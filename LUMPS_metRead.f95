@@ -1,7 +1,7 @@
-subroutine MetRead(i)
-!Reading met data
-!Input: hour number i
-!Code changed in Feb 2012 (LJ). Input fluxes qh and qe changed _obs as well as qn1_obs ending
+ subroutine MetRead(i)
+ !Reading met data
+ !Input: hour number i
+ !Code changed in Feb 2012 (LJ). Input fluxes qh and qe changed _obs as well as qn1_obs ending
 
   use data_in
   use gis_data
@@ -67,12 +67,12 @@ subroutine MetRead(i)
   endif
     
   
-  if(iostat_var<0)THEN
-     iostat_var=0
-     CLOSE(lfn)
-     finish=.TRUE.
-     RETURN
-  ENDIF
+  !if(iostat_var<0)THEN
+  !   iostat_var=0
+  !   CLOSE(lfn)
+  !   finish=.TRUE.
+  !   RETURN
+  !ENDIF
 
  qual=0
   if(AvKdn<0) then

@@ -4,7 +4,8 @@ CC = gfortran		        	# compiler
 TARGET = SUEWS_V2014b			# program name
 # All the files which include modules used by other modules (these therefore
 # needs to be compiled first)
-MODULES =		LUMPS_Module_constants_v2014a.o  \
+MODULES =		LUMPS_Module_constants_v2014b.o  \
+						SUEWS_Read.o \
 						LUMPS_metRead.o  \
 						SUEWS_Files_run_Control.o
 # Rest of the files including modules and functions which are independend

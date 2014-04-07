@@ -89,8 +89,7 @@ subroutine SUEWS_temporal(GridName,GridFrom,GridFromFrac,iyr,errFileYes,SnowPack
                    
   character(len=100)::FileNameOld,str2
 
-  !Variables related to NARP
-   !Radiation balance components for different surfaces
+  !Variables related to NARP. Radiation balance components for different surfaces
   real(kind(1D0))::NARP_ALB_is,NARP_EMIS_is,qn1_cum,kup_cum,lup_cum,tsurf_cum,snowFracTot
 
   
@@ -136,11 +135,17 @@ if (snowUse==1) then
  
 
  !=============Get data ready for the qs calculation====================
-  write(12,*) '# Met file: ', trim(fileMet), finish
- !write(12,*)InputMetFormat, "MET Data Input: [1] MUHD format [2] Minimum [3] London"
- 
+ write(12,*) '# Met file: ', trim(fileMet), finish
+
  open(1,file=trim(fileMet),status='old',err=314,iostat=ios_out,position='rewind')
  call skipHeader(1,SkipHeaderMet)
+
+ call SUEWS_Read(1)
+
+ !Allocate output files. Ca be moved elsewhere
+ allocate(dataOut1(nlines,62))
+ allocate(dataOut2(nlines,30))
+ allocate(dataOut3(nlines,106))
 
  STPH1=0
  if(NetRadiationChoice==0) then !Radiative components are provided as forcing 
@@ -206,7 +211,9 @@ enddo
  ! assume starting at midnight
  ! first couple of time steps will not be correct for Qs 
  
-  do i=1,367*48 !want more than it will be old: 4000 24 h days or 1000 96 *15 days!NPeriodsPerYear
+ 
+ 
+  do i=1,nlines !367*48 !want more than it will be old: 4000 24 h days or 1000 96 *15 days!NPeriodsPerYear
    
     !INITIALIZE VARIABLE FOR THE LOOP
     runoffAGveg=0
@@ -233,7 +240,10 @@ enddo
     MwStore = 0
     WaterHoldCapFrac=0
 
-    call MetRead(i) !READ FORCING DATA
+
+    call ConvertMetData(i)
+
+    !call MetRead(i) !READ FORCING DATA
     
     if(finish) then
       write(*,*)id,it 

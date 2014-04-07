@@ -3,7 +3,7 @@
 ! lj jun 2012 - snow part added
 
 !===================================================================================
-module allocateArray
+ module allocateArray
    implicit none
 
    integer::PavSurf=1,& ! when all surfaces    BareSoilSurf= treated separately below
@@ -342,10 +342,14 @@ MODULE cbl_MODULE
                     xsmd,&      !Measured soil moisture deficit
                     year      !Year of the measurements
 
-  integer::FirstYear
+  integer::FirstYear,nlines
               
   real (kind(1d0)),dimension(366,25)::day,season,month,yr_tot,all_tot !daily matrixes
-                                            
+  real (kind(1d0)),dimension(:,:), allocatable:: dataMet
+  real (kind(1d0)),dimension(:,:), allocatable:: dataOut1
+  real (kind(1d0)),dimension(:,:), allocatable:: dataOut2
+  real (kind(1d0)),dimension(:,:), allocatable:: dataOut3
+
   integer::AlbedoChoice,&         !If albedos dependency on zenith angle is taken into account
            AnthropHeatChoice,&    !Is anthropogenic heat calculated
            CBLuse,&               !s.o.

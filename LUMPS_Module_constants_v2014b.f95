@@ -3,7 +3,7 @@
 ! lj jun 2012 - snow part added
 
 !===================================================================================
- module allocateArray
+module allocateArray
    implicit none
 
    integer::PavSurf=1,& ! when all surfaces    BareSoilSurf= treated separately below
@@ -333,6 +333,7 @@ MODULE cbl_MODULE
                     qn1_SF,&    !Total net all-wave radiation for the snowpack
                     qs,&        !Observed storage heat flux
                     snow,&      !snow cover
+                    snow_obs,&  !Observed snow cover
                     T_CRITIC,& !Critical temperature
                     Temp_C,&    !Air temperature
                     timezone,&  !Timezone (GMT=0)
@@ -342,13 +343,14 @@ MODULE cbl_MODULE
                     xsmd,&      !Measured soil moisture deficit
                     year      !Year of the measurements
 
-  integer::FirstYear,nlines
+  integer::FirstYear, nlines  !Number of lines in met forcing file.
               
   real (kind(1d0)),dimension(366,25)::day,season,month,yr_tot,all_tot !daily matrixes
-  real (kind(1d0)),dimension(:,:), allocatable:: dataMet
-  real (kind(1d0)),dimension(:,:), allocatable:: dataOut1
-  real (kind(1d0)),dimension(:,:), allocatable:: dataOut2
-  real (kind(1d0)),dimension(:,:), allocatable:: dataOut3
+  integer,dimension(:,:), allocatable:: dataMet1              !Meteorological input matrix
+  real(kind(1d0)),dimension(:,:), allocatable:: dataMet2              !Meteorological input matrix
+  real(kind(1d0)),dimension(:,:), allocatable:: dataOut1             !Main output matrix
+  real(kind(1d0)),dimension(:,:), allocatable:: dataOut2             !NARP output matrix
+  real(kind(1d0)),dimension(:,:), allocatable:: dataOut3             !Snow output matrix
 
   integer::AlbedoChoice,&         !If albedos dependency on zenith angle is taken into account
            AnthropHeatChoice,&    !Is anthropogenic heat calculated
@@ -418,7 +420,7 @@ MODULE cbl_MODULE
    integer :: id,&            !Day of year
               it,&            !Hour
               iostat_var,&      !File status from reading data (should not be here)
-             lastTimeofDAY=23, firstTimeofDay=0,&
+              lastTimeofDAY=23, firstTimeofDay=0,&
               DLS                            !- day lightsavings =1 + 1h) =0  
  
              ! check what lasttime of day should be

@@ -4,42 +4,43 @@ CC = gfortran		        	# compiler
 TARGET = SUEWS_V2014b			# program name
 # All the files which include modules used by other modules (these therefore
 # needs to be compiled first)
-MODULES =		LUMPS_Module_constants_v2014b.o  \
-						SUEWS_Read.o \
-						LUMPS_metRead.o  \
-						SUEWS_Files_run_Control.o
+MODULES =	LUMPS_Module_constants_v2014b.o  \
+          LUMPS_metRead.o  \
+          SUEWS_Files_run_Control.o
 # Rest of the files including modules and functions which are independend
-OTHERS =		BLUEWS_CBL.o   \
-						BLUEWS_Diff.o  \
-						SUEWS_HorizontalSoilWater.o \
-						LUMPS_accumulate.o \
-            SUEWS_Initial.o \
-            LUMPS_atmos_functions_moist.o \
-            SUEWS_OHMnew.o \
-            LUMPS_atmos_functions_stab.o \
-            LUMPS_gis_read.o \
-            SUEWS_ReDistributeWater.o \
-            SUEWS_RoughnessParameters.o \
-            SUEWS_RunoffFromGrid.o \
-            LUMPS_NARP_v3.o \
-            NARP_sun_position_v2.o \
-            SUEWS_SAHP.o \
-            LUMPS_OutputHeaders.o \
-            SUEWS_Snow.o \
-            LUMPS_QHQE.o \
-            SUEWS_spatial.o \
-            SUEWS_AerodynamicResistance.o \
-            SUEWS_store.o \
-            SUEWS_BL_Resist.o \
-            SUEWS_SurfaceResistance.o \
-            SUEWS_DailyState.o \
-            SUEWS_SnowUpdate.o \
-            SUEWS_temporal.o \
-            SUEWS_drain.o \
-            SUEWS_TimeRelatedSubroutines.o \
-            SUEWS_error.o \
-            SUEWS_waterUse.o \
-            SUEWS_evap.o \
+OTHERS =	BLUEWS_CBL.o   \
+          BLUEWS_Diff.o  \
+          SUEWS_HorizontalSoilWater.o \
+          LUMPS_accumulate.o \
+          SUEWS_Initial.o \
+          LUMPS_atmos_functions_moist.o \
+          SUEWS_OHMnew.o \
+          LUMPS_atmos_functions_stab.o \
+          LUMPS_gis_read.o \
+          SUEWS_ReDistributeWater.o \
+          SUEWS_RoughnessParameters.o \
+          SUEWS_RunoffFromGrid.o \
+          LUMPS_NARP_v3.o \
+          NARP_sun_position_v2.o \
+          SUEWS_SAHP.o \
+          LUMPS_OutputHeaders.o \
+          SUEWS_Snow.o \
+          LUMPS_QHQE.o \
+          SUEWS_spatial.o \
+          SUEWS_AerodynamicResistance.o \
+          SUEWS_store.o \
+          SUEWS_BL_Resist.o \
+          SUEWS_SurfaceResistance.o \
+          SUEWS_DailyState.o \
+          SUEWS_SnowUpdate.o \
+          SUEWS_temporal.o \
+          SUEWS_drain.o \
+          SUEWS_TimeRelatedSubroutines.o \
+          SUEWS_error.o \
+          SUEWS_waterUse.o \
+          SUEWS_evap.o \
+          SUEWS_Read.o  \
+          SUEWS_Output.o  \
 
 # Build main program - main uses MODULES and OTHERS
 main: SUEWS_Program.f95 $(MODULES) $(OTHERS)

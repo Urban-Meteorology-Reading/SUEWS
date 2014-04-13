@@ -89,21 +89,14 @@ subroutine SUEWS_temporal(GridName,GridFrom,GridFromFrac,iyr,errFileYes,SnowPack
                    
   character(len=100)::FileNameOld,str2
 
-  !Variables related to NARP. Radiation balance components for different surfaces
+  !Variables related to NARP
+   !Radiation balance components for different surfaces
   real(kind(1D0))::NARP_ALB_is,NARP_EMIS_is,qn1_cum,kup_cum,lup_cum,tsurf_cum,snowFracTot
 
   
  !Initialize the model (reading nml files, defining filepaths, printing filechoices)
  call OHMinitialize
  !===========================NARP CONFIG=============================================
- if (NARPOutput==1) then
-        open(7,file=NARPOut) 
-        write(7,110)           
-110 	format('%id  dectime   kup_pav   kup_blg kup_everg   kup_dec kup_Irrgr    kup_Gr   kup_wtr  ', &
-          ' lup_pav   lup_blg  lup_everg  lup_dec lup_Irrgr   lup_Gr    lup_wtr    Ts_pav    Ts_blg   Ts_everg',&
-          '  Ts_dec   Ts_Irrgr     Ts_Gr    Ts_wtr    qn_pav   qn_blg   qn_everg   qn_dec   qn_Irrgr    qn_Gr   qn_wtr') 
-
- endif
  if(NetRadiationChoice>0)then 
     	call NARP_CONFIG(LAT,LNG,YEAR,TIMEZONE,ALB_SNOW,EMIS_SNOW,TRANS_SITE,Interval,ldown_option)
   		!This for the snow cover fractions
@@ -112,44 +105,15 @@ subroutine SUEWS_temporal(GridName,GridFrom,GridFromFrac,iyr,errFileYes,SnowPack
  endif
  finish=.false.
 
- 
-!Snow outputfile
-if (snowUse==1) then
-        open(8,file=SnowOut)
-        write(8,111)           
-111 	format('%doy  it dectime  SWE_pav SWE_bldg SWE_evergr SWE_dec SWE_irrGr SWE_Gr SWE_water ',&
-               ' SnowRem_pav SnowRem_bldg Mw Mw_pav Mw_bldg Mw_evergr  Mw_dec Mw_irrGr    Mw_Gr ',&
-               'Mw_water     Qm   Qm_pav Qm_bldg Qm_evergr Qm_dec Qm_irrGr Qm_Gr Qm_water ',&
-               'Qa_pav Qa_bldg Qa_evergr Qa_dec Qa_irrGr Qa_Gr Qa_water QmFr_pav ',&
-               'QmFr_bldg QmFr_evergr QmFr_dec QmFr_irrGr QmFr_Gr QmFr_water ',&
-               'fr_pav fr_bldg fr_evergr fr_dec fr_irrGr fr_Gr alb_snow  rainOnSnow_pav ',&
-               'rainOnSnow_bldg rainOnSnow_evergr rainOnSnow_dec rainOnSnow_irrGr rainOnSnow_Gr',&
-               'rainOnSnow_water Qn_pavSnow Qs_blgSnow Qs_evergrSnow Qs_decSnow Qs_irrGrSnow Qs_GrSnow ',&
-               'Qs_wtrSnow kup_pavSnow kup_blgSnow kup_evergrSnow kup_decSnow kup_irrGrSnow kup_GrSnow ',&
-               'kup_wtrSnow ') !Not yet final!
- endif
-
-
- !Anthropogenic Heat coefs
- ! this location allows change between years and locations
- 
 
  !=============Get data ready for the qs calculation====================
  write(12,*) '# Met file: ', trim(fileMet), finish
 
- open(1,file=trim(fileMet),status='old',err=314,iostat=ios_out,position='rewind')
- call skipHeader(1,SkipHeaderMet)
-
  call SUEWS_Read(1)
-
- !Allocate output files. Ca be moved elsewhere
- allocate(dataOut1(nlines,62))
- allocate(dataOut2(nlines,30))
- allocate(dataOut3(nlines,106))
 
  STPH1=0
  if(NetRadiationChoice==0) then !Radiative components are provided as forcing 
-    !avkdn=NAN     !Needed for resistances for SUEWS.
+    !avkdn=NAN                  !Needed for resistances for SUEWS.
     ldown=NAN
     lup=NAN
     kup=NAN
@@ -196,7 +160,7 @@ do is=1,4
    open(lfnOld,file=trim(FileNameOld),err=319,iostat=ios_out)
    call skipHeader(lfnOld,5)
    endif
-enddo
+ enddo
 ! CHECK Where this needs to actually occur at the moment just put here
   
 ! ! temperature  and LAI initialization
@@ -211,9 +175,7 @@ enddo
  ! assume starting at midnight
  ! first couple of time steps will not be correct for Qs 
  
- 
- 
-  do i=1,nlines !367*48 !want more than it will be old: 4000 24 h days or 1000 96 *15 days!NPeriodsPerYear
+  do i=1,nlines  !367*48 !want more than it will be old: 4000 24 h days or 1000 96 *15 days!NPeriodsPerYear
    
     !INITIALIZE VARIABLE FOR THE LOOP
     runoffAGveg=0
@@ -240,11 +202,9 @@ enddo
     MwStore = 0
     WaterHoldCapFrac=0
 
-
+    !call MetRead(i) !READ FORCING DATA
     call ConvertMetData(i)
 
-    !call MetRead(i) !READ FORCING DATA
-    
     if(finish) then
       write(*,*)id,it 
       if(finish)exit
@@ -291,7 +251,7 @@ enddo
     ! ===================NET ALLWAVE RADIATION================================
     if(NetRadiationChoice>0)then  
 
-        if (snowUse==0) snowFrac=SNOW 
+        if (snowUse==0) snowFrac=snow_obs
        
         if(ldown_option==1) then !Observed ldown provided as forcing
            ldown=ldown_obs
@@ -309,7 +269,7 @@ enddo
                   Ea_hPa,Press_hPa,ldown_option,AlbedoChoice,qn1_obs,&
                   netRadiationChoice,alb_snow,qn1_SF,qn1_S)
     else
-        snowFrac = snow
+        snowFrac = snow_obs
         qn1=qn1_obs
     endif
     
@@ -598,44 +558,26 @@ enddo
       
      !¤¤¤¤¤¤¤¤¤FILE WRITE SECTION¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
      ! if this changes it will impact LUMPS_RunoffFromGrid
-     
+     dataOut1(i,1:62)=(/real(id,kind(1D0)),real(it,kind(1D0)),dectime,avkdn,kup,ldown,lup,tsurf,&  !8
+                       qn1,h_mod,e_mod,qs,qf,qh,qeph,Precip_hr,ext_wuhP,ev_per_interval,& !18
+                       dr_per_interval,ch_per_interval,st_per_interval,runoffSoil_per_interval,runoff_per_interval,& !23
+                       runoffPipes,runoffAGimpervious,runoffAGveg,runoffWaterBody,ra,ResistSurf,ustar,& !30
+                       l_mod,(smd_nsurfOut(is),is=1,nsurf-1),(stateOut(is),is=1,nsurf),Fcld,soilmoist_state,smd,lai_wt,& !48
+                       FlowChange*sfr(WaterSurf),AdditionalWater,ext_wuh,wuhTrees,qn1_SF,qn1_S,Qm,QmFreez,QmRain,& !57
+                       swe,MwStore,(SnowRemoval(is),is=1,2),chSnow_per_interval/)
 
-    write(lfnoutC,301)id,it,&
-          dectime,avkdn,kup,ldown,lup,tsurf,&  !8
-          qn1,h_mod,e_mod,qs,qf,qh,qeph,Precip_hr,ext_wuhP,ev_per_interval,& !18
-          dr_per_interval,ch_per_interval,st_per_interval,runoffSoil_per_interval,runoff_per_interval,& !23
-          runoffPipes,runoffAGimpervious,runoffAGveg,runoffWaterBody,ra,ResistSurf,ustar,& !30
-          l_mod,(smd_nsurfOut(is),is=1,nsurf-1),(stateOut(is),is=1,nsurf),Fcld,soilmoist_state,smd,lai_wt,& !48
-          FlowChange*sfr(WaterSurf),AdditionalWater,ext_wuh,wuhTrees,qn1_SF,qn1_S,Qm,QmFreez,QmRain,& !57
-          swe,MwStore,(SnowRemoval(is),is=1,2),chSnow_per_interval !62
+     dataOut2(i,1:30)=(/real(id,kind(1D0)),dectime,kup_ind(1:7),lup_ind(1:7),tsurf_ind(1:7),qn1_ind(1:7)/)
 
-          
-     !Radiation output
-     if (NARPOutput==1) then
-     	write(7,117)id,dectime,(kup_ind(is),is=1,nsurf),(lup_ind(is),is=1,nsurf),&
-          	(tsurf_ind(is),is=1,nsurf),(qn1_ind(is),is=1,nsurf)       
-        117 format(i3,f9.4,28f10.3)
- 	 endif 
+     dataOut3(i,1:106)=(/real(id,kind(1D0)),real(it,kind(1D0)),dectime,SnowPack(1:7),SnowRemoval(1:2),mwh,mw_ind(1:7),&
+                        Qm,Qm_melt(1:7),Qm_rain(1:7),Qm_freezState(1:7),snowFrac(1:6),alb_snow,rainOnSnow(1:7),&
+                        qn1_ind_snow(1:7),kup_ind_snow(1:7),freezMelt(1:7),MeltWaterStore(1:7),densSnow(1:7),&
+                        snowDepth(1:7),Tsurf_ind_snow(1:7),QmFreez/)
 
-     !Snow output
-     if (snowUse==1) then 
-        write(8,118)id,it,dectime,(SnowPack(is),is=1,nsurf),(SnowRemoval(is),is=1,2),mwh,& !1-13
-             (mw_ind(is),is=1,nsurf),Qm,(Qm_melt(is),is=1,nsurf),& !14-28
-             (Qm_rain(is),is=1,nsurf),(Qm_freezState(is),is=1,nsurf),& !29-42
-             (snowFrac(is),is=1,nsurf-1),alb_snow,(rainOnSnow(is),is=1,nsurf),&!43-56
-             (qn1_ind_snow(is),is=1,nsurf),(kup_ind_snow(is),is=1,nsurf),& !57-70
-             (freezMelt(is),is=1,nsurf),(MeltWaterStore(is),is=1,nsurf),& !71-84
-             (densSnow(is),is=1,nsurf),(snowDepth(is),is=1,nsurf),& !85 - 91, 92 - 98
-             (Tsurf_ind_snow(is),is=1,nsurf),QmFreez !99 -105, 106
-             
-        118 format(2(i3,1X),(f8.4,1X),17(f8.3,1X),22(f7.2,1X),7(f7.2,1X),7(f7.3,1X),14(f7.2,1X),&
-        14(f7.3,1X),21(f7.2,1X),(f14.3,1X))     
-     endif
-      
+
      !Writes to monthly and daily out
      !First day is not necessarily 1 Jan. Headers are only written with the first line
-     !if(id==1.and.reset==1)then     
-     if(reset==1)then         
+     !if(id==1.and.reset==1)then
+     if(reset==1)then
         iyr=iyr+1
         reset=0
      
@@ -680,12 +622,16 @@ enddo
        enddo
     endif
      
-end do !i=1,10000 (LJ)
+ end do !i=1,10000 (LJ)
 
- !Variables passed to future years. Currently: Surface and soil stores and LAI - occurs in nextInitial 
+ !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+ !Save data to files
+ call SUEWS_Output
 
- if(errFileYes==1)close (lfnout)
- close (lfnoutC)
+
+ !Variables passed to future years. Currently: Surface and soil stores and LAI - occurs in nextInitial
+ !if(errFileYes==1)close (lfnout)
+ !close (lfnoutC)
  close (7) 
 
 
@@ -706,7 +652,7 @@ end do !i=1,10000 (LJ)
   endif
  enddo
 
- call OutputHeaders(ProgName,lfnOut,lfnOutC,text,veg_type,ldown_option,1,0)
+ call OutputHeaders(ProgName,lfnOutC,text,veg_type,ldown_option,1)
  call out_accumulate(id,day,14,0)
  call out_accumulate(12,month,15,0)
  write(15,*)'% Season year-',iyr

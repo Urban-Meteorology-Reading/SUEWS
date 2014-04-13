@@ -8,7 +8,7 @@
 !     L - monin obukhov stability length
 !       Van Ulden & Holtslag (1985) JCAM: 24: 1196-1207
 
-SUBROUTINE STAB_lumps(H,StabilityMethod,ustar,L) 
+ SUBROUTINE STAB_lumps(H,StabilityMethod,ustar,L)
   USE mod_k
   USE mod_z
   USE mod_grav

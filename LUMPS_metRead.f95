@@ -1,7 +1,7 @@
- subroutine MetRead(i)
- !Reading met data
- !Input: hour number i
- !Code changed in Feb 2012 (LJ). Input fluxes qh and qe changed _obs as well as qn1_obs ending
+subroutine MetRead(i)
+!Reading met data
+!Input: hour number i
+!Code changed in Feb 2012 (LJ). Input fluxes qh and qe changed _obs as well as qn1_obs ending
 
   use data_in
   use gis_data
@@ -19,7 +19,7 @@
   if (InputMetFormat==0) then !This is the default format using LUMPS only
     
   	READ(lfn,*,iostat=iostat_var)id,it,dectime,qn1_obs,avu1,avrh,& 
-             Temp_C,dir30,Pres_kPa,Precip_hr,avkdn,snow,ldown_obs,fcld_obs
+             Temp_C,dir30,Pres_kPa,Precip_hr,avkdn,snow_obs,ldown_obs,fcld_obs
     
     qf=-999
     qs=-999
@@ -29,7 +29,7 @@
     
   elseif (InputMetFormat==10) then !SUEWS reading
       READ(lfn,*,iostat=iostat_var)id,it,dectime,qn1_obs,qh_obs,qe_obs,qs,qf,avu1,avrh,&
-               Temp_C,Pres_kPa,Precip_hr,avkdn,snow,ldown_obs,fcld_obs,&
+               Temp_C,Pres_kPa,Precip_hr,avkdn,snow_obs,ldown_obs,fcld_obs,&
                wuh,xsmd,lai_hr
                
       ! check with LJ -- lai_hr only one veg type
@@ -67,17 +67,17 @@
   endif
     
   
-  !if(iostat_var<0)THEN
-  !   iostat_var=0
-  !   CLOSE(lfn)
-  !   finish=.TRUE.
-  !   RETURN
-  !ENDIF
+  if(iostat_var<0)THEN
+     iostat_var=0
+     CLOSE(lfn)
+     finish=.TRUE.
+     RETURN
+  ENDIF
 
- qual=0
+  qual=0
   if(AvKdn<0) then
     call ErrorHint(27,'Met Data: avKdn - needed for Surf. resistance, If present, check file not tab delimited',&
-     avkdn,dectime, notUsedI)
+                      avkdn,dectime, notUsedI)
      !sg removed this is causing the problems with resistances 
      !  AvKdn=0 !Solar radiation cannot be lower than 1
   endif
@@ -117,10 +117,10 @@
      call ErrorHint(27,'Met Data: Precip_hr - less than 0',Precip_hr ,dectime, notUsedI)
   endif
 
-  if (snow==NAN) snow=0
+  if (snow_obs==NAN) snow_obs=0
     
-  if (snowUse==0.and.(snow<0.or.snow>1)) then
-     call ErrorHint(27,'Met Data: snow not between [0  1]',snow ,dectime, notUsedI)
+  if (snowUse==0.and.(snow_obs<0.or.snow_obs>1)) then
+     call ErrorHint(27,'Met Data: snow not between [0  1]',snow_obs ,dectime, notUsedI)
   endif
 
   if (xsmd<0.and.smd_choice==1) then  !If soil moisture deficit is zero
@@ -131,5 +131,5 @@
   if (i==1) call CheckInitial 
 
   RETURN	
-END SUBROUTINE MetRead
+ END SUBROUTINE MetRead
 

@@ -18,7 +18,7 @@
     CHARACTER (len=90),DIMENSION(14)::text
     integer::i,j !,lfnOutC
 
-    !Firs opem output files and print headers to them
+    !First open output files and print headers to them
     if (NARPOutput==1) then
         open(7,file=NARPOut)
         write(7,110)
@@ -41,7 +41,7 @@
       keepHeader(j)=text(j)
     end do
 
-!Snow outputfile
+    !Snow outputfile
     if (snowUse==1) then
         open(8,file=SnowOut)
         write(8,111)
@@ -58,20 +58,34 @@
 
     endif
 
+    if(write5min==1) then                ! if going to write 5 min data out
+       open(16,file=file5min,err=204)
+       write(16,161)
 
-
-  do i=1,nlines
-     write(lfnoutC,301) int(dataOut1(i,1)),int(dataOut1(i,2)),(dataOut1(i,is),is = 3,62)
-     !write(lfnoutC,301)(dataOut1(nlines,is),is = 1,62)
-
-     if (NARPOutput==1) then
-        write(7,117) int(dataOut2(i,1)),(dataOut2(i,is),is = 2,30)
+ 161   	format('%id 5min dectime    pp       Ie        E     St_pav   St_blg   St_everg St_dec ' ,&
+               ' St_IrrGr  St_Gr   St_water SoilSt_pav SoilSt_blg SoilSt_everg SoilSt_dec',&
+               ' SoilSt_IrrGr SoilSt_Gr D_pav D_blg  D_everg    D_dec    D_IrrGr     D_Gr     r_pav',&
+               '     r_blg    r_everg    r_dec    r_IrrGr    r_Gr  soilr_pav soilr_bldg soilr_everg soilr_dec',&
+               ' soilr_IrrGr soilr_Gr snowr_pav snowr_bldg snowr_everg snowr_dec snowr_IrrGr snowr_Gr',&
+               ' SWE_pav SWE_bldg SWE_everg SWE_dec SWE_IrrGr SWE_Gr SWE_water snowCh_pav snowCh_bldg',&
+               ' snowCh_everg snowCh_dec snowCh_IrrGr snowCh_Gr snowCh_water mwh_pav mwh_bldg mwh_everg',&
+               ' mwh_dec mwh_IrrGr mwh_Gr mwh_water')
      endif
-     if (snowUse==1) then
-        write(8,118) int(dataOut3(i,1)),int(dataOut1(i,2)),(dataOut3(i,is),is = 3,106)
-     endif
 
-  enddo
+    !Actual data writings
+    do i=1,nlines
+        write(lfnoutC,301) int(dataOut1(i,1)),int(dataOut1(i,2)),(dataOut1(i,is),is = 3,62)
+
+        if (NARPOutput==1)  write(7,117) int(dataOut2(i,1)),(dataOut2(i,is),is = 2,30)
+        if (snowUse==1)  write(8,118) int(dataOut3(i,1)),int(dataOut1(i,2)),(dataOut3(i,is),is = 3,106)
+    enddo
+
+    if(write5min==1) then
+      do i=1,nlines*int(INTERVAL/Tstep)
+         write(16,36) int(dataOut5min(i,1)),int(dataOut5min(i,2)),(dataOut5min(i,is),is = 3,69)
+
+      enddo
+    endif
 
 !Writing formats
 !301 format(2i4,f9.4,5f8.2,7f12.4,12f10.4,2f9.1,f10.4,g15.5,27f12.4)!s.o. 7F11.4 ->9F11.4
@@ -80,7 +94,7 @@
            (f7.2,1X),(g14.5,1X),16(f8.3,1X),(f9.2,1X),4(f9.3,1X),5(f8.2,1X),5(f9.3,1X))!
 118 format(2(i3,1X),(f8.4,1X),17(f8.3,1X),22(f7.2,1X),7(f7.2,1X),7(f7.3,1X),14(f7.2,1X),14(f7.3,1X),21(f7.2,1X),(f14.3,1X))
 117 format(i3,f9.4,28f10.3)
-
+36  format(2i3,f9.4,66f9.3)     !format(i3,i3,3f12.4,6f10.4, f14.3,25f10.4)
 
  close (lfnoutC)
  close (8)
@@ -88,7 +102,11 @@
 
  return
 
+!Error commands
 112 call ProblemsText(trim(FileOut))
+    call PauseStop
+
+204 call ProblemsText(trim(file5min))
     call PauseStop
 
  end subroutine

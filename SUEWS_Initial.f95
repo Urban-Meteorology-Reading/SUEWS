@@ -1,6 +1,6 @@
 ! sg feb 2012
 ! only run once at start - fixed for all grids and all years
-subroutine OverallRunControl
+ subroutine OverallRunControl
   use resist        ! LUMPS_metRead.f95
   use data_in      ! LUMPS_metRead.f95
   use ohm_calc
@@ -511,7 +511,7 @@ end subroutine RunControlByGridByYear
 ! sg feb 2012 - 
 !----------------------------------------------------------------------------------------------
 
-subroutine InitialState(GridName,errFileYes)
+ subroutine InitialState(GridName,errFileYes)
   use resist        ! LUMPS_metRead.f95
   use data_in       ! LUMPS_metRead.f95
   use ohm_calc
@@ -900,25 +900,9 @@ r3=-99
 
  
 !==================OUTPUT FILE OPTIONS=============================================
-!Open daily, monthly and 5-min file (the latter only if write5min=1)
+!Open daily and monthly
    open(14,file=fileDaily,err=201)
    open(15,file=fileMonthly,err=202)
- 
-
- if(write5min==1) then                         ! if going to write 5 min data out
-    	open(16,file=file5min,err=204)
-    	write(16,161)          
-
-        161   	format('%id 5min dectime    pp       Ie        E     St_pav   St_blg   St_everg St_dec ' ,&
-             ' St_IrrGr  St_Gr   St_water SoilSt_pav SoilSt_blg SoilSt_everg SoilSt_dec',&
-             ' SoilSt_IrrGr SoilSt_Gr D_pav D_blg  D_everg    D_dec    D_IrrGr     D_Gr     r_pav',&
-             '     r_blg    r_everg    r_dec    r_IrrGr    r_Gr  soilr_pav soilr_bldg soilr_everg soilr_dec',&
-             ' soilr_IrrGr soilr_Gr snowr_pav snowr_bldg snowr_everg snowr_dec snowr_IrrGr snowr_Gr',&
-             ' SWE_pav SWE_bldg SWE_everg SWE_dec SWE_IrrGr SWE_Gr SWE_water snowCh_pav snowCh_bldg',&
-             ' snowCh_everg snowCh_dec snowCh_IrrGr snowCh_Gr snowCh_water mwh_pav mwh_bldg mwh_everg',&
-             ' mwh_dec mwh_IrrGr mwh_Gr mwh_water')     
-	endif
-      
 
 
  ! zero arrays------------------------------------------------------------
@@ -939,8 +923,6 @@ return
 		call PauseStop
 203 	call ErrorHint(16,trim(FileInit),notUsed,notUsed,ios_out)
       	write(500,nml=InitialConditions)       
-        call PauseStop      
-204		call ProblemsText(trim(file5min))
         call PauseStop
 111 	call ProblemsText(trim(FileErrorInf))
 		call PauseStop

@@ -31,7 +31,7 @@
   Tstar=(-H/ustar)
   L=(USTAR**2)/(G_T_K*Tstar)
   
-  IF(LOG(zzd/z0M)<0.001) call ErrorHint(17,'stability subroutine',zzd,z0m,notUsedI)   
+  IF(LOG(zzd/z0M)<0.001000) call ErrorHint(17,'stability subroutine',zzd,z0m,notUsedI)
   DO i=1,330 !Iteration starts
      LOLD=L
      zL=zzd/L
@@ -42,7 +42,7 @@
           
      USTAR=KUZ/(LOG(Zzd/Z0M)-PSIM+psimz0) !Friction velocity in non-neutral situation
      
-     IF(ustar<0.001)THEN       !If u* too small
+     IF(ustar<0.001000)THEN       !If u* too small
         USTAR=KUZ/(LOG(Zzd/Z0M))
         call ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.001] zl,dectime',zl,dectime,notUsedI)
         call ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.001] z0l,ustar',z0l,ustar,notUsedI)

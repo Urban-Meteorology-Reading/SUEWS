@@ -83,7 +83,7 @@ subroutine SUEWS_temporal(GridName,GridFrom,GridFromFrac,iyr,errFileYes,SnowPack
   
   !Other variables 
   logical:: debug=.false.                            
-  integer:: imon,iday,iyr,iseas,reset=1,i,iv,ih,id_in,it_in, SunriseTime,SunsetTime,errFileYes
+  integer:: imon,iday,iyr,iseas,reset=1,i,iv,ih,id_in,it_in, SunriseTime,SunsetTime,errFileYes,ind5min=1
             
   real(kind(1d0))::lai_wt,dectime_nsh,SnowDepletionCurve
                    
@@ -107,10 +107,6 @@ subroutine SUEWS_temporal(GridName,GridFrom,GridFromFrac,iyr,errFileYes,SnowPack
 
 
  !=============Get data ready for the qs calculation====================
- write(12,*) '# Met file: ', trim(fileMet), finish
-
- call SUEWS_Read(1)
-
  STPH1=0
  if(NetRadiationChoice==0) then !Radiative components are provided as forcing 
     !avkdn=NAN                  !Needed for resistances for SUEWS.
@@ -202,8 +198,7 @@ do is=1,4
     MwStore = 0
     WaterHoldCapFrac=0
 
-    !call MetRead(i) !READ FORCING DATA
-    call ConvertMetData(i)
+    call ConvertMetData(i) !Get correct forcing data for each timestep
 
     if(finish) then
       write(*,*)id,it 
@@ -492,15 +487,12 @@ do is=1,4
 
           dectime_nsh = dectime + 1.0*(in-1)/nsh/24
 
-          if(write5min==1) then           !   write 5 min results       
-
-            write(16,36)id,in,dectime_nsh,pin,ext_wu,ev_per_interval,(stateOut(is),is=1,nsurf),& !1-13
-                  (smd_nsurfOut(is),is=1,nsurf-1),(drain(is),is=1,nsurf-1),(runoffOut(is),is=1,nsurf-1),& !14-19,20-25,26-31
-                  (runoffsoilOut(is),is=1,nsurf-1),(runoffSnow(is),is=1,nsurf-1),(snowPack(is),is=1,nsurf),& !32-37,38-43,44-50
-                  (ChangSnow(is),is=1,nsurf),(mw_ind(is),is=1,nsurf)
-                   
-36        format(2i3,f9.4,61f9.3)     !format(i3,i3,3f12.4,6f10.4, f14.3,25f10.4)   
-          endif   
+          if(write5min==1) then           !   Save 5 min results to a file
+            dataOut5min(ind5min,1:69)=(/real(id,kind(1D0)),real(in,kind(1D0)),dectime_nsh,pin,ext_wu,ev_per_interval,&
+                              stateOut(1:nsurf),smd_nsurfOut(1:nsurf),drain(1:nsurf),runoffOut(1:nsurf),runoffsoilOut(1:nsurf),&
+                              runoffSnow(1:nsurf),snowPack(1:nsurf),ChangSnow(1:nsurf),mw_ind(1:nsurf)/)
+            ind5min = ind5min+1
+          endif
          
       enddo !in=1,nsh (LJ)
       
@@ -632,8 +624,7 @@ do is=1,4
  !Variables passed to future years. Currently: Surface and soil stores and LAI - occurs in nextInitial
  !if(errFileYes==1)close (lfnout)
  !close (lfnoutC)
- close (7) 
-
+ close (7)
 
  do is=1,4
   if (GridFromFrac(is)/=0) then!If runoff from other surfaces exists read data
@@ -680,11 +671,11 @@ do is=1,4
 !endif
 !---------------------------------------------------------------------------
 
- ! stop 'finished'
+
  return
 
 314 	call errorHint(11,trim(filemet),notUsed,notUsed,ios_out)
 319 	call errorHint(11,trim(FileNameOld),notUsed,notUsed,ios_out)
 
 
-end subroutine SUEWS_temporal
+ end subroutine SUEWS_temporal

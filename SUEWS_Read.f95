@@ -3,6 +3,7 @@
  subroutine SUEWS_Read(lunit)
 
  use data_in
+ use sues_data
  use time
  use defaultnotUsed
 
@@ -16,15 +17,20 @@
  call skipHeader(lunit,SkipHeaderMet)
 
  nlines = 0 !Initialize nlines
-
  DO
     READ (lunit,*, END=10)
     nlines = nlines + 1
  END DO
  10 CLOSE (lunit)
 
+ !Allocate hourly input and ouutput matrixes
+ allocate(dataMet1(nlines,2))
+ allocate(dataMet2(nlines,18))
+ allocate(dataOut1(nlines,62))
+ allocate(dataOut2(nlines,30))
+ allocate(dataOut3(nlines,106))
+ allocate(dataOut5min(nlines*nsh,69))
 
- call AllocateFiles(0)
 
 !Open the file again. Code later better
  open(1,file=trim(fileMet),status='old',err=314,position='rewind')
@@ -33,34 +39,11 @@
  DO i=1,nlines
     call MetRead(i)
     dataMet1(i,1:2) = (/id,it/)
-    dataMet2(i,1:18) = (/dectime,qn1_obs,qh_obs,qe_obs,qs,qf,avu1,&
-                       avrh,Temp_C,Pres_kPa,Precip_hr,avkdn,snow_obs,ldown_obs,fcld_obs,wuh,xsmd,lai_hr/)
+    dataMet2(i,1:18) = (/dectime,qn1_obs,qh_obs,qe_obs,qs,qf,avu1,avrh,Temp_C,Press_hPa,&
+                       Precip_hr,avkdn,snow_obs,ldown_obs,fcld_obs,wuh,xsmd,lai_hr/)
  ENDDO
 
  CLOSE(1)
-
- it=NAN
- id=NAN
- dectime=NAN
- qn1_obs=NAN
- qh_obs=NAN
- qe_obs=NAN
- qs=NAN
- qf=NAN
- avu1=NAN
- avrh=NAN
- Temp_C=NAN
- Pres_kPa=NAN
- Precip_hr=NAN
- avkdn = NAN
- snow_obs = NAN
- ldown_obs = NAN
- fcld_obs=NAN
- wuh=NAN
- xsmd=NAN
- lai_hr=NAN
-
-
  return
 
 314 call errorHint(11,trim(filemet),notUsed,notUsed,ios_out)
@@ -68,32 +51,6 @@
 
  end subroutine
 
-!############################################################
-!Allocate and deallocate input forcing file and output files
-!TypeAll = 0    Allocates all files according to nlines
-!        = 1    Deallocate all files
- subroutine AllocateFiles(TypeAll)
-
-    use data_in
-
-    IMPLICIT NONE
-
-    integer::TypeAll
-
-    if (TypeAll==0) then
-        allocate(dataMet1(nlines,2))
-        allocate(dataMet2(nlines,18))
-        allocate(dataOut1(nlines,62))
-        allocate(dataOut2(nlines,30))
-        allocate(dataOut3(nlines,106))
-    elseif (TypeAll==1) then
-        deallocate(dataMet1)
-        deallocate(dataMet1)
-        deallocate(dataOut1)
-        deallocate(dataOut2)
-        deallocate(dataOut3)
-    endif
- end subroutine
 
 !#####################################
  subroutine ConvertMetData(i)
@@ -118,7 +75,7 @@
     avu1 = dataMet2(i,7)
     avrh = dataMet2(i,8)
     Temp_C = dataMet2(i,9)
-    Pres_kPa = dataMet2(i,10)
+    Press_hPa = dataMet2(i,10)
     Precip_hr = dataMet2(i,11)
     avkdn = dataMet2(i,12)
     snow_obs = dataMet2(i,13)
@@ -127,7 +84,5 @@
     wuh = dataMet2(i,16)
     xsmd = dataMet2(i,17)
     lai_hr = dataMet2(i,18)
-
-
 
  end subroutine

@@ -351,6 +351,7 @@ MODULE cbl_MODULE
   real(kind(1d0)),dimension(:,:), allocatable:: dataOut1             !Main output matrix
   real(kind(1d0)),dimension(:,:), allocatable:: dataOut2             !NARP output matrix
   real(kind(1d0)),dimension(:,:), allocatable:: dataOut3             !Snow output matrix
+  real(kind(1d0)),dimension(:,:), allocatable:: dataOut5min
 
   integer::AlbedoChoice,&         !If albedos dependency on zenith angle is taken into account
            AnthropHeatChoice,&    !Is anthropogenic heat calculated
@@ -447,9 +448,9 @@ MODULE cbl_MODULE
  
  !===================================================================================
  module mod_k
-   real(kind(1d0)) :: k=0.4,&          !Von Karman's contant
-                      k2=0.16,&        !Power of Van Karman's contant
-                      neut_limit=0.001 !Limit for neutral stability
+   real(kind(1d0)) :: k=0.4,&             !Von Karman's contant
+                      k2=0.16,&           !Power of Van Karman's contant
+                      neut_limit=0.001000 !Limit for neutral stability
  end module mod_k
  
  !===================================================================================

@@ -41,6 +41,7 @@
         SkipHeaderMet,&
         SnowFractionChoice,&
         SNOWuse,&
+        SOLWEIGout,&
         Interval,&          
         TIMEZONE,& 
         Tstep,& 

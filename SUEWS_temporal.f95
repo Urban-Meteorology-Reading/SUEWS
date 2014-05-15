@@ -85,7 +85,7 @@ subroutine SUEWS_temporal(GridName,GridFrom,GridFromFrac,iyr,errFileYes,SnowPack
   logical:: debug=.false.                            
   integer:: imon,iday,iyr,iseas,reset=1,i,iv,ih,id_in,it_in, SunriseTime,SunsetTime,errFileYes,ind5min=1
             
-  real(kind(1d0))::lai_wt,dectime_nsh,SnowDepletionCurve
+  real(kind(1d0))::lai_wt,dectime_nsh,SnowDepletionCurve,itf,idf
                    
   character(len=100)::FileNameOld,str2
 
@@ -164,6 +164,7 @@ do is=1,4
 
 
   if(CBLuse==1) call CBL_initial
+  if(SOLWEIGout==1 call SOLWEIG_initial
     
  !=================================================================================
  !=========INTERVAL LOOP WHERE THE ACTUAL MODEL CALCULATIONS HAPPEN================
@@ -212,7 +213,9 @@ do is=1,4
       id_in=id   ! sg  - gis data can be missing - so now check 
       it_in=it
        call read_gis(finish)
-       if(id/=id_in.or.it/=it_in) call ErrorHint(21,FileGIS,float(id),float(it),it_in)
+       itf=float(it) ! converted to real to run in Intel
+       idf=float(id) ! converted to real to run in Intel
+       if(id/=id_in.or.it/=it_in) call ErrorHint(21,FileGIS,idf,itf,it_in)
        if(finish)exit
     endif
     if(z0_method>1) call RoughnessParameters(id-1)   ! this will vary with porosity even with fixed sFr
@@ -449,9 +452,9 @@ do is=1,4
 
               if(soilmoist_state<0)then
                 call errorHint(29,'subroutine SUEWS_temporal[soilmoist_state<0],dectime,soilmoist_state,sfr(is)', &
-                 dectime,soilmoist_state,sfr(is))
+                 dectime,soilmoist_state,int(sfr(is)))
                 call errorHint(29,'subroutine SUEWS_temporal[soilmoist_state<0],dectime,soilmoist(is),sfr(is)', &
-                dectime,soilmoist(is),sfr(is))
+                dectime,soilmoist(is),int(sfr(is)))
 
               endif
           enddo

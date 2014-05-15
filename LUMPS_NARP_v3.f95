@@ -407,7 +407,7 @@ CONTAINS
     !lat, lng in RADS
     REAL(KIND(1d0)) ::lat,lng,timezone,dectime,zenith, eqtime
     REAL(KIND(1d0)) ::ha, decl,tst, time_offset,gamma
-
+  
     gamma=2.*3.141592654/365.25463*dectime
     eqtime=229.18*(7.5e-5+1.868e-3*COS(gamma)-0.032077*SIN(gamma)&
          -0.014615*COS(2.*gamma)-0.040849*SIN(2.*gamma))

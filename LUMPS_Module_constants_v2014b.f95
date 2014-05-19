@@ -372,7 +372,8 @@ MODULE cbl_MODULE
            SkipHeaderGis,&        !Number of lines in gis file that are skipped
            SkipHeaderMet,&        !Number of lines to skip in met file input
            SNOWuse,&
-           write5min,&                !Defines if 5-min output is printed
+           SOLWEIGout,&           !Calculates Tmrt, FL 
+           write5min,&            !Defines if 5-min output is printed
            writedailyState=1
                    
       character (len=150)::FileInputPath,&   !Filepath for input file
@@ -406,14 +407,33 @@ MODULE cbl_MODULE
  
          
   !---------Water bucket (see B. Offerle's PhD)----------------------------------
-         REAL (KIND(1D0)):: DRAINRT,&    !Drainage rate of the water bucket
+      real (KIND(1D0)):: DRAINRT,&    !Drainage rate of the water bucket
                             RAINBUCKET,& !RAINFALL RESERVOIR
                             RAINCOVER,&  
                             RAINMAXRES,& !Maximum water bucket reservoir
                             RAINRES,& 
                             TEMPVEG ! TEMPORARY VEGETATIVE SURFACE FRACTION ADJUSTED BY RAINFALL
-       
-             
+      
+  !---------SOLWEIG variables---------------------------------------------------
+     real(kind(1D0))::absL,&           ! Absorption coefficient of longwave radiation of a person         
+                      absK,&           ! Absorption coefficient of shortwave radiation of a person
+                      heightgravity,&  ! Centre of gravity for a standing person
+                      transS,&         ! Tranmissivity of K through decidious vegetation (leaf on)
+                      transW           ! Tranmissivity of K through decidious vegetation (leaf off)
+
+     integer::Pasture,&                ! 1.Standing, 2.Sitting
+              usevegdem,& 	           ! With vegetation (1)
+              row,&                    ! X coordinate for point of interest
+              col                      ! Y coordinate for point of interest
+              
+     character (len=150)::DSMPath,&    ! Path to DSMs
+                          DSMname,&    ! Ground and building DSM
+                          CDSMname,&   ! Canopy DSM
+                          TDSMname,&   ! Trunk zone DSM
+                          SVFPath,&    ! Path to SVFs
+                          SVFsuffix,&  !
+                          buildingsname! Boolean matrix for locations of building pixels 
+
  end module data_in
  !===================================================================================
  !**********************************************

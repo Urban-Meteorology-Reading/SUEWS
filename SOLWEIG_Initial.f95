@@ -1,0 +1,160 @@
+! setup for SOLWEIG
+! FL may 2014
+subroutine SOLWEIG_Initial
+use matsize         ! All allocatable grids and related variables used in SOLWEIG
+use InitialCond 
+use data_in! 
+    
+implicit none
+    
+character(len=100)  :: Path 
+real(kind(1d0))     :: amaxvalue
+    
+    namelist/SOLWEIGinput/Pasture,&    ! 1.Standing, 2.Sitting
+        absL,&       ! Absorption coefficient of longwave radiation of a person  
+        absK,&       ! Absorption coefficient of shortwave radiation of a person
+        heightgravity,&     ! Centre of gravity for a standing person
+        usevegdem,&       ! With vegetation (1)
+        DSMPath,&     ! Path to DSMs
+        DSMname,&     ! Ground and building DSM
+        CDSMname,&      ! Canopy DSM
+        TDSMname,&      ! Trunk zone DSM
+        transS,&       ! Tranmissivity of K through decidious vegetation (leaf on)
+        transW,&       ! Tranmissivity of K through decidious vegetation (leaf off)
+        SVFsuffix,&!
+        buildingsname,&  ! Boolean matrix for locations of building pixels 
+        row,&         ! X coordinate for point of interest
+        col          ! Y coordinate for point of interest
+
+  !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  !Read in the runcontrol.nml file
+    open(52,file=trim(FileInputPath)//'SOLWEIGinput.nml',err=204,status='old')
+    read(52,nml=SOLWEIGinput,err=201)
+    close(52)
+
+    
+    
+	!!! Loading DSM !!!
+    Path=trim(FileInputPath)//trim(DSMPath)
+    call LoadEsriAsciiGrid(Path,DSMName,xllcorner,yllcorner,cellsize,NoData)
+    allocate(a(sizey,sizex))
+    a=tempgrid
+    deallocate(tempgrid)
+    
+    scale=1/cellsize
+    
+	!!! Set up for vegetation scheme, or not !!!
+	if (usevegdem==1) then 
+    	
+        ! Vegetation transmittivity of shortwave radiation based on GDD
+        if (GDDfull(2)==GDD_1_0(2)) then
+            trans=transS
+        elseif (GDD_1_0(0)==0) then
+            trans=transW
+        else
+            ! here should spring and autumn transition be added
+        endif
+        !psi=trans 
+       	
+		! Loading vegDSM (SDSM)
+        Path=trim(FileInputPath)//trim(DSMPath)
+    	call LoadEsriAsciiGrid(Path,CDSMname,xllcorner,yllcorner,cellsize,NoData)
+        allocate(vegdem(sizey,sizex))
+        vegdem=tempgrid
+        deallocate(tempgrid)
+
+        ! Loading trunkDSM (TDSM)
+        Path=trim(FileInputPath)//trim(DSMPath)
+    	call LoadEsriAsciiGrid(Path,TDSMname,xllcorner,yllcorner,cellsize,NoData)
+        allocate(vegdem2(sizey,sizex))
+        vegdem2=tempgrid
+        deallocate(tempgrid)        
+        
+    	! amaxvalue (used in calculation of vegetation shadows)
+    	vegmax=maxval(vegdem)
+    	amaxvalue=maxval(a)-minval(a)
+    	amaxvalue=max(amaxvalue,vegmax)
+    
+    	! Elevation vegdems if buildingDSM includes ground heights
+    	vegdem=vegdem+a
+    	where (vegdem==a)!vegdem(vegdem==a)=0;
+        	vegdem=0.0
+    	end where
+    
+		vegdem2=vegdem2+a;
+    	where (vegdem2==a)!vegdem2(vegdem2==a)=0;
+        	vegdem2=0.0
+    	end where
+         
+		! Bush separation
+        allocate(bush(sizex,sizey))
+        
+        where ((vegdem>0) .and. (vegdem2==0))
+        	bush=vegdem
+        elsewhere
+        	bush=0.0
+        end where
+ 	else
+    	trans=1.00;
+    endif    
+    
+    !!! Loading/creating SVFs !!!
+    Path=trim(FileInputPath)//trim(SVFPath)//trim(SVFsuffix)
+    svfname=(/'svf.asc ','svfE.asc','svfN.asc','svfW.asc','svfS.asc'/)
+    svfvegname=(/'svfveg.asc  ','svfEveg.asc ','svfNveg.asc ','svfWveg.asc ','svfSveg.asc ',&
+        'svfaveg.asc ','svfEaveg.asc','svfNaveg.asc','svfWaveg.asc','svfSaveg.asc'/)
+    ! SVFs, Should be done as a loop... ! How to change variable in a loop???      
+    call LoadEsriAsciiGrid(GridPath,svfname(1),xllcorner,yllcorner,cellsize,NoData)
+    allocate(svf(sizey,sizex)); svf=tempgrid; deallocate(tempgrid)
+    call LoadEsriAsciiGrid(GridPath,svfname(2),xllcorner,yllcorner,cellsize,NoData)
+    allocate(svfE(sizey,sizex)); svfE=tempgrid; deallocate(tempgrid)        
+    call LoadEsriAsciiGrid(GridPath,svfname(3),xllcorner,yllcorner,cellsize,NoData)
+    allocate(svfN(sizey,sizex)); svfN=tempgrid; deallocate(tempgrid)        
+    call LoadEsriAsciiGrid(GridPath,svfname(4),xllcorner,yllcorner,cellsize,NoData)
+    allocate(svfW(sizey,sizex)); svfW=tempgrid; deallocate(tempgrid)
+    call LoadEsriAsciiGrid(GridPath,svfname(5),xllcorner,yllcorner,cellsize,NoData)
+    allocate(svfS(sizey,sizex)); svfS=tempgrid; deallocate(tempgrid)
+    call LoadEsriAsciiGrid(GridPath,svfvegname(1),xllcorner,yllcorner,cellsize,NoData)
+    allocate(svfveg(sizey,sizex)); svfveg=tempgrid; deallocate(tempgrid)
+   	call LoadEsriAsciiGrid(GridPath,svfvegname(2),xllcorner,yllcorner,cellsize,NoData)
+    allocate(svfEveg(sizey,sizex)); svfEveg=tempgrid; deallocate(tempgrid)        
+   	call LoadEsriAsciiGrid(GridPath,svfvegname(3),xllcorner,yllcorner,cellsize,NoData)
+    allocate(svfNveg(sizey,sizex)); svfNveg=tempgrid; deallocate(tempgrid)        
+  	call LoadEsriAsciiGrid(GridPath,svfvegname(4),xllcorner,yllcorner,cellsize,NoData)
+    allocate(svfWveg(sizey,sizex)); svfWveg=tempgrid; deallocate(tempgrid)
+   	call LoadEsriAsciiGrid(GridPath,svfvegname(5),xllcorner,yllcorner,cellsize,NoData)
+    allocate(svfSveg(sizey,sizex)); svfSveg=tempgrid; deallocate(tempgrid)
+   	call LoadEsriAsciiGrid(GridPath,svfvegname(6),xllcorner,yllcorner,cellsize,NoData)
+    allocate(svfaveg(sizey,sizex)); svfaveg=tempgrid; deallocate(tempgrid)
+   	call LoadEsriAsciiGrid(GridPath,svfvegname(7),xllcorner,yllcorner,cellsize,NoData)
+    allocate(svfEaveg(sizey,sizex)); svfEaveg=tempgrid; deallocate(tempgrid)        
+   	call LoadEsriAsciiGrid(GridPath,svfvegname(8),xllcorner,yllcorner,cellsize,NoData)
+    allocate(svfNaveg(sizey,sizex)) ; svfNaveg=tempgrid; deallocate(tempgrid)        
+   	call LoadEsriAsciiGrid(GridPath,svfvegname(9),xllcorner,yllcorner,cellsize,NoData)
+    allocate(svfWaveg(sizey,sizex)); svfWaveg=tempgrid; deallocate(tempgrid)
+   	call LoadEsriAsciiGrid(GridPath,svfvegname(10),xllcorner,yllcorner,cellsize,NoData)
+    allocate(svfSaveg(sizey,sizex)); svfSaveg=tempgrid; deallocate(tempgrid)
+    
+    
+    	!!! Loading buildings grid !!!
+    Path=trim(FileInputPath)//trim(DSMPath)
+    GridFile=trim(GridPath)//trim(buildingsname)
+    inquire(file=GridFile, exist=exist)
+    if (exist) then
+    	call LoadEsriAsciiGrid(Path,buildingsname,xllcorner,yllcorner,cellsize,NoData)
+        allocate(buildings(sizey,sizex))
+        buildings=tempgrid
+        deallocate(tempgrid)
+    else
+        !!! Not ready, should return error. Also for the other grids
+    endif
+    
+    ! Time related info
+    timestepdec=INTERVAL/(1440.*60.) 
+    timeadd=0 !
+    
+    ! Initiate map for surface temperature delay
+    allocate(Tgmap1(sizey,sizex))
+    Tgmap1=0.0
+    
+end subroutine SOLWEIG_Initial

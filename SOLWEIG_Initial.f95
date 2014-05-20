@@ -6,6 +6,7 @@ use InitialCond
 use allocateArray
 use data_in  
 use defaultNotUsed
+use InitialCond
 
 implicit none
     
@@ -55,13 +56,13 @@ logical                         :: exist
 	if (usevegdem==1) then 
     	
         ! Vegetation transmittivity of shortwave radiation based on GDD
-        !if (GDDfull(2)==GDD_1_0(2)) then
+        if (GDDfull(2)==GDD_1_0) then
             trans=transS
-        !elseif (GDD_1_0(0)==0) then
-       !     trans=transW
-       ! else
+        elseif (GDD_1_0==0) then
+            trans=transW
+        !else
             ! here should spring and autumn transition be added
-        !endif
+        endif
                	
 		! Loading vegDSM (SDSM)
         Path=trim(FileInputPath)//trim(DSMPath)

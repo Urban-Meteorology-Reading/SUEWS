@@ -50,6 +50,7 @@
 ! start at midnight
 ! daily calculations done each day - 
 !lj June 2012 - development of snow to the model has started
+!fl May 2014 - coupling with SOLWEIG has started
 
 !----------------------------------------------------------------------------------
  
@@ -163,7 +164,7 @@ do is=1,4
 ! need to think about what happens if LAI not calcualated
 
 
-  if(CBLuse==1) call CBL_initial
+  if((CBLuse==1).or.(CBLuse==2)) call CBL_initial
   !if(SOLWEIGout==1) call SOLWEIG_initial
     
  !=================================================================================
@@ -206,7 +207,11 @@ do is=1,4
       if(finish)exit
     endif
     
-    if(CBLuse==1)call CBL
+    if(i/=1)then
+    	if((CBLuse==1).or.(CBLuse==2))then
+      		call CBL
+        endif
+    endif
 
     ! If GISInput Varies
     if(GISInputType==4)then

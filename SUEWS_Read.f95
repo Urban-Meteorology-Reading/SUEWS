@@ -30,7 +30,7 @@
  allocate(dataOut2(nlines,30))
  allocate(dataOut3(nlines,106))
  allocate(dataOut5min(nlines*nsh,69))
-
+ allocate(dataOutBL(nlines,10))
 
 !Open the file again. Code later better
  open(1,file=trim(fileMet),status='old',err=314,position='rewind')

@@ -130,6 +130,7 @@ CONTAINS
     !Modified by LJ to calcuate snow free and snowpack components (May 2013)
     !-------------------------------------------------------------------------------
     use  allocateArray
+    use gis_data
     
     REAL(KIND(1D0)),INTENT(IN)   ::DTIME,Temp_C,RH,Ea_hPa,PREss_hPa,qn1_obs,alb_snow
     REAL(KIND(1D0)),INTENT(OUT)  ::QSTARall,KUPall,KCLEAR,LUPall,TSURFall,QSTAR_SF,QSTAR_S
@@ -141,7 +142,7 @@ CONTAINS
     REAL(KIND(1D0))              ::LUPCORR,LUPCORR_SNOW,SIGMATK4,KDOWN_HR=0.
     REAL(KIND(1D0))              ::AZIMUTH
     INTEGER                      ::DOY, is 
-    real(kind(1D0)),parameter::altitude=3.0 !This should be check !Shiho
+    !real(kind(1D0)),parameter::altitude=3.0 !This should be check !Shiho
 
     real(kind(1D0))::qn1_cum,kup_cum,lup_cum,tsurf_cum,&   !Cumulative radiation components 
                    qn1_is,kup_is,lup_is,tsurf_is,&       !Sub-surface radiation components 
@@ -155,7 +156,7 @@ CONTAINS
     SIGMATK4=SIGMA_SB*Temp_K**4     
     TD=DEWPOINT(Temp_C,RH)    
     !ZENITH=SOLAR_ZENITH(NARP_LAT,NARP_LONG,NARP_TZ,DTIME)
-    call sun_position(NARP_YEAR,DTIME,NARP_TZ,NARP_LAT,NARP_LONG,altitude,AZIMUTH,ZENITH)
+    call sun_position(NARP_YEAR,DTIME,NARP_TZ,NARP_LAT,NARP_LONG,Alt,AZIMUTH,ZENITH)
     ZENITH=ZENITH*DEG2RAD
     DOY=INT(DTIME)
     if(DOY==366)doy=365

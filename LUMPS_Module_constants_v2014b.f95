@@ -193,14 +193,15 @@ MODULE cbl_MODULE
     character (len=200), dimension(366)::FileSonde=""
     character (len=200)::InitialDataFileName    
     real(kind(1D0)):: wsb       ! subsidence velocity    
-    real(kind(1d0)),dimension(0:1,0:8):: cbldata
-    real(kind(1d0)),dimension(0:8)::cbld
+    real(kind(1d0)),dimension(0:1,0:9):: cbldata
+    real(kind(1d0)),dimension(0:9)::cbld
     
   !Parameters in CBL code         
     integer::tstep_s,&
              which_day,&     
              zmax,&            
-             start1 
+             start1,&
+             start2
     integer::C2K=273.16,&
              nEqn=4,&      
              nCBLstep          ! number of time steps of Runge-kutta methods in one hour  
@@ -352,6 +353,7 @@ MODULE cbl_MODULE
   real(kind(1d0)),dimension(:,:), allocatable:: dataOut2             !NARP output matrix
   real(kind(1d0)),dimension(:,:), allocatable:: dataOut3             !Snow output matrix
   real(kind(1d0)),dimension(:,:), allocatable:: dataOut5min
+  real(kind(1d0)),dimension(:,:), allocatable:: dataOutBL           !CBL output matrix
 
   integer::AlbedoChoice,&         !If albedos dependency on zenith angle is taken into account
            AnthropHeatChoice,&    !Is anthropogenic heat calculated
@@ -535,7 +537,7 @@ MODULE cbl_MODULE
    implicit none                             
                                          
    real(kind(1d0)):: Alt,&                        !Altitude in m
-   					 areaunir,&                   !Unirrigated area
+   		     areaunir,&                   !Unirrigated area
                      areair,&                     !Irrigated area
                      bldgH,&                       !Mean building height                    
                      FAIbldg,&                     !Frontal area fraction of buildings

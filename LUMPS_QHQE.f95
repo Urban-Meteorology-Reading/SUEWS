@@ -42,9 +42,8 @@ subroutine LUMPS_QHQE
          sIce_hpa=slope_svp(Temp_C)
       endif
       psyc_s=psyc_hPa/sIce_hPa !Psychometric constant divided by the slope
-  endif 
+  endif
 
-  
   ! replaced by sinusoidal vegetation formulation 
   !alpha=gis(idgis,itgis,1)*alpha_sl+alpha_in 
 
@@ -70,14 +69,14 @@ subroutine LUMPS_QHQE
     VegMin=LAImin(iv)*sfr(iv+2)+VegMin
   enddo
   
-  if (VegMax<=0.01) then  !If max vegetation is very small, TempVeg = 0;
+  if (VegMax<=0.01000) then  !If max vegetation is very small, TempVeg = 0;
       TempVeg=0
   else
      VegPhenLumps=(VegPhen)/(VegMax)
      TempVeg=Veg_Fr*VegPhenLumps !Now this is veg_fraction in general
   endif
  
-  if (TempVeg>0.9) then !If vegetation fraction is larger than 0.7 (0.9?)
+  if (TempVeg>0.9000) then !If vegetation fraction is larger than 0.7 (0.9?)
        beta = (20-3)*TempVeg+3
        alpha_qhqe=TempVeg*.8+.2
   else  

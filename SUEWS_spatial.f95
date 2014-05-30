@@ -34,15 +34,15 @@ subroutine SUEWS_spatial(year_txt,iyr)
       
 	  !=======Call the program itself grid by grid========================
       Grid='none' !Initiate Grid number
-      
+
       do i=1,NroGrids
          if (trim(GridConnections(1,i))/=trim(Grid)) then
              Grid=GridConnections(1,i) !Define grid
              GridFromFrac=0
-                
-			 !Check what grids get water from other grids 
+
+			 !Check what grids get water from other grids
              jj=1
-             do ii=1, NroGrids 
+             do ii=1, NroGrids
                 if (trim(GridConnections(2,ii))==trim(Grid)) then
                    GridFrom(1,jj)=GridConnections(1,ii)
                    GridFromFrac(jj)=GridConnectionsFrac(ii)
@@ -56,13 +56,27 @@ subroutine SUEWS_spatial(year_txt,iyr)
              FileCode=trim(Grid)//trim(year_txt)
              write(12,*) "*************",FileCode,"*************"
              
-			 call RunControlByGridByYear  !Call grid specific runcontrol        
-	         Call InitialState(Grid,errFileYes)      !Initial state of the run            
+			 call RunControlByGridByYear             !Call grid specific runcontrol
+	         call InitialState(Grid,errFileYes)      !Initial state of the run
+
+             !Save information about the met file and read grid forcing data in
+             !Later likely all grid data will be read in, but now only one at a time.
+             write(12,*) '# Met file: ', trim(fileMet), finish
+             call SUEWS_Read(i)
+
              call SUEWS_temporal(Grid,GridFrom,GridFromFrac,iyr,errFileYes,SnowPackG(i,:)) !Call the code grid by grid
-             
+
+             !Deallocate datamatrixes
+             deallocate(dataMet1)
+             deallocate(dataMet2)
+             deallocate(dataOut1)
+             deallocate(dataOut2)
+             deallocate(dataOut3)
+             deallocate(dataOut5min)
+
           endif
 	  enddo
-   
+
       return
 317	  call ProblemsText(trim( GridConnectionsName))
       call PauseStop	

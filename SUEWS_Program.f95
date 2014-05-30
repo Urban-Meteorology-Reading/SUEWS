@@ -1,15 +1,15 @@
 !Main program of SUEWS version 1.0
 !Last modified by LJ Nov/2010
-!Repository created
 !::::::::::::::::::::::::::::::::::::::::::::::::::::
 program SUEWS_Program
-	use allocateArray
+	  use allocateArray
     use data_In
     use time
     use defaultNotUsed
-	implicit none
+	 
+	  implicit none
     integer::NroYears,i,year_int,iyr                              !Initializing variables used
-	character(len=4)::year_txt
+	  character(len=4)::year_txt
 
   	stateGrids=NAN 
     soilmoistGrids=NAN

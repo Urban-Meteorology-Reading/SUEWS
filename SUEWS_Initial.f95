@@ -1,6 +1,6 @@
 ! sg feb 2012
 ! only run once at start - fixed for all grids and all years
-subroutine OverallRunControl
+ subroutine OverallRunControl
   use resist        ! LUMPS_metRead.f95
   use data_in      ! LUMPS_metRead.f95
   use ohm_calc
@@ -511,7 +511,7 @@ end subroutine RunControlByGridByYear
 ! sg feb 2012 - 
 !----------------------------------------------------------------------------------------------
 
-subroutine InitialState(GridName,errFileYes)
+ subroutine InitialState(GridName,errFileYes)
   use resist        ! LUMPS_metRead.f95
   use data_in       ! LUMPS_metRead.f95
   use ohm_calc
@@ -881,66 +881,36 @@ r2=-100
 r3=-99
 
 
-!%%%%%%%%%%OUTPUT FILENAMES AND THEIR PATHS%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Write(str2,'(i2)') Interval/60
-FileOut=trim(FileOutputPath)//trim(FileCode)//'_'//trim(adjustl(str2))//'.txt'
-FileErrorInf=trim(FileOutputPath)//trim(FileCode)//'_ErrorFile.txt'
-NARPOut=trim(FileOutputPath)//trim(FileCode)//'_NARPOut.txt'
-fileMonthly=trim(FileOutputPath)//trim(FileCode)//'_MonthlyFile.txt'
-fileDaily=trim(FileOutputPath)//trim(FileCode)//'_DailyFile.txt'
-file5min=trim(FileOutputPath)//trim(FileCode)//'_5min.txt'
-SnowOut=trim(FileOutputPath)//trim(FileCode)//'_SnowOut.txt'
+ !%%%%%%%%%%OUTPUT FILENAMES AND THEIR PATHS%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ Write(str2,'(i2)') Interval/60
+ FileOut=trim(FileOutputPath)//trim(FileCode)//'_'//trim(adjustl(str2))//'.txt'
+ FileErrorInf=trim(FileOutputPath)//trim(FileCode)//'_ErrorFile.txt'
+ NARPOut=trim(FileOutputPath)//trim(FileCode)//'_NARPOut.txt'
+ fileMonthly=trim(FileOutputPath)//trim(FileCode)//'_MonthlyFile.txt'
+ fileDaily=trim(FileOutputPath)//trim(FileCode)//'_DailyFile.txt'
+ file5min=trim(FileOutputPath)//trim(FileCode)//'_5min.txt'
+ SnowOut=trim(FileOutputPath)//trim(FileCode)//'_SnowOut.txt'
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!DEFINE DIFFERENT INITIALIZATION PARAMETERS
-once=.true.
+ !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ !DEFINE DIFFERENT INITIALIZATION PARAMETERS
+ once=.true.
 
-lfn_us=10
-lfnOut=35  ! Output error file
-lfnOutC=39 !Clean output file
+ lfn_us=10
+ lfnOut=35  ! Output error file
 
  
 !==================OUTPUT FILE OPTIONS=============================================
-!Open daily, monthly and 5-min file (the latter only if write5min=1)
+!Open daily and monthly
    open(14,file=fileDaily,err=201)
    open(15,file=fileMonthly,err=202)
- 
-! Output File Setup
-   if(errFileYes==1)  open(lfnOut,file=trim(FileErrorInf),err=111)
-   open(lfnOutC,file=trim(FileOut),err=112)
-   
-!Header output is printedll 
-	text(1)="_FileChoices.txt: options selected"
-    text(2)="DailyState.txt:LAI,HDD etc"
-    text(3)="% "
-    text(4)="% "
- 	call OutputHeaders(ProgName,lfnOut,lfnOutC,text,veg_type,ldown_option,2,errFileYes) ! LUMPS_OutputHeaders.f95
-   do j=1,4
-     keepHeader(j)=text(j)
-   end do
-
-if(write5min==1) then                         ! if going to write 5 min data out    
-    	open(16,file=file5min,err=204)
-    	write(16,161)          
-
-        161   	format('%id 5min dectime    pp       Ie        E     St_pav   St_blg   St_everg St_dec ' ,&
-             ' St_IrrGr  St_Gr   St_water SoilSt_pav SoilSt_blg SoilSt_everg SoilSt_dec',&
-             ' SoilSt_IrrGr SoilSt_Gr D_pav D_blg  D_everg    D_dec    D_IrrGr     D_Gr     r_pav',&
-             '     r_blg    r_everg    r_dec    r_IrrGr    r_Gr  soilr_pav soilr_bldg soilr_everg soilr_dec',&
-             ' soilr_IrrGr soilr_Gr snowr_pav snowr_bldg snowr_everg snowr_dec snowr_IrrGr snowr_Gr',&
-             ' SWE_pav SWE_bldg SWE_everg SWE_dec SWE_IrrGr SWE_Gr SWE_water snowCh_pav snowCh_bldg',&
-             ' snowCh_everg snowCh_dec snowCh_IrrGr snowCh_Gr snowCh_water mwh_pav mwh_bldg mwh_everg',&
-             ' mwh_dec mwh_IrrGr mwh_Gr mwh_water')     
-	endif
-      
 
 
-! zero arrays------------------------------------------------------------
-!sg -- 16 variables written out
+ ! zero arrays------------------------------------------------------------
+ !sg -- 16 variables written out
 
-do j=1,NumberDailyVars
+ do j=1,NumberDailyVars
    all_tot(1,j)=0  
-enddo
+ enddo
 call accum_zero    
 ! zero arrays------------------------------------------------------------
     
@@ -953,17 +923,13 @@ return
 		call PauseStop
 203 	call ErrorHint(16,trim(FileInit),notUsed,notUsed,ios_out)
       	write(500,nml=InitialConditions)       
-        call PauseStop      
-204		call ProblemsText(trim(file5min))
         call PauseStop
 111 	call ProblemsText(trim(FileErrorInf))
-		call PauseStop
-112		call ProblemsText(trim(FileOut))
 		call PauseStop
 313 	call ProblemsText(trim(filegis))
 		call PauseStop
 
-end subroutine InitialState
+ end subroutine InitialState
 
 !--------------------------------------------------------------------------
 

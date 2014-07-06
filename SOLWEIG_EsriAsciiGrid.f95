@@ -45,30 +45,31 @@ subroutine SaveEsriAsciiGrid(GridPath,GridName,xllcornerlo,yllcornerlo,cellsizel
     integer                           :: col,row
     character(len=100)                :: GridPath,GridName,GridFile
     !integer                           :: sizey,sizex!,intent(in)
-    !real(kind(1d0)),dimension(sizey,sizex)       :: tempgrid!,allocatable
+    !real(kind(1d0)), allocatable, dimension(:,:):: grid
+   ! real(kind(1d0)),dimension(sizey,sizex)       :: grid!,allocatable
     
     ! Loading DSM
     !GridPath='D:\SOLWEIG2013b_Fortran\Inputdata\'
     !GridName='kr_dem.asc'
     GridFile=trim(GridPath)//trim(GridName)
-    open(98,File=GridFile,status='replace') 
+    open(94,File=GridFile,status='unknown') 
     
     ! Read Header
-    write(98,"(A5,1x,I0)") 'ncols',sizex
-    write(98,"(A5,1x,I0)") 'nrows',sizey
-    write(98,"(A9,1x,F0.2)") 'xllcorner',xllcornerlo
-    write(98,"(A9,1x,F0.2)") 'yllcorner',yllcornerlo
-    write(98,"(A8,1x,F0.2)") 'cellsize',cellsizelo
-    write(98,"(A12,1x,F0.2)") 'NODATA_value',NoDatalo
+    write(94,"(A5,1x,I0)") 'ncols',sizex
+    write(94,"(A5,1x,I0)") 'nrows',sizey
+    write(94,"(A9,1x,F0.2)") 'xllcorner',xllcornerlo
+    write(94,"(A9,1x,F0.2)") 'yllcorner',yllcornerlo
+    write(94,"(A8,1x,F0.2)") 'cellsize',cellsizelo
+    write(94,"(A12,1x,F0.2)") 'NODATA_value',NoDatalo
 
-    !allocate(tempgrid(sizex,sizey))     
+    !allocate(grid(sizex,sizey))     
     
 	! write Matrix
     do row=1,sizey
-         write(98,100) (tempgrid(row,col),col=1,sizex)
+         write(94,100) (savegrid(row,col),col=1,sizex)
      end do
-     close(98)
-100  format(200(f10.5,1x))
+     close(94)
+100  format((f6.2,1x))
  
      return
     end subroutine SaveEsriAsciiGrid

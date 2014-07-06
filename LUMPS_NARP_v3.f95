@@ -32,6 +32,7 @@ MODULE NARP_MODULE
   !lj May 2013. Main program NARP changed to take subsurfaces and snow into account here and not
   !             in the main program
   !FL Nov 2013. A new sun postion algorithm added
+  !FL July 2014. Variables are moved to modules in NARP subroutine. Snow related should also in future.
   !
   !==============================================================================================
   use  allocateArray  
@@ -83,9 +84,10 @@ CONTAINS
   END SUBROUTINE NARP_CONFIG
 
   !============================================================================== 
-  SUBROUTINE NARP(QSTARall,KCLEAR,KUPall,LDOWN,LUPall,FCLD,TSURFall,DTIME,KDOWN,&
-                  Temp_C,RH,Ea_hPa,Press_hPa,ldown_option,AlbedoChoice,qn1_obs,&
-                  netRadiationChoice,alb_snow,QSTAR_SF,QSTAR_s)
+  SUBROUTINE NARP(alb_snow,QSTAR_SF,QSTAR_s)
+                  !KCLEAR,FCLD,DTIME,KDOWN,QSTARall,KUPall,LDOWN,LUPall,TSURFall,&
+                  !AlbedoChoice,ldown_option,Temp_C,Press_hPa,Ea_hPa,qn1_obs,RH,&
+                  !,zenith_degnetRadiationChoice,
   
     !SUBROUTINE NARP(QSTAR,DTIME,KDOWN,LDOWN,T,RH,PRESS,FCLD,SNOW)
     !returns estimate of Q* given the meteorological fields and prior
@@ -128,21 +130,23 @@ CONTAINS
     ! DOY = day of year
 
     !Modified by LJ to calcuate snow free and snowpack components (May 2013)
+    !Modified to define variables in data_in module
     !-------------------------------------------------------------------------------
-    use  allocateArray
+    use allocateArray
     use gis_data
+    use data_in ! Included 20140701, FL
+    use moist   ! Included 20140701, FL
+    use time    ! Included 20140701, FL
     
-    REAL(KIND(1D0)),INTENT(IN)   ::DTIME,Temp_C,RH,Ea_hPa,PREss_hPa,qn1_obs,alb_snow
-    REAL(KIND(1D0)),INTENT(OUT)  ::QSTARall,KUPall,KCLEAR,LUPall,TSURFall,QSTAR_SF,QSTAR_S
-    REAL(KIND(1D0)),INTENT(INOUT)::FCLD,KDOWN,LDOWN
-    INTEGER,INTENT(IN)           ::ldown_option,AlbedoChoice,netRadiationChoice!,ALB_SNOW
-
-    REAL(KIND(1D0))              ::Temp_K,TD,ZENITH,QSTAR,KUP,LUP,TSURF,QSTAR_SNOW,KUP_SNOW,LUP_SNOW,TSURF_SNOW
-    REAL(KIND(1D0))              ::ALB0,EMIS0,EMIS_A,TRANS
+    REAL(KIND(1D0))              ::alb_snow!Temp_C,PREss_hPa,qn1_obs,Ea_hPa,,INTENT(IN)
+    REAL(KIND(1D0))              ::QSTARall,KUPall,LUPall,TSURFall,QSTAR_SF,QSTAR_S!KCLEAR,,INTENT(OUT)
+    !REAL(KIND(1D0)),INTENT(INOUT)::!FCLD,LDOWN,
+    !INTEGER,INTENT(IN)           ::ldown_option,AlbedoChoice,netRadiationChoice!,ALB_SNOW
+    REAL(KIND(1D0))              ::Temp_K,TD,ZENITH,QSTAR,QSTAR_SNOW,KUP_SNOW,LUP_SNOW,TSURF_SNOW!KUP,LUP,TSURF,
+    REAL(KIND(1D0))              ::ALB0,EMIS0,EMIS_A,TRANS,RH,DTIME,KDOWN
     REAL(KIND(1D0))              ::LUPCORR,LUPCORR_SNOW,SIGMATK4,KDOWN_HR=0.
-    REAL(KIND(1D0))              ::AZIMUTH
+    !REAL(KIND(1D0))              ::AZIMUTH
     INTEGER                      ::DOY, is 
-    !real(kind(1D0)),parameter::altitude=3.0 !This should be check !Shiho
 
     real(kind(1D0))::qn1_cum,kup_cum,lup_cum,tsurf_cum,&   !Cumulative radiation components 
                    qn1_is,kup_is,lup_is,tsurf_is,&       !Sub-surface radiation components 
@@ -152,12 +156,16 @@ CONTAINS
                    SF_all,ALB1      
 
     !Initialize variables
+    RH=avrh
+    DTIME=dectime
+    KDOWN=avkdn
     Temp_K=Temp_C+273.16   
     SIGMATK4=SIGMA_SB*Temp_K**4     
     TD=DEWPOINT(Temp_C,RH)    
+    !!! Sun postition is now calculated in the main loop, FL
     !ZENITH=SOLAR_ZENITH(NARP_LAT,NARP_LONG,NARP_TZ,DTIME)
-    call sun_position(NARP_YEAR,DTIME,NARP_TZ,NARP_LAT,NARP_LONG,Alt,AZIMUTH,ZENITH)
-    ZENITH=ZENITH*DEG2RAD
+    !call sun_position(NARP_YEAR,DTIME,NARP_TZ,NARP_LAT,NARP_LONG,Alt,AZIMUTH,ZENITH)
+    ZENITH=ZENITH_deg*DEG2RAD
     DOY=INT(DTIME)
     if(DOY==366)doy=365
      
@@ -245,10 +253,10 @@ CONTAINS
       TSURF=TSURF-273.16
 
       !======================================================================
-      !Snow related parameters is snow pack existing
+      !Snow related parameters if snow pack existing
       IF (snowFrac(is)>0) THEN
 
-        IF (AlbedoChoice==1.and.180*ZENITH/ACOS(0.0)<90) THEN                         
+        IF (AlbedoChoice==1.and.180*ZENITH/ACOS(0.0)<90) THEN   !!!!! THIS LOOKS LIKE DEGREES ANGLE! CHECK WITH LEENA                        
            ALB1=alb_snow+0.5e-16*(180*ZENITH/ACOS(0.0))**8 !AIDA 1982
         ELSE
            ALB1=alb_snow
@@ -328,6 +336,12 @@ CONTAINS
    KUPall=kup_cum
    LUPall=lup_cum
    TSURFall=tsurf_cum 
+   
+   qn1=QSTARall
+   kup=KUPall
+   !LDOWN has same name
+   lup=LUPall
+   tsurf=TSURFall
    
   END SUBROUTINE NARP
 
@@ -445,7 +459,7 @@ CONTAINS
 
   !===============================================================================
   FUNCTION solar_ESdist(doy) RESULT(Rse)
-    !from Stull, 1998
+    !from Stull, 1998   Keep! called from SOLWEIG_clearnessindex_2013b
     INTEGER          ::doy
     REAL(KIND(1d0))             ::Rse
     REAL(KIND(1d0)) ::MA,nu,e,a

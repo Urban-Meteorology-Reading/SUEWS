@@ -87,14 +87,14 @@
     use data_in
     use sues_data
 !    use allocateArray
-     use time
-     USE CBL_MODULE
+    use time
+    USE CBL_MODULE
     use defaultnotUsed
     use mod_grav	 
 	implicit none
     real(kind(1D0)), dimension(neqn)::dyds,y1
-	real(kind(1d0)) :: zero=0.0,s
-    real(kind(1d0)) :: h1,t_K,q_kgkg,c,cp,ws
+	real(kind(1d0)) :: zero=0.0
+    real(kind(1d0)) :: h1,t_K,q_kgkg,c,cp,ws,s
     real(kind(1D0)):: delt_K,delq_kgkg,delc
     real(kind(1D0)):: gamtv_Km,deltv_K,ftv_Kms
     real(kind(1D0)):: ftva_Kms,delb,qs2,qs3

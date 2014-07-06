@@ -145,6 +145,9 @@ logical:: v1=.false.,v2=.false.,v3=.false.,v4=.false.,v5=.false.,v6=.false.,retu
       elseif(errh==39) then 
         text1 = 'Tstep and INTERVAL do not match!'
         v2 = .true.  !2 real    
+      elseif(errh==40) then
+      	text1='SOLWEIG file problem - opening'
+        v7=.true.
       endif
     
      if(v1) then ! 1 real

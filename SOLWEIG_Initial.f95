@@ -7,31 +7,45 @@ use allocateArray
 use data_in  
 use defaultNotUsed
 use InitialCond
+use solweig_module
+use time
 
 implicit none
     
-character(len=100)  :: Path,GridFile 
-real(kind(1d0))     :: amaxvalue,xllcorner,yllcorner,NoData,cellsize,scale  
-real(kind(1d0))     :: trans,vegmax  
+character(len=100)  :: Path,GridFile,GridFolder
+!character(len=25)  :: makedirectory 
+!,scale,amaxvalue, 
+real(kind(1d0))     :: vegmax!,laitest!trans,  
 character(len=100),dimension(5) :: svfname
 character(len=100),dimension(10):: svfvegname
 logical                         :: exist
+integer             :: firstday
 
-    namelist/SOLWEIGinput/Pasture,&    ! 1.Standing, 2.Sitting
-        absL,&       ! Absorption coefficient of longwave radiation of a person  
-        absK,&       ! Absorption coefficient of shortwave radiation of a person
-        heightgravity,&     ! Centre of gravity for a standing person
+    namelist/SOLWEIGinput/Posture,&    ! 1.Standing, 2.Sitting
+        absL,&            ! Absorption coefficient of longwave radiation of a person  
+        absK,&            ! Absorption coefficient of shortwave radiation of a person
+        heightgravity,&    ! Centre of gravity for a standing person
         usevegdem,&       ! With vegetation (1)
-        DSMPath,&     ! Path to DSMs
-        DSMname,&     ! Ground and building DSM
-        CDSMname,&      ! Canopy DSM
-        TDSMname,&      ! Trunk zone DSM
-        transS,&       ! Tranmissivity of K through decidious vegetation (leaf on)
-        transW,&       ! Tranmissivity of K through decidious vegetation (leaf off)
-        SVFsuffix,&!
-        buildingsname,&  ! Boolean matrix for locations of building pixels 
-        row,&         ! X coordinate for point of interest
-        col          ! Y coordinate for point of interest
+        DSMPath,&         ! Path to DSMs
+        DSMname,&         ! Ground and building DSM
+        CDSMname,&        ! Canopy DSM
+        TDSMname,&        ! Trunk zone DSM
+        TransMin,&        ! Tranmissivity of K through decidious vegetation (leaf on)
+        TransMax,&        ! Tranmissivity of K through decidious vegetation (leaf off)
+        SVFPath,&         ! Path to SVFs
+        SVFsuffix,&       !
+        buildingsname,&   ! Boolean matrix for locations of building pixels 
+        row,&             ! X coordinate for point of interest
+        col,&             ! Y coordinate for point of interest
+        onlyglobal,&      ! if no diffuse and direct, then =1
+        SOLWEIGpoi_out,&  ! write output variables at point of interest
+        Tmrt_out,&        ! write Tmrt grid to file
+        Lup2d_out,&       ! write Lup grid to file
+        Ldown2d_out,&     ! write Ldown grid to file
+        Kup2d_out,&       ! write Kup grid to file
+        Kdown2d_out,&     ! write Kdown grid to file
+        GVF_out,&         ! write GroundViewFactor grid to file
+        SOLWEIG_ldown     ! 1= use SOLWEIG code to estimate Ldown, 0=use SEUWS
 
   !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   !Read in the runcontrol.nml file
@@ -39,10 +53,16 @@ logical                         :: exist
     read(52,nml=SOLWEIGinput)
     close(52)
 
-274 call ErrorHint(24,trim("RunControl.nml FileCode is missing"),notUsed,notUsed,notUsedI) 
+    if (Posture==1) then
+        Fside=0.22
+        Fup=0.06
+    else
+        Fside=0.1666666667
+        Fup=0.166666667
+    endif
+   
+    timestepdec=interval/(3600*24)
  
-    
-    
 	!!! Loading DSM !!!
     Path=trim(FileInputPath)//trim(DSMPath)
     call LoadEsriAsciiGrid(Path,DSMName,xllcorner,yllcorner,cellsize,NoData)
@@ -52,17 +72,33 @@ logical                         :: exist
     
     scale=1/cellsize
     
+    ! Create grid folder !! This does not work in windows. needs to be done in python
+    !GridFolder=trim(FileOutputPath)//'Gridsen'
+    !inquire(file=GridFolder, exist=exist)
+    !if (exist) then
+    !else
+    !    makedirectory = 'mkdir ' // trim(GridFolder)
+    !    call system(makedirectory)
+    !end if
+    
 	!!! Set up for vegetation scheme, or not !!!
 	if (usevegdem==1) then 
     	
-        ! Vegetation transmittivity of shortwave radiation based on GDD
-        if (GDDfull(2)==GDD_1_0) then
-            trans=transS
-        elseif (GDD_1_0==0) then
-            trans=transW
+        ! Caclulating tranmissiviy of shortwave radiation  through vegetation based on decid lai
+        transperlai=(TransMax-TransMin)/(laimax(2)-laimin(2))
+        firstday = dataMet1(1,1) 
+        !laitest=lai(firstday-1,2)
+        trans=TransMin+(laimax(2)-lai(firstday-1,2))*transperlai
+        
+        !! Vegetation transmittivity of shortwave radiation based on GDD THIS SHOULD BE MOVE TO CORE
+        !if (GDDfull(2)==GDD_1_0) then ! not correct?
+        !    trans=transS
+        !    
+        !elseif (GDD_1_0==0) then
+        !    ! here should spring and autumn transition be added
         !else
-            ! here should spring and autumn transition be added
-        endif
+        !    trans=transW
+        !endif
                	
 		! Loading vegDSM (SDSM)
         Path=trim(FileInputPath)//trim(DSMPath)
@@ -164,5 +200,9 @@ logical                         :: exist
     ! Initiate map for surface temperature delay
     allocate(Tgmap1(sizey,sizex))
     Tgmap1=0.0
+    
+    return
+    
+274 call ErrorHint(40,trim("SOLWEIGinput.nml FileCode is missing"),notUsed,notUsed,notUsedI) 
     
 end subroutine SOLWEIG_Initial

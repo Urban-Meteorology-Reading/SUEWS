@@ -260,7 +260,7 @@
   
   120	 format (10g10.2)
  
-  !Interval (min),TStep (s),NSH number of steps per interval
+  !Interval (sec),TStep (s),NSH number of steps per interval
   
   NSH_real = interval/TSTEP 
 
@@ -277,10 +277,11 @@
     endif
   endif
   
-  
   NMIN=TSTEP/60
   
   NPeriodsPerYear= NPeriodsPerDay*NDays ! assume 366 max but could be less  
+  
+  halftimestep=real(interval)/2/(24*3600) ! used in sun_position to get sunpos in the middle of timestep
  
   ! ---------------OHMChoices-----------------------------------------------
   ! coefficients for storage heat flux (will select by grid later)
@@ -891,6 +892,8 @@ r3=-99
  fileDaily=trim(FileOutputPath)//trim(FileCode)//'_DailyFile.txt'
  file5min=trim(FileOutputPath)//trim(FileCode)//'_5min.txt'
  SnowOut=trim(FileOutputPath)//trim(FileCode)//'_SnowOut.txt'
+ SOLWEIGpoiOut=trim(FileOutputPath)//trim(FileCode)//'_SOLWEIGpoiOut.txt'
+ BLOut=trim(FileOutputPath)//trim(FileCode)//'_BL.txt'
 
  !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  !DEFINE DIFFERENT INITIALIZATION PARAMETERS

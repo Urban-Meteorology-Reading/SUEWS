@@ -71,6 +71,7 @@ subroutine SUEWS_temporal(GridName,GridFrom,GridFromFrac,iyr,errFileYes,SnowPack
   use defaultnotUsed
   use VegPhenogy
   use snowMod
+  use solweig_module
   
   implicit none 
   
@@ -86,19 +87,19 @@ subroutine SUEWS_temporal(GridName,GridFrom,GridFromFrac,iyr,errFileYes,SnowPack
   logical:: debug=.false.                            
   integer:: imon,iday,iyr,iseas,reset=1,i,iv,ih,id_in,it_in, SunriseTime,SunsetTime,errFileYes,ind5min=1
             
-  real(kind(1d0))::lai_wt,dectime_nsh,SnowDepletionCurve!,itf,idf
+  real(kind(1d0))::lai_wt,dectime_nsh,SnowDepletionCurve,idectime
                    
   character(len=100)::FileNameOld,str2
 
   !Variables related to NARP
    !Radiation balance components for different surfaces
-  real(kind(1D0))::NARP_ALB_is,NARP_EMIS_is,qn1_cum,kup_cum,lup_cum,tsurf_cum,snowFracTot
+  real(kind(1D0))::NARP_ALB_is,NARP_EMIS_is,snowFracTot!,qn1_cum,kup_cum,lup_cum,tsurf_cum
 
   
  !Initialize the model (reading nml files, defining filepaths, printing filechoices)
  call OHMinitialize
  !===========================NARP CONFIG=============================================
- if(NetRadiationChoice>0)then 
+ if(NetRadiationChoice>0)then ! I don't think this is needed anymore (FL)
     	call NARP_CONFIG(LAT,LNG,YEAR,TIMEZONE,ALB_SNOW,EMIS_SNOW,TRANS_SITE,Interval,ldown_option)
   		!This for the snow cover fractions
  		!Initiate NARP anyway in order to get surface temperatures 
@@ -165,7 +166,7 @@ do is=1,4
 
 
   if((CBLuse==1).or.(CBLuse==2)) call CBL_initial
-  !if(SOLWEIGout==1) call SOLWEIG_initial
+  if(SOLWEIGout==1) call SOLWEIG_initial
     
  !=================================================================================
  !=========INTERVAL LOOP WHERE THE ACTUAL MODEL CALCULATIONS HAPPEN================
@@ -207,19 +208,21 @@ do is=1,4
       if(finish)exit
     endif
     
-    if(i/=1)then
-    	if((CBLuse==1).or.(CBLuse==2))then
-      		call CBL
-        endif
+    ! Calculate sun position
+    idectime=dectime-halftimestep! sun position at middle of timestep before
+    call sun_position(year,idectime,timezone,lat,lng,alt,azimuth,zenith_deg)
+    
+
+    if(CBLuse>=1)then
+        call CBL(i)
     endif
+
 
     ! If GISInput Varies
     if(GISInputType==4)then
       id_in=id   ! sg  - gis data can be missing - so now check 
       it_in=it
        call read_gis(finish)
-       !itf=float(it) ! converted to real to run in Intel
-       !idf=float(id) ! converted to real to run in Intel
        if(id/=id_in.or.it/=it_in) call ErrorHint(21,FileGIS,real(id,kind(1d0)),real(it,kind(1d0)),it_in)
        if(finish)exit
     endif
@@ -268,13 +271,21 @@ do is=1,4
         
         ALB(DecidSurf)=albDec(ID-1) !Change deciduous albedo
 
-        call narp(qn1,kclear,kup,ldown,lup,fcld,tsurf,dectime,avkdn,Temp_C,avRH,&
-                  Ea_hPa,Press_hPa,ldown_option,AlbedoChoice,qn1_obs,&
-                  netRadiationChoice,alb_snow,qn1_SF,qn1_S)
+        call narp(alb_snow,qn1_SF,qn1_S)
+                  !Temp_C,kclear,fcld,dectime,avkdn,avRH,qn1,kup,ldown,lup,tsurf,&
+                  !AlbedoChoice,ldown_option,Press_hPa,Ea_hPa,qn1_obs,&
+                  !zenith_deg,netRadiationChoice,
     else
         snowFrac = snow_obs
         qn1=qn1_obs
     endif
+    
+    ! ===================SOLWEIG OUTPUT ========================================
+    if (SOLWEIGout==1) then
+        call SOLWEIG_2014a_core(i)
+    else
+        SOLWEIGpoi_out=0
+    endif  
     
     ! ===================ANTHROPOGENIC HEAT FLUX================================
     ih=it-DLS
@@ -567,16 +578,18 @@ do is=1,4
                        swe,MwStore,(SnowRemoval(is),is=1,2),chSnow_per_interval/)
 
      dataOut2(i,1:30)=(/real(id,kind(1D0)),dectime,kup_ind(1:7),lup_ind(1:7),tsurf_ind(1:7),qn1_ind(1:7)/)
-
+     if (snowUse==1)then!Shiho: This condition is needed when snowUse=0
      dataOut3(i,1:106)=(/real(id,kind(1D0)),real(it,kind(1D0)),dectime,SnowPack(1:7),SnowRemoval(1:2),mwh,mw_ind(1:7),&
                         Qm,Qm_melt(1:7),Qm_rain(1:7),Qm_freezState(1:7),snowFrac(1:6),alb_snow,rainOnSnow(1:7),&
                         qn1_ind_snow(1:7),kup_ind_snow(1:7),freezMelt(1:7),MeltWaterStore(1:7),densSnow(1:7),&
                         snowDepth(1:7),Tsurf_ind_snow(1:7),QmFreez/)
+     endif
 
 
      !Writes to monthly and daily out
      !First day is not necessarily 1 Jan. Headers are only written with the first line
      !if(id==1.and.reset==1)then
+
      if(reset==1)then
         iyr=iyr+1
         reset=0

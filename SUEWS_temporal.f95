@@ -278,6 +278,8 @@ do is=1,4
     else
         snowFrac = snow_obs
         qn1=qn1_obs
+        qn1_sf=qn1_obs
+        qn1_s=qn1_obs
     endif
     
     ! ===================SOLWEIG OUTPUT ========================================

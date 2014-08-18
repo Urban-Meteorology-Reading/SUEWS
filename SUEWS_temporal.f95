@@ -51,6 +51,8 @@
 ! daily calculations done each day - 
 !lj June 2012 - development of snow to the model has started
 !fl May 2014 - coupling with SOLWEIG has started
+! hcw Jul 2014 - state on non-water area is now calculated only for the last timestep  
+! hcw Jul 2014 - Corrected 5-min output file columns to match header (64 cols)
 
 !----------------------------------------------------------------------------------
  
@@ -436,8 +438,10 @@ do is=1,4
                call Evap_SUEWS(surf(1,is))  !qe and ev out
                call soilstore(surf(1,is)) !Soil store updates
                
-               if (is.ne.WaterSurf) st_per_interval=st_per_interval+state(is)*sfr(is)!State on non-water area (LJ 10/2010)
-        
+               if(in==nsh) then   	! if requirement added by HCW 30/07/2014
+              		 if (is.ne.WaterSurf) st_per_interval=st_per_interval+state(is)*sfr(is)!State on non-water area (LJ 10/2010)
+        	   endif
+               
                !Add evaporation to total one
                if (is==BldgSurf.or.is==PavSurf) then
                    ev_per_interval=ev_per_interval+((ev-SurPlus_evap(is))*sfr(is))
@@ -508,10 +512,12 @@ do is=1,4
 
           dectime_nsh = dectime + 1.0*(in-1)/nsh/24
 
+         !Modified hcw 30/07/2014 so that output columns and header match (was 69 cols with extra columns for water)
           if(write5min==1) then           !   Save 5 min results to a file
-            dataOut5min(ind5min,1:69)=(/real(id,kind(1D0)),real(in,kind(1D0)),dectime_nsh,pin,ext_wu,ev_per_interval,&
-                              stateOut(1:nsurf),smd_nsurfOut(1:nsurf),drain(1:nsurf),runoffOut(1:nsurf),runoffsoilOut(1:nsurf),&
-                              runoffSnow(1:nsurf),snowPack(1:nsurf),ChangSnow(1:nsurf),mw_ind(1:nsurf)/)
+            dataOut5min(ind5min,1:64)=(/real(id,kind(1D0)),real(in,kind(1D0)),dectime_nsh,pin,ext_wu,ev_per_interval,&
+                              stateOut(1:nsurf),smd_nsurfOut(1:(nsurf-1)),drain(1:(nsurf-1)),runoffOut(1:(nsurf-1)),&
+                              runoffsoilOut(1:(nsurf-1)),&
+                              runoffSnow(1:(nsurf-1)),snowPack(1:nsurf),ChangSnow(1:nsurf),mw_ind(1:nsurf)/)
             ind5min = ind5min+1
           endif
          

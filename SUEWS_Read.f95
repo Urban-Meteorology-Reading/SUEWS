@@ -30,7 +30,7 @@
  allocate(dataOut2(nlines,30))
  allocate(dataOut3(nlines,106))
  allocate(dataOut5min(nlines*nsh,69))
-  allocate(dataOutBL(nlines*4,20))
+ allocate(dataOutBL(nlines*4,20))
  allocate(dataOutSOL(nlines,28))
 
 !Open the file again. Code later better

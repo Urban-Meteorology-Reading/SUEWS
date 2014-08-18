@@ -603,7 +603,8 @@ end subroutine RunControlByGridByYear
   write(year_txt,'(I4)')year_int
 
   FileInit=trim(FileInputPath)//trim("InitialConditions")//trim(GridName)//trim(year_txt)//'.nml'
-  print*,fileInit
+  call ErrorHint(44,FileInit,notUsed,notUsed,notUsedI)
+   
   open(55,File=trim(FileInit),err=200,status='old') !Change with needs
   read(55,iostat=ios_out,nml=InitialConditions,err=203)
   close(55)
@@ -725,7 +726,7 @@ if(id_next>nofDaysThisYear) then
   id_next=1
   year=year+1
   switch=1
-  print*,'switch'
+  call ErrorHint(43,'switch- years',notUsed,notUsed,notUsedI)
 endif
 call day2month(id_next,mb,date,seas,year,lat)!Calculate real date from doy
 call Day_of_Week(date,mb,year,wd)!Calculate weekday (1=Sun,...)

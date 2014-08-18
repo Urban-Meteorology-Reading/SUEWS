@@ -476,6 +476,7 @@ CONTAINS
   !===============================================================================
   FUNCTION SmithLambda(lat) RESULT(G)
      use FileName
+     use defaultnotUsed
     !read kriged data based on Smith 1966 (JAM)
     INTEGER :: lat,ios,ilat
     REAL(KIND(1d0)),DIMENSION(365):: G
@@ -488,8 +489,7 @@ CONTAINS
     ENDDO
     READ(99,*,iostat=ios)ilat, G
     IF (ios/=0) THEN
-       PRINT*, "Iostat=", ios, " reading Smith1966.grd"
-       STOP
+      call  ErrorHint(11,'reading Smith1966.grd',notUsed,notUsed,ios)       
     ENDIF
     CLOSE(99)
   END FUNCTION SmithLambda

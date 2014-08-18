@@ -7,6 +7,7 @@ SUBROUTINE atmos_moist_lumps(air_dens)
   USE gas
   USE time
   use snowMod
+  use defaultnotUsed
   
   IMPLICIT NONE
   REAL(KIND(1d0))::vap_dens, air_dens
@@ -46,7 +47,9 @@ SUBROUTINE atmos_moist_lumps(air_dens)
   endif
   
   !if(debug)write(*,*)lv_J_kg,Temp_C,'lv2'
-  if(press_hPa<900)write(*,*)dectime,Press_hPa
+  if(press_hPa<900) then
+     call ErrorHint(46, 'Function Atmos_moist_Lumps',press_hPa,notUsed, notUsedI)
+  endif
   RETURN
 END SUBROUTINE atmos_moist_lumps
 
@@ -150,6 +153,7 @@ END SUBROUTINE atmos_moist_lumps
  FUNCTION spec_heat_beer(Temp_C,rh,rho_v,rho_d) RESULT (cp)
 ! Input: Air temperature, relative humidity, water vapour and dry air densities
 ! Output: heat capacity in units J kg-1 K-1
+   use defaultnotUsed
    IMPLICIT NONE
    REAL(kind(1d0))::cp,cpd,cpm,rho_v,rho_d,rh,temp_C
 
@@ -161,7 +165,8 @@ END SUBROUTINE atmos_moist_lumps
        (10.+0.5*rH)*(Temp_C/100.)**2
        
    IF(abs(rho_d)<0.001000.OR.abs(rho_v)<0.001000.OR.abs(rho_d+rho_v)<0.001000)THEN
-      PRINT*,'~/progs/spec_heat.f',rho_v,rho_d
+      call ErrorHint(42,'spec-heat_beer',rho_v,rho_d,notusedI)
+     
    ENDIF
   
    cp=cpd*(rho_d/(rho_d+rho_v))+cpm*(rho_v/(rho_d+rho_v))
@@ -179,6 +184,7 @@ END SUBROUTINE atmos_moist_lumps
 
   use time
   use SnowMod
+  use defaultnotUsed
   
   IMPLICIT none
   REAL(KIND(1d0))::cp,lv_J_kg,ea_fix,tw,& 
@@ -200,7 +206,9 @@ END SUBROUTINE atmos_moist_lumps
   tw=Temp_C/2.  !First estimate for wet bulb temperature
   incr=3.
   DO ii=1,100
-      if(Press_hPa<900) write(*,*)Press_hPA,'1',ii !If air presure below 900 print the loop number
+      if(Press_hPa<900) then
+         call ErrorHint(45,'function Lat_vap',Press_hPA,notUsed,ii)
+      endif
       
       ! if(debug.and.dectime>55.13.and.dectime<55.2)write(35,*)'% 1',Tw
       
@@ -208,12 +216,16 @@ END SUBROUTINE atmos_moist_lumps
       
       !if(debug.and.dectime>55.13.and.dectime<55.2)write(35,*)'% 2',Tw
        
-      If(Press_hPa<900)write(*,*)Press_hPA,'2',ii
+      if(Press_hPa<900) then
+         call ErrorHint(45,'function Lat_vap - 2',Press_hPA,notUsed,ii)
+      endif
       
       psyc=psyc_const(cp,Press_hPa,lv_J_kg) !in units hPa/K
       
-      If(Press_hPa<900)write(*,*)Press_hPA,'31',ii
-        
+      if(Press_hPa<900) then
+         call ErrorHint(45,'function Lat _vap -31',Press_hPA,notUsed,ii)
+      endif   
+      
       ea_est=es_tw-psyc*(temp_C-tw)
       
       lv_J_kg=(2500.25-2.365*tw)*1e3

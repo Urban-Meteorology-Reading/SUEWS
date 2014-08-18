@@ -87,14 +87,14 @@
     use data_in
     use sues_data
 !    use allocateArray
-     use time
-     USE CBL_MODULE
+    use time
+    USE CBL_MODULE
     use defaultnotUsed
     use mod_grav	 
 	implicit none
-    real (kind(1D0)), dimension(neqn)::dyds,y1
-	real(kind(1d0)) :: zero=0.0,s
-    real(kind(1d0)) :: h1,t_K,q_kgkg,c,cp,ws
+    real(kind(1D0)), dimension(neqn)::dyds,y1
+	real(kind(1d0)) :: zero=0.0
+    real(kind(1d0)) :: h1,t_K,q_kgkg,c,cp,ws,s
     real(kind(1D0)):: delt_K,delq_kgkg,delc
     real(kind(1D0)):: gamtv_Km,deltv_K,ftv_Kms
     real(kind(1D0)):: ftva_Kms,delb,qs2,qs3
@@ -139,7 +139,7 @@
               
 	      call errorHint(30,"subroutine diff [CBL: Deltv_K<0.01 EntrainmentType=1], deltv_K,delt_K,",deltv_K,delt_K,notUsedI)
           call errorHint(30,"subroutine diff [CBL: Deltv_K<0.01 EntrainmentType=1], tm_K,TPP_K,y1",tm_K,TPP_K, notUsedI)
-          call errorHint(31,"subroutine diff [CBL: Deltv_K<0.01 EntrainmentType=1], y1",y1,notUsed,notUsedI)
+         ! call errorHint(31,"subroutine diff [CBL: Deltv_K<0.01 EntrainmentType=1], y1",real(y1(1),kind(1d0)),notUsed,notUsedI)
 	   else
               delb = grav*deltv_K/tm_K
               conc = 0.2
@@ -224,7 +224,7 @@ real (kind(1d0)),parameter::notUsed=-9999.99
 	enddo
 900	    zmax=i-1
 		if(zmax.gt.izm)then
-	         call ErrorHint(23,FileN,float(zmax),notUsed,izm)	
+            call ErrorHint(23,FileN,real(zmax,kind(1D0)),notUsed,izm)
 	    endif
         close(fn)
         return

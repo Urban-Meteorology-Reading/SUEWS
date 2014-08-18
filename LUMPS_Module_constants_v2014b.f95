@@ -193,17 +193,21 @@ MODULE cbl_MODULE
     character (len=200), dimension(366)::FileSonde=""
     character (len=200)::InitialDataFileName    
     real(kind(1D0)):: wsb       ! subsidence velocity    
-    real(kind(1d0)),dimension(0:1,0:8):: cbldata
-    real(kind(1d0)),dimension(0:8)::cbld
+    real(kind(1d0)),dimension(0:1,0:9):: cbldata
+    real(kind(1d0)),dimension(0:9)::cbld
+    real(kind(1d0)),dimension(:,:),allocatable::IniCBLdata
     
   !Parameters in CBL code         
     integer::tstep_s,&
-             which_day,&     
+			 which_day,& 
              zmax,&            
-             start1 
+             start1,&
+             start2,&
+             icount,&
+             jday 
     integer::C2K=273.16,&
-             nEqn=4,&      
-             nCBLstep          ! number of time steps of Runge-kutta methods in one hour  
+             nEqn=4      
+             
                
  real (kind(1D0)):: usbl,ftbl,fqbl,fcbl,gamt,gamq,gamc,tpp,qpp,cp0!,tk
  
@@ -228,7 +232,7 @@ MODULE cbl_MODULE
                      qm_kgkg,&  ! Specific humidity in CBL(kg/kg)                  
                      qp_gkg,&   ! Specific humidity above Boundary layer height(g/kg)
                      qp_kgkg,&  ! Specific humidity above Boundary layer height(kg/kg)                    
-                     qpp_kgkg         
+                     qpp_kgkg       
 
                                       
     real (kind(1D0)), dimension (0:500,2):: gtheta,ghum ! Vertical gradient of theta and specific humidity from sonde data
@@ -299,6 +303,7 @@ MODULE cbl_MODULE
                     avrh,&      !Average relative humidity
                     avts,&      !Average surface temperature
                     avu1,&      !Average wind speed
+                    azimuth,&   !Sun azimuth in degrees
                     BaseTHDD,&             !Base temperature for QF               
                     defaultQf,&             !Default anthropogenic heat flux
                     defaultQs,&             !Default storage heat flux
@@ -308,6 +313,8 @@ MODULE cbl_MODULE
                     fcld_obs,&  !Cloud fraction observed
                     h_mod,&      !Modelled sensible heat flux with LUMPS
                     kclear,&  !Theoretical downward shortwave radiation
+                    kdiff,&   !Diffuse shortwave radiation
+                    kdir,&    !Direct shortwave radiation
                     kup,&     !Upward 
                     lai_hr,&    !LAI                
                     lat,&                  !Latitude
@@ -339,9 +346,11 @@ MODULE cbl_MODULE
                     timezone,&  !Timezone (GMT=0)
                     trans_site,&  !Atmospheric transmittivity
                     tsurf,&   !Surface temperature
+                    wdir,&      ! Wind direction
                     wuh,&       !Hourly water use (mm)
                     xsmd,&      !Measured soil moisture deficit
-                    year      !Year of the measurements
+                    year,&      !Year of the measurements
+                    zenith_deg    !Sun zenith angle in degrees
 
   integer::FirstYear, nlines  !Number of lines in met forcing file.
               
@@ -352,6 +361,8 @@ MODULE cbl_MODULE
   real(kind(1d0)),dimension(:,:), allocatable:: dataOut2             !NARP output matrix
   real(kind(1d0)),dimension(:,:), allocatable:: dataOut3             !Snow output matrix
   real(kind(1d0)),dimension(:,:), allocatable:: dataOut5min
+  real(kind(1d0)),dimension(:,:), allocatable:: dataOutBL    !CBL output matrix
+  real(kind(1d0)),dimension(:,:), allocatable:: dataOutSOL   !SOLWEIG POI output
 
   integer::AlbedoChoice,&         !If albedos dependency on zenith angle is taken into account
            AnthropHeatChoice,&    !Is anthropogenic heat calculated
@@ -372,7 +383,8 @@ MODULE cbl_MODULE
            SkipHeaderGis,&        !Number of lines in gis file that are skipped
            SkipHeaderMet,&        !Number of lines to skip in met file input
            SNOWuse,&
-           write5min,&                !Defines if 5-min output is printed
+           SOLWEIGout,&           !Calculates Tmrt and other fluxes on a grid, FL 
+           write5min,&            !Defines if 5-min output is printed
            writedailyState=1
                    
       character (len=150)::FileInputPath,&   !Filepath for input file
@@ -390,6 +402,8 @@ MODULE cbl_MODULE
                            file5min,&        !5min output filename
                            NARPOut,&         !File name for NARP output
                            SnowOut,&         !File name for snow output file
+                           SOLWEIGpoiOut,&   !File name for SOLWEIG poi file
+                           BLOut,&           !File name for BL output file
                            FileSAHP          !SAHP file name
                            
       character (len=20)::FileCode,FileCodeO
@@ -404,16 +418,48 @@ MODULE cbl_MODULE
                           
       real(kind(1d0)), dimension(0:23,2):: AHPROF !Heat profile -- ?? check why not 0:23
  
+      real(kind(1d0))::nCBLstep  !number of time steps of Runge-kutta methods in one hour 
          
   !---------Water bucket (see B. Offerle's PhD)----------------------------------
-         REAL (KIND(1D0)):: DRAINRT,&    !Drainage rate of the water bucket
+      real (KIND(1D0)):: DRAINRT,&    !Drainage rate of the water bucket
                             RAINBUCKET,& !RAINFALL RESERVOIR
                             RAINCOVER,&  
                             RAINMAXRES,& !Maximum water bucket reservoir
                             RAINRES,& 
                             TEMPVEG ! TEMPORARY VEGETATIVE SURFACE FRACTION ADJUSTED BY RAINFALL
-       
+      
+  !---------SOLWEIG variables---------------------------------------------------
+     real(kind(1D0))::absL,&           ! Absorption coefficient of longwave radiation of a person         
+                      absK,&           ! Absorption coefficient of shortwave radiation of a person
+                      heightgravity,&  ! Centre of gravity for a standing person
+                      TransMin,&         ! Tranmissivity of K through decidious vegetation (leaf on)
+                      TransMax           ! Tranmissivity of K through decidious vegetation (leaf off)
+
+     integer::Posture,&                ! 1.Standing, 2.Sitting
+              usevegdem,& 	           ! With vegetation (1)
+              row,&                    ! Y coordinate for point of interest
+              col,&                    ! X coordinate for point of interest
+              onlyglobal,&             ! if no diffuse and direct SW, then =1
+              SOLWEIGpoi_out,&         ! write output variables at point of interest
+              Tmrt_out,&               ! write output Tmrt grid
+              Lup2d_out,&              ! write output Lup grid
+              Ldown2d_out,&            ! write output Ldown grid
+              Kup2d_out,&              ! write output Kup grid
+              Kdown2d_out,&            ! write output Kdown grid
+              GVF_out,&                ! write output GroundViewFActor grid
+              SOLWEIG_ldown            ! 1= use SOLWEIG code to estimate Ldown, 0=use SEUWS 
+              
+     character (len=150)::DSMPath,&    ! Path to DSMs
+                          DSMname,&    ! Ground and building DSM
+                          CDSMname,&   ! Canopy DSM
+                          TDSMname,&   ! Trunk zone DSM
+                          SVFPath,&    ! Path to SVFs
+                          SVFsuffix,&  !
+                          buildingsname! Boolean matrix for locations of building pixels
+     
              
+
+
  end module data_in
  !===================================================================================
  !**********************************************
@@ -426,6 +472,7 @@ MODULE cbl_MODULE
  
              ! check what lasttime of day should be
    real (kind(1d0)):: dectime !Time is decimals
+   real (kind(1d0)):: halftimestep !in decimal time based on interval in runcontrol
    real (kind(1d0)):: NPeriodsPerDay,&  ! number of time intervals
    hrcount ! count number of hours in this day
  integer::nofDaysThisYear   ! BASED ON WHETHEr leapyear or no
@@ -515,7 +562,7 @@ MODULE cbl_MODULE
    implicit none                             
                                          
    real(kind(1d0)):: Alt,&                        !Altitude in m
-   					 areaunir,&                   !Unirrigated area
+   		     areaunir,&                   !Unirrigated area
                      areair,&                     !Irrigated area
                      bldgH,&                       !Mean building height                    
                      FAIbldg,&                     !Frontal area fraction of buildings

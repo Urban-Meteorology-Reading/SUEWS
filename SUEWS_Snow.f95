@@ -102,7 +102,7 @@ subroutine MeltHeat(i)
    
         endif !End if snowpack
          
-        !¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
+        !¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
         !Freeze surface state if cold enough and there is water, this will freeze.
         if (Tsurf_ind(is)<0.and.state(is)>0) then
     
@@ -136,7 +136,7 @@ subroutine MeltHeat(i)
     
          endif
          
-         !¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
+         !¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
          
          !Define if any snowmelt calculations are made
          !snowpack existing,freezing occuring on ground or from precip
@@ -610,7 +610,7 @@ subroutine SnowCalc(i)
 
   return
 
-  !¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
+  !¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
   !WATERBODY is treated separately as state always below ice if ice existing
   !Calculate change in snowpack
 606 changSnow(WaterSurf)=(pin+freezMelt(WaterSurf)/nsh+freezState(WaterSurf)/nsh)-&
@@ -797,7 +797,7 @@ subroutine SnowCalc(i)
    else
      if (swe<=sweD) then
         
-        asc=1-((1/3.1416)*acos(2*(swe/sweD)-1))**1.3
+        asc=1-((1/3.1416)*acos(2*(swe/sweD)-1))**1.7
      else
         asc=1
      endif

@@ -50,6 +50,9 @@
 ! start at midnight
 ! daily calculations done each day - 
 !lj June 2012 - development of snow to the model has started
+!fl May 2014 - coupling with SOLWEIG has started
+! hcw Jul 2014 - state on non-water area is now calculated only for the last timestep  
+! hcw Jul 2014 - Corrected 5-min output file columns to match header (64 cols)
 
 !----------------------------------------------------------------------------------
  
@@ -70,6 +73,7 @@ subroutine SUEWS_temporal(GridName,GridFrom,GridFromFrac,iyr,errFileYes,SnowPack
   use defaultnotUsed
   use VegPhenogy
   use snowMod
+  use solweig_module
   
   implicit none 
   
@@ -85,19 +89,19 @@ subroutine SUEWS_temporal(GridName,GridFrom,GridFromFrac,iyr,errFileYes,SnowPack
   logical:: debug=.false.                            
   integer:: imon,iday,iyr,iseas,reset=1,i,iv,ih,id_in,it_in, SunriseTime,SunsetTime,errFileYes,ind5min=1
             
-  real(kind(1d0))::lai_wt,dectime_nsh,SnowDepletionCurve
+  real(kind(1d0))::lai_wt,dectime_nsh,SnowDepletionCurve,idectime
                    
   character(len=100)::FileNameOld,str2
 
   !Variables related to NARP
    !Radiation balance components for different surfaces
-  real(kind(1D0))::NARP_ALB_is,NARP_EMIS_is,qn1_cum,kup_cum,lup_cum,tsurf_cum,snowFracTot
+  real(kind(1D0))::NARP_ALB_is,NARP_EMIS_is,snowFracTot!,qn1_cum,kup_cum,lup_cum,tsurf_cum
 
   
  !Initialize the model (reading nml files, defining filepaths, printing filechoices)
  call OHMinitialize
  !===========================NARP CONFIG=============================================
- if(NetRadiationChoice>0)then 
+ if(NetRadiationChoice>0)then ! I don't think this is needed anymore (FL)
     	call NARP_CONFIG(LAT,LNG,YEAR,TIMEZONE,ALB_SNOW,EMIS_SNOW,TRANS_SITE,Interval,ldown_option)
   		!This for the snow cover fractions
  		!Initiate NARP anyway in order to get surface temperatures 
@@ -163,7 +167,8 @@ do is=1,4
 ! need to think about what happens if LAI not calcualated
 
 
-  if(CBLuse==1) call CBL_initial
+  if((CBLuse==1).or.(CBLuse==2)) call CBL_initial
+  if(SOLWEIGout==1) call SOLWEIG_initial
     
  !=================================================================================
  !=========INTERVAL LOOP WHERE THE ACTUAL MODEL CALCULATIONS HAPPEN================
@@ -205,14 +210,22 @@ do is=1,4
       if(finish)exit
     endif
     
-    if(CBLuse==1)call CBL
+    ! Calculate sun position
+    idectime=dectime-halftimestep! sun position at middle of timestep before
+    call sun_position(year,idectime,timezone,lat,lng,alt,azimuth,zenith_deg)
+    
+
+    if(CBLuse>=1)then
+        call CBL(i)
+    endif
+
 
     ! If GISInput Varies
     if(GISInputType==4)then
       id_in=id   ! sg  - gis data can be missing - so now check 
       it_in=it
        call read_gis(finish)
-       if(id/=id_in.or.it/=it_in) call ErrorHint(21,FileGIS,float(id),float(it),it_in)
+       if(id/=id_in.or.it/=it_in) call ErrorHint(21,FileGIS,real(id,kind(1d0)),real(it,kind(1d0)),it_in)
        if(finish)exit
     endif
     if(z0_method>1) call RoughnessParameters(id-1)   ! this will vary with porosity even with fixed sFr
@@ -260,13 +273,23 @@ do is=1,4
         
         ALB(DecidSurf)=albDec(ID-1) !Change deciduous albedo
 
-        call narp(qn1,kclear,kup,ldown,lup,fcld,tsurf,dectime,avkdn,Temp_C,avRH,&
-                  Ea_hPa,Press_hPa,ldown_option,AlbedoChoice,qn1_obs,&
-                  netRadiationChoice,alb_snow,qn1_SF,qn1_S)
+        call narp(alb_snow,qn1_SF,qn1_S)
+                  !Temp_C,kclear,fcld,dectime,avkdn,avRH,qn1,kup,ldown,lup,tsurf,&
+                  !AlbedoChoice,ldown_option,Press_hPa,Ea_hPa,qn1_obs,&
+                  !zenith_deg,netRadiationChoice,
     else
         snowFrac = snow_obs
         qn1=qn1_obs
+        qn1_sf=qn1_obs
+        qn1_s=qn1_obs
     endif
+    
+    ! ===================SOLWEIG OUTPUT ========================================
+    if (SOLWEIGout==1) then
+        call SOLWEIG_2014a_core(i)
+    else
+        SOLWEIGpoi_out=0
+    endif  
     
     ! ===================ANTHROPOGENIC HEAT FLUX================================
     ih=it-DLS
@@ -415,8 +438,10 @@ do is=1,4
                call Evap_SUEWS(surf(1,is))  !qe and ev out
                call soilstore(surf(1,is)) !Soil store updates
                
-               if (is.ne.WaterSurf) st_per_interval=st_per_interval+state(is)*sfr(is)!State on non-water area (LJ 10/2010)
-        
+               if(in==nsh) then   	! if requirement added by HCW 30/07/2014
+              		 if (is.ne.WaterSurf) st_per_interval=st_per_interval+state(is)*sfr(is)!State on non-water area (LJ 10/2010)
+        	   endif
+               
                !Add evaporation to total one
                if (is==BldgSurf.or.is==PavSurf) then
                    ev_per_interval=ev_per_interval+((ev-SurPlus_evap(is))*sfr(is))
@@ -449,9 +474,9 @@ do is=1,4
 
               if(soilmoist_state<0)then
                 call errorHint(29,'subroutine SUEWS_temporal[soilmoist_state<0],dectime,soilmoist_state,sfr(is)', &
-                 dectime,soilmoist_state,sfr(is))
+                 dectime,soilmoist_state,int(sfr(is)))
                 call errorHint(29,'subroutine SUEWS_temporal[soilmoist_state<0],dectime,soilmoist(is),sfr(is)', &
-                dectime,soilmoist(is),sfr(is))
+                dectime,soilmoist(is),int(sfr(is)))
 
               endif
           enddo
@@ -487,10 +512,12 @@ do is=1,4
 
           dectime_nsh = dectime + 1.0*(in-1)/nsh/24
 
+         !Modified hcw 30/07/2014 so that output columns and header match (was 69 cols with extra columns for water)
           if(write5min==1) then           !   Save 5 min results to a file
-            dataOut5min(ind5min,1:69)=(/real(id,kind(1D0)),real(in,kind(1D0)),dectime_nsh,pin,ext_wu,ev_per_interval,&
-                              stateOut(1:nsurf),smd_nsurfOut(1:nsurf),drain(1:nsurf),runoffOut(1:nsurf),runoffsoilOut(1:nsurf),&
-                              runoffSnow(1:nsurf),snowPack(1:nsurf),ChangSnow(1:nsurf),mw_ind(1:nsurf)/)
+            dataOut5min(ind5min,1:64)=(/real(id,kind(1D0)),real(in,kind(1D0)),dectime_nsh,pin,ext_wu,ev_per_interval,&
+                              stateOut(1:nsurf),smd_nsurfOut(1:(nsurf-1)),drain(1:(nsurf-1)),runoffOut(1:(nsurf-1)),&
+                              runoffsoilOut(1:(nsurf-1)),&
+                              runoffSnow(1:(nsurf-1)),snowPack(1:nsurf),ChangSnow(1:nsurf),mw_ind(1:nsurf)/)
             ind5min = ind5min+1
           endif
          
@@ -559,16 +586,18 @@ do is=1,4
                        swe,MwStore,(SnowRemoval(is),is=1,2),chSnow_per_interval/)
 
      dataOut2(i,1:30)=(/real(id,kind(1D0)),dectime,kup_ind(1:7),lup_ind(1:7),tsurf_ind(1:7),qn1_ind(1:7)/)
-
+     if (snowUse==1)then!Shiho: This condition is needed when snowUse=0
      dataOut3(i,1:106)=(/real(id,kind(1D0)),real(it,kind(1D0)),dectime,SnowPack(1:7),SnowRemoval(1:2),mwh,mw_ind(1:7),&
                         Qm,Qm_melt(1:7),Qm_rain(1:7),Qm_freezState(1:7),snowFrac(1:6),alb_snow,rainOnSnow(1:7),&
                         qn1_ind_snow(1:7),kup_ind_snow(1:7),freezMelt(1:7),MeltWaterStore(1:7),densSnow(1:7),&
                         snowDepth(1:7),Tsurf_ind_snow(1:7),QmFreez/)
+     endif
 
 
      !Writes to monthly and daily out
      !First day is not necessarily 1 Jan. Headers are only written with the first line
      !if(id==1.and.reset==1)then
+
      if(reset==1)then
         iyr=iyr+1
         reset=0

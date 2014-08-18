@@ -15,6 +15,7 @@ Subroutine DailyState
     use data_in        ! sdec1,sdec2,sdec3,sdec4
     use VegPhenogy
     use snowMod
+    use defaultNotUsed
     
     implicit none
     
@@ -70,7 +71,8 @@ Subroutine DailyState
           year=year-1
           call LeapYearCalc (year,id)
           switch=1
-          print*,'switch- to last day of last year'
+          call ErrorHint(43,'switch- to last day of last year',notUsed,notUsed,notUsedI)
+          
       endif 
   
       call day2month(id,mb,date,seas,year,lat)!Calculate real date from doy

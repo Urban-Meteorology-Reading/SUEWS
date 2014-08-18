@@ -12,14 +12,14 @@ subroutine soilstore(StorCap)
   use gis_data
   use time
   use allocateArray
+  use defaultNotUsed
   
   implicit none
   real (Kind(1d0))::StorCap,EvPart
-
     
   !====If surface is irrigated grass, add external water use========
   if(is==GrassISurf) then  
-     p=pin+ext_wu    
+     p=pin+ext_wu    ! converted to per nsh in SUEWS_waterUse
   elseif(is==ConifSurf.or.is==DecidSurf) then
      p=pin+wuhTrees/nsh 
   else
@@ -29,7 +29,7 @@ subroutine soilstore(StorCap)
   !Add water from other surfaces at this point
   p=p+AddWater(is) 
 
-  ! Reset runoff ffrom previous time interval
+  ! Reset runoff from previous time interval
   runoff(is)=0.0
   runoffsoil(is)=0.0
     
@@ -116,7 +116,7 @@ subroutine soilstore(StorCap)
         	runoff(is)=runoff(is)+(soilmoist(is)-soilstoreCap(is))
         	soilmoist(is)=soilstoreCap(is)
      	elseif (soilmoist(is)<0) then
-     		soilmoist(is)=0
+     		soilmoist(is)=0 ! HCW Check groundwater / deeper soil should kick in 11.08.2014
      	endif
      !==============For water body===========================================
      elseif (is==WaterSurf) then
@@ -124,9 +124,7 @@ subroutine soilstore(StorCap)
         !Add water from previous grid
    
         If(addWaterBody>0.and.sfr(watersurf)<0.000001)then
-          print*,'subroutine soilstore'
-          print*,'addwaterbody=',addwaterbody, 'but watersurf=',sfr(watersurf)
-         stop
+	         call ErrorHint(41,'subroutine soilstore',addwaterbody,sfr(watersurf),notUsedI)               
          endif   
            !If water body exists add water from surface
          if(sfr(watersurf)/=0)then

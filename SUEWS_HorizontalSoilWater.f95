@@ -34,7 +34,7 @@ real(kind(1d0)) ::SoilMoist_vol1,SoilMoistCap_vol1,SoilMoist_vol2,SoilMoistCap_v
                 SoilMoistCap_Vol1=VolSoilMoistCap(is)  !Volumetric soil moisture capacity
                 SoilMoist_vol1=SoilMoist(is)/SoilDepth !Volumetric soil moisture
                 
-                B_r1=SoilMoistCap_Vol1-SoilMoist_vol1
+                B_r1=SoilMoistCap_Vol1-SoilMoist_vol1 ! xx query HCW 11/08/2014 Wilting point?
   
                 if (B_r1<SoilMoist_vol1) then 
     				DimenWaterCon1=(SoilMoist_vol1-B_r1)/(SoilMoistCap_Vol1-B_r1)!Dimensionless water content
@@ -53,7 +53,7 @@ real(kind(1d0)) ::SoilMoist_vol1,SoilMoistCap_vol1,SoilMoist_vol2,SoilMoistCap_v
                     Km1=SatHydraulicConduct(is)*sqrt(DimenWaterCon1)*(1-(1-DimenWaterCon1**2)**0.5)**2
                     
                     if (MatPot1>100000) MatPot1=100000! Max. potential is 100 000 (van Genuchten 1980)
-           
+                    ! xx query HCW 11/08/2014 Km1 = 0 needed here, or not?
                 else
                     MatPot1 = 100000
                     Km1 = 0 !Added by LJ in Nov 2013
@@ -67,7 +67,7 @@ real(kind(1d0)) ::SoilMoist_vol1,SoilMoistCap_vol1,SoilMoist_vol2,SoilMoistCap_v
     			
                  
                 
-                B_r2=SoilMoistCap_Vol2-SoilMoist_vol2
+                B_r2=SoilMoistCap_Vol2-SoilMoist_vol2 ! xx query HCW 11/08/2014 Wilting point?
                 
                 if (B_r2<SoilMoist_vol2) then 
     				DimenWaterCon2=(SoilMoist_vol2-B_r2)/(SoilMoistCap_Vol2-B_r2) !Dimensionless water content
@@ -81,22 +81,23 @@ real(kind(1d0)) ::SoilMoist_vol1,SoilMoistCap_vol1,SoilMoist_vol2,SoilMoistCap_v
                     Km2=SatHydraulicConduct(jj)*sqrt(DimenWaterCon2)*(1-(1-DimenWaterCon2**2)**0.5)**2
                     
 				    if ((MatPot2)>100000) MatPot2=100000 ! Max. potential is 100 000 (van Genuchten 1980)
-					
+					! xx query HCW 11/08/2014 Km2 = 0 needed here, or not?
                 else
                     MatPot2=100000
                     Km2 = 0 !Added by LJ in Nov 2013
                 endif
                 
                 Distance=(sqrt(sfr(is)*SurfaceArea)+sqrt(sfr(jj)*SurfaceArea))/2!Distance of the two stores
-                
+                                
 				!Areally weighted new Km
                 KmWeight=(sfr(is)*Km1+sfr(jj)*Km2)/(sfr(is)+sfr(jj))
                 
 				dI_dt=-(KmWeight)*(-MatPot1+MatPot2)/Distance !Water flow between the stores
+                ! xx query HCW 11/08/2014 Are units compatible here?
 
                 !Water moves only if there is space for water
                 if ((SoilMoist(jj)>=dI_dt*sfr(is)/sfr(jj)).and.((SoilMoist(is)+dI_dt)>=0)) then
-                	SoilMoist(is)=SoilMoist(is)+dI_dt
+                	SoilMoist(is)=SoilMoist(is)+dI_dt                   ! xx query HCW 11/08/2014 dI_dt in mm s-1??
         			SoilMoist(jj)=SoilMoist(jj)-dI_dt*sfr(is)/sfr(jj)
                     
                 elseif ((SoilMoist(is)+dI_dt)<0) then

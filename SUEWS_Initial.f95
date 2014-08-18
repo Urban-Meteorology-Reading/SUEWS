@@ -41,6 +41,7 @@
         SkipHeaderMet,&
         SnowFractionChoice,&
         SNOWuse,&
+        SOLWEIGout,&
         Interval,&          
         TIMEZONE,& 
         Tstep,& 
@@ -259,7 +260,7 @@
   
   120	 format (10g10.2)
  
-  !Interval (min),TStep (s),NSH number of steps per interval
+  !Interval (sec),TStep (s),NSH number of steps per interval
   
   NSH_real = interval/TSTEP 
 
@@ -276,10 +277,11 @@
     endif
   endif
   
-  
   NMIN=TSTEP/60
   
   NPeriodsPerYear= NPeriodsPerDay*NDays ! assume 366 max but could be less  
+  
+  halftimestep=real(interval)/2/(24*3600) ! used in sun_position to get sunpos in the middle of timestep
  
   ! ---------------OHMChoices-----------------------------------------------
   ! coefficients for storage heat flux (will select by grid later)
@@ -601,7 +603,8 @@ end subroutine RunControlByGridByYear
   write(year_txt,'(I4)')year_int
 
   FileInit=trim(FileInputPath)//trim("InitialConditions")//trim(GridName)//trim(year_txt)//'.nml'
-  print*,fileInit
+  call ErrorHint(44,FileInit,notUsed,notUsed,notUsedI)
+   
   open(55,File=trim(FileInit),err=200,status='old') !Change with needs
   read(55,iostat=ios_out,nml=InitialConditions,err=203)
   close(55)
@@ -723,7 +726,7 @@ if(id_next>nofDaysThisYear) then
   id_next=1
   year=year+1
   switch=1
-  print*,'switch'
+  call ErrorHint(43,'switch- years',notUsed,notUsed,notUsedI)
 endif
 call day2month(id_next,mb,date,seas,year,lat)!Calculate real date from doy
 call Day_of_Week(date,mb,year,wd)!Calculate weekday (1=Sun,...)
@@ -890,6 +893,8 @@ r3=-99
  fileDaily=trim(FileOutputPath)//trim(FileCode)//'_DailyFile.txt'
  file5min=trim(FileOutputPath)//trim(FileCode)//'_5min.txt'
  SnowOut=trim(FileOutputPath)//trim(FileCode)//'_SnowOut.txt'
+ SOLWEIGpoiOut=trim(FileOutputPath)//trim(FileCode)//'_SOLWEIGpoiOut.txt'
+ BLOut=trim(FileOutputPath)//trim(FileCode)//'_BL.txt'
 
  !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  !DEFINE DIFFERENT INITIALIZATION PARAMETERS

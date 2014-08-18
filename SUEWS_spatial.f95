@@ -73,6 +73,8 @@ subroutine SUEWS_spatial(year_txt,iyr)
              deallocate(dataOut2)
              deallocate(dataOut3)
              deallocate(dataOut5min)
+             deallocate(dataOutBL)
+             deallocate(dataOutSOL)
 
           endif
 	  enddo

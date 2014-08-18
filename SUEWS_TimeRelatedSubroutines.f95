@@ -5,9 +5,17 @@
 ! leapYearCalc 
 !       returns -- number of days in actual year
 !    	used    -- LUMPS pneology (initalization)
+!
 ! DayofWeek   
 !       returns -- day of week
 !       used    -- for water use and anthropogenic heat
+! 
+! dectime_to_timevec
+!       This subroutine converts dectime to individual 
+!       hours, minutes and seconds
+!
+! daylen 
+!       Computes solar day length
 !
 !sg feb 2012 - moved all time related subroutines together
 !===============================================================================
@@ -190,3 +198,48 @@ subroutine dectime_to_timevec(dectime,HOURS,MINS,SECS)
         SECS=int(60*DS)
 
 end subroutine dectime_to_timevec    
+    
+!==============================================================================
+    
+!FL
+!=======================================================================
+!  DAYLEN, Real Function, N.B. Pickering, 09/23/1993
+!  Computes solar day length (Spitters, 1986).
+!=======================================================================
+
+SUBROUTINE DAYLEN(DOY, XLAT,DAYL, DEC, SNDN, SNUP)
+!-----------------------------------------------------------------------
+    IMPLICIT NONE
+    INTEGER :: DOY
+    REAL(kind(1d0)) :: DEC,DAYL,SOC,SNDN,SNUP,XLAT
+    REAL(kind(1d0)),PARAMETER :: PI=3.14159, RAD=PI/180.0
+
+!-----------------------------------------------------------------------
+!     Calculation of declination of sun (Eqn. 16). Amplitude= +/-23.45
+!     deg. Minimum = DOY 355 (DEC 21), maximum = DOY 172.5 (JUN 21/22).
+      DEC = -23.45 * COS(2.0*PI*(DOY+10.0)/365.0)
+
+!     Sun angles.  SOC limited for latitudes above polar circles.
+      SOC = TAN(RAD*DEC) * TAN(RAD*XLAT)
+      SOC = MIN(MAX(SOC,-1.0),1.0)
+
+!     Calculate daylength, sunrise and sunset (Eqn. 17)
+      DAYL = 12.0 + 24.0*ASIN(SOC)/PI
+      SNUP = 12.0 - DAYL/2.0
+      SNDN = 12.0 + DAYL/2.0
+
+END SUBROUTINE DAYLEN
+
+!=======================================================================
+! DAYLEN Variables
+!-----------------------------------------------------------------------
+! DAYL  Day length on day of simulation (from sunrise to sunset)  (hr)
+! DEC   Solar declination or (90o - solar elevation at noon) (deg.)
+! DOY   Day of year (d)
+! PI    PI=3.14159 (rad)
+! RAD   RAD=PI/180. (rad./deg.)
+! SNDN  Time of sunset (hr)
+! SNUP  Time of sunrise (hr)
+! SOC   Sine over cosine (intermediate calculation)
+! XLAT  Latitude (deg.)
+!=======================================================================

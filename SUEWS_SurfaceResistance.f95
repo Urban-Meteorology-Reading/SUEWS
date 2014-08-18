@@ -1,7 +1,7 @@
 subroutine SurfaceResistance(id,it)
 !Last modified by LJ in 24 April 2013
 !Added impact of snow fraction in LAI and in soil moisture deficit
-
+! HCW 31/07/2014 Modified condition on g6 part to select meas/mod smd
 
   use sues_data
   use moist
@@ -62,7 +62,7 @@ subroutine SurfaceResistance(id,it)
    
       sdp=S1/G6+S2
       
-      if(smd_choice==1)then
+      if(smd_choice>0)then 	!Modified from ==1 to > 0 by HCW 31/07/2014
           gs=1-exp(g6*(xsmd-sdp))!Measured soil moisture deficit is used
       else
           gs=1-exp(g6*(smd-sdp))!Modelled is used

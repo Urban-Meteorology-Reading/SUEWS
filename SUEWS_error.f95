@@ -5,6 +5,7 @@ subroutine ErrorHint(errh,ProblemFile,value,value2,valueI) ! real
 !value2      -- Real number with correct type
 !valueI      -- Integer 2
 !Last modified LJ 8 Feb 2013
+! sg 29/7/14 - close (500)
 !-------------------------------------------------------------------------------------------------
 
 Use defaultNotUsed
@@ -44,7 +45,7 @@ logical:: v1=.false.,v2=.false.,v3=.false.,v4=.false.,v5=.false.,v6=.false.,retu
         text1= ' printed - one of these should be zero - - water Distribution'
         v2=.true.
  	 elseif(errh==10) then
-        text1=' should add to 1  in above file'
+        text1=' should add to 1 in above file'
         v2=.true.
      elseif(errh==11) then
         text1=' this file not found- ios_out' 
@@ -126,8 +127,9 @@ logical:: v1=.false.,v2=.false.,v3=.false.,v4=.false.,v5=.false.,v6=.false.,retu
       	text1 = 'Number of snow layers too large.' 
         v1=.true.  ! 1 real
       elseif(errh==34) then
-        returntrue=.true.
-        !Reserved for CBL
+         text1= 'Air temperature > 55 C -- will keep running' 
+  	 	v1=.true.  ! 1 real
+        returntrue=.true.     
       elseif(errh==35) then 
         text1 = 'Problems with Met data -forcing data: doy, dectime'
         v2 = .true.  ! 2 real
@@ -145,6 +147,33 @@ logical:: v1=.false.,v2=.false.,v3=.false.,v4=.false.,v5=.false.,v6=.false.,retu
       elseif(errh==39) then 
         text1 = 'Tstep and INTERVAL do not match!'
         v2 = .true.  !2 real    
+      elseif(errh==40) then
+      	text1='SOLWEIG file problem - opening'
+        v7=.true.
+      elseif(errh==41) then
+         text1= ' addwaterbody= Error1-- but watersurf=  Error 2'
+         v2=.true. !2 real
+      elseif(errh==42)then
+         text1= 'abs(rho_d)<0.001000.OR.abs(rho_v)<0.001000.OR.abs(rho_d+rho_v)<0.001000) rho_v,rho_d'
+         returntrue=.true.
+         v2=.true. !2 real 
+      elseif(errh==43) then
+      	text1='Switching Years - will keep running'
+        returntrue=.true.
+        v7=.true.  
+      elseif(errh==44)then
+      	text1='Initial File Name - will keep going'
+         returntrue=.true.
+        v7=.true.  
+      elseif(errh==45)then
+      	text1='Pressure < 900 hPa, Loop Number'
+        returntrue=.true.
+        v5=.true.  
+     elseif(errh==46)then
+      	text1='Pressure < 900 hPa'
+        returntrue=.true.
+        v1=.true.  
+
       endif
     
      if(v1) then ! 1 real
@@ -172,12 +201,15 @@ logical:: v1=.false.,v2=.false.,v3=.false.,v4=.false.,v5=.false.,v6=.false.,retu
     
     write(500,*)trim(text1)
     write(*,*)trim(text1)
-    if(returnTrue)return  !Continue program 
+    close (500)
+    if(returnTrue) then
+      write(*,*)'Problems.txt has been closed and overwritten ir other errors occur'
+      return  !Continue program
+    endif
     call PauseStop        !Stop the program
     
 return
 end subroutine ErrorHint
-
 
 
 subroutine ProblemsText(ProblemFile)
@@ -186,6 +218,7 @@ character (len=*):: ProblemFile
     write(500,*)'problem file: ',trim(ProblemFile)
     write(*,*)'problem file: ',trim(ProblemFile)
     write(*,*)'see problems.txt'
+  
     return
 end subroutine ProblemsText
 

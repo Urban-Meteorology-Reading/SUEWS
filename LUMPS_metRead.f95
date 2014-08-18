@@ -30,7 +30,7 @@ subroutine MetRead(i)
   elseif (InputMetFormat==10) then !SUEWS reading
       READ(lfn,*,iostat=iostat_var)id,it,dectime,qn1_obs,qh_obs,qe_obs,qs,qf,avu1,avrh,&
                Temp_C,Pres_kPa,Precip_hr,avkdn,snow_obs,ldown_obs,fcld_obs,&
-               wuh,xsmd,lai_hr
+               wuh,xsmd,lai_hr,kdiff,kdir,wdir
                
       ! check with LJ -- lai_hr only one veg type
   

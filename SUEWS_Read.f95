@@ -25,22 +25,24 @@
 
  !Allocate hourly input and ouutput matrixes
  allocate(dataMet1(nlines,2))
- allocate(dataMet2(nlines,18))
+ allocate(dataMet2(nlines,21))
  allocate(dataOut1(nlines,62))
  allocate(dataOut2(nlines,30))
  allocate(dataOut3(nlines,106))
  allocate(dataOut5min(nlines*nsh,69))
-
+ allocate(dataOutBL(nlines*4,20))
+ allocate(dataOutSOL(nlines,28))
 
 !Open the file again. Code later better
  open(1,file=trim(fileMet),status='old',err=314,position='rewind')
  call skipHeader(1,SkipHeaderMet)
 
  DO i=1,nlines
+
     call MetRead(i)
     dataMet1(i,1:2) = (/id,it/)
-    dataMet2(i,1:18) = (/dectime,qn1_obs,qh_obs,qe_obs,qs,qf,avu1,avrh,Temp_C,Press_hPa,&
-                       Precip_hr,avkdn,snow_obs,ldown_obs,fcld_obs,wuh,xsmd,lai_hr/)
+    dataMet2(i,1:21) = (/dectime,qn1_obs,qh_obs,qe_obs,qs,qf,avu1,avrh,Temp_C,Press_hPa,&
+                       Precip_hr,avkdn,snow_obs,ldown_obs,fcld_obs,wuh,xsmd,lai_hr,kdiff,kdir,wdir/)
  ENDDO
 
  CLOSE(1)
@@ -84,5 +86,8 @@
     wuh = dataMet2(i,16)
     xsmd = dataMet2(i,17)
     lai_hr = dataMet2(i,18)
+    kdiff = dataMet2(i,19)
+    kdir = dataMet2(i,20)
+    wdir = dataMet2(i,21)
 
  end subroutine

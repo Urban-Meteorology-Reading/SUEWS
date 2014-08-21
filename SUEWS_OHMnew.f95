@@ -1,4 +1,4 @@
-SUBROUTINE OHMinitialize
+ SUBROUTINE OHMinitialize
 !This subroutine deals with the new OHM calculation where
 !surface state and wind speed are taken into account
 !Made by LJ in 30 Aug 2011 according to the matlab codes by SG
@@ -9,28 +9,27 @@ SUBROUTINE OHMinitialize
   use allocateArray   ! sg feb 2012 - add allocated arrays
   use time
 
+  IMPLICIT NONE
 
-implicit none
-integer:: i, ii, iii, rr
- ! check this is not being used -subvalues
+  integer:: i, ii, iii, rr
+  ! check this is not being used -subvalues
 
-!-------OPEN OHM FILES-------------------------
-!The length of the user defined file is fixed
-open(7,file=trim(fileOHM),status='old',err=200)
-!  +1 is  -- soil
-write(12,*)' OHM coefficients----------------------'
-! a1,a2,a3, code for the line of coefficients
-do i=1,4
+  !-------OPEN OHM FILES-------------------------
+  !The length of the user defined file is fixed
+  open(7,file=trim(fileOHM),status='old',err=200)
+  !  +1 is  -- soil
+  write(12,*)'-------',trim(fileOHM),'----------------------'
+  ! a1,a2,a3, code for the line of coefficients
+  do i=1,4
 	READ(7,*,iostat=iostat_var) (co2use(i,rr),rr=1,nsurf+2)
     write(12,'(8g12.4)')(co2use(i,rr),rr=1,nsurf+2)
-enddo
-close(7)
+  enddo
+  close(7)
 
-!Calculate the actual coefficients
-OHM_coef=0
+ !Calculate the actual coefficients
+ OHM_coef=0
 
-! 
-do ii=1,nsurf+2   !cols
+ do ii=1,nsurf+2   !cols
     do i=1,4 ! rows      (seasons/state)
         if(co2use(i,ii)>0) then !If value is realistic start to compare with co
 			do iii=1,NrowOhm !Go each row in the co file through
@@ -42,20 +41,22 @@ do ii=1,nsurf+2   !cols
             enddo
         endif
     enddo
-enddo
-! this would have bare soil coefficient under UnIrrigated Grass -- but this should be fixed by water state
-! canyon - in nsurf+1
-write(12,*)' OHM coefficients----------------------'
-do i=1,4
+ enddo
+ ! this would have bare soil coefficient under UnIrrigated Grass -- but this should be fixed by water state
+ ! canyon - in nsurf+1
+ write(12,*)' OHM coefficients----------------------'
+ do i=1,4
     do ii=1, nsurf+1
     	write(12,'(2i4,3g10.3)')ii,i, (OHM_coef(ii,i,iii),iii=1,3)
     enddo
-enddo
-return
+ enddo
+
+ close(12)
+ return
 
 200 	call ProblemsText(trim(fileOHM))
 		call PauseStop
-ENDSUBROUTINE OHMinitialize
+ ENDSUBROUTINE OHMinitialize
 
 !-------------------------------------------------------------------------
 !Snowfraction added as a comment text. LJ 15 Jan 2013

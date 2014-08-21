@@ -1,7 +1,7 @@
 !Main program of SUEWS version 1.0
 !Last modified by LJ Nov/2010
 !::::::::::::::::::::::::::::::::::::::::::::::::::::
-program SUEWS_Program
+ program SUEWS_Program
     use allocateArray
     use data_In
     use time
@@ -10,7 +10,7 @@ program SUEWS_Program
     implicit none
     integer::NroYears,i,year_int,iyr                              !Initializing variables used
     character(len=4)::year_txt
-
+    !----------------------------------------------------------
   	stateGrids=NAN 
     soilmoistGrids=NAN
     laiGrids=NAN
@@ -42,17 +42,16 @@ program SUEWS_Program
          year_int=int(year)
          write(year_txt,'(I4)')year_int
          FileCode=trim(FileCodeO)//trim(adjustl(year_txt))
-   
-       	 write(12,*)'================== ',trim(fileCode),' =========================='	
+
          write(*,*)'================== ',trim(fileCode),' =========================='
-         call LeapYearCalc (year,nofDaysThisYear)
-         call SUEWS_spatial(year_txt,iyr) ! via allocatearray->>stateGrids,soilmoistGrids,laiGrids,laiID
+         call LeapYearCalc (year_int,nofDaysThisYear)
+         call SUEWS_spatial(year_int,year_txt,iyr) ! via allocatearray->>stateGrids,soilmoistGrids,laiGrids,laiID
 
     enddo
-    close(12) 
+    close(98)
     stop 'finished'
 
 317		call ProblemsText(trim('ModelledYears.txt'))
       	call PauseStop
 
-end program SUEWS_Program
+ end program SUEWS_Program

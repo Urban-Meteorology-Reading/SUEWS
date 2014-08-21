@@ -61,8 +61,8 @@
   
   !--------------------------------------------------------------------------
  
-  !Read in FileChoices.txt
-  FileChoices=trim(FileOutputPath)//trim(FileCode)//'FileChoices.txt'
+  !Read in FileChoices.txt and write runcontrol.nml in it
+  FileChoices=trim(FileOutputPath)//trim(FileCode)//'_FileChoices.txt'
   open(12,file=FileChoices,err=203)
   write(12,nml=RunControl)
 
@@ -111,7 +111,8 @@
            write(*,*) 'Value not usable'
            stop
        endif
-  endif   
+  endif
+
   ! %%%%%%%%%%%%%%%%%%%%SUEWS_FunctionalTypes.txt%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   !Open SUEWS_FunctionalTypes
   
@@ -211,6 +212,7 @@
   NPeriodsPerDay= 24 ! number of time periods per day
 
   !----------------------------------------------------------------------
+  !Print run information on the screen
   write(*,*)'-------------------------------------------------'
   write(*,*)"LUMPS/Suews 2012a - relevant references"
   write(*,*)"LUMPS - Grimmond and Oke (2002) JAM, 41, 79-810"
@@ -218,13 +220,13 @@
   write(*,*)"NARP - Offerle et al. (2003) JAM"
   write(*,*)"SUES - Evaporation Grimmond & Oke (1991) WRR"
   write(*,*)"Water Balance Model Grimmond et al. (1986) WRR"
-  write(*,*)"NARP - long wave improvements (Loridan et al. 2011 JAMC)"
-  write(*,*)"SUEWS - anthropogenic heat, etc (Jarvi et al. 2011 JH)"
+  write(*,*)"NARP - Long wave improvements (Loridan et al. 2011 JAMC)"
+  write(*,*)"SUEWS - Anthropogenic heat, etc (Jarvi et al. 2011 JH)"
+  write(*,*)"SUEWS - Snow module included (Jarvi et al. 2014 GMD)"
   write(*,*)'-------------------------------------------------'
 
   !----------------------------------------------------------------------
   !Write nml files to FileChoices.txt
-  
   write(12,*)'--------SUEWS_FunctionalTypes.txt---------------------------- '
   write(12,*)'!Paved  Bldg   Conif  Decid  GrassI   GrassU  Water  Snow        -9 not applicable  '
   write(12,120) (alb(iv),iv=1,nsurf), alb_snow,' albedo -1'             ! 1
@@ -261,7 +263,6 @@
   120	 format (10g10.2)
  
   !Interval (sec),TStep (s),NSH number of steps per interval
-  
   NSH_real = interval/TSTEP 
 
   if (NSH_real<2) then    !If NSH_real smaller that two, only one period is run
@@ -295,6 +296,7 @@
   close (8)
   write(12,*) '---Number of rows in OHM_Coefficients.txt =',i-1
 
+  close(12) !Close file choices to be opened again later in the code
   return
   !-------problems---------------------------------------------------------------------------------------
 200		call ProblemsText('RunControl.nml -file not found')
@@ -317,7 +319,7 @@ end subroutine OverallRunControl
 !----------------------------------------------------------------------------------------------
 !----------------------------------------------------------------------------------------------
 
-subroutine OpenAnnualFiles(Grid)
+ subroutine OpenAnnualFiles(Grid)
 	!This subroutine opens the annual files and saves header to those
     use allocateArray
     use data_in
@@ -365,6 +367,8 @@ subroutine OpenAnnualFiles(Grid)
        ' dayLG   LAIc   LAId  LAIgI  LAIgU  DEcap    Por Albdec WUgr(1) WUgr(2) WUgr(3)',&
        ' WUtr(1) WUtr(2) WUtr(3) LAIch LAIlumps alb_snow dens_snow_pav dens_snow_bldg',&
        ' dens_snow_evergr dens_snow_dec dens_snow_Irrgr dens_snow_Gr dens_snow_water')
+
+
        
 		return
 
@@ -422,6 +426,7 @@ subroutine RunControlByGridByYear
  FileWU=trim(FileInputPath)//'SiteSpecificParam'//trim(FileCode)//'.nml'
  FileHr=trim(FileInputPath)//'HourlyProfile'//trim(FileCode)//'.txt'
 
+ !Open and read hourly profile file
  open(7,File=FileHr,err=251,status='old')
  read(7,*,err=251,iostat=ios_out) !skip header
  ic=1
@@ -434,33 +439,40 @@ subroutine RunControlByGridByYear
  read(7,*,err=250,iostat=ios_out)(snowProf(j),j=0,23)
  close (7)
 
- open(7,File=FileWU,err=200,status='old') !Change with needs
- read(7,nml=SiteSpecificParam,err=211, iostat=ios_out)
- close(7)
-
+ !write hourly profile to FileChoices
  write(12,*)'----------',trim(FileHr),'-hr:0 to 23-- after HourResChoice--------'
  write(12,'(24f6.2, a10)')HourWat, ' Hour Wat'
  write(12,'(24f6.2,a20)')(AhProF(j,1),j=0,23),'AhProf weekday -1 '
  write(12,'(24f6.2,a20)')(AhProF(j,2),j=0,23),'AhProf weekend -2 '
-   
+
+ !Check that the hourly profiles are given correctly to the model
  if(abs(sum(HourWat)-1.000)>0.001)then
-  if(abs(sum(HourWat)-1.000)<0.02)then
-    	HourWat=HourWat*(1/sum(HourWat))
-  else
-  		call ErrorHint(7,trim(FileHr),sum(HourWat),notUsed,notUsedI)
-  endif
+   if(abs(sum(HourWat)-1.000)<0.02)then
+     HourWat=HourWat*(1/sum(HourWat))
+   else
+     call ErrorHint(7,trim(FileHr),sum(HourWat),notUsed,notUsedI)
+   endif
  endif
- SurfaceArea=SurfaceArea*10000!Change surface area from ha to m^2
+
+ !Open and read SiteSpecificParam-file
+ open(7,File=FileWU,err=200,status='old')
+ read(7,nml=SiteSpecificParam,err=211, iostat=ios_out)
+ close(7)
+
+ !Write these to FileChoices
  write(12,*)'----------',trim(FileWU),'----------'
  write(12,nml=SiteSpecificParam)
+
+ SurfaceArea=SurfaceArea*10000 !Change surface area from ha to m^2
  
- !------------------------------------------------------------------------------------------                    
+ !------------------------------------------------------------------------------------------  
+ !Define and read in WaterDistribution file
  CanopyName=trim(FileInputPath)//'WaterDist'//trim(FileCode)//'.txt'  
  open(6,File=trim(CanopyName),err=201,status='old') 
  read(6,*,iostat=ios_out) ! skip header
  if(ios_out<0)call ErrorHint(11,trim(canopyname),notUsed,notUsed,ios_out)
  
-! initialize to all zero
+ !initialize to all zero
  WaterDist=0 !Table which determines distribution of water in the canopy
  do iv=1, Nsurf-1 
  	read(6,*,iostat=ios_out,end=501)(rate(j),j=1,9),which
@@ -473,7 +485,7 @@ subroutine RunControlByGridByYear
  	endif
  501 	if(rate(which)/=0) call ErrorHint(8,trim(CanopyName),rate(which),notUsed,notUsedI)
     	
-  ! check LJ why can this not go to soil and runof
+   ! check LJ why can this not go to soil and runof
   	if(rate(8)/=0.and.rate(9)/=0)  call ErrorHint(9,trim(CanopyName),rate(8),rate(9),notUsedI)
     if(sum(rate)>1.0000001.or.sum(rate)<0.9999999)call ErrorHint(10,trim(CanopyName),sum(rate),notUsed,which)
       	
@@ -486,16 +498,18 @@ subroutine RunControlByGridByYear
  	  	WaterDist(8,which)=rate(9)
 	 endif
   enddo
+
+  !Write to FileChoices
+  write(12,*)'----------',trim(CanopyName),'----------'
+  write(12,*)'To !Paved Build  Conif  Decid GrassIrr GrassUnirr  Water Runoff  Soil SurfaceFrom   '
   
-   write(12,*)'waterDistribution'
-   write(12,*)'To !Paved Build  Conif  Decid GrassIrr GrassUnirr  Water Runoff  Soil SurfaceFrom   '
-  
-   do iv=1,nSurf-1
-        write(12,'(i4, 8f6.2)')iv,(WaterDist(j,iv),j=1,nsurf+1)
-   enddo
+  do iv=1,nSurf-1
+    write(12,'(i4, 8f6.2)')iv,(WaterDist(j,iv),j=1,nsurf+1)
+  enddo
         
-   close(6)                                
-return
+  close(6)
+
+  return
 200		call ProblemsText(trim(FileWU))
 		call PauseStop 
 201		call ProblemsText(trim(CanopyName))
@@ -513,7 +527,7 @@ end subroutine RunControlByGridByYear
 ! sg feb 2012 - 
 !----------------------------------------------------------------------------------------------
 
- subroutine InitialState(GridName,errFileYes)
+ subroutine InitialState(GridName,errFileYes,year_int,year_txt)
   use resist        ! LUMPS_metRead.f95
   use data_in       ! LUMPS_metRead.f95
   use ohm_calc
@@ -542,7 +556,7 @@ end subroutine RunControlByGridByYear
   character (len=4)::year_txt   
   character(len=150)::fileInit 
   integer:: j,DaysSinceRain,wd,seas,date,mb,year_int,switch=0,id_next,calc,errFileYes
-
+  !-------------------------------------------------------------------------------------
   !These relate to InitialConditions.nml and are only used in this part of the code
 
   namelist/InitialConditions/DaysSinceRain,&
@@ -599,18 +613,19 @@ end subroutine RunControlByGridByYear
                   SnowDensPav,&
                   SnowDensWater
 
-  year_int=int(year)
-  write(year_txt,'(I4)')year_int
-
+  !Define InitialConditions file, open and read and close it
   FileInit=trim(FileInputPath)//trim("InitialConditions")//trim(GridName)//trim(year_txt)//'.nml'
   call ErrorHint(44,FileInit,notUsed,notUsed,notUsedI)
    
   open(55,File=trim(FileInit),err=200,status='old') !Change with needs
   read(55,iostat=ios_out,nml=InitialConditions,err=203)
   close(55)
+
+  !Write this to FileChoices
+  write(12,*)'----------',trim(FileInit),'----------'
   write(12,nml=InitialConditions)
   
-  if(id_prev>=364)id_prev=0
+  if(id_prev>=364)id_prev=0  !If previous day is larger than 264, set this to zero
     
   changed=0 ! use for LUMPS phenology
   changeInit=0
@@ -630,7 +645,8 @@ end subroutine RunControlByGridByYear
   GDD(:,4)=-90 ! going to check for maximum
   GDD(id_prev,1)=GDD_1_0
   GDD(id_prev,2)=GDD_2_0
-  
+
+  !Anthropogenic heat flux initializations
   jj1=0
   jj2=0
   jj3=0
@@ -664,100 +680,107 @@ end subroutine RunControlByGridByYear
   FileGIS=trim(FileInputPath)//trim(FileCode)//'.gis'
   FileOHM=trim(FileInputPath)//'SelectOHM'//trim(FileCode)//'.txt'
 
-            !===============READ GIS DATA  if not varying ==================================================================
+  !======READ GIS DATA (if not varying) ======================================
   open(3,file=trim(fileGIS),status='old',err=313)
   call skipHeader(3,SkipHeaderGIS)
   finish=.false.
    ! GISInputType=4   Varies each time step
    ! GISInputType=3   Stays the same each hour
    
-   IF(gisInputType==3) then
-      call read_gis(finish)
-          if(z0_method==1) then
-               if(z0m<0.00001) call ErrorHint(5,trim(fileGIS),z0m,notUsed,notUsedI)
-               if(zdm<0.00001) call ErrorHint(6,trim(fileGIS),zdm,notUsed,notUsedI)
-                zzd=z-zdm
-          elseif(z0_method==3)then
-                if(FAIBLdg<0) call ErrorHint(1,trim(fileGIS),Faibldg,notUsed,notUsedI)
-                if(FAITree<0)call ErrorHint(2,trim(fileGIS),faitree,notUsed,notUsedI)
-          else   
-               call RoughnessParameters(id_prev)
-          endif
+  IF(gisInputType==3) then
+
+    call read_gis(finish)  !Read gis file
+        if(z0_method==1) then
+            if(z0m<0.00001) call ErrorHint(5,trim(fileGIS),z0m,notUsed,notUsedI)
+            if(zdm<0.00001) call ErrorHint(6,trim(fileGIS),zdm,notUsed,notUsedI)
+            zzd=z-zdm
+        elseif(z0_method==3)then
+            if(FAIBLdg<0) call ErrorHint(1,trim(fileGIS),Faibldg,notUsed,notUsedI)
+            if(FAITree<0)call ErrorHint(2,trim(fileGIS),faitree,notUsed,notUsedI)
+        else
+            !Calculate roughness parameters
+            call RoughnessParameters(id_prev)
+        endif
       close(3)
-   elseIF(gisInputType==4) then
-      call read_gis(finish)
-          if(z0_method==1) then
-               if(z0m<0.00001) call ErrorHint(5,trim(fileGIS),z0m,notUsed,notUsedI)
-               if(zdm<0.00001) call ErrorHint(6,trim(fileGIS),zdm,notUsed,notUsedI)
-                zzd=z-zdm
-          elseif(z0_method==3)then
-                if(FAIBLdg<0) call ErrorHint(1,trim(fileGIS),Faibldg,notUsed,notUsedI)
-                if(FAITree<0)call ErrorHint(2,trim(fileGIS),faitree,notUsed,notUsedI)
-          else   
-               call RoughnessParameters(id_prev)
-          endif
+  elseIF(gisInputType==4) then
+    call read_gis(finish)
+        if(z0_method==1) then
+            if(z0m<0.00001) call ErrorHint(5,trim(fileGIS),z0m,notUsed,notUsedI)
+            if(zdm<0.00001) call ErrorHint(6,trim(fileGIS),zdm,notUsed,notUsedI)
+            zzd=z-zdm
+        elseif(z0_method==3)then
+            if(FAIBLdg<0) call ErrorHint(1,trim(fileGIS),Faibldg,notUsed,notUsedI)
+            if(FAITree<0)call ErrorHint(2,trim(fileGIS),faitree,notUsed,notUsedI)
+        else
+            call RoughnessParameters(id_prev)
+        endif
       backspace(3)
  
-   endif
+  endif
 
-if(id_prev==0)then
-  year=year-1
-  call LeapYearCalc (year,id_prev)
-  switch=1
-!  print*,'switch'
-endif 
+ !If the run start day is at previous year, then calculate the number of days
+ !on that year. 
+ !switch tells whether the current day is on previous year (switch=1) or in the 
+ !current year (switch=0, initial condition)
+ if(id_prev==0)then
+   year=year-1
+   call LeapYearCalc (year_int,id_prev)
+   switch=1
+ endif
   
-call day2month(id_prev,mb,date,seas,year,lat)!Calculate real date from doy
-call Day_of_Week(date,mb,year,wd)!Calculate weekday (1=Sun,...)
+ call day2month(id_prev,mb,date,seas,year,lat)!Calculate real date from doy
+ call Day_of_Week(date,mb,year,wd)            !Calculate weekday (1=Sun,...)
 
-if(switch==1)then
-  year=year+1
-  id_prev=0
-  switch=0
-endif
+ !After the day in previous year switch is changed back to zero
+ if(switch==1)then
+   year=year+1
+   id_prev=0
+   switch=0
+ endif
   
-dayofWeek(id_prev,1)=wd  ! day of week
-dayofWeek(id_prev,2)=mb  ! month
-dayofweek(id_prev,3)=seas ! season
+ dayofWeek(id_prev,1)=wd  ! day of week
+ dayofWeek(id_prev,2)=mb  ! month
+ dayofweek(id_prev,3)=seas ! season
 
-! in case first hour not 0
-id_next=id_prev+1
-if(id_next>nofDaysThisYear) then
-  id_next=1
-  year=year+1
-  switch=1
-  call ErrorHint(43,'switch- years',notUsed,notUsed,notUsedI)
-endif
-call day2month(id_next,mb,date,seas,year,lat)!Calculate real date from doy
-call Day_of_Week(date,mb,year,wd)!Calculate weekday (1=Sun,...)
-if(switch==1)then
-  year=year-1
-  switch=0
-endif
-dayofWeek(id_next,1)=wd  ! day of week
-dayofWeek(id_next,2)=mb  ! month
-dayofweek(id_next,3)=seas ! season
+ ! in case first hour not 0
+ id_next=id_prev+1
+ if(id_next>nofDaysThisYear) then
+   id_next=1
+   year=year+1
+   switch=1
+   call ErrorHint(43,'switch- years',notUsed,notUsed,notUsedI)
+ endif
+
+ call day2month(id_next,mb,date,seas,year,lat)!Calculate real date from doy
+ call Day_of_Week(date,mb,year,wd)!Calculate weekday (1=Sun,...)
+ if(switch==1)then
+   year=year-1
+   switch=0
+ endif
+ dayofWeek(id_next,1)=wd  ! day of week
+ dayofWeek(id_next,2)=mb  ! month
+ dayofweek(id_next,3)=seas ! season
 
 
-if(switch==1)then
-  year=year+1
-  id_prev=0
-  switch=0
-endif
+ if(switch==1)then
+   year=year+1
+   id_prev=0
+   switch=0
+ endif
 
-WU_day=0
-id=id_prev
-it=LastTimeOfDay
-if (id_prev>=DayLightSavingDay(1).and.id_prev<=DayLightSavingDay(2)) then!Summer time
+ WU_day=0
+ id=id_prev
+ it=LastTimeOfDay
+ if (id_prev>=DayLightSavingDay(1).and.id_prev<=DayLightSavingDay(2)) then!Summetime
     DLS=1
-else
+ else
     DLS=0
-endif
+ endif
         
 
-!Calculate daily water use if this is modelled
-IrrTrees =0
-if (WU_choice==0) then
+ !Calculate daily water use if this is modelled
+ IrrTrees =0
+ if (WU_choice==0) then
   ! check if
   calc=0
   if (DayWat(wd)==1.0) then      !if=1 - then this is a day that has watering
@@ -804,84 +827,83 @@ if (WU_choice==0) then
     endif
  endif
 
- 
-     !Wetness status of each surface  
+ !Wetness status of each surface
 
-!Above ground state
-State(PavSurf)=PavState
-State(BldgSurf)=BldgState
-State(ConifSurf)=ConifState
-State(DecidSurf)=DecidState
-State(GrassISurf)=GrassIState
-State(GrassUSurf)=GrassUState
-State(WaterSurf)=WaterState   !State of water body
+ !Above ground state
+ State(PavSurf)=PavState
+ State(BldgSurf)=BldgState
+ State(ConifSurf)=ConifState
+ State(DecidSurf)=DecidState
+ State(GrassISurf)=GrassIState
+ State(GrassUSurf)=GrassUState
+ State(WaterSurf)=WaterState   !State of water body
 
-!Maximum capasity soil storage can hold for each surface type
+ !Maximum capasity soil storage can hold for each surface type
 
-!::::Below ground state::::::::::::::::::::::::::::::::::::::::::
-!Max capacity of the different soil levels
+ !::::Below ground state::::::::::::::::::::::::::::::::::::::::::
+ !Max capacity of the different soil levels
 
  !Soil moisture of each surface type
    
-!Initial conditions for soilstores
-soilmoist(PavSurf)=soilstorePavstate
-soilmoist(BldgSurf)=soilstoreBldgState
-soilmoist(ConifSurf)=soilstoreConifstate
-soilmoist(DecidSurf)=soilstoreDecState
-soilmoist(GrassISurf)=soilstoreGrassIrrState
-soilmoist(GrassUSurf)=soilstoreGrassUnirState
-soilmoist(WaterSurf)=0                 !No soil layer for water body
+ !Initial conditions for soilstores
+ soilmoist(PavSurf)=soilstorePavstate
+ soilmoist(BldgSurf)=soilstoreBldgState
+ soilmoist(ConifSurf)=soilstoreConifstate
+ soilmoist(DecidSurf)=soilstoreDecState
+ soilmoist(GrassISurf)=soilstoreGrassIrrState
+ soilmoist(GrassUSurf)=soilstoreGrassUnirState
+ soilmoist(WaterSurf)=0                 !No soil layer for water body
 
 
-!!SNOWPACK PARAMETERS
-!Initial parameters for snowpack 
-SnowPack(PavSurf)=SnowPackPav
-SnowPack(BldgSurf)=SnowPackBldg
-SnowPack(ConifSurf)=SnowPackConif
-SnowPack(DecidSurf)=SnowPackDec
-SnowPack(GrassISurf)=SnowPackGrassIrr
-SnowPack(GrassUSurf)=SnowPackGrassUnir
-SnowPack(WaterSurf)=SnowPackWater
+ !!SNOWPACK PARAMETERS
+ !Initial parameters for snowpack
+ SnowPack(PavSurf)=SnowPackPav
+ SnowPack(BldgSurf)=SnowPackBldg
+ SnowPack(ConifSurf)=SnowPackConif
+ SnowPack(DecidSurf)=SnowPackDec
+ SnowPack(GrassISurf)=SnowPackGrassIrr
+ SnowPack(GrassUSurf)=SnowPackGrassUnir
+ SnowPack(WaterSurf)=SnowPackWater
 
-!Amount of liquid (melted water) in the snowpack
-MeltWaterStore(PavSurf) = SnowWaterPavstate
-MeltWaterStore(BldgSurf) = SnowWaterBldgState
-MeltWaterStore(ConifSurf) = SnowWaterConifstate
-MeltWaterStore(DecidSurf) = SnowWaterDecState
-MeltWaterStore(GrassISurf) = SnowWaterGrassIrrState
-MeltWaterStore(GrassUSurf) = SnowWaterGrassUnirState
-MeltWaterStore(WaterSurf) = SnowWaterWaterstate
+ !Amount of liquid (melted water) in the snowpack
+ MeltWaterStore(PavSurf) = SnowWaterPavstate
+ MeltWaterStore(BldgSurf) = SnowWaterBldgState
+ MeltWaterStore(ConifSurf) = SnowWaterConifstate
+ MeltWaterStore(DecidSurf) = SnowWaterDecState
+ MeltWaterStore(GrassISurf) = SnowWaterGrassIrrState
+ MeltWaterStore(GrassUSurf) = SnowWaterGrassUnirState
+ MeltWaterStore(WaterSurf) = SnowWaterWaterstate
 
-!Initial fraction of snow
-snowFrac(PavSurf)=SnowFracPav
-snowFrac(BldgSurf)=SnowFracBldg
-snowFrac(ConifSurf)=SnowFracConif
-snowFrac(DecidSurf)=SnowFracDec
-snowFrac(GrassISurf)=SnowFracGrassIrr
-snowFrac(GrassUSurf)=SnowFracGrassUnir
-snowFrac(WaterSurf)=SnowFracWater
+ !Initial fraction of snow
+ snowFrac(PavSurf)=SnowFracPav
+ snowFrac(BldgSurf)=SnowFracBldg
+ snowFrac(ConifSurf)=SnowFracConif
+ snowFrac(DecidSurf)=SnowFracDec
+ snowFrac(GrassISurf)=SnowFracGrassIrr
+ snowFrac(GrassUSurf)=SnowFracGrassUnir
+ snowFrac(WaterSurf)=SnowFracWater
 
-iceFrac=0.2
+ iceFrac=0.2 !Estimated fraction of ice. Should be improved in the future
 
 
-densSnow(PavSurf) = SnowDensPav    !Initialize snow density
-densSnow(BldgSurf) = SnowDensBldg 
-densSnow(ConifSurf) = SnowDensConif
-densSnow(DecidSurf) = SnowDensDec
-densSnow(GrassISurf) = SnowDensGrassIrr
-densSnow(GrassUSurf) = SnowDensGrassUnir
-densSnow(WaterSurf) = SnowDensWater
+ densSnow(PavSurf) = SnowDensPav    !Initialize snow density
+ densSnow(BldgSurf) = SnowDensBldg
+ densSnow(ConifSurf) = SnowDensConif
+ densSnow(DecidSurf) = SnowDensDec
+ densSnow(GrassISurf) = SnowDensGrassIrr
+ densSnow(GrassUSurf) = SnowDensGrassUnir
+ densSnow(WaterSurf) = SnowDensWater
 
-! for first 3 h Q* just assume at night
-! check ?? this should not happen at the start of the year if continuing
+ ! for first 3 h Q* just assume at night
+ ! check ?? this should not happen at the start of the year if continuing
 
-q1=-101
-q2=-100
-q3=-99
+ q1=-101
+ q2=-100
+ q3=-99
 
-r1=-101
-r2=-100
-r3=-99
+ r1=-101
+ r2=-100
+ r3=-99
 
 
  !%%%%%%%%%%OUTPUT FILENAMES AND THEIR PATHS%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -906,9 +928,8 @@ r3=-99
  
 !==================OUTPUT FILE OPTIONS=============================================
 !Open daily and monthly
-   open(14,file=fileDaily,err=201)
-   open(15,file=fileMonthly,err=202)
-
+ open(14,file=fileDaily,err=201)
+ open(15,file=fileMonthly,err=202)
 
  ! zero arrays------------------------------------------------------------
  !sg -- 16 variables written out
@@ -916,10 +937,10 @@ r3=-99
  do j=1,NumberDailyVars
    all_tot(1,j)=0  
  enddo
-call accum_zero    
+ call accum_zero
 ! zero arrays------------------------------------------------------------
     
-return
+ return
 200		call ProblemsText(trim(FileInit))
 		call PauseStop
 201		call ProblemsText(trim(fileDaily))

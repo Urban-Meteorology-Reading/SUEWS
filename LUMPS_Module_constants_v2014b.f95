@@ -3,7 +3,7 @@
 ! lj jun 2012 - snow part added
 
 !===================================================================================
-module allocateArray
+ module allocateArray
    implicit none
 
    integer::PavSurf=1,& ! when all surfaces    BareSoilSurf= treated separately below
@@ -408,7 +408,7 @@ MODULE cbl_MODULE
                            
       character (len=20)::FileCode,FileCodeO
       character (len=90),dimension(14)::keepheader
-      character (len=90)::progname='SUEWS V2014a'  !!!!<<<<<<<<<<<<<<<<<<
+      character (len=90)::progname='SUEWS V2014b'  !!!!<<<<<<<<<<<<<<<<<<
         
       logical:: finish,once
  
@@ -520,8 +520,8 @@ MODULE cbl_MODULE
    real (kind(1d0)) :: zzd,&  !Active measurement height (meas. height-displac. height)
                        z0m,&  !Aerodynamic roughness length
                        zdm,&  !Displacement height
-                       z    !Windspeed height
-   real(kind(1E10))::z0V    !Roughness length for vapour 
+                       z      !Windspeed height
+   real(kind(1E10))::z0V      !Roughness length for vapour
  end module mod_z
  
  !**********************************************
@@ -562,18 +562,19 @@ MODULE cbl_MODULE
    implicit none                             
                                          
    real(kind(1d0)):: Alt,&                        !Altitude in m
-   		     areaunir,&                   !Unirrigated area
+   		             areaunir,&                   !Unirrigated area
                      areair,&                     !Irrigated area
-                     bldgH,&                       !Mean building height                    
-                     FAIbldg,&                     !Frontal area fraction of buildings
+                     bldgH,&                      !Mean building height
+                     FAIbldg,&                    !Frontal area fraction of buildings
                      FAItree,&                    !Frontal area fraction of trees                   
                      grassfractionirrigated,&     !Irrigated grass fraction for LUMPS                                   
                      pavedfractionirrigated,&     !Irrigated paved area fraction for LUMPS
-                     TreeH,&                       !Mean tree height
+                     TreeH,&                      !Mean tree height
                      treefractionirrigated,&      !Irrigated tree fraction for LUMPS                    
-                     veg_fr,&                     !Vegetation fraction from land area - For LUMPS - dependent on user choice & water                                       
+                     veg_fr,&                     !Vegetation fraction from land area 
+                                                  !- For LUMPS - dependent on user choice    & water
                      VegFraction, &               ! sum of vegetation -not including water
-                     areaZh                        !=(sfr(BldgSurf)+sfr(ConifSurf)+sfr(DecidSurf)) !Total area of buildings and trees     
+                     areaZh                       !=(sfr(BldgSurf)+sfr(ConifSurf)+sfr(DecidSurf)) !Total area of buildings and trees
  
    integer:: idgis,&      !Time integers used in the code    
              itgis,&      !

@@ -1,14 +1,15 @@
 !The spatial part of SUEWS: LJ in Nov 2010
 !Last modified lj/sg May 2012
 !----------------------------------------------------------------------------------------------------------
-subroutine SUEWS_spatial(year_txt,iyr)
+ subroutine SUEWS_spatial(year_int,year_txt,iyr)
 
 	  use allocateArray
       use data_in
+      use snowMod
       
       IMPLICIT NONE
 
-      integer::iostat_var,NroGrids,i,ii,jj,iyr ,errFileYes=0
+      integer::iostat_var,NroGrids,i,ii,jj,iyr,year_int,errFileYes=0
       character(len=15),dimension(2,4)::GridFrom                    !Grid connections for each grid    
       real (kind(1d0)),DIMENSION(4)::GridFromFrac                   !Fraction of water moving between these
       character(len=15)::grid
@@ -54,17 +55,24 @@ subroutine SUEWS_spatial(year_txt,iyr)
              
              !Define new filecode for each grid separately and save to FileChoices
              FileCode=trim(Grid)//trim(year_txt)
-             write(12,*) "*************",FileCode,"*************"
-             
+
+             open(12,file=FileChoices,position="append")
+             write(12,*) " "
+             write(12,*) "======================",trim(FileCode),"============================"
+             write(12,*) " "
+
 			 call RunControlByGridByYear             !Call grid specific runcontrol
-	         call InitialState(Grid,errFileYes)      !Initial state of the run
+	         call InitialState(Grid,errFileYes,year_int,year_txt)      !Initial state of the run
 
              !Save information about the met file and read grid forcing data in
              !Later likely all grid data will be read in, but now only one at a time.
-             write(12,*) '# Met file: ', trim(fileMet), finish
-             call SUEWS_Read(i)
+             write(12,*) '# Met file: ', trim(fileMet)
 
-             call SUEWS_temporal(Grid,GridFrom,GridFromFrac,iyr,errFileYes,SnowPackG(i,:)) !Call the code grid by grid
+             call SUEWS_Read(i) !Read in the forcing data
+             call OHMinitialize !Initialize OHM
+
+
+             call SUEWS_temporal(Grid,GridFrom,GridFromFrac,iyr,errFileYes) !Call the code grid by grid
 
              !Deallocate datamatrixes
              deallocate(dataMet1)
@@ -84,4 +92,4 @@ subroutine SUEWS_spatial(year_txt,iyr)
       call PauseStop	
 
 
-end subroutine SUEWS_spatial
+ end subroutine SUEWS_spatial

@@ -56,7 +56,7 @@
 
 !----------------------------------------------------------------------------------
  
-subroutine SUEWS_temporal(GridName,GridFrom,GridFromFrac,iyr,errFileYes,SnowPack_grid)
+ subroutine SUEWS_temporal(GridName,GridFrom,GridFromFrac,iyr,errFileYes)
   use allocateArray  !module_LUMPS_constants,f90   
   use gas           ! module_LUMPS_constants,f90
   use mod_grav	    ! module_LUMPS_constants,f90
@@ -75,8 +75,8 @@ subroutine SUEWS_temporal(GridName,GridFrom,GridFromFrac,iyr,errFileYes,SnowPack
   use snowMod
   use solweig_module
   
-  implicit none 
-  
+  IMPLICIT NONE
+
   !Grid information 
   real(kind(1d0)),DIMENSION(4)::GridFromFrac
   character(len=15)::GridName
@@ -87,27 +87,23 @@ subroutine SUEWS_temporal(GridName,GridFrom,GridFromFrac,iyr,errFileYes,SnowPack
   
   !Other variables 
   logical:: debug=.false.                            
-  integer:: imon,iday,iyr,iseas,reset=1,i,iv,ih,id_in,it_in, SunriseTime,SunsetTime,errFileYes,ind5min=1
-            
+  integer:: imon,iday,iyr,iseas,reset=1,i,iv,ih,id_in,it_in,&
+            SunriseTime,SunsetTime,errFileYes,ind5min=1
   real(kind(1d0))::lai_wt,dectime_nsh,SnowDepletionCurve,idectime
-                   
   character(len=100)::FileNameOld,str2
 
   !Variables related to NARP
-   !Radiation balance components for different surfaces
+  !Radiation balance components for different surfaces
   real(kind(1D0))::NARP_ALB_is,NARP_EMIS_is,snowFracTot!,qn1_cum,kup_cum,lup_cum,tsurf_cum
 
-  
- !Initialize the model (reading nml files, defining filepaths, printing filechoices)
- call OHMinitialize
- !===========================NARP CONFIG=============================================
- if(NetRadiationChoice>0)then ! I don't think this is needed anymore (FL)
-    	call NARP_CONFIG(LAT,LNG,YEAR,TIMEZONE,ALB_SNOW,EMIS_SNOW,TRANS_SITE,Interval,ldown_option)
+  !===========================NARP CONFIG=============================================
+  if(NetRadiationChoice>0)then
+   	call NARP_CONFIG(LAT,LNG,YEAR,TIMEZONE,ALB_SNOW,EMIS_SNOW,TRANS_SITE,Interval,ldown_option)
   		!This for the snow cover fractions
  		!Initiate NARP anyway in order to get surface temperatures 
  		!call NARP_CONFIG(LAT,LNG,YEAR,TIMEZONE,ALB,EMIS,ALB_SNOW,EMIS_SNOW,TRANS_SITE,INTERVAL,ldown_option)
- endif
- finish=.false.
+  endif
+  finish=.false.
 
 
  !=============Get data ready for the qs calculation====================
@@ -138,7 +134,7 @@ subroutine SUEWS_temporal(GridName,GridFrom,GridFromFrac,iyr,errFileYes,SnowPack
 !======Open files of other grids if flow exists=======================================
 !Made by LJ 10/2010
 !Read the additional water from surroundings grids here.4 possible options.
-do is=1,4
+ do is=1,4
    if (GridFromFrac(is)/=0) then!If runoff from other surfaces exists read data
 
    !File identifier
@@ -380,6 +376,7 @@ do is=1,4
       call BoundaryLayerResistance
 
       !Calculate available energy times s
+     write(*,*) ProgName
       
       sae=s_hPa*(qn1_SF+qf-qs)    !s - slope of svp vs t curve
                                   !qn1 changed to qn1_SF, lj in May 2013

@@ -348,10 +348,10 @@ end subroutine OverallRunControl
         
         if(writedailyState==1)then
           if(int(year)==FirstYear)then
-               open(60, file=trim(FileOutputPath)//trim(Grid)//'DailyState.txt',err=202)
+               open(60, file=trim(FileOutputPath)//trim(Grid)//'_DailyState.txt',err=202)
                write(60,142)
           else     
-               open(60, file=trim(FileOutputPath)//trim(Grid)//'DailyState.txt',access="append",err=202)   
+               open(60, file=trim(FileOutputPath)//trim(Grid)//'_DailyState.txt',access="append",err=202)
           endif
         endif
 
@@ -380,12 +380,12 @@ end subroutine OverallRunControl
 
 202 	call ProblemsText(trim(FileOutputPath)//trim(Grid)//'DailyState.txt')
 		call PauseStop 
-end subroutine OpenAnnualFiles
+ end subroutine OpenAnnualFiles
 
 !----------------------------------------------------------------------------------------------
 !----------------------------------------------------------------------------------------------
 
-subroutine RunControlByGridByYear    
+ subroutine RunControlByGridByYear
  use data_in       ! LUMPS_metRead.f95
  use ohm_calc
  use run_info      ! run_control_v2_1.f90
@@ -546,12 +546,12 @@ end subroutine RunControlByGridByYear
   
   character (len=15)::GridName
   character (len=10)::str2 !Variables related to filepaths 
-  real (KIND(1d0))::BldgState,ConifState,DecidState,GrassIState,GrassUState,PavState,&
-              	soilstoreDecState,soilstoreGrassUnirState,soilstoreConifstate,&
-          		soilstoreGrassIrrState,soilstorePavstate,soilstoreBldgState,SnowFracBldg,&
-                SnowFracConif, SnowFracDec, SnowFracGrassIrr, SnowFracGrassUnir,&
-                SnowFracPav, SnowFracWater,SnowDensBldg,SnowDensConif,SnowDensDec,&
-                SnowDensGrassIrr,SnowDensGrassUnir,SnowDensPav,SnowDensWater  
+  real (KIND(1d0))::BldgState,ETState,DTState,IGState,UGState,PavState,&
+              	    soilstoreDTState,soilstoreIGState,soilstoreETstate,&
+          		    soilstorePavstate,soilstoreBldgState,soilstoreUGState,&
+                    SnowFracBldg,SnowFracET, SnowFracDT, SnowFracIG, SnowFracUG,&
+                    SnowFracPav, SnowFracWater,SnowDensBldg,SnowDensET,SnowDensDT,&
+                    SnowDensIG,SnowDensUG,SnowDensPav,SnowDensWater
                     
   character (len=4)::year_txt   
   character(len=150)::fileInit 
@@ -565,56 +565,56 @@ end subroutine RunControlByGridByYear
                   GDD_1_0,&
                   GDD_2_0,&
                   BldgState,&
-                  ConifState,&
-                  DecidState,&
+                  ETState,&
+                  DTState,&
                   PavState,&
-                  GrassIState,&
-                  GrassUState,&
-                  LAIinitialConif,&            ! 
-                  LAIinitialDecid,&
-                  LAIinitialGrassU,&
-                  LAIinitialGrassI,&
+                  IGState,&
+                  UGState,&
+                  LAIinitialET,&            !
+                  LAIinitialDT,&
+                  LAIinitialUG,&
+                  LAIinitialIG,&
                   porosity0,&
                   DecidCap0,&
                   albDec0,&
                   soilstoreBldgState,&
-                  soilstoreConifstate,&
-                  soilstoreDecState,&
-                  soilstoreGrassUnirState,&
-                  soilstoreGrassIrrState,&
+                  soilstoreETstate,&
+                  soilstoreDTState,&
+                  soilstoreUGState,&
+                  soilstoreIGState,&
                   soilstorePavstate,&
                   WaterState,&
 				  SnowWaterBldgState,&
-				  SnowWaterConifstate,&
-                  SnowWaterDecState,&
-                  SnowWaterGrassIrrState,&
-                  SnowWaterGrassUnirState,&
+				  SnowWaterETstate,&
+                  SnowWaterDTState,&
+                  SnowWaterIGState,&
+                  SnowWaterUGState,&
                   SnowWaterPavstate,&
                   SnowWaterWaterstate,&
 				  SnowPackBldg,& 
-                  SnowPackConif,&
-                  SnowPackDec,&
-                  SnowPackGrassIrr,&
-                  SnowPackGrassUnir,&
+                  SnowPackET,&
+                  SnowPackDT,&
+                  SnowPackIG,&
+                  SnowPackUG,&
                   SnowPackWater,&
                   SnowPackPav,&
                   SnowFracBldg,&
-                  SnowFracConif,&
-                  SnowFracDec,&
-                  SnowFracGrassIrr,&
-                  SnowFracGrassUnir,&
+                  SnowFracET,&
+                  SnowFracDT,&
+                  SnowFracIG,&
+                  SnowFracUG,&
                   SnowFracPav,&
                   SnowFracWater,&
                   SnowDensBldg,&
-                  SnowDensConif,&
-                  SnowDensDec,&
-                  SnowDensGrassIrr,&
-                  SnowDensGrassUnir,&
+                  SnowDensET,&
+                  SnowDensDT,&
+                  SnowDensIG,&
+                  SnowDensUG,&
                   SnowDensPav,&
                   SnowDensWater
 
   !Define InitialConditions file, open and read and close it
-  FileInit=trim(FileInputPath)//trim("InitialConditions")//trim(GridName)//trim(year_txt)//'.nml'
+  FileInit=trim(FileInputPath)//trim("InitialConditions")//trim(GridName)//'_'//trim(year_txt)//'.nml'
   call ErrorHint(44,FileInit,notUsed,notUsed,notUsedI)
    
   open(55,File=trim(FileInit),err=200,status='old') !Change with needs
@@ -632,10 +632,10 @@ end subroutine RunControlByGridByYear
   ! check -- this needs to be set for passing between years
   !'-2' because array nvegsurf
   lai=0
-  lai(id_prev,ivConif)=LAIinitialConif
-  lai(id_prev,ivdecid)=LAIinitialDecid
-  lai(id_prev,ivGrassI)=LAIinitialGrassI
-  lai(id_prev,ivGrassU)=LAIinitialGrassU
+  lai(id_prev,ivConif)=LAIinitialET
+  lai(id_prev,ivdecid)=LAIinitialDT
+  lai(id_prev,ivGrassI)=LAIinitialIG
+  lai(id_prev,ivGrassU)=LAIinitialUG
   
   ! growing degree days
   GDD(:,1)=0
@@ -832,10 +832,10 @@ end subroutine RunControlByGridByYear
  !Above ground state
  State(PavSurf)=PavState
  State(BldgSurf)=BldgState
- State(ConifSurf)=ConifState
- State(DecidSurf)=DecidState
- State(GrassISurf)=GrassIState
- State(GrassUSurf)=GrassUState
+ State(ConifSurf)=ETState
+ State(DecidSurf)=DTState
+ State(GrassISurf)=IGState
+ State(GrassUSurf)=UGState
  State(WaterSurf)=WaterState   !State of water body
 
  !Maximum capasity soil storage can hold for each surface type
@@ -848,10 +848,10 @@ end subroutine RunControlByGridByYear
  !Initial conditions for soilstores
  soilmoist(PavSurf)=soilstorePavstate
  soilmoist(BldgSurf)=soilstoreBldgState
- soilmoist(ConifSurf)=soilstoreConifstate
- soilmoist(DecidSurf)=soilstoreDecState
- soilmoist(GrassISurf)=soilstoreGrassIrrState
- soilmoist(GrassUSurf)=soilstoreGrassUnirState
+ soilmoist(ConifSurf)=soilstoreETstate
+ soilmoist(DecidSurf)=soilstoreDTState
+ soilmoist(GrassISurf)=soilstoreIGState
+ soilmoist(GrassUSurf)=soilstoreUGState
  soilmoist(WaterSurf)=0                 !No soil layer for water body
 
 
@@ -859,39 +859,38 @@ end subroutine RunControlByGridByYear
  !Initial parameters for snowpack
  SnowPack(PavSurf)=SnowPackPav
  SnowPack(BldgSurf)=SnowPackBldg
- SnowPack(ConifSurf)=SnowPackConif
- SnowPack(DecidSurf)=SnowPackDec
- SnowPack(GrassISurf)=SnowPackGrassIrr
- SnowPack(GrassUSurf)=SnowPackGrassUnir
+ SnowPack(ConifSurf)=SnowPackET
+ SnowPack(DecidSurf)=SnowPackDT
+ SnowPack(GrassISurf)=SnowPackIG
+ SnowPack(GrassUSurf)=SnowPackUG
  SnowPack(WaterSurf)=SnowPackWater
 
  !Amount of liquid (melted water) in the snowpack
  MeltWaterStore(PavSurf) = SnowWaterPavstate
  MeltWaterStore(BldgSurf) = SnowWaterBldgState
- MeltWaterStore(ConifSurf) = SnowWaterConifstate
- MeltWaterStore(DecidSurf) = SnowWaterDecState
- MeltWaterStore(GrassISurf) = SnowWaterGrassIrrState
- MeltWaterStore(GrassUSurf) = SnowWaterGrassUnirState
+ MeltWaterStore(ConifSurf) = SnowWaterETstate
+ MeltWaterStore(DecidSurf) = SnowWaterDTState
+ MeltWaterStore(GrassISurf) = SnowWaterIGState
+ MeltWaterStore(GrassUSurf) = SnowWaterUGState
  MeltWaterStore(WaterSurf) = SnowWaterWaterstate
 
  !Initial fraction of snow
  snowFrac(PavSurf)=SnowFracPav
  snowFrac(BldgSurf)=SnowFracBldg
- snowFrac(ConifSurf)=SnowFracConif
- snowFrac(DecidSurf)=SnowFracDec
- snowFrac(GrassISurf)=SnowFracGrassIrr
- snowFrac(GrassUSurf)=SnowFracGrassUnir
+ snowFrac(ConifSurf)=SnowFracET
+ snowFrac(DecidSurf)=SnowFracDT
+ snowFrac(GrassISurf)=SnowFracIG
+ snowFrac(GrassUSurf)=SnowFracUG
  snowFrac(WaterSurf)=SnowFracWater
 
  iceFrac=0.2 !Estimated fraction of ice. Should be improved in the future
 
-
  densSnow(PavSurf) = SnowDensPav    !Initialize snow density
  densSnow(BldgSurf) = SnowDensBldg
- densSnow(ConifSurf) = SnowDensConif
- densSnow(DecidSurf) = SnowDensDec
- densSnow(GrassISurf) = SnowDensGrassIrr
- densSnow(GrassUSurf) = SnowDensGrassUnir
+ densSnow(ConifSurf) = SnowDensET
+ densSnow(DecidSurf) = SnowDensDT
+ densSnow(GrassISurf) = SnowDensIG
+ densSnow(GrassUSurf) = SnowDensUG
  densSnow(WaterSurf) = SnowDensWater
 
  ! for first 3 h Q* just assume at night
@@ -973,98 +972,99 @@ end subroutine accum_zero
 
 !--------------------------------------------------------------------------
 
-subroutine NextInitial(GridName)
-use allocateArray  ! module_LUMPS_constants,f90
-use time
-use data_in
-use snowMod
+ subroutine NextInitial(GridName)
+  use allocateArray  ! module_LUMPS_constants,f90
+  use time
+  use data_in
+  use snowMod
 
-IMPLICIT NONE
-character (len=15)::GridName
-character (len=4)::year_txt
-!real(Kind(1d0))::year
-integer:: year_int
+  IMPLICIT NONE
 
-if (id>360) then 
-  year_int=int(year+1)
-  write(year_txt,'(I4)')year_int
-  open(55,File=trim(FileInputPath)//trim("InitialConditions")//trim(GridName)//trim(adjustl(year_txt))//'.nml',err=200) 
+  character (len=15)::GridName
+  character (len=4)::year_txt
+  integer:: year_int
 
-else
-  year_int=int(year)
-  write(year_txt,'(I4)')year_int
-  open(55,File=trim(FileInputPath)//trim("InitialConditions")//trim(GridName)//trim(adjustl(year_txt))//'end'//'.nml',err=201) 
-endif
+  if (id>360) then
+    year_int=int(year+1)
+    write(year_txt,'(I4)')year_int
+    open(55,File=trim(FileInputPath)//trim("InitialConditions")//trim(GridName)//'_'//trim(adjustl(year_txt))//'.nml',err=200)
 
-write(55,*)'&InitialConditions'
-write(55,*)'DaysSinceRain=',int(HDD(id,6))
-if(it/=LastTimeofday)then
-  ! need to do this otherwise it will not be completed
+  else
+    year_int=int(year)
+    write(year_txt,'(I4)')year_int
+    open(55,File=trim(FileInputPath)//trim("InitialConditions")//trim(GridName)//'_'//trim(adjustl(year_txt))//'end.nml',err=201)
+  endif
+
+  write(55,*)'&InitialConditions'
+  write(55,*)'DaysSinceRain=',int(HDD(id,6))
+  if(it/=LastTimeofday)then
+   ! need to do this otherwise it will not be completed
 	id=id-1  
-endif
+  endif
 
-write(55,*)'Temp_C0=',HDD(id,3)  
-write(55,*)'ID_Prev=',id
-write(55,*)'GDD_1_0=',GDD(id,1)
-write(55,*)'GDD_2_0=',GDD(id,2)
-write(55,*)'BldgState=',State(BldgSurf)
-write(55,*)'ConifState=',State(ConifSurf)
-write(55,*)'DecidState=',State(DecidSurf)
-write(55,*)'PavState=',State(PavSurf)
-write(55,*)'GrassIState=',State(GrassISurf)
-write(55,*)'GrassUState=',State(GrassUSurf)
-write(55,*)'LAIinitialConif=',lai(id,ivConif)         ! 
-write(55,*)'LAIinitialDecid=',lai(id,ivdecid)
-write(55,*)'LAIinitialGrassU=',lai(id,ivGrassI)
-write(55,*)'LAIinitialGrassI=',lai(id,ivGrassU)
-write(55,*)'porosity0=',porosity(id)
-write(55,*)'DecidCap0=',decidCap(id)
-write(55,*)'albDec0=',AlbDec(id)
-write(55,*)'soilstoreBldgState=',soilmoist(BldgSurf)
-write(55,*)'soilstoreConifstate=',soilmoist(ConifSurf)
-write(55,*)'soilstoreDecState=',soilmoist(DecidSurf)
-write(55,*)'soilstoreGrassUnirState=',soilmoist(GrassISurf)
-write(55,*)'soilstoreGrassIrrState=',soilmoist(GrassUSurf)
-write(55,*)'soilstorePavstate=',soilmoist(PavSurf)
-write(55,*)'WaterState=',State(WaterSurf)
-write(55,*)'SnowWaterBldgState=',MeltWaterStore(BldgSurf)
-write(55,*)'SnowWaterConifstate=',MeltWaterStore(ConifSurf)
-write(55,*)'SnowWaterDecState=',MeltWaterStore(DecidSurf)
-write(55,*)'SnowWaterGrassIrrState=',MeltWaterStore(GrassISurf)
-write(55,*)'SnowWaterGrassUnirState=',MeltWaterStore(GrassUSurf)
-write(55,*)'SnowWaterPavstate=',MeltWaterStore(PavSurf)
-write(55,*)'SnowWaterWaterstate=',MeltWaterStore(WaterSurf)
-write(55,*)'SnowPackBldg=',SnowPack(BldgSurf)
-write(55,*)'SnowPackConif=',SnowPack(ConifSurf)
-write(55,*)'SnowPackDec=',SnowPack(DecidSurf)
-write(55,*)'SnowPackGrassIrr=',SnowPack(GrassISurf)
-write(55,*)'SnowPackGrassUnir=',SnowPack(GrassUSurf)
-write(55,*)'SnowPackPav=',SnowPack(PavSurf)
-write(55,*)'SnowPackWater=',SnowPack(WaterSurf)
-write(55,*)'SnowFracBldg=',SnowFrac(BldgSurf)
-write(55,*)'SnowFracConif=',SnowFrac(ConifSurf)
-write(55,*)'SnowFracDec=',SnowFrac(DecidSurf)
-write(55,*)'SnowFracGrassIrr=',SnowFrac(GrassISurf)
-write(55,*)'SnowFracGrassUnir=',SnowFrac(GrassUSurf)
-write(55,*)'SnowFracPav=',SnowFrac(PavSurf)
-write(55,*)'SnowFracWater=',SnowFrac(WaterSurf)
-write(55,*)'SnowDensBldg=',densSnow(BldgSurf)
-write(55,*)'SnowDensConif=',densSnow(ConifSurf)
-write(55,*)'SnowDensDec=',densSnow(DecidSurf)
-write(55,*)'SnowDensGrassIrr=',densSnow(GrassISurf)
-write(55,*)'SnowDensGrassUnir=',densSnow(GrassUSurf)
-write(55,*)'SnowDensPav=',densSnow(PavSurf)
-write(55,*)'SnowDensWater=',densSnow(WaterSurf)
-write(55,*)'/'
-close(55)
-return
+  write(55,*)'Temp_C0=',HDD(id,3)
+  write(55,*)'ID_Prev=',id
+  write(55,*)'GDD_1_0=',GDD(id,1)
+  write(55,*)'GDD_2_0=',GDD(id,2)
+  write(55,*)'BldgState=',State(BldgSurf)
+  write(55,*)'ETState=',State(ConifSurf)
+  write(55,*)'DTState=',State(DecidSurf)
+  write(55,*)'PavState=',State(PavSurf)
+  write(55,*)'IGState=',State(GrassISurf)
+  write(55,*)'UGState=',State(GrassUSurf)
+  write(55,*)'LAIinitialET=',lai(id,ivConif)         !
+  write(55,*)'LAIinitialDT=',lai(id,ivdecid)
+  write(55,*)'LAIinitialUG=',lai(id,ivGrassI)
+  write(55,*)'LAIinitialIG=',lai(id,ivGrassU)
+  write(55,*)'porosity0=',porosity(id)
+  write(55,*)'DecidCap0=',decidCap(id)
+  write(55,*)'albDec0=',AlbDec(id)
+  write(55,*)'soilstoreBldgState=',soilmoist(BldgSurf)
+  write(55,*)'soilstoreETstate=',soilmoist(ConifSurf)
+  write(55,*)'soilstoreDTState=',soilmoist(DecidSurf)
+  write(55,*)'soilstoreUGState=',soilmoist(GrassISurf)
+  write(55,*)'soilstoreIGState=',soilmoist(GrassUSurf)
+  write(55,*)'soilstorePavstate=',soilmoist(PavSurf)
+  write(55,*)'WaterState=',State(WaterSurf)
+  write(55,*)'SnowWaterBldgState=',MeltWaterStore(BldgSurf)
+  write(55,*)'SnowWaterETstate=',MeltWaterStore(ConifSurf)
+  write(55,*)'SnowWaterDTState=',MeltWaterStore(DecidSurf)
+  write(55,*)'SnowWaterIGState=',MeltWaterStore(GrassISurf)
+  write(55,*)'SnowWaterUGState=',MeltWaterStore(GrassUSurf)
+  write(55,*)'SnowWaterPavstate=',MeltWaterStore(PavSurf)
+  write(55,*)'SnowWaterWaterstate=',MeltWaterStore(WaterSurf)
+  write(55,*)'SnowPackBldg=',SnowPack(BldgSurf)
+  write(55,*)'SnowPackET=',SnowPack(ConifSurf)
+  write(55,*)'SnowPackDT=',SnowPack(DecidSurf)
+  write(55,*)'SnowPackIG=',SnowPack(GrassISurf)
+  write(55,*)'SnowPackUG=',SnowPack(GrassUSurf)
+  write(55,*)'SnowPackPav=',SnowPack(PavSurf)
+  write(55,*)'SnowPackWater=',SnowPack(WaterSurf)
+  write(55,*)'SnowFracBldg=',SnowFrac(BldgSurf)
+  write(55,*)'SnowFracET=',SnowFrac(ConifSurf)
+  write(55,*)'SnowFracDT=',SnowFrac(DecidSurf)
+  write(55,*)'SnowFracIG=',SnowFrac(GrassISurf)
+  write(55,*)'SnowFracUG=',SnowFrac(GrassUSurf)
+  write(55,*)'SnowFracPav=',SnowFrac(PavSurf)
+  write(55,*)'SnowFracWater=',SnowFrac(WaterSurf)
+  write(55,*)'SnowDensBldg=',densSnow(BldgSurf)
+  write(55,*)'SnowDensET=',densSnow(ConifSurf)
+  write(55,*)'SnowDensDT=',densSnow(DecidSurf)
+  write(55,*)'SnowDensIG=',densSnow(GrassISurf)
+  write(55,*)'SnowDensUG=',densSnow(GrassUSurf)
+  write(55,*)'SnowDensPav=',densSnow(PavSurf)
+  write(55,*)'SnowDensWater=',densSnow(WaterSurf)
+  write(55,*)'/'
+  close(55)
 
-200 	call ProblemsText(trim(FileInputPath)//trim("InitialConditions")//trim(GridName)//trim(adjustl(year_txt))//'.nml')
+  return
+
+200 	call ProblemsText(trim(FileInputPath)//trim("InitialConditions")//trim(GridName)//'_'//trim(adjustl(year_txt))//'.nml')
 		call PauseStop
-201     call ProblemsText(trim(FileInputPath)//trim("InitialConditions")//trim(GridName)//trim(adjustl(year_txt))//'end'//'.nml')
+201     call ProblemsText(trim(FileInputPath)//trim("InitialConditions")//trim(GridName)//'_'//trim(adjustl(year_txt))//'end.nml')
 		call PauseStop
         
-end subroutine NextInitial
+ end subroutine NextInitial
 
 
  !¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
@@ -1092,54 +1092,54 @@ end subroutine NextInitial
  !Check if LAI values are OK. Need to treat different hemispheres as well as 
  !tropics separately.
  if (lat>40) then
-   if ((LAIinitialConif>LAImin(ConifSurf-2)+1.and.(id<60.or.id>330)).or.&
-     (LAIinitialConif<LAImax(ConifSurf-2)-1.and.(id>130.and.id<244))) then
-      call ErrorHint(37,'Check LAIinitialConif in InitialConditions file', LAIinitialConif, LAImin(ConifSurf), notUsedI)
+   if ((LAIinitialET>LAImin(ConifSurf-2)+1.and.(id<60.or.id>330)).or.&
+     (LAIinitialET<LAImax(ConifSurf-2)-1.and.(id>130.and.id<244))) then
+      call ErrorHint(37,'Check LAIinitialET in InitialConditions file', LAIinitialET, LAImin(ConifSurf), notUsedI)
    endif
-   if ((LAIinitialDecid>LAImin(DecidSurf-2)+1.and.(id<60.or.id>330)).or.&
-     (LAIinitialDecid<LAImax(DecidSurf-2)-1.and.(id>130.and.id<244))) then
-      call ErrorHint(37,'Check LAIinitialDecid in InitialConditions file', LAIinitialDecid, LAImin(DecidSurf), notUsedI)
+   if ((LAIinitialDT>LAImin(DecidSurf-2)+1.and.(id<60.or.id>330)).or.&
+     (LAIinitialDT<LAImax(DecidSurf-2)-1.and.(id>130.and.id<244))) then
+      call ErrorHint(37,'Check LAIinitialDT in InitialConditions file', LAIinitialDT, LAImin(DecidSurf), notUsedI)
    endif
-   if ((LAIinitialGrassU>LAImin(GrassUSurf-2)+1.and.(id<60.or.id>330)).or.&
-     (LAIinitialGrassU<LAImax(GrassUSurf-2)-1.and.(id>130.and.id<244))) then
-      call ErrorHint(37,'Check LAIinitialGrassU in InitialConditions file', LAIinitialGrassU, LAImin(GrassUSurf), notUsedI)
+   if ((LAIinitialUG>LAImin(GrassUSurf-2)+1.and.(id<60.or.id>330)).or.&
+     (LAIinitialUG<LAImax(GrassUSurf-2)-1.and.(id>130.and.id<244))) then
+      call ErrorHint(37,'Check LAIinitialUG in InitialConditions file', LAIinitialUG, LAImin(GrassUSurf), notUsedI)
    endif
-   if ((LAIinitialGrassI>LAImin(GrassISurf-2)+1.and.(id<60.or.id>330)).or.&
-     (LAIinitialGrassI<LAImax(GrassISurf-2)-1.and.(id>130.and.id<244))) then
-      call ErrorHint(37,'Check LAIinitialGrassI in InitialConditions file', LAIinitialGrassI, LAImin(GrassISurf), notUsedI)
+   if ((LAIinitialIG>LAImin(GrassISurf-2)+1.and.(id<60.or.id>330)).or.&
+     (LAIinitialIG<LAImax(GrassISurf-2)-1.and.(id>130.and.id<244))) then
+      call ErrorHint(37,'Check LAIinitialIG in InitialConditions file', LAIinitialIG, LAImin(GrassISurf), notUsedI)
    endif    
    
  elseif (lat<-40) then
-   if ((LAIinitialConif<LAImax(ConifSurf-2)-1.and.(id<60.or.id>330)).or.&
-     (LAIinitialConif>LAImin(ConifSurf-2)+1.and.(id>130.and.id<244))) then
-      call ErrorHint(37,'Check LAIinitialConif in InitialConditions file', LAIinitialConif, LAImax(ConifSurf), notUsedI)
+   if ((LAIinitialET<LAImax(ConifSurf-2)-1.and.(id<60.or.id>330)).or.&
+     (LAIinitialET>LAImin(ConifSurf-2)+1.and.(id>130.and.id<244))) then
+      call ErrorHint(37,'Check LAIinitialET in InitialConditions file', LAIinitialET, LAImax(ConifSurf), notUsedI)
    endif
-   if ((LAIinitialDecid>LAImax(DecidSurf-2)-1.and.(id<60.or.id>330)).or.&
-     (LAIinitialDecid>LAImin(DecidSurf-2)+1.and.(id>130.and.id<244))) then
-      call ErrorHint(37,'Check LAIinitialDecid in InitialConditions file', LAIinitialDecid, LAImax(DecidSurf), notUsedI)
+   if ((LAIinitialDT>LAImax(DecidSurf-2)-1.and.(id<60.or.id>330)).or.&
+     (LAIinitialDT>LAImin(DecidSurf-2)+1.and.(id>130.and.id<244))) then
+      call ErrorHint(37,'Check LAIinitialDT in InitialConditions file', LAIinitialDT, LAImax(DecidSurf), notUsedI)
    endif
-   if ((LAIinitialGrassU<LAImax(GrassUSurf-2)-1.and.(id<60.or.id>330)).or.&
-     (LAIinitialGrassU>LAImin(GrassUSurf-2)+1.and.(id>130.and.id<244))) then
-      call ErrorHint(37,'Check LAIinitialGrassU in InitialConditions file', LAIinitialGrassU, LAImax(GrassUSurf), notUsedI)
+   if ((LAIinitialUG<LAImax(GrassUSurf-2)-1.and.(id<60.or.id>330)).or.&
+     (LAIinitialUG>LAImin(GrassUSurf-2)+1.and.(id>130.and.id<244))) then
+      call ErrorHint(37,'Check LAIinitialUG in InitialConditions file', LAIinitialUG, LAImax(GrassUSurf), notUsedI)
    endif
-   if ((LAIinitialGrassI<LAImax(GrassISurf-2)-1.and.(id<60.or.id>330)) .or.&
-     (LAIinitialGrassI>LAImin(GrassISurf-2)+1.and.(id>130.and.id<244))) then
-      call ErrorHint(37,'Check LAIinitialGrassI in InitialConditions file', LAIinitialGrassI, LAImax(GrassISurf), notUsedI)
+   if ((LAIinitialIG<LAImax(GrassISurf-2)-1.and.(id<60.or.id>330)) .or.&
+     (LAIinitialIG>LAImin(GrassISurf-2)+1.and.(id>130.and.id<244))) then
+      call ErrorHint(37,'Check LAIinitialIG in InitialConditions file', LAIinitialIG, LAImax(GrassISurf), notUsedI)
    endif    
  
  elseif (lat<10.and.lat>-10) then
  
-   if (LAIinitialConif<LAImax(ConifSurf-2)-0.5) then
-      call ErrorHint(37,'Check LAIinitialConif in InitialConditions file', LAIinitialConif, LAImax(ConifSurf), notUsedI)
+   if (LAIinitialET<LAImax(ConifSurf-2)-0.5) then
+      call ErrorHint(37,'Check LAIinitialET in InitialConditions file', LAIinitialET, LAImax(ConifSurf), notUsedI)
    endif
-   if (LAIinitialDecid<LAImax(DecidSurf-2)-0.5) then
-      call ErrorHint(37,'Check LAIinitialDecid in InitialConditions file', LAIinitialDecid, LAImax(DecidSurf), notUsedI)
+   if (LAIinitialDT<LAImax(DecidSurf-2)-0.5) then
+      call ErrorHint(37,'Check LAIinitialDT in InitialConditions file', LAIinitialDT, LAImax(DecidSurf), notUsedI)
    endif
-   if (LAIinitialGrassU<LAImax(GrassUSurf-2)-0.5) then
-      call ErrorHint(37,'ICheck LAIinitialGrassU in InitialConditions file', LAIinitialGrassU, LAImax(GrassUSurf), notUsedI)
+   if (LAIinitialUG<LAImax(GrassUSurf-2)-0.5) then
+      call ErrorHint(37,'ICheck LAIinitialUG in InitialConditions file', LAIinitialUG, LAImax(GrassUSurf), notUsedI)
    endif
-   if (LAIinitialGrassI<LAImax(GrassISurf-2)-0.5) then
-      call ErrorHint(37,'Check LAIinitialGrassI in InitialConditions file', LAIinitialGrassI, LAImax(GrassISurf), notUsedI)
+   if (LAIinitialIG<LAImax(GrassISurf-2)-0.5) then
+      call ErrorHint(37,'Check LAIinitialIG in InitialConditions file', LAIinitialIG, LAImax(GrassISurf), notUsedI)
    endif
   
  endif
@@ -1175,20 +1175,20 @@ end subroutine NextInitial
     if (SnowWaterBldgState>CRWmax*SnowPackBldg) then
        call ErrorHint(36,'InitialCond: SnowWaterBldgState', SnowWaterBldgState, SnowPackBldg, notUsedI)
     endif 
-    if (SnowWaterPavstate>CRWmax*SnowPackPav) then
+    if (SnowWaterPavState>CRWmax*SnowPackPav) then
        call ErrorHint(36,'InitialCond: SnowWaterPavState', SnowWaterPavstate, SnowPackPav, notUsedI)
     endif 
-    if (SnowWaterConifstate>CRWmax*SnowPackConif) then
-       call ErrorHint(36,'InitialCond: SnowWaterConifstate', SnowWaterConifstate, SnowPackConif, notUsedI)
+    if (SnowWaterETState>CRWmax*SnowPackET) then
+       call ErrorHint(36,'InitialCond: SnowWaterETstate', SnowWaterETstate, SnowPackET, notUsedI)
     endif 
-    if (SnowWaterDecState>CRWmax*SnowPackDec) then
-       call ErrorHint(36,'InitialCond: SnowWaterDecState', SnowWaterDecState, SnowPackDec, notUsedI)
+    if (SnowWaterDTState>CRWmax*SnowPackDT) then
+       call ErrorHint(36,'InitialCond: SnowWaterDTState', SnowWaterDTState, SnowPackDT, notUsedI)
     endif 
-    if (SnowWaterGrassIrrState>CRWmax*SnowPackGrassIrr) then
-       call ErrorHint(36,'InitialCond: SnowWaterGrassIrrState', SnowWaterGrassIrrState, SnowPackGrassIrr, notUsedI)
+    if (SnowWaterIGState>CRWmax*SnowPackIG) then
+       call ErrorHint(36,'InitialCond: SnowWaterIGState', SnowWaterIGState, SnowPackIG, notUsedI)
     endif 
-    if (SnowWaterGrassUnirState>CRWmax*SnowPackGrassUnir) then
-       call ErrorHint(36,'InitialCond: SnowWaterGrassUnirState', SnowWaterGrassUnirState, SnowPackGrassUnir, notUsedI)
+    if (SnowWaterUGState>CRWmax*SnowPackUG) then
+       call ErrorHint(36,'InitialCond: SnowWaterGrassUnirState', SnowWaterUGState, SnowPackUG, notUsedI)
     endif 
  endif
 

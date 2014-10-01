@@ -54,7 +54,7 @@
     		 call OpenAnnualFiles(Grid) !Open annual and dailystate output files
              
              !Define new filecode for each grid separately and save to FileChoices
-             FileCode=trim(Grid)//trim(year_txt)
+             FileCode=trim(Grid)//'_'//trim(year_txt)
 
              open(12,file=FileChoices,position="append")
              write(12,*) " "
@@ -70,7 +70,6 @@
 
              call SUEWS_Read(i) !Read in the forcing data
              call OHMinitialize !Initialize OHM
-
 
              call SUEWS_temporal(Grid,GridFrom,GridFromFrac,iyr,errFileYes) !Call the code grid by grid
 

@@ -7,40 +7,48 @@
     use time
     use defaultNotUsed
 	 
-    implicit none
-    integer::NroYears,i,year_int,iyr                              !Initializing variables used
+    IMPLICIT NONE
+
+    integer::NroYears,i,year_int,iyr,iyy                              !Initializing variables used
     character(len=4)::year_txt
     !----------------------------------------------------------
   	stateGrids=NAN 
     soilmoistGrids=NAN
     laiGrids=NAN
 
-    
     call overallRunControl   ! Reads RunControl.nml and FunctionalTypes.nml located in SUEWS_initial
-	    
-    !Open file including yearly information
+
+    !Open file including yearly and daylighsaving information (needed for NH or SH).
+    !Read only the number of years at this point.
     open(98,file=trim(FileInputPath)//trim('ModelledYears.txt'),status='old',err=317)
-    READ(98,*,iostat=iostat_var) NroYears  !Read number of years
-    
-    !Use daylighsavings to determine if NH or SH
-    READ(98,*,iostat=iostat_var)year,DayLightSavingDay(1),DayLightSavingDay(2)
-    
-    FirstYear=int(year) !Define the first year
-    
-    rewind(98)
-    READ(98,*,iostat=iostat_var) NroYears  !Read number of years
+    READ(98,*,iostat=iostat_var) NroYears  !Read in number of years
+    close (98)
+
+    !If only one year is run, no annual file will be created.
     if(NroYears>1)then
 	    createAnnual=1
     else
         createAnnual=0
     endif
 
-	FileCodeO=FileCode
+
+	FileCodeO=FileCode !Initialize file code from the RunControl.nml
     iyr=0
 	do i=1,NroYears
+         !Open the file again
+         open(98,file=trim(FileInputPath)//trim('ModelledYears.txt'),status='old',err=317)
+
+         !Read empty lines on those years that have already been read in
+         do iyy=1,i
+          read(98,*)
+         enddo
          READ(98,*,iostat=iostat_var)year,DayLightSavingDay(1),DayLightSavingDay(2)
+         close(98)
+
+         if (i==1) FirstYear=year
          year_int=int(year)
-         write(year_txt,'(I4)')year_int
+
+         write(year_txt,'(I4)') year_int
          FileCode=trim(FileCodeO)//trim(adjustl(year_txt))
 
          write(*,*)'================== ',trim(fileCode),' =========================='
@@ -48,7 +56,7 @@
          call SUEWS_spatial(year_int,year_txt,iyr) ! via allocatearray->>stateGrids,soilmoistGrids,laiGrids,laiID
 
     enddo
-    close(98)
+    !close(98)
     stop 'finished'
 
 317		call ProblemsText(trim('ModelledYears.txt'))

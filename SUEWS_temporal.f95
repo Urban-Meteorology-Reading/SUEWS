@@ -191,7 +191,7 @@
     Qm = 0        !Heat related to melting/freezing
     QmFreez = 0
     QmRain =0
-    mw_ind = 0    
+    Mw_ind = 0
     SnowDepth = 0
     zf = 0
     deltaQi = 0
@@ -509,19 +509,22 @@
 
           dectime_nsh = dectime + 1.0*(in-1)/nsh/24
 
+          !open(13,file='TestingFiveMin.txt',position="append")
+          !write(13,*) id,in,dectime,dectime_nsh
+          !close(13)
+
          !Modified hcw 30/07/2014 so that output columns and header match (was 69 cols with extra columns for water)
           if(write5min==1) then           !   Save 5 min results to a file
-            dataOut5min(ind5min,1:64)=(/real(id,kind(1D0)),real(in,kind(1D0)),dectime_nsh,pin,ext_wu,ev_per_interval,&
+                dataOut5min(ind5min,1:64)=(/real(id,kind(1D0)),real(in,kind(1D0)),dectime_nsh,pin,ext_wu,ev_per_interval,&
                               stateOut(1:nsurf),smd_nsurfOut(1:(nsurf-1)),drain(1:(nsurf-1)),runoffOut(1:(nsurf-1)),&
-                              runoffsoilOut(1:(nsurf-1)),&
-                              runoffSnow(1:(nsurf-1)),snowPack(1:nsurf),ChangSnow(1:nsurf),mw_ind(1:nsurf)/)
-            ind5min = ind5min+1
+                              runoffsoilOut(1:(nsurf-1)),runoffSnow(1:(nsurf-1)),snowPack(1:nsurf),&
+                              ChangSnow(1:nsurf),mw_ind(1:nsurf)/)
+                ind5min = ind5min+1
           endif
-         
+
       enddo !in=1,nsh (LJ)
-      
+
       !======FINAL STEPS BEFORE WRITING OUT====================================
-       
       AdditionalWater=addWaterBody*sfr(WaterSurf)+addPipes+addImpervious*sfr(BldgSurf)+addveg*  &
                      (sfr(ConifSurf)+sfr(DecidSurf)+sfr(GrassISurf)+sfr(GrassUSurf))
 
@@ -583,8 +586,9 @@
                        swe,MwStore,(SnowRemoval(is),is=1,2),chSnow_per_interval/)
 
      dataOut2(i,1:30)=(/real(id,kind(1D0)),dectime,kup_ind(1:7),lup_ind(1:7),tsurf_ind(1:7),qn1_ind(1:7)/)
+
      if (snowUse==1)then!Shiho: This condition is needed when snowUse=0
-     dataOut3(i,1:106)=(/real(id,kind(1D0)),real(it,kind(1D0)),dectime,SnowPack(1:7),SnowRemoval(1:2),mwh,mw_ind(1:7),&
+             dataOut3(i,1:106)=(/real(id,kind(1D0)),real(it,kind(1D0)),dectime,SnowPack(1:7),SnowRemoval(1:2),mwh,mw_ind(1:7),&
                         Qm,Qm_melt(1:7),Qm_rain(1:7),Qm_freezState(1:7),snowFrac(1:6),alb_snow,rainOnSnow(1:7),&
                         qn1_ind_snow(1:7),kup_ind_snow(1:7),freezMelt(1:7),MeltWaterStore(1:7),densSnow(1:7),&
                         snowDepth(1:7),Tsurf_ind_snow(1:7),QmFreez/)
@@ -669,7 +673,7 @@
   endif
  enddo
 
- call OutputHeaders(ProgName,lfnOutC,text,veg_type,ldown_option,1)
+ call OutputHeaders(ProgName,lfnOutC,text,veg_type,ldown_option,1,0)
  call out_accumulate(id,day,14,0)
  call out_accumulate(12,month,15,0)
  write(15,*)'% Season year-',iyr

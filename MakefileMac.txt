@@ -6,6 +6,7 @@ TARGET = SUEWS_V2014b			# program name
 # needs to be compiled first)
 MODULES =	LUMPS_Module_constants_v2014b.o  \
           LUMPS_metRead.o  \
+          SOLWEIG_modules.o  \
           SUEWS_Files_run_Control.o
 # Rest of the files including modules and functions which are independend
 OTHERS =	BLUEWS_CBL.o   \
@@ -41,6 +42,20 @@ OTHERS =	BLUEWS_CBL.o   \
           SUEWS_evap.o \
           SUEWS_Read.o  \
           SUEWS_Output.o  \
+          SOLWEIG_2014a_core.o  \
+          SOLWEIG_clearnessindex_2013b.o  \
+          SOLWEIG_cylindric_wedge.o  \
+          SOLWEIG_diffusefraction.o  \
+          SOLWEIG_EsriAsciiGrid.o  \
+          SOLWEIG_Initial.o  \
+          SOLWEIG_Kside_veg_v24.o  \
+          SOLWEIG_Lside_veg_v2.o  \
+          SOLWEIG_Lvikt_veg.o  \
+          SOLWEIG_misc.o  \
+          SOLWEIG_shadowingfunction_10.o  \
+          SOLWEIG_shadowingfunction_20.o  \
+          SOLWEIG_sunonsurface_veg.o  \
+          SOLWEIG_wallinsun_veg.o  \
 
 # Build main program - main uses MODULES and OTHERS
 main: SUEWS_Program.f95 $(MODULES) $(OTHERS)
@@ -56,5 +71,5 @@ $(MODULES): $(subst .o,.f95, $(MODULES))
 	$(CC) -c $(subst .o,.f95, $@)
 
 # If wanted, clean all *.o files after build
-clean:
-	rm -rf *.o SUEWS_V2014a
+clean: 
+	    -rm BLUEWS_CBL.o

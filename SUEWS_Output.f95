@@ -23,9 +23,9 @@
     if (NARPOutput==1) then
         open(7,file=NARPOut)
         write(7,110)
-        110 format('%id  dectime   kup_pav   kup_blg kup_everg   kup_dec kup_Irrgr    kup_Gr   kup_wtr  ', &
-                   ' lup_pav   lup_blg  lup_everg  lup_dec lup_Irrgr   lup_Gr    lup_wtr    Ts_pav    Ts_blg   Ts_everg',&
-                   '  Ts_dec   Ts_Irrgr     Ts_Gr    Ts_wtr    qn_pav   qn_blg   qn_everg   qn_dec   qn_Irrgr    qn_Gr   qn_wtr')
+        110 format('%id  dectime   kup_pav   kup_blgs   kup_ET    kup_dT    kup_IG    kup_UG   kup_wtr  ', &
+                   ' lup_pav  lup_bldg    lup_ET    lup_DT   lup_IG    lup_UG    lup_wtr    Ts_pav    Ts_bldg    Ts_ET',&
+                   '     Ts_DT     Ts_IG     Ts_UG    Ts_wtr    qn_pav   qn_bldg     qn_ET     qn_DT     qn_IG    qn_UG     qn_wtr')
     endif
 
     !Actual output file
@@ -46,17 +46,20 @@
     if (snowUse==1) then
         open(8,file=SnowOut)
         write(8,111)
-        111  format('%doy  it dectime  SWE_pav SWE_bldg SWE_evergr SWE_dec SWE_irrGr SWE_Gr SWE_water ',&
-                ' SnowRem_pav SnowRem_bldg Mw Mw_pav Mw_bldg Mw_evergr  Mw_dec Mw_irrGr    Mw_Gr ',&
-                'Mw_water     Qm   Qm_pav Qm_bldg Qm_evergr Qm_dec Qm_irrGr Qm_Gr Qm_water ',&
-                'Qa_pav Qa_bldg Qa_evergr Qa_dec Qa_irrGr Qa_Gr Qa_water QmFr_pav ',&
-                'QmFr_bldg QmFr_evergr QmFr_dec QmFr_irrGr QmFr_Gr QmFr_water ',&
-                'fr_pav fr_bldg fr_evergr fr_dec fr_irrGr fr_Gr alb_snow  rainOnSnow_pav ',&
-                'rainOnSnow_bldg rainOnSnow_evergr rainOnSnow_dec rainOnSnow_irrGr rainOnSnow_Gr',&
-                'rainOnSnow_water Qn_pavSnow Qs_blgSnow Qs_evergrSnow Qs_decSnow Qs_irrGrSnow Qs_GrSnow ',&
-                'Qs_wtrSnow kup_pavSnow kup_blgSnow kup_evergrSnow kup_decSnow kup_irrGrSnow kup_GrSnow ',&
-                'kup_wtrSnow ')
-
+        111  format('%id   it dectime  SWE_pav SWE_bldg   SWE_ET   SWE_DT   SWE_IG   SWE_UG  SWE_wtr ',&
+                'SnowRem_pav SnowRem_bldg Mw  Mw_pav  Mw_bldg    Mw_ET    Mw_DT    Mw_IG    Mw_UG ',&
+                '  Mw_wtr     Qm   Qm_pav Qm_bldg   Qm_ET   Qm_DT   Qm_IG   Qm_UG  Qm_wtr ',&
+                ' Qa_pav Qa_bldg   Qa_ET   Qa_DT   Qa_IG   Qa_UG  Qa_wtr QmFr_pav ',&
+                'QmFr_bldg QmFr_ET QmFr_DT QmFr_IG QmFr_UG QmFr_wtr ',&
+                'fr_pav fr_bldg fr_ET  fr_DT   fr_IG   fr_UG alb_snow RainSn_pav ',&
+                'RainSn_bldg RainSn_ET RainSn_DT RainSn_IG RainSn_UG ',&
+                'RainSn_wtr Qn_pavSnow Qn_blgsSnow Qn_ETSnow Qn_DTSnow Qn_IGSnow Qn_UG ',&
+                'Qs_wtrSnow kup_pavSnow kup_blgsSnow kup_ETSnow kup_DTSnow kup_IGSnow kup_UGSnow ',&
+                'kup_wtrSnow frMelt_pav frMelt_bldg frMelt_ET frMelt_DT frMelt_IG frMelt_UG frMelt_wtr',&
+                'MwStore_pav MwStore_bldg MwStore_ET MwStore_DT MwStore_IG MwStore_UG MwStore_wtr',&
+                'densSnow_pav densSnow_bldg densSnow_ET densSnow_DT densSnow_IG densSnow_UG densSnow_wtr',&
+                'Sd_pav Sd_bldg Sd_ET Sd_DT Sd_IG Sd_UG Sd_water Tsnow_pav Tsnow_bldg Tsnow_ET Tsnow_DT',&
+                'Tsnow_IG Tsnow_UG Tsnow_wtr delta_Qi')
     endif
 
     !SOLWEIG outputfile
@@ -73,14 +76,14 @@
        open(16,file=file5min,err=204)
        write(16,161)
 
- 161   	format('%id 5min dectime    pp       Ie        E     St_pav   St_blg   St_everg St_dec ' ,&
-               ' St_IrrGr  St_Gr   St_water SoilSt_pav SoilSt_blg SoilSt_everg SoilSt_dec',&
-               ' SoilSt_IrrGr SoilSt_Gr D_pav D_blg  D_everg    D_dec    D_IrrGr     D_Gr     r_pav',&
-               '     r_blg    r_everg    r_dec    r_IrrGr    r_Gr  soilr_pav soilr_bldg soilr_everg soilr_dec',&
-               ' soilr_IrrGr soilr_Gr snowr_pav snowr_bldg snowr_everg snowr_dec snowr_IrrGr snowr_Gr',&
-               ' SWE_pav SWE_bldg SWE_everg SWE_dec SWE_IrrGr SWE_Gr SWE_water snowCh_pav snowCh_bldg',&
-               ' snowCh_everg snowCh_dec snowCh_IrrGr snowCh_Gr snowCh_water mwh_pav mwh_bldg mwh_everg',&
-               ' mwh_dec mwh_IrrGr mwh_Gr mwh_water')
+ 161   	format('%id 5min dectime    pp       Ie        E     St_pav   St_bldg   St_ET    St_DT ' ,&
+               '   St_IG    St_UG St_wtr SoilSt_pav SoilSt_bldg SoilSt_ET SoilSt_DT',&
+               ' SoilSt_IG SoilSt_UG D_pav D_bldg  D_ET    D_DT    D_IG     D_UG     r_pav',&
+               '     r_bldg    r_ET    r_DT    r_IG    r_UG  soilr_pav soilr_bldg soilr_ET soilr_DT',&
+               ' soilr_IG soilr_UG snowr_pav snowr_bldg snowr_ET snowr_DT snowr_IG snowr_UG',&
+               ' SWE_pav SWE_bldg SWE_ET SWE_DT   SWE_IG   SWE_UG  SWE_wtr snowCh_pav snowCh_bldg',&
+               ' snowCh_ET snowCh_DT snowCh_IG snowCh_UG snowCh_wtr mwh_pav mwh_bldg mwh_ET',&
+               ' mwh_DT mwh_IG mwh_UG mwh_wtr')
     endif
     
      !BL ouputfile
@@ -102,7 +105,7 @@
 
     if(write5min==1) then
       do i=1,nlines*int(INTERVAL/Tstep)
-         write(16,36) int(dataOut5min(i,1)),int(dataOut5min(i,2)),(dataOut5min(i,is),is = 3,69)
+         write(16,36) int(dataOut5min(i,1)),int(dataOut5min(i,2)),(dataOut5min(i,is),is = 3,64)
 
       enddo
     endif
@@ -122,7 +125,7 @@
 118 format(2(i3,1X),(f8.4,1X),17(f8.3,1X),22(f7.2,1X),7(f7.2,1X),7(f7.3,1X),14(f7.2,1X),14(f7.3,1X),21(f7.2,1X),(f14.3,1X))
 119 format(1(i3,1X),4(f8.4,1X),23(f9.3,1X))
 117 format(i3,f9.4,28f10.3)
-36  format(2i3,f9.4,66f9.3)     !format(i3,i3,3f12.4,6f10.4, f14.3,25f10.4)
+36  format(2i3,f9.4,61f9.3)     !format(i3,i3,3f12.4,6f10.4, f14.3,25f10.4)
 114 format((i3,1X),(f5.2,1X),(f8.4,1X),14(f15.7,1x),3(f15.7,1X))
 
 

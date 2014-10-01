@@ -364,6 +364,9 @@ MODULE cbl_MODULE
   real(kind(1d0)),dimension(:,:), allocatable:: dataOutBL    !CBL output matrix
   real(kind(1d0)),dimension(:,:), allocatable:: dataOutSOL   !SOLWEIG POI output
 
+  !Testing different annual reading
+  integer,dimension(:,:), allocatable:: AnnualFileIN
+
   integer::AlbedoChoice,&         !If albedos dependency on zenith angle is taken into account
            AnthropHeatChoice,&    !Is anthropogenic heat calculated
            CBLuse,&               !s.o.
@@ -734,10 +737,10 @@ MODULE cbl_MODULE
  
  Module InitialCond
 
-   real (Kind(1d0))::LAIinitialConif,&
-                     LAIinitialDecid,&
-                     LAIinitialGrassU,&
-                     LAIinitialGrassI,&
+   real (Kind(1d0))::LAIinitialET,&
+                     LAIinitialDT,&
+                     LAIinitialUG,&
+                     LAIinitialIG,&
                      porosity0,&
                      DecidCap0,&
                      albDec0,&
@@ -745,17 +748,17 @@ MODULE cbl_MODULE
                      GDD_1_0,&
                      GDD_2_0,&
                      SnowWaterBldgState,&
-                     SnowWaterConifstate,&
-                     SnowWaterDecState,&
-                     SnowWaterGrassIrrState,&
-                     SnowWaterGrassUnirState,&
+                     SnowWaterETstate,&
+                     SnowWaterDTState,&
+                     SnowWaterIGState,&
+                     SnowWaterUGState,&
                      SnowWaterPavstate,&
                      SnowWaterWaterstate,&
                      SnowPackBldg,&
-                     SnowPackConif,&
-                     SnowPackDec,&
-                     SnowPackGrassIrr,&
-                     SnowPackGrassUnir,&
+                     SnowPackET,&
+                     SnowPackDT,&
+                     SnowPackIG,&
+                     SnowPackUG,&
                      SnowPackWater,&
                      SnowPackPav
      integer::ID_Prev

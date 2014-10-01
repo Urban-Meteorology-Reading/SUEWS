@@ -12,8 +12,8 @@
     30 format('%id it  dectime    kdown     kup    ldown     lup     Tsurf     qn      h_mod    e_mod',&
             '     qs        QF       QH       QE      P/i      Ie/i     E/i      DR/i    Ch/i', &
             '     ST/i    ROsoil/i  RO/i    ROpipe   ROpav     ROveg   ROwater    RA      RS     ustar',&
-            '    L_mod SoilSt_pav SoilSt_blg SoilSt_everg SoilSt_dec SoilSt_Irrgr SoilSt_Gr St_pav ',&
-            'St_blg St_everg St_dec St_Irrgr St_Gr St_water  Fcld    SoilState    smd       LAI',&
+            '    L_mod SoilSt_pav SoilSt_bldg SoilSt_ET SoilSt_DT SoilSt_IG SoilSt_UG St_pav ',&
+            'St_bldg   St_ET    St_DT    St_IG    St_UG   St_wtr     Fcld SoilState    smd       LAI',&
             '       Fw     addWater Iegrass/i Ietrees/i qn1_SF    qn1_S     Qm ',&
             '   delta_QS    Qrain     SWE    MwStore snowRem_pav snowRem_bldg ChSnow/i ')
             
@@ -30,7 +30,7 @@
  !For daily and monthly files
  if (selectHeader==1)then
 	write(14,140)
-	140 format('%day counter   qn      qs       qf     qe_S       pp      ext_Ie',&
+	140 format('%time counter   qn      qs       qf     qe_S       pp      ext_Ie',&
         '     int_Ie   tot_ie      E_S     Change     R_Soil      R         Fw ',&
         '    addWater   QH_S      Qm   delta_QSI   Qrain    SWE    MwStore snowRem_pav snowRem_bldg ChSnow/i')
 	write(15,140)

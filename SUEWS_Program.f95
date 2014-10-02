@@ -15,6 +15,7 @@
   	stateGrids=NAN 
     soilmoistGrids=NAN
     laiGrids=NAN
+    errorChoice=0 !Initialize error file that is printed out
 
     call overallRunControl   ! Reads RunControl.nml and FunctionalTypes.nml located in SUEWS_initial
 
@@ -22,7 +23,7 @@
     !Read only the number of years at this point.
     open(98,file=trim(FileInputPath)//trim('ModelledYears.txt'),status='old',err=317)
     READ(98,*,iostat=iostat_var) NroYears  !Read in number of years
-    close (98)
+    close(98)
 
     !If only one year is run, no annual file will be created.
     if(NroYears>1)then

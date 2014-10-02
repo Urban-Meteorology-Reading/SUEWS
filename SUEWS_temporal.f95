@@ -375,9 +375,7 @@
       call SurfaceResistance(id,it)   !qsc and surface resistance out
       call BoundaryLayerResistance
 
-      !Calculate available energy times s
-     write(*,*) ProgName
-      
+     
       sae=s_hPa*(qn1_SF+qf-qs)    !s - slope of svp vs t curve
                                   !qn1 changed to qn1_SF, lj in May 2013
     

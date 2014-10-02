@@ -286,7 +286,7 @@ MODULE cbl_MODULE
  Module defaultNotUsed
  	implicit none
  	real (kind(1d0)):: notUsed=-55.55,reall,NAN=-999,pNAN=999
- 	integer:: notUsedI=-55, ios_out
+ 	integer:: notUsedI=-55, ios_out,errorChoice  !errorChoice defines if the problemfile is opened for the first time
  end Module defaultNotUsed
  
  !===================================================================================

@@ -164,12 +164,13 @@ END SUBROUTINE atmos_moist_lumps
    cpm = 1859 + 0.13*rH+ (19.3+0.569*rH)*(Temp_C/100.) + &
        (10.+0.5*rH)*(Temp_C/100.)**2
        
-   IF(abs(rho_d)<0.001000.OR.abs(rho_v)<0.001000.OR.abs(rho_d+rho_v)<0.001000)THEN
+   IF(abs(rho_d)<0.000100.OR.abs(rho_v)<0.000100.OR.abs(rho_d+rho_v)<0.000100)THEN
       call ErrorHint(42,'spec-heat_beer',rho_v,rho_d,notusedI)
      
    ENDIF
   
    cp=cpd*(rho_d/(rho_d+rho_v))+cpm*(rho_v/(rho_d+rho_v))
+
    !   print*,"cp: ",cp,cpd,rho_d,rho_v,cpm,rh
  END FUNCTION spec_heat_beer
 

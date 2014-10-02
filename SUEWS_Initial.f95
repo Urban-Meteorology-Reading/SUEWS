@@ -468,14 +468,15 @@ end subroutine OverallRunControl
  !------------------------------------------------------------------------------------------  
  !Define and read in WaterDistribution file
  CanopyName=trim(FileInputPath)//'WaterDist'//trim(FileCode)//'.txt'  
- open(6,File=trim(CanopyName),err=201,status='old') 
- read(6,*,iostat=ios_out) ! skip header
- if(ios_out<0)call ErrorHint(11,trim(canopyname),notUsed,notUsed,ios_out)
+ open(7,File=trim(CanopyName),err=201,status='old')
+ read(7,*,iostat=ios_out) ! skip header
+
+ if(ios_out<0) call ErrorHint(11,trim(canopyname),notUsed,notUsed,ios_out)
  
  !initialize to all zero
  WaterDist=0 !Table which determines distribution of water in the canopy
  do iv=1, Nsurf-1 
- 	read(6,*,iostat=ios_out,end=501)(rate(j),j=1,9),which
+ 	read(7,*,iostat=ios_out,end=501)(rate(j),j=1,9),which
        
     if(ios_out/=0)then
 		call ProblemsText(trim(CanopyName))
@@ -483,7 +484,7 @@ end subroutine OverallRunControl
       	write(500,*)ios_Out, " [if this is -1 EOF; -2 EOR]"
         call PauseStop	  
  	endif
- 501 	if(rate(which)/=0) call ErrorHint(8,trim(CanopyName),rate(which),notUsed,notUsedI)
+ 501 if(rate(which)/=0) call ErrorHint(8,trim(CanopyName),rate(which),notUsed,notUsedI)
     	
    ! check LJ why can this not go to soil and runof
   	if(rate(8)/=0.and.rate(9)/=0)  call ErrorHint(9,trim(CanopyName),rate(8),rate(9),notUsedI)
@@ -507,7 +508,7 @@ end subroutine OverallRunControl
     write(12,'(i4, 8f6.2)')iv,(WaterDist(j,iv),j=1,nsurf+1)
   enddo
         
-  close(6)
+  close(7)
 
   return
 200		call ProblemsText(trim(FileWU))

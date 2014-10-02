@@ -366,7 +366,7 @@ FUNCTION qsatf(T,PMB) result(qsat)
     real (kind(1D0))::A=6.106, B=17.27, C=237.3  !Teten coefficients
 
 	if(t.gt.55)then
-       call ErrorHint(34,'Function qsatf',T,notUsed,notUsedI)	   
+       call ErrorHint(34,'Function qsatf',T,0.00D0,notUsedI)	   
 	endif
 
 	ES = A*dEXP(B*T/(C+T))

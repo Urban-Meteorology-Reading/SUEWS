@@ -673,7 +673,7 @@
   endif
  enddo
 
- call OutputHeaders(ProgName,lfnOutC,text,veg_type,ldown_option,1,0)
+ call OutputHeaders(ProgName,lfnOutC,text,veg_type,ldown_option,1)
  call out_accumulate(id,day,14,0)
  call out_accumulate(12,month,15,0)
  write(15,*)'% Season year-',iyr

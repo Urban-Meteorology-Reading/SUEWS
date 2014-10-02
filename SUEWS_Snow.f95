@@ -3,7 +3,6 @@
 !mod by lj in May 2013 - calculation of the energy balance for the snowpack was modified
 !                        to use qn1_ind_snow(surf)
 
-
 subroutine MeltHeat(i)
 
   use allocateArray
@@ -57,7 +56,7 @@ subroutine MeltHeat(i)
                  	mw_ind(is) = TempMeltFact*Temp_C  ! in mm h-1
                  else
                     mw_ind(is) = RadMeltFact*(qn1_ind_snow(is))
-                endif
+                 endif
 
              else  !Freezing equations
                  AdjMeltFact=1
@@ -101,8 +100,9 @@ subroutine MeltHeat(i)
             endif
    
         endif !End if snowpack
+        
+        !=================================================================
          
-        !いいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいい
         !Freeze surface state if cold enough and there is water, this will freeze.
         if (Tsurf_ind(is)<0.and.state(is)>0) then
     
@@ -134,9 +134,9 @@ subroutine MeltHeat(i)
              endif
            endif
     
-         endif
+        endif
          
-         !いいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいい
+         !======================================================================
          
          !Define if any snowmelt calculations are made
          !snowpack existing,freezing occuring on ground or from precip
@@ -164,9 +164,9 @@ subroutine MeltHeat(i)
          QmRain = QmRain + Qm_rain(is)*sfr(is)*snowFrac(is)
          !QmFreez = QmFreez + deltaQi(is)*sfr(is)*snowFrac(is)+Qm_freezState(is)*sfr(is)*(1-snowFrac(is))
          QmFreez = QmFreez + deltaQi(is)*sfr(is)*snowFrac(is)+Qm_freezState(is)*sfr(is)*(1-snowFrac(is))
-     endif
+    endif
      
-    enddo !End surface type
+  enddo !End surface type
 
     !Update snow albedo and density
     if (Precip_hr>0.and.sum(snowPack)>0.and.Temp_C<0) then
@@ -177,7 +177,7 @@ subroutine MeltHeat(i)
     endif
 
    
- end subroutine MeltHeat
+end subroutine MeltHeat
 
 
 
@@ -610,7 +610,7 @@ subroutine SnowCalc(i)
 
   return
 
-  !いいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいい
+  !==========================================================================
   !WATERBODY is treated separately as state always below ice if ice existing
   !Calculate change in snowpack
 606 changSnow(WaterSurf)=(pin+freezMelt(WaterSurf)/nsh+freezState(WaterSurf)/nsh)-&

@@ -69,7 +69,7 @@ Subroutine DailyState
     if(it==FirstTimeofDay) then
       if(id<=1)then
           year=year-1
-          call LeapYearCalc (year,id)
+          call LeapYearCalc (int(year),id)
           switch=1
           call ErrorHint(43,'switch- to last day of last year',notUsed,notUsed,notUsedI)
           

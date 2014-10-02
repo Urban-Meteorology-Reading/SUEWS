@@ -244,7 +244,7 @@
     !Second option for later points
     if (errorChoice==0) then
         open(500,file='problems.txt')
-        write(*,*)'Problems in the run. See problems.txt'
+        write(*,*)'Issues while running the program. Please see problems.txt for more details.'
         errorChoice=1
     else
         open(500,file='problems.txt',position="append")

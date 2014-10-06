@@ -228,7 +228,7 @@
     
     !=============DAILY LAI AND WATER USE====================================================
     !Calculate LAI and temperature related 
-    call DailyState   
+    call DailyState   !Not sure if currently working ??
 
     if(LAICalcYes==0)then
       ! check -- this is going to be a problem as it is not for each vegtation class
@@ -324,7 +324,7 @@
     
       call MeltHeat(i)
 
-      !New fraction of vegetation
+      !New fraction of vegetation.
       IF(veg_type==1)THEN         ! area vegetated
          veg_fr=sfr(ConifSurf)*(1-snowFrac(ConifSurf))+sfr(DecidSurf)*(1-snowFrac(DecidSurf))+&
                 sfr(GrassUSurf)*(1-snowFrac(GrassUSurf))+sfr(GrassISurf)*(1-snowFrac(GrassISurf))+&
@@ -702,8 +702,9 @@
 
  return
 
-314 	call errorHint(11,trim(filemet),notUsed,notUsed,ios_out)
-319 	call errorHint(11,trim(FileNameOld),notUsed,notUsed,ios_out)
+!----------Problems---------------------------------------------------------
+314 call errorHint(11,trim(filemet),notUsed,notUsed,ios_out)
+319 call errorHint(11,trim(FileNameOld),notUsed,notUsed,ios_out)
 
 
  end subroutine SUEWS_temporal

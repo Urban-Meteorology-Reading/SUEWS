@@ -20,12 +20,12 @@
  integer:: errh,ValueI,ValueI2
  logical:: v1=.false.,v2=.false.,v3=.false.,v4=.false.,v5=.false.,v6=.false.,returnTrue=.false.,v7=.true.,v8=.true.
 
- call ProblemsText(ProblemFile,errorChoice)                 !Call the subroutine that opens the problem.txt file
+ call ProblemsText(ProblemFile)                 !Call the subroutine that opens the problem.txt file
 
  !The list of knows possible problems of the code:
  !  text1 is the error message written to the ProblemFile.
- !  v1 -v7 are different possibilities for ??
- !  ReturnTrue is
+ !  v1 -v7 are different possibilities for what numbers will be written out
+ !  ReturnTrue is true if the model run will be stopped.
 
      if(errh==1)then  
           text1='for FAIBLDG - for z0_method selected - this value looks inappropriate'
@@ -178,11 +178,34 @@
       elseif(errh==45)then
       	  text1='Pressure < 900 hPa, Loop Number'
           returntrue=.true.
-          v5=.true.
+          v5 = .true.
      elseif(errh==46)then
-      	  text1='Pressure < 900 hPa'
-          returntrue=.true.
-          v1=.true.
+      	  text1 = 'Pressure < 900 hPa'
+          returntrue = .true.
+          v1 = .true.
+     elseif(errh==47)then
+          text1 = 'File missing'
+          returntrue = .true.
+     elseif(errh==48)then
+          text1 = 'Something wrong in the rows of the file'
+          returntrue = .true.
+     elseif(errh==49)then
+          text1 = 'Problems in saving to InitialConditionsYYYY.nml'
+     elseif(errh==50)then
+          text1 = 'Wrong number of lines read: nsurf, [-1 EOF; -2 EOR]'
+          v1 = .true.
+     elseif(errh==51)then
+          text1 = 'Problems in opening the file'
+     elseif(errh==52)then
+          text1 = 'Problems in opening the output file'
+     elseif(errh==53)then
+          text1 = 'AH_min=0.and.Ah_slope=0.and.T_Critic=0 AnthropHeatChoice='
+          returntrue = .true.
+          v3 = .true.
+     elseif(errh==54)then
+          text1 = 'QF_A=0.and.QF_B=0.and.QF_C=0, AnthropHeatChoice='
+          returntrue = .true.
+          v3 = .true.
      endif
 
 
@@ -233,12 +256,13 @@
 
 !=============================================================
 
- subroutine ProblemsText(ProblemFile,errorChoice)
+ subroutine ProblemsText(ProblemFile)
 
+    use defaultNotUsed
     IMPLICIT NONE
 
     character (len=*):: ProblemFile
-    integer::errorChoice
+    !integer::errorChoice
 
     !Opening problems.txt file: First option is selected if the file is opened for the first time
     !Second option for later points

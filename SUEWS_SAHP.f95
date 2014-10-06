@@ -8,8 +8,10 @@
 !       id_prev     Previous day index
 !========================================= 
  SUBROUTINE SAHP_Coefs(temp_C0,id_prev)
+
   use allocateArray
   use data_in
+  use defaultNotUsed
 
   IMPLICIT NONE
 
@@ -45,21 +47,19 @@
 
   !Go through different Q_F choices
   if(AnthropHeatChoice==1) then
-    if(AH_min==0.and.Ah_slope==0.and.T_Critic==0)then
-     	call ProblemsText(trim(FileSAHP))    	
-        write(500,*)AnthropHeatChoice, "=AnthropHeatChoice"
-        write(500,*)"AH_min=0.and.Ah_slope=0.and.T_Critic=0"        
-      	write(500,nml=AnthropogenicHeat)       	
-        Call PauseStop
-    endif
+
+     !If Loridan et al. (2011) calculation is done and all needed variables are zero
+     if(AH_min==0.and.Ah_slope==0.and.T_Critic==0)then
+       call ErrorHint(53,trim(FileSAHP),notUsed,notUsed,AnthropHeatChoice)
+     endif
+
   elseif(AnthropHeatChoice==2) then
+
+    !If Jarvi et al. (2011) calculation is done and all needed variables are zero
     if(sum(QF_A)==0.and.sum(QF_B)==0.and.sum(QF_C)==0)then
-    	call ProblemsText(trim(FileSAHP))  
-        write(500,*)AnthropHeatChoice, "=AnthropHeatChoice"
-        write(500,*)"QF_A=0.and.QF_B=0.and.QF_C=0"
-      	write(500,nml=AnthropogenicHeat)
-        Call PauseStop
+        call ErrorHint(54,trim(FileSAHP),notUsed,notUsed,AnthropHeatChoice)
     endif
+
   endif
 
  !Calculations related to heating and cooling degree days
@@ -79,11 +79,9 @@
  HDD(id_prev,2)= gamma2*(Temp_C0-BaseTHDD) ! Cooling
 
  return
- 200  	Call ProblemsText(trim(FileSAHP))
- 		write(*,nml=AnthropogenicHeat)
-      	write(500,nml=AnthropogenicHeat)
-       	call PauseStop
-      
+
+!Problems in file reading
+ 200  call ErrorHint(48,trim(FileSAHP),notUsed,notUsed,AnthropHeatChoice)      
 
  END SUBROUTINE SAHP_Coefs
 

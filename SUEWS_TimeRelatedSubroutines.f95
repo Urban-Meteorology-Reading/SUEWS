@@ -130,9 +130,11 @@
   END IF
  end subroutine month2day
 !===============================================================================
+!Defines the number or days in each year (defines the leap year)
  subroutine LeapYearCalc(year_int,nroDays)
-  ! LJ
+
   IMPLICIT NONE
+
   integer :: nroDays
   integer:: year_int
 

@@ -43,6 +43,7 @@
          do iyy=1,i
           read(98,*)
          enddo
+
          READ(98,*,iostat=iostat_var)year,DayLightSavingDay(1),DayLightSavingDay(2)
          close(98)
 
@@ -57,10 +58,9 @@
          call SUEWS_spatial(year_int,year_txt,iyr) ! via allocatearray->>stateGrids,soilmoistGrids,laiGrids,laiID
 
     enddo
-    !close(98)
+
     stop 'finished'
 
-317		call ProblemsText(trim('ModelledYears.txt'))
-      	call PauseStop
+317  call ErrorHint(47,trim('ModelledYears.txt'),notUsed,notUsed,notUsedI)
 
  end program SUEWS_Program

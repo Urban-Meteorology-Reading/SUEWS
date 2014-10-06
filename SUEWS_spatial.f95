@@ -6,6 +6,7 @@
 	  use allocateArray
       use data_in
       use snowMod
+      use defaultNotUsed
       
       IMPLICIT NONE
 
@@ -25,8 +26,7 @@
 	  GridConnectionsName=trim(FileInputPath)//'GridConnections'//trim(adjustl(year_txt))//'.txt'
       open(89,file=trim(GridConnectionsName),status='old',err=317)
 	  READ(89,*,iostat=iostat_var) NroGrids  !Read number of grids
-      
-      
+
       !Grid names and connections are read in
       do i=1,NroGrids
       	 READ(89,*,iostat=iostat_var) GridConnections(1,i),GridConnectionsFrac(i),GridConnections(2,i)
@@ -87,8 +87,6 @@
 	  enddo
 
       return
-317	  call ProblemsText(trim( GridConnectionsName))
-      call PauseStop	
 
-
+317   call ErrorHint(47,trim(GridConnectionsName),notUsed,notUsed,notUsedI)
  end subroutine SUEWS_spatial

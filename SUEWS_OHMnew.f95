@@ -8,6 +8,7 @@
   use ohm_calc
   use allocateArray   ! sg feb 2012 - add allocated arrays
   use time
+  use defaultNotUsed
 
   IMPLICIT NONE
 
@@ -54,8 +55,8 @@
  close(12)
  return
 
-200 	call ProblemsText(trim(fileOHM))
-		call PauseStop
+200 call ErrorHint(47,trim(fileOHM),notUsed,notUsed,notUsedI)
+
  ENDSUBROUTINE OHMinitialize
 
 !-------------------------------------------------------------------------

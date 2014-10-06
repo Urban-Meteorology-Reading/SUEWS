@@ -13,6 +13,8 @@
     use allocateArray
     use gis_data
     use time
+    use defaultNotUsed
+
 
     IMPLICIT NONE
 
@@ -128,7 +130,7 @@
 36  format(2i3,f9.4,61f9.3)     !format(i3,i3,3f12.4,6f10.4, f14.3,25f10.4)
 114 format((i3,1X),(f5.2,1X),(f8.4,1X),14(f15.7,1x),3(f15.7,1X))
 
-
+!Close all output files
  close (lfnoutC)
  close (8)
  close (7)
@@ -136,11 +138,9 @@
 
  return
 
-!Error commands
-112 call ProblemsText(trim(FileOut))
-    call PauseStop
+ !Error commands
+ 112 call ErrorHint(52,trim(fileOut),notUsed,notUsed,notUsedI)
+ 204 call ErrorHint(52,trim(file5min),notUsed,notUsed,notUsedI)
 
-204 call ProblemsText(trim(file5min))
-    call PauseStop
 
  end subroutine

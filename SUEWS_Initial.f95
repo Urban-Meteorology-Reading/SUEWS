@@ -298,24 +298,17 @@
 
   close(12) !Close file choices to be opened again later in the code
   return
-  !-------problems---------------------------------------------------------------------------------------
-200		call ProblemsText('RunControl.nml -file not found')
-		call PauseStop
-201  	call ProblemsText('RunControl.nml - problem in file')  
-		write(500,nml=RunControl)
-        call PauseStop
-202		call ProblemsText(trim(fileOHMChoices))
- 		call PauseStop
-203     call ProblemsText(trim(FileChoices))
- 		call PauseStop
-204     call ProblemsText(trim(FileInputPath)//trim('SUEWS_FunctionalTypes.txt'))
- 		call PauseStop       
-205		call ProblemsText(trim(FileInputPath)//trim('SUEWS_FunctionalTypes.txt')// ProbLine)
-		call PauseStop
-219     call ErrorHint(12,trim('SnowControl'),notUsed,notUsed,ios_out)
-        call PauseStop         
-     
-end subroutine OverallRunControl
+
+  !-------Possible problems--------------------------------------------------------------------
+ 200 call ErrorHint(47,'RunControl.nml',notUsed,notUsed,notUsedI)
+ 201 call ErrorHint(48,'RunControl.nml',notUsed,notUsed,notUsedI)
+ 202 call ErrorHint(47,trim(fileOHMChoices),notUsed,notUsed,notUsedI)
+ 203 call ErrorHint(47,trim(FileChoices),notUsed,notUsed,notUsedI)
+ 204 call ErrorHint(47,trim(FileInputPath)//trim('SUEWS_FunctionalTypes.txt'),notUsed,notUsed,notUsedI)
+ 205 call ErrorHint(47,trim(FileInputPath)//trim('SUEWS_FunctionalTypes.txt')// ProbLine,notUsed,notUsed,notUsedI)  ! another error number???
+ 219 call ErrorHint(12,trim('SnowControl'),notUsed,notUsed,ios_out)
+
+ end subroutine OverallRunControl
 !----------------------------------------------------------------------------------------------
 !----------------------------------------------------------------------------------------------
 
@@ -323,6 +316,7 @@ end subroutine OverallRunControl
 	!This subroutine opens the annual files and saves header to those
     use allocateArray
     use data_in
+    use defaultNotUsed
     
 	IMPLICIT NONE
 
@@ -368,18 +362,12 @@ end subroutine OverallRunControl
        ' WUtr(1) WUtr(2) WUtr(3) LAIch LAIlumps alb_snow dens_snow_pav dens_snow_bldg',&
        ' dens_snow_evergr dens_snow_dec dens_snow_Irrgr dens_snow_Gr dens_snow_water')
 
-
-       
 		return
 
-200 	call ProblemsText(trim(FileOutputPath)//trim(Grid)//'_annual.txt')
-		call PauseStop 
+200 call ErrorHint(47,trim(FileOutputPath)//trim(Grid)//'_annual.txt',notUsed,notUsed,notUsedI)
+201 call ErrorHint(47,trim(FileOutputPath)//trim(Grid)//'_alldays.txt',notUsed,notUsed,notUsedI)
+202 call ErrorHint(47,trim(FileOutputPath)//trim(Grid)//'DailyState.txt',notUsed,notUsed,notUsedI)
 
-201 	call ProblemsText(trim(FileOutputPath)//trim(Grid)//'_alldays.txt')
-        call PauseStop 
-
-202 	call ProblemsText(trim(FileOutputPath)//trim(Grid)//'DailyState.txt')
-		call PauseStop 
  end subroutine OpenAnnualFiles
 
 !----------------------------------------------------------------------------------------------
@@ -478,12 +466,8 @@ end subroutine OverallRunControl
  do iv=1, Nsurf-1 
  	read(7,*,iostat=ios_out,end=501)(rate(j),j=1,9),which
        
-    if(ios_out/=0)then
-		call ProblemsText(trim(CanopyName))
-       	write(500,*)iv,' number of lines read but expecting ',nsurf-1
-      	write(500,*)ios_Out, " [if this is -1 EOF; -2 EOR]"
-        call PauseStop	  
- 	endif
+    if(ios_out/=0) call ErrorHint(50,trim(CanopyName),real(ios_Out,kind(1d0)),notUsed,iv)
+
  501 if(rate(which)/=0) call ErrorHint(8,trim(CanopyName),rate(which),notUsed,notUsedI)
     	
    ! check LJ why can this not go to soil and runof
@@ -511,19 +495,15 @@ end subroutine OverallRunControl
   close(7)
 
   return
-200		call ProblemsText(trim(FileWU))
-		call PauseStop 
-201		call ProblemsText(trim(CanopyName))
-		call PauseStop         
-251		call ErrorHint(11,trim(FileHr),notUsed,notUsed,ios_out)
-250     reall=real(ios_out)
-		call ErrorHint(13,trim(FileHr),reall,notUsed,ic)
-211 	write(*,nml=SiteSpecificParam) 
- 		call ErrorHint(12,trim(FileWU),daywatper(1),daywatper(2),ios_out)
-		write(500,nml=SiteSpecificParam) 
-        call PauseStop 
 
-end subroutine RunControlByGridByYear          
+200 call ErrorHint(47,trim(FileWU),notUsed,notUsed,notUsedI)
+201 call ErrorHint(47,trim(CanopyName),notUsed,notUsed,notUsedI)
+251 call ErrorHint(47,trim(FileHr),notUsed,notUsed,notUsedI)
+250 reall=real(ios_out)
+    call ErrorHint(13,trim(FileHr),reall,notUsed,ic)
+211 call ErrorHint(12,trim(FileWU),daywatper(1),daywatper(2),ios_out)
+
+ end subroutine RunControlByGridByYear
 !----------------------------------------------------------------------------------------------
 ! sg feb 2012 - 
 !----------------------------------------------------------------------------------------------
@@ -697,7 +677,7 @@ end subroutine RunControlByGridByYear
             zzd=z-zdm
         elseif(z0_method==3)then
             if(FAIBLdg<0) call ErrorHint(1,trim(fileGIS),Faibldg,notUsed,notUsedI)
-            if(FAITree<0)call ErrorHint(2,trim(fileGIS),faitree,notUsed,notUsedI)
+            if(FAITree<0) call ErrorHint(2,trim(fileGIS),faitree,notUsed,notUsedI)
         else
             !Calculate roughness parameters
             call RoughnessParameters(id_prev)
@@ -941,35 +921,29 @@ end subroutine RunControlByGridByYear
 ! zero arrays------------------------------------------------------------
     
  return
-200		call ProblemsText(trim(FileInit))
-		call PauseStop
-201		call ProblemsText(trim(fileDaily))
-		call PauseStop
-202		call ProblemsText(trim(fileMonthly))
-		call PauseStop
-203 	call ErrorHint(16,trim(FileInit),notUsed,notUsed,ios_out)
-      	write(500,nml=InitialConditions)       
-        call PauseStop
-111 	call ProblemsText(trim(FileErrorInf))
-		call PauseStop
-313 	call ProblemsText(trim(filegis))
-		call PauseStop
+200 call ErrorHint(47,trim(FileInit),notUsed,notUsed,notUsedI)
+201 call ErrorHint(51,trim(fileDaily),notUsed,notUsed,notUsedI)
+202	call ErrorHint(51,trim(fileMonthly),notUsed,notUsed,notUsedI)
+203 call ErrorHint(48,trim(FileInit),notUsed,notUsed,ios_out)
+313 call ErrorHint(47,trim(filegis),notUsed,notUsed,notUsedI)
 
  end subroutine InitialState
 
 !--------------------------------------------------------------------------
+!Accumulating day, month, year and season
+ subroutine accum_zero
 
-  
-subroutine accum_zero
-use data_in
-implicit none
-   day=0
-   month=0
-   yr_tot=0
-   season=0  
+  use data_in
 
-return
-end subroutine accum_zero
+  IMPLICIT NONE
+
+  day=0
+  month=0
+  yr_tot=0
+  season=0
+
+ return
+ end subroutine accum_zero
 
 !--------------------------------------------------------------------------
 
@@ -978,6 +952,7 @@ end subroutine accum_zero
   use time
   use data_in
   use snowMod
+  use defaultNotUsed
 
   IMPLICIT NONE
 
@@ -1060,11 +1035,9 @@ end subroutine accum_zero
 
   return
 
-200 	call ProblemsText(trim(FileInputPath)//trim("InitialConditions")//trim(GridName)//'_'//trim(adjustl(year_txt))//'.nml')
-		call PauseStop
-201     call ProblemsText(trim(FileInputPath)//trim("InitialConditions")//trim(GridName)//'_'//trim(adjustl(year_txt))//'end.nml')
-		call PauseStop
-        
+200 call ErrorHint(49,trim("InitialConditions")//trim(GridName)//'_'//trim(adjustl(year_txt))//'.nml',notUsed,notUsed,notUsedI)
+201 call ErrorHint(49,trim("InitialConditions")//trim(GridName)//'_'//trim(adjustl(year_txt))//'end.nml',notUsed,notUsed,notUsedI)
+
  end subroutine NextInitial
 
 

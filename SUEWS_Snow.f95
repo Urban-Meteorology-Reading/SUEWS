@@ -3,7 +3,7 @@
 !mod by lj in May 2013 - calculation of the energy balance for the snowpack was modified
 !                        to use qn1_ind_snow(surf)
 
-subroutine MeltHeat(i)
+ subroutine MeltHeat(i)
 
   use allocateArray
   use snowMod
@@ -14,15 +14,14 @@ subroutine MeltHeat(i)
   use sues_data
   use gis_data
   
-  implicit none
+  IMPLICIT NONE
 
-  REAL(KIND(1d0)):: Watfreeze,& !State of snow on ith surface, total energy exchange (not exported!)
-                    ci=2090,cw=4190       !Specific heat capacity of water
+  REAL(KIND(1d0)):: Watfreeze,&        !State of snow on ith surface, total energy exchange (not exported!)
+                    ci=2090,cw=4190    !Specific heat capacity of water
  
   INTEGER :: i 
  
   !Initialize snow variables
-
   snowCalcSwitch=0     !Initialize switches
   StateFraction=0
   snowCoverForms=0
@@ -103,7 +102,7 @@ subroutine MeltHeat(i)
         
         !=================================================================
          
-        !Freeze surface state if cold enough and there is water, this will freeze.
+        !Freeze surface state if cold enough.
         if (Tsurf_ind(is)<0.and.state(is)>0) then
     
            snowCalcSwitch(is)=1 !If water on ground this forms ice and snow calculations are made
@@ -177,13 +176,13 @@ subroutine MeltHeat(i)
     endif
 
    
-end subroutine MeltHeat
+ end subroutine MeltHeat
 
 
 
 !===============================================================================================
 !===============================================================================================
-subroutine SnowCalc(i)
+ subroutine SnowCalc(i)
   !Calculation of snow and water balance on 5 min timestep. Treats snowfree and snow covered 
   !areas separately. Weighting is taken into account in the overall values.
   !Last modified LJ in 24 May 2013
@@ -262,13 +261,13 @@ subroutine SnowCalc(i)
 
     
    
-  !First is whole surface is covered with snow or if snowpack forms at this timestep
+  !First if whole surface is covered with snow or if snowpack forms at this timestep
   if (snowFrac(is)==1.or.(snowPack(is)==0.and.pin>0.and.Temp_C<0.and.Tsurf_ind(is)<0)&
     .or.(freezState(is)>0)) then
         
      !------Snow pack exists-----------------------------------------
      if (SnowPack(is)>0) then
-        ev_snow(is)=ev_snow(is)+EvPart !Evaporataion surplus
+        ev_snow(is)=ev_snow(is)+EvPart !Evaporation surplus
 
         
        !(Snowfall per interval+freezing of water) - (meltwater+evaporation from snowpack)

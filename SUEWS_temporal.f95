@@ -586,10 +586,12 @@
      dataOut2(i,1:30)=(/real(id,kind(1D0)),dectime,kup_ind(1:7),lup_ind(1:7),tsurf_ind(1:7),qn1_ind(1:7)/)
 
      if (snowUse==1)then!Shiho: This condition is needed when snowUse=0
-             dataOut3(i,1:106)=(/real(id,kind(1D0)),real(it,kind(1D0)),dectime,SnowPack(1:7),SnowRemoval(1:2),mwh,mw_ind(1:7),&
-                        Qm,Qm_melt(1:7),Qm_rain(1:7),Qm_freezState(1:7),snowFrac(1:6),alb_snow,rainOnSnow(1:7),&
-                        qn1_ind_snow(1:7),kup_ind_snow(1:7),freezMelt(1:7),MeltWaterStore(1:7),densSnow(1:7),&
-                        snowDepth(1:7),Tsurf_ind_snow(1:7),QmFreez/)
+             dataOut3(i,1:106)=(/real(id,kind(1D0)),real(it,kind(1D0)),dectime,SnowPack(1:nsurf),&
+                                SnowRemoval(1:2),mwh,mw_ind(1:nsurf),Qm,Qm_melt(1:nsurf),Qm_rain(1:nsurf),&
+                                Qm_freezState(1:nsurf),snowFrac(1:(nsurf-1)),alb_snow,rainOnSnow(1:nsurf),&
+                                qn1_ind_snow(1:nsurf),kup_ind_snow(1:nsurf),freezMelt(1:nsurf),&
+                                MeltWaterStore(1:nsurf),densSnow(1:nsurf),snowDepth(1:nsurf),&
+                                Tsurf_ind_snow(1:nsurf),QmFreez/)
      endif
 
 

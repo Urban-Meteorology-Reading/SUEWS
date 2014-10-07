@@ -268,7 +268,7 @@
     !Second option for later points
     if (errorChoice==0) then
         open(500,file='problems.txt')
-        write(*,*)'Issues while running the program. Please see problems.txt for more details.'
+        write(*,*)'See problems.txt for possible issues in the run.'
         errorChoice=1
     else
         open(500,file='problems.txt',position="append")
@@ -288,6 +288,6 @@
    write(*,*)'problem file: ',trim(ProblemFile)
    write(*,*)'see problems.txt'
 
-   pause
+   !pause
    stop
  end subroutine PauseStop

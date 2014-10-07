@@ -421,7 +421,7 @@ MODULE cbl_MODULE
                           
       real(kind(1d0)), dimension(0:23,2):: AHPROF !Heat profile -- ?? check why not 0:23
  
-      real(kind(1d0))::nCBLstep  !number of time steps of Runge-kutta methods in one hour 
+      integer::nCBLstep  !number of time steps of Runge-kutta methods in one hour
          
   !---------Water bucket (see B. Offerle's PhD)----------------------------------
       real (KIND(1D0)):: DRAINRT,&    !Drainage rate of the water bucket

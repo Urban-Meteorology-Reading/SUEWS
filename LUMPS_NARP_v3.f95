@@ -261,9 +261,17 @@ CONTAINS
         ELSE
            ALB1=alb_snow
         ENDIF
-  
-		KUP_SNOW = (ALB1*(snowFrac(is)-IceFrac(is))+ALB0*IceFrac(is))*KDOWN   !Reflected from snowpack
-        
+
+        !KUP_SNOW = (ALB1*(snowFrac(is)-IceFrac(is))+ALB0*IceFrac(is))*KDOWN   !Reflected from snowpack
+        !KUP_SNOW = ALB1*KDOWN !This is just the snow albedo. Weigting is done later.
+        KUP_SNOW = (ALB1*(snowFrac(is)-snowFrac(is)*IceFrac(is))+ALB0*snowFrac(is)*IceFrac(is))*KDOWN
+
+
+        !Test file for the fractions
+        open(34,file='TestingSnowFrac.txt',position="append")
+        write(34,*) dectime,is, ALB1, ALB0,snowFrac(is),IceFrac(is),KDOWN,KUP_SNOW
+        close(34)
+
         TSURF_SNOW=((NARP_EMIS_SNOW*SIGMATK4)/(NARP_EMIS_SNOW*SIGMA_SB))**0.25 !Snow surface temperature
         
         !IF (TSURF_SNOW>273.16) TSURF_SNOW=min(273.16,Temp_K)!Set this to 2 degrees (melted water on top)

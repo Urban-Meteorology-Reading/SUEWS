@@ -117,7 +117,12 @@
                   FreezState(is) = state(is)
                   FreezStateVol(is) = state(is)*(1-snowFrac(is))/snowFrac(is)
               endif
-              
+
+              if (FreezState(is)<0.0000000000000001) then
+                 FreezState(is) = 0
+                 FreezStateVol(is) = 0
+              endif
+
               Qm_freezState(is) = -waterDens*(FreezState(is)/3600/1000)*(lvS_J_kg-lv_J_kg)
                
            else       !Water surface 
@@ -259,12 +264,11 @@
   
   if (is==WaterSurf.and.sfr(WaterSurf)>0) GO TO 606  !Water surface is treated separately
 
-    
-   
   !First if whole surface is covered with snow or if snowpack forms at this timestep
   if (snowFrac(is)==1.or.(snowPack(is)==0.and.pin>0.and.Temp_C<0.and.Tsurf_ind(is)<0)&
     .or.(freezState(is)>0)) then
-        
+
+
      !------Snow pack exists-----------------------------------------
      if (SnowPack(is)>0) then
         ev_snow(is)=ev_snow(is)+EvPart !Evaporation surplus
@@ -274,15 +278,19 @@
         changSnow(is)=(pin+freezMelt(is)/nsh)-(mw_ind(is)/nsh+ev_snow(is)) !Calculate change in the snowpack
         
         if (freezState(is)>0) then !snowfraction is not 1 but the snow free surface water freezes
+
+           !if (dectime>=11.9150.and.dectime<12.1000.and.is==4) then
+           !   write(*,*) dectime,is,freezState(is), iceFrac(is),snowFrac(is),1
+           !endif
+
            FreezStateVol(is)=FreezState(is)
            changSnow(is) = changSnow(is)+freezStateVol(is)/nsh
            ev=0
 
            if (in==1) iceFrac(is)=1-snowFrac(is)
-           snowFrac(is)=1 
-           
+           snowFrac(is)=1
         endif
-        
+
         !Let runoff happen if rain on snow event
         if (rainOnSnow(is)>0) then
            changSnow(is)=changSnow(is)-pin
@@ -403,7 +411,7 @@
   !いいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいい
   !いいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいい
    
-  !If both snow and snow free surface exists 
+  !If both snow and snow free surfaces exists
   else
    
     !Snowpack water balance for the whole surface area. In reality snow depth = snowPack/snowFrac(is)  

@@ -5,7 +5,6 @@
 !===================================================================================
  module allocateArray
    implicit none
-
    integer::PavSurf=1,& ! when all surfaces    BareSoilSurf= treated separately below
    			BldgSurf=2,&
             ConifSurf=3,&

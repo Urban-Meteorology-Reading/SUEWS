@@ -266,7 +266,10 @@ CONTAINS
         TSURF_SNOW=((NARP_EMIS_SNOW*SIGMATK4)/(NARP_EMIS_SNOW*SIGMA_SB))**0.25 !Snow surface temperature
         
         !IF (TSURF_SNOW>273.16) TSURF_SNOW=min(273.16,Temp_K)!Set this to 2 degrees (melted water on top)
-        
+        !open(34,file='TestingSnowFrac.txt',position='append')
+        !write(34,*) dectime,is,alb1,alb0,snowFrac(is),IceFrac(is),KDOWN,KUP_snow
+        !close(34)
+
         LUP_SNOW = NARP_EMIS_SNOW*SIGMA_SB*TSURF_SNOW**4+(1-NARP_EMIS_SNOW)*LDOWN 
         QSTAR_SNOW = KDOWN-KUP_SNOW+LDOWN-LUP_SNOW
         TSURF_SNOW = TSURF_SNOW-273.16

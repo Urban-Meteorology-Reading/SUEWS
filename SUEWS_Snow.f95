@@ -118,7 +118,7 @@
                   FreezStateVol(is) = state(is)*(1-snowFrac(is))/snowFrac(is)
               endif
 
-              if (FreezState(is)<0.0000000000000001) then
+              if (FreezState(is)<0.00000000000001) then
                  FreezState(is) = 0
                  FreezStateVol(is) = 0
               endif
@@ -278,17 +278,13 @@
         changSnow(is)=(pin+freezMelt(is)/nsh)-(mw_ind(is)/nsh+ev_snow(is)) !Calculate change in the snowpack
         
         if (freezState(is)>0) then !snowfraction is not 1 but the snow free surface water freezes
-
-           !if (dectime>=11.9150.and.dectime<12.1000.and.is==4) then
-           !   write(*,*) dectime,is,freezState(is), iceFrac(is),snowFrac(is),1
-           !endif
-
            FreezStateVol(is)=FreezState(is)
            changSnow(is) = changSnow(is)+freezStateVol(is)/nsh
            ev=0
 
            if (in==1) iceFrac(is)=1-snowFrac(is)
            snowFrac(is)=1
+
         endif
 
         !Let runoff happen if rain on snow event

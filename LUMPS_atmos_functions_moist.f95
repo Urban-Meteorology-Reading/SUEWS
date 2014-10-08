@@ -155,18 +155,18 @@ END SUBROUTINE atmos_moist_lumps
 ! Output: heat capacity in units J kg-1 K-1
    use defaultnotUsed
    IMPLICIT NONE
+
    REAL(kind(1d0))::cp,cpd,cpm,rho_v,rho_d,rh,temp_C
 
    !Garratt equation a20 (1992)
-   CPd=1005.0+((Temp_C+23.16)**2)/3364.0 !Changed from 23.15 to 23.16
+   CPd = 1005.0+((Temp_C+23.16)**2)/3364.0 !Changed from 23.15 to 23.16
   
    !Beer (1991) for water vapor
    cpm = 1859 + 0.13*rH+ (19.3+0.569*rH)*(Temp_C/100.) + &
        (10.+0.5*rH)*(Temp_C/100.)**2
        
-   IF(abs(rho_d)<0.00100.OR.abs(rho_v)<0.00100.OR.abs(rho_d+rho_v)<0.00100)THEN
-      call ErrorHint(42,'spec-heat_beer',rho_v,rho_d,notusedI)
-     
+   IF(abs(rho_d)<0.000100.OR.abs(rho_v)<0.000100.OR.abs(rho_d+rho_v)<0.000100)THEN
+      call ErrorHint(42,'spec-heat_beer',rho_v,rho_d,int(Temp_C))
    ENDIF
   
    cp=cpd*(rho_d/(rho_d+rho_v))+cpm*(rho_v/(rho_d+rho_v))

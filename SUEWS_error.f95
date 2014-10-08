@@ -164,9 +164,9 @@
            text1= ' addwaterbody= Error1-- but watersurf=  Error 2'
            v2=.true. !2 real
       elseif(errh==42)then
-           text1= 'abs(rho_d)<0.001000.OR.abs(rho_v)<0.001000.OR.abs(rho_d+rho_v)<0.001000) rho_v,rho_d'
+           text1= 'abs(rho_d)<0.001000.OR.abs(rho_v)<0.001000.OR.abs(rho_d+rho_v)<0.001000) rho_v,rho_d, T'
            returntrue=.true.
-           v2=.true. !2 real
+           v4=.true. !2 real, temperature as an integer
       elseif(errh==43) then
       	  text1='Switching Years - will keep running'
           returntrue=.true.

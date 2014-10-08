@@ -31,7 +31,7 @@ SUBROUTINE atmos_moist_lumps(air_dens)
   !Vap density or absolute humidity	 (kg/m3)
   vap_dens=(Ea_hPa*100/((Temp_C+273.16)*gas_ct_wv))
   
-  !density Dry Air Beer(1991)	kg/m3
+  !density Dry Air Beer(1990)	kg/m3
   dens_dry=((Press_hPa-Ea_hPa)*100)/(gas_ct_dry*(273.16+Temp_C))
  
   !Air density in kg/m3
@@ -153,6 +153,10 @@ END SUBROUTINE atmos_moist_lumps
  FUNCTION spec_heat_beer(Temp_C,rh,rho_v,rho_d) RESULT (cp)
 ! Input: Air temperature, relative humidity, water vapour and dry air densities
 ! Output: heat capacity in units J kg-1 K-1
+! Reference: Tom Beer, CSIRO, 1990. Applied Environmetrics Meteorological Tables.
+! Can be found from SG:s office from Atmmos Moist map
+!-------------------------------------------------------------------------------
+
    use defaultnotUsed
    IMPLICIT NONE
 

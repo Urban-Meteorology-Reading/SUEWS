@@ -161,7 +161,7 @@ END SUBROUTINE atmos_moist_lumps
    !Garratt equation a20 (1992)
    CPd = 1005.0+((Temp_C+23.16)**2)/3364.0 !Changed from 23.15 to 23.16
   
-   !Beer (1991) for water vapor
+   !Beer (1990) for water vapor
    cpm = 1859 + 0.13*rH+ (19.3+0.569*rH)*(Temp_C/100.) + &
        (10.+0.5*rH)*(Temp_C/100.)**2
        

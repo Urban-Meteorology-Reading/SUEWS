@@ -360,7 +360,7 @@
 142      format('%year id    HD1h  HDD2c  HDD3m  HDT5d   Prec   DaSR  GDD1g GDD2s  GDmn   GDmx ',&
        ' dayLG   LAIc   LAId  LAIgI  LAIgU  DEcap    Por Albdec WUgr(1) WUgr(2) WUgr(3)',&
        ' WUtr(1) WUtr(2) WUtr(3) LAIch LAIlumps alb_snow dens_snow_pav dens_snow_bldg',&
-       ' dens_snow_evergr dens_snow_dec dens_snow_Irrgr dens_snow_Gr dens_snow_water')
+       ' dens_snow_ET dens_snow_DT dens_snow_IG dens_snow_UG dens_snow_wtr')
 
 		return
 

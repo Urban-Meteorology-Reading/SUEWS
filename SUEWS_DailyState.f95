@@ -323,9 +323,9 @@ Subroutine DailyState
        write(60,601)int(year),id,(HDD(id,j),j=1,6),(GDD(id,j),j=1,5),(lai(id,iv),iv=1,nvegsurf),&
                     decidcap(id),porosity(id),albdec(id), WU_day(id-1,1),WU_day(id-1,2),&
                     Wu_day(id-1,3),WU_day(id-1,4),WU_day(id-1,5),Wu_day(id-1,6),deltaLAI,&
-                    VegPhenLumps,alb_snow,(densSnow(j),j=1,6)
+                    VegPhenLumps,alb_snow,(densSnow(j),j=1,nsurf)
        601 format(2(i4,1X),6(f6.1,1X),2(f5.0,1X),3(f6.1,1X),4(f6.2,1X),3(f6.2,1X),6(f7.3,1X),&
-       17(f7.2,1X))  
+       18(f7.2,1X))
        
        if (id>=DayLightSavingDay(1).and.id<=DayLightSavingDay(2)) then!Summer time
            DLS=1

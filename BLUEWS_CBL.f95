@@ -307,6 +307,7 @@ Subroutine CBL_initial
 	use allocateArray
 	use data_in
 	use cbl_module
+    use initial
 	implicit none
     integer::i,j
     real(kind(1d0)),dimension(nlines,8)::indata

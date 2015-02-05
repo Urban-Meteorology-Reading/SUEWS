@@ -25,10 +25,10 @@ subroutine accumulate(id,total)
   total(id,4)=total(id,4)+qs
   total(id,5)=total(id,5)+qf
   total(id,6)=total(id,6)+qeph
-  total(id,7)=total(id,7)+Precip_hr
-  total(id,8)=total(id,8)+ext_wuhP
-  total(id,9)=total(id,9)+int_wuh
-  total(id,10)=total(id,10)+int_wuh+ext_wuhP
+  total(id,7)=total(id,7)+Precip
+  total(id,8)=total(id,8)+ext_wu
+  total(id,9)=total(id,9)+int_wu
+  total(id,10)=total(id,10)+int_wu+ext_wu
   total(id,11)=total(id,11)+ev_per_interval
   total(id,12)=total(id,12)+ch_per_interval
  !total(id,13)=soilmoist_state

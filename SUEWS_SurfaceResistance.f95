@@ -85,7 +85,7 @@ subroutine SurfaceResistance(id,it)
       ! vegetated surfaces
       ! check basis for values koe - maximum surface conductance
     !  print*,id,it,sfr
-      do iv=ivConif,ivGrassU
+      do iv=ivConif,ivGrass
     !    print*,iv,laimax(iv),MaxConductance(iv),sfr(iv+2),lai(id-1,iv)
     !     pause
           ! check 

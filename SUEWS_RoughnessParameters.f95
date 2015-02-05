@@ -1,4 +1,4 @@
- subroutine RoughnessParameters(id)
+ subroutine RoughnessParameters
  ! Get surface covers and frontal area fractions (LJ 11/2010)
  !  areaZh=(sfr(BldgSurf)+sfr(ConifSurf)+sfr(DecidSurf)) !Total area of buildings and trees
  ! sg feb 2012 -- made separate subroutine

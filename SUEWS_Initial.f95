@@ -1,25 +1,39 @@
+!=========================================================================
 ! sg feb 2012
 ! only run once at start - fixed for all grids and all years
- subroutine OverallRunControl
-  use resist        ! LUMPS_metRead.f95
-  use data_in      ! LUMPS_metRead.f95
-  use ohm_calc
-  use run_info     ! run_control_v2_1.f90
-  use SUES_data    !
-  USE GIS_data     ! LUMPS_gis_read.f95
-  use mod_z	       ! module_LUMPS_constants,f90
-  use FileName
-  use allocateArray  ! module_LUMPS_constants,f90
-  use defaultNotUsed
-  use time
-  use snowMod
+ 
+ SUBROUTINE OverallRunControl
+! Last modified by HCW 19 Dec 2014
+! To do: 
+! 	- Holidays.txt input file needs to be read in and coded into model
+!	- Add column header checks for SiteSelect
+!-------------------------------------------------------------------------
   
+  use allocateArray 
+  use ColNamesInputFiles
+  use data_in      
+  use defaultNotUsed
+  use FileName
+  use initial
+  use gis_data     
+  use mod_z	   
+  use ohm_calc
+  use resist       
+  use run_info     
+  use snowMod
+  use sues_data    
+  use time
+   
   IMPLICIT NONE
   
-  real (Kind(1d0)):: skip, NSH_real
-  integer::iv,i !sh (1=NH)
-  character (len=50)::ProbLine
+  real(kind(1d0)):: skip
+  integer:: iv,i,ii,SkipCounter            !iv and i, ii are integers used in do loops
+  character(len=50):: ProbLine,FileN
   
+  character (len=50):: InputFileName
+  integer:: nColumns
+ 
+  ! ---- Namelist for RunControl.nml ----
   namelist/RunControl/AnthropHeatChoice,&
         CBLuse,& !s.o.
         GISInputType,&
@@ -37,7 +51,7 @@
         FileCode,&
         FileInputPath,&
         FileOutputPath,&
-        SkipHeaderGIS,&
+        SkipHeaderSiteInfo,&
         SkipHeaderMet,&
         SnowFractionChoice,&
         SNOWuse,&
@@ -46,39 +60,40 @@
         TIMEZONE,& 
         Tstep,& 
         Z
+  ! -------------------------------------
         
   FileCode='none'
   !smithFile='Smith1966.grd'
   
-  !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  !Read in the runcontrol.nml file
+  !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  !Read in the RunControl.nml file
   open(55,File='RunControl.nml',err=200,status='old') !Change with needs
   read(55,nml=RunControl,err=201)
   close(55)
 
-  !Problems with filecode?
+  !Check for problems with FileCode
   if (FileCode=='none') call ErrorHint(26,trim("RunControl.nml FileCode is missing"),notUsed,notUsed,notUsedI)
-  
-  !--------------------------------------------------------------------------
+   
+  !-----------------------------------------------------------------------
  
-  !Read in FileChoices.txt and write runcontrol.nml in it
+  !Write RunControl information to FileChoices.txt
   FileChoices=trim(FileOutputPath)//trim(FileCode)//'_FileChoices.txt'
-  open(12,file=FileChoices,err=203)
+  open (12,file=FileChoices,err=203)
   write(12,nml=RunControl)
-
-  !Determines what should be done with respect to radiation
+  close(12)
+  
+  !Determine what should be done with respect to radiation
   AlbedoChoice=0
   NARPOutput=0
   ldown_option=0
-  if(netRadiationChoice==0)then     !Observation from the input file is used
-    
+  if(netRadiationChoice==0)then     !Observed Q* from the met input file will be used
     if(snowUse==1) then             !If snow is modelled, NARP is needed for surface temperature
        netRadiationChoice=3000
-       ldown_option=3   !Ldown will be modeled
+       ldown_option=3   	    !Ldown will be modelled
        !NetRadiationChoice=NetRadiationChoice/1000
     endif
     
-  elseif(netRadiationChoice>0)then  !Modelled is used
+  elseif(netRadiationChoice>0)then  !Modelled Q* is used (NARP)
        AlbedoChoice=-9
        NARPOutput=-9
        if(NetRadiationChoice<10) then
@@ -94,7 +109,7 @@
             if(NetRadiationChoice==10)ldown_option=1
             if(NetRadiationChoice==20)ldown_option=2
             if(NetRadiationChoice==30)ldown_option=3
-            NetRadiationChoice=NetRadiationChoice/10
+               NetRadiationChoice=NetRadiationChoice/10
             
        elseif(NetRadiationChoice>=100.and.NetRadiationChoice<1000) then
             AlbedoChoice=1  
@@ -102,118 +117,20 @@
             if(NetRadiationChoice==100)ldown_option=1
             if(NetRadiationChoice==200)ldown_option=2
             if(NetRadiationChoice==300)ldown_option=3
-           	NetRadiationChoice=NetRadiationChoice/100
+               NetRadiationChoice=NetRadiationChoice/100
        endif
        
-       !If bad netRadiationChoice value
+       !If bad NetRadiationChoice value
 	   if(netRadiationChoice>3.or. AlbedoChoice==-9.or.NARPOutput==-9)then
-           write(*,*) 'NetRadiationChoice=',  NetRadiationChoice
+           write(*,*) 'NetRadiationChoice=',NetRadiationChoice
            write(*,*) 'Value not usable'
            stop
        endif
   endif
-
-  ! %%%%%%%%%%%%%%%%%%%%SUEWS_FunctionalTypes.txt%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  !Open SUEWS_FunctionalTypes
   
-  open(55,file=trim(FileInputPath)//trim('SUEWS_FunctionalTypes.txt'),err=204,status='old')
-  ProbLine='header'
-  read(55,*,err=205)  ! skip header
-  ProbLine='alb'
-  read(55,*,err=205) (alb(iv),iv=1,nsurf), alb_snow                  ! 1
-  
-  alBMax_dec=alb(DecidSurf)
-  ProbLine='emis'
-  read(55,*,err=205) (emis(iv),iv=1,nsurf), emis_snow                ! 2
-  ProbLine='BaseT'
-  read(55,*,err=205) skip, skip, (baseT(iv),iv=1,nVegsurf),skip,skip   ! 3
-  ProbLine='BaseTe'
-  read(55,*) skip, skip, (baseTe(iv),iv=1,nVegsurf),skip,skip   ! 4
-  ProbLine='! storage capacity minimum'
-  read(55,*,err=205) (Surf(1,iv),iv=1,nsurf), skip         ! 5   ! storage capacity minimum/default
-  ProbLine='! 6    ! storage capacity maximum'
-  read(55,*,err=205) (Surf(5,iv),iv=1,nsurf), skip         ! 6    ! storage capacity maximum
-  ProbLine='! 7   ! drainage equation'
-  read(55,*,err=205) (Surf(2,iv),iv=1,nsurf), skip         ! 7   ! drainage equation
-  ProbLine='! 8    ! drainage coef1'
-  read(55,*,err=205) (Surf(3,iv),iv=1,nsurf), skip         ! 8    ! drainage coef1
-  ProbLine='! 9    ! drainage coef2'
-  read(55,*,err=205) (Surf(4,iv),iv=1,nsurf), skip         ! 9    ! drainage coef2
-  ProbLine='!10 GDD full'
-  read(55,*,err=205) skip, skip, (GDDFull(iv),iv=1,nVegsurf),skip,skip  ! 10
-  ProbLine='!11 SDD full'
-  read(55,*,err=205) skip, skip,(SDDFull(iv),iv=1,nVegsurf),skip,skip   ! 11
-  ProbLine='!12  LAI min'
-  read(55,*,err=205) skip, skip, (LAImin(iv),iv=1,nVegsurf),skip,skip ! 12  ! LAI min
-  ProbLine='!13  LAI max'
-  read(55,*,err=205) skip, skip, (LAImax(iv),iv=1,nVegsurf),skip,skip  ! 13 ! LAI max
-  ProbLine='! 14 Maximum conductance'
-  read(55,*,err=205) skip, skip, (MaxConductance(iv),iv=1,nVegsurf),skip,skip  ! 14 Maximum conductance
-  ProbLine='!15 Soil store capacity'
-  read(55,*,err=205) (soilstoreCap(iv),iv=1,nsurf), skip    !15 Soil store capacity
-  ProbLine='!16 Volumetric soil moisture capacity'
-  read(55,*,err=205) (VolSoilMoistCap(iv),iv=1,nsurf), skip !16 Volumetric soil moisture capacity
-  ProbLine='!17 %Hydraulic conductivity of saturated soil'
-  read(55,*,err=205) (SatHydraulicConduct(iv),iv=1, nsurf), skip !17 %Hydraulic conductivity of saturated soil
-  ProbLine= 'header'
-  read(55,*,err=205)  ! skip header
-  ProbLine= '! 19 conductance parameters'
-  read(55,*,err=205) G1,G2,G3,G4,G5,G6   ! 19 conductance parameters
-  ProbLine='! 20 conductance parameters'
-  read(55,*,err=205) TH,TL,S1,S2, Kmax   ! 20 conductance parameters
-  ProbLine= 'header'
-  read(55,*,err=205)  ! skip header Soil related (measurements)
-  ProbLine='Soil related (measurements)'
-  read(55,*,err=205) SoilDensity, SoilDepthMeas, SoilRocks,SmCap  !22
-  ProbLine= 'header'
-  read(55,*,err=205)  ! skip header LUMPS related
-  ProbLine='! 23LUMPS related '
-  read(55,*,err=205)  DRAINRT, RAINCOVER, RAINMAXRES ! 24 LUMPS related (1)drainage rate (2),for adjusting alpha/beta for wet surface= , (3)Maximum water bucket reservoir
-  ProbLine= 'header'
-  read(55,*,err=205) ! skip header snow related
-  ProbLine='!25 Snow Related'
-  read(55,*,err=205) RadMeltFact,TempMeltFact,albSnowMin,albSnowMax,tau_a,tau_f,PrecipLimitAlb !26
-  read(55,*,err=205) densSnowMin,densSnowMax,tau_r,CRWmin,CRWmax,PrecipLimit                   !27
-  read(55,*,err=205) (snowD(iv),iv=1,nsurf-1)!28
-  ProbLine='!28 Snow water hold capacity'
-  read(55,*,err=205)  ! skip header !29
-  ProbLine=' Narp Related'
-  read(55,*,err=205) TRANS_SITE !30
-  read(55,*,err=205) ! skip header snow related !31
-  ProbLine=' 30 LAI related' ! skip header
-  read(55,*,err=205) LAItype, (laiPower(iv),iv=1,4)
-  
-  !!sg_09Nov13 - remove this
-  !Maxima LAI's
- ! MaxLaiMax=max(Laimax(1),LaiMax(2))
-!  do iv=3,nVegsurf
-!      MaxLaiMax=max(MaxLaiMax,LaiMax(iv))
-!  enddo
-      
-  CapMin_dec=surf(1,DecidSurf)
-  CapMax_dec=surf(5,DecidSurf)
-  
-  GDDmax=0
-  SDDmax=0
-  do iv=1,NVegSurf
-      GDDmax=max(GDDFull(iv),GDDmax)
-      SDDmax=min(SDDFull(iv),SDDmax)
-  enddo
-  close (55) 
-  file_qs=.false.
-    
- 
-  !----------------------------------------------------------------------
-  !SUEWS run information
-  Inputmetformat=10
-  hrcount=0
-  LAICalcYes=1
-  ITY=2
-  NPeriodsPerDay= 24 ! number of time periods per day
-
-  !----------------------------------------------------------------------
+  !------------------------------------------------------------------
   !Print run information on the screen
-  write(*,*)'-------------------------------------------------'
+  write(*,*)'--------------------------------------------------------'
   write(*,*)"LUMPS/Suews 2012a - relevant references"
   write(*,*)"LUMPS - Grimmond and Oke (2002) JAM, 41, 79-810"
   write(*,*)"OHM - Grimmond and Oke (1999) JAM, 38, 922-940"
@@ -223,484 +140,1355 @@
   write(*,*)"NARP - Long wave improvements (Loridan et al. 2011 JAMC)"
   write(*,*)"SUEWS - Anthropogenic heat, etc (Jarvi et al. 2011 JH)"
   write(*,*)"SUEWS - Snow module included (Jarvi et al. 2014 GMD)"
-  write(*,*)'-------------------------------------------------'
-
-  !----------------------------------------------------------------------
-  !Write nml files to FileChoices.txt
-  write(12,*)'--------SUEWS_FunctionalTypes.txt---------------------------- '
-  write(12,*)'!Paved  Bldg   Conif  Decid  GrassI   GrassU  Water  Snow        -9 not applicable  '
-  write(12,120) (alb(iv),iv=1,nsurf), alb_snow,' albedo -1'             ! 1
-  write(12,120) (emis(iv),iv=1,nsurf), emis_snow, 'emis -2'               ! 2
-  write(12,120) skip, skip, (baseT(iv),iv=1,nVegsurf),skip,skip ,'BaseT'  ! 3
-  write(12,120) skip, skip, (baseTe(iv),iv=1,nVegsurf),skip,skip, 'BaseTe'   ! 4
-  write(12,120) (Surf(1,iv),iv=1,nsurf), skip ,'storage capacity minimum/default' !5
-  write(12,120) (Surf(5,iv),iv=1,nsurf), skip ,'storage capacity maximum'       ! 
-  write(12,120) (Surf(2,iv),iv=1,nsurf), skip ,'drain equation' 
-  write(12,120) (Surf(3,iv),iv=1,nsurf), skip ,'dr coef1'     ! 7    ! 
-  write(12,120) (Surf(4,iv),iv=1,nsurf), skip ,'dr coef2'      ! 8    !  
-  write(12,'(8f8.0, 2g10.4)') skip, skip, (GDDFull(iv),iv=1,nVegsurf),skip,skip, 'GDDFull '  ! 10
-  write(12,'(8f8.0, 2g10.4)') skip, skip,(SDDFull(iv),iv=1,nVegsurf),skip,skip,'SDDFull'  ! 11
-  write(12,120) skip, skip, (LAImin(iv),iv=1,nVegsurf),skip,skip,'LAI min'! 12  !
-  write(12,120) skip, skip, (LAImax(iv),iv=1,nVegsurf),skip,skip,'LAI max'  ! 13 ! 
-  write(12,120) skip, skip, (MaxConductance(iv),iv=1,nVegsurf),skip,skip,'MaxCond'  ! 14
-  write(12,'(8f8.0, 2g10.4)') (soilstoreCap(iv),iv=1,nsurf), skip, 'soilstoreCap'     ! 15
-  write(12,120) skip, skip, (VolSoilMoistCap(iv),iv=1,nVegsurf),skip,skip,'VolSoilMoistCap'  ! 16
-  write(12,120) (SatHydraulicConduct(iv),iv=1,nsurf),skip,'SatHydraulicConduct'  ! 17
-  write(12,'(5g10.4, g10.5, g20.0)') G1,G2,G3,G4,G5,G6,' conductance parameters'   ! 17 
-  write(12,'(4g10.2,g10.5,g20.0)') TH,TL,S1,S2, Kmax,' conductance parameters'   ! 18 
-  write(12,*)  ! skip header Soil rlated
-  write(12,'(g12.6,g10.2,f6.0,3g8.3,g8.1)')SoilDensity,SoilDepthMeas, SoilRocks,SmCap,'Soil'  !24
-  write(12,*)  ! skip header LUMPS related
-  write(12,'(10g8.2)')DRAINRT,RAINCOVER,RAINMAXRES,'LUMPS (1)drainage rate,adjust alpha/beta wet surface(3)Max water bucket'  ! 26
-  write(12,*)! skip header snow related  
-  write(12,'(10g8.2)')RadMeltFact,TempMeltFact,albSnowMin,albSnowMax,tau_a,tau_f,PrecipLimitAlb
-  write(12,'(10g8.2)')densSnowMin,densSnowMax,tau_r,CRWmin,CRWmax,PrecipLimit    
-  write(12,*)! skip header NARP related  
-  write(12,'(10g8.2)') TRANS_SITE, 'tran_site'
-  write(12,*)! skip header LAI related  
-  write(12,'(10g8.2)') LAItype, (laiPower(iv),iv=1,2)
+  write(*,*)'--------------------------------------------------------'    
   
-  120	 format (10g10.2)
- 
-  !Interval (sec),TStep (s),NSH number of steps per interval
-  NSH_real = interval/TSTEP 
+
+  !=======================================================================
+  !======================== Read input files ============================= 	
+  ! This part reads the input files derived from the SiteInfo spreadsheet
+  
+  write(*,*) 'Reading the following input files:'
+
+  !=======================SUEWS_SiteSelect.txt============================
+  FileN='SUEWS_SiteSelect.txt'
+  call NumberRows(FileN,SkipHeaderSiteInfo)     !Find number of rows in input file
+  nlinesSiteSelect=nlines
+  allocate(SiteSelect(nlinesSiteSelect,ncolumnsSiteSelect))
+  !Read input file 
+  open(54,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
+  do SkipCounter=1,(SkipHeaderSiteInfo-1)
+     read(54,*) 	!Skip lines before header
+  enddo
+  read(54,*) (HeaderSiteSelect_File(iv),iv=1,ncolumnsSiteSelect) !Get header
+    
+  do i=1,nlinesSiteSelect
+     read(54,*) (SiteSelect(i,iv),iv=1,ncolumnsSiteSelect)
+     !write(*,*) (SiteSelect(i,iv),iv=1,ncolumnsSiteSelect)
+  enddo
+  close(54)
+  
+  !call InputHeaderCheck(FileN) !! Need to add column checks for SiteSelect.txt
+  
+  !=======================SUEWS_NonVeg.txt============================
+  FileN='SUEWS_NonVeg.txt'
+    call NumberRows(FileN,SkipHeaderSiteInfo)     !Find number of rows in input file
+    nlinesImpervious=nlines
+    allocate(Impervious_Coeff(nlinesImpervious,ncolumnsImpervious))
+    !Read input file 
+    open(55,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
+    do SkipCounter=1,(SkipHeaderSiteInfo-1)
+       read(55,*) 	!Skip lines before header
+    enddo
+    read(55,*) (HeaderImp_File(iv),iv=1,ncolumnsImpervious) !Get header
+      
+    do i=1,nlinesImpervious
+       read(55,*) (Impervious_Coeff(i,iv),iv=1,ncolumnsImpervious)
+       !write(*,*) (Impervious_Coeff(i,iv),iv=1,ncolumnsImpervious)
+    enddo
+  close(55)
+  
+  call InputHeaderCheck(FileN)
+
+  ! Check codes are unique
+  do i=1,nlinesImpervious
+     do ii=1,nlinesImpervious
+        if(Impervious_Coeff(i,ci_Code)==Impervious_Coeff(ii,ci_Code) .and. i/=ii) then
+           write(*,*) 'Code',Impervious_Coeff(i,ci_Code),'in Impervious.txt not unique!'
+           call ErrorHint(60,FileN,Impervious_Coeff(i,ci_Code),notUsed,notUsedI)
+        endif
+     enddo
+  enddo   
+  
+  !=======================SUEWS_Veg.txt==============================
+  FileN='SUEWS_Veg.txt'
+    call NumberRows(FileN,SkipHeaderSiteInfo)     !Find number of rows in input file
+    nlinesPervious=nlines
+    allocate(Pervious_Coeff(nlinesPervious,ncolumnsPervious))
+    !Read input file 
+    open(56,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
+    do SkipCounter=1,(SkipHeaderSiteInfo-1)
+       read(56,*) 	!Skip lines before header
+    enddo
+    read(56,*) (HeaderPer_File(iv),iv=1,ncolumnsPervious) !Get header
+      
+    do i=1,nlinesPervious
+       read(56,*) (Pervious_Coeff(i,iv),iv=1,ncolumnsPervious)
+       !write(*,*) (Pervious_Coeff(i,iv),iv=1,ncolumnsPervious)
+    enddo
+  close(56)
+  
+  call InputHeaderCheck(FileN)
+
+  ! Check codes are unique
+  do i=1,nlinesPervious
+     do ii=1,nlinesPervious
+        if(Pervious_Coeff(i,cp_Code)==Pervious_Coeff(ii,cp_Code) .and. i/=ii) then
+           write(*,*) 'Code',Pervious_Coeff(i,cp_Code),'in Pervious.txt not unique!'
+           call ErrorHint(60,FileN,Pervious_Coeff(i,cp_Code),notUsed,notUsedI)
+        endif
+     enddo
+  enddo   
+
+  !=======================SUEWS_Water.txt=================================
+  FileN='SUEWS_Water.txt'
+    call NumberRows(FileN,SkipHeaderSiteInfo)     !Find number of rows in input file
+    nlinesWater=nlines
+    allocate(Water_Coeff(nlinesWater,ncolumnsWater))
+    !Read input file 
+    open(57,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
+    do SkipCounter=1,(SkipHeaderSiteInfo-1)
+       read(57,*) 	!Skip lines before header
+    enddo
+    read(57,*) (HeaderWater_File(iv),iv=1,ncolumnsWater) !Get header
+      
+    do i=1,nlinesWater
+       read(57,*) (Water_Coeff(i,iv),iv=1,ncolumnsWater)
+       !write(*,*) (Water_Coeff(i,iv),iv=1,ncolumnsWater)
+    enddo
+  close(57)
+  
+  call InputHeaderCheck(FileN)
+  
+  ! Check codes are unique
+  do i=1,nlinesWater
+     do ii=1,nlinesWater
+        if(Water_Coeff(i,cw_Code)==Water_Coeff(ii,cw_Code) .and. i/=ii) then
+           write(*,*) 'Code',Water_Coeff(i,cw_Code),'in Water.txt not unique!'
+           call ErrorHint(60,FileN,Water_Coeff(i,cw_Code),notUsed,notUsedI)
+        endif
+     enddo
+  enddo   
+
+
+  !=======================SUEWS_Snow.txt==================================
+  FileN='SUEWS_Snow.txt'
+    call NumberRows(FileN,SkipHeaderSiteInfo)     !Find number of rows in input file
+    nlinesSnow=nlines
+    allocate(Snow_Coeff(nlinesSnow,ncolumnsSnow))
+    !Read input file 
+    open(58,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
+    do SkipCounter=1,(SkipHeaderSiteInfo-1)
+       read(58,*) 	!Skip lines before header
+    enddo
+    read(58,*) (HeaderSnow_File(iv),iv=1,ncolumnsSnow) !Get header
+      
+    do i=1,nlinesSnow
+       read(58,*) (Snow_Coeff(i,iv),iv=1,ncolumnsSnow)
+       !write(*,*) (Snow_Coeff(i,iv),iv=1,ncolumnsSnow)
+    enddo
+  close(58)
+  
+  call InputHeaderCheck(FileN)
+
+  ! Check codes are unique
+  do i=1,nlinesSnow
+     do ii=1,nlinesSnow
+        if(Snow_Coeff(i,cs_Code)==Snow_Coeff(ii,cs_Code) .and. i/=ii) then
+           write(*,*) 'Code',Snow_Coeff(i,cs_Code),'in Snow.txt not unique!'
+           call ErrorHint(60,FileN,Snow_Coeff(i,cs_Code),notUsed,notUsedI)
+        endif
+     enddo
+  enddo   
+
+  
+  !=======================SUEWS_Soil.txt==================================
+  FileN='SUEWS_Soil.txt'
+    call NumberRows(FileN,SkipHeaderSiteInfo)     !Find number of rows in input file
+    nlinesSoil=nlines
+    allocate(Soil_Coeff(nlinesSoil,ncolumnsSoil))
+    !Read input file 
+    open(59,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
+    do SkipCounter=1,(SkipHeaderSiteInfo-1)
+       read(59,*) 	!Skip lines before header
+    enddo
+    read(59,*) (HeaderSoil_File(iv),iv=1,ncolumnsSoil) !Get header
+      
+    do i=1,nlinesSoil
+       read(59,*) (Soil_Coeff(i,iv),iv=1,ncolumnsSoil)
+       !write(*,*) (Soil_Coeff(i,iv),iv=1,ncolumnsSoil)
+    enddo
+  close(59)
+  
+  call InputHeaderCheck(FileN)
+  
+  ! Check codes are unique
+  do i=1,nlinesSoil
+     do ii=1,nlinesSoil
+        if(Soil_Coeff(i,cSo_Code)==Soil_Coeff(ii,cSo_Code) .and. i/=ii) then
+           write(*,*) 'Code',Soil_Coeff(i,cSo_Code),'in Soil.txt not unique!'
+           call ErrorHint(60,FileN,Soil_Coeff(i,cSo_Code),notUsed,notUsedI)
+        endif
+     enddo
+  enddo     
+
+  !===================SUEWS_Conductance.txt===============================
+  FileN='SUEWS_Conductance.txt'
+    call NumberRows(FileN,SkipHeaderSiteInfo)     !Find number of rows in input file
+    nlinesConductance=nlines
+    allocate(Conductance_Coeff(nlinesConductance,ncolumnsConductance))
+    !Read input file 
+    open(61,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
+    do SkipCounter=1,(SkipHeaderSiteInfo-1)
+       read(61,*) 	!Skip lines before header
+    enddo
+    read(61,*) (HeaderCond_File(iv),iv=1,ncolumnsConductance) !Get header
+      
+    do i=1,nlinesConductance
+       read(61,*) (Conductance_Coeff(i,iv),iv=1,ncolumnsConductance)
+       !write(*,*) (Conductance_Coeff(i,iv),iv=1,ncolumnsConductance)
+    enddo
+  close(61)
+  
+  call InputHeaderCheck(FileN)
+
+  ! Check codes are unique
+  do i=1,nlinesConductance
+     do ii=1,nlinesConductance
+        if(Conductance_Coeff(i,cc_Code)==Conductance_Coeff(ii,cc_Code) .and. i/=ii) then
+           write(*,*) 'Code',Conductance_Coeff(i,cc_Code),'in Conductance.txt not unique!'
+           call ErrorHint(60,FileN,Conductance_Coeff(i,cc_Code),notUsed,notUsedI)
+        endif
+     enddo
+  enddo   
+  
+  !===================SUEWS_OHMCoefficients.txt===========================
+  FileN='SUEWS_OHMCoefficients.txt'
+    call NumberRows(FileN,SkipHeaderSiteInfo)     !Find number of rows in input file
+    nlinesOHMCoefficients=nlines
+    allocate(OHMCoefficients_Coeff(nlinesOHMCoefficients,ncolumnsOHMCoefficients))
+    !Read input file 
+    open(62,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
+    do SkipCounter=1,(SkipHeaderSiteInfo-1)
+       read(62,*) 	!Skip lines before header
+    enddo
+    read(62,*) (HeaderOHMCoefficients_File(iv),iv=1,ncolumnsOHMCoefficients) !Get header
+      
+    do i=1,nlinesOHMCoefficients
+       read(62,*) (OHMCoefficients_Coeff(i,iv),iv=1,ncolumnsOHMCoefficients)
+       !write(*,*) (OHMCoefficients_Coeff(i,iv),iv=1,ncolumnsOHMCoefficients)
+    enddo
+  close(62)
+  
+  call InputHeaderCheck(FileN)
+
+  ! Check codes are unique
+  do i=1,nlinesOHMCoefficients
+     do ii=1,nlinesOHMCoefficients
+        if(OHMCoefficients_Coeff(i,cO_Code)==OHMCoefficients_Coeff(ii,cO_Code) .and. i/=ii) then
+           write(*,*) 'Code',OHMCoefficients_Coeff(i,cO_Code),'in OHMCoefficients.txt not unique!'
+           call ErrorHint(60,FileN,OHMCoefficients_Coeff(i,cO_Code),notUsed,notUsedI)
+        endif
+     enddo
+  enddo     
+
+  !================SUEWS_AnthropogenicHeat.txt============================
+  FileN='SUEWS_AnthropogenicHeat.txt'
+    call NumberRows(FileN,SkipHeaderSiteInfo)     !Find number of rows in input file
+    nlinesAnthropogenicHeat=nlines
+    allocate(AnthropogenicHeat_Coeff(nlinesAnthropogenicHeat,ncolumnsAnthropogenicHeat))
+    !Read input file 
+    open(63,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
+    do SkipCounter=1,(SkipHeaderSiteInfo-1)
+       read(63,*) 	!Skip lines before header
+    enddo
+    read(63,*) (HeaderAnthropogenicHeat_File(iv),iv=1,ncolumnsAnthropogenicHeat) !Get header
+      
+    do i=1,nlinesAnthropogenicHeat
+       read(63,*) (AnthropogenicHeat_Coeff(i,iv),iv=1,ncolumnsAnthropogenicHeat)
+       !write(*,*) (AnthropogenicHeat_Coeff(i,iv),iv=1,ncolumnsAnthropogenicHeat)
+    enddo
+  close(63)
+
+  call InputHeaderCheck(FileN)
+
+  ! Check codes are unique
+  do i=1,nlinesAnthropogenicHeat
+     do ii=1,nlinesAnthropogenicHeat
+        if(AnthropogenicHeat_Coeff(i,cA_Code)==AnthropogenicHeat_Coeff(ii,cA_Code) .and. i/=ii) then
+           write(*,*) 'Code',AnthropogenicHeat_Coeff(i,cA_Code),'in AnthropogenicHeat.txt not unique!'
+           call ErrorHint(60,FileN,AnthropogenicHeat_Coeff(i,cA_Code),notUsed,notUsedI)
+        endif
+     enddo
+  enddo     
+
+  !================SUEWS_Irrigation.txt===================================
+  FileN='SUEWS_Irrigation.txt'
+    call NumberRows(FileN,SkipHeaderSiteInfo)     !Find number of rows in input file
+    nlinesIrrigation=nlines
+    allocate(Irrigation_Coeff(nlinesIrrigation,ncolumnsIrrigation))
+    !Read input file 
+    open(64,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
+    do SkipCounter=1,(SkipHeaderSiteInfo-1)
+       read(64,*) 	!Skip lines before header
+    enddo
+    read(64,*) (HeaderIrrigation_File(iv),iv=1,ncolumnsIrrigation) !Get header
+      
+    do i=1,nlinesIrrigation
+       read(64,*) (Irrigation_Coeff(i,iv),iv=1,ncolumnsIrrigation)
+       !write(*,*) (Irrigation_Coeff(i,iv),iv=1,ncolumnsIrrigation)
+    enddo
+  close(64)
+  
+  call InputHeaderCheck(FileN)
+
+  ! Check codes are unique
+  do i=1,nlinesIrrigation
+     do ii=1,nlinesIrrigation
+        if(Irrigation_Coeff(i,cIr_Code)==Irrigation_Coeff(ii,cIr_Code) .and. i/=ii) then
+           write(*,*) 'Code',Irrigation_Coeff(i,cIr_Code),'in Irrigation.txt not unique!'
+           call ErrorHint(60,FileN,Irrigation_Coeff(i,cIr_Code),notUsed,notUsedI)
+        endif
+     enddo
+  enddo     
+  
+  !================SUEWS_Profiles.txt=====================================
+  FileN='SUEWS_Profiles.txt'
+    call NumberRows(FileN,SkipHeaderSiteInfo)     !Find number of rows in input file
+    nlinesProfiles=nlines
+    allocate(Profiles_Coeff(nlinesProfiles,ncolumnsProfiles))
+    !Read input file 
+    open(65,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
+    do SkipCounter=1,(SkipHeaderSiteInfo-1)
+       read(65,*) 	!Skip lines before header
+    enddo
+    read(65,*) (HeaderProfiles_File(iv),iv=1,ncolumnsProfiles) !Get header
+      
+    do i=1,nlinesProfiles
+       read(65,*) (Profiles_Coeff(i,iv),iv=1,ncolumnsProfiles)
+       !write(*,*) (Profiles_Coeff(i,iv),iv=1,ncolumnsProfiles)
+    enddo
+  close(65)
+  
+  call InputHeaderCheck(FileN)
+
+  ! Check codes are unique
+  do i=1,nlinesProfiles
+     do ii=1,nlinesProfiles
+        if(Profiles_Coeff(i,cPr_Code)==Profiles_Coeff(ii,cPr_Code) .and. i/=ii) then
+           write(*,*) 'Code',Profiles_Coeff(i,cPr_Code),'in Profiles.txt not unique!'
+           call ErrorHint(60,FileN,Profiles_Coeff(i,cPr_Code),notUsed,notUsedI)
+        endif
+     enddo
+  enddo   
+
+ !================SUEWS_WithinGridWaterDist.txt===========================
+  FileN='SUEWS_WithinGridWaterDist.txt'
+    call NumberRows(FileN,SkipHeaderSiteInfo)     !Find number of rows in input file
+    nlinesWGWaterDist=nlines
+    allocate(WGWaterDist_Coeff(nlinesWGWaterDist,ncolumnsWGWaterDist))
+    !Read input file 
+    open(66,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
+    do SkipCounter=1,(SkipHeaderSiteInfo-1)
+       read(66,*) 	!Skip lines before header
+    enddo
+    read(66,*) (HeaderWGWaterDist_File(iv),iv=1,ncolumnsWGWaterDist) !Get header
+      
+    do i=1,nlinesWGWaterDist
+       read(66,*) (WGWaterDist_Coeff(i,iv),iv=1,ncolumnsWGWaterDist)
+       !write(*,*) (WGWaterDist_Coeff(i,iv),iv=1,ncolumnsWGWaterDist)
+    enddo
+  close(66)
+  
+  call InputHeaderCheck(FileN)
+  
+  ! Check codes are unique
+  do i=1,nlinesWGWaterDist
+     do ii=1,nlinesWGWaterDist
+        if(WGWaterDist_Coeff(i,cWG_Code)==WGWaterDist_Coeff(ii,cWG_Code) .and. i/=ii) then
+           write(*,*) 'Code',WGWaterDist_Coeff(i,cWG_Code),'in WithinGridWaterDist.txt not unique!'
+           call ErrorHint(60,FileN,WGWaterDist_Coeff(i,cWG_Code),notUsed,notUsedI)
+        endif
+     enddo
+  enddo    
+    
+  !=======================================================================
+  !=======================================================================
+    
+  !-----------------------------------------------------------------------
+  !SUEWS run information
+  Inputmetformat=10	!Input met data file in LUMPS format (1) or SUEWS format (10)
+  LAICalcYes=1		!1 -> Calculate LAI
+  ITY=2			!Evaporation calculated according to Rutter (=1) or Shuttleworth (=2)
+  tstepcount=0
+   
+  ! Calculate NSH (number of steps per interval) from info in RunControl
+  NSH_real = INTERVAL/TSTEP	!Both in seconds 
 
   if (NSH_real<2) then    !If NSH_real smaller that two, only one period is run
-    NSH=1
-    TSTEP=real(interval,kind(1d0))
-  else
-    if (NSH_real==int(NSH_real)) then
-    	NSH=interval/TSTEP    !NSH needs to be an integer
-        
-    else
-      	call ErrorHint(39,'File: RunControl',TSTEP,real(interval,kind(1d0)),notUsedI)
-      
-    endif
+     NSH=1
+     TSTEP=real(INTERVAL,kind(1d0))
+  else			  !Check NSH is an integer	
+     if (NSH_real==int(NSH_real)) then 
+        NSH = INTERVAL/TSTEP    
+     else
+        call ErrorHint(39,'File: RunControl',TSTEP,real(INTERVAL,kind(1d0)),notUsedI)
+     endif
   endif
   
-  NMIN=TSTEP/60
-  
-  NPeriodsPerYear= NPeriodsPerDay*NDays ! assume 366 max but could be less  
-  
-  halftimestep=real(interval)/2/(24*3600) ! used in sun_position to get sunpos in the middle of timestep
- 
-  ! ---------------OHMChoices-----------------------------------------------
-  ! coefficients for storage heat flux (will select by grid later)
-  fileOHMChoices=trim(FileInputPath)//'OHM_Coefficients.txt'
-  co=0
-  ! ---------------OHMChoices-----------------------------------------------
-  open(8,file=trim(fileOHMChoices),status='old',err=202)
-  do i=1,NrowOhm
-	 READ(8,*,iostat=iostat_var) (co(i,iv),iv=1,NCoeffOhm)
-  enddo
-  close (8)
-  write(12,*) '---Number of rows in OHM_Coefficients.txt =',i-1
-
-  close(12) !Close file choices to be opened again later in the code
-  return
-
-  !-------Possible problems--------------------------------------------------------------------
- 200 call ErrorHint(47,'RunControl.nml',notUsed,notUsed,notUsedI)
- 201 call ErrorHint(48,'RunControl.nml',notUsed,notUsed,notUsedI)
- 202 call ErrorHint(47,trim(fileOHMChoices),notUsed,notUsed,notUsedI)
- 203 call ErrorHint(47,trim(FileChoices),notUsed,notUsed,notUsedI)
- 204 call ErrorHint(47,trim(FileInputPath)//trim('SUEWS_FunctionalTypes.txt'),notUsed,notUsed,notUsedI)
- 205 call ErrorHint(47,trim(FileInputPath)//trim('SUEWS_FunctionalTypes.txt')// ProbLine,notUsed,notUsed,notUsedI)  ! another error number???
- 219 call ErrorHint(12,trim('SnowControl'),notUsed,notUsed,ios_out)
-
- end subroutine OverallRunControl
-!----------------------------------------------------------------------------------------------
-!----------------------------------------------------------------------------------------------
-
- subroutine OpenAnnualFiles(Grid)
-	!This subroutine opens the annual files and saves header to those
-    use allocateArray
-    use data_in
-    use defaultNotUsed
+  !Copy integer NSH to NSH_real for use in calculations
+  NSH_real = real(NSH,kind(1d0))
     
-	IMPLICIT NONE
-
-    character(len=15)::grid
-
-    if(CreateAnnual==1)then
-           if(int(year)==FirstYear)then
-               open(61,file=trim(FileOutputPath)//trim(Grid)//'_annual.txt',err=200)
-               write(61,140)
-           else
-               open(61,file=trim(FileOutputPath)//trim(Grid)//'_annual.txt',access="append",err=200)
-           endif
-
-        endif
-        if(alldays==1) then
-           if(int(year)==FirstYear)then
-               open(90,file=trim(FileOutputPath)//trim(Grid)//'_alldays.txt',err=201)
-               write(90,141)
-           else
-               open(90,file=trim(FileOutputPath)//trim(Grid)//'_alldays.txt',access="append",err=201)
-           endif
-        endif
-        
-        if(writedailyState==1)then
-          if(int(year)==FirstYear)then
-               open(60, file=trim(FileOutputPath)//trim(Grid)//'_DailyState.txt',err=202)
-               write(60,142)
-          else     
-               open(60, file=trim(FileOutputPath)//trim(Grid)//'_DailyState.txt',access="append",err=202)
-          endif
-        endif
-
-140 	format('%yr counter      qn      qs       qf     qe_S       pp      ext_Ie',&
-        '     int_Ie   tot_ie      E_S     Change     R_Soil      R         Fw ',&
-        '    addWater   QH_S      Qm   delta_QSI   Qrain    SWE    MwStore snowRem_pav snowRem_bldg ChSnow/i') 
-
-141 	format('%yr     day     qn      qs       qf     qe_S       pp      ext_Ie',&
-        '     int_Ie   tot_ie      E_S     Change     R_Soil      R         Fw ',&
-        '    addWater   QH_S      Qm   delta_QSI   Qrain    SWE    MwStore snowRem_pav snowRem_bldg ChSnow/i')
-
-142      format('%year id    HD1h  HDD2c  HDD3m  HDT5d   Prec   DaSR  GDD1g GDD2s  GDmn   GDmx ',&
-       ' dayLG   LAIc   LAId  LAIgI  LAIgU  DEcap    Por Albdec WUgr(1) WUgr(2) WUgr(3)',&
-       ' WUtr(1) WUtr(2) WUtr(3) LAIch LAIlumps alb_snow dens_snow_pav dens_snow_bldg',&
-       ' dens_snow_ET dens_snow_DT dens_snow_IG dens_snow_UG dens_snow_wtr')
-
-		return
-
-200 call ErrorHint(47,trim(FileOutputPath)//trim(Grid)//'_annual.txt',notUsed,notUsed,notUsedI)
-201 call ErrorHint(47,trim(FileOutputPath)//trim(Grid)//'_alldays.txt',notUsed,notUsed,notUsedI)
-202 call ErrorHint(47,trim(FileOutputPath)//trim(Grid)//'DailyState.txt',notUsed,notUsed,notUsedI)
-
- end subroutine OpenAnnualFiles
-
-!----------------------------------------------------------------------------------------------
-!----------------------------------------------------------------------------------------------
-
- subroutine RunControlByGridByYear
- use data_in       ! LUMPS_metRead.f95
- use ohm_calc
- use run_info      ! run_control_v2_1.f90
- use SUES_data     !
- USE GIS_data      ! LUMPS_gis_read.f95
- use mod_z     ! module_LUMPS_constants,f90
- use FileName
- use allocateArray  ! module_LUMPS_constants,f90
- use time
- use defaultNotUsed
- use snowMod
- 
- IMPLICIT NONE
- integer:: which,iv,j,ic
- real(kind(1d0))::rate(9)
- character (len=150):: CanopyName,FileHr !Name of the input files
- 
- namelist/SiteSpecificParam/lat,&
- 							lng,& 
-                            SurfaceArea,&
-                            RunoffToWater,&  
-                            WaterUseAreaGrass,&
-                            WaterUseAreaTrees,&
-                            FlowChange,& 
-                            PipeCapacity,&
- 							Faut,&          !Irrigation
-                            Ie_end,&  
-                            Ie_start,&
-                            Ie_a,&
-                            Ie_m,&
-                            DayWat,& 
-                            DayWatPer,&   
-                            InternalWaterUse,&  ! in mm (/24)    
-                            SnowLimBuild,&
-				            SnowLimPaved				                
-                         
-                        
- FileWU=trim(FileInputPath)//'SiteSpecificParam'//trim(FileCode)//'.nml'
- FileHr=trim(FileInputPath)//'HourlyProfile'//trim(FileCode)//'.txt'
-
- !Open and read hourly profile file
- open(7,File=FileHr,err=251,status='old')
- read(7,*,err=251,iostat=ios_out) !skip header
- ic=1
- read(7,*,err=250,iostat=ios_out)(HourWat(j),j=0,23)
- ic=2
- read(7,*,err=250,iostat=ios_out)(AhProF(j,1),j=0,23)
- ic=3
- read(7,*,err=250,iostat=ios_out)(AhProF(j,2),j=0,23)
- ic=4
- read(7,*,err=250,iostat=ios_out)(snowProf(j),j=0,23)
- close (7)
-
- !write hourly profile to FileChoices
- write(12,*)'----------',trim(FileHr),'-hr:0 to 23-- after HourResChoice--------'
- write(12,'(24f6.2, a10)')HourWat, ' Hour Wat'
- write(12,'(24f6.2,a20)')(AhProF(j,1),j=0,23),'AhProf weekday -1 '
- write(12,'(24f6.2,a20)')(AhProF(j,2),j=0,23),'AhProf weekend -2 '
-
- !Check that the hourly profiles are given correctly to the model
- if(abs(sum(HourWat)-1.000)>0.001)then
-   if(abs(sum(HourWat)-1.000)<0.02)then
-     HourWat=HourWat*(1/sum(HourWat))
-   else
-     call ErrorHint(7,trim(FileHr),sum(HourWat),notUsed,notUsedI)
-   endif
- endif
-
- !Open and read SiteSpecificParam-file
- open(7,File=FileWU,err=200,status='old')
- read(7,nml=SiteSpecificParam,err=211, iostat=ios_out)
- close(7)
-
- !Write these to FileChoices
- write(12,*)'----------',trim(FileWU),'----------'
- write(12,nml=SiteSpecificParam)
-
- SurfaceArea=SurfaceArea*10000 !Change surface area from ha to m^2
- 
- !------------------------------------------------------------------------------------------  
- !Define and read in WaterDistribution file
- CanopyName=trim(FileInputPath)//'WaterDist'//trim(FileCode)//'.txt'  
- open(7,File=trim(CanopyName),err=201,status='old')
- read(7,*,iostat=ios_out) ! skip header
-
- if(ios_out<0) call ErrorHint(11,trim(canopyname),notUsed,notUsed,ios_out)
- 
- !initialize to all zero
- WaterDist=0 !Table which determines distribution of water in the canopy
- do iv=1, Nsurf-1 
- 	read(7,*,iostat=ios_out,end=501)(rate(j),j=1,9),which
-       
-    if(ios_out/=0) call ErrorHint(50,trim(CanopyName),real(ios_Out,kind(1d0)),notUsed,iv)
-
- 501 if(rate(which)/=0) call ErrorHint(8,trim(CanopyName),rate(which),notUsed,notUsedI)
-    	
-   ! check LJ why can this not go to soil and runof
-  	if(rate(8)/=0.and.rate(9)/=0)  call ErrorHint(9,trim(CanopyName),rate(8),rate(9),notUsedI)
-    if(sum(rate)>1.0000001.or.sum(rate)<0.9999999)call ErrorHint(10,trim(CanopyName),sum(rate),notUsed,which)
-      	
-	 do j=1,Nsurf  
-		 WaterDist(j,which)=rate(j) 
-	 enddo
-	 if(rate(8)/=0) then
- 		WaterDist(8,which)=rate(8)
-	 else
- 	  	WaterDist(8,which)=rate(9)
-	 endif
-  enddo
-
-  !Write to FileChoices
-  write(12,*)'----------',trim(CanopyName),'----------'
-  write(12,*)'To !Paved Build  Conif  Decid GrassIrr GrassUnirr  Water Runoff  Soil SurfaceFrom   '
-  
-  do iv=1,nSurf-1
-    write(12,'(i4, 8f6.2)')iv,(WaterDist(j,iv),j=1,nsurf+1)
-  enddo
-        
-  close(7)
-
+  HalfTimeStep=real(INTERVAL)/2/(24*3600)   !Used in sun_position to get sunpos in the middle of timestep
+    
   return
 
-200 call ErrorHint(47,trim(FileWU),notUsed,notUsed,notUsedI)
-201 call ErrorHint(47,trim(CanopyName),notUsed,notUsed,notUsedI)
-251 call ErrorHint(47,trim(FileHr),notUsed,notUsed,notUsedI)
-250 reall=real(ios_out)
-    call ErrorHint(13,trim(FileHr),reall,notUsed,ic)
-211 call ErrorHint(12,trim(FileWU),daywatper(1),daywatper(2),ios_out)
+  !-------Possible problems-----------------------------------------------
+  200 call ErrorHint(47,'RunControl.nml',notUsed,notUsed,notUsedI)
+  201 call ErrorHint(48,'RunControl.nml',notUsed,notUsed,notUsedI)
+ 
+  203 call ErrorHint(47,trim(FileChoices),notUsed,notUsed,notUsedI)
+ 
+  300 call ErrorHint(48,trim(FileN),notUsed,notUsed,notUsedI)
+  !-----------------------------------------------------------------------
+   
+  END SUBROUTINE OverallRunControl
+!=========================================================================
 
- end subroutine RunControlByGridByYear
+
+
+!=========================================================================
+!This subroutine finds the number of rows in each input file
+!INPUT: FileN      		Name of the input file 
+!       SkipHeaderLines 	Number of header rows to skip
+!Made by LJ/HCW in Oct 2014
+ 
+ subroutine NumberRows(FileN,SkipHeaderLines)
+
+   use data_in
+   use DefaultNotUsed
+   use Initial
+
+   IMPLICIT NONE
+
+   character(len=50):: FileN
+   integer:: SkipHeaderLines, RunNumber
+   integer:: SkipCounter
+      
+   !write(*,*) FileN
+   open(57,file=trim(FileInputPath)//trim(FileN),err=204,status='old')
+
+   if(SkipHeaderLines > 0) then
+     do SkipCounter=1,SkipHeaderLines
+        read(57,*,err=205)
+        !write(*,*) SkipCounter, SkipHeaderLines
+     enddo
+   endif
+
+   nlines = 0 !Initialize nlines
+   do
+      read(57,*) RunNumber
+      if(RunNumber==-9) exit
+      nlines = nlines + 1
+   end do
+    !write(*,*) 'nlines read: ',nlines
+   close(57)
+   return
+
+204 call ErrorHint(47,trim(FileInputPath)//trim(FileN),notUsed,notUsed,notUsedI)
+205 call ErrorHint(48,trim(FileInputPath)//trim(FileN),notUsed,notUsed,notUsedI)
+
+ end subroutine NumberRows
+!=========================================================================
+
+
+
 !----------------------------------------------------------------------------------------------
-! sg feb 2012 - 
+!Moves input information corresponding to row rr of SiteSelect into row Gridiv of SurfaceChar
+! - currently done once per year for each grid
+!Made by HW&LJ Oct 2014.
+!Last modified: HCW 26 Jan 2015
+! Interpolated hourly energy use profiles to resolution of model timestep.
+! Interpolated hourly water use profiles to resolution of model timestep.
+! Normalised energy use & water use profiles as required.
+! Hourly snow clearing profile is a 0-1 switch, and thus is not interpolated nor normalised.
+! To Do 
+!	- Rename profiles 1-24 rather than 0-23?
+!----------------------------------------------------------------------------------------------
+ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
+
+   use allocateArray
+   use ColNamesInputFiles
+   use defaultNotUsed
+   use Initial
+   use sues_data
+   
+   IMPLICIT NONE
+
+   integer:: Gridiv,&    !Row of SurfaceChar where input information will be stored
+             rr          !Row of SiteSelect that matches current grid and year
+                   
+   !-------------------------------------------------------------------------------------------
+   
+   ! Initialise row of SurfaceChar
+   SurfaceChar(Gridiv,:) = -999
+         	
+   ! Transfer data in SiteSelect to SurfaceChar
+   SurfaceChar(Gridiv,1:ncolumnsSiteSelect) = SiteSelect(rr,1:ncolumnsSiteSelect) !Cols in same order as in SiteSelect.txt
+     
+   ! ======== Retrieve information from other input files via codes ========
+          
+   ! ---- Find code for Paved surface (Impervious) ----
+   call CodeMatchImpervious(rr,c_PavedCode)
+   ! Transfer characteristics to SurfaceChar for Paved surface
+   SurfaceChar(gridiv,c_Alb(PavSurf)) 	       = Impervious_Coeff(iv5,ci_Alb)
+   SurfaceChar(gridiv,c_Emis(PavSurf))         = Impervious_Coeff(iv5,ci_Emis)
+   SurfaceChar(gridiv,c_StorMin(PavSurf))      = Impervious_Coeff(iv5,ci_StorMin)
+   SurfaceChar(gridiv,c_StorMax(PavSurf))      = Impervious_Coeff(iv5,ci_StorMax)
+   SurfaceChar(gridiv,c_DrEq(PavSurf)) 	       = Impervious_Coeff(iv5,ci_DrEq)
+   SurfaceChar(gridiv,c_DrCoef1(PavSurf))      = Impervious_Coeff(iv5,ci_DrCoef1)
+   SurfaceChar(gridiv,c_DrCoef2(PavSurf))      = Impervious_Coeff(iv5,ci_DrCoef2)
+   SurfaceChar(gridiv,c_SoilStCap(PavSurf))    = Impervious_Coeff(iv5,ci_SoilStCap)
+   SurfaceChar(gridiv,c_SoilTCode(PavSurf))    = Impervious_Coeff(iv5,ci_SoilTCode)
+   SurfaceChar(gridiv,c_SnowLimPat(PavSurf))   = Impervious_Coeff(iv5,ci_SnowLimPat)
+   SurfaceChar(gridiv,c_SnowLimRem(PavSurf))   = Impervious_Coeff(iv5,ci_SnowLimRem)
+   SurfaceChar(gridiv,c_OHMCode_SWet(PavSurf)) = Impervious_Coeff(iv5,ci_OHMCode_SWet)
+   SurfaceChar(gridiv,c_OHMCode_SDry(PavSurf)) = Impervious_Coeff(iv5,ci_OHMCode_SDry)
+   SurfaceChar(gridiv,c_OHMCode_WWet(PavSurf)) = Impervious_Coeff(iv5,ci_OHMCode_WWet)
+   SurfaceChar(gridiv,c_OHMCode_WDry(PavSurf)) = Impervious_Coeff(iv5,ci_OHMCode_WDry)
+   ! Use SoilCode for Paved to find code for soil characteristics
+   call CodeMatchSoil(Gridiv,c_SoilTCode(PavSurf))
+   ! Transfer soil characteristics to SurfaceChar
+   SurfaceChar(gridiv,c_VolSMCap(PavSurf))    = Soil_Coeff(iv5,cSo_VolSMCap)
+   SurfaceChar(gridiv,c_KSat(PavSurf))        = Soil_Coeff(iv5,cSo_KSat)
+   SurfaceChar(gridiv,c_SoilDens(PavSurf))    = Soil_Coeff(iv5,cSo_SoilDens)
+   SurfaceChar(gridiv,c_SoilInfRate(PavSurf)) = Soil_Coeff(iv5,cSo_SoilInfRate)
+   SurfaceChar(gridiv,c_ObsSMDepth(PavSurf))  = Soil_Coeff(iv5,cSo_ObsSMDepth)
+   SurfaceChar(gridiv,c_ObsSMMax(PavSurf))    = Soil_Coeff(iv5,cSo_ObsSMMax)
+   SurfaceChar(gridiv,c_ObsSNRFrac(PavSurf))  = Soil_Coeff(iv5,cSo_ObsSNRFrac) 
+   
+   ! Get OHM characteristics for Paved
+   call CodeMatchOHM(Gridiv,PavSurf,'SWet')  !Summer wet
+   ! Transfer OHM characteristics to SurfaceChar
+   SurfaceChar(Gridiv,c_a1_SWet(PavSurf))    = OHMCoefficients_Coeff(iv5,cO_a1)
+   SurfaceChar(Gridiv,c_a2_SWet(PavSurf))    = OHMCoefficients_Coeff(iv5,cO_a2)
+   SurfaceChar(Gridiv,c_a3_SWet(PavSurf))    = OHMCoefficients_Coeff(iv5,cO_a3)
+   call CodeMatchOHM(Gridiv,PavSurf,'SDry')  !Summer dry	
+   ! Transfer OHM characteristics to SurfaceChar
+   SurfaceChar(Gridiv,c_a1_SDry(PavSurf))    = OHMCoefficients_Coeff(iv5,cO_a1)
+   SurfaceChar(Gridiv,c_a2_SDry(PavSurf))    = OHMCoefficients_Coeff(iv5,cO_a2)
+   SurfaceChar(Gridiv,c_a3_SDry(PavSurf))    = OHMCoefficients_Coeff(iv5,cO_a3)   
+   call CodeMatchOHM(Gridiv,PavSurf,'WWet')  !Winter wet
+   ! Transfer OHM characteristics to SurfaceChar
+   SurfaceChar(Gridiv,c_a1_WWet(PavSurf))    = OHMCoefficients_Coeff(iv5,cO_a1)
+   SurfaceChar(Gridiv,c_a2_WWet(PavSurf))    = OHMCoefficients_Coeff(iv5,cO_a2)
+   SurfaceChar(Gridiv,c_a3_WWet(PavSurf))    = OHMCoefficients_Coeff(iv5,cO_a3)
+   call CodeMatchOHM(Gridiv,PavSurf,'WDry')  !Winter dry
+   ! Transfer OHM characteristics to SurfaceChar
+   SurfaceChar(Gridiv,c_a1_WDry(PavSurf))    = OHMCoefficients_Coeff(iv5,cO_a1)
+   SurfaceChar(Gridiv,c_a2_WDry(PavSurf))    = OHMCoefficients_Coeff(iv5,cO_a2)
+   SurfaceChar(Gridiv,c_a3_WDry(PavSurf))    = OHMCoefficients_Coeff(iv5,cO_a3)   
+   
+   ! Get water distribution (within grid) for Paved
+   call CodeMatchDist(rr,c_WGPavedCode,cWG_ToPaved)
+   ! Transfer distribution to SurfaceChar
+   SurfaceChar(Gridiv,c_WGToPaved(PavSurf))  = WGWaterDist_Coeff(iv5,cWG_ToPaved)   
+   SurfaceChar(Gridiv,c_WGToBuilt(PavSurf))  = WGWaterDist_Coeff(iv5,cWG_ToBuilt)   
+   SurfaceChar(Gridiv,c_WGToEveTr(PavSurf))  = WGWaterDist_Coeff(iv5,cWG_ToEveTr)   
+   SurfaceChar(Gridiv,c_WGToDecTr(PavSurf))  = WGWaterDist_Coeff(iv5,cWG_ToDecTr)   
+   SurfaceChar(Gridiv,c_WGToGrass(PavSurf))  = WGWaterDist_Coeff(iv5,cWG_ToGrass)   
+   SurfaceChar(Gridiv,c_WGToBSoil(PavSurf))  = WGWaterDist_Coeff(iv5,cWG_ToBSoil)   
+   SurfaceChar(Gridiv,c_WGToWater(PavSurf))  = WGWaterDist_Coeff(iv5,cWG_ToWater)   
+   SurfaceChar(Gridiv,c_WGToRunoff(PavSurf))  = WGWaterDist_Coeff(iv5,cWG_ToRunoff)   
+   SurfaceChar(Gridiv,c_WGToSoilStore(PavSurf))    = WGWaterDist_Coeff(iv5,cWG_ToSoilStore)   
+       
+   ! ---- Find code for Built surface (Impervious) ----
+   call CodeMatchImpervious(rr,c_BuiltCode) 
+   ! Transfer characteristics to SurfaceChar for Built surface
+   SurfaceChar(gridiv,c_Alb(BldgSurf))          = Impervious_Coeff(iv5,ci_Alb)
+   SurfaceChar(gridiv,c_Emis(BldgSurf))         = Impervious_Coeff(iv5,ci_Emis)
+   SurfaceChar(gridiv,c_StorMin(BldgSurf))      = Impervious_Coeff(iv5,ci_StorMin)
+   SurfaceChar(gridiv,c_StorMax(BldgSurf))      = Impervious_Coeff(iv5,ci_StorMax)
+   SurfaceChar(gridiv,c_DrEq(BldgSurf))         = Impervious_Coeff(iv5,ci_DrEq)
+   SurfaceChar(gridiv,c_DrCoef1(BldgSurf))      = Impervious_Coeff(iv5,ci_DrCoef1)
+   SurfaceChar(gridiv,c_DrCoef2(BldgSurf))      = Impervious_Coeff(iv5,ci_DrCoef2)
+   SurfaceChar(gridiv,c_SoilStCap(BldgSurf))    = Impervious_Coeff(iv5,ci_SoilStCap)
+   SurfaceChar(gridiv,c_SoilTCode(BldgSurf))    = Impervious_Coeff(iv5,ci_SoilTCode)
+   SurfaceChar(gridiv,c_SnowLimPat(BldgSurf))   = Impervious_Coeff(iv5,ci_SnowLimPat)
+   SurfaceChar(gridiv,c_SnowLimRem(BldgSurf))   = Impervious_Coeff(iv5,ci_SnowLimRem)
+   SurfaceChar(gridiv,c_OHMCode_SWet(BldgSurf)) = Impervious_Coeff(iv5,ci_OHMCode_SWet)
+   SurfaceChar(gridiv,c_OHMCode_SDry(BldgSurf)) = Impervious_Coeff(iv5,ci_OHMCode_SDry)
+   SurfaceChar(gridiv,c_OHMCode_WWet(BldgSurf)) = Impervious_Coeff(iv5,ci_OHMCode_WWet)
+   SurfaceChar(gridiv,c_OHMCode_WDry(BldgSurf)) = Impervious_Coeff(iv5,ci_OHMCode_WDry)   
+   ! Use SoilCode for Built to find code for soil characteristics
+   call CodeMatchSoil(Gridiv,c_SoilTCode(BldgSurf))
+   ! Transfer soil characteristics to SurfaceChar
+   SurfaceChar(gridiv,c_VolSMCap(BldgSurf))    = Soil_Coeff(iv5,cSo_VolSMCap)
+   SurfaceChar(gridiv,c_KSat(BldgSurf))        = Soil_Coeff(iv5,cSo_KSat)
+   SurfaceChar(gridiv,c_SoilDens(BldgSurf))    = Soil_Coeff(iv5,cSo_SoilDens)
+   SurfaceChar(gridiv,c_SoilInfRate(BldgSurf)) = Soil_Coeff(iv5,cSo_SoilInfRate)
+   SurfaceChar(gridiv,c_ObsSMDepth(BldgSurf))  = Soil_Coeff(iv5,cSo_ObsSMDepth)
+   SurfaceChar(gridiv,c_ObsSMMax(BldgSurf))    = Soil_Coeff(iv5,cSo_ObsSMMax)
+   SurfaceChar(gridiv,c_ObsSNRFrac(BldgSurf))  = Soil_Coeff(iv5,cSo_ObsSNRFrac)
+   !Get OHM characteristics for Built
+   call CodeMatchOHM(Gridiv,BldgSurf,'SWet')  !Summer wet
+   ! Transfer OHM characteristics to SurfaceChar
+   SurfaceChar(Gridiv,c_a1_SWet(BldgSurf))    = OHMCoefficients_Coeff(iv5,cO_a1)
+   SurfaceChar(Gridiv,c_a2_SWet(BldgSurf))    = OHMCoefficients_Coeff(iv5,cO_a2)
+   SurfaceChar(Gridiv,c_a3_SWet(BldgSurf))    = OHMCoefficients_Coeff(iv5,cO_a3)
+   call CodeMatchOHM(Gridiv,BldgSurf,'SDry')  !Summer dry	
+   ! Transfer OHM characteristics to SurfaceChar
+   SurfaceChar(Gridiv,c_a1_SDry(BldgSurf))    = OHMCoefficients_Coeff(iv5,cO_a1)
+   SurfaceChar(Gridiv,c_a2_SDry(BldgSurf))    = OHMCoefficients_Coeff(iv5,cO_a2)
+   SurfaceChar(Gridiv,c_a3_SDry(BldgSurf))    = OHMCoefficients_Coeff(iv5,cO_a3)   
+   call CodeMatchOHM(Gridiv,BldgSurf,'WWet')  !Winter wet
+   ! Transfer OHM characteristics to SurfaceChar
+   SurfaceChar(Gridiv,c_a1_WWet(BldgSurf))    = OHMCoefficients_Coeff(iv5,cO_a1)
+   SurfaceChar(Gridiv,c_a2_WWet(BldgSurf))    = OHMCoefficients_Coeff(iv5,cO_a2)
+   SurfaceChar(Gridiv,c_a3_WWet(BldgSurf))    = OHMCoefficients_Coeff(iv5,cO_a3)
+   call CodeMatchOHM(Gridiv,BldgSurf,'WDry')  !Winter dry
+   ! Transfer OHM characteristics to SurfaceChar
+   SurfaceChar(Gridiv,c_a1_WDry(BldgSurf))    = OHMCoefficients_Coeff(iv5,cO_a1)
+   SurfaceChar(Gridiv,c_a2_WDry(BldgSurf))    = OHMCoefficients_Coeff(iv5,cO_a2)
+   SurfaceChar(Gridiv,c_a3_WDry(BldgSurf))    = OHMCoefficients_Coeff(iv5,cO_a3)      
+   
+   ! Get water distribution (within grid) for Built
+   call CodeMatchDist(rr,c_WGBuiltCode,cWG_ToBuilt)  
+   ! Transfer distribution to SurfaceChar
+   SurfaceChar(Gridiv,c_WGToPaved(BldgSurf))  = WGWaterDist_Coeff(iv5,cWG_ToPaved)   
+   SurfaceChar(Gridiv,c_WGToBuilt(BldgSurf))  = WGWaterDist_Coeff(iv5,cWG_ToBuilt)   
+   SurfaceChar(Gridiv,c_WGToEveTr(BldgSurf))  = WGWaterDist_Coeff(iv5,cWG_ToEveTr)   
+   SurfaceChar(Gridiv,c_WGToDecTr(BldgSurf))  = WGWaterDist_Coeff(iv5,cWG_ToDecTr)   
+   SurfaceChar(Gridiv,c_WGToGrass(BldgSurf))  = WGWaterDist_Coeff(iv5,cWG_ToGrass)   
+   SurfaceChar(Gridiv,c_WGToBSoil(BldgSurf))  = WGWaterDist_Coeff(iv5,cWG_ToBSoil)   
+   SurfaceChar(Gridiv,c_WGToWater(BldgSurf))  = WGWaterDist_Coeff(iv5,cWG_ToWater)   
+   SurfaceChar(Gridiv,c_WGToRunoff(BldgSurf))  = WGWaterDist_Coeff(iv5,cWG_ToRunoff)   
+   SurfaceChar(Gridiv,c_WGToSoilStore(BldgSurf))    = WGWaterDist_Coeff(iv5,cWG_ToSoilStore)   
+ 
+   ! ---- Find code for EveTr surface (Pervious) ----
+   call CodeMatchPervious(rr,c_EveTrCode)       
+   ! Transfer characteristics to SurfaceChar for EveTr surface
+   ! All surfaces (1-nsurf)
+   SurfaceChar(gridiv,c_Alb(ConifSurf))        = Pervious_Coeff(iv5,cp_Alb)
+   SurfaceChar(gridiv,c_Emis(ConifSurf))       = Pervious_Coeff(iv5,cp_Emis)
+   SurfaceChar(gridiv,c_StorMin(ConifSurf))    = Pervious_Coeff(iv5,cp_StorMin)
+   SurfaceChar(gridiv,c_StorMax(ConifSurf))    = Pervious_Coeff(iv5,cp_StorMax)
+   SurfaceChar(gridiv,c_DrEq(ConifSurf))       = Pervious_Coeff(iv5,cp_DrEq)
+   SurfaceChar(gridiv,c_DrCoef1(ConifSurf))    = Pervious_Coeff(iv5,cp_DrCoef1)
+   SurfaceChar(gridiv,c_DrCoef2(ConifSurf))    = Pervious_Coeff(iv5,cp_DrCoef2)
+   SurfaceChar(gridiv,c_SoilStCap(ConifSurf))  = Pervious_Coeff(iv5,cp_SoilStCap)
+   SurfaceChar(gridiv,c_SoilTCode(ConifSurf))  = Pervious_Coeff(iv5,cp_SoilTCode)
+   SurfaceChar(gridiv,c_SnowLimPat(ConifSurf)) = Pervious_Coeff(iv5,cp_SnowLimPat)
+   ! Veg surfaces only (1-nvegsurf)
+   SurfaceChar(gridiv,c_BaseT(ivConif))        = Pervious_Coeff(iv5,cp_BaseT)
+   SurfaceChar(gridiv,c_BaseTe(ivConif))       = Pervious_Coeff(iv5,cp_BaseTe)
+   SurfaceChar(gridiv,c_GDDFull(ivConif))      = Pervious_Coeff(iv5,cp_GDDFull)
+   SurfaceChar(gridiv,c_SDDFull(ivConif))      = Pervious_Coeff(iv5,cp_SDDFull)
+   SurfaceChar(gridiv,c_LAIMin(ivConif))       = Pervious_Coeff(iv5,cp_LAIMin)
+   SurfaceChar(gridiv,c_LAIMax(ivConif))       = Pervious_Coeff(iv5,cp_LAIMax)
+   SurfaceChar(gridiv,c_GsMax(ivConif))        = Pervious_Coeff(iv5,cp_GsMax)
+   SurfaceChar(gridiv,c_LAIEq(ivConif))        = Pervious_Coeff(iv5,cp_LAIEq)
+   SurfaceChar(gridiv,c_LeafGP1(ivConif))      = Pervious_Coeff(iv5,cp_LeafGP1)
+   SurfaceChar(gridiv,c_LeafGP2(ivConif))      = Pervious_Coeff(iv5,cp_LeafGP2)
+   SurfaceChar(gridiv,c_LeafOP1(ivConif))      = Pervious_Coeff(iv5,cp_LeafOP1)
+   SurfaceChar(gridiv,c_LeafOP2(ivConif))      = Pervious_Coeff(iv5,cp_LeafOP2)
+   ! OHM codes
+   SurfaceChar(gridiv,c_OHMCode_SWet(ConifSurf)) = Pervious_Coeff(iv5,cp_OHMCode_SWet)
+   SurfaceChar(gridiv,c_OHMCode_SDry(ConifSurf)) = Pervious_Coeff(iv5,cp_OHMCode_SDry)
+   SurfaceChar(gridiv,c_OHMCode_WWet(ConifSurf)) = Pervious_Coeff(iv5,cp_OHMCode_WWet)
+   SurfaceChar(gridiv,c_OHMCode_WDry(ConifSurf)) = Pervious_Coeff(iv5,cp_OHMCode_WDry)     
+   ! Use SoilCode for EveTr to find code for soil characteristics
+   call CodeMatchSoil(Gridiv,c_SoilTCode(ConifSurf))     
+   ! Transfer soil characteristics to SurfaceChar
+   SurfaceChar(gridiv,c_VolSMCap(ConifSurf))    = Soil_Coeff(iv5,cSo_VolSMCap)
+   SurfaceChar(gridiv,c_KSat(ConifSurf))        = Soil_Coeff(iv5,cSo_KSat)
+   SurfaceChar(gridiv,c_SoilDens(ConifSurf))    = Soil_Coeff(iv5,cSo_SoilDens)
+   SurfaceChar(gridiv,c_SoilInfRate(ConifSurf)) = Soil_Coeff(iv5,cSo_SoilInfRate)
+   SurfaceChar(gridiv,c_ObsSMDepth(ConifSurf))  = Soil_Coeff(iv5,cSo_ObsSMDepth)
+   SurfaceChar(gridiv,c_ObsSMMax(ConifSurf))    = Soil_Coeff(iv5,cSo_ObsSMMax)
+   SurfaceChar(gridiv,c_ObsSNRFrac(ConifSurf))  = Soil_Coeff(iv5,cSo_ObsSNRFrac)
+   !Get OHM characteristics for Conif
+   call CodeMatchOHM(Gridiv,ConifSurf,'SWet')  !Summer wet
+   ! Transfer OHM characteristics to SurfaceChar
+   SurfaceChar(Gridiv,c_a1_SWet(ConifSurf))    = OHMCoefficients_Coeff(iv5,cO_a1)
+   SurfaceChar(Gridiv,c_a2_SWet(ConifSurf))    = OHMCoefficients_Coeff(iv5,cO_a2)
+   SurfaceChar(Gridiv,c_a3_SWet(ConifSurf))    = OHMCoefficients_Coeff(iv5,cO_a3)
+   call CodeMatchOHM(Gridiv,ConifSurf,'SDry')  !Summer dry	
+   ! Transfer OHM characteristics to SurfaceChar
+   SurfaceChar(Gridiv,c_a1_SDry(ConifSurf))    = OHMCoefficients_Coeff(iv5,cO_a1)
+   SurfaceChar(Gridiv,c_a2_SDry(ConifSurf))    = OHMCoefficients_Coeff(iv5,cO_a2)
+   SurfaceChar(Gridiv,c_a3_SDry(ConifSurf))    = OHMCoefficients_Coeff(iv5,cO_a3)   
+   call CodeMatchOHM(Gridiv,ConifSurf,'WWet')  !Winter wet
+   ! Transfer OHM characteristics to SurfaceChar
+   SurfaceChar(Gridiv,c_a1_WWet(ConifSurf))    = OHMCoefficients_Coeff(iv5,cO_a1)
+   SurfaceChar(Gridiv,c_a2_WWet(ConifSurf))    = OHMCoefficients_Coeff(iv5,cO_a2)
+   SurfaceChar(Gridiv,c_a3_WWet(ConifSurf))    = OHMCoefficients_Coeff(iv5,cO_a3)
+   call CodeMatchOHM(Gridiv,ConifSurf,'WDry')  !Winter dry
+   ! Transfer OHM characteristics to SurfaceChar
+   SurfaceChar(Gridiv,c_a1_WDry(ConifSurf))    = OHMCoefficients_Coeff(iv5,cO_a1)
+   SurfaceChar(Gridiv,c_a2_WDry(ConifSurf))    = OHMCoefficients_Coeff(iv5,cO_a2)
+   SurfaceChar(Gridiv,c_a3_WDry(ConifSurf))    = OHMCoefficients_Coeff(iv5,cO_a3)      
+   
+   ! Get water distribution (within grid) for EveTr
+   call CodeMatchDist(rr,c_WGEveTrCode,cWG_ToEveTr)  
+   ! Transfer distribution to SurfaceChar
+   SurfaceChar(Gridiv,c_WGToPaved(ConifSurf))  = WGWaterDist_Coeff(iv5,cWG_ToPaved)   
+   SurfaceChar(Gridiv,c_WGToBuilt(ConifSurf))  = WGWaterDist_Coeff(iv5,cWG_ToBuilt)   
+   SurfaceChar(Gridiv,c_WGToEveTr(ConifSurf))  = WGWaterDist_Coeff(iv5,cWG_ToEveTr)   
+   SurfaceChar(Gridiv,c_WGToDecTr(ConifSurf))  = WGWaterDist_Coeff(iv5,cWG_ToDecTr)   
+   SurfaceChar(Gridiv,c_WGToGrass(ConifSurf))  = WGWaterDist_Coeff(iv5,cWG_ToGrass)   
+   SurfaceChar(Gridiv,c_WGToBSoil(ConifSurf))  = WGWaterDist_Coeff(iv5,cWG_ToBSoil)   
+   SurfaceChar(Gridiv,c_WGToWater(ConifSurf))  = WGWaterDist_Coeff(iv5,cWG_ToWater)   
+   SurfaceChar(Gridiv,c_WGToRunoff(ConifSurf))  = WGWaterDist_Coeff(iv5,cWG_ToRunoff)   
+   SurfaceChar(Gridiv,c_WGToSoilStore(ConifSurf))    = WGWaterDist_Coeff(iv5,cWG_ToSoilStore)     
+     
+   ! ---- Find code for DecTr surface (Pervious) ----
+   call CodeMatchPervious(rr,c_DecTrCode)        
+   ! Transfer characteristics to SurfaceChar for DecTr surface
+   ! All surfaces (1-nsurf)
+   SurfaceChar(gridiv,c_Alb(DecidSurf))        = Pervious_Coeff(iv5,cp_Alb)
+   SurfaceChar(gridiv,c_Emis(DecidSurf))       = Pervious_Coeff(iv5,cp_Emis)
+   SurfaceChar(gridiv,c_StorMin(DecidSurf))    = Pervious_Coeff(iv5,cp_StorMin)
+   SurfaceChar(gridiv,c_StorMax(DecidSurf))    = Pervious_Coeff(iv5,cp_StorMax)
+   SurfaceChar(gridiv,c_DrEq(DecidSurf))       = Pervious_Coeff(iv5,cp_DrEq)
+   SurfaceChar(gridiv,c_DrCoef1(DecidSurf))    = Pervious_Coeff(iv5,cp_DrCoef1)
+   SurfaceChar(gridiv,c_DrCoef2(DecidSurf))    = Pervious_Coeff(iv5,cp_DrCoef2)
+   SurfaceChar(gridiv,c_SoilStCap(DecidSurf))  = Pervious_Coeff(iv5,cp_SoilStCap)
+   SurfaceChar(gridiv,c_SoilTCode(DecidSurf))  = Pervious_Coeff(iv5,cp_SoilTCode)
+   SurfaceChar(gridiv,c_SnowLimPat(DecidSurf)) = Pervious_Coeff(iv5,cp_SnowLimPat)
+   ! Veg surfaces only (1-nvegsurf)
+   SurfaceChar(gridiv,c_BaseT(ivDecid))        = Pervious_Coeff(iv5,cp_BaseT)
+   SurfaceChar(gridiv,c_BaseTe(ivDecid))       = Pervious_Coeff(iv5,cp_BaseTe)
+   SurfaceChar(gridiv,c_GDDFull(ivDecid))      = Pervious_Coeff(iv5,cp_GDDFull)
+   SurfaceChar(gridiv,c_SDDFull(ivDecid))      = Pervious_Coeff(iv5,cp_SDDFull)
+   SurfaceChar(gridiv,c_LAIMin(ivDecid))       = Pervious_Coeff(iv5,cp_LAIMin)
+   SurfaceChar(gridiv,c_LAIMax(ivDecid))       = Pervious_Coeff(iv5,cp_LAIMax)
+   SurfaceChar(gridiv,c_GsMax(ivDecid))        = Pervious_Coeff(iv5,cp_GsMax)
+   SurfaceChar(gridiv,c_LAIEq(ivDecid))        = Pervious_Coeff(iv5,cp_LAIEq)
+   SurfaceChar(gridiv,c_LeafGP1(ivDecid))      = Pervious_Coeff(iv5,cp_LeafGP1)
+   SurfaceChar(gridiv,c_LeafGP2(ivDecid))      = Pervious_Coeff(iv5,cp_LeafGP2)
+   SurfaceChar(gridiv,c_LeafOP1(ivDecid))      = Pervious_Coeff(iv5,cp_LeafOP1)
+   SurfaceChar(gridiv,c_LeafOP2(ivDecid))      = Pervious_Coeff(iv5,cp_LeafOP2)
+   ! OHM codes
+   SurfaceChar(gridiv,c_OHMCode_SWet(DecidSurf)) = Pervious_Coeff(iv5,cp_OHMCode_SWet)
+   SurfaceChar(gridiv,c_OHMCode_SDry(DecidSurf)) = Pervious_Coeff(iv5,cp_OHMCode_SDry)
+   SurfaceChar(gridiv,c_OHMCode_WWet(DecidSurf)) = Pervious_Coeff(iv5,cp_OHMCode_WWet)
+   SurfaceChar(gridiv,c_OHMCode_WDry(DecidSurf)) = Pervious_Coeff(iv5,cp_OHMCode_WDry)      
+   ! Use SoilCode for DecTr to find code for soil characteristics
+   call CodeMatchSoil(Gridiv,c_SoilTCode(DecidSurf))           
+   ! Transfer soil characteristics to SurfaceChar
+   SurfaceChar(gridiv,c_VolSMCap(DecidSurf))    = Soil_Coeff(iv5,cSo_VolSMCap)
+   SurfaceChar(gridiv,c_KSat(DecidSurf))        = Soil_Coeff(iv5,cSo_KSat)
+   SurfaceChar(gridiv,c_SoilDens(DecidSurf))    = Soil_Coeff(iv5,cSo_SoilDens)
+   SurfaceChar(gridiv,c_SoilInfRate(DecidSurf)) = Soil_Coeff(iv5,cSo_SoilInfRate)
+   SurfaceChar(gridiv,c_ObsSMDepth(DecidSurf))  = Soil_Coeff(iv5,cSo_ObsSMDepth)
+   SurfaceChar(gridiv,c_ObsSMMax(DecidSurf))    = Soil_Coeff(iv5,cSo_ObsSMMax)
+   SurfaceChar(gridiv,c_ObsSNRFrac(DecidSurf))  = Soil_Coeff(iv5,cSo_ObsSNRFrac)   
+   !Get OHM characteristics for Decid
+   call CodeMatchOHM(Gridiv,DecidSurf,'SWet')  !Summer wet
+   ! Transfer OHM characteristics to SurfaceChar
+   SurfaceChar(Gridiv,c_a1_SWet(DecidSurf))    = OHMCoefficients_Coeff(iv5,cO_a1)
+   SurfaceChar(Gridiv,c_a2_SWet(DecidSurf))    = OHMCoefficients_Coeff(iv5,cO_a2)
+   SurfaceChar(Gridiv,c_a3_SWet(DecidSurf))    = OHMCoefficients_Coeff(iv5,cO_a3)
+   call CodeMatchOHM(Gridiv,DecidSurf,'SDry')  !Summer dry	
+   ! Transfer OHM characteristics to SurfaceChar
+   SurfaceChar(Gridiv,c_a1_SDry(DecidSurf))    = OHMCoefficients_Coeff(iv5,cO_a1)
+   SurfaceChar(Gridiv,c_a2_SDry(DecidSurf))    = OHMCoefficients_Coeff(iv5,cO_a2)
+   SurfaceChar(Gridiv,c_a3_SDry(DecidSurf))    = OHMCoefficients_Coeff(iv5,cO_a3)   
+   call CodeMatchOHM(Gridiv,DecidSurf,'WWet')  !Winter wet
+   ! Transfer OHM characteristics to SurfaceChar
+   SurfaceChar(Gridiv,c_a1_WWet(DecidSurf))    = OHMCoefficients_Coeff(iv5,cO_a1)
+   SurfaceChar(Gridiv,c_a2_WWet(DecidSurf))    = OHMCoefficients_Coeff(iv5,cO_a2)
+   SurfaceChar(Gridiv,c_a3_WWet(DecidSurf))    = OHMCoefficients_Coeff(iv5,cO_a3)
+   call CodeMatchOHM(Gridiv,DecidSurf,'WDry')  !Winter dry
+   ! Transfer OHM characteristics to SurfaceChar
+   SurfaceChar(Gridiv,c_a1_WDry(DecidSurf))    = OHMCoefficients_Coeff(iv5,cO_a1)
+   SurfaceChar(Gridiv,c_a2_WDry(DecidSurf))    = OHMCoefficients_Coeff(iv5,cO_a2)
+   SurfaceChar(Gridiv,c_a3_WDry(DecidSurf))    = OHMCoefficients_Coeff(iv5,cO_a3)         
+  
+  ! Get water distribution (within grid) for DecTr
+   call CodeMatchDist(rr,c_WGDecTrCode,cWG_ToDecTr)  
+   ! Transfer distribution to SurfaceChar
+   SurfaceChar(Gridiv,c_WGToPaved(DecidSurf))  = WGWaterDist_Coeff(iv5,cWG_ToPaved)   
+   SurfaceChar(Gridiv,c_WGToBuilt(DecidSurf))  = WGWaterDist_Coeff(iv5,cWG_ToBuilt)   
+   SurfaceChar(Gridiv,c_WGToEveTr(DecidSurf))  = WGWaterDist_Coeff(iv5,cWG_ToEveTr)   
+   SurfaceChar(Gridiv,c_WGToDecTr(DecidSurf))  = WGWaterDist_Coeff(iv5,cWG_ToDecTr)   
+   SurfaceChar(Gridiv,c_WGToGrass(DecidSurf))  = WGWaterDist_Coeff(iv5,cWG_ToGrass)   
+   SurfaceChar(Gridiv,c_WGToBSoil(DecidSurf))  = WGWaterDist_Coeff(iv5,cWG_ToBSoil)   
+   SurfaceChar(Gridiv,c_WGToWater(DecidSurf))  = WGWaterDist_Coeff(iv5,cWG_ToWater)   
+   SurfaceChar(Gridiv,c_WGToRunoff(DecidSurf))  = WGWaterDist_Coeff(iv5,cWG_ToRunoff)   
+   SurfaceChar(Gridiv,c_WGToSoilStore(DecidSurf))    = WGWaterDist_Coeff(iv5,cWG_ToSoilStore)       
+   
+   ! ---- Find code for Grass surface (Pervious) ----
+   call CodeMatchPervious(rr,c_GrassCode)       
+   ! Transfer characteristics to SurfaceChar for Grass surface
+   ! All surfaces (1-nsurf)
+   SurfaceChar(gridiv,c_Alb(GrassSurf))        = Pervious_Coeff(iv5,cp_Alb)
+   SurfaceChar(gridiv,c_Emis(GrassSurf))       = Pervious_Coeff(iv5,cp_Emis)
+   SurfaceChar(gridiv,c_StorMin(GrassSurf))    = Pervious_Coeff(iv5,cp_StorMin)
+   SurfaceChar(gridiv,c_StorMax(GrassSurf))    = Pervious_Coeff(iv5,cp_StorMax)
+   SurfaceChar(gridiv,c_DrEq(GrassSurf))       = Pervious_Coeff(iv5,cp_DrEq)
+   SurfaceChar(gridiv,c_DrCoef1(GrassSurf))    = Pervious_Coeff(iv5,cp_DrCoef1)
+   SurfaceChar(gridiv,c_DrCoef2(GrassSurf))    = Pervious_Coeff(iv5,cp_DrCoef2)
+   SurfaceChar(gridiv,c_SoilStCap(GrassSurf))  = Pervious_Coeff(iv5,cp_SoilStCap)
+   SurfaceChar(gridiv,c_SoilTCode(GrassSurf))  = Pervious_Coeff(iv5,cp_SoilTCode)
+   SurfaceChar(gridiv,c_SnowLimPat(GrassSurf)) = Pervious_Coeff(iv5,cp_SnowLimPat)
+   ! Veg surfaces only (1-nvegsurf)
+   SurfaceChar(gridiv,c_BaseT(ivGrass))        = Pervious_Coeff(iv5,cp_BaseT)
+   SurfaceChar(gridiv,c_BaseTe(ivGrass))       = Pervious_Coeff(iv5,cp_BaseTe)
+   SurfaceChar(gridiv,c_GDDFull(ivGrass))      = Pervious_Coeff(iv5,cp_GDDFull)
+   SurfaceChar(gridiv,c_SDDFull(ivGrass))      = Pervious_Coeff(iv5,cp_SDDFull)
+   SurfaceChar(gridiv,c_LAIMin(ivGrass))       = Pervious_Coeff(iv5,cp_LAIMin)
+   SurfaceChar(gridiv,c_LAIMax(ivGrass))       = Pervious_Coeff(iv5,cp_LAIMax)
+   SurfaceChar(gridiv,c_GsMax(ivGrass))        = Pervious_Coeff(iv5,cp_GsMax)
+   SurfaceChar(gridiv,c_LAIEq(ivGrass))        = Pervious_Coeff(iv5,cp_LAIEq)
+   SurfaceChar(gridiv,c_LeafGP1(ivGrass))      = Pervious_Coeff(iv5,cp_LeafGP1)
+   SurfaceChar(gridiv,c_LeafGP2(ivGrass))      = Pervious_Coeff(iv5,cp_LeafGP2)
+   SurfaceChar(gridiv,c_LeafOP1(ivGrass))      = Pervious_Coeff(iv5,cp_LeafOP1)
+   SurfaceChar(gridiv,c_LeafOP2(ivGrass))      = Pervious_Coeff(iv5,cp_LeafOP2)
+   ! OHM codes
+   SurfaceChar(gridiv,c_OHMCode_SWet(GrassSurf)) = Pervious_Coeff(iv5,cp_OHMCode_SWet)
+   SurfaceChar(gridiv,c_OHMCode_SDry(GrassSurf)) = Pervious_Coeff(iv5,cp_OHMCode_SDry)
+   SurfaceChar(gridiv,c_OHMCode_WWet(GrassSurf)) = Pervious_Coeff(iv5,cp_OHMCode_WWet)
+   SurfaceChar(gridiv,c_OHMCode_WDry(GrassSurf)) = Pervious_Coeff(iv5,cp_OHMCode_WDry)         
+   ! Use SoilCode for Grass to find code for soil characteristics
+   call CodeMatchSoil(Gridiv,c_SoilTCode(GrassSurf))     
+   ! Transfer soil characteristics to SurfaceChar
+   SurfaceChar(gridiv,c_VolSMCap(GrassSurf))    = Soil_Coeff(iv5,cSo_VolSMCap)
+   SurfaceChar(gridiv,c_KSat(GrassSurf))        = Soil_Coeff(iv5,cSo_KSat)
+   SurfaceChar(gridiv,c_SoilDens(GrassSurf))    = Soil_Coeff(iv5,cSo_SoilDens)
+   SurfaceChar(gridiv,c_SoilInfRate(GrassSurf)) = Soil_Coeff(iv5,cSo_SoilInfRate)
+   SurfaceChar(gridiv,c_ObsSMDepth(GrassSurf))  = Soil_Coeff(iv5,cSo_ObsSMDepth)
+   SurfaceChar(gridiv,c_ObsSMMax(GrassSurf))    = Soil_Coeff(iv5,cSo_ObsSMMax)
+   SurfaceChar(gridiv,c_ObsSNRFrac(GrassSurf))  = Soil_Coeff(iv5,cSo_ObsSNRFrac)   
+   !Get OHM characteristics for Grass
+   call CodeMatchOHM(Gridiv,GrassSurf,'SWet')  !Summer wet
+   ! Transfer OHM characteristics to SurfaceChar
+   SurfaceChar(Gridiv,c_a1_SWet(GrassSurf))    = OHMCoefficients_Coeff(iv5,cO_a1)
+   SurfaceChar(Gridiv,c_a2_SWet(GrassSurf))    = OHMCoefficients_Coeff(iv5,cO_a2)
+   SurfaceChar(Gridiv,c_a3_SWet(GrassSurf))    = OHMCoefficients_Coeff(iv5,cO_a3)
+   call CodeMatchOHM(Gridiv,GrassSurf,'SDry')  !Summer dry	
+   ! Transfer OHM characteristics to SurfaceChar
+   SurfaceChar(Gridiv,c_a1_SDry(GrassSurf))    = OHMCoefficients_Coeff(iv5,cO_a1)
+   SurfaceChar(Gridiv,c_a2_SDry(GrassSurf))    = OHMCoefficients_Coeff(iv5,cO_a2)
+   SurfaceChar(Gridiv,c_a3_SDry(GrassSurf))    = OHMCoefficients_Coeff(iv5,cO_a3)   
+   call CodeMatchOHM(Gridiv,GrassSurf,'WWet')  !Winter wet
+   ! Transfer OHM characteristics to SurfaceChar
+   SurfaceChar(Gridiv,c_a1_WWet(GrassSurf))    = OHMCoefficients_Coeff(iv5,cO_a1)
+   SurfaceChar(Gridiv,c_a2_WWet(GrassSurf))    = OHMCoefficients_Coeff(iv5,cO_a2)
+   SurfaceChar(Gridiv,c_a3_WWet(GrassSurf))    = OHMCoefficients_Coeff(iv5,cO_a3)
+   call CodeMatchOHM(Gridiv,GrassSurf,'WDry')  !Winter dry
+   ! Transfer OHM characteristics to SurfaceChar
+   SurfaceChar(Gridiv,c_a1_WDry(GrassSurf))    = OHMCoefficients_Coeff(iv5,cO_a1)
+   SurfaceChar(Gridiv,c_a2_WDry(GrassSurf))    = OHMCoefficients_Coeff(iv5,cO_a2)
+   SurfaceChar(Gridiv,c_a3_WDry(GrassSurf))    = OHMCoefficients_Coeff(iv5,cO_a3)      
+   
+  ! Get water distribution (within grid) for Grass
+   call CodeMatchDist(rr,c_WGGrassCode,cWG_ToGrass)  
+   ! Transfer distribution to SurfaceChar
+   SurfaceChar(Gridiv,c_WGToPaved(GrassSurf))  = WGWaterDist_Coeff(iv5,cWG_ToPaved)   
+   SurfaceChar(Gridiv,c_WGToBuilt(GrassSurf))  = WGWaterDist_Coeff(iv5,cWG_ToBuilt)   
+   SurfaceChar(Gridiv,c_WGToEveTr(GrassSurf))  = WGWaterDist_Coeff(iv5,cWG_ToEveTr)   
+   SurfaceChar(Gridiv,c_WGToDecTr(GrassSurf))  = WGWaterDist_Coeff(iv5,cWG_ToDecTr)   
+   SurfaceChar(Gridiv,c_WGToGrass(GrassSurf))  = WGWaterDist_Coeff(iv5,cWG_ToGrass)   
+   SurfaceChar(Gridiv,c_WGToBSoil(GrassSurf))  = WGWaterDist_Coeff(iv5,cWG_ToBSoil)   
+   SurfaceChar(Gridiv,c_WGToWater(GrassSurf))  = WGWaterDist_Coeff(iv5,cWG_ToWater)   
+   SurfaceChar(Gridiv,c_WGToRunoff(GrassSurf))  = WGWaterDist_Coeff(iv5,cWG_ToRunoff)   
+   SurfaceChar(Gridiv,c_WGToSoilStore(GrassSurf))    = WGWaterDist_Coeff(iv5,cWG_ToSoilStore)        
+        
+   ! ---- Find code for BSoil surface (Impervious) ----
+   call CodeMatchImpervious(rr,c_BSoilCode)       
+   ! Transfer characteristics to SurfaceChar for BSoil surface
+   ! All surfaces (1-nsurf)
+   SurfaceChar(gridiv,c_Alb(BSoilSurf))        = Impervious_Coeff(iv5,ci_Alb)
+   SurfaceChar(gridiv,c_Emis(BSoilSurf))       = Impervious_Coeff(iv5,ci_Emis)
+   SurfaceChar(gridiv,c_StorMin(BSoilSurf))    = Impervious_Coeff(iv5,ci_StorMin)
+   SurfaceChar(gridiv,c_StorMax(BSoilSurf))    = Impervious_Coeff(iv5,ci_StorMax)
+   SurfaceChar(gridiv,c_DrEq(BSoilSurf))       = Impervious_Coeff(iv5,ci_DrEq)
+   SurfaceChar(gridiv,c_DrCoef1(BSoilSurf))    = Impervious_Coeff(iv5,ci_DrCoef1)
+   SurfaceChar(gridiv,c_DrCoef2(BSoilSurf))    = Impervious_Coeff(iv5,ci_DrCoef2)
+   SurfaceChar(gridiv,c_SoilStCap(BSoilSurf))  = Impervious_Coeff(iv5,ci_SoilStCap)
+   SurfaceChar(gridiv,c_SoilTCode(BSoilSurf))  = Impervious_Coeff(iv5,ci_SoilTCode)
+   SurfaceChar(gridiv,c_SnowLimPat(BSoilSurf)) = Impervious_Coeff(iv5,ci_SnowLimPat)
+   SurfaceChar(gridiv,c_SnowLimRem(BSoilSurf))   = Impervious_Coeff(iv5,ci_SnowLimRem)
+   SurfaceChar(gridiv,c_OHMCode_SWet(BSoilSurf)) = Impervious_Coeff(iv5,ci_OHMCode_SWet)
+   SurfaceChar(gridiv,c_OHMCode_SDry(BSoilSurf)) = Impervious_Coeff(iv5,ci_OHMCode_SDry)
+   SurfaceChar(gridiv,c_OHMCode_WWet(BSoilSurf)) = Impervious_Coeff(iv5,ci_OHMCode_WWet)
+   SurfaceChar(gridiv,c_OHMCode_WDry(BSoilSurf)) = Impervious_Coeff(iv5,ci_OHMCode_WDry)         
+   ! Use SoilCode for BSoil to find code for soil characteristics
+   call CodeMatchSoil(Gridiv,c_SoilTCode(BSoilSurf))         
+   ! Transfer soil characteristics to SurfaceChar
+   SurfaceChar(gridiv,c_VolSMCap(BSoilSurf))    = Soil_Coeff(iv5,cSo_VolSMCap)
+   SurfaceChar(gridiv,c_KSat(BSoilSurf))        = Soil_Coeff(iv5,cSo_KSat)
+   SurfaceChar(gridiv,c_SoilDens(BSoilSurf))    = Soil_Coeff(iv5,cSo_SoilDens)
+   SurfaceChar(gridiv,c_SoilInfRate(BSoilSurf)) = Soil_Coeff(iv5,cSo_SoilInfRate)
+   SurfaceChar(gridiv,c_ObsSMDepth(BSoilSurf))  = Soil_Coeff(iv5,cSo_ObsSMDepth)
+   SurfaceChar(gridiv,c_ObsSMMax(BSoilSurf))    = Soil_Coeff(iv5,cSo_ObsSMMax)
+   SurfaceChar(gridiv,c_ObsSNRFrac(BSoilSurf))  = Soil_Coeff(iv5,cSo_ObsSNRFrac)   
+   ! Get OHM characteristics for BSoil
+   call CodeMatchOHM(Gridiv,BSoilSurf,'SWet')  !Summer wet
+   ! Transfer OHM characteristics to SurfaceChar
+   SurfaceChar(Gridiv,c_a1_SWet(BSoilSurf))    = OHMCoefficients_Coeff(iv5,cO_a1)
+   SurfaceChar(Gridiv,c_a2_SWet(BSoilSurf))    = OHMCoefficients_Coeff(iv5,cO_a2)
+   SurfaceChar(Gridiv,c_a3_SWet(BSoilSurf))    = OHMCoefficients_Coeff(iv5,cO_a3)
+   call CodeMatchOHM(Gridiv,BSoilSurf,'SDry')  !Summer dry	
+   ! Transfer OHM characteristics to SurfaceChar
+   SurfaceChar(Gridiv,c_a1_SDry(BSoilSurf))    = OHMCoefficients_Coeff(iv5,cO_a1)
+   SurfaceChar(Gridiv,c_a2_SDry(BSoilSurf))    = OHMCoefficients_Coeff(iv5,cO_a2)
+   SurfaceChar(Gridiv,c_a3_SDry(BSoilSurf))    = OHMCoefficients_Coeff(iv5,cO_a3)   
+   call CodeMatchOHM(Gridiv,BSoilSurf,'WWet')  !Winter wet
+   ! Transfer OHM characteristics to SurfaceChar
+   SurfaceChar(Gridiv,c_a1_WWet(BSoilSurf))    = OHMCoefficients_Coeff(iv5,cO_a1)
+   SurfaceChar(Gridiv,c_a2_WWet(BSoilSurf))    = OHMCoefficients_Coeff(iv5,cO_a2)
+   SurfaceChar(Gridiv,c_a3_WWet(BSoilSurf))    = OHMCoefficients_Coeff(iv5,cO_a3)
+   call CodeMatchOHM(Gridiv,BSoilSurf,'WDry')  !Winter dry
+   ! Transfer OHM characteristics to SurfaceChar
+   SurfaceChar(Gridiv,c_a1_WDry(BSoilSurf))    = OHMCoefficients_Coeff(iv5,cO_a1)
+   SurfaceChar(Gridiv,c_a2_WDry(BSoilSurf))    = OHMCoefficients_Coeff(iv5,cO_a2)
+   SurfaceChar(Gridiv,c_a3_WDry(BSoilSurf))    = OHMCoefficients_Coeff(iv5,cO_a3)      
+   
+   ! Get water distribution (within grid) for Bare soil
+   call CodeMatchDist(rr,c_WGBSoilCode,cWG_ToBSoil)  
+   ! Transfer distribution to SurfaceChar
+   SurfaceChar(Gridiv,c_WGToPaved(BSoilSurf))  = WGWaterDist_Coeff(iv5,cWG_ToPaved)   
+   SurfaceChar(Gridiv,c_WGToBuilt(BSoilSurf))  = WGWaterDist_Coeff(iv5,cWG_ToBuilt)   
+   SurfaceChar(Gridiv,c_WGToEveTr(BSoilSurf))  = WGWaterDist_Coeff(iv5,cWG_ToEveTr)   
+   SurfaceChar(Gridiv,c_WGToDecTr(BSoilSurf))  = WGWaterDist_Coeff(iv5,cWG_ToDecTr)   
+   SurfaceChar(Gridiv,c_WGToGrass(BSoilSurf))  = WGWaterDist_Coeff(iv5,cWG_ToGrass)   
+   SurfaceChar(Gridiv,c_WGToBSoil(BSoilSurf))  = WGWaterDist_Coeff(iv5,cWG_ToBSoil)   
+   SurfaceChar(Gridiv,c_WGToWater(BSoilSurf))  = WGWaterDist_Coeff(iv5,cWG_ToWater)   
+   SurfaceChar(Gridiv,c_WGToRunoff(BSoilSurf))  = WGWaterDist_Coeff(iv5,cWG_ToRunoff)   
+   SurfaceChar(Gridiv,c_WGToSoilStore(BSoilSurf))    = WGWaterDist_Coeff(iv5,cWG_ToSoilStore)    
+   
+
+   ! ---- Find code for Water surface (Water) ----
+   call CodeMatchWater(rr,c_WaterCode)              
+   ! Transfer characteristics to SurfaceChar for Water surface
+   ! All surfaces (1-nsurf)
+   SurfaceChar(gridiv,c_Alb(WaterSurf))        = Water_Coeff(iv5,cw_Alb)
+   SurfaceChar(gridiv,c_Emis(WaterSurf))       = Water_Coeff(iv5,cw_Emis)
+   SurfaceChar(gridiv,c_StorMin(WaterSurf))    = Water_Coeff(iv5,cw_StorMin)
+   SurfaceChar(gridiv,c_StorMax(WaterSurf))    = Water_Coeff(iv5,cw_StorMax)
+   SurfaceChar(gridiv,c_DrEq(WaterSurf))       = Water_Coeff(iv5,cw_DrEq)
+   SurfaceChar(gridiv,c_DrCoef1(WaterSurf))    = Water_Coeff(iv5,cw_DrCoef1)
+   SurfaceChar(gridiv,c_DrCoef2(WaterSurf))    = Water_Coeff(iv5,cw_DrCoef2)
+   ! OHM codes 
+   SurfaceChar(gridiv,c_OHMCode_SWet(WaterSurf)) = Water_Coeff(iv5,cw_OHMCode_SWet)
+   SurfaceChar(gridiv,c_OHMCode_SDry(WaterSurf)) = Water_Coeff(iv5,cw_OHMCode_SDry)
+   SurfaceChar(gridiv,c_OHMCode_WWet(WaterSurf)) = Water_Coeff(iv5,cw_OHMCode_WWet)
+   SurfaceChar(gridiv,c_OHMCode_WDry(WaterSurf)) = Water_Coeff(iv5,cw_OHMCode_WDry)    
+   ! Get OHM characteristics for Water   
+   call CodeMatchOHM(Gridiv,WaterSurf,'SWet')  !Summer wet
+   ! Transfer OHM characteristics to SurfaceChar
+   SurfaceChar(Gridiv,c_a1_SWet(WaterSurf))    = OHMCoefficients_Coeff(iv5,cO_a1)
+   SurfaceChar(Gridiv,c_a2_SWet(WaterSurf))    = OHMCoefficients_Coeff(iv5,cO_a2)
+   SurfaceChar(Gridiv,c_a3_SWet(WaterSurf))    = OHMCoefficients_Coeff(iv5,cO_a3)
+   call CodeMatchOHM(Gridiv,WaterSurf,'SDry')  !Summer dry	
+   ! Transfer OHM characteristics to SurfaceChar
+   SurfaceChar(Gridiv,c_a1_SDry(WaterSurf))    = OHMCoefficients_Coeff(iv5,cO_a1)
+   SurfaceChar(Gridiv,c_a2_SDry(WaterSurf))    = OHMCoefficients_Coeff(iv5,cO_a2)
+   SurfaceChar(Gridiv,c_a3_SDry(WaterSurf))    = OHMCoefficients_Coeff(iv5,cO_a3)   
+   call CodeMatchOHM(Gridiv,WaterSurf,'WWet')  !Winter wet
+   ! Transfer OHM characteristics to SurfaceChar
+   SurfaceChar(Gridiv,c_a1_WWet(WaterSurf))    = OHMCoefficients_Coeff(iv5,cO_a1)
+   SurfaceChar(Gridiv,c_a2_WWet(WaterSurf))    = OHMCoefficients_Coeff(iv5,cO_a2)
+   SurfaceChar(Gridiv,c_a3_WWet(WaterSurf))    = OHMCoefficients_Coeff(iv5,cO_a3)
+   call CodeMatchOHM(Gridiv,WaterSurf,'WDry')  !Winter dry
+   ! Transfer OHM characteristics to SurfaceChar
+   SurfaceChar(Gridiv,c_a1_WDry(WaterSurf))    = OHMCoefficients_Coeff(iv5,cO_a1)
+   SurfaceChar(Gridiv,c_a2_WDry(WaterSurf))    = OHMCoefficients_Coeff(iv5,cO_a2)
+   SurfaceChar(Gridiv,c_a3_WDry(WaterSurf))    = OHMCoefficients_Coeff(iv5,cO_a3)         
+   
+   ! Get water distribution (within grid) for Water
+   call CodeMatchDist(rr,c_WGWaterCode,cWG_ToWater)  
+   ! Transfer distribution to SurfaceChar
+   SurfaceChar(Gridiv,c_WGToPaved(WaterSurf))  = WGWaterDist_Coeff(iv5,cWG_ToPaved)   
+   SurfaceChar(Gridiv,c_WGToBuilt(WaterSurf))  = WGWaterDist_Coeff(iv5,cWG_ToBuilt)   
+   SurfaceChar(Gridiv,c_WGToEveTr(WaterSurf))  = WGWaterDist_Coeff(iv5,cWG_ToEveTr)   
+   SurfaceChar(Gridiv,c_WGToDecTr(WaterSurf))  = WGWaterDist_Coeff(iv5,cWG_ToDecTr)   
+   SurfaceChar(Gridiv,c_WGToGrass(WaterSurf))  = WGWaterDist_Coeff(iv5,cWG_ToGrass)   
+   SurfaceChar(Gridiv,c_WGToBSoil(WaterSurf))  = WGWaterDist_Coeff(iv5,cWG_ToBSoil)   
+   SurfaceChar(Gridiv,c_WGToWater(WaterSurf))  = WGWaterDist_Coeff(iv5,cWG_ToWater)   
+   SurfaceChar(Gridiv,c_WGToRunoff(WaterSurf))  = WGWaterDist_Coeff(iv5,cWG_ToRunoff)   
+   SurfaceChar(Gridiv,c_WGToSoilStore(WaterSurf))    = WGWaterDist_Coeff(iv5,cWG_ToSoilStore)     
+    
+
+   ! ---- Find code for Snow surface (Snow) ----
+   call CodeMatchSnow(rr,c_SnowCode)     
+   ! Transfer characteristics to SurfaceChar for Snow surface
+   SurfaceChar(gridiv,c_SnowRMFactor) = Snow_Coeff(iv5,cs_SnowRMFactor)
+   SurfaceChar(gridiv,c_SnowTMFactor) = Snow_Coeff(iv5,cs_SnowTMFactor)
+   SurfaceChar(gridiv,c_SnowAlbMin)   = Snow_Coeff(iv5,cs_SnowAlbMin)
+   SurfaceChar(gridiv,c_SnowAlbMax)   = Snow_Coeff(iv5,cs_SnowAlbMax)
+   SurfaceChar(gridiv,c_SnowAlb)      = Snow_Coeff(iv5,cs_SnowAlb)
+   SurfaceChar(gridiv,c_SnowEmis)     = Snow_Coeff(iv5,cs_SnowEmis)
+   SurfaceChar(gridiv,c_Snowtau_a)    = Snow_Coeff(iv5,cs_Snowtau_a)
+   SurfaceChar(gridiv,c_Snowtau_f)    = Snow_Coeff(iv5,cs_Snowtau_f)
+   SurfaceChar(gridiv,c_SnowPLimAlb)  = Snow_Coeff(iv5,cs_SnowPLimAlb)
+   SurfaceChar(gridiv,c_SnowSDMin)    = Snow_Coeff(iv5,cs_SnowSDMin)
+   SurfaceChar(gridiv,c_SnowSDMax)    = Snow_Coeff(iv5,cs_SnowSDMax)
+   SurfaceChar(gridiv,c_Snowtau_r)    = Snow_Coeff(iv5,cs_Snowtau_r)
+   SurfaceChar(gridiv,c_SnowCRWMin)   = Snow_Coeff(iv5,cs_SnowCRWMin)
+   SurfaceChar(gridiv,c_SnowCRWMax)   = Snow_Coeff(iv5,cs_SnowCRWMax)
+   SurfaceChar(gridiv,c_SnowPLimSnow) = Snow_Coeff(iv5,cs_SnowPLimSnow)
+   SurfaceChar(gridiv,c_OHMCode_SWet(nsurf+1)) = Snow_Coeff(iv5,cs_OHMCode_SWet)
+   SurfaceChar(gridiv,c_OHMCode_SDry(nsurf+1)) = Snow_Coeff(iv5,cs_OHMCode_SDry)
+   SurfaceChar(gridiv,c_OHMCode_WWet(nsurf+1)) = Snow_Coeff(iv5,cs_OHMCode_WWet)
+   SurfaceChar(gridiv,c_OHMCode_WDry(nsurf+1)) = Snow_Coeff(iv5,cs_OHMCode_WDry)   
+   ! Get OHM characteristics for Snow
+   call CodeMatchOHM(Gridiv,(nsurf+1),'SWet')  !Summer wet
+   ! Transfer OHM characteristics to SurfaceChar
+   SurfaceChar(Gridiv,c_a1_SWet(nsurf+1))    = OHMCoefficients_Coeff(iv5,cO_a1)
+   SurfaceChar(Gridiv,c_a2_SWet(nsurf+1))    = OHMCoefficients_Coeff(iv5,cO_a2)
+   SurfaceChar(Gridiv,c_a3_SWet(nsurf+1))    = OHMCoefficients_Coeff(iv5,cO_a3)
+   call CodeMatchOHM(Gridiv,(nsurf+1),'SDry')  !Summer dry	
+   ! Transfer OHM characteristics to SurfaceChar
+   SurfaceChar(Gridiv,c_a1_SDry(nsurf+1))    = OHMCoefficients_Coeff(iv5,cO_a1)
+   SurfaceChar(Gridiv,c_a2_SDry(nsurf+1))    = OHMCoefficients_Coeff(iv5,cO_a2)
+   SurfaceChar(Gridiv,c_a3_SDry(nsurf+1))    = OHMCoefficients_Coeff(iv5,cO_a3)   
+   call CodeMatchOHM(Gridiv,(nsurf+1),'WWet')  !Winter wet
+   ! Transfer OHM characteristics to SurfaceChar
+   SurfaceChar(Gridiv,c_a1_WWet(nsurf+1))    = OHMCoefficients_Coeff(iv5,cO_a1)
+   SurfaceChar(Gridiv,c_a2_WWet(nsurf+1))    = OHMCoefficients_Coeff(iv5,cO_a2)
+   SurfaceChar(Gridiv,c_a3_WWet(nsurf+1))    = OHMCoefficients_Coeff(iv5,cO_a3)
+   call CodeMatchOHM(Gridiv,(nsurf+1),'WDry')  !Winter dry
+   ! Transfer OHM characteristics to SurfaceChar
+   SurfaceChar(Gridiv,c_a1_WDry(nsurf+1))    = OHMCoefficients_Coeff(iv5,cO_a1)
+   SurfaceChar(Gridiv,c_a2_WDry(nsurf+1))    = OHMCoefficients_Coeff(iv5,cO_a2)
+   SurfaceChar(Gridiv,c_a3_WDry(nsurf+1))    = OHMCoefficients_Coeff(iv5,cO_a3)         
+         
+   ! ---- Find code for Surface conductances ----
+   call CodeMatchConductance(rr,c_CondCode)
+   ! Transfer conductance characteristics to SurfaceChar
+   SurfaceChar(gridiv,c_GsG1) 	    = Conductance_Coeff(iv5,cc_GsG1)
+   SurfaceChar(gridiv,c_GsG2) 	    = Conductance_Coeff(iv5,cc_GsG2)
+   SurfaceChar(gridiv,c_GsG3) 	    = Conductance_Coeff(iv5,cc_GsG3)
+   SurfaceChar(gridiv,c_GsG4) 	    = Conductance_Coeff(iv5,cc_GsG4)
+   SurfaceChar(gridiv,c_GsG5) 	    = Conductance_Coeff(iv5,cc_GsG5)
+   SurfaceChar(gridiv,c_GsG6) 	    = Conductance_Coeff(iv5,cc_GsG6)
+   SurfaceChar(gridiv,c_GsTH) 	    = Conductance_Coeff(iv5,cc_GsTH)
+   SurfaceChar(gridiv,c_GsTL) 	    = Conductance_Coeff(iv5,cc_GsTL)
+   SurfaceChar(gridiv,c_GsS1) 	    = Conductance_Coeff(iv5,cc_GsS1)
+   SurfaceChar(gridiv,c_GsS2) 	    = Conductance_Coeff(iv5,cc_GsS2)
+   SurfaceChar(gridiv,c_GsKmax)     = Conductance_Coeff(iv5,cc_GsKmax)
+       
+   ! ---- Find code for Anthropogenic heat ----
+   call CodeMatchAnthropogenicHeat(rr,c_QFCode)    
+   ! Transfer Anthropogenic heat characteristics to SurfaceChar
+   SurfaceChar(gridiv,c_BaseTHDD)   = AnthropogenicHeat_Coeff(iv5,cA_BaseTHDD)
+   SurfaceChar(gridiv,c_QF_A1) 	    = AnthropogenicHeat_Coeff(iv5,cA_QF_A1)
+   SurfaceChar(gridiv,c_QF_B1) 	    = AnthropogenicHeat_Coeff(iv5,cA_QF_B1)
+   SurfaceChar(gridiv,c_QF_C1) 	    = AnthropogenicHeat_Coeff(iv5,cA_QF_C1)
+   SurfaceChar(gridiv,c_QF_A2) 	    = AnthropogenicHeat_Coeff(iv5,cA_QF_A2)
+   SurfaceChar(gridiv,c_QF_B2) 	    = AnthropogenicHeat_Coeff(iv5,cA_QF_B2)
+   SurfaceChar(gridiv,c_QF_C2) 	    = AnthropogenicHeat_Coeff(iv5,cA_QF_C2)
+   SurfaceChar(gridiv,c_AHMin) 	    = AnthropogenicHeat_Coeff(iv5,cA_AHMin)
+   SurfaceChar(gridiv,c_AHSlope)    = AnthropogenicHeat_Coeff(iv5,cA_AHSlope)
+   SurfaceChar(gridiv,c_TCritic)    = AnthropogenicHeat_Coeff(iv5,cA_TCritic)
+       
+   ! ---- Find code for Irrigation ----
+   call CodeMatchIrrigation(rr,c_IrrCode)    
+   ! Transfer Irrigation characteristics to SurfaceChar
+   SurfaceChar(gridiv,c_IeStart)     = Irrigation_Coeff(iv5,cIr_IeStart)
+   SurfaceChar(gridiv,c_IeEnd)       = Irrigation_Coeff(iv5,cIr_IeEnd)
+   SurfaceChar(gridiv,c_IntWU)       = Irrigation_Coeff(iv5,cIr_IntWU)
+   SurfaceChar(gridiv,c_Faut)        = Irrigation_Coeff(iv5,cIr_Faut)
+   SurfaceChar(gridiv,c_Ie_a)        = Irrigation_Coeff(iv5,cIr_Ie_a1:cIr_Ie_a3)
+   SurfaceChar(gridiv,c_Ie_m)        = Irrigation_Coeff(iv5,cIr_Ie_m1:cIr_Ie_m3)
+   SurfaceChar(gridiv,c_DayWat)      = Irrigation_Coeff(iv5,cIr_DayWat1:cIr_DayWat7)
+   SurfaceChar(gridiv,c_DayWatPer)   = Irrigation_Coeff(iv5,cIr_DayWatPer1:cIr_DayWatPer7)
+       
+   ! ---- Find code for Hourly Profiles ----
+   ! Energy use (weekdays)
+   call CodeMatchProf(rr,c_EnProfWD)
+   SurfaceChar(gridiv,c_HrProfEnUseWD) = Profiles_Coeff(iv5,cPr_Hours)
+   ! Energy use (weekends)
+   call CodeMatchProf(rr,c_EnProfWE)
+   SurfaceChar(gridiv,c_HrProfEnUseWE) = Profiles_Coeff(iv5,cPr_Hours)
+   ! Water use profile (manual, weekdays)
+   call CodeMatchProf(rr,c_WProfManuWD)
+   SurfaceChar(gridiv,c_HrProfWUManuWD)  = Profiles_Coeff(iv5,cPr_Hours)
+   ! Water use profile (manual, weekends)
+   call CodeMatchProf(rr,c_WProfManuWE)
+   SurfaceChar(gridiv,c_HrProfWUManuWE)  = Profiles_Coeff(iv5,cPr_Hours)
+   ! Water use profile (automatic, weekdays)
+   call CodeMatchProf(rr,c_WProfAutoWD)
+   SurfaceChar(gridiv,c_HrProfWUAutoWD) = Profiles_Coeff(iv5,cPr_Hours)
+   ! Water use profile (automatic, weekends)
+   call CodeMatchProf(rr,c_WProfAutoWE)
+   SurfaceChar(gridiv,c_HrProfWUAutoWE) = Profiles_Coeff(iv5,cPr_Hours)
+   ! Snow clearing profile (weekdays)
+   call CodeMatchProf(rr,c_SnowProfWD)
+   SurfaceChar(gridiv,c_HrProfSnowCWD) = Profiles_Coeff(iv5,cPr_Hours)
+   ! Snow clearing profile (weekends)
+   call CodeMatchProf(rr,c_SnowProfWE)
+   SurfaceChar(gridiv,c_HrProfSnowCWE) = Profiles_Coeff(iv5,cPr_Hours)
+   
+   ! ---- Interpolate Hourly Profiles to model timestep and normalise
+   TstepProfiles = 0   !Initialise TstepProfiles
+   ! Energy use
+   call SUEWS_InterpHourlyProfiles(Gridiv,cTP_EnUseWD,c_HrProfEnUseWD)
+   call SUEWS_InterpHourlyProfiles(Gridiv,cTP_EnUseWE,c_HrProfEnUseWE)
+   ! For energy use, normalise so the AVERAGE of the multipliers is equal to 1
+   TstepProfiles(Gridiv,cTP_EnUseWD,:) = TstepProfiles(Gridiv,cTP_EnUseWD,:) / sum(TstepProfiles(Gridiv,cTP_EnUseWD,:))*24*NSH
+   TstepProfiles(Gridiv,cTP_EnUseWE,:) = TstepProfiles(Gridiv,cTP_EnUseWE,:) / sum(TstepProfiles(Gridiv,cTP_EnUseWE,:))*24*NSH
+   ! Water use
+   call SUEWS_InterpHourlyProfiles(Gridiv,cTP_WUManuWD,c_HrProfWUManuWD)
+   call SUEWS_InterpHourlyProfiles(Gridiv,cTP_WUManuWE,c_HrProfWUManuWE)
+   call SUEWS_InterpHourlyProfiles(Gridiv,cTP_WUAutoWD,c_HrProfWUAutoWD)
+   call SUEWS_InterpHourlyProfiles(Gridiv,cTP_WUAutoWE,c_HrProfWUAutoWE)
+   ! For water use, normalise so the SUM of the multipliers is equal to 1 (profile is multiplied by daily water use)
+   TstepProfiles(Gridiv,cTP_WUManuWD,:) = TstepProfiles(Gridiv,cTP_WUManuWD,:) / sum(TstepProfiles(Gridiv,cTP_WUManuWD,:))
+   TstepProfiles(Gridiv,cTP_WUManuWE,:) = TstepProfiles(Gridiv,cTP_WUManuWE,:) / sum(TstepProfiles(Gridiv,cTP_WUManuWE,:))
+   TstepProfiles(Gridiv,cTP_WUAutoWD,:) = TstepProfiles(Gridiv,cTP_WUAutoWD,:) / sum(TstepProfiles(Gridiv,cTP_WUAutoWD,:))
+   TstepProfiles(Gridiv,cTP_WUAutoWE,:) = TstepProfiles(Gridiv,cTP_WUAutoWE,:) / sum(TstepProfiles(Gridiv,cTP_WUAutoWE,:))
+      
+ end subroutine InitializeSurfaceCharacteristics
+
+
+!----------------------------------------------------------------------------------------------
+!Calculates the initial conditions for each grid on the first year of run
+!Made by sg feb 2012 -
+!Latest modified:
+!20 Oct 2014, LJ: Saves to slot 0 of the output matrix
+!06 Nov 2014 HCW
 !----------------------------------------------------------------------------------------------
 
- subroutine InitialState(GridName,errFileYes,year_int,year_txt)
-  use resist        ! LUMPS_metRead.f95
-  use data_in       ! LUMPS_metRead.f95
-  use ohm_calc
-  use run_info      ! run_control_v2_1.f90
-  use SUES_data     !
-  USE GIS_data      ! LUMPS_gis_read.f95
-  use mod_z         ! module_LUMPS_constants,f90
-  use FileName
-  use allocateArray  ! module_LUMPS_constants,f90
-  use time
+ 
+!-------------------------------------------------------------------------
+ SUBROUTINE InitialState(GridName,errFileYes,year_int,Gridiv,year_txt)
+ ! Last modified by HCW 03 Dec 2014
+ ! To do:
+ !	 - Check running means (5-day temperature)
+ !	 - HCW still has lots of questions about InitialState subroutine!  
+ !------------------------------------------------------------------------
+ 
+  use allocateArray 
+  use data_in 
+  use ColNamesModelDailyState
   use defaultNotUsed
-  use snowMod
+  use FileName
+  use gis_data
   use InitialCond
+  use mod_z    
+  use ohm_calc
+  use resist  
+  use run_info
+  use snowMod
+  use sues_data 
+  use time
   
   IMPLICIT NONE
   
-  character (len=15)::GridName
-  character (len=10)::str2 !Variables related to filepaths 
-  real (KIND(1d0))::BldgState,ETState,DTState,IGState,UGState,PavState,&
-              	    soilstoreDTState,soilstoreIGState,soilstoreETstate,&
-          		    soilstorePavstate,soilstoreBldgState,soilstoreUGState,&
-                    SnowFracBldg,SnowFracET, SnowFracDT, SnowFracIG, SnowFracUG,&
-                    SnowFracPav, SnowFracWater,SnowDensBldg,SnowDensET,SnowDensDT,&
-                    SnowDensIG,SnowDensUG,SnowDensPav,SnowDensWater
-                    
-  character (len=4)::year_txt   
-  character(len=150)::fileInit 
-  integer:: j,DaysSinceRain,wd,seas,date,mb,year_int,switch=0,id_next,calc,errFileYes
-  !-------------------------------------------------------------------------------------
-  !These relate to InitialConditions.nml and are only used in this part of the code
+  character(len=20):: GridName
+  character(len=10):: str2  !Variables related to filepaths 
+  character(len=150):: fileInit
+  character(len=4):: year_txt
+  integer::errFileYes,DaysSinceRain,Gridiv,gamma1,gamma2
+  integer:: j,wd,seas,date,mb,year_int,switch=0,id_next,calc
+  
+  real (KIND(1d0))::PavedState,BldgsState,EveTrState,DecTrState,GrassState,BSoilState,&
+              	    SoilStorePavedState,SoilStoreBldgsState,SoilStoreEveTrState,&
+              	      SoilStoreDecTrstate,SoilStoreGrassState,SoilStoreBSoilState,&
+                    SnowFracPaved,SnowFracBldgs,SnowFracEveTr,SnowFracDecTr,&
+                      SnowFracGrass,SnowFracBSoil,SnowFracWater,&
+                    SnowDensPaved,SnowDensBldgs,SnowDensEveTr,SnowDensDecTr,&
+                      SnowDensGrass,SnowDensBSoil,SnowDensWater
+
+  !-----------------------------------------------------------------------
 
   namelist/InitialConditions/DaysSinceRain,&
                   Temp_C0,&
                   ID_Prev,&
                   GDD_1_0,&
                   GDD_2_0,&
-                  BldgState,&
-                  ETState,&
-                  DTState,&
-                  PavState,&
-                  IGState,&
-                  UGState,&
-                  LAIinitialET,&            !
-                  LAIinitialDT,&
-                  LAIinitialUG,&
-                  LAIinitialIG,&
+                  LAIinitialEveTr,&            
+                  LAIinitialDecTr,&
+                  LAIinitialGrass,&
                   porosity0,&
-                  DecidCap0,&
                   albDec0,&
-                  soilstoreBldgState,&
-                  soilstoreETstate,&
-                  soilstoreDTState,&
-                  soilstoreUGState,&
-                  soilstoreIGState,&
-                  soilstorePavstate,&
+                  decidCap0,&
+                  PavedState,&
+                  BldgsState,&
+	          EveTrState,&
+	          DecTrState,&
+	          GrassState,&
+                  BSoilState,&
                   WaterState,&
-				  SnowWaterBldgState,&
-				  SnowWaterETstate,&
-                  SnowWaterDTState,&
-                  SnowWaterIGState,&
-                  SnowWaterUGState,&
-                  SnowWaterPavstate,&
-                  SnowWaterWaterstate,&
-				  SnowPackBldg,& 
-                  SnowPackET,&
-                  SnowPackDT,&
-                  SnowPackIG,&
-                  SnowPackUG,&
+                  SoilStorePavedState,&
+                  SoilStoreBldgsState,&
+                  SoilStoreEveTrState,&
+                  SoilStoreDecTrState,&
+                  SoilStoreGrassState,&
+                  SoilStoreBSoilState,&
+		  SnowWaterPavedState,&
+		  SnowWaterBldgsState,&
+		  SnowWaterEveTrState,&
+                  SnowWaterDecTrState,&
+                  SnowWaterGrassState,&
+                  SnowWaterBSoilState,&
+                  SnowWaterWaterState,&
+		  SnowPackPaved,&
+		  SnowPackBldgs,& 
+                  SnowPackEveTr,&
+                  SnowPackDecTr,&
+                  SnowPackGrass,&
+                  SnowPackBSoil,&
                   SnowPackWater,&
-                  SnowPackPav,&
-                  SnowFracBldg,&
-                  SnowFracET,&
-                  SnowFracDT,&
-                  SnowFracIG,&
-                  SnowFracUG,&
-                  SnowFracPav,&
+                  SnowFracPaved,&
+                  SnowFracBldgs,&
+                  SnowFracEveTr,&
+                  SnowFracDecTr,&
+                  SnowFracGrass,&
+                  SnowFracBSoil,&
                   SnowFracWater,&
-                  SnowDensBldg,&
-                  SnowDensET,&
-                  SnowDensDT,&
-                  SnowDensIG,&
-                  SnowDensUG,&
-                  SnowDensPav,&
+                  SnowDensPaved,&
+                  SnowDensBldgs,&
+                  SnowDensEveTr,&
+                  SnowDensDecTr,&
+                  SnowDensGrass,&
+                  SnowDensBSoil,&
                   SnowDensWater
 
-  !Define InitialConditions file, open and read and close it
+  ! Define InitialConditions file ----------------------------------------
   FileInit=trim(FileInputPath)//trim("InitialConditions")//trim(GridName)//'_'//trim(year_txt)//'.nml'
-  call ErrorHint(44,FileInit,notUsed,notUsed,notUsedI)
-   
-  open(55,File=trim(FileInit),err=200,status='old') !Change with needs
-  read(55,iostat=ios_out,nml=InitialConditions,err=203)
-  close(55)
-
-  !Write this to FileChoices
+  ! Open, read and close InitialConditions file --------------------------
+  open(52,File=trim(FileInit),err=600) !Change with needs
+  read(52,iostat=ios_out,nml=InitialConditions,err=601)
+  close(52)
+  
+  ! Write InitialConditions to FileChoices -------------------------------
+  FileChoices=trim(FileOutputPath)//trim(FileCode)//'_FileChoices.txt'
+  open(12,file=FileChoices,position='append')
   write(12,*)'----------',trim(FileInit),'----------'
   write(12,nml=InitialConditions)
+  close(12)
   
-  if(id_prev>=364)id_prev=0  !If previous day is larger than 264, set this to zero
-    
-  changed=0 ! use for LUMPS phenology
-  changeInit=0
-  ! check -- this needs to be set for passing between years
-  !'-2' because array nvegsurf
-  lai=0
-  lai(id_prev,ivConif)=LAIinitialET
-  lai(id_prev,ivdecid)=LAIinitialDT
-  lai(id_prev,ivGrassI)=LAIinitialIG
-  lai(id_prev,ivGrassU)=LAIinitialUG
-  
-  ! growing degree days
-  GDD(:,1)=0
-  GDD(:,2)=0
-  GDD(:,5)=0
-  GDD(:,3)=90 ! going to check for minimum
-  GDD(:,4)=-90 ! going to check for maximum
-  GDD(id_prev,1)=GDD_1_0
-  GDD(id_prev,2)=GDD_2_0
-
-  !Anthropogenic heat flux initializations
-  jj1=0
-  jj2=0
-  jj3=0
-  jj4=0
-  HDD=0
-  if(AnthropHeatChoice>=0)then !!BaseT is used always.??Check
-    ! sg 18/04/12 - file name changed
-    FileSAHP=trim(FileInputPath)//trim(FileCode)//'SAHP.nml'  
-    call SAHP_Coefs(temp_C0,id_prev)
-  endif
-  ! assume that the temperature has been the same for the previous days
-  HDD(id_prev-3,3)=Temp_C0
-  HDD(id_prev-2,3)=Temp_C0
-  HDD(id_prev-1,3)=Temp_C0
-  HDD(id_prev,3)=Temp_C0
-  HDD(id_prev,6)=daysSinceRain
-
-  !Initialize hourly temperature and precipitation + 5 day mean used 
-  !to define thermal growing season
-  runT(0:23)=Temp_C0
-  runP(0:23)=0
-  
-  ! initialize all initally to the previous day value (i.e. day before run starts)
-  porosity=porosity0
-  AlbDec=albDec0
-  decidCap=DecidCap0
-  CumSnowfall=0
-  
-  !------DEFINE INPUT FILE PATHS AND FILE NAMES------------------------------
-  FileMet=trim(FileInputPath)//trim(FileCode)//'_data.txt'
-  FileGIS=trim(FileInputPath)//trim(FileCode)//'.gis'
-  FileOHM=trim(FileInputPath)//'SelectOHM'//trim(FileCode)//'.txt'
-
-  !======READ GIS DATA (if not varying) ======================================
-  open(3,file=trim(fileGIS),status='old',err=313)
-  call skipHeader(3,SkipHeaderGIS)
-  finish=.false.
-   ! GISInputType=4   Varies each time step
-   ! GISInputType=3   Stays the same each hour
-   
-  IF(gisInputType==3) then
-
-    call read_gis(finish)  !Read gis file
-        if(z0_method==1) then
-            if(z0m<0.00001) call ErrorHint(5,trim(fileGIS),z0m,notUsed,notUsedI)
-            if(zdm<0.00001) call ErrorHint(6,trim(fileGIS),zdm,notUsed,notUsedI)
-            zzd=z-zdm
-        elseif(z0_method==3)then
-            if(FAIBLdg<0) call ErrorHint(1,trim(fileGIS),Faibldg,notUsed,notUsedI)
-            if(FAITree<0) call ErrorHint(2,trim(fileGIS),faitree,notUsed,notUsedI)
-        else
-            !Calculate roughness parameters
-            call RoughnessParameters(id_prev)
-        endif
-      close(3)
-  elseIF(gisInputType==4) then
-    call read_gis(finish)
-        if(z0_method==1) then
-            if(z0m<0.00001) call ErrorHint(5,trim(fileGIS),z0m,notUsed,notUsedI)
-            if(zdm<0.00001) call ErrorHint(6,trim(fileGIS),zdm,notUsed,notUsedI)
-            zzd=z-zdm
-        elseif(z0_method==3)then
-            if(FAIBLdg<0) call ErrorHint(1,trim(fileGIS),Faibldg,notUsed,notUsedI)
-            if(FAITree<0)call ErrorHint(2,trim(fileGIS),faitree,notUsed,notUsedI)
-        else
-            call RoughnessParameters(id_prev)
-        endif
-      backspace(3)
+  !-----------------------------------------------------------------------
  
+  !changed=0 !Used for LUMPS phenology - removed
+  !changeInit=0
+  
+  ! Previous day DOY number (needed in file allocations)
+  if(id_prev>=364) id_prev=0  !If previous day is larger than 364, set this to zero
+       
+  ! -- Save id_prev to ModelDailyState array --
+  ModelDailyState(Gridiv,cMDS_id_prev) = id_prev
+
+  ! -- Save phenology info in InitialConditions to ModelDailyState array --
+  ModelDailyState(Gridiv,cMDS_LAIInitialEveTr) = LAIInitialEveTr
+  ModelDailyState(Gridiv,cMDS_LAIInitialDecTr) = LAIInitialDecTr
+  ModelDailyState(Gridiv,cMDS_LAIInitialGrass) = LAIInitialGrass
+  ModelDailyState(Gridiv,cMDS_GDD1_0) = GDD_1_0
+  ModelDailyState(Gridiv,cMDS_GDD2_0) = GDD_2_0
+  ModelDailyState(Gridiv,cMDS_GDDMin) =  90   !Going to check for minimum GDD - ??
+  ModelDailyState(Gridiv,cMDS_GDDMax) = -90   !Going to check for maximum GDD - ??
+
+  ! Initialize to the previous day's value (i.e. day before run starts)
+  ModelDailyState(Gridiv,cMDS_porosity) = porosity0
+  ModelDailyState(Gridiv,cMDS_albDec)   = albDec0
+  ModelDailyState(Gridiv,cMDS_DecidCap) = DecidCap0
+  ModelDailyState(Gridiv,cMDS_CumSnowfall) = 0 !!Check this
+
+  ! -- Anthropogenic heat flux initializations -- 
+  ! Need to get BaseTHDD from SurfaceChar, as info not transferred until SUEWS_Translate called 
+  BaseTHDD = SurfaceChar(Gridiv,c_BaseTHDD)
+    
+  if(AnthropHeatChoice>=0) then    
+     !Calculations related to heating and cooling degree days (BaseT is used always)   
+     if ((Temp_C0-BaseTHDD)>=0) then   !Cooling
+        gamma2=1
+     else
+        gamma2=0
+     endif
+     if ((BaseTHDD-Temp_C0)>=0) then   !Heating
+        gamma1=1
+     else
+        gamma1=0
+     endif
+     ModelDailyState(Gridiv,cMDS_HDD1) = gamma1*(BaseTHDD-Temp_C0) ! Heating
+     ModelDailyState(Gridiv,cMDS_HDD2) = gamma2*(Temp_C0-BaseTHDD) ! Cooling
   endif
 
- !If the run start day is at previous year, then calculate the number of days
- !on that year. 
+  ModelDailyState(Gridiv,cMDS_TempC) = Temp_C0
+  ModelDailyState(Gridiv,cMDS_DaysSinceRain) = real(DaysSinceRain,kind(1d0))
+
+  ! Assume that the temperature has been the same for the previous days
+  ModelDailyState(Gridiv,cMDS_TempCOld1) = Temp_C0
+  ModelDailyState(Gridiv,cMDS_TempCOld2) = Temp_C0
+  ModelDailyState(Gridiv,cMDS_TempCOld3) = Temp_C0
+  
+  !! These variables don't seem to be needed (commented out HCW 27 Nov 2014)
+  !! If required, they will need updating for a non-hourly timestep
+  !! Initialize hourly temperature and precipitation + 5 day mean used to define thermal growing season
+  !runT(0:23)=Temp_C0 
+  !runP(0:23)=0
+    
+  finish=.false.  !!What does this do??
+     
+  ! -- Save snow density info in InitialConditions to ModelDailyState array --  
+  ModelDailyState(Gridiv,cMDS_SnowDens(PavSurf))    = SnowDensPaved   
+  ModelDailyState(Gridiv,cMDS_SnowDens(BldgSurf))   = SnowDensBldgs
+  ModelDailyState(Gridiv,cMDS_SnowDens(ConifSurf))  = SnowDensEveTr
+  ModelDailyState(Gridiv,cMDS_SnowDens(DecidSurf))  = SnowDensDecTr
+  ModelDailyState(Gridiv,cMDS_SnowDens(GrassSurf))  = SnowDensGrass
+  ModelDailyState(Gridiv,cMDS_SnowDens(BSoilSurf))  = SnowDensBSoil
+  ModelDailyState(Gridiv,cMDS_SnowDens(WaterSurf))  = SnowDensWater
+ 
+  !! Where is this from??   
+  IceFrac=0.2   !Estimated fraction of ice. Should be improved in the future
+  
+  ! ==============================================================
+  ! ============ Save states to ModelOutputData ==================      
+     
+  ! -- Initial wetness status of each surface (above ground) --
+  ModelOutputData(0,cMOD_State(PavSurf),   Gridiv) = PavedState
+  ModelOutputData(0,cMOD_State(BldgSurf),  Gridiv) = BldgsState
+  ModelOutputData(0,cMOD_State(ConifSurf), Gridiv) = EveTrState
+  ModelOutputData(0,cMOD_State(DecidSurf), Gridiv) = DecTrState
+  ModelOutputData(0,cMOD_State(GrassSurf), Gridiv) = GrassState
+  ModelOutputData(0,cMOD_State(BSoilSurf), Gridiv) = BSoilState
+  ModelOutputData(0,cMOD_State(WaterSurf), Gridiv) = WaterState
+ 
+  ! -- Initial soil stores for each surface (below ground) --
+  ModelOutputData(0,cMOD_SoilState(PavSurf),   Gridiv) = SoilStorePavedState
+  ModelOutputData(0,cMOD_SoilState(BldgSurf),  Gridiv) = SoilStoreBldgsState
+  ModelOutputData(0,cMOD_SoilState(ConifSurf), Gridiv) = SoilStoreEveTrstate
+  ModelOutputData(0,cMOD_SoilState(DecidSurf), Gridiv) = SoilStoreDecTrState
+  ModelOutputData(0,cMOD_SoilState(GrassSurf), Gridiv) = SoilStoreGrassState
+  ModelOutputData(0,cMOD_SoilState(BSoilSurf), Gridiv) = SoilStoreBSoilState
+  ModelOutputData(0,cMOD_SoilState(WaterSurf), Gridiv) = 0 ! No soil layer for water surface
+  
+  ! -- Initial snow water equivalent for each surface --
+  ModelOutputData(0,cMOD_SnowPack(PavSurf),   Gridiv) = SnowPackPaved
+  ModelOutputData(0,cMOD_SnowPack(BldgSurf),  Gridiv) = SnowPackBldgs
+  ModelOutputData(0,cMOD_SnowPack(ConifSurf), Gridiv) = SnowPackEveTr
+  ModelOutputData(0,cMOD_SnowPack(DecidSurf), Gridiv) = SnowPackDecTr
+  ModelOutputData(0,cMOD_SnowPack(GrassSurf), Gridiv) = SnowPackGrass
+  ModelOutputData(0,cMOD_SnowPack(BSoilSurf), Gridiv) = SnowPackBSoil
+  ModelOutputData(0,cMOD_SnowPack(WaterSurf), Gridiv) = SnowPackWater
+  
+  ! -- Initial liquid (melted) water for each surface --
+  ModelOutputData(0,cMOD_SnowWaterState(PavSurf),   Gridiv) = SnowWaterPavedState
+  ModelOutputData(0,cMOD_SnowWaterState(BldgSurf),  Gridiv) = SnowWaterBldgsState
+  ModelOutputData(0,cMOD_SnowWaterState(ConifSurf), Gridiv) = SnowWaterEveTrstate
+  ModelOutputData(0,cMOD_SnowWaterState(DecidSurf), Gridiv) = SnowWaterDecTrState
+  ModelOutputData(0,cMOD_SnowWaterState(GrassSurf), Gridiv) = SnowWaterGrassState
+  ModelOutputData(0,cMOD_SnowWaterState(BSoilSurf), Gridiv) = SnowWaterBSoilState
+  ModelOutputData(0,cMOD_SnowWaterState(WaterSurf), Gridiv) = SnowWaterWaterState
+ 
+  ! -- Initial fraction of snow on each surface --
+  ModelOutputData(0,cMOD_SnowFrac(PavSurf),   Gridiv) = SnowFracPaved
+  ModelOutputData(0,cMOD_SnowFrac(BldgSurf),  Gridiv) = SnowFracBldgs
+  ModelOutputData(0,cMOD_SnowFrac(ConifSurf), Gridiv) = SnowFracEveTr
+  ModelOutputData(0,cMOD_SnowFrac(DecidSurf), Gridiv) = SnowFracDecTr
+  ModelOutputData(0,cMOD_SnowFrac(GrassSurf), Gridiv) = SnowFracGrass
+  ModelOutputData(0,cMOD_SnowFrac(BSoilSurf), Gridiv) = SnowFracBSoil
+  ModelOutputData(0,cMOD_SnowFrac(WaterSurf), Gridiv) = SnowFracWater 
+     
+  !At this point translate arrays to variables (needed for RoughnessParameters)
+  call SUEWS_Translate(Gridiv,0,0)  
+    
+  !Calculation of roughness parameters (N.B. uses porosity)
+  call RoughnessParameters
+  
+
+ !=============================================================================
+ !!This part not working yet!!! - LJ's comment
+ !! HCW - I don't understand what this is supposed to do??
+
+ ! If the run start day is at previous year, then calculate the number of days
+ ! in that year.
+
  !switch tells whether the current day is on previous year (switch=1) or in the 
  !current year (switch=0, initial condition)
  if(id_prev==0)then
@@ -708,9 +1496,9 @@
    call LeapYearCalc (year_int,id_prev)
    switch=1
  endif
-  
- call day2month(id_prev,mb,date,seas,year,lat)!Calculate real date from doy
- call Day_of_Week(date,mb,year,wd)            !Calculate weekday (1=Sun,...)
+
+ call day2month(id_prev,mb,date,seas,year,lat) !Calculate real date from doy. Last it Lat
+ call Day_of_Week(date,mb,year,wd)             !Calculate weekday (1=Sun,...)
 
  !After the day in previous year switch is changed back to zero
  if(switch==1)then
@@ -719,8 +1507,8 @@
    switch=0
  endif
   
- dayofWeek(id_prev,1)=wd  ! day of week
- dayofWeek(id_prev,2)=mb  ! month
+ dayofWeek(id_prev,1)=wd   ! day of week
+ dayofWeek(id_prev,2)=mb   ! month
  dayofweek(id_prev,3)=seas ! season
 
  ! in case first hour not 0
@@ -732,8 +1520,9 @@
    call ErrorHint(43,'switch- years',notUsed,notUsed,notUsedI)
  endif
 
- call day2month(id_next,mb,date,seas,year,lat)!Calculate real date from doy
- call Day_of_Week(date,mb,year,wd)!Calculate weekday (1=Sun,...)
+ call day2month(id_next,mb,date,seas,year,lat) !Calculate real date from doy
+ call Day_of_Week(date,mb,year,wd)             !Calculate weekday (1=Sun,...)
+
  if(switch==1)then
    year=year-1
    switch=0
@@ -748,134 +1537,82 @@
    id_prev=0
    switch=0
  endif
-
+ !=============================================================================
+ 
  WU_day=0
  id=id_prev
  it=LastTimeOfDay
- if (id_prev>=DayLightSavingDay(1).and.id_prev<=DayLightSavingDay(2)) then!Summetime
+ if (id_prev>=DayLightSavingDay(1).and.id_prev<=DayLightSavingDay(2)) then  !Summertime
     DLS=1
  else
     DLS=0
  endif
-        
+          
+ ! -----------------------------------------------------------------------
+ ! Calculate daily water use if modelled (i.e. if WU_choice = 0)
+ !! Will need to be adjusted for irrigated fractions/ IG,UG -> Grass,BSoil surfaces
 
- !Calculate daily water use if this is modelled
- IrrTrees =0
- if (WU_choice==0) then
-  ! check if
-  calc=0
-  if (DayWat(wd)==1.0) then      !if=1 - then this is a day that has watering
-      if (lat>=0)then             !Northern Hemisphere
+ IrrTrees = 0   !Initialize total fraction of irrigated trees
+
+ if (WU_choice==0) then  !Model water use
+    calc=0
+    if (DayWat(wd)==1.0) then      !if=1 then this is a day that has watering
+       if (lat>=0) then            !Northern Hemisphere
           if (id>=Ie_start.and.id<=Ie_end) calc=1 !if day between irrigation period               
-      else                        !Southern Hemisphere
+       else                        !Southern Hemisphere
           calc=1
           if (id>=Ie_end.and.id<=Ie_start) calc=0 !if day between irrigation period                       
-      endif
-      if(calc==1) then              
-          ! HDD(id,6) -- daysSincerain, HDD(id3)- mean airT
-          ! automatic
-
-          WU_day(id,2)=Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*sfr(GrassISurf)*DayWatPer(wd) 
-          ! manual
-          WU_day(id,3)=(1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*sfr(GrassISurf)*DayWatPer(wd)
-                      !aut=(-84.535+9.959*TempWU_Daily(i)+3.674*DaysSinceRain(i))*Faut
-                      !man=(-23.36+2.988*TempWU_Daily(i)+1.102*DaysSinceRain(i))*(1-Faut)
-          if (WU_Day(id,2)<0) WU_Day(id,2)=0 !If modelled WU is negative -> 0
-          if (WU_Day(id,3)<0) WU_Day(id,3)=0 !If modelled WU is negative -> 0
-                              
-          WU_Day(id,1)=(WU_day(id,2)+WU_day(id,3))
-          
-          !Calculate the fraction for irrigated trees/shrubs. Added by LJ in 9 September 2013
-          IrrTrees = sfr(ConifSurf)*IrrFractionTrees+sfr(DecidSurf)*IrrFractionTrees
-
-          WU_day(id,5)=Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*IrrTrees*DayWatPer(wd) 
-          WU_day(id,6)=(1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*IrrTrees*DayWatPer(wd)
-                           
-            
-          if (WU_Day(id,5)<0) WU_Day(id,5)=0 !If modelled WU is negative -> 0
-          if (WU_Day(id,6)<0) WU_Day(id,6)=0 !If modelled WU is negative -> 0
-                              
-          WU_Day(id,4)=(WU_day(id,5)+WU_day(id,6))
- 
-        else
-           WU_Day(id,1)=0
-           WU_Day(id,2)=0
-           WU_Day(id,3)=0
-           WU_Day(id,4)=0
-           WU_Day(id,5)=0
-           WU_Day(id,6)=0
+       endif
+       if(calc==1) then                     
+          ! Model daily water use based on HDD(id,6)(days since rain) and HDD(id,3)(average temp)
+	  ! ---- Automatic irrigation (evergreen trees) ----
+	  WU_day(id,2) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*sfr(ConifSurf)*IrrFracConif*DayWatPer(wd) 
+	  if (WU_Day(id,2)<0) WU_Day(id,2)=0   !If modelled WU is negative -> 0
+	  ! ---- Manual irrigation (evergreen trees) ----
+	  WU_day(id,3) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*sfr(ConifSurf)*IrrFracConif*DayWatPer(wd)
+	  if (WU_Day(id,3)<0) WU_Day(id,3)=0   !If modelled WU is negative -> 0
+	  ! ---- Total evergreen trees water use (automatic + manual) ----
+	  WU_Day(id,1)=(WU_day(id,2)+WU_day(id,3))
+	                              
+	  ! ---- Automatic irrigation (deciduous trees) ----
+	  WU_day(id,5) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*sfr(DecidSurf)*IrrFracDecid*DayWatPer(wd) 
+	  if (WU_Day(id,5)<0) WU_Day(id,5)=0   !If modelled WU is negative -> 0
+	  ! ---- Manual irrigation (deciduous trees) ----
+	  WU_day(id,6) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*sfr(DecidSurf)*IrrFracDecid*DayWatPer(wd)
+	  if (WU_Day(id,6)<0) WU_Day(id,6)=0   !If modelled WU is negative -> 0
+	  ! ---- Total deciduous trees water use (automatic + manual) ----
+	  WU_Day(id,4)=(WU_day(id,5)+WU_day(id,6))
+	                              
+	  ! ---- Automatic irrigation (grass) ----
+	  WU_day(id,8) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*sfr(GrassSurf)*IrrFracGrass*DayWatPer(wd) 
+	  if (WU_Day(id,8)<0) WU_Day(id,8)=0   !If modelled WU is negative -> 0
+	  ! ---- Manual irrigation (grass) ----
+	  WU_day(id,9) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*sfr(GrassSurf)*IrrFracGrass*DayWatPer(wd)
+	  if (WU_Day(id,9)<0) WU_Day(id,9)=0   !If modelled WU is negative -> 0
+	  ! ---- Total grass water use (automatic + manual) ----      
+          WU_Day(id,7)=(WU_day(id,8)+WU_day(id,9))
+       else
+          WU_Day(id,1)=0
+          WU_Day(id,2)=0
+          WU_Day(id,3)=0
+          WU_Day(id,4)=0
+          WU_Day(id,5)=0
+          WU_Day(id,6)=0
+          WU_Day(id,7)=0
+          WU_Day(id,8)=0
+          WU_Day(id,9)=0
        endif
     endif
  endif
 
- !Wetness status of each surface
-
- !Above ground state
- State(PavSurf)=PavState
- State(BldgSurf)=BldgState
- State(ConifSurf)=ETState
- State(DecidSurf)=DTState
- State(GrassISurf)=IGState
- State(GrassUSurf)=UGState
- State(WaterSurf)=WaterState   !State of water body
-
- !Maximum capasity soil storage can hold for each surface type
-
- !::::Below ground state::::::::::::::::::::::::::::::::::::::::::
- !Max capacity of the different soil levels
-
- !Soil moisture of each surface type
+ ! -----------------------------------------------------------------------
    
- !Initial conditions for soilstores
- soilmoist(PavSurf)=soilstorePavstate
- soilmoist(BldgSurf)=soilstoreBldgState
- soilmoist(ConifSurf)=soilstoreETstate
- soilmoist(DecidSurf)=soilstoreDTState
- soilmoist(GrassISurf)=soilstoreIGState
- soilmoist(GrassUSurf)=soilstoreUGState
- soilmoist(WaterSurf)=0                 !No soil layer for water body
 
-
- !!SNOWPACK PARAMETERS
- !Initial parameters for snowpack
- SnowPack(PavSurf)=SnowPackPav
- SnowPack(BldgSurf)=SnowPackBldg
- SnowPack(ConifSurf)=SnowPackET
- SnowPack(DecidSurf)=SnowPackDT
- SnowPack(GrassISurf)=SnowPackIG
- SnowPack(GrassUSurf)=SnowPackUG
- SnowPack(WaterSurf)=SnowPackWater
-
- !Amount of liquid (melted water) in the snowpack
- MeltWaterStore(PavSurf) = SnowWaterPavstate
- MeltWaterStore(BldgSurf) = SnowWaterBldgState
- MeltWaterStore(ConifSurf) = SnowWaterETstate
- MeltWaterStore(DecidSurf) = SnowWaterDTState
- MeltWaterStore(GrassISurf) = SnowWaterIGState
- MeltWaterStore(GrassUSurf) = SnowWaterUGState
- MeltWaterStore(WaterSurf) = SnowWaterWaterstate
-
- !Initial fraction of snow
- snowFrac(PavSurf)=SnowFracPav
- snowFrac(BldgSurf)=SnowFracBldg
- snowFrac(ConifSurf)=SnowFracET
- snowFrac(DecidSurf)=SnowFracDT
- snowFrac(GrassISurf)=SnowFracIG
- snowFrac(GrassUSurf)=SnowFracUG
- snowFrac(WaterSurf)=SnowFracWater
-
- iceFrac=0.2 !Estimated fraction of ice. Should be improved in the future
-
- densSnow(PavSurf) = SnowDensPav    !Initialize snow density
- densSnow(BldgSurf) = SnowDensBldg
- densSnow(ConifSurf) = SnowDensET
- densSnow(DecidSurf) = SnowDensDT
- densSnow(GrassISurf) = SnowDensIG
- densSnow(GrassUSurf) = SnowDensUG
- densSnow(WaterSurf) = SnowDensWater
-
+ !----------------------------------------------
  ! for first 3 h Q* just assume at night
  ! check ?? this should not happen at the start of the year if continuing
+
+ !! What is this?? - HCW
 
  q1=-101
  q2=-100
@@ -886,48 +1623,25 @@
  r3=-99
 
 
- !%%%%%%%%%%OUTPUT FILENAMES AND THEIR PATHS%%%%%%%%%%%%%%%%%%%%%%%%%%%
- Write(str2,'(i2)') Interval/60
- FileOut=trim(FileOutputPath)//trim(FileCode)//'_'//trim(adjustl(str2))//'.txt'
- FileErrorInf=trim(FileOutputPath)//trim(FileCode)//'_ErrorFile.txt'
- NARPOut=trim(FileOutputPath)//trim(FileCode)//'_NARPOut.txt'
- fileMonthly=trim(FileOutputPath)//trim(FileCode)//'_MonthlyFile.txt'
- fileDaily=trim(FileOutputPath)//trim(FileCode)//'_DailyFile.txt'
- file5min=trim(FileOutputPath)//trim(FileCode)//'_5min.txt'
- SnowOut=trim(FileOutputPath)//trim(FileCode)//'_SnowOut.txt'
- SOLWEIGpoiOut=trim(FileOutputPath)//trim(FileCode)//'_SOLWEIGpoiOut.txt'
- BLOut=trim(FileOutputPath)//trim(FileCode)//'_BL.txt'
-
  !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- !DEFINE DIFFERENT INITIALIZATION PARAMETERS
- once=.true.
+ !DEFINE DIFFERENT INITIALIZATION PARAMEveTrERS
+ !Are still needed ??
+ !once=.true.
 
- lfn_us=10
- lfnOut=35  ! Output error file
 
- 
-!==================OUTPUT FILE OPTIONS=============================================
-!Open daily and monthly
- open(14,file=fileDaily,err=201)
- open(15,file=fileMonthly,err=202)
-
- ! zero arrays------------------------------------------------------------
- !sg -- 16 variables written out
-
- do j=1,NumberDailyVars
-   all_tot(1,j)=0  
- enddo
- call accum_zero
+ !do j=1,NumberDailyVars
+ !  all_tot(1,j)=0
+ !enddo
+ !call accum_zero
 ! zero arrays------------------------------------------------------------
-    
+ 
  return
-200 call ErrorHint(47,trim(FileInit),notUsed,notUsed,notUsedI)
-201 call ErrorHint(51,trim(fileDaily),notUsed,notUsed,notUsedI)
-202	call ErrorHint(51,trim(fileMonthly),notUsed,notUsed,notUsedI)
-203 call ErrorHint(48,trim(FileInit),notUsed,notUsed,ios_out)
-313 call ErrorHint(47,trim(filegis),notUsed,notUsed,notUsedI)
+
+600 call ErrorHint(47,trim(FileInit),notUsed,notUsed,notUsedI)
+601 call ErrorHint(48,trim(FileInit),notUsed,notUsed,ios_out)
 
  end subroutine InitialState
+
 
 !--------------------------------------------------------------------------
 !Accumulating day, month, year and season
@@ -947,101 +1661,187 @@
 
 !--------------------------------------------------------------------------
 
- subroutine NextInitial(GridName)
-  use allocateArray  ! module_LUMPS_constants,f90
-  use time
+ 
+!-------------------------------------------------------------------------
+ subroutine NextInitial(GridName,year_int,GridName2)
+ !Modified by
+ !LJ 5 Feb 2015:
+ !HCW 21 Nov 2014
+ !
+ !------------------------------------------------------------------------
+  use allocateArray 
+  use ColNamesInputFiles
+  use ColNamesModelDailyState
   use data_in
-  use snowMod
   use defaultNotUsed
-
+  use Initial
+  use snowMod
+  use time
+  
   IMPLICIT NONE
 
   character (len=15)::GridName
-  character (len=4)::year_txt
-  integer:: year_int
+  character (len=15)::GridName2
+  integer:: Gridiv
+  character (len=4)::year_txt2
+  integer:: year_int2
+  integer:: year_int, year_int_final = 2
+  
+!  write(*,*) LastGrid
+!  pause
+   
+  year=year_int   !HCW added 21 Nov 2014
+  !pause
+  
+  !if (year < real(year_int_final,kind(1D0))) then   !Write out InitialConditions file for each year ready for next year loop
+  !    year_int2=int(year+1)
+  !    write(year_txt2,'(I4)')year_int2
+  !    open(55,File=trim(FileInputPath)//trim("InitialConditions")//trim(GridName2)// &
+   !      '_'//trim(adjustl(year_txt2))//'.nml',err=200)
 
-  if (id>360) then
-    year_int=int(year+1)
-    write(year_txt,'(I4)')year_int
-    open(55,File=trim(FileInputPath)//trim("InitialConditions")//trim(GridName)//'_'//trim(adjustl(year_txt))//'.nml',err=200)
-
-  else
-    year_int=int(year)
-    write(year_txt,'(I4)')year_int
-    open(55,File=trim(FileInputPath)//trim("InitialConditions")//trim(GridName)//'_'//trim(adjustl(year_txt))//'end.nml',err=201)
-  endif
+  !elseif (year_int == year_int_final) then
+     if (id>360) then  !!Why 360??
+       year_int2=int(year+1)
+       write(year_txt2,'(I4)')year_int2
+       open(55,File=trim(FileInputPath)//trim("InitialConditions")//trim(GridName)// &
+            '_'//trim(adjustl(year_txt2))//'.nml',err=200)  
+     else
+        year_int2=int(year)
+        write(year_txt2,'(I4)')year_int2
+        open(55,File=trim(FileInputPath)//trim("InitialConditions")//trim(GridName)// &
+     	     '_'//trim(adjustl(year_txt2))//'end.nml',err=201)
+     endif
+  !endif
 
   write(55,*)'&InitialConditions'
   write(55,*)'DaysSinceRain=',int(HDD(id,6))
+   
   if(it/=LastTimeofday)then
    ! need to do this otherwise it will not be completed
 	id=id-1  
   endif
-
+   
   write(55,*)'Temp_C0=',HDD(id,3)
   write(55,*)'ID_Prev=',id
   write(55,*)'GDD_1_0=',GDD(id,1)
   write(55,*)'GDD_2_0=',GDD(id,2)
-  write(55,*)'BldgState=',State(BldgSurf)
-  write(55,*)'ETState=',State(ConifSurf)
-  write(55,*)'DTState=',State(DecidSurf)
-  write(55,*)'PavState=',State(PavSurf)
-  write(55,*)'IGState=',State(GrassISurf)
-  write(55,*)'UGState=',State(GrassUSurf)
-  write(55,*)'LAIinitialET=',lai(id,ivConif)         !
-  write(55,*)'LAIinitialDT=',lai(id,ivdecid)
-  write(55,*)'LAIinitialUG=',lai(id,ivGrassI)
-  write(55,*)'LAIinitialIG=',lai(id,ivGrassU)
+  write(55,*)'PavedState=',State(PavSurf)
+  write(55,*)'BldgsState=',State(BldgSurf)
+  write(55,*)'EveTrState=',State(ConifSurf)
+  write(55,*)'DecTrState=',State(DecidSurf)
+  write(55,*)'GrassState=',State(GrassSurf)
+  write(55,*)'BSoilState=',State(BSoilSurf)
+  write(55,*)'WaterState=',State(WaterSurf)
+  write(55,*)'LAIinitialEveTr=',lai(id,ivConif)         
+  write(55,*)'LAIinitialDecTr=',lai(id,ivDecid)
+  write(55,*)'LAIinitialGrass=',lai(id,ivGrass)
   write(55,*)'porosity0=',porosity(id)
   write(55,*)'DecidCap0=',decidCap(id)
   write(55,*)'albDec0=',AlbDec(id)
-  write(55,*)'soilstoreBldgState=',soilmoist(BldgSurf)
-  write(55,*)'soilstoreETstate=',soilmoist(ConifSurf)
-  write(55,*)'soilstoreDTState=',soilmoist(DecidSurf)
-  write(55,*)'soilstoreUGState=',soilmoist(GrassISurf)
-  write(55,*)'soilstoreIGState=',soilmoist(GrassUSurf)
-  write(55,*)'soilstorePavstate=',soilmoist(PavSurf)
-  write(55,*)'WaterState=',State(WaterSurf)
-  write(55,*)'SnowWaterBldgState=',MeltWaterStore(BldgSurf)
-  write(55,*)'SnowWaterETstate=',MeltWaterStore(ConifSurf)
-  write(55,*)'SnowWaterDTState=',MeltWaterStore(DecidSurf)
-  write(55,*)'SnowWaterIGState=',MeltWaterStore(GrassISurf)
-  write(55,*)'SnowWaterUGState=',MeltWaterStore(GrassUSurf)
-  write(55,*)'SnowWaterPavstate=',MeltWaterStore(PavSurf)
-  write(55,*)'SnowWaterWaterstate=',MeltWaterStore(WaterSurf)
-  write(55,*)'SnowPackBldg=',SnowPack(BldgSurf)
-  write(55,*)'SnowPackET=',SnowPack(ConifSurf)
-  write(55,*)'SnowPackDT=',SnowPack(DecidSurf)
-  write(55,*)'SnowPackIG=',SnowPack(GrassISurf)
-  write(55,*)'SnowPackUG=',SnowPack(GrassUSurf)
-  write(55,*)'SnowPackPav=',SnowPack(PavSurf)
+  write(55,*)'soilstorePavedState=',soilmoist(PavSurf)
+  write(55,*)'soilstoreBldgsState=',soilmoist(BldgSurf)
+  write(55,*)'soilstoreEveTrState=',soilmoist(ConifSurf)
+  write(55,*)'soilstoreDecTrState=',soilmoist(DecidSurf)
+  write(55,*)'soilstoreGrassState=',soilmoist(GrassSurf)
+  write(55,*)'soilstoreBSoilState=',soilmoist(BSoilSurf)
+  write(55,*)'SnowWaterPavedstate=',MeltWaterStore(PavSurf)
+  write(55,*)'SnowWaterBldgsState=',MeltWaterStore(BldgSurf)
+  write(55,*)'SnowWaterEveTrState=',MeltWaterStore(ConifSurf)
+  write(55,*)'SnowWaterDecTrState=',MeltWaterStore(DecidSurf)
+  write(55,*)'SnowWaterGrassState=',MeltWaterStore(GrassSurf)
+  write(55,*)'SnowWaterBSoilState=',MeltWaterStore(BSoilSurf)
+  write(55,*)'SnowWaterWaterState=',MeltWaterStore(WaterSurf)
+  write(55,*)'SnowPackPaved=',SnowPack(PavSurf)
+  write(55,*)'SnowPackBldgs=',SnowPack(BldgSurf)
+  write(55,*)'SnowPackEveTr=',SnowPack(ConifSurf)
+  write(55,*)'SnowPackDecTr=',SnowPack(DecidSurf)
+  write(55,*)'SnowPackGrass=',SnowPack(GrassSurf)
+  write(55,*)'SnowPackBSoil=',SnowPack(BSoilSurf)
   write(55,*)'SnowPackWater=',SnowPack(WaterSurf)
-  write(55,*)'SnowFracBldg=',SnowFrac(BldgSurf)
-  write(55,*)'SnowFracET=',SnowFrac(ConifSurf)
-  write(55,*)'SnowFracDT=',SnowFrac(DecidSurf)
-  write(55,*)'SnowFracIG=',SnowFrac(GrassISurf)
-  write(55,*)'SnowFracUG=',SnowFrac(GrassUSurf)
-  write(55,*)'SnowFracPav=',SnowFrac(PavSurf)
+  write(55,*)'SnowFracPaved=',SnowFrac(PavSurf)
+  write(55,*)'SnowFracBldgs=',SnowFrac(BldgSurf)
+  write(55,*)'SnowFracEveTr=',SnowFrac(ConifSurf)
+  write(55,*)'SnowFracDecTr=',SnowFrac(DecidSurf)
+  write(55,*)'SnowFracGrass=',SnowFrac(GrassSurf)
+  write(55,*)'SnowFracBSoil=',SnowFrac(BSoilSurf)
   write(55,*)'SnowFracWater=',SnowFrac(WaterSurf)
-  write(55,*)'SnowDensBldg=',densSnow(BldgSurf)
-  write(55,*)'SnowDensET=',densSnow(ConifSurf)
-  write(55,*)'SnowDensDT=',densSnow(DecidSurf)
-  write(55,*)'SnowDensIG=',densSnow(GrassISurf)
-  write(55,*)'SnowDensUG=',densSnow(GrassUSurf)
-  write(55,*)'SnowDensPav=',densSnow(PavSurf)
+  write(55,*)'SnowDensPaved=',densSnow(PavSurf)
+  write(55,*)'SnowDensBldgs=',densSnow(BldgSurf)
+  write(55,*)'SnowDensEveTr=',densSnow(ConifSurf)
+  write(55,*)'SnowDensDecTr=',densSnow(DecidSurf)
+  write(55,*)'SnowDensGrass=',densSnow(GrassSurf)
+  write(55,*)'SnowDensBSoil=',densSnow(BSoilSurf)
   write(55,*)'SnowDensWater=',densSnow(WaterSurf)
   write(55,*)'/'
   close(55)
-
+  
   return
 
-200 call ErrorHint(49,trim("InitialConditions")//trim(GridName)//'_'//trim(adjustl(year_txt))//'.nml',notUsed,notUsed,notUsedI)
-201 call ErrorHint(49,trim("InitialConditions")//trim(GridName)//'_'//trim(adjustl(year_txt))//'end.nml',notUsed,notUsed,notUsedI)
+200 call ErrorHint(49,trim("InitialConditions")//trim(GridName)// &
+		   '_'//trim(adjustl(year_txt2))//'.nml',notUsed,notUsed,notUsedI)
+201 call ErrorHint(49,trim("InitialConditions")//trim(GridName)// &
+		   '_'//trim(adjustl(year_txt2))//'end.nml',notUsed,notUsed,notUsedI)
 
  end subroutine NextInitial
+!------------------------------------------------------------------------- 
 
 
- !¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
+
+ !=======================================================================
+ !=======================================================================
+ !This subroutine prepares a meteorological forcing file.
+
+ subroutine SUEWS_InitializeMetData(lunit)
+
+   use allocateArray
+   use data_in
+   use sues_data
+   use time
+   use defaultnotUsed
+   use Initial
+
+   IMPLICIT NONE
+
+   integer::lunit,i,iyy,iv,RunNumber!,NSHcounter
+   real (kind(1d0)),dimension(24)::MetArray
+
+   !---------------------------------------------------------------
+
+   !Open the file for reading and read the actual data
+   open(lunit,file=trim(fileMet),status='old',err=314)
+   call skipHeader(lunit,SkipHeaderMet)
+
+   ! Skip to the right place in the met file, depending on how many chunks have been read already
+   if (skippedLines>0) then
+       do iyy=1,skippedLines
+       read(lunit,*)
+       enddo
+   endif
+
+   ! Read in next chunk of met data and fill MetForcingData array with data for every timestep
+   !NSHcounter = 1
+   DO i=1,int(ReadLinesMetdata)
+       call MetRead(MetArray,InputmetFormat,AnthropHeatChoice,ldown_option,NetRadiationChoice,&
+                   snowUse,smd_choice,defaultQf,defaultQs,SoilDepthMeas,SoilRocks,SoilDensity,SmCap)
+       !DO iv=1,NSH
+       !    MetForcingData(NSHcounter,1:24,GridCounter) = MetArray
+       !   NSHcounter = NSHcounter + 1
+       !ENDDO
+       MetForcingData(i,1:24,GridCounter) = MetArray
+    ENDDO
+
+   CLOSE(lunit)
+
+   return
+
+314 call errorHint(11,trim(fileMet),notUsed,notUsed,ios_out)
+
+
+ end subroutine SUEWS_InitializeMetData
+!----------------------------------------------------------------------------------------------
+
+
+ !====================================================================================
  subroutine CheckInitial  
  !Check that the parameters in InitialConditions file.
  !Called from metRead. Added by LJ in 8/2/2013
@@ -1066,54 +1866,43 @@
  !Check if LAI values are OK. Need to treat different hemispheres as well as 
  !tropics separately.
  if (lat>40) then
-   if ((LAIinitialET>LAImin(ConifSurf-2)+1.and.(id<60.or.id>330)).or.&
-     (LAIinitialET<LAImax(ConifSurf-2)-1.and.(id>130.and.id<244))) then
-      call ErrorHint(37,'Check LAIinitialET in InitialConditions file', LAIinitialET, LAImin(ConifSurf), notUsedI)
+   if ((LAIinitialEveTr>LAImin(ConifSurf-2)+1.and.(id<60.or.id>330)).or.&
+     (LAIinitialEveTr<LAImax(ConifSurf-2)-1.and.(id>130.and.id<244))) then
+      call ErrorHint(37,'Check LAIinitialEveTr in InitialConditions file', LAIinitialEveTr, LAImin(ConifSurf), notUsedI)
    endif
-   if ((LAIinitialDT>LAImin(DecidSurf-2)+1.and.(id<60.or.id>330)).or.&
-     (LAIinitialDT<LAImax(DecidSurf-2)-1.and.(id>130.and.id<244))) then
-      call ErrorHint(37,'Check LAIinitialDT in InitialConditions file', LAIinitialDT, LAImin(DecidSurf), notUsedI)
+   if ((LAIinitialDecTr>LAImin(DecidSurf-2)+1.and.(id<60.or.id>330)).or.&
+     (LAIinitialDecTr<LAImax(DecidSurf-2)-1.and.(id>130.and.id<244))) then
+      call ErrorHint(37,'Check LAIinitialDecTr in InitialConditions file', LAIinitialDecTr, LAImin(DecidSurf), notUsedI)
    endif
-   if ((LAIinitialUG>LAImin(GrassUSurf-2)+1.and.(id<60.or.id>330)).or.&
-     (LAIinitialUG<LAImax(GrassUSurf-2)-1.and.(id>130.and.id<244))) then
-      call ErrorHint(37,'Check LAIinitialUG in InitialConditions file', LAIinitialUG, LAImin(GrassUSurf), notUsedI)
-   endif
-   if ((LAIinitialIG>LAImin(GrassISurf-2)+1.and.(id<60.or.id>330)).or.&
-     (LAIinitialIG<LAImax(GrassISurf-2)-1.and.(id>130.and.id<244))) then
-      call ErrorHint(37,'Check LAIinitialIG in InitialConditions file', LAIinitialIG, LAImin(GrassISurf), notUsedI)
+   if ((LAIinitialGrass>LAImin(GrassSurf-2)+1.and.(id<60.or.id>330)).or.&
+     (LAIinitialGrass<LAImax(GrassSurf-2)-1.and.(id>130.and.id<244))) then
+      call ErrorHint(37,'Check LAIinitialGrass in InitialConditions file', LAIinitialGrass, LAImin(GrassSurf), notUsedI)
    endif    
    
  elseif (lat<-40) then
-   if ((LAIinitialET<LAImax(ConifSurf-2)-1.and.(id<60.or.id>330)).or.&
-     (LAIinitialET>LAImin(ConifSurf-2)+1.and.(id>130.and.id<244))) then
-      call ErrorHint(37,'Check LAIinitialET in InitialConditions file', LAIinitialET, LAImax(ConifSurf), notUsedI)
+   if ((LAIinitialEveTr<LAImax(ConifSurf-2)-1.and.(id<60.or.id>330)).or.&
+     (LAIinitialEveTr>LAImin(ConifSurf-2)+1.and.(id>130.and.id<244))) then
+      call ErrorHint(37,'Check LAIinitialEveTr in InitialConditions file', LAIinitialEveTr, LAImax(ConifSurf), notUsedI)
    endif
-   if ((LAIinitialDT>LAImax(DecidSurf-2)-1.and.(id<60.or.id>330)).or.&
-     (LAIinitialDT>LAImin(DecidSurf-2)+1.and.(id>130.and.id<244))) then
-      call ErrorHint(37,'Check LAIinitialDT in InitialConditions file', LAIinitialDT, LAImax(DecidSurf), notUsedI)
+   if ((LAIinitialDecTr>LAImax(DecidSurf-2)-1.and.(id<60.or.id>330)).or.&
+     (LAIinitialDecTr>LAImin(DecidSurf-2)+1.and.(id>130.and.id<244))) then
+      call ErrorHint(37,'Check LAIinitialDecTr in InitialConditions file', LAIinitialDecTr, LAImax(DecidSurf), notUsedI)
    endif
-   if ((LAIinitialUG<LAImax(GrassUSurf-2)-1.and.(id<60.or.id>330)).or.&
-     (LAIinitialUG>LAImin(GrassUSurf-2)+1.and.(id>130.and.id<244))) then
-      call ErrorHint(37,'Check LAIinitialUG in InitialConditions file', LAIinitialUG, LAImax(GrassUSurf), notUsedI)
-   endif
-   if ((LAIinitialIG<LAImax(GrassISurf-2)-1.and.(id<60.or.id>330)) .or.&
-     (LAIinitialIG>LAImin(GrassISurf-2)+1.and.(id>130.and.id<244))) then
-      call ErrorHint(37,'Check LAIinitialIG in InitialConditions file', LAIinitialIG, LAImax(GrassISurf), notUsedI)
+   if ((LAIinitialGrass<LAImax(GrassSurf-2)-1.and.(id<60.or.id>330)) .or.&
+     (LAIinitialGrass>LAImin(GrassSurf-2)+1.and.(id>130.and.id<244))) then
+      call ErrorHint(37,'Check LAIinitialGrass in InitialConditions file', LAIinitialGrass, LAImax(GrassSurf), notUsedI)
    endif    
  
  elseif (lat<10.and.lat>-10) then
  
-   if (LAIinitialET<LAImax(ConifSurf-2)-0.5) then
-      call ErrorHint(37,'Check LAIinitialET in InitialConditions file', LAIinitialET, LAImax(ConifSurf), notUsedI)
+   if (LAIinitialEveTr<LAImax(ConifSurf-2)-0.5) then
+      call ErrorHint(37,'Check LAIinitialEveTr in InitialConditions file', LAIinitialEveTr, LAImax(ConifSurf), notUsedI)
    endif
-   if (LAIinitialDT<LAImax(DecidSurf-2)-0.5) then
-      call ErrorHint(37,'Check LAIinitialDT in InitialConditions file', LAIinitialDT, LAImax(DecidSurf), notUsedI)
+   if (LAIinitialDecTr<LAImax(DecidSurf-2)-0.5) then
+      call ErrorHint(37,'Check LAIinitialDecTr in InitialConditions file', LAIinitialDecTr, LAImax(DecidSurf), notUsedI)
    endif
-   if (LAIinitialUG<LAImax(GrassUSurf-2)-0.5) then
-      call ErrorHint(37,'ICheck LAIinitialUG in InitialConditions file', LAIinitialUG, LAImax(GrassUSurf), notUsedI)
-   endif
-   if (LAIinitialIG<LAImax(GrassISurf-2)-0.5) then
-      call ErrorHint(37,'Check LAIinitialIG in InitialConditions file', LAIinitialIG, LAImax(GrassISurf), notUsedI)
+   if (LAIinitialGrass<LAImax(GrassSurf-2)-0.5) then
+      call ErrorHint(37,'Check LAIinitialGrass in InitialConditions file', LAIinitialGrass, LAImax(GrassSurf), notUsedI)
    endif
   
  endif
@@ -1135,46 +1924,81 @@
     call ErrorHint(36,'InitialCond: Check initial condition of deciduous soil store.',&
                    soilmoist(DecidSurf), soilstoreCap(DecidSurf), notUsedI)
  endif
- if (soilmoist(GrassUSurf)>soilstoreCap(GrassUSurf)) then
-    call ErrorHint(36,'InitialCond: Check initial condition of unirrigated soil store.',&
-                   soilmoist(GrassUSurf), soilstoreCap(GrassUSurf), notUsedI)
+ if (soilmoist(BSoilSurf)>soilstoreCap(BSoilSurf)) then
+    call ErrorHint(36,'InitialCond: Check initial condition of bare soil soil store.',&
+                   soilmoist(BSoilSurf), soilstoreCap(BSoilSurf), notUsedI)
  endif
- if (soilmoist(GrassISurf)>soilstoreCap(GrassISurf)) then
-    call ErrorHint(36,'InitialCond: Check initial condition of irrigated soil store.',&
-                   soilmoist(GrassISurf), soilstoreCap(GrassISurf), notUsedI)
+ if (soilmoist(GrassSurf)>soilstoreCap(GrassSurf)) then
+    call ErrorHint(36,'InitialCond: Check initial condition of grass soil store.',&
+                   soilmoist(GrassSurf), soilstoreCap(GrassSurf), notUsedI)
  endif
 
  !Snow stuff
  if (snowUse==1) then
-    if (SnowWaterBldgState>CRWmax*SnowPackBldg) then
-       call ErrorHint(36,'InitialCond: SnowWaterBldgState', SnowWaterBldgState, SnowPackBldg, notUsedI)
+    if (SnowWaterBldgsState>CRWmax*SnowPackBldgs) then
+       call ErrorHint(36,'InitialCond: SnowWaterBldgsState', SnowWaterBldgsState, SnowPackBldgs, notUsedI)
     endif 
-    if (SnowWaterPavState>CRWmax*SnowPackPav) then
-       call ErrorHint(36,'InitialCond: SnowWaterPavState', SnowWaterPavstate, SnowPackPav, notUsedI)
+    if (SnowWaterPavedState>CRWmax*SnowPackPaved) then
+       call ErrorHint(36,'InitialCond: SnowWaterPavedState', SnowWaterPavedState, SnowPackPaved, notUsedI)
     endif 
-    if (SnowWaterETState>CRWmax*SnowPackET) then
-       call ErrorHint(36,'InitialCond: SnowWaterETstate', SnowWaterETstate, SnowPackET, notUsedI)
+    if (SnowWaterEveTrState>CRWmax*SnowPackEveTr) then
+       call ErrorHint(36,'InitialCond: SnowWaterEveTrstate', SnowWaterEveTrstate, SnowPackEveTr, notUsedI)
     endif 
-    if (SnowWaterDTState>CRWmax*SnowPackDT) then
-       call ErrorHint(36,'InitialCond: SnowWaterDTState', SnowWaterDTState, SnowPackDT, notUsedI)
+    if (SnowWaterDecTrState>CRWmax*SnowPackDecTr) then
+       call ErrorHint(36,'InitialCond: SnowWaterDecTrState', SnowWaterDecTrState, SnowPackDecTr, notUsedI)
     endif 
-    if (SnowWaterIGState>CRWmax*SnowPackIG) then
-       call ErrorHint(36,'InitialCond: SnowWaterIGState', SnowWaterIGState, SnowPackIG, notUsedI)
+    if (SnowWaterGrassState>CRWmax*SnowPackGrass) then
+       call ErrorHint(36,'InitialCond: SnowWaterGrassState', SnowWaterGrassState, SnowPackGrass, notUsedI)
     endif 
-    if (SnowWaterUGState>CRWmax*SnowPackUG) then
-       call ErrorHint(36,'InitialCond: SnowWaterGrassUnirState', SnowWaterUGState, SnowPackUG, notUsedI)
+    if (SnowWaterBSoilState>CRWmax*SnowPackBSoil) then
+       call ErrorHint(36,'InitialCond: SnowWaterGrassUnirState', SnowWaterBSoilState, SnowPackBSoil, notUsedI)
     endif 
  endif
 
 !SnowWaterWaterstate,& ??
 !SnowPackWater,& ??
 
+!! Add QF checks here from SAHP Coefs too?
+  !  !Go through different Q_F choices
+  !  if(AnthropHeatChoice==1) then
+  !
+  !     !If Loridan et al. (2011) calculation is done and all needed variables are zero
+  !     if(AH_min==0.and.Ah_slope==0.and.T_Critic==0)then
+  !       call ErrorHint(53,trim(FileSAHP),notUsed,notUsed,AnthropHeatChoice)
+  !     endif
+  !
+  !  elseif(AnthropHeatChoice==2) then
+  !
+  !    !If Jarvi et al. (2011) calculation is done and all needed variables are zero
+  !    if(sum(QF_A)==0.and.sum(QF_B)==0.and.sum(QF_C)==0)then
+  !        call ErrorHint(54,trim(FileSAHP),notUsed,notUsed,AnthropHeatChoice)
+  !   endif
+  !
+  !endif
+  
+ !!HourWat no longer used (HCW 23 Jan 2015) ----------------------------------------------
+ !! Add checks on water use from HourlyProfile (was in RunControlByGridByYear subroutine)
+ !!Check that the hourly profiles are given correctly to the model
+ !!if(abs(sum(HourWat)-1.000)>0.001)then
+ !!  if(abs(sum(HourWat)-1.000)<0.02)then
+ !!    HourWat=HourWat*(1/sum(HourWat))
+ !!  else
+ !!    call ErrorHint(7,trim(FileHr),sum(HourWat),notUsed,notUsedI)
+ !!  endif
+ !!endif
+ !---------------------------------------------------------------------------------------
  
-
-
-
-
+ !! Add checks on (was in InitialState)
+        !if(z0_method==1) then
+        !    if(z0m<0.00001) call ErrorHint(5,trim(fileGIS),z0m,notUsed,notUsedI)
+        !    if(zdm<0.00001) call ErrorHint(6,trim(fileGIS),zdm,notUsed,notUsedI)
+        !    zzd=z-zdm
+        !elseif(z0_method==3)then
+        !    if(FAIBLdg<0) call ErrorHint(1,trim(fileGIS),Faibldg,notUsed,notUsedI)
+        !    if(FAITree<0)call ErrorHint(2,trim(fileGIS),faitree,notUsed,notUsedI)
+        !endif 
 
  end subroutine CheckInitial  
+
 
   

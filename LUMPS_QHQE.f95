@@ -5,6 +5,7 @@
 ! lj/sg May 2012 - Changed phenology to be consistent with SUEWS LAI. No longer Loridan et al. (2011)
 ! lj June 2012 - Modified to work with snow (Qm added in the equations!!)
 ! LJ Feb 2014 - the bug related to VegMax has been fixed (cannot divide by zero)
+!! HCW Jan 2015 - CHECK HOURLY ASSUMPTIONS (RainMaxRes, etc)
 ! -------------------------------------------------------------- 
 
 subroutine LUMPS_QHQE
@@ -54,7 +55,7 @@ subroutine LUMPS_QHQE
   IF (E_MOD>0.) RainBucket=RainBucket-E_MOD*1.44E-3 !1.44E-3 MM/(W/M^2)/HR
   IF (Temp_C>0.) RainBucket=RainBucket - DRAINRT
   IF (RainBucket<0.) RainBucket=0.
-  IF (Precip_hr>0) RainBucket=MIN(RainMaxRes,RainBucket+Precip_hr)
+  IF (Precip>0) RainBucket=MIN(RainMaxRes,RainBucket+Precip)
 
   RAINRES = RainBucket
   IF (RAINRES>RAINCOVER) RAINRES=RAINCOVER
@@ -63,7 +64,7 @@ subroutine LUMPS_QHQE
   VegPhen=0
   VegMax=0
   VegMin=0
-  do iv=ivConif,ivGrassU !Normalized LAI for vegetations
+  do iv=ivConif,ivGrass !Normalized LAI for vegetations
   	VegPhen = sfr(iv+2)*lai(id-1,iv)+ VegPhen
     VegMax=LAImax(iv)*sfr(iv+2)+VegMax
     VegMin=LAImin(iv)*sfr(iv+2)+VegMin

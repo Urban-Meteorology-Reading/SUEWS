@@ -3,6 +3,7 @@
 ! Fredrik Lindberg, fredrikl@gvc.gu.se 
 ! Göteborg Urban Climate Group 
 ! Gothenburg University
+! Last modified by HCW 02 Dec 2014 DEG2RAD and RAD2DEG commented out as now defined in AllocateArray 
 
 subroutine Solweig_2014a_core(ith)
 
@@ -30,7 +31,7 @@ use allocateArray
     ! temporary parameters and variables for testing
     real(kind(1d0)),parameter   :: pi=3.141592653589793
     real(kind(1d0)),parameter   :: SBC=5.67051e-8
-    REAL(KIND(1D0)),PARAMETER   :: DEG2RAD=0.017453292,RAD2DEG=57.29577951
+    !REAL(KIND(1D0)),PARAMETER   :: DEG2RAD=0.017453292,RAD2DEG=57.29577951 !Now defined in AllocateArray HCW 02 Dec 2014
     
 
     !!!!!! Begin program !!!!!!
@@ -209,13 +210,13 @@ use allocateArray
         if (dectime<(DOY+0.5) .and. dectime>DOY .and. altitude<1.0) then
             j=0
             do while (dectime<(DOY+SNUP/24))
-                call ConvertMetData(ith+j) ! read data at sunrise
+            !    call ConvertMetData(ith+j) ! read data at sunrise ??
                 j=j+1
             end do
             call sun_position(year,dectime,timezone,lat,lng,alt,azimuth,zenith_deg)!this is not good
             zen=zenith_deg*DEG2RAD
             call clearnessindex_2013b(zen,DOY,Temp_C,RH/100,avkdn,lat,Press_hPa,I0,CI,Kt,I0et,CIuncorr)
-            call ConvertMetData(ith) ! read data at current timestep again
+            !call ConvertMetData(ith) ! read data at current timestep again ??
             call sun_position(year,dectime,timezone,lat,lng,alt,azimuth,zenith_deg)!this is not good
         else
             if (ith==1) then

@@ -39,7 +39,8 @@
 
      psim=stab_fn_mom(StabilityMethod,zL,zL)
      psimz0=stab_fn_mom(StabilityMethod,zL,z0L)
-          
+
+
      USTAR=KUZ/(LOG(Zzd/Z0M)-PSIM+psimz0) !Friction velocity in non-neutral situation
      
      IF(ustar<0.001000)THEN       !If u* too small

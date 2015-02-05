@@ -135,8 +135,7 @@
 
   IMPLICIT NONE
 
-  integer :: nroDays
-  integer:: year_int
+  integer :: nroDays,year_int
 
   IF(MOD(year_int,100).NE.0.AND.MOD(year_int,4).EQ.0) THEN
     nroDays=366

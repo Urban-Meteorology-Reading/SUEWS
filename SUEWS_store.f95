@@ -17,14 +17,18 @@ subroutine soilstore(StorCap)
   implicit none
   real (Kind(1d0))::StorCap,EvPart
     
-  !====If surface is irrigated grass, add external water use========
-  if(is==GrassISurf) then  
-     p=pin+ext_wu    ! converted to per nsh in SUEWS_waterUse
-  elseif(is==ConifSurf.or.is==DecidSurf) then
-     p=pin+wuhTrees/nsh 
+  !======= If surface is irrigated, add external water use =========
+  ! Add external water use to all of each surface type
+  if(is==GrassSurf) then  
+     p=pin+wu_Grass*IrrFracGrass   !Reduce amount of water [mm] applied by the fraction that is actually irrigated
+  elseif(is==ConifSurf) then
+     p=pin+wu_EveTr*IrrFracConif   
+  elseif(is==DecidSurf) then
+     p=pin+wu_DecTr*IrrFracDecid    
   else
      p=pin
   endif
+    
   !=================================================================
   !Add water from other surfaces at this point
   p=p+AddWater(is) 
@@ -45,9 +49,9 @@ subroutine soilstore(StorCap)
      else
         chang(is)=P-(drain(is)+ev)
      endif
-     
+         
      state(is)=state(is)+chang(is)
-     
+         
      !Add water from neighbouring grids.
      !check - this is Bldg Surf originally - but I think should be paved (sg has changed)
      if (is==PavSurf) state(is)=state(is)+addImpervious/nsh
@@ -60,7 +64,7 @@ subroutine soilstore(StorCap)
      !elseif (state(is)>StorCap) then !If state is higher than the max capacity??
      !   runoff(is)=runoff(is)+(state(is)-StorCap)
      !   state(is)=StorCap
-  	 endif
+     endif
        
  elseif(is>=3) then ! Pervious surfaces (conif, decid, grass unirr, grass irr, water body)
      
@@ -71,8 +75,10 @@ subroutine soilstore(StorCap)
         EvPart=0
      endif
      
-	 ev=ev+EvPart
+     ev=ev+EvPart
      
+!write(*,*) 'state', is, state(is)
+    
      if (is/=WaterSurf) then !Not for water body
         
         !Additional water input from other grids
@@ -83,13 +89,15 @@ subroutine soilstore(StorCap)
         !Change in water stores !Modified by LJ in 4 Aug 2011.
         
         if (P>10) then !if 5min precipitation is larger than 10 mm
-            runoff(is)=runoff(is)+(P-10)
-            chang(is)=10-(drain(is)+ev)
-		else
-        	chang(is)=(P)-(drain(is)+ev)	
-	    endif
-		state(is)=state(is)+chang(is)
-        
+           runoff(is)=runoff(is)+(P-10)
+           chang(is)=10-(drain(is)+ev)
+	else
+           chang(is)=(P)-(drain(is)+ev)	
+	endif
+	state(is)=state(is)+chang(is)
+		        
+!write(*,*) 'state', is, state(is)
+		        
         !Add water in soil store. 
         soilmoist(is)=soilmoist(is)+Drain(is)*AddWaterRunoff(is) !Drainage goes to soil storages
    
@@ -103,13 +111,15 @@ subroutine soilstore(StorCap)
           		chang(is)=chang(is)-state(is)
           		ev=ev+state(is)
           		state(is)=0.0
-			endif
+		endif
         
         !elseif (state(is)>StorCap) then !!In original SUES, this was commented out
        !								!!Should be tested how change of S affects!!
        !    runoff(is)=runoff(is)+(state(is)-StorCap)
        !	   state(is)=StorCap
   	 	endif !state is negative
+
+!write(*,*) 'state', is, state(is)
 
         !If soilstorage is full at this point, excess will go to surface runoff
      	if(soilmoist(is)>soilstoreCap(is))then  !Runoff occurs only through soilstorages
@@ -151,6 +161,7 @@ subroutine soilstore(StorCap)
         endif
      endif
 
+!write(*,*) 'state', is, state(is)
      
  endif!Different surfaces
 
@@ -173,7 +184,7 @@ subroutine soilstore(StorCap)
             endif
             runoffPipes=PipeCapacity										 !and pipes are in their max. capacity
             							 
-   		elseif (is>=ConifSurf.and.is<=GrassUSurf) then
+   		elseif (is>=ConifSurf.and.is<=BSoilSurf) then
         
         	if (sfr(WaterSurf)>0.0000001) then
         		runoffAGveg=runoffAGveg+(runoffPipes-PipeCapacity)*(1-RunoffToWater)       !if pipes are full, water will stay above ground

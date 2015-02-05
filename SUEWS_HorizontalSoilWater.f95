@@ -148,7 +148,7 @@
                 
               !Multiply dI_dt by number of seconds in timestep to convert mm s-1 to mm
               !Added by HCW 12/08/2014
-              dI=dI_dt*tstep  !Use dI instead of dI_dt in the following calculations             
+              dI=dI_dt*real(tstep,kind(1d0))  !Use dI instead of dI_dt in the following calculations
                           
               !Move water (in mm) ------------------------------------------------------
               !Water moves only if (i) there is sufficient water to move and (ii) there is space to move it

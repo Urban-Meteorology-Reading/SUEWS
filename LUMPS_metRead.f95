@@ -1,72 +1,129 @@
-subroutine MetRead(i)
-!Reading met data
-!Input: hour number i
-!Code changed in Feb 2012 (LJ). Input fluxes qh and qe changed _obs as well as qn1_obs ending
+!Reading one line of meteorological forcing data in.
+!Latest change:
+!  Feb 2012, LJ:  Input fluxes qh and qe changed _obs as well as qn1_obs ending
+!  Oct 2014, LJ:  Variables changed only be used in this part of code and these are passed to calling
+!                 function in MetArray.
+!  Jan 2015, HCW: Precip_hr, wuh and lai_hr changed for generic timesteps
+!---------------------------------------------------------------------------------------------------
+ subroutine MetRead(MetArray,InputmetFormat,AnthropHeatChoice,ldown_option,NetRadiationChoice,&
+               snowUse,smd_choice,defaultQf,defaultQs,SoilDepthMeas,SoilRocks,SoilDensity,SmCap)
 
-  use data_in
-  use gis_data
-  use time
-  use sues_data
   use defaultNotUsed
-  implicit none
-  integer::lfn=1, i
 
-  real(kind(1D0)):: dir30
-      
+  IMPLICIT NONE
+
+  !INPUT
+  real (kind(1d0)),dimension(24)::MetArray !Array leaving the subroutine within 
+                                           !each INTERVAL (defined in RunControl.nml)
+                                           ! - Met data now provided at a resolution of tstep, HCW Jan 2015
+  
+  real (kind(1d0))::defaultQf,&            !Default anthropogenic heat flux
+                    defaultQs,&            !Default storage heat flux
+                    SmCap,&
+                    SoilDepthMeas,&        !Measured soil depth
+                    SoilRocks,&            !Rocks on ground
+                    SoilDensity            !Density of soil
+
+  integer::AnthropHeatChoice,&  !Method of calculating QF
+           InputmetFormat,&     !Format of the meteorological forcing file
+           ldown_option,&       !Method of calculating Ldown
+           NetRadiationChoice,& !Method of calculating Q*
+           smd_choice,&         !Method of measured soil moisture
+           snowUse
+
+  ! Variables read in
+  real (kind(1d0))::avkdn,&     !Average downwelling shortwave radiation
+                    avrh,&      !Average relative humidity
+                    avu1,&      !Average wind speed
+                    dectime,&   !Decimal time
+                    fcld_obs,&  !Cloud fraction observed
+                    iy,&        !Year
+                    id,&        !Day
+                    it,&        !Hour
+                    imin,&      !Minute
+                    kdiff,&     !Diffuse shortwave radiation
+                    kdir,&      !Direct shortwave radiation
+                    kup,&       !Upward shortwave radiation
+                    lai_obs,&   !Overall LAI of the study area
+                    ldown_obs,& !Downwelling longwave radiation
+                    Precip,& !Rainfall [mm]
+                    Pres_hPa,&  !Station air pressure in hPa
+                    Pres_kPa,&  !Station air pressure in kPa
+                    snow_obs,&  !Observed surface fraction of snow (between 0 and 1)
+                    qe_obs,&    !Observed latent heat flux
+                    qf_obs,&    !Observed antrhropogeni heat flux
+                    qh_obs,&    !Observed sensible heat flux
+                    qn1_obs,&   !Observed net all-wave radiation
+                    qs_obs,&    !Observed storage heat flux
+                    Temp_C,&    !Air temperature
+                    wdir,&      !Wind direction
+                    wu_m3,&     !Water use provided in met forcing file [m3]
+                    xsmd        !Measured soil moisture deficit
+
+  integer::iostat_var,lfn=1
+  logical::finish
+  !-----------------------------------------------------------------------------------
+  !-----------------------------------------------------------------------------------
   finish=.false.
+  if (InputMetFormat==0) then   !Default format using LUMPS only
 
-  
-  if (InputMetFormat==0) then !This is the default format using LUMPS only
-    
-  	READ(lfn,*,iostat=iostat_var)id,it,dectime,qn1_obs,avu1,avrh,& 
-             Temp_C,dir30,Pres_kPa,Precip_hr,avkdn,snow_obs,ldown_obs,fcld_obs
-    
-    qf=-999
-    qs=-999
-    qh_obs=-999
-    qe_obs=-999
+  	READ(lfn,*,iostat=iostat_var)iy,id,it,imin,qn1_obs,avu1,avrh,&
+             Temp_C,wdir,Pres_kPa,Precip,avkdn,snow_obs,ldown_obs,fcld_obs
+
+    !Set other variables needed while running SUEWS to zero
+    qf_obs=NaN
+    qs_obs=NaN
+    qh_obs=NaN
+    qe_obs=NaN
     xsmd=-99999
-    
+    kdiff=NaN
+    kdir=NaN
+    wdir=NaN
+
   elseif (InputMetFormat==10) then !SUEWS reading
-      READ(lfn,*,iostat=iostat_var)id,it,dectime,qn1_obs,qh_obs,qe_obs,qs,qf,avu1,avrh,&
-               Temp_C,Pres_kPa,Precip_hr,avkdn,snow_obs,ldown_obs,fcld_obs,&
-               wuh,xsmd,lai_hr,kdiff,kdir,wdir
-               
-      ! check with LJ -- lai_hr only one veg type
-  
-      !Calculate soil moisture deficits from either volumetric or gravimetric soilstates
-      if (smd_choice==1.and.xsmd/=-999) then !Soil moisture - volumetric 
+      READ(lfn,*,iostat=iostat_var) iy,id,it,imin,qn1_obs,qh_obs,qe_obs,qs_obs,qf_obs,avu1,avrh,&
+                                    Temp_C,Pres_kPa,Precip,avkdn,snow_obs,ldown_obs,fcld_obs,&
+                                    wu_m3,xsmd,lai_obs,kdiff,kdir,wdir
+                                   
+
+  !write(*,*) 'In LUMPS_MetRead (1)'
+  !write(*,*) 'imin',imin             
+  !write(*,*) 'it',it             
+  !write(*,*) 'id',id
+  !write(*,*) 'iy',iy                        
+                                   
+
+      !Calculate observed soil moisture deficits from either volumetric or gravimetric soilstates
+      if (smd_choice==1.and.xsmd/=-999) then !Soil moisture - volumetric
          xsmd=(SmCap-xsmd)*SoilDepthMeas*SoilRocks
       elseif (smd_choice==2.and.xsmd/=-999) then !Soil moisture -gravimetric
          xsmd=(SmCap-xsmd)*SoilDensity*SoilDepthMeas*SoilRocks
       else
-         xsmd=-999  
+         xsmd=-999
       endif
              
   else
-     write(12,*)'HeaderInput.nml error InputMetFormat not usable ',InputmetFormat
+     call ErrorHint(55,'RunControl.nml, InputMetFormat not usable',notUsed,notUsed,InputmetFormat)
   endif
   
-  !################Meteorological variables reading done###########################
-  Press_hPa=Pres_kPa*10. ! convert to hPa
+  !===============Meteorological variables reading done==========================
+  Pres_hPa=Pres_kPa*10. ! convert to hPa
 
-  if (qs==-999.0) qs=defaultQs  
-       
-  if (AnthropHeatChoice==0.and.qf==-999)then
-      call ErrorHint(30,'subroutine MetRead: [Qf default value going to be used],qf,dectime',qf,dectime,notUsedI)
-      qf=defaultQf
+  !Set observed -999 qs to defaultQs
+  if (qs_obs==-999.0) qs_obs=defaultQs
+
+  !Same for Qf if measured AnthropHeatChoice
+  if (AnthropHeatChoice==0.and.qf_obs==-999)then
+      call ErrorHint(29,'subroutine MetRead: [Qf default value going to be used],qf,id,it',qf_obs,id,int(it))
+      qf_obs=defaultQf
   endif
 
+  !If hour is 23, change this to following day
   if(it==24) then
      id=id+1
      it=it+1
   endif
 
-  if (int(dectime)/=id) then !Added my LJ in Feb 2013
-    call ErrorHint(35,'Met Data: decimal time does not match with day of year',real(id,kind(1d0)),dectime,notUsedI)
-  endif
-    
-  
   if(iostat_var<0)THEN
      iostat_var=0
      CLOSE(lfn)
@@ -74,26 +131,24 @@ subroutine MetRead(i)
      RETURN
   ENDIF
 
-  qual=0
   if(AvKdn<0) then
     call ErrorHint(27,'Met Data: avKdn - needed for Surf. resistance, If present, check file not tab delimited',&
-                      avkdn,dectime, notUsedI)
+                      avkdn,dectime,notUsedI)
      !sg removed this is causing the problems with resistances 
      !  AvKdn=0 !Solar radiation cannot be lower than 1
   endif
- 
-  
+
   if((ldown_option==1).and.(ldown_obs<0))then
-     call ErrorHint(27,'Met Data: LWdn (ldown_obs) - impact Q* calc', ldown_obs,dectime, notUsedI)
+     call ErrorHint(27,'Met Data: LWdn (ldown_obs) - impact Q* calc',ldown_obs,dectime,notUsedI)
     
   elseif(ldown_option==2) then
      if(fcld_obs==-999.0.or.fcld_obs<0.or.fcld_obs>1) then
-        call ErrorHint(27,'Met Data: flcd_obs - impacts LW & Q* radiation', fcld_obs,dectime, notUsedI)
+        call ErrorHint(27,'Met Data: flcd_obs - impacts LW & Q* radiation',fcld_obs,dectime,notUsedI)
      endif	
   endif
   
   if(qn1_obs==-999.and.NetRadiationChoice==0) then  !If measured Q* is used and it is -999 
-     call ErrorHint(27,'Met Data: Q* - will impact everything', qn1,dectime, notUsedI)
+     call ErrorHint(27,'Met Data: Q* - will impact everything', qn1_obs,dectime, notUsedI)
   endif
     
   if(avu1<=0) then !If wind speed is negative
@@ -113,8 +168,8 @@ subroutine MetRead(i)
     call ErrorHint(27,'Met Data: Pres_kPa - too low - this could be fixed in model',Pres_kPa ,dectime, notUsedI)
   endif
 
-  if (Precip_hr<0) then  !If rain in negative, set it to zero
-     call ErrorHint(27,'Met Data: Precip_hr - less than 0',Precip_hr ,dectime, notUsedI)
+  if (Precip<0) then  !If rain in negative, set it to zero
+     call ErrorHint(27,'Met Data: Precip - less than 0',Precip ,dectime, notUsedI)
   endif
 
   if (snow_obs==NAN) snow_obs=0
@@ -127,9 +182,21 @@ subroutine MetRead(i)
     call ErrorHint(27,'Met Data: xsmd - less than 0',xsmd ,dectime, notUsedI)
   endif
    
-  !Check initial conditions
-  if (i==1) call CheckInitial 
+  !!Check initial conditions Needs to fixed an maybe moved..
+  !if (i==1) call CheckInitial ??
 
-  RETURN	
+  !Create an array to be printed out.
+  MetArray(1:24)=(/iy,id,it,imin,qn1_obs,qh_obs,qe_obs,qs_obs,qf_obs,avu1,&
+                   avrh,Temp_C,Pres_hPa,Precip,avkdn,snow_obs,ldown_obs,&
+                   fcld_obs,wu_m3,xsmd,lai_obs,kdiff,kdir,wdir/)
+                   
+  !write(*,*) 'In LUMPS_MetRead (2)'
+  !write(*,*) 'imin',imin             
+  !write(*,*) 'it',it             
+  !write(*,*) 'id',id
+  !write(*,*) 'iy',iy        
+  
+  RETURN
+
  END SUBROUTINE MetRead
 

@@ -4,7 +4,8 @@ subroutine sun_position(year,idectime,UTC,locationlatitude,locationlongitude,loc
     integer :: month,day,hour,min,seas,dayofyear
     REAL(KIND(1D0)) :: sec,year,idectime,UTC
     REAL(KIND(1D0)) :: juliancentury,julianday,julianephemeris_century,julianephemeris_day,julianephemeris_millenium    
-    REAL(KIND(1D0)) :: earth_heliocentric_positionlatitude,earth_heliocentric_positionlongitude,earth_heliocentric_positionradius    
+    REAL(KIND(1D0)) :: earth_heliocentric_positionlatitude,earth_heliocentric_positionlongitude,&
+    		       earth_heliocentric_positionradius    
     REAL(KIND(1D0)) :: sun_geocentric_positionlatitude, sun_geocentric_positionlongitude    
     REAL(KIND(1D0)) :: nutationlongitude,nutationobliquity    
     REAL(KIND(1D0)) :: corr_obliquity    

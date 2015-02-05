@@ -50,7 +50,7 @@ END SUBROUTINE run_control
 
 ! Skip Headers------------------------------
 
-subroutine SkipHeader(lfn,skip)
+ subroutine SkipHeader(lfn,skip)
   use defaultnotUsed
   implicit none
 
@@ -63,5 +63,5 @@ subroutine SkipHeader(lfn,skip)
    
   201 	reall=real(skip)
 	  	call ErrorHint(20,'SkipHeader ',reall,notUsed,ios_out)
-end subroutine SkipHeader
+ end subroutine SkipHeader
 

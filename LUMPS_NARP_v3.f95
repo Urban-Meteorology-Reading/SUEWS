@@ -1,4 +1,4 @@
-MODULE NARP_MODULE
+ MODULE NARP_MODULE
   !==============================================================================
   !NET ALL WAVE RADIATION PARAMETERIZATION ROUTINES
   !B. OFFERLE
@@ -39,49 +39,51 @@ MODULE NARP_MODULE
   IMPLICIT NONE
  
 
-  !NARP SPECIFIC PARAMETERS
-  REAL(KIND(1D0))             :: NARP_LAT,NARP_LONG,NARP_YEAR,NARP_TZ,&
-                                 NARP_ALB_SNOW,NARP_EMIS_SNOW,NARP_TRANS_SITE
-  !REAL(KIND(1d0)),allocatable:: NARP_ALB(:),NARP_EMIS(:)                             
-  ! check everywhere else 366 days
-  REAL(KIND(1D0))             :: NARP_G(365)
-  INTEGER                     :: NARP_NPERHOUR
-  REAL(KIND(1D0)),ALLOCATABLE :: NARP_KDOWN_HR(:)
+  ! Moved to AllocateArray HCW 02 Dec 2014 ------------------------------------
+  !!NARP SPECIFIC PARAMETERS
+  !REAL(KIND(1D0))             :: NARP_LAT,NARP_LONG,NARP_YEAR,NARP_TZ,&
+  !                               NARP_ALB_SNOW,NARP_EMIS_SNOW,NARP_TRANS_SITE
+  !!REAL(KIND(1d0)),allocatable:: NARP_ALB(:),NARP_EMIS(:)                             
+  !! check everywhere else 366 days
+  !REAL(KIND(1D0))             :: NARP_G(365)
+  !INTEGER                     :: NARP_NPERHOUR
+  !REAL(KIND(1D0)),ALLOCATABLE :: NARP_KDOWN_HR(:)
+  !
+  !REAL(KIND(1D0)),PARAMETER   :: DEG2RAD=0.017453292,RAD2DEG=57.29577951,&
+  !                               SIGMA_SB=5.67E-8
+  ! ---------------------------------------------------------------------------
 
-  REAL(KIND(1D0)),PARAMETER   :: DEG2RAD=0.017453292,RAD2DEG=57.29577951,&
-                                 SIGMA_SB=5.67E-8
+ CONTAINS
 
-CONTAINS
-
-  !============================================================================== 
-  SUBROUTINE NARP_CONFIG(LAT,LNG,YEAR,TIMEZONE,ALB_SNOW,EMIS_SNOW,TRANS_SITE,INTERVAL,ldown_option)
+!  !==============================================================================
+!  SUBROUTINE NARP_CONFIG(LAT,LNG,YEAR,TIMEZONE,ALB_SNOW,EMIS_SNOW,TRANS_SITE,INTERVAL,ldown_option)
   
-    use  allocateArray     !ALB,EMIS
+!    use  allocateArray     !ALB,EMIS
   
-    !RUN ONCE TO INITIALIZE FOR EACH SITE/YEAR
-    REAL(KIND(1D0)),INTENT(IN) ::LAT,LNG,YEAR,TIMEZONE,ALB_SNOW,EMIS_SNOW,TRANS_SITE
-    INTEGER,INTENT(IN)         ::ldown_option,INTERVAL
+!    !RUN ONCE TO INITIALIZE FOR EACH SITE/YEAR
+!    REAL(KIND(1D0)),INTENT(IN) ::LAT,LNG,YEAR,TIMEZONE,ALB_SNOW,EMIS_SNOW,TRANS_SITE
+!    INTEGER,INTENT(IN)         ::ldown_option,INTERVAL
  
-    !NARP_LAT=DEG2RAD*LAT; NARP_LONG=DEG2RAD*LNG
-    NARP_LAT=LAT; NARP_LONG=LNG ! New sun_position_v2 use degrees FL
-    NARP_YEAR=YEAR; NARP_TZ=TIMEZONE
-    NARP_EMIS_SNOW=EMIS_SNOW
-    NARP_TRANS_SITE=TRANS_SITE
+!!NARP_LAT=DEG2RAD*LAT; NARP_LONG=DEG2RAD*LNG
+!    NARP_LAT=LAT; NARP_LONG=LNG ! New sun_position_v2 use degrees FL
+!    NARP_YEAR=YEAR; NARP_TZ=TIMEZONE
+!    NARP_EMIS_SNOW=EMIS_SNOW
+!    NARP_TRANS_SITE=TRANS_SITE
  
     !INTERVAL IS ONLY RELEVANT TO LUPCORR
     !ALL OTHER CALCULATIONS ARE INTERVAL INDEPENDENT
     !NB FOR INTERVALS LONGER THAN 15 MINUTES ERRORS IN KCLEAR WILL BE GREATER 
 
-    NARP_NPERHOUR=MAX(3600/INTERVAL,1)
-    IF(ALLOCATED(NARP_KDOWN_HR)) DEALLOCATE(NARP_KDOWN_HR)
-    ALLOCATE(NARP_KDOWN_HR(NARP_NPERHOUR))
-    NARP_KDOWN_HR=0.
+ !   NARP_NPERHOUR=MAX(3600/INTERVAL,1)
+ !   IF(ALLOCATED(NARP_KDOWN_HR)) DEALLOCATE(NARP_KDOWN_HR)
+ !   ALLOCATE(NARP_KDOWN_HR(NARP_NPERHOUR))
+ !   NARP_KDOWN_HR=0.
  
-    if (ldown_option==4.or.ldown_option==5) then !Added by LJ
-        !INIITIALIZE SMITH DAY OF YEAR GRID G
-        NARP_G=SMITHLAMBDA(NINT(LAT))
-    endif
-  END SUBROUTINE NARP_CONFIG
+  !  if (ldown_option==4.or.ldown_option==5) then !Added by LJ
+  !      !INIITIALIZE SMITH DAY OF YEAR GRID G
+  !      NARP_G=SMITHLAMBDA(NINT(LAT))
+  !  endif
+  !END SUBROUTINE NARP_CONFIG
 
   !============================================================================== 
   SUBROUTINE NARP(alb_snow,QSTAR_SF,QSTAR_s)
@@ -255,7 +257,6 @@ CONTAINS
       !======================================================================
       !Snow related parameters if snow pack existing
       IF (snowFrac(is)>0) THEN
-
         IF (AlbedoChoice==1.and.180*ZENITH/ACOS(0.0)<90) THEN   !!!!! THIS LOOKS LIKE DEGREES ANGLE! CHECK WITH LEENA                        
            ALB1=alb_snow+0.5e-16*(180*ZENITH/ACOS(0.0))**8 !AIDA 1982
         ELSE
@@ -264,7 +265,7 @@ CONTAINS
 
         KUP_SNOW = (ALB1*(snowFrac(is)-snowFrac(is)*IceFrac(is))+ALB0*snowFrac(is)*IceFrac(is))*KDOWN
         TSURF_SNOW=((NARP_EMIS_SNOW*SIGMATK4)/(NARP_EMIS_SNOW*SIGMA_SB))**0.25 !Snow surface temperature
-        
+               
         !IF (TSURF_SNOW>273.16) TSURF_SNOW=min(273.16,Temp_K)!Set this to 2 degrees (melted water on top)
         !open(34,file='TestingSnowFrac.txt',position='append')
         !write(34,*) dectime,is,alb1,alb0,snowFrac(is),IceFrac(is),KDOWN,KUP_snow

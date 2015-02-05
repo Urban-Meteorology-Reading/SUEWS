@@ -24,11 +24,11 @@ else
       
    elseif(int(DrainEq)==3) then   !    falk and niemczynowicz (1978) equation
       drain(is)=(DrainCoef1*(state(is)**DrainCoef2))/nsh
-      
+            
    elseif(int(DrainEq)==4) then    !    rutter eqn not corrected for c=0
       drain(is)=DrainCoef1*exp(DrainCoef2*(state(is)-StorCap))
       
-      drain(is)=drain(is)*nmin
+      drain(is)=drain(is)*TSTEP/60 !i.e. multiply by no. mins per timestep
    endif
    !drain(is)=drain(is)*sfr(is)
     !if(drain(is)>25)then

@@ -8,7 +8,6 @@ subroutine Evap_SUEWS
 !See Sect 2.4 of Jarvi et al. (2011) Ja11
 !
 !Last modified HCW 30 Jan 2015
-! Removed erroneous + 1 from wet P-M equation
 ! Removed StorCap input because it is provided by module allocateArray
 ! Tidied and commented code
 !Last modified LJ 10/2010
@@ -58,8 +57,7 @@ subroutine Evap_SUEWS
         ! Calculate redefined surface resistance for wet surfaces (zero if W=1)
         ! Eq7, Jarvi et al. 2011
         rss=(1/((W/rbsg)+((1-W)/rsrbsg)))-rbsg   
-        !qe=e/(s_hPa+psyc_hPa*(rss/ra+1))   !Why +1 here?? Removed HCW 30 Jan 2015
-        qe=e/(s_hPa+psyc_hPa*(rss/ra))      !QE [W m-2]
+        qe=e/(s_hPa+psyc_hPa*(1+rss/ra))   !QE [W m-2]
         ev=qe/tlv 				 !Ev [mm]		
 
      elseif(ity==1) then   !-- Rutter --

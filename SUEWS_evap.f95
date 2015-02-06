@@ -1,59 +1,79 @@
-subroutine Evap_SUEWS(StorCap)
-!Input: storage capacity of each surface cover  
-!Last time modified LJ 10/2010
-!------------------------------------------------------------------      
-  use data_in
-  use moist
-  use SUES_data
+subroutine Evap_SUEWS
+!------------------------------------------------------------------------------
+!Calcualates evaporation for each surface from modified Penman-Monteith eqn
+!State determines whether each surface type is dry or wet (wet/transition)
+!Wet surfaces below storage capacity are in transition 
+! and QE depends on the state and storage capacity (i.e. varies with surface);
+! for wet or dry surfaces QE does not vary between surface types
+!See Sect 2.4 of Jarvi et al. (2011) Ja11
+!
+!Last modified HCW 30 Jan 2015
+! Removed erroneous + 1 from wet P-M equation
+! Removed StorCap input because it is provided by module allocateArray
+! Tidied and commented code
+!Last modified LJ 10/2010
+!------------------------------------------------------------------------------      
+  
   use allocateArray
+  use data_in
   use defaultNotUsed
-  implicit none
-  real (Kind(1d0))::StorCap,RSS,R,RSRBSG,RBSG,x,w
+  use moist
+  use sues_data
+    
+  IMPLICIT NONE
+  
+  real(kind(1d0)):: rss,&	!Redefined surface resistance for transition [s m-1]
+  		    rbsg,&	!Boundary-layer resistance x (slope/psychrometric const + 1) [s m-1]
+  		    rsrbsg,&	!rs + rbsg [s m-1]
+  		    W,&		!Depends on the amount of water on the canopy [-]
+  		    r,x  
+        
+  ! Dry surface ---------------------------------------------------------------
+  ! Use Penman-Monteith eqn modified for urban areas (Eq6, Jarvi et al. 2011)      
+  ! Calculation independent of surface characteristics
+  ! Uses value of rs for whole area (calculated based on LAI of veg surfaces in SUEWS_SurfaceResistance)
+  if(state(is)<=0.001) then    
+     qe=e/(s_hPa+psyc_hPa*(1+ResistSurf/ra))	!QE [W m-2] (e = numerator of P-M eqn)
+     ev=qe/tlv					!Ev [mm]    (qe[W m-2]/tlv[J kg-1 s-1]*1/density_water[1000 kg m-3])	
+     W=NAN   !W not needed for dry surfaces (set to -999)
+     rst=1   !Set flag indicating dry surface(1)	
+  
+  else 
+  ! Wet surface ---------------------------------------------------------------
+     rst=0   !Set flag indicating wet surface(0)	
      
-if(state(is)<=0.001) then    !Dry surface
-   qe=e/(s_hPa+psyc_hPa*(1+ResistSurf/ra))
-   ev=qe/tlv
-   W=NAN
-   rst=1
+     ! Evaporation calculated according to Rutter(ity=1) or Shuttleworth(ity=2)
+  
+     if(ity==2) then   !-- Shuttleworth (1978) --
+        rbsg=rb*(sp+1)           !Boundary-layer resistance x (slope/psychro + 1)
+        rsrbsg=ResistSurf+rbsg   !rs + rsbg
+        ! If surface is completely wet, set rs to zero -------------------
+        if(state(is)>=surf(1,is).or.ResistSurf<25) then   !If at storage capacity or rs is small
+           W=1   !So that rs=0 (Eq7, Jarvi et al. 2011)
+        ! If surface is in transition, use rss ---------------------------
+        else   !if((state(is)<StorCap).and.(state(is)>0.001).or.(ResistSurf<50)) then
+           r=(ResistSurf/ra)*(ra-rb)/rsrbsg
+	   W=(r-1)/(r-(surf(1,is)/state(is)))
+        endif
+        ! Calculate redefined surface resistance for wet surfaces (zero if W=1)
+        ! Eq7, Jarvi et al. 2011
+        rss=(1/((W/rbsg)+((1-W)/rsrbsg)))-rbsg   
+        !qe=e/(s_hPa+psyc_hPa*(rss/ra+1))   !Why +1 here?? Removed HCW 30 Jan 2015
+        qe=e/(s_hPa+psyc_hPa*(rss/ra))      !QE [W m-2]
+        ev=qe/tlv 				 !Ev [mm]		
 
-!write(*,*) 'dry', is, ev, qe, state(is), surf(1,is)
-
-else 
-  ! surface wet--------------------------------------------------------- 
-   rst=0
-   if(ity==2) then   !Shuttleworth (1978)      
-      rbsg=rb*(sp+1) !Boundary_layer_resistance*(slope/psychom.+1)
-      rsrbsg=ResistSurf+rbsg !Multiplyed by surface resistance      
-      if((state(is)>=StorCap).or.(ResistSurf<25)) then !Wet surface
-         w=1
-      else   !if((state(is)<StorCap).and.(state(is)>0.001).or.(ResistSurf<50)) then !Surface in transition
-         r=(ResistSurf/ra)*(ra-rb)/rsrbsg
-	 w=(r-1)/(r-(surf(1,is)/state(is)))
-      endif
-      
-      rss=(1/((w/rbsg)+((1-w)/rsrbsg)))-rbsg
-                        
-      qe=e/(s_hPa+psyc_hPa*(rss/ra+1))  !Latent heat (W/m^2)      
-      ev=qe/tlv 						!Evaporation (in)
-
-!write(*,*) 'wet', r, w
-!write(*,*) 'wet', is, ev, qe, state(is), surf(1,is)          
-
-    elseif(ity==1) then                 !  rutter              
-       qe=e/(s_hPa+psyc_hPa)
-       ev=qe/tlv
-       if(state(is)>=StorCap) then
-          x=1.0
-       else
-        x=state(is)/StorCap
-      endif
-     ev=ev*x
-    	qe=ev*tlv
-    endif
-
-!write(*,*) 'wet', is, ev, qe, state(is), surf(1,is)    
-endif
-
-!write(*,*) is, ev, qe, state(is), surf(1,is)
+     elseif(ity==1) then   !-- Rutter --
+        qe=e/(s_hPa+psyc_hPa)
+        ev=qe/tlv
+        if(state(is)>=surf(1,is)) then
+           x=1.0
+        else
+           x=state(is)/surf(1,is)
+        endif
+        ev=ev*x	    !QE [W m-2]
+        qe=ev*tlv   !Ev [mm]
+     endif   !Rutter/Shuttleworth calculation
+  endif   !Wet/dry surface
 
 end subroutine Evap_SUEWS
+!------------------------------------------------------------------------------

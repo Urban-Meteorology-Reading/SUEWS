@@ -10,10 +10,10 @@
    use allocateArray
    use mod_z
    use defaultNotUsed
-
+   use time 
+   
    IMPLICIT NONE
 
-   integer::id
    !------------------------------------------------------------------------------
    !If total area of buildings and trees is larger than zero
    if (areaZh/=0)then

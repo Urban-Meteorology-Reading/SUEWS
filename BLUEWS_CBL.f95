@@ -1,3 +1,5 @@
+! Note: INTERVAL is now set to 3600 s in Initial (it is no longer set in RunControl) HCW 29 Jan 2015
+
 subroutine CBL(ifirst)
 
 	use mod_z     
@@ -306,6 +308,7 @@ end subroutine CBL
 Subroutine CBL_initial
 	use allocateArray
 	use data_in
+	use sues_data
 	use cbl_module
     use initial
 	implicit none

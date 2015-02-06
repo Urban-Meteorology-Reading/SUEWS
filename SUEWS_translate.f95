@@ -537,17 +537,17 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   write(12,120) (Surf(2,iv),iv=1,nsurf), FCskip ,'drain equation' 
   write(12,120) (Surf(3,iv),iv=1,nsurf), FCskip ,'dr coef1'     ! 7    ! 
   write(12,120) (Surf(4,iv),iv=1,nsurf), FCskip ,'dr coef2'      ! 8    !  
-  write(12,'(7f8.0, 2g10.4)') FCskip, FCskip, (GDDFull(iv),iv=1,nVegsurf),FCskip,FCskip, 'GDDFull '  ! 10
-  write(12,'(7f8.0, 2g10.4)') FCskip, FCskip,(SDDFull(iv),iv=1,nVegsurf),FCskip,FCskip,'SDDFull'  ! 11
-  write(12,120) FCskip, FCskip, (LAImin(iv),iv=1,nVegsurf),FCskip,FCskip,'LAI min'! 12  !
-  write(12,120) FCskip, FCskip, (LAImax(iv),iv=1,nVegsurf),FCskip,FCskip,'LAI max'  ! 13 ! 
-  write(12,120) FCskip, FCskip, (MaxConductance(iv),iv=1,nVegsurf),FCskip,FCskip,'MaxCond'  ! 14
+  write(12,'(7f8.0, 2g10.4)') FCskip, FCskip, (GDDFull(iv),iv=1,nVegsurf),FCskip,FCskip,FCskip, 'GDDFull '  ! 10
+  write(12,'(7f8.0, 2g10.4)') FCskip, FCskip,(SDDFull(iv),iv=1,nVegsurf),FCskip,FCskip,FCskip,'SDDFull'  ! 11
+  write(12,120) FCskip, FCskip, (LAImin(iv),iv=1,nVegsurf),FCskip,FCskip,FCskip,'LAI min'! 12  !
+  write(12,120) FCskip, FCskip, (LAImax(iv),iv=1,nVegsurf),FCskip,FCskip,FCskip,'LAI max'  ! 13 ! 
+  write(12,120) FCskip, FCskip, (MaxConductance(iv),iv=1,nVegsurf),FCskip,FCskip,FCskip,'MaxCond'  ! 14
   write(12,'(8f8.0, 2g10.4)') (soilstoreCap(iv),iv=1,nsurf), FCskip, 'soilstoreCap'     ! 15
-  write(12,120) FCskip, FCskip, (VolSoilMoistCap(iv),iv=1,nVegsurf),FCskip,FCskip,'VolSoilMoistCap'  ! 16
+  write(12,120) (VolSoilMoistCap(iv),iv=1,nsurf),FCskip,'VolSoilMoistCap'  ! 16
   write(12,120) (SatHydraulicConduct(iv),iv=1,nsurf),FCskip,'SatHydraulicConduct'  ! 17
   write(12,'(5g10.4, g10.5, g20.0)') G1,G2,G3,G4,G5,G6,' conductance parameters'   ! 17 
   write(12,'(4g10.2,g10.5,g20.0)') TH,TL,S1,S2, Kmax,' conductance parameters'   ! 18 
-  write(12,*)  ! FCskip header Soil rlated
+  write(12,*)  ! FCskip header Soil related
   write(12,'(g12.6,g10.2,f6.0,3g8.3,g8.1)')SoilDensity,SoilDepthMeas, SoilRocks,SmCap,'Soil'  !24
   write(12,*)  ! FCskip header LUMPS related
   write(12,'(10g8.2)')DRAINRT,RAINCOVER,RAINMAXRES,'LUMPS (1)drainage rate,adjust alpha/beta wet surface(3)Max water bucket'  ! 26
@@ -666,8 +666,8 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
      kdir =      MetForcingData(ir,23,Gridiv)
      wdir =      MetForcingData(ir,24,Gridiv)
 
-     !Calculate dectime  This is with resolution defined by tstep.
-     dectime = id+it/24+imin/(60*24)
+     ! Calculate dectime
+     dectime = real(id,kind(1d0))+real(it,kind(1d0))/24+real(imin,kind(1d0))/(60*24)
 
      !write(*,*) 'In SUEWS_translate'
      !write(*,*) 'imin',imin             

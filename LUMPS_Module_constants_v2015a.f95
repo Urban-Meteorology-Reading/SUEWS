@@ -64,9 +64,9 @@
    real(kind(1d0)),dimension(:,:,:),allocatable:: MetForcingData  !Meteorological forcing data matrix kept
                                                                   !in the program at once
    real(kind(1d0)),dimension(:,:,:),allocatable::ModelOutputData  !Same for tsep output data matrix
-   real(kind(1d0)),dimension(:,:),allocatable::  ModelDailyState    !DailyState matrix
-   real(kind(1d0)),dimension(:),allocatable::    DailyStateFirstOpen
-   real(kind(1d0)),dimension(:,:),allocatable::  SurfaceChar        !Matrix for the surface characteristics
+   real(kind(1d0)),dimension(:,:),  allocatable::ModelDailyState    !DailyState matrix
+   real(kind(1d0)),dimension(:),    allocatable::DailyStateFirstOpen
+   real(kind(1d0)),dimension(:,:),  allocatable::SurfaceChar        !Matrix for the surface characteristics
    
    real(kind(1d0)),dimension(:,:,:),allocatable:: TstepProfiles   !Array for hourly profiles interpolated to Tstep
    ! Columns
@@ -711,7 +711,6 @@ MODULE cbl_MODULE
            commonchoiceallsites,& !Determines if multiple sites are considered  impacts OHM sub-model
            gisinputtype, &        !GisInputType -- 1/2/3/4
            Inputmetformat,&       !Defines format for met input data
-           Interval,&             !Measurement interval in seconds
            ldown_option,&         !What parameterization is used for downward longwave radiation 1-2-3
            lfnout,&               !Error Output write units
            lfnoutC,&              !Clean output write units
@@ -813,7 +812,7 @@ MODULE cbl_MODULE
  
              ! check what lasttime of day should be
    real (kind(1d0)):: dectime !Time is decimals
-   real (kind(1d0)):: halftimestep !in decimal time based on interval in runcontrol
+   real (kind(1d0)):: halftimestep !in decimal time based on interval 
    real (kind(1d0)):: tstepcount ! count number of timesteps in this day
  integer::nofDaysThisYear   ! BASED ON WHETHEr leapyear or no
  end module time
@@ -838,6 +837,13 @@ MODULE cbl_MODULE
                       k2=0.16,&           !Power of Van Karman's contant
                       neut_limit=0.001000 !Limit for neutral stability
  end module mod_k
+
+ !===================================================================================
+ module Thresh
+   real(kind(1d0)) :: IPThreshold_mmhr = 10   !Threshold for intense precipitation [mm hr-1]
+   
+ end module Thresh
+ 
  
  !===================================================================================
  module gas
@@ -924,6 +930,31 @@ MODULE cbl_MODULE
  !************************************************************
  module sues_data
    implicit none                                  
+   
+   integer:: tstep,&    !Timestep [s] at which the model is run (set in RunControl)
+             nsh,&      !Number of timesteps per hour
+             interval   !Number of seconds in an hour [s] (now set in OverallRunControl)
+   
+   real(kind(1d0)):: nsh_real,&   !nsh cast as a real for use in calculations                   
+                     tstep_real   !tstep cast as a real for use in calculations                   
+             
+   !Options for model setup (switches, etc) mainly set in RunControl 
+   integer:: LAIcalcYes,&        !Use observed(0) or modelled(1) LAI  !Set to 1 in OverallRunControl
+             ity,&               !Evaporation calculated according to Rutter(1) or Shuttleworth(2)  !Set to 2 in OverallRunControl
+             z0_method,&         !Defines method for calculating z0 & zd (set in RunControl)
+             WU_choice,&         !Use modelled(0) or observed(1) water use (set in RunControl)
+             SMD_choice,&        !Defines if soil moisture is modelled(0) or observed(1,2) (set in RunControl)
+             StabilityMethod,&   !Defines stability functions used (set in RunControl)
+             RoughLen_heat       !Defines method for calculating roughness length for heat (set in RunControl)
+                     
+   integer:: in                     
+   integer:: is      !Integer to count over surface types
+
+   !These are variables which currently have been removed from SuesInput.nml     
+   integer::AerodynamicResistanceMethod=2 !The method used to calculate aerodynamic resistance
+   
+   integer::Ie_start,&   !Starting time of water use (DOY)
+            Ie_end       !Ending time of water use (DOY)     
        
    real(kind(1d0)),dimension(2):: SurPlus_evap !Surplus for evaporation in 5 min timestep
     ! sg -- need to determine size                 
@@ -955,14 +986,7 @@ MODULE cbl_MODULE
                      wu_EveTr,&              !Water use for evergreen trees/shrubs [mm]
 		     wu_DecTr,&              !Water use for deciduous trees/shrubs [mm]
 		     wu_Grass                !Water use for grass [mm]
-		                                       
-   integer:: ity,&              !Evaporation calculated according to Shuttleworth (=2) or Rutter (=1)
-             RoughLen_heat,&    !Method of calculating roughness length for heat
-             tstep,&
-             smd_choice !Defines if soil moisture calculated or  observed (and type of input)
-   
-             
-                    
+		                                         
    !Other related to SUES   
    real (kind(1d0))::AdditionalWater,&     !Water flow from other surfaces
                      ch_per_interval,&     !Change in state per interval
@@ -1022,7 +1046,7 @@ MODULE cbl_MODULE
                       sp,&       !Term in calculation of E
                       sae,&      !Same
                       ev,&       !Evaporation
-                      rst,&      !Some switch ??
+                      rst,&      !Flag in SUEWS_Evap (gets set to 1 if surface dry; 0 if surface wet)
                       qeph       !Latent heat flux (W m^-2)
                       
  
@@ -1045,25 +1069,7 @@ MODULE cbl_MODULE
  
  
   real (kind(1d0)),dimension(3)::Ie_a,&
-                                  Ie_m
-  
-  integer ::HourResChoice,&
-            WU_choice,&  !Defines if water use is calculated
-            Ie_start,&   !Starting time of water use (DOY)
-            Ie_end       !Ending time of water use (DOY)     
- 
-   integer :: nsh,&
-              is,&             ! which surface
-              in,&
-              LAIcalcYes,&       ! 1 YES Calc LAI 0 do not
-              z0_method,&  
-              stabilitymethod !Method to calculate stability
-                     
-   real(kind(1d0)):: NSH_real  ! NSH cast as a real for use in calculations                   
-                     
-   !These are variables which currently have been removed from SuesInput.nml     
-   integer::AerodynamicResistanceMethod=2 !The method used to calculate aerodynamic resistance
-           
+                                  Ie_m           
      
  end module sues_data
  

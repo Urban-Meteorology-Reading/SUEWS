@@ -3,6 +3,8 @@
 ! only run once at start - fixed for all grids and all years
  
  SUBROUTINE OverallRunControl
+! Last modified by HCW 06 Feb 2015
+!  File ID numbers changed so they are unique
 ! Last modified by HCW 19 Dec 2014
 ! To do: 
 ! 	- Holidays.txt input file needs to be read in and coded into model
@@ -36,7 +38,6 @@
   ! ---- Namelist for RunControl.nml ----
   namelist/RunControl/AnthropHeatChoice,&
         CBLuse,& !s.o.
-        GISInputType,&
         NetRadiationChoice,&
         RoughLen_heat,&
         QSChoice,&
@@ -56,7 +57,6 @@
         SnowFractionChoice,&
         SNOWuse,&
         SOLWEIGout,&
-        Interval,&          
         TIMEZONE,& 
         Tstep,& 
         Z
@@ -155,17 +155,17 @@
   nlinesSiteSelect=nlines
   allocate(SiteSelect(nlinesSiteSelect,ncolumnsSiteSelect))
   !Read input file 
-  open(54,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
+  open(21,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
   do SkipCounter=1,(SkipHeaderSiteInfo-1)
-     read(54,*) 	!Skip lines before header
+     read(21,*) 	!Skip lines before header
   enddo
-  read(54,*) (HeaderSiteSelect_File(iv),iv=1,ncolumnsSiteSelect) !Get header
+  read(21,*) (HeaderSiteSelect_File(iv),iv=1,ncolumnsSiteSelect) !Get header
     
   do i=1,nlinesSiteSelect
-     read(54,*) (SiteSelect(i,iv),iv=1,ncolumnsSiteSelect)
+     read(21,*) (SiteSelect(i,iv),iv=1,ncolumnsSiteSelect)
      !write(*,*) (SiteSelect(i,iv),iv=1,ncolumnsSiteSelect)
   enddo
-  close(54)
+  close(21)
   
   !call InputHeaderCheck(FileN) !! Need to add column checks for SiteSelect.txt
   
@@ -175,17 +175,17 @@
     nlinesImpervious=nlines
     allocate(Impervious_Coeff(nlinesImpervious,ncolumnsImpervious))
     !Read input file 
-    open(55,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
+    open(22,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
     do SkipCounter=1,(SkipHeaderSiteInfo-1)
-       read(55,*) 	!Skip lines before header
+       read(22,*) 	!Skip lines before header
     enddo
-    read(55,*) (HeaderImp_File(iv),iv=1,ncolumnsImpervious) !Get header
+    read(22,*) (HeaderImp_File(iv),iv=1,ncolumnsImpervious) !Get header
       
     do i=1,nlinesImpervious
-       read(55,*) (Impervious_Coeff(i,iv),iv=1,ncolumnsImpervious)
+       read(22,*) (Impervious_Coeff(i,iv),iv=1,ncolumnsImpervious)
        !write(*,*) (Impervious_Coeff(i,iv),iv=1,ncolumnsImpervious)
     enddo
-  close(55)
+  close(22)
   
   call InputHeaderCheck(FileN)
 
@@ -205,17 +205,17 @@
     nlinesPervious=nlines
     allocate(Pervious_Coeff(nlinesPervious,ncolumnsPervious))
     !Read input file 
-    open(56,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
+    open(23,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
     do SkipCounter=1,(SkipHeaderSiteInfo-1)
-       read(56,*) 	!Skip lines before header
+       read(23,*) 	!Skip lines before header
     enddo
-    read(56,*) (HeaderPer_File(iv),iv=1,ncolumnsPervious) !Get header
+    read(23,*) (HeaderPer_File(iv),iv=1,ncolumnsPervious) !Get header
       
     do i=1,nlinesPervious
-       read(56,*) (Pervious_Coeff(i,iv),iv=1,ncolumnsPervious)
+       read(23,*) (Pervious_Coeff(i,iv),iv=1,ncolumnsPervious)
        !write(*,*) (Pervious_Coeff(i,iv),iv=1,ncolumnsPervious)
     enddo
-  close(56)
+  close(23)
   
   call InputHeaderCheck(FileN)
 
@@ -235,17 +235,17 @@
     nlinesWater=nlines
     allocate(Water_Coeff(nlinesWater,ncolumnsWater))
     !Read input file 
-    open(57,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
+    open(24,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
     do SkipCounter=1,(SkipHeaderSiteInfo-1)
-       read(57,*) 	!Skip lines before header
+       read(24,*) 	!Skip lines before header
     enddo
-    read(57,*) (HeaderWater_File(iv),iv=1,ncolumnsWater) !Get header
+    read(24,*) (HeaderWater_File(iv),iv=1,ncolumnsWater) !Get header
       
     do i=1,nlinesWater
-       read(57,*) (Water_Coeff(i,iv),iv=1,ncolumnsWater)
+       read(24,*) (Water_Coeff(i,iv),iv=1,ncolumnsWater)
        !write(*,*) (Water_Coeff(i,iv),iv=1,ncolumnsWater)
     enddo
-  close(57)
+  close(24)
   
   call InputHeaderCheck(FileN)
   
@@ -266,17 +266,17 @@
     nlinesSnow=nlines
     allocate(Snow_Coeff(nlinesSnow,ncolumnsSnow))
     !Read input file 
-    open(58,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
+    open(25,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
     do SkipCounter=1,(SkipHeaderSiteInfo-1)
-       read(58,*) 	!Skip lines before header
+       read(25,*) 	!Skip lines before header
     enddo
-    read(58,*) (HeaderSnow_File(iv),iv=1,ncolumnsSnow) !Get header
+    read(25,*) (HeaderSnow_File(iv),iv=1,ncolumnsSnow) !Get header
       
     do i=1,nlinesSnow
-       read(58,*) (Snow_Coeff(i,iv),iv=1,ncolumnsSnow)
+       read(25,*) (Snow_Coeff(i,iv),iv=1,ncolumnsSnow)
        !write(*,*) (Snow_Coeff(i,iv),iv=1,ncolumnsSnow)
     enddo
-  close(58)
+  close(25)
   
   call InputHeaderCheck(FileN)
 
@@ -297,17 +297,17 @@
     nlinesSoil=nlines
     allocate(Soil_Coeff(nlinesSoil,ncolumnsSoil))
     !Read input file 
-    open(59,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
+    open(26,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
     do SkipCounter=1,(SkipHeaderSiteInfo-1)
-       read(59,*) 	!Skip lines before header
+       read(26,*) 	!Skip lines before header
     enddo
-    read(59,*) (HeaderSoil_File(iv),iv=1,ncolumnsSoil) !Get header
+    read(26,*) (HeaderSoil_File(iv),iv=1,ncolumnsSoil) !Get header
       
     do i=1,nlinesSoil
-       read(59,*) (Soil_Coeff(i,iv),iv=1,ncolumnsSoil)
+       read(26,*) (Soil_Coeff(i,iv),iv=1,ncolumnsSoil)
        !write(*,*) (Soil_Coeff(i,iv),iv=1,ncolumnsSoil)
     enddo
-  close(59)
+  close(26)
   
   call InputHeaderCheck(FileN)
   
@@ -327,17 +327,17 @@
     nlinesConductance=nlines
     allocate(Conductance_Coeff(nlinesConductance,ncolumnsConductance))
     !Read input file 
-    open(61,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
+    open(27,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
     do SkipCounter=1,(SkipHeaderSiteInfo-1)
-       read(61,*) 	!Skip lines before header
+       read(27,*) 	!Skip lines before header
     enddo
-    read(61,*) (HeaderCond_File(iv),iv=1,ncolumnsConductance) !Get header
+    read(27,*) (HeaderCond_File(iv),iv=1,ncolumnsConductance) !Get header
       
     do i=1,nlinesConductance
-       read(61,*) (Conductance_Coeff(i,iv),iv=1,ncolumnsConductance)
+       read(27,*) (Conductance_Coeff(i,iv),iv=1,ncolumnsConductance)
        !write(*,*) (Conductance_Coeff(i,iv),iv=1,ncolumnsConductance)
     enddo
-  close(61)
+  close(27)
   
   call InputHeaderCheck(FileN)
 
@@ -357,17 +357,17 @@
     nlinesOHMCoefficients=nlines
     allocate(OHMCoefficients_Coeff(nlinesOHMCoefficients,ncolumnsOHMCoefficients))
     !Read input file 
-    open(62,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
+    open(28,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
     do SkipCounter=1,(SkipHeaderSiteInfo-1)
-       read(62,*) 	!Skip lines before header
+       read(28,*) 	!Skip lines before header
     enddo
-    read(62,*) (HeaderOHMCoefficients_File(iv),iv=1,ncolumnsOHMCoefficients) !Get header
+    read(28,*) (HeaderOHMCoefficients_File(iv),iv=1,ncolumnsOHMCoefficients) !Get header
       
     do i=1,nlinesOHMCoefficients
-       read(62,*) (OHMCoefficients_Coeff(i,iv),iv=1,ncolumnsOHMCoefficients)
+       read(28,*) (OHMCoefficients_Coeff(i,iv),iv=1,ncolumnsOHMCoefficients)
        !write(*,*) (OHMCoefficients_Coeff(i,iv),iv=1,ncolumnsOHMCoefficients)
     enddo
-  close(62)
+  close(28)
   
   call InputHeaderCheck(FileN)
 
@@ -387,17 +387,17 @@
     nlinesAnthropogenicHeat=nlines
     allocate(AnthropogenicHeat_Coeff(nlinesAnthropogenicHeat,ncolumnsAnthropogenicHeat))
     !Read input file 
-    open(63,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
+    open(29,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
     do SkipCounter=1,(SkipHeaderSiteInfo-1)
-       read(63,*) 	!Skip lines before header
+       read(29,*) 	!Skip lines before header
     enddo
-    read(63,*) (HeaderAnthropogenicHeat_File(iv),iv=1,ncolumnsAnthropogenicHeat) !Get header
+    read(29,*) (HeaderAnthropogenicHeat_File(iv),iv=1,ncolumnsAnthropogenicHeat) !Get header
       
     do i=1,nlinesAnthropogenicHeat
-       read(63,*) (AnthropogenicHeat_Coeff(i,iv),iv=1,ncolumnsAnthropogenicHeat)
+       read(29,*) (AnthropogenicHeat_Coeff(i,iv),iv=1,ncolumnsAnthropogenicHeat)
        !write(*,*) (AnthropogenicHeat_Coeff(i,iv),iv=1,ncolumnsAnthropogenicHeat)
     enddo
-  close(63)
+  close(29)
 
   call InputHeaderCheck(FileN)
 
@@ -417,17 +417,17 @@
     nlinesIrrigation=nlines
     allocate(Irrigation_Coeff(nlinesIrrigation,ncolumnsIrrigation))
     !Read input file 
-    open(64,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
+    open(30,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
     do SkipCounter=1,(SkipHeaderSiteInfo-1)
-       read(64,*) 	!Skip lines before header
+       read(30,*) 	!Skip lines before header
     enddo
-    read(64,*) (HeaderIrrigation_File(iv),iv=1,ncolumnsIrrigation) !Get header
+    read(30,*) (HeaderIrrigation_File(iv),iv=1,ncolumnsIrrigation) !Get header
       
     do i=1,nlinesIrrigation
-       read(64,*) (Irrigation_Coeff(i,iv),iv=1,ncolumnsIrrigation)
+       read(30,*) (Irrigation_Coeff(i,iv),iv=1,ncolumnsIrrigation)
        !write(*,*) (Irrigation_Coeff(i,iv),iv=1,ncolumnsIrrigation)
     enddo
-  close(64)
+  close(30)        
   
   call InputHeaderCheck(FileN)
 
@@ -447,17 +447,17 @@
     nlinesProfiles=nlines
     allocate(Profiles_Coeff(nlinesProfiles,ncolumnsProfiles))
     !Read input file 
-    open(65,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
+    open(31,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
     do SkipCounter=1,(SkipHeaderSiteInfo-1)
-       read(65,*) 	!Skip lines before header
+       read(31,*) 	!Skip lines before header
     enddo
-    read(65,*) (HeaderProfiles_File(iv),iv=1,ncolumnsProfiles) !Get header
+    read(31,*) (HeaderProfiles_File(iv),iv=1,ncolumnsProfiles) !Get header
       
     do i=1,nlinesProfiles
-       read(65,*) (Profiles_Coeff(i,iv),iv=1,ncolumnsProfiles)
+       read(31,*) (Profiles_Coeff(i,iv),iv=1,ncolumnsProfiles)
        !write(*,*) (Profiles_Coeff(i,iv),iv=1,ncolumnsProfiles)
     enddo
-  close(65)
+  close(31)
   
   call InputHeaderCheck(FileN)
 
@@ -477,17 +477,17 @@
     nlinesWGWaterDist=nlines
     allocate(WGWaterDist_Coeff(nlinesWGWaterDist,ncolumnsWGWaterDist))
     !Read input file 
-    open(66,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
+    open(32,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
     do SkipCounter=1,(SkipHeaderSiteInfo-1)
-       read(66,*) 	!Skip lines before header
+       read(32,*) 	!Skip lines before header
     enddo
-    read(66,*) (HeaderWGWaterDist_File(iv),iv=1,ncolumnsWGWaterDist) !Get header
+    read(32,*) (HeaderWGWaterDist_File(iv),iv=1,ncolumnsWGWaterDist) !Get header
       
     do i=1,nlinesWGWaterDist
-       read(66,*) (WGWaterDist_Coeff(i,iv),iv=1,ncolumnsWGWaterDist)
+       read(32,*) (WGWaterDist_Coeff(i,iv),iv=1,ncolumnsWGWaterDist)
        !write(*,*) (WGWaterDist_Coeff(i,iv),iv=1,ncolumnsWGWaterDist)
     enddo
-  close(66)
+  close(32)  
   
   call InputHeaderCheck(FileN)
   
@@ -506,28 +506,33 @@
     
   !-----------------------------------------------------------------------
   !SUEWS run information
-  Inputmetformat=10	!Input met data file in LUMPS format (1) or SUEWS format (10)
-  LAICalcYes=1		!1 -> Calculate LAI
-  ITY=2			!Evaporation calculated according to Rutter (=1) or Shuttleworth (=2)
+  InputMetFormat=10	!Input met data file in LUMPS format(1) or SUEWS format(10)
+  LAICalcYes=1		!Use observed(0) or modelled(1) LAI
+  ity=2			!Evaporation calculated according to Rutter(1) or Shuttleworth(2)
   tstepcount=0
    
-  ! Calculate NSH (number of steps per interval) from info in RunControl
-  NSH_real = INTERVAL/TSTEP	!Both in seconds 
-
-  if (NSH_real<2) then    !If NSH_real smaller that two, only one period is run
-     NSH=1
-     TSTEP=real(INTERVAL,kind(1d0))
-  else			  !Check NSH is an integer	
-     if (NSH_real==int(NSH_real)) then 
-        NSH = INTERVAL/TSTEP    
+  INTERVAL = 3600   !Number of seconds in an hour  
+   
+  !Calculate nsh (number of steps per hour) from model timestep (tstep) set in in RunControl
+  nsh_real = INTERVAL/real(tstep,kind(1d0))
+  
+  if(nsh_real<2) then   !If nsh_real is less than 2, set nsh to 1 and tstep to 3600
+     nsh=1
+     tstep=INTERVAL
+  else			  
+     if(nsh_real==int(nsh_real)) then   !Check nsh is an integer	
+        nsh = INTERVAL/tstep    
      else
-        call ErrorHint(39,'File: RunControl',TSTEP,real(INTERVAL,kind(1d0)),notUsedI)
+        call ErrorHint(39,'File: RunControl',real(tstep,kind(1d0)),real(INTERVAL,kind(1d0)),notUsedI)
      endif
   endif
   
-  !Copy integer NSH to NSH_real for use in calculations
-  NSH_real = real(NSH,kind(1d0))
+  ! Cast integer nsh as nsh_real for use in calculations
+  nsh_real = real(nsh,kind(1d0))
+  ! Cast integer tstep as tstep_real for use in calculations
+  tstep_real = real(tstep,kind(1d0))
     
+  !! Check this is still valid for v2015a  
   HalfTimeStep=real(INTERVAL)/2/(24*3600)   !Used in sun_position to get sunpos in the middle of timestep
     
   return
@@ -564,25 +569,26 @@
    integer:: SkipHeaderLines, RunNumber
    integer:: SkipCounter
       
-   !write(*,*) FileN
-   open(57,file=trim(FileInputPath)//trim(FileN),err=204,status='old')
+   write(*,*) FileN
+   open(39,file=trim(FileInputPath)//trim(FileN),err=204,status='old')
 
    if(SkipHeaderLines > 0) then
      do SkipCounter=1,SkipHeaderLines
-        read(57,*,err=205)
+        read(39,*,err=205) 
         !write(*,*) SkipCounter, SkipHeaderLines
      enddo
    endif
 
    nlines = 0 !Initialize nlines
    do
-      read(57,*) RunNumber
-      if(RunNumber==-9) exit
-      nlines = nlines + 1
+      read(39,*) RunNumber
+       if(RunNumber==-9) exit
+       nlines = nlines + 1
    end do
-    !write(*,*) 'nlines read: ',nlines
-   close(57)
-   return
+   !write(*,*) 'nlines read: ',nlines
+   close(39)
+   
+  return
 
 204 call ErrorHint(47,trim(FileInputPath)//trim(FileN),notUsed,notUsed,notUsedI)
 205 call ErrorHint(48,trim(FileInputPath)//trim(FileN),notUsed,notUsed,notUsedI)
@@ -1219,8 +1225,8 @@
    call SUEWS_InterpHourlyProfiles(Gridiv,cTP_EnUseWD,c_HrProfEnUseWD)
    call SUEWS_InterpHourlyProfiles(Gridiv,cTP_EnUseWE,c_HrProfEnUseWE)
    ! For energy use, normalise so the AVERAGE of the multipliers is equal to 1
-   TstepProfiles(Gridiv,cTP_EnUseWD,:) = TstepProfiles(Gridiv,cTP_EnUseWD,:) / sum(TstepProfiles(Gridiv,cTP_EnUseWD,:))*24*NSH
-   TstepProfiles(Gridiv,cTP_EnUseWE,:) = TstepProfiles(Gridiv,cTP_EnUseWE,:) / sum(TstepProfiles(Gridiv,cTP_EnUseWE,:))*24*NSH
+   TstepProfiles(Gridiv,cTP_EnUseWD,:) = TstepProfiles(Gridiv,cTP_EnUseWD,:) / sum(TstepProfiles(Gridiv,cTP_EnUseWD,:))*24*nsh_real
+   TstepProfiles(Gridiv,cTP_EnUseWE,:) = TstepProfiles(Gridiv,cTP_EnUseWE,:) / sum(TstepProfiles(Gridiv,cTP_EnUseWE,:))*24*nsh_real
    ! Water use
    call SUEWS_InterpHourlyProfiles(Gridiv,cTP_WUManuWD,c_HrProfWUManuWD)
    call SUEWS_InterpHourlyProfiles(Gridiv,cTP_WUManuWE,c_HrProfWUManuWE)
@@ -1342,9 +1348,9 @@
   ! Define InitialConditions file ----------------------------------------
   FileInit=trim(FileInputPath)//trim("InitialConditions")//trim(GridName)//'_'//trim(year_txt)//'.nml'
   ! Open, read and close InitialConditions file --------------------------
-  open(52,File=trim(FileInit),err=600) !Change with needs
-  read(52,iostat=ios_out,nml=InitialConditions,err=601)
-  close(52)
+  open(56,File=trim(FileInit),err=600,status='old') !Change with needs
+  read(56,iostat=ios_out,nml=InitialConditions,err=601)
+  close(56)
   
   ! Write InitialConditions to FileChoices -------------------------------
   FileChoices=trim(FileOutputPath)//trim(FileCode)//'_FileChoices.txt'
@@ -1498,7 +1504,7 @@
  endif
 
  call day2month(id_prev,mb,date,seas,year,lat) !Calculate real date from doy. Last it Lat
- call Day_of_Week(date,mb,year,wd)             !Calculate weekday (1=Sun,...)
+ call Day_of_Week(date,mb,year,wd)             !Calculate weekday (1=Sun, ..., 7=Sat)
 
  !After the day in previous year switch is changed back to zero
  if(switch==1)then
@@ -1521,7 +1527,7 @@
  endif
 
  call day2month(id_next,mb,date,seas,year,lat) !Calculate real date from doy
- call Day_of_Week(date,mb,year,wd)             !Calculate weekday (1=Sun,...)
+ call Day_of_Week(date,mb,year,wd)             !Calculate weekday (1=Sun, ..., 7=Sat)
 
  if(switch==1)then
    year=year-1
@@ -1664,10 +1670,7 @@
  
 !-------------------------------------------------------------------------
  subroutine NextInitial(GridName,year_int,GridName2)
- !Modified by
- !LJ 5 Feb 2015:
- !HCW 21 Nov 2014
- !
+ ! Modified by HCW 21 Nov 2014
  !------------------------------------------------------------------------
   use allocateArray 
   use ColNamesInputFiles
@@ -1687,93 +1690,91 @@
   integer:: year_int2
   integer:: year_int, year_int_final = 2
   
-!  write(*,*) LastGrid
-!  pause
+  !write(*,*) LastGrid
+  
    
   year=year_int   !HCW added 21 Nov 2014
-  !pause
   
-  !if (year < real(year_int_final,kind(1D0))) then   !Write out InitialConditions file for each year ready for next year loop
+  !if (year_int < real(year_int_final,kind(1d0))) then   !Write out InitialConditions file for each year ready for next year loop
   !    year_int2=int(year+1)
   !    write(year_txt2,'(I4)')year_int2
-  !    open(55,File=trim(FileInputPath)//trim("InitialConditions")//trim(GridName2)// &
-   !      '_'//trim(adjustl(year_txt2))//'.nml',err=200)
-
+  !    open(57,File=trim(FileInputPath)//trim("InitialConditions")//trim(GridName2)// &
+  !       '_'//trim(adjustl(year_txt2))//'.nml',err=200)       
   !elseif (year_int == year_int_final) then
      if (id>360) then  !!Why 360??
        year_int2=int(year+1)
        write(year_txt2,'(I4)')year_int2
-       open(55,File=trim(FileInputPath)//trim("InitialConditions")//trim(GridName)// &
+       open(57,File=trim(FileInputPath)//trim("InitialConditions")//trim(GridName)// &
             '_'//trim(adjustl(year_txt2))//'.nml',err=200)  
      else
         year_int2=int(year)
         write(year_txt2,'(I4)')year_int2
-        open(55,File=trim(FileInputPath)//trim("InitialConditions")//trim(GridName)// &
+        open(57,File=trim(FileInputPath)//trim("InitialConditions")//trim(GridName)// &
      	     '_'//trim(adjustl(year_txt2))//'end.nml',err=201)
      endif
   !endif
 
-  write(55,*)'&InitialConditions'
-  write(55,*)'DaysSinceRain=',int(HDD(id,6))
+  write(57,*)'&InitialConditions'
+  write(57,*)'DaysSinceRain=',int(HDD(id,6))
    
   if(it/=LastTimeofday)then
    ! need to do this otherwise it will not be completed
 	id=id-1  
   endif
    
-  write(55,*)'Temp_C0=',HDD(id,3)
-  write(55,*)'ID_Prev=',id
-  write(55,*)'GDD_1_0=',GDD(id,1)
-  write(55,*)'GDD_2_0=',GDD(id,2)
-  write(55,*)'PavedState=',State(PavSurf)
-  write(55,*)'BldgsState=',State(BldgSurf)
-  write(55,*)'EveTrState=',State(ConifSurf)
-  write(55,*)'DecTrState=',State(DecidSurf)
-  write(55,*)'GrassState=',State(GrassSurf)
-  write(55,*)'BSoilState=',State(BSoilSurf)
-  write(55,*)'WaterState=',State(WaterSurf)
-  write(55,*)'LAIinitialEveTr=',lai(id,ivConif)         
-  write(55,*)'LAIinitialDecTr=',lai(id,ivDecid)
-  write(55,*)'LAIinitialGrass=',lai(id,ivGrass)
-  write(55,*)'porosity0=',porosity(id)
-  write(55,*)'DecidCap0=',decidCap(id)
-  write(55,*)'albDec0=',AlbDec(id)
-  write(55,*)'soilstorePavedState=',soilmoist(PavSurf)
-  write(55,*)'soilstoreBldgsState=',soilmoist(BldgSurf)
-  write(55,*)'soilstoreEveTrState=',soilmoist(ConifSurf)
-  write(55,*)'soilstoreDecTrState=',soilmoist(DecidSurf)
-  write(55,*)'soilstoreGrassState=',soilmoist(GrassSurf)
-  write(55,*)'soilstoreBSoilState=',soilmoist(BSoilSurf)
-  write(55,*)'SnowWaterPavedstate=',MeltWaterStore(PavSurf)
-  write(55,*)'SnowWaterBldgsState=',MeltWaterStore(BldgSurf)
-  write(55,*)'SnowWaterEveTrState=',MeltWaterStore(ConifSurf)
-  write(55,*)'SnowWaterDecTrState=',MeltWaterStore(DecidSurf)
-  write(55,*)'SnowWaterGrassState=',MeltWaterStore(GrassSurf)
-  write(55,*)'SnowWaterBSoilState=',MeltWaterStore(BSoilSurf)
-  write(55,*)'SnowWaterWaterState=',MeltWaterStore(WaterSurf)
-  write(55,*)'SnowPackPaved=',SnowPack(PavSurf)
-  write(55,*)'SnowPackBldgs=',SnowPack(BldgSurf)
-  write(55,*)'SnowPackEveTr=',SnowPack(ConifSurf)
-  write(55,*)'SnowPackDecTr=',SnowPack(DecidSurf)
-  write(55,*)'SnowPackGrass=',SnowPack(GrassSurf)
-  write(55,*)'SnowPackBSoil=',SnowPack(BSoilSurf)
-  write(55,*)'SnowPackWater=',SnowPack(WaterSurf)
-  write(55,*)'SnowFracPaved=',SnowFrac(PavSurf)
-  write(55,*)'SnowFracBldgs=',SnowFrac(BldgSurf)
-  write(55,*)'SnowFracEveTr=',SnowFrac(ConifSurf)
-  write(55,*)'SnowFracDecTr=',SnowFrac(DecidSurf)
-  write(55,*)'SnowFracGrass=',SnowFrac(GrassSurf)
-  write(55,*)'SnowFracBSoil=',SnowFrac(BSoilSurf)
-  write(55,*)'SnowFracWater=',SnowFrac(WaterSurf)
-  write(55,*)'SnowDensPaved=',densSnow(PavSurf)
-  write(55,*)'SnowDensBldgs=',densSnow(BldgSurf)
-  write(55,*)'SnowDensEveTr=',densSnow(ConifSurf)
-  write(55,*)'SnowDensDecTr=',densSnow(DecidSurf)
-  write(55,*)'SnowDensGrass=',densSnow(GrassSurf)
-  write(55,*)'SnowDensBSoil=',densSnow(BSoilSurf)
-  write(55,*)'SnowDensWater=',densSnow(WaterSurf)
-  write(55,*)'/'
-  close(55)
+  write(57,*)'Temp_C0=',HDD(id,3)
+  write(57,*)'ID_Prev=',id
+  write(57,*)'GDD_1_0=',GDD(id,1)
+  write(57,*)'GDD_2_0=',GDD(id,2)
+  write(57,*)'PavedState=',State(PavSurf)
+  write(57,*)'BldgsState=',State(BldgSurf)
+  write(57,*)'EveTrState=',State(ConifSurf)
+  write(57,*)'DecTrState=',State(DecidSurf)
+  write(57,*)'GrassState=',State(GrassSurf)
+  write(57,*)'BSoilState=',State(BSoilSurf)
+  write(57,*)'WaterState=',State(WaterSurf)
+  write(57,*)'LAIinitialEveTr=',lai(id,ivConif)         
+  write(57,*)'LAIinitialDecTr=',lai(id,ivDecid)
+  write(57,*)'LAIinitialGrass=',lai(id,ivGrass)
+  write(57,*)'porosity0=',porosity(id)
+  write(57,*)'DecidCap0=',decidCap(id)
+  write(57,*)'albDec0=',AlbDec(id)
+  write(57,*)'soilstorePavedState=',soilmoist(PavSurf)
+  write(57,*)'soilstoreBldgsState=',soilmoist(BldgSurf)
+  write(57,*)'soilstoreEveTrState=',soilmoist(ConifSurf)
+  write(57,*)'soilstoreDecTrState=',soilmoist(DecidSurf)
+  write(57,*)'soilstoreGrassState=',soilmoist(GrassSurf)
+  write(57,*)'soilstoreBSoilState=',soilmoist(BSoilSurf)
+  write(57,*)'SnowWaterPavedstate=',MeltWaterStore(PavSurf)
+  write(57,*)'SnowWaterBldgsState=',MeltWaterStore(BldgSurf)
+  write(57,*)'SnowWaterEveTrState=',MeltWaterStore(ConifSurf)
+  write(57,*)'SnowWaterDecTrState=',MeltWaterStore(DecidSurf)
+  write(57,*)'SnowWaterGrassState=',MeltWaterStore(GrassSurf)
+  write(57,*)'SnowWaterBSoilState=',MeltWaterStore(BSoilSurf)
+  write(57,*)'SnowWaterWaterState=',MeltWaterStore(WaterSurf)
+  write(57,*)'SnowPackPaved=',SnowPack(PavSurf)
+  write(57,*)'SnowPackBldgs=',SnowPack(BldgSurf)
+  write(57,*)'SnowPackEveTr=',SnowPack(ConifSurf)
+  write(57,*)'SnowPackDecTr=',SnowPack(DecidSurf)
+  write(57,*)'SnowPackGrass=',SnowPack(GrassSurf)
+  write(57,*)'SnowPackBSoil=',SnowPack(BSoilSurf)
+  write(57,*)'SnowPackWater=',SnowPack(WaterSurf)
+  write(57,*)'SnowFracPaved=',SnowFrac(PavSurf)
+  write(57,*)'SnowFracBldgs=',SnowFrac(BldgSurf)
+  write(57,*)'SnowFracEveTr=',SnowFrac(ConifSurf)
+  write(57,*)'SnowFracDecTr=',SnowFrac(DecidSurf)
+  write(57,*)'SnowFracGrass=',SnowFrac(GrassSurf)
+  write(57,*)'SnowFracBSoil=',SnowFrac(BSoilSurf)
+  write(57,*)'SnowFracWater=',SnowFrac(WaterSurf)
+  write(57,*)'SnowDensPaved=',densSnow(PavSurf)
+  write(57,*)'SnowDensBldgs=',densSnow(BldgSurf)
+  write(57,*)'SnowDensEveTr=',densSnow(ConifSurf)
+  write(57,*)'SnowDensDecTr=',densSnow(DecidSurf)
+  write(57,*)'SnowDensGrass=',densSnow(GrassSurf)
+  write(57,*)'SnowDensBSoil=',densSnow(BSoilSurf)
+  write(57,*)'SnowDensWater=',densSnow(WaterSurf)
+  write(57,*)'/'
+  close(57)
   
   return
 

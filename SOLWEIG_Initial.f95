@@ -5,6 +5,7 @@ use matsize         ! All allocatable grids and related variables used in SOLWEI
 use InitialCond 
 use allocateArray
 use data_in  
+use sues_data
 use defaultNotUsed
 use InitialCond
 use solweig_module

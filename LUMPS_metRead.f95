@@ -16,6 +16,7 @@
   real (kind(1d0)),dimension(24)::MetArray !Array leaving the subroutine within 
                                            !each INTERVAL (defined in RunControl.nml)
                                            ! - Met data now provided at a resolution of tstep, HCW Jan 2015
+                                           ! so MetArray could be bypassed??
   
   real (kind(1d0))::defaultQf,&            !Default anthropogenic heat flux
                     defaultQs,&            !Default storage heat flux

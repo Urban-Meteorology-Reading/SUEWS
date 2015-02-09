@@ -71,11 +71,11 @@
              endif
 
              !Get the value in mm/timestep needed for the new model version
-             mw_ind(is) = mw_ind(is)/nsh 
+             mw_ind(is) = mw_ind(is)/nsh_real
 
              !Heat consumed to snowmelt/refreezing within Tstep.
 	 	  !Converted from mm nsh-1 to mm nsh-1 and to m s-1
-             Qm_melt(is) = waterDens*((mw_ind(is)/Tstep)/1000)*(lvS_J_kg-lv_J_kg)
+             Qm_melt(is) = waterDens*((mw_ind(is)/tstep_real)/1000)*(lvS_J_kg-lv_J_kg)
 
              !If melt is negative this means freezing water in the snowpack
              if (mw_ind(is)<0) then
@@ -87,7 +87,7 @@
                 if (FreezMelt(is)>Meltwaterstore(is)) FreezMelt(is) = Meltwaterstore(is)
              
                 !Recalculate melt related energy
-                Qm_melt(is) = waterDens*((-FreezMelt(is)/Tstep)/1000)*(lvS_J_kg-lv_J_kg)
+                Qm_melt(is) = waterDens*((-FreezMelt(is)/tstep_real)/1000)*(lvS_J_kg-lv_J_kg)
 
              endif
             
@@ -96,7 +96,7 @@
             !------snowpack. Eq (23) in Sun et al., 1999
   		  ! Calculation done at resolution of the model timestep 
             if (Temp_C>=PrecipLimit.and.Precip>0) then
-               Qm_rain(is) = waterDens*cw*(Temp_C-PrecipLimit)*(Precip*0.001/Tstep)  !in W m-2
+               Qm_rain(is) = waterDens*cw*(Temp_C-PrecipLimit)*(Precip*0.001/tstep_real)  !in W m-2
 
                if (Qm_rain(is)<0) then !Can only be positive
                   Qm_rain(is) = 0  
@@ -131,18 +131,18 @@
                  FreezStateVol(is) = 0
               endif
 
-              Qm_freezState(is) = -waterDens*(FreezState(is)/Tstep/1000)*(lvS_J_kg-lv_J_kg)
+              Qm_freezState(is) = -waterDens*(FreezState(is)/tstep_real/1000)*(lvS_J_kg-lv_J_kg)
                
            else       !Water surface 
              !Calculate average value how much water can freeze above the water areas
-             Watfreeze = 100*(0-Temp_C)/(waterDens*(lvS_J_kg-lv_J_kg)/Tstep)
+             Watfreeze = 100*(0-Temp_C)/(waterDens*(lvS_J_kg-lv_J_kg)/tstep_real)
             
              if (Watfreeze<=state(is)) then !Not all state freezes
                 FreezState(is) = Watfreeze  
-                Qm_freezState(is) = -waterDens*(Watfreeze/Tstep/1000)*(lvS_J_kg-lv_J_kg)
+                Qm_freezState(is) = -waterDens*(Watfreeze/tstep_real/1000)*(lvS_J_kg-lv_J_kg)
              else
                 FreezState(is) = state(is)  !All state freezes
-                Qm_freezState(is) = -waterDens*(state(is)/Tstep/1000)*(lvS_J_kg-lv_J_kg)
+                Qm_freezState(is) = -waterDens*(state(is)/tstep_real/1000)*(lvS_J_kg-lv_J_kg)
              endif
            endif
     
@@ -183,7 +183,7 @@
     !Update snow albedo and density
     if (Precip>0.and.sum(snowPack)>0.and.Temp_C<0) then
        CumSnowfall=CumSnowfall + Precip
-       if (CumSnowfall>PrecipLimitAlb/nsh)  alb_snow=albSnowMax
+       if (CumSnowfall>PrecipLimitAlb/nsh_real)  alb_snow=albSnowMax
     else
         CumSnowfall=0
     endif
@@ -205,14 +205,15 @@
   
   use allocateArray
   use defaultNotUsed
-  use data_in
-  use snowMod
-  use time
-  use moist
-  use sues_data
+  use data_in    
   use gis_data
   use mod_k
   use mod_z
+  use moist
+  use snowMod
+  use sues_data
+  use thresh
+  use time
   
   implicit none
              
@@ -259,7 +260,7 @@
   ev=0
 
   !Calculate evaporation from snowpack and snow free surfaces (in mm)
-  if (snowFrac(is)<1) call Evap_SUEWS(surf(1,is)) 
+  if (snowFrac(is)<1) call Evap_SUEWS 
   
   if (snowFrac(is)>0) then
       ev_snow(is) = Evap_SUEWS_Snow(qn1_S,qf,qs,Qm_Melt(is),Qm_rain(is),lvS_J_kg,avdens,avRh,Press_hPa,Temp_C,RA,&
@@ -292,7 +293,7 @@
 
         
        !(Snowfall per interval+freezing of water) - (meltwater+evaporation from snowpack)
-        changSnow(is)=(Precip+freezMelt(is)/nsh)-(mw_ind(is)/nsh+ev_snow(is)) !Calculate change in the snowpack
+        changSnow(is)=(Precip+freezMelt(is)/nsh_real)-(mw_ind(is)/nsh_real+ev_snow(is)) !Calculate change in the snowpack
         
         if (freezState(is)>0) then !snowfraction is not 1 but the snow free surface water freezes
            FreezStateVol(is)=FreezState(is)
@@ -497,9 +498,9 @@
     if (is==PavSurf.or.is==BldgSurf) then  !Impervious surfaces (paved, buildings)
   
         !Surface store update       
-        if (precip>10/nsh) then
-           runoff(is)=runoff(is)+(Precip+SnowToSurf(is)+AddWater(is)-10/nsh)
-           chang(is)=10/nsh-(drain(is)+ev+freezState(is)) 
+        if (precip>IPThreshold_mmhr/nsh_real) then
+           runoff(is)=runoff(is)+(Precip+SnowToSurf(is)+AddWater(is)-IPThreshold_mmhr/nsh_real)
+           chang(is)=IPThreshold_mmhr/nsh_real-(drain(is)+ev+freezState(is)) 
         else 
            chang(is)=Precip+SnowToSurf(is)+AddWater(is)-(drain(is)+ev+freezState(is))   !Add precip and water from other surfaces
         endif                                                !remove drainage, evap and freezing of state
@@ -523,9 +524,9 @@
           
         
  	 !Change in water stores 
-        if (Precip+addVeg*(sfr(is)/VegFraction)>(10/nsh)) then !if 5min precipitation is larger than 10 mm
-            runoff(is)=runoff(is)+(Precip+addVeg*(sfr(is)/VegFraction)+SnowToSurf(is)+AddWater(is)-(10/nsh))
-            chang(is)=(10/nsh)-(drain(is)+ev+freezState(is))
+        if (Precip+addVeg*(sfr(is)/VegFraction)>(IPThreshold_mmhr/nsh_real)) then !if 5min precipitation is larger than 10 mm
+            runoff(is)=runoff(is)+(Precip+addVeg*(sfr(is)/VegFraction)+SnowToSurf(is)+AddWater(is)-(IPThreshold_mmhr/nsh_real))
+            chang(is)=(IPThreshold_mmhr/nsh_real)-(drain(is)+ev+freezState(is))
         else
             chang(is)=Precip+addVeg*(sfr(is)/VegFraction)+SnowToSurf(is)+AddWater(is)-(drain(is)+ev+freezState(is)) 
        endif
@@ -706,15 +707,18 @@
   !Calculates evaporation from snow surface (ev_snow). 
   !INPUT:  
   
-
    implicit none
-   
+     
    real (Kind(1d0))::sae_snow,lvS_J_kg,e_snow,qe_snow,avdens,Temp_C,RA,Qfreez,&
                      qn1,qf,qs,Qm,ev_snow,vdrcIce,esIce_hPa,EaIce_hPa,avRh,Press_hPa,&
                      psyc_hPa,tlv_sub,avcp,sIce_hPa,QP,RAsnow
                      
    real (Kind(1d0)):: sat_vap_pressIce !Function
    integer:: ity,tstep,from=1
+   
+   real (kind(1d0)):: tstep_real
+   
+   tstep_real = real(tstep,kind(1d0))
    
    !s * (Available energy)
    !sae_snow=sIce_hPa*(qn1+Qp-Qm-Qfreez)
@@ -726,7 +730,7 @@
    EaIce_hPa=avRh/100*esIce_hPa  
    
    vdrcIce=(esIce_hPa-eaIce_hpa)*avdens*avcp
-   tlv_sub=lvS_J_kg/tstep                  !Latent heat for sublimation!
+   tlv_sub=lvS_J_kg/tstep_real                  !Latent heat for sublimation!
   
    e_snow=sae_snow+vdrcIce/RAsnow
 

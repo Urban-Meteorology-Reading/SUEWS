@@ -66,6 +66,8 @@ subroutine WaterUse
      if(DayofWeek(id,1)==1.or.DayofWeek(id,1)==7) then  
         iu=2  !Set to 2=weekend
      endif
+     
+     write(*,*) (NSH*(ih+1-1)+imin*NSH/60+1)
         
      ! ---- Automatic irrigation ----
      wu_EveTr = WUProfA_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WU_Day(id-1,2)   !Automatic evergreen trees
@@ -92,7 +94,7 @@ subroutine WaterUse
 
   ! Internal water use is supplied in SUEWS_Irrigation in mm h-1
   ! Convert to mm for the model timestep
-  InternalWaterUse = InternalWaterUse_h/nsh
+  InternalWaterUse = InternalWaterUse_h/nsh_real
   
   ! Remove InternalWaterUse from the total water use
   ext_wu = wu-(InternalWaterUse+OverUse)

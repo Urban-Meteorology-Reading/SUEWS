@@ -81,8 +81,8 @@
   qs=NAN  		!qs  = Net storage heat flux  [W m-2]
   if(qn1>-999) then	!qn1 = Net all-wave radiation [W m-2]     
      !if(q1>-999.and.q3>-999) then
-        !dqndt = 0.5*(q3-q1)*nsh	  !gradient at t-2
-        dqndt = 0.5*(qn1-q2)*nsh  	  !gradient at t-1
+        !dqndt = 0.5*(q3-q1)*nsh_real	  !gradient at t-2
+        dqndt = 0.5*(qn1-q2)*nsh_real  	  !gradient at t-1
      	! Calculate net storage heat flux
      	qs = qn1*a1 + dqndt*a2 + a3   !Eq 4, Grimmond et al. 1991
      !endif
@@ -102,8 +102,8 @@
      deltaQi=NAN  
      if(qn1_S>-999) then
         !if(r1>-999.and.r3>-999) then
-           !dqndt = 0.5*(r3-r1)*nsh	  !gradient at t-2
-           dqndt = 0.5*(qn1_S-r2)*nsh  	  !gradient at t-1
+           !dqndt = 0.5*(r3-r1)*nsh_real	  !gradient at t-2
+           dqndt = 0.5*(qn1_S-r2)*nsh_real  	  !gradient at t-1
            ! Calculate net storage heat flux for snow surface (winter wet conditions HCW 15/01/2015)
            deltaQi = qn1_S*OHM_coef(nsurf+2,3,1) + dqndt*OHM_coef(nsurf+2,3,2) + OHM_coef(nsurf+2,3,3)
         !endif

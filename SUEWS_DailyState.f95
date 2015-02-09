@@ -4,10 +4,12 @@
 ! Responds to what has happened in the past (temperature, rainfall, etc)
 ! N.B. If changes are made here, may need to update code in SUEWS_Initial accordingly
 !
-! Last modified:
-! -DailyState saving fixed. Now header is printed and the file closed and opened as suggested. LJ 5/2/2015
-! HCW 26 Jan 2015: sfr and IrrFracs deleted from WU_Day calculations, so that WU_Day is not spread over
-!  the total area
+! Last modified LJ 05 Feb 2015
+!  DailyState saving fixed. Now header is printed and the file closed and opened as suggested.
+! N.B. Bug in daily Precip - needs fixing!!!
+! Last modified HCW 26 Jan 2015
+!  sfr and IrrFracs deleted from WU_Day calculations, so that WU_Day is not spread over
+!   the total area
 ! Modified HCW 22 Jan 2015
 ! WU_Day now has 9 columns (EveTr, DecTr, Grass; automatic, manual, total) HCW 23/01/2015 
 ! Handles values for different grids (Gridiv & ir arguments) HCW 27/11/2014
@@ -24,7 +26,7 @@
 !	- Check and improve DailyState output file
 !	- Could add different coefficients (Ie_m, Ie_a) for each vegetation type
 !==============================================================================
- subroutine DailyState(Gridiv,ir)
+subroutine DailyState(Gridiv,ir)
 
   use allocateArray
   use data_in      
@@ -84,7 +86,7 @@
   GDD(id,3) = min(Temp_C,GDD(id,3))     !Daily min T in column 3
   GDD(id,4) = max(Temp_C,GDD(id,4))     !Daily max T in column 4
   if (avkdn>10) then
-     GDD(id,5) = GDD(id,5)+1/nsh_real   !Cumulate daytime hours !Divide by NSH (HCW 01 Dec 2014)
+     GDD(id,5) = GDD(id,5)+1/nsh_real   !Cumulate daytime hours !Divide by nsh (HCW 01 Dec 2014)
   endif
       
   ! Calculations related to heating and cooling degree days (HDD) ------------------
@@ -130,7 +132,7 @@
      endif 
   
      call day2month(id,mb,date,seas,year,lat)	!Calculate real date from doy
-     call Day_of_Week(date,mb,year,wd)   	!Calculate weekday (1=Sun,...)
+     call Day_of_Week(date,mb,year,wd)   	!Calculate weekday (1=Sun, ..., 7=Sat)
 
      if(switch==1)then
         year=year+1
@@ -360,39 +362,42 @@
      albDec(id)=albDec(id-1)+albChange
      SURF(1,DecidSurf)=DecidCap(id)  !Surface moisture capacity of deciduous trees        
         
+     ! -----------------------------------------------------------------------------
+    
      !--------------------------------------------------------------------------
-     !Write out DailyState file (1 row per day)  !! Check, add header
+     !Write out DailyState file (1 row per day)
 
      if (writedailyState==1) then
-       !Define filename
-       write(grstr2,'(i2)') Gridiv      !Convert grid number for output file name
-       FileDaily=trim(FileOutputPath)//trim(FileCode)//trim(adjustl(grstr2))//'_DailyState.txt'
+        !Define filename
+        write(grstr2,'(i2)') Gridiv      !Convert grid number for output file name
+        FileDaily=trim(FileOutputPath)//trim(FileCode)//trim(adjustl(grstr2))//'_DailyState.txt'
 
-       !If first modelled day, open the file and save header
-       if (DailyStateFirstOpen(Gridiv)==1) then
-         open(60,file=FileDaily)
-         write(60,142)
-         142  format('%year id    HD1h  HDD2c  HDD3m  HDT5d   Prec   DaSR  GDD1g GDD2s  GDmn   GDmx ',&
-                     ' dayLG   LAIc   LAId  LAIgI  LAIgU  DEcap    Por Albdec WUgr(1) WUgr(2) WUgr(3)',&
-                     ' WUtr(1) WUtr(2) WUtr(3) LAIch LAIlumps alb_snow dens_snow_pav dens_snow_bldg',&
-                     ' dens_snow_ET dens_snow_DT dens_snow_IG dens_snow_UG dens_snow_wtr')
-         DailyStateFirstOpen(Gridiv)=0
-       !Otherwise open file to append
-       else
-         open(60,file=FileDaily,position='append')
-       endif
+        ! If first modelled day, open the file and save header
+        if (DailyStateFirstOpen(Gridiv)==1) then
+           open(60,file=FileDaily)
+           write(60,142)
+           142  format('%year id    HD1h  HDD2c  HDD3m  HDT5d   Prec   DaSR  GDD1g GDD2s  GDmn   GDmx ',&
+                       ' dayLG   LAIc   LAId  LAIgI  LAIgU  DEcap    Por Albdec WUgr(1) WUgr(2) WUgr(3)',&
+                       ' WUtr(1) WUtr(2) WUtr(3) LAIch LAIlumps alb_snow dens_snow_pav dens_snow_bldg',&
+                       ' dens_snow_ET dens_snow_DT dens_snow_IG dens_snow_UG dens_snow_wtr')
+           DailyStateFirstOpen(Gridiv)=0
+        ! Otherwise open file to append
+        else
+           open(60,file=FileDaily,position='append')
+        endif
 
-       !Write actual data
-       write(60,601) iy,id,(HDD(id,j),j=1,6),(GDD(id,j),j=1,5),(lai(id,iv),iv=1,nvegsurf),&
-                     decidcap(id),porosity(id),albdec(id), (WU_day(id-1,j),j=1,9),&
-                     deltaLAI,VegPhenLumps,alb_snow,(densSnow(j),j=1,nsurf)
-       601 format(2(i4,1X),6(f6.1,1X),2(f5.0,1X),3(f6.1,1X),4(f6.2,1X),3(f6.2,1X),9(f7.3,1X),&
-                  18(f7.2,1X))
-
-       !Close the daily state file
-       close(60)
+        ! Write actual data     
+        write(60,601) iy,id,(HDD(id,j),j=1,6),(GDD(id,j),j=1,5),(lai(id,iv),iv=1,nvegsurf),&
+                      decidcap(id),porosity(id),albdec(id), (WU_day(id-1,j),j=1,9),&
+                      deltaLAI,VegPhenLumps,alb_snow,(densSnow(j),j=1,nsurf)
+            
+        601 format(2(i4,1X),6(f6.1,1X),2(f5.0,1X),3(f6.1,1X),4(f6.2,1X),3(f6.2,1X),9(f7.3,1X),&
+                   18(f7.2,1X))
+         
+        ! Close the daily state file
+        close(60)
      endif  !End writedailystate
-
+     
      ! Set Daylight Saving ---------------------------------------------------------   
      if (id>=DayLightSavingDay(1).and.id<=DayLightSavingDay(2)) then   !Summer time
         DLS=1

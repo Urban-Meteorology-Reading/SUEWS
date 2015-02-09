@@ -26,10 +26,10 @@
     			FileCodeXNext	  
     integer:: ReadMetTimes		!Number of blocks of met data
     integer:: errFileYes
-    integer:: i,&	   ! FirstGrid to LastGrid (i.e. grid number)
-    		  iv,&	   ! 1 to ReadMetTimes (i.e. met data block number)
-    		  ir,irMax,& ! Row of met data within each chunk of met data
-    		  rr 	   ! Row of SiteSelect corresponding to current year and grid
+    integer:: 	i,&	   ! FirstGrid to LastGrid (i.e. grid number)
+    		iv,&	   ! 1 to ReadMetTimes (i.e. met data block number)
+    		ir,irMax,& ! Row of met data within each chunk of met data  	
+    		rr 	   ! Row of SiteSelect corresponding to current year and grid
     		   
     !==========================================================================
     
@@ -54,7 +54,7 @@
 
     ! ---- Allocate array -----------------------------------------------------
     ! Daily state needs to be outside year loop to transfer states between years
-    allocate(ModelDailyState(NumberOfGrids,MaxNCols_cMDS))   !DailyState      
+    allocate(ModelDailyState(NumberOfGrids,MaxNCols_cMDS))   !DailyState        
     allocate(DailyStateFirstOpen(NumberOfGrids))             !Initialization for header
     ! -------------------------------------------------------------------------
  
@@ -81,7 +81,6 @@
        ! Get met file name for this year for this grid
        FileCodeX=trim(FileCode)//trim(adjustl(grid_txt))//'_'//trim(year_txt)
        FileMet=trim(FileInputPath)//trim(FileCodeX)//'_data.txt'
-
        ! Open this example met file
        open(10,file=trim(FileMet),status='old',err=314)
        call skipHeader(10,SkipHeaderMet)  !Skip header
@@ -154,8 +153,7 @@
 		      exit
 		   elseif(rr == nlinesSiteSelect) then 
 		      write(*,*) 'Program stopped! Year',year_int,'and/or grid',i,'not found in SiteSelect.txt.'
-		      !! HCW 20 Nov 2014 - I can't get valueI to write out to the error file correctly
-		      call ErrorHint(59,'Cannot find year and/or grid in SiteSelect.txt',i,NotUsed,year_int)
+		      call ErrorHint(59,'Cannot find year and/or grid in SiteSelect.txt',real(i,kind(1d0)),NotUsed,year_int)
                    endif     
 	        enddo
 	        ! (b) get initial conditions

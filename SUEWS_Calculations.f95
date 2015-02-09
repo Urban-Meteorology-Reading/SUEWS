@@ -29,7 +29,7 @@
   integer :: Gridiv,ir,i,ih,iMB
   logical:: debug=.false.
   !real(kind(1d0)),DIMENSION(4)::GridFromFrac !Not maybe needed in the future
-  real(kind(1d0))::idectime, dectime_nsh
+  real(kind(1d0))::idectime
   integer:: imon,iday,iyr,iseas
   integer:: reset=1!,i,iv,ih,id_in,it_in,&
             !SunriseTime,SunsetTime,errFileYes,ind5min=1
@@ -39,6 +39,8 @@
   integer::irMax
   
   integer::OHMIncQF=1 	!Move to RunControl.nml
+
+  real(kind(1d0)):: ggg
 
 !==================================================================
 !==================================================================
@@ -282,7 +284,7 @@
 
  vdrc=vpd_hPa*avdens*avcp
  sp=s_hPa/psyc_hPa
- tlv=lv_J_kg/tstep
+ tlv=lv_J_kg/tstep_real
  e=sae+vdrc/ra
 
  ! write(*,*)e,sae,vdrc,ra,vpd_hPa,avdens,avcp,s_Hpa,qn1,qs,qf
@@ -331,7 +333,7 @@
     if (snowCalcSwitch(is)==1) then
        call snowCalc(i) 
     else
-       call Evap_SUEWS(surf(1,is))  !qe and ev out
+       call Evap_SUEWS  !qe and ev out
                  
        call soilstore(surf(1,is))   !Soil store updates
               
@@ -360,8 +362,7 @@
         
  enddo  !end loop over surfaces
  
- 
- 
+  
  
  ! At this point water has moved between the canopy and soilstorages of each surface.
  ! ==================================================================================  
@@ -410,18 +411,16 @@
     endif
  enddo  !end loop over surfaces
  
- !dectime_nsh = dectime + 1.0*(real(in)-1)/real(nsh)/24
- dectime_nsh = dectime
- write(*,*) dectime
+ !write(*,*) dectime
  
  !open(13,file='TestingFiveMin.txt',position="append")
- !write(13,*) id,in,dectime,dectime_nsh
+ !write(13,*) id,in,dectime
  !close(13)
  
  !!Write out 5-min file - fix this later (needs allocating??)
  !Modified HCW 30/07/2014 so that output columns and header match (was 69 cols with extra columns for water)
  if(write5min==1) then           !   Save 5 min results to a file
- !   dataOut5min(ind5min,1:64)=(/real(id,kind(1D0)),real(in,kind(1D0)),dectime_nsh,pin,ext_wu,ev_per_interval,&
+ !   dataOut5min(ind5min,1:64)=(/real(id,kind(1D0)),real(in,kind(1D0)),dectime,pin,ext_wu,ev_per_interval,&
  !                               stateOut(1:nsurf),smd_nsurfOut(1:(nsurf-1)),drain(1:(nsurf-1)),runoffOut(1:(nsurf-1)),&
  !                               runoffsoilOut(1:(nsurf-1)),runoffSnow(1:(nsurf-1)),snowPack(1:nsurf),&
  !                               ChangSnow(1:nsurf),mw_ind(1:nsurf)/)
@@ -436,8 +435,8 @@
  AdditionalWater=addWaterBody*sfr(WaterSurf)+addPipes+addImpervious*sfr(BldgSurf)+addveg*  &
                  (sfr(ConifSurf)+sfr(DecidSurf)+sfr(GrassSurf)+sfr(BSoilSurf))
 
- qeph=qe_per_interval/Interval * Interval/Tstep !Calculate evaporation per interval          
-      
+ qeph=qe_per_interval/Interval * Interval/tstep_real !Calculate evaporation per interval          
+           
  !Calculate sensible heat flux as a residual (Modified by LJ in Nov 2012)
  !qh=(qn1+qf+QmRain+QmFreez)-(qeph+qs+Qm) 
  qh=(qn1+qf+QmRain)-(qeph+qs+Qm+QmFreez) 
@@ -515,7 +514,7 @@
     enddo
  endif      
  
- call SUEWS_TranslateBack(Gridiv,ir,iMB) 
+ call SUEWS_TranslateBack(Gridiv,ir,iMB,irMax) 
  
  !write(*,*) 'In SUEWS_Calculations'
  !write(*,*) 'imin',imin             

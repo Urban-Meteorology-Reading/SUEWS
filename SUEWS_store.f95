@@ -7,12 +7,14 @@ subroutine soilstore(StorCap)
 !Calculation of storage change updated in this subroutine
 !------------------------------------------------------------
   
-  use data_in
-  use SUES_data
-  use gis_data
-  use time
   use allocateArray
+  use data_in
   use defaultNotUsed
+  use gis_data  
+  use sues_data
+  use thresh
+  use time
+  
   
   implicit none
   real (Kind(1d0))::StorCap,EvPart
@@ -41,11 +43,10 @@ subroutine soilstore(StorCap)
 
   if(is==PavSurf.or.is==BldgSurf) then  !Impervious surfaces (paved, buildings)
    
-     !Change water in the surface store 
-     !If P too large!
-     if (P>10) then
-        runoff(is)=runoff(is)+(P-10)
-        chang(is)=10-(drain(is)+ev)
+     !Change water in the surface store if P too large
+     if (P>IPThreshold_mmhr/nsh_real) then
+        runoff(is)=runoff(is)+(P-IPThreshold_mmhr/nsh_real)
+        chang(is)=IPThreshold_mmhr/nsh_real-(drain(is)+ev)
      else
         chang(is)=P-(drain(is)+ev)
      endif
@@ -54,7 +55,7 @@ subroutine soilstore(StorCap)
          
      !Add water from neighbouring grids.
      !check - this is Bldg Surf originally - but I think should be paved (sg has changed)
-     if (is==PavSurf) state(is)=state(is)+addImpervious/nsh
+     if (is==PavSurf) state(is)=state(is)+addImpervious/nsh_real
      
      runoff(is)=runoff(is)+drain(is)*AddWaterRunoff(is)!Drainage (not flowing to other surfaces) goes to runoff 
      
@@ -83,14 +84,14 @@ subroutine soilstore(StorCap)
         
         !Additional water input from other grids
         if (VegFraction/=0) then
-        	P=P+addVeg/nsh*(sfr(is)/VegFraction)
+        	P=P+addVeg/nsh_real*(sfr(is)/VegFraction)
         endif
         
         !Change in water stores !Modified by LJ in 4 Aug 2011.
         
-        if (P>10) then !if 5min precipitation is larger than 10 mm
-           runoff(is)=runoff(is)+(P-10)
-           chang(is)=10-(drain(is)+ev)
+        if (P>IPThreshold_mmhr/nsh_real) then !if precipitation is larger than threshold
+           runoff(is)=runoff(is)+(P-IPThreshold_mmhr/nsh_real)
+           chang(is)=IPThreshold_mmhr/nsh_real-(drain(is)+ev)
 	else
            chang(is)=(P)-(drain(is)+ev)	
 	endif
@@ -141,8 +142,8 @@ subroutine soilstore(StorCap)
               ! check  what happens if no water body in this grid what would happen
               !  check whether this should be the maximum or minimm watersurf store (5, or (1
         !Do the changes in water body in certain order
-             P=P+addWaterBody/nsh
-     		chang(WaterSurf)=(P+FlowChange/nsh)-(ev)
+             P=P+addWaterBody/nsh_real
+     		chang(WaterSurf)=(P+FlowChange/nsh_real)-(ev)
 			state(WaterSurf)=state(WaterSurf)+chang(WaterSurf)
 
         if (state(WaterSurf)>Surf(5,WaterSurf)) then

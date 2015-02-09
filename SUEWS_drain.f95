@@ -16,19 +16,19 @@ else
    	  if(state(is)<StorCap) then
          drain(is)=0
       else
-         drain(is)=(DrainCoef1*(state(is)-StorCap)**DrainCoef2)/nsh
+         drain(is)=(DrainCoef1*(state(is)-StorCap)**DrainCoef2)/nsh_real
       endif
       
    elseif(int(DrainEq)==2) then   !     rutter eqn corrected for c=0
-      drain(is)=(DrainCoef1*((exp(DrainCoef2*state(is)))-1))/nsh
+      drain(is)=(DrainCoef1*((exp(DrainCoef2*state(is)))-1))/nsh_real
       
    elseif(int(DrainEq)==3) then   !    falk and niemczynowicz (1978) equation
-      drain(is)=(DrainCoef1*(state(is)**DrainCoef2))/nsh
+      drain(is)=(DrainCoef1*(state(is)**DrainCoef2))/nsh_real
             
    elseif(int(DrainEq)==4) then    !    rutter eqn not corrected for c=0
       drain(is)=DrainCoef1*exp(DrainCoef2*(state(is)-StorCap))
       
-      drain(is)=drain(is)*TSTEP/60 !i.e. multiply by no. mins per timestep
+      drain(is)=drain(is)*tstep_real/60 !i.e. multiply by no. mins per timestep
    endif
    !drain(is)=drain(is)*sfr(is)
     !if(drain(is)>25)then

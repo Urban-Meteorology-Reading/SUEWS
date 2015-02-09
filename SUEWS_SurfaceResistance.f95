@@ -104,7 +104,7 @@ subroutine SurfaceResistance(id,it)
      
  endif
   
- ResistSurf=1/(gsc/1000)
+ ResistSurf=1/(gsc/1000)  ![s m-1]
 
   return
 end subroutine SurfaceResistance

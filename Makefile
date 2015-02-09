@@ -1,7 +1,8 @@
 	
 
-CC = gfortran		        	# compiler
+CC = gfortran $(CFLAGS)		        	# compiler
 TARGET = SUEWS_V2015a			# program name
+CFLAGS = -g
 # All the files which include modules used by other modules (these therefore
 # needs to be compiled first)
 MODULES = LUMPS_Module_constants_v2015a.o  \
@@ -60,7 +61,7 @@ OTHERS =  BLUEWS_CBL.o   \
 
 # Build main program - main uses MODULES and OTHERS
 main: SUEWS_Program.f95 $(MODULES) $(OTHERS)
-	$(CC) SUEWS_Program.f95 -c; \
+	$(CC) SUEWS_Program.f95 $(CFLAGS) -c; \
 	$(CC) SUEWS_Program.o $(MODULES) $(OTHERS) -o $(TARGET)
 
 # If OTHERS have changed, compile them again

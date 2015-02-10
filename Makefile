@@ -2,7 +2,7 @@
 
 CC = gfortran $(CFLAGS)		        	# compiler
 TARGET = SUEWS_V2015a			# program name
-CFLAGS = -g
+CFLAGS = -g -Wall -Wtabs 
 # All the files which include modules used by other modules (these therefore
 # needs to be compiled first)
 MODULES = LUMPS_Module_constants_v2015a.o  \

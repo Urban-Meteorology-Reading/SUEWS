@@ -120,7 +120,7 @@
  endif
  
  !Call the dailystate routine to get surface characteristics ready
- call DailyState(Gridiv,ir)
+ call DailyState(Gridiv)
 
  if(LAICalcYes==0)then
    ! check -- this is going to be a problem as it is not for each vegtation class

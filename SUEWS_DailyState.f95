@@ -26,7 +26,7 @@
 !	- Check and improve DailyState output file
 !	- Could add different coefficients (Ie_m, Ie_a) for each vegetation type
 !==============================================================================
-subroutine DailyState(Gridiv,ir)
+ subroutine DailyState(Gridiv)
 
   use allocateArray
   use data_in      
@@ -39,7 +39,7 @@ subroutine DailyState(Gridiv,ir)
       
   IMPLICIT NONE
         
-  integer:: Gridiv,ir
+  integer:: Gridiv
   integer:: gamma1,gamma2  !Switch for heating and cooling degree days
   integer:: iv,&   !Loop over vegetation types
   	    jj,&   !Loop over previous 5 days

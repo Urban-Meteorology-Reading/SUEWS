@@ -1,11 +1,11 @@
 ! This is the core function of the SOLWEIG model 
 ! 2013-10-27 
 ! Fredrik Lindberg, fredrikl@gvc.gu.se 
-! Göteborg Urban Climate Group 
+! Gï¿½teborg Urban Climate Group 
 ! Gothenburg University
 ! Last modified by HCW 02 Dec 2014 DEG2RAD and RAD2DEG commented out as now defined in AllocateArray 
 
-subroutine Solweig_2014a_core(ith)
+subroutine Solweig_2014a_core(iMBi)
 
 use matsize
 use solweig_module
@@ -15,14 +15,14 @@ use time
 use allocateArray
  
     implicit none
-    integer         :: DOY,hour,first,second,j,dfm,ith!onlyglobal,usevegdem,x,y,i
+    integer         :: DOY,hour,first,second,j,dfm,iMBi!,ith!onlyglobal,usevegdem,x,y,i
     real(kind(1d0)) :: albedo_b,albedo_g,eground,ewall!absK,absL,,Fside,Fup 
     real(kind(1d0)) :: t,Tstart,height,psi!,timezone,lat,lng,alt,amaxvalue
     real(kind(1d0)) :: altitude,zen!scale,azimuth,zenith
     real(kind(1d0)) :: CI,CI_Tg,c,I0,Kt,Tg,Tgamp,Tw,Ktc,weight1
     real(kind(1d0)) :: Ta,RH,P,radG,radD,radI,radI0!,idectime,tdectime!dectime,
     real(kind(1d0)) :: corr,I0et,CIuncorr,s!,lati  
-	real(kind(1d0)) :: SNDN,SNUP,DEC,DAYL!,timestepdec,YEAR
+    real(kind(1d0)) :: SNDN,SNUP,DEC,DAYL!,timestepdec,YEAR
     real(kind(1d0)) :: msteg,esky,ea
     ! Internal grids
     real(kind(1d0)),allocatable,dimension(:,:) :: tmp,Knight,svfbuveg,Tgmap0!,Tgmap
@@ -79,7 +79,7 @@ use allocateArray
     radD=kdiff
     radI=kdir
     
-    ! Tranmissiviy of shortwave radiation through vegetation based on decid lai
+    ! Transmissivity of shortwave radiation through vegetation based on decid lai
     if (it==firstTimeofDay) then
         trans=TransMin+(laimax(2)-lai(id-1,2))*transperlai
     end if
@@ -97,7 +97,7 @@ use allocateArray
     where (tmp<=0) tmp=0.000000001 ! avoiding log(0)
     svfalfa=asin(exp(log(tmp)/2))
 
-    !Parameterisarion for Lup 
+    !Parameterization for Lup 
     first=anint(height) !Radiative surface influence, Rule of thumb by Schmid et al. (1990).
     if (first==0) then 
         first=1
@@ -107,7 +107,7 @@ use allocateArray
     ! SVF combines for buildings and vegetation    
     svfbuveg=(svf-(1-svfveg)*(1-psi))
     
-	! Sun position related things
+    ! Sun position related things
     call DAYLEN(DOY,lat,DAYL,DEC,SNDN,SNUP)
     zen=zenith_deg*DEG2RAD
     altitude=90-zenith_deg
@@ -116,15 +116,14 @@ use allocateArray
     ea=6.107*10**((7.5*Ta)/(237.3+Ta))*(RH/100)!Vapor pressure
     msteg=46.5*(ea/(Ta+273.15))
     esky=(1-(1+msteg)*exp(-((1.2+3.0*msteg)**0.5)))-0.04
-    
-    
+       
     !!! DAYTIME !!!
     if (altitude>0) then 
-    
+        
         !Clearness Index on Earth's surface after Crawford and Dunchon (1999) with a correction 
         !factor for low sun elevations after Lindberg et al. (2008) 
         call clearnessindex_2013b(zen,DOY,Ta,RH/100,radG,lat,P,I0,CI,Kt,I0et,CIuncorr) 
-        if (CI>1) CI=1  !!FIX THIS?? .and. CI<inf) CI=1
+        if (CI>1) CI=1
         CIlatenight=CI
     
         !Estimation of radD and radI if not measured after Reindl et al. (1990) 
@@ -142,7 +141,7 @@ use allocateArray
             shadow=sh
         end if 
     
-        !Ground View Factors based on shadowpatterns and sunlit walls 
+        !Ground View Factors based on shadow patterns and sunlit walls 
         gvf=0.0D0
         call wallinsun_veg(azimuth) 
         do j=1,size(azimuthA) 
@@ -206,20 +205,22 @@ use allocateArray
         
     else !!!!!!! NIGHTTIME !!!!!!!!
     
-        !Nocturnal cloudfraction from Offerle et al. 2003 
-        if (dectime<(DOY+0.5) .and. dectime>DOY .and. altitude<1.0) then
-            j=0
-            do while (dectime<(DOY+SNUP/24))
-            !    call ConvertMetData(ith+j) ! read data at sunrise ??
-                j=j+1
-            end do
-            call sun_position(year,dectime,timezone,lat,lng,alt,azimuth,zenith_deg)!this is not good
-            zen=zenith_deg*DEG2RAD
-            call clearnessindex_2013b(zen,DOY,Temp_C,RH/100,avkdn,lat,Press_hPa,I0,CI,Kt,I0et,CIuncorr)
-            !call ConvertMetData(ith) ! read data at current timestep again ??
-            call sun_position(year,dectime,timezone,lat,lng,alt,azimuth,zenith_deg)!this is not good
+        !Nocturnal cloud fraction from Offerle et al. 2003 
+        if (dectime<(DOY+0.5) .and. dectime>DOY .and. altitude<1.0) then  !! THIS NEED SOME THOUGHT 20150211
+            !j=0
+            !do while (dectime<(DOY+SNUP/24))
+            !!    call ConvertMetData(ith+j) ! read data at sunrise ??
+            !    j=j+1
+            !end do
+            !call sun_position(year,dectime,timezone,lat,lng,alt,azimuth,zenith_deg)!this is not good
+            !zen=zenith_deg*DEG2RAD
+            !call clearnessindex_2013b(zen,DOY,Temp_C,RH/100,avkdn,lat,Press_hPa,I0,CI,Kt,I0et,CIuncorr)
+            !!call ConvertMetData(ith) ! read data at current timestep again ??
+            !call sun_position(year,dectime,timezone,lat,lng,alt,azimuth,zenith_deg)!this is not good
+            
+            CI=1.0
         else
-            if (ith==1) then
+            if (SolweigCount==1) then
                 CI=1.0
             else
                 CI=CIlatenight
@@ -270,7 +271,7 @@ use allocateArray
     Tmrt=sqrt(sqrt((Sstr/(absL*SBC))))-273.2
     
     if (SOLWEIGpoi_out==1) then
-        dataOutSOL(ith,1:28)=(/real(id,kind(1D0)),dectime,azimuth,altitude,radG,radD,radI,&
+        dataOutSOL(SolweigCount,1:28,iMBi)=(/real(id,kind(1D0)),dectime,azimuth,altitude,radG,radD,radI,&
             Kdown2d(row,col),Kup2d(row,col),Ksouth(row,col),Kwest(row,col),Knorth(row,col),Keast(row,col),&
             Ldown2d(row,col),Lup2d(row,col),Lsouth(row,col),Lwest(row,col),Lnorth(row,col),Least(row,col),&
             Tmrt(row,col),I0,CI,gvf(row,col),shadow(row,col),svf(row,col),svfbuveg(row,col),Ta,Tg/)

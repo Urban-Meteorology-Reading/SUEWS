@@ -113,6 +113,10 @@
        allocate(MetForcingData(1:ReadlinesMetdata,24,NumberOfGrids))   	      !Met forcing data 
        allocate(ModelOutputData(0:ReadlinesMetdata,MaxNCols_cMOD,NumberOfGrids))  !5-min output
        allocate(dataOut(1:ReadlinesMetdata,192,NumberOfGrids))  	!Main output array
+       if (SOLWEIGout == 1) then
+           allocate(dataOutSOL(1:ReadlinesMetdata,28,NumberOfGrids))  	!SOLWEIG POI output
+       endif
+       
        ! ----------------------------------------------------------------------
           
        ! ---- Initialise arrays
@@ -177,8 +181,8 @@
           !enddo
           !close(78)
               
-          if((CBLuse==1).or.(CBLuse==2)) call CBL_initial  !These need to be fixed??
-          if(SOLWEIGout==1) call SOLWEIG_initial	   !These need to be fixed??
+          if((CBLuse==1).or.(CBLuse==2)) call CBL_initial
+          if(SOLWEIGout==1) call SOLWEIG_initial
 
 	  write(*,*) 'Initialisation done'
 	  ! First stage: initialisation done -----------------------------

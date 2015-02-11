@@ -3,7 +3,7 @@ module matsize
     
     IMPLICIT NONE
     
-    integer								        	:: sizex,sizey ! numer of rows and cols of grid
+    integer				        	:: sizex,sizey ! number of rows and cols of grid
     real(kind(1d0)), allocatable, dimension(:,:) 	:: a,sh,vbshvegsh,vegsh
     real(kind(1d0)), allocatable, dimension(:,:) 	:: bush,vegdem,vegdem2,tempgrid
     real(kind(1d0)), allocatable, dimension(:,:) 	:: buildings,svf,svfE,svfS,svfW,svfN 
@@ -29,7 +29,7 @@ end module matsize
 module solweig_module
     IMPLICIT NONE
     
-    real(kind(1d0)) :: timestepdec,& !timestep in decimaltime
+    real(kind(1d0)) :: timestepdec,& !time step in decimal time
                        CIlatenight,&
                        timeadd,&
                        firstdaytime,& ! if new day starts, =1 else =0
@@ -43,5 +43,6 @@ module solweig_module
                        yllcorner,&
                        NoData,&
                        cellsize
+    integer         :: SolweigCount
     
 end module solweig_module

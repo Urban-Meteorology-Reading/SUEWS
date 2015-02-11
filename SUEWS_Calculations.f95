@@ -22,6 +22,7 @@
   use moist
   use mod_z
   use mod_k
+  use solweig_module
 
 
   IMPLICIT NONE
@@ -175,7 +176,17 @@
 
 ! ===================SOLWEIG OUTPUT ========================================
  if (SOLWEIGout==1) then
-   call SOLWEIG_2014a_core(i)
+     if (OutInterval==imin) then
+         if (RunForGrid==-999) then
+             call SOLWEIG_2014a_core(iMB)
+             SolweigCount=SolweigCount+1
+         else
+             if (Gridiv == RunForGrid) then
+                 call SOLWEIG_2014a_core(iMB)
+                 SolweigCount=SolweigCount+1
+             endif             
+         endif
+     endif
  else
    SOLWEIGpoi_out=0
  endif

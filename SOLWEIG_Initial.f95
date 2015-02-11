@@ -14,25 +14,23 @@ use time
 implicit none
     
 character(len=100)  :: Path,GridFile,GridFolder
-!character(len=25)  :: makedirectory 
-!,scale,amaxvalue, 
-real(kind(1d0))     :: vegmax!,laitest!trans,  
+real(kind(1d0))                 :: vegmax
 character(len=100),dimension(5) :: svfname
 character(len=100),dimension(10):: svfvegname
 logical                         :: exist
-integer             :: firstday
+integer                         :: firstday
 
 namelist/SOLWEIGinput/Posture,&    ! 1.Standing, 2.Sitting
     absL,&            ! Absorption coefficient of longwave radiation of a person  
     absK,&            ! Absorption coefficient of shortwave radiation of a person
-    heightgravity,&    ! Centre of gravity for a standing person
+    heightgravity,&   ! Center of gravity for a standing person
     usevegdem,&       ! With vegetation (1)
     DSMPath,&         ! Path to DSMs
     DSMname,&         ! Ground and building DSM
     CDSMname,&        ! Canopy DSM
     TDSMname,&        ! Trunk zone DSM
-    TransMin,&        ! Tranmissivity of K through decidious vegetation (leaf on)
-    TransMax,&        ! Tranmissivity of K through decidious vegetation (leaf off)
+    TransMin,&        ! Transmissivity of K through decidious vegetation (leaf on)
+    TransMax,&        ! Transmissivity of K through decidious vegetation (leaf off)
     SVFPath,&         ! Path to SVFs
     SVFsuffix,&       !
     buildingsname,&   ! Boolean matrix for locations of building pixels 
@@ -47,14 +45,21 @@ namelist/SOLWEIGinput/Posture,&    ! 1.Standing, 2.Sitting
     Kdown2d_out,&     ! write Kdown grid to file
     GVF_out,&         ! write GroundViewFactor grid to file
     SOLWEIG_ldown,&   ! 1= use SOLWEIG code to estimate Ldown, 0=use SEUWS
-    OutInterval       ! Output interval in minutes
+    OutInterval,&     ! Output interval in minutes
+    RunForGrid        ! If only one grid should be run. All grids -999
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   !Read in the SOLWEIGinput.nml file
     open(52,file=trim(FileInputPath)//'SOLWEIGinput.nml',err=274,status='old')
     read(52,nml=SOLWEIGinput)
     close(52)
-
+    
+    SolweigCount=1
+    
+    if (OutInterval == 60) then
+        OutInterval=0
+    endif
+    
     if (Posture==1) then
         Fside=0.22
         Fup=0.06
@@ -63,7 +68,8 @@ namelist/SOLWEIGinput/Posture,&    ! 1.Standing, 2.Sitting
         Fup=0.166666667
     endif
    
-    timestepdec=t_interval/(3600*24)
+    !timestepdec=real(t_interval)/(3600*24)
+    timestepdec=real(OutInterval)/(real(t_interval)*24.)
  
 	!!! Loading DSM !!!
     Path=trim(FileInputPath)//trim(DSMPath)
@@ -74,8 +80,9 @@ namelist/SOLWEIGinput/Posture,&    ! 1.Standing, 2.Sitting
     
     scale=1/cellsize
     
+    GridFolder=trim(FileOutputPath)//'Grids'
+    
     ! Create grid folder !! This does not work in windows. needs to be done in python
-    !GridFolder=trim(FileOutputPath)//'Gridsen'
     !inquire(file=GridFolder, exist=exist)
     !if (exist) then
     !else
@@ -83,26 +90,14 @@ namelist/SOLWEIGinput/Posture,&    ! 1.Standing, 2.Sitting
     !    call system(makedirectory)
     !end if
     
-	!!! Set up for vegetation scheme, or not !!!
-	if (usevegdem==1) then 
-    	
-        ! Caclulating tranmissiviy of shortwave radiation  through vegetation based on decid lai
+    !!! Set up for vegetation scheme, or not !!!
+    if (usevegdem==1) then 
+        ! Calculating transmissivity of short wave radiation  through vegetation based on decid lai
         transperlai=(TransMax-TransMin)/(laimax(2)-laimin(2))
-        firstday = dataMet1(1,1) 
-        !laitest=lai(firstday-1,2)
+        firstday = MetForcingData(1,2,1) 
         trans=TransMin+(laimax(2)-lai(firstday-1,2))*transperlai
-        
-        !! Vegetation transmittivity of shortwave radiation based on GDD THIS SHOULD BE MOVE TO CORE
-        !if (GDDfull(2)==GDD_1_0) then ! not correct?
-        !    trans=transS
-        !    
-        !elseif (GDD_1_0==0) then
-        !    ! here should spring and autumn transition be added
-        !else
-        !    trans=transW
-        !endif
                	
-		! Loading vegDSM (SDSM)
+	! Loading vegDSM (SDSM)
         Path=trim(FileInputPath)//trim(DSMPath)
     	call LoadEsriAsciiGrid(Path,CDSMname,xllcorner,yllcorner,cellsize,NoData)
         allocate(vegdem(sizey,sizex))
@@ -123,18 +118,15 @@ namelist/SOLWEIGinput/Posture,&    ! 1.Standing, 2.Sitting
     
     	! Elevation vegdems if buildingDSM includes ground heights
     	vegdem=vegdem+a
-    	where (vegdem==a)!vegdem(vegdem==a)=0;
+    	where (vegdem==a)
         	vegdem=0.0
-    	end where
-    
-		vegdem2=vegdem2+a;
-    	where (vegdem2==a)!vegdem2(vegdem2==a)=0;
+    	end where    
+	vegdem2=vegdem2+a;
+    	where (vegdem2==a)
         	vegdem2=0.0
     	end where
-         
-		! Bush separation
+        ! Bush separation
         allocate(bush(sizex,sizey))
-        
         where ((vegdem>0) .and. (vegdem2==0))
         	bush=vegdem
         elsewhere
@@ -181,8 +173,7 @@ namelist/SOLWEIGinput/Posture,&    ! 1.Standing, 2.Sitting
    	call LoadEsriAsciiGrid(Path,svfvegname(10),xllcorner,yllcorner,cellsize,NoData)
     allocate(svfSaveg(sizey,sizex)); svfSaveg=tempgrid; deallocate(tempgrid)
     
-    
-    	!!! Loading buildings grid !!!
+    !!! Loading buildings grid !!!
     Path=trim(FileInputPath)//trim(DSMPath)
     GridFile=trim(Path)//trim(buildingsname)
     inquire(file=GridFile, exist=exist)
@@ -196,8 +187,8 @@ namelist/SOLWEIGinput/Posture,&    ! 1.Standing, 2.Sitting
     endif
     
     ! Time related info
-    timestepdec=t_INTERVAL/(1440.*60.) 
-    timeadd=0.00 !
+    !timestepdec=t_INTERVAL/(1440.*60.) 
+    timeadd=0.00 
     
     ! Initiate map for surface temperature delay
     allocate(Tgmap1(sizey,sizex))

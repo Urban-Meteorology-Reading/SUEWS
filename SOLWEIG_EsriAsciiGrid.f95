@@ -62,14 +62,12 @@ subroutine SaveEsriAsciiGrid(GridPath,GridName,xllcornerlo,yllcornerlo,cellsizel
     write(94,"(A8,1x,F0.2)") 'cellsize',cellsizelo
     write(94,"(A12,1x,F0.2)") 'NODATA_value',NoDatalo
 
-    !allocate(grid(sizex,sizey))     
-    
 	! write Matrix
     do row=1,sizey
-         write(94,100) (savegrid(row,col),col=1,sizex)
-     end do
-     close(94)
-100  format((f6.2,1x))
+        write(94,100) (savegrid(row,col),col=1,sizex)
+    end do
+    close(94)
+100 format((f6.2,1x))
  
-     return
+    return
     end subroutine SaveEsriAsciiGrid

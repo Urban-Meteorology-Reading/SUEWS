@@ -8,16 +8,13 @@ use matsize
     real(kind(1d0))             :: iazimuthA,iazimuth,sinazimuth,cosazimuth,tanazimuth
     real(kind(1d0))             :: scale 
     integer                     :: index,xc1,xc2,yc1,yc2,xp1,xp2,yp1,yp2,n,first,second
-    real(kind(1d0))             :: dx,dy,dz,ds,absdx,absdy,psi
+    real(kind(1d0))             :: dx,dy,ds,absdx,absdy,psi !,dz
     real(kind(1d0))             :: pibyfour,threetimespibyfour,fivetimespibyfour
     real(kind(1d0))             :: seventimespibyfour
     real(kind(1d0))             :: signsinazimuth,signcosazimuth,dssin,dscos
     real(kind(1d0)),allocatable,dimension(:,:)  ::weightsumwall,weightsumsh,gvf1,gvf2
     real(kind(1d0)),allocatable,dimension(:,:)  ::f,tempsh,tempbu,tempbub,tempwallsun,tempb,sh1
 
-    
-    
-    
     real(kind(1d0)), parameter  :: pi=3.141592653589793
     real(kind(1d0)), parameter  :: maxpos=10000000000.0
     
@@ -32,11 +29,6 @@ use matsize
     allocate(tempwallsun(sizex,sizey))
     allocate(tempb(sizex,sizey))    
     allocate(sh1(sizex,sizey))
-!    allocate(sh(sizex,sizey))    
-!    allocate(vegsh(sizex,sizey))
-!    allocate(sos(sizex,sizey))
-!    allocate(buildings(sizex,sizey))
-!    allocate(sunwall(sizex,sizey))
  
     iazimuth=iazimuthA*(pi/180)
     !special cases
@@ -77,7 +69,7 @@ use matsize
     dssin=abs(1./sinazimuth)
     dscos=abs(1./cosazimuth)
     
-    !! The Shadow casting algoritm 
+    !! The Shadow casting algorithm 
     do n=1,second 
         IF ((pibyfour <= iazimuth .and. iazimuth < threetimespibyfour) .or. (fivetimespibyfour&
              & <= iazimuth .and. iazimuth < seventimespibyfour)) THEN
@@ -105,11 +97,11 @@ use matsize
         tempbu(xp1:xp2,yp1:yp2)=buildings(xc1:xc2,yc1:yc2) !moving building
 
         tempsh(xp1:xp2,yp1:yp2)=sh1(xc1:xc2,yc1:yc2) !moving shadow image
-        f=min(f,tempbu) !utsmetning av buildings
+        f=min(f,tempbu) !utsmetning of buildings
 
         weightsumsh=weightsumsh+tempsh*f
 
-        tempwallsun(xp1:xp2,yp1:yp2)=sunwall(xc1:xc2,yc1:yc2) !moving buildingwall insun image
+        tempwallsun(xp1:xp2,yp1:yp2)=sunwall(xc1:xc2,yc1:yc2) !moving building wall in sun image
         tempb=tempwallsun*f
         where ((tempb+tempbub)>0) !tempbub=(tempb+tempbub)>0==1
             tempbub=1.

@@ -172,7 +172,7 @@
           returntrue=.true.
           v1 = .true.  !2 real
      elseif(errh==39) then 
-          text1 = 'TSTEP and INTERVAL do not match! TSTEP must divide into INTERVAL exactly.'
+          text1 = 'TSTEP and t_INTERVAL do not match! TSTEP must divide into t_INTERVAL exactly.'
           v2 = .true.  !2 real
      elseif(errh==40) then
       	  text1='SOLWEIG file problem - opening'

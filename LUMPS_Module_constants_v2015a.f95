@@ -2,7 +2,6 @@
 ! sg feb 2012 - changed number of surfaces to allocatable array
 ! lj jun 2012 - snow part added
 ! HW, LJ Oct 2014 - fixes to the structure
-! HCW 11 Feb 2015 Bug fix in column numbers for SurfaceChar (affected HrProfonwards)
 
 !===================================================================================
  module allocateArray
@@ -435,7 +434,7 @@
    integer,dimension(24):: c_HrProfSnowCWE  = (/(cc, cc=ccEndIr+ 7*24+1, ccEndIr+ 7*24+24, 1)/)  ! Snow clearing, weekends
  
    ! Find current column number	
-   integer,parameter:: ccEndPr = (ccEndIr+ 7*24+24)
+   integer,parameter:: ccEndPr = (ccEndIr+ 5*24+24)
        
    ! Within-grid water distribution (for each surface)
    integer,dimension(nsurf):: c_WGToPaved = (/(cc, cc=ccEndPr+ 0*nsurf+1,ccEndPr+ 0*nsurf+nsurf, 1)/) !Water dist to Paved
@@ -702,7 +701,7 @@ MODULE cbl_MODULE
   real(kind(1d0)),dimension(:,:), allocatable:: dataMet2              !Meteorological input matrix
   real(kind(1d0)),dimension(:,:,:), allocatable:: dataOut             !Main output matrix
   real(kind(1d0)),dimension(:,:), allocatable:: dataOutBL    !CBL output matrix
-  real(kind(1d0)),dimension(:,:), allocatable:: dataOutSOL   !SOLWEIG POI output
+  real(kind(1d0)),dimension(:,:,:), allocatable:: dataOutSOL   !SOLWEIG POI output
 
   !Testing different annual reading
   integer,dimension(:,:), allocatable:: AnnualFileIN
@@ -788,7 +787,8 @@ MODULE cbl_MODULE
               Kdown2d_out,&            ! write output Kdown grid
               GVF_out,&                ! write output GroundViewFActor grid
               SOLWEIG_ldown,&          ! 1= use SOLWEIG code to estimate Ldown, 0=use SEUWS
-              OutInterval              ! Output interval in minutes
+              OutInterval,&            ! Output interval in minutes
+              RunForGrid               ! If only one grid should be run. All grids -999
               
      character (len=150)::DSMPath,&    ! Path to DSMs
                           DSMname,&    ! Ground and building DSM

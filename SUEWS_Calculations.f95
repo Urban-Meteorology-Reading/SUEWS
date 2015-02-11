@@ -435,7 +435,7 @@
  AdditionalWater=addWaterBody*sfr(WaterSurf)+addPipes+addImpervious*sfr(BldgSurf)+addveg*  &
                  (sfr(ConifSurf)+sfr(DecidSurf)+sfr(GrassSurf)+sfr(BSoilSurf))
 
- qeph=qe_per_interval/Interval * Interval/tstep_real !Calculate evaporation per interval          
+ qeph=qe_per_interval/t_Interval * t_Interval/tstep_real !Calculate evaporation per interval          
            
  !Calculate sensible heat flux as a residual (Modified by LJ in Nov 2012)
  !qh=(qn1+qf+QmRain+QmFreez)-(qeph+qs+Qm) 
@@ -484,7 +484,7 @@
     MwStore = MwStore + MeltWaterStore(is)*sfr(is)*snowFrac(is)
  enddo
 
- !¤¤¤¤¤¤¤¤¤FILE WRITE SECTION¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
+ !ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½FILE WRITE SECTIONï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
  !Define the overall output matrix to be printed out step by step
  !! N.B. ext_wu now appears multiple times here - need to tidy columns
  !! Need to match up with LUMPS_RunoffFromGrid !!

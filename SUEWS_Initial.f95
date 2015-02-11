@@ -511,19 +511,19 @@
   ity=2			!Evaporation calculated according to Rutter(1) or Shuttleworth(2)
   tstepcount=0
    
-  INTERVAL = 3600   !Number of seconds in an hour  
+  t_INTERVAL = 3600   !Number of seconds in an hour  
    
   !Calculate nsh (number of steps per hour) from model timestep (tstep) set in in RunControl
-  nsh_real = INTERVAL/real(tstep,kind(1d0))
+  nsh_real = t_INTERVAL/real(tstep,kind(1d0))
   
   if(nsh_real<2) then   !If nsh_real is less than 2, set nsh to 1 and tstep to 3600
      nsh=1
-     tstep=INTERVAL
+     tstep=t_INTERVAL
   else			  
      if(nsh_real==int(nsh_real)) then   !Check nsh is an integer	
-        nsh = INTERVAL/tstep    
+        nsh = t_INTERVAL/tstep    
      else
-        call ErrorHint(39,'File: RunControl',real(tstep,kind(1d0)),real(INTERVAL,kind(1d0)),notUsedI)
+        call ErrorHint(39,'File: RunControl',real(tstep,kind(1d0)),real(t_INTERVAL,kind(1d0)),notUsedI)
      endif
   endif
   
@@ -533,7 +533,7 @@
   tstep_real = real(tstep,kind(1d0))
     
   !! Check this is still valid for v2015a  
-  HalfTimeStep=real(INTERVAL)/2/(24*3600)   !Used in sun_position to get sunpos in the middle of timestep
+  HalfTimeStep=real(t_INTERVAL)/2/(24*3600)   !Used in sun_position to get sunpos in the middle of timestep
     
   return
 

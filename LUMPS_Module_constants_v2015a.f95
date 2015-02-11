@@ -2,6 +2,7 @@
 ! sg feb 2012 - changed number of surfaces to allocatable array
 ! lj jun 2012 - snow part added
 ! HW, LJ Oct 2014 - fixes to the structure
+! HCW 11 Feb 2015 Bug fix in column numbers for SurfaceChar (affected HrProfonwards)
 
 !===================================================================================
  module allocateArray
@@ -434,7 +435,7 @@
    integer,dimension(24):: c_HrProfSnowCWE  = (/(cc, cc=ccEndIr+ 7*24+1, ccEndIr+ 7*24+24, 1)/)  ! Snow clearing, weekends
  
    ! Find current column number	
-   integer,parameter:: ccEndPr = (ccEndIr+ 5*24+24)
+   integer,parameter:: ccEndPr = (ccEndIr+ 7*24+24)
        
    ! Within-grid water distribution (for each surface)
    integer,dimension(nsurf):: c_WGToPaved = (/(cc, cc=ccEndPr+ 0*nsurf+1,ccEndPr+ 0*nsurf+nsurf, 1)/) !Water dist to Paved

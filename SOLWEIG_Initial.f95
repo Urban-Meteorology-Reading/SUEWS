@@ -22,34 +22,35 @@ character(len=100),dimension(10):: svfvegname
 logical                         :: exist
 integer             :: firstday
 
-    namelist/SOLWEIGinput/Posture,&    ! 1.Standing, 2.Sitting
-        absL,&            ! Absorption coefficient of longwave radiation of a person  
-        absK,&            ! Absorption coefficient of shortwave radiation of a person
-        heightgravity,&    ! Centre of gravity for a standing person
-        usevegdem,&       ! With vegetation (1)
-        DSMPath,&         ! Path to DSMs
-        DSMname,&         ! Ground and building DSM
-        CDSMname,&        ! Canopy DSM
-        TDSMname,&        ! Trunk zone DSM
-        TransMin,&        ! Tranmissivity of K through decidious vegetation (leaf on)
-        TransMax,&        ! Tranmissivity of K through decidious vegetation (leaf off)
-        SVFPath,&         ! Path to SVFs
-        SVFsuffix,&       !
-        buildingsname,&   ! Boolean matrix for locations of building pixels 
-        row,&             ! X coordinate for point of interest
-        col,&             ! Y coordinate for point of interest
-        onlyglobal,&      ! if no diffuse and direct, then =1
-        SOLWEIGpoi_out,&  ! write output variables at point of interest
-        Tmrt_out,&        ! write Tmrt grid to file
-        Lup2d_out,&       ! write Lup grid to file
-        Ldown2d_out,&     ! write Ldown grid to file
-        Kup2d_out,&       ! write Kup grid to file
-        Kdown2d_out,&     ! write Kdown grid to file
-        GVF_out,&         ! write GroundViewFactor grid to file
-        SOLWEIG_ldown     ! 1= use SOLWEIG code to estimate Ldown, 0=use SEUWS
+namelist/SOLWEIGinput/Posture,&    ! 1.Standing, 2.Sitting
+    absL,&            ! Absorption coefficient of longwave radiation of a person  
+    absK,&            ! Absorption coefficient of shortwave radiation of a person
+    heightgravity,&    ! Centre of gravity for a standing person
+    usevegdem,&       ! With vegetation (1)
+    DSMPath,&         ! Path to DSMs
+    DSMname,&         ! Ground and building DSM
+    CDSMname,&        ! Canopy DSM
+    TDSMname,&        ! Trunk zone DSM
+    TransMin,&        ! Tranmissivity of K through decidious vegetation (leaf on)
+    TransMax,&        ! Tranmissivity of K through decidious vegetation (leaf off)
+    SVFPath,&         ! Path to SVFs
+    SVFsuffix,&       !
+    buildingsname,&   ! Boolean matrix for locations of building pixels 
+    row,&             ! X coordinate for point of interest
+    col,&             ! Y coordinate for point of interest
+    onlyglobal,&      ! if no diffuse and direct, then =1
+    SOLWEIGpoi_out,&  ! write output variables at point of interest
+    Tmrt_out,&        ! write Tmrt grid to file
+    Lup2d_out,&       ! write Lup grid to file
+    Ldown2d_out,&     ! write Ldown grid to file
+    Kup2d_out,&       ! write Kup grid to file
+    Kdown2d_out,&     ! write Kdown grid to file
+    GVF_out,&         ! write GroundViewFactor grid to file
+    SOLWEIG_ldown,&   ! 1= use SOLWEIG code to estimate Ldown, 0=use SEUWS
+    OutInterval       ! Output interval in minutes
 
-  !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  !Read in the runcontrol.nml file
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  !Read in the SOLWEIGinput.nml file
     open(52,file=trim(FileInputPath)//'SOLWEIGinput.nml',err=274,status='old')
     read(52,nml=SOLWEIGinput)
     close(52)
@@ -62,7 +63,7 @@ integer             :: firstday
         Fup=0.166666667
     endif
    
-    timestepdec=interval/(3600*24)
+    timestepdec=t_interval/(3600*24)
  
 	!!! Loading DSM !!!
     Path=trim(FileInputPath)//trim(DSMPath)
@@ -195,7 +196,7 @@ integer             :: firstday
     endif
     
     ! Time related info
-    timestepdec=INTERVAL/(1440.*60.) 
+    timestepdec=t_INTERVAL/(1440.*60.) 
     timeadd=0.00 !
     
     ! Initiate map for surface temperature delay

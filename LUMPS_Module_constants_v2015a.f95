@@ -500,14 +500,15 @@ MODULE cbl_MODULE
     
   !Parameters in CBL code         
     integer::tstep_s,&
-			 which_day,& 
-             zmax,&            
-             start1,&
-             start2,&
-             icount,&
-             jday 
-    integer::C2K=273.16,&
-             nEqn=4      
+	    which_day,& 
+            zmax,&            
+            start1,&
+            start2,&
+            icount,&
+            jday,&
+            nEqn=4 
+    real(kind(1d0))::C2K=273.16
+                  
              
                
  real (kind(1D0)):: usbl,ftbl,fqbl,fcbl,gamt,gamq,gamc,tpp,qpp,cp0!,tk
@@ -785,7 +786,8 @@ MODULE cbl_MODULE
               Kup2d_out,&              ! write output Kup grid
               Kdown2d_out,&            ! write output Kdown grid
               GVF_out,&                ! write output GroundViewFActor grid
-              SOLWEIG_ldown            ! 1= use SOLWEIG code to estimate Ldown, 0=use SEUWS 
+              SOLWEIG_ldown,&          ! 1= use SOLWEIG code to estimate Ldown, 0=use SEUWS
+              OutInterval              ! Output interval in minutes
               
      character (len=150)::DSMPath,&    ! Path to DSMs
                           DSMname,&    ! Ground and building DSM
@@ -795,9 +797,6 @@ MODULE cbl_MODULE
                           SVFsuffix,&  !
                           buildingsname! Boolean matrix for locations of building pixels
      
-             
-
-
  end module data_in
  !===================================================================================
  !**********************************************
@@ -933,7 +932,7 @@ MODULE cbl_MODULE
    
    integer:: tstep,&    !Timestep [s] at which the model is run (set in RunControl)
              nsh,&      !Number of timesteps per hour
-             interval   !Number of seconds in an hour [s] (now set in OverallRunControl)
+             t_interval   !Number of seconds in an hour [s] (now set in OverallRunControl)
    
    real(kind(1d0)):: nsh_real,&   !nsh cast as a real for use in calculations                   
                      tstep_real   !tstep cast as a real for use in calculations                   

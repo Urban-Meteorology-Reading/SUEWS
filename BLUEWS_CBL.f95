@@ -48,7 +48,7 @@ subroutine CBL(ifirst)
         if(zenith_deg>=85) then         
             start1=0
             blh_m=NAN
-            if(interval==3600)then
+            if(t_interval==3600)then
                 cbldata(0,0)=it
                 cbldata(0,1)=qh_use
                 cbldata(0,2)=qe_use
@@ -76,7 +76,7 @@ subroutine CBL(ifirst)
     elseif((CBLuse==2).and.(start2==0)) then! CBL model is used fulltime
         start2=1
         blh_m=NAN
-        if(interval==3600)then
+        if(t_interval==3600)then
             cbldata(0,0)=it
             cbldata(0,1)=qh_use
             cbldata(0,2)=qe_use
@@ -321,7 +321,7 @@ Subroutine CBL_initial
 	open(51,file=trim(FileInputPath)//'CBLInput.nml',status='old', err=24) 
 	read(51,nml=CBLInput,err=24)
 	close(51)
-	nCBLstep=(Interval)/tstep_s
+	nCBLstep=(t_Interval)/tstep_s
 
     !Read initial values if it's needed
 	if(InitialData_use==1 .or. InitialData_use==2)then

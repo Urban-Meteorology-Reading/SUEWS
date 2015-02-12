@@ -1821,7 +1821,7 @@
 
    ! Read in next chunk of met data and fill MetForcingData array with data for every timestep
    !NSHcounter = 1
-   DO i=1,int(ReadLinesMetdata)
+   DO i=1,int(nlinesReadMet)
        call MetRead(MetArray,InputmetFormat,AnthropHeatChoice,ldown_option,NetRadiationChoice,&
                    snowUse,smd_choice,defaultQf,defaultQs,SoilDepthMeas,SoilRocks,SoilDensity,SmCap)
        !DO iv=1,NSH

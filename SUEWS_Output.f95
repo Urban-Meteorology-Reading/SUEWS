@@ -19,6 +19,7 @@
   use time
   use defaultNotUsed
   use initial
+  use solweig_module
 
   IMPLICIT NONE
 
@@ -35,7 +36,8 @@
 
   rawpath=trim(FileOutputPath)//trim(FileCode)//trim(adjustl(grstr2))//'_'//trim(adjustl(yrstr2))
   FileOut=trim(rawpath)//'_'//trim(adjustl(str2))//'.txt'
-
+  SOLWEIGpoiOut=trim(rawpath)//'_SOLWEIGpoiOut.txt'
+  
   !================OPEN OUTPUT FILE AND PRINT HEADER================
 
   ! Hourly output file
@@ -73,11 +75,26 @@
     open(lfnOutC,file=trim(FileOut),position='append')!,err=112)
   endif
 
+  !SOLWEIG outputfile
+  if (SOLWEIGpoi_out==1) then
+       open(9,file=SOLWEIGpoiOut)
+       write(9,113)
+  113     format('%doy dectime  azimuth altitude GlobalRad DiffuseRad DirectRad ',&
+             ' Kdown2d    Kup2d    Ksouth     Kwest    Knorth     Keast ',&
+             ' Ldown2d    Lup2d    Lsouth     Lwest    Lnorth     Least ',&
+             '   Tmrt       I0       CI        gvf      shadow    svf    svfbuveg    Ta    Tg')
+  endif
+  
  !================ACTUAL DATA WRITING================
-
+  if (SOLWEIGpoi_out==1) then
+      do i=1,SolweigCount-1
+          write(9,304) int(dataOutSOL(i,1,Gridiv)),(dataOutSOL(i,is,Gridiv),is = 2,28)
+      enddo
+  endif  
+      
   do i=1,irMax
-        write(lfnoutC,301) int(dataOut(i,1,Gridiv)),int(dataOut(i,2,Gridiv)),int(dataOut(i,3,Gridiv)),&
-                           int(dataOut(i,4,Gridiv)),(dataOut(i,is,Gridiv),is = 5,192)
+      write(lfnoutC,301) int(dataOut(i,1,Gridiv)),int(dataOut(i,2,Gridiv)),int(dataOut(i,3,Gridiv)),&
+                       int(dataOut(i,4,Gridiv)),(dataOut(i,is,Gridiv),is = 5,192)
   enddo
 
   !================WRITING FORMAT================
@@ -86,12 +103,13 @@
           28f10.3,17(f8.3,1X),22(f8.2,1X),7(f8.2,1X),7(f8.3,1X),14(f8.2,1X),&
           14(f8.3,1X),21(f8.2,1X),(f14.3,1X))
 
-  !304 format(1(i3,1X),4(f8.4,1X),23(f9.3,1X))                                                   !Solweig output
+  304 format(1(i3,1X),4(f8.4,1X),23(f9.3,1X))                                                   !Solweig output
   !305 format((i3,1X),(f5.2,1X),(f8.4,1X),14(f15.7,1x),3(f15.7,1X))                              !CBL output
 
 
   !================CLOSE OUTPUTFILE================
   close (lfnoutC)
+  close (9)
 
   return
 

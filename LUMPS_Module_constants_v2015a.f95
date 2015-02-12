@@ -571,6 +571,8 @@ MODULE cbl_MODULE
               nlinesProfiles,&
               nlinesWGWaterDist,&
               nlines,&             !Number of lines in different files
+              nlinesReadMet,&      ! Max number of lines to the read Metdata in Initial
+              maxNoLines,&         ! Number of lines read initialy 
               iv5		   !Counter for code matching
 
      character (len=150):: FileMet !Meteorological input filename. Change location

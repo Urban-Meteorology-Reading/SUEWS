@@ -85,17 +85,23 @@
        open(10,file=trim(FileMet),status='old',err=314)
        call skipHeader(10,SkipHeaderMet)  !Skip header
        ! Find number of lines in met file
+       maxNoLines = 10000    ! Max number of lines to the read
        nlinesMetdata = 0   !Initialise nlines
        do
           read(10,*) iv
           if (iv == -9) exit
           nlinesMetdata = nlinesMetdata + 1
        enddo
+       nlinesReadMet = nlinesMetdata
+       if (nlinesMetdata>maxNoLines) then ! This solves problem with an Intel fortran error
+           nlinesReadMet = maxNoLines
+       endif
+       
        close(10)
        !-----------------------------------------------------------------------
-
+        
        ! To conserve memory, read met data in blocks of ReadlinesMetdata
-       ReadlinesMetdata = int(floor(10000/real(NumberOfGrids,kind(1d0))))
+       ReadlinesMetdata = int(floor(maxNoLines/real(NumberOfGrids,kind(1d0))))
        !write(*,*) 'Met data will be read in chunks of',ReadlinesMetdata,'lines.'
 
        ! Number of blocks of met data

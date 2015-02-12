@@ -67,7 +67,7 @@ subroutine SaveEsriAsciiGrid(GridPath,GridName,xllcornerlo,yllcornerlo,cellsizel
         write(94,100) (savegrid(row,col),col=1,sizex)
     end do
     close(94)
-100 format((f6.2,1x))
+100 format(200(f6.2,1x))
  
     return
     end subroutine SaveEsriAsciiGrid

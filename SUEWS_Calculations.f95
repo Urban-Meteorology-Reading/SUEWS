@@ -116,8 +116,8 @@
  idectime=dectime-halftimestep! sun position at middle of timestep before
  call sun_position(year,idectime,timezone,lat,lng,alt,azimuth,zenith_deg)
 
- if(CBLuse>=1)then !??
-   call CBL(i)
+ if(CBLuse>=1)then ! If CBL is used, calculated Temp_C and RH are replaced with the obs.  
+   call CBL(i,iMB)
  endif
  
  !Call the dailystate routine to get surface characteristics ready

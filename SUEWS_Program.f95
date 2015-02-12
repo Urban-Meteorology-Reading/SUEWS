@@ -122,6 +122,9 @@
        if (SOLWEIGout == 1) then
            allocate(dataOutSOL(1:ReadlinesMetdata,28,NumberOfGrids))  	!SOLWEIG POI output
        endif
+       if (CBLuse >= 1) then
+           allocate(dataOutBL(1:ReadlinesMetdata,22,NumberOfGrids))  	!CBL output
+       endif
        
        ! ----------------------------------------------------------------------
           

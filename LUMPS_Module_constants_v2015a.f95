@@ -494,8 +494,8 @@ MODULE cbl_MODULE
     character (len=200), dimension(366)::FileSonde=""
     character (len=200)::InitialDataFileName    
     real(kind(1D0)):: wsb       ! subsidence velocity    
-    real(kind(1d0)),dimension(0:1,0:9):: cbldata
-    real(kind(1d0)),dimension(0:9)::cbld
+    real(kind(1d0)),dimension(1:2,1:10):: cbldata
+    real(kind(1d0)),dimension(1:10)::cbld
     real(kind(1d0)),dimension(:,:),allocatable::IniCBLdata
     
   !Parameters in CBL code         
@@ -506,7 +506,8 @@ MODULE cbl_MODULE
             start2,&
             icount,&
             jday,&
-            nEqn=4 
+            nEqn=4,&
+            iCBLcount
     real(kind(1d0))::C2K=273.16
                   
              
@@ -702,7 +703,7 @@ MODULE cbl_MODULE
   integer,dimension(:,:), allocatable:: dataMet1              !Meteorological input matrix
   real(kind(1d0)),dimension(:,:), allocatable:: dataMet2              !Meteorological input matrix
   real(kind(1d0)),dimension(:,:,:), allocatable:: dataOut             !Main output matrix
-  real(kind(1d0)),dimension(:,:), allocatable:: dataOutBL    !CBL output matrix
+  real(kind(1d0)),dimension(:,:,:), allocatable:: dataOutBL    !CBL output matrix
   real(kind(1d0)),dimension(:,:,:), allocatable:: dataOutSOL   !SOLWEIG POI output
 
   !Testing different annual reading

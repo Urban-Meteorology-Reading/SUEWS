@@ -190,7 +190,7 @@
           !enddo
           !close(78)
               
-          if((CBLuse==1).or.(CBLuse==2)) call CBL_initial
+          if((CBLuse==1).or.(CBLuse==2)) call CBL_ReadInputData
           if(SOLWEIGout==1) call SOLWEIG_initial
 
 	  write(*,*) 'Initialisation done'

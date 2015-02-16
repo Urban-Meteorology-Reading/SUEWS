@@ -200,18 +200,18 @@
 
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
-subroutine sonde
+subroutine sonde(id)
 ! read sonde or vertical profile data - when available          
 !use allocateArray
 use data_in
 use cbl_module
 implicit none
-integer::i,fn=101,izm=500,notUsedI=-9999
+integer::i,fn=101,izm=500,notUsedI=-9999,id
 character (len=200)::FileN
 real (kind(1d0)):: dxx
 real (kind(1d0)),parameter::notUsed=-9999.99
 
-	FileN=trim(FileInputPath)//trim(FileSonde(which_day))
+	FileN=trim(FileInputPath)//trim(FileSonde(id))
     open(fn,file=FileN,status="old",err=24)
     ! todo gneric skip header
 	read(fn,*)

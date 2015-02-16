@@ -484,7 +484,7 @@
 MODULE cbl_MODULE
 
 	integer::EntrainmentType,&  ! Entrainment type choice
-			 CO2_included,&     ! CO2 included
+             CO2_included,&     ! CO2 included
              InitialData_use,&  ! 1 read initial data, 0 do not        
              qh_choice,&        ! selection of qh use to drive CBL growth 1=Suews 2=lumps 3=obs
              sondeflag      ! 1 read sonde or vertical profile data in 0 do not
@@ -494,23 +494,16 @@ MODULE cbl_MODULE
     character (len=200), dimension(366)::FileSonde=""
     character (len=200)::InitialDataFileName    
     real(kind(1D0)):: wsb       ! subsidence velocity    
-    real(kind(1d0)),dimension(1:2,1:10):: cbldata
+    real(kind(1d0)),dimension(1,1:10):: cbldata
     real(kind(1d0)),dimension(1:10)::cbld
     real(kind(1d0)),dimension(:,:),allocatable::IniCBLdata
     
   !Parameters in CBL code         
-    integer::tstep_s,&
-	    which_day,& 
-            zmax,&            
-            start1,&
-            start2,&
-            icount,&
-            jday,&
+    integer::zmax,&            
             nEqn=4,&
-            iCBLcount
-    real(kind(1d0))::C2K=273.16
-                  
-             
+            iCBLcount,&
+            nlineInData
+    real(kind(1d0))::C2K=273.16     
                
  real (kind(1D0)):: usbl,ftbl,fqbl,fcbl,gamt,gamq,gamc,tpp,qpp,cp0!,tk
  

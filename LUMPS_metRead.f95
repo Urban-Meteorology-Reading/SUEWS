@@ -44,7 +44,6 @@
                     imin,&      !Minute
                     kdiff,&     !Diffuse shortwave radiation
                     kdir,&      !Direct shortwave radiation
-                    kup,&       !Upward shortwave radiation
                     lai_obs,&   !Overall LAI of the study area
                     ldown_obs,& !Downwelling longwave radiation
                     Precip,& !Rainfall [mm]
@@ -104,7 +103,7 @@
       endif
              
   else
-     call ErrorHint(55,'RunControl.nml, InputMetFormat not usable',notUsed,notUsed,InputmetFormat)
+     call ErrorHint(55,'RunControl.nml, InputMetFormat not usable.',notUsed,notUsed,InputmetFormat)
   endif
   
   !===============Meteorological variables reading done==========================

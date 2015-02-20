@@ -104,7 +104,7 @@
    integer, parameter:: nSurf=7      ! total number of surfaces
    integer, parameter:: NVegSurf=3   ! number of surfaces that are vegetated
    integer, parameter:: nSurfIncSnow=nsurf+1 !Number of surfaces + snow
-   integer, parameter:: maxGrid=100  ! maximum number of surface grids -- could be much larger e.g 1000
+   integer, parameter:: maxGrid=10000  ! max. number of surface grids !HCW to 10000 from 100 (does not seem to slow down model).
    integer, parameter:: NCoeffOhm=4  ! number of coefficients per surface to use (4)
    integer, parameter:: Ndays =366   ! sg -- could read this in -- and allocate arrays
           
@@ -141,16 +141,17 @@
    real (kind(1d0)),dimension(nsurf):: runoffSoilOut !Soil runoff from existing soil stores
    real (kind(1d0)),dimension(nsurf):: SatHydraulicConduct ! Saturated Hydraulic conductivity 
    real (kind(1d0)),dimension(nsurf):: areasfr       !Area of each subsurface
+   real (kind(1d0)),dimension(nsurf):: evap          !Evaporation [mm] for each surface
   
    real (kind(1d0)),dimension(nsurf)::  smd_nsurf     !Soil moisture deficit of each sub-surface
    real (kind(1d0)),dimension(nsurf)::  smd_nsurfOut  !Soil moisture deficit in existing soil stores
-   real (kind(1d0)),dimension(nsurf)::  SoilmoistOld  !Soil moisture from pervius timestep
    real (kind(1d0)),dimension(nsurf)::  soilmoist0    !Inital soil moisture
    real (kind(1d0)),dimension(nsurf)::  Soilmoist     !Soil moisture of each surface type
    real (kind(1d0)),dimension(nsurf)::  soilstorecap !Maximum capasity soil storage can hold for each surface
    real (kind(1d0)),dimension(nsurf)::  VolSoilMoistCap ! Maximum volumetric soil moisture capacity of each surface
-   real (kind(1d0)),dimension(nsurf):: SoilStateOld,StateOld
- 
+   real (kind(1d0)),dimension(nsurf)::  StateOld
+   real (kind(1d0)),dimension(nsurf)::  SoilMoistOld  !Soil moisture from previous timestep
+   
    !========Variables related to NARP================================
    !Radiation balance components for different surfaces
    real (kind(1d0)),dimension(nsurf)::  Tsurf_ind,&
@@ -239,7 +240,7 @@
 		      AlbMax_dec,&
                       CapMin_dec,&
                       CapMax_dec                                
-   real (kind(1d0)), dimension(5,nsurf):: surf     !Surface information matrix defined in LUMPS_Initial.f90
+   real (kind(1d0)), dimension(6,nsurf):: surf     ! Contains min,max and current storage capacities and drainage equation info
           
    ! LUMPS vegetation phenology
    integer:: jj1,jj2,jj3,jj4, changed,changeInit,LAItype
@@ -434,7 +435,7 @@
    integer,dimension(24):: c_HrProfSnowCWE  = (/(cc, cc=ccEndIr+ 7*24+1, ccEndIr+ 7*24+24, 1)/)  ! Snow clearing, weekends
  
    ! Find current column number	
-   integer,parameter:: ccEndPr = (ccEndIr+ 5*24+24)
+   integer,parameter:: ccEndPr = (ccEndIr+ 7*24+24)
        
    ! Within-grid water distribution (for each surface)
    integer,dimension(nsurf):: c_WGToPaved = (/(cc, cc=ccEndPr+ 0*nsurf+1,ccEndPr+ 0*nsurf+nsurf, 1)/) !Water dist to Paved
@@ -915,6 +916,9 @@ MODULE cbl_MODULE
                      veg_fr,&                     !Vegetation fraction from land area 
                                                   !- For LUMPS - dependent on user choice    & water
                      VegFraction, &               ! sum of vegetation -not including water
+                     ImpervFraction,&             ! sum of surface cover fractions for impervious surfaces
+                     PervFraction,&               ! sum of surface cover fractions for pervious surfaces
+                     NonWaterFraction,&           ! sum of surface cover fractions for all except water surfaces                     
                      areaZh                       !=(sfr(BldgSurf)+sfr(ConifSurf)+sfr(DecidSurf)) !Total area of buildings and trees
  
    integer:: idgis,&      !Time integers used in the code    
@@ -952,19 +956,13 @@ MODULE cbl_MODULE
    integer::Ie_start,&   !Starting time of water use (DOY)
             Ie_end       !Ending time of water use (DOY)     
        
-   real(kind(1d0)),dimension(2):: SurPlus_evap !Surplus for evaporation in 5 min timestep
+   real(kind(1d0)),dimension(2):: SurplusEvap !Surplus for evaporation in 5 min timestep
     ! sg -- need to determine size                 
                                   
    !Variables listed in SuesInput.nml                                      
-   real (kind(1d0))::addImpervious,&      !Water from other grids of paved area
-                     addPipes,&           !Water from other grids in pipes
-                     addVeg,&             !Water from other grids of vegetation area
-                     addWaterbody,&       !Water from from other grids in water body
-					 DecidStorCapMin,&    !Storage capacity for deciduos trees in off-leaf period
-                     FlowChange,&         !Difference between the input and output flow in the water body
+   real (kind(1d0))::FlowChange,&         !Difference between the input and output flow in the water body
                      PipeCapacity,&       !Capacity of pipes to transfer water
-                     RunoffToWater,&      !Fraction of surface runoff goinf to water body
-                     DecidStorCapMax,&    !Storage capacity for deciduos trees in on-leaf period
+                     RunoffToWater,&      !Fraction of surface runoff going to water body
                      SmCap,&              !Volumetric/gravimetric soil moisture capacity
                      SoilDensity,&        !Bulk density of soil
                      SoilDepth,&          !Depth of the soil layer
@@ -984,30 +982,49 @@ MODULE cbl_MODULE
 		     wu_Grass                !Water use for grass [mm]
 		                                         
    !Other related to SUES   
-   real (kind(1d0))::AdditionalWater,&     !Water flow from other surfaces
+   real (kind(1d0))::AdditionalWater,&     !Water flow from other grids
                      ch_per_interval,&     !Change in state per interval
                      chSnow_per_interval,& !Change in snow state per interval
                      dI_dt,&               !Water flow between two stores
                      dr_per_interval,&     !Drainage per interval
                      ev_per_interval,&     !Evaporation per interval
+		     surf_chang_per_tstep,&     !Change in surface state per timestep [mm] (for whole surface) 
+                     tot_chang_per_tstep,&     !Change in surface and soilstate per timestep [mm] (for whole surface) 
+                     NWstate_per_tstep,&     !State per timestep [mm] (for whole surface, excluding water body) 
+                     state_per_tstep,&     !State per timestep [mm] (for whole surface) 
+                     drain_per_tstep,&     !Drainage per timestep [mm] (for whole surface, excluding water body) 
+                     runoff_per_tstep,&     !Runoff per timestep [mm] (for whole surface) 
+                     runoffSoil_per_tstep,& !Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
+                     ev_per_tstep,&     !Evaporation per timestep [mm] (for whole surface) 
+                     qe_per_tstep,&     !QE [W m-2] (for whole surface)
                      evap_5min,&           !Evaporation per 5 minute
-                     P,&
+                     p_mm,&                !Inputs to surface water balance                     
                      pin,&                 !Rain per time interval
                      planF,&               !Areally weighted frontal area fraction
                      rb,&                  !Boundary layer resistance
-                     runoffAGimpervious,&  !Above ground runoff from impervious surface
-                     runoffAGveg,&         !Above ground runoff from vegetated surfaces
-                     runoffPipes,&         !Runoff in pipes
-                     runoffWaterBody,&
+		     ! Water leaving each grid for grid-to-grid connectivity
+                     runoffAGimpervious,&     !Above ground runoff from impervious surface [mm] for whole surface area
+                     runoffAGveg,&            !Above ground runoff from vegetated surfaces [mm] for whole surface area
+                     runoffWaterBody,&        !Above ground runoff from water surface [mm] for whole surface area
+                     runoffPipes,&            !Runoff in pipes [mm] for whole surface area
+                     runoffAGimpervious_m3,&  !Volume of above ground runoff from impervious surface [m3]
+                     runoffAGveg_m3,&         !Volume of above ground runoff from vegetated surfaces [m3]
+                     runoffWaterBody_m3,&     !Volume of above ground runoff from water surface [m3]
+                     runoffPipes_m3,&         !Volume of runoff in pipes [m3]
                      runoff_per_interval,&
+                     ! Total water transported to each grid for grid-to-grid connectivity
+                     addImpervious,&      !Water from impervious surfaces of other grids [mm] for whole surface area
+                     addVeg,&             !Water from vegetated surfaces of other grids [mm] for whole surface area
+                     addWaterbody,&       !Water from water surface of other grids [mm] for whole surface area
+                     addPipes,&           !Water in pipes from other grids [mm] for whole surface area                     
+                     
                      runoffSoil_per_interval,&
                      qe_per_interval,&     !latent heat per interval
-                     soilmoist_state=0,&
                      soilmoistcap,&
-                     soilstate,&
+                     soilstate,&        !Area-averaged soil moisture [mm] for whole surface
                      st_per_interval,&!Surface state per interval
                      stph1,&          !State per interval ??
-                     surplusWaterBody,&
+                     surplusWaterBody,&  !Extra runoff that goes to water body [mm] as specified by RunoffToWater
                      tlv,&            !Vaporization per timestep
                      tlv_sub,&
                      overuse=0,&
@@ -1038,12 +1055,13 @@ MODULE cbl_MODULE
                      
   !SUES latent heat flux related variables 
   real (kind(1d0))::  vdrc,&     !Second term up in calculation of E
-                      e,&        !Upper part of the equation and e used as emissivity in NARP 
+                      numPM,&    !Numerator of PM equation
                       sp,&       !Term in calculation of E
                       sae,&      !Same
                       ev,&       !Evaporation
                       rst,&      !Flag in SUEWS_Evap (gets set to 1 if surface dry; 0 if surface wet)
-                      qeph       !Latent heat flux (W m^-2)
+                      qeph,&       !Latent heat flux (W m^-2)
+                      qeOut      !Latent heat flux [W m-2]
                       
  
  !Water use related variables

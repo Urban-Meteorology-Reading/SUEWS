@@ -4,9 +4,12 @@
 ! Responds to what has happened in the past (temperature, rainfall, etc)
 ! N.B. If changes are made here, may need to update code in SUEWS_Initial accordingly
 !
+! Last modified HCW 20 Feb 2015
+!  Added surf(6,is) for the current storage capacity
+!  Updated and corrected DailyState output file
 ! Last modified LJ 05 Feb 2015
 !  DailyState saving fixed. Now header is printed and the file closed and opened as suggested.
-! N.B. Bug in daily Precip - needs fixing!!!
+! N.B. Bug in daily Precip - needs fixing!!! - HCW thinks this is fixed 20 Feb 2015
 ! Last modified HCW 26 Jan 2015
 !  sfr and IrrFracs deleted from WU_Day calculations, so that WU_Day is not spread over
 !   the total area
@@ -60,7 +63,7 @@
   ! HDD(,5) ---- Daily precip total	 [mm]	! GDD(,5) ---- Daytime hours    [h]
   ! HDD(,6) ---- Days since rain   	 [d]
   !
-  ! LAI(,1:4) -- LAI for each veg surface [m2 m-2]
+  ! LAI(,1:3) -- LAI for each veg surface [m2 m-2]
   !
   ! WU_Day(,1) - Daily water use total for Irr EveTr (automatic+manual) [mm]
   ! WU_Day(,2) - Automatic irrigation for Irr EveTr 		  	[mm]
@@ -352,7 +355,6 @@
        
      if((LAI(ID,iv)-LAI(ID-1,iv))/=0) then
         deltaLAI=(LAI(id,iv)-LAI(id-1,iv))/(LAImax(iv)-LaiMin(iv))
-        !CapChange=(surf(1,DecidSurf)-surf(5,DecidSurf))* deltaLAI
         CapChange=(CapMin_dec-CapMax_dec)* deltaLAI
         albChange=(alBMax_dec-AlbMin_dec)* deltaLAI          !AlbMin_dec set to 0.15 in LUMPS_ModuleConstants
         porChange=(0.2-0.6)* deltaLAI     
@@ -360,10 +362,10 @@
      DecidCap(id)=DecidCap(id-1)-CapChange
      porosity(id)=porosity(id-1)-porChange
      albDec(id)=albDec(id-1)+albChange
-     SURF(1,DecidSurf)=DecidCap(id)  !Surface moisture capacity of deciduous trees        
+     surf(6,DecidSurf)=DecidCap(id)  !Current storage capacity of deciduous trees        
         
      ! -----------------------------------------------------------------------------
-    
+     
      !--------------------------------------------------------------------------
      !Write out DailyState file (1 row per day)
 
@@ -376,23 +378,36 @@
         if (DailyStateFirstOpen(Gridiv)==1) then
            open(60,file=FileDaily)
            write(60,142)
-           142  format('%year id    HD1h  HDD2c  HDD3m  HDT5d   Prec   DaSR  GDD1g GDD2s  GDmn   GDmx ',&
-                       ' dayLG   LAIc   LAId  LAIgI  LAIgU  DEcap    Por Albdec WUgr(1) WUgr(2) WUgr(3)',&
-                       ' WUtr(1) WUtr(2) WUtr(3) LAIch LAIlumps alb_snow dens_snow_pav dens_snow_bldg',&
-                       ' dens_snow_ET dens_snow_DT dens_snow_IG dens_snow_UG dens_snow_wtr')
+           142  format('%year id ',&                                                                                    !2
+                       'HDD1_h HDD2_c HDD3_Tmean HDD4_T5d P/day DaysSR ',&                                              !8
+                       'GDD1_g GDD2_s GDD3_Tmin GDD4_Tmax GDD5_DayLHrs ',&                                              !13
+                       'LAI_EveTr LAI_DecTr LAI_Grass ',&                                                               !16
+                       'DecidCap Porosity AlbDec ',&                                                                    !19
+                       'WU_EveTr(1) WU_EveTr(2) WU_EveTr(3) ',&                                                         !22
+                       'WU_DecTr(1) WU_DecTr(2) WU_DecTr(3) ',&                                                         !25    
+                       'WU_Grass(1) WU_Grass(2) WU_Grass(3) ',&                                                         !28
+                       'deltaLAI LAIlumps alb_snow ',&                                                                  !31     !38
+                       'DensSnow_Paved DensSnow_Bldgs DensSnow_EveTr DensSnow_DecTr DensSnow_Grass DensSnow_BSoil DensSnow_Water ')
            DailyStateFirstOpen(Gridiv)=0
         ! Otherwise open file to append
         else
            open(60,file=FileDaily,position='append')
-        endif
-
+        endif      
+        
         ! Write actual data     
-        write(60,601) iy,id,(HDD(id,j),j=1,6),(GDD(id,j),j=1,5),(lai(id,iv),iv=1,nvegsurf),&
-                      decidcap(id),porosity(id),albdec(id), (WU_day(id-1,j),j=1,9),&
-                      deltaLAI,VegPhenLumps,alb_snow,(densSnow(j),j=1,nsurf)
+        write(60,601) iy,id,&
+                      HDD(id,1:6),GDD(id,1:5),LAI(id,1:nvegsurf),&
+                      DecidCap(id),Porosity(id),AlbDec(id),&
+                      WU_day(id-1,1:9),&
+                      deltaLAI,VegPhenLumps,alb_snow,&
+                      densSnow(1:nsurf)
             
-        601 format(2(i4,1X),6(f6.1,1X),2(f5.0,1X),3(f6.1,1X),4(f6.2,1X),3(f6.2,1X),9(f7.3,1X),&
-                   18(f7.2,1X))
+        601 format(2(i4,1X),&
+                   6(f6.1,1X), 5(f6.1,1X), 3(f6.2,1X),&
+                   3(f6.2,1X),&
+                   9(f7.3,1X),&
+                   3(f7.2,1X),&
+                   7(f7.2,1X))
          
         ! Close the daily state file
         close(60)

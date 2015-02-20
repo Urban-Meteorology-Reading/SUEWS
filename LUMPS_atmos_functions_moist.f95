@@ -67,7 +67,7 @@ END SUBROUTINE atmos_moist_lumps
   use defaultnotUsed
   IMPLICIT NONE
   
-  REAL(KIND(1d0))::e,f,temp_C,press_hpa,press_kpa,es_hPA!,pw
+  REAL(KIND(1d0))::e_mb,f,temp_C,press_hpa,press_kpa,es_hPA!,pw
   integer:: from,iv
   
   !If air temperature between -0.001 - 
@@ -83,18 +83,18 @@ END SUBROUTINE atmos_moist_lumps
   Press_kPa=Press_hPa/10
   
   IF(Temp_C<50.and.Temp_C>-40)THEN
-     !e=6.1121*EXP(((18.729-Temp_C/227.3)*Temp_C)/(Temp_C+257.87)) !Old one
+     !e_mb=6.1121*EXP(((18.729-Temp_C/227.3)*Temp_C)/(Temp_C+257.87)) !Old one
      !f=1.00072+Press_hPa*(3.2E-6+5.9D-10*Temp_C**2)
 		
      if (Temp_C>=0.001000) then
-     	e=6.1121*exp(((18.678-Temp_C/234.5)*Temp_C)/(Temp_C+257.14))
+     	e_mb=6.1121*exp(((18.678-Temp_C/234.5)*Temp_C)/(Temp_C+257.14))
        	f=1.00072+Press_kPa*(3.2E-6+5.9E-10*Temp_C**2)
-        es_hPa=e*f
+        es_hPa=e_mb*f
 
      elseif (Temp_C<=-0.001000) then
-        e=6.1115*exp(((23.036-Temp_C/333.7)*Temp_C)/(Temp_C+279.82))
+        e_mb=6.1115*exp(((23.036-Temp_C/333.7)*Temp_C)/(Temp_C+279.82))
         f=1.00022+Press_kPa*(3.83E-6+6.4E-10*Temp_C**2)
-        es_hPa=e*f
+        es_hPa=e_mb*f
      endif	
      
   ELSE
@@ -111,7 +111,7 @@ END SUBROUTINE atmos_moist_lumps
   use defaultnotUsed
   IMPLICIT NONE
   
-  REAL(KIND(1d0))::e,f,temp_C,press_hpa,press_kpa,es_hPA!,pw
+  REAL(KIND(1d0))::e_mb,f,temp_C,press_hpa,press_kpa,es_hPA!,pw
   integer:: from,iv
   
   !If air temperature between -0.001 - 
@@ -127,9 +127,9 @@ END SUBROUTINE atmos_moist_lumps
   Press_kPa=Press_hPa/10
   
   IF(Temp_C<50.and.Temp_C>-40)THEN
-    e=6.1115*exp(((23.036-Temp_C/333.7)*Temp_C)/(Temp_C+279.82))
+    e_mb=6.1115*exp(((23.036-Temp_C/333.7)*Temp_C)/(Temp_C+279.82))
     f=1.00022+Press_kPa*(3.83E-6+6.4E-10*Temp_C**2) !In hPa
-    es_hPa=e*f
+    es_hPa=e_mb*f
      
   ELSE
      call ErrorHint(28,'FUNCTION sat_vap_press: [Temperature is out of range], Temp_C,dectime',Temp_C,dectime,notUsedI)

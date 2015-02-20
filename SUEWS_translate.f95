@@ -36,7 +36,6 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   integer::iv, j
   integer::i, ii, iii
   
-  real (Kind(1d0)):: skip
   real (Kind(1d0)):: FCskip = -9  !NULL value used for output to FileChoices	
 
 
@@ -105,6 +104,9 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
         veg_fr = (IrrFracConif*sfr(ConifSurf) + IrrFracDecid*sfr(DecidSurf) + IrrFracGrass*sfr(GrassSurf))
   ENDIF
   
+  ImpervFraction =  (sfr(PavSurf) + sfr(BldgSurf))
+  PervFraction =  (sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) + sfr(BSoilSurf) + sfr(WaterSurf)) 
+  NonWaterFraction = (sfr(PavSurf) + sfr(BldgSurf) + sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) + sfr(BSoilSurf)) 
   ! ---------------------------------------------------------------------------------
 
   ! ---- Heights & frontal areas
@@ -132,13 +134,14 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   emis_snow = SurfaceChar(Gridiv,c_SnowEmis)
   
   ! ---- Storage capacities
-  Surf(1,1:nsurf) = SurfaceChar(Gridiv,c_StorMin)   ! Minimum	
-  Surf(5,1:nsurf) = SurfaceChar(Gridiv,c_StorMax)   ! Maximum	
+  surf(1,1:nsurf) = SurfaceChar(Gridiv,c_StorMin)   ! Minimum	
+  surf(5,1:nsurf) = SurfaceChar(Gridiv,c_StorMax)   ! Maximum	
+  !surf(6:) is current storage capacity
   
   ! ---- Drainage
-  Surf(2,1:nsurf) = SurfaceChar(Gridiv,c_DrEq)      ! Drainage equation
-  Surf(3,1:nsurf) = SurfaceChar(Gridiv,c_DrCoef1)   ! Drainage coef 1
-  Surf(4,1:nsurf) = SurfaceChar(Gridiv,c_DrCoef2)   ! Drainage coef 2
+  surf(2,1:nsurf) = SurfaceChar(Gridiv,c_DrEq)      ! Drainage equation
+  surf(3,1:nsurf) = SurfaceChar(Gridiv,c_DrCoef1)   ! Drainage coef 1
+  surf(4,1:nsurf) = SurfaceChar(Gridiv,c_DrCoef2)   ! Drainage coef 2
   
   ! ---- Soil store capacity
   SoilStoreCap(1:nsurf) = SurfaceChar(Gridiv,c_SoilStCap)      
@@ -185,7 +188,7 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   !write(*,*) SurfaceChar(Gridiv,c_LeafOP1)  
   !write(*,*) SurfaceChar(Gridiv,c_LeafOP2)  
   !! Set all rows the same for now in input file & use Decid row in model
-  LAItype = SurfaceChar(Gridiv,c_LAIEq(ivDecid))
+  LAItype = int(SurfaceChar(Gridiv,c_LAIEq(ivDecid)))
   LAIPower(1) = SurfaceChar(Gridiv,c_LeafGP1(ivDecid)) ! 4 powers (not 4 veg types!)
   LAIPower(2) = SurfaceChar(Gridiv,c_LeafGP2(ivDecid)) ! 4 powers (not 4 veg types!)
   LAIPower(3) = SurfaceChar(Gridiv,c_LeafOP1(ivDecid)) ! 4 powers (not 4 veg types!)
@@ -236,8 +239,8 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   RunoffToWater = SurfaceChar(Gridiv,c_RunoffToWater)                  
   
   ! ---- Daylight saving (was from ModelledYears.txt)
-  DayLightSavingDay(1) = SurfaceChar(Gridiv,c_StartDLS)
-  DayLightSavingDay(2) = SurfaceChar(Gridiv,c_EndDLS)
+  DayLightSavingDay(1) = int(SurfaceChar(Gridiv,c_StartDLS))
+  DayLightSavingDay(2) = int(SurfaceChar(Gridiv,c_EndDLS))
                   
   ! ---- OHM coeffs (was in SUEWS_OHMnew.f95, subroutine OHMinitialize)                 
   OHM_coef = 0 ! Initialise OHM_coef 
@@ -293,8 +296,8 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   T_Critic = SurfaceChar(Gridiv,c_TCritic)
   
   ! ---- Irrigation
-  Ie_start        	 = SurfaceChar(Gridiv,c_IeStart)
-  Ie_end          	 = SurfaceChar(Gridiv,c_IeEnd)
+  Ie_start        	 = int(SurfaceChar(Gridiv,c_IeStart))
+  Ie_end          	 = int(SurfaceChar(Gridiv,c_IeEnd))
   InternalWaterUse_h  = SurfaceChar(Gridiv,c_IntWU)
   Faut	            	 = SurfaceChar(Gridiv,c_Faut)
   Ie_a		    	 = SurfaceChar(Gridiv,c_Ie_a)
@@ -319,7 +322,7 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   WUProfM_tstep(:,2) = TstepProfiles(Gridiv,cTP_WUManuWE,:) ! Water use, manual, weekends
   WUProfA_tstep(:,1) = TstepProfiles(Gridiv,cTP_WUAutoWD,:) ! Water use, automatic, weekdays
   WUProfA_tstep(:,2) = TstepProfiles(Gridiv,cTP_WUAutoWE,:) ! Water use, automatic, weekends
-  
+   
   ! ---- Within-grid water distribution
   ! N.B. Rows and columns of WaterDist are the other way round to the input info
   !! Model currently does not include above-ground flow from the Water surface
@@ -437,15 +440,15 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
 !  write(*,*) 'Grid, Year:', SurfaceChar(Gridiv,c_Grid), SurfaceChar(Gridiv,c_Year)
 !  write(*,*) 'met forcing file index:',ir
   if(ir == 0) then
-     write(*,*) 'This should be seen only when called from InitialState and ir is 0. ir:',ir
-     write(*,*) ''
+     !write(*,*) 'This should be seen only when called from InitialState and ir is 0. ir:',ir
+     !write(*,*) ''
      
      ! =============================================================================
      ! === Translate inputs from ModelDailyState to variable names used in model ===
      ! =============================================================================  
      
      ! Get id_prev from ModelDailyState
-     id_prev = ModelDailyState(Gridiv,cMDS_id_prev)
+     id_prev = int(ModelDailyState(Gridiv,cMDS_id_prev))
      !write(*,*) 'id_prev',id_prev
      
      porosity = ModelDailyState(Gridiv,cMDS_porosity)
@@ -499,7 +502,7 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
      ! =============================================================================     
     
      ! ---- Above-ground state
-     State(1:nsurf) = ModelOutputData(0,cMOD_State(1:nsurf),Gridiv)    
+     State(1:nsurf) = ModelOutputData(0,cMOD_State(1:nsurf),Gridiv)  
      ! ---- Below-ground state
      SoilMoist(1:nsurf) = ModelOutputData(0,cMOD_SoilState(1:nsurf),Gridiv)    
      ! ---- Snow fraction
@@ -724,7 +727,7 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
 !Last modified: HCW 28 Nov 2014
 ! To Do:
 !===================================================================== 
-subroutine SUEWS_TranslateBack(Gridiv,ir,iMB,irMax)
+subroutine SUEWS_TranslateBack(Gridiv,ir,irMax)
 
   use Initial
   use allocateArray   ! defines: SiteInfo, sfr, (PavSurf, BldgSurf, etc) 
@@ -745,13 +748,9 @@ subroutine SUEWS_TranslateBack(Gridiv,ir,iMB,irMax)
 
   integer::Gridiv,&   ! Index of the analysed grid (Gridcounter)
            ir,&       ! Meteorological forcing file index (set to zero if SUEWS_Translate called from InitialState)
-           iMB,&      ! Chunk of met data
+           !iMB,&      ! Chunk of met data
            irMax      ! Last row in current chunk of met data
            
-           
-  integer::iv, j
-  integer::i, ii, iii 
- 
   ! =============================================================================
   ! === Translate values from variable names used in model to ModelDailyState ===
   ! =============================================================================

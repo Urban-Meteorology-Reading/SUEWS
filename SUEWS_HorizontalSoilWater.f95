@@ -1,8 +1,8 @@
 
  subroutine HorizontalSoilWater
- !Program tranfer water in soil stores of land surfaces LJ (2010)
+ !Transfers water in soil stores of land surfaces LJ (2010)
  !Change the model to use varying hydraulic conductivity instead of constant value LJ (7/2011)
- !If one of the surface's soildepth is zero, not water movement is considered
+ !If one of the surface's soildepth is zero, no water movement is considered
  ! HCW 12/08/2014 Modifications:  - Distance changed from m to mm in dI_dt calculation
  !                                - dI_dt [mm s-1] multiplied by no. seconds in timestep -> dI [mm]
  !                                - if MatPot is set to max. value (100000 mm), Km set to 0 mm s-1
@@ -41,7 +41,7 @@
  alphavG=0.0005  !Set alphavG to match value in van Genuchten (1980) [mm-1]                
  runoffSoil=0.0  !Set soil runoff to zero [mm]
  
- NUnits = 1   !Estimate for Swindon
+ NUnits = 1   !Can change to represent plot/base unit size
  
  do is=1,nsurf-1 !nsurf-1,1,-1  !Loop through each surface, excluding water surface (runs backwards as of 13/08/2014, HCW)
     
@@ -191,7 +191,7 @@
     
     endif  !end if first surface exists and is capable of storing water
  
- runoffSoil_per_interval=runoffSoil_per_interval+(runoffSoil(is)*sfr(is))
+ runoffSoil_per_tstep=runoffSoil_per_tstep+(runoffSoil(is)*sfr(is)/NonWaterFraction)  !Excludes water body
      
  enddo !is loop over first surface
 

@@ -32,7 +32,7 @@ subroutine Evap_SUEWS
   ! Calculation independent of surface characteristics
   ! Uses value of rs for whole area (calculated based on LAI of veg surfaces in SUEWS_SurfaceResistance)
   if(state(is)<=0.001) then    
-     qe=e/(s_hPa+psyc_hPa*(1+ResistSurf/ra))	!QE [W m-2] (e = numerator of P-M eqn)
+     qe=numPM/(s_hPa+psyc_hPa*(1+ResistSurf/ra))	!QE [W m-2] (numPM = numerator of P-M eqn)
      ev=qe/tlv					!Ev [mm]    (qe[W m-2]/tlv[J kg-1 s-1]*1/density_water[1000 kg m-3])	
      W=NAN   !W not needed for dry surfaces (set to -999)
      rst=1   !Set flag indicating dry surface(1)	
@@ -47,26 +47,26 @@ subroutine Evap_SUEWS
         rbsg=rb*(sp+1)           !Boundary-layer resistance x (slope/psychro + 1)
         rsrbsg=ResistSurf+rbsg   !rs + rsbg
         ! If surface is completely wet, set rs to zero -------------------
-        if(state(is)>=surf(1,is).or.ResistSurf<25) then   !If at storage capacity or rs is small
+        if(state(is)>=surf(6,is).or.ResistSurf<25) then   !If at storage capacity or rs is small
            W=1   !So that rs=0 (Eq7, Jarvi et al. 2011)
         ! If surface is in transition, use rss ---------------------------
         else   !if((state(is)<StorCap).and.(state(is)>0.001).or.(ResistSurf<50)) then
            r=(ResistSurf/ra)*(ra-rb)/rsrbsg
-	   W=(r-1)/(r-(surf(1,is)/state(is)))
+	   W=(r-1)/(r-(surf(6,is)/state(is)))
         endif
         ! Calculate redefined surface resistance for wet surfaces (zero if W=1)
         ! Eq7, Jarvi et al. 2011
         rss=(1/((W/rbsg)+((1-W)/rsrbsg)))-rbsg   
-        qe=e/(s_hPa+psyc_hPa*(1+rss/ra))   !QE [W m-2]
+        qe=numPM/(s_hPa+psyc_hPa*(1+rss/ra))   !QE [W m-2]
         ev=qe/tlv 				 !Ev [mm]		
 
      elseif(ity==1) then   !-- Rutter --
-        qe=e/(s_hPa+psyc_hPa)
+        qe=numPM/(s_hPa+psyc_hPa)
         ev=qe/tlv
-        if(state(is)>=surf(1,is)) then
+        if(state(is)>=surf(6,is)) then
            x=1.0
         else
-           x=state(is)/surf(1,is)
+           x=state(is)/surf(6,is)
         endif
         ev=ev*x	    !QE [W m-2]
         qe=ev*tlv   !Ev [mm]

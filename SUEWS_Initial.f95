@@ -28,13 +28,9 @@
    
   IMPLICIT NONE
   
-  real(kind(1d0)):: skip
   integer:: iv,i,ii,SkipCounter            !iv and i, ii are integers used in do loops
-  character(len=50):: ProbLine,FileN
+  character(len=50):: FileN
   
-  character (len=50):: InputFileName
-  integer:: nColumns
- 
   ! ---- Namelist for RunControl.nml ----
   namelist/RunControl/AnthropHeatChoice,&
         CBLuse,& !s.o.
@@ -516,15 +512,16 @@
   !Calculate nsh (number of steps per hour) from model timestep (tstep) set in in RunControl
   nsh_real = t_INTERVAL/real(tstep,kind(1d0))
   
-  if(nsh_real<2) then   !If nsh_real is less than 2, set nsh to 1 and tstep to 3600
-     nsh=1
-     tstep=t_INTERVAL
-  else			  
-     if(nsh_real==int(nsh_real)) then   !Check nsh is an integer	
-        nsh = t_INTERVAL/tstep    
-     else
-        call ErrorHint(39,'File: RunControl',real(tstep,kind(1d0)),real(t_INTERVAL,kind(1d0)),notUsedI)
-     endif
+  ! Check nsh is an integer	
+  if(nsh_real==int(nsh_real)) then
+     nsh = int(nsh_real)   
+  else
+     call ErrorHint(39,'TSTEP must divide into t_INTERVAL exactly.',real(tstep,kind(1d0)),real(t_INTERVAL,kind(1d0)),notUsedI)
+  endif 
+  
+  ! Check nsh is reasonable
+  if(nsh_real<6.or.nsh_real>60) then   
+     call ErrorHint(39,'TSTEP is too small or too large.',real(tstep,kind(1d0)),real(t_INTERVAL,kind(1d0)),notUsedI)        
   endif
   
   ! Cast integer nsh as nsh_real for use in calculations
@@ -546,6 +543,8 @@
   300 call ErrorHint(48,trim(FileN),notUsed,notUsed,notUsedI)
   !-----------------------------------------------------------------------
    
+  pause
+  
   END SUBROUTINE OverallRunControl
 !=========================================================================
 
@@ -1227,6 +1226,7 @@
    ! For energy use, normalise so the AVERAGE of the multipliers is equal to 1
    TstepProfiles(Gridiv,cTP_EnUseWD,:) = TstepProfiles(Gridiv,cTP_EnUseWD,:) / sum(TstepProfiles(Gridiv,cTP_EnUseWD,:))*24*nsh_real
    TstepProfiles(Gridiv,cTP_EnUseWE,:) = TstepProfiles(Gridiv,cTP_EnUseWE,:) / sum(TstepProfiles(Gridiv,cTP_EnUseWE,:))*24*nsh_real
+     
    ! Water use
    call SUEWS_InterpHourlyProfiles(Gridiv,cTP_WUManuWD,c_HrProfWUManuWD)
    call SUEWS_InterpHourlyProfiles(Gridiv,cTP_WUManuWE,c_HrProfWUManuWE)
@@ -1280,7 +1280,7 @@
   character(len=150):: fileInit
   character(len=4):: year_txt
   integer::errFileYes,DaysSinceRain,Gridiv,gamma1,gamma2
-  integer:: j,wd,seas,date,mb,year_int,switch=0,id_next,calc
+  integer:: wd,seas,date,mb,year_int,switch=0,id_next,calc
   
   real (KIND(1d0))::PavedState,BldgsState,EveTrState,DecTrState,GrassState,BSoilState,&
               	    SoilStorePavedState,SoilStoreBldgsState,SoilStoreEveTrState,&
@@ -1444,7 +1444,7 @@
   ModelOutputData(0,cMOD_State(GrassSurf), Gridiv) = GrassState
   ModelOutputData(0,cMOD_State(BSoilSurf), Gridiv) = BSoilState
   ModelOutputData(0,cMOD_State(WaterSurf), Gridiv) = WaterState
- 
+  
   ! -- Initial soil stores for each surface (below ground) --
   ModelOutputData(0,cMOD_SoilState(PavSurf),   Gridiv) = SoilStorePavedState
   ModelOutputData(0,cMOD_SoilState(BldgSurf),  Gridiv) = SoilStoreBldgsState
@@ -1630,7 +1630,7 @@
 
 
  !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- !DEFINE DIFFERENT INITIALIZATION PARAMEveTrERS
+ !DEFINE DIFFERENT INITIALIZATION PARAMETERS
  !Are still needed ??
  !once=.true.
 
@@ -1685,10 +1685,9 @@
 
   character (len=15)::GridName
   character (len=15)::GridName2
-  integer:: Gridiv
   character (len=4)::year_txt2
   integer:: year_int2
-  integer:: year_int, year_int_final = 2
+  integer:: year_int
   
   !write(*,*) LastGrid
   
@@ -1803,8 +1802,9 @@
 
    IMPLICIT NONE
 
-   integer::lunit,i,iyy,iv,RunNumber!,NSHcounter
+   integer::lunit,i,iyy,RunNumber!,NSHcounter
    real (kind(1d0)),dimension(24)::MetArray
+   real(kind(1d0)):: imin_prev, tstep_met   !For checks on temporal resolution of met data
 
    !---------------------------------------------------------------
 
@@ -1829,6 +1829,15 @@
        !   NSHcounter = NSHcounter + 1
        !ENDDO
        MetForcingData(i,1:24,GridCounter) = MetArray
+       ! Check timestamp of met data file matches TSTEP specified in RunControl
+       if(i==1) then
+          imin_prev = MetArray(4)
+       elseif(i==2) then
+          tstep_met = (MetArray(4)-imin_prev)*60   !tstep in seconds
+          if(tstep_met.ne.tstep_real) then
+             call ErrorHint(39,'TSTEP in RunControl does not match TSTEP of met data.',real(tstep,kind(1d0)),tstep_met,notUsedI)        
+          endif    
+       endif   
     ENDDO
 
    CLOSE(lunit)

@@ -6,6 +6,7 @@
 ! lj June 2012 - Modified to work with snow (Qm added in the equations!!)
 ! LJ Feb 2014 - the bug related to VegMax has been fixed (cannot divide by zero)
 !! HCW Jan 2015 - CHECK HOURLY ASSUMPTIONS (RainMaxRes, etc)
+!               - also not sure VegPhenLumps is still working correctly (HCW Feb 2015)
 ! -------------------------------------------------------------- 
 
 subroutine LUMPS_QHQE

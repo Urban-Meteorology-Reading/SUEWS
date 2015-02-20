@@ -1,4 +1,6 @@
 ! Conversion of water use (irrigation) 
+! Last modified by HCW 12 Feb 2015
+!  - Water use [mm] now inidcates the amount of water supplied for each surface
 ! Last modified by HCW 26 Jan 2015
 !  - Water use [mm] is the same for each surface at the moment and indicates the 
 ! amount of water supplied for each irrigated area
@@ -43,14 +45,17 @@ subroutine WaterUse
            wu = (wu_m3/WUAreaTotal_m2/1000)     !Water use in mm for the whole irrigated area
            if (WUAreaEveTr_m2>0) then
               wu_EveTr=wu   			!Water use for Irr EveTr in mm - these are all the same at the moment
+              wu_EveTr=wu_EveTr*IrrFracConif	!Water use for EveTr in mm
            endif
            if (WUAreaDecTr_m2>0) then
 	      wu_DecTr=wu   			!Water use for Irr DecTr in mm - these are all the same at the moment
+	      wu_DecTr=wu_DecTr*IrrFracDecid	!Water use for DecTr in mm
            endif
            if (WUAreaGrass_m2>0) then
               wu_Grass=wu   			!Water use for Irr Grass in mm - these are all the same at the moment
+              wu_Grass=wu_Grass*IrrFracGrass	!Water use for Grass in mm
            endif            
-           wu = (wu_m3/SurfaceArea/1000)        !Water use in mm for the whole study area
+           wu = (wu_m3/SurfaceArea/1000)        !Water use for the whole study area in mm 
         endif
      endif   
       
@@ -67,7 +72,7 @@ subroutine WaterUse
         iu=2  !Set to 2=weekend
      endif
      
-     write(*,*) (NSH*(ih+1-1)+imin*NSH/60+1)
+     !write(*,*) (NSH*(ih+1-1)+imin*NSH/60+1)
         
      ! ---- Automatic irrigation ----
      wu_EveTr = WUProfA_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WU_Day(id-1,2)   !Automatic evergreen trees
@@ -86,8 +91,13 @@ subroutine WaterUse
      wu_DecTr = wu_DecTr + (WuFr*WUProfM_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WU_Day(id-1,6)) !Manual deciduous trees
      wu_Grass = wu_Grass + (WuFr*WUProfM_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WU_Day(id-1,9)) !Manual grass
 
+     ! Added HCW 12 Feb 2015
+     wu_EveTr=wu_EveTr*IrrFracConif	!Water use for EveTr [mm]
+     wu_DecTr=wu_DecTr*IrrFracDecid	!Water use for DecTr [mm]
+     wu_Grass=wu_Grass*IrrFracGrass	!Water use for Grass [mm]
+     
      ! Total water use for the whole study area [mm]
-     wu = wu_EveTr*IrrFracConif*sfr(ConifSurf) + wu_DecTr*IrrFracDecid*sfr(DecidSurf) + wu_Grass*IrrFracGrass*sfr(GrassSurf)
+     wu = wu_EveTr*sfr(ConifSurf) + wu_DecTr*sfr(DecidSurf) + wu_Grass*sfr(GrassSurf)
   
   endif   !End WU_choice
   ! --------------------------------------------------------------------------------

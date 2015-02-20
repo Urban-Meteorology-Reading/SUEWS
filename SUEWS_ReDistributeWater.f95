@@ -1,22 +1,20 @@
 subroutine ReDistributeWater
 !Drainage moves into different parts defined by WaterDistSS_YYYY.txt. LJ 2010
-!addWater(is) has that amount of water that is gained for each surface
-!
+!addWater(is) is that amount of water that is gained for each surface
 !Latest update takes snow into account. 22/03/2013 LJ
 !-------------------------------------------------------------------
 
   use allocateArray
-  use Sues_data
-  use gis_data
   use data_in
-     
+  use gis_data
+  use sues_data
+       
   implicit none
   
   integer::ii,jj
-  real (kind(1d0)):: WaterVol
-  
+    
   !Fractions that go to runoff from each surface
-  do ii=1,nsurf-1 ! not water in the calculation
+  do ii=1,nsurf-1   !not water in the calculation
       AddWaterRunoff(ii)=WaterDist(8,ii) 
   enddo
   AddWaterRunoff(WaterSurf)=0

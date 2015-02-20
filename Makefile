@@ -16,7 +16,6 @@ OTHERS =  BLUEWS_CBL.o   \
           BLUEWS_Diff.o  \
           SUEWS_translate.o \
           SUEWS_HorizontalSoilWater.o \
-          LUMPS_accumulate.o \
           SUEWS_Initial.o \
           LUMPS_atmos_functions_moist.o \
           SUEWS_OHM_v2015.o \

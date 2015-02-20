@@ -22,11 +22,11 @@ subroutine SUEWS_InterpHourlyProfiles(Gridiv,TstepP_ID,SurfChar_HrProf)
       if(i == 24) j = 1   !If last hour of day, loop round to first hour of day for interpolation
       deltaProf = ((SurfaceChar(Gridiv,SurfChar_HrProf(j)) - SurfaceChar(Gridiv,SurfChar_HrProf(i))))/nsh_real
       do ii=1,nsh
-         if(i==24.and.ii<nsh) then
+         if((nsh*(i-1)+ii+1) < (23*nsh+nsh+1))  then
             TstepProfiles(Gridiv,TstepP_ID,(nsh*(i-1)+ii+1)) = SurfaceChar(Gridiv,SurfChar_HrProf(i)) + deltaProf*ii              
          endif
       enddo         
    enddo
-
+   
 endsubroutine SUEWS_InterpHourlyProfiles
 !===================================================================================

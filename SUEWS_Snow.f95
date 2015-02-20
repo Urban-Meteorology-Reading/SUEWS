@@ -271,12 +271,12 @@
   !evaporation is taken from pervious surfaces
   if (is>2) then
      if  ((VegFraction+sfr(WaterSurf))/=0) then
-        EvPart=(SurPlus_evap(PavSurf)+SurPlus_evap(BldgSurf))*(sfr(is)/(VegFraction+sfr(WaterSurf)))
+        EvPart=(SurplusEvap(PavSurf)+SurplusEvap(BldgSurf))*(sfr(is)/(VegFraction+sfr(WaterSurf)))
      endif
   endif
  
   
-  !いいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいい
+  !============================================================================
   !First if the surface is fully covered with snow or the snowpack forms 
   !(equally distributed) on the current Tstep
   
@@ -382,9 +382,9 @@
 
      !------Evaporation
      if (is==BldgSurf.or.is==PavSurf) then 
-        ev_per_interval=ev_per_interval+(ev-SurPlus_evap(is))*sfr(is)+ev_snow(is)*sfr(is)
-        qe_per_interval=qe_per_interval+ev_snow(is)*lvS_J_kg*sfr(is)+(ev-SurPlus_evap(is))*lv_J_kg*sfr(is)
-       evap_5min=evap_5min+(ev-SurPlus_evap(is))*sfr(is)+ev_snow(is)*sfr(is)
+        ev_per_interval=ev_per_interval+(ev-SurplusEvap(is))*sfr(is)+ev_snow(is)*sfr(is)
+        qe_per_interval=qe_per_interval+ev_snow(is)*lvS_J_kg*sfr(is)+(ev-SurplusEvap(is))*lv_J_kg*sfr(is)
+       evap_5min=evap_5min+(ev-SurplusEvap(is))*sfr(is)+ev_snow(is)*sfr(is)
      else  
         ev_per_interval=ev_per_interval+ev*sfr(is)+ev_snow(is)*sfr(is)
         qe_per_interval=qe_per_interval+ev_snow(is)*lvS_J_kg*sfr(is)+ev*lv_J_kg*sfr(is)
@@ -422,8 +422,8 @@
      runoff_per_interval=runoff_per_interval+runoffSnow(is)*sfr(is)
   
 
-  !いいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいい
-  !いいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいいい
+  !================================================================================
+  !================================================================================
    
   !If both snow and snow free surfaces exists
   else
@@ -513,7 +513,7 @@
         runoff(is)=runoff(is)+drain(is)*AddWaterRunoff(is) !Drainage (not flowing to other surfaces) goes to runoff
         
         if(state(is)<0.0) then  !Surface state cannot be negative
-           SurPlus_Evap(is)=abs(state(is)) !take evaporation from other surfaces in mm 
+           SurplusEvap(is)=abs(state(is)) !take evaporation from other surfaces in mm 
            state(is)=0.0
         endif
        
@@ -574,10 +574,10 @@
    
    !Add evaporation to total 
    if (is==BldgSurf.or.is==PavSurf) then
-       ev_per_interval=ev_per_interval+(ev-SurPlus_evap(is))*sfr(is)*(1-snowFrac(is))+ev_snow(is)*sfr(is)*snowFrac(is)
+       ev_per_interval=ev_per_interval+(ev-SurplusEvap(is))*sfr(is)*(1-snowFrac(is))+ev_snow(is)*sfr(is)*snowFrac(is)
        qe_per_interval=qe_per_interval+ev_snow(is)*lvS_J_kg*sfr(is)*snowFrac(is)&
-                       +(ev-SurPlus_evap(is))*lv_J_kg*sfr(is)*(1-snowFrac(is))
-       evap_5min=evap_5min+(ev-SurPlus_evap(is))*sfr(is)*(1-snowFrac(is))+ev_snow(is)*sfr(is)*snowFrac(is)
+                       +(ev-SurplusEvap(is))*lv_J_kg*sfr(is)*(1-snowFrac(is))
+       evap_5min=evap_5min+(ev-SurplusEvap(is))*sfr(is)*(1-snowFrac(is))+ev_snow(is)*sfr(is)*snowFrac(is)
    else
        ev_per_interval=ev_per_interval+ev*sfr(is)*(1-snowFrac(is))+ev_snow(is)*sfr(is)*snowFrac(is)
        qe_per_interval=qe_per_interval+ev_snow(is)*lvS_J_kg*sfr(is)*snowFrac(is)+ev*lv_J_kg*sfr(is)*(1-snowFrac(is))

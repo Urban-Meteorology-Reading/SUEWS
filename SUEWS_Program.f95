@@ -30,6 +30,8 @@
     		iv,&	   ! 1 to ReadMetTimes (i.e. met data block number)
     		ir,irMax,& ! Row of met data within each chunk of met data  	
     		rr 	   ! Row of SiteSelect corresponding to current year and grid
+    
+    logical::PrintPlace=.false.   !Prints row, block, grid no. to screen if TRUE
     		   
     !==========================================================================
     
@@ -47,6 +49,10 @@
     FirstGrid = minval(int(SiteSelect(:,c_Grid))) 
     LastGrid  = maxval(int(SiteSelect(:,c_Grid))) 
     NumberOfGrids = LastGrid-FirstGrid+1   !Number of grids of the current run
+    if(NumberOfGrids > MaxGrid) then
+       call ErrorHint(64,'No. of grids exceeds max. possible no. of grids.',real(MaxGrid,kind(1d0)),NotUsed,NumberOfGrids)
+    endif    
+    
     
     write(*,*) '--------------------------------------------'
     write(*,*) 'Years identified:',FirstYear,'to',LastYear
@@ -193,7 +199,7 @@
           if((CBLuse==1).or.(CBLuse==2)) call CBL_ReadInputData
           if(SOLWEIGout==1) call SOLWEIG_initial
 
-	  write(*,*) 'Initialisation done'
+	  !write(*,*) 'Initialisation done'
 	  ! First stage: initialisation done -----------------------------
       
           ! (2) Second stage: do calculations at 5-min timesteps ---------
@@ -209,7 +215,7 @@
              GridCounter=1    !Initialise counter for grids in each year
              DO i=FirstGrid,LastGrid   !Loop through grids
            
- 	      write(*,*) 'Row (ir):', ir, '/',irMax,'of block (iv):',iv,'Grid:',i	           
+ 	      if(PrintPlace) write(*,*) 'Row (ir):', ir, '/',irMax,'of block (iv):',iv,'Grid:',i	           
  
               ! Call model calculation code
               call SUEWS_Calculations(GridCounter,ir,iv,irMax)
@@ -235,7 +241,7 @@
           ! Write output files in blocks --------------------------------
           DO i=FirstGrid,LastGrid
              call SUEWS_Output(i,year_int,iv,irMax)
-	     write(*,*) 'Output files written', id,year_int,i
+	     write(*,*) 'Output files written (reached DOY, year, Grid)', id,year_int,i
           ENDDO
        !!pause
            

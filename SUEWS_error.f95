@@ -172,7 +172,7 @@
           returntrue=.true.
           v1 = .true.  !2 real
      elseif(errh==39) then 
-          text1 = 'TSTEP and t_INTERVAL do not match! TSTEP must divide into t_INTERVAL exactly.'
+          text1 = 'Different value of TSTEP needed (300 s recommended). Resolution of met data must match TSTEP set in RunControl.'
           v2 = .true.  !2 real
      elseif(errh==40) then
       	  text1='SOLWEIG file problem - opening'
@@ -243,6 +243,20 @@
      elseif(errh==60)then
           text1 = 'non-unique code.'
           v1 = .true.
+     elseif(errh==61)then
+          text1 = 'Check coefficients and drainage equation specified in input files.'
+          v4 = .true.
+          returntrue = .true.
+     elseif(errh==62)then
+          text1 = 'Problem with soil moisture calculation.'
+          v5 = .true.
+     elseif(errh==63)then
+          text1 = 'Problem with calculation.'
+          v1 = .true.
+          !returntrue = .true.
+     elseif(errh==64)then
+          text1 = 'SUEWS cannot currently handle this many grids.'
+          v6 = .true.
      endif
 
 !write(*,*) errh	

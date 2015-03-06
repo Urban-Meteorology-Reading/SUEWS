@@ -76,6 +76,7 @@ subroutine SAHP_2_v2015(QF_o,id,ih,imin)
 !write(*,*) HDD(id-1,1), HDD(id-1,2)
 
 !write(*,*) '--------- QF ---------'
+!write(*,*) (NSH*(ih+1-1)+imin*NSH/60+1)
 !write(*,*) AHProf_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)
 !write(*,*) (Qf_a(iu)+Qf_b(iu)*HDD(id-1,2)+Qf_c(iu)*HDD(id-1,1))*numCapita
    

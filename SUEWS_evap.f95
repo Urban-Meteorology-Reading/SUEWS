@@ -26,7 +26,7 @@ subroutine Evap_SUEWS
   		    rsrbsg,&	!rs + rbsg [s m-1]
   		    W,&		!Depends on the amount of water on the canopy [-]
   		    r,x  
-        
+                           
   ! Dry surface ---------------------------------------------------------------
   ! Use Penman-Monteith eqn modified for urban areas (Eq6, Jarvi et al. 2011)      
   ! Calculation independent of surface characteristics
@@ -72,6 +72,9 @@ subroutine Evap_SUEWS
         qe=ev*tlv   !Ev [mm]
      endif   !Rutter/Shuttleworth calculation
   endif   !Wet/dry surface
-
+  
+!write(*,*) is,state(is),W,qe,ev,ResistSurf,rss,RA
+!write(*,*) is,qe
+  
 end subroutine Evap_SUEWS
 !------------------------------------------------------------------------------

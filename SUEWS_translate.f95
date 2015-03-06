@@ -4,33 +4,31 @@
 !Made by HW&LJ Oct 2014
 !Last modified: HCW 28 Nov 2014
 ! To Do:
+!       - Check observed soil moisture works correctly!!
+!       - Adjust model to allow water to runoff and sub-surface soil store for each surface type
 !	- Adjust model to calculate LAI per surface
 !	- Adjust model for SM per surface (measured characteristics)
-!       - Code BareSoil properly
-!       - Code separate heights and FAI for evergreen and deciduous trees
 !===================================================================================
 subroutine SUEWS_Translate(Gridiv,ir,iMB)
 
   use Initial
-  use allocateArray   ! defines: SiteInfo, sfr, (PavSurf, BldgSurf, etc) 
+  use allocateArray   !defines: SiteInfo, sfr, (PavSurf, BldgSurf, etc) 
   use ColNamesInputFiles
   use ColNamesModelDailyState
-  use data_in	      ! defines: lat, lng, PopDaytime, PopNighttime, DayLightSavingDay, QF variables
+  use data_in	      !defines: lat, lng, PopDaytime, PopNighttime, DayLightSavingDay, QF variables
   use defaultnotUsed
-  use gis_data        ! defines: areaZh, VegFraction, veg_fr, veg_type, BldgH, TreeH, FAIBldg, FAITree, Alt
-  use mod_z	      ! defines: z0m, zdm	
-  use ohm_calc        ! defines: OHM_coef
-  use resist	      ! defines: G1-G6, TH, TL, S1, S2, Kmax
-  use run_info	      ! for file_qs (still needed??)	 
-  use snowMod	      ! defines: alb_snow, etc		
-  use sues_data       ! defines: SurfaceArea, IrrFractionTrees, IrrFracConif, IrrFracDecid, IrrFracGrass, Irrigation variables
+  use gis_data        !defines: areaZh, VegFraction, veg_fr, veg_type, BldgH, TreeH, FAIBldg, FAITree, Alt
+  use mod_z	      !defines: z0m, zdm	
+  use resist	      !defines: G1-G6, TH, TL, S1, S2, Kmax
+  use snowMod	      !defines: alb_snow, etc		
+  use sues_data       !defines: SurfaceArea, IrrFracConif, IrrFracDecid, IrrFracGrass, Irrigation variables
   use time
   
   IMPLICIT NONE
 
-  integer::Gridiv,&   ! Index of the analysed grid (Gridcounter)
-           ir,&       ! Meteorological forcing file index (set to zero if SUEWS_Translate called from InitialState)
-           iMB,&      !	Chunk of met data
+  integer::Gridiv,&   !Index of the analysed grid (Gridcounter)
+           ir,&       !Meteorological forcing file index (set to zero if SUEWS_Translate called from InitialState)
+           iMB,&      !Chunk of met data
            id_prev
 
   integer::iv, j
@@ -83,9 +81,6 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   IrrFracDecid = SurfaceChar(Gridiv,c_IrrDecTrFrac)  ! Decid
   IrrFracGrass = SurfaceChar(Gridiv,c_IrrGrassFrac)  ! Grass
   
-  IrrFractionTrees = IrrFracConif+IrrFracDecid	!! change this after testing (delete IrrFractionTrees)
-  
-
   ! ---------------------------------------------------------------------------------  
   ! --------- Surface cover calculations (previously in LUMPS_gis_read) -------------
    
@@ -110,51 +105,56 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   ! ---------------------------------------------------------------------------------
 
   ! ---- Heights & frontal areas
-  BldgH = SurfaceChar(Gridiv,c_HBuilt)	  ! Building height [m]
-  TreeH = (SurfaceChar(Gridiv,c_HEveTr) + SurfaceChar(Gridiv,c_HDecTr))/2	! Tree height [m]
-  !! Code separate heights for evergreen and deciduous trees later !!
-  FAIBldg = SurfaceChar(Gridiv,c_FAIBuilt)  ! Frontal area index for buildings
-  FAITree = (SurfaceChar(Gridiv,c_FAIEveTr ) + SurfaceChar(Gridiv,c_FAIDecTr ))/2 ! Frontal area index for trees
-  !! Code separate heights for evergreen and deciduous trees later !!
+  BldgH = SurfaceChar(Gridiv,c_HBuilt)	      ! Building height [m]
+  EveTreeH = SurfaceChar(Gridiv,c_HEveTr)     ! Evergreen tree height [m]
+  DecTreeH = SurfaceChar(Gridiv,c_HDecTr)     ! Deciduous tree height [m]
+  TreeH = (EveTreeH*sfr(ConifSurf) + DecTreeH*sfr(DecidSurf))/(sfr(ConifSurf)+sfr(DecidSurf))	! Average tree height [m]
+  FAIBldg = SurfaceChar(Gridiv,c_FAIBuilt)    ! Frontal area index for buildings
+  FAIEveTree = SurfaceChar(Gridiv,c_FAIEveTr) ! Frontal area index for evergreen trees
+  FAIDecTree = SurfaceChar(Gridiv,c_FAIDecTr) ! Frontal area index for deciduous trees
+  FAITree = (FAIEveTree*sfr(ConifSurf) + FAIDecTree*sfr(DecidSurf))/(sfr(ConifSurf)+sfr(DecidSurf)) ! Frontal area index for trees
+  
   z0m = SurfaceChar(Gridiv,c_z0m) 	  ! Roughness length [m]
   zdm = SurfaceChar(Gridiv,c_zdm) 	  ! Displacement height [m]
   
   ! ---- Population
-  PopDensDaytime   = SurfaceChar(Gridiv,c_PopDensDay)	! Daytime population density
-  PopDensNighttime = SurfaceChar(Gridiv,c_PopDensNight)  ! Night-time population density
+  PopDensDaytime   = SurfaceChar(Gridiv,c_PopDensDay)	 ! Daytime population density [ha-1]
+  PopDensNighttime = SurfaceChar(Gridiv,c_PopDensNight)  ! Night-time population density [ha-1]
   
-  NumCapita = PopDensDaytime      ! Pop density [ha-1] !! Use Daytime pop density for NumCapita for testing! 
+  NumCapita = PopDensDaytime      ! Pop density [ha-1]   !!Use Daytime pop density for NumCapita for testing! 
   
-  ! ---- Albedo
-  alb(1:nsurf) = SurfaceChar(Gridiv,c_Alb)
+  ! ---- Albedo [-]
+  alb(1:nsurf) = SurfaceChar(Gridiv,c_Alb)       
   alb_snow     = SurfaceChar(Gridiv,c_SnowAlb)
   
-  ! ---- Emissivity
+  ! ---- Emissivity [-] 
   emis(1:nsurf) = SurfaceChar(Gridiv,c_Emis)
   emis_snow = SurfaceChar(Gridiv,c_SnowEmis)
   
-  ! ---- Storage capacities
+  ! ---- Storage capacities [mm]
   surf(1,1:nsurf) = SurfaceChar(Gridiv,c_StorMin)   ! Minimum	
   surf(5,1:nsurf) = SurfaceChar(Gridiv,c_StorMax)   ! Maximum	
   !surf(6:) is current storage capacity
+  
+  ! ---- Limit for state [mm]
+  StateLimit(1:nsurf) = SurfaceChar(Gridiv,c_StateLimit)
   
   ! ---- Drainage
   surf(2,1:nsurf) = SurfaceChar(Gridiv,c_DrEq)      ! Drainage equation
   surf(3,1:nsurf) = SurfaceChar(Gridiv,c_DrCoef1)   ! Drainage coef 1
   surf(4,1:nsurf) = SurfaceChar(Gridiv,c_DrCoef2)   ! Drainage coef 2
-  
-  ! ---- Soil store capacity
-  SoilStoreCap(1:nsurf) = SurfaceChar(Gridiv,c_SoilStCap)      
-  
+   
   ! ---- Limit of SWE (each surface except Water)
   snowD(1:(nsurf-1)) = SurfaceChar(Gridiv,c_SnowLimPat(1:(nsurf-1)))
   
   ! ---- Snow limit for removal (only impervious surfaces)
   SnowLimPaved = SurfaceChar(Gridiv,c_SnowLimRem(PavSurf)) 
   SnowLimBuild = SurfaceChar(Gridiv,c_SnowLimRem(BldgSurf))
-        
+  !SnowLimBSoil = SurfaceChar(Gridiv,c_SnowLimRem(BSoilSurf))   !Snow clearing not applicable to bare soil surface
+  
   ! ---- Soil characteristics (each surface except Water)
-  VolSoilMoistCap    (1:(nsurf-1)) = SurfaceChar(Gridiv,c_VolSMCap(1:(nsurf-1))) ! Volumetric soil moisture capacity [m3 m-3]
+  SoilDepth(1:(nsurf-1))    = SurfaceChar(Gridiv,c_SoilDepth(1:(nsurf-1))) ! Depth of sub-surface soil store [mm]
+  SoilStoreCap(1:(nsurf-1)) = SurfaceChar(Gridiv,c_SoilStCap(1:(nsurf-1))) ! Soil store capacity [mm]
   SatHydraulicConduct(1:(nsurf-1)) = SurfaceChar(Gridiv,c_KSat(1:(nsurf-1))) ! Hydraulic conductivity of saturated soil [mm s-1] 
   !SoilDensity          (1:(nsurf-1)) = SurfaceChar(Gridiv,c_SoilDens(1:(nsurf-1))) ! Soil density [units??]
   ! Not yet implemented in model
@@ -167,7 +167,7 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   !SoilRocks    (1:(nsurf-1)) = SurfaceChar(Gridiv,c_ObsSNRFrac(1:(nsurf-1)))
   !!Obs soil characteristics now in SUEWS_Soil, i.e. per surface; single value was given previously in FunctionalTypes
   !!Take first row here for testing !! Need to alter model later...
-  SoilDensity    = SurfaceChar(Gridiv,c_SoilDens(1))
+  SoilDensity    = SurfaceChar(Gridiv,c_SoilDens(1))   !!Not sure this works correctly - need to check
   SoilDepthMeas = SurfaceChar(Gridiv,c_ObsSMDepth(1))
   SmCap         = SurfaceChar(Gridiv,c_ObsSMMax(1))
   SoilRocks     = SurfaceChar(Gridiv,c_ObsSNRFrac(1))
@@ -195,9 +195,9 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   LAIPower(4) = SurfaceChar(Gridiv,c_LeafOP2(ivDecid)) ! 4 powers (not 4 veg types!)  
   
   ! ---- LUMPS-related parameters
-  DRAINRT    = SurfaceChar(Gridiv,c_LUMPSDr)  	 ! LUMPS Drainage rate [mm h-1]
+  DRAINRT    = SurfaceChar(Gridiv,c_LUMPSDr)  	  ! LUMPS Drainage rate [mm h-1]
   RAINCOVER  = SurfaceChar(Gridiv,c_LUMPSCover)   ! LUMPS Limit when surface totally wet [mm]
-  RAINMAXRES = SurfaceChar(Gridiv,c_LUMPSMaxRes)  ! LUMPS Maximum water bucket reservoir
+  RAINMAXRES = SurfaceChar(Gridiv,c_LUMPSMaxRes)  ! LUMPS Maximum water bucket reservoir [mm]
   
   ! ---- NARP-related parameters
   TRANS_SITE = SurfaceChar(Gridiv,c_NARPTrans)    ! NARP atmospheric transmissivity
@@ -300,8 +300,8 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   Ie_end          	 = int(SurfaceChar(Gridiv,c_IeEnd))
   InternalWaterUse_h  = SurfaceChar(Gridiv,c_IntWU)
   Faut	            	 = SurfaceChar(Gridiv,c_Faut)
-  Ie_a		    	 = SurfaceChar(Gridiv,c_Ie_a)
-  Ie_m		    	 = SurfaceChar(Gridiv,c_Ie_m)
+  Ie_a		    	 = SurfaceChar(Gridiv,c_Ie_a)   !Automatic irrigation model cofficients [mm d-1]; [mm d-1 degC-1]; [mm d-2]
+  Ie_m		    	 = SurfaceChar(Gridiv,c_Ie_m)   !Manual irrigation model cofficients [mm d-1]; [mm d-1 degC-1]; [mm d-2]
   DayWat	    	 = SurfaceChar(Gridiv,c_DayWat)
   DayWatPer        	 = SurfaceChar(Gridiv,c_DayWatPer)
     
@@ -322,12 +322,13 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   WUProfM_tstep(:,2) = TstepProfiles(Gridiv,cTP_WUManuWE,:) ! Water use, manual, weekends
   WUProfA_tstep(:,1) = TstepProfiles(Gridiv,cTP_WUAutoWD,:) ! Water use, automatic, weekdays
   WUProfA_tstep(:,2) = TstepProfiles(Gridiv,cTP_WUAutoWE,:) ! Water use, automatic, weekends
-   
+    
   ! ---- Within-grid water distribution
   ! N.B. Rows and columns of WaterDist are the other way round to the input info
   !! Model currently does not include above-ground flow from the Water surface
   !! - Probably should adjust WaterDist to have nsurf columns so that Water can behave like the other surfaces.
-  !! Model returns an error if both ToRunoff and ToSoilStore are non-zero. (Now done in CodeMatchDist.) Why?? 
+  ! Model returns an error if both ToRunoff and ToSoilStore are non-zero (in CodeMatchDist) 
+  ! For impervious surfaces, water goes to runoff; for pervious surfaces, water goes to soilstore
   WaterDist(PavSurf,  1:(nsurf-1)) = SurfaceChar(Gridiv,c_WGToPaved(1:(nsurf-1)))
   WaterDist(BldgSurf, 1:(nsurf-1)) = SurfaceChar(Gridiv,c_WGToBuilt(1:(nsurf-1)))
   WaterDist(ConifSurf,1:(nsurf-1)) = SurfaceChar(Gridiv,c_WGToEveTr(1:(nsurf-1)))
@@ -335,8 +336,7 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   WaterDist(GrassSurf,1:(nsurf-1)) = SurfaceChar(Gridiv,c_WGToGrass(1:(nsurf-1)))
   WaterDist(BSoilSurf,1:(nsurf-1)) = SurfaceChar(Gridiv,c_WGToBSoil(1:(nsurf-1)))
   WaterDist(WaterSurf,1:(nsurf-1)) = SurfaceChar(Gridiv,c_WGToWater(1:(nsurf-1)))
-  ! Runoff or SoilStore row !! Change later to allow both Runoff and SoilStore??
-  !! N.B. model may not have have been allowing drainage to soilstore - all counted as runoff??
+  ! Runoff or SoilStore row   !!Change later to allow both Runoff and SoilStore
   do iv = 1,(nsurf-1)
      if(SurfaceChar(Gridiv,c_WGToRunoff(iv)) /= 0) then
         WaterDist((nsurf+1),iv) = SurfaceChar(Gridiv,c_WGToRunoff(iv))
@@ -346,7 +346,7 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   enddo
   
   !! ---- Between-grid water distribution
-  !!! Need to make these larger than MaxGrids (and recode), as each grid can have 8 connections
+  !!! Need to make these larger than MaxNumberOfGrids (and recode), as each grid can have 8 connections
   !!GridConnections(1,) = SurfaceChar(Gridiv,c_Grid)
   !!GridConnectionsFrac() = SurfaceChar(Gridiv,55)
   !!GridConnections(2,) = SurfaceChar(Gridiv,54)
@@ -391,48 +391,46 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   
   ! ================================================================================= 
    
-  ! Make other assignments using this input information  !! NEEDS CHECKING!
-  ! Max albedo for DecTr    
-  AlbMax_dec = alb(DecidSurf)
-  ! Min & max Storage capacities for DecTr
+  ! Make other assignments using this input information
+  AlbMin_dec = 0.15             !Min albedo for DecTr set to 0.15   !!Should change later / set as input option
+  AlbMax_dec = alb(DecidSurf)   !Max albedo for DecTr set to current input (full leaf-on, middle of the day) value   
+  ! Min & max storage capacities for DecTr
   CapMin_dec = surf(1,DecidSurf)
   CapMax_dec = surf(5,DecidSurf)
-  ! Max GDD & SDD
-  GDDMax=0
-  SDDMax=0
-  do iv=1,nvegsurf
-     GDDMax=max(GDDFull(iv),GDDMax)	!! HCW - what is this doing??
-     SDDMax=min(SDDFull(iv),SDDMax)
-  enddo
-  file_qs=.false.  !! HCW - not sure whether this is still needed - what is it for??
-       
-
+  !! Max GDD & SDD   !!This is not used anywhere. Removed HCW 03 Mar 2015
+  !GDDMax=0
+  !SDDMax=0
+  !do iv=1,nvegsurf
+  !   GDDMax=max(GDDFull(iv),GDDMax)	
+  !   SDDMax=min(SDDFull(iv),SDDMax)
+  !enddo
+      
  !-----------------------------------------------------
   !-----------------------------------------------------
   !NARP_CONFIGURATION if net radiation is to be modelled
 
   IF(NetRadiationChoice>0)THEN
-    NARP_LAT = SurfaceChar(Gridiv,c_lat)
-    NARP_LONG = SurfaceChar(Gridiv,c_lng)    ! New sun_position_v2 use degrees FL
-    NARP_YEAR = int(SurfaceChar(Gridiv,c_Year))
-    NARP_TZ = TIMEZONE                           !not every 5-min
-    NARP_EMIS_SNOW = SurfaceChar(Gridiv,c_SnowEmis)
-           
-    NARP_TRANS_SITE = TRANS_SITE
+     NARP_LAT = SurfaceChar(Gridiv,c_lat)
+     NARP_LONG = SurfaceChar(Gridiv,c_lng)    ! New sun_position_v2 use degrees FL
+     NARP_YEAR = int(SurfaceChar(Gridiv,c_Year))
+     NARP_TZ = TIMEZONE                           !not every 5-min
+     NARP_EMIS_SNOW = SurfaceChar(Gridiv,c_SnowEmis)        
+     NARP_TRANS_SITE = TRANS_SITE
 
     !INTERVAL IS ONLY RELEVANT TO LUPCORR
     !ALL OTHER CALCULATIONS ARE INTERVAL INDEPENDENT
     !NB FOR INTERVALS LONGER THAN 15 MINUTES ERRORS IN KCLEAR WILL BE GREATER
 
-    NARP_NPERHOUR=MAX(3600/t_INTERVAL,1) !!Check this
-    IF(ALLOCATED(NARP_KDOWN_HR)) DEALLOCATE(NARP_KDOWN_HR)
-    ALLOCATE(NARP_KDOWN_HR(NARP_NPERHOUR))
-    NARP_KDOWN_HR=0.
+    ! Commented out HCW 04 Mar 2015
+    !NARP_NPERHOUR=MAX(3600/t_INTERVAL,1) !!Check this
+    !IF(ALLOCATED(NARP_KDOWN_HR)) DEALLOCATE(NARP_KDOWN_HR)
+    !ALLOCATE(NARP_KDOWN_HR(NARP_NPERHOUR))
+    !NARP_KDOWN_HR=0.
 
-    IF (ldown_option==4.or.ldown_option==5) then !Added by LJ
-      !INIITIALIZE SMITH DAY OF YEAR GRID G
-     ! NARP_G=SMITHLAMBDA(NINT(LAT))
-    ENDIF
+    !IF (ldown_option==4.or.ldown_option==5) then !Added by LJ
+    !  INIITIALIZE SMITH DAY OF YEAR GRID G
+    !  NARP_G=SMITHLAMBDA(NINT(LAT))
+    !ENDIF
   ENDIF
 
 
@@ -449,8 +447,7 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
      
      ! Get id_prev from ModelDailyState
      id_prev = int(ModelDailyState(Gridiv,cMDS_id_prev))
-     !write(*,*) 'id_prev',id_prev
-     
+         
      porosity = ModelDailyState(Gridiv,cMDS_porosity)
      albDec   = ModelDailyState(Gridiv,cMDS_albDec)
      DecidCap = ModelDailyState(Gridiv,cMDS_DecidCap)
@@ -474,14 +471,14 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   
      ! ---- Heating degree days, HDD
      HDD = 0       
-     HDD(id_prev,1) = ModelDailyState(Gridiv,cMDS_HDD1)		! 1 = Heating
-     HDD(id_prev,2) = ModelDailyState(Gridiv,cMDS_HDD2)		! 2 = Cooling
-     HDD(id_prev-3,3) = ModelDailyState(Gridiv,cMDS_TempCOld3)	! 3 will become average 
+     HDD(id_prev,1) = ModelDailyState(Gridiv,cMDS_HDD1)		  ! 1 = Heating
+     HDD(id_prev,2) = ModelDailyState(Gridiv,cMDS_HDD2)		  ! 2 = Cooling
+     HDD(id_prev-3,3) = ModelDailyState(Gridiv,cMDS_TempCOld3)	  ! 3 will become average 
      HDD(id_prev-2,3) = ModelDailyState(Gridiv,cMDS_TempCOld2)
      HDD(id_prev-1,3) = ModelDailyState(Gridiv,cMDS_TempCOld1)
      HDD(id_prev,3)   = ModelDailyState(Gridiv,cMDS_TempC)
-								! 4 = 5 day running mean  
-        							! 5 = daily precip total     
+								  ! 4 = 5 day running mean  
+        							  ! 5 = daily precip total     
      HDD(id_prev,6) = ModelDailyState(Gridiv,cMDS_DaysSinceRain)  ! 6 = days since rain
     
     
@@ -517,126 +514,151 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
      
   
   !Write FileChoices.txt (was in SUEWS_Initial.f95) once per grid per year
+  if (ir==1.and.iMB==1) then   !For first row of first block only
+    
+     write(*,*) 'Writing to FileChoices for first chunk of met data per year per grid'
   
-  if (ir==1.and.iMB==1) then
+     FileChoices=trim(FileOutputPath)//trim(FileCode)//'_FileChoices.txt'
+     open(12,file=FileChoices,position='append')
+   
+     write(12,*) ''
+     write(12,*) '===================================================================='
+     write(12,'(g6.2,i6,g6.2,i6)') 'YEAR:',int(SurfaceChar(Gridiv,c_Year)),'GRID:',int(SurfaceChar(Gridiv,c_Grid))
   
-  write(*,*) 'Writing to FileChoices for first chunk of met data per year per grid'
-  
-  FileChoices=trim(FileOutputPath)//trim(FileCode)//'_FileChoices.txt'
-  open(12,file=FileChoices,position='append')
-  
-  write(12,*) ''
-  write(12,*) '===================================================================='
-  write(12,'(g6.2,i6,g6.2,i6)') 'YEAR:',int(SurfaceChar(Gridiv,c_Year)),'GRID:',int(SurfaceChar(Gridiv,c_Grid))
-  
-  write(12,*)'--------SUEWS_FunctionalTypes.txt---------------------------- '
-  write(12,*)'!Paved  Bldgs   EveTr  DecTr  Grass   BSoil  Water  Snow        -9 not applicable  '
-  write(12,120) (alb(iv),iv=1,nsurf), alb_snow,' albedo -1'             ! 1
-  write(12,120) (emis(iv),iv=1,nsurf), emis_snow, 'emis -2'               ! 2
-  write(12,120) FCskip, FCskip, (baseT(iv),iv=1,nVegsurf),FCskip,FCskip ,'BaseT'  ! 3
-  write(12,120) FCskip, FCskip, (baseTe(iv),iv=1,nVegsurf),FCskip,FCskip, 'BaseTe'   ! 4
-  write(12,120) (Surf(1,iv),iv=1,nsurf), FCskip ,'storage capacity minimum/default' !5
-  write(12,120) (Surf(5,iv),iv=1,nsurf), FCskip ,'storage capacity maximum'       ! 
-  write(12,120) (Surf(2,iv),iv=1,nsurf), FCskip ,'drain equation' 
-  write(12,120) (Surf(3,iv),iv=1,nsurf), FCskip ,'dr coef1'     ! 7    ! 
-  write(12,120) (Surf(4,iv),iv=1,nsurf), FCskip ,'dr coef2'      ! 8    !  
-  write(12,'(7f8.0, 2g10.4)') FCskip, FCskip, (GDDFull(iv),iv=1,nVegsurf),FCskip,FCskip,FCskip, 'GDDFull '  ! 10
-  write(12,'(7f8.0, 2g10.4)') FCskip, FCskip,(SDDFull(iv),iv=1,nVegsurf),FCskip,FCskip,FCskip,'SDDFull'  ! 11
-  write(12,120) FCskip, FCskip, (LAImin(iv),iv=1,nVegsurf),FCskip,FCskip,FCskip,'LAI min'! 12  !
-  write(12,120) FCskip, FCskip, (LAImax(iv),iv=1,nVegsurf),FCskip,FCskip,FCskip,'LAI max'  ! 13 ! 
-  write(12,120) FCskip, FCskip, (MaxConductance(iv),iv=1,nVegsurf),FCskip,FCskip,FCskip,'MaxCond'  ! 14
-  write(12,'(8f8.0, 2g10.4)') (soilstoreCap(iv),iv=1,nsurf), FCskip, 'soilstoreCap'     ! 15
-  write(12,120) (VolSoilMoistCap(iv),iv=1,nsurf),FCskip,'VolSoilMoistCap'  ! 16
-  write(12,120) (SatHydraulicConduct(iv),iv=1,nsurf),FCskip,'SatHydraulicConduct'  ! 17
-  write(12,'(5g10.4, g10.5, g20.0)') G1,G2,G3,G4,G5,G6,' conductance parameters'   ! 17 
-  write(12,'(4g10.2,g10.5,g20.0)') TH,TL,S1,S2, Kmax,' conductance parameters'   ! 18 
-  write(12,*)  ! FCskip header Soil related
-  write(12,'(g12.6,g10.2,f6.0,3g8.3,g8.1)')SoilDensity,SoilDepthMeas, SoilRocks,SmCap,'Soil'  !24
-  write(12,*)  ! FCskip header LUMPS related
-  write(12,'(10g8.2)')DRAINRT,RAINCOVER,RAINMAXRES,'LUMPS (1)drainage rate,adjust alpha/beta wet surface(3)Max water bucket'  ! 26
-  write(12,*)! FCskip header snow related  
-  write(12,'(10g8.2)')RadMeltFact,TempMeltFact,albSnowMin,albSnowMax,tau_a,tau_f,PrecipLimitAlb
-  write(12,'(10g8.2)')densSnowMin,densSnowMax,tau_r,CRWmin,CRWmax,PrecipLimit    
-  write(12,*)! FCskip header NARP related  
-  write(12,'(10g8.2)') TRANS_SITE, 'tran_site'
-  write(12,*)! FCskip header LAI related  
-  write(12,'(10g8.2)') LAItype, (laiPower(iv),iv=1,2)
-  
-  120	 format (10g10.2)  
-  
- 
-  !! Check what to do about OHM canyons !!
-  
-  write(12,*) '---Number of rows in OHM_Coefficients.txt =',nlinesOHMCoefficients
-  
-  write(12,*)'-------','Select OHM','----------------------'
-  write(12,'(8g12.4)')  SurfaceChar(Gridiv,c_OHMCode_SWet)
-  write(12,'(8g12.4)')  SurfaceChar(Gridiv,c_OHMCode_SDry)
-  write(12,'(8g12.4)')  SurfaceChar(Gridiv,c_OHMCode_WWet)
-  write(12,'(8g12.4)')  SurfaceChar(Gridiv,c_OHMCode_WDry)
-  
-  write(12,*)' OHM coefficients----------------------'
-  do i=1,4
-     do ii=1, nsurf+1
-     	write(12,'(2i4,3g10.3)') ii,i, (OHM_coef(ii,i,iii),iii=1,3)
+     write(12,*)'--------SUEWS_FunctionalTypes.txt---------------------------- '
+     write(12,*)'!Paved  Bldgs   EveTr  DecTr  Grass   BSoil  Water  Snow        -9 not applicable  '
+     write(12,120) alb(1:nsurf),  alb_snow,  ' albedo'             ! 1
+     write(12,120) emis(1:nsurf), emis_snow, ' emissivity'               ! 2
+     write(12,120) FCskip, FCskip, baseT (1:nvegsurf),FCskip, FCskip, FCskip,' BaseT'  ! 3
+     write(12,120) FCskip, FCskip, baseTe(1:nvegsurf),FCskip, FCskip, FCskip, ' BaseTe'   ! 4
+     write(12,120) (Surf(1,iv),iv=1,nsurf), FCskip ,'min storage capacity' !5
+     write(12,120) (Surf(5,iv),iv=1,nsurf), FCskip ,'max storage capacity'       ! 
+     write(12,'(6g8.2,1f8.2,g8.2,g15.2)') (StateLimit(iv),iv=1,nsurf), FCskip,' StateLimit' !
+     write(12,120) (Surf(2,iv),iv=1,nsurf), FCskip ,' drain equation' 
+     write(12,120) (Surf(3,iv),iv=1,nsurf), FCskip ,' dr coef1'     ! 7    ! 
+     write(12,120) (Surf(4,iv),iv=1,nsurf), FCskip ,' dr coef2'      ! 8    !  
+     write(12,'(7f8.0, 2g10.4)') FCskip, FCskip, (GDDFull(iv),iv=1,nVegsurf),FCskip,FCskip,FCskip, 'GDDFull '  ! 10
+     write(12,'(7f8.0, 2g10.4)') FCskip, FCskip,(SDDFull(iv),iv=1,nVegsurf),FCskip,FCskip,FCskip,'SDDFull'  ! 11
+     write(12,120) FCskip, FCskip, (LAImin(iv),iv=1,nVegsurf),FCskip,FCskip,FCskip,'LAI min'! 12  !
+     write(12,120) FCskip, FCskip, (LAImax(iv),iv=1,nVegsurf),FCskip,FCskip,FCskip,'LAI max'  ! 13 ! 
+     write(12,120) FCskip, FCskip, (MaxConductance(iv),iv=1,nVegsurf),FCskip,FCskip,FCskip,'MaxCond'  ! 14
+     write(12,'(8f8.0, 2g10.4)') (soilstoreCap(iv),iv=1,nsurf), FCskip, 'soilstoreCap'     ! 15
+     write(12,120) (SoilDepth(iv),iv=1,nsurf),FCskip,'SoilDepth'  ! 16
+     write(12,120) (SatHydraulicConduct(iv),iv=1,nsurf),FCskip,'SatHydraulicConduct'  ! 17
+     write(12,'(5g10.4, g10.5, g20.0)') G1,G2,G3,G4,G5,G6,' conductance parameters'   ! 17 
+     write(12,'(4g10.2,g10.5,g20.0)') TH,TL,S1,S2, Kmax,' conductance parameters'   ! 18 
+     write(12,*)  ! FCskip header Soil related
+     write(12,'(g12.6,g10.2,f6.0,3g8.3,g8.1)')SoilDensity,SoilDepthMeas, SoilRocks,SmCap,'Soil'  !24
+     write(12,*)  ! FCskip header LUMPS related
+     write(12,'(10g8.2)')DRAINRT,RAINCOVER,RAINMAXRES,'LUMPS (1)drainage rate,adjust alpha/beta wet surface(3)Max water bucket'  ! 26
+     write(12,*)! FCskip header snow related  
+     write(12,'(10g8.2)')RadMeltFact,TempMeltFact,albSnowMin,albSnowMax,tau_a,tau_f,PrecipLimitAlb
+     write(12,'(10g8.2)')densSnowMin,densSnowMax,tau_r,CRWmin,CRWmax,PrecipLimit    
+     write(12,*)! FCskip header NARP related  
+     write(12,'(10g8.2)') TRANS_SITE, 'trans_site'
+     write(12,*)! FCskip header LAI related  
+     write(12,'(10g8.2)') LAItype, (laiPower(iv),iv=1,4)
+
+     120	 format (8g8.2, g15.2)  !format (10g10.2)  
+         
+     
+     write(12,*) '---Number of rows in OHM_Coefficients.txt =',nlinesOHMCoefficients
+
+     write(12,*)'-------','Select OHM','----------------------'
+     write(12,'(8g12.4)')  SurfaceChar(Gridiv,c_OHMCode_SWet)
+     write(12,'(8g12.4)')  SurfaceChar(Gridiv,c_OHMCode_SDry)
+     write(12,'(8g12.4)')  SurfaceChar(Gridiv,c_OHMCode_WWet)
+     write(12,'(8g12.4)')  SurfaceChar(Gridiv,c_OHMCode_WDry)
+     write(12,*)' OHM coefficients----------------------'
+     do i=1,4
+        do ii=1, nsurf+1
+           write(12,'(2i4,3g10.3)') ii,i, (OHM_coef(ii,i,iii),iii=1,3)
+        enddo
      enddo
-  enddo
-  
-  write(12,*)'----------','Within-grid water distribution','----------'
-  !write(12,*)'To !Paved Built  EveTr  DecTr Grass BSoil  Water Runoff/SoilStore'
-  do iv=1,(nsurf-1)
-    write(12,'(i4, 8f6.2)')iv,(WaterDist(j,iv),j=1,nsurf+1)
-  enddo  
-  
-  write(12,*)'----------','Hourly Profiles','----------'
-  write(12,'(24f6.2, a20)') AHProf(0:23,1), 'Hourly anthropogenic heat profile WD'
-  write(12,'(24f6.2, a20)') AHProf(0:23,2), 'Hourly anthropogenic heat profile WE'
-  write(12,'(24f6.2, a20)') WUProfM(0:23,1),'Hourly manual water use profile WD'  
-  write(12,'(24f6.2, a20)') WUProfM(0:23,2),'Hourly manual water use profile WE'  
-  write(12,'(24f6.2, a20)') WUProfA(0:23,1),'Hourly automatic water use profile WD'  
-  write(12,'(24f6.2, a20)') WUProfA(0:23,2),'Hourly automatic water use profile WE'  
-  write(12,'(24f6.2, a20)') SnowProf(0:23,1), 'Hourly snow clearing profile WD'  
-  write(12,'(24f6.2, a20)') SnowProf(0:23,2), 'Hourly snow clearing profile WE'  
-  
-  write(12,*)'----------','Anthropogenic Heat','----------'
-  write(12,'(2g12.3)') 'NumCapita = ',NumCapita
-  write(12,'(2g12.3)') 'BaseTHDD = ',BaseTHDD
-  write(12,'(3g12.3)') 'QF_A = ',QF_A
-  write(12,'(3g12.3)') 'QF_B = ',QF_B
-  write(12,'(3g12.3)') 'QF_C = ',QF_C  
-  write(12,'(2g12.3)') 'AH_Min = ',AH_Min
-  write(12,'(2g12.3)') 'AH_Slope = ',AH_Slope
-  write(12,'(2g12.3)') 'T_critic = ',T_critic
-  
-  write(12,*)'----------','Site specific','----------'
-  write(12,130) 'Lat = ',lat
-  write(12,130) 'Lon = ',lng
-  write(12,130) 'SurfaceArea = ',SurfaceArea
-  write(12,130) 'RunoffToWater = ',RunoffToWater
-  write(12,130) 'WaterUseAreaGrass = ',WUAreaGrass_m2  
-  !write(12,130) 'WaterUseAreaTrees = ',WUAreaTrees_m2  
-  write(12,130) 'FlowChange = ',FlowChange
-  write(12,130) 'PipeCapacity = ',PipeCapacity  
-  write(12,130) 'Faut = ',Faut  
-  write(12,130) 'Ie_start = ',Ie_start
-  write(12,130) 'Ie_end = ',Ie_end
-  write(12,130) 'Ie_a = ',Ie_a
-  write(12,130) 'Ie_m = ',Ie_m
-  write(12,130) 'DayWat = ',DayWat
-  write(12,130) 'DayWatPer = ',DayWatPer
-  write(12,130) 'InternalWaterUse = ',InternalWaterUse_h
-  write(12,130) 'SnowLimBuild = ',SnowLimBuild
-  write(12,130) 'SnowLimPaved = ',SnowLimPaved
-  
-  130 	 format (g20.1,7g10.3) 
-  
-  write(12,*) '===================================================================='
-  
-  close(12)
 
-  endif
+     write(12,*)'----------','Within-grid water distribution','----------'
+     !write(12,*)'To !Paved Built  EveTr  DecTr Grass BSoil  Water Runoff/SoilStore'
+     do iv=1,(nsurf-1)
+        write(12,'(i4, 8f6.2)')iv,(WaterDist(j,iv),j=1,nsurf+1)
+     enddo  
 
+     write(12,*)'----------','Hourly Profiles','----------'
+     write(12,'(24f6.2, a20)') AHProf(0:23,1), 'Hourly anthropogenic heat profile WD'
+     write(12,'(24f6.2, a20)') AHProf(0:23,2), 'Hourly anthropogenic heat profile WE'
+     write(12,'(24f6.2, a20)') WUProfM(0:23,1),'Hourly manual water use profile WD'  
+     write(12,'(24f6.2, a20)') WUProfM(0:23,2),'Hourly manual water use profile WE'  
+     write(12,'(24f6.2, a20)') WUProfA(0:23,1),'Hourly automatic water use profile WD'  
+     write(12,'(24f6.2, a20)') WUProfA(0:23,2),'Hourly automatic water use profile WE'  
+     write(12,'(24f6.2, a20)') SnowProf(0:23,1), 'Hourly snow clearing profile WD'  
+     write(12,'(24f6.2, a20)') SnowProf(0:23,2), 'Hourly snow clearing profile WE'  
 
+     write(12,*)'----------','Anthropogenic Heat','----------'
+     write(12,'(2g12.3)') 'NumCapita = ',NumCapita
+     write(12,'(2g12.3)') 'BaseTHDD = ',BaseTHDD
+     write(12,'(3g12.3)') 'QF_A = ',QF_A
+     write(12,'(3g12.3)') 'QF_B = ',QF_B
+     write(12,'(3g12.3)') 'QF_C = ',QF_C  
+     write(12,'(2g12.3)') 'AH_Min = ',AH_Min
+     write(12,'(2g12.3)') 'AH_Slope = ',AH_Slope
+     write(12,'(2g12.3)') 'T_critic = ',T_critic
+
+     write(12,*)'----------','Site specific','----------'
+     write(12,130) 'Lat = ',lat
+     write(12,130) 'Lon = ',lng
+     write(12,130) 'SurfaceArea = ',SurfaceArea
+     write(12,130) 'RunoffToWater = ',RunoffToWater
+     write(12,130) 'WaterUseAreaEveTrees = ',WUAreaEveTr_m2  
+     write(12,130) 'WaterUseAreaDecTrees = ',WUAreaDecTr_m2  
+     write(12,130) 'WaterUseAreaGrass = ',WUAreaGrass_m2  
+     write(12,130) 'FlowChange = ',FlowChange
+     write(12,130) 'PipeCapacity = ',PipeCapacity  
+     write(12,130) 'Faut = ',Faut  
+     write(12,130) 'Ie_start = ',Ie_start
+     write(12,130) 'Ie_end = ',Ie_end
+     write(12,130) 'Ie_a = ',Ie_a
+     write(12,130) 'Ie_m = ',Ie_m
+     write(12,130) 'DayWat = ',DayWat
+     write(12,130) 'DayWatPer = ',DayWatPer
+     write(12,130) 'InternalWaterUse = ',InternalWaterUse_h
+     write(12,130) 'SnowLimBuild = ',SnowLimBuild
+     write(12,130) 'SnowLimPaved = ',SnowLimPaved
+
+     130 	 format (g20.1,7g10.3) 
+
+     write(12,*) '===================================================================='
+
+     close(12)
+      
+     !==============================================================================
+     ! Check input values are reasonable ===========================================
+    
+     ! Coefficients for anthropogenic heat models ----------------------------------
+     if(AnthropHeatChoice==1) then   !Loridan et al. (2011) calculation
+        if(AH_min==0.and.Ah_slope==0.and.T_Critic==0) then
+           call ErrorHint(53,'Check QF calculation coefficients.',notUsed,notUsed,AnthropHeatChoice)
+        endif
+  
+     elseif(AnthropHeatChoice==2) then   !Jarvi et al. (2011) calculation 
+        if(sum(QF_A)==0.and.sum(QF_B)==0.and.sum(QF_C)==0) then
+           call ErrorHint(54,'Check QF calculation coefficients.',notUsed,notUsed,AnthropHeatChoice)
+        endif
+     endif 
+
+     ! Morphometric parameters -----------------------------------------------------
+     if(z0_method==1) then   !z0, zd values provided in input file
+        if(z0m<0.00001) call ErrorHint(5,'Check value of z0 in input data.',z0m,notUsed,notUsedI)
+        if(zdm<0.00001) call ErrorHint(6,'Check value of zd in input data.',zdm,notUsed,notUsedI)
+        zzd=z-zdm
+     elseif(z0_method==3) then   !z0, zd calculated using FAI in input file, check FAIs reasonable
+        if(FAIBLdg<0) call ErrorHint(1,'Check value of FAI for Buildings in input data',FAIBldg,notUsed,notUsedI)
+        if(FAITree<0) call ErrorHint(2,'Check value of FAI for Trees in input data (weighted EveTr+DecTr)',FAITree,notUsed,notUsedI)
+     endif 
+    
+     !==============================================================================
+         
+  endif   !End for first row of first block only
+  
+  
   !For each row of the met forcing file (ir), translate correct info for each grid 
   ! into model variables
   if (ir>0) then
@@ -644,20 +666,20 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
      ! === Translate met data from MetForcingData to variable names used in model ==
      ! ============================================================================= 
   
-     iy =    int(MetForcingData(ir,1,Gridiv))  !Integer variables
-     id =    int(MetForcingData(ir,2,Gridiv))
-     it =    int(MetForcingData(ir,3,Gridiv))
-     imin =  int(MetForcingData(ir,4,Gridiv))
-     qn1_obs =   MetForcingData(ir,5,Gridiv)   !Real values (kind(1d0))
-     qh_obs =    MetForcingData(ir,6,Gridiv)
-     qe_obs =    MetForcingData(ir,7,Gridiv)
-     qs =        MetForcingData(ir,8,Gridiv)
-     qf =        MetForcingData(ir,9,Gridiv)
+     iy =    int(MetForcingData(ir, 1,Gridiv))  !Integer variables
+     id =    int(MetForcingData(ir, 2,Gridiv))
+     it =    int(MetForcingData(ir, 3,Gridiv))
+     imin =  int(MetForcingData(ir, 4,Gridiv))
+     qn1_obs =   MetForcingData(ir, 5,Gridiv)   !Real values (kind(1d0))
+     qh_obs =    MetForcingData(ir, 6,Gridiv)
+     qe_obs =    MetForcingData(ir, 7,Gridiv)
+     qs =        MetForcingData(ir, 8,Gridiv)
+     qf =        MetForcingData(ir, 9,Gridiv)
      avu1 =      MetForcingData(ir,10,Gridiv)
      avrh =      MetForcingData(ir,11,Gridiv)
      Temp_C =    MetForcingData(ir,12,Gridiv)
      Press_hPa = MetForcingData(ir,13,Gridiv)
-     Precip = MetForcingData(ir,14,Gridiv)
+     Precip =    MetForcingData(ir,14,Gridiv)
      avkdn =     MetForcingData(ir,15,Gridiv)
      snow_obs =  MetForcingData(ir,16,Gridiv)
      ldown_obs = MetForcingData(ir,17,Gridiv)
@@ -685,7 +707,7 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
      porosity(id) = ModelDailyState(Gridiv,cMDS_porosity)
      albDec(id)   = ModelDailyState(Gridiv,cMDS_albDec)
      DecidCap(id) = ModelDailyState(Gridiv,cMDS_DecidCap)
-     CumSnowfall = ModelDailyState(Gridiv,cMDS_CumSnowfall)
+     CumSnowfall  = ModelDailyState(Gridiv,cMDS_CumSnowfall)
      
      ! Save required DailyState variables for the current grid (HCW 27 Nov 2014)
      HDD(:,:) = HDD_grids(:,:,Gridiv)
@@ -713,8 +735,13 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
      SnowPack(1:nsurf)  = ModelOutputData(ir-1,cMOD_SnowPack(1:nsurf), Gridiv)    
      ! ---- Liquid (melted) water in snowpack
      MeltWaterStore(1:nsurf)  = ModelOutputData(ir-1,cMOD_SnowWaterState(1:nsurf), Gridiv)    
-   
+    
   endif !ir>0
+  
+  ! Check Initial Conditions are reasonable ----------------------------------------
+  if (ir==1.and.iMB==1) then   !For first row of first block only
+     call CheckInitial
+  endif   
 
   return
  end subroutine SUEWS_Translate
@@ -730,20 +757,18 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
 subroutine SUEWS_TranslateBack(Gridiv,ir,irMax)
 
   use Initial
-  use allocateArray   ! defines: SiteInfo, sfr, (PavSurf, BldgSurf, etc) 
-  use data_in	      ! defines: lat, lng, PopDaytime, PopNighttime, DayLightSavingDay, QF variables
-  use sues_data       ! defines: SurfaceArea, IrrFractionTrees, IrrFracConif, IrrFracDecid, IrrFracGrass, Irrigation variables
-  use gis_data        ! defines: areaZh, VegFraction, veg_fr, veg_type, BldgH, TreeH, FAIBldg, FAITree, Alt
-  use mod_z	      ! defines: z0m, zdm	
-  use snowMod	      ! defines: alb_snow, etc		
-  use resist	      ! defines: G1-G6, TH, TL, S1, S2, Kmax
-  use ohm_calc        ! defines: OHM_coef
+  use allocateArray   
+  use data_in	      
+  use sues_data       
+  use gis_data        
+  use mod_z	      
+  use snowMod	      
+  use resist	      
   use defaultnotUsed
   use time
   use ColNamesInputFiles
   use ColNamesModelDailyState
-  use run_info	      ! for file_qs (still needed??)	 
-
+  
   IMPLICIT NONE
 
   integer::Gridiv,&   ! Index of the analysed grid (Gridcounter)

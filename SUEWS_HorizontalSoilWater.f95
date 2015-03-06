@@ -24,7 +24,7 @@
  real(kind(1d0)) ::SoilMoist_vol1,SoilMoistCap_vol1,SoilMoist_vol2,SoilMoistCap_vol2,&
  		MatPot1,DimenWaterCon1,MatPot2,DimenWaterCon2,Distance,B_r1,B_r2,Km1,Km2,KmWeight,&
  		alphavG,dI, NUnits
-
+                         
  ! SoilMoist_vol1,2     = Volumetric soil moisture [m3 m-3]        
  ! SoilMoistCap_vol1,2  = Volumetric soil moisture capacity [m3 m-3] (from FunctionalTypes)
  ! MatPot1,2            = Water potential (i.e. pressure head) of store [mm]
@@ -53,11 +53,9 @@
                                                         ! and is capable of storing water
               
               ! ---- For surface 1 -----------------------------------------------------
-              ! Calculate SoilDepth [mm] in order to calculate non-saturated VWC
-              SoilDepth=SoilStoreCap(is)/VolSoilMoistCap(is)
-                
-   			  SoilMoistCap_Vol1=VolSoilMoistCap(is)  !Volumetric soil moisture capacity [m3 m-3] (i.e. saturated VWC)
-              SoilMoist_vol1=SoilMoist(is)/SoilDepth !Volumetric soil moisture [m3 m-3]
+              ! Calculate non-saturated VWC
+              SoilMoistCap_Vol1=SoilStoreCap(is)/SoilDepth(is) !Volumetric soil moisture capacity [m3 m-3] (i.e. saturated VWC)
+              SoilMoist_vol1=SoilMoist(is)/SoilDepth(is) !Volumetric soil moisture [m3 m-3]
                 
               !B_r1=SoilMoistCap_Vol1-SoilMoist_vol1  !Residual soil moisture content [m3 m-3]   
               B_r1=0.1 !HCW 12/08/2014 Temporary fix 
@@ -68,9 +66,9 @@
     		     DimenWaterCon1=(SoilMoist_vol1-B_r1)/(SoilMoistCap_Vol1-B_r1) !Dimensionless water content [-]
                     
                  if(DimenWaterCon1>0.99999) then
-                    DimenWaterCon1=DimenWaterCon1-0.0001 !This cannot equal 1!!!
+                    DimenWaterCon1=DimenWaterCon1-0.0001 !This cannot equal 1
                  endif
-                 ! write(*,*)DimenWaterCon1,SoilMoist(is),SoilDepth ,SoilStoreCap(is), B_r1,is
+                 ! write(*,*)DimenWaterCon1,SoilMoist(is),SoilDepth(is),SoilStoreCap(is), B_r1,is
                  ! pause
                  
                  !Check this (HCW 12/08/2014) - is this needed? Why is it not done for other surface?
@@ -98,11 +96,9 @@
               endif
               
               ! ---- For surface 2 -----------------------------------------------------
-              ! Calculate SoilDepth [mm] in order to calculate non-saturated VWC
-              SoilDepth=SoilStoreCap(jj)/VolSoilMoistCap(jj) ! Soil depth of other surface
-                
-              SoilMoistCap_Vol2=VolSoilMoistCap(jj)  !Volumetric soil moisture capacity [m3 m-3] (i.e. saturated VWC)
-        	  SoilMoist_vol2=SoilMoist(jj)/SoilDepth !Volumetric soil moisture [m3 m-3]
+              ! Calculate non-saturated VWC
+              SoilMoistCap_Vol2=SoilStoreCap(jj)/SoilDepth(jj) !Volumetric soil moisture capacity [m3 m-3] (i.e. saturated VWC)             
+              SoilMoist_vol2=SoilMoist(jj)/SoilDepth(jj) !Volumetric soil moisture [m3 m-3]
     			
               !B_r2=SoilMoistCap_Vol2-SoilMoist_vol2  !Residual soil moisture content [m3 m-3]   
               B_r2=0.1 !HCW 12/08/2014 Temporary fix 
@@ -113,7 +109,7 @@
     		     DimenWaterCon2=(SoilMoist_vol2-B_r2)/(SoilMoistCap_Vol2-B_r2) !Dimensionless water content [-]
                 
                  if(DimenWaterCon2>0.99999) then
-                    DimenWaterCon2=DimenWaterCon2-0.0001 !This cannot equal 1!!!
+                    DimenWaterCon2=DimenWaterCon2-0.0001 !This cannot equal 1
                  endif 
       
                  !van Genuchten (1980), with n=2 and m = 1-1/n = 1/2

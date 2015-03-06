@@ -4,6 +4,8 @@
 ! Responds to what has happened in the past (temperature, rainfall, etc)
 ! N.B. If changes are made here, may need to update code in SUEWS_Initial accordingly
 !
+! Last modified HCW 06 Mar 2015
+!  iy used instead of year which does not have a value here
 ! Last modified HCW 20 Feb 2015
 !  Added surf(6,is) for the current storage capacity
 !  Updated and corrected DailyState output file
@@ -24,9 +26,7 @@
 ! To Do - Check SnowUpdate following adjustment to 5-min timestep (LJ to do)
 !	- Account for change of year in 5-day running mean?
 !	- Check LAI calcs (N/S hemisphere similarities; use of day length)
-!       - Take out doy limits (140,170, etc) and code as paramters
-! 	- Check units of Ie_a, Ie_m!!
-!	- Check and improve DailyState output file
+!       - Take out doy limits (140,170, etc) and code as parameters
 !	- Could add different coefficients (Ie_m, Ie_a) for each vegetation type
 !==============================================================================
  subroutine DailyState(Gridiv)
@@ -112,7 +112,7 @@
   HDD(id,2)=HDD(id,2) + gamma2*(Temp_C-BaseTHDD)   !Cooling
   HDD(id,3)=HDD(id,3) + Temp_C                     !Will become daily average temperature
   ! 	 4 ------------------------------------!   !5-day running mean  
-  HDD(id,5)=HDD(id,5) + Precip                     !Daily precip total  !!
+  HDD(id,5)=HDD(id,5) + Precip                     !Daily precip total  
   ! 	 6 ------------------------------------!   !Days since rain
     
   ! Calculation of snow albedo and density from previous timestep (delta t = 1 h)
@@ -128,17 +128,17 @@
      !write(*,*) 'First timestep of day'  
      
      if(id<=1)then
-        year=year-1
-        call LeapYearCalc (int(year),id)
+        iy=iy-1
+        call LeapYearCalc (iy,id)
         switch=1
         call ErrorHint(43,'switch- to last day of last year',notUsed,notUsed,notUsedI)
      endif 
   
-     call day2month(id,mb,date,seas,year,lat)	!Calculate real date from doy
-     call Day_of_Week(date,mb,year,wd)   	!Calculate weekday (1=Sun, ..., 7=Sat)
-
+     call day2month(id,mb,date,seas,iy,lat)	!Calculate real date from doy
+     call Day_of_Week(date,mb,iy,wd)   	!Calculate weekday (1=Sun, ..., 7=Sat)   
+     
      if(switch==1)then
-        year=year+1
+        iy=iy+1
         id=1
         switch=0
      endif
@@ -160,7 +160,7 @@
      if(Gridiv == NumberOfGrids) tstepcount=0  !Set to zero only after last grid has run
      
      ! Calculate 5-day running mean temp
-     !! Need to deal with the previous year - to do !! 
+     !! Need to deal with the previous year
      do jj=1,5         
         HDD(id,4)=HDD(id,4) + HDD(id-(jj-1),3)
      enddo
@@ -244,7 +244,7 @@
         yes =((GDD(id,3)+GDD(id,4))/2-BaseT(iv))    !Leaf on
         no  =((GDD(id,3)+GDD(id,4))/2-BaseTe(iv))   !Leaf off
       
-        indHelp = 0   !Help switch to allow GDD fo to zero in sprint-time !!What does this mean?? HCW
+        indHelp = 0   !Help switch to allow GDD to go to zero in sprint-time !!What does this mean?? HCW
           
         if(yes<0) then   !GDD cannot be negative 
            indHelp=yes   !Amount of negative GDD
@@ -295,7 +295,7 @@
            elseif (LAItype>=0.5) then            
               if(GDD(id,1)>0.and.GDD(id,1)<GDDFull(iv)) then        !Leaves can still grow
                  lai(id,iv)=(lai(id-1,iv)**laiPower(1)*GDD(id,1)*laiPower(2))+lai(id-1,iv)
-              !! Use day length to start senescence at high latitudes (N hemisphere) !!   
+              !! Use day length to start senescence at high latitudes (N hemisphere)  
               elseif (GDD(id,5)<=12.and.GDD(id,2)>SDDFull(iv)) then !Start senescence	
                  lai(id,iv)=(lai(id-1,iv)*laiPower(3)*(1-GDD(id,2))*laiPower(4))+lai(id-1,iv)
               else
@@ -321,7 +321,7 @@
            else  
               if(GDD(id,1)>0.and.GDD(id,1)<GDDFull(iv)) then
                  lai(id,iv)=(lai(id-1,iv)**laiPower(1)*GDD(id,1)*laiPower(2))+lai(id-1,iv)
-              !! Day length not used to start senescence in S hemisphere (not much land) !!                 
+              !! Day length not used to start senescence in S hemisphere (not much land) 
               elseif(GDD(id,2)<0.and.GDD(id,2)>SDDFull(iv)) then
                  lai(id,iv)=(lai(id-1,iv)*laiPower(3)*(1-GDD(id,2))*laiPower(4))+lai(id-1,iv) 
               else
@@ -343,7 +343,7 @@
      !::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
      ! Calculate the development of deciduous cover, albedo and porosity
      ! If only LUMPS is used, set deciduous capacities to 0
-              
+                   
      !assume porosity Change based on GO99- Heisler?
      ! max-min for 
      ! sg changed to increase or decrease appropriately for change in LAI
@@ -352,11 +352,11 @@
      CapChange=0
      porChange=0
      albChange=0
-       
+            
      if((LAI(ID,iv)-LAI(ID-1,iv))/=0) then
         deltaLAI=(LAI(id,iv)-LAI(id-1,iv))/(LAImax(iv)-LaiMin(iv))
         CapChange=(CapMin_dec-CapMax_dec)* deltaLAI
-        albChange=(alBMax_dec-AlbMin_dec)* deltaLAI          !AlbMin_dec set to 0.15 in LUMPS_ModuleConstants
+        albChange=(alBMax_dec-AlbMin_dec)* deltaLAI          
         porChange=(0.2-0.6)* deltaLAI     
      endif        
      DecidCap(id)=DecidCap(id-1)-CapChange
@@ -386,8 +386,8 @@
                        'WU_EveTr(1) WU_EveTr(2) WU_EveTr(3) ',&                                                         !22
                        'WU_DecTr(1) WU_DecTr(2) WU_DecTr(3) ',&                                                         !25    
                        'WU_Grass(1) WU_Grass(2) WU_Grass(3) ',&                                                         !28
-                       'deltaLAI LAIlumps alb_snow ',&                                                                  !31     !38
-                       'DensSnow_Paved DensSnow_Bldgs DensSnow_EveTr DensSnow_DecTr DensSnow_Grass DensSnow_BSoil DensSnow_Water ')
+                       'deltaLAI LAIlumps ')                                                                            !30
+                       
            DailyStateFirstOpen(Gridiv)=0
         ! Otherwise open file to append
         else
@@ -399,15 +399,13 @@
                       HDD(id,1:6),GDD(id,1:5),LAI(id,1:nvegsurf),&
                       DecidCap(id),Porosity(id),AlbDec(id),&
                       WU_day(id-1,1:9),&
-                      deltaLAI,VegPhenLumps,alb_snow,&
-                      densSnow(1:nsurf)
+                      deltaLAI,VegPhenLumps
             
         601 format(2(i4,1X),&
                    6(f6.1,1X), 5(f6.1,1X), 3(f6.2,1X),&
                    3(f6.2,1X),&
                    9(f7.3,1X),&
-                   3(f7.2,1X),&
-                   7(f7.2,1X))
+                   2(f7.2,1X))
          
         ! Close the daily state file
         close(60)

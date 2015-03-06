@@ -55,14 +55,15 @@
        	  text1='sdec3=sdec=4 - check/adjust GDD and SDDFull & DailyState'
           v3=.true.
      elseif(errh==5)then   
-          text1='for z0m - GIS Input selected for z0_method - this value looks inappropriate'
+          text1='Value for z0 in SiteSelect looks inappropriate'
           v1=.true.
      elseif(errh==6)then     	 
-          text1='for zd - GIS Input selected for z0_method - this value looks inappropriate'
+          text1='Value for zd in SiteSelect looks inappropriate'
           v1=.true.
      elseif(errh==7) then
-	  text1='HourWat should add to 1 in this file'  !!HourWat no longer used (HCW 23 Jan 2015)
+	  text1='RA value exceeds thresholds set in model'
           v1=.true.
+          returnTrue=.true.
      elseif(errh==8) then
      	  text1='Should be zero (water cannot move from one surface to the same surface).'
           v1=.true.
@@ -217,7 +218,7 @@
      elseif(errh==52)then
           text1 = 'Problems in opening the output file'
      elseif(errh==53)then
-          text1 = 'AH_min=0.and.Ah_slope=0.and.T_Critic=0 AnthropHeatChoice='
+          text1 = 'AH_min=0.and.Ah_slope=0.and.T_Critic=0, AnthropHeatChoice='
           returntrue = .true.
           v3 = .true.
      elseif(errh==54)then

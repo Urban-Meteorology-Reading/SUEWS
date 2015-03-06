@@ -83,7 +83,7 @@ subroutine WaterUse
      WuFr=1 !Initialize WuFr to 1, but if raining, reduce manual fraction of water use
      ! If cumulative daily precipitation exceeds 2 mm
      if(HDD(id,5)>2) then    !.and.WU_Day(id-1,3)>0) then !Commented out HCW 23/01/2015
-        WuFr=0   ! 0 -> No manual irrigation if raining !!Check what this value should be
+        WuFr=0   ! 0 -> No manual irrigation if raining 
      endif
      
      ! Add manual to automatic to find total irrigation

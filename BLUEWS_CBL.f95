@@ -23,7 +23,8 @@ subroutine CBL(ifirst,iMB)
     real(Kind(1d0)), parameter::pi=3.141592653589793d+0,d2r=pi/180.
 
     !Skip first loop and unspecified days
-    if(ifirst==1 .or. CBLday(id)==0)then
+    !if(ifirst==1 .or. CBLday(id)==0) then   
+    if((ifirst==1 .and. iMB==1) .or. CBLday(id)==0) then   !HCW modified condition to check for first timestep of the model run
         iCBLcount=iCBLcount+1
         dataOutBL(iCBLcount,1:22,iMB)=(/real(iy,8),real(id,8),real(it,8),real(imin,8),dectime,(NAN,is=6,22)/)                 
         return
@@ -111,8 +112,10 @@ subroutine CBL(ifirst,iMB)
     
     !Output time correction
     idoy=id 
-    If(it==0 .and. imin==55) idoy=id-1 
+    !If(it==0 .and. imin==55) idoy=id-1 
+    if(it==0 .and. imin==(nsh_real-1)/nsh_real*60) idoy=id-1  !Modified by HCW 04 Mar 2015 in case model timestep is not 5-min
 
+    
     if((qh_choice==1).or.(qh_choice==2))then !BLUEWS or BLUMPS
         !Stability correction
         !tm_K_zm=tm_K+cbld(10)*cbld(2)/(k*cbld(8)*cbld(6)*cbld(4))

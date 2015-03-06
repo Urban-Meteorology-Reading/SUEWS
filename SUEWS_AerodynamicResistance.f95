@@ -1,10 +1,12 @@
 subroutine AerodynamicResistance(RA,AerodynamicResistanceMethod,StabilityMethod,RoughLen_heat,&
             ZZD,z0m,k2,AVU1,L_mod,Ustar,veg_fr,psyh) ! psyh is added. shiho
-            
-! Returns Aerodynamic resistance (RA) to the main program SUEWS_temporal
+        
+! Returns Aerodynamic resistance (RA) to the main program SUEWS_Calculations
 ! All ra equations reported in Thom & Oliver (1977)
 ! Modified by LJ in 12 April to not to be used with global variables
-! OUTPUT: RA - Aerodynamic resistance (m^-1)
+! To Do:
+!       - Check whether the thresholds 2-200 s m-1 are suitable over a range of z0!! HCW 04 Mar 2015
+! OUTPUT: RA - Aerodynamic resistance [s m^-1]
 ! INPUT:  AerodynamicResistanceMethod = Method to calculate RA
 !         StabilityMethod = defines the method to calculate atmospheric stability
 !         RoughLen_heat = Method to calculate heat roughness length
@@ -16,6 +18,9 @@ subroutine AerodynamicResistance(RA,AerodynamicResistanceMethod,StabilityMethod,
 !         Ustar = Friction velocity (m s-1)
 !         veg_fr = Fraction of vegetation
          
+
+use DefaultNotUsed
+            
 implicit none
 
 real (kind(1d0))::psym,psyh,stab_fn_heat,stab_fn_mom,ZZD,z0m,k2,AVU1,L_mod,Ustar,RA,z0V,veg_fr, & 
@@ -36,7 +41,7 @@ integer::AerodynamicResistanceMethod,StabilityMethod,RoughLen_heat
      psym=stab_fn_mom(StabilityMethod,ZZD/L_mod,zzd/L_mod)
      psyh=stab_fn_heat(StabilityMethod,ZZD/L_mod,zzd/L_mod)
 
-     !¤¤¤¤¤¤Z0V roughness length for vapour¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤ 
+     !ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Z0V roughness length for vapourï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 
   	 if (RoughLen_heat==1) then !Brutasert (1982) Z0v=z0/10(see Grimmond & Oke, 1986)
   	 	z0V=Z0m/10 
      elseif (RoughLen_heat==2) then !Kanda and Moriwaki (2007),Loridan et al. (2010)
@@ -58,14 +63,16 @@ integer::AerodynamicResistanceMethod,StabilityMethod,RoughLen_heat
      RA=(4.72*log(ZZD/z0m)**2)/(1 + 0.54*AVU1)
   endif
 
-  !If Ra too large  ! this was 175 (??check)
+  !If Ra too large  ! this was 175 (??check)  !!Check whether these thresholds are suitable over a range of z0
   
   if(RA>200) then           
+     call errorHint(7,'RA > 200 s m-1; value set to 200 s m-1',RA,notUsed,notUsedI)
      RA=200
-  elseif(Ra<2)then   ! found  By Shiho - fix Dec 2012
-  		RA=2
+  elseif(RA<2)then   ! found  By Shiho - fix Dec 2012
+     call errorHint(7,'RA < 2 s m-1; value set to 2 s m-1',RA,notUsed,notUsedI)
+     RA=2
      ! RA=(log(ZZD/z0m))**2/(k2*AVU1)
-      if(avu1<0)write (*,*)avu1,ra
+     if(avu1<0) write(*,*) avu1,ra
   endif
  
   return

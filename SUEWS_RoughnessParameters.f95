@@ -1,6 +1,6 @@
  subroutine RoughnessParameters
+ ! Last modified by HCW 03 Mar 2015   
  ! Get surface covers and frontal area fractions (LJ 11/2010)
- !  areaZh=(sfr(BldgSurf)+sfr(ConifSurf)+sfr(DecidSurf)) !Total area of buildings and trees
  ! sg feb 2012 -- made separate subroutine
  !INPUT: id  Day index
  !--------------------------------------------------------------------------------
@@ -17,7 +17,8 @@
    !------------------------------------------------------------------------------
    !If total area of buildings and trees is larger than zero
    if (areaZh/=0)then
-      Zh=bldgH*sfr(BldgSurf)/areaZh+treeH*sfr(ConifSurf)/areaZh+treeH*(1-porosity(id))*sfr(DecidSurf)/areaZh
+      !Zh=bldgH*sfr(BldgSurf)/areaZh+treeH*sfr(ConifSurf)/areaZh+treeH*(1-porosity(id))*sfr(DecidSurf)/areaZh
+      Zh=bldgH*sfr(BldgSurf)/areaZh + EveTreeH*sfr(ConifSurf)/areaZh + DecTreeH*(1-porosity(id))*sfr(DecidSurf)/areaZh
    endif
 
    !Calculate Z0m and Zdm depending on the Z0 method
@@ -26,7 +27,8 @@
       Zdm=0.7*Zh
    elseif(z0_Method==3)then !MacDonald 1998
       if (areaZh/=0)then  !Plan area fraction
-          planF=FAIBldg*sfr(BldgSurf)/areaZh+FAItree*sfr(ConifSurf)/areaZh+FAItree*(1-porosity(id))*sfr(DecidSurf)/areaZh
+          !planF=FAIBldg*sfr(BldgSurf)/areaZh+FAItree*sfr(ConifSurf)/areaZh+FAItree*(1-porosity(id))*sfr(DecidSurf)/areaZh
+          planF=FAIBldg*sfr(BldgSurf)/areaZh + FAIEveTree*sfr(ConifSurf)/areaZh + FAIDecTree*(1-porosity(id))*sfr(DecidSurf)/areaZh
       else
           planF=0.00001
           Zh=1

@@ -17,51 +17,51 @@ SUBROUTINE InputHeaderCheck(FileName)
   ! =======================================================
  
   ! ========== SUEWS_NonVeg.txt =============
-  HeaderImp_Reqd(ci_Code)	  = "Code"
-  HeaderImp_Reqd(ci_Alb)	  = "Albedo"
-  HeaderImp_Reqd(ci_Emis)	  = "Emissivity"
-  HeaderImp_Reqd(ci_StorMin)	  = "StorageMin"
-  HeaderImp_Reqd(ci_StorMax)	  = "StorageMax"
-  HeaderImp_Reqd(ci_DrEq)         = "DrainageEq"
-  HeaderImp_Reqd(ci_DrCoef1) 	  = "DrainageCoef1"
-  HeaderImp_Reqd(ci_DrCoef2) 	  = "DrainageCoef2"
-  HeaderImp_Reqd(ci_SoilStCap)    = "SoilStoreCap"
-  HeaderImp_Reqd(ci_SoilTCode)    = "SoilTypeCode"
-  HeaderImp_Reqd(ci_SnowLimPat)   = "SnowLimPatch"
-  HeaderImp_Reqd(ci_SnowLimRem)   = "SnowLimRemove"     
-  HeaderImp_Reqd(ci_OHMCode_SWet) = "OHMCode_SummerWet"     
-  HeaderImp_Reqd(ci_OHMCode_SDry) = "OHMCode_SummerDry"     
-  HeaderImp_Reqd(ci_OHMCode_WWet) = "OHMCode_WinterWet"     
-  HeaderImp_Reqd(ci_OHMCode_WDry) = "OHMCode_WinterDry"     
+  HeaderNonVeg_Reqd(ci_Code)	  = "Code"
+  HeaderNonVeg_Reqd(ci_Alb)	  = "Albedo"
+  HeaderNonVeg_Reqd(ci_Emis)	  = "Emissivity"
+  HeaderNonVeg_Reqd(ci_StorMin)	  = "StorageMin"
+  HeaderNonVeg_Reqd(ci_StorMax)	  = "StorageMax"
+  HeaderNonVeg_Reqd(ci_StateLimit)= "StateLimit"
+  HeaderNonVeg_Reqd(ci_DrEq)      = "DrainageEq"
+  HeaderNonVeg_Reqd(ci_DrCoef1)   = "DrainageCoef1"
+  HeaderNonVeg_Reqd(ci_DrCoef2)   = "DrainageCoef2"
+  HeaderNonVeg_Reqd(ci_SoilTCode)    = "SoilTypeCode"
+  HeaderNonVeg_Reqd(ci_SnowLimPat)   = "SnowLimPatch"
+  HeaderNonVeg_Reqd(ci_SnowLimRem)   = "SnowLimRemove"     
+  HeaderNonVeg_Reqd(ci_OHMCode_SWet) = "OHMCode_SummerWet"     
+  HeaderNonVeg_Reqd(ci_OHMCode_SDry) = "OHMCode_SummerDry"     
+  HeaderNonVeg_Reqd(ci_OHMCode_WWet) = "OHMCode_WinterWet"     
+  HeaderNonVeg_Reqd(ci_OHMCode_WDry) = "OHMCode_WinterDry"     
    
   ! ========== SUEWS_Veg.txt ===============
-  HeaderPer_Reqd(cp_Code)	  = "Code"
-  HeaderPer_Reqd(cp_Alb)	  = "Albedo"
-  HeaderPer_Reqd(cp_Emis)	  = "Emissivity"
-  HeaderPer_Reqd(cp_StorMin)	  = "StorageMin"
-  HeaderPer_Reqd(cp_StorMax)	  = "StorageMax"
-  HeaderPer_Reqd(cp_DrEq)	  = "DrainageEq"
-  HeaderPer_Reqd(cp_DrCoef1)	  = "DrainageCoef1"
-  HeaderPer_Reqd(cp_DrCoef2)	  = "DrainageCoef2"
-  HeaderPer_Reqd(cp_SoilStCap)	  = "SoilStoreCap"
-  HeaderPer_Reqd(cp_SoilTCode)	  = "SoilTypeCode"
-  HeaderPer_Reqd(cp_SnowLimPat)   = "SnowLimPatch"
-  HeaderPer_Reqd(cp_BaseT)	  = "BaseT"      
-  HeaderPer_Reqd(cp_BaseTe)	  = "BaseTe"      
-  HeaderPer_Reqd(cp_GDDFull)	  = "GDDFull"      
-  HeaderPer_Reqd(cp_SDDFull)	  = "SDDFull"      
-  HeaderPer_Reqd(cp_LAIMin)	  = "LAIMin"      
-  HeaderPer_Reqd(cp_LAIMax)	  = "LAIMax"      
-  HeaderPer_Reqd(cp_GsMax)	  = "MaxConductance"      
-  HeaderPer_Reqd(cp_LAIEq)	  = "LAIEq"      
-  HeaderPer_Reqd(cp_LeafGP1)	  = "LeafGrowthPower1"      
-  HeaderPer_Reqd(cp_LeafGP2)	  = "LeafGrowthPower2"      
-  HeaderPer_Reqd(cp_LeafOP1)	  = "LeafOffPower1"      
-  HeaderPer_Reqd(cp_LeafOP2)	  = "LeafOffPower2"    
-  HeaderPer_Reqd(cp_OHMCode_SWet) = "OHMCode_SummerWet"     
-  HeaderPer_Reqd(cp_OHMCode_SDry) = "OHMCode_SummerDry"     
-  HeaderPer_Reqd(cp_OHMCode_WWet) = "OHMCode_WinterWet"     
-  HeaderPer_Reqd(cp_OHMCode_WDry) = "OHMCode_WinterDry"        
+  HeaderVeg_Reqd(cp_Code)	  = "Code"
+  HeaderVeg_Reqd(cp_Alb)	  = "Albedo"
+  HeaderVeg_Reqd(cp_Emis)	  = "Emissivity"
+  HeaderVeg_Reqd(cp_StorMin)	  = "StorageMin"
+  HeaderVeg_Reqd(cp_StorMax)	  = "StorageMax"
+  HeaderVeg_Reqd(cp_StateLimit)   = "StateLimit"
+  HeaderVeg_Reqd(cp_DrEq)	  = "DrainageEq"
+  HeaderVeg_Reqd(cp_DrCoef1)	  = "DrainageCoef1"
+  HeaderVeg_Reqd(cp_DrCoef2)	  = "DrainageCoef2"
+  HeaderVeg_Reqd(cp_SoilTCode)	  = "SoilTypeCode"
+  HeaderVeg_Reqd(cp_SnowLimPat)   = "SnowLimPatch"
+  HeaderVeg_Reqd(cp_BaseT)	  = "BaseT"      
+  HeaderVeg_Reqd(cp_BaseTe)	  = "BaseTe"      
+  HeaderVeg_Reqd(cp_GDDFull)	  = "GDDFull"      
+  HeaderVeg_Reqd(cp_SDDFull)	  = "SDDFull"      
+  HeaderVeg_Reqd(cp_LAIMin)	  = "LAIMin"      
+  HeaderVeg_Reqd(cp_LAIMax)	  = "LAIMax"      
+  HeaderVeg_Reqd(cp_GsMax)	  = "MaxConductance"      
+  HeaderVeg_Reqd(cp_LAIEq)	  = "LAIEq"      
+  HeaderVeg_Reqd(cp_LeafGP1)	  = "LeafGrowthPower1"      
+  HeaderVeg_Reqd(cp_LeafGP2)	  = "LeafGrowthPower2"      
+  HeaderVeg_Reqd(cp_LeafOP1)	  = "LeafOffPower1"      
+  HeaderVeg_Reqd(cp_LeafOP2)	  = "LeafOffPower2"    
+  HeaderVeg_Reqd(cp_OHMCode_SWet) = "OHMCode_SummerWet"     
+  HeaderVeg_Reqd(cp_OHMCode_SDry) = "OHMCode_SummerDry"     
+  HeaderVeg_Reqd(cp_OHMCode_WWet) = "OHMCode_WinterWet"     
+  HeaderVeg_Reqd(cp_OHMCode_WDry) = "OHMCode_WinterDry"        
    
   ! ========== SUEWS_Water.txt ==================
   HeaderWater_Reqd(cw_Code)         = "Code"
@@ -69,6 +69,7 @@ SUBROUTINE InputHeaderCheck(FileName)
   HeaderWater_Reqd(cw_Emis)         = "Emissivity"
   HeaderWater_Reqd(cw_StorMin)      = "StorageMin"
   HeaderWater_Reqd(cw_StorMax)      = "StorageMax"
+  HeaderWater_Reqd(cw_StateLimit)   = "StateLimit"
   HeaderWater_Reqd(cw_DrEq)         = "DrainageEq"
   HeaderWater_Reqd(cw_DrCoef1)      = "DrainageCoef1"
   HeaderWater_Reqd(cw_DrCoef2) 	    = "DrainageCoef2"   
@@ -101,7 +102,8 @@ SUBROUTINE InputHeaderCheck(FileName)
   
   ! ========== SUEWS_Soil.txt ===================
   HeaderSoil_Reqd(cSo_Code)        = "Code" 
-  HeaderSoil_Reqd(cSo_VolSmCap)    = "VolSoilMoistCap" 
+  HeaderSoil_Reqd(cSo_SoilDepth)   = "SoilDepth" 
+  HeaderSoil_Reqd(cSo_SoilStCap)   = "SoilStoreCap" 
   HeaderSoil_Reqd(cSo_KSat)  	   = "SatHydraulicCond" 
   HeaderSoil_Reqd(cSo_SoilDens)    = "SoilDensity" 
   HeaderSoil_Reqd(cSo_SoilInfRate) = "InfiltrationRate" 
@@ -215,16 +217,16 @@ SUBROUTINE InputHeaderCheck(FileName)
   ! Check columns in input files match model code    
    
   if(FileName == 'SUEWS_NonVeg.txt') then
-     if(ANY(HeaderImp_File /= HeaderImp_Reqd)) then
-        write(*,*) HeaderImp_File == HeaderImp_Reqd
-        write(*,*) HeaderImp_File
-        write(*,*) HeaderImp_Reqd
+     if(ANY(HeaderNonVeg_File /= HeaderNonVeg_Reqd)) then
+        write(*,*) HeaderNonVeg_File == HeaderNonVeg_Reqd
+        write(*,*) HeaderNonVeg_File
+        write(*,*) HeaderNonVeg_Reqd
         call ErrorHint(56,'Names or order of columns in SUEWS_NonVeg.txt does not match model code.',notUsed,notUsed,notUsedI)
      endif  
     
   elseif(FileName == 'SUEWS_Veg.txt') then
-     if(ANY(HeaderPer_File /= HeaderPer_Reqd)) then
-        write(*,*) HeaderPer_File == HeaderPer_Reqd
+     if(ANY(HeaderVeg_File /= HeaderVeg_Reqd)) then
+        write(*,*) HeaderVeg_File == HeaderVeg_Reqd
         call ErrorHint(56,'Names or order of columns in SUEWS_Veg.txt does not match model code.',notUsed,notUsed,notUsedI)
      endif 
     

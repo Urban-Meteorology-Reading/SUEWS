@@ -155,7 +155,7 @@
  INTEGER DATE, MONTH, DAY, YR, MN, N1, N2, DOW
  real(kind(1d0))::YEAR
 
-        YR = YEAR
+        YR = YEAR      
         MN = MONTH
 !C
 !C       IF JANUARY OR FEBRUARY, ADJUST MONTH AND YEAR
@@ -179,7 +179,7 @@ subroutine dectime_to_timevec(dectime,HOURS,MINS,SECS)
     !hours, minutes and seconds
     INTEGER :: HOURS, MINS, doy
     REAL(kind(1d0))    :: dectime,SECS,DH,DM,DS
-    INTEGER :: year
+    !INTEGER :: year
     
         doy=FLOOR(dectime)
         

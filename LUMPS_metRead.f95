@@ -4,9 +4,11 @@
 !  Oct 2014, LJ:  Variables changed only be used in this part of code and these are passed to calling
 !                 function in MetArray.
 !  Jan 2015, HCW: Precip_hr, wuh and lai_hr changed for generic timesteps
+! To Do: 
+!       - Check observed SM calculation
 !---------------------------------------------------------------------------------------------------
  subroutine MetRead(MetArray,InputmetFormat,AnthropHeatChoice,ldown_option,NetRadiationChoice,&
-               snowUse,smd_choice,defaultQf,defaultQs,SoilDepthMeas,SoilRocks,SoilDensity,SmCap)
+               snowUse,smd_choice,SoilDepthMeas,SoilRocks,SoilDensity,SmCap)
 
   use defaultNotUsed
 
@@ -18,9 +20,7 @@
                                            ! - Met data now provided at a resolution of tstep, HCW Jan 2015
                                            ! so MetArray could be bypassed??
   
-  real (kind(1d0))::defaultQf,&            !Default anthropogenic heat flux
-                    defaultQs,&            !Default storage heat flux
-                    SmCap,&
+  real (kind(1d0))::SmCap,&
                     SoilDepthMeas,&        !Measured soil depth
                     SoilRocks,&            !Rocks on ground
                     SoilDensity            !Density of soil
@@ -109,15 +109,6 @@
   !===============Meteorological variables reading done==========================
   Pres_hPa=Pres_kPa*10. ! convert to hPa
 
-  !Set observed -999 qs to defaultQs
-  if (qs_obs==-999.0) qs_obs=defaultQs
-
-  !Same for Qf if measured AnthropHeatChoice
-  if (AnthropHeatChoice==0.and.qf_obs==-999)then
-      call ErrorHint(29,'subroutine MetRead: [Qf default value going to be used],qf,id,it',qf_obs,id,int(it))
-      qf_obs=defaultQf
-  endif
-
   !If hour is 23, change this to following day
   if(it==24) then
      id=id+1
@@ -182,9 +173,6 @@
     call ErrorHint(27,'Met Data: xsmd - less than 0',xsmd ,dectime, notUsedI)
   endif
    
-  !!Check initial conditions Needs to fixed an maybe moved..
-  !if (i==1) call CheckInitial ??
-
   !Create an array to be printed out.
   MetArray(1:24)=(/iy,id,it,imin,qn1_obs,qh_obs,qe_obs,qs_obs,qf_obs,avu1,&
                    avrh,Temp_C,Pres_hPa,Precip,avkdn,snow_obs,ldown_obs,&

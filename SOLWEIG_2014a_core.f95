@@ -32,8 +32,9 @@ use allocateArray
     real(kind(1d0)),parameter   :: pi=3.141592653589793
     real(kind(1d0)),parameter   :: SBC=5.67051e-8
     !REAL(KIND(1D0)),PARAMETER   :: DEG2RAD=0.017453292,RAD2DEG=57.29577951 !Now defined in AllocateArray HCW 02 Dec 2014
-    
-
+   
+    integer:: firstTimeofDay=0  !!Needs updating for new model timestep
+   
     !!!!!! Begin program !!!!!!
     ! internal grids
     allocate(tmp(sizey,sizex))
@@ -82,7 +83,7 @@ use allocateArray
     ! Transmissivity of shortwave radiation through vegetation based on decid lai
     if (it==firstTimeofDay) then
         trans=TransMin+(laimax(2)-lai(id-1,2))*transperlai
-    end if
+    endif
     
     ! Radiation sensor setup offset in degrees 
     t=0

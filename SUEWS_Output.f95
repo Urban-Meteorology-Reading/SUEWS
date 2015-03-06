@@ -6,7 +6,7 @@
 ! HCW 18 Nov 2014
 ! LJ 5 Jan 2015: code cleaned, daily and monthly filesaving added
 !-----------------------------------------------------------------------------------------------
- subroutine SUEWS_Output(Gridiv, year_int, iv, irMax) !(DataOut1,DataOut2,DataOut3,NARPOutput,snowUse,)
+ subroutine SUEWS_Output(Gridiv, year_int, iv, irMax)
  !INPUT: Gridiv = Grid number
  !       year_int = Year as a integer
  !       iv = Block number of met data
@@ -99,18 +99,20 @@
       
   do i=1,irMax
       write(lfnoutC,301) int(dataOut(i,1,Gridiv)),int(dataOut(i,2,Gridiv)),int(dataOut(i,3,Gridiv)),int(dataOut(i,4,Gridiv)),&
-                         (dataOut(i,is,Gridiv),is = 5,194)
+                         dataOut(i,5:ncolumnsDataOut,Gridiv)
+                                              
   enddo
-
+  
+ 
   !================WRITING FORMAT================
   301 format((i4,1X),3(i3,1X),(f8.4,1X),&
              4(f8.2,1X),(f7.2,1X),7(f8.2,1X),&
              4(f8.3,1X),&
-             4(f8.3,1X),&
+             1(f10.3,1X),3(f8.3,1X),&
              6(f8.3,1X),&
              2(f7.1,1X),4(f7.2,1X),&
              3(f8.3,1X),(g14.5,1X),(f8.3,1X),&
-             2(f9.2,1X),6(f8.3,1X),7(f8.3,1X),&
+             2(f9.2,1X),6(f8.3,1X),7(f10.3,1X),&
               (f9.2,1X),&
              5(f8.2,1X),6(f9.3,1X),&
              14(f10.3,1X),7(f7.2,1X),7(f10.3,1X),&

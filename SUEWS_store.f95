@@ -40,7 +40,7 @@ subroutine soilstore
   
   IMPLICIT NONE
   
-  !real(kind(1d0)),dimension(nsurf):: SurfaceFlood   !Stores flood water when surface state exceeds storage capacity [mm] 	!!Move to LUMPS_ModCon !!
+  !real(kind(1d0)),dimension(nsurf):: SurfaceFlood   !Stores flood water when surface state exceeds storage capacity [mm]
   
   real(kind(1d0)):: EvPart   !Extra evaporation [mm] from impervious surfaces which cannot happen due to lack of water
   ! Initialise extra evaporation to zero
@@ -78,7 +78,6 @@ subroutine soilstore
      ! Calculate change in surface state (inputs - outputs)
      chang(is)=p_mm-(drain(is)+ev)	   
      
-     !! Does this make physical sense?
      ! If p_mm is too large, excess goes to runoff (i.e. the rate of water supply is too fast)
      !  and does not affect state
      if(p_mm>IPThreshold_mmhr/nsh_real) then
@@ -96,9 +95,9 @@ subroutine soilstore
         SurplusEvap(is)=abs(state(is))   !Surplus evaporation is that which tries to evaporate non-existent water
  	ev = ev-SurplusEvap(is)	  !Limit evaporation according to water availability
         state(is)=0.0			  !Now surface is dry
-    ! elseif (state(is)>surf(6,is)) then   
+    ! elseif (state(is)>surf(6,is)) then   !!This should perhaps be StateLimit(is)
     !    !! If state exceeds the storage capacity, then the excess goes to surface flooding
-    !    !SurfaceFlood(is)=SurfaceFlood(is)+(state(is)-surf(6,is))   !!Need to deal with this properly!!
+    !    !SurfaceFlood(is)=SurfaceFlood(is)+(state(is)-surf(6,is))   !!Need to deal with this properly
     !    runoff(is)=runoff(is)+(state(is)-surf(6,is))   !!needs to go to flooding
     !    state(is)=surf(6,is)              !Now surface state is at max (storage) capacity
      endif     
@@ -110,10 +109,10 @@ subroutine soilstore
      ! For impervious surfaces, some of drain(is) becomes runoff
      runoff(is)=runoff(is)+drain(is)*AddWaterRunoff(is)   !Drainage (that is not flowing to other surfaces) goes to runoff 
           
-     !!So, up to this point, runoff(is) can have contributions if
-     !! p_mm > ipthreshold (water input too fast)
-     !! state > surf(6,is) (net water exceeds storage capacity)
-     !! WaterDist specifies some fraction of drain(is) -> runoff
+     !So, up to this point, runoff(is) can have contributions if
+     ! p_mm > ipthreshold (water input too fast)
+     ! state > surf(6,is) (net water exceeds storage capacity)
+     ! WaterDist specifies some fraction of drain(is) -> runoff
  
   !==== Pervious surfaces (Conif, Decid, Grass, BSoil, Water) =======
   elseif(is>=3) then 
@@ -141,7 +140,6 @@ subroutine soilstore
         ! Calculate change in surface state (inputs - outputs)
 	chang(is)=p_mm-(drain(is)+ev)	   
 	     
-	!! Does this make physical sense?
 	! If p_mm is too large, excess goes to runoff (i.e. the rate of water supply is too fast)
         !  and does not affect state
         if (p_mm>IPThreshold_mmhr/nsh_real) then   
@@ -166,9 +164,9 @@ subroutine soilstore
 	   endif
 	   !! What about if there is some water in soilstore, but not enough to provide all the water for evaporation??	   
 	   !! Is this saying water can be evaporated from the soilstore as easily as from the surface??
-  	!elseif (state(is)>surf(6,is)) then   
+  	!elseif (state(is)>surf(6,is)) then   !!This should perhaps be StateLimit(is)
 	!   !! If state exceeds the storage capacity, then the excess goes to surface flooding
-	!   !SurfaceFlood(is)=SurfaceFlood(is)+(state(is)-surf(6,is))   !!Need to deal with this properly!!
+	!   !SurfaceFlood(is)=SurfaceFlood(is)+(state(is)-surf(6,is))   !!Need to deal with this properly
 	!   runoff(is)=runoff(is)+(state(is)-surf(6,is))   !!needs to go to flooding
 	!   state(is)=surf(6,is)              !Now surface state is at max (storage) capacity
 	endif     
@@ -214,9 +212,9 @@ subroutine soilstore
               ! If there is not sufficient water on the surface, then don't allow this evaporation to happen
               ev=ev-abs(state(is))   !Limit evaporation according to water availability
               state(is)=0.0	     !Now surface is dry	
- 	   !elseif (state(is)>surf(6,is)) then   
+ 	   !elseif (state(is)>surf(6,is)) then   !!This should perhaps be StateLimit(is)
            !   !! If state exceeds the storage capacity, then the excess goes to surface flooding
-           !   !SurfaceFlood(is)=SurfaceFlood(is)+(state(is)-surf(6,is))   !!Need to deal with this properly!!
+           !   !SurfaceFlood(is)=SurfaceFlood(is)+(state(is)-surf(6,is))   !!Need to deal with this properly
            !   runoff(is)=runoff(is)+(state(is)-surf(6,is))   !!needs to go to flooding
            !   state(is)=surf(6,is)              !Now surface state is at max (storage) capacity
            endif     
@@ -224,17 +222,16 @@ subroutine soilstore
            ! Recalculate change in surface state from difference with previous timestep
            chang(is) = state(is)-stateOld(is)        	  
         	 
-           !! What is happening in these two loops??  Why use 5 not 1?? Need to make compatible with above new addition
-     	   ! If state exceeds max storage capacity, then excess goes to runoff
-           if (state(WaterSurf)>Surf(5,WaterSurf)) then
-              runoff(WaterSurf)=runoff(WaterSurf)+(state(WaterSurf)-Surf(5,WaterSurf))
-              state(WaterSurf)=Surf(5,WaterSurf)
+           ! If state exceeds limit, then excess goes to runoff (currently applies to water surf only)
+           if (state(WaterSurf)>StateLimit(WaterSurf)) then
+              runoff(WaterSurf)=runoff(WaterSurf)+(state(WaterSurf)-StateLimit(WaterSurf))
+              state(WaterSurf)=StateLimit(WaterSurf)
               runoffWaterBody=runoffWaterBody+runoff(WaterSurf)*sfr(WaterSurf)
            else  
               state(WaterSurf)=state(WaterSurf)+surplusWaterBody
-              if (state(WaterSurf)>Surf(5,WaterSurf)) then
-                 runoffWaterBody=runoffWaterBody+(state(WaterSurf)-Surf(5,WaterSurf))*sfr(WaterSurf)
-                 state(WaterSurf)=Surf(5,WaterSurf)
+              if (state(WaterSurf)>StateLimit(WaterSurf)) then
+                 runoffWaterBody=runoffWaterBody+(state(WaterSurf)-StateLimit(WaterSurf))*sfr(WaterSurf)
+                 state(WaterSurf)=StateLimit(WaterSurf)
               endif
            endif
            

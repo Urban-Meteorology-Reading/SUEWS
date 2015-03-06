@@ -10,7 +10,6 @@
 ! Added switch OHMIncQF to calculate QS with (1, default) or without (0) QF added to QSTAR
 ! To do 
 !      - add iy and imin to output files (may impact LUMPS_RunoffFromGrid)
-!      - move OHMIncQF to RunControl.nml
 !      - phase out _per_interval water balance variables
 !      - renormalise by NonWaterFraction where necessary
 !      - Update Snow subroutines similarly in terms of water balance
@@ -42,8 +41,6 @@
   real(kind(1d0)):: SnowDepletionCurve
   real(kind(1d0))::lai_wt
   integer::irMax
-  
-  integer::OHMIncQF=1 	!Move to RunControl.nml
 
 !==================================================================
 !==================================================================
@@ -55,7 +52,6 @@
   !NARP Config now done in SUEWS_Translate
  
 !=============Get data ready for the qs calculation====================
- STPH1=0
  if(NetRadiationChoice==0) then !Radiative components are provided as forcing
    !avkdn=NAN                  !Needed for resistances for SUEWS.
    ldown=NAN
@@ -73,17 +69,14 @@
     Fcld=NAN
   endif
 !=====================================================================
- !! Should these be initialised in SUEWS_Translate instead??
- !Initialization for OAF's water bucket scheme
- ! LUMPS only (Loridan et al. (2012)
- !RAINRES = 0.
- !RAINBUCKET = 0.
- !E_MOD=0 !RAIN24HR = 0.;
+ ! Initialisation for OAF's water bucket scheme
+ ! LUMPS only (Loridan et al. (2012))
+ RAINRES = 0.
+ RAINBUCKET = 0.
+ E_MOD=0 !RAIN24HR = 0.;
 
 !=====================================================================
-
- !! Does flow from other grids, temperature and LAI initialization need to happen here??
-  
+ 
  !INITIALIZE VARIABLE FOR THE LOOP
  runoffAGveg=0
  runoffAGimpervious=0
@@ -107,12 +100,15 @@
  MwStore = 0
  WaterHoldCapFrac=0
 
+ qh = -999 ! Added HCW 26 Feb 2015
+ H = -999 ! Added HCW 26 Feb 2015
+ 
  ! Calculate sun position
  idectime=dectime-halftimestep! sun position at middle of timestep before
  call sun_position(year,idectime,timezone,lat,lng,alt,azimuth,zenith_deg)
 
  if(CBLuse>=1)then ! If CBL is used, calculated Temp_C and RH are replaced with the obs.  
-   call CBL(i,iMB)
+   call CBL(ir,iMB)   !ir=1 indicates first row of each met data block
  endif
  
  !Call the dailystate routine to get surface characteristics ready
@@ -130,15 +126,16 @@
  !======== Calculate soil moisture =========
  SoilMoistCap=0   !Maximum capacity of soil store [mm] for whole surface
  soilstate=0      !Area-averaged soil moisture [mm] for whole surface
- do is=1,nsurf-1   !No water body included   !!Mention in manual.
+ do is=1,nsurf-1   !No water body included   
    soilmoistCap=soilMoistCap+(soilstoreCap(is)*sfr(is)/NonWaterFraction)
    soilstate=soilstate+(soilmoist(is)*sfr(is)/NonWaterFraction)
  enddo
 
- if (ir==1) then  !Calculate initial smd  !!Why only initial?? - need initial value of smd?
+ !If loop removed HCW 26 Feb 2015
+ !if (ir==1) then  !Calculate initial smd
     smd=soilmoistCap-soilstate
- endif
-
+ !endif
+    
  ! ===================NET ALLWAVE RADIATION================================
  if(NetRadiationChoice>0)then
 
@@ -168,7 +165,7 @@
  endif
 
 ! ===================SOLWEIG OUTPUT ========================================
- if (SOLWEIGout==1) then
+ if (SOLWEIGuse==1) then
      if (OutInterval==imin) then
          if (RunForGrid==-999) then
              call SOLWEIG_2014a_core(iMB)
@@ -188,7 +185,7 @@
 
  ih=it-DLS
  if(ih<0) ih=23
-
+ 
  if(AnthropHeatChoice==1) then
     call SAHP_1_v2015(qf_sahp,id,ih,imin)
     qn1_bup=qn1
@@ -208,10 +205,10 @@
  ! =================STORAGE HEAT FLUX=======================================
  if(QSChoice==1) then		!Use OHM to calculate QS
     if(OHMIncQF == 1) then	!Calculate QS using QSTAR+QF
-       call OHM_v2015		
+       call OHM_v2015(Gridiv)		
     elseif(OHMIncQF == 0) then  !Calculate QS using QSTAR 
       qn1=qn1_bup  
-      call OHM_v2015
+      call OHM_v2015(Gridiv)
     endif   
  endif   
  
@@ -227,7 +224,7 @@
  !==================Energy related to snow melting/freezing processes=======
  IF (snowUse==1)  then
 
-   call MeltHeat(i)
+   call MeltHeat
 
    ! If snow on ground, no irrigation, so veg_fr same in each case
    !New fraction of vegetation.
@@ -243,11 +240,12 @@
  END IF
 
  !==========================Turbulent Fluxes================================
-
+ 
+ tlv=lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
+ 
  call LUMPS_QHQE !Calculate QH and QE from LUMPS
-
  if(debug)write(*,*)press_Hpa,psyc_hPA,i
-
+ 
  call WaterUse !Gives the external and internal water uses per timestep
 
  if(Precip>0) then   !Initiate rain data [mm]
@@ -256,17 +254,20 @@
    pin=0
  endif
 
- ! Kinematic Heat flux (w'T'). Changed by LJ
- if(i==1) qh=qh_obs
- if ((qh==NAN.or.qh==0).and.h_mod/=0) then
-  !if (h_mod/=NAN.and.h_mod<1000) then
-   H=h_mod/(avdens*avcp)
+ 
+ ! Get first estimate of sensible heat flux. Modified by HCW 26 Feb 2015  
+ ! Calculate kinematic heat flux (w'T') from sensible heat flux [W m-2] from observed data (if available) or LUMPS 
+ if(qh_obs/=NAN) then   !if(qh_obs/=NAN) qh=qh_obs   !Commented out by HCW 04 Mar 2015
+    H=qh_obs/(avdens*avcp)  !Use observed value
  else
- ! if LUMPS has had a problem then we need a value
-   H=(qn1*0.2)/(avdens*avcp)
- !call ErrorHint(37,'LUMPS unable to calculate realistic value.',h_mod, dectime, notUsedI) !comment out by SO
+    if(h_mod/=NAN) then 
+       H=h_mod/(avdens*avcp)   !Use LUMPS value
+    else   
+       H=(qn1*0.2)/(avdens*avcp)   !If LUMPS has had a problem, we still need a value
+       call ErrorHint(38,'LUMPS unable to calculate realistic value for H_mod.',h_mod, dectime, notUsedI)
+    endif   
  endif
-
+  
  !------------------------------------------------------------------
 
  call STAB_lumps(H,StabilityMethod,ustar,L_mod) !u* and monin-obukhov length out
@@ -275,25 +276,25 @@
                             ZZD,z0m,k2,AVU1,L_mod,Ustar,veg_fr,psyh)      !RA out
 
  if (snowUse==1) then
-      call AerodynamicResistance(RAsnow,AerodynamicResistanceMethod,StabilityMethod,3,&
-                                 ZZD,z0m,k2,AVU1,L_mod,Ustar,veg_fr,psyh)      !RA out
+    call AerodynamicResistance(RAsnow,AerodynamicResistanceMethod,StabilityMethod,3,&
+                               ZZD,z0m,k2,AVU1,L_mod,Ustar,veg_fr,psyh)      !RA out
  endif
 
  call SurfaceResistance(id,it)   !qsc and surface resistance out
+
  call BoundaryLayerResistance
 
 
  sae=s_hPa*(qn1_SF+qf-qs)    !s_haPa - slope of svp vs t curve
  !qn1 changed to qn1_SF, lj in May 2013
-
  vdrc=vpd_hPa*avdens*avcp
  sp=s_hPa/psyc_hPa
- tlv=lv_J_kg/tstep_real
  numPM=sae+vdrc/ra
 
+ !write(*,*) numPM, sae, vdrc/ra, s_hPA+psyc_hPa, NumPM/(s_hPA+psyc_hPa)
+  
   !#######End of water vapour calculations############################
 
- 
  !=====================================================================
  !==================== Water balance calculations =====================
  ! Needs to run at small timesteps (i.e. minutes)
@@ -307,6 +308,8 @@
  SurplusEvap=0  
 
  evap=0
+ 
+ chang=0
  
  runoff=0
  runoffSoil=0
@@ -323,7 +326,7 @@
  NWstate_per_tstep=0
  runoff_per_tstep=0
  
- evap_5min=0   !! CHECK p_i
+ evap_5min=0   !!Remove once snow subroutines updated
  
  ! Retain previous surface state and soil moisture state
  stateOld=state           !State of each surface [mm] for the previous timestep
@@ -353,16 +356,17 @@
  
  ! Distribute water within grid, according to WithinGridWaterDist matrix (Cols 1-7)
  call ReDistributeWater   !Calculates AddWater(is)
- 
+  
  !======== Evaporation and surface state ========
  do is=1,nsurf   !For each surface in turn      
     if (snowCalcSwitch(is)==1) then
-       call snowCalc(i) 
+       call snowCalc
     else
        call Evap_SUEWS   !Calculates ev [mm]             
        call soilstore    !Surface water balance and soil store updates (can modify ev, updates state)
        !Store ev for each surface 
        evap(is) = ev     
+       !write(*,*) is,' ',' ', ev*tlv
        
        ! Sum evaporation from different surfaces to find total evaporation [mm]
        ev_per_tstep=ev_per_tstep+evap(is)*sfr(is)
@@ -389,13 +393,29 @@
  ! Calculate sensible heat flux as a residual (Modified by LJ in Nov 2012)
  qh=(qn1+qf+QmRain)-(qeOut+qs+Qm+QmFreez)     !qh=(qn1+qf+QmRain+QmFreez)-(qeOut+qs+Qm)
  
+ 
+ !write(*,*) Gridiv, qn1, qf, qh, qeOut, qs, qn1+qf-qs
+ !if(ir > 155 .and. ir <165) pause
+ !if((qn1+qf-qs) - (qeOut) < -1)  then
+ !    write(*,*) '!!', (qn1+qf-qs),(qeOut)
+ !    pause
+ !endif    
+ !if(ir > 600) pause
+ !if(Gridiv == 3) write(*,*) ''
+ !if(Gridiv == 3 .and. ir == 100) pause 
+ !!if(Gridiv == 3 .and.ir == 200) pause 
+ !!if(Gridiv == 3 .and.ir == 300) pause 
+ !if(Gridiv == 3 .and.ir == 400) pause 
+ !if(Gridiv == 3 .and. ir == irMax ) pause
+  
  ! Calculate volume of water that will move between grids
- ! Depth relative to whole area [mm] / 1000 [mm m-1] * SurfaceArea [m2]
+ ! Volume [m3] = Depth relative to whole area [mm] / 1000 [mm m-1] * SurfaceArea [m2]
+ ! Need to use these volumes when converting back to addImpervious, AddVeg and AddWater
  runoffAGimpervious_m3 = runoffAGimpervious/1000 *SurfaceArea   
  runoffAGveg_m3 = runoffAGveg/1000 *SurfaceArea
  runoffWaterBody_m3 = runoffWaterBody/1000 *SurfaceArea
  runoffPipes_m3 = runoffPipes/1000 *SurfaceArea
- !! Need to use these volumes when converting back to addImpervious, AddVeg and AddWater
+ 
   
  !=== Horizontal movement between soil stores ===
  ! Now water is allowed to move horizontally between the soil stores
@@ -425,27 +445,31 @@
  
  !=====================================================================
  !====================== Prepare data for output ======================
- ! Remove non-existing surface type from surface and soil outputs
- do is=1,nsurf
-    if (sfr(is)<0.00001) then
-       stateOut(is)=0
-       smd_nsurfOut(is)=0
-       runoffOut(is)=0
-       runoffSoilOut(is)=0
-    else
-       stateOut(is)=state(is)
-       smd_nsurfOut(is)=smd_nsurf(is)
-       runoffOut(is)=runoff(is)
-       runoffSoilOut(is)=runoffSoil(is)
-    endif
- enddo
  
- !! Remove negative state   !ErrorHint added, then commented out by HCW 16 Feb 2015 as should never occur
- !if(st_per_interval<0) call ErrorHint(63,'SUEWS_Calculations: st_per_interval < 0',st_per_interval,NotUsed,NotUsedI)   !st_per_interval=0 
+ ! Remove non-existing surface type from surface and soil outputs   !Commented out by HCW 04 Mar 2015 as should not occur
+ !do is=1,nsurf
+ !   if (sfr(is)<0.00001) then
+ !      stateOut(is)=0
+ !      smd_nsurfOut(is)=0
+ !      runoffOut(is)=0
+ !      runoffSoilOut(is)=0
+ !   else
+ !      stateOut(is)=state(is)
+ !      smd_nsurfOut(is)=smd_nsurf(is)
+ !      runoffOut(is)=runoff(is)
+ !      runoffSoilOut(is)=runoffSoil(is)
+ !   endif
+ !enddo
+ 
+ ! Remove negative state   !ErrorHint added, then commented out by HCW 16 Feb 2015 as should never occur
+ !if(st_per_interval<0) then
+ !   call ErrorHint(63,'SUEWS_Calculations: st_per_interval < 0',st_per_interval,NotUsed,NotUsedI)   
+ !   !st_per_interval=0 
+ !endif   
  
  ! Set limit on ResistSurf
  if(ResistSurf>9999) ResistSurf=9999
-
+     
  ! Set NA values   !!Why only these variables??  !!ErrorHints here too??
  if(abs(qh)>pNAN) qh=NAN
  if(abs(qeOut)>pNAN) qeOut=NAN
@@ -458,7 +482,8 @@
 
  ! If measured smd is used, set components to -999 and smd output to measured one
  if (smd_choice>0) then
-    smd_nsurfOut=NAN
+     smd_nsurf=NAN
+    !smd_nsurfOut=NAN
     smd=xsmd
  endif
  
@@ -482,16 +507,14 @@
  !=====================================================================
  !====================== Write out files ==============================
  !Define the overall output matrix to be printed out step by step
- !! N.B. ext_wu now appears multiple times here - need to tidy columns
- !! Need to match up with LUMPS_RunoffFromGrid !!
- dataOut(ir,1:195,Gridiv)=(/real(iy,kind(1D0)),real(id,kind(1D0)),real(it,kind(1D0)),real(imin,kind(1D0)),dectime,&         !5
+ dataOut(ir,1:ncolumnsDataOut,Gridiv)=(/real(iy,kind(1D0)),real(id,kind(1D0)),real(it,kind(1D0)),real(imin,kind(1D0)),dectime,&   !5
                            avkdn,kup,ldown,lup,tsurf,qn1,h_mod,e_mod,qs,qf,qh,qeOut,&                                       !17
                            precip,ext_wu,ev_per_tstep,drain_per_tstep,&                                                     !21
                            state_per_tstep,NWstate_per_tstep,surf_chang_per_tstep,tot_chang_per_tstep,&                     !25
                            runoff_per_tstep,runoffSoil_per_tstep,runoffPipes,runoffAGimpervious,runoffAGveg,runoffWaterBody,&  !31
                            AdditionalWater,FlowChange/nsh_real,int_wu,wu_EveTr,wu_DecTr,wu_Grass,&                          !37
                            ra,ResistSurf,ustar,l_mod,Fcld,&                                                                 !42
-                           soilstate,smd,(smd_nsurfOut(is),is=1,nsurf-1),(stateOut(is),is=1,nsurf),&                        !57
+                           soilstate,smd,(smd_nsurf(is),is=1,nsurf-1),(state(is),is=1,nsurf),&                              !57
                            lai_wt,&                                                                                         !58
                            qn1_SF,qn1_S,Qm,QmFreez,QmRain,swe,mwh,MwStore,(SnowRemoval(is),is=1,2),chSnow_per_interval,&    !69                       
                            kup_ind(1:nsurf),lup_ind(1:nsurf),Tsurf_ind(1:nsurf),qn1_ind(1:nsurf),&                          !97
@@ -500,6 +523,7 @@
                            qn1_ind_snow(1:nsurf),kup_ind_snow(1:nsurf),freezMelt(1:nsurf),MeltWaterStore(1:nsurf),&         !174
                            densSnow(1:nsurf),snowDepth(1:nsurf),Tsurf_ind_snow(1:nsurf)/)                                   !195
 
+  
   !Calculate new snow fraction used in the next timestep if snowUse==1
   !This is done each hour?? Location likely needs to be changes
  
@@ -516,10 +540,5 @@
  call SUEWS_TranslateBack(Gridiv,ir,irMax) 
 
 ! write(*,*) '------------'
-
-
-!GridFromFrac- close files??
-
-!SnowPack_grid=SnowPack   !!is this needed??
 
  END SUBROUTINE SUEWS_Calculations

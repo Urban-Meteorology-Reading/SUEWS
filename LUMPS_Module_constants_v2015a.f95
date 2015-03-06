@@ -2,74 +2,89 @@
 ! sg feb 2012 - changed number of surfaces to allocatable array
 ! lj jun 2012 - snow part added
 ! HW, LJ Oct 2014 - fixes to the structure
+! HCW 03 Mar 2015 - tidied
 
-!===================================================================================
+!==================================================================================================
  module allocateArray
 
    IMPLICIT NONE
    
-   ! Set number of columns in input files
-   integer, parameter:: ncolumnsSiteSelect=80	!SUEWS_SiteSelect.txt
-   integer, parameter:: ncolumnsImpervious=16   !SUEWS_Impervious.txt
-   integer, parameter:: ncolumnsPervious=27     !SUEWS_Pervious.txt
-   integer, parameter:: ncolumnsWater=12	!SUEWS_Water.txt
-   integer, parameter:: ncolumnsSnow=20		!SUEWS_Snow.txt
-   integer, parameter:: ncolumnsSoil=8		!SUEWS_Soil.txt
-   integer, parameter:: ncolumnsConductance=12	!SUEWS_Conductance.txt
+   ! ---- Set parameters for reading in data ------------------------------------------------------
+   integer, parameter:: MaxNumberOfGrids=10000   !Max no. grids   !HCW changed to 10000 from 100
+   integer, parameter:: MaxLinesMet=50000        !Max no. lines to read in one go (for all grids, ie MaxLinesMet/NumberOfGrids each)
+   
+   ! ---- Set number of columns in input files ----------------------------------------------------
+   integer, parameter:: ncolumnsSiteSelect=80           !SUEWS_SiteSelect.txt
+   integer, parameter:: ncolumnsNonVeg=16               !SUEWS_NonVeg.txt
+   integer, parameter:: ncolumnsVeg=27                  !SUEWS_Veg.txt
+   integer, parameter:: ncolumnsWater=13                !SUEWS_Water.txt
+   integer, parameter:: ncolumnsSnow=20                 !SUEWS_Snow.txt
+   integer, parameter:: ncolumnsSoil=9                  !SUEWS_Soil.txt
+   integer, parameter:: ncolumnsConductance=12          !SUEWS_Conductance.txt
    integer, parameter:: ncolumnsOHMCoefficients=4 	!SUEWS_OHMCoefficients.txt
    integer, parameter:: ncolumnsAnthropogenicHeat=11 	!SUEWS_AnthropogenicHeat.txt
    integer, parameter:: ncolumnsIrrigation=25		!SUEWS_Irrigation.txt
    integer, parameter:: ncolumnsProfiles=25 		!SUEWS_Profiles.txt
    integer, parameter:: ncolumnsWGWaterDist=10 		!SUEWS_WithinGridWaterDist.txt
+   integer, parameter:: ncolumnsMetForcingData=24	!Meteorological forcing file (_data.txt)
+   
+   ! ---- Set number of columns in output files ---------------------------------------------------
+   integer, parameter:: ncolumnsDataOut=195		!Main output file (_5.txt). DataOut created in SUEWS_Calculations.f95
   
-   ! For input file headers               
-   character(len=20),dimension(ncolumnsSiteSelect) :: HeaderSiteSelect_File     !Header for SiteSelect.txt                
-   character(len=20),dimension(ncolumnsImpervious) :: HeaderImp_File  !Header for the impervious surface
-   character(len=20),dimension(ncolumnsImpervious) :: HeaderImp_Reqd !Expected Header for the impervious surface 	
-   character(len=20),dimension(ncolumnsPervious)   :: HeaderPer_File  !Header for the pervious surface
-   character(len=20),dimension(ncolumnsPervious)   :: HeaderPer_Reqd  !Expected Header for the pervious surface 	
-   character(len=20),dimension(ncolumnsWater)      :: HeaderWater_File  !Header for water surface
-   character(len=20),dimension(ncolumnsWater)      :: HeaderWater_Reqd  !Expected Header for water surface 	
-   character(len=20),dimension(ncolumnsSnow)       :: HeaderSnow_File  !Header for Snow surface
-   character(len=20),dimension(ncolumnsSnow)       :: HeaderSnow_Reqd    !Expected Header for Snow surface 	
-   character(len=20),dimension(ncolumnsSoil)       :: HeaderSoil_File  !Header for soils
-   character(len=20),dimension(ncolumnsSoil)	   :: HeaderSoil_Reqd    !Expected Header for soils
-   character(len=20),dimension(ncolumnsConductance):: HeaderCond_File !Header for conductances 
-   character(len=20),dimension(ncolumnsConductance):: HeaderCond_Reqd  !Expected Header for conductances 
-   character(len=20),dimension(ncolumnsOHMCoefficients)    :: HeaderOHMCoefficients_File  !Header for soils
-   character(len=20),dimension(ncolumnsOHMCoefficients)	   :: HeaderOHMCoefficients_Reqd    !Expected Header for soils   
-   character(len=20),dimension(ncolumnsAnthropogenicHeat)    :: HeaderAnthropogenicHeat_File  !Header for QF
-   character(len=20),dimension(ncolumnsAnthropogenicHeat)    :: HeaderAnthropogenicHeat_Reqd    !Expected Header for QF 
-   character(len=20),dimension(ncolumnsIrrigation):: HeaderIrrigation_File !Header for Irrigation
-   character(len=20),dimension(ncolumnsIrrigation):: HeaderIrrigation_Reqd  !Expected Header for Irrigation
-   character(len=20),dimension(ncolumnsProfiles):: HeaderProfiles_File !Header for Profiles
-   character(len=20),dimension(ncolumnsProfiles):: HeaderProfiles_Reqd  !Expected Header for Profiles
-   character(len=20),dimension(ncolumnsWGWaterDist):: HeaderWGWaterDist_File !Header for Profiles
-   character(len=20),dimension(ncolumnsWGWaterDist):: HeaderWGWaterDist_Reqd  !Expected Header for Profiles
+   ! ---- Define input file headers ---------------------------------------------------------------              
+   character(len=20),dimension(ncolumnsSiteSelect)::        HeaderSiteSelect_File          !Header for SiteSelect.txt                
+   character(len=20),dimension(ncolumnsNonVeg)::            HeaderNonVeg_File              !Header for the nonveg surface
+   character(len=20),dimension(ncolumnsNonVeg)::            HeaderNonVeg_Reqd              !Expected header for the nonveg surface 	
+   character(len=20),dimension(ncolumnsVeg)::               HeaderVeg_File                 !Header for the veg surface
+   character(len=20),dimension(ncolumnsVeg)::               HeaderVeg_Reqd                 !Expected header for the veg surface 	
+   character(len=20),dimension(ncolumnsWater)::             HeaderWater_File               !Header for water surface
+   character(len=20),dimension(ncolumnsWater)::             HeaderWater_Reqd               !Expected header for water surface 	
+   character(len=20),dimension(ncolumnsSnow)::              HeaderSnow_File                !Header for Snow surface
+   character(len=20),dimension(ncolumnsSnow)::              HeaderSnow_Reqd                !Expected header for Snow surface 	
+   character(len=20),dimension(ncolumnsSoil)::              HeaderSoil_File                !Header for soils
+   character(len=20),dimension(ncolumnsSoil)::              HeaderSoil_Reqd                !Expected header for soils
+   character(len=20),dimension(ncolumnsConductance)::       HeaderCond_File                !Header for conductances 
+   character(len=20),dimension(ncolumnsConductance)::       HeaderCond_Reqd                !Expected header for conductances 
+   character(len=20),dimension(ncolumnsOHMCoefficients)::   HeaderOHMCoefficients_File     !Header for soils
+   character(len=20),dimension(ncolumnsOHMCoefficients)::   HeaderOHMCoefficients_Reqd     !Expected header for soils   
+   character(len=20),dimension(ncolumnsAnthropogenicHeat):: HeaderAnthropogenicHeat_File   !Header for QF
+   character(len=20),dimension(ncolumnsAnthropogenicHeat):: HeaderAnthropogenicHeat_Reqd   !Expected header for QF 
+   character(len=20),dimension(ncolumnsIrrigation)::        HeaderIrrigation_File          !Header for Irrigation
+   character(len=20),dimension(ncolumnsIrrigation)::        HeaderIrrigation_Reqd          !Expected header for Irrigation
+   character(len=20),dimension(ncolumnsProfiles)::          HeaderProfiles_File            !Header for Profiles
+   character(len=20),dimension(ncolumnsProfiles)::          HeaderProfiles_Reqd            !Expected header for Profiles
+   character(len=20),dimension(ncolumnsWGWaterDist)::       HeaderWGWaterDist_File         !Header for Profiles
+   character(len=20),dimension(ncolumnsWGWaterDist)::       HeaderWGWaterDist_Reqd         !Expected header for Profiles
    
-   real(kind(1d0)),dimension(:,:),allocatable::SiteSelect           !Matrix of SiteSelect.txt
-   real(kind(1d0)),dimension(:,:),allocatable::Impervious_Coeff   !Coefficients for the impervious surfaces
-   real(kind(1d0)),dimension(:,:),allocatable::Pervious_Coeff     !Coefficients for the pervious surfaces
-   real(kind(1d0)),dimension(:,:),allocatable::Water_Coeff        !Coefficients for the water surface
-   real(kind(1d0)),dimension(:,:),allocatable::Snow_Coeff	  !Coefficients for snow
-   real(kind(1d0)),dimension(:,:),allocatable::Soil_Coeff	  !Coefficients for soil
-   real(kind(1d0)),dimension(:,:),allocatable::Conductance_Coeff  !Coefficients for conductances
-   real(kind(1d0)),dimension(:,:),allocatable::OHMCoefficients_Coeff   !Coefficients for OHMCoefficients 
-   real(kind(1d0)),dimension(:,:),allocatable::AnthropogenicHeat_Coeff !Coefficients for AnthropogenicHeat
-   real(kind(1d0)),dimension(:,:),allocatable::Irrigation_Coeff  !Coefficients for Irrigation
-   real(kind(1d0)),dimension(:,:),allocatable::Profiles_Coeff  !Coefficients for Profiles
-   real(kind(1d0)),dimension(:,:),allocatable::WGWaterDist_Coeff  !Coefficients for WithinGridWaterDist
-      
-      
-   real(kind(1d0)),dimension(:,:,:),allocatable:: MetForcingData  !Meteorological forcing data matrix kept
-                                                                  !in the program at once
-   real(kind(1d0)),dimension(:,:,:),allocatable::ModelOutputData  !Same for tsep output data matrix
-   real(kind(1d0)),dimension(:,:),  allocatable::ModelDailyState    !DailyState matrix
-   real(kind(1d0)),dimension(:),    allocatable::DailyStateFirstOpen
-   real(kind(1d0)),dimension(:,:),  allocatable::SurfaceChar        !Matrix for the surface characteristics
+   ! ---- Define arrays to store input information from SiteInfo spreadsheet ----------------------
+   real(kind(1d0)),dimension(:,:),allocatable::SiteSelect                !Stores info from SiteSelect.txt
+   real(kind(1d0)),dimension(:,:),allocatable::NonVeg_Coeff              !Coefficients for the nonveg surfaces
+   real(kind(1d0)),dimension(:,:),allocatable::Veg_Coeff                 !Coefficients for the veg surfaces
+   real(kind(1d0)),dimension(:,:),allocatable::Water_Coeff               !Coefficients for the water surface
+   real(kind(1d0)),dimension(:,:),allocatable::Snow_Coeff                !Coefficients for snow
+   real(kind(1d0)),dimension(:,:),allocatable::Soil_Coeff                !Coefficients for soil
+   real(kind(1d0)),dimension(:,:),allocatable::Conductance_Coeff         !Coefficients for conductances
+   real(kind(1d0)),dimension(:,:),allocatable::OHMCoefficients_Coeff     !Coefficients for OHMCoefficients 
+   real(kind(1d0)),dimension(:,:),allocatable::AnthropogenicHeat_Coeff   !Coefficients for AnthropogenicHeat
+   real(kind(1d0)),dimension(:,:),allocatable::Irrigation_Coeff          !Coefficients for Irrigation
+   real(kind(1d0)),dimension(:,:),allocatable::Profiles_Coeff            !Coefficients for Profiles
+   real(kind(1d0)),dimension(:,:),allocatable::WGWaterDist_Coeff         !Coefficients for WithinGridWaterDist
+            
+   ! ---- Define arrays for model calculations ----------------------------------------------------
+   real(kind(1d0)),dimension(:,:),  allocatable:: SurfaceChar          !Array for surface characteristics
+   real(kind(1d0)),dimension(:,:,:),allocatable:: MetForcingData       !Array for meteorological forcing data
+   real(kind(1d0)),dimension(:,:),  allocatable:: ModelDailyState      !DailyState array
+   real(kind(1d0)),dimension(:),    allocatable:: DailyStateFirstOpen
+   real(kind(1d0)),dimension(:,:,:),allocatable:: ModelOutputData      !Output data matrix
+   real(kind(1d0)),dimension(:,:,:),allocatable:: dataOut              !Main data output matrix
+   real(kind(1d0)),dimension(:,:,:),allocatable:: dataOutBL            !CBL output matrix
+   real(kind(1d0)),dimension(:,:,:),allocatable:: dataOutSOL           !SOLWEIG POI output matrix
    
-   real(kind(1d0)),dimension(:,:,:),allocatable:: TstepProfiles   !Array for hourly profiles interpolated to Tstep
-   ! Columns
+   ! ---- Define array for hourly profiles interpolated to tstep ----------------------------------
+   real(kind(1d0)),dimension(:,:,:),allocatable:: TstepProfiles        
+   real(kind(1d0)),dimension(:,:),  allocatable:: AHProf_tstep 
+   real(kind(1d0)),dimension(:,:),  allocatable:: WUProfM_tstep, WUProfA_tstep
+   ! Column numbers for TstepProfiles
    integer:: cTP_EnUseWD  = 1,&
    	     cTP_EnUseWE  = 2,&
        	     cTP_WUManuWD = 3,&
@@ -78,12 +93,14 @@
        	     cTP_WUAutoWE = 6,&
    	     cTP_SnowCWD  = 7,&
    	     cTP_SnowCWE  = 8
-    
-   real(kind(1d0)),dimension(:,:),allocatable:: AHProf_tstep 
-   real(kind(1d0)),dimension(:,:),allocatable:: WUProfM_tstep, WUProfA_tstep
 
-   !--------------------------------------------------------------
-   ! Surface types
+   !-----------------------------------------------------------------------------------------------
+             
+   ! ---- Surface types ---------------------------------------------------------------------------
+   integer, parameter:: nsurf=7                !Total number of surfaces
+   integer, parameter:: NVegSurf=3             !Number of surfaces that are vegetated
+   integer, parameter:: nsurfIncSnow=nsurf+1   !Number of surfaces + snow
+      
    integer:: PavSurf   = 1,&   !When all surfaces considered together (1-7)
    	     BldgSurf  = 2,&
              ConifSurf = 3,&
@@ -91,189 +108,195 @@
              GrassSurf = 5,&   !New surface classes: Grass = 5th/7 surfaces
              BSoilSurf = 6,&   !New surface classes: Bare soil = 6th/7 surfaces
              WaterSurf = 7,&
-             ExcessSurf= 8,&   ! runoff or soil
-             NSurfDoNotReceiveDrainage=0,& ! Number of surfaces do not receive drainage water - green roof
-             ivConif = 1,&     !When only vegetated (now pervious) surfaces considered (1-4)
+             ExcessSurf= 8,&   !Runoff or subsurface soil in WGWaterDist
+             NSurfDoNotReceiveDrainage=0,&   !Number of surfaces that do not receive drainage water (green roof)
+             ivConif = 1,&     !When only vegetated surfaces considered (1-3)
              ivDecid = 2,&
-             ivGrass = 3,&     !New surface classes: Grass = 3rd/4 veg (pervious) surfaces
-             ivBSoil = 4,&     !New surface classes: BSoil = 4th/4 veg (pervious) surfaces
-            CreateAnnual,& 
-            alldays=1,&
-            NumberDailyVars=25  !Number of columns in daily/monthly output file
-            
-   integer, parameter:: nSurf=7      ! total number of surfaces
-   integer, parameter:: NVegSurf=3   ! number of surfaces that are vegetated
-   integer, parameter:: nSurfIncSnow=nsurf+1 !Number of surfaces + snow
-   integer, parameter:: maxGrid=10000  ! max. number of surface grids !HCW to 10000 from 100 (does not seem to slow down model).
-   integer, parameter:: NCoeffOhm=4  ! number of coefficients per surface to use (4)
-   integer, parameter:: Ndays =366   ! sg -- could read this in -- and allocate arrays
-          
-   integer:: numMonth=12             ! sg -- could read this in -- and allocate arrays
-   integer,parameter:: sideG=90        !Number of horizontal grids to which snow melting is calculated
-
-   !DailyState
-   real (kind(1d0)),dimension(0:NDays, 5):: GDD ! growing degree days - for LAI
+             ivGrass = 3  
+             
+   real(kind(1d0)),dimension(nsurf):: sfr   !Surface fractions [-]                  
+     
+   ! ---- Water balance for each surface  ---------------------------------------------------------
+   !These variables are expressed as depths [mm] over each surface(is); the depth therefore varies with sfr(is)
+   real(kind(1d0)),dimension(nsurf):: AddWater       !Water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
+   real(kind(1d0)),dimension(nsurf):: AddWaterRunoff !Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
+                                                     ! N.B. this is not an amount; drain(is)*AddWaterRunoff(is) is the amount [mm]
+   real(kind(1d0)),dimension(nsurf):: chang          !Change in state [mm]
+   real(kind(1d0)),dimension(nsurf):: drain          !Drainage of each surface type [mm]
+   real(kind(1d0)),dimension(nsurf):: evap           !Evaporation from each surface type [mm]
+   real(kind(1d0)),dimension(nsurf):: runoff         !Runoff from each surface type [mm]
+   !real(kind(1d0)),dimension(nsurf):: runoffOut      !Runoff from each existing surface type for output [mm]
+   real(kind(1d0)),dimension(nsurf):: runoffSoil     !Soil runoff from each soil sub-surface [mm]
+   !real(kind(1d0)),dimension(nsurf):: runoffSoilOut  !Soil runoff from each existing soil sub-surface [mm]
+   real(kind(1d0)),dimension(nsurf):: smd_nsurf      !Soil moisture deficit of each sub-surface [mm]
+   !real(kind(1d0)),dimension(nsurf):: smd_nsurfOut   !Soil moisture deficit in existing soil stores [mm]
+   real(kind(1d0)),dimension(nsurf):: soilmoist      !Soil moisture of each surface type [mm]
+   real(kind(1d0)),dimension(nsurf):: soilmoistOld   !Soil moisture of each surface type from previous timestep [mm]
+   real(kind(1d0)),dimension(nsurf):: state          !Wetness status of each surface type [mm]
+   !real(kind(1d0)),dimension(nsurf):: stateOut       !Wetness status of each existing surface type [mm]  
+   real(kind(1d0)),dimension(nsurf):: stateOld       !Wetness status of each surface type from previous timestep [mm]
    
-   ! check this may not be needed to go to -4 -- as 5 day mean only seems to be used in -OHM subroutine 
-   real (kind(1d0)),dimension(-4:NDays, 6):: HDD ! heating dd - for QF
-                                                !Matrix for heating and cooling degree days and Tair 
-    										 !Last column contains the 5-day running mean								
-
-   real (kind(1d0)),dimension(-4:NDays,NVegSurf)::LAI 	! LAI
+   real(kind(1d0)),dimension(nsurf):: StateLimit      !Limit for state of each surface type [mm] (specified in input files)
+   
+   ! ---- Soil characteristics specified in input files -------------------------------------------
+   real(kind(1d0)),dimension(nsurf):: SatHydraulicConduct !Saturated hydraulic conductivity for each soil subsurface [mm s-1]
+   real(kind(1d0)),dimension(nsurf):: SoilDepth           !Depth of sub-surface soil store for each surface [mm]
+   real(kind(1d0)),dimension(nsurf):: SoilStoreCap        !Capacity of soil store for each surface [mm]
+         
+   ! ---- Within-grid water distribution matrix ---------------------------------------------------
+   real(kind(1d0)),dimension(nsurf+1,nsurf-1)::WaterDist !Within-grid water distribution to other surfaces and runoff/soil store [-]
+   
+   ! ---- Drainage characteristics ----------------------------------------------------------------
+   real(kind(1d0)),dimension(6,nsurf):: surf   !Storage capacities and drainage equation info for each surface 
+                                               ! 1 - min storage capacity [mm]
+                                               ! 2 - Drainage equation to use
+                                               ! 3 - Drainage coeff 1 [units depend on choice of eqn]
+                                               ! 4 - Drainage coeff 2 [units depend on choice of eqn]
+                                               ! 5 - max storage capacity [mm]
+                                               ! 6 - current storage capacity [mm]
+   !-----------------------------------------------------------------------------------------------
+   
+   ! ---- Define arrays at daily timestep ---------------------------------------------------------
+   integer, parameter:: ndays = 366   !Max no. days in a year used to specify size of daily arrays             
+   !! Could delete NDays and allocate these elsewhere once no. days is known
+   real(kind(1d0)),dimension( 0:ndays, 5):: GDD          !Growing Degree Days (see SUEWS_DailyState.f95)
+   real(kind(1d0)),dimension(-4:ndays, 6):: HDD          !Heating Degree Days (see SUEWS_DailyState.f95)
+   real(kind(1d0)),dimension( 0:ndays, 9):: WU_Day       !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
+   real(kind(1d0)),dimension(-4:ndays, nvegsurf):: LAI   !LAI for each veg surface [m2 m-2]
+   
+   ! Seasonality of deciduous trees accounted for by the following variables which change with time
+   real(kind(1d0)),dimension( 0:ndays):: albDec     !Albedo of deciduous trees [-]
+   real(kind(1d0)),dimension( 0:ndays):: DecidCap   !Storage capacity of deciduous trees [mm]
+   real(kind(1d0)),dimension( 0:ndays):: porosity   !Porosity of deciduous trees [-]
+   
+   real(kind(1d0)):: AlbMin_dec,&   !Min albedo for for deciduous trees [-]
+		     AlbMax_dec,&   !Max albedo for for deciduous trees [-]
+                     CapMin_dec,&   !Min storage capacity for deciduous trees [mm] (from input information)
+                     CapMax_dec     !Max storage capacity for deciduous trees [mm] (from input information)                           
       
-   ! Replicate variables needed for DailyState, adding dimension to identify the grid, HCW 27 Nov 2014
-   !! Could delete maxGrid and allocate these elsewhere once NumberOfGrids is known
-   real (kind(1d0)),dimension(-4:NDays,6,maxGrid):: HDD_grids
-   real (kind(1d0)),dimension( 0:NDays,5,maxGrid):: GDD_grids
-   real (kind(1d0)),dimension(-4:NDays,NVegSurf,maxGrid):: LAI_grids
-   real (kind(1d0)),dimension( 0:NDays,9,maxGrid):: WU_Day_grids
-   real (kind(1d0)),dimension( 0:NDays,maxGrid):: albDec_grids
-   real (kind(1d0)),dimension( 0:NDays,maxGrid):: DecidCap_grids
-   real (kind(1d0)),dimension( 0:NDays,maxGrid):: porosity_grids
+   ! Replicate arrays needed for DailyState, adding dimension to identify the grid, HCW 27 Nov 2014
+   !! Could delete MaxNumberOfGrids and allocate these elsewhere once NumberOfGrids is known
+   real(kind(1d0)),dimension( 0:ndays, 5,MaxNumberOfGrids):: GDD_grids
+   real(kind(1d0)),dimension(-4:ndays, 6,MaxNumberOfGrids):: HDD_grids
+   real(kind(1d0)),dimension( 0:ndays, 9,MaxNumberOfGrids):: WU_Day_grids       
+   real(kind(1d0)),dimension(-4:ndays, nvegsurf,MaxNumberOfGrids):: LAI_grids   
    
-   real (kind(1d0)),dimension(nsurf):: AddWater       !Additional water from other surfaces
-   real (kind(1d0)),dimension(nsurf):: AddWaterRunoff !Part of outflows going to runoff/soil
-   real (kind(1d0)),dimension(nsurf):: chang          !Change in surface stores
-   real (kind(1d0)),dimension(nsurf):: drain          !Drainage of each surface type
-   real (kind(1d0)),dimension(nsurf):: runoff        !Runoff from each surface type
-   real (kind(1d0)),dimension(nsurf):: runoffOut     !Runoff of existing surface types
-   real (kind(1d0)),dimension(nsurf):: runoffSoil    !Soil runoff from each sub-surface
-   real (kind(1d0)),dimension(nsurf):: runoffSoilOut !Soil runoff from existing soil stores
-   real (kind(1d0)),dimension(nsurf):: SatHydraulicConduct ! Saturated Hydraulic conductivity 
-   real (kind(1d0)),dimension(nsurf):: areasfr       !Area of each subsurface
-   real (kind(1d0)),dimension(nsurf):: evap          !Evaporation [mm] for each surface
-  
-   real (kind(1d0)),dimension(nsurf)::  smd_nsurf     !Soil moisture deficit of each sub-surface
-   real (kind(1d0)),dimension(nsurf)::  smd_nsurfOut  !Soil moisture deficit in existing soil stores
-   real (kind(1d0)),dimension(nsurf)::  soilmoist0    !Inital soil moisture
-   real (kind(1d0)),dimension(nsurf)::  Soilmoist     !Soil moisture of each surface type
-   real (kind(1d0)),dimension(nsurf)::  soilstorecap !Maximum capasity soil storage can hold for each surface
-   real (kind(1d0)),dimension(nsurf)::  VolSoilMoistCap ! Maximum volumetric soil moisture capacity of each surface
-   real (kind(1d0)),dimension(nsurf)::  StateOld
-   real (kind(1d0)),dimension(nsurf)::  SoilMoistOld  !Soil moisture from previous timestep
+   real(kind(1d0)),dimension( 0:ndays,MaxNumberOfGrids):: albDec_grids
+   real(kind(1d0)),dimension( 0:ndays,MaxNumberOfGrids):: DecidCap_grids
+   real(kind(1d0)),dimension( 0:ndays,MaxNumberOfGrids):: porosity_grids             
    
-   !========Variables related to NARP================================
-   !Radiation balance components for different surfaces
-   real (kind(1d0)),dimension(nsurf)::  Tsurf_ind,&
-                                        Tsurf_ind_snow,&
-                                        Tsurf_ind_nosnow 
-   real (kind(1d0)),dimension(nsurf)::  kup_ind,&
-                                        kup_ind_snow,&
-                                        kup_ind_nosnow
-   real (kind(1d0)),dimension(nsurf)::  lup_ind,&
-                                        lup_ind_snow,&
-                                        lup_ind_nosnow
-   real (kind(1d0)),dimension(nsurf)::  qn1_ind,&
-                                        qn1_ind_snow,&
-                                        qn1_ind_nosnow
-   real (kind(1d0)),dimension(nsurf)::  emis       ! emissivity
-   real (kind(1d0)),dimension(nsurf)::  alb        !albedo
+   ! Day of week, month and season (used for water use and energy use calculations, and in OHM)
+   integer,dimension(0:ndays,3)::DayofWeek   !1 - day of week; 2 - month; 3 - season
+   !-----------------------------------------------------------------------------------------------
    
-   !========NARP SPECIFIC PARAMETERS================================
+   ! --- Vegetation phenology ---------------------------------------------------------------------
+   ! Parameters provided in input information for each vegetation surface (SUEWS_Veg.txt)
+   real(kind(1d0)),dimension(nvegsurf):: BaseT            !Base temperature for growing degree days [degC]
+   real(kind(1d0)),dimension(nvegsurf):: BaseTe           !Base temperature for senescence degree days [degC]
+   real(kind(1d0)),dimension(nvegsurf):: GDDFull          !Growing degree days needed for full capacity [degC]
+   real(kind(1d0)),dimension(nvegsurf):: SDDFull          !Senescence degree days needed to initiate leaf off [degC]
+   real(kind(1d0)),dimension(nvegsurf):: LaiMin           !Min LAI [m2 m-2]
+   real(kind(1d0)),dimension(nvegsurf):: LaiMax           !Max LAI  [m2 m-2]    
+   real(kind(1d0)),dimension(nvegsurf):: MaxConductance   !Max conductance [mm s-1]                                   
+   real(kind(1d0)),dimension(4)       :: LaiPower         !Coeffs for LAI equation: 1,2 - leaf growth; 3,4 - leaf off
+                                                          !! N.B. currently DecTr only, although input provided for all veg types
+   integer:: LAIType                                      !LAI equation to use: original (0) or new (1)
+   !real(kind(1d0))::GDDmax,SDDMax                         ! Max GDD and SDD across all veg types [degC] (removed HCW 03 Mar 2015)
    
-   REAL(KIND(1D0))             :: NARP_LAT,NARP_LONG,NARP_YEAR,NARP_TZ,&
+   !No longer used (removed HCW 27 Nov 2014) 
+   !real(kind(1d0)),dimension(0:23)::runT           ! running average T for the day   
+   !real(kind(1d0)),dimension(0:23)::runP           ! running total Precip for the day
+   !real (kind(1d0))::avT_h, totP_h                 ! daily running average Temp, Total precip
+   !-----------------------------------------------------------------------------------------------                   
+   
+   ! ---- Variables related to NARP ---------------------------------------------------------------
+   real(kind(1d0)),dimension(nsurf):: alb    !Albedo of each surface type [-]
+   real(kind(1d0)),dimension(nsurf):: emis   !Emissivity of each surface type [-]
+   
+   ! Radiation balance components for different surfaces
+   real(kind(1d0)),dimension(nsurf):: Tsurf_ind,&        !Surface temperature for each surface [degC]
+                                      Tsurf_ind_snow,&   !Snow surface temperature for each surface [degC]
+                                      Tsurf_ind_nosnow   
+   real(kind(1d0)),dimension(nsurf):: kup_ind,&          !Outgoing shortwave radiation for each surface [W m-2]
+                                      kup_ind_snow,&     !Outgoing shortwave radiation for each snow surface [W m-2]
+                                      kup_ind_nosnow
+   real(kind(1d0)),dimension(nsurf):: lup_ind,&          !Outgoing longwave radiation for each surface [W m-2]
+                                      lup_ind_snow,&     !Outgoing longwave radiation for each snow surface [W m-2]
+                                      lup_ind_nosnow
+   real(kind(1d0)),dimension(nsurf):: qn1_ind,&          !Net all-wave radiation for each surface [W m-2]
+                                      qn1_ind_snow,&     !Net all-wave radiation for each snow surface [W m-2]
+                                      qn1_ind_nosnow
+     
+   ! ---- NARP-specific parameters ----------------------------------------------------------------
+   real(kind(1d0))             :: NARP_LAT,NARP_LONG,NARP_YEAR,NARP_TZ,&
                                   NARP_ALB_SNOW,NARP_EMIS_SNOW,NARP_TRANS_SITE
-   !REAL(KIND(1d0)),allocatable:: NARP_ALB(:),NARP_EMIS(:)                             
-   ! check everywhere else 366 days
-   REAL(KIND(1D0))             :: NARP_G(365)
+   REAL(KIND(1D0))             :: NARP_G(365)   !!Should this be NDays?? - HCW
    INTEGER                     :: NARP_NPERHOUR
    REAL(KIND(1D0)),ALLOCATABLE :: NARP_KDOWN_HR(:)
-   
-   REAL(KIND(1D0)),PARAMETER   :: DEG2RAD=0.017453292,RAD2DEG=57.29577951,&
+   ! Constants required
+   REAL(KIND(1D0)),PARAMETER   :: DEG2RAD=0.017453292,&   
+                                  RAD2DEG=57.29577951,&
                                   SIGMA_SB=5.67E-8
-  
-   !GIS information
-   real (kind(1d0)),dimension(nsurf)::  sfr     ! surface fractions + bare soil
-   real (kind(1d0))::BareSoilSurfFraction
- 
-   !surface states
-   real (kind(1d0)),dimension(nsurf):: state      !Wetness status of each surface type in mm
-   real (kind(1d0)),dimension(nsurf):: stateAll   !Wetness status of each surface type in mm 
-   real (kind(1d0)),dimension(nsurf):: StateOut   !Wetness state of existing surfaces  
-   real (kind(1d0)),dimension(nsurf):: state0     !inital Wetness status of each surface   state
- 
-   real (kind(1d0)),dimension(nsurf+1,nsurf-1)::WaterDist !Table which determines distribution of water in the canopy
-   
- !===================Snow related===================================
-   real (kind(1d0)),dimension(nsurf)::changSnow,&       !Change in snowpack in mm
-   									  maxSnowVol,&      !! Maximum snow volume							  
-									  MeltWaterStore,&  !!Liquid water in the snow pack of ith surface
+   !-----------------------------------------------------------------------------------------------
+                                  
+   ! ---- OHM coefficients ------------------------------------------------------------------------
+   real(kind(1d0)),dimension(9,4,3):: OHM_coef   !Array for OHM coefficients                      
+   real(kind(1d0)):: a1,a2,a3   !OHM coefficients, a1 [-]; a2 [h]; a3 [W m-2]                                       
+   real(kind(1d0)),dimension(MaxNumberOfGrids):: q1_grids,q2_grids,q3_grids,&   !For rate of change for OHM for each grid
+                                                 r1_grids,r2_grids,r3_grids     !Same for snow   
+   !-----------------------------------------------------------------------------------------------                                            
+                                                 
+   ! ---- Snow-related variables ------------------------------------------------------------------
+   real(kind(1d0)),dimension(nsurf):: changSnow,&       !Change in snowpack in mm
+   				      maxSnowVol,&      !! Maximum snow volume							  
+				      MeltWaterStore,&  !!Liquid water in the snow pack of ith surface
                                       ev_snow,&        	!!Evaporation from snowpack in mm
                                       mw_ind,&         	!Melt water from individual surface in mm
                                       mw_indDay,&      	!!Melt water per day from each surface type in m3
-									  runoffSnow,&     	!!Runoff from snowpack in mm and in m3
+			              runoffSnow,&     	!!Runoff from snowpack in mm and in m3
                                       densSnow,&        !Density of snow
                                       SnowDensInit,&
                                       snowFrac,&       	!!Surface fraction of snow cover
                                       iceFrac,&
                                       snowInit,&
-                                      snowDepth,&      !Depth of snow in cm
-                                      SnowToSurf,&     !Meltwater flowing from snow to surface
+                                      snowDepth,&       !Depth of snow in cm
+                                      SnowToSurf,&      !Meltwater flowing from snow to surface
                                       volSWE,&
-                                      StateFraction,&  !Fraction of state that can freeze                                      
-                                      freezMelt,&      !Amount of freezing meltwater in mm for the ith surface area
-                                      Qm_freezState,&  !Heat by freezing of surface state
-                                      freezState,&     !Amount of freezing state in mm for the ith surface area
+                                      StateFraction,&   !Fraction of state that can freeze                                      
+                                      freezMelt,&       !Amount of freezing meltwater in mm for the ith surface area
+                                      Qm_freezState,&   !Heat by freezing of surface state
+                                      freezState,&      !Amount of freezing state in mm for the ith surface area
                                       FreezStateVol,&
-                                      Qm_melt,&        !Heat consumption by snow melt
-                                      Qm_rain,&        !Heat by rain falling on snow
-                                      rainOnSnow,&     !Liquid precipitation falling on snow ()
+                                      Qm_melt,&         !Heat consumption by snow melt
+                                      Qm_rain,&         !Heat by rain falling on snow
+                                      rainOnSnow,&      !Liquid precipitation falling on snow ()
                                       snowD,&
                                       deltaQi
  
-   real (kind(1d0)),dimension(nsurf)::snowPack,&       !Amount of snow on each surface in mm
+   real(kind(1d0)),dimension(nsurf):: snowPack,&        !Amount of snow on each surface in mm
                                       snowPackOld
    integer,dimension(nsurf):: heiG,&                    !snow layer height
                               snowCoverForms,&
                               snowCalcSwitch=0          !Defines if snow related balance is made
+   !-----------------------------------------------------------------------------------------------
     
-   !==================Outer programs================================= 
-   character(len=15),dimension(2,maxGrid)::GridConnections  !List of different grid corrections
-   real (kind(1d0)),dimension(maxGrid)::   GridConnectionsFrac   !Fraction of water moving between the different grids
-   integer,dimension(maxGrid):: laiID   !Day of year of LAI from previous year
-         
-   real (kind(1d0)), dimension(0:ndays)::albDec    !Changing albedo for deciduous trees
-   real (kind(1d0)), dimension(0:ndays)::DecidCap  !Max capacity of deciduous trees
-   real (kind(1d0)), dimension(0:ndays):: porosity !Porosity of deciduous trees
-   real (kind(1d0)), dimension(0:ndays,9):: WU_Day !Daily water use (total, automatic, manual) for EveTr,DecTr,Grass
-   real (kind(1d0)):: AlbMin_dec=0.15,&
-		      AlbMax_dec,&
-                      CapMin_dec,&
-                      CapMax_dec                                
-   real (kind(1d0)), dimension(6,nsurf):: surf     ! Contains min,max and current storage capacities and drainage equation info
-          
-   ! LUMPS vegetation phenology
-   integer:: jj1,jj2,jj3,jj4, changed,changeInit,LAItype
-   real (kind(1d0)):: kk1,kk2,dmax,dmin,dx1,dx2    ! used to calculate Vegetation phenology for LUMPS
-   !real(kind(1d0)),dimension(0:23)::runT           ! running average T for the day   !Not used (HCW 27 Nov 2014) 
-   !real(kind(1d0)),dimension(0:23)::runP           ! running total Precip for the day   !Not used (HCW 27 Nov 2014) 
-   !real (kind(1d0))::avT_h, totP_h                 ! daily running average Temp, Total precip   !Not used (HCW 27 Nov 2014) 
-   real(kind(1d0)),dimension(nvegsurf):: baseT     ! Base Temperature for growing degree days
-   real(kind(1d0)),dimension(nvegsurf):: BaseTe    ! Base Temperature for senescence
-   real(kind(1d0)),dimension(nvegsurf):: GDDFull   !Canopy growth parameters
-   real(kind(1d0))::GDDmax,SDDMax                  ! limit across vegetation types
-   real(kind(1d0)),dimension(nvegsurf):: LaiMin    ! minimum LAI
-   real(kind(1d0)),dimension(nvegsurf):: LaiMax    ! maximum LAI
-   !real(kind(1d0)):: MaxLaiMax                     ! maximum LAI of all  sg 12 nov 13 -- no longer used
-   real(kind(1d0)),dimension(nvegsurf):: SDDFull   ! Vegetation parameters 
-   real(kind(1d0)),dimension(nvegsurf+2):: MaxConductance      ! maximum conductance for surface resistance
-                   ! +2 so can use surface position in array
-                   
-   real(kind(1d0)),dimension(4):: laiPower
-                    
-   ! used in water Use, anthropogenic heat and storage calculation                   
-   integer,dimension(0:Ndays,3)::DayofWeek  ! day of week, month, season
-   real (kind(1d0)), dimension(3)::WU_prof      !% of water use profile
+   ! ---- Grid connections ------------------------------------------------------------------------
+   !! Grid connections needs coding, currently no water transfer between grids
+   ! Added HCW 14 Nov 2014
+   integer,parameter:: nconns = 8   !Number of grids for between-grid connections
+   real(kind(1d0)),dimension(nconns):: GridToFrac   !Fraction of water moving to the grid specified in GridTo [-]
+   real(kind(1d0)),dimension(nconns):: GridTo       !Grid that water moves to     
+   !!character(len=15),dimension(2,MaxNumberOfGrids)::GridConnections  !List of different grid corrections
+   !!real (kind(1d0)),dimension(MaxNumberOfGrids)::   GridConnectionsFrac   !Fraction of water moving between the different grids
+   !-----------------------------------------------------------------------------------------------
    
    
-   ! ==== Grid connections ==== ! Added HCW 14 Nov 2014
-   integer,parameter:: NConns = 8 	!Number of grids for between-grid connections
-   real(kind(1d0)), dimension(NConns) :: GridToFrac
-   real(kind(1d0)), dimension(NConns) :: GridTo
-       
-   !======== Column numbers for SurfaceChar =============================    
+   !-----------------------------------------------------------------------------------------------
+   !---------------------------------- Column numbers ---------------------------------------------                                                 
+   
+   ! ---- Set column numbering for SurfaceChar ----------------------------------------------------
    ! Columns 1:80 are the same as in SiteSelect.txt and defined below
-   integer:: cc	 !Column counter
+   integer:: cc 	 !Column counter
    integer,parameter:: ccEndSI=ncolumnsSiteSelect
    
    ! Applicable to each surface
@@ -281,20 +304,20 @@
    integer,dimension(nsurf):: c_Emis	  =(/(cc, cc=ccEndSI+ 1*nsurf+1,ccEndSI+ 1*nsurf+nsurf, 1)/)  !Emissivity
    integer,dimension(nsurf):: c_StorMin	  =(/(cc, cc=ccEndSI+ 2*nsurf+1,ccEndSI+ 2*nsurf+nsurf, 1)/)  !Min. storage capacity (canopy)
    integer,dimension(nsurf):: c_StorMax	  =(/(cc, cc=ccEndSI+ 3*nsurf+1,ccEndSI+ 3*nsurf+nsurf, 1)/)  !Max. storage capacity (canopy)
-   integer,dimension(nsurf):: c_DrEq	  =(/(cc, cc=ccEndSI+ 4*nsurf+1,ccEndSI+ 4*nsurf+nsurf, 1)/)  !Drainage equation
-   integer,dimension(nsurf):: c_DrCoef1	  =(/(cc, cc=ccEndSI+ 5*nsurf+1,ccEndSI+ 5*nsurf+nsurf, 1)/)  !Drainage coef. 1    
-   integer,dimension(nsurf):: c_DrCoef2   =(/(cc, cc=ccEndSI+ 6*nsurf+1,ccEndSI+ 6*nsurf+nsurf, 1)/)  !Drainage coef. 2
-   integer,dimension(nsurf):: c_SoilStCap  =(/(cc, cc=ccEndSI+ 7*nsurf+1,ccEndSI+ 7*nsurf+nsurf, 1)/)  !Soil storage capacity (below surface)	
-   integer,dimension(nsurf):: c_SoilTCode  =(/(cc, cc=ccEndSI+ 8*nsurf+1,ccEndSI+ 8*nsurf+nsurf, 1)/)  !Soil type code
+   integer,dimension(nsurf):: c_StateLimit=(/(cc, cc=ccEndSI+ 4*nsurf+1,ccEndSI+ 4*nsurf+nsurf, 1)/)  !Limit for surface state [mm]
+   integer,dimension(nsurf):: c_DrEq	  =(/(cc, cc=ccEndSI+ 5*nsurf+1,ccEndSI+ 5*nsurf+nsurf, 1)/)  !Drainage equation
+   integer,dimension(nsurf):: c_DrCoef1	  =(/(cc, cc=ccEndSI+ 6*nsurf+1,ccEndSI+ 6*nsurf+nsurf, 1)/)  !Drainage coef. 1    
+   integer,dimension(nsurf):: c_DrCoef2   =(/(cc, cc=ccEndSI+ 7*nsurf+1,ccEndSI+ 7*nsurf+nsurf, 1)/)  !Drainage coef. 2
+   integer,dimension(nsurf):: c_SoilTCode =(/(cc, cc=ccEndSI+ 8*nsurf+1,ccEndSI+ 8*nsurf+nsurf, 1)/) !Soil type code
    ! N.B. not included in SUEWS_Water.txt
-   integer,dimension(nsurf):: c_SnowLimPat =(/(cc, cc=ccEndSI+ 9*nsurf+1,ccEndSI+ 9*nsurf+nsurf, 1)/)  !Snow limit for patchiness
-   ! N.B. currently only in SUEWS_Impervious.txt
-   integer,dimension(nsurf):: c_SnowLimRem =(/(cc, cc=ccEndSI+10*nsurf+1,ccEndSI+10*nsurf+nsurf, 1)/)  !Snow limit for removal
+   integer,dimension(nsurf):: c_SnowLimPat =(/(cc, cc=ccEndSI+ 9*nsurf+1,ccEndSI+ 9*nsurf+nsurf, 1)/) !Snow limit for patchiness
+   ! N.B. currently only in SUEWS_NonVeg.txt
+   integer,dimension(nsurf):: c_SnowLimRem =(/(cc, cc=ccEndSI+ 10*nsurf+1,ccEndSI+ 10*nsurf+nsurf, 1)/) !Snow limit for removal
    
    ! Find current column number	
    integer,parameter:: ccEndI = (ccEndSI+10*nsurf+nsurf)
    
-   ! Applicable to pervious surfaces only
+   ! Applicable to vegetated surfaces only
    integer,dimension(NVegSurf):: c_BaseT   =(/(cc, cc=ccEndI+ 0*nvegsurf+1,ccEndI+ 0*nvegsurf+nvegsurf, 1)/) !Base temp. for leaf-on
    integer,dimension(NVegSurf):: c_BaseTe  =(/(cc, cc=ccEndI+ 1*nvegsurf+1,ccEndI+ 1*nvegsurf+nvegsurf, 1)/) !Base temp. for leaf-off
    integer,dimension(NVegSurf):: c_GDDFull =(/(cc, cc=ccEndI+ 2*nvegsurf+1,ccEndI+ 2*nvegsurf+nvegsurf, 1)/) !GDD for full LAI
@@ -332,16 +355,17 @@
    integer,parameter:: ccEndSn = (ccEndP+15)
       
    ! Soil information
-   integer,dimension(nsurf):: c_VolSMCap    = (/(cc, cc=ccEndSn+ 0*nsurf+1,ccEndSn+ 0*nsurf+nsurf, 1)/)  ! Volumetric SM capacity
-   integer,dimension(nsurf):: c_KSat        = (/(cc, cc=ccEndSn+ 1*nsurf+1,ccEndSn+ 1*nsurf+nsurf, 1)/)  ! Saturated hydraulic conductivity
-   integer,dimension(nsurf):: c_SoilDens    = (/(cc, cc=ccEndSn+ 2*nsurf+1,ccEndSn+ 2*nsurf+nsurf, 1)/)  ! Soil Density
-   integer,dimension(nsurf):: c_SoilInfRate = (/(cc, cc=ccEndSn+ 3*nsurf+1,ccEndSn+ 3*nsurf+nsurf, 1)/)  ! Soil infiltration rate
-   integer,dimension(nsurf):: c_ObsSMDepth  = (/(cc, cc=ccEndSn+ 4*nsurf+1,ccEndSn+ 4*nsurf+nsurf, 1)/)  ! Depth of SM obs
-   integer,dimension(nsurf):: c_ObsSMMax    = (/(cc, cc=ccEndSn+ 5*nsurf+1,ccEndSn+ 5*nsurf+nsurf, 1)/)  ! Obs maximum SM [kg kg-1 OR m3 m-3]
-   integer,dimension(nsurf):: c_ObsSNRFrac  = (/(cc, cc=ccEndSn+ 6*nsurf+1,ccEndSn+ 6*nsurf+nsurf, 1)/)  ! Obs fraction of soil without rocks
+   integer,dimension(nsurf):: c_SoilDepth    = (/(cc, cc=ccEndSn+ 0*nsurf+1,ccEndSn+ 0*nsurf+nsurf, 1)/)  ! Volumetric SM capacity
+   integer,dimension(nsurf):: c_SoilStCap = (/(cc, cc=ccEndSn+ 1*nsurf+1,ccEndSn+ 1*nsurf+nsurf, 1)/)  ! Volumetric SM capacity
+   integer,dimension(nsurf):: c_KSat         = (/(cc, cc=ccEndSn+ 2*nsurf+1,ccEndSn+ 2*nsurf+nsurf, 1)/)  ! Saturated hydraulic conductivity
+   integer,dimension(nsurf):: c_SoilDens     = (/(cc, cc=ccEndSn+ 3*nsurf+1,ccEndSn+ 3*nsurf+nsurf, 1)/)  ! Soil Density
+   integer,dimension(nsurf):: c_SoilInfRate  = (/(cc, cc=ccEndSn+ 4*nsurf+1,ccEndSn+ 4*nsurf+nsurf, 1)/)  ! Soil infiltration rate
+   integer,dimension(nsurf):: c_ObsSMDepth   = (/(cc, cc=ccEndSn+ 5*nsurf+1,ccEndSn+ 5*nsurf+nsurf, 1)/)  ! Depth of SM obs
+   integer,dimension(nsurf):: c_ObsSMMax     = (/(cc, cc=ccEndSn+ 6*nsurf+1,ccEndSn+ 6*nsurf+nsurf, 1)/)  ! Obs maximum SM [kg kg-1 OR m3 m-3]
+   integer,dimension(nsurf):: c_ObsSNRFrac   = (/(cc, cc=ccEndSn+ 7*nsurf+1,ccEndSn+ 7*nsurf+nsurf, 1)/)  ! Obs fraction of soil without rocks
    
    ! Find current column number	
-   integer,parameter:: ccEndSo = (ccEndSn+ 6*nsurf+nsurf)
+   integer,parameter:: ccEndSo = (ccEndSn+ 7*nsurf+nsurf)
    
    ! Surface conductance
    integer:: c_GsG1	= (ccEndSo+ 1)
@@ -450,9 +474,9 @@
  
    !Last column number for SurfaceChar array
    integer,parameter:: MaxNCols_c = ccEndPr+ 8*nsurf+nsurf
- 
-   !----------------------------------------------------------------------
-   ! ---- For ModelOutputData ----
+   !-----------------------------------------------------------------------------------------------
+   
+   ! ---- Set column numbering for ModelOutputData ------------------------------------------------
    ! Applicable to each surface
    integer,parameter:: ccMOD = 32
    integer,dimension(nsurf):: cMOD_State          =(/(cc, cc=ccMOD+ 0*nsurf+1,ccMOD+ 0*nsurf+nsurf, 1)/)  !Above ground state
@@ -465,22 +489,220 @@
    
    !Last column number for ModelOutputData array
    integer,parameter:: MaxNCols_cMOD = ccMOD+ 5*nsurf+nsurf
+   !-----------------------------------------------------------------------------------------------
    
-   !----------------------------------------------------------------------
-  
-   !----------------------------------------------------------------------
-   ! ---- For ModelDailyState ----
+   ! ---- Set column numbering for ModelDailyState ------------------------------------------------
    ! Applicable to each surface
    integer,parameter:: ccMDS = 30
    integer,dimension(nsurf):: cMDS_SnowDens       =(/(cc, cc=ccMDS+ 0*nsurf+1,ccMDS+ 0*nsurf+nsurf, 1)/)  !Snow density
    
    !Last column number for ModelDailyState array
    integer,parameter:: MaxNCols_cMDS = ccMDS+ 0*nsurf+nsurf
-   
-   !----------------------------------------------------------------------
+   !-----------------------------------------------------------------------------------------------
       
- end MODULE allocateArray
+ end module allocateArray
+!==================================================================================================
  
+!==================================================================================================
+ module Initial
+ 
+    IMPLICIT NONE
+
+    integer::FirstYear,&          !First year to run (specified in SiteSelect.txt)
+             LastYear,&           !Last year to run  (specified in SiteSelect.txt)
+             FirstGrid,&	  !First grid to run (as in SiteSelect)
+             LastGrid,&	          !Last grid to run  (as in SiteSelect)
+             NumberOfGrids,&      !Number of grids
+             GridCounter,&        !Counter for grids (i.e. from 1 to NumberOfGrids)
+              
+             ReadBlocksMetData,&  !Number of blocks of met data to read (for each grid, for each year)
+             ReadLinesMetData,&   !Number of lines of met data in each block (for each grid)
+                           
+             nlinesMetData,&            !Number of lines in Met Forcing file
+             nlinesSiteSelect,&         !Number of lines in SUEWS_SiteSelect.txt
+             nlinesNonVeg,&             !Number of lines in SUEWS_NonVeg.txt
+             nlinesVeg,&                !Number of lines in SUEWS_Veg.txt
+             nlinesWater,&   	        !Number of lines in SUEWS_Water.txt
+             nlinesSnow,&               !Number of lines in SUEWS_Snow.txt
+             nlinesSoil,&               !Number of lines in SUEWS_Soil.txt
+             nlinesConductance,&        !Number of lines in SUEWS_Conductance.txt
+             nlinesOHMCoefficients,&    !Number of lines in SUEWS_OHMCoefficients.txt
+             nlinesAnthropogenicHeat,&  !Number of lines in SUEWS_AnthropogenicHeat.txt
+             nlinesIrrigation,&         !Number of lines in SUEWS_Irrigation.txt
+             nlinesProfiles,&           !Number of lines in SUEWS_Profiles.txt
+             nlinesWGWaterDist,&        !Number of lines in SUEWS_WGWaterDist.txt  
+             nlines,&                   !Number of lines in different files
+             SkippedLines,& 	        !Number of lines to skip over before reading each block of met data
+             iv5		        !Counter for code matching.
+
+ end module Initial
+!==================================================================================================
+
+!================================================================================================== 
+ module data_in
+ 
+    IMPLICIT NONE
+ 
+    character (len=90)::progname='SUEWS V2015a'  !<<<<<<<<<<<<<<<<<<
+    
+    ! ---- Run information ------------------------------------------------------------------------
+    character (len=20)::  FileCode   !Set in RunControl
+    character (len=150):: FileInputPath,&   !Filepath for input files (set in RunControl)
+                          FileOutputPath    !Filepath for output files (set in RunControl)
+    ! ---- File names -----------------------------------------------------------------------------  
+    character (len=150):: FileOut,&         !Output file name   
+                          FileChoices,&     !Run characteristics file name
+                          FileMet,&         !Meteorological forcing file name
+                          FileDaily,&       !Daily State output file name
+                          SOLWEIGpoiOut     !SOLWEIG poi file name
+                                                 
+    ! ---- Model options set in RunControl --------------------------------------------------------
+    integer:: AnthropHeatChoice,&    !QF in met file (0); Loridan et al. 2010 (1); Jarvi et al. 2011 (2)
+              CBLuse,&               !CBL slab model used (1) or not used (0)
+              MultipleMetFiles,&     !Indicates whether a single met file is used for all grids (0) or one for each grid (1)              
+              NetRadiationChoice,&   !Options for net all-wave radiation calculation
+              OHMIncQF,&             !OHM calculation uses Q* only (0) or Q*+QF (1)
+              QSChoice,&             !OHM (1); QS in met file (2)
+              SkipHeaderSiteInfo,&   !Number of header lines to skip in SiteInfo files 
+              SkipHeaderMet,&        !Number of header lines to skip in met file input
+              SNOWuse,&              !Snow part used (1) or not used (0)   
+              SOLWEIGuse,&           !SOLWEIG part used (calculates Tmrt and other fluxes on a grid, FL)
+              smd_choice,&           !Use modelled (0) or observed(1,2) soil moisture
+              WU_choice,&            !Use modelled (0) or observed (1) water use
+              z0_method              !Defines method for calculating z0 & zd 
+             
+    ! ---- Model options currently set in model, but may be moved to RunControl at a later date
+    integer:: AlbedoChoice,&         !No additional albedo varaition (0); zenith angle calculation (1)
+                                     !Currently set to 0 in SUEWS_Initial
+              InputMetFormat,&       !Defines format for met input data: LUMPS format(1) or SUEWS format(10) 
+                                     !Currently set to 10 in SUEWS_Initial
+              ity,&                  !Evaporation calculated according to Rutter (1) or Shuttleworth (2)  
+                                     !Currently set to 2 in OverallRunControl
+              LAIcalcYes,&           !Use observed (0) or modelled (1) LAI  
+                                     !Currently set to 1 in OverallRunControl
+              WriteDailyState        !Daily state file written (1)
+                                     !Currently set to 1 in SUEWS_Initial              
+              
+    ! ---- Other options used within model --------------------------------------------------------
+    integer:: ldown_option           !Parameterisation used for downward longwave radiation (1/2/3)
+    
+    ! ---- Output file numbers --------------------------------------------------------------------
+    integer:: lfnout,&               !Error Output write units
+              lfnoutC,&              !Clean output write units
+              lfnOld                 !!Was used for GridConnections
+      
+    logical:: finish,once
+ 
+    ! ---- Other options set in RunControl --------------------------------------------------------
+    real (kind(1d0)):: timezone      !Timezone (GMT=0)
+    
+    ! ---- Variables in alphabetical order --------------------------------------------------------
+    !! Add units                    
+    real (kind(1d0)):: AH_MIN,&    !Minimum anthropogenic heat flux (AnthropHeatChoice = 1)
+                       AH_SLOPE,&  !Slope of the antrhropogenic heat flux calculation (AnthropHeatChoice = 1)
+                       alpha_qhqe,& !Alpha parameter used in LUMPS QH and QE calculations [-]
+                       avdens,&    !Average air density
+                       avkdn,&     !Average downwelling shortwave radiation
+                       avrh,&      !Average relative humidity
+                       avts,&      !Average surface temperature
+                       avu1,&      !Average wind speed
+                       azimuth,&   !Sun azimuth in degrees
+                       BaseTHDD,&  !Base temperature for QF               
+                       E_mod,&     !Modelled latent heat flux with LUMPS  [W m-2]
+                       emis_snow,& !Emissivity of snow
+                       fcld,&      !Cloud fraction modelled
+                       fcld_obs,&  !Cloud fraction observed
+                       h_mod,&     !Modelled sensible heat flux with LUMPS [W m-2]
+                       kclear,&    !Theoretical downward shortwave radiation
+                       kdiff,&     !Diffuse shortwave radiation
+                       kdir,&      !Direct shortwave radiation
+                       kup,&       !Upward shortwave radiation
+                       lai_obs,&   !LAI for study area provided in met forcing file                
+                       lat,&       !Latitude
+                       ldown, &    !Downward longwave radiation
+                       ldown_obs,& !Downwelling longwave radiation
+                       lng,&       !Longitude
+                       lup,&       !Upward longwave radiation             
+                       NumCapita,& !Number of people in the study area per hectare [ha-1]
+                       PopDensDaytime,&   ! Daytime population density [ha-1] (i.e. workers) 
+                       PopDensNighttime,& ! Nighttime population density [ha-1] (i.e. residents)
+                       Precip,&    !Precipitation per timestep [mm]
+                       Precip_hr,&    !Precipitation [mm hr-1]
+                       Press_hPa,&  !Station air pressure in hPa     
+                       Pres_kPa,&   !Station air pressure in kPa
+                       qe,&        !Observed latent heat flux
+                       qe_obs,&
+                       qf,&        !Observed anthropogenic heat flux
+                       QF_SAHP,&    !Anthropogenic heat flux calculated by SAHP
+                       qh,&        !Observed sensible heat flux
+                       qh_obs,&
+                       qn1,&       !Net all-wave radiation for the study area
+                       qn1_bup,&
+                       qn1_obs,&   !Observed new all-wave radiation
+                       qn1_S,&     !Total net all-wave radiation for the snowpack
+                       qn1_SF,&    !Total net all-wave radiation for the snowfree surface
+                       qs,&        !Observed storage heat flux
+                       snow,&      !snow cover
+                       snow_obs,&  !Observed snow cover
+                       T_CRITIC,& !Critical temperature
+                       Temp_C,&    !Air temperature
+                       trans_site,&  !Atmospheric transmittivity
+                       tsurf,&   !Surface temperature
+                       wdir,&      ! Wind direction
+                       wu_m3,&     !Water use provided in met forcing file [m3]
+                       xsmd,&      !Measured soil moisture deficit
+                       year,&      !Year of the measurements
+                       zenith_deg  !Sun zenith angle in degrees
+
+    real(kind(1d0)),dimension(2)::Qf_A,Qf_B,Qf_C   !Qf coefficients
+    real(kind(1d0)),dimension(0:23,2):: AHPROF     !Anthropogenic heat profiles for (1)weekdays / (2)weekends  
+    
+    integer,dimension(2)::DayLightSavingDay   !DOY when daylight saving changes
+     
+    integer::nCBLstep  !number of time steps of Runge-kutta methods in one hour
+         
+    !---------Water bucket (see B. Offerle's PhD)----------------------------------
+    real (KIND(1D0)):: DRAINRT,&      !Drainage rate of the water bucket [mm hr-1]
+                       RAINBUCKET,&   !RAINFALL RESERVOIR [mm]
+                       RAINCOVER,&  
+                       RAINMAXRES,&   !Maximum water bucket reservoir [mm]
+                       RAINRES,&      ! [mm]
+                       TEMPVEG        !TEMPORARY VEGETATIVE SURFACE FRACTION ADJUSTED BY RAINFALL
+      
+    !---------SOLWEIG variables---------------------------------------------------
+    real(kind(1D0)):: absL,&             ! Absorption coefficient of longwave radiation of a person         
+                      absK,&             ! Absorption coefficient of shortwave radiation of a person
+                      heightgravity,&    ! Centre of gravity for a standing person
+                      TransMin,&         ! Tranmissivity of K through decidious vegetation (leaf on)
+                      TransMax           ! Tranmissivity of K through decidious vegetation (leaf off)
+
+    integer:: Posture,&                ! 1.Standing, 2.Sitting
+              usevegdem,& 	       ! With vegetation (1)
+              row,&                    ! Y coordinate for point of interest
+              col,&                    ! X coordinate for point of interest
+              onlyglobal,&             ! if no diffuse and direct SW, then =1
+              SOLWEIGpoi_out,&         ! write output variables at point of interest
+              Tmrt_out,&               ! write output Tmrt grid
+              Lup2d_out,&              ! write output Lup grid
+              Ldown2d_out,&            ! write output Ldown grid
+              Kup2d_out,&              ! write output Kup grid
+              Kdown2d_out,&            ! write output Kdown grid
+              GVF_out,&                ! write output GroundViewFActor grid
+              SOLWEIG_ldown,&          ! 1= use SOLWEIG code to estimate Ldown, 0=use SEUWS
+              OutInterval,&            ! Output interval in minutes
+              RunForGrid               ! If only one grid should be run. All grids -999
+              
+    character (len=150):: DSMPath,&    ! Path to DSMs
+                          DSMname,&    ! Ground and building DSM
+                          CDSMname,&   ! Canopy DSM
+                          TDSMname,&   ! Trunk zone DSM
+                          SVFPath,&    ! Path to SVFs
+                          SVFsuffix,&  !
+                          buildingsname! Boolean matrix for locations of building pixels
+     
+ end module data_in
+!================================================================================================== 
+  
 !======================================================================================================
 MODULE cbl_MODULE
 
@@ -537,45 +759,8 @@ MODULE cbl_MODULE
  
    END   MODULE cbl_MODULE
  !===================================================================================
-!New module for model initialization
-
- !-----------------------------------------------------------------------------
-  MODULE Initial
- 
-     IMPLICIT NONE
-
-     integer::FirstYear,&          !First year
-     	      LastYear,&           !Last year
-     	      FirstGrid,&	   !First grid (as in SiteSelect)
-     	      LastGrid,&	   !Last grid (as in SiteSelect)
-     	      NumberOfGrids,&      !Number of grids
-              GridCounter,&        !Counter for grids (i.e. from 1 to NumberOfGrids)
-              ReadlinesMetdata,&   !Number of lines in each block of met data read at once
-              skippedLines,& 	   !Number of lines to skip over before reading each block of met data
-              nlinesMetdata,&      !Total number of lines in met forcing file
-              nlinesSiteSelect,&   !Number of lines in SUEWS_SiteSelect.txt
-              nlinesImpervious,&   !Number of lines in SUEWS_Impervious.txt
-              nlinesPervious,&     !Number of lines in SUEWS_Pervious.txt
-              nlinesWater,&   	   !Number of lines in SUEWS_Water.txt
-              nlinesSnow,&		
-              nlinesSoil,&
-              nlinesConductance,&
-              nlinesOHMCoefficients,&
-              nlinesAnthropogenicHeat,&
-              nlinesIrrigation,&
-              nlinesProfiles,&
-              nlinesWGWaterDist,&
-              nlines,&             !Number of lines in different files
-              nlinesReadMet,&      ! Max number of lines to the read Metdata in Initial
-              maxNoLines,&         ! Number of lines read initialy 
-              iv5		   !Counter for code matching
-
-     character (len=150):: FileMet !Meteorological input filename. Change location
-
-  END MODULE Initial
- !-----------------------------------------------------------------------------
-
- module snowMod
+   
+  module snowMod
      implicit none
  
      real (kind(1D0))::AdjMeltFact,&	  !Factor between melt and freezing factors
@@ -616,213 +801,33 @@ MODULE cbl_MODULE
      integer::SnowFractionChoice   !Choice how fraction of snow is calculated
  
  end module snowMod
-
- !===================================================================================
- Module defaultNotUsed
+!===================================================================================
+ 
+!==================================================================================================
+ module defaultNotUsed
  	implicit none
  	real (kind(1d0)):: notUsed=-55.55,reall,NAN=-999,pNAN=999
  	integer:: notUsedI=-55, ios_out,errorChoice  !errorChoice defines if the problemfile is opened for the first time
- end Module defaultNotUsed
- 
- !===================================================================================
- 
- module data_in
- 
- IMPLICIT NONE
- 
- ! In alphabetical order
- real (kind(1d0)):: AH_MIN,&    !Minimum anthropogenic heat flux (AnthropHeatChoice = 1)
-                    AH_SLOPE,&  !Slope of the antrhropogenic heat flux calculation (AnthropHeatChoice = 1)
-                    alpha_qhqe,& !Alpha parameter used in LUMPS QH and QE calculations
-                    avdens,&    !Average air density
-                    avkdn,&     !Average downwelling shortwave radiation
-                    avrh,&      !Average relative humidity
-                    avts,&      !Average surface temperature
-                    avu1,&      !Average wind speed
-                    azimuth,&   !Sun azimuth in degrees
-                    BaseTHDD,&  !Base temperature for QF               
-                    defaultQf,& !Default anthropogenic heat flux
-                    defaultQs,& !Default storage heat flux
-                    E_mod,&     !Modelled latent heat flux with LUMPS
-                    emis_snow,& !Emissivity of snow
-                    fcld,&      !Cloud fraction modelled
-                    fcld_obs,&  !Cloud fraction observed
-                    h_mod,&     !Modelled sensible heat flux with LUMPS
-                    kclear,&    !Theoretical downward shortwave radiation
-                    kdiff,&     !Diffuse shortwave radiation
-                    kdir,&      !Direct shortwave radiation
-                    kup,&       !Upward shortwave radiation
-                    lai_obs,&   !LAI for study area provided in met forcing file                
-                    lat,&       !Latitude
-                    ldown, &    !Downward longwave radiation
-                    ldown_obs,& !Downwelling longwave radiation
-                    lng,&       !Longitude
-                    lup,&       !Upward longwave radiation             
-                    NumCapita,& !Number of people in the study area per hectare [ha-1]
-                    PopDensDaytime,&   ! Daytime population density [ha-1] (i.e. workers) 
-                    PopDensNighttime,& ! Nighttime population density [ha-1] (i.e. residents)
-                    Precip,&    !Precipitation per timestep [mm]
-                    Precip_hr,&    !Precipitation [mm hr-1]
-                    Press_hPa,&  !Station air pressure in hPa     
-                    Pres_kPa,&   !Station air pressure in kPa
-                    q1_noqf,&
-                    qe,&        !Observed latent heat flux
-                    qe_obs,&
-                    qf,&        !Observed antrhropogeni heat flux
-                    QF_SAHP,&    !Anthropogenic heat flux calculated by SAHP
-                    qh,&        !Observed sensible heat flux
-                    qh_obs,&
-                    qn1,&       !Net all-wave radiation for the study area
-                    qn1_bup,&
-                    qn1_obs,&   !Observed new all-wave radiation
-                    qn1_S,&     !Total net all-wave radiation for the snowpack
-                    qn1_SF,&    !Total net all-wave radiation for the snowfree surface
-                    qs,&        !Observed storage heat flux
-                    snow,&      !snow cover
-                    snow_obs,&  !Observed snow cover
-                    T_CRITIC,& !Critical temperature
-                    Temp_C,&    !Air temperature
-                    timezone,&  !Timezone (GMT=0)
-                    trans_site,&  !Atmospheric transmittivity
-                    tsurf,&   !Surface temperature
-                    wdir,&      ! Wind direction
-                    wu_m3,&     !Water use provided in met forcing file [m3]
-                    xsmd,&      !Measured soil moisture deficit
-                    year,&      !Year of the measurements
-                    zenith_deg  !Sun zenith angle in degrees
-
-
-              
-  real (kind(1d0)),dimension(366,25)::day,season,month,yr_tot,all_tot !daily matrixes
-  integer,dimension(:,:), allocatable:: dataMet1              !Meteorological input matrix
-  real(kind(1d0)),dimension(:,:), allocatable:: dataMet2              !Meteorological input matrix
-  real(kind(1d0)),dimension(:,:,:), allocatable:: dataOut             !Main output matrix
-  real(kind(1d0)),dimension(:,:,:), allocatable:: dataOutBL    !CBL output matrix
-  real(kind(1d0)),dimension(:,:,:), allocatable:: dataOutSOL   !SOLWEIG POI output
-
-  !Testing different annual reading
-  integer,dimension(:,:), allocatable:: AnnualFileIN
-
-  integer::AlbedoChoice,&         !If albedos dependency on zenith angle is taken into account
-           AnthropHeatChoice,&    !Is anthropogenic heat calculated
-           CBLuse,&               !s.o.
-           commonchoiceallsites,& !Determines if multiple sites are considered  impacts OHM sub-model
-           gisinputtype, &        !GisInputType -- 1/2/3/4
-           Inputmetformat,&       !Defines format for met input data
-           ldown_option,&         !What parameterization is used for downward longwave radiation 1-2-3
-           lfnout,&               !Error Output write units
-           lfnoutC,&              !Clean output write units
-           lfnOld,&
-           lfnSAHP,&              !Number of SAHP file
-           NARPOutput,&           !Defines if radiation components are separatley printed out
-           netradiationchoice,&   !Is net all-wave radiation modeled (=2) or measured (=1)
-           qschoice,&             !Defines if QS is calculated
-           SkipHeaderSiteInfo,&   !Number of header lines to skip in SiteInfo files 
-           SkipHeaderMet,&        !Number of header lines to skip in met file input
-           SNOWuse,&
-           SOLWEIGout,&           !Calculates Tmrt and other fluxes on a grid, FL
-           write5min,&            !Defines if 5-min output is printed
-           writedailyState=1
-                   
-      character (len=150)::FileInputPath,&   !Filepath for input file
-                           FileOutputPath,&  !Filepath for output file
-                           fileout,&         !Output file name   
-                           FileErrorInf,&    !Output error file name
-                           filechoices,&     !File with output of run characteristics
-                           filegis,&         !GIS input datafile
-                           fileOHM,&         !File name with ohm coefficients
-                           FileOHMChoices,&  !File name where possible a1-a3 coefficients are located
-                           fileWU,&          !WU filename
-                           fileMonthly,&     !Monthly output file name
-                           fileDaily,&       !Daily output filename
-                           file5min,&        !5min output filename
-                           NARPOut,&         !File name for NARP output
-                           SnowOut,&         !File name for snow output file
-                           SOLWEIGpoiOut,&   !File name for SOLWEIG poi file
-                           BLOut,&           !File name for BL output file
-                           FileSAHP          !SAHP file name
-                           
-      character (len=20)::FileCode,FileCodeO
-      character (len=90),dimension(14)::keepheader
-      character (len=90)::progname='SUEWS V2014c'  !!!!<<<<<<<<<<<<<<<<<<
-        
-      logical:: finish,once
- 
-      real(kind(1d0)),dimension(2)::Qf_A,Qf_B,Qf_C !Qf coefficients
-      
-      integer,dimension(2)::DayLightSavingDay    !The date when it is changed to daylight saving (in DOY)
-                          
-      real(kind(1d0)), dimension(0:23,2):: AHPROF !Anthropogenic heat profiles for (1)weekdays / (2)weekends
- 
-      integer::nCBLstep  !number of time steps of Runge-kutta methods in one hour
-         
-  !---------Water bucket (see B. Offerle's PhD)----------------------------------
-      real (KIND(1D0)):: DRAINRT,&    !Drainage rate of the water bucket
-                            RAINBUCKET,& !RAINFALL RESERVOIR
-                            RAINCOVER,&  
-                            RAINMAXRES,& !Maximum water bucket reservoir
-                            RAINRES,& 
-                            TEMPVEG ! TEMPORARY VEGETATIVE SURFACE FRACTION ADJUSTED BY RAINFALL
-      
-  !---------SOLWEIG variables---------------------------------------------------
-     real(kind(1D0))::absL,&           ! Absorption coefficient of longwave radiation of a person         
-                      absK,&           ! Absorption coefficient of shortwave radiation of a person
-                      heightgravity,&  ! Centre of gravity for a standing person
-                      TransMin,&         ! Tranmissivity of K through decidious vegetation (leaf on)
-                      TransMax           ! Tranmissivity of K through decidious vegetation (leaf off)
-
-     integer::Posture,&                ! 1.Standing, 2.Sitting
-              usevegdem,& 	           ! With vegetation (1)
-              row,&                    ! Y coordinate for point of interest
-              col,&                    ! X coordinate for point of interest
-              onlyglobal,&             ! if no diffuse and direct SW, then =1
-              SOLWEIGpoi_out,&         ! write output variables at point of interest
-              Tmrt_out,&               ! write output Tmrt grid
-              Lup2d_out,&              ! write output Lup grid
-              Ldown2d_out,&            ! write output Ldown grid
-              Kup2d_out,&              ! write output Kup grid
-              Kdown2d_out,&            ! write output Kdown grid
-              GVF_out,&                ! write output GroundViewFActor grid
-              SOLWEIG_ldown,&          ! 1= use SOLWEIG code to estimate Ldown, 0=use SEUWS
-              OutInterval,&            ! Output interval in minutes
-              RunForGrid               ! If only one grid should be run. All grids -999
-              
-     character (len=150)::DSMPath,&    ! Path to DSMs
-                          DSMname,&    ! Ground and building DSM
-                          CDSMname,&   ! Canopy DSM
-                          TDSMname,&   ! Trunk zone DSM
-                          SVFPath,&    ! Path to SVFs
-                          SVFsuffix,&  !
-                          buildingsname! Boolean matrix for locations of building pixels
-     
- end module data_in
- !===================================================================================
- !**********************************************
+ end module defaultNotUsed
+!==================================================================================================
+  
+!==================================================================================================
  module time
-   integer :: iy,&            !Year
+    integer:: iy,&            !Year
               id,&            !Day of year
               it,&            !Hour
               imin,&          !Minutes
               iostat_var,&      !File status from reading data (should not be here)
-              lastTimeofDAY=23, firstTimeofDay=0,&
-              DLS                            !- day lightsavings =1 + 1h) =0  
+              DLS                            !day lightsavings =1 + 1h) =0  
  
-             ! check what lasttime of day should be
-   real (kind(1d0)):: dectime !Time is decimals
-   real (kind(1d0)):: halftimestep !in decimal time based on interval 
-   real (kind(1d0)):: tstepcount ! count number of timesteps in this day
- integer::nofDaysThisYear   ! BASED ON WHETHEr leapyear or no
+    real(kind(1d0)):: dectime        !Decimal time
+    real(kind(1d0)):: halftimestep   !In decimal time based on interval 
+    real (kind(1d0)):: tstepcount    !Count number of timesteps in this day
+    integer:: nofDaysThisYear        !Based on whether leap year or not
+    
  end module time
- !===================================================================================
- module ohm_calc !OHM related variables
-   implicit none
-   real (kind(1d0)):: q1,q2,q3,& !Time derivatives of OHM coefficients
-                      a1,a2,a3,&   !Coefficients for OHM
-                      r1,r2,r3
-                      ! ?? add what the dimensions are for this array
-   real(kind(1d0)),dimension (9,4,3):: OHM_coef                   
- end module ohm_calc
- 
+ !==================================================================================================
+
  !===================================================================================
  module mod_grav    
    real (kind(1d0)):: grav=9.80665  !g - gravity - physics today august 1987
@@ -887,7 +892,8 @@ MODULE cbl_MODULE
                      dq,&          !Specific humidity deficit
                      Ea_hPa,&      !Water vapour pressure in hPa 
                      Es_hPa,&      !Saturation vapour pressure in hPa   
-                     lv_J_kg,&     !Latent heat of vaporization in J/kg
+                     lv_J_kg,&     !Latent heat of vaporization in [J kg-1]
+                     tlv,&         !Latent heat of vaporization per timestep [J kg-1 s-1] (tlv=lv_J_kg/tstep_real)
                      psyc_hPa,&    !Psychometric constant in hPa
                      psycIce_hPa,& !Psychometric constant in hPa for snow
                      s_Pa,&        !Vapour pressure versus temperature slope in Pa
@@ -909,9 +915,13 @@ MODULE cbl_MODULE
                      bldgH,&                      !Mean building height
                      FAIbldg,&                    !Frontal area fraction of buildings
                      FAItree,&                    !Frontal area fraction of trees                   
+                     FAIEveTree,&                    !Frontal area fraction of evergreen trees                   
+                     FAIDecTree,&                    !Frontal area fraction of deciduous trees                   
                      grassfractionirrigated,&     !Irrigated grass fraction for LUMPS                                   
                      pavedfractionirrigated,&     !Irrigated paved area fraction for LUMPS
                      TreeH,&                      !Mean tree height
+                     EveTreeH,&                     !Height of evergreen trees
+                     DecTreeH,&                     !Height of deciduous trees
                      treefractionirrigated,&      !Irrigated tree fraction for LUMPS                    
                      veg_fr,&                     !Vegetation fraction from land area 
                                                   !- For LUMPS - dependent on user choice    & water
@@ -939,13 +949,9 @@ MODULE cbl_MODULE
                      tstep_real   !tstep cast as a real for use in calculations                   
              
    !Options for model setup (switches, etc) mainly set in RunControl 
-   integer:: LAIcalcYes,&        !Use observed(0) or modelled(1) LAI  !Set to 1 in OverallRunControl
-             ity,&               !Evaporation calculated according to Rutter(1) or Shuttleworth(2)  !Set to 2 in OverallRunControl
-             z0_method,&         !Defines method for calculating z0 & zd (set in RunControl)
-             WU_choice,&         !Use modelled(0) or observed(1) water use (set in RunControl)
-             SMD_choice,&        !Defines if soil moisture is modelled(0) or observed(1,2) (set in RunControl)
-             StabilityMethod,&   !Defines stability functions used (set in RunControl)
-             RoughLen_heat       !Defines method for calculating roughness length for heat (set in RunControl)
+   integer:: StabilityMethod,&   !Defines stability functions used (set in RunControl)
+             RoughLen_heat     !Defines method for calculating roughness length for heat (set in RunControl)
+             
                      
    integer:: in                     
    integer:: is      !Integer to count over surface types
@@ -965,7 +971,6 @@ MODULE cbl_MODULE
                      RunoffToWater,&      !Fraction of surface runoff going to water body
                      SmCap,&              !Volumetric/gravimetric soil moisture capacity
                      SoilDensity,&        !Bulk density of soil
-                     SoilDepth,&          !Depth of the soil layer
                      SoilDepthMeas,&      !Soil depth of the measured soil moisture
                      SoilRocks,&          !Fraction of rocks in soil
                      SurfaceArea,&        !Surface area of the study area [m2]
@@ -1023,15 +1028,13 @@ MODULE cbl_MODULE
                      soilmoistcap,&
                      soilstate,&        !Area-averaged soil moisture [mm] for whole surface
                      st_per_interval,&!Surface state per interval
-                     stph1,&          !State per interval ??
                      surplusWaterBody,&  !Extra runoff that goes to water body [mm] as specified by RunoffToWater
-                     tlv,&            !Vaporization per timestep
                      tlv_sub,&
                      overuse=0,&
                      Zh               !Areally weighted roughness element height
  
    !Calculation of u*,stability and aerodynamic resistance  
-   real (kind(1d0))::h,&          !Sensible heat flux used to calculate friction velocity
+   real (kind(1d0))::H,&          !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
                      l_mod,&      !Monin-Obukhov length (either measured or modelled)
                      psim,&       !Stability function of momentum
                      psyh,&       !Stability function of heat
@@ -1068,8 +1071,6 @@ MODULE cbl_MODULE
   real (kind(1d0)):: ext_wu,&         !External water use for the model timestep [mm] (over whole study area)
                      Faut,&           !Fraction of irrigated area using automatic irrigation
                      int_wu,&         !Internal water use for the model timestep [mm] (over whole study area)
-                     IrrFractionTrees,& !Fraction of the surafce area of irrigated trees
-                     IrrTrees,&         !Surface area fraction of irrigated trees
                      IrrFracConif,&	!Fraction of evergreen trees which are irrigated
 		     IrrFracDecid,&	!Fraction of deciduous trees which are irrigated
 		     IrrFracGrass,&	!Fraction of grass which is irrigated
@@ -1082,8 +1083,7 @@ MODULE cbl_MODULE
    				      WUProfA   !Hourly profiles for water use (automatic irrigation) 
  
  
-  real (kind(1d0)),dimension(3)::Ie_a,&
-                                  Ie_m           
+  real (kind(1d0)),dimension(3)::Ie_a,Ie_m   !Coefficients for automatic and manual irrigation models             
      
  end module sues_data
  
@@ -1110,6 +1110,12 @@ MODULE cbl_MODULE
                      Temp_C0,&
                      GDD_1_0,&
                      GDD_2_0,&
+                     SoilStorePavedState,&
+                     SoilStoreBldgsState,&
+                     SoilStoreEveTrState,&
+              	     SoilStoreDecTrstate,&
+                     SoilStoreGrassState,&
+                     SoilStoreBSoilState,&
                      SnowWaterPavedState,&
                      SnowWaterBldgsState,&
                      SnowWaterEveTrState,&
@@ -1218,12 +1224,12 @@ MODULE cbl_MODULE
 	    c_PopDensDay    =30,&
             c_PopDensNight  =31,&
 	    ! Codes for different surfaces
-            c_PavedCode	    =32,&	! Links characteristics in SUEWS_Impervious.txt
-            c_BuiltCode	    =33,&	! Links characteristics in SUEWS_Impervious.txt
-            c_EveTrCode	    =34,&	! Links characteristics in SUEWS_Pervious.txt
-            c_DecTrCode	    =35,&  	! Links characteristics in SUEWS_Pervious.txt
-            c_GrassCode	    =36,&   	! Links characteristics in SUEWS_Pervious.txt
-            c_BSoilCode	    =37,&	! Links characteristics in SUEWS_Pervious.txt
+            c_PavedCode	    =32,&	! Links characteristics in SUEWS_NonVeg.txt
+            c_BuiltCode	    =33,&	! Links characteristics in SUEWS_NonVeg.txt
+            c_EveTrCode	    =34,&	! Links characteristics in SUEWS_Veg.txt
+            c_DecTrCode	    =35,&  	! Links characteristics in SUEWS_Veg.txt
+            c_GrassCode	    =36,&   	! Links characteristics in SUEWS_Veg.txt
+            c_BSoilCode	    =37,&	! Links characteristics in SUEWS_Veg.txt
             c_WaterCode	    =38,&       ! Links characteristics in SUEWS_Water.txt
 	    ! LUMPS info
 	    c_LUMPSDr	    =39,&
@@ -1276,16 +1282,16 @@ MODULE cbl_MODULE
      	    c_WGBSoilCode   =79,& 	! Links to SUEWS_WaterDistibuteWithinGrid.txt		
  	    c_WGWaterCode   =80 	! Links to SUEWS_WaterDistibuteWithinGrid.txt		 	     	    
  	 
-   !========== Columns for SUEWS_Impervious.txt ==========================
+   !========== Columns for SUEWS_NonVeg.txt ==========================
    integer :: ci_Code	      =  1,&
    	      ci_Alb 	      =  2,&
    	      ci_Emis         =  3,&
 	      ci_StorMin      =  4,&
 	      ci_StorMax      =  5,&
-	      ci_DrEq         =  6,&
-	      ci_DrCoef1      =  7,&
-	      ci_DrCoef2      =  8,&
-	      ci_SoilStCap    =  9,&
+	      ci_StateLimit   =  6,&
+              ci_DrEq         =  7,&
+	      ci_DrCoef1      =  8,&
+	      ci_DrCoef2      =  9,&
 	      ci_SoilTCode    = 10,&
 	      ci_SnowLimPat   = 11,&
               ci_SnowLimRem   = 12,&
@@ -1294,16 +1300,16 @@ MODULE cbl_MODULE
 	      ci_OHMCode_WWet = 15,&
 	      ci_OHMCode_WDry = 16              
             
-   !========== Columns for SUEWS_Pervious.txt ============================
+   !========== Columns for SUEWS_Veg.txt ============================
    integer :: cp_Code	    =  1,&
    	      cp_Alb 	    =  2,&
    	      cp_Emis       =  3,&
 	      cp_StorMin    =  4,&
 	      cp_StorMax    =  5,&
-	      cp_DrEq       =  6,&
-	      cp_DrCoef1    =  7,&
-	      cp_DrCoef2    =  8,&
-	      cp_SoilStCap  =  9,&
+              cp_StateLimit =  6,&
+	      cp_DrEq       =  7,&
+	      cp_DrCoef1    =  8,&
+	      cp_DrCoef2    =  9,&
 	      cp_SoilTCode  = 10,&
 	      cp_SnowLimPat = 11,&
 	      cp_BaseT 	    = 12,&
@@ -1329,13 +1335,14 @@ MODULE cbl_MODULE
    	      cw_Emis       =  3,&
 	      cw_StorMin    =  4,&
 	      cw_StorMax    =  5,&
-	      cw_DrEq       =  6,&
-	      cw_DrCoef1    =  7,&
-	      cw_DrCoef2    =  8,&
-	      cw_OHMCode_SWet = 9,&
-	      cw_OHMCode_SDry = 10,&
-	      cw_OHMCode_WWet = 11,&
-	      cw_OHMCode_WDry = 12
+              cw_StateLimit =  6,&
+	      cw_DrEq       =  7,&
+	      cw_DrCoef1    =  8,&
+	      cw_DrCoef2    =  9,&
+	      cw_OHMCode_SWet = 10,&
+	      cw_OHMCode_SDry = 11,&
+	      cw_OHMCode_WWet = 12,&
+	      cw_OHMCode_WDry = 13
 	      
    !========== Columns for SUEWS_Snow.txt ================================	      
    integer :: cs_Code	      =  1,&
@@ -1361,13 +1368,14 @@ MODULE cbl_MODULE
 	      
    !========== Columns for SUEWS_Soil.txt ================================
    integer :: cSo_Code        =  1,&
-   	      cSo_VolSmCap    =  2,&
-   	      cSo_KSat 	      =  3,&
-   	      cSo_SoilDens    =  4,&
-	      cSo_SoilInfRate =  5,&
-	      cSo_ObsSMDepth  =  6,&
-	      cSo_ObsSMMax    =  7,&
-	      cSo_ObsSNRFrac  =  8
+   	      cSo_SoilDepth   =  2,&
+   	      cSo_SoilStCap   =  3,&
+              cSo_KSat 	      =  4,&
+   	      cSo_SoilDens    =  5,&
+	      cSo_SoilInfRate =  6,&
+	      cSo_ObsSMDepth  =  7,&
+	      cSo_ObsSMMax    =  8,&
+	      cSo_ObsSNRFrac  =  9
 	      
    !========== Columns for SUEWS_Conductance.txt =========================
    integer :: cc_Code   =  1,&

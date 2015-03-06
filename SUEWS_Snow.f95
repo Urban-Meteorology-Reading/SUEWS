@@ -1,12 +1,13 @@
 !This subroutine makes snow related calculations at the model time step. Needed for the 
 !available energy in LUMPS and SUEWS. Made by LJ in Dec 2012
 !Last modification
+!HCW 06 Mar 2015 - Unused variable 'i' removed.
 !lj in Jan 2015 - Change the calculation from hourly timestep to timestep defined by nsh
 !lj in May 2013 - calculation of the energy balance for the snowpack was modified
 !                        to use qn1_ind_snow(surf)
 !=======================================================================================
 
- subroutine MeltHeat(i)
+ subroutine MeltHeat
 
   use allocateArray
   use snowMod
@@ -21,9 +22,7 @@
 
   REAL(KIND(1d0)):: Watfreeze,&        !State of snow on ith surface, total energy exchange (not exported!)
                     ci=2090,cw=4190    !Specific heat capacity of water
- 
-  INTEGER:: i 
-   
+    
   !Initialize snow variables
   snowCalcSwitch=0     !Initialize switches
   StateFraction=0
@@ -195,9 +194,10 @@
 
 !===============================================================================================
 !===============================================================================================
- subroutine SnowCalc(i)
+ subroutine SnowCalc
   !Calculation of snow and water balance on 5 min timestep. Treats snowfree and snow covered 
   !areas separately. Weighting is taken into account in the overall values.
+  !HCW 06 Mar 2015 - Unused variable 'i' removed.
   !Last modified HCW 26 Jan 2015
   ! Added weekday/weekend option for snow clearing profiles
   !Last modified LJ in 24 May 2013
@@ -227,7 +227,6 @@
                     
   REAL(KIND(1d0))::SnowDepletionCurve !Function
   
-  integer::i
   integer:: iu     !1=weekday OR 2=weekend
      	       
   ! Use weekday or weekend snow clearing profile
@@ -586,7 +585,7 @@
   
   !========RUNOFF=======================
    
-  !!Add runoff to pipes 
+  !Add runoff to pipes 
   runoffPipes=runoffPipes+runoffSnow(is)*sfr(is)*snowFrac(is)+runoff(is)*sfr(is)*(1-snowFrac(is))+runoffTest*sfr(is)
   
     !If pipe capacity is full, surface runoff occurs

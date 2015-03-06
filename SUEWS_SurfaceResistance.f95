@@ -24,7 +24,7 @@ subroutine SurfaceResistance(id,it)
   else 
      
      QNM=Kmax/(Kmax+G2)
-    !gq=(qn1/(g2+qn1))/qnm !With net all-wave radiation
+     !gq=(qn1/(g2+qn1))/qnm !With net all-wave radiation
       
      gq=(avkdn/(G2+avkdn))/QNM !With Kdown
       
@@ -92,10 +92,9 @@ subroutine SurfaceResistance(id,it)
           ! sg feb 2012 -- changed to use previous day LAI value
           !  and uses the maximum LAI read in
           !gl=gl+sfr(iv+2)*lai(id-1,iv)/MaxLaiMax*MaxConductance(iv)
-        !!  gl=gl+(sfr(iv+2)*(1-snowFrac(iv+2)))*lai(id-1,iv)/MaxLaiMax*MaxConductance(iv)
-        !! sg 12nov13 -- removed maxLAImax - so just use the veg by class
+          !gl=gl+(sfr(iv+2)*(1-snowFrac(iv+2)))*lai(id-1,iv)/MaxLaiMax*MaxConductance(iv)
+          !sg 12nov13 -- removed maxLAImax - so just use the veg by class
              gl=gl+(sfr(iv+2)*(1-snowFrac(iv+2)))*lai(id-1,iv)/LaiMax(iv)*MaxConductance(iv)
-          
       enddo
       
       gsc=(g1*gq*gdq*gtemp*gs*gl) !Original

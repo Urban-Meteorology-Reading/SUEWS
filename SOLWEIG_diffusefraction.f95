@@ -4,7 +4,7 @@ subroutine diffusefraction(radG,altitude,Kt,Ta,RH,radI,radD)
     implicit none 
 
     real(kind(1d0))                 :: radG,altitude,Kt,Ta,RH,radD,radI,alfa
-    REAL(KIND(1D0)),PARAMETER       :: DEG2RAD=0.017453292,RAD2DEG=57.29577951
+    REAL(KIND(1D0)),PARAMETER       :: DEG2RAD=0.017453292,RAD2DEG=57.29577951  !!Already defined in AllocateArray module. Delete??
  
     alfa=altitude*DEG2RAD
 	

@@ -144,8 +144,9 @@ SUBROUTINE CodeMatchDist(rr,CodeCol,codeColSameSurf)
      call ErrorHint(8,'Problem in SUEWS_WithinGridWaterDist.txt.',WGWaterDist_Coeff(iv5,codeColSameSurf),notUsed,notUsedI)
   endif 
   
+  !! MODIFY THIS??
   ! Check water either moves to runoff or soilstore, but not to both
-  ! Model returns an error if both ToRunoff and ToSoilStore are non-zero. Why?? 
+  ! Model returns an error if both ToRunoff and ToSoilStore are non-zero. 
   !! - Probably should remove this...
   !! - Also look at SUEWS_translate, as the non-zero value goes into WaterDist
   if(WGWaterDist_Coeff(iv5,cWG_ToRunoff)/=0.and.WGWaterDist_Coeff(iv5,cWG_ToSoilStore)/=0) then
@@ -168,7 +169,7 @@ ENDSUBROUTINE CodeMatchDist
 ! ---------------------------------------------------------
 
 
-SUBROUTINE CodeMatchImpervious(rr,CodeCol)
+SUBROUTINE CodeMatchNonVeg(rr,CodeCol)
 ! Matches Impervious characteristics via codes in SiteSelect
 ! HCW 20 Nov 2014
 ! ---------------------------------------------------------
@@ -185,21 +186,21 @@ SUBROUTINE CodeMatchImpervious(rr,CodeCol)
  
   iv5=0 ! Reset iv5 to zero
  
-  do iv5=1,nlinesImpervious
-     if (Impervious_Coeff(iv5,ci_Code)==SiteSelect(rr,codeCol)) then
+  do iv5=1,nlinesNonVeg
+     if (NonVeg_Coeff(iv5,ci_Code)==SiteSelect(rr,codeCol)) then
      exit
-     elseif(iv5 == nlinesImpervious) then 
+     elseif(iv5 == nlinesNonVeg) then 
      write(*,*) 'Program stopped! NonVeg code ',SiteSelect(rr,codeCol),'not found in SUEWS_NonVeg.txt.'
      call ErrorHint(57,'Cannot find code in SUEWS_NonVeg.txt',SiteSelect(rr,codeCol),notUsed,notUsedI)
      endif
   enddo   
   
   return
-ENDSUBROUTINE CodeMatchImpervious 
+ENDSUBROUTINE CodeMatchNonVeg 
 ! ---------------------------------------------------------   
 
 
-SUBROUTINE CodeMatchPervious(rr,CodeCol)
+SUBROUTINE CodeMatchVeg(rr,CodeCol)
 ! Matches Pervious characteristics via codes in SiteSelect
 ! HCW 20 Nov 2014
 ! ---------------------------------------------------------
@@ -216,17 +217,17 @@ SUBROUTINE CodeMatchPervious(rr,CodeCol)
  
   iv5=0 ! Reset iv5 to zero
  
-  do iv5=1,nlinesPervious
-     if (Pervious_Coeff(iv5,cp_Code)==SiteSelect(rr,codeCol)) then
+  do iv5=1,nlinesVeg
+     if (Veg_Coeff(iv5,cp_Code)==SiteSelect(rr,codeCol)) then
      exit
-     elseif(iv5 == nlinesPervious) then 
+     elseif(iv5 == nlinesVeg) then 
      write(*,*) 'Program stopped! Veg code ',SiteSelect(rr,codeCol),'not found in SUEWS_Vegs.txt.'
      call ErrorHint(57,'Cannot find code in SUEWS_Veg.txt',SiteSelect(rr,codeCol),notUsed,notUsedI)
      endif
   enddo   
   
   return
-ENDSUBROUTINE CodeMatchPervious 
+ENDSUBROUTINE CodeMatchVeg 
 ! --------------------------------------------------------- 
 
 

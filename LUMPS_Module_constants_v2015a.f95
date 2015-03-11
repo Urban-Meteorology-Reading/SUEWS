@@ -559,7 +559,9 @@
     ! ---- Model options set in RunControl --------------------------------------------------------
     integer:: AnthropHeatChoice,&    !QF in met file (0); Loridan et al. 2010 (1); Jarvi et al. 2011 (2)
               CBLuse,&               !CBL slab model used (1) or not used (0)
-              MultipleMetFiles,&     !Indicates whether a single met file is used for all grids (0) or one for each grid (1)              
+              MultipleMetFiles,&     !Indicates whether a single met file is used for all grids (0) or one for each grid (1)   
+              KeepTstepFilesIn,&     !Delete (0) or keep (1) input met files at resolution of tstep (used by python, not fortran)
+              KeepTstepFilesOut,&    !Delete (0) or keep (1) output files at resolution of tstep (used by python, not fortran)
               NetRadiationChoice,&   !Options for net all-wave radiation calculation
               OHMIncQF,&             !OHM calculation uses Q* only (0) or Q*+QF (1)
               QSChoice,&             !OHM (1); QS in met file (2)

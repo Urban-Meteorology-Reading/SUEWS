@@ -47,6 +47,8 @@
         SkipHeaderSiteInfo,&
         SkipHeaderMet,&
         MultipleMetFiles,&
+        KeepTstepFilesIn,&
+        KeepTstepFilesOut,&
         SnowFractionChoice,&
         SNOWuse,&
         SOLWEIGuse,&
@@ -57,17 +59,12 @@
         
   FileCode='none'
   !smithFile='Smith1966.grd'
-  
-  write(*,*) 'Read in RC'
-  
+   
   !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   !Read in the RunControl.nml file
   open(55,File='RunControl.nml',err=200,status='old') !Change with needs
-  write(*,*) 'opened rc'
   read(55,nml=RunControl,err=201)
   close(55)
-
-  write(*,*) 'Read in RC'
   
   !Check for problems with FileCode
   if (FileCode=='none') call ErrorHint(26,trim("RunControl.nml FileCode is missing"),notUsed,notUsed,notUsedI)

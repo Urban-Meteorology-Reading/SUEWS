@@ -23,9 +23,9 @@
 
  subroutine day2month(b,mb,md,seas,year,latitude)
    IMPLICIT NONE
-   integer ::b,mb,md,k,seas
+   integer ::b,mb,md,k,seas,year,t1,t2,t3
 
-   real (kind(1d0))::year,t1,t2,t3,latitude
+   real (kind(1d0))::latitude
 
    !b=doy   --IN
    !month=mb  --OUT
@@ -144,19 +144,22 @@
   ELSE
     nroDays=365
   ENDIF
-
  end subroutine LeapYearCalc
 
 !===============================================================================
 
  subroutine Day_Of_Week(DATE, MONTH, YEAR, DOW)
- ! LJ
- IMPLICIT NONE
- INTEGER DATE, MONTH, DAY, YR, MN, N1, N2, DOW
- real(kind(1d0))::YEAR
+ ! Calculate weekday from year, month and day information.
+ ! DOW: Sunday=1,...Saturday=7
+ ! YEAR fixed to integer, LJ March 2015
 
-        YR = YEAR      
-        MN = MONTH
+ IMPLICIT NONE
+
+ INTEGER DATE, MONTH, DAY, YR, MN, N1, N2, DOW, YEAR
+
+   YR = YEAR
+   MN = MONTH
+
 !C
 !C       IF JANUARY OR FEBRUARY, ADJUST MONTH AND YEAR
 !C

@@ -34,17 +34,16 @@
     			year_txtNext	!Following year as a text string (used for NextInitial)
     character(len=20):: FileCodeX,&	!Current file code
     			FileCodeXNext	!File code for the following year  
-    character(len=20):: grid_txt	!Grid number as a text string (from FirstGrid to LastGrid)
+    character(len=20):: grid_txt,&	!Grid number as a text string (from FirstGrid to LastGrid)
+                        tstep_txt       !Model timestep (in minutes) as a text string
     
     integer:: nlinesLimit   !Max number of lines that can be read in one go for each grid
                                
-    integer:: 	i,&	   ! Grid number (from FirstGrid to LastGrid)
-    		iv,&	   ! Block number (from 1 to ReadBlocksMetData)
-    		ir,irMax,& ! Row number within each block (from 1 to irMax)
-    		rr,& 	   ! Row of SiteSelect corresponding to current year and grid
-                year_int   ! Year as an integer (from SiteSelect rather than met forcing file) 
-    
-    integer:: errFileYes            
+    integer::i,&	   ! Grid number (from FirstGrid to LastGrid)
+    		 iv,&	   ! Block number (from 1 to ReadBlocksMetData)
+    		 ir,irMax,& ! Row number within each block (from 1 to irMax)
+    		 rr,& 	   ! Row of SiteSelect corresponding to current year and grid
+             year_int   ! Year as an integer (from SiteSelect rather than met forcing file)
     
     logical:: PrintPlace=.true.   !Prints row, block, and grid number to screen if TRUE
     		     
@@ -97,9 +96,10 @@
        !  Need to know how many lines will be read each iteration
        !  Use FirstGrid as an example
        write(grid_txt,'(I5)') FirstGrid  !Get grid as a text string
+       write(tstep_txt,'(I5)') tstep/60  !Get tstep (in minutes) as a text string
        ! Get met file name for this year for this grid
        FileCodeX=trim(FileCode)//trim(adjustl(grid_txt))//'_'//trim(year_txt)
-       FileMet=trim(FileInputPath)//trim(FileCodeX)//'_data.txt'
+       FileMet=trim(FileInputPath)//trim(FileCodeX)//'_data_'//trim(adjustl(tstep_txt))//'.txt'
        ! Open this example met file
        open(10,file=trim(FileMet),status='old',err=314)
        call skipHeader(10,SkipHeaderMet)  !Skip header
@@ -162,28 +162,28 @@
           GridCounter=1   !Initialise counter for grids in each year
           DO i=FirstGrid,LastGrid   !Loop through grids
 	    	
-  	     !write(*,*) i,'/',NumberOfGrids, 'grids (i loop).'
+  	         !write(*,*) i,'/',NumberOfGrids, 'grids (i loop).'
              write(grid_txt,'(I5)') i   !Get grid as a text string
              ! Get met forcing file name for this year for this grid
              FileCodeX=trim(FileCode)//trim(adjustl(grid_txt))//'_'//trim(year_txt)
              write(*,*) 'Current FileCode', FileCodeX      
                           	     
-  	     ! For the first block of met data --------------------------------
-  	     if(iv == 1) then  
-	        !write(*,*) 'First block of data - doing initialisation'
+  	         ! For the first block of met data --------------------------------
+  	         if(iv == 1) then
+	            !write(*,*) 'First block of data - doing initialisation'
                 ! (a) Transfer characteristics from SiteSelect to correct row of SurfaceChar
                 do rr=1,nlinesSiteSelect
                    if(SiteSelect(rr,c_Grid)==i.and.SiteSelect(rr,c_Year)==year_int)then
                       !write(*,*) 'Match found (grid and year) for rr = ', rr
                       call InitializeSurfaceCharacteristics(GridCounter,rr)
-		      exit
-		   elseif(rr == nlinesSiteSelect) then 
-		      write(*,*) 'Program stopped! Year',year_int,'and/or grid',i,'not found in SiteSelect.txt.'
-		      call ErrorHint(59,'Cannot find year and/or grid in SiteSelect.txt',real(i,kind(1d0)),NotUsed,year_int)
+		              exit
+		           elseif(rr == nlinesSiteSelect) then
+		               write(*,*) 'Program stopped! Year',year_int,'and/or grid',i,'not found in SiteSelect.txt.'
+		               call ErrorHint(59,'Cannot find year and/or grid in SiteSelect.txt',real(i,kind(1d0)),NotUsed,year_int)
                    endif     
-	        enddo
-	        ! (b) get initial conditions
-                call InitialState(FileCodeX,errFileYes,year_int,GridCounter,year_txt)
+	           enddo
+               ! (b) get initial conditions
+               call InitialState(FileCodeX,year_int,GridCounter,year_txt)
              endif   !end first block of met data
                           
              ! For every block of met data ------------------------------------
@@ -191,10 +191,10 @@
              write(*,*) 'Initialising met data for block',iv
              
              if(MultipleMetFiles == 1) then   !If each grid has its own met file
-                FileMet=trim(FileInputPath)//trim(FileCodeX)//'_data.txt'
+                FileMet=trim(FileInputPath)//trim(FileCodeX)//'_data_'//trim(adjustl(tstep_txt))//'.txt'
                 call SUEWS_InitializeMetData(1)   
              else                             !If one met file used for all grids  
-                FileMet=trim(FileInputPath)//trim(FileCode)//'_'//trim(year_txt)//'_data.txt'
+                FileMet=trim(FileInputPath)//trim(FileCodeX)//'_data_'//trim(adjustl(tstep_txt))//'.txt'
                 if(i == FirstGrid) then       !Read for the first grid only  
                    call SUEWS_InitializeMetData(1)
                 else                          !Then for subsequent grids simply copy data  
@@ -225,7 +225,7 @@
              GridCounter=1    !Initialise counter for grids in each year
              DO i=FirstGrid,LastGrid   !Loop through grids
            
- 	      if(PrintPlace) write(*,*) 'Row (ir):', ir,'/',irMax,'of block (iv):', iv,'/',ReadBlocksMetData,'Grid:',i	           
+ 	         if(PrintPlace) write(*,*) 'Row (ir):', ir,'/',irMax,'of block (iv):', iv,'/',ReadBlocksMetData,'Grid:',i
  
               ! Call model calculation code
               call SUEWS_Calculations(GridCounter,ir,iv,irMax)
@@ -237,7 +237,7 @@
                     write(year_txtNext,'(I4)') year_int+1  !Get next year as a string format
                     FileCodeX    =trim(FileCode)//trim(adjustl(grid_txt))//'_'//trim(year_txt)
                     FileCodeXNext=trim(FileCode)//trim(adjustl(grid_txt))//'_'//trim(year_txtNext)
-                    call NextInitial(FileCodeX,year_int,FileCodeXNext)
+                    call NextInitial(FileCodeXNext,year_int)
 	         endif
               endif
            

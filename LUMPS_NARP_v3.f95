@@ -101,15 +101,12 @@
     !INTEGER,INTENT(IN)           ::ldown_option,AlbedoChoice,netRadiationChoice!,ALB_SNOW
     REAL(KIND(1D0))              ::Temp_K,TD,ZENITH,QSTAR,QSTAR_SNOW,KUP_SNOW,LUP_SNOW,TSURF_SNOW!KUP,LUP,TSURF,
     REAL(KIND(1D0))              ::ALB0,EMIS0,EMIS_A,TRANS,RH,DTIME,KDOWN
-    REAL(KIND(1D0))              ::LUPCORR,LUPCORR_SNOW,SIGMATK4,KDOWN_HR=0.
+    REAL(KIND(1D0))              ::LUPCORR,SIGMATK4,KDOWN_HR=0.
     !REAL(KIND(1D0))              ::AZIMUTH
     INTEGER                      ::DOY, is 
 
     real(kind(1D0))::qn1_cum,kup_cum,lup_cum,tsurf_cum,&   !Cumulative radiation components 
                    qn1_is,kup_is,lup_is,tsurf_is,&       !Sub-surface radiation components 
-                   NARP_ALB_is,NARP_EMIS_is,&
-                   qn1_is_snow,kup_is_snow,lup_is_snow,tsurf_is_snow,& !Snow variables
-                   qn1_is_nosnow,kup_is_nosnow,lup_is_nosnow,tsurf_is_nosnow,&  !Snow free variables
                    SF_all,ALB1      
 
     !Initialize variables

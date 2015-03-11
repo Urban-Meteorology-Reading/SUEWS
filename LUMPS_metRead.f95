@@ -7,7 +7,7 @@
 ! To Do: 
 !       - Check observed SM calculation
 !---------------------------------------------------------------------------------------------------
- subroutine MetRead(MetArray,InputmetFormat,AnthropHeatChoice,ldown_option,NetRadiationChoice,&
+  subroutine MetRead(MetArray,InputmetFormat,ldown_option,NetRadiationChoice,&
                snowUse,smd_choice,SoilDepthMeas,SoilRocks,SoilDensity,SmCap)
 
   use defaultNotUsed
@@ -25,8 +25,7 @@
                     SoilRocks,&            !Rocks on ground
                     SoilDensity            !Density of soil
 
-  integer::AnthropHeatChoice,&  !Method of calculating QF
-           InputmetFormat,&     !Format of the meteorological forcing file
+  integer::InputmetFormat,&     !Format of the meteorological forcing file
            ldown_option,&       !Method of calculating Ldown
            NetRadiationChoice,& !Method of calculating Q*
            smd_choice,&         !Method of measured soil moisture

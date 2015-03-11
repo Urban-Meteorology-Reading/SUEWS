@@ -37,7 +37,6 @@
   logical:: debug=.false.
   !real(kind(1d0)),DIMENSION(4)::GridFromFrac !Not maybe needed in the future
   real(kind(1d0))::idectime
-  integer:: reset=1
   real(kind(1d0)):: SnowDepletionCurve
   real(kind(1d0))::lai_wt
   integer::irMax

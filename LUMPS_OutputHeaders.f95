@@ -1,7 +1,7 @@
  subroutine OutputHeaders(ProgName,lfnOutC,text,veg_type,ldown_option,selectHeader)
   
  CHARACTER (len=90),DIMENSION(14)::text
- integer :: Veg_type,lfnOut,lfnOutC, selectHeader,errFileYes,ldown_option
+ integer :: Veg_type,lfnOut,lfnOutC, selectHeader,ldown_option
  character(len=90)::ProgName
  
 101 format("% common",a30,a30,/,'%',a30,a30)

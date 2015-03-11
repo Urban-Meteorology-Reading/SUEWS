@@ -44,12 +44,16 @@
         
   integer:: Gridiv
   integer:: gamma1,gamma2  !Switch for heating and cooling degree days
-  integer:: iv,&   !Loop over vegetation types
-  	    jj,&   !Loop over previous 5 days
-  	    j,&
-  	    calc,& !Water use calculation is done when calc = 1
-  	    wd,mb,seas,date,switch=0,&
-  	    critDays   !Limit for GDD when GDD or SDD is set to zero 
+  integer:: iv,&           !Loop over vegetation types
+  	        jj,&           !Loop over previous 5 days
+  	        j,&
+  	        calc,&         !Water use calculation is done when calc = 1
+  	        wd,&           !Number of weekday (Sun=1,...Sat=7)
+            mb,&           !Months
+            seas,&         !Season (summer=1, winter=2)
+            date,&         !Day
+            critDays       !Limit for GDD when GDD or SDD is set to zero
+
   real(kind(1d0)):: capChange,porChange,albChange,deltaLAI
   real(kind(1d0)):: no,yes,indHelp   !Switches and checks for GDD
   character(len=10):: grstr2
@@ -122,31 +126,16 @@
   ! ================================================================================
   ! This next part occurs only on the first or last timestep of each day
     
-  ! On first timestep, check and adjust date if necessary --------------------------
-  !! What is this actually doing?? Is it working correctly? HCW
+  ! On first timestep of each day, define whether the day each a workday or weekend
   if (it==0.and.imin==0) then
-     !write(*,*) 'First timestep of day'  
-     
-     if(id<=1)then
-        iy=iy-1
-        call LeapYearCalc (iy,id)
-        switch=1
-        call ErrorHint(43,'switch- to last day of last year',notUsed,notUsed,notUsedI)
-     endif 
-  
+
      call day2month(id,mb,date,seas,iy,lat)	!Calculate real date from doy
-     call Day_of_Week(date,mb,iy,wd)   	!Calculate weekday (1=Sun, ..., 7=Sat)   
-     
-     if(switch==1)then
-        iy=iy+1
-        id=1
-        switch=0
-     endif
-     
+     call Day_of_Week(date,mb,iy,wd)   	    !Calculate weekday (1=Sun, ..., 7=Sat)
+
      dayofWeek(id,1)=wd      !Day of week
      dayofWeek(id,2)=mb      !Month
-     dayofweek(id,3)=seas    !Season       
-  
+     dayofweek(id,3)=seas    !Season     
+
   ! On last timestep, perform the daily calculations -------------------------------
   ! Daily values not correct until end of each day, so main program uses day before
   elseif (it==23.and.imin==(nsh_real-1)/nsh_real*60) then
@@ -177,6 +166,7 @@
      ! Calculate modelled daily water use ------------------------------------------
      if (WU_choice==0) then   !If water use is to be modelled (rather than observed)
         wd=dayofWeek(id,1)
+        
         if (DayWat(wd)==1.0) then      !1 indicates watering permitted on this day
            calc=0
            if (lat>=0) then            !Northern Hemisphere

@@ -47,6 +47,8 @@
         SkipHeaderSiteInfo,&
         SkipHeaderMet,&
         MultipleMetFiles,&
+        KeepTstepFilesIn,&
+        KeepTstepFilesOut,&
         SnowFractionChoice,&
         SNOWuse,&
         SOLWEIGuse,&
@@ -57,17 +59,12 @@
         
   FileCode='none'
   !smithFile='Smith1966.grd'
-  
-  write(*,*) 'Read in RC'
-  
+   
   !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   !Read in the RunControl.nml file
   open(55,File='RunControl.nml',err=200,status='old') !Change with needs
-  write(*,*) 'opened rc'
   read(55,nml=RunControl,err=201)
   close(55)
-
-  write(*,*) 'Read in RC'
   
   !Check for problems with FileCode
   if (FileCode=='none') call ErrorHint(26,trim("RunControl.nml FileCode is missing"),notUsed,notUsed,notUsedI)
@@ -534,7 +531,7 @@
   300 call ErrorHint(48,trim(FileN),notUsed,notUsed,notUsedI)
   !-----------------------------------------------------------------------
    
-  pause
+  !pause
   
   END SUBROUTINE OverallRunControl
 !=========================================================================
@@ -1250,7 +1247,7 @@
 
  
 !-------------------------------------------------------------------------
- SUBROUTINE InitialState(GridName,errFileYes,year_int,Gridiv,year_txt)
+ SUBROUTINE InitialState(GridName,year_int,Gridiv,year_txt)
  ! Last modified by HCW 03 Dec 2014
  ! To do:
  !	 - Check running means (5-day temperature)
@@ -1275,7 +1272,7 @@
   character(len=10):: str2  !Variables related to filepaths 
   character(len=150):: fileInit
   character(len=4):: year_txt
-  integer::errFileYes,DaysSinceRain,Gridiv,gamma1,gamma2
+  integer::DaysSinceRain,Gridiv,gamma1,gamma2
   integer:: wd,seas,date,mb,year_int,switch=0,id_next,calc
   
   real (KIND(1d0))::PavedState,BldgsState,EveTrState,DecTrState,GrassState,BSoilState,&
@@ -1299,9 +1296,9 @@
                   decidCap0,&
                   PavedState,&
                   BldgsState,&
-	          EveTrState,&
-	          DecTrState,&
-	          GrassState,&
+	              EveTrState,&
+	              DecTrState,&
+	              GrassState,&
                   BSoilState,&
                   WaterState,&
                   SoilStorePavedState,&
@@ -1310,15 +1307,15 @@
                   SoilStoreDecTrState,&
                   SoilStoreGrassState,&
                   SoilStoreBSoilState,&
-		  SnowWaterPavedState,&
-		  SnowWaterBldgsState,&
-		  SnowWaterEveTrState,&
+		          SnowWaterPavedState,&
+		          SnowWaterBldgsState,&
+		          SnowWaterEveTrState,&
                   SnowWaterDecTrState,&
                   SnowWaterGrassState,&
                   SnowWaterBSoilState,&
                   SnowWaterWaterState,&
-		  SnowPackPaved,&
-		  SnowPackBldgs,& 
+                  SnowPackPaved,&
+		          SnowPackBldgs,&
                   SnowPackEveTr,&
                   SnowPackDecTr,&
                   SnowPackGrass,&
@@ -1340,7 +1337,8 @@
                   SnowDensWater
 
   ! Define InitialConditions file ----------------------------------------
-  FileInit=trim(FileInputPath)//trim("InitialConditions")//trim(GridName)//'_'//trim(year_txt)//'.nml'
+  FileInit=trim(FileInputPath)//trim("InitialConditions")//trim(GridName)//'.nml'
+
   ! Open, read and close InitialConditions file --------------------------
   open(56,File=trim(FileInit),err=600,status='old') !Change with needs
   read(56,iostat=ios_out,nml=InitialConditions,err=601)
@@ -1477,63 +1475,58 @@
     
   !Calculation of roughness parameters (N.B. uses porosity)
   call RoughnessParameters
-  
-  
- !=============================================================================
- !!This part not working yet!!! - LJ's comment
- !! HCW - I don't understand what this is supposed to do??
 
+ !=============================================================================
  ! If the run start day is at previous year, then calculate the number of days
  ! in that year.
 
- !switch tells whether the current day is on previous year (switch=1) or in the 
- !current year (switch=0, initial condition)
- if(id_prev==0)then
-   iy=iy-1
-   call LeapYearCalc (iy,id_prev)
+ !First we need to know if the previous day given in initial conditions (id_prev) is
+ !on previous year as this is needed in the initialization of dayofWeek matrix.
+ !In this case switch is set to one for date calculations.
+ if(id_prev==0)then                     !If id_prev = 0, means that the first modelled day is 1 Jan
+   year_int=year_int-1                  !1) find the number of days on that year
+   call LeapYearCalc (year_int,id_prev) !2) set switch to 1 so that the code knows to change back to current year (switch=0)
    switch=1
  endif
 
- call day2month(id_prev,mb,date,seas,iy,lat) !Calculate real date from doy. Last it Lat
- call Day_of_Week(date,mb,iy,wd)             !Calculate weekday (1=Sun, ..., 7=Sat)
- 
- !After the day in previous year switch is changed back to zero
+ call day2month(id_prev,mb,date,seas,year_int,lat) !Calculate date information (mb = month, date = day,...)
+ call Day_of_Week(date,mb,year_int,wd)             !Calculate weekday of the previous day (wd) (1=Sun, ..., 7=Sat)
+
+ !After the day in previous year switch is changed back to zero: 
+ !    ie not previous day anymore
+ !Also the size of dayofweek is from 0:NdaysinYear meaning 
+ !that in zero slot is the previous day information
  if(switch==1)then
-   iy=iy+1
+   year_int=year_int+1
    id_prev=0
    switch=0
  endif
   
  dayofWeek(id_prev,1)=wd   ! day of week
  dayofWeek(id_prev,2)=mb   ! month
- dayofweek(id_prev,3)=seas ! season
+ dayofweek(id_prev,3)=seas ! season (summer=1, winter=2) needed for accumulation
 
- ! in case first hour not 0
+ ! in case next day goes to next year calculate again the date information for dayofweek matrix.
  id_next=id_prev+1
  if(id_next>nofDaysThisYear) then
    id_next=1
-   iy=iy+1
+   year_int=year_int+1
    switch=1
    call ErrorHint(43,'switch- years',notUsed,notUsed,notUsedI)
  endif
 
- call day2month(id_next,mb,date,seas,iy,lat) !Calculate real date from doy
- call Day_of_Week(date,mb,iy,wd)             !Calculate weekday (1=Sun, ..., 7=Sat)
+ call day2month(id_next,mb,date,seas,year_int,lat) !Calculate real date from doy
+ call Day_of_Week(date,mb,year_int,wd)             !Calculate weekday (1=Sun, ..., 7=Sat)
  
  if(switch==1)then
    iy=iy-1
    switch=0
  endif
+
  dayofWeek(id_next,1)=wd  ! day of week
  dayofWeek(id_next,2)=mb  ! month
  dayofweek(id_next,3)=seas ! season
 
-
- if(switch==1)then
-   iy=iy+1
-   id_prev=0
-   switch=0
- endif
  !=============================================================================
  
  !id=id_prev
@@ -1545,12 +1538,14 @@
  endif
           
  ! -----------------------------------------------------------------------
- ! Calculate daily water use if modelled (i.e. if WU_choice = 0)
+ ! Calculate daily water use if modelled (i.e. if WU_choice = 0). 
+ ! Calculated from previous day information given in InitialConditions file
  
- WU_day=0
+ WU_day=0                !Initialize WU_day
  if (WU_choice==0) then  !Model water use
     calc=0
-    if (DayWat(wd)==1.0) then      !if=1 then this is a day that has watering
+
+    if (DayWat(wd)==1.0) then !if DayWat(wd)=1.0 (irrigation occurs on this day)
        if (lat>=0) then            !Northern Hemisphere
           if (id>=Ie_start.and.id<=Ie_end) calc=1 !if day between irrigation period               
        else                        !Southern Hemisphere
@@ -1559,31 +1554,31 @@
        endif
        if(calc==1) then                     
           ! Model daily water use based on HDD(id,6)(days since rain) and HDD(id,3)(average temp)
-	  ! ---- Automatic irrigation (evergreen trees) ----
-	  WU_day(id,2) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*sfr(ConifSurf)*IrrFracConif*DayWatPer(wd) 
-	  if (WU_Day(id,2)<0) WU_Day(id,2)=0   !If modelled WU is negative -> 0
-	  ! ---- Manual irrigation (evergreen trees) ----
-	  WU_day(id,3) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*sfr(ConifSurf)*IrrFracConif*DayWatPer(wd)
-	  if (WU_Day(id,3)<0) WU_Day(id,3)=0   !If modelled WU is negative -> 0
-	  ! ---- Total evergreen trees water use (automatic + manual) ----
-	  WU_Day(id,1)=(WU_day(id,2)+WU_day(id,3))
+          ! ---- Automatic irrigation (evergreen trees) ----
+	      WU_day(id,2) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*sfr(ConifSurf)*IrrFracConif*DayWatPer(wd)
+	      if (WU_Day(id,2)<0) WU_Day(id,2)=0   !If modelled WU is negative -> 0
+	      ! ---- Manual irrigation (evergreen trees) ----
+	      WU_day(id,3) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*sfr(ConifSurf)*IrrFracConif*DayWatPer(wd)
+	      if (WU_Day(id,3)<0) WU_Day(id,3)=0   !If modelled WU is negative -> 0
+	      ! ---- Total evergreen trees water use (automatic + manual) ----
+	      WU_Day(id,1)=(WU_day(id,2)+WU_day(id,3))
 	                              
-	  ! ---- Automatic irrigation (deciduous trees) ----
-	  WU_day(id,5) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*sfr(DecidSurf)*IrrFracDecid*DayWatPer(wd) 
-	  if (WU_Day(id,5)<0) WU_Day(id,5)=0   !If modelled WU is negative -> 0
-	  ! ---- Manual irrigation (deciduous trees) ----
-	  WU_day(id,6) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*sfr(DecidSurf)*IrrFracDecid*DayWatPer(wd)
-	  if (WU_Day(id,6)<0) WU_Day(id,6)=0   !If modelled WU is negative -> 0
-	  ! ---- Total deciduous trees water use (automatic + manual) ----
-	  WU_Day(id,4)=(WU_day(id,5)+WU_day(id,6))
+	      ! ---- Automatic irrigation (deciduous trees) ----
+	      WU_day(id,5) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*sfr(DecidSurf)*IrrFracDecid*DayWatPer(wd)
+	      if (WU_Day(id,5)<0) WU_Day(id,5)=0   !If modelled WU is negative -> 0
+	      ! ---- Manual irrigation (deciduous trees) ----
+	      WU_day(id,6) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*sfr(DecidSurf)*IrrFracDecid*DayWatPer(wd)
+	      if (WU_Day(id,6)<0) WU_Day(id,6)=0   !If modelled WU is negative -> 0
+	      ! ---- Total deciduous trees water use (automatic + manual) ----
+	      WU_Day(id,4)=(WU_day(id,5)+WU_day(id,6))
 	                              
-	  ! ---- Automatic irrigation (grass) ----
-	  WU_day(id,8) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*sfr(GrassSurf)*IrrFracGrass*DayWatPer(wd) 
-	  if (WU_Day(id,8)<0) WU_Day(id,8)=0   !If modelled WU is negative -> 0
-	  ! ---- Manual irrigation (grass) ----
-	  WU_day(id,9) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*sfr(GrassSurf)*IrrFracGrass*DayWatPer(wd)
-	  if (WU_Day(id,9)<0) WU_Day(id,9)=0   !If modelled WU is negative -> 0
-	  ! ---- Total grass water use (automatic + manual) ----      
+	      ! ---- Automatic irrigation (grass) ----
+	      WU_day(id,8) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*sfr(GrassSurf)*IrrFracGrass*DayWatPer(wd)
+	      if (WU_Day(id,8)<0) WU_Day(id,8)=0   !If modelled WU is negative -> 0
+	      ! ---- Manual irrigation (grass) ----
+	      WU_day(id,9) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*sfr(GrassSurf)*IrrFracGrass*DayWatPer(wd)
+	      if (WU_Day(id,9)<0) WU_Day(id,9)=0   !If modelled WU is negative -> 0
+	      ! ---- Total grass water use (automatic + manual) ----
           WU_Day(id,7)=(WU_day(id,8)+WU_day(id,9))
        else
           WU_Day(id,1)=0
@@ -1625,7 +1620,7 @@
  end subroutine InitialState
 
 !-------------------------------------------------------------------------
- subroutine NextInitial(GridName,year_int,GridName2)
+ subroutine NextInitial(GridName,year_int)
  ! Modified by HCW 21 Nov 2014
  !------------------------------------------------------------------------
   use allocateArray 
@@ -1641,32 +1636,20 @@
   IMPLICIT NONE
 
   character (len=15)::GridName
-  character (len=15)::GridName2
   character (len=4)::year_txt2
   integer:: year_int2
   integer:: year_int
-  
-  !write(*,*) LastGrid
-  
-   
+
   year=year_int   !HCW added 21 Nov 2014
-  
-  !if (year_int < real(year_int_final,kind(1d0))) then   !Write out InitialConditions file for each year ready for next year loop
-  !    year_int2=int(year+1)
-  !    write(year_txt2,'(I4)')year_int2
-  !    open(57,File=trim(FileInputPath)//trim("InitialConditions")//trim(GridName2)// &
-  !       '_'//trim(adjustl(year_txt2))//'.nml',err=200)       
-  !elseif (year_int == year_int_final) then
+
   if (id==nofDaysThisYear) then 
-       year_int2=int(year+1)
-       write(year_txt2,'(I4)')year_int2
-       open(57,File=trim(FileInputPath)//trim("InitialConditions")//trim(GridName)// &
-            '_'//trim(adjustl(year_txt2))//'.nml',err=200)  
-     else
+     year_int2=int(year+1)
+     write(year_txt2,'(I4)')year_int2
+     open(57,File=trim(FileInputPath)//trim("InitialConditions")//trim(GridName)//'.nml',err=200)
+  else
         year_int2=int(year)
         write(year_txt2,'(I4)')year_int2
-        open(57,File=trim(FileInputPath)//trim("InitialConditions")//trim(GridName)// &
-     	     '_'//trim(adjustl(year_txt2))//'end.nml',err=201)
+        open(57,File=trim(FileInputPath)//trim("InitialConditions")//trim(GridName)//'end.nml',err=201)
      endif
   !endif
 
@@ -1784,7 +1767,7 @@
    ! Read in next chunk of met data and fill MetForcingData array with data for every timestep
    !NSHcounter = 1
    DO i=1,ReadlinesMetdata
-      call MetRead(MetArray,InputmetFormat,AnthropHeatChoice,ldown_option,NetRadiationChoice,&
+      call MetRead(MetArray,InputmetFormat,ldown_option,NetRadiationChoice,&
                    snowUse,smd_choice,SoilDepthMeas,SoilRocks,SoilDensity,SmCap)
       !DO iv=1,NSH
       !    MetForcingData(NSHcounter,1:24,GridCounter) = MetArray

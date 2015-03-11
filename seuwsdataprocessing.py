@@ -5,6 +5,21 @@ __author__ = 'Fredrik Lindberg'
 import numpy as np
 
 
+def leap_year(yy):
+    if (yy % 4) == 0:
+        if (yy % 100) == 0:
+            if (yy % 400) == 0:
+                leapyear = 1
+            else:
+                leapyear = 0
+        else:
+            leapyear = 1
+    else:
+        leapyear = 0
+
+    return leapyear
+
+
 class SuewsDataProcessing:
     def __init__(self):
         pass
@@ -12,7 +27,7 @@ class SuewsDataProcessing:
     def tofivemin_v1(self, met_old):
 
         # Time columns
-        #iy = met_old[:, 0]
+        iy = met_old[:, 0]
         id = met_old[:, 1]
         it = met_old[:, 2]
         imin = met_old[:, 3]
@@ -28,7 +43,6 @@ class SuewsDataProcessing:
         else:  # interpolate to five minute
             met_new = np.zeros((met_old.shape[0] * howmanyfives, 24))
             for i in range(0, met_old.shape[0]):
-                #print met_old[i, :]
                 timestep_before = met_old[i - 1, :]
                 timestep_now = met_old[i, :]
 
@@ -48,14 +62,12 @@ class SuewsDataProcessing:
                     waterchange = 0
                 else:
                     waterchange = timestep_next[18] / howmanyfives
-                # if timestep_next[13] == -999:
-                #     snowchange = -999
-                # else:
-                #     snowchange = timestep_next[13] / howmanyfives
 
                 met_temp = np.zeros((howmanyfives, 24))
                 min = 0
                 for j in range(0, howmanyfives):
+                    min += 5
+                    #index = i * j + j
                     if j * 5 < 30:
                         if i == 0:
                             met_temp[j, :] = met_old[i, :]
@@ -66,16 +78,23 @@ class SuewsDataProcessing:
                             met_temp[j, :] = met_old[i, :]
                         else:
                             met_temp[j, :] = timestep_now + changeinold_next * (j - (howmanyfives / 2))
-                    #print met_temp[:, 9]
                     met_temp[j, 13] = rainchange  # rain
-                    # met_temp[j, 15] = timestep_now[15] + snowchange              # snow FIX!!!
                     met_temp[j, 18] = waterchange  # wuh
-                    met_temp[j, 0] = timestep_now[0]  # iy
-                    met_temp[j, 1] = timestep_now[1]  # id
-                    met_temp[j, 2] = timestep_now[2]  # it
-                    met_temp[j, 3] = timestep_now[3] + min  # imin
-                    #print met_temp[j, :]
-                    min += 5
+                    if min == 60:
+                        min = 0
+                        if it[i] == 23:
+                            it[i] = 0
+                            leapyear = leap_year(iy[i])
+                            if id[i] - leapyear == 365:
+                                id[i] = 0
+                                iy[i] += 1
+                        else:
+                            it[i] += 1
+
+                    met_temp[j, 0] = iy[i]  #timestep_now[0]  # iy
+                    met_temp[j, 1] = id[i]  #timestep_now[1]  # id
+                    met_temp[j, 2] = it[i]  #timestep_now[2]  # it
+                    met_temp[j, 3] = min  #timestep_now[3] + min  # imin
 
                 met_new[i * howmanyfives:i * howmanyfives + howmanyfives, :] = met_temp
 
@@ -381,3 +400,4 @@ class SuewsDataProcessing:
             # %Save as text files
             numformat = '%3d %3d %6.5f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f'
             np.savetxt(outputdata, met_new, fmt=numformat, delimiter=delim, header=header, comments='')
+

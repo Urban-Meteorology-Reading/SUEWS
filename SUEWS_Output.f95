@@ -46,8 +46,8 @@
     open(lfnOutC,file=trim(FileOut),err=112)
     write(lfnOutC,110)
 
-    110 format('%iy id it imin  dectime ',&
-               'kdown kup ldown lup Tsurf qn  h_mod e_mod qs QF QH QE ',&
+    110 format('%iy id it imin dectime ',&
+               'kdown kup ldown lup Tsurf qn h_mod e_mod qs QF QH QE ',&
                'P/i Ie/i E/i Dr/i ',&
                'St/i NWSt/i surfCh/i totCh/i ',&
                'RO/i ROsoil/i ROpipe ROpav ROveg ROwater ',&
@@ -57,25 +57,26 @@
                'St_Paved St_Bldgs St_EveTr St_DecTr St_Grass St_BSoil St_Water ',&
                'LAI ',&
                'qn1_SF qn1_S Qm QmFreez Qmrain SWE Mw MwStore snowRem_Paved snowRem_Bldgs ChSnow/i ',&
-               'kup_Paved kup_Bldgs kup_EveTr kup_DecTr kup_Grass kup_BSoil kup_Water ',&
-               'lup_Paved lup_Bldgs lup_EveTr lup_DecTr lup_Grass lup_BSoil lup_Water ',&
-               'Ts_Paved Ts_Bldgs Ts_EveTr Ts_DecTr Ts_Grass Ts_BSoil Ts_Water ',&
-               'qn_Paved qn_Bldgs qn_EveTr qn_DecTr qn_Grass qn_BSoil qn_Water ',&
-               'SWE_Paved SWE_Bldgs SWE_EveTr SWE_DecTr SWE_Grass SWE_BSoil SWE_Water ',&
-               'Mw_Paved Mw_Bldgs Mw_EveTr Mw_DecTr Mw_Grass Mw_BSoil Mw_Water ',&
-               'Qm_Paved Qm_Bldgs Qm_EveTr Qm_DecTr Qm_Grass Qm_BSoil Qm_Water ',&
-               'Qa_Paved Qa_Bldgs Qa_EveTr Qa_DecTr Qa_Grass Qa_BSoil Qa_Water ',&
-               'QmFr_Paved QmFr_Bldgs QmFr_EveTr QmFr_DecTr QmFr_Grass QmFr_BSoil QmFr_Water ',&
-               'fr_Paved fr_Bldgs fr_EveTr fr_DecTr fr_Grass fr_BSoil ',&
-               'alb_snow ',&
-               'RainSn_Paved RainSn_Bldgs RainSn_EveTr RainSn_DecTr RainSn_Grass RainSn_BSoil RainSn_Water ',&
-               'Qn_PavedSnow Qn_BldgsSnow Qn_EveTrSnpw Qn_DecTrSnow Qn_GrassSnpw Qn_BSoilSnow Qn_WaterSnow ',&
-               'kup_PavedSnow kup_BldgsSnow kup_EveTrSnpw kup_DecTrSnow kup_GrassSnpw kup_BSoilSnow kup_WaterSnow ',&
-               'frMelt_Paved frMelt_Bldgs frMelt_EveTr frMelt_DecTr frMelt_Grass frMelt_BSoil frMelt_Water ',&
-               'MwStore_Paved MwStore_Bldgs MwStore_EveTr MwStore_DecTr MwStore_Grass MwStore_BSoil MwStore_Water ',&
-               'DensSnow_Paved DensSnow_Bldgs DensSnow_EveTr DensSnow_DecTr DensSnow_Grass DensSnow_BSoil DensSnow_Water ',&
-               'Sd_Paved Sd_Bldgs Sd_EveTr Sd_DecTr Sd_Grass Sd_BSoil Sd_Water ',&
-               'Tsnow_Paved Tsnow_Bldgs Tsnow_EveTr Tsnow_DecTr Tsnow_Grass Tsnow_BSoil Tsnow_Water ')
+               !'kup_Paved kup_Bldgs kup_EveTr kup_DecTr kup_Grass kup_BSoil kup_Water ',&
+               !'lup_Paved lup_Bldgs lup_EveTr lup_DecTr lup_Grass lup_BSoil lup_Water ',&
+               !'Ts_Paved Ts_Bldgs Ts_EveTr Ts_DecTr Ts_Grass Ts_BSoil Ts_Water ',&
+               !'qn_Paved qn_Bldgs qn_EveTr qn_DecTr qn_Grass qn_BSoil qn_Water ',&
+               !'SWE_Paved SWE_Bldgs SWE_EveTr SWE_DecTr SWE_Grass SWE_BSoil SWE_Water ',&
+               !'Mw_Paved Mw_Bldgs Mw_EveTr Mw_DecTr Mw_Grass Mw_BSoil Mw_Water ',&
+               !'Qm_Paved Qm_Bldgs Qm_EveTr Qm_DecTr Qm_Grass Qm_BSoil Qm_Water ',&
+               !'Qa_Paved Qa_Bldgs Qa_EveTr Qa_DecTr Qa_Grass Qa_BSoil Qa_Water ',&
+               !'QmFr_Paved QmFr_Bldgs QmFr_EveTr QmFr_DecTr QmFr_Grass QmFr_BSoil QmFr_Water ',&
+               !'fr_Paved fr_Bldgs fr_EveTr fr_DecTr fr_Grass fr_BSoil ',&
+               'alb_snow ')!,&
+               !'RainSn_Paved RainSn_Bldgs RainSn_EveTr RainSn_DecTr RainSn_Grass RainSn_BSoil RainSn_Water ',&
+               !'Qn_PavedSnow Qn_BldgsSnow Qn_EveTrSnpw Qn_DecTrSnow Qn_GrassSnpw Qn_BSoilSnow Qn_WaterSnow ',&
+               !'kup_PavedSnow kup_BldgsSnow kup_EveTrSnpw kup_DecTrSnow kup_GrassSnpw kup_BSoilSnow kup_WaterSnow ',&
+               !'frMelt_Paved frMelt_Bldgs frMelt_EveTr frMelt_DecTr frMelt_Grass frMelt_BSoil frMelt_Water ',&
+               !'MwStore_Paved MwStore_Bldgs MwStore_EveTr MwStore_DecTr MwStore_Grass MwStore_BSoil MwStore_Water ',&
+               !'DensSnow_Paved DensSnow_Bldgs DensSnow_EveTr DensSnow_DecTr DensSnow_Grass DensSnow_BSoil DensSnow_Water ',&
+               !'Sd_Paved Sd_Bldgs Sd_EveTr Sd_DecTr Sd_Grass Sd_BSoil Sd_Water ',&
+               !'Tsnow_Paved Tsnow_Bldgs Tsnow_EveTr Tsnow_DecTr Tsnow_Grass Tsnow_BSoil Tsnow_Water '
+               !)
   else
     open(lfnOutC,file=trim(FileOut),position='append')!,err=112)
   endif
@@ -103,8 +104,10 @@
                                               
   enddo
   
- 
   !================WRITING FORMAT================
+  ! Main output file at model timestep
+  ! Do NOT change from 301 here - read by python wrapper
+  ! 301_Format
   301 format((i4,1X),3(i3,1X),(f8.4,1X),&
              4(f8.2,1X),(f7.2,1X),7(f8.2,1X),&
              4(f8.3,1X),&
@@ -115,14 +118,23 @@
              2(f9.2,1X),6(f8.3,1X),7(f10.3,1X),&
               (f9.2,1X),&
              5(f8.2,1X),6(f9.3,1X),&
-             14(f10.3,1X),7(f7.2,1X),7(f10.3,1X),&
-             21(f8.3,1X),&
-             14(f8.2,1X),6(f8.2,1X),1(f8.2,1X),7(f8.3,1X),&
-             14(f8.2,1X),14(f8.3,1X),&
-             14(f8.2,1X),7(f7.2,1X))
+             !14(f10.3,1X),7(f7.2,1X),7(f10.3,1X),&
+             !21(f8.3,1X),&
+             !14(f8.2,1X),6(f8.2,1X),&
+             1(f8.2,1X) )!,
+             !7(f8.3,1X),14(f8.2,1X),14(f8.3,1X),14(f8.2,1X),7(f7.2,1X))
+             
+  !==================== This part read by python wrapper ======================
+  ! Update to match output columns, header and format
+  ! Average, sum, or use last value to go from model timestep to 60-min output
+  ! 301_Instructions         
+  ! TimeCol = [1,2,3,4,5]
+  ! AvCol  = [6,7,8,9,10,11,12,13,14,15,16,17,  38,39,40,41,42,  59,60,61,62,63]          
+  ! SumCol = [18,19,20,21,  24,25, 26,27,28,29,30,31,  32,33,34,35,36,37,  67,68,69] 
+  ! LastCol  = [22,23,  43,44,45,46,47,48,49,50,  51,52,53,54,55,56,57,  58,  64,65,66,  70]                         
 
-  304 format(1(i3,1X),4(f8.4,1X),23(f9.3,1X))                                                   !Solweig output
-  !305 format((i3,1X),(f5.2,1X),(f8.4,1X),14(f15.7,1x),3(f15.7,1X))                              !CBL output
+  304 format(1(i3,1X),4(f8.4,1X),23(f9.3,1X))   !Solweig output
+  !305 format((i3,1X),(f5.2,1X),(f8.4,1X),14(f15.7,1x),3(f15.7,1X))   !CBL output
 
 
   !================CLOSE OUTPUTFILE================

@@ -4,6 +4,8 @@
 ! Responds to what has happened in the past (temperature, rainfall, etc)
 ! N.B. If changes are made here, may need to update code in SUEWS_Initial accordingly
 !
+! Last modified LJ 11 Mar 2015
+! Removed switch as no longer necessary
 ! Last modified HCW 06 Mar 2015
 !  iy used instead of year which does not have a value here
 ! Last modified HCW 20 Feb 2015
@@ -45,10 +47,10 @@
   integer:: Gridiv
   integer:: gamma1,gamma2  !Switch for heating and cooling degree days
   integer:: iv,&           !Loop over vegetation types
-  	        jj,&           !Loop over previous 5 days
-  	        j,&
-  	        calc,&         !Water use calculation is done when calc = 1
-  	        wd,&           !Number of weekday (Sun=1,...Sat=7)
+  	    jj,&           !Loop over previous 5 days
+  	    j,&
+  	    calc,&         !Water use calculation is done when calc = 1
+  	    wd,&           !Number of weekday (Sun=1,...Sat=7)
             mb,&           !Months
             seas,&         !Season (summer=1, winter=2)
             date,&         !Day

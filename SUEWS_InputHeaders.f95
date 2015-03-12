@@ -201,7 +201,7 @@ SUBROUTINE InputHeaderCheck(FileName)
   ! ========== SUEWS_WithinGridWaterDist.txt ====  
   HeaderWGWaterDist_Reqd(cWG_Code)        = "Code"     
   HeaderWGWaterDist_Reqd(cWG_ToPaved)     = "ToPaved"     
-  HeaderWGWaterDist_Reqd(cWG_ToBuilt)     = "ToBuilt"     
+  HeaderWGWaterDist_Reqd(cWG_ToBldgs)     = "ToBldgs"     
   HeaderWGWaterDist_Reqd(cWG_ToEveTr)     = "ToEveTr"     
   HeaderWGWaterDist_Reqd(cWG_ToDecTr)     = "ToDecTr"     
   HeaderWGWaterDist_Reqd(cWG_ToGrass)     = "ToGrass"     

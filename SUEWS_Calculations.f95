@@ -43,12 +43,13 @@
 
 !==================================================================
 !==================================================================
-
+ 
   !Translate all data to the variables used in the model calculations
   call SUEWS_Translate(Gridiv,ir,iMB)
   call RoughnessParameters ! Added by HCW 11 Nov 2014
-  
-  !NARP Config now done in SUEWS_Translate
+    
+  !if(ir==1) write(*,*) 'Now running DOY ',id,' of year',iy,'...'
+   
  
 !=============Get data ready for the qs calculation====================
  if(NetRadiationChoice==0) then !Radiative components are provided as forcing
@@ -516,11 +517,13 @@
                            soilstate,smd,(smd_nsurf(is),is=1,nsurf-1),(state(is),is=1,nsurf),&                              !57
                            lai_wt,&                                                                                         !58
                            qn1_SF,qn1_S,Qm,QmFreez,QmRain,swe,mwh,MwStore,(SnowRemoval(is),is=1,2),chSnow_per_interval,&    !69                       
-                           kup_ind(1:nsurf),lup_ind(1:nsurf),Tsurf_ind(1:nsurf),qn1_ind(1:nsurf),&                          !97
-                           SnowPack(1:nsurf),mw_ind(1:nsurf),Qm_melt(1:nsurf),&                                             !118
-                           Qm_rain(1:nsurf),Qm_freezState(1:nsurf),snowFrac(1:(nsurf-1)),alb_snow,rainOnSnow(1:nsurf),&     !146
-                           qn1_ind_snow(1:nsurf),kup_ind_snow(1:nsurf),freezMelt(1:nsurf),MeltWaterStore(1:nsurf),&         !174
-                           densSnow(1:nsurf),snowDepth(1:nsurf),Tsurf_ind_snow(1:nsurf)/)                                   !195
+                           !kup_ind(1:nsurf),lup_ind(1:nsurf),Tsurf_ind(1:nsurf),qn1_ind(1:nsurf),&                         !97
+                           !SnowPack(1:nsurf),mw_ind(1:nsurf),Qm_melt(1:nsurf),&                                            !118
+                           !Qm_rain(1:nsurf),Qm_freezState(1:nsurf),snowFrac(1:(nsurf-1)),                                  !138
+                           alb_snow/)  !70   !,&                                                                            !139
+                           !rainOnSnow(1:nsurf),&                                                                            !146
+                           !qn1_ind_snow(1:nsurf),kup_ind_snow(1:nsurf),freezMelt(1:nsurf),MeltWaterStore(1:nsurf),&         !174
+                           !densSnow(1:nsurf),snowDepth(1:nsurf),Tsurf_ind_snow(1:nsurf)/)                                   !195
 
   
   !Calculate new snow fraction used in the next timestep if snowUse==1

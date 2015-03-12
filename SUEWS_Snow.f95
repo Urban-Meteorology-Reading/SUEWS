@@ -794,7 +794,7 @@
         asc=1
      endif
      
-   !Built surface  
+   !Bldgs surface  
    elseif (is==BldgSurf) then
    
      if (swe<=sweD) then

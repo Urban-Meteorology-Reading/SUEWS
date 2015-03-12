@@ -42,5 +42,5 @@
 
    ! error messages if aerodynamic parameters negative
    if(z0m<0) call ErrorHint(14,'SUEWS_RoughnessParameters',z0m,notUsed,notUsedI)
-   if(zzd<0)call ErrorHint(15,'SUEWS_RoughnessParameters',zzd,notUsed,notUsedI)
+   if(zzd<0) call ErrorHint(15,'SUEWS_RoughnessParameters',zzd,notUsed,notUsedI)
  end subroutine RoughnessParameters

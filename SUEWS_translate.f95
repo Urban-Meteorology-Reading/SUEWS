@@ -60,7 +60,7 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
  
   ! ---- Surface fractions (previously in LUMPS_gis_read)
   sfr(PavSurf)   = SurfaceChar(Gridiv,c_FrPaved)  ! Paved
-  sfr(BldgSurf)  = SurfaceChar(Gridiv,c_FrBuilt)  ! Built
+  sfr(BldgSurf)  = SurfaceChar(Gridiv,c_FrBldgs)  ! Bldgs
   sfr(ConifSurf) = SurfaceChar(Gridiv,c_FrEveTr)  ! Everg
   sfr(DecidSurf) = SurfaceChar(Gridiv,c_FrDecTr)  ! Decid
   sfr(GrassSurf) = SurfaceChar(Gridiv,c_FrGrass)  ! Grass
@@ -105,11 +105,11 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   ! ---------------------------------------------------------------------------------
 
   ! ---- Heights & frontal areas
-  BldgH = SurfaceChar(Gridiv,c_HBuilt)	      ! Building height [m]
+  BldgH = SurfaceChar(Gridiv,c_HBldgs)	      ! Building height [m]
   EveTreeH = SurfaceChar(Gridiv,c_HEveTr)     ! Evergreen tree height [m]
   DecTreeH = SurfaceChar(Gridiv,c_HDecTr)     ! Deciduous tree height [m]
   TreeH = (EveTreeH*sfr(ConifSurf) + DecTreeH*sfr(DecidSurf))/(sfr(ConifSurf)+sfr(DecidSurf))	! Average tree height [m]
-  FAIBldg = SurfaceChar(Gridiv,c_FAIBuilt)    ! Frontal area index for buildings
+  FAIBldg = SurfaceChar(Gridiv,c_FAIBldgs)    ! Frontal area index for buildings
   FAIEveTree = SurfaceChar(Gridiv,c_FAIEveTr) ! Frontal area index for evergreen trees
   FAIDecTree = SurfaceChar(Gridiv,c_FAIDecTr) ! Frontal area index for deciduous trees
   FAITree = (FAIEveTree*sfr(ConifSurf) + FAIDecTree*sfr(DecidSurf))/(sfr(ConifSurf)+sfr(DecidSurf)) ! Frontal area index for trees
@@ -330,7 +330,7 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   ! Model returns an error if both ToRunoff and ToSoilStore are non-zero (in CodeMatchDist) 
   ! For impervious surfaces, water goes to runoff; for pervious surfaces, water goes to soilstore
   WaterDist(PavSurf,  1:(nsurf-1)) = SurfaceChar(Gridiv,c_WGToPaved(1:(nsurf-1)))
-  WaterDist(BldgSurf, 1:(nsurf-1)) = SurfaceChar(Gridiv,c_WGToBuilt(1:(nsurf-1)))
+  WaterDist(BldgSurf, 1:(nsurf-1)) = SurfaceChar(Gridiv,c_WGToBldgs(1:(nsurf-1)))
   WaterDist(ConifSurf,1:(nsurf-1)) = SurfaceChar(Gridiv,c_WGToEveTr(1:(nsurf-1)))
   WaterDist(DecidSurf,1:(nsurf-1)) = SurfaceChar(Gridiv,c_WGToDecTr(1:(nsurf-1)))
   WaterDist(GrassSurf,1:(nsurf-1)) = SurfaceChar(Gridiv,c_WGToGrass(1:(nsurf-1)))
@@ -515,9 +515,7 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   
   !Write FileChoices.txt (was in SUEWS_Initial.f95) once per grid per year
   if (ir==1.and.iMB==1) then   !For first row of first block only
-    
-     write(*,*) 'Writing to FileChoices for first chunk of met data per year per grid'
-  
+     !write(*,*) 'Writing to FileChoices for first chunk of met data per year per grid'
      FileChoices=trim(FileOutputPath)//trim(FileCode)//'_FileChoices.txt'
      open(12,file=FileChoices,position='append')
    
@@ -577,7 +575,7 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
      enddo
 
      write(12,*)'----------','Within-grid water distribution','----------'
-     !write(12,*)'To !Paved Built  EveTr  DecTr Grass BSoil  Water Runoff/SoilStore'
+     !write(12,*)'To !Paved Bldgs  EveTr  DecTr Grass BSoil  Water Runoff/SoilStore'
      do iv=1,(nsurf-1)
         write(12,'(i4, 8f6.2)')iv,(WaterDist(j,iv),j=1,nsurf+1)
      enddo  

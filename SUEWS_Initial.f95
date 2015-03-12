@@ -49,6 +49,7 @@
         MultipleMetFiles,&
         KeepTstepFilesIn,&
         KeepTstepFilesOut,&
+        WriteSurfsFile,&
         SnowFractionChoice,&
         SNOWuse,&
         SOLWEIGuse,&
@@ -677,7 +678,7 @@
    call CodeMatchDist(rr,c_WGPavedCode,cWG_ToPaved)
    ! Transfer distribution to SurfaceChar
    SurfaceChar(Gridiv,c_WGToPaved(PavSurf))  = WGWaterDist_Coeff(iv5,cWG_ToPaved)   
-   SurfaceChar(Gridiv,c_WGToBuilt(PavSurf))  = WGWaterDist_Coeff(iv5,cWG_ToBuilt)   
+   SurfaceChar(Gridiv,c_WGToBldgs(PavSurf))  = WGWaterDist_Coeff(iv5,cWG_ToBldgs)   
    SurfaceChar(Gridiv,c_WGToEveTr(PavSurf))  = WGWaterDist_Coeff(iv5,cWG_ToEveTr)   
    SurfaceChar(Gridiv,c_WGToDecTr(PavSurf))  = WGWaterDist_Coeff(iv5,cWG_ToDecTr)   
    SurfaceChar(Gridiv,c_WGToGrass(PavSurf))  = WGWaterDist_Coeff(iv5,cWG_ToGrass)   
@@ -686,9 +687,9 @@
    SurfaceChar(Gridiv,c_WGToRunoff(PavSurf))  = WGWaterDist_Coeff(iv5,cWG_ToRunoff)   
    SurfaceChar(Gridiv,c_WGToSoilStore(PavSurf))    = WGWaterDist_Coeff(iv5,cWG_ToSoilStore)   
        
-   ! ---- Find code for Built surface (Impervious) ----
-   call CodeMatchNonVeg(rr,c_BuiltCode) 
-   ! Transfer characteristics to SurfaceChar for Built surface
+   ! ---- Find code for Bldgs surface (Impervious) ----
+   call CodeMatchNonVeg(rr,c_BldgsCode) 
+   ! Transfer characteristics to SurfaceChar for Bldgs surface
    SurfaceChar(gridiv,c_Alb(BldgSurf))          = NonVeg_Coeff(iv5,ci_Alb)
    SurfaceChar(gridiv,c_Emis(BldgSurf))         = NonVeg_Coeff(iv5,ci_Emis)
    SurfaceChar(gridiv,c_StorMin(BldgSurf))      = NonVeg_Coeff(iv5,ci_StorMin)
@@ -704,7 +705,7 @@
    SurfaceChar(gridiv,c_OHMCode_SDry(BldgSurf)) = NonVeg_Coeff(iv5,ci_OHMCode_SDry)
    SurfaceChar(gridiv,c_OHMCode_WWet(BldgSurf)) = NonVeg_Coeff(iv5,ci_OHMCode_WWet)
    SurfaceChar(gridiv,c_OHMCode_WDry(BldgSurf)) = NonVeg_Coeff(iv5,ci_OHMCode_WDry)   
-   ! Use SoilCode for Built to find code for soil characteristics
+   ! Use SoilCode for Bldgs to find code for soil characteristics
    call CodeMatchSoil(Gridiv,c_SoilTCode(BldgSurf))
    ! Transfer soil characteristics to SurfaceChar
    SurfaceChar(gridiv,c_SoilDepth(BldgSurf))    = Soil_Coeff(iv5,cSo_SoilDepth)
@@ -715,7 +716,7 @@
    SurfaceChar(gridiv,c_ObsSMDepth(BldgSurf))  = Soil_Coeff(iv5,cSo_ObsSMDepth)
    SurfaceChar(gridiv,c_ObsSMMax(BldgSurf))    = Soil_Coeff(iv5,cSo_ObsSMMax)
    SurfaceChar(gridiv,c_ObsSNRFrac(BldgSurf))  = Soil_Coeff(iv5,cSo_ObsSNRFrac)
-   !Get OHM characteristics for Built
+   !Get OHM characteristics for Bldgs
    call CodeMatchOHM(Gridiv,BldgSurf,'SWet')  !Summer wet
    ! Transfer OHM characteristics to SurfaceChar
    SurfaceChar(Gridiv,c_a1_SWet(BldgSurf))    = OHMCoefficients_Coeff(iv5,cO_a1)
@@ -737,11 +738,11 @@
    SurfaceChar(Gridiv,c_a2_WDry(BldgSurf))    = OHMCoefficients_Coeff(iv5,cO_a2)
    SurfaceChar(Gridiv,c_a3_WDry(BldgSurf))    = OHMCoefficients_Coeff(iv5,cO_a3)      
    
-   ! Get water distribution (within grid) for Built
-   call CodeMatchDist(rr,c_WGBuiltCode,cWG_ToBuilt)  
+   ! Get water distribution (within grid) for Bldgs
+   call CodeMatchDist(rr,c_WGBldgsCode,cWG_ToBldgs)  
    ! Transfer distribution to SurfaceChar
    SurfaceChar(Gridiv,c_WGToPaved(BldgSurf))  = WGWaterDist_Coeff(iv5,cWG_ToPaved)   
-   SurfaceChar(Gridiv,c_WGToBuilt(BldgSurf))  = WGWaterDist_Coeff(iv5,cWG_ToBuilt)   
+   SurfaceChar(Gridiv,c_WGToBldgs(BldgSurf))  = WGWaterDist_Coeff(iv5,cWG_ToBldgs)   
    SurfaceChar(Gridiv,c_WGToEveTr(BldgSurf))  = WGWaterDist_Coeff(iv5,cWG_ToEveTr)   
    SurfaceChar(Gridiv,c_WGToDecTr(BldgSurf))  = WGWaterDist_Coeff(iv5,cWG_ToDecTr)   
    SurfaceChar(Gridiv,c_WGToGrass(BldgSurf))  = WGWaterDist_Coeff(iv5,cWG_ToGrass)   
@@ -819,7 +820,7 @@
    call CodeMatchDist(rr,c_WGEveTrCode,cWG_ToEveTr)  
    ! Transfer distribution to SurfaceChar
    SurfaceChar(Gridiv,c_WGToPaved(ConifSurf))  = WGWaterDist_Coeff(iv5,cWG_ToPaved)   
-   SurfaceChar(Gridiv,c_WGToBuilt(ConifSurf))  = WGWaterDist_Coeff(iv5,cWG_ToBuilt)   
+   SurfaceChar(Gridiv,c_WGToBldgs(ConifSurf))  = WGWaterDist_Coeff(iv5,cWG_ToBldgs)   
    SurfaceChar(Gridiv,c_WGToEveTr(ConifSurf))  = WGWaterDist_Coeff(iv5,cWG_ToEveTr)   
    SurfaceChar(Gridiv,c_WGToDecTr(ConifSurf))  = WGWaterDist_Coeff(iv5,cWG_ToDecTr)   
    SurfaceChar(Gridiv,c_WGToGrass(ConifSurf))  = WGWaterDist_Coeff(iv5,cWG_ToGrass)   
@@ -897,7 +898,7 @@
    call CodeMatchDist(rr,c_WGDecTrCode,cWG_ToDecTr)  
    ! Transfer distribution to SurfaceChar
    SurfaceChar(Gridiv,c_WGToPaved(DecidSurf))  = WGWaterDist_Coeff(iv5,cWG_ToPaved)   
-   SurfaceChar(Gridiv,c_WGToBuilt(DecidSurf))  = WGWaterDist_Coeff(iv5,cWG_ToBuilt)   
+   SurfaceChar(Gridiv,c_WGToBldgs(DecidSurf))  = WGWaterDist_Coeff(iv5,cWG_ToBldgs)   
    SurfaceChar(Gridiv,c_WGToEveTr(DecidSurf))  = WGWaterDist_Coeff(iv5,cWG_ToEveTr)   
    SurfaceChar(Gridiv,c_WGToDecTr(DecidSurf))  = WGWaterDist_Coeff(iv5,cWG_ToDecTr)   
    SurfaceChar(Gridiv,c_WGToGrass(DecidSurf))  = WGWaterDist_Coeff(iv5,cWG_ToGrass)   
@@ -975,7 +976,7 @@
    call CodeMatchDist(rr,c_WGGrassCode,cWG_ToGrass)  
    ! Transfer distribution to SurfaceChar
    SurfaceChar(Gridiv,c_WGToPaved(GrassSurf))  = WGWaterDist_Coeff(iv5,cWG_ToPaved)   
-   SurfaceChar(Gridiv,c_WGToBuilt(GrassSurf))  = WGWaterDist_Coeff(iv5,cWG_ToBuilt)   
+   SurfaceChar(Gridiv,c_WGToBldgs(GrassSurf))  = WGWaterDist_Coeff(iv5,cWG_ToBldgs)   
    SurfaceChar(Gridiv,c_WGToEveTr(GrassSurf))  = WGWaterDist_Coeff(iv5,cWG_ToEveTr)   
    SurfaceChar(Gridiv,c_WGToDecTr(GrassSurf))  = WGWaterDist_Coeff(iv5,cWG_ToDecTr)   
    SurfaceChar(Gridiv,c_WGToGrass(GrassSurf))  = WGWaterDist_Coeff(iv5,cWG_ToGrass)   
@@ -1040,7 +1041,7 @@
    call CodeMatchDist(rr,c_WGBSoilCode,cWG_ToBSoil)  
    ! Transfer distribution to SurfaceChar
    SurfaceChar(Gridiv,c_WGToPaved(BSoilSurf))  = WGWaterDist_Coeff(iv5,cWG_ToPaved)   
-   SurfaceChar(Gridiv,c_WGToBuilt(BSoilSurf))  = WGWaterDist_Coeff(iv5,cWG_ToBuilt)   
+   SurfaceChar(Gridiv,c_WGToBldgs(BSoilSurf))  = WGWaterDist_Coeff(iv5,cWG_ToBldgs)   
    SurfaceChar(Gridiv,c_WGToEveTr(BSoilSurf))  = WGWaterDist_Coeff(iv5,cWG_ToEveTr)   
    SurfaceChar(Gridiv,c_WGToDecTr(BSoilSurf))  = WGWaterDist_Coeff(iv5,cWG_ToDecTr)   
    SurfaceChar(Gridiv,c_WGToGrass(BSoilSurf))  = WGWaterDist_Coeff(iv5,cWG_ToGrass)   
@@ -1093,7 +1094,7 @@
    call CodeMatchDist(rr,c_WGWaterCode,cWG_ToWater)  
    ! Transfer distribution to SurfaceChar
    SurfaceChar(Gridiv,c_WGToPaved(WaterSurf))  = WGWaterDist_Coeff(iv5,cWG_ToPaved)   
-   SurfaceChar(Gridiv,c_WGToBuilt(WaterSurf))  = WGWaterDist_Coeff(iv5,cWG_ToBuilt)   
+   SurfaceChar(Gridiv,c_WGToBldgs(WaterSurf))  = WGWaterDist_Coeff(iv5,cWG_ToBldgs)   
    SurfaceChar(Gridiv,c_WGToEveTr(WaterSurf))  = WGWaterDist_Coeff(iv5,cWG_ToEveTr)   
    SurfaceChar(Gridiv,c_WGToDecTr(WaterSurf))  = WGWaterDist_Coeff(iv5,cWG_ToDecTr)   
    SurfaceChar(Gridiv,c_WGToGrass(WaterSurf))  = WGWaterDist_Coeff(iv5,cWG_ToGrass)   
@@ -1753,7 +1754,7 @@
    !---------------------------------------------------------------
 
    !Open the file for reading and read the actual data
-   write(*,*) fileMet
+   !write(*,*) fileMet
    open(lunit,file=trim(fileMet),status='old',err=314)
    call skipHeader(lunit,SkipHeaderMet)
 

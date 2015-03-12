@@ -310,7 +310,7 @@
     !Second option for later points
     if (errorChoice==0) then
         open(500,file='problems.txt',status='old')
-        write(*,*)'See problems.txt for possible issues in the run.'
+        write(*,*) 'See problems.txt for possible issues in the run.'
         errorChoice=1
     else
         open(500,file='problems.txt',position="append")

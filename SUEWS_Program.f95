@@ -9,7 +9,7 @@
 !  - then over rows
 !  - then over grids
 !
-!Last modified by HCW 03 Mar 2015
+!Last modified by HCW 12 Mar 2015
 !Last modified by HCW 26 Feb 2015
 !Last modified by HCW 03 Dec 2014
 !
@@ -43,9 +43,9 @@
     		 iv,&	   ! Block number (from 1 to ReadBlocksMetData)
     		 ir,irMax,& ! Row number within each block (from 1 to irMax)
     		 rr,& 	   ! Row of SiteSelect corresponding to current year and grid
-             year_int   ! Year as an integer (from SiteSelect rather than met forcing file)
+                 year_int   ! Year as an integer (from SiteSelect rather than met forcing file)
     
-    logical:: PrintPlace=.true.   !Prints row, block, and grid number to screen if TRUE
+    logical:: PrintPlace=.false.   !Prints row, block, and grid number to screen if TRUE
     		     
     !==========================================================================
     
@@ -84,7 +84,7 @@
     DO year_int=FirstYear,LastYear   !Loop through years
     
        write(*,*) ' '
-       write(*,*) 'Now running year',year_int
+       !write(*,*) 'Now running year',year_int
       
        write(year_txt,'(I4)') year_int  !Get year as a text string
 
@@ -166,7 +166,7 @@
              write(grid_txt,'(I5)') i   !Get grid as a text string
              ! Get met forcing file name for this year for this grid
              FileCodeX=trim(FileCode)//trim(adjustl(grid_txt))//'_'//trim(year_txt)
-             write(*,*) 'Current FileCode', FileCodeX      
+             if(iv==1) write(*,*) 'Current FileCode: ', FileCodeX      
                           	     
   	         ! For the first block of met data --------------------------------
   	         if(iv == 1) then
@@ -188,7 +188,7 @@
                           
              ! For every block of met data ------------------------------------
              ! Initialise met forcing data into 3-dimensional matrix
-             write(*,*) 'Initialising met data for block',iv
+             !write(*,*) 'Initialising met data for block',iv
              
              if(MultipleMetFiles == 1) then   !If each grid has its own met file
                 FileMet=trim(FileInputPath)//trim(FileCodeX)//'_data_'//trim(adjustl(tstep_txt))//'.txt'
@@ -228,6 +228,7 @@
  	         if(PrintPlace) write(*,*) 'Row (ir):', ir,'/',irMax,'of block (iv):', iv,'/',ReadBlocksMetData,'Grid:',i
  
               ! Call model calculation code
+              if(ir==1) write(*,*) 'Now running block ',iv,'/',ReadBlocksMetData,' of year ',year_int,'...'
               call SUEWS_Calculations(GridCounter,ir,iv,irMax)
               
               ! Write state information to new InitialConditions files
@@ -251,7 +252,6 @@
           ! Write output files in blocks --------------------------------
           DO i=FirstGrid,LastGrid
              call SUEWS_Output(i,year_int,iv,irMax)
-	     write(*,*) 'Output files written (reached DOY, year, Grid)', id,year_int,i
           ENDDO
                   
        ENDDO !end loop over blocks of met data

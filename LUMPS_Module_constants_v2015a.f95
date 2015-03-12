@@ -29,7 +29,7 @@
    integer, parameter:: ncolumnsMetForcingData=24	!Meteorological forcing file (_data.txt)
    
    ! ---- Set number of columns in output files ---------------------------------------------------
-   integer, parameter:: ncolumnsDataOut=195		!Main output file (_5.txt). DataOut created in SUEWS_Calculations.f95
+   integer, parameter:: ncolumnsDataOut=70		!Main output file (_5.txt). DataOut created in SUEWS_Calculations.f95
   
    ! ---- Define input file headers ---------------------------------------------------------------              
    character(len=20),dimension(ncolumnsSiteSelect)::        HeaderSiteSelect_File          !Header for SiteSelect.txt                
@@ -463,7 +463,7 @@
        
    ! Within-grid water distribution (for each surface)
    integer,dimension(nsurf):: c_WGToPaved = (/(cc, cc=ccEndPr+ 0*nsurf+1,ccEndPr+ 0*nsurf+nsurf, 1)/) !Water dist to Paved
-   integer,dimension(nsurf):: c_WGToBuilt = (/(cc, cc=ccEndPr+ 1*nsurf+1,ccEndPr+ 1*nsurf+nsurf, 1)/) !Water dist to Built
+   integer,dimension(nsurf):: c_WGToBldgs = (/(cc, cc=ccEndPr+ 1*nsurf+1,ccEndPr+ 1*nsurf+nsurf, 1)/) !Water dist to Bldgs
    integer,dimension(nsurf):: c_WGToEveTr = (/(cc, cc=ccEndPr+ 2*nsurf+1,ccEndPr+ 2*nsurf+nsurf, 1)/) !Water dist to EveTr
    integer,dimension(nsurf):: c_WGToDecTr = (/(cc, cc=ccEndPr+ 3*nsurf+1,ccEndPr+ 3*nsurf+nsurf, 1)/) !Water dist to DecTr
    integer,dimension(nsurf):: c_WGToGrass = (/(cc, cc=ccEndPr+ 4*nsurf+1,ccEndPr+ 4*nsurf+nsurf, 1)/) !Water dist to Grass
@@ -562,6 +562,7 @@
               MultipleMetFiles,&     !Indicates whether a single met file is used for all grids (0) or one for each grid (1)   
               KeepTstepFilesIn,&     !Delete (0) or keep (1) input met files at resolution of tstep (used by python, not fortran)
               KeepTstepFilesOut,&    !Delete (0) or keep (1) output files at resolution of tstep (used by python, not fortran)
+              WriteSurfsFile,&       !Write output file containing variables for each surface (1) or not (0). Not currently used!!
               NetRadiationChoice,&   !Options for net all-wave radiation calculation
               OHMIncQF,&             !OHM calculation uses Q* only (0) or Q*+QF (1)
               QSChoice,&             !OHM (1); QS in met file (2)
@@ -1203,7 +1204,7 @@ MODULE cbl_MODULE
             c_imin	    =11,&
             ! Surface fractions
             c_FrPaved	    =12,&
-            c_FrBuilt	    =13,&
+            c_FrBldgs	    =13,&
             c_FrEveTr	    =14,&
             c_FrDecTr	    =15,&
             c_FrGrass	    =16,&
@@ -1214,12 +1215,12 @@ MODULE cbl_MODULE
             c_IrrDecTrFrac  =20,&
             c_IrrGrassFrac  =21,&
             ! Height information
-            c_HBuilt	    =22,&
+            c_HBldgs	    =22,&
             c_HEveTr	    =23,&
             c_HDecTr	    =24,&
             c_z0m	    =25,&
             c_zdm	    =26,&
-            c_FAIBuilt	    =27,&
+            c_FAIBldgs	    =27,&
             c_FAIEveTr	    =28,&
             c_FAIDecTr	    =29,&
             ! Population
@@ -1227,7 +1228,7 @@ MODULE cbl_MODULE
             c_PopDensNight  =31,&
 	    ! Codes for different surfaces
             c_PavedCode	    =32,&	! Links characteristics in SUEWS_NonVeg.txt
-            c_BuiltCode	    =33,&	! Links characteristics in SUEWS_NonVeg.txt
+            c_BldgsCode	    =33,&	! Links characteristics in SUEWS_NonVeg.txt
             c_EveTrCode	    =34,&	! Links characteristics in SUEWS_Veg.txt
             c_DecTrCode	    =35,&  	! Links characteristics in SUEWS_Veg.txt
             c_GrassCode	    =36,&   	! Links characteristics in SUEWS_Veg.txt
@@ -1277,7 +1278,7 @@ MODULE cbl_MODULE
             c_Fraction8of8 	 =73,&            
  	    ! Runoff within grid (for each surface type)
  	    c_WGPavedCode   =74,& 	! Links to SUEWS_WaterDistibuteWithinGrid.txt		
- 	    c_WGBuiltCode   =75,& 	! Links to SUEWS_WaterDistibuteWithinGrid.txt		
+ 	    c_WGBldgsCode   =75,& 	! Links to SUEWS_WaterDistibuteWithinGrid.txt		
  	    c_WGEveTrCode   =76,& 	! Links to SUEWS_WaterDistibuteWithinGrid.txt		
  	    c_WGDecTrCode   =77,& 	! Links to SUEWS_WaterDistibuteWithinGrid.txt		
  	    c_WGGrassCode   =78,& 	! Links to SUEWS_WaterDistibuteWithinGrid.txt		
@@ -1451,7 +1452,7 @@ MODULE cbl_MODULE
    
    integer:: 	cWG_Code 	= 1,&
    		cWG_ToPaved	= 2,&
-   		cWG_ToBuilt	= 3,&
+   		cWG_ToBldgs	= 3,&
    		cWG_ToEveTr	= 4,&
    		cWG_ToDecTr	= 5,&
    		cWG_ToGrass	= 6,&

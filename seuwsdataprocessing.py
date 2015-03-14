@@ -36,93 +36,86 @@ class SuewsDataProcessing:
         dectime0 = id[0] + it[0] / 24 + imin[0] / (60 * 24)
         dectime1 = id[1] + it[1] / 24 + imin[1] / (60 * 24)
         timeres_old = np.round((dectime1 - dectime0) * (60 * 24))
-        howmanyfives = int(timeres_old / 5)
+        nsh = int(timeres_old / 5)
+        index = 0
 
-        if howmanyfives < 1:  # put code here to make longer timestep
+        if nsh < 1:  # put code here to make longer timestep
             notused = []
         else:  # interpolate to five minute
-            met_new = np.zeros((met_old.shape[0] * howmanyfives, 24))
-            for i in range(0, met_old.shape[0]):
-                timestep_before = met_old[i - 1, :]
-                timestep_now = met_old[i, :]
+            met_new = np.zeros(((met_old.shape[0] - 1) * nsh, 24)) - 999
 
-                if met_old.shape[0] - 1 == i:
-                    timestep_next = timestep_now  #This should be fixed if multiple years are run
-                else:
-                    timestep_next = met_old[i + 1, :]
-
-                changeinold_before = (timestep_before - timestep_now) / howmanyfives
-                changeinold_next = (timestep_next - timestep_now) / howmanyfives
-
-                if timestep_next[13] == -999:
-                    rainchange = 0
-                else:
-                    rainchange = timestep_next[13] / howmanyfives
-                if timestep_next[18] == -999:
-                    waterchange = 0
-                else:
-                    waterchange = timestep_next[18] / howmanyfives
-
-                met_temp = np.zeros((howmanyfives, 24))
-                min = 0
-                for j in range(0, howmanyfives):
-                    min += 5
-                    #index = i * j + j
-                    if j * 5 < 30:
-                        if i == 0:
-                            met_temp[j, :] = met_old[i, :]
-                        else:
-                            met_temp[j, :] = timestep_now + changeinold_before * ((howmanyfives / 2) - j)
-                    else:
-                        if i == met_old.shape[0] - 2:
-                            met_temp[j, :] = met_old[i, :]
-                        else:
-                            met_temp[j, :] = timestep_now + changeinold_next * (j - (howmanyfives / 2))
-                    met_temp[j, 13] = rainchange  # rain
-                    met_temp[j, 18] = waterchange  # wuh
-                    if min == 60:
-                        min = 0
+            for i in range(0, met_old.shape[0] - 1): # writing time columns
+                mins = 0
+                for j in range(0, nsh):
+                    mins += 5
+                    if mins == 60:
+                        mins = 0
                         if it[i] == 23:
+                            id[i] += 1
                             it[i] = 0
                             leapyear = leap_year(iy[i])
-                            if id[i] - leapyear == 365:
-                                id[i] = 0
+                            if id[i] - leapyear == 366:
+                                id[i] = 1
                                 iy[i] += 1
                         else:
                             it[i] += 1
+                    met_new[index, 0] = iy[i]
+                    met_new[index, 1] = id[i]
+                    met_new[index, 2] = it[i]
+                    met_new[index, 3] = mins
+                    index += 1
 
-                    met_temp[j, 0] = iy[i]  #timestep_now[0]  # iy
-                    met_temp[j, 1] = id[i]  #timestep_now[1]  # id
-                    met_temp[j, 2] = it[i]  #timestep_now[2]  # it
-                    met_temp[j, 3] = min  #timestep_now[3] + min  # imin
+            index = 0
+            for i in range(1, met_old.shape[0] - 1): # Making 5min metdata
+                met_now = met_old[i, 4:24]
+                if i >= met_old.shape[0] - 2:
+                    met_next = met_old[i, 4:24]
+                else:
+                    met_next = met_old[i + 1, 4:24]
 
-                met_new[i * howmanyfives:i * howmanyfives + howmanyfives, :] = met_temp
+                if met_now[13 - 4] == -999:
+                    rainchange = -999
+                else:
+                    rainchange = met_now[13 - 4] / nsh
+                if met_now[18 - 4] == -999:
+                    waterchange = -999
+                else:
+                    waterchange = met_now[18 - 4] / nsh
+
+                for j in range(0, nsh):
+
+                    met_new[index + 6, 4:24] = met_now - (met_next - met_now) / (2 * nsh) + (met_next - met_now) / nsh * (j + 1)
+
+                    met_new[index, 13] = rainchange  # rain
+                    met_new[index, 18] = waterchange  # wuh
+
+                    if (i == 1 and j == 0): # fixing beginning of file
+                        met_new[0:6, 4:24] = met_new[6, 4:24]
+
+                    index += 1
+
+            met_new[index + 6:met_new.shape[0], 4:24] = met_new[index + 5, 4:24] # fixing end of files
 
         return met_new
 
-    def from5minto1hour_v1(self, results):
 
-        # Time columns
-        id = results[:, 1]
-        it = results[:, 2]
-        # imin = results[:, 3]
+    def from5minto1hour_v1(self, results, SumCol, LastCol, TimeCol):
 
-        suews_1h = np.zeros((results.shape[0], results.shape[1]))
-        index = 0
-        sumcol = [17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 50, 51, 52, 53, 62, 63, 64]
-        lastcol = [33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 47, 48, 49, 60, 62]
-        for i in range(int(id.min()), int(id.max())):
-            suews_1h[index, :] = np.mean(results[index * 12: index * 12 + 12, :], axis=0)
+        suews_1h = np.zeros((results.shape[0] / 12, results.shape[1]))
 
-            for j in range(0, sumcol.__len__()):
-                suews_1h[index, sumcol[j]] = np.sum(results[index * 12: index * 12 + 12, sumcol[j]], axis=0)
+        for i in range(0, suews_1h.shape[0]):
+            suews_1h[i, 5:results.shape[1] - 1] = np.mean(results[i * 12: i * 12 + 12, 5:results.shape[1] - 1], axis=0)
 
-            for j in range(0, lastcol.__len__()):
-                suews_1h[index, lastcol[j]] = results[index * 12 + 12, lastcol[j]]
+            for j in range(0, SumCol.__len__()):
+                suews_1h[i, SumCol[j]] = np.sum(results[i * 12: i * 12 + 12, SumCol[j]], axis=0)
 
-            index += 1
+            for j in range(0, LastCol.__len__()):
+                suews_1h[i, LastCol[j]] = results[i * 12 + 11, LastCol[j]]
+
+            suews_1h[i, TimeCol] = results[i * 12 + 11, TimeCol]
 
         return suews_1h
+
 
     def translatemetdata(self, old, ver, inputdata, outputdata, delim):
 
@@ -291,7 +284,7 @@ class SuewsDataProcessing:
                 fcld = met_old[:, fcld_col]
                 wuh = met_old[:, wuh_col]
                 xsmd = met_old[:, xsmd_col]
-                lai= met_old[:, lai_col]
+                lai = met_old[:, lai_col]
                 D = met_old[:, drad_col]
                 I = met_old[:, irad_col]
                 wdir = met_old[:, wdir_col]
@@ -339,7 +332,7 @@ class SuewsDataProcessing:
                 doy[i] = sum(dayspermonth[0:int(mm[i] - 1)]) + dd[i]  # might now work
 
         if ver == 2015:  # v2015a
-            #inputnew = 'M:/SOLWEIG/Inputdata/metdata/2015a/gbg20051011_2015a.txt'
+            # inputnew = 'M:/SOLWEIG/Inputdata/metdata/2015a/gbg20051011_2015a.txt'
             #f = open(inputnew, 'r')
             #header = f.readline()
             header = '%iy id  it imin   Q*      QH      QE      Qs      Qf    Wind    RH     Td     press   rain ' \

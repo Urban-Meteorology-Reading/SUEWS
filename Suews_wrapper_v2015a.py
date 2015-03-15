@@ -16,27 +16,38 @@ filecode = nml['runcontrol']['filecode']
 wf = os.getcwd()
 prog_name = 'SUEWS_V2015a.exe'
 
-# # open SiteSelect to get year and gridnames
+### open SiteSelect to get year and gridnames
 SiteIn = wf + fileinputpath[1:] + 'SUEWS_SiteSelect.txt'
 f = open(SiteIn)
 lin = f.readlines()
-lines = lin[2].split()
-YYYY = int(lines[1])
-gridcode = lines[0]
+index = 2
+loop_out = ''
+YYYY_old = -9876
+while loop_out != '-9':
+    lines = lin[index].split()
+    YYYY = int(lines[1])
+    if index == 2:
+        gridcode = lines[0]
 
-### This part converts metdata into 5 min ###
-data_in = wf + fileinputpath[1:] + filecode + gridcode + '_' + str(YYYY) + '_data.txt'
-data_out = wf + fileinputpath[1:] + filecode + gridcode + '_' + str(YYYY) + '_data_5.txt'
+    if YYYY != YYYY_old:
+        ### This part converts metdata into 5 min ###
+        data_in = wf + fileinputpath[1:] + filecode + gridcode + '_' + str(YYYY) + '_data.txt'
+        data_out = wf + fileinputpath[1:] + filecode + gridcode + '_' + str(YYYY) + '_data_5.txt'
+        met_old = np.loadtxt(data_in, skiprows=1)
+        met_new = su.tofivemin_v1(met_old)
+        header = 'iy id it imin qn qh qe qs qf U RH Tair pres rain kdown snow ldown fcld wuh xsmd lai kdiff kdir wdir'
+        numformat = '%3d %2d %3d %2d %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.4f %6.2f %6.2f %6.2f %6.2f ' \
+                    '%6.4f %6.2f %6.2f %6.2f %6.2f %6.2f'
+        np.savetxt(data_out, met_new, fmt=numformat, delimiter=' ', header=header, comments='')
+        f_handle = file(data_out, 'a')
+        endoffile = [-9, -9]
+        np.savetxt(f_handle, endoffile, fmt='%2d')
+        f_handle.close()
+        YYYY_old = YYYY
 
-met_old = np.loadtxt(data_in, skiprows=1)
-met_new = su.tofivemin_v1(met_old)
-header = 'iy id it imin qn qh qe qs qf U RH Tair pres rain kdown snow ldown fcld wuh xsmd lai kdiff kdir wdir'
-numformat = '%3d %2d %3d %2d %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.4f %6.2f %6.2f %6.2f %6.2f %6.4f %6.2f %6.2f %6.2f %6.2f %6.2f'
-np.savetxt(data_out, met_new, fmt=numformat, delimiter=' ', header=header, comments='')
-f_handle = file(data_out, 'a')
-endoffile = [-9, -9]
-np.savetxt(f_handle, endoffile, fmt='%2d')
-f_handle.close()
+    lines = lin[index + 1].split()
+    loop_out = lines[0]
+    index += 1
 
 
 ### This part runs the model ###
@@ -50,7 +61,7 @@ suews_out = wf + fileoutputpath[1:] + filecode + gridcode + '_' + str(YYYY) + '_
 suews_in = np.loadtxt(suews_5min, skiprows=1)
 
 
-## open SUEWS_output.f95 to get format and header of outputfile NOT READY
+## open SUEWS_output.f95 to get format and header of output file NOT READY
 # SiteIn = wf + '/SUEWS_Output.f95'
 # f = open(SiteIn)
 # lin = f.readlines()

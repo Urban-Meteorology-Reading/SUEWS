@@ -27,19 +27,19 @@
 !       DYDX = ON EXIT, ARRAY (LENGTH NE) OF VALUES OF DERIVATIVES
 !	IMPLICIT real*8 (A-H,O-Z)
 	implicit none
-    integer::ns,nsteps, nj,n,neqn
+        integer::ns,nsteps, nj,n,neqn
 	real(kind(1D0)), dimension (neqn):: y
 	real(kind(1D0)), dimension (21):: dydx,arg
 	real(kind(1D0)), dimension (21,5):: rk
 	real(kind(1D0)), dimension (4):: coef
-    real (kind(1D0)):: XA,XB,step,X,xx
+        real (kind(1D0)):: XA,XB,step,X,xx
    
 	coef(1)=1.0
 	coef(2)=0.5
 	coef(3)=0.5
 	coef(4)=1.0
 !	print*,"rk1: ",xa,xb,y
-	STEP = (XB-XA)/NSTEPS 
+	STEP = (XB-XA)/NSTEPS
 
 	DO NS = 1,NSTEPS
 	   DO  NJ = 1,nEqn
@@ -52,6 +52,7 @@
 	      elseIF (N.GT.1)then
 		  XX = X + COEF(N)*STEP
 	      endif
+              
 	      DO NJ = 1,nEqn
 		     ARG(NJ) = Y(NJ) + COEF(N)*RK(NJ,N)
 	      enddo
@@ -65,7 +66,7 @@
          
 	   DO  NJ = 1,nEqn
 	      DO  N = 1,4
-		  		Y(NJ) = Y(NJ) + RK(NJ,N+1)/(6*COEF(N))
+		  Y(NJ) = Y(NJ) + RK(NJ,N+1)/(6*COEF(N))
 	      enddo
 	   enddo
 	enddo
@@ -90,10 +91,11 @@
     use time
     USE CBL_MODULE
     use defaultnotUsed
-    use mod_grav	 
-	implicit none
+    use mod_grav	
+    
+    implicit none
     real(kind(1D0)), dimension(neqn)::dyds,y1
-	real(kind(1d0)) :: zero=0.0
+    real(kind(1d0)) :: zero=0.0
     real(kind(1d0)) :: h1,t_K,q_kgkg,c,cp,ws,s
     real(kind(1D0)):: delt_K,delq_kgkg,delc
     real(kind(1D0)):: gamtv_Km,deltv_K,ftv_Kms
@@ -101,7 +103,7 @@
     real(kind(1D0)):: dhds,dtds,dqds,dcds
     real(kind(1D0)):: conk,conn,cona,conc,cont
 
-!	print*,"diff: timestamp:",s
+!    print*,"diff: timestamp:",s
 !    pause
 	h1     = y1(1)!m
 	t_K    = y1(2)!K
@@ -136,20 +138,19 @@
 !       EntrainmentType=2: Driedonks 1981 (as in McN and S 1986 eq 13)
 	   if (deltv_K.le.0.01) then 
               dhds = ftva_Kms/(h1*gamtv_Km)        
-              
-	      call errorHint(30,"subroutine diff [CBL: Deltv_K<0.01 EntrainmentType=1], deltv_K,delt_K,",deltv_K,delt_K,notUsedI)
-          call errorHint(30,"subroutine diff [CBL: Deltv_K<0.01 EntrainmentType=1], tm_K,TPP_K,y1",tm_K,TPP_K, notUsedI)
+              call errorHint(30,"subroutine diff [CBL: Deltv_K<0.01 EntrainmentType=1], deltv_K,delt_K,",deltv_K,delt_K,notUsedI)
+              call errorHint(30,"subroutine diff [CBL: Deltv_K<0.01 EntrainmentType=1], tm_K,TPP_K,y1",tm_K,TPP_K, notUsedI)
          ! call errorHint(31,"subroutine diff [CBL: Deltv_K<0.01 EntrainmentType=1], y1",real(y1(1),kind(1d0)),notUsed,notUsedI)
 	   else
               delb = grav*deltv_K/tm_K
               conc = 0.2
               cona = 5.0
-              dhds = (conc*ws**3 + cona*cbld(7)**3)/(h1*delb)
+              dhds = (conc*ws**3 + cona*cbldata(8)**3)/(h1*delb)
 	   end if                          
    
 	else if (EntrainmentType.eq.4) then
 !       EntrainmentType=3: Tennekes 1973 (as in R 1991 eqs 3,4)
-       alpha3=0.7
+        alpha3=0.7
 	   if (deltv_K.le.0.01) then 
 	      dhds = ftva_Kms/(h1*gamtv_Km)
 	      call ErrorHint(31, 'subroutine difflfnout: [CBL: deltv_K<0.01 EntrainmentType=4],deltv_K',&
@@ -165,7 +166,7 @@
 	   conn = 1.33
 	   conk = 0.18
 	   cont = 0.80
-	   qs3 = ws**3 + (conn*cbld(7))**3
+	   qs3 = ws**3 + (conn*cbldata(8))**3
 	   qs2 = qs3**(0.6666666667) 
 	   
 	   if (deltv_K.le.0.01) then 
@@ -194,7 +195,6 @@
 	dyds(3) = dqds
 	dyds(4) = dcds
     
-
  	return
 	end subroutine diff
 

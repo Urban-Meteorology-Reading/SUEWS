@@ -554,7 +554,8 @@
                           FileChoices,&     !Run characteristics file name
                           FileMet,&         !Meteorological forcing file name
                           FileDaily,&       !Daily State output file name
-                          SOLWEIGpoiOut     !SOLWEIG poi file name
+                          SOLWEIGpoiOut,&   !SOLWEIG poi file name
+                          BLout             !CLB output file name
                                                  
     ! ---- Model options set in RunControl --------------------------------------------------------
     integer:: AnthropHeatChoice,&    !QF in met file (0); Loridan et al. 2010 (1); Jarvi et al. 2011 (2)
@@ -720,8 +721,7 @@ MODULE cbl_MODULE
     character (len=200), dimension(366)::FileSonde=""
     character (len=200)::InitialDataFileName    
     real(kind(1D0)):: wsb       ! subsidence velocity    
-    real(kind(1d0)),dimension(1,1:10):: cbldata
-    real(kind(1d0)),dimension(1:10)::cbld
+    real(kind(1d0)),dimension(1:10):: cbldata
     real(kind(1d0)),dimension(:,:),allocatable::IniCBLdata
     
   !Parameters in CBL code         

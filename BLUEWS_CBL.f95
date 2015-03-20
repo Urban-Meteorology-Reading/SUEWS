@@ -19,48 +19,60 @@ subroutine CBL(ifirst,iMB)
     real(Kind(1d0))::qh_use,qe_use,tm_K_zm,qm_gkg_zm
     real(Kind(1d0))::Temp_C1,avrh1,es_hPa1   
     real(Kind(1d0))::secs0,secs1,Lv
-    integer::i,j,idoy,ifirst,iMB
+    integer::idoy,ifirst,iMB,startflag
     real(Kind(1d0)), parameter::pi=3.141592653589793d+0,d2r=pi/180.
 
-    !Skip first loop and unspecified days
-    !if(ifirst==1 .or. CBLday(id)==0) then   
+    
+    !Skip first loop and unspecified days 
     if((ifirst==1 .and. iMB==1) .or. CBLday(id)==0) then   !HCW modified condition to check for first timestep of the model run
         iCBLcount=iCBLcount+1
         dataOutBL(iCBLcount,1:22,iMB)=(/real(iy,8),real(id,8),real(it,8),real(imin,8),dectime,(NAN,is=6,22)/)                 
         return
     elseif(avkdn<5)then
-        call CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,iMb)
+        call CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,iMb)
         return
     endif
-   
+
+    if(startflag==0)then !write down initial values in previous time step
+        dataOutBL(iCBLcount,1:22,iMB)=(/real(iy,8),real(id,8),real(it,8),real(imin,8),dectime,blh_m,tm_K,qm_kgkg*1000,&
+        tp_K,qp_kgkg*1000,(NAN,is=11,20),gamt_Km,gamq_kgkgm/)
+        startflag=1
+    endif
+    
+    !Heat flux choices           
+    if(Qh_choice==1) then   !from SUEWS
+        qh_use=qh
+        qe_use=qeph
+    elseif(qh_choice==2)then !from LUMPS
+        qh_use=H_mod
+        qe_use=E_mod
+    elseif(qh_choice==3)then  !from OBS
+        if(qh_obs<-900.or.qe_obs<-900)then  ! observed data has a problem
+            call ErrorHint(22,'Problem in observed Qh/Qe_value',qh_obs,qe_obs,qh_choice)
+        endif
+        qh_use=qh_obs
+        qe_use=qe_obs
+    endif
+
     !-------Main loop of CBL calculation--------------------------------------
     !-------------------------------------------------------------------------
 
-    cbldata(1,1)=float(it)+float(imin)/60.
-    cbldata(1,2)=qh_use
-    cbldata(1,3)=qe_use
-    cbldata(1,4)=avdens
-    cbldata(1,5)=lv_J_kg
-    cbldata(1,6)=avcp
-    cbldata(1,7)=avu1
-    cbldata(1,8)=ustar
-    cbldata(1,9)=Press_hPa
-    cbldata(1,10)=psyh
+    cbldata(1)=float(it)+float(imin)/60.
+    cbldata(2)=qh_use
+    cbldata(3)=qe_use
+    cbldata(4)=avdens
+    cbldata(5)=lv_J_kg
+    cbldata(6)=avcp
+    cbldata(7)=avu1
+    cbldata(8)=ustar
+    cbldata(9)=Press_hPa
+    cbldata(10)=psyh
 
-    !Unit of calculation time is decimal hour
-    cbld(1)=cbldata(1,1)
-
-    secs0=cbld(1)*3600.
+    secs0=cbldata(1)*3600.
     secs1=secs0+float(tstep) ! time in seconds
-
-    do j=2,10
-       cbld(j)=cbldata(1,j)
-    enddo 
-
     ! Kinematic fluxes   
-    fhbl_Kms    = cbld(2)/ (cbld(4)*cbld(6))  !qh_use/(avdens*avcp)      ! units: degK * m/s 
-    febl_kgkgms = cbld(3)/ (cbld(4)*cbld(5))  !qe_use/(avdens*lv_J_kg)   ! units: kg/kg * m/s 
-
+    fhbl_Kms    = cbldata(2)/ (cbldata(4)*cbldata(6))  !qh_use/(avdens*avcp)      ! units: degK * m/s 
+    febl_kgkgms = cbldata(3)/ (cbldata(4)*cbldata(5))  !qe_use/(avdens*lv_J_kg)   ! units: kg/kg * m/s 
     if(CO2_included==1)then
         fcbl = 0!fc(i)/(rmco2/volm)      ! units: mol/mol * m/s
     else
@@ -81,7 +93,7 @@ subroutine CBL(ifirst,iMB)
     y(4)=cm
 
 !++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    call rkutta(neqn,secs0,secs1,y,t_interval/tstep)
+    call rkutta(neqn,secs0,secs1,y,1)
 !++++++++++++++++++++++++++++++++++++++++++++++++++++++    
     blh_m   =y(1)
     tm_K    =y(2)  ! potential temperature, units: deg C 
@@ -97,8 +109,8 @@ subroutine CBL(ifirst,iMB)
             tp_K = tm_K
     endif
 
-!		th = tm_K - (grav/cbld(5))*blh_m			 ! actual temp just below z=h
-!		dh = qsatf(th,cbld(8)) - qm_kgkg           ! deficit just below z=h
+!		th = tm_K - (grav/cbldata(5))*blh_m			 ! actual temp just below z=h
+!		dh = qsatf(th,cbldata(8)) - qm_kgkg           ! deficit just below z=h
 
     tp_C=tp_K-C2K      
     tm_C=tm_K-C2K
@@ -108,7 +120,6 @@ subroutine CBL(ifirst,iMB)
     !deltv = (tp_K - tm_K) + 0.61*tm_k*(qp_kgkg - qm_kgkg)  ! pot virtual temp
 
     qm_gkg=qm_kgkg*1000 !humidities: kg/kg -> g/kg
-
     
     !Output time correction
     idoy=id 
@@ -118,36 +129,36 @@ subroutine CBL(ifirst,iMB)
     
     if((qh_choice==1).or.(qh_choice==2))then !BLUEWS or BLUMPS
         !Stability correction
-        !tm_K_zm=tm_K+cbld(10)*cbld(2)/(k*cbld(8)*cbld(6)*cbld(4))
-        Temp_C=tm_K/((1000/cbld(9))**(gas_ct_dry/cbld(6)))-C2K 
-        es_hPa=sat_vap_press(Temp_C,cbld(9),1)           
+        !tm_K_zm=tm_K+cbldata(10)*cbldata(2)/(k*cbldata(8)*cbldata(6)*cbldata(4))
+        Temp_C=tm_K/((1000/cbldata(9))**(gas_ct_dry/cbldata(6)))-C2K 
+        es_hPa=sat_vap_press(Temp_C,cbldata(9),1)           
         lv=(2500.25-2.365*Temp_C)*1000
-        !qm_gkg_zm=qm_gkg+cbld(10)*cbld(3)/(k*cbld(8)*cbld(4)*lv)
-        avrh=100*((qm_gkg*cbld(9)/(622+qm_gkg))/es_hPa) !check pressure
+        !qm_gkg_zm=qm_gkg+cbldata(10)*cbldata(3)/(k*cbldata(8)*cbldata(4)*lv)
+        avrh=100*((qm_gkg*cbldata(9)/(622+qm_gkg))/es_hPa) !check pressure
         if(avrh>100)then
-            call errorHint(34,'subroutine CBL dectime, relative humidity',idoy+cbld(1)/24.0,avrh,100)
+            call errorHint(34,'subroutine CBL dectime, relative humidity',idoy+cbldata(1)/24.0,avrh,100)
             avrh=100     
         endif
         iCBLcount=iCBLcount+1
         dataOutBL(iCBLcount,1:22,iMB)=(/real(iy,8),real(id,8),real(it,8),real(imin,8),dectime,blh_m,tm_K,qm_kgkg*1000,&
         tp_K,qp_kgkg*1000,&
-        Temp_C,avrh,cbld(2),cbld(3),cbld(9),cbld(7),cbld(8),cbld(4),cbld(5),cbld(6),&
+        Temp_C,avrh,cbldata(2),cbldata(3),cbldata(9),cbldata(7),cbldata(8),cbldata(4),cbldata(5),cbldata(6),&
         gamt_Km,gamq_kgkgm/) 
     elseif(qh_choice==3)then ! CBL
-        !tm_K_zm=tm_K+cbld(10)*cbld(2)/(k*cbld(8)*cbld(6)*cbld(4))
-        Temp_C1=tm_K/((1000/cbld(9))**(gas_ct_dry/cbld(6)))-C2K   
-        es_hPa1=sat_vap_press(Temp_C1,cbld(9),1)
+        !tm_K_zm=tm_K+cbldata(10)*cbldata(2)/(k*cbldata(8)*cbldata(6)*cbldata(4))
+        Temp_C1=tm_K/((1000/cbldata(9))**(gas_ct_dry/cbldata(6)))-C2K   
+        es_hPa1=sat_vap_press(Temp_C1,cbldata(9),1)
         lv=(2500.25-2.365*Temp_C1)*1000
-        !qm_gkg_zm=qm_gkg+cbld(10)*cbld(3)/(k*cbld(8)*cbld(4)*lv)
-        avrh1=100*((qm_gkg*cbld(8)/(622+qm_gkg))/es_hPa1) !check pressure
+        !qm_gkg_zm=qm_gkg+cbldata(10)*cbldata(3)/(k*cbldata(8)*cbldata(4)*lv)
+        avrh1=100*((qm_gkg*cbldata(8)/(622+qm_gkg))/es_hPa1) !check pressure
         if(avrh1>100)then
-            call errorHint(34,'subroutine CBL dectime, relative humidity',idoy+cbld(1)/24.0,avrh,100)
+            call errorHint(34,'subroutine CBL dectime, relative humidity',idoy+cbldata(1)/24.0,avrh,100)
             avrh1=100     
         endif
         iCBLcount=iCBLcount+1
         dataOutBL(iCBLcount,1:22,iMB)=(/real(iy,8),real(id,8),real(it,8),real(imin,8),dectime,blh_m,tm_K,qm_kgkg*1000,&
         tp_K,qp_kgkg*1000,&
-        Temp_C1,avrh1,cbld(2),cbld(3),cbld(9),cbld(7),cbld(8),cbld(4),cbld(5),cbld(6),&
+        Temp_C1,avrh1,cbldata(2),cbldata(3),cbldata(9),cbldata(7),cbldata(8),cbldata(4),cbldata(5),cbldata(6),&
         gamt_Km,gamq_kgkgm/)
     endif
 
@@ -197,7 +208,7 @@ Subroutine CBL_ReadInputData
             open(52,file=trim(FileInputPath)//trim(InitialDataFileName),status='old', err=25)
             read(52,*)
             do i=1,nlineInData
-              read(52,*)IniCBLdata(i,1:8)          
+              read(52,*)IniCBLdata(i,1:8)
             enddo
             close(52)
 	endif
@@ -217,7 +228,7 @@ end subroutine CBL_ReadInputData
 
 !----------------------------------------------------------------------
 !-----------------------------------------------------------------------
-Subroutine CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,iMB)
+Subroutine CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,iMB)
   
     use mod_z     
     use mod_k     
@@ -234,7 +245,7 @@ Subroutine CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,iMB)
     
     real(Kind(1d0))::qh_use,qe_use,tm_K_zm,qm_gkg_zm
     real(Kind(1d0))::qsatf,sat_vap_press,lv
-    integer::i,nLineDay,iMB
+    integer::i,nLineDay,iMB,startflag
     
     !Heat flux choices           
     if(Qh_choice==1) then   !from SUEWS
@@ -258,8 +269,9 @@ Subroutine CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,iMB)
     
     nLineDay=0
     do i=1,nlineInData
-        if (int(IniCBLdata(i,1))==id)exit
+        if (int(IniCBLdata(i,1))<=id)then
         nLineDay=nLineDay+1
+        endif
     enddo
     
     if(InitialData_use==2) then
@@ -321,6 +333,7 @@ Subroutine CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,iMB)
 !    if((CBLuse==2).and.(zenith_deg>=90))then
 !    blh_m=188
 !    endif
+    startflag=0
 
     
 end subroutine CBL_initial

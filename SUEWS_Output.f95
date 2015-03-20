@@ -20,6 +20,8 @@
   use defaultNotUsed
   use initial
   use solweig_module
+  use cbl_module
+  
 
   IMPLICIT NONE
 
@@ -36,6 +38,7 @@
   rawpath=trim(FileOutputPath)//trim(FileCode)//trim(adjustl(grstr2))//'_'//trim(adjustl(yrstr2))
   FileOut=trim(rawpath)//'_'//trim(adjustl(str2))//'.txt'
   SOLWEIGpoiOut=trim(rawpath)//'_SOLWEIGpoiOut.txt'
+  BLOut=trim(rawpath)//'_BL.txt'
   
   !================OPEN OUTPUT FILE AND PRINT HEADER================
 
@@ -91,6 +94,17 @@
              '   Tmrt       I0       CI        gvf      shadow    svf    svfbuveg    Ta    Tg')
   endif
   
+     !BL ouputfile
+    if (CBLuse>=1)then
+        open(53,file=BLOut,status='unknown')
+	write(53, 102)
+102  	format('iy  id   it imin dectime         z            theta          q',&
+               '               theta+          q+              Temp_C          rh',&
+               '              QH_use          QE_use          Press_hPa       avu1',&
+               '            ustar           avdens          lv_J_kg         avcp',&
+               '            gamt            gamq') 
+    endif
+  
  !================ACTUAL DATA WRITING================
   if (SOLWEIGpoi_out==1) then
       do i=1,SolweigCount-1
@@ -103,6 +117,12 @@
                          dataOut(i,5:ncolumnsDataOut,Gridiv)
                                               
   enddo
+  
+if(CBLuse>=1) then
+    do i=1,iCBLcount
+        write(53,305)(int(dataOutBL(i,is,Gridiv)),is=1,4),(dataOutBL(i,is,Gridiv),is=5,22) 
+    enddo  
+endif 
   
   !================WRITING FORMAT================
   ! Main output file at model timestep
@@ -134,13 +154,12 @@
   ! LastCol  = [22,23,  43,44,45,46,47,48,49,50,  51,52,53,54,55,56,57,  58,  64,65,66,  70]                         
 
   304 format(1(i3,1X),4(f8.4,1X),23(f9.3,1X))   !Solweig output
-  !305 format((i3,1X),(f5.2,1X),(f8.4,1X),14(f15.7,1x),3(f15.7,1X))   !CBL output
-
+  305 format((i4,1X),3(i3,1X),(f8.4,1X),17(f15.7,1x))                              !CBL output
 
   !================CLOSE OUTPUTFILE================
   close (lfnoutC)
   close (9)
-
+  close (53)
   return
 
   !Error commands

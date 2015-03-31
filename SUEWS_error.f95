@@ -309,7 +309,7 @@
     !Opening problems.txt file: First option is selected if the file is opened for the first time
     !Second option for later points
     if (errorChoice==0) then
-        open(500,file='problems.txt',status='old')
+        open(500,file='problems.txt')
         write(*,*) 'See problems.txt for possible issues in the run.'
         errorChoice=1
     else

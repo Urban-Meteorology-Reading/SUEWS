@@ -1749,7 +1749,7 @@
 
    integer::lunit,i,iyy,RunNumber!,NSHcounter
    real (kind(1d0)),dimension(24)::MetArray
-   real(kind(1d0)):: imin_prev, tstep_met   !For checks on temporal resolution of met data
+   real(kind(1d0)):: imin_prev, ih_prev, iday_prev, tstep_met   !For checks on temporal resolution of met data
 
    !---------------------------------------------------------------
 
@@ -1778,10 +1778,13 @@
       ! Check timestamp of met data file matches TSTEP specified in RunControl
       if(i==1) then
          imin_prev = MetArray(4)
+         ih_prev   = MetArray(3)
+         iday_prev   = MetArray(2)
       elseif(i==2) then
-         tstep_met = (MetArray(4)-imin_prev)*60   !tstep in seconds
-         if(tstep_met.ne.tstep_real) then
-            call ErrorHint(39,'TSTEP in RunControl does not match TSTEP of met data.',real(tstep,kind(1d0)),tstep_met,notUsedI)        
+         tstep_met = ((MetArray(4)+60*MetArray(3)) - (imin_prev+60*ih_prev))*60   !tstep in seconds
+         if(tstep_met.ne.tstep_real.and.MetArray(2)==iday_prev) then
+            call ErrorHint(39,'TSTEP in RunControl does not match TSTEP of met data (DOY).',real(tstep,kind(1d0)),tstep_met,&
+                           int(MetArray(2)))        
          endif    
       endif   
         

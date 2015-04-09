@@ -173,7 +173,7 @@
     v1 = .true.  !2 real
  elseif(errh==39) then
     text1 = 'Different value of TSTEP needed (300 s recommended). Resolution of met data must match TSTEP set in RunControl.'
-    v2 = .true.  !2 real
+    v4 = .true.  !2 real, 1 int
  elseif(errh==40) then
     text1='SOLWEIG file problem - opening'
     v8=.true.

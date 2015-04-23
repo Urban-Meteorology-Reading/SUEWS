@@ -1623,6 +1623,8 @@
 !-------------------------------------------------------------------------
  subroutine NextInitial(GridName,year_int)
  ! Modified by HCW 21 Nov 2014
+ ! Last day of year is not anymore the number of days on that year, but rather
+ ! id == 1. Thus nofDaysThisYear was changed to 1. LJ 9/4/2015
  !------------------------------------------------------------------------
   use allocateArray 
   use ColNamesInputFiles
@@ -1643,7 +1645,7 @@
 
   year=year_int   !HCW added 21 Nov 2014
 
-  if (id==nofDaysThisYear) then 
+  if (id==1) then  !nofDaysThisYear changed to 1
      year_int2=int(year+1)
      write(year_txt2,'(I4)')year_int2
      open(57,File=trim(FileInputPath)//trim("InitialConditions")//trim(GridName)//'.nml',err=200)
@@ -1657,15 +1659,15 @@
   write(57,*)'&InitialConditions'
   write(57,*)'DaysSinceRain=',int(HDD(id,6))
    
-  ! If last time of day, then DailyState variables will have been updated so can write out arrays for id rather than id-1
-  if(it==23 .and. imin == (nsh_real-1)/nsh_real*60) then  !!LastTimeofday
-     id=id+1  
-  endif
-   
-  write(57,*)'Temp_C0=',HDD(id-1,3)
-  write(57,*)'ID_Prev=',id-1
-  write(57,*)'GDD_1_0=',GDD(id-1,1)
-  write(57,*)'GDD_2_0=',GDD(id-1,2)
+  !! If last time of day, then DailyState variables will have been updated so can write out arrays for id rather than id-1
+  !if(it==23 .and. imin == (nsh_real-1)/nsh_real*60) then  !!LastTimeofday
+  !   id=id+1
+  !endif
+
+  write(57,*)'Temp_C0=',HDD(nofDaysThisYear,3)
+  write(57,*)'ID_Prev=',nofDaysThisYear
+  write(57,*)'GDD_1_0=',GDD(nofDaysThisYear,1)
+  write(57,*)'GDD_2_0=',GDD(nofDaysThisYear,2)
   write(57,*)'PavedState=',State(PavSurf)
   write(57,*)'BldgsState=',State(BldgSurf)
   write(57,*)'EveTrState=',State(ConifSurf)
@@ -1673,9 +1675,9 @@
   write(57,*)'GrassState=',State(GrassSurf)
   write(57,*)'BSoilState=',State(BSoilSurf)
   write(57,*)'WaterState=',State(WaterSurf)
-  write(57,*)'LAIinitialEveTr=',lai(id-1,ivConif)         
-  write(57,*)'LAIinitialDecTr=',lai(id-1,ivDecid)
-  write(57,*)'LAIinitialGrass=',lai(id-1,ivGrass)
+  write(57,*)'LAIinitialEveTr=',lai(nofDaysThisYear,ivConif)
+  write(57,*)'LAIinitialDecTr=',lai(nofDaysThisYear,ivDecid)
+  write(57,*)'LAIinitialGrass=',lai(nofDaysThisYear,ivGrass)
   write(57,*)'porosity0=',porosity(id)
   write(57,*)'DecidCap0=',decidCap(id)
   write(57,*)'albDec0=',AlbDec(id)

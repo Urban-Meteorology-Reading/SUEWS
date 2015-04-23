@@ -239,7 +239,7 @@
                     FileCodeX    =trim(FileCode)//trim(adjustl(grid_txt))//'_'//trim(year_txt)
                     FileCodeXNext=trim(FileCode)//trim(adjustl(grid_txt))//'_'//trim(year_txtNext)
                     call NextInitial(FileCodeXNext,year_int)
-	         endif
+	             endif
               endif
            
               GridCounter = GridCounter+1   !Increase GridCounter by 1 for next grid
@@ -262,6 +262,10 @@
        deallocate(MetForcingData)
        deallocate(ModelOutputData)
        deallocate(dataOut)
+       deallocate(TstepProfiles)
+       deallocate(AHProf_tstep)
+       deallocate(WUProfM_tstep)
+       deallocate(WUProfA_tstep)
        ! ----------------------------------------------------------------------
 
     ENDDO  !end loop over years

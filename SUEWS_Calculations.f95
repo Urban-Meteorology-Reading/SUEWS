@@ -2,6 +2,8 @@
 !Made by LJ and HW Oct 2014
 !Gives in the grid ID (Gridiv) and number of line in the met forcing data to be analyzed (ir)
 !Last modification
+! HCW 27 Apr 2015
+! Correction to tot_chang_per_tstep calculation (water balance should now close)
 ! HCW 16 Feb 2015
 ! Updated water balance calculations
 ! Corrected area-averaged calculations (soil moisture, drain, two versions of state with/out water)
@@ -439,8 +441,8 @@
  ! Soil stores can change after horizontal water movements
  ! Calculate total change in surface and soil state
  tot_chang_per_tstep = surf_chang_per_tstep   !Change in surface state
- do is=1,nsurf   !No soil for water surface so change for water surface will always be zero
-    tot_chang_per_tstep = tot_chang_per_tstep + ((SoilMoist(is)-SoilMoistOld(is)))   !Add change in soil state
+ do is=1,(nsurf-1)   !No soil for water surface (so change in soil moisture is zero)
+    tot_chang_per_tstep = tot_chang_per_tstep + ((SoilMoist(is)-SoilMoistOld(is))*sfr(is))   !Add change in soil state
  enddo
  
  !=====================================================================

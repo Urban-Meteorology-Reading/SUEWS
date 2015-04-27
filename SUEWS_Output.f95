@@ -1,6 +1,8 @@
 !In this subroutine the output files will be opened and the output matrices will be printed out.
 !
 !Last change:
+! HCW 27 Apr 2015
+! Increased output resolution of water balance components (N.B. model time steps < 5 min may require higher precision)
 ! LJ in 13 April 2014
 ! FL in 10 June 2014
 ! HCW 18 Nov 2014
@@ -130,9 +132,9 @@ endif
   ! 301_Format           
   301 format((i4,1X),3(i3,1X),(f8.4,1X),&
              5(f9.4,1X),7(f9.4,1X),&
-             4(f10.5,1X),&
-             1(f10.5,1X),3(f10.5,1X),&
-             6(f10.5,1X),&
+             4(f10.6,1X),&
+             1(f10.5,1X),3(f10.6,1X),&
+             6(f10.6,1X),&
              2(f9.3,1X),4(f9.4,1X),&
              3(f10.5,1X),(g14.7,1X),(f10.5,1X),&
              2(f10.4,1X),6(f10.5,1X),7(f10.4,1X),&

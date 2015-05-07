@@ -1,4 +1,4 @@
-subroutine SurfaceResistance(id,it)
+ subroutine SurfaceResistance(id,it)
 !Last modified by LJ in 24 April 2013
 !Added impact of snow fraction in LAI and in soil moisture deficit
 ! HCW 31/07/2014 Modified condition on g6 part to select meas/mod smd

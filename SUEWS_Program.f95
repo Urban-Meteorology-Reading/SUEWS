@@ -30,12 +30,12 @@
     
     IMPLICIT NONE
 
-    character(len=4)::  year_txt,&	!Year as a text string
-    			year_txtNext	!Following year as a text string (used for NextInitial)
-    character(len=20):: FileCodeX,&	!Current file code
-    			FileCodeXNext	!File code for the following year  
-    character(len=20):: grid_txt,&	!Grid number as a text string (from FirstGrid to LastGrid)
-                        tstep_txt       !Model timestep (in minutes) as a text string
+    character(len=4)::year_txt,&	!Year as a text string
+    			      year_txtNext	!Following year as a text string (used for NextInitial)
+    character(len=20)::FileCodeX,&	!Current file code
+    			       FileCodeXNext	!File code for the following year
+    character(len=20)::grid_txt,&	!Grid number as a text string (from FirstGrid to LastGrid)
+                       tstep_txt       !Model timestep (in minutes) as a text string
     
     integer:: nlinesLimit   !Max number of lines that can be read in one go for each grid
                                
@@ -43,7 +43,7 @@
     		 iv,&	   ! Block number (from 1 to ReadBlocksMetData)
     		 ir,irMax,& ! Row number within each block (from 1 to irMax)
     		 rr,& 	   ! Row of SiteSelect corresponding to current year and grid
-                 year_int   ! Year as an integer (from SiteSelect rather than met forcing file)
+             year_int   ! Year as an integer (from SiteSelect rather than met forcing file)
     
     logical:: PrintPlace=.false.   !Prints row, block, and grid number to screen if TRUE
     		     

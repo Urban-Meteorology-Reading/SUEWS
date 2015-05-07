@@ -786,7 +786,7 @@ MODULE cbl_MODULE
                        qn1_nosnow,&       !Same for the snow free surface
                        RadMeltFact,&      !Radiation melt factor
                        SnowLimBuild,&     !Snow removal limits for roofs in mm)
-		       SnowLimPaved,&     !Snow removal limits for paved surfaces in mm)
+		               SnowLimPaved,&     !Snow removal limits for paved surfaces in mm)
                        swe,&			  !Weighted snow water equivalent (in mm)
                        tau_a,&            !Time constans related to albedo change
                        tau_f,&
@@ -896,7 +896,8 @@ MODULE cbl_MODULE
                      Ea_hPa,&      !Water vapour pressure in hPa 
                      Es_hPa,&      !Saturation vapour pressure in hPa   
                      lv_J_kg,&     !Latent heat of vaporization in [J kg-1]
-                     tlv,&         !Latent heat of vaporization per timestep [J kg-1 s-1] (tlv=lv_J_kg/tstep_real)
+                     tlv,&         !Latent heat of vaporization per timestep 
+                                   ![J kg-1 s-1] (tlv=lv_J_kg/tstep_real)
                      psyc_hPa,&    !Psychometric constant in hPa
                      psycIce_hPa,& !Psychometric constant in hPa for snow
                      s_Pa,&        !Vapour pressure versus temperature slope in Pa
@@ -996,8 +997,8 @@ MODULE cbl_MODULE
                      dI_dt,&               !Water flow between two stores
                      dr_per_interval,&     !Drainage per interval
                      ev_per_interval,&     !Evaporation per interval
-		     surf_chang_per_tstep,&     !Change in surface state per timestep [mm] (for whole surface) 
-                     tot_chang_per_tstep,&     !Change in surface and soilstate per timestep [mm] (for whole surface) 
+                     surf_chang_per_tstep,& !Change in surface state per timestep [mm] (for whole surface)
+                     tot_chang_per_tstep,&  !Change in surface and soilstate per timestep [mm] (for whole surface) 
                      NWstate_per_tstep,&     !State per timestep [mm] (for whole surface, excluding water body) 
                      state_per_tstep,&     !State per timestep [mm] (for whole surface) 
                      drain_per_tstep,&     !Drainage per timestep [mm] (for whole surface, excluding water body) 
@@ -1005,8 +1006,7 @@ MODULE cbl_MODULE
                      runoffSoil_per_tstep,& !Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
                      ev_per_tstep,&     !Evaporation per timestep [mm] (for whole surface) 
                      qe_per_tstep,&     !QE [W m-2] (for whole surface)
-                     evap_5min,&           !Evaporation per 5 minute
-                     p_mm,&                !Inputs to surface water balance                     
+                     p_mm,&                !Inputs to surface water balance
                      pin,&                 !Rain per time interval
                      planF,&               !Areally weighted frontal area fraction
                      rb,&                  !Boundary layer resistance
@@ -1075,8 +1075,8 @@ MODULE cbl_MODULE
                      Faut,&           !Fraction of irrigated area using automatic irrigation
                      int_wu,&         !Internal water use for the model timestep [mm] (over whole study area)
                      IrrFracConif,&	!Fraction of evergreen trees which are irrigated
-		     IrrFracDecid,&	!Fraction of deciduous trees which are irrigated
-		     IrrFracGrass,&	!Fraction of grass which is irrigated
+                     IrrFracDecid,&	!Fraction of deciduous trees which are irrigated
+                     IrrFracGrass,&	!Fraction of grass which is irrigated
                      InternalWaterUse_h !Internal water use [mm h-1]
   
  ! 7 - number of days in week                   

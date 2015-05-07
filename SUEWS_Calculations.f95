@@ -37,7 +37,6 @@
 
   integer :: Gridiv,ir,i,ih,iMB
   logical:: debug=.false.
-  !real(kind(1d0)),DIMENSION(4)::GridFromFrac !Not maybe needed in the future
   real(kind(1d0))::idectime
   real(kind(1d0)):: SnowDepletionCurve
   real(kind(1d0))::lai_wt
@@ -49,10 +48,7 @@
   !Translate all data to the variables used in the model calculations
   call SUEWS_Translate(Gridiv,ir,iMB)
   call RoughnessParameters ! Added by HCW 11 Nov 2014
-    
-  !if(ir==1) write(*,*) 'Now running DOY ',id,' of year',iy,'...'
-   
- 
+
 !=============Get data ready for the qs calculation====================
  if(NetRadiationChoice==0) then !Radiative components are provided as forcing
    !avkdn=NAN                  !Needed for resistances for SUEWS.
@@ -65,11 +61,11 @@
    tsurf_ind=NAN
    qn1_ind=NAN
    Fcld=NAN
-  endif
+ endif
 
-  if(ldown_option==1) then
-    Fcld=NAN
-  endif
+ if(ldown_option==1) then
+   Fcld=NAN
+ endif
 !=====================================================================
  ! Initialisation for OAF's water bucket scheme
  ! LUMPS only (Loridan et al. (2012))
@@ -79,16 +75,13 @@
 
 !=====================================================================
  
- !INITIALIZE VARIABLE FOR THE LOOP
+ !Initialize variables calculated at each 5-min timestep
  runoffAGveg=0
  runoffAGimpervious=0
  runoffWaterBody=0
  runoffSoil_per_tstep=0
- 
  runoffSoil_per_interval=0
- 
  chSnow_per_interval=0
- 
  mwh = 0       !Initialize snow melt and heat related to snowmelt
  fwh = 0
  Qm = 0        !Heat related to melting/freezing
@@ -117,8 +110,7 @@
  call DailyState(Gridiv)
 
  if(LAICalcYes==0)then
-   ! check -- this is going to be a problem as it is not for each vegetation class
-   lai(id-1,:)=lai_obs
+   lai(id-1,:)=lai_obs ! check -- this is going to be a problem as it is not for each vegetation class
  endif
 
  !Calculation of density and other water related parameters
@@ -184,7 +176,6 @@
  endif
 
  ! ===================ANTHROPOGENIC HEAT FLUX================================
-
  ih=it-DLS
  if(ih<0) ih=23
  
@@ -231,9 +222,9 @@
    ! If snow on ground, no irrigation, so veg_fr same in each case
    !New fraction of vegetation.
    !IF(veg_type==1)THEN         ! area vegetated
-      veg_fr=sfr(ConifSurf)*(1-snowFrac(ConifSurf))+sfr(DecidSurf)*(1-snowFrac(DecidSurf))+&
-                 sfr(GrassSurf)*(1-snowFrac(GrassSurf))+sfr(BSoilSurf)*(1-snowFrac(BSoilSurf))+&
-                 sfr(WaterSurf)*(1-snowFrac(WaterSurf))
+   veg_fr = sfr(ConifSurf)*(1-snowFrac(ConifSurf))+sfr(DecidSurf)*(1-snowFrac(DecidSurf))+&
+            sfr(GrassSurf)*(1-snowFrac(GrassSurf))+sfr(BSoilSurf)*(1-snowFrac(BSoilSurf))+&
+            sfr(WaterSurf)*(1-snowFrac(WaterSurf))
 
    !ELSEIF(veg_type==2)THEN     ! area irrigated
    !   !!!veg_fr=sfr(GrassISurf)*(1-snowFrac(GrassUSurf))
@@ -283,22 +274,18 @@
  endif
 
  call SurfaceResistance(id,it)   !qsc and surface resistance out
-
  call BoundaryLayerResistance
 
 
- sae=s_hPa*(qn1_SF+qf-qs)    !s_haPa - slope of svp vs t curve
- !qn1 changed to qn1_SF, lj in May 2013
+ sae=s_hPa*(qn1_SF+qf-qs)    !s_haPa - slope of svp vs t curve. qn1 changed to qn1_SF, lj in May 2013
  vdrc=vpd_hPa*avdens*avcp
  sp=s_hPa/psyc_hPa
  numPM=sae+vdrc/ra
 
  !write(*,*) numPM, sae, vdrc/ra, s_hPA+psyc_hPa, NumPM/(s_hPA+psyc_hPa)
-  
-  !#######End of water vapour calculations############################
 
  !=====================================================================
- !==================== Water balance calculations =====================
+ !========= Water balance calculations ================================
  ! Needs to run at small timesteps (i.e. minutes)
  ! Previously, v2014b switched to 60/NSH min intervals here
  ! Now whole model runs at a resolution of tstep
@@ -307,15 +294,11 @@
  qe=0
  ev=0           
  ev_snow=0
- SurplusEvap=0  
-
+ SurplusEvap=0
  evap=0
- 
  chang=0
- 
  runoff=0
  runoffSoil=0
- 
  surplusWaterBody=0    
  
  ! Added by HCW 13 Feb 2015
@@ -328,11 +311,9 @@
  NWstate_per_tstep=0
  runoff_per_tstep=0
  
- evap_5min=0   !!Remove once snow subroutines updated
- 
  ! Retain previous surface state and soil moisture state
- stateOld=state           !State of each surface [mm] for the previous timestep
- soilmoistOld=soilmoist   !Soil moisture of each surface [mm] for the previous timestep
+ stateOld = state           !State of each surface [mm] for the previous timestep
+ soilmoistOld = soilmoist   !Soil moisture of each surface [mm] for the previous timestep
   
  !============= Grid-to-grid runoff =============
  ! Calculate additional water coming from other grids 
@@ -343,18 +324,20 @@
  AdditionalWater=addPipes+addImpervious+addVeg+addWaterBody  ![mm]
  
  ! Initialise runoff in pipes
- runoffPipes=addPipes   !Water flowing in pipes from other grids
+ runoffPipes=addPipes   !Water flowing in pipes from other grids. No need for scaling??
  !! CHECK p_i
- runoff_per_interval=addPipes
+ runoff_per_interval=addPipes !pipe plor added to total runoff.
   
  !================== Drainage ===================
  ! Calculate drainage for each soil subsurface (excluding water body)
  do is=1,nsurf-1
-    call Drainage(surf(6,is),surf(2,is),surf(3,is),surf(4,is))   !HCW added and changed to surf(6,is) here 20 Feb 2015
+    call Drainage(surf(6,is),surf(2,is),surf(3,is),surf(4,is))
+    !HCW added and changed to surf(6,is) here 20 Feb 2015
+
     drain_per_tstep=drain_per_tstep+(drain(is)*sfr(is)/NonWaterFraction)   !No water body included
  enddo
- ! Set drainage from water body to zero
- drain(WaterSurf)=0  
+
+ drain(WaterSurf) = 0  ! Set drainage from water body to zero
  
  ! Distribute water within grid, according to WithinGridWaterDist matrix (Cols 1-7)
  call ReDistributeWater   !Calculates AddWater(is)
@@ -366,12 +349,12 @@
     else
        call Evap_SUEWS   !Calculates ev [mm]             
        call soilstore    !Surface water balance and soil store updates (can modify ev, updates state)
-       !Store ev for each surface 
-       evap(is) = ev     
-       !write(*,*) is,' ',' ', ev*tlv
+
+       evap(is) = ev  !Store ev for each surface
        
        ! Sum evaporation from different surfaces to find total evaporation [mm]
        ev_per_tstep=ev_per_tstep+evap(is)*sfr(is)
+
        ! Sum change from different surfaces to find total change to surface state
        surf_chang_per_tstep=surf_chang_per_tstep+(state(is)-stateOld(is))*sfr(is)
        ! Sum runoff from different surfaces to find total runoff
@@ -510,22 +493,22 @@
  !====================== Write out files ==============================
  !Define the overall output matrix to be printed out step by step
  dataOut(ir,1:ncolumnsDataOut,Gridiv)=(/real(iy,kind(1D0)),real(id,kind(1D0)),real(it,kind(1D0)),real(imin,kind(1D0)),dectime,&   !5
-                           avkdn,kup,ldown,lup,tsurf,qn1,h_mod,e_mod,qs,qf,qh,qeOut,&                                       !17
-                           precip,ext_wu,ev_per_tstep,drain_per_tstep,&                                                     !21
-                           state_per_tstep,NWstate_per_tstep,surf_chang_per_tstep,tot_chang_per_tstep,&                     !25
-                           runoff_per_tstep,runoffSoil_per_tstep,runoffPipes,runoffAGimpervious,runoffAGveg,runoffWaterBody,&  !31
-                           AdditionalWater,FlowChange/nsh_real,int_wu,wu_EveTr,wu_DecTr,wu_Grass,&                          !37
-                           ra,ResistSurf,ustar,l_mod,Fcld,&                                                                 !42
-                           soilstate,smd,(smd_nsurf(is),is=1,nsurf-1),(state(is),is=1,nsurf),&                              !57
-                           lai_wt,&                                                                                         !58
-                           qn1_SF,qn1_S,Qm,QmFreez,QmRain,swe,mwh,MwStore,(SnowRemoval(is),is=1,2),chSnow_per_interval,&    !69                       
-                           !kup_ind(1:nsurf),lup_ind(1:nsurf),Tsurf_ind(1:nsurf),qn1_ind(1:nsurf),&                         !97
-                           !SnowPack(1:nsurf),mw_ind(1:nsurf),Qm_melt(1:nsurf),&                                            !118
-                           !Qm_rain(1:nsurf),Qm_freezState(1:nsurf),snowFrac(1:(nsurf-1)),                                  !138
-                           alb_snow/)  !70   !,&                                                                            !139
-                           !rainOnSnow(1:nsurf),&                                                                            !146
-                           !qn1_ind_snow(1:nsurf),kup_ind_snow(1:nsurf),freezMelt(1:nsurf),MeltWaterStore(1:nsurf),&         !174
-                           !densSnow(1:nsurf),snowDepth(1:nsurf),Tsurf_ind_snow(1:nsurf)/)                                   !195
+        avkdn,kup,ldown,lup,tsurf,qn1,h_mod,e_mod,qs,qf,qh,qeOut,&                                       !17
+        precip,ext_wu,ev_per_tstep,drain_per_tstep,&                                                     !21
+        state_per_tstep,NWstate_per_tstep,surf_chang_per_tstep,tot_chang_per_tstep,&                     !25
+        runoff_per_tstep,runoffSoil_per_tstep,runoffPipes,runoffAGimpervious,runoffAGveg,runoffWaterBody,&  !31
+        AdditionalWater,FlowChange/nsh_real,int_wu,wu_EveTr,wu_DecTr,wu_Grass,&                          !37
+        ra,ResistSurf,ustar,l_mod,Fcld,&                                                                 !42
+        soilstate,smd,(smd_nsurf(is),is=1,nsurf-1),(state(is),is=1,nsurf),&                              !57
+        lai_wt,&                                                                                         !58
+        qn1_SF,qn1_S,Qm,QmFreez,QmRain,swe,mwh,MwStore,(SnowRemoval(is),is=1,2),chSnow_per_interval,&    !69
+        !kup_ind(1:nsurf),lup_ind(1:nsurf),Tsurf_ind(1:nsurf),qn1_ind(1:nsurf),&                         !97
+        !SnowPack(1:nsurf),mw_ind(1:nsurf),Qm_melt(1:nsurf),&                                            !118
+        !Qm_rain(1:nsurf),Qm_freezState(1:nsurf),snowFrac(1:(nsurf-1)),                                  !138
+        alb_snow/)  !70   !,&                                                                            !139
+        !rainOnSnow(1:nsurf),&                                                                            !146
+        !qn1_ind_snow(1:nsurf),kup_ind_snow(1:nsurf),freezMelt(1:nsurf),MeltWaterStore(1:nsurf),&         !174
+        !densSnow(1:nsurf),snowDepth(1:nsurf),Tsurf_ind_snow(1:nsurf)/)                                   !195
 
   
   !Calculate new snow fraction used in the next timestep if snowUse==1

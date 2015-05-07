@@ -7,7 +7,7 @@
 ! To Do:
 !	- Add functionality for water on paved surfaces (street cleaning, fountains)
 !===================================================================================
-subroutine WaterUse
+ subroutine WaterUse
   
   use allocateArray
   use data_in
@@ -66,6 +66,7 @@ subroutine WaterUse
      ! Account for Daylight saving
      ih=it-DLS
      if (ih<0) ih=23
+
      ! Weekday or weekend profile 	 
      iu=1     !Set to 1=weekday
      if(DayofWeek(id,1)==1.or.DayofWeek(id,1)==7) then  
@@ -91,7 +92,7 @@ subroutine WaterUse
      wu_DecTr = wu_DecTr + (WuFr*WUProfM_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WU_Day(id-1,6)) !Manual deciduous trees
      wu_Grass = wu_Grass + (WuFr*WUProfM_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WU_Day(id-1,9)) !Manual grass
 
-     ! Added HCW 12 Feb 2015
+     ! Added HCW 12 Feb 2015.
      wu_EveTr=wu_EveTr*IrrFracConif	!Water use for EveTr [mm]
      wu_DecTr=wu_DecTr*IrrFracDecid	!Water use for DecTr [mm]
      wu_Grass=wu_Grass*IrrFracGrass	!Water use for Grass [mm]

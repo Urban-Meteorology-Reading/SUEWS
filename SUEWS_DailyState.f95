@@ -47,10 +47,10 @@
   integer:: Gridiv
   integer:: gamma1,gamma2  !Switch for heating and cooling degree days
   integer:: iv,&           !Loop over vegetation types
-  	    jj,&           !Loop over previous 5 days
-  	    j,&
-  	    calc,&         !Water use calculation is done when calc = 1
-  	    wd,&           !Number of weekday (Sun=1,...Sat=7)
+  	        jj,&           !Loop over previous 5 days
+  	        j,&
+  	        calc,&         !Water use calculation is done when calc = 1
+  	        wd,&           !Number of weekday (Sun=1,...Sat=7)
             mb,&           !Months
             seas,&         !Season (summer=1, winter=2)
             date,&         !Day
@@ -120,10 +120,9 @@
   ! 	 4 ------------------------------------!   !5-day running mean  
   HDD(id,5)=HDD(id,5) + Precip                     !Daily precip total  
   ! 	 6 ------------------------------------!   !Days since rain
-    
-  ! Calculation of snow albedo and density from previous timestep (delta t = 1 h)
-  !! This needs checking (LJ to do)!!
-  call SnowUpdate
+
+  ! Update snow density and albedo
+  if (snowUse==1) call SnowUpdate(Temp_C)
 
   ! ================================================================================
   ! This next part occurs only on the first or last timestep of each day
@@ -136,7 +135,7 @@
 
      dayofWeek(id,1)=wd      !Day of week
      dayofWeek(id,2)=mb      !Month
-     dayofweek(id,3)=seas    !Season     
+     dayofweek(id,3)=seas    !Season
 
   ! On last timestep, perform the daily calculations -------------------------------
   ! Daily values not correct until end of each day, so main program uses day before
@@ -182,30 +181,37 @@
               ! Model daily water use based on HDD(id,6)(days since rain) and HDD(id,3)(average temp)
               ! WU_Day is the amount of water [mm] per day, applied to each of the irrigated areas
               ! N.B. These are the same for each vegetation type at the moment
+
               ! ---- Automatic irrigation (evergreen trees) ----
-	      WU_day(id,2) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*DayWatPer(wd) 
-	      if (WU_Day(id,2)<0) WU_Day(id,2)=0   !If modelled WU is negative -> 0
-	      ! ---- Manual irrigation (evergreen trees) ----
-	      WU_day(id,3) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*DayWatPer(wd)
-	      if (WU_Day(id,3)<0) WU_Day(id,3)=0   !If modelled WU is negative -> 0
-	      ! ---- Total evergreen trees water use (automatic + manual) ----
+	          WU_day(id,2) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*DayWatPer(wd)
+	          if (WU_Day(id,2)<0) WU_Day(id,2)=0   !If modelled WU is negative -> 0
+
+              ! ---- Manual irrigation (evergreen trees) ----
+	          WU_day(id,3) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*DayWatPer(wd)
+	          if (WU_Day(id,3)<0) WU_Day(id,3)=0   !If modelled WU is negative -> 0
+
+	          ! ---- Total evergreen trees water use (automatic + manual) ----
               WU_Day(id,1)=(WU_day(id,2)+WU_day(id,3))
                             
               ! ---- Automatic irrigation (deciduous trees) ----
-	      WU_day(id,5) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*DayWatPer(wd) 
-	      if (WU_Day(id,5)<0) WU_Day(id,5)=0   !If modelled WU is negative -> 0
-	      ! ---- Manual irrigation (deciduous trees) ----
-	      WU_day(id,6) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*DayWatPer(wd)
-	      if (WU_Day(id,6)<0) WU_Day(id,6)=0   !If modelled WU is negative -> 0
-	      ! ---- Total deciduous trees water use (automatic + manual) ----
+	          WU_day(id,5) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*DayWatPer(wd)
+	          if (WU_Day(id,5)<0) WU_Day(id,5)=0   !If modelled WU is negative -> 0
+
+              ! ---- Manual irrigation (deciduous trees) ----
+	          WU_day(id,6) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*DayWatPer(wd)
+	          if (WU_Day(id,6)<0) WU_Day(id,6)=0   !If modelled WU is negative -> 0
+
+              ! ---- Total deciduous trees water use (automatic + manual) ----
               WU_Day(id,4)=(WU_day(id,5)+WU_day(id,6))
                             
               ! ---- Automatic irrigation (grass) ----
               WU_day(id,8) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*DayWatPer(wd) 
               if (WU_Day(id,8)<0) WU_Day(id,8)=0   !If modelled WU is negative -> 0
+
               ! ---- Manual irrigation (grass) ----
               WU_day(id,9) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*DayWatPer(wd)
               if (WU_Day(id,9)<0) WU_Day(id,9)=0   !If modelled WU is negative -> 0
+
               ! ---- Total grass water use (automatic + manual) ----      
               WU_Day(id,7)=(WU_day(id,8)+WU_day(id,9))
 
@@ -217,7 +223,7 @@
               WU_Day(id,5)=0
               WU_Day(id,6)=0
               WU_Day(id,7)=0
-	      WU_Day(id,8)=0
+	          WU_Day(id,8)=0
               WU_Day(id,9)=0
            endif
         endif

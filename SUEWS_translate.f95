@@ -752,7 +752,7 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
 !Last modified: HCW 28 Nov 2014
 ! To Do:
 !===================================================================== 
-subroutine SUEWS_TranslateBack(Gridiv,ir,irMax)
+ subroutine SUEWS_TranslateBack(Gridiv,ir,irMax)
 
   use Initial
   use allocateArray   

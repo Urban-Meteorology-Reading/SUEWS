@@ -14,22 +14,23 @@
    integer, parameter:: MaxLinesMet=50000        !Max no. lines to read in one go (for all grids, ie MaxLinesMet/NumberOfGrids each)
    
    ! ---- Set number of columns in input files ----------------------------------------------------
-   integer, parameter:: ncolumnsSiteSelect=80           !SUEWS_SiteSelect.txt
-   integer, parameter:: ncolumnsNonVeg=16               !SUEWS_NonVeg.txt
-   integer, parameter:: ncolumnsVeg=27                  !SUEWS_Veg.txt
-   integer, parameter:: ncolumnsWater=13                !SUEWS_Water.txt
-   integer, parameter:: ncolumnsSnow=20                 !SUEWS_Snow.txt
-   integer, parameter:: ncolumnsSoil=9                  !SUEWS_Soil.txt
-   integer, parameter:: ncolumnsConductance=12          !SUEWS_Conductance.txt
-   integer, parameter:: ncolumnsOHMCoefficients=4 	!SUEWS_OHMCoefficients.txt
-   integer, parameter:: ncolumnsAnthropogenicHeat=11 	!SUEWS_AnthropogenicHeat.txt
-   integer, parameter:: ncolumnsIrrigation=25		!SUEWS_Irrigation.txt
-   integer, parameter:: ncolumnsProfiles=25 		!SUEWS_Profiles.txt
-   integer, parameter:: ncolumnsWGWaterDist=10 		!SUEWS_WithinGridWaterDist.txt
-   integer, parameter:: ncolumnsMetForcingData=24	!Meteorological forcing file (_data.txt)
+   integer, parameter:: ncolumnsSiteSelect=80        !SUEWS_SiteSelect.txt
+   integer, parameter:: ncolumnsNonVeg=16            !SUEWS_NonVeg.txt
+   integer, parameter:: ncolumnsVeg=27               !SUEWS_Veg.txt
+   integer, parameter:: ncolumnsWater=13             !SUEWS_Water.txt
+   integer, parameter:: ncolumnsSnow=20              !SUEWS_Snow.txt
+   integer, parameter:: ncolumnsSoil=9               !SUEWS_Soil.txt
+   integer, parameter:: ncolumnsConductance=12       !SUEWS_Conductance.txt
+   integer, parameter:: ncolumnsOHMCoefficients=4 	 !SUEWS_OHMCoefficients.txt
+   integer, parameter:: ncolumnsAnthropogenicHeat=11 !SUEWS_AnthropogenicHeat.txt
+   integer, parameter:: ncolumnsIrrigation=25		 !SUEWS_Irrigation.txt
+   integer, parameter:: ncolumnsProfiles=25 		 !SUEWS_Profiles.txt
+   integer, parameter:: ncolumnsWGWaterDist=10 		 !SUEWS_WithinGridWaterDist.txt
+   integer, parameter:: ncolumnsMetForcingData=24	 !Meteorological forcing file (_data.txt)
    
    ! ---- Set number of columns in output files ---------------------------------------------------
-   integer, parameter:: ncolumnsDataOut=70		!Main output file (_5.txt). DataOut created in SUEWS_Calculations.f95
+   integer, parameter:: ncolumnsDataOut=70,&		!Main output file (_5.txt). DataOut created in SUEWS_Calculations.f95
+                        ncolumnsDataOutSnow=102
   
    ! ---- Define input file headers ---------------------------------------------------------------              
    character(len=20),dimension(ncolumnsSiteSelect)::        HeaderSiteSelect_File          !Header for SiteSelect.txt                
@@ -79,6 +80,7 @@
    real(kind(1d0)),dimension(:,:,:),allocatable:: dataOut              !Main data output matrix
    real(kind(1d0)),dimension(:,:,:),allocatable:: dataOutBL            !CBL output matrix
    real(kind(1d0)),dimension(:,:,:),allocatable:: dataOutSOL           !SOLWEIG POI output matrix
+   real(kind(1d0)),dimension(:,:,:),allocatable:: dataOutSnow          !Main data output matrix
    
    ! ---- Define array for hourly profiles interpolated to tstep ----------------------------------
    real(kind(1d0)),dimension(:,:,:),allocatable:: TstepProfiles        
@@ -248,12 +250,12 @@
                                                  
    ! ---- Snow-related variables ------------------------------------------------------------------
    real(kind(1d0)),dimension(nsurf):: changSnow,&       !Change in snowpack in mm
-   				      maxSnowVol,&      !! Maximum snow volume							  
-				      MeltWaterStore,&  !!Liquid water in the snow pack of ith surface
+   				                      maxSnowVol,&      !! Maximum snow volume
+				                      MeltWaterStore,&  !!Liquid water in the snow pack of ith surface
                                       ev_snow,&        	!!Evaporation from snowpack in mm
                                       mw_ind,&         	!Melt water from individual surface in mm
                                       mw_indDay,&      	!!Melt water per day from each surface type in m3
-			              runoffSnow,&     	!!Runoff from snowpack in mm and in m3
+			                          runoffSnow,&     	!!Runoff from snowpack in mm and in m3
                                       densSnow,&        !Density of snow
                                       SnowDensInit,&
                                       snowFrac,&       	!!Surface fraction of snow cover
@@ -484,9 +486,8 @@
    integer,dimension(nsurf):: cMOD_SnowWaterState =(/(cc, cc=ccMOD+ 2*nsurf+1,ccMOD+ 2*nsurf+nsurf, 1)/)  !Liquid (melted) water
    integer,dimension(nsurf):: cMOD_SnowPack       =(/(cc, cc=ccMOD+ 3*nsurf+1,ccMOD+ 3*nsurf+nsurf, 1)/)  !SWE
    integer,dimension(nsurf):: cMOD_SnowFrac       =(/(cc, cc=ccMOD+ 4*nsurf+1,ccMOD+ 4*nsurf+nsurf, 1)/)  !Snow fraction
-   !integer,dimension(nsurf):: cMOD_SnowDens      =(/(cc, cc=ccMOD+ 5*nsurf+1,ccMOD+ 5*nsurf+nsurf, 1)/)  !Snow density
-   !SnowDens in ModelDailyState instead - why??
-   
+   integer,dimension(nsurf):: cMOD_SnowDens       =(/(cc, cc=ccMOD+ 5*nsurf+1,ccMOD+ 5*nsurf+nsurf, 1)/)  !Snow density
+
    !Last column number for ModelOutputData array
    integer,parameter:: MaxNCols_cMOD = ccMOD+ 5*nsurf+nsurf
    !-----------------------------------------------------------------------------------------------

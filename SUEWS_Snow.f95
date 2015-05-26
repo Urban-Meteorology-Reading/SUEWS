@@ -43,9 +43,9 @@
   rainOnSnow = 0
   
   !Initialize mechanical snow removal
-  SnowRemoval(1)=0
-  SnowRemoval(2)=0
-  
+  SnowRemoval(PavSurf)=0
+  SnowRemoval(BldgSurf)=0
+
   !=========================================================================================
   do is=1,nsurf  !Go each surface type through
     if (sfr(is)/=0) then  !If surface type existing,
@@ -53,9 +53,9 @@
 
          SnowDepth(is) = (SnowPack(is)/1000)*waterDens/densSnow(is) !Snow depth in m
 
-         !Calculate meltwater related water flows from hourly degree-day method
-             
-         !Melt equations
+         !Calculate meltwater related water flows with hourly degree-day method.
+
+         !These are for snow melting
          if (Temp_C>=0) then
             if (qn1_ind_snow(is)<0) then
                mw_ind(is) = TempMeltFact*Temp_C  ! (mm C−1 h−1)*(C) = in mm h-1
@@ -68,10 +68,10 @@
             mw_ind(is) = TempMeltFact*Temp_C*AdjMeltFact ! in mm h-1
          endif
 
-         if (mw_ind(is)>SnowPack(is)) mw_ind(is) = SnowPack(is)!Limited by the previous timestep snowpack
-
-         !Get the value in mm/timestep needed for the new model version
+         !Previous equation give the hourly values, divide these with the timestep number 
          mw_ind(is) = mw_ind(is)/nsh_real
+
+         if (mw_ind(is)>SnowPack(is)) mw_ind(is) = SnowPack(is)!Limited by the previous timestep snowpack
 
          !-----------------------------------------------------
          ! Heat consumed to snowmelt/refreezing within Tstep.
@@ -82,7 +82,7 @@
          if (mw_ind(is)<0) then
             
             FreezMelt(is) = -mw_ind(is) !Save this to variable FreezMelt
-            mw_ind(is)=0
+            mw_ind(is) = 0
                 
             !Freezing water cannot exceed meltwater store
             if (FreezMelt(is)>Meltwaterstore(is)) FreezMelt(is) = Meltwaterstore(is)
@@ -91,6 +91,9 @@
             Qm_melt(is) = waterDens*((-FreezMelt(is)/tstep_real)/1000)*(lvS_J_kg-lv_J_kg)
           endif
 
+
+          !write(*,*) is,dectime,SnowPack(is),densSnow(is),mw_ind(is),Qm_melt(is),Meltwaterstore(is)
+          !pause
           !-----------------------------------------------------
           ! If air temperature is above zero, precipitation causes advective heat to the
           ! snowpack. Eq (23) in Sun et al., 1999
@@ -132,6 +135,11 @@
               !Calculate the heat exchange in W m-2
               Qm_freezState(is) = -waterDens*(FreezState(is)/tstep_real/1000)*(lvS_J_kg-lv_J_kg)
 
+              !if (Qm_freezState(is)/=0) then
+              !    write(*,*) is, Qm_freezState(is),FreezState(is),tstep_real,snowFrac(is)
+              !endif
+
+
            !Water surface separately
            else
               !Calculate average value how much water can freeze above the water areas
@@ -165,6 +173,9 @@
         if (Precip>0.and.Tsurf_ind(is)<0) then
          	densSnow(is) = densSnow(is)*snowPack(is)/(snowPack(is)+Precip)+densSnowMin*Precip/(snowPack(is)+Precip)
         endif
+
+        !write(*,*) is,dectime,SnowPack(is),densSnow(is),mw_ind(is)
+        !pause
 
         !Weighted variables for the whole area
         mwh = mwh + mw_ind(is)*sfr(is)*snowFrac(is)        !Snowmelt
@@ -707,20 +718,24 @@
  
   end subroutine snowRem
  
-  !-----------------------------------------------
-  !-----------------------------------------------
-  FUNCTION SnowDepletionCurve(is,swe,sweD,SnowLimPaved,SnowLimBuild) RESULT(asc)
+  !----------------------------------------------------------------------------
+  !----------------------------------------------------------------------------
+  FUNCTION SnowDepletionCurve(is,swe,sweD) RESULT(asc)
   !This function calculates surface coverage of snow according to the
   !depletion curves in Valeo and Ho (2004). Done once per hour.
+  !INPUT: is   Surface type number
+  !       swe  Snow water content
+  !       sweD Limit for
   
    use allocateArray
   
    IMPLICIT  NONE
   
    INTEGER::is
-   REAL (KIND(1d0))::asc,sweD,swe,SnowLimPaved,SnowLimBuild
-  
-   !Impervious surface 
+   REAL (KIND(1d0))::asc,sweD,swe
+
+
+   !Impervious surface
    if (is==PavSurf) then
        
      if (swe<=sweD) then      !Snow water equivalent below threshold

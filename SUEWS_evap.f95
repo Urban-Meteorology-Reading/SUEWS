@@ -77,7 +77,4 @@
      endif   !Rutter/Shuttleworth calculation
   endif   !Wet/dry surface
   
-!write(*,*) is,state(is),W,qe,ev,ResistSurf,rss,RA
-!write(*,*) is,qe
-  
  end subroutine Evap_SUEWS

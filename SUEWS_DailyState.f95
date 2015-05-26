@@ -48,8 +48,7 @@
   integer:: gamma1,gamma2  !Switch for heating and cooling degree days
   integer:: iv,&           !Loop over vegetation types
   	        jj,&           !Loop over previous 5 days
-  	        j,&
-  	        calc,&         !Water use calculation is done when calc = 1
+            calc,&         !Water use calculation is done when calc = 1
   	        wd,&           !Number of weekday (Sun=1,...Sat=7)
             mb,&           !Months
             seas,&         !Season (summer=1, winter=2)
@@ -121,7 +120,7 @@
   HDD(id,5)=HDD(id,5) + Precip                     !Daily precip total  
   ! 	 6 ------------------------------------!   !Days since rain
 
-  ! Update snow density and albedo
+  ! Update snow density, albedo surface fraction
   if (snowUse==1) call SnowUpdate(Temp_C)
 
   ! ================================================================================
@@ -376,15 +375,17 @@
         if (DailyStateFirstOpen(Gridiv)==1) then
            open(60,file=FileDaily)
            write(60,142)
-           142  format('%year id ',&                                                                                    !2
-                       'HDD1_h HDD2_c HDD3_Tmean HDD4_T5d P/day DaysSR ',&                                              !8
-                       'GDD1_g GDD2_s GDD3_Tmin GDD4_Tmax GDD5_DayLHrs ',&                                              !13
-                       'LAI_EveTr LAI_DecTr LAI_Grass ',&                                                               !16
-                       'DecidCap Porosity AlbDec ',&                                                                    !19
-                       'WU_EveTr(1) WU_EveTr(2) WU_EveTr(3) ',&                                                         !22
-                       'WU_DecTr(1) WU_DecTr(2) WU_DecTr(3) ',&                                                         !25    
-                       'WU_Grass(1) WU_Grass(2) WU_Grass(3) ',&                                                         !28
-                       'deltaLAI LAIlumps ')                                                                            !30
+           142  format('%year id ',&                                          !2
+                       'HDD1_h HDD2_c HDD3_Tmean HDD4_T5d P/day DaysSR ',&    !8
+                       'GDD1_g GDD2_s GDD3_Tmin GDD4_Tmax GDD5_DayLHrs ',&    !13
+                       'LAI_EveTr LAI_DecTr LAI_Grass ',&                     !16
+                       'DecidCap Porosity AlbDec ',&                          !19
+                       'WU_EveTr(1) WU_EveTr(2) WU_EveTr(3) ',&               !22
+                       'WU_DecTr(1) WU_DecTr(2) WU_DecTr(3) ',&               !25
+                       'WU_Grass(1) WU_Grass(2) WU_Grass(3) ',&               !28
+                       'deltaLAI LAIlumps AlbSnow dens_snow_pav ',&           !32
+                       'dens_snow_bldg dens_snow_EveTr dens_snow_DecTr',&     !35
+                       'dens_snow_Grass dens_snow_Bares dens_snow_wtr')       !38
                        
            DailyStateFirstOpen(Gridiv)=0
         ! Otherwise open file to append
@@ -394,16 +395,18 @@
         
         ! Write actual data     
         write(60,601) iy,id,&
-                      HDD(id,1:6),GDD(id,1:5),LAI(id,1:nvegsurf),&
+                      HDD(id,1:6),GDD(id,1:5),&
+                      LAI(id,1:nvegsurf),&
                       DecidCap(id),Porosity(id),AlbDec(id),&
                       WU_day(id-1,1:9),&
-                      deltaLAI,VegPhenLumps
+                      deltaLAI,VegPhenLumps,alb_snow,densSnow(1:7)
             
         601 format(2(i4,1X),&
-                   6(f6.1,1X), 5(f6.1,1X), 3(f6.2,1X),&
+                   6(f6.1,1X), 5(f6.1,1X),&
+                   3(f6.2,1X),&
                    3(f6.2,1X),&
                    9(f7.3,1X),&
-                   2(f7.2,1X))
+                   2(f7.2,1X),8(f7.2,1X))
          
         ! Close the daily state file
         close(60)

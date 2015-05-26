@@ -137,6 +137,9 @@
        if (CBLuse >= 1) then
           allocate(dataOutBL(1:ReadlinesMetdata,22,NumberOfGrids))  	                   !CBL output
        endif
+       if (SnowUse == 1) then
+          allocate(dataOutSnow(1:ReadlinesMetdata,ncolumnsDataOutSnow,NumberOfGrids))  	   !Snow output array
+       endif
        
        allocate(TstepProfiles(NumberOfGrids,6,24*NSH))	!Hourly profiles interpolated to model timestep
        allocate(AHProf_tstep(24*NSH,2))			!Anthropogenic heat profiles at model timestep
@@ -262,6 +265,7 @@
        deallocate(MetForcingData)
        deallocate(ModelOutputData)
        deallocate(dataOut)
+       if (SnowUse == 1) deallocate(dataOutSnow)
        deallocate(TstepProfiles)
        deallocate(AHProf_tstep)
        deallocate(WUProfM_tstep)

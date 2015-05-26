@@ -25,7 +25,9 @@
   dens_change=0
   tau_1=24*60*60
 
-  !Calculation of snow albedo by Lemonsu et al. 2010 (org: Verseghy (1991)&Baker et al.(1990))
+  !==========================================================
+  !Calculation of snow albedo by Lemonsu et al. 2010 
+  !(org: Verseghy (1991)&Baker et al.(1990))
 
   if (sum(SnowPack)>0) then !Check if snow on any of the surfaces
 
@@ -43,15 +45,26 @@
      alb_snow = 0
   endif
 
-  !Update snow density
+
+  !Update snow density and snow fraction.
   do is=1,nsurf
-     dens_change = exp(-tau_r*(60*60)/tau_1)
-     if (snowpack(is)>0) densSnow(is) = (densSnow(is)-densSnowMax)*dens_change/NSH_real+densSnowMax
-     if (densSnow(is)>densSnowMax) densSnow(is)=densSnowMax
+
+    !If snowPack existing
+    if (snowPack(is)>0) then
+
+       dens_change = exp(-tau_r*(60*60)/tau_1)
+       !write(*,*) densSnow(is),densSnowMax,dens_change,NSH_real
+       if (snowpack(is)>0) densSnow(is) = (densSnow(is)-densSnowMax)*dens_change+densSnowMax
+       !write(*,*) densSnow(is)
+       if (densSnow(is)>densSnowMax) densSnow(is)=densSnowMax
+
+    else
+       densSnow(is) = 0
+    endif
   enddo
 
+  !write(*,*) densSnow(1)
 
-  
  end subroutine SnowUpdate
 
 !====================================================================================

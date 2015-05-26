@@ -1269,18 +1269,21 @@
   
   IMPLICIT NONE
   
-  character(len=20):: GridName
-  character(len=10):: str2  !Variables related to filepaths 
-  character(len=150):: fileInit
-  character(len=4):: year_txt
-  integer::DaysSinceRain,Gridiv,gamma1,gamma2
-  integer:: wd,seas,date,mb,year_int,switch=0,id_next,calc
+  character(len=20):: GridName    !Name of the evaluated grid
+  character(len=10):: str2        !Variables related to filepaths
+  character(len=150):: fileInit   !Initial conditions filename
+  character(len=4):: year_txt     !year in txt format
+  integer::DaysSinceRain,Gridiv,& !number of days since rain, grid number,
+           gamma1,gamma2          !switches related to cooling and heating degree days
+  integer::wd,seas,date,mb,&      !weekday information, season, date, month
+           year_int,switch=0,&    !year as an integer, switch related to previous day
+           id_next,calc           !next day,counter in irrigation calculations
   
   real (KIND(1d0))::PavedState,BldgsState,EveTrState,DecTrState,GrassState,BSoilState,&
               	    SnowFracPaved,SnowFracBldgs,SnowFracEveTr,SnowFracDecTr,&
-                      SnowFracGrass,SnowFracBSoil,SnowFracWater,&
+                    SnowFracGrass,SnowFracBSoil,SnowFracWater,&
                     SnowDensPaved,SnowDensBldgs,SnowDensEveTr,SnowDensDecTr,&
-                      SnowDensGrass,SnowDensBSoil,SnowDensWater
+                    SnowDensGrass,SnowDensBSoil,SnowDensWater
 
   !-----------------------------------------------------------------------
 
@@ -1422,9 +1425,10 @@
  
   !! Where is this from??   
   IceFrac=0.2   !Estimated fraction of ice. Should be improved in the future
-  
+
   ! ==============================================================
-  ! ============ Save states to ModelOutputData ==================      
+  ! ============ Save states to ModelOutputData ==================    
+
      
   ! -- Initial wetness status of each surface (above ground) --
   ModelOutputData(0,cMOD_State(PavSurf),   Gridiv) = PavedState

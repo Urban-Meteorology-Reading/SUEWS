@@ -369,6 +369,7 @@
        
     endif                  
  enddo  !end loop over surfaces
+
  
  ! Convert evaporation to latent heat flux [W m-2]
  qe_per_tstep=ev_per_tstep*tlv
@@ -502,29 +503,34 @@
         soilstate,smd,(smd_nsurf(is),is=1,nsurf-1),(state(is),is=1,nsurf),&                              !57
         lai_wt,&                                                                                         !58
         qn1_SF,qn1_S,Qm,QmFreez,QmRain,swe,mwh,MwStore,(SnowRemoval(is),is=1,2),chSnow_per_interval,&    !69
-        !kup_ind(1:nsurf),lup_ind(1:nsurf),Tsurf_ind(1:nsurf),qn1_ind(1:nsurf),&                         !97
-        !SnowPack(1:nsurf),mw_ind(1:nsurf),Qm_melt(1:nsurf),&                                            !118
-        !Qm_rain(1:nsurf),Qm_freezState(1:nsurf),snowFrac(1:(nsurf-1)),                                  !138
-        alb_snow/)  !70   !,&                                                                            !139
-        !rainOnSnow(1:nsurf),&                                                                            !146
-        !qn1_ind_snow(1:nsurf),kup_ind_snow(1:nsurf),freezMelt(1:nsurf),MeltWaterStore(1:nsurf),&         !174
-        !densSnow(1:nsurf),snowDepth(1:nsurf),Tsurf_ind_snow(1:nsurf)/)                                   !195
+        alb_snow/)                                                                                       !70
 
-  
-  !Calculate new snow fraction used in the next timestep if snowUse==1
-  !This is done each hour?? Location likely needs to be changes
- 
- if (SnowFractionChoice==2.and.snowUse==1) then
+ if (snowUse==1) then
+    dataOutSnow(ir,1:ncolumnsDataOutSnow,Gridiv)=(/real(iy,kind(1D0)),real(id,kind(1D0)),&               !2
+                real(it,kind(1D0)),real(imin,kind(1D0)),dectime,&                                        !5
+                SnowPack(1:nsurf),mw_ind(1:nsurf),Qm_melt(1:nsurf),&                                     !26
+                Qm_rain(1:nsurf),Qm_freezState(1:nsurf),snowFrac(1:(nsurf-1)),&                          !46
+                rainOnSnow(1:nsurf),&                                                                    !53
+                qn1_ind_snow(1:nsurf),kup_ind_snow(1:nsurf),freezMelt(1:nsurf),&                         !74
+                MeltWaterStore(1:nsurf),densSnow(1:nsurf),&                                              !88
+                snowDepth(1:nsurf),Tsurf_ind_snow(1:nsurf)/)                                             !102
+ endif
+
+ !Calculate new snow fraction used in the next timestep if snowUse==1
+ !Calculated only at end of each hour.
+ if (SnowFractionChoice==2.and.snowUse==1.and.it==23.and.imin==(nsh_real-1)/nsh_real*60) then
     do is=1,nsurf-1
        if (snowPack(is)>0.and.mw_ind(is)>0) then
-          snowFrac(is)=SnowDepletionCurve(is,snowPack(is),snowD(is),SnowLimPaved,SnowLimBuild)
+          !write(*,*) snowPack(is),snowFrac(is),snowD(is)
+          !pause
+          snowFrac(is)=SnowDepletionCurve(is,snowPack(is),snowD(is))
        elseif (snowPack(is)==0) then
           snowFrac(is)=0
        endif
     enddo
- endif      
+ endif
  
- call SUEWS_TranslateBack(Gridiv,ir,irMax) 
+ call SUEWS_TranslateBack(Gridiv,ir,irMax)
 
 ! write(*,*) '------------'
 

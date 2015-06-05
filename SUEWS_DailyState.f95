@@ -4,6 +4,8 @@
 ! Responds to what has happened in the past (temperature, rainfall, etc)
 ! N.B. If changes are made here, may need to update code in SUEWS_Initial accordingly
 !
+! Last modified HCW 05 Jun 2015
+! Bug fix - set all current storage capacities (surf(6,)) to min. value, then set for DecTr
 ! Last modified LJ 11 Mar 2015
 ! Removed switch as no longer necessary
 ! Last modified HCW 06 Mar 2015
@@ -359,6 +361,8 @@
      DecidCap(id)=DecidCap(id-1)-CapChange
      porosity(id)=porosity(id-1)-porChange
      albDec(id)=albDec(id-1)+albChange
+     
+     surf(6,1:nsurf) = surf(1,1:nsurf)  !Set storage capacities for all surface to minimum... then adjust for DecTr
      surf(6,DecidSurf)=DecidCap(id)  !Current storage capacity of deciduous trees        
         
      ! -----------------------------------------------------------------------------

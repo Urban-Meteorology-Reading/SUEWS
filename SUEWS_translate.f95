@@ -134,7 +134,7 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   ! ---- Storage capacities [mm]
   surf(1,1:nsurf) = SurfaceChar(Gridiv,c_StorMin)   ! Minimum	
   surf(5,1:nsurf) = SurfaceChar(Gridiv,c_StorMax)   ! Maximum	
-  !surf(6:) is current storage capacity
+  !surf(6,1:nsurf) !Current storage capacity set to min values (only DecTr changes with time) in DailyState.
   
   ! ---- Limit for state [mm]
   StateLimit(1:nsurf) = SurfaceChar(Gridiv,c_StateLimit)

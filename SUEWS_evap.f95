@@ -8,6 +8,8 @@
 !-See Sect 2.4 of Jarvi et al. (2011) Ja11
 !
 !Last modified:
+!  HCW 11 Jun 2015
+!   Added WetThresh to distinguish wet/partially wet surfaces from the storage capacities used in SUEWS_drain    
 !  HCW 30 Jan 2015
 !   Removed StorCap input because it is provided by module allocateArray
 !   Tidied and commented code
@@ -23,12 +25,12 @@
  IMPLICIT NONE
   
  real(kind(1d0)):: rss,&	!Redefined surface resistance for transition [s m-1]
-  		           rbsg,&	!Boundary-layer resistance x (slope/psychrometric const + 1) [s m-1]
-  		           rsrbsg,&	!rs + rbsg [s m-1]
-  		           W,&		!Depends on the amount of water on the canopy [-]
-  		           r,&
+  		   rbsg,&	!Boundary-layer resistance x (slope/psychrometric const + 1) [s m-1]
+  		   rsrbsg,&	!rs + rbsg [s m-1]
+  		   W,&		!Depends on the amount of water on the canopy [-]
+  		   r,&
                    x
-
+                   
 ! Use Penman-Monteith eqn modified for urban areas (Eq6, Jarvi et al. 2011)
 ! Calculation independent of surface characteristics
 ! Uses value of rs for whole area (calculated based on LAI of veg surfaces in SUEWS_SurfaceResistance)
@@ -51,12 +53,13 @@
         rsrbsg=ResistSurf+rbsg   !rs + rsbg
 
         ! If surface is completely wet, set rs to zero -------------------
-        if(state(is)>=surf(6,is).or.ResistSurf<25) then   !If at storage capacity or rs is small
+        !if(state(is)>=surf(6,is).or.ResistSurf<25) then   !If at storage capacity or rs is small
+        if(state(is)>=WetThresh(is).or.ResistSurf<25) then   !If at storage capacity or rs is small
            W=1                                            !So that rs=0 (Eq7, Jarvi et al. 2011)
         ! If surface is in transition, use rss ---------------------------
         else   !if((state(is)<StorCap).and.(state(is)>0.001).or.(ResistSurf<50)) then
            r=(ResistSurf/ra)*(ra-rb)/rsrbsg
-	       W=(r-1)/(r-(surf(6,is)/state(is)))
+	       W=(r-1)/(r-(WetThresh(is)/state(is)))
         endif
 
         rss=(1/((W/rbsg)+((1-W)/rsrbsg)))-rbsg !Redefined surface resistance for wet

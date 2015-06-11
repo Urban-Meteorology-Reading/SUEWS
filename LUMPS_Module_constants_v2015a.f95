@@ -15,9 +15,9 @@
    
    ! ---- Set number of columns in input files ----------------------------------------------------
    integer, parameter:: ncolumnsSiteSelect=80        !SUEWS_SiteSelect.txt
-   integer, parameter:: ncolumnsNonVeg=16            !SUEWS_NonVeg.txt
-   integer, parameter:: ncolumnsVeg=27               !SUEWS_Veg.txt
-   integer, parameter:: ncolumnsWater=13             !SUEWS_Water.txt
+   integer, parameter:: ncolumnsNonVeg=17            !SUEWS_NonVeg.txt
+   integer, parameter:: ncolumnsVeg=28               !SUEWS_Veg.txt
+   integer, parameter:: ncolumnsWater=14             !SUEWS_Water.txt
    integer, parameter:: ncolumnsSnow=20              !SUEWS_Snow.txt
    integer, parameter:: ncolumnsSoil=9               !SUEWS_Soil.txt
    integer, parameter:: ncolumnsConductance=12       !SUEWS_Conductance.txt
@@ -138,8 +138,9 @@
    !real(kind(1d0)),dimension(nsurf):: stateOut       !Wetness status of each existing surface type [mm]  
    real(kind(1d0)),dimension(nsurf):: stateOld       !Wetness status of each surface type from previous timestep [mm]
    
-   real(kind(1d0)),dimension(nsurf):: StateLimit      !Limit for state of each surface type [mm] (specified in input files)
-   
+   real(kind(1d0)),dimension(nsurf):: WetThresh      !When State > WetThresh, rs=0 limit in SUEWS_evap [mm] (specified in input files)
+   real(kind(1d0)),dimension(nsurf):: StateLimit     !Limit for state of each surface type [mm] (specified in input files)
+      
    ! ---- Soil characteristics specified in input files -------------------------------------------
    real(kind(1d0)),dimension(nsurf):: SatHydraulicConduct !Saturated hydraulic conductivity for each soil subsurface [mm s-1]
    real(kind(1d0)),dimension(nsurf):: SoilDepth           !Depth of sub-surface soil store for each surface [mm]
@@ -306,18 +307,19 @@
    integer,dimension(nsurf):: c_Emis	  =(/(cc, cc=ccEndSI+ 1*nsurf+1,ccEndSI+ 1*nsurf+nsurf, 1)/)  !Emissivity
    integer,dimension(nsurf):: c_StorMin	  =(/(cc, cc=ccEndSI+ 2*nsurf+1,ccEndSI+ 2*nsurf+nsurf, 1)/)  !Min. storage capacity (canopy)
    integer,dimension(nsurf):: c_StorMax	  =(/(cc, cc=ccEndSI+ 3*nsurf+1,ccEndSI+ 3*nsurf+nsurf, 1)/)  !Max. storage capacity (canopy)
-   integer,dimension(nsurf):: c_StateLimit=(/(cc, cc=ccEndSI+ 4*nsurf+1,ccEndSI+ 4*nsurf+nsurf, 1)/)  !Limit for surface state [mm]
-   integer,dimension(nsurf):: c_DrEq	  =(/(cc, cc=ccEndSI+ 5*nsurf+1,ccEndSI+ 5*nsurf+nsurf, 1)/)  !Drainage equation
-   integer,dimension(nsurf):: c_DrCoef1	  =(/(cc, cc=ccEndSI+ 6*nsurf+1,ccEndSI+ 6*nsurf+nsurf, 1)/)  !Drainage coef. 1    
-   integer,dimension(nsurf):: c_DrCoef2   =(/(cc, cc=ccEndSI+ 7*nsurf+1,ccEndSI+ 7*nsurf+nsurf, 1)/)  !Drainage coef. 2
-   integer,dimension(nsurf):: c_SoilTCode =(/(cc, cc=ccEndSI+ 8*nsurf+1,ccEndSI+ 8*nsurf+nsurf, 1)/) !Soil type code
+   integer,dimension(nsurf):: c_WetThresh =(/(cc, cc=ccEndSI+ 4*nsurf+1,ccEndSI+ 4*nsurf+nsurf, 1)/)  !Threshold for wet evaporation [mm]
+   integer,dimension(nsurf):: c_StateLimit=(/(cc, cc=ccEndSI+ 5*nsurf+1,ccEndSI+ 5*nsurf+nsurf, 1)/)  !Limit for surface state [mm]
+   integer,dimension(nsurf):: c_DrEq	  =(/(cc, cc=ccEndSI+ 6*nsurf+1,ccEndSI+ 6*nsurf+nsurf, 1)/)  !Drainage equation
+   integer,dimension(nsurf):: c_DrCoef1	  =(/(cc, cc=ccEndSI+ 7*nsurf+1,ccEndSI+ 7*nsurf+nsurf, 1)/)  !Drainage coef. 1    
+   integer,dimension(nsurf):: c_DrCoef2   =(/(cc, cc=ccEndSI+ 8*nsurf+1,ccEndSI+ 8*nsurf+nsurf, 1)/)  !Drainage coef. 2
+   integer,dimension(nsurf):: c_SoilTCode =(/(cc, cc=ccEndSI+ 9*nsurf+1,ccEndSI+ 9*nsurf+nsurf, 1)/) !Soil type code
    ! N.B. not included in SUEWS_Water.txt
-   integer,dimension(nsurf):: c_SnowLimPat =(/(cc, cc=ccEndSI+ 9*nsurf+1,ccEndSI+ 9*nsurf+nsurf, 1)/) !Snow limit for patchiness
+   integer,dimension(nsurf):: c_SnowLimPat =(/(cc, cc=ccEndSI+10*nsurf+1,ccEndSI+10*nsurf+nsurf, 1)/) !Snow limit for patchiness
    ! N.B. currently only in SUEWS_NonVeg.txt
-   integer,dimension(nsurf):: c_SnowLimRem =(/(cc, cc=ccEndSI+ 10*nsurf+1,ccEndSI+ 10*nsurf+nsurf, 1)/) !Snow limit for removal
+   integer,dimension(nsurf):: c_SnowLimRem =(/(cc, cc=ccEndSI+11*nsurf+1,ccEndSI+11*nsurf+nsurf, 1)/) !Snow limit for removal
    
    ! Find current column number	
-   integer,parameter:: ccEndI = (ccEndSI+10*nsurf+nsurf)
+   integer,parameter:: ccEndI = (ccEndSI+11*nsurf+nsurf)
    
    ! Applicable to vegetated surfaces only
    integer,dimension(NVegSurf):: c_BaseT   =(/(cc, cc=ccEndI+ 0*nvegsurf+1,ccEndI+ 0*nvegsurf+nvegsurf, 1)/) !Base temp. for leaf-on
@@ -1292,17 +1294,18 @@ MODULE cbl_MODULE
    	      ci_Emis         =  3,&
 	      ci_StorMin      =  4,&
 	      ci_StorMax      =  5,&
-	      ci_StateLimit   =  6,&
-              ci_DrEq         =  7,&
-	      ci_DrCoef1      =  8,&
-	      ci_DrCoef2      =  9,&
-	      ci_SoilTCode    = 10,&
-	      ci_SnowLimPat   = 11,&
-              ci_SnowLimRem   = 12,&
-	      ci_OHMCode_SWet = 13,&
-	      ci_OHMCode_SDry = 14,&
-	      ci_OHMCode_WWet = 15,&
-	      ci_OHMCode_WDry = 16              
+	      ci_WetThresh    =  6,&
+              ci_StateLimit   =  7,&
+              ci_DrEq         =  8,&
+	      ci_DrCoef1      =  9,&
+	      ci_DrCoef2      = 10,&
+	      ci_SoilTCode    = 11,&
+	      ci_SnowLimPat   = 12,&
+              ci_SnowLimRem   = 13,&
+	      ci_OHMCode_SWet = 14,&
+	      ci_OHMCode_SDry = 15,&
+	      ci_OHMCode_WWet = 16,&
+	      ci_OHMCode_WDry = 17              
             
    !========== Columns for SUEWS_Veg.txt ============================
    integer :: cp_Code	    =  1,&
@@ -1310,28 +1313,29 @@ MODULE cbl_MODULE
    	      cp_Emis       =  3,&
 	      cp_StorMin    =  4,&
 	      cp_StorMax    =  5,&
-              cp_StateLimit =  6,&
-	      cp_DrEq       =  7,&
-	      cp_DrCoef1    =  8,&
-	      cp_DrCoef2    =  9,&
-	      cp_SoilTCode  = 10,&
-	      cp_SnowLimPat = 11,&
-	      cp_BaseT 	    = 12,&
-	      cp_BaseTe	    = 13,&
-	      cp_GDDFull    = 14,&
-	      cp_SDDFull    = 15,&
-	      cp_LAIMin	    = 16,&
-	      cp_LAIMax	    = 17,&
-	      cp_GsMax	    = 18,&
-	      cp_LAIEq      = 19,&
-	      cp_LeafGP1    = 20,&
-	      cp_LeafGP2    = 21,&
-	      cp_LeafOP1    = 22,&
-	      cp_LeafOP2    = 23,&
-	      cp_OHMCode_SWet = 24,&
-	      cp_OHMCode_SDry = 25,&
-	      cp_OHMCode_WWet = 26,&
-	      cp_OHMCode_WDry = 27	      
+              cp_WetThresh  =  6,&
+              cp_StateLimit =  7,&
+	      cp_DrEq       =  8,&
+	      cp_DrCoef1    =  9,&
+	      cp_DrCoef2    = 10,&
+	      cp_SoilTCode  = 11,&
+	      cp_SnowLimPat = 12,&
+	      cp_BaseT 	    = 13,&
+	      cp_BaseTe	    = 14,&
+	      cp_GDDFull    = 15,&
+	      cp_SDDFull    = 16,&
+	      cp_LAIMin	    = 17,&
+	      cp_LAIMax	    = 18,&
+	      cp_GsMax	    = 19,&
+	      cp_LAIEq      = 20,&
+	      cp_LeafGP1    = 21,&
+	      cp_LeafGP2    = 22,&
+	      cp_LeafOP1    = 23,&
+	      cp_LeafOP2    = 24,&
+	      cp_OHMCode_SWet = 25,&
+	      cp_OHMCode_SDry = 26,&
+	      cp_OHMCode_WWet = 27,&
+	      cp_OHMCode_WDry = 28	      
    
    !========== Columns for SUEWS_Water.txt ===============================
    integer :: cw_Code	    =  1,&
@@ -1339,14 +1343,15 @@ MODULE cbl_MODULE
    	      cw_Emis       =  3,&
 	      cw_StorMin    =  4,&
 	      cw_StorMax    =  5,&
-              cw_StateLimit =  6,&
-	      cw_DrEq       =  7,&
-	      cw_DrCoef1    =  8,&
-	      cw_DrCoef2    =  9,&
-	      cw_OHMCode_SWet = 10,&
-	      cw_OHMCode_SDry = 11,&
-	      cw_OHMCode_WWet = 12,&
-	      cw_OHMCode_WDry = 13
+              cw_WetThresh  =  6,&
+              cw_StateLimit =  7,&
+	      cw_DrEq       =  8,&
+	      cw_DrCoef1    =  9,&
+	      cw_DrCoef2    =  10,&
+	      cw_OHMCode_SWet = 11,&
+	      cw_OHMCode_SDry = 12,&
+	      cw_OHMCode_WWet = 13,&
+	      cw_OHMCode_WDry = 14
 	      
    !========== Columns for SUEWS_Snow.txt ================================	      
    integer :: cs_Code	      =  1,&

@@ -346,7 +346,7 @@
        read(28,*) 	!Skip lines before header
     enddo
     read(28,*) (HeaderOHMCoefficients_File(iv),iv=1,ncolumnsOHMCoefficients) !Get header
-      
+  
     do i=1,nlinesOHMCoefficients
        read(28,*) (OHMCoefficients_Coeff(i,iv),iv=1,ncolumnsOHMCoefficients)
        !write(*,*) (OHMCoefficients_Coeff(i,iv),iv=1,ncolumnsOHMCoefficients)
@@ -629,6 +629,7 @@
    SurfaceChar(gridiv,c_Emis(PavSurf))         = NonVeg_Coeff(iv5,ci_Emis)
    SurfaceChar(gridiv,c_StorMin(PavSurf))      = NonVeg_Coeff(iv5,ci_StorMin)
    SurfaceChar(gridiv,c_StorMax(PavSurf))      = NonVeg_Coeff(iv5,ci_StorMax)
+   SurfaceChar(gridiv,c_WetThresh(PavSurf))   = NonVeg_Coeff(iv5,ci_WetThresh)
    SurfaceChar(gridiv,c_StateLimit(PavSurf))   = NonVeg_Coeff(iv5,ci_StateLimit)
    SurfaceChar(gridiv,c_DrEq(PavSurf)) 	       = NonVeg_Coeff(iv5,ci_DrEq)
    SurfaceChar(gridiv,c_DrCoef1(PavSurf))      = NonVeg_Coeff(iv5,ci_DrCoef1)
@@ -694,6 +695,7 @@
    SurfaceChar(gridiv,c_Emis(BldgSurf))         = NonVeg_Coeff(iv5,ci_Emis)
    SurfaceChar(gridiv,c_StorMin(BldgSurf))      = NonVeg_Coeff(iv5,ci_StorMin)
    SurfaceChar(gridiv,c_StorMax(BldgSurf))      = NonVeg_Coeff(iv5,ci_StorMax)
+   SurfaceChar(gridiv,c_WetThresh(BldgSurf))   = NonVeg_Coeff(iv5,ci_WetThresh)
    SurfaceChar(gridiv,c_StateLimit(BldgSurf))   = NonVeg_Coeff(iv5,ci_StateLimit)
    SurfaceChar(gridiv,c_DrEq(BldgSurf))         = NonVeg_Coeff(iv5,ci_DrEq)
    SurfaceChar(gridiv,c_DrCoef1(BldgSurf))      = NonVeg_Coeff(iv5,ci_DrCoef1)
@@ -759,6 +761,7 @@
    SurfaceChar(gridiv,c_Emis(ConifSurf))       = Veg_Coeff(iv5,cp_Emis)
    SurfaceChar(gridiv,c_StorMin(ConifSurf))    = Veg_Coeff(iv5,cp_StorMin)
    SurfaceChar(gridiv,c_StorMax(ConifSurf))    = Veg_Coeff(iv5,cp_StorMax)
+   SurfaceChar(gridiv,c_WetThresh(ConifSurf)) = Veg_Coeff(iv5,cp_WetThresh)
    SurfaceChar(gridiv,c_StateLimit(ConifSurf)) = Veg_Coeff(iv5,cp_StateLimit)
    SurfaceChar(gridiv,c_DrEq(ConifSurf))       = Veg_Coeff(iv5,cp_DrEq)
    SurfaceChar(gridiv,c_DrCoef1(ConifSurf))    = Veg_Coeff(iv5,cp_DrCoef1)
@@ -837,6 +840,7 @@
    SurfaceChar(gridiv,c_Emis(DecidSurf))       = Veg_Coeff(iv5,cp_Emis)
    SurfaceChar(gridiv,c_StorMin(DecidSurf))    = Veg_Coeff(iv5,cp_StorMin)
    SurfaceChar(gridiv,c_StorMax(DecidSurf))    = Veg_Coeff(iv5,cp_StorMax)
+   SurfaceChar(gridiv,c_WetThresh(DecidSurf)) = Veg_Coeff(iv5,cp_WetThresh)
    SurfaceChar(gridiv,c_StateLimit(DecidSurf)) = Veg_Coeff(iv5,cp_StateLimit)
    SurfaceChar(gridiv,c_DrEq(DecidSurf))       = Veg_Coeff(iv5,cp_DrEq)
    SurfaceChar(gridiv,c_DrCoef1(DecidSurf))    = Veg_Coeff(iv5,cp_DrCoef1)
@@ -915,6 +919,7 @@
    SurfaceChar(gridiv,c_Emis(GrassSurf))       = Veg_Coeff(iv5,cp_Emis)
    SurfaceChar(gridiv,c_StorMin(GrassSurf))    = Veg_Coeff(iv5,cp_StorMin)
    SurfaceChar(gridiv,c_StorMax(GrassSurf))    = Veg_Coeff(iv5,cp_StorMax)
+   SurfaceChar(gridiv,c_WetThresh(GrassSurf)) = Veg_Coeff(iv5,cp_WetThresh)
    SurfaceChar(gridiv,c_StateLimit(GrassSurf)) = Veg_Coeff(iv5,cp_StateLimit)
    SurfaceChar(gridiv,c_DrEq(GrassSurf))       = Veg_Coeff(iv5,cp_DrEq)
    SurfaceChar(gridiv,c_DrCoef1(GrassSurf))    = Veg_Coeff(iv5,cp_DrCoef1)
@@ -993,6 +998,7 @@
    SurfaceChar(gridiv,c_Emis(BSoilSurf))       = NonVeg_Coeff(iv5,ci_Emis)
    SurfaceChar(gridiv,c_StorMin(BSoilSurf))    = NonVeg_Coeff(iv5,ci_StorMin)
    SurfaceChar(gridiv,c_StorMax(BSoilSurf))    = NonVeg_Coeff(iv5,ci_StorMax)
+   SurfaceChar(gridiv,c_WetThresh(BSoilSurf)) = NonVeg_Coeff(iv5,ci_WetThresh)
    SurfaceChar(gridiv,c_StateLimit(BSoilSurf)) = NonVeg_Coeff(iv5,ci_StateLimit)
    SurfaceChar(gridiv,c_DrEq(BSoilSurf))       = NonVeg_Coeff(iv5,ci_DrEq)
    SurfaceChar(gridiv,c_DrCoef1(BSoilSurf))    = NonVeg_Coeff(iv5,ci_DrCoef1)
@@ -1059,6 +1065,7 @@
    SurfaceChar(gridiv,c_Emis(WaterSurf))       = Water_Coeff(iv5,cw_Emis)
    SurfaceChar(gridiv,c_StorMin(WaterSurf))    = Water_Coeff(iv5,cw_StorMin)
    SurfaceChar(gridiv,c_StorMax(WaterSurf))    = Water_Coeff(iv5,cw_StorMax)
+   SurfaceChar(gridiv,c_WetThresh(WaterSurf)) = Water_Coeff(iv5,cw_WetThresh)
    SurfaceChar(gridiv,c_StateLimit(WaterSurf)) = Water_Coeff(iv5,cw_StateLimit)
    SurfaceChar(gridiv,c_DrEq(WaterSurf))       = Water_Coeff(iv5,cw_DrEq)
    SurfaceChar(gridiv,c_DrCoef1(WaterSurf))    = Water_Coeff(iv5,cw_DrCoef1)

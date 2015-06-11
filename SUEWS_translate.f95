@@ -136,6 +136,9 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   surf(5,1:nsurf) = SurfaceChar(Gridiv,c_StorMax)   ! Maximum	
   surf(6,1:nsurf) = surf(1,1:nsurf)  !Set storage capacities for all surface to minimum (DecTr changes with time in Calculations).
   
+  ! ---- Threshold for wet evaporation [mm]
+  WetThresh(1:nsurf) = SurfaceChar(Gridiv,c_WetThresh)
+  
   ! ---- Limit for state [mm]
   StateLimit(1:nsurf) = SurfaceChar(Gridiv,c_StateLimit)
   
@@ -531,6 +534,7 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
      write(12,120) FCskip, FCskip, baseTe(1:nvegsurf),FCskip, FCskip, FCskip, ' BaseTe'   ! 4
      write(12,120) (Surf(1,iv),iv=1,nsurf), FCskip ,'min storage capacity' !5
      write(12,120) (Surf(5,iv),iv=1,nsurf), FCskip ,'max storage capacity'       ! 
+     write(12,'(6g8.2,1f8.2,g8.2,g15.2)') (WetThresh(iv),iv=1,nsurf), FCskip,' WetThreshold' !
      write(12,'(6g8.2,1f8.2,g8.2,g15.2)') (StateLimit(iv),iv=1,nsurf), FCskip,' StateLimit' !
      write(12,120) (Surf(2,iv),iv=1,nsurf), FCskip ,' drain equation' 
      write(12,120) (Surf(3,iv),iv=1,nsurf), FCskip ,' dr coef1'     ! 7    ! 

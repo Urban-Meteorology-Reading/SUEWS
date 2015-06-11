@@ -4,10 +4,9 @@
 ! Responds to what has happened in the past (temperature, rainfall, etc)
 ! N.B. If changes are made here, may need to update code in SUEWS_Initial accordingly
 !
-! Last modified HCW 1 Jun 2015
+! Last modified HCW 11 Jun 2015
 ! Bug fix 05 Jun now fixed in a different way - DecidCap is now treated the same as DecidAlb 
 !  so should cope with multiple grids.
-=======
 ! Last modified HCW 05 Jun 2015
 ! Bug fix - set all current storage capacities (surf(6,)) to min. value, then set for DecTr
 ! Last modified LJ 11 Mar 2015
@@ -364,16 +363,9 @@
      endif        
      DecidCap(id)=DecidCap(id-1)-CapChange
      porosity(id)=porosity(id-1)-porChange
-     albDec(id)=albDec(id-1)+albChange
-<<<<<<< HEAD
-      
-=======
-     
-     surf(6,1:nsurf) = surf(1,1:nsurf)  !Set storage capacities for all surface to minimum... then adjust for DecTr
-     surf(6,DecidSurf)=DecidCap(id)  !Current storage capacity of deciduous trees        
+     albDec(id)=albDec(id-1)+albChange    
         
->>>>>>> 60209c4b354eabf31544f4d96465afdcec1dfd25
-     ! -----------------------------------------------------------------------------
+    ! -----------------------------------------------------------------------------
      
      !--------------------------------------------------------------------------
      !Write out DailyState file (1 row per day)

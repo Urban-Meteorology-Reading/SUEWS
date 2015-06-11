@@ -14,22 +14,23 @@
    integer, parameter:: MaxLinesMet=50000        !Max no. lines to read in one go (for all grids, ie MaxLinesMet/NumberOfGrids each)
    
    ! ---- Set number of columns in input files ----------------------------------------------------
-   integer, parameter:: ncolumnsSiteSelect=80           !SUEWS_SiteSelect.txt
-   integer, parameter:: ncolumnsNonVeg=16               !SUEWS_NonVeg.txt
-   integer, parameter:: ncolumnsVeg=27                  !SUEWS_Veg.txt
-   integer, parameter:: ncolumnsWater=13                !SUEWS_Water.txt
-   integer, parameter:: ncolumnsSnow=20                 !SUEWS_Snow.txt
-   integer, parameter:: ncolumnsSoil=9                  !SUEWS_Soil.txt
-   integer, parameter:: ncolumnsConductance=12          !SUEWS_Conductance.txt
-   integer, parameter:: ncolumnsOHMCoefficients=4 	!SUEWS_OHMCoefficients.txt
-   integer, parameter:: ncolumnsAnthropogenicHeat=11 	!SUEWS_AnthropogenicHeat.txt
-   integer, parameter:: ncolumnsIrrigation=25		!SUEWS_Irrigation.txt
-   integer, parameter:: ncolumnsProfiles=25 		!SUEWS_Profiles.txt
-   integer, parameter:: ncolumnsWGWaterDist=10 		!SUEWS_WithinGridWaterDist.txt
-   integer, parameter:: ncolumnsMetForcingData=24	!Meteorological forcing file (_data.txt)
+   integer, parameter:: ncolumnsSiteSelect=80        !SUEWS_SiteSelect.txt
+   integer, parameter:: ncolumnsNonVeg=16            !SUEWS_NonVeg.txt
+   integer, parameter:: ncolumnsVeg=27               !SUEWS_Veg.txt
+   integer, parameter:: ncolumnsWater=13             !SUEWS_Water.txt
+   integer, parameter:: ncolumnsSnow=20              !SUEWS_Snow.txt
+   integer, parameter:: ncolumnsSoil=9               !SUEWS_Soil.txt
+   integer, parameter:: ncolumnsConductance=12       !SUEWS_Conductance.txt
+   integer, parameter:: ncolumnsOHMCoefficients=4 	 !SUEWS_OHMCoefficients.txt
+   integer, parameter:: ncolumnsAnthropogenicHeat=11 !SUEWS_AnthropogenicHeat.txt
+   integer, parameter:: ncolumnsIrrigation=25		 !SUEWS_Irrigation.txt
+   integer, parameter:: ncolumnsProfiles=25 		 !SUEWS_Profiles.txt
+   integer, parameter:: ncolumnsWGWaterDist=10 		 !SUEWS_WithinGridWaterDist.txt
+   integer, parameter:: ncolumnsMetForcingData=24	 !Meteorological forcing file (_data.txt)
    
    ! ---- Set number of columns in output files ---------------------------------------------------
-   integer, parameter:: ncolumnsDataOut=70		!Main output file (_5.txt). DataOut created in SUEWS_Calculations.f95
+   integer, parameter:: ncolumnsDataOut=70,&		!Main output file (_5.txt). DataOut created in SUEWS_Calculations.f95
+                        ncolumnsDataOutSnow=102
   
    ! ---- Define input file headers ---------------------------------------------------------------              
    character(len=20),dimension(ncolumnsSiteSelect)::        HeaderSiteSelect_File          !Header for SiteSelect.txt                
@@ -79,6 +80,7 @@
    real(kind(1d0)),dimension(:,:,:),allocatable:: dataOut              !Main data output matrix
    real(kind(1d0)),dimension(:,:,:),allocatable:: dataOutBL            !CBL output matrix
    real(kind(1d0)),dimension(:,:,:),allocatable:: dataOutSOL           !SOLWEIG POI output matrix
+   real(kind(1d0)),dimension(:,:,:),allocatable:: dataOutSnow          !Main data output matrix
    
    ! ---- Define array for hourly profiles interpolated to tstep ----------------------------------
    real(kind(1d0)),dimension(:,:,:),allocatable:: TstepProfiles        
@@ -248,12 +250,12 @@
                                                  
    ! ---- Snow-related variables ------------------------------------------------------------------
    real(kind(1d0)),dimension(nsurf):: changSnow,&       !Change in snowpack in mm
-   				      maxSnowVol,&      !! Maximum snow volume							  
-				      MeltWaterStore,&  !!Liquid water in the snow pack of ith surface
+   				                      maxSnowVol,&      !! Maximum snow volume
+				                      MeltWaterStore,&  !!Liquid water in the snow pack of ith surface
                                       ev_snow,&        	!!Evaporation from snowpack in mm
                                       mw_ind,&         	!Melt water from individual surface in mm
                                       mw_indDay,&      	!!Melt water per day from each surface type in m3
-			              runoffSnow,&     	!!Runoff from snowpack in mm and in m3
+			                          runoffSnow,&     	!!Runoff from snowpack in mm and in m3
                                       densSnow,&        !Density of snow
                                       SnowDensInit,&
                                       snowFrac,&       	!!Surface fraction of snow cover
@@ -484,9 +486,8 @@
    integer,dimension(nsurf):: cMOD_SnowWaterState =(/(cc, cc=ccMOD+ 2*nsurf+1,ccMOD+ 2*nsurf+nsurf, 1)/)  !Liquid (melted) water
    integer,dimension(nsurf):: cMOD_SnowPack       =(/(cc, cc=ccMOD+ 3*nsurf+1,ccMOD+ 3*nsurf+nsurf, 1)/)  !SWE
    integer,dimension(nsurf):: cMOD_SnowFrac       =(/(cc, cc=ccMOD+ 4*nsurf+1,ccMOD+ 4*nsurf+nsurf, 1)/)  !Snow fraction
-   !integer,dimension(nsurf):: cMOD_SnowDens      =(/(cc, cc=ccMOD+ 5*nsurf+1,ccMOD+ 5*nsurf+nsurf, 1)/)  !Snow density
-   !SnowDens in ModelDailyState instead - why??
-   
+   integer,dimension(nsurf):: cMOD_SnowDens       =(/(cc, cc=ccMOD+ 5*nsurf+1,ccMOD+ 5*nsurf+nsurf, 1)/)  !Snow density
+
    !Last column number for ModelOutputData array
    integer,parameter:: MaxNCols_cMOD = ccMOD+ 5*nsurf+nsurf
    !-----------------------------------------------------------------------------------------------
@@ -786,7 +787,7 @@ MODULE cbl_MODULE
                        qn1_nosnow,&       !Same for the snow free surface
                        RadMeltFact,&      !Radiation melt factor
                        SnowLimBuild,&     !Snow removal limits for roofs in mm)
-		       SnowLimPaved,&     !Snow removal limits for paved surfaces in mm)
+		               SnowLimPaved,&     !Snow removal limits for paved surfaces in mm)
                        swe,&			  !Weighted snow water equivalent (in mm)
                        tau_a,&            !Time constans related to albedo change
                        tau_f,&
@@ -896,7 +897,8 @@ MODULE cbl_MODULE
                      Ea_hPa,&      !Water vapour pressure in hPa 
                      Es_hPa,&      !Saturation vapour pressure in hPa   
                      lv_J_kg,&     !Latent heat of vaporization in [J kg-1]
-                     tlv,&         !Latent heat of vaporization per timestep [J kg-1 s-1] (tlv=lv_J_kg/tstep_real)
+                     tlv,&         !Latent heat of vaporization per timestep 
+                                   ![J kg-1 s-1] (tlv=lv_J_kg/tstep_real)
                      psyc_hPa,&    !Psychometric constant in hPa
                      psycIce_hPa,& !Psychometric constant in hPa for snow
                      s_Pa,&        !Vapour pressure versus temperature slope in Pa
@@ -996,8 +998,8 @@ MODULE cbl_MODULE
                      dI_dt,&               !Water flow between two stores
                      dr_per_interval,&     !Drainage per interval
                      ev_per_interval,&     !Evaporation per interval
-		     surf_chang_per_tstep,&     !Change in surface state per timestep [mm] (for whole surface) 
-                     tot_chang_per_tstep,&     !Change in surface and soilstate per timestep [mm] (for whole surface) 
+                     surf_chang_per_tstep,& !Change in surface state per timestep [mm] (for whole surface)
+                     tot_chang_per_tstep,&  !Change in surface and soilstate per timestep [mm] (for whole surface) 
                      NWstate_per_tstep,&     !State per timestep [mm] (for whole surface, excluding water body) 
                      state_per_tstep,&     !State per timestep [mm] (for whole surface) 
                      drain_per_tstep,&     !Drainage per timestep [mm] (for whole surface, excluding water body) 
@@ -1005,8 +1007,7 @@ MODULE cbl_MODULE
                      runoffSoil_per_tstep,& !Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
                      ev_per_tstep,&     !Evaporation per timestep [mm] (for whole surface) 
                      qe_per_tstep,&     !QE [W m-2] (for whole surface)
-                     evap_5min,&           !Evaporation per 5 minute
-                     p_mm,&                !Inputs to surface water balance                     
+                     p_mm,&                !Inputs to surface water balance
                      pin,&                 !Rain per time interval
                      planF,&               !Areally weighted frontal area fraction
                      rb,&                  !Boundary layer resistance
@@ -1075,8 +1076,8 @@ MODULE cbl_MODULE
                      Faut,&           !Fraction of irrigated area using automatic irrigation
                      int_wu,&         !Internal water use for the model timestep [mm] (over whole study area)
                      IrrFracConif,&	!Fraction of evergreen trees which are irrigated
-		     IrrFracDecid,&	!Fraction of deciduous trees which are irrigated
-		     IrrFracGrass,&	!Fraction of grass which is irrigated
+                     IrrFracDecid,&	!Fraction of deciduous trees which are irrigated
+                     IrrFracGrass,&	!Fraction of grass which is irrigated
                      InternalWaterUse_h !Internal water use [mm h-1]
   
  ! 7 - number of days in week                   

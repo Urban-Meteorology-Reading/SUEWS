@@ -1,7 +1,10 @@
-subroutine soilstore
+ subroutine soilstore
 !------------------------------------------------------------------------------
 !Calculation of storage change
-!Evaporation is modified using EvapPart 
+!LJ 6 May 2015
+! - Calculations of the piperunoff exceedings moved to separate subroutine updateFlood.
+!   Now also called from snow subroutine
+!Evaporation is modified using EvapPart
 ! - when no water on impervious surfaces, evap occurs above pervious surfaces instead
 !Rewritten by HCW 12 Feb 2015
 ! Old variable 'p' for water input to the surface renamed to 'p_mm'
@@ -246,45 +249,59 @@ subroutine soilstore
   !==================================================================
   !==== RUNOFF ======================================================
  
-  !! Need to consider areas here - SurfaceArea may vary between grids too
-  !! - also implement where water for next surface is calculated (RunoffFromGrid subroutine)
+  ! Need to consider areas here - SurfaceArea may vary between grids too
+  ! - also implement where water for next surface is calculated (RunoffFromGrid subroutine)
+  ! Calculations of the piperunoff exceedensances moved to separate subroutine so that from snow same 
+  ! calculations can be made. LJ in May 2015
    
   if(is<WaterSurf) then   !Not for water body
 
      ! Add runoff to pipes 
      runoffPipes=runoffPipes+(runoff(is)*sfr(is))
-    
-     ! If pipe capacity is full, surface runoff occurs 
-     ! N.B. this will happen each loop (replicates pipes filling up)
-     if(runoffPipes>PipeCapacity) then
-        if(is==PavSurf.or.is==BldgSurf) then
-           if(sfr(WaterSurf)>0.0000001) then
-              ! If there is some water present, the water surface will take some of the flood water (fraction RunoffToWater)
-              ! RunoffToWater is specified in SUEWS_SiteSelect.txt
-   	      runoffAGimpervious=runoffAGimpervious+(runoffPipes-PipeCapacity)*(1-RunoffToWater)
-              surplusWaterBody=surplusWaterBody+(runoffPipes-PipeCapacity)*RunoffToWater
-           else
-              ! Otherwise, all flood water must go to runoff
-              runoffAGimpervious=runoffAGimpervious+(runoffPipes-PipeCapacity)
-           endif
-           runoffPipes=PipeCapacity   !Pipes are at their max capacity
-            							 
-        elseif(is>=ConifSurf.and.is<=BSoilSurf) then
-	   if(sfr(WaterSurf)>0.0000001) then
-	      ! If there is some water present, the water surface will take some of the flood water (fraction RunoffToWater)
-              runoffAGveg=runoffAGveg+(runoffPipes-PipeCapacity)*(1-RunoffToWater)
-              surplusWaterBody=surplusWaterBody+(runoffPipes-PipeCapacity)*RunoffToWater
-           else
-              ! Otherwise, all flood water must go to runoff
-              runoffAGveg=runoffAGveg+(runoffPipes-PipeCapacity)	
-           endif
-	   runoffPipes=PipeCapacity   !Pipes are at their max capacity
-   	endif
-     endif   !If runoff exceed pipe capacity
- 
-  endif   !For all except water surface
-   
+     call updateFlood
+  endif
+
   runoff_per_interval=runoff_per_interval+(runoff(is)*sfr(is)) !The total runoff from the area !!Check (HCW)
   
-end subroutine soilstore
+ end subroutine soilstore
 !------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
+ subroutine updateFlood
+
+  use allocateArray
+  use sues_data
+
+  IMPLICIT NONE
+
+  ! If pipe capacity is full, surface runoff occurs
+  ! N.B. this will happen each loop (replicates pipes filling up)
+  if(runoffPipes>PipeCapacity) then
+
+    !------Paved and building surface
+    if(is==PavSurf.or.is==BldgSurf) then
+        if(sfr(WaterSurf)>0.0000001) then
+           ! If there is some water present, the water surface will take some of the flood water (fraction RunoffToWater)
+           ! RunoffToWater is specified in SUEWS_SiteSelect.txt
+           runoffAGimpervious=runoffAGimpervious+(runoffPipes-PipeCapacity)*(1-RunoffToWater)
+           surplusWaterBody=surplusWaterBody+(runoffPipes-PipeCapacity)*RunoffToWater
+        else
+           ! Otherwise, all flood water must go to runoff
+           runoffAGimpervious=runoffAGimpervious+(runoffPipes-PipeCapacity)
+        endif
+                   !------other surfaces
+     elseif(is>=ConifSurf.and.is<=BSoilSurf) then
+        if(sfr(WaterSurf)>0.0000001) then
+          ! If there is some water present, the water surface will take some of the flood water (fraction RunoffToWater)
+          runoffAGveg=runoffAGveg+(runoffPipes-PipeCapacity)*(1-RunoffToWater)
+          surplusWaterBody=surplusWaterBody+(runoffPipes-PipeCapacity)*RunoffToWater
+        else
+          ! Otherwise, all flood water must go to runoff
+          runoffAGveg=runoffAGveg+(runoffPipes-PipeCapacity)
+        endif
+      endif
+
+      runoffPipes=PipeCapacity   !Pipes are at their max capacity
+
+  endif   !If runoff exceed pipe capacity
+
+ end subroutine updateFlood

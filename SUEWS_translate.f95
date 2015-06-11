@@ -134,7 +134,7 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   ! ---- Storage capacities [mm]
   surf(1,1:nsurf) = SurfaceChar(Gridiv,c_StorMin)   ! Minimum	
   surf(5,1:nsurf) = SurfaceChar(Gridiv,c_StorMax)   ! Maximum	
-  !surf(6:) is current storage capacity
+  surf(6,1:nsurf) = surf(1,1:nsurf)  !Set storage capacities for all surface to minimum (DecTr changes with time in Calculations).
   
   ! ---- Limit for state [mm]
   StateLimit(1:nsurf) = SurfaceChar(Gridiv,c_StateLimit)
@@ -752,7 +752,7 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
 !Last modified: HCW 28 Nov 2014
 ! To Do:
 !===================================================================== 
-subroutine SUEWS_TranslateBack(Gridiv,ir,irMax)
+ subroutine SUEWS_TranslateBack(Gridiv,ir,irMax)
 
   use Initial
   use allocateArray   

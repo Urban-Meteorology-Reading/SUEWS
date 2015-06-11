@@ -1269,18 +1269,21 @@
   
   IMPLICIT NONE
   
-  character(len=20):: GridName
-  character(len=10):: str2  !Variables related to filepaths 
-  character(len=150):: fileInit
-  character(len=4):: year_txt
-  integer::DaysSinceRain,Gridiv,gamma1,gamma2
-  integer:: wd,seas,date,mb,year_int,switch=0,id_next,calc
+  character(len=20):: GridName    !Name of the evaluated grid
+  character(len=10):: str2        !Variables related to filepaths
+  character(len=150):: fileInit   !Initial conditions filename
+  character(len=4):: year_txt     !year in txt format
+  integer::DaysSinceRain,Gridiv,& !number of days since rain, grid number,
+           gamma1,gamma2          !switches related to cooling and heating degree days
+  integer::wd,seas,date,mb,&      !weekday information, season, date, month
+           year_int,switch=0,&    !year as an integer, switch related to previous day
+           id_next,calc           !next day,counter in irrigation calculations
   
   real (KIND(1d0))::PavedState,BldgsState,EveTrState,DecTrState,GrassState,BSoilState,&
               	    SnowFracPaved,SnowFracBldgs,SnowFracEveTr,SnowFracDecTr,&
-                      SnowFracGrass,SnowFracBSoil,SnowFracWater,&
+                    SnowFracGrass,SnowFracBSoil,SnowFracWater,&
                     SnowDensPaved,SnowDensBldgs,SnowDensEveTr,SnowDensDecTr,&
-                      SnowDensGrass,SnowDensBSoil,SnowDensWater
+                    SnowDensGrass,SnowDensBSoil,SnowDensWater
 
   !-----------------------------------------------------------------------
 
@@ -1422,9 +1425,10 @@
  
   !! Where is this from??   
   IceFrac=0.2   !Estimated fraction of ice. Should be improved in the future
-  
+
   ! ==============================================================
-  ! ============ Save states to ModelOutputData ==================      
+  ! ============ Save states to ModelOutputData ==================    
+
      
   ! -- Initial wetness status of each surface (above ground) --
   ModelOutputData(0,cMOD_State(PavSurf),   Gridiv) = PavedState
@@ -1623,6 +1627,8 @@
 !-------------------------------------------------------------------------
  subroutine NextInitial(GridName,year_int)
  ! Modified by HCW 21 Nov 2014
+ ! Last day of year is not anymore the number of days on that year, but rather
+ ! id == 1. Thus nofDaysThisYear was changed to 1. LJ 9/4/2015
  !------------------------------------------------------------------------
   use allocateArray 
   use ColNamesInputFiles
@@ -1643,7 +1649,7 @@
 
   year=year_int   !HCW added 21 Nov 2014
 
-  if (id==nofDaysThisYear) then 
+  if (id==1) then  !nofDaysThisYear changed to 1
      year_int2=int(year+1)
      write(year_txt2,'(I4)')year_int2
      open(57,File=trim(FileInputPath)//trim("InitialConditions")//trim(GridName)//'.nml',err=200)
@@ -1657,15 +1663,15 @@
   write(57,*)'&InitialConditions'
   write(57,*)'DaysSinceRain=',int(HDD(id,6))
    
-  ! If last time of day, then DailyState variables will have been updated so can write out arrays for id rather than id-1
-  if(it==23 .and. imin == (nsh_real-1)/nsh_real*60) then  !!LastTimeofday
-     id=id+1  
-  endif
-   
-  write(57,*)'Temp_C0=',HDD(id-1,3)
-  write(57,*)'ID_Prev=',id-1
-  write(57,*)'GDD_1_0=',GDD(id-1,1)
-  write(57,*)'GDD_2_0=',GDD(id-1,2)
+  !! If last time of day, then DailyState variables will have been updated so can write out arrays for id rather than id-1
+  !if(it==23 .and. imin == (nsh_real-1)/nsh_real*60) then  !!LastTimeofday
+  !   id=id+1
+  !endif
+
+  write(57,*)'Temp_C0=',HDD(nofDaysThisYear,3)
+  write(57,*)'ID_Prev=',nofDaysThisYear
+  write(57,*)'GDD_1_0=',GDD(nofDaysThisYear,1)
+  write(57,*)'GDD_2_0=',GDD(nofDaysThisYear,2)
   write(57,*)'PavedState=',State(PavSurf)
   write(57,*)'BldgsState=',State(BldgSurf)
   write(57,*)'EveTrState=',State(ConifSurf)
@@ -1673,9 +1679,9 @@
   write(57,*)'GrassState=',State(GrassSurf)
   write(57,*)'BSoilState=',State(BSoilSurf)
   write(57,*)'WaterState=',State(WaterSurf)
-  write(57,*)'LAIinitialEveTr=',lai(id-1,ivConif)         
-  write(57,*)'LAIinitialDecTr=',lai(id-1,ivDecid)
-  write(57,*)'LAIinitialGrass=',lai(id-1,ivGrass)
+  write(57,*)'LAIinitialEveTr=',lai(nofDaysThisYear,ivConif)
+  write(57,*)'LAIinitialDecTr=',lai(nofDaysThisYear,ivDecid)
+  write(57,*)'LAIinitialGrass=',lai(nofDaysThisYear,ivGrass)
   write(57,*)'porosity0=',porosity(id)
   write(57,*)'DecidCap0=',decidCap(id)
   write(57,*)'albDec0=',AlbDec(id)
@@ -1749,7 +1755,7 @@
 
    integer::lunit,i,iyy,RunNumber!,NSHcounter
    real (kind(1d0)),dimension(24)::MetArray
-   real(kind(1d0)):: imin_prev, tstep_met   !For checks on temporal resolution of met data
+   real(kind(1d0)):: imin_prev, ih_prev, iday_prev, tstep_met   !For checks on temporal resolution of met data
 
    !---------------------------------------------------------------
 
@@ -1778,10 +1784,13 @@
       ! Check timestamp of met data file matches TSTEP specified in RunControl
       if(i==1) then
          imin_prev = MetArray(4)
+         ih_prev   = MetArray(3)
+         iday_prev   = MetArray(2)
       elseif(i==2) then
-         tstep_met = (MetArray(4)-imin_prev)*60   !tstep in seconds
-         if(tstep_met.ne.tstep_real) then
-            call ErrorHint(39,'TSTEP in RunControl does not match TSTEP of met data.',real(tstep,kind(1d0)),tstep_met,notUsedI)        
+         tstep_met = ((MetArray(4)+60*MetArray(3)) - (imin_prev+60*ih_prev))*60   !tstep in seconds
+         if(tstep_met.ne.tstep_real.and.MetArray(2)==iday_prev) then
+            call ErrorHint(39,'TSTEP in RunControl does not match TSTEP of met data (DOY).',real(tstep,kind(1d0)),tstep_met,&
+                           int(MetArray(2)))        
          endif    
       endif   
         

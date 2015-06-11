@@ -4,12 +4,10 @@
 ! Responds to what has happened in the past (temperature, rainfall, etc)
 ! N.B. If changes are made here, may need to update code in SUEWS_Initial accordingly
 !
-<<<<<<< HEAD
 ! Last modified HCW 1 Jun 2015
 ! Bug fix 05 Jun now fixed in a different way - DecidCap is now treated the same as DecidAlb 
 !  so should cope with multiple grids.
 =======
->>>>>>> 60209c4b354eabf31544f4d96465afdcec1dfd25
 ! Last modified HCW 05 Jun 2015
 ! Bug fix - set all current storage capacities (surf(6,)) to min. value, then set for DecTr
 ! Last modified LJ 11 Mar 2015

@@ -41,7 +41,7 @@
   FileOut=trim(rawpath)//'_'//trim(adjustl(str2))//'.txt'
   SOLWEIGpoiOut=trim(rawpath)//'_SOLWEIGpoiOut.txt'
   BLOut=trim(rawpath)//'_BL.txt'
-  SnowOut=trim(rawpath)//'_snow.txt'
+  SnowOut=trim(rawpath)//'_snow_5.txt'
   
   !================OPEN OUTPUT FILE AND PRINT HEADER================
 
@@ -97,7 +97,8 @@
 
  !Snow outputfile
  if (SnowUse>=1) then
-    open(54,file=SnowOut,status='unknown')
+   if(iv == 1) then
+    open(54,file=SnowOut)
     write(54, 114)
 114 format('%iy  id   it imin dectime ',&
            'SWE_Paved SWE_Bldgs SWE_EveTr SWE_DecTr SWE_Grass SWE_BSoil SWE_Water ',&
@@ -114,6 +115,9 @@
            'DensSnow_Paved DensSnow_Bldgs DensSnow_EveTr DensSnow_DecTr DensSnow_Grass DensSnow_BSoil DensSnow_Water ',&
            'Sd_Paved Sd_Bldgs Sd_EveTr Sd_DecTr Sd_Grass Sd_BSoil Sd_Water ',&
           'Tsnow_Paved Tsnow_Bldgs Tsnow_EveTr Tsnow_DecTr Tsnow_Grass Tsnow_BSoil Tsnow_Water')
+   else
+    open(54,file=trim(SnowOut),position='append')
+   endif
  endif
 
  !================ACTUAL DATA WRITING================
@@ -153,7 +157,7 @@
             3(f10.5,1X),(g14.7,1X),(f10.5,1X),& !42
             2(f10.4,1X),6(f10.5,1X),7(f10.4,1X),& !57
              (f10.4,1X),&                       !58 LAI
-            5(f10.4,1X),6(f10.5,1X),&           !69
+            5(f10.4,1X),6(f10.6,1X),&           !69
             1(f8.4,1X))                        !70 albedo snow
 
   !==================== This part read by python wrapper ======================

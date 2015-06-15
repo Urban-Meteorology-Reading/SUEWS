@@ -269,15 +269,19 @@
                                     psyc_hPa,tstep,avcp,sIce_hPa)
   endif
 
+
   !If not enough water for evaporation in impervious surfaces,
   !evaporation is taken from pervious surfaces
   if (is>2) then
-     if  ((VegFraction+sfr(WaterSurf))/=0) then
-        EvPart=(SurplusEvap(PavSurf)+SurplusEvap(BldgSurf))*(sfr(is)/(VegFraction+sfr(WaterSurf)))
+     !if  ((VegFraction+sfr(WaterSurf))/=0) then
+     !   EvPart=(SurplusEvap(PavSurf)+SurplusEvap(BldgSurf))*(sfr(is)/(VegFraction+sfr(WaterSurf)))
+     !endif
+     if  (PervFraction/=0) then
+       EvPart=(SurplusEvap(PavSurf)*sfr(PavSurf)+SurplusEvap(BldgSurf)*sfr(BldgSurf))/PervFraction
      endif
   endif
- 
-  
+
+
   !============================================================================
   !1) Surface is fully covered with snow or the snowpack forms (equally distributed) 
   !   on the current Tstep
@@ -381,21 +385,21 @@
 
      !------Change state of snow and surface
      chSnow_per_interval = chSnow_per_interval+((snowPack(is)+MeltWaterstore(is))-snowTotInit)*sfr(is)
-     ch_per_interval = ch_per_interval+(state(is)-stateOld(is))*sfr(is)
+     surf_chang_per_tstep=surf_chang_per_tstep+(state(is)-stateOld(is))*sfr(is)
 
      !------Evaporation
      if (is==BldgSurf.or.is==PavSurf) then 
-        ev_per_interval=ev_per_interval+(ev-SurplusEvap(is))*sfr(is)+ev_snow(is)*sfr(is)
-        qe_per_interval=qe_per_interval+ev_snow(is)*lvS_J_kg*sfr(is)+(ev-SurplusEvap(is))*lv_J_kg*sfr(is)
+        ev_per_tstep=ev_per_tstep+(ev-SurplusEvap(is))*sfr(is)+ev_snow(is)*sfr(is)
+        qe_per_tstep=qe_per_tstep+ev_snow(is)*lvS_J_kg*sfr(is)+(ev-SurplusEvap(is))*lv_J_kg*sfr(is)
      else
-        ev_per_interval=ev_per_interval+ev*sfr(is)+ev_snow(is)*sfr(is)
-        qe_per_interval=qe_per_interval+ev_snow(is)*lvS_J_kg*sfr(is)+ev*lv_J_kg*sfr(is)
+        ev_per_tstep=ev_per_tstep+ev*sfr(is)+ev_snow(is)*sfr(is)
+        qe_per_tstep=qe_per_tstep+ev_snow(is)*lvS_J_kg*sfr(is)+ev*lv_J_kg*sfr(is)
      endif
 
      !==========RUNOFF===================
      runoffPipes=runoffPipes+runoffSnow(is)*sfr(is) !Runoff to pipes
      call updateFlood
-     runoff_per_interval=runoff_per_interval+runoffSnow(is)*sfr(is)
+     runoff_per_tstep=runoff_per_tstep+runoffSnow(is)*sfr(is)
   
 
   !2) If both snow and snow free surfaces exists
@@ -489,10 +493,9 @@
            ev = ev-SurplusEvap(is)
            state(is)=0.0
         endif
-       
 
     elseif(is>=3) then ! Pervious surfaces (conif, decid, grass unirr, grass irr)
-     
+
        ev=ev+EvPart
 
        !Change in water stores
@@ -541,17 +544,22 @@
    endif !Surface type
 
    !Calculate change in snowpack and state
-   ch_per_interval=ch_per_interval+(state(is)-stateOld(is))*sfr(is)*(1-snowFrac(is))
+   !ch_per_interval=ch_per_interval+(state(is)-stateOld(is))*sfr(is)*(1-snowFrac(is))
+   surf_chang_per_tstep=surf_chang_per_tstep+(state(is)-stateOld(is))*sfr(is)*(1-snowFrac(is))
    chSnow_per_interval=chSnow_per_interval+((snowPack(is)+MeltWaterstore(is))-snowTotInit)*sfr(is)*snowFrac(is)
-   
-   !Add evaporation to total 
+
+   !if (id==102.and.it==21.and.imin==0) then
+   !  write(*,*) is, ev, ev_snow(is),Evpart,SurplusEvap(is)
+   !  pause
+   !endif
+   !Add evaporation to total
    if (is==BldgSurf.or.is==PavSurf) then
-       ev_per_interval=ev_per_interval+(ev-SurplusEvap(is))*sfr(is)*(1-snowFrac(is))+ev_snow(is)*sfr(is)*snowFrac(is)
-       qe_per_interval=qe_per_interval+ev_snow(is)*lvS_J_kg*sfr(is)*snowFrac(is)&
-                       +(ev-SurplusEvap(is))*lv_J_kg*sfr(is)*(1-snowFrac(is))
+       ev_per_tstep=ev_per_tstep+ev*sfr(is)*(1-snowFrac(is))+ev_snow(is)*sfr(is)*snowFrac(is)
+       qe_per_tstep=qe_per_tstep+ev_snow(is)*lvS_J_kg*sfr(is)*snowFrac(is)&
+                       +ev*lv_J_kg*sfr(is)*(1-snowFrac(is))
    else
-       ev_per_interval=ev_per_interval+ev*sfr(is)*(1-snowFrac(is))+ev_snow(is)*sfr(is)*snowFrac(is)
-       qe_per_interval=qe_per_interval+ev_snow(is)*lvS_J_kg*sfr(is)*snowFrac(is)+ev*lv_J_kg*sfr(is)*(1-snowFrac(is))
+       ev_per_tstep=ev_per_tstep+ev*sfr(is)*(1-snowFrac(is))+ev_snow(is)*sfr(is)*snowFrac(is)
+       qe_per_tstep=qe_per_tstep+ev_snow(is)*lvS_J_kg*sfr(is)*snowFrac(is)+ev*lv_J_kg*sfr(is)*(1-snowFrac(is))
    endif
   
    !========RUNOFF=======================
@@ -559,11 +567,12 @@
    !Add runoff to pipes
    runoffPipes=runoffPipes+runoffSnow(is)*sfr(is)*snowFrac(is)+runoff(is)*sfr(is)*(1-snowFrac(is))+runoffTest*sfr(is)
    call updateFlood
-   runoff_per_interval=runoff_per_interval+runoffSnow(is)*sfr(is)*snowFrac(is)+runoff(is)*sfr(is)*(1-snowFrac(is))&
+   runoff_per_tstep=runoff_per_tstep+runoffSnow(is)*sfr(is)*snowFrac(is)+runoff(is)*sfr(is)*(1-snowFrac(is))&
                          +runoffTest*sfr(is)
-  !runoff_per_interval=runoff_per_interval+runoffSnow(is)*sfr(is)+runoff(is)*sfr(is)+runoffTest*sfr(is)
 
-  endif !Ground both snow covered and snow free    
+  endif !Ground both snow covered and snow free   
+
+
 
 
   return
@@ -623,12 +632,13 @@
 
      !Change state of snow and surface
      chSnow_per_interval=chSnow_per_interval+((snowPack(WaterSurf)+MeltWaterstore(WaterSurf))-snowTotInit)*sfr(WaterSurf)
-     ch_per_interval=ch_per_interval+(state(WaterSurf)-stateOld(WaterSurf))*sfr(WaterSurf)
+     !ch_per_interval=ch_per_interval+(state(WaterSurf)-stateOld(WaterSurf))*sfr(WaterSurf)
+     surf_chang_per_tstep=surf_chang_per_tstep+(state(WaterSurf)-stateOld(WaterSurf))*sfr(WaterSurf)
      
      !Evaporation
-     ev_per_interval=ev_per_interval+ev*sfr(WaterSurf)+ev_snow(WaterSurf)*sfr(WaterSurf)
-     qe_per_interval=qe_per_interval+ev_snow(WaterSurf)*lvS_J_kg*sfr(WaterSurf)+ev*lv_J_kg*sfr(WaterSurf) 
-     runoff_per_interval=runoff_per_interval+(runoff(is)*sfr(is)) !The total runoff from the area
+     ev_per_tstep=ev_per_tstep+ev*sfr(WaterSurf)+ev_snow(WaterSurf)*sfr(WaterSurf)
+     qe_per_tstep=qe_per_tstep+ev_snow(WaterSurf)*lvS_J_kg*sfr(WaterSurf)+ev*lv_J_kg*sfr(WaterSurf) 
+     runoff_per_tstep=runoff_per_tstep+(runoff(is)*sfr(is)) !The total runoff from the area
      
      if (snowPack(WaterSurf)>0) then     !Fraction only 1 or 0
          snowFrac(WaterSurf)=1

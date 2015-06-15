@@ -69,7 +69,9 @@
   ! ---- Add water from other surfaces within the same grid (RS2S) ----
   ! AddWater is the water supplied to the current surface from other surfaces 
   !  i.e. drain*WaterDist (see SUEWS_ReDistributeWater)
-  p_mm=p_mm+AddWater(is)   
+  p_mm=p_mm+AddWater(is)
+
+
  
   !==== Impervious surfaces (Paved, Buildings) ======================
   if(is==PavSurf.or.is==BldgSurf) then
@@ -77,7 +79,7 @@
      ! ---- Add water from neighbouring grids (RG2G) ----
      ! Add to PavSurf only, as water cannot flow onto buildings
      if (is==PavSurf) p_mm=p_mm+addImpervious/sfr(PavSurf)
-                                                          
+
      ! Calculate change in surface state (inputs - outputs)
      chang(is)=p_mm-(drain(is)+ev)	   
      
@@ -90,13 +92,13 @@
      
      ! Calculate updated state using chang
      state(is)=state(is)+chang(is)
-     
+
      ! Check state is within physical limits between zero (dry) and max. storage capacity
      if(state(is)<0.0) then   ! Cannot have a negative surface state
         ! If there is not sufficient water on the surface, then don't allow this evaporation to happen
         ! Allow evaporation only until surface is dry (state(is)=0); additional evaporation -> evaporation surplus
         SurplusEvap(is)=abs(state(is))   !Surplus evaporation is that which tries to evaporate non-existent water
- 	ev = ev-SurplusEvap(is)	  !Limit evaporation according to water availability
+ 	    ev = ev-SurplusEvap(is)	  !Limit evaporation according to water availability
         state(is)=0.0			  !Now surface is dry
     ! elseif (state(is)>surf(6,is)) then   !!This should perhaps be StateLimit(is)
     !    !! If state exceeds the storage capacity, then the excess goes to surface flooding
@@ -118,8 +120,8 @@
      ! WaterDist specifies some fraction of drain(is) -> runoff
  
   !==== Pervious surfaces (Conif, Decid, Grass, BSoil, Water) =======
-  elseif(is>=3) then 
-           
+  elseif(is>=3) then
+
      ! Transfer evaporation surplus from impervious surfaces to pervious surfaces
      if(PervFraction/=0) then   !If pervious surfaces exist 
         EvPart=(SurplusEvap(PavSurf)*sfr(PavSurf)+SurplusEvap(BldgSurf)*sfr(BldgSurf))/PervFraction
@@ -128,7 +130,7 @@
      endif
      ! Add surplus evaporation to ev for pervious surfaces
      ev=ev+EvPart
-     
+
      !==== For Conif, Decid, Grass, BSoil surfaces ==================
      if (is/=WaterSurf) then
         
@@ -141,22 +143,22 @@
         endif
         
         ! Calculate change in surface state (inputs - outputs)
-	chang(is)=p_mm-(drain(is)+ev)	   
-	     
-	! If p_mm is too large, excess goes to runoff (i.e. the rate of water supply is too fast)
+	    chang(is)=p_mm-(drain(is)+ev)
+
+	    ! If p_mm is too large, excess goes to runoff (i.e. the rate of water supply is too fast)
         !  and does not affect state
         if (p_mm>IPThreshold_mmhr/nsh_real) then   
            runoff(is)=runoff(is)+(p_mm-IPThreshold_mmhr/nsh_real)
            chang(is)=IPThreshold_mmhr/nsh_real-(drain(is)+ev)   
-	endif
+	    endif
 	
-	! Calculate updated state using chang
-     	state(is)=state(is)+chang(is)			        
-			        
+	    ! Calculate updated state using chang
+     	state(is)=state(is)+chang(is)
+
         ! Check state is within physical limits between zero (dry) and max. storage capacity
-	if(state(is)<0.0) then   ! Cannot have a negative surface state
-	   ! If there is not sufficient water on the surface, then remove water from soilstore   
- 	   ! Allow evaporation until soilmoist is depleted and surface is dry
+	    if(state(is)<0.0) then   ! Cannot have a negative surface state
+	    ! If there is not sufficient water on the surface, then remove water from soilstore
+ 	    ! Allow evaporation until soilmoist is depleted and surface is dry
            if((soilmoist(is)+state(is))>=0) then
               soilmoist(is)=soilmoist(is)+state(is)
               state(is)=0.0
@@ -167,18 +169,17 @@
 	   endif
 	   !! What about if there is some water in soilstore, but not enough to provide all the water for evaporation??	   
 	   !! Is this saying water can be evaporated from the soilstore as easily as from the surface??
-  	!elseif (state(is)>surf(6,is)) then   !!This should perhaps be StateLimit(is)
-	!   !! If state exceeds the storage capacity, then the excess goes to surface flooding
-	!   !SurfaceFlood(is)=SurfaceFlood(is)+(state(is)-surf(6,is))   !!Need to deal with this properly
-	!   runoff(is)=runoff(is)+(state(is)-surf(6,is))   !!needs to go to flooding
-	!   state(is)=surf(6,is)              !Now surface state is at max (storage) capacity
+  	   !elseif (state(is)>surf(6,is)) then   !!This should perhaps be StateLimit(is)
+	    !   !! If state exceeds the storage capacity, then the excess goes to surface flooding
+	   !   !SurfaceFlood(is)=SurfaceFlood(is)+(state(is)-surf(6,is))   !!Need to deal with this properly
+	   !   runoff(is)=runoff(is)+(state(is)-surf(6,is))   !!needs to go to flooding
+	   !   state(is)=surf(6,is)              !Now surface state is at max (storage) capacity
 	endif     
 	       
 	! Recalculate change in surface state from difference with previous timestep
-        chang(is) = state(is)-stateOld(is)
-        
-        
-        !!Where should this go? Used to be before previous part!!
+    chang(is) = state(is)-stateOld(is)
+
+    !Where should this go? Used to be before previous part!!
 	! Soilmoist -------------------------------------------------
 	! For pervious surfaces (not water), some of drain(is) goes to soil storage
 	soilmoist(is)=soilmoist(is)+drain(is)*AddWaterRunoff(is) !Drainage (that is not flowing to other surfaces) goes to soil storages

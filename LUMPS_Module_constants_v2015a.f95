@@ -567,6 +567,7 @@
               KeepTstepFilesIn,&     !Delete (0) or keep (1) input met files at resolution of tstep (used by python, not fortran)
               KeepTstepFilesOut,&    !Delete (0) or keep (1) output files at resolution of tstep (used by python, not fortran)
               WriteSurfsFile,&       !Write output file containing variables for each surface (1) or not (0). Not currently used!!
+              gsChoice,&             !Options for surface conductance calculation (1 - Ja11, 2 - adjusted method)
               NetRadiationChoice,&   !Options for net all-wave radiation calculation
               OHMIncQF,&             !OHM calculation uses Q* only (0) or Q*+QF (1)
               QSChoice,&             !OHM (1); QS in met file (2)

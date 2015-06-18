@@ -33,6 +33,7 @@
   ! ---- Namelist for RunControl.nml ----
   namelist/RunControl/AnthropHeatChoice,&
         CBLuse,& !s.o.
+        gsChoice,&
         NetRadiationChoice,&
         RoughLen_heat,&
         QSChoice,&

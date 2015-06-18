@@ -256,6 +256,10 @@
  elseif(errh==64)then
     text1 = 'SUEWS cannot currently handle this many grids.'
     v6 = .true.
+ elseif(errh==65) then
+    text1='Negative gs calculated! Check suitability of parameters in Conductance.txt.'
+    returntrue=.true.
+    v7=.true.  ! 1 real, 2 integers
  endif
  !---------------------------------------------------------------------
  !This part of the code determines how the error message is written out

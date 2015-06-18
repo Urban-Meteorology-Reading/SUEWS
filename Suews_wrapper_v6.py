@@ -90,7 +90,7 @@ while loop_out != '-9':
 
 ### This part runs the model ###
 suewsstring = wf + '/' + prog_name
-# subprocess.call(suewsstring)
+subprocess.call(suewsstring)
 
 
 ### This part makes hourly averages from SUEWS 5 min output ###

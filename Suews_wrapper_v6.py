@@ -90,7 +90,7 @@ while loop_out != '-9':
 
 ### This part runs the model ###
 suewsstring = wf + '/' + prog_name
-subprocess.call(suewsstring)
+# subprocess.call(suewsstring)
 
 
 ### This part makes hourly averages from SUEWS 5 min output ###
@@ -197,7 +197,6 @@ header_snow = '%iy  id   it imin dectime SWE_Paved SWE_Bldgs SWE_EveTr SWE_DecTr
 
 pynumformat_snow = '%4i ' + '%3i ' * 3 + '%8.5f ' + '%10.4f ' * 97
 
-
 TimeCol = np.array(TimeCol) - 1
 SumCol = np.array(SumCol) - 1
 LastCol = np.array(LastCol) - 1
@@ -235,6 +234,10 @@ while headend == 0:
 #          'LAI ' \
 #          'qn1_SF qn1_S Qm QmFreez Qmrain SWE Mw MwStore snowRem_Paved snowRem_Bldgs ChSnow/i alb_snow '
 
+TimeCol_snow = np.array([1, 2, 3, 4, 5]) - 1
+SumCol_snow = np.array([13, 14, 15, 16, 17, 18, 19, 47, 48, 49, 50, 51, 52, 53, 68, 69, 70, 71, 72, 73, 74]) - 1
+LastCol_snow = np.array([6, 7, 8, 9, 10, 11, 12, 75, 76, 77, 78, 79, 80, 81]) - 1
+
 for j in range(2, index):
     lines = lin[j].split()
     YYYY = int(lines[1])
@@ -246,15 +249,10 @@ for j in range(2, index):
     suews_1hour = su.from5minto1hour_v1(suews_in, SumCol, LastCol, TimeCol)
     np.savetxt(suews_out, suews_1hour, fmt=pynumformat, delimiter=' ', header=header, comments='')  #, fmt=numformat
 
-    #data_out_snow = wf + fileinputpath[1:] + filecode + gridcode + '_' + str(YYYY) + '_data_5.txt'
-
-    TimeCol = np.array([1, 2, 3, 4, 5]) - 1
-    SumCol = np.array([13,14,15,16,17,18,19,47,48,49,50,51,52,53,68,69,70,71,72,73,74]) - 1
-    LastCol = np.array([6,7,8,9,10,11,12,75,76,77,78,79,80,81]) - 1
     suews_5min_snow = wf + fileoutputpath[1:] + filecode + gridcode + '_' + str(YYYY) + '_snow_5.txt'
     suews_out_snow = wf + fileoutputpath[1:] + filecode + gridcode + '_' + str(YYYY) + '_snow_60.txt'
     suews_in_snow = np.loadtxt(suews_5min_snow, skiprows=1)
-    suews_1hour_snow = su.from5minto1hour_v1(suews_in_snow, SumCol, LastCol, TimeCol)
+    suews_1hour_snow = su.from5minto1hour_v1(suews_in_snow, SumCol_snow, LastCol_snow, TimeCol_snow)
     np.savetxt(suews_out_snow, suews_1hour_snow, fmt=pynumformat_snow, delimiter=' ', header=header_snow, comments='')  #, fmt=numformat
 
     if KeepTstepFilesIn == 0:
@@ -263,7 +261,6 @@ for j in range(2, index):
     if KeepTstepFilesOut == 0:
         os.remove(suews_5min)
         os.remove(suews_5min_snow)
-
 
 ### plot results ###
 # read namelist, plot.nml

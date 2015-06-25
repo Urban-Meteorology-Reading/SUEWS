@@ -1,11 +1,11 @@
 __author__ = 'Fredrik Lindberg'
 
 # This class will be used to plot output result from Suews
-
+import Tkinter
 import numpy as np
 import matplotlib.pylab as plt
 import matplotlib.dates as dt
-import datetime
+#import datetime
 
 def leap_year(yy):
     if (yy % 4) == 0:
@@ -72,7 +72,7 @@ class SuewsPlotting:
         ax4.bar(dectime, datain[:, 13], width=0.0, edgecolor='b' , label='$Precip$')
         ax4.plot(dectime, dataout[:, 43], 'k', label='$SMD$')
         ax3.set_xlabel('Time', fontsize=14)
-        ax3.set_ylabel('$LAI$'' ''$f_{vegetation}$', color='g', fontsize=14)
+        ax3.set_ylabel('$LAI$', color='g', fontsize=14)
         ax4.set_ylabel('$mm$', color='b', fontsize=14)
         ax3.set_xlim([min(dectime), max(dectime)])
         pos1 = ax3.get_position()
@@ -114,11 +114,14 @@ class SuewsPlotting:
             Qf[i - 1] = np.mean(dataout[month == i, 14])
             Qstar[i - 1] = np.mean(dataout[month == i, 10])
 
-            precip[i - 1] = np.sum(dataout[month == i, 17])
-            wu[i - 1] = np.sum(dataout[month == i, 18])  #Ie  # exteranl wu
-            st[i - 1] = np.sum(dataout[month == i, 23])  # storage
-            evap[i - 1] = np.sum(dataout[month == i, 19])
-            drain[i - 1] = np.sum(dataout[month == i, 25]) # runoff
+            precip[i - 1] = np.sum(dataout[month == i, 17])  #Precipitation (P/i)
+            wu[i - 1] = np.sum(dataout[month == i, 18])  # exteranl wu (Ie/i)
+            st[i - 1] = np.sum(dataout[month == i, 24])  #storage (totCh/i)
+            evap[i - 1] = np.sum(dataout[month == i, 19])  #Evaporation (E/i)
+            drain[i - 1] = np.sum(dataout[month == i, 25]) #runoff (RO/i)
+
+
+        totch = precip + wu - st - evap - drain
 
         plt.figure(2, figsize=(15, 7), facecolor='white')
         ax1 = plt.subplot(1, 2, 1)

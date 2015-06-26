@@ -2,6 +2,9 @@
 !Made by LJ and HW Oct 2014
 !Gives in the grid ID (Gridiv) and number of line in the met forcing data to be analyzed (ir)
 !Last modification
+! HCW 25 Jun 2015
+!  Fixed bug in LAI calculation at year change.
+!  Changed AlbDec to use id value (not (id-1) value) to avoid issues at year change.
 ! HCW 27 Apr 2015
 ! Correction to tot_chang_per_tstep calculation (water balance should now close)
 ! HCW 16 Feb 2015
@@ -27,6 +30,7 @@
   use sues_data
   use snowMod
   use gis_data
+  use initial
   use moist
   use mod_z
   use mod_k
@@ -35,13 +39,13 @@
 
   IMPLICIT NONE
 
-  integer :: Gridiv,ir,i,ih,iMB
+  integer:: Gridiv,ir,i,ih,iMB
   logical:: debug=.false.
-  real(kind(1d0))::idectime
+  real(kind(1d0)):: idectime
   real(kind(1d0)):: SnowDepletionCurve
-  real(kind(1d0))::lai_wt
-  integer::irMax
-
+  real(kind(1d0)):: lai_wt
+  integer:: irMax
+    
 !==================================================================
 !==================================================================
  
@@ -107,8 +111,11 @@
  endif
  
  !Call the dailystate routine to get surface characteristics ready
+ !!!write(*,*) 'Calling DailyState from Calculations'
+ !!!write(*,*) id, it, imin, DecidCap(id), Albdec(id), porosity(id)
  call DailyState(Gridiv)
-
+ !!!write(*,*) id, it, imin, DecidCap(id), Albdec(id), porosity(id)
+ 
  if(LAICalcYes==0)then
    lai(id-1,:)=lai_obs ! check -- this is going to be a problem as it is not for each vegetation class
  endif
@@ -145,9 +152,11 @@
      fcld=fcld_obs
    endif
 
-   ALB(DecidSurf)=albDec(ID-1) !Change deciduous albedo
-   surf(6,DecidSurf)=DecidCap(id)  !Change current storage capacity of deciduous trees        
-
+   !write(*,*) DecidCap(id), id, it, imin, 'Calc - near start'
+   
+   ALB(DecidSurf)=albDec(id) !Change deciduous albedo
+   surf(6,DecidSurf)=DecidCap(id)  !Change current storage capacity of deciduous trees
+   
    call narp(alb_snow,qn1_SF,qn1_S)
    !Temp_C,kclear,fcld,dectime,avkdn,avRH,qn1,kup,ldown,lup,tsurf,&
    !AlbedoChoice,ldown_option,Press_hPa,Ea_hPa,qn1_obs,&
@@ -475,11 +484,19 @@
  endif
  
  ! Calculate areally-weighted LAI
- lai_wt=0
- do is=1,nvegsurf
-    lai_wt=lai_wt+lai(id-1,is)*sfr(is+2) 
- enddo
+ if(iy == (iy_prev_t+1) .and. (id-1) == 0) then   !Check for start of next year and avoid using lai(id-1) as this is at the start of the year 
+   lai_wt=0  
+   do is=1,nvegsurf
+       lai_wt=lai_wt+lai(id_prev_t,is)*sfr(is+2) 
+   enddo        
+ else
+   lai_wt=0
+   do is=1,nvegsurf
+       lai_wt=lai_wt+lai(id-1,is)*sfr(is+2) 
+   enddo
+ endif
  
+     
  ! Calculate snowdepth from SWE
  do is=1,nsurf
     if (densSnow(is)/=0) then  
@@ -531,8 +548,17 @@
     enddo
  endif
  
+ !write(*,*) DecidCap(id), id, it, imin, 'Calc - before translate back'
+ !write(*,*) iy, id, it, imin, 'Calc - before translate back'
+ !if(Gridiv==1)  write(*,*) iy, id, it, imin, HDD(id-1,5), HDD(id,5), HDD(id-1,6), HDD(id,6)
+ !if(id==12) pause
+ !write(*,*) ' '
  call SUEWS_TranslateBack(Gridiv,ir,irMax)
 
-! write(*,*) '------------'
+ !!!if((id <=3 .or. id > 364).and. it == 0 .and. imin == 0) pause
+ !!!if((id <=3 .or. id > 364).and. it == 23 .and. imin == 55) pause
+ !!!if((id >=100 .or. id < 103).and. it == 0 .and. imin == 0) pause
+ 
+ ! write(*,*) '------------'
 
  END SUBROUTINE SUEWS_Calculations

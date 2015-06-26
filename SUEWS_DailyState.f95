@@ -1,28 +1,29 @@
 ! Calculation of daily state variables
-! Updates each timestep, but correct values calculated only at the end of each day
-! Rest of the code uses value from previous day
 ! Responds to what has happened in the past (temperature, rainfall, etc)
-! N.B. If changes are made here, may need to update code in SUEWS_Initial accordingly
-!
-! Last modified HCW 11 Jun 2015
-! Bug fix 05 Jun now fixed in a different way - DecidCap is now treated the same as DecidAlb 
-!  so should cope with multiple grids.
-! Last modified HCW 05 Jun 2015
+! Updates each time step, but for many variables, correct values are calculated only at the end of each day!
+! --> for these variables, the rest of the code MUST use values from the previous day
+! N.B. Some of this code is repeated in SUEWS_Initial
+! --> so if changes are made here, SUEWS_Initial may also need to be updated accordingly
+! 
+!Last modified HCW 11 Jun 2015
+! Bug fix from 05 Jun now fixed in a different way - DecidCap is now treated the same as DecidAlb 
+!  so should be able to cope with multiple grids.
+!Last modified HCW 05 Jun 2015
 ! Bug fix - set all current storage capacities (surf(6,)) to min. value, then set for DecTr
-! Last modified LJ 11 Mar 2015
+!Last modified LJ 11 Mar 2015
 ! Removed switch as no longer necessary
-! Last modified HCW 06 Mar 2015
+!Last modified HCW 06 Mar 2015
 !  iy used instead of year which does not have a value here
-! Last modified HCW 20 Feb 2015
+!Last modified HCW 20 Feb 2015
 !  Added surf(6,is) for the current storage capacity
 !  Updated and corrected DailyState output file
-! Last modified LJ 05 Feb 2015
-!  DailyState saving fixed. Now header is printed and the file closed and opened as suggested.
+!Last modified LJ 05 Feb 2015
+! DailyState saving fixed. Now header is printed and the file closed and opened as suggested.
 ! N.B. Bug in daily Precip - needs fixing!!! - HCW thinks this is fixed 20 Feb 2015
-! Last modified HCW 26 Jan 2015
-!  sfr and IrrFracs deleted from WU_Day calculations, so that WU_Day is not spread over
-!   the total area
-! Modified HCW 22 Jan 2015
+!Last modified HCW 26 Jan 2015
+! sfr and IrrFracs deleted from WU_Day calculations, so that WU_Day is not spread over
+!  the total area
+!Last modified HCW 22 Jan 2015
 ! WU_Day now has 9 columns (EveTr, DecTr, Grass; automatic, manual, total) HCW 23/01/2015 
 ! Handles values for different grids (Gridiv & ir arguments) HCW 27/11/2014
 ! Added the calculation of surface temperature
@@ -52,9 +53,9 @@
   integer:: Gridiv
   integer:: gamma1,gamma2  !Switch for heating and cooling degree days
   integer:: iv,&           !Loop over vegetation types
-  	        jj,&           !Loop over previous 5 days
+  	    jj,&           !Loop over previous 5 days
             calc,&         !Water use calculation is done when calc = 1
-  	        wd,&           !Number of weekday (Sun=1,...Sat=7)
+  	    wd,&           !Number of weekday (Sun=1,...Sat=7)
             mb,&           !Months
             seas,&         !Season (summer=1, winter=2)
             date,&         !Day
@@ -128,9 +129,11 @@
   ! Update snow density, albedo surface fraction
   if (snowUse==1) call SnowUpdate(Temp_C)
 
+  
   ! ================================================================================
-  ! This next part occurs only on the first or last timestep of each day
-    
+  ! This next part occurs only on the first or last timestep of each day ===========
+  
+  ! --------------------------------------------------------------------------------
   ! On first timestep of each day, define whether the day each a workday or weekend
   if (it==0.and.imin==0) then
 
@@ -141,8 +144,10 @@
      dayofWeek(id,2)=mb      !Month
      dayofweek(id,3)=seas    !Season
 
+  ! --------------------------------------------------------------------------------
   ! On last timestep, perform the daily calculations -------------------------------
-  ! Daily values not correct until end of each day, so main program uses day before
+  ! Daily values not correct until end of each day, 
+  !  so main program should use values from the previous day
   elseif (it==23.and.imin==(nsh_real-1)/nsh_real*60) then
      !write(*,*) 'Last timestep of day'    
      
@@ -153,14 +158,13 @@
         
      if(Gridiv == NumberOfGrids) tstepcount=0  !Set to zero only after last grid has run
      
-     ! Calculate 5-day running mean temp
-     !! Need to deal with the previous year
+     ! Calculate 5-day running mean temp     !!Need to deal with the previous year - CHECK!!
      do jj=1,5         
         HDD(id,4)=HDD(id,4) + HDD(id-(jj-1),3)
      enddo
      HDD(id,4) = HDD(id,4)/5
           
-     ! Calculate days since rain     
+     ! Calculate number of days since rain     
      if(HDD(id,5)>0) then        !Rain occurred
         HDD(id,6)=0
      else
@@ -345,10 +349,7 @@
      !::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
      ! Calculate the development of deciduous cover, albedo and porosity
      ! If only LUMPS is used, set deciduous capacities to 0
-                   
-     !assume porosity Change based on GO99- Heisler?
-     ! max-min for 
-     ! sg changed to increase or decrease appropriately for change in LAI
+     ! Assume porosity Change based on GO99- Heisler??
      iv=ivDecid
      deltaLAI=0
      CapChange=0
@@ -359,12 +360,12 @@
         deltaLAI=(LAI(id,iv)-LAI(id-1,iv))/(LAImax(iv)-LaiMin(iv))
         CapChange=(CapMin_dec-CapMax_dec)* deltaLAI
         albChange=(alBMax_dec-AlbMin_dec)* deltaLAI          
-        porChange=(0.2-0.6)* deltaLAI     
+        porChange=(PorMin_dec-PorMax_dec)* deltaLAI     
      endif        
-     DecidCap(id)=DecidCap(id-1)-CapChange
-     porosity(id)=porosity(id-1)-porChange
-     albDec(id)=albDec(id-1)+albChange    
-        
+     
+     DecidCap(id) = DecidCap(id-1) - CapChange
+     albDec(id)   = albDec(id-1)   + albChange    
+     porosity(id) = porosity(id-1) - porChange
     ! -----------------------------------------------------------------------------
      
      !--------------------------------------------------------------------------
@@ -396,7 +397,7 @@
         else
            open(60,file=FileDaily,position='append')
         endif      
-        
+
         ! Write actual data     
         write(60,601) iy,id,&
                       HDD(id,1:6),GDD(id,1:5),&

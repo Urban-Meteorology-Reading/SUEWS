@@ -1286,7 +1286,7 @@
   integer::wd,seas,date,mb,&      !weekday information, season, date, month
            year_int,switch=0,&    !year as an integer, switch related to previous day
            id_next,calc           !next day,counter in irrigation calculations
-  
+   
   real (KIND(1d0))::PavedState,BldgsState,EveTrState,DecTrState,GrassState,BSoilState,&
               	    SnowFracPaved,SnowFracBldgs,SnowFracEveTr,SnowFracDecTr,&
                     SnowFracGrass,SnowFracBSoil,SnowFracWater,&
@@ -1308,9 +1308,9 @@
                   decidCap0,&
                   PavedState,&
                   BldgsState,&
-	              EveTrState,&
-	              DecTrState,&
-	              GrassState,&
+	          EveTrState,&
+	          DecTrState,&
+	          GrassState,&
                   BSoilState,&
                   WaterState,&
                   SoilStorePavedState,&
@@ -1319,15 +1319,15 @@
                   SoilStoreDecTrState,&
                   SoilStoreGrassState,&
                   SoilStoreBSoilState,&
-		          SnowWaterPavedState,&
-		          SnowWaterBldgsState,&
-		          SnowWaterEveTrState,&
+		  SnowWaterPavedState,&
+		  SnowWaterBldgsState,&
+		  SnowWaterEveTrState,&
                   SnowWaterDecTrState,&
                   SnowWaterGrassState,&
                   SnowWaterBSoilState,&
                   SnowWaterWaterState,&
                   SnowPackPaved,&
-		          SnowPackBldgs,&
+		  SnowPackBldgs,&
                   SnowPackEveTr,&
                   SnowPackDecTr,&
                   SnowPackGrass,&
@@ -1362,9 +1362,9 @@
   write(12,*)'----------',trim(FileInit),'----------'
   write(12,nml=InitialConditions)
   close(12)
-  
+
   !-----------------------------------------------------------------------
- 
+
   ! Previous day DOY number (needed in file allocations)
   if(id_prev>=364) id_prev=0  !If previous day is larger than 364, set this to zero
   
@@ -1675,7 +1675,7 @@
   !if(it==23 .and. imin == (nsh_real-1)/nsh_real*60) then  !!LastTimeofday
   !   id=id+1
   !endif
-
+  
   write(57,*)'Temp_C0=',HDD(nofDaysThisYear,3)
   write(57,*)'ID_Prev=',nofDaysThisYear
   write(57,*)'GDD_1_0=',GDD(nofDaysThisYear,1)
@@ -1830,6 +1830,8 @@
 
  implicit none
 
+ real(kind(1d0)):: pTol   !Precision tolerance for range checks
+ 
  if (Temp_C0<(Temp_C-10).or.Temp_C0>(Temp_C+10)) then
      call ErrorHint(36,'InitialCond: Check temperature', Temp_C0, Temp_C, notUsedI)
  endif
@@ -1838,7 +1840,42 @@
    call ErrorHint(36,'InitialCond: Check previous day', real(ID_Prev,kind(1d0)), real(id,kind(1d0)), notUsedI)
  endif
 
- !Check if LAI values are OK. Need to treat different hemispheres as well as 
+  !!This part currently does not work for multiple grids as Initial conditions values get overwritten.
+  ! Simple checks that Initial Conditions are within the specified ranges (within a precision tolerance)
+  pTol = 0.00001  
+  !write(*,*) LAIInitialEveTr,LAImin(ConifSurf-2),LAImax(ConifSurf-2)
+  if(LAIInitialEveTr < (LAImin(ConifSurf-2)-pTol)) then
+     call ErrorHint(36,'Intial LAI for EveTr < min value in SUEWS_Veg.txt!', LAIMin(ConifSurf-2), LAIInitialEveTr, notUsedI)
+  endif
+  if(LAIInitialEveTr > (LAImax(ConifSurf-2)+pTol)) then
+     call ErrorHint(36,'Intial LAI for EveTr > max value in SUEWS_Veg.txt!', LAIMax(ConifSurf-2), LAIInitialEveTr, notUsedI)
+  endif
+  !write(*,*) LAIInitialDecTr,LAImin(DecidSurf-2)
+  if(LAIInitialDecTr < (LAImin(DecidSurf-2)-pTol)) then
+     call ErrorHint(36,'Intial LAI for DecTr < min value in SUEWS_Veg.txt!', LAIMin(DecidSurf-2), LAIInitialDecTr, notUsedI)
+  endif
+  if(LAIInitialDecTr > (LAImax(DecidSurf-2)+pTol)) then
+     call ErrorHint(36,'Intial LAI for DecTr > max value in SUEWS_Veg.txt!', LAIMax(DecidSurf-2), LAIInitialDecTr, notUsedI)
+  endif
+  if(LAIInitialGrass < (LAImin(GrassSurf-2)-pTol)) then
+     call ErrorHint(36,'Intial LAI for Grass < min value in SUEWS_Veg.txt!', LAIMin(GrassSurf-2), LAIInitialGrass, notUsedI)
+  endif
+  if(LAIInitialGrass > (LAImax(GrassSurf-2)+pTol)) then
+    call ErrorHint(36,'Intial LAI for Grass > max value in SUEWS_Veg.txt!', LAIMax(GrassSurf-2), LAIInitialGrass, notUsedI)
+  endif
+
+  !write(*,*) AlbDec0, albmin_dec, albmax_dec
+  if(AlbDec0 < (AlbMin_dec-pTol)) then
+     !call ErrorHint(36,'Intial albedo for DecTr < min value in SUEWS_Veg.txt!', AlbMin_dec, AlbDec0, notUsedI)
+     call ErrorHint(36,'Intial albedo for DecTr < min value!', AlbMin_dec, AlbDec0, notUsedI)
+  endif
+  if(AlbDec0 > (AlbMax_dec+pTol)) then
+     !call ErrorHint(36,'Intial albedo for DecTr > max value in SUEWS_Veg.txt!', AlbMax_dec, AlbDec0, notUsedI)
+     call ErrorHint(36,'Intial albedo for DecTr < max value!', AlbMax_dec, AlbDec0, notUsedI)
+  endif 
+  !DecidCap0, Porosity0...
+ 
+ !Check more thoroughly if LAI values are OK. Need to treat different hemispheres as well as 
  !tropics separately.
  if (lat>40) then
    if ((LAIinitialEveTr>LAImin(ConifSurf-2)+1.and.(id<60.or.id>330)).or.&

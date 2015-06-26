@@ -172,11 +172,13 @@
    real(kind(1d0)),dimension( 0:ndays):: DecidCap   !Storage capacity of deciduous trees [mm]
    real(kind(1d0)),dimension( 0:ndays):: porosity   !Porosity of deciduous trees [-]
    
-   real(kind(1d0)):: AlbMin_dec,&   !Min albedo for for deciduous trees [-]
-		     AlbMax_dec,&   !Max albedo for for deciduous trees [-]
+   real(kind(1d0)):: AlbMin_dec,&   !Min albedo for deciduous trees [-]
+		     AlbMax_dec,&   !Max albedo for deciduous trees [-]
                      CapMin_dec,&   !Min storage capacity for deciduous trees [mm] (from input information)
-                     CapMax_dec     !Max storage capacity for deciduous trees [mm] (from input information)                           
-      
+                     CapMax_dec,&   !Max storage capacity for deciduous trees [mm] (from input information)                           
+                     PorMin_dec,&  !Min porosity for deciduous trees 
+                     PorMax_dec    !Max porosity for deciduous trees
+   
    ! Replicate arrays needed for DailyState, adding dimension to identify the grid, HCW 27 Nov 2014
    !! Could delete MaxNumberOfGrids and allocate these elsewhere once NumberOfGrids is known
    real(kind(1d0)),dimension( 0:ndays, 5,MaxNumberOfGrids):: GDD_grids
@@ -831,6 +833,8 @@ MODULE cbl_MODULE
     real(kind(1d0)):: halftimestep   !In decimal time based on interval 
     real (kind(1d0)):: tstepcount    !Count number of timesteps in this day
     integer:: nofDaysThisYear        !Based on whether leap year or not
+    
+    integer:: iy_prev_t, id_prev_t   !Value of iy and id at previous timestep
     
  end module time
  !==================================================================================================

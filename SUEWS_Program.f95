@@ -9,6 +9,8 @@
 !  - then over rows
 !  - then over grids
 !
+!Last modified by HCW 25 Jun 2015
+!  Fixed bug in LAI calculation at year change
 !Last modified by HCW 12 Mar 2015
 !Last modified by HCW 26 Feb 2015
 !Last modified by HCW 03 Dec 2014
@@ -233,6 +235,11 @@
               ! Call model calculation code
               if(ir==1) write(*,*) 'Now running block ',iv,'/',ReadBlocksMetData,' of year ',year_int,'...'
               call SUEWS_Calculations(GridCounter,ir,iv,irMax)
+              ! Record iy and id for current time step to handle last row in yearly files (YYYY 1 0 0)
+              if(GridCounter == NumberOfGrids) then   !Adjust only when the final grid has been run for this time step
+                 iy_prev_t = iy
+                 id_prev_t = id
+              endif
               
               ! Write state information to new InitialConditions files
               if(ir == irMax) then              !If last row...

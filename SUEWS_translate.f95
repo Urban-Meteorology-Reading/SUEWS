@@ -1,8 +1,13 @@
-!Translates new input arrays to actual model variables
-! Runs at the start of SUEWS_Calculations to transfer correct info
-!for each grid to the actual model variables
+!SUEWS_Translate
+!Translates - new input arrays (v2014b) to existing model variables
+!           - between arrays for different grids and the model variables
 !Made by HW&LJ Oct 2014
+!-----------------------------------------------------------------------------------
+!Last modified: HCW 26 Jun 2015
+! Translation of DailyState variables from the corresponding '_grids' arrays moved
+! earlier in code in order to fix bug in DecidCap, AlbDec, Porosity.
 !Last modified: HCW 28 Nov 2014
+!
 ! To Do:
 !       - Check observed soil moisture works correctly!!
 !       - Adjust model to allow water to runoff and sub-surface soil store for each surface type
@@ -11,13 +16,13 @@
 !===================================================================================
 subroutine SUEWS_Translate(Gridiv,ir,iMB)
 
-  use Initial
-  use allocateArray   !defines: SiteInfo, sfr, (PavSurf, BldgSurf, etc) 
+  use allocateArray
   use ColNamesInputFiles
   use ColNamesModelDailyState
   use data_in	      !defines: lat, lng, PopDaytime, PopNighttime, DayLightSavingDay, QF variables
   use defaultnotUsed
   use gis_data        !defines: areaZh, VegFraction, veg_fr, veg_type, BldgH, TreeH, FAIBldg, FAITree, Alt
+  use initial
   use mod_z	      !defines: z0m, zdm	
   use resist	      !defines: G1-G6, TH, TL, S1, S2, Kmax
   use snowMod	      !defines: alb_snow, etc		
@@ -35,7 +40,6 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   integer::i, ii, iii
   
   real (Kind(1d0)):: FCskip = -9  !NULL value used for output to FileChoices	
-
 
   !write(*,*) '---- SUEWS_Translate ----' 
   !write(*,*) 'Year:', SurfaceChar(Gridiv,c_Year)
@@ -66,12 +70,6 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   sfr(GrassSurf) = SurfaceChar(Gridiv,c_FrGrass)  ! Grass
   sfr(BSoilSurf) = SurfaceChar(Gridiv,c_FrBSoil)  ! BSoil
   sfr(WaterSurf) = SurfaceChar(Gridiv,c_FrWater)  ! Water
-
-  !write(*,*) '----------'
-  !write(*,*) Gridiv
-  !write(*,*) sum(sfr)
-  !write(*,*) sfr
-  !write(*,*) '----------'
 
   ! Check the surface fractions add up to 1 (or close to 1)
   if(sum(sfr)>1.001.or.sum(sfr)<0.999) call ErrorHint(10,'SiteSelect.txt - check surface fractions',sum(sfr),notUsed,notUsedI)
@@ -185,11 +183,6 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   MaxConductance(1:nvegsurf) = SurfaceChar(Gridiv,c_GsMax)  
   
   ! ---- LAI characteristics  !! Model currently uses one single Eq & set of powers; adjust later for each veg type
-  !write(*,*) SurfaceChar(Gridiv,c_LAIEq)  
-  !write(*,*) SurfaceChar(Gridiv,c_LeafGP1)  
-  !write(*,*) SurfaceChar(Gridiv,c_LeafGP2)  
-  !write(*,*) SurfaceChar(Gridiv,c_LeafOP1)  
-  !write(*,*) SurfaceChar(Gridiv,c_LeafOP2)  
   !! Set all rows the same for now in input file & use Decid row in model
   LAItype = int(SurfaceChar(Gridiv,c_LAIEq(ivDecid)))
   LAIPower(1) = SurfaceChar(Gridiv,c_LeafGP1(ivDecid)) ! 4 powers (not 4 veg types!)
@@ -232,7 +225,6 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   S1   = SurfaceChar(Gridiv,c_GsS1)  
   S2   = SurfaceChar(Gridiv,c_GsS2)  
   Kmax = SurfaceChar(Gridiv,c_GsKmax)  
-  
   
   ! ---- Pipe capacity (was from SiteSpecificParam.txt)
   PipeCapacity = SurfaceChar(Gridiv,c_PipeCapacity)
@@ -301,24 +293,24 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   ! ---- Irrigation
   Ie_start        	 = int(SurfaceChar(Gridiv,c_IeStart))
   Ie_end          	 = int(SurfaceChar(Gridiv,c_IeEnd))
-  InternalWaterUse_h  = SurfaceChar(Gridiv,c_IntWU)
+  InternalWaterUse_h     = SurfaceChar(Gridiv,c_IntWU)
   Faut	            	 = SurfaceChar(Gridiv,c_Faut)
-  Ie_a		    	 = SurfaceChar(Gridiv,c_Ie_a)   !Automatic irrigation model cofficients [mm d-1]; [mm d-1 degC-1]; [mm d-2]
-  Ie_m		    	 = SurfaceChar(Gridiv,c_Ie_m)   !Manual irrigation model cofficients [mm d-1]; [mm d-1 degC-1]; [mm d-2]
+  Ie_a		    	 = SurfaceChar(Gridiv,c_Ie_a)   !Automatic irrigation model coefficients [mm d-1]; [mm d-1 degC-1]; [mm d-2]
+  Ie_m		    	 = SurfaceChar(Gridiv,c_Ie_m)   !Manual irrigation model coefficients [mm d-1]; [mm d-1 degC-1]; [mm d-2]
   DayWat	    	 = SurfaceChar(Gridiv,c_DayWat)
   DayWatPer        	 = SurfaceChar(Gridiv,c_DayWatPer)
     
   ! ---- Hourly profiles
-  AHProf(0:23,1) = SurfaceChar(Gridiv,c_HrProfEnUseWD) ! Anthropogenic heat, weekdays
-  AHProf(0:23,2) = SurfaceChar(Gridiv,c_HrProfEnUseWE) ! Anthropogenic heat, weekends
+  AHProf(0:23,1)   = SurfaceChar(Gridiv,c_HrProfEnUseWD)   ! Anthropogenic heat, weekdays
+  AHProf(0:23,2)   = SurfaceChar(Gridiv,c_HrProfEnUseWE)   ! Anthropogenic heat, weekends
   WUProfM(0:23,1)  = SurfaceChar(Gridiv,c_HrProfWUManuWD)  ! Water use, manual, weekdays
   WUProfM(0:23,2)  = SurfaceChar(Gridiv,c_HrProfWUManuWE)  ! Water use, manual, weekends
   WUProfA(0:23,1)  = SurfaceChar(Gridiv,c_HrProfWUAutoWD)  ! Water use, automatic, weekdays
   WUProfA(0:23,2)  = SurfaceChar(Gridiv,c_HrProfWUAutoWE)  ! Water use, automatic, weekends
-  SnowProf(0:23,1)  = SurfaceChar(Gridiv,c_HrProfSnowCWD)  ! Snow clearing, weekdays
-  SnowProf(0:23,2)  = SurfaceChar(Gridiv,c_HrProfSnowCWE)  ! Snow clearing, weekends
+  SnowProf(0:23,1) = SurfaceChar(Gridiv,c_HrProfSnowCWD)   ! Snow clearing, weekdays
+  SnowProf(0:23,2) = SurfaceChar(Gridiv,c_HrProfSnowCWE)   ! Snow clearing, weekends
     
-  ! ---- Profiles at the resolution of model timestep
+  ! ---- Profiles at the resolution of model time step
   AHProf_tstep(:,1)  = TstepProfiles(Gridiv,cTP_EnUseWD,:) ! Anthropogenic heat, weekdays
   AHProf_tstep(:,2)  = TstepProfiles(Gridiv,cTP_EnUseWE,:) ! Anthropogenic heat, weekends
   WUProfM_tstep(:,1) = TstepProfiles(Gridiv,cTP_WUManuWD,:) ! Water use, manual, weekdays
@@ -347,6 +339,15 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
         WaterDist((nsurf+1),iv) = SurfaceChar(Gridiv,c_WGToSoilStore(iv))
      endif   
   enddo
+
+  ! Access required DailyState variables for the current grid (moved HCW 26 Jun 2015)
+  HDD(:,:)    = HDD_grids(:,:,Gridiv)
+  GDD(:,:)    = GDD_grids(:,:,Gridiv)
+  LAI(:,:)    = LAI_grids(:,:,Gridiv)
+  WU_day(:,:) = WU_Day_grids(:,:,Gridiv)
+  AlbDec(:)   = AlbDec_grids(:,Gridiv)
+  DecidCap(:) = DecidCap_grids(:,Gridiv) 
+  Porosity(:) = Porosity_grids(:,Gridiv)
   
   !! ---- Between-grid water distribution
   !!! Need to make these larger than MaxNumberOfGrids (and recode), as each grid can have 8 connections
@@ -360,38 +361,7 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   !! Grid where water goes to
   !GridTo(1:NConns)     = (SurfaceChar(Gridiv,54:68:2))
   !! Come back to this later
-  
-  
-  !write(*,*) 'QFProf'
-  !write(*,*) AHProf
-  !write(*,*) 'WaterProf'
-  !write(*,*) WUProfM
-  !write(*,*) WUProfA
-  !write(*,*) 'SnowProf'
-  !write(*,*) SnowProf
-  
-  !write(*,*) '------ IRRIGATION ------'
-  !write(*,*) Ie_start, Ie_end    
-  !write(*,*) InternalWaterUse_h
-  !write(*,*) Faut
-  !write(*,*) Ie_a
-  !write(*,*) Ie_m
-  !write(*,*) DayWat
-  !write(*,*) DayWatPer
-  !write(*,*) WUAreaEveTr_m2,WUAreaDecTr_m2,WUAreaGrass_m2
-  !write(*,*) WUAreaTrees_m2
-  !write(*,*) '------ ---------- ------'      
-  
-  !write(*,*) '------ QF COEFFS ------'
-  !write(*,*) BaseTHDD
-  !write(*,*) QF_A
-  !write(*,*) QF_B
-  !write(*,*) QF_C
-  !write(*,*) AH_min
-  !write(*,*) AH_slope
-  !write(*,*) T_Critic 
-  !write(*,*) '------ --------- ------'        
-  
+   
   ! ================================================================================= 
    
   ! Make other assignments using this input information
@@ -400,6 +370,9 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   ! Min & max storage capacities for DecTr
   CapMin_dec = surf(1,DecidSurf)
   CapMax_dec = surf(5,DecidSurf)
+  ! Min & max porosity for DecTr
+  PorMin_dec = 0.2
+  PorMax_dec = 0.6
   !! Max GDD & SDD   !!This is not used anywhere. Removed HCW 03 Mar 2015
   !GDDMax=0
   !SDDMax=0
@@ -408,10 +381,9 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   !   SDDMax=min(SDDFull(iv),SDDMax)
   !enddo
       
- !-----------------------------------------------------
+  !-----------------------------------------------------
   !-----------------------------------------------------
   !NARP_CONFIGURATION if net radiation is to be modelled
-
   IF(NetRadiationChoice>0)THEN
      NARP_LAT = SurfaceChar(Gridiv,c_lat)
      NARP_LONG = SurfaceChar(Gridiv,c_lng)    ! New sun_position_v2 use degrees FL
@@ -437,13 +409,11 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   ENDIF
 
 
-  !When SUEWS_Translate is called from InitialState (ir=0), translate inputs 
-!  write(*,*) 'Grid, Year:', SurfaceChar(Gridiv,c_Grid), SurfaceChar(Gridiv,c_Year)
-!  write(*,*) 'met forcing file index:',ir
+  !=================================================================================
+  ! When SUEWS_Translate is called from InitialState (ir=0), inputs need translating
   if(ir == 0) then
      !write(*,*) 'This should be seen only when called from InitialState and ir is 0. ir:',ir
-     !write(*,*) ''
-     
+          
      ! =============================================================================
      ! === Translate inputs from ModelDailyState to variable names used in model ===
      ! =============================================================================  
@@ -455,7 +425,7 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
      albDec   = ModelDailyState(Gridiv,cMDS_albDec)
      DecidCap = ModelDailyState(Gridiv,cMDS_DecidCap)
      CumSnowfall = ModelDailyState(Gridiv,cMDS_CumSnowfall)
-     
+  
      ! ---- LAI
      lai=0
      lai(id_prev,ivConif)  = ModelDailyState(Gridiv,cMDS_LAIInitialEveTr) 
@@ -500,7 +470,6 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
      ! =============================================================================
      ! === Translate inputs from ModelOutputData to variable names used in model ===
      ! =============================================================================     
-    
      ! ---- Above-ground state
      State(1:nsurf) = ModelOutputData(0,cMOD_State(1:nsurf),Gridiv)  
      ! ---- Below-ground state
@@ -513,10 +482,12 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
      MeltWaterStore(1:nsurf)  = ModelOutputData(0,cMOD_SnowWaterState(1:nsurf), Gridiv)   
               
   endif  !ir = 0
-
-     
+  !=================================================================================
   
-  !Write FileChoices.txt (was in SUEWS_Initial.f95) once per grid per year
+  
+  !=========================== Write FileChoices.txt ===============================
+  !=================================================================================
+  ! Do once per grid per year (was in SUEWS_Initial.f95)
   if (ir==1.and.iMB==1) then   !For first row of first block only
      !write(*,*) 'Writing to FileChoices for first chunk of met data per year per grid'
      FileChoices=trim(FileOutputPath)//trim(FileCode)//'_FileChoices.txt'
@@ -563,9 +534,7 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
 
      120	 format (8g8.2, g15.2)  !format (10g10.2)  
          
-     
      write(12,*) '---Number of rows in OHM_Coefficients.txt =',nlinesOHMCoefficients
-
      write(12,*)'-------','Select OHM','----------------------'
      write(12,'(8g12.4)')  SurfaceChar(Gridiv,c_OHMCode_SWet)
      write(12,'(8g12.4)')  SurfaceChar(Gridiv,c_OHMCode_SDry)
@@ -631,6 +600,7 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
 
      close(12)
       
+     
      !==============================================================================
      ! Check input values are reasonable ===========================================
     
@@ -655,19 +625,17 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
         if(FAIBLdg<0) call ErrorHint(1,'Check value of FAI for Buildings in input data',FAIBldg,notUsed,notUsedI)
         if(FAITree<0) call ErrorHint(2,'Check value of FAI for Trees in input data (weighted EveTr+DecTr)',FAITree,notUsed,notUsedI)
      endif 
-    
-     !==============================================================================
          
-  endif   !End for first row of first block only
+  endif   !End for first row of first block only ===================================
+     
   
-  
+  !=================================================================================
   !For each row of the met forcing file (ir), translate correct info for each grid 
   ! into model variables
   if (ir>0) then
      ! =============================================================================
      ! === Translate met data from MetForcingData to variable names used in model ==
      ! ============================================================================= 
-  
      iy =    int(MetForcingData(ir, 1,Gridiv))  !Integer variables
      id =    int(MetForcingData(ir, 2,Gridiv))
      it =    int(MetForcingData(ir, 3,Gridiv))
@@ -696,37 +664,19 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
      ! Calculate dectime
      dectime = real(id,kind(1d0))+real(it,kind(1d0))/24+real(imin,kind(1d0))/(60*24)
 
-     !write(*,*) 'In SUEWS_translate'
-     !write(*,*) 'imin',imin             
-     !write(*,*) 'it',it             
-     !write(*,*) 'id',id
-     !write(*,*) 'iy',iy
-
      ! =============================================================================
      ! === Translate values from ModelDailyState to variable names used in model ===
      ! =============================================================================
-
      porosity(id) = ModelDailyState(Gridiv,cMDS_porosity)
      albDec(id)   = ModelDailyState(Gridiv,cMDS_albDec)
      DecidCap(id) = ModelDailyState(Gridiv,cMDS_DecidCap)
      CumSnowfall  = ModelDailyState(Gridiv,cMDS_CumSnowfall)
-     
-     ! Save required DailyState variables for the current grid (HCW 27 Nov 2014)
-     HDD(:,:) = HDD_grids(:,:,Gridiv)
-     GDD(:,:) = GDD_grids(:,:,Gridiv)
-     LAI(:,:) = LAI_grids(:,:,Gridiv)
-     WU_day(:,:) = WU_Day_grids(:,:,Gridiv)
-     AlbDec(:)   = AlbDec_grids(:,Gridiv)
-     DecidCap(:) = DecidCap_grids(:,Gridiv) 
-     Porosity(:) = Porosity_grids(:,Gridiv)
-           
      ! ---- Snow density of each surface
      DensSnow(1:nsurf) = ModelDailyState(Gridiv,cMDS_SnowDens(1:nsurf))
          
      ! =============================================================================
      ! === Translate values from ModelOutputData to variable names used in model ===
      ! =============================================================================     
-    
      ! ---- Above-ground state
      State(1:nsurf) = ModelOutputData(ir-1,cMOD_State(1:nsurf),Gridiv)    
      ! ---- Below-ground state
@@ -738,44 +688,46 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
      ! ---- Liquid (melted) water in snowpack
      MeltWaterStore(1:nsurf)  = ModelOutputData(ir-1,cMOD_SnowWaterState(1:nsurf), Gridiv)    
     
-  endif !ir>0
+  endif !ir>0   !===================================================================
   
+  ! --------------------------------------------------------------------------------
   ! Check Initial Conditions are reasonable ----------------------------------------
   if (ir==1.and.iMB==1) then   !For first row of first block only
      call CheckInitial
   endif   
-
+  ! --------------------------------------------------------------------------------
+    
   return
  end subroutine SUEWS_Translate
- 
+!===================================================================================
 
+ 
+ !SUEWS_TranslateBack
 !Translates model variables to arrays for each grid
-! Runs at the end of SUEWS_Calculations to transfer correct info
-!for each grid to arrays
+! Runs at the end of SUEWS_Calculations to store correct info for each grid
 !Made by HW Nov 2014
-!Last modified: HCW 28 Nov 2014
-! To Do:
-!===================================================================== 
+!-----------------------------------------------------------------------------------
+ !Last modified: HCW 28 Nov 2014
+!===================================================================================
  subroutine SUEWS_TranslateBack(Gridiv,ir,irMax)
 
-  use Initial
   use allocateArray   
-  use data_in	      
-  use sues_data       
-  use gis_data        
-  use mod_z	      
-  use snowMod	      
-  use resist	      
-  use defaultnotUsed
-  use time
   use ColNamesInputFiles
   use ColNamesModelDailyState
+  use data_in	      
+  use defaultnotUsed
+  use gis_data        
+  use Initial
+  use mod_z	      
+  use resist	      
+  use snowMod	      
+  use sues_data       
+  use time
   
   IMPLICIT NONE
 
   integer::Gridiv,&   ! Index of the analysed grid (Gridcounter)
            ir,&       ! Meteorological forcing file index (set to zero if SUEWS_Translate called from InitialState)
-           !iMB,&      ! Chunk of met data
            irMax      ! Last row in current chunk of met data
            
   ! =============================================================================
@@ -786,7 +738,7 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   ModelDailyState(Gridiv,cMDS_albDec)   = albDec(id)   
   ModelDailyState(Gridiv,cMDS_DecidCap) = DecidCap(id) 
   ModelDailyState(Gridiv,cMDS_CumSnowfall) = CumSnowfall
-     
+       
   ! Save required DailyState variables for the current grid (HCW 27 Nov 2014)
   HDD_grids(:,:,Gridiv) = HDD(:,:) 
   GDD_grids(:,:,Gridiv) = GDD(:,:) 
@@ -819,4 +771,4 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
            
   return
 endsubroutine SUEWS_TranslateBack
- 
+!=================================================================================== 

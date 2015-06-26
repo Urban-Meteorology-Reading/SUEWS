@@ -64,20 +64,23 @@ while loop_out != '-9':
                 met_old = np.loadtxt(data_in, skiprows=1)
                 met_new = su.tofivemin_v1(met_old)
 
-    ### find start end end of 5 min file
-    posstart = (np.where((met_new[:, 0] == YYYY) & (met_new[:, 1] == 1) & (met_new[:, 2] == 0) & (met_new[:, 3] == 5)))
-    posend = (np.where((met_new[:, 0] == YYYY + 1) & (met_new[:, 1] == 1) & (met_new[:, 2] == 0) & (met_new[:, 3] == 0)))
+    ### find start end end of 5 min file for each year
+    posstart = np.where((met_new[:, 0] == YYYY) & (met_new[:, 1] == 1) & (met_new[:, 2] == 0) & (met_new[:, 3] == 5))
+    posend = np.where((met_new[:, 0] == YYYY + 1) & (met_new[:, 1] == 1) & (met_new[:, 2] == 0) & (met_new[:, 3] == 0))
     fixpos = 1
 
     if len(posstart[0]) == 0:
-        posstart = 0
+        starting = 0
+    else:
+        starting = posstart[0]
     if len(posend[0]) == 0:
-        posend = met_new.shape[0]
+        ending = met_new.shape[0]
         fixpos = 0
+    else:
+        ending = posend[0]
 
-    # met_save = met_new[posstart[0]:posend[0] + fixpos, :]  ## original for on full year
-    # met_save = met_new[0:posend[0] + fixpos, :]
-    met_save = met_new
+    met_save = met_new[starting:ending + fixpos, :]  ## original for on full year
+
     ### save file
     data_out = wf + fileinputpath[1:] + filecode + gridcode1 + '_' + str(YYYY) + '_data_5.txt'
     header = 'iy id it imin qn qh qe qs qf U RH Tair pres rain kdown snow ldown fcld wuh xsmd lai kdiff kdir wdir'
@@ -96,7 +99,7 @@ while loop_out != '-9':
 
 ### This part runs the model ###
 suewsstring = wf + '/' + prog_name
-# subprocess.call(suewsstring)
+subprocess.call(suewsstring)
 
 ### This part makes hourly averages from SUEWS 5 min output ###
 
@@ -313,6 +316,7 @@ if plotmonthlystat == 1:
 
 if plotbasic == 1:   # or plotmonthlystat == 1
     plt.show()
+
 # precip = (suews_1hour[:, 17])  #Precipitation (P/i)
 # wu = (suews_1hour[:, 18])  # exteranl wu (Ie/i)
 # st = (suews_1hour[:, 24])  #storage (totCh/i)

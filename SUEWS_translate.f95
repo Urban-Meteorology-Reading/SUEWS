@@ -3,6 +3,8 @@
 !           - between arrays for different grids and the model variables
 !Made by HW&LJ Oct 2014
 !-----------------------------------------------------------------------------------
+!Last modified: HCW 03 Jul 2015
+! Use PopDensNighttime by default (not PopDensDaytime)
 !Last modified: HCW 26 Jun 2015
 ! Translation of DailyState variables from the corresponding '_grids' arrays moved
 ! earlier in code in order to fix bug in DecidCap, AlbDec, Porosity.
@@ -119,11 +121,19 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   PopDensDaytime   = SurfaceChar(Gridiv,c_PopDensDay)	 ! Daytime population density [ha-1]
   PopDensNighttime = SurfaceChar(Gridiv,c_PopDensNight)  ! Night-time population density [ha-1]
   
-  NumCapita = PopDensDaytime      ! Pop density [ha-1]   !!Use Daytime pop density for NumCapita for testing! 
+  NumCapita = PopDensNighttime      ! Pop density [ha-1]     !!Use Night-time pop density for NumCapita for testing! 
   
   ! ---- Albedo [-]
-  alb(1:nsurf) = SurfaceChar(Gridiv,c_Alb)       
+  alb(1:nsurf) = SurfaceChar(Gridiv,c_AlbMax)   !Use maximum albedos as default value (albmin for veg surfaces handled below)     
   alb_snow     = SurfaceChar(Gridiv,c_SnowAlb)
+  
+  ! ---- Set min & max albedo for vegetated surfaces (min albedo not currently used for NonVeg or Water surfaces)
+  AlbMin_EveTr = SurfaceChar(Gridiv,c_AlbMin(ConifSurf))
+  AlbMax_EveTr = SurfaceChar(Gridiv,c_AlbMax(ConifSurf))
+  AlbMin_DecTr = SurfaceChar(Gridiv,c_AlbMin(DecidSurf))
+  AlbMax_DecTr = SurfaceChar(Gridiv,c_AlbMax(DecidSurf))
+  AlbMin_Grass = SurfaceChar(Gridiv,c_AlbMin(GrassSurf))
+  AlbMax_Grass = SurfaceChar(Gridiv,c_AlbMax(GrassSurf))
   
   ! ---- Emissivity [-] 
   emis(1:nsurf) = SurfaceChar(Gridiv,c_Emis)
@@ -133,6 +143,13 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   surf(1,1:nsurf) = SurfaceChar(Gridiv,c_StorMin)   ! Minimum	
   surf(5,1:nsurf) = SurfaceChar(Gridiv,c_StorMax)   ! Maximum	
   surf(6,1:nsurf) = surf(1,1:nsurf)  !Set storage capacities for all surface to minimum (DecTr changes with time in Calculations).
+
+  ! ---- Set min & max storage capacities for DecTr
+  CapMin_dec = surf(1,DecidSurf)
+  CapMax_dec = surf(5,DecidSurf)
+  ! ---- Set min & max porosity for DecTr
+  PorMin_dec = 0.2
+  PorMax_dec = 0.6
   
   ! ---- Threshold for wet evaporation [mm]
   WetThresh(1:nsurf) = SurfaceChar(Gridiv,c_WetThresh)
@@ -348,6 +365,8 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   AlbDec(:)   = AlbDec_grids(:,Gridiv)
   DecidCap(:) = DecidCap_grids(:,Gridiv) 
   Porosity(:) = Porosity_grids(:,Gridiv)
+  AlbEveTr(:)   = AlbEveTr_grids(:,Gridiv)
+  AlbGrass(:)   = AlbGrass_grids(:,Gridiv)
   
   !! ---- Between-grid water distribution
   !!! Need to make these larger than MaxNumberOfGrids (and recode), as each grid can have 8 connections
@@ -364,23 +383,7 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
    
   ! ================================================================================= 
    
-  ! Make other assignments using this input information
-  AlbMin_dec = 0.15             !Min albedo for DecTr set to 0.15   !!Should change later / set as input option
-  AlbMax_dec = alb(DecidSurf)   !Max albedo for DecTr set to current input (full leaf-on, middle of the day) value   
-  ! Min & max storage capacities for DecTr
-  CapMin_dec = surf(1,DecidSurf)
-  CapMax_dec = surf(5,DecidSurf)
-  ! Min & max porosity for DecTr
-  PorMin_dec = 0.2
-  PorMax_dec = 0.6
-  !! Max GDD & SDD   !!This is not used anywhere. Removed HCW 03 Mar 2015
-  !GDDMax=0
-  !SDDMax=0
-  !do iv=1,nvegsurf
-  !   GDDMax=max(GDDFull(iv),GDDMax)	
-  !   SDDMax=min(SDDFull(iv),SDDMax)
-  !enddo
-      
+        
   !-----------------------------------------------------
   !-----------------------------------------------------
   !NARP_CONFIGURATION if net radiation is to be modelled
@@ -423,6 +426,8 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
          
      porosity = ModelDailyState(Gridiv,cMDS_porosity)
      albDec   = ModelDailyState(Gridiv,cMDS_albDec)
+     albEveTr   = ModelDailyState(Gridiv,cMDS_albEveTr)
+     albGrass   = ModelDailyState(Gridiv,cMDS_albGrass)
      DecidCap = ModelDailyState(Gridiv,cMDS_DecidCap)
      CumSnowfall = ModelDailyState(Gridiv,cMDS_CumSnowfall)
   
@@ -461,6 +466,8 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
      LAI_grids(:,:,Gridiv) = LAI(:,:) 
      WU_Day_grids(:,:,Gridiv) = WU_day(:,:)
      AlbDec_grids(:,Gridiv) = AlbDec(:)   
+     AlbEveTr_grids(:,Gridiv) = AlbEveTr(:)   
+     AlbGrass_grids(:,Gridiv) = AlbGrass(:)   
      DecidCap_grids(:,Gridiv) = DecidCap(:) 
      Porosity_grids(:,Gridiv) = Porosity(:)     
     
@@ -500,6 +507,8 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
      write(12,*)'--------SUEWS_FunctionalTypes.txt---------------------------- '
      write(12,*)'!Paved  Bldgs   EveTr  DecTr  Grass   BSoil  Water  Snow        -9 not applicable  '
      write(12,120) alb(1:nsurf),  alb_snow,  ' albedo'             ! 1
+     write(12,120) FCskip,FCskip,AlbMin_EveTr,AlbMin_DecTr,AlbMin_Grass,FCskip,FCskip,albSnowMin,  ' min albedo'   ! 1a
+     write(12,120) FCskip,FCskip,AlbMax_EveTr,AlbMax_DecTr,AlbMax_Grass,FCskip,FCskip,albSnowMax,  ' max albedo'   ! 1a
      write(12,120) emis(1:nsurf), emis_snow, ' emissivity'               ! 2
      write(12,120) FCskip, FCskip, baseT (1:nvegsurf),FCskip, FCskip, FCskip,' BaseT'  ! 3
      write(12,120) FCskip, FCskip, baseTe(1:nvegsurf),FCskip, FCskip, FCskip, ' BaseTe'   ! 4
@@ -669,6 +678,8 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
      ! =============================================================================
      porosity(id) = ModelDailyState(Gridiv,cMDS_porosity)
      albDec(id)   = ModelDailyState(Gridiv,cMDS_albDec)
+     albEveTr(id)   = ModelDailyState(Gridiv,cMDS_albEveTr)
+     albGrass(id)   = ModelDailyState(Gridiv,cMDS_albGrass)
      DecidCap(id) = ModelDailyState(Gridiv,cMDS_DecidCap)
      CumSnowfall  = ModelDailyState(Gridiv,cMDS_CumSnowfall)
      ! ---- Snow density of each surface
@@ -736,6 +747,8 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
 
   ModelDailyState(Gridiv,cMDS_porosity) = porosity(id) 
   ModelDailyState(Gridiv,cMDS_albDec)   = albDec(id)   
+  ModelDailyState(Gridiv,cMDS_albEveTr) = albEveTr(id)   
+  ModelDailyState(Gridiv,cMDS_albGrass) = albGrass(id)   
   ModelDailyState(Gridiv,cMDS_DecidCap) = DecidCap(id) 
   ModelDailyState(Gridiv,cMDS_CumSnowfall) = CumSnowfall
        
@@ -744,7 +757,9 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   GDD_grids(:,:,Gridiv) = GDD(:,:) 
   LAI_grids(:,:,Gridiv) = LAI(:,:) 
   WU_Day_grids(:,:,Gridiv) = WU_day(:,:)
-  AlbDec_grids(:,Gridiv) = AlbDec(:)   
+  AlbDec_grids(:,Gridiv) = AlbDec(:)
+  AlbEveTr_grids(:,Gridiv) = AlbEveTr(:)
+  AlbGrass_grids(:,Gridiv) = AlbGrass(:)
   DecidCap_grids(:,Gridiv) = DecidCap(:) 
   Porosity_grids(:,Gridiv) = Porosity(:)    
 

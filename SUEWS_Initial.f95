@@ -626,7 +626,8 @@
    ! ---- Find code for Paved surface (Impervious) ----
    call CodeMatchNonVeg(rr,c_PavedCode)
    ! Transfer characteristics to SurfaceChar for Paved surface
-   SurfaceChar(gridiv,c_Alb(PavSurf)) 	       = NonVeg_Coeff(iv5,ci_Alb)
+   SurfaceChar(gridiv,c_AlbMin(PavSurf))       = NonVeg_Coeff(iv5,ci_AlbMin)
+   SurfaceChar(gridiv,c_AlbMax(PavSurf))       = NonVeg_Coeff(iv5,ci_AlbMax)
    SurfaceChar(gridiv,c_Emis(PavSurf))         = NonVeg_Coeff(iv5,ci_Emis)
    SurfaceChar(gridiv,c_StorMin(PavSurf))      = NonVeg_Coeff(iv5,ci_StorMin)
    SurfaceChar(gridiv,c_StorMax(PavSurf))      = NonVeg_Coeff(iv5,ci_StorMax)
@@ -692,7 +693,8 @@
    ! ---- Find code for Bldgs surface (Impervious) ----
    call CodeMatchNonVeg(rr,c_BldgsCode) 
    ! Transfer characteristics to SurfaceChar for Bldgs surface
-   SurfaceChar(gridiv,c_Alb(BldgSurf))          = NonVeg_Coeff(iv5,ci_Alb)
+   SurfaceChar(gridiv,c_AlbMin(BldgSurf))       = NonVeg_Coeff(iv5,ci_AlbMin)
+   SurfaceChar(gridiv,c_AlbMax(BldgSurf))       = NonVeg_Coeff(iv5,ci_AlbMax)
    SurfaceChar(gridiv,c_Emis(BldgSurf))         = NonVeg_Coeff(iv5,ci_Emis)
    SurfaceChar(gridiv,c_StorMin(BldgSurf))      = NonVeg_Coeff(iv5,ci_StorMin)
    SurfaceChar(gridiv,c_StorMax(BldgSurf))      = NonVeg_Coeff(iv5,ci_StorMax)
@@ -758,7 +760,8 @@
    call CodeMatchVeg(rr,c_EveTrCode)       
    ! Transfer characteristics to SurfaceChar for EveTr surface
    ! All surfaces (1-nsurf)
-   SurfaceChar(gridiv,c_Alb(ConifSurf))        = Veg_Coeff(iv5,cp_Alb)
+   SurfaceChar(gridiv,c_AlbMin(ConifSurf))     = Veg_Coeff(iv5,cp_AlbMin)
+   SurfaceChar(gridiv,c_AlbMax(ConifSurf))     = Veg_Coeff(iv5,cp_AlbMax)
    SurfaceChar(gridiv,c_Emis(ConifSurf))       = Veg_Coeff(iv5,cp_Emis)
    SurfaceChar(gridiv,c_StorMin(ConifSurf))    = Veg_Coeff(iv5,cp_StorMin)
    SurfaceChar(gridiv,c_StorMax(ConifSurf))    = Veg_Coeff(iv5,cp_StorMax)
@@ -837,11 +840,12 @@
    call CodeMatchVeg(rr,c_DecTrCode)        
    ! Transfer characteristics to SurfaceChar for DecTr surface
    ! All surfaces (1-nsurf)
-   SurfaceChar(gridiv,c_Alb(DecidSurf))        = Veg_Coeff(iv5,cp_Alb)
+   SurfaceChar(gridiv,c_AlbMin(DecidSurf))     = Veg_Coeff(iv5,cp_AlbMin)
+   SurfaceChar(gridiv,c_AlbMax(DecidSurf))     = Veg_Coeff(iv5,cp_AlbMax)
    SurfaceChar(gridiv,c_Emis(DecidSurf))       = Veg_Coeff(iv5,cp_Emis)
    SurfaceChar(gridiv,c_StorMin(DecidSurf))    = Veg_Coeff(iv5,cp_StorMin)
    SurfaceChar(gridiv,c_StorMax(DecidSurf))    = Veg_Coeff(iv5,cp_StorMax)
-   SurfaceChar(gridiv,c_WetThresh(DecidSurf)) = Veg_Coeff(iv5,cp_WetThresh)
+   SurfaceChar(gridiv,c_WetThresh(DecidSurf))  = Veg_Coeff(iv5,cp_WetThresh)
    SurfaceChar(gridiv,c_StateLimit(DecidSurf)) = Veg_Coeff(iv5,cp_StateLimit)
    SurfaceChar(gridiv,c_DrEq(DecidSurf))       = Veg_Coeff(iv5,cp_DrEq)
    SurfaceChar(gridiv,c_DrCoef1(DecidSurf))    = Veg_Coeff(iv5,cp_DrCoef1)
@@ -916,7 +920,8 @@
    call CodeMatchVeg(rr,c_GrassCode)       
    ! Transfer characteristics to SurfaceChar for Grass surface
    ! All surfaces (1-nsurf)
-   SurfaceChar(gridiv,c_Alb(GrassSurf))        = Veg_Coeff(iv5,cp_Alb)
+   SurfaceChar(gridiv,c_AlbMin(GrassSurf))     = Veg_Coeff(iv5,cp_AlbMin)
+   SurfaceChar(gridiv,c_AlbMax(GrassSurf))     = Veg_Coeff(iv5,cp_AlbMax)
    SurfaceChar(gridiv,c_Emis(GrassSurf))       = Veg_Coeff(iv5,cp_Emis)
    SurfaceChar(gridiv,c_StorMin(GrassSurf))    = Veg_Coeff(iv5,cp_StorMin)
    SurfaceChar(gridiv,c_StorMax(GrassSurf))    = Veg_Coeff(iv5,cp_StorMax)
@@ -995,7 +1000,8 @@
    call CodeMatchNonVeg(rr,c_BSoilCode)       
    ! Transfer characteristics to SurfaceChar for BSoil surface
    ! All surfaces (1-nsurf)
-   SurfaceChar(gridiv,c_Alb(BSoilSurf))        = NonVeg_Coeff(iv5,ci_Alb)
+   SurfaceChar(gridiv,c_AlbMin(BSoilSurf))     = NonVeg_Coeff(iv5,ci_AlbMin)
+   SurfaceChar(gridiv,c_AlbMax(BSoilSurf))     = NonVeg_Coeff(iv5,ci_AlbMax)
    SurfaceChar(gridiv,c_Emis(BSoilSurf))       = NonVeg_Coeff(iv5,ci_Emis)
    SurfaceChar(gridiv,c_StorMin(BSoilSurf))    = NonVeg_Coeff(iv5,ci_StorMin)
    SurfaceChar(gridiv,c_StorMax(BSoilSurf))    = NonVeg_Coeff(iv5,ci_StorMax)
@@ -1062,7 +1068,8 @@
    call CodeMatchWater(rr,c_WaterCode)              
    ! Transfer characteristics to SurfaceChar for Water surface
    ! All surfaces (1-nsurf)
-   SurfaceChar(gridiv,c_Alb(WaterSurf))        = Water_Coeff(iv5,cw_Alb)
+   SurfaceChar(gridiv,c_AlbMin(WaterSurf))     = Water_Coeff(iv5,cw_AlbMin)
+   SurfaceChar(gridiv,c_AlbMax(WaterSurf))     = Water_Coeff(iv5,cw_AlbMax)
    SurfaceChar(gridiv,c_Emis(WaterSurf))       = Water_Coeff(iv5,cw_Emis)
    SurfaceChar(gridiv,c_StorMin(WaterSurf))    = Water_Coeff(iv5,cw_StorMin)
    SurfaceChar(gridiv,c_StorMax(WaterSurf))    = Water_Coeff(iv5,cw_StorMax)
@@ -1257,6 +1264,8 @@
  
 !-------------------------------------------------------------------------
  SUBROUTINE InitialState(GridName,year_int,Gridiv,year_txt)
+ ! Last modified HCW 03 Jul 2015
+ ! Added initial conditions albEveTr0 and albGrass0    
  ! Last modified by HCW 03 Dec 2014
  ! To do:
  !	 - Check running means (5-day temperature)
@@ -1303,9 +1312,11 @@
                   LAIinitialEveTr,&            
                   LAIinitialDecTr,&
                   LAIinitialGrass,&
-                  porosity0,&
+                  AlbEveTr0,&
                   albDec0,&
+                  AlbGrass0,&
                   decidCap0,&
+                  porosity0,&
                   PavedState,&
                   BldgsState,&
 	          EveTrState,&
@@ -1385,7 +1396,9 @@
   ModelDailyState(Gridiv,cMDS_albDec)   = albDec0
   ModelDailyState(Gridiv,cMDS_DecidCap) = DecidCap0
   ModelDailyState(Gridiv,cMDS_CumSnowfall) = 0 !!Check this
-
+  ModelDailyState(Gridiv,cMDS_albEveTr)   = albEveTr0
+  ModelDailyState(Gridiv,cMDS_albGrass)   = albGrass0
+  
   ! -- Anthropogenic heat flux initializations -- 
   ! Need to get BaseTHDD from SurfaceChar, as info not transferred until SUEWS_Translate called 
   BaseTHDD = SurfaceChar(Gridiv,c_BaseTHDD)
@@ -1634,6 +1647,8 @@
 
 !-------------------------------------------------------------------------
  subroutine NextInitial(GridName,year_int)
+ ! Last modified HCW 03 Jul 2015
+ ! Added initial conditions albEveTr0 and albGrass0    
  ! Modified by HCW 21 Nov 2014
  ! Last day of year is not anymore the number of days on that year, but rather
  ! id == 1. Thus nofDaysThisYear was changed to 1. LJ 9/4/2015
@@ -1690,9 +1705,11 @@
   write(57,*)'LAIinitialEveTr=',lai(nofDaysThisYear,ivConif)
   write(57,*)'LAIinitialDecTr=',lai(nofDaysThisYear,ivDecid)
   write(57,*)'LAIinitialGrass=',lai(nofDaysThisYear,ivGrass)
-  write(57,*)'porosity0=',porosity(id)
-  write(57,*)'DecidCap0=',decidCap(id)
+  write(57,*)'albEveTr0=',AlbEveTr(id)
   write(57,*)'albDec0=',AlbDec(id)
+  write(57,*)'albGrass0=',AlbGrass(id)
+  write(57,*)'DecidCap0=',decidCap(id)
+  write(57,*)'porosity0=',porosity(id)
   write(57,*)'soilstorePavedState=',soilmoist(PavSurf)
   write(57,*)'soilstoreBldgsState=',soilmoist(BldgSurf)
   write(57,*)'soilstoreEveTrState=',soilmoist(ConifSurf)
@@ -1840,40 +1857,40 @@
    call ErrorHint(36,'InitialCond: Check previous day', real(ID_Prev,kind(1d0)), real(id,kind(1d0)), notUsedI)
  endif
 
-  !!This part currently does not work for multiple grids as Initial conditions values get overwritten.
-  ! Simple checks that Initial Conditions are within the specified ranges (within a precision tolerance)
-  pTol = 0.00001  
-  !write(*,*) LAIInitialEveTr,LAImin(ConifSurf-2),LAImax(ConifSurf-2)
-  if(LAIInitialEveTr < (LAImin(ConifSurf-2)-pTol)) then
-     call ErrorHint(36,'Intial LAI for EveTr < min value in SUEWS_Veg.txt!', LAIMin(ConifSurf-2), LAIInitialEveTr, notUsedI)
-  endif
-  if(LAIInitialEveTr > (LAImax(ConifSurf-2)+pTol)) then
-     call ErrorHint(36,'Intial LAI for EveTr > max value in SUEWS_Veg.txt!', LAIMax(ConifSurf-2), LAIInitialEveTr, notUsedI)
-  endif
-  !write(*,*) LAIInitialDecTr,LAImin(DecidSurf-2)
-  if(LAIInitialDecTr < (LAImin(DecidSurf-2)-pTol)) then
-     call ErrorHint(36,'Intial LAI for DecTr < min value in SUEWS_Veg.txt!', LAIMin(DecidSurf-2), LAIInitialDecTr, notUsedI)
-  endif
-  if(LAIInitialDecTr > (LAImax(DecidSurf-2)+pTol)) then
-     call ErrorHint(36,'Intial LAI for DecTr > max value in SUEWS_Veg.txt!', LAIMax(DecidSurf-2), LAIInitialDecTr, notUsedI)
-  endif
-  if(LAIInitialGrass < (LAImin(GrassSurf-2)-pTol)) then
-     call ErrorHint(36,'Intial LAI for Grass < min value in SUEWS_Veg.txt!', LAIMin(GrassSurf-2), LAIInitialGrass, notUsedI)
-  endif
-  if(LAIInitialGrass > (LAImax(GrassSurf-2)+pTol)) then
-    call ErrorHint(36,'Intial LAI for Grass > max value in SUEWS_Veg.txt!', LAIMax(GrassSurf-2), LAIInitialGrass, notUsedI)
-  endif
+  !!!This part currently does not work for multiple grids as Initial conditions values get overwritten.
+  !! Simple checks that Initial Conditions are within the specified ranges (within a precision tolerance)
+  !pTol = 0.00001  
+  !!write(*,*) LAIInitialEveTr,LAImin(ConifSurf-2),LAImax(ConifSurf-2)
+  !if(LAIInitialEveTr < (LAImin(ConifSurf-2)-pTol)) then
+  !  call ErrorHint(36,'Intial LAI for EveTr < min value in SUEWS_Veg.txt!', LAIMin(ConifSurf-2), LAIInitialEveTr, notUsedI)
+  !endif
+  !if(LAIInitialEveTr > (LAImax(ConifSurf-2)+pTol)) then
+  !   call ErrorHint(36,'Intial LAI for EveTr > max value in SUEWS_Veg.txt!', LAIMax(ConifSurf-2), LAIInitialEveTr, notUsedI)
+  !endif
+  !!write(*,*) LAIInitialDecTr,LAImin(DecidSurf-2)
+  !if(LAIInitialDecTr < (LAImin(DecidSurf-2)-pTol)) then
+  !   call ErrorHint(36,'Intial LAI for DecTr < min value in SUEWS_Veg.txt!', LAIMin(DecidSurf-2), LAIInitialDecTr, notUsedI)
+  !endif
+  !if(LAIInitialDecTr > (LAImax(DecidSurf-2)+pTol)) then
+  !   call ErrorHint(36,'Intial LAI for DecTr > max value in SUEWS_Veg.txt!', LAIMax(DecidSurf-2), LAIInitialDecTr, notUsedI)
+  !endif
+  !if(LAIInitialGrass < (LAImin(GrassSurf-2)-pTol)) then
+  !   call ErrorHint(36,'Intial LAI for Grass < min value in SUEWS_Veg.txt!', LAIMin(GrassSurf-2), LAIInitialGrass, notUsedI)
+  !endif
+  !if(LAIInitialGrass > (LAImax(GrassSurf-2)+pTol)) then
+  !  call ErrorHint(36,'Intial LAI for Grass > max value in SUEWS_Veg.txt!', LAIMax(GrassSurf-2), LAIInitialGrass, notUsedI)
+  !endif
 
-  !write(*,*) AlbDec0, albmin_dec, albmax_dec
-  if(AlbDec0 < (AlbMin_dec-pTol)) then
-     !call ErrorHint(36,'Intial albedo for DecTr < min value in SUEWS_Veg.txt!', AlbMin_dec, AlbDec0, notUsedI)
-     call ErrorHint(36,'Intial albedo for DecTr < min value!', AlbMin_dec, AlbDec0, notUsedI)
-  endif
-  if(AlbDec0 > (AlbMax_dec+pTol)) then
-     !call ErrorHint(36,'Intial albedo for DecTr > max value in SUEWS_Veg.txt!', AlbMax_dec, AlbDec0, notUsedI)
-     call ErrorHint(36,'Intial albedo for DecTr < max value!', AlbMax_dec, AlbDec0, notUsedI)
-  endif 
-  !DecidCap0, Porosity0...
+  !!write(*,*) AlbDec0, albmin_DecTr, albmax_DecTr
+  !if(AlbDec0 < (AlbMin_DecTr-pTol)) then
+  !   !call ErrorHint(36,'Intial albedo for DecTr < min value in SUEWS_Veg.txt!', AlbMin_DecTr, AlbDec0, notUsedI)
+  !   call ErrorHint(36,'Intial albedo for DecTr < min value!', AlbMin_DecTr, AlbDec0, notUsedI)
+  !endif
+  !if(AlbDec0 > (AlbMax_dec+pTol)) then
+  !   !call ErrorHint(36,'Intial albedo for DecTr > max value in SUEWS_Veg.txt!', AlbMax_dec, AlbDec0, notUsedI)
+  !   call ErrorHint(36,'Intial albedo for DecTr < max value!', AlbMax_dec, AlbDec0, notUsedI)
+  !endif 
+  !!DecidCap0, Porosity0...
  
  !Check more thoroughly if LAI values are OK. Need to treat different hemispheres as well as 
  !tropics separately.

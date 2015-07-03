@@ -2,6 +2,8 @@
 !Made by LJ and HW Oct 2014
 !Gives in the grid ID (Gridiv) and number of line in the met forcing data to be analyzed (ir)
 !Last modification
+! HCW 29 Jun 2015
+!  Added albEveTr and albGrass
 ! HCW 25 Jun 2015
 !  Fixed bug in LAI calculation at year change.
 !  Changed AlbDec to use id value (not (id-1) value) to avoid issues at year change.
@@ -111,11 +113,8 @@
  endif
  
  !Call the dailystate routine to get surface characteristics ready
- !!!write(*,*) 'Calling DailyState from Calculations'
- !!!write(*,*) id, it, imin, DecidCap(id), Albdec(id), porosity(id)
  call DailyState(Gridiv)
- !!!write(*,*) id, it, imin, DecidCap(id), Albdec(id), porosity(id)
- 
+  
  if(LAICalcYes==0)then
    lai(id-1,:)=lai_obs ! check -- this is going to be a problem as it is not for each vegetation class
  endif
@@ -154,8 +153,12 @@
 
    !write(*,*) DecidCap(id), id, it, imin, 'Calc - near start'
    
-   ALB(DecidSurf)=albDec(id) !Change deciduous albedo
+   ! Update variables that change daily and represent seasonal variability
+   alb(DecidSurf)=albDec(id) !Change deciduous albedo
    surf(6,DecidSurf)=DecidCap(id)  !Change current storage capacity of deciduous trees
+   ! Change EveTr and Grass albedo too
+   alb(ConifSurf)=albEveTr(id)
+   alb(GrassSurf)=albGrass(id)
    
    call narp(alb_snow,qn1_SF,qn1_S)
    !Temp_C,kclear,fcld,dectime,avkdn,avRH,qn1,kup,ldown,lup,tsurf,&

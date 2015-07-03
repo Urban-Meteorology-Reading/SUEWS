@@ -5,6 +5,11 @@
 ! N.B. Some of this code is repeated in SUEWS_Initial
 ! --> so if changes are made here, SUEWS_Initial may also need to be updated accordingly
 ! 
+!Last modified HCW 03 Jul 2015
+! Increased output resolution of P/day in DailyState file to avoid rounding errors
+! Albedo of EveTr and Grass now adjusted based on change in LAI for EveTr and Grass (rather than DecTr)
+!Last modified HCW 29 Jun 2015
+! Added albChange for EveTr and Grass surfaces
 !Last modified HCW 11 Jun 2015
 ! Bug fix from 05 Jun now fixed in a different way - DecidCap is now treated the same as DecidAlb 
 !  so should be able to cope with multiple grids.
@@ -61,7 +66,7 @@
             date,&         !Day
             critDays       !Limit for GDD when GDD or SDD is set to zero
 
-  real(kind(1d0)):: capChange,porChange,albChange,deltaLAI
+  real(kind(1d0)):: capChange,porChange,albChangeDecTr,albChangeEveTr,albChangeGrass,deltaLAI,deltaLAIEveTr,deltaLAIGrass
   real(kind(1d0)):: no,yes,indHelp   !Switches and checks for GDD
   character(len=10):: grstr2
      
@@ -347,26 +352,52 @@
      !------------------------------------------------------------------------------
        
      !::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-     ! Calculate the development of deciduous cover, albedo and porosity
+     ! Calculate the development of vegetation cover
+     ! Albedo changes with LAI for each vegetation type
+     ! Storage capacity and porosity are updated based on DecTr LAI only (seasonal variation in Grass and EveTr assumed small)
      ! If only LUMPS is used, set deciduous capacities to 0
      ! Assume porosity Change based on GO99- Heisler??
-     iv=ivDecid
      deltaLAI=0
+     deltaLAIEveTr=0
+     deltaLAIGrass=0
      CapChange=0
      porChange=0
-     albChange=0
-            
+     albChangeDecTr=0
+     albChangeEveTr=0
+     albChangeGrass=0
+     
+     iv=ivDecid
      if((LAI(ID,iv)-LAI(ID-1,iv))/=0) then
         deltaLAI=(LAI(id,iv)-LAI(id-1,iv))/(LAImax(iv)-LaiMin(iv))
+        albChangeDecTr=(alBMax_DecTr-AlbMin_DecTr)* deltaLAI          
         CapChange=(CapMin_dec-CapMax_dec)* deltaLAI
-        albChange=(alBMax_dec-AlbMin_dec)* deltaLAI          
         porChange=(PorMin_dec-PorMax_dec)* deltaLAI     
      endif        
      
+     iv=ivConif
+     if((LAI(ID,iv)-LAI(ID-1,iv))/=0) then
+        deltaLAIEveTr=(LAI(id,iv)-LAI(id-1,iv))/(LAImax(iv)-LaiMin(iv))
+        albChangeEveTr=(alBMax_EveTr-AlbMin_EveTr)* deltaLAIEveTr    !!N.B. Currently uses deltaLAI for deciduous trees only!!       
+     endif        
+        
+     iv=ivGrass
+     if((LAI(ID,iv)-LAI(ID-1,iv))/=0) then
+        deltaLAIGrass=(LAI(id,iv)-LAI(id-1,iv))/(LAImax(iv)-LaiMin(iv))
+        albChangeGrass=(alBMax_Grass-AlbMin_Grass)* deltaLAIGrass    !!N.B. Currently uses deltaLAI for deciduous trees only!!       
+     endif        
+     
+     iv=ivDecid
+     
+     !write(*,*) deltaLAI, deltaLAIEveTr, deltaLAIGrass
+     
      DecidCap(id) = DecidCap(id-1) - CapChange
-     albDec(id)   = albDec(id-1)   + albChange    
-     porosity(id) = porosity(id-1) - porChange
-    ! -----------------------------------------------------------------------------
+     albDec(id)   = albDec(id-1)   + albChangeDecTr    
+     porosity(id) = porosity(id-1) - porChange    
+     !Also update albedo of EveTr and Grass surfaces
+     albEveTr(id) = albEveTr(id-1) + albChangeEveTr    
+     albGrass(id) = albGrass(id-1) + albChangeGrass
+     
+     ! -----------------------------------------------------------------------------
      
      !--------------------------------------------------------------------------
      !Write out DailyState file (1 row per day)
@@ -407,7 +438,7 @@
                       deltaLAI,VegPhenLumps,alb_snow,densSnow(1:7)
             
         601 format(2(i4,1X),&
-                   6(f6.1,1X), 5(f6.1,1X),&
+                   4(f6.1,1X),1(f8.4,1X),1(f6.1,1X), 5(f6.1,1X),&
                    3(f6.2,1X),&
                    3(f6.2,1X),&
                    9(f7.3,1X),&

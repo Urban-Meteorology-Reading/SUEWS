@@ -18,7 +18,8 @@ SUBROUTINE InputHeaderCheck(FileName)
  
   ! ========== SUEWS_NonVeg.txt =============
   HeaderNonVeg_Reqd(ci_Code)	  = "Code"
-  HeaderNonVeg_Reqd(ci_Alb)	  = "Albedo"
+  HeaderNonVeg_Reqd(ci_AlbMin)	  = "AlbedoMin"
+  HeaderNonVeg_Reqd(ci_AlbMax)	  = "AlbedoMax"
   HeaderNonVeg_Reqd(ci_Emis)	  = "Emissivity"
   HeaderNonVeg_Reqd(ci_StorMin)	  = "StorageMin"
   HeaderNonVeg_Reqd(ci_StorMax)	  = "StorageMax"
@@ -37,7 +38,8 @@ SUBROUTINE InputHeaderCheck(FileName)
    
   ! ========== SUEWS_Veg.txt ===============
   HeaderVeg_Reqd(cp_Code)	  = "Code"
-  HeaderVeg_Reqd(cp_Alb)	  = "Albedo"
+  HeaderVeg_Reqd(cp_AlbMin)	  = "AlbedoMin"
+  HeaderVeg_Reqd(cp_AlbMax)	  = "AlbedoMax"
   HeaderVeg_Reqd(cp_Emis)	  = "Emissivity"
   HeaderVeg_Reqd(cp_StorMin)	  = "StorageMin"
   HeaderVeg_Reqd(cp_StorMax)	  = "StorageMax"
@@ -67,7 +69,8 @@ SUBROUTINE InputHeaderCheck(FileName)
    
   ! ========== SUEWS_Water.txt ==================
   HeaderWater_Reqd(cw_Code)         = "Code"
-  HeaderWater_Reqd(cw_Alb)          = "Albedo"
+  HeaderWater_Reqd(cw_AlbMin)       = "AlbedoMin"
+  HeaderWater_Reqd(cw_AlbMax)       = "AlbedoMax"
   HeaderWater_Reqd(cw_Emis)         = "Emissivity"
   HeaderWater_Reqd(cw_StorMin)      = "StorageMin"
   HeaderWater_Reqd(cw_StorMax)      = "StorageMax"

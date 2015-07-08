@@ -3,7 +3,7 @@
 !and density are calculated using the timestep air temperature and then these are scaled to timestep
 !according to NSH.  Made by LJ in sprint 2014
 !Last update:
-!  LJ in May 2015 - Changed to work with shorter timestep. Cleaning of the code made
+!  LJ in 7 July 2015 - Changed to work with shorter timestep: defined by tstep. Cleaning of the code.
 !
 !========================================================================
 
@@ -28,21 +28,22 @@
   !==========================================================
   !Calculation of snow albedo by Lemonsu et al. 2010 
   !(org: Verseghy (1991)&Baker et al.(1990))
-
   if (sum(SnowPack)>0) then !Check if snow on any of the surfaces
 
       if (Temp_C_hr<0) then
-        alb_change = tau_a*(60*60)/tau_1
-      	alb_snow = alb_snow-alb_change/NSH_real
+        !alb_change = tau_a*(60*60)/tau_1
+        alb_change = tau_a*(tstep)/tau_1
+      	snowAlb = SnowAlb-alb_change
   	  else
-        alb_change = exp(-tau_f*(60*60)/tau_1)
-      	alb_snow = (alb_snow-albSnowMin)*alb_change/NSH_real+albSnowMin
+        !alb_change = exp(-tau_f*(60*60)/tau_1)
+        alb_change = exp(-tau_f*(tstep)/tau_1)
+      	SnowAlb = (SnowAlb-SnowAlbMin)*alb_change+SnowAlbMin
       endif	
-    
-      if (alb_snow<albSnowMin) alb_snow=albSnowMin !Albedo cannot be smaller than the min albedo
+
+      if (SnowAlb<SnowAlbMin) SnowAlb=SnowAlbMin !Albedo cannot be smaller than the min albedo
 
   else
-     alb_snow = 0
+     SnowAlb = 0
   endif
 
 
@@ -51,19 +52,13 @@
 
     !If snowPack existing
     if (snowPack(is)>0) then
-
-       dens_change = exp(-tau_r*(60*60)/tau_1)
-       !write(*,*) densSnow(is),densSnowMax,dens_change,NSH_real
-       if (snowpack(is)>0) densSnow(is) = (densSnow(is)-densSnowMax)*dens_change+densSnowMax
-       !write(*,*) densSnow(is)
-       if (densSnow(is)>densSnowMax) densSnow(is)=densSnowMax
-
+       dens_change = exp(-tau_r*(tstep)/tau_1)
+       if (snowpack(is)>0) SnowDens(is) = (SnowDens(is)-SnowDensMax)*dens_change+SnowDensMax
+       if (SnowDens(is)>SnowDensMax) SnowDens(is)=SnowDensMax
     else
-       densSnow(is) = 0
+       SnowDens(is) = 0
     endif
   enddo
-
-  !write(*,*) densSnow(1)
 
  end subroutine SnowUpdate
 

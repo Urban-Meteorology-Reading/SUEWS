@@ -51,7 +51,7 @@
     if (sfr(is)/=0) then  !If surface type existing,
       if (SnowPack(is)>0) then  !If snowpack existing, calculate meltwater related water flows
 
-         SnowDepth(is) = (SnowPack(is)/1000)*waterDens/densSnow(is) !Snow depth in m
+         SnowDepth(is) = (SnowPack(is)/1000)*waterDens/SnowDens(is) !Snow depth in m
 
          !Calculate meltwater related water flows with hourly degree-day method.
 
@@ -91,9 +91,6 @@
             Qm_melt(is) = waterDens*((-FreezMelt(is)/tstep_real)/1000)*(lvS_J_kg-lv_J_kg)
           endif
 
-
-          !write(*,*) is,dectime,SnowPack(is),densSnow(is),mw_ind(is),Qm_melt(is),Meltwaterstore(is)
-          !pause
           !-----------------------------------------------------
           ! If air temperature is above zero, precipitation causes advective heat to the
           ! snowpack. Eq (23) in Sun et al., 1999
@@ -118,13 +115,19 @@
     
            !Other surfaces than water
            if (is/=WaterSurf) then
-             
+              !How much water can freeze
+              Watfreeze = 100*(0-Temp_C)/(waterDens*(lvS_J_kg-lv_J_kg)/tstep_real)
+
               if (snowpack(is)==0.or.snowfrac(is)==0) then !Snowpack forms.
-                  FreezState(is) = state(is)
-                  FreezStateVol(is) = FreezState(is)
+                  if (state(is)<=Watfreeze) then
+                    FreezState(is) = state(is)
+                    FreezStateVol(is) = FreezState(is)
+                  endif
               else                                !There is snow already on ground
+                  if (state(is)<=Watfreeze) then
                   FreezState(is) = state(is)
                   FreezStateVol(is) = state(is)*(1-snowFrac(is))/snowFrac(is)
+                  endif
               endif
 
               if (FreezState(is)<0.00000000000001) then   !If the amount of freezing water
@@ -134,12 +137,8 @@
 
               !Calculate the heat exchange in W m-2
               Qm_freezState(is) = -waterDens*(FreezState(is)/tstep_real/1000)*(lvS_J_kg-lv_J_kg)
-
-              !if (Qm_freezState(is)/=0) then
-              !    write(*,*) is, Qm_freezState(is),FreezState(is),tstep_real,snowFrac(is)
-              !endif
-
-
+              !write(*,*) is, state(is),Qm_freezState(is),waterDens,FreezState(is),tstep_real,lvS_J_kg,lv_J_kg
+              !pause
            !Water surface separately
            else
               !Calculate average value how much water can freeze above the water areas
@@ -171,11 +170,8 @@
 
         !Update snow density of each surface
         if (Precip>0.and.Tsurf_ind(is)<0) then
-         	densSnow(is) = densSnow(is)*snowPack(is)/(snowPack(is)+Precip)+densSnowMin*Precip/(snowPack(is)+Precip)
+         	SnowDens(is) = SnowDens(is)*snowPack(is)/(snowPack(is)+Precip)+SnowDensMin*Precip/(snowPack(is)+Precip)
         endif
-
-        !write(*,*) is,dectime,SnowPack(is),densSnow(is),mw_ind(is)
-        !pause
 
         !Weighted variables for the whole area
         mwh = mwh + mw_ind(is)*sfr(is)*snowFrac(is)        !Snowmelt
@@ -187,10 +183,17 @@
      
   enddo !End surface type
 
-  !Update snow albedo to its maximum value
+  !Update snow albedo to its maximum value if precipitation exists
   if (Precip>0.and.sum(snowPack)>0.and.Temp_C<0) then
+
     CumSnowfall=CumSnowfall + Precip
-    if (CumSnowfall>PrecipLimitAlb/nsh_real)  alb_snow=albSnowMax
+    
+    if (CumSnowfall>PrecipLimitAlb/nsh_real) then
+      !write(*,*) CumSnowfall,Precip,PrecipLimitAlb,PrecipLimitAlb/nsh_real
+      !pause
+      SnowAlb=SnowAlbMax
+      CumSnowfall=0
+    endif
   else
     CumSnowfall=0
   endif
@@ -254,10 +257,10 @@
   snowTotInit=snowPack(is)+MeltWaterStore(is) 
   
   !Calculate water holding capacity (Jin et al. 1999)
-  if (densSnow(is)>=200) then
+  if (SnowDens(is)>=200) then
      WaterHoldCapFrac=CRWmin
   else
-     WaterHoldCapFrac=CRWmin+(CRWmax-CRWmin)*(200-densSnow(is))/200  
+     WaterHoldCapFrac=CRWmin+(CRWmax-CRWmin)*(200-SnowDens(is))/200  
   endif
 
   !======================================================================
@@ -273,9 +276,6 @@
   !If not enough water for evaporation in impervious surfaces,
   !evaporation is taken from pervious surfaces
   if (is>2) then
-     !if  ((VegFraction+sfr(WaterSurf))/=0) then
-     !   EvPart=(SurplusEvap(PavSurf)+SurplusEvap(BldgSurf))*(sfr(is)/(VegFraction+sfr(WaterSurf)))
-     !endif
      if  (PervFraction/=0) then
        EvPart=(SurplusEvap(PavSurf)*sfr(PavSurf)+SurplusEvap(BldgSurf)*sfr(BldgSurf))/PervFraction
      endif
@@ -325,7 +325,7 @@
         changSnow(is)=(Precip+freezStateVol(is))-ev 
         snowFrac(is)=1
         iceFrac(is)=0
-        densSnow(is)=densSnowMin
+        SnowDens(is)=SnowDensMin
      endif
      
      !--------------------------------------------------------------------------------------
@@ -349,9 +349,8 @@
         endif
         
         !At the end of it (hour) calculate possible snow removal
-        !if (it>=6.and.it<=18.and.in==12.and.is<3) call snowRem 
-        if (SnowProf(it,iu)==1.and.in==12.and.is<3) call snowRem
-   
+        if (SnowProf(it,iu)==1.and.is<3.and.(imin==(nsh_real-1)/nsh_real*60))  call snowRem
+
      !----------If snowPack is negative, it melts at this timestep
      elseif (SnowPack(is)<0) then
 
@@ -440,10 +439,9 @@
          MeltWaterStore(is) = FWC
       endif
       
-      !At the end of it (hour) calculate possible snowremoval
-      !if (it>=6.and.it<=18.and.in==12.and.is<3) call snowRem 
-      if (SnowProf(it,iu)==1.and.in==12.and.is<3) call snowRem 
-        
+      !At the end of each hour calculate possible snowremoval
+      if (SnowProf(it,iu)==1.and.is<3.and.(imin==(nsh_real-1)/nsh_real*60))  call snowRem
+             
     !---If snowPack negative
     elseif (SnowPack(is)<0) then
 
@@ -710,6 +708,8 @@
   
    IMPLICIT NONE
 
+  !write(*,*) is, SnowPack(is),SnowLimPaved,SnowLimBuild
+
    if (is==PavSurf) then
      if (SnowPack(PavSurf)>SnowLimPaved) then
          SnowRemoval(PavSurf) = (SnowPack(PavSurf)-SnowLimPaved)*sfr(PavSurf)*snowfrac(PavSurf)
@@ -724,8 +724,8 @@
          !snowPack(BldgSurf)=snowPack(BldgSurf)/snowFrac(BldgSurf)
      endif  
   endif
- 
- 
+  !write(*,*) is, SnowPack(is),SnowLimPaved,SnowLimBuild
+ !pause
   end subroutine snowRem
  
   !----------------------------------------------------------------------------

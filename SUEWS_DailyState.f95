@@ -435,7 +435,7 @@
                       LAI(id,1:nvegsurf),&
                       DecidCap(id),Porosity(id),AlbDec(id),&
                       WU_day(id-1,1:9),&
-                      deltaLAI,VegPhenLumps,alb_snow,densSnow(1:7)
+                      deltaLAI,VegPhenLumps,SnowAlb,SnowDens(1:7)
             
         601 format(2(i4,1X),&
                    4(f6.1,1X),1(f8.4,1X),1(f6.1,1X), 5(f6.1,1X),&

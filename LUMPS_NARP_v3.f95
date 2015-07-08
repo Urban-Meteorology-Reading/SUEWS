@@ -41,7 +41,7 @@
  CONTAINS
 
   !============================================================================== 
-  SUBROUTINE NARP(alb_snow,QSTAR_SF,QSTAR_s)
+  SUBROUTINE NARP(SnowAlb,QSTAR_SF,QSTAR_s)
                   !KCLEAR,FCLD,DTIME,KDOWN,QSTARall,KUPall,LDOWN,LUPall,TSURFall,&
                   !AlbedoChoice,ldown_option,Temp_C,Press_hPa,Ea_hPa,qn1_obs,RH,&
                   !,zenith_degnetRadiationChoice,
@@ -95,10 +95,10 @@
     use moist   ! Included 20140701, FL
     use time    ! Included 20140701, FL
     
-    REAL(KIND(1D0))              ::alb_snow!Temp_C,PREss_hPa,qn1_obs,Ea_hPa,,INTENT(IN)
+    REAL(KIND(1D0))              ::SnowAlb!Temp_C,PREss_hPa,qn1_obs,Ea_hPa,,INTENT(IN)
     REAL(KIND(1D0))              ::QSTARall,KUPall,LUPall,TSURFall,QSTAR_SF,QSTAR_S!KCLEAR,,INTENT(OUT)
     !REAL(KIND(1D0)),INTENT(INOUT)::!FCLD,LDOWN,
-    !INTEGER,INTENT(IN)           ::ldown_option,AlbedoChoice,netRadiationChoice!,ALB_SNOW
+    !INTEGER,INTENT(IN)           ::ldown_option,AlbedoChoice,netRadiationChoice!,SnowAlb
     REAL(KIND(1D0))              ::Temp_K,TD,ZENITH,QSTAR,QSTAR_SNOW,KUP_SNOW,LUP_SNOW,TSURF_SNOW!KUP,LUP,TSURF,
     REAL(KIND(1D0))              ::ALB0,EMIS0,EMIS_A,TRANS,RH,DTIME,KDOWN
     REAL(KIND(1D0))              ::LUPCORR,SIGMATK4,KDOWN_HR=0.
@@ -210,9 +210,9 @@
       !Snow related parameters if snow pack existing
       IF (snowFrac(is)>0) THEN
         IF (AlbedoChoice==1.and.180*ZENITH/ACOS(0.0)<90) THEN                      
-           ALB1=alb_snow+0.5e-16*(180*ZENITH/ACOS(0.0))**8 !AIDA 1982
+           ALB1=SnowAlb+0.5e-16*(180*ZENITH/ACOS(0.0))**8 !AIDA 1982
         ELSE
-           ALB1=alb_snow
+           ALB1=SnowAlb
         ENDIF
 
         KUP_SNOW = (ALB1*(snowFrac(is)-snowFrac(is)*IceFrac(is))+ALB0*snowFrac(is)*IceFrac(is))*KDOWN
@@ -297,6 +297,10 @@
    !LDOWN has same name
    lup=LUPall
    tsurf=TSURFall
+   !if (kup>500) then
+   ! write(*,*) Kdown, kup, kup_ind(1),kup_ind(2),kup_ind(3),kup_ind(4),kup_ind(5),kup_ind(6),SnowAlb
+   ! pause
+   !endif
    
   END SUBROUTINE NARP
 

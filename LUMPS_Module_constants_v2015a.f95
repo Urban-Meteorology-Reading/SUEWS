@@ -4,6 +4,8 @@
 ! HW, LJ Oct 2014 - fixes to the structure
 ! HCW 03 Mar 2015 - tidied
 ! HCW 03 Jul 2015 - added albedo max & min to SUEWS_NonVeg.txt (min not used), SUEWS_Veg.txt, SUEWS_Water.txt (min not used)
+! LJ 06 Jul 2015 - changed alb_snow, albsnowmin and albsnowmax to SnowAlb, SnowAlbMin and SnowAlbMax (to be systematic with
+!                   other variables). Similarly denssnow changed to SnowDens. cMDS_SnowAlb=29 added.
 
 !==================================================================================================
  module allocateArray
@@ -19,7 +21,7 @@
    integer, parameter:: ncolumnsNonVeg=18            !SUEWS_NonVeg.txt
    integer, parameter:: ncolumnsVeg=29               !SUEWS_Veg.txt
    integer, parameter:: ncolumnsWater=15             !SUEWS_Water.txt
-   integer, parameter:: ncolumnsSnow=20              !SUEWS_Snow.txt
+   integer, parameter:: ncolumnsSnow=19              !SUEWS_Snow.txt
    integer, parameter:: ncolumnsSoil=9               !SUEWS_Soil.txt
    integer, parameter:: ncolumnsConductance=12       !SUEWS_Conductance.txt
    integer, parameter:: ncolumnsOHMCoefficients=4 	 !SUEWS_OHMCoefficients.txt
@@ -270,9 +272,8 @@
                                       mw_ind,&         	!Melt water from individual surface in mm
                                       mw_indDay,&      	!!Melt water per day from each surface type in m3
 			                          runoffSnow,&     	!!Runoff from snowpack in mm and in m3
-                                      densSnow,&        !Density of snow
-                                      SnowDensInit,&
-                                      snowFrac,&       	!!Surface fraction of snow cover
+                                      SnowDens,&        !Density of snow
+                                      SnowFrac,&       	!!Surface fraction of snow cover
                                       iceFrac,&
                                       snowInit,&
                                       snowDepth,&       !Depth of snow in cm
@@ -357,7 +358,7 @@
    integer:: c_SnowTMFactor = (ccEndP+ 2)  
    integer:: c_SnowAlbMin   = (ccEndP+ 3)      
    integer:: c_SnowAlbMax   = (ccEndP+ 4)
-   integer:: c_SnowAlb      = (ccEndP+ 5)
+   !integer:: c_SnowAlb      = (ccEndP+ 5) (ccEndP free if needed somewhere)
    integer:: c_SnowEmis     = (ccEndP+ 6)      
    integer:: c_Snowtau_a    = (ccEndP+ 7)
    integer:: c_Snowtau_f    = (ccEndP+ 8)
@@ -785,12 +786,7 @@ MODULE cbl_MODULE
      implicit none
  
      real (kind(1D0))::AdjMeltFact,&	  !Factor between melt and freezing factors
-     				   ALB_SNOW,&
-                       albSnowMin,&       !Minimum snow albedo
-                       albSnowMax,&       !Maximum snow albedo
                        CumSnowfall,&        !Cumulative snowfall
-                       densSnowMin,&      !Minimum density of snow
-                       densSnowMax,&      !Maximum density of snow
                        fwh,&              !Weighted freezing water
                        lvS_J_kg,&         !Latent heat of sublimation in J/kg
                        mwh,&              !Weighted hourly water melt
@@ -803,6 +799,11 @@ MODULE cbl_MODULE
                        qn1_snow,&         !Net all-wave radiation of snowpack
                        qn1_nosnow,&       !Same for the snow free surface
                        RadMeltFact,&      !Radiation melt factor
+                       SnowAlb,&          !Snow albedo
+                       SnowAlbMin,&       !Minimum snow albedo
+                       SnowAlbMax,&       !Maximum snow albedo
+                       SnowDensMin,&      !Minimum density of snow
+                       SnowDensMax,&      !Maximum density of snow
                        SnowLimBuild,&     !Snow removal limits for roofs in mm)
 		               SnowLimPaved,&     !Snow removal limits for paved surfaces in mm)
                        swe,&			  !Weighted snow water equivalent (in mm)
@@ -1154,7 +1155,8 @@ MODULE cbl_MODULE
                      SnowPackDecTr,&
                      SnowPackGrass,&
                      SnowPackBSoil,&
-                     SnowPackWater
+                     SnowPackWater,&
+                     SnowAlb0
                      
      integer::ID_Prev
 
@@ -1171,17 +1173,16 @@ MODULE cbl_MODULE
     
    !========== Columns for ModelDailyState array =========================
  
-   integer:: cMDS_id_prev	= 3,& 
-   	     cMDS_HDD1		= 4,&
+   integer:: cMDS_id_prev	= 3,&
+             cMDS_HDD1		= 4,&
              cMDS_HDD2		= 5,&
              cMDS_TempC		= 6,&
              cMDS_TempCRM  	= 7,&
              cMDS_Precip	= 8,&
              cMDS_DaysSinceRain	= 9,&
              cMDS_TempCOld1	=10,&
-	     cMDS_TempCOld2	=11,&
+             cMDS_TempCOld2	=11,&
              cMDS_TempCOld3	=12,&
-                        
              cMDS_GDDMin	=13,&
              cMDS_GDDMax	=14,&
              cMDS_GDD1_0	=15,&
@@ -1189,17 +1190,16 @@ MODULE cbl_MODULE
              cMDS_LAIInitialEveTr =17,&
              cMDS_LAIInitialDecTr =18,&
              cMDS_LAIInitialGrass =19,&
-                          
              cMDS_porosity	=20,&
              cMDS_albEveTr	=21,&
-	     cMDS_albDec	=22,&
+             cMDS_albDec	=22,&
              cMDS_albGrass	=23,&
              cMDS_DecidCap	=24,&
              cMDS_CumSnowfall	=25,&
-
-	     cMDS_LAIEveTr	=26,&
-	     cMDS_LAIDecTr	=27,&
-	     cMDS_LAIGrass	=28
+             cMDS_LAIEveTr	=26,&
+             cMDS_LAIDecTr	=27,&
+             cMDS_LAIGrass	=28,&
+             cMDS_SnowAlb	=29
 	     
  end Module ColNamesModelDailyState
 
@@ -1383,21 +1383,20 @@ MODULE cbl_MODULE
    	      cs_SnowTMFactor =  3,&
    	      cs_SnowAlbMin   =  4,&
    	      cs_SnowAlbMax   =  5,&
-   	      cs_SnowAlb      =  6,&
-   	      cs_SnowEmis     =  7,&
-   	      cs_Snowtau_a    =  8,&
-   	      cs_Snowtau_f    =  9,&
-	      cs_SnowPLimAlb  = 10,&   	      
-	      cs_SnowSDMin    = 11,&   	      
-	      cs_SnowSDMax    = 12,&   	      
-	      cs_Snowtau_r    = 13,&
-      	      cs_SnowCRWMin   = 14,&
-   	      cs_SnowCRWMax   = 15,&
-   	      cs_SnowPLimSnow = 16,&     
-	      cs_OHMCode_SWet = 17,&
-	      cs_OHMCode_SDry = 18,&
-	      cs_OHMCode_WWet = 19,&
-	      cs_OHMCode_WDry = 20
+   	      cs_SnowEmis     =  6,&
+   	      cs_Snowtau_a    =  7,&
+   	      cs_Snowtau_f    =  8,&
+	      cs_SnowPLimAlb  =  9,&
+	      cs_SnowSDMin    = 10,&
+	      cs_SnowSDMax    = 11,&
+	      cs_Snowtau_r    = 12,&
+          cs_SnowCRWMin   = 13,&
+   	      cs_SnowCRWMax   = 14,&
+   	      cs_SnowPLimSnow = 15,&
+	      cs_OHMCode_SWet = 16,&
+	      cs_OHMCode_SDry = 17,&
+	      cs_OHMCode_WWet = 18,&
+	      cs_OHMCode_WDry = 19
 	      
    !========== Columns for SUEWS_Soil.txt ================================
    integer :: cSo_Code        =  1,&

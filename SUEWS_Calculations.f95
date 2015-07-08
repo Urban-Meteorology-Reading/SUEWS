@@ -160,7 +160,7 @@
    alb(ConifSurf)=albEveTr(id)
    alb(GrassSurf)=albGrass(id)
    
-   call narp(alb_snow,qn1_SF,qn1_S)
+   call NARP(SnowAlb,qn1_SF,qn1_S)
    !Temp_C,kclear,fcld,dectime,avkdn,avRH,qn1,kup,ldown,lup,tsurf,&
    !AlbedoChoice,ldown_option,Press_hPa,Ea_hPa,qn1_obs,&
    !zenith_deg,netRadiationChoice,
@@ -502,8 +502,8 @@
      
  ! Calculate snowdepth from SWE
  do is=1,nsurf
-    if (densSnow(is)/=0) then  
-       SnowDepth(is) = SnowPack(is)*waterDens/densSnow(is) 
+    if (SnowDens(is)/=0) then
+       SnowDepth(is) = SnowPack(is)*waterDens/SnowDens(is)
     endif
     ! Calculate overall snow water equivalent
     swe = swe + SnowDepth(is)*sfr(is)*snowFrac(is)
@@ -524,7 +524,7 @@
         soilstate,smd,(smd_nsurf(is),is=1,nsurf-1),(state(is),is=1,nsurf),&                              !57
         lai_wt,&                                                                                         !58
         qn1_SF,qn1_S,Qm,QmFreez,QmRain,swe,mwh,MwStore,(SnowRemoval(is),is=1,2),chSnow_per_interval,&    !69
-        alb_snow/)                                                                                       !70
+        SnowAlb/)                                                                                       !70
 
  if (snowUse==1) then
     dataOutSnow(ir,1:ncolumnsDataOutSnow,Gridiv)=(/real(iy,kind(1D0)),real(id,kind(1D0)),&               !2
@@ -533,7 +533,7 @@
                 Qm_rain(1:nsurf),Qm_freezState(1:nsurf),snowFrac(1:(nsurf-1)),&                          !46
                 rainOnSnow(1:nsurf),&                                                                    !53
                 qn1_ind_snow(1:nsurf),kup_ind_snow(1:nsurf),freezMelt(1:nsurf),&                         !74
-                MeltWaterStore(1:nsurf),densSnow(1:nsurf),&                                              !88
+                MeltWaterStore(1:nsurf),SnowDens(1:nsurf),&                                              !88
                 snowDepth(1:nsurf),Tsurf_ind_snow(1:nsurf)/)                                             !102
  endif
 

@@ -7,7 +7,7 @@
 !  snowRem - Removal of snow my snow clearing
 !  SnowDepletionCurve - Calculation of snow fractions
 !Last modification:
-!  LJ in May 2015 - Code checked to be worked at 5-min timestep
+!  LJ in 14 July 2015 - Code fixed to work with tstep.
 !  HCW 06 Mar 2015 - Unused variable 'i' removed.
 !  LJ in Jan 2015 - Change the calculation from hourly timestep to timestep defined by nsh
 !  LJ in May 2013 - calculation of the energy balance for the snowpack was modified
@@ -115,19 +115,12 @@
     
            !Other surfaces than water
            if (is/=WaterSurf) then
-              !How much water can freeze
-              Watfreeze = 100*(0-Temp_C)/(waterDens*(lvS_J_kg-lv_J_kg)/tstep_real)
-
               if (snowpack(is)==0.or.snowfrac(is)==0) then !Snowpack forms.
-                  if (state(is)<=Watfreeze) then
                     FreezState(is) = state(is)
                     FreezStateVol(is) = FreezState(is)
-                  endif
               else                                !There is snow already on ground
-                  if (state(is)<=Watfreeze) then
-                  FreezState(is) = state(is)
-                  FreezStateVol(is) = state(is)*(1-snowFrac(is))/snowFrac(is)
-                  endif
+                   FreezState(is) = state(is)
+                   FreezStateVol(is) = state(is)*(1-snowFrac(is))/snowFrac(is)
               endif
 
               if (FreezState(is)<0.00000000000001) then   !If the amount of freezing water
@@ -137,12 +130,15 @@
 
               !Calculate the heat exchange in W m-2
               Qm_freezState(is) = -waterDens*(FreezState(is)/tstep_real/1000)*(lvS_J_kg-lv_J_kg)
-              !write(*,*) is, state(is),Qm_freezState(is),waterDens,FreezState(is),tstep_real,lvS_J_kg,lv_J_kg
-              !pause
+
            !Water surface separately
            else
               !Calculate average value how much water can freeze above the water areas
-              Watfreeze = 100*(0-Temp_C)/(waterDens*(lvS_J_kg-lv_J_kg)/tstep_real)
+              !Equation is -hA(T-T0) = rhoV(Cp+dT +Lf) in a timestep
+              !h=convective heat trasnfer,A, area of water,rwo water density,V volume, dT temperature difference
+              !before and end of the 5-min period. dT equals zero, h=100 and when multiplied with Area, the equation
+              !simplyfies to the this. LJ 14 July 2015
+              Watfreeze = 100*(0-Temp_C)/(waterDens*(lvS_J_kg-lv_J_kg))
             
              if (Watfreeze<=state(is)) then !Not all state freezes
                 FreezState(is) = Watfreeze  
@@ -169,7 +165,7 @@
         endif
 
         !Update snow density of each surface
-        if (Precip>0.and.Tsurf_ind(is)<0) then
+        if (Precip>0.and.Tsurf_ind(is)<0.and.SnowPack(is)>0) then
          	SnowDens(is) = SnowDens(is)*snowPack(is)/(snowPack(is)+Precip)+SnowDensMin*Precip/(snowPack(is)+Precip)
         endif
 
@@ -188,7 +184,7 @@
 
     CumSnowfall=CumSnowfall + Precip
     
-    if (CumSnowfall>PrecipLimitAlb/nsh_real) then
+    if (CumSnowfall>PrecipLimitAlb) then
       !write(*,*) CumSnowfall,Precip,PrecipLimitAlb,PrecipLimitAlb/nsh_real
       !pause
       SnowAlb=SnowAlbMax

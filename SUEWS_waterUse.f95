@@ -93,10 +93,13 @@
      wu_Grass = wu_Grass + (WuFr*WUProfM_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WU_Day(id-1,9)) !Manual grass
 
      ! Added HCW 12 Feb 2015.
+     !wu_EveTr=wu_EveTr*sfr(ConifSurf)*IrrFracConif	!Water use for EveTr [mm]
+     !wu_DecTr=wu_DecTr*sfr(DecidSurf)*IrrFracDecid	!Water use for DecTr [mm]
+     !wu_Grass=wu_Grass*sfr(GrassSurf)*IrrFracGrass	!Water use for Grass [mm]
      wu_EveTr=wu_EveTr*IrrFracConif	!Water use for EveTr [mm]
      wu_DecTr=wu_DecTr*IrrFracDecid	!Water use for DecTr [mm]
      wu_Grass=wu_Grass*IrrFracGrass	!Water use for Grass [mm]
-     
+
      ! Total water use for the whole study area [mm]
      wu = wu_EveTr*sfr(ConifSurf) + wu_DecTr*sfr(DecidSurf) + wu_Grass*sfr(GrassSurf)
   

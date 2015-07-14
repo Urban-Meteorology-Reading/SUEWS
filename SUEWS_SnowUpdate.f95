@@ -46,8 +46,7 @@
      SnowAlb = 0
   endif
 
-
-  !Update snow density and snow fraction.
+  !Update snow density: There is a mistake in Järvi et al. (2014): tau_h should be tau_1
   do is=1,nsurf
 
     !If snowPack existing
@@ -56,7 +55,7 @@
        if (snowpack(is)>0) SnowDens(is) = (SnowDens(is)-SnowDensMax)*dens_change+SnowDensMax
        if (SnowDens(is)>SnowDensMax) SnowDens(is)=SnowDensMax
     else
-       SnowDens(is) = 0
+       SnowDens(is) = SnowDensMin
     endif
   enddo
 

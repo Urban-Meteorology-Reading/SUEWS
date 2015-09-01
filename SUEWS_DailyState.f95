@@ -5,6 +5,8 @@
 ! N.B. Some of this code is repeated in SUEWS_Initial
 ! --> so if changes are made here, SUEWS_Initial may also need to be updated accordingly
 ! 
+!Last modified HCW 20 Aug 2015
+! Sign of the porosity change corrected so that porosity is greatest when LAI is smallest
 !Last modified HCW 03 Jul 2015
 ! Increased output resolution of P/day in DailyState file to avoid rounding errors
 ! Albedo of EveTr and Grass now adjusted based on change in LAI for EveTr and Grass (rather than DecTr)
@@ -392,7 +394,7 @@
      
      DecidCap(id) = DecidCap(id-1) - CapChange
      albDec(id)   = albDec(id-1)   + albChangeDecTr    
-     porosity(id) = porosity(id-1) - porChange    
+     porosity(id) = porosity(id-1) + porChange  !- changed to + by HCW 20 Aug 2015 (porosity greatest when LAI smallest)    
      !Also update albedo of EveTr and Grass surfaces
      albEveTr(id) = albEveTr(id-1) + albChangeEveTr    
      albGrass(id) = albGrass(id-1) + albChangeGrass
@@ -435,7 +437,7 @@
                       LAI(id,1:nvegsurf),&
                       DecidCap(id),Porosity(id),AlbDec(id),&
                       WU_day(id-1,1:9),&
-                      deltaLAI,VegPhenLumps,alb_snow,densSnow(1:7)
+                      deltaLAI,VegPhenLumps,SnowAlb,SnowDens(1:7)
             
         601 format(2(i4,1X),&
                    4(f6.1,1X),1(f8.4,1X),1(f6.1,1X), 5(f6.1,1X),&

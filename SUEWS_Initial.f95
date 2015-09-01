@@ -1126,7 +1126,7 @@
    SurfaceChar(gridiv,c_SnowTMFactor) = Snow_Coeff(iv5,cs_SnowTMFactor)
    SurfaceChar(gridiv,c_SnowAlbMin)   = Snow_Coeff(iv5,cs_SnowAlbMin)
    SurfaceChar(gridiv,c_SnowAlbMax)   = Snow_Coeff(iv5,cs_SnowAlbMax)
-   SurfaceChar(gridiv,c_SnowAlb)      = Snow_Coeff(iv5,cs_SnowAlb)
+   !SurfaceChar(gridiv,c_SnowAlb)      = Snow_Coeff(iv5,cs_SnowAlb)
    SurfaceChar(gridiv,c_SnowEmis)     = Snow_Coeff(iv5,cs_SnowEmis)
    SurfaceChar(gridiv,c_Snowtau_a)    = Snow_Coeff(iv5,cs_Snowtau_a)
    SurfaceChar(gridiv,c_Snowtau_f)    = Snow_Coeff(iv5,cs_Snowtau_f)
@@ -1319,9 +1319,9 @@
                   porosity0,&
                   PavedState,&
                   BldgsState,&
-	          EveTrState,&
-	          DecTrState,&
-	          GrassState,&
+	              EveTrState,&
+	              DecTrState,&
+	              GrassState,&
                   BSoilState,&
                   WaterState,&
                   SoilStorePavedState,&
@@ -1330,15 +1330,15 @@
                   SoilStoreDecTrState,&
                   SoilStoreGrassState,&
                   SoilStoreBSoilState,&
-		  SnowWaterPavedState,&
-		  SnowWaterBldgsState,&
-		  SnowWaterEveTrState,&
+		          SnowWaterPavedState,&
+		          SnowWaterBldgsState,&
+		          SnowWaterEveTrState,&
                   SnowWaterDecTrState,&
                   SnowWaterGrassState,&
                   SnowWaterBSoilState,&
                   SnowWaterWaterState,&
                   SnowPackPaved,&
-		  SnowPackBldgs,&
+                  SnowPackBldgs,&
                   SnowPackEveTr,&
                   SnowPackDecTr,&
                   SnowPackGrass,&
@@ -1357,7 +1357,8 @@
                   SnowDensDecTr,&
                   SnowDensGrass,&
                   SnowDensBSoil,&
-                  SnowDensWater
+                  SnowDensWater,&
+                  SnowAlb0
 
   ! Define InitialConditions file ----------------------------------------
   FileInit=trim(FileInputPath)//trim("InitialConditions")//trim(GridName)//'.nml'
@@ -1435,7 +1436,7 @@
     
   finish=.false.  
   
-  ! -- Save snow density info in InitialConditions to ModelDailyState array --  
+  ! -- Save snow density and snow albedo info in InitialConditions to ModelDailyState array --
   ModelDailyState(Gridiv,cMDS_SnowDens(PavSurf))    = SnowDensPaved   
   ModelDailyState(Gridiv,cMDS_SnowDens(BldgSurf))   = SnowDensBldgs
   ModelDailyState(Gridiv,cMDS_SnowDens(ConifSurf))  = SnowDensEveTr
@@ -1443,6 +1444,7 @@
   ModelDailyState(Gridiv,cMDS_SnowDens(GrassSurf))  = SnowDensGrass
   ModelDailyState(Gridiv,cMDS_SnowDens(BSoilSurf))  = SnowDensBSoil
   ModelDailyState(Gridiv,cMDS_SnowDens(WaterSurf))  = SnowDensWater
+  ModelDailyState(Gridiv,cMDS_SnowAlb)  = SnowAlb0
  
   !! Where is this from??   
   IceFrac=0.2   !Estimated fraction of ice. Should be improved in the future
@@ -1647,6 +1649,8 @@
 
 !-------------------------------------------------------------------------
  subroutine NextInitial(GridName,year_int)
+ ! Last modified LJ 06 Jul 2015
+ ! Initial conditions of SnowAlb added, densSnow changed to SnowDens 
  ! Last modified HCW 03 Jul 2015
  ! Added initial conditions albEveTr0 and albGrass0    
  ! Modified by HCW 21 Nov 2014
@@ -1737,13 +1741,14 @@
   write(57,*)'SnowFracGrass=',SnowFrac(GrassSurf)
   write(57,*)'SnowFracBSoil=',SnowFrac(BSoilSurf)
   write(57,*)'SnowFracWater=',SnowFrac(WaterSurf)
-  write(57,*)'SnowDensPaved=',densSnow(PavSurf)
-  write(57,*)'SnowDensBldgs=',densSnow(BldgSurf)
-  write(57,*)'SnowDensEveTr=',densSnow(ConifSurf)
-  write(57,*)'SnowDensDecTr=',densSnow(DecidSurf)
-  write(57,*)'SnowDensGrass=',densSnow(GrassSurf)
-  write(57,*)'SnowDensBSoil=',densSnow(BSoilSurf)
-  write(57,*)'SnowDensWater=',densSnow(WaterSurf)
+  write(57,*)'SnowDensPaved=',SnowDens(PavSurf)
+  write(57,*)'SnowDensBldgs=',SnowDens(BldgSurf)
+  write(57,*)'SnowDensEveTr=',SnowDens(ConifSurf)
+  write(57,*)'SnowDensDecTr=',SnowDens(DecidSurf)
+  write(57,*)'SnowDensGrass=',SnowDens(GrassSurf)
+  write(57,*)'SnowDensBSoil=',SnowDens(BSoilSurf)
+  write(57,*)'SnowDensWater=',SnowDens(WaterSurf)
+  write(57,*)'SnowAlb0=',SnowAlb
   write(57,*)'/'
   close(57)
   

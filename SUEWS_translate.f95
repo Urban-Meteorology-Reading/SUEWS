@@ -3,6 +3,8 @@
 !           - between arrays for different grids and the model variables
 !Made by HW&LJ Oct 2014
 !-----------------------------------------------------------------------------------
+!Last modified: LJ 06 Jul 2015
+! Changed to read snowAlb from ModelDailyState instead of SurfaceChar. Location also moved.
 !Last modified: HCW 03 Jul 2015
 ! Use PopDensNighttime by default (not PopDensDaytime)
 !Last modified: HCW 26 Jun 2015
@@ -16,7 +18,7 @@
 !	- Adjust model to calculate LAI per surface
 !	- Adjust model for SM per surface (measured characteristics)
 !===================================================================================
-subroutine SUEWS_Translate(Gridiv,ir,iMB)
+ subroutine SUEWS_Translate(Gridiv,ir,iMB)
 
   use allocateArray
   use ColNamesInputFiles
@@ -27,7 +29,7 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   use initial
   use mod_z	      !defines: z0m, zdm	
   use resist	      !defines: G1-G6, TH, TL, S1, S2, Kmax
-  use snowMod	      !defines: alb_snow, etc		
+  use snowMod	      !defines: SnowAlb, etc
   use sues_data       !defines: SurfaceArea, IrrFracConif, IrrFracDecid, IrrFracGrass, Irrigation variables
   use time
   
@@ -125,8 +127,7 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   
   ! ---- Albedo [-]
   alb(1:nsurf) = SurfaceChar(Gridiv,c_AlbMax)   !Use maximum albedos as default value (albmin for veg surfaces handled below)     
-  alb_snow     = SurfaceChar(Gridiv,c_SnowAlb)
-  
+
   ! ---- Set min & max albedo for vegetated surfaces (min albedo not currently used for NonVeg or Water surfaces)
   AlbMin_EveTr = SurfaceChar(Gridiv,c_AlbMin(ConifSurf))
   AlbMax_EveTr = SurfaceChar(Gridiv,c_AlbMax(ConifSurf))
@@ -218,13 +219,13 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   ! ---- Snow-related characteristics
   RadMeltFact    = SurfaceChar(Gridiv,c_SnowRMFactor)  
   TempMeltFact   = SurfaceChar(Gridiv,c_SnowTMFactor)  
-  albSnowMin     = SurfaceChar(Gridiv,c_SnowAlbMin)  
-  albSnowMax	 = SurfaceChar(Gridiv,c_SnowAlbMax) 
+  SnowAlbMin     = SurfaceChar(Gridiv,c_SnowAlbMin)
+  SnowAlbMax	 = SurfaceChar(Gridiv,c_SnowAlbMax)
   tau_a		 = SurfaceChar(Gridiv,c_Snowtau_a) 
   tau_f		 = SurfaceChar(Gridiv,c_Snowtau_f) 
   PrecipLimitAlb = SurfaceChar(Gridiv,c_SnowPlimAlb) 
-  DensSnowMin	 = SurfaceChar(Gridiv,c_SnowSDMin) 
-  DensSnowMax	 = SurfaceChar(Gridiv,c_SnowSDMax)
+  SnowDensMin	 = SurfaceChar(Gridiv,c_SnowSDMin)
+  SnowDensMax	 = SurfaceChar(Gridiv,c_SnowSDMax)
   tau_r   	 = SurfaceChar(Gridiv,c_Snowtau_r)
   CRWMin 	 = SurfaceChar(Gridiv,c_SnowCRWMin)
   CRWMax	 = SurfaceChar(Gridiv,c_SnowCRWMax)
@@ -430,6 +431,7 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
      albGrass   = ModelDailyState(Gridiv,cMDS_albGrass)
      DecidCap = ModelDailyState(Gridiv,cMDS_DecidCap)
      CumSnowfall = ModelDailyState(Gridiv,cMDS_CumSnowfall)
+     SnowAlb    = ModelDailyState(Gridiv,cMDS_SnowAlb)
   
      ! ---- LAI
      lai=0
@@ -472,7 +474,7 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
      Porosity_grids(:,Gridiv) = Porosity(:)     
     
      ! ---- Snow density of each surface
-     DensSnow(1:nsurf) = ModelDailyState(Gridiv,cMDS_SnowDens(1:nsurf))
+     SnowDens(1:nsurf) = ModelDailyState(Gridiv,cMDS_SnowDens(1:nsurf))
          
      ! =============================================================================
      ! === Translate inputs from ModelOutputData to variable names used in model ===
@@ -506,9 +508,9 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   
      write(12,*)'--------SUEWS_FunctionalTypes.txt---------------------------- '
      write(12,*)'!Paved  Bldgs   EveTr  DecTr  Grass   BSoil  Water  Snow        -9 not applicable  '
-     write(12,120) alb(1:nsurf),  alb_snow,  ' albedo'             ! 1
-     write(12,120) FCskip,FCskip,AlbMin_EveTr,AlbMin_DecTr,AlbMin_Grass,FCskip,FCskip,albSnowMin,  ' min albedo'   ! 1a
-     write(12,120) FCskip,FCskip,AlbMax_EveTr,AlbMax_DecTr,AlbMax_Grass,FCskip,FCskip,albSnowMax,  ' max albedo'   ! 1a
+     write(12,120) alb(1:nsurf),  SnowAlb,  ' albedo'             ! 1
+     write(12,120) FCskip,FCskip,AlbMin_EveTr,AlbMin_DecTr,AlbMin_Grass,FCskip,FCskip,SnowAlbMin,  ' min albedo'   ! 1a
+     write(12,120) FCskip,FCskip,AlbMax_EveTr,AlbMax_DecTr,AlbMax_Grass,FCskip,FCskip,SnowAlbMax,  ' max albedo'   ! 1a
      write(12,120) emis(1:nsurf), emis_snow, ' emissivity'               ! 2
      write(12,120) FCskip, FCskip, baseT (1:nvegsurf),FCskip, FCskip, FCskip,' BaseT'  ! 3
      write(12,120) FCskip, FCskip, baseTe(1:nvegsurf),FCskip, FCskip, FCskip, ' BaseTe'   ! 4
@@ -534,8 +536,8 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
      write(12,*)  ! FCskip header LUMPS related
      write(12,'(10g8.2)')DRAINRT,RAINCOVER,RAINMAXRES,'LUMPS (1)drainage rate,adjust alpha/beta wet surface(3)Max water bucket'  ! 26
      write(12,*)! FCskip header snow related  
-     write(12,'(10g8.2)')RadMeltFact,TempMeltFact,albSnowMin,albSnowMax,tau_a,tau_f,PrecipLimitAlb
-     write(12,'(10g8.2)')densSnowMin,densSnowMax,tau_r,CRWmin,CRWmax,PrecipLimit    
+     write(12,'(10g8.2)')RadMeltFact,TempMeltFact,SnowAlb,SnowAlbMax,tau_a,tau_f,PrecipLimitAlb
+     write(12,'(10g8.2)')SnowDensMin,SnowDensMax,tau_r,CRWmin,CRWmax,PrecipLimit    
      write(12,*)! FCskip header NARP related  
      write(12,'(10g8.2)') TRANS_SITE, 'trans_site'
      write(12,*)! FCskip header LAI related  
@@ -683,7 +685,7 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
      DecidCap(id) = ModelDailyState(Gridiv,cMDS_DecidCap)
      CumSnowfall  = ModelDailyState(Gridiv,cMDS_CumSnowfall)
      ! ---- Snow density of each surface
-     DensSnow(1:nsurf) = ModelDailyState(Gridiv,cMDS_SnowDens(1:nsurf))
+     SnowDens(1:nsurf) = ModelDailyState(Gridiv,cMDS_SnowDens(1:nsurf))
          
      ! =============================================================================
      ! === Translate values from ModelOutputData to variable names used in model ===
@@ -764,7 +766,7 @@ subroutine SUEWS_Translate(Gridiv,ir,iMB)
   Porosity_grids(:,Gridiv) = Porosity(:)    
 
   ! ---- Snow density of each surface
-  ModelDailyState(Gridiv,cMDS_SnowDens(1:nsurf)) = DensSnow(1:nsurf) 
+  ModelDailyState(Gridiv,cMDS_SnowDens(1:nsurf)) = SnowDens(1:nsurf) 
          
   ! =============================================================================
   ! === Translate values from variable names used in model to ModelOutputData ===

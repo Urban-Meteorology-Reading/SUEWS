@@ -63,7 +63,7 @@
                'St_Paved St_Bldgs St_EveTr St_DecTr St_Grass St_BSoil St_Water ',&
                'LAI ',&
                'qn1_SF qn1_S Qm QmFreez Qmrain SWE Mw MwStore snowRem_Paved snowRem_Bldgs ChSnow/i ',&
-               'alb_snow ')
+               'SnowAlb ')
               !These belon to NARP ouput file
               ! 'kup_Paved kup_Bldgs kup_EveTr kup_DecTr kup_Grass kup_BSoil kup_Water ',&
               ! 'lup_Paved lup_Bldgs lup_EveTr lup_DecTr lup_Grass lup_BSoil lup_Water ',&
@@ -112,9 +112,9 @@
            'kup_PavedSnow kup_BldgsSnow kup_EveTrSnpw kup_DecTrSnow kup_GrassSnpw kup_BSoilSnow kup_WaterSnow ',&
            'frMelt_Paved frMelt_Bldgs frMelt_EveTr frMelt_DecTr frMelt_Grass frMelt_BSoil frMelt_Water ',&
            'MwStore_Paved MwStore_Bldgs MwStore_EveTr MwStore_DecTr MwStore_Grass MwStore_BSoil MwStore_Water ',&
-           'DensSnow_Paved DensSnow_Bldgs DensSnow_EveTr DensSnow_DecTr DensSnow_Grass DensSnow_BSoil DensSnow_Water ',&
+           'SnowDens_Paved SnowDens_Bldgs SnowDens_EveTr SnowDens_DecTr SnowDens_Grass SnowDens_BSoil SnowDens_Water ',&
            'Sd_Paved Sd_Bldgs Sd_EveTr Sd_DecTr Sd_Grass Sd_BSoil Sd_Water ',&
-          'Tsnow_Paved Tsnow_Bldgs Tsnow_EveTr Tsnow_DecTr Tsnow_Grass Tsnow_BSoil Tsnow_Water')
+           'Tsnow_Paved Tsnow_Bldgs Tsnow_EveTr Tsnow_DecTr Tsnow_Grass Tsnow_BSoil Tsnow_Water')
    else
     open(54,file=trim(SnowOut),position='append')
    endif
@@ -173,7 +173,7 @@
   305 format((i4,1X),3(i3,1X),(f8.4,1X),17(f15.7,1x))  !CBL output
   306 format((i4,1X),3(i3,1X),(f8.4,1X)&               !Snow out
              7(f10.4,1X),7(f10.4,1X),7(f10.4,1X),&
-             7(f10.4,1X),7(f10.4,1X),6(f10.4,1X),&
+             7(f10.4,1X),7(f12.4,1X),6(f10.4,1X),&
              7(f10.4,1X),&
              7(f10.4,1X),7(f10.4,1X),7(f10.4,1X),&
              7(f10.4,1X),7(f10.4,1X),7(f10.4,1X),7(f10.4,1X))

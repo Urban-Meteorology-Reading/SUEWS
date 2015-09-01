@@ -2,6 +2,9 @@
 SUBROUTINE InputHeaderCheck(FileName)
 ! Checks columns in input files match the columns expected by model code 
 ! Model code columns are defined here
+! Latest update:
+!   LJ 07 July 2015: snow albedo removed
+!
 ! HCW 12 Nov 2014
 !-------------------------------------------------------------------------
 
@@ -90,7 +93,6 @@ SUBROUTINE InputHeaderCheck(FileName)
   HeaderSnow_Reqd(cs_SnowTMFactor) = "TempMeltFactor"
   HeaderSnow_Reqd(cs_SnowAlbMin)   = "AlbedoMin"
   HeaderSnow_Reqd(cs_SnowAlbMax)   = "AlbedoMax"
-  HeaderSnow_Reqd(cs_SnowAlb)	   = "Albedo"
   HeaderSnow_Reqd(cs_SnowEmis)     = "Emissivity"
   HeaderSnow_Reqd(cs_Snowtau_a)    = "tau_a"
   HeaderSnow_Reqd(cs_Snowtau_f)    = "tau_f"

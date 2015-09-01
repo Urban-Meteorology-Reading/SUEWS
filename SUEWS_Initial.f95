@@ -1504,6 +1504,7 @@
   !Calculation of roughness parameters (N.B. uses porosity)
   call RoughnessParameters
 
+   
  !=============================================================================
  ! If the run start day is at previous year, then calculate the number of days
  ! in that year.

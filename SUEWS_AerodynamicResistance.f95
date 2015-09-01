@@ -12,7 +12,7 @@ subroutine AerodynamicResistance(RA,AerodynamicResistanceMethod,StabilityMethod,
 !         RoughLen_heat = Method to calculate heat roughness length
 !         ZZD = Displacement height (m)
 !         z0m = Aerodynamic roughness length (m)
-!         k2 = Power of Van Karman's contant
+!         k2 = Power of Van Karman's constant (= 0.16 = 0.4^2)
 !         AVU1 = Mean wind speed
 !         L_mod = Obukhov length (m)
 !         Ustar = Friction velocity (m s-1)
@@ -74,6 +74,6 @@ integer::AerodynamicResistanceMethod,StabilityMethod,RoughLen_heat
      ! RA=(log(ZZD/z0m))**2/(k2*AVU1)
      if(avu1<0) write(*,*) avu1,ra
   endif
- 
+  
   return
 end subroutine AerodynamicResistance

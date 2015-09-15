@@ -368,6 +368,7 @@
   Porosity(:) = Porosity_grids(:,Gridiv)
   AlbEveTr(:)   = AlbEveTr_grids(:,Gridiv)
   AlbGrass(:)   = AlbGrass_grids(:,Gridiv)
+  SnowAlb = ModelDailyState(Gridiv,cMDS_SnowAlb)
   
   !! ---- Between-grid water distribution
   !!! Need to make these larger than MaxNumberOfGrids (and recode), as each grid can have 8 connections
@@ -432,7 +433,7 @@
      DecidCap = ModelDailyState(Gridiv,cMDS_DecidCap)
      CumSnowfall = ModelDailyState(Gridiv,cMDS_CumSnowfall)
      SnowAlb    = ModelDailyState(Gridiv,cMDS_SnowAlb)
-  
+
      ! ---- LAI
      lai=0
      lai(id_prev,ivConif)  = ModelDailyState(Gridiv,cMDS_LAIInitialEveTr) 
@@ -471,8 +472,8 @@
      AlbEveTr_grids(:,Gridiv) = AlbEveTr(:)   
      AlbGrass_grids(:,Gridiv) = AlbGrass(:)   
      DecidCap_grids(:,Gridiv) = DecidCap(:) 
-     Porosity_grids(:,Gridiv) = Porosity(:)     
-    
+     Porosity_grids(:,Gridiv) = Porosity(:)
+
      ! ---- Snow density of each surface
      SnowDens(1:nsurf) = ModelDailyState(Gridiv,cMDS_SnowDens(1:nsurf))
          
@@ -713,14 +714,14 @@
   return
  end subroutine SUEWS_Translate
 !===================================================================================
-
  
  !SUEWS_TranslateBack
 !Translates model variables to arrays for each grid
-! Runs at the end of SUEWS_Calculations to store correct info for each grid
+!Runs at the end of SUEWS_Calculations to store correct info for each grid
 !Made by HW Nov 2014
 !-----------------------------------------------------------------------------------
- !Last modified: HCW 28 Nov 2014
+!Last modified:LJ 14 Sep 2015
+!              HCW 28 Nov 2014
 !===================================================================================
  subroutine SUEWS_TranslateBack(Gridiv,ir,irMax)
 
@@ -766,7 +767,9 @@
   Porosity_grids(:,Gridiv) = Porosity(:)    
 
   ! ---- Snow density of each surface
-  ModelDailyState(Gridiv,cMDS_SnowDens(1:nsurf)) = SnowDens(1:nsurf) 
+  ModelDailyState(Gridiv,cMDS_SnowDens(1:nsurf)) = SnowDens(1:nsurf)
+  ModelDailyState(Gridiv,cMDS_SnowAlb) = SnowAlb
+
          
   ! =============================================================================
   ! === Translate values from variable names used in model to ModelOutputData ===

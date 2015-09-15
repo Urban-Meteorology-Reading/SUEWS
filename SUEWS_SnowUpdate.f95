@@ -17,8 +17,8 @@
 
   REAL(KIND(1D0))::alb_change,&     !Change in snow albedo
                    dens_change,&    !Change in snow density
-                   tau_1,& !Number of seconds in a day
-                   Temp_C_hr      !Air temperature
+                   tau_1,&          !Number of seconds in a day
+                   Temp_C_hr        !Air temperature
 
   !Initialize
   alb_change=0
@@ -29,7 +29,6 @@
   !Calculation of snow albedo by Lemonsu et al. 2010 
   !(org: Verseghy (1991)&Baker et al.(1990))
   if (sum(SnowPack)>0) then !Check if snow on any of the surfaces
-
       if (Temp_C_hr<0) then
         !alb_change = tau_a*(60*60)/tau_1
         alb_change = tau_a*(tstep)/tau_1
@@ -39,9 +38,7 @@
         alb_change = exp(-tau_f*(tstep)/tau_1)
       	SnowAlb = (SnowAlb-SnowAlbMin)*alb_change+SnowAlbMin
       endif	
-
       if (SnowAlb<SnowAlbMin) SnowAlb=SnowAlbMin !Albedo cannot be smaller than the min albedo
-
   else
      SnowAlb = 0
   endif

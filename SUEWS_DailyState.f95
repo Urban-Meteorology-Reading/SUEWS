@@ -406,7 +406,7 @@
 
      if (writedailyState==1) then
         !Define filename
-        write(grstr2,'(i2)') Gridiv      !Convert grid number for output file name
+        write(grstr2,'(i5)') Gridiv      !Convert grid number for output file name
         FileDaily=trim(FileOutputPath)//trim(FileCode)//trim(adjustl(grstr2))//'_DailyState.txt'
 
         ! If first modelled day, open the file and save header

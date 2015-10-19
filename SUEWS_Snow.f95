@@ -424,8 +424,9 @@
          MeltExcess = 0
          MeltExcess = MeltWaterStore(is)-FWC  
 
-         !Can flow to snow free surface
-         if (snowFrac(is)>0.9) then
+         !Can flow to snow free surface if fraction of snow covered ground is less than 80%. 
+         !Otherwise all water goes to runoff (and in the vase og build surface this always happens)
+         if ((snowFrac(is)>0.8.and.is/=BldgSurf).or.(is==BldgSurf)) then
          	runoffSnow(is) = runoffSnow(is) + MeltExcess*snowFrac(is)
          	SnowToSurf(is) = SnowToSurf(is) + MeltExcess*snowFrac(is)
          else
@@ -503,11 +504,11 @@
        state(is)=state(is)+chang(is)
         
        !Add water in soil store only if ground is not frozen
-       !if (Temp_C>0) then
-       soilmoist(is)=soilmoist(is)+Drain(is)*AddWaterRunoff(is)*(1-snowFrac(is))
-       !else
-       !	 runoff(is)=runoff(is)+Drain(is)*AddWaterRunoff(is)
-       !endif		
+       if (Temp_C>0) then
+         soilmoist(is)=soilmoist(is)+Drain(is)*AddWaterRunoff(is)*(1-snowFrac(is))
+       else
+       	 runoff(is)=runoff(is)+Drain(is)*AddWaterRunoff(is)
+       endif		
      
        !If state of the surface is negative, remove water from soilstore
        if(state(is)<0.0) then  

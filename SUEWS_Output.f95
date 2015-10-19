@@ -34,7 +34,7 @@
     
   !================DEFINE OUTPUT FILENAME AND ITS PATH================
   write(str2,'(i2)') TSTEP/60
-  write(grstr2,'(i2)') Gridiv
+  write(grstr2,'(i5)') Gridiv
   write(yrstr2,'(i4)') year_int
 
   rawpath=trim(FileOutputPath)//trim(FileCode)//trim(adjustl(grstr2))//'_'//trim(adjustl(yrstr2))

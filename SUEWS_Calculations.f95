@@ -2,6 +2,8 @@
 !Made by LJ and HW Oct 2014
 !Gives in the grid ID (Gridiv) and number of line in the met forcing data to be analyzed (ir)
 !Last modification
+! HCW 12 Nov 2015
+!  Added z0m and zdm to output file
 ! HCW 05 Nov 2015
 !  Changed Kawai et al. (2007) z0v calculation so VegFraction(veg+soil) rather than veg_fr(veg+soil+water) is used.
 ! HCW 29 Jun 2015
@@ -524,9 +526,9 @@
         AdditionalWater,FlowChange/nsh_real,int_wu,wu_EveTr,wu_DecTr,wu_Grass,&                          !37
         ra,ResistSurf,ustar,l_mod,Fcld,&                                                                 !42
         soilstate,smd,(smd_nsurf(is),is=1,nsurf-1),(state(is),is=1,nsurf),&                              !57
-        lai_wt,&                                                                                         !58
-        qn1_SF,qn1_S,Qm,QmFreez,QmRain,swe,mwh,MwStore,(SnowRemoval(is),is=1,2),chSnow_per_interval,&    !69
-        SnowAlb/)                                                                                       !70
+        lai_wt,z0m,zdm,&                                                                                 !60
+        qn1_SF,qn1_S,Qm,QmFreez,QmRain,swe,mwh,MwStore,(SnowRemoval(is),is=1,2),chSnow_per_interval,&    !71
+        SnowAlb/)                                                                                        !72
 
  if (snowUse==1) then
     dataOutSnow(ir,1:ncolumnsDataOutSnow,Gridiv)=(/real(iy,kind(1D0)),real(id,kind(1D0)),&               !2

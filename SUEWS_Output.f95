@@ -1,6 +1,8 @@
 !In this subroutine the output files will be opened and the output matrices will be printed out.
 !
 !Last change:
+! HCW 12 Nov 2015
+! Added z0m and zdm to output file
 ! HCW 27 Apr 2015
 ! Increased output resolution of water balance components (N.B. model time steps < 5 min may require higher precision)
 ! LJ in 13 April 2014
@@ -61,7 +63,7 @@
                'RA RS ustar L_mod Fcld ',&
                'SoilSt smd smd_Paved smd_Bldgs smd_EveTr smd_DecTr smd_Grass smd_BSoil ',&
                'St_Paved St_Bldgs St_EveTr St_DecTr St_Grass St_BSoil St_Water ',&
-               'LAI ',&
+               'LAI z0m zdm ',&
                'qn1_SF qn1_S Qm QmFreez Qmrain SWE Mw MwStore snowRem_Paved snowRem_Bldgs ChSnow/i ',&
                'SnowAlb ')
               !These belon to NARP ouput file
@@ -156,18 +158,18 @@
             2(f9.3,1X),4(f9.4,1X),&            !37
             3(f10.5,1X),(g14.7,1X),(f10.5,1X),& !42
             2(f10.4,1X),6(f10.5,1X),7(f10.4,1X),& !57
-             (f10.4,1X),&                       !58 LAI
-            5(f10.4,1X),6(f10.6,1X),&           !69
-            1(f8.4,1X))                        !70 albedo snow
+            3(f10.4,1X),&                       !60 LAI z0m zdm
+            5(f10.4,1X),6(f10.6,1X),&           !71
+            1(f8.4,1X))                        !72 albedo snow
 
   !==================== This part read by python wrapper ======================
   ! Update to match output columns, header and format
   ! Average, sum, or use last value to go from model timestep to 60-min output
   ! 301_Instructions         
   ! TimeCol = [1,2,3,4,5]
-  ! AvCol  = [6,7,8,9,10,11,12,13,14,15,16,17,  38,39,40,41,42,  59,60,61,62,63]          
-  ! SumCol = [18,19,20,21,  24,25, 26,27,28,29,30,31,  32,33,34,35,36,37,  67,68,69] 
-  ! LastCol  = [22,23,  43,44,45,46,47,48,49,50,  51,52,53,54,55,56,57,  58,  64,65,66,  70]                         
+  ! AvCol  = [6,7,8,9,10,11,12,13,14,15,16,17,  38,39,40,41,42,  61,62,63,64,65]          
+  ! SumCol = [18,19,20,21,  24,25, 26,27,28,29,30,31,  32,33,34,35,36,37,  69,70,71] 
+  ! LastCol  = [22,23,  43,44,45,46,47,48,49,50,  51,52,53,54,55,56,57,  58,59,60,  66,67,68,  72]                         
 
   304 format(1(i3,1X),4(f8.4,1X),23(f9.3,1X))          !Solweig output
   305 format((i4,1X),3(i3,1X),(f8.4,1X),17(f15.7,1x))  !CBL output

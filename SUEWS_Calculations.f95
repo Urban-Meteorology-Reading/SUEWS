@@ -2,6 +2,8 @@
 !Made by LJ and HW Oct 2014
 !Gives in the grid ID (Gridiv) and number of line in the met forcing data to be analyzed (ir)
 !Last modification
+! HCW 05 Nov 2015
+!  Changed Kawai et al. (2007) z0v calculation so VegFraction(veg+soil) rather than veg_fr(veg+soil+water) is used.
 ! HCW 29 Jun 2015
 !  Added albEveTr and albGrass
 ! HCW 25 Jun 2015
@@ -279,11 +281,11 @@
  call STAB_lumps(H,StabilityMethod,ustar,L_mod) !u* and monin-obukhov length out
 
  call AerodynamicResistance(RA,AerodynamicResistanceMethod,StabilityMethod,RoughLen_heat,&
-                            ZZD,z0m,k2,AVU1,L_mod,Ustar,veg_fr,psyh)      !RA out
+                            ZZD,z0m,k2,AVU1,L_mod,Ustar,VegFraction,psyh)      !RA out
 
  if (snowUse==1) then
     call AerodynamicResistance(RAsnow,AerodynamicResistanceMethod,StabilityMethod,3,&
-                               ZZD,z0m,k2,AVU1,L_mod,Ustar,veg_fr,psyh)      !RA out
+                               ZZD,z0m,k2,AVU1,L_mod,Ustar,VegFraction,psyh)      !RA out
  endif
 
  call SurfaceResistance(id,it)   !qsc and surface resistance out

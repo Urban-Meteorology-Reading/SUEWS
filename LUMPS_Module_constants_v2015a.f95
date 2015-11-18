@@ -32,7 +32,7 @@
    integer, parameter:: ncolumnsMetForcingData=24	 !Meteorological forcing file (_data.txt)
    
    ! ---- Set number of columns in output files ---------------------------------------------------
-   integer, parameter:: ncolumnsDataOut=70,&		!Main output file (_5.txt). DataOut created in SUEWS_Calculations.f95
+   integer, parameter:: ncolumnsDataOut=72,&		!Main output file (_5.txt). DataOut created in SUEWS_Calculations.f95
                         ncolumnsDataOutSnow=102
   
    ! ---- Define input file headers ---------------------------------------------------------------              

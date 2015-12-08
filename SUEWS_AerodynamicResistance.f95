@@ -3,6 +3,7 @@ subroutine AerodynamicResistance(RA,AerodynamicResistanceMethod,StabilityMethod,
         
 ! Returns Aerodynamic resistance (RA) to the main program SUEWS_Calculations
 ! All ra equations reported in Thom & Oliver (1977)
+! Modified by HCW 03 Dec 2015 - changed lower limit on ra from 2 s m-1 to 10 s m-1 (to avoid unrealistically high evaporation rates) 
 ! Modified by LJ in 12 April to not to be used with global variables
 ! To Do:
 !       - Check whether the thresholds 2-200 s m-1 are suitable over a range of z0!! HCW 04 Mar 2015
@@ -70,9 +71,9 @@ integer::AerodynamicResistanceMethod,StabilityMethod,RoughLen_heat
   if(RA>200) then           
      call errorHint(7,'RA > 200 s m-1; value set to 200 s m-1',RA,notUsed,notUsedI)
      RA=200
-  elseif(RA<2)then   ! found  By Shiho - fix Dec 2012
-     call errorHint(7,'RA < 2 s m-1; value set to 2 s m-1',RA,notUsed,notUsedI)
-     RA=2
+  elseif(RA<10)then   ! found  By Shiho - fix Dec 2012  !Threshold changed from 2 to 10 s m-1 (HCW 03 Dec 2015) 
+     call errorHint(7,'RA < 10 s m-1; value set to 10 s m-1',RA,notUsed,notUsedI)
+     RA=10
      ! RA=(log(ZZD/z0m))**2/(k2*AVU1)
      if(avu1<0) write(*,*) avu1,ra
   endif

@@ -7,6 +7,7 @@
 !  snowRem - Removal of snow my snow clearing
 !  SnowDepletionCurve - Calculation of snow fractions
 !Last modification:
+! HCW 08 Dec 2015 - Added check for no Paved surfaces     
 !  LJ in 14 July 2015 - Code fixed to work with tstep.
 !  HCW 06 Mar 2015 - Unused variable 'i' removed.
 !  LJ in Jan 2015 - Change the calculation from hourly timestep to timestep defined by nsh
@@ -478,8 +479,9 @@
      
         state(is)=state(is)+chang(is) !Change in state (for whole surface area areasfr(is))
      
-        !Add water from neighbouring grids 
-        if (is==PavSurf) state(is)=state(is)+(addImpervious)/sfr(PavSurf)
+        !Add water from neighbouring grids
+        ! Check sfr/=0 added HCW 08 Dec 2015
+        if (is==PavSurf.and. sfr(PavSurf)/=0) state(is)=state(is)+(addImpervious)/sfr(PavSurf)
         
         runoff(is)=runoff(is)+drain(is)*AddWaterRunoff(is) !Drainage (not flowing to other surfaces) goes to runoff
         

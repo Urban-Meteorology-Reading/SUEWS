@@ -1,6 +1,8 @@
  subroutine soilstore
 !------------------------------------------------------------------------------
 !Calculation of storage change
+! HCW 08 Dec 2015
+!  Added if-loop check for no Paved surfaces     
 !LJ 6 May 2015
 ! - Calculations of the piperunoff exceedings moved to separate subroutine updateFlood.
 !   Now also called from snow subroutine
@@ -78,8 +80,12 @@
      
      ! ---- Add water from neighbouring grids (RG2G) ----
      ! Add to PavSurf only, as water cannot flow onto buildings
-     if (is==PavSurf) p_mm=p_mm+addImpervious/sfr(PavSurf)
-
+     if (is==PavSurf) then
+       if(sfr(PavSurf)/=0) then   ! If loop added HCW 08 Dec 2015
+           p_mm=p_mm+addImpervious/sfr(PavSurf)   
+       endif
+     endif   
+           
      ! Calculate change in surface state (inputs - outputs)
      chang(is)=p_mm-(drain(is)+ev)	   
      

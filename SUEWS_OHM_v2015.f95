@@ -10,7 +10,7 @@
 ! Modified by HCW 25 Feb 2015
 !  Adapted q1,q2,q3 & r1,r2,r3 for multiple grids 
 ! To Do:
-! 	- Could change OHM_TForSummer with latitude (5 degC not always appropriate)
+! 	- Change OHM_TForSummer with latitude (5 degC not always appropriate) - add to inputs
 !      	- Is OHM_SMForWet = 0.9 appropriate?
 ! 	- No canyons implemented at the moment [OHM_coef(nsurf+1,,)]
 ! ?? Why is BldgSurf treated differently in terms of SnowFrac? (HCW)
@@ -31,7 +31,8 @@
   real(kind(1d0)):: dqndt 	!Rate of change of net radiation [W m-2 h-1] at t-2
   real(kind(1d0)):: surfrac  	!Surface fraction accounting for SnowFrac if appropriate
   
-  real(kind(1d0)):: OHM_TForSummer = 5  !Use summer coefficients if 5-day Tair >= 5 degC
+  !real(kind(1d0)):: OHM_TForSummer = 5  !Use summer coefficients if 5-day Tair >= 5 degC
+  real(kind(1d0)):: OHM_TForSummer = 10  !Use summer coefficients if 5-day Tair >= 10 degC - modified for UK HCW 14 Dec 2015
   real(kind(1d0)):: OHM_SMForWet = 0.9  !Use wet coefficients if SM close to soil capacity
    
    

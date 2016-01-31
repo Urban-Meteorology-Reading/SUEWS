@@ -28,8 +28,8 @@
   integer:: i,ii
   integer:: Gridiv
   
-  real(kind(1d0)):: dqndt 	!Rate of change of net radiation [W m-2 h-1] at t-2
-  real(kind(1d0)):: surfrac  	!Surface fraction accounting for SnowFrac if appropriate
+  real(kind(1d0)):: dqndt    !Rate of change of net radiation [W m-2 h-1] at t-2
+  real(kind(1d0)):: surfrac  !Surface fraction accounting for SnowFrac if appropriate
   
   !real(kind(1d0)):: OHM_TForSummer = 5  !Use summer coefficients if 5-day Tair >= 5 degC
   real(kind(1d0)):: OHM_TForSummer = 10  !Use summer coefficients if 5-day Tair >= 10 degC - modified for UK HCW 14 Dec 2015
@@ -44,9 +44,9 @@
   ! -------------------------
   
   ! Use 5-day running mean Tair to decide whether it is summer or winter ----------------
-  if(HDD(id-1,4) >= OHM_TForSummer) then     !Summer
+  if(HDD(id-1,4) >= OHM_TForSummer) then !Summer
      ii=0
-  else			        !Winter
+  else          !Winter
      ii=2
   endif
     
@@ -59,10 +59,10 @@
            i=ii+2
            ! If the surface is dry but SM is close to capacity, use coefficients for wet surfaces
            if(is>BldgSurf.and.is/=WaterSurf)then    !Wet soil (i.e. EveTr, DecTr, Grass, BSoil surfaces)
-       	      if(soilmoist(is)/soilstoreCap(is) > OHM_SMForWet) then   
+              if(soilmoist(is)/soilstoreCap(is) > OHM_SMForWet) then
                  i=ii+1
               endif
-           endif             		 
+           endif
         endif    
         
      ! If snow, adjust surface fractions accordingly
@@ -81,20 +81,21 @@
 !write(*,*) a1,a2,a3
 
   ! Calculate radiation part ------------------------------------------------------------
-  qs=NAN  		!qs  = Net storage heat flux  [W m-2]
-  if(qn1>-999) then	!qn1 = Net all-wave radiation [W m-2]     
+  qs=NAN              !qs  = Net storage heat flux  [W m-2]
+  if(qn1>-999) then   !qn1 = Net all-wave radiation [W m-2]
      !if(q1>-999.and.q3>-999) then
-        !dqndt = 0.5*(q3-q1)*nsh_real	  !gradient at t-2
-        dqndt = 0.5*(qn1-q2_grids(Gridiv))*nsh_real  	  !gradient at t-1
-     	! Calculate net storage heat flux
-     	qs = qn1*a1 + dqndt*a2 + a3   !Eq 4, Grimmond et al. 1991
+        !dqndt = 0.5*(q3-q1)*nsh_real	              !gradient at t-2
+        dqndt = 0.5*(qn1-q2_grids(Gridiv))*nsh_real   !gradient at t-1
+
+        !Calculate net storage heat flux
+        qs = qn1*a1 + dqndt*a2 + a3   !Eq 4, Grimmond et al. 1991
      !endif
      !q1=q2	!q1 = net radiation at t-2 (at t-3 when q1 used in next timestep)
      !q2=q3	!q2 = net radiation at t-1
      !q3=qn1	!q3 = net radiation at t   (at t-1 when q3 used in next timestep)   
-     q1_grids(Gridiv)=q2_grids(Gridiv)	!q1 = net radiation at t-2 (at t-3 when q1 used in next timestep)
-     q2_grids(Gridiv)=q3_grids(Gridiv)	!q2 = net radiation at t-1
-     q3_grids(Gridiv)=qn1	!q3 = net radiation at t   (at t-1 when q3 used in next timestep)
+     q1_grids(Gridiv)=q2_grids(Gridiv) !q1 = net radiation at t-2 (at t-3 when q1 used in next timestep)
+     q2_grids(Gridiv)=q3_grids(Gridiv) !q2 = net radiation at t-1
+     q3_grids(Gridiv)=qn1              !q3 = net radiation at t   (at t-1 when q3 used in next timestep)
   else
      call ErrorHint(21,'Bad value for qn1 found during OHM calculation',qn1,NotUsed,notUsedI)
   endif    
@@ -109,7 +110,7 @@
      if(qn1_S>-999) then
         !if(r1>-999.and.r3>-999) then
            !dqndt = 0.5*(r3-r1)*nsh_real	  !gradient at t-2
-           dqndt = 0.5*(qn1_S-r2_grids(Gridiv))*nsh_real  	  !gradient at t-1
+           dqndt = 0.5*(qn1_S-r2_grids(Gridiv))*nsh_real     !gradient at t-1
            ! Calculate net storage heat flux for snow surface (winter wet conditions HCW 15/01/2015)
            deltaQi = qn1_S*OHM_coef(nsurf+2,3,1) + dqndt*OHM_coef(nsurf+2,3,2) + OHM_coef(nsurf+2,3,3)
         !endif

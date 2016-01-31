@@ -32,12 +32,12 @@
       if (Temp_C_hr<0) then
         !alb_change = tau_a*(60*60)/tau_1
         alb_change = tau_a*(tstep)/tau_1
-      	snowAlb = SnowAlb-alb_change
-  	  else
+        snowAlb = SnowAlb-alb_change
+      else
         !alb_change = exp(-tau_f*(60*60)/tau_1)
         alb_change = exp(-tau_f*(tstep)/tau_1)
-      	SnowAlb = (SnowAlb-SnowAlbMin)*alb_change+SnowAlbMin
-      endif	
+        SnowAlb = (SnowAlb-SnowAlbMin)*alb_change+SnowAlbMin
+      endif
       if (SnowAlb<SnowAlbMin) SnowAlb=SnowAlbMin !Albedo cannot be smaller than the min albedo
   else
      SnowAlb = 0

@@ -4,14 +4,14 @@ use matsize
 use data_in
 
     implicit none 
-    real(kind(1D0))								:: vikttot,aziE,aziN,aziS,aziW 
-    real(kind(1D0))								:: altitude,Ta,Tw,SBC,ewall,esky,t,CI,c!azimuth,
-    real(kind(1d0)),allocatable,dimension(:,:) 	:: svfalfaE,svfalfaS,svfalfaW,svfalfaN
-    real(kind(1d0)),allocatable,dimension(:,:) 	:: alfaB,betaB,betasun
-    real(kind(1d0)),allocatable,dimension(:,:) 	:: Lground,Lrefl,Lsky,Lsky_allsky,Lveg,Lwallsh,Lwallsun
-    real(kind(1d0)),allocatable,dimension(:,:) 	:: viktonlywall,viktaveg,svfvegbu
-    real(kind(1d0)),allocatable,dimension(:,:) 	:: oneminussvfE,oneminussvfS,oneminussvfW,oneminussvfN
-    real(kind(1d0)),parameter          			:: pi=3.141592653589793
+    real(kind(1D0))                             :: vikttot,aziE,aziN,aziS,aziW
+    real(kind(1D0))                             :: altitude,Ta,Tw,SBC,ewall,esky,t,CI,c!azimuth,
+    real(kind(1d0)),allocatable,dimension(:,:)  :: svfalfaE,svfalfaS,svfalfaW,svfalfaN
+    real(kind(1d0)),allocatable,dimension(:,:)  :: alfaB,betaB,betasun
+    real(kind(1d0)),allocatable,dimension(:,:)  :: Lground,Lrefl,Lsky,Lsky_allsky,Lveg,Lwallsh,Lwallsun
+    real(kind(1d0)),allocatable,dimension(:,:)  :: viktonlywall,viktaveg,svfvegbu
+    real(kind(1d0)),allocatable,dimension(:,:)  :: oneminussvfE,oneminussvfS,oneminussvfW,oneminussvfN
+    real(kind(1d0)),parameter                   :: pi=3.141592653589793
 
     allocate(oneminussvfE(sizex,sizey))
     allocate(oneminussvfS(sizex,sizey))
@@ -61,7 +61,7 @@ use data_in
     F_sh=2.*F_sh-1. !(cylindric_wedge scaled 0-1)
     
      if (SOLWEIG_ldown==1) then 
-	    c=1-CI
+        c=1-CI
         Lsky_allsky=esky*SBC*((Ta+273.15)**4)*(1-c)+c*SBC*((Ta+273.15)**4) 
     else
         Lsky_allsky=ldown

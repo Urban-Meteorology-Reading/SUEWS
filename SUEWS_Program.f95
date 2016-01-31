@@ -32,19 +32,19 @@
     
     IMPLICIT NONE
 
-    character(len=4)::year_txt,&	!Year as a text string
-    			      year_txtNext	!Following year as a text string (used for NextInitial)
-    character(len=20)::FileCodeX,&	!Current file code
-    			       FileCodeXNext	!File code for the following year
-    character(len=20)::grid_txt,&	!Grid number as a text string (from FirstGrid to LastGrid)
-                       tstep_txt       !Model timestep (in minutes) as a text string
+    character(len=4)::year_txt,&	 !Year as a text string
+                      year_txtNext   !Following year as a text string (used for NextInitial)
+    character(len=20)::FileCodeX,&	 !Current file code
+                       FileCodeXNext !File code for the following year
+    character(len=20)::grid_txt,&	 !Grid number as a text string (from FirstGrid to LastGrid)
+                       tstep_txt     !Model timestep (in minutes) as a text string
     
     integer:: nlinesLimit   !Max number of lines that can be read in one go for each grid
                                
-    integer::i,&	   ! Grid number (from FirstGrid to LastGrid)
-    		 iv,&	   ! Block number (from 1 to ReadBlocksMetData)
-    		 ir,irMax,& ! Row number within each block (from 1 to irMax)
-    		 rr,& 	   ! Row of SiteSelect corresponding to current year and grid
+    integer::i,&	    !Grid number (from FirstGrid to LastGrid)
+             iv,&       !Block number (from 1 to ReadBlocksMetData)
+             ir,irMax,& !Row number within each block (from 1 to irMax)
+             rr,&       ! Row of SiteSelect corresponding to current year and grid
              year_int   ! Year as an integer (from SiteSelect rather than met forcing file)
     
     logical:: PrintPlace=.false.   !Prints row, block, and grid number to screen if TRUE
@@ -132,21 +132,21 @@
        allocate(SurfaceChar(NumberOfGrids,MaxNCols_c))   !Surface characteristics
        allocate(MetForcingData(1:ReadlinesMetdata,ncolumnsMetForcingData,NumberOfGrids))   !Met forcing data 
        allocate(ModelOutputData(0:ReadlinesMetdata,MaxNCols_cMOD,NumberOfGrids))           !Data at model timestep
-       allocate(dataOut(1:ReadlinesMetdata,ncolumnsDataOut,NumberOfGrids))  	           !Main output array
+       allocate(dataOut(1:ReadlinesMetdata,ncolumnsDataOut,NumberOfGrids))                 !Main output array
        if (SOLWEIGuse == 1) then
           allocate(dataOutSOL(1:ReadlinesMetdata,28,NumberOfGrids))                        !SOLWEIG POI output
        endif
        if (CBLuse >= 1) then
-          allocate(dataOutBL(1:ReadlinesMetdata,22,NumberOfGrids))  	                   !CBL output
+          allocate(dataOutBL(1:ReadlinesMetdata,22,NumberOfGrids))                         !CBL output
        endif
        if (SnowUse == 1) then
-          allocate(dataOutSnow(1:ReadlinesMetdata,ncolumnsDataOutSnow,NumberOfGrids))  	   !Snow output array
+          allocate(dataOutSnow(1:ReadlinesMetdata,ncolumnsDataOutSnow,NumberOfGrids))      !Snow output array
        endif
        
-       allocate(TstepProfiles(NumberOfGrids,6,24*NSH))	!Hourly profiles interpolated to model timestep
-       allocate(AHProf_tstep(24*NSH,2))			!Anthropogenic heat profiles at model timestep
-       allocate(WUProfM_tstep(24*NSH,2))		!Manual water use profiles at model timestep
-       allocate(WUProfA_tstep(24*NSH,2))		!Automatic water use profiles at model timestep
+       allocate(TstepProfiles(NumberOfGrids,6,24*NSH))  !Hourly profiles interpolated to model timestep
+       allocate(AHProf_tstep(24*NSH,2))                 !Anthropogenic heat profiles at model timestep
+       allocate(WUProfM_tstep(24*NSH,2))                !Manual water use profiles at model timestep
+       allocate(WUProfA_tstep(24*NSH,2))                !Automatic water use profiles at model timestep
        !! Add snow clearing (?)      
        ! ----------------------------------------------------------------------
           
@@ -174,19 +174,19 @@
              if(iv==1) write(*,*) 'Current FileCode: ', FileCodeX      
                           	     
   	         ! For the first block of met data --------------------------------
-  	         if(iv == 1) then
+             if(iv == 1) then
 	            !write(*,*) 'First block of data - doing initialisation'
                 ! (a) Transfer characteristics from SiteSelect to correct row of SurfaceChar
                 do rr=1,nlinesSiteSelect
                    if(SiteSelect(rr,c_Grid)==i.and.SiteSelect(rr,c_Year)==year_int)then
                       !write(*,*) 'Match found (grid and year) for rr = ', rr
                       call InitializeSurfaceCharacteristics(GridCounter,rr)
-		              exit
-		           elseif(rr == nlinesSiteSelect) then
-		               write(*,*) 'Program stopped! Year',year_int,'and/or grid',i,'not found in SiteSelect.txt.'
-		               call ErrorHint(59,'Cannot find year and/or grid in SiteSelect.txt',real(i,kind(1d0)),NotUsed,year_int)
-                   endif     
-	           enddo
+                      exit
+                   elseif(rr == nlinesSiteSelect) then
+                       write(*,*) 'Program stopped! Year',year_int,'and/or grid',i,'not found in SiteSelect.txt.'
+                       call ErrorHint(59,'Cannot find year and/or grid in SiteSelect.txt',real(i,kind(1d0)),NotUsed,year_int)
+                   endif
+               enddo
                ! (b) get initial conditions
                call InitialState(FileCodeX,year_int,GridCounter,year_txt)
              endif   !end first block of met data
@@ -223,14 +223,14 @@
           ! First set maximum value of ir
           if(iv == ReadBlocksMetData) then   !For last block of data in file
              irMax = nlinesMetdata - (iv-1)*ReadLinesMetdata
-          else 				
+          else
              irMax = ReadLinesMetdata
           endif   
           DO ir=1,irMax   !Loop through rows of current block of met data
              GridCounter=1    !Initialise counter for grids in each year
              DO i=FirstGrid,LastGrid   !Loop through grids
-           
- 	         if(PrintPlace) write(*,*) 'Row (ir):', ir,'/',irMax,'of block (iv):', iv,'/',ReadBlocksMetData,'Grid:',i
+
+              if(PrintPlace) write(*,*) 'Row (ir):', ir,'/',irMax,'of block (iv):', iv,'/',ReadBlocksMetData,'Grid:',i
  
               ! Call model calculation code
               if(ir==1) write(*,*) 'Now running block ',iv,'/',ReadBlocksMetData,' of year ',year_int,'...'
@@ -249,7 +249,7 @@
                     FileCodeX    =trim(FileCode)//trim(adjustl(grid_txt))//'_'//trim(year_txt)
                     FileCodeXNext=trim(FileCode)//trim(adjustl(grid_txt))//'_'//trim(year_txtNext)
                     call NextInitial(FileCodeXNext,year_int)
-	             endif
+                 endif
               endif
            
               GridCounter = GridCounter+1   !Increase GridCounter by 1 for next grid

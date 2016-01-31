@@ -1,9 +1,11 @@
-! This subroutine loads a ESRIACSII grid as a 2D array
-    
-    subroutine LoadEsriAsciiGrid(GridPath,GridName,xllcornerlo,yllcornerlo,cellsizelo,NoDatalo)	
+ ! This subroutine loads a ESRIACSII grid as a 2D array
+ ! Last modified:
+ ! LJ 27 Jan 2016-removal of tabs
+ !-----------------------------------------------------
+ subroutine LoadEsriAsciiGrid(GridPath,GridName,xllcornerlo,yllcornerlo,cellsizelo,NoDatalo)
     use matsize
     
-	implicit none
+    implicit none
     real(kind(1d0))                   :: xllcornerlo,yllcornerlo,cellsizelo,NoDatalo
     integer                           :: col,row
     character(len=100)                :: GridPath,GridName,GridFile,n
@@ -14,7 +16,7 @@
     !GridPath='D:\SOLWEIG2013b_Fortran\Inputdata\'
     !GridName='kr_dem.asc'
     GridFile=trim(GridPath)//trim(GridName)
-  	open(99,File=GridFile,status='old') 
+    open(99,File=GridFile,status='old')
     
 	! Read Header
     read(99,*) n,sizex
@@ -28,7 +30,7 @@
     
 	! Read Matrix
     do row=1,sizey
-      	read(99,*) (tempgrid(row,col),col=1,sizex)
+       read(99,*) (tempgrid(row,col),col=1,sizex)
     end do
     close(99)
 
@@ -36,8 +38,8 @@
     end subroutine LoadEsriAsciiGrid
     
     
-! This subroutine saves a 2D array as an ESRIACSII grid
-subroutine SaveEsriAsciiGrid(GridPath,GridName,xllcornerlo,yllcornerlo,cellsizelo,NoDatalo)	
+    ! This subroutine saves a 2D array as an ESRIACSII grid
+    subroutine SaveEsriAsciiGrid(GridPath,GridName,xllcornerlo,yllcornerlo,cellsizelo,NoDatalo)
     use matsize
     
     implicit none
@@ -70,4 +72,4 @@ subroutine SaveEsriAsciiGrid(GridPath,GridName,xllcornerlo,yllcornerlo,cellsizel
 100 format(200(f6.2,1x))
  
     return
-    end subroutine SaveEsriAsciiGrid
+ end subroutine SaveEsriAsciiGrid

@@ -24,12 +24,12 @@
    integer, parameter:: ncolumnsSnow=19              !SUEWS_Snow.txt
    integer, parameter:: ncolumnsSoil=9               !SUEWS_Soil.txt
    integer, parameter:: ncolumnsConductance=12       !SUEWS_Conductance.txt
-   integer, parameter:: ncolumnsOHMCoefficients=4 	 !SUEWS_OHMCoefficients.txt
+   integer, parameter:: ncolumnsOHMCoefficients=4    !SUEWS_OHMCoefficients.txt
    integer, parameter:: ncolumnsAnthropogenicHeat=11 !SUEWS_AnthropogenicHeat.txt
-   integer, parameter:: ncolumnsIrrigation=25		 !SUEWS_Irrigation.txt
-   integer, parameter:: ncolumnsProfiles=25 		 !SUEWS_Profiles.txt
-   integer, parameter:: ncolumnsWGWaterDist=10 		 !SUEWS_WithinGridWaterDist.txt
-   integer, parameter:: ncolumnsMetForcingData=24	 !Meteorological forcing file (_data.txt)
+   integer, parameter:: ncolumnsIrrigation=25        !SUEWS_Irrigation.txt
+   integer, parameter:: ncolumnsProfiles=25          !SUEWS_Profiles.txt
+   integer, parameter:: ncolumnsWGWaterDist=10       !SUEWS_WithinGridWaterDist.txt
+   integer, parameter:: ncolumnsMetForcingData=24    !Meteorological forcing file (_data.txt)
    
    ! ---- Set number of columns in output files ---------------------------------------------------
    integer, parameter:: ncolumnsDataOut=72,&		!Main output file (_5.txt). DataOut created in SUEWS_Calculations.f95
@@ -91,13 +91,13 @@
    real(kind(1d0)),dimension(:,:),  allocatable:: WUProfM_tstep, WUProfA_tstep
    ! Column numbers for TstepProfiles
    integer:: cTP_EnUseWD  = 1,&
-   	     cTP_EnUseWE  = 2,&
-       	     cTP_WUManuWD = 3,&
-       	     cTP_WUManuWE = 4,&
-       	     cTP_WUAutoWD = 5,&
-       	     cTP_WUAutoWE = 6,&
-   	     cTP_SnowCWD  = 7,&
-   	     cTP_SnowCWE  = 8
+   cTP_EnUseWE  = 2,&
+         cTP_WUManuWD = 3,&
+         cTP_WUManuWE = 4,&
+         cTP_WUAutoWD = 5,&
+         cTP_WUAutoWE = 6,&
+         cTP_SnowCWD  = 7,&
+         cTP_SnowCWE  = 8
 
    !-----------------------------------------------------------------------------------------------
              
@@ -107,7 +107,7 @@
    integer, parameter:: nsurfIncSnow=nsurf+1   !Number of surfaces + snow
       
    integer:: PavSurf   = 1,&   !When all surfaces considered together (1-7)
-   	     BldgSurf  = 2,&
+             BldgSurf  = 2,&
              ConifSurf = 3,&
              DecidSurf = 4,&          
              GrassSurf = 5,&   !New surface classes: Grass = 5th/7 surfaces
@@ -179,15 +179,15 @@
    real(kind(1d0)),dimension( 0:ndays):: albGrass   !Albedo of grass[-]
    
    real(kind(1d0)):: AlbMin_DecTr,&   !Min albedo for deciduous trees [-]
-		     AlbMax_DecTr,&   !Max albedo for deciduous trees [-]
-                     CapMin_dec,&   !Min storage capacity for deciduous trees [mm] (from input information)
-                     CapMax_dec,&   !Max storage capacity for deciduous trees [mm] (from input information)                           
-                     PorMin_dec,&  !Min porosity for deciduous trees 
-                     PorMax_dec,&    !Max porosity for deciduous trees
-                     AlbMin_EveTr,&   !Min albedo for evergreen trees [-]
-		     AlbMax_EveTr,&   !Max albedo for evergreen trees [-]
-                     AlbMin_Grass,&   !Min albedo for grass [-]
-		     AlbMax_Grass     !Max albedo for grass [-]
+             AlbMax_DecTr,&   !Max albedo for deciduous trees [-]
+             CapMin_dec,&   !Min storage capacity for deciduous trees [mm] (from input information)
+             CapMax_dec,&   !Max storage capacity for deciduous trees [mm] (from input information)
+             PorMin_dec,&  !Min porosity for deciduous trees
+             PorMax_dec,&    !Max porosity for deciduous trees
+             AlbMin_EveTr,&   !Min albedo for evergreen trees [-]
+             AlbMax_EveTr,&   !Max albedo for evergreen trees [-]
+             AlbMin_Grass,&   !Min albedo for grass [-]
+             AlbMax_Grass     !Max albedo for grass [-]
                      
    ! Replicate arrays needed for DailyState, adding dimension to identify the grid, HCW 27 Nov 2014
    !! Could delete MaxNumberOfGrids and allocate these elsewhere once NumberOfGrids is known
@@ -266,12 +266,12 @@
                                                  
    ! ---- Snow-related variables ------------------------------------------------------------------
    real(kind(1d0)),dimension(nsurf):: changSnow,&       !Change in snowpack in mm
-   				                      maxSnowVol,&      !! Maximum snow volume
-				                      MeltWaterStore,&  !!Liquid water in the snow pack of ith surface
+                                      maxSnowVol,&      !! Maximum snow volume
+                                      MeltWaterStore,&  !!Liquid water in the snow pack of ith surface
                                       ev_snow,&        	!!Evaporation from snowpack in mm
                                       mw_ind,&         	!Melt water from individual surface in mm
                                       mw_indDay,&      	!!Melt water per day from each surface type in m3
-			                          runoffSnow,&     	!!Runoff from snowpack in mm and in m3
+                                      runoffSnow,&     	!!Runoff from snowpack in mm and in m3
                                       SnowDens,&        !Density of snow
                                       SnowFrac,&       	!!Surface fraction of snow cover
                                       iceFrac,&
@@ -313,19 +313,19 @@
    
    ! ---- Set column numbering for SurfaceChar ----------------------------------------------------
    ! Columns 1:80 are the same as in SiteSelect.txt and defined below
-   integer:: cc 	 !Column counter
+   integer:: cc        !Column counter
    integer,parameter:: ccEndSI=ncolumnsSiteSelect
    
    ! Applicable to each surface
-   integer,dimension(nsurf):: c_AlbMin	  =(/(cc, cc=ccEndSI+ 0*nsurf+1,ccEndSI+ 0*nsurf+nsurf, 1)/)  !Min. albedo
-   integer,dimension(nsurf):: c_AlbMax	  =(/(cc, cc=ccEndSI+ 1*nsurf+1,ccEndSI+ 1*nsurf+nsurf, 1)/)  !Max. albedo
-   integer,dimension(nsurf):: c_Emis	  =(/(cc, cc=ccEndSI+ 2*nsurf+1,ccEndSI+ 2*nsurf+nsurf, 1)/)  !Emissivity
-   integer,dimension(nsurf):: c_StorMin	  =(/(cc, cc=ccEndSI+ 3*nsurf+1,ccEndSI+ 3*nsurf+nsurf, 1)/)  !Min. storage capacity (canopy)
-   integer,dimension(nsurf):: c_StorMax	  =(/(cc, cc=ccEndSI+ 4*nsurf+1,ccEndSI+ 4*nsurf+nsurf, 1)/)  !Max. storage capacity (canopy)
+   integer,dimension(nsurf):: c_AlbMin    =(/(cc, cc=ccEndSI+ 0*nsurf+1,ccEndSI+ 0*nsurf+nsurf, 1)/)  !Min. albedo
+   integer,dimension(nsurf):: c_AlbMax    =(/(cc, cc=ccEndSI+ 1*nsurf+1,ccEndSI+ 1*nsurf+nsurf, 1)/)  !Max. albedo
+   integer,dimension(nsurf):: c_Emis      =(/(cc, cc=ccEndSI+ 2*nsurf+1,ccEndSI+ 2*nsurf+nsurf, 1)/)  !Emissivity
+   integer,dimension(nsurf):: c_StorMin   =(/(cc, cc=ccEndSI+ 3*nsurf+1,ccEndSI+ 3*nsurf+nsurf, 1)/)  !Min. storage capacity (canopy)
+   integer,dimension(nsurf):: c_StorMax   =(/(cc, cc=ccEndSI+ 4*nsurf+1,ccEndSI+ 4*nsurf+nsurf, 1)/)  !Max. storage capacity (canopy)
    integer,dimension(nsurf):: c_WetThresh =(/(cc, cc=ccEndSI+ 5*nsurf+1,ccEndSI+ 5*nsurf+nsurf, 1)/)  !Threshold for wet evaporation [mm]
    integer,dimension(nsurf):: c_StateLimit=(/(cc, cc=ccEndSI+ 6*nsurf+1,ccEndSI+ 6*nsurf+nsurf, 1)/)  !Limit for surface state [mm]
-   integer,dimension(nsurf):: c_DrEq	  =(/(cc, cc=ccEndSI+ 7*nsurf+1,ccEndSI+ 7*nsurf+nsurf, 1)/)  !Drainage equation
-   integer,dimension(nsurf):: c_DrCoef1	  =(/(cc, cc=ccEndSI+ 8*nsurf+1,ccEndSI+ 8*nsurf+nsurf, 1)/)  !Drainage coef. 1    
+   integer,dimension(nsurf):: c_DrEq      =(/(cc, cc=ccEndSI+ 7*nsurf+1,ccEndSI+ 7*nsurf+nsurf, 1)/)  !Drainage equation
+   integer,dimension(nsurf):: c_DrCoef1   =(/(cc, cc=ccEndSI+ 8*nsurf+1,ccEndSI+ 8*nsurf+nsurf, 1)/)  !Drainage coef. 1
    integer,dimension(nsurf):: c_DrCoef2   =(/(cc, cc=ccEndSI+ 9*nsurf+1,ccEndSI+ 9*nsurf+nsurf, 1)/)  !Drainage coef. 2
    integer,dimension(nsurf):: c_SoilTCode =(/(cc, cc=ccEndSI+10*nsurf+1,ccEndSI+10*nsurf+nsurf, 1)/) !Soil type code
    ! N.B. not included in SUEWS_Water.txt
@@ -387,66 +387,66 @@
    integer,parameter:: ccEndSo = (ccEndSn+ 7*nsurf+nsurf)
    
    ! Surface conductance
-   integer:: c_GsG1	= (ccEndSo+ 1)
-   integer:: c_GsG2	= (ccEndSo+ 2)
-   integer:: c_GsG3	= (ccEndSo+ 3)
-   integer:: c_GsG4	= (ccEndSo+ 4)
-   integer:: c_GsG5	= (ccEndSo+ 5)
-   integer:: c_GsG6	= (ccEndSo+ 6)
-   integer:: c_GsTH	= (ccEndSo+ 7)
-   integer:: c_GsTL	= (ccEndSo+ 8)
-   integer:: c_GsS1	= (ccEndSo+ 9)
-   integer:: c_GsS2	= (ccEndSo+10)
-   integer:: c_GsKmax	= (ccEndSo+11)
+   integer:: c_GsG1 = (ccEndSo+ 1)
+   integer:: c_GsG2 = (ccEndSo+ 2)
+   integer:: c_GsG3 = (ccEndSo+ 3)
+   integer:: c_GsG4 = (ccEndSo+ 4)
+   integer:: c_GsG5 = (ccEndSo+ 5)
+   integer:: c_GsG6 = (ccEndSo+ 6)
+   integer:: c_GsTH = (ccEndSo+ 7)
+   integer:: c_GsTL = (ccEndSo+ 8)
+   integer:: c_GsS1 = (ccEndSo+ 9)
+   integer:: c_GsS2 = (ccEndSo+10)
+   integer:: c_GsKmax = (ccEndSo+11)
        
    ! Find current column number	
    integer,parameter:: ccEndGs = (ccEndSo+11)
    
    ! OHM codes
    integer,dimension(nsurfIncSnow):: c_OHMCode_SWet  =(/(cc, cc=ccEndGs+ 0*nsurfIncSnow+1,&
-   								ccEndGs+ 0*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM code (summer wet)
+                                ccEndGs+ 0*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM code (summer wet)
    integer,dimension(nsurfIncSnow):: c_OHMCode_SDry  =(/(cc, cc=ccEndGs+ 1*nsurfIncSnow+1,&
-   								ccEndGs+ 1*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM code (summer dry)
+                                ccEndGs+ 1*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM code (summer dry)
    integer,dimension(nsurfIncSnow):: c_OHMCode_WWet  =(/(cc, cc=ccEndGs+ 2*nsurfIncSnow+1,&
-   								ccEndGs+ 2*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM code (winter wet)
+                                ccEndGs+ 2*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM code (winter wet)
    integer,dimension(nsurfIncSnow):: c_OHMCode_WDry  =(/(cc, cc=ccEndGs+ 3*nsurfIncSnow+1,&
-   								ccEndGs+ 3*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM code (winter dry)
+                                ccEndGs+ 3*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM code (winter dry)
    integer,dimension(nsurfIncSnow):: c_a1_SWet       =(/(cc, cc=ccEndGs+ 4*nsurfIncSnow+1,&
-   								ccEndGs+ 4*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a1 (summer wet)
+                                ccEndGs+ 4*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a1 (summer wet)
    integer,dimension(nsurfIncSnow):: c_a2_SWet       =(/(cc, cc=ccEndGs+ 5*nsurfIncSnow+1,&
-   								ccEndGs+ 5*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a2 (summer wet)
-   integer,dimension(nsurfIncSnow):: c_a3_SWet	     =(/(cc, cc=ccEndGs+ 6*nsurfIncSnow+1,&
-   								ccEndGs+ 6*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a3 (summer wet)
+                                ccEndGs+ 5*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a2 (summer wet)
+   integer,dimension(nsurfIncSnow):: c_a3_SWet       =(/(cc, cc=ccEndGs+ 6*nsurfIncSnow+1,&
+                                ccEndGs+ 6*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a3 (summer wet)
    integer,dimension(nsurfIncSnow):: c_a1_SDry       =(/(cc, cc=ccEndGs+ 7*nsurfIncSnow+1,&
-   								ccEndGs+ 7*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a1 (summer dry)
+                                ccEndGs+ 7*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a1 (summer dry)
    integer,dimension(nsurfIncSnow):: c_a2_SDry       =(/(cc, cc=ccEndGs+ 8*nsurfIncSnow+1,&
-   								ccEndGs+ 8*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a2 (summer dry)
+                                ccEndGs+ 8*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a2 (summer dry)
    integer,dimension(nsurfIncSnow):: c_a3_SDry       =(/(cc, cc=ccEndGs+ 9*nsurfIncSnow+1,&
-   								ccEndGs+ 9*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a3 (summer dry)
+                                ccEndGs+ 9*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a3 (summer dry)
    integer,dimension(nsurfIncSnow):: c_a1_WWet       =(/(cc, cc=ccEndGs+10*nsurfIncSnow+1,&
-   								ccEndGs+10*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a1 (winter wet)
+                                ccEndGs+10*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a1 (winter wet)
    integer,dimension(nsurfIncSnow):: c_a2_WWet       =(/(cc, cc=ccEndGs+11*nsurfIncSnow+1,&
-   								ccEndGs+11*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a2 (winter wet)
+                                ccEndGs+11*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a2 (winter wet)
    integer,dimension(nsurfIncSnow):: c_a3_WWet       =(/(cc, cc=ccEndGs+12*nsurfIncSnow+1,&
-   								ccEndGs+12*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a3 (winter wet)
+                                ccEndGs+12*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a3 (winter wet)
    integer,dimension(nsurfIncSnow):: c_a1_WDry       =(/(cc, cc=ccEndGs+13*nsurfIncSnow+1,&
-   								ccEndGs+13*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a1 (winter dry)
+                                ccEndGs+13*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a1 (winter dry)
    integer,dimension(nsurfIncSnow):: c_a2_WDry       =(/(cc, cc=ccEndGs+14*nsurfIncSnow+1,&
-   								ccEndGs+14*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a2 (winter dry)
+                                ccEndGs+14*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a2 (winter dry)
    integer,dimension(nsurfIncSnow):: c_a3_WDry       =(/(cc, cc=ccEndGs+15*nsurfIncSnow+1,&
-   								ccEndGs+15*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a3 (winter dry)   
+                                ccEndGs+15*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a3 (winter dry)
 
    ! Find current column number	
    integer,parameter:: ccEndO = (ccEndGs+15*nsurfIncSnow+nsurfIncSnow)
    
    ! Anthropogenic heat
    integer :: c_BaseTHDD  = (ccEndO+ 1)
-   integer :: c_QF_A1	  = (ccEndO+ 2)
+   integer :: c_QF_A1     = (ccEndO+ 2)
    integer :: c_QF_B1     = (ccEndO+ 3)
    integer :: c_QF_C1     = (ccEndO+ 4)
-   integer :: c_QF_A2 	  = (ccEndO+ 5)
-   integer :: c_QF_B2	  = (ccEndO+ 6)
-   integer :: c_QF_C2 	  = (ccEndO+ 7)
+   integer :: c_QF_A2     = (ccEndO+ 5)
+   integer :: c_QF_B2     = (ccEndO+ 6)
+   integer :: c_QF_C2     = (ccEndO+ 7)
    integer :: c_AHMin     = (ccEndO+ 8)
    integer :: c_AHSlope   = (ccEndO+ 9)
    integer :: c_TCritic   = (ccEndO+10)
@@ -455,10 +455,10 @@
    integer,parameter:: ccEndA = (ccEndO+10)
     
    ! Irrigation 
-   integer :: c_IeStart	  = (ccEndA+ 1)
-   integer :: c_IeEnd	  = (ccEndA+ 2)
-   integer :: c_IntWU	  = (ccEndA+ 3)
-   integer :: c_Faut	  = (ccEndA+ 4)
+   integer :: c_IeStart   = (ccEndA+ 1)
+   integer :: c_IeEnd     = (ccEndA+ 2)
+   integer :: c_IntWU     = (ccEndA+ 3)
+   integer :: c_Faut      = (ccEndA+ 4)
    integer,dimension(3):: c_Ie_a      = (/(cc, cc=ccEndA+4+ 0*3+1, ccEndA+4 + 0*3+3, 1)/)  ! Automatic irrigation coeffs
    integer,dimension(3):: c_Ie_m      = (/(cc, cc=ccEndA+4+ 1*3+1, ccEndA+4 + 1*3+3, 1)/)  ! Manual irrigation coeffs
    integer,dimension(7):: c_DayWat    = (/(cc, cc=ccEndA+10+ 0*7+1,ccEndA+10+ 0*7+7, 1)/)  ! Irrigation allowed on each day
@@ -551,7 +551,7 @@
              nlinesWGWaterDist,&        !Number of lines in SUEWS_WGWaterDist.txt  
              nlines,&                   !Number of lines in different files
              SkippedLines,& 	        !Number of lines to skip over before reading each block of met data
-             iv5		        !Counter for code matching.
+             iv5                        !Counter for code matching.
 
  end module Initial
 !==================================================================================================
@@ -727,9 +727,9 @@
 !================================================================================================== 
   
 !======================================================================================================
-MODULE cbl_MODULE
+ MODULE cbl_MODULE
 
-	integer::EntrainmentType,&  ! Entrainment type choice
+    integer::EntrainmentType,&  ! Entrainment type choice
              CO2_included,&     ! CO2 included
              InitialData_use,&  ! 1 read initial data, 0 do not        
              qh_choice,&        ! selection of qh use to drive CBL growth 1=Suews 2=lumps 3=obs
@@ -805,7 +805,7 @@ MODULE cbl_MODULE
                        SnowDensMin,&      !Minimum density of snow
                        SnowDensMax,&      !Maximum density of snow
                        SnowLimBuild,&     !Snow removal limits for roofs in mm)
-		               SnowLimPaved,&     !Snow removal limits for paved surfaces in mm)
+                       SnowLimPaved,&     !Snow removal limits for paved surfaces in mm)
                        swe,&			  !Weighted snow water equivalent (in mm)
                        tau_a,&            !Time constans related to albedo change
                        tau_f,&
@@ -827,9 +827,9 @@ MODULE cbl_MODULE
  
 !==================================================================================================
  module defaultNotUsed
- 	implicit none
- 	real (kind(1d0)):: notUsed=-55.55,reall,NAN=-999,pNAN=999
- 	integer:: notUsedI=-55, ios_out,errorChoice  !errorChoice defines if the problemfile is opened for the first time
+    implicit none
+    real (kind(1d0)):: notUsed=-55.55,reall,NAN=-999,pNAN=999
+    integer:: notUsedI=-55, ios_out,errorChoice  !errorChoice defines if the problemfile is opened for the first time
  end module defaultNotUsed
 !==================================================================================================
   
@@ -912,7 +912,7 @@ MODULE cbl_MODULE
    implicit none
    
    real (kind(1d0))::avcp,&        !Specific heat capacity                        
-   					 dens_dry,&    !Dry air density kg m-3
+                     dens_dry,&    !Dry air density kg m-3
                      dq,&          !Specific humidity deficit
                      Ea_hPa,&      !Water vapour pressure in hPa 
                      Es_hPa,&      !Saturation vapour pressure in hPa   
@@ -935,7 +935,7 @@ MODULE cbl_MODULE
    implicit none                             
                                          
    real(kind(1d0)):: Alt,&                        !Altitude in m
-   		             areaunir,&                   !Unirrigated area
+                     areaunir,&                   !Unirrigated area
                      areair,&                     !Irrigated area
                      bldgH,&                      !Mean building height
                      FAIbldg,&                    !Frontal area fraction of buildings
@@ -1008,8 +1008,8 @@ MODULE cbl_MODULE
                      WUAreaGrass_m2,&     !Water use area (grass) [m2]                     
                      WUAreaTotal_m2,&     !Water use area (total) [m2]
                      wu_EveTr,&              !Water use for evergreen trees/shrubs [mm]
-		     wu_DecTr,&              !Water use for deciduous trees/shrubs [mm]
-		     wu_Grass                !Water use for grass [mm]
+                     wu_DecTr,&              !Water use for deciduous trees/shrubs [mm]
+                     wu_Grass                !Water use for grass [mm]
 		                                         
    !Other related to SUES   
    real (kind(1d0))::AdditionalWater,&     !Water flow from other grids
@@ -1104,7 +1104,7 @@ MODULE cbl_MODULE
   real(kind(1d0)),dimension(7)::DayWatPer,&  !% of houses following daily water
                                   DayWat       !Days of watering allowed
   real(kind(1d0)),dimension(0:23,2):: WUProfM,&   !Hourly profiles for water use (manual irrigation) 
-   				      WUProfA   !Hourly profiles for water use (automatic irrigation) 
+                                      WUProfA   !Hourly profiles for water use (automatic irrigation)
  
  
   real (kind(1d0)),dimension(3)::Ie_a,Ie_m   !Coefficients for automatic and manual irrigation models             
@@ -1139,7 +1139,7 @@ MODULE cbl_MODULE
                      SoilStorePavedState,&
                      SoilStoreBldgsState,&
                      SoilStoreEveTrState,&
-              	     SoilStoreDecTrstate,&
+                     SoilStoreDecTrstate,&
                      SoilStoreGrassState,&
                      SoilStoreBSoilState,&
                      SnowWaterPavedState,&
@@ -1173,33 +1173,33 @@ MODULE cbl_MODULE
     
    !========== Columns for ModelDailyState array =========================
  
-   integer:: cMDS_id_prev	= 3,&
-             cMDS_HDD1		= 4,&
-             cMDS_HDD2		= 5,&
-             cMDS_TempC		= 6,&
-             cMDS_TempCRM  	= 7,&
-             cMDS_Precip	= 8,&
-             cMDS_DaysSinceRain	= 9,&
-             cMDS_TempCOld1	=10,&
-             cMDS_TempCOld2	=11,&
-             cMDS_TempCOld3	=12,&
-             cMDS_GDDMin	=13,&
-             cMDS_GDDMax	=14,&
-             cMDS_GDD1_0	=15,&
-             cMDS_GDD2_0	=16,&
+   integer:: cMDS_id_prev   = 3,&
+             cMDS_HDD1      = 4,&
+             cMDS_HDD2      = 5,&
+             cMDS_TempC     = 6,&
+             cMDS_TempCRM   = 7,&
+             cMDS_Precip    = 8,&
+             cMDS_DaysSinceRain = 9,&
+             cMDS_TempCOld1 =10,&
+             cMDS_TempCOld2 =11,&
+             cMDS_TempCOld3 =12,&
+             cMDS_GDDMin    =13,&
+             cMDS_GDDMax    =14,&
+             cMDS_GDD1_0    =15,&
+             cMDS_GDD2_0    =16,&
              cMDS_LAIInitialEveTr =17,&
              cMDS_LAIInitialDecTr =18,&
              cMDS_LAIInitialGrass =19,&
-             cMDS_porosity	=20,&
-             cMDS_albEveTr	=21,&
-             cMDS_albDec	=22,&
-             cMDS_albGrass	=23,&
-             cMDS_DecidCap	=24,&
-             cMDS_CumSnowfall	=25,&
-             cMDS_LAIEveTr	=26,&
-             cMDS_LAIDecTr	=27,&
-             cMDS_LAIGrass	=28,&
-             cMDS_SnowAlb	=29
+             cMDS_porosity  =20,&
+             cMDS_albEveTr  =21,&
+             cMDS_albDec    =22,&
+             cMDS_albGrass  =23,&
+             cMDS_DecidCap  =24,&
+             cMDS_CumSnowfall=25,&
+             cMDS_LAIEveTr  =26,&
+             cMDS_LAIDecTr  =27,&
+             cMDS_LAIGrass  =28,&
+             cMDS_SnowAlb   =29
 	     
  end Module ColNamesModelDailyState
 
@@ -1213,282 +1213,284 @@ MODULE cbl_MODULE
    
    !========== Columns for SUEWS_SiteSelect.txt ==========================
    ! Columns 1:80 are the same for SurfaceChar
-   integer::c_Grid	    = 1,&
-            c_Year	    = 2,&
-            c_StartDLS	    = 3,&
-            c_EndDLS	    = 4,&
-            ! Site info
-            c_lat	    = 5,&
-            c_lng	    = 6,&
-            c_Area	    = 7,&
-            c_Alt	    = 8,&
-            ! Time info
-            c_id	    = 9,&
-            c_it	    =10,&
-            c_imin	    =11,&
-            ! Surface fractions
-            c_FrPaved	    =12,&
-            c_FrBldgs	    =13,&
-            c_FrEveTr	    =14,&
-            c_FrDecTr	    =15,&
-            c_FrGrass	    =16,&
-            c_FrBSoil	    =17,&
-            c_FrWater	    =18,&
-            ! Irrigated fractions
-            c_IrrEveTrFrac  =19,&
-            c_IrrDecTrFrac  =20,&
-            c_IrrGrassFrac  =21,&
-            ! Height information
-            c_HBldgs	    =22,&
-            c_HEveTr	    =23,&
-            c_HDecTr	    =24,&
-            c_z0m	    =25,&
-            c_zdm	    =26,&
-            c_FAIBldgs	    =27,&
-            c_FAIEveTr	    =28,&
-            c_FAIDecTr	    =29,&
-            ! Population
-	    c_PopDensDay    =30,&
-            c_PopDensNight  =31,&
-	    ! Codes for different surfaces
-            c_PavedCode	    =32,&	! Links characteristics in SUEWS_NonVeg.txt
-            c_BldgsCode	    =33,&	! Links characteristics in SUEWS_NonVeg.txt
-            c_EveTrCode	    =34,&	! Links characteristics in SUEWS_Veg.txt
-            c_DecTrCode	    =35,&  	! Links characteristics in SUEWS_Veg.txt
-            c_GrassCode	    =36,&   	! Links characteristics in SUEWS_Veg.txt
-            c_BSoilCode	    =37,&	! Links characteristics in SUEWS_Veg.txt
-            c_WaterCode	    =38,&       ! Links characteristics in SUEWS_Water.txt
-	    ! LUMPS info
-	    c_LUMPSDr	    =39,&
-	    c_LUMPSCover    =40,&
-	    c_LUMPSMaxRes   =41,&
-	    ! NARP info
-	    c_NARPTrans	    =42,&
-	    ! Code for conductances
-	    c_CondCode	    =43,&       ! Links characteristics in SUEWS_Conductance.txt
-	    ! Code for snow		
-            c_SnowCode      =44,&  	! Links characteristics in SUEWS_Snow.txt
-            ! Codes for human impacts on energy, water and snow
-            c_SnowProfWD    =45,&	! Snow-clearing profile in SUEWS_Profile.txt (weekdays)
-	    c_SnowProfWE    =46,&	! Snow-clearing profile in SUEWS_Profile.txt (weekends)
-	    c_QFCode        =47,&     	! Links anthropogenic heat info in SUEWS_AnthropogenicHeat.txt
-	    c_EnProfWD	    =48,&	! Links to energy-use profile in SUEWS_Profile.txt (weekdays)
-	    c_EnProfWE 	    =49,&	! Links to energy-use profile in SUEWS_Profile.txt (weekends)
-	    c_IrrCode	    =50,&     	! Links irrigation info in SUEWS_Irrigation.txt
-	    c_WProfManuWD   =51,&	! Links to water-use profile in SUEWS_Profile.txt (manual irrigation, weekdays)
-	    c_WProfManuWE   =52,&	! Links to water-use profile in SUEWS_Profile.txt (manual irrigation, weekends)
-	    c_WProfAutoWD   =53,&	! Links to water-use profile in SUEWS_Profile.txt (automatic irrigation, weekdays)
-	    c_WProfAutoWE   =54,&	! Links to water-use profile in SUEWS_Profile.txt (automatic irrigation, weekends)
-	    ! Flow information 	
-	    c_FlowChange    =55,&	! Difference in input & output flows for water surface
-	    c_RunoffToWater =56,&  	! Fraction of above-ground runoff flowing to water surface
-	    c_PipeCapacity  =57,&	! Pipe capacity [mm]	
- 	    ! Runoff (to 8 adjacent grids)		
-            c_GridConnection1of8 =58,&
-            c_Fraction1of8 	 =59,&
-            c_GridConnection2of8 =60,&
-            c_Fraction2of8 	 =61,&
-            c_GridConnection3of8 =62,&
-            c_Fraction3of8 	 =63,&
-            c_GridConnection4of8 =64,&
-            c_Fraction4of8 	 =65,&
-            c_GridConnection5of8 =66,&
-            c_Fraction5of8 	 =67,&
-            c_GridConnection6of8 =68,&
-            c_Fraction6of8 	 =69,&
-            c_GridConnection7of8 =70,&
-            c_Fraction7of8 	 =71,&
-            c_GridConnection8of8 =72,&
-            c_Fraction8of8 	 =73,&            
- 	    ! Runoff within grid (for each surface type)
- 	    c_WGPavedCode   =74,& 	! Links to SUEWS_WaterDistibuteWithinGrid.txt		
- 	    c_WGBldgsCode   =75,& 	! Links to SUEWS_WaterDistibuteWithinGrid.txt		
- 	    c_WGEveTrCode   =76,& 	! Links to SUEWS_WaterDistibuteWithinGrid.txt		
- 	    c_WGDecTrCode   =77,& 	! Links to SUEWS_WaterDistibuteWithinGrid.txt		
- 	    c_WGGrassCode   =78,& 	! Links to SUEWS_WaterDistibuteWithinGrid.txt		
-     	    c_WGBSoilCode   =79,& 	! Links to SUEWS_WaterDistibuteWithinGrid.txt		
- 	    c_WGWaterCode   =80 	! Links to SUEWS_WaterDistibuteWithinGrid.txt		 	     	    
+   integer::c_Grid = 1,&
+        c_Year     = 2,&
+        c_StartDLS = 3,&
+        c_EndDLS   = 4,&
+        ! Site info
+        c_lat      = 5,&
+        c_lng      = 6,&
+        c_Area     = 7,&
+        c_Alt      = 8,&
+        ! Time info
+        c_id       = 9,&
+        c_it       =10,&
+        c_imin     =11,&
+        ! Surface fractions
+        c_FrPaved  =12,&
+        c_FrBldgs  =13,&
+        c_FrEveTr  =14,&
+        c_FrDecTr  =15,&
+        c_FrGrass  =16,&
+        c_FrBSoil  =17,&
+        c_FrWater  =18,&
+        ! Irrigated fractions
+        c_IrrEveTrFrac =19,&
+        c_IrrDecTrFrac =20,&
+        c_IrrGrassFrac =21,&
+        ! Height information
+        c_HBldgs    =22,&
+        c_HEveTr    =23,&
+        c_HDecTr    =24,&
+        c_z0m       =25,&
+        c_zdm       =26,&
+        c_FAIBldgs  =27,&
+        c_FAIEveTr  =28,&
+        c_FAIDecTr  =29,&
+        ! Population
+        c_PopDensDay    =30,&
+        c_PopDensNight  =31,&
+        ! Codes for different surfaces
+        c_PavedCode     =32,&	! Links characteristics in SUEWS_NonVeg.txt
+        c_BldgsCode     =33,&	! Links characteristics in SUEWS_NonVeg.txt
+        c_EveTrCode     =34,&	! Links characteristics in SUEWS_Veg.txt
+        c_DecTrCode     =35,&  	! Links characteristics in SUEWS_Veg.txt
+        c_GrassCode     =36,&   	! Links characteristics in SUEWS_Veg.txt
+        c_BSoilCode     =37,&	! Links characteristics in SUEWS_Veg.txt
+        c_WaterCode     =38,&       ! Links characteristics in SUEWS_Water.txt
+        ! LUMPS info
+        c_LUMPSDr       =39,&
+        c_LUMPSCover    =40,&
+        c_LUMPSMaxRes   =41,&
+        ! NARP info
+        c_NARPTrans     =42,&
+        ! Code for conductances
+        c_CondCode      =43,&       ! Links characteristics in SUEWS_Conductance.txt
+        ! Code for snow
+        c_SnowCode      =44,&  	! Links characteristics in SUEWS_Snow.txt
+        ! Codes for human impacts on energy, water and snow
+        c_SnowProfWD    =45,&	! Snow-clearing profile in SUEWS_Profile.txt (weekdays)
+        c_SnowProfWE    =46,&	! Snow-clearing profile in SUEWS_Profile.txt (weekends)
+        c_QFCode        =47,&   ! Links anthropogenic heat info in SUEWS_AnthropogenicHeat.txt
+        c_EnProfWD      =48,&	! Links to energy-use profile in SUEWS_Profile.txt (weekdays)
+        c_EnProfWE      =49,&	! Links to energy-use profile in SUEWS_Profile.txt (weekends)
+        c_IrrCode       =50,&   ! Links irrigation info in SUEWS_Irrigation.txt
+        c_WProfManuWD   =51,&	! Links to water-use profile in SUEWS_Profile.txt (manual irrigation, weekdays)
+        c_WProfManuWE   =52,&	! Links to water-use profile in SUEWS_Profile.txt (manual irrigation, weekends)
+        c_WProfAutoWD   =53,&	! Links to water-use profile in SUEWS_Profile.txt (automatic irrigation, weekdays)
+        c_WProfAutoWE   =54,&	! Links to water-use profile in SUEWS_Profile.txt (automatic irrigation, weekends)
+        ! Flow information
+        c_FlowChange    =55,&	! Difference in input & output flows for water surface
+        c_RunoffToWater =56,&  	! Fraction of above-ground runoff flowing to water surface
+        c_PipeCapacity  =57,&	! Pipe capacity [mm]
+
+        ! Runoff (to 8 adjacent grids)
+        c_GridConnection1of8 =58,&
+        c_Fraction1of8  =59,&
+        c_GridConnection2of8 =60,&
+        c_Fraction2of8  =61,&
+        c_GridConnection3of8 =62,&
+        c_Fraction3of8  =63,&
+        c_GridConnection4of8 =64,&
+        c_Fraction4of8   =65,&
+        c_GridConnection5of8 =66,&
+        c_Fraction5of8   =67,&
+        c_GridConnection6of8 =68,&
+        c_Fraction6of8   =69,&
+        c_GridConnection7of8 =70,&
+        c_Fraction7of8   =71,&
+        c_GridConnection8of8 =72,&
+        c_Fraction8of8   =73,&
+
+       ! Runoff within grid (for each surface type)
+        c_WGPavedCode   =74,& 	! Links to SUEWS_WaterDistibuteWithinGrid.txt
+        c_WGBldgsCode   =75,& 	! Links to SUEWS_WaterDistibuteWithinGrid.txt
+        c_WGEveTrCode   =76,& 	! Links to SUEWS_WaterDistibuteWithinGrid.txt
+        c_WGDecTrCode   =77,& 	! Links to SUEWS_WaterDistibuteWithinGrid.txt
+        c_WGGrassCode   =78,& 	! Links to SUEWS_WaterDistibuteWithinGrid.txt
+        c_WGBSoilCode   =79,& 	! Links to SUEWS_WaterDistibuteWithinGrid.txt
+        c_WGWaterCode   =80     ! Links to SUEWS_WaterDistibuteWithinGrid.txt
  	 
    !========== Columns for SUEWS_NonVeg.txt ==========================
-   integer :: ci_Code	      =  1,&
-   	      ci_AlbMin	      =  2,&
-   	      ci_AlbMax	      =  3,&
-              ci_Emis         =  4,&
-	      ci_StorMin      =  5,&
-	      ci_StorMax      =  6,&
-	      ci_WetThresh    =  7,&
-              ci_StateLimit   =  8,&
-              ci_DrEq         =  9,&
-	      ci_DrCoef1      = 10,&
-	      ci_DrCoef2      = 11,&
-	      ci_SoilTCode    = 12,&
-	      ci_SnowLimPat   = 13,&
-              ci_SnowLimRem   = 14,&
-	      ci_OHMCode_SWet = 15,&
-	      ci_OHMCode_SDry = 16,&
-	      ci_OHMCode_WWet = 17,&
-	      ci_OHMCode_WDry = 18              
+   integer::ci_Code       =  1,&
+          ci_AlbMin       =  2,&
+          ci_AlbMax       =  3,&
+          ci_Emis         =  4,&
+          ci_StorMin      =  5,&
+          ci_StorMax      =  6,&
+          ci_WetThresh    =  7,&
+          ci_StateLimit   =  8,&
+          ci_DrEq         =  9,&
+          ci_DrCoef1      = 10,&
+          ci_DrCoef2      = 11,&
+          ci_SoilTCode    = 12,&
+          ci_SnowLimPat   = 13,&
+          ci_SnowLimRem   = 14,&
+          ci_OHMCode_SWet = 15,&
+          ci_OHMCode_SDry = 16,&
+          ci_OHMCode_WWet = 17,&
+          ci_OHMCode_WDry = 18
             
    !========== Columns for SUEWS_Veg.txt ============================
-   integer :: cp_Code	    =  1,&
-   	      cp_AlbMin     =  2,&
-              cp_AlbMax     =  3,&
-   	      cp_Emis       =  4,&
-	      cp_StorMin    =  5,&
-	      cp_StorMax    =  6,&
-              cp_WetThresh  =  7,&
-              cp_StateLimit =  8,&
-	      cp_DrEq       =  9,&
-	      cp_DrCoef1    = 10,&
-	      cp_DrCoef2    = 11,&
-	      cp_SoilTCode  = 12,&
-	      cp_SnowLimPat = 13,&
-	      cp_BaseT 	    = 14,&
-	      cp_BaseTe	    = 15,&
-	      cp_GDDFull    = 16,&
-	      cp_SDDFull    = 17,&
-	      cp_LAIMin	    = 18,&
-	      cp_LAIMax	    = 19,&
-	      cp_GsMax	    = 20,&
-	      cp_LAIEq      = 21,&
-	      cp_LeafGP1    = 22,&
-	      cp_LeafGP2    = 23,&
-	      cp_LeafOP1    = 24,&
-	      cp_LeafOP2    = 25,&
-	      cp_OHMCode_SWet = 26,&
-	      cp_OHMCode_SDry = 27,&
-	      cp_OHMCode_WWet = 28,&
-	      cp_OHMCode_WDry = 29	      
+   integer::cp_Code     =  1,&
+          cp_AlbMin     =  2,&
+          cp_AlbMax     =  3,&
+          cp_Emis       =  4,&
+          cp_StorMin    =  5,&
+          cp_StorMax    =  6,&
+          cp_WetThresh  =  7,&
+          cp_StateLimit =  8,&
+          cp_DrEq       =  9,&
+          cp_DrCoef1    = 10,&
+          cp_DrCoef2    = 11,&
+          cp_SoilTCode  = 12,&
+          cp_SnowLimPat = 13,&
+          cp_BaseT      = 14,&
+          cp_BaseTe     = 15,&
+          cp_GDDFull    = 16,&
+          cp_SDDFull    = 17,&
+          cp_LAIMin     = 18,&
+          cp_LAIMax     = 19,&
+          cp_GsMax      = 20,&
+          cp_LAIEq      = 21,&
+          cp_LeafGP1    = 22,&
+          cp_LeafGP2    = 23,&
+          cp_LeafOP1    = 24,&
+          cp_LeafOP2    = 25,&
+          cp_OHMCode_SWet = 26,&
+          cp_OHMCode_SDry = 27,&
+          cp_OHMCode_WWet = 28,&
+          cp_OHMCode_WDry = 29
    
    !========== Columns for SUEWS_Water.txt ===============================
-   integer :: cw_Code	    =  1,&
-   	      cw_AlbMin	    =  2,&
-   	      cw_AlbMax	    =  3,&
-              cw_Emis       =  4,&
-	      cw_StorMin    =  5,&
-	      cw_StorMax    =  6,&
-              cw_WetThresh  =  7,&
-              cw_StateLimit =  8,&
-	      cw_DrEq       =  9,&
-	      cw_DrCoef1    = 10,&
-	      cw_DrCoef2    = 11,&
-	      cw_OHMCode_SWet = 12,&
-	      cw_OHMCode_SDry = 13,&
-	      cw_OHMCode_WWet = 14,&
-	      cw_OHMCode_WDry = 15
+   integer::cw_Code     =  1,&
+          cw_AlbMin     =  2,&
+          cw_AlbMax     =  3,&
+          cw_Emis       =  4,&
+          cw_StorMin    =  5,&
+          cw_StorMax    =  6,&
+          cw_WetThresh  =  7,&
+          cw_StateLimit =  8,&
+          cw_DrEq       =  9,&
+          cw_DrCoef1    = 10,&
+          cw_DrCoef2    = 11,&
+          cw_OHMCode_SWet = 12,&
+          cw_OHMCode_SDry = 13,&
+          cw_OHMCode_WWet = 14,&
+          cw_OHMCode_WDry = 15
 	      
    !========== Columns for SUEWS_Snow.txt ================================	      
-   integer :: cs_Code	      =  1,&
-   	      cs_SnowRMFactor =  2,&
-   	      cs_SnowTMFactor =  3,&
-   	      cs_SnowAlbMin   =  4,&
-   	      cs_SnowAlbMax   =  5,&
-   	      cs_SnowEmis     =  6,&
-   	      cs_Snowtau_a    =  7,&
-   	      cs_Snowtau_f    =  8,&
-	      cs_SnowPLimAlb  =  9,&
-	      cs_SnowSDMin    = 10,&
-	      cs_SnowSDMax    = 11,&
-	      cs_Snowtau_r    = 12,&
+   integer::cs_Code       =  1,&
+          cs_SnowRMFactor =  2,&
+          cs_SnowTMFactor =  3,&
+          cs_SnowAlbMin   =  4,&
+          cs_SnowAlbMax   =  5,&
+          cs_SnowEmis     =  6,&
+          cs_Snowtau_a    =  7,&
+          cs_Snowtau_f    =  8,&
+          cs_SnowPLimAlb  =  9,&
+          cs_SnowSDMin    = 10,&
+          cs_SnowSDMax    = 11,&
+          cs_Snowtau_r    = 12,&
           cs_SnowCRWMin   = 13,&
-   	      cs_SnowCRWMax   = 14,&
-   	      cs_SnowPLimSnow = 15,&
-	      cs_OHMCode_SWet = 16,&
-	      cs_OHMCode_SDry = 17,&
-	      cs_OHMCode_WWet = 18,&
-	      cs_OHMCode_WDry = 19
+          cs_SnowCRWMax   = 14,&
+          cs_SnowPLimSnow = 15,&
+          cs_OHMCode_SWet = 16,&
+          cs_OHMCode_SDry = 17,&
+          cs_OHMCode_WWet = 18,&
+          cs_OHMCode_WDry = 19
 	      
    !========== Columns for SUEWS_Soil.txt ================================
-   integer :: cSo_Code        =  1,&
-   	      cSo_SoilDepth   =  2,&
-   	      cSo_SoilStCap   =  3,&
-              cSo_KSat 	      =  4,&
-   	      cSo_SoilDens    =  5,&
-	      cSo_SoilInfRate =  6,&
-	      cSo_ObsSMDepth  =  7,&
-	      cSo_ObsSMMax    =  8,&
-	      cSo_ObsSNRFrac  =  9
+   integer::cSo_Code     =  1,&
+            cSo_SoilDepth  =  2,&
+            cSo_SoilStCap   =  3,&
+            cSo_KSat        =  4,&
+            cSo_SoilDens    =  5,&
+            cSo_SoilInfRate =  6,&
+            cSo_ObsSMDepth  =  7,&
+            cSo_ObsSMMax    =  8,&
+            cSo_ObsSNRFrac  =  9
 	      
    !========== Columns for SUEWS_Conductance.txt =========================
    integer :: cc_Code   =  1,&
-   	      cc_GsG1   =  2,&
-   	      cc_GsG2   =  3,&
-   	      cc_GsG3   =  4,&
-   	      cc_GsG4   =  5,&
-   	      cc_GsG5   =  6,&
-   	      cc_GsG6   =  7,&
-   	      cc_GsTH   =  8,&
-   	      cc_GsTL   =  9,&
-   	      cc_GsS1   =  10,&
-   	      cc_GsS2   =  11,&
-   	      cc_GsKmax =  12
+          cc_GsG1   =  2,&
+          cc_GsG2   =  3,&
+          cc_GsG3   =  4,&
+          cc_GsG4   =  5,&
+          cc_GsG5   =  6,&
+          cc_GsG6   =  7,&
+          cc_GsTH   =  8,&
+          cc_GsTL   =  9,&
+          cc_GsS1   =  10,&
+          cc_GsS2   =  11,&
+          cc_GsKmax =  12
                               
    !========== Columns for SUEWS_OHMCoefficients.txt =====================
-   integer :: cO_Code   =  1,&
-   	      cO_a1	=  2,&
-   	      cO_a2   	=  3,&
-   	      cO_a3   	=  4   
+   integer::cO_Code = 1,&
+            cO_a1   = 2,&
+            cO_a2   = 3,&
+            cO_a3   = 4
    	      
    !========== Columns for SUEWS_AnthropogenicHeat.txt ===================
-   integer :: cA_Code 	  =  1,&
-   	      cA_BaseTHDD =  2,&
-   	      cA_QF_A1	  =  3,&   !Weekday
-   	      cA_QF_B1    =  4,&   !Weekday
-   	      cA_QF_C1    =  5,&   !Weekday
-   	      cA_QF_A2 	  =  6,&   !Weekend 
-   	      cA_QF_B2	  =  7,&   !Weekend
-   	      cA_QF_C2 	  =  8,&   !Weekend
-   	      cA_AHMin    =  9,&
-   	      cA_AHSlope  = 10,&
-   	      cA_TCritic  = 11
+   integer::cA_Code   = 1,&
+          cA_BaseTHDD = 2,&
+          cA_QF_A1    = 3,&   !Weekday
+          cA_QF_B1    = 4,&   !Weekday
+          cA_QF_C1    = 5,&   !Weekday
+          cA_QF_A2    = 6,&   !Weekend
+          cA_QF_B2    = 7,&   !Weekend
+          cA_QF_C2    = 8,&   !Weekend
+          cA_AHMin    = 9,&
+          cA_AHSlope  = 10,&
+          cA_TCritic  = 11
 
    !========== Columns for SUEWS_Irrigation.txt ==========================   	      
  	       	      
-   integer ::	cIr_Code	=  1,&
-   		cIr_IeStart 	=  2,&
-   		cIr_IeEnd	=  3,&
-   		cIr_IntWU	=  4,&
-   		cIr_Faut	=  5,&
-   		cIr_Ie_a1    	=  6,&
-		cIr_Ie_a2    	=  7,&   				
-		cIr_Ie_a3    	=  8,&
-		cIr_Ie_m1    	=  9,&
-		cIr_Ie_m2    	= 10,&
-		cIr_Ie_m3    	= 11,&
-   		cIr_DayWat1	= 12,&		
-   		cIr_DayWat2	= 13,&		
-   		cIr_DayWat3	= 14,&		
-   		cIr_DayWat4	= 15,&		
-   		cIr_DayWat5	= 16,&		
-   		cIr_DayWat6	= 17,&		
-   		cIr_DayWat7	= 18,&		
-   		cIr_DayWatPer1	= 19,&		
-   		cIr_DayWatPer2	= 20,&		
-   		cIr_DayWatPer3	= 21,&		
-   		cIr_DayWatPer4	= 22,&		
-   		cIr_DayWatPer5	= 23,&		
-   		cIr_DayWatPer6	= 24,&		
-   		cIr_DayWatPer7	= 25		
+   integer::cIr_Code = 1,&
+        cIr_IeStart  = 2,&
+        cIr_IeEnd    = 3,&
+        cIr_IntWU    = 4,&
+        cIr_Faut     = 5,&
+        cIr_Ie_a1    =  6,&
+        cIr_Ie_a2    =  7,&
+        cIr_Ie_a3    =  8,&
+        cIr_Ie_m1    =  9,&
+        cIr_Ie_m2    = 10,&
+        cIr_Ie_m3    = 11,&
+        cIr_DayWat1  = 12,&
+        cIr_DayWat2  = 13,&
+        cIr_DayWat3  = 14,&
+        cIr_DayWat4  = 15,&
+        cIr_DayWat5  = 16,&
+        cIr_DayWat6  = 17,&
+        cIr_DayWat7  = 18,&
+        cIr_DayWatPer1 = 19,&
+        cIr_DayWatPer2 = 20,&
+        cIr_DayWatPer3 = 21,&
+        cIr_DayWatPer4 = 22,&
+        cIr_DayWatPer5 = 23,&
+        cIr_DayWatPer6 = 24,&
+        cIr_DayWatPer7 = 25
    		
    !========== Columns for SUEWS_Profile.txt =============================   	         		
    
-   integer:: cc	 !Column counter
+   integer:: cc   !Column counter
    
    integer:: cPr_Code = 1
    integer,dimension(24):: cPr_Hours = (/(cc, cc=2,25, 1)/)  ! Hourly profile data
 
    !========== Columns for SUEWS_WithinGridWaterDist.txt =================
    
-   integer:: 	cWG_Code 	= 1,&
-   		cWG_ToPaved	= 2,&
-   		cWG_ToBldgs	= 3,&
-   		cWG_ToEveTr	= 4,&
-   		cWG_ToDecTr	= 5,&
-   		cWG_ToGrass	= 6,&
-   		cWG_ToBSoil	= 7,&
-   		cWG_ToWater	= 8,&
-   		cWG_ToRunoff	= 9,&
-   		cWG_ToSoilStore	= 10
+   integer::cWG_Code        = 1,&
+            cWG_ToPaved     = 2,&
+            cWG_ToBldgs     = 3,&
+            cWG_ToEveTr     = 4,&
+            cWG_ToDecTr     = 5,&
+            cWG_ToGrass     = 6,&
+            cWG_ToBSoil     = 7,&
+            cWG_ToWater     = 8,&
+            cWG_ToRunoff    = 9,&
+            cWG_ToSoilStore = 10
 
  end Module ColNamesInputFiles
 

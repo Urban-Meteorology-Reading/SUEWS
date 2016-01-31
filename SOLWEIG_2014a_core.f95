@@ -3,16 +3,19 @@
 ! Fredrik Lindberg, fredrikl@gvc.gu.se 
 ! G�teborg Urban Climate Group 
 ! Gothenburg University
-! Last modified by HCW 02 Dec 2014 DEG2RAD and RAD2DEG commented out as now defined in AllocateArray 
+! Last modified:
+!   LJ 27 Jan 2016  Renoval of tabs and fixing int-real conversions
+!   HCW 02 Dec 2014 DEG2RAD and RAD2DEG commented out as now defined in AllocateArray
 
-subroutine Solweig_2014a_core(iMBi)
 
-use matsize
-use solweig_module
-use data_in
-use gis_data
-use time
-use allocateArray
+ subroutine Solweig_2014a_core(iMBi)
+
+ use matsize
+ use solweig_module
+ use data_in
+ use gis_data
+ use time
+ use allocateArray
  
     implicit none
     integer         :: DOY,hour,first,second,j,dfm,iMBi!,ith!onlyglobal,usevegdem,x,y,i
@@ -99,11 +102,11 @@ use allocateArray
     svfalfa=asin(exp(log(tmp)/2))
 
     !Parameterization for Lup 
-    first=anint(height) !Radiative surface influence, Rule of thumb by Schmid et al. (1990).
+    first=int(anint(height)) !Radiative surface influence, Rule of thumb by Schmid et al. (1990).
     if (first==0) then 
         first=1
     end if 
-    second=anint(height*20)
+    second=int(anint(height*20))
     
     ! SVF combines for buildings and vegetation    
     svfbuveg=(svf-(1-svfveg)*(1-psi))

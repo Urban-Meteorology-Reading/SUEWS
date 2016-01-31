@@ -23,14 +23,14 @@
   use allocateArray
   use ColNamesInputFiles
   use ColNamesModelDailyState
-  use data_in	      !defines: lat, lng, PopDaytime, PopNighttime, DayLightSavingDay, QF variables
+  use data_in        !defines: lat, lng, PopDaytime, PopNighttime, DayLightSavingDay, QF variables
   use defaultnotUsed
-  use gis_data        !defines: areaZh, VegFraction, veg_fr, veg_type, BldgH, TreeH, FAIBldg, FAITree, Alt
+  use gis_data       !defines: areaZh, VegFraction, veg_fr, veg_type, BldgH, TreeH, FAIBldg, FAITree, Alt
   use initial
-  use mod_z	      !defines: z0m, zdm	
-  use resist	      !defines: G1-G6, TH, TL, S1, S2, Kmax
-  use snowMod	      !defines: SnowAlb, etc
-  use sues_data       !defines: SurfaceArea, IrrFracConif, IrrFracDecid, IrrFracGrass, Irrigation variables
+  use mod_z          !defines: z0m, zdm
+  use resist         !defines: G1-G6, TH, TL, S1, S2, Kmax
+  use snowMod        !defines: SnowAlb, etc
+  use sues_data      !defines: SurfaceArea, IrrFracConif, IrrFracDecid, IrrFracGrass, Irrigation variables
   use time
   
   IMPLICIT NONE
@@ -96,9 +96,9 @@
   ! ---- Vegetated fraction (for LUMPS) ----
   ! For LUMPS, vegetated fraction includes Water and Bare soil surfaces
   IF(veg_type==1) THEN          ! area vegetated
-  	veg_fr = (sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) + sfr(BSoilSurf) + sfr(WaterSurf))
+     veg_fr = (sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) + sfr(BSoilSurf) + sfr(WaterSurf))
   ELSEIF(veg_type==2) THEN      ! area irrigated
-        veg_fr = (IrrFracConif*sfr(ConifSurf) + IrrFracDecid*sfr(DecidSurf) + IrrFracGrass*sfr(GrassSurf))
+     veg_fr = (IrrFracConif*sfr(ConifSurf) + IrrFracDecid*sfr(DecidSurf) + IrrFracGrass*sfr(GrassSurf))
   ENDIF
   
   ImpervFraction =  (sfr(PavSurf) + sfr(BldgSurf))
@@ -107,20 +107,20 @@
   ! ---------------------------------------------------------------------------------
 
   ! ---- Heights & frontal areas
-  BldgH = SurfaceChar(Gridiv,c_HBldgs)	      ! Building height [m]
+  BldgH = SurfaceChar(Gridiv,c_HBldgs)        ! Building height [m]
   EveTreeH = SurfaceChar(Gridiv,c_HEveTr)     ! Evergreen tree height [m]
   DecTreeH = SurfaceChar(Gridiv,c_HDecTr)     ! Deciduous tree height [m]
-  TreeH = (EveTreeH*sfr(ConifSurf) + DecTreeH*sfr(DecidSurf))/(sfr(ConifSurf)+sfr(DecidSurf))	! Average tree height [m]
+  TreeH = (EveTreeH*sfr(ConifSurf) + DecTreeH*sfr(DecidSurf))/(sfr(ConifSurf)+sfr(DecidSurf)) ! Average tree height [m]
   FAIBldg = SurfaceChar(Gridiv,c_FAIBldgs)    ! Frontal area index for buildings
   FAIEveTree = SurfaceChar(Gridiv,c_FAIEveTr) ! Frontal area index for evergreen trees
   FAIDecTree = SurfaceChar(Gridiv,c_FAIDecTr) ! Frontal area index for deciduous trees
   FAITree = (FAIEveTree*sfr(ConifSurf) + FAIDecTree*sfr(DecidSurf))/(sfr(ConifSurf)+sfr(DecidSurf)) ! Frontal area index for trees
   
-  z0m = SurfaceChar(Gridiv,c_z0m) 	  ! Roughness length [m]
-  zdm = SurfaceChar(Gridiv,c_zdm) 	  ! Displacement height [m]
+  z0m = SurfaceChar(Gridiv,c_z0m)     ! Roughness length [m]
+  zdm = SurfaceChar(Gridiv,c_zdm)     ! Displacement height [m]
   
   ! ---- Population
-  PopDensDaytime   = SurfaceChar(Gridiv,c_PopDensDay)	 ! Daytime population density [ha-1]
+  PopDensDaytime   = SurfaceChar(Gridiv,c_PopDensDay)    ! Daytime population density [ha-1]
   PopDensNighttime = SurfaceChar(Gridiv,c_PopDensNight)  ! Night-time population density [ha-1]
   
   NumCapita = PopDensNighttime      ! Pop density [ha-1]     !!Use Night-time pop density for NumCapita for testing! 
@@ -192,8 +192,8 @@
   SoilRocks     = SurfaceChar(Gridiv,c_ObsSNRFrac(1))
   
   ! ---- Vegetation characteristics (pervious surfaces)
-  BaseT  (1:nvegsurf) = SurfaceChar(Gridiv,c_BaseT)   	    
-  BaseTe (1:nvegsurf) = SurfaceChar(Gridiv,c_BaseTe)   
+  BaseT  (1:nvegsurf) = SurfaceChar(Gridiv,c_BaseT)
+  BaseTe (1:nvegsurf) = SurfaceChar(Gridiv,c_BaseTe)
   GDDFull(1:nvegsurf) = SurfaceChar(Gridiv,c_GDDFull)  
   SDDFull(1:nvegsurf) = SurfaceChar(Gridiv,c_SDDFull)  
   LAIMin (1:nvegsurf) = SurfaceChar(Gridiv,c_LAIMin)  
@@ -209,7 +209,7 @@
   LAIPower(4) = SurfaceChar(Gridiv,c_LeafOP2(ivDecid)) ! 4 powers (not 4 veg types!)  
   
   ! ---- LUMPS-related parameters
-  DRAINRT    = SurfaceChar(Gridiv,c_LUMPSDr)  	  ! LUMPS Drainage rate [mm h-1]
+  DRAINRT    = SurfaceChar(Gridiv,c_LUMPSDr)      ! LUMPS Drainage rate [mm h-1]
   RAINCOVER  = SurfaceChar(Gridiv,c_LUMPSCover)   ! LUMPS Limit when surface totally wet [mm]
   RAINMAXRES = SurfaceChar(Gridiv,c_LUMPSMaxRes)  ! LUMPS Maximum water bucket reservoir [mm]
   
@@ -220,16 +220,16 @@
   RadMeltFact    = SurfaceChar(Gridiv,c_SnowRMFactor)  
   TempMeltFact   = SurfaceChar(Gridiv,c_SnowTMFactor)  
   SnowAlbMin     = SurfaceChar(Gridiv,c_SnowAlbMin)
-  SnowAlbMax	 = SurfaceChar(Gridiv,c_SnowAlbMax)
-  tau_a		 = SurfaceChar(Gridiv,c_Snowtau_a) 
-  tau_f		 = SurfaceChar(Gridiv,c_Snowtau_f) 
+  SnowAlbMax     = SurfaceChar(Gridiv,c_SnowAlbMax)
+  tau_a          = SurfaceChar(Gridiv,c_Snowtau_a)
+  tau_f          = SurfaceChar(Gridiv,c_Snowtau_f)
   PrecipLimitAlb = SurfaceChar(Gridiv,c_SnowPlimAlb) 
-  SnowDensMin	 = SurfaceChar(Gridiv,c_SnowSDMin)
-  SnowDensMax	 = SurfaceChar(Gridiv,c_SnowSDMax)
-  tau_r   	 = SurfaceChar(Gridiv,c_Snowtau_r)
-  CRWMin 	 = SurfaceChar(Gridiv,c_SnowCRWMin)
-  CRWMax	 = SurfaceChar(Gridiv,c_SnowCRWMax)
-  PrecipLimit 	 = SurfaceChar(Gridiv,c_SnowPLimSnow)
+  SnowDensMin    = SurfaceChar(Gridiv,c_SnowSDMin)
+  SnowDensMax    = SurfaceChar(Gridiv,c_SnowSDMax)
+  tau_r          = SurfaceChar(Gridiv,c_Snowtau_r)
+  CRWMin         = SurfaceChar(Gridiv,c_SnowCRWMin)
+  CRWMax         = SurfaceChar(Gridiv,c_SnowCRWMax)
+  PrecipLimit    = SurfaceChar(Gridiv,c_SnowPLimSnow)
 
   ! ---- Conductance parameters
   G1   = SurfaceChar(Gridiv,c_GsG1)  
@@ -309,14 +309,14 @@
   T_Critic = SurfaceChar(Gridiv,c_TCritic)
   
   ! ---- Irrigation
-  Ie_start        	 = int(SurfaceChar(Gridiv,c_IeStart))
-  Ie_end          	 = int(SurfaceChar(Gridiv,c_IeEnd))
-  InternalWaterUse_h     = SurfaceChar(Gridiv,c_IntWU)
-  Faut	            	 = SurfaceChar(Gridiv,c_Faut)
-  Ie_a		    	 = SurfaceChar(Gridiv,c_Ie_a)   !Automatic irrigation model coefficients [mm d-1]; [mm d-1 degC-1]; [mm d-2]
-  Ie_m		    	 = SurfaceChar(Gridiv,c_Ie_m)   !Manual irrigation model coefficients [mm d-1]; [mm d-1 degC-1]; [mm d-2]
-  DayWat	    	 = SurfaceChar(Gridiv,c_DayWat)
-  DayWatPer        	 = SurfaceChar(Gridiv,c_DayWatPer)
+  Ie_start           = int(SurfaceChar(Gridiv,c_IeStart))
+  Ie_end             = int(SurfaceChar(Gridiv,c_IeEnd))
+  InternalWaterUse_h = SurfaceChar(Gridiv,c_IntWU)
+  Faut               = SurfaceChar(Gridiv,c_Faut)
+  Ie_a = SurfaceChar(Gridiv,c_Ie_a)   !Automatic irrigation model coefficients [mm d-1]; [mm d-1 degC-1]; [mm d-2]
+  Ie_m = SurfaceChar(Gridiv,c_Ie_m)   !Manual irrigation model coefficients [mm d-1]; [mm d-1 degC-1]; [mm d-2]
+  DayWat             = SurfaceChar(Gridiv,c_DayWat)
+  DayWatPer          = SurfaceChar(Gridiv,c_DayWatPer)
     
   ! ---- Hourly profiles
   AHProf(0:23,1)   = SurfaceChar(Gridiv,c_HrProfEnUseWD)   ! Anthropogenic heat, weekdays
@@ -452,9 +452,9 @@
   
      ! ---- Heating degree days, HDD
      HDD = 0       
-     HDD(id_prev,1) = ModelDailyState(Gridiv,cMDS_HDD1)		  ! 1 = Heating
-     HDD(id_prev,2) = ModelDailyState(Gridiv,cMDS_HDD2)		  ! 2 = Cooling
-     HDD(id_prev-3,3) = ModelDailyState(Gridiv,cMDS_TempCOld3)	  ! 3 will become average 
+     HDD(id_prev,1) = ModelDailyState(Gridiv,cMDS_HDD1)         ! 1 = Heating
+     HDD(id_prev,2) = ModelDailyState(Gridiv,cMDS_HDD2)         ! 2 = Cooling
+     HDD(id_prev-3,3) = ModelDailyState(Gridiv,cMDS_TempCOld3)  ! 3 will become average
      HDD(id_prev-2,3) = ModelDailyState(Gridiv,cMDS_TempCOld2)
      HDD(id_prev-1,3) = ModelDailyState(Gridiv,cMDS_TempCOld1)
      HDD(id_prev,3)   = ModelDailyState(Gridiv,cMDS_TempC)
@@ -544,7 +544,7 @@
      write(12,*)! FCskip header LAI related  
      write(12,'(10g8.2)') LAItype, (laiPower(iv),iv=1,4)
 
-     120	 format (8g8.2, g15.2)  !format (10g10.2)  
+     120  format (8g8.2, g15.2)  !format (10g10.2)
          
      write(12,*) '---Number of rows in OHM_Coefficients.txt =',nlinesOHMCoefficients
      write(12,*)'-------','Select OHM','----------------------'
@@ -606,7 +606,7 @@
      write(12,130) 'SnowLimBuild = ',SnowLimBuild
      write(12,130) 'SnowLimPaved = ',SnowLimPaved
 
-     130 	 format (g20.1,7g10.3) 
+     130  format (g20.1,7g10.3)
 
      write(12,*) '===================================================================='
 
@@ -728,14 +728,14 @@
   use allocateArray   
   use ColNamesInputFiles
   use ColNamesModelDailyState
-  use data_in	      
+  use data_in
   use defaultnotUsed
-  use gis_data        
+  use gis_data
   use Initial
-  use mod_z	      
-  use resist	      
-  use snowMod	      
-  use sues_data       
+  use mod_z
+  use resist
+  use snowMod
+  use sues_data
   use time
   
   IMPLICIT NONE

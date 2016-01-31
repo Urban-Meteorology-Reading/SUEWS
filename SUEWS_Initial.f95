@@ -3,10 +3,11 @@
 ! only run once at start - fixed for all grids and all years
  
  SUBROUTINE OverallRunControl
-! Last modified by HCW 06 Mar 2015 - Removed options 10,20,30 (NARPOutput) for NetRadiationChoice
-! Last modified by HCW 06 Feb 2015
-!  File ID numbers changed so they are unique
-! Last modified by HCW 19 Dec 2014
+! Last modified:
+! LJ 27 Jan 2016  - Removal of tabs, cleaning of the code
+! HCW 06 Mar 2015 - Removed options 10,20,30 (NARPOutput) for NetRadiationChoice
+! HCW 06 Feb 2015 - File ID numbers changed so they are unique
+! HCW 19 Dec 2014
 ! To Do: 
 ! 	- Holidays.txt input file needs to be read in and coded into model
 !	- Add column header checks for SiteSelect
@@ -19,8 +20,8 @@
   use FileName
   use initial
   use gis_data     
-  use mod_z	   
-  use resist       
+  use mod_z
+  use resist
   use snowMod
   use sues_data    
   use time
@@ -82,10 +83,10 @@
   !Determine what should be done with respect to radiation
   AlbedoChoice=0
   ldown_option=0
-  if(netRadiationChoice==0)then     !Observed Q* from the met input file will be used
-    if(snowUse==1) then             !If snow is modelled, NARP is needed for surface temperature
+  if(netRadiationChoice==0)then    !Observed Q* from the met input file will be used
+    if(snowUse==1) then            !If snow is modelled, NARP is needed for surface temperature
        netRadiationChoice=3000
-       ldown_option=3   	    !Ldown will be modelled
+       ldown_option=3              !Ldown will be modelled
        !NetRadiationChoice=NetRadiationChoice/1000
     endif
     
@@ -106,7 +107,7 @@
        endif
        
        !If bad NetRadiationChoice value
-	   if(netRadiationChoice>3.or. AlbedoChoice==-9)then
+       if(netRadiationChoice>3.or. AlbedoChoice==-9)then
            write(*,*) 'NetRadiationChoice=',NetRadiationChoice
            write(*,*) 'Value not usable'
            stop
@@ -142,7 +143,7 @@
   !Read input file 
   open(21,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
   do SkipCounter=1,(SkipHeaderSiteInfo-1)
-     read(21,*) 	!Skip lines before header
+     read(21,*)   !Skip lines before header
   enddo
   read(21,*) (HeaderSiteSelect_File(iv),iv=1,ncolumnsSiteSelect) !Get header
     
@@ -162,7 +163,7 @@
     !Read input file 
     open(22,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
     do SkipCounter=1,(SkipHeaderSiteInfo-1)
-       read(22,*) 	!Skip lines before header
+       read(22,*)   !Skip lines before header
     enddo
     read(22,*) (HeaderNonVeg_File(iv),iv=1,ncolumnsNonVeg) !Get header
       
@@ -192,7 +193,7 @@
     !Read input file 
     open(23,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
     do SkipCounter=1,(SkipHeaderSiteInfo-1)
-       read(23,*) 	!Skip lines before header
+       read(23,*)   !Skip lines before header
     enddo
     read(23,*) (HeaderVeg_File(iv),iv=1,ncolumnsVeg) !Get header
       
@@ -222,7 +223,7 @@
     !Read input file 
     open(24,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
     do SkipCounter=1,(SkipHeaderSiteInfo-1)
-       read(24,*) 	!Skip lines before header
+       read(24,*)   !Skip lines before header
     enddo
     read(24,*) (HeaderWater_File(iv),iv=1,ncolumnsWater) !Get header
       
@@ -253,7 +254,7 @@
     !Read input file 
     open(25,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
     do SkipCounter=1,(SkipHeaderSiteInfo-1)
-       read(25,*) 	!Skip lines before header
+       read(25,*)   !Skip lines before header
     enddo
     read(25,*) (HeaderSnow_File(iv),iv=1,ncolumnsSnow) !Get header
       
@@ -284,7 +285,7 @@
     !Read input file 
     open(26,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
     do SkipCounter=1,(SkipHeaderSiteInfo-1)
-       read(26,*) 	!Skip lines before header
+       read(26,*)   !Skip lines before header
     enddo
     read(26,*) (HeaderSoil_File(iv),iv=1,ncolumnsSoil) !Get header
       
@@ -314,7 +315,7 @@
     !Read input file 
     open(27,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
     do SkipCounter=1,(SkipHeaderSiteInfo-1)
-       read(27,*) 	!Skip lines before header
+       read(27,*)   !Skip lines before header
     enddo
     read(27,*) (HeaderCond_File(iv),iv=1,ncolumnsConductance) !Get header
       
@@ -344,7 +345,7 @@
     !Read input file 
     open(28,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
     do SkipCounter=1,(SkipHeaderSiteInfo-1)
-       read(28,*) 	!Skip lines before header
+       read(28,*)   !Skip lines before header
     enddo
     read(28,*) (HeaderOHMCoefficients_File(iv),iv=1,ncolumnsOHMCoefficients) !Get header
   
@@ -374,7 +375,7 @@
     !Read input file 
     open(29,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
     do SkipCounter=1,(SkipHeaderSiteInfo-1)
-       read(29,*) 	!Skip lines before header
+       read(29,*)   !Skip lines before header
     enddo
     read(29,*) (HeaderAnthropogenicHeat_File(iv),iv=1,ncolumnsAnthropogenicHeat) !Get header
       
@@ -404,7 +405,7 @@
     !Read input file 
     open(30,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
     do SkipCounter=1,(SkipHeaderSiteInfo-1)
-       read(30,*) 	!Skip lines before header
+       read(30,*)   !Skip lines before header
     enddo
     read(30,*) (HeaderIrrigation_File(iv),iv=1,ncolumnsIrrigation) !Get header
       
@@ -434,7 +435,7 @@
     !Read input file 
     open(31,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
     do SkipCounter=1,(SkipHeaderSiteInfo-1)
-       read(31,*) 	!Skip lines before header
+       read(31,*)   !Skip lines before header
     enddo
     read(31,*) (HeaderProfiles_File(iv),iv=1,ncolumnsProfiles) !Get header
       
@@ -464,7 +465,7 @@
     !Read input file 
     open(32,file=trim(FileInputPath)//trim(FileN),err=300,status='old')
     do SkipCounter=1,(SkipHeaderSiteInfo-1)
-       read(32,*) 	!Skip lines before header
+       read(32,*)    !Skip lines before header
     enddo
     read(32,*) (HeaderWGWaterDist_File(iv),iv=1,ncolumnsWGWaterDist) !Get header
       
@@ -491,10 +492,10 @@
     
   !-----------------------------------------------------------------------
   !SUEWS run information
-  InputMetFormat=10	!Input met data file in LUMPS format(1) or SUEWS format(10)
-  LAICalcYes=1		!Use observed(0) or modelled(1) LAI
-  ity=2			!Evaporation calculated according to Rutter(1) or Shuttleworth(2)
-  WriteDailyState = 1   !Daily state file written
+  InputMetFormat=10    !Input met data file in LUMPS format(1) or SUEWS format(10)
+  LAICalcYes=1         !Use observed(0) or modelled(1) LAI
+  ity=2                !Evaporation calculated according to Rutter(1) or Shuttleworth(2)
+  WriteDailyState = 1  !Daily state file written
   tstepcount=0
    
   t_INTERVAL = 3600   !Number of seconds in an hour  
@@ -631,9 +632,9 @@
    SurfaceChar(gridiv,c_Emis(PavSurf))         = NonVeg_Coeff(iv5,ci_Emis)
    SurfaceChar(gridiv,c_StorMin(PavSurf))      = NonVeg_Coeff(iv5,ci_StorMin)
    SurfaceChar(gridiv,c_StorMax(PavSurf))      = NonVeg_Coeff(iv5,ci_StorMax)
-   SurfaceChar(gridiv,c_WetThresh(PavSurf))   = NonVeg_Coeff(iv5,ci_WetThresh)
+   SurfaceChar(gridiv,c_WetThresh(PavSurf))    = NonVeg_Coeff(iv5,ci_WetThresh)
    SurfaceChar(gridiv,c_StateLimit(PavSurf))   = NonVeg_Coeff(iv5,ci_StateLimit)
-   SurfaceChar(gridiv,c_DrEq(PavSurf)) 	       = NonVeg_Coeff(iv5,ci_DrEq)
+   SurfaceChar(gridiv,c_DrEq(PavSurf))         = NonVeg_Coeff(iv5,ci_DrEq)
    SurfaceChar(gridiv,c_DrCoef1(PavSurf))      = NonVeg_Coeff(iv5,ci_DrCoef1)
    SurfaceChar(gridiv,c_DrCoef2(PavSurf))      = NonVeg_Coeff(iv5,ci_DrCoef2)
    SurfaceChar(gridiv,c_SoilTCode(PavSurf))    = NonVeg_Coeff(iv5,ci_SoilTCode)
@@ -1166,29 +1167,29 @@
    ! ---- Find code for Surface conductances ----
    call CodeMatchConductance(rr,c_CondCode)
    ! Transfer conductance characteristics to SurfaceChar
-   SurfaceChar(gridiv,c_GsG1) 	    = Conductance_Coeff(iv5,cc_GsG1)
-   SurfaceChar(gridiv,c_GsG2) 	    = Conductance_Coeff(iv5,cc_GsG2)
-   SurfaceChar(gridiv,c_GsG3) 	    = Conductance_Coeff(iv5,cc_GsG3)
-   SurfaceChar(gridiv,c_GsG4) 	    = Conductance_Coeff(iv5,cc_GsG4)
-   SurfaceChar(gridiv,c_GsG5) 	    = Conductance_Coeff(iv5,cc_GsG5)
-   SurfaceChar(gridiv,c_GsG6) 	    = Conductance_Coeff(iv5,cc_GsG6)
-   SurfaceChar(gridiv,c_GsTH) 	    = Conductance_Coeff(iv5,cc_GsTH)
-   SurfaceChar(gridiv,c_GsTL) 	    = Conductance_Coeff(iv5,cc_GsTL)
-   SurfaceChar(gridiv,c_GsS1) 	    = Conductance_Coeff(iv5,cc_GsS1)
-   SurfaceChar(gridiv,c_GsS2) 	    = Conductance_Coeff(iv5,cc_GsS2)
+   SurfaceChar(gridiv,c_GsG1)       = Conductance_Coeff(iv5,cc_GsG1)
+   SurfaceChar(gridiv,c_GsG2)       = Conductance_Coeff(iv5,cc_GsG2)
+   SurfaceChar(gridiv,c_GsG3)       = Conductance_Coeff(iv5,cc_GsG3)
+   SurfaceChar(gridiv,c_GsG4)       = Conductance_Coeff(iv5,cc_GsG4)
+   SurfaceChar(gridiv,c_GsG5)       = Conductance_Coeff(iv5,cc_GsG5)
+   SurfaceChar(gridiv,c_GsG6)       = Conductance_Coeff(iv5,cc_GsG6)
+   SurfaceChar(gridiv,c_GsTH)       = Conductance_Coeff(iv5,cc_GsTH)
+   SurfaceChar(gridiv,c_GsTL)       = Conductance_Coeff(iv5,cc_GsTL)
+   SurfaceChar(gridiv,c_GsS1)       = Conductance_Coeff(iv5,cc_GsS1)
+   SurfaceChar(gridiv,c_GsS2)       = Conductance_Coeff(iv5,cc_GsS2)
    SurfaceChar(gridiv,c_GsKmax)     = Conductance_Coeff(iv5,cc_GsKmax)
        
    ! ---- Find code for Anthropogenic heat ----
    call CodeMatchAnthropogenicHeat(rr,c_QFCode)    
    ! Transfer Anthropogenic heat characteristics to SurfaceChar
    SurfaceChar(gridiv,c_BaseTHDD)   = AnthropogenicHeat_Coeff(iv5,cA_BaseTHDD)
-   SurfaceChar(gridiv,c_QF_A1) 	    = AnthropogenicHeat_Coeff(iv5,cA_QF_A1)
-   SurfaceChar(gridiv,c_QF_B1) 	    = AnthropogenicHeat_Coeff(iv5,cA_QF_B1)
-   SurfaceChar(gridiv,c_QF_C1) 	    = AnthropogenicHeat_Coeff(iv5,cA_QF_C1)
-   SurfaceChar(gridiv,c_QF_A2) 	    = AnthropogenicHeat_Coeff(iv5,cA_QF_A2)
-   SurfaceChar(gridiv,c_QF_B2) 	    = AnthropogenicHeat_Coeff(iv5,cA_QF_B2)
-   SurfaceChar(gridiv,c_QF_C2) 	    = AnthropogenicHeat_Coeff(iv5,cA_QF_C2)
-   SurfaceChar(gridiv,c_AHMin) 	    = AnthropogenicHeat_Coeff(iv5,cA_AHMin)
+   SurfaceChar(gridiv,c_QF_A1)      = AnthropogenicHeat_Coeff(iv5,cA_QF_A1)
+   SurfaceChar(gridiv,c_QF_B1)      = AnthropogenicHeat_Coeff(iv5,cA_QF_B1)
+   SurfaceChar(gridiv,c_QF_C1)      = AnthropogenicHeat_Coeff(iv5,cA_QF_C1)
+   SurfaceChar(gridiv,c_QF_A2)      = AnthropogenicHeat_Coeff(iv5,cA_QF_A2)
+   SurfaceChar(gridiv,c_QF_B2)      = AnthropogenicHeat_Coeff(iv5,cA_QF_B2)
+   SurfaceChar(gridiv,c_QF_C2)      = AnthropogenicHeat_Coeff(iv5,cA_QF_C2)
+   SurfaceChar(gridiv,c_AHMin)      = AnthropogenicHeat_Coeff(iv5,cA_AHMin)
    SurfaceChar(gridiv,c_AHSlope)    = AnthropogenicHeat_Coeff(iv5,cA_AHSlope)
    SurfaceChar(gridiv,c_TCritic)    = AnthropogenicHeat_Coeff(iv5,cA_TCritic)
        
@@ -1287,7 +1288,7 @@
   IMPLICIT NONE
   
   character(len=20):: GridName    !Name of the evaluated grid
-  character(len=10):: str2        !Variables related to filepaths
+  !character(len=10):: str2        !Variables related to filepaths
   character(len=150):: fileInit   !Initial conditions filename
   character(len=4):: year_txt     !year in txt format
   integer::DaysSinceRain,Gridiv,& !number of days since rain, grid number,
@@ -1297,7 +1298,7 @@
            id_next,calc           !next day,counter in irrigation calculations
    
   real (KIND(1d0))::PavedState,BldgsState,EveTrState,DecTrState,GrassState,BSoilState,&
-              	    SnowFracPaved,SnowFracBldgs,SnowFracEveTr,SnowFracDecTr,&
+                    SnowFracPaved,SnowFracBldgs,SnowFracEveTr,SnowFracDecTr,&
                     SnowFracGrass,SnowFracBSoil,SnowFracWater,&
                     SnowDensPaved,SnowDensBldgs,SnowDensEveTr,SnowDensDecTr,&
                     SnowDensGrass,SnowDensBSoil,SnowDensWater
@@ -1319,9 +1320,9 @@
                   porosity0,&
                   PavedState,&
                   BldgsState,&
-	              EveTrState,&
-	              DecTrState,&
-	              GrassState,&
+                  EveTrState,&
+                  DecTrState,&
+                  GrassState,&
                   BSoilState,&
                   WaterState,&
                   SoilStorePavedState,&
@@ -1330,9 +1331,9 @@
                   SoilStoreDecTrState,&
                   SoilStoreGrassState,&
                   SoilStoreBSoilState,&
-		          SnowWaterPavedState,&
-		          SnowWaterBldgsState,&
-		          SnowWaterEveTrState,&
+                  SnowWaterPavedState,&
+                  SnowWaterBldgsState,&
+                  SnowWaterEveTrState,&
                   SnowWaterDecTrState,&
                   SnowWaterGrassState,&
                   SnowWaterBSoilState,&
@@ -1583,30 +1584,38 @@
        endif
        if(calc==1) then                     
           ! Model daily water use based on HDD(id,6)(days since rain) and HDD(id,3)(average temp)
+
           ! ---- Automatic irrigation (evergreen trees) ----
-	      WU_day(id,2) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*sfr(ConifSurf)*IrrFracConif*DayWatPer(wd)
-	      if (WU_Day(id,2)<0) WU_Day(id,2)=0   !If modelled WU is negative -> 0
-	      ! ---- Manual irrigation (evergreen trees) ----
-	      WU_day(id,3) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*sfr(ConifSurf)*IrrFracConif*DayWatPer(wd)
-	      if (WU_Day(id,3)<0) WU_Day(id,3)=0   !If modelled WU is negative -> 0
-	      ! ---- Total evergreen trees water use (automatic + manual) ----
-	      WU_Day(id,1)=(WU_day(id,2)+WU_day(id,3))
+          WU_day(id,2) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*sfr(ConifSurf)*IrrFracConif*DayWatPer(wd)
+          if (WU_Day(id,2)<0) WU_Day(id,2)=0   !If modelled WU is negative -> 0
+
+          ! ---- Manual irrigation (evergreen trees) ----
+          WU_day(id,3) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*sfr(ConifSurf)*IrrFracConif*DayWatPer(wd)
+          if (WU_Day(id,3)<0) WU_Day(id,3)=0   !If modelled WU is negative -> 0
+
+          ! ---- Total evergreen trees water use (automatic + manual) ----
+          WU_Day(id,1)=(WU_day(id,2)+WU_day(id,3))
 	                              
 	      ! ---- Automatic irrigation (deciduous trees) ----
-	      WU_day(id,5) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*sfr(DecidSurf)*IrrFracDecid*DayWatPer(wd)
-	      if (WU_Day(id,5)<0) WU_Day(id,5)=0   !If modelled WU is negative -> 0
-	      ! ---- Manual irrigation (deciduous trees) ----
-	      WU_day(id,6) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*sfr(DecidSurf)*IrrFracDecid*DayWatPer(wd)
-	      if (WU_Day(id,6)<0) WU_Day(id,6)=0   !If modelled WU is negative -> 0
-	      ! ---- Total deciduous trees water use (automatic + manual) ----
-	      WU_Day(id,4)=(WU_day(id,5)+WU_day(id,6))
+          WU_day(id,5) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*sfr(DecidSurf)*IrrFracDecid*DayWatPer(wd)
+          if (WU_Day(id,5)<0) WU_Day(id,5)=0   !If modelled WU is negative -> 0
+
+          ! ---- Manual irrigation (deciduous trees) ----
+          WU_day(id,6) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*sfr(DecidSurf)*&
+                         IrrFracDecid*DayWatPer(wd)
+          if (WU_Day(id,6)<0) WU_Day(id,6)=0   !If modelled WU is negative -> 0
+
+          ! ---- Total deciduous trees water use (automatic + manual) ----
+          WU_Day(id,4)=(WU_day(id,5)+WU_day(id,6))
 	                              
 	      ! ---- Automatic irrigation (grass) ----
-	      WU_day(id,8) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*sfr(GrassSurf)*IrrFracGrass*DayWatPer(wd)
-	      if (WU_Day(id,8)<0) WU_Day(id,8)=0   !If modelled WU is negative -> 0
+          WU_day(id,8) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*sfr(GrassSurf)*&
+                         IrrFracGrass*DayWatPer(wd)
+          if (WU_Day(id,8)<0) WU_Day(id,8)=0   !If modelled WU is negative -> 0
 	      ! ---- Manual irrigation (grass) ----
-	      WU_day(id,9) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*sfr(GrassSurf)*IrrFracGrass*DayWatPer(wd)
-	      if (WU_Day(id,9)<0) WU_Day(id,9)=0   !If modelled WU is negative -> 0
+          WU_day(id,9) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*sfr(GrassSurf)*&
+                         IrrFracGrass*DayWatPer(wd)
+          if (WU_Day(id,9)<0) WU_Day(id,9)=0   !If modelled WU is negative -> 0
 	      ! ---- Total grass water use (automatic + manual) ----
           WU_Day(id,7)=(WU_day(id,8)+WU_day(id,9))
        else
@@ -1784,7 +1793,7 @@
 
    IMPLICIT NONE
 
-   integer::lunit,i,iyy,RunNumber!,NSHcounter
+   integer::lunit,i,iyy !,RunNumber,NSHcounter
    real (kind(1d0)),dimension(24)::MetArray
    real(kind(1d0)):: imin_prev, ih_prev, iday_prev, tstep_met   !For checks on temporal resolution of met data
 
@@ -1853,7 +1862,7 @@
 
  implicit none
 
- real(kind(1d0)):: pTol   !Precision tolerance for range checks
+ !real(kind(1d0)):: pTol   !Precision tolerance for range checks
  
  if (Temp_C0<(Temp_C-10).or.Temp_C0>(Temp_C+10)) then
      call ErrorHint(36,'InitialCond: Check temperature', Temp_C0, Temp_C, notUsedI)

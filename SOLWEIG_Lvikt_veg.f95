@@ -2,7 +2,7 @@ subroutine Lvikt_veg(isvf,isvfveg,isvfaveg,vikttot)
 use matsize 
    
     implicit none
-    real(kind(1D0))	:: vikttot
+    real(kind(1D0)) :: vikttot
     real(kind(1d0)), dimension(sizey,sizex) :: isvf
     real(kind(1d0)), dimension(sizey,sizex) :: isvfveg
     real(kind(1d0)), dimension(sizey,sizex) :: isvfaveg

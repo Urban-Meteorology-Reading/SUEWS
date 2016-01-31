@@ -1,6 +1,9 @@
 !> 
-subroutine clearnessindex_2013b(zen,jday,Ta,RH,radG,lat,P,I0,CI,Kt,I0et,CIuncorr)
-implicit none 
+ subroutine clearnessindex_2013b(zen,jday,Ta,RH,radG,lat,P,I0,CI,Kt,I0et,CIuncorr)
+ !Last modified:
+ !LJ 27 Jan 2016 - Removal of tabs
+
+ implicit none
     ! Use somemodule 
 
     real(kind(1d0))                 :: CI,CIuncorr,I0,I0et,Kt
@@ -100,16 +103,16 @@ implicit none
     
     !===============================================================================
 
-subroutine sun_distance(jday,D)
+ subroutine sun_distance(jday,D)
  
-! Calculates solar irradiance variation based on mean earth sun distance
-! with day of year as input.
-! Partridge and Platt, 1975
+ ! Calculates solar irradiance variation based on mean earth sun distance
+ ! with day of year as input.
+ ! Partridge and Platt, 1975
 
-    INTEGER          	::jday
-    REAL(KIND(1d0)) 	::b,D
+    INTEGER          ::jday
+    REAL(KIND(1d0))  ::b,D
 
-	b = 2*3.141592654*jday/365
-	D = sqrt(1.00011 + 0.034221 * cos(b) + 0.001280 * sin(b) + 0.000719 * cos(2*b) + 0.000077 * sin(2*b))
+    b = 2*3.141592654*jday/365
+    D = sqrt(1.00011 + 0.034221 * cos(b) + 0.001280 * sin(b) + 0.000719 * cos(2*b) + 0.000077 * sin(2*b))
 
-end subroutine sun_distance
+ end subroutine sun_distance

@@ -3,10 +3,10 @@ use matsize
     
     implicit none
     
-    real(kind(1d0)), parameter          :: pi=3.141592653589793
-    real(kind(1D0))	:: vikttot,aziE,aziN,aziS,aziW 
-    real(kind(1D0))	:: radI,radG,radD
-    real(kind(1D0))	:: azimuth,altitude,psi,t,albedo
+    real(kind(1d0)), parameter     :: pi=3.141592653589793
+    real(kind(1D0)) :: vikttot,aziE,aziN,aziS,aziW
+    real(kind(1D0)) :: radI,radG,radD
+    real(kind(1D0)) :: azimuth,altitude,psi,t,albedo
     
     ! Internal grids
     real(kind(1d0)),allocatable,dimension(:,:) :: svfviktbuveg
@@ -64,7 +64,7 @@ subroutine Kvikt_veg(isvf, isvfveg, vikttot)
 use matsize
 
     implicit none
-    real(kind(1D0))	:: vikttot     
+    real(kind(1D0)) :: vikttot
     real(kind(1d0)), dimension(sizey,sizex) :: isvf
     real(kind(1d0)), dimension(sizey,sizex) :: isvfveg
     real(kind(1d0)), dimension(sizey,sizex) :: svfvegbu 

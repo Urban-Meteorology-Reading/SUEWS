@@ -1,16 +1,17 @@
-! ref: Grimmond and Oke (2002) JAM and references within that
-! Offerle (2003) -- add water bucket
-! ref: Loridan et al. (2011) JAMC dynamic water & vegetation 
-! sg feb 2012     - added some comments
-! lj/sg May 2012  - Changed phenology to be consistent with SUEWS LAI. No longer Loridan et al. (2011)
-! lj June 2012    - Modified to work with snow (Qm added in the equations!)
-! LJ Feb 2014     - the bug related to VegMax has been fixed (cannot divide by zero)
-! HCW 04 Mar 2015 - Modified to account for model timestep (rather than hourly resolution)
-! -------------------------------------------------------------- 
+ subroutine LUMPS_QHQE
+ !Calculates QH and QE for LUMPS. See Loridan et al. (2011)
+ ! ref: Grimmond and Oke (2002) JAM and references within that
+ !      Offerle (2003) -- add water bucket
+ ! ref: Loridan et al. (2011) JAMC dynamic water & vegetation
+ ! Last modified: 
+ ! LJ 27 Jan 2016  - Removal of tabs, cleaning the code
+ ! HCW 04 Mar 2015 - Modified to account for model timestep (rather than hourly resolution)
+ ! LJ Feb 2014     - The bug related to VegMax has been fixed (cannot divide by zero)
+ ! LJ/SG May 2012  - Changed phenology to be consistent with SUEWS LAI. No longer Loridan et al. (2011)
+ ! LJ June 2012    - Modified to work with snow (Qm added in the equations!)
+ ! SG Feb 2012     - added some comments
+ ! --------------------------------------------------------------
 
-!Calculates QH and QE for LUMPS. See Loridan et al. (2011)
-subroutine LUMPS_QHQE
-  
   use allocateArray
   use data_in
   use defaultNotUsed
@@ -23,13 +24,12 @@ subroutine LUMPS_QHQE
   
   IMPLICIT NONE
  
-  integer::iv!,start
-  real (kind(1d0)):: VegPhen,VegMax,VegMin,&     !Vegetation phenology for LUMPS
-  		     slope_svp, slopeIce_svp,&
-                     psyc_s,psyc_const,&
- 	             alpha_sl,alpha_in,&  	 !Parameter used in LUMPS QH and QE calculations  
-   	             beta    			 !Beta parameter used in LUMPS QH and QE calculations [W m-2] 
-
+  integer::iv                                 !,start
+  real (kind(1d0))::VegPhen,VegMax,VegMin,&   !Vegetation phenology for LUMPS
+                    slope_svp, slopeIce_svp,& !Slope of the saturation vapour pressure curve above watre and ice
+                    psyc_s,psyc_const,&       !Psychometric constant
+                    alpha_sl,alpha_in,&    	  !Parameters used in LUMPS QH and QE calculations
+                    beta                      !Beta parameter used in LUMPS QH and QE calculations [W m-2]
 
   ! Calculate slope of the saturation vapour pressure vs air temp.
   s_hPa=slope_svp(Temp_C) 
@@ -101,7 +101,7 @@ subroutine LUMPS_QHQE
  
   return
 
-end subroutine LUMPS_QHQE
+ end subroutine LUMPS_QHQE
 
 
 

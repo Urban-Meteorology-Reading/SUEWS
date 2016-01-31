@@ -1,6 +1,8 @@
 ! Note: INTERVAL is now set to 3600 s in Initial (it is no longer set in RunControl) HCW 29 Jan 2015
+! Last modified:
+!  LJ 27 Jan 2016 - Removal of tabs
 
-subroutine CBL(ifirst,iMB)
+ subroutine CBL(ifirst,iMB)
 
     use mod_z     
     use mod_k     
@@ -168,17 +170,19 @@ end subroutine CBL
 
 !-----------------------------------------------------------------------
 !-----------------------------------------------------------------------
-Subroutine CBL_ReadInputData
-	use allocateArray
-	use data_in
-	use sues_data
-	use cbl_module
-        use initial
-	implicit none
-        integer::i
-        real(kind(1d0))::l
+ Subroutine CBL_ReadInputData
+    use allocateArray
+    use data_in
+    use sues_data
+    use cbl_module
+    use initial
 
-	namelist/CBLInput/EntrainmentType,&
+    implicit none
+
+    integer::i
+    real(kind(1d0))::l
+
+    namelist/CBLInput/EntrainmentType,&
                             QH_choice,&
                             CO2_included,&
                             cblday,&
@@ -188,12 +192,12 @@ Subroutine CBL_ReadInputData
                             sondeflag,&
                             FileSonde
 
-	open(51,file=trim(FileInputPath)//'CBLInput.nml',status='old', err=24) 
-        read(51,nml=CBLInput,err=24)
-	close(51)
+    open(51,file=trim(FileInputPath)//'CBLInput.nml',status='old', err=24)
+    read(51,nml=CBLInput,err=24)
+    close(51)
 
-        !Read initial values if it's needed
-	if(InitialData_use==1 .or. InitialData_use==2)then
+    !Read initial values if it's needed
+    if(InitialData_use==1 .or. InitialData_use==2)then
             open(52,file=trim(FileInputPath)//trim(InitialDataFileName),status='old', err=25)
             read(52,*)
             nlineInData = 0   !Initialise nlines
@@ -211,15 +215,15 @@ Subroutine CBL_ReadInputData
               read(52,*)IniCBLdata(i,1:8)
             enddo
             close(52)
-	endif
+    endif
 
-	if(CO2_included==0)then
-		fcbl=0      ! hard-wire no CO2
-	endif
+    if(CO2_included==0)then
+      fcbl=0       ! hard-wire no CO2
+    endif
 
-        iCBLcount=0
+    iCBLcount=0
 
-	return
+    return
 
 24  call ErrorHint(24,'CBLInput.nml',0.00D0,0.000D0,0) 
 25  call ErrorHint(24,trim(FileInputPath)//trim(InitialDataFileName),0.00D0,0.00D0,0)
@@ -351,10 +355,10 @@ FUNCTION qsatf(T,PMB) result(qsat)
     real (kind(1D0))::T,es,qsat,PMB
     real (kind(1D0))::A=6.106, B=17.27, C=237.3  !Teten coefficients
 
-	if(t.gt.55)then
-       call ErrorHint(34,'Function qsatf',T,0.00D0,notUsedI)	   
-	endif
+    if(t.gt.55)then
+       call ErrorHint(34,'Function qsatf',T,0.00D0,notUsedI)
+    endif
 
-	ES = A*dEXP(B*T/(C+T))
-	qsat = (molar_wat_vap/molar)*ES/PMB!(rmh2o/rmair)*ES/PMB
+    ES = A*dEXP(B*T/(C+T))
+    qsat = (molar_wat_vap/molar)*ES/PMB!(rmh2o/rmair)*ES/PMB
 END function qsatf

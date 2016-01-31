@@ -68,10 +68,10 @@
    
         sdp=S1/G6+S2
       
-        if(smd_choice>0)then 	!Modified from ==1 to > 0 by HCW 31/07/2014
-            gs=1-exp(g6*(xsmd-sdp))!Measured soil moisture deficit is used
+        if(smd_choice>0)then         !Modified from ==1 to > 0 by HCW 31/07/2014
+            gs=1-exp(g6*(xsmd-sdp))  !Measured soil moisture deficit is used
         else
-            gs=1-exp(g6*(smd-sdp))!Modelled is used
+            gs=1-exp(g6*(smd-sdp))   !Modelled is used
         endif
 
         gs = gs*(1-sum(snowFrac(1:6))/6)
@@ -145,8 +145,8 @@
        endif
        ! ---- g(smd) ----
        sdp=S1/G6+S2
-       if(smd_choice>0) then 	!Modified from ==1 to > 0 by HCW 31/07/2014
-          gs=(1-exp(g6*(xsmd-sdp)))/(1-exp(g6*(-sdp)))   !Use measured smd        
+       if(smd_choice>0) then                           !Modified from ==1 to > 0 by HCW 31/07/2014
+          gs=(1-exp(g6*(xsmd-sdp)))/(1-exp(g6*(-sdp))) !Use measured smd
        else
           gs=1-exp(g6*(smd-sdp))   !Use modelled smd
           gs=(1-exp(g6*(smd-sdp)))/(1-exp(g6*(-sdp)))

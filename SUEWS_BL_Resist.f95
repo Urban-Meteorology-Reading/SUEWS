@@ -1,8 +1,8 @@
 subroutine BoundaryLayerResistance
   use sues_data
   use data_in
-  use mod_z	        ! module_LUMPS_constants,f90
-  use mod_k	        ! module_LUMPS_constants,f90
+  use mod_z       ! module_LUMPS_constants,f90
+  use mod_k       ! module_LUMPS_constants,f90
   implicit none
 
   if(ustar<0.01) then

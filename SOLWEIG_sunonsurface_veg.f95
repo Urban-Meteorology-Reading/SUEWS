@@ -1,9 +1,12 @@
-subroutine sunonsurface_veg(iazimuthA, scale, first, second, psi)
-! This m-file creates a boolean image of sunlit walls. 
-! Shadows from both buildings and vegetation is accounted for 
-! moving building in the direction of the sun
+ subroutine sunonsurface_veg(iazimuthA, scale, first, second, psi)
+ ! This m-file creates a boolean image of sunlit walls.
+ ! Shadows from both buildings and vegetation is accounted for
+ ! moving building in the direction of the sun
+ ! Last modified:
+ ! LJ 27 Jan 2016 - Removal of tabs and fixing real-int conversions
 
-use matsize
+ use matsize
+
     implicit none
     real(kind(1d0))             :: iazimuthA,iazimuth,sinazimuth,cosazimuth,tanazimuth
     real(kind(1d0))             :: scale 
@@ -51,8 +54,8 @@ use matsize
     weightsumsh = 0.0D0
     weightsumwall = 0.0D0
 
-    first=first*scale
-    second=second*scale
+    first=int(real(first,kind(1d0))*scale)  !Int added around the equation as first and second are both integers
+    second=int(real(second,kind(1d0))*scale)
 
     ! other loop parameters
     pibyfour=pi/4.
@@ -85,14 +88,14 @@ use matsize
         absdx=abs(dx)
         absdy=abs(dy)
    
-        xc1=((dx+absdx)/2)+1
-        xc2=(sizex+(dx-absdx)/2)
-        yc1=((dy+absdy)/2)+1
-        yc2=(sizey+(dy-absdy)/2)
-        xp1=-((dx-absdx)/2)+1
-        xp2=(sizex-(dx+absdx)/2)
-        yp1=-((dy-absdy)/2)+1
-        yp2=(sizey-(dy+absdy)/2)
+        xc1=int((dx+absdx)/2)+1
+        xc2=(sizex+int((dx-absdx)/2))
+        yc1=int((dy+absdy)/2)+1
+        yc2=(sizey+int((dy-absdy)/2))
+        xp1=-int((dx-absdx)/2)+1
+        xp2=(sizex-int((dx+absdx)/2))
+        yp1=-int((dy-absdy)/2)+1
+        yp2=(sizey-int((dy+absdy)/2))
 
         tempbu(xp1:xp2,yp1:yp2)=buildings(xc1:xc2,yc1:yc2) !moving building
 

@@ -3,9 +3,9 @@ SUBROUTINE InputHeaderCheck(FileName)
 ! Checks columns in input files match the columns expected by model code 
 ! Model code columns are defined here
 ! Latest update:
-!   LJ 07 July 2015: snow albedo removed
-!
-! HCW 12 Nov 2014
+!   LJ 27 Jan 2016  - Removal of tabs
+!   LJ 07 July 2015 - snow albedo removed
+!   HCW 12 Nov 2014
 !-------------------------------------------------------------------------
 
   use allocateArray 
@@ -20,17 +20,17 @@ SUBROUTINE InputHeaderCheck(FileName)
   ! =======================================================
  
   ! ========== SUEWS_NonVeg.txt =============
-  HeaderNonVeg_Reqd(ci_Code)	  = "Code"
-  HeaderNonVeg_Reqd(ci_AlbMin)	  = "AlbedoMin"
-  HeaderNonVeg_Reqd(ci_AlbMax)	  = "AlbedoMax"
-  HeaderNonVeg_Reqd(ci_Emis)	  = "Emissivity"
-  HeaderNonVeg_Reqd(ci_StorMin)	  = "StorageMin"
-  HeaderNonVeg_Reqd(ci_StorMax)	  = "StorageMax"
-  HeaderNonVeg_Reqd(ci_WetThresh)= "WetThreshold"
-  HeaderNonVeg_Reqd(ci_StateLimit)= "StateLimit"
-  HeaderNonVeg_Reqd(ci_DrEq)      = "DrainageEq"
-  HeaderNonVeg_Reqd(ci_DrCoef1)   = "DrainageCoef1"
-  HeaderNonVeg_Reqd(ci_DrCoef2)   = "DrainageCoef2"
+  HeaderNonVeg_Reqd(ci_Code)         = "Code"
+  HeaderNonVeg_Reqd(ci_AlbMin)       = "AlbedoMin"
+  HeaderNonVeg_Reqd(ci_AlbMax)       = "AlbedoMax"
+  HeaderNonVeg_Reqd(ci_Emis)         = "Emissivity"
+  HeaderNonVeg_Reqd(ci_StorMin)      = "StorageMin"
+  HeaderNonVeg_Reqd(ci_StorMax)      = "StorageMax"
+  HeaderNonVeg_Reqd(ci_WetThresh)    = "WetThreshold"
+  HeaderNonVeg_Reqd(ci_StateLimit)   = "StateLimit"
+  HeaderNonVeg_Reqd(ci_DrEq)         = "DrainageEq"
+  HeaderNonVeg_Reqd(ci_DrCoef1)      = "DrainageCoef1"
+  HeaderNonVeg_Reqd(ci_DrCoef2)      = "DrainageCoef2"
   HeaderNonVeg_Reqd(ci_SoilTCode)    = "SoilTypeCode"
   HeaderNonVeg_Reqd(ci_SnowLimPat)   = "SnowLimPatch"
   HeaderNonVeg_Reqd(ci_SnowLimRem)   = "SnowLimRemove"     
@@ -40,31 +40,31 @@ SUBROUTINE InputHeaderCheck(FileName)
   HeaderNonVeg_Reqd(ci_OHMCode_WDry) = "OHMCode_WinterDry"     
    
   ! ========== SUEWS_Veg.txt ===============
-  HeaderVeg_Reqd(cp_Code)	  = "Code"
-  HeaderVeg_Reqd(cp_AlbMin)	  = "AlbedoMin"
-  HeaderVeg_Reqd(cp_AlbMax)	  = "AlbedoMax"
-  HeaderVeg_Reqd(cp_Emis)	  = "Emissivity"
-  HeaderVeg_Reqd(cp_StorMin)	  = "StorageMin"
-  HeaderVeg_Reqd(cp_StorMax)	  = "StorageMax"
+  HeaderVeg_Reqd(cp_Code)         = "Code"
+  HeaderVeg_Reqd(cp_AlbMin)       = "AlbedoMin"
+  HeaderVeg_Reqd(cp_AlbMax)       = "AlbedoMax"
+  HeaderVeg_Reqd(cp_Emis)         = "Emissivity"
+  HeaderVeg_Reqd(cp_StorMin)      = "StorageMin"
+  HeaderVeg_Reqd(cp_StorMax)      = "StorageMax"
   HeaderVeg_Reqd(cp_WetThresh)    = "WetThreshold"
   HeaderVeg_Reqd(cp_StateLimit)   = "StateLimit"
-  HeaderVeg_Reqd(cp_DrEq)	  = "DrainageEq"
-  HeaderVeg_Reqd(cp_DrCoef1)	  = "DrainageCoef1"
-  HeaderVeg_Reqd(cp_DrCoef2)	  = "DrainageCoef2"
-  HeaderVeg_Reqd(cp_SoilTCode)	  = "SoilTypeCode"
+  HeaderVeg_Reqd(cp_DrEq)         = "DrainageEq"
+  HeaderVeg_Reqd(cp_DrCoef1)      = "DrainageCoef1"
+  HeaderVeg_Reqd(cp_DrCoef2)      = "DrainageCoef2"
+  HeaderVeg_Reqd(cp_SoilTCode)    = "SoilTypeCode"
   HeaderVeg_Reqd(cp_SnowLimPat)   = "SnowLimPatch"
-  HeaderVeg_Reqd(cp_BaseT)	  = "BaseT"      
-  HeaderVeg_Reqd(cp_BaseTe)	  = "BaseTe"      
-  HeaderVeg_Reqd(cp_GDDFull)	  = "GDDFull"      
-  HeaderVeg_Reqd(cp_SDDFull)	  = "SDDFull"      
-  HeaderVeg_Reqd(cp_LAIMin)	  = "LAIMin"      
-  HeaderVeg_Reqd(cp_LAIMax)	  = "LAIMax"      
-  HeaderVeg_Reqd(cp_GsMax)	  = "MaxConductance"      
-  HeaderVeg_Reqd(cp_LAIEq)	  = "LAIEq"      
-  HeaderVeg_Reqd(cp_LeafGP1)	  = "LeafGrowthPower1"      
-  HeaderVeg_Reqd(cp_LeafGP2)	  = "LeafGrowthPower2"      
-  HeaderVeg_Reqd(cp_LeafOP1)	  = "LeafOffPower1"      
-  HeaderVeg_Reqd(cp_LeafOP2)	  = "LeafOffPower2"    
+  HeaderVeg_Reqd(cp_BaseT)        = "BaseT"
+  HeaderVeg_Reqd(cp_BaseTe)       = "BaseTe"
+  HeaderVeg_Reqd(cp_GDDFull)      = "GDDFull"
+  HeaderVeg_Reqd(cp_SDDFull)      = "SDDFull"
+  HeaderVeg_Reqd(cp_LAIMin)       = "LAIMin"
+  HeaderVeg_Reqd(cp_LAIMax)       = "LAIMax"
+  HeaderVeg_Reqd(cp_GsMax)        = "MaxConductance"
+  HeaderVeg_Reqd(cp_LAIEq)        = "LAIEq"
+  HeaderVeg_Reqd(cp_LeafGP1)      = "LeafGrowthPower1"
+  HeaderVeg_Reqd(cp_LeafGP2)      = "LeafGrowthPower2"
+  HeaderVeg_Reqd(cp_LeafOP1)      = "LeafOffPower1"
+  HeaderVeg_Reqd(cp_LeafOP2)      = "LeafOffPower2"
   HeaderVeg_Reqd(cp_OHMCode_SWet) = "OHMCode_SummerWet"     
   HeaderVeg_Reqd(cp_OHMCode_SDry) = "OHMCode_SummerDry"     
   HeaderVeg_Reqd(cp_OHMCode_WWet) = "OHMCode_WinterWet"     
@@ -81,14 +81,14 @@ SUBROUTINE InputHeaderCheck(FileName)
   HeaderWater_Reqd(cw_StateLimit)   = "StateLimit"
   HeaderWater_Reqd(cw_DrEq)         = "DrainageEq"
   HeaderWater_Reqd(cw_DrCoef1)      = "DrainageCoef1"
-  HeaderWater_Reqd(cw_DrCoef2) 	    = "DrainageCoef2"   
+  HeaderWater_Reqd(cw_DrCoef2)      = "DrainageCoef2"
   HeaderWater_Reqd(cw_OHMCode_SWet) = "OHMCode_SummerWet"     
   HeaderWater_Reqd(cw_OHMCode_SDry) = "OHMCode_SummerDry"     
   HeaderWater_Reqd(cw_OHMCode_WWet) = "OHMCode_WinterWet"     
   HeaderWater_Reqd(cw_OHMCode_WDry) = "OHMCode_WinterDry"       
    
   ! ========== SUEWS_Snow.txt ===================
-  HeaderSnow_Reqd(cs_Code) 	   = "Code"
+  HeaderSnow_Reqd(cs_Code)         = "Code"
   HeaderSnow_Reqd(cs_SnowRMFactor) = "RadMeltFactor"
   HeaderSnow_Reqd(cs_SnowTMFactor) = "TempMeltFactor"
   HeaderSnow_Reqd(cs_SnowAlbMin)   = "AlbedoMin"
@@ -112,7 +112,7 @@ SUBROUTINE InputHeaderCheck(FileName)
   HeaderSoil_Reqd(cSo_Code)        = "Code" 
   HeaderSoil_Reqd(cSo_SoilDepth)   = "SoilDepth" 
   HeaderSoil_Reqd(cSo_SoilStCap)   = "SoilStoreCap" 
-  HeaderSoil_Reqd(cSo_KSat)  	   = "SatHydraulicCond" 
+  HeaderSoil_Reqd(cSo_KSat)        = "SatHydraulicCond"
   HeaderSoil_Reqd(cSo_SoilDens)    = "SoilDensity" 
   HeaderSoil_Reqd(cSo_SoilInfRate) = "InfiltrationRate" 
   HeaderSoil_Reqd(cSo_ObsSMDepth)  = "OBS_SMDepth" 

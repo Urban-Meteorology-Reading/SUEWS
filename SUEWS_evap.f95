@@ -25,11 +25,11 @@
  IMPLICIT NONE
   
  real(kind(1d0)):: rss,&	!Redefined surface resistance for transition [s m-1]
-  		   rbsg,&	!Boundary-layer resistance x (slope/psychrometric const + 1) [s m-1]
-  		   rsrbsg,&	!rs + rbsg [s m-1]
-  		   W,&		!Depends on the amount of water on the canopy [-]
-  		   r,&
-                   x
+           rbsg,&	!Boundary-layer resistance x (slope/psychrometric const + 1) [s m-1]
+           rsrbsg,&	!rs + rbsg [s m-1]
+           W,&		!Depends on the amount of water on the canopy [-]
+           r,&
+           x
                    
 ! Use Penman-Monteith eqn modified for urban areas (Eq6, Jarvi et al. 2011)
 ! Calculation independent of surface characteristics
@@ -37,10 +37,10 @@
 
  ! Dry surface ---------------------------------------------------------------
  if(state(is)<=0.001) then
-     qe=numPM/(s_hPa+psyc_hPa*(1+ResistSurf/ra))	!QE [W m-2] (numPM = numerator of P-M eqn)
-     ev=qe/tlv					!Ev [mm]    (qe[W m-2]/tlv[J kg-1 s-1]*1/density_water[1000 kg m-3])	
-     W=NAN   !W not needed for dry surfaces (set to -999)
-     rst=1   !Set flag indicating dry surface(1)	
+     qe=numPM/(s_hPa+psyc_hPa*(1+ResistSurf/ra))  !QE [W m-2] (numPM = numerator of P-M eqn)
+     ev=qe/tlv              !Ev [mm]    (qe[W m-2]/tlv[J kg-1 s-1]*1/density_water[1000 kg m-3])
+     W=NAN                  !W not needed for dry surfaces (set to -999)
+     rst=1                  !Set flag indicating dry surface(1)
 
  ! Wet surface ---------------------------------------------------------------
  else
@@ -59,13 +59,13 @@
         ! If surface is in transition, use rss ---------------------------
         else   !if((state(is)<StorCap).and.(state(is)>0.001).or.(ResistSurf<50)) then
            r=(ResistSurf/ra)*(ra-rb)/rsrbsg
-	       W=(r-1)/(r-(WetThresh(is)/state(is)))
+           W=(r-1)/(r-(WetThresh(is)/state(is)))
         endif
 
         rss=(1/((W/rbsg)+((1-W)/rsrbsg)))-rbsg !Redefined surface resistance for wet
                                                !surfaces (zero if W=1). Eq7, Jarvi et al. (2011)
         qe=numPM/(s_hPa+psyc_hPa*(1+rss/ra))   !QE [W m-2]
-        ev=qe/tlv 				               !Ev [mm]
+        ev=qe/tlv                              !Ev [mm]
 
      elseif(ity==1) then   !-- Rutter --
         qe=numPM/(s_hPa+psyc_hPa)
@@ -75,7 +75,7 @@
         else
            x=state(is)/surf(6,is)
         endif
-        ev=ev*x	    !QE [W m-2]
+        ev=ev*x     !QE [W m-2]
         qe=ev*tlv   !Ev [mm]
      endif   !Rutter/Shuttleworth calculation
   endif   !Wet/dry surface

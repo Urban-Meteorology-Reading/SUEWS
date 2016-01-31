@@ -71,19 +71,19 @@
   else
      write(*,*) 'Problem with CodeMatchOHM (in SUEWS_CodeMatch.f95). ',SWWD,' not recognised. Needs to be one of: ',&
      	        'SWet = Summer Wet, SDry = Summer Dry, WWet = WinterWet, WDry = Winter Dry. N.B. Case sensitive. '
-     stop  	     
+     stop
   endif
    
   return
-ENDSUBROUTINE CodeMatchOHM  
+ ENDSUBROUTINE CodeMatchOHM
 ! ---------------------------------------------------------
 
 
-SUBROUTINE CodeMatchProf(rr,CodeCol)
-! Matches Hourly profiles via profile codes 
-! for energy use/water use/snow clearing  
-! HCW 05 Nov 2014
-! ---------------------------------------------------------
+ SUBROUTINE CodeMatchProf(rr,CodeCol)
+ ! Matches Hourly profiles via profile codes
+ ! for energy use/water use/snow clearing
+ ! HCW 05 Nov 2014
+ ! ---------------------------------------------------------
 
   use allocateArray
   use Initial
@@ -151,16 +151,16 @@ SUBROUTINE CodeMatchDist(rr,CodeCol,codeColSameSurf)
   !! - Also look at SUEWS_translate, as the non-zero value goes into WaterDist
   if(WGWaterDist_Coeff(iv5,cWG_ToRunoff)/=0.and.WGWaterDist_Coeff(iv5,cWG_ToSoilStore)/=0) then
      call ErrorHint(9,'Problem in SUEWS_WithinGridWaterDist.txt.',&
-     		    WGWaterDist_Coeff(iv5,cWG_ToRunoff),WGWaterDist_Coeff(iv5,cWG_ToSoilStore),notUsedI)
+          WGWaterDist_Coeff(iv5,cWG_ToRunoff),WGWaterDist_Coeff(iv5,cWG_ToSoilStore),notUsedI)
   endif
   
   !! Also do for water surface once implemented
   if(codeCol /= c_WGWaterCode) then   ! Except for Water surface
      ! Check total water distribution from each surface adds up to 1
-     if( sum(WGWaterDist_Coeff(iv5,cWG_ToPaved:cWG_ToSoilStore)) > 1.0000001.or.sum(WGWaterDist_Coeff(iv5,&
-             			   cWG_ToPaved:cWG_ToSoilStore)) < 0.9999999 ) then
+     if(sum(WGWaterDist_Coeff(iv5,cWG_ToPaved:cWG_ToSoilStore)) > 1.0000001.or.sum(WGWaterDist_Coeff(iv5,&
+             cWG_ToPaved:cWG_ToSoilStore)) < 0.9999999 ) then
         call ErrorHint(10,'Problem in SUEWS_WithinGridWaterDist.txt.',&
-      		       sum(WGWaterDist_Coeff(iv5,cWG_ToPaved:cWG_ToSoilStore)),notUsed,notUsedI)
+             sum(WGWaterDist_Coeff(iv5,cWG_ToPaved:cWG_ToSoilStore)),notUsed,notUsedI)
      endif     
   endif
   

@@ -213,10 +213,10 @@
  ! -- qn1_bup is QSTAR only
 
  ! =================STORAGE HEAT FLUX=======================================
- if(QSChoice==1) then		!Use OHM to calculate QS
-    if(OHMIncQF == 1) then	!Calculate QS using QSTAR+QF
-       call OHM_v2015(Gridiv)		
-    elseif(OHMIncQF == 0) then  !Calculate QS using QSTAR 
+ if(QSChoice==1) then           !Use OHM to calculate QS
+    if(OHMIncQF == 1) then      !Calculate QS using QSTAR+QF
+      call OHM_v2015(Gridiv)
+    elseif(OHMIncQF == 0) then  !Calculate QS using QSTAR
       qn1=qn1_bup  
       call OHM_v2015(Gridiv)
     endif   
@@ -425,7 +425,7 @@
  call HorizontalSoilWater
            
  !========== Calculate soil moisture ============
- soilstate=0  	!Area-averaged soil moisture [mm] for whole surface
+ soilstate=0       !Area-averaged soil moisture [mm] for whole surface
  do is=1,nsurf-1   !No water body included   
     soilstate=soilstate+(soilmoist(is)*sfr(is)/NonWaterFraction)
     if (soilstate<0) then
@@ -546,8 +546,6 @@
  if (SnowFractionChoice==2.and.snowUse==1.and.it==23.and.imin==(nsh_real-1)/nsh_real*60) then
     do is=1,nsurf-1
        if (snowPack(is)>0.and.mw_ind(is)>0) then
-          !write(*,*) snowPack(is),snowFrac(is),snowD(is)
-          !pause
           snowFrac(is)=SnowDepletionCurve(is,snowPack(is),snowD(is))
        elseif (snowPack(is)==0) then
           snowFrac(is)=0

@@ -22,23 +22,23 @@
   !     cloud fraction is kept constant throught the night (Offerle et al. 2003, JAM) 
   ! 5 - Option 3 at night and 4 during the day (might cause discontinuities in Ldown)
   
-  !SUEWS   L. J�rvi - Oct 2010
+  !SUEWS   L. Jarvi - Oct 2010
   !Currently Ldown options 4 and 5 commented out in order to reduce input files.
-  !
-  !sg feb 2012
-  ! allocatable array module added
-  !lj Oct 2012
-  ! zenith angle change in the calculation of albedo added
-  !lj May 2013. Main program NARP changed to take subsurfaces and snow into account here and not
-  !             in the main program
-  !FL Nov 2013. A new sun postion algorithm added
-  !FL July 2014. Variables are moved to modules in NARP subroutine. Snow related should also in future.
-  !
+  !Last modified:
+  !LJ 27 Jan 2016 - Removal of tabs, cleaning of the code
+  !FL July 2014   - Variables are moved to modules in NARP subroutine. Snow related should also in future.
+  !FL Nov 2013    - A new sun postion algorithm added
+  !LJ May 2013    - Main program NARP changed to take subsurfaces and snow into account here and not
+  !                 in the main program
+  !LJ Oct 2012    - Zenith angle change in the calculation of albedo added
+  !sg feb 2012    - Allocatable array module added
+
   !==============================================================================================
-  use  allocateArray  
+  use allocateArray  
+
   IMPLICIT NONE
  
- CONTAINS
+  CONTAINS
 
   !============================================================================== 
   SUBROUTINE NARP(SnowAlb,QSTAR_SF,QSTAR_s)
@@ -315,7 +315,7 @@
     ! http://www.atd.ucar.edu/weather_fl/dewpoint.html
     ! dewpoint = (237.3 * ln(e_vp/6.1078)) / (17.27 - (ln(e_vp/6.1078)))
 
-    REAL(KIND(1d0)) 			::rh,td,Temp_C,g
+    REAL(KIND(1d0))::rh,td,Temp_C,g
     !http://en.wikipedia.org/wiki/Dew_point
     g=((17.27*Temp_C)/(237.7+Temp_C))+log(rh/100)
     Td=(237.7*g)/(17.27-g)
@@ -324,8 +324,8 @@
   !===============================================================================
   FUNCTION PRATA_EMIS(Temp_K,EA_hPa) RESULT(EMIS_A)
     ! clear sky emissivity function Prata 1996
-    REAL(KIND(1d0)) 			::Temp_K,ea_hPa,EMIS_A
-    REAL(KIND(1d0)) 			::W
+    REAL(KIND(1d0))::Temp_K,ea_hPa,EMIS_A
+    REAL(KIND(1d0))::W
     
     W=46.5*(ea_hPa/Temp_K)
     EMIS_A=1.-(1.+W)*EXP(-SQRT(1.2+3.*W))
@@ -333,7 +333,7 @@
   !===============================================================================
   FUNCTION EMIS_CLOUD(EMIS_A,FCLD) RESULT(em_adj)
     !calculates adjusted emissivity due to clouds 
-    REAL(KIND(1d0)) 			::EMIS_A,FCLD,em_adj
+    REAL(KIND(1d0))::EMIS_A,FCLD,em_adj
     !T. Loridan, removing the square for FCLD in the emissivity correction
     !em_adj=EMIS_A+(1.-EMIS_A)*FCLD*FCLD
     em_adj=EMIS_A+(1.-EMIS_A)*FCLD
@@ -341,12 +341,12 @@
   !===============================================================================
   FUNCTION EMIS_CLOUD_SQ(EMIS_A,FCLD) RESULT(em_adj)
     !calculates adjusted emissivity due to clouds 
-    REAL(KIND(1d0)) 			::EMIS_A,FCLD,em_adj
+    REAL(KIND(1d0))::EMIS_A,FCLD,em_adj
     em_adj=EMIS_A+(1.-EMIS_A)*FCLD*FCLD
   END FUNCTION EMIS_CLOUD_SQ
   !===============================================================================
   FUNCTION cloud_fraction(KDOWN,KCLEAR) RESULT(FCLD)
-    REAL(KIND(1d0))		::KDOWN,KCLEAR,FCLD
+    REAL(KIND(1d0))::KDOWN,KCLEAR,FCLD
 
     FCLD=1.-KDOWN/KCLEAR
     IF(FCLD>1.) FCLD=1.
@@ -400,16 +400,16 @@
     ! Calculates ground level solar irradiance clear sky
     ! assuming transmissivity = 1
     ! let it report zero if zenith >= 90
-    REAL(KIND(1d0))		::zenith,Isurf
-    INTEGER	::doy
+    REAL(KIND(1d0))::zenith,Isurf
+    INTEGER::doy
     REAL(KIND(1d0))::Rmean, Rse, cosZ,Itoa
 
-    Rmean = 149.6	 !Stull 1998 
+    Rmean = 149.6                 !Stull 1998
     Rse=solar_ESdist(doy)
     IF(zenith<90.*DEG2RAD) THEN
        cosZ = COS(zenith)
-       Itoa = 1370.*(Rmean/Rse)**2	  !top of the atmosphere
-       Isurf = Itoa*cosZ		  !ground level solar irradiance in W/m2
+       Itoa = 1370.*(Rmean/Rse)**2  !top of the atmosphere
+       Isurf = Itoa*cosZ            !ground level solar irradiance in W/m2
     ELSE
        Isurf = 0.
     ENDIF
@@ -478,9 +478,9 @@
    !Rayleigh & permanent gases
    TrTpg = 1.021-0.084*SQRT(m*(0.000949*Press_hPa+0.051)) !first two trans coeff	
    u = EXP(0.113-LOG(G+1)+0.0393*Tdf)             !precipitable water
-   Tw = 1-0.077*(u*m)**0.3	                !vapor transmission coe3ff.
-   Ta = 0.935**m			                !4th trans coeff
-   trans = TrTpg*Tw*Ta  	                        !bulk atmospheric transmissivity
+   Tw = 1-0.077*(u*m)**0.3             !vapor transmission coe3ff.
+   Ta = 0.935**m                       !4th trans coeff
+   trans = TrTpg*Tw*Ta                 !bulk atmospheric transmissivity
  END FUNCTION transmissivity
   !===============================================================================
 END MODULE NARP_MODULE

@@ -1,12 +1,13 @@
 	!------------------------------------------------!
 	! Shadow casting algorithm, ground and buildings !
     !------------------------------------------------!
-subroutine shadowingfunction_10(azimuth,altitude,scale)	
-use matsize
+    subroutine shadowingfunction_10(azimuth,altitude,scale)
+    use matsize
 	! This m.file calculates shadows on a DSM
     ! Code originate from Carlo Rattis thesis
     ! This code is translated from Matlab by
     ! Fredrik Lindberg, Gothenburg University
+    ! Last modified LJ 27 Jan 2016 - Removal of tabs and fixing real-int conversions
     
     implicit none
     real(kind(1d0)), parameter          :: pi=3.141592653589793
@@ -84,14 +85,14 @@ use matsize
         absdx=abs(dx)
         absdy=abs(dy)
    
-        xc1=((dx+absdx)/2)+1
-        xc2=(sizex+(dx-absdx)/2)
-        yc1=((dy+absdy)/2)+1
-        yc2=(sizey+(dy-absdy)/2)
-        xp1=-((dx-absdx)/2)+1
-        xp2=(sizex-(dx+absdx)/2)
-        yp1=-((dy-absdy)/2)+1
-        yp2=(sizey-(dy+absdy)/2)
+        xc1=int((dx+absdx)/2)+1
+        xc2=(sizex+int((dx-absdx)/2))
+        yc1=int((dy+absdy)/2)+1
+        yc2=(sizey+int((dy-absdy)/2))
+        xp1=-int((dx-absdx)/2)+1
+        xp2=(sizex-int((dx+absdx)/2))
+        yp1=-int((dy-absdy)/2)+1
+        yp2=(sizey-int((dy+absdy)/2))
     
         temp(xp1:xp2,yp1:yp2)= a(xc1:xc2,yc1:yc2)-dz
     

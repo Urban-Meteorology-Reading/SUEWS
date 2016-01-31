@@ -1,11 +1,12 @@
 
 !===================================================================================
 !Simple Anthropogenic Heat Parameterization routines
-!Last modified HCW 20 Jan 2015
-! v2015 applies a profile at each model timestep
-! these have been interpolated from the hourly profile input data (SUEWS_Profiles)
-! they are now normalised (sum to 1) in InitializeSurfaceCharacteristics 
-! N.B. previous versions were not applying weekday/weekend profiles correctly
+!Last modified
+! LJ 27 Jan 2016  - Removal of Tabs
+! HCW 20 Jan 2015 - v2015 applies a profile at each model timestep
+!                   these have been interpolated from the hourly profile input data (SUEWS_Profiles)
+!                   vthey are now normalised (sum to 1) in InitializeSurfaceCharacteristics
+!                   N.B. previous versions were not applying weekday/weekend profiles correctly
 ! 
 ! AnthropHeatChoice = 1 - Method according to Loridan et al. (2011) : SAHP
 ! AnthropHeatChoice = 2 - Method according to Jarvi et al. (2011)   : SAHP_2
@@ -14,10 +15,10 @@
 !===================================================================================
 
 !-----------------------------------------------------------------------------------
-subroutine SAHP_1_v2015(QF_o,id,ih,imin)
-! Called if AnthropHeatChoice = 1
-! Method according to Loridan et al. (2011)
-! Weekday/weekend differences due to profile only
+ subroutine SAHP_1_v2015(QF_o,id,ih,imin)
+ ! Called if AnthropHeatChoice = 1
+ ! Method according to Loridan et al. (2011)
+ ! Weekday/weekend differences due to profile only
 
   use allocateArray
   use data_in
@@ -26,9 +27,9 @@ subroutine SAHP_1_v2015(QF_o,id,ih,imin)
   IMPLICIT NONE
   
   integer:: id,&   !Day
-  	    ih,&   !Hour, with daylight saving accounted for (ih, not it)
-  	    imin,& !Minute
-  	    iu     !1=weekday OR 2=weekend
+            ih,&   !Hour, with daylight saving accounted for (ih, not it)
+            imin,& !Minute
+            iu     !1=weekday OR 2=weekend
   	    
   real (kind(1d0)):: QF_o   !Output: modelled QF [W m-2]
 
@@ -60,9 +61,9 @@ subroutine SAHP_2_v2015(QF_o,id,ih,imin)
   IMPLICIT NONE
    
   integer:: id,&   !Day
-   	    ih,&   !Hour, with daylight saving accounted for (ih, not it)
-   	    imin,& !Minute
-   	    iu     !1=weekday OR 2=weekend
+            ih,&   !Hour, with daylight saving accounted for (ih, not it)
+            imin,& !Minute
+            iu     !1=weekday OR 2=weekend
    	    
   real (kind(1d0)):: QF_o   !Output: modelled QF  [W m-2]
 

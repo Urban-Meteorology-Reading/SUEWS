@@ -42,7 +42,7 @@ use matsize
     allocate(vbshvegsh(sizex,sizey))
     
 	! allocation of grids
-	allocate(f(sizex,sizey)) 
+    allocate(f(sizex,sizey)) 
     allocate(temp(sizex,sizey))
     allocate(tmp(sizex,sizey))
     allocate(stopbuild(sizex,sizey))
@@ -51,7 +51,7 @@ use matsize
     allocate(bushplant(sizex,sizey))
     allocate(tempvegdem(sizex,sizey))
     allocate(tempvegdem2(sizex,sizey))
-	allocate(fabovea(sizex,sizey))
+    allocate(fabovea(sizex,sizey))
     allocate(gabovea(sizex,sizey))
     allocate(firstvegdem(sizex,sizey))
     allocate(tempbush(sizex,sizey))
@@ -69,7 +69,7 @@ use matsize
     stopveg=sh
     vbshvegsh=sh
     g=sh
-	bushplant=temp
+    bushplant=temp
     where (bush>1)
         bushplant=1
     end where
@@ -113,14 +113,14 @@ use matsize
         absdx=abs(dx)
         absdy=abs(dy)
     
-        xc1=((dx+absdx)/2)+1
-        xc2=(sizex+(dx-absdx)/2)
-        yc1=((dy+absdy)/2)+1
-        yc2=(sizey+(dy-absdy)/2)
-        xp1=-((dx-absdx)/2)+1
-        xp2=(sizex-(dx+absdx)/2)
-        yp1=-((dy-absdy)/2)+1
-        yp2=(sizey-(dy+absdy)/2)
+        xc1=int(((dx+absdx)/2))+1
+        xc2=(sizex+int((dx-absdx)/2))
+        yc1=int((dy+absdy)/2)+1
+        yc2=(sizey+int((dy-absdy)/2))
+        xp1=-int((dx-absdx)/2)+1
+        xp2=(sizex-int((dx+absdx)/2))
+        yp1=-int((dy-absdy)/2)+1
+        yp2=(sizey-int((dy+absdy)/2))
 
         temp(xp1:xp2,yp1:yp2)= a(xc1:xc2,yc1:yc2)-dz
         tempvegdem(xp1:xp2,yp1:yp2)=vegdem(xc1:xc2,yc1:yc2)-dz
@@ -128,83 +128,83 @@ use matsize
 
         f=max(f,temp)
         where (f>a) !sh(f>a)=1;sh(f<=a)=0; !Moving building shadow
-        	sh=1
+            sh=1
         elsewhere
             sh=0
         end where
-    	where (tempvegdem>a) !fabovea=tempvegdem>a; !vegdem above DEM
-   			fabovea=1
+        where (tempvegdem>a) !fabovea=tempvegdem>a; !vegdem above DEM
+            fabovea=1
         elsewhere
             fabovea=0
         end where
-    	where (tempvegdem2>a) !gabovea=tempvegdem2>a; !vegdem2 above DEM
-   			gabovea=1
+        where (tempvegdem2>a) !gabovea=tempvegdem2>a; !vegdem2 above DEM
+            gabovea=1
         elsewhere
             gabovea=0
         end where        
         vegsh2=fabovea-gabovea
-    	vegsh=max(vegsh,vegsh2)
+        vegsh=max(vegsh,vegsh2)
         where ((vegsh*sh)>0) !vegsh(vegsh.*sh>0)=0;! removing shadows 'behind' buildings
-        	vegsh=0
+           vegsh=0
         end where
         vbshvegsh=vegsh+vbshvegsh
        
     	! vegsh at high sun altitudes
-    	if (index==1) then
-        	firstvegdem=tempvegdem-temp
+        if (index==1) then
+            firstvegdem=tempvegdem-temp
             where (firstvegdem<=0)!firstvegdem(firstvegdem<=0)=1000;
-        		firstvegdem=1000
+                firstvegdem=1000
             end where
             where (firstvegdem<dz)!vegsh(firstvegdem<dz)=1;
-        		vegsh=1
+                vegsh=1
             end where
             tmp=temp*0.0
             where (vegdem2>a)!vegsh=vegsh.*(vegdem2>a);
-            	tmp=1
+                tmp=1
             end where
-        	vegsh=vegsh*tmp
-        	vbshvegsh=temp*0.0 !vbshvegsh=zeros(sizex,sizey);
-    	end if
+            vegsh=vegsh*tmp
+            vbshvegsh=temp*0.0 !vbshvegsh=zeros(sizex,sizey);
+        end if
     
     	! Bush shadow on bush plant
         tmp=fabovea*bush
-    	if ((maxval(bush)>0) .and. (maxval(tmp)>0)) then
-        	tempbush=temp*0.0
-        	tempbush(xp1:xp2,yp1:yp2)=bush(xc1:xc2,yc1:yc2)-dz
-        	g=max(g,tempbush)
-        	g=bushplant*g
-     	end if
+        if ((maxval(bush)>0) .and. (maxval(tmp)>0)) then
+            tempbush=temp*0.0
+            tempbush(xp1:xp2,yp1:yp2)=bush(xc1:xc2,yc1:yc2)-dz
+            g=max(g,tempbush)
+            g=bushplant*g
+        end if
       
         index=index+1
     END DO
 
-	sh=1-sh
+    sh=1-sh
     where (vbshvegsh>0)!vbshvegsh(vbshvegsh>0)=1;
-    	vbshvegsh=1
+        vbshvegsh=1
     end where
-	vbshvegsh=vbshvegsh-vegsh;
+    vbshvegsh=vbshvegsh-vegsh;
 
-	if (maxval(bush)>0) then
- 	    g=g-bush
+    if (maxval(bush)>0) then
+        g=g-bush
         where (g>0)!g(g>0)=1;g(g<0)=0;
-        	g=1
+            g=1
         elsewhere
             g=0
         end where
-	    vegsh=vegsh-bushplant+g
-    	where (vegsh<0)!vegsh(vegsh<0)=0;
-        	vegsh=0
+        vegsh=vegsh-bushplant+g
+        where (vegsh<0)!vegsh(vegsh<0)=0;
+           vegsh=0
         end where
-	end if
+    end if
 
-	where (vegsh>0)!vegsh(vegsh>0)=1;
-    	vegsh=1
+    where (vegsh>0)!vegsh(vegsh>0)=1;
+        vegsh=1
     end where
-	vegsh=1-vegsh
-	vbshvegsh=1-vbshvegsh 
+    vegsh=1-vegsh
+    vbshvegsh=1-vbshvegsh
 
     !deallocation of grids
-	deallocate(f) 
+    deallocate(f)
     deallocate(temp)
     deallocate(tmp)
     deallocate(stopbuild)
@@ -213,7 +213,7 @@ use matsize
     deallocate(bushplant)
     deallocate(tempvegdem)
     deallocate(tempvegdem2)
-	deallocate(fabovea)
+    deallocate(fabovea)
     deallocate(gabovea)
     deallocate(firstvegdem)
     deallocate(tempbush)

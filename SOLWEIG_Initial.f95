@@ -1,24 +1,26 @@
-! setup for SOLWEIG
-! FL may 2014
-subroutine SOLWEIG_Initial
-use matsize         ! All allocatable grids and related variables used in SOLWEIG
-use InitialCond 
-use allocateArray
-use data_in  
-use sues_data
-use defaultNotUsed
-use InitialCond
-use solweig_module
-use time
+ ! setup for SOLWEIG
+ ! FL may 2014
+ subroutine SOLWEIG_Initial
+ !Last modified LJ 27 Jan 2016 - Removal of Tabs and real-int fixes
 
-implicit none
+  use matsize         ! All allocatable grids and related variables used in SOLWEIG
+  use InitialCond
+  use allocateArray
+  use data_in
+  use sues_data
+  use defaultNotUsed
+  use InitialCond
+  use solweig_module
+  use time
+
+  implicit none
     
-character(len=100)  :: Path,GridFile,GridFolder
-real(kind(1d0))                 :: vegmax
-character(len=100),dimension(5) :: svfname
-character(len=100),dimension(10):: svfvegname
-logical                         :: exist
-integer                         :: firstday
+ character(len=100)  :: Path,GridFile,GridFolder
+ real(kind(1d0))                 :: vegmax
+ character(len=100),dimension(5) :: svfname
+ character(len=100),dimension(10):: svfvegname
+ logical                         :: exist
+ integer                         :: firstday
 
 namelist/SOLWEIGinput/Posture,&    ! 1.Standing, 2.Sitting
     absL,&            ! Absorption coefficient of longwave radiation of a person  
@@ -94,46 +96,46 @@ namelist/SOLWEIGinput/Posture,&    ! 1.Standing, 2.Sitting
     if (usevegdem==1) then 
         ! Calculating transmissivity of short wave radiation  through vegetation based on decid lai
         transperlai=(TransMax-TransMin)/(laimax(2)-laimin(2))
-        firstday = MetForcingData(1,2,1) 
+        firstday = int(MetForcingData(1,2,1))
         trans=TransMin+(laimax(2)-lai(firstday-1,2))*transperlai
                	
-	! Loading vegDSM (SDSM)
+	    ! Loading vegDSM (SDSM)
         Path=trim(FileInputPath)//trim(DSMPath)
-    	call LoadEsriAsciiGrid(Path,CDSMname,xllcorner,yllcorner,cellsize,NoData)
+        call LoadEsriAsciiGrid(Path,CDSMname,xllcorner,yllcorner,cellsize,NoData)
         allocate(vegdem(sizey,sizex))
         vegdem=tempgrid
         deallocate(tempgrid)
 
         ! Loading trunkDSM (TDSM)
         Path=trim(FileInputPath)//trim(DSMPath)
-    	call LoadEsriAsciiGrid(Path,TDSMname,xllcorner,yllcorner,cellsize,NoData)
+        call LoadEsriAsciiGrid(Path,TDSMname,xllcorner,yllcorner,cellsize,NoData)
         allocate(vegdem2(sizey,sizex))
         vegdem2=tempgrid
         deallocate(tempgrid)        
         
     	! amaxvalue (used in calculation of vegetation shadows)
-    	vegmax=maxval(vegdem)
-    	amaxvalue=maxval(a)-minval(a)
-    	amaxvalue=max(amaxvalue,vegmax)
+        vegmax=maxval(vegdem)
+        amaxvalue=maxval(a)-minval(a)
+        amaxvalue=max(amaxvalue,vegmax)
     
     	! Elevation vegdems if buildingDSM includes ground heights
-    	vegdem=vegdem+a
-    	where (vegdem==a)
-        	vegdem=0.0
-    	end where    
-	vegdem2=vegdem2+a;
-    	where (vegdem2==a)
-        	vegdem2=0.0
-    	end where
+        vegdem=vegdem+a
+        where (vegdem==a)
+            vegdem=0.0
+        end where
+        vegdem2=vegdem2+a;
+        where (vegdem2==a)
+            vegdem2=0.0
+        end where
         ! Bush separation
         allocate(bush(sizex,sizey))
         where ((vegdem>0) .and. (vegdem2==0))
-        	bush=vegdem
+            bush=vegdem
         elsewhere
-        	bush=0.0
+            bush=0.0
         end where
- 	else
-    	trans=1.00;
+    else
+        trans=1.00;
     endif    
     
     !!! Loading/creating SVFs !!!
@@ -154,23 +156,23 @@ namelist/SOLWEIGinput/Posture,&    ! 1.Standing, 2.Sitting
     allocate(svfS(sizey,sizex)); svfS=tempgrid; deallocate(tempgrid)
     call LoadEsriAsciiGrid(Path,svfvegname(1),xllcorner,yllcorner,cellsize,NoData)
     allocate(svfveg(sizey,sizex)); svfveg=tempgrid; deallocate(tempgrid)
-   	call LoadEsriAsciiGrid(Path,svfvegname(2),xllcorner,yllcorner,cellsize,NoData)
+    call LoadEsriAsciiGrid(Path,svfvegname(2),xllcorner,yllcorner,cellsize,NoData)
     allocate(svfEveg(sizey,sizex)); svfEveg=tempgrid; deallocate(tempgrid)        
-   	call LoadEsriAsciiGrid(Path,svfvegname(3),xllcorner,yllcorner,cellsize,NoData)
+    call LoadEsriAsciiGrid(Path,svfvegname(3),xllcorner,yllcorner,cellsize,NoData)
     allocate(svfNveg(sizey,sizex)); svfNveg=tempgrid; deallocate(tempgrid)        
-  	call LoadEsriAsciiGrid(Path,svfvegname(4),xllcorner,yllcorner,cellsize,NoData)
+    call LoadEsriAsciiGrid(Path,svfvegname(4),xllcorner,yllcorner,cellsize,NoData)
     allocate(svfWveg(sizey,sizex)); svfWveg=tempgrid; deallocate(tempgrid)
-   	call LoadEsriAsciiGrid(Path,svfvegname(5),xllcorner,yllcorner,cellsize,NoData)
+    call LoadEsriAsciiGrid(Path,svfvegname(5),xllcorner,yllcorner,cellsize,NoData)
     allocate(svfSveg(sizey,sizex)); svfSveg=tempgrid; deallocate(tempgrid)
-   	call LoadEsriAsciiGrid(Path,svfvegname(6),xllcorner,yllcorner,cellsize,NoData)
+    call LoadEsriAsciiGrid(Path,svfvegname(6),xllcorner,yllcorner,cellsize,NoData)
     allocate(svfaveg(sizey,sizex)); svfaveg=tempgrid; deallocate(tempgrid)
-   	call LoadEsriAsciiGrid(Path,svfvegname(7),xllcorner,yllcorner,cellsize,NoData)
+    call LoadEsriAsciiGrid(Path,svfvegname(7),xllcorner,yllcorner,cellsize,NoData)
     allocate(svfEaveg(sizey,sizex)); svfEaveg=tempgrid; deallocate(tempgrid)        
-   	call LoadEsriAsciiGrid(Path,svfvegname(8),xllcorner,yllcorner,cellsize,NoData)
+    call LoadEsriAsciiGrid(Path,svfvegname(8),xllcorner,yllcorner,cellsize,NoData)
     allocate(svfNaveg(sizey,sizex)) ; svfNaveg=tempgrid; deallocate(tempgrid)        
-   	call LoadEsriAsciiGrid(Path,svfvegname(9),xllcorner,yllcorner,cellsize,NoData)
+    call LoadEsriAsciiGrid(Path,svfvegname(9),xllcorner,yllcorner,cellsize,NoData)
     allocate(svfWaveg(sizey,sizex)); svfWaveg=tempgrid; deallocate(tempgrid)
-   	call LoadEsriAsciiGrid(Path,svfvegname(10),xllcorner,yllcorner,cellsize,NoData)
+    call LoadEsriAsciiGrid(Path,svfvegname(10),xllcorner,yllcorner,cellsize,NoData)
     allocate(svfSaveg(sizey,sizex)); svfSaveg=tempgrid; deallocate(tempgrid)
     
     !!! Loading buildings grid !!!
@@ -178,7 +180,7 @@ namelist/SOLWEIGinput/Posture,&    ! 1.Standing, 2.Sitting
     GridFile=trim(Path)//trim(buildingsname)
     inquire(file=GridFile, exist=exist)
     if (exist) then
-    	call LoadEsriAsciiGrid(Path,buildingsname,xllcorner,yllcorner,cellsize,NoData)
+        call LoadEsriAsciiGrid(Path,buildingsname,xllcorner,yllcorner,cellsize,NoData)
         allocate(buildings(sizey,sizex))
         buildings=tempgrid
         deallocate(tempgrid)

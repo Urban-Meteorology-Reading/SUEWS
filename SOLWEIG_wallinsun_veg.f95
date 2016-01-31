@@ -1,10 +1,13 @@
-!> 
-subroutine wallinsun_veg(azimuth) 
-! This m-file creates a boolean image of sunlit walls. 
-! Shadows from both buildings and vegetation is accounted for 
-! moving building in the direction of the sun
+ !>
+ subroutine wallinsun_veg(azimuth)
+ ! This m-file creates a boolean image of sunlit walls.
+ ! Shadows from both buildings and vegetation is accounted for
+ ! moving building in the direction of the sun
+ ! Last modified: 
+ !  LJ 27 Jan 2017 - Change of equations xc1...yp2 to account for the change from real to integer
+ !---------------------------------------------------------------------------------
 
-use matsize
+ use matsize
     implicit none
     real(kind(1d0))             :: azimuth,iazimuth 
     integer                     :: index,xc1,xc2,yc1,yc2,xp1,xp2,yp1,yp2
@@ -76,23 +79,23 @@ use matsize
     absdx=abs(dx)
     absdy=abs(dy)
    
-    xc1=((dx+absdx)/2)+1
-    xc2=(sizex+(dx-absdx)/2)
-    yc1=((dy+absdy)/2)+1
-    yc2=(sizey+(dy-absdy)/2)
-    xp1=-((dx-absdx)/2)+1
-    xp2=(sizex-(dx+absdx)/2)
-    yp1=-((dy-absdy)/2)+1
-    yp2=(sizey-(dy+absdy)/2)
+    xc1=int((dx+absdx)/2)+1  !LJ added int to the equation to account for the conversion from real to int
+    xc2=(sizex+int((dx-absdx)/2))
+    yc1=int((dy+absdy)/2)+1
+    yc2=(sizey+int((dy-absdy)/2))
+    xp1=-int((dx-absdx)/2)+1
+    xp2=(sizex-int((dx+absdx)/2))
+    yp1=-int((dy-absdy)/2)+1
+    yp2=(sizey-int((dy+absdy)/2))
 
     temp(xp1:xp2,yp1:yp2)= buildings(xc1:xc2,yc1:yc2)
 
     sunwall=temp-buildings
     where (sunwall==1) !f1(f1==1)=0
-   		sunwall=0
+          sunwall=0
     end where
     where (sunwall==-1) !f1(f1==-1)=1
-   		sunwall=1
+          sunwall=1
     end where    
     sunwall=sh1*sunwall
     

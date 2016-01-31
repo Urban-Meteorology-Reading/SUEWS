@@ -87,15 +87,15 @@ END SUBROUTINE atmos_moist_lumps
      !f=1.00072+Press_hPa*(3.2E-6+5.9D-10*Temp_C**2)
 		
      if (Temp_C>=0.001000) then
-     	e_mb=6.1121*exp(((18.678-Temp_C/234.5)*Temp_C)/(Temp_C+257.14))
-       	f=1.00072+Press_kPa*(3.2E-6+5.9E-10*Temp_C**2)
+        e_mb=6.1121*exp(((18.678-Temp_C/234.5)*Temp_C)/(Temp_C+257.14))
+        f=1.00072+Press_kPa*(3.2E-6+5.9E-10*Temp_C**2)
         es_hPa=e_mb*f
 
      elseif (Temp_C<=-0.001000) then
         e_mb=6.1115*exp(((23.036-Temp_C/333.7)*Temp_C)/(Temp_C+279.82))
         f=1.00022+Press_kPa*(3.83E-6+6.4E-10*Temp_C**2)
         es_hPa=e_mb*f
-     endif	
+     endif
      
   ELSE
      call ErrorHint(28,'FUNCTION sat_vap_press: [Temperature is out of range], Temp_C,dectime',Temp_C,dectime,notUsedI)
@@ -256,19 +256,18 @@ END SUBROUTINE atmos_moist_lumps
 
 
  FUNCTION Lat_vapSublim(Temp_C,Ea_hPa,Press_hPa,cp) RESULT (lvS_J_kg)
-!Input: Air temperature, Water vapour pressure, Air pressure, heat capacity
-!Output: latent heat of sublimation in units J/kg
+ !Input: Air temperature, Water vapour pressure, Air pressure, heat capacity
+ !Output: latent heat of sublimation in units J/kg
 
   use time
   
   IMPLICIT none
-  REAL(KIND(1d0))::cp,lvS_J_kg,ea_fix,tw,& 
-       incr,es_tw,psyc,ea_est,press_hPa,ea_HPa, temp_C!,Temp_K
-  real (Kind(1d0))::sat_vap_pressIce,psyc_const ! functions
-       
-  LOGICAL:: switch1=.FALSE.,switch2=.FALSE.!,debug=.true.
-  INTEGER:: ii,from=2
-  
+
+  REAL(KIND(1d0))::lvS_J_kg,temp_C,tw,incr,Ea_hPa,Press_hPa,cp
+  !REAL(KIND(1d0))::ea_fix,es_tw,psyc,ea_est,Temp_K
+  !REAL(KIND(1d0))::sat_vap_pressIce,psyc_const ! functions
+  !LOGICAL:: switch1=.FALSE.,switch2=.FALSE.!,debug=.true.
+  !INTEGER:: ii,from=2
 
   !Latent heat for sublimation
   !From Rogers&Yau (A short course in cloud physics), Wikipedia
@@ -277,8 +276,12 @@ END SUBROUTINE atmos_moist_lumps
  
   lvS_J_kg=(2834.1-0.29*temp_C)*1e3 !First guess for Ls in J/kg
      
-  !tw=Temp_C/2.  !First estimate for wet bulb temperature
-  !incr=3.
+  tw=Temp_C/2.  !First estimate for wet bulb temperature
+  incr=3.
+  Press_hPa=Press_hPa
+  Ea_hPa=Ea_hPa
+  cp=cp
+
   !DO ii=1,100
      
    !   es_tw=sat_vap_pressIce(Tw,Press_hPa,from)  !Calculate saturation vapour pressure in hPa

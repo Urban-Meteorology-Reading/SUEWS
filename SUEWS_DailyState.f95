@@ -5,40 +5,32 @@
 ! N.B. Some of this code is repeated in SUEWS_Initial
 ! --> so if changes are made here, SUEWS_Initial may also need to be updated accordingly
 ! 
-!Last modified HCW 20 Aug 2015
-! Sign of the porosity change corrected so that porosity is greatest when LAI is smallest
-!Last modified HCW 03 Jul 2015
-! Increased output resolution of P/day in DailyState file to avoid rounding errors
-! Albedo of EveTr and Grass now adjusted based on change in LAI for EveTr and Grass (rather than DecTr)
-!Last modified HCW 29 Jun 2015
-! Added albChange for EveTr and Grass surfaces
-!Last modified HCW 11 Jun 2015
-! Bug fix from 05 Jun now fixed in a different way - DecidCap is now treated the same as DecidAlb 
-!  so should be able to cope with multiple grids.
-!Last modified HCW 05 Jun 2015
-! Bug fix - set all current storage capacities (surf(6,)) to min. value, then set for DecTr
-!Last modified LJ 11 Mar 2015
-! Removed switch as no longer necessary
-!Last modified HCW 06 Mar 2015
-!  iy used instead of year which does not have a value here
-!Last modified HCW 20 Feb 2015
-!  Added surf(6,is) for the current storage capacity
-!  Updated and corrected DailyState output file
-!Last modified LJ 05 Feb 2015
-! DailyState saving fixed. Now header is printed and the file closed and opened as suggested.
-! N.B. Bug in daily Precip - needs fixing!!! - HCW thinks this is fixed 20 Feb 2015
-!Last modified HCW 26 Jan 2015
-! sfr and IrrFracs deleted from WU_Day calculations, so that WU_Day is not spread over
-!  the total area
-!Last modified HCW 22 Jan 2015
-! WU_Day now has 9 columns (EveTr, DecTr, Grass; automatic, manual, total) HCW 23/01/2015 
-! Handles values for different grids (Gridiv & ir arguments) HCW 27/11/2014
-! Added the calculation of surface temperature
-! Snow albedo aging and calculation of snow density added, LJ 22/02/2013
-! Calculation of LAI senescence from previous day length added, LJ 22/07/2013
-! sg feb 2012 - rewritten from LUMPS_LAI so done in real time
+!Last modified:
+!  LJ 27 Jan 2016  - Removal of tabs
+!  HCW 20 Aug 2015 - Sign of the porosity change corrected so that porosity is greatest when LAI is smallest
+!  HCW 03 Jul 2015 - Increased output resolution of P/day in DailyState file to avoid rounding errors.
+!                    Albedo of EveTr and Grass now adjusted based on change in LAI for EveTr and Grass
+!                    (rather than DecTr)
+!  HCW 29 Jun 2015 - Added albChange for EveTr and Grass surfaces
+!  HCW 11 Jun 2015 - Bug fix from 05 Jun now fixed in a different way -
+!                    DecidCap is now treated the same as DecidAlb so should be able to cope with multiple grids.
+!  HCW 05 Jun 2015 - Bug fix - set all current storage capacities (surf(6,)) to min. value, then set for DecTr
+!  LJ 11 Mar 2015  - Removed switch as no longer necessary
+!  HCW 06 Mar 2015 - iy used instead of year which does not have a value here
+!  HCW 20 Feb 2015 - Added surf(6,is) for the current storage capacity
+!                    Updated and corrected DailyState output file
+!  LJ 05 Feb 2015  - DailyState saving fixed. Now header is printed and the file closed and opened as suggested.
+!                    N.B. Bug in daily Precip - needs fixing!!! - HCW thinks this is fixed 20 Feb 2015
+!  HCW 26 Jan 2015 - sfr and IrrFracs deleted from WU_Day calculations, so that WU_Day is not spread over
+!                    the total area
+!  HCW 23 Jan 2015 - WU_Day now has 9 columns (EveTr, DecTr, Grass; automatic, manual, total)
+!  HCW 27 Nov 2014 - Handles values for different grids (Gridiv & ir arguments)
+!                    Added the calculation of surface temperature
+!  LJ 22 Feb 2013  - Snow albedo aging and calculation of snow density added,
+!  LJ 22 Jul 2013  - Calculation of LAI senescence from previous day length added
+!  sg feb 2012     - rewritten from LUMPS_LAI so done in real time
 !
-! To Do - Check SnowUpdate following adjustment to 5-min timestep (LJ to do)
+! To Do
 !	- Account for change of year in 5-day running mean?
 !	- Check LAI calcs (N/S hemisphere similarities; use of day length)
 !       - Take out doy limits (140,170, etc) and code as parameters
@@ -60,9 +52,9 @@
   integer:: Gridiv
   integer:: gamma1,gamma2  !Switch for heating and cooling degree days
   integer:: iv,&           !Loop over vegetation types
-  	    jj,&           !Loop over previous 5 days
+            jj,&           !Loop over previous 5 days
             calc,&         !Water use calculation is done when calc = 1
-  	    wd,&           !Number of weekday (Sun=1,...Sat=7)
+            wd,&           !Number of weekday (Sun=1,...Sat=7)
             mb,&           !Months
             seas,&         !Season (summer=1, winter=2)
             date,&         !Day
@@ -144,8 +136,8 @@
   ! On first timestep of each day, define whether the day each a workday or weekend
   if (it==0.and.imin==0) then
 
-     call day2month(id,mb,date,seas,iy,lat)	!Calculate real date from doy
-     call Day_of_Week(date,mb,iy,wd)   	    !Calculate weekday (1=Sun, ..., 7=Sat)
+     call day2month(id,mb,date,seas,iy,lat) !Calculate real date from doy
+     call Day_of_Week(date,mb,iy,wd)        !Calculate weekday (1=Sun, ..., 7=Sat)
 
      dayofWeek(id,1)=wd      !Day of week
      dayofWeek(id,2)=mb      !Month
@@ -198,23 +190,23 @@
               ! N.B. These are the same for each vegetation type at the moment
 
               ! ---- Automatic irrigation (evergreen trees) ----
-	          WU_day(id,2) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*DayWatPer(wd)
-	          if (WU_Day(id,2)<0) WU_Day(id,2)=0   !If modelled WU is negative -> 0
+              WU_day(id,2) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*DayWatPer(wd)
+              if (WU_Day(id,2)<0) WU_Day(id,2)=0   !If modelled WU is negative -> 0
 
               ! ---- Manual irrigation (evergreen trees) ----
-	          WU_day(id,3) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*DayWatPer(wd)
-	          if (WU_Day(id,3)<0) WU_Day(id,3)=0   !If modelled WU is negative -> 0
+              WU_day(id,3) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*DayWatPer(wd)
+              if (WU_Day(id,3)<0) WU_Day(id,3)=0   !If modelled WU is negative -> 0
 
 	          ! ---- Total evergreen trees water use (automatic + manual) ----
               WU_Day(id,1)=(WU_day(id,2)+WU_day(id,3))
                             
               ! ---- Automatic irrigation (deciduous trees) ----
-	          WU_day(id,5) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*DayWatPer(wd)
-	          if (WU_Day(id,5)<0) WU_Day(id,5)=0   !If modelled WU is negative -> 0
+              WU_day(id,5) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*DayWatPer(wd)
+              if (WU_Day(id,5)<0) WU_Day(id,5)=0   !If modelled WU is negative -> 0
 
               ! ---- Manual irrigation (deciduous trees) ----
-	          WU_day(id,6) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*DayWatPer(wd)
-	          if (WU_Day(id,6)<0) WU_Day(id,6)=0   !If modelled WU is negative -> 0
+              WU_day(id,6) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*DayWatPer(wd)
+              if (WU_Day(id,6)<0) WU_Day(id,6)=0   !If modelled WU is negative -> 0
 
               ! ---- Total deciduous trees water use (automatic + manual) ----
               WU_Day(id,4)=(WU_day(id,5)+WU_day(id,6))
@@ -238,7 +230,7 @@
               WU_Day(id,5)=0
               WU_Day(id,6)=0
               WU_Day(id,7)=0
-	          WU_Day(id,8)=0
+              WU_Day(id,8)=0
               WU_Day(id,9)=0
            endif
         endif

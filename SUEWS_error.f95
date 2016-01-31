@@ -15,9 +15,9 @@
 
  real(kind(1d0)):: value,value2
 
- character (len=*)::ProblemFile                !Name of the problem file
- character (len=150)::text1='unknown problem'   !Initialization of text
- integer:: errh,ValueI,ValueI2					! v7,v8 initialised as false, HCW 28/10/2014
+ character (len=*)::ProblemFile                 ! Name of the problem file
+ character (len=150)::text1='unknown problem'   ! Initialization of text
+ integer:: errh,ValueI,ValueI2                  ! v7,v8 initialised as false, HCW 28/10/2014
  logical:: v1=.false.,v2=.false.,v3=.false.,v4=.false.,v5=.false.,v6=.false.,v7=.false.,v8=.false.
  logical:: returnTrue=.false.
 

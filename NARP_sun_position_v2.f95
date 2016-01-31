@@ -1,11 +1,12 @@
-subroutine sun_position(year,idectime,UTC,locationlatitude,locationlongitude,locationaltitude,sunazimuth,sunzenith)
+ subroutine sun_position(year,idectime,UTC,locationlatitude,locationlongitude,locationaltitude,sunazimuth,sunzenith)
     implicit none 
  
     integer :: month,day,hour,min,seas,dayofyear
     REAL(KIND(1D0)) :: sec,year,idectime,UTC
-    REAL(KIND(1D0)) :: juliancentury,julianday,julianephemeris_century,julianephemeris_day,julianephemeris_millenium    
+    REAL(KIND(1D0)) :: juliancentury,julianday,julianephemeris_century,julianephemeris_day,&
+                       julianephemeris_millenium
     REAL(KIND(1D0)) :: earth_heliocentric_positionlatitude,earth_heliocentric_positionlongitude,&
-    		       earth_heliocentric_positionradius    
+                       earth_heliocentric_positionradius
     REAL(KIND(1D0)) :: sun_geocentric_positionlatitude, sun_geocentric_positionlongitude    
     REAL(KIND(1D0)) :: nutationlongitude,nutationobliquity    
     REAL(KIND(1D0)) :: corr_obliquity    
@@ -31,6 +32,9 @@ subroutine sun_position(year,idectime,UTC,locationlatitude,locationlongitude,loc
     ! Technical report NREL/TP-560-34302. 
     ! This document is avalaible at www.osti.gov/bridge  
     ! Code is translated from matlab code by Fredrik Lindberg (fredrikl@gvc.gu.se)
+    ! Last modified: LJ 27 Jan 2016 - Tabs removed
+
+
     ! Convert to timevectors from dectime and year
     call dectime_to_timevec(idectime,hour,min,sec)
     dayofyear=floor(idectime)

@@ -1,24 +1,19 @@
 !This subroutine does the actual calculations of the SUEWS code (mostly old SUEWS_Temporal).
 !Made by LJ and HW Oct 2014
 !Gives in the grid ID (Gridiv) and number of line in the met forcing data to be analyzed (ir)
-!Last modification
-! HCW 12 Nov 2015
-!  Added z0m and zdm to output file
-! HCW 05 Nov 2015
-!  Changed Kawai et al. (2007) z0v calculation so VegFraction(veg+soil) rather than veg_fr(veg+soil+water) is used.
-! HCW 29 Jun 2015
-!  Added albEveTr and albGrass
-! HCW 25 Jun 2015
-!  Fixed bug in LAI calculation at year change.
-!  Changed AlbDec to use id value (not (id-1) value) to avoid issues at year change.
-! HCW 27 Apr 2015
-! Correction to tot_chang_per_tstep calculation (water balance should now close)
-! HCW 16 Feb 2015
-! Updated water balance calculations
-! Corrected area-averaged calculations (soil moisture, drain, two versions of state with/out water)
-! Replaced soilmoist_state variable with soilstate (as seems to be duplicate)
-! HCW 15 Jan 2015
-! Added switch OHMIncQF to calculate QS with (1, default) or without (0) QF added to QSTAR
+!Last modification:
+! HCW 10 Mar 2016 - Calculation of soil moisture deficit of vegetated surfaces added (vsmd)
+! LJ 2 Jan 2016   - Calculation of snow fraction moved from SUEWS_Calculations to SUEWS_Snow
+! HCW 12 Nov 2015 - Added z0m and zdm to output file
+! HCW 05 Nov 2015 - Changed Kawai et al. (2007) z0v calculation so VegFraction(veg+soil) rather than veg_fr(veg+soil+water) is used.
+! HCW 29 Jun 2015 - Added albEveTr and albGrass
+! HCW 25 Jun 2015 - Fixed bug in LAI calculation at year change.
+!                 - Changed AlbDec to use id value (not (id-1) value) to avoid issues at year change.
+! HCW 27 Apr 2015 - Correction to tot_chang_per_tstep calculation (water balance should now close)
+! HCW 16 Feb 2015 - Updated water balance calculations
+!                 - Corrected area-averaged calculations (soil moisture, drain, two versions of state with/out water)
+!                 - Replaced soilmoist_state variable with soilstate (as seems to be duplicate)
+! HCW 15 Jan 2015 - Added switch OHMIncQF to calculate QS with (1, default) or without (0) QF added to QSTAR
 ! To do 
 !      - add iy and imin to output files (may impact LUMPS_RunoffFromGrid)
 !      - phase out _per_interval water balance variables
@@ -139,7 +134,14 @@
  !if (ir==1) then  !Calculate initial smd
     smd=soilmoistCap-soilstate
  !endif
-    
+
+ ! Calculate soil moisture for vegetated surfaces only (for use in surface conductance)
+ vsmd=0
+ do is=ConifSurf,GrassSurf  !Vegetated surfaces only
+    vsmd=vsmd+(soilstoreCap(is) - soilmoist(is))*sfr(is)/(sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf))
+    !write(*,*) is, vsmd, smd
+ enddo
+
  ! ===================NET ALLWAVE RADIATION================================
  if(NetRadiationChoice>0)then
 
@@ -362,7 +364,13 @@
  !======== Evaporation and surface state ========
  do is=1,nsurf   !For each surface in turn      
     if (snowCalcSwitch(is)==1) then
-       call snowCalc
+       if (sfr(is)/=0) then
+          call snowCalc
+       else
+          snowFrac(is)=0
+          SnowDens(is)=0
+          SnowPack(is)=0
+       endif
     else
        call Evap_SUEWS   !Calculates ev [mm]             
        call soilstore    !Surface water balance and soil store updates (can modify ev, updates state)
@@ -502,17 +510,6 @@
        lai_wt=lai_wt+lai(id-1,is)*sfr(is+2) 
    enddo
  endif
- 
-     
- ! Calculate snowdepth from SWE
- do is=1,nsurf
-    if (SnowDens(is)/=0) then
-       SnowDepth(is) = SnowPack(is)*waterDens/SnowDens(is)
-    endif
-    ! Calculate overall snow water equivalent
-    swe = swe + SnowDepth(is)*sfr(is)*snowFrac(is)
-    MwStore = MwStore + MeltWaterStore(is)*sfr(is)*snowFrac(is)
- enddo
 
  
  !=====================================================================
@@ -543,15 +540,19 @@
 
  !Calculate new snow fraction used in the next timestep if snowUse==1
  !Calculated only at end of each hour.
- if (SnowFractionChoice==2.and.snowUse==1.and.it==23.and.imin==(nsh_real-1)/nsh_real*60) then
-    do is=1,nsurf-1
-       if (snowPack(is)>0.and.mw_ind(is)>0) then
-          snowFrac(is)=SnowDepletionCurve(is,snowPack(is),snowD(is))
-       elseif (snowPack(is)==0) then
-          snowFrac(is)=0
-       endif
-    enddo
- endif
+ !if (SnowFractionChoice==2.and.snowUse==1.and.it==23.and.imin==(nsh_real-1)/nsh_real*60) then
+ !   do is=1,nsurf-1
+ !      if ((snowPack(is)>0.and.mw_ind(is)>0)) then
+ !         write(*,*) is,snowPack(is),snowD(is),mw_ind(is),snowFrac(is)!
+
+ !         snowFrac(is)=SnowDepletionCurve(is,snowPack(is),snowD(is))
+ !         write(*,*) snowFrac(is)
+ !         pause
+ !      elseif (snowPack(is)==0) then
+ !         snowFrac(is)=0
+ !      endif
+ !   enddo
+ !endif
  
  !write(*,*) DecidCap(id), id, it, imin, 'Calc - before translate back'
  !write(*,*) iy, id, it, imin, 'Calc - before translate back'

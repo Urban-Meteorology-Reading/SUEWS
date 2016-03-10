@@ -6,6 +6,7 @@
 ! HCW 03 Jul 2015 - added albedo max & min to SUEWS_NonVeg.txt (min not used), SUEWS_Veg.txt, SUEWS_Water.txt (min not used)
 ! LJ 06 Jul 2015 - changed alb_snow, albsnowmin and albsnowmax to SnowAlb, SnowAlbMin and SnowAlbMax (to be systematic with
 !                   other variables). Similarly denssnow changed to SnowDens. cMDS_SnowAlb=29 added.
+! HCW 10 Mar 2016 - variable vsmd added for soil moisture of vegetated surfaces
 
 !==================================================================================================
  module allocateArray
@@ -1077,6 +1078,7 @@
                      gl,&         !G(LAI)
                      sdp,&        !S1/G6+S2
                      smd,&        !Soil moisture deficit of the soil surface layer
+                     vsmd,&       !Soil moisture deficit for vegetated surfaces only (what about BSoil?)
                      gs,&         !G(Soil moisture deficit)
                      gsc          !Surface Layer Conductance      
                      

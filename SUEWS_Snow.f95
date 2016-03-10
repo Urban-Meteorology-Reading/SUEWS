@@ -1,13 +1,16 @@
 !This subroutine makes snow related calculations at the model time step. Needed for the 
 !available energy in LUMPS and SUEWS. Made by LJ in Dec 2012
 !SUBROUTINES:
-!  MeltHeat - Calculation of hourly snow related energy processes
-!  SnowCalc - Calculation of the snow and soil storages
+!  MeltHeat - Calculation of snow related energy processes
+!  SnowCalc - Calculation of snow and soil storages
 !  Evap_SUEWS_Snow - Calculation of evaporation from the snowpack
 !  snowRem - Removal of snow my snow clearing
 !  SnowDepletionCurve - Calculation of snow fractions
 !Last modified
-!  LJ 27 Jan 2016  - Tabs removed, cleaning of teh code
+!  LJ 3 Feb 2016  - Changed so that not all surface water freezes in 5-min timestep.
+!                    Re-organization of the snow routine due to this change
+!                    Calculation of albedo moved from MeltHeat to SnowCalc
+!  LJ 27 Jan 2016  - Tabs removed, cleaning of the code
 !  HCW 08 Dec 2015 - Added check for no Paved surfaces
 !  LJ 14 July 2015 - Code fixed to work with tstep.
 !  HCW 06 Mar 2015 - Unused variable 'i' removed.
@@ -60,7 +63,7 @@
          !These are for snow melting
          if (Temp_C>=0) then
             if (qn1_ind_snow(is)<0) then
-               mw_ind(is) = TempMeltFact*Temp_C  ! (mm C−1 h−1)*(C) = in mm h-1
+               mw_ind(is) = TempMeltFact*Temp_C             !(mm C−1 h−1)*(C) = in mm h-1
             else
                mw_ind(is) = RadMeltFact*(qn1_ind_snow(is))  !(mm m2 W−1 h−1)*(W m-2)= mm h-1 ??
             endif
@@ -110,23 +113,32 @@
         
         !=================================================================
          
-        !Freeze surface state if cold enough.
+        !Freeze surface water state if cold enough.
         if (Tsurf_ind(is)<0.and.state(is)>0) then
     
            snowCalcSwitch(is)=1 !If water on ground this forms ice and snow calculations are made
     
-           !Other surfaces than water
+           !Other surfaces than water treated first
            if (is/=WaterSurf) then
-              if (snowpack(is)==0.or.snowfrac(is)==0) then !Snowpack forms.
-                    FreezState(is) = state(is)
-                    FreezStateVol(is) = FreezState(is)
-              else                                !There is snow already on ground
-                   FreezState(is) = state(is)
-                   FreezStateVol(is) = state(is)*(1-snowFrac(is))/snowFrac(is)
+
+              !FreezState(is) = state(is) 
+              !Previously all state could freeze in 5-min timestep. Now we calculate how much water
+              !can freeze in timestep (see watersurf exaplanation)
+              FreezState(is) = 100*(0-Temp_C)/(waterDens*(lvS_J_kg-lv_J_kg))
+
+              !The amount of freezing water cannot be greater than the surface state
+              if (FreezState(is)>state(is)) FreezState(is) = state(is)
+
+              if (snowpack(is)==0.or.snowfrac(is)==0) then !Snowpack forms
+                   FreezStateVol(is) = FreezState(is)
+              else                                         !There is snow already on ground
+                   FreezStateVol(is) = FreezState(is)*(1-snowFrac(is))/snowFrac(is)
               endif
 
-              if (FreezState(is)<0.00000000000001) then   !If the amount of freezing water
-                 FreezState(is) = 0                       !is within the limits of resolution
+              ! If the amount of freezing water is very small and there is state left to the ground
+              ! no freezing of water will take place
+              if (FreezStateVol(is)<0.00000000001.and.FreezState(is)<state(is)) then
+                 FreezState(is) = 0
                  FreezStateVol(is) = 0
               endif
 
@@ -136,19 +148,13 @@
            !Water surface separately
            else
               !Calculate average value how much water can freeze above the water areas
-              !Equation is -hA(T-T0) = rhoV(Cp+dT +Lf) in an hour
+              !Equation is -hA(T-T0) = rhoV(Cp+dT +Lf) in 5-min timestep
               !h=convective heat trasnfer,A, area of water,rwo water density,V volume, dT temperature difference
               !before and end of the 5-min period. dT equals zero, h=100 and when multiplied with Area, the equation
               !simplyfies to the this. LJ 14 July 2015
-              Watfreeze = 100*(0-Temp_C)/(waterDens*(lvS_J_kg-lv_J_kg))/tstep_real
-            
-             if (Watfreeze<=state(is)) then !Not all state freezes
-                FreezState(is) = Watfreeze  
-                Qm_freezState(is) = -waterDens*(Watfreeze/tstep_real/1000)*(lvS_J_kg-lv_J_kg)
-             else
-                FreezState(is) = state(is)  !All state freezes
-                Qm_freezState(is) = -waterDens*(state(is)/tstep_real/1000)*(lvS_J_kg-lv_J_kg)
-             endif
+              Watfreeze = 100*(0-Temp_C)/(waterDens*(lvS_J_kg-lv_J_kg))
+              FreezState(is) = Watfreeze
+              Qm_freezState(is) = -waterDens*(Watfreeze/tstep_real/1000)*(lvS_J_kg-lv_J_kg)
            endif
     
         endif
@@ -168,7 +174,10 @@
 
         !Update snow density of each surface
         if (Precip>0.and.Tsurf_ind(is)<0.and.SnowPack(is)>0) then
+            !write(*,*) SnowDens(is),snowPack(is),Precip,SnowDensMin
             SnowDens(is) = SnowDens(is)*snowPack(is)/(snowPack(is)+Precip)+SnowDensMin*Precip/(snowPack(is)+Precip)
+            !write(*,*) SnowDens(is)
+            !pause
         endif
 
         !Weighted variables for the whole area
@@ -176,7 +185,7 @@
         fwh = fwh + FreezMelt(is)*sfr(is)*snowFrac(is)     !Freezing water
         Qm = Qm + Qm_melt(is)*sfr(is)*snowFrac(is)         !Energy consumed to the melt/freezing.
         QmRain = QmRain + Qm_rain(is)*sfr(is)*snowFrac(is) !Rain on snow
-        QmFreez = QmFreez + deltaQi(is)*sfr(is)*snowFrac(is)+Qm_freezState(is)*sfr(is)*(1-snowFrac(is)) !Freezing water
+        QmFreez=QmFreez+deltaQi(is)*sfr(is)*snowFrac(is)+Qm_freezState(is)*sfr(is)*(1-snowFrac(is)) !Freezing water
     endif
      
   enddo !End surface type
@@ -185,16 +194,17 @@
   if (Precip>0.and.sum(snowPack)>0.and.Temp_C<0) then
 
     CumSnowfall=CumSnowfall + Precip
-    
+
     if (CumSnowfall>PrecipLimitAlb) then
-      !write(*,*) CumSnowfall,Precip,PrecipLimitAlb,PrecipLimitAlb/nsh_real
-      !pause
+    !write(*,*) CumSnowfall,Precip,PrecipLimitAlb,PrecipLimitAlb/nsh_real
+   !pause
       SnowAlb=SnowAlbMax
       CumSnowfall=0
     endif
   else
     CumSnowfall=0
   endif
+
 
  end subroutine MeltHeat
 
@@ -230,16 +240,19 @@
                     snowTotInit,&
                     EvPart,&
                     runoffTest,&
-                    FWC           !Water holding capacity of snow in mm
+                    snowFracFresh,&   !Snow fraction for newly formed snowpack.
+                    FWC               !Water holding capacity of snow in mm
+  REAL(KIND(1d0)):: SnowDepletionCurve
 
-  integer:: iu     !1=weekday OR 2=weekend
+  integer:: iu,freshSnowSwitch     !1=weekday OR 2=weekend
   !========================================================================
   !Initialize variables for the calculation of water storages and evaporation
 
   ! Use weekday or weekend snow clearing profile
   iu=1     !Set to 1=weekday
   if(DayofWeek(id,1)==1.or.DayofWeek(id,1)==7) iu=2  !Set to 2=weekend
-  
+  freshSnowSwitch=0
+
   runoffSnow(is)=0 !Initialize for runoff caused by snowmelting
   runoff(is)=0
   runoffSoil(is)=0
@@ -249,6 +262,7 @@
   SnowToSurf(is)=0
   EvPart=0
   ev=0
+  snowFracFresh=0
 
   !Initial snowpack + meltwater in it  
   snowTotInit=snowPack(is)+MeltWaterStore(is) 
@@ -269,7 +283,6 @@
                                     psyc_hPa,tstep,avcp,sIce_hPa)
   endif
 
-
   !If not enough water for evaporation in impervious surfaces,
   !evaporation is taken from pervious surfaces
   if (is>2) then
@@ -287,296 +300,252 @@
   if (is==WaterSurf.and.sfr(WaterSurf)>0) GO TO 606
 
 
-  !1) Complete snow cover or if snowpack forms at this timestep
-  if (snowFrac(is)==1.or.(snowPack(is)==0.and.Precip>0.and.Temp_C<0.and.Tsurf_ind(is)<0)&
-    .or.(freezState(is)>0)) then
+  !The following snow and surface state calculations were rewritten in Feb 3. The calculations
+  !are divided into three parts:
+  !(1) There is snow on ground and its storage change are calculated
+  !(2) Snow pack can form at the current timestep through snowfall or freezing water on ground.
+  !    Currently the density of ice is not accounted for, but this should be changed in the future
+  !(3) Calculations for snow-free surface area is made
 
-     !Calculate the changes in the snow pack and surface state
-     !------Snow pack exists---------------------------------
-     if (SnowPack(is)>0) then
+  !!!!!!First calculate the snowpack water balance!!!!!!!!!!
 
-        ev_snow(is)=ev_snow(is)+EvPart !Evaporation surplus
+  !Snow already on ground (1)
+  if (SnowPack(is)>0) then
+     ev_snow(is)=ev_snow(is)+EvPart !Evaporation surplus
 
-       !(Snowfall per interval+freezing of water) - (meltwater+evaporation from snowpack)
-        changSnow(is)=(Precip+freezMelt(is))-(mw_ind(is)+ev_snow(is)) !Calculate change in snowpack (in mm)
-        
-        if (freezState(is)>0) then !snowfraction is not 1 but at the snow free surface water freezes
-           FreezStateVol(is)=FreezState(is)
-           changSnow(is) = changSnow(is)+freezStateVol(is)
-           ev=0     !No evaporation takes place as the water freezes. Should be fixed at some point
+     !----Snowpack water balance for the whole surface area. In reality snow depth = snowPack/snowFrac(is)
+     !(Snowfall per interval+freezing of melt water and surface state) - (meltwater+evaporation from snowpack)
+     changSnow(is)=(Precip+freezMelt(is)+freezStateVol(is))-(mw_ind(is)+ev_snow(is)) !Calculate change in snowpack (in mm)
 
-           if (in==1) iceFrac(is)=1-snowFrac(is) !??
-           snowFrac(is)=1
-
-        endif
-
-        !If rain on snow event, add this water to meltwaterstore
-        if (rainOnSnow(is)>0) then
-           changSnow(is)=changSnow(is)-Precip
-           MeltWaterStore(is) = MeltWaterStore(is)+rainOnSnow(is)
-        endif
-        
-     !------Snowpack forms at this timestep from precipitation or freezing state---   
-     else 
-        ev=ev+EvPart
-        changSnow(is)=(Precip+freezStateVol(is))-ev 
-        snowFrac(is)=1
-        iceFrac(is)=0
-        SnowDens(is)=SnowDensMin
-     endif
-     
-     !--------------------------------------------------------------------------------------
-     !Now update snowpack, surface state and meltwater storage accordingly
-     SnowPack(is)=SnowPack(is)+changSnow(is)  !Update snowpack
-     state(is)=state(is)-freezState(is)       !Update state if water has frozen
-
-     !---------If snowpack exists after the state calculations
-     if (snowPack(is)>0) then  
-    
-        !Add melted water to meltstore and freeze water according to freezMelt(is)
-        MeltWaterStore(is) = MeltWaterStore(is) + mw_ind(is) - freezMelt(is)
-      
-        !Calculate water holding capacity (FWC: Valeo and Ho, 2004) of the snowpack
-        FWC = WaterHoldCapFrac*snowPack(is)
-     
-        !If FWC is exceeded, add meltwater to runoff
-        if (MeltWaterStore(is)>=FWC) then
-            runoffSnow(is)=runoffSnow(is)+(MeltWaterStore(is)-FWC)
-            MeltWaterStore(is) = FWC
-        endif
-        
-        !At the end of it (hour) calculate possible snow removal
-        if (SnowProf(it,iu)==1.and.is<3.and.(imin==(nsh_real-1)/nsh_real*60))  call snowRem
-
-     !----------If snowPack is negative, it melts at this timestep
-     elseif (SnowPack(is)<0) then
-
-        !If freezing meltwater inside this hour, remove it from the MeltWaterStore
-        MeltWaterStore(is)=MeltWaterStore(is)-freezMelt(is)+mw_ind(is)+SnowPack(is) 
-        SnowPack(is)=0
-        snowFrac(is)=0
-  
-        if (MeltWaterStore(is)<0) then !Not enough water in the meltwater store, 
-                            
-            if (ev_snow(is)/=0) then              
-               ev_snow(is)=ev_snow(is)+MeltWaterStore(is) !evaporation from snow is decreased. ZZ Possible problem
-               if (ev_snow(is)<0) ev_snow(is)=0
-               changSnow(is)=changSnow(is)+MeltWaterStore(is)
-               MeltWaterStore(is)=0
-            else
-              ev=ev+MeltWaterStore(is)
-              if (ev<0) ev=0
-              changSnow(is)=changSnow(is)+MeltWaterStore(is)
-              MeltWaterStore(is)=0
-            endif
-            
-        else
-            chang(is)=MeltWaterStore(is)  !Meltwater goes to surface state as no snow exists anymore
-            state(is)=state(is)+chang(is) 
-            MeltWaterStore(is)=0
-            
-        endif
-      
-     endif !snowpack negative or positive
-
-     !------Change state of snow and surface
-     chSnow_per_interval = chSnow_per_interval+((snowPack(is)+MeltWaterstore(is))-snowTotInit)*sfr(is)
-     surf_chang_per_tstep=surf_chang_per_tstep+(state(is)-stateOld(is))*sfr(is)
-
-     !------Evaporation
-     if (is==BldgSurf.or.is==PavSurf) then 
-        ev_per_tstep=ev_per_tstep+(ev-SurplusEvap(is))*sfr(is)+ev_snow(is)*sfr(is)
-        qe_per_tstep=qe_per_tstep+ev_snow(is)*lvS_J_kg*sfr(is)+(ev-SurplusEvap(is))*lv_J_kg*sfr(is)
-     else
-        ev_per_tstep=ev_per_tstep+ev*sfr(is)+ev_snow(is)*sfr(is)
-        qe_per_tstep=qe_per_tstep+ev_snow(is)*lvS_J_kg*sfr(is)+ev*lv_J_kg*sfr(is)
-     endif
-
-     !==========RUNOFF===================
-     runoffPipes=runoffPipes+runoffSnow(is)*sfr(is) !Runoff to pipes
-     call updateFlood
-     runoff_per_tstep=runoff_per_tstep+runoffSnow(is)*sfr(is)
-  
-
-  !2) If both snow and snow free surfaces exists
-  else
-
-    !----Snowpack water balance for the whole surface area. In reality snow depth = snowPack/snowFrac(is)
-    changSnow(is)=(Precip+freezMelt(is))-(mw_ind(is)+ev_snow(is))
-
-    if (rainOnSnow(is)>0) then  ! Precipitation is routed to meltwater store
-        changSnow(is)=changSnow(is)-Precip 
+     !If rain on snow event, add this water to meltwaterstore
+     if (rainOnSnow(is)>0) then
+        changSnow(is)=changSnow(is)-Precip
         MeltWaterStore(is) = MeltWaterStore(is)+rainOnSnow(is)
-    endif
-  
-    SnowPack(is)=SnowPack(is)+changSnow(is)  !Update snowpack
-    
-    !----If snowpack exists at this point
-    if (snowPack(is)>0) then  
+     endif
+  endif
 
-      !Add melted water to meltstore and freeze water according to freezMelt(is)
-      MeltWaterStore(is) = MeltWaterStore(is) + mw_ind(is) - freezMelt(is)
-      
-      !Calculate water holding capacity (FWC: Valeo and Ho, 2004) of the snowpack
-      FWC = WaterHoldCapFrac*snowPack(is)
-     
-      !If FWC is exceeded, add meltwater to runoff
-      if (MeltWaterStore(is)>=FWC) then
-         MeltExcess = 0
-         MeltExcess = MeltWaterStore(is)-FWC  
+  SnowPack(is)=SnowPack(is)+changSnow(is)  !Update snowpack
 
-         !Can flow to snow free surface if fraction of snow covered ground is less than 80%. 
-         !Otherwise all water goes to runoff (and in the vase og build surface this always happens)
-         if ((snowFrac(is)>0.8.and.is/=BldgSurf).or.(is==BldgSurf)) then
-            runoffSnow(is) = runoffSnow(is) + MeltExcess*snowFrac(is)
-            SnowToSurf(is) = SnowToSurf(is) + MeltExcess*snowFrac(is)
-         else
-            SnowToSurf(is) = SnowToSurf(is) + MeltExcess*snowFrac(is)/(1-snowFrac(is))
-         endif
-         
-         MeltWaterStore(is) = FWC
-      endif
-      
-      !At the end of each hour calculate possible snowremoval
-      if (SnowProf(it,iu)==1.and.is<3.and.(imin==(nsh_real-1)/nsh_real*60))  call snowRem
-             
-    !---If snowPack negative
-    elseif (SnowPack(is)<0) then
+  !---------If snowpack exists after the state calculations
+  if (snowPack(is)>0) then
 
-      !If freezing meltwater inside this hour, remove it from the MeltWaterStore
-      MeltWaterStore(is) = MeltWaterStore(is) + mw_ind(is) - freezMelt(is)
-      MeltWaterStore(is) = MeltWaterStore(is) + SnowPack(is) 
-      SnowPack(is)=0
-      snowFrac(is)=0
-      
-      if (MeltWaterStore(is)<0) then !Not enough water in the meltwater store, 
-                                        
-          ev_snow(is)=ev_snow(is)+MeltWaterStore(is) !evaporation from snow is decreased
-          if (ev_snow(is)<0)  ev_snow(is)=0
-          changSnow(is)=changSnow(is)+MeltWaterStore(is)
-          MeltWaterStore(is)=0
-          
-      else
-          chang(is)=MeltWaterStore(is)*snowFrac(is)/(1-snowFrac(is)) !Meltwater goes to surface state 
-          SnowToSurf(is)=SnowToSurf(is)+chang(is) 
-          MeltWaterStore(is)=0
-      endif
-      
-    endif !snowpack negative or positive
+     !Add melted water to meltstore and freeze water according to freezMelt(is)
+     MeltWaterStore(is) = MeltWaterStore(is) + mw_ind(is) - freezMelt(is)
 
-    !-------------------------------------------------------------------------
-    !-----Snow free surface
-    
-    if (is==PavSurf.or.is==BldgSurf) then  !Impervious surfaces (paved, buildings)
-  
-        !Surface store update       
-        if (precip>IPThreshold_mmhr/nsh_real) then
-           runoff(is)=runoff(is)+(Precip+SnowToSurf(is)+AddWater(is)-IPThreshold_mmhr/nsh_real)
-           chang(is)=IPThreshold_mmhr/nsh_real-(drain(is)+ev+freezState(is)) 
-        else 
-           chang(is)=Precip+SnowToSurf(is)+AddWater(is)-(drain(is)+ev+freezState(is))   !Add precip and water from other surfaces
-        endif                                                !remove drainage, evap and freezing of state
-     
-        state(is)=state(is)+chang(is) !Change in state (for whole surface area areasfr(is))
-     
-        !Add water from neighbouring grids
-        ! Check sfr/=0 added HCW 08 Dec 2015
-        if (is==PavSurf.and. sfr(PavSurf)/=0) state(is)=state(is)+(addImpervious)/sfr(PavSurf)
-        
-        runoff(is)=runoff(is)+drain(is)*AddWaterRunoff(is) !Drainage (not flowing to other surfaces) goes to runoff
-        
-        if(state(is)<0.0) then  !Surface state cannot be negative
-           SurplusEvap(is)=abs(state(is)) !take evaporation from other surfaces in mm 
-           ev = ev-SurplusEvap(is)
+     !Calculate water holding capacity (FWC: Valeo and Ho, 2004) of the snowpack
+     FWC = WaterHoldCapFrac*snowPack(is)
+
+     !If FWC is exceeded, excess meltwater (MeltExcess) will leave from the snowpack
+     if (MeltWaterStore(is)>=FWC) then
+        MeltExcess = 0                      !Initialize the excess meltwater
+        MeltExcess = MeltWaterStore(is)-FWC !Calculate the exceess water
+        MeltWaterStore(is) = FWC            !Update the meltwaterstore to the maximum it can hold
+
+        !If the fraction of snow is greater than 0.8 or if the surface is is buildings,
+        !the excess water will directly go to runoff. Otherwise it will flow to the 
+        !snow free area via SnowToSurf(is)
+        if ((snowFrac(is)>0.8.and.is/=BldgSurf).or.(is==BldgSurf)) then
+           runoffSnow(is) = runoffSnow(is) + MeltExcess
+        else
+           SnowToSurf(is) = SnowToSurf(is) + MeltExcess*snowFrac(is)/(1-snowFrac(is))
+        endif
+     endif
+
+     !At the end of the hour calculate possible snow removal
+     if (SnowProf(it,iu)==1.and.is<3.and.(imin==(nsh_real-1)/nsh_real*60))  call snowRem
+
+
+  !----------If snowPack is negative, it melts at this timestep
+  elseif (SnowPack(is)<0) then
+
+     !If freezing meltwater inside this timestep, remove it from the MeltWaterStore
+     MeltWaterStore(is)=MeltWaterStore(is)-freezMelt(is)+mw_ind(is)+SnowPack(is)
+
+     SnowPack(is)=0.0   !Set the snow pack and snow
+     snowFrac(is)=0.0
+
+     if (MeltWaterStore(is)<0) then !Not enough water in the meltwater store,
+        ev_snow(is)=ev_snow(is)+MeltWaterStore(is) !evaporation from snow is decreased.??
+        if (ev_snow(is)<0) ev_snow(is)=0
+        changSnow(is)=changSnow(is)+MeltWaterStore(is)
+        MeltWaterStore(is)=0
+
+     else
+        chang(is)=MeltWaterStore(is)*snowFrac(is)/(1-snowFrac(is))  !Meltwater goes to surface state as no snow exists anymore
+        SnowToSurf(is)=SnowToSurf(is)+chang(is)
+        MeltWaterStore(is)=0
+     endif
+     freshSnowSwitch=1
+  endif !snowpack negative or positive
+
+
+
+  !Snowpack can also form at the current timestep (2). If this forms purely from snowfall or/and all water at surface freezes,
+  !the whole surface will be covered with snow. If there is water on ground this snowfall can immediately melt
+  !and in this case the snow fraction is not necessarily 1 but its information is saved to snowFracFresh that
+  !is taken into account in snow fraction after calculation of state.
+  if (snowPack(is)==0.and.Tsurf_ind(is)<0.and.freshSnowSwitch==0) then
+
+     !The fraction of snow will get a value of 1 (ie full snow cover):
+     !Surface state is dry but precipitation occurs, no precipitation but all state freezes at a single timestep,
+     !There is both precipitation and all surface state freezes
+     if ((Precip>0.and.state(is)==0).or.(Precip==0.and.FreezState(is)==state(is)).or.&
+         (Precip>0.and.FreezState(is)==state(is))) then
+
+         ev=ev+EvPart
+         changSnow(is)=Precip+FreezStateVol(is)-ev-drain(is)
+         SnowPack(is)=SnowPack(is)+changSnow(is)  !Update snowpack
+         snowFrac(is)=1                           !If precipitation occurs, snow fraction = 1
+         iceFrac(is)=0
+         SnowDens(is)=SnowDensMin
+         state(is)=0
+     endif
+
+     if (FreezState(is)>0.and.FreezState(is)<state(is)) then
+        changSnow(is)=(Precip+freezStateVol(is))
+        SnowPack(is)=SnowPack(is)+changSnow(is)  !Update snowpack
+
+        snowFracFresh=SnowDepletionCurve(is,snowPack(is),snowD(is))
+        SnowDens(is)=SnowDensMin
+        if (snowFracFresh<0.001) snowFracFresh=0.001
+
+     endif
+ endif
+
+  !--------
+  !Next the snow free surface (3). Calculations only done if snowfraction is smaller than 1
+  if ((is==PavSurf.or.is==BldgSurf).and.snowFrac(is)<1) then  !Impervious surfaces (paved, buildings)
+
+     !Surface store update. If precipitation is greater than the threshold, the exceeding water
+     !goes directly to runoff
+     if (precip>IPThreshold_mmhr/nsh_real) then
+        !runoff = runoff + (precipitation+water from the snow surface+water from other surfaces-the thereshold limit)
+        runoff(is)=runoff(is)+(Precip+SnowToSurf(is)+AddWater(is)-IPThreshold_mmhr/nsh_real)
+        chang(is)=IPThreshold_mmhr/nsh_real-(drain(is)+ev+freezState(is))
+     else
+        !Add precip and water from other surfaces and remove drainage, evap and freezing of state
+        chang(is)=Precip+SnowToSurf(is)+AddWater(is)-(drain(is)+ev+freezState(is))
+     endif
+
+     state(is)=state(is)+chang(is) !Change in state (for whole surface area areasfr(is))
+
+     !Add water from impervious grids
+     ! Check sfr/=0 added HCW 08 Dec 2015
+     if (is==PavSurf.and.sfr(PavSurf)/=0) state(is)=state(is)+(addImpervious)/sfr(PavSurf)
+
+     runoff(is)=runoff(is)+drain(is)*AddWaterRunoff(is) !Drainage (not flowing to other surfaces) goes to runoff
+
+     if(state(is)<0.0) then  !Surface state cannot be negative
+        SurplusEvap(is)=abs(state(is)) !take evaporation from other surfaces in mm
+        ev = ev-SurplusEvap(is)
+        state(is)=0.0
+     endif
+
+  elseif(is>=3.and.snowFrac(is)<1) then ! Pervious surfaces (conif, decid, grass unirr, grass irr)
+
+     ev=ev+EvPart
+
+     !Change in water stores
+     if (Precip+addVeg*(sfr(is)/VegFraction)>(IPThreshold_mmhr/nsh_real)) then !if 5min precipitation is larger than 10 mm
+        runoff(is)=runoff(is)+(Precip+addVeg*(sfr(is)/VegFraction)+SnowToSurf(is)+AddWater(is)-(IPThreshold_mmhr/nsh_real))
+        chang(is)=(IPThreshold_mmhr/nsh_real)-(drain(is)+ev+freezState(is))
+     else
+        chang(is)=Precip+addVeg*(sfr(is)/VegFraction)+SnowToSurf(is)+AddWater(is)-(drain(is)+ev+freezState(is))
+     endif
+
+     state(is)=state(is)+chang(is)
+
+     !Add water in soil store only if ground is not frozen
+     if (Temp_C>0) then
+        soilmoist(is)=soilmoist(is)+Drain(is)*AddWaterRunoff(is)*(1-snowFrac(is))
+     else
+        runoff(is)=runoff(is)+Drain(is)*AddWaterRunoff(is)
+     endif
+
+     !If state of the surface is negative, remove water from soilstore
+     if(state(is)<0.0) then
+
+        if ((soilmoist(is)+state(is))>=0.and.Temp_C>0) then !If water in soilstore, water is removed
+
+           soilmoist(is)=soilmoist(is)+state(is)*(1-snowFrac(is))
+           state(is)=0.0
+
+        else !If not water in the soilstore evaporation does not occur
+           chang(is)=chang(is)+state(is)
+           ev=ev+state(is)
            state(is)=0.0
         endif
+      endif !state is negative
 
-    elseif(is>=3) then ! Pervious surfaces (conif, decid, grass unirr, grass irr)
+     !If soilstorage is full at this point, excess will go to surface runoff
+     if (soilmoist(is)>soilstoreCap(is)) then
+         runoffTest=runoffTest+(soilmoist(is)-soilstoreCap(is))
+         soilmoist(is)=soilstoreCap(is)
+     elseif (soilmoist(is)<0) then
+         soilmoist(is)=0
+     endif
 
-       ev=ev+EvPart
+     !State of non-water area in mm
+     st_per_interval=st_per_interval+state(is)*sfr(is)*(1-snowFrac(is))
 
-       !Change in water stores
-        if (Precip+addVeg*(sfr(is)/VegFraction)>(IPThreshold_mmhr/nsh_real)) then !if 5min precipitation is larger than 10 mm
-            runoff(is)=runoff(is)+(Precip+addVeg*(sfr(is)/VegFraction)+SnowToSurf(is)+AddWater(is)-(IPThreshold_mmhr/nsh_real))
-            chang(is)=(IPThreshold_mmhr/nsh_real)-(drain(is)+ev+freezState(is))
-        else
-            chang(is)=Precip+addVeg*(sfr(is)/VegFraction)+SnowToSurf(is)+AddWater(is)-(drain(is)+ev+freezState(is)) 
-       endif
-     
-       state(is)=state(is)+chang(is)
-        
-       !Add water in soil store only if ground is not frozen
-       if (Temp_C>0) then
-         soilmoist(is)=soilmoist(is)+Drain(is)*AddWaterRunoff(is)*(1-snowFrac(is))
-       else
-          runoff(is)=runoff(is)+Drain(is)*AddWaterRunoff(is)
-       endif
-     
-       !If state of the surface is negative, remove water from soilstore
-       if(state(is)<0.0) then  
-   
-          if ((soilmoist(is)+state(is))>=0.and.Temp_C>0) then !If water in soilstore, water is removed
-            
-              soilmoist(is)=soilmoist(is)+state(is)*(1-snowFrac(is))
-              state(is)=0.0
+  endif !Surface type
 
-          else !If not water in the soilstore evaporation does not occur
-              chang(is)=chang(is)+state(is)
-              ev=ev+state(is)
-              state(is)=0.0
-          endif
-       endif !state is negative
-       
-       !If soilstorage is full at this point, excess will go to surface runoff
-       if (soilmoist(is)>soilstoreCap(is)) then  
-          runoffTest=runoffTest+(soilmoist(is)-soilstoreCap(is))
-          soilmoist(is)=soilstoreCap(is)
-       elseif (soilmoist(is)<0) then
-          soilmoist(is)=0
-       endif
-    
-     !State of non-water area in mm 
-      st_per_interval=st_per_interval+state(is)*sfr(is)*(1-snowFrac(is))
-   
-   endif !Surface type
 
-   !Calculate change in snowpack and state
-   !ch_per_interval=ch_per_interval+(state(is)-stateOld(is))*sfr(is)*(1-snowFrac(is))
-   surf_chang_per_tstep=surf_chang_per_tstep+(state(is)-stateOld(is))*sfr(is)*(1-snowFrac(is))
-   chSnow_per_interval=chSnow_per_interval+((snowPack(is)+MeltWaterstore(is))-snowTotInit)*sfr(is)*snowFrac(is)
+  !!Update the fraction of snow in the case of falling snow
+  if (snowFracFresh>0) snowFrac(is)=snowFracFresh
 
-   !if (id==102.and.it==21.and.imin==0) then
-   !  write(*,*) is, ev, ev_snow(is),Evpart,SurplusEvap(is)
-   !  pause
-   !endif
-   !Add evaporation to total
-   if (is==BldgSurf.or.is==PavSurf) then
-       ev_per_tstep=ev_per_tstep+ev*sfr(is)*(1-snowFrac(is))+ev_snow(is)*sfr(is)*snowFrac(is)
-       qe_per_tstep=qe_per_tstep+ev_snow(is)*lvS_J_kg*sfr(is)*snowFrac(is)&
+  !Calculate change in snowpack and state for the respective surface areas
+  !ch_per_interval=ch_per_interval+(state(is)-stateOld(is))*sfr(is)*(1-snowFrac(is))
+  surf_chang_per_tstep=surf_chang_per_tstep+(state(is)-stateOld(is))*sfr(is)*(1-snowFrac(is))
+  chSnow_per_interval=chSnow_per_interval+((snowPack(is)+MeltWaterstore(is))-snowTotInit)*sfr(is)*snowFrac(is)
+
+  !Add evaporation to total
+  if (is==BldgSurf.or.is==PavSurf) then
+    ev_per_tstep=ev_per_tstep+ev*sfr(is)*(1-snowFrac(is))+ev_snow(is)*sfr(is)*snowFrac(is)
+    qe_per_tstep=qe_per_tstep+ev_snow(is)*lvS_J_kg*sfr(is)*snowFrac(is)&
                        +ev*lv_J_kg*sfr(is)*(1-snowFrac(is))
-   else
-       ev_per_tstep=ev_per_tstep+ev*sfr(is)*(1-snowFrac(is))+ev_snow(is)*sfr(is)*snowFrac(is)
-       qe_per_tstep=qe_per_tstep+ev_snow(is)*lvS_J_kg*sfr(is)*snowFrac(is)+ev*lv_J_kg*sfr(is)*(1-snowFrac(is))
-   endif
+  else
+    ev_per_tstep=ev_per_tstep+ev*sfr(is)*(1-snowFrac(is))+ev_snow(is)*sfr(is)*snowFrac(is)
+    qe_per_tstep=qe_per_tstep+ev_snow(is)*lvS_J_kg*sfr(is)*snowFrac(is)+ev*lv_J_kg*sfr(is)*(1-snowFrac(is))
+  endif
   
-   !========RUNOFF=======================
+  !========RUNOFF=======================
    
-   !Add runoff to pipes
-   runoffPipes=runoffPipes+runoffSnow(is)*sfr(is)*snowFrac(is)+runoff(is)*sfr(is)*(1-snowFrac(is))+runoffTest*sfr(is)
-   call updateFlood
-   runoff_per_tstep=runoff_per_tstep+runoffSnow(is)*sfr(is)*snowFrac(is)+runoff(is)*sfr(is)*(1-snowFrac(is))&
+  !Add runoff to pipes
+  runoffPipes=runoffPipes+runoffSnow(is)*sfr(is)*snowFrac(is)+runoff(is)*sfr(is)*(1-snowFrac(is))+runoffTest*sfr(is)
+  call updateFlood
+  runoff_per_tstep=runoff_per_tstep+runoffSnow(is)*sfr(is)*snowFrac(is)+runoff(is)*sfr(is)*(1-snowFrac(is))&
                          +runoffTest*sfr(is)
 
-  endif !Ground both snow covered and snow free   
+  !===Update snow depth, weighted SWE, and Mwstore
+  if (SnowDens(is)/=0) then
+     SnowDepth(is) = SnowPack(is)*waterDens/SnowDens(is)
+  endif
+
+  ! Calculate overall snow water equivalent
+  swe = swe + SnowPack(is)*sfr(is)*snowFrac(is)
+  MwStore = MwStore + MeltWaterStore(is)*sfr(is)*snowFrac(is)
 
 
+  !Calculate new snow fraction here
+  if (SnowFractionChoice==2.and.it==23.and.imin==(nsh_real-1)/nsh_real*60) then
+     !if (snowPack(is)>0.and.mw_ind(is)>0) then
+     if (snowPack(is)>0) then
+        snowFrac(is) = SnowDepletionCurve(is,snowPack(is),snowD(is))
+        if (snowFrac(is)<0.001) snowFrac(is)=0.001  !The snow fraction minimum is 1% of the surface
+     elseif (snowPack(is)>0.and.Precip>0.and.Tsurf_ind(is)<0.and.state(is)==0) then
+        snowFrac(is) = 1
+     endif
 
+  elseif (snowPack(is)==0) then
+    snowFrac(is)=0
+  endif
 
-  return
+ return
 
-  !==========================================================================
-  !WATERBODY is treated separately as state always below ice if ice existing
-  !Calculate change in snowpack
+ !==========================================================================
+ !WATERBODY is treated separately as state always below ice if ice existing
+ !Calculate change in snowpack
 606 changSnow(WaterSurf)=(Precip+freezMelt(WaterSurf)+freezState(WaterSurf))-&
                          (mw_ind(WaterSurf)+ev_snow(WaterSurf))
                          
@@ -731,7 +700,7 @@
   !----------------------------------------------------------------------------
   FUNCTION SnowDepletionCurve(is,swe,sweD) RESULT(asc)
   !This function calculates surface coverage of snow according to the
-  !depletion curves in Valeo and Ho (2004). Done once per hour.
+  !depletion curves in Valeo and Ho (2004).
   !INPUT: is   Surface type number
   !       swe  Snow water content
   !       sweD Limit for
@@ -779,7 +748,7 @@
      
    endif
 
-   !asc=real(int(10000.*asc))/10000  !4 decimal precision 
+   !asc=real(int(10000.*asc))/10000  !4 decimal precision
 
    RETURN
   END FUNCTION SnowDepletionCurve

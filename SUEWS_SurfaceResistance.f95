@@ -2,9 +2,10 @@
 ! Last modified by HCW 18 Jun 2015
 ! Alternative gs calculation added using different functional forms and new coefficients     
 ! Error hints added     
-!Last modified by LJ in 24 April 2013
-!Added impact of snow fraction in LAI and in soil moisture deficit
+! Last modified by LJ in 24 April 2013
+! Added impact of snow fraction in LAI and in soil moisture deficit
 ! HCW 31/07/2014 Modified condition on g6 part to select meas/mod smd
+! HCW 01/03/2016 SM dependence is now on modelled smd for vegetated surfaces only (vsmd) (Note:  obs smd still not operational!)
 
   use allocateArray
   use data_in
@@ -71,7 +72,7 @@
         if(smd_choice>0)then         !Modified from ==1 to > 0 by HCW 31/07/2014
             gs=1-exp(g6*(xsmd-sdp))  !Measured soil moisture deficit is used
         else
-            gs=1-exp(g6*(smd-sdp))   !Modelled is used
+            gs=1-exp(g6*(vsmd-sdp))   !Modelled is used
         endif
 
         gs = gs*(1-sum(snowFrac(1:6))/6)
@@ -148,8 +149,8 @@
        if(smd_choice>0) then                           !Modified from ==1 to > 0 by HCW 31/07/2014
           gs=(1-exp(g6*(xsmd-sdp)))/(1-exp(g6*(-sdp))) !Use measured smd
        else
-          gs=1-exp(g6*(smd-sdp))   !Use modelled smd
-          gs=(1-exp(g6*(smd-sdp)))/(1-exp(g6*(-sdp)))
+          gs=1-exp(g6*(vsmd-sdp))   !Use modelled smd
+          gs=(1-exp(g6*(vsmd-sdp)))/(1-exp(g6*(-sdp)))
        endif
 
        gs = gs*(1-sum(snowFrac(1:6))/6)

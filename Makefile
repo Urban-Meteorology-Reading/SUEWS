@@ -1,8 +1,8 @@
 	
 
 CC = gfortran $(CFLAGS)		        	# compiler
-TARGET = SUEWS_V2015a			# program name
-CFLAGS = -g -Wall -Wtabs 
+TARGET = SUEWS_AnOHM_v2016			# program name
+CFLAGS = -g -w -Wall -Wtabs 
 # All the files which include modules used by other modules (these therefore
 # needs to be compiled first)
 MODULES = LUMPS_Module_constants_v2015a.o  \
@@ -57,6 +57,7 @@ OTHERS =  BLUEWS_CBL.o   \
           SOLWEIG_shadowingfunction_20.o  \
           SOLWEIG_sunonsurface_veg.o  \
           SOLWEIG_wallinsun_veg.o  \
+		  SUEWS_AnOHM_v2016.o # AnOHM TS 02 Mar 2016 
 
 # Build main program - main uses MODULES and OTHERS
 main: SUEWS_Program.f95 $(MODULES) $(OTHERS)

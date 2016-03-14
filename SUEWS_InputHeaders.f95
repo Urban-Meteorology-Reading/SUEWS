@@ -3,6 +3,7 @@ SUBROUTINE InputHeaderCheck(FileName)
 ! Checks columns in input files match the columns expected by model code 
 ! Model code columns are defined here
 ! Latest update:
+!   TS 02 Mar 2016  - AnOHM related variables added
 !   LJ 27 Jan 2016  - Removal of tabs
 !   LJ 07 July 2015 - snow albedo removed
 !   HCW 12 Nov 2014
@@ -38,6 +39,9 @@ SUBROUTINE InputHeaderCheck(FileName)
   HeaderNonVeg_Reqd(ci_OHMCode_SDry) = "OHMCode_SummerDry"     
   HeaderNonVeg_Reqd(ci_OHMCode_WWet) = "OHMCode_WinterWet"     
   HeaderNonVeg_Reqd(ci_OHMCode_WDry) = "OHMCode_WinterDry"     
+  HeaderNonVeg_Reqd(ci_cpAnOHM)           = "cp"		! AnOHM TS
+  HeaderNonVeg_Reqd(ci_kkAnOHM)           = "kk"		! AnOHM TS
+  HeaderNonVeg_Reqd(ci_chAnOHM)           = "ch"		! AnOHM TS
    
   ! ========== SUEWS_Veg.txt ===============
   HeaderVeg_Reqd(cp_Code)         = "Code"
@@ -69,6 +73,9 @@ SUBROUTINE InputHeaderCheck(FileName)
   HeaderVeg_Reqd(cp_OHMCode_SDry) = "OHMCode_SummerDry"     
   HeaderVeg_Reqd(cp_OHMCode_WWet) = "OHMCode_WinterWet"     
   HeaderVeg_Reqd(cp_OHMCode_WDry) = "OHMCode_WinterDry"        
+  HeaderVeg_Reqd(cp_cpAnOHM)           = "cp"		! AnOHM TS
+  HeaderVeg_Reqd(cp_kkAnOHM)           = "kk"		! AnOHM TS
+  HeaderVeg_Reqd(cp_chAnOHM)           = "ch"		! AnOHM TS        
    
   ! ========== SUEWS_Water.txt ==================
   HeaderWater_Reqd(cw_Code)         = "Code"
@@ -86,6 +93,9 @@ SUBROUTINE InputHeaderCheck(FileName)
   HeaderWater_Reqd(cw_OHMCode_SDry) = "OHMCode_SummerDry"     
   HeaderWater_Reqd(cw_OHMCode_WWet) = "OHMCode_WinterWet"     
   HeaderWater_Reqd(cw_OHMCode_WDry) = "OHMCode_WinterDry"       
+  HeaderWater_Reqd(cw_cpAnOHM)           = "cp"		! AnOHM TS
+  HeaderWater_Reqd(cw_kkAnOHM)           = "kk"		! AnOHM TS
+  HeaderWater_Reqd(cw_chAnOHM)           = "ch"		! AnOHM TS       
    
   ! ========== SUEWS_Snow.txt ===================
   HeaderSnow_Reqd(cs_Code)         = "Code"
@@ -107,6 +117,10 @@ SUBROUTINE InputHeaderCheck(FileName)
   HeaderSnow_Reqd(cs_OHMCode_SDry) = "OHMCode_SummerDry"     
   HeaderSnow_Reqd(cs_OHMCode_WWet) = "OHMCode_WinterWet"     
   HeaderSnow_Reqd(cs_OHMCode_WDry) = "OHMCode_WinterDry"           
+  HeaderSnow_Reqd(cs_cpAnOHM)           = "cp"		! AnOHM TS
+  HeaderSnow_Reqd(cs_kkAnOHM)           = "kk"		! AnOHM TS
+  HeaderSnow_Reqd(cs_chAnOHM)           = "ch"		! AnOHM TS    
+             
   
   ! ========== SUEWS_Soil.txt ===================
   HeaderSoil_Reqd(cSo_Code)        = "Code" 

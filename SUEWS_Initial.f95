@@ -644,6 +644,10 @@
    SurfaceChar(gridiv,c_OHMCode_SDry(PavSurf)) = NonVeg_Coeff(iv5,ci_OHMCode_SDry)
    SurfaceChar(gridiv,c_OHMCode_WWet(PavSurf)) = NonVeg_Coeff(iv5,ci_OHMCode_WWet)
    SurfaceChar(gridiv,c_OHMCode_WDry(PavSurf)) = NonVeg_Coeff(iv5,ci_OHMCode_WDry)
+   SurfaceChar(Gridiv,c_CpAnOHM(PavSurf))           = NonVeg_Coeff(iv5,ci_CpAnOHM) 	! heat capacity, AnOHM TS   
+   SurfaceChar(Gridiv,c_KkAnOHM(PavSurf))           = NonVeg_Coeff(iv5,ci_KkAnOHM)	! heat conductivity, AnOHM TS   
+   SurfaceChar(Gridiv,c_ChAnOHM(PavSurf))           = NonVeg_Coeff(iv5,ci_ChAnOHM)	! bulk transfer coef., AnOHM TS
+   
    ! Use SoilCode for Paved to find code for soil characteristics
    call CodeMatchSoil(Gridiv,c_SoilTCode(PavSurf))
    ! Transfer soil characteristics to SurfaceChar
@@ -711,6 +715,10 @@
    SurfaceChar(gridiv,c_OHMCode_SDry(BldgSurf)) = NonVeg_Coeff(iv5,ci_OHMCode_SDry)
    SurfaceChar(gridiv,c_OHMCode_WWet(BldgSurf)) = NonVeg_Coeff(iv5,ci_OHMCode_WWet)
    SurfaceChar(gridiv,c_OHMCode_WDry(BldgSurf)) = NonVeg_Coeff(iv5,ci_OHMCode_WDry)   
+   SurfaceChar(Gridiv,c_CpAnOHM(BldgSurf))            = NonVeg_Coeff(iv5,ci_CpAnOHM) 	! heat capacity, AnOHM TS   
+   SurfaceChar(Gridiv,c_KkAnOHM(BldgSurf))            = NonVeg_Coeff(iv5,ci_KkAnOHM)	! heat conductivity, AnOHM TS   
+   SurfaceChar(Gridiv,c_ChAnOHM(BldgSurf))            = NonVeg_Coeff(iv5,ci_ChAnOHM)	! bulk transfer coef., AnOHM TS
+    
    ! Use SoilCode for Bldgs to find code for soil characteristics
    call CodeMatchSoil(Gridiv,c_SoilTCode(BldgSurf))
    ! Transfer soil characteristics to SurfaceChar
@@ -791,6 +799,11 @@
    SurfaceChar(gridiv,c_OHMCode_SDry(ConifSurf)) = Veg_Coeff(iv5,cp_OHMCode_SDry)
    SurfaceChar(gridiv,c_OHMCode_WWet(ConifSurf)) = Veg_Coeff(iv5,cp_OHMCode_WWet)
    SurfaceChar(gridiv,c_OHMCode_WDry(ConifSurf)) = Veg_Coeff(iv5,cp_OHMCode_WDry)     
+   ! AnOHM TS
+   SurfaceChar(Gridiv,c_CpAnOHM(ConifSurf))           = Veg_Coeff(iv5,cp_CpAnOHM) ! heat capacity, AnOHM TS   
+   SurfaceChar(Gridiv,c_KkAnOHM(ConifSurf))           = Veg_Coeff(iv5,cp_KkAnOHM)	! heat conductivity, AnOHM TS   
+   SurfaceChar(Gridiv,c_ChAnOHM(ConifSurf))           = Veg_Coeff(iv5,cp_ChAnOHM)	! bulk transfer coef., AnOHM TS
+        
    ! Use SoilCode for EveTr to find code for soil characteristics
    call CodeMatchSoil(Gridiv,c_SoilTCode(ConifSurf))     
    ! Transfer soil characteristics to SurfaceChar
@@ -871,6 +884,10 @@
    SurfaceChar(gridiv,c_OHMCode_SDry(DecidSurf)) = Veg_Coeff(iv5,cp_OHMCode_SDry)
    SurfaceChar(gridiv,c_OHMCode_WWet(DecidSurf)) = Veg_Coeff(iv5,cp_OHMCode_WWet)
    SurfaceChar(gridiv,c_OHMCode_WDry(DecidSurf)) = Veg_Coeff(iv5,cp_OHMCode_WDry)      
+   ! AnOHM TS
+   SurfaceChar(Gridiv,c_CpAnOHM(DecidSurf))           = Veg_Coeff(iv5,cp_CpAnOHM) ! heat capacity, AnOHM TS   
+   SurfaceChar(Gridiv,c_KkAnOHM(DecidSurf))           = Veg_Coeff(iv5,cp_KkAnOHM)	! heat conductivity, AnOHM TS   
+   SurfaceChar(Gridiv,c_ChAnOHM(DecidSurf))           = Veg_Coeff(iv5,cp_ChAnOHM)	! bulk transfer coef., AnOHM TS      
    ! Use SoilCode for DecTr to find code for soil characteristics
    call CodeMatchSoil(Gridiv,c_SoilTCode(DecidSurf))           
    ! Transfer soil characteristics to SurfaceChar
@@ -951,6 +968,10 @@
    SurfaceChar(gridiv,c_OHMCode_SDry(GrassSurf)) = Veg_Coeff(iv5,cp_OHMCode_SDry)
    SurfaceChar(gridiv,c_OHMCode_WWet(GrassSurf)) = Veg_Coeff(iv5,cp_OHMCode_WWet)
    SurfaceChar(gridiv,c_OHMCode_WDry(GrassSurf)) = Veg_Coeff(iv5,cp_OHMCode_WDry)         
+   ! AnOHM TS
+   SurfaceChar(Gridiv,c_CpAnOHM(GrassSurf))           = Veg_Coeff(iv5,cp_CpAnOHM) ! heat capacity, AnOHM TS   
+   SurfaceChar(Gridiv,c_KkAnOHM(GrassSurf))           = Veg_Coeff(iv5,cp_KkAnOHM)	! heat conductivity, AnOHM TS   
+   SurfaceChar(Gridiv,c_ChAnOHM(GrassSurf))           = Veg_Coeff(iv5,cp_ChAnOHM)	! bulk transfer coef., AnOHM TS         
    ! Use SoilCode for Grass to find code for soil characteristics
    call CodeMatchSoil(Gridiv,c_SoilTCode(GrassSurf))     
    ! Transfer soil characteristics to SurfaceChar
@@ -1018,6 +1039,9 @@
    SurfaceChar(gridiv,c_OHMCode_SDry(BSoilSurf)) = NonVeg_Coeff(iv5,ci_OHMCode_SDry)
    SurfaceChar(gridiv,c_OHMCode_WWet(BSoilSurf)) = NonVeg_Coeff(iv5,ci_OHMCode_WWet)
    SurfaceChar(gridiv,c_OHMCode_WDry(BSoilSurf)) = NonVeg_Coeff(iv5,ci_OHMCode_WDry)         
+   SurfaceChar(Gridiv,c_CpAnOHM(BSoilSurf))           = NonVeg_Coeff(iv5,ci_CpAnOHM) ! heat capacity, AnOHM TS   
+   SurfaceChar(Gridiv,c_KkAnOHM(BSoilSurf))           = NonVeg_Coeff(iv5,ci_KkAnOHM)	! heat conductivity, AnOHM TS   
+   SurfaceChar(Gridiv,c_ChAnOHM(BSoilSurf))           = NonVeg_Coeff(iv5,ci_ChAnOHM)	! bulk transfer coef., AnOHM TS         
    ! Use SoilCode for BSoil to find code for soil characteristics
    call CodeMatchSoil(Gridiv,c_SoilTCode(BSoilSurf))         
    ! Transfer soil characteristics to SurfaceChar
@@ -1084,6 +1108,10 @@
    SurfaceChar(gridiv,c_OHMCode_SDry(WaterSurf)) = Water_Coeff(iv5,cw_OHMCode_SDry)
    SurfaceChar(gridiv,c_OHMCode_WWet(WaterSurf)) = Water_Coeff(iv5,cw_OHMCode_WWet)
    SurfaceChar(gridiv,c_OHMCode_WDry(WaterSurf)) = Water_Coeff(iv5,cw_OHMCode_WDry)    
+   ! AnOHM TS
+   SurfaceChar(Gridiv,c_CpAnOHM(WaterSurf))           = Water_Coeff(iv5,cw_CpAnOHM) ! heat capacity, AnOHM TS   
+   SurfaceChar(Gridiv,c_KkAnOHM(WaterSurf))           = Water_Coeff(iv5,cw_KkAnOHM)	! heat conductivity, AnOHM TS   
+   SurfaceChar(Gridiv,c_ChAnOHM(WaterSurf))           = Water_Coeff(iv5,cw_ChAnOHM)	! bulk transfer coef., AnOHM TS    
    ! Get OHM characteristics for Water   
    call CodeMatchOHM(Gridiv,WaterSurf,'SWet')  !Summer wet
    ! Transfer OHM characteristics to SurfaceChar
@@ -1142,6 +1170,9 @@
    SurfaceChar(gridiv,c_OHMCode_SDry(nsurf+1)) = Snow_Coeff(iv5,cs_OHMCode_SDry)
    SurfaceChar(gridiv,c_OHMCode_WWet(nsurf+1)) = Snow_Coeff(iv5,cs_OHMCode_WWet)
    SurfaceChar(gridiv,c_OHMCode_WDry(nsurf+1)) = Snow_Coeff(iv5,cs_OHMCode_WDry)   
+!    SurfaceChar(Gridiv,c_CpAnOHM(nsurf+1))           = Snow_Coeff(iv5,cs_CpAnOHM) 	! heat capacity, AnOHM TS
+!    SurfaceChar(Gridiv,c_KkAnOHM(nsurf+1))           = Snow_Coeff(iv5,cs_KkAnOHM)	! heat conductivity, AnOHM TS
+!    SurfaceChar(Gridiv,c_ChAnOHM(nsurf+1))           = Snow_Coeff(iv5,cs_ChAnOHM)	! bulk transfer coef., AnOHM TS
    ! Get OHM characteristics for Snow
    call CodeMatchOHM(Gridiv,(nsurf+1),'SWet')  !Summer wet
    ! Transfer OHM characteristics to SurfaceChar
@@ -1644,7 +1675,13 @@
  r1_grids(Gridiv)=-101
  r2_grids(Gridiv)=-100
  r3_grids(Gridiv)=-99
+ 
+! ---- AnOHM TS ---------------------
+! initialize Bowen ratio
+	Bo_grids(0,:)=1.
+	mAH_grids(0,:)=25.
 
+! -----------------------------------
 
  !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  !DEFINE DIFFERENT INITIALIZATION PARAMETERS

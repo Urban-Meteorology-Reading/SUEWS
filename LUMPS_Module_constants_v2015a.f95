@@ -7,6 +7,7 @@
 ! LJ 06 Jul 2015 - changed alb_snow, albsnowmin and albsnowmax to SnowAlb, SnowAlbMin and SnowAlbMax (to be systematic with
 !                   other variables). Similarly denssnow changed to SnowDens. cMDS_SnowAlb=29 added.
 ! HCW 10 Mar 2016 - variable vsmd added for soil moisture of vegetated surfaces
+! TS 14 Mar 2016 - multiple addtions for AnOHM
 
 !==================================================================================================
  module allocateArray
@@ -19,10 +20,10 @@
    
    ! ---- Set number of columns in input files ----------------------------------------------------
    integer, parameter:: ncolumnsSiteSelect=80        !SUEWS_SiteSelect.txt
-   integer, parameter:: ncolumnsNonVeg=18            !SUEWS_NonVeg.txt
-   integer, parameter:: ncolumnsVeg=29               !SUEWS_Veg.txt
-   integer, parameter:: ncolumnsWater=15             !SUEWS_Water.txt
-   integer, parameter:: ncolumnsSnow=19              !SUEWS_Snow.txt
+   integer, parameter:: ncolumnsNonVeg=21            !SUEWS_NonVeg.txt, changed from 18 to 21, AnOHM TS
+   integer, parameter:: ncolumnsVeg=32               !SUEWS_Veg.txt, changed from 29 to 32, AnOHM TS
+   integer, parameter:: ncolumnsWater=18             !SUEWS_Water.txt, changed from 15 to 18, AnOHM TS
+   integer, parameter:: ncolumnsSnow=22              !SUEWS_Snow.txt, changed from 19 to 22, AnOHM TS
    integer, parameter:: ncolumnsSoil=9               !SUEWS_Soil.txt
    integer, parameter:: ncolumnsConductance=12       !SUEWS_Conductance.txt
    integer, parameter:: ncolumnsOHMCoefficients=4    !SUEWS_OHMCoefficients.txt
@@ -204,6 +205,13 @@
    real(kind(1d0)),dimension( 0:ndays,MaxNumberOfGrids):: albEveTr_grids
    real(kind(1d0)),dimension( 0:ndays,MaxNumberOfGrids):: albGrass_grids
    
+   ! AnOHM related: added by TS 01 Mar 2016
+   real(kind(1d0)),dimension( 0:ndays,MaxNumberOfGrids):: Bo_grids
+   real(kind(1d0)),dimension( 0:ndays,MaxNumberOfGrids):: mAH_grids
+   real(kind(1d0)),dimension( 0:ndays,MaxNumberOfGrids):: a1AnOHM_grids
+   real(kind(1d0)),dimension( 0:ndays,MaxNumberOfGrids):: a2AnOHM_grids
+   real(kind(1d0)),dimension( 0:ndays,MaxNumberOfGrids):: a3AnOHM_grids
+   
    ! Day of week, month and season (used for water use and energy use calculations, and in OHM)
    integer,dimension(0:ndays,3)::DayofWeek   !1 - day of week; 2 - month; 3 - season
    !-----------------------------------------------------------------------------------------------
@@ -308,6 +316,15 @@
    !!real (kind(1d0)),dimension(MaxNumberOfGrids)::   GridConnectionsFrac   !Fraction of water moving between the different grids
    !-----------------------------------------------------------------------------------------------
    
+   ! ---- AnOHM related variable, added by TS, 01 Mar 2016 ---------------------------------------------------------------
+   real(kind(1d0)),dimension(MaxNumberOfGrids) :: a1AnOHM,a2AnOHM,a3AnOHM 	! OHM coefficients, a1 [-]; a2 [h]; a3 [W m-2]
+   real(kind(1d0)),dimension(MaxNumberOfGrids) :: mAHAnOHM   				! daily mean AH [W m-2]
+   real(kind(1d0)),dimension(MaxNumberOfGrids) :: BoAnOHMStart	! initial Bo for interation [-]
+   real(kind(1d0)),dimension(MaxNumberOfGrids) :: BoAnOHMEnd	! final Bo for interation [-]
+   real(kind(1d0)),dimension(nsurf):: cpAnOHM    	! heat capacity [??]
+   real(kind(1d0)),dimension(nsurf):: kkAnOHM   		! heat conductivity [??]
+   real(kind(1d0)),dimension(nsurf):: chAnOHM    	! bulk transfer coef. [-]
+   !----------------------------------------------------------------------------------------------- 
    
    !-----------------------------------------------------------------------------------------------
    !---------------------------------- Column numbers ---------------------------------------------                                                 
@@ -333,9 +350,13 @@
    integer,dimension(nsurf):: c_SnowLimPat =(/(cc, cc=ccEndSI+11*nsurf+1,ccEndSI+11*nsurf+nsurf, 1)/) !Snow limit for patchiness
    ! N.B. currently only in SUEWS_NonVeg.txt
    integer,dimension(nsurf):: c_SnowLimRem =(/(cc, cc=ccEndSI+12*nsurf+1,ccEndSI+12*nsurf+nsurf, 1)/) !Snow limit for removal
+   ! AnOHM TS
+   integer,dimension(nsurf):: c_CpAnOHM = (/(cc, cc=ccEndSI+13*nsurf+1,ccEndSI+13*nsurf+nsurf, 1)/) !heat capacity, AnOHM TS
+   integer,dimension(nsurf):: c_KkAnOHM = (/(cc, cc=ccEndSI+14*nsurf+1,ccEndSI+14*nsurf+nsurf, 1)/) !heat conductivity, AnOHM TS
+   integer,dimension(nsurf):: c_ChAnOHM = (/(cc, cc=ccEndSI+15*nsurf+1,ccEndSI+15*nsurf+nsurf, 1)/) !bulk transfer coef., AnOHM TS
    
    ! Find current column number	
-   integer,parameter:: ccEndI = (ccEndSI+12*nsurf+nsurf)
+   integer,parameter:: ccEndI = (ccEndSI+15*nsurf+nsurf) !add columns for AnOHM, AnOHM TS
    
    ! Applicable to vegetated surfaces only
    integer,dimension(NVegSurf):: c_BaseT   =(/(cc, cc=ccEndI+ 0*nvegsurf+1,ccEndI+ 0*nvegsurf+nvegsurf, 1)/) !Base temp. for leaf-on
@@ -723,6 +744,9 @@
                           SVFPath,&    ! Path to SVFs
                           SVFsuffix,&  !
                           buildingsname! Boolean matrix for locations of building pixels
+						  
+	!--------- AnOHM related variables----------------------------------
+	! to be added here
      
  end module data_in
 !================================================================================================== 
@@ -1201,7 +1225,12 @@
              cMDS_LAIEveTr  =26,&
              cMDS_LAIDecTr  =27,&
              cMDS_LAIGrass  =28,&
-             cMDS_SnowAlb   =29
+             cMDS_SnowAlb   =29,&
+			 cMDS_BoRatio         = 30,& ! noontime Bowen ratio, added by TS
+			 cMDS_a1AnOHM         = 31,& ! a1 of AnOHM, added by TS
+			 cMDS_a2AnOHM         = 32,& ! a2 of AnOHM, added by TS
+			 cMDS_a3AnOHM         = 33 ! a3 of AnOHM, added by TS
+			 
 	     
  end Module ColNamesModelDailyState
 
@@ -1329,9 +1358,12 @@
           ci_SnowLimPat   = 13,&
           ci_SnowLimRem   = 14,&
           ci_OHMCode_SWet = 15,&
-          ci_OHMCode_SDry = 16,&
-          ci_OHMCode_WWet = 17,&
-          ci_OHMCode_WDry = 18
+	      ci_OHMCode_SDry    = 16,&
+	      ci_OHMCode_WWet    = 17,&
+	      ci_OHMCode_WDry    = 18,&
+		  ci_cpAnOHM            = 19,& ! heat capacity, added by TS AnOHM
+		  ci_kkAnOHM            = 20,& ! heat conductivity, added by TS AnOHM
+		  ci_ChAnOHM            = 21   ! bulk transfer coef., added by TS AnOHM              
             
    !========== Columns for SUEWS_Veg.txt ============================
    integer::cp_Code     =  1,&
@@ -1362,7 +1394,11 @@
           cp_OHMCode_SWet = 26,&
           cp_OHMCode_SDry = 27,&
           cp_OHMCode_WWet = 28,&
-          cp_OHMCode_WDry = 29
+          cp_OHMCode_WDry = 29,&
+		  cp_cpAnOHM = 30,& ! heat capacity, added by TS AnOHM
+		  cp_kkAnOHM = 31,& ! heat conductivity, added by TS AnOHM
+		  cp_ChAnOHM = 32   ! bulk transfer coef., added by TS AnOHM
+					      
    
    !========== Columns for SUEWS_Water.txt ===============================
    integer::cw_Code     =  1,&
@@ -1379,7 +1415,10 @@
           cw_OHMCode_SWet = 12,&
           cw_OHMCode_SDry = 13,&
           cw_OHMCode_WWet = 14,&
-          cw_OHMCode_WDry = 15
+          cw_OHMCode_WDry = 15,&
+		  cw_cpAnOHM              = 16,& ! heat capacity, added by TS AnOHM
+		  cw_kkAnOHM              = 17,& ! heat conductivity, added by TS AnOHM
+		  cw_ChAnOHM              = 18   ! bulk transfer coef., added by TS AnOHM
 	      
    !========== Columns for SUEWS_Snow.txt ================================	      
    integer::cs_Code       =  1,&
@@ -1397,10 +1436,13 @@
           cs_SnowCRWMin   = 13,&
           cs_SnowCRWMax   = 14,&
           cs_SnowPLimSnow = 15,&
-          cs_OHMCode_SWet = 16,&
-          cs_OHMCode_SDry = 17,&
-          cs_OHMCode_WWet = 18,&
-          cs_OHMCode_WDry = 19
+	      cs_OHMCode_SWet    = 16,&
+	      cs_OHMCode_SDry    = 17,&
+	      cs_OHMCode_WWet    = 18,&
+	      cs_OHMCode_WDry    = 19,&
+		  cs_cpAnOHM            = 20,& ! heat capacity, added by TS
+		  cs_kkAnOHM            = 21,& ! heat conductivity, added by TS
+		  cs_ChAnOHM            = 22   ! bulk transfer coef., added by TS
 	      
    !========== Columns for SUEWS_Soil.txt ================================
    integer::cSo_Code     =  1,&

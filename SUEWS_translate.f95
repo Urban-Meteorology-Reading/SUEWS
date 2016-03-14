@@ -290,6 +290,16 @@
   OHM_coef(nsurf+2,4,2) = SurfaceChar(Gridiv,c_a2_WDry(nsurf+1)) !Snow    a2 Winter dry 
   OHM_coef(1:nsurf,4,3) = SurfaceChar(Gridiv,c_a3_WDry(1:nsurf)) !1:nsurf a3 Winter dry
   OHM_coef(nsurf+2,4,3) = SurfaceChar(Gridiv,c_a3_WDry(nsurf+1)) !Snow    a3 Winter dry
+  
+  ! ---- AnOHM related ------------------------------
+  cpAnOHM(1:nsurf) = SurfaceChar(Gridiv,c_cpAnOHM)   ! AnOHM TS
+  kkAnOHM(1:nsurf) = SurfaceChar(Gridiv,c_kkAnOHM)   ! AnOHM TS
+  chAnOHM(1:nsurf) = SurfaceChar(Gridiv,c_chAnOHM)   ! AnOHM TS
+  
+  
+  
+  ! -------------------------------------------------
+  
    
   ! ---- QF coeffs (was in SUEWS_SAHP.f95, subroutine SAHP_Coefs)                 
   BaseTHDD = -999 ! Initialise  QF coeffs 

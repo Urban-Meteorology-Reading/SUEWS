@@ -1,6 +1,9 @@
 !This subroutine does the actual calculations of the SUEWS code (mostly old SUEWS_Temporal).
 !Made by LJ and HW Oct 2014
 !Gives in the grid ID (Gridiv) and number of line in the met forcing data to be analyzed (ir)
+!Last modification
+! TS 09 Mar 2016
+!  Added AnOHM subroutine to calculate heat storage
 !Last modification:
 ! HCW 10 Mar 2016 - Calculation of soil moisture deficit of vegetated surfaces added (vsmd)
 ! LJ 2 Jan 2016   - Calculation of snow fraction moved from SUEWS_Calculations to SUEWS_Snow
@@ -223,6 +226,10 @@
       call OHM_v2015(Gridiv)
     endif   
  endif   
+  
+ if (QSChoice==3) then 	! use AnOHM to calculate QS
+ 	call AnOHM_v2016(Gridiv)
+ end if   
  
  ! For the purpose of turbulent fluxes, remove QF from the net all-wave radiation
  qn1=qn1_bup  !Remove QF from QSTAR

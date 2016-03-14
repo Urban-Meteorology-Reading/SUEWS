@@ -60,6 +60,19 @@
             date,&         !Day
             critDays       !Limit for GDD when GDD or SDD is set to zero
 
+!------------------------------------------------------------------------------------------------			
+!	local variables to calculate Bowen ratio, AnOHM TS:
+	real,dimension(24) :: xQH,xQE,xAH	! QH and QE
+	real :: xBo							! Bowen ratio
+	real :: mxQH,mxQE,xmAH 				! mean values
+	real :: xx							! temporary use
+	integer :: i						! temporary use
+	integer :: lenDataOut				! length of met data block 
+	integer, allocatable :: lSub(:) 	! array to retrieve data of the previous day (id)
+	integer :: irRange(2)				! row range in MetData containing id values
+	
+!------------------------------------------------------------------------------------------------	
+
   real(kind(1d0)):: capChange,porChange,albChangeDecTr,albChangeEveTr,albChangeGrass,deltaLAI,deltaLAIEveTr,deltaLAIGrass
   real(kind(1d0)):: no,yes,indHelp   !Switches and checks for GDD
   character(len=10):: grstr2
@@ -390,6 +403,52 @@
      !Also update albedo of EveTr and Grass surfaces
      albEveTr(id) = albEveTr(id-1) + albChangeEveTr    
      albGrass(id) = albGrass(id-1) + albChangeGrass
+
+! ------- AnOHM related, added by TS 01 Mar 2016 ------------------------------
+! 	read in QH and QE of the current day
+	allocate(lSub(size(dataOut(:,2,Gridiv))))
+	where (dataOut(:,2,Gridiv) == id) 
+		lSub = 1
+		elsewhere
+		lSub = 0	
+	end where
+	irRange = (/maxloc(lSub),maxloc(lSub)+sum(lSub)/)
+! write(*,*) 'good here: 424',irRange(2), irRange(1),sum(lSub),maxloc(lSub)
+! 	calculate Bowen ratio
+! 	check if the diurnal cycle of present day (id) is complete
+	if (irRange(2)- irRange(1) >= nsh*24-1) then
+! 	load the sublist into forcings:
+! 	QH and QE for Bowen ratio
+	 	xQH  = dataOut(irRange(1):irRange(2):nsh,16,Gridiv)
+	 	xQE  = dataOut(irRange(1):irRange(2):nsh,17,Gridiv)
+	 	mxQH = sum(xQH(10:16))/7
+	 	mxQE = sum(xQE(10:16))/7
+		xBo  = mxQH/mxQE
+! 	calculate daily mean AH
+		xAH  = dataOut(irRange(1):irRange(2):nsh,15,Gridiv)
+		xmAH  = sum(xAH(:))/24
+	else
+!  	give a default Bo as 1 if no enough flux data to update with:
+		xBo  = 1.
+		xmAH = 25.	
+	end if
+! 	handle NAN
+	if ( xBo/=xBo ) then
+		xBo = 1.
+	end if
+	if ( xmAH/=xmAH ) then
+		xmAH = 25.
+	end if
+
+	BoAnOHMEnd(Gridiv)   = xBo
+	Bo_grids(id,Gridiv)  = BoAnOHMEnd(Gridiv)
+	mAHAnOHM(Gridiv)     = xmAH
+	mAH_grids(id,Gridiv) = mAHAnOHM(Gridiv)
+!	load current AnOHM coef.: 	 
+	a1AnOHM_grids(id,Gridiv) = a1AnOHM(Gridiv)
+	a2AnOHM_grids(id,Gridiv) = a2AnOHM(Gridiv)
+	a3AnOHM_grids(id,Gridiv) = a3AnOHM(Gridiv)
+! ----------------------------------------------------------------------------
      
      ! -----------------------------------------------------------------------------
      
@@ -414,9 +473,10 @@
                        'WU_DecTr(1) WU_DecTr(2) WU_DecTr(3) ',&               !25
                        'WU_Grass(1) WU_Grass(2) WU_Grass(3) ',&               !28
                        'deltaLAI LAIlumps AlbSnow dens_snow_pav ',&           !32
-                       'dens_snow_bldg dens_snow_EveTr dens_snow_DecTr',&     !35
-                       'dens_snow_Grass dens_snow_Bares dens_snow_wtr')       !38
-                       
+                       'dens_snow_bldg dens_snow_EveTr dens_snow_DecTr ',&     !35
+                       'dens_snow_Grass dens_snow_Bares dens_snow_wtr ',&      !38
+                       'BoAnOHMEnd a1AnOHM a2AnOHM a3AnOHM')					  !41 TS AnOHM 05 Mar 2016 
+					   
            DailyStateFirstOpen(Gridiv)=0
         ! Otherwise open file to append
         else
@@ -429,14 +489,16 @@
                       LAI(id,1:nvegsurf),&
                       DecidCap(id),Porosity(id),AlbDec(id),&
                       WU_day(id-1,1:9),&
-                      deltaLAI,VegPhenLumps,SnowAlb,SnowDens(1:7)
+                      deltaLAI,VegPhenLumps,SnowAlb,SnowDens(1:7),&
+					  BoAnOHMEnd(Gridiv),a1AnOHM(Gridiv),a2AnOHM(Gridiv),a3AnOHM(Gridiv)
             
         601 format(2(i4,1X),&
                    4(f6.1,1X),1(f8.4,1X),1(f6.1,1X), 5(f6.1,1X),&
                    3(f6.2,1X),&
                    3(f6.2,1X),&
                    9(f7.3,1X),&
-                   2(f7.2,1X),8(f7.2,1X))
+                   2(f7.2,1X),8(f7.2,1X),&
+				   4(f7.2,1X))
          
         ! Close the daily state file
         close(60)

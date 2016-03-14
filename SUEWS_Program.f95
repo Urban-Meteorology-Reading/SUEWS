@@ -9,6 +9,8 @@
 !  - then over rows
 !  - then over grids
 !
+!
+!Last modified by TS 14 Mar 2016 to include AnOHM daily interation
 !Last modified by HCW 25 Jun 2015
 !  Fixed bug in LAI calculation at year change
 !Last modified by HCW 12 Mar 2015
@@ -45,12 +47,20 @@
              iv,&       !Block number (from 1 to ReadBlocksMetData)
              ir,irMax,& !Row number within each block (from 1 to irMax)
              rr,&       ! Row of SiteSelect corresponding to current year and grid
-             year_int   ! Year as an integer (from SiteSelect rather than met forcing file)
+             year_int,& ! Year as an integer (from SiteSelect rather than met forcing file)
+			 iter		! iteraion counter, AnOHM TS
     
     logical:: PrintPlace=.false.   !Prints row, block, and grid number to screen if TRUE
+	
+	logical, allocatable :: flagRerunAnOHM(:)	! iteration run to make Bo converge,AnOHM TS
+	real :: timeStart, timeFinish ! profiling use, AnOHM TS
     		     
     !==========================================================================
     
+	! start counting cpu time
+	call cpu_time(timeStart)
+	
+	
     ! Initialise error file (0 -> problems.txt file is created)
     errorChoice=0
 
@@ -77,9 +87,17 @@
     ! Daily state needs to be outside year loop to transfer states between years
     allocate(ModelDailyState(NumberOfGrids,MaxNCols_cMDS))   !DailyState        
     allocate(DailyStateFirstOpen(NumberOfGrids))             !Initialization for header
+	allocate(flagRerunAnOHM(NumberOfGrids))					 !flag for rerun AnOHM
+! 	allocate(BoAnOHMStart(NumberOfGrids))		! initial Bo
+! 	allocate(BoAnOHMEnd(NumberOfGrids))			! final Bo
+	
+	
+	
     ! ---- Initialise arrays --------------------------------------------------
     ModelDailyState(:,:) = -999
     DailyStateFirstOpen(:) = 1
+	
+	flagRerunAnOHM(:) = .TRUE.
     ! -------------------------------------------------------------------------
     
     !==========================================================================
@@ -118,7 +136,8 @@
        ! To conserve memory, read met data in blocks
        ! Find number of lines that can be read in each block (i.e. read in at once)
        ReadLinesMetData = nlinesMetData   !Initially set limit as the size of the met file (N.B.solves problem with Intel fortran)
-       nlinesLimit = int(floor(MaxLinesMet/real(NumberOfGrids,kind(1d0))))
+!        nlinesLimit = int(floor(MaxLinesMet/real(NumberOfGrids,kind(1d0))))
+       nlinesLimit = 24*nsh
        if(nlinesMetData > nlinesLimit) then   !But restrict if this limit exceeds memory capacity
           ReadLinesMetData = nlinesLimit
        endif    
@@ -226,10 +245,21 @@
           else
              irMax = ReadLinesMetdata
           endif   
+		  
+		  iter       = 0
+		  BoAnOHMEnd = NAN
+		  
+		  flagRerunAnOHM = .TRUE.
+		 
+		  do while ( any(flagRerunAnOHM) .and. iter<10 )
+			  iter = iter+1
+			  write(unit=*, fmt=*) 'iteration:',iter
+			  
+			  
           DO ir=1,irMax   !Loop through rows of current block of met data
              GridCounter=1    !Initialise counter for grids in each year
              DO i=FirstGrid,LastGrid   !Loop through grids
-
+           
               if(PrintPlace) write(*,*) 'Row (ir):', ir,'/',irMax,'of block (iv):', iv,'/',ReadBlocksMetData,'Grid:',i
  
               ! Call model calculation code
@@ -249,8 +279,25 @@
                     FileCodeX    =trim(FileCode)//trim(adjustl(grid_txt))//'_'//trim(year_txt)
                     FileCodeXNext=trim(FileCode)//trim(adjustl(grid_txt))//'_'//trim(year_txtNext)
                     call NextInitial(FileCodeXNext,year_int)
+		             endif
                  endif
+				  
+				  ! check if Bowen ratio converges for AnOHM
+! 				  if ( it == 0 .and. imin == 5 )  write(*, '(a8,f10.4,2x,i2,i2)') 'BoStart',BoAnOHMStart(GridCounter),it,imin				  
+! 				  if ( ir == irMax) write(*, '(a8,f10.4,2x,i2,i2)') 'BoEnd',BoAnOHMEnd(GridCounter),it,imin
+				  
+				  if ( QSChoice == 3 .and. ir == irMax .and. abs(BoAnOHMStart(GridCounter)-BoAnOHMEnd(GridCounter))<0.05) then
+					  flagRerunAnOHM(GridCounter)=.FALSE.
+! 					  write(unit=*, fmt=*) 'converged:'
+! 					  write(*, '(a8,f10.6)') 'BoStart',BoAnOHMStart(GridCounter)
+! 					  write(*, '(a8,f10.6)') 'BoEnd',BoAnOHMEnd(GridCounter)
+! 					  write(*, '(a8,f10.6)') 'diff.',abs(BoAnOHMStart(GridCounter)-BoAnOHMEnd(GridCounter))
+! 					  write(unit=*, fmt=*) '*********'
               endif
+				  
+				  ! bypass converge check do-while loop
+				  if ( QSChoice /= 3 ) flagRerunAnOHM(GridCounter)=.FALSE.			  
+				  
            
               GridCounter = GridCounter+1   !Increase GridCounter by 1 for next grid
               ENDDO !end loop over grids
@@ -258,6 +305,9 @@
               !!water movements between the grids needs to be taken into account here ??
               
           ENDDO !end loop over rows of met data
+		  	
+		  end do   
+          
 
           ! Write output files in blocks --------------------------------
           DO i=FirstGrid,LastGrid
@@ -285,6 +335,10 @@
     ! Daily state needs to be outside year loop to transfer states between years
     deallocate(ModelDailyState)
     ! -------------------------------------------------------------------------
+	
+	! get cpu time consumed
+	call cpu_time(timeFinish)	
+	write(*,*) "Time = ",timeFinish-timeStart," seconds."
 
     stop 'finished'
 

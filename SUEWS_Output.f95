@@ -25,14 +25,15 @@
   use initial
   use solweig_module
   use cbl_module
+  use ESTM_data
   
 
   IMPLICIT NONE
 
-  integer::i !,lfnOutC
+  integer::i ,azero!,lfnOutC
   integer:: Gridiv, year_int, iv, irMax
   character(len=10):: str2, grstr2, yrstr2
-  character(len=100):: rawpath, SnowOut
+  character(len=100):: rawpath, SnowOut,ESTMOut
     
   !================DEFINE OUTPUT FILENAME AND ITS PATH================
   write(str2,'(i2)') TSTEP/60
@@ -42,6 +43,7 @@
   rawpath=trim(FileOutputPath)//trim(FileCode)//trim(adjustl(grstr2))//'_'//trim(adjustl(yrstr2))
   FileOut=trim(rawpath)//'_'//trim(adjustl(str2))//'.txt'
   SOLWEIGpoiOut=trim(rawpath)//'_SOLWEIGpoiOut.txt'
+  ESTMOut=trim(rawpath)//'_ESTM_5.txt'
   BLOut=trim(rawpath)//'_BL.txt'
   SnowOut=trim(rawpath)//'_snow_5.txt'
   
@@ -121,6 +123,18 @@
     open(54,file=trim(SnowOut),position='append')
    endif
  endif
+ 
+ !ESTM ouputfile
+  if (QSChoice==4 .or. QSChoice==14)then
+     open(58,file=ESTMOut,status='unknown')
+     write(58, 115)                                             
+     115  format('%iy id it imin dectime ',&
+                 'QSNET QSAIR QSWALL QSROOF QSGROUND QSIBLD ',&
+  			     'TWALL1 TWALL2 TWALL3 TWALL4 TWALL5 ',&       !T0_WALL TWALL1 TWALL2 TWALL3 TN_WALL
+  			     'TROOF1 TROOF2 TROOF3 TROOF4 TROOF5 ',&
+  			     'TGROUND1 TGROUND2 TGROUND3 TGROUND4 TGROUND5 ',&
+  			     'TiBLD1 TiBLD2 TiBLD3 TiBLD4 TiBLD5 TaBLD ')
+  endif
 
  !================ACTUAL DATA WRITING================
  if (SOLWEIGpoi_out==1) then
@@ -143,6 +157,11 @@
  if(SnowUse>=1) then
     do i=1,irmax
        write(54,306)(int(dataOutSnow(i,is,Gridiv)),is=1,4),(dataOutSnow(i,is,Gridiv),is=5,ncolumnsDataOutSnow)
+    enddo
+ endif
+ if (QSChoice==4 .or. QSChoice==14)then
+    do i=1,iESTMcount
+        write(58, 307)(int(dataOutESTM(i,is,Gridiv)),is=1,4),(dataOutESTM(i,is,Gridiv),is=5,32)
     enddo
  endif
 
@@ -179,12 +198,14 @@
              7(f10.4,1X),&
              7(f10.4,1X),7(f10.4,1X),7(f10.4,1X),&
              7(f10.4,1X),7(f10.4,1X),7(f10.4,1X),7(f10.4,1X))
+  307 format((i4,1X),3(i3,1X),(f8.4,1X),27(f12.4,1X))  !ESTM out      
 
   !================CLOSE OUTPUTFILE================
   close (lfnoutC)
   close (9)
   close (53)
   close (54)
+  close (58)
   return
 
   !Error commands

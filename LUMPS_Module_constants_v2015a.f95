@@ -7,7 +7,7 @@
 ! LJ 06 Jul 2015 - changed alb_snow, albsnowmin and albsnowmax to SnowAlb, SnowAlbMin and SnowAlbMax (to be systematic with
 !                   other variables). Similarly denssnow changed to SnowDens. cMDS_SnowAlb=29 added.
 ! HCW 10 Mar 2016 - variable vsmd added for soil moisture of vegetated surfaces
-
+    
 !==================================================================================================
  module allocateArray
 
@@ -26,6 +26,7 @@
    integer, parameter:: ncolumnsSoil=9               !SUEWS_Soil.txt
    integer, parameter:: ncolumnsConductance=12       !SUEWS_Conductance.txt
    integer, parameter:: ncolumnsOHMCoefficients=4    !SUEWS_OHMCoefficients.txt
+   integer, parameter:: ncolumnsESTMCoefficients=53  !SUEWS_ESTMCoefficients.txt ! S.O. 04 Feb 2016
    integer, parameter:: ncolumnsAnthropogenicHeat=11 !SUEWS_AnthropogenicHeat.txt
    integer, parameter:: ncolumnsIrrigation=25        !SUEWS_Irrigation.txt
    integer, parameter:: ncolumnsProfiles=25          !SUEWS_Profiles.txt
@@ -51,7 +52,9 @@
    character(len=20),dimension(ncolumnsConductance)::       HeaderCond_File                !Header for conductances 
    character(len=20),dimension(ncolumnsConductance)::       HeaderCond_Reqd                !Expected header for conductances 
    character(len=20),dimension(ncolumnsOHMCoefficients)::   HeaderOHMCoefficients_File     !Header for soils
-   character(len=20),dimension(ncolumnsOHMCoefficients)::   HeaderOHMCoefficients_Reqd     !Expected header for soils   
+   character(len=20),dimension(ncolumnsOHMCoefficients)::   HeaderOHMCoefficients_Reqd     !Expected header for soils
+   character(len=20),dimension(ncolumnsESTMCoefficients)::  HeaderESTMCoefficients_File    !Header for soils            ! S.O. 04 Feb 2016
+   character(len=20),dimension(ncolumnsESTMCoefficients)::  HeaderESTMCoefficients_Reqd    !Expected header for soils   ! S.O. 04 Feb 2016
    character(len=20),dimension(ncolumnsAnthropogenicHeat):: HeaderAnthropogenicHeat_File   !Header for QF
    character(len=20),dimension(ncolumnsAnthropogenicHeat):: HeaderAnthropogenicHeat_Reqd   !Expected header for QF 
    character(len=20),dimension(ncolumnsIrrigation)::        HeaderIrrigation_File          !Header for Irrigation
@@ -69,7 +72,8 @@
    real(kind(1d0)),dimension(:,:),allocatable::Snow_Coeff                !Coefficients for snow
    real(kind(1d0)),dimension(:,:),allocatable::Soil_Coeff                !Coefficients for soil
    real(kind(1d0)),dimension(:,:),allocatable::Conductance_Coeff         !Coefficients for conductances
-   real(kind(1d0)),dimension(:,:),allocatable::OHMCoefficients_Coeff     !Coefficients for OHMCoefficients 
+   real(kind(1d0)),dimension(:,:),allocatable::OHMCoefficients_Coeff     !Coefficients for OHMCoefficients
+   real(kind(1d0)),dimension(:,:),allocatable::ESTMCoefficients_Coeff    !Coefficients for ESTMCoefficients   ! S.O. 04 Feb 2016 
    real(kind(1d0)),dimension(:,:),allocatable::AnthropogenicHeat_Coeff   !Coefficients for AnthropogenicHeat
    real(kind(1d0)),dimension(:,:),allocatable::Irrigation_Coeff          !Coefficients for Irrigation
    real(kind(1d0)),dimension(:,:),allocatable::Profiles_Coeff            !Coefficients for Profiles
@@ -85,7 +89,7 @@
    real(kind(1d0)),dimension(:,:,:),allocatable:: dataOutBL            !CBL output matrix
    real(kind(1d0)),dimension(:,:,:),allocatable:: dataOutSOL           !SOLWEIG POI output matrix
    real(kind(1d0)),dimension(:,:,:),allocatable:: dataOutSnow          !Main data output matrix
-   
+   real(kind(1d0)),dimension(:,:,:),allocatable:: dataOutESTM          !ESTM output matrix   
    ! ---- Define array for hourly profiles interpolated to tstep ----------------------------------
    real(kind(1d0)),dimension(:,:,:),allocatable:: TstepProfiles        
    real(kind(1d0)),dimension(:,:),  allocatable:: AHProf_tstep 
@@ -376,7 +380,7 @@
       
    ! Soil information
    integer,dimension(nsurf):: c_SoilDepth    = (/(cc, cc=ccEndSn+ 0*nsurf+1,ccEndSn+ 0*nsurf+nsurf, 1)/)  ! Volumetric SM capacity
-   integer,dimension(nsurf):: c_SoilStCap = (/(cc, cc=ccEndSn+ 1*nsurf+1,ccEndSn+ 1*nsurf+nsurf, 1)/)  ! Volumetric SM capacity
+   integer,dimension(nsurf):: c_SoilStCap    = (/(cc, cc=ccEndSn+ 1*nsurf+1,ccEndSn+ 1*nsurf+nsurf, 1)/)  ! Volumetric SM capacity
    integer,dimension(nsurf):: c_KSat         = (/(cc, cc=ccEndSn+ 2*nsurf+1,ccEndSn+ 2*nsurf+nsurf, 1)/)  ! Saturated hydraulic conductivity
    integer,dimension(nsurf):: c_SoilDens     = (/(cc, cc=ccEndSn+ 3*nsurf+1,ccEndSn+ 3*nsurf+nsurf, 1)/)  ! Soil Density
    integer,dimension(nsurf):: c_SoilInfRate  = (/(cc, cc=ccEndSn+ 4*nsurf+1,ccEndSn+ 4*nsurf+nsurf, 1)/)  ! Soil infiltration rate
@@ -491,9 +495,66 @@
    integer,dimension(nsurf):: c_WGToWater = (/(cc, cc=ccEndPr+ 6*nsurf+1,ccEndPr+ 6*nsurf+nsurf, 1)/) !Water dist to Water
    integer,dimension(nsurf):: c_WGToRunoff    = (/(cc, cc=ccEndPr+ 7*nsurf+1,ccEndPr+ 7*nsurf+nsurf, 1)/) !Water dist to runoff 
    integer,dimension(nsurf):: c_WGToSoilStore = (/(cc, cc=ccEndPr+ 8*nsurf+1,ccEndPr+ 8*nsurf+nsurf, 1)/) !Water dist to sub-surface soil
- 
+   
+   ! Find current column number	
+   integer,parameter:: ccEndWG = (ccEndPr+ 8*nsurf+nsurf)
+       
+   !ESTM
+   integer,dimension(2):: c_thick1_r   = (/(cc, cc=ccEndWG+ 0*2+1,ccEndWG+  0*2+2, 1)/) 
+   integer,dimension(2):: c_k1_r       = (/(cc, cc=ccEndWG+ 1*2+1,ccEndWG+  1*2+2, 1)/) 
+   integer,dimension(2):: c_rhoCp1_r   = (/(cc, cc=ccEndWG+ 2*2+1,ccEndWG+  2*2+2, 1)/) 
+   integer,dimension(2):: c_thick2_r   = (/(cc, cc=ccEndWG+ 3*2+1,ccEndWG+  3*2+2, 1)/)
+   integer,dimension(2):: c_k2_r       = (/(cc, cc=ccEndWG+ 4*2+1,ccEndWG+  4*2+2, 1)/) 
+   integer,dimension(2):: c_rhoCp2_r   = (/(cc, cc=ccEndWG+ 5*2+1,ccEndWG+  5*2+2, 1)/) 
+   integer,dimension(2):: c_thick3_r   = (/(cc, cc=ccEndWG+ 6*2+1,ccEndWG+  6*2+2, 1)/)
+   integer,dimension(2):: c_k3_r       = (/(cc, cc=ccEndWG+ 7*2+1,ccEndWG+  7*2+2, 1)/) 
+   integer,dimension(2):: c_rhoCp3_r   = (/(cc, cc=ccEndWG+ 8*2+1,ccEndWG+  8*2+2, 1)/)
+   integer,dimension(2):: c_thick4_r   = (/(cc, cc=ccEndWG+ 9*2+1,ccEndWG+  9*2+2, 1)/)
+   integer,dimension(2):: c_k4_r       = (/(cc, cc=ccEndWG+ 10*2+1,ccEndWG+ 10*2+2, 1)/) 
+   integer,dimension(2):: c_rhoCp4_r   = (/(cc, cc=ccEndWG+ 11*2+1,ccEndWG+ 11*2+2, 1)/)
+   integer,dimension(2):: c_thick5_r   = (/(cc, cc=ccEndWG+ 12*2+1,ccEndWG+ 12*2+2, 1)/)
+   integer,dimension(2):: c_k5_r       = (/(cc, cc=ccEndWG+ 13*2+1,ccEndWG+ 13*2+2, 1)/) 
+   integer,dimension(2):: c_rhoCp5_r   = (/(cc, cc=ccEndWG+ 14*2+1,ccEndWG+ 14*2+2, 1)/)
+   integer,dimension(2):: c_thick1_e   = (/(cc, cc=ccEndWG+ 15*2+1,ccEndWG+ 15*2+2, 1)/) 
+   integer,dimension(2):: c_k1_e       = (/(cc, cc=ccEndWG+ 16*2+1,ccEndWG+ 16*2+2, 1)/) 
+   integer,dimension(2):: c_rhoCp1_e   = (/(cc, cc=ccEndWG+ 17*2+1,ccEndWG+ 17*2+2, 1)/) 
+   integer,dimension(2):: c_thick2_e   = (/(cc, cc=ccEndWG+ 18*2+1,ccEndWG+ 18*2+2, 1)/)
+   integer,dimension(2):: c_k2_e       = (/(cc, cc=ccEndWG+ 19*2+1,ccEndWG+ 19*2+2, 1)/) 
+   integer,dimension(2):: c_rhoCp2_e   = (/(cc, cc=ccEndWG+ 20*2+1,ccEndWG+ 20*2+2, 1)/) 
+   integer,dimension(2):: c_thick3_e   = (/(cc, cc=ccEndWG+ 21*2+1,ccEndWG+ 21*2+2, 1)/)
+   integer,dimension(2):: c_k3_e       = (/(cc, cc=ccEndWG+ 22*2+1,ccEndWG+ 22*2+2, 1)/) 
+   integer,dimension(2):: c_rhoCp3_e   = (/(cc, cc=ccEndWG+ 23*2+1,ccEndWG+ 23*2+2, 1)/)
+   integer,dimension(2):: c_thick4_e   = (/(cc, cc=ccEndWG+ 24*2+1,ccEndWG+ 24*2+2, 1)/)
+   integer,dimension(2):: c_k4_e       = (/(cc, cc=ccEndWG+ 25*2+1,ccEndWG+ 25*2+2, 1)/) 
+   integer,dimension(2):: c_rhoCp4_e   = (/(cc, cc=ccEndWG+ 26*2+1,ccEndWG+ 26*2+2, 1)/)
+   integer,dimension(2):: c_thick5_e   = (/(cc, cc=ccEndWG+ 27*2+1,ccEndWG+ 27*2+2, 1)/)
+   integer,dimension(2):: c_k5_e       = (/(cc, cc=ccEndWG+ 28*2+1,ccEndWG+ 28*2+2, 1)/) 
+   integer,dimension(2):: c_rhoCp5_e   = (/(cc, cc=ccEndWG+ 29*2+1,ccEndWG+ 29*2+2, 1)/)
+   integer,dimension(2):: c_thick1_i   = (/(cc, cc=ccEndWG+ 30*2+1,ccEndWG+ 30*2+2, 1)/) 
+   integer,dimension(2):: c_k1_i       = (/(cc, cc=ccEndWG+ 31*2+1,ccEndWG+ 31*2+2, 1)/) 
+   integer,dimension(2):: c_rhoCp1_i   = (/(cc, cc=ccEndWG+ 32*2+1,ccEndWG+ 32*2+2, 1)/) 
+   integer,dimension(2):: c_thick2_i   = (/(cc, cc=ccEndWG+ 33*2+1,ccEndWG+ 33*2+2, 1)/)
+   integer,dimension(2):: c_k2_i       = (/(cc, cc=ccEndWG+ 34*2+1,ccEndWG+ 34*2+2, 1)/) 
+   integer,dimension(2):: c_rhoCp2_i   = (/(cc, cc=ccEndWG+ 35*2+1,ccEndWG+ 35*2+2, 1)/) 
+   integer,dimension(2):: c_thick3_i   = (/(cc, cc=ccEndWG+ 36*2+1,ccEndWG+ 36*2+2, 1)/)
+   integer,dimension(2):: c_k3_i       = (/(cc, cc=ccEndWG+ 37*2+1,ccEndWG+ 37*2+2, 1)/) 
+   integer,dimension(2):: c_rhoCp3_i   = (/(cc, cc=ccEndWG+ 38*2+1,ccEndWG+ 38*2+2, 1)/)
+   integer,dimension(2):: c_thick4_i   = (/(cc, cc=ccEndWG+ 39*2+1,ccEndWG+ 39*2+2, 1)/)
+   integer,dimension(2):: c_k4_i       = (/(cc, cc=ccEndWG+ 40*2+1,ccEndWG+ 40*2+2, 1)/) 
+   integer,dimension(2):: c_rhoCp4_i   = (/(cc, cc=ccEndWG+ 41*2+1,ccEndWG+ 41*2+2, 1)/)
+   integer,dimension(2):: c_thick5_i   = (/(cc, cc=ccEndWG+ 42*2+1,ccEndWG+ 42*2+2, 1)/)
+   integer,dimension(2):: c_k5_i       = (/(cc, cc=ccEndWG+ 43*2+1,ccEndWG+ 43*2+2, 1)/) 
+   integer,dimension(2):: c_rhoCp5_i   = (/(cc, cc=ccEndWG+ 44*2+1,ccEndWG+ 44*2+2, 1)/)    
+   integer,dimension(2):: c_nroom      = (/(cc, cc=ccEndWG+ 45*2+1,ccEndWG+ 45*2+2, 1)/) 
+   integer,dimension(2):: c_alb_ibld   = (/(cc, cc=ccEndWG+ 46*2+1,ccEndWG+ 46*2+2, 1)/)
+   integer,dimension(2):: c_em_ibld    = (/(cc, cc=ccEndWG+ 47*2+1,ccEndWG+ 47*2+2, 1)/)
+   integer,dimension(2):: c_CH_iwall   = (/(cc, cc=ccEndWG+ 48*2+1,ccEndWG+ 48*2+2, 1)/) 
+   integer,dimension(2):: c_CH_iroof   = (/(cc, cc=ccEndWG+ 49*2+1,ccEndWG+ 49*2+2, 1)/)    
+   integer,dimension(2):: c_CH_ibld    = (/(cc, cc=ccEndWG+ 50*2+1,ccEndWG+ 50*2+2, 1)/)
+   integer,dimension(2):: c_fwall      = (/(cc, cc=ccEndWG+ 51*2+1,ccEndWG+ 51*2+2, 1)/) 
+   
    !Last column number for SurfaceChar array
-   integer,parameter:: MaxNCols_c = ccEndPr+ 8*nsurf+nsurf
+   integer,parameter:: MaxNCols_c = ccEndWG+ 51*2+2
    !-----------------------------------------------------------------------------------------------
    
    ! ---- Set column numbering for ModelOutputData ------------------------------------------------
@@ -546,6 +607,7 @@
              nlinesSoil,&               !Number of lines in SUEWS_Soil.txt
              nlinesConductance,&        !Number of lines in SUEWS_Conductance.txt
              nlinesOHMCoefficients,&    !Number of lines in SUEWS_OHMCoefficients.txt
+             nlinesESTMCoefficients,&   !Number of lines in SUEWS_ESTMCoefficients.txt    
              nlinesAnthropogenicHeat,&  !Number of lines in SUEWS_AnthropogenicHeat.txt
              nlinesIrrigation,&         !Number of lines in SUEWS_Irrigation.txt
              nlinesProfiles,&           !Number of lines in SUEWS_Profiles.txt
@@ -574,7 +636,7 @@
                           FileMet,&         !Meteorological forcing file name
                           FileDaily,&       !Daily State output file name
                           SOLWEIGpoiOut,&   !SOLWEIG poi file name
-                          BLout             !CLB output file name
+                          BLout           !CLB output file name
                                                  
     ! ---- Model options set in RunControl --------------------------------------------------------
     integer:: AnthropHeatChoice,&    !QF in met file (0); Loridan et al. 2010 (1); Jarvi et al. 2011 (2)
@@ -586,14 +648,14 @@
               gsChoice,&             !Options for surface conductance calculation (1 - Ja11, 2 - adjusted method)
               NetRadiationChoice,&   !Options for net all-wave radiation calculation
               OHMIncQF,&             !OHM calculation uses Q* only (0) or Q*+QF (1)
-              QSChoice,&             !OHM (1); QS in met file (2)
+              QSChoice,&             !OHM (1); QS in met file (2); AnOHM(3); ESTM(4)
               SkipHeaderSiteInfo,&   !Number of header lines to skip in SiteInfo files 
               SkipHeaderMet,&        !Number of header lines to skip in met file input
               SNOWuse,&              !Snow part used (1) or not used (0)   
               SOLWEIGuse,&           !SOLWEIG part used (calculates Tmrt and other fluxes on a grid, FL)
               smd_choice,&           !Use modelled (0) or observed(1,2) soil moisture
               WU_choice,&            !Use modelled (0) or observed (1) water use
-              z0_method              !Defines method for calculating z0 & zd 
+              z0_method            !Defines method for calculating z0 & zd 
              
     ! ---- Model options currently set in model, but may be moved to RunControl at a later date
     integer:: AlbedoChoice,&         !No additional albedo varaition (0); zenith angle calculation (1)
@@ -666,6 +728,8 @@
                        qn1_S,&     !Total net all-wave radiation for the snowpack
                        qn1_SF,&    !Total net all-wave radiation for the snowfree surface
                        qs,&        !Observed storage heat flux
+                       QSanOHM,&
+                       QSestm,&
                        snow,&      !snow cover
                        snow_obs,&  !Observed snow cover
                        T_CRITIC,& !Critical temperature
@@ -1432,7 +1496,62 @@
             cO_a1   = 2,&
             cO_a2   = 3,&
             cO_a3   = 4
-   	      
+   
+   !========== Columns for SUEWS_ESTMCoefficients.txt =====================!   ! S.O. 04 Feb 2016
+   integer::cE_Code       = 1,&
+            cE_thick1_r   = 2,&
+            cE_k1_r       = 3,&
+            cE_rhoCP1_r   = 4,&
+            cE_thick2_r   = 5,&
+            cE_k2_r       = 6,&
+            cE_rhoCP2_r   = 7,&
+            cE_thick3_r   = 8,&
+            cE_k3_r       = 9,&
+            cE_rhoCP3_r   = 10,&
+            cE_thick4_r   = 11,&
+            cE_k4_r       = 12,&
+            cE_rhoCP4_r   = 13,&
+            cE_thick5_r   = 14,&
+            cE_k5_r       = 15,&
+            cE_rhoCP5_r   = 16,&
+            cE_thick1_e   = 17,&
+            cE_k1_e       = 18,&
+            cE_rhoCP1_e   = 19,&
+            cE_thick2_e   = 20,&
+            cE_k2_e       = 21,&
+            cE_rhoCP2_e   = 22,&
+            cE_thick3_e   = 23,&
+            cE_k3_e       = 24,&
+            cE_rhoCP3_e   = 25,&
+            cE_thick4_e   = 26,&
+            cE_k4_e       = 27,&
+            cE_rhoCP4_e   = 28,&
+            cE_thick5_e   = 29,&
+            cE_k5_e       = 30,&
+            cE_rhoCP5_e   = 31,& 
+            cE_thick1_i   = 32,&
+            cE_k1_i       = 33,&
+            cE_rhoCP1_i   = 34,&
+            cE_thick2_i   = 35,&
+            cE_k2_i       = 36,&
+            cE_rhoCP2_i   = 37,&
+            cE_thick3_i   = 38,&
+            cE_k3_i       = 39,&
+            cE_rhoCP3_i   = 40,&
+            cE_thick4_i   = 41,&
+            cE_k4_i       = 42,&
+            cE_rhoCP4_i   = 43,&
+            cE_thick5_i   = 44,&
+            cE_k5_i       = 45,&
+            cE_rhoCP5_i   = 46,&        
+            cE_nroom      = 47,&
+            cE_alb_ibld   = 48,&
+            cE_em_ibld    = 49,&
+            cE_CH_iwall   = 50,&
+            cE_CH_iroof   = 51,&     
+            cE_CH_ibld    = 52,&   
+            cE_fwall      = 53 
+   
    !========== Columns for SUEWS_AnthropogenicHeat.txt ===================
    integer::cA_Code   = 1,&
           cA_BaseTHDD = 2,&
@@ -1494,15 +1613,166 @@
             cWG_ToRunoff    = 9,&
             cWG_ToSoilStore = 10
 
- end Module ColNamesInputFiles
+    end Module ColNamesInputFiles
 
 
 
  !C:\Users\sue\Dropbox\BLUEWS\2012av\LUMPS_Module_constants_v6_0.f95C:\Users\sue\Dropbox\BLUEWS\2012av\LUMPS_Module_constants_v6_0.f95
- 
- 
- 
- 
+
+!----------------------------------------------------------------------------------------
+ module ESTM_data !S.O. and FO
+
+   ! =======ESTMinput.nml==============================
+   integer ::        evolveTibld,&
+                     TsurfChoice,&
+                     ibldCHmod
+   
+   real(kind(1d0)):: LBC_soil,&        !Lowest boundary condition in soil
+                     THEAT_ON,&
+                     THEAT_OFF,&
+                     THEAT_fix,&
+                     ivf_iw,&    !Internal view factors : im
+                     ivf_ir,&
+                     ivf_ii,&
+                     ivf_if,&
+                     ivf_ww,&    !Internal view factors : wall
+                     ivf_wr,&
+                     ivf_wi,&
+                     ivf_wf,&
+                     ivf_rw,&    !Internal view factors : roof
+                     ivf_ri,&
+                     ivf_rf,&
+                     ivf_fw,&    !Internal view factors : floor
+                     ivf_fr,&
+                     ivf_fi
+   
+
+   !=======ESTMcoefficients.txt=================================
+   integer::                                  nroom,& ! Number of rooms in internal building
+                                              Nibld,&           !Number of layers in an internal element in buildings, calculated when the file is read. 
+                                              Nwall,&           !Number of layers in external wall
+                                              Nroof,&           !Number of layers in roof
+                                              Nground           !Number of layers in ground
+   
+   real(kind(1d0)),dimension(5)::             zibld,&    !Thickness of layers in internal building
+                                              zwall,&    !Thickness of layers in external wall
+                                              zroof,&    !Thickness of layers in roof
+                                              zground,&  !Thickness of layers in ground
+                                              kibld,&    !Thermal conductivity of layers in internal building
+                                              kwall,&    !Thermal conductivity of layers in external wall
+                                              kroof,&    !Thermal conductivity of layers in roof
+                                              kground,&  !Thermal conductivity of layers in ground
+                                              ribld,&    !Volumetric heat capacity of layers in internal building
+                                              rwall,&    !Volumetric heat capacity of layers in external wall
+                                              rroof,&    !Volumetric heat capacity of layers in roof
+                                              rground    !Volumetric heat capacity of layers in ground
+   
+   real(kind(1d0))::                          alb_ibld,& !albedo value of internal elements
+                                              em_ibld,&  !emissivity of internal elements
+                                              CH_iroof,& !bulk transfer coefficient of internal roof
+                                              CH_iwall,& !bulk transfer coefficient of internal wall
+                                              CH_ibld,&  !bulk transfer coefficient of internal building element
+                                              fwall      !fraction of wall   
+   
+   !=======ESTM Ts input=================================
+   real(kind(1d0)),allocatable,dimension(:)  ::  Tibld,Twall,Troof,Tground
+   real(kind(1d0)),allocatable,dimension(:,:)::  Tw_4
+   
+   !=======variables and parameters created in ESTM=============================
+   integer                                   ::  dtperday,&     !number of time step per day
+                                                 iESTMcount
+                                                 
+   real(kind(1d0))                           ::  alb_avg,&
+                                                 alb_ground,&   !albedo value of ground
+                                                 alb_roof,&     !albedo value of roof 
+                                                 alb_veg,&      !albedo value of veg
+                                                 CHAIR,&
+                                                 CHR,&
+                                                 em_ground,&    !emissivity of ground
+                                                 em_roof,&      !emissivity of roof
+                                                 em_veg,&       !emissivity of veg
+                                                 em_r,&         !emissivity of roof inside building
+                                                 em_w,&         !emissivity of internal wall
+                                                 em_i,&         !emissivity of ???
+                                                 em_f,&         !emissivity of floor
+                                                 fair,&         !fraction of air (or ratio of outdoor air volume to indoor air volume)
+                                                 fground,&      !fraction of ground
+                                                 fibld,&        !fraction of internal elements (?)
+                                                 finternal,&    !sum of froof, fibld and fwall
+                                                 froof,&        !fraction of roof
+                                                 fveg,&         !fraction of veg
+                                                 HW,&           !Height Width ratio
+                                                 LUP_ground,&
+                                                 LUP_ROOF,&
+                                                 LUP_VEG,&
+                                                 LUP_WALL,&
+                                                 minshc_airbld,&
+                                                 Pcoeff(5),&
+                                                 Qsground,&     !Storage heat flux into ground
+                                                 Qsroof,&       !Storage heat flux into roof
+                                                 Qswall,&       !Storage heat flux into wall
+                                                 Qs_4(4),&      !Storage heat flux into each external wall (N,E,S and W direction)
+                                                 Qsair,&        !Storage heat flux into air
+                                                 Qsibld,&       !Storage heat flux into internal building elements
+                                                 RVF_ground,&
+                                                 RVF_WALL,&
+                                                 RVF_ROOF,&
+                                                 RVF_CANYON,&
+                                                 RVF_VEG,&
+                                                 SHC_air,&
+                                                 SVF_ground,&   !Sky view factor from ground
+                                                 SVF_wall,&     !Sky view factor from wall
+                                                 SVF_roof,&     !Sky view factor from roof
+                                                 TANZENITH,&    !
+                                                 Tair1,&
+                                                 Tair2,&
+                                                 Tairday,&      !24hour average air temperature
+                                                 Tfloor,&
+                                                 Tievolve,&
+                                                 TN_roof,&
+                                                 TN_wall,&
+                                                 T0_wall,&
+                                                 T0_roof,&
+                                                 T0_ground,&
+                                                 T0_ibld,&
+                                                 WS,&           !Wind speed used in ESTM
+                                                 xvf_wall,&
+                                                 ZREF,&         !local scale reference height
+                                                 zvf_ground,&   !wall view factor from ground
+                                                 zvf_WALL     !wall view factor from ground
+   
+   real(kind(1d0)),allocatable,dimension(:,:)::  Ts5mindata     !surface temperature interpolated from 15 min input data
+   real(kind(1d0)),allocatable,dimension(:) ::   Tair24HR
+   
+   logical             ::bctype(2),&
+                         CFLfail=.FALSE.,&
+                         diagnoseTi=.FALSE.,&
+                         first,&
+                         HVAC=.false.,&
+                         SPINDONE=.FALSE.
+   
+   real(kind(1d0)),parameter::alb_wall=0.23,em_wall=0.9  ! used only when radforce = T but radforce is always set to F.
+   integer, parameter::        maxiter=100
+   real(kind(1d0)),parameter:: C2K=273.15,&
+                               conv=0.0001,&
+                               sigma=5.67e-8          
+   
+   !=============variables maybe will be removed=======================================
+   integer             ::nalb,&
+                         nemis
+   real(kind(1d0))     ::sumalb,&
+                         sumemis
+
+end module ESTM_data
+    
+!----------------------------------------------------------------------------------
+module MathConstants
+	
+	real (kind(1d0)),parameter ::pi=3.14159265359
+	real (kind(1d0)),parameter ::dtr=0.0174532925, rtd=57.2957795
+
+end module    
+
  
  
  

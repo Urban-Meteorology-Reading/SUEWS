@@ -32,6 +32,7 @@
   use snowMod        !defines: SnowAlb, etc
   use sues_data      !defines: SurfaceArea, IrrFracConif, IrrFracDecid, IrrFracGrass, Irrigation variables
   use time
+  use ESTM_data
   
   IMPLICIT NONE
 
@@ -290,6 +291,53 @@
   OHM_coef(nsurf+2,4,2) = SurfaceChar(Gridiv,c_a2_WDry(nsurf+1)) !Snow    a2 Winter dry 
   OHM_coef(1:nsurf,4,3) = SurfaceChar(Gridiv,c_a3_WDry(1:nsurf)) !1:nsurf a3 Winter dry
   OHM_coef(nsurf+2,4,3) = SurfaceChar(Gridiv,c_a3_WDry(nsurf+1)) !Snow    a3 Winter dry
+  
+  ! ---- ESTM coeffs (was in SUEWS_ESTM_v2016.f95, subroutine ESTM_v2016)
+  zground  = SurfaceChar(Gridiv,(/c_thick1_r(1),c_thick2_r(1),c_thick3_r(1),c_thick4_r(1),c_thick5_r(1)/))
+  zroof    = SurfaceChar(Gridiv,(/c_thick1_r(2),c_thick2_r(2),c_thick3_r(2),c_thick4_r(2),c_thick5_r(2)/))
+  zwall    = SurfaceChar(Gridiv,(/c_thick1_e(2),c_thick2_e(2),c_thick3_e(2),c_thick4_e(2),c_thick5_e(2)/))
+  zibld    = SurfaceChar(Gridiv,(/c_thick1_i(2),c_thick2_i(2),c_thick3_i(2),c_thick4_i(2),c_thick5_i(2)/))
+  kground  = SurfaceChar(Gridiv,(/c_k1_r(1),c_k2_r(1),c_k3_r(1),c_k4_r(1),c_k5_r(1)/))
+  kroof    = SurfaceChar(Gridiv,(/c_k1_r(2),c_k2_r(2),c_k3_r(2),c_k4_r(2),c_k5_r(2)/))
+  kwall    = SurfaceChar(Gridiv,(/c_k1_e(2),c_k2_e(2),c_k3_e(2),c_k4_e(2),c_k5_e(2)/))
+  kibld    = SurfaceChar(Gridiv,(/c_k1_i(2),c_k2_i(2),c_k3_i(2),c_k4_i(2),c_k5_i(2)/))
+  rground  = SurfaceChar(Gridiv,(/c_rhoCp1_r(1),c_rhoCp2_r(1),c_rhoCp3_r(1),c_rhoCp4_r(1),c_rhoCp5_r(1)/))
+  rroof    = SurfaceChar(Gridiv,(/c_rhoCp1_r(2),c_rhoCp2_r(2),c_rhoCp3_r(2),c_rhoCp4_r(2),c_rhoCp5_r(2)/))
+  rwall    = SurfaceChar(Gridiv,(/c_rhoCp1_e(2),c_rhoCp2_e(2),c_rhoCp3_e(2),c_rhoCp4_e(2),c_rhoCp5_e(2)/))
+  ribld    = SurfaceChar(Gridiv,(/c_rhoCp1_i(2),c_rhoCp2_i(2),c_rhoCp3_i(2),c_rhoCp4_i(2),c_rhoCp5_i(2)/))
+
+  nroom    = SurfaceChar(Gridiv,c_nroom(2))
+  alb_ibld = SurfaceChar(Gridiv,c_alb_ibld(2))
+  em_ibld  = SurfaceChar(Gridiv,c_em_ibld(2))
+  CH_iwall = SurfaceChar(Gridiv,c_CH_iwall(2))
+  CH_iroof = SurfaceChar(Gridiv,c_CH_iroof(2))
+  CH_ibld  = SurfaceChar(Gridiv,c_CH_ibld(2))
+  fwall    = SurfaceChar(Gridiv,c_fwall(2)) 
+  
+  do i=1,5
+    if (zground(i)<=0)then
+       Nground=i-1
+       exit
+    endif
+  enddo
+  do i=1,5
+    if (zroof(i)<=0) then
+       Nroof=i-1
+       exit
+    endif
+  enddo
+  do i=1,5
+    if (zwall(i)<=0) then
+       Nwall=i-1
+       exit
+    endif
+  enddo
+  do i=1,5
+    if (zibld(i)<=0) then
+       Nibld=i-1
+       exit
+    endif
+  enddo
    
   ! ---- QF coeffs (was in SUEWS_SAHP.f95, subroutine SAHP_Coefs)                 
   BaseTHDD = -999 ! Initialise  QF coeffs 

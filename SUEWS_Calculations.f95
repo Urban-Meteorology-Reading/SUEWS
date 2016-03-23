@@ -134,14 +134,15 @@
  !if (ir==1) then  !Calculate initial smd
     smd=soilmoistCap-soilstate
  !endif
-
+    
  ! Calculate soil moisture for vegetated surfaces only (for use in surface conductance)
  vsmd=0
  do is=ConifSurf,GrassSurf  !Vegetated surfaces only
     vsmd=vsmd+(soilstoreCap(is) - soilmoist(is))*sfr(is)/(sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf))
     !write(*,*) is, vsmd, smd
  enddo
-
+   
+    
  ! ===================NET ALLWAVE RADIATION================================
  if(NetRadiationChoice>0)then
 
@@ -215,14 +216,27 @@
  ! -- qn1_bup is QSTAR only
 
  ! =================STORAGE HEAT FLUX=======================================
- if(QSChoice==1) then           !Use OHM to calculate QS
+ if(QSChoice==1 .or. QSChoice==11.or.QSChoice==4 ) then           !Use OHM to calculate QS
     if(OHMIncQF == 1) then      !Calculate QS using QSTAR+QF
       call OHM_v2015(Gridiv)
     elseif(OHMIncQF == 0) then  !Calculate QS using QSTAR
       qn1=qn1_bup  
       call OHM_v2015(Gridiv)
-    endif   
- endif   
+    endif
+ endif
+ if(QSChoice==4 .or. QSChoice==14) then  
+    call ESTM_v2016(QSestm,iMB)            !Calculate QS using ESTM
+ endif
+ 
+ if (QSChoice>=10)then ! Chose which QS will be used in SUEWS and output file
+    !write(800,*)id,it,QS,QSanOHM,QSestm
+    if(QSChoice==14)then
+        QS=QSestm
+    elseif(QSChoice==13)then
+        QS=QSanOHM
+    endif  
+ endif
+ 
  
  ! For the purpose of turbulent fluxes, remove QF from the net all-wave radiation
  qn1=qn1_bup  !Remove QF from QSTAR
@@ -510,7 +524,6 @@
        lai_wt=lai_wt+lai(id-1,is)*sfr(is+2) 
    enddo
  endif
-
  
  !=====================================================================
  !====================== Write out files ==============================
@@ -553,6 +566,7 @@
  !      endif
  !   enddo
  !endif
+ 
  
  !write(*,*) DecidCap(id), id, it, imin, 'Calc - before translate back'
  !write(*,*) iy, id, it, imin, 'Calc - before translate back'

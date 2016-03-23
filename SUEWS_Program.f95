@@ -142,6 +142,9 @@
        if (SnowUse == 1) then
           allocate(dataOutSnow(1:ReadlinesMetdata,ncolumnsDataOutSnow,NumberOfGrids))      !Snow output array
        endif
+       if(QSChoice==4 .or. QSChoice==14) then
+           allocate(dataOutESTM(1:ReadlinesMetdata,32,NumberOfGrids))
+       endif
        
        allocate(TstepProfiles(NumberOfGrids,6,24*NSH))  !Hourly profiles interpolated to model timestep
        allocate(AHProf_tstep(24*NSH,2))                 !Anthropogenic heat profiles at model timestep
@@ -215,6 +218,7 @@
           ! Initialise CBL and SOLWEIG parts if required
           if((CBLuse==1).or.(CBLuse==2)) call CBL_ReadInputData
           if(SOLWEIGuse==1) call SOLWEIG_initial
+          if(QSChoice==4 .or. QSChoice==14) call ESTM_initials(FileCodeX)
 
 	  !write(*,*) 'Initialisation done'
 	  ! First stage: initialisation done ----------------------------------

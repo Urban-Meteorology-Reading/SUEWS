@@ -9,11 +9,11 @@
 !  - then over rows
 !  - then over grids
 !
-!Last modified by HCW 25 Jun 2015
-!  Fixed bug in LAI calculation at year change
-!Last modified by HCW 12 Mar 2015
-!Last modified by HCW 26 Feb 2015
-!Last modified by HCW 03 Dec 2014
+!Last modified by LJ  30 Mar 2016 - Grid run order changed from linear to non-linear
+!                 HCW 25 Jun 2015 - Fixed bug in LAI calculation at year change
+!                 HCW 12 Mar 2015
+!                 HCW 26 Feb 2015
+!                 HCW 03 Dec 2014
 !
 ! To do:
 ! 	- Snow modules need updating for water balance part
@@ -39,13 +39,14 @@
     character(len=20)::grid_txt,&	 !Grid number as a text string (from FirstGrid to LastGrid)
                        tstep_txt     !Model timestep (in minutes) as a text string
     
-    integer:: nlinesLimit   !Max number of lines that can be read in one go for each grid
-                               
+    integer:: nlinesLimit,&   !Max number of lines that can be read in one go for each grid
+              NumberOfYears   !Number of years to be run
+
     integer::i,&	    !Grid number (from FirstGrid to LastGrid)
              iv,&       !Block number (from 1 to ReadBlocksMetData)
              ir,irMax,& !Row number within each block (from 1 to irMax)
-             rr,&       ! Row of SiteSelect corresponding to current year and grid
-             year_int   ! Year as an integer (from SiteSelect rather than met forcing file)
+             rr,&       !Row of SiteSelect corresponding to current year and grid
+             year_int   !Year as an integer (from SiteSelect rather than met forcing file)
     
     logical:: PrintPlace=.false.   !Prints row, block, and grid number to screen if TRUE
     		     
@@ -54,24 +55,35 @@
     ! Initialise error file (0 -> problems.txt file is created)
     errorChoice=0
 
-    ! Read RunControl.nml and all input files from SiteInfo spreadsheet
+    ! Read RunControl.nml and all input files from SiteSelect spreadsheet. 
+    ! This is saved to SiteSelect datamatrix
     call overallRunControl
 
     ! First find first and last year of the current run
     FirstYear = minval(int(SiteSelect(:,c_Year)))
     LastYear  = maxval(int(SiteSelect(:,c_Year)))
-    
-    ! Find the first and last grid numbers (N.B. need to have the same grids for each year)
-    FirstGrid = minval(int(SiteSelect(:,c_Grid))) 
-    LastGrid  = maxval(int(SiteSelect(:,c_Grid))) 
-    NumberOfGrids = LastGrid-FirstGrid+1   !Number of grids of the current run
+
+    NumberOfYears = LastYear-FirstYear+1 !Find the number of years to run
+
+    !Find the the number of grids within each year in SiteSelect and GridIDs
+    !(N.B. need to have the same grids for each year)
+    NumberOfGrids=int(nlinesSiteSelect/NumberOfYears)
+
+    !! Find the first and last grid numbers (N.B. need to have the same grids for each year)
+    !FirstGrid = minval(int(SiteSelect(:,c_Grid)))
+    !LastGrid  = maxval(int(SiteSelect(:,c_Grid)))
     if(NumberOfGrids > MaxNumberOfGrids) then
-       call ErrorHint(64,'No. of grids exceeds max. possible no. of grids.',real(MaxNumberOfGrids,kind(1d0)),NotUsed,NumberOfGrids)
-    endif    
+      call ErrorHint(64,'No. of grids exceeds max. possible no. of grids.',real(MaxNumberOfGrids,kind(1d0)),NotUsed,NumberOfGrids)
+    endif
+
+    allocate (GridIDmatrix(NumberOfGrids)) !Get the nGrid numbers correctly
+    DO i=1,NumberOfGrids
+       GridIDmatrix(i)=int(SiteSelect(i,c_Grid))
+    ENDDO
     
     write(*,*) '--------------------------------------------'
     write(*,*) 'Years identified:',FirstYear,'to',LastYear
-    write(*,*) 'Grids identified:',FirstGrid,'to',LastGrid
+    write(*,*) 'Grids identified:',NumberOfGrids,'grids'
 
     ! ---- Allocate arrays ----------------------------------------------------
     ! Daily state needs to be outside year loop to transfer states between years
@@ -86,8 +98,6 @@
     DO year_int=FirstYear,LastYear   !Loop through years
     
        write(*,*) ' '
-       !write(*,*) 'Now running year',year_int
-      
        write(year_txt,'(I4)') year_int  !Get year as a text string
 
        ! Find number of days in the current year
@@ -95,16 +105,20 @@
        
        !-----------------------------------------------------------------------
        ! Find number of lines in met forcing file for current year (nlinesMetdata)
-       !  Need to know how many lines will be read each iteration
-       !  Use FirstGrid as an example
-       write(grid_txt,'(I5)') FirstGrid  !Get grid as a text string
+       ! Need to know how many lines will be read each iteration
+       ! Use first grid as an example as the number of lines is the same for all grids
+       ! within one year
+       write(grid_txt,'(I5)') GridIDmatrix(1)  !Get grid as a text string
        write(tstep_txt,'(I5)') tstep/60  !Get tstep (in minutes) as a text string
+
        ! Get met file name for this year for this grid
        FileCodeX=trim(FileCode)//trim(adjustl(grid_txt))//'_'//trim(year_txt)
        FileMet=trim(FileInputPath)//trim(FileCodeX)//'_data_'//trim(adjustl(tstep_txt))//'.txt'
+
        ! Open this example met file
        open(10,file=trim(FileMet),status='old',err=314)
        call skipHeader(10,SkipHeaderMet)  !Skip header
+
        ! Find number of lines in met file
        nlinesMetdata = 0   !Initialise nlinesMetdata (total number of lines in met forcing file)
        do
@@ -129,24 +143,17 @@
        !write(*,*) 'Met data will be read in',ReadBlocksMetData,'blocks.'
 
        ! ---- Allocate arrays--------------------------------------------------
-       allocate(SurfaceChar(NumberOfGrids,MaxNCols_c))   !Surface characteristics
-       allocate(MetForcingData(1:ReadlinesMetdata,ncolumnsMetForcingData,NumberOfGrids))   !Met forcing data 
-       allocate(ModelOutputData(0:ReadlinesMetdata,MaxNCols_cMOD,NumberOfGrids))           !Data at model timestep
-       allocate(dataOut(1:ReadlinesMetdata,ncolumnsDataOut,NumberOfGrids))                 !Main output array
-       if (SOLWEIGuse == 1) then
-          allocate(dataOutSOL(1:ReadlinesMetdata,28,NumberOfGrids))                        !SOLWEIG POI output
-       endif
-       if (CBLuse >= 1) then
-          allocate(dataOutBL(1:ReadlinesMetdata,22,NumberOfGrids))                         !CBL output
-       endif
-       if (SnowUse == 1) then
-          allocate(dataOutSnow(1:ReadlinesMetdata,ncolumnsDataOutSnow,NumberOfGrids))      !Snow output array
-       endif
-       
-       allocate(TstepProfiles(NumberOfGrids,6,24*NSH))  !Hourly profiles interpolated to model timestep
-       allocate(AHProf_tstep(24*NSH,2))                 !Anthropogenic heat profiles at model timestep
-       allocate(WUProfM_tstep(24*NSH,2))                !Manual water use profiles at model timestep
-       allocate(WUProfA_tstep(24*NSH,2))                !Automatic water use profiles at model timestep
+       allocate(SurfaceChar(NumberOfGrids,MaxNCols_c))                                               !Surface characteristics
+       allocate(MetForcingData(1:ReadlinesMetdata,ncolumnsMetForcingData,NumberOfGrids))             !Met forcing data
+       allocate(ModelOutputData(0:ReadlinesMetdata,MaxNCols_cMOD,NumberOfGrids))                     !Data at model timestep
+       allocate(dataOut(1:ReadlinesMetdata,ncolumnsDataOut,NumberOfGrids))                           !Main output array
+       if (SOLWEIGuse == 1) allocate(dataOutSOL(1:ReadlinesMetdata,28,NumberOfGrids))                !SOLWEIG POI output
+       if (CBLuse >= 1)  allocate(dataOutBL(1:ReadlinesMetdata,22,NumberOfGrids))                    !CBL output
+       if (SnowUse == 1) allocate(dataOutSnow(1:ReadlinesMetdata,ncolumnsDataOutSnow,NumberOfGrids)) !Snow output array
+       allocate(TstepProfiles(NumberOfGrids,6,24*NSH))                        !Hourly profiles interpolated to model timestep
+       allocate(AHProf_tstep(24*NSH,2))                                       !Anthropogenic heat profiles at model timestep
+       allocate(WUProfM_tstep(24*NSH,2))                                      !Manual water use profiles at model timestep
+       allocate(WUProfA_tstep(24*NSH,2))                                      !Automatic water use profiles at model timestep
        !! Add snow clearing (?)      
        ! ----------------------------------------------------------------------
           
@@ -157,28 +164,31 @@
        SkippedLines=0  !Initialise lines to be skipped in met forcing file
 	
        DO iv=1,ReadBlocksMetData   !Loop through blocks of met data  
- 	  !write(*,*) iv,'/',ReadBlocksMetData,'ReadBlocksMetData (iv loop)'
+ 	      !write(*,*) iv,'/',ReadBlocksMetData,'ReadBlocksMetData (iv loop)'
           
           ! Model calculations are made in two stages: 
           ! (1) initialise the run for each block of met data (iv from 1 to ReadBlocksMetData)
           ! (2) perform the actual model calculations (SUEWS_Calculations)
 
           ! (1) First stage: initialise run -----------------------------------
-          GridCounter=1   !Initialise counter for grids in each year
-          DO i=FirstGrid,LastGrid   !Loop through grids
-	    	
-  	         !write(*,*) i,'/',NumberOfGrids, 'grids (i loop).'
-             write(grid_txt,'(I5)') i   !Get grid as a text string
-             ! Get met forcing file name for this year for this grid
+          GridCounter=1          !Initialise counter for grids in each year
+          DO i=1,NumberOfGrids   !Loop through grids
+
+             write(grid_txt,'(I5)') GridIDmatrix(i)   !Get grid ID as a text string
+
+             ! Get met forcing file name for this year for the first grid 
+             ! Can be something else than 1
              FileCodeX=trim(FileCode)//trim(adjustl(grid_txt))//'_'//trim(year_txt)
              if(iv==1) write(*,*) 'Current FileCode: ', FileCodeX      
-                          	     
+
   	         ! For the first block of met data --------------------------------
              if(iv == 1) then
 	            !write(*,*) 'First block of data - doing initialisation'
+
                 ! (a) Transfer characteristics from SiteSelect to correct row of SurfaceChar
                 do rr=1,nlinesSiteSelect
-                   if(SiteSelect(rr,c_Grid)==i.and.SiteSelect(rr,c_Year)==year_int)then
+                   !Find correct grid and year
+                   if(SiteSelect(rr,c_Grid)==GridIDmatrix(i).and.SiteSelect(rr,c_Year)==year_int) then
                       !write(*,*) 'Match found (grid and year) for rr = ', rr
                       call InitializeSurfaceCharacteristics(GridCounter,rr)
                       exit
@@ -200,7 +210,7 @@
                 call SUEWS_InitializeMetData(1)   
              else                             !If one met file used for all grids  
                 FileMet=trim(FileInputPath)//trim(FileCodeX)//'_data_'//trim(adjustl(tstep_txt))//'.txt'
-                if(i == FirstGrid) then       !Read for the first grid only  
+                if(i == 1) then       !Read for the first grid only
                    call SUEWS_InitializeMetData(1)
                 else                          !Then for subsequent grids simply copy data  
                    MetForcingData(1:ReadlinesMetdata,1:24,GridCounter) = MetForcingData(1:ReadlinesMetdata,1:24,1)
@@ -228,9 +238,9 @@
           endif   
           DO ir=1,irMax   !Loop through rows of current block of met data
              GridCounter=1    !Initialise counter for grids in each year
-             DO i=FirstGrid,LastGrid   !Loop through grids
+             DO i=1,NumberOfGrids   !Loop through grids
 
-              if(PrintPlace) write(*,*) 'Row (ir):', ir,'/',irMax,'of block (iv):', iv,'/',ReadBlocksMetData,'Grid:',i
+              if(PrintPlace) write(*,*) 'Row (ir):', ir,'/',irMax,'of block (iv):', iv,'/',ReadBlocksMetData,'Grid:',GridIDmatrix(i)
  
               ! Call model calculation code
               if(ir==1) write(*,*) 'Now running block ',iv,'/',ReadBlocksMetData,' of year ',year_int,'...'
@@ -244,7 +254,7 @@
               ! Write state information to new InitialConditions files
               if(ir == irMax) then              !If last row...
                  if(iv == ReadBlocksMetData) then    !...of last block of met data 
-                    write(grid_txt,'(I5)') i
+                    write(grid_txt,'(I5)') GridIDmatrix(i)
                     write(year_txtNext,'(I4)') year_int+1  !Get next year as a string format
                     FileCodeX    =trim(FileCode)//trim(adjustl(grid_txt))//'_'//trim(year_txt)
                     FileCodeXNext=trim(FileCode)//trim(adjustl(grid_txt))//'_'//trim(year_txtNext)
@@ -260,8 +270,8 @@
           ENDDO !end loop over rows of met data
 
           ! Write output files in blocks --------------------------------
-          DO i=FirstGrid,LastGrid
-             call SUEWS_Output(i,year_int,iv,irMax)
+          DO i=1,NumberOfGrids
+             call SUEWS_Output(i,year_int,iv,irMax,GridIDmatrix(i))
           ENDDO
                   
        ENDDO !end loop over blocks of met data

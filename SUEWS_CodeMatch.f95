@@ -169,7 +169,7 @@ ENDSUBROUTINE CodeMatchDist
 ! ---------------------------------------------------------
 
 
-SUBROUTINE CodeMatchNonVeg(rr,CodeCol)
+ SUBROUTINE CodeMatchNonVeg(rr,CodeCol)
 ! Matches Impervious characteristics via codes in SiteSelect
 ! HCW 20 Nov 2014
 ! ---------------------------------------------------------
@@ -185,25 +185,25 @@ SUBROUTINE CodeMatchNonVeg(rr,CodeCol)
   integer:: codeCol
  
   iv5=0 ! Reset iv5 to zero
- 
+
   do iv5=1,nlinesNonVeg
      if (NonVeg_Coeff(iv5,ci_Code)==SiteSelect(rr,codeCol)) then
-     exit
+        exit
      elseif(iv5 == nlinesNonVeg) then 
-     write(*,*) 'Program stopped! NonVeg code ',SiteSelect(rr,codeCol),'not found in SUEWS_NonVeg.txt.'
-     call ErrorHint(57,'Cannot find code in SUEWS_NonVeg.txt',SiteSelect(rr,codeCol),notUsed,notUsedI)
+        write(*,*) 'Program stopped! NonVeg code ',SiteSelect(rr,codeCol),'not found in SUEWS_NonVeg.txt.'
+        call ErrorHint(57,'Cannot find code in SUEWS_NonVeg.txt',SiteSelect(rr,codeCol),notUsed,notUsedI)
      endif
   enddo   
   
   return
-ENDSUBROUTINE CodeMatchNonVeg 
+ ENDSUBROUTINE CodeMatchNonVeg
 ! ---------------------------------------------------------   
 
 
-SUBROUTINE CodeMatchVeg(rr,CodeCol)
-! Matches Pervious characteristics via codes in SiteSelect
-! HCW 20 Nov 2014
-! ---------------------------------------------------------
+ SUBROUTINE CodeMatchVeg(rr,CodeCol)
+  ! Matches Pervious characteristics via codes in SiteSelect
+  ! HCW 20 Nov 2014
+  ! ---------------------------------------------------------
 
   use allocateArray
   use Initial

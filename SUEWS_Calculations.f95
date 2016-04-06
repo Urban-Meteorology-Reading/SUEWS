@@ -544,28 +544,13 @@
                 MeltWaterStore(1:nsurf),SnowDens(1:nsurf),&                                              !88
                 snowDepth(1:nsurf),Tsurf_ind_snow(1:nsurf)/)                                             !102
  endif
-
- !Calculate new snow fraction used in the next timestep if snowUse==1
- !Calculated only at end of each hour.
- !if (SnowFractionChoice==2.and.snowUse==1.and.it==23.and.imin==(nsh_real-1)/nsh_real*60) then
- !   do is=1,nsurf-1
- !      if ((snowPack(is)>0.and.mw_ind(is)>0)) then
- !         write(*,*) is,snowPack(is),snowD(is),mw_ind(is),snowFrac(is)!
-
- !         snowFrac(is)=SnowDepletionCurve(is,snowPack(is),snowD(is))
- !         write(*,*) snowFrac(is)
- !         pause
- !      elseif (snowPack(is)==0) then
- !         snowFrac(is)=0
- !      endif
- !   enddo
- !endif
  
  !write(*,*) DecidCap(id), id, it, imin, 'Calc - before translate back'
  !write(*,*) iy, id, it, imin, 'Calc - before translate back'
  !if(Gridiv==1)  write(*,*) iy, id, it, imin, HDD(id-1,5), HDD(id,5), HDD(id-1,6), HDD(id,6)
  !if(id==12) pause
  !write(*,*) ' '
+
  call SUEWS_TranslateBack(Gridiv,ir,irMax)
 
  !!!if((id <=3 .or. id > 364).and. it == 0 .and. imin == 0) pause

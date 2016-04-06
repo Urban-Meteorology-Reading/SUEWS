@@ -1,6 +1,6 @@
 !=========================================================================
 ! sg feb 2012
-! only run once at start - fixed for all grids and all years
+! only run once at start - fixed for all gds and all years
  
  SUBROUTINE OverallRunControl
 ! Last modified:
@@ -485,10 +485,7 @@
            call ErrorHint(60,FileN,WGWaterDist_Coeff(i,cWG_Code),notUsed,notUsedI)
         endif
      enddo
-  enddo    
-    
-  !=======================================================================
-  !=======================================================================
+  enddo
     
   !-----------------------------------------------------------------------
   !SUEWS run information
@@ -539,7 +536,7 @@
   END SUBROUTINE OverallRunControl
 !=========================================================================
 
-
+!=========================================================================
 
 !=========================================================================
 !This subroutine finds the number of rows in each input file
@@ -613,19 +610,19 @@
 
    integer:: Gridiv,&    !Row of SurfaceChar where input information will be stored
              rr          !Row of SiteSelect that matches current grid and year
-                   
    !-------------------------------------------------------------------------------------------
    
    ! Initialise row of SurfaceChar
    SurfaceChar(Gridiv,:) = -999
          	
-   ! Transfer data in SiteSelect to SurfaceChar
-   SurfaceChar(Gridiv,1:ncolumnsSiteSelect) = SiteSelect(rr,1:ncolumnsSiteSelect) !Cols in same order as in SiteSelect.txt
-     
+   ! Transfer data in SiteSelect to SurfaceChar (Cols in same order as in SiteSelect.txt)
+   SurfaceChar(Gridiv,1:ncolumnsSiteSelect) = SiteSelect(rr,1:ncolumnsSiteSelect)
+
    ! ======== Retrieve information from other input files via codes ========
           
    ! ---- Find code for Paved surface (Impervious) ----
    call CodeMatchNonVeg(rr,c_PavedCode)
+
    ! Transfer characteristics to SurfaceChar for Paved surface
    SurfaceChar(gridiv,c_AlbMin(PavSurf))       = NonVeg_Coeff(iv5,ci_AlbMin)
    SurfaceChar(gridiv,c_AlbMax(PavSurf))       = NonVeg_Coeff(iv5,ci_AlbMax)
@@ -1402,6 +1399,7 @@
   
   ! Write InitialConditions to FileChoices -------------------------------
   FileChoices=trim(FileOutputPath)//trim(FileCode)//'_FileChoices.txt'
+
   open(12,file=FileChoices,position='append')
   write(12,*)'----------',trim(FileInit),'----------'
   write(12,nml=InitialConditions)
@@ -1667,6 +1665,14 @@
    
  !Initialise rates of change variables for OHM calculation 
  ! check ?? this should not happen at the start of the year if continuing
+
+ !q1_grids(Gridiv)=-20
+ !q2_grids(Gridiv)=-22
+ !q3_grids(Gridiv)=-24
+
+ !r1_grids(Gridiv)=-20
+ !r2_grids(Gridiv)=-22
+ !r3_grids(Gridiv)=-24
 
  q1_grids(Gridiv)=-101
  q2_grids(Gridiv)=-100

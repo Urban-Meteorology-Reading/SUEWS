@@ -216,7 +216,9 @@
  
  ! -- qn1 is now QSTAR+QF (net all-wave radiation + anthropogenic heat flux)
  ! -- qn1_bup is QSTAR only
-
+ if(AnthropHeatChoice>=1) then
+    qf=QF_SAHP
+ endif
  ! =================STORAGE HEAT FLUX=======================================
  if(QSChoice==1) then           !Use OHM to calculate QS
     if(OHMIncQF == 1) then      !Calculate QS using QSTAR+QF
@@ -236,9 +238,7 @@
  
  ! -- qn1 is now QSTAR only
  
- if(AnthropHeatChoice>=1) then
-    qf=QF_SAHP
- endif
+
 
  !==================Energy related to snow melting/freezing processes=======
  IF (snowUse==1)  then

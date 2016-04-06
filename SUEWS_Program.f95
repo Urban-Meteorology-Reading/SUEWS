@@ -9,21 +9,17 @@
 !  - then over rows
 !  - then over grids
 !
-<<<<<<< HEAD
-!
-!Last modified by TS 14 Mar 2016 to include AnOHM daily interation
-!Last modified by HCW 25 Jun 2015
-!  Fixed bug in LAI calculation at year change
+! 
+!Last modified by TS 14 Mar 2016  - Include AnOHM daily interation
+!Last modified by HCW 25 Jun 2015 - Fixed bug in LAI calculation at year change
 !Last modified by HCW 12 Mar 2015
 !Last modified by HCW 26 Feb 2015
 !Last modified by HCW 03 Dec 2014
-=======
 !Last modified by LJ  30 Mar 2016 - Grid run order changed from linear to non-linear
 !                 HCW 25 Jun 2015 - Fixed bug in LAI calculation at year change
 !                 HCW 12 Mar 2015
 !                 HCW 26 Feb 2015
 !                 HCW 03 Dec 2014
->>>>>>> master
 !
 ! To do:
 ! 	- Snow modules need updating for water balance part
@@ -55,26 +51,22 @@
     integer::i,&	    !Grid number (from FirstGrid to LastGrid)
              iv,&       !Block number (from 1 to ReadBlocksMetData)
              ir,irMax,& !Row number within each block (from 1 to irMax)
-<<<<<<< HEAD
-             rr,&       ! Row of SiteSelect corresponding to current year and grid
              year_int,& ! Year as an integer (from SiteSelect rather than met forcing file)
-			 iter		! iteraion counter, AnOHM TS
-=======
-             rr,&       !Row of SiteSelect corresponding to current year and grid
-             year_int   !Year as an integer (from SiteSelect rather than met forcing file)
->>>>>>> master
+			 iter,&		! iteraion counter, AnOHM TS
+             rr      !Row of SiteSelect corresponding to current year and grid
     
     logical:: PrintPlace=.false.   !Prints row, block, and grid number to screen if TRUE
-	
-	logical, allocatable :: flagRerunAnOHM(:)	! iteration run to make Bo converge,AnOHM TS
-	real :: timeStart, timeFinish ! profiling use, AnOHM TS
-    		     
+    
+    logical, allocatable :: flagRerunAnOHM(:)   ! iteration run to make Bo converge,AnOHM TS
+    real :: timeStart, timeFinish ! profiling use, AnOHM TS
+    real :: errBo      ! error in Bo iteration, AnOHM TS 20160331
+                 
     !==========================================================================
     
-	! start counting cpu time
-	call cpu_time(timeStart)
-	
-	
+    ! start counting cpu time
+    call cpu_time(timeStart)
+    
+    
     ! Initialise error file (0 -> problems.txt file is created)
     errorChoice=0
 
@@ -112,12 +104,12 @@
     ! Daily state needs to be outside year loop to transfer states between years
     allocate(ModelDailyState(NumberOfGrids,MaxNCols_cMDS))   !DailyState        
     allocate(DailyStateFirstOpen(NumberOfGrids))             !Initialization for header
-	allocate(flagRerunAnOHM(NumberOfGrids))					 !flag for rerun AnOHM
-! 	allocate(BoAnOHMStart(NumberOfGrids))		! initial Bo
-! 	allocate(BoAnOHMEnd(NumberOfGrids))			! final Bo
-	
-	
-	
+    allocate(flagRerunAnOHM(NumberOfGrids))                  !flag for rerun AnOHM
+!   allocate(BoAnOHMStart(NumberOfGrids))       ! initial Bo
+!   allocate(BoAnOHMEnd(NumberOfGrids))         ! final Bo
+    
+    
+    
     ! ---- Initialise arrays --------------------------------------------------
     ModelDailyState(:,:) = -999
     DailyStateFirstOpen(:) = 1
@@ -203,20 +195,18 @@
           ! (2) perform the actual model calculations (SUEWS_Calculations)
 
           ! (1) First stage: initialise run -----------------------------------
-          GridCounter=1          !Initialise counter for grids in each year
+          GridCounter=1   !Initialise counter for grids in each year
           DO i=1,NumberOfGrids   !Loop through grids
-
+            
              write(grid_txt,'(I5)') GridIDmatrix(i)   !Get grid ID as a text string
-
              ! Get met forcing file name for this year for the first grid 
              ! Can be something else than 1
              FileCodeX=trim(FileCode)//trim(adjustl(grid_txt))//'_'//trim(year_txt)
              if(iv==1) write(*,*) 'Current FileCode: ', FileCodeX      
-
-  	         ! For the first block of met data --------------------------------
+                                 
+             ! For the first block of met data --------------------------------
              if(iv == 1) then
-	            !write(*,*) 'First block of data - doing initialisation'
-
+                !write(*,*) 'First block of data - doing initialisation'
                 ! (a) Transfer characteristics from SiteSelect to correct row of SurfaceChar
                 do rr=1,nlinesSiteSelect
                    !Find correct grid and year
@@ -227,7 +217,7 @@
                    elseif(rr == nlinesSiteSelect) then
                        write(*,*) 'Program stopped! Year',year_int,'and/or grid',i,'not found in SiteSelect.txt.'
                        call ErrorHint(59,'Cannot find year and/or grid in SiteSelect.txt',real(i,kind(1d0)),NotUsed,year_int)
-                   endif
+                   endif     
                enddo
                ! (b) get initial conditions
                call InitialState(FileCodeX,year_int,GridCounter,year_txt)
@@ -258,84 +248,87 @@
           if((CBLuse==1).or.(CBLuse==2)) call CBL_ReadInputData
           if(SOLWEIGuse==1) call SOLWEIG_initial
 
-	  !write(*,*) 'Initialisation done'
-	  ! First stage: initialisation done ----------------------------------
+      !write(*,*) 'Initialisation done'
+      ! First stage: initialisation done ----------------------------------
       
           ! (2) Second stage: do calculations at 5-min timesteps --------------
           ! First set maximum value of ir
           if(iv == ReadBlocksMetData) then   !For last block of data in file
              irMax = nlinesMetdata - (iv-1)*ReadLinesMetdata
-          else
+          else              
              irMax = ReadLinesMetdata
-          endif   
-		  
-		  iter       = 0
-		  BoAnOHMEnd = NAN
-		  
-		  flagRerunAnOHM = .TRUE.
-		 
-		  do while ( any(flagRerunAnOHM) .and. iter<10 )
-			  iter = iter+1
-			  write(unit=*, fmt=*) 'iteration:',iter
-			  
-			  
-          DO ir=1,irMax   !Loop through rows of current block of met data
-             GridCounter=1    !Initialise counter for grids in each year
-<<<<<<< HEAD
-             DO i=FirstGrid,LastGrid   !Loop through grids
-           
-              if(PrintPlace) write(*,*) 'Row (ir):', ir,'/',irMax,'of block (iv):', iv,'/',ReadBlocksMetData,'Grid:',i
-=======
-             DO i=1,NumberOfGrids   !Loop through grids
+          endif
+          
+          iter       = 0
+          BoAnOHMEnd = NAN
+          
+          flagRerunAnOHM = .TRUE.
+         
+          do while ( any(flagRerunAnOHM) .and. iter < 20 )
+              iter = iter+1
+              write(unit=*, fmt=*) 'iteration:',iter
+              
+              
+              DO ir=1,irMax   !Loop through rows of current block of met data
+                 GridCounter=1    !Initialise counter for grids in each year
 
-              if(PrintPlace) write(*,*) 'Row (ir):', ir,'/',irMax,'of block (iv):', iv,'/',ReadBlocksMetData,'Grid:',GridIDmatrix(i)
->>>>>>> master
+
+                  DO i=1,NumberOfGrids   !Loop through grids
+                  if(PrintPlace) write(*,*) 'Row (ir):', ir,'/',irMax,'of block (iv):', iv,'/',ReadBlocksMetData,&
+                  'Grid:',GridIDmatrix(i)
+
  
-              ! Call model calculation code
-              if(ir==1) write(*,*) 'Now running block ',iv,'/',ReadBlocksMetData,' of year ',year_int,'...'
-              call SUEWS_Calculations(GridCounter,ir,iv,irMax)
-              ! Record iy and id for current time step to handle last row in yearly files (YYYY 1 0 0)
-              if(GridCounter == NumberOfGrids) then   !Adjust only when the final grid has been run for this time step
-                 iy_prev_t = iy
-                 id_prev_t = id
-              endif
+                  ! Call model calculation code
+                  if(ir==1) write(*,*) 'Now running block ',iv,'/',ReadBlocksMetData,' of year ',year_int,'...'
+                  call SUEWS_Calculations(GridCounter,ir,iv,irMax)
+                  ! Record iy and id for current time step to handle last row in yearly files (YYYY 1 0 0)
+                  if(GridCounter == NumberOfGrids) then   !Adjust only when the final grid has been run for this time step
+                     iy_prev_t = iy
+                     id_prev_t = id
+                  endif
               
-              ! Write state information to new InitialConditions files
-              if(ir == irMax) then              !If last row...
-                 if(iv == ReadBlocksMetData) then    !...of last block of met data 
+                  ! Write state information to new InitialConditions files
+                  if(ir == irMax) then              !If last row...
+                     if(iv == ReadBlocksMetData) then    !...of last block of met data 
                     write(grid_txt,'(I5)') GridIDmatrix(i)
-                    write(year_txtNext,'(I4)') year_int+1  !Get next year as a string format
-                    FileCodeX    =trim(FileCode)//trim(adjustl(grid_txt))//'_'//trim(year_txt)
-                    FileCodeXNext=trim(FileCode)//trim(adjustl(grid_txt))//'_'//trim(year_txtNext)
-                    call NextInitial(FileCodeXNext,year_int)
-		             endif
-                 endif
-				  
-				  ! check if Bowen ratio converges for AnOHM
-! 				  if ( it == 0 .and. imin == 5 )  write(*, '(a8,f10.4,2x,i2,i2)') 'BoStart',BoAnOHMStart(GridCounter),it,imin				  
-! 				  if ( ir == irMax) write(*, '(a8,f10.4,2x,i2,i2)') 'BoEnd',BoAnOHMEnd(GridCounter),it,imin
-				  
-				  if ( QSChoice == 3 .and. ir == irMax .and. abs(BoAnOHMStart(GridCounter)-BoAnOHMEnd(GridCounter))<0.05) then
-					  flagRerunAnOHM(GridCounter)=.FALSE.
-! 					  write(unit=*, fmt=*) 'converged:'
-! 					  write(*, '(a8,f10.6)') 'BoStart',BoAnOHMStart(GridCounter)
-! 					  write(*, '(a8,f10.6)') 'BoEnd',BoAnOHMEnd(GridCounter)
-! 					  write(*, '(a8,f10.6)') 'diff.',abs(BoAnOHMStart(GridCounter)-BoAnOHMEnd(GridCounter))
-! 					  write(unit=*, fmt=*) '*********'
-              endif
-				  
-				  ! bypass converge check do-while loop
-				  if ( QSChoice /= 3 ) flagRerunAnOHM(GridCounter)=.FALSE.			  
-				  
+                        write(year_txtNext,'(I4)') year_int+1  !Get next year as a string format
+                        FileCodeX    =trim(FileCode)//trim(adjustl(grid_txt))//'_'//trim(year_txt)
+                        FileCodeXNext=trim(FileCode)//trim(adjustl(grid_txt))//'_'//trim(year_txtNext)
+                        call NextInitial(FileCodeXNext,year_int)
+                     endif
+                  endif
+                  
+                  ! check if Bowen ratio converges for AnOHM
+                  errBo = abs(BoAnOHMStart(GridCounter)-BoAnOHMEnd(GridCounter))
+                  errBo = abs(errBo/BoAnOHMEnd(GridCounter))
+                  
+                  if ( it == 0 .and. imin == 5 )  write(*, '(a8,f10.4,2x,i2,x,i2)') 'BoStart',BoAnOHMStart(GridCounter),it,imin
+                  if ( ir == irMax) write(*, '(a8,f10.4,2x,i2,x,i2)') 'BoEnd',BoAnOHMEnd(GridCounter),it,imin
+                  if ( ir == irMax) write(*, '(a10,f10.4,2x,i2,x,i2)') 'Error(%)',errBo,it,imin
+                  
+                  
+
+                  if ( QSChoice == 3 .and. ir == irMax .and. errBo < 0.15) then
+                      flagRerunAnOHM(GridCounter)=.FALSE.
+                      write(unit=*, fmt=*) 'converged:'
+                      write(*, '(a8,f10.6)') 'BoStart',BoAnOHMStart(GridCounter)
+                      write(*, '(a8,f10.6)') 'BoEnd',BoAnOHMEnd(GridCounter)
+                      write(*, '(a8,f10.6)') 'diff.',abs(BoAnOHMStart(GridCounter)-BoAnOHMEnd(GridCounter))
+                      write(unit=*, fmt=*) '*********'
+                  endif
+                  
+                  ! bypass converge check do-while loop
+                  if ( QSChoice /= 3 ) flagRerunAnOHM(GridCounter)=.FALSE.            
+                  
            
-              GridCounter = GridCounter+1   !Increase GridCounter by 1 for next grid
-              ENDDO !end loop over grids
+                  GridCounter = GridCounter+1   !Increase GridCounter by 1 for next grid
+                  ENDDO !end loop over grids
            
-              !!water movements between the grids needs to be taken into account here ??
+                  !!water movements between the grids needs to be taken into account here ??
               
-          ENDDO !end loop over rows of met data
-		  	
-		  end do   
+              ENDDO !end loop over rows of met data
+            
+          end do   
           
 
           ! Write output files in blocks --------------------------------
@@ -364,12 +357,13 @@
     ! Daily state needs to be outside year loop to transfer states between years
     deallocate(ModelDailyState)
     ! -------------------------------------------------------------------------
-	
-	! get cpu time consumed
-	call cpu_time(timeFinish)	
-	write(*,*) "Time = ",timeFinish-timeStart," seconds."
+    
+    ! get cpu time consumed
+    call cpu_time(timeFinish)   
+    write(*,*) "Time = ",timeFinish-timeStart," seconds."
 
     stop 'finished'
+    
 
  314 call errorHint(11,trim(FileMet),notUsed,notUsed,ios_out)
 

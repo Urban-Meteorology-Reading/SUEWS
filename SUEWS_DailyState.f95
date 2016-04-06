@@ -445,10 +445,17 @@
 	mAHAnOHM(Gridiv)     = xmAH
 	mAH_grids(id,Gridiv) = mAHAnOHM(Gridiv)
 !	load current AnOHM coef.: 	 
+    if ( QsChoice==3 ) then
 	a1AnOHM_grids(id,Gridiv) = a1AnOHM(Gridiv)
 	a2AnOHM_grids(id,Gridiv) = a2AnOHM(Gridiv)
 	a3AnOHM_grids(id,Gridiv) = a3AnOHM(Gridiv)
-! ----------------------------------------------------------------------------
+    else
+!       output the normal OHM coeff.:
+        a1AnOHM(Gridiv) = a1
+        a2AnOHM(Gridiv) = a2
+        a3AnOHM(Gridiv) = a3        
+    end if       
+! --------- AnOHM related End ----------------------------------------------------
      
      ! -----------------------------------------------------------------------------
      

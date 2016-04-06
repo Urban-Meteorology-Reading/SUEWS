@@ -5,7 +5,7 @@
 !                 function in MetArray.
 !  Jan 2015, HCW: Precip_hr, wuh and lai_hr changed for generic timesteps
 !  Jan 2016, LJ:  Removal of tabs  
-!  To Do:
+! To Do: 
 !       - Check observed SM calculation
 !---------------------------------------------------------------------------------------------------
   subroutine MetRead(MetArray,InputmetFormat,ldown_option,NetRadiationChoice,&
@@ -67,7 +67,7 @@
   finish=.false.
   if (InputMetFormat==0) then   !Default format using LUMPS only
 
-     READ(lfn,*,iostat=iostat_var)iy,id,it,imin,qn1_obs,avu1,avrh,&
+    READ(lfn,*,iostat=iostat_var)iy,id,it,imin,qn1_obs,avu1,avrh,&
              Temp_C,wdir,Pres_kPa,Precip,avkdn,snow_obs,ldown_obs,fcld_obs
 
     !Set other variables needed while running SUEWS to zero
@@ -135,7 +135,7 @@
   elseif(ldown_option==2) then
      if(fcld_obs==-999.0.or.fcld_obs<0.or.fcld_obs>1) then
         call ErrorHint(27,'Met Data: flcd_obs - impacts LW & Q* radiation',fcld_obs,dectime,notUsedI)
-     endif
+     endif  
   endif
   
   if(qn1_obs==-999.and.NetRadiationChoice==0) then  !If measured Q* is used and it is -999 

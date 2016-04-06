@@ -113,16 +113,11 @@
            stop
        endif
   endif
-    if (gsChoice>2)then
-        write(*,*) 'gsChoice=', gsChoice
-        write(*,*) 'value too large'
-        stop
-    end if
   
   !------------------------------------------------------------------
   !Print run information on the screen
   write(*,*)'--------------------------------------------------------'
-  write(*,*)"LUMPS/Suews 2016 - relevant references"
+  write(*,*)"LUMPS/Suews 2012a - relevant references"
   write(*,*)"LUMPS - Grimmond and Oke (2002) JAM, 41, 79-810"
   write(*,*)"OHM - Grimmond and Oke (1999) JAM, 38, 922-940"
   write(*,*)"NARP - Offerle et al. (2003) JAM"

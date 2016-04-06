@@ -16,7 +16,7 @@
    
    ! ---- Set parameters for reading in data ------------------------------------------------------
    integer, parameter:: MaxNumberOfGrids=10000   !Max no. grids   !HCW changed to 10000 from 100
-   integer, parameter:: MaxLinesMet=50000        !Max no. lines to read in one go (for all grids, ie MaxLinesMet/NumberOfGrids each)
+   integer, parameter:: MaxLinesMet=8640        !Max no. lines to read in one go (for all grids, ie MaxLinesMet/NumberOfGrids each)
 
    ! ---- Set number of columns in input files ----------------------------------------------------
    integer, parameter:: ncolumnsSiteSelect=80        !SUEWS_SiteSelect.txt

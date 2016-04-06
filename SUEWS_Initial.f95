@@ -1,6 +1,6 @@
 !=========================================================================
 ! sg feb 2012
-! only run once at start - fixed for all gds and all years
+! only run once at start - fixed for all grids and all years
  
  SUBROUTINE OverallRunControl
 ! Last modified:

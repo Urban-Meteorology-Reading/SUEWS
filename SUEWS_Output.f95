@@ -10,7 +10,7 @@
 ! HCW 18 Nov 2014
 ! LJ 5 Jan 2015: code cleaned, daily and monthly filesaving added
 !-----------------------------------------------------------------------------------------------
- subroutine SUEWS_Output(Gridiv, year_int, iv, irMax, GridID)
+ subroutine SUEWS_Output(Gridiv, year_int, iv, irMax)
  !INPUT: Gridiv = Grid number
  !       year_int = Year as a integer
  !       iv = Block number of met data
@@ -25,18 +25,17 @@
   use initial
   use solweig_module
   use cbl_module
-  
 
   IMPLICIT NONE
 
   integer::i !,lfnOutC
-  integer:: Gridiv, GridID, year_int, iv, irMax
+  integer:: Gridiv, year_int, iv, irMax
   character(len=10):: str2, grstr2, yrstr2
   character(len=100):: rawpath, SnowOut
-    
+
   !================DEFINE OUTPUT FILENAME AND ITS PATH================
   write(str2,'(i2)') TSTEP/60
-  write(grstr2,'(i5)') GridID
+  write(grstr2,'(i5)') Gridiv
   write(yrstr2,'(i4)') year_int
 
   rawpath=trim(FileOutputPath)//trim(FileCode)//trim(adjustl(grstr2))//'_'//trim(adjustl(yrstr2))
@@ -44,7 +43,7 @@
   SOLWEIGpoiOut=trim(rawpath)//'_SOLWEIGpoiOut.txt'
   BLOut=trim(rawpath)//'_BL.txt'
   SnowOut=trim(rawpath)//'_snow_5.txt'
-  
+
   !================OPEN OUTPUT FILE AND PRINT HEADER================
 
   ! Hourly output file
@@ -54,18 +53,18 @@
     open(lfnOutC,file=trim(FileOut),err=112)
     write(lfnOutC,110)
 
-    110 format('%iy id it imin dectime ',&
-               'kdown kup ldown lup Tsurf qn h_mod e_mod qs QF QH QE ',&
-               'P/i Ie/i E/i Dr/i ',&
-               'St/i NWSt/i surfCh/i totCh/i ',&
-               'RO/i ROsoil/i ROpipe ROpav ROveg ROwater ',&
-               'AdditionalWater FlowChange WU_int WU_EveTr WU_DecTr WU_Grass ',&
-               'RA RS ustar L_mod Fcld ',&
-               'SoilSt smd smd_Paved smd_Bldgs smd_EveTr smd_DecTr smd_Grass smd_BSoil ',&
-               'St_Paved St_Bldgs St_EveTr St_DecTr St_Grass St_BSoil St_Water ',&
-               'LAI z0m zdm ',&
-               'qn1_SF qn1_S Qm QmFreez Qmrain SWE Mw MwStore snowRem_Paved snowRem_Bldgs ChSnow/i ',&
-               'SnowAlb ')
+    110 format('%iy id it imin dectime        kdown       kup     ldown lup          Tsurf',&
+            '      qn     h_mod     e_mod     qs        QF       QH         QE          P/i ',&
+            '         Ie/i      E/i      Dr/i     St/i        NWSt/i     surfCh/i    totCh/i  ',&
+            '  RO/i     ROsoil/i    ROpipe      ROpav      ROveg    ROwater AdditionalWater',&
+            ' FlowChange WU_int WU_EveTr WU_DecTr WU_Grass       RA     RS            ustar',&
+            '    L_mod           Fcld       SoilSt      smd     smd_Paved smd_Bldgs',&
+            '   smd_EveTr smd_DecTr  smd_Grass   smd_BSoil  St_Paved     St_Bldgs   St_EveTr',&
+            ' St_DecTr    St_Grass   St_BSoil St_Water      LAI        z0m         zdm       ',&
+            'qn1_SF       qn1_S      Qm       QmFreez     Qmrain      SWE       Mw',&
+            '      MwStore  snowRem_Paved snowRem_Bldgs ChSnow/i SnowAlb ')
+
+
               !These belon to NARP ouput file
               ! 'kup_Paved kup_Bldgs kup_EveTr kup_DecTr kup_Grass kup_BSoil kup_Water ',&
               ! 'lup_Paved lup_Bldgs lup_EveTr lup_DecTr lup_Grass lup_BSoil lup_Water ',&
@@ -85,7 +84,7 @@
              ' Ldown2d    Lup2d    Lsouth     Lwest    Lnorth     Least ',&
              '   Tmrt       I0       CI        gvf      shadow    svf    svfbuveg    Ta    Tg')
   endif
-  
+
   !BL ouputfile
   if (CBLuse>=1)then
      open(53,file=BLOut,status='unknown')
@@ -128,16 +127,16 @@
           write(9,304) int(dataOutSOL(i,1,Gridiv)),(dataOutSOL(i,is,Gridiv),is = 2,28)
     enddo
  endif
-      
+
  do i=1,irMax
     write(lfnoutC,301) int(dataOut(i,1,Gridiv)),int(dataOut(i,2,Gridiv)),int(dataOut(i,3,Gridiv)),int(dataOut(i,4,Gridiv)),&
                          dataOut(i,5:ncolumnsDataOut,Gridiv)
  enddo
-  
+
  if(CBLuse>=1) then
     do i=1,iCBLcount
-        write(53,305)(int(dataOutBL(i,is,Gridiv)),is=1,4),(dataOutBL(i,is,Gridiv),is=5,22) 
-    enddo  
+        write(53,305)(int(dataOutBL(i,is,Gridiv)),is=1,4),(dataOutBL(i,is,Gridiv),is=5,22)
+    enddo
  endif
 
  if(SnowUse>=1) then
@@ -165,11 +164,11 @@
   !==================== This part read by python wrapper ======================
   ! Update to match output columns, header and format
   ! Average, sum, or use last value to go from model timestep to 60-min output
-  ! 301_Instructions         
+  ! 301_Instructions
   ! TimeCol = [1,2,3,4,5]
-  ! AvCol  = [6,7,8,9,10,11,12,13,14,15,16,17,  38,39,40,41,42,  61,62,63,64,65]          
-  ! SumCol = [18,19,20,21,  24,25, 26,27,28,29,30,31,  32,33,34,35,36,37,  69,70,71] 
-  ! LastCol  = [22,23,  43,44,45,46,47,48,49,50,  51,52,53,54,55,56,57,  58,59,60,  66,67,68,  72]                         
+  ! AvCol  = [6,7,8,9,10,11,12,13,14,15,16,17,  38,39,40,41,42,  61,62,63,64,65]
+  ! SumCol = [18,19,20,21,  24,25, 26,27,28,29,30,31,  32,33,34,35,36,37,  69,70,71]
+  ! LastCol  = [22,23,  43,44,45,46,47,48,49,50,  51,52,53,54,55,56,57,  58,59,60,  66,67,68,  72]
 
   304 format(1(i3,1X),4(f8.4,1X),23(f9.3,1X))          !Solweig output
   305 format((i4,1X),3(i3,1X),(f8.4,1X),17(f15.7,1x))  !CBL output

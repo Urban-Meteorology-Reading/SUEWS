@@ -360,7 +360,7 @@
  
  ! Distribute water within grid, according to WithinGridWaterDist matrix (Cols 1-7)
  call ReDistributeWater   !Calculates AddWater(is)
-  
+
  !======== Evaporation and surface state ========
  do is=1,nsurf   !For each surface in turn      
     if (snowCalcSwitch(is)==1) then

@@ -75,8 +75,63 @@
   endif
    
   return
- ENDSUBROUTINE CodeMatchOHM
+ENDSUBROUTINE CodeMatchOHM
 ! ---------------------------------------------------------
+    
+ SUBROUTINE CodeMatchESTM(Gridiv,is,SWWD) 
+! Matches ESTM coefficients via OHM codes 
+! for summer/winter wet/dry conditions 
+! S.O. 04 Feb 2016
+! ---------------------------------------------------------
+
+  use allocateArray
+  use Initial
+  use ColNamesInputFiles
+  use defaultNotUsed
+  
+  IMPLICIT NONE
+  
+  integer:: gridiv
+  integer:: is
+  character(len=4):: SWWD
+ 
+  iv5=0 ! Reset iv5 to zero
+  
+  if(SWWD == 'Grnd') then
+      
+     do iv5=1,nlinesESTMCoefficients
+        if (ESTMCoefficients_Coeff(iv5,cE_Code)==SurfaceChar(gridiv,c_OHMCode_SWet(is))) then
+           exit
+        elseif(iv5 == nlinesESTMCoefficients) then 
+           write(*,*) 'Program stopped! ESTM code',SurfaceChar(gridiv,c_OHMCode_SWet(is)),&
+         		      'not found in ESTM_Coefficients.txt for surface',is,'.'
+           call ErrorHint(57,'Cannot find ESTM code',SurfaceChar(gridiv,c_OHMCode_SWet(is)),notUsed,notUsedI)
+        endif
+     enddo      
+      
+  
+  elseif(SWWD == 'Bldg') then
+  
+     do iv5=1,nlinesESTMCoefficients
+        if (ESTMCoefficients_Coeff(iv5,cE_Code)==SurfaceChar(gridiv,c_OHMCode_SWet(is))) then
+           exit
+        elseif(iv5 == nlinesESTMCoefficients) then 
+           write(*,*) 'Program stopped! ESTM code',SurfaceChar(gridiv,c_OHMCode_SWet(is)),&
+         		      'not found in ESTM_Coefficients.txt for surface',is,'.'
+           call ErrorHint(57,'Cannot find ESTM code',SurfaceChar(gridiv,c_OHMCode_SWet(is)),notUsed,notUsedI)
+        endif
+     enddo
+          
+  else
+     write(*,*) 'Problem with CodeMatchESTM (in SUEWS_CodeMatch.f95). ',SWWD,' not recognised. Needs to be one of: ',&
+     	        'Roof, Wall, Ibld. N.B. Case sensitive.'
+     stop    
+      
+  endif
+       
+  return
+ ENDSUBROUTINE CodeMatchESTM
+! ---------------------------------------------------------    
 
 
  SUBROUTINE CodeMatchProf(rr,CodeCol)

@@ -34,6 +34,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   USE snowMod        !defines: SnowAlb, etc
   USE sues_data      !defines: SurfaceArea, IrrFracConif, IrrFracDecid, IrrFracGrass, Irrigation variables
   USE time
+  use ESTM_data
 
   IMPLICIT NONE
 
@@ -44,6 +45,8 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
 
   INTEGER::iv, j
   INTEGER::i, ii, iii
+  
+  real (Kind(1d0)):: FCskip = -9  !NULL value used for output to FileChoices	
 
   REAL (KIND(1d0)):: FCskip = -9  !NULL value used for output to FileChoices
 
@@ -291,16 +294,60 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   OHM_coef(nsurf+2,4,2) = SurfaceChar(Gridiv,c_a2_WDry(nsurf+1)) !Snow    a2 Winter dry
   OHM_coef(1:nsurf,4,3) = SurfaceChar(Gridiv,c_a3_WDry(1:nsurf)) !1:nsurf a3 Winter dry
   OHM_coef(nsurf+2,4,3) = SurfaceChar(Gridiv,c_a3_WDry(nsurf+1)) !Snow    a3 Winter dry
+  
+  ! ---- ESTM coeffs (was in SUEWS_ESTM_v2016.f95, subroutine ESTM_v2016)
+  zground  = SurfaceChar(Gridiv,(/c_thick1_r(1),c_thick2_r(1),c_thick3_r(1),c_thick4_r(1),c_thick5_r(1)/))
+  zroof    = SurfaceChar(Gridiv,(/c_thick1_r(2),c_thick2_r(2),c_thick3_r(2),c_thick4_r(2),c_thick5_r(2)/))
+  zwall    = SurfaceChar(Gridiv,(/c_thick1_e(2),c_thick2_e(2),c_thick3_e(2),c_thick4_e(2),c_thick5_e(2)/))
+  zibld    = SurfaceChar(Gridiv,(/c_thick1_i(2),c_thick2_i(2),c_thick3_i(2),c_thick4_i(2),c_thick5_i(2)/))
+  kground  = SurfaceChar(Gridiv,(/c_k1_r(1),c_k2_r(1),c_k3_r(1),c_k4_r(1),c_k5_r(1)/))
+  kroof    = SurfaceChar(Gridiv,(/c_k1_r(2),c_k2_r(2),c_k3_r(2),c_k4_r(2),c_k5_r(2)/))
+  kwall    = SurfaceChar(Gridiv,(/c_k1_e(2),c_k2_e(2),c_k3_e(2),c_k4_e(2),c_k5_e(2)/))
+  kibld    = SurfaceChar(Gridiv,(/c_k1_i(2),c_k2_i(2),c_k3_i(2),c_k4_i(2),c_k5_i(2)/))
+  rground  = SurfaceChar(Gridiv,(/c_rhoCp1_r(1),c_rhoCp2_r(1),c_rhoCp3_r(1),c_rhoCp4_r(1),c_rhoCp5_r(1)/))
+  rroof    = SurfaceChar(Gridiv,(/c_rhoCp1_r(2),c_rhoCp2_r(2),c_rhoCp3_r(2),c_rhoCp4_r(2),c_rhoCp5_r(2)/))
+  rwall    = SurfaceChar(Gridiv,(/c_rhoCp1_e(2),c_rhoCp2_e(2),c_rhoCp3_e(2),c_rhoCp4_e(2),c_rhoCp5_e(2)/))
+  ribld    = SurfaceChar(Gridiv,(/c_rhoCp1_i(2),c_rhoCp2_i(2),c_rhoCp3_i(2),c_rhoCp4_i(2),c_rhoCp5_i(2)/))
 
   ! ---- AnOHM related ------------------------------
   cpAnOHM(1:nsurf) = SurfaceChar(Gridiv,c_cpAnOHM)   ! AnOHM TS
+  nroom    = SurfaceChar(Gridiv,c_nroom(2))
+  alb_ibld = SurfaceChar(Gridiv,c_alb_ibld(2))
+  em_ibld  = SurfaceChar(Gridiv,c_em_ibld(2))
+  CH_iwall = SurfaceChar(Gridiv,c_CH_iwall(2))
   kkAnOHM(1:nsurf) = SurfaceChar(Gridiv,c_kkAnOHM)   ! AnOHM TS
+  CH_iroof = SurfaceChar(Gridiv,c_CH_iroof(2))
+  CH_ibld  = SurfaceChar(Gridiv,c_CH_ibld(2))
   chAnOHM(1:nsurf) = SurfaceChar(Gridiv,c_chAnOHM)   ! AnOHM TS
-  ! -------------------------------------------------
-
-
-  ! ---- QF coeffs (was in SUEWS_SAHP.f95, subroutine SAHP_Coefs)
-  BaseTHDD = -999 ! Initialise  QF coeffs
+  fwall    = SurfaceChar(Gridiv,c_fwall(2)) 
+  
+  do i=1,5
+    if (zground(i)<=0)then
+       Nground=i-1
+       exit
+    endif
+  enddo
+  do i=1,5
+    if (zroof(i)<=0) then
+       Nroof=i-1
+       exit
+    endif
+  enddo
+  do i=1,5
+    if (zwall(i)<=0) then
+       Nwall=i-1
+       exit
+    endif
+  enddo
+  do i=1,5
+    if (zibld(i)<=0) then
+       Nibld=i-1
+       exit
+    endif
+  enddo
+   
+  ! ---- QF coeffs (was in SUEWS_SAHP.f95, subroutine SAHP_Coefs)                 
+  BaseTHDD = -999 ! Initialise  QF coeffs 
   QF_A=0
   QF_B=0
   QF_C=0
@@ -512,10 +559,65 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      !write(*,*) 'Writing to FileChoices for first chunk of met data per year per grid'
      FileChoices=TRIM(FileOutputPath)//TRIM(FileCode)//'_FileChoices.txt'
      OPEN(12,file=FileChoices,position='append')
+   
+     write(12,*) ''
+     write(12,*) '===================================================================='
+     write(12,'(g6.2,i6,g6.2,i6)') 'YEAR:',int(SurfaceChar(Gridiv,c_Year)),'GRID:',int(SurfaceChar(Gridiv,c_Grid))
+  
+     write(12,*)'--------SUEWS_FunctionalTypes.txt---------------------------- '
+     write(12,*)'!Paved  Bldgs   EveTr  DecTr  Grass   BSoil  Water  Snow        -9 not applicable  '
+     write(12,120) alb(1:nsurf),  SnowAlb,  ' albedo'             ! 1
+     write(12,120) FCskip,FCskip,AlbMin_EveTr,AlbMin_DecTr,AlbMin_Grass,FCskip,FCskip,SnowAlbMin,  ' min albedo'   ! 1a
+     write(12,120) FCskip,FCskip,AlbMax_EveTr,AlbMax_DecTr,AlbMax_Grass,FCskip,FCskip,SnowAlbMax,  ' max albedo'   ! 1a
+     write(12,120) emis(1:nsurf), emis_snow, ' emissivity'               ! 2
+     write(12,120) FCskip, FCskip, baseT (1:nvegsurf),FCskip, FCskip, FCskip,' BaseT'  ! 3
+     write(12,120) FCskip, FCskip, baseTe(1:nvegsurf),FCskip, FCskip, FCskip, ' BaseTe'   ! 4
+     write(12,120) (Surf(1,iv),iv=1,nsurf), FCskip ,'min storage capacity' !5
+     write(12,120) (Surf(5,iv),iv=1,nsurf), FCskip ,'max storage capacity'       ! 
+     write(12,'(6g8.2,1f8.2,g8.2,g15.2)') (WetThresh(iv),iv=1,nsurf), FCskip,' WetThreshold' !
+     write(12,'(6g8.2,1f8.2,g8.2,g15.2)') (StateLimit(iv),iv=1,nsurf), FCskip,' StateLimit' !
+     write(12,120) (Surf(2,iv),iv=1,nsurf), FCskip ,' drain equation' 
+     write(12,120) (Surf(3,iv),iv=1,nsurf), FCskip ,' dr coef1'     ! 7    ! 
+     write(12,120) (Surf(4,iv),iv=1,nsurf), FCskip ,' dr coef2'      ! 8    !  
+     write(12,'(7f8.0, 2g10.4)') FCskip, FCskip, (GDDFull(iv),iv=1,nVegsurf),FCskip,FCskip,FCskip, 'GDDFull '  ! 10
+     write(12,'(7f8.0, 2g10.4)') FCskip, FCskip,(SDDFull(iv),iv=1,nVegsurf),FCskip,FCskip,FCskip,'SDDFull'  ! 11
+     write(12,120) FCskip, FCskip, (LAImin(iv),iv=1,nVegsurf),FCskip,FCskip,FCskip,'LAI min'! 12  !
+     write(12,120) FCskip, FCskip, (LAImax(iv),iv=1,nVegsurf),FCskip,FCskip,FCskip,'LAI max'  ! 13 ! 
+     write(12,120) FCskip, FCskip, (MaxConductance(iv),iv=1,nVegsurf),FCskip,FCskip,FCskip,'MaxCond'  ! 14
+     write(12,'(8f8.0, 2g10.4)') (soilstoreCap(iv),iv=1,nsurf), FCskip, 'soilstoreCap'     ! 15
+     write(12,120) (SoilDepth(iv),iv=1,nsurf),FCskip,'SoilDepth'  ! 16
+     write(12,120) (SatHydraulicConduct(iv),iv=1,nsurf),FCskip,'SatHydraulicConduct'  ! 17
+     write(12,'(5g10.4, g10.5, g20.0)') G1,G2,G3,G4,G5,G6,' conductance parameters'   ! 17 
+     write(12,'(4g10.2,g10.5,g20.0)') TH,TL,S1,S2, Kmax,' conductance parameters'   ! 18 
+     write(12,*)  ! FCskip header Soil related
+     write(12,'(g12.6,g10.2,f6.0,3g8.3,g8.1)')SoilDensity,SoilDepthMeas, SoilRocks,SmCap,'Soil'  !24
+     write(12,*)  ! FCskip header LUMPS related
+     write(12,'(10g8.2)')DRAINRT,RAINCOVER,RAINMAXRES,'LUMPS (1)drainage rate,adjust alpha/beta wet surface(3)Max water bucket'  ! 26
+     write(12,*)! FCskip header snow related  
+     write(12,'(10g8.2)')RadMeltFact,TempMeltFact,SnowAlb,SnowAlbMax,tau_a,tau_f,PrecipLimitAlb
+     write(12,'(10g8.2)')SnowDensMin,SnowDensMax,tau_r,CRWmin,CRWmax,PrecipLimit    
+     write(12,*)! FCskip header NARP related  
+     write(12,'(10g8.2)') TRANS_SITE, 'trans_site'
+     write(12,*)! FCskip header LAI related  
+     write(12,'(10g8.2)') LAItype, (laiPower(iv),iv=1,4)
 
+     120  format (8g8.2, g15.2)  !format (10g10.2)
+         
+     write(12,*) '---Number of rows in OHM_Coefficients.txt =',nlinesOHMCoefficients
+     write(12,*)'-------','Select OHM','----------------------'
      WRITE(12,*) ''
      WRITE(12,*) '===================================================================='
+     write(12,'(8g12.4)')  SurfaceChar(Gridiv,c_OHMCode_SWet)
+     write(12,'(8g12.4)')  SurfaceChar(Gridiv,c_OHMCode_SDry)
+     write(12,'(8g12.4)')  SurfaceChar(Gridiv,c_OHMCode_WWet)
+     write(12,'(8g12.4)')  SurfaceChar(Gridiv,c_OHMCode_WDry)
      WRITE(12,'(g6.2,i6,g6.2,i6)') 'YEAR:',INT(SurfaceChar(Gridiv,c_Year)),'GRID:',INT(SurfaceChar(Gridiv,c_Grid))
+     write(12,*)' OHM coefficients----------------------'
+     do i=1,4
+        do ii=1, nsurf+1
+           write(12,'(2i4,3g10.3)') ii,i, (OHM_coef(ii,i,iii),iii=1,3)
+        enddo
+     enddo
 
      WRITE(12,*)'--------SUEWS_FunctionalTypes.txt---------------------------- '
      WRITE(12,*)'!Paved  Bldgs   EveTr  DecTr  Grass   BSoil  Water  Snow        -9 not applicable  '

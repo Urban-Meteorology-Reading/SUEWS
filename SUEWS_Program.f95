@@ -61,6 +61,32 @@ PROGRAM SUEWS_Program
   REAL :: xErr      ! error in Bo iteration, AnOHM TS 20160331
   LOGICAL, ALLOCATABLE :: flagRerunAnOHM(:)   ! iteration run to make Bo converge,AnOHM TS
 
+       ! ---- Allocate arrays--------------------------------------------------
+       allocate(SurfaceChar(NumberOfGrids,MaxNCols_c))   !Surface characteristics
+       allocate(MetForcingData(1:ReadlinesMetdata,ncolumnsMetForcingData,NumberOfGrids))   !Met forcing data 
+       allocate(ModelOutputData(0:ReadlinesMetdata,MaxNCols_cMOD,NumberOfGrids))           !Data at model timestep
+       allocate(dataOut(1:ReadlinesMetdata,ncolumnsDataOut,NumberOfGrids))                 !Main output array
+       if (SOLWEIGuse == 1) then
+          allocate(dataOutSOL(1:ReadlinesMetdata,28,NumberOfGrids))                        !SOLWEIG POI output
+       endif
+       if (CBLuse >= 1) then
+          allocate(dataOutBL(1:ReadlinesMetdata,22,NumberOfGrids))                         !CBL output
+       endif
+       if (SnowUse == 1) then
+          allocate(dataOutSnow(1:ReadlinesMetdata,ncolumnsDataOutSnow,NumberOfGrids))      !Snow output array
+       endif
+       if(QSChoice==4 .or. QSChoice==14) then
+           allocate(dataOutESTM(1:ReadlinesMetdata,32,NumberOfGrids))
+       endif
+       
+       allocate(TstepProfiles(NumberOfGrids,6,24*NSH))  !Hourly profiles interpolated to model timestep
+       allocate(AHProf_tstep(24*NSH,2))                 !Anthropogenic heat profiles at model timestep
+       allocate(WUProfM_tstep(24*NSH,2))                !Manual water use profiles at model timestep
+       allocate(WUProfA_tstep(24*NSH,2))                !Automatic water use profiles at model timestep
+       !! Add snow clearing (?)      
+       ! ----------------------------------------------------------------------
+          
+       ! ---- Initialise arrays  !! Does this need to happen here??
 
   !==========================================================================
 

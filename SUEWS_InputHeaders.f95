@@ -153,6 +153,61 @@ SUBROUTINE InputHeaderCheck(FileName)
   HeaderOHMCoefficients_Reqd(cO_a2)   = "a2"    
   HeaderOHMCoefficients_Reqd(cO_a3)   = "a3"   
    
+    ! ========== SUEWS_ESTMCoefficients.txt ======== 
+  HeaderESTMCoefficients_Reqd(cE_Code)       = "Code" 
+  HeaderESTMCoefficients_Reqd(cE_thick1_r)   = "thick1" 
+  HeaderESTMCoefficients_Reqd(cE_k1_r)       = "k1"    
+  HeaderESTMCoefficients_Reqd(cE_rhoCp1_r)   = "rhoCp1"
+  HeaderESTMCoefficients_Reqd(cE_thick2_r)   = "thick2" 
+  HeaderESTMCoefficients_Reqd(cE_k2_r)       = "k2" 
+  HeaderESTMCoefficients_Reqd(cE_rhoCp2_r)   = "rhoCp2" 
+  HeaderESTMCoefficients_Reqd(cE_thick3_r)   = "thick3" 
+  HeaderESTMCoefficients_Reqd(cE_k3_r)       = "k3"   
+  HeaderESTMCoefficients_Reqd(cE_rhoCp3_r)   = "rhoCp3"
+  HeaderESTMCoefficients_Reqd(cE_thick4_r)   = "thick4" 
+  HeaderESTMCoefficients_Reqd(cE_k4_r)       = "k4" 
+  HeaderESTMCoefficients_Reqd(cE_rhoCp4_r)   = "rhoCp4" 
+  HeaderESTMCoefficients_Reqd(cE_thick5_r)   = "thick5" 
+  HeaderESTMCoefficients_Reqd(cE_k5_r)       = "k5" 
+  HeaderESTMCoefficients_Reqd(cE_rhoCp5_r)   = "rhoCp5"
+  HeaderESTMCoefficients_Reqd(cE_thick1_e)   = "thick1" 
+  HeaderESTMCoefficients_Reqd(cE_k1_e)       = "k1"    
+  HeaderESTMCoefficients_Reqd(cE_rhoCp1_e)   = "rhoCp1"
+  HeaderESTMCoefficients_Reqd(cE_thick2_e)   = "thick2" 
+  HeaderESTMCoefficients_Reqd(cE_k2_e)       = "k2" 
+  HeaderESTMCoefficients_Reqd(cE_rhoCp2_e)   = "rhoCp2" 
+  HeaderESTMCoefficients_Reqd(cE_thick3_e)   = "thick3" 
+  HeaderESTMCoefficients_Reqd(cE_k3_e)       = "k3"   
+  HeaderESTMCoefficients_Reqd(cE_rhoCp3_e)   = "rhoCp3"
+  HeaderESTMCoefficients_Reqd(cE_thick4_e)   = "thick4" 
+  HeaderESTMCoefficients_Reqd(cE_k4_e)       = "k4" 
+  HeaderESTMCoefficients_Reqd(cE_rhoCp4_e)   = "rhoCp4" 
+  HeaderESTMCoefficients_Reqd(cE_thick5_e)   = "thick5" 
+  HeaderESTMCoefficients_Reqd(cE_k5_e)       = "k5" 
+  HeaderESTMCoefficients_Reqd(cE_rhoCp5_e)   = "rhoCp5"
+  HeaderESTMCoefficients_Reqd(cE_thick1_i)   = "thick1" 
+  HeaderESTMCoefficients_Reqd(cE_k1_i)       = "k1"    
+  HeaderESTMCoefficients_Reqd(cE_rhoCp1_i)   = "rhoCp1"
+  HeaderESTMCoefficients_Reqd(cE_thick2_i)   = "thick2" 
+  HeaderESTMCoefficients_Reqd(cE_k2_i)       = "k2" 
+  HeaderESTMCoefficients_Reqd(cE_rhoCp2_i)   = "rhoCp2" 
+  HeaderESTMCoefficients_Reqd(cE_thick3_i)   = "thick3" 
+  HeaderESTMCoefficients_Reqd(cE_k3_i)       = "k3"   
+  HeaderESTMCoefficients_Reqd(cE_rhoCp3_i)   = "rhoCp3"
+  HeaderESTMCoefficients_Reqd(cE_thick4_i)   = "thick4" 
+  HeaderESTMCoefficients_Reqd(cE_k4_i)       = "k4" 
+  HeaderESTMCoefficients_Reqd(cE_rhoCp4_i)   = "rhoCp4" 
+  HeaderESTMCoefficients_Reqd(cE_thick5_i)   = "thick5" 
+  HeaderESTMCoefficients_Reqd(cE_k5_i)       = "k5" 
+  HeaderESTMCoefficients_Reqd(cE_rhoCp5_i)   = "rhoCp5"
+  HeaderESTMCoefficients_Reqd(cE_nroom)      = "nroom" 
+  HeaderESTMCoefficients_Reqd(cE_alb_ibld)   = "alb_ibld" 
+  HeaderESTMCoefficients_Reqd(cE_em_ibld)    = "em_ibld"
+  HeaderESTMCoefficients_Reqd(cE_CH_iwall)   = "CH_iwall" 
+  HeaderESTMCoefficients_Reqd(cE_CH_iroof)   = "CH_iroof"
+  HeaderESTMCoefficients_Reqd(cE_CH_ibld)    = "CH_ibld"
+  HeaderESTMCoefficients_Reqd(cE_fwall)      = "fwall"
+  
   ! ========== SUEWS_AnthropogenicHeat.txt ======  
   HeaderAnthropogenicHeat_Reqd(cA_Code)     = "Code" 
   HeaderAnthropogenicHeat_Reqd(cA_BaseTHDD) = "BaseTHDD" 
@@ -284,6 +339,13 @@ SUBROUTINE InputHeaderCheck(FileName)
         call ErrorHint(56,'Names or order of columns in SUEWS_OHMCoefficients.txt does not match model code.',&
                        notUsed,notUsed,notUsedI)
      endif 
+     
+  elseif(FileName == 'SUEWS_ESTMCoefficients.txt') then 
+     if(ANY(HeaderESTMCoefficients_File /= HeaderESTMCoefficients_Reqd)) then
+        write(*,*) HeaderESTMCoefficients_File == HeaderESTMCoefficients_Reqd
+        call ErrorHint(56,'Names or order of columns in SUEWS_ESTMCoefficients.txt does not match model code.',&
+                       notUsed,notUsed,notUsedI)
+  endif    
    
   elseif(FileName == 'SUEWS_AnthropogenicHeat.txt') then
      if(ANY(HeaderAnthropogenicHeat_File /= HeaderAnthropogenicHeat_Reqd)) then

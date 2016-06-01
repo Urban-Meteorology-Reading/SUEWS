@@ -39,7 +39,7 @@ namelist /ESTMinput/TsurfChoice,&
     open(51,file=trim(FileInputPath)//'ESTMinput.nml',status='old')
     read(51,nml=ESTMinput)
     close(51)
-    
+
     dtperday=86400.0/Tstep
     allocate(Tair24HR(dtperday))
     Tair24HR=C2K
@@ -134,8 +134,12 @@ namelist /ESTMinput/TsurfChoice,&
 
     !ground
     fground=sfr(ConifSurf)+sfr(DecidSurf)+sfr(GrassSurf)+sfr(PavSurf)+sfr(BsoilSurf)+sfr(WaterSurf) !! S.O. This is calculated based on current version of ESTM but maybe will be changed.
-    alb_ground=(alb(ConifSurf)*sfr(ConifSurf)+alb(DecidSurf)*sfr(DecidSurf)+alb(GrassSurf)*sfr(GrassSurf)+alb(PavSurf)*sfr(PavSurf)+alb(BsoilSurf)*sfr(BsoilSurf)+alb(WaterSurf)*sfr(WaterSurf))/fground
-    em_ground=(emis(ConifSurf)*sfr(ConifSurf)+emis(DecidSurf)*sfr(DecidSurf)+emis(GrassSurf)*sfr(GrassSurf)+emis(PavSurf)*sfr(PavSurf)+emis(BsoilSurf)*sfr(BsoilSurf)+emis(WaterSurf)*sfr(WaterSurf))/fground
+    alb_ground=(alb(ConifSurf)*sfr(ConifSurf)+alb(DecidSurf)*sfr(DecidSurf)&
+                +alb(GrassSurf)*sfr(GrassSurf)+alb(PavSurf)*sfr(PavSurf)&
+                +alb(BsoilSurf)*sfr(BsoilSurf)+alb(WaterSurf)*sfr(WaterSurf))/fground
+    em_ground=(emis(ConifSurf)*sfr(ConifSurf)+emis(DecidSurf)*sfr(DecidSurf)&
+              +emis(GrassSurf)*sfr(GrassSurf)+emis(PavSurf)*sfr(PavSurf)&
+              +emis(BsoilSurf)*sfr(BsoilSurf)+emis(WaterSurf)*sfr(WaterSurf))/fground
 
     HW=fwall/(2.*(1.-froof))
 

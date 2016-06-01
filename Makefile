@@ -1,8 +1,8 @@
-	
 
-CC = gfortran $(CFLAGS)		        	# compiler
+
+CC = gfortran $(CFLAGS)					# compiler
 TARGET = SUEWS_AnOHM_v2016			# program name
-CFLAGS = -g -w -Wall -Wtabs 
+CFLAGS = -g -w -Wall -Wtabs
 # All the files which include modules used by other modules (these therefore
 # needs to be compiled first)
 MODULES = LUMPS_Module_constants_v2015a.o  \
@@ -57,7 +57,10 @@ OTHERS =  BLUEWS_CBL.o   \
           SOLWEIG_shadowingfunction_20.o  \
           SOLWEIG_sunonsurface_veg.o  \
           SOLWEIG_wallinsun_veg.o  \
-		  SUEWS_AnOHM_v2016.o # AnOHM TS 02 Mar 2016 
+          SUEWS_AnOHM_v2016.o  \
+          SUEWS_ESTM_functions.o \
+          SUEWS_ESTM_initials.o \
+          SUEWS_ESTM_v2016.o 
 
 # Build main program - main uses MODULES and OTHERS
 main: SUEWS_Program.f95 $(MODULES) $(OTHERS)
@@ -73,5 +76,5 @@ $(MODULES): $(subst .o,.f95, $(MODULES))
 	$(CC) -c $(subst .o,.f95, $@)
 
 # If wanted, clean all *.o files after build
-clean: 
-	    -rm *.o
+clean:
+	-rm *.o

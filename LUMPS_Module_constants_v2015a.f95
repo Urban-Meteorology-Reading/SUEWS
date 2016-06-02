@@ -173,19 +173,18 @@
    real(kind(1d0)),dimension(-4:ndays, nvegsurf):: LAI   !LAI for each veg surface [m2 m-2]
    
    ! Seasonality of deciduous trees accounted for by the following variables which change with time
-   real(kind(1d0)),dimension( 0:ndays):: albDec     !Albedo of deciduous trees [-]
    real(kind(1d0)),dimension( 0:ndays):: DecidCap   !Storage capacity of deciduous trees [mm]
    real(kind(1d0)),dimension( 0:ndays):: porosity   !Porosity of deciduous trees [-]
-   
-   real(kind(1d0)),dimension( 0:ndays):: albEveTr     !Albedo of evergreen trees [-]
+   real(kind(1d0)),dimension( 0:ndays):: albDecTr   !Albedo of deciduous trees [-]
+   real(kind(1d0)),dimension( 0:ndays):: albEveTr   !Albedo of evergreen trees [-]
    real(kind(1d0)),dimension( 0:ndays):: albGrass   !Albedo of grass[-]
    
    real(kind(1d0)):: AlbMin_DecTr,&   !Min albedo for deciduous trees [-]
              AlbMax_DecTr,&   !Max albedo for deciduous trees [-]
-             CapMin_dec,&   !Min storage capacity for deciduous trees [mm] (from input information)
-             CapMax_dec,&   !Max storage capacity for deciduous trees [mm] (from input information)
-             PorMin_dec,&  !Min porosity for deciduous trees
-             PorMax_dec,&    !Max porosity for deciduous trees
+             CapMin_dec,&     !Min storage capacity for deciduous trees [mm] (from input information)
+             CapMax_dec,&     !Max storage capacity for deciduous trees [mm] (from input information)
+             PorMin_dec,&     !Min porosity for deciduous trees
+             PorMax_dec,&     !Max porosity for deciduous trees
              AlbMin_EveTr,&   !Min albedo for evergreen trees [-]
              AlbMax_EveTr,&   !Max albedo for evergreen trees [-]
              AlbMin_Grass,&   !Min albedo for grass [-]
@@ -198,7 +197,7 @@
    real(kind(1d0)),dimension( 0:ndays, 9,MaxNumberOfGrids):: WU_Day_grids       
    real(kind(1d0)),dimension(-4:ndays, nvegsurf,MaxNumberOfGrids):: LAI_grids   
    
-   real(kind(1d0)),dimension( 0:ndays,MaxNumberOfGrids):: albDec_grids
+   real(kind(1d0)),dimension( 0:ndays,MaxNumberOfGrids):: albDecTr_grids
    real(kind(1d0)),dimension( 0:ndays,MaxNumberOfGrids):: DecidCap_grids
    real(kind(1d0)),dimension( 0:ndays,MaxNumberOfGrids):: porosity_grids             
    
@@ -1133,7 +1132,7 @@
                      LAIinitialGrass,&
                      porosity0,&
                      DecidCap0,&
-                     albDec0,&
+                     albDecTr0,&
                      albEveTr0,&
                      albGrass0,&
                      Temp_C0,&
@@ -1195,7 +1194,7 @@
              cMDS_LAIInitialGrass =19,&
              cMDS_porosity  =20,&
              cMDS_albEveTr  =21,&
-             cMDS_albDec    =22,&
+             cMDS_albDecTr    =22,&
              cMDS_albGrass  =23,&
              cMDS_DecidCap  =24,&
              cMDS_CumSnowfall=25,&

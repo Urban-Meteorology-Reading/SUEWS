@@ -7,6 +7,7 @@
 !Last modified LJ 8 Feb 2013
 ! sg 29/7/14 - close (500)
 ! LJ 2/10/2014 - addition of comments
+! HCW 25 May 2016 Added warning/error labels to distinguish serious errors (that stop program)     
 !-------------------------------------------------------------------------------------------------
 
  use defaultNotUsed
@@ -265,28 +266,33 @@
  !This part of the code determines how the error message is written out
     
  if(v1) then ! 1 real
-    write(500,*)'ERROR value: =', value
+    write(500,*)'Error value: =', value
  elseif(v2) then ! 2 real
-    write(500,*)'ERROR values: =', value, value2
+    write(500,*)'Error values: =', value, value2
  elseif(v3) then ! 1 integer
-    write(500,*)'ERROR value: =', valueI
+    write(500,*)'Error value: =', valueI
  elseif(v4) then ! 2 real, 1 integer
-    write(500,*)'ERROR values: =', value, value2, valueI
+    write(500,*)'Error values: =', value, value2, valueI
  elseif(v5) then ! 1 real 1 integer
-    write(500,*)'ERROR values: =', value, valueI
+    write(500,*)'Error values: =', value, valueI
  elseif(v6) then ! 2 integer
     valueI2=int(value)
-    write(500,*)'ERROR values: =', valueI, valueI2
+    write(500,*)'Error values: =', valueI, valueI2
  elseif(v7) then
     valueI2=int(value2)
-    write(500,*)'ERROR values: =', value, valueI2, valueI
+    write(500,*)'Error values: =', value, valueI2, valueI
  elseif(v8) then
     ! no error values
  endif
      
-     
- !Write the actual comment the problems file
- write(500,*) trim(text1)
+ ! Write comment to problems.txt
+ if(returnTrue) then
+    write(500,*) trim(text1),' - WARNING'
+ else
+     write(500,*) 'ERROR! Program stopped: ',trim(text1)
+ endif
+ !!Write the actual comment the problems file
+ !write(500,*) trim(text1)
 
  close(500)
 

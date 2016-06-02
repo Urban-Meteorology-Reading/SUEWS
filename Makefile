@@ -1,7 +1,7 @@
 	
 
 CC = gfortran $(CFLAGS)		        	# compiler
-TARGET = SUEWS_V2015a			# program name
+TARGET = SUEWS_V2016a			# program name
 CFLAGS = -g -Wall -Wtabs 
 # All the files which include modules used by other modules (these therefore
 # needs to be compiled first)

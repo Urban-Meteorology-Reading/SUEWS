@@ -13,7 +13,7 @@
  ! INPUT:  AerodynamicResistanceMethod = Method to calculate RA
  !         StabilityMethod = defines the method to calculate atmospheric stability
  !         RoughLen_heat = Method to calculate heat roughness length
- !         ZZD = Displacement height (m)
+ !         ZZD = *Measurement height minus* Displacement height (m) (was incorrectly labelled, corrected HCW 25 May 2016)
  !         z0m = Aerodynamic roughness length (m)
  !         k2 = Power of Van Karman's constant (= 0.16 = 0.4^2)
  !         AVU1 = Mean wind speed

@@ -4,8 +4,11 @@
 ! --> for these variables, the rest of the code MUST use values from the previous day
 ! N.B. Some of this code is repeated in SUEWS_Initial
 ! --> so if changes are made here, SUEWS_Initial may also need to be updated accordingly
+! N.B. Currently, daily variables are calculated using 00:00-23:55 timestamps (for 5-min resolution); should use 00:05-00:00
 ! 
 !Last modified:
+!  HCW 25 May 2016 - Added extra columns to daily state file (albedo for EveTr and Grass)
+!  HCW 24 May 2016 - Bug fixed in naming of DailyState file (now uses GridIDmatrix(Gridiv) rather than Gridiv)
 !  LJ 27 Jan 2016  - Removal of tabs
 !  HCW 20 Aug 2015 - Sign of the porosity change corrected so that porosity is greatest when LAI is smallest
 !  HCW 03 Jul 2015 - Increased output resolution of P/day in DailyState file to avoid rounding errors.
@@ -385,7 +388,7 @@
      !write(*,*) deltaLAI, deltaLAIEveTr, deltaLAIGrass
      
      DecidCap(id) = DecidCap(id-1) - CapChange
-     albDec(id)   = albDec(id-1)   + albChangeDecTr    
+     albDecTr(id)   = albDecTr(id-1)   + albChangeDecTr    
      porosity(id) = porosity(id-1) + porChange  !- changed to + by HCW 20 Aug 2015 (porosity greatest when LAI smallest)    
      !Also update albedo of EveTr and Grass surfaces
      albEveTr(id) = albEveTr(id-1) + albChangeEveTr    
@@ -398,24 +401,27 @@
 
      if (writedailyState==1) then
         !Define filename
-        write(grstr2,'(i5)') Gridiv      !Convert grid number for output file name
+        !write(grstr2,'(i5)') Gridiv      !Convert grid number for output file name
+        write(grstr2,'(i5)') GridIDmatrix(Gridiv)      !Bug fix HCW 24/05/2016 - name file with Grid as in SiteSelect         
+        !write(*,*) FileCode, Gridiv, GridIDmatrix(Gridiv)
+        
         FileDaily=trim(FileOutputPath)//trim(FileCode)//trim(adjustl(grstr2))//'_DailyState.txt'
 
         ! If first modelled day, open the file and save header
         if (DailyStateFirstOpen(Gridiv)==1) then
            open(60,file=FileDaily)
            write(60,142)
-           142  format('%year id ',&                                          !2
+           142  format('%iy id ',&                                          !2
                        'HDD1_h HDD2_c HDD3_Tmean HDD4_T5d P/day DaysSR ',&    !8
                        'GDD1_g GDD2_s GDD3_Tmin GDD4_Tmax GDD5_DayLHrs ',&    !13
                        'LAI_EveTr LAI_DecTr LAI_Grass ',&                     !16
-                       'DecidCap Porosity AlbDec ',&                          !19
-                       'WU_EveTr(1) WU_EveTr(2) WU_EveTr(3) ',&               !22
-                       'WU_DecTr(1) WU_DecTr(2) WU_DecTr(3) ',&               !25
-                       'WU_Grass(1) WU_Grass(2) WU_Grass(3) ',&               !28
-                       'deltaLAI LAIlumps AlbSnow dens_snow_pav ',&           !32
-                       'dens_snow_bldg dens_snow_EveTr dens_snow_DecTr',&     !35
-                       'dens_snow_Grass dens_snow_Bares dens_snow_wtr')       !38
+                       'DecidCap Porosity AlbEveTr AlbDecTr AlbGrass ',&       !21
+                       'WU_EveTr(1) WU_EveTr(2) WU_EveTr(3) ',&               !24
+                       'WU_DecTr(1) WU_DecTr(2) WU_DecTr(3) ',&               !27
+                       'WU_Grass(1) WU_Grass(2) WU_Grass(3) ',&               !30
+                       'deltaLAI LAIlumps AlbSnow DensSnow_Paved ',&          !34
+                       'DensSnow_Bldgs DensSnow_EveTr DensSnow_DecTr ',&       !37
+                       'DensSnow_Grass DensSnow_BSoil DensSnow_Water ')        !39
                        
            DailyStateFirstOpen(Gridiv)=0
         ! Otherwise open file to append
@@ -427,14 +433,14 @@
         write(60,601) iy,id,&
                       HDD(id,1:6),GDD(id,1:5),&
                       LAI(id,1:nvegsurf),&
-                      DecidCap(id),Porosity(id),AlbDec(id),&
+                      DecidCap(id),Porosity(id),AlbEveTr(id),AlbDecTr(id),AlbGrass(id),&
                       WU_day(id-1,1:9),&
                       deltaLAI,VegPhenLumps,SnowAlb,SnowDens(1:7)
             
         601 format(2(i4,1X),&
                    4(f6.1,1X),1(f8.4,1X),1(f6.1,1X), 5(f6.1,1X),&
                    3(f6.2,1X),&
-                   3(f6.2,1X),&
+                   5(f6.2,1X),&
                    9(f7.3,1X),&
                    2(f7.2,1X),8(f7.2,1X))
          

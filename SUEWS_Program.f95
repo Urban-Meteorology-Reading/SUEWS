@@ -9,7 +9,9 @@
 !  - then over rows
 !  - then over grids
 !
-!Last modified by LJ  30 Mar 2016 - Grid run order changed from linear to non-linear
+!Last modified by HCW 24 May 2016 - InitialConditions file naming altered
+!                                   Unused year_txt argument removed from InitialState
+!                 LJ  30 Mar 2016 - Grid run order changed from linear to non-linear
 !                 HCW 25 Jun 2015 - Fixed bug in LAI calculation at year change
 !                 HCW 12 Mar 2015
 !                 HCW 26 Feb 2015
@@ -32,10 +34,9 @@
     
     IMPLICIT NONE
 
-    character(len=4)::year_txt,&	 !Year as a text string
-                      year_txtNext   !Following year as a text string (used for NextInitial)
+    character(len=4)::year_txt	 !Year as a text string                      
     character(len=20)::FileCodeX,&	 !Current file code
-                       FileCodeXNext !File code for the following year
+                       FileCodeXwy      !File code without year
     character(len=20)::grid_txt,&	 !Grid number as a text string (from FirstGrid to LastGrid)
                        tstep_txt     !Model timestep (in minutes) as a text string
     
@@ -179,9 +180,9 @@
              ! Get met forcing file name for this year for the first grid 
              ! Can be something else than 1
              FileCodeX=trim(FileCode)//trim(adjustl(grid_txt))//'_'//trim(year_txt)
-             if(iv==1) write(*,*) 'Current FileCode: ', FileCodeX      
+             !if(iv==1) write(*,*) 'Current FileCode: ', FileCodeX      
 
-  	         ! For the first block of met data --------------------------------
+  	     ! For the first block of met data --------------------------------
              if(iv == 1) then
 	            !write(*,*) 'First block of data - doing initialisation'
 
@@ -196,9 +197,9 @@
                        write(*,*) 'Program stopped! Year',year_int,'and/or grid',i,'not found in SiteSelect.txt.'
                        call ErrorHint(59,'Cannot find year and/or grid in SiteSelect.txt',real(i,kind(1d0)),NotUsed,year_int)
                    endif
-               enddo
-               ! (b) get initial conditions
-               call InitialState(FileCodeX,year_int,GridCounter,year_txt)
+                enddo
+                ! (b) get initial conditions
+                call InitialState(FileCodeX,year_int,GridCounter)
              endif   !end first block of met data
                           
              ! For every block of met data ------------------------------------
@@ -243,7 +244,12 @@
               if(PrintPlace) write(*,*) 'Row (ir):', ir,'/',irMax,'of block (iv):', iv,'/',ReadBlocksMetData,'Grid:',GridIDmatrix(i)
  
               ! Call model calculation code
-              if(ir==1) write(*,*) 'Now running block ',iv,'/',ReadBlocksMetData,' of year ',year_int,'...'
+              !if(ir==1) write(*,*) 'Now running block ',iv,'/',ReadBlocksMetData,' of year ',year_txt,'...'
+              write(grid_txt,'(I5)') GridIDmatrix(i)   !Get grid ID as a text string
+              FileCodeX=trim(FileCode)//trim(adjustl(grid_txt))//'_'//trim(year_txt)
+              if(ir==1) then
+                  write(*,*) trim(adjustl(FileCodeX)),': Now running block ',iv,'/',ReadBlocksMetData,' of ',trim(year_txt),'...'
+              endif
               call SUEWS_Calculations(GridCounter,ir,iv,irMax)
               ! Record iy and id for current time step to handle last row in yearly files (YYYY 1 0 0)
               if(GridCounter == NumberOfGrids) then   !Adjust only when the final grid has been run for this time step
@@ -255,10 +261,8 @@
               if(ir == irMax) then              !If last row...
                  if(iv == ReadBlocksMetData) then    !...of last block of met data 
                     write(grid_txt,'(I5)') GridIDmatrix(i)
-                    write(year_txtNext,'(I4)') year_int+1  !Get next year as a string format
-                    FileCodeX    =trim(FileCode)//trim(adjustl(grid_txt))//'_'//trim(year_txt)
-                    FileCodeXNext=trim(FileCode)//trim(adjustl(grid_txt))//'_'//trim(year_txtNext)
-                    call NextInitial(FileCodeXNext,year_int)
+                    FileCodeXwy=trim(FileCode)//trim(adjustl(grid_txt)) !File code without year (HCW 24 May 2016)
+                    call NextInitial(FileCodeXwy,year_int)
                  endif
               endif
            

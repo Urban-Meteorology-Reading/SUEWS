@@ -1,6 +1,7 @@
 !In this subroutine the output files will be opened and the output matrices will be printed out.
 !
 !Last change:
+! HCW 25 May 2016 - changed QF, QH QE in output file to qf, qh, qe to match input file. Also e.g. RA, RS, L_mod -> ra, rs, L_Ob 
 ! HCW 12 Nov 2015
 ! Added z0m and zdm to output file
 ! HCW 27 Apr 2015
@@ -55,16 +56,18 @@
     write(lfnOutC,110)
 
     110 format('%iy id it imin dectime ',&
-               'kdown kup ldown lup Tsurf qn h_mod e_mod qs QF QH QE ',&
+               'kdown kup ldown lup Tsurf qn h_mod e_mod qs qf qh qe ',&
                'P/i Ie/i E/i Dr/i ',&
+               'St/i NWSt/i surfCh/i totCh/i ',&
+               'St/i NWSt/i surfCh/i totCh/i ',&
                'St/i NWSt/i surfCh/i totCh/i ',&
                'RO/i ROsoil/i ROpipe ROpav ROveg ROwater ',&
                'AdditionalWater FlowChange WU_int WU_EveTr WU_DecTr WU_Grass ',&
-               'RA RS ustar L_mod Fcld ',&
+               'ra rs ustar L_Ob Fcld ',&
                'SoilSt smd smd_Paved smd_Bldgs smd_EveTr smd_DecTr smd_Grass smd_BSoil ',&
                'St_Paved St_Bldgs St_EveTr St_DecTr St_Grass St_BSoil St_Water ',&
                'LAI z0m zdm ',&
-               'qn1_SF qn1_S Qm QmFreez Qmrain SWE Mw MwStore snowRem_Paved snowRem_Bldgs ChSnow/i ',&
+               'qn1_SF qn1_S Qm QmFreez QmRain SWE Mw MwStore snowRem_Paved snowRem_Bldgs ChSnow/i ',&
                'SnowAlb ')
               !These belon to NARP ouput file
               ! 'kup_Paved kup_Bldgs kup_EveTr kup_DecTr kup_Grass kup_BSoil kup_Water ',&

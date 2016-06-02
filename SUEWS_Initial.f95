@@ -77,6 +77,7 @@
   !Write RunControl information to FileChoices.txt
   FileChoices=trim(FileOutputPath)//trim(FileCode)//'_FileChoices.txt'
   open (12,file=FileChoices,err=203)
+  write(12,*) '----- RunControl -----'
   write(12,nml=RunControl)
   close(12)
   
@@ -1261,7 +1262,9 @@
 
  
 !-------------------------------------------------------------------------
- SUBROUTINE InitialState(GridName,year_int,Gridiv,year_txt)
+ SUBROUTINE InitialState(GridName,year_int,Gridiv)
+ ! Last modified HCW 24 May 2016
+ !  removed unused argument year_txt    
  ! Last modified HCW 03 Jul 2015
  ! Added initial conditions albEveTr0 and albGrass0    
  ! Last modified by HCW 03 Dec 2014
@@ -1287,7 +1290,6 @@
   character(len=20):: GridName    !Name of the evaluated grid
   !character(len=10):: str2        !Variables related to filepaths
   character(len=150):: fileInit   !Initial conditions filename
-  character(len=4):: year_txt     !year in txt format
   integer::DaysSinceRain,Gridiv,& !number of days since rain, grid number,
            gamma1,gamma2          !switches related to cooling and heating degree days
   integer::wd,seas,date,mb,&      !weekday information, season, date, month
@@ -1311,7 +1313,7 @@
                   LAIinitialDecTr,&
                   LAIinitialGrass,&
                   AlbEveTr0,&
-                  albDec0,&
+                  AlbDecTr0,&
                   AlbGrass0,&
                   decidCap0,&
                   porosity0,&
@@ -1370,7 +1372,7 @@
   FileChoices=trim(FileOutputPath)//trim(FileCode)//'_FileChoices.txt'
 
   open(12,file=FileChoices,position='append')
-  write(12,*)'----------',trim(FileInit),'----------'
+  write(12,*) '----- '//trim("InitialConditions")//trim(GridName)//'.nml'//' -----'
   write(12,nml=InitialConditions)
   close(12)
 
@@ -1393,7 +1395,7 @@
 
   ! Initialize to the previous day's value (i.e. day before run starts)
   ModelDailyState(Gridiv,cMDS_porosity) = porosity0
-  ModelDailyState(Gridiv,cMDS_albDec)   = albDec0
+  ModelDailyState(Gridiv,cMDS_albDecTr) = albDecTr0
   ModelDailyState(Gridiv,cMDS_DecidCap) = DecidCap0
   ModelDailyState(Gridiv,cMDS_CumSnowfall) = 0 !!Check this
   ModelDailyState(Gridiv,cMDS_albEveTr)   = albEveTr0
@@ -1665,6 +1667,8 @@
 
 !-------------------------------------------------------------------------
  subroutine NextInitial(GridName,year_int)
+ ! Last modified HCW 24 May 2016
+ ! Year of InitialConditions output file fixed. _EndofRun appended to files where the run finishes before the year end  
  ! Last modified LJ 06 Jul 2015
  ! Initial conditions of SnowAlb added, densSnow changed to SnowDens 
  ! Last modified HCW 03 Jul 2015
@@ -1689,30 +1693,32 @@
   character (len=4)::year_txt2
   integer:: year_int2
   integer:: year_int
+  integer:: ID_Prev_Out ! ID_Prev written to next Initial Conditions file 
 
   year=year_int   !HCW added 21 Nov 2014
-
-  if (id==1) then  !nofDaysThisYear changed to 1
+ 
+  ! Modified by HCW 24 May 2016
+  if(id==1.and.iy==(year+1)) then   !if id = 1 and this is the first row of next year
      year_int2=int(year+1)
      write(year_txt2,'(I4)')year_int2
-     open(57,File=trim(FileInputPath)//trim("InitialConditions")//trim(GridName)//'.nml',err=200)
+     open(57,File=trim(FileInputPath)//trim("InitialConditions")//trim(GridName)//'_'//trim(adjustl(year_txt2))//'.nml',err=200)     
   else
-        year_int2=int(year)
-        write(year_txt2,'(I4)')year_int2
-        open(57,File=trim(FileInputPath)//trim("InitialConditions")//trim(GridName)//'end.nml',err=201)
-     endif
-  !endif
+     year_int2=int(year)  !End of Run but not end of year
+     write(year_txt2,'(I4)')year_int2
+     open(57,File=trim(FileInputPath)//trim("InitialConditions")//trim(GridName)//'_'//trim(adjustl(year_txt2))// & 
+                       '_EndofRun.nml',err=201)     
+  endif    
+  ID_Prev_Out=(id-1)
 
-  write(57,*)'&InitialConditions'
-  write(57,*)'DaysSinceRain=',int(HDD(id,6))
-   
   !! If last time of day, then DailyState variables will have been updated so can write out arrays for id rather than id-1
   !if(it==23 .and. imin == (nsh_real-1)/nsh_real*60) then  !!LastTimeofday
   !   id=id+1
   !endif
   
+  write(57,*)'&InitialConditions'
+  write(57,*)'DaysSinceRain=',int(HDD(id,6))
   write(57,*)'Temp_C0=',HDD(nofDaysThisYear,3)
-  write(57,*)'ID_Prev=',nofDaysThisYear
+  write(57,*)'ID_Prev=',ID_Prev_Out
   write(57,*)'GDD_1_0=',GDD(nofDaysThisYear,1)
   write(57,*)'GDD_2_0=',GDD(nofDaysThisYear,2)
   write(57,*)'PavedState=',State(PavSurf)
@@ -1726,7 +1732,7 @@
   write(57,*)'LAIinitialDecTr=',lai(nofDaysThisYear,ivDecid)
   write(57,*)'LAIinitialGrass=',lai(nofDaysThisYear,ivGrass)
   write(57,*)'albEveTr0=',AlbEveTr(id)
-  write(57,*)'albDec0=',AlbDec(id)
+  write(57,*)'albDecTr0=',AlbDecTr(id)
   write(57,*)'albGrass0=',AlbGrass(id)
   write(57,*)'DecidCap0=',decidCap(id)
   write(57,*)'porosity0=',porosity(id)
@@ -1777,7 +1783,7 @@
 200 call ErrorHint(49,trim("InitialConditions")//trim(GridName)// &
 		   '_'//trim(adjustl(year_txt2))//'.nml',notUsed,notUsed,notUsedI)
 201 call ErrorHint(49,trim("InitialConditions")//trim(GridName)// &
-		   '_'//trim(adjustl(year_txt2))//'end.nml',notUsed,notUsed,notUsedI)
+		   '_'//trim(adjustl(year_txt2))//'EoR.nml',notUsed,notUsed,notUsedI)
 
  end subroutine NextInitial
 !------------------------------------------------------------------------- 
@@ -1902,14 +1908,14 @@
   !  call ErrorHint(36,'Intial LAI for Grass > max value in SUEWS_Veg.txt!', LAIMax(GrassSurf-2), LAIInitialGrass, notUsedI)
   !endif
 
-  !!write(*,*) AlbDec0, albmin_DecTr, albmax_DecTr
-  !if(AlbDec0 < (AlbMin_DecTr-pTol)) then
-  !   !call ErrorHint(36,'Intial albedo for DecTr < min value in SUEWS_Veg.txt!', AlbMin_DecTr, AlbDec0, notUsedI)
-  !   call ErrorHint(36,'Intial albedo for DecTr < min value!', AlbMin_DecTr, AlbDec0, notUsedI)
+  !!write(*,*) AlbDecTr0, albmin_DecTr, albmax_DecTr
+  !if(AlbDecTr0 < (AlbMin_DecTr-pTol)) then
+  !   !call ErrorHint(36,'Intial albedo for DecTr < min value in SUEWS_Veg.txt!', AlbMin_DecTr, AlbDecTr0, notUsedI)
+  !   call ErrorHint(36,'Intial albedo for DecTr < min value!', AlbMin_DecTr, AlbDecTr0, notUsedI)
   !endif
-  !if(AlbDec0 > (AlbMax_dec+pTol)) then
-  !   !call ErrorHint(36,'Intial albedo for DecTr > max value in SUEWS_Veg.txt!', AlbMax_dec, AlbDec0, notUsedI)
-  !   call ErrorHint(36,'Intial albedo for DecTr < max value!', AlbMax_dec, AlbDec0, notUsedI)
+  !if(AlbDecTr0 > (AlbMax_dec+pTol)) then
+  !   !call ErrorHint(36,'Intial albedo for DecTr > max value in SUEWS_Veg.txt!', AlbMax_dec, AlbDecTr0, notUsedI)
+  !   call ErrorHint(36,'Intial albedo for DecTr < max value!', AlbMax_dec, AlbDecTr0, notUsedI)
   !endif 
   !!DecidCap0, Porosity0...
  

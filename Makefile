@@ -77,4 +77,4 @@ $(MODULES): $(subst .o,.f95, $(MODULES))
 
 # If wanted, clean all *.o files after build
 clean:
-	-rm *.o
+	-rm -rf *.o *.mod *.dSYM

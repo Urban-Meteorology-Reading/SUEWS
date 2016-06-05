@@ -38,15 +38,19 @@ SUBROUTINE ESTM_initials(FileCodeX)
   CLOSE(51)
 
   dtperday=86400.0/Tstep
-  ALLOCATE(Tair24HR(dtperday))
+  IF ( .NOT. ALLOCATED(Tair24HR) ) THEN
+     ALLOCATE(Tair24HR(dtperday))
+  END IF
   Tair24HR=C2K
 
   !=======read input file===============================================================
 
   FileESTMTs=TRIM(FileInputPath)//TRIM(FileCodeX)//'_ESTM_Ts_data.txt'
+  ! print*, TRIM(FileInputPath)
+  ! print*, TRIM(FileCodeX)
+  ! print*, FileESTMTs
   OPEN(10,file=TRIM(FileESTMTs),status='old',action='read',iostat=ios1)! Read the file of Ts forcing
   IF (ios1/=0) CALL error(FileESTMTs,ios1)
-
   READ(10,*) !skip header line
   datalines=0
   DO WHILE(ios1==0)  ! interpolate 15 min to 5min
@@ -55,8 +59,14 @@ SUBROUTINE ESTM_initials(FileCodeX)
   ENDDO
   REWIND(10)
 
-  ALLOCATE(Ts15mindata(datalines,10))
-  ALLOCATE(Ts5mindata(((datalines-1)*3+1),10))
+  IF ( .NOT. ALLOCATED(Ts15mindata) ) THEN
+     ALLOCATE(Ts15mindata(datalines,10))
+  END IF
+
+
+  IF ( .NOT. ALLOCATED(Ts5mindata) ) THEN
+     ALLOCATE(Ts5mindata(((datalines-1)*3+1),10))
+  END IF
 
   datalines5min=0
   READ(10,*) !skip header line
@@ -73,10 +83,14 @@ SUBROUTINE ESTM_initials(FileCodeX)
         ENDDO
      ENDIF
   ENDDO
+  CLOSE(10) ! test, TS 05 Jun 2016
 
   !=====Initialization of variables and paramters===================================
 
-  ALLOCATE(Tibld(Nibld),Twall(Nwall),Troof(Nroof),Tground(Nground),Tw_4(Nwall,4))
+  IF ( .NOT. ALLOCATED(Tibld) ) THEN
+     ALLOCATE(Tibld(Nibld),Twall(Nwall),Troof(Nroof),Tground(Nground),Tw_4(Nwall,4))
+  END IF
+
 
   !CONVERT ALL TEMPS TO KELVIN
   DO i=1,Nground

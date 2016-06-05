@@ -27,7 +27,7 @@ MODULE allocateArray
   INTEGER, PARAMETER:: ncolumnsSoil=9               !SUEWS_Soil.txt
   INTEGER, PARAMETER:: ncolumnsConductance=12       !SUEWS_Conductance.txt
   INTEGER, PARAMETER:: ncolumnsOHMCoefficients=4    !SUEWS_OHMCoefficients.txt
-  INTEGER, PARAMETER:: ncolumnsESTMCoefficients=51  !SUEWS_ESTMCoefficients.txt ! S.O. 04 Feb 2016
+  INTEGER, PARAMETER:: ncolumnsESTMCoefficients=53  !SUEWS_ESTMCoefficients.txt ! S.O. 04 Feb 2016
   INTEGER, PARAMETER:: ncolumnsAnthropogenicHeat=11 !SUEWS_AnthropogenicHeat.txt
   INTEGER, PARAMETER:: ncolumnsIrrigation=25     !SUEWS_Irrigation.txt
   INTEGER, PARAMETER:: ncolumnsProfiles=25      !SUEWS_Profiles.txt

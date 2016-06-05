@@ -61,32 +61,32 @@ PROGRAM SUEWS_Program
   REAL :: xErr      ! error in Bo iteration, AnOHM TS 20160331
   LOGICAL, ALLOCATABLE :: flagRerunAnOHM(:)   ! iteration run to make Bo converge,AnOHM TS
 
-       ! ---- Allocate arrays--------------------------------------------------
-       allocate(SurfaceChar(NumberOfGrids,MaxNCols_c))   !Surface characteristics
-       allocate(MetForcingData(1:ReadlinesMetdata,ncolumnsMetForcingData,NumberOfGrids))   !Met forcing data 
-       allocate(ModelOutputData(0:ReadlinesMetdata,MaxNCols_cMOD,NumberOfGrids))           !Data at model timestep
-       allocate(dataOut(1:ReadlinesMetdata,ncolumnsDataOut,NumberOfGrids))                 !Main output array
-       if (SOLWEIGuse == 1) then
-          allocate(dataOutSOL(1:ReadlinesMetdata,28,NumberOfGrids))                        !SOLWEIG POI output
-       endif
-       if (CBLuse >= 1) then
-          allocate(dataOutBL(1:ReadlinesMetdata,22,NumberOfGrids))                         !CBL output
-       endif
-       if (SnowUse == 1) then
-          allocate(dataOutSnow(1:ReadlinesMetdata,ncolumnsDataOutSnow,NumberOfGrids))      !Snow output array
-       endif
-       if(QSChoice==4 .or. QSChoice==14) then
-           allocate(dataOutESTM(1:ReadlinesMetdata,32,NumberOfGrids))
-       endif
-       
-       allocate(TstepProfiles(NumberOfGrids,6,24*NSH))  !Hourly profiles interpolated to model timestep
-       allocate(AHProf_tstep(24*NSH,2))                 !Anthropogenic heat profiles at model timestep
-       allocate(WUProfM_tstep(24*NSH,2))                !Manual water use profiles at model timestep
-       allocate(WUProfA_tstep(24*NSH,2))                !Automatic water use profiles at model timestep
-       !! Add snow clearing (?)      
-       ! ----------------------------------------------------------------------
-          
-       ! ---- Initialise arrays  !! Does this need to happen here??
+  !  ! ---- Allocate arrays--------------------------------------------------
+  !  allocate(SurfaceChar(NumberOfGrids,MaxNCols_c))   !Surface characteristics
+  !  allocate(MetForcingData(1:ReadlinesMetdata,ncolumnsMetForcingData,NumberOfGrids))   !Met forcing data
+  !  allocate(ModelOutputData(0:ReadlinesMetdata,MaxNCols_cMOD,NumberOfGrids))           !Data at model timestep
+  !  allocate(dataOut(1:ReadlinesMetdata,ncolumnsDataOut,NumberOfGrids))                 !Main output array
+  !  if (SOLWEIGuse == 1) then
+  !     allocate(dataOutSOL(1:ReadlinesMetdata,28,NumberOfGrids))                        !SOLWEIG POI output
+  !  endif
+  !  if (CBLuse >= 1) then
+  !     allocate(dataOutBL(1:ReadlinesMetdata,22,NumberOfGrids))                         !CBL output
+  !  endif
+  !  if (SnowUse == 1) then
+  !     allocate(dataOutSnow(1:ReadlinesMetdata,ncolumnsDataOutSnow,NumberOfGrids))      !Snow output array
+  !  endif
+  !  if(QSChoice==4 .or. QSChoice==14) then
+  !      allocate(dataOutESTM(1:ReadlinesMetdata,32,NumberOfGrids))
+  !  endif
+  !
+  !  allocate(TstepProfiles(NumberOfGrids,6,24*NSH))  !Hourly profiles interpolated to model timestep
+  !  allocate(AHProf_tstep(24*NSH,2))                 !Anthropogenic heat profiles at model timestep
+  !  allocate(WUProfM_tstep(24*NSH,2))                !Manual water use profiles at model timestep
+  !  allocate(WUProfA_tstep(24*NSH,2))                !Automatic water use profiles at model timestep
+  !  !! Add snow clearing (?)
+  !  ! ----------------------------------------------------------------------
+
+  ! ---- Initialise arrays  !! Does this need to happen here??
 
   !==========================================================================
 
@@ -201,11 +201,24 @@ PROGRAM SUEWS_Program
      IF (SOLWEIGuse == 1) ALLOCATE(dataOutSOL(1:ReadlinesMetdata,28,NumberOfGrids))                !SOLWEIG POI output
      IF (CBLuse >= 1)  ALLOCATE(dataOutBL(1:ReadlinesMetdata,22,NumberOfGrids))                    !CBL output
      IF (SnowUse == 1) ALLOCATE(dataOutSnow(1:ReadlinesMetdata,ncolumnsDataOutSnow,NumberOfGrids)) !Snow output array
+     IF (QSChoice==4 .OR. QSChoice==14) ALLOCATE(dataOutESTM(1:ReadlinesMetdata,32,NumberOfGrids)) !ESTM output array, TS 05 Jun 2016
      ALLOCATE(TstepProfiles(NumberOfGrids,6,24*NSH))                        !Hourly profiles interpolated to model timestep
      ALLOCATE(AHProf_tstep(24*NSH,2))                                       !Anthropogenic heat profiles at model timestep
      ALLOCATE(WUProfM_tstep(24*NSH,2))                                      !Manual water use profiles at model timestep
      ALLOCATE(WUProfA_tstep(24*NSH,2))                                      !Automatic water use profiles at model timestep
      !! Add snow clearing (?)
+
+    !  ! test ESTM initialisation
+    !  IF(QSChoice==4 .OR. QSChoice==14) THEN
+    !     PRINT*, 'day:', iv
+     !
+    !     !  if ( iv>1 ) then
+    !     CALL ESTM_initials(FileCodeX)
+     !
+    !     !  end if
+    !  ENDIF
+
+
      ! ----------------------------------------------------------------------
 
      ! ---- Initialise arrays  !! Does this need to happen here??
@@ -229,7 +242,7 @@ PROGRAM SUEWS_Program
            WRITE(grid_txt,'(I5)') GridIDmatrix(igrid)   !Get grid ID as a text string
            ! Get met forcing file name for this year for the first grid
            ! Can be something else than 1
-           FileCodeX=TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt)
+           FileCodeX = TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt)
            IF(iv==1) WRITE(*,*) 'Current FileCode: ', FileCodeX
 
            ! For the first block of met data --------------------------------
@@ -272,9 +285,25 @@ PROGRAM SUEWS_Program
         ENDDO !end loop over grids
         skippedLines = skippedLines + ReadlinesMetdata   !Increase skippedLines ready for next block
 
+        ! Initialise the modules on the first day
+        ! if ( iv==1 ) then
         ! Initialise CBL and SOLWEIG parts if required
         IF((CBLuse==1).OR.(CBLuse==2)) CALL CBL_ReadInputData
         IF(SOLWEIGuse==1) CALL SOLWEIG_initial
+
+        ! Initialise ESTM if required, TS 05 Jun 2016
+        ! print*, "before call ESTM_initials:", FileCodeX
+        IF(QSChoice==4 .OR. QSChoice==14) THEN
+           PRINT*, 'day:', iv
+
+          !  if ( iv>1 ) then
+             CALL ESTM_initials(FileCodeX)
+
+          !  end if
+        ENDIF
+
+        ! end if
+
 
         !write(*,*) 'Initialisation done'
         ! First stage: initialisation done ----------------------------------
@@ -296,7 +325,7 @@ PROGRAM SUEWS_Program
 
         DO WHILE ( ANY(flagRerunAnOHM) .AND. iter < 20 )
            iter = iter+1
-           PRINT*, 'iteration:',iter
+           !  PRINT*, 'iteration:',iter
 
 
            DO ir=1,irMax   !Loop through rows of current block of met data
@@ -335,33 +364,30 @@ PROGRAM SUEWS_Program
                     ENDIF
                  ENDIF
 
-                 !  if ( ir==irMax ) then
-                 !    print*, 'state in the end:', state
-                 !  end if
 
-
-                 IF ( it == 0 .AND. imin == 5 )  THEN
-                    WRITE(*, '(a13,2f10.4)') 'Start: a1, a2',a1AnOHM_grids(id,igrid),a2AnOHM_grids(id,igrid)
-                 ENDIF
+                 ! print AnOHM coeffs. info.:
+                 !  IF ( it == 0 .AND. imin == 5 )  THEN
+                 !     WRITE(*, '(a13,2f10.4)') 'Start: a1, a2',a1AnOHM_grids(id,igrid),a2AnOHM_grids(id,igrid)
+                 !  ENDIF
 
                  IF ( ir == irMax-10) THEN
                     xErr = ABS(a1AnOHM(igrid)-a1AnOHM_grids(id,igrid))/ABS(a1AnOHM(igrid))+&
                          ABS(a2AnOHM(igrid)-a2AnOHM_grids(id,igrid))/ABS(a2AnOHM(igrid))
                     xErr = ABS(xErr/2)
-                    WRITE(*, '(a13,2f10.4)') 'End: a1, a2',a1AnOHM(igrid),a2AnOHM(igrid)
-                    WRITE(*, '(a10,f10.4,2x,i2,x,i2)') 'Error(%)',xErr*100,it,imin
+                    !     WRITE(*, '(a13,2f10.4)') 'End: a1, a2',a1AnOHM(igrid),a2AnOHM(igrid)
+                    !     WRITE(*, '(a10,f10.4,2x,i2,x,i2)') 'Error(%)',xErr*100,it,imin
                  ENDIF
 
 
 
                  IF ( QSChoice == 3 .AND. ir == irMax .AND. xErr < 0.1) THEN
                     flagRerunAnOHM(igrid)=.FALSE.
-                    WRITE(unit=*, fmt=*) '*********'
-                    WRITE(unit=*, fmt=*) 'converged:'
-                    WRITE(*, '(a8,f10.6)') 'a1 Start',a1AnOHM_grids(id,igrid)
-                    WRITE(*, '(a8,f10.6)') 'a1 End',a1AnOHM(igrid)
-                    WRITE(*, '(a8,f10.6)') 'diff.',ABS(a1AnOHM(igrid)-a1AnOHM_grids(id,igrid))
-                    WRITE(unit=*, fmt=*) '*********'
+                    ! WRITE(unit=*, fmt=*) '*********'
+                    ! WRITE(unit=*, fmt=*) 'converged:'
+                    ! WRITE(*, '(a8,f10.6)') 'a1 Start',a1AnOHM_grids(id,igrid)
+                    ! WRITE(*, '(a8,f10.6)') 'a1 End',a1AnOHM(igrid)
+                    ! WRITE(*, '(a8,f10.6)') 'diff.',ABS(a1AnOHM(igrid)-a1AnOHM_grids(id,igrid))
+                    ! WRITE(unit=*, fmt=*) '*********'
                  ENDIF
 
                  ! bypass the do-while loop for converge checking
@@ -375,7 +401,7 @@ PROGRAM SUEWS_Program
 
            ENDDO !end loop over rows of met data
 
-        END DO ! do-while loop for AnOHM end --------------------------
+        ENDDO ! do-while loop for AnOHM end --------------------------
 
 
         ! Write output files in blocks --------------------------------

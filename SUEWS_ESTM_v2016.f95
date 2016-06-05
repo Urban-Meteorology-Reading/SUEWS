@@ -9,7 +9,7 @@ SUBROUTINE ESTM_v2016(QSnet,iMB)
   !             (1) CHANGED AIR EXCHANGE RATE TO ALSO BE DEPENDENT ON OUTSIDE AIR TEMPERATURE
   !             (2) ADDED SPECIFIC HEAT CALCULATION FOR AIR
   !             (3) RH ADDED AS VAR(14) IN INPUT FILE
-  !	12 JANUARY 2004
+  !  12 JANUARY 2004
   !             (1) ADDED ESTIMATED AVG NADIR LOOKING EXTERNAL SURFACE TEMPERATURE TO OUTPUT
   !                 WEIGHTED BY SURFACE FRACTION AND SVF. SVF_ROOF=1, SVF_WALLS = 1-SVF_ground
   !             (2) ADDED NET RADIATION (RN) CALCULATIONS FOR ALL SURFACES AND AVG RN TO OUTPUT BASED ON
@@ -63,35 +63,35 @@ SUBROUTINE ESTM_v2016(QSnet,iMB)
   !INPUT:
   !FORCING DATA: DTIME,KDOWN,LDOWN,TSURF,TAIR_OUT,TAIR_IN,TROOF,TWALL_AVG,TWALL_N,TWALL_E,TWALL_S,TWALL_W,Tground,RH,U
   !NAMELIST    : HEATSTORAGE_vFO.NML
-  !		&config
-  !		ifile=FORCING DATA
-  !		ofile=OUTPUT FILE
-  !		pfile=HEAT STORAGE PARAMETER FILE
-  !		Nibld = INTERNAL MASS LAYERS
-  !		Nwall = EXTERNAL WALL LAYERS
-  !		Nroof = ROOF LAYERS
-  !		Nground = ground/SOIL LAYERS
-  !		LBC_soil = LOWER BOUNDARY CONDITION FOR ground/SOIL
-  !		iloc= INPUT COLUMNS IN DATA FILE
-  !		evolveTibld= USE DIAGNOSTIC VALUE FOR INTERNAL BUILDING TEMPERATURE
+  !    &config
+  !    ifile=FORCING DATA
+  !    ofile=OUTPUT FILE
+  !    pfile=HEAT STORAGE PARAMETER FILE
+  !    Nibld = INTERNAL MASS LAYERS
+  !    Nwall = EXTERNAL WALL LAYERS
+  !    Nroof = ROOF LAYERS
+  !    Nground = ground/SOIL LAYERS
+  !    LBC_soil = LOWER BOUNDARY CONDITION FOR ground/SOIL
+  !    iloc= INPUT COLUMNS IN DATA FILE
+  !    evolveTibld= USE DIAGNOSTIC VALUE FOR INTERNAL BUILDING TEMPERATURE
   !                        0: don't use, use measured
   !                        1: TURN ON USE when temp goess ABOVE TINT_ON, off when temp is below TINT_OFF
   !                        2: always use diagnostic
-  !		THEAT_ON= TEMPERATURE AT WHICH HEAT CONTROL IS TURNED ON
-  !		THEAT_OFF= TEMPERATURE AT WHICH HEAT CONTROL IS TURNED OFF
+  !    THEAT_ON= TEMPERATURE AT WHICH HEAT CONTROL IS TURNED ON
+  !    THEAT_OFF= TEMPERATURE AT WHICH HEAT CONTROL IS TURNED OFF
   !       THEAT_FIX = Fixed internal temperature for climate control
-  !		oneTsurf= USE SINGLE SURFACE TEMPERATURE TO DRIVE ALL LAYERS
-  !		radforce= USE RADIATIVE ENERGY BALANCE TO DRIVE EXTERNAL TEMPERATURES
-  !		maxtimestep=302, maximum time step in s for filling data gaps.
+  !    oneTsurf= USE SINGLE SURFACE TEMPERATURE TO DRIVE ALL LAYERS
+  !    radforce= USE RADIATIVE ENERGY BALANCE TO DRIVE EXTERNAL TEMPERATURES
+  !    maxtimestep=302, maximum time step in s for filling data gaps.
   !       Alt = STATION HEIGHT (m) FOR PRESSURE CALCULATION
   !       SPINUP = NUMBER OF LINES TO USE FOR SPINUP (REPEATS THESE LINES BUT ONLY OUTPUTS THE 2ND TIME)
-  !		INITTEMP = if TRUE INITIALIZES TEMPERATURES TO THOSE IN FINALTEMP.TXT FILE
-  !		CH_ibld = INTERNAL BUILDING CONVECTIVE EXCHANGE COEFFICIENT
+  !    INITTEMP = if TRUE INITIALIZES TEMPERATURES TO THOSE IN FINALTEMP.TXT FILE
+  !    CH_ibld = INTERNAL BUILDING CONVECTIVE EXCHANGE COEFFICIENT
   !       **** THESE SHOULD DEPEND ON WIND SPEED BUT CURRENTLY DO NOT ****
   !       CHAIR = CONVECTIVE EXCHANGE COEFFICIENT FOR ROOF
   !       chair_ground = ... FOR ground
   !       chair_wall = ... FOR WALL
-  !		/
+  !    /
   ! ***************** PARAMETER FILE VARIABLES
   !               fveg = FRACTION OF ground SURFACE COVERED WITH VEG
   !               zveg = VEGETATION HEIGHT
@@ -162,8 +162,10 @@ SUBROUTINE ESTM_v2016(QSnet,iMB)
   REAL(KIND(1d0)),PARAMETER::WSmin=0.1  ! Check why there is this condition. S.O.
   LOGICAL::radforce, groundradforce
 
-  radforce=.FALSE.; groundradforce=.FALSE. !Close the radiation scheme in original ESTM S.O.
+  radforce       = .FALSE.
+  groundradforce = .FALSE. !Close the radiation scheme in original ESTM S.O.O.
 
+  ! PRINT*, "run into ESTM"
   dum=(/-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,&
        -999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,&
        -999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,&
@@ -171,17 +173,21 @@ SUBROUTINE ESTM_v2016(QSnet,iMB)
        -999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999./)
 
   kdn_estm=avkdn
+  ! PRINT*, "run into ESTM1"
 
-  iESTMcount=iESTMcount+1
-  Tinternal= Ts5mindata(iESTMcount,2)
-  Tsurf_all= Ts5mindata(iESTMcount,3)
-  Troof_in=  Ts5mindata(iESTMcount,4)
-  Troad=     Ts5mindata(iESTMcount,5)
-  Twall_all= Ts5mindata(iESTMcount,6)
-  Tw_n=      Ts5mindata(iESTMcount,7)
-  Tw_e=      Ts5mindata(iESTMcount,8)
-  Tw_s=      Ts5mindata(iESTMcount,9)
-  Tw_w=      Ts5mindata(iESTMcount,10)
+  iESTMcount = iESTMcount+1
+  Tinternal  = Ts5mindata(iESTMcount,2)
+  Tsurf_all  = Ts5mindata(iESTMcount,3)
+  Troof_in   = Ts5mindata(iESTMcount,4)
+  Troad      = Ts5mindata(iESTMcount,5)
+  Twall_all  = Ts5mindata(iESTMcount,6)
+
+  ! PRINT*, "run into ESTM1.1"
+
+  Tw_n       = Ts5mindata(iESTMcount,7)
+  Tw_e       = Ts5mindata(iESTMcount,8)
+  Tw_s       = Ts5mindata(iESTMcount,9)
+  Tw_w       = Ts5mindata(iESTMcount,10)
 
   !    if (any(isnan(Ts5mindata))) then                                    !!FO!! can't use data when time gap is too big (or neg.) or data is NaN
   !        if (spindone) then                                                  !!FO!! writes a line of NaNs
@@ -204,15 +210,21 @@ SUBROUTINE ESTM_v2016(QSnet,iMB)
   !        return ! changed from cycle
   !    ENDIF
 
+  ! PRINT*, "run into ESTM2"
+  ! print*, 'if fist:',first
 
   IF (first) THEN
      Tair2=Temp_C+C2K
      first=.FALSE.
+    !  PRINT*, "run into ESTM2.1"
+    !  print*, "size of dataOutESTM at dim 1:",size(dataOutESTM, dim=1)
+    !  print*, "size of dataOutESTM at dim 2:",size(dataOutESTM, dim=2)
      dataOutESTM(iESTMcount,1:32,iMB)=(/REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),&
           REAL(it,KIND(1D0)),REAL(imin,KIND(1D0)),dectime,(dum(ii),ii=1,27)/)
      RETURN
   ENDIF
 
+  ! PRINT*, "run into ESTM3"
 
   zenith_rad=zenith_deg/180*PI
   IF (zenith_rad>0.AND.zenith_rad<PI/2.-HW) THEN  !ZENITH MUST BE HIGHER THAN BUILDINGS FOR DIRECT INTERCEPTION
@@ -236,6 +248,8 @@ SUBROUTINE ESTM_v2016(QSnet,iMB)
   SHC_air=HEATCAPACITY_AIR(Tair1,avrh,Press_hPa)
   Tair24HR=EOSHIFT(Tair24hr, 1, Tair1, 1)
   Tairday=SUM(Tair24HR)/dtperday
+
+  ! PRINT*, "run into ESTM4"
 
   !Evolution of building temperature from heat added by convection
   SELECT CASE(evolvetibld)
@@ -265,12 +279,12 @@ SUBROUTINE ESTM_v2016(QSnet,iMB)
 
   !internal convective exchange coefficients                         !!FO!! ibldCHmod = 0 originally
   IF (ibldCHmod==1) THEN       !ASHRAE 2001
-     CH_ibld = 1.31*(ABS(T0_ibld-Tievolve))**0.25/shc_airbld
+     CH_ibld  = 1.31*(ABS(T0_ibld-Tievolve))**0.25/shc_airbld
      CH_iwall = 1.31*(ABS(TN_wall-Tievolve))**0.25/shc_airbld
      CH_iroof = 1.52*(ABS(TN_roof-Tievolve))**0.25/shc_airbld
      IF (ABS(TN_roof-Tievolve)>0) CH_iroof=CH_iroof*0.39 !effect of convection is weaker downward
   ELSEIF (ibldCHmod==2) THEN   !Awbi, H.B. 1998, Energy and Buildings 28: 219-227
-     CH_ibld = 1.823*(ABS(T0_ibld-Tievolve))**0.293/shc_airbld
+     CH_ibld  = 1.823*(ABS(T0_ibld-Tievolve))**0.293/shc_airbld
      CH_iwall = 1.823*(ABS(TN_wall-Tievolve))**0.293/shc_airbld
      CH_iroof = 2.175*(ABS(TN_roof-Tievolve))**0.308/shc_airbld
      IF (ABS(TN_roof-Tievolve)>0) CH_iroof=0.704*(ABS(TN_roof-Tievolve))**0.133/shc_airbld !effect of convection is weaker downward
@@ -324,9 +338,9 @@ SUBROUTINE ESTM_v2016(QSnet,iMB)
   !DIFFICULT TO DETERMINE WHAT THIS IS EXACTLY, DONT INCLUDE WALLS
   kup_estm=kdn_estm-RVF_ROOF*Rs_roof-(RVF_ground+RVF_WALL)*Rs_ground/svf_ground-RVF_VEG*ALB_VEG*kdn_estm
   IF (kdn_estm>10 .AND. kup_estm > 0) THEN
-     alb_avg=kup_estm/kdn_estm
-     sumalb=sumalb+alb_avg
-     Nalb = Nalb+1
+     alb_avg = kup_estm/kdn_estm
+     sumalb  = sumalb+alb_avg
+     Nalb    = Nalb+1
   ENDIF
 
   !internal components
@@ -344,6 +358,8 @@ SUBROUTINE ESTM_v2016(QSnet,iMB)
   Rl_iroof=sigma*(ivf_ri*em_i*T0_ibld**4 +&
        ivf_rw*em_w*TN_wall**4 +&
        ivf_rf*em_f*Tfloor**4)
+
+  ! PRINT*, "run into ESTM5"
 
   !========>INTERNAL<================
   bctype=.FALSE.
@@ -412,6 +428,8 @@ SUBROUTINE ESTM_v2016(QSnet,iMB)
 
   CALL heatcond1d(Troof,Qsroof,zroof(1:nroof),REAL(Tstep,KIND(1d0)),kroof(1:nroof),rroof(1:nroof),bc,bctype)
 
+  ! PRINT*, "run into ESTM6"
+
   !========>ground<================
   bctype=.FALSE.
   kdz=2*kground(1)/zground(1)
@@ -432,6 +450,7 @@ SUBROUTINE ESTM_v2016(QSnet,iMB)
 
   CALL heatcond1d(Tground,Qsground,zground(1:Nground),REAL(Tstep,KIND(1d0)),kground(1:Nground),rground(1:Nground),bc,bctype)
 
+  ! PRINT*, "run into ESTM7"
 
   Qsair = fair*SHC_air*(Tair1-Tair2)/Tstep
   Qsibld = Qsibld*fibld
@@ -442,35 +461,57 @@ SUBROUTINE ESTM_v2016(QSnet,iMB)
 
   !========>Radiation<================
   !note that the LUP for individual components does not include reflected
-  LUP_ground=SIGMA*EM_ground*T0_ground**4
-  LUP_WALL=SIGMA*EM_WALL*T0_WALL**4
-  LUP_ROOF=SIGMA*EM_ROOF*T0_ROOF**4
-  TVEG=TAIR1
-  LUP_VEG=SIGMA*EM_VEG*TVEG**4
-  T0=RVF_ground*T0_ground+RVF_WALL*T0_WALL+RVF_ROOF*T0_ROOF+RVF_VEG*TVEG
-  LUP_net=RVF_ground*LUP_ground+RVF_WALL*LUP_WALL+RVF_ROOF*LUP_ROOF+RVF_VEG*LUP_VEG
-  EM_EQUIV=LUP_net/(SIGMA*T0**4)                                          !!FO!! apparent emissivity of the atmosphere [cloudless sky: >� Ldown from gases in the lowest 100 m] calculated from surface at T0
-  RN_ground=rs_ground+rl_ground-lup_ground
-  RN_ROOF=rs_roof+rl_roof-lup_roof
-  RN_WALL=rs_wall+rl_wall-lup_wall*(1-zvf_wall*em_wall)
-  RN=kdn_estm-kup_estm+ldown*EM_EQUIV-lup_net                                 !!FO!! average net radiation (at z > zref ????) = shortwave down - shortwave up + [longwave down * apparent emissivity] - longwave up
-  QHestm=(T0-Tair1)*CHair*SHC_air*WS
-  sumemis=sumemis+EM_EQUIV; nemis=nemis+1
+  LUP_ground = SIGMA*EM_ground*T0_ground**4
+  LUP_WALL   = SIGMA*EM_WALL*T0_WALL**4
+  LUP_ROOF   = SIGMA*EM_ROOF*T0_ROOF**4
+  TVEG       = TAIR1
+  LUP_VEG    = SIGMA*EM_VEG*TVEG**4
+  T0         = RVF_ground*T0_ground+RVF_WALL*T0_WALL+RVF_ROOF*T0_ROOF+RVF_VEG*TVEG
+  LUP_net    = RVF_ground*LUP_ground+RVF_WALL*LUP_WALL+RVF_ROOF*LUP_ROOF+RVF_VEG*LUP_VEG
+  EM_EQUIV   = LUP_net/(SIGMA*T0**4) !!FO!! apparent emissivity of the atmosphere [cloudless sky: >� Ldown from gases in the lowest 100 m] calculated from surface at T0
+  RN_ground  = rs_ground+rl_ground-lup_ground
+  RN_ROOF    = rs_roof+rl_roof-lup_roof
+  RN_WALL    = rs_wall+rl_wall-lup_wall*(1-zvf_wall*em_wall)
+  RN         = kdn_estm-kup_estm+ldown*EM_EQUIV-lup_net !!FO!! average net radiation (at z > zref ????) = shortwave down - shortwave up + [longwave down * apparent emissivity] - longwave up
+  QHestm     = (T0-Tair1)*CHair*SHC_air*WS
+  sumemis    = sumemis+EM_EQUIV
+  nemis      = nemis+1
 
   ! IF (SPINDONE) THEN                                                      !!FO!! only the last set of values in the time interpolation loop is written to file
 
-  IF (Nwall<5)THEN;   Twallout  =(/Twall,(dum(ii),  ii=1,(5-Nwall))/);    ELSE; Twallout=Twall;ENDIF
-     IF (Nroof<5)THEN;   Troofout  =(/Troof,(dum(ii),  ii=1,(5-Nroof))/);    ELSE; Troofout=Troof;ENDIF
-        IF (Nground<5)THEN; Tgroundout=(/Tground,(dum(ii),ii=1,(5-Nground))/);  ELSE; Tgroundout=Tground;ENDIF
-           IF (Nibld<5)THEN;   Tibldout  =(/Tibld,(dum(ii),  ii=1,(5-Nibld))/);    ELSE; Tibldout=Tibld;ENDIF
-              dataOutESTM(iESTMcount,1:32,iMB)=(/REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),&
-                   REAL(it,KIND(1D0)),REAL(imin,KIND(1D0)),dectime,Qsnet,Qsair,Qswall,Qsroof,Qsground,Qsibld,&!11
-                   Twallout,Troofout,Tgroundout,Tibldout,Tievolve/)!21
-              !kdn_estm,kup_estm,ldown,lup_net,RN,& !10
-              !   Qsnet,Qsair,QHestm,QFBld,T0,Qswall,Qsroof,Qsground,Qsibld,RN_WALL,RN_ROOF,RN_ground,&   !12
-              !  Twallout,TN_Wall,Troofout,TN_roof,Tgroundout,Tibldout,Tievolve,zenith_deg/)!8+XX
-              ! WRITE(30,'(1F8.4,10F10.1)') dectime, kdn_estm, rs_wall, rs_roof, rs_ground, ldown,rl_wall, rl_roof, rl_ground
-              !endif
+  IF (Nwall<5)THEN
+     Twallout  =(/Twall,(dum(ii),  ii=1,(5-Nwall))/)
+  ELSE
+     Twallout=Twall
+  ENDIF
 
-              Tair2=Tair1
-            END SUBROUTINE ESTM_v2016
+  IF (Nroof<5) THEN
+     Troofout  =(/Troof,(dum(ii),  ii=1,(5-Nroof))/);
+  ELSE
+     Troofout=Troof
+  ENDIF
+
+  IF (Nground<5)THEN
+     Tgroundout=(/Tground,(dum(ii),ii=1,(5-Nground))/)
+  ELSE
+     Tgroundout=Tground
+  ENDIF
+
+  IF (Nibld<5)THEN
+     Tibldout  =(/Tibld,(dum(ii),  ii=1,(5-Nibld))/)
+  ELSE
+     Tibldout=Tibld
+  ENDIF
+
+  dataOutESTM(iESTMcount,1:32,iMB)=(/REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),&
+       REAL(it,KIND(1D0)),REAL(imin,KIND(1D0)),dectime,Qsnet,Qsair,Qswall,Qsroof,Qsground,Qsibld,&!11
+       Twallout,Troofout,Tgroundout,Tibldout,Tievolve/)!21
+  !kdn_estm,kup_estm,ldown,lup_net,RN,& !10
+  !   Qsnet,Qsair,QHestm,QFBld,T0,Qswall,Qsroof,Qsground,Qsibld,RN_WALL,RN_ROOF,RN_ground,&   !12
+  !  Twallout,TN_Wall,Troofout,TN_roof,Tgroundout,Tibldout,Tievolve,zenith_deg/)!8+XX
+  ! WRITE(30,'(1F8.4,10F10.1)') dectime, kdn_estm, rs_wall, rs_roof, rs_ground, ldown,rl_wall, rl_roof, rl_ground
+  !endif
+
+  Tair2=Tair1
+  print*, Tair2
+END SUBROUTINE ESTM_v2016

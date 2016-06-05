@@ -2,9 +2,9 @@
 !Made by LJ and HW Oct 2014
 !Gives in the grid ID (Gridiv) and number of line in the met forcing data to be analyzed (ir)
 !Last modification
-! TS 09 Mar 2016
-!  Added AnOHM subroutine to calculate heat storage
+!
 !Last modification:
+! TS 09 Mar 2016  - Added AnOHM subroutine to calculate heat storage
 ! HCW 10 Mar 2016 - Calculation of soil moisture deficit of vegetated surfaces added (vsmd)
 ! LJ 2 Jan 2016   - Calculation of snow fraction moved from SUEWS_Calculations to SUEWS_Snow
 ! HCW 12 Nov 2015 - Added z0m and zdm to output file
@@ -56,14 +56,14 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   !Translate all data to the variables used in the model calculations
   CALL SUEWS_Translate(Gridiv,ir,iMB)
-  ! load the final water balance states of the previous day, by TS 13 Apr 2016
+  ! load the final water states of the previous day to keep water balance, by TS 13 Apr 2016
   IF ( ir==1 ) THEN
-    !  PRINT*, '********************************'
-    !  PRINT*, 'starting state of', id,it,imin
+     !  PRINT*, '********************************'
+     !  PRINT*, 'starting state of', id,it,imin
      state(1:nsurf)     = stateDay(id-1,Gridiv,1:nsurf)
      soilmoist(1:nsurf) = soilmoistDay(id-1,Gridiv,1:nsurf)
-    !  PRINT*, 'state:', state
-    !  PRINT*, 'soilmoist', soilmoist
+     !  PRINT*, 'state:', state
+     !  PRINT*, 'soilmoist', soilmoist
   END IF
   CALL RoughnessParameters ! Added by HCW 11 Nov 2014
 
@@ -237,22 +237,25 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
      ELSEIF(OHMIncQF == 0) THEN  !Calculate QS using QSTAR
         qn1=qn1_bup
         CALL OHM_v2015(Gridiv)
-    endif
- endif
- if(QSChoice==4 .or. QSChoice==14) then  
-    call ESTM_v2016(QSestm,iMB)            !Calculate QS using ESTM
- endif
- 
- if (QSChoice>=10)then ! Chose which QS will be used in SUEWS and output file
-    !write(800,*)id,it,QS,QSanOHM,QSestm
-    if(QSChoice==14)then
-        QS=QSestm
-    elseif(QSChoice==13)then
-        QS=QSanOHM
-    endif  
- endif
+     ENDIF
+  ENDIF
 
-  IF (QSChoice==3) THEN 	! use AnOHM to calculate QS
+  IF(QSChoice==4 .OR. QSChoice==14) THEN
+     PRINT*, "run ESTM_v2016"
+     print*, 'ir:', ir
+     CALL ESTM_v2016(QSestm,iMB)            !Calculate QS using ESTM
+  ENDIF
+
+  IF (QSChoice>=10)THEN ! Chose which QS will be used in SUEWS and output file
+     !write(800,*)id,it,QS,QSanOHM,QSestm
+     IF(QSChoice==14)THEN
+        QS=QSestm
+     ELSEIF(QSChoice==13)THEN
+        QS=QSanOHM
+     ENDIF
+  ENDIF
+
+  IF (QSChoice==3) THEN   ! use AnOHM to calculate QS
      CALL AnOHM_v2016(Gridiv)
   END IF
 
@@ -570,22 +573,22 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
           snowDepth(1:nsurf),Tsurf_ind_snow(1:nsurf)/)                                             !102
   ENDIF
 
- !Calculate new snow fraction used in the next timestep if snowUse==1
- !Calculated only at end of each hour.
- !if (SnowFractionChoice==2.and.snowUse==1.and.it==23.and.imin==(nsh_real-1)/nsh_real*60) then
- !   do is=1,nsurf-1
- !      if ((snowPack(is)>0.and.mw_ind(is)>0)) then
- !         write(*,*) is,snowPack(is),snowD(is),mw_ind(is),snowFrac(is)!
+  !Calculate new snow fraction used in the next timestep if snowUse==1
+  !Calculated only at end of each hour.
+  !if (SnowFractionChoice==2.and.snowUse==1.and.it==23.and.imin==(nsh_real-1)/nsh_real*60) then
+  !   do is=1,nsurf-1
+  !      if ((snowPack(is)>0.and.mw_ind(is)>0)) then
+  !         write(*,*) is,snowPack(is),snowD(is),mw_ind(is),snowFrac(is)!
 
- !         snowFrac(is)=SnowDepletionCurve(is,snowPack(is),snowD(is))
- !         write(*,*) snowFrac(is)
- !         pause
- !      elseif (snowPack(is)==0) then
- !         snowFrac(is)=0
- !      endif
- !   enddo
- !endif
- 
+  !         snowFrac(is)=SnowDepletionCurve(is,snowPack(is),snowD(is))
+  !         write(*,*) snowFrac(is)
+  !         pause
+  !      elseif (snowPack(is)==0) then
+  !         snowFrac(is)=0
+  !      endif
+  !   enddo
+  !endif
+
 
   !write(*,*) DecidCap(id), id, it, imin, 'Calc - before translate back'
   !write(*,*) iy, id, it, imin, 'Calc - before translate back'
@@ -597,12 +600,12 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   ! store water balance states of the day, by TS 13 Apr 2016
   IF ( ir==irMax ) THEN
-    !  PRINT*, 'ending end of', id,it,imin
+     !  PRINT*, 'ending end of', id,it,imin
      stateDay(id,Gridiv,:)     = state(:)
      soilmoistDay(id,Gridiv,:) = soilmoist(:)
-    !  PRINT*, 'state:', state
-    !  PRINT*, 'soilmoist', soilmoist
-    !  PRINT*, '********************************'
+     !  PRINT*, 'state:', state
+     !  PRINT*, 'soilmoist', soilmoist
+     !  PRINT*, '********************************'
   END IF
 
   ! if ( id>10 ) then

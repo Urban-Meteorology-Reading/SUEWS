@@ -7,6 +7,7 @@
 !Last modified LJ 8 Feb 2013
 ! sg 29/7/14 - close (500)
 ! LJ 2/10/2014 - addition of comments
+! HCW 25 May 2016 Added warning/error labels to distinguish serious errors (that stop program)     
 !-------------------------------------------------------------------------------------------------
 
  use defaultNotUsed
@@ -285,8 +286,13 @@
  endif
      
      
- !Write the actual comment the problems file
- write(500,*) trim(text1)
+ if(returnTrue) then
+    write(500,*) trim(text1),' - WARNING'
+ else
+     write(500,*) 'ERROR! Program stopped: ',trim(text1)
+ endif
+ !!Write the actual comment the problems file
+ !write(500,*) trim(text1)
 
  close(500)
 

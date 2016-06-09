@@ -43,12 +43,12 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   IMPLICIT NONE
 
-  INTEGER        :: Gridiv,ir,i,ih,iMB
-  LOGICAL        :: debug=.FALSE.
-  REAL(KIND(1d0)):: idectime
-  REAL(KIND(1d0)):: SnowDepletionCurve
-  REAL(KIND(1d0)):: lai_wt
-  INTEGER        :: irMax
+  integer:: Gridiv,ir,i,ih,iMB
+  logical:: debug=.false.
+  real(kind(1d0)):: idectime
+  !real(kind(1d0)):: SnowDepletionCurve  !for SUEWS_Snow - not needed here (HCW 24 May 2016)
+  real(kind(1d0)):: lai_wt
+  integer:: irMax
 
   !==================================================================
   !==================================================================
@@ -151,6 +151,9 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   ! Calculate soil moisture for vegetated surfaces only (for use in surface conductance)
   vsmd=0
+   alb(DecidSurf)=albDecTr(id) !Change deciduous albedo
+   surf(6,DecidSurf)=DecidCap(id)  !Change current storage capacity of deciduous trees
+   ! Change EveTr and Grass albedo too
   DO is=ConifSurf,GrassSurf  !Vegetated surfaces only
      vsmd=vsmd+(soilstoreCap(is) - soilmoist(is))*sfr(is)/(sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf))
      !write(*,*) is, vsmd, smd

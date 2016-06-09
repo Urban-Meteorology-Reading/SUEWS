@@ -64,17 +64,17 @@ OTHERS =  BLUEWS_CBL.o   \
 
 # Build main program - main uses MODULES and OTHERS
 main: SUEWS_Program.f95 $(MODULES) $(OTHERS)
-  $(CC) SUEWS_Program.f95 $(CFLAGS) -c; \
-  $(CC) SUEWS_Program.o $(MODULES) $(OTHERS) -o $(TARGET)
+	$(CC) SUEWS_Program.f95 $(CFLAGS) -c; \
+	$(CC) SUEWS_Program.o $(MODULES) $(OTHERS) -o $(TARGET)
 
 # If OTHERS have changed, compile them again
 $(OTHERS): $(MODULES) $(subst .o,.f95, $(OTHERS))
-  $(CC) -c $(subst .o,.f95, $@)
+	$(CC) -c $(subst .o,.f95, $@)
 
 # If MODULES have changed, compile them again
 $(MODULES): $(subst .o,.f95, $(MODULES))
-  $(CC) -c $(subst .o,.f95, $@)
+	$(CC) -c $(subst .o,.f95, $@)
 
 # If wanted, clean all *.o files after build
 clean:
-  -rm -rf *.o *.mod *.dSYM
+	-rm -rf *.o *.mod *.dSYM

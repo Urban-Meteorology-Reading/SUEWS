@@ -178,10 +178,10 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(-4:ndays, nvegsurf):: LAI   !LAI for each veg surface [m2 m-2]
 
   ! Seasonality of deciduous trees accounted for by the following variables which change with time
-  REAL(KIND(1d0)),DIMENSION( 0:ndays):: albDec     !Albedo of deciduous trees [-]
   REAL(KIND(1d0)),DIMENSION( 0:ndays):: DecidCap   !Storage capacity of deciduous trees [mm]
   REAL(KIND(1d0)),DIMENSION( 0:ndays):: porosity   !Porosity of deciduous trees [-]
 
+  REAL(KIND(1d0)),DIMENSION( 0:ndays):: albDecTr     !Albedo of deciduous trees [-]
   REAL(KIND(1d0)),DIMENSION( 0:ndays):: albEveTr     !Albedo of evergreen trees [-]
   REAL(KIND(1d0)),DIMENSION( 0:ndays):: albGrass   !Albedo of grass[-]
 
@@ -203,7 +203,7 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION( 0:ndays, 9,MaxNumberOfGrids):: WU_Day_grids
   REAL(KIND(1d0)),DIMENSION(-4:ndays, nvegsurf,MaxNumberOfGrids):: LAI_grids
 
-  REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: albDec_grids
+  REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: albDecTr_grids
   REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: DecidCap_grids
   REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: porosity_grids
 
@@ -1228,7 +1228,7 @@ MODULE InitialCond
        LAIinitialGrass,&
        porosity0,&
        DecidCap0,&
-       albDec0,&
+       albDecTr0,&
        albEveTr0,&
        albGrass0,&
        Temp_C0,&
@@ -1271,13 +1271,13 @@ MODULE ColNamesModelDailyState
 
   !========== Columns for ModelDailyState array =========================
 
-  INTEGER:: cMDS_id_prev         = 3,&
-       cMDS_HDD1            = 4,&
-       cMDS_HDD2            = 5,&
-       cMDS_TempC           = 6,&
-       cMDS_TempCRM         = 7,&
-       cMDS_Precip          = 8,&
-       cMDS_DaysSinceRain   = 9,&
+  INTEGER:: cMDS_id_prev    = 3, &
+       cMDS_HDD1            = 4, &
+       cMDS_HDD2            = 5, &
+       cMDS_TempC           = 6, &
+       cMDS_TempCRM         = 7, &
+       cMDS_Precip          = 8, &
+       cMDS_DaysSinceRain   = 9, &
        cMDS_TempCOld1       = 10,&
        cMDS_TempCOld2       = 11,&
        cMDS_TempCOld3       = 12,&
@@ -1290,7 +1290,7 @@ MODULE ColNamesModelDailyState
        cMDS_LAIInitialGrass = 19,&
        cMDS_porosity        = 20,&
        cMDS_albEveTr        = 21,&
-       cMDS_albDec          = 22,&
+       cMDS_albDecTr        = 22,&
        cMDS_albGrass        = 23,&
        cMDS_DecidCap        = 24,&
        cMDS_CumSnowfall     = 25,&

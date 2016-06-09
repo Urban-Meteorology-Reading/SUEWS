@@ -1,5 +1,5 @@
 !===============================================================================
-SUBROUTINE ESTM_v2016(QSnet,iMB)
+SUBROUTINE ESTM_v2016(QSnet,Gridiv)
   !Contains calculation for each time step
   !Calculate local scale heat storage from single building and surroundings observations
   !OFferle, May 2003
@@ -131,8 +131,8 @@ SUBROUTINE ESTM_v2016(QSnet,iMB)
 
   !Output to SUEWS
   REAL(KIND(1d0)),INTENT(out)::QSnet
-  !Input from SUEWS
-  INTEGER,INTENT(in)::iMB
+  !Input from SUEWS, corrected as Gridiv by TS 09 Jun 2016
+  INTEGER,INTENT(in)::Gridiv
   !Use only in this subroutine
   INTEGER::i, ios1,ii
   REAL(KIND(1d0))::AIREXHR, AIREXDT
@@ -161,11 +161,12 @@ SUBROUTINE ESTM_v2016(QSnet,iMB)
   REAL(KIND(1d0))::dum(50)
   REAL(KIND(1d0)),PARAMETER::WSmin=0.1  ! Check why there is this condition. S.O.
   LOGICAL::radforce, groundradforce
+  REAL :: xxx(32)
 
   radforce       = .FALSE.
   groundradforce = .FALSE. !Close the radiation scheme in original ESTM S.O.O.
 
-  ! PRINT*, "run into ESTM"
+
   dum=(/-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,&
        -999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,&
        -999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,&
@@ -173,7 +174,7 @@ SUBROUTINE ESTM_v2016(QSnet,iMB)
        -999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999./)
 
   kdn_estm=avkdn
-  ! PRINT*, "run into ESTM1"
+
 
   iESTMcount = iESTMcount+1
   Tinternal  = Ts5mindata(iESTMcount,2)
@@ -182,7 +183,7 @@ SUBROUTINE ESTM_v2016(QSnet,iMB)
   Troad      = Ts5mindata(iESTMcount,5)
   Twall_all  = Ts5mindata(iESTMcount,6)
 
-  ! PRINT*, "run into ESTM1.1"
+
 
   Tw_n       = Ts5mindata(iESTMcount,7)
   Tw_e       = Ts5mindata(iESTMcount,8)
@@ -210,21 +211,17 @@ SUBROUTINE ESTM_v2016(QSnet,iMB)
   !        return ! changed from cycle
   !    ENDIF
 
-  ! PRINT*, "run into ESTM2"
-  ! print*, 'if fist:',first
+
+
 
   IF (first) THEN
      Tair2=Temp_C+C2K
      first=.FALSE.
-    !  PRINT*, "run into ESTM2.1"
-    !  print*, "size of dataOutESTM at dim 1:",size(dataOutESTM, dim=1)
-    !  print*, "size of dataOutESTM at dim 2:",size(dataOutESTM, dim=2)
-     dataOutESTM(iESTMcount,1:32,iMB)=(/REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),&
+     dataOutESTM(iESTMcount,1:32,Gridiv)=(/REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),&
           REAL(it,KIND(1D0)),REAL(imin,KIND(1D0)),dectime,(dum(ii),ii=1,27)/)
      RETURN
   ENDIF
 
-  ! PRINT*, "run into ESTM3"
 
   zenith_rad=zenith_deg/180*PI
   IF (zenith_rad>0.AND.zenith_rad<PI/2.-HW) THEN  !ZENITH MUST BE HIGHER THAN BUILDINGS FOR DIRECT INTERCEPTION
@@ -249,7 +246,7 @@ SUBROUTINE ESTM_v2016(QSnet,iMB)
   Tair24HR=EOSHIFT(Tair24hr, 1, Tair1, 1)
   Tairday=SUM(Tair24HR)/dtperday
 
-  ! PRINT*, "run into ESTM4"
+
 
   !Evolution of building temperature from heat added by convection
   SELECT CASE(evolvetibld)
@@ -359,7 +356,7 @@ SUBROUTINE ESTM_v2016(QSnet,iMB)
        ivf_rw*em_w*TN_wall**4 +&
        ivf_rf*em_f*Tfloor**4)
 
-  ! PRINT*, "run into ESTM5"
+
 
   !========>INTERNAL<================
   bctype=.FALSE.
@@ -428,7 +425,7 @@ SUBROUTINE ESTM_v2016(QSnet,iMB)
 
   CALL heatcond1d(Troof,Qsroof,zroof(1:nroof),REAL(Tstep,KIND(1d0)),kroof(1:nroof),rroof(1:nroof),bc,bctype)
 
-  ! PRINT*, "run into ESTM6"
+
 
   !========>ground<================
   bctype=.FALSE.
@@ -450,7 +447,7 @@ SUBROUTINE ESTM_v2016(QSnet,iMB)
 
   CALL heatcond1d(Tground,Qsground,zground(1:Nground),REAL(Tstep,KIND(1d0)),kground(1:Nground),rground(1:Nground),bc,bctype)
 
-  ! PRINT*, "run into ESTM7"
+
 
   Qsair = fair*SHC_air*(Tair1-Tair2)/Tstep
   Qsibld = Qsibld*fibld
@@ -503,7 +500,7 @@ SUBROUTINE ESTM_v2016(QSnet,iMB)
      Tibldout=Tibld
   ENDIF
 
-  dataOutESTM(iESTMcount,1:32,iMB)=(/REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),&
+  dataOutESTM(iESTMcount,1:32,Gridiv)=(/REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),&
        REAL(it,KIND(1D0)),REAL(imin,KIND(1D0)),dectime,Qsnet,Qsair,Qswall,Qsroof,Qsground,Qsibld,&!11
        Twallout,Troofout,Tgroundout,Tibldout,Tievolve/)!21
   !kdn_estm,kup_estm,ldown,lup_net,RN,& !10
@@ -513,5 +510,5 @@ SUBROUTINE ESTM_v2016(QSnet,iMB)
   !endif
 
   Tair2=Tair1
-  print*, Tair2
+
 END SUBROUTINE ESTM_v2016

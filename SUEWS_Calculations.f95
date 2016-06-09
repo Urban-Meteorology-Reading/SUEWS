@@ -241,9 +241,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ENDIF
 
   IF(QSChoice==4 .OR. QSChoice==14) THEN
-     PRINT*, "run ESTM_v2016"
-     print*, 'ir:', ir
-     CALL ESTM_v2016(QSestm,iMB)            !Calculate QS using ESTM
+     CALL ESTM_v2016(QSestm,Gridiv)   !Calculate QS using ESTM, iMB corrected to Gridiv, TS 09 Jun 2016
   ENDIF
 
   IF (QSChoice>=10)THEN ! Chose which QS will be used in SUEWS and output file

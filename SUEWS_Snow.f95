@@ -7,7 +7,7 @@
 !  snowRem - Removal of snow my snow clearing
 !  SnowDepletionCurve - Calculation of snow fractions
 !Last modified
-!  LJ 3 Feb 2016  - Changed so that not all surface water freezes in 5-min timestep.
+!  LJ May 2016     - Changed so that not all surface water freezes in 5-min timestep.
 !                    Re-organization of the snow routine due to this change
 !                    Calculation of albedo moved from MeltHeat to SnowCalc
 !  LJ 27 Jan 2016  - Tabs removed, cleaning of the code
@@ -124,8 +124,7 @@
 
               !FreezState(is) = state(is) 
               !Previously all state could freeze in 5-min timestep. Now we calculate how much water
-              !can freeze in timestep
-              !FreezState(is) = 100*(0-Temp_C)/(waterDens*(lvS_J_kg-lv_J_kg))
+              !can freeze in a timestep based on the same temperature freezing fraction.
               FreezState(is) = -TempMeltFact*Tsurf_ind(is)/nsh_real
 
               !The amount of freezing water cannot be greater than the surface state
@@ -293,10 +292,7 @@
 
 
   !============================================================================
-  !1) Surface is fully covered with snow or the snowpack forms (equally distributed) 
-  !   on the current Tstep
-  !2) Both snow and snow free surface exists
-  !3) Water surface is treated separately
+  !Water surface is treated separately
   if (is==WaterSurf.and.sfr(WaterSurf)>0) GO TO 606
 
   !The calculations are divided into 2 main parts
@@ -385,21 +381,24 @@
        SnowPack(is)=SnowPack(is)+changSnow(is)
 
 
-       !The fraction of snow will get a value of 1 (ie full snow cover):
-       !Surface state is dry but precipitation occurs, no precipitation but all state freezes at a single timestep,
-       !There is both precipitation and all surface state freezes
-       !In this case no snow free state calculations are made as snowFrac(is) will be set to 1
-       if ((Precip>0.and.state(is)==0).or.(Precip>0.and.FreezState(is)==state(is))) then
+       !The fraction of snow will update when:
+       !a) Surface state is dry but precipitation occurs =1
+       !b) There is both precipitation and all surface state freezes =1
+       !c) No precipitation but all state freezes at a single timestep =2
+       !d) Part of the surface freezes
+       if (Precip>0.and.FreezState(is)==state(is)) then !both a) and b)
           snowFracFresh1=1
-          !SnowDens(is)=SnowDens(is)*(SnowPack(is)/(SnowPack(is)+Precip+FreezStateVol(is)))&
-          !             +SnowDensMin*((Precip+FreezStateVol(is))/(SnowPack(is)+Precip+FreezStateVol(is)))
-       elseif (Precip==0.and.FreezState(is)==state(is)) then
-          snowFracFresh1=SnowDepletionCurve(is,snowPack(is),snowD(is))
-          if (snowFracFresh1<0.001) snowFracFresh1=0.001
+       elseif (Precip==0.and.FreezState(is)>0.and.FreezState(is)==state(is)) then
+          snowFracFresh1=1
+          !snowFracFresh1=SnowDepletionCurve(is,snowPack(is),snowD(is))
+          !if (snowFracFresh1<0.001) snowFracFresh1=0.001
        elseif (FreezState(is)>0.and.FreezState(is)<state(is)) then !This if not all water freezes
           snowFracFresh1=0.95 !Now this fraction set to something close to one. Should be improved in the future at some point
-          !write(*,*) is,id,it,imin,snowfrac(is),FreezState(is),state(is),state(is)+Precip
-          !pause
+          !if (is==1)then
+           ! write(*,*) id,it,imin,snowfrac(is),FreezState(is),state(is)
+           ! pause
+          !endif
+
        endif
 
      !Snowpack can also form at the current timestep (2). If this forms purely from snowfall or/and all water at surface freezes,

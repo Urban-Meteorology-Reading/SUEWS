@@ -5,7 +5,7 @@ TARGET = SUEWS_AnOHM+ESTM_v2016      # program name
 CFLAGS = -g -w -Wall -Wtabs -fbounds-check
 # All the files which include modules used by other modules (these therefore
 # needs to be compiled first)
-MODULES = LUMPS_Module_constants_v2015a.o  \
+MODULES = LUMPS_Module_constants_v2016a.o  \
           LUMPS_metRead.o  \
           SOLWEIG_modules.o  \
           SUEWS_Files_run_Control.o

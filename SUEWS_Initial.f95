@@ -554,7 +554,7 @@ SUBROUTINE OverallRunControl
   ! Cast integer tstep as tstep_real for use in calculations
   tstep_real = REAL(tstep,KIND(1d0))
 
-  !! Check this is still valid for v2015a
+  !! Check this is still valid for v2016a
   HalfTimeStep=REAL(tstep_real)/2/(24*3600)   !Used in sun_position to get sunpos in the middle of timestep
 
   RETURN

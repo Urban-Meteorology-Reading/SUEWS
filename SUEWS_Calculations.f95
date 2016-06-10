@@ -43,12 +43,12 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   IMPLICIT NONE
 
-  integer:: Gridiv,ir,i,ih,iMB
-  logical:: debug=.false.
-  real(kind(1d0)):: idectime
+  INTEGER        :: Gridiv,ir,i,ih,iMB
+  LOGICAL        :: debug=.FALSE.
+  REAL(KIND(1d0)):: idectime
   !real(kind(1d0)):: SnowDepletionCurve  !for SUEWS_Snow - not needed here (HCW 24 May 2016)
-  real(kind(1d0)):: lai_wt
-  integer:: irMax
+  REAL(KIND(1d0)):: lai_wt
+  INTEGER        :: irMax
 
   !==================================================================
   !==================================================================
@@ -151,9 +151,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   ! Calculate soil moisture for vegetated surfaces only (for use in surface conductance)
   vsmd=0
-   alb(DecidSurf)=albDecTr(id) !Change deciduous albedo
-   surf(6,DecidSurf)=DecidCap(id)  !Change current storage capacity of deciduous trees
-   ! Change EveTr and Grass albedo too
   DO is=ConifSurf,GrassSurf  !Vegetated surfaces only
      vsmd=vsmd+(soilstoreCap(is) - soilmoist(is))*sfr(is)/(sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf))
      !write(*,*) is, vsmd, smd
@@ -177,7 +174,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
      !write(*,*) DecidCap(id), id, it, imin, 'Calc - near start'
 
      ! Update variables that change daily and represent seasonal variability
-     alb(DecidSurf)    = albDec(id)   !Change deciduous albedo
+     alb(DecidSurf)    = albDecTr(id) !Change deciduous albedo
      surf(6,DecidSurf) = DecidCap(id) !Change current storage capacity of deciduous trees
      ! Change EveTr and Grass albedo too
      alb(ConifSurf) = albEveTr(id)

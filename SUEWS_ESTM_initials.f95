@@ -88,6 +88,11 @@ SUBROUTINE ESTM_initials(FileCodeX)
   !=====Initialization of variables and paramters===================================
 
   IF ( .NOT. ALLOCATED(Tibld) ) THEN
+    ! print*, "Nibld",Nibld
+    ! print*, "Nwall",Nwall
+    ! print*, "Nroof",Nroof
+    ! print*, "Nground",Nground
+    
      ALLOCATE(Tibld(Nibld),Twall(Nwall),Troof(Nroof),Tground(Nground),Tw_4(Nwall,4))
   END IF
 

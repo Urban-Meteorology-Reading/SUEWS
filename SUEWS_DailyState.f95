@@ -5,7 +5,7 @@
 ! N.B. Some of this code is repeated in SUEWS_Initial
 ! --> so if changes are made here, SUEWS_Initial may also need to be updated accordingly
 ! N.B. Currently, daily variables are calculated using 00:00-23:55 timestamps (for 5-min resolution); should use 00:05-00:00
-! 
+!
 !Last modified:
 !  HCW 25 May 2016 - Added extra columns to daily state file (albedo for EveTr and Grass)
 !  HCW 24 May 2016 - Bug fixed in naming of DailyState file (now uses GridIDmatrix(Gridiv) rather than Gridiv)
@@ -401,8 +401,8 @@ SUBROUTINE DailyState(Gridiv)
      !write(*,*) deltaLAI, deltaLAIEveTr, deltaLAIGrass
 
      DecidCap(id) = DecidCap(id-1) - CapChange
-     albDecTr(id)   = albDecTr(id-1)   + albChangeDecTr    
-     porosity(id) = porosity(id-1) + porChange  !- changed to + by HCW 20 Aug 2015 (porosity greatest when LAI smallest)    
+     albDecTr(id) = albDecTr(id-1) + albChangeDecTr
+     porosity(id) = porosity(id-1) + porChange !- changed to + by HCW 20 Aug 2015 (porosity greatest when LAI smallest)
      !Also update albedo of EveTr and Grass surfaces
      albEveTr(id) = albEveTr(id-1) + albChangeEveTr
      albGrass(id) = albGrass(id-1) + albChangeGrass
@@ -453,11 +453,11 @@ SUBROUTINE DailyState(Gridiv)
      mAH_grids(id,Gridiv) = mAHAnOHM(Gridiv)
      ! load current AnOHM coef.:
      IF ( QsChoice==3 ) THEN
-      !  if ( id>364 ) then
-      !    print*, 'test in DailyState'
-      !    print*, a1AnOHM(Gridiv),a2AnOHM(Gridiv),a3AnOHM(Gridiv)
-       !
-      !  end if
+        !  if ( id>364 ) then
+        !    print*, 'test in DailyState'
+        !    print*, a1AnOHM(Gridiv),a2AnOHM(Gridiv),a3AnOHM(Gridiv)
+        !
+        !  end if
         a1AnOHM_grids(id,Gridiv) = a1AnOHM(Gridiv)
         a2AnOHM_grids(id,Gridiv) = a2AnOHM(Gridiv)
         a3AnOHM_grids(id,Gridiv) = a3AnOHM(Gridiv)
@@ -477,28 +477,28 @@ SUBROUTINE DailyState(Gridiv)
 
      IF (writedailyState==1) THEN
         !Define filename
-        !write(grstr2,'(i5)') Gridiv      !Convert grid number for output file name
-        write(grstr2,'(i5)') GridIDmatrix(Gridiv)      !Bug fix HCW 24/05/2016 - name file with Grid as in SiteSelect         
-        !write(*,*) FileCode, Gridiv, GridIDmatrix(Gridiv)
-        
-        FileDaily=trim(FileOutputPath)//trim(FileCode)//trim(adjustl(grstr2))//'_DailyState.txt'
+        ! WRITE(grstr2,'(i5)') Gridiv      !Convert grid number for output file name
+        WRITE(grstr2,'(i5)') GridIDmatrix(Gridiv)      !Bug fix HCW 24/05/2016 - name file with Grid as in SiteSelect
+
+        FileDaily=TRIM(FileOutputPath)//TRIM(FileCode)//TRIM(ADJUSTL(grstr2))//'_DailyState.txt'
 
         ! If first modelled day, open the file and save header
         IF (DailyStateFirstOpen(Gridiv)==1) THEN
            OPEN(60,file=FileDaily)
            WRITE(60,142)
-142        FORMAT('%year id ',&                                          !2
+142        FORMAT('%iy id ',&                                          !2
                 'HDD1_h HDD2_c HDD3_Tmean HDD4_T5d P/day DaysSR ',&    !8
                 'GDD1_g GDD2_s GDD3_Tmin GDD4_Tmax GDD5_DayLHrs ',&    !13
                 'LAI_EveTr LAI_DecTr LAI_Grass ',&                     !16
-                'DecidCap Porosity AlbEveTr AlbDecTr AlbGrass',&                   !21
+                'DecidCap Porosity AlbEveTr AlbDecTr AlbGrass ',&      !21
                 'WU_EveTr(1) WU_EveTr(2) WU_EveTr(3) ',&               !24
                 'WU_DecTr(1) WU_DecTr(2) WU_DecTr(3) ',&               !27
                 'WU_Grass(1) WU_Grass(2) WU_Grass(3) ',&               !30
-                'deltaLAI LAIlumps AlbSnow Dens_Snow_Paved ',&           !34
-                'Dens_Snow_Bldg Dens_Snow_EveTr Dens_Snow_DecTr ',&     !37
-                'Dens_Snow_Grass Dens_Snow_BSoil Dens_Snow_Water ',&      !40
-                'BoAnOHMEnd a1AnOHM a2AnOHM a3AnOHM')                      !44 TS AnOHM 05 Mar 2016
+                'deltaLAI LAIlumps AlbSnow Dens_Snow_Paved ',&         !34
+                'Dens_Snow_Bldgs Dens_Snow_EveTr Dens_Snow_DecTr ',&   !37
+                'Dens_Snow_Grass Dens_Snow_BSoil Dens_Snow_Water ',&   !40
+                'BoAnOHMEnd a1AnOHM a2AnOHM a3AnOHM')                  !44 TS AnOHM 05 Mar 2016
+
            DailyStateFirstOpen(Gridiv)=0
            ! Otherwise open file to append
         ELSE
@@ -517,8 +517,7 @@ SUBROUTINE DailyState(Gridiv)
 601     FORMAT(2(i4,1X),&
              4(f6.1,1X),1(f8.4,1X),1(f6.1,1X), 5(f6.1,1X),&
              3(f6.2,1X),&
-                   5(f6.2,1X),&
-             3(f6.2,1X),&
+             5(f6.2,1X),&
              9(f7.3,1X),&
              2(f7.2,1X),8(f7.2,1X),&
              4(f7.2,1X))

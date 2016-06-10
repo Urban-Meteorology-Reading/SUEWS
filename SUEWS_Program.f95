@@ -9,7 +9,9 @@
 !  - then over rows
 !  - then over grids
 !
-!
+!Last modified by HCW 24 May 2016 - InitialConditions file naming altered
+!                                   Unused year_txt argument removed from InitialState
+!                 LJ  30 Mar 2016 - Grid run order changed from linear to non-linear
 !Last modified by TS 14 Mar 2016  - Include AnOHM daily interation
 !Last modified by HCW 25 Jun 2015 - Fixed bug in LAI calculation at year change
 !Last modified by HCW 12 Mar 2015
@@ -38,12 +40,12 @@ PROGRAM SUEWS_Program
 
   IMPLICIT NONE
 
-  CHARACTER(len = 4) ::year_txt, & !Year as a text string
-       year_txtNext !Following year as a text string (used for NextInitial)
+  CHARACTER(len = 4) ::year_txt  !Year as a text string
+
   CHARACTER(len = 20)::FileCodeX,& !Current file code
-       FileCodeXNext !File code for the following year
+       FileCodeXWY !File code without year
   CHARACTER(len = 20)::grid_txt, & !Grid number as a text string (from FirstGrid to LastGrid)
-       tstep_txt !Model timestep (in minutes) as a text string
+       tstep_txt   !Model timestep (in minutes) as a text string
 
   INTEGER:: nlinesLimit,&   !Max number of lines that can be read in one go for each grid
        NumberOfYears   !Number of years to be run
@@ -208,15 +210,15 @@ PROGRAM SUEWS_Program
      ALLOCATE(WUProfA_tstep(24*NSH,2))                                      !Automatic water use profiles at model timestep
      !! Add snow clearing (?)
 
-    !  ! test ESTM initialisation
-    !  IF(QSChoice==4 .OR. QSChoice==14) THEN
-    !     PRINT*, 'day:', iv
+     !  ! test ESTM initialisation
+     !  IF(QSChoice==4 .OR. QSChoice==14) THEN
+     !     PRINT*, 'day:', iv
      !
-    !     !  if ( iv>1 ) then
-    !     CALL ESTM_initials(FileCodeX)
+     !     !  if ( iv>1 ) then
+     !     CALL ESTM_initials(FileCodeX)
      !
-    !     !  end if
-    !  ENDIF
+     !     !  end if
+     !  ENDIF
 
 
      ! ----------------------------------------------------------------------
@@ -243,7 +245,7 @@ PROGRAM SUEWS_Program
            ! Get met forcing file name for this year for the first grid
            ! Can be something else than 1
            FileCodeX = TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt)
-           IF(iv==1) WRITE(*,*) 'Current FileCode: ', FileCodeX
+           !  IF(iv==1) WRITE(*,*) 'Current FileCode: ', FileCodeX
 
            ! For the first block of met data --------------------------------
            IF(iv == 1) THEN
@@ -261,7 +263,7 @@ PROGRAM SUEWS_Program
                  ENDIF
               ENDDO
               ! (b) get initial conditions
-              CALL InitialState(FileCodeX,year_int,GridCounter,year_txt)
+              CALL InitialState(FileCodeX,year_int,GridCounter)
            ENDIF   !end first block of met data
 
            ! For every block of met data ------------------------------------
@@ -296,10 +298,10 @@ PROGRAM SUEWS_Program
         IF(QSChoice==4 .OR. QSChoice==14) THEN
            PRINT*, 'day:', iv
 
-          !  if ( iv>1 ) then
-             CALL ESTM_initials(FileCodeX)
+           !  if ( iv>1 ) then
+           CALL ESTM_initials(FileCodeX)
 
-          !  end if
+           !  end if
         ENDIF
 
         ! end if
@@ -342,7 +344,12 @@ PROGRAM SUEWS_Program
                  !  END IF
 
                  ! Call model calculation code
-                 IF(ir==1) WRITE(*,*) 'Now running block ',iv,'/',ReadBlocksMetData,' of year ',year_int,'...'
+                 !  IF(ir==1) WRITE(*,*) 'Now running block ',iv,'/',ReadBlocksMetData,' of year ',year_int,'...'
+                 WRITE(grid_txt,'(I5)') GridIDmatrix(igrid)   !Get grid ID as a text string
+                 FileCodeX=TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt)
+                 IF(ir==1) THEN
+                    WRITE(*,*) TRIM(ADJUSTL(FileCodeX)),': Now running block ',iv,'/',ReadBlocksMetData,' of ',TRIM(year_txt),'...'
+                 ENDIF
                  CALL SUEWS_Calculations(GridCounter,ir,iv,irMax)
 
 
@@ -357,10 +364,13 @@ PROGRAM SUEWS_Program
                  IF(ir == irMax) THEN              !If last row...
                     IF(iv == ReadBlocksMetData) THEN    !...of last block of met data
                        WRITE(grid_txt,'(I5)') GridIDmatrix(igrid)
-                       WRITE(year_txtNext,'(I4)') year_int+1  !Get next year as a string format
-                       FileCodeX     = TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt)
-                       FileCodeXNext = TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txtNext)
-                       CALL NextInitial(FileCodeXNext,year_int)
+                       !  WRITE(year_txtNext,'(I4)') year_int+1  !Get next year as a string format
+                       !  FileCodeX     = TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt)
+                       !  FileCodeXNext = TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txtNext)
+                       !  CALL NextInitial(FileCodeXNext,year_int)
+                       FileCodeXwy=TRIM(FileCode)//TRIM(ADJUSTL(grid_txt)) !File code without year (HCW 24 May 2016)
+                       CALL NextInitial(FileCodeXwy,year_int)
+
                     ENDIF
                  ENDIF
 

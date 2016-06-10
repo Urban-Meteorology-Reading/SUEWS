@@ -294,17 +294,8 @@ PROGRAM SUEWS_Program
         IF(SOLWEIGuse==1) CALL SOLWEIG_initial
 
         ! Initialise ESTM if required, TS 05 Jun 2016
-        ! print*, "before call ESTM_initials:", FileCodeX
-        IF(QSChoice==4 .OR. QSChoice==14) THEN
-           PRINT*, 'day:', iv
+        IF(QSChoice==4 .OR. QSChoice==14) CALL ESTM_initials(FileCodeX)
 
-           !  if ( iv>1 ) then
-           CALL ESTM_initials(FileCodeX)
-
-           !  end if
-        ENDIF
-
-        ! end if
 
 
         !write(*,*) 'Initialisation done'

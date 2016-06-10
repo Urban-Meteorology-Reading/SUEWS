@@ -240,22 +240,28 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
      ENDIF
   ENDIF
 
-  IF(QSChoice==4 .OR. QSChoice==14) THEN
-     CALL ESTM_v2016(QSestm,Gridiv)   !Calculate QS using ESTM, iMB corrected to Gridiv, TS 09 Jun 2016
-  ENDIF
-
-  IF (QSChoice>=10)THEN ! Chose which QS will be used in SUEWS and output file
-     !write(800,*)id,it,QS,QSanOHM,QSestm
-     IF(QSChoice==14)THEN
-        QS=QSestm
-     ELSEIF(QSChoice==13)THEN
-        QS=QSanOHM
-     ENDIF
-  ENDIF
-
-  IF (QSChoice==3) THEN   ! use AnOHM to calculate QS
+  ! use AnOHM to calculate QS, TS 14 Mar 2016
+  IF (QSChoice==3) THEN
      CALL AnOHM_v2016(Gridiv)
   END IF
+
+  !Calculate QS using ESTM
+  IF(QSChoice==4 .OR. QSChoice==14) THEN
+    !CALL ESTM_v2016(QSestm,iMB)
+     CALL ESTM_v2016(QSestm,Gridiv)  ! iMB corrected to Gridiv, TS 09 Jun 2016
+  ENDIF
+
+  ! don't use thses composite QS options at the moment, TS 10 Jun 2016
+  ! IF (QSChoice>=10)THEN ! Chose which QS will be used in SUEWS and output file
+  !    !write(800,*)id,it,QS,QSanOHM,QSestm
+  !    IF(QSChoice==14)THEN
+  !       QS=QSestm
+  !    ELSEIF(QSChoice==13)THEN
+  !       QS=QSanOHM
+  !    ENDIF
+  ! ENDIF
+
+
 
   ! For the purpose of turbulent fluxes, remove QF from the net all-wave radiation
   qn1=qn1_bup  !Remove QF from QSTAR

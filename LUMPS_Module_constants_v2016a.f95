@@ -1413,15 +1413,15 @@ MODULE ColNamesInputFiles
        c_WGWaterCode = 80   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
 
   !========== Columns for SUEWS_NonVeg.txt ==========================
-  INTEGER :: ci_Code        =  1,&
-       ci_AlbMin        =  2,&
-       ci_AlbMax        =  3,&
-       ci_Emis         =  4,&
-       ci_StorMin      =  5,&
-       ci_StorMax      =  6,&
-       ci_WetThresh    =  7,&
-       ci_StateLimit   =  8,&
-       ci_DrEq         =  9,&
+  INTEGER :: ci_Code   = 1, &
+       ci_AlbMin       = 2, &
+       ci_AlbMax       = 3, &
+       ci_Emis         = 4, &
+       ci_StorMin      = 5, &
+       ci_StorMax      = 6, &
+       ci_WetThresh    = 7, &
+       ci_StateLimit   = 8, &
+       ci_DrEq         = 9, &
        ci_DrCoef1      = 10,&
        ci_DrCoef2      = 11,&
        ci_SoilTCode    = 12,&
@@ -1431,44 +1431,43 @@ MODULE ColNamesInputFiles
        ci_OHMCode_SDry = 16,&
        ci_OHMCode_WWet = 17,&
        ci_OHMCode_WDry = 18,&
-       ci_cpAnOHM            = 19,& ! heat capacity, added by TS AnOHM
-       ci_kkAnOHM            = 20,& ! heat conductivity, added by TS AnOHM
-       ci_ChAnOHM            = 21   ! bulk transfer coef., added by TS AnOHM
+       ci_cpAnOHM      = 19,& ! heat capacity, added by TS AnOHM
+       ci_kkAnOHM      = 20,& ! heat conductivity, added by TS AnOHM
+       ci_ChAnOHM      = 21 ! bulk transfer coef., added by TS AnOHM
 
   !========== Columns for SUEWS_Veg.txt ============================
-  INTEGER ::   cp_Code       = 1,&
-       cp_AlbMin        = 2,&
-       cp_AlbMax     = 3,&
-       cp_Emis          = 4,&
-       cp_StorMin          = 5,&
-       cp_StorMax          = 6,&
-       cp_WetThresh  = 7,&
-       cp_StateLimit = 8,&
-       cp_DrEq             = 9,&
-       cp_DrCoef1          = 10,&
-       cp_DrCoef2          = 11,&
-       cp_SoilTCode        = 12,&
-       cp_SnowLimPat       = 13,&
-       cp_BaseT            = 14,&
-       cp_BaseTe           = 15,&
-       cp_GDDFull          = 16,&
-       cp_SDDFull          = 17,&
-       cp_LAIMin           = 18,&
-       cp_LAIMax           = 19,&
-       cp_GsMax            = 20,&
-       cp_LAIEq            = 21,&
-       cp_LeafGP1          = 22,&
-       cp_LeafGP2          = 23,&
-       cp_LeafOP1          = 24,&
-       cp_LeafOP2          = 25,&
-       cp_OHMCode_SWet     = 26,&
-       cp_OHMCode_SDry     = 27,&
-       cp_OHMCode_WWet     = 28,&
-       cp_OHMCode_WDry     = 29,&
-
-       cp_cpAnOHM = 30,& ! heat capacity, added by TS AnOHM
-       cp_kkAnOHM = 31,& ! heat conductivity, added by TS AnOHM
-       cp_ChAnOHM = 32   ! bulk transfer coef., added by TS AnOHM
+  INTEGER :: cp_Code   = 1, &
+       cp_AlbMin       = 2, &
+       cp_AlbMax       = 3, &
+       cp_Emis         = 4, &
+       cp_StorMin      = 5, &
+       cp_StorMax      = 6, &
+       cp_WetThresh    = 7, &
+       cp_StateLimit   = 8, &
+       cp_DrEq         = 9, &
+       cp_DrCoef1      = 10,&
+       cp_DrCoef2      = 11,&
+       cp_SoilTCode    = 12,&
+       cp_SnowLimPat   = 13,&
+       cp_BaseT        = 14,&
+       cp_BaseTe       = 15,&
+       cp_GDDFull      = 16,&
+       cp_SDDFull      = 17,&
+       cp_LAIMin       = 18,&
+       cp_LAIMax       = 19,&
+       cp_GsMax        = 20,&
+       cp_LAIEq        = 21,&
+       cp_LeafGP1      = 22,&
+       cp_LeafGP2      = 23,&
+       cp_LeafOP1      = 24,&
+       cp_LeafOP2      = 25,&
+       cp_OHMCode_SWet = 26,&
+       cp_OHMCode_SDry = 27,&
+       cp_OHMCode_WWet = 28,&
+       cp_OHMCode_WDry = 29,&
+       cp_cpAnOHM      = 30,& ! heat capacity, added by TS AnOHM
+       cp_kkAnOHM      = 31,& ! heat conductivity, added by TS AnOHM
+       cp_ChAnOHM      = 32 ! bulk transfer coef., added by TS AnOHM
 
 
   !========== Columns for SUEWS_Water.txt ===============================

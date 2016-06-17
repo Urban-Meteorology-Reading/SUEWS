@@ -3,6 +3,9 @@
 !           - between arrays for different grids and the model variables
 !Made by HW&LJ Oct 2014
 !-----------------------------------------------------------------------------------
+!Last modified: HCW 16 Jun 2016
+! ESTM development for 7 surface types + snow, allowing 3x Paved classes and 5x Bldgs classes
+! Currently surface characteristics are averaged here; probably want to average QS instead.
 !Last modified: TS 13 Apr 2016
 ! Added AnOHM required variables.
 !Last modified: LJ 06 Jul 2015
@@ -15,6 +18,7 @@
 !Last modified: HCW 28 Nov 2014
 !
 ! To Do:
+!       - Add AnOHM and ESTM info to FileChoices
 !       - Check observed soil moisture works correctly!!
 !       - Adjust model to allow water to runoff and sub-surface soil store for each surface type
 !  - Adjust model to calculate LAI per surface
@@ -303,27 +307,214 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   OHM_coef(1:nsurf,4,3) = SurfaceChar(Gridiv,c_a3_WDry(1:nsurf)) !1:nsurf a3 Winter dry
   OHM_coef(nsurf+2,4,3) = SurfaceChar(Gridiv,c_a3_WDry(nsurf+1)) !Snow    a3 Winter dry
 
-  ! ---- ESTM coeffs (was in SUEWS_ESTM_v2016.f95, subroutine ESTM_v2016)
-  zground  = SurfaceChar(Gridiv,(/c_thick1_r(1),c_thick2_r(1),c_thick3_r(1),c_thick4_r(1),c_thick5_r(1)/))
-  zroof    = SurfaceChar(Gridiv,(/c_thick1_r(2),c_thick2_r(2),c_thick3_r(2),c_thick4_r(2),c_thick5_r(2)/))
-  zwall    = SurfaceChar(Gridiv,(/c_thick1_e(2),c_thick2_e(2),c_thick3_e(2),c_thick4_e(2),c_thick5_e(2)/))
-  zibld    = SurfaceChar(Gridiv,(/c_thick1_i(2),c_thick2_i(2),c_thick3_i(2),c_thick4_i(2),c_thick5_i(2)/))
-  kground  = SurfaceChar(Gridiv,(/c_k1_r(1),c_k2_r(1),c_k3_r(1),c_k4_r(1),c_k5_r(1)/))
-  kroof    = SurfaceChar(Gridiv,(/c_k1_r(2),c_k2_r(2),c_k3_r(2),c_k4_r(2),c_k5_r(2)/))
-  kwall    = SurfaceChar(Gridiv,(/c_k1_e(2),c_k2_e(2),c_k3_e(2),c_k4_e(2),c_k5_e(2)/))
-  kibld    = SurfaceChar(Gridiv,(/c_k1_i(2),c_k2_i(2),c_k3_i(2),c_k4_i(2),c_k5_i(2)/))
-  rground  = SurfaceChar(Gridiv,(/c_rhoCp1_r(1),c_rhoCp2_r(1),c_rhoCp3_r(1),c_rhoCp4_r(1),c_rhoCp5_r(1)/))
-  rroof    = SurfaceChar(Gridiv,(/c_rhoCp1_r(2),c_rhoCp2_r(2),c_rhoCp3_r(2),c_rhoCp4_r(2),c_rhoCp5_r(2)/))
-  rwall    = SurfaceChar(Gridiv,(/c_rhoCp1_e(2),c_rhoCp2_e(2),c_rhoCp3_e(2),c_rhoCp4_e(2),c_rhoCp5_e(2)/))
-  ribld    = SurfaceChar(Gridiv,(/c_rhoCp1_i(2),c_rhoCp2_i(2),c_rhoCp3_i(2),c_rhoCp4_i(2),c_rhoCp5_i(2)/))
-  nroom    = SurfaceChar(Gridiv,c_nroom(2))
-  alb_ibld = SurfaceChar(Gridiv,c_alb_ibld(2))
-  em_ibld  = SurfaceChar(Gridiv,c_em_ibld(2))
-  CH_iwall = SurfaceChar(Gridiv,c_CH_iwall(2))
-  CH_iroof = SurfaceChar(Gridiv,c_CH_iroof(2))
-  CH_ibld  = SurfaceChar(Gridiv,c_CH_ibld(2))
-  fwall    = SurfaceChar(Gridiv,c_fwall(2))
-
+  ! ---- ESTM characteristics -------------------------
+  ! HCW 16 Jun 2016
+  ! Wall fraction for ESTM (in SiteSelect.txt)
+  AreaWall = SurfaceChar(Gridiv,c_AreaWall)
+  fwall=AreaWall/SurfaceArea
+  
+  ! Get surface fractions for ESTM classes for Bldgs and Paved surfaces 
+  ESTMsfr_Paved = SurfaceChar(Gridiv,c_Fr_ESTMClass_Paved)   !Dim 3
+  ESTMsfr_Bldgs = SurfaceChar(Gridiv,c_Fr_ESTMClass_Bldgs)   !Dim 5
+  
+  ! ===== PAVED =====
+  ! First combine characteristics of the 3x Paved classes
+  IF(SurfaceChar(Gridiv,c_ESTMCode(PavSurf)) == 0) THEN   ! If Code = 0, use multiple classes
+     ! Get characteristics of each Paved class
+     DO i=1,3
+        zSurf_Paved(:,i) = SurfaceChar(Gridiv,(/c_Surf_thick1_Paved(i),c_Surf_thick2_Paved(i),c_Surf_thick3_Paved(i), &
+                                                c_Surf_thick4_Paved(i),c_Surf_thick5_Paved(i)/))
+        kSurf_Paved(:,i) = SurfaceChar(Gridiv,(/c_Surf_k1_Paved(i),c_Surf_k2_Paved(i),c_Surf_k3_Paved(i), &
+                                                c_Surf_k4_Paved(i),c_Surf_k5_Paved(i)/))
+        rSurf_Paved(:,i) = SurfaceChar(Gridiv,(/c_Surf_rhoCp1_Paved(i),c_Surf_rhoCp2_Paved(i),c_Surf_rhoCp3_Paved(i), &
+                                               c_Surf_rhoCp4_Paved(i),c_Surf_rhoCp5_Paved(i)/))                                               
+     ENDDO
+     ! Average characteristics of each Paved class according to surface fractions (these sum to 1)
+     zSurf_SUEWSsurfs(:,PavSurf) = zSurf_Paved(:,1)*ESTMsfr_Paved(1) & 
+                                 + zSurf_Paved(:,2)*ESTMsfr_Paved(2) &
+                                 + zSurf_Paved(:,3)*ESTMsfr_Paved(3)                                     
+     kSurf_SUEWSsurfs(:,PavSurf) = kSurf_Paved(:,1)*ESTMsfr_Paved(1) & 
+                                 + kSurf_Paved(:,2)*ESTMsfr_Paved(2) &
+                                 + kSurf_Paved(:,3)*ESTMsfr_Paved(3)                                    
+     rSurf_SUEWSsurfs(:,PavSurf) = rSurf_Paved(:,1)*ESTMsfr_Paved(1) & 
+                                 + rSurf_Paved(:,2)*ESTMsfr_Paved(2) &
+                                 + rSurf_Paved(:,3)*ESTMsfr_Paved(3)                                    
+  ELSEIF(SurfaceChar(Gridiv,c_ESTMCode(PavSurf)) /= 0) THEN   !Otherwise use single values 
+     zSurf_SUEWSsurfs(:,PavSurf) = SurfaceChar(Gridiv,(/c_Surf_thick1(PavSurf),c_Surf_thick2(PavSurf),c_Surf_thick3(PavSurf),&
+                                                        c_Surf_thick4(PavSurf),c_Surf_thick5(PavSurf)/))
+     kSurf_SUEWSsurfs(:,PavSurf) = SurfaceChar(Gridiv,(/c_Surf_k1(PavSurf),c_Surf_k2(PavSurf),c_Surf_k3(PavSurf),&
+                                                        c_Surf_k4(PavSurf),c_Surf_k5(PavSurf)/))
+     rSurf_SUEWSsurfs(:,PavSurf) = SurfaceChar(Gridiv,(/c_Surf_rhoCp1(PavSurf),c_Surf_rhoCp2(PavSurf),c_Surf_rhoCp3(PavSurf),&
+                                                        c_Surf_rhoCp4(PavSurf),c_Surf_rhoCp5(PavSurf)/))                                                        
+  ENDIF
+  
+  ! ===== BLDGS =====
+  ! Combine characteristics of 5x Bldgs classes into one
+  IF(SurfaceChar(Gridiv,c_ESTMCode(BldgSurf)) == 0) THEN   ! If Code = 0, use multiple classes
+     ! Get characteristics of each Bldgs class
+     DO i=1,5
+        zSurf_Bldgs(:,i) = SurfaceChar(Gridiv,(/c_Surf_thick1_Bldgs(i),c_Surf_thick2_Bldgs(i),c_Surf_thick3_Bldgs(i), &
+                                                c_Surf_thick4_Bldgs(i),c_Surf_thick5_Bldgs(i)/))
+        kSurf_Bldgs(:,i) = SurfaceChar(Gridiv,(/c_Surf_k1_Bldgs(i),c_Surf_k2_Bldgs(i),c_Surf_k3_Bldgs(i), &
+                                                c_Surf_k4_Bldgs(i),c_Surf_k5_Bldgs(i)/))
+        rSurf_Bldgs(:,i) = SurfaceChar(Gridiv,(/c_Surf_rhoCp1_Bldgs(i),c_Surf_rhoCp2_Bldgs(i),c_Surf_rhoCp3_Bldgs(i), &
+                                               c_Surf_rhoCp4_Bldgs(i),c_Surf_rhoCp5_Bldgs(i)/))                                               
+        zwall_Bldgs(:,i) = SurfaceChar(Gridiv,(/c_Wall_thick1_Bldgs(i),c_Wall_thick2_Bldgs(i),c_Wall_thick3_Bldgs(i), &
+                                                c_Wall_thick4_Bldgs(i),c_Wall_thick5_Bldgs(i)/))
+        kwall_Bldgs(:,i) = SurfaceChar(Gridiv,(/c_Wall_k1_Bldgs(i),c_Wall_k2_Bldgs(i),c_Wall_k3_Bldgs(i), &
+                                                c_Wall_k4_Bldgs(i),c_Wall_k5_Bldgs(i)/))
+        rwall_Bldgs(:,i) = SurfaceChar(Gridiv,(/c_Wall_rhoCp1_Bldgs(i),c_Wall_rhoCp2_Bldgs(i),c_Wall_rhoCp3_Bldgs(i), &
+                                                c_Wall_rhoCp4_Bldgs(i),c_Wall_rhoCp5_Bldgs(i)/))                                                                                      
+        zibld_Bldgs(:,i) = SurfaceChar(Gridiv,(/c_Internal_thick1_Bldgs(i),c_Internal_thick2_Bldgs(i),c_Internal_thick3_Bldgs(i), &
+                                                c_Internal_thick4_Bldgs(i),c_Internal_thick5_Bldgs(i)/))
+        kibld_Bldgs(:,i) = SurfaceChar(Gridiv,(/c_Internal_k1_Bldgs(i),c_Internal_k2_Bldgs(i),c_Internal_k3_Bldgs(i), &
+                                                c_Internal_k4_Bldgs(i),c_Internal_k5_Bldgs(i)/))
+        ribld_Bldgs(:,i) = SurfaceChar(Gridiv,(/c_Internal_rhoCp1_Bldgs(i),c_Internal_rhoCp2_Bldgs(i),c_Internal_rhoCp3_Bldgs(i), &
+                                                c_Internal_rhoCp4_Bldgs(i),c_Internal_rhoCp5_Bldgs(i)/))
+        nroom_Bldgs(i)    = SurfaceChar(Gridiv,c_nroom_Bldgs(i))                                        
+        alb_ibld_Bldgs(i) = SurfaceChar(Gridiv,c_alb_ibld_Bldgs(i))
+        em_ibld_Bldgs(i)  = SurfaceChar(Gridiv,c_em_ibld_Bldgs(i))
+        CH_iwall_Bldgs(i) = SurfaceChar(Gridiv,c_CH_iwall_Bldgs(i))
+        CH_iroof_Bldgs(i) = SurfaceChar(Gridiv,c_CH_iroof_Bldgs(i))
+        CH_ibld_Bldgs(i)  = SurfaceChar(Gridiv,c_CH_ibld_Bldgs(i))
+     ENDDO
+     ! Average characteristics of each Bldgs class according to surface fractions (these sum to 1)
+     zSurf_SUEWSsurfs(:,BldgSurf) = zSurf_Bldgs(:,1)*ESTMsfr_Bldgs(1) & 
+                                  + zSurf_Bldgs(:,2)*ESTMsfr_Bldgs(2) &
+                                  + zSurf_Bldgs(:,3)*ESTMsfr_Bldgs(3) &
+                                  + zSurf_Bldgs(:,4)*ESTMsfr_Bldgs(4) &                                    
+                                  + zSurf_Bldgs(:,5)*ESTMsfr_Bldgs(5)                                     
+     kSurf_SUEWSsurfs(:,BldgSurf) = kSurf_Bldgs(:,1)*ESTMsfr_Bldgs(1) & 
+                                  + kSurf_Bldgs(:,2)*ESTMsfr_Bldgs(2) &
+                                  + kSurf_Bldgs(:,3)*ESTMsfr_Bldgs(3) &
+                                  + kSurf_Bldgs(:,4)*ESTMsfr_Bldgs(4) &
+                                  + kSurf_Bldgs(:,5)*ESTMsfr_Bldgs(5)
+     rSurf_SUEWSsurfs(:,BldgSurf) = rSurf_Bldgs(:,1)*ESTMsfr_Bldgs(1) & 
+                                  + rSurf_Bldgs(:,2)*ESTMsfr_Bldgs(2) &
+                                  + rSurf_Bldgs(:,3)*ESTMsfr_Bldgs(3) &                                    
+                                  + rSurf_Bldgs(:,4)*ESTMsfr_Bldgs(4) &
+                                  + rSurf_Bldgs(:,5)*ESTMsfr_Bldgs(5)
+     !Wall                             
+     zwall = zwall_Bldgs(:,1)*ESTMsfr_Bldgs(1) & 
+           + zwall_Bldgs(:,2)*ESTMsfr_Bldgs(2) &
+           + zwall_Bldgs(:,3)*ESTMsfr_Bldgs(3) &
+           + zwall_Bldgs(:,4)*ESTMsfr_Bldgs(4) &                                    
+           + zwall_Bldgs(:,5)*ESTMsfr_Bldgs(5)                                     
+     kwall = kwall_Bldgs(:,1)*ESTMsfr_Bldgs(1) & 
+           + kwall_Bldgs(:,2)*ESTMsfr_Bldgs(2) &
+           + kwall_Bldgs(:,3)*ESTMsfr_Bldgs(3) &
+           + kwall_Bldgs(:,4)*ESTMsfr_Bldgs(4) &
+           + kwall_Bldgs(:,5)*ESTMsfr_Bldgs(5)
+     rwall = rwall_Bldgs(:,1)*ESTMsfr_Bldgs(1) & 
+           + rwall_Bldgs(:,2)*ESTMsfr_Bldgs(2) &
+           + rwall_Bldgs(:,3)*ESTMsfr_Bldgs(3) &                                    
+           + rwall_Bldgs(:,4)*ESTMsfr_Bldgs(4) &
+           + rwall_Bldgs(:,5)*ESTMsfr_Bldgs(5)
+     !Internal                             
+     zibld = zibld_Bldgs(:,1)*ESTMsfr_Bldgs(1) & 
+           + zibld_Bldgs(:,2)*ESTMsfr_Bldgs(2) &
+           + zibld_Bldgs(:,3)*ESTMsfr_Bldgs(3) &
+           + zibld_Bldgs(:,4)*ESTMsfr_Bldgs(4) &                                    
+           + zibld_Bldgs(:,5)*ESTMsfr_Bldgs(5)                                     
+     kibld = kibld_Bldgs(:,1)*ESTMsfr_Bldgs(1) & 
+           + kibld_Bldgs(:,2)*ESTMsfr_Bldgs(2) &
+           + kibld_Bldgs(:,3)*ESTMsfr_Bldgs(3) &
+           + kibld_Bldgs(:,4)*ESTMsfr_Bldgs(4) &
+           + kibld_Bldgs(:,5)*ESTMsfr_Bldgs(5)
+     ribld = ribld_Bldgs(:,1)*ESTMsfr_Bldgs(1) & 
+           + ribld_Bldgs(:,2)*ESTMsfr_Bldgs(2) &
+           + ribld_Bldgs(:,3)*ESTMsfr_Bldgs(3) &                                    
+           + ribld_Bldgs(:,4)*ESTMsfr_Bldgs(4) &
+           + ribld_Bldgs(:,5)*ESTMsfr_Bldgs(5)
+           
+     nroom = nroom_Bldgs(1)*ESTMsfr_Bldgs(1) & 
+           + nroom_Bldgs(2)*ESTMsfr_Bldgs(2) &
+           + nroom_Bldgs(3)*ESTMsfr_Bldgs(3) &                                    
+           + nroom_Bldgs(4)*ESTMsfr_Bldgs(4) &
+           + nroom_Bldgs(5)*ESTMsfr_Bldgs(5)                
+     alb_ibld = alb_ibld_Bldgs(1)*ESTMsfr_Bldgs(1) & 
+              + alb_ibld_Bldgs(2)*ESTMsfr_Bldgs(2) &
+              + alb_ibld_Bldgs(3)*ESTMsfr_Bldgs(3) &                                    
+              + alb_ibld_Bldgs(4)*ESTMsfr_Bldgs(4) &
+              + alb_ibld_Bldgs(5)*ESTMsfr_Bldgs(5)     
+     em_ibld = em_ibld_Bldgs(1)*ESTMsfr_Bldgs(1) & 
+             + em_ibld_Bldgs(2)*ESTMsfr_Bldgs(2) &
+             + em_ibld_Bldgs(3)*ESTMsfr_Bldgs(3) &                                    
+             + em_ibld_Bldgs(4)*ESTMsfr_Bldgs(4) &
+             + em_ibld_Bldgs(5)*ESTMsfr_Bldgs(5)                
+     CH_iwall = CH_iwall_Bldgs(1)*ESTMsfr_Bldgs(1) & 
+              + CH_iwall_Bldgs(2)*ESTMsfr_Bldgs(2) &
+              + CH_iwall_Bldgs(3)*ESTMsfr_Bldgs(3) &                                    
+              + CH_iwall_Bldgs(4)*ESTMsfr_Bldgs(4) &
+              + CH_iwall_Bldgs(5)*ESTMsfr_Bldgs(5)     
+     CH_iroof = CH_iroof_Bldgs(1)*ESTMsfr_Bldgs(1) & 
+              + CH_iroof_Bldgs(2)*ESTMsfr_Bldgs(2) &
+              + CH_iroof_Bldgs(3)*ESTMsfr_Bldgs(3) &                                    
+              + CH_iroof_Bldgs(4)*ESTMsfr_Bldgs(4) &
+              + CH_iroof_Bldgs(5)*ESTMsfr_Bldgs(5)                
+     CH_ibld = CH_ibld_Bldgs(1)*ESTMsfr_Bldgs(1) & 
+             + CH_ibld_Bldgs(2)*ESTMsfr_Bldgs(2) &
+             + CH_ibld_Bldgs(3)*ESTMsfr_Bldgs(3) &                                    
+             + CH_ibld_Bldgs(4)*ESTMsfr_Bldgs(4) &
+             + CH_ibld_Bldgs(5)*ESTMsfr_Bldgs(5)     
+              
+  ELSEIF(SurfaceChar(Gridiv,c_ESTMCode(BldgSurf)) /= 0) THEN   !Otherwise use single values 
+     zSurf_SUEWSsurfs(:,BldgSurf) = SurfaceChar(Gridiv,(/c_Surf_thick1(BldgSurf),c_Surf_thick2(BldgSurf),c_Surf_thick3(BldgSurf),&
+                                                         c_Surf_thick4(BldgSurf),c_Surf_thick5(BldgSurf)/))
+     kSurf_SUEWSsurfs(:,BldgSurf) = SurfaceChar(Gridiv,(/c_Surf_k1(BldgSurf),c_Surf_k2(BldgSurf),c_Surf_k3(BldgSurf),&
+                                                         c_Surf_k4(BldgSurf),c_Surf_k5(BldgSurf)/))
+     rSurf_SUEWSsurfs(:,BldgSurf) = SurfaceChar(Gridiv,(/c_Surf_rhoCp1(BldgSurf),c_Surf_rhoCp2(BldgSurf),c_Surf_rhoCp3(BldgSurf),&
+                                                         c_Surf_rhoCp4(BldgSurf),c_Surf_rhoCp5(BldgSurf)/))                                                        
+     zwall = SurfaceChar(Gridiv,(/c_Wall_thick1,c_Wall_thick2,c_Wall_thick3,c_Wall_thick4,c_Wall_thick5/))
+     kwall = SurfaceChar(Gridiv,(/c_Wall_k1,c_Wall_k2,c_Wall_k3,c_Wall_k4,c_Wall_k5/))                                                   
+     rwall = SurfaceChar(Gridiv,(/c_Wall_rhoCp1,c_Wall_rhoCp2,c_Wall_rhoCp3,c_Wall_rhoCp4,c_Wall_rhoCp5/))
+     zibld = SurfaceChar(Gridiv,(/c_Internal_thick1,c_Internal_thick2,c_Internal_thick3,c_Internal_thick4,c_Internal_thick5/))
+     kibld = SurfaceChar(Gridiv,(/c_Internal_k1,c_Internal_k2,c_Internal_k3,c_Internal_k4,c_Internal_k5/))                                                   
+     ribld = SurfaceChar(Gridiv,(/c_Internal_rhoCp1,c_Internal_rhoCp2,c_Internal_rhoCp3,c_Internal_rhoCp4,c_Internal_rhoCp5/))                                                   
+     
+     nroom = SurfaceChar(Gridiv,c_nroom)                                        
+     alb_ibld = SurfaceChar(Gridiv,c_alb_ibld)
+     em_ibld = SurfaceChar(Gridiv,c_em_ibld)
+     CH_iwall = SurfaceChar(Gridiv,c_CH_iwall)
+     CH_iroof = SurfaceChar(Gridiv,c_CH_iroof)
+     CH_ibld = SurfaceChar(Gridiv,c_CH_ibld)
+  ENDIF
+  
+  !For other surfaces, only one ESTM class       
+  DO iv=ConifSurf, nsurfIncSnow
+     zSurf_SUEWSsurfs(:,iv) = SurfaceChar(Gridiv,(/c_Surf_thick1(iv),c_Surf_thick2(iv),c_Surf_thick3(iv),&
+                                                     c_Surf_thick4(iv),c_Surf_thick5(iv)/))
+     kSurf_SUEWSsurfs(:,iv) = SurfaceChar(Gridiv,(/c_Surf_k1(iv),c_Surf_k2(iv),c_Surf_k3(iv),&
+                                                     c_Surf_k4(iv),c_Surf_k5(iv)/))
+     rSurf_SUEWSsurfs(:,iv) = SurfaceChar(Gridiv,(/c_Surf_rhoCp1(iv),c_Surf_rhoCp2(iv),c_Surf_rhoCp3(iv),&
+                                                     c_Surf_rhoCp4(iv),c_Surf_rhoCp5(iv)/))                                                     
+  ENDDO
+     
+  ! Now combine SUEWS surfaces into ESTM facets
+  !Surface fractions for ESTM facets (moved from SUEWS_ESTM_initials HCW 16 Jun 2016)
+  !roof = Bldgs
+  froof=sfr(BldgSurf)
+  !ground = all except Bldgs
+  fground=sfr(PavSurf)+sfr(ConifSurf)+sfr(DecidSurf)+sfr(GrassSurf)+sfr(BsoilSurf)+sfr(WaterSurf)
+  !veg = EveTr, DecTr, Grass
+  fveg=sfr(ConifSurf)+sfr(DecidSurf)+sfr(GrassSurf)
+  
+  ! Ground = all except buildings (exclude snow at the moment)
+  zground = 0
+  kground = 0
+  rground = 0
+  DO iv=1,nsurf
+     IF(iv/=BldgSurf) then   !Bldgs surface excluded from ground facet
+        zground = zground + zSurf_SUEWSsurfs(:,iv)*sfr(iv) /fground   !Normalised by ground fraction
+        kground = kground + kSurf_SUEWSsurfs(:,iv)*sfr(iv) /fground   !Normalised by ground fraction
+        rground = rground + rSurf_SUEWSsurfs(:,iv)*sfr(iv) /fground   !Normalised by ground fraction           
+     ENDIF 
+  ENDDO
+  ! Roof = buildings
+  zroof = zSurf_SUEWSsurfs(:,BldgSurf)
+  kroof = kSurf_SUEWSsurfs(:,BldgSurf)
+  rroof = rSurf_SUEWSsurfs(:,BldgSurf)
+  
   DO i=1,5
      IF (zground(i)<=0)THEN
         Nground=i-1

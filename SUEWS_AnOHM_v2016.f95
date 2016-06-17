@@ -71,7 +71,6 @@ SUBROUTINE AnOHM_v2016(Gridiv)
         WRITE(*,'(3f10.4)') a1AnOHM(Gridiv),a2AnOHM(Gridiv),a3AnOHM(Gridiv)
      END IF
 
-
   END IF
 
 

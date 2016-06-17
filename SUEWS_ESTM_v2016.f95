@@ -1,5 +1,9 @@
 !===============================================================================
 SUBROUTINE ESTM_v2016(QSnet,Gridiv)
+ 
+  !SUEWS_ESTM_v2016
+  ! Last modified HCW 14 Jun 2016
+    
   !Contains calculation for each time step
   !Calculate local scale heat storage from single building and surroundings observations
   !OFferle, May 2003
@@ -112,12 +116,14 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv)
   !OUTPUT:      fixed format text with single header, heatstorage for all elements, and temperatures
   !             for each element-layer.
   !===============================================================================
+  
   USE meteo                                                               !!FO!! :METEOMOD.f95
-  USE mod_error
+  !USE mod_error
   USE mod_interp                                                          !!FO!! :mod_interp.f95
   USE mod_solver                                                          !!FO!! :mod_solver.f95
   USE modSolarCalc                                                        !!FO!! :modsolarcalc.f95
   USE MathConstants                                                       !!FO!! :MathConstants_module.f95
+  USE PhysConstants
   USE heatflux
   USE ESTM_data
   USE mod_z
@@ -126,6 +132,7 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv)
   USE gis_data
   USE allocateArray
   USE time
+
   IMPLICIT NONE
 
 
@@ -133,8 +140,9 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv)
   REAL(KIND(1d0)),INTENT(out)::QSnet
   !Input from SUEWS, corrected as Gridiv by TS 09 Jun 2016
   INTEGER,INTENT(in)::Gridiv
+  
   !Use only in this subroutine
-  INTEGER::i, ios1,ii
+  INTEGER::i, ii
   REAL(KIND(1d0))::AIREXHR, AIREXDT
   REAL(KIND(1d0)),DIMENSION(2)::bc
   REAL(KIND(1d0))::chair_ground,chair_wall
@@ -161,34 +169,36 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv)
   REAL(KIND(1d0))::dum(50)
   REAL(KIND(1d0)),PARAMETER::WSmin=0.1  ! Check why there is this condition. S.O.
   LOGICAL::radforce, groundradforce
-  REAL :: xxx(32)
-
+  
   radforce       = .FALSE.
   groundradforce = .FALSE. !Close the radiation scheme in original ESTM S.O.O.
 
-
+  ! Set -999s for first row
   dum=(/-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,&
        -999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,&
        -999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,&
        -999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,&
        -999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999./)
 
+  ! Get kdown from SUEWS for use in ESTM subroutine     
   kdn_estm=avkdn
+  ! Get wind speed for use in ESTM subroutine 
+  WS=avu1
+  IF (WS<WSMin) WS=WSmin
+  ! Get air temperature and convert to Kelvin 
+  Tair1=Temp_C+C2K
+  
+  iESTMcount = iESTMcount+1   ! Set to zero in ESTM_initials
+  Tinternal  = Ts5mindata(iESTMcount,cTs_Tiair)
+  Tsurf_all  = Ts5mindata(iESTMcount,cTs_Tsurf)
+  Troof_in   = Ts5mindata(iESTMcount,cTs_Troof)
+  Troad      = Ts5mindata(iESTMcount,cTs_Troad)
+  Twall_all  = Ts5mindata(iESTMcount,cTs_Twall)
 
-
-  iESTMcount = iESTMcount+1
-  Tinternal  = Ts5mindata(iESTMcount,2)
-  Tsurf_all  = Ts5mindata(iESTMcount,3)
-  Troof_in   = Ts5mindata(iESTMcount,4)
-  Troad      = Ts5mindata(iESTMcount,5)
-  Twall_all  = Ts5mindata(iESTMcount,6)
-
-
-
-  Tw_n       = Ts5mindata(iESTMcount,7)
-  Tw_e       = Ts5mindata(iESTMcount,8)
-  Tw_s       = Ts5mindata(iESTMcount,9)
-  Tw_w       = Ts5mindata(iESTMcount,10)
+  Tw_n       = Ts5mindata(iESTMcount,cTs_Twall_n)
+  Tw_e       = Ts5mindata(iESTMcount,cTs_Twall_e)
+  Tw_s       = Ts5mindata(iESTMcount,cTs_Twall_s)
+  Tw_w       = Ts5mindata(iESTMcount,cTs_Twall_w)
 
   !    if (any(isnan(Ts5mindata))) then                                    !!FO!! can't use data when time gap is too big (or neg.) or data is NaN
   !        if (spindone) then                                                  !!FO!! writes a line of NaNs
@@ -211,10 +221,8 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv)
   !        return ! changed from cycle
   !    ENDIF
 
-
-
-
-  IF (first) THEN
+  ! Write first row as -999
+  IF (first) THEN  !Set to true in ESTM_initials
      Tair2=Temp_C+C2K
      first=.FALSE.
      dataOutESTM(iESTMcount,1:32,Gridiv)=(/REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),&
@@ -222,7 +230,7 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv)
      RETURN
   ENDIF
 
-
+  ! What are these constants? - Need defining somewhere
   zenith_rad=zenith_deg/180*PI
   IF (zenith_rad>0.AND.zenith_rad<PI/2.-HW) THEN  !ZENITH MUST BE HIGHER THAN BUILDINGS FOR DIRECT INTERCEPTION
      tanzenith = MIN(TAN(zenith_rad),5.67) !LIMITS TO ANGLES LESS THAN 80 EVEN FOR LOW HW
@@ -231,31 +239,26 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv)
      tanzenith = 0.
   ENDIF
 
-  WS=avu1
-  IF (WS<WSMin) WS=WSmin
-
   !external bulk exchange coefficients
   CHR=0.005
   CHAIR=CHR
   CHAIR_ground=CHAIR
   CHAIR_WALL=CHAIR
 
-
-  Tair1=Temp_C+C2K
-  SHC_air=HEATCAPACITY_AIR(Tair1,avrh,Press_hPa)
+  SHC_air=HEATCAPACITY_AIR(Tair1,avrh,Press_hPa)   ! Use SUEWS version
   Tair24HR=EOSHIFT(Tair24hr, 1, Tair1, 1)
   Tairday=SUM(Tair24HR)/dtperday
-
-
 
   !Evolution of building temperature from heat added by convection
   SELECT CASE(evolvetibld)
   CASE(0); diagnoseTi=.FALSE.; HVAC=.FALSE.!use data in file                                 !!FO!! use measured indoor temperature (Tref in Lodz2002HS.txt)
   CASE(1);                                                                                   !!FO!! use of HVAC to counteract T changes
      diagnoseTi=.TRUE.
-     IF (Tievolve>THEAT_OFF+C2K) THEN
+     IF (Tievolve>THEAT_OFF) THEN   !THEAT_OFF now converted to Kelvin in ESTM_initials - HCW 15 Jun 2016
+     !IF (Tievolve>THEAT_OFF+C2K) THEN
         HVAC=.FALSE.
-     ELSEIF (Tievolve<THEAT_ON+C2K) THEN
+     ELSEIF (Tievolve<THEAT_ON) THEN   !THEAT_OFF now converted to Kelvin in ESTM_initials - HCW 15 Jun 2016
+     !ELSEIF (Tievolve<THEAT_ON+C2K) THEN
         HVAC=.TRUE.
      ENDIF
   CASE(2); diagnoseTi=.TRUE.                                                                 !!FO!! convection between ibld and inside of external walls(?)
@@ -304,7 +307,7 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv)
   ENDIF
 
   !========>RADIATION<================
-  IF (kdn_estm<0) kdn_estm=0. !set non-zero shortwave to zero
+  IF (kdn_estm<0) kdn_estm=0. !set non-zero shortwave to zero  !Should this be moved up to line 183/4?
 
   !external components, no diffuse
   !for reflections complete absorption is assumed
@@ -344,15 +347,15 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv)
   Rs_ibld=0 ! This could change if there are windows (need solar angles or wall svf * fraction glazing * transmissivity)
   !internal incoming longwave terms do not include the view factors for its own surface e.g. for ibld and walls
   !added floor view factors
-  Rl_ibld=sigma*(ivf_iw*em_w*TN_wall**4 +&
+  Rl_ibld=SBConst*(ivf_iw*em_w*TN_wall**4 +&
        ivf_ir*em_r*TN_roof**4 +&
        ivf_if*em_f*Tfloor**4)
   Rs_iwall=0
-  Rl_iwall=sigma*(ivf_wi*em_i*T0_ibld**4 +&
+  Rl_iwall=SBConst*(ivf_wi*em_i*T0_ibld**4 +&
        ivf_wr*em_r*TN_roof**4 +&
        ivf_wf*em_f*Tfloor**4)
   Rs_iroof=0
-  Rl_iroof=sigma*(ivf_ri*em_i*T0_ibld**4 +&
+  Rl_iroof=SBConst*(ivf_ri*em_i*T0_ibld**4 +&
        ivf_rw*em_w*TN_wall**4 +&
        ivf_rf*em_f*Tfloor**4)
 
@@ -361,7 +364,7 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv)
   !========>INTERNAL<================
   bctype=.FALSE.
   kdz=2*kibld(1)/zibld(1)
-  Pcoeff=(/em_ibld*sigma*(1-ivf_ii*em_ibld),0.0d0,0.0d0,kdz+shc_airbld*CH_ibld,&
+  Pcoeff=(/em_ibld*SBConst*(1-ivf_ii*em_ibld),0.0d0,0.0d0,kdz+shc_airbld*CH_ibld,&
        -kdz*Tibld(1)-shc_airbld*CH_ibld*Tievolve-Rs_ibld-Rl_ibld/)
   T0_ibld=NewtonPolynomial(T0_ibld,Pcoeff,conv,maxiter)
   bc(1)=T0_ibld                                                       !!FO!! this leads to Tibld(1) = Tibld(3) , i.e. ...
@@ -371,7 +374,7 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv)
   !========>WALLS<================
   bctype=.FALSE.
   kdz=2*kwall(nwall)/zwall(nwall)
-  Pcoeff=(/em_ibld*sigma*(1-ivf_ww*em_ibld),0.0d0,0.0d0,kdz+shc_airbld*CH_iwall,&
+  Pcoeff=(/em_ibld*SBConst*(1-ivf_ww*em_ibld),0.0d0,0.0d0,kdz+shc_airbld*CH_iwall,&
        -kdz*Twall(nwall)-shc_airbld*CH_iwall*Tievolve-Rs_iwall-Rl_iwall/)
   TN_wall=NewtonPolynomial(TN_wall,Pcoeff,conv,maxiter)
   bc(2)=TN_wall                                                       !!FO!! boundary condition #2 = inner surface Twall, originally from lodz_parms_ltm.txt or finaltemp.txt
@@ -379,7 +382,7 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv)
   IF (TsurfChoice<2 .OR.radforce) THEN
      IF (radforce) THEN                                              !!FO!! 1st prio: radforce
         kdz=2*kwall(1)/zwall(1)
-        Pcoeff=(/em_wall*sigma*(1-zvf_wall*em_wall),0.0d0,0.0d0,kdz+shc_air*chair_wall*WS,&
+        Pcoeff=(/em_wall*SBConst*(1-zvf_wall*em_wall),0.0d0,0.0d0,kdz+shc_air*chair_wall*WS,&
              -kdz*Twall(1)-shc_air*chair_wall*WS*Tair1-Rs_wall-Rl_wall/)
         T0_wall=NewtonPolynomial(T0_wall,Pcoeff,conv,maxiter)
         bc(1)=T0_wall                                               !!FO!! boundary condition #1 = outer surface Twall, originally from lodz_parms_ltm.txt or finaltemp.txt
@@ -406,14 +409,14 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv)
   !========>ROOF<================
   bctype=.FALSE.
   kdz=2*kroof(nroof)/zroof(nroof)
-  Pcoeff=(/em_ibld*sigma,0.0d0,0.0d0,kdz+shc_airbld*CH_iroof,&
+  Pcoeff=(/em_ibld*SBConst,0.0d0,0.0d0,kdz+shc_airbld*CH_iroof,&
        -kdz*Troof(nroof)-shc_airbld*CH_iroof*Tievolve-Rs_iroof-Rl_iroof/)
   TN_roof=NewtonPolynomial(TN_roof,Pcoeff,conv,maxiter)
   bc(2)=TN_roof
 
   IF (radforce) THEN
      kdz=2*kroof(1)/zroof(1)
-     Pcoeff=(/em_roof*sigma,0.0d0,0.0d0,kdz+shc_air*chair*WS,&
+     Pcoeff=(/em_roof*SBConst,0.0d0,0.0d0,kdz+shc_air*chair*WS,&
           -kdz*Troof(1)-shc_air*chair*WS*Tair1-Rs_roof-Rl_roof/)
      T0_roof=NewtonPolynomial(T0_roof,Pcoeff,conv,maxiter)
      bc(1)=T0_roof
@@ -432,7 +435,7 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv)
   kdz=2*kground(1)/zground(1)
 
   IF (radforce.OR.groundradforce) THEN
-     Pcoeff=(/em_ground*sigma,0.0d0,0.0d0,kdz+shc_air*chair_ground*WS,&
+     Pcoeff=(/em_ground*SBConst,0.0d0,0.0d0,kdz+shc_air*chair_ground*WS,&
           -kdz*Tground(1)-shc_air*chair_ground*WS*Tair1-Rs_ground-Rl_ground/)
      T0_ground=NewtonPolynomial(T0_ground,Pcoeff,conv,maxiter)
      bc(1)=T0_ground
@@ -456,16 +459,18 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv)
   Qsground = Qsground*fground
   Qsnet = Qsibld + Qswall + Qsroof + Qsground                              !!FO!! QSair not included; called QSNET in output file (column #10)
 
+  !write(*,*) Qsair, QSibld, Qswall, Qsroof, Qsground, Qsnet
+  
   !========>Radiation<================
   !note that the LUP for individual components does not include reflected
-  LUP_ground = SIGMA*EM_ground*T0_ground**4
-  LUP_WALL   = SIGMA*EM_WALL*T0_WALL**4
-  LUP_ROOF   = SIGMA*EM_ROOF*T0_ROOF**4
+  LUP_ground = SBConst*EM_ground*T0_ground**4
+  LUP_WALL   = SBConst*EM_WALL*T0_WALL**4
+  LUP_ROOF   = SBConst*EM_ROOF*T0_ROOF**4
   TVEG       = TAIR1
-  LUP_VEG    = SIGMA*EM_VEG*TVEG**4
+  LUP_VEG    = SBConst*EM_VEG*TVEG**4
   T0         = RVF_ground*T0_ground+RVF_WALL*T0_WALL+RVF_ROOF*T0_ROOF+RVF_VEG*TVEG
   LUP_net    = RVF_ground*LUP_ground+RVF_WALL*LUP_WALL+RVF_ROOF*LUP_ROOF+RVF_VEG*LUP_VEG
-  EM_EQUIV   = LUP_net/(SIGMA*T0**4) !!FO!! apparent emissivity of the atmosphere [cloudless sky: >� Ldown from gases in the lowest 100 m] calculated from surface at T0
+  EM_EQUIV   = LUP_net/(SBConst*T0**4) !!FO!! apparent emissivity of the atmosphere [cloudless sky: >� Ldown from gases in the lowest 100 m] calculated from surface at T0
   RN_ground  = rs_ground+rl_ground-lup_ground
   RN_ROOF    = rs_roof+rl_roof-lup_roof
   RN_WALL    = rs_wall+rl_wall-lup_wall*(1-zvf_wall*em_wall)

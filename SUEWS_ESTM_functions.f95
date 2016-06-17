@@ -1,19 +1,20 @@
-module mod_error
-implicit none
-
-contains
-    
- subroutine error(fname,ios,nostop)
- integer ::ios
- character (len=*)::fname
- integer,optional::nostop
-
- print*,"file error: iostat=",ios, trim(fname)
- if (.not.present(nostop)) stop
- return
- end subroutine error
-    
-end module
+! HCW - No longer needed as error handling done by SUEWS_error.f95 instead
+!module mod_error
+!implicit none
+!
+!contains
+!    
+! subroutine error(fname,ios,nostop)
+! integer ::ios
+! character (len=*)::fname
+! integer,optional::nostop
+!
+! print*,"file error: iostat=",ios, trim(fname)
+! if (.not.present(nostop)) stop
+! return
+! end subroutine error
+!    
+!end module
     
 !==============================================================================
 module mod_interp
@@ -364,7 +365,7 @@ Module METEO
  REAL (KIND(1d0)),PARAMETER ::  MU_CO2=MOLMASS_AIR/MOLMASS_CO2   ! mol air/mol CO2 
  REAL (KIND(1d0)),PARAMETER ::  R_DRY_MOL=8.31451                ! J/K/mol gas constant
  REAL (KIND(1D0)),PARAMETER ::  R_DRY_MASS=R_DRY_MOL/MOLMASS_AIR ! J/K/kg GAS CONSTANT
- REAL (KIND(1d0)),PARAMETER ::  SIGMA_SB=5.67051e-8              ! Stefan-Boltzmann constant
+ !REAL (KIND(1d0)),PARAMETER ::  SIGMA_SB=5.67051e-8              ! Stefan-Boltzmann constant
  REAL (KIND(1d0)),PARAMETER ::  EPSIL=0.62197
  REAL (KIND(1d0)),PARAMETER ::  KB=1.3807E-25                    ! BOLTZMANN'S CONSTANT (m^3 MB K^-1)=R/A
  REAL (KIND(1d0)),PARAMETER ::  AVOGADRO=6.02252E23              ! AVOGADRO'S NUMBER (molecules/mol)

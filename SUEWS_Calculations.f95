@@ -247,8 +247,9 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   !Calculate QS using ESTM
   IF(QSChoice==4 .OR. QSChoice==14) THEN
-    !CALL ESTM_v2016(QSestm,iMB)
+    !CALL ESTM_v2016(QSestm,iMB)      
      CALL ESTM_v2016(QSestm,Gridiv)  ! iMB corrected to Gridiv, TS 09 Jun 2016
+     QS=QSestm   ! Use ESTM qs
   ENDIF
 
   ! don't use thses composite QS options at the moment, TS 10 Jun 2016

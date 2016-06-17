@@ -1,11 +1,11 @@
 
 
 CC = gfortran $(CFLAGS)          # compiler
-TARGET = SUEWS_AnOHM+ESTM_v2016      # program name
-CFLAGS = -g -w -Wall -Wtabs -fbounds-check
+TARGET = SUEWS_V2016b      # program name
+CFLAGS = -g -Wall -Wtabs -fbounds-check
 # All the files which include modules used by other modules (these therefore
 # needs to be compiled first)
-MODULES = LUMPS_Module_constants_v2016a.o  \
+MODULES = LUMPS_Module_constants.o  \
           LUMPS_metRead.o  \
           SOLWEIG_modules.o  \
           SUEWS_Files_run_Control.o

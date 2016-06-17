@@ -78,9 +78,10 @@
 ENDSUBROUTINE CodeMatchOHM
 ! ---------------------------------------------------------
     
- SUBROUTINE CodeMatchESTM(Gridiv,is,SWWD) 
-! Matches ESTM coefficients via OHM codes 
-! for summer/winter wet/dry conditions 
+ SUBROUTINE CodeMatchESTM(Gridiv,is) 
+! Matches ESTM coefficients via ESTM code 
+! Modified HCW 16 Jun 2016 - for SUEWS surface types
+!                          - removed summer/winter wet/dry option   
 ! S.O. 04 Feb 2016
 ! ---------------------------------------------------------
 
@@ -93,46 +94,68 @@ ENDSUBROUTINE CodeMatchOHM
   
   integer:: gridiv
   integer:: is
-  character(len=4):: SWWD
- 
+   
   iv5=0 ! Reset iv5 to zero
   
-  if(SWWD == 'Grnd') then
-      
-     do iv5=1,nlinesESTMCoefficients
-        if (ESTMCoefficients_Coeff(iv5,cE_Code)==SurfaceChar(gridiv,c_OHMCode_SWet(is))) then
-           exit
-        elseif(iv5 == nlinesESTMCoefficients) then 
-           write(*,*) 'Program stopped! ESTM code',SurfaceChar(gridiv,c_OHMCode_SWet(is)),&
-         		      'not found in ESTM_Coefficients.txt for surface',is,'.'
-           call ErrorHint(57,'Cannot find ESTM code',SurfaceChar(gridiv,c_OHMCode_SWet(is)),notUsed,notUsedI)
-        endif
-     enddo      
-      
-  
-  elseif(SWWD == 'Bldg') then
-  
-     do iv5=1,nlinesESTMCoefficients
-        if (ESTMCoefficients_Coeff(iv5,cE_Code)==SurfaceChar(gridiv,c_OHMCode_SWet(is))) then
-           exit
-        elseif(iv5 == nlinesESTMCoefficients) then 
-           write(*,*) 'Program stopped! ESTM code',SurfaceChar(gridiv,c_OHMCode_SWet(is)),&
-         		      'not found in ESTM_Coefficients.txt for surface',is,'.'
-           call ErrorHint(57,'Cannot find ESTM code',SurfaceChar(gridiv,c_OHMCode_SWet(is)),notUsed,notUsedI)
-        endif
-     enddo
-          
-  else
-     write(*,*) 'Problem with CodeMatchESTM (in SUEWS_CodeMatch.f95). ',SWWD,' not recognised. Needs to be one of: ',&
-     	        'Roof, Wall, Ibld. N.B. Case sensitive.'
-     stop    
-      
-  endif
-       
+  do iv5=1,nlinesESTMCoefficients
+     if (ESTMCoefficients_Coeff(iv5,cE_Code)==SurfaceChar(gridiv,c_ESTMCode(is))) then
+        exit
+     elseif(iv5 == nlinesESTMCoefficients) then 
+        write(*,*) 'Program stopped! ESTM code',SurfaceChar(gridiv,c_ESTMCode(is)),&
+                   'not found in ESTM_Coefficients.txt for surface',is,'.'
+        call ErrorHint(57,'Cannot find ESTM code',SurfaceChar(gridiv,c_ESTMCode(is)),notUsed,notUsedI)
+     endif
+  enddo      
+           
   return
  ENDSUBROUTINE CodeMatchESTM
 ! ---------------------------------------------------------    
 
+ SUBROUTINE CodeMatchESTM_Class(Gridiv,is,ii) 
+! Matches ESTM coefficients via ESTM codes in SiteSelect for Paved and Bldgs ESTM classes
+! HCW 16 Jun 2016
+! ---------------------------------------------------------
+
+  use allocateArray
+  use Initial
+  use ColNamesInputFiles
+  use defaultNotUsed
+  
+  IMPLICIT NONE
+  
+  integer:: gridiv
+  integer:: is, ii
+   
+  iv5=0 ! Reset iv5 to zero
+  
+  if(is == BldgSurf) then      
+     do iv5=1,nlinesESTMCoefficients
+        if (ESTMCoefficients_Coeff(iv5,cE_Code)==SurfaceChar(gridiv,c_Code_ESTMClass_Bldgs(ii))) then
+           exit
+        elseif(iv5 == nlinesESTMCoefficients) then 
+           write(*,*) 'Program stopped! ESTM code',SurfaceChar(gridiv,c_Code_ESTMClass_Bldgs(ii)),&
+                      'not found in ESTM_Coefficients.txt for surface',is,'.'
+           call ErrorHint(57,'Cannot find ESTM code',SurfaceChar(gridiv,c_Code_ESTMClass_Bldgs(ii)),notUsed,notUsedI)
+        endif
+     enddo      
+  elseif(is == PavSurf) then         
+     do iv5=1,nlinesESTMCoefficients
+        if (ESTMCoefficients_Coeff(iv5,cE_Code)==SurfaceChar(gridiv,c_Code_ESTMClass_Paved(ii))) then
+           exit
+        elseif(iv5 == nlinesESTMCoefficients) then 
+           write(*,*) 'Program stopped! ESTM code',SurfaceChar(gridiv,c_Code_ESTMClass_Paved(ii)),&
+                      'not found in ESTM_Coefficients.txt for surface',is,'.'
+           call ErrorHint(57,'Cannot find ESTM code',SurfaceChar(gridiv,c_Code_ESTMClass_Paved(ii)),notUsed,notUsedI)
+        endif
+     enddo      
+  else
+     write(*,*) 'Problem with CodeMatchESTM_Class (in SUEWS_CodeMatch.f95). ',is,' not correct. Needs to be either ',&
+     	        '1 = Paved surfaced, 2 = Bldgs surfaces.'
+     stop
+  endif   
+  return
+ ENDSUBROUTINE CodeMatchESTM_Class
+! ---------------------------------------------------------    
 
  SUBROUTINE CodeMatchProf(rr,CodeCol)
  ! Matches Hourly profiles via profile codes

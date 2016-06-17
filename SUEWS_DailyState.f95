@@ -446,8 +446,8 @@ SUBROUTINE DailyState(Gridiv)
 
      BoAnOHMEnd(Gridiv)  = xBo
      Bo_grids(id,Gridiv) = BoAnOHMEnd(Gridiv)
-     IF ( ABS(xBo) > 30 ) WRITE(unit=*, fmt=*) "mean QH, QE:", mxQH,mxQE
-     IF ( ABS(xBo) < 1/30 ) WRITE(unit=*, fmt=*) "mean QH, QE:", mxQH,mxQE
+     !IF ( ABS(xBo) > 30 ) WRITE(unit=*, fmt=*) "mean QH, QE:", mxQH,mxQE
+     !IF ( ABS(xBo) < 1/30 ) WRITE(unit=*, fmt=*) "mean QH, QE:", mxQH,mxQE
 
      mAHAnOHM(Gridiv)     = xmAH
      mAH_grids(id,Gridiv) = mAHAnOHM(Gridiv)

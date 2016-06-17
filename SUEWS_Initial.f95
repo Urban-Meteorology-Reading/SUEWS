@@ -123,7 +123,7 @@ SUBROUTINE OverallRunControl
   !------------------------------------------------------------------
   !Print run information on the screen
   WRITE(*,*)'--------------------------------------------------------'
-  WRITE(*,*)"LUMPS/Suews 2016 - relevant references"
+  WRITE(*,*)"LUMPS/SUEWS 2016 - relevant references"
   WRITE(*,*)"LUMPS - Grimmond and Oke (2002) JAM, 41, 79-810"
   WRITE(*,*)"OHM - Grimmond and Oke (1999) JAM, 38, 922-940"
   WRITE(*,*)"NARP - Offerle et al. (2003) JAM"
@@ -132,6 +132,7 @@ SUBROUTINE OverallRunControl
   WRITE(*,*)"NARP - Long wave improvements (Loridan et al. 2011 JAMC)"
   WRITE(*,*)"SUEWS - Anthropogenic heat, etc (Jarvi et al. 2011 JH)"
   WRITE(*,*)"SUEWS - Snow module included (Jarvi et al. 2014 GMD)"
+  WRITE(*,*)"SUEWS - v2016a release (Ward et al. 2016 UC)"
   WRITE(*,*)'--------------------------------------------------------'
 
 
@@ -158,7 +159,7 @@ SUBROUTINE OverallRunControl
      !write(*,*) (SiteSelect(i,iv),iv=1,ncolumnsSiteSelect)
   ENDDO
   CLOSE(21)
-
+  
   !call InputHeaderCheck(FileN) !! Need to add column checks for SiteSelect.txt
 
   !=======================SUEWS_NonVeg.txt============================
@@ -647,8 +648,10 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   IMPLICIT NONE
 
   INTEGER:: Gridiv,&    !Row of SurfaceChar where input information will be stored
-       rr          !Row of SiteSelect that matches current grid and year
-
+            rr          !Row of SiteSelect that matches current grid and year
+  INTEGER:: iii, & 
+            ii 
+            
   !-------------------------------------------------------------------------------------------
 
   ! Initialise row of SurfaceChar
@@ -656,7 +659,7 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
 
   ! Transfer data in SiteSelect to SurfaceChar
   SurfaceChar(Gridiv,1:ncolumnsSiteSelect) = SiteSelect(rr,1:ncolumnsSiteSelect) !Cols in same order as in SiteSelect.txt
-
+  
   ! ======== Retrieve information from other input files via codes ========
 
   ! ---- Find code for Paved surface (Impervious) ----
@@ -679,6 +682,7 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(gridiv,c_OHMCode_SDry(PavSurf)) = NonVeg_Coeff(iv5,ci_OHMCode_SDry)
   SurfaceChar(gridiv,c_OHMCode_WWet(PavSurf)) = NonVeg_Coeff(iv5,ci_OHMCode_WWet)
   SurfaceChar(gridiv,c_OHMCode_WDry(PavSurf)) = NonVeg_Coeff(iv5,ci_OHMCode_WDry)
+  SurfaceChar(gridiv,c_ESTMCode(PavSurf))     = NonVeg_Coeff(iv5,ci_ESTMCode)
   SurfaceChar(Gridiv,c_CpAnOHM(PavSurf))           = NonVeg_Coeff(iv5,ci_CpAnOHM)   ! heat capacity, AnOHM TS
   SurfaceChar(Gridiv,c_KkAnOHM(PavSurf))           = NonVeg_Coeff(iv5,ci_KkAnOHM)  ! heat conductivity, AnOHM TS
   SurfaceChar(Gridiv,c_ChAnOHM(PavSurf))           = NonVeg_Coeff(iv5,ci_ChAnOHM)  ! bulk transfer coef., AnOHM TS
@@ -716,64 +720,7 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(Gridiv,c_a1_WDry(PavSurf))    = OHMCoefficients_Coeff(iv5,cO_a1)
   SurfaceChar(Gridiv,c_a2_WDry(PavSurf))    = OHMCoefficients_Coeff(iv5,cO_a2)
   SurfaceChar(Gridiv,c_a3_WDry(PavSurf))    = OHMCoefficients_Coeff(iv5,cO_a3)
-
-  !Get ESTM parameters for ground
-  ! Transfer ESTM characteristics to SurfaceChar
-  CALL CodeMatchESTM(Gridiv,PavSurf,'Grnd')
-  !roof
-  SurfaceChar(Gridiv,c_thick1_r(PavSurf))    = ESTMCoefficients_Coeff(iv5,cE_thick1_r)
-  SurfaceChar(Gridiv,c_k1_r(PavSurf))        = ESTMCoefficients_Coeff(iv5,cE_k1_r)
-  SurfaceChar(Gridiv,c_rhoCp1_r(PavSurf))    = ESTMCoefficients_Coeff(iv5,cE_rhoCP1_r)
-  SurfaceChar(Gridiv,c_thick2_r(PavSurf))    = ESTMCoefficients_Coeff(iv5,cE_thick2_r)
-  SurfaceChar(Gridiv,c_k2_r(PavSurf))        = ESTMCoefficients_Coeff(iv5,cE_k2_r)
-  SurfaceChar(Gridiv,c_rhoCp2_r(PavSurf))    = ESTMCoefficients_Coeff(iv5,cE_rhoCP2_r)
-  SurfaceChar(Gridiv,c_thick3_r(PavSurf))    = ESTMCoefficients_Coeff(iv5,cE_thick3_r)
-  SurfaceChar(Gridiv,c_k3_r(PavSurf))        = ESTMCoefficients_Coeff(iv5,cE_k3_r)
-  SurfaceChar(Gridiv,c_rhoCp3_r(PavSurf))    = ESTMCoefficients_Coeff(iv5,cE_rhoCP3_r)
-  SurfaceChar(Gridiv,c_thick4_r(PavSurf))    = ESTMCoefficients_Coeff(iv5,cE_thick4_r)
-  SurfaceChar(Gridiv,c_k4_r(PavSurf))        = ESTMCoefficients_Coeff(iv5,cE_k4_r)
-  SurfaceChar(Gridiv,c_rhoCp4_r(PavSurf))    = ESTMCoefficients_Coeff(iv5,cE_rhoCP4_r)
-  SurfaceChar(Gridiv,c_thick5_r(PavSurf))    = ESTMCoefficients_Coeff(iv5,cE_thick5_r)
-  SurfaceChar(Gridiv,c_k5_r(PavSurf))        = ESTMCoefficients_Coeff(iv5,cE_k5_r)
-  SurfaceChar(Gridiv,c_rhoCp5_r(PavSurf))    = ESTMCoefficients_Coeff(iv5,cE_rhoCP5_r)   !parameters below are empty
-  SurfaceChar(Gridiv,c_thick1_e(PavSurf))    = ESTMCoefficients_Coeff(iv5,cE_thick1_e)
-  SurfaceChar(Gridiv,c_k1_e(PavSurf))        = ESTMCoefficients_Coeff(iv5,cE_k1_e)
-  SurfaceChar(Gridiv,c_rhoCp1_e(PavSurf))    = ESTMCoefficients_Coeff(iv5,cE_rhoCP1_e)
-  SurfaceChar(Gridiv,c_thick2_e(PavSurf))    = ESTMCoefficients_Coeff(iv5,cE_thick2_e)
-  SurfaceChar(Gridiv,c_k2_e(PavSurf))        = ESTMCoefficients_Coeff(iv5,cE_k2_e)
-  SurfaceChar(Gridiv,c_rhoCp2_e(PavSurf))    = ESTMCoefficients_Coeff(iv5,cE_rhoCP2_e)
-  SurfaceChar(Gridiv,c_thick3_e(PavSurf))    = ESTMCoefficients_Coeff(iv5,cE_thick3_e)
-  SurfaceChar(Gridiv,c_k3_e(PavSurf))        = ESTMCoefficients_Coeff(iv5,cE_k3_e)
-  SurfaceChar(Gridiv,c_rhoCp3_e(PavSurf))    = ESTMCoefficients_Coeff(iv5,cE_rhoCP3_e)
-  SurfaceChar(Gridiv,c_thick4_e(PavSurf))    = ESTMCoefficients_Coeff(iv5,cE_thick4_e)
-  SurfaceChar(Gridiv,c_k4_e(PavSurf))        = ESTMCoefficients_Coeff(iv5,cE_k4_e)
-  SurfaceChar(Gridiv,c_rhoCp4_e(PavSurf))    = ESTMCoefficients_Coeff(iv5,cE_rhoCP4_e)
-  SurfaceChar(Gridiv,c_thick5_e(PavSurf))    = ESTMCoefficients_Coeff(iv5,cE_thick5_e)
-  SurfaceChar(Gridiv,c_k5_e(PavSurf))        = ESTMCoefficients_Coeff(iv5,cE_k5_e)
-  SurfaceChar(Gridiv,c_rhoCp5_e(PavSurf))    = ESTMCoefficients_Coeff(iv5,cE_rhoCP5_e)
-  SurfaceChar(Gridiv,c_thick1_i(PavSurf))    = ESTMCoefficients_Coeff(iv5,cE_thick1_i)
-  SurfaceChar(Gridiv,c_k1_i(PavSurf))        = ESTMCoefficients_Coeff(iv5,cE_k1_i)
-  SurfaceChar(Gridiv,c_rhoCp1_i(PavSurf))    = ESTMCoefficients_Coeff(iv5,cE_rhoCP1_i)
-  SurfaceChar(Gridiv,c_thick2_i(PavSurf))    = ESTMCoefficients_Coeff(iv5,cE_thick2_i)
-  SurfaceChar(Gridiv,c_k2_i(PavSurf))        = ESTMCoefficients_Coeff(iv5,cE_k2_i)
-  SurfaceChar(Gridiv,c_rhoCp2_i(PavSurf))    = ESTMCoefficients_Coeff(iv5,cE_rhoCP2_i)
-  SurfaceChar(Gridiv,c_thick3_i(PavSurf))    = ESTMCoefficients_Coeff(iv5,cE_thick3_i)
-  SurfaceChar(Gridiv,c_k3_i(PavSurf))        = ESTMCoefficients_Coeff(iv5,cE_k3_i)
-  SurfaceChar(Gridiv,c_rhoCp3_i(PavSurf))    = ESTMCoefficients_Coeff(iv5,cE_rhoCP3_i)
-  SurfaceChar(Gridiv,c_thick4_i(PavSurf))    = ESTMCoefficients_Coeff(iv5,cE_thick4_i)
-  SurfaceChar(Gridiv,c_k4_i(PavSurf))        = ESTMCoefficients_Coeff(iv5,cE_k4_i)
-  SurfaceChar(Gridiv,c_rhoCp4_i(PavSurf))    = ESTMCoefficients_Coeff(iv5,cE_rhoCP4_i)
-  SurfaceChar(Gridiv,c_thick5_i(PavSurf))    = ESTMCoefficients_Coeff(iv5,cE_thick5_i)
-  SurfaceChar(Gridiv,c_k5_i(PavSurf))        = ESTMCoefficients_Coeff(iv5,cE_k5_i)
-  SurfaceChar(Gridiv,c_rhoCp5_i(PavSurf))    = ESTMCoefficients_Coeff(iv5,cE_rhoCP5_i)
-  SurfaceChar(Gridiv,c_nroom(PavSurf))       = ESTMCoefficients_Coeff(iv5,cE_nroom)
-  SurfaceChar(Gridiv,c_alb_ibld(PavSurf))    = ESTMCoefficients_Coeff(iv5,cE_alb_ibld)
-  SurfaceChar(Gridiv,c_em_ibld(PavSurf))     = ESTMCoefficients_Coeff(iv5,cE_em_ibld)
-  SurfaceChar(Gridiv,c_CH_iwall(PavSurf))    = ESTMCoefficients_Coeff(iv5,cE_CH_iwall)
-  SurfaceChar(Gridiv,c_CH_iroof(PavSurf))    = ESTMCoefficients_Coeff(iv5,cE_CH_iroof)
-  SurfaceChar(Gridiv,c_CH_ibld(PavSurf))     = ESTMCoefficients_Coeff(iv5,cE_CH_ibld)
-  SurfaceChar(Gridiv,c_fwall(PavSurf))       = ESTMCoefficients_Coeff(iv5,cE_fwall)
-
+ 
   ! Get water distribution (within grid) for Paved
   CALL CodeMatchDist(rr,c_WGPavedCode,cWG_ToPaved)
   ! Transfer distribution to SurfaceChar
@@ -807,6 +754,7 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(gridiv,c_OHMCode_SDry(BldgSurf)) = NonVeg_Coeff(iv5,ci_OHMCode_SDry)
   SurfaceChar(gridiv,c_OHMCode_WWet(BldgSurf)) = NonVeg_Coeff(iv5,ci_OHMCode_WWet)
   SurfaceChar(gridiv,c_OHMCode_WDry(BldgSurf)) = NonVeg_Coeff(iv5,ci_OHMCode_WDry)
+  SurfaceChar(gridiv,c_ESTMCode(BldgSurf))     = NonVeg_Coeff(iv5,ci_ESTMCode)
   SurfaceChar(Gridiv,c_CpAnOHM(BldgSurf))            = NonVeg_Coeff(iv5,ci_CpAnOHM)   ! heat capacity, AnOHM TS
   SurfaceChar(Gridiv,c_KkAnOHM(BldgSurf))            = NonVeg_Coeff(iv5,ci_KkAnOHM)  ! heat conductivity, AnOHM TS
   SurfaceChar(Gridiv,c_ChAnOHM(BldgSurf))            = NonVeg_Coeff(iv5,ci_ChAnOHM)  ! bulk transfer coef., AnOHM TS
@@ -843,65 +791,6 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(Gridiv,c_a1_WDry(BldgSurf))    = OHMCoefficients_Coeff(iv5,cO_a1)
   SurfaceChar(Gridiv,c_a2_WDry(BldgSurf))    = OHMCoefficients_Coeff(iv5,cO_a2)
   SurfaceChar(Gridiv,c_a3_WDry(BldgSurf))    = OHMCoefficients_Coeff(iv5,cO_a3)
-
-  !Get ESTM parameters for Bldgs (roof, external wall and internal element)
-  ! Transfer ESTM characteristics to SurfaceChar
-  CALL CodeMatchESTM(Gridiv,BldgSurf,'Bldg')
-  !roof
-  SurfaceChar(Gridiv,c_thick1_r(BldgSurf))    = ESTMCoefficients_Coeff(iv5,cE_thick1_r)
-  SurfaceChar(Gridiv,c_k1_r(BldgSurf))        = ESTMCoefficients_Coeff(iv5,cE_k1_r)
-  SurfaceChar(Gridiv,c_rhoCp1_r(BldgSurf))    = ESTMCoefficients_Coeff(iv5,cE_rhoCP1_r)
-  SurfaceChar(Gridiv,c_thick2_r(BldgSurf))    = ESTMCoefficients_Coeff(iv5,cE_thick2_r)
-  SurfaceChar(Gridiv,c_k2_r(BldgSurf))        = ESTMCoefficients_Coeff(iv5,cE_k2_r)
-  SurfaceChar(Gridiv,c_rhoCp2_r(BldgSurf))    = ESTMCoefficients_Coeff(iv5,cE_rhoCP2_r)
-  SurfaceChar(Gridiv,c_thick3_r(BldgSurf))    = ESTMCoefficients_Coeff(iv5,cE_thick3_r)
-  SurfaceChar(Gridiv,c_k3_r(BldgSurf))        = ESTMCoefficients_Coeff(iv5,cE_k3_r)
-  SurfaceChar(Gridiv,c_rhoCp3_r(BldgSurf))    = ESTMCoefficients_Coeff(iv5,cE_rhoCP3_r)
-  SurfaceChar(Gridiv,c_thick4_r(BldgSurf))    = ESTMCoefficients_Coeff(iv5,cE_thick4_r)
-  SurfaceChar(Gridiv,c_k4_r(BldgSurf))        = ESTMCoefficients_Coeff(iv5,cE_k4_r)
-  SurfaceChar(Gridiv,c_rhoCp4_r(BldgSurf))    = ESTMCoefficients_Coeff(iv5,cE_rhoCP4_r)
-  SurfaceChar(Gridiv,c_thick5_r(BldgSurf))    = ESTMCoefficients_Coeff(iv5,cE_thick5_r)
-  SurfaceChar(Gridiv,c_k5_r(BldgSurf))        = ESTMCoefficients_Coeff(iv5,cE_k5_r)
-  SurfaceChar(Gridiv,c_rhoCp5_r(BldgSurf))    = ESTMCoefficients_Coeff(iv5,cE_rhoCP5_r)
-  !external wall
-  SurfaceChar(Gridiv,c_thick1_e(BldgSurf))    = ESTMCoefficients_Coeff(iv5,cE_thick1_e)
-  SurfaceChar(Gridiv,c_k1_e(BldgSurf))        = ESTMCoefficients_Coeff(iv5,cE_k1_e)
-  SurfaceChar(Gridiv,c_rhoCp1_e(BldgSurf))    = ESTMCoefficients_Coeff(iv5,cE_rhoCP1_e)
-  SurfaceChar(Gridiv,c_thick2_e(BldgSurf))    = ESTMCoefficients_Coeff(iv5,cE_thick2_e)
-  SurfaceChar(Gridiv,c_k2_e(BldgSurf))        = ESTMCoefficients_Coeff(iv5,cE_k2_e)
-  SurfaceChar(Gridiv,c_rhoCp2_e(BldgSurf))    = ESTMCoefficients_Coeff(iv5,cE_rhoCP2_e)
-  SurfaceChar(Gridiv,c_thick3_e(BldgSurf))    = ESTMCoefficients_Coeff(iv5,cE_thick3_e)
-  SurfaceChar(Gridiv,c_k3_e(BldgSurf))        = ESTMCoefficients_Coeff(iv5,cE_k3_e)
-  SurfaceChar(Gridiv,c_rhoCp3_e(BldgSurf))    = ESTMCoefficients_Coeff(iv5,cE_rhoCP3_e)
-  SurfaceChar(Gridiv,c_thick4_e(BldgSurf))    = ESTMCoefficients_Coeff(iv5,cE_thick4_e)
-  SurfaceChar(Gridiv,c_k4_e(BldgSurf))        = ESTMCoefficients_Coeff(iv5,cE_k4_e)
-  SurfaceChar(Gridiv,c_rhoCp4_e(BldgSurf))    = ESTMCoefficients_Coeff(iv5,cE_rhoCP4_e)
-  SurfaceChar(Gridiv,c_thick5_e(BldgSurf))    = ESTMCoefficients_Coeff(iv5,cE_thick5_e)
-  SurfaceChar(Gridiv,c_k5_e(BldgSurf))        = ESTMCoefficients_Coeff(iv5,cE_k5_e)
-  SurfaceChar(Gridiv,c_rhoCp5_e(BldgSurf))    = ESTMCoefficients_Coeff(iv5,cE_rhoCP5_e)
-  !internal element in buildings
-  SurfaceChar(Gridiv,c_thick1_i(BldgSurf))    = ESTMCoefficients_Coeff(iv5,cE_thick1_i)
-  SurfaceChar(Gridiv,c_k1_i(BldgSurf))        = ESTMCoefficients_Coeff(iv5,cE_k1_i)
-  SurfaceChar(Gridiv,c_rhoCp1_i(BldgSurf))    = ESTMCoefficients_Coeff(iv5,cE_rhoCP1_i)
-  SurfaceChar(Gridiv,c_thick2_i(BldgSurf))    = ESTMCoefficients_Coeff(iv5,cE_thick2_i)
-  SurfaceChar(Gridiv,c_k2_i(BldgSurf))        = ESTMCoefficients_Coeff(iv5,cE_k2_i)
-  SurfaceChar(Gridiv,c_rhoCp2_i(BldgSurf))    = ESTMCoefficients_Coeff(iv5,cE_rhoCP2_i)
-  SurfaceChar(Gridiv,c_thick3_i(BldgSurf))    = ESTMCoefficients_Coeff(iv5,cE_thick3_i)
-  SurfaceChar(Gridiv,c_k3_i(BldgSurf))        = ESTMCoefficients_Coeff(iv5,cE_k3_i)
-  SurfaceChar(Gridiv,c_rhoCp3_i(BldgSurf))    = ESTMCoefficients_Coeff(iv5,cE_rhoCP3_i)
-  SurfaceChar(Gridiv,c_thick4_i(BldgSurf))    = ESTMCoefficients_Coeff(iv5,cE_thick4_i)
-  SurfaceChar(Gridiv,c_k4_i(BldgSurf))        = ESTMCoefficients_Coeff(iv5,cE_k4_i)
-  SurfaceChar(Gridiv,c_rhoCp4_i(BldgSurf))    = ESTMCoefficients_Coeff(iv5,cE_rhoCP4_i)
-  SurfaceChar(Gridiv,c_thick5_i(BldgSurf))    = ESTMCoefficients_Coeff(iv5,cE_thick5_i)
-  SurfaceChar(Gridiv,c_k5_i(BldgSurf))        = ESTMCoefficients_Coeff(iv5,cE_k5_i)
-  SurfaceChar(Gridiv,c_rhoCp5_i(BldgSurf))    = ESTMCoefficients_Coeff(iv5,cE_rhoCP5_i)
-  SurfaceChar(Gridiv,c_nroom(BldgSurf))       = ESTMCoefficients_Coeff(iv5,cE_nroom)
-  SurfaceChar(Gridiv,c_alb_ibld(BldgSurf))    = ESTMCoefficients_Coeff(iv5,cE_alb_ibld)
-  SurfaceChar(Gridiv,c_em_ibld(BldgSurf))     = ESTMCoefficients_Coeff(iv5,cE_em_ibld)
-  SurfaceChar(Gridiv,c_CH_iwall(BldgSurf))    = ESTMCoefficients_Coeff(iv5,cE_CH_iwall)
-  SurfaceChar(Gridiv,c_CH_iroof(BldgSurf))    = ESTMCoefficients_Coeff(iv5,cE_CH_iroof)
-  SurfaceChar(Gridiv,c_CH_ibld(BldgSurf))     = ESTMCoefficients_Coeff(iv5,cE_CH_ibld)
-  SurfaceChar(Gridiv,c_fwall(BldgSurf))       = ESTMCoefficients_Coeff(iv5,cE_fwall)
 
   ! Get water distribution (within grid) for Bldgs
   CALL CodeMatchDist(rr,c_WGBldgsCode,cWG_ToBldgs)
@@ -950,6 +839,8 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(gridiv,c_OHMCode_SDry(ConifSurf)) = Veg_Coeff(iv5,cp_OHMCode_SDry)
   SurfaceChar(gridiv,c_OHMCode_WWet(ConifSurf)) = Veg_Coeff(iv5,cp_OHMCode_WWet)
   SurfaceChar(gridiv,c_OHMCode_WDry(ConifSurf)) = Veg_Coeff(iv5,cp_OHMCode_WDry)
+  ! ESTM code 
+  SurfaceChar(gridiv,c_ESTMCode(ConifSurf))     = Veg_Coeff(iv5,cp_ESTMCode)
   ! AnOHM TS
   SurfaceChar(Gridiv,c_CpAnOHM(ConifSurf))           = Veg_Coeff(iv5,cp_CpAnOHM) ! heat capacity, AnOHM TS
   SurfaceChar(Gridiv,c_KkAnOHM(ConifSurf))           = Veg_Coeff(iv5,cp_KkAnOHM)  ! heat conductivity, AnOHM TS
@@ -1000,7 +891,7 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(Gridiv,c_WGToWater(ConifSurf))  = WGWaterDist_Coeff(iv5,cWG_ToWater)
   SurfaceChar(Gridiv,c_WGToRunoff(ConifSurf))  = WGWaterDist_Coeff(iv5,cWG_ToRunoff)
   SurfaceChar(Gridiv,c_WGToSoilStore(ConifSurf))    = WGWaterDist_Coeff(iv5,cWG_ToSoilStore)
-
+    
   ! ---- Find code for DecTr surface (Pervious) ----
   CALL CodeMatchVeg(rr,c_DecTrCode)
   ! Transfer characteristics to SurfaceChar for DecTr surface
@@ -1035,6 +926,8 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(gridiv,c_OHMCode_SDry(DecidSurf)) = Veg_Coeff(iv5,cp_OHMCode_SDry)
   SurfaceChar(gridiv,c_OHMCode_WWet(DecidSurf)) = Veg_Coeff(iv5,cp_OHMCode_WWet)
   SurfaceChar(gridiv,c_OHMCode_WDry(DecidSurf)) = Veg_Coeff(iv5,cp_OHMCode_WDry)
+  ! ESTM code 
+  SurfaceChar(gridiv,c_ESTMCode(DecidSurf))     = Veg_Coeff(iv5,cp_ESTMCode)
   ! AnOHM TS
   SurfaceChar(Gridiv,c_CpAnOHM(DecidSurf))           = Veg_Coeff(iv5,cp_CpAnOHM) ! heat capacity, AnOHM TS
   SurfaceChar(Gridiv,c_KkAnOHM(DecidSurf))           = Veg_Coeff(iv5,cp_KkAnOHM)  ! heat conductivity, AnOHM TS
@@ -1119,6 +1012,8 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(gridiv,c_OHMCode_SDry(GrassSurf)) = Veg_Coeff(iv5,cp_OHMCode_SDry)
   SurfaceChar(gridiv,c_OHMCode_WWet(GrassSurf)) = Veg_Coeff(iv5,cp_OHMCode_WWet)
   SurfaceChar(gridiv,c_OHMCode_WDry(GrassSurf)) = Veg_Coeff(iv5,cp_OHMCode_WDry)
+  ! ESTM code 
+  SurfaceChar(gridiv,c_ESTMCode(GrassSurf))     = Veg_Coeff(iv5,cp_ESTMCode)
   ! AnOHM TS
   SurfaceChar(Gridiv,c_CpAnOHM(GrassSurf))           = Veg_Coeff(iv5,cp_CpAnOHM) ! heat capacity, AnOHM TS
   SurfaceChar(Gridiv,c_KkAnOHM(GrassSurf))           = Veg_Coeff(iv5,cp_KkAnOHM)  ! heat conductivity, AnOHM TS
@@ -1190,6 +1085,7 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(gridiv,c_OHMCode_SDry(BSoilSurf)) = NonVeg_Coeff(iv5,ci_OHMCode_SDry)
   SurfaceChar(gridiv,c_OHMCode_WWet(BSoilSurf)) = NonVeg_Coeff(iv5,ci_OHMCode_WWet)
   SurfaceChar(gridiv,c_OHMCode_WDry(BSoilSurf)) = NonVeg_Coeff(iv5,ci_OHMCode_WDry)
+  SurfaceChar(gridiv,c_ESTMCode(BSoilSurf))     = NonVeg_Coeff(iv5,ci_ESTMCode)
   SurfaceChar(Gridiv,c_CpAnOHM(BSoilSurf))           = NonVeg_Coeff(iv5,ci_CpAnOHM) ! heat capacity, AnOHM TS
   SurfaceChar(Gridiv,c_KkAnOHM(BSoilSurf))           = NonVeg_Coeff(iv5,ci_KkAnOHM)  ! heat conductivity, AnOHM TS
   SurfaceChar(Gridiv,c_ChAnOHM(BSoilSurf))           = NonVeg_Coeff(iv5,ci_ChAnOHM)  ! bulk transfer coef., AnOHM TS
@@ -1259,6 +1155,8 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(gridiv,c_OHMCode_SDry(WaterSurf)) = Water_Coeff(iv5,cw_OHMCode_SDry)
   SurfaceChar(gridiv,c_OHMCode_WWet(WaterSurf)) = Water_Coeff(iv5,cw_OHMCode_WWet)
   SurfaceChar(gridiv,c_OHMCode_WDry(WaterSurf)) = Water_Coeff(iv5,cw_OHMCode_WDry)
+  ! ESTM code 
+  SurfaceChar(gridiv,c_ESTMCode(WaterSurf))     = Water_Coeff(iv5,cw_ESTMCode)
   ! AnOHM TS
   SurfaceChar(Gridiv,c_CpAnOHM(WaterSurf))           = Water_Coeff(iv5,cw_CpAnOHM) ! heat capacity, AnOHM TS
   SurfaceChar(Gridiv,c_KkAnOHM(WaterSurf))           = Water_Coeff(iv5,cw_KkAnOHM)  ! heat conductivity, AnOHM TS
@@ -1298,7 +1196,6 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(Gridiv,c_WGToRunoff(WaterSurf))  = WGWaterDist_Coeff(iv5,cWG_ToRunoff)
   SurfaceChar(Gridiv,c_WGToSoilStore(WaterSurf))    = WGWaterDist_Coeff(iv5,cWG_ToSoilStore)
 
-
   ! ---- Find code for Snow surface (Snow) ----
   CALL CodeMatchSnow(rr,c_SnowCode)
   ! Transfer characteristics to SurfaceChar for Snow surface
@@ -1321,6 +1218,8 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(gridiv,c_OHMCode_SDry(nsurf+1)) = Snow_Coeff(iv5,cs_OHMCode_SDry)
   SurfaceChar(gridiv,c_OHMCode_WWet(nsurf+1)) = Snow_Coeff(iv5,cs_OHMCode_WWet)
   SurfaceChar(gridiv,c_OHMCode_WDry(nsurf+1)) = Snow_Coeff(iv5,cs_OHMCode_WDry)
+  ! ESTM code 
+  SurfaceChar(gridiv,c_ESTMCode(nsurf+1))     = Snow_Coeff(iv5,cs_ESTMCode)
   !    SurfaceChar(Gridiv,c_CpAnOHM(nsurf+1))           = Snow_Coeff(iv5,cs_CpAnOHM)   ! heat capacity, AnOHM TS
   !    SurfaceChar(Gridiv,c_KkAnOHM(nsurf+1))           = Snow_Coeff(iv5,cs_KkAnOHM)  ! heat conductivity, AnOHM TS
   !    SurfaceChar(Gridiv,c_ChAnOHM(nsurf+1))           = Snow_Coeff(iv5,cs_ChAnOHM)  ! bulk transfer coef., AnOHM TS
@@ -1346,6 +1245,143 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(Gridiv,c_a2_WDry(nsurf+1))    = OHMCoefficients_Coeff(iv5,cO_a2)
   SurfaceChar(Gridiv,c_a3_WDry(nsurf+1))    = OHMCoefficients_Coeff(iv5,cO_a3)
 
+  !Transfer ESTM characteristics to SurfaceChar
+  DO iii=1,(nsurf+1)  
+     IF(SurfaceChar(Gridiv,c_ESTMCode(iii)) /= 0) THEN !If ESTM Code not equal to zero, use code as normal
+        CALL CodeMatchESTM(Gridiv,iii)
+        SurfaceChar(Gridiv,c_Surf_thick1(iii)) = ESTMCoefficients_Coeff(iv5,cE_Surf_thick1)
+        SurfaceChar(Gridiv,c_Surf_thick2(iii)) = ESTMCoefficients_Coeff(iv5,cE_Surf_thick2)
+        SurfaceChar(Gridiv,c_Surf_thick3(iii)) = ESTMCoefficients_Coeff(iv5,cE_Surf_thick3)
+        SurfaceChar(Gridiv,c_Surf_thick4(iii)) = ESTMCoefficients_Coeff(iv5,cE_Surf_thick4)
+        SurfaceChar(Gridiv,c_Surf_thick5(iii)) = ESTMCoefficients_Coeff(iv5,cE_Surf_thick5)
+        SurfaceChar(Gridiv,c_Surf_k1(iii))     = ESTMCoefficients_Coeff(iv5,cE_Surf_k1)
+        SurfaceChar(Gridiv,c_Surf_k2(iii))     = ESTMCoefficients_Coeff(iv5,cE_Surf_k2)
+        SurfaceChar(Gridiv,c_Surf_k3(iii))     = ESTMCoefficients_Coeff(iv5,cE_Surf_k3)
+        SurfaceChar(Gridiv,c_Surf_k4(iii))     = ESTMCoefficients_Coeff(iv5,cE_Surf_k4)
+        SurfaceChar(Gridiv,c_Surf_k5(iii))     = ESTMCoefficients_Coeff(iv5,cE_Surf_k5)                       
+        SurfaceChar(Gridiv,c_Surf_rhoCp1(iii)) = ESTMCoefficients_Coeff(iv5,cE_Surf_rhoCp1)
+        SurfaceChar(Gridiv,c_Surf_rhoCp2(iii)) = ESTMCoefficients_Coeff(iv5,cE_Surf_rhoCp2)
+        SurfaceChar(Gridiv,c_Surf_rhoCp3(iii)) = ESTMCoefficients_Coeff(iv5,cE_Surf_rhoCp3)
+        SurfaceChar(Gridiv,c_Surf_rhoCp4(iii)) = ESTMCoefficients_Coeff(iv5,cE_Surf_rhoCp4)
+        SurfaceChar(Gridiv,c_Surf_rhoCp5(iii)) = ESTMCoefficients_Coeff(iv5,cE_Surf_rhoCp5)
+        !Extra characteristics for Bldg surfaces
+        IF(iii==BldgSurf) THEN
+           SurfaceChar(Gridiv,c_Wall_thick1) = ESTMCoefficients_Coeff(iv5,cE_Wall_thick1)
+           SurfaceChar(Gridiv,c_Wall_thick2) = ESTMCoefficients_Coeff(iv5,cE_Wall_thick2)
+           SurfaceChar(Gridiv,c_Wall_thick3) = ESTMCoefficients_Coeff(iv5,cE_Wall_thick3)
+           SurfaceChar(Gridiv,c_Wall_thick4) = ESTMCoefficients_Coeff(iv5,cE_Wall_thick4)
+           SurfaceChar(Gridiv,c_Wall_thick5) = ESTMCoefficients_Coeff(iv5,cE_Wall_thick5)
+           SurfaceChar(Gridiv,c_Wall_k1)     = ESTMCoefficients_Coeff(iv5,cE_Wall_k1)
+           SurfaceChar(Gridiv,c_Wall_k2)     = ESTMCoefficients_Coeff(iv5,cE_Wall_k2)
+           SurfaceChar(Gridiv,c_Wall_k3)     = ESTMCoefficients_Coeff(iv5,cE_Wall_k3)
+           SurfaceChar(Gridiv,c_Wall_k4)     = ESTMCoefficients_Coeff(iv5,cE_Wall_k4)
+           SurfaceChar(Gridiv,c_Wall_k5)     = ESTMCoefficients_Coeff(iv5,cE_Wall_k5)                       
+           SurfaceChar(Gridiv,c_Wall_rhoCp1) = ESTMCoefficients_Coeff(iv5,cE_Wall_rhoCp1)
+           SurfaceChar(Gridiv,c_Wall_rhoCp2) = ESTMCoefficients_Coeff(iv5,cE_Wall_rhoCp2)
+           SurfaceChar(Gridiv,c_Wall_rhoCp3) = ESTMCoefficients_Coeff(iv5,cE_Wall_rhoCp3)
+           SurfaceChar(Gridiv,c_Wall_rhoCp4) = ESTMCoefficients_Coeff(iv5,cE_Wall_rhoCp4)
+           SurfaceChar(Gridiv,c_Wall_rhoCp5) = ESTMCoefficients_Coeff(iv5,cE_Wall_rhoCp5)
+           SurfaceChar(Gridiv,c_Internal_thick1) = ESTMCoefficients_Coeff(iv5,cE_Internal_thick1)
+           SurfaceChar(Gridiv,c_Internal_thick2) = ESTMCoefficients_Coeff(iv5,cE_Internal_thick2)
+           SurfaceChar(Gridiv,c_Internal_thick3) = ESTMCoefficients_Coeff(iv5,cE_Internal_thick3)
+           SurfaceChar(Gridiv,c_Internal_thick4) = ESTMCoefficients_Coeff(iv5,cE_Internal_thick4)
+           SurfaceChar(Gridiv,c_Internal_thick5) = ESTMCoefficients_Coeff(iv5,cE_Internal_thick5)
+           SurfaceChar(Gridiv,c_Internal_k1)     = ESTMCoefficients_Coeff(iv5,cE_Internal_k1)
+           SurfaceChar(Gridiv,c_Internal_k2)     = ESTMCoefficients_Coeff(iv5,cE_Internal_k2)
+           SurfaceChar(Gridiv,c_Internal_k3)     = ESTMCoefficients_Coeff(iv5,cE_Internal_k3)
+           SurfaceChar(Gridiv,c_Internal_k4)     = ESTMCoefficients_Coeff(iv5,cE_Internal_k4)
+           SurfaceChar(Gridiv,c_Internal_k5)     = ESTMCoefficients_Coeff(iv5,cE_Internal_k5)                       
+           SurfaceChar(Gridiv,c_Internal_rhoCp1) = ESTMCoefficients_Coeff(iv5,cE_Internal_rhoCp1)
+           SurfaceChar(Gridiv,c_Internal_rhoCp2) = ESTMCoefficients_Coeff(iv5,cE_Internal_rhoCp2)
+           SurfaceChar(Gridiv,c_Internal_rhoCp3) = ESTMCoefficients_Coeff(iv5,cE_Internal_rhoCp3)
+           SurfaceChar(Gridiv,c_Internal_rhoCp4) = ESTMCoefficients_Coeff(iv5,cE_Internal_rhoCp4)
+           SurfaceChar(Gridiv,c_Internal_rhoCp5) = ESTMCoefficients_Coeff(iv5,cE_Internal_rhoCp5)
+           SurfaceChar(Gridiv,c_nroom)           = ESTMCoefficients_Coeff(iv5,cE_nroom)
+           SurfaceChar(Gridiv,c_alb_ibld)        = ESTMCoefficients_Coeff(iv5,cE_alb_ibld)
+           SurfaceChar(Gridiv,c_em_ibld)         = ESTMCoefficients_Coeff(iv5,cE_em_ibld)
+           SurfaceChar(Gridiv,c_CH_iwall)        = ESTMCoefficients_Coeff(iv5,cE_CH_iwall)
+           SurfaceChar(Gridiv,c_CH_iroof)        = ESTMCoefficients_Coeff(iv5,cE_CH_iroof)
+           SurfaceChar(Gridiv,c_CH_ibld)         = ESTMCoefficients_Coeff(iv5,cE_CH_ibld)
+        ENDIF
+        !If ESTM Code equals zero, use codes and surface fractions from SiteSelect.txt for Paved and Bldgs
+     ELSEIF(iii==PavSurf .and. SurfaceChar(Gridiv,c_ESTMCode(iii)) == 0) THEN
+        DO ii=1,3   !for the 3x Paved ESTM classes 
+           CALL CodeMatchESTM_Class(Gridiv,iii,ii)
+           SurfaceChar(Gridiv,c_Surf_thick1_Paved(ii)) = ESTMCoefficients_Coeff(iv5,cE_Surf_thick1)
+           SurfaceChar(Gridiv,c_Surf_thick2_Paved(ii)) = ESTMCoefficients_Coeff(iv5,cE_Surf_thick2)
+           SurfaceChar(Gridiv,c_Surf_thick3_Paved(ii)) = ESTMCoefficients_Coeff(iv5,cE_Surf_thick3)
+           SurfaceChar(Gridiv,c_Surf_thick4_Paved(ii)) = ESTMCoefficients_Coeff(iv5,cE_Surf_thick4)
+           SurfaceChar(Gridiv,c_Surf_thick5_Paved(ii)) = ESTMCoefficients_Coeff(iv5,cE_Surf_thick5)
+           SurfaceChar(Gridiv,c_Surf_k1_Paved(ii))     = ESTMCoefficients_Coeff(iv5,cE_Surf_k1)
+           SurfaceChar(Gridiv,c_Surf_k2_Paved(ii))     = ESTMCoefficients_Coeff(iv5,cE_Surf_k2)
+           SurfaceChar(Gridiv,c_Surf_k3_Paved(ii))     = ESTMCoefficients_Coeff(iv5,cE_Surf_k3)
+           SurfaceChar(Gridiv,c_Surf_k4_Paved(ii))     = ESTMCoefficients_Coeff(iv5,cE_Surf_k4)
+           SurfaceChar(Gridiv,c_Surf_k5_Paved(ii))     = ESTMCoefficients_Coeff(iv5,cE_Surf_k5)
+           SurfaceChar(Gridiv,c_Surf_rhoCp1_Paved(ii)) = ESTMCoefficients_Coeff(iv5,cE_Surf_rhoCp1)
+           SurfaceChar(Gridiv,c_Surf_rhoCp2_Paved(ii)) = ESTMCoefficients_Coeff(iv5,cE_Surf_rhoCp2)
+           SurfaceChar(Gridiv,c_Surf_rhoCp3_Paved(ii)) = ESTMCoefficients_Coeff(iv5,cE_Surf_rhoCp3)
+           SurfaceChar(Gridiv,c_Surf_rhoCp4_Paved(ii)) = ESTMCoefficients_Coeff(iv5,cE_Surf_rhoCp4)
+           SurfaceChar(Gridiv,c_Surf_rhoCp5_Paved(ii)) = ESTMCoefficients_Coeff(iv5,cE_Surf_rhoCp5)
+        ENDDO 
+     ELSEIF(iii==BldgSurf .and. SurfaceChar(Gridiv,c_ESTMCode(iii)) == 0) THEN
+        DO ii=1,5   !for the 5x Bldgs ESTM classes 
+           CALL CodeMatchESTM_Class(Gridiv,iii,ii)
+           SurfaceChar(Gridiv,c_Surf_thick1_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5,cE_Surf_thick1)
+           SurfaceChar(Gridiv,c_Surf_thick2_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5,cE_Surf_thick2)
+           SurfaceChar(Gridiv,c_Surf_thick3_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5,cE_Surf_thick3)
+           SurfaceChar(Gridiv,c_Surf_thick4_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5,cE_Surf_thick4)
+           SurfaceChar(Gridiv,c_Surf_thick5_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5,cE_Surf_thick5)
+           SurfaceChar(Gridiv,c_Surf_k1_Bldgs(ii))     = ESTMCoefficients_Coeff(iv5,cE_Surf_k1)
+           SurfaceChar(Gridiv,c_Surf_k2_Bldgs(ii))     = ESTMCoefficients_Coeff(iv5,cE_Surf_k2)
+           SurfaceChar(Gridiv,c_Surf_k3_Bldgs(ii))     = ESTMCoefficients_Coeff(iv5,cE_Surf_k3)
+           SurfaceChar(Gridiv,c_Surf_k4_Bldgs(ii))     = ESTMCoefficients_Coeff(iv5,cE_Surf_k4)
+           SurfaceChar(Gridiv,c_Surf_k5_Bldgs(ii))     = ESTMCoefficients_Coeff(iv5,cE_Surf_k5)
+           SurfaceChar(Gridiv,c_Surf_rhoCp1_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5,cE_Surf_rhoCp1)
+           SurfaceChar(Gridiv,c_Surf_rhoCp2_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5,cE_Surf_rhoCp2)
+           SurfaceChar(Gridiv,c_Surf_rhoCp3_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5,cE_Surf_rhoCp3)
+           SurfaceChar(Gridiv,c_Surf_rhoCp4_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5,cE_Surf_rhoCp4)
+           SurfaceChar(Gridiv,c_Surf_rhoCp5_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5,cE_Surf_rhoCp5)
+           !Extra characteristics for Bldgs surface
+           SurfaceChar(Gridiv,c_Wall_thick1_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5,cE_Wall_thick1)
+           SurfaceChar(Gridiv,c_Wall_thick2_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5,cE_Wall_thick2)
+           SurfaceChar(Gridiv,c_Wall_thick3_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5,cE_Wall_thick3)
+           SurfaceChar(Gridiv,c_Wall_thick4_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5,cE_Wall_thick4)
+           SurfaceChar(Gridiv,c_Wall_thick5_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5,cE_Wall_thick5)
+           SurfaceChar(Gridiv,c_Wall_k1_Bldgs(ii))     = ESTMCoefficients_Coeff(iv5,cE_Wall_k1)
+           SurfaceChar(Gridiv,c_Wall_k2_Bldgs(ii))     = ESTMCoefficients_Coeff(iv5,cE_Wall_k2)
+           SurfaceChar(Gridiv,c_Wall_k3_Bldgs(ii))     = ESTMCoefficients_Coeff(iv5,cE_Wall_k3)
+           SurfaceChar(Gridiv,c_Wall_k4_Bldgs(ii))     = ESTMCoefficients_Coeff(iv5,cE_Wall_k4)
+           SurfaceChar(Gridiv,c_Wall_k5_Bldgs(ii))     = ESTMCoefficients_Coeff(iv5,cE_Wall_k5)                       
+           SurfaceChar(Gridiv,c_Wall_rhoCp1_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5,cE_Wall_rhoCp1)
+           SurfaceChar(Gridiv,c_Wall_rhoCp2_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5,cE_Wall_rhoCp2)
+           SurfaceChar(Gridiv,c_Wall_rhoCp3_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5,cE_Wall_rhoCp3)
+           SurfaceChar(Gridiv,c_Wall_rhoCp4_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5,cE_Wall_rhoCp4)
+           SurfaceChar(Gridiv,c_Wall_rhoCp5_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5,cE_Wall_rhoCp5)
+           SurfaceChar(Gridiv,c_Internal_thick1_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5,cE_Internal_thick1)
+           SurfaceChar(Gridiv,c_Internal_thick2_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5,cE_Internal_thick2)
+           SurfaceChar(Gridiv,c_Internal_thick3_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5,cE_Internal_thick3)
+           SurfaceChar(Gridiv,c_Internal_thick4_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5,cE_Internal_thick4)
+           SurfaceChar(Gridiv,c_Internal_thick5_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5,cE_Internal_thick5)
+           SurfaceChar(Gridiv,c_Internal_k1_Bldgs(ii))     = ESTMCoefficients_Coeff(iv5,cE_Internal_k1)
+           SurfaceChar(Gridiv,c_Internal_k2_Bldgs(ii))     = ESTMCoefficients_Coeff(iv5,cE_Internal_k2)
+           SurfaceChar(Gridiv,c_Internal_k3_Bldgs(ii))     = ESTMCoefficients_Coeff(iv5,cE_Internal_k3)
+           SurfaceChar(Gridiv,c_Internal_k4_Bldgs(ii))     = ESTMCoefficients_Coeff(iv5,cE_Internal_k4)
+           SurfaceChar(Gridiv,c_Internal_k5_Bldgs(ii))     = ESTMCoefficients_Coeff(iv5,cE_Internal_k5)                       
+           SurfaceChar(Gridiv,c_Internal_rhoCp1_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5,cE_Internal_rhoCp1)
+           SurfaceChar(Gridiv,c_Internal_rhoCp2_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5,cE_Internal_rhoCp2)
+           SurfaceChar(Gridiv,c_Internal_rhoCp3_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5,cE_Internal_rhoCp3)
+           SurfaceChar(Gridiv,c_Internal_rhoCp4_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5,cE_Internal_rhoCp4)
+           SurfaceChar(Gridiv,c_Internal_rhoCp5_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5,cE_Internal_rhoCp5)
+           SurfaceChar(Gridiv,c_nroom_Bldgs(ii))           = ESTMCoefficients_Coeff(iv5,cE_nroom)
+           SurfaceChar(Gridiv,c_alb_ibld_Bldgs(ii))        = ESTMCoefficients_Coeff(iv5,cE_alb_ibld)
+           SurfaceChar(Gridiv,c_em_ibld_Bldgs(ii))         = ESTMCoefficients_Coeff(iv5,cE_em_ibld)
+           SurfaceChar(Gridiv,c_CH_iwall_Bldgs(ii))        = ESTMCoefficients_Coeff(iv5,cE_CH_iwall)
+           SurfaceChar(Gridiv,c_CH_iroof_Bldgs(ii))        = ESTMCoefficients_Coeff(iv5,cE_CH_iroof)
+           SurfaceChar(Gridiv,c_CH_ibld_Bldgs(ii))         = ESTMCoefficients_Coeff(iv5,cE_CH_ibld)         
+        ENDDO    
+     ENDIF  
+  ENDDO
+  
   ! ---- Find code for Surface conductances ----
   CALL CodeMatchConductance(rr,c_CondCode)
   ! Transfer conductance characteristics to SurfaceChar

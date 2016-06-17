@@ -39,9 +39,10 @@ SUBROUTINE InputHeaderCheck(FileName)
   HeaderNonVeg_Reqd(ci_OHMCode_SDry) = "OHMCode_SummerDry"
   HeaderNonVeg_Reqd(ci_OHMCode_WWet) = "OHMCode_WinterWet"
   HeaderNonVeg_Reqd(ci_OHMCode_WDry) = "OHMCode_WinterDry"
-  HeaderNonVeg_Reqd(ci_cpAnOHM)           = "cp"		! AnOHM TS
-  HeaderNonVeg_Reqd(ci_kkAnOHM)           = "kk"		! AnOHM TS
-  HeaderNonVeg_Reqd(ci_chAnOHM)           = "ch"		! AnOHM TS
+  HeaderNonVeg_Reqd(ci_ESTMCode)     = "ESTMCode"
+  HeaderNonVeg_Reqd(ci_cpAnOHM)           = "AnOHM_Cp"		! AnOHM TS
+  HeaderNonVeg_Reqd(ci_kkAnOHM)           = "AnOHM_Kk"		! AnOHM TS
+  HeaderNonVeg_Reqd(ci_chAnOHM)           = "AnOHM_Ch"		! AnOHM TS
 
   ! ========== SUEWS_Veg.txt ===============
   HeaderVeg_Reqd(cp_Code)         = "Code"
@@ -73,9 +74,10 @@ SUBROUTINE InputHeaderCheck(FileName)
   HeaderVeg_Reqd(cp_OHMCode_SDry) = "OHMCode_SummerDry"
   HeaderVeg_Reqd(cp_OHMCode_WWet) = "OHMCode_WinterWet"
   HeaderVeg_Reqd(cp_OHMCode_WDry) = "OHMCode_WinterDry"
-  HeaderVeg_Reqd(cp_cpAnOHM)           = "cp"		! AnOHM TS
-  HeaderVeg_Reqd(cp_kkAnOHM)           = "kk"		! AnOHM TS
-  HeaderVeg_Reqd(cp_chAnOHM)           = "ch"		! AnOHM TS
+  HeaderVeg_Reqd(cp_ESTMCode)     = "ESTMCode"
+  HeaderVeg_Reqd(cp_cpAnOHM)           = "AnOHM_Cp"		! AnOHM TS
+  HeaderVeg_Reqd(cp_kkAnOHM)           = "AnOHM_Kk"		! AnOHM TS
+  HeaderVeg_Reqd(cp_chAnOHM)           = "AnOHM_Ch"		! AnOHM TS
 
   ! ========== SUEWS_Water.txt ==================
   HeaderWater_Reqd(cw_Code)         = "Code"
@@ -93,9 +95,10 @@ SUBROUTINE InputHeaderCheck(FileName)
   HeaderWater_Reqd(cw_OHMCode_SDry) = "OHMCode_SummerDry"
   HeaderWater_Reqd(cw_OHMCode_WWet) = "OHMCode_WinterWet"
   HeaderWater_Reqd(cw_OHMCode_WDry) = "OHMCode_WinterDry"
-  HeaderWater_Reqd(cw_cpAnOHM)           = "cp"		! AnOHM TS
-  HeaderWater_Reqd(cw_kkAnOHM)           = "kk"		! AnOHM TS
-  HeaderWater_Reqd(cw_chAnOHM)           = "ch"		! AnOHM TS
+  HeaderWater_Reqd(cw_ESTMCode)     = "ESTMCode"
+  HeaderWater_Reqd(cw_cpAnOHM)           = "AnOHM_Cp"		! AnOHM TS
+  HeaderWater_Reqd(cw_kkAnOHM)           = "AnOHM_Kk"		! AnOHM TS
+  HeaderWater_Reqd(cw_chAnOHM)           = "AnOHM_Ch"		! AnOHM TS
 
   ! ========== SUEWS_Snow.txt ===================
   HeaderSnow_Reqd(cs_Code)         = "Code"
@@ -117,9 +120,10 @@ SUBROUTINE InputHeaderCheck(FileName)
   HeaderSnow_Reqd(cs_OHMCode_SDry) = "OHMCode_SummerDry"
   HeaderSnow_Reqd(cs_OHMCode_WWet) = "OHMCode_WinterWet"
   HeaderSnow_Reqd(cs_OHMCode_WDry) = "OHMCode_WinterDry"
-  HeaderSnow_Reqd(cs_cpAnOHM)           = "cp"		! AnOHM TS
-  HeaderSnow_Reqd(cs_kkAnOHM)           = "kk"		! AnOHM TS
-  HeaderSnow_Reqd(cs_chAnOHM)           = "ch"		! AnOHM TS
+  HeaderSnow_Reqd(cs_ESTMCode)     = "ESTMCode"
+  HeaderSnow_Reqd(cs_cpAnOHM)           = "AnOHM_Cp"		! AnOHM TS
+  HeaderSnow_Reqd(cs_kkAnOHM)           = "AnOHM_Kk"		! AnOHM TS
+  HeaderSnow_Reqd(cs_chAnOHM)           = "AnOHM_Ch"		! AnOHM TS
 
 
   ! ========== SUEWS_Soil.txt ===================
@@ -155,59 +159,58 @@ SUBROUTINE InputHeaderCheck(FileName)
 
   ! ========== SUEWS_ESTMCoefficients.txt ========
   HeaderESTMCoefficients_Reqd(cE_Code)       = "Code"
-  HeaderESTMCoefficients_Reqd(cE_thick1_r)   = "thick1"
-  HeaderESTMCoefficients_Reqd(cE_k1_r)       = "k1"
-  HeaderESTMCoefficients_Reqd(cE_rhoCp1_r)   = "rhoCp1"
-  HeaderESTMCoefficients_Reqd(cE_thick2_r)   = "thick2"
-  HeaderESTMCoefficients_Reqd(cE_k2_r)       = "k2"
-  HeaderESTMCoefficients_Reqd(cE_rhoCp2_r)   = "rhoCp2"
-  HeaderESTMCoefficients_Reqd(cE_thick3_r)   = "thick3"
-  HeaderESTMCoefficients_Reqd(cE_k3_r)       = "k3"
-  HeaderESTMCoefficients_Reqd(cE_rhoCp3_r)   = "rhoCp3"
-  HeaderESTMCoefficients_Reqd(cE_thick4_r)   = "thick4"
-  HeaderESTMCoefficients_Reqd(cE_k4_r)       = "k4"
-  HeaderESTMCoefficients_Reqd(cE_rhoCp4_r)   = "rhoCp4"
-  HeaderESTMCoefficients_Reqd(cE_thick5_r)   = "thick5"
-  HeaderESTMCoefficients_Reqd(cE_k5_r)       = "k5"
-  HeaderESTMCoefficients_Reqd(cE_rhoCp5_r)   = "rhoCp5"
-  HeaderESTMCoefficients_Reqd(cE_thick1_e)   = "thick1"
-  HeaderESTMCoefficients_Reqd(cE_k1_e)       = "k1"
-  HeaderESTMCoefficients_Reqd(cE_rhoCp1_e)   = "rhoCp1"
-  HeaderESTMCoefficients_Reqd(cE_thick2_e)   = "thick2"
-  HeaderESTMCoefficients_Reqd(cE_k2_e)       = "k2"
-  HeaderESTMCoefficients_Reqd(cE_rhoCp2_e)   = "rhoCp2"
-  HeaderESTMCoefficients_Reqd(cE_thick3_e)   = "thick3"
-  HeaderESTMCoefficients_Reqd(cE_k3_e)       = "k3"
-  HeaderESTMCoefficients_Reqd(cE_rhoCp3_e)   = "rhoCp3"
-  HeaderESTMCoefficients_Reqd(cE_thick4_e)   = "thick4"
-  HeaderESTMCoefficients_Reqd(cE_k4_e)       = "k4"
-  HeaderESTMCoefficients_Reqd(cE_rhoCp4_e)   = "rhoCp4"
-  HeaderESTMCoefficients_Reqd(cE_thick5_e)   = "thick5"
-  HeaderESTMCoefficients_Reqd(cE_k5_e)       = "k5"
-  HeaderESTMCoefficients_Reqd(cE_rhoCp5_e)   = "rhoCp5"
-  HeaderESTMCoefficients_Reqd(cE_thick1_i)   = "thick1"
-  HeaderESTMCoefficients_Reqd(cE_k1_i)       = "k1"
-  HeaderESTMCoefficients_Reqd(cE_rhoCp1_i)   = "rhoCp1"
-  HeaderESTMCoefficients_Reqd(cE_thick2_i)   = "thick2"
-  HeaderESTMCoefficients_Reqd(cE_k2_i)       = "k2"
-  HeaderESTMCoefficients_Reqd(cE_rhoCp2_i)   = "rhoCp2"
-  HeaderESTMCoefficients_Reqd(cE_thick3_i)   = "thick3"
-  HeaderESTMCoefficients_Reqd(cE_k3_i)       = "k3"
-  HeaderESTMCoefficients_Reqd(cE_rhoCp3_i)   = "rhoCp3"
-  HeaderESTMCoefficients_Reqd(cE_thick4_i)   = "thick4"
-  HeaderESTMCoefficients_Reqd(cE_k4_i)       = "k4"
-  HeaderESTMCoefficients_Reqd(cE_rhoCp4_i)   = "rhoCp4"
-  HeaderESTMCoefficients_Reqd(cE_thick5_i)   = "thick5"
-  HeaderESTMCoefficients_Reqd(cE_k5_i)       = "k5"
-  HeaderESTMCoefficients_Reqd(cE_rhoCp5_i)   = "rhoCp5"
+  HeaderESTMCoefficients_Reqd(cE_Surf_thick1)   = "Surf_thick1"
+  HeaderESTMCoefficients_Reqd(cE_Surf_k1)       = "Surf_k1"
+  HeaderESTMCoefficients_Reqd(cE_Surf_rhoCp1)   = "Surf_rhoCp1"
+  HeaderESTMCoefficients_Reqd(cE_Surf_thick2)   = "Surf_thick2"
+  HeaderESTMCoefficients_Reqd(cE_Surf_k2)       = "Surf_k2"
+  HeaderESTMCoefficients_Reqd(cE_Surf_rhoCp2)   = "Surf_rhoCp2"
+  HeaderESTMCoefficients_Reqd(cE_Surf_thick3)   = "Surf_thick3"
+  HeaderESTMCoefficients_Reqd(cE_Surf_k3)       = "Surf_k3"
+  HeaderESTMCoefficients_Reqd(cE_Surf_rhoCp3)   = "Surf_rhoCp3"
+  HeaderESTMCoefficients_Reqd(cE_Surf_thick4)   = "Surf_thick4"
+  HeaderESTMCoefficients_Reqd(cE_Surf_k4)       = "Surf_k4"
+  HeaderESTMCoefficients_Reqd(cE_Surf_rhoCp4)   = "Surf_rhoCp4"
+  HeaderESTMCoefficients_Reqd(cE_Surf_thick5)   = "Surf_thick5"
+  HeaderESTMCoefficients_Reqd(cE_Surf_k5)       = "Surf_k5"
+  HeaderESTMCoefficients_Reqd(cE_Surf_rhoCp5)   = "Surf_rhoCp5"
+  HeaderESTMCoefficients_Reqd(cE_Wall_thick1)   = "Wall_thick1"
+  HeaderESTMCoefficients_Reqd(cE_Wall_k1)       = "Wall_k1"
+  HeaderESTMCoefficients_Reqd(cE_Wall_rhoCp1)   = "Wall_rhoCp1"
+  HeaderESTMCoefficients_Reqd(cE_Wall_thick2)   = "Wall_thick2"
+  HeaderESTMCoefficients_Reqd(cE_Wall_k2)       = "Wall_k2"
+  HeaderESTMCoefficients_Reqd(cE_Wall_rhoCp2)   = "Wall_rhoCp2"
+  HeaderESTMCoefficients_Reqd(cE_Wall_thick3)   = "Wall_thick3"
+  HeaderESTMCoefficients_Reqd(cE_Wall_k3)       = "Wall_k3"
+  HeaderESTMCoefficients_Reqd(cE_Wall_rhoCp3)   = "Wall_rhoCp3"
+  HeaderESTMCoefficients_Reqd(cE_Wall_thick4)   = "Wall_thick4"
+  HeaderESTMCoefficients_Reqd(cE_Wall_k4)       = "Wall_k4"
+  HeaderESTMCoefficients_Reqd(cE_Wall_rhoCp4)   = "Wall_rhoCp4"
+  HeaderESTMCoefficients_Reqd(cE_Wall_thick5)   = "Wall_thick5"
+  HeaderESTMCoefficients_Reqd(cE_Wall_k5)       = "Wall_k5"
+  HeaderESTMCoefficients_Reqd(cE_Wall_rhoCp5)   = "Wall_rhoCp5"
+  HeaderESTMCoefficients_Reqd(cE_Internal_thick1)   = "Internal_thick1"
+  HeaderESTMCoefficients_Reqd(cE_Internal_k1)       = "Internal_k1"
+  HeaderESTMCoefficients_Reqd(cE_Internal_rhoCp1)   = "Internal_rhoCp1"
+  HeaderESTMCoefficients_Reqd(cE_Internal_thick2)   = "Internal_thick2"
+  HeaderESTMCoefficients_Reqd(cE_Internal_k2)       = "Internal_k2"
+  HeaderESTMCoefficients_Reqd(cE_Internal_rhoCp2)   = "Internal_rhoCp2"
+  HeaderESTMCoefficients_Reqd(cE_Internal_thick3)   = "Internal_thick3"
+  HeaderESTMCoefficients_Reqd(cE_Internal_k3)       = "Internal_k3"
+  HeaderESTMCoefficients_Reqd(cE_Internal_rhoCp3)   = "Internal_rhoCp3"
+  HeaderESTMCoefficients_Reqd(cE_Internal_thick4)   = "Internal_thick4"
+  HeaderESTMCoefficients_Reqd(cE_Internal_k4)       = "Internal_k4"
+  HeaderESTMCoefficients_Reqd(cE_Internal_rhoCp4)   = "Internal_rhoCp4"
+  HeaderESTMCoefficients_Reqd(cE_Internal_thick5)   = "Internal_thick5"
+  HeaderESTMCoefficients_Reqd(cE_Internal_k5)       = "Internal_k5"
+  HeaderESTMCoefficients_Reqd(cE_Internal_rhoCp5)   = "Internal_rhoCp5"
   HeaderESTMCoefficients_Reqd(cE_nroom)      = "nroom"
-  HeaderESTMCoefficients_Reqd(cE_alb_ibld)   = "alb_ibld"
-  HeaderESTMCoefficients_Reqd(cE_em_ibld)    = "em_ibld"
-  HeaderESTMCoefficients_Reqd(cE_CH_iwall)   = "CH_iwall"
-  HeaderESTMCoefficients_Reqd(cE_CH_iroof)   = "CH_iroof"
-  HeaderESTMCoefficients_Reqd(cE_CH_ibld)    = "CH_ibld"
-  HeaderESTMCoefficients_Reqd(cE_fwall)      = "fwall"
-
+  HeaderESTMCoefficients_Reqd(cE_alb_ibld)   = "Internal_albedo"
+  HeaderESTMCoefficients_Reqd(cE_em_ibld)    = "Internal_emissivity"
+  HeaderESTMCoefficients_Reqd(cE_CH_iwall)   = "Internal_CHwall"
+  HeaderESTMCoefficients_Reqd(cE_CH_iroof)   = "Internal_CHroof"
+  HeaderESTMCoefficients_Reqd(cE_CH_ibld)    = "Internal_CHbld"
+  
   ! ========== SUEWS_AnthropogenicHeat.txt ======
   HeaderAnthropogenicHeat_Reqd(cA_Code)     = "Code"
   HeaderAnthropogenicHeat_Reqd(cA_BaseTHDD) = "BaseTHDD"

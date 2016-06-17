@@ -296,8 +296,6 @@ PROGRAM SUEWS_Program
         ! Initialise ESTM if required, TS 05 Jun 2016
         IF(QSChoice==4 .OR. QSChoice==14) CALL ESTM_initials(FileCodeX)
 
-
-
         !write(*,*) 'Initialisation done'
         ! First stage: initialisation done ----------------------------------
 

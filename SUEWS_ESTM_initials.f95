@@ -1,11 +1,30 @@
 SUBROUTINE ESTM_initials(FileCodeX)
+  
+  ! Last modified HCW 15 Jun 2016 - code now reads in 5-min file (interpolation done beforehand, outside of SUEWS itself)    
+  ! HCW Questions:
+  !                - should TFloor be set in namelist instead of hard-coded here?
+  !                - zref used for radiation calculation and fair is set to 2*BldgH here. For compatibility with the rest of the
+  !                  SUEWS model, should this be the (wind speed) measurement height z specified in RunControl.nml?
+  !                - In SUEWS_translate, fwall=AreaWall/SurfaceArea. Is this correct?
+  !                - If froof=1 (i.e. whole grid is building), is HW=0 correct?  
+  !                - Then is an IF(Fground ==0) option needed?  
+  !                - alb_wall=0.23 and em_wall=0.9 are set in LUMPS_module_constants. Shouldn't these be provided as input?
+  !                - Do the LUP calculations here need to be compatible with those in LUMPS_NARP?
+  !                - File opening rewritten using existing error handling in SUEWS - can delete mod_error module from SUEWS_ESTM_functions
+  !                - In SUEWS_ESTM_v2016, the first row is set to -999. This may be acceptable at the
+  !                  start of the run but should be handled properly between blocks of met data? - need to check what's actually happening here.
+  !                - Many duplicate functions in SUEWS_ESTM_functions need changing to the existing SUEWS versions.  
+  !  
+    
+  USE defaultNotUsed  
   USE heatflux
   USE meteo                                                               !!FO!! :METEOMOD.f95
   USE mod_interp                                                          !!FO!! :mod_interp.f95
   USE mod_solver                                                          !!FO!! :mod_solver.f95
-  USE mod_error
+  !USE mod_error
   USE modSolarCalc                                                        !!FO!! :modsolarcalc.f95
   USE MathConstants                                                       !!FO!! :MathConstants_module.f95
+  USE PhysConstants
   USE ESTM_data
   USE allocateArray
   USE gis_data
@@ -13,18 +32,19 @@ SUBROUTINE ESTM_initials(FileCodeX)
   USE data_in
 
   IMPLICIT NONE
-  INTEGER :: i,ii,ios,ios1,ios2
-  INTEGER :: datalines,datalines5min
-  REAL(KIND(1d0)) :: CFLval
-  REAL(KIND(1d0)) :: t5min
-  REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:,:)::Ts15mindata
+  INTEGER :: i
+  INTEGER:: iv
+  INTEGER:: nlinesESTMdata
+  !REAL(KIND(1d0)) :: CFLval
+  !REAL(KIND(1d0)) :: t5min
   REAL(KIND(1d0))::W,WB
   CHARACTER (len=20),INTENT(in)::FileCodeX
-  CHARACTER (len=150)::FileESTMTs,FileESTMoutput
+  CHARACTER (len=150)::FileESTMTs, FileFinalTemp
+  CHARACTER (len=20):: tstep_txt
   LOGICAL:: inittemps=.FALSE.
 
 
-  !=====Reading ESTMinput.nml================================
+  !=====Read ESTMinput.nml================================
   NAMELIST/ESTMinput/TsurfChoice,&
        evolveTibld,              &
        ibldCHmod,                &
@@ -33,85 +53,74 @@ SUBROUTINE ESTM_initials(FileCodeX)
        THEAT_OFF,                &
        THEAT_fix
 
-  OPEN(51,file=TRIM(FileInputPath)//'ESTMinput.nml',status='old')
-  READ(51,nml=ESTMinput)
-  CLOSE(51)
+  OPEN(511,file=TRIM(FileInputPath)//'ESTMinput.nml',status='old')
+  READ(511,nml=ESTMinput)
+  CLOSE(511)
 
-  dtperday=86400.0/Tstep
+  !dtperday=86400.0/Tstep  
+  dtperday=86400/Tstep  ! HCW 14 Jun 2016 - dtperday is an integer
   IF ( .NOT. ALLOCATED(Tair24HR) ) THEN
      ALLOCATE(Tair24HR(dtperday))
   END IF
   Tair24HR=C2K
 
-  !=======read input file===============================================================
-
-  FileESTMTs=TRIM(FileInputPath)//TRIM(FileCodeX)//'_ESTM_Ts_data.txt'
-  ! print*, TRIM(FileInputPath)
-  ! print*, TRIM(FileCodeX)
-  ! print*, FileESTMTs
-  OPEN(10,file=TRIM(FileESTMTs),status='old',action='read',iostat=ios1)! Read the file of Ts forcing
-  IF (ios1/=0) CALL error(FileESTMTs,ios1)
-  READ(10,*) !skip header line
-  datalines=0
-  DO WHILE(ios1==0)  ! interpolate 15 min to 5min
-     READ(10,*,iostat=ios1)
-     datalines=datalines+1
+  TFLOOR=20.0 ! This is used only when radforce =T  !HCW should this be put in the namelist instead?
+  
+  !=======Read ESTM input file===============================================================
+  WRITE(tstep_txt,'(I5)') tstep/60  !Get tstep (in minutes) as a text string 
+  FileESTMTs=TRIM(FileInputPath)//TRIM(FileCodeX)//'_ESTM_Ts_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
+  
+  OPEN(101,file=TRIM(FileESTMTs),status='old',action='read',err=315)
+  CALL skipHeader(101,SkipHeaderMet)  !Skip header
+  ! Find number of lines in ESTM data file
+  nlinesESTMdata = 0
+  DO
+     READ(101,*) iv
+     IF (iv == -9) EXIT
+     nlinesESTMdata = nlinesESTMdata + 1
   ENDDO
-  REWIND(10)
-
-  IF ( .NOT. ALLOCATED(Ts15mindata) ) THEN
-     ALLOCATE(Ts15mindata(datalines,10))
-  END IF
-
-
+  REWIND(101)  !Go back to start of ESTM file
+ 
   IF ( .NOT. ALLOCATED(Ts5mindata) ) THEN
-     ALLOCATE(Ts5mindata(((datalines-1)*3+1),10))
-  END IF
-
-  datalines5min=0
-  READ(10,*) !skip header line
-  DO i=1,datalines-1  ! interpolate 15 min to 5min
-     READ(10,*) Ts15mindata(i,:)
-     IF (i==1) THEN
-        datalines5min=datalines5min+1
-        Ts5mindata(datalines5min,:)=Ts15mindata(i,:)
-     ELSE
-        DO ii=1,3
-           datalines5min=datalines5min+1
-           t5min=Ts15mindata(i-1,1)+(Ts15mindata(i,1)-Ts15mindata(i-1,1))*ii/3
-           Ts5mindata(datalines5min,:)=interp1d(Ts15mindata(i-1,1),Ts15mindata(i,1),Ts15mindata(i-1,:),Ts15mindata(i,:),t5min)
-        ENDDO
-     ENDIF
+     ALLOCATE(Ts5mindata(nlinesESTMdata,ncolsTs5mindata))
+  ENDIF
+  
+  CALL skipHeader(101,SkipHeaderMet)  !Skip header
+  DO i=1,nlinesESTMdata
+     READ(101,*) Ts5mindata(i,:)
   ENDDO
-  CLOSE(10) ! test, TS 05 Jun 2016
+  CLOSE(101)
 
-  !=====Initialization of variables and paramters===================================
-
+  !=====Initialization of variables and parameters==================================
+  ! Transfer variables from Ts5mindata to variable names
   IF ( .NOT. ALLOCATED(Tibld) ) THEN
     ! print*, "Nibld",Nibld
     ! print*, "Nwall",Nwall
     ! print*, "Nroof",Nroof
-    ! print*, "Nground",Nground
-    
+    ! print*, "Nground",Nground  
      ALLOCATE(Tibld(Nibld),Twall(Nwall),Troof(Nroof),Tground(Nground),Tw_4(Nwall,4))
-  END IF
+  ENDIF
 
-
-  !CONVERT ALL TEMPS TO KELVIN
+  ! N.B. column numbers here for the following file format - need to change if input columns change!
+  !dectime iy id it imin Tiair Tsurf Troof Troad Twall Twall_n Twall_e Twall_s Twall_w
+  !        1  2  3  4    5     6     7     8     9     10      11      12      13       !new
+          
+  ! Calculate temperature of each layer in Kelvin
   DO i=1,Nground
-     Tground(i)=(Ts5mindata(1,2)-Ts5mindata(1,5))*(i-1)/(Nground-1)+Ts5mindata(1,5)+C2K
+     Tground(i)=(Ts5mindata(1,cTs_Tiair)-Ts5mindata(1,cTs_Troad))*(i-1)/(Nground-1)+Ts5mindata(1,cTs_Troad)+C2K   
   ENDDO
   DO i=1,Nwall
-     Twall(i)=(Ts5mindata(1,2)-Ts5mindata(1,6))*(i-1)/(Nwall-1)+Ts5mindata(1,6)+C2K
+     Twall(i)=(Ts5mindata(1,cTs_Tiair)-Ts5mindata(1,cTs_Twall))*(i-1)/(Nwall-1)+Ts5mindata(1,cTs_Twall)+C2K  
   ENDDO
   DO i=1,Nroof
-     Troof(i)=(Ts5mindata(1,2)-Ts5mindata(1,4))*(i-1)/(Nroof-1)+Ts5mindata(1,4)+C2K
+     Troof(i)=(Ts5mindata(1,cTs_Tiair)-Ts5mindata(1,cTs_Troof))*(i-1)/(Nroof-1)+Ts5mindata(1,cTs_Troof)+C2K
   ENDDO
 
-  Tibld(1:Nibld)=Ts5mindata(1,2)+C2K
+  Tibld(1:Nibld)=Ts5mindata(1,cTs_Tiair)+C2K
 
+  THEAT_ON=THEAT_ON+C2K
+  THEAT_OFF=THEAT_OFF+C2K
   THEAT_fix=THEAT_fix+C2K
-  Tfloor=20. ! This is used only when radforce =T
   TFLOOR=TFLOOR+C2K
 
   !=====Internal view factors=====================================================
@@ -132,33 +141,42 @@ SUBROUTINE ESTM_initials(FileCodeX)
   IVF_FI =   0.950000
 
   !=====Parameters related to land surface characteristics==========================
-  ZREF=2.*BldgH                                                          !!FO!! BldgH: mean bulding hight, zref: local scale reference height (local: ~ 10^2 x 10^2 -- 10^3 x 10^3 m^2)
-  svf_ground = 1.
-  svf_ROOF=1.
-  Tievolve = 20.+C2K;
+  ZREF=2.0*BldgH   !Would Zref=z be more appropriate?                              !!FO!! BldgH: mean bulding hight, zref: local scale reference height (local: ~ 10^2 x 10^2 -- 10^3 x 10^3 m^2)
+  svf_ground=1.0
+  svf_ROOF=1.0
+  Tievolve = 20.0+C2K;
 
-  !roof
-  froof=sfr(BldgSurf)
+  !roof (i.e. Bldgs)
+  !froof=sfr(BldgSurf)   ! Moved to SUEWS_translate HCW 16 Jun 2016
   alb_roof=alb(BldgSurf)
   em_roof=emis(BldgSurf)
 
-  !vegetation
-  fveg=sfr(ConifSurf)+sfr(DecidSurf)+sfr(GrassSurf)
-  alb_veg=(alb(ConifSurf)*sfr(ConifSurf)+alb(DecidSurf)*sfr(DecidSurf)+alb(GrassSurf)*sfr(GrassSurf))/fveg
-  em_veg=(emis(ConifSurf)*sfr(ConifSurf)+emis(DecidSurf)*sfr(DecidSurf)+emis(GrassSurf)*sfr(GrassSurf))/fveg
+  !vegetation (i.e. EveTr, DecTr, Grass) 
+  !fveg=sfr(ConifSurf)+sfr(DecidSurf)+sfr(GrassSurf)  ! Moved to SUEWS_translate HCW 16 Jun 2016
+  IF(fveg/=0) THEN
+     alb_veg=(alb(ConifSurf)*sfr(ConifSurf) + alb(DecidSurf)*sfr(DecidSurf) + alb(GrassSurf)*sfr(GrassSurf))/fveg
+     em_veg=(emis(ConifSurf)*sfr(ConifSurf) + emis(DecidSurf)*sfr(DecidSurf) + emis(GrassSurf)*sfr(GrassSurf))/fveg
+  ENDIF 
+  
+  !ground (i.e. Paved, EveTr, DecTr, Grass, BSoil, Water - all except Bldgs)
+  !fground=sfr(ConifSurf)+sfr(DecidSurf)+sfr(GrassSurf)+sfr(PavSurf)+sfr(BsoilSurf)+sfr(WaterSurf) ! Moved to SUEWS_translate HCW 16 Jun 2016
+  IF(fground/=0) THEN
+      
+     alb_ground=(alb(ConifSurf)*sfr(ConifSurf)+alb(DecidSurf)*sfr(DecidSurf)&
+          +alb(GrassSurf)*sfr(GrassSurf)+alb(PavSurf)*sfr(PavSurf)&
+          +alb(BsoilSurf)*sfr(BsoilSurf)+alb(WaterSurf)*sfr(WaterSurf))/fground
+     em_ground=(emis(ConifSurf)*sfr(ConifSurf)+emis(DecidSurf)*sfr(DecidSurf)&
+          +emis(GrassSurf)*sfr(GrassSurf)+emis(PavSurf)*sfr(PavSurf)&
+          +emis(BsoilSurf)*sfr(BsoilSurf)+emis(WaterSurf)*sfr(WaterSurf))/fground
+  ENDIF
+  
+  IF(froof<1.0) THEN
+     HW=fwall/(2.0*(1.0-froof))
+  ELSE
+     HW=0  !HCW if only roof, no ground
+  ENDIF   
 
-  !ground
-  fground=sfr(ConifSurf)+sfr(DecidSurf)+sfr(GrassSurf)+sfr(PavSurf)+sfr(BsoilSurf)+sfr(WaterSurf) !! S.O. This is calculated based on current version of ESTM but maybe will be changed.
-  alb_ground=(alb(ConifSurf)*sfr(ConifSurf)+alb(DecidSurf)*sfr(DecidSurf)&
-       +alb(GrassSurf)*sfr(GrassSurf)+alb(PavSurf)*sfr(PavSurf)&
-       +alb(BsoilSurf)*sfr(BsoilSurf)+alb(WaterSurf)*sfr(WaterSurf))/fground
-  em_ground=(emis(ConifSurf)*sfr(ConifSurf)+emis(DecidSurf)*sfr(DecidSurf)&
-       +emis(GrassSurf)*sfr(GrassSurf)+emis(PavSurf)*sfr(PavSurf)&
-       +emis(BsoilSurf)*sfr(BsoilSurf)+emis(WaterSurf)*sfr(WaterSurf))/fground
-
-  HW=fwall/(2.*(1.-froof))
-
-  IF (Fground==1.) THEN                                                         !!FO!! if only ground, i.e. no houses
+  IF (Fground==1.0) THEN   !!FO!! if only ground, i.e. no houses
      W=1
      WB=0
      SVF_ground=1.
@@ -173,7 +191,7 @@ SUBROUTINE ESTM_initials(FileCodeX)
      RVF_WALL=0
      RVF_VEG=FVEG
   ELSE
-     W=BldgH/HW
+     W=BldgH/HW   !What about if HW = 0 ! need to add IF(Fground ==0) option?
      WB=W*SQRT(FROOF/Fground)
      SVF_ground=COS(ATAN(2*HW))                                              !!FO!! sky view factor for ground
      zvf_WALL=COS(ATAN(2/HW))                                                !!FO!! wall view factor for wall
@@ -190,7 +208,7 @@ SUBROUTINE ESTM_initials(FileCodeX)
      RVF_Wall=1-RVF_ROOF-RVF_ground-RVF_VEG
   ENDIF
 
-  alb_avg=alb_ground*RVF_ground+alb_wall*RVF_WALL+alb_roof*RVF_ROOF+alb_veg*RVF_VEG
+  alb_avg=alb_ground*RVF_ground + alb_wall*RVF_WALL + alb_roof*RVF_ROOF + alb_veg*RVF_VEG
 
   sumalb=0.; nalb=0
   sumemis=0.; nemis=0
@@ -225,21 +243,29 @@ SUBROUTINE ESTM_initials(FileCodeX)
   ENDIF
 
   !!=======Initial setting==============================================
-
-  IF (inittemps) THEN                                                        !!FO!! inittemps=.true. set in nml file
-     OPEN(99,file='outputfiles/finaltemp.txt',status='old',iostat=ios)       !!FO!! has to exist
-
-     IF (ios/=0) CALL error('outputfiles/finaltemp.txt',ios,1)               !!FO!! calls mod_error.f95, writes that the opening failed and stops prg
-     IF (ios/=0) THEN
-        Twall   = (/273., 285., 291./)
-        Troof   = (/273., 285., 291./)
-        Tground = (/273., 275., 280., 290./)
-        Tibld   = (/293., 293., 293./)
-     ELSE
-        READ(99,*) Twall,Troof,Tground,Tibld                             !!FO!! if finaltemp.txt exists Twall[3], Troof[3], Tground[4] & Tibld[3] get new values
-        CLOSE(99)
-     ENDIF
+  ! Rewritten by HCW 15 Jun 2016 to use existing SUEWS error handling
+  IF(inittemps) THEN
+     FileFinalTemp=TRIM(FileOutputPath)//TRIM(FileCodeX)//'_ESTM_finaltemp.txt' 
+     OPEN(99,file=TRIM(FileFinalTemp),status='old',err=316)  ! Program stopped if error opening file
+     READ(99,*) Twall,Troof,Tground,Tibld                    ! Twall, Troof, Tground & Tibld get new values
+     CLOSE(99)
   ENDIF
+
+  !IF (inittemps) THEN                                                        !!FO!! inittemps=.true. set in nml file
+  !   OPEN(99,file='outputfiles/finaltemp.txt',status='old',iostat=ios)       !!FO!! has to exist
+  !
+  !   IF (ios/=0) CALL error('outputfiles/finaltemp.txt',ios,1)               !!FO!! calls mod_error.f95, writes that the opening failed and stops prg
+  !   IF (ios/=0) THEN
+  !      Twall   = (/273., 285., 291./)
+  !      Troof   = (/273., 285., 291./)
+  !      Tground = (/273., 275., 280., 290./)
+  !      Tibld   = (/293., 293., 293./)
+  !   ELSE
+  !      READ(99,*) Twall,Troof,Tground,Tibld                             !!FO!! if finaltemp.txt exists Twall[3], Troof[3], Tground[4] & Tibld[3] get new values
+  !      CLOSE(99)
+  !   ENDIF
+  !ENDIF
+  
   !where (isnan(Twall))
   !    Twall = 273
   !endwhere
@@ -259,10 +285,10 @@ SUBROUTINE ESTM_initials(FileCodeX)
      T0_ground=Tground(1); T0_wall=Twall(1); T0_roof=Troof(1); T0_ibld=Tibld(1);
      TN_roof=Troof(nroof); TN_wall=Twall(nwall);
 
-     !initialize outgoing longwave
-     LUP_ground=SIGMA*EM_ground*T0_ground**4
-     LUP_WALL=SIGMA*EM_WALL*T0_WALL**4
-     LUP_ROOF=SIGMA*EM_ROOF*T0_ROOF**4
+     !initialize outgoing longwave   !HCW - Are these calculations compatible with those in LUMPS_NARP?
+     LUP_ground=SBConst*EM_ground*T0_ground**4
+     LUP_WALL=SBConst*EM_WALL*T0_WALL**4
+     LUP_ROOF=SBConst*EM_ROOF*T0_ROOF**4
 
      !  PRINT*,"W,WB= ",W,WB
      !  PRINT*,'SVF_ground ','SVF_WALL ','zvf_WALL ','HW '
@@ -306,4 +332,10 @@ SUBROUTINE ESTM_initials(FileCodeX)
 
 
      ! Tiaircyc = (1+(LondonQSJune_Barbican.Tair-Tiair)./(5*Tiair)).*(Tiair + 0.4*sin(LondonQSJune_Barbican.HOUR*2*pi/24-10/24*2*pi))    !!FO!! outdoor temp affected
+      
+     RETURN 
+     
+     315 CALL errorHint(11,TRIM(fileESTMTs),notUsed,notUsed,NotUsedI)
+     316 CALL errorHint(11,TRIM(fileFinalTemp),notUsed,notUsed,NotUsedI)
+     
    END SUBROUTINE ESTM_initials

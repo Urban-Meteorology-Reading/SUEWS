@@ -1,7 +1,6 @@
 __author__ = 'Fredrik Lindberg'
 
 # This class will be used to plot output result from Suews
-import Tkinter
 import numpy as np
 import matplotlib.pylab as plt
 import matplotlib.dates as dt
@@ -49,8 +48,9 @@ class SuewsPlotting:
         ax1.plot(dates, dataout[:, 10], 'k', label='$Q*$')
         ax1.set_ylim([-100, 1000])
         ax1.set_ylabel('$W$'' ''$m ^{-2}$', fontsize=14)
+        plt.title('Model output of radiation balance, energy budget and water balance')
         pos1 = ax1.get_position()
-        pos2 = [pos1.x0 - 0.07, pos1.y0 + 0.05, pos1.width * 1.05, pos1.height * 1.1]
+        pos2 = [pos1.x0 - 0.07, pos1.y0 + 0.04, pos1.width * 1.05, pos1.height * 1.1]
         ax1.set_position(pos2)
         plt.legend(bbox_to_anchor=(1.13, 1.08))
 
@@ -69,6 +69,7 @@ class SuewsPlotting:
         ax3 = plt.subplot(3, 1, 3, sharex=ax1)
         ax4 = ax3.twinx()
         ax3.plot(dates, dataout[:, 57], 'g-', label='$LAI$')
+        ax3.legend(bbox_to_anchor=(1.16, 0.5))
         ax4.bar(dectime, datain[:, 13], width=0.0, edgecolor='b' , label='$Precip$')
         ax4.plot(dectime, dataout[:, 43], 'k', label='$SMD$')
         ax3.set_xlabel('Time', fontsize=14)
@@ -79,8 +80,8 @@ class SuewsPlotting:
         pos2 = [pos1.x0 - 0.07, pos1.y0 - 0.02, pos1.width * 1.05, pos1.height * 1.1]
         ax3.set_position(pos2)
         ax4.set_position(pos2)
-        plt.legend(bbox_to_anchor=(1.16, 1.0))
-
+        # plt.legend(bbox_to_anchor=(1.16, 1.0))
+        ax4.legend(bbox_to_anchor=(1.16, 1.0))
 
     def plotmonthlystatistics(self, dataout, datain):
 
@@ -106,26 +107,28 @@ class SuewsPlotting:
         evap = np.zeros(int(month.max() - month.min() + 1))
         drain = np.zeros(int(month.max() - month.min() + 1))
 
+        ind = 0
         for i in range(int(month.min()), int(month.max() + 1)):
-            pltmonth[i - 1] = i
-            Qh[i - 1] = np.mean(dataout[month == i, 15])
-            Qe[i - 1] = np.mean(dataout[month == i, 16])
-            Qs[i - 1] = np.mean(dataout[month == i, 13])
-            Qf[i - 1] = np.mean(dataout[month == i, 14])
-            Qstar[i - 1] = np.mean(dataout[month == i, 10])
+            pltmonth[ind] = i
+            Qh[ind] = np.mean(dataout[month == i, 15])
+            Qe[ind] = np.mean(dataout[month == i, 16])
+            Qs[ind] = np.mean(dataout[month == i, 13])
+            Qf[ind] = np.mean(dataout[month == i, 14])
+            Qstar[ind] = np.mean(dataout[month == i, 10])
 
-            precip[i - 1] = np.sum(dataout[month == i, 17])  #Precipitation (P/i)
-            wu[i - 1] = np.sum(dataout[month == i, 18])  # exteranl wu (Ie/i)
-            st[i - 1] = np.sum(dataout[month == i, 24])  #storage (totCh/i)
-            evap[i - 1] = np.sum(dataout[month == i, 19])  #Evaporation (E/i)
-            drain[i - 1] = np.sum(dataout[month == i, 25]) #runoff (RO/i)
+            precip[ind] = np.sum(dataout[month == i, 17])  #Precipitation (P/i)
+            wu[ind] = np.sum(dataout[month == i, 18])  # exteranl wu (Ie/i)
+            st[ind] = np.sum(dataout[month == i, 24])  #storage (totCh/i)
+            evap[ind] = np.sum(dataout[month == i, 19])  #Evaporation (E/i)
+            drain[ind] = np.sum(dataout[month == i, 25]) #runoff (RO/i)
 
+            ind += 1
 
         totch = precip + wu - st - evap - drain
 
         plt.figure(2, figsize=(15, 7), facecolor='white')
         ax1 = plt.subplot(1, 2, 1)
-        ax1.plot(pltmonth, Qstar, 'ro-', label='$Q*$')
+        ax1.plot(pltmonth, Qstar, 'go-', label='$Q*$')
         ax1.plot(pltmonth, -Qh, 'ro-', label='$Q_H$')
         ax1.plot(pltmonth, -Qe, 'bo-', label='$Q_E$')
         ax1.plot(pltmonth, -Qs, 'ko-', label='$\Delta Q_S$')
@@ -136,7 +139,7 @@ class SuewsPlotting:
         ax1.set_ylabel('$W$'' ''$m ^{-2}$', fontsize=14)
         plt.title('Monthly  partition of the surface energy balance')
         pos1 = ax1.get_position()
-        pos2 = [pos1.x0 - 0.06, pos1.y0 + 0.00, pos1.width * 1.00, pos1.height * 1.0]
+        pos2 = [pos1.x0 - 0.035, pos1.y0 + 0.00, pos1.width * 1.00, pos1.height * 1.0]
         ax1.set_position(pos2)
         plt.legend(bbox_to_anchor=(1.25, 1.0))
 
@@ -152,7 +155,7 @@ class SuewsPlotting:
         ax3.set_xticks(pltmonth)
         plt.title('Monthly water balance')
         pos1 = ax3.get_position()
-        pos2 = [pos1.x0 - 0.01, pos1.y0 - 0.00, pos1.width * 1.00, pos1.height * 1.0]
+        pos2 = [pos1.x0 - 0.00, pos1.y0 - 0.00, pos1.width * 1.00, pos1.height * 1.0]
         ax3.set_position(pos2)
         ax3.set_position(pos2)
         plt.legend(bbox_to_anchor=(1.3, 1.0))

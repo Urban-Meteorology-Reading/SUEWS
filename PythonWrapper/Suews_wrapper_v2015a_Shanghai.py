@@ -1,10 +1,12 @@
 import numpy as np
-import suewsdataprocessing_v2
+import suewsdataprocessing
+import suewsplotting
 import subprocess
 import f90nml
 import os
 
 su = suewsdataprocessing_v2.SuewsDataProcessing()
+pl = suewsplotting_v1.SuewsPlotting()
 
 # read namelist, Runcontrol.nml
 nml = f90nml.read('RunControl.nml')
@@ -111,7 +113,4 @@ for j in range(2, index):
 
     if KeepTstepFilesOut == 0:
         os.remove(suews_5min)
-
-
-
 

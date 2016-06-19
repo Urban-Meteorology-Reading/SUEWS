@@ -4,8 +4,8 @@ __author__ = 'xlinfr'
 def wrapper(pathtoplugin):
 
     import numpy as np
-    import suewsdataprocessing_v3
-    import suewsplotting_v1
+    import suewsdataprocessing
+    import suewsplotting
     import subprocess
     import f90nml
     import os
@@ -21,10 +21,10 @@ def wrapper(pathtoplugin):
         nomatplot = 1
         pass
 
-    su = suewsdataprocessing_v3.SuewsDataProcessing()
-    pl = suewsplotting_v1.SuewsPlotting()
+    su = suewsdataprocessing.SuewsDataProcessing()
+    pl = suewsplotting.SuewsPlotting()
 
-    # read namelist, Runcontrol.nml
+    ### read namelist, Runcontrol.nml
     nml = f90nml.read(pathtoplugin + '/RunControl.nml')
     fileinputpath = nml['runcontrol']['fileinputpath']
     fileoutputpath = nml['runcontrol']['fileoutputpath']
@@ -32,18 +32,18 @@ def wrapper(pathtoplugin):
     multiplemetfiles = nml['runcontrol']['multiplemetfiles']
     snowuse = nml['runcontrol']['snowuse']
 
-    # Working folder
-    #wf = os.getcwd()
+    ### Working folder
+    if not os.path.exists(fileoutputpath):
+        os.mkdir(fileoutputpath)
     wf = pathtoplugin
-    prog_name = 'SUEWS_V2015a'
+    prog_name = 'SUEWS_V2016a'
 
     ### open SiteSelect to get year and gridnames
-    SiteIn = wf + fileinputpath[1:] + 'SUEWS_SiteSelect.txt'
+    SiteIn = fileinputpath + 'SUEWS_SiteSelect.txt'
     f = open(SiteIn)
     lin = f.readlines()
     index = 2
     loop_out = ''
-    YYYY_old = -9876
     while loop_out != '-9':
         lines = lin[index].split()
         YYYY = int(lines[1])
@@ -52,7 +52,7 @@ def wrapper(pathtoplugin):
         if multiplemetfiles == 0: # one metfile
             if index == 2:
                 gridcode1 = lines[0]
-                data_in = wf + fileinputpath[1:] + filecode + gridcode1 + '_data.txt'
+                data_in = fileinputpath + filecode + '_data.txt' # No grid code in the name, nov 2015
                 met_old = np.loadtxt(data_in, skiprows=1)
                 if met_old[1, 3] - met_old[0, 3] == 5:
                     met_new = met_old
@@ -61,7 +61,7 @@ def wrapper(pathtoplugin):
         else:  # multiple metfiles
             if index == 2:
                 gridcode1 = lines[0]
-                data_in = wf + fileinputpath[1:] + filecode + gridcode1 + '_data.txt'
+                data_in = fileinputpath + filecode + gridcode1 + '_data.txt'
                 met_old = np.loadtxt(data_in, skiprows=1)
                 if met_old[1, 3] - met_old[0, 3] == 5:
                     met_new = met_old
@@ -71,7 +71,7 @@ def wrapper(pathtoplugin):
                 gridcode2 = lines[0]
                 if gridcode2 != gridcode1:
                     gridcode1 = gridcode2
-                    data_in = wf + fileinputpath[1:] + filecode + gridcode1 + '_data.txt'
+                    data_in = fileinputpath + filecode + gridcode1 + '_data.txt'
                     met_old = np.loadtxt(data_in, skiprows=1)
                     if met_old[1, 3] - met_old[0, 3] == 5:
                         met_new = met_old
@@ -93,10 +93,10 @@ def wrapper(pathtoplugin):
         else:
             ending = posend[0]
 
-        met_save = met_new[starting:ending + fixpos, :]  ## original for on full year
+        met_save = met_new[starting:ending + fixpos, :]  ## originally for one full year
 
         ### save file
-        data_out = wf + fileinputpath[1:] + filecode + gridcode1 + '_' + str(YYYY) + '_data_5.txt'
+        data_out = fileinputpath + filecode + gridcode1 + '_' + str(YYYY) + '_data_5.txt'
         header = 'iy id it imin qn qh qe qs qf U RH Tair pres rain kdown snow ldown fcld wuh xsmd lai kdiff kdir wdir'
         numformat = '%3d %2d %3d %2d %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.4f %6.2f %6.2f %6.2f %6.2f ' \
                     '%6.4f %6.2f %6.2f %6.2f %6.2f %6.2f'
@@ -110,34 +110,38 @@ def wrapper(pathtoplugin):
         loop_out = lines[0]
         index += 1
 
+
     ### This part runs the model ###
     pf = sys.platform
-    suewsstring1 = 'cd ' + os.path.dirname(os.path.abspath(__file__)) + '\n'
-
-        ### This part runs the model ###
     if pf == 'win32':
         suewsstring0 = 'REM' + '\n'
         suewsstring1 = 'cd ' + os.path.dirname(os.path.abspath(__file__)) + '\n'
         suewsstring2 = os.path.dirname(os.path.abspath(__file__)) + os.path.sep + prog_name
         suewsbat = wf + '/runsuews.bat'
+        f = open(suewsbat, 'w')
 
-    if (pf == 'darwin' or pf == 'linux'):
+    if pf == 'darwin' or pf == 'linux2':
         suewsstring0 = '#!/bin/bash' + '\n'
         suewsstring1 = 'cd ' + os.path.dirname(os.path.abspath(__file__)) + '\n'
         suewsstring2 = os.path.dirname(os.path.abspath(__file__)) + os.path.sep + prog_name
         suewsbat = wf + '/runsuews.sh'
+        f = open(suewsbat, 'w')
         st = os.stat(wf + '/runsuews.sh')
-        os.chmod(wf + '/runsuews.sh', st.st_mode | st.S_IXUSR | st.S_IXGRP | st.S_IXOTH)
+        os.chmod(wf + '/runsuews.sh', st.st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+        st2 = os.stat(wf + '/' + prog_name)
+        os.chmod(wf + '/' + prog_name, st2.st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
-    f = open(suewsbat, 'w')
     f.write(suewsstring0)
     f.write(suewsstring1)
     f.write(suewsstring2)
     f.close()
 
-    si = subprocess.STARTUPINFO()
-    si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    if pf == 'win32':
+        si = subprocess.STARTUPINFO()
+        si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+
     subprocess.call(suewsbat)
+
 
     ### This part makes hourly averages from SUEWS 5 min output ###
 
@@ -145,7 +149,7 @@ def wrapper(pathtoplugin):
     KeepTstepFilesIn = nml['runcontrol']['KeepTstepFilesIn']
     KeepTstepFilesOut = nml['runcontrol']['KeepTstepFilesOut']
 
-    ## open SUEWS_output.f95 to get format and header of output file NOT READY
+    ## open SUEWS_output.f95 to get format and header of output file
     SiteIn = wf + '/SUEWS_Output.f95'
     f = open(SiteIn)
     lin2 = f.readlines()
@@ -173,6 +177,8 @@ def wrapper(pathtoplugin):
         if formatline > -1:
             formatstart = i
 
+
+    # This part aims to convert f90 numformat tp python. Not ready yet.
     # first = 1
     # formend = 0
     # pynumformat = ""
@@ -215,6 +221,8 @@ def wrapper(pathtoplugin):
     #     else:
     #         formend = 1
 
+
+    # Hard-coded python numformat
     pynumformat = '%4i ' + '%3i ' * 3 + '%8.5f ' +\
     '%9.4f ' * 5  + '%9.4f ' * 7 +\
     '%10.6f ' * 4 +\
@@ -223,7 +231,7 @@ def wrapper(pathtoplugin):
     '%9.3f ' * 2  + '%9.4f ' * 4 +\
     '%10.5f ' * 3 + '%14.7g ' * 1 + '%10.5f ' * 1 +\
     '%10.4f ' * 2 + '%10.5f ' * 6 + '%10.5f ' * 7 +\
-    '%10.4f ' * 1 +\
+    '%10.4f ' * 3 +\
     '%10.4f ' * 5 + '%10.6f ' * 6 +\
     '%8.4f' * 1
 
@@ -239,7 +247,6 @@ def wrapper(pathtoplugin):
                   'MwStore_Water DensSnow_Paved DensSnow_Bldgs DensSnow_EveTr DensSnow_DecTr DensSnow_Grass ' \
                   'DensSnow_BSoil DensSnow_Water Sd_Paved Sd_Bldgs Sd_EveTr Sd_DecTr Sd_Grass Sd_BSoil Sd_Water ' \
                   'Tsnow_Paved Tsnow_Bldgs Tsnow_EveTr Tsnow_DecTr Tsnow_Grass Tsnow_BSoil Tsnow_Water'
-
 
     pynumformat_snow = '%4i ' + '%3i ' * 3 + '%8.5f ' + '%10.4f ' * 97
 
@@ -268,17 +275,18 @@ def wrapper(pathtoplugin):
         else:
             headend = 1
 
-    # header = '%iy id it imin dectime ' \
-    #          'kdown kup ldown lup Tsurf qn h_mod e_mod qs QF QH QE ' \
-    #          'P/i Ie/i E/i Dr/i ' \
-    #          'St/i NWSt/i surfCh/i totCh/i ' \
-    #          'RO/i ROsoil/i ROpipe ROpav ROveg ROwater ' \
-    #          'AdditionalWater FlowChange WU_int WU_EveTr WU_DecTr WU_Grass ' \
-    #          'RA RS ustar L_mod Fcld ' \
-    #          'SoilSt smd smd_Paved smd_Bldgs smd_EveTr smd_DecTr smd_Grass smd_BSoil ' \
-    #          'St_Paved St_Bldgs St_EveTr St_DecTr St_Grass St_BSoil St_Water ' \
-    #          'LAI ' \
-    #          'qn1_SF qn1_S Qm QmFreez Qmrain SWE Mw MwStore snowRem_Paved snowRem_Bldgs ChSnow/i alb_snow '
+    header = '%iy id it imin dectime ' \
+             'kdown kup ldown lup Tsurf qn h_mod e_mod qs qf qh qe ' \
+             'P/i Ie/i E/i Dr/i ' \
+             'St/i NWSt/i surfCh/i totCh/i ' \
+             'RO/i ROsoil/i ROpipe ROpav ROveg ROwater ' \
+             'AdditionalWater FlowChange WU_int WU_EveTr WU_DecTr WU_Grass ' \
+             'RA RS ustar L_mod Fcld ' \
+             'SoilSt smd smd_Paved smd_Bldgs smd_EveTr smd_DecTr smd_Grass smd_BSoil ' \
+             'St_Paved St_Bldgs St_EveTr St_DecTr St_Grass St_BSoil St_Water ' \
+             'LAI z0m zdm ' \
+             'qn1_SF qn1_S Qm QmFreez Qmrain SWE Mw MwStore snowRem_Paved snowRem_Bldgs ChSnow/i ' \
+             'SnowAlb '
 
     TimeCol_snow = np.array([1, 2, 3, 4, 5]) - 1
     SumCol_snow = np.array([13, 14, 15, 16, 17, 18, 19, 47, 48, 49, 50, 51, 52, 53, 68, 69, 70, 71, 72, 73, 74]) - 1
@@ -288,16 +296,16 @@ def wrapper(pathtoplugin):
         lines = lin[j].split()
         YYYY = int(lines[1])
         gridcode = lines[0]
-        data_out = wf + fileinputpath[1:] + filecode + gridcode + '_' + str(YYYY) + '_data_5.txt'
-        suews_5min = wf + fileoutputpath[1:] + filecode + gridcode + '_' + str(YYYY) + '_5.txt'
-        suews_out = wf + fileoutputpath[1:] + filecode + gridcode + '_' + str(YYYY) + '_60.txt'
+        data_out = fileinputpath + filecode + gridcode + '_' + str(YYYY) + '_data_5.txt'
+        suews_5min = fileoutputpath + filecode + gridcode + '_' + str(YYYY) + '_5.txt'
+        suews_out = fileoutputpath + filecode + gridcode + '_' + str(YYYY) + '_60.txt'
         suews_in = np.loadtxt(suews_5min, skiprows=1)
         suews_1hour = su.from5minto1hour_v1(suews_in, SumCol, LastCol, TimeCol)
         np.savetxt(suews_out, suews_1hour, fmt=pynumformat, delimiter=' ', header=header, comments='')  #, fmt=numformat
 
         if snowuse == 1:
-            suews_5min_snow = wf + fileoutputpath[1:] + filecode + gridcode + '_' + str(YYYY) + '_snow_5.txt'
-            suews_out_snow = wf + fileoutputpath[1:] + filecode + gridcode + '_' + str(YYYY) + '_snow_60.txt'
+            suews_5min_snow = fileoutputpath + filecode + gridcode + '_' + str(YYYY) + '_snow_5.txt'
+            suews_out_snow = fileoutputpath + filecode + gridcode + '_' + str(YYYY) + '_snow_60.txt'
             suews_in_snow = np.loadtxt(suews_5min_snow, skiprows=1)
             suews_1hour_snow = su.from5minto1hour_v1(suews_in_snow, SumCol_snow, LastCol_snow, TimeCol_snow)
             np.savetxt(suews_out_snow, suews_1hour_snow, fmt=pynumformat_snow, delimiter=' ', header=header_snow, comments='')  #, fmt=numformat
@@ -306,7 +314,7 @@ def wrapper(pathtoplugin):
             os.remove(data_out)
 
         if KeepTstepFilesIn == 0 and multiplemetfiles == 0 and gridcode==gridcode1:
-            os.remove(wf + fileinputpath[1:] + filecode + gridcode + '_' + str(YYYY) + '_data_5.txt')
+            os.remove(fileinputpath + filecode + gridcode + '_' + str(YYYY) + '_data_5.txt')
 
         if KeepTstepFilesOut == 0:
             os.remove(suews_5min)
@@ -331,7 +339,7 @@ def wrapper(pathtoplugin):
             if chooseyearbasic:
                 YYYY = chooseyearbasic
 
-            suews_out = wf + fileoutputpath[1:] + filecode + gridcode + '_' + str(YYYY) + '_60.txt'
+            suews_out = fileoutputpath + filecode + gridcode + '_' + str(YYYY) + '_60.txt'
 
             if chooseyearbasic or choosegridbasic:
                 suews_1hour = np.loadtxt(suews_out, skiprows=1)
@@ -345,7 +353,7 @@ def wrapper(pathtoplugin):
             if chooseyearstat:
                 YYYY = chooseyearstat
 
-            suews_out = wf + fileoutputpath[1:] + filecode + gridcode + '_' + str(YYYY) + '_60.txt'
+            suews_out = fileoutputpath + filecode + gridcode + '_' + str(YYYY) + '_60.txt'
 
             if chooseyearbasic or choosegridbasic:
                 suews_1hour = np.loadtxt(suews_out, skiprows=1)
@@ -356,7 +364,7 @@ def wrapper(pathtoplugin):
         if plotmonthlystat == 1:
             plt.show()
 
-        if plotbasic == 1:   # or plotmonthlystat == 1
+        if plotbasic == 1:
             plt.show()
     else:
         print("No plots generated - No matplotlib installed")
@@ -379,5 +387,7 @@ def wrapper(pathtoplugin):
     # ax3.plot(precip + wu - st - drain - evap)
 
     # plt.show()
+
+
 
 

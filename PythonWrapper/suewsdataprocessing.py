@@ -166,8 +166,8 @@ class SuewsDataProcessing:
             G = met_old[:, 6].copy()
             D = met_old[:, 7].copy()
             I = met_old[:, 8].copy()
-            Ws = met_old[:, 9].copy()
-            press = met_old[:, 9].copy() * 0 - 999
+            Ws = met_old[:, 8].copy() * 0 - 999
+            press = met_old[:, 8].copy() * 0 - 999
 
             # Moving one hour
             Ta[1:np.size(Ta)] = Ta[0:np.size(Ta) - 1]
@@ -363,8 +363,7 @@ class SuewsDataProcessing:
             # inputnew = 'M:/SOLWEIG/Inputdata/metdata/2015a/gbg20051011_2015a.txt'
             #f = open(inputnew, 'r')
             #header = f.readline()
-            header = '%iy id  it imin   Q*      QH      QE      Qs      Qf    Wind    RH     Td     press   rain ' \
-                     '   Kdn    snow    ldown   fcld    wuh     xsmd    lai_hr  Kdiff   Kdir    Wd'
+            header = 'iy id it imin qn qh qe qs qf U RH Tair pres rain kdown snow ldown fcld wuh xsmd lai kdiff kdir wdir'
 
             met_new[:, 0] = yyyy
             met_new[:, 1] = doy
@@ -398,7 +397,7 @@ class SuewsDataProcessing:
                 met_new[:, 22] = wdir
 
             # #Save as text files
-            numformat = '%3d %2d %3d %2d %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f'
+            numformat = '%d %d %d %d %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f'
             np.savetxt(outputdata, met_new, fmt=numformat, header=header, comments='')
 
         else:  # v2014a

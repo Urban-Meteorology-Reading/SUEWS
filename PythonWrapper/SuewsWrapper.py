@@ -1,10 +1,18 @@
-__author__ = 'xlinfr'
+"""
+ SUEWS WRAPPER
 
-import Suews_wrapper_v12
+This python file is the main file for the SUEWS model.
+
+author: Fredrik Lindberg, fredrikl@gvc.gu.se
+
+"""
+
+#import Suews_wrapper_v2015a
+import Suews_wrapper_v2016a
 import os
-import Tkinter
 import FileDialog
 
-# working_path = os.path.dirname(__file__)
 working_path = os.getcwd()
-Suews_wrapper_v12.wrapper(working_path)
+
+#Suews_wrapper_v2015a.wrapper(working_path)
+Suews_wrapper_v2016a.wrapper(working_path)

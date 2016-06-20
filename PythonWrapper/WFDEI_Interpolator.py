@@ -33,6 +33,8 @@ import csv
 import pandas as pd
 
 
+a = Astral()
+
 # determing grid index according to coordinates
 def lon_lat_grid(lat, lon):
     lon_deci = lon - int(lon)
@@ -78,7 +80,7 @@ def WFDEI_get_city_index(lat, lon):
     with open('WFDEI-land-long-lat-height.txt') as f:
         ls = [line.split() for line in f]
     for i in range(7, len(ls)):
-        if float(ls[i][0]) == lat and float(ls[i][1]) == lon:
+        if float(ls[i][0]) == lon and float(ls[i][1]) == lat:
             return int(ls[i][4]), int(ls[i][3])
             break
 
@@ -258,7 +260,7 @@ def write_SUEWS_forcing_1h(WFDEI_path, output_path, year_start, year_end, lat, l
                                 index=False, float_format='%.4f')
         print(file_output_year)
 
-    print('*************** Interpolation succeed! *************** ')
+    print('*************** Interpolation succeeded! *************** ')
 
 
 
@@ -267,10 +269,10 @@ def write_SUEWS_forcing_1h(WFDEI_path, output_path, year_start, year_end, lat, l
 # provide parameters here
 ################################################################################
 # read in data from WFDEI files
-# filepath='/Users/sunt05/Documents/Data/WFDEI/'
-input_path = '/Volumes/DATA-TS/WFDEI/'
+input_path='/Users/sunt05/Documents/Data/WFDEI/'
+# input_path = '/Volumes/DATA-TS/WFDEI/'
 output_path = '~/Downloads'
-year_start, year_end = 1979, 2014
+year_start, year_end = 2012, 2012
 lat, lon = 51.51, -0.12
 # city = a["London"]
 # lat, lon = lon_lat_grid(city.latitude, city.longitude)

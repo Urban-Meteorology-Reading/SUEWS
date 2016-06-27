@@ -9,24 +9,19 @@
 !  - then over rows
 !  - then over grids
 !
+!Last modified by HCW 27 Jun 2016 - Re-corrected grid number for output files. N.B. Gridiv seems to have been renamed iGrid
+!                                 - Met file no longer has grid number attached if same met data used for all grids
 !Last modified by HCW 24 May 2016 - InitialConditions file naming altered
 !                                   Unused year_txt argument removed from InitialState
 !                 LJ  30 Mar 2016 - Grid run order changed from linear to non-linear
-!Last modified by TS 14 Mar 2016  - Include AnOHM daily interation
+!Last modified by TS 14 Mar 2016  - Include AnOHM daily iteration
 !Last modified by HCW 25 Jun 2015 - Fixed bug in LAI calculation at year change
 !Last modified by HCW 12 Mar 2015
 !Last modified by HCW 26 Feb 2015
 !Last modified by HCW 03 Dec 2014
-!Last modified by LJ  30 Mar 2016 - Grid run order changed from linear to non-linear
-!                 HCW 25 Jun 2015 - Fixed bug in LAI calculation at year change
-!                 HCW 12 Mar 2015
-!                 HCW 26 Feb 2015
-!                 HCW 03 Dec 2014
 !
 ! To do:
-!   - Snow modules need updating for water balance part
 !   - Water movement between grids (GridConnections) not yet coded
-!   - Check all arrays are allocated/deallocated and initialised in the correct place
 !::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 PROGRAM SUEWS_Program
 
@@ -43,7 +38,8 @@ PROGRAM SUEWS_Program
   CHARACTER(len = 4) ::year_txt  !Year as a text string
 
   CHARACTER(len = 20)::FileCodeX,& !Current file code
-       FileCodeXWY !File code without year
+       FileCodeXWY,& !File code without year
+       FileCodeXWG !File code without grid
   CHARACTER(len = 20)::grid_txt, & !Grid number as a text string (from FirstGrid to LastGrid)
        tstep_txt   !Model timestep (in minutes) as a text string
 
@@ -166,7 +162,12 @@ PROGRAM SUEWS_Program
      ! Get met file name for this year for this grid
      FileCodeX = TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt)
      FileMet   = TRIM(FileInputPath)//TRIM(FileCodeX)//'_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
-
+     !If each grid has the same met file, met file name does not include grid number (HCW 27 Jun 2016)
+     IF(MultipleMetFiles /= 1) THEN   
+        FileCodeXWG=TRIM(FileCode)//'_'//TRIM(year_txt) !File code without grid 
+        FileMet=TRIM(FileInputPath)//TRIM(FileCodeXWG)//'_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
+     ENDIF      
+          
      ! Open this example met file
      OPEN(10,file=TRIM(FileMet),status='old',err=314)
      CALL skipHeader(10,SkipHeaderMet)  !Skip header
@@ -274,7 +275,9 @@ PROGRAM SUEWS_Program
               FileMet=TRIM(FileInputPath)//TRIM(FileCodeX)//'_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
               CALL SUEWS_InitializeMetData(1)
            ELSE                             !If one met file used for all grids
-              FileMet=TRIM(FileInputPath)//TRIM(FileCodeX)//'_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
+              !FileMet=TRIM(FileInputPath)//TRIM(FileCodeX)//'_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
+              ! If one met file used for all grids, look for met file with no grid code (FileCodeXWG)
+              FileMet=TRIM(FileInputPath)//TRIM(FileCodeXWG)//'_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
               IF(igrid == 1) THEN       !Read for the first grid only
                  CALL SUEWS_InitializeMetData(1)
               ELSE                          !Then for subsequent grids simply copy data
@@ -282,6 +285,18 @@ PROGRAM SUEWS_Program
               ENDIF
            ENDIF
 
+           ! Initialise ESTM if required, TS 05 Jun 2016; moved inside grid loop HCW 27 Jun 2016
+           IF(QSChoice==4 .OR. QSChoice==14) THEN
+              IF(MultipleESTMFiles  == 1) THEN  !if separate ESTM files for each grid
+                 FileESTMTs=TRIM(FileInputPath)//TRIM(FileCodeX)//'_ESTM_Ts_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'             
+                 CALL ESTM_initials(FileCodeX)
+              ELSE   !if one ESMT file for all grids
+                 FileESTMTs=TRIM(FileInputPath)//TRIM(FileCodeXWG)//'_ESTM_Ts_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'             
+                 CALL ESTM_initials(FileCodeX)
+              ENDIF
+          ENDIF    
+           
+           
            GridCounter = GridCounter+1   !Increase GridCounter by 1 for next grid
 
         ENDDO !end loop over grids
@@ -293,9 +308,7 @@ PROGRAM SUEWS_Program
         IF((CBLuse==1).OR.(CBLuse==2)) CALL CBL_ReadInputData
         IF(SOLWEIGuse==1) CALL SOLWEIG_initial
 
-        ! Initialise ESTM if required, TS 05 Jun 2016
-        IF(QSChoice==4 .OR. QSChoice==14) CALL ESTM_initials(FileCodeX)
-
+            
         !write(*,*) 'Initialisation done'
         ! First stage: initialisation done ----------------------------------
 
@@ -337,7 +350,7 @@ PROGRAM SUEWS_Program
                  WRITE(grid_txt,'(I5)') GridIDmatrix(igrid)   !Get grid ID as a text string
                  FileCodeX=TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt)
                  IF(ir==1) THEN
-                    WRITE(*,*) TRIM(ADJUSTL(FileCodeX)),': Now running block ',iv,'/',ReadBlocksMetData,' of ',TRIM(year_txt),'...'
+                     WRITE(*,*) TRIM(ADJUSTL(FileCodeX)),': Now running block ',iv,'/',ReadBlocksMetData,' of ',TRIM(year_txt),'...'
                  ENDIF
                  CALL SUEWS_Calculations(GridCounter,ir,iv,irMax)
 
@@ -405,8 +418,8 @@ PROGRAM SUEWS_Program
 
         ! Write output files in blocks --------------------------------
         DO igrid=1,NumberOfGrids
-           !              call SUEWS_Output(igrid,year_int,iv,irMax,GridIDmatrix(igrid))
-           CALL SUEWS_Output(igrid,year_int,iv,irMax)
+           CALL SUEWS_Output(igrid,year_int,iv,irMax,GridIDmatrix(igrid))  !GridIDmatrix required for correct naming of output files
+           !CALL SUEWS_Output(igrid,year_int,iv,irMax)
         ENDDO
 
      ENDDO !end loop over blocks of met data

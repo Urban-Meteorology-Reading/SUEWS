@@ -11,7 +11,7 @@
 ! HCW 18 Nov 2014
 ! LJ 5 Jan 2015: code cleaned, daily and monthly filesaving added
 !-----------------------------------------------------------------------------------------------
-SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax)
+SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  GridID)
   !INPUT: Gridiv = Grid number
   !       year_int = Year as a integer
   !       iv = Block number of met data
@@ -32,13 +32,13 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax)
   IMPLICIT NONE
 
   INTEGER::i ,azero!,lfnOutC
-  INTEGER:: Gridiv, year_int, iv, irMax
+  INTEGER:: Gridiv, year_int, iv, irMax, GridID
   CHARACTER(len=10):: str2, grstr2, yrstr2
   CHARACTER(len=100):: rawpath, SnowOut,ESTMOut
 
   !================DEFINE OUTPUT FILENAME AND ITS PATH================
   WRITE(str2,'(i2)') TSTEP/60
-  WRITE(grstr2,'(i5)') Gridiv
+  WRITE(grstr2,'(i5)') GridID
   WRITE(yrstr2,'(i4)') year_int
 
   rawpath=TRIM(FileOutputPath)//TRIM(FileCode)//TRIM(ADJUSTL(grstr2))//'_'//TRIM(ADJUSTL(yrstr2))

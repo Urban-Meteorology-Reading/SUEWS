@@ -49,6 +49,7 @@ SUBROUTINE OverallRunControl
        SkipHeaderSiteInfo,&
        SkipHeaderMet,&
        MultipleMetFiles,&
+       MultipleESTMFiles,&
        KeepTstepFilesIn,&
        KeepTstepFilesOut,&
        WriteSurfsFile,&
@@ -1720,7 +1721,7 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv)
 
   !At this point translate arrays to variables (needed for RoughnessParameters)
   CALL SUEWS_Translate(Gridiv,0,0)
-  PRINT*, 'id_prev in initial after translate',id_prev
+  !PRINT*, 'id_prev in initial after translate',id_prev
 
   !Calculation of roughness parameters (N.B. uses porosity)
   CALL RoughnessParameters
@@ -2039,7 +2040,7 @@ SUBROUTINE SUEWS_InitializeMetData(lunit)
   REAL(KIND(1d0)):: imin_prev, ih_prev, iday_prev, tstep_met   !For checks on temporal resolution of met data
 
   !---------------------------------------------------------------
-
+ 
   !Open the file for reading and read the actual data
   !write(*,*) fileMet
   OPEN(lunit,file=TRIM(fileMet),status='old',err=314)

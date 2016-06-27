@@ -39,7 +39,7 @@ SUBROUTINE ESTM_initials(FileCodeX)
   !REAL(KIND(1d0)) :: t5min
   REAL(KIND(1d0))::W,WB
   CHARACTER (len=20),INTENT(in)::FileCodeX
-  CHARACTER (len=150)::FileESTMTs, FileFinalTemp
+  CHARACTER (len=150):: FileFinalTemp
   CHARACTER (len=20):: tstep_txt
   LOGICAL:: inittemps=.FALSE.
 
@@ -67,9 +67,7 @@ SUBROUTINE ESTM_initials(FileCodeX)
   TFLOOR=20.0 ! This is used only when radforce =T  !HCW should this be put in the namelist instead?
   
   !=======Read ESTM input file===============================================================
-  WRITE(tstep_txt,'(I5)') tstep/60  !Get tstep (in minutes) as a text string 
-  FileESTMTs=TRIM(FileInputPath)//TRIM(FileCodeX)//'_ESTM_Ts_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
-  
+    
   OPEN(101,file=TRIM(FileESTMTs),status='old',action='read',err=315)
   CALL skipHeader(101,SkipHeaderMet)  !Skip header
   ! Find number of lines in ESTM data file

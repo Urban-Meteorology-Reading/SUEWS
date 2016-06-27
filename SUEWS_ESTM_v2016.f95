@@ -3,6 +3,7 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv)
  
   !SUEWS_ESTM_v2016
   ! Last modified HCW 14 Jun 2016
+  !               HCW 27 Jun 2016 Corrected iESTMcount bug - now increases for all grids together
     
   !Contains calculation for each time step
   !Calculate local scale heat storage from single building and surroundings observations
@@ -188,7 +189,8 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv)
   ! Get air temperature and convert to Kelvin 
   Tair1=Temp_C+C2K
   
-  iESTMcount = iESTMcount+1   ! Set to zero in ESTM_initials
+  !iESTMcount = iESTMcount+1   ! Set to zero in ESTM_initials
+  IF(Gridiv == 1) iESTMcount = iESTMcount+1   !Add 1 to iESTMcount only once for all grids
   Tinternal  = Ts5mindata(iESTMcount,cTs_Tiair)
   Tsurf_all  = Ts5mindata(iESTMcount,cTs_Tsurf)
   Troof_in   = Ts5mindata(iESTMcount,cTs_Troof)
@@ -504,7 +506,7 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv)
   ELSE
      Tibldout=Tibld
   ENDIF
-
+  
   dataOutESTM(iESTMcount,1:32,Gridiv)=(/REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),&
        REAL(it,KIND(1D0)),REAL(imin,KIND(1D0)),dectime,Qsnet,Qsair,Qswall,Qsroof,Qsground,Qsibld,&!11
        Twallout,Troofout,Tgroundout,Tibldout,Tievolve/)!21

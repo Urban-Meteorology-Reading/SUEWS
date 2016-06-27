@@ -16,7 +16,7 @@ MODULE allocateArray
   IMPLICIT NONE
 
   ! ---- Set parameters for reading in data ------------------------------------------------------
-  INTEGER, PARAMETER:: MaxNumberOfGrids=1000   !Max no. grids   !HCW changed to 1000 from 10000 so prog can run on windows (2GB lim)
+  INTEGER, PARAMETER:: MaxNumberOfGrids=2000   !Max no. grids   !HCW changed to 2000 from 10000 so prog can run on windows (2GB lim)
   INTEGER, PARAMETER:: MaxLinesMet=8640        !Max no. lines to read in one go (for all grids, ie MaxLinesMet/NumberOfGrids each)
 
   ! ---- Set number of columns in input files ----------------------------------------------------
@@ -763,6 +763,7 @@ MODULE data_in
        FileChoices,&     !Run characteristics file name
        FileMet,&         !Meteorological forcing file name
        FileDaily,&       !Daily State output file name
+       FileESTMTs,&      !ESTM input file name   
        SOLWEIGpoiOut,&   !SOLWEIG poi file name
        BLout             !CLB output file name
 
@@ -770,6 +771,7 @@ MODULE data_in
   INTEGER:: AnthropHeatChoice,&    !QF in met file (0); Loridan et al. 2010 (1); Jarvi et al. 2011 (2)
        CBLuse,&               !CBL slab model used (1) or not used (0)
        MultipleMetFiles,&     !Indicates whether a single met file is used for all grids (0) or one for each grid (1)
+       MultipleESTMFiles,&    !Indicates whether a single ESTM input data file is used for all grids (0) or one for each grid (1)
        KeepTstepFilesIn,&     !Delete (0) or keep (1) input met files at resolution of tstep (used by python, not fortran)
        KeepTstepFilesOut,&    !Delete (0) or keep (1) output files at resolution of tstep (used by python, not fortran)
        WriteSurfsFile,&       !Write output file containing variables for each surface (1) or not (0). Not currently used!!

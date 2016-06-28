@@ -3,6 +3,7 @@ __author__ = 'Fredrik Lindberg'
 # This class will be used to prepare input met data into UMEP
 
 import numpy as np
+import datetime
 
 
 def leap_year(yy):
@@ -40,7 +41,8 @@ class SuewsDataProcessing:
         index = 0
         leapyear = 0
 
-        if nsh < 1:  # put code here to make longer timestep
+        if nsh < 1:
+            #TODO:  put code here to make longer timestep
             notused = []
         else:  # interpolate to five minute
 
@@ -53,49 +55,21 @@ class SuewsDataProcessing:
                 hh = it[i]
                 mins = imin[i]
 
-                if dd == 1 and hh == 0:
-                    endofyear = 1
-                    if i > 0:
-                        leapyear = leap_year(iy[i] - 1)
-                else:
-                    endofyear = 0
-                    if i > 0:
-                        leapyear = leap_year(iy[i] - 1)
-
-                hh -= 1
-
-                if (endofyear == 1) or (i == 0 and dd == 1 and hh == -1): # end of YYYY
-                    yyyy -= 1
-                    dd = 365 + leapyear
+                ymdhm = datetime.datetime(int(yyyy), 1, 1) + datetime.timedelta(days=int(dd - 1), hours=int(hh), minutes=mins)
 
                 for j in range(0, nsh):
-                    mins += 5
-                    if hh == - 1:
-                        hh = 23
-                        if endofyear == 0:
-                        #    yyyy -= 1
-                            dd -= 1
-                    if mins == 60: # changing hour
-                        mins = 0
-                        if hh == 23: # changing day
-                            hh = 0
-                            dd += 1
-                            if endofyear == 1:
-                                yyyy += 1
-                                dd = 1
-                        else:
-                            hh += 1
 
-                    met_new[index, 0] = yyyy
-                    met_new[index, 1] = dd
-                    met_new[index, 2] = hh
-                    met_new[index, 3] = mins
+                    timestep = ymdhm - datetime.timedelta(minutes=timeres_old - 5 * j)
+                    met_new[index, 0] = timestep.year
+                    met_new[index, 1] = timestep.timetuple().tm_yday
+                    met_new[index, 2] = timestep.hour
+                    met_new[index, 3] = timestep.minute
                     index += 1
 
             index = 0
             for i in range(0, met_old.shape[0] - 1): # Making 5min metdata
                 met_now = met_old[i, 4:24]
-                if i > met_old.shape[0] - 2: #=
+                if i > met_old.shape[0] - 2:
                     met_next = met_old[i, 4:24]
                 else:
                     met_next = met_old[i + 1, 4:24]
@@ -124,6 +98,67 @@ class SuewsDataProcessing:
 
         return met_new
 
+    def ts_tofivemin_v1(self, met_old):
+
+        # Time columns
+        iy = met_old[:, 0]
+        id = met_old[:, 1]
+        it = met_old[:, 2]
+        imin = met_old[:, 3]
+
+        # first figure out the time res of input file
+        dectime0 = id[0] + it[0] / 24 + imin[0] / (60 * 24)
+        dectime1 = id[1] + it[1] / 24 + imin[1] / (60 * 24)
+        timeres_old = np.round((dectime1 - dectime0) * (60 * 24))
+        nsh = int(timeres_old / 5)
+        index = 0
+        leapyear = 0
+
+        if nsh < 1:  # put code here to make longer timestep
+            notused = []
+        else:  # interpolate to five minute
+
+            met_new = np.zeros(((met_old.shape[0]) * nsh, 13)) - 999
+
+            for i in range(0, met_old.shape[0]): # writing time columns
+
+                yyyy = iy[i]
+                dd = id[i]
+                hh = it[i]
+                mins = imin[i]
+
+                ymdhm = datetime.datetime(int(yyyy), 1, 1, 0) + datetime.timedelta(days=int(dd - 1), hours=int(hh), minutes=mins)
+
+                for j in range(0, nsh):
+
+                    timestep = ymdhm - datetime.timedelta(minutes=timeres_old - 5 * j)
+                    met_new[index, 0] = timestep.year
+                    met_new[index, 1] = timestep.timetuple().tm_yday
+                    met_new[index, 2] = timestep.hour
+                    met_new[index, 3] = timestep.minute
+                    index += 1
+
+            index = 0
+            for i in range(0, met_old.shape[0] - 1): # Making 5min metdata
+                met_now = met_old[i, 4:13]
+                if i > met_old.shape[0] - 2:
+                    met_next = met_old[i, 4:13]
+                else:
+                    met_next = met_old[i + 1, 4:13]
+
+                for j in range(0, nsh):
+
+                    met_new[index + int(nsh / 2), 4:13] = met_now - (met_next - met_now) / (2 * nsh) + (met_next - met_now) / nsh * (j + 1)
+
+                    if (i == 1 and j == 0): # fixing beginning of file
+                        met_new[0:int(nsh / 2), 4:13] = met_new[int(nsh / 2), 4:13]
+
+                    index += 1
+
+            met_new[index + int(nsh / 2):met_new.shape[0], 4:13] = met_new[index + int(nsh / 2) - 1, 4:13] # fixing end of files
+
+        return met_new
+
 
     def from5minto1hour_v1(self, results, SumCol, LastCol, TimeCol):
 
@@ -141,6 +176,24 @@ class SuewsDataProcessing:
             suews_1h[i, TimeCol] = results[i * 12 + 11, TimeCol]
 
         return suews_1h
+
+    def from5mintoanytime(self, results, SumCol, LastCol, TimeCol, minint):
+
+        splitparts = minint / 5
+        suews_anytime = np.zeros((results.shape[0] / splitparts, results.shape[1]))
+
+        for i in range(0, suews_anytime.shape[0]):
+            suews_anytime[i, 5:results.shape[1] - 1] = np.mean(results[i * splitparts: i * splitparts + splitparts, 5:results.shape[1] - 1], axis=0)
+
+            for j in range(0, SumCol.__len__()):
+                suews_anytime[i, SumCol[j]] = np.sum(results[i * splitparts: i * splitparts + splitparts, SumCol[j]], axis=0)
+
+            for j in range(0, LastCol.__len__()):
+                suews_anytime[i, LastCol[j]] = results[i * splitparts + splitparts - 1, LastCol[j]]
+
+            suews_anytime[i, TimeCol] = results[i * splitparts + splitparts - 1, TimeCol]
+
+        return suews_anytime
 
 
     def translatemetdata(self, old, ver, inputdata, outputdata, delim):

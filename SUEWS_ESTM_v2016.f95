@@ -118,6 +118,7 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv)
   !             for each element-layer.
   !===============================================================================
   
+  USE initial
   USE meteo                                                               !!FO!! :METEOMOD.f95
   !USE mod_error
   USE mod_interp                                                          !!FO!! :mod_interp.f95
@@ -191,6 +192,7 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv)
   
   !iESTMcount = iESTMcount+1   ! Set to zero in ESTM_initials
   IF(Gridiv == 1) iESTMcount = iESTMcount+1   !Add 1 to iESTMcount only once for all grids
+  
   Tinternal  = Ts5mindata(iESTMcount,cTs_Tiair)
   Tsurf_all  = Ts5mindata(iESTMcount,cTs_Tsurf)
   Troof_in   = Ts5mindata(iESTMcount,cTs_Troof)
@@ -223,10 +225,13 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv)
   !        return ! changed from cycle
   !    ENDIF
 
-  ! Write first row as -999
+  ! Write first row of each met block as -999  
   IF (first) THEN  !Set to true in ESTM_initials
+     !write(*,*) iy, id, it, imin, QSnet
+     !write(*,*) Tair1, Tair2, Temp_C
      Tair2=Temp_C+C2K
-     first=.FALSE.
+     ! first=.FALSE.
+     IF(Gridiv == NumberOfGrids) first=.FALSE.  !Set to false only after all grids have run
      dataOutESTM(iESTMcount,1:32,Gridiv)=(/REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),&
           REAL(it,KIND(1D0)),REAL(imin,KIND(1D0)),dectime,(dum(ii),ii=1,27)/)
      RETURN

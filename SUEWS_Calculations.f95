@@ -4,6 +4,8 @@
 !Last modification
 !
 !Last modification:
+! HCW 29 Jun 2016 - Commented out StateDay and SoilMoistDay as creates jumps and should not be needed. 
+!                   Would not work unless each met block consists of a whole day for each grid.
 ! TS 09 Mar 2016  - Added AnOHM subroutine to calculate heat storage
 ! HCW 10 Mar 2016 - Calculation of soil moisture deficit of vegetated surfaces added (vsmd)
 ! LJ 2 Jan 2016   - Calculation of snow fraction moved from SUEWS_Calculations to SUEWS_Snow
@@ -56,15 +58,15 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   !Translate all data to the variables used in the model calculations
   CALL SUEWS_Translate(Gridiv,ir,iMB)
-  ! load the final water states of the previous day to keep water balance, by TS 13 Apr 2016
-  IF ( ir==1 ) THEN
-     !  PRINT*, '********************************'
-     !  PRINT*, 'starting state of', id,it,imin
-     state(1:nsurf)     = stateDay(id-1,Gridiv,1:nsurf)
-     soilmoist(1:nsurf) = soilmoistDay(id-1,Gridiv,1:nsurf)
-     !  PRINT*, 'state:', state
-     !  PRINT*, 'soilmoist', soilmoist
-  END IF
+ ! ! load the final water states of the previous day to keep water balance, by TS 13 Apr 2016
+ ! IF ( ir==1 ) THEN
+ !      PRINT*, '********************************'
+ !      PRINT*, 'starting state of', id,it,imin
+ !    state(1:nsurf)     = stateDay(id-1,Gridiv,1:nsurf)
+ !    soilmoist(1:nsurf) = soilmoistDay(id-1,Gridiv,1:nsurf)
+ !      PRINT*, 'state:', state
+ !      PRINT*, 'soilmoist', soilmoist
+ ! END IF
   CALL RoughnessParameters ! Added by HCW 11 Nov 2014
 
 
@@ -603,15 +605,15 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   CALL SUEWS_TranslateBack(Gridiv,ir,irMax)
 
-  ! store water balance states of the day, by TS 13 Apr 2016
-  IF ( ir==irMax ) THEN
-     !  PRINT*, 'ending end of', id,it,imin
-     stateDay(id,Gridiv,:)     = state(:)
-     soilmoistDay(id,Gridiv,:) = soilmoist(:)
-     !  PRINT*, 'state:', state
-     !  PRINT*, 'soilmoist', soilmoist
-     !  PRINT*, '********************************'
-  END IF
+!  ! store water balance states of the day, by TS 13 Apr 2016
+!  IF ( ir==irMax ) THEN
+!       PRINT*, 'ending end of', id,it,imin
+!     stateDay(id,Gridiv,:)     = state(:)
+!     soilmoistDay(id,Gridiv,:) = soilmoist(:)
+!       PRINT*, 'state:', state
+!       PRINT*, 'soilmoist', soilmoist
+!       PRINT*, '********************************'
+!  END IF
 
   ! if ( id>10 ) then
   !   stop "stop to test state"

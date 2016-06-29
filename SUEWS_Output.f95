@@ -2,6 +2,7 @@
 !
 !Last change:
 ! HCW 29 Jun 2016 - Fixed bug in output file (4 columns were repeated twice)
+!                 - Changed ESTM output file to be written for more than one met block
 ! HCW 25 May 2016 - changed QF, QH QE in output file to qf, qh, qe to match input file. Also e.g. RA, RS, L_mod -> ra, rs, L_Ob
 ! HCW 12 Nov 2015
 ! Added z0m and zdm to output file
@@ -129,14 +130,18 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  GridID)
 
   !ESTM ouputfile
   IF (QSChoice==4 .OR. QSChoice==14)THEN
-     OPEN(58,file=ESTMOut,status='unknown')
-     WRITE(58, 115)
-115  FORMAT('%iy id it imin dectime ',&
-          'QSNET QSAIR QSWALL QSROOF QSGROUND QSIBLD ',&
-          'TWALL1 TWALL2 TWALL3 TWALL4 TWALL5 ',&       !T0_WALL TWALL1 TWALL2 TWALL3 TN_WALL
-          'TROOF1 TROOF2 TROOF3 TROOF4 TROOF5 ',&
-          'TGROUND1 TGROUND2 TGROUND3 TGROUND4 TGROUND5 ',&
-          'TiBLD1 TiBLD2 TiBLD3 TiBLD4 TiBLD5 TaBLD ')
+     IF(iv == 1) THEN    
+        OPEN(58,file=TRIM(ESTMOut),status='unknown')
+        WRITE(58, 115)
+115     FORMAT('%iy id it imin dectime ',&
+               'QSNET QSAIR QSWALL QSROOF QSGROUND QSIBLD ',&
+               'TWALL1 TWALL2 TWALL3 TWALL4 TWALL5 ',&       !T0_WALL TWALL1 TWALL2 TWALL3 TN_WALL
+               'TROOF1 TROOF2 TROOF3 TROOF4 TROOF5 ',&
+               'TGROUND1 TGROUND2 TGROUND3 TGROUND4 TGROUND5 ',&
+               'TiBLD1 TiBLD2 TiBLD3 TiBLD4 TiBLD5 TaBLD ')
+     ELSE
+        OPEN(58,file=TRIM(ESTMOut),position='append')
+     ENDIF
   ENDIF
 
   !================ACTUAL DATA WRITING================

@@ -9,6 +9,7 @@
 !  - then over rows
 !  - then over grids
 !
+!Last modified by HCW 29 Jun 2016 - Reversed over-ruling of ReadLinesMetData so this is not restricted here to one day 
 !Last modified by HCW 27 Jun 2016 - Re-corrected grid number for output files. N.B. Gridiv seems to have been renamed iGrid
 !                                 - Met file no longer has grid number attached if same met data used for all grids
 !Last modified by HCW 24 May 2016 - InitialConditions file naming altered
@@ -123,7 +124,7 @@ PROGRAM SUEWS_Program
 
   WRITE(*,*) '--------------------------------------------'
   WRITE(*,*) 'Years identified:',FirstYear,'to',LastYear
-  WRITE(*,*) 'Grids identified:',NumberOfGrids,'grids'
+  WRITE(*,*) 'No. grids identified:',NumberOfGrids,'grids'
 
   ! ---- Allocate arrays ----------------------------------------------------
   ! Daily state needs to be outside year loop to transfer states between years
@@ -181,17 +182,17 @@ PROGRAM SUEWS_Program
      ENDDO
      CLOSE(10)
      !-----------------------------------------------------------------------
-
+   
      ! To conserve memory, read met data in blocks
      ! Find number of lines that can be read in each block (i.e. read in at once)
      ReadLinesMetData = nlinesMetData   !Initially set limit as the size of the met file (N.B.solves problem with Intel fortran)
-     !        nlinesLimit = int(floor(MaxLinesMet/real(NumberOfGrids,kind(1d0))))
-     nlinesLimit = 24*nsh
+     nlinesLimit = int(floor(MaxLinesMet/real(NumberOfGrids,kind(1d0))))  !Uncommented HCW 29 Jun 2016
+     !nlinesLimit = 24*nsh  !Commented out HCW 29 Jun 2016
      IF(nlinesMetData > nlinesLimit) THEN   !But restrict if this limit exceeds memory capacity
         ReadLinesMetData = nlinesLimit
      ENDIF
      !write(*,*) 'Met data will be read in chunks of',ReadlinesMetdata,'lines.'
-
+     
      ! Find number of blocks of met data
      ReadBlocksMetData = INT(CEILING(REAL(nlinesMetData,KIND(1d0))/REAL(ReadLinesMetData,KIND(1d0))))
      !write(*,*) 'Met data will be read in',ReadBlocksMetData,'blocks.'
@@ -289,9 +290,11 @@ PROGRAM SUEWS_Program
            IF(QSChoice==4 .OR. QSChoice==14) THEN
               IF(MultipleESTMFiles  == 1) THEN  !if separate ESTM files for each grid
                  FileESTMTs=TRIM(FileInputPath)//TRIM(FileCodeX)//'_ESTM_Ts_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'             
+                 !write(*,*) 'Calling ESTM initials...', FileCodeX, iv, igrid
                  CALL ESTM_initials(FileCodeX)
               ELSE   !if one ESMT file for all grids
                  FileESTMTs=TRIM(FileInputPath)//TRIM(FileCodeXWG)//'_ESTM_Ts_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'             
+                 !write(*,*) 'Calling ESTM initials...', FileCodeX, iv, igrid
                  CALL ESTM_initials(FileCodeX)
               ENDIF
           ENDIF    

@@ -3,6 +3,8 @@
 !           - between arrays for different grids and the model variables
 !Made by HW&LJ Oct 2014
 !-----------------------------------------------------------------------------------
+!Last modified HCW 29 Jun 2016
+! Removed SoilMoistDay and StateDay
 !Last modified: HCW 16 Jun 2016
 ! ESTM development for 7 surface types + snow, allowing 3x Paved classes and 5x Bldgs classes
 ! Currently surface characteristics are averaged here; probably want to average QS instead.
@@ -736,10 +738,10 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      ! =============================================================================
      ! ---- Above-ground state
      State(1:nsurf)             = ModelOutputData(0,cMOD_State(1:nsurf),Gridiv)
-     stateDay(0,Gridiv,1:nsurf) = ModelOutputData(0,cMOD_State(1:nsurf),Gridiv)
+!     stateDay(0,Gridiv,1:nsurf) = ModelOutputData(0,cMOD_State(1:nsurf),Gridiv)
      ! ---- Below-ground state
      SoilMoist(1:nsurf)             = ModelOutputData(0,cMOD_SoilState(1:nsurf),Gridiv)
-     soilmoistDay(0,Gridiv,1:nsurf) = ModelOutputData(0,cMOD_SoilState(1:nsurf),Gridiv)
+!     soilmoistDay(0,Gridiv,1:nsurf) = ModelOutputData(0,cMOD_SoilState(1:nsurf),Gridiv)
      ! ---- Snow fraction
      SnowFrac(1:nsurf)  = ModelOutputData(0,cMOD_SnowFrac(1:nsurf), Gridiv)
      ! ---- Snow water equivalent in snowpack

@@ -1,6 +1,7 @@
 !In this subroutine the output files will be opened and the output matrices will be printed out.
 !
 !Last change:
+! HCW 29 Jun 2016 - Fixed bug in output file (4 columns were repeated twice)
 ! HCW 25 May 2016 - changed QF, QH QE in output file to qf, qh, qe to match input file. Also e.g. RA, RS, L_mod -> ra, rs, L_Ob
 ! HCW 12 Nov 2015
 ! Added z0m and zdm to output file
@@ -60,8 +61,6 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  GridID)
 110  FORMAT('%iy id it imin dectime ',&
      'kdown kup ldown lup Tsurf qn h_mod e_mod qs qf qh qe ',&
      'P/i Ie/i E/i Dr/i ',&
-     'St/i NWSt/i surfCh/i totCh/i ',&
-     'St/i NWSt/i surfCh/i totCh/i ',&
      'St/i NWSt/i surfCh/i totCh/i ',&
      'RO/i ROsoil/i ROpipe ROpav ROveg ROwater ',&
      'AdditionalWater FlowChange WU_int WU_EveTr WU_DecTr WU_Grass ',&

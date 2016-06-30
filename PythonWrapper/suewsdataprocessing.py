@@ -59,7 +59,7 @@ class SuewsDataProcessing:
 
                 for j in range(0, nsh):
 
-                    timestep = ymdhm - datetime.timedelta(minutes=timeres_old - 5 * j)
+                    timestep = ymdhm - datetime.timedelta(minutes=timeres_old - 5 * j - 5)
                     met_new[index, 0] = timestep.year
                     met_new[index, 1] = timestep.timetuple().tm_yday
                     met_new[index, 2] = timestep.hour
@@ -131,7 +131,7 @@ class SuewsDataProcessing:
 
                 for j in range(0, nsh):
 
-                    timestep = ymdhm - datetime.timedelta(minutes=timeres_old - 5 * j)
+                    timestep = ymdhm - datetime.timedelta(minutes=timeres_old - 5 * j - 5)
                     met_new[index, 0] = timestep.year
                     met_new[index, 1] = timestep.timetuple().tm_yday
                     met_new[index, 2] = timestep.hour
@@ -194,7 +194,6 @@ class SuewsDataProcessing:
             suews_anytime[i, TimeCol] = results[i * splitparts + splitparts - 1, TimeCol]
 
         return suews_anytime
-
 
     def translatemetdata(self, old, ver, inputdata, outputdata, delim):
 

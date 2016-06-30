@@ -17,7 +17,6 @@ def wrapper(pathtoplugin):
         import matplotlib.pyplot as plt
         nomatplot = 0
     except ImportError:
-        #raise ImportError('<any message you want here>')
         nomatplot = 1
         pass
 
@@ -41,13 +40,10 @@ def wrapper(pathtoplugin):
     prog_name = 'SUEWS_V2016b'
 
     # Open SiteSelect to get year and gridnames
-    SiteIn = fileinputpath + 'SUEWS_SiteSelect.txt'
-    f = open(SiteIn)
+    sitein = fileinputpath + 'SUEWS_SiteSelect.txt'
+    f = open(sitein)
     lin = f.readlines()
     index = 2
-    lines = lin[index].split()
-    # gridcodemet = lines[0]
-    # gridcodeesmt = lines[0]
     loop_out = ''
     while loop_out != '-9':
         lines = lin[index].split()
@@ -186,97 +182,24 @@ def wrapper(pathtoplugin):
 
     subprocess.call(suewsbat)
 
-
     # --- This part makes temporal averages from SUEWS 5 min output --- #
 
-    ### Chech if 5 min files should be deleted
+    # Check if 5 min files should be deleted
     KeepTstepFilesIn = nml['runcontrol']['KeepTstepFilesIn']
     KeepTstepFilesOut = nml['runcontrol']['KeepTstepFilesOut']
 
-    # open SUEWS_output.f95 to get format and header of output file
-    SiteIn = wf + '/SUEWS_Output.f95'
-    f = open(SiteIn)
-    lin2 = f.readlines()
-
-    for i in range(0,lin2.__len__()):
-        timeline = lin2[i].find('TimeCol')
-        sumline = lin2[i].find('SumCol')
-        lastline = lin2[i].find('LastCol')
-
-        if timeline > -1:
-            TimeCo = lin2[i][lin2[i].find('[') + 1:lin2[i].find(']')]
-            TimeCol = [int(k) for k in TimeCo.split(',')]
-        if sumline > -1:
-            SumCo = lin2[i][lin2[i].find('[') + 1:lin2[i].find(']')]
-            SumCol = [int(k) for k in SumCo.split(',')]
-        if lastline > -1:
-            LastCo = lin2[i][lin2[i].find('[') + 1:lin2[i].find(']')]
-            LastCol = [int(k) for k in LastCo.split(',')]
-
-        headerline = lin2[i].find('110 format')
-        if headerline > -1:
-            headstart = i
-
-        # formatline = lin2[i].find('301 format')
-        # if formatline > -1:
-        #     formatstart = i
-
-    # TODO: This part will convert f90 numformat tp python. Not ready yet.
-    # first = 1
-    # formend = 0
-    # pynumformat = ""
-    # while formend == 0:
-    #     if first == 1:
-    #         sta = lin2[formatstart].find("((")
-    #         first =
-    #
-    #
-    #     sta = lin2[formatstart].find("'")
-    #     end = lin2[formatstart].rfind("+")
-    #     block = lin2[formatstart][sta + 1:end]
-    #     stop = lin2[formatstart].find(")")
-    #     # skip = lin2[formatstart].find("!")
-    #     # if skip > -1:
-    #     #     if skip > sta:
-    #     #         pynumformat = pynumformat + block
-    #     # else:
-    #     pynumformat = pynumformat + block
-    #     if stop == -1:
-    #         formatstart += 1
-    #     else:
-    #         formend = 1
-
-    # formend = 0
-    # pynumformat = ""
-    # while formend == 0:
-    #     sta = lin2[formatstart].find("'")
-    #     end = lin2[formatstart].rfind("+")
-    #     block = lin2[formatstart][sta + 1:end]
-    #     stop = lin2[formatstart].find(")")
-    #     # skip = lin2[formatstart].find("!")
-    #     # if skip > -1:
-    #     #     if skip > sta:
-    #     #         pynumformat = pynumformat + block
-    #     # else:
-    #     pynumformat = pynumformat + block
-    #     if stop == -1:
-    #         formatstart += 1
-    #     else:
-    #         formend = 1
-
-
     # Hard-coded python numformat
     pynumformat = '%4i ' + '%3i ' * 3 + '%8.5f ' +\
-    '%9.4f ' * 5  + '%9.4f ' * 7 +\
-    '%10.6f ' * 4 +\
-    '%10.5f ' * 1 + '%10.6f ' * 3 +\
-    '%10.6f ' * 6 +\
-    '%9.3f ' * 2  + '%9.4f ' * 4 +\
-    '%10.5f ' * 3 + '%14.7g ' * 1 + '%10.5f ' * 1 +\
-    '%10.4f ' * 2 + '%10.5f ' * 6 + '%10.5f ' * 7 +\
-    '%10.4f ' * 3 +\
-    '%10.4f ' * 5 + '%10.6f ' * 6 +\
-    '%8.4f' * 1
+        '%9.4f ' * 5 + '%9.4f ' * 7 +\
+        '%10.6f ' * 4 +\
+        '%10.5f ' * 1 + '%10.6f ' * 3 +\
+        '%10.6f ' * 6 +\
+        '%9.3f ' * 2 + '%9.4f ' * 4 +\
+        '%10.5f ' * 3 + '%14.7g ' * 1 + '%10.5f ' * 1 +\
+        '%10.4f ' * 2 + '%10.5f ' * 6 + '%10.5f ' * 7 +\
+        '%10.4f ' * 3 +\
+        '%10.4f ' * 5 + '%10.6f ' * 6 +\
+        '%8.4f' * 1
 
     header_snow = '%iy  id   it imin dectime SWE_Paved SWE_Bldgs SWE_EveTr SWE_DecTr SWE_Grass SWE_BSoil SWE_Water ' \
                   'Mw_Paved Mw_Bldgs Mw_EveTr Mw_DecTr Mw_Grass Mw_BSoil Mw_Water Qm_Paved Qm_Bldgs Qm_EveTr Qm_DecTr ' \
@@ -299,42 +222,21 @@ def wrapper(pathtoplugin):
 
     pynumformat_estm = '%4i ' + '%3i ' * 3 + '%8.5f ' + '%10.4f ' * 27
 
-    TimeCol = np.array(TimeCol) - 1
-    SumCol = np.array(SumCol) - 1
-    LastCol = np.array(LastCol) - 1
-    # TimeCol = np.array([1, 2, 3, 4, 5]) - 1
-    # SumCol = np.array([18, 19, 20, 21, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 67, 68, 69]) - 1
-    # LastCol = np.array([22, 23, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 64, 65, 66, 70]) - 1
+    TimeCol = np.array([1, 2, 3, 4, 5]) -1
+    SumCol = np.array([18, 19, 20, 21, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 69, 70, 71]) -1
+    LastCol = np.array([22, 23, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 66, 67, 68, 72]) -1
 
-    headend = 0
-    header = ""
-    while headend == 0:
-        sta = lin2[headstart].find("'")
-        end = lin2[headstart].rfind("'")
-        block = lin2[headstart][sta + 1:end]
-        stop = lin2[headstart].find(")")
-        skip = lin2[headstart].find("!")
-        if skip > -1:
-            if skip > sta:
-                header = header + block
-        else:
-            header = header + block
-        if stop == -1:
-            headstart += 1
-        else:
-            headend = 1
-
-    header = '%iy id it imin dectime ' \
-             'kdown kup ldown lup Tsurf qn h_mod e_mod qs qf qh qe ' \
-             'P/i Ie/i E/i Dr/i ' \
-             'St/i NWSt/i surfCh/i totCh/i ' \
-             'RO/i ROsoil/i ROpipe ROpav ROveg ROwater ' \
-             'AdditionalWater FlowChange WU_int WU_EveTr WU_DecTr WU_Grass ' \
-             'RA RS ustar L_mod Fcld ' \
-             'SoilSt smd smd_Paved smd_Bldgs smd_EveTr smd_DecTr smd_Grass smd_BSoil ' \
-             'St_Paved St_Bldgs St_EveTr St_DecTr St_Grass St_BSoil St_Water ' \
-             'LAI z0m zdm ' \
-             'qn1_SF qn1_S Qm QmFreez Qmrain SWE Mw MwStore snowRem_Paved snowRem_Bldgs ChSnow/i ' \
+    header = '%iy id it imin dectime '\
+             'kdown kup ldown lup Tsurf qn h_mod e_mod qs qf qh qe '\
+             'P/i Ie/i E/i Dr/i '\
+             'St/i NWSt/i surfCh/i totCh/i '\
+             'RO/i ROsoil/i ROpipe ROpav ROveg ROwater '\
+             'AdditionalWater FlowChange WU_int WU_EveTr WU_DecTr WU_Grass '\
+             'ra rs ustar L_Ob Fcld '\
+             'SoilSt smd smd_Paved smd_Bldgs smd_EveTr smd_DecTr smd_Grass smd_BSoil '\
+             'St_Paved St_Bldgs St_EveTr St_DecTr St_Grass St_BSoil St_Water '\
+             'LAI z0m zdm '\
+             'qn1_SF qn1_S Qm QmFreez QmRain SWE Mw MwStore snowRem_Paved snowRem_Bldgs ChSnow/i '\
              'SnowAlb '
 
     TimeCol_snow = np.array([1, 2, 3, 4, 5]) - 1
@@ -406,7 +308,7 @@ def wrapper(pathtoplugin):
 
         if plotmonthlystat == 1:
             if choosegridstat:
-                gridcode = choosegridstat
+                gridcodemet = choosegridstat
 
             if chooseyearstat:
                 YYYY = chooseyearstat
@@ -418,7 +320,6 @@ def wrapper(pathtoplugin):
 
             pl.plotmonthlystatistics(suews_result, met_old)
 
-
         if plotmonthlystat == 1:
             plt.show()
 
@@ -427,6 +328,7 @@ def wrapper(pathtoplugin):
     else:
         print("No plots generated - No matplotlib installed")
 
+    # Plot for water related variables
     # precip = (suews_1hour[:, 17])  #Precipitation (P/i)
     # wu = (suews_1hour[:, 18])  # exteranl wu (Ie/i)
     # st = (suews_1hour[:, 24])  #storage (totCh/i)
@@ -443,8 +345,99 @@ def wrapper(pathtoplugin):
     # plt.legend(bbox_to_anchor=(1.0, 1.0))
     # ax3 = plt.subplot(3, 1, 3, sharex=ax1)
     # ax3.plot(precip + wu - st - drain - evap)
-
     # plt.show()
+
+    # TODO: This part will read info from SUEWS_Output.f95 to e.g. convert f90 numformat to python. Not ready yet.
+    # open SUEWS_output.f95 to get format and header of output file
+    # SiteIn = wf + '/SUEWS_Output.f95'
+    # f = open(SiteIn)
+    # lin2 = f.readlines()
+    #
+    # for i in range(0,lin2.__len__()):
+    #     timeline = lin2[i].find('TimeCol')
+    #     sumline = lin2[i].find('SumCol')
+    #     lastline = lin2[i].find('LastCol')
+    #
+    #     if timeline > -1:
+    #         TimeCo = lin2[i][lin2[i].find('[') + 1:lin2[i].find(']')]
+    #         TimeCol = [int(k) for k in TimeCo.split(',')]
+    #     if sumline > -1:
+    #         SumCo = lin2[i][lin2[i].find('[') + 1:lin2[i].find(']')]
+    #         SumCol = [int(k) for k in SumCo.split(',')]
+    #     if lastline > -1:
+    #         LastCo = lin2[i][lin2[i].find('[') + 1:lin2[i].find(']')]
+    #         LastCol = [int(k) for k in LastCo.split(',')]
+    #
+    # TimeCol = np.array(TimeCol) - 1
+    # SumCol = np.array(SumCol) - 1
+    # LastCol = np.array(LastCol) - 1
+    #
+    # headerline = lin2[i].find('110 format')
+    # if headerline > -1:
+    #     headstart = i
+    #
+    # formatline = lin2[i].find('301 format')
+    # if formatline > -1:
+    #     formatstart = i
+    #
+    # first = 1
+    # formend = 0
+    # pynumformat = ""
+    # while formend == 0:
+    #     if first == 1:
+    #         sta = lin2[formatstart].find("((")
+    #         first =
+    #
+    #     sta = lin2[formatstart].find("'")
+    #     end = lin2[formatstart].rfind("+")
+    #     block = lin2[formatstart][sta + 1:end]
+    #     stop = lin2[formatstart].find(")")
+    #     # skip = lin2[formatstart].find("!")
+    #     # if skip > -1:
+    #     #     if skip > sta:
+    #     #         pynumformat = pynumformat + block
+    #     # else:
+    #     pynumformat = pynumformat + block
+    #     if stop == -1:
+    #         formatstart += 1
+    #     else:
+    #         formend = 1
+    #
+    # formend = 0
+    # pynumformat = ""
+    # while formend == 0:
+    #     sta = lin2[formatstart].find("'")
+    #     end = lin2[formatstart].rfind("+")
+    #     block = lin2[formatstart][sta + 1:end]
+    #     stop = lin2[formatstart].find(")")
+    #     # skip = lin2[formatstart].find("!")
+    #     # if skip > -1:
+    #     #     if skip > sta:
+    #     #         pynumformat = pynumformat + block
+    #     # else:
+    #     pynumformat = pynumformat + block
+    #     if stop == -1:
+    #         formatstart += 1
+    #     else:
+    #         formend = 1
+    #
+    # headend = 0
+    # header = ""
+    # while headend == 0:
+    #     sta = lin2[headstart].find("'")
+    #     end = lin2[headstart].rfind("'")
+    #     block = lin2[headstart][sta + 1:end]
+    #     stop = lin2[headstart].find(")")
+    #     skip = lin2[headstart].find("!")
+    #     if skip > -1:
+    #         if skip > sta:
+    #             header = header + block
+    #     else:
+    #         header = header + block
+    #     if stop == -1:
+    #         headstart += 1
+    #     else:
+    #         headend = 1
 
 
 

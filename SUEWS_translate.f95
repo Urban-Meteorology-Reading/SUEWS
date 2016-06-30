@@ -41,7 +41,8 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   USE sues_data      !defines: SurfaceArea, IrrFracConif, IrrFracDecid, IrrFracGrass, Irrigation variables
   USE time
   USE ESTM_data
-
+  USE PhysConstants
+  
   IMPLICIT NONE
 
   INTEGER::Gridiv,&   !Index of the analysed grid (Gridcounter)
@@ -541,7 +542,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
         EXIT
      ENDIF
   ENDDO
-
+  
   ! ---- AnOHM related ------------------------------
   cpAnOHM(1:nsurf) = SurfaceChar(Gridiv,c_cpAnOHM) ! AnOHM TS
   kkAnOHM(1:nsurf) = SurfaceChar(Gridiv,c_kkAnOHM) ! AnOHM TS
@@ -626,6 +627,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   AlbGrass(:) = AlbGrass_grids(:,Gridiv)
   SnowAlb     = ModelDailyState(Gridiv,cMDS_SnowAlb)
 
+  
   !! ---- Between-grid water distribution
 !!! Need to make these larger than MaxNumberOfGrids (and recode), as each grid can have 8 connections
   !!GridConnections(1,) = SurfaceChar(Gridiv,c_Grid)
@@ -641,6 +643,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
 
   ! =================================================================================
 
+  
 
   !-----------------------------------------------------
   !-----------------------------------------------------
@@ -748,7 +751,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      SnowPack(1:nsurf)  = ModelOutputData(0,cMOD_SnowPack(1:nsurf), Gridiv)
      ! ---- Liquid (melted) water in snowpack
      MeltWaterStore(1:nsurf)  = ModelOutputData(0,cMOD_SnowWaterState(1:nsurf), Gridiv)
-
+     
   ENDIF  !ir = 0
   !=================================================================================
 
@@ -968,8 +971,16 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      ! ---- Snow water equivalent in snowpack
      SnowPack(1:nsurf)       = ModelOutputData(ir-1,cMOD_SnowPack(1:nsurf), Gridiv)
      ! ---- Liquid (melted) water in snowpack
-     MeltWaterStore(1:nsurf) = ModelOutputData(ir-1,cMOD_SnowWaterState(1:nsurf), Gridiv)
+     MeltWaterStore(1:nsurf) = ModelOutputData(ir-1,cMOD_SnowWaterState(1:nsurf), Gridiv)  
 
+
+     !Also translate ESTM forcing data
+     IF(QSChoice==4 .OR. QSChoice==14) THEN
+        !write(*,*) 'Translating ESTM forcing data'
+        Ts5mindata(ir,1:ncolsESTMdata) = ESTMForcingData(ir,1:ncolsESTMdata,Gridiv)
+        CALL ESTM_translate(Gridiv)
+     ENDIF
+          
   ENDIF !ir>0   !===================================================================
 
   ! --------------------------------------------------------------------------------

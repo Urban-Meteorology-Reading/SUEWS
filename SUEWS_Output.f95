@@ -168,7 +168,7 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  GridID)
      ENDDO
   ENDIF
   IF (QSChoice==4 .OR. QSChoice==14)THEN
-     DO i=1,iESTMcount
+     DO i=1,irMax
         WRITE(58, 307)(INT(dataOutESTM(i,is,Gridiv)),is=1,4),(dataOutESTM(i,is,Gridiv),is=5,32)
      ENDDO
   ENDIF

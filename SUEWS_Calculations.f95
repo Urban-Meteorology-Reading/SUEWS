@@ -58,7 +58,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   !Translate all data to the variables used in the model calculations
   CALL SUEWS_Translate(Gridiv,ir,iMB)
- ! ! load the final water states of the previous day to keep water balance, by TS 13 Apr 2016
+  ! ! load the final water states of the previous day to keep water balance, by TS 13 Apr 2016
  ! IF ( ir==1 ) THEN
  !      PRINT*, '********************************'
  !      PRINT*, 'starting state of', id,it,imin
@@ -250,7 +250,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !Calculate QS using ESTM
   IF(QSChoice==4 .OR. QSChoice==14) THEN
     !CALL ESTM_v2016(QSestm,iMB)      
-     CALL ESTM_v2016(QSestm,Gridiv)  ! iMB corrected to Gridiv, TS 09 Jun 2016
+     CALL ESTM_v2016(QSestm,Gridiv,ir)  ! iMB corrected to Gridiv, TS 09 Jun 2016
      QS=QSestm   ! Use ESTM qs
   ENDIF
 

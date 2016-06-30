@@ -92,7 +92,9 @@ PROGRAM SUEWS_Program
   ! start counting cpu time
   CALL cpu_TIME(timeStart)
 
-
+  ESTMOne = 0
+  write(*,*) '--- ESTMOne:', ESTMOne
+  
   ! Initialise error file (0 -> problems.txt file is created)
   errorChoice=0
 
@@ -135,7 +137,6 @@ PROGRAM SUEWS_Program
   !   allocate(BoAnOHMEnd(NumberOfGrids))         ! final Bo
 
 
-
   ! ---- Initialise arrays --------------------------------------------------
   ModelDailyState(:,:) = -999
   DailyStateFirstOpen(:) = 1
@@ -143,6 +144,11 @@ PROGRAM SUEWS_Program
   flagRerunAnOHM(:) = .TRUE.
   ! -------------------------------------------------------------------------
 
+  ! Initialise ESTM (reads ESTM nml, should only run once)
+  IF(QSChoice==4 .OR. QSChoice==14) THEN
+     CALL ESTM_initials
+  ENDIF   
+  
   !==========================================================================
   DO year_int=FirstYear,LastYear   !Loop through years
 
@@ -211,21 +217,41 @@ PROGRAM SUEWS_Program
      ALLOCATE(WUProfM_tstep(24*NSH,2))                                      !Manual water use profiles at model timestep
      ALLOCATE(WUProfA_tstep(24*NSH,2))                                      !Automatic water use profiles at model timestep
      !! Add snow clearing (?)
-
-     !  ! test ESTM initialisation
-     !  IF(QSChoice==4 .OR. QSChoice==14) THEN
-     !     PRINT*, 'day:', iv
-     !
-     !     !  if ( iv>1 ) then
-     !     CALL ESTM_initials(FileCodeX)
-     !
-     !     !  end if
-     !  ENDIF
-
-
+       
+     ! Check number of lines in ESTM forcing file (nlinesESTMdata)
+     IF(QSChoice==4 .OR. QSChoice==14) THEN
+        IF(MultipleESTMFiles  == 1) THEN  !if separate ESTM files for each grid
+           FileESTMTs=TRIM(FileInputPath)//TRIM(FileCodeX)//'_ESTM_Ts_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'             
+           !write(*,*) 'Calling ESTM initials...', FileCodeX, iv, igrid
+           !CALL ESTM_initials(FileCodeX)
+        ELSE   !if one ESMT file for all grids
+           FileESTMTs=TRIM(FileInputPath)//TRIM(FileCodeXWG)//'_ESTM_Ts_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'             
+           !write(*,*) 'Calling ESTM initials...', FileCodeX, iv, igrid
+           !CALL ESTM_initials(FileCodeX)
+        ENDIF                
+        ! Open this example met file
+        OPEN(101,file=TRIM(FileESTMTs),status='old',action='read',err=315)
+        CALL skipHeader(101,SkipHeaderMet)  !Skip header
+        ! Find number of lines in ESTM data file
+        nlinesESTMdata = 0
+        DO
+           READ(101,*) iv
+           IF (iv == -9) EXIT
+           nlinesESTMdata = nlinesESTMdata + 1
+        ENDDO
+        CLOSE(101)
+ 
+        ! Check ESTM data and met data are same length (so that ESTM file can be read same blocks as met data
+        IF(nlinesESTMdata /= nlinesMetdata) THEN
+           CALL ErrorHint(66,'ESTM input file different length to met forcing file',REAL(nlinesESTMdata,KIND(1d0)), &
+                           NotUsed,nlinesMetdata)     
+        ENDIF
+        ! Allocate array to receive ESTM forcing data   
+        ALLOCATE(ESTMForcingData(1:ReadlinesMetdata,ncolsESTMdata,NumberOfGrids))        
+        ALLOCATE(Ts5mindata(1:ReadlinesMetdata,ncolsESTMdata)) 
+        ALLOCATE(Tair24HR(24*nsh))
+     ENDIF    
      ! ----------------------------------------------------------------------
-
-     ! ---- Initialise arrays  !! Does this need to happen here??
 
      !-----------------------------------------------------------------------
      !-----------------------------------------------------------------------
@@ -237,7 +263,6 @@ PROGRAM SUEWS_Program
         ! Model calculations are made in two stages:
         ! (1) initialise the run for each block of met data (iv from 1 to ReadBlocksMetData)
         ! (2) perform the actual model calculations (SUEWS_Calculations)
-
 
         ! (1) First stage: initialise run -----------------------------------
         GridCounter=1   !Initialise counter for grids in each year
@@ -265,13 +290,13 @@ PROGRAM SUEWS_Program
                  ENDIF
               ENDDO
               ! (b) get initial conditions
+              !write(*,*) 'Calling InitialState'
               CALL InitialState(FileCodeX,year_int,GridCounter)
            ENDIF   !end first block of met data
 
            ! For every block of met data ------------------------------------
            ! Initialise met forcing data into 3-dimensional matrix
            !write(*,*) 'Initialising met data for block',iv
-
            IF(MultipleMetFiles == 1) THEN   !If each grid has its own met file
               FileMet=TRIM(FileInputPath)//TRIM(FileCodeX)//'_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
               CALL SUEWS_InitializeMetData(1)
@@ -290,15 +315,19 @@ PROGRAM SUEWS_Program
            IF(QSChoice==4 .OR. QSChoice==14) THEN
               IF(MultipleESTMFiles  == 1) THEN  !if separate ESTM files for each grid
                  FileESTMTs=TRIM(FileInputPath)//TRIM(FileCodeX)//'_ESTM_Ts_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'             
-                 !write(*,*) 'Calling ESTM initials...', FileCodeX, iv, igrid
-                 CALL ESTM_initials(FileCodeX)
+                 !write(*,*) 'Calling GetESTMData...', FileCodeX, iv, igrid
+                 CALL SUEWS_GetESTMData(101)
               ELSE   !if one ESMT file for all grids
                  FileESTMTs=TRIM(FileInputPath)//TRIM(FileCodeXWG)//'_ESTM_Ts_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'             
-                 !write(*,*) 'Calling ESTM initials...', FileCodeX, iv, igrid
-                 CALL ESTM_initials(FileCodeX)
+                 !write(*,*) 'Calling GetESTMData...', FileCodeX, iv, igrid
+                 IF(igrid == 1) THEN       !Read for the first grid only
+                    CALL SUEWS_GetESTMData(101)
+                 ELSE                          !Then for subsequent grids simply copy data
+                    ESTMForcingData(1:ReadlinesMetdata,1:ncolsESTMdata,GridCounter) = ESTMForcingData(1:ReadlinesMetdata, &
+                      1:ncolsESTMdata,1)
+                 ENDIF
               ENDIF
-          ENDIF    
-           
+           ENDIF    
            
            GridCounter = GridCounter+1   !Increase GridCounter by 1 for next grid
 
@@ -310,11 +339,9 @@ PROGRAM SUEWS_Program
         ! Initialise CBL and SOLWEIG parts if required
         IF((CBLuse==1).OR.(CBLuse==2)) CALL CBL_ReadInputData
         IF(SOLWEIGuse==1) CALL SOLWEIG_initial
-
             
         !write(*,*) 'Initialisation done'
         ! First stage: initialisation done ----------------------------------
-
 
         ! (2) Second stage: do calculations at 5-min timesteps --------------
         ! First set maximum value of ir
@@ -334,10 +361,8 @@ PROGRAM SUEWS_Program
            iter = iter+1
            !  PRINT*, 'iteration:',iter
 
-
            DO ir=1,irMax   !Loop through rows of current block of met data
               GridCounter=1    !Initialise counter for grids in each year
-
 
               DO igrid=1,NumberOfGrids   !Loop through grids
                  IF(PrintPlace) WRITE(*,*) 'Row (ir):', ir,'/',irMax,'of block (iv):', iv,'/',ReadBlocksMetData,&
@@ -356,7 +381,6 @@ PROGRAM SUEWS_Program
                      WRITE(*,*) TRIM(ADJUSTL(FileCodeX)),': Now running block ',iv,'/',ReadBlocksMetData,' of ',TRIM(year_txt),'...'
                  ENDIF
                  CALL SUEWS_Calculations(GridCounter,ir,iv,irMax)
-
 
                  ! Record iy and id for current time step to handle last row in yearly files (YYYY 1 0 0)
                  !  IF(GridCounter == NumberOfGrids) THEN   !Adjust only when the final grid has been run for this time step
@@ -455,5 +479,6 @@ PROGRAM SUEWS_Program
 
 
 314 CALL errorHint(11,TRIM(FileMet),notUsed,notUsed,ios_out)
-
+315 CALL errorHint(11,TRIM(fileESTMTs),notUsed,notUsed,NotUsedI)
+     
 END PROGRAM SUEWS_Program

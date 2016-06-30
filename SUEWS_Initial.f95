@@ -2088,7 +2088,6 @@ SUBROUTINE SUEWS_InitializeMetData(lunit)
 END SUBROUTINE SUEWS_InitializeMetData
 !----------------------------------------------------------------------------------------------
 
-
 !====================================================================================
 SUBROUTINE CheckInitial
   !Check the parameters in InitialConditions file.

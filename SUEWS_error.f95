@@ -174,7 +174,7 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI) ! real
      returntrue=.TRUE.
      v1 = .TRUE.  !2 real
   ELSEIF(errh==39) THEN
-     text1 = 'Different value of TSTEP needed (300 s recommended). Resolution of met data must match TSTEP set in RunControl.'
+     text1 = 'Different value of TSTEP needed (300 s recommended). Resolution of forcing data must match TSTEP set in RunControl.'
      v4 = .TRUE.  !2 real, 1 int
   ELSEIF(errh==40) THEN
      text1='SOLWEIG file problem - opening'
@@ -262,6 +262,9 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI) ! real
      text1='Negative gs calculated! Check suitability of parameters in Conductance.txt.'
      returntrue=.TRUE.
      v7=.TRUE.  ! 1 real, 2 integers
+  ELSEIF(errh==66)THEN
+     text1 = 'Different number of lines in ESTM forcing and Met forcing files.'
+     v6 = .TRUE.
   ENDIF
   !---------------------------------------------------------------------
   !This part of the code determines how the error message is written out

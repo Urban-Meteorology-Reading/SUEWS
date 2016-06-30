@@ -1,9 +1,26 @@
 !===============================================================================
-SUBROUTINE ESTM_v2016(QSnet,Gridiv)
- 
+SUBROUTINE ESTM_v2016(QSnet,Gridiv,ir)
+  ! HCW Questions:
+  !                - should TFloor be set in namelist instead of hard-coded here?
+  !                - zref used for radiation calculation and fair is set to 2*BldgH here. For compatibility with the rest of the
+  !                  SUEWS model, should this be the (wind speed) measurement height z specified in RunControl.nml?
+  !                - In SUEWS_translate, fwall=AreaWall/SurfaceArea. Is this correct?
+  !                - If froof=1 (i.e. whole grid is building), is HW=0 correct?  
+  !                - Then is an IF(Fground ==0) option needed?  
+  !                - alb_wall=0.23 and em_wall=0.9 are set in LUMPS_module_constants. Shouldn't these be provided as input?
+  !                - Do the LUP calculations here need to be compatible with those in LUMPS_NARP?
+  !                - File opening rewritten using existing error handling in SUEWS - can delete mod_error module from SUEWS_ESTM_functions
+  !                - In SUEWS_ESTM_v2016, the first row is set to -999. This may be acceptable at the
+  !                  start of the run but should be handled properly between blocks of met data? - need to check what's actually happening here.
+  !                - Many duplicate functions in SUEWS_ESTM_functions need changing to the existing SUEWS versions.  
+  !                - Are the following correctly initialised? T0_ibld, T0_ground, T0_wall, T0_roof, TN_wall, TN_roof, Tground, Twall, Troof, Tibld    
+  !                - What are Nalb, sumalb, Nemis and Sumemis for? Are they used correctly?  
+  !
+    
   !SUEWS_ESTM_v2016
   ! Last modified HCW 14 Jun 2016
   !               HCW 27 Jun 2016 Corrected iESTMcount bug - now increases for all grids together
+  !               HCW 30 Jun 2016 Major changes to handle grids and met blocks  
     
   !Contains calculation for each time step
   !Calculate local scale heat storage from single building and surroundings observations
@@ -141,10 +158,11 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv)
   !Output to SUEWS
   REAL(KIND(1d0)),INTENT(out)::QSnet
   !Input from SUEWS, corrected as Gridiv by TS 09 Jun 2016
-  INTEGER,INTENT(in)::Gridiv
+  INTEGER,INTENT(in)::Gridiv, ir
   
   !Use only in this subroutine
   INTEGER::i, ii
+  INTEGER:: Tair2Set=0
   REAL(KIND(1d0))::AIREXHR, AIREXDT
   REAL(KIND(1d0)),DIMENSION(2)::bc
   REAL(KIND(1d0))::chair_ground,chair_wall
@@ -182,28 +200,54 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv)
        -999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,&
        -999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999./)
 
-  ! Get kdown from SUEWS for use in ESTM subroutine     
+  !External bulk exchange coefficients - set these somewhere more sensible***
+  CHR=0.005
+  CHAIR=CHR
+  CHAIR_ground=CHAIR
+  CHAIR_WALL=CHAIR
+        
+  !Get met data for use in ESTM subroutine     
   kdn_estm=avkdn
-  ! Get wind speed for use in ESTM subroutine 
   WS=avu1
   IF (WS<WSMin) WS=WSmin
-  ! Get air temperature and convert to Kelvin 
   Tair1=Temp_C+C2K
+  ! Set initial value of Tair2 to air temp
+  IF(Gridiv == 1) Tair2Set = Tair2Set+1
+  IF(Tair2Set==1) THEN
+    Tair2=Temp_C+C2K 
+  ELSE
+    Tair2 = Tair2_grids(Gridiv)
+    ! Also get other variables for this grid
+    Tievolve = Tievolve_grids(Gridiv)   
+    lup_ground = lup_ground_grids(Gridiv)
+    lup_wall = lup_wall_grids(Gridiv)
+    lup_roof = lup_roof_grids(Gridiv)  
+    T0_ibld = T0_ibld_grids(Gridiv)
+    T0_ground = T0_ground_grids(Gridiv)
+    T0_wall = T0_wall_grids(Gridiv)
+    T0_roof = T0_roof_grids(Gridiv)
+    TN_wall = TN_wall_grids(Gridiv)
+    TN_roof = TN_roof_grids(Gridiv)
+    Tground(:) = Tground_grids(:,Gridiv)
+    Twall(:) = Twall_grids(:,Gridiv)
+    Troof(:) = Troof_grids(:,Gridiv)
+    Tibld(:) = Tibld_grids(:,Gridiv)
+    Tw_4 = Tw_4_grids(:,:,Gridiv)  
+    
+  ENDIF
   
-  !iESTMcount = iESTMcount+1   ! Set to zero in ESTM_initials
-  IF(Gridiv == 1) iESTMcount = iESTMcount+1   !Add 1 to iESTMcount only once for all grids
-  
-  Tinternal  = Ts5mindata(iESTMcount,cTs_Tiair)
-  Tsurf_all  = Ts5mindata(iESTMcount,cTs_Tsurf)
-  Troof_in   = Ts5mindata(iESTMcount,cTs_Troof)
-  Troad      = Ts5mindata(iESTMcount,cTs_Troad)
-  Twall_all  = Ts5mindata(iESTMcount,cTs_Twall)
+  ! Get Ts from Ts5min data array   
+  Tinternal  = Ts5mindata(ir,cTs_Tiair)
+  Tsurf_all  = Ts5mindata(ir,cTs_Tsurf)
+  Troof_in   = Ts5mindata(ir,cTs_Troof)
+  Troad      = Ts5mindata(ir,cTs_Troad)
+  Twall_all  = Ts5mindata(ir,cTs_Twall)
 
-  Tw_n       = Ts5mindata(iESTMcount,cTs_Twall_n)
-  Tw_e       = Ts5mindata(iESTMcount,cTs_Twall_e)
-  Tw_s       = Ts5mindata(iESTMcount,cTs_Twall_s)
-  Tw_w       = Ts5mindata(iESTMcount,cTs_Twall_w)
-
+  Tw_n       = Ts5mindata(ir,cTs_Twall_n)
+  Tw_e       = Ts5mindata(ir,cTs_Twall_e)
+  Tw_s       = Ts5mindata(ir,cTs_Twall_s)
+  Tw_w       = Ts5mindata(ir,cTs_Twall_w)
+ 
   !    if (any(isnan(Ts5mindata))) then                                    !!FO!! can't use data when time gap is too big (or neg.) or data is NaN
   !        if (spindone) then                                                  !!FO!! writes a line of NaNs
   !            write(20,'(1F8.4,I6,100f10.1)') dectime,it,-0./0.,-0./0.,-0./0.,-0./0.,-0./0.,-0./0.,&
@@ -221,22 +265,19 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv)
   !        NLINESREAD=0
   !        SPINDONE=.TRUE.
   !PRINT*, "SPUNUP"
-
   !        return ! changed from cycle
   !    ENDIF
 
-  ! Write first row of each met block as -999  
-  IF (first) THEN  !Set to true in ESTM_initials
-     !write(*,*) iy, id, it, imin, QSnet
-     !write(*,*) Tair1, Tair2, Temp_C
-     Tair2=Temp_C+C2K
-     ! first=.FALSE.
-     IF(Gridiv == NumberOfGrids) first=.FALSE.  !Set to false only after all grids have run
-     dataOutESTM(iESTMcount,1:32,Gridiv)=(/REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),&
-          REAL(it,KIND(1D0)),REAL(imin,KIND(1D0)),dectime,(dum(ii),ii=1,27)/)
-     RETURN
-  ENDIF
-
+  !! Write first row of each met block as -999  
+  !IF (first) THEN  !Set to true in ESTM_initials
+  !!   !Tair2=Temp_C+C2K !This is now set in SUEWS_translate for ir=0 only
+  !!   ! first=.FALSE.
+  !   IF(Gridiv == NumberOfGrids) first=.FALSE.  !Set to false only after all grids have run
+  !   dataOutESTM(ir,1:32,Gridiv)=(/REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),&
+  !        REAL(it,KIND(1D0)),REAL(imin,KIND(1D0)),dectime,(dum(ii),ii=1,27)/)
+  !   RETURN
+  !ENDIF
+  
   ! What are these constants? - Need defining somewhere
   zenith_rad=zenith_deg/180*PI
   IF (zenith_rad>0.AND.zenith_rad<PI/2.-HW) THEN  !ZENITH MUST BE HIGHER THAN BUILDINGS FOR DIRECT INTERCEPTION
@@ -246,19 +287,14 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv)
      tanzenith = 0.
   ENDIF
 
-  !external bulk exchange coefficients
-  CHR=0.005
-  CHAIR=CHR
-  CHAIR_ground=CHAIR
-  CHAIR_WALL=CHAIR
-
   SHC_air=HEATCAPACITY_AIR(Tair1,avrh,Press_hPa)   ! Use SUEWS version
-  Tair24HR=EOSHIFT(Tair24hr, 1, Tair1, 1)
-  Tairday=SUM(Tair24HR)/dtperday
+  Tair24HR=EOSHIFT(Tair24hr, 1, Tair1, 1) !!!***Check this
+  Tairday=SUM(Tair24HR)/(24*nsh)
 
+    
   !Evolution of building temperature from heat added by convection
-  SELECT CASE(evolvetibld)
-  CASE(0); diagnoseTi=.FALSE.; HVAC=.FALSE.!use data in file                                 !!FO!! use measured indoor temperature (Tref in Lodz2002HS.txt)
+  SELECT CASE(evolvetibld)   !EvolveTiBld specifies which internal building temperature approach to use
+  CASE(0); diagnoseTi=.FALSE.; HVAC=.FALSE. !use data in file                                !!FO!! use measured indoor temperature (Tref in Lodz2002HS.txt)
   CASE(1);                                                                                   !!FO!! use of HVAC to counteract T changes
      diagnoseTi=.TRUE.
      IF (Tievolve>THEAT_OFF) THEN   !THEAT_OFF now converted to Kelvin in ESTM_initials - HCW 15 Jun 2016
@@ -285,6 +321,7 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv)
   IF (shc_airbld<minshc_airbld) minshc_airbld=shc_airbld
 
   !internal convective exchange coefficients                         !!FO!! ibldCHmod = 0 originally
+  !iBldCHmod specifies method for convective exchange coeffs
   IF (ibldCHmod==1) THEN       !ASHRAE 2001
      CH_ibld  = 1.31*(ABS(T0_ibld-Tievolve))**0.25/shc_airbld
      CH_iwall = 1.31*(ABS(TN_wall-Tievolve))**0.25/shc_airbld
@@ -300,19 +337,20 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv)
   !Evolving T = (Previous Temp + dT from Sensible heat flux) mixed with outside air
   !ASSUMES THE CH_BLD INCLUDES THE EFFECT OF VENTILATION RATE IN m/s (e.g. if a normal CH is .005 and
   !the value here is .003 the assumed ventilation is 0.6 m/s                                 !!FO!! CH_ibld=0.0015 from heatstorage_Barbican.nml => ventilation=0.3 m/s
-  Tairmix =  (Tievolve + TAIR1*AIREXDT)/(1.+AIREXDT)
+  Tairmix =  (Tievolve + TAIR1*AIREXDT)/(1.0+AIREXDT)
   QFBld= froof*(Tievolve-Tairmix)*shc_airbld*BldgH/Tstep !heat added or lost, requires cooling or heating if HVAC on
 
-  !!FO!! CH_xxxx has unit [m/s]
-  Tievolve = Tairmix+Tstep/BldgH/finternal*&                                                                         !!FO!! finternal(=froof+fibld+fwall) => normalisation of fractions
+  !!FO!! CH_xxxx has unit [m/s]  !!**HCW what is going on with tstep here??
+  Tievolve = Tairmix+Tstep/BldgH/finternal* &                                                                         !!FO!! finternal(=froof+fibld+fwall) => normalisation of fractions
        (CH_ibld*fibld*(T0_ibld-Tievolve)+CH_iroof*froof*(TN_roof-Tievolve)+CH_iwall*fwall*(TN_wall-Tievolve))      !!FO!! [K] = [K] + [s/m]*([m/s]*([K]))
 
   IF (.NOT.diagnoseTi) Tievolve=Tinternal+C2K
   IF (HVAC) THEN !Run up/down to set point +/- 1 degree with adjustment of 90% per hour
-     Tadd=(SIGN(-1.0d0,THEAT_fix-Tievolve)+THEAT_fix-Tievolve)*MIN(4.*Tstep/3600.0,0.9)
+     Tadd=(SIGN(-1.0d0,THEAT_fix-Tievolve)+THEAT_fix-Tievolve)*MIN(4.*Tstep/3600.0,0.9) !!**HCW check??
      Tievolve=Tievolve+Tadd
   ENDIF
 
+  
   !========>RADIATION<================
   IF (kdn_estm<0) kdn_estm=0. !set non-zero shortwave to zero  !Should this be moved up to line 183/4?
 
@@ -324,7 +362,7 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv)
   sw_hor =kdn_estm           !incoming solar on horizontal surface
   sw_vert=kdn_estm*tanzenith !incoming solar on vertical surface = kdown(obs)*sin(zenith)/cos(zenith)
 
-  Rs_roof=svf_roof*(1.-alb_roof)*sw_hor
+  Rs_roof=svf_roof*(1.0-alb_roof)*sw_hor
   Rl_roof=svf_roof*em_roof*ldown
 
   Rs_ground=svf_ground*(1.-alb_ground)*sw_hor+&
@@ -344,12 +382,13 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv)
 
   !DIFFICULT TO DETERMINE WHAT THIS IS EXACTLY, DONT INCLUDE WALLS
   kup_estm=kdn_estm-RVF_ROOF*Rs_roof-(RVF_ground+RVF_WALL)*Rs_ground/svf_ground-RVF_VEG*ALB_VEG*kdn_estm
-  IF (kdn_estm>10 .AND. kup_estm > 0) THEN
+  IF (kdn_estm > 10 .AND. kup_estm > 0) THEN
      alb_avg = kup_estm/kdn_estm
      sumalb  = sumalb+alb_avg
      Nalb    = Nalb+1
   ENDIF
 
+  
   !internal components
   Rs_ibld=0 ! This could change if there are windows (need solar angles or wall svf * fraction glazing * transmissivity)
   !internal incoming longwave terms do not include the view factors for its own surface e.g. for ibld and walls
@@ -365,8 +404,6 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv)
   Rl_iroof=SBConst*(ivf_ri*em_i*T0_ibld**4 +&
        ivf_rw*em_w*TN_wall**4 +&
        ivf_rf*em_f*Tfloor**4)
-
-
 
   !========>INTERNAL<================
   bctype=.FALSE.
@@ -434,8 +471,7 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv)
   ENDIF
 
   CALL heatcond1d(Troof,Qsroof,zroof(1:nroof),REAL(Tstep,KIND(1d0)),kroof(1:nroof),rroof(1:nroof),bc,bctype)
-
-
+  
 
   !========>ground<================
   bctype=.FALSE.
@@ -456,9 +492,7 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv)
   !     bc(2)=0.; bctype(2)=.t.
 
   CALL heatcond1d(Tground,Qsground,zground(1:Nground),REAL(Tstep,KIND(1d0)),kground(1:Nground),rground(1:Nground),bc,bctype)
-
-
-
+      
   Qsair = fair*SHC_air*(Tair1-Tair2)/Tstep
   Qsibld = Qsibld*fibld
   Qswall = Qswall*fwall
@@ -512,7 +546,7 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv)
      Tibldout=Tibld
   ENDIF
   
-  dataOutESTM(iESTMcount,1:32,Gridiv)=(/REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),&
+  dataOutESTM(ir,1:32,Gridiv)=(/REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),&
        REAL(it,KIND(1D0)),REAL(imin,KIND(1D0)),dectime,Qsnet,Qsair,Qswall,Qsroof,Qsground,Qsibld,&!11
        Twallout,Troofout,Tgroundout,Tibldout,Tievolve/)!21
   !kdn_estm,kup_estm,ldown,lup_net,RN,& !10
@@ -523,4 +557,22 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv)
 
   Tair2=Tair1
 
+  ! Save variables for this grid
+  Tair2_grids(Gridiv)=Tair1
+  lup_ground_grids(Gridiv) = lup_ground
+  lup_wall_grids(Gridiv) = lup_wall
+  lup_roof_grids(Gridiv) = lup_roof  
+  Tievolve_grids(Gridiv) = Tievolve
+  T0_ibld_grids(Gridiv) = T0_ibld
+  T0_ground_grids(Gridiv) = T0_ground
+  T0_wall_grids(Gridiv) = T0_wall
+  T0_roof_grids(Gridiv) = T0_roof
+  TN_wall_grids(Gridiv) = TN_wall
+  TN_roof_grids(Gridiv) = TN_roof
+  Tground_grids(:,Gridiv) = Tground(:)
+  Twall_grids(:,Gridiv) = Twall(:)
+  Troof_grids(:,Gridiv) = Troof(:)
+  Tibld_grids(:,Gridiv) = Tibld(:)
+  Tw_4_grids(:,:,Gridiv) = Tw_4(:,:)
+  
 END SUBROUTINE ESTM_v2016

@@ -15,6 +15,8 @@ MODULE allocateArray
 
   IMPLICIT NONE
 
+  INTEGER:: ESTMOne
+  
   ! ---- Set parameters for reading in data ------------------------------------------------------
   INTEGER, PARAMETER:: MaxNumberOfGrids=2000   !Max no. grids   !HCW changed to 2000 from 10000 so prog can run on windows (2GB lim)
   INTEGER, PARAMETER:: MaxLinesMet=8640        !Max no. lines to read in one go (for all grids, ie MaxLinesMet/NumberOfGrids each)
@@ -34,7 +36,7 @@ MODULE allocateArray
   INTEGER, PARAMETER:: ncolumnsProfiles=25          !SUEWS_Profiles.txt
   INTEGER, PARAMETER:: ncolumnsWGWaterDist=10       !SUEWS_WithinGridWaterDist.txt
   INTEGER, PARAMETER:: ncolumnsMetForcingData=24    !Meteorological forcing file (_data.txt)
-  INTEGER, PARAMETER:: ncolsTs5mindata=13           !ESTM input file (_ESTM_Ts_data.txt))
+  INTEGER, PARAMETER:: ncolsESTMdata=13           !ESTM input file (_ESTM_Ts_data.txt))
   
   ! ---- Set number of columns in output files ---------------------------------------------------
   INTEGER, PARAMETER:: ncolumnsDataOut=72,&    !Main output file (_5.txt). DataOut created in SUEWS_Calculations.f95
@@ -86,6 +88,7 @@ MODULE allocateArray
   INTEGER(KIND(1d0)),DIMENSION(:), ALLOCATABLE:: GridIDmatrix         !Array containing GridIDs in SiteSelect
   REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: SurfaceChar          !Array for surface characteristics
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: MetForcingData       !Array for meteorological forcing data
+  REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: ESTMForcingData      !Array for ESTM forcing data
   REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: ModelDailyState      !DailyState array
   REAL(KIND(1d0)),DIMENSION(:),    ALLOCATABLE:: DailyStateFirstOpen
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: ModelOutputData      !Output data matrix
@@ -99,6 +102,11 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: TstepProfiles
   REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: AHProf_tstep
   REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: WUProfM_tstep, WUProfA_tstep
+  
+  ! ---- For ESTM
+  REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:,:)::  Ts5mindata     !surface temperature input data
+  REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:) ::   Tair24HR
+
   ! Column numbers for TstepProfiles
   INTEGER:: cTP_EnUseWD  = 1,&
             cTP_EnUseWE  = 2,&
@@ -727,6 +735,7 @@ MODULE Initial
        ReadLinesMetData,&   !Number of lines of met data in each block (for each grid)
 
        nlinesMetData,&            !Number of lines in Met Forcing file
+       nlinesESTMdata,&           !Number of lines in ESTM Forcing file
        nlinesSiteSelect,&         !Number of lines in SUEWS_SiteSelect.txt
        nlinesNonVeg,&             !Number of lines in SUEWS_NonVeg.txt
        nlinesVeg,&                !Number of lines in SUEWS_Veg.txt
@@ -1858,10 +1867,10 @@ MODULE ESTM_data !S.O. and FO
   REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:)  ::  Tibld,Twall,Troof,Tground
   REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:,:)::  Tw_4
 
+  REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:,:)  ::  Tibld_grids,Twall_grids,Troof_grids,Tground_grids
+  REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:,:,:)::  Tw_4_grids
+  
   !=======variables and parameters created in ESTM=============================
-  INTEGER                                   ::  dtperday,&     !number of time step per day
-       iESTMcount
-
   REAL(KIND(1d0))                           ::  alb_avg,&
        alb_ground,&   !albedo value of ground
        alb_roof,&     !albedo value of roof
@@ -1921,13 +1930,23 @@ MODULE ESTM_data !S.O. and FO
        zvf_ground,&   !wall view factor from ground
        zvf_WALL     !wall view factor from ground
 
+  ! Arrays to store variables for each grid
+  REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE:: Tair2_grids
+  REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE:: lup_ground_grids
+  REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE:: lup_wall_grids
+  REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE:: lup_roof_grids
+  REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE:: Tievolve_grids
+  REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE:: T0_wall_grids
+  REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE:: T0_roof_grids
+  REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE:: T0_ground_grids
+  REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE:: T0_ibld_grids
+  REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE:: TN_roof_grids
+  REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE:: TN_wall_grids
+  
   ! Surface fractions for ESTM classes   
   REAL(KIND(1d0)),DIMENSION(3):: ESTMsfr_Paved     
   REAL(KIND(1d0)),DIMENSION(5):: ESTMsfr_Bldgs
   
-  REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:,:)::  Ts5mindata     !surface temperature input data
-  REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:) ::   Tair24HR
-
   LOGICAL             ::bctype(2),&
        CFLfail=.FALSE.,&
        diagnoseTi=.FALSE.,&

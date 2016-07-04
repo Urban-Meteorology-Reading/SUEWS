@@ -204,10 +204,10 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI) ! real
      v1 = .TRUE.
   ELSEIF(errh==47)THEN
      text1 = 'File missing'
-     returntrue = .TRUE.
+     !returntrue = .TRUE.
   ELSEIF(errh==48)THEN
      text1 = 'Something wrong in the rows of the file'
-     returntrue = .TRUE.
+     !returntrue = .TRUE.
   ELSEIF(errh==49)THEN
      text1 = 'Problems in saving to InitialConditionsYYYY.nml'
   ELSEIF(errh==50)THEN

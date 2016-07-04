@@ -1,6 +1,7 @@
 !In this subroutine the output files will be opened and the output matrices will be printed out.
 !
 !Last change:
+! HCW 04 Jul 2016 - GridID can now be up to 10 digits long. If file not found or not read correctly, program stops
 ! HCW 29 Jun 2016 - Fixed bug in output file (4 columns were repeated twice)
 !                 - Changed ESTM output file to be written for more than one met block
 ! HCW 25 May 2016 - changed QF, QH QE in output file to qf, qh, qe to match input file. Also e.g. RA, RS, L_mod -> ra, rs, L_Ob
@@ -40,7 +41,7 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  GridID)
 
   !================DEFINE OUTPUT FILENAME AND ITS PATH================
   WRITE(str2,'(i2)') TSTEP/60
-  WRITE(grstr2,'(i5)') GridID
+  WRITE(grstr2,'(i10)') GridID
   WRITE(yrstr2,'(i4)') year_int
 
   rawpath=TRIM(FileOutputPath)//TRIM(FileCode)//TRIM(ADJUSTL(grstr2))//'_'//TRIM(ADJUSTL(yrstr2))

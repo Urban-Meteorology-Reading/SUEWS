@@ -7,6 +7,7 @@
 ! N.B. Currently, daily variables are calculated using 00:00-23:55 timestamps (for 5-min resolution); should use 00:05-00:00
 !
 !Last modified:
+!  HCW 04 Jul 2016 - GridID can now be up to 10 digits long
 !  HCW 25 May 2016 - Added extra columns to daily state file (albedo for EveTr and Grass)
 !  HCW 24 May 2016 - Bug fixed in naming of DailyState file (now uses GridIDmatrix(Gridiv) rather than Gridiv)
 !  LJ 27 Jan 2016  - Removal of tabs
@@ -478,7 +479,7 @@ SUBROUTINE DailyState(Gridiv)
      IF (writedailyState==1) THEN
         !Define filename
         ! WRITE(grstr2,'(i5)') Gridiv      !Convert grid number for output file name
-        WRITE(grstr2,'(i5)') GridIDmatrix(Gridiv)      !Bug fix HCW 24/05/2016 - name file with Grid as in SiteSelect
+        WRITE(grstr2,'(i10)') GridIDmatrix(Gridiv)      !Bug fix HCW 24/05/2016 - name file with Grid as in SiteSelect
 
         FileDaily=TRIM(FileOutputPath)//TRIM(FileCode)//TRIM(ADJUSTL(grstr2))//'_DailyState.txt'
 

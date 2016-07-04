@@ -9,6 +9,7 @@
 !  - then over rows
 !  - then over grids
 !
+!Last modified by HCW 04 Jul 2016 - GridID can now be up to 10 digits long
 !Last modified by HCW 29 Jun 2016 - Reversed over-ruling of ReadLinesMetData so this is not restricted here to one day 
 !Last modified by HCW 27 Jun 2016 - Re-corrected grid number for output files. N.B. Gridiv seems to have been renamed iGrid
 !                                 - Met file no longer has grid number attached if same met data used for all grids
@@ -163,7 +164,7 @@ PROGRAM SUEWS_Program
      ! Need to know how many lines will be read each iteration
      ! Use first grid as an example as the number of lines is the same for all grids
      ! within one year
-     WRITE(grid_txt,'(I5)') GridIDmatrix(1)  !Get grid as a text string
+     WRITE(grid_txt,'(I10)') GridIDmatrix(1)  !Get grid as a text string
      WRITE(tstep_txt,'(I5)') tstep/60  !Get tstep (in minutes) as a text string
 
      ! Get met file name for this year for this grid
@@ -268,7 +269,7 @@ PROGRAM SUEWS_Program
         GridCounter=1   !Initialise counter for grids in each year
         DO igrid=1,NumberOfGrids   !Loop through grids
 
-           WRITE(grid_txt,'(I5)') GridIDmatrix(igrid)   !Get grid ID as a text string
+           WRITE(grid_txt,'(I10)') GridIDmatrix(igrid)   !Get grid ID as a text string
            ! Get met forcing file name for this year for the first grid
            ! Can be something else than 1
            FileCodeX = TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt)
@@ -375,7 +376,7 @@ PROGRAM SUEWS_Program
 
                  ! Call model calculation code
                  !  IF(ir==1) WRITE(*,*) 'Now running block ',iv,'/',ReadBlocksMetData,' of year ',year_int,'...'
-                 WRITE(grid_txt,'(I5)') GridIDmatrix(igrid)   !Get grid ID as a text string
+                 WRITE(grid_txt,'(I10)') GridIDmatrix(igrid)   !Get grid ID as a text string
                  FileCodeX=TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt)
                  IF(ir==1) THEN
                      WRITE(*,*) TRIM(ADJUSTL(FileCodeX)),': Now running block ',iv,'/',ReadBlocksMetData,' of ',TRIM(year_txt),'...'
@@ -392,7 +393,7 @@ PROGRAM SUEWS_Program
                  ! Write state information to new InitialConditions files
                  IF(ir == irMax) THEN              !If last row...
                     IF(iv == ReadBlocksMetData) THEN    !...of last block of met data
-                       WRITE(grid_txt,'(I5)') GridIDmatrix(igrid)
+                       WRITE(grid_txt,'(I10)') GridIDmatrix(igrid)
                        !  WRITE(year_txtNext,'(I4)') year_int+1  !Get next year as a string format
                        !  FileCodeX     = TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt)
                        !  FileCodeXNext = TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txtNext)

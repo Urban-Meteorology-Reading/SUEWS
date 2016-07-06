@@ -15,8 +15,6 @@ MODULE allocateArray
 
   IMPLICIT NONE
 
-  INTEGER:: ESTMOne
-  
   ! ---- Set parameters for reading in data ------------------------------------------------------
   INTEGER, PARAMETER:: MaxNumberOfGrids=2000   !Max no. grids   !HCW changed to 2000 from 10000 so prog can run on windows (2GB lim)
   INTEGER, PARAMETER:: MaxLinesMet=8640        !Max no. lines to read in one go (for all grids, ie MaxLinesMet/NumberOfGrids each)
@@ -39,7 +37,7 @@ MODULE allocateArray
   INTEGER, PARAMETER:: ncolsESTMdata=13           !ESTM input file (_ESTM_Ts_data.txt))
   
   ! ---- Set number of columns in output files ---------------------------------------------------
-  INTEGER, PARAMETER:: ncolumnsDataOut=72,&    !Main output file (_5.txt). DataOut created in SUEWS_Calculations.f95
+  INTEGER, PARAMETER:: ncolumnsDataOut=74,&    !Main output file (_5.txt). DataOut created in SUEWS_Calculations.f95
        ncolumnsDataOutSnow=102
 
   ! ---- Define input file headers ---------------------------------------------------------------
@@ -154,7 +152,8 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(nsurf):: soilmoistOld   !Soil moisture of each surface type from previous timestep [mm]
   REAL(KIND(1d0)),DIMENSION(nsurf):: state          !Wetness status of each surface type [mm]
   REAL(KIND(1d0)),DIMENSION(nsurf):: stateOld       !Wetness status of each surface type from previous timestep [mm]
-
+  REAL(KIND(1D0)),DIMENSION(nsurf):: rss_nsurf      !Surface resistance after wet/partially wet adjustment for each surface
+  
   REAL(KIND(1d0)),DIMENSION(nsurf):: WetThresh      !When State > WetThresh, rs=0 limit in SUEWS_evap [mm] (specified in input files)
   REAL(KIND(1d0)),DIMENSION(nsurf):: StateLimit     !Limit for state of each surface type [mm] (specified in input files)
 
@@ -258,6 +257,8 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(nsurf):: alb    !Albedo of each surface type [-]
   REAL(KIND(1d0)),DIMENSION(nsurf):: emis   !Emissivity of each surface type [-]
 
+  REAL(KIND(1d0)):: bulkalbedo !Bulk albedo for whole surface (areally-weighted)
+  
   ! Radiation balance components for different surfaces
   REAL(KIND(1d0)),DIMENSION(nsurf):: Tsurf_ind,&        !Surface temperature for each surface [degC]
        Tsurf_ind_snow,&   !Snow surface temperature for each surface [degC]
@@ -783,6 +784,7 @@ MODULE data_in
        MultipleESTMFiles,&    !Indicates whether a single ESTM input data file is used for all grids (0) or one for each grid (1)
        KeepTstepFilesIn,&     !Delete (0) or keep (1) input met files at resolution of tstep (used by python, not fortran)
        KeepTstepFilesOut,&    !Delete (0) or keep (1) output files at resolution of tstep (used by python, not fortran)
+       ResolutionFilesOut,&   !Specify resolution of output file produced by wrapper [s]
        WriteSurfsFile,&       !Write output file containing variables for each surface (1) or not (0). Not currently used!!
        gsChoice,&             !Options for surface conductance calculation (1 - Ja11, 2 - adjusted method)
        NetRadiationChoice,&   !Options for net all-wave radiation calculation
@@ -861,6 +863,7 @@ MODULE data_in
        QF_SAHP,&    !Anthropogenic heat flux calculated by SAHP
        qh,&        !Observed sensible heat flux
        qh_obs,&
+       QH_r,&      !Sensible heat flux calculated using resistance method 
        qn1,&       !Net all-wave radiation for the study area
        qn1_bup,&
        qn1_obs,&   !Observed new all-wave radiation
@@ -1286,8 +1289,9 @@ MODULE sues_data
        smd,&        !Soil moisture deficit of the soil surface layer
        vsmd,&       !Soil moisture deficit for vegetated surfaces only (what about BSoil?)
        gs,&         !G(Soil moisture deficit)
-       gsc          !Surface Layer Conductance
-
+       gsc,&        !Surface Layer Conductance
+       rss          !Surface resistance after wet/partially wet adjustment
+              
   !SUES latent heat flux related variables
   REAL (KIND(1d0))::  vdrc,&     !Second term up in calculation of E
        numPM,&    !Numerator of PM equation

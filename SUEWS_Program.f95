@@ -92,9 +92,6 @@ PROGRAM SUEWS_Program
 
   ! start counting cpu time
   CALL cpu_TIME(timeStart)
-
-  ESTMOne = 0
-  write(*,*) '--- ESTMOne:', ESTMOne
   
   ! Initialise error file (0 -> problems.txt file is created)
   errorChoice=0

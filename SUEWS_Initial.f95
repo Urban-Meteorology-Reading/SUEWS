@@ -52,6 +52,7 @@ SUBROUTINE OverallRunControl
        MultipleESTMFiles,&
        KeepTstepFilesIn,&
        KeepTstepFilesOut,&
+       ResolutionFilesOut,&
        WriteSurfsFile,&
        SnowFractionChoice,&
        SNOWuse,&

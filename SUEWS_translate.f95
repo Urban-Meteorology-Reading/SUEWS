@@ -3,6 +3,9 @@
 !           - between arrays for different grids and the model variables
 !Made by HW&LJ Oct 2014
 !-----------------------------------------------------------------------------------
+!Last modified HCW 06 Jul 2016
+! Checks on ESTM fractions
+!  - default setting to first ESTM Class code if surface not present and ESTM fractions do not sum to 1.
 !Last modified HCW 29 Jun 2016
 ! Removed SoilMoistDay and StateDay
 !Last modified: HCW 16 Jun 2016
@@ -319,6 +322,27 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   ! Get surface fractions for ESTM classes for Bldgs and Paved surfaces 
   ESTMsfr_Paved = SurfaceChar(Gridiv,c_Fr_ESTMClass_Paved)   !Dim 3
   ESTMsfr_Bldgs = SurfaceChar(Gridiv,c_Fr_ESTMClass_Bldgs)   !Dim 5
+  !Check these sum to 1 and are consistent with sfr of Paved and Bldgs surface types
+  IF(sfr(PavSurf) > 0) THEN  !If surface exists, ESTM fractions must be correct 
+     IF(SUM(ESTMsfr_Paved)>1.001.OR.SUM(ESTMsfr_Paved)<0.999) CALL ErrorHint(10, &
+         'SiteSelect.txt - check ESTM Paved surface fractions',SUM(ESTMsfr_Paved),notUsed,notUsedI)
+  ELSEIF(sfr(PavSurf) == 0) THEN !If surface does not exist, ESTM fraction does not matter
+     IF(SUM(ESTMsfr_Paved)>1.001.OR.SUM(ESTMsfr_Paved)<0.999) THEN   !If ESTM fractions do not sum to 1, set here
+        ESTMsfr_Paved(1) = 1.000    
+        ESTMsfr_Paved(2:3) = 0.000
+        CALL ErrorHint(67,'ESTM Paved classes do not sum to 1 (but no Paved surface present).',SUM(ESTMsfr_Paved),notUsed,notUsedI)
+     ENDIF   
+  ENDIF
+  IF(sfr(BldgSurf) > 0) THEN 
+     IF(SUM(ESTMsfr_Bldgs)>1.001.OR.SUM(ESTMsfr_Bldgs)<0.999) CALL ErrorHint(10, &
+         'SiteSelect.txt - check ESTM Bldgs surface fractions',SUM(ESTMsfr_Bldgs),notUsed,notUsedI)
+  ELSEIF(sfr(BldgSurf) == 0) THEN !If surface does not exist, ESTM fraction does not matter
+     IF(SUM(ESTMsfr_Bldgs)>1.001.OR.SUM(ESTMsfr_Bldgs)<0.999) THEN   !If ESTM fractions do not sum to 1, set here
+        ESTMsfr_Bldgs(1) = 1.000    
+        ESTMsfr_Bldgs(2:5) = 0.000
+        CALL ErrorHint(67,'ESTM Bldgs classes do not sum to 1 (but no Bldgs surface present).',SUM(ESTMsfr_Bldgs),notUsed,notUsedI)
+     ENDIF          
+  ENDIF
   
   ! ===== PAVED =====
   ! First combine characteristics of the 3x Paved classes

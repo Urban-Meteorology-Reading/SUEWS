@@ -8,6 +8,8 @@ SUBROUTINE Evap_SUEWS
   !-See Sect 2.4 of Jarvi et al. (2011) Ja11
   !
   !Last modified:
+  !  HCW 06 Jul 2016
+  !   Moved rss declaration to LUMPS_Module_Constants so it can be written out
   !  HCW 11 Jun 2015
   !   Added WetThresh to distinguish wet/partially wet surfaces from the storage capacities used in SUEWS_drain
   !  HCW 30 Jan 2015
@@ -25,8 +27,7 @@ SUBROUTINE Evap_SUEWS
 
   IMPLICIT NONE
 
-  REAL(KIND(1d0)):: rss,&  !Redefined surface resistance for transition [s m-1]
-       rbsg,&  !Boundary-layer resistance x (slope/psychrometric const + 1) [s m-1]
+  REAL(KIND(1d0)):: rbsg,&  !Boundary-layer resistance x (slope/psychrometric const + 1) [s m-1]
        rsrbsg,&  !rs + rbsg [s m-1]
        W,&  !Depends on the amount of water on the canopy [-]
        r,&

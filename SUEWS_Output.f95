@@ -62,6 +62,7 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  GridID)
 
 110  FORMAT('%iy id it imin dectime ',&
      'kdown kup ldown lup Tsurf qn h_mod e_mod qs qf qh qe ',&
+     'QH_r ',&
      'P/i Ie/i E/i Dr/i ',&
      'St/i NWSt/i surfCh/i totCh/i ',&
      'RO/i ROsoil/i ROpipe ROpav ROveg ROwater ',&
@@ -69,7 +70,7 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  GridID)
      'ra rs ustar L_Ob Fcld ',&
      'SoilSt smd smd_Paved smd_Bldgs smd_EveTr smd_DecTr smd_Grass smd_BSoil ',&
      'St_Paved St_Bldgs St_EveTr St_DecTr St_Grass St_BSoil St_Water ',&
-     'LAI z0m zdm ',&
+     'LAI z0m zdm bulkalbedo ',&
      'qn1_SF qn1_S Qm QmFreez QmRain SWE Mw MwStore snowRem_Paved snowRem_Bldgs ChSnow/i ',&
      'SnowAlb ')
 
@@ -180,15 +181,16 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  GridID)
   ! 301_Format
 301 FORMAT((i4,1X),3(i3,1X),(f8.4,1X),&       !time parameters 5
        5(f9.4,1X),7(f9.4,1X),&            !17
-       4(f10.6,1X),&                      !21
-       1(f10.5,1X),3(f10.6,1X),&          !25
-       6(f10.6,1X),&                      !31
-       2(f9.3,1X),4(f9.4,1X),&            !37
-       3(f10.5,1X),(g14.7,1X),(f10.5,1X),& !42
-       2(f10.4,1X),6(f10.5,1X),7(f10.4,1X),& !57
-       3(f10.4,1X),&                       !60 LAI z0m zdm
-       5(f10.4,1X),6(f10.6,1X),&           !71
-       1(f8.4,1X))                        !72 albedo snow
+       1(f9.4,1X),&                       !18
+       4(f10.6,1X),&                      !22
+       1(f10.5,1X),3(f10.6,1X),&          !26
+       6(f10.6,1X),&                      !32
+       2(f9.3,1X),4(f9.4,1X),&            !38
+       3(f10.5,1X),(g14.7,1X),(f10.5,1X),& !43
+       2(f10.4,1X),6(f10.5,1X),7(f10.4,1X),& !58
+       4(f10.4,1X),&                       !62 LAI z0m zdm bulkalbedo
+       5(f10.4,1X),6(f10.6,1X),&           !73
+       1(f8.4,1X))                        !74 albedo snow
 
   !==================== This part read by python wrapper ======================
   ! Update to match output columns, header and format

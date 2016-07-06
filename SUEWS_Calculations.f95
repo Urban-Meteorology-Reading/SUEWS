@@ -359,7 +359,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   runoff           = 0
   runoffSoil       = 0
   surplusWaterBody = 0
-
+ 
   ! Added by HCW 13 Feb 2015
   qe_per_tstep         = 0     ![W m-2]
   ev_per_tstep         = 0
@@ -413,6 +413,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
         ENDIF
      ELSE
         CALL Evap_SUEWS   !Calculates ev [mm]
+        rss_nsurf(is) = rss !Store rss for each surface
         CALL soilstore    !Surface water balance and soil store updates (can modify ev, updates state)
         ! if ( id>160 ) then
         !   stop "stop after Evap_SUEWS"
@@ -446,7 +447,13 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ! Calculate sensible heat flux as a residual (Modified by LJ in Nov 2012)
   qh=(qn1+qf+QmRain)-(qeOut+qs+Qm+QmFreez)     !qh=(qn1+qf+QmRain+QmFreez)-(qeOut+qs+Qm)
 
-
+  ! Calculate QH using resistance method (for testing HCW 06 Jul 2016)
+  if(ra/=0) then
+    qh_r = avdens*avcp*(tsurf-Temp_C)/ra
+  else
+    qh_r=NAN
+  endif    
+    
   !write(*,*) Gridiv, qn1, qf, qh, qeOut, qs, qn1+qf-qs
   !if(ir > 155 .and. ir <165) pause
   !if((qn1+qf-qs) - (qeOut) < -1)  then
@@ -553,21 +560,27 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
      ENDDO
   ENDIF
 
-
+  ! Calculate areally-weighted albedo
+  bulkalbedo = 0
+  DO is=1,nsurf
+      bulkalbedo = bulkalbedo + alb(is)*sfr(is)
+  ENDDO    
+  
   !=====================================================================
   !====================== Write out files ==============================
   !Define the overall output matrix to be printed out step by step
   dataOut(ir,1:ncolumnsDataOut,Gridiv)=(/REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),REAL(it,KIND(1D0)),REAL(imin,KIND(1D0)),dectime,&   !5
        avkdn,kup,ldown,lup,tsurf,qn1,h_mod,e_mod,qs,qf,qh,qeOut,&                                       !17
-       precip,ext_wu,ev_per_tstep,drain_per_tstep,&                                                     !21
-       state_per_tstep,NWstate_per_tstep,surf_chang_per_tstep,tot_chang_per_tstep,&                     !25
-       runoff_per_tstep,runoffSoil_per_tstep,runoffPipes,runoffAGimpervious,runoffAGveg,runoffWaterBody,&  !31
-       AdditionalWater,FlowChange/nsh_real,int_wu,wu_EveTr,wu_DecTr,wu_Grass,&                          !37
-       ra,ResistSurf,ustar,l_mod,Fcld,&                                                                 !42
-       soilstate,smd,(smd_nsurf(is),is=1,nsurf-1),(state(is),is=1,nsurf),&                              !57
-       lai_wt,z0m,zdm,&                                                                                 !60
-       qn1_SF,qn1_S,Qm,QmFreez,QmRain,swe,mwh,MwStore,(SnowRemoval(is),is=1,2),chSnow_per_interval,&    !71
-       SnowAlb/)                                                                                        !72
+       qh_r,&                                                                                         !18
+       precip,ext_wu,ev_per_tstep,drain_per_tstep,&                                                     !22
+       state_per_tstep,NWstate_per_tstep,surf_chang_per_tstep,tot_chang_per_tstep,&                     !26
+       runoff_per_tstep,runoffSoil_per_tstep,runoffPipes,runoffAGimpervious,runoffAGveg,runoffWaterBody,&  !32
+       AdditionalWater,FlowChange/nsh_real,int_wu,wu_EveTr,wu_DecTr,wu_Grass,&                          !38
+       ra,ResistSurf,ustar,l_mod,Fcld,&                                                                 !43
+       soilstate,smd,(smd_nsurf(is),is=1,nsurf-1),(state(is),is=1,nsurf),&                              !58
+       lai_wt,z0m,zdm,bulkalbedo,&                                                                      !62
+       qn1_SF,qn1_S,Qm,QmFreez,QmRain,swe,mwh,MwStore,(SnowRemoval(is),is=1,2),chSnow_per_interval,&    !73
+       SnowAlb/)                                                                                        !74
 
   IF (snowUse==1) THEN
      dataOutSnow(ir,1:ncolumnsDataOutSnow,Gridiv)=(/REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),&               !2

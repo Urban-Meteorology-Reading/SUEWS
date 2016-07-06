@@ -265,6 +265,10 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI) ! real
   ELSEIF(errh==66)THEN
      text1 = 'Different number of lines in ESTM forcing and Met forcing files.'
      v6 = .TRUE.
+  ELSEIF(errh==67) THEN
+     text1='ESTMClass1 automatically set to 100%.'
+     returntrue=.TRUE.
+     v1=.TRUE.
   ENDIF
   !---------------------------------------------------------------------
   !This part of the code determines how the error message is written out

@@ -423,6 +423,7 @@ SUBROUTINE DailyState(Gridiv)
      IF (irRange(2)- irRange(1) >= nsh*24-1) THEN
         !   load the sublist into forcings:
         !   QH and QE for Bowen ratio
+        
         xQH  = dataOut(irRange(1):irRange(2):nsh,16,Gridiv)
         xQE  = dataOut(irRange(1):irRange(2):nsh,17,Gridiv)
         mxQH = SUM(xQH(10:16))/7

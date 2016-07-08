@@ -10,7 +10,7 @@
 !  - then over grids
 !
 !Last modified by HCW 04 Jul 2016 - GridID can now be up to 10 digits long
-!Last modified by HCW 29 Jun 2016 - Reversed over-ruling of ReadLinesMetData so this is not restricted here to one day 
+!Last modified by HCW 29 Jun 2016 - Reversed over-ruling of ReadLinesMetData so this is not restricted here to one day
 !Last modified by HCW 27 Jun 2016 - Re-corrected grid number for output files. N.B. Gridiv seems to have been renamed iGrid
 !                                 - Met file no longer has grid number attached if same met data used for all grids
 !Last modified by HCW 24 May 2016 - InitialConditions file naming altered
@@ -59,7 +59,7 @@ PROGRAM SUEWS_Program
 
   REAL :: timeStart, timeFinish ! profiling use, AnOHM TS
   REAL :: xErr      ! error in Bo iteration, AnOHM TS 20160331
-  LOGICAL, ALLOCATABLE :: flagRerunAnOHM(:)   ! iteration run to make Bo converge,AnOHM TS
+  ! LOGICAL, ALLOCATABLE :: flagRerunAnOHM(:)   ! iteration run to make Bo converge,AnOHM TS
 
   !  ! ---- Allocate arrays--------------------------------------------------
   !  allocate(SurfaceChar(NumberOfGrids,MaxNCols_c))   !Surface characteristics
@@ -92,7 +92,7 @@ PROGRAM SUEWS_Program
 
   ! start counting cpu time
   CALL cpu_TIME(timeStart)
-  
+
   ! Initialise error file (0 -> problems.txt file is created)
   errorChoice=0
 
@@ -130,7 +130,7 @@ PROGRAM SUEWS_Program
   ! Daily state needs to be outside year loop to transfer states between years
   ALLOCATE(ModelDailyState(NumberOfGrids,MaxNCols_cMDS))   !DailyState
   ALLOCATE(DailyStateFirstOpen(NumberOfGrids))             !Initialization for header
-  ALLOCATE(flagRerunAnOHM(NumberOfGrids))                  !flag for rerun AnOHM
+  ! ALLOCATE(flagRerunAnOHM(NumberOfGrids))                  !flag for rerun AnOHM
   !   allocate(BoAnOHMStart(NumberOfGrids))       ! initial Bo
   !   allocate(BoAnOHMEnd(NumberOfGrids))         ! final Bo
 
@@ -139,14 +139,14 @@ PROGRAM SUEWS_Program
   ModelDailyState(:,:) = -999
   DailyStateFirstOpen(:) = 1
 
-  flagRerunAnOHM(:) = .TRUE.
+  ! flagRerunAnOHM(:) = .TRUE.
   ! -------------------------------------------------------------------------
 
   ! Initialise ESTM (reads ESTM nml, should only run once)
   IF(QSChoice==4 .OR. QSChoice==14) THEN
      CALL ESTM_initials
-  ENDIF   
-  
+  ENDIF
+
   !==========================================================================
   DO year_int=FirstYear,LastYear   !Loop through years
 
@@ -168,11 +168,11 @@ PROGRAM SUEWS_Program
      FileCodeX = TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt)
      FileMet   = TRIM(FileInputPath)//TRIM(FileCodeX)//'_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
      !If each grid has the same met file, met file name does not include grid number (HCW 27 Jun 2016)
-     IF(MultipleMetFiles /= 1) THEN   
-        FileCodeXWG=TRIM(FileCode)//'_'//TRIM(year_txt) !File code without grid 
+     IF(MultipleMetFiles /= 1) THEN
+        FileCodeXWG=TRIM(FileCode)//'_'//TRIM(year_txt) !File code without grid
         FileMet=TRIM(FileInputPath)//TRIM(FileCodeXWG)//'_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
-     ENDIF      
-          
+     ENDIF
+
      ! Open this example met file
      OPEN(10,file=TRIM(FileMet),status='old',err=314)
      CALL skipHeader(10,SkipHeaderMet)  !Skip header
@@ -186,20 +186,23 @@ PROGRAM SUEWS_Program
      ENDDO
      CLOSE(10)
      !-----------------------------------------------------------------------
-   
+
      ! To conserve memory, read met data in blocks
      ! Find number of lines that can be read in each block (i.e. read in at once)
      ReadLinesMetData = nlinesMetData   !Initially set limit as the size of the met file (N.B.solves problem with Intel fortran)
-     nlinesLimit = int(floor(MaxLinesMet/real(NumberOfGrids,kind(1d0))))  !Uncommented HCW 29 Jun 2016
+     nlinesLimit = INT(FLOOR(MaxLinesMet/REAL(NumberOfGrids,KIND(1d0))))  !Uncommented HCW 29 Jun 2016
      !nlinesLimit = 24*nsh  !Commented out HCW 29 Jun 2016
      IF(nlinesMetData > nlinesLimit) THEN   !But restrict if this limit exceeds memory capacity
         ReadLinesMetData = nlinesLimit
      ENDIF
-     !write(*,*) 'Met data will be read in chunks of',ReadlinesMetdata,'lines.'
-     
+     ! make sure the metblocks read in consists of complete diurnal cycles, TS 08 Jul 2016
+     ReadLinesMetData = nsd*(ReadLinesMetData/nsd)
+
+     write(*,*) 'Met data will be read in chunks of',ReadlinesMetdata,'lines.'
+
      ! Find number of blocks of met data
      ReadBlocksMetData = INT(CEILING(REAL(nlinesMetData,KIND(1d0))/REAL(ReadLinesMetData,KIND(1d0))))
-     !write(*,*) 'Met data will be read in',ReadBlocksMetData,'blocks.'
+     write(*,*) 'Met data will be read in',ReadBlocksMetData,'blocks.'
 
      ! ---- Allocate arrays--------------------------------------------------
      ALLOCATE(SurfaceChar(NumberOfGrids,MaxNCols_c))                                               !Surface characteristics
@@ -215,18 +218,18 @@ PROGRAM SUEWS_Program
      ALLOCATE(WUProfM_tstep(24*NSH,2))                                      !Manual water use profiles at model timestep
      ALLOCATE(WUProfA_tstep(24*NSH,2))                                      !Automatic water use profiles at model timestep
      !! Add snow clearing (?)
-       
+
      ! Check number of lines in ESTM forcing file (nlinesESTMdata)
      IF(QSChoice==4 .OR. QSChoice==14) THEN
         IF(MultipleESTMFiles  == 1) THEN  !if separate ESTM files for each grid
-           FileESTMTs=TRIM(FileInputPath)//TRIM(FileCodeX)//'_ESTM_Ts_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'             
+           FileESTMTs=TRIM(FileInputPath)//TRIM(FileCodeX)//'_ESTM_Ts_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
            !write(*,*) 'Calling ESTM initials...', FileCodeX, iv, igrid
            !CALL ESTM_initials(FileCodeX)
         ELSE   !if one ESMT file for all grids
-           FileESTMTs=TRIM(FileInputPath)//TRIM(FileCodeXWG)//'_ESTM_Ts_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'             
+           FileESTMTs=TRIM(FileInputPath)//TRIM(FileCodeXWG)//'_ESTM_Ts_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
            !write(*,*) 'Calling ESTM initials...', FileCodeX, iv, igrid
            !CALL ESTM_initials(FileCodeX)
-        ENDIF                
+        ENDIF
         ! Open this example met file
         OPEN(101,file=TRIM(FileESTMTs),status='old',action='read',err=315)
         CALL skipHeader(101,SkipHeaderMet)  !Skip header
@@ -238,17 +241,17 @@ PROGRAM SUEWS_Program
            nlinesESTMdata = nlinesESTMdata + 1
         ENDDO
         CLOSE(101)
- 
+
         ! Check ESTM data and met data are same length (so that ESTM file can be read same blocks as met data
         IF(nlinesESTMdata /= nlinesMetdata) THEN
            CALL ErrorHint(66,'ESTM input file different length to met forcing file',REAL(nlinesESTMdata,KIND(1d0)), &
-                           NotUsed,nlinesMetdata)     
+                NotUsed,nlinesMetdata)
         ENDIF
-        ! Allocate array to receive ESTM forcing data   
-        ALLOCATE(ESTMForcingData(1:ReadlinesMetdata,ncolsESTMdata,NumberOfGrids))        
-        ALLOCATE(Ts5mindata(1:ReadlinesMetdata,ncolsESTMdata)) 
+        ! Allocate array to receive ESTM forcing data
+        ALLOCATE(ESTMForcingData(1:ReadlinesMetdata,ncolsESTMdata,NumberOfGrids))
+        ALLOCATE(Ts5mindata(1:ReadlinesMetdata,ncolsESTMdata))
         ALLOCATE(Tair24HR(24*nsh))
-     ENDIF    
+     ENDIF
      ! ----------------------------------------------------------------------
 
      !-----------------------------------------------------------------------
@@ -312,21 +315,21 @@ PROGRAM SUEWS_Program
            ! Initialise ESTM if required, TS 05 Jun 2016; moved inside grid loop HCW 27 Jun 2016
            IF(QSChoice==4 .OR. QSChoice==14) THEN
               IF(MultipleESTMFiles  == 1) THEN  !if separate ESTM files for each grid
-                 FileESTMTs=TRIM(FileInputPath)//TRIM(FileCodeX)//'_ESTM_Ts_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'             
+                 FileESTMTs=TRIM(FileInputPath)//TRIM(FileCodeX)//'_ESTM_Ts_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
                  !write(*,*) 'Calling GetESTMData...', FileCodeX, iv, igrid
                  CALL SUEWS_GetESTMData(101)
               ELSE   !if one ESMT file for all grids
-                 FileESTMTs=TRIM(FileInputPath)//TRIM(FileCodeXWG)//'_ESTM_Ts_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'             
+                 FileESTMTs=TRIM(FileInputPath)//TRIM(FileCodeXWG)//'_ESTM_Ts_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
                  !write(*,*) 'Calling GetESTMData...', FileCodeX, iv, igrid
                  IF(igrid == 1) THEN       !Read for the first grid only
                     CALL SUEWS_GetESTMData(101)
                  ELSE                          !Then for subsequent grids simply copy data
                     ESTMForcingData(1:ReadlinesMetdata,1:ncolsESTMdata,GridCounter) = ESTMForcingData(1:ReadlinesMetdata, &
-                      1:ncolsESTMdata,1)
+                         1:ncolsESTMdata,1)
                  ENDIF
               ENDIF
-           ENDIF    
-           
+           ENDIF
+
            GridCounter = GridCounter+1   !Increase GridCounter by 1 for next grid
 
         ENDDO !end loop over grids
@@ -337,7 +340,7 @@ PROGRAM SUEWS_Program
         ! Initialise CBL and SOLWEIG parts if required
         IF((CBLuse==1).OR.(CBLuse==2)) CALL CBL_ReadInputData
         IF(SOLWEIGuse==1) CALL SOLWEIG_initial
-            
+
         !write(*,*) 'Initialisation done'
         ! First stage: initialisation done ----------------------------------
 
@@ -353,92 +356,92 @@ PROGRAM SUEWS_Program
         iter       = 0
         BoAnOHMEnd = NAN
 
-        flagRerunAnOHM = .TRUE.
+        ! flagRerunAnOHM = .TRUE.
 
-        DO WHILE ( ANY(flagRerunAnOHM) .AND. iter < 20 )
-           iter = iter+1
-           !  PRINT*, 'iteration:',iter
+        ! DO WHILE ( ANY(flagRerunAnOHM) .AND. iter < 20 )
+        !    iter = iter+1
+        !  PRINT*, 'iteration:',iter
 
-           DO ir=1,irMax   !Loop through rows of current block of met data
-              GridCounter=1    !Initialise counter for grids in each year
+        DO ir=1,irMax   !Loop through rows of current block of met data
+           GridCounter=1    !Initialise counter for grids in each year
 
-              DO igrid=1,NumberOfGrids   !Loop through grids
-                 IF(PrintPlace) WRITE(*,*) 'Row (ir):', ir,'/',irMax,'of block (iv):', iv,'/',ReadBlocksMetData,&
-                      'Grid:',GridIDmatrix(igrid)
+           DO igrid=1,NumberOfGrids   !Loop through grids
+              IF(PrintPlace) WRITE(*,*) 'Row (ir):', ir,'/',irMax,'of block (iv):', iv,'/',ReadBlocksMetData,&
+                   'Grid:',GridIDmatrix(igrid)
 
-                 !  ! Translate daily state back so as to keep water balance at beginning of a day
-                 !  IF ( QSChoice==3 .AND. ir==1) THEN
-                 !     CALL SUEWS_Translate(igrid,0,iv)
-                 !  END IF
+              !  ! Translate daily state back so as to keep water balance at beginning of a day
+              !  IF ( QSChoice==3 .AND. ir==1) THEN
+              !     CALL SUEWS_Translate(igrid,0,iv)
+              !  END IF
 
-                 ! Call model calculation code
-                 !  IF(ir==1) WRITE(*,*) 'Now running block ',iv,'/',ReadBlocksMetData,' of year ',year_int,'...'
-                 WRITE(grid_txt,'(I10)') GridIDmatrix(igrid)   !Get grid ID as a text string
-                 FileCodeX=TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt)
-                 IF(ir==1) THEN
-                     WRITE(*,*) TRIM(ADJUSTL(FileCodeX)),': Now running block ',iv,'/',ReadBlocksMetData,' of ',TRIM(year_txt),'...'
+              ! Call model calculation code
+              !  IF(ir==1) WRITE(*,*) 'Now running block ',iv,'/',ReadBlocksMetData,' of year ',year_int,'...'
+              WRITE(grid_txt,'(I10)') GridIDmatrix(igrid)   !Get grid ID as a text string
+              FileCodeX=TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt)
+              IF(ir==1) THEN
+                 WRITE(*,*) TRIM(ADJUSTL(FileCodeX)),': Now running block ',iv,'/',ReadBlocksMetData,' of ',TRIM(year_txt),'...'
+              ENDIF
+              CALL SUEWS_Calculations(GridCounter,ir,iv,irMax)
+
+              ! Record iy and id for current time step to handle last row in yearly files (YYYY 1 0 0)
+              !  IF(GridCounter == NumberOfGrids) THEN   !Adjust only when the final grid has been run for this time step
+              IF(igrid == NumberOfGrids) THEN   !Adjust only when the final grid has been run for this time step
+                 iy_prev_t = iy
+                 id_prev_t = id
+              ENDIF
+
+              ! Write state information to new InitialConditions files
+              IF(ir == irMax) THEN              !If last row...
+                 IF(iv == ReadBlocksMetData) THEN    !...of last block of met data
+                    WRITE(grid_txt,'(I10)') GridIDmatrix(igrid)
+                    !  WRITE(year_txtNext,'(I4)') year_int+1  !Get next year as a string format
+                    !  FileCodeX     = TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt)
+                    !  FileCodeXNext = TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txtNext)
+                    !  CALL NextInitial(FileCodeXNext,year_int)
+                    FileCodeXwy=TRIM(FileCode)//TRIM(ADJUSTL(grid_txt)) !File code without year (HCW 24 May 2016)
+                    CALL NextInitial(FileCodeXwy,year_int)
+
                  ENDIF
-                 CALL SUEWS_Calculations(GridCounter,ir,iv,irMax)
-
-                 ! Record iy and id for current time step to handle last row in yearly files (YYYY 1 0 0)
-                 !  IF(GridCounter == NumberOfGrids) THEN   !Adjust only when the final grid has been run for this time step
-                 IF(igrid == NumberOfGrids) THEN   !Adjust only when the final grid has been run for this time step
-                    iy_prev_t = iy
-                    id_prev_t = id
-                 ENDIF
-
-                 ! Write state information to new InitialConditions files
-                 IF(ir == irMax) THEN              !If last row...
-                    IF(iv == ReadBlocksMetData) THEN    !...of last block of met data
-                       WRITE(grid_txt,'(I10)') GridIDmatrix(igrid)
-                       !  WRITE(year_txtNext,'(I4)') year_int+1  !Get next year as a string format
-                       !  FileCodeX     = TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt)
-                       !  FileCodeXNext = TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txtNext)
-                       !  CALL NextInitial(FileCodeXNext,year_int)
-                       FileCodeXwy=TRIM(FileCode)//TRIM(ADJUSTL(grid_txt)) !File code without year (HCW 24 May 2016)
-                       CALL NextInitial(FileCodeXwy,year_int)
-
-                    ENDIF
-                 ENDIF
+              ENDIF
 
 
-                 ! print AnOHM coeffs. info.:
-                 !  IF ( it == 0 .AND. imin == 5 )  THEN
-                 !     WRITE(*, '(a13,2f10.4)') 'Start: a1, a2',a1AnOHM_grids(id,igrid),a2AnOHM_grids(id,igrid)
-                 !  ENDIF
+              ! print AnOHM coeffs. info.:
+              !  IF ( it == 0 .AND. imin == 5 )  THEN
+              !     WRITE(*, '(a13,2f10.4)') 'Start: a1, a2',a1AnOHM_grids(id,igrid),a2AnOHM_grids(id,igrid)
+              !  ENDIF
 
-                 IF ( ir == irMax-10) THEN
-                    xErr = ABS(a1AnOHM(igrid)-a1AnOHM_grids(id,igrid))/ABS(a1AnOHM(igrid))+&
-                         ABS(a2AnOHM(igrid)-a2AnOHM_grids(id,igrid))/ABS(a2AnOHM(igrid))
-                    xErr = ABS(xErr/2)
-                    !     WRITE(*, '(a13,2f10.4)') 'End: a1, a2',a1AnOHM(igrid),a2AnOHM(igrid)
-                    !     WRITE(*, '(a10,f10.4,2x,i2,x,i2)') 'Error(%)',xErr*100,it,imin
-                 ENDIF
+              IF ( ir == irMax-10) THEN
+                 xErr = ABS(a1AnOHM(igrid)-a1AnOHM_grids(id,igrid))/ABS(a1AnOHM(igrid))+&
+                      ABS(a2AnOHM(igrid)-a2AnOHM_grids(id,igrid))/ABS(a2AnOHM(igrid))
+                 xErr = ABS(xErr/2)
+                 !     WRITE(*, '(a13,2f10.4)') 'End: a1, a2',a1AnOHM(igrid),a2AnOHM(igrid)
+                 !     WRITE(*, '(a10,f10.4,2x,i2,x,i2)') 'Error(%)',xErr*100,it,imin
+              ENDIF
 
 
 
-                 IF ( QSChoice == 3 .AND. ir == irMax .AND. xErr < 0.1) THEN
-                    flagRerunAnOHM(igrid)=.FALSE.
-                    ! WRITE(unit=*, fmt=*) '*********'
-                    ! WRITE(unit=*, fmt=*) 'converged:'
-                    ! WRITE(*, '(a8,f10.6)') 'a1 Start',a1AnOHM_grids(id,igrid)
-                    ! WRITE(*, '(a8,f10.6)') 'a1 End',a1AnOHM(igrid)
-                    ! WRITE(*, '(a8,f10.6)') 'diff.',ABS(a1AnOHM(igrid)-a1AnOHM_grids(id,igrid))
-                    ! WRITE(unit=*, fmt=*) '*********'
-                 ENDIF
+              ! IF ( QSChoice == 3 .AND. ir == irMax .AND. xErr < 0.1) THEN
+              !    flagRerunAnOHM(igrid)=.FALSE.
+              !    ! WRITE(unit=*, fmt=*) '*********'
+              !    ! WRITE(unit=*, fmt=*) 'converged:'
+              !    ! WRITE(*, '(a8,f10.6)') 'a1 Start',a1AnOHM_grids(id,igrid)
+              !    ! WRITE(*, '(a8,f10.6)') 'a1 End',a1AnOHM(igrid)
+              !    ! WRITE(*, '(a8,f10.6)') 'diff.',ABS(a1AnOHM(igrid)-a1AnOHM_grids(id,igrid))
+              !    ! WRITE(unit=*, fmt=*) '*********'
+              ! ENDIF
 
-                 ! bypass the do-while loop for converge checking
-                 IF ( QSChoice /= 3 ) flagRerunAnOHM(igrid)=.FALSE.
+              ! bypass the do-while loop for converge checking
+              ! IF ( QSChoice /= 3 ) flagRerunAnOHM(igrid)=.FALSE.
 
 
-                 GridCounter = GridCounter+1   !Increase GridCounter by 1 for next grid
-              ENDDO !end loop over grids
+              GridCounter = GridCounter+1   !Increase GridCounter by 1 for next grid
+           ENDDO !end loop over grids
 
-              !!water movements between the grids needs to be taken into account here ??
+           !!water movements between the grids needs to be taken into account here ??
 
-           ENDDO !end loop over rows of met data
+        ENDDO !end loop over rows of met data
 
-        ENDDO ! do-while loop for AnOHM end --------------------------
+        ! ENDDO ! do-while loop for AnOHM end --------------------------
 
 
         ! Write output files in blocks --------------------------------
@@ -478,5 +481,5 @@ PROGRAM SUEWS_Program
 
 314 CALL errorHint(11,TRIM(FileMet),notUsed,notUsed,ios_out)
 315 CALL errorHint(11,TRIM(fileESTMTs),notUsed,notUsed,NotUsedI)
-     
+
 END PROGRAM SUEWS_Program

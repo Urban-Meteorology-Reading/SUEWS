@@ -35,7 +35,7 @@ MODULE allocateArray
   INTEGER, PARAMETER:: ncolumnsWGWaterDist=10       !SUEWS_WithinGridWaterDist.txt
   INTEGER, PARAMETER:: ncolumnsMetForcingData=24    !Meteorological forcing file (_data.txt)
   INTEGER, PARAMETER:: ncolsESTMdata=13           !ESTM input file (_ESTM_Ts_data.txt))
-  
+
   ! ---- Set number of columns in output files ---------------------------------------------------
   INTEGER, PARAMETER:: ncolumnsDataOut=74,&    !Main output file (_5.txt). DataOut created in SUEWS_Calculations.f95
        ncolumnsDataOutSnow=102
@@ -100,7 +100,7 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: TstepProfiles
   REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: AHProf_tstep
   REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: WUProfM_tstep, WUProfA_tstep
-  
+
   ! ---- For ESTM
   REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:,:)::  Ts5mindata     !surface temperature input data
   REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:) ::   Tair24HR
@@ -153,7 +153,7 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(nsurf):: state          !Wetness status of each surface type [mm]
   REAL(KIND(1d0)),DIMENSION(nsurf):: stateOld       !Wetness status of each surface type from previous timestep [mm]
   REAL(KIND(1D0)),DIMENSION(nsurf):: rss_nsurf      !Surface resistance after wet/partially wet adjustment for each surface
-  
+
   REAL(KIND(1d0)),DIMENSION(nsurf):: WetThresh      !When State > WetThresh, rs=0 limit in SUEWS_evap [mm] (specified in input files)
   REAL(KIND(1d0)),DIMENSION(nsurf):: StateLimit     !Limit for state of each surface type [mm] (specified in input files)
 
@@ -258,7 +258,7 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(nsurf):: emis   !Emissivity of each surface type [-]
 
   REAL(KIND(1d0)):: bulkalbedo !Bulk albedo for whole surface (areally-weighted)
-  
+
   ! Radiation balance components for different surfaces
   REAL(KIND(1d0)),DIMENSION(nsurf):: Tsurf_ind,&        !Surface temperature for each surface [degC]
        Tsurf_ind_snow,&   !Snow surface temperature for each surface [degC]
@@ -378,7 +378,7 @@ MODULE allocateArray
   INTEGER,DIMENSION(nsurf):: c_CpAnOHM = (/(cc, cc=ccEndSI+13*nsurf+1,ccEndSI+13*nsurf+nsurf, 1)/) !heat capacity, AnOHM TS
   INTEGER,DIMENSION(nsurf):: c_KkAnOHM = (/(cc, cc=ccEndSI+14*nsurf+1,ccEndSI+14*nsurf+nsurf, 1)/) !heat conductivity, AnOHM TS
   INTEGER,DIMENSION(nsurf):: c_ChAnOHM = (/(cc, cc=ccEndSI+15*nsurf+1,ccEndSI+15*nsurf+nsurf, 1)/) !bulk transfer coef., AnOHM TS
- 
+
   ! Find current column number
   INTEGER,PARAMETER:: ccEndI = (ccEndSI+15*nsurf+nsurf) !add columns for AnOHM, AnOHM TS
 
@@ -485,7 +485,7 @@ MODULE allocateArray
   ! ESTM code for each surface inclduing snow
   INTEGER,DIMENSION(nsurfIncSnow):: c_ESTMCode      = (/(cc, cc=ccEndGs+16*nsurfIncSnow+1,&
                                                              ccEndGs+16*nsurfIncSnow+nsurfIncSnow, 1)/)  !ESTM code
-       
+
   ! Find current column number
   INTEGER,PARAMETER:: ccEndO = (ccEndGs+16*nsurfIncSnow+nsurfIncSnow)
 
@@ -593,13 +593,13 @@ MODULE allocateArray
   INTEGER:: c_Internal_rhoCp4  = (ccEndESTMB+27)
   INTEGER:: c_Internal_thick5  = (ccEndESTMB+28)
   INTEGER:: c_Internal_k5      = (ccEndESTMB+29)
-  INTEGER:: c_Internal_rhoCp5  = (ccEndESTMB+30)  
-  INTEGER:: c_nroom      =  (ccEndESTMB+31)  
-  INTEGER:: c_alb_ibld   =  (ccEndESTMB+32)  
-  INTEGER:: c_em_ibld    =  (ccEndESTMB+33)  
-  INTEGER:: c_CH_iwall   =  (ccEndESTMB+34)  
-  INTEGER:: c_CH_iroof   =  (ccEndESTMB+35)  
-  INTEGER:: c_CH_ibld    =  (ccEndESTMB+36)  
+  INTEGER:: c_Internal_rhoCp5  = (ccEndESTMB+30)
+  INTEGER:: c_nroom      =  (ccEndESTMB+31)
+  INTEGER:: c_alb_ibld   =  (ccEndESTMB+32)
+  INTEGER:: c_em_ibld    =  (ccEndESTMB+33)
+  INTEGER:: c_CH_iwall   =  (ccEndESTMB+34)
+  INTEGER:: c_CH_iroof   =  (ccEndESTMB+35)
+  INTEGER:: c_CH_ibld    =  (ccEndESTMB+36)
   ! Find current column number
   INTEGER,PARAMETER:: ccEndESTMM = (ccEndESTMB+36)
   ! For Paved surfaces, there are 3 possible ESTM classes (with _Surf characteristics only)
@@ -665,14 +665,14 @@ MODULE allocateArray
   INTEGER,DIMENSION(5):: c_Internal_rhoCp4_Bldgs  = (/(cc, cc=ccEndESTMMP+41*5+1,ccEndESTMMP+41*5+5, 1)/)
   INTEGER,DIMENSION(5):: c_Internal_thick5_Bldgs  = (/(cc, cc=ccEndESTMMP+42*5+1,ccEndESTMMP+42*5+5, 1)/)
   INTEGER,DIMENSION(5):: c_Internal_k5_Bldgs      = (/(cc, cc=ccEndESTMMP+43*5+1,ccEndESTMMP+43*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Internal_rhoCp5_Bldgs  = (/(cc, cc=ccEndESTMMP+44*5+1,ccEndESTMMP+44*5+5, 1)/) 
-  INTEGER,DIMENSION(5):: c_nroom_Bldgs      =  (ccEndESTMMP+44*5+5+ 1)  
-  INTEGER,DIMENSION(5):: c_alb_ibld_Bldgs   =  (ccEndESTMMP+44*5+5+ 2)  
-  INTEGER,DIMENSION(5):: c_em_ibld_Bldgs    =  (ccEndESTMMP+44*5+5+ 3)  
-  INTEGER,DIMENSION(5):: c_CH_iwall_Bldgs   =  (ccEndESTMMP+44*5+5+ 4)  
-  INTEGER,DIMENSION(5):: c_CH_iroof_Bldgs   =  (ccEndESTMMP+44*5+5+ 5)  
-  INTEGER,DIMENSION(5):: c_CH_ibld_Bldgs    =  (ccEndESTMMP+44*5+5+ 6)  
-  
+  INTEGER,DIMENSION(5):: c_Internal_rhoCp5_Bldgs  = (/(cc, cc=ccEndESTMMP+44*5+1,ccEndESTMMP+44*5+5, 1)/)
+  INTEGER,DIMENSION(5):: c_nroom_Bldgs      =  (ccEndESTMMP+44*5+5+ 1)
+  INTEGER,DIMENSION(5):: c_alb_ibld_Bldgs   =  (ccEndESTMMP+44*5+5+ 2)
+  INTEGER,DIMENSION(5):: c_em_ibld_Bldgs    =  (ccEndESTMMP+44*5+5+ 3)
+  INTEGER,DIMENSION(5):: c_CH_iwall_Bldgs   =  (ccEndESTMMP+44*5+5+ 4)
+  INTEGER,DIMENSION(5):: c_CH_iroof_Bldgs   =  (ccEndESTMMP+44*5+5+ 5)
+  INTEGER,DIMENSION(5):: c_CH_ibld_Bldgs    =  (ccEndESTMMP+44*5+5+ 6)
+
   !Last column number for SurfaceChar array
   INTEGER,PARAMETER:: MaxNCols_c = (ccEndESTMMP+44*5+5+ 6)
   !-----------------------------------------------------------------------------------------------
@@ -715,8 +715,8 @@ MODULE allocateArray
   INTEGER, PARAMETER:: cTs_Twall_e = 11
   INTEGER, PARAMETER:: cTs_Twall_s = 12
   INTEGER, PARAMETER:: cTs_Twall_w = 13
-    
-  
+
+
 END MODULE allocateArray
 !==================================================================================================
 
@@ -773,7 +773,7 @@ MODULE data_in
        FileChoices,&     !Run characteristics file name
        FileMet,&         !Meteorological forcing file name
        FileDaily,&       !Daily State output file name
-       FileESTMTs,&      !ESTM input file name   
+       FileESTMTs,&      !ESTM input file name
        SOLWEIGpoiOut,&   !SOLWEIG poi file name
        BLout             !CLB output file name
 
@@ -863,7 +863,7 @@ MODULE data_in
        QF_SAHP,&    !Anthropogenic heat flux calculated by SAHP
        qh,&        !Observed sensible heat flux
        qh_obs,&
-       QH_r,&      !Sensible heat flux calculated using resistance method 
+       QH_r,&      !Sensible heat flux calculated using resistance method
        qn1,&       !Net all-wave radiation for the study area
        qn1_bup,&
        qn1_obs,&   !Observed new all-wave radiation
@@ -1178,6 +1178,7 @@ MODULE sues_data
 
   INTEGER:: tstep,&    !Timestep [s] at which the model is run (set in RunControl)
        nsh,&      !Number of timesteps per hour
+       nsd,&      !Number of timesteps per day
        t_interval   !Number of seconds in an hour [s] (now set in OverallRunControl)
 
   REAL(KIND(1d0)):: nsh_real,&   !nsh cast as a real for use in calculations
@@ -1291,7 +1292,7 @@ MODULE sues_data
        gs,&         !G(Soil moisture deficit)
        gsc,&        !Surface Layer Conductance
        rss          !Surface resistance after wet/partially wet adjustment
-              
+
   !SUES latent heat flux related variables
   REAL (KIND(1d0))::  vdrc,&     !Second term up in calculation of E
        numPM,&    !Numerator of PM equation
@@ -1425,7 +1426,7 @@ END MODULE ColNamesModelDailyState
 MODULE ColNamesInputFiles
 
   IMPLICIT NONE
-  
+
   INTEGER:: ccc    !Column counter
 
   ! Column names and numbers must match the input files
@@ -1529,12 +1530,12 @@ MODULE ColNamesInputFiles
        c_WGWaterCode = 80,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
                                  ! Additional info for ESTM
        c_AreaWall = 81   ! Wall surface fraction (Awall/Agridcell)
-       
+
        INTEGER,DIMENSION(3) :: c_Fr_ESTMClass_Paved = (/(ccc,ccc=82,84,1)/) ! Fraction of Paved surface with ESTM Class 1-5
        INTEGER,DIMENSION(3) :: c_Code_ESTMClass_Paved = (/(ccc,ccc=85,87,1)/) ! Code for Paved surface ESTM Class 1-5
        INTEGER,DIMENSION(5) :: c_Fr_ESTMClass_Bldgs = (/(ccc,ccc=88,92,1)/) ! Fraction of Bldgs surface with ESTM Class 1-5
        INTEGER,DIMENSION(5) :: c_Code_ESTMClass_Bldgs = (/(ccc,ccc=93,97,1)/) ! Code for Bldgs surface ESTM Class 1-5
-       
+
   !========== Columns for SUEWS_NonVeg.txt ==========================
   INTEGER :: ci_Code   = 1, &
        ci_AlbMin       = 2, &
@@ -1589,7 +1590,7 @@ MODULE ColNamesInputFiles
        cp_OHMCode_SDry = 27,&
        cp_OHMCode_WWet = 28,&
        cp_OHMCode_WDry = 29,&
-       cp_ESTMCode     = 30,& 
+       cp_ESTMCode     = 30,&
        cp_CpAnOHM      = 31,& ! heat capacity, added by TS AnOHM
        cp_KkAnOHM      = 32,& ! heat conductivity, added by TS AnOHM
        cp_ChAnOHM      = 33 ! bulk transfer coef., added by TS AnOHM
@@ -1835,20 +1836,20 @@ MODULE ESTM_data !S.O. and FO
        rwall,&    !Volumetric heat capacity of layers in external wall
        rroof,&    !Volumetric heat capacity of layers in roof
        rground    !Volumetric heat capacity of layers in ground
-  
+
   ! Paved and Bldgs surfaces can include 3 and 5 classes respectively
   !For the 3x Paved surfaces
-  REAL(KIND(1d0)),DIMENSION(5,3):: zSurf_Paved  
+  REAL(KIND(1d0)),DIMENSION(5,3):: zSurf_Paved
   REAL(KIND(1d0)),DIMENSION(5,3):: kSurf_Paved
   REAL(KIND(1d0)),DIMENSION(5,3):: rSurf_Paved
   !For the 5x Bldgs surfaces
-  REAL(KIND(1d0)),DIMENSION(5,5):: zSurf_Bldgs  
+  REAL(KIND(1d0)),DIMENSION(5,5):: zSurf_Bldgs
   REAL(KIND(1d0)),DIMENSION(5,5):: kSurf_Bldgs
   REAL(KIND(1d0)),DIMENSION(5,5):: rSurf_Bldgs
-  REAL(KIND(1d0)),DIMENSION(5,5):: zwall_Bldgs  
+  REAL(KIND(1d0)),DIMENSION(5,5):: zwall_Bldgs
   REAL(KIND(1d0)),DIMENSION(5,5):: kwall_Bldgs
   REAL(KIND(1d0)),DIMENSION(5,5):: rwall_Bldgs
-  REAL(KIND(1d0)),DIMENSION(5,5):: zibld_Bldgs  
+  REAL(KIND(1d0)),DIMENSION(5,5):: zibld_Bldgs
   REAL(KIND(1d0)),DIMENSION(5,5):: kibld_Bldgs
   REAL(KIND(1d0)),DIMENSION(5,5):: ribld_Bldgs
   REAL(KIND(1d0)),DIMENSION(5):: nroom_Bldgs
@@ -1857,7 +1858,7 @@ MODULE ESTM_data !S.O. and FO
   REAL(KIND(1d0)),DIMENSION(5):: CH_iwall_Bldgs
   REAL(KIND(1d0)),DIMENSION(5):: CH_iroof_Bldgs
   REAL(KIND(1d0)),DIMENSION(5):: CH_ibld_Bldgs
-  
+
   REAL(KIND(1d0))::   nroom,&      !Number of rooms in internal building  (changed from integer to real HCW 16 Jun 2016)
        alb_ibld,& !albedo value of internal elements
        em_ibld,&  !emissivity of internal elements
@@ -1873,7 +1874,7 @@ MODULE ESTM_data !S.O. and FO
 
   REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:,:)  ::  Tibld_grids,Twall_grids,Troof_grids,Tground_grids
   REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:,:,:)::  Tw_4_grids
-  
+
   !=======variables and parameters created in ESTM=============================
   REAL(KIND(1d0))                           ::  alb_avg,&
        alb_ground,&   !albedo value of ground
@@ -1946,11 +1947,11 @@ MODULE ESTM_data !S.O. and FO
   REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE:: T0_ibld_grids
   REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE:: TN_roof_grids
   REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE:: TN_wall_grids
-  
-  ! Surface fractions for ESTM classes   
-  REAL(KIND(1d0)),DIMENSION(3):: ESTMsfr_Paved     
+
+  ! Surface fractions for ESTM classes
+  REAL(KIND(1d0)),DIMENSION(3):: ESTMsfr_Paved
   REAL(KIND(1d0)),DIMENSION(5):: ESTMsfr_Bldgs
-  
+
   LOGICAL             ::bctype(2),&
        CFLfail=.FALSE.,&
        diagnoseTi=.FALSE.,&

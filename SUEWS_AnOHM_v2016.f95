@@ -66,10 +66,10 @@ SUBROUTINE AnOHM_v2016(Gridiv)
 
      ENDDO
      !   end of loop over surface types -----------------------------------------
-     IF ( id>365 ) THEN
-        PRINT*, '----- OHM coeffs -----'
-        WRITE(*,'(3f10.4)') a1AnOHM(Gridiv),a2AnOHM(Gridiv),a3AnOHM(Gridiv)
-     END IF
+    !  IF ( id>365 ) THEN
+    !     PRINT*, '----- OHM coeffs -----'
+    !     WRITE(*,'(3f10.4)') a1AnOHM(Gridiv),a2AnOHM(Gridiv),a3AnOHM(Gridiv)
+    !  END IF
 
   END IF
 
@@ -636,16 +636,25 @@ SUBROUTINE AnOHM_FcLoad(sfc,xid,xgrid,& ! input
 
   lenMetData = SIZE(MetForcingData(:,2,xgrid))
 
+  ! determine the positions of met forcings of xid in the whole met chunk
   ALLOCATE(lSub(lenMetData))
   lSub = (/(i,i=1,lenMetData)/)
-
+  ! select pieces of xid
   WHERE (MetForcingData(:,2,xgrid) == xid)
      lSub = 1
   ELSEWHERE
      lSub = 0
   END WHERE
-  irRange = (/MAXLOC(lSub),MAXLOC(lSub)+SUM(lSub)-1/)
-  !   print*, 'irRange:', irRange
+  irRange = (/MAXLOC(lSub),MAXLOC(lSub)+nsd-1/)
+  ! PRINT*, 'irRange:', irRange
+
+  ! IF ( sfc==1 .AND. xid ==366 ) THEN
+  !    PRINT*, 'irRange:', irRange
+  !    PRINT*, 'id:',xid
+  !   !  print*, 'id:', MetForcingData(:,2,xgrid)
+  !
+  ! END IF
+
 
 
   !   load the sublist into forcings:
@@ -741,13 +750,15 @@ SUBROUTINE AnOHM_SfcLoad(sfc,xid,xgrid,&            ! input
 
   !   load Bowen ratio of yesterday from DailyState calculation
   IF ( BoAnOHMEnd(xgrid) == NAN ) THEN
-     xBo = 1.!Bo_grids(xid-1,xgrid)
+     xBo = 1. ! give a guess as 1
+     !  xBo = Bo_grids(xid-1,xgrid)
   ELSE
-     IF ( BoAnOHMEnd(xgrid) > BoAnOHMStart(xgrid) ) THEN
-        xBo = BoAnOHMEnd(xgrid)/2+BoAnOHMStart(xgrid)/2
-     ELSE
-        xBo = (BoAnOHMStart(xgrid)+BoAnOHMEnd(xgrid))/2
-     END IF
+     !  IF ( BoAnOHMEnd(xgrid) > BoAnOHMStart(xgrid) ) THEN
+     !     xBo = BoAnOHMEnd(xgrid)/2+BoAnOHMStart(xgrid)/2
+     !  ELSE
+     !     xBo = (BoAnOHMStart(xgrid)+BoAnOHMEnd(xgrid))/2
+     !  END IF
+     xBo = Bo_grids(xid-1,xgrid) ! set as previous day's Bo, 20160708 TS
   END IF
   !     if ( xBo>30 .or. xBo<-1 ) write(unit=*, fmt=*) "Bo",xBo
 

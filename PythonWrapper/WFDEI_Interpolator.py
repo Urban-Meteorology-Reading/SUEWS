@@ -399,7 +399,7 @@ def write_SUEWS_forcing_1h(WFDEI_path, output_path, year_start, year_end, lat, l
 # write_SUEWS_forcing_1h(input_path, output_path,
 #                        year_start, year_end, lat, lon)
 # end = time.time()
-print('time used in processing:' + '%.2f' % (end - start) + ' s')
+# print('time used in processing:' + '%.2f' % (end - start) + ' s')
 
 
 # interatively get input parameters

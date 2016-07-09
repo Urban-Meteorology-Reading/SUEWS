@@ -4,7 +4,7 @@
 !Last modification
 !
 !Last modification:
-! HCW 29 Jun 2016 - Commented out StateDay and SoilMoistDay as creates jumps and should not be needed. 
+! HCW 29 Jun 2016 - Commented out StateDay and SoilMoistDay as creates jumps and should not be needed.
 !                   Would not work unless each met block consists of a whole day for each grid.
 ! TS 09 Mar 2016  - Added AnOHM subroutine to calculate heat storage
 ! HCW 10 Mar 2016 - Calculation of soil moisture deficit of vegetated surfaces added (vsmd)
@@ -59,14 +59,14 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !Translate all data to the variables used in the model calculations
   CALL SUEWS_Translate(Gridiv,ir,iMB)
   ! ! load the final water states of the previous day to keep water balance, by TS 13 Apr 2016
- ! IF ( ir==1 ) THEN
- !      PRINT*, '********************************'
- !      PRINT*, 'starting state of', id,it,imin
- !    state(1:nsurf)     = stateDay(id-1,Gridiv,1:nsurf)
- !    soilmoist(1:nsurf) = soilmoistDay(id-1,Gridiv,1:nsurf)
- !      PRINT*, 'state:', state
- !      PRINT*, 'soilmoist', soilmoist
- ! END IF
+  ! IF ( ir==1 ) THEN
+  !      PRINT*, '********************************'
+  !      PRINT*, 'starting state of', id,it,imin
+  !    state(1:nsurf)     = stateDay(id-1,Gridiv,1:nsurf)
+  !    soilmoist(1:nsurf) = soilmoistDay(id-1,Gridiv,1:nsurf)
+  !      PRINT*, 'state:', state
+  !      PRINT*, 'soilmoist', soilmoist
+  ! END IF
   CALL RoughnessParameters ! Added by HCW 11 Nov 2014
 
 
@@ -244,17 +244,19 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   ! use AnOHM to calculate QS, TS 14 Mar 2016
   IF (QSChoice==3) THEN
+     !Calculate QS using QSTAR as QF has been considered in AnOHM
+     qn1=qn1_bup
      CALL AnOHM_v2016(Gridiv)
   END IF
 
   !Calculate QS using ESTM
   IF(QSChoice==4 .OR. QSChoice==14) THEN
-    !CALL ESTM_v2016(QSestm,iMB)      
+     !CALL ESTM_v2016(QSestm,iMB)
      CALL ESTM_v2016(QSestm,Gridiv,ir)  ! iMB corrected to Gridiv, TS 09 Jun 2016
      QS=QSestm   ! Use ESTM qs
   ENDIF
 
-  ! don't use thses composite QS options at the moment, TS 10 Jun 2016
+  ! don't use these composite QS options at the moment, TS 10 Jun 2016
   ! IF (QSChoice>=10)THEN ! Chose which QS will be used in SUEWS and output file
   !    !write(800,*)id,it,QS,QSanOHM,QSestm
   !    IF(QSChoice==14)THEN
@@ -359,7 +361,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   runoff           = 0
   runoffSoil       = 0
   surplusWaterBody = 0
- 
+
   ! Added by HCW 13 Feb 2015
   qe_per_tstep         = 0     ![W m-2]
   ev_per_tstep         = 0
@@ -448,12 +450,12 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   qh=(qn1+qf+QmRain)-(qeOut+qs+Qm+QmFreez)     !qh=(qn1+qf+QmRain+QmFreez)-(qeOut+qs+Qm)
 
   ! Calculate QH using resistance method (for testing HCW 06 Jul 2016)
-  if(ra/=0) then
-    qh_r = avdens*avcp*(tsurf-Temp_C)/ra
-  else
-    qh_r=NAN
-  endif    
-    
+  IF(ra/=0) THEN
+     qh_r = avdens*avcp*(tsurf-Temp_C)/ra
+  ELSE
+     qh_r=NAN
+  ENDIF
+
   !write(*,*) Gridiv, qn1, qf, qh, qeOut, qs, qn1+qf-qs
   !if(ir > 155 .and. ir <165) pause
   !if((qn1+qf-qs) - (qeOut) < -1)  then
@@ -563,9 +565,9 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ! Calculate areally-weighted albedo
   bulkalbedo = 0
   DO is=1,nsurf
-      bulkalbedo = bulkalbedo + alb(is)*sfr(is)
-  ENDDO    
-  
+     bulkalbedo = bulkalbedo + alb(is)*sfr(is)
+  ENDDO
+
   !=====================================================================
   !====================== Write out files ==============================
   !Define the overall output matrix to be printed out step by step
@@ -618,15 +620,15 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   CALL SUEWS_TranslateBack(Gridiv,ir,irMax)
 
-!  ! store water balance states of the day, by TS 13 Apr 2016
-!  IF ( ir==irMax ) THEN
-!       PRINT*, 'ending end of', id,it,imin
-!     stateDay(id,Gridiv,:)     = state(:)
-!     soilmoistDay(id,Gridiv,:) = soilmoist(:)
-!       PRINT*, 'state:', state
-!       PRINT*, 'soilmoist', soilmoist
-!       PRINT*, '********************************'
-!  END IF
+  !  ! store water balance states of the day, by TS 13 Apr 2016
+  !  IF ( ir==irMax ) THEN
+  !       PRINT*, 'ending end of', id,it,imin
+  !     stateDay(id,Gridiv,:)     = state(:)
+  !     soilmoistDay(id,Gridiv,:) = soilmoist(:)
+  !       PRINT*, 'state:', state
+  !       PRINT*, 'soilmoist', soilmoist
+  !       PRINT*, '********************************'
+  !  END IF
 
   ! if ( id>10 ) then
   !   stop "stop to test state"

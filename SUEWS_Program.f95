@@ -52,13 +52,13 @@ PROGRAM SUEWS_Program
        iv,       & !Block number (from 1 to ReadBlocksMetData)
        ir,irMax, & !Row number within each block (from 1 to irMax)
        year_int, & ! Year as an integer (from SiteSelect rather than met forcing file)
-       iter,     & ! iteraion counter, AnOHM TS
+      !  iter,     & ! iteraion counter, AnOHM TS
        rr !Row of SiteSelect corresponding to current year and grid
 
   LOGICAL:: PrintPlace = .FALSE.   !Prints row, block, and grid number to screen if TRUE;
 
   REAL :: timeStart, timeFinish ! profiling use, AnOHM TS
-  REAL :: xErr      ! error in Bo iteration, AnOHM TS 20160331
+  ! REAL :: xErr      ! error in Bo iteration, AnOHM TS 20160331
   ! LOGICAL, ALLOCATABLE :: flagRerunAnOHM(:)   ! iteration run to make Bo converge,AnOHM TS
 
   !  ! ---- Allocate arrays--------------------------------------------------
@@ -352,9 +352,9 @@ PROGRAM SUEWS_Program
            irMax = ReadLinesMetdata
         ENDIF
 
-        ! iteration for AnOHM running by do-while, 12 Mar 2016 TS ------------
-        iter       = 0
-        BoAnOHMEnd = NAN
+        ! ! iteration for AnOHM running by do-while, 12 Mar 2016 TS ------------
+        ! iter       = 0
+        ! BoAnOHMEnd = NAN
 
         ! flagRerunAnOHM = .TRUE.
 
@@ -410,13 +410,13 @@ PROGRAM SUEWS_Program
               !     WRITE(*, '(a13,2f10.4)') 'Start: a1, a2',a1AnOHM_grids(id,igrid),a2AnOHM_grids(id,igrid)
               !  ENDIF
 
-              IF ( ir == irMax-10) THEN
-                 xErr = ABS(a1AnOHM(igrid)-a1AnOHM_grids(id,igrid))/ABS(a1AnOHM(igrid))+&
-                      ABS(a2AnOHM(igrid)-a2AnOHM_grids(id,igrid))/ABS(a2AnOHM(igrid))
-                 xErr = ABS(xErr/2)
-                 !     WRITE(*, '(a13,2f10.4)') 'End: a1, a2',a1AnOHM(igrid),a2AnOHM(igrid)
-                 !     WRITE(*, '(a10,f10.4,2x,i2,x,i2)') 'Error(%)',xErr*100,it,imin
-              ENDIF
+              ! IF ( ir == irMax-10) THEN
+              !    xErr = ABS(a1AnOHM(igrid)-a1AnOHM_grids(id,igrid))/ABS(a1AnOHM(igrid))+&
+              !         ABS(a2AnOHM(igrid)-a2AnOHM_grids(id,igrid))/ABS(a2AnOHM(igrid))
+              !    xErr = ABS(xErr/2)
+              !    !     WRITE(*, '(a13,2f10.4)') 'End: a1, a2',a1AnOHM(igrid),a2AnOHM(igrid)
+              !    !     WRITE(*, '(a10,f10.4,2x,i2,x,i2)') 'Error(%)',xErr*100,it,imin
+              ! ENDIF
 
 
 

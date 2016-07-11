@@ -298,7 +298,7 @@ SUBROUTINE AnOHM_coef(sfc_typ,xid,xgrid,&   ! input
   !     xa2 = max(min(xa2,0.7),-0.7)
 
   !   a3:
-  xa3  = -xa1*(fT/f)*(mSd*(1-xalb))-mAH
+  xa3  = -xa1*(fT/f)*(mSd*(1-xalb))-mAH*0.2
 
   !   quality checking:
   !   quality checking of forcing conditions
@@ -306,7 +306,7 @@ SUBROUTINE AnOHM_coef(sfc_typ,xid,xgrid,&   ! input
   !   quality checking of a1
   IF ( .NOT. (xa1>0 .AND. xa1<0.7)) flagGood = .FALSE.
   !   quality checking of a2
-  IF ( .NOT. (xa2>-0.7 .AND. xa2<0.7)) flagGood = .FALSE.
+  IF ( .NOT. (xa2>-0.5 .AND. xa2<0.5)) flagGood = .FALSE.
   !   quality checking of a3
   IF ( .NOT. (xa3<0)) flagGood = .FALSE.
 

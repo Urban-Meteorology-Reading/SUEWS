@@ -52,7 +52,7 @@ PROGRAM SUEWS_Program
        iv,       & !Block number (from 1 to ReadBlocksMetData)
        ir,irMax, & !Row number within each block (from 1 to irMax)
        year_int, & ! Year as an integer (from SiteSelect rather than met forcing file)
-      !  iter,     & ! iteraion counter, AnOHM TS
+                                !  iter,     & ! iteraion counter, AnOHM TS
        rr !Row of SiteSelect corresponding to current year and grid
 
   LOGICAL:: PrintPlace = .FALSE.   !Prints row, block, and grid number to screen if TRUE;
@@ -196,13 +196,13 @@ PROGRAM SUEWS_Program
         ReadLinesMetData = nlinesLimit
      ENDIF
      ! make sure the metblocks read in consists of complete diurnal cycles, TS 08 Jul 2016
-     ReadLinesMetData = nsd*(ReadLinesMetData/nsd)
+     ReadLinesMetData = INT(MAX(nsd*(ReadLinesMetData/nsd), nsd))
 
-     write(*,*) 'Met data will be read in chunks of',ReadlinesMetdata,'lines.'
+     WRITE(*,*) 'Met data will be read in chunks of',ReadlinesMetdata,'lines.'
 
      ! Find number of blocks of met data
      ReadBlocksMetData = INT(CEILING(REAL(nlinesMetData,KIND(1d0))/REAL(ReadLinesMetData,KIND(1d0))))
-     write(*,*) 'Met data will be read in',ReadBlocksMetData,'blocks.'
+     WRITE(*,*) 'Met data will be read in',ReadBlocksMetData,'blocks.'
 
      ! ---- Allocate arrays--------------------------------------------------
      ALLOCATE(SurfaceChar(NumberOfGrids,MaxNCols_c))                                               !Surface characteristics

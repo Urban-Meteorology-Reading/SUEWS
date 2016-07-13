@@ -269,6 +269,10 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI) ! real
      text1='ESTMClass1 automatically set to 100%.'
      returntrue=.TRUE.
      v1=.TRUE.
+  ELSEIF(errh==68) THEN
+     text1='Initial Bowen ratio automatically set to 1.'
+     returntrue=.TRUE.
+     v1=.TRUE.
   ENDIF
   !---------------------------------------------------------------------
   !This part of the code determines how the error message is written out

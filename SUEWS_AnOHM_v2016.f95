@@ -26,6 +26,7 @@ SUBROUTINE AnOHM_v2016(Gridiv)
   USE gis_data
   USE sues_data
   USE time
+  USE InitialCond
 
   IMPLICIT NONE
 
@@ -714,6 +715,7 @@ SUBROUTINE AnOHM_SfcLoad(sfc,xid,xgrid,&            ! input
   USE initial
   USE sues_data
   USE time
+  USE InitialCond
 
   IMPLICIT NONE
 
@@ -751,23 +753,32 @@ SUBROUTINE AnOHM_SfcLoad(sfc,xid,xgrid,&            ! input
 
 
   !   load Bowen ratio of yesterday from DailyState calculation
-  IF ( BoAnOHMEnd(xgrid) == NAN ) THEN
-     xBo = 1. ! give a guess as 1
-     !  xBo = Bo_grids(xid-1,xgrid)
+  IF ( BoInit==NAN ) THEN
+    CALL ErrorHint(68,'No initial Bowen ratio found in InitialConditions.',BoInit,notUsed,notUsedI)
   ELSE
-     !  IF ( BoAnOHMEnd(xgrid) > BoAnOHMStart(xgrid) ) THEN
-     !     xBo = BoAnOHMEnd(xgrid)/2+BoAnOHMStart(xgrid)/2
-     !  ELSE
-     !     xBo = (BoAnOHMStart(xgrid)+BoAnOHMEnd(xgrid))/2
-     !  END IF
-     xBo = Bo_grids(xid-1,xgrid) ! set as previous day's Bo, 20160708 TS
+     xBo = BoInit ! get Initial value from initial condition namelist
   END IF
+  ! set as previous day's Bo, 20160708 TS
+  xBo = Bo_grids(xid-1,xgrid) ! default Bo will be read in when xid = 0
+  ! IF ( xid==1 ) THEN
+  !
+  !    !  xBo = Bo_grids(xid-1,xgrid)
+  ! ELSE
+  !    !  IF ( BoAnOHMEnd(xgrid) > BoAnOHMStart(xgrid) ) THEN
+  !    !     xBo = BoAnOHMEnd(xgrid)/2+BoAnOHMStart(xgrid)/2
+  !    !  ELSE
+  !    !     xBo = (BoAnOHMStart(xgrid)+BoAnOHMEnd(xgrid))/2
+  !    !  END IF
+  !
+  ! END IF
   !     if ( xBo>30 .or. xBo<-1 ) write(unit=*, fmt=*) "Bo",xBo
 
   !     xBo = 2.
   xBo = MAX(MIN(xBo,30.),0.1)
 
-
+  ! if ( xid==1 ) then
+  !   print*, 'xBo:', xBo
+  ! end if
   !   print*, 'xBo:', xBo
 
 END SUBROUTINE AnOHM_SfcLoad

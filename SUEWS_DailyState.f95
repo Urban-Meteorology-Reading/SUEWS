@@ -50,6 +50,7 @@ SUBROUTINE DailyState(Gridiv)
   USE sues_data
   USE time
   USE VegPhenogy
+  USE InitialCond
 
   IMPLICIT NONE
 
@@ -423,7 +424,7 @@ SUBROUTINE DailyState(Gridiv)
      IF (irRange(2)- irRange(1) >= nsh*24-1) THEN
         !   load the sublist into forcings:
         !   QH and QE for Bowen ratio
-        
+
         xQH  = dataOut(irRange(1):irRange(2):nsh,16,Gridiv)
         xQE  = dataOut(irRange(1):irRange(2):nsh,17,Gridiv)
         mxQH = SUM(xQH(10:16))/7
@@ -433,13 +434,13 @@ SUBROUTINE DailyState(Gridiv)
         xAH  = dataOut(irRange(1):irRange(2):nsh,15,Gridiv)
         xmAH  = SUM(xAH(:))/24
      ELSE
-        !   give a default Bo as 1 if no enough flux data to update with:
-        xBo  = 1.
+        !   give a default Bo as 2 if no enough flux data to update with:
+        xBo  = 2.
         xmAH = 25.
      END IF
      !   handle NAN
      IF ( xBo/=xBo ) THEN
-        xBo = 1.
+        xBo = 2.
      END IF
      IF ( xmAH/=xmAH ) THEN
         xmAH = 25.
@@ -448,6 +449,7 @@ SUBROUTINE DailyState(Gridiv)
 
      BoAnOHMEnd(Gridiv)  = xBo
      Bo_grids(id,Gridiv) = BoAnOHMEnd(Gridiv)
+     BoInit              = Bo_grids(id,Gridiv) ! BoInit will be written out to InitialConditions of next year
      !IF ( ABS(xBo) > 30 ) WRITE(unit=*, fmt=*) "mean QH, QE:", mxQH,mxQE
      !IF ( ABS(xBo) < 1/30 ) WRITE(unit=*, fmt=*) "mean QH, QE:", mxQH,mxQE
 

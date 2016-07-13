@@ -652,9 +652,9 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   IMPLICIT NONE
 
   INTEGER:: Gridiv,&    !Row of SurfaceChar where input information will be stored
-            rr          !Row of SiteSelect that matches current grid and year
+       rr          !Row of SiteSelect that matches current grid and year
   INTEGER:: iii, &
-            ii
+       ii
 
   !-------------------------------------------------------------------------------------------
 
@@ -1308,7 +1308,7 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
            SurfaceChar(Gridiv,c_CH_ibld)         = ESTMCoefficients_Coeff(iv5,cE_CH_ibld)
         ENDIF
         !If ESTM Code equals zero, use codes and surface fractions from SiteSelect.txt for Paved and Bldgs
-     ELSEIF(iii==PavSurf .and. SurfaceChar(Gridiv,c_ESTMCode(iii)) == 0) THEN
+     ELSEIF(iii==PavSurf .AND. SurfaceChar(Gridiv,c_ESTMCode(iii)) == 0) THEN
         DO ii=1,3   !for the 3x Paved ESTM classes
            CALL CodeMatchESTM_Class(Gridiv,iii,ii)
            SurfaceChar(Gridiv,c_Surf_thick1_Paved(ii)) = ESTMCoefficients_Coeff(iv5,cE_Surf_thick1)
@@ -1327,7 +1327,7 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
            SurfaceChar(Gridiv,c_Surf_rhoCp4_Paved(ii)) = ESTMCoefficients_Coeff(iv5,cE_Surf_rhoCp4)
            SurfaceChar(Gridiv,c_Surf_rhoCp5_Paved(ii)) = ESTMCoefficients_Coeff(iv5,cE_Surf_rhoCp5)
         ENDDO
-     ELSEIF(iii==BldgSurf .and. SurfaceChar(Gridiv,c_ESTMCode(iii)) == 0) THEN
+     ELSEIF(iii==BldgSurf .AND. SurfaceChar(Gridiv,c_ESTMCode(iii)) == 0) THEN
         DO ii=1,5   !for the 5x Bldgs ESTM classes
            CALL CodeMatchESTM_Class(Gridiv,iii,ii)
            SurfaceChar(Gridiv,c_Surf_thick1_Bldgs(ii)) = ESTMCoefficients_Coeff(iv5,cE_Surf_thick1)
@@ -1508,6 +1508,7 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv)
   USE snowMod
   USE sues_data
   USE time
+  USE InitialCond
 
   IMPLICIT NONE
 
@@ -1526,6 +1527,7 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv)
        SnowDensPaved,SnowDensBldgs,SnowDensEveTr,SnowDensDecTr,          &
        SnowDensGrass,SnowDensBSoil,SnowDensWater
 
+  ! BoInit=NAN
   !-----------------------------------------------------------------------
 
   NAMELIST/InitialConditions/DaysSinceRain,&
@@ -1582,10 +1584,13 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv)
        SnowDensGrass,&
        SnowDensBSoil,&
        SnowDensWater,&
-       SnowAlb0
+       SnowAlb0,&
+       BoInit
 
   ! Define InitialConditions file ----------------------------------------
   FileInit=TRIM(FileInputPath)//TRIM("InitialConditions")//TRIM(GridName)//'.nml'
+
+  BoInit=NAN
 
   ! Open, read and close InitialConditions file --------------------------
   OPEN(56,File=TRIM(FileInit),err=600,status='old') !Change with needs
@@ -1879,7 +1884,7 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv)
 
   ! ---- AnOHM TS ---------------------
   ! initialize Bowen ratio
-  Bo_grids(0,:)=1.
+  Bo_grids(0,:)=2.
   mAH_grids(0,:)=25.
 
   ! -----------------------------------
@@ -1916,6 +1921,7 @@ SUBROUTINE NextInitial(GridName,year_int)
   USE sues_data
   USE snowMod
   USE time
+  USE InitialCond
 
   IMPLICIT NONE
 
@@ -2004,6 +2010,7 @@ SUBROUTINE NextInitial(GridName,year_int)
   WRITE(57,*)'SnowDensBSoil=',SnowDens(BSoilSurf)
   WRITE(57,*)'SnowDensWater=',SnowDens(WaterSurf)
   WRITE(57,*)'SnowAlb0=',SnowAlb
+  WRITE(57,*)'BoInit=',BoInit
   WRITE(57,*)'/'
   CLOSE(57)
 

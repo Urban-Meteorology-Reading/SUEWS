@@ -236,8 +236,8 @@ def wrapper(pathtoplugin):
     pynumformat_estm = '%4i ' + '%3i ' * 3 + '%8.5f ' + '%10.4f ' * 27
 
     TimeCol = np.array([1, 2, 3, 4, 5]) -1
-    SumCol = np.array([18, 19, 20, 21, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 69, 70, 71]) -1
-    LastCol = np.array([22, 23, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 66, 67, 68, 72]) -1
+    SumCol = np.array([19,20,21,22,  25,26, 27,28,29,30,31,32,  33,34,35,36,37,38,  71,72,73]) -1
+    LastCol = np.array( [23,24,  44,45,46,47,48,49,50,51,  52,53,54,55,56,57,58,  59,60,61,62,  68,69,70,  74]) -1
 
     header = '%iy id it imin dectime '\
              'kdown kup ldown lup Tsurf qn h_mod e_mod qs qf qh qe '\
@@ -314,8 +314,6 @@ def wrapper(pathtoplugin):
         LastCol_plot = np.array([16]) - 1
 
         if plotbasic == 1:
-
-
             if choosegridbasic:
                 gridcode = choosegridbasic
 
@@ -326,7 +324,7 @@ def wrapper(pathtoplugin):
             suews_res = np.loadtxt(suews_out, skiprows=1)
 
             suews_plottime = su.from5mintoanytime(suews_res, SumCol, LastCol, TimeCol, timeaggregation)
-            suews_plottimeold = su.from5mintoanytime(met_old, SumCol_plot, LastCol_plot, TimeCol_plot, timeaggregation)
+            suews_plottimeold = su.from5mintoanytime(met_new, SumCol_plot, LastCol_plot, TimeCol_plot, timeaggregation)
 
             pl.plotbasic(suews_plottime, suews_plottimeold)
             # pl.plotbasic(suews_result, met_old)
@@ -342,7 +340,7 @@ def wrapper(pathtoplugin):
             suews_res = np.loadtxt(suews_out, skiprows=1)
 
             suews_plottime = su.from5mintoanytime(suews_res, SumCol, LastCol, TimeCol, timeaggregation)
-            suews_plottimeold = su.from5mintoanytime(met_old, SumCol_plot, LastCol_plot, TimeCol_plot, timeaggregation)
+            suews_plottimeold = su.from5mintoanytime(met_new, SumCol_plot, LastCol_plot, TimeCol_plot, timeaggregation)
 
             # suews_out = fileoutputpath + filecode + gridcode + '_' + str(YYYY) + '_' + str(timeres_min) + '.txt'
             #

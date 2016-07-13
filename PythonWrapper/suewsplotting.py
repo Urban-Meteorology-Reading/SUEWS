@@ -2,9 +2,14 @@ __author__ = 'Fredrik Lindberg'
 
 # This class will be used to plot output result from Suews
 import numpy as np
-import matplotlib.pylab as plt
-import matplotlib.dates as dt
-#import datetime
+try:
+    import matplotlib.pylab as plt
+    import matplotlib.dates as dt
+    nomatplot = 0
+except ImportError:
+    nomatplot = 1
+    pass
+
 
 def leap_year(yy):
     if (yy % 4) == 0:

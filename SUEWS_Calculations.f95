@@ -4,6 +4,7 @@
 !Last modification
 !
 !Last modification:
+! HCW 21 Jul 2016 - Set soil variables to -999 in output when grid is 100% water surface.
 ! HCW 29 Jun 2016 - Commented out StateDay and SoilMoistDay as creates jumps and should not be needed.
 !                   Would not work unless each met block consists of a whole day for each grid.
 ! TS 09 Mar 2016  - Added AnOHM subroutine to calculate heat storage
@@ -507,6 +508,16 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   !=====================================================================
   !====================== Prepare data for output ======================
+
+  ! Check surface composition (HCW 21 Jul 2016)
+  ! if totally water surface, set output to -999 for columns that do not exist 
+  IF(sfr(WaterSurf)==1) THEN
+     NWstate_per_tstep = NAN  !no non-water surface
+     smd = NAN   !no soil store beneath water surface
+     soilstate = NAN
+     runoffSoil_per_tstep = NAN
+     drain_per_tstep = NAN   !no drainage from water surf 
+  ENDIF
 
   ! Remove non-existing surface type from surface and soil outputs   !Commented out by HCW 04 Mar 2015 as should not occur
   !do is=1,nsurf

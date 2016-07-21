@@ -6,7 +6,10 @@ SUBROUTINE SurfaceResistance(id,it)
   ! Added impact of snow fraction in LAI and in soil moisture deficit
   ! HCW 31/07/2014 Modified condition on g6 part to select meas/mod smd
   ! HCW 01/03/2016 SM dependence is now on modelled smd for vegetated surfaces only (vsmd) (Note:  obs smd still not operational!)
-
+  ! HCW 21/07/2016 If no veg surfaces, vsmd = NaN so QE & QH = NaN; if water surfaces only, smd = NaN so QE & QH = NaN.
+  !                Add checks here so that gs (soil part) = 0 in either of these situations.
+  !                This shouldn't change results but handles NaN error
+    
   USE allocateArray
   USE data_in
   USE gis_data
@@ -73,8 +76,11 @@ SUBROUTINE SurfaceResistance(id,it)
            gs=1-EXP(g6*(xsmd-sdp))  !Measured soil moisture deficit is used
         ELSE
            gs=1-EXP(g6*(vsmd-sdp))   !Modelled is used
+           IF(sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) == 0 .OR. sfr(WaterSurf)==1 ) THEN   
+              gs=0  !If no veg so no vsmd, or all water so no smd, set gs=0 HCW 21 Jul 2016
+           ENDIF       
         ENDIF
-
+        
         gs = gs*(1-SUM(snowFrac(1:6))/6)
 
         IF(gs<0)THEN
@@ -149,8 +155,11 @@ SUBROUTINE SurfaceResistance(id,it)
         IF(smd_choice>0) THEN                           !Modified from ==1 to > 0 by HCW 31/07/2014
            gs=(1-EXP(g6*(xsmd-sdp)))/(1-EXP(g6*(-sdp))) !Use measured smd
         ELSE
-           gs=1-EXP(g6*(vsmd-sdp))   !Use modelled smd
+           !gs=1-EXP(g6*(vsmd-sdp))   !Use modelled smd
            gs=(1-EXP(g6*(vsmd-sdp)))/(1-EXP(g6*(-sdp)))
+           IF(sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) == 0 .OR. sfr(WaterSurf)==1 ) THEN   
+              gs=0  !If no veg so no vsmd, or all water so no smd, set gs=0 HCW 21 Jul 2016
+           ENDIF       
         ENDIF
 
         gs = gs*(1-SUM(snowFrac(1:6))/6)

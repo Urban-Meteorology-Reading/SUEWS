@@ -151,6 +151,7 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv,ir)
   USE gis_data
   USE allocateArray
   USE time
+  USE defaultNotUsed
 
   IMPLICIT NONE
 
@@ -491,8 +492,12 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv,ir)
   bc(2)=LBC_soil+C2K
   !     bc(2)=0.; bctype(2)=.t.
 
-  CALL heatcond1d(Tground,Qsground,zground(1:Nground),REAL(Tstep,KIND(1d0)),kground(1:Nground),rground(1:Nground),bc,bctype)
-      
+  IF ( fground/=0. )   THEN   ! check fground==0 scenario to avoid division-by-zero error, TS 21 Jul 2016
+     CALL heatcond1d(Tground,Qsground,zground(1:Nground),REAL(Tstep,KIND(1d0)),kground(1:Nground),rground(1:Nground),bc,bctype)
+  ELSE
+     Qsground=NAN
+  END IF
+
   Qsair = fair*SHC_air*(Tair1-Tair2)/Tstep
   Qsibld = Qsibld*fibld
   Qswall = Qswall*fwall

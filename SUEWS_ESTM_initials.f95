@@ -32,8 +32,8 @@ SUBROUTINE SUEWS_GetESTMData(lunit)
 
   ! Read in next chunk of ESTM data and fill ESTMForcingData array with data for every timestep
   DO i=1,ReadlinesMetdata
-      READ(lunit,*,iostat=iostat_var) ESTMArray
-      ESTMForcingData(i,1:ncolsESTMdata,GridCounter) = ESTMArray
+     READ(lunit,*,iostat=iostat_var) ESTMArray
+     ESTMForcingData(i,1:ncolsESTMdata,GridCounter) = ESTMArray
      ! Check timestamp of met data file matches TSTEP specified in RunControl
      IF(i==1) THEN
         imin_prev = ESTMArray(4)
@@ -245,13 +245,16 @@ SUBROUTINE ESTM_initials
      em_ground=(emis(ConifSurf)*sfr(ConifSurf)+emis(DecidSurf)*sfr(DecidSurf)&
           +emis(GrassSurf)*sfr(GrassSurf)+emis(PavSurf)*sfr(PavSurf)&
           +emis(BsoilSurf)*sfr(BsoilSurf)+emis(WaterSurf)*sfr(WaterSurf))/fground
+  ELSE ! check fground==0 scenario to avoid division-by-zero error, TS 21 Jul 2016
+     alb_ground=NAN
+     em_ground=NAN
   ENDIF
-  
+
   IF(froof<1.0) THEN
      HW=fwall/(2.0*(1.0-froof))
   ELSE
      HW=0  !HCW if only roof, no ground
-  ENDIF   
+  ENDIF
 
   IF (Fground==1.0) THEN   !!FO!! if only ground, i.e. no houses
      W=1
@@ -267,6 +270,24 @@ SUBROUTINE ESTM_initials
      RVF_ROOF=0
      RVF_WALL=0
      RVF_VEG=FVEG
+  ELSE IF ( Fground==0.0 ) THEN !check fground==0 (or HW==0) scenario to avoid division-by-zero error, TS 21 Jul 2016
+    ! the following values are calculated given HW=0
+     W=0
+     WB=1
+     zvf_WALL= 0 !COS(ATAN(2/HW))  when HW=0                                 !!FO!! wall view factor for wall
+     HW=0
+     SVF_ground=COS(ATAN(2*HW))                                              !!FO!! sky view factor for ground
+     SVF_WALL=(1-zvf_WALL)/2                                                 !!FO!! sky view factor for wall
+     zvf_ground=1-svf_ground                                                 !!FO!! wall view factor for ground
+     xvf_wall=svf_wall                                                       !!FO!! ground view factor
+     !   RVF_CANYON=COS(ATAN(2*ZREF/W))
+     !   RVF_ROOF=1-RVF_CANYON
+     !   RVF_WALL=(COS(ATAN(2*(ZREF-BldgH)/W))-RVF_CANYON)*RVF_CANYON
+     !   RVF_ground=RVF_CANYON-RVF_WALL
+     RVF_ground=(fground-fveg)*SVF_ground
+     RVF_veg=fveg*SVF_ground
+     RVF_ROOF=froof
+     RVF_Wall=1-RVF_ROOF-RVF_ground-RVF_VEG
   ELSE
      W=BldgH/HW   !What about if HW = 0 ! need to add IF(Fground ==0) option?
      WB=W*SQRT(FROOF/Fground)

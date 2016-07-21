@@ -525,23 +525,30 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   fground=sfr(PavSurf)+sfr(ConifSurf)+sfr(DecidSurf)+sfr(GrassSurf)+sfr(BsoilSurf)+sfr(WaterSurf)
   !veg = EveTr, DecTr, Grass
   fveg=sfr(ConifSurf)+sfr(DecidSurf)+sfr(GrassSurf)
-  
+
   ! Ground = all except buildings (exclude snow at the moment)
   zground = 0
   kground = 0
   rground = 0
   DO iv=1,nsurf
-     IF(iv/=BldgSurf) then   !Bldgs surface excluded from ground facet
+     IF(iv/=BldgSurf .AND. fground /= 0) THEN   !Bldgs surface excluded from ground facet
         zground = zground + zSurf_SUEWSsurfs(:,iv)*sfr(iv) /fground   !Normalised by ground fraction
         kground = kground + kSurf_SUEWSsurfs(:,iv)*sfr(iv) /fground   !Normalised by ground fraction
-        rground = rground + rSurf_SUEWSsurfs(:,iv)*sfr(iv) /fground   !Normalised by ground fraction           
-     ENDIF 
+        rground = rground + rSurf_SUEWSsurfs(:,iv)*sfr(iv) /fground   !Normalised by ground fraction
+     ELSEIF ( fground==0. ) THEN !check fground==0 (or HW==0) scenario to avoid division-by-zero error, TS 21 Jul 2016
+        zground=zground+0.01
+        kground=kground+0.01
+        rground=rground+0.01
+        ! PRINT*, zground
+        ! PRINT*, kground
+        ! PRINT*, rground
+     ENDIF
   ENDDO
   ! Roof = buildings
   zroof = zSurf_SUEWSsurfs(:,BldgSurf)
   kroof = kSurf_SUEWSsurfs(:,BldgSurf)
   rroof = rSurf_SUEWSsurfs(:,BldgSurf)
-  
+
   DO i=1,5
      IF (zground(i)<=0)THEN
         Nground=i-1

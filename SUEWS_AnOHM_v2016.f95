@@ -299,15 +299,22 @@ SUBROUTINE AnOHM_coef(sfc_typ,xid,xgrid,&   ! input
   !     xa2 = max(min(xa2,0.7),-0.7)
 
   !   a3:
-  xa3  = -xa1*(fT/f)*(mSd*(1-xalb))-mAH*0.2
+  xa3  = -xa1*(fT/f)*(mSd*(1-xalb))-mAH
 
   !   quality checking:
   !   quality checking of forcing conditions
   IF ( ASd < 0 .OR. ATa < 0 .OR. ATs < 0 .OR. tau<-4.0/12*Pi) flagGood = .FALSE.
   !   quality checking of a1
-  IF ( .NOT. (xa1>0 .AND. xa1<0.7)) flagGood = .FALSE.
+  IF ( .NOT. (xa1>0 .AND. xa1<0.7)) THEN
+     flagGood = .FALSE.
+     IF (xa1 >0.7) xa1=MAX(0.7,xa1)
+  ENDIF
   !   quality checking of a2
-  IF ( .NOT. (xa2>-0.5 .AND. xa2<0.5)) flagGood = .FALSE.
+  IF ( .NOT. (xa2>-0.5 .AND. xa2<0.5)) THEN
+     flagGood = .FALSE.
+     IF ( xa2>0.5) xa2 = 0.5
+     IF (xa2<-0.5) xa2 = -0.5
+  ENDIF
   !   quality checking of a3
   IF ( .NOT. (xa3<0)) flagGood = .FALSE.
 
@@ -327,12 +334,12 @@ SUBROUTINE AnOHM_coef(sfc_typ,xid,xgrid,&   ! input
 
 
   !   update good values of AnOHM coefs.:
-  IF ( .NOT. flagGood ) THEN
-     !       replace values of today of yesterday
-     xa1 = a123AnOHM_gs(xid-1,xgrid,sfc_typ,1)
-     xa2 = a123AnOHM_gs(xid-1,xgrid,sfc_typ,2)
-     xa3 = a123AnOHM_gs(xid-1,xgrid,sfc_typ,3)
-  ENDIF
+  ! IF ( .NOT. flagGood ) THEN
+  !       replace values of today of yesterday
+  ! xa1 = a123AnOHM_gs(xid-1,xgrid,sfc_typ,1)
+  ! xa2 = a123AnOHM_gs(xid-1,xgrid,sfc_typ,2)
+  ! xa3 = a123AnOHM_gs(xid-1,xgrid,sfc_typ,3)
+  ! ENDIF
 
   !   update today's values with good values
   a123AnOHM_gs(xid,xgrid,sfc_typ,1) = xa1
@@ -754,7 +761,7 @@ SUBROUTINE AnOHM_SfcLoad(sfc,xid,xgrid,&            ! input
 
   !   load Bowen ratio of yesterday from DailyState calculation
   IF ( BoInit==NAN ) THEN
-    CALL ErrorHint(68,'No initial Bowen ratio found in InitialConditions.',BoInit,notUsed,notUsedI)
+     CALL ErrorHint(68,'No initial Bowen ratio found in InitialConditions.',BoInit,notUsed,notUsedI)
   ELSE
      xBo = BoInit ! get Initial value from initial condition namelist
   END IF

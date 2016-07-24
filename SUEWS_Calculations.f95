@@ -245,9 +245,12 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   ! use AnOHM to calculate QS, TS 14 Mar 2016
   IF (QSChoice==3) THEN
-     !Calculate QS using QSTAR as QF has been considered in AnOHM
-     qn1=qn1_bup
-     CALL AnOHM_v2016(Gridiv)
+     IF ( OHMIncQF == 1 ) THEN    !Calculate QS using QSTAR+QF
+        CALL AnOHM_v2016(Gridiv)
+     ELSEIF(OHMIncQF == 0) THEN   !Calculate QS using QSTAR
+        qn1=qn1_bup
+        CALL AnOHM_v2016(Gridiv)
+     END IF
   END IF
 
   !Calculate QS using ESTM

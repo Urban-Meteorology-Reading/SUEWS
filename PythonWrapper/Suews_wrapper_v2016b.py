@@ -118,12 +118,12 @@ def wrapper(pathtoplugin):
                     '%6.4f %6.2f %6.2f %6.2f %6.2f %6.2f'
 
         if multiplemetfiles == 0: # one file
-            if index == 2:
-                np.savetxt(data_out, met_save, fmt=numformat, delimiter=' ', header=header, comments='')
-                f_handle = file(data_out, 'a')
-                endoffile = [-9, -9]
-                np.savetxt(f_handle, endoffile, fmt='%2d')
-                f_handle.close()
+            # if index == 2:
+            np.savetxt(data_out, met_save, fmt=numformat, delimiter=' ', header=header, comments='')
+            f_handle = file(data_out, 'a')
+            endoffile = [-9, -9]
+            np.savetxt(f_handle, endoffile, fmt='%2d')
+            f_handle.close()
         else:
             np.savetxt(data_out, met_save, fmt=numformat, delimiter=' ', header=header, comments='')
             f_handle = file(data_out, 'a')

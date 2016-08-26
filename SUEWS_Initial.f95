@@ -1452,7 +1452,13 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   ! Snow clearing profile (weekends)
   CALL CodeMatchProf(rr,c_SnowProfWE)
   SurfaceChar(gridiv,c_HrProfSnowCWE) = Profiles_Coeff(iv5,cPr_Hours)
-
+  !Human activity (weekdays)
+  CALL CodeMatchProf(rr,c_CO2mWD)
+  SurfaceChar(gridiv,c_HrProfCO2mWD) = Profiles_Coeff(iv5,cPr_Hours)
+  !Human activity (weekends)
+  CALL CodeMatchProf(rr,c_CO2mWE)
+  SurfaceChar(gridiv,c_HrProfCO2mWE) = Profiles_Coeff(iv5,cPr_Hours)
+  
   ! ---- Interpolate Hourly Profiles to model timestep and normalise
   TstepProfiles(Gridiv,:,:) = -999   !Initialise TstepProfiles
   ! Energy use
@@ -1473,6 +1479,17 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   TstepProfiles(Gridiv,cTP_WUAutoWD,:) = TstepProfiles(Gridiv,cTP_WUAutoWD,:) / SUM(TstepProfiles(Gridiv,cTP_WUAutoWD,:))
   TstepProfiles(Gridiv,cTP_WUAutoWE,:) = TstepProfiles(Gridiv,cTP_WUAutoWE,:) / SUM(TstepProfiles(Gridiv,cTP_WUAutoWE,:))
 
+  ! Human activity for CO2 calculations
+  CALL SUEWS_InterpHourlyProfiles(Gridiv,cTP_CO2mWD,c_HrProfCO2mWD)
+  CALL SUEWS_InterpHourlyProfiles(Gridiv,cTP_CO2mWE,c_HrProfCO2mWE)
+  ! For human activity, check values are between 1 (night) and 2 (day)
+  IF(any(TstepProfiles(Gridiv,cTP_CO2mWD,:) < 1 .or. TstepProfiles(Gridiv,cTP_CO2mWD,:) > 2)) THEN
+     CALL ErrorHint(70,'Profile value for human activity (WD) exceeds allowed range 1-2.',NotUsed,NotUsed,notUsedI)    
+  ENDIF
+  IF(any(TstepProfiles(Gridiv,cTP_CO2mWE,:) < 1 .or. TstepProfiles(Gridiv,cTP_CO2mWE,:) > 2)) THEN
+     CALL ErrorHint(70,'Profile value for human activity (WD) exceeds allowed range 1-2.',NotUsed,NotUsed,notUsedI)    
+  ENDIF    
+  
 END SUBROUTINE InitializeSurfaceCharacteristics
 
 

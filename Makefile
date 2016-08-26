@@ -9,7 +9,7 @@ MODULES = LUMPS_Module_constants.o  \
           LUMPS_metRead.o  \
           SOLWEIG_modules.o  \
           SUEWS_Files_run_Control.o
-# Rest of the files including modules and functions which are independend
+# Rest of the files including modules and functions which are independent
 OTHERS =  BLUEWS_CBL.o   \
           LUMPS_NARP_v3.o \
           SUEWS_Calculations.o  \
@@ -60,7 +60,8 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_AnOHM_v2016.o  \
           SUEWS_ESTM_functions.o \
           SUEWS_ESTM_initials.o \
-          SUEWS_ESTM_v2016.o
+          SUEWS_ESTM_v2016.o \
+		  SUEWS_CO2.o
 
 # Build main program - main uses MODULES and OTHERS
 main: SUEWS_Program.f95 $(MODULES) $(OTHERS)

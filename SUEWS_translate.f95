@@ -3,6 +3,8 @@
 !           - between arrays for different grids and the model variables
 !Made by HW&LJ Oct 2014
 !-----------------------------------------------------------------------------------
+!Last modified HCW 26 Aug 2016
+! NumCapita now uses average of day and night pop density, unless only one is specified 
 !Last modified HCW 06 Jul 2016
 ! Checks on ESTM fractions
 !  - default setting to first ESTM Class code if surface not present and ESTM fractions do not sum to 1.
@@ -145,8 +147,16 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   ! ---- Population
   PopDensDaytime   = SurfaceChar(Gridiv,c_PopDensDay)   ! Daytime population density [ha-1]
   PopDensNighttime = SurfaceChar(Gridiv,c_PopDensNight) ! Night-time population density [ha-1]
-  NumCapita        = PopDensNighttime                   ! Pop density [ha-1], Use Night-time pop density for NumCapita for testing!
-
+  ! Pop density [ha-1]
+  IF(PopDensDaytime >= 0 .and. PopDensNighttime <  0) PopDensNighttime = PopDensDaytime  !If only daytime data provided, use them
+  IF(PopDensDaytime <  0 .and. PopDensNighttime >= 0) PopDensDaytime = PopDensNighttime  !If only night-time data provided, use them
+  IF(PopDensDaytime >= 0 .and. PopDensNighttime >= 0) NumCapita = (PopDensDaytime+PopDensNighttime)/2  !If both, use average
+  
+  ! ---- Traffic rate
+  TrafficRate = SurfaceChar(Gridiv,c_TrafficRate) ! Mean traffic rate within modelled area
+  ! ---- Building energy use
+  BuildEnergyUse = SurfaceChar(Gridiv,c_BuildEnergyUse) ! Building energy use within modelled area
+  
   ! ---- Albedo [-]
   alb(1:nsurf) = SurfaceChar(Gridiv,c_AlbMax)   !Use maximum albedos as default value (albmin for veg surfaces handled below)
 
@@ -615,7 +625,10 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   WUProfA(0:23,2)  = SurfaceChar(Gridiv,c_HrProfWUAutoWE)  ! Water use, automatic, weekends
   SnowProf(0:23,1) = SurfaceChar(Gridiv,c_HrProfSnowCWD)   ! Snow clearing, weekdays
   SnowProf(0:23,2) = SurfaceChar(Gridiv,c_HrProfSnowCWE)   ! Snow clearing, weekends
-
+  CO2mProf(0:23,1) = SurfaceChar(Gridiv,c_HrProfCO2mWD)    ! Anthropogenic heat, weekdays
+  CO2mProf(0:23,2) = SurfaceChar(Gridiv,c_HrProfCO2mWE)    ! Anthropogenic heat, weekends
+  
+  
   ! ---- Profiles at the resolution of model time step
   AHProf_tstep(:,1)  = TstepProfiles(Gridiv,cTP_EnUseWD,:) ! Anthropogenic heat, weekdays
   AHProf_tstep(:,2)  = TstepProfiles(Gridiv,cTP_EnUseWE,:) ! Anthropogenic heat, weekends
@@ -623,7 +636,9 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   WUProfM_tstep(:,2) = TstepProfiles(Gridiv,cTP_WUManuWE,:) ! Water use, manual, weekends
   WUProfA_tstep(:,1) = TstepProfiles(Gridiv,cTP_WUAutoWD,:) ! Water use, automatic, weekdays
   WUProfA_tstep(:,2) = TstepProfiles(Gridiv,cTP_WUAutoWE,:) ! Water use, automatic, weekends
-
+  CO2m_tstep(:,1)  = TstepProfiles(Gridiv,cTP_CO2mWD,:) ! CO2 metabolic  activity, weekdays
+  CO2m_tstep(:,2)  = TstepProfiles(Gridiv,cTP_CO2mWE,:) ! CO2 metabolic activity, weekends
+  
   ! ---- Within-grid water distribution
   ! N.B. Rows and columns of WaterDist are the other way round to the input info
   !! Model currently does not include above-ground flow from the Water surface

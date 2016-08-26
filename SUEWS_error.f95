@@ -273,6 +273,13 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI) ! real
      text1='Initial Bowen ratio automatically set to 1.'
      returntrue=.TRUE.
      v1=.TRUE.
+  ELSEIF(errh==69) THEN
+     text1='Setting QF_traff to zero. Check input data.'
+     returntrue=.TRUE.
+     v2=.TRUE.
+  ELSEIF(errh==70) THEN
+     text1='Specify profile values between 1 (night) and 2 (day).'
+     v8=.TRUE.
   ENDIF
   !---------------------------------------------------------------------
   !This part of the code determines how the error message is written out

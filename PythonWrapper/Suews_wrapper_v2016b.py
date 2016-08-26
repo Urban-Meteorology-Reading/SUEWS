@@ -118,12 +118,12 @@ def wrapper(pathtoplugin):
                     '%6.4f %6.2f %6.2f %6.2f %6.2f %6.2f'
 
         if multiplemetfiles == 0: # one file
-            if index == 2:
-                np.savetxt(data_out, met_save, fmt=numformat, delimiter=' ', header=header, comments='')
-                f_handle = file(data_out, 'a')
-                endoffile = [-9, -9]
-                np.savetxt(f_handle, endoffile, fmt='%2d')
-                f_handle.close()
+            # if index == 2:
+            np.savetxt(data_out, met_save, fmt=numformat, delimiter=' ', header=header, comments='')
+            f_handle = file(data_out, 'a')
+            endoffile = [-9, -9]
+            np.savetxt(f_handle, endoffile, fmt='%2d')
+            f_handle.close()
         else:
             np.savetxt(data_out, met_save, fmt=numformat, delimiter=' ', header=header, comments='')
             f_handle = file(data_out, 'a')
@@ -204,6 +204,7 @@ def wrapper(pathtoplugin):
     pynumformat = '%4i ' + '%3i ' * 3 + '%8.5f ' +\
         '%9.4f ' * 5 + '%9.4f ' * 7 +\
         '%9.4f ' +\
+        '%9.4f ' * 6 +\
         '%10.6f ' * 4 +\
         '%10.5f ' * 1 + '%10.6f ' * 3 +\
         '%10.6f ' * 6 +\
@@ -236,12 +237,13 @@ def wrapper(pathtoplugin):
     pynumformat_estm = '%4i ' + '%3i ' * 3 + '%8.5f ' + '%10.4f ' * 27
 
     TimeCol = np.array([1, 2, 3, 4, 5]) -1
-    SumCol = np.array([19,20,21,22,  25,26, 27,28,29,30,31,32,  33,34,35,36,37,38,  71,72,73]) -1
-    LastCol = np.array( [23,24,  44,45,46,47,48,49,50,51,  52,53,54,55,56,57,58,  59,60,61,62,  68,69,70,  74]) -1
+    SumCol = np.array([25,26,27,28,  31,32, 33,34,35,36,37,38,  39,40,41,42,43,44,  77,78,79]) -1
+    LastCol = np.array( [29,30,  50,51,52,53,54,55,56,57,  58,59,60,61,62,63,64,  65,66,67,68,  74,75,76,  80]) -1
 
     header = '%iy id it imin dectime '\
              'kdown kup ldown lup Tsurf qn h_mod e_mod qs qf qh qe '\
-             'qh_r '\
+             'qh_r ' \
+             'Fc Fc_photo Fc_respi Fc_metab Fc_traff Fc_build '\
              'P/i Ie/i E/i Dr/i '\
              'St/i NWSt/i surfCh/i totCh/i '\
              'RO/i ROsoil/i ROpipe ROpav ROveg ROwater '\

@@ -9,6 +9,7 @@
 !  - then over rows
 !  - then over grids
 !
+!Last modified by HCW 26 Aug 2016 - CO2 flux added
 !Last modified by HCW 04 Jul 2016 - GridID can now be up to 10 digits long
 !Last modified by HCW 29 Jun 2016 - Reversed over-ruling of ReadLinesMetData so this is not restricted here to one day
 !Last modified by HCW 27 Jun 2016 - Re-corrected grid number for output files. N.B. Gridiv seems to have been renamed iGrid
@@ -198,11 +199,11 @@ PROGRAM SUEWS_Program
      ! make sure the metblocks read in consists of complete diurnal cycles, TS 08 Jul 2016
      ReadLinesMetData = INT(MAX(nsd*(ReadLinesMetData/nsd), nsd))
 
-     WRITE(*,*) 'Met data will be read in chunks of',ReadlinesMetdata,'lines.'
-
+     WRITE(*,*) 'Met data will be read in chunks of ',ReadlinesMetdata,'lines.'
+          
      ! Find number of blocks of met data
      ReadBlocksMetData = INT(CEILING(REAL(nlinesMetData,KIND(1d0))/REAL(ReadLinesMetData,KIND(1d0))))
-     WRITE(*,*) 'Met data will be read in',ReadBlocksMetData,'blocks.'
+     WRITE(*,*) 'Processing current year in ',ReadBlocksMetData,'blocks.'
 
      ! ---- Allocate arrays--------------------------------------------------
      ALLOCATE(SurfaceChar(NumberOfGrids,MaxNCols_c))                                               !Surface characteristics
@@ -213,10 +214,11 @@ PROGRAM SUEWS_Program
      IF (CBLuse >= 1)  ALLOCATE(dataOutBL(1:ReadlinesMetdata,22,NumberOfGrids))                    !CBL output
      IF (SnowUse == 1) ALLOCATE(dataOutSnow(1:ReadlinesMetdata,ncolumnsDataOutSnow,NumberOfGrids)) !Snow output array
      IF (QSChoice==4 .OR. QSChoice==14) ALLOCATE(dataOutESTM(1:ReadlinesMetdata,32,NumberOfGrids)) !ESTM output array, TS 05 Jun 2016
-     ALLOCATE(TstepProfiles(NumberOfGrids,6,24*NSH))                        !Hourly profiles interpolated to model timestep
+     ALLOCATE(TstepProfiles(NumberOfGrids,10,24*NSH))                        !Hourly profiles interpolated to model timestep
      ALLOCATE(AHProf_tstep(24*NSH,2))                                       !Anthropogenic heat profiles at model timestep
      ALLOCATE(WUProfM_tstep(24*NSH,2))                                      !Manual water use profiles at model timestep
      ALLOCATE(WUProfA_tstep(24*NSH,2))                                      !Automatic water use profiles at model timestep
+     ALLOCATE(CO2m_tstep(24*NSH,2))
      !! Add snow clearing (?)
 
      ! Check number of lines in ESTM forcing file (nlinesESTMdata)
@@ -463,6 +465,7 @@ PROGRAM SUEWS_Program
      DEALLOCATE(AHProf_tstep)
      DEALLOCATE(WUProfM_tstep)
      DEALLOCATE(WUProfA_tstep)
+     DEALLOCATE(CO2m_tstep)
      ! ----------------------------------------------------------------------
 
   ENDDO  !end loop over years

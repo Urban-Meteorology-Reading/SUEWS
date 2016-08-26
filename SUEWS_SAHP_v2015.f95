@@ -2,6 +2,7 @@
 !===================================================================================
 !Simple Anthropogenic Heat Parameterization routines
 !Last modified
+! HCW 25 Aug 2016 - Outputs base QF (part without temp. dependence)
 ! LJ 27 Jan 2016  - Removal of Tabs
 ! HCW 20 Jan 2015 - v2015 applies a profile at each model timestep
 !                   these have been interpolated from the hourly profile input data (SUEWS_Profiles)
@@ -15,7 +16,7 @@
 !===================================================================================
 
 !-----------------------------------------------------------------------------------
- subroutine SAHP_1_v2015(QF_o,id,ih,imin)
+ subroutine SAHP_1_v2015(QF_o,QF_o_base,QF_o_heat,id,ih,imin)
  ! Called if AnthropHeatChoice = 1
  ! Method according to Loridan et al. (2011)
  ! Weekday/weekend differences due to profile only
@@ -32,6 +33,7 @@
             iu     !1=weekday OR 2=weekend
   	    
   real (kind(1d0)):: QF_o   !Output: modelled QF [W m-2]
+  real (kind(1d0)):: QF_o_base, QF_o_heat  !Output: temperature-independent part and heating only part of modelled QF  [W m-2]
 
   iu=1     !Set to 1=weekday
   if(DayofWeek(id,1)==1.or.DayofWeek(id,1)==7) then  
@@ -44,12 +46,15 @@
   else
      QF_o = AHProf_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*AH_MIN
   endif 
-
+  
+  QF_o_base = AHProf_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*AH_MIN
+  QF_o_heat = QF_o - QF_o_base
+     
  endsubroutine SAHP_1_v2015
 !-----------------------------------------------------------------------------------
 
 !-----------------------------------------------------------------------------------
-subroutine SAHP_2_v2015(QF_o,id,ih,imin)
+subroutine SAHP_2_v2015(QF_o,QF_o_base,QF_o_heat,id,ih,imin)
 ! Called if AnthropHeatChoice = 2
 ! Method according to Jarvi et al. (2011)  
 ! Weekday/weekend differences due to profile and coefficients QF_a,b,c
@@ -66,6 +71,7 @@ subroutine SAHP_2_v2015(QF_o,id,ih,imin)
             iu     !1=weekday OR 2=weekend
    	    
   real (kind(1d0)):: QF_o   !Output: modelled QF  [W m-2]
+  real (kind(1d0)):: QF_o_base, QF_o_heat  !Output: temperature-independent part and heating only part of modelled QF  [W m-2]
 
   iu=1     !Set to 1=weekday
   if(DayofWeek(id,1)==1.or.DayofWeek(id,1)==7) then  
@@ -83,7 +89,10 @@ subroutine SAHP_2_v2015(QF_o,id,ih,imin)
    
   QF_o = (AHProf_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*(Qf_a(iu)+Qf_b(iu)*HDD(id-1,2)+Qf_c(iu)*HDD(id-1,1)))*numCapita
 
-!write(*,*) QF_o
+  QF_o_base = (AHProf_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*(Qf_a(iu)))*numCapita
+  QF_o_heat = (AHProf_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*(Qf_c(iu)*HDD(id-1,1)))*numCapita
+
+  !write(*,*) QF_o
 !write(*,*) '----------------------'
 !write(*,*) " " 
 

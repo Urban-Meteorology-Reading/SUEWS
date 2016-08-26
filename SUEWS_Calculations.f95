@@ -4,6 +4,8 @@
 !Last modification
 !
 !Last modification:
+! HCw 24 Aug 2016 - smd and state for each surface set to NAN in output file if surface does not exist.
+!                 - Added Fc to output file (temporarily - need to add properly)  
 ! HCW 21 Jul 2016 - Set soil variables to -999 in output when grid is 100% water surface.
 ! HCW 29 Jun 2016 - Commented out StateDay and SoilMoistDay as creates jumps and should not be needed.
 !                   Would not work unless each met block consists of a whole day for each grid.
@@ -216,11 +218,11 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   IF(ih<0) ih=23
 
   IF(AnthropHeatChoice==1) THEN
-     CALL SAHP_1_v2015(qf_sahp,id,ih,imin)
+     CALL SAHP_1_v2015(qf_sahp,QF_SAHP_base,QF_SAHP_heat,id,ih,imin)
      qn1_bup=qn1
      qn1=qn1+QF_SAHP
   ELSEIF(AnthropHeatChoice==2) THEN
-     CALL SAHP_2_v2015(qf_sahp,id,ih,imin)
+     CALL SAHP_2_v2015(qf_sahp,QF_SAHP_base,QF_SAHP_heat,id,ih,imin)
      qn1_bup=qn1
      qn1=qn1+QF_SAHP
   ELSE
@@ -233,6 +235,10 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   IF(AnthropHeatChoice>=1) THEN
      qf=QF_SAHP
   ENDIF
+
+  ! Calculate CO2 fluxes from anthropogenic components
+  CALL CO2_anthro(id,ih,imin)
+
   ! =================STORAGE HEAT FLUX=======================================
   IF(QSChoice==1) THEN           !Use OHM to calculate QS
      IF(OHMIncQF == 1) THEN      !Calculate QS using QSTAR+QF
@@ -342,6 +348,11 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   CALL BoundaryLayerResistance
 
 
+  ! Calculate CO2 fluxes from biogenic components
+  CALL CO2_biogen
+  ! Sum anthropogenic and biogenic CO2 flux components to find overall CO2 flux 
+  Fc = Fc_anthro + Fc_biogen
+  
   sae   = s_hPa*(qn1_SF+qf-qs)    !s_haPa - slope of svp vs t curve. qn1 changed to qn1_SF, lj in May 2013
   vdrc  = vpd_hPa*avdens*avcp
   sp    = s_hPa/psyc_hPa
@@ -522,20 +533,20 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
      drain_per_tstep = NAN   !no drainage from water surf 
   ENDIF
 
-  ! Remove non-existing surface type from surface and soil outputs   !Commented out by HCW 04 Mar 2015 as should not occur
-  !do is=1,nsurf
-  !   if (sfr(is)<0.00001) then
-  !      stateOut(is)=0
-  !      smd_nsurfOut(is)=0
-  !      runoffOut(is)=0
-  !      runoffSoilOut(is)=0
-  !   else
-  !      stateOut(is)=state(is)
-  !      smd_nsurfOut(is)=smd_nsurf(is)
-  !      runoffOut(is)=runoff(is)
-  !      runoffSoilOut(is)=runoffSoil(is)
-  !   endif
-  !enddo
+  ! Remove non-existing surface type from surface and soil outputs   ! Added back in with NANs by HCW 24 Aug 2016
+  do is=1,nsurf
+     if (sfr(is)<0.00001) then
+        stateOut(is)= NAN
+        smd_nsurfOut(is)= NAN
+        !runoffOut(is)= NAN
+        !runoffSoilOut(is)= NAN
+     else
+        stateOut(is)=state(is)
+        smd_nsurfOut(is)=smd_nsurf(is)
+        !runoffOut(is)=runoff(is)
+        !runoffSoilOut(is)=runoffSoil(is)
+    endif
+  enddo
 
   ! Remove negative state   !ErrorHint added, then commented out by HCW 16 Feb 2015 as should never occur
   !if(st_per_interval<0) then
@@ -559,7 +570,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ! If measured smd is used, set components to -999 and smd output to measured one
   IF (smd_choice>0) THEN
      smd_nsurf=NAN
-     !smd_nsurfOut=NAN
+     smd_nsurfOut=NAN
      smd=xsmd
   ENDIF
 
@@ -587,16 +598,17 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !Define the overall output matrix to be printed out step by step
   dataOut(ir,1:ncolumnsDataOut,Gridiv)=(/REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),REAL(it,KIND(1D0)),REAL(imin,KIND(1D0)),dectime,&   !5
        avkdn,kup,ldown,lup,tsurf,qn1,h_mod,e_mod,qs,qf,qh,qeOut,&                                       !17
-       qh_r,&                                                                                         !18
-       precip,ext_wu,ev_per_tstep,drain_per_tstep,&                                                     !22
-       state_per_tstep,NWstate_per_tstep,surf_chang_per_tstep,tot_chang_per_tstep,&                     !26
-       runoff_per_tstep,runoffSoil_per_tstep,runoffPipes,runoffAGimpervious,runoffAGveg,runoffWaterBody,&  !32
-       AdditionalWater,FlowChange/nsh_real,int_wu,wu_EveTr,wu_DecTr,wu_Grass,&                          !38
-       ra,ResistSurf,ustar,l_mod,Fcld,&                                                                 !43
-       soilstate,smd,(smd_nsurf(is),is=1,nsurf-1),(state(is),is=1,nsurf),&                              !58
-       lai_wt,z0m,zdm,bulkalbedo,&                                                                      !62
-       qn1_SF,qn1_S,Qm,QmFreez,QmRain,swe,mwh,MwStore,(SnowRemoval(is),is=1,2),chSnow_per_interval,&    !73
-       SnowAlb/)                                                                                        !74
+       qh_r,&                                                                                           !18
+       Fc,Fc_photo,Fc_respi,Fc_metab,Fc_traff,Fc_build,&                                                !24
+       precip,ext_wu,ev_per_tstep,drain_per_tstep,&                                                     !28
+       state_per_tstep,NWstate_per_tstep,surf_chang_per_tstep,tot_chang_per_tstep,&                     !32
+       runoff_per_tstep,runoffSoil_per_tstep,runoffPipes,runoffAGimpervious,runoffAGveg,runoffWaterBody,&  !38
+       AdditionalWater,FlowChange/nsh_real,int_wu,wu_EveTr,wu_DecTr,wu_Grass,&                          !44
+       ra,ResistSurf,ustar,l_mod,Fcld,&                                                                 !49
+       soilstate,smd,(smd_nsurfOut(is),is=1,nsurf-1),(stateOut(is),is=1,nsurf),&                              !64
+       lai_wt,z0m,zdm,bulkalbedo,&                                                                      !68
+       qn1_SF,qn1_S,Qm,QmFreez,QmRain,swe,mwh,MwStore,(SnowRemoval(is),is=1,2),chSnow_per_interval,&    !71
+       SnowAlb/)                                                                                        !80
 
   IF (snowUse==1) THEN
      dataOutSnow(ir,1:ncolumnsDataOutSnow,Gridiv)=(/REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),&               !2

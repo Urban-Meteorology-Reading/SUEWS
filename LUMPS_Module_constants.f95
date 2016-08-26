@@ -8,7 +8,8 @@
 !                   other variables). Similarly denssnow changed to SnowDens. cMDS_SnowAlb=29 added.
 ! HCW 10 Mar 2016 - variable vsmd added for soil moisture of vegetated surfaces
 ! TS 14 Mar 2016 - multiple addtions for AnOHM
-! HCW 14 Jun 2015 - updated columns for ESTM and column names for AnOHM
+! HCW 14 Jun 2016 - updated columns for ESTM and column names for AnOHM
+! HCW 26 Aug 2016 - CO2 flux added
 
 !==================================================================================================
 MODULE allocateArray
@@ -20,7 +21,7 @@ MODULE allocateArray
   INTEGER, PARAMETER:: MaxLinesMet=8640        !Max no. lines to read in one go (for all grids, ie MaxLinesMet/NumberOfGrids each)
 
   ! ---- Set number of columns in input files ----------------------------------------------------
-  INTEGER, PARAMETER:: ncolumnsSiteSelect=97        !SUEWS_SiteSelect.txt
+  INTEGER, PARAMETER:: ncolumnsSiteSelect=101        !SUEWS_SiteSelect.txt
   INTEGER, PARAMETER:: ncolumnsNonVeg=22            !SUEWS_NonVeg.txt
   INTEGER, PARAMETER:: ncolumnsVeg=33               !SUEWS_Veg.txt
   INTEGER, PARAMETER:: ncolumnsWater=19             !SUEWS_Water.txt
@@ -37,7 +38,7 @@ MODULE allocateArray
   INTEGER, PARAMETER:: ncolsESTMdata=13           !ESTM input file (_ESTM_Ts_data.txt))
 
   ! ---- Set number of columns in output files ---------------------------------------------------
-  INTEGER, PARAMETER:: ncolumnsDataOut=74,&    !Main output file (_5.txt). DataOut created in SUEWS_Calculations.f95
+  INTEGER, PARAMETER:: ncolumnsDataOut=80,&    !Main output file (_5.txt). DataOut created in SUEWS_Calculations.f95
        ncolumnsDataOutSnow=102
 
   ! ---- Define input file headers ---------------------------------------------------------------
@@ -100,7 +101,8 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: TstepProfiles
   REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: AHProf_tstep
   REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: WUProfM_tstep, WUProfA_tstep
-
+  REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: CO2m_tstep
+  
   ! ---- For ESTM
   REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:,:)::  Ts5mindata     !surface temperature input data
   REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:) ::   Tair24HR
@@ -113,8 +115,9 @@ MODULE allocateArray
             cTP_WUAutoWD = 5,&
             cTP_WUAutoWE = 6,&
             cTP_SnowCWD  = 7,&
-            cTP_SnowCWE  = 8
-
+            cTP_SnowCWE  = 8,&
+            cTP_CO2mWD   = 9,&
+            cTP_CO2mWE   = 10
   !-----------------------------------------------------------------------------------------------
 
   ! ---- Surface types ---------------------------------------------------------------------------
@@ -148,9 +151,11 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(nsurf):: runoff         !Runoff from each surface type [mm]
   REAL(KIND(1d0)),DIMENSION(nsurf):: runoffSoil     !Soil runoff from each soil sub-surface [mm]
   REAL(KIND(1d0)),DIMENSION(nsurf):: smd_nsurf      !Soil moisture deficit of each sub-surface [mm]
+  REAL(KIND(1d0)),DIMENSION(nsurf):: smd_nsurfOut   !Soil moisture deficit of each sub-surface (written out) [mm]
   REAL(KIND(1d0)),DIMENSION(nsurf):: soilmoist      !Soil moisture of each surface type [mm]
   REAL(KIND(1d0)),DIMENSION(nsurf):: soilmoistOld   !Soil moisture of each surface type from previous timestep [mm]
   REAL(KIND(1d0)),DIMENSION(nsurf):: state          !Wetness status of each surface type [mm]
+  REAL(KIND(1d0)),DIMENSION(nsurf):: stateOut       !Wetness status of each surface type (written out) [mm]
   REAL(KIND(1d0)),DIMENSION(nsurf):: stateOld       !Wetness status of each surface type from previous timestep [mm]
   REAL(KIND(1D0)),DIMENSION(nsurf):: rss_nsurf      !Surface resistance after wet/partially wet adjustment for each surface
 
@@ -526,9 +531,11 @@ MODULE allocateArray
   INTEGER,DIMENSION(24):: c_HrProfWUAutoWE = (/(cc, cc=ccEndIr+ 5*24+1, ccEndIr+ 5*24+24, 1)/)  ! Water use, automatic, weekends
   INTEGER,DIMENSION(24):: c_HrProfSnowCWD  = (/(cc, cc=ccEndIr+ 6*24+1, ccEndIr+ 6*24+24, 1)/)  ! Snow clearing, weekdays
   INTEGER,DIMENSION(24):: c_HrProfSnowCWE  = (/(cc, cc=ccEndIr+ 7*24+1, ccEndIr+ 7*24+24, 1)/)  ! Snow clearing, weekends
-
+  INTEGER,DIMENSION(24):: c_HrProfCO2mWD   = (/(cc, cc=ccEndIr+ 8*24+1, ccEndIr+ 8*24+24, 1)/)  ! Energy use, weekdays
+  INTEGER,DIMENSION(24):: c_HrProfCO2mWE   = (/(cc, cc=ccEndIr+ 9*24+1, ccEndIr+ 9*24+24, 1)/)  ! Energy use, weekends
+  
   ! Find current column number
-  INTEGER,PARAMETER:: ccEndPr = (ccEndIr+ 7*24+24)
+  INTEGER,PARAMETER:: ccEndPr = (ccEndIr+ 9*24+24)
 
   ! Within-grid water distribution (for each surface)
   INTEGER,DIMENSION(nsurf):: c_WGToPaved = (/(cc, cc=ccEndPr+ 0*nsurf+1,ccEndPr+ 0*nsurf+nsurf, 1)/) !Water dist to Paved
@@ -835,8 +842,17 @@ MODULE data_in
        avu1,&      !Average wind speed
        azimuth,&   !Sun azimuth in degrees
        BaseTHDD,&  !Base temperature for QF
+       BuildEnergyUse,&  ! Building energy use
        E_mod,&     !Modelled latent heat flux with LUMPS  [W m-2]
        emis_snow,& !Emissivity of snow
+       Fc,&        !CO2 flux [umol m-2 s-1]
+       Fc_anthro,& !CO2 flux (anthropogenic part) [umol m-2 s-1]
+       Fc_biogen,& !CO2 flux (biogenic part) [umol m-2 s-1]
+       Fc_photo,&  !CO2 flux (photosynthesis component) [umol m-2 s-1]
+       Fc_respi,&  !CO2 flux (non-human respiration component) [umol m-2 s-1]
+       Fc_metab,&  !CO2 flux (human metabolism component) [umol m-2 s-1]
+       Fc_traff,&  !CO2 flux (traffic component) [umol m-2 s-1]
+       Fc_build,&  !CO2 flux (building energy use component) [umol m-2 s-1]
        fcld,&      !Cloud fraction modelled
        fcld_obs,&  !Cloud fraction observed
        h_mod,&     !Modelled sensible heat flux with LUMPS [W m-2]
@@ -861,6 +877,8 @@ MODULE data_in
        qe_obs,&
        qf,&        !Observed anthropogenic heat flux
        QF_SAHP,&    !Anthropogenic heat flux calculated by SAHP
+       QF_SAHP_base,&    !Anthropogenic heat flux calculated by SAHP (temp independent part)
+       QF_SAHP_heat,&    !Anthropogenic heat flux calculated by SAHP (heating part only)
        qh,&        !Observed sensible heat flux
        qh_obs,&
        QH_r,&      !Sensible heat flux calculated using resistance method
@@ -876,7 +894,8 @@ MODULE data_in
        snow_obs,&  !Observed snow cover
        T_CRITIC,& !Critical temperature
        Temp_C,&    !Air temperature
-       trans_site,&  !Atmospheric transmittivity
+       trans_site,&  !Atmospheric transmissivity
+       TrafficRate,&  !Traffic rate
        tsurf,&   !Surface temperature
        wdir,&      ! Wind direction
        wu_m3,&     !Water use provided in met forcing file [m3]
@@ -886,7 +905,8 @@ MODULE data_in
 
   REAL(KIND(1d0)),DIMENSION(2)::Qf_A,Qf_B,Qf_C   !Qf coefficients
   REAL(KIND(1d0)),DIMENSION(0:23,2):: AHPROF     !Anthropogenic heat profiles for (1)weekdays / (2)weekends
-
+  REAL(KIND(1d0)),DIMENSION(0:23,2):: CO2mProf   !HUman actvity profiles for (1)weekdays / (2)weekends
+  
   INTEGER,DIMENSION(2)::DayLightSavingDay   !DOY when daylight saving changes
 
   INTEGER::nCBLstep  !number of time steps of Runge-kutta methods in one hour
@@ -1471,71 +1491,75 @@ MODULE ColNamesInputFiles
                                 ! Population
        c_PopDensDay   = 30,&
        c_PopDensNight = 31,&
-                                ! Codes for different surfaces
-       c_PavedCode = 32,&  ! Links characteristics in SUEWS_NonVeg.txt
-       c_BldgsCode = 33,&  ! Links characteristics in SUEWS_NonVeg.txt
-       c_EveTrCode = 34,&  ! Links characteristics in SUEWS_Veg.txt
-       c_DecTrCode = 35,&    ! Links characteristics in SUEWS_Veg.txt
-       c_GrassCode = 36,&     ! Links characteristics in SUEWS_Veg.txt
-       c_BSoilCode = 37,&  ! Links characteristics in SUEWS_Veg.txt
-       c_WaterCode = 38,&       ! Links characteristics in SUEWS_Water.txt
+       c_TrafficRate  = 32,&    ! Mean traffic rate in modelled area [veh km m-2 s-1]
+       c_BuildEnergyUse  = 33,&    ! Building energy use for modelled area [W m-2] - could change units?
+       ! Codes for different surfaces
+       c_PavedCode = 34,&  ! Links characteristics in SUEWS_NonVeg.txt
+       c_BldgsCode = 35,&  ! Links characteristics in SUEWS_NonVeg.txt
+       c_EveTrCode = 36,&  ! Links characteristics in SUEWS_Veg.txt
+       c_DecTrCode = 37,&    ! Links characteristics in SUEWS_Veg.txt
+       c_GrassCode = 38,&     ! Links characteristics in SUEWS_Veg.txt
+       c_BSoilCode = 39,&  ! Links characteristics in SUEWS_Veg.txt
+       c_WaterCode = 40,&       ! Links characteristics in SUEWS_Water.txt
                                 ! LUMPS info
-       c_LUMPSDr     = 39,&
-       c_LUMPSCover  = 40,&
-       c_LUMPSMaxRes = 41,&
+       c_LUMPSDr     = 41,&
+       c_LUMPSCover  = 42,&
+       c_LUMPSMaxRes = 43,&
                                 ! NARP info
-       c_NARPTrans      =42,&
-                                ! Code for conductances
-       c_CondCode      =43,&       ! Links characteristics in SUEWS_Conductance.txt
+       c_NARPTrans   = 44,&
+                               ! Code for conductances
+       c_CondCode    = 45,&       ! Links characteristics in SUEWS_Conductance.txt
                                 ! Code for snow
-       c_SnowCode      =44,&    ! Links characteristics in SUEWS_Snow.txt
+       c_SnowCode    = 46,&    ! Links characteristics in SUEWS_Snow.txt
                                 ! Codes for human impacts on energy, water and snow
-       c_SnowProfWD= 45,&  ! Snow-clearing profile in SUEWS_Profile.txt (weekdays)
-       c_SnowProfWE   = 46,&  ! Snow-clearing profile in SUEWS_Profile.txt (weekends)
-       c_QFCode       = 47,&       ! Links anthropogenic heat info in SUEWS_AnthropogenicHeat.txt
-       c_EnProfWD     = 48,&  ! Links to energy-use profile in SUEWS_Profile.txt (weekdays)
-       c_EnProfWE     = 49,&  ! Links to energy-use profile in SUEWS_Profile.txt (weekends)
-       c_IrrCode      = 50,&       ! Links irrigation info in SUEWS_Irrigation.txt
-       c_WProfManuWD  = 51,&  ! Links to water-use profile in SUEWS_Profile.txt (manual irrigation, weekdays)
-       c_WProfManuWE  = 52,&  ! Links to water-use profile in SUEWS_Profile.txt (manual irrigation, weekends)
-       c_WProfAutoWD  = 53,&  ! Links to water-use profile in SUEWS_Profile.txt (automatic irrigation, weekdays)
-       c_WProfAutoWE  = 54,&  ! Links to water-use profile in SUEWS_Profile.txt (automatic irrigation, weekends)
-                                ! Flow information
-       c_FlowChange    =55,&  ! Difference in input & output flows for water surface
-       c_RunoffToWater =56,&    ! Fraction of above-ground runoff flowing to water surface
-       c_PipeCapacity  =57,&  ! Pipe capacity [mm]
+       c_SnowProfWD  = 47,&  ! Snow-clearing profile in SUEWS_Profile.txt (weekdays)
+       c_SnowProfWE  = 48,&  ! Snow-clearing profile in SUEWS_Profile.txt (weekends)
+       c_QFCode      = 49,&       ! Links anthropogenic heat info in SUEWS_AnthropogenicHeat.txt
+       c_EnProfWD    = 50,&  ! Links to energy-use profile in SUEWS_Profile.txt (weekdays)
+       c_EnProfWE    = 51,&  ! Links to energy-use profile in SUEWS_Profile.txt (weekends)
+       c_CO2mWD      = 52,&  ! Links to human activity profile in SUEWS_Profile.txt (weekdays)
+       c_CO2mWE      = 53,&  ! Links to human activity profile in SUEWS_Profile.txt (weekends)
+       c_IrrCode     = 54,&       ! Links irrigation info in SUEWS_Irrigation.txt
+       c_WProfManuWD = 55,&  ! Links to water-use profile in SUEWS_Profile.txt (manual irrigation, weekdays)
+       c_WProfManuWE = 56,&  ! Links to water-use profile in SUEWS_Profile.txt (manual irrigation, weekends)
+       c_WProfAutoWD = 57,&  ! Links to water-use profile in SUEWS_Profile.txt (automatic irrigation, weekdays)
+       c_WProfAutoWE = 58,&  ! Links to water-use profile in SUEWS_Profile.txt (automatic irrigation, weekends)
+                               ! Flow information
+       c_FlowChange    =59,&  ! Difference in input & output flows for water surface
+       c_RunoffToWater =60,&    ! Fraction of above-ground runoff flowing to water surface
+       c_PipeCapacity  =61,&  ! Pipe capacity [mm]
                                 ! Runoff (to 8 adjacent grids)
-       c_GridConnection1of8 = 58,&
-       c_Fraction1of8       = 59,&
-       c_GridConnection2of8 = 60,&
-       c_Fraction2of8       = 61,&
-       c_GridConnection3of8 = 62,&
-       c_Fraction3of8       = 63,&
-       c_GridConnection4of8 = 64,&
-       c_Fraction4of8       = 65,&
-       c_GridConnection5of8 = 66,&
-       c_Fraction5of8       = 67,&
-       c_GridConnection6of8 = 68,&
-       c_Fraction6of8       = 69,&
-       c_GridConnection7of8 = 70,&
-       c_Fraction7of8       = 71,&
-       c_GridConnection8of8 = 72,&
-       c_Fraction8of8       = 73,&
-                                ! Runoff within grid (for each surface type)
-       c_WGPavedCode = 74,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
-       c_WGBldgsCode = 75,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
-       c_WGEveTrCode = 76,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
-       c_WGDecTrCode = 77,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
-       c_WGGrassCode = 78,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
-       c_WGBSoilCode = 79,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
-       c_WGWaterCode = 80,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
-                                 ! Additional info for ESTM
-       c_AreaWall = 81   ! Wall surface fraction (Awall/Agridcell)
+       c_GridConnection1of8 = 62,&
+       c_Fraction1of8       = 63,&
+       c_GridConnection2of8 = 64,&
+       c_Fraction2of8       = 65,&
+       c_GridConnection3of8 = 66,&
+       c_Fraction3of8       = 67,&
+       c_GridConnection4of8 = 68,&
+       c_Fraction4of8       = 69,&
+       c_GridConnection5of8 = 70,&
+       c_Fraction5of8       = 71,&
+       c_GridConnection6of8 = 72,&
+       c_Fraction6of8       = 73,&
+       c_GridConnection7of8 = 74,&
+       c_Fraction7of8       = 75,&
+       c_GridConnection8of8 = 76,&
+       c_Fraction8of8       = 77,&
+                              ! Runoff within grid (for each surface type)
+       c_WGPavedCode = 78,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
+       c_WGBldgsCode = 79,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
+       c_WGEveTrCode = 80,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
+       c_WGDecTrCode = 81,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
+       c_WGGrassCode = 82,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
+       c_WGBSoilCode = 83,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
+       c_WGWaterCode = 84,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
+                               ! Additional info for ESTM
+       c_AreaWall = 85   ! Wall surface fraction (Awall/Agridcell)
 
-       INTEGER,DIMENSION(3) :: c_Fr_ESTMClass_Paved = (/(ccc,ccc=82,84,1)/) ! Fraction of Paved surface with ESTM Class 1-5
-       INTEGER,DIMENSION(3) :: c_Code_ESTMClass_Paved = (/(ccc,ccc=85,87,1)/) ! Code for Paved surface ESTM Class 1-5
-       INTEGER,DIMENSION(5) :: c_Fr_ESTMClass_Bldgs = (/(ccc,ccc=88,92,1)/) ! Fraction of Bldgs surface with ESTM Class 1-5
-       INTEGER,DIMENSION(5) :: c_Code_ESTMClass_Bldgs = (/(ccc,ccc=93,97,1)/) ! Code for Bldgs surface ESTM Class 1-5
+       INTEGER,DIMENSION(3) :: c_Fr_ESTMClass_Paved = (/(ccc,ccc=86,88,1)/) ! Fraction of Paved surface with ESTM Class 1-5
+       INTEGER,DIMENSION(3) :: c_Code_ESTMClass_Paved = (/(ccc,ccc=89,91,1)/) ! Code for Paved surface ESTM Class 1-5
+       INTEGER,DIMENSION(5) :: c_Fr_ESTMClass_Bldgs = (/(ccc,ccc=92,96,1)/) ! Fraction of Bldgs surface with ESTM Class 1-5
+       INTEGER,DIMENSION(5) :: c_Code_ESTMClass_Bldgs = (/(ccc,ccc=97,101,1)/) ! Code for Bldgs surface ESTM Class 1-5
 
   !========== Columns for SUEWS_NonVeg.txt ==========================
   INTEGER :: ci_Code   = 1, &
@@ -1985,6 +2009,7 @@ MODULE PhysConstants
 
   REAL (KIND(1d0)),PARAMETER :: C2K = 273.15   !Celsius to Kelvin
   REAL (KIND(1d0)),PARAMETER :: SBConst = 5.67051e-8   !Stefan Boltzmann constant [W m-2 K-4]
+  REAL (KIND(1d0)),PARAMETER :: JtoumolPAR = 4.6   ! Convert PAR from W m-2 to umol m-2 s-1
 
 END MODULE PhysConstants
 

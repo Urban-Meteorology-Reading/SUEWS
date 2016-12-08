@@ -59,6 +59,7 @@ PROGRAM SUEWS_Program
   LOGICAL:: PrintPlace = .FALSE.   !Prints row, block, and grid number to screen if TRUE;
 
   REAL :: timeStart, timeFinish ! profiling use, AnOHM TS
+  integer :: ncMode = 1 ! if the output should be written in netCDF, TS, 08 Dec 201616
   ! REAL :: xErr      ! error in Bo iteration, AnOHM TS 20160331
   ! LOGICAL, ALLOCATABLE :: flagRerunAnOHM(:)   ! iteration run to make Bo converge,AnOHM TS
 
@@ -200,7 +201,7 @@ PROGRAM SUEWS_Program
      ReadLinesMetData = INT(MAX(nsd*(ReadLinesMetData/nsd), nsd))
 
      WRITE(*,*) 'Met data will be read in chunks of ',ReadlinesMetdata,'lines.'
-          
+
      ! Find number of blocks of met data
      ReadBlocksMetData = INT(CEILING(REAL(nlinesMetData,KIND(1d0))/REAL(ReadLinesMetData,KIND(1d0))))
      WRITE(*,*) 'Processing current year in ',ReadBlocksMetData,'blocks.'
@@ -447,10 +448,16 @@ PROGRAM SUEWS_Program
 
 
         ! Write output files in blocks --------------------------------
-        DO igrid=1,NumberOfGrids
-           CALL SUEWS_Output(igrid,year_int,iv,irMax,GridIDmatrix(igrid))  !GridIDmatrix required for correct naming of output files
-           !CALL SUEWS_Output(igrid,year_int,iv,irMax)
-        ENDDO
+        if ( ncMode .eq. 0 ) then
+          DO igrid=1,NumberOfGrids
+             CALL SUEWS_Output(igrid,year_int,iv,irMax,GridIDmatrix(igrid))  !GridIDmatrix required for correct naming of output files
+             !CALL SUEWS_Output(igrid,year_int,iv,irMax)
+          ENDDO
+        else
+          CALL SUEWS_Output_nc(year_int,iv,irMax)
+          
+        end if
+
 
      ENDDO !end loop over blocks of met data
      !-----------------------------------------------------------------------

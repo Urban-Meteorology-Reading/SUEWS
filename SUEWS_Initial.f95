@@ -4,6 +4,7 @@
 
 SUBROUTINE OverallRunControl
   ! Last modified:
+  ! HCW 04 Nov 2016 - minor bug fix in LAImin/LAImax warnings related to 3 veg surface types out cf 7 surface types  
   ! LJ 27 Jan 2016  - Removal of tabs, cleaning of the code
   ! HCW 06 Mar 2015 - Removed options 10,20,30 (NARPOutput) for NetRadiationChoice
   ! HCW 06 Feb 2015 - File ID numbers changed so they are unique
@@ -2179,41 +2180,41 @@ SUBROUTINE CheckInitial
   IF (lat>40) THEN
      IF ((LAIinitialEveTr>LAImin(ConifSurf-2)+1.AND.(id<60.OR.id>330)).OR.&
           (LAIinitialEveTr<LAImax(ConifSurf-2)-1.AND.(id>130.AND.id<244))) THEN
-        CALL ErrorHint(37,'Check LAIinitialEveTr in InitialConditions file', LAIinitialEveTr, LAImin(ConifSurf), notUsedI)
+        CALL ErrorHint(37,'Check LAIinitialEveTr in InitialConditions file', LAIinitialEveTr, LAImin(ConifSurf-2), notUsedI)
      ENDIF
      IF ((LAIinitialDecTr>LAImin(DecidSurf-2)+1.AND.(id<60.OR.id>330)).OR.&
           (LAIinitialDecTr<LAImax(DecidSurf-2)-1.AND.(id>130.AND.id<244))) THEN
-        CALL ErrorHint(37,'Check LAIinitialDecTr in InitialConditions file', LAIinitialDecTr, LAImin(DecidSurf), notUsedI)
+        CALL ErrorHint(37,'Check LAIinitialDecTr in InitialConditions file', LAIinitialDecTr, LAImin(DecidSurf-2), notUsedI)
      ENDIF
      IF ((LAIinitialGrass>LAImin(GrassSurf-2)+1.AND.(id<60.OR.id>330)).OR.&
           (LAIinitialGrass<LAImax(GrassSurf-2)-1.AND.(id>130.AND.id<244))) THEN
-        CALL ErrorHint(37,'Check LAIinitialGrass in InitialConditions file', LAIinitialGrass, LAImin(GrassSurf), notUsedI)
+        CALL ErrorHint(37,'Check LAIinitialGrass in InitialConditions file', LAIinitialGrass, LAImin(GrassSurf-2), notUsedI)
      ENDIF
 
   ELSEIF (lat<-40) THEN
      IF ((LAIinitialEveTr<LAImax(ConifSurf-2)-1.AND.(id<60.OR.id>330)).OR.&
           (LAIinitialEveTr>LAImin(ConifSurf-2)+1.AND.(id>130.AND.id<244))) THEN
-        CALL ErrorHint(37,'Check LAIinitialEveTr in InitialConditions file', LAIinitialEveTr, LAImax(ConifSurf), notUsedI)
+        CALL ErrorHint(37,'Check LAIinitialEveTr in InitialConditions file', LAIinitialEveTr, LAImax(ConifSurf-2), notUsedI)
      ENDIF
      IF ((LAIinitialDecTr>LAImax(DecidSurf-2)-1.AND.(id<60.OR.id>330)).OR.&
           (LAIinitialDecTr>LAImin(DecidSurf-2)+1.AND.(id>130.AND.id<244))) THEN
-        CALL ErrorHint(37,'Check LAIinitialDecTr in InitialConditions file', LAIinitialDecTr, LAImax(DecidSurf), notUsedI)
+        CALL ErrorHint(37,'Check LAIinitialDecTr in InitialConditions file', LAIinitialDecTr, LAImax(DecidSurf-2), notUsedI)
      ENDIF
      IF ((LAIinitialGrass<LAImax(GrassSurf-2)-1.AND.(id<60.OR.id>330)) .OR.&
           (LAIinitialGrass>LAImin(GrassSurf-2)+1.AND.(id>130.AND.id<244))) THEN
-        CALL ErrorHint(37,'Check LAIinitialGrass in InitialConditions file', LAIinitialGrass, LAImax(GrassSurf), notUsedI)
+        CALL ErrorHint(37,'Check LAIinitialGrass in InitialConditions file', LAIinitialGrass, LAImax(GrassSurf-2), notUsedI)
      ENDIF
 
   ELSEIF (lat<10.AND.lat>-10) THEN
 
      IF (LAIinitialEveTr<LAImax(ConifSurf-2)-0.5) THEN
-        CALL ErrorHint(37,'Check LAIinitialEveTr in InitialConditions file', LAIinitialEveTr, LAImax(ConifSurf), notUsedI)
+        CALL ErrorHint(37,'Check LAIinitialEveTr in InitialConditions file', LAIinitialEveTr, LAImax(ConifSurf-2), notUsedI)
      ENDIF
      IF (LAIinitialDecTr<LAImax(DecidSurf-2)-0.5) THEN
-        CALL ErrorHint(37,'Check LAIinitialDecTr in InitialConditions file', LAIinitialDecTr, LAImax(DecidSurf), notUsedI)
+        CALL ErrorHint(37,'Check LAIinitialDecTr in InitialConditions file', LAIinitialDecTr, LAImax(DecidSurf-2), notUsedI)
      ENDIF
      IF (LAIinitialGrass<LAImax(GrassSurf-2)-0.5) THEN
-        CALL ErrorHint(37,'Check LAIinitialGrass in InitialConditions file', LAIinitialGrass, LAImax(GrassSurf), notUsedI)
+        CALL ErrorHint(37,'Check LAIinitialGrass in InitialConditions file', LAIinitialGrass, LAImax(GrassSurf-2), notUsedI)
      ENDIF
 
   ENDIF

@@ -102,7 +102,7 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: AHProf_tstep
   REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: WUProfM_tstep, WUProfA_tstep
   REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: CO2m_tstep
-  
+
   ! ---- For ESTM
   REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:,:)::  Ts5mindata     !surface temperature input data
   REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:) ::   Tair24HR
@@ -533,7 +533,7 @@ MODULE allocateArray
   INTEGER,DIMENSION(24):: c_HrProfSnowCWE  = (/(cc, cc=ccEndIr+ 7*24+1, ccEndIr+ 7*24+24, 1)/)  ! Snow clearing, weekends
   INTEGER,DIMENSION(24):: c_HrProfCO2mWD   = (/(cc, cc=ccEndIr+ 8*24+1, ccEndIr+ 8*24+24, 1)/)  ! Energy use, weekdays
   INTEGER,DIMENSION(24):: c_HrProfCO2mWE   = (/(cc, cc=ccEndIr+ 9*24+1, ccEndIr+ 9*24+24, 1)/)  ! Energy use, weekends
-  
+
   ! Find current column number
   INTEGER,PARAMETER:: ccEndPr = (ccEndIr+ 9*24+24)
 
@@ -803,7 +803,10 @@ MODULE data_in
        SOLWEIGuse,&           !SOLWEIG part used (calculates Tmrt and other fluxes on a grid, FL)
        smd_choice,&           !Use modelled (0) or observed(1,2) soil moisture
        WU_choice,&            !Use modelled (0) or observed (1) water use
-       z0_method              !Defines method for calculating z0 & zd
+       z0_method,&            !Defines method for calculating z0 & zd
+       ncMode,&               !Write output file in netCDF (1) or not (0) , TS, 09 Dec 2016
+       nRow,&                 !number of rows of checker board layout in the netCDF output, TS, 09 Dec 2016
+       nCol                   !number of columns of checker board layout in the netCDF output, TS, 09 Dec 2016
 
   ! ---- Model options currently set in model, but may be moved to RunControl at a later date
   INTEGER:: AlbedoChoice,&         !No additional albedo varaition (0); zenith angle calculation (1)
@@ -906,7 +909,7 @@ MODULE data_in
   REAL(KIND(1d0)),DIMENSION(2)::Qf_A,Qf_B,Qf_C   !Qf coefficients
   REAL(KIND(1d0)),DIMENSION(0:23,2):: AHPROF     !Anthropogenic heat profiles for (1)weekdays / (2)weekends
   REAL(KIND(1d0)),DIMENSION(0:23,2):: CO2mProf   !HUman actvity profiles for (1)weekdays / (2)weekends
-  
+
   INTEGER,DIMENSION(2)::DayLightSavingDay   !DOY when daylight saving changes
 
   INTEGER::nCBLstep  !number of time steps of Runge-kutta methods in one hour
@@ -1348,7 +1351,7 @@ END MODULE sues_data
 !===================================================================================
 MODULE VegPhenogy
   IMPLICIT NONE
-  REAL (KIND(1d0)):: VegPhenLumps
+  REAL (KIND(1d0)):: VegPhenLumps,deltaLAI
 END MODULE VegPhenogy
 
 MODULE filename

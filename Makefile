@@ -63,16 +63,20 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_ESTM_functions.o \
           SUEWS_ESTM_initials.o \
           SUEWS_ESTM_v2016.o \
-          SUEWS_CO2.o\
-					SUEWS_Output_nc.o
+          SUEWS_CO2.o
+TEST = 		SUEWS_Output_nc.o
 
 # Build main program - main uses MODULES and OTHERS
-main: SUEWS_Program.f95 $(MODULES) $(OTHERS)
-	$(CC) SUEWS_Program.f95 $(CFLAGS) -c ; \
-	$(CC) SUEWS_Program.o $(MODULES) $(OTHERS) -L/usr/local/lib -lnetcdf -o $(TARGET)
+main: SUEWS_AR_Program.f95 $(MODULES) $(OTHERS) $(TEST)
+	$(CC) SUEWS_AR_Program.f95 $(CFLAGS) -c ; \
+	$(CC) SUEWS_AR_Program.o $(MODULES) $(OTHERS) $(TEST) -L/usr/local/lib -lnetcdf -o $(TARGET)
 
 # If OTHERS have changed, compile them again
 $(OTHERS): $(MODULES) $(subst .o,.f95, $(OTHERS))
+	$(CC) -c $(subst .o,.f95, $@)
+
+# If TEST have changed, compile them again
+$(TEST): $(MODULES) $(subst .o,.f95, $(TEST))
 	$(CC) -c $(subst .o,.f95, $@)
 
 # If MODULES have changed, compile them again

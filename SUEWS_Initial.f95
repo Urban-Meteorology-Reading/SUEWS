@@ -59,7 +59,10 @@ SUBROUTINE OverallRunControl
        SOLWEIGuse,&
        TIMEZONE,&
        Tstep,&
-       Z
+       Z,&
+       ncMode,&
+       nRow,&
+       nCol
   ! -------------------------------------
 
   FileCode='none'
@@ -533,7 +536,7 @@ SUBROUTINE OverallRunControl
   InputMetFormat=10    !Input met data file in LUMPS format(1) or SUEWS format(10)
   LAICalcYes=1         !Use observed(0) or modelled(1) LAI
   ity=2                !Evaporation calculated according to Rutter(1) or Shuttleworth(2)
-  WriteDailyState = 1  !Daily state file written
+  WriteDailyState = 0  !Daily state file written
   tstepcount=0
 
   t_INTERVAL = 3600   !Number of seconds in an hour

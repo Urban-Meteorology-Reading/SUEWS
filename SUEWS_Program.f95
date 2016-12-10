@@ -59,7 +59,7 @@ PROGRAM SUEWS_Program
   LOGICAL:: PrintPlace = .FALSE.   !Prints row, block, and grid number to screen if TRUE;
 
   REAL :: timeStart, timeFinish ! profiling use, AnOHM TS
-  integer :: ncMode = 1 ! if the output should be written in netCDF, TS, 08 Dec 201616
+  ! integer :: ncMode = 1 ! if the output should be written in netCDF, TS, 08 Dec 201616
   ! REAL :: xErr      ! error in Bo iteration, AnOHM TS 20160331
   ! LOGICAL, ALLOCATABLE :: flagRerunAnOHM(:)   ! iteration run to make Bo converge,AnOHM TS
 
@@ -455,7 +455,7 @@ PROGRAM SUEWS_Program
           ENDDO
         else
           CALL SUEWS_Output_nc(year_int,iv,irMax)
-          
+
         end if
 
 

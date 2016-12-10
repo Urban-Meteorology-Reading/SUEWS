@@ -1,7 +1,7 @@
 &RunControl
 AnthropHeatChoice=2
 CBLuse=0
-NetRadiationChoice=3 
+NetRadiationChoice=3
 gsChoice=1
 RoughLen_heat=2
 QSChoice=2
@@ -25,4 +25,5 @@ SOLWEIGuse=0
 TIMEZONE=0
 Tstep=300
 z=50.3
+ncMode=0
 /

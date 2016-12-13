@@ -10,7 +10,8 @@ CFLAGS = -g -Wall -Wtabs -fbounds-check -I/usr/local/include
 MODULES = LUMPS_Module_constants.o  \
           LUMPS_metRead.o  \
           SOLWEIG_modules.o  \
-          SUEWS_Files_run_Control.o
+          SUEWS_Files_run_Control.o\
+					qsort_c_module.o
 # Rest of the files including modules and functions which are independent
 OTHERS =  BLUEWS_CBL.o   \
           LUMPS_NARP_v3.o \
@@ -64,12 +65,12 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_ESTM_initials.o \
           SUEWS_ESTM_v2016.o \
           SUEWS_CO2.o
-TEST = 		SUEWS_Output_nc.o
+TEST = 		SUEWS_IO_nc.o
 
 # Build main program - main uses MODULES and OTHERS
-main: SUEWS_AR_Program.f95 $(MODULES) $(OTHERS) $(TEST)
-	$(CC) SUEWS_AR_Program.f95 $(CFLAGS) -c ; \
-	$(CC) SUEWS_AR_Program.o $(MODULES) $(OTHERS) $(TEST) -L/usr/local/lib -lnetcdf -o $(TARGET)
+main: SUEWS_Program.f95 $(MODULES) $(OTHERS) $(TEST)
+	$(CC) SUEWS_Program.f95 $(CFLAGS) -c ; \
+	$(CC) SUEWS_Program.o $(MODULES) $(OTHERS) $(TEST) -L/usr/local/lib -lnetcdf -o $(TARGET)
 
 # If OTHERS have changed, compile them again
 $(OTHERS): $(MODULES) $(subst .o,.f95, $(OTHERS))

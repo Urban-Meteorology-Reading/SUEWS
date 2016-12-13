@@ -59,6 +59,7 @@ PROGRAM SUEWS_Program
   LOGICAL:: PrintPlace = .FALSE.   !Prints row, block, and grid number to screen if TRUE;
 
   REAL :: timeStart, timeFinish ! profiling use, AnOHM TS
+  INTEGER(KIND(1d0)),ALLOCATABLE :: GridIDmatrix0(:)
   ! integer :: ncMode = 1 ! if the output should be written in netCDF, TS, 08 Dec 201616
   ! REAL :: xErr      ! error in Bo iteration, AnOHM TS 20160331
   ! LOGICAL, ALLOCATABLE :: flagRerunAnOHM(:)   ! iteration run to make Bo converge,AnOHM TS
@@ -120,10 +121,19 @@ PROGRAM SUEWS_Program
   ENDIF
 
   ALLOCATE (GridIDmatrix(NumberOfGrids)) !Get the nGrid numbers correctly
+  ALLOCATE (GridIDmatrix0(NumberOfGrids)) !Get the nGrid numbers correctly
+
   DO igrid=1,NumberOfGrids
      GridIDmatrix(igrid) = INT(SiteSelect(igrid,c_Grid))
+     GridIDmatrix0(igrid) =INT(SiteSelect(igrid,c_Grid))
   ENDDO
 
+  ! sort grid matrix to conform the geospatial layout as in QGIS
+  CALL sortGrid(GridIDmatrix0,GridIDmatrix,nRow,nCol)
+  ! GridIDmatrix0 stores the grid ID in the original order
+
+
+  ! GridIDmatrix=GridIDmatrix0
   WRITE(*,*) '--------------------------------------------'
   WRITE(*,*) 'Years identified:',FirstYear,'to',LastYear
   WRITE(*,*) 'No. grids identified:',NumberOfGrids,'grids'
@@ -262,7 +272,7 @@ PROGRAM SUEWS_Program
      SkippedLines=0  !Initialise lines to be skipped in met forcing file
 
      DO iv=1,ReadBlocksMetData   !Loop through blocks of met data
-        !write(*,*) iv,'/',ReadBlocksMetData,'ReadBlocksMetData (iv loop)'
+        WRITE(*,*) iv,'/',ReadBlocksMetData,'ReadBlocksMetData (iv loop)'
 
         ! Model calculations are made in two stages:
         ! (1) initialise the run for each block of met data (iv from 1 to ReadBlocksMetData)
@@ -381,9 +391,9 @@ PROGRAM SUEWS_Program
               !  IF(ir==1) WRITE(*,*) 'Now running block ',iv,'/',ReadBlocksMetData,' of year ',year_int,'...'
               WRITE(grid_txt,'(I10)') GridIDmatrix(igrid)   !Get grid ID as a text string
               FileCodeX=TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt)
-              IF(ir==1) THEN
-                 WRITE(*,*) TRIM(ADJUSTL(FileCodeX)),': Now running block ',iv,'/',ReadBlocksMetData,' of ',TRIM(year_txt),'...'
-              ENDIF
+              ! IF(ir==1) THEN
+              !    WRITE(*,*) TRIM(ADJUSTL(FileCodeX)),': Now running block ',iv,'/',ReadBlocksMetData,' of ',TRIM(year_txt),'...'
+              ! ENDIF
               CALL SUEWS_Calculations(GridCounter,ir,iv,irMax)
 
               ! Record iy and id for current time step to handle last row in yearly files (YYYY 1 0 0)
@@ -448,15 +458,23 @@ PROGRAM SUEWS_Program
 
 
         ! Write output files in blocks --------------------------------
-        if ( ncMode .eq. 0 ) then
-          DO igrid=1,NumberOfGrids
-             CALL SUEWS_Output(igrid,year_int,iv,irMax,GridIDmatrix(igrid))  !GridIDmatrix required for correct naming of output files
-             !CALL SUEWS_Output(igrid,year_int,iv,irMax)
-          ENDDO
-        else
-          CALL SUEWS_Output_nc(year_int,iv,irMax)
+        IF ( ncMode .EQ. 0 ) THEN
+           DO igrid=1,NumberOfGrids
+              CALL SUEWS_Output(igrid,year_int,iv,irMax,GridIDmatrix(igrid))  !GridIDmatrix required for correct naming of output files
+              !CALL SUEWS_Output(igrid,year_int,iv,irMax)
+           ENDDO
+        ELSE
+           ! write resulst in netCDF
+           CALL SUEWS_Output_nc(year_int,iv,irMax)
+           ! write input information in netCDF as well for future development 
+           IF ( iv==1 ) THEN
+              CALL SiteSelect_txt2nc
 
-        end if
+           END IF
+
+
+
+        END IF
 
 
      ENDDO !end loop over blocks of met data

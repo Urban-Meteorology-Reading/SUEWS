@@ -25,5 +25,7 @@ SOLWEIGuse=0
 TIMEZONE=0
 Tstep=300
 z=50.3
-ncMode=0
+ncMode=1
+nRow=36
+nCol=47
 /

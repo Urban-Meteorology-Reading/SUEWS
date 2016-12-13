@@ -581,16 +581,16 @@ SUBROUTINE seq2mat(seq2Sort, seqSorted, matGrid, nRow, nCol)
 
   CALL sortSeqReal(seq2Sort, seqSorted, nRow, nCol)
   PRINT*, 'old:'
-  PRINT*, seqGrid2Sort(1:5)
+  PRINT*, seq2Sort(1:5)
   PRINT*, 'sorted:'
-  PRINT*, seqGridSorted(1:5)
+  PRINT*, seqSorted(1:5)
   PRINT*, ''
   DO i = 1, nRow
      DO j = 1, nCol
         loc=(i-1)*nCol+j
         ! PRINT*, i,j,loc
         ! PRINT*, seqGridSorted(loc)
-        matGrid(i,j)=seqGridSorted(loc)
+        matGrid(i,j)=seqSorted(loc)
      END DO
   END DO
 

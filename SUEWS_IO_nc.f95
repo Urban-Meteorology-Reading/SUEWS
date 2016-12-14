@@ -301,8 +301,11 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
   ! When we create netCDF files, variables and dimensions, we get back
   ! an ID for each one.
   INTEGER :: ncID, varID, dimids(NDIMS),varIDGrid
-  INTEGER :: x_dimid, y_dimid,time_dimid,iVar
-  REAL(KIND(1d0)), ALLOCATABLE :: varOut(:,:,:)
+  INTEGER :: x_dimid, y_dimid,time_dimid,iVar,varIDx,varIDy
+  REAL(KIND(1d0)), ALLOCATABLE :: varOut(:,:,:),&
+       varX(:,:),varY(:,:),&
+       xLat(:,:),xLon(:,:),&
+       varSeq0(:),varSeq(:)
   INTEGER :: idVar(iVarStart:ncolumnsDataOut)
   CHARACTER(len=20):: nameVarList(iVarStart:ncolumnsDataOut),ivarStr2
 
@@ -341,8 +344,31 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
   WRITE(yrStr2,'(i4)') year_int
 
   ! define the dimension of spatial array/frame in the output
-  nX=nCol
-  nY=nRow
+  nX   = nCol
+  nY   = nRow
+
+  ALLOCATE(varSeq0(nX*nY))
+  ALLOCATE(varSeq(nX*nY))
+  ALLOCATE(xLon(nX,nY))
+  ALLOCATE(xLat(nX,nY))
+  ALLOCATE(varY(nX,nY))
+  ALLOCATE(varX(nX,nY))
+
+  ! longitude:
+  varSeq0=SiteSelect(:,5)
+  CALL sortSeqReal(varSeq0,varSeq,nY,nX)
+  xLon = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
+
+  ! longitude:
+  varSeq0=SiteSelect(:,6)
+  CALL sortSeqReal(varSeq0,varSeq,nY,nX)
+  xLat = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
+
+  ! pass values to coordinate variables
+  varY = xLon
+  varX = xLat
+  ! PRINT*, 'size x:',SIZE(varX, dim=1)
+  ! PRINT*, 'size y:',SIZE(varY, dim=1)
 
   ! file names
   rawpath=TRIM(FileOutputPath)//TRIM(FileCode)//TRIM(ADJUSTL(yrStr2))//'_'//TRIM(ADJUSTL(ivStr2))
@@ -358,6 +384,7 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
   CALL check( nf90_def_dim(ncID, "time", NF90_UNLIMITED, time_dimid) )
   CALL check( nf90_def_dim(ncID, "west_east", NX, x_dimid) )
   CALL check( nf90_def_dim(ncID, "south_north", NY, y_dimid) )
+  ! PRINT*, 'good define dim'
 
   ! The dimids array is used to pass the IDs of the dimensions of
   ! the variables. Note that in fortran arrays are stored in
@@ -368,7 +395,16 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
   ALLOCATE(varOut(nX,nY,irMax))
 
   ! define all variables
-  ! define grid_ID first:
+  ! define coordinate variables:
+  CALL check( nf90_def_var(ncID,'xLon', NF90_REAL, (/x_dimid, y_dimid/), varIDx))
+  CALL check( nf90_put_att(ncID,varIDx,'units','degree_east') )
+
+  CALL check( nf90_def_var(ncID,'xLat', NF90_REAL, (/x_dimid, y_dimid/), varIDy))
+  CALL check( nf90_put_att(ncID,varIDy,'units','degree_north') )
+
+  ! PRINT*, 'good define var'
+
+  ! define grid_ID:
   CALL check( nf90_def_var(ncID,'grid_ID', NF90_INT, (/x_dimid, y_dimid/), varID))
   varIDGrid=varID
   ! define other 3D variables:
@@ -379,13 +415,21 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
      ! Define the variable. The type of the variable in this case is
      ! NF90_REAL.
      CALL check( nf90_def_var(ncID,TRIM(ivarStr2), NF90_REAL, dimids, varID) )
+     CALL check( nf90_put_att(ncID,varID,'coordinates','xLon xLat') )
      idVar(iVar)=varID
   END DO
   CALL check( nf90_enddef(ncID) )
   ! End define mode. This tells netCDF we are done defining metadata.
 
   ! put all variable values into netCDF datasets
-  ! put grid_ID first:
+  ! put coordinate variables:
+  CALL check( nf90_put_var(ncID, varIDx, varX) )
+  CALL check( nf90_put_var(ncID, varIDy, varY) )
+  CALL check( NF90_SYNC(ncID) )
+  ! PRINT*, 'good put var'
+
+
+  ! put grid_ID:
   CALL check( nf90_put_var(ncID, varIDGrid, RESHAPE(GridIDmatrix,(/nX,nY/),order = (/1,2/))) )
   CALL check( NF90_SYNC(ncID) )
 
@@ -395,7 +439,7 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
      !  PRINT*, 'dim2:',SIZE(dataOut(1:irMax,iVar,:), dim=2)
      ! reshape dataOut to be aligned in checker board form
      varOut = RESHAPE(dataOut(1:irMax,iVar,:),(/nX,nY,irMax/),order = (/3,1,2/) )
-     varOut = varOut(:,nY:1:-1,:)
+    !  varOut = varOut(:,nY:1:-1,:)
      !  get the variable id
      varID= idVar(iVar)
      CALL check( nf90_put_var(ncID, varID, varOut) )

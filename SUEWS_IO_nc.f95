@@ -354,21 +354,25 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
   ALLOCATE(varY(nX,nY))
   ALLOCATE(varX(nX,nY))
 
-  ! longitude:
+  ! latitude:
   varSeq0=SiteSelect(:,5)
   CALL sortSeqReal(varSeq0,varSeq,nY,nX)
-  xLon = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
+  xLat = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
+  ! PRINT*, 'before flipping:',xLat(1:5,1)
+  xLat =xLat(:,nY:1:-1)
+  ! PRINT*, 'after flipping:',xLat(1:5,1)
 
   ! longitude:
   varSeq0=SiteSelect(:,6)
   CALL sortSeqReal(varSeq0,varSeq,nY,nX)
-  xLat = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
+  xLon = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
+
 
   ! pass values to coordinate variables
-  varY = xLon
-  varX = xLat
-  ! PRINT*, 'size x:',SIZE(varX, dim=1)
-  ! PRINT*, 'size y:',SIZE(varY, dim=1)
+  varY = xLat
+  varX = xLon
+  ! PRINT*, 'size x dim 1:',SIZE(varX, dim=1)
+  ! PRINT*, 'size x dim 2:',SIZE(varX, dim=2)
 
   ! file names
   rawpath=TRIM(FileOutputPath)//TRIM(FileCode)//TRIM(ADJUSTL(yrStr2))//'_'//TRIM(ADJUSTL(ivStr2))
@@ -406,7 +410,9 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
 
   ! define grid_ID:
   CALL check( nf90_def_var(ncID,'grid_ID', NF90_INT, (/x_dimid, y_dimid/), varID))
+  CALL check( nf90_put_att(ncID,varID,'coordinates','xLon xLat') )
   varIDGrid=varID
+
   ! define other 3D variables:
   DO iVar = iVarStart, ncolumnsDataOut, 1
      ! define variable name
@@ -439,7 +445,7 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
      !  PRINT*, 'dim2:',SIZE(dataOut(1:irMax,iVar,:), dim=2)
      ! reshape dataOut to be aligned in checker board form
      varOut = RESHAPE(dataOut(1:irMax,iVar,:),(/nX,nY,irMax/),order = (/3,1,2/) )
-    !  varOut = varOut(:,nY:1:-1,:)
+     varOut = varOut(:,nY:1:-1,:)
      !  get the variable id
      varID= idVar(iVar)
      CALL check( nf90_put_var(ncID, varID, varOut) )

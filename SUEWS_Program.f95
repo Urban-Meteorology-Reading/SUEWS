@@ -129,7 +129,7 @@ PROGRAM SUEWS_Program
   ENDDO
 
   ! sort grid matrix to conform the geospatial layout as in QGIS
-  CALL sortGrid(GridIDmatrix0,GridIDmatrix,nRow,nCol)
+  if (ncMode==1) CALL sortGrid(GridIDmatrix0,GridIDmatrix,nRow,nCol)
   ! GridIDmatrix0 stores the grid ID in the original order
 
 
@@ -146,7 +146,7 @@ PROGRAM SUEWS_Program
   !   allocate(BoAnOHMStart(NumberOfGrids))       ! initial Bo
   !   allocate(BoAnOHMEnd(NumberOfGrids))         ! final Bo
 
-
+print*, 'good 1'
   ! ---- Initialise arrays --------------------------------------------------
   ModelDailyState(:,:) = -999
   DailyStateFirstOpen(:) = 1
@@ -466,7 +466,7 @@ PROGRAM SUEWS_Program
         ELSE
            ! write resulst in netCDF
            CALL SUEWS_Output_nc(year_int,iv,irMax)
-           ! write input information in netCDF as well for future development 
+           ! write input information in netCDF as well for future development
            IF ( iv==1 ) THEN
               CALL SiteSelect_txt2nc
 

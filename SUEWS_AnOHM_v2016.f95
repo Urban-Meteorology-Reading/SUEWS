@@ -50,8 +50,8 @@ SUBROUTINE AnOHM_v2016(Gridiv)
      a2AnOHM(Gridiv) = 0   ![h]
      a3AnOHM(Gridiv) = 0   ![W m-2]
      !----------------------------------
-     !  land surfaces
-     DO  is=1,nsurf-1
+
+     DO is=1,nsurf
         surfrac=sfr(is)
         !   print*, 'surfrac of ', is, 'is: ',surfrac
         !   initialize the coefs.
@@ -59,20 +59,22 @@ SUBROUTINE AnOHM_v2016(Gridiv)
         xa2 = 0.2
         xa3 = 10
         !   call AnOHM to calculate the coefs.
-        CALL AnOHM_coef(is,id,Gridiv,xa1,xa2,xa3)
-
+        IF ( is<nsurf ) THEN
+           !  land surfaces
+           CALL AnOHM_coef(is,id,Gridiv,xa1,xa2,xa3)
+        ELSE
+           !  water surface
+           CALL AnOHM_coef_water(nsurf,id,Gridiv,xa1,xa2,xa3)
+        END IF
         !   calculate the areally-weighted OHM coefficients
         a1AnOHM(Gridiv) = a1AnOHM(Gridiv)+surfrac*xa1
         a2AnOHM(Gridiv) = a2AnOHM(Gridiv)+surfrac*xa2
         a3AnOHM(Gridiv) = a3AnOHM(Gridiv)+surfrac*xa3
 
      ENDDO
-     !  water surface
-     CALL AnOHM_coef_water(nsurf,id,Gridiv,xa1,xa2,xa3)
-     !   calculate the areally-weighted OHM coefficients
-     a1AnOHM(Gridiv) = a1AnOHM(Gridiv)+surfrac*xa1
-     a2AnOHM(Gridiv) = a2AnOHM(Gridiv)+surfrac*xa2
-     a3AnOHM(Gridiv) = a3AnOHM(Gridiv)+surfrac*xa3
+
+     PRINT*, 'grid coeff:'
+     PRINT*, a1AnOHM(Gridiv),a2AnOHM(Gridiv),a3AnOHM(Gridiv)
      !   end of loop over surface types -----------------------------------------
      !  IF ( id>365 ) THEN
      !     PRINT*, '----- OHM coeffs -----'
@@ -452,6 +454,7 @@ SUBROUTINE AnOHM_coef_water(sfc_typ,xid,xgrid,&   ! input
   REAL :: dtau,dpsi,dphi         ! temporary use
   REAL :: cdtau,cdpsi,cdphi      ! temporary use
   REAL :: xxT,xxkappa,xxdltphi   ! temporary use
+  LOGICAL :: flagGood = .TRUE.  ! quality flag, T for good, F for bad
 
 
   ! !   give fixed values for test
@@ -574,6 +577,27 @@ SUBROUTINE AnOHM_coef_water(sfc_typ,xid,xgrid,&   ! input
 
   !   a3:
   xa3  = mSd*(xalb-1)*(xeta+(fT-fL*xeta)/f*xa1)
+
+
+  !   quality checking:
+  !   quality checking of forcing conditions
+  IF ( ASd < 0 .OR. ATa < 0 .OR. ATs < 0 .OR. tau<-4.0/12*Pi) flagGood = .FALSE.
+  !   quality checking of a1
+  IF ( .NOT. (xa1>0 .AND. xa1<0.7)) THEN
+     flagGood = .FALSE.
+     IF (xa1 >0.7) xa1=MAX(0.7,xa1)
+  ENDIF
+  !   quality checking of a2
+  IF ( .NOT. (xa2>-0.5 .AND. xa2<0.5)) THEN
+     flagGood = .FALSE.
+     IF ( xa2>0.5) xa2 = 0.5
+     IF (xa2<-0.5) xa2 = -0.5
+  ENDIF
+  !   quality checking of a3
+  IF ( .NOT. (xa3<0)) flagGood = .FALSE.
+
+  !   skip the first day for quality checking
+  IF ( xid == 1 ) flagGood = .TRUE.
 
   WRITE(*,*) 'sfc_typ_water:', sfc_typ
   WRITE(*,*) 'a1,a2,a3:', xa1,xa2,xa3

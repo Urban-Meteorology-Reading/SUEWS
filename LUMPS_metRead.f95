@@ -8,8 +8,8 @@
 ! To Do: 
 !       - Check observed SM calculation
 !---------------------------------------------------------------------------------------------------
-  subroutine MetRead(MetArray,InputmetFormat,ldown_option,NetRadiationChoice,&
-               snowUse,smd_choice,SoilDepthMeas,SoilRocks,SoilDensity,SmCap)
+  subroutine MetRead(MetArray,InputmetFormat,ldown_option,NetRadiationMethod,&
+               snowUse,SMDMethod,SoilDepthMeas,SoilRocks,SoilDensity,SmCap)
 
   use defaultNotUsed
 
@@ -28,8 +28,8 @@
 
   integer::InputmetFormat,&     !Format of the meteorological forcing file
            ldown_option,&       !Method of calculating Ldown
-           NetRadiationChoice,& !Method of calculating Q*
-           smd_choice,&         !Method of measured soil moisture
+           NetRadiationMethod,& !Method of calculating Q*
+           SMDMethod,&         !Method of measured soil moisture
            snowUse
 
   ! Variables read in
@@ -61,10 +61,10 @@
                     xsmd        !Measured soil moisture deficit
 
   integer::iostat_var,lfn=1
-  logical::finish
+ 
   !-----------------------------------------------------------------------------------
   !-----------------------------------------------------------------------------------
-  finish=.false.
+  
   if (InputMetFormat==0) then   !Default format using LUMPS only
 
     READ(lfn,*,iostat=iostat_var)iy,id,it,imin,qn1_obs,avu1,avrh,&
@@ -94,9 +94,9 @@
                                    
 
       !Calculate observed soil moisture deficits from either volumetric or gravimetric soilstates
-      if (smd_choice==1.and.xsmd/=-999) then !Soil moisture - volumetric
+      if (SMDMethod==1.and.xsmd/=-999) then !Soil moisture - volumetric
          xsmd=(SmCap-xsmd)*SoilDepthMeas*SoilRocks
-      elseif (smd_choice==2.and.xsmd/=-999) then !Soil moisture -gravimetric
+      elseif (SMDMethod==2.and.xsmd/=-999) then !Soil moisture -gravimetric
          xsmd=(SmCap-xsmd)*SoilDensity*SoilDepthMeas*SoilRocks
       else
          xsmd=-999
@@ -118,7 +118,6 @@
   if(iostat_var<0)THEN
      iostat_var=0
      CLOSE(lfn)
-     finish=.TRUE.
      RETURN
   ENDIF
 
@@ -138,7 +137,7 @@
      endif  
   endif
   
-  if(qn1_obs==-999.and.NetRadiationChoice==0) then  !If measured Q* is used and it is -999 
+  if(qn1_obs==-999.and.NetRadiationMethod==0) then  !If measured Q* is used and it is -999 
      call ErrorHint(27,'Met Data: Q* - will impact everything', qn1_obs,dectime, notUsedI)
   endif
     
@@ -169,7 +168,7 @@
      call ErrorHint(27,'Met Data: snow not between [0  1]',snow_obs ,dectime, notUsedI)
   endif
 
-  if (xsmd<0.and.smd_choice==1) then  !If soil moisture deficit is zero
+  if (xsmd<0.and.SMDMethod==1) then  !If soil moisture deficit is zero
     call ErrorHint(27,'Met Data: xsmd - less than 0',xsmd ,dectime, notUsedI)
   endif
    

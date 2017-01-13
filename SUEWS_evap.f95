@@ -35,7 +35,7 @@ SUBROUTINE Evap_SUEWS
 
   ! Use Penman-Monteith eqn modified for urban areas (Eq6, Jarvi et al. 2011)
   ! Calculation independent of surface characteristics
-  ! Uses value of rs for whole area (calculated based on LAI of veg surfaces in SUEWS_SurfaceResistance)
+  ! Uses value of rs for whole area (calculated based on LAI of veg surfaces in SUEWS_SurfaceResistance.f95)
 
   ! PRINT*, 'is',is,'SMOIS',state(is)
   ! Dry surface ---------------------------------------------------------------

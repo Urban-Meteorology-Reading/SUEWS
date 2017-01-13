@@ -219,7 +219,8 @@ SUBROUTINE CodeMatchDist(rr,CodeCol,codeColSameSurf)
   
   ! Check water flow to same surface is zero (previously in RunControlByGridByYear in SUEWS_Initial.f95)
   if(WGWaterDist_Coeff(iv5,codeColSameSurf) /= 0) then
-     call ErrorHint(8,'Problem in SUEWS_WithinGridWaterDist.txt.',WGWaterDist_Coeff(iv5,codeColSameSurf),notUsed,notUsedI)
+     call ErrorHint(8,'Diagonal elements should be zero as water cannot move from one surface to the same surface.', &
+                    WGWaterDist_Coeff(iv5,codeColSameSurf),notUsed,notUsedI)
   endif 
   
   !! MODIFY THIS??
@@ -228,8 +229,8 @@ SUBROUTINE CodeMatchDist(rr,CodeCol,codeColSameSurf)
   !! - Probably should remove this...
   !! - Also look at SUEWS_translate, as the non-zero value goes into WaterDist
   if(WGWaterDist_Coeff(iv5,cWG_ToRunoff)/=0.and.WGWaterDist_Coeff(iv5,cWG_ToSoilStore)/=0) then
-     call ErrorHint(9,'Problem in SUEWS_WithinGridWaterDist.txt.',&
-          WGWaterDist_Coeff(iv5,cWG_ToRunoff),WGWaterDist_Coeff(iv5,cWG_ToSoilStore),notUsedI)
+     call ErrorHint(9,'One of these (ToRunoff,ToSoilStore) should be zero.', &
+                    WGWaterDist_Coeff(iv5,cWG_ToRunoff),WGWaterDist_Coeff(iv5,cWG_ToSoilStore),notUsedI)
   endif
   
   !! Also do for water surface once implemented
@@ -237,8 +238,8 @@ SUBROUTINE CodeMatchDist(rr,CodeCol,codeColSameSurf)
      ! Check total water distribution from each surface adds up to 1
      if(sum(WGWaterDist_Coeff(iv5,cWG_ToPaved:cWG_ToSoilStore)) > 1.0000001.or.sum(WGWaterDist_Coeff(iv5,&
              cWG_ToPaved:cWG_ToSoilStore)) < 0.9999999 ) then
-        call ErrorHint(10,'Problem in SUEWS_WithinGridWaterDist.txt.',&
-             sum(WGWaterDist_Coeff(iv5,cWG_ToPaved:cWG_ToSoilStore)),notUsed,notUsedI)
+        call ErrorHint(8,'Total water distribution from each surface should add up to 1.',&
+                       sum(WGWaterDist_Coeff(iv5,cWG_ToPaved:cWG_ToSoilStore)),notUsed,notUsedI)
      endif     
   endif
   

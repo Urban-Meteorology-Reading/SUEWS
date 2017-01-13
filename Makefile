@@ -1,7 +1,7 @@
 
 
 CC = gfortran $(CFLAGS)          # compiler
-TARGET = SUEWS_V2016b      # program name
+TARGET = SUEWS_V2017a      # program name
 CFLAGS = -g -Wall -Wtabs -fbounds-check
 # All the files which include modules used by other modules (these therefore
 # needs to be compiled first)
@@ -18,7 +18,7 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_HorizontalSoilWater.o \
           SUEWS_Initial.o \
           LUMPS_atmos_functions_moist.o \
-          SUEWS_OHM_v2015.o \
+          SUEWS_OHM.o \
           LUMPS_atmos_functions_stab.o \
           SUEWS_ReDistributeWater.o \
           SUEWS_RoughnessParameters.o \
@@ -61,7 +61,7 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_ESTM_functions.o \
           SUEWS_ESTM_initials.o \
           SUEWS_ESTM_v2016.o \
-		  SUEWS_CO2.o
+	  SUEWS_CO2.o
 
 # Build main program - main uses MODULES and OTHERS
 main: SUEWS_Program.f95 $(MODULES) $(OTHERS)

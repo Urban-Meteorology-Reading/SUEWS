@@ -1,15 +1,16 @@
-SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI) ! real
+SUBROUTINE ErrorHint(errh,ProblemFile,value,value2,valueI)
   !errh        -- Create a numbered code for the situation so get a unique message to help solve the problem
-  !ProblemFile -- Filename where the problem occurs
-  !value       -- Real number with correct type
-  !value2      -- Real number with correct type
-  !valueI      -- Integer 2
-  !Last modified LJ 8 Feb 2013
-  ! sg 29/7/14 - close (500)
-  ! LJ 2/10/2014 - addition of comments
-  ! HCW 25 May 2016 Added warning/error labels to distinguish serious errors (that stop program)
-
-  !-------------------------------------------------------------------------------------------------
+  !ProblemFile -- Filename where the problem occurs/error message
+  !value       -- Error value (real number with correct type)
+  !value2      -- Second error value (real number with correct type)
+  !valueI      -- Error value (integer)
+  ! Last modified -----------------------------------------------------
+  ! HCW 13 Dec 2016: Tidied up and improved error hints
+  ! HCW 25 May 2016: Added warning/error labels to distinguish serious errors (that stop program)
+  ! LJ  02 Oct 2014: addition of comments
+  ! sg  29 Jul 2014: close (500)
+  ! LJ  08 Feb 2013
+  !--------------------------------------------------------------------
 
   USE defaultNotUsed
 
@@ -22,7 +23,8 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI) ! real
   INTEGER:: errh,ValueI,ValueI2                  ! v7,v8 initialised as false, HCW 28/10/2014
   LOGICAL:: v1=.FALSE.,v2=.FALSE.,v3=.FALSE.,v4=.FALSE.,v5=.FALSE.,v6=.FALSE.,v7=.FALSE.,v8=.FALSE.
   LOGICAL:: returnTrue=.FALSE.
-
+ 
+  
   ! Initialise returnTrue as false (HCW 29/10/2014)
   ! - need to do this in Fortran as values assigned in declarations are not applied
   ! on subsequent calling of the subroutine
@@ -37,84 +39,53 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI) ! real
   v7=.FALSE.
   v8=.FALSE.
 
-  CALL ProblemsText(ProblemFile)                 !Call the subroutine that opens the problem.txt file
+  CALL ProblemsText(ProblemFile)   !Call the subroutine that opens the problem.txt file
 
   !The list of knows possible problems of the code:
   !  text1 is the error message written to the ProblemFile.
   !  v1 -v7 are different possibilities for what numbers will be written out
   !  ReturnTrue is true if the model run can continue. (Comment modified by HCW 17/10/2014)
   IF(errh==1)THEN
-     text1='for FAIBLDG - for z0_method selected - this value looks inappropriate'
-     v1=.TRUE.
-  ELSEIF(errh==2)THEN
-     text1='for FAITree - for z0_method selected - this value looks inappropriate'
-     v1=.TRUE.
-  ELSEIF(errh==3) THEN
-     text1='sdec1=sdec2 - check/adjust GDD and SDDFull & DailyState'
-     v3=.TRUE.
-  ELSEIF(errh==4) THEN
-     text1='sdec3=sdec=4 - check/adjust GDD and SDDFull & DailyState'
-     v3=.TRUE.
-  ELSEIF(errh==5)THEN
-     text1='Value for z0 in SiteSelect looks inappropriate'
-     v1=.TRUE.
-  ELSEIF(errh==6)THEN
-     text1='Value for zd in SiteSelect looks inappropriate'
-     v1=.TRUE.
+     text1='Check value in SUEWS_SiteSelect.txt.'
+     v5=.TRUE.
+  ! 2,3,4,5,6,   
   ELSEIF(errh==7) THEN
-     text1='RA value exceeds thresholds set in model'
+     text1='ra value obtained exceeds permitted range.'
      v1=.TRUE.
      returnTrue=.TRUE.
   ELSEIF(errh==8) THEN
-     text1='Should be zero (water cannot move from one surface to the same surface).'
+     text1='Check values in SUEWS_WithinGridWaterDist.txt.'
      v1=.TRUE.
   ELSEIF(errh==9) THEN
-     text1= 'One of these (water to Runoff or to SoilStore) should be zero.'
+     text1= 'Check ToRunoff and ToSoilStore values in SUEWS_WithinGridWaterDist.txt.'
      v2=.TRUE.
   ELSEIF(errh==10) THEN
-     text1='Should sum to 1.'
+     text1='Check values in SUEWS_SiteSelect.txt.'
      v1=.TRUE.
   ELSEIF(errh==11) THEN
-     text1=' this file not found- ios_out'
+     text1='File not found.'
      v3=.TRUE.
-  ELSEIF(errh==12) THEN
-     text1= 'daywatper values - need a space in front after = if less than 1 '
-     v3=.TRUE.
-     returnTrue=.TRUE.
-  ELSEIF(errh==13) THEN
-     text1= ' problem with line, ios_out error: '
-     v6=.TRUE.
+  ! 12,13
   ELSEIF(errh==14) THEN
-     text1= ' Above subroutine has calculated of z0m - this value looks inappropriate'
+     text1= 'Inappropriate value calculated.'
      v1=.TRUE.
-  ELSEIF(errh==15) THEN
-     text1= ' Above subroutine has calculated of zd - this value looks inappropriate'
-     v1=.TRUE.
-  ELSEIF(errh==16) THEN
-     text1=' Check gridConnectionsYYYY.txt file to see if year embedded in name, ios_out'
-     v3=.TRUE.
-     returnTrue=.TRUE.
+  ! 15,16 
   ELSEIF(errh==17) THEN
-     text1= 'LOG(zzd/z0M)<0.001) problem: zzd, z0m'
+     text1= 'Problem with (z-zd) and/or z0.'
      v2=.TRUE.
-     returnTrue=.TRUE.
   ELSEIF(errh==18) THEN
-     text1='check the soil depth relative to: SoilStoreCap(is), soilmoist(is), whichsurface no'
+     text1='Check soil depth relative to soil moisture and capacity.'
      v4=.TRUE.
-     !probably will stop but need to check this is really the problem
-     returnTrue=.TRUE.
   ELSEIF(errh==19)THEN
-     text1=' cp, press , lv - not stopping after pause'
+     text1='Caution - check range.'
      v4=.TRUE.
      returnTrue=.TRUE.
   ELSEIF(errh==20)THEN
-     text1=' skip lines, ios_out If running multiple grids, check the order of the grids.'
+     text1=' skip lines, ios_out.'
      v5=.TRUE.
   ELSEIF(errh==21)THEN
-     text1='Check qn, qn1_S, qf.'
+     text1='Bad input for OHM/AnOHM storage heat flux calculation. Check qn, qn_Sn, qf for issues.'
      v1=.TRUE.
-     !text1=' missing times in GIS file: id- GIS it-gis, it-met'  !gis file no longer used - errh 21 recycled
-     !v4=.true.
   ELSEIF(errh==22)THEN
      text1=' QH_observed, QE_observed, QH_choice: '
      v4=.TRUE.
@@ -128,7 +99,7 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI) ! real
      text1='CBL file problem -- reading sonde data, line:'
      v3=.TRUE.
   ELSEIF(errh==26) THEN
-     text1='Check that FileOutputPath and FileCode are specified and have double quotes around them'
+     text1='Check that FileCode, FileInputPath and FileOutputPath are specified correctly in RunControl.nml.'
      v8=.TRUE.
   ELSEIF(errh==27)THEN
      text1='Problems with Met data -forcing data: variable value, dectime'
@@ -163,10 +134,10 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI) ! real
      text1 = 'Problems with Met data -forcing data: doy, dectime'
      v2 = .TRUE.  ! 2 real
   ELSEIF(errh==36) THEN
-     text1 = 'Problems in the InitialConditions file: Initial value, compared value'
-     v2 = .TRUE.  !2 real
+     text1 = 'Problem found in InitialConditions file!'
+     v8 = .TRUE.
   ELSEIF(errh==37) THEN
-     text1 = 'Problems in the InitialConditions file: Initial value, compared value'
+     text1 = 'Check inputs in InitialConditions file!'
      returntrue=.TRUE.
      v2 = .TRUE.  !2 real
   ELSEIF(errh==38) THEN
@@ -217,13 +188,13 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI) ! real
      text1 = 'Problems in opening the file'
      WRITE(*,*) ProblemFile
   ELSEIF(errh==52)THEN
-     text1 = 'Problems in opening the output file'
+     text1 = 'Problems opening the output file.'
   ELSEIF(errh==53)THEN
-     text1 = 'AH_min=0.and.Ah_slope=0.and.T_Critic=0, AnthropHeatChoice='
+     text1 = 'AH_min=0.and.Ah_slope=0.and.T_Critic=0, AnthropHeatMethod='
      returntrue = .TRUE.
      v3 = .TRUE.
   ELSEIF(errh==54)THEN
-     text1 = 'QF_A=0.and.QF_B=0.and.QF_C=0, AnthropHeatChoice='
+     text1 = 'QF_A=0.and.QF_B=0.and.QF_C=0, AnthropHeatMethod='
      returntrue = .TRUE.
      v3 = .TRUE.
   ELSEIF(errh==55)THEN
@@ -259,7 +230,7 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI) ! real
      text1 = 'SUEWS cannot currently handle this many grids.'
      v6 = .TRUE.
   ELSEIF(errh==65) THEN
-     text1='Negative gs calculated! Check suitability of parameters in Conductance.txt.'
+     text1='Negative gs calculated! Check suitability of parameters in SUEWS_Conductance.txt.'
      returntrue=.TRUE.
      v7=.TRUE.  ! 1 real, 2 integers
   ELSEIF(errh==66)THEN
@@ -280,26 +251,29 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI) ! real
   ELSEIF(errh==70) THEN
      text1='Specify profile values between 1 (night) and 2 (day).'
      v8=.TRUE.
+  ELSEIF(errh==71) THEN
+     text1='Check input file SUEWS_Conductance.txt.'
+     v3=.TRUE.   
   ENDIF
   !---------------------------------------------------------------------
   !This part of the code determines how the error message is written out
 
   IF(v1) THEN ! 1 real
-     WRITE(500,*)'Error value: =', VALUE
+     WRITE(500,'((a),(f9.4))')'Error value: ', VALUE
   ELSEIF(v2) THEN ! 2 real
-     WRITE(500,*)'Error values: =', VALUE, value2
+     WRITE(500,'((a),2(f9.4))')'Error values: ', VALUE, value2
   ELSEIF(v3) THEN ! 1 integer
-     WRITE(500,*)'Error value: =', valueI
+     WRITE(500,'((a),(i10))')'Error value: ', valueI
   ELSEIF(v4) THEN ! 2 real, 1 integer
-     WRITE(500,*)'Error values: =', VALUE, value2, valueI
+     WRITE(500,'((a),2(f9.4),(i10))')'Error values: ', VALUE, value2, valueI
   ELSEIF(v5) THEN ! 1 real 1 integer
-     WRITE(500,*)'Error values: =', VALUE, valueI
+     WRITE(500,'((f9.4),(i10))')'Error values: ', VALUE, valueI
   ELSEIF(v6) THEN ! 2 integer
      valueI2=INT(VALUE)
-     WRITE(500,*)'Error values: =', valueI, valueI2
-  ELSEIF(v7) THEN
+     WRITE(500,'((a),2(i10))')'Error values: ', valueI, valueI2
+  ELSEIF(v7) THEN ! 1 real, 2 integer
      valueI2=INT(value2)
-     WRITE(500,*)'Error values: =', VALUE, valueI2, valueI
+     WRITE(500,'((a),(f9.4),2(i10))')'Error values: ', VALUE, valueI2, valueI
   ELSEIF(v8) THEN
      ! no error values
   ENDIF
@@ -307,9 +281,11 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI) ! real
 
   ! Write comment to problems.txt
   IF(returnTrue) THEN
-     WRITE(500,*) TRIM(text1),' - WARNING'
+     WRITE(500,*) TRIM(text1),' (WARNING)'
   ELSE
      WRITE(500,*) 'ERROR! Program stopped: ',TRIM(text1)
+     WRITE(500,'(i3)')  errh  !Add error code to problems.txt
+     WRITE(*,*) 'ERROR! SUEWS run stopped.'   !Print message to screen if program stopped
   ENDIF
   !!Write the actual comment the problems file
   !write(500,*) trim(text1)
@@ -347,7 +323,7 @@ END SUBROUTINE ErrorHint
     ENDIF
 
     !Writing of the problem file
-    WRITE(500,*)'problem file: ',TRIM(ProblemFile)
+    WRITE(500,*)'problem: ',TRIM(ProblemFile)
 
     RETURN
  END SUBROUTINE ProblemsText
@@ -358,8 +334,8 @@ END SUBROUTINE ErrorHint
    IMPLICIT NONE
    CHARACTER (len=*):: ProblemFile
 
-   WRITE(*,*)'problem file: ',TRIM(ProblemFile)
-   WRITE(*,*)'see problems.txt'
+   WRITE(*,*)'problem: ',TRIM(ProblemFile)
+   WRITE(*,*)'See problems.txt for more info.'
 
    !pause
    STOP

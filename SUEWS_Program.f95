@@ -9,6 +9,7 @@
 !  - then over rows
 !  - then over grids
 !
+!Last modified by HCW 12 Jan 2017 - Changes to InitialConditions
 !Last modified by HCW 26 Aug 2016 - CO2 flux added
 !Last modified by HCW 04 Jul 2016 - GridID can now be up to 10 digits long
 !Last modified by HCW 29 Jun 2016 - Reversed over-ruling of ReadLinesMetData so this is not restricted here to one day
@@ -38,77 +39,54 @@ PROGRAM SUEWS_Program
 
   IMPLICIT NONE
 
-  CHARACTER(len = 4) ::year_txt  !Year as a text string
+  CHARACTER(len = 4) :: year_txt  !Year as a text string
 
-  CHARACTER(len = 20)::FileCodeX,& !Current file code
-       FileCodeXWY,& !File code without year
-       FileCodeXWG !File code without grid
-  CHARACTER(len = 20)::grid_txt, & !Grid number as a text string (from FirstGrid to LastGrid)
-       tstep_txt   !Model timestep (in minutes) as a text string
+  CHARACTER(len = 20):: FileCodeX,& !Current file code
+                        FileCodeXWY,& !File code without year
+                        FileCodeXWG !File code without grid
+  CHARACTER(len = 20):: grid_txt, & !Grid number as a text string (from FirstGrid to LastGrid)
+                        tstep_txt   !Model timestep (in minutes) as a text string
 
   INTEGER:: nlinesLimit,&   !Max number of lines that can be read in one go for each grid
-       NumberOfYears   !Number of years to be run
+            NumberOfYears   !Number of years to be run
 
-  INTEGER::igrid,& !Grid number (from FirstGrid to LastGrid)
-       iv,       & !Block number (from 1 to ReadBlocksMetData)
-       ir,irMax, & !Row number within each block (from 1 to irMax)
-       year_int, & ! Year as an integer (from SiteSelect rather than met forcing file)
-                                !  iter,     & ! iteraion counter, AnOHM TS
-       rr !Row of SiteSelect corresponding to current year and grid
+  INTEGER:: igrid,& !Grid number (from FirstGrid to LastGrid)
+            iv,       & !Block number (from 1 to ReadBlocksMetData)
+            ir,irMax, & !Row number within each block (from 1 to irMax)
+            year_int, & ! Year as an integer (from SiteSelect rather than met forcing file)
+            rr !Row of SiteSelect corresponding to current year and grid
 
   LOGICAL:: PrintPlace = .FALSE.   !Prints row, block, and grid number to screen if TRUE;
 
-  REAL :: timeStart, timeFinish ! profiling use, AnOHM TS
+  REAL::  timeStart, timeFinish ! profiling use, AnOHM TS
   ! REAL :: xErr      ! error in Bo iteration, AnOHM TS 20160331
   ! LOGICAL, ALLOCATABLE :: flagRerunAnOHM(:)   ! iteration run to make Bo converge,AnOHM TS
 
-  !  ! ---- Allocate arrays--------------------------------------------------
-  !  allocate(SurfaceChar(NumberOfGrids,MaxNCols_c))   !Surface characteristics
-  !  allocate(MetForcingData(1:ReadlinesMetdata,ncolumnsMetForcingData,NumberOfGrids))   !Met forcing data
-  !  allocate(ModelOutputData(0:ReadlinesMetdata,MaxNCols_cMOD,NumberOfGrids))           !Data at model timestep
-  !  allocate(dataOut(1:ReadlinesMetdata,ncolumnsDataOut,NumberOfGrids))                 !Main output array
-  !  if (SOLWEIGuse == 1) then
-  !     allocate(dataOutSOL(1:ReadlinesMetdata,28,NumberOfGrids))                        !SOLWEIG POI output
-  !  endif
-  !  if (CBLuse >= 1) then
-  !     allocate(dataOutBL(1:ReadlinesMetdata,22,NumberOfGrids))                         !CBL output
-  !  endif
-  !  if (SnowUse == 1) then
-  !     allocate(dataOutSnow(1:ReadlinesMetdata,ncolumnsDataOutSnow,NumberOfGrids))      !Snow output array
-  !  endif
-  !  if(QSChoice==4 .or. QSChoice==14) then
-  !      allocate(dataOutESTM(1:ReadlinesMetdata,32,NumberOfGrids))
-  !  endif
-  !
-  !  allocate(TstepProfiles(NumberOfGrids,6,24*NSH))  !Hourly profiles interpolated to model timestep
-  !  allocate(AHProf_tstep(24*NSH,2))                 !Anthropogenic heat profiles at model timestep
-  !  allocate(WUProfM_tstep(24*NSH,2))                !Manual water use profiles at model timestep
-  !  allocate(WUProfA_tstep(24*NSH,2))                !Automatic water use profiles at model timestep
-  !  !! Add snow clearing (?)
-  !  ! ----------------------------------------------------------------------
-
-  ! ---- Initialise arrays  !! Does this need to happen here??
-
   !==========================================================================
 
-  ! start counting cpu time
+  ! Start counting cpu time
   CALL cpu_TIME(timeStart)
-
+  
+  WRITE(*,*) '========================================================'
+  WRITE(*,*) 'Running ',progname
+  
   ! Initialise error file (0 -> problems.txt file is created)
   errorChoice=0
+  ! Initialise OutputFormats to 1 so that output format is written out only once per run
+  OutputFormats = 1
+  
+  ! Read RunControl.nml and all .txt input files from SiteSelect spreadsheet
+   
+  CALL overallRunControl  
 
-  ! Read RunControl.nml and all input files from SiteSelect spreadsheet.
-  ! This is saved to SiteSelect datamatrix
-  CALL overallRunControl
-
-  ! First find first and last year of the current run
+  ! Find first and last year of the current run
   FirstYear = MINVAL(INT(SiteSelect(:,c_Year)))
   LastYear  = MAXVAL(INT(SiteSelect(:,c_Year)))
 
   NumberOfYears = LastYear-FirstYear+1 !Find the number of years to run
 
-  !Find the the number of grids within each year in SiteSelect and GridIDs
-  !(N.B. need to have the same grids for each year)
+  !Find the the number of grids within each year in SUEWS_SiteSelect.txt
+  ! N.B. need to have the same grids for each year
   NumberOfGrids = INT(nlinesSiteSelect/NumberOfYears)
 
   !! Find the first and last grid numbers (N.B. need to have the same grids for each year)
@@ -130,21 +108,20 @@ PROGRAM SUEWS_Program
   ! ---- Allocate arrays ----------------------------------------------------
   ! Daily state needs to be outside year loop to transfer states between years
   ALLOCATE(ModelDailyState(NumberOfGrids,MaxNCols_cMDS))   !DailyState
-  ALLOCATE(DailyStateFirstOpen(NumberOfGrids))             !Initialization for header
-  ! ALLOCATE(flagRerunAnOHM(NumberOfGrids))                  !flag for rerun AnOHM
-  !   allocate(BoAnOHMStart(NumberOfGrids))       ! initial Bo
-  !   allocate(BoAnOHMEnd(NumberOfGrids))         ! final Bo
-
+  ALLOCATE(DailyStateFirstOpen(NumberOfGrids))             !Initialisation for header
+  !ALLOCATE(flagRerunAnOHM(NumberOfGrids))                  !flag for rerun AnOHM
+  !allocate(BoAnOHMStart(NumberOfGrids))                    !initial Bo
+  !allocate(BoAnOHMEnd(NumberOfGrids))                      !final Bo
 
   ! ---- Initialise arrays --------------------------------------------------
   ModelDailyState(:,:) = -999
   DailyStateFirstOpen(:) = 1
-
-  ! flagRerunAnOHM(:) = .TRUE.
+  !flagRerunAnOHM(:) = .TRUE.
+  
   ! -------------------------------------------------------------------------
 
   ! Initialise ESTM (reads ESTM nml, should only run once)
-  IF(QSChoice==4 .OR. QSChoice==14) THEN
+  IF(StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
      CALL ESTM_initials
   ENDIF
 
@@ -206,23 +183,30 @@ PROGRAM SUEWS_Program
      WRITE(*,*) 'Processing current year in ',ReadBlocksMetData,'blocks.'
 
      ! ---- Allocate arrays--------------------------------------------------
-     ALLOCATE(SurfaceChar(NumberOfGrids,MaxNCols_c))                                               !Surface characteristics
-     ALLOCATE(MetForcingData(1:ReadlinesMetdata,ncolumnsMetForcingData,NumberOfGrids))             !Met forcing data
-     ALLOCATE(ModelOutputData(0:ReadlinesMetdata,MaxNCols_cMOD,NumberOfGrids))                     !Data at model timestep
-     ALLOCATE(dataOut(1:ReadlinesMetdata,ncolumnsDataOut,NumberOfGrids))                           !Main output array
-     IF (SOLWEIGuse == 1) ALLOCATE(dataOutSOL(1:ReadlinesMetdata,28,NumberOfGrids))                !SOLWEIG POI output
-     IF (CBLuse >= 1)  ALLOCATE(dataOutBL(1:ReadlinesMetdata,22,NumberOfGrids))                    !CBL output
-     IF (SnowUse == 1) ALLOCATE(dataOutSnow(1:ReadlinesMetdata,ncolumnsDataOutSnow,NumberOfGrids)) !Snow output array
-     IF (QSChoice==4 .OR. QSChoice==14) ALLOCATE(dataOutESTM(1:ReadlinesMetdata,32,NumberOfGrids)) !ESTM output array, TS 05 Jun 2016
-     ALLOCATE(TstepProfiles(NumberOfGrids,10,24*NSH))                        !Hourly profiles interpolated to model timestep
-     ALLOCATE(AHProf_tstep(24*NSH,2))                                       !Anthropogenic heat profiles at model timestep
-     ALLOCATE(WUProfM_tstep(24*NSH,2))                                      !Manual water use profiles at model timestep
-     ALLOCATE(WUProfA_tstep(24*NSH,2))                                      !Automatic water use profiles at model timestep
+     ALLOCATE(SurfaceChar(NumberOfGrids,MaxNCols_c))                                   !Surface characteristics
+     ALLOCATE(MetForcingData(ReadlinesMetdata,ncolumnsMetForcingData,NumberOfGrids))   !Met forcing data
+     ALLOCATE(ModelOutputData(0:ReadlinesMetdata,MaxNCols_cMOD,NumberOfGrids))         !Data at model timestep
+     ALLOCATE(dataOut(ReadlinesMetdata,ncolumnsDataOut,NumberOfGrids))                 !Main output array
+     IF (SOLWEIGuse == 1) ALLOCATE(dataOutSOL(ReadlinesMetdata,ncolumnsdataOutSOL,NumberOfGrids))     !SOLWEIG POI output
+     IF (CBLuse >= 1)     ALLOCATE(dataOutBL(ReadlinesMetdata,ncolumnsdataOutBL,NumberOfGrids))       !CBL output
+     IF (SnowUse == 1)    ALLOCATE(dataOutSnow(ReadlinesMetdata,ncolumnsDataOutSnow,NumberOfGrids))   !Snow output
+     IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14) ALLOCATE(dataOutESTM(ReadlinesMetdata,32,NumberOfGrids)) !ESTM output
+     ALLOCATE(TstepProfiles(NumberOfGrids,10,24*NSH))   !Hourly profiles interpolated to model timestep
+     ALLOCATE(AHProf_tstep(24*NSH,2))                   !Anthropogenic heat profiles at model timestep
+     ALLOCATE(WUProfM_tstep(24*NSH,2))                  !Manual water use profiles at model timestep
+     ALLOCATE(WUProfA_tstep(24*NSH,2))                  !Automatic water use profiles at model timestep
      ALLOCATE(CO2m_tstep(24*NSH,2))
+     ALLOCATE(qn1_store(NSH,NumberOfGrids))
+     ALLOCATE(qn1_av_store(2*NSH+1,NumberOfGrids))
      !! Add snow clearing (?)
 
+     qn1_store(:,:) = NAN ! Initialise to -999
+     qn1_av_store(:,:) = NAN ! Initialise to -999
+     ! Initialise other arrays here???
+     
+     
      ! Check number of lines in ESTM forcing file (nlinesESTMdata)
-     IF(QSChoice==4 .OR. QSChoice==14) THEN
+     IF(StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
         IF(MultipleESTMFiles  == 1) THEN  !if separate ESTM files for each grid
            FileESTMTs=TRIM(FileInputPath)//TRIM(FileCodeX)//'_ESTM_Ts_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
            !write(*,*) 'Calling ESTM initials...', FileCodeX, iv, igrid
@@ -292,9 +276,9 @@ PROGRAM SUEWS_Program
                     CALL ErrorHint(59,'Cannot find year and/or grid in SiteSelect.txt',REAL(igrid,KIND(1d0)),NotUsed,year_int)
                  ENDIF
               ENDDO
-              ! (b) get initial conditions
+              !! (b) get initial conditions (moved to below, HCW 12 Jan 2017)
               !write(*,*) 'Calling InitialState'
-              CALL InitialState(FileCodeX,year_int,GridCounter)
+              !CALL InitialState(FileCodeX,year_int,GridCounter,NumberOfGrids)
            ENDIF   !end first block of met data
 
            ! For every block of met data ------------------------------------
@@ -313,9 +297,15 @@ PROGRAM SUEWS_Program
                  MetForcingData(1:ReadlinesMetdata,1:24,GridCounter) = MetForcingData(1:ReadlinesMetdata,1:24,1)
               ENDIF
            ENDIF
+           
+           ! Only for the first block of met data, read initial conditions (moved from above, HCW 12 Jan 2017)
+           IF(iv == 1) THEN
+              !write(*,*) ' Now calling InitialState'
+              CALL InitialState(FileCodeX,year_int,GridCounter,NumberOfGrids)
+           ENDIF 
 
            ! Initialise ESTM if required, TS 05 Jun 2016; moved inside grid loop HCW 27 Jun 2016
-           IF(QSChoice==4 .OR. QSChoice==14) THEN
+           IF(StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
               IF(MultipleESTMFiles  == 1) THEN  !if separate ESTM files for each grid
                  FileESTMTs=TRIM(FileInputPath)//TRIM(FileCodeX)//'_ESTM_Ts_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
                  !write(*,*) 'Calling GetESTMData...', FileCodeX, iv, igrid
@@ -372,7 +362,7 @@ PROGRAM SUEWS_Program
                    'Grid:',GridIDmatrix(igrid)
 
               !  ! Translate daily state back so as to keep water balance at beginning of a day
-              !  IF ( QSChoice==3 .AND. ir==1) THEN
+              !  IF ( StorageHeatMethod==3 .AND. ir==1) THEN
               !     CALL SUEWS_Translate(igrid,0,iv)
               !  END IF
 
@@ -422,7 +412,7 @@ PROGRAM SUEWS_Program
 
 
 
-              ! IF ( QSChoice == 3 .AND. ir == irMax .AND. xErr < 0.1) THEN
+              ! IF ( StorageHeatMethod == 3 .AND. ir == irMax .AND. xErr < 0.1) THEN
               !    flagRerunAnOHM(igrid)=.FALSE.
               !    ! WRITE(unit=*, fmt=*) '*********'
               !    ! WRITE(unit=*, fmt=*) 'converged:'
@@ -433,7 +423,7 @@ PROGRAM SUEWS_Program
               ! ENDIF
 
               ! bypass the do-while loop for converge checking
-              ! IF ( QSChoice /= 3 ) flagRerunAnOHM(igrid)=.FALSE.
+              ! IF ( StorageHeatMethod /= 3 ) flagRerunAnOHM(igrid)=.FALSE.
 
 
               GridCounter = GridCounter+1   !Increase GridCounter by 1 for next grid
@@ -466,6 +456,8 @@ PROGRAM SUEWS_Program
      DEALLOCATE(WUProfM_tstep)
      DEALLOCATE(WUProfA_tstep)
      DEALLOCATE(CO2m_tstep)
+     DEALLOCATE(qn1_store)
+     DEALLOCATE(qn1_av_store)
      ! ----------------------------------------------------------------------
 
   ENDDO  !end loop over years
@@ -478,6 +470,21 @@ PROGRAM SUEWS_Program
   ! get cpu time consumed
   CALL cpu_TIME(timeFinish)
   WRITE(*,*) "Time = ",timeFinish-timeStart," seconds."
+
+  !Write to problems.txt that run has completed
+  IF (errorChoice==0) THEN  !if file has not been opened previously
+     OPEN(500,file='problems.txt')
+     errorChoice=1
+  ELSE
+     OPEN(500,file='problems.txt',position="append")
+  ENDIF
+  !Writing of the problem file
+  WRITE(500,*) '--------------'
+  write(500,*) 'Run completed.'
+  write(500,*) '0'  ! Write out error code 0 if run completed
+  
+  ! Also print to screen
+  WRITE(*,*) "----- SUEWS run completed -----"
 
   STOP 'finished'
 

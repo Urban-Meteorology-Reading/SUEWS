@@ -325,9 +325,9 @@ END SUBROUTINE atmos_moist_lumps
   IMPLICIT NONE
   REAL (KIND(1d0))::cp,lv_J_kg,press_hPa,psyc_hpa
 
-  !     cp for moist air (shuttleworth p 4.13)
+  ! cp for moist air (shuttleworth p 4.13)
   IF(cp*press_hPa<900.OR.lv_J_kg<10000)then
-     call errorHint(19,'psychrometric constant:  cp, press (hPa), lv (J/kg):',cp,Press_hPa,int(lv_J_kg))
+     call errorHint(19,'in psychrometric constant calculation:  cp [J kg-1 K-1], p [hPa], Lv [J kg-1]',cp,Press_hPa,int(lv_J_kg))
   endif
 
   psyc_hPa=(cp*press_hPa)/(epsil*lv_J_kg)

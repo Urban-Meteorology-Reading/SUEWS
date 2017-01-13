@@ -4,9 +4,10 @@
 
 SUBROUTINE OverallRunControl
   ! Last modified:
+  ! HCW 13 Jan 2017 - Changes to RunControl and InitialConditions
   ! HCW 04 Nov 2016 - minor bug fix in LAImin/LAImax warnings related to 3 veg surface types out cf 7 surface types  
   ! LJ 27 Jan 2016  - Removal of tabs, cleaning of the code
-  ! HCW 06 Mar 2015 - Removed options 10,20,30 (NARPOutput) for NetRadiationChoice
+  ! HCW 06 Mar 2015 - Removed options 10,20,30 (NARPOutput) for NetRadiationMethod
   ! HCW 06 Feb 2015 - File ID numbers changed so they are unique
   ! HCW 19 Dec 2014
   ! To Do:
@@ -33,34 +34,31 @@ SUBROUTINE OverallRunControl
   CHARACTER(len=50):: FileN
 
   ! ---- Namelist for RunControl.nml ----
-  NAMELIST/RunControl/AnthropHeatChoice,&
-       CBLuse,& !s.o.
-       gsChoice,&
-       NetRadiationChoice,&
-       RoughLen_heat,&
-       QSChoice,&
-       OHMIncQF,&
-       smd_choice,&
-       StabilityMethod,&
-       WU_choice,&
-       z0_method,&
-       FileCode,&
+  NAMELIST/RunControl/FileCode,&
        FileInputPath,&
        FileOutputPath,&
-       SkipHeaderSiteInfo,&
-       SkipHeaderMet,&
+       Tstep,& 
        MultipleMetFiles,&
+       MultipleInitFiles,&
        MultipleESTMFiles,&
        KeepTstepFilesIn,&
        KeepTstepFilesOut,&
+       WriteOutOption,&
        ResolutionFilesOut,&
-       WriteSurfsFile,&
-       SnowFractionChoice,&
+       CBLuse,&
        SNOWuse,&
        SOLWEIGuse,&
-       TIMEZONE,&
-       Tstep,&
-       Z
+       AnthropHeatMethod,&
+       AnthropCo2Method,&
+       NetRadiationMethod,&
+       RoughLenHeatMethod,&      
+       RoughLenMomMethod,&
+       SMDMethod,&
+       StabilityMethod,&
+       StorageHeatMethod,&
+       OHMIncQF,&
+       WaterUseMethod
+       
   ! -------------------------------------
 
   FileCode='none'
@@ -87,46 +85,41 @@ SUBROUTINE OverallRunControl
   !Determine what should be done with respect to radiation
   AlbedoChoice=0
   ldown_option=0
-  IF(netRadiationChoice==0)THEN    !Observed Q* from the met input file will be used
+  IF(NetRadiationMethod==0)THEN    !Observed Q* from the met input file will be used
      IF(snowUse==1) THEN            !If snow is modelled, NARP is needed for surface temperature
-        netRadiationChoice=3000
+        NetRadiationMethod=3000
         ldown_option=3              !Ldown will be modelled
-        !NetRadiationChoice=NetRadiationChoice/1000
+        !NetRadiationMethod=NetRadiationMethod/1000
      ENDIF
 
-  ELSEIF(netRadiationChoice>0)THEN  !Modelled Q* is used (NARP)
+  ELSEIF(NetRadiationMethod>0)THEN  !Modelled Q* is used (NARP)
      AlbedoChoice=-9
-     IF(NetRadiationChoice<10) THEN
+     IF(NetRadiationMethod<10) THEN
         AlbedoChoice=0
-        IF(NetRadiationChoice==1)ldown_option=1
-        IF(NetRadiationChoice==2)ldown_option=2
-        IF(NetRadiationChoice==3)ldown_option=3
+        IF(NetRadiationMethod==1)ldown_option=1
+        IF(NetRadiationMethod==2)ldown_option=2
+        IF(NetRadiationMethod==3)ldown_option=3
 
-     ELSEIF(NetRadiationChoice>=100.AND.NetRadiationChoice<1000) THEN
+     ELSEIF(NetRadiationMethod>=100.AND.NetRadiationMethod<1000) THEN
         AlbedoChoice=1
-        IF(NetRadiationChoice==100)ldown_option=1
-        IF(NetRadiationChoice==200)ldown_option=2
-        IF(NetRadiationChoice==300)ldown_option=3
-        NetRadiationChoice=NetRadiationChoice/100
+        IF(NetRadiationMethod==100)ldown_option=1
+        IF(NetRadiationMethod==200)ldown_option=2
+        IF(NetRadiationMethod==300)ldown_option=3
+        NetRadiationMethod=NetRadiationMethod/100
      ENDIF
 
-     !If bad NetRadiationChoice value
-     IF(netRadiationChoice>3.OR. AlbedoChoice==-9)THEN
-        WRITE(*,*) 'NetRadiationChoice=',NetRadiationChoice
+     !If bad NetRadiationMethod value
+     IF(NetRadiationMethod>3.OR. AlbedoChoice==-9)THEN
+        WRITE(*,*) 'NetRadiationMethod=',NetRadiationMethod
         WRITE(*,*) 'Value not usable'
         STOP
      ENDIF
   ENDIF
-  IF (gsChoice>2)THEN
-     WRITE(*,*) 'gsChoice=', gsChoice
-     WRITE(*,*) 'value too large'
-     STOP
-  END IF
-
+  
   !------------------------------------------------------------------
   !Print run information on the screen
   WRITE(*,*)'--------------------------------------------------------'
-  WRITE(*,*)"LUMPS/SUEWS 2016 - relevant references"
+  WRITE(*,*)"LUMPS/SUEWS - relevant references"
   WRITE(*,*)"LUMPS - Grimmond and Oke (2002) JAM, 41, 79-810"
   WRITE(*,*)"OHM - Grimmond and Oke (1999) JAM, 38, 922-940"
   WRITE(*,*)"NARP - Offerle et al. (2003) JAM"
@@ -628,7 +621,6 @@ END SUBROUTINE NumberRows
 !=========================================================================
 
 
-
 !----------------------------------------------------------------------------------------------
 !Moves input information corresponding to row rr of SiteSelect into row Gridiv of SurfaceChar
 ! - currently done once per year for each grid
@@ -687,6 +679,8 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(gridiv,c_OHMCode_SDry(PavSurf)) = NonVeg_Coeff(iv5,ci_OHMCode_SDry)
   SurfaceChar(gridiv,c_OHMCode_WWet(PavSurf)) = NonVeg_Coeff(iv5,ci_OHMCode_WWet)
   SurfaceChar(gridiv,c_OHMCode_WDry(PavSurf)) = NonVeg_Coeff(iv5,ci_OHMCode_WDry)
+  SurfaceChar(gridiv,c_OHMThresh_SW(PavSurf)) = NonVeg_Coeff(iv5,ci_OHMThresh_SW)
+  SurfaceChar(gridiv,c_OHMThresh_WD(PavSurf)) = NonVeg_Coeff(iv5,ci_OHMThresh_WD)
   SurfaceChar(gridiv,c_ESTMCode(PavSurf))     = NonVeg_Coeff(iv5,ci_ESTMCode)
   SurfaceChar(Gridiv,c_CpAnOHM(PavSurf))           = NonVeg_Coeff(iv5,ci_CpAnOHM)   ! heat capacity, AnOHM TS
   SurfaceChar(Gridiv,c_KkAnOHM(PavSurf))           = NonVeg_Coeff(iv5,ci_KkAnOHM)  ! heat conductivity, AnOHM TS
@@ -747,7 +741,7 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(gridiv,c_Emis(BldgSurf))         = NonVeg_Coeff(iv5,ci_Emis)
   SurfaceChar(gridiv,c_StorMin(BldgSurf))      = NonVeg_Coeff(iv5,ci_StorMin)
   SurfaceChar(gridiv,c_StorMax(BldgSurf))      = NonVeg_Coeff(iv5,ci_StorMax)
-  SurfaceChar(gridiv,c_WetThresh(BldgSurf))   = NonVeg_Coeff(iv5,ci_WetThresh)
+  SurfaceChar(gridiv,c_WetThresh(BldgSurf))    = NonVeg_Coeff(iv5,ci_WetThresh)
   SurfaceChar(gridiv,c_StateLimit(BldgSurf))   = NonVeg_Coeff(iv5,ci_StateLimit)
   SurfaceChar(gridiv,c_DrEq(BldgSurf))         = NonVeg_Coeff(iv5,ci_DrEq)
   SurfaceChar(gridiv,c_DrCoef1(BldgSurf))      = NonVeg_Coeff(iv5,ci_DrCoef1)
@@ -759,16 +753,18 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(gridiv,c_OHMCode_SDry(BldgSurf)) = NonVeg_Coeff(iv5,ci_OHMCode_SDry)
   SurfaceChar(gridiv,c_OHMCode_WWet(BldgSurf)) = NonVeg_Coeff(iv5,ci_OHMCode_WWet)
   SurfaceChar(gridiv,c_OHMCode_WDry(BldgSurf)) = NonVeg_Coeff(iv5,ci_OHMCode_WDry)
+  SurfaceChar(gridiv,c_OHMThresh_SW(BldgSurf)) = NonVeg_Coeff(iv5,ci_OHMThresh_SW)
+  SurfaceChar(gridiv,c_OHMThresh_WD(Bldgsurf)) = NonVeg_Coeff(iv5,ci_OHMThresh_WD)
   SurfaceChar(gridiv,c_ESTMCode(BldgSurf))     = NonVeg_Coeff(iv5,ci_ESTMCode)
-  SurfaceChar(Gridiv,c_CpAnOHM(BldgSurf))            = NonVeg_Coeff(iv5,ci_CpAnOHM)   ! heat capacity, AnOHM TS
-  SurfaceChar(Gridiv,c_KkAnOHM(BldgSurf))            = NonVeg_Coeff(iv5,ci_KkAnOHM)  ! heat conductivity, AnOHM TS
-  SurfaceChar(Gridiv,c_ChAnOHM(BldgSurf))            = NonVeg_Coeff(iv5,ci_ChAnOHM)  ! bulk transfer coef., AnOHM TS
+  SurfaceChar(Gridiv,c_CpAnOHM(BldgSurf))      = NonVeg_Coeff(iv5,ci_CpAnOHM)   ! heat capacity, AnOHM TS
+  SurfaceChar(Gridiv,c_KkAnOHM(BldgSurf))      = NonVeg_Coeff(iv5,ci_KkAnOHM)  ! heat conductivity, AnOHM TS
+  SurfaceChar(Gridiv,c_ChAnOHM(BldgSurf))      = NonVeg_Coeff(iv5,ci_ChAnOHM)  ! bulk transfer coef., AnOHM TS
 
   ! Use SoilCode for Bldgs to find code for soil characteristics
   CALL CodeMatchSoil(Gridiv,c_SoilTCode(BldgSurf))
   ! Transfer soil characteristics to SurfaceChar
-  SurfaceChar(gridiv,c_SoilDepth(BldgSurf))    = Soil_Coeff(iv5,cSo_SoilDepth)
-  SurfaceChar(gridiv,c_SoilStCap(BldgSurf))    = Soil_Coeff(iv5,cSo_SoilStCap)
+  SurfaceChar(gridiv,c_SoilDepth(BldgSurf))   = Soil_Coeff(iv5,cSo_SoilDepth)
+  SurfaceChar(gridiv,c_SoilStCap(BldgSurf))   = Soil_Coeff(iv5,cSo_SoilStCap)
   SurfaceChar(gridiv,c_KSat(BldgSurf))        = Soil_Coeff(iv5,cSo_KSat)
   SurfaceChar(gridiv,c_SoilDens(BldgSurf))    = Soil_Coeff(iv5,cSo_SoilDens)
   SurfaceChar(gridiv,c_SoilInfRate(BldgSurf)) = Soil_Coeff(iv5,cSo_SoilInfRate)
@@ -819,7 +815,7 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(gridiv,c_Emis(ConifSurf))       = Veg_Coeff(iv5,cp_Emis)
   SurfaceChar(gridiv,c_StorMin(ConifSurf))    = Veg_Coeff(iv5,cp_StorMin)
   SurfaceChar(gridiv,c_StorMax(ConifSurf))    = Veg_Coeff(iv5,cp_StorMax)
-  SurfaceChar(gridiv,c_WetThresh(ConifSurf)) = Veg_Coeff(iv5,cp_WetThresh)
+  SurfaceChar(gridiv,c_WetThresh(ConifSurf))  = Veg_Coeff(iv5,cp_WetThresh)
   SurfaceChar(gridiv,c_StateLimit(ConifSurf)) = Veg_Coeff(iv5,cp_StateLimit)
   SurfaceChar(gridiv,c_DrEq(ConifSurf))       = Veg_Coeff(iv5,cp_DrEq)
   SurfaceChar(gridiv,c_DrCoef1(ConifSurf))    = Veg_Coeff(iv5,cp_DrCoef1)
@@ -833,6 +829,8 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(gridiv,c_SDDFull(ivConif))      = Veg_Coeff(iv5,cp_SDDFull)
   SurfaceChar(gridiv,c_LAIMin(ivConif))       = Veg_Coeff(iv5,cp_LAIMin)
   SurfaceChar(gridiv,c_LAIMax(ivConif))       = Veg_Coeff(iv5,cp_LAIMax)
+  SurfaceChar(gridiv,c_PorosityMin(ivConif))  = Veg_Coeff(iv5,cp_PorosityMin)
+  SurfaceChar(gridiv,c_PorosityMax(ivConif))  = Veg_Coeff(iv5,cp_PorosityMax)
   SurfaceChar(gridiv,c_GsMax(ivConif))        = Veg_Coeff(iv5,cp_GsMax)
   SurfaceChar(gridiv,c_LAIEq(ivConif))        = Veg_Coeff(iv5,cp_LAIEq)
   SurfaceChar(gridiv,c_LeafGP1(ivConif))      = Veg_Coeff(iv5,cp_LeafGP1)
@@ -844,18 +842,20 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(gridiv,c_OHMCode_SDry(ConifSurf)) = Veg_Coeff(iv5,cp_OHMCode_SDry)
   SurfaceChar(gridiv,c_OHMCode_WWet(ConifSurf)) = Veg_Coeff(iv5,cp_OHMCode_WWet)
   SurfaceChar(gridiv,c_OHMCode_WDry(ConifSurf)) = Veg_Coeff(iv5,cp_OHMCode_WDry)
+  SurfaceChar(gridiv,c_OHMThresh_SW(ConifSurf)) = Veg_Coeff(iv5,cp_OHMThresh_SW)
+  SurfaceChar(gridiv,c_OHMThresh_WD(ConifSurf)) = Veg_Coeff(iv5,cp_OHMThresh_WD)
   ! ESTM code
   SurfaceChar(gridiv,c_ESTMCode(ConifSurf))     = Veg_Coeff(iv5,cp_ESTMCode)
   ! AnOHM TS
-  SurfaceChar(Gridiv,c_CpAnOHM(ConifSurf))           = Veg_Coeff(iv5,cp_CpAnOHM) ! heat capacity, AnOHM TS
-  SurfaceChar(Gridiv,c_KkAnOHM(ConifSurf))           = Veg_Coeff(iv5,cp_KkAnOHM)  ! heat conductivity, AnOHM TS
-  SurfaceChar(Gridiv,c_ChAnOHM(ConifSurf))           = Veg_Coeff(iv5,cp_ChAnOHM)  ! bulk transfer coef., AnOHM TS
+  SurfaceChar(Gridiv,c_CpAnOHM(ConifSurf))      = Veg_Coeff(iv5,cp_CpAnOHM) ! heat capacity, AnOHM TS
+  SurfaceChar(Gridiv,c_KkAnOHM(ConifSurf))      = Veg_Coeff(iv5,cp_KkAnOHM)  ! heat conductivity, AnOHM TS
+  SurfaceChar(Gridiv,c_ChAnOHM(ConifSurf))      = Veg_Coeff(iv5,cp_ChAnOHM)  ! bulk transfer coef., AnOHM TS
 
   ! Use SoilCode for EveTr to find code for soil characteristics
   CALL CodeMatchSoil(Gridiv,c_SoilTCode(ConifSurf))
   ! Transfer soil characteristics to SurfaceChar
-  SurfaceChar(gridiv,c_SoilDepth(ConifSurf))    = Soil_Coeff(iv5,cSo_SoilDepth)
-  SurfaceChar(gridiv,c_SoilStCap(ConifSurf))    = Soil_Coeff(iv5,cSo_SoilStCap)
+  SurfaceChar(gridiv,c_SoilDepth(ConifSurf))   = Soil_Coeff(iv5,cSo_SoilDepth)
+  SurfaceChar(gridiv,c_SoilStCap(ConifSurf))   = Soil_Coeff(iv5,cSo_SoilStCap)
   SurfaceChar(gridiv,c_KSat(ConifSurf))        = Soil_Coeff(iv5,cSo_KSat)
   SurfaceChar(gridiv,c_SoilDens(ConifSurf))    = Soil_Coeff(iv5,cSo_SoilDens)
   SurfaceChar(gridiv,c_SoilInfRate(ConifSurf)) = Soil_Coeff(iv5,cSo_SoilInfRate)
@@ -920,6 +920,8 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(gridiv,c_SDDFull(ivDecid))      = Veg_Coeff(iv5,cp_SDDFull)
   SurfaceChar(gridiv,c_LAIMin(ivDecid))       = Veg_Coeff(iv5,cp_LAIMin)
   SurfaceChar(gridiv,c_LAIMax(ivDecid))       = Veg_Coeff(iv5,cp_LAIMax)
+  SurfaceChar(gridiv,c_PorosityMin(ivDecid))  = Veg_Coeff(iv5,cp_PorosityMin)
+  SurfaceChar(gridiv,c_PorosityMax(ivDecid))  = Veg_Coeff(iv5,cp_PorosityMax)
   SurfaceChar(gridiv,c_GsMax(ivDecid))        = Veg_Coeff(iv5,cp_GsMax)
   SurfaceChar(gridiv,c_LAIEq(ivDecid))        = Veg_Coeff(iv5,cp_LAIEq)
   SurfaceChar(gridiv,c_LeafGP1(ivDecid))      = Veg_Coeff(iv5,cp_LeafGP1)
@@ -931,6 +933,8 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(gridiv,c_OHMCode_SDry(DecidSurf)) = Veg_Coeff(iv5,cp_OHMCode_SDry)
   SurfaceChar(gridiv,c_OHMCode_WWet(DecidSurf)) = Veg_Coeff(iv5,cp_OHMCode_WWet)
   SurfaceChar(gridiv,c_OHMCode_WDry(DecidSurf)) = Veg_Coeff(iv5,cp_OHMCode_WDry)
+  SurfaceChar(gridiv,c_OHMThresh_SW(DecidSurf)) = Veg_Coeff(iv5,cp_OHMThresh_SW)
+  SurfaceChar(gridiv,c_OHMThresh_WD(DecidSurf)) = Veg_Coeff(iv5,cp_OHMThresh_WD)
   ! ESTM code
   SurfaceChar(gridiv,c_ESTMCode(DecidSurf))     = Veg_Coeff(iv5,cp_ESTMCode)
   ! AnOHM TS
@@ -992,7 +996,7 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(gridiv,c_Emis(GrassSurf))       = Veg_Coeff(iv5,cp_Emis)
   SurfaceChar(gridiv,c_StorMin(GrassSurf))    = Veg_Coeff(iv5,cp_StorMin)
   SurfaceChar(gridiv,c_StorMax(GrassSurf))    = Veg_Coeff(iv5,cp_StorMax)
-  SurfaceChar(gridiv,c_WetThresh(GrassSurf)) = Veg_Coeff(iv5,cp_WetThresh)
+  SurfaceChar(gridiv,c_WetThresh(GrassSurf))  = Veg_Coeff(iv5,cp_WetThresh)
   SurfaceChar(gridiv,c_StateLimit(GrassSurf)) = Veg_Coeff(iv5,cp_StateLimit)
   SurfaceChar(gridiv,c_DrEq(GrassSurf))       = Veg_Coeff(iv5,cp_DrEq)
   SurfaceChar(gridiv,c_DrCoef1(GrassSurf))    = Veg_Coeff(iv5,cp_DrCoef1)
@@ -1006,6 +1010,8 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(gridiv,c_SDDFull(ivGrass))      = Veg_Coeff(iv5,cp_SDDFull)
   SurfaceChar(gridiv,c_LAIMin(ivGrass))       = Veg_Coeff(iv5,cp_LAIMin)
   SurfaceChar(gridiv,c_LAIMax(ivGrass))       = Veg_Coeff(iv5,cp_LAIMax)
+  SurfaceChar(gridiv,c_PorosityMin(ivGrass))       = Veg_Coeff(iv5,cp_PorosityMin)
+  SurfaceChar(gridiv,c_PorosityMax(ivGrass))       = Veg_Coeff(iv5,cp_PorosityMax)
   SurfaceChar(gridiv,c_GsMax(ivGrass))        = Veg_Coeff(iv5,cp_GsMax)
   SurfaceChar(gridiv,c_LAIEq(ivGrass))        = Veg_Coeff(iv5,cp_LAIEq)
   SurfaceChar(gridiv,c_LeafGP1(ivGrass))      = Veg_Coeff(iv5,cp_LeafGP1)
@@ -1017,6 +1023,8 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(gridiv,c_OHMCode_SDry(GrassSurf)) = Veg_Coeff(iv5,cp_OHMCode_SDry)
   SurfaceChar(gridiv,c_OHMCode_WWet(GrassSurf)) = Veg_Coeff(iv5,cp_OHMCode_WWet)
   SurfaceChar(gridiv,c_OHMCode_WDry(GrassSurf)) = Veg_Coeff(iv5,cp_OHMCode_WDry)
+  SurfaceChar(gridiv,c_OHMThresh_SW(GrassSurf)) = Veg_Coeff(iv5,cp_OHMThresh_SW)
+  SurfaceChar(gridiv,c_OHMThresh_WD(GrassSurf)) = Veg_Coeff(iv5,cp_OHMThresh_WD)
   ! ESTM code
   SurfaceChar(gridiv,c_ESTMCode(GrassSurf))     = Veg_Coeff(iv5,cp_ESTMCode)
   ! AnOHM TS
@@ -1078,7 +1086,7 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(gridiv,c_Emis(BSoilSurf))       = NonVeg_Coeff(iv5,ci_Emis)
   SurfaceChar(gridiv,c_StorMin(BSoilSurf))    = NonVeg_Coeff(iv5,ci_StorMin)
   SurfaceChar(gridiv,c_StorMax(BSoilSurf))    = NonVeg_Coeff(iv5,ci_StorMax)
-  SurfaceChar(gridiv,c_WetThresh(BSoilSurf)) = NonVeg_Coeff(iv5,ci_WetThresh)
+  SurfaceChar(gridiv,c_WetThresh(BSoilSurf))  = NonVeg_Coeff(iv5,ci_WetThresh)
   SurfaceChar(gridiv,c_StateLimit(BSoilSurf)) = NonVeg_Coeff(iv5,ci_StateLimit)
   SurfaceChar(gridiv,c_DrEq(BSoilSurf))       = NonVeg_Coeff(iv5,ci_DrEq)
   SurfaceChar(gridiv,c_DrCoef1(BSoilSurf))    = NonVeg_Coeff(iv5,ci_DrCoef1)
@@ -1090,6 +1098,8 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(gridiv,c_OHMCode_SDry(BSoilSurf)) = NonVeg_Coeff(iv5,ci_OHMCode_SDry)
   SurfaceChar(gridiv,c_OHMCode_WWet(BSoilSurf)) = NonVeg_Coeff(iv5,ci_OHMCode_WWet)
   SurfaceChar(gridiv,c_OHMCode_WDry(BSoilSurf)) = NonVeg_Coeff(iv5,ci_OHMCode_WDry)
+  SurfaceChar(gridiv,c_OHMThresh_SW(BSoilSurf)) = NonVeg_Coeff(iv5,ci_OHMThresh_SW)
+  SurfaceChar(gridiv,c_OHMThresh_WD(BSoilSurf)) = NonVeg_Coeff(iv5,ci_OHMThresh_WD)
   SurfaceChar(gridiv,c_ESTMCode(BSoilSurf))     = NonVeg_Coeff(iv5,ci_ESTMCode)
   SurfaceChar(Gridiv,c_CpAnOHM(BSoilSurf))           = NonVeg_Coeff(iv5,ci_CpAnOHM) ! heat capacity, AnOHM TS
   SurfaceChar(Gridiv,c_KkAnOHM(BSoilSurf))           = NonVeg_Coeff(iv5,ci_KkAnOHM)  ! heat conductivity, AnOHM TS
@@ -1150,16 +1160,20 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(gridiv,c_Emis(WaterSurf))       = Water_Coeff(iv5,cw_Emis)
   SurfaceChar(gridiv,c_StorMin(WaterSurf))    = Water_Coeff(iv5,cw_StorMin)
   SurfaceChar(gridiv,c_StorMax(WaterSurf))    = Water_Coeff(iv5,cw_StorMax)
-  SurfaceChar(gridiv,c_WetThresh(WaterSurf)) = Water_Coeff(iv5,cw_WetThresh)
+  SurfaceChar(gridiv,c_WetThresh(WaterSurf))  = Water_Coeff(iv5,cw_WetThresh)
   SurfaceChar(gridiv,c_StateLimit(WaterSurf)) = Water_Coeff(iv5,cw_StateLimit)
   SurfaceChar(gridiv,c_DrEq(WaterSurf))       = Water_Coeff(iv5,cw_DrEq)
   SurfaceChar(gridiv,c_DrCoef1(WaterSurf))    = Water_Coeff(iv5,cw_DrCoef1)
   SurfaceChar(gridiv,c_DrCoef2(WaterSurf))    = Water_Coeff(iv5,cw_DrCoef2)
+  ! Water surface only
+  SurfaceChar(gridiv,c_WaterDepth) = Water_Coeff(iv5,cw_WaterDepth)
   ! OHM codes
   SurfaceChar(gridiv,c_OHMCode_SWet(WaterSurf)) = Water_Coeff(iv5,cw_OHMCode_SWet)
   SurfaceChar(gridiv,c_OHMCode_SDry(WaterSurf)) = Water_Coeff(iv5,cw_OHMCode_SDry)
   SurfaceChar(gridiv,c_OHMCode_WWet(WaterSurf)) = Water_Coeff(iv5,cw_OHMCode_WWet)
   SurfaceChar(gridiv,c_OHMCode_WDry(WaterSurf)) = Water_Coeff(iv5,cw_OHMCode_WDry)
+  SurfaceChar(gridiv,c_OHMThresh_SW(WaterSurf)) = Water_Coeff(iv5,cw_OHMThresh_SW)
+  SurfaceChar(gridiv,c_OHMThresh_WD(WaterSurf)) = Water_Coeff(iv5,cw_OHMThresh_WD)
   ! ESTM code
   SurfaceChar(gridiv,c_ESTMCode(WaterSurf))     = Water_Coeff(iv5,cw_ESTMCode)
   ! AnOHM TS
@@ -1223,6 +1237,9 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(gridiv,c_OHMCode_SDry(nsurf+1)) = Snow_Coeff(iv5,cs_OHMCode_SDry)
   SurfaceChar(gridiv,c_OHMCode_WWet(nsurf+1)) = Snow_Coeff(iv5,cs_OHMCode_WWet)
   SurfaceChar(gridiv,c_OHMCode_WDry(nsurf+1)) = Snow_Coeff(iv5,cs_OHMCode_WDry)
+  SurfaceChar(gridiv,c_OHMThresh_SW(nsurf+1)) = Snow_Coeff(iv5,cs_OHMThresh_SW)
+  SurfaceChar(gridiv,c_OHMThresh_WD(nsurf+1)) = Snow_Coeff(iv5,cs_OHMThresh_WD)
+  
   ! ESTM code
   SurfaceChar(gridiv,c_ESTMCode(nsurf+1))     = Snow_Coeff(iv5,cs_ESTMCode)
   !    SurfaceChar(Gridiv,c_CpAnOHM(nsurf+1))           = Snow_Coeff(iv5,cs_CpAnOHM)   ! heat capacity, AnOHM TS
@@ -1401,7 +1418,8 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(gridiv,c_GsS1)       = Conductance_Coeff(iv5,cc_GsS1)
   SurfaceChar(gridiv,c_GsS2)       = Conductance_Coeff(iv5,cc_GsS2)
   SurfaceChar(gridiv,c_GsKmax)     = Conductance_Coeff(iv5,cc_GsKmax)
-
+  SurfaceChar(gridiv,c_gsModel)    = Conductance_Coeff(iv5,cc_gsModel)
+  
   ! ---- Find code for Anthropogenic heat ----
   CALL CodeMatchAnthropogenicHeat(rr,c_QFCode)
   ! Transfer Anthropogenic heat characteristics to SurfaceChar
@@ -1504,17 +1522,14 @@ END SUBROUTINE InitializeSurfaceCharacteristics
 
 
 !-------------------------------------------------------------------------
-SUBROUTINE InitialState(GridName,year_int,Gridiv)
-  ! Last modified HCW 24 May 2016
-  ! removed unused argument year_txt
-  ! Last modified HCW 03 Jul 2015
-  ! Added initial conditions albEveTr0 and albGrass0
-  ! Last modified by HCW 03 Dec 2014
-  ! To do:
-  !   - Check running means (5-day temperature)
+SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
+  ! Last modified HCW 13 Jan 2017 - Major changes to InitialConditions file
+  ! Last modified HCW 24 May 2016 - Removed unused argument year_txt
+  ! Last modified HCW 03 Jul 2015 - Added initial conditions albEveTr0 and albGrass0
+  ! Last modified HCW 03 Dec 2014
   !------------------------------------------------------------------------
 
-  USE allocateArray
+  USE AllocateArray
   USE data_in
   USE ColNamesModelDailyState
   USE defaultNotUsed
@@ -1531,36 +1546,43 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv)
   IMPLICIT NONE
 
   CHARACTER(len=20):: GridName    !Name of the evaluated grid
-  !character(len=10):: str2        !Variables related to filepaths
+  CHARACTER(len=4)::  year_txt
+  INTEGER:: NumberOfGrids
+  
   CHARACTER(len=150):: fileInit   !Initial conditions filename
   INTEGER::DaysSinceRain,Gridiv,& !number of days since rain, grid number,
-       gamma1,gamma2          !switches related to cooling and heating degree days
+           gamma1,gamma2          !switches related to cooling and heating degree days
   INTEGER::wd,seas,date,mb,&      !weekday information, season, date, month
-       year_int,switch=0,&    !year as an integer, switch related to previous day
-       id_next,calc           !next day,counter in irrigation calculations
+           year_int,switch=0,&    !year as an integer, switch related to previous day
+           id_next,calc           !next day,counter in irrigation calculations
 
-  REAL (KIND(1d0))::PavedState,BldgsState,EveTrState,DecTrState,GrassState,BSoilState,&
+  REAL (KIND(1d0))::PavedState,BldgsState,EveTrState,DecTrState,GrassState,BSoilState,WaterState,&
        SnowFracPaved,SnowFracBldgs,SnowFracEveTr,SnowFracDecTr,          &
        SnowFracGrass,SnowFracBSoil,SnowFracWater,                        &
        SnowDensPaved,SnowDensBldgs,SnowDensEveTr,SnowDensDecTr,          &
        SnowDensGrass,SnowDensBSoil,SnowDensWater
 
-  ! BoInit=NAN
-  !-----------------------------------------------------------------------
-
+  INTEGER:: LeavesOutInitially   !Allows for quick setting of veg-related initial conditions for full leaf-out (1) or leaf-off (0)
+  INTEGER:: SnowInitially        !Allows for quick setting of snow-related initial conditions for no snow initially (0)
+       
+  INTEGER:: GridsInitialised=0   ! Number of grids initialised at start of model run
+  REAL(KIND(1d0)):: NormalizeVegChar  !Function
+  
+  ! Define InitialConditions namelist ---------------------------------------     
   NAMELIST/InitialConditions/DaysSinceRain,&
        Temp_C0,&
-       ID_Prev,&
+       !ID_Prev,&  !Now calculated from met forcing file
+       LeavesOutInitially,&
        GDD_1_0,&
        GDD_2_0,&
        LAIinitialEveTr,&
        LAIinitialDecTr,&
        LAIinitialGrass,&
        AlbEveTr0,&
-       albDecTr0,&
+       AlbDecTr0,&
        AlbGrass0,&
-       decidCap0,&
-       porosity0,&
+       DecidCap0,&
+       Porosity0,&
        PavedState,&
        BldgsState,&
        EveTrState,&
@@ -1574,6 +1596,7 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv)
        SoilStoreDecTrState,&
        SoilStoreGrassState,&
        SoilStoreBSoilState,&
+       SnowInitially,&
        SnowWaterPavedState,&
        SnowWaterBldgsState,&
        SnowWaterEveTrState,&
@@ -1605,32 +1628,235 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv)
        SnowAlb0,&
        BoInit
 
-  ! Define InitialConditions file ----------------------------------------
-  FileInit=TRIM(FileInputPath)//TRIM("InitialConditions")//TRIM(GridName)//'.nml'
-
+  ! Initialise namelist to NAN ----------------------------------------------     
+  DaysSinceRain=INT(NAN)
+  Temp_C0=NAN
+  LeavesOutInitially=INT(NAN)
+  GDD_1_0=NAN
+  GDD_2_0=NAN
+  LAIinitialEveTr=NAN
+  LAIinitialDecTr=NAN
+  LAIinitialGrass=NAN
+  AlbEveTr0=NAN
+  AlbDecTr0=NAN
+  AlbGrass0=NAN
+  DecidCap0=NAN
+  Porosity0=NAN
+  PavedState=NAN
+  BldgsState=NAN
+  EveTrState=NAN
+  DecTrState=NAN
+  GrassState=NAN
+  BSoilState=NAN
+  WaterState=NAN
+  SoilStorePavedState=NAN
+  SoilStoreBldgsState=NAN
+  SoilStoreEveTrState=NAN
+  SoilStoreDecTrState=NAN
+  SoilStoreGrassState=NAN
+  SoilStoreBSoilState=NAN
+  SnowInitially=INT(NAN)
+  SnowWaterPavedState=NAN
+  SnowWaterBldgsState=NAN
+  SnowWaterEveTrState=NAN
+  SnowWaterDecTrState=NAN
+  SnowWaterGrassState=NAN
+  SnowWaterBSoilState=NAN
+  SnowWaterWaterState=NAN
+  SnowPackPaved=NAN
+  SnowPackBldgs=NAN
+  SnowPackEveTr=NAN
+  SnowPackDecTr=NAN
+  SnowPackGrass=NAN
+  SnowPackBSoil=NAN
+  SnowPackWater=NAN
+  SnowFracPaved=NAN
+  SnowFracBldgs=NAN
+  SnowFracEveTr=NAN
+  SnowFracDecTr=NAN
+  SnowFracGrass=NAN
+  SnowFracBSoil=NAN
+  SnowFracWater=NAN
+  SnowDensPaved=NAN
+  SnowDensBldgs=NAN
+  SnowDensEveTr=NAN
+  SnowDensDecTr=NAN
+  SnowDensGrass=NAN
+  SnowDensBSoil=NAN
+  SnowDensWater=NAN
+  SnowAlb0=NAN
   BoInit=NAN
 
-  ! Open, read and close InitialConditions file --------------------------
-  OPEN(56,File=TRIM(FileInit),err=600,status='old') !Change with needs
+  WRITE(year_txt,'(I4)') year_int  !Get year as a text string
+  
+  ! Define InitialConditions file -------------------------------------------
+  FileInit=TRIM(FileInputPath)//TRIM("InitialConditions")//TRIM(GridName)//'.nml'
+  ! On very first InitialConditions for each grid, can use one initial conditions file specified for all grids
+  IF(MultipleInitFiles == 0 .and. GridsInitialised < NumberOfGrids) THEN   
+     FileInit=TRIM(FileInputPath)//TRIM("InitialConditions")//TRIM(FileCode)//'_'//TRIM(year_txt)//'.nml'
+     GridsInitialised=GridsInitialised+1
+  ENDIF
+    
+  ! Open, read and close InitialConditions file -----------------------------
+  OPEN(56,File=TRIM(FileInit),err=600,status='old')
   READ(56,iostat=ios_out,nml=InitialConditions,err=601)
   CLOSE(56)
 
-  ! Write InitialConditions to FileChoices -------------------------------
+  ! Write InitialConditions to FileChoices ----------------------------------
   FileChoices=TRIM(FileOutputPath)//TRIM(FileCode)//'_FileChoices.txt'
   OPEN(12,file=FileChoices,position='append')
   WRITE(12,*) '----- '//TRIM("InitialConditions")//TRIM(GridName)//'.nml'//' -----'
   WRITE(12,nml=InitialConditions)
   CLOSE(12)
-
-  !-----------------------------------------------------------------------
-
+  
+  
+  !--------------------------------------------------------------------------
+  ! Check initial conditions and assign values if not provided --------------
+  
+  ! Calculate previous day --------------------------------------------------
+  id_prev = INT(MetForcingData(1,2,Gridiv)) - 1
+  
+  ! If no. days since rainfall unknown, set to zero -------------------------
+  IF(DaysSinceRain == INT(NAN)) DaysSinceRain = 0  
+  
+  ! If average temperature for previous day unknown, use average of first day
+  IF(Temp_C0 == NAN) Temp_C0=sum(MetForcingData(1:(24*nsh),12,Gridiv))/(24*nsh) 
+  
+  ! Set vegetation-related initial conditions -------------------------------
+  ! If LeavesOutInitially is -999, don't use and check all required conditions have been provided
+  IF(LeavesOutInitially == INT(NAN)) THEN   
+     IF(GDD_1_0 == NAN .or. GDD_2_0 == NAN) THEN 
+        CALL ErrorHint(36,'Specify values for GDD_1_0 and GDD_2_0.', notUsed,notUsed,notUsedI)
+     ENDIF
+     IF(LAIinitialEveTr == NAN .or. LAIinitialDecTr == NAN .or. LAIinitialGrass == NAN) THEN
+         CALL ErrorHint(36,'Specify initial values for LAI for all vegetated surface types.', notUsed,notUsed,notUsedI)
+     ENDIF    
+     IF(AlbEveTr0 == NAN .or. AlbDecTr0 == NAN .or. AlbGrass0 == NAN) THEN
+        CALL ErrorHint(36,'Specify initial values for albedo for all vegetated surface types.', notUsed,notUsed,notUsedI)
+     ENDIF    
+     IF(DecidCap0 == NAN) THEN
+         CALL ErrorHint(36,'Specify DecidCap0.', notUsed,notUsed,notUsedI)
+     ENDIF
+     IF(Porosity0 == NAN) THEN
+        CALL ErrorHint(36,'Specify Porosity0.', notUsed,notUsed,notUsedI)
+     ENDIF
+  ELSEIF(LeavesOutInitially == 1) THEN   !If leaves out, set to summertime values using SUEWS_Veg.txt
+      GDD_1_0 = NormalizeVegChar(c_GDDFull,Gridiv)              
+      GDD_2_0 = 0
+      LAIinitialEveTr = SurfaceChar(Gridiv,c_LAIMax(ivConif))   !Max LAI
+      LAIinitialDecTr = SurfaceChar(Gridiv,c_LAIMax(ivDecid))
+      LAIinitialGrass = SurfaceChar(Gridiv,c_LAIMax(ivGrass))
+      AlbEveTr0 = SurfaceChar(Gridiv,c_AlbMax(ConifSurf))       !Max albedo
+      AlbDecTr0 = SurfaceChar(Gridiv,c_AlbMax(DecidSurf))
+      AlbGrass0 = SurfaceChar(Gridiv,c_AlbMax(GrassSurf))
+      DecidCap0 = SurfaceChar(Gridiv,c_StorMax(DecidSurf))      !Max storage capacity (DecTr only)
+      Porosity0 = SurfaceChar(Gridiv,c_PorosityMin(ivDecid))  !Min porosity (DecTr only)
+  ELSEIF(LeavesOutInitially == 0) THEN   !If leaves off, set to wintertime values using SUEWS_Veg.txt
+      GDD_1_0 = 0
+      GDD_2_0 = NormalizeVegChar(c_SDDFull,Gridiv)
+      LAIinitialEveTr = SurfaceChar(Gridiv,c_LAIMin(ivConif))   !Min LAI
+      LAIinitialDecTr = SurfaceChar(Gridiv,c_LAIMin(ivDecid))
+      LAIinitialGrass = SurfaceChar(Gridiv,c_LAIMin(ivGrass))
+      AlbEveTr0 = SurfaceChar(Gridiv,c_AlbMin(ConifSurf))       !Min albedo
+      AlbDecTr0 = SurfaceChar(Gridiv,c_AlbMin(DecidSurf))
+      AlbGrass0 = SurfaceChar(Gridiv,c_AlbMin(GrassSurf))
+      DecidCap0 = SurfaceChar(Gridiv,c_StorMin(DecidSurf))      !Min storage capacity (DecTr only)
+      Porosity0 = SurfaceChar(Gridiv,c_PorosityMax(ivDecid))  !Max porosity (DecTr only)
+  ELSE
+     CALL ErrorHint(36,'LeavesOutInitially must be 0, 1, or -999 (or omitted from InitialConditions namelist)', &
+                    notUsed,notUsed,notUsedI)
+  ENDIF
+  
+  ! If surface wetness states unknown, set to zero --------------------------
+  IF(PavedState == NAN) PavedState = 0
+  IF(BldgsState == NAN) BldgsState = 0
+  IF(EveTrState == NAN) EveTrState = 0
+  IF(DecTrState == NAN) DecTrState = 0
+  IF(GrassState == NAN) GrassState = 0
+  IF(BSoilState == NAN) BSoilState = 0
+  ! except for water surface - set using WaterDepth in SUEWS_Water.txt
+  IF(WaterState == NAN) WaterState = SurfaceChar(Gridiv,c_WaterDepth)
+  
+  ! Check initial soil moisture states are provided -------------------------
+  IF(SoilStorePavedState == NAN .or. SoilStoreBldgsState == NAN .or. SoilStoreEveTrState == NAN .or. &
+     SoilStoreDecTrState == NAN .or. SoilStoreGrassState == NAN .or. SoilStoreBSoilState == NAN) THEN
+     CALL ErrorHint(36,'Initial soil moisture must be provided for all surface types except water.', notUsed,notUsed,notUsedI)
+  ENDIF
+  
+  ! Set snow-related initial conditions -------------------------------
+  ! If snow part not used, or no snow initially, set all snow-related initial conditions to zero
+  IF(SnowUse == 0 .or. SnowInitially == 0) THEN
+     SnowWaterPavedState = 0
+     SnowWaterBldgsState = 0
+     SnowWaterEveTrState = 0
+     SnowWaterDecTrState = 0
+     SnowWaterGrassState = 0
+     SnowWaterBSoilState = 0
+     SnowWaterWaterState = 0
+     SnowPackPaved = 0
+     SnowPackBldgs = 0
+     SnowPackEveTr = 0
+     SnowPackDecTr = 0
+     SnowPackGrass = 0
+     SnowPackBSoil = 0
+     SnowPackWater = 0
+     SnowFracPaved = 0
+     SnowFracBldgs = 0
+     SnowFracEveTr = 0
+     SnowFracDecTr = 0
+     SnowFracGrass = 0
+     SnowFracBSoil = 0
+     SnowFracWater = 0
+     SnowDensPaved = 0
+     SnowDensBldgs = 0
+     SnowDensEveTr = 0
+     SnowDensDecTr = 0
+     SnowDensGrass = 0
+     SnowDensBSoil = 0
+     SnowDensWater = 0     
+     SnowAlb0 = 0
+  ELSEIF(SnowInitially == INT(NAN)) THEN   !Check all required snow-related conditions are provided
+     IF(SnowWaterPavedState == NAN .or. SnowWaterBldgsState == NAN .or. SnowWaterEveTrState == NAN .or. &
+        SnowWaterDecTrState == NAN .or. SnowWaterGrassState == NAN .or. SnowWaterBSoilState == NAN .or. &
+        SnowWaterWaterState == NAN) THEN
+        CALL ErrorHint(36,'Specify SnowWater state for all 7 surface types.', notUsed,notUsed,notUsedI)
+     ENDIF
+     IF(SnowPackPaved == NAN .or. SnowPackBldgs == NAN .or. SnowPackEveTr == NAN .or. &
+        SnowPackDecTr == NAN .or. SnowPackGrass == NAN .or. SnowPackBSoil == NAN .or. &
+        SnowPackWater == NAN) THEN
+        CALL ErrorHint(36,'Specify SnowPack for all 7 surface types.', notUsed,notUsed,notUsedI)
+     ENDIF
+     IF(SnowFracPaved == NAN .or. SnowFracBldgs == NAN .or. SnowFracEveTr == NAN .or. &
+        SnowFracDecTr == NAN .or. SnowFracGrass == NAN .or. SnowFracBSoil == NAN .or. &
+        SnowFracWater == NAN) THEN
+        CALL ErrorHint(36,'Specify SnowFrac for all 7 surface types.', notUsed,notUsed,notUsedI)
+     ENDIF
+     IF(SnowDensPaved == NAN .or. SnowDensBldgs == NAN .or. SnowDensEveTr == NAN .or. &
+        SnowDensDecTr == NAN .or. SnowDensGrass == NAN .or. SnowDensBSoil == NAN .or. &
+        SnowDensWater == NAN) THEN
+        CALL ErrorHint(36,'Specify SnowDens for all 7 surface types.', notUsed,notUsed,notUsedI)
+     ENDIF     
+     IF(SnowAlb0 == NAN) THEN
+        CALL ErrorHint(36,'Specify SnowAlb0.', notUsed,notUsed,notUsedI)
+     ENDIF
+  ELSE
+     CALL ErrorHint(36,'SnowInitially must be 0 or -999 (or omitted from InitialConditions namelist)', &
+                    notUsed,notUsed,notUsedI)
+  ENDIF
+  
+  ! If AnOHM option selected, check initial Bowen ratio is provided ---------
+  IF(StorageHeatMethod==3 .and. BoInit == NAN) THEN
+     CALL ErrorHint(36,'Specify BoInit for AnOHM calculations.', notUsed,notUsed,notUsedI)
+  ENDIF 
+      
+  ! -------------------------------------------------------------------------
+  ! -------------------------------------------------------------------------
+  
   ! Previous day DOY number (needed in file allocations)
   IF(id_prev>=364) id_prev=0  !If previous day is larger than 364, set this to zero
 
-  ! -- Save id_prev to ModelDailyState array --
+  ! Save initial conditions to ModelDailyState array ------------------------
   ModelDailyState(Gridiv,cMDS_id_prev) = id_prev
-
-  ! -- Save phenology info in InitialConditions to ModelDailyState array --
   ModelDailyState(Gridiv,cMDS_LAIInitialEveTr) = LAIInitialEveTr
   ModelDailyState(Gridiv,cMDS_LAIInitialDecTr) = LAIInitialDecTr
   ModelDailyState(Gridiv,cMDS_LAIInitialGrass) = LAIInitialGrass
@@ -1638,20 +1864,26 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv)
   ModelDailyState(Gridiv,cMDS_GDD2_0) = GDD_2_0
   ModelDailyState(Gridiv,cMDS_GDDMin) =  90   !Going to check for minimum GDD - ??
   ModelDailyState(Gridiv,cMDS_GDDMax) = -90   !Going to check for maximum GDD - ??
-
-  ! Initialize to the previous day's value (i.e. day before run starts)
-  ModelDailyState(Gridiv,cMDS_porosity)    = porosity0
-  ModelDailyState(Gridiv,cMDS_albDecTr)    = albDecTr0
+  ModelDailyState(Gridiv,cMDS_albEveTr)    = AlbEveTr0
+  ModelDailyState(Gridiv,cMDS_albDecTr)    = AlbDecTr0
+  ModelDailyState(Gridiv,cMDS_albGrass)    = AlbGrass0
+  ModelDailyState(Gridiv,cMDS_porosity)    = Porosity0  
   ModelDailyState(Gridiv,cMDS_DecidCap)    = DecidCap0
+  
   ModelDailyState(Gridiv,cMDS_CumSnowfall) = 0 !!Check this
-  ModelDailyState(Gridiv,cMDS_albEveTr)    = albEveTr0
-  ModelDailyState(Gridiv,cMDS_albGrass)    = albGrass0
+  
+  ModelDailyState(Gridiv,cMDS_DaysSinceRain) = REAL(DaysSinceRain,KIND(1d0))
+  ModelDailyState(Gridiv,cMDS_TempC) = Temp_C0
+  ! Assume that the temperature has been the same for the previous days
+  ModelDailyState(Gridiv,cMDS_TempCOld1) = Temp_C0
+  ModelDailyState(Gridiv,cMDS_TempCOld2) = Temp_C0
+  ModelDailyState(Gridiv,cMDS_TempCOld3) = Temp_C0
 
   ! -- Anthropogenic heat flux initializations --
   ! Need to get BaseTHDD from SurfaceChar, as info not transferred until SUEWS_Translate called
   BaseTHDD = SurfaceChar(Gridiv,c_BaseTHDD)
 
-  IF(AnthropHeatChoice>=0) THEN
+  IF(AnthropHeatMethod>=0) THEN
      !Calculations related to heating and cooling degree days (BaseT is used always)
      IF ((Temp_C0-BaseTHDD)>=0) THEN   !Cooling
         gamma2=1
@@ -1667,22 +1899,6 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv)
      ModelDailyState(Gridiv,cMDS_HDD2) = gamma2*(Temp_C0-BaseTHDD) ! Cooling
   ENDIF
 
-  ModelDailyState(Gridiv,cMDS_TempC) = Temp_C0
-  ModelDailyState(Gridiv,cMDS_DaysSinceRain) = REAL(DaysSinceRain,KIND(1d0))
-
-  ! Assume that the temperature has been the same for the previous days
-  ModelDailyState(Gridiv,cMDS_TempCOld1) = Temp_C0
-  ModelDailyState(Gridiv,cMDS_TempCOld2) = Temp_C0
-  ModelDailyState(Gridiv,cMDS_TempCOld3) = Temp_C0
-
-  !! These variables don't seem to be needed (commented out HCW 27 Nov 2014)
-  !! If required, they will need updating for a non-hourly timestep
-  !! Initialize hourly temperature and precipitation + 5 day mean used to define thermal growing season
-  !runT(0:23)=Temp_C0
-  !runP(0:23)=0
-
-  finish=.FALSE.
-
   ! -- Save snow density and snow albedo info in InitialConditions to ModelDailyState array --
   ModelDailyState(Gridiv,cMDS_SnowDens(PavSurf))    = SnowDensPaved
   ModelDailyState(Gridiv,cMDS_SnowDens(BldgSurf))   = SnowDensBldgs
@@ -1691,14 +1907,12 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv)
   ModelDailyState(Gridiv,cMDS_SnowDens(GrassSurf))  = SnowDensGrass
   ModelDailyState(Gridiv,cMDS_SnowDens(BSoilSurf))  = SnowDensBSoil
   ModelDailyState(Gridiv,cMDS_SnowDens(WaterSurf))  = SnowDensWater
+
   ModelDailyState(Gridiv,cMDS_SnowAlb)  = SnowAlb0
-
-  !! Where is this from??
-  IceFrac=0.2   !Estimated fraction of ice. Should be improved in the future
-
-  ! ==============================================================
-  ! ============ Save states to ModelOutputData ==================
-
+  
+  ! -------------------------------------------------------------------------
+  
+  ! Saving to ModelOutputData array -----------------------------------------
 
   ! -- Initial wetness status of each surface (above ground) --
   ModelOutputData(0,cMOD_State(PavSurf),   Gridiv) = PavedState
@@ -1718,15 +1932,6 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv)
   ModelOutputData(0,cMOD_SoilState(BSoilSurf), Gridiv) = SoilStoreBSoilState
   ModelOutputData(0,cMOD_SoilState(WaterSurf), Gridiv) = 0 ! No soil layer for water surface
 
-  ! -- Initial snow water equivalent for each surface --
-  ModelOutputData(0,cMOD_SnowPack(PavSurf),   Gridiv) = SnowPackPaved
-  ModelOutputData(0,cMOD_SnowPack(BldgSurf),  Gridiv) = SnowPackBldgs
-  ModelOutputData(0,cMOD_SnowPack(ConifSurf), Gridiv) = SnowPackEveTr
-  ModelOutputData(0,cMOD_SnowPack(DecidSurf), Gridiv) = SnowPackDecTr
-  ModelOutputData(0,cMOD_SnowPack(GrassSurf), Gridiv) = SnowPackGrass
-  ModelOutputData(0,cMOD_SnowPack(BSoilSurf), Gridiv) = SnowPackBSoil
-  ModelOutputData(0,cMOD_SnowPack(WaterSurf), Gridiv) = SnowPackWater
-
   ! -- Initial liquid (melted) water for each surface --
   ModelOutputData(0,cMOD_SnowWaterState(PavSurf),   Gridiv) = SnowWaterPavedState
   ModelOutputData(0,cMOD_SnowWaterState(BldgSurf),  Gridiv) = SnowWaterBldgsState
@@ -1735,6 +1940,15 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv)
   ModelOutputData(0,cMOD_SnowWaterState(GrassSurf), Gridiv) = SnowWaterGrassState
   ModelOutputData(0,cMOD_SnowWaterState(BSoilSurf), Gridiv) = SnowWaterBSoilState
   ModelOutputData(0,cMOD_SnowWaterState(WaterSurf), Gridiv) = SnowWaterWaterState
+
+  ! -- Initial snow water equivalent for each surface --
+  ModelOutputData(0,cMOD_SnowPack(PavSurf),   Gridiv) = SnowPackPaved
+  ModelOutputData(0,cMOD_SnowPack(BldgSurf),  Gridiv) = SnowPackBldgs
+  ModelOutputData(0,cMOD_SnowPack(ConifSurf), Gridiv) = SnowPackEveTr
+  ModelOutputData(0,cMOD_SnowPack(DecidSurf), Gridiv) = SnowPackDecTr
+  ModelOutputData(0,cMOD_SnowPack(GrassSurf), Gridiv) = SnowPackGrass
+  ModelOutputData(0,cMOD_SnowPack(BSoilSurf), Gridiv) = SnowPackBSoil
+  ModelOutputData(0,cMOD_SnowPack(WaterSurf), Gridiv) = SnowPackWater
 
   ! -- Initial fraction of snow on each surface --
   ModelOutputData(0,cMOD_SnowFrac(PavSurf),   Gridiv) = SnowFracPaved
@@ -1745,9 +1959,12 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv)
   ModelOutputData(0,cMOD_SnowFrac(BSoilSurf), Gridiv) = SnowFracBSoil
   ModelOutputData(0,cMOD_SnowFrac(WaterSurf), Gridiv) = SnowFracWater
 
-  !At this point translate arrays to variables (needed for RoughnessParameters)
+   
+  !! Where is this from??
+  IceFrac=0.2   !Estimated fraction of ice. Should be improved in the future
+
+  ! At this point translate arrays to variables (needed for RoughnessParameters)
   CALL SUEWS_Translate(Gridiv,0,0)
-  !PRINT*, 'id_prev in initial after translate',id_prev
 
   !Calculation of roughness parameters (N.B. uses porosity)
   CALL RoughnessParameters
@@ -1815,11 +2032,11 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv)
   ENDIF
 
   ! -----------------------------------------------------------------------
-  ! Calculate daily water use if modelled (i.e. if WU_choice = 0).
+  ! Calculate daily water use if modelled (i.e. if WaterUseMethod = 0).
   ! Calculated from previous day information given in InitialConditions file
 
   WU_day=0                !Initialize WU_day
-  IF (WU_choice==0) THEN  !Model water use
+  IF (WaterUseMethod==0) THEN  !Model water use
      calc=0
 
      IF (DayWat(wd)==1.0) THEN !if DayWat(wd)=1.0 (irrigation occurs on this day)
@@ -1881,25 +2098,6 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv)
 
   ! -----------------------------------------------------------------------
 
-  !Initialise rates of change variables for OHM calculation
-  ! check ?? this should not happen at the start of the year if continuing
-
-  !q1_grids(Gridiv)=-20
-  !q2_grids(Gridiv)=-22
-  !q3_grids(Gridiv)=-24
-
-  !r1_grids(Gridiv)=-20
-  !r2_grids(Gridiv)=-22
-  !r3_grids(Gridiv)=-24
-
-  q1_grids(Gridiv)=-101
-  q2_grids(Gridiv)=-100
-  q3_grids(Gridiv)=-99
-
-  r1_grids(Gridiv)=-101
-  r2_grids(Gridiv)=-100
-  r3_grids(Gridiv)=-99
-
   ! ---- AnOHM TS ---------------------
   ! initialize Bowen ratio
   Bo_grids(0,:)=2.
@@ -1907,16 +2105,34 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv)
 
   ! -----------------------------------
 
-  !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  !DEFINE DIFFERENT INITIALIZATION PARAMETERS
-  !Are still needed ??
-  !once=.true.
   RETURN
 
 600 CALL ErrorHint(47,TRIM(FileInit),notUsed,notUsed,notUsedI)
 601 CALL ErrorHint(48,TRIM(FileInit),notUsed,notUsed,ios_out)
 
 END SUBROUTINE InitialState
+
+   
+! ===========================================================================
+FUNCTION NormalizeVegChar(VegCol,Gridiv) RESULT(NormVegResult)
+        
+  USE AllocateArray
+  USE ColNamesInputFiles
+    
+  IMPLICIT NONE
+  
+  INTEGER,DIMENSION(nvegsurf):: VegCol  !Must be column numbers defined for veg surfaces only
+  INTEGER:: Gridiv
+  REAL(KIND(1d0)):: NormVegResult
+   
+  NormVegResult = (SurfaceChar(Gridiv,VegCol(ivConif))*SurfaceChar(Gridiv,c_FrEveTr) + &
+                   SurfaceChar(Gridiv,VegCol(ivDecid))*SurfaceChar(Gridiv,c_FrDecTr) + &
+                   SurfaceChar(Gridiv,VegCol(ivGrass))*SurfaceChar(Gridiv,c_FrGrass)) / &
+                    (SurfaceChar(Gridiv,c_FrEveTr) + SurfaceChar(Gridiv,c_FrDecTr) + SurfaceChar(Gridiv,c_FrGrass))
+  
+  RETURN
+END FUNCTION NormalizeVegChar
+! ===========================================================================
 
 !-------------------------------------------------------------------------
 SUBROUTINE NextInitial(GridName,year_int)
@@ -1930,6 +2146,7 @@ SUBROUTINE NextInitial(GridName,year_int)
   ! Last day of year is not anymore the number of days on that year, but rather
   ! id == 1. Thus nofDaysThisYear was changed to 1. LJ 9/4/2015
   !------------------------------------------------------------------------
+  
   USE allocateArray
   USE ColNamesInputFiles
   USE ColNamesModelDailyState
@@ -1948,6 +2165,7 @@ SUBROUTINE NextInitial(GridName,year_int)
   INTEGER:: year_int2
   INTEGER:: year_int
   INTEGER:: ID_Prev_Out ! ID_Prev written to next Initial Conditions file
+  INTEGER:: nofDaysThisYear_ForOutput  !Added HCW 13 Jan 2017
 
   year=year_int   !HCW added 21 Nov 2014
 
@@ -1956,28 +2174,41 @@ SUBROUTINE NextInitial(GridName,year_int)
      year_int2=INT(year+1)
      WRITE(year_txt2,'(I4)')year_int2
      OPEN(57,File=TRIM(FileInputPath)//TRIM("InitialConditions")//TRIM(GridName)//'_'//TRIM(ADJUSTL(year_txt2))//'.nml',err=200)
+     nofDaysThisYear_ForOutput = nofdaysthisyear
   ELSE
      year_int2=INT(year)  !End of Run but not end of year
      WRITE(year_txt2,'(I4)')year_int2
      OPEN(57,File=TRIM(FileInputPath)//TRIM("InitialConditions")//TRIM(GridName)//'_'//TRIM(ADJUSTL(year_txt2))// &
           '_EndofRun.nml',err=201)
+     nofDaysThisYear_ForOutput = id-1
   ENDIF
   ID_Prev_Out=(id-1)
-  !endif
 
-
-
-
+    
   !! If last time of day, then DailyState variables will have been updated so can write out arrays for id rather than id-1
   !if(it==23 .and. imin == (nsh_real-1)/nsh_real*60) then  !!LastTimeofday
   !   id=id+1
   !endif
   WRITE(57,*)'&InitialConditions'
-  WRITE(57,*)'DaysSinceRain=',INT(HDD(id,6))
-  WRITE(57,*)'Temp_C0=',HDD(nofDaysThisYear,3)
-  WRITE(57,*)'ID_Prev=',ID_Prev_Out
-  WRITE(57,*)'GDD_1_0=',GDD(nofDaysThisYear,1)
-  WRITE(57,*)'GDD_2_0=',GDD(nofDaysThisYear,2)
+  WRITE(57,*)'DaysSinceRain=',INT(HDD(nofDaysThisYear_ForOutput,6))
+  WRITE(57,*)'Temp_C0=',HDD(nofDaysThisYear_ForOutput,3)
+  !WRITE(57,*)'ID_Prev=',ID_Prev_Out  !No longer included in initial conditions (HCW 13 Jan 2017)
+  WRITE(57,*)'GDD_1_0=',GDD(nofDaysThisYear_ForOutput,1)
+  WRITE(57,*)'GDD_2_0=',GDD(nofDaysThisYear_ForOutput,2)
+  WRITE(57,*)'LAIinitialEveTr=',lai(nofDaysThisYear_ForOutput,ivConif)
+  WRITE(57,*)'LAIinitialDecTr=',lai(nofDaysThisYear_ForOutput,ivDecid)
+  WRITE(57,*)'LAIinitialGrass=',lai(nofDaysThisYear_ForOutput,ivGrass)
+  WRITE(57,*)'AlbEveTr0=',AlbEveTr(nofDaysThisYear_ForOutput)
+  WRITE(57,*)'AlbDecTr0=',AlbDecTr(nofDaysThisYear_ForOutput)
+  WRITE(57,*)'AlbGrass0=',AlbGrass(nofDaysThisYear_ForOutput)
+  WRITE(57,*)'DecidCap0=',decidCap(nofDaysThisYear_ForOutput)
+  WRITE(57,*)'Porosity0=',porosity(nofDaysThisYear_ForOutput)
+  WRITE(57,*)'SoilStorePavedState=',soilmoist(PavSurf)
+  WRITE(57,*)'SoilStoreBldgsState=',soilmoist(BldgSurf)
+  WRITE(57,*)'SoilStoreEveTrState=',soilmoist(ConifSurf)
+  WRITE(57,*)'SoilStoreDecTrState=',soilmoist(DecidSurf)
+  WRITE(57,*)'SoilStoreGrassState=',soilmoist(GrassSurf)
+  WRITE(57,*)'SoilStoreBSoilState=',soilmoist(BSoilSurf)
   WRITE(57,*)'PavedState=',State(PavSurf)
   WRITE(57,*)'BldgsState=',State(BldgSurf)
   WRITE(57,*)'EveTrState=',State(ConifSurf)
@@ -1985,49 +2216,38 @@ SUBROUTINE NextInitial(GridName,year_int)
   WRITE(57,*)'GrassState=',State(GrassSurf)
   WRITE(57,*)'BSoilState=',State(BSoilSurf)
   WRITE(57,*)'WaterState=',State(WaterSurf)
-  WRITE(57,*)'LAIinitialEveTr=',lai(nofDaysThisYear,ivConif)
-  WRITE(57,*)'LAIinitialDecTr=',lai(nofDaysThisYear,ivDecid)
-  WRITE(57,*)'LAIinitialGrass=',lai(nofDaysThisYear,ivGrass)
-  WRITE(57,*)'albEveTr0=',AlbEveTr(id)
-  WRITE(57,*)'albDecTr0=',AlbDecTr(id)
-  WRITE(57,*)'albGrass0=',AlbGrass(id)
-  WRITE(57,*)'DecidCap0=',decidCap(id)
-  WRITE(57,*)'porosity0=',porosity(id)
-  WRITE(57,*)'soilstorePavedState=',soilmoist(PavSurf)
-  WRITE(57,*)'soilstoreBldgsState=',soilmoist(BldgSurf)
-  WRITE(57,*)'soilstoreEveTrState=',soilmoist(ConifSurf)
-  WRITE(57,*)'soilstoreDecTrState=',soilmoist(DecidSurf)
-  WRITE(57,*)'soilstoreGrassState=',soilmoist(GrassSurf)
-  WRITE(57,*)'soilstoreBSoilState=',soilmoist(BSoilSurf)
-  WRITE(57,*)'SnowWaterPavedstate=',MeltWaterStore(PavSurf)
-  WRITE(57,*)'SnowWaterBldgsState=',MeltWaterStore(BldgSurf)
-  WRITE(57,*)'SnowWaterEveTrState=',MeltWaterStore(ConifSurf)
-  WRITE(57,*)'SnowWaterDecTrState=',MeltWaterStore(DecidSurf)
-  WRITE(57,*)'SnowWaterGrassState=',MeltWaterStore(GrassSurf)
-  WRITE(57,*)'SnowWaterBSoilState=',MeltWaterStore(BSoilSurf)
-  WRITE(57,*)'SnowWaterWaterState=',MeltWaterStore(WaterSurf)
-  WRITE(57,*)'SnowPackPaved=',SnowPack(PavSurf)
-  WRITE(57,*)'SnowPackBldgs=',SnowPack(BldgSurf)
-  WRITE(57,*)'SnowPackEveTr=',SnowPack(ConifSurf)
-  WRITE(57,*)'SnowPackDecTr=',SnowPack(DecidSurf)
-  WRITE(57,*)'SnowPackGrass=',SnowPack(GrassSurf)
-  WRITE(57,*)'SnowPackBSoil=',SnowPack(BSoilSurf)
-  WRITE(57,*)'SnowPackWater=',SnowPack(WaterSurf)
-  WRITE(57,*)'SnowFracPaved=',SnowFrac(PavSurf)
-  WRITE(57,*)'SnowFracBldgs=',SnowFrac(BldgSurf)
-  WRITE(57,*)'SnowFracEveTr=',SnowFrac(ConifSurf)
-  WRITE(57,*)'SnowFracDecTr=',SnowFrac(DecidSurf)
-  WRITE(57,*)'SnowFracGrass=',SnowFrac(GrassSurf)
-  WRITE(57,*)'SnowFracBSoil=',SnowFrac(BSoilSurf)
-  WRITE(57,*)'SnowFracWater=',SnowFrac(WaterSurf)
-  WRITE(57,*)'SnowDensPaved=',SnowDens(PavSurf)
-  WRITE(57,*)'SnowDensBldgs=',SnowDens(BldgSurf)
-  WRITE(57,*)'SnowDensEveTr=',SnowDens(ConifSurf)
-  WRITE(57,*)'SnowDensDecTr=',SnowDens(DecidSurf)
-  WRITE(57,*)'SnowDensGrass=',SnowDens(GrassSurf)
-  WRITE(57,*)'SnowDensBSoil=',SnowDens(BSoilSurf)
-  WRITE(57,*)'SnowDensWater=',SnowDens(WaterSurf)
-  WRITE(57,*)'SnowAlb0=',SnowAlb
+  ! Only write snow variables if snow part is running
+  IF(snowUse==1) THEN
+     WRITE(57,*)'SnowWaterPavedState=',MeltWaterStore(PavSurf)
+     WRITE(57,*)'SnowWaterBldgsState=',MeltWaterStore(BldgSurf)
+     WRITE(57,*)'SnowWaterEveTrState=',MeltWaterStore(ConifSurf)
+     WRITE(57,*)'SnowWaterDecTrState=',MeltWaterStore(DecidSurf)
+     WRITE(57,*)'SnowWaterGrassState=',MeltWaterStore(GrassSurf)
+     WRITE(57,*)'SnowWaterBSoilState=',MeltWaterStore(BSoilSurf)
+     WRITE(57,*)'SnowWaterWaterState=',MeltWaterStore(WaterSurf)
+     WRITE(57,*)'SnowPackPaved=',SnowPack(PavSurf)
+     WRITE(57,*)'SnowPackBldgs=',SnowPack(BldgSurf)
+     WRITE(57,*)'SnowPackEveTr=',SnowPack(ConifSurf)
+     WRITE(57,*)'SnowPackDecTr=',SnowPack(DecidSurf)
+     WRITE(57,*)'SnowPackGrass=',SnowPack(GrassSurf)
+     WRITE(57,*)'SnowPackBSoil=',SnowPack(BSoilSurf)
+     WRITE(57,*)'SnowPackWater=',SnowPack(WaterSurf)
+     WRITE(57,*)'SnowFracPaved=',SnowFrac(PavSurf)
+     WRITE(57,*)'SnowFracBldgs=',SnowFrac(BldgSurf)
+     WRITE(57,*)'SnowFracEveTr=',SnowFrac(ConifSurf)
+     WRITE(57,*)'SnowFracDecTr=',SnowFrac(DecidSurf)
+     WRITE(57,*)'SnowFracGrass=',SnowFrac(GrassSurf)
+     WRITE(57,*)'SnowFracBSoil=',SnowFrac(BSoilSurf)
+     WRITE(57,*)'SnowFracWater=',SnowFrac(WaterSurf)
+     WRITE(57,*)'SnowDensPaved=',SnowDens(PavSurf)
+     WRITE(57,*)'SnowDensBldgs=',SnowDens(BldgSurf)
+     WRITE(57,*)'SnowDensEveTr=',SnowDens(ConifSurf)
+     WRITE(57,*)'SnowDensDecTr=',SnowDens(DecidSurf)
+     WRITE(57,*)'SnowDensGrass=',SnowDens(GrassSurf)
+     WRITE(57,*)'SnowDensBSoil=',SnowDens(BSoilSurf)
+     WRITE(57,*)'SnowDensWater=',SnowDens(WaterSurf)
+     WRITE(57,*)'SnowAlb0=',SnowAlb
+  ENDIF
   WRITE(57,*)'BoInit=',BoInit
   WRITE(57,*)'/'
   CLOSE(57)
@@ -2084,8 +2304,8 @@ SUBROUTINE SUEWS_InitializeMetData(lunit)
   ! Read in next chunk of met data and fill MetForcingData array with data for every timestep
   !NSHcounter = 1
   DO i=1,ReadlinesMetdata
-     CALL MetRead(MetArray,InputmetFormat,ldown_option,NetRadiationChoice,&
-          snowUse,smd_choice,SoilDepthMeas,SoilRocks,SoilDensity,SmCap)
+     CALL MetRead(MetArray,InputmetFormat,ldown_option,NetRadiationMethod,&
+          snowUse,SMDMethod,SoilDepthMeas,SoilRocks,SoilDensity,SmCap)
      !DO iv=1,NSH
      !    MetForcingData(NSHcounter,1:24,GridCounter) = MetArray
      !   NSHcounter = NSHcounter + 1
@@ -2134,49 +2354,10 @@ SUBROUTINE CheckInitial
   !real(kind(1d0)):: pTol   !Precision tolerance for range checks
 
   IF (Temp_C0<(Temp_C-10).OR.Temp_C0>(Temp_C+10)) THEN
-     CALL ErrorHint(36,'InitialCond: Check temperature', Temp_C0, Temp_C, notUsedI)
+     CALL ErrorHint(37,'Temp_C0 very different to Tair.', Temp_C0, Temp_C, notUsedI)
   ENDIF
 
-  IF (ID_Prev/=id-1) THEN
-     CALL ErrorHint(36,'InitialCond: Check previous day', REAL(ID_Prev,KIND(1d0)), REAL(id,KIND(1d0)), notUsedI)
-  ENDIF
-
-!!!This part currently does not work for multiple grids as Initial conditions values get overwritten.
-  !! Simple checks that Initial Conditions are within the specified ranges (within a precision tolerance)
-  !pTol = 0.00001
-  !!write(*,*) LAIInitialEveTr,LAImin(ConifSurf-2),LAImax(ConifSurf-2)
-  !if(LAIInitialEveTr < (LAImin(ConifSurf-2)-pTol)) then
-  !  call ErrorHint(36,'Intial LAI for EveTr < min value in SUEWS_Veg.txt!', LAIMin(ConifSurf-2), LAIInitialEveTr, notUsedI)
-  !endif
-  !if(LAIInitialEveTr > (LAImax(ConifSurf-2)+pTol)) then
-  !   call ErrorHint(36,'Intial LAI for EveTr > max value in SUEWS_Veg.txt!', LAIMax(ConifSurf-2), LAIInitialEveTr, notUsedI)
-  !endif
-  !!write(*,*) LAIInitialDecTr,LAImin(DecidSurf-2)
-  !if(LAIInitialDecTr < (LAImin(DecidSurf-2)-pTol)) then
-  !   call ErrorHint(36,'Intial LAI for DecTr < min value in SUEWS_Veg.txt!', LAIMin(DecidSurf-2), LAIInitialDecTr, notUsedI)
-  !endif
-  !if(LAIInitialDecTr > (LAImax(DecidSurf-2)+pTol)) then
-  !   call ErrorHint(36,'Intial LAI for DecTr > max value in SUEWS_Veg.txt!', LAIMax(DecidSurf-2), LAIInitialDecTr, notUsedI)
-  !endif
-  !if(LAIInitialGrass < (LAImin(GrassSurf-2)-pTol)) then
-  !   call ErrorHint(36,'Intial LAI for Grass < min value in SUEWS_Veg.txt!', LAIMin(GrassSurf-2), LAIInitialGrass, notUsedI)
-  !endif
-  !if(LAIInitialGrass > (LAImax(GrassSurf-2)+pTol)) then
-  !  call ErrorHint(36,'Intial LAI for Grass > max value in SUEWS_Veg.txt!', LAIMax(GrassSurf-2), LAIInitialGrass, notUsedI)
-  !endif
-
-  !!write(*,*) AlbDecTr0, albmin_DecTr, albmax_DecTr
-  !if(AlbDecTr0 < (AlbMin_DecTr-pTol)) then
-  !   !call ErrorHint(36,'Intial albedo for DecTr < min value in SUEWS_Veg.txt!', AlbMin_DecTr, AlbDecTr0, notUsedI)
-  !   call ErrorHint(36,'Intial albedo for DecTr < min value!', AlbMin_DecTr, AlbDecTr0, notUsedI)  !endif
-  !if(AlbDecTr0 > (AlbMax_dec+pTol)) then
-  !   !call ErrorHint(36,'Intial albedo for DecTr > max value in SUEWS_Veg.txt!', AlbMax_dec, AlbDecTr0, notUsedI)
-  !   call ErrorHint(36,'Intial albedo for DecTr < max value!', AlbMax_dec, AlbDecTr0, notUsedI)
-  !endif
-  !!DecidCap0, Porosity0...
-
-  !Check more thoroughly if LAI values are OK. Need to treat different hemispheres as well as
-  !tropics separately.
+  !Check more thoroughly if LAI values are OK. Need to treat different hemispheres as well as tropics separately.
   IF (lat>40) THEN
      IF ((LAIinitialEveTr>LAImin(ConifSurf-2)+1.AND.(id<60.OR.id>330)).OR.&
           (LAIinitialEveTr<LAImax(ConifSurf-2)-1.AND.(id>130.AND.id<244))) THEN
@@ -2221,54 +2402,50 @@ SUBROUTINE CheckInitial
 
   !Soilstore check
   IF (SoilstoreBldgsState>soilstoreCap(BldgSurf)) THEN
-     CALL ErrorHint(36,'InitialCond: Check initial condition of building soil store.',&
+     CALL ErrorHint(37,'InitialCond: Check initial condition of building soil store.',&
           SoilstoreBldgsState, soilstoreCap(BldgSurf), notUsedI)
   ENDIF
   IF (SoilstorePavedState>soilstoreCap(PavSurf)) THEN
-     CALL ErrorHint(36,'InitialCond: Check initial condition of paved soil store.',&
+     CALL ErrorHint(37,'InitialCond: Check initial condition of paved soil store.',&
           SoilstorePavedState, soilstoreCap(PavSurf), notUsedI)
   ENDIF
   IF (SoilstoreEveTrState>soilstoreCap(ConifSurf)) THEN
-     CALL ErrorHint(36,'InitialCond: Check initial condition of conif soil store.',&
+     CALL ErrorHint(37,'InitialCond: Check initial condition of conif soil store.',&
           SoilstoreEveTrState, soilstoreCap(ConifSurf), notUsedI)
   ENDIF
   IF (SoilstoreDecTrState>soilstoreCap(DecidSurf)) THEN
-     CALL ErrorHint(36,'InitialCond: Check initial condition of deciduous soil store.',&
+     CALL ErrorHint(37,'InitialCond: Check initial condition of deciduous soil store.',&
           SoilstoreDecTrState, soilstoreCap(DecidSurf), notUsedI)
   ENDIF
   IF (SoilstoreBSoilState>soilstoreCap(BSoilSurf)) THEN
-     CALL ErrorHint(36,'InitialCond: Check initial condition of bare soil soil store.',&
+     CALL ErrorHint(37,'InitialCond: Check initial condition of bare soil soil store.',&
           SoilstoreBSoilState, soilstoreCap(BSoilSurf), notUsedI)
   ENDIF
   IF (SoilstoreGrassState>soilstoreCap(GrassSurf)) THEN
-     CALL ErrorHint(36,'InitialCond: Check initial condition of grass soil store.',&
+     CALL ErrorHint(37,'InitialCond: Check initial condition of grass soil store.',&
           SoilstoreGrassState, soilstoreCap(GrassSurf), notUsedI)
   ENDIF
 
   !Snow stuff
   IF (snowUse==1) THEN
      IF (SnowWaterBldgsState>CRWmax*SnowPackBldgs) THEN
-        CALL ErrorHint(36,'InitialCond: SnowWaterBldgsState', SnowWaterBldgsState, SnowPackBldgs, notUsedI)
+        CALL ErrorHint(37,'InitialCond: SnowWaterBldgsState', SnowWaterBldgsState, SnowPackBldgs, notUsedI)
      ENDIF
      IF (SnowWaterPavedState>CRWmax*SnowPackPaved) THEN
-        CALL ErrorHint(36,'InitialCond: SnowWaterPavedState', SnowWaterPavedState, SnowPackPaved, notUsedI)
+        CALL ErrorHint(37,'InitialCond: SnowWaterPavedState', SnowWaterPavedState, SnowPackPaved, notUsedI)
      ENDIF
      IF (SnowWaterEveTrState>CRWmax*SnowPackEveTr) THEN
-        CALL ErrorHint(36,'InitialCond: SnowWaterEveTrstate', SnowWaterEveTrstate, SnowPackEveTr, notUsedI)
+        CALL ErrorHint(37,'InitialCond: SnowWaterEveTrstate', SnowWaterEveTrstate, SnowPackEveTr, notUsedI)
      ENDIF
      IF (SnowWaterDecTrState>CRWmax*SnowPackDecTr) THEN
-        CALL ErrorHint(36,'InitialCond: SnowWaterDecTrState', SnowWaterDecTrState, SnowPackDecTr, notUsedI)
+        CALL ErrorHint(37,'InitialCond: SnowWaterDecTrState', SnowWaterDecTrState, SnowPackDecTr, notUsedI)
      ENDIF
      IF (SnowWaterGrassState>CRWmax*SnowPackGrass) THEN
-        CALL ErrorHint(36,'InitialCond: SnowWaterGrassState', SnowWaterGrassState, SnowPackGrass, notUsedI)
+        CALL ErrorHint(37,'InitialCond: SnowWaterGrassState', SnowWaterGrassState, SnowPackGrass, notUsedI)
      ENDIF
      IF (SnowWaterBSoilState>CRWmax*SnowPackBSoil) THEN
-        CALL ErrorHint(36,'InitialCond: SnowWaterGrassUnirState', SnowWaterBSoilState, SnowPackBSoil, notUsedI)
+        CALL ErrorHint(37,'InitialCond: SnowWaterGrassUnirState', SnowWaterBSoilState, SnowPackBSoil, notUsedI)
      ENDIF
   ENDIF
-
-  !SnowWaterWaterstate,& ??
-  !SnowPackWater,& ??
-
 
 END SUBROUTINE CheckInitial

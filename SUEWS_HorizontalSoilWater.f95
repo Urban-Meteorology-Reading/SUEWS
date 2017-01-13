@@ -73,7 +73,7 @@
                  
                  !Check this (HCW 12/08/2014) - is this needed? Why is it not done for other surface?
                  if(DimenWaterCon1<0.00000005) then
-                    call ErrorHint(18,'HorizontalSoilWater - check soil moisture capacity & volumetric water content',&
+                    call ErrorHint(18,'In HorizontalSoilWater.f95, check soil moisture capacity & soil moisture for this surface.',&
                         SoilStoreCap(is), soilmoist(is),is)
                  endif
                  

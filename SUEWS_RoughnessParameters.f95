@@ -22,10 +22,10 @@ SUBROUTINE RoughnessParameters
   ENDIF
 
   !Calculate Z0m and Zdm depending on the Z0 method
-  IF(z0_Method==2) THEN  !Rule of thumb (G&O 1999)
+  IF(RoughLenMomMethod==2) THEN  !Rule of thumb (G&O 1999)
      Z0m=0.1*Zh
      Zdm=0.7*Zh
-  ELSEIF(z0_Method==3)THEN !MacDonald 1998
+  ELSEIF(RoughLenMomMethod==3)THEN !MacDonald 1998
      IF (areaZh/=0)THEN  !Plan area fraction
         !planF=FAIBldg*sfr(BldgSurf)/areaZh+FAItree*sfr(ConifSurf)/areaZh+FAItree*(1-porosity(id))*sfr(DecidSurf)/areaZh
         planF=FAIBldg*sfr(BldgSurf)/areaZh + FAIEveTree*sfr(ConifSurf)/areaZh + FAIDecTree*(1-porosity(id))*sfr(DecidSurf)/areaZh
@@ -40,7 +40,7 @@ SUBROUTINE RoughnessParameters
 
   ZZD=Z-zdm
 
-  ! error messages if aerodynamic parameters negative
-  IF(z0m<0) CALL ErrorHint(14,'SUEWS_RoughnessParameters',z0m,notUsed,notUsedI)
-  IF(zzd<0) CALL ErrorHint(15,'SUEWS_RoughnessParameters',zzd,notUsed,notUsedI)
+  ! Error messages if aerodynamic parameters negative
+  IF(z0m<0) CALL ErrorHint(14,'In SUEWS_RoughnessParameters.f95, z0 < 0 m.',z0m,notUsed,notUsedI)
+  IF(zzd<0) CALL ErrorHint(14,'In SUEWS_RoughnessParameters.f95, zd < 0 m.',zzd,notUsed,notUsedI)
 END SUBROUTINE RoughnessParameters

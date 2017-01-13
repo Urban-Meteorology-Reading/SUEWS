@@ -70,9 +70,9 @@ SUBROUTINE DailyState(Gridiv)
   REAL,DIMENSION(24) :: xQH,xQE,xAH   ! QH and QE
   REAL :: xBo                         ! Bowen ratio
   REAL :: mxQH,mxQE,xmAH              ! mean values
-  REAL :: xx                          ! temporary use
-  INTEGER :: i                        ! temporary use
-  INTEGER :: lenDataOut               ! length of met data block
+  !REAL :: xx                          ! temporary use
+  !INTEGER :: i                        ! temporary use
+  !INTEGER :: lenDataOut               ! length of met data block
   INTEGER, ALLOCATABLE :: lSub(:)     ! array to retrieve data of the previous day (id)
   INTEGER :: irRange(2)               ! row range in MetData containing id values
 
@@ -190,7 +190,7 @@ SUBROUTINE DailyState(Gridiv)
 
 
      ! Calculate modelled daily water use ------------------------------------------
-     IF (WU_choice==0) THEN   !If water use is to be modelled (rather than observed)
+     IF (WaterUseMethod==0) THEN   !If water use is to be modelled (rather than observed)
         wd=dayofWeek(id,1)
 
         IF (DayWat(wd)==1.0) THEN      !1 indicates watering permitted on this day
@@ -307,20 +307,20 @@ SUBROUTINE DailyState(Gridiv)
            ! Set GDD zero in winter time
            IF (GDD(id,2)<-critDays.AND.id>170) GDD(id,1)=0
 
-           IF (LAItype < 0.5) THEN   !Original LAI type
+           IF (LAItype(iv) < 0.5) THEN   !Original LAI type
               IF(GDD(id,1)>0.AND.GDD(id,1)<GDDFull(iv)) THEN       !Leaves can still grow
-                 lai(id,iv)=(lai(id-1,iv)**laiPower(1)*GDD(id,1)*laiPower(2))+lai(id-1,iv)
+                 lai(id,iv)=(lai(id-1,iv)**laiPower(1,iv)*GDD(id,1)*laiPower(2,iv))+lai(id-1,iv)
               ELSEIF(GDD(id,2)<0.AND.GDD(id,2)>SDDFull(iv)) THEN   !Start senescence
-                 lai(id,iv)=(lai(id-1,iv)**laiPower(3)*GDD(id,2)*laiPower(4))+lai(id-1,iv)
+                 lai(id,iv)=(lai(id-1,iv)**laiPower(3,iv)*GDD(id,2)*laiPower(4,iv))+lai(id-1,iv)
               ELSE
                  lai(id,iv)=lai(id-1,iv)
               ENDIF
-           ELSEIF (LAItype>=0.5) THEN
+           ELSEIF (LAItype(iv)>=0.5) THEN
               IF(GDD(id,1)>0.AND.GDD(id,1)<GDDFull(iv)) THEN        !Leaves can still grow
-                 lai(id,iv)=(lai(id-1,iv)**laiPower(1)*GDD(id,1)*laiPower(2))+lai(id-1,iv)
+                 lai(id,iv)=(lai(id-1,iv)**laiPower(1,iv)*GDD(id,1)*laiPower(2,iv))+lai(id-1,iv)
                  !! Use day length to start senescence at high latitudes (N hemisphere)
               ELSEIF (GDD(id,5)<=12.AND.GDD(id,2)>SDDFull(iv)) THEN !Start senescence
-                 lai(id,iv)=(lai(id-1,iv)*laiPower(3)*(1-GDD(id,2))*laiPower(4))+lai(id-1,iv)
+                 lai(id,iv)=(lai(id-1,iv)*laiPower(3,iv)*(1-GDD(id,2))*laiPower(4,iv))+lai(id-1,iv)
               ELSE
                  lai(id,iv)=lai(id-1,iv)
               ENDIF
@@ -333,20 +333,20 @@ SUBROUTINE DailyState(Gridiv)
            ! Set GDD zero in winter time
            IF (GDD(id,2)<-critDays.AND.id<250) GDD(id,1)=0
 
-           IF (LAItype < 0.5) THEN   !Original LAI type
+           IF (LAItype(iv) < 0.5) THEN   !Original LAI type
               IF(GDD(id,1)>0.AND.GDD(id,1)<GDDFull(iv)) THEN
-                 lai(id,iv)=(lai(id-1,iv)**laiPower(1)*GDD(id,1)*laiPower(2))+lai(id-1,iv)
+                 lai(id,iv)=(lai(id-1,iv)**laiPower(1,iv)*GDD(id,1)*laiPower(2,iv))+lai(id-1,iv)
               ELSEIF(GDD(id,2)<0.AND.GDD(id,2)>SDDFull(iv)) THEN
-                 lai(id,iv)=(lai(id-1,iv)**laiPower(3)*GDD(id,2)*laiPower(4))+lai(id-1,iv)
+                 lai(id,iv)=(lai(id-1,iv)**laiPower(3,iv)*GDD(id,2)*laiPower(4,iv))+lai(id-1,iv)
               ELSE
                  lai(id,iv)=lai(id-1,iv)
               ENDIF
            ELSE
               IF(GDD(id,1)>0.AND.GDD(id,1)<GDDFull(iv)) THEN
-                 lai(id,iv)=(lai(id-1,iv)**laiPower(1)*GDD(id,1)*laiPower(2))+lai(id-1,iv)
+                 lai(id,iv)=(lai(id-1,iv)**laiPower(1,iv)*GDD(id,1)*laiPower(2,iv))+lai(id-1,iv)
                  !! Day length not used to start senescence in S hemisphere (not much land)
               ELSEIF(GDD(id,2)<0.AND.GDD(id,2)>SDDFull(iv)) THEN
-                 lai(id,iv)=(lai(id-1,iv)*laiPower(3)*(1-GDD(id,2))*laiPower(4))+lai(id-1,iv)
+                 lai(id,iv)=(lai(id-1,iv)*laiPower(3,iv)*(1-GDD(id,2))*laiPower(4,iv))+lai(id-1,iv)
               ELSE
                  lai(id,iv)=lai(id-1,iv)
               ENDIF
@@ -456,7 +456,7 @@ SUBROUTINE DailyState(Gridiv)
      mAHAnOHM(Gridiv)     = xmAH
      mAH_grids(id,Gridiv) = mAHAnOHM(Gridiv)
      ! load current AnOHM coef.:
-     IF ( QsChoice==3 ) THEN
+     IF ( StorageHeatMethod==3 ) THEN
         !  if ( id>364 ) then
         !    print*, 'test in DailyState'
         !    print*, a1AnOHM(Gridiv),a2AnOHM(Gridiv),a3AnOHM(Gridiv)
@@ -479,7 +479,8 @@ SUBROUTINE DailyState(Gridiv)
      !--------------------------------------------------------------------------
      !Write out DailyState file (1 row per day)
 
-     IF (writedailyState==1) THEN
+     IF (writedailyState==1) THEN     
+        !write(*,*) 'writing out daily state for day id:',id 
         !Define filename
         ! WRITE(grstr2,'(i5)') Gridiv      !Convert grid number for output file name
         WRITE(grstr2,'(i10)') GridIDmatrix(Gridiv)      !Bug fix HCW 24/05/2016 - name file with Grid as in SiteSelect

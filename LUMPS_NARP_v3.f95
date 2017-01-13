@@ -97,13 +97,11 @@
     
     REAL(KIND(1D0))              ::SnowAlb!Temp_C,PREss_hPa,qn1_obs,Ea_hPa,,INTENT(IN)
     REAL(KIND(1D0))              ::QSTARall,KUPall,LUPall,TSURFall,QSTAR_SF,QSTAR_S!KCLEAR,,INTENT(OUT)
-    !REAL(KIND(1D0)),INTENT(INOUT)::!FCLD,LDOWN,
-    !INTEGER,INTENT(IN)           ::ldown_option,AlbedoChoice,netRadiationChoice!,SnowAlb
+    
     REAL(KIND(1D0))              ::Temp_K,TD,ZENITH,QSTAR,QSTAR_SNOW,KUP_SNOW,LUP_SNOW,TSURF_SNOW!KUP,LUP,TSURF,
     REAL(KIND(1D0))              ::ALB0,EMIS0,EMIS_A,TRANS,RH,DTIME,KDOWN
     REAL(KIND(1D0))              ::LUPCORR,SIGMATK4,KDOWN_HR=0.
-    !REAL(KIND(1D0))              ::AZIMUTH
-    INTEGER                      ::DOY, is 
+        INTEGER                      ::DOY, is 
 
     real(kind(1D0))::qn1_cum,kup_cum,lup_cum,tsurf_cum,&   !Cumulative radiation components 
                    qn1_is,kup_is,lup_is,tsurf_is,&       !Sub-surface radiation components 
@@ -282,7 +280,7 @@
    
 
    !Set overall radiation components
-   if (netRadiationChoice/=3000) then !Observed Q* used and snow is modeled
+   if (NetRadiationMethod/=3000) then !Observed Q* used and snow is modeled
       QSTARall=qn1_cum
    else
       QSTARall=qn1_obs
@@ -448,7 +446,7 @@
     ENDDO
     READ(99,*,iostat=ios)ilat, G
     IF (ios/=0) THEN
-      call  ErrorHint(11,'reading Smith1966.grd',notUsed,notUsed,ios)       
+      call  ErrorHint(11,'reading Smith1966.grd (ios).',notUsed,notUsed,ios)       
     ENDIF
     CLOSE(99)
   END FUNCTION SmithLambda

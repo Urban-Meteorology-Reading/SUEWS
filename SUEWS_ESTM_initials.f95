@@ -136,13 +136,12 @@ SUBROUTINE ESTM_initials
 
   IMPLICIT NONE
   INTEGER :: i
-  INTEGER:: iv
   !REAL(KIND(1d0)) :: CFLval
   !REAL(KIND(1d0)) :: t5min
   REAL(KIND(1d0))::W,WB
-  CHARACTER (len=20)::FileCodeX
-  CHARACTER (len=150):: FileFinalTemp
-  LOGICAL:: inittemps=.FALSE.
+  !CHARACTER (len=20)::FileCodeX
+  !CHARACTER (len=150):: FileFinalTemp
+  !LOGICAL:: inittemps=.FALSE.
   INTEGER:: ESTMStart=0
   INTEGER:: Gridiv
 
@@ -444,6 +443,6 @@ SUBROUTINE ESTM_initials
      RETURN 
      
 !     315 CALL errorHint(11,TRIM(fileESTMTs),notUsed,notUsed,NotUsedI)
-     316 CALL errorHint(11,TRIM(fileFinalTemp),notUsed,notUsed,NotUsedI)
+!     316 CALL errorHint(11,TRIM(fileFinalTemp),notUsed,notUsed,NotUsedI)
      
  END SUBROUTINE ESTM_translate

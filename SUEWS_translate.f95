@@ -3,6 +3,8 @@
 !           - between arrays for different grids and the model variables
 !Made by HW&LJ Oct 2014
 !-----------------------------------------------------------------------------------
+! HCW 13 Dec 2016 : LAIPower and LAIType for all vegetation types now used (previously only DecTr were used)
+! HCW 12 Dec 2016 : Switched sign of lng so that input should be -ve for W, +ve for E, as is conventional
 !Last modified HCW 26 Aug 2016
 ! NumCapita now uses average of day and night pop density, unless only one is specified 
 !Last modified HCW 06 Jul 2016
@@ -64,7 +66,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   CHARACTER(len=20):: grid_txt
   CHARACTER(len=4):: year_txt
   CHARACTER(len=12)::SsG_YYYY !Site, grid, year string
-
+  INTEGER:: GridID
 
 
   !write(*,*) '---- SUEWS_Translate ----'
@@ -78,11 +80,16 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   ! =================================================================================
   ! ======= Translate inputs from SurfaceChar to variable names used in model =======
   ! =================================================================================
+  GridID = GridIDmatrix(Gridiv)
   ! ---- Latitude and longitude
   lat = SurfaceChar(Gridiv,c_lat)
-  lng = SurfaceChar(Gridiv,c_lng)
+  lng = SurfaceChar(Gridiv,c_lng)*(-1.0)  !HCW switched sign of lng 12 Dec 2016. Input should now be -ve for W, +ve for E
+  ! ---- Timezone
+  TIMEZONE = SurfaceChar(Gridiv,c_tz)
   ! ---- Altitude [m]
   Alt = SurfaceChar(Gridiv,c_Alt)
+  ! ---- Measurement height [m]
+  z = SurfaceChar(Gridiv,c_z)
   ! ---- Surface area [ha]
   SurfaceArea_ha = SurfaceChar(Gridiv,c_Area)
   ! Change from ha to m2 (was in RunControlByGridByYear)
@@ -98,7 +105,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   sfr(WaterSurf) = SurfaceChar(Gridiv,c_FrWater)  ! Water
 
   ! Check the surface fractions add up to 1 (or close to 1)
-  IF(SUM(sfr)>1.001.OR.SUM(sfr)<0.999) CALL ErrorHint(10,'SiteSelect.txt - check surface fractions',SUM(sfr),notUsed,notUsedI)
+  IF(SUM(sfr)>1.001.OR.SUM(sfr)<0.999) CALL ErrorHint(10,'Surface fractions (Fr_) should add up to 1.',SUM(sfr),notUsed,notUsedI)
 
   ! ---- Irrigated fractions
   IrrFracConif = SurfaceChar(Gridiv,c_IrrEveTrFrac)  ! Everg
@@ -181,8 +188,8 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   CapMin_dec = surf(1,DecidSurf)
   CapMax_dec = surf(5,DecidSurf)
   ! ---- Set min & max porosity for DecTr
-  PorMin_dec = 0.2
-  PorMax_dec = 0.6
+  PorMin_dec = SurfaceChar(Gridiv,c_PorosityMin(ivDecid))   ! Minimum
+  PorMax_dec = SurfaceChar(Gridiv,c_PorosityMax(ivDecid))   ! Minimum
 
   ! ---- Threshold for wet evaporation [mm]
   WetThresh(1:nsurf) = SurfaceChar(Gridiv,c_WetThresh)
@@ -190,6 +197,9 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   ! ---- Limit for state [mm]
   StateLimit(1:nsurf) = SurfaceChar(Gridiv,c_StateLimit)
 
+  ! ---- Water depth [mm]
+  WaterDepth = SurfaceChar(Gridiv,c_WaterDepth)
+  
   ! ---- Drainage
   surf(2,1:nsurf) = SurfaceChar(Gridiv,c_DrEq)      ! Drainage equation
   surf(3,1:nsurf) = SurfaceChar(Gridiv,c_DrCoef1)   ! Drainage coef 1
@@ -232,13 +242,12 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   LAIMax (1:nvegsurf) = SurfaceChar(Gridiv,c_LAIMax)
   MaxConductance(1:nvegsurf) = SurfaceChar(Gridiv,c_GsMax)
 
-  ! ---- LAI characteristics  !! Model currently uses one single Eq & set of powers; adjust later for each veg type
-  !! Set all rows the same for now in input file & use Decid row in model
-  LAItype = INT(SurfaceChar(Gridiv,c_LAIEq(ivDecid)))
-  LAIPower(1) = SurfaceChar(Gridiv,c_LeafGP1(ivDecid)) ! 4 powers (not 4 veg types!)
-  LAIPower(2) = SurfaceChar(Gridiv,c_LeafGP2(ivDecid)) ! 4 powers (not 4 veg types!)
-  LAIPower(3) = SurfaceChar(Gridiv,c_LeafOP1(ivDecid)) ! 4 powers (not 4 veg types!)
-  LAIPower(4) = SurfaceChar(Gridiv,c_LeafOP2(ivDecid)) ! 4 powers (not 4 veg types!)
+  ! ---- LAI characteristics (updated HCW 13 Dec 2016)
+  LAItype(1:nvegsurf) = INT(SurfaceChar(Gridiv,c_LAIEq(1:nvegsurf)))
+  LAIPower(1,1:nvegsurf) = SurfaceChar(Gridiv,c_LeafGP1(1:nvegsurf))
+  LAIPower(2,1:nvegsurf) = SurfaceChar(Gridiv,c_LeafGP2(1:nvegsurf))
+  LAIPower(3,1:nvegsurf) = SurfaceChar(Gridiv,c_LeafOP1(1:nvegsurf))
+  LAIPower(4,1:nvegsurf) = SurfaceChar(Gridiv,c_LeafOP2(1:nvegsurf))
 
   ! ---- LUMPS-related parameters
   DRAINRT    = SurfaceChar(Gridiv,c_LUMPSDr)      ! LUMPS Drainage rate [mm h-1]
@@ -275,7 +284,8 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   S1   = SurfaceChar(Gridiv,c_GsS1)
   S2   = SurfaceChar(Gridiv,c_GsS2)
   Kmax = SurfaceChar(Gridiv,c_GsKmax)
-
+  gsModel = INT(SurfaceChar(Gridiv,c_gsModel))
+  
   ! ---- Pipe capacity (was from SiteSpecificParam.txt)
   PipeCapacity = SurfaceChar(Gridiv,c_PipeCapacity)
 
@@ -322,7 +332,12 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   OHM_coef(nsurf+2,4,2) = SurfaceChar(Gridiv,c_a2_WDry(nsurf+1)) !Snow    a2 Winter dry
   OHM_coef(1:nsurf,4,3) = SurfaceChar(Gridiv,c_a3_WDry(1:nsurf)) !1:nsurf a3 Winter dry
   OHM_coef(nsurf+2,4,3) = SurfaceChar(Gridiv,c_a3_WDry(nsurf+1)) !Snow    a3 Winter dry
-
+  ! OHM thresholds
+  OHM_threshSW(1:nsurf) = SurfaceChar(Gridiv,c_OHMThresh_SW(1:nsurf)) !1:nsurf
+  OHM_threshSW(nsurf+2) = SurfaceChar(Gridiv,c_OHMThresh_SW(nsurf+1)) !Snow
+  OHM_threshWD(1:nsurf) = SurfaceChar(Gridiv,c_OHMThresh_WD(1:nsurf)) !1:nsurf
+  OHM_threshWD(nsurf+2) = SurfaceChar(Gridiv,c_OHMThresh_WD(nsurf+1)) !Snow
+  
   ! ---- ESTM characteristics -------------------------
   ! HCW 16 Jun 2016
   ! Wall fraction for ESTM (in SiteSelect.txt)
@@ -334,8 +349,9 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   ESTMsfr_Bldgs = SurfaceChar(Gridiv,c_Fr_ESTMClass_Bldgs)   !Dim 5
   !Check these sum to 1 and are consistent with sfr of Paved and Bldgs surface types
   IF(sfr(PavSurf) > 0) THEN  !If surface exists, ESTM fractions must be correct 
-     IF(SUM(ESTMsfr_Paved)>1.001.OR.SUM(ESTMsfr_Paved)<0.999) CALL ErrorHint(10, &
-         'SiteSelect.txt - check ESTM Paved surface fractions',SUM(ESTMsfr_Paved),notUsed,notUsedI)
+     IF(SUM(ESTMsfr_Paved)>1.001.OR.SUM(ESTMsfr_Paved)<0.999) THEN
+        CALL ErrorHint(10,'Surface fractions (Fr_ESTMClass_Paved) should sum to 1.',SUM(ESTMsfr_Paved),notUsed,notUsedI)
+     ENDIF   
   ELSEIF(sfr(PavSurf) == 0) THEN !If surface does not exist, ESTM fraction does not matter
      IF(SUM(ESTMsfr_Paved)>1.001.OR.SUM(ESTMsfr_Paved)<0.999) THEN   !If ESTM fractions do not sum to 1, set here
         ESTMsfr_Paved(1) = 1.000    
@@ -344,8 +360,9 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      ENDIF   
   ENDIF
   IF(sfr(BldgSurf) > 0) THEN 
-     IF(SUM(ESTMsfr_Bldgs)>1.001.OR.SUM(ESTMsfr_Bldgs)<0.999) CALL ErrorHint(10, &
-         'SiteSelect.txt - check ESTM Bldgs surface fractions',SUM(ESTMsfr_Bldgs),notUsed,notUsedI)
+     IF(SUM(ESTMsfr_Bldgs)>1.001.OR.SUM(ESTMsfr_Bldgs)<0.999) THEN
+        CALL ErrorHint(10,'Surface fractions (Fr_ESTMClass_Bldgs) should sum to 1.',SUM(ESTMsfr_Bldgs),notUsed,notUsedI)
+     ENDIF   
   ELSEIF(sfr(BldgSurf) == 0) THEN !If surface does not exist, ESTM fraction does not matter
      IF(SUM(ESTMsfr_Bldgs)>1.001.OR.SUM(ESTMsfr_Bldgs)<0.999) THEN   !If ESTM fractions do not sum to 1, set here
         ESTMsfr_Bldgs(1) = 1.000    
@@ -694,7 +711,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   !-----------------------------------------------------
   !-----------------------------------------------------
   !NARP_CONFIGURATION if net radiation is to be modelled
-  IF(NetRadiationChoice>0)THEN
+  IF(NetRadiationMethod>0)THEN
      NARP_LAT = SurfaceChar(Gridiv,c_lat)
      NARP_LONG = SurfaceChar(Gridiv,c_lng)    ! New sun_position_v2 use degrees FL
      NARP_YEAR = INT(SurfaceChar(Gridiv,c_Year))
@@ -840,11 +857,13 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      WRITE(12,120) FCskip,FCskip,(SDDFull(iv),iv=1,nvegsurf),FCskip,FCskip,FCskip, ' SDDFull'
      WRITE(12,120) FCskip,FCskip,(LAImin(iv),iv=1,nvegsurf),FCskip,FCskip,FCskip, ' LAIMin'
      WRITE(12,120) FCskip,FCskip,(LAImax(iv),iv=1,nvegsurf),FCskip,FCskip,FCskip, ' LAIMax'
-     WRITE(12,'(3f10.3,i10,  4f10.3,a16)') FCskip,FCskip,FCskip,LAItype,FCskip,FCskip,FCskip,FCskip, ' LAIEq'   !integer
-     WRITE(12,'(3f10.3,f10.5,4f10.3,a16)') FCskip,FCskip,FCskip,LAIPower(1),FCskip,FCskip,FCskip,FCskip, ' LAI_LeafGP1'
-     WRITE(12,'(3f10.3,f10.5,4f10.3,a16)') FCskip,FCskip,FCskip,LAIPower(2),FCskip,FCskip,FCskip,FCskip, ' LAI_LeafGP2'
-     WRITE(12,'(3f10.3,f10.5,4f10.3,a16)') FCskip,FCskip,FCskip,LAIPower(3),FCskip,FCskip,FCskip,FCskip, ' LAI_LeafOP1'
-     WRITE(12,'(3f10.3,f10.5,4f10.3,a16)') FCskip,FCskip,FCskip,LAIPower(4),FCskip,FCskip,FCskip,FCskip, ' LAI_LeafOP2'
+     WRITE(12,120) FCskip,FCskip,FCskip,PorMin_dec,FCSkip,FCskip,FCskip,FCskip, ' PorosityMin'
+     WRITE(12,120) FCskip,FCskip,FCskip,PorMax_dec,FCSkip,FCskip,FCskip,FCskip, ' PorosityMax'
+     WRITE(12,'(2f10.3,3i10,  3f10.3,a16)') FCskip,FCskip,LAItype(1:nvegsurf),FCskip,FCskip,FCskip, ' LAIEq'   !integer
+     WRITE(12,'(2f10.3,3f10.5,3f10.3,a16)') FCskip,FCskip,LAIPower(1,1:nvegsurf),FCskip,FCskip,FCskip, ' LAI_LeafGP1'
+     WRITE(12,'(2f10.3,3f10.5,3f10.3,a16)') FCskip,FCskip,LAIPower(2,1:nvegsurf),FCskip,FCskip,FCskip, ' LAI_LeafGP2'
+     WRITE(12,'(2f10.3,3f10.5,3f10.3,a16)') FCskip,FCskip,LAIPower(3,1:nvegsurf),FCskip,FCskip,FCskip, ' LAI_LeafOP1'
+     WRITE(12,'(2f10.3,3f10.5,3f10.3,a16)') FCskip,FCskip,LAIPower(4,1:nvegsurf),FCskip,FCskip,FCskip, ' LAI_LeafOP2'
      WRITE(12,120) FCskip,FCskip,(MaxConductance(iv),iv=1,nvegsurf),FCskip,FCskip,FCskip, ' MaxCond'
      WRITE(12,120) (SoilDepth(iv),iv=1,(nsurf-1)),FCskip,FCskip, ' SoilDepth'
      WRITE(12,120) (soilstoreCap(iv),iv=1,(nsurf-1)), FCskip, FCskip, ' SoilStoreCap'
@@ -864,7 +883,9 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      WRITE(12,120) (OHM_coef(1:nsurf,2,3)),OHM_coef(nsurf+2,2,3), ' OHM_a3_Sum_Dry'
      WRITE(12,120) (OHM_coef(1:nsurf,3,3)),OHM_coef(nsurf+2,3,3), ' OHM_a3_Win_Wet'
      WRITE(12,120) (OHM_coef(1:nsurf,4,3)),OHM_coef(nsurf+2,4,3), ' OHM_a3_Win_Dry'
-
+     WRITE(12,120) (OHM_threshSW(1:nsurf)),OHM_threshSW(nsurf+2), ' OHMthreshold_SW'
+     WRITE(12,120) (OHM_threshWD(1:nsurf)),OHM_threshWD(nsurf+2), ' OHMthreshold_WD'
+     
      WRITE(12,*) '----- '//TRIM(ADJUSTL(SsG_YYYY))//' Snow parameters'//' -----'
      WRITE(12,'(a12,11a10)') 'Grid','RadMeltF','TempMeltF','tau_a','tau_f','PLimAlb','SDensMin','SDensMax', &
           'tau_r','CRWMin','CRWMax','PLimSnow'
@@ -872,8 +893,8 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
           tau_r,CRWmin,CRWmax,PrecipLimit
 
      WRITE(12,*) '----- '//TRIM(ADJUSTL(SsG_YYYY))//' Conductance parameters'//' -----'
-     WRITE(12,'(a12,11a10)') 'Grid','G1','G2','G3','G4','G5','G6','TH','TL','S1','S2','Kmax'
-     WRITE(12,'(a12,11f10.3)') SsG_YYYY,G1,G2,G3,G4,G5,G6,TH,TL,S1,S2,Kmax
+     WRITE(12,'(a12,12a10)') 'Grid','G1','G2','G3','G4','G5','G6','TH','TL','S1','S2','Kmax','gsModel'
+     WRITE(12,'(a12,11f10.3,i3)') SsG_YYYY,G1,G2,G3,G4,G5,G6,TH,TL,S1,S2,Kmax,gsModel
 
      WRITE(12,*) '----- '//TRIM(ADJUSTL(SsG_YYYY))//' Energy-use parameters'//' -----'
      WRITE(12,'(a12,11a10)') 'Grid','NumCapita','BaseTHDD','QF_A_WD','QF_A_WE','QF_B_WD','QF_B_WE','QF_C_WD','QF_C_WE', &
@@ -894,12 +915,12 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
 
      WRITE(12,*) '----- '//TRIM(ADJUSTL(SsG_YYYY))//' Hourly profiles'//' -----'
      WRITE(12,'(a12,24i10,a20)') 'Grid',(iv,iv=0,23),'HourOfDay'
-     WRITE(12,121) SsG_YYYY,AHProf(0:23,1), ' Anthropogenic heat WD'
-     WRITE(12,121) SsG_YYYY,AHProf(0:23,2), ' Anthropogenic heat  WE'
+     WRITE(12,121) SsG_YYYY,AHProf(0:23,1), ' Anthrop heat WD'
+     WRITE(12,121) SsG_YYYY,AHProf(0:23,2), ' Anthrop heat WE'
      WRITE(12,121) SsG_YYYY,WUProfM(0:23,1),' Manual water use WD'
      WRITE(12,121) SsG_YYYY,WUProfM(0:23,2),' Manual water use WE'
-     WRITE(12,121) SsG_YYYY,WUProfA(0:23,1),' Automatic water use WD'
-     WRITE(12,121) SsG_YYYY,WUProfA(0:23,2),' Automatic water use WE'
+     WRITE(12,121) SsG_YYYY,WUProfA(0:23,1),' Auto. water use WD'
+     WRITE(12,121) SsG_YYYY,WUProfA(0:23,2),' Auto. water use WE'
      WRITE(12,121) SsG_YYYY,SnowProf(0:23,1), ' Snow clearing WD'
      WRITE(12,121) SsG_YYYY,SnowProf(0:23,2), ' Snow clearing WE'
 
@@ -919,8 +940,9 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
           Trans_Site
 
      WRITE(12,*) '----- '//TRIM(ADJUSTL(SsG_YYYY))//' Site parameters'//' -----'
-     WRITE(12,'(a12,9a10)') 'Grid','lat','lon','alt','SurfA_ha','NumCapita','z0_input','zd_input','StartDLS','EndDLS'
-     WRITE(12,'(a12,3f10.4,f10.2,3f10.4,2i10)') SsG_YYYY,lat,lng,alt,SurfaceArea_ha,NumCapita,z0m_in,zdm_in,DayLightSavingDay(1:2)
+     WRITE(12,'(a12,9a10)') 'Grid','lat','lon','tz','alt','SurfA_ha','z','NumCapita','z0_input','zd_input','StartDLS','EndDLS'
+     WRITE(12,'(a12,4f10.4,f10.2,4f10.4,2i10)') SsG_YYYY,lat,lng*(-1.0),timezone,alt,SurfaceArea_ha,z,NumCapita,z0m_in,zdm_in, &
+                                                 DayLightSavingDay(1:2)
 
      WRITE(12,*) ''
 
@@ -934,25 +956,27 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      ! Check input values are reasonable ===========================================
 
      ! Coefficients for anthropogenic heat models ----------------------------------
-     IF(AnthropHeatChoice==1) THEN   !Loridan et al. (2011) calculation
+     IF(AnthropHeatMethod==1) THEN   !Loridan et al. (2011) calculation
         IF(AH_min==0.AND.Ah_slope==0.AND.T_Critic==0) THEN
-           CALL ErrorHint(53,'Check QF calculation coefficients.',notUsed,notUsed,AnthropHeatChoice)
+           CALL ErrorHint(53,'Check QF calculation coefficients.',notUsed,notUsed,AnthropHeatMethod)
         ENDIF
 
-     ELSEIF(AnthropHeatChoice==2) THEN   !Jarvi et al. (2011) calculation
+     ELSEIF(AnthropHeatMethod==2) THEN   !Jarvi et al. (2011) calculation
         IF(SUM(QF_A)==0.AND.SUM(QF_B)==0.AND.SUM(QF_C)==0) THEN
-           CALL ErrorHint(54,'Check QF calculation coefficients.',notUsed,notUsed,AnthropHeatChoice)
+           CALL ErrorHint(54,'Check QF calculation coefficients.',notUsed,notUsed,AnthropHeatMethod)
         ENDIF
      ENDIF
 
      ! Morphometric parameters -----------------------------------------------------
-     IF(z0_method==1) THEN   !z0, zd values provided in input file
-        IF(z0m<0.00001) CALL ErrorHint(5,'Check value of z0 in input data.',z0m,notUsed,notUsedI)
-        IF(zdm<0.00001) CALL ErrorHint(6,'Check value of zd in input data.',zdm,notUsed,notUsedI)
+     IF(RoughLenMomMethod==1) THEN   !z0, zd values provided in input file
+        ! Check z0m and zd are reasonable
+        IF(z0m<0.00001) CALL ErrorHint(1,'z0 value provided is very small (RoughLenMomMethod=1).',z0m,notUsed,GridID)
+        IF(zdm<0.00001) CALL ErrorHint(1,'zd value provided is very small (RoughLenMomMethod=1).',zdm,notUsed,GridID)
         zzd=z-zdm
-     ELSEIF(z0_method==3) THEN   !z0, zd calculated using FAI in input file, check FAIs reasonable
-        IF(FAIBLdg<0) CALL ErrorHint(1,'Check value of FAI for Buildings in input data',FAIBldg,notUsed,notUsedI)
-        IF(FAITree<0) CALL ErrorHint(2,'Check value of FAI for Trees in input data (weighted EveTr+DecTr)',FAITree,notUsed,notUsedI)
+     ELSEIF(RoughLenMomMethod==3) THEN   !z0, zd calculated using FAI provided in input file
+         ! Check FAIs reasonable
+        IF(FAIBLdg<0) CALL ErrorHint(1,'FAI_Bldgs value provided is very small (RoughLenMomMethod=3)',FAIBldg,notUsed,GridID)
+        IF(FAITree<0) CALL ErrorHint(1,'FAI_EveTr/DecTr value provided is very small (RoughLenMomMethod=3)',FAITree,notUsed,GridID)
      ENDIF
 
   ENDIF   !End for first row of first block only ===================================
@@ -1021,7 +1045,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
 
 
      !Also translate ESTM forcing data
-     IF(QSChoice==4 .OR. QSChoice==14) THEN
+     IF(StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
         !write(*,*) 'Translating ESTM forcing data'
         Ts5mindata(ir,1:ncolsESTMdata) = ESTMForcingData(ir,1:ncolsESTMdata,Gridiv)
         CALL ESTM_translate(Gridiv)

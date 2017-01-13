@@ -1,4 +1,4 @@
-SUBROUTINE AerodynamicResistance(RA,AerodynamicResistanceMethod,StabilityMethod,RoughLen_heat,&
+SUBROUTINE AerodynamicResistance(RA,AerodynamicResistanceMethod,StabilityMethod,RoughLenHeatMethod,&
      ZZD,z0m,k2,AVU1,L_mod,Ustar,VegFraction,psyh) ! psyh is added. shiho
 
   ! Returns Aerodynamic resistance (RA) to the main program SUEWS_Calculations
@@ -12,7 +12,7 @@ SUBROUTINE AerodynamicResistance(RA,AerodynamicResistanceMethod,StabilityMethod,
   ! OUTPUT: RA - Aerodynamic resistance [s m^-1]
   ! INPUT:  AerodynamicResistanceMethod = Method to calculate RA
   !         StabilityMethod = defines the method to calculate atmospheric stability
-  !         RoughLen_heat = Method to calculate heat roughness length
+  !         RoughLenHeatMethod = Method to calculate heat roughness length
   !         *Measurement height minus* Displacement height (m) (was incorrectly labelled, corrected HCW 25 May 2016
   !         z0m = Aerodynamic roughness length (m)
   !         k2 = Power of Van Karman's constant (= 0.16 = 0.4^2)
@@ -29,7 +29,7 @@ SUBROUTINE AerodynamicResistance(RA,AerodynamicResistanceMethod,StabilityMethod,
 
   REAL (KIND(1d0))::psym,psyh,stab_fn_heat,stab_fn_mom,ZZD,z0m,k2,AVU1,L_mod,Ustar,RA,z0V,VegFraction, &
        muu=1.46e-5 !molecular viscosity
-  INTEGER::AerodynamicResistanceMethod,StabilityMethod,RoughLen_heat
+  INTEGER::AerodynamicResistanceMethod,StabilityMethod,RoughLenHeatMethod
 
 
   !1)Monteith (1965)-neutral stability
@@ -46,15 +46,15 @@ SUBROUTINE AerodynamicResistance(RA,AerodynamicResistanceMethod,StabilityMethod,
      psyh=stab_fn_heat(StabilityMethod,ZZD/L_mod,zzd/L_mod)
 
      !Z0V roughness length for vapour
-     IF (RoughLen_heat==1) THEN !Brutasert (1982) Z0v=z0/10(see Grimmond & Oke, 1986)
+     IF (RoughLenHeatMethod==1) THEN !Brutasert (1982) Z0v=z0/10(see Grimmond & Oke, 1986)
         z0V=Z0m/10
-     ELSEIF (RoughLen_heat==2) THEN ! Kawai et al. (2007)
+     ELSEIF (RoughLenHeatMethod==2) THEN ! Kawai et al. (2007)
        	!z0V=Z0m*exp(2-(1.2-0.9*veg_fr**0.29)*(Ustar*Z0m/muu)**0.25)
         ! Changed by HCW 05 Nov 2015 (veg_fr includes water; VegFraction = veg + bare soil)
         z0V=Z0m*EXP(2-(1.2-0.9*VegFraction**0.29)*(Ustar*Z0m/muu)**0.25)
-     ELSEIF (RoughLen_heat==3) THEN
+     ELSEIF (RoughLenHeatMethod==3) THEN
         z0V=Z0m*EXP(-20.) ! Voogt and Grimmond, JAM, 2000
-     ELSEIF (RoughLen_heat==4) THEN
+     ELSEIF (RoughLenHeatMethod==4) THEN
         z0V=Z0m*EXP(2-1.29*(Ustar*Z0m/muu)**0.25) !See !Kanda and Moriwaki (2007),Loridan et al. (2010)
      ENDIF
 
@@ -69,13 +69,12 @@ SUBROUTINE AerodynamicResistance(RA,AerodynamicResistanceMethod,StabilityMethod,
      RA=(4.72*LOG(ZZD/z0m)**2)/(1 + 0.54*AVU1)
   ENDIF
 
-  !If Ra too large  ! this was 175 (??check)  !!Check whether these thresholds are suitable over a range of z0
-
-  IF(RA>200) THEN
-     CALL errorHint(7,'RA > 200 s m-1; value set to 200 s m-1',RA,notUsed,notUsedI)
+  !If ra outside permitted range, adjust extreme values !!Check whether these thresholds are suitable over a range of z0
+  IF(RA>200) THEN   !was 175
+     CALL errorHint(7,'In AerodynamicResistance.f95, calculated ra > 200 s m-1; ra set to 200 s m-1',RA,notUsed,notUsedI)
      RA=200
-  ELSEIF(RA<10)THEN   ! found  By Shiho - fix Dec 2012  !Threshold changed from 2 to 10 s m-1 (HCW 03 Dec 2015)
-     CALL errorHint(7,'RA < 10 s m-1; value set to 10 s m-1',RA,notUsed,notUsedI)
+  ELSEIF(RA<10) THEN   !found  By Shiho - fix Dec 2012  !Threshold changed from 2 to 10 s m-1 (HCW 03 Dec 2015)
+     CALL errorHint(7,'In AerodynamicResistance.f95, calculated ra < 10 s m-1; ra set to 10 s m-1',RA,notUsed,notUsedI)
      RA=10
      ! RA=(log(ZZD/z0m))**2/(k2*AVU1)
      IF(avu1<0) WRITE(*,*) avu1,ra

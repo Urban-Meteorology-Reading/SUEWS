@@ -54,38 +54,39 @@ SUBROUTINE SiteSelect_txt2nc
   nameVarList=(/&
        "Grid                     ",  "Year                     ",  "StartDLS                 ",&
        "EndDLS                   ",  "lat                      ",  "lng                      ",&
-       "SurfaceArea              ",  "Alt                      ",  "id                       ",&
-       "ih                       ",  "imin                     ",  "Fr_Paved                 ",&
-       "Fr_Bldgs                 ",  "Fr_EveTr                 ",  "Fr_DecTr                 ",&
-       "Fr_Grass                 ",  "Fr_Bsoil                 ",  "Fr_Water                 ",&
-       "IrrFr_EveTr              ",  "IrrFr_DecTr              ",  "IrrFr_Grass              ",&
-       "H_Bldgs                  ",  "H_EveTr                  ",  "H_DecTr                  ",&
-       "z0                       ",  "zd                       ",  "FAI_Bldgs                ",&
-       "FAI_EveTr                ",  "FAI_DecTr                ",  "PopDensDay               ",&
-       "PopDensNight             ",  "TrafficRate              ",  "BuildEnergyUse           ",&
-       "Code_Paved               ",  "Code_Bldgs               ",  "Code_EveTr               ",&
-       "Code_DecTr               ",  "Code_Grass               ",  "Code_Bsoil               ",&
-       "Code_Water               ",  "LUMPS_DrRate             ",  "LUMPS_Cover              ",&
-       "LUMPS_MaxRes             ",  "NARP_Trans               ",  "CondCode                 ",&
-       "SnowCode                 ",  "SnowClearingProfWD       ",  "SnowClearingProfWE       ",&
-       "AnthropogenicCode        ",  "EnergyUseProfWD          ",  "EnergyUseProfWE          ",&
-       "ActivityProfWD           ",  "ActivityProfWE           ",  "IrrigationCode           ",&
-       "WaterUseProfManuWD       ",  "WaterUseProfManuWE       ",  "WaterUseProfAutoWD       ",&
-       "WaterUseProfAutoWE       ",  "FlowChange               ",  "RunoffToWater            ",&
-       "PipeCapacity             ",  "GridConnection1of8       ",  "Fraction1of8             ",&
-       "GridConnection2of8       ",  "Fraction2of8             ",  "GridConnection3of8       ",&
-       "Fraction3of8             ",  "GridConnection4of8       ",  "Fraction4of8             ",&
-       "GridConnection5of8       ",  "Fraction5of8             ",  "GridConnection6of8       ",&
-       "Fraction6of8             ",  "GridConnection7of8       ",  "Fraction7of8             ",&
-       "GridConnection8of8       ",  "Fraction8of8             ",  "WithinGridPavedCode      ",&
-       "WithinGridBldgsCode      ",  "WithinGridEveTrCode      ",  "WithinGridDecTrCode      ",&
-       "WithinGridGrassCode      ",  "WithinGridUnmanBSoilCode ",  "WithinGridWaterCode      ",&
-       "AreaWall                 ",  "Fr_ESTMClass_Paved1      ",  "Fr_ESTMClass_Paved2      ",&
-       "Fr_ESTMClass_Paved3      ",  "Code_ESTMClass_Paved1    ",  "Code_ESTMClass_Paved2    ",&
-       "Code_ESTMClass_Paved3    ",  "Fr_ESTMClass_Bldgs1      ",  "Fr_ESTMClass_Bldgs2      ",&
-       "Fr_ESTMClass_Bldgs3      ",  "Fr_ESTMClass_Bldgs4      ",  "Fr_ESTMClass_Bldgs5      ",&
-       "Code_ESTMClass_Bldgs1    ",  "Code_ESTMClass_Bldgs2    ",  "Code_ESTMClass_Bldgs3    ",&
-       "Code_ESTMClass_Bldgs4    ",  "Code_ESTMClass_Bldgs5    "  /)
+       "Timezone                 ",  "SurfaceArea              ",  "Alt                      ",&
+       "z                        ",  "id                       ",  "ih                       ",&
+       "imin                     ",  "Fr_Paved                 ",  "Fr_Bldgs                 ",&
+       "Fr_EveTr                 ",  "Fr_DecTr                 ",  "Fr_Grass                 ",&
+       "Fr_Bsoil                 ",  "Fr_Water                 ",  "IrrFr_EveTr              ",&
+       "IrrFr_DecTr              ",  "IrrFr_Grass              ",  "H_Bldgs                  ",&
+       "H_EveTr                  ",  "H_DecTr                  ",  "z0                       ",&
+       "zd                       ",  "FAI_Bldgs                ",  "FAI_EveTr                ",&
+       "FAI_DecTr                ",  "PopDensDay               ",  "PopDensNight             ",&
+       "TrafficRate              ",  "BuildEnergyUse           ",  "Code_Paved               ",&
+       "Code_Bldgs               ",  "Code_EveTr               ",  "Code_DecTr               ",&
+       "Code_Grass               ",  "Code_Bsoil               ",  "Code_Water               ",&
+       "LUMPS_DrRate             ",  "LUMPS_Cover              ",  "LUMPS_MaxRes             ",&
+       "NARP_Trans               ",  "CondCode                 ",  "SnowCode                 ",&
+       "SnowClearingProfWD       ",  "SnowClearingProfWE       ",  "AnthropogenicCode        ",&
+       "EnergyUseProfWD          ",  "EnergyUseProfWE          ",  "ActivityProfWD           ",&
+       "ActivityProfWE           ",  "IrrigationCode           ",  "WaterUseProfManuWD       ",&
+       "WaterUseProfManuWE       ",  "WaterUseProfAutoWD       ",  "WaterUseProfAutoWE       ",&
+       "FlowChange               ",  "RunoffToWater            ",  "PipeCapacity             ",&
+       "GridConnection1of8       ",  "Fraction1of8             ",  "GridConnection2of8       ",&
+       "Fraction2of8             ",  "GridConnection3of8       ",  "Fraction3of8             ",&
+       "GridConnection4of8       ",  "Fraction4of8             ",  "GridConnection5of8       ",&
+       "Fraction5of8             ",  "GridConnection6of8       ",  "Fraction6of8             ",&
+       "GridConnection7of8       ",  "Fraction7of8             ",  "GridConnection8of8       ",&
+       "Fraction8of8             ",  "WithinGridPavedCode      ",  "WithinGridBldgsCode      ",&
+       "WithinGridEveTrCode      ",  "WithinGridDecTrCode      ",  "WithinGridGrassCode      ",&
+       "WithinGridUnmanBSoilCode ",  "WithinGridWaterCode      ",  "AreaWall                 ",&
+       "Fr_ESTMClass_Paved1      ",  "Fr_ESTMClass_Paved2      ",  "Fr_ESTMClass_Paved3      ",&
+       "Code_ESTMClass_Paved1    ",  "Code_ESTMClass_Paved2    ",  "Code_ESTMClass_Paved3    ",&
+       "Fr_ESTMClass_Bldgs1      ",  "Fr_ESTMClass_Bldgs2      ",  "Fr_ESTMClass_Bldgs3      ",&
+       "Fr_ESTMClass_Bldgs4      ",  "Fr_ESTMClass_Bldgs5      ",  "Code_ESTMClass_Bldgs1    ",&
+       "Code_ESTMClass_Bldgs2    ",  "Code_ESTMClass_Bldgs3    ",  "Code_ESTMClass_Bldgs4    ",&
+       "Code_ESTMClass_Bldgs5    " /)
 
   !=======================convert txt to netCDF============================
   ! file names
@@ -285,12 +286,13 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
   USE solweig_module
   USE cbl_module
   USE ESTM_data
+  USE SetupOutput
   USE netCDF
 
 
   IMPLICIT NONE
 
-  INTEGER:: year_int, iv, irMax
+  INTEGER:: year_int, iv, irMax, i
   CHARACTER(len=10):: tstepStr2, ivStr2, yrStr2
   CHARACTER(len=100):: rawpath
 
@@ -307,35 +309,96 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
        xLat(:,:),xLon(:,:),&
        varSeq0(:),varSeq(:)
   INTEGER :: idVar(iVarStart:ncolumnsDataOut)
-  CHARACTER(len=20):: nameVarList(iVarStart:ncolumnsDataOut),ivarStr2
+  CHARACTER(len=20):: nameVarList(iVarStart:ncolumnsDataOut),&
+       unitVarList(iVarStart:ncolumnsDataOut),&
+       ivarStr2
+  CHARACTER(len=12*nColumnsDataOut):: HeaderOut, UnitsOut   !Header and units for selected output variables (untrimmed)
 
+
+  !================DEFINE OUTPUT VARIABLES AND UNITS================
   ! variable names:
   nameVarList=(/&
-       "kdown               ",  "kup                 ",  "ldown               ",&
-       "lup                 ",  "Tsurf               ",  "qn                  ",&
-       "h_mod               ",  "e_mod               ",  "qs                  ",&
-       "qf                  ",  "qh                  ",  "qe                  ",&
-       "qh_r                ",  "Fc                  ",  "Fc_photo            ",&
-       "Fc_respi            ",  "Fc_metab            ",  "Fc_traff            ",&
-       "Fc_build            ",  "P_i                 ",  "Ie_i                ",&
-       "E_i                 ",  "Dr_i                ",  "St_i                ",&
-       "NWSt_i              ",  "surfCh_i            ",  "totCh_i             ",&
-       "RO_i                ",  "ROsoil_i            ",  "ROpipe              ",&
-       "ROpav               ",  "ROveg               ",  "ROwater             ",&
-       "AdditionalWater     ",  "FlowChange          ",  "WU_int              ",&
-       "WU_EveTr            ",  "WU_DecTr            ",  "WU_Grass            ",&
-       "ra                  ",  "rs                  ",  "ustar               ",&
-       "L_Ob                ",  "Fcld                ",  "SoilSt              ",&
-       "smd                 ",  "smd_Paved           ",  "smd_Bldgs           ",&
-       "smd_EveTr           ",  "smd_DecTr           ",  "smd_Grass           ",&
-       "smd_BSoil           ",  "St_Paved            ",  "St_Bldgs            ",&
-       "St_EveTr            ",  "St_DecTr            ",  "St_Grass            ",&
-       "St_BSoil            ",  "St_Water            ",  "LAI                 ",&
-       "z0m                 ",  "zdm                 ",  "bulkalbedo          ",&
-       "qn1_SF              ",  "qn1_S               ",  "Qm                  ",&
-       "QmFreez             ",  "QmRain              ",  "SWE                 ",&
-       "Mw                  ",  "MwStore             ",  "snowRem_Paved       ",&
-       "snowRem_Bldgs       ",  "ChSnow_i            ",  "SnowAlb             "/)
+       '     kdown','       kup','     ldown','       lup','     Tsurf', &   !radiation components (6-10)
+       '        qn','        qf','        qs','        qh','        qe', &   !energy fluxes (11-15)
+       '  qh_LUMPS','  qe_LUMPS','      qh_r', &                             !energy fluxes (other approaches) (16-18)
+       '       P/i','      Ie/i','       E/i','      RO/i','   totCh/i', &   !water balance components (19-23)
+       '  surfCh/i','      St/i','    NWSt/i','      Dr/i','       smd', &   !water balance components cont. (24-28)
+       '    FlowCh','  AddWater', &                                          !water balance components cont. (29-30)
+       '    ROsoil','    ROpipe','    RO_imp','    RO_veg','    RO_wat', &   !runoff components (31-35)
+       '    wu_int','  wu_EveTr','  wu_DecTr','  wu_Grass', &                !water use (36-39)
+       ' smd_Paved',' smd_Bldgs',' smd_EveTr',' smd_DecTr',' smd_Grass',' smd_BSoil', &   !smd for each surface (40-45)
+       '  St_Paved','  St_Bldgs','  St_EveTr','  St_DecTr','  St_Grass','  St_BSoil','  St_Water',&   !states (46-52)
+       '    zenith','   azimuth','  alb_bulk','      Fcld', &                ! extra radiation info (53-56)
+       '       LAI','       z0m','       zdm', &                             ! extra surface info (57-59)
+       '     ustar','       Lob','        ra','        rs', &                ! turbulence (60-63)
+       '        Fc', &                                                       ! CO2 flux (64)
+       '  Fc_photo','  Fc_respi','  Fc_metab','  Fc_traff','  Fc_build', &   ! CO2 flux components (65-69)
+       '   qn_SnFr','  qn_Sn   ','  alb_snow', &                             ! snow-related (radiation) (70-72)
+       '        qm','  qmFreeze','    qmRain','       SWE','        Mw','   MwStore','    SnCh/i', &   !snow (73-79)
+       ' SnR_Paved',' SnR_Bldgs'&                                            !snow-related (removal) (80-81)
+       /)
+
+  unitVarList=(/&
+       '       W_m-2','       W_m-2','       W_m-2','       W_m-2','        degC', &   !radiation components (6-10)
+       '       W_m-2','       W_m-2','       W_m-2','       W_m-2','       W_m-2', &   !energy fluxes (11-15)
+       '       W_m-2','       W_m-2','       W_m-2', &                                 !energy fluxes (other approaches) (16-18)
+       '          mm','          mm','          mm','          mm','          mm', &   !water balance components (19-23)
+       '          mm','          mm','          mm','          mm','          mm', &   !water balance components cont. (24-28)
+       '          mm','          mm', &                                                !water balance components cont. (29-30)
+       '          mm','          mm','          mm','          mm','          mm', &   !runoff components (31-35)
+       '          mm','          mm','          mm','          mm', &                  !water use (36-39)
+       '          mm','          mm','          mm','          mm','          mm','          mm', &   !smd for each surface (40-45)
+       '          mm','          mm','          mm','          mm','          mm','          mm','          mm',&   !states (46-52)
+       '         deg','         deg','           -','           -', &                  ! extra radiation info (53-56)
+       '      m2_m-2','           m','           m', &                                 ! extra surface info (57-59)
+       '       m_s-1','           m','       s_m-1','       s_m-1', &                  ! turbulence (60-63)
+       'umol_m-2_s-1', &                                                               ! CO2 flux (64)
+       'umol_m-2_s-1','umol_m-2_s-1','umol_m-2_s-1','umol_m-2_s-1','umol_m-2_s-1', &   ! CO2 flux components (65-69)
+       '       W_m-2','       W_m-2','           -', &                                 ! snow-related (radiation) (70-72)
+       '       W_m-2','       W_m-2','       W_m-2','          mm','          mm','          mm','          mm', &   !snow (73-79)
+       '          mm','          mm' /)                                                !snow-related (removal) (80-81)
+
+  ! Select variables to be written out
+  IF(WriteOutOption == 0) THEN   !all (not snow-related)
+     UsecolumnsDataOut = (/ (i, i=6,69, 1) /)
+  ELSEIF(WriteOutOption == 1) THEN   !all plus snow-related
+     UsecolumnsDataOut = (/ (i, i=6,nColumnsDataOut, 1) /)
+  ELSEIF(WriteOutOption == 2) THEN   !minimal output
+     UsecolumnsDataOut = (/ (i, i=6,15, 1),(i, i=19,28, 1), 53,54,55,56, 57, 60,61, 64 /)
+  ELSE
+     WRITE(*,*) 'RunControl: WriteOutOption code not recognised, so writing out all variables.'
+     UsecolumnsDataOut = (/ (i, i=6,69, 1) /)
+  ENDIF
+
+  ! Create subset of HeaderAll and FormatAll for selected variables only
+  HeaderOut=''
+  UnitsOut=''
+  ! FormatOut=''
+  ! AggOut=''
+  ! ColNos=''
+  DO i=1,SIZE(UseColumnsDataOut)
+     HeaderOut=TRIM(HeaderOut)//' '//ADJUSTL(nameVarList(UsecolumnsDataOut(i)))
+     !write(*,*) HeaderOut
+     UnitsOut=TRIM(UnitsOut)//' '//ADJUSTL(unitVarList(UsecolumnsDataOut(i)))
+     !write(*,*) UnitsOut
+     !  FormatOut=TRIM(FormatOut)//' '//ADJUSTL(FormatAll(UsecolumnsDataOut(i)))
+     !write(*,*) FormatOut
+     !  AggOut=TRIM(AggOut)//' '//ADJUSTL(AggAll(UsecolumnsDataOut(i)))
+     !write(*,*) AggOut
+     !  WRITE(itext,'(i3)') i
+     !  ColNos=TRIM(ColNos)//' '//ADJUSTL(itext)
+  ENDDO
+
+  ALLOCATE(CHARACTER(LEN(TRIM(ADJUSTL(HeaderOut)))):: HeaderUse)
+  ALLOCATE(CHARACTER(LEN(TRIM(ADJUSTL(UnitsOut)))):: UnitsUse)
+  ! ALLOCATE(CHARACTER(LEN(trim(adjustl(FormatOut)))):: FormatUse)
+  ! ALLOCATE(CHARACTER(LEN(trim(adjustl(AggOut)))):: AggUse)
+  ! ALLOCATE(CHARACTER(LEN(trim(adjustl(ColNos)))):: ColNosUse)
+  HeaderUse=TRIM(ADJUSTL(HeaderOut))
+  UnitsUse=TRIM(ADJUSTL(UnitsOut))
+  ! FormatUse='('//trim(adjustl(FormatOut))//')'
+  ! AggUse=trim(adjustl(AggOut))
+  ! ColNosUse=trim(adjustl(ColNos))
 
 
   !================DEFINE OUTPUT FILENAME AND ITS PATH================

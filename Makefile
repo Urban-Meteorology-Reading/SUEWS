@@ -1,7 +1,7 @@
 
 
 CC = gfortran $(CFLAGS)          # compiler
-TARGET = SUEWS_V2016b      # program name
+TARGET = SUEWS_V2017a      # program name
 CFLAGS = -g -Wall -Wtabs -fbounds-check -I/usr/local/include
 # NETCDFINC = -I/usr/local/include
 # NETCDFLIB = -L/usr/local/lib -lnetcdf
@@ -19,9 +19,9 @@ OTHERS =  BLUEWS_CBL.o   \
           BLUEWS_Diff.o  \
           SUEWS_translate.o \
           SUEWS_HorizontalSoilWater.o \
-          SUEWS_Initial.o \
           LUMPS_atmos_functions_moist.o \
-          SUEWS_OHM_v2015.o \
+          SUEWS_OHM.o \
+					SUEWS_Initial.o \
           LUMPS_atmos_functions_stab.o \
           SUEWS_ReDistributeWater.o \
           SUEWS_RoughnessParameters.o \
@@ -47,11 +47,11 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_InputHeaders.o \
           SUEWS_InterpHourlyProfiles.o \
           SOLWEIG_2014a_core.o  \
+					SOLWEIG_Initial.o  \
           SOLWEIG_clearnessindex_2013b.o  \
           SOLWEIG_cylindric_wedge.o  \
           SOLWEIG_diffusefraction.o  \
           SOLWEIG_EsriAsciiGrid.o  \
-          SOLWEIG_Initial.o  \
           SOLWEIG_Kside_veg_v24.o  \
           SOLWEIG_Lside_veg_v2.o  \
           SOLWEIG_Lvikt_veg.o  \

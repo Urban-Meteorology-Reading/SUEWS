@@ -9,15 +9,15 @@
 !                   vthey are now normalised (sum to 1) in InitializeSurfaceCharacteristics
 !                   N.B. previous versions were not applying weekday/weekend profiles correctly
 ! 
-! AnthropHeatChoice = 1 - Method according to Loridan et al. (2011) : SAHP
-! AnthropHeatChoice = 2 - Method according to Jarvi et al. (2011)   : SAHP_2
-! AnthropHeatChoice = 0 - Use values in met forcing file, or default QF
+! AnthropHeatMethod = 1 - Method according to Loridan et al. (2011) : SAHP
+! AnthropHeatMethod = 2 - Method according to Jarvi et al. (2011)   : SAHP_2
+! AnthropHeatMethod = 0 - Use values in met forcing file, or default QF
 !
 !===================================================================================
 
 !-----------------------------------------------------------------------------------
  subroutine SAHP_1_v2015(QF_o,QF_o_base,QF_o_heat,id,ih,imin)
- ! Called if AnthropHeatChoice = 1
+ ! Called if AnthropHeatMethod = 1
  ! Method according to Loridan et al. (2011)
  ! Weekday/weekend differences due to profile only
 
@@ -55,7 +55,7 @@
 
 !-----------------------------------------------------------------------------------
 subroutine SAHP_2_v2015(QF_o,QF_o_base,QF_o_heat,id,ih,imin)
-! Called if AnthropHeatChoice = 2
+! Called if AnthropHeatMethod = 2
 ! Method according to Jarvi et al. (2011)  
 ! Weekday/weekend differences due to profile and coefficients QF_a,b,c
   

@@ -28,7 +28,8 @@ SUBROUTINE CBL(ifirst,iMB)
   !Skip first loop and unspecified days
   IF((ifirst==1 .AND. iMB==1) .OR. CBLday(id)==0) THEN   !HCW modified condition to check for first timestep of the model run
      iCBLcount=iCBLcount+1
-     dataOutBL(iCBLcount,1:22,iMB)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime,(NAN,is=6,22)/)
+     dataOutBL(iCBLcount,1:ncolumnsdataOutBL,iMB)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime, &
+                                                    (NAN,is=6,ncolumnsdataOutBL)/)
      RETURN
   ELSEIF(avkdn<5)THEN
      CALL CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,iMb)
@@ -36,7 +37,7 @@ SUBROUTINE CBL(ifirst,iMB)
   ENDIF
 
   IF(startflag==0)THEN !write down initial values in previous time step
-     dataOutBL(iCBLcount,1:22,iMB)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime,blh_m,tm_K,qm_kgkg*1000,&
+     dataOutBL(iCBLcount,1:ncolumnsdataOutBL,iMB)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime,blh_m,tm_K,qm_kgkg*1000,&
           tp_K,qp_kgkg*1000,(NAN,is=11,20),gamt_Km,gamq_kgkgm/)
      startflag=1
   ENDIF
@@ -50,7 +51,7 @@ SUBROUTINE CBL(ifirst,iMB)
      qe_use=E_mod
   ELSEIF(qh_choice==3)THEN  !from OBS
      IF(qh_obs<-900.OR.qe_obs<-900)THEN  ! observed data has a problem
-        CALL ErrorHint(22,'Problem in observed Qh/Qe_value',qh_obs,qe_obs,qh_choice)
+        CALL ErrorHint(22,'Unrealistic observed qh or qe_value.',qh_obs,qe_obs,qh_choice)
      ENDIF
      qh_use=qh_obs
      qe_use=qe_obs
@@ -142,7 +143,7 @@ SUBROUTINE CBL(ifirst,iMB)
         avrh=100
      ENDIF
      iCBLcount=iCBLcount+1
-     dataOutBL(iCBLcount,1:22,iMB)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime,blh_m,tm_K,qm_kgkg*1000,&
+     dataOutBL(iCBLcount,1:ncolumnsdataOutBL,iMB)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime,blh_m,tm_K,qm_kgkg*1000,&
           tp_K,qp_kgkg*1000,&
           Temp_C,avrh,cbldata(2),cbldata(3),cbldata(9),cbldata(7),cbldata(8),cbldata(4),cbldata(5),cbldata(6),&
           gamt_Km,gamq_kgkgm/)
@@ -158,7 +159,7 @@ SUBROUTINE CBL(ifirst,iMB)
         avrh1=100
      ENDIF
      iCBLcount=iCBLcount+1
-     dataOutBL(iCBLcount,1:22,iMB)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime,blh_m,tm_K,qm_kgkg*1000,&
+     dataOutBL(iCBLcount,1:ncolumnsdataOutBL,iMB)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime,blh_m,tm_K,qm_kgkg*1000,&
           tp_K,qp_kgkg*1000,&
           Temp_C1,avrh1,cbldata(2),cbldata(3),cbldata(9),cbldata(7),cbldata(8),cbldata(4),cbldata(5),cbldata(6),&
           gamt_Km,gamq_kgkgm/)
@@ -260,7 +261,7 @@ SUBROUTINE CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,iMB)
      qe_use=E_mod
   ELSEIF(qh_choice==3)THEN  !from OBS
      IF(qh_obs<-900.OR.qe_obs<-900)THEN  ! observed data has a problem
-        CALL ErrorHint(22,'Problem in observed Qh/Qe_value',qh_obs,qe_obs,qh_choice)
+        CALL ErrorHint(22,'Unrealistic observed qh or qe_value.',qh_obs,qe_obs,qh_choice)
      ENDIF
      qh_use=qh_obs
      qe_use=qe_obs
@@ -269,7 +270,8 @@ SUBROUTINE CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,iMB)
 
   blh_m=NAN
   iCBLcount=iCBLcount+1
-  dataOutBL(iCBLcount,1:22,iMB)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime,(NAN,is=6,22)/)
+  dataOutBL(iCBLcount,1:ncolumnsdataOutBL,iMB)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime, &
+                                                 (NAN,is=6,ncolumnsdataOutBL)/)
 
   nLineDay=0
   DO i=1,nlineInData

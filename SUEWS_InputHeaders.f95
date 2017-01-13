@@ -39,6 +39,8 @@ SUBROUTINE InputHeaderCheck(FileName)
   HeaderNonVeg_Reqd(ci_OHMCode_SDry) = "OHMCode_SummerDry"
   HeaderNonVeg_Reqd(ci_OHMCode_WWet) = "OHMCode_WinterWet"
   HeaderNonVeg_Reqd(ci_OHMCode_WDry) = "OHMCode_WinterDry"
+  HeaderNonVeg_Reqd(ci_OHMThresh_SW) = "OHMThresh_SW"
+  HeaderNonVeg_Reqd(ci_OHMThresh_WD) = "OHMThresh_WD"
   HeaderNonVeg_Reqd(ci_ESTMCode)     = "ESTMCode"
   HeaderNonVeg_Reqd(ci_cpAnOHM)           = "AnOHM_Cp"		! AnOHM TS
   HeaderNonVeg_Reqd(ci_kkAnOHM)           = "AnOHM_Kk"		! AnOHM TS
@@ -64,6 +66,8 @@ SUBROUTINE InputHeaderCheck(FileName)
   HeaderVeg_Reqd(cp_SDDFull)      = "SDDFull"
   HeaderVeg_Reqd(cp_LAIMin)       = "LAIMin"
   HeaderVeg_Reqd(cp_LAIMax)       = "LAIMax"
+  HeaderVeg_Reqd(cp_PorosityMin)  = "PorosityMin"
+  HeaderVeg_Reqd(cp_PorosityMax)  = "PorosityMax"
   HeaderVeg_Reqd(cp_GsMax)        = "MaxConductance"
   HeaderVeg_Reqd(cp_LAIEq)        = "LAIEq"
   HeaderVeg_Reqd(cp_LeafGP1)      = "LeafGrowthPower1"
@@ -74,6 +78,8 @@ SUBROUTINE InputHeaderCheck(FileName)
   HeaderVeg_Reqd(cp_OHMCode_SDry) = "OHMCode_SummerDry"
   HeaderVeg_Reqd(cp_OHMCode_WWet) = "OHMCode_WinterWet"
   HeaderVeg_Reqd(cp_OHMCode_WDry) = "OHMCode_WinterDry"
+  HeaderVeg_Reqd(cp_OHMThresh_SW) = "OHMThresh_SW"
+  HeaderVeg_Reqd(cp_OHMThresh_WD) = "OHMThresh_WD"
   HeaderVeg_Reqd(cp_ESTMCode)     = "ESTMCode"
   HeaderVeg_Reqd(cp_cpAnOHM)           = "AnOHM_Cp"		! AnOHM TS
   HeaderVeg_Reqd(cp_kkAnOHM)           = "AnOHM_Kk"		! AnOHM TS
@@ -88,6 +94,7 @@ SUBROUTINE InputHeaderCheck(FileName)
   HeaderWater_Reqd(cw_StorMax)      = "StorageMax"
   HeaderWater_Reqd(cw_WetThresh)    = "WetThreshold"
   HeaderWater_Reqd(cw_StateLimit)   = "StateLimit"
+  HeaderWater_Reqd(cw_WaterDepth)   = "WaterDepth"
   HeaderWater_Reqd(cw_DrEq)         = "DrainageEq"
   HeaderWater_Reqd(cw_DrCoef1)      = "DrainageCoef1"
   HeaderWater_Reqd(cw_DrCoef2)      = "DrainageCoef2"
@@ -95,6 +102,8 @@ SUBROUTINE InputHeaderCheck(FileName)
   HeaderWater_Reqd(cw_OHMCode_SDry) = "OHMCode_SummerDry"
   HeaderWater_Reqd(cw_OHMCode_WWet) = "OHMCode_WinterWet"
   HeaderWater_Reqd(cw_OHMCode_WDry) = "OHMCode_WinterDry"
+  HeaderWater_Reqd(cw_OHMThresh_SW) = "OHMThresh_SW"
+  HeaderWater_Reqd(cw_OHMThresh_WD) = "OHMThresh_WD"
   HeaderWater_Reqd(cw_ESTMCode)     = "ESTMCode"
   HeaderWater_Reqd(cw_cpAnOHM)           = "AnOHM_Cp"		! AnOHM TS
   HeaderWater_Reqd(cw_kkAnOHM)           = "AnOHM_Kk"		! AnOHM TS
@@ -120,6 +129,8 @@ SUBROUTINE InputHeaderCheck(FileName)
   HeaderSnow_Reqd(cs_OHMCode_SDry) = "OHMCode_SummerDry"
   HeaderSnow_Reqd(cs_OHMCode_WWet) = "OHMCode_WinterWet"
   HeaderSnow_Reqd(cs_OHMCode_WDry) = "OHMCode_WinterDry"
+  HeaderSnow_Reqd(cs_OHMThresh_SW) = "OHMThresh_SW"
+  HeaderSnow_Reqd(cs_OHMThresh_WD) = "OHMThresh_WD"
   HeaderSnow_Reqd(cs_ESTMCode)     = "ESTMCode"
   HeaderSnow_Reqd(cs_cpAnOHM)           = "AnOHM_Cp"		! AnOHM TS
   HeaderSnow_Reqd(cs_kkAnOHM)           = "AnOHM_Kk"		! AnOHM TS
@@ -150,7 +161,8 @@ SUBROUTINE InputHeaderCheck(FileName)
   HeaderCond_Reqd(cc_GsS1)         = "S1"
   HeaderCond_Reqd(cc_GsS2)         = "S2"
   HeaderCond_Reqd(cc_GsKmax)       = "Kmax"
-
+  HeaderCond_Reqd(cc_gsModel)       = "gsModel"
+  
   ! ========== SUEWS_OHMCoefficients.txt ========
   HeaderOHMCoefficients_Reqd(cO_Code) = "Code"
   HeaderOHMCoefficients_Reqd(cO_a1)   = "a1"

@@ -18,6 +18,7 @@ SUBROUTINE AnOHM_v2016(Gridiv)
   !
   ! history:
   ! 20160301: initial version
+  ! 20170109  updated dqndt calculation in accordance with SUEWS_OHM.f95 (HCW) 
   !========================================================================================
 
   USE allocateArray
@@ -30,14 +31,14 @@ SUBROUTINE AnOHM_v2016(Gridiv)
 
   IMPLICIT NONE
 
-  INTEGER :: i,ii
+  !INTEGER :: i,ii
   INTEGER :: Gridiv
 
   REAL    :: dqndt        ! rate of change of net radiation [W m-2 h-1] at t-2
   REAL    :: surfrac      ! surface fraction accounting for SnowFrac if appropriate
   REAL    :: xa1,xa2,xa3  ! temporary AnOHM coefs.
-
-
+  REAL(KIND(1d0))    :: qn1_av       ! average net radiation over previous hour [W m-2]
+  REAL(KIND(1d0))    :: nsh_nna      ! number of timesteps per hour with non -999 values (used for spinup)
 
   ! ------AnOHM coefficients --------
   !   print*, 'n surf:', nsurf
@@ -86,16 +87,45 @@ SUBROUTINE AnOHM_v2016(Gridiv)
   !   Calculate radiation part ------------------------------------------------------------
   qs=NAN          !qs  = Net storage heat flux  [W m-2]
   IF(qn1>-999) THEN   !qn1 = Net all-wave radiation [W m-2]
-     dqndt = 0.5*(qn1-q2_grids(Gridiv))*nsh_real/2       !gradient at t-1
-     !       Calculate net storage heat flux
-     qs = qn1*a1AnOHM(Gridiv)+dqndt*a2AnOHM(Gridiv)+a3AnOHM(Gridiv)          !Eq 4, Grimmond et al. 1991
-
-     q1_grids(Gridiv) = q2_grids(Gridiv) !q1 = net radiation at t-2 (at t-3 when q1 used in next timestep)
-     q2_grids(Gridiv) = q3_grids(Gridiv) !q2 = net radiation at t-1
-     q3_grids(Gridiv) = qn1              !q3 = net radiation at t (at t-1 when q3 used in next timestep)
-
+     ! Old calculations
+     !dqndt = 0.5*(qn1-q2_grids(Gridiv))*nsh_real/2       !gradient at t-1
+     !!       Calculate net storage heat flux
+     !qs = qn1*a1AnOHM(Gridiv)+dqndt*a2AnOHM(Gridiv)+a3AnOHM(Gridiv)          !Eq 4, Grimmond et al. 1991
+     !
+     !q1_grids(Gridiv) = q2_grids(Gridiv) !q1 = net radiation at t-2 (at t-3 when q1 used in next timestep)
+     !q2_grids(Gridiv) = q3_grids(Gridiv) !q2 = net radiation at t-1
+     !q3_grids(Gridiv) = qn1              !q3 = net radiation at t (at t-1 when q3 used in next timestep)
+     
+     ! New calculations (HCW Dec 2016)
+     ! Store instantaneous qn1 values for previous hour (qn1_store) and average (qn1_av)
+     if(nsh > 1) then
+        qn1_store(1:(nsh-1),Gridiv) = qn1_store(2:nsh,Gridiv)    
+        qn1_store(nsh,Gridiv) = qn1
+        nsh_nna = sum(qn1_store(:,Gridiv)/qn1_store(:,Gridiv), mask=qn1_store(:,Gridiv) /= -999) !Find how many are not -999s      
+        qn1_av = sum(qn1_store(:,Gridiv), mask=qn1_store(:,Gridiv) /= -999)/nsh_nna
+     elseif(nsh==1) then
+         qn1_store(:,Gridiv) = qn1
+         qn1_av = qn1
+     endif         
+     ! Store hourly average values (calculated every timestep) for previous 2 hours
+     if(nsh > 1) then
+        qn1_av_store(1:(2*nsh),Gridiv) = qn1_av_store(2:(2*nsh+1),Gridiv)    
+        qn1_av_store(2*nsh+1,Gridiv) = qn1_av
+     elseif(nsh==1) then
+        qn1_av_store(:,Gridiv) = qn1_av
+     endif    
+     ! Calculate dQ* per dt for 60 min (using running mean Q* at t hours and (t-2) hours)
+     if(any(qn1_av_store == -999)) then
+        dqndt=0  ! Set dqndt term to zero for spinup
+     else
+        dqndt=0.5*(qn1_av_store((2*nsh+1),Gridiv)-qn1_av_store(1,Gridiv))
+     endif
+     
+     ! Calculate net storage heat flux
+     qs = qn1*a1AnOHM(Gridiv)+dqndt*a2AnOHM(Gridiv)+a3AnOHM(Gridiv)
+  
   ELSE
-     CALL ErrorHint(21,'Bad value for qn1 found during OHM calculation',qn1,NotUsed,notUsedI)
+     CALL ErrorHint(21,'SUEWS_AnOHM.f95: bad value for qn found during qs calculation.',qn1,NotUsed,notUsedI)
   ENDIF
 
 END SUBROUTINE AnOHM_v2016
@@ -171,21 +201,21 @@ SUBROUTINE AnOHM_coef(sfc_typ,xid,xgrid,&   ! input
 
 
   !   local variables:
-  REAL    :: beta               ! inverse Bowen ratio
-  REAL    :: f,fL,fT            ! energy redistribution factors
-  REAL    :: lambda             ! thermal diffusivity
-  REAL    :: delta,m,n          ! water flux related variables
-  REAL    :: ms,ns              ! m, n related
-  REAL    :: gamma              ! phase lag scale
-  REAL    :: ASd,mSd            ! solar radiation
-  REAL    :: ATa,mTa            ! air temperature
-  REAL    :: tau                ! phase lag between Sd and Ta (Ta-Sd)
-  REAL    :: ATs,mTs            ! surface temperature amplitude
-  REAL    :: ceta,cphi          ! phase related temporary variables
-  REAL    :: eta,phi,xlag       ! phase related temporary variables
-  REAL    :: mWS,mWF,mAH        ! mean values of WS, WF and AH
-  REAL    :: xx1,xx2,xx3        ! temporary use
-  REAL    :: solTs              ! surface temperature
+  REAL(KIND(1d0))    :: beta               ! inverse Bowen ratio
+  REAL(KIND(1d0))    :: f,fL,fT            ! energy redistribution factors
+  REAL(KIND(1d0))    :: lambda             ! thermal diffusivity
+  REAL(KIND(1d0))    :: delta,m,n          ! water flux related variables
+  REAL(KIND(1d0))    :: ms,ns              ! m, n related
+  REAL(KIND(1d0))    :: gamma              ! phase lag scale
+  REAL(KIND(1d0))    :: ASd,mSd            ! solar radiation
+  REAL(KIND(1d0))    :: ATa,mTa            ! air temperature
+  REAL(KIND(1d0))    :: tau                ! phase lag between Sd and Ta (Ta-Sd)
+  REAL(KIND(1d0))    :: ATs!,mTs            ! surface temperature amplitude
+  REAL(KIND(1d0))    :: ceta,cphi          ! phase related temporary variables
+  REAL(KIND(1d0))    :: eta,phi,xlag       ! phase related temporary variables
+  REAL(KIND(1d0))    :: mWS,mWF,mAH        ! mean values of WS, WF and AH
+  REAL(KIND(1d0))    :: xx1,xx2,xx3        ! temporary use
+  !REAL(KIND(1d0))    :: solTs              ! surface temperature
   LOGICAL :: flagGood = .TRUE.  ! quality flag, T for good, F for bad
 
   !   give fixed values for test
@@ -659,9 +689,9 @@ SUBROUTINE AnOHM_FcCal(Sd,Ta,WS,WF,AH,&                 ! input
   REAL, PARAMETER :: C2K   = 273.15           ! degC to K
 
   !   local variables:
-  REAL :: tSd,tTa         ! peaking timestamps
-  ! REAL :: aCosb,aSinb,b,c ! parameters for fitted shape: a*Sin(Pi/12*t+b)+c
-  REAL :: xx              ! temporary use
+  REAL(KIND(1d0)) :: tSd,tTa         ! peaking timestamps
+  ! REAL(KIND(1d0)) :: aCosb,aSinb,b,c ! parameters for fitted shape: a*Sin(Pi/12*t+b)+c
+  ! REAL(KIND(1d0)) :: xx              ! temporary use
 
 
   !   calculate sinusoidal scales of Sd:
@@ -921,7 +951,7 @@ SUBROUTINE AnOHM_FcLoad(sfc,xid,xgrid,& ! input
   Ta = MetForcingData(irRange(1):irRange(2):nsh,12,xgrid)
   WS = MetForcingData(irRange(1):irRange(2):nsh,10,xgrid)
   WF = MetForcingData(irRange(1):irRange(2):nsh,12,xgrid)*0   ! set as 0 for debug
-  IF ( anthropheatchoice == 0 ) THEN
+  IF ( AnthropHeatMethod == 0 ) THEN
      AH = MetForcingData(irRange(1):irRange(2):nsh,9,xgrid)*0    ! read in from MetForcingData,
   ELSE
      AH = mAH_grids(xid-1,xgrid)

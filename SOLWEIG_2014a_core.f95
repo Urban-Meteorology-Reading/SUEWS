@@ -275,7 +275,7 @@
     Tmrt=sqrt(sqrt((Sstr/(absL*SBC))))-273.2
     
     if (SOLWEIGpoi_out==1) then
-        dataOutSOL(SolweigCount,1:28,iMBi)=(/real(id,kind(1D0)),dectime,azimuth,altitude,radG,radD,radI,&
+        dataOutSOL(SolweigCount,1:ncolumnsdataOutSOL,iMBi)=(/real(id,kind(1D0)),dectime,azimuth,altitude,radG,radD,radI,&
             Kdown2d(row,col),Kup2d(row,col),Ksouth(row,col),Kwest(row,col),Knorth(row,col),Keast(row,col),&
             Ldown2d(row,col),Lup2d(row,col),Lsouth(row,col),Lwest(row,col),Lnorth(row,col),Least(row,col),&
             Tmrt(row,col),I0,CI,gvf(row,col),shadow(row,col),svf(row,col),svfbuveg(row,col),Ta,Tg/)

@@ -26,7 +26,7 @@
   ! --------------------------------------------------------------------------------
   ! If water used is observed and provided in the met forcing file, units are m3
   ! Divide observed water use (in m3) by water use area to find water use (in mm)
-  if (WU_choice==1) then   !If water use is observed
+  if (WaterUseMethod==1) then   !If water use is observed
      ! Calculate water use area [m2] for each surface type
      WUAreaEveTr_m2 = IrrFracConif*sfr(ConifSurf)*SurfaceArea
      WUAreaDecTr_m2 = IrrFracDecid*sfr(DecidSurf)*SurfaceArea
@@ -61,7 +61,7 @@
       
   ! --------------------------------------------------------------------------------  
   ! If water use is modelled, calculate at timestep of model resolution [mm]
-  elseif (WU_choice==0) then   !If water use is modelled
+  elseif (WaterUseMethod==0) then   !If water use is modelled
  
      ! Account for Daylight saving
      ih=it-DLS
@@ -103,7 +103,7 @@
      ! Total water use for the whole study area [mm]
      wu = wu_EveTr*sfr(ConifSurf) + wu_DecTr*sfr(DecidSurf) + wu_Grass*sfr(GrassSurf)
   
-  endif   !End WU_choice
+  endif   !End WaterUseMethod
   ! --------------------------------------------------------------------------------
 
   ! Internal water use is supplied in SUEWS_Irrigation in mm h-1

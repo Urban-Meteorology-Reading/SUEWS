@@ -31,7 +31,7 @@
   Tstar=(-H/ustar)
   L=(USTAR**2)/(G_T_K*Tstar)
   
-  IF(LOG(zzd/z0M)<0.001000) call ErrorHint(17,'stability subroutine',zzd,z0m,notUsedI)
+  IF(LOG(zzd/z0M)<0.001000) CALL ErrorHint(17,'In stability subroutine, (z-zd) < z0.',zzd,z0m,notUsedI)
   DO i=1,330 !Iteration starts
      LOLD=L
      zL=zzd/L
@@ -55,7 +55,7 @@
      
      tstar=(-H/ustar)
      L=(Ustar**2)/(G_T_K*Tstar)
-
+     
      IF(ABS(LOLD-L)<0.01)THEN
        if (ABS(L)>1e6) L = L/ABS(L)*1e6
         RETURN

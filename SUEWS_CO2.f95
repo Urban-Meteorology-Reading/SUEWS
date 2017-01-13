@@ -77,7 +77,7 @@
 ! -ve Fc for uptake; +ve Fc for emission      
 !
 ! To Do:
-!   - Add specific diurnal profiles for traffic and building energy use for AnthropCO2Choice=3
+!   - Add specific diurnal profiles for traffic and building energy use for AnthropCO2Method=3
 !      (currently the same anthropogenic heat profile is applied to both traffic and buildings)
 !   - Add anthropogenic latent heat too?
 !========================================================================================
@@ -95,12 +95,13 @@
     
   REAL(KIND(1d0)):: QF_metab, QF_traff, QF_build    !W m-2
   REAL(KIND(1d0)):: DorNorT   !Daytime, night-time or transition time
-  
-  !!!Move to RunControl later!!!
-  INTEGER:: AnthropCO2Choice = 1  !1 - CO2 emissions based on QF calculated according to AnthropHeatChoice=2;
-                                 !2 - CO2 emissions based on mean traffic rate and building energy use specified in SiteSelect 
+    
   !!!Move to input file later!!! Rename SUEWS_AnthropogenicHeat.txt to SUEWS_Anthropogenic.txt and add these there?
   REAL(KIND(1d0)):: FcEF_v_kgkm, EnEF_v_Jkm, EF_umolCO2perJ, FracFossilFuel
+  
+  !AnthropCO2Method
+  !1 - CO2 emissions based on QF calculated according to AnthropHeatMethod=2;
+  !2 - CO2 emissions based on mean traffic rate and building energy use specified in SiteSelect 
   
   ! Define coefficients ---------------------------------------   ! Move to inputs?
   ! CO2 emission factors
@@ -132,7 +133,7 @@
   ENDIF
     
   ! Calculate CO2 emissions from traffic ----------------------
-  IF(AnthropCO2Choice == 1) THEN
+  IF(AnthropCO2Method == 2) THEN
      ! Assume temperature independent part of QF is traffic + metabolism
      QF_traff = QF_SAHP_base - QF_metab
      IF(QF_traff < 0) THEN
@@ -140,19 +141,19 @@
          QF_traff = 0
      ENDIF
      Fc_traff = QF_traff / EnEF_v_Jkm * FcEF_v_kgkm*1e3*1e6/44   !Divide QF by energy emission factor and multiply by CO2 factor
-  ELSEIF(AnthropCO2Choice == 3) THEN
+  ELSEIF(AnthropCO2Method == 3) THEN
      ! Calculate using mean traffic rate [veh km m-2 s-1] * emission factor [kg km-1] * 1e3 g kg-1 /44 g mol-1 * 1e6 umol mol-1
      Fc_traff = TrafficRate * FcEF_v_kgkm*1e3*1e6/44 * AHProf_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)
      QF_traff = TrafficRate * EnEF_v_Jkm * AHProf_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)  !Also calculate QF 
   ENDIF
      
   ! Calculate CO2 emissions from building energy use ----------
-  IF(AnthropCO2Choice == 1) THEN
+  IF(AnthropCO2Method == 2) THEN
      ! Assume temperature independent part of QF is traffic + metabolism, 
      ! CDD part is electric A/C (no local CO2 emissions)
      ! HDD part is building energy use, split between electric (no local emissions CO2) and combustion (CO2) heating
      Fc_build = QF_SAHP_heat * EF_umolCO2perJ * FracFossilFuel
-  ELSEIF(AnthropCO2Choice == 3) THEN
+  ELSEIF(AnthropCO2Method == 3) THEN
      ! Calculate using building energy use [W m-2]
      Fc_build = BuildEnergyUse * EF_umolCO2perJ * FracFossilFuel * AHProf_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)
      QF_build = BuildEnergyUse * AHProf_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)  !Also calculate QF 
@@ -161,7 +162,7 @@
   ! Combine to find anthropogenic CO2 flux
   Fc_anthro = Fc_metab + Fc_traff + Fc_build
   
-  IF(AnthropHeatChoice == 3) THEN !!! N.B. need to implement this QF in QS according to OHMIncQF !!!
+  IF(AnthropHeatMethod == 3) THEN !!! N.B. need to implement this QF in QS according to OHMIncQF !!!
      QF = QF_metab + QF_traff + QF_build 
   ENDIF
   

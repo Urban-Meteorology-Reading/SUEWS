@@ -53,7 +53,6 @@ subroutine RunoffFromGrid(GridFromFrac)
             if(iostat_var<0)THEN
                iostat_var=0
                CLOSE(lfnOld)
-               finish=.TRUE.
                RETURN
             ENDIF
        endif

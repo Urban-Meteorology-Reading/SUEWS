@@ -4,8 +4,9 @@
 !Last modification
 !
 !Last modification:
+! HCW 09 Dec 2016 - Add zenith and azimuth to output file
 ! HCw 24 Aug 2016 - smd and state for each surface set to NAN in output file if surface does not exist.
-!                 - Added Fc to output file (temporarily - need to add properly)
+!                 - Added Fc to output file
 ! HCW 21 Jul 2016 - Set soil variables to -999 in output when grid is 100% water surface.
 ! HCW 29 Jun 2016 - Commented out StateDay and SoilMoistDay as creates jumps and should not be needed.
 !                   Would not work unless each met block consists of a whole day for each grid.
@@ -70,11 +71,11 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !      PRINT*, 'state:', state
   !      PRINT*, 'soilmoist', soilmoist
   ! END IF
-  CALL RoughnessParameters ! Added by HCW 11 Nov 2014
+  CALL RoughnessParameters(Gridiv) ! Added by HCW 11 Nov 2014
 
 
   !=============Get data ready for the qs calculation====================
-  IF(NetRadiationChoice==0) THEN !Radiative components are provided as forcing
+  IF(NetRadiationMethod==0) THEN !Radiative components are provided as forcing
      !avkdn=NAN                  !Needed for resistances for SUEWS.
      ldown     = NAN
      lup       = NAN
@@ -162,7 +163,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ENDDO
 
   ! ===================NET ALLWAVE RADIATION================================
-  IF(NetRadiationChoice>0)THEN
+  IF(NetRadiationMethod>0)THEN
 
      IF (snowUse==0) snowFrac=snow_obs
 
@@ -188,7 +189,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
      CALL NARP(SnowAlb,qn1_SF,qn1_S)
      !Temp_C,kclear,fcld,dectime,avkdn,avRH,qn1,kup,ldown,lup,tsurf,&
      !AlbedoChoice,ldown_option,Press_hPa,Ea_hPa,qn1_obs,&
-     !zenith_deg,netRadiationChoice,
+     !zenith_deg,NetRadiationMethod,
   ELSE
      snowFrac = snow_obs
      qn1      = qn1_obs
@@ -217,11 +218,11 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ih=it-DLS
   IF(ih<0) ih=23
 
-  IF(AnthropHeatChoice==1) THEN
+  IF(AnthropHeatMethod==1) THEN
      CALL SAHP_1_v2015(qf_sahp,QF_SAHP_base,QF_SAHP_heat,id,ih,imin)
      qn1_bup=qn1
      qn1=qn1+QF_SAHP
-  ELSEIF(AnthropHeatChoice==2) THEN
+  ELSEIF(AnthropHeatMethod==2) THEN
      CALL SAHP_2_v2015(qf_sahp,QF_SAHP_base,QF_SAHP_heat,id,ih,imin)
      qn1_bup=qn1
      qn1=qn1+QF_SAHP
@@ -232,7 +233,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   ! -- qn1 is now QSTAR+QF (net all-wave radiation + anthropogenic heat flux)
   ! -- qn1_bup is QSTAR only
-  IF(AnthropHeatChoice>=1) THEN
+  IF(AnthropHeatMethod>=1) THEN
      qf=QF_SAHP
   ENDIF
 
@@ -240,17 +241,17 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   CALL CO2_anthro(id,ih,imin)
 
   ! =================STORAGE HEAT FLUX=======================================
-  IF(QSChoice==1) THEN           !Use OHM to calculate QS
+  IF(StorageHeatMethod==1) THEN           !Use OHM to calculate QS
      IF(OHMIncQF == 1) THEN      !Calculate QS using QSTAR+QF
-        CALL OHM_v2015(Gridiv)
+        CALL OHM(Gridiv)
      ELSEIF(OHMIncQF == 0) THEN  !Calculate QS using QSTAR
         qn1=qn1_bup
-        CALL OHM_v2015(Gridiv)
+        CALL OHM(Gridiv)
      ENDIF
   ENDIF
 
   ! use AnOHM to calculate QS, TS 14 Mar 2016
-  IF (QSChoice==3) THEN
+  IF (StorageHeatMethod==3) THEN
      IF ( OHMIncQF == 1 ) THEN    !Calculate QS using QSTAR+QF
         CALL AnOHM_v2016(Gridiv)
      ELSEIF(OHMIncQF == 0) THEN   !Calculate QS using QSTAR
@@ -260,18 +261,18 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   END IF
 
   !Calculate QS using ESTM
-  IF(QSChoice==4 .OR. QSChoice==14) THEN
+  IF(StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
      !CALL ESTM_v2016(QSestm,iMB)
      CALL ESTM_v2016(QSestm,Gridiv,ir)  ! iMB corrected to Gridiv, TS 09 Jun 2016
      QS=QSestm   ! Use ESTM qs
   ENDIF
 
   ! don't use these composite QS options at the moment, TS 10 Jun 2016
-  ! IF (QSChoice>=10)THEN ! Chose which QS will be used in SUEWS and output file
+  ! IF (StorageHeatMethod>=10)THEN ! Chose which QS will be used in SUEWS and output file
   !    !write(800,*)id,it,QS,QSanOHM,QSestm
-  !    IF(QSChoice==14)THEN
+  !    IF(StorageHeatMethod==14)THEN
   !       QS=QSestm
-  !    ELSEIF(QSChoice==13)THEN
+  !    ELSEIF(StorageHeatMethod==13)THEN
   !       QS=QSanOHM
   !    ENDIF
   ! ENDIF
@@ -336,7 +337,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   CALL STAB_lumps(H,StabilityMethod,ustar,L_mod) !u* and monin-obukhov length out
 
-  CALL AerodynamicResistance(RA,AerodynamicResistanceMethod,StabilityMethod,RoughLen_heat,&
+  CALL AerodynamicResistance(RA,AerodynamicResistanceMethod,StabilityMethod,RoughLenHeatMethod,&
        ZZD,z0m,k2,AVU1,L_mod,Ustar,VegFraction,psyh)      !RA out
 
   IF (snowUse==1) THEN
@@ -568,7 +569,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   IF(ABS(smd)>pNAN) smd=NAN
 
   ! If measured smd is used, set components to -999 and smd output to measured one
-  IF (smd_choice>0) THEN
+  IF (SMDMethod>0) THEN
      smd_nsurf=NAN
      smd_nsurfOut=NAN
      smd=xsmd
@@ -597,18 +598,24 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !====================== Write out files ==============================
   !Define the overall output matrix to be printed out step by step
   dataOut(ir,1:ncolumnsDataOut,Gridiv)=(/REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),REAL(it,KIND(1D0)),REAL(imin,KIND(1D0)),dectime,&   !5
-       avkdn,kup,ldown,lup,tsurf,qn1,h_mod,e_mod,qs,qf,qh,qeOut,&                                       !17
-       qh_r,&                                                                                           !18
-       Fc,Fc_photo,Fc_respi,Fc_metab,Fc_traff,Fc_build,&                                                !24
-       precip,ext_wu,ev_per_tstep,drain_per_tstep,&                                                     !28
-       state_per_tstep,NWstate_per_tstep,surf_chang_per_tstep,tot_chang_per_tstep,&                     !32
-       runoff_per_tstep,runoffSoil_per_tstep,runoffPipes,runoffAGimpervious,runoffAGveg,runoffWaterBody,&  !38
-       AdditionalWater,FlowChange/nsh_real,int_wu,wu_EveTr,wu_DecTr,wu_Grass,&                          !44
-       ra,ResistSurf,ustar,l_mod,Fcld,&                                                                 !49
-       soilstate,smd,(smd_nsurfOut(is),is=1,nsurf-1),(stateOut(is),is=1,nsurf),&                              !64
-       lai_wt,z0m,zdm,bulkalbedo,&                                                                      !68
-       qn1_SF,qn1_S,Qm,QmFreez,QmRain,swe,mwh,MwStore,(SnowRemoval(is),is=1,2),chSnow_per_interval,&    !71
-       SnowAlb/)                                                                                        !80
+       avkdn,kup,ldown,lup,tsurf,&
+       qn1,qf,qs,qh,qeOut,&
+       h_mod,e_mod,qh_r,&
+       precip,ext_wu,ev_per_tstep,runoff_per_tstep,tot_chang_per_tstep,&
+       surf_chang_per_tstep,state_per_tstep,NWstate_per_tstep,drain_per_tstep,smd,&
+       FlowChange/nsh_real,AdditionalWater,&
+       runoffSoil_per_tstep,runoffPipes,runoffAGimpervious,runoffAGveg,runoffWaterBody,&
+       int_wu,wu_EveTr,wu_DecTr,wu_Grass,&
+       (smd_nsurfOut(is),is=1,nsurf-1),&
+       (stateOut(is),is=1,nsurf),&
+       zenith_deg,azimuth,bulkalbedo,Fcld,&
+       lai_wt,z0m,zdm,&
+       ustar,l_mod,ra,ResistSurf,&
+       Fc,&
+       Fc_photo,Fc_respi,Fc_metab,Fc_traff,Fc_build,&
+       qn1_SF,qn1_S,SnowAlb,&
+       Qm,QmFreez,QmRain,swe,mwh,MwStore,chSnow_per_interval,&
+       (SnowRemoval(is),is=1,2) /)
 
   IF (snowUse==1) THEN
      dataOutSnow(ir,1:ncolumnsDataOutSnow,Gridiv)=(/REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),&               !2

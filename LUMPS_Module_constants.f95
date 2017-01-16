@@ -10,6 +10,7 @@
 ! TS 14 Mar 2016 - multiple addtions for AnOHM
 ! HCW 14 Jun 2016 - updated columns for ESTM and column names for AnOHM
 ! HCW 26 Aug 2016 - CO2 flux added
+! HCW 16 Jan 2017 - WhereWhen module added to store info relating to grid and datetime
 
 !==================================================================================================
 MODULE allocateArray
@@ -1091,7 +1092,6 @@ MODULE time
        id,&            !Day of year
        it,&            !Hour
        imin,&          !Minutes
-       iostat_var,&      !File status from reading data (should not be here)
        DLS                            !day lightsavings =1 + 1h) =0
 
   REAL(KIND(1d0)):: dectime        !Decimal time
@@ -2032,6 +2032,17 @@ MODULE ESTM_data !S.O. and FO
 
 END MODULE ESTM_data
 
+!----------------------------------------------------------------------------------
+MODULE WhereWhen
+! Stores grid and datetime info
+
+  INTEGER:: GridID   !Grid number (as specified in SUEWS_SiteSelect.txt)
+  !To add:
+  !Grid number (continuous)
+  !Datetime info
+
+END MODULE WhereWhen
+  
 !----------------------------------------------------------------------------------
 MODULE SetupOutput
 

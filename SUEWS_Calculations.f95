@@ -335,7 +335,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   !------------------------------------------------------------------
 
-  CALL STAB_lumps(H,StabilityMethod,ustar,L_mod) !u* and monin-obukhov length out
+  CALL STAB_lumps(H,StabilityMethod,ustar,L_mod) !u* and Obukhov length out
 
   CALL AerodynamicResistance(RA,AerodynamicResistanceMethod,StabilityMethod,RoughLenHeatMethod,&
        ZZD,z0m,k2,AVU1,L_mod,Ustar,VegFraction,psyh)      !RA out

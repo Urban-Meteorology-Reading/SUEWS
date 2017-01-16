@@ -13,6 +13,7 @@ SUBROUTINE SUEWS_GetESTMData(lunit)
   IMPLICIT NONE
 
   INTEGER::lunit,i,iyy !,RunNumber,NSHcounter
+  integer::iostat_var
   REAL (KIND(1d0)),DIMENSION(ncolsESTMdata):: ESTMArray
   REAL(KIND(1d0)):: imin_prev, ih_prev, iday_prev, tstep_estm   !For checks on temporal resolution of estm data
 

@@ -49,6 +49,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   USE time
   USE ESTM_data
   USE PhysConstants
+  USE WhereWhen
   
   IMPLICIT NONE
 
@@ -66,7 +67,6 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   CHARACTER(len=20):: grid_txt
   CHARACTER(len=4):: year_txt
   CHARACTER(len=12)::SsG_YYYY !Site, grid, year string
-  INTEGER:: GridID
 
 
   !write(*,*) '---- SUEWS_Translate ----'
@@ -80,7 +80,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   ! =================================================================================
   ! ======= Translate inputs from SurfaceChar to variable names used in model =======
   ! =================================================================================
-  GridID = GridIDmatrix(Gridiv)
+  GridID = GridIDmatrix(Gridiv) !also in SUEWS_Program - could delete here?
   ! ---- Latitude and longitude
   lat = SurfaceChar(Gridiv,c_lat)
   lng = SurfaceChar(Gridiv,c_lng)*(-1.0)  !HCW switched sign of lng 12 Dec 2016. Input should now be -ve for W, +ve for E

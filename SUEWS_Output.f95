@@ -15,12 +15,12 @@
 ! HCW 18 Nov 2014
 ! LJ 5 Jan 2015: code cleaned, daily and monthly filesaving added
 !-----------------------------------------------------------------------------------------------
-SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  GridID)
+SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
   !INPUT: Gridiv   = Grid number
   !       year_int = Year as a integer
   !       iv       = Block number of met data
   !       irMax    = Maximum number of rows in met data
-  !       GridID   = Grid ID (as in SiteSelect.txt)
+  !       CurrentGrid   = Grid ID (according to SiteSelect.txt)
 
   USE allocateArray
   USE cbl_module
@@ -36,7 +36,7 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  GridID)
 
   IMPLICIT NONE
 
-  INTEGER:: Gridiv, year_int, iv, irMax, GridID   !inputs
+  INTEGER:: Gridiv, year_int, iv, irMax, CurrentGrid !inputs
   INTEGER:: i  
   
   CHARACTER(len=10):: str2, grstr2, yrstr2
@@ -67,7 +67,7 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  GridID)
   
   !========== Set file path and file names ==========
   WRITE(str2,'(i2)') TSTEP/60
-  WRITE(grstr2,'(i10)') GridID
+  WRITE(grstr2,'(i10)') CurrentGrid
   WRITE(yrstr2,'(i4)') year_int
 
   rawpath=TRIM(FileOutputPath)//TRIM(FileCode)//TRIM(ADJUSTL(grstr2))//'_'//TRIM(ADJUSTL(yrstr2))
@@ -85,25 +85,25 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  GridID)
   IF(OutputFormats==1) THEN   !Once per run
   
      ! Set all output variables here. This must agree with dataOut (see SUEWS_Calculations.f95) and FormatAll
-     HeaderAll(:) = (/ '        iy','        id','        it','      imin','   dectime', &   !datetime info (1-5)
-                       '     kdown','       kup','     ldown','       lup','     Tsurf', &   !radiation components (6-10)
-                       '        qn','        qf','        qs','        qh','        qe', &   !energy fluxes (11-15)
-                       '  qh_LUMPS','  qe_LUMPS','      qh_r', &                             !energy fluxes (other approaches) (16-18)
-                       '       P/i','      Ie/i','       E/i','      RO/i','   totCh/i', &   !water balance components (19-23)
-                       '  surfCh/i','      St/i','    NWSt/i','      Dr/i','       smd', &   !water balance components cont. (24-28)
+     HeaderAll(:) = (/ '      Year','       DOY','      Hour','       Min','   Dectime', &   !datetime info (1-5)
+                       '     Kdown','       Kup','     Ldown','       Lup','     Tsurf', &   !radiation components (6-10)
+                       '        QN','        QF','        QS','        QH','        QE', &   !energy fluxes (11-15)
+                       '   QHlumps','   QElumps','   QHresis', &                             !energy fluxes (other approaches) (16-18)
+                       '      Rain','       Irr','      Evap','        RO','     TotCh', &   !water balance components (19-23)
+                       '    SurfCh','     State',' NWtrState','  Drainage','       SMD', &   !water balance components cont. (24-28)
                        '    FlowCh','  AddWater', &                                          !water balance components cont. (29-30)
-                       '    ROsoil','    ROpipe','    RO_imp','    RO_veg','    RO_wat', &   !runoff components (31-35)
-                       '    wu_int','  wu_EveTr','  wu_DecTr','  wu_Grass', &                !water use (36-39)
-                       ' smd_Paved',' smd_Bldgs',' smd_EveTr',' smd_DecTr',' smd_Grass',' smd_BSoil', &   !smd for each surface (40-45)
-                       '  St_Paved','  St_Bldgs','  St_EveTr','  St_DecTr','  St_Grass','  St_BSoil','  St_Water',&   !states (46-52)
-                       '    zenith','   azimuth','  alb_bulk','      Fcld', &                ! extra radiation info (53-56)
+                       '    ROSoil','    ROPipe','     ROImp','     ROVeg','   ROWater', &   !runoff components (31-35)
+                       '     WUInt','   WUEveTr','   WUDecTr','   WUGrass', &                !water use (36-39)
+                       '  SMDPaved','  SMDBldgs','  SMDEveTr','  SMDDecTr','  SMDGrass','  SMDBSoil', &   !smd for each surface (40-45)
+                       '   StPaved','   StBldgs','   StEveTr','   StDecTr','   StGrass','   StBSoil','   StWater',&   !states (46-52)
+                       '    Zenith','   Azimuth','   AlbBulk','      Fcld', &                ! extra radiation info (53-56)
                        '       LAI','       z0m','       zdm', &                             ! extra surface info (57-59)
                        '     ustar','       Lob','        ra','        rs', &                ! turbulence (60-63)
                        '        Fc', &                                                       ! CO2 flux (64)
-                       '  Fc_photo','  Fc_respi','  Fc_metab','  Fc_traff','  Fc_build', &   ! CO2 flux components (65-69)
-                       '   qn_SnFr','  qn_Sn   ','  alb_snow', &                             ! snow-related (radiation) (70-72)
-                       '        qm','  qmFreeze','    qmRain','       SWE','        Mw','   MwStore','    SnCh/i', &   !snow (73-79)
-                       ' SnR_Paved',' SnR_Bldgs' /)                                          !snow-related (removal) (80-81)
+                       '   FcPhoto','   FcRespi','   FcMetab','   FcTraff','   FcBuild', &   ! CO2 flux components (65-69)
+                       '  QNSnowFr','    QNSnow','   AlbSnow', &                             ! snow-related (radiation) (70-72)
+                       '        QM','  QMFreeze','    QMRain','       SWE',' MeltWater','MeltWStore','    SnowCh', &   !snow (73-79)
+                       'SnowRPaved','SnowRBldgs' /)                                          !snow-related (removal) (80-81)
 
      UnitsAll(:) = (/  '        YYYY','         DOY','          HH','          MM','         day', &   !datetime info (1-5)
                        '       W_m-2','       W_m-2','       W_m-2','       W_m-2','        degC', &   !radiation components (6-10)

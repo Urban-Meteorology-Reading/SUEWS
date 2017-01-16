@@ -13,7 +13,8 @@ SUBROUTINE ErrorHint(errh,ProblemFile,value,value2,valueI)
   !--------------------------------------------------------------------
 
   USE defaultNotUsed
-
+  USE WhereWhen
+  
   IMPLICIT NONE
 
   REAL(KIND(1d0)):: VALUE,value2
@@ -284,7 +285,8 @@ SUBROUTINE ErrorHint(errh,ProblemFile,value,value2,valueI)
      WRITE(500,*) TRIM(text1),' (WARNING)'
   ELSE
      WRITE(500,*) 'ERROR! Program stopped: ',TRIM(text1)
-     WRITE(500,'(i3)')  errh  !Add error code to problems.txt
+     WRITE(500,'((a),(i10))') ' Grid: ',GridID !,' DateTime: '  !Add grid (and datetime - later) to problems.txt
+     WRITE(500,'(i3)') errh  !Add error code to problems.txt
      WRITE(*,*) 'ERROR! SUEWS run stopped.'   !Print message to screen if program stopped
   ENDIF
   !!Write the actual comment the problems file

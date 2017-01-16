@@ -15,6 +15,7 @@
   use data_in
   use time
   use defaultnotUsed
+  use WhereWhen
   IMPLICIT NONE
  
   REAL(KIND(1d0))::h,ustar,tstar,l,g_t_K,kuz,zl,&!zl_f, &
@@ -31,6 +32,7 @@
   Tstar=(-H/ustar)
   L=(USTAR**2)/(G_T_K*Tstar)
   
+    
   IF(LOG(zzd/z0M)<0.001000) CALL ErrorHint(17,'In stability subroutine, (z-zd) < z0.',zzd,z0m,notUsedI)
   DO i=1,330 !Iteration starts
      LOLD=L

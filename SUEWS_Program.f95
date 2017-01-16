@@ -36,6 +36,7 @@ PROGRAM SUEWS_Program
   USE initial
   USE sues_data
   USE time
+  USE WhereWhen
 
   IMPLICIT NONE
 
@@ -141,7 +142,7 @@ PROGRAM SUEWS_Program
      ! within one year
      WRITE(grid_txt,'(I10)') GridIDmatrix(1)  !Get grid as a text string
      WRITE(tstep_txt,'(I5)') tstep/60  !Get tstep (in minutes) as a text string
-
+     
      ! Get met file name for this year for this grid
      FileCodeX = TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt)
      FileMet   = TRIM(FileInputPath)//TRIM(FileCodeX)//'_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
@@ -255,6 +256,7 @@ PROGRAM SUEWS_Program
         GridCounter=1   !Initialise counter for grids in each year
         DO igrid=1,NumberOfGrids   !Loop through grids
 
+           GridID = GridIDmatrix(igrid)   !store grid here for referencing error codes
            WRITE(grid_txt,'(I10)') GridIDmatrix(igrid)   !Get grid ID as a text string
            ! Get met forcing file name for this year for the first grid
            ! Can be something else than 1
@@ -439,7 +441,6 @@ PROGRAM SUEWS_Program
         ! Write output files in blocks --------------------------------
         DO igrid=1,NumberOfGrids
            CALL SUEWS_Output(igrid,year_int,iv,irMax,GridIDmatrix(igrid))  !GridIDmatrix required for correct naming of output files
-           !CALL SUEWS_Output(igrid,year_int,iv,irMax)
         ENDDO
 
      ENDDO !end loop over blocks of met data

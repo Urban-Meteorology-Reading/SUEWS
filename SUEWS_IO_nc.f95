@@ -455,7 +455,7 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
   CALL check( nf90_def_dim(ncID, "time", NF90_UNLIMITED, time_dimid) )
   CALL check( nf90_def_dim(ncID, "west_east", NX, x_dimid) )
   CALL check( nf90_def_dim(ncID, "south_north", NY, y_dimid) )
-  PRINT*, 'good define dim'
+  ! PRINT*, 'good define dim'
 
   ! The dimids array is used to pass the IDs of the dimensions of
   ! the variables. Note that in fortran arrays are stored in
@@ -473,7 +473,7 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
   CALL check( nf90_def_var(ncID,'xLat', NF90_REAL, (/x_dimid, y_dimid/), varIDy))
   CALL check( nf90_put_att(ncID,varIDy,'units','degree_north') )
 
-  PRINT*, 'good define var'
+  ! PRINT*, 'good define var'
 
   ! define grid_ID:
   CALL check( nf90_def_var(ncID,'grid_ID', NF90_INT, (/x_dimid, y_dimid/), varID))
@@ -484,15 +484,15 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
   DO iVar = iVarStart, ncolumnsDataOut, 1
      ! define variable name
      ivarStr2=nameVarList(iVar)
-     print*, ivarStr2
+    !  print*, ivarStr2
 
      ! Define the variable. The type of the variable in this case is
      ! NF90_REAL.
-     print*, TRIM(ADJUSTL(ivarStr2))
+    !  print*, TRIM(ADJUSTL(ivarStr2))
      CALL check( nf90_def_var(ncID,TRIM(ADJUSTL(ivarStr2)), NF90_REAL, dimids, varID) )
-     print*, 'define good'
+    !  print*, 'define good'
      CALL check( nf90_put_att(ncID,varID,'coordinates','xLon xLat') )
-     print*, 'put att good'
+    !  print*, 'put att good'
      idVar(iVar)=varID
   END DO
   CALL check( nf90_enddef(ncID) )
@@ -503,7 +503,7 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
   CALL check( nf90_put_var(ncID, varIDx, varX) )
   CALL check( nf90_put_var(ncID, varIDy, varY) )
   CALL check( NF90_SYNC(ncID) )
-  PRINT*, 'good put var'
+  ! PRINT*, 'good put var'
 
 
   ! put grid_ID:
@@ -528,8 +528,8 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
   ! associated with the file, and flushes any buffers.
   CALL check( nf90_close(ncID) )
 
-  PRINT*, "*** SUCCESS writing netCDF file:"
-  PRINT*, FileOut
+  ! PRINT*, "*** SUCCESS writing netCDF file:"
+  ! PRINT*, FileOut
 
 END SUBROUTINE SUEWS_Output_nc
 

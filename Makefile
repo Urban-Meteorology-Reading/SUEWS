@@ -1,10 +1,11 @@
 
 
 CC = gfortran $(CFLAGS)          # compiler
+NETCDFINC = /usr/local/include
+NETCDFLIB = /usr/local/lib
 TARGET = SUEWS_V2017a      # program name
-CFLAGS = -g -Wall -Wtabs -fbounds-check -I/usr/local/include
-# NETCDFINC = -I/usr/local/include
-# NETCDFLIB = -L/usr/local/lib -lnetcdf
+CFLAGS = -g -Wall -Wtabs -fbounds-check -I$(NETCDFINC)
+
 # All the files which include modules used by other modules (these therefore
 # needs to be compiled first)
 MODULES = LUMPS_Module_constants.o  \
@@ -63,14 +64,14 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_ESTM_functions.o \
           SUEWS_ESTM_initials.o \
           SUEWS_ESTM_v2016.o \
+					SUEWS_Output.o  \
           SUEWS_CO2.o
-TEST = 		SUEWS_Output.o  \
-          SUEWS_IO_nc.o
+TEST = 		SUEWS_IO_nc.o
 
 # Build main program - main uses MODULES and OTHERS
 main: SUEWS_Program.f95 $(MODULES) $(OTHERS) $(TEST)
 	$(CC) SUEWS_Program.f95 $(CFLAGS) -c ; \
-	$(CC) SUEWS_Program.o $(MODULES) $(OTHERS) $(TEST) -L/usr/local/lib -lnetcdf -o $(TARGET)
+	$(CC) SUEWS_Program.o $(MODULES) $(OTHERS) $(TEST) -L$(NETCDFLIB) -lnetcdf -o $(TARGET)
 
 # If OTHERS have changed, compile them again
 $(OTHERS): $(MODULES) $(subst .o,.f95, $(OTHERS))

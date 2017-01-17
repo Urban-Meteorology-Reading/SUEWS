@@ -444,7 +444,7 @@ PROGRAM SUEWS_Program
            !!water movements between the grids needs to be taken into account here ??
 
         ENDDO !end loop over rows of met data
-        print*, 'finish running:', iv
+        ! print*, 'finish running:', iv
 
         ! ENDDO ! do-while loop for AnOHM end --------------------------
 
@@ -463,7 +463,7 @@ PROGRAM SUEWS_Program
               CALL SiteSelect_txt2nc
            ENDIF
         ENDIF
-        print*, 'finish output:',iv
+        ! print*, 'finish output:',iv
 
      ENDDO !end loop over blocks of met data
      !-----------------------------------------------------------------------

@@ -313,6 +313,7 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
        unitVarList(iVarStart:ncolumnsDataOut),&
        ivarStr2
   CHARACTER(len=12*nColumnsDataOut):: HeaderOut, UnitsOut   !Header and units for selected output variables (untrimmed)
+  CHARACTER(len=12*nColumnsDataOut):: HeaderUsed, UnitsUsed   !Header and units for selected output variables (untrimmed)
 
 
   !================DEFINE OUTPUT VARIABLES AND UNITS================
@@ -321,8 +322,8 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
        '     kdown','       kup','     ldown','       lup','     Tsurf', &   !radiation components (6-10)
        '        qn','        qf','        qs','        qh','        qe', &   !energy fluxes (11-15)
        '  qh_LUMPS','  qe_LUMPS','      qh_r', &                             !energy fluxes (other approaches) (16-18)
-       '       P/i','      Ie/i','       E/i','      RO/i','   totCh/i', &   !water balance components (19-23)
-       '  surfCh/i','      St/i','    NWSt/i','      Dr/i','       smd', &   !water balance components cont. (24-28)
+       '       P_i','      Ie_i','       E_i','      RO_i','   totCh_i', &   !water balance components (19-23)
+       '  surfCh_i','      St_i','    NWSt_i','      Dr_i','       smd', &   !water balance components cont. (24-28)
        '    FlowCh','  AddWater', &                                          !water balance components cont. (29-30)
        '    ROsoil','    ROpipe','    RO_imp','    RO_veg','    RO_wat', &   !runoff components (31-35)
        '    wu_int','  wu_EveTr','  wu_DecTr','  wu_Grass', &                !water use (36-39)
@@ -334,7 +335,7 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
        '        Fc', &                                                       ! CO2 flux (64)
        '  Fc_photo','  Fc_respi','  Fc_metab','  Fc_traff','  Fc_build', &   ! CO2 flux components (65-69)
        '   qn_SnFr','  qn_Sn   ','  alb_snow', &                             ! snow-related (radiation) (70-72)
-       '        qm','  qmFreeze','    qmRain','       SWE','        Mw','   MwStore','    SnCh/i', &   !snow (73-79)
+       '        qm','  qmFreeze','    qmRain','       SWE','        Mw','   MwStore','    SnCh_i', &   !snow (73-79)
        ' SnR_Paved',' SnR_Bldgs'&                                            !snow-related (removal) (80-81)
        /)
 
@@ -389,13 +390,16 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
      !  ColNos=TRIM(ColNos)//' '//ADJUSTL(itext)
   ENDDO
 
-  ALLOCATE(CHARACTER(LEN(TRIM(ADJUSTL(HeaderOut)))):: HeaderUse)
-  ALLOCATE(CHARACTER(LEN(TRIM(ADJUSTL(UnitsOut)))):: UnitsUse)
+  ! PRINT*, 'mem start'
+  ! ALLOCATE(CHARACTER(LEN(TRIM(ADJUSTL(HeaderOut)))):: HeaderUse)
+  ! PRINT*, 'mem', 1
+  ! ALLOCATE(CHARACTER(LEN(TRIM(ADJUSTL(UnitsOut)))):: UnitsUse)
+  ! PRINT*, 'mem', 2
   ! ALLOCATE(CHARACTER(LEN(trim(adjustl(FormatOut)))):: FormatUse)
   ! ALLOCATE(CHARACTER(LEN(trim(adjustl(AggOut)))):: AggUse)
   ! ALLOCATE(CHARACTER(LEN(trim(adjustl(ColNos)))):: ColNosUse)
-  HeaderUse=TRIM(ADJUSTL(HeaderOut))
-  UnitsUse=TRIM(ADJUSTL(UnitsOut))
+  HeaderUsed=TRIM(ADJUSTL(HeaderOut))
+  UnitsUsed=TRIM(ADJUSTL(UnitsOut))
   ! FormatUse='('//trim(adjustl(FormatOut))//')'
   ! AggUse=trim(adjustl(AggOut))
   ! ColNosUse=trim(adjustl(ColNos))
@@ -451,7 +455,7 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
   CALL check( nf90_def_dim(ncID, "time", NF90_UNLIMITED, time_dimid) )
   CALL check( nf90_def_dim(ncID, "west_east", NX, x_dimid) )
   CALL check( nf90_def_dim(ncID, "south_north", NY, y_dimid) )
-  ! PRINT*, 'good define dim'
+  PRINT*, 'good define dim'
 
   ! The dimids array is used to pass the IDs of the dimensions of
   ! the variables. Note that in fortran arrays are stored in
@@ -469,7 +473,7 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
   CALL check( nf90_def_var(ncID,'xLat', NF90_REAL, (/x_dimid, y_dimid/), varIDy))
   CALL check( nf90_put_att(ncID,varIDy,'units','degree_north') )
 
-  ! PRINT*, 'good define var'
+  PRINT*, 'good define var'
 
   ! define grid_ID:
   CALL check( nf90_def_var(ncID,'grid_ID', NF90_INT, (/x_dimid, y_dimid/), varID))
@@ -480,11 +484,15 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
   DO iVar = iVarStart, ncolumnsDataOut, 1
      ! define variable name
      ivarStr2=nameVarList(iVar)
+     print*, ivarStr2
 
      ! Define the variable. The type of the variable in this case is
      ! NF90_REAL.
-     CALL check( nf90_def_var(ncID,TRIM(ivarStr2), NF90_REAL, dimids, varID) )
+     print*, TRIM(ADJUSTL(ivarStr2))
+     CALL check( nf90_def_var(ncID,TRIM(ADJUSTL(ivarStr2)), NF90_REAL, dimids, varID) )
+     print*, 'define good'
      CALL check( nf90_put_att(ncID,varID,'coordinates','xLon xLat') )
+     print*, 'put att good'
      idVar(iVar)=varID
   END DO
   CALL check( nf90_enddef(ncID) )
@@ -495,7 +503,7 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
   CALL check( nf90_put_var(ncID, varIDx, varX) )
   CALL check( nf90_put_var(ncID, varIDy, varY) )
   CALL check( NF90_SYNC(ncID) )
-  ! PRINT*, 'good put var'
+  PRINT*, 'good put var'
 
 
   ! put grid_ID:
@@ -520,8 +528,8 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
   ! associated with the file, and flushes any buffers.
   CALL check( nf90_close(ncID) )
 
-  ! PRINT*, "*** SUCCESS writing netCDF file:"
-  ! PRINT*, FileOut
+  PRINT*, "*** SUCCESS writing netCDF file:"
+  PRINT*, FileOut
 
 END SUBROUTINE SUEWS_Output_nc
 

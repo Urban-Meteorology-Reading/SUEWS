@@ -42,7 +42,6 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_error.o \
           SUEWS_waterUse.o \
           SUEWS_evap.o \
-          SUEWS_Output.o  \
           SUEWS_CodeMatch.o \
           SUEWS_InputHeaders.o \
           SUEWS_InterpHourlyProfiles.o \
@@ -65,7 +64,8 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_ESTM_initials.o \
           SUEWS_ESTM_v2016.o \
           SUEWS_CO2.o
-TEST = 		SUEWS_IO_nc.o
+TEST = 		SUEWS_Output.o  \
+          SUEWS_IO_nc.o
 
 # Build main program - main uses MODULES and OTHERS
 main: SUEWS_Program.f95 $(MODULES) $(OTHERS) $(TEST)

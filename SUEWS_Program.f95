@@ -42,19 +42,19 @@ PROGRAM SUEWS_Program
   CHARACTER(len = 4) :: year_txt  !Year as a text string
 
   CHARACTER(len = 20):: FileCodeX,& !Current file code
-                        FileCodeXWY,& !File code without year
-                        FileCodeXWG !File code without grid
+       FileCodeXWY,& !File code without year
+       FileCodeXWG !File code without grid
   CHARACTER(len = 20):: grid_txt, & !Grid number as a text string (from FirstGrid to LastGrid)
-                        tstep_txt   !Model timestep (in minutes) as a text string
+       tstep_txt   !Model timestep (in minutes) as a text string
 
   INTEGER:: nlinesLimit,&   !Max number of lines that can be read in one go for each grid
-            NumberOfYears   !Number of years to be run
+       NumberOfYears   !Number of years to be run
 
   INTEGER:: igrid,& !Grid number (from FirstGrid to LastGrid)
-            iv,       & !Block number (from 1 to ReadBlocksMetData)
-            ir,irMax, & !Row number within each block (from 1 to irMax)
-            year_int, & ! Year as an integer (from SiteSelect rather than met forcing file)
-            rr !Row of SiteSelect corresponding to current year and grid
+       iv,       & !Block number (from 1 to ReadBlocksMetData)
+       ir,irMax, & !Row number within each block (from 1 to irMax)
+       year_int, & ! Year as an integer (from SiteSelect rather than met forcing file)
+       rr !Row of SiteSelect corresponding to current year and grid
 
   LOGICAL:: PrintPlace = .FALSE.   !Prints row, block, and grid number to screen if TRUE;
 
@@ -107,7 +107,7 @@ PROGRAM SUEWS_Program
   ENDDO
 
   ! sort grid matrix to conform the geospatial layout as in QGIS
-  if (ncMode==1) CALL sortGrid(GridIDmatrix0,GridIDmatrix,nRow,nCol)
+  IF (ncMode==1) CALL sortGrid(GridIDmatrix0,GridIDmatrix,nRow,nCol)
   ! GridIDmatrix0 stores the grid ID in the original order
 
 
@@ -124,7 +124,7 @@ PROGRAM SUEWS_Program
   !allocate(BoAnOHMStart(NumberOfGrids))                    !initial Bo
   !allocate(BoAnOHMEnd(NumberOfGrids))                      !final Bo
 
-print*, 'good 1'
+  ! print*, 'good 1'
   ! ---- Initialise arrays --------------------------------------------------
   ModelDailyState(:,:) = -999
   DailyStateFirstOpen(:) = 1
@@ -444,6 +444,7 @@ print*, 'good 1'
            !!water movements between the grids needs to be taken into account here ??
 
         ENDDO !end loop over rows of met data
+        print*, 'finish running:', iv
 
         ! ENDDO ! do-while loop for AnOHM end --------------------------
 
@@ -460,13 +461,9 @@ print*, 'good 1'
            ! write input information in netCDF as well for future development
            IF ( iv==1 ) THEN
               CALL SiteSelect_txt2nc
-
-           END IF
-
-
-
-        END IF
-
+           ENDIF
+        ENDIF
+        print*, 'finish output:',iv
 
      ENDDO !end loop over blocks of met data
      !-----------------------------------------------------------------------
@@ -506,8 +503,8 @@ print*, 'good 1'
   ENDIF
   !Writing of the problem file
   WRITE(500,*) '--------------'
-  write(500,*) 'Run completed.'
-  write(500,*) '0'  ! Write out error code 0 if run completed
+  WRITE(500,*) 'Run completed.'
+  WRITE(500,*) '0'  ! Write out error code 0 if run completed
 
   ! Also print to screen
   WRITE(*,*) "----- SUEWS run completed -----"

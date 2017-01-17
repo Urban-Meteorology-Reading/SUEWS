@@ -45,9 +45,11 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  GridID)
   CHARACTER(len=10),DIMENSION(nColumnsDataOut):: HeaderAll, FormatAll  !Header and formats for all output variables
   CHARACTER(len=12),DIMENSION(nColumnsDataOut):: UnitsAll              !Units and formats for all output variables
   CHARACTER(len=12*nColumnsDataOut):: HeaderOut, FormatOut, UnitsOut   !Header and format for selected output variables (untrimmed)
-  CHARACTER(len=1),DIMENSION(nColumnsDataOut):: AggAll                !Aggregation method required
-  CHARACTER(len=5*nColumnsDataOut),ALLOCATABLE:: AggOut
-  CHARACTER(len=3*nColumnsDataOut),ALLOCATABLE:: ColNos
+  CHARACTER(len=1),DIMENSION(nColumnsDataOut):: AggAll         !Aggregation method required
+  ! CHARACTER(len=5*nColumnsDataOut),ALLOCATABLE:: AggOut
+  CHARACTER(len=5*nColumnsDataOut) :: AggOut
+  ! CHARACTER(len=3*nColumnsDataOut),ALLOCATABLE:: ColNos
+  CHARACTER(len=3*nColumnsDataOut) :: ColNos
   CHARACTER(len=10):: fy, ft, fd, f94, f104, f106   !Useful formats
   CHARACTER(len= 1):: aT, aA, aS, aL   !Useful formats
   CHARACTER(len= 5):: itext
@@ -86,86 +88,86 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  GridID)
 
      ! Set all output variables here. This must agree with dataOut (see SUEWS_Calculations.f95) and FormatAll
      HeaderAll(:) = (/ '        iy','        id','        it','      imin','   dectime', &   !datetime info (1-5)
-                       '     kdown','       kup','     ldown','       lup','     Tsurf', &   !radiation components (6-10)
-                       '        qn','        qf','        qs','        qh','        qe', &   !energy fluxes (11-15)
-                       '  qh_LUMPS','  qe_LUMPS','      qh_r', &                             !energy fluxes (other approaches) (16-18)
-                       '       P/i','      Ie/i','       E/i','      RO/i','   totCh/i', &   !water balance components (19-23)
-                       '  surfCh/i','      St/i','    NWSt/i','      Dr/i','       smd', &   !water balance components cont. (24-28)
-                       '    FlowCh','  AddWater', &                                          !water balance components cont. (29-30)
-                       '    ROsoil','    ROpipe','    RO_imp','    RO_veg','    RO_wat', &   !runoff components (31-35)
-                       '    wu_int','  wu_EveTr','  wu_DecTr','  wu_Grass', &                !water use (36-39)
-                       ' smd_Paved',' smd_Bldgs',' smd_EveTr',' smd_DecTr',' smd_Grass',' smd_BSoil', &   !smd for each surface (40-45)
-                       '  St_Paved','  St_Bldgs','  St_EveTr','  St_DecTr','  St_Grass','  St_BSoil','  St_Water',&   !states (46-52)
-                       '    zenith','   azimuth','  alb_bulk','      Fcld', &                ! extra radiation info (53-56)
-                       '       LAI','       z0m','       zdm', &                             ! extra surface info (57-59)
-                       '     ustar','       Lob','        ra','        rs', &                ! turbulence (60-63)
-                       '        Fc', &                                                       ! CO2 flux (64)
-                       '  Fc_photo','  Fc_respi','  Fc_metab','  Fc_traff','  Fc_build', &   ! CO2 flux components (65-69)
-                       '   qn_SnFr','  qn_Sn   ','  alb_snow', &                             ! snow-related (radiation) (70-72)
-                       '        qm','  qmFreeze','    qmRain','       SWE','        Mw','   MwStore','    SnCh/i', &   !snow (73-79)
-                       ' SnR_Paved',' SnR_Bldgs' /)                                          !snow-related (removal) (80-81)
+          '     kdown','       kup','     ldown','       lup','     Tsurf', &   !radiation components (6-10)
+          '        qn','        qf','        qs','        qh','        qe', &   !energy fluxes (11-15)
+          '  qh_LUMPS','  qe_LUMPS','      qh_r', &                             !energy fluxes (other approaches) (16-18)
+          '       P/i','      Ie/i','       E/i','      RO/i','   totCh/i', &   !water balance components (19-23)
+          '  surfCh/i','      St/i','    NWSt/i','      Dr/i','       smd', &   !water balance components cont. (24-28)
+          '    FlowCh','  AddWater', &                                          !water balance components cont. (29-30)
+          '    ROsoil','    ROpipe','    RO_imp','    RO_veg','    RO_wat', &   !runoff components (31-35)
+          '    wu_int','  wu_EveTr','  wu_DecTr','  wu_Grass', &                !water use (36-39)
+          ' smd_Paved',' smd_Bldgs',' smd_EveTr',' smd_DecTr',' smd_Grass',' smd_BSoil', &   !smd for each surface (40-45)
+          '  St_Paved','  St_Bldgs','  St_EveTr','  St_DecTr','  St_Grass','  St_BSoil','  St_Water',&   !states (46-52)
+          '    zenith','   azimuth','  alb_bulk','      Fcld', &                ! extra radiation info (53-56)
+          '       LAI','       z0m','       zdm', &                             ! extra surface info (57-59)
+          '     ustar','       Lob','        ra','        rs', &                ! turbulence (60-63)
+          '        Fc', &                                                       ! CO2 flux (64)
+          '  Fc_photo','  Fc_respi','  Fc_metab','  Fc_traff','  Fc_build', &   ! CO2 flux components (65-69)
+          '   qn_SnFr','  qn_Sn   ','  alb_snow', &                             ! snow-related (radiation) (70-72)
+          '        qm','  qmFreeze','    qmRain','       SWE','        Mw','   MwStore','    SnCh/i', &   !snow (73-79)
+          ' SnR_Paved',' SnR_Bldgs' /)                                          !snow-related (removal) (80-81)
 
      UnitsAll(:) = (/  '        YYYY','         DOY','          HH','          MM','         day', &   !datetime info (1-5)
-                       '       W_m-2','       W_m-2','       W_m-2','       W_m-2','        degC', &   !radiation components (6-10)
-                       '       W_m-2','       W_m-2','       W_m-2','       W_m-2','       W_m-2', &   !energy fluxes (11-15)
-                       '       W_m-2','       W_m-2','       W_m-2', &                                 !energy fluxes (other approaches) (16-18)
-                       '          mm','          mm','          mm','          mm','          mm', &   !water balance components (19-23)
-                       '          mm','          mm','          mm','          mm','          mm', &   !water balance components cont. (24-28)
-                       '          mm','          mm', &                                                !water balance components cont. (29-30)
-                       '          mm','          mm','          mm','          mm','          mm', &   !runoff components (31-35)
-                       '          mm','          mm','          mm','          mm', &                  !water use (36-39)
-                       '          mm','          mm','          mm','          mm','          mm','          mm', &   !smd for each surface (40-45)
-                       '          mm','          mm','          mm','          mm','          mm','          mm','          mm',&   !states (46-52)
-                       '         deg','         deg','           -','           -', &                  ! extra radiation info (53-56)
-                       '      m2_m-2','           m','           m', &                                 ! extra surface info (57-59)
-                       '       m_s-1','           m','       s_m-1','       s_m-1', &                  ! turbulence (60-63)
-                       'umol_m-2_s-1', &                                                               ! CO2 flux (64)
-                       'umol_m-2_s-1','umol_m-2_s-1','umol_m-2_s-1','umol_m-2_s-1','umol_m-2_s-1', &   ! CO2 flux components (65-69)
-                       '       W_m-2','       W_m-2','           -', &                                 ! snow-related (radiation) (70-72)
-                       '       W_m-2','       W_m-2','       W_m-2','          mm','          mm','          mm','          mm', &   !snow (73-79)
-                       '          mm','          mm' /)                                                !snow-related (removal) (80-81)
+          '       W_m-2','       W_m-2','       W_m-2','       W_m-2','        degC', &   !radiation components (6-10)
+          '       W_m-2','       W_m-2','       W_m-2','       W_m-2','       W_m-2', &   !energy fluxes (11-15)
+          '       W_m-2','       W_m-2','       W_m-2', &                                 !energy fluxes (other approaches) (16-18)
+          '          mm','          mm','          mm','          mm','          mm', &   !water balance components (19-23)
+          '          mm','          mm','          mm','          mm','          mm', &   !water balance components cont. (24-28)
+          '          mm','          mm', &                                                !water balance components cont. (29-30)
+          '          mm','          mm','          mm','          mm','          mm', &   !runoff components (31-35)
+          '          mm','          mm','          mm','          mm', &                  !water use (36-39)
+          '          mm','          mm','          mm','          mm','          mm','          mm', &   !smd for each surface (40-45)
+          '          mm','          mm','          mm','          mm','          mm','          mm','          mm',&   !states (46-52)
+          '         deg','         deg','           -','           -', &                  ! extra radiation info (53-56)
+          '      m2_m-2','           m','           m', &                                 ! extra surface info (57-59)
+          '       m_s-1','           m','       s_m-1','       s_m-1', &                  ! turbulence (60-63)
+          'umol_m-2_s-1', &                                                               ! CO2 flux (64)
+          'umol_m-2_s-1','umol_m-2_s-1','umol_m-2_s-1','umol_m-2_s-1','umol_m-2_s-1', &   ! CO2 flux components (65-69)
+          '       W_m-2','       W_m-2','           -', &                                 ! snow-related (radiation) (70-72)
+          '       W_m-2','       W_m-2','       W_m-2','          mm','          mm','          mm','          mm', &   !snow (73-79)
+          '          mm','          mm' /)                                                !snow-related (removal) (80-81)
 
      ! Use SPREAD function to duplicate repeat formats for groups of similar variables
      FormatAll(:) = (/ fy,SPREAD(ft,1,3),fd, &      !date time info
-                       SPREAD(f94,1,5), &           !radiation components
-                       SPREAD(f94,1,5), &           !energy fluxes
-                       SPREAD(f94,1,3), &           !energy fluxes (other approaches)
-                       SPREAD(f106,1,5), &          !water balance components
-                       f106,f104,f106,f106,f94, &   !water balance components cont.
-                       f104,f104, &                 !water balance components cont.
-                       SPREAD(f106,1,5), &          !runoff components
-                       SPREAD(f94,1,4), &           !water use
-                       SPREAD(f94,1,6), &           !smd for each surface
-                       SPREAD(f94,1,6),f104, &      !state for each surface
-                       SPREAD(f94,1,4), &           !extra radiation info
-                       SPREAD(f94,1,3), &           !extra surface info
-                       f94,f104,f94,f94, &          !turbulence
-                       f94, &                       !CO2 flux
-                       SPREAD(f94,1,5), &           !CO2 flux components
-                       SPREAD(f94,1,3), &           !snow-related (radiation)
-                       SPREAD(f106,1,7), &          !snow-related (radiation)
-                       SPREAD(f94,1,2) /)           !snow-related (removal)
+          SPREAD(f94,1,5), &           !radiation components
+          SPREAD(f94,1,5), &           !energy fluxes
+          SPREAD(f94,1,3), &           !energy fluxes (other approaches)
+          SPREAD(f106,1,5), &          !water balance components
+          f106,f104,f106,f106,f94, &   !water balance components cont.
+          f104,f104, &                 !water balance components cont.
+          SPREAD(f106,1,5), &          !runoff components
+          SPREAD(f94,1,4), &           !water use
+          SPREAD(f94,1,6), &           !smd for each surface
+          SPREAD(f94,1,6),f104, &      !state for each surface
+          SPREAD(f94,1,4), &           !extra radiation info
+          SPREAD(f94,1,3), &           !extra surface info
+          f94,f104,f94,f94, &          !turbulence
+          f94, &                       !CO2 flux
+          SPREAD(f94,1,5), &           !CO2 flux components
+          SPREAD(f94,1,3), &           !snow-related (radiation)
+          SPREAD(f106,1,7), &          !snow-related (radiation)
+          SPREAD(f94,1,2) /)           !snow-related (removal)
 
      ! Set type of aggregation required by wrapper
      AggAll(:) = (/ SPREAD(aT,1,5), &         !date time info
-                    SPREAD(aA,1,5), &         !radiation components
-                    SPREAD(aA,1,5), &         !energy fluxes
-                    SPREAD(aA,1,3), &         !energy fluxes (other approaches)
-                    SPREAD(aS,1,5), &         !water balance components
-                    aS,aL,aL,aS,aL, &         !water balance components cont.
-                    aS,aS, &                  !water balance components cont.
-                    SPREAD(aS,1,5), &         !runoff components
-                    SPREAD(aS,1,4), &         !water use
-                    SPREAD(aL,1,6), &         !smd for each surface
-                    SPREAD(aL,1,7), &         !state for each surface
-                    aL,aL,aA,aA, &            !extra radiation info
-                    SPREAD(aA,1,3), &         !extra surface info
-                    SPREAD(aA,1,4), &         !turbulence
-                    aA, &                     !CO2 flux
-                    SPREAD(aA,1,5), &         !CO2 flux components
-                    SPREAD(aA,1,3), &         !snow-related (radiation)
-                    aA,aA,aA,aS,aS,aS,aS, &   !snow-related (radiation)
-                    SPREAD(aS,1,2) /)         !snow-related (removal)
+          SPREAD(aA,1,5), &         !radiation components
+          SPREAD(aA,1,5), &         !energy fluxes
+          SPREAD(aA,1,3), &         !energy fluxes (other approaches)
+          SPREAD(aS,1,5), &         !water balance components
+          aS,aL,aL,aS,aL, &         !water balance components cont.
+          aS,aS, &                  !water balance components cont.
+          SPREAD(aS,1,5), &         !runoff components
+          SPREAD(aS,1,4), &         !water use
+          SPREAD(aL,1,6), &         !smd for each surface
+          SPREAD(aL,1,7), &         !state for each surface
+          aL,aL,aA,aA, &            !extra radiation info
+          SPREAD(aA,1,3), &         !extra surface info
+          SPREAD(aA,1,4), &         !turbulence
+          aA, &                     !CO2 flux
+          SPREAD(aA,1,5), &         !CO2 flux components
+          SPREAD(aA,1,3), &         !snow-related (radiation)
+          aA,aA,aA,aS,aS,aS,aS, &   !snow-related (radiation)
+          SPREAD(aS,1,2) /)         !snow-related (removal)
 
      ! Select variables to be written out
      IF(WriteOutOption == 0) THEN   !all (not snow-related)
@@ -175,7 +177,7 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  GridID)
      ELSEIF(WriteOutOption == 2) THEN   !minimal output
         UsecolumnsDataOut = (/ (i, i=1,15, 1),(i, i=19,28, 1), 53,54,55,56, 57, 60,61, 64 /)
      ELSE
-        write(*,*) 'RunControl: WriteOutOption code not recognised, so writing out all variables.'
+        WRITE(*,*) 'RunControl: WriteOutOption code not recognised, so writing out all variables.'
         UsecolumnsDataOut = (/ (i, i=1,69, 1) /)
      ENDIF
 
@@ -186,34 +188,52 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  GridID)
      AggOut=''
      ColNos=''
      DO i=1,SIZE(UseColumnsDataOut)
-        HeaderOut=trim(HeaderOut)//' '//adjustl(HeaderAll(UsecolumnsDataOut(i)))
+        HeaderOut=TRIM(HeaderOut)//' '//ADJUSTL(HeaderAll(UsecolumnsDataOut(i)))
         !write(*,*) HeaderOut
-        UnitsOut=trim(UnitsOut)//' '//adjustl(UnitsAll(UsecolumnsDataOut(i)))
+        UnitsOut=TRIM(UnitsOut)//' '//ADJUSTL(UnitsAll(UsecolumnsDataOut(i)))
         !write(*,*) UnitsOut
-        FormatOut=trim(FormatOut)//' '//adjustl(FormatAll(UsecolumnsDataOut(i)))
+        FormatOut=TRIM(FormatOut)//' '//ADJUSTL(FormatAll(UsecolumnsDataOut(i)))
         !write(*,*) FormatOut
-        AggOut=trim(AggOut)//' '//adjustl(AggAll(UsecolumnsDataOut(i)))
+        AggOut=TRIM(AggOut)//' '//ADJUSTL(AggAll(UsecolumnsDataOut(i)))
         !write(*,*) AggOut
-        write(itext,'(i3)') i
-        ColNos=trim(ColNos)//' '//adjustl(itext)
+        WRITE(itext,'(i3)') i
+        ColNos=TRIM(ColNos)//' '//ADJUSTL(itext)
      ENDDO
      !HeaderUse=trim(adjustl(HeaderOut))//' ' !with extra space at end of header row
-     ALLOCATE(CHARACTER(LEN(trim(adjustl(HeaderOut)))):: HeaderUse)
-     ALLOCATE(CHARACTER(LEN(trim(adjustl(UnitsOut)))):: UnitsUse)
-     ALLOCATE(CHARACTER(LEN(trim(adjustl(FormatOut)))):: FormatUse)
-     ALLOCATE(CHARACTER(LEN(trim(adjustl(AggOut)))):: AggUse)
-     ALLOCATE(CHARACTER(LEN(trim(adjustl(ColNos)))):: ColNosUse)
-     HeaderUse=trim(adjustl(HeaderOut))
-     UnitsUse=trim(adjustl(UnitsOut))
-     FormatUse='('//trim(adjustl(FormatOut))//')'
-     AggUse=trim(adjustl(AggOut))
-     ColNosUse=trim(adjustl(ColNos))
+     PRINT*, 'mem start'
+
+     ALLOCATE(CHARACTER(LEN(TRIM(ADJUSTL(HeaderOut)))):: HeaderUse)
+     PRINT*, 'mem',1
+
+     ALLOCATE(CHARACTER(LEN(TRIM(ADJUSTL(UnitsOut)))):: UnitsUse)
+     PRINT*, 'mem',2
+
+     PRINT*, LEN(TRIM(ADJUSTL(FormatOut)))
+     PRINT*, FormatOut
+     ALLOCATE(CHARACTER(LEN(TRIM(ADJUSTL(FormatOut)))):: FormatUse)
+     PRINT*, 'mem',3
+
+     PRINT*, LEN(TRIM(ADJUSTL(AggOut)))
+     PRINT*, AggOut
+     ALLOCATE(CHARACTER(LEN(TRIM(ADJUSTL(AggOut)))):: AggUse)
+     PRINT*, 'mem',4
+
+     ALLOCATE(CHARACTER(LEN(TRIM(ADJUSTL(ColNos)))):: ColNosUse)
+     PRINT*, 'mem',5
+
+     PRINT*, 'mem end'
+
+     HeaderUse=TRIM(ADJUSTL(HeaderOut))
+     UnitsUse=TRIM(ADJUSTL(UnitsOut))
+     FormatUse='('//TRIM(ADJUSTL(FormatOut))//')'
+     AggUse=TRIM(ADJUSTL(AggOut))
+     ColNosUse=TRIM(ADJUSTL(ColNos))
      !write(*,*) '||',HeaderUse,'||'
      !write(*,*) '||',FormatUse,'||'
      !write(*,*) '||',ColNosUse,'||'
 
 
-    !=========== Write output format info to file ===========
+     !=========== Write output format info to file ===========
      OPEN(50,file=TRIM(FileOutFormat),err=111)
      WRITE(50,'(a)') ColNosUse
      WRITE(50,'(a)') HeaderUse
@@ -240,9 +260,9 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  GridID)
      OPEN(9,file=SOLWEIGpoiOut)
      WRITE(9,113)
 113  FORMAT('%doy dectime  azimuth altitude GlobalRad DiffuseRad DirectRad ', &
-            ' Kdown2d    Kup2d    Ksouth     Kwest    Knorth     Keast ', &
-            ' Ldown2d    Lup2d    Lsouth     Lwest    Lnorth     Least ', &
-            '   Tmrt       I0       CI        gvf      shadow    svf    svfbuveg    Ta    Tg')
+          ' Kdown2d    Kup2d    Ksouth     Kwest    Knorth     Keast ', &
+          ' Ldown2d    Lup2d    Lsouth     Lwest    Lnorth     Least ', &
+          '   Tmrt       I0       CI        gvf      shadow    svf    svfbuveg    Ta    Tg')
   ENDIF
 
   ! BL ouput file -----------------------------------------------------
@@ -250,10 +270,10 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  GridID)
      OPEN(53,file=BLOut,status='unknown')
      WRITE(53, 102)
 102  FORMAT('iy  id   it imin dectime         z            theta          q',&
-            '               theta+          q+              Temp_C          rh',&
-            '              QH_use          QE_use          Press_hPa       avu1',&
-            '            ustar           avdens          lv_J_kg         avcp',&
-            '            gamt            gamq')
+          '               theta+          q+              Temp_C          rh',&
+          '              QH_use          QE_use          Press_hPa       avu1',&
+          '            ustar           avdens          lv_J_kg         avcp',&
+          '            gamt            gamq')
   ENDIF
 
   ! Snow output file --------------------------------------------------
@@ -262,20 +282,20 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  GridID)
         OPEN(54,file=SnowOut)
         WRITE(54, 114)
 114     FORMAT('%iy  id   it imin dectime ',&
-               'SWE_Paved SWE_Bldgs SWE_EveTr SWE_DecTr SWE_Grass SWE_BSoil SWE_Water ',&
-               'Mw_Paved Mw_Bldgs Mw_EveTr Mw_DecTr Mw_Grass Mw_BSoil Mw_Water ',&
-               'Qm_Paved Qm_Bldgs Qm_EveTr Qm_DecTr Qm_Grass Qm_BSoil Qm_Water ',&
-               'Qa_Paved Qa_Bldgs Qa_EveTr Qa_DecTr Qa_Grass Qa_BSoil Qa_Water ',&
-               'QmFr_Paved QmFr_Bldgs QmFr_EveTr QmFr_DecTr QmFr_Grass QmFr_BSoil QmFr_Water ',&
-               'fr_Paved fr_Bldgs fr_EveTr fr_DecTr fr_Grass fr_BSoil ',&
-               'RainSn_Paved RainSn_Bldgs RainSn_EveTr RainSn_DecTr RainSn_Grass RainSn_BSoil RainSn_Water ',&
-               'Qn_PavedSnow Qn_BldgsSnow Qn_EveTrSnpw Qn_DecTrSnow Qn_GrassSnpw Qn_BSoilSnow Qn_WaterSnow ',&
-               'kup_PavedSnow kup_BldgsSnow kup_EveTrSnpw kup_DecTrSnow kup_GrassSnpw kup_BSoilSnow kup_WaterSnow ',&
-               'frMelt_Paved frMelt_Bldgs frMelt_EveTr frMelt_DecTr frMelt_Grass frMelt_BSoil frMelt_Water ',&
-               'MwStore_Paved MwStore_Bldgs MwStore_EveTr MwStore_DecTr MwStore_Grass MwStore_BSoil MwStore_Water ',&
-               'SnowDens_Paved SnowDens_Bldgs SnowDens_EveTr SnowDens_DecTr SnowDens_Grass SnowDens_BSoil SnowDens_Water ',&
-               'Sd_Paved Sd_Bldgs Sd_EveTr Sd_DecTr Sd_Grass Sd_BSoil Sd_Water ',&
-               'Tsnow_Paved Tsnow_Bldgs Tsnow_EveTr Tsnow_DecTr Tsnow_Grass Tsnow_BSoil Tsnow_Water')
+             'SWE_Paved SWE_Bldgs SWE_EveTr SWE_DecTr SWE_Grass SWE_BSoil SWE_Water ',&
+             'Mw_Paved Mw_Bldgs Mw_EveTr Mw_DecTr Mw_Grass Mw_BSoil Mw_Water ',&
+             'Qm_Paved Qm_Bldgs Qm_EveTr Qm_DecTr Qm_Grass Qm_BSoil Qm_Water ',&
+             'Qa_Paved Qa_Bldgs Qa_EveTr Qa_DecTr Qa_Grass Qa_BSoil Qa_Water ',&
+             'QmFr_Paved QmFr_Bldgs QmFr_EveTr QmFr_DecTr QmFr_Grass QmFr_BSoil QmFr_Water ',&
+             'fr_Paved fr_Bldgs fr_EveTr fr_DecTr fr_Grass fr_BSoil ',&
+             'RainSn_Paved RainSn_Bldgs RainSn_EveTr RainSn_DecTr RainSn_Grass RainSn_BSoil RainSn_Water ',&
+             'Qn_PavedSnow Qn_BldgsSnow Qn_EveTrSnpw Qn_DecTrSnow Qn_GrassSnpw Qn_BSoilSnow Qn_WaterSnow ',&
+             'kup_PavedSnow kup_BldgsSnow kup_EveTrSnpw kup_DecTrSnow kup_GrassSnpw kup_BSoilSnow kup_WaterSnow ',&
+             'frMelt_Paved frMelt_Bldgs frMelt_EveTr frMelt_DecTr frMelt_Grass frMelt_BSoil frMelt_Water ',&
+             'MwStore_Paved MwStore_Bldgs MwStore_EveTr MwStore_DecTr MwStore_Grass MwStore_BSoil MwStore_Water ',&
+             'SnowDens_Paved SnowDens_Bldgs SnowDens_EveTr SnowDens_DecTr SnowDens_Grass SnowDens_BSoil SnowDens_Water ',&
+             'Sd_Paved Sd_Bldgs Sd_EveTr Sd_DecTr Sd_Grass Sd_BSoil Sd_Water ',&
+             'Tsnow_Paved Tsnow_Bldgs Tsnow_EveTr Tsnow_DecTr Tsnow_Grass Tsnow_BSoil Tsnow_Water')
      ELSE
         OPEN(54,file=TRIM(SnowOut),position='append')
      ENDIF
@@ -287,27 +307,27 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  GridID)
         OPEN(58,file=TRIM(ESTMOut),status='unknown')
         WRITE(58, 115)
 115     FORMAT('%iy id it imin dectime ',&
-               'QSNET QSAIR QSWALL QSROOF QSGROUND QSIBLD ',&
-               'TWALL1 TWALL2 TWALL3 TWALL4 TWALL5 ',&       !T0_WALL TWALL1 TWALL2 TWALL3 TN_WALL
-               'TROOF1 TROOF2 TROOF3 TROOF4 TROOF5 ',&
-               'TGROUND1 TGROUND2 TGROUND3 TGROUND4 TGROUND5 ',&
-               'TiBLD1 TiBLD2 TiBLD3 TiBLD4 TiBLD5 TaBLD ')
+             'QSNET QSAIR QSWALL QSROOF QSGROUND QSIBLD ',&
+             'TWALL1 TWALL2 TWALL3 TWALL4 TWALL5 ',&       !T0_WALL TWALL1 TWALL2 TWALL3 TN_WALL
+             'TROOF1 TROOF2 TROOF3 TROOF4 TROOF5 ',&
+             'TGROUND1 TGROUND2 TGROUND3 TGROUND4 TGROUND5 ',&
+             'TiBLD1 TiBLD2 TiBLD3 TiBLD4 TiBLD5 TaBLD ')
      ELSE
         OPEN(58,file=TRIM(ESTMOut),position='append')
      ENDIF
   ENDIF
 
   !These belong to NARP ouput file
-     ! 'kup_Paved kup_Bldgs kup_EveTr kup_DecTr kup_Grass kup_BSoil kup_Water ',&
-     ! 'lup_Paved lup_Bldgs lup_EveTr lup_DecTr lup_Grass lup_BSoil lup_Water ',&
-     ! 'Ts_Paved Ts_Bldgs Ts_EveTr Ts_DecTr Ts_Grass Ts_BSoil Ts_Water ',&
-     ! 'qn_Paved qn_Bldgs qn_EveTr qn_DecTr qn_Grass qn_BSoil qn_Water ',&
+  ! 'kup_Paved kup_Bldgs kup_EveTr kup_DecTr kup_Grass kup_BSoil kup_Water ',&
+  ! 'lup_Paved lup_Bldgs lup_EveTr lup_DecTr lup_Grass lup_BSoil lup_Water ',&
+  ! 'Ts_Paved Ts_Bldgs Ts_EveTr Ts_DecTr Ts_Grass Ts_BSoil Ts_Water ',&
+  ! 'qn_Paved qn_Bldgs qn_EveTr qn_DecTr qn_Grass qn_BSoil qn_Water ',&
 
 
   !========== Write out data ==========
   DO i=1,irMax
-      WRITE(lfnoutC,FormatUse) INT(dataOut(i,PACK(UseColumnsDataOut, UsecolumnsDataOut < 5),Gridiv)),&
-           dataOut(i,PACK(UseColumnsDataOut, UsecolumnsDataOut >= 5),Gridiv)
+     WRITE(lfnoutC,FormatUse) INT(dataOut(i,PACK(UseColumnsDataOut, UsecolumnsDataOut < 5),Gridiv)),&
+          dataOut(i,PACK(UseColumnsDataOut, UsecolumnsDataOut >= 5),Gridiv)
      !WRITE(lfnoutC,301) (INT(dataOut(i,is,Gridiv)),is=1,4),&
      !      dataOut(i,5:ncolumnsDataOut,Gridiv)
 

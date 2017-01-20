@@ -10,6 +10,7 @@
 ! TS 14 Mar 2016 - multiple addtions for AnOHM
 ! HCW 14 Jun 2016 - updated columns for ESTM and column names for AnOHM
 ! HCW 26 Aug 2016 - CO2 flux added
+! HCW 16 Jan 2017 - WhereWhen module added to store info relating to grid and datetime
 
 !==================================================================================================
 MODULE allocateArray
@@ -70,6 +71,16 @@ MODULE allocateArray
   CHARACTER(len=20),DIMENSION(ncolumnsWGWaterDist)::       HeaderWGWaterDist_File         !Header for Profiles
   CHARACTER(len=20),DIMENSION(ncolumnsWGWaterDist)::       HeaderWGWaterDist_Reqd         !Expected header for Profiles
 
+
+  ! ---- Define output file headers --------------------------------------------------------------
+  INTEGER,DIMENSION(:),ALLOCATABLE:: UseColumnsDataOut       !Column numbers used to select output variables
+  ! If change lengths in SUEWS_Output.f95, also need to adjust here 
+  CHARACTER(len=14*ncolumnsDataOut):: HeaderUse,FormatUse,HeaderUseNoSep,FormatUseNoSep    !Header and format in correct form
+  CHARACTER(len=52*ncolumnsDataOut):: LongNmUse
+  CHARACTER(len=14*ncolumnsDataOut):: UnitsUse
+  CHARACTER(len=3*ncolumnsDataOut):: AggregUse 
+  CHARACTER(len=4*ncolumnsDataOut):: ColNosUse
+  
   ! ---- Define arrays to store input information from SiteInfo spreadsheet ----------------------
   REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::SiteSelect                !Stores info from SiteSelect.txt
   REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::NonVeg_Coeff              !Coefficients for the nonveg surfaces
@@ -850,7 +861,7 @@ MODULE data_in
        lfnOld                 !!Was used for GridConnections
 
   INTEGER:: OutputFormats   !Used to control writing out of output file format
-
+ 
 
   ! ---- Other options set in RunControl --------------------------------------------------------
   REAL (KIND(1d0)):: timezone      !Timezone (GMT=0)
@@ -2036,14 +2047,16 @@ MODULE ESTM_data !S.O. and FO
 END MODULE ESTM_data
 
 !----------------------------------------------------------------------------------
-MODULE SetupOutput
+MODULE WhereWhen
+! Stores grid and datetime info
 
-  CHARACTER(len=:),ALLOCATABLE:: HeaderUse,FormatUse, UnitsUse, AggUse !Header and format in correct form (i.e. whitespace trimmed, brackets)
-  CHARACTER(len=:),ALLOCATABLE:: ColNosUse
-  INTEGER,DIMENSION(:),ALLOCATABLE:: UseColumnsDataOut       !Column numbers used to select output variables
+  INTEGER:: GridID   !Grid number (as specified in SUEWS_SiteSelect.txt)
+  !To add:
+  !Grid number (continuous)
+  !Datetime info
+END MODULE WhereWhen
 
-END MODULE SetupOutput
-
+  
 !----------------------------------------------------------------------------------
 MODULE MathConstants
 

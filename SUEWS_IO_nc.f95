@@ -484,15 +484,15 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
   DO iVar = iVarStart, ncolumnsDataOut, 1
      ! define variable name
      ivarStr2=nameVarList(iVar)
-    !  print*, ivarStr2
+     !  print*, ivarStr2
 
      ! Define the variable. The type of the variable in this case is
      ! NF90_REAL.
-    !  print*, TRIM(ADJUSTL(ivarStr2))
+     !  print*, TRIM(ADJUSTL(ivarStr2))
      CALL check( nf90_def_var(ncID,TRIM(ADJUSTL(ivarStr2)), NF90_REAL, dimids, varID) )
-    !  print*, 'define good'
+     !  print*, 'define good'
      CALL check( nf90_put_att(ncID,varID,'coordinates','xLon xLat') )
-    !  print*, 'put att good'
+     !  print*, 'put att good'
      idVar(iVar)=varID
   END DO
   CALL check( nf90_enddef(ncID) )

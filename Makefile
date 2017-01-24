@@ -1,10 +1,9 @@
-
-
 CC = gfortran $(CFLAGS)          # compiler
 NETCDFINC = /usr/local/include
 NETCDFLIB = /usr/local/lib
 TARGET = SUEWS_V2017a      # program name
-CFLAGS = -g -Wall -Wtabs -fbounds-check -I$(NETCDFINC)
+# CFLAGS = -g -Wall -Wtabs -fbounds-check -I$(NETCDFINC)
+CFLAGS = -g -Wall -Wtabs -fbounds-check `nc-config --fflags`
 
 # All the files which include modules used by other modules (these therefore
 # needs to be compiled first)
@@ -64,14 +63,15 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_ESTM_functions.o \
           SUEWS_ESTM_initials.o \
           SUEWS_ESTM_v2016.o \
-					SUEWS_Output.o  \
           SUEWS_CO2.o
-TEST = 		SUEWS_IO_nc.o
+TEST = 		SUEWS_IO_nc.o  \
+					SUEWS_Output.o
 
 # Build main program - main uses MODULES and OTHERS
 main: SUEWS_Program.f95 $(MODULES) $(OTHERS) $(TEST)
 	$(CC) SUEWS_Program.f95 $(CFLAGS) -c ; \
-	$(CC) SUEWS_Program.o $(MODULES) $(OTHERS) $(TEST) -L$(NETCDFLIB) -lnetcdf -o $(TARGET)
+	# $(CC) SUEWS_Program.o $(MODULES) $(OTHERS) $(TEST) -L$(NETCDFLIB) -lnetcdf -o $(TARGET)
+	$(CC) SUEWS_Program.o $(MODULES) $(OTHERS) $(TEST) `nc-config --flibs` -o $(TARGET)
 
 # If OTHERS have changed, compile them again
 $(OTHERS): $(MODULES) $(subst .o,.f95, $(OTHERS))

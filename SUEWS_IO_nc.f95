@@ -286,7 +286,7 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
   USE solweig_module
   USE cbl_module
   USE ESTM_data
-  USE SetupOutput
+  ! USE SetupOutput
   USE netCDF
 
 

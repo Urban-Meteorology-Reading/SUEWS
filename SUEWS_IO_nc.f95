@@ -311,7 +311,7 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
   INTEGER :: idVar(iVarStart:ncolumnsDataOut)
   CHARACTER(len=20):: nameVarList(iVarStart:ncolumnsDataOut),&
        unitVarList(iVarStart:ncolumnsDataOut),&
-       ivarStr2
+       ivarStr2,iunitStr2
   CHARACTER(len=12*nColumnsDataOut):: HeaderOut, UnitsOut   !Header and units for selected output variables (untrimmed)
   CHARACTER(len=12*nColumnsDataOut):: HeaderUsed, UnitsUsed   !Header and units for selected output variables (untrimmed)
 
@@ -484,7 +484,8 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
   DO iVar = iVarStart, ncolumnsDataOut, 1
      ! define variable name
      ivarStr2=nameVarList(iVar)
-     !  print*, ivarStr2
+     iunitStr2=unitVarList(iVar)
+     PRINT*, iunitStr2
 
      ! Define the variable. The type of the variable in this case is
      ! NF90_REAL.
@@ -493,6 +494,8 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
      !  print*, 'define good'
      CALL check( nf90_put_att(ncID,varID,'coordinates','xLon xLat') )
      !  print*, 'put att good'
+     CALL check( nf90_put_att(ncID,varIDy,'units',TRIM(ADJUSTL(iunitStr2))) )
+     !  print*, 'put unit good'
      idVar(iVar)=varID
   END DO
   CALL check( nf90_enddef(ncID) )

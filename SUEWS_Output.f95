@@ -297,23 +297,23 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  CurrentGrid)
         ENDIF
      ENDDO
      !HeaderUse=trim(adjustl(HeaderOut))//' ' !with extra space at end of header row
-     PRINT*, 'mem start'
+    !  PRINT*, 'mem start'
 
      !ALLOCATE(CHARACTER(LEN(trim(adjustl(HeaderOut)))):: HeaderUse)
-     PRINT*, 'mem',1
+    !  PRINT*, 'mem',1
 
      !ALLOCATE(CHARACTER(LEN(trim(adjustl(UnitsOut)))):: UnitsUse)
      !ALLOCATE(CHARACTER(LEN(trim(adjustl(LongNmOut)))):: LongNmUse)
 
-     PRINT*, LEN(TRIM(ADJUSTL(FormatOut)))
-     PRINT*, FormatOut
+    !  PRINT*, LEN(TRIM(ADJUSTL(FormatOut)))
+    !  PRINT*, FormatOut
      !ALLOCATE(CHARACTER(LEN(trim(adjustl(FormatOut)))):: FormatUse)
-     PRINT*, 'mem',3
+    !  PRINT*, 'mem',3
 
-     PRINT*, LEN(TRIM(ADJUSTL(AggregOut)))
-     PRINT*, AggregOut
+    !  PRINT*, LEN(TRIM(ADJUSTL(AggregOut)))
+    !  PRINT*, AggregOut
      !ALLOCATE(CHARACTER(LEN(trim(adjustl(AggregOut)))):: AggregUse)
-     PRINT*, 'mem',4
+    !  PRINT*, 'mem',4
 
      !ALLOCATE(CHARACTER(LEN(trim(adjustl(ColNos)))):: ColNosUse)
      HeaderUse=TRIM(adjustl(HeaderOut))

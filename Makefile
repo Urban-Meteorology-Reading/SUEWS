@@ -21,7 +21,6 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_HorizontalSoilWater.o \
           LUMPS_atmos_functions_moist.o \
           SUEWS_OHM.o \
-					SUEWS_Initial.o \
           LUMPS_atmos_functions_stab.o \
           SUEWS_ReDistributeWater.o \
           SUEWS_RoughnessParameters.o \
@@ -65,6 +64,7 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_ESTM_v2016.o \
           SUEWS_CO2.o
 TEST = 		SUEWS_IO_nc.o  \
+					SUEWS_Initial.o \
 					SUEWS_Output.o
 
 # Build main program - main uses MODULES and OTHERS

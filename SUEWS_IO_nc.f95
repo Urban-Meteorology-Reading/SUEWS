@@ -494,7 +494,7 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
      !  print*, 'define good'
      CALL check( nf90_put_att(ncID,varID,'coordinates','xLon xLat') )
      !  print*, 'put att good'
-     CALL check( nf90_put_att(ncID,varIDy,'units',TRIM(ADJUSTL(iunitStr2))) )
+     CALL check( nf90_put_att(ncID,varID,'units',TRIM(ADJUSTL(iunitStr2))) )
      !  print*, 'put unit good'
      idVar(iVar)=varID
   END DO

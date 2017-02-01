@@ -144,14 +144,24 @@ SUBROUTINE OverallRunControl
   !=======================SUEWS_SiteSelect.txt============================
   FileN='SUEWS_SiteSelect.txt'
   CALL NumberRows(FileN,SkipHeaderSiteInfo)     !Find number of rows in input file
+  CALL NumberRows(FileN,SkipHeaderSiteInfo)     !Find number of rows in input file
+  CALL NumberRows(FileN,SkipHeaderSiteInfo)     !Find number of rows in input file
+  CALL NumberRows(FileN,SkipHeaderSiteInfo)     !Find number of rows in input file
+  CALL NumberRows(FileN,SkipHeaderSiteInfo)     !Find number of rows in input file
+  CALL NumberRows(FileN,SkipHeaderSiteInfo)     !Find number of rows in input file
+
+  ! nlinesSiteSelect=2
+  ! print*, nlinesSiteSelect
   nlinesSiteSelect=nlines
   ALLOCATE(SiteSelect(nlinesSiteSelect,ncolumnsSiteSelect))
   !Read input file
-  OPEN(21,file=TRIM(FileInputPath)//TRIM(FileN),err=300,status='old')
+  ! OPEN(21,file=TRIM(FileInputPath)//TRIM(FileN),err=300,status='old')
+  OPEN(21,file=(TRIM(FileInputPath)//TRIM(FileN)),status='old')
   DO SkipCounter=1,(SkipHeaderSiteInfo-1)
      READ(21,*)   !Skip lines before header
   ENDDO
   READ(21,*) (HeaderSiteSelect_File(iv),iv=1,ncolumnsSiteSelect) !Get header
+
 
   DO i=1,nlinesSiteSelect
      READ(21,*) (SiteSelect(i,iv),iv=1,ncolumnsSiteSelect)
@@ -163,7 +173,7 @@ SUBROUTINE OverallRunControl
 
   !=======================SUEWS_NonVeg.txt============================
   FileN='SUEWS_NonVeg.txt'
-  CALL NumberRows(FileN,SkipHeaderSiteInfo)     !Find number of rows in input file
+  ! CALL NumberRows(FileN,SkipHeaderSiteInfo)     !Find number of rows in input file
   nlinesNonVeg=nlines
   ALLOCATE(NonVeg_Coeff(nlinesNonVeg,ncolumnsNonVeg))
   !Read input file
@@ -594,7 +604,7 @@ SUBROUTINE NumberRows(FileN,SkipHeaderLines)
 
   CHARACTER(len=50):: FileN
   INTEGER:: SkipHeaderLines, RunNumber
-  INTEGER:: SkipCounter
+  INTEGER:: SkipCounter,ios
 
   WRITE(*,*) FileN
   OPEN(39,file=TRIM(FileInputPath)//TRIM(FileN),err=204,status='old')
@@ -612,8 +622,11 @@ SUBROUTINE NumberRows(FileN,SkipHeaderLines)
      IF(RunNumber==-9) EXIT
      nlines = nlines + 1
   END DO
-  ! write(*,*) 'nlines read: ',nlines
+  write(*,*) 'nlines read: ',nlines
+  rewind(39)
   CLOSE(39)
+  ! close(unit=39, iostat=ios)
+  ! if ( ios /= 0 ) stop "Error closing file unit "
 
   RETURN
 

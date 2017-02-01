@@ -485,7 +485,7 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
      ! define variable name
      ivarStr2=nameVarList(iVar)
      iunitStr2=unitVarList(iVar)
-     PRINT*, iunitStr2
+    !  PRINT*, iunitStr2
 
      ! Define the variable. The type of the variable in this case is
      ! NF90_REAL.

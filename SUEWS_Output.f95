@@ -107,7 +107,7 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  CurrentGrid)
      FormatAll(6:9) = f94
      AggregAll(6:9) = aA
      LongNmAll(6:9) = (/'Incoming shortwave radiation','Outgoing shortwave radiation', &
-                        ' Incoming longwave radiation',' Outgoing longwave radiation'/)
+          ' Incoming longwave radiation',' Outgoing longwave radiation'/)
 
      HeaderAll(10) = 'Tsurf'
      UnitsAll (10) = 'degC'
@@ -120,30 +120,30 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  CurrentGrid)
      FormatAll(11:15) = f94
      AggregAll(11:15) = aA
      LongNmAll(11:15) = (/' Net all-wave radiation','Anthropogenic heat flux','  Net storage heat flux', &
-                          '     Sensible heat flux','       Latent heat flux'/)
+          '     Sensible heat flux','       Latent heat flux'/)
 
      HeaderAll(16:18) = (/'QHlumps','QElumps','QHresis'/)   !energy fluxes (other approaches)
      UnitsAll (16:18)  = 'W_m-2'
      FormatAll(16:18) = f94
      AggregAll(16:18) = aA
      LongNmAll(16:18) = (/ '      Sensible heat flux (using LUMPS)','        Latent heat flux (using LUMPS)', &
-                           'Sensible heat flux (resistance method)'/)
+          'Sensible heat flux (resistance method)'/)
 
      HeaderAll(19:23) = (/' Rain','  Irr',' Evap','   RO','TotCh'/)   !water balance components
      UnitsAll (19:23) = 'mm'
      FormatAll(19:23) = f106
      AggregAll(19:23) = aS
      LongNmAll(19:23) = (/'                            Rain','                      Irrigation', &
-                          '                     Evaporation','                          Runoff', &
-                          'Surface and soil moisture change'/)
+          '                     Evaporation','                          Runoff', &
+          'Surface and soil moisture change'/)
 
      HeaderAll(24:28) = (/'    SurfCh','     State',' NWtrState','  Drainage','       SMD'/)   !water balance components cont.
      UnitsAll (24:28) = 'mm'
      FormatAll(24:28) = (/ f106,f104,f106,f106,f94 /)
      AggregAll(24:28) = (/aS,aL,aL,aS,aL/)
      LongNmAll(24:28) = (/'                   Surface moisture change','                       SurfaceWetnessState', &
-                          'Surface wetness state (non-water surfaces)','                                  Drainage', &
-                          '                       SoilMoistureDeficit'/)
+          'Surface wetness state (non-water surfaces)','                                  Drainage', &
+          '                       SoilMoistureDeficit'/)
 
 
      HeaderAll(29:30) = (/'  FlowCh','AddWater'/)                                          !water balance components cont.
@@ -157,38 +157,38 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  CurrentGrid)
      FormatAll(31:35) = f106
      AggregAll(31:35) = aS
      LongNmAll(31:35) = (/'                 Runoff to soil','                Runoff to pipes', &
-                          'Runoff over impervious surfaces',' Runoff over vegetated surfaces', &
-                          '       Runoff for water surface'/)
+          'Runoff over impervious surfaces',' Runoff over vegetated surfaces', &
+          '       Runoff for water surface'/)
 
      HeaderAll(36:39) = (/'  WUInt','WUEveTr','WUDecTr','WUGrass'/)                !water use
      UnitsAll (36:39) = 'mm'
      FormatAll(36:39) = f94
      AggregAll(36:39) = aS
      LongNmAll(36:39) = (/'             InternalWaterUse', &
-                          'Water use for evergreen trees','Water use for deciduous trees','          Water use for grass'/)
+          'Water use for evergreen trees','Water use for deciduous trees','          Water use for grass'/)
 
      HeaderAll(40:45) = (/'SMDPaved','SMDBldgs','SMDEveTr','SMDDecTr','SMDGrass','SMDBSoil'/)  !smd for each surface
      UnitsAll (40:45) = 'mm'
      FormatAll(40:45) = f94
      AggregAll(40:45) = aL
      LongNmAll(40:45) = (/'         Soil moisture deficit for paved surface', &
-                          '      Soil moisture deficit for building surface', &
-                          'Soil moisture deficit for evergreen tree surface', &
-                          'Soil moisture deficit for deciduous tree surface', &
-                          '         Soil moisture deficit for grass surface', &
-                          '     Soil moisture deficit for bare soil surface'/)
+          '      Soil moisture deficit for building surface', &
+          'Soil moisture deficit for evergreen tree surface', &
+          'Soil moisture deficit for deciduous tree surface', &
+          '         Soil moisture deficit for grass surface', &
+          '     Soil moisture deficit for bare soil surface'/)
 
      HeaderAll(46:52) = (/'StPaved','StBldgs','StEveTr','StDecTr','StGrass','StBSoil','StWater'/)   !states
      UnitsAll (46:52) = 'mm'
      FormatAll(46:52) = (/SPREAD(f94,1,6),f104/)
      AggregAll(46:52) = aL
      LongNmAll(46:52) = (/'         Surface wetness state for paved surface', &
-                          '      Surface wetness state for building surface', &
-                          'Surface wetness state for evergreen tree surface', &
-                          'Surface wetness state for deciduous tree surface', &
-                          '         Surface wetness state for grass surface', &
-                          '     Surface wetness state for bare soil surface', &
-                          '         Surface wetness state for water surface'/)
+          '      Surface wetness state for building surface', &
+          'Surface wetness state for evergreen tree surface', &
+          'Surface wetness state for deciduous tree surface', &
+          '         Surface wetness state for grass surface', &
+          '     Surface wetness state for bare soil surface', &
+          '         Surface wetness state for water surface'/)
 
      HeaderAll(53:54) = (/' Zenith','Azimuth'/)! solar angles
      UnitsAll (53:54) = 'deg'
@@ -219,22 +219,22 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  CurrentGrid)
      FormatAll(60:63) = (/f94,f104,f94,f94/)
      AggregAll(60:63) = aA
      LongNmAll(60:63) = (/'     Friction velocity','        Obukhov length', &
-                          'Aerodynamic resistance','    Surface resistance'/)
+          'Aerodynamic resistance','    Surface resistance'/)
 
      HeaderAll(64:69) = (/'     Fc','FcPhoto','FcRespi','FcMetab','FcTraff','FcBuild'/)   ! CO2 flux & components
      UnitsAll (64:69) = 'umol_m-2_s-1'
      FormatAll(64:69) = f94
      AggregAll(64:69) = aA
      LongNmAll(64:69) = (/'                    CO2 flux', &
-                          'CO2 flux from photosynthesis','   CO2 flux from respiration', &
-                          '    CO2 flux from metabolism','       CO2 flux from traffic','     CO2 flux from buildings'/)
+          'CO2 flux from photosynthesis','   CO2 flux from respiration', &
+          '    CO2 flux from metabolism','       CO2 flux from traffic','     CO2 flux from buildings'/)
 
      HeaderAll(70:72) = (/'QNSnowFr','  QNSnow',' AlbSnow'/)                             ! snow-related (radiation)
      UnitsAll (70:72) = (/'W_m-2','W_m-2','    -'/)
      FormatAll(70:72) = f94
      AggregAll(70:72) = aA
      LongNmAll(70:72) = (/'Net all-wave radiation for non-snow area','    Net all-wave radiation for snow area', &
-                          '                             Snow albedo'/)
+          '                             Snow albedo'/)
 
      HeaderAll(73:75) = (/'        QM','  QMFreeze','    QMRain'/)
      UnitsAll (73:75) = 'W_m-2'
@@ -269,62 +269,62 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  CurrentGrid)
 
      ! Create subset of HeaderAll and FormatAll for selected variables only
      DO i=1,SIZE(UseColumnsDataOut)
-        write(itext,'(i3)') i
+        WRITE(itext,'(i3)') i
         IF(i==1) THEN
-           HeaderOut=adjustl(HeaderAll(UsecolumnsDataOut(i)))
-           HeaderOutNoSep=adjustl(HeaderAll(UsecolumnsDataOut(i)))
-           UnitsOut=adjustl(UnitsAll(UsecolumnsDataOut(i)))
-           FormatOut=adjustl(FormatAll(UsecolumnsDataOut(i)))
-           FormatOutNoSep=adjustl(FormatAll(UsecolumnsDataOut(i)))
-           LongNmOut=adjustl(LongNmAll(UsecolumnsDataOut(i)))
-           AggregOut=adjustl(AggregAll(UsecolumnsDataOut(i)))
-           ColNos=adjustl(itext)
+           HeaderOut=ADJUSTL(HeaderAll(UsecolumnsDataOut(i)))
+           HeaderOutNoSep=ADJUSTL(HeaderAll(UsecolumnsDataOut(i)))
+           UnitsOut=ADJUSTL(UnitsAll(UsecolumnsDataOut(i)))
+           FormatOut=ADJUSTL(FormatAll(UsecolumnsDataOut(i)))
+           FormatOutNoSep=ADJUSTL(FormatAll(UsecolumnsDataOut(i)))
+           LongNmOut=ADJUSTL(LongNmAll(UsecolumnsDataOut(i)))
+           AggregOut=ADJUSTL(AggregAll(UsecolumnsDataOut(i)))
+           ColNos=ADJUSTL(itext)
         ELSE
-           HeaderOut=trim(HeaderOut)//';'//adjustl(HeaderAll(UsecolumnsDataOut(i)))
-           HeaderOutNoSep=trim(HeaderOutNoSep)//' '//adjustl(HeaderAll(UsecolumnsDataOut(i)))
-        !write(*,*) HeaderOut
-           UnitsOut=trim(UnitsOut)//';'//adjustl(UnitsAll(UsecolumnsDataOut(i)))
-        !write(*,*) UnitsOut
-           FormatOut=trim(FormatOut)//';'//adjustl(FormatAll(UsecolumnsDataOut(i)))
-           FormatOutNoSep=trim(FormatOutNoSep)//' '//adjustl(FormatAll(UsecolumnsDataOut(i)))
-        !write(*,*) FormatOut
-           LongNmOut=trim(LongNmOut)//';'//adjustl(LongNmAll(UsecolumnsDataOut(i)))
+           HeaderOut=TRIM(HeaderOut)//';'//ADJUSTL(HeaderAll(UsecolumnsDataOut(i)))
+           HeaderOutNoSep=TRIM(HeaderOutNoSep)//' '//ADJUSTL(HeaderAll(UsecolumnsDataOut(i)))
+           !write(*,*) HeaderOut
+           UnitsOut=TRIM(UnitsOut)//';'//ADJUSTL(UnitsAll(UsecolumnsDataOut(i)))
+           !write(*,*) UnitsOut
+           FormatOut=TRIM(FormatOut)//';'//ADJUSTL(FormatAll(UsecolumnsDataOut(i)))
+           FormatOutNoSep=TRIM(FormatOutNoSep)//' '//ADJUSTL(FormatAll(UsecolumnsDataOut(i)))
+           !write(*,*) FormatOut
+           LongNmOut=TRIM(LongNmOut)//';'//ADJUSTL(LongNmAll(UsecolumnsDataOut(i)))
            !write(*,*) LongNmOut
-           AggregOut=trim(AggregOut)//';'//adjustl(AggregAll(UsecolumnsDataOut(i)))
+           AggregOut=TRIM(AggregOut)//';'//ADJUSTL(AggregAll(UsecolumnsDataOut(i)))
            !write(*,*) AggregOut
-           ColNos=trim(ColNos)//';'//adjustl(itext)
+           ColNos=TRIM(ColNos)//';'//ADJUSTL(itext)
         ENDIF
      ENDDO
      !HeaderUse=trim(adjustl(HeaderOut))//' ' !with extra space at end of header row
-    !  PRINT*, 'mem start'
+     !  PRINT*, 'mem start'
 
      !ALLOCATE(CHARACTER(LEN(trim(adjustl(HeaderOut)))):: HeaderUse)
-    !  PRINT*, 'mem',1
+     !  PRINT*, 'mem',1
 
      !ALLOCATE(CHARACTER(LEN(trim(adjustl(UnitsOut)))):: UnitsUse)
      !ALLOCATE(CHARACTER(LEN(trim(adjustl(LongNmOut)))):: LongNmUse)
 
-    !  PRINT*, LEN(TRIM(ADJUSTL(FormatOut)))
-    !  PRINT*, FormatOut
+     !  PRINT*, LEN(TRIM(ADJUSTL(FormatOut)))
+     !  PRINT*, FormatOut
      !ALLOCATE(CHARACTER(LEN(trim(adjustl(FormatOut)))):: FormatUse)
-    !  PRINT*, 'mem',3
+     !  PRINT*, 'mem',3
 
-    !  PRINT*, LEN(TRIM(ADJUSTL(AggregOut)))
-    !  PRINT*, AggregOut
+     !  PRINT*, LEN(TRIM(ADJUSTL(AggregOut)))
+     !  PRINT*, AggregOut
      !ALLOCATE(CHARACTER(LEN(trim(adjustl(AggregOut)))):: AggregUse)
-    !  PRINT*, 'mem',4
+     !  PRINT*, 'mem',4
 
      !ALLOCATE(CHARACTER(LEN(trim(adjustl(ColNos)))):: ColNosUse)
-     HeaderUse=TRIM(adjustl(HeaderOut))
+     HeaderUse=TRIM(ADJUSTL(HeaderOut))
 
-     HeaderUseNoSep=TRIM(adjustl(HeaderOutNoSep))
-     UnitsUse=TRIM(adjustl(UnitsOut))
+     HeaderUseNoSep=TRIM(ADJUSTL(HeaderOutNoSep))
+     UnitsUse=TRIM(ADJUSTL(UnitsOut))
 
-     LongNmUse=TRIM(adjustl(LongNmOut))
-     FormatUse='('//TRIM(adjustl(FormatOut))//')'
-     FormatUseNoSep='('//TRIM(adjustl(FormatOutNoSep))//')'
-     AggregUse=TRIM(adjustl(AggregOut))
-     ColNosUse=TRIM(adjustl(ColNos))
+     LongNmUse=TRIM(ADJUSTL(LongNmOut))
+     FormatUse=TRIM(ADJUSTL(FormatOut))
+     FormatUseNoSep='('//TRIM(ADJUSTL(FormatOutNoSep))//')'
+     AggregUse=TRIM(ADJUSTL(AggregOut))
+     ColNosUse=TRIM(ADJUSTL(ColNos))
      !write(*,*) '||',TRIM(HeaderUse),'||'
      !write(*,*) '||',TRIM(FormatUse),'||'
      !write(*,*) '||',TRIM(ColNosUse),'||'
@@ -336,7 +336,7 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  CurrentGrid)
      WRITE(50,'(a)') TRIM(HeaderUse)
      WRITE(50,'(a)') TRIM(LongNmUse)
      WRITE(50,'(a)') TRIM(UnitsUse)
-     WRITE(50,'(a)') TRIM(FormatUse(2:(LEN(FormatUse)-1)))   !also write formats to output file (without outer brackets)
+     WRITE(50,'(a)') TRIM(FormatUse)   !also write formats to output file (without outer brackets)
      WRITE(50,'(a)') TRIM(AggregUse)
      CLOSE (50)
      OutputFormats = 0
@@ -423,7 +423,7 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  CurrentGrid)
 
   !========== Write out data ==========
   DO i=1,irMax
-      WRITE(lfnoutC,FormatUseNoSep) INT(dataOut(i,PACK(UseColumnsDataOut, UsecolumnsDataOut < 5),Gridiv)),&
+     WRITE(lfnoutC,FormatUseNoSep) INT(dataOut(i,PACK(UseColumnsDataOut, UsecolumnsDataOut < 5),Gridiv)),&
           dataOut(i,PACK(UseColumnsDataOut, UsecolumnsDataOut >= 5),Gridiv)
      !WRITE(lfnoutC,301) (INT(dataOut(i,is,Gridiv)),is=1,4),&
      !      dataOut(i,5:ncolumnsDataOut,Gridiv)

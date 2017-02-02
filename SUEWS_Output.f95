@@ -306,7 +306,7 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
      HeaderUseNoSep=TRIM(adjustl(HeaderOutNoSep))
      UnitsUse=TRIM(adjustl(UnitsOut))
      LongNmUse=TRIM(adjustl(LongNmOut))
-     FormatUse='('//TRIM(adjustl(FormatOut))//')'     
+     FormatUse=TRIM(adjustl(FormatOut))
      FormatUseNoSep='('//TRIM(adjustl(FormatOutNoSep))//')'     
      AggregUse=TRIM(adjustl(AggregOut))
      ColNosUse=TRIM(adjustl(ColNos))
@@ -321,7 +321,7 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
      WRITE(50,'(a)') TRIM(HeaderUse)
      WRITE(50,'(a)') TRIM(LongNmUse)
      WRITE(50,'(a)') TRIM(UnitsUse)
-     WRITE(50,'(a)') TRIM(FormatUse(2:(LEN(FormatUse)-1)))   !also write formats to output file (without outer brackets)
+     WRITE(50,'(a)') TRIM(FormatUse)   !also write formats to output file (without outer brackets)
      WRITE(50,'(a)') TRIM(AggregUse)
      CLOSE (50)
      OutputFormats = 0

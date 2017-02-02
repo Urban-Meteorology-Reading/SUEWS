@@ -361,14 +361,14 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
 
   ! Select variables to be written out
   IF(WriteOutOption == 0) THEN   !all (not snow-related)
-     UsecolumnsDataOut = (/ (i, i=6,69, 1) /)
+     UsecolumnsDataOut = (/ (i, i=iVarStart,69, 1) /)
   ELSEIF(WriteOutOption == 1) THEN   !all plus snow-related
-     UsecolumnsDataOut = (/ (i, i=6,nColumnsDataOut, 1) /)
+     UsecolumnsDataOut = (/ (i, i=iVarStart,nColumnsDataOut, 1) /)
   ELSEIF(WriteOutOption == 2) THEN   !minimal output
-     UsecolumnsDataOut = (/ (i, i=6,15, 1),(i, i=19,28, 1), 53,54,55,56, 57, 60,61, 64 /)
+     UsecolumnsDataOut = (/ (i, i=iVarStart,15, 1),(i, i=19,28, 1), 53,54,55,56, 57, 60,61, 64 /)
   ELSE
      WRITE(*,*) 'RunControl: WriteOutOption code not recognised, so writing out all variables.'
-     UsecolumnsDataOut = (/ (i, i=6,69, 1) /)
+     UsecolumnsDataOut = (/ (i, i=iVarStart,69, 1) /)
   ENDIF
 
   ! Create subset of HeaderAll and FormatAll for selected variables only

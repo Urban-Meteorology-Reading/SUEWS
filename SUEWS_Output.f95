@@ -287,7 +287,6 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  CurrentGrid)
         !write(*,*) UnitsOut
            FormatOut=trim(FormatOut)//';'//adjustl(FormatAll(UsecolumnsDataOut(i)))
            FormatOutNoSep=trim(FormatOutNoSep)//' '//adjustl(FormatAll(UsecolumnsDataOut(i)))
-        FormatOut=TRIM(FormatOut)//' '//ADJUSTL(FormatAll(UsecolumnsDataOut(i)))
         !write(*,*) FormatOut
            LongNmOut=trim(LongNmOut)//';'//adjustl(LongNmAll(UsecolumnsDataOut(i)))
            !write(*,*) LongNmOut

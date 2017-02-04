@@ -44,9 +44,10 @@ SUBROUTINE SiteSelect_txt2nc
   !
   ! When we create netCDF files, variables and dimensions, we get back
   ! an ID for each one.
-  INTEGER :: ncID, varID, dimids(NDIMS)
+  INTEGER :: ncID, varID, dimids(NDIMS),varIDx,varIDy
   INTEGER :: x_dimid, y_dimid,iVar
-  REAL(KIND(1d0)), ALLOCATABLE :: varOut(:,:), varSeq(:),varSeq0(:)
+  REAL(KIND(1d0)), ALLOCATABLE :: varOut(:,:), varSeq(:),varSeq0(:),&
+       varX(:,:),varY(:,:),xLat(:,:),xLon(:,:)
   INTEGER :: idVar(iVarStart:ncolumnsSiteSelect)
   CHARACTER(len=25):: nameVarList(iVarStart:ncolumnsSiteSelect),ivarStr2
 
@@ -100,13 +101,36 @@ SUBROUTINE SiteSelect_txt2nc
   ! print*, FileOut
   ! PRINT*, 'GOOD 2'
 
-
+  ! define the dimension of spatial array/frame in the output
   nX=nCol
   nY=nRow
-  ! write out each variable
+
+  ! allocate arrays
   ALLOCATE(varOut(nX,nY))
-  ALLOCATE(varSeq(nlinesSiteSelect))
-  ALLOCATE(varSeq0(nlinesSiteSelect))
+  ALLOCATE(varSeq0(nX*nY))
+  ALLOCATE(varSeq(nX*nY))
+  ALLOCATE(xLon(nX,nY))
+  ALLOCATE(xLat(nX,nY))
+  ALLOCATE(varY(nX,nY))
+  ALLOCATE(varX(nX,nY))
+
+  ! latitude:
+  varSeq0=SiteSelect(:,5)
+  CALL sortSeqReal(varSeq0,varSeq,nY,nX)
+  xLat = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
+  ! PRINT*, 'before flipping:',xLat(1:5,1)
+  xLat =xLat(:,nY:1:-1)
+  ! PRINT*, 'after flipping:',xLat(1:5,1)
+
+  ! longitude:
+  varSeq0=SiteSelect(:,6)
+  CALL sortSeqReal(varSeq0,varSeq,nY,nX)
+  xLon = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
+
+
+  ! pass values to coordinate variables
+  varY = xLat
+  varX = xLon
 
 
   ! Define the dimensions. NetCDF will hand back an ID for each.
@@ -120,6 +144,15 @@ SUBROUTINE SiteSelect_txt2nc
   dimids =  (/x_dimid, y_dimid/)
 
   ! define 2D variables:
+
+  ! define coordinate variables:
+  CALL check( nf90_def_var(ncID,'xLon', NF90_REAL, (/x_dimid, y_dimid/), varIDx))
+  CALL check( nf90_put_att(ncID,varIDx,'units','degree_east') )
+
+  CALL check( nf90_def_var(ncID,'xLat', NF90_REAL, (/x_dimid, y_dimid/), varIDy))
+  CALL check( nf90_put_att(ncID,varIDy,'units','degree_north') )
+
+  ! define variables in SiteSelect
   DO iVar = iVarStart, ncolumnsSiteSelect, 1
      ! define variable name
      ivarStr2=nameVarList(iVar)
@@ -127,12 +160,21 @@ SUBROUTINE SiteSelect_txt2nc
      ! Define the variable. The type of the variable in this case is
      ! NF90_REAL.
      CALL check( nf90_def_var(ncID,TRIM(ivarStr2), NF90_REAL, dimids, varID) )
+     CALL check( nf90_put_att(ncID,varID,'coordinates','xLon xLat') )
+     !  print*, 'put att good'
+     !  CALL check( nf90_put_att(ncID,varID,'units',TRIM(ADJUSTL(iunitStr2))) )
+     !  print*, 'put unit good'
      idVar(iVar)=varID
   END DO
   CALL check( nf90_enddef(ncID) )
   ! End define mode. This tells netCDF we are done defining metadata.
 
-  ! then other 3D variables
+  ! put coordinate variables:
+  CALL check( nf90_put_var(ncID, varIDx, varX) )
+  CALL check( nf90_put_var(ncID, varIDy, varY) )
+  CALL check( NF90_SYNC(ncID) )
+
+  ! put 2D variables in
   DO iVar = iVarStart, ncolumnsSiteSelect, 1
      !  PRINT*, 'dim1:', SIZE(dataOut(1:irMax,iVar,:), dim=1)
      !  PRINT*, 'dim2:',SIZE(dataOut(1:irMax,iVar,:), dim=2)
@@ -485,7 +527,7 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
      ! define variable name
      ivarStr2=nameVarList(iVar)
      iunitStr2=unitVarList(iVar)
-    !  PRINT*, iunitStr2
+     !  PRINT*, iunitStr2
 
      ! Define the variable. The type of the variable in this case is
      ! NF90_REAL.

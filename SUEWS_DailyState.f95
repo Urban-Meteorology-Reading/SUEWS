@@ -67,9 +67,9 @@ SUBROUTINE DailyState(Gridiv)
 
   !------------------------------------------------------------------------------------------------
   !   local variables to calculate Bowen ratio, AnOHM TS:
-  REAL,DIMENSION(24) :: xQH,xQE,xAH   ! QH and QE
-  REAL :: xBo                         ! Bowen ratio
-  REAL :: mxQH,mxQE,xmAH              ! mean values
+  REAL(KIND(1d0)),DIMENSION(24) :: xQH,xQE,xAH   ! QH and QE
+  REAL(KIND(1d0)) :: xBo                         ! Bowen ratio
+  REAL(KIND(1d0)) :: mxQH,mxQE,xmAH              ! mean values
   !REAL :: xx                          ! temporary use
   !INTEGER :: i                        ! temporary use
   !INTEGER :: lenDataOut               ! length of met data block

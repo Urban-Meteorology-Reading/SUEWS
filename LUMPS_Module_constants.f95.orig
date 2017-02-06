@@ -10,6 +10,7 @@
 ! TS 14 Mar 2016 - multiple addtions for AnOHM
 ! HCW 14 Jun 2016 - updated columns for ESTM and column names for AnOHM
 ! HCW 26 Aug 2016 - CO2 flux added
+! HCW 16 Jan 2017 - WhereWhen module added to store info relating to grid and datetime
 
 !==================================================================================================
 MODULE allocateArray
@@ -70,6 +71,16 @@ MODULE allocateArray
   CHARACTER(len=20),DIMENSION(ncolumnsWGWaterDist)::       HeaderWGWaterDist_File         !Header for Profiles
   CHARACTER(len=20),DIMENSION(ncolumnsWGWaterDist)::       HeaderWGWaterDist_Reqd         !Expected header for Profiles
 
+
+  ! ---- Define output file headers --------------------------------------------------------------
+  INTEGER,DIMENSION(:),ALLOCATABLE:: UseColumnsDataOut       !Column numbers used to select output variables
+  ! If change lengths in SUEWS_Output.f95, also need to adjust here 
+  CHARACTER(len=14*ncolumnsDataOut):: HeaderUse,FormatUse,HeaderUseNoSep,FormatUseNoSep    !Header and format in correct form
+  CHARACTER(len=52*ncolumnsDataOut):: LongNmUse
+  CHARACTER(len=14*ncolumnsDataOut):: UnitsUse
+  CHARACTER(len=3*ncolumnsDataOut):: AggregUse 
+  CHARACTER(len=4*ncolumnsDataOut):: ColNosUse
+  
   ! ---- Define arrays to store input information from SiteInfo spreadsheet ----------------------
   REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::SiteSelect                !Stores info from SiteSelect.txt
   REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::NonVeg_Coeff              !Coefficients for the nonveg surfaces
@@ -86,7 +97,7 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::WGWaterDist_Coeff         !Coefficients for WithinGridWaterDist
 
   ! ---- Define arrays for model calculations ----------------------------------------------------
-  INTEGER,DIMENSION(:), ALLOCATABLE:: GridIDmatrix         !Array containing GridIDs in SiteSelect
+  INTEGER(KIND(1d0)),DIMENSION(:), ALLOCATABLE:: GridIDmatrix         !Array containing GridIDs in SiteSelect
   REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: SurfaceChar          !Array for surface characteristics
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: MetForcingData       !Array for meteorological forcing data
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: ESTMForcingData      !Array for ESTM forcing data
@@ -163,9 +174,9 @@ MODULE allocateArray
 
   REAL(KIND(1d0)),DIMENSION(nsurf):: WetThresh      !When State > WetThresh, rs=0 limit in SUEWS_evap [mm] (specified in input files)
   REAL(KIND(1d0)),DIMENSION(nsurf):: StateLimit     !Limit for state of each surface type [mm] (specified in input files)
-  
+
   REAL(KIND(1d0)),DIMENSION(1)::     WaterDepth     !Depth of open water
-  
+
   ! ---- Soil characteristics specified in input files -------------------------------------------
   REAL(KIND(1d0)),DIMENSION(nsurf):: SatHydraulicConduct !Saturated hydraulic conductivity for each soil subsurface [mm s-1]
   REAL(KIND(1d0)),DIMENSION(nsurf):: SoilDepth           !Depth of sub-surface soil store for each surface [mm]
@@ -297,9 +308,9 @@ MODULE allocateArray
   ! ---- OHM coefficients ------------------------------------------------------------------------
   REAL(KIND(1d0)),DIMENSION(9,4,3):: OHM_coef   !Array for OHM coefficients
   REAL(KIND(1d0)),DIMENSION(9)::     OHM_threshSW, OHM_threshWD   !Arrays for OHM thresholds
-  REAL(KIND(1d0)):: a1,a2,a3   !OHM coefficients, a1 [-]; a2 [h]; a3 [W m-2]     
+  REAL(KIND(1d0)):: a1,a2,a3   !OHM coefficients, a1 [-]; a2 [h]; a3 [W m-2]
   REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE:: qn1_store, qn1_S_store   !Q* values for each timestep over previous hr (_S for snow)
-  REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE:: qn1_av_store, qn1_S_av_store  !Hourly Q* values for each timestep over previous 2 hr  
+  REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE:: qn1_av_store, qn1_S_av_store  !Hourly Q* values for each timestep over previous 2 hr
   !-----------------------------------------------------------------------------------------------
 
   ! ---- Snow-related variables ------------------------------------------------------------------
@@ -413,10 +424,10 @@ MODULE allocateArray
 
   ! Applicable to water surfaces only
   INTEGER:: c_WaterDepth = (ccEndP+1)
-  
+
   ! Find current column number
   INTEGER,PARAMETER:: ccEndW = (ccEndP+1)
-  
+
   ! Applicable to snow only
   INTEGER:: c_SnowRMFactor = (ccEndW+ 1)
   INTEGER:: c_SnowTMFactor = (ccEndW+ 2)
@@ -463,7 +474,7 @@ MODULE allocateArray
   INTEGER:: c_GsS2  = (ccEndSo+10)
   INTEGER:: c_GsKmax  = (ccEndSo+11)
   INTEGER:: c_gsModel  = (ccEndSo+12)
-  
+
   ! Find current column number
   INTEGER,PARAMETER:: ccEndGs = (ccEndSo+12)
 
@@ -500,11 +511,11 @@ MODULE allocateArray
        ccEndGs+14*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a2 (winter dry)
   INTEGER,DIMENSION(nsurfIncSnow):: c_a3_WDry       =(/(cc, cc=ccEndGs+15*nsurfIncSnow+1,&
        ccEndGs+15*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a3 (winter dry)
-       
+
   INTEGER,DIMENSION(nsurfIncSnow):: c_OHMThresh_SW  =(/(cc, cc=ccEndGs+ 16*nsurfIncSnow+1,&
-       ccEndGs+ 16*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM Threshold (summer/winter)       
+       ccEndGs+ 16*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM Threshold (summer/winter)
   INTEGER,DIMENSION(nsurfIncSnow):: c_OHMThresh_WD  =(/(cc, cc=ccEndGs+ 17*nsurfIncSnow+1,&
-       ccEndGs+ 17*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM Threshold (wet/dry)     
+       ccEndGs+ 17*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM Threshold (wet/dry)
 
   ! ESTM code for each surface inclduing snow
   INTEGER,DIMENSION(nsurfIncSnow):: c_ESTMCode      = (/(cc, cc=ccEndGs+18*nsurfIncSnow+1,&
@@ -805,10 +816,10 @@ MODULE data_in
 
   INTEGER:: SkipHeaderSiteInfo = 2   !Number of header lines to skip in SiteInfo files
   INTEGER:: SkipHeaderMet = 1        !Number of header lines to skip in met forcing file
-            
+
   ! ---- Model options set in RunControl --------------------------------------------------------
   INTEGER:: AnthropHeatMethod,&    !QF in met file (0); Loridan et al. 2010 (1); Jarvi et al. 2011 (2)
-       AnthropCO2Method,&     !  ! using QF from AnthropHeatMethod=2 (2); using traffic rate and building energy use in SiteSelect 
+       AnthropCO2Method,&     !  ! using QF from AnthropHeatMethod=2 (2); using traffic rate and building energy use in SiteSelect
        CBLuse,&               !CBL slab model used (1) or not used (0)
        MultipleMetFiles,&     !Indicates whether a single met file is used for all grids (0) or one for each grid (1)
        MultipleInitFiles,&      !Indicates whether a single initial conditions file is used for all grids (0) or one for each grid (1)
@@ -822,18 +833,16 @@ MODULE data_in
        StorageHeatMethod,&             !OHM (1); QS in met file (2); AnOHM(3); ESTM(4)
        SNOWuse,&              !Snow part used (1) or not used (0)
        SOLWEIGuse,&           !SOLWEIG part used (calculates Tmrt and other fluxes on a grid, FL)
+       SMDMethod,&           !Use modelled (0) or observed(1,2) soil moisture
+       WaterUseMethod,&            !Use modelled (0) or observed (1) water use
+       RoughLenMomMethod,&              !Defines method for calculating z0 & zd
 <<<<<<< HEAD
-       smd_choice,&           !Use modelled (0) or observed(1,2) soil moisture
-       WU_choice,&            !Use modelled (0) or observed (1) water use
-       z0_method,&            !Defines method for calculating z0 & zd
        ncMode,&               !Write output file in netCDF (1) or not (0) , TS, 09 Dec 2016
        nRow,&                 !number of rows of checker board layout in the netCDF output, TS, 09 Dec 2016
        nCol                   !number of columns of checker board layout in the netCDF output, TS, 09 Dec 2016
 =======
-       SMDMethod,&           !Use modelled (0) or observed(1,2) soil moisture
-       WaterUseMethod,&            !Use modelled (0) or observed (1) water use
-       RoughLenMomMethod              !Defines method for calculating z0 & zd
->>>>>>> 6f2870d... v2017a - major changes to input files (see folder NewInputFiles_v2017a); OHM code changed to use running means; several other changes
+       Diagnose              !Set to 1 to get print-out of model progress
+>>>>>>> 7328eef... Segmentation fault errors fixed (allocatable array was not allocated).
 
   ! ---- Model options currently set in model, but may be moved to RunControl at a later date
   INTEGER:: AlbedoChoice,&         !No additional albedo varaition (0); zenith angle calculation (1)
@@ -855,7 +864,7 @@ MODULE data_in
        lfnoutC,&              !Clean output write units
        lfnOld                 !!Was used for GridConnections
 
-  INTEGER:: OutputFormats   !Used to control writing out of output file format   
+  INTEGER:: OutputFormats   !Used to control writing out of output file format
  
 
   ! ---- Other options set in RunControl --------------------------------------------------------
@@ -1166,7 +1175,7 @@ MODULE resist  !Variables related surface resistance calculations (P. 1744 in G&
        g5,g6,s1,s2,&    !surface res. calculations
        tc,&             !Temperature parameter 1
        tc2              !Temperature parameter 2
-  INTEGER:: gsModel     !Choice of gs parameterisation (1 = Ja11, 2 = Wa16)       
+  INTEGER:: gsModel     !Choice of gs parameterisation (1 = Ja11, 2 = Wa16)
 END MODULE resist
 
 !**********************************************
@@ -2042,14 +2051,16 @@ MODULE ESTM_data !S.O. and FO
 END MODULE ESTM_data
 
 !----------------------------------------------------------------------------------
-MODULE SetupOutput
+MODULE WhereWhen
+! Stores grid and datetime info
 
-  CHARACTER(len=:),ALLOCATABLE:: HeaderUse,FormatUse, UnitsUse, AggUse !Header and format in correct form (i.e. whitespace trimmed, brackets)
-  CHARACTER(len=:),ALLOCATABLE:: ColNosUse
-  INTEGER,DIMENSION(:),ALLOCATABLE:: UseColumnsDataOut       !Column numbers used to select output variables
+  INTEGER:: GridID   !Grid number (as specified in SUEWS_SiteSelect.txt)
+  !To add:
+  !Grid number (continuous)
+  !Datetime info
+END MODULE WhereWhen
 
-END MODULE SetupOutput
-
+  
 !----------------------------------------------------------------------------------
 MODULE MathConstants
 

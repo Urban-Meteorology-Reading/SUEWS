@@ -58,6 +58,7 @@ SUBROUTINE OverallRunControl
        StorageHeatMethod,&
        OHMIncQF,&
        WaterUseMethod,&
+       Diagnose,&
        ncMode,&
        nRow,&
        nCol
@@ -73,6 +74,8 @@ SUBROUTINE OverallRunControl
   READ(55,nml=RunControl,err=201)
   CLOSE(55)
 
+  IF(Diagnose==1) write(*,*) 'Diagnosis switched on (model progress will be printed to screen)...'
+    
   !Check for problems with FileCode
   IF (FileCode=='none') CALL ErrorHint(26,TRIM("RunControl.nml FileCode is missing"),notUsed,notUsed,notUsedI)
 
@@ -1564,8 +1567,8 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
        SnowFracGrass,SnowFracBSoil,SnowFracWater,                        &
        SnowDensPaved,SnowDensBldgs,SnowDensEveTr,SnowDensDecTr,          &
        SnowDensGrass,SnowDensBSoil,SnowDensWater
-  INTEGER:: LeavesOutInitially   !Allows for quick setting of veg-related initial conditions for full leaf-out (1) or leaf-off (0)
 
+  INTEGER:: LeavesOutInitially   !Allows for quick setting of veg-related initial conditions for full leaf-out (1) or leaf-off (0)
   INTEGER:: SnowInitially        !Allows for quick setting of snow-related initial conditions for no snow initially (0)
 
   INTEGER:: GridsInitialised=0   ! Number of grids initialised at start of model run
@@ -1962,7 +1965,7 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
   ModelOutputData(0,cMOD_SnowFrac(BSoilSurf), Gridiv) = SnowFracBSoil
   ModelOutputData(0,cMOD_SnowFrac(WaterSurf), Gridiv) = SnowFracWater
 
-
+   
   !! Where is this from??
   IceFrac=0.2   !Estimated fraction of ice. Should be improved in the future
 

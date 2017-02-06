@@ -49,13 +49,13 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
   CHARACTER(len=14*nColumnsDataOut):: UnitsOut                         !Units for selected output variables
   CHARACTER(len=50),DIMENSION(nColumnsDataOut):: LongNmAll             !LongName for all output variables
   CHARACTER(len=52*nColumnsDataOut):: LongNmOut                        !LongName for selected output variables (untrimmed)
-  CHARACTER(len= 1),DIMENSION(nColumnsDataOut):: AggregAll                !Aggregation method required for all output variables
-  CHARACTER(len= 3*nColumnsDataOut):: AggregOut                           !Aggregation method required for selected output variables
+  CHARACTER(len= 1),DIMENSION(nColumnsDataOut):: AggregAll             !Aggregation method required for all output variables
+  CHARACTER(len= 3*nColumnsDataOut):: AggregOut                        !Aggregation method required for selected output variables
   CHARACTER(len= 4*nColumnsDataOut):: ColNos
   
   CHARACTER(len=10):: fy, ft, fd, f94, f104, f106   !Useful formats
   CHARACTER(len= 1):: aT, aA, aS, aL   !Useful formats
-  CHARACTER(len= 5):: itext
+  CHARACTER(len= 3):: itext
 
   ! Define useful formats here  
   fy   = '(i0004,1X)'   !4 digit integer for year
@@ -88,7 +88,6 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
   ! To add extra columns, change all these (Header, Units, LongNm, Format, Agg) together
   ! Could change to read from external file later
   IF(OutputFormats==1) THEN   !Once per run
-  
      ! Set all output variables here. This must agree with dataOut (see SUEWS_Calculations.f95)
      HeaderAll(:) = '-'   !Initialise
      UnitsAll (:) = '-'
@@ -252,18 +251,23 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
      UnitsAll (80:81) = 'mm'
      FormatAll(80:81) = f94
      AggregAll(80:81) = aS
-     LongNmAll(80:81) = (/'  Snow removed from paved surface','Snow removed from builing surface' /)
+     LongNmAll(80:81) = (/'   Snow removed from paved surface','Snow removed from building surface' /)
      
      
      ! Select variables to be written out                  
+     !write(*,*) 'WriteOutOption:', WriteOutOption
      IF(WriteOutOption == 0) THEN   !all (not snow-related)
+        ALLOCATE(UseColumnsDataOut(69))
         UsecolumnsDataOut = (/ (i, i=1,69, 1) /)
      ELSEIF(WriteOutOption == 1) THEN   !all plus snow-related 
+        ALLOCATE(UseColumnsDataOut(nColumnsDataOut))
         UsecolumnsDataOut = (/ (i, i=1,nColumnsDataOut, 1) /)
      ELSEIF(WriteOutOption == 2) THEN   !minimal output
+        ALLOCATE(UseColumnsDataOut(33))
         UsecolumnsDataOut = (/ (i, i=1,15, 1),(i, i=19,28, 1), 53,54,55,56, 57, 60,61, 64 /) 
      ELSE
         write(*,*) 'RunControl: WriteOutOption code not recognised, so writing out all variables.'    
+        ALLOCATE(UseColumnsDataOut(69))
         UsecolumnsDataOut = (/ (i, i=1,69, 1) /)
      ENDIF
 
@@ -294,7 +298,7 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
            !write(*,*) AggregOut
            ColNos=trim(ColNos)//';'//adjustl(itext)
         ENDIF
-     ENDDO  
+     ENDDO
      !HeaderUse=trim(adjustl(HeaderOut))//' ' !with extra space at end of header row
      !ALLOCATE(CHARACTER(LEN(trim(adjustl(HeaderOut)))):: HeaderUse)
      !ALLOCATE(CHARACTER(LEN(trim(adjustl(UnitsOut)))):: UnitsUse)

@@ -57,7 +57,8 @@ SUBROUTINE OverallRunControl
        StabilityMethod,&
        StorageHeatMethod,&
        OHMIncQF,&
-       WaterUseMethod
+       WaterUseMethod,&
+       Diagnose
        
   ! -------------------------------------
 
@@ -70,6 +71,8 @@ SUBROUTINE OverallRunControl
   READ(55,nml=RunControl,err=201)
   CLOSE(55)
 
+  IF(Diagnose==1) write(*,*) 'Diagnosis switched on (model progress will be printed to screen)...'
+    
   !Check for problems with FileCode
   IF (FileCode=='none') CALL ErrorHint(26,TRIM("RunControl.nml FileCode is missing"),notUsed,notUsed,notUsedI)
 

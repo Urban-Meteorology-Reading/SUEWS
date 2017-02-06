@@ -835,7 +835,8 @@ MODULE data_in
        SOLWEIGuse,&           !SOLWEIG part used (calculates Tmrt and other fluxes on a grid, FL)
        SMDMethod,&           !Use modelled (0) or observed(1,2) soil moisture
        WaterUseMethod,&            !Use modelled (0) or observed (1) water use
-       RoughLenMomMethod              !Defines method for calculating z0 & zd
+       RoughLenMomMethod,&              !Defines method for calculating z0 & zd
+       Diagnose              !Set to 1 to get print-out of model progress
 
   ! ---- Model options currently set in model, but may be moved to RunControl at a later date
   INTEGER:: AlbedoChoice,&         !No additional albedo varaition (0); zenith angle calculation (1)

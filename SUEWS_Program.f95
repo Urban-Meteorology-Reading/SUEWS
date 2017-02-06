@@ -75,6 +75,8 @@ PROGRAM SUEWS_Program
   errorChoice=0
   ! Initialise OutputFormats to 1 so that output format is written out only once per run
   OutputFormats = 1
+  ! Set Diagnose switch to off (0). If Diagnose = 1 is set in RunControl, model progress will be printed
+  Diagnose = 0  
   
   ! Read RunControl.nml and all .txt input files from SiteSelect spreadsheet
    
@@ -123,6 +125,7 @@ PROGRAM SUEWS_Program
 
   ! Initialise ESTM (reads ESTM nml, should only run once)
   IF(StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
+     IF(Diagnose==1) write(*,*) 'Calling ESTM_initials...' 
      CALL ESTM_initials
   ENDIF
 
@@ -184,6 +187,7 @@ PROGRAM SUEWS_Program
      WRITE(*,*) 'Processing current year in ',ReadBlocksMetData,'blocks.'
 
      ! ---- Allocate arrays--------------------------------------------------
+     IF(Diagnose==1) write(*,*) 'Allocating arrays in SUEWS_Program.f95...' 
      ALLOCATE(SurfaceChar(NumberOfGrids,MaxNCols_c))                                   !Surface characteristics
      ALLOCATE(MetForcingData(ReadlinesMetdata,ncolumnsMetForcingData,NumberOfGrids))   !Met forcing data
      ALLOCATE(ModelOutputData(0:ReadlinesMetdata,MaxNCols_cMOD,NumberOfGrids))         !Data at model timestep
@@ -362,6 +366,8 @@ PROGRAM SUEWS_Program
            DO igrid=1,NumberOfGrids   !Loop through grids
               IF(PrintPlace) WRITE(*,*) 'Row (ir):', ir,'/',irMax,'of block (iv):', iv,'/',ReadBlocksMetData,&
                    'Grid:',GridIDmatrix(igrid)
+              IF(Diagnose==1) WRITE(*,*) 'Row (ir):', ir,'/',irMax,'of block (iv):', iv,'/',ReadBlocksMetData,&
+                   'Grid:',GridIDmatrix(igrid)     
 
               !  ! Translate daily state back so as to keep water balance at beginning of a day
               !  IF ( StorageHeatMethod==3 .AND. ir==1) THEN
@@ -375,8 +381,10 @@ PROGRAM SUEWS_Program
               IF(ir==1) THEN
                  WRITE(*,*) TRIM(ADJUSTL(FileCodeX)),': Now running block ',iv,'/',ReadBlocksMetData,' of ',TRIM(year_txt),'...'
               ENDIF
+              IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_Calculations...'
               CALL SUEWS_Calculations(GridCounter,ir,iv,irMax)
-
+              IF(Diagnose==1) WRITE(*,*) 'SUEWS_Calculations finished...'
+              
               ! Record iy and id for current time step to handle last row in yearly files (YYYY 1 0 0)
               !  IF(GridCounter == NumberOfGrids) THEN   !Adjust only when the final grid has been run for this time step
               IF(igrid == NumberOfGrids) THEN   !Adjust only when the final grid has been run for this time step
@@ -393,6 +401,7 @@ PROGRAM SUEWS_Program
                     !  FileCodeXNext = TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txtNext)
                     !  CALL NextInitial(FileCodeXNext,year_int)
                     FileCodeXwy=TRIM(FileCode)//TRIM(ADJUSTL(grid_txt)) !File code without year (HCW 24 May 2016)
+                    IF(Diagnose==1) WRITE(*,*) 'Calling NextInitial...'
                     CALL NextInitial(FileCodeXwy,year_int)
 
                  ENDIF
@@ -440,6 +449,7 @@ PROGRAM SUEWS_Program
 
         ! Write output files in blocks --------------------------------
         DO igrid=1,NumberOfGrids
+           IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_Output...'
            CALL SUEWS_Output(igrid,year_int,iv,irMax,GridIDmatrix(igrid))  !GridIDmatrix required for correct naming of output files
         ENDDO
 
@@ -447,6 +457,7 @@ PROGRAM SUEWS_Program
      !-----------------------------------------------------------------------
 
      ! ---- Decallocate arrays ----------------------------------------------
+     IF(Diagnose==1) WRITE(*,*) 'Deallocating arrays in SUEWS_Program.f95...'
      DEALLOCATE(SurfaceChar)
      DEALLOCATE(MetForcingData)
      DEALLOCATE(ModelOutputData)
@@ -466,6 +477,8 @@ PROGRAM SUEWS_Program
   ! ---- Decallocate array --------------------------------------------------
   ! Daily state needs to be outside year loop to transfer states between years
   DEALLOCATE(ModelDailyState)
+  ! Also needs to happen at the end of the run
+  DEALLOCATE(UseColumnsDataOut)
   ! -------------------------------------------------------------------------
 
   ! get cpu time consumed

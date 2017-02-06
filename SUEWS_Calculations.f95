@@ -61,6 +61,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
 
   !Translate all data to the variables used in the model calculations
+  IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_Translate...'
   CALL SUEWS_Translate(Gridiv,ir,iMB)
   ! ! load the final water states of the previous day to keep water balance, by TS 13 Apr 2016
   ! IF ( ir==1 ) THEN
@@ -71,6 +72,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !      PRINT*, 'state:', state
   !      PRINT*, 'soilmoist', soilmoist
   ! END IF
+  IF(Diagnose==1) WRITE(*,*) 'Calling RoughnessParameters...'
   CALL RoughnessParameters ! Added by HCW 11 Nov 2014
 
 
@@ -125,13 +127,16 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   ! Calculate sun position
   idectime=dectime-halftimestep! sun position at middle of timestep before
+  IF(Diagnose==1) WRITE(*,*) 'Calling sun_position...'
   CALL sun_position(year,idectime,timezone,lat,lng,alt,azimuth,zenith_deg)
 
   IF(CBLuse>=1)THEN ! If CBL is used, calculated Temp_C and RH are replaced with the obs.
+     IF(Diagnose==1) WRITE(*,*) 'Calling CBL...'
      CALL CBL(ir,iMB)   !ir=1 indicates first row of each met data block
   ENDIF
 
   !Call the dailystate routine to get surface characteristics ready
+  IF(Diagnose==1) WRITE(*,*) 'Calling DailyState...'
   CALL DailyState(Gridiv)
 
   IF(LAICalcYes==0)THEN
@@ -139,6 +144,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ENDIF
 
   !Calculation of density and other water related parameters
+  IF(Diagnose==1) WRITE(*,*) 'Calling atmos_moist_lumps...'
   CALL atmos_moist_lumps(avdens)
 
 
@@ -186,6 +192,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
      alb(ConifSurf) = albEveTr(id)
      alb(GrassSurf) = albGrass(id)
 
+     IF(Diagnose==1) WRITE(*,*) 'Calling NARP...'
      CALL NARP(SnowAlb,qn1_SF,qn1_S)
      !Temp_C,kclear,fcld,dectime,avkdn,avRH,qn1,kup,ldown,lup,tsurf,&
      !AlbedoChoice,ldown_option,Press_hPa,Ea_hPa,qn1_obs,&
@@ -201,10 +208,12 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   IF (SOLWEIGuse==1) THEN
      IF (OutInterval==imin) THEN
         IF (RunForGrid==-999) THEN
+           IF(Diagnose==1) WRITE(*,*) 'Calling SOLWEIG_2014a_core...'
            CALL SOLWEIG_2014a_core(iMB)
            SolweigCount=SolweigCount+1
         ELSE
            IF (Gridiv == RunForGrid) THEN
+              IF(Diagnose==1) WRITE(*,*) 'Calling SOLWEIG_2014a_core...'
               CALL SOLWEIG_2014a_core(iMB)
               SolweigCount=SolweigCount+1
            ENDIF
@@ -219,10 +228,12 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   IF(ih<0) ih=23
 
   IF(AnthropHeatMethod==1) THEN
-     CALL SAHP_1_v2015(qf_sahp,QF_SAHP_base,QF_SAHP_heat,id,ih,imin)
+      IF(Diagnose==1) WRITE(*,*) 'Calling SAHP_1...'
+      CALL SAHP_1_v2015(qf_sahp,QF_SAHP_base,QF_SAHP_heat,id,ih,imin)
      qn1_bup=qn1
      qn1=qn1+QF_SAHP
   ELSEIF(AnthropHeatMethod==2) THEN
+     IF(Diagnose==1) WRITE(*,*) 'Calling SAHP_2...'
      CALL SAHP_2_v2015(qf_sahp,QF_SAHP_base,QF_SAHP_heat,id,ih,imin)
      qn1_bup=qn1
      qn1=qn1+QF_SAHP
@@ -238,14 +249,17 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ENDIF
 
   ! Calculate CO2 fluxes from anthropogenic components
+  IF(Diagnose==1) WRITE(*,*) 'Calling CO2_anthro...'
   CALL CO2_anthro(id,ih,imin)
 
   ! =================STORAGE HEAT FLUX=======================================
   IF(StorageHeatMethod==1) THEN           !Use OHM to calculate QS
      IF(OHMIncQF == 1) THEN      !Calculate QS using QSTAR+QF
+        IF(Diagnose==1) WRITE(*,*) 'Calling OHM...'
         CALL OHM(Gridiv)
      ELSEIF(OHMIncQF == 0) THEN  !Calculate QS using QSTAR
         qn1=qn1_bup
+        IF(Diagnose==1) WRITE(*,*) 'Calling OHM...'
         CALL OHM(Gridiv)
      ENDIF
   ENDIF
@@ -253,9 +267,11 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ! use AnOHM to calculate QS, TS 14 Mar 2016
   IF (StorageHeatMethod==3) THEN
      IF ( OHMIncQF == 1 ) THEN    !Calculate QS using QSTAR+QF
+        IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'
         CALL AnOHM_v2016(Gridiv)
      ELSEIF(OHMIncQF == 0) THEN   !Calculate QS using QSTAR
         qn1=qn1_bup
+        IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'
         CALL AnOHM_v2016(Gridiv)
      END IF
   END IF
@@ -263,6 +279,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !Calculate QS using ESTM
   IF(StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
      !CALL ESTM_v2016(QSestm,iMB)
+     IF(Diagnose==1) WRITE(*,*) 'Calling ESTM...'
      CALL ESTM_v2016(QSestm,Gridiv,ir)  ! iMB corrected to Gridiv, TS 09 Jun 2016
      QS=QSestm   ! Use ESTM qs
   ENDIF
@@ -289,6 +306,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !==================Energy related to snow melting/freezing processes=======
   IF (snowUse==1)  THEN
 
+     IF(Diagnose==1) WRITE(*,*) 'Calling MeltHeat'
      CALL MeltHeat
 
      ! If snow on ground, no irrigation, so veg_fr same in each case
@@ -308,9 +326,11 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   tlv=lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
 
+  IF(Diagnose==1) WRITE(*,*) 'Calling LUMPS_QHQE...'
   CALL LUMPS_QHQE !Calculate QH and QE from LUMPS
   IF(debug)WRITE(*,*)press_Hpa,psyc_hPA,i
 
+  IF(Diagnose==1) WRITE(*,*) 'Calling WaterUse...'
   CALL WaterUse !Gives the external and internal water uses per timestep
 
   IF(Precip>0) THEN   !Initiate rain data [mm]
@@ -335,21 +355,27 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   !------------------------------------------------------------------
 
+  IF(Diagnose==1) WRITE(*,*) 'Calling STAB_lumps...'
   CALL STAB_lumps(H,StabilityMethod,ustar,L_mod) !u* and Obukhov length out
 
+  IF(Diagnose==1) WRITE(*,*) 'Calling AerodynamicResistance...'
   CALL AerodynamicResistance(RA,AerodynamicResistanceMethod,StabilityMethod,RoughLenHeatMethod,&
        ZZD,z0m,k2,AVU1,L_mod,Ustar,VegFraction,psyh)      !RA out
 
   IF (snowUse==1) THEN
+     IF(Diagnose==1) WRITE(*,*) 'Calling AerodynamicResistance...'
      CALL AerodynamicResistance(RAsnow,AerodynamicResistanceMethod,StabilityMethod,3,&
-          ZZD,z0m,k2,AVU1,L_mod,Ustar,VegFraction,psyh)      !RA out
+                                 ZZD,z0m,k2,AVU1,L_mod,Ustar,VegFraction,psyh)      !RA out
   ENDIF
 
+  IF(Diagnose==1) WRITE(*,*) 'Calling SurfaceResistance...'
   CALL SurfaceResistance(id,it)   !qsc and surface resistance out
+  IF(Diagnose==1) WRITE(*,*) 'Calling BoundaryLayerResistance...'
   CALL BoundaryLayerResistance
 
 
   ! Calculate CO2 fluxes from biogenic components
+  IF(Diagnose==1) WRITE(*,*) 'Calling CO2_biogen...'
   CALL CO2_biogen
   ! Sum anthropogenic and biogenic CO2 flux components to find overall CO2 flux 
   Fc = Fc_anthro + Fc_biogen
@@ -407,22 +433,25 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   !================== Drainage ===================
   ! Calculate drainage for each soil subsurface (excluding water body)
-  DO is=1,nsurf-1
+  IF(Diagnose==1) WRITE(*,*) 'Calling Drainage...'
+  DO is=1,nsurf-1     
      CALL Drainage(surf(6,is),surf(2,is),surf(3,is),surf(4,is))
      !HCW added and changed to surf(6,is) here 20 Feb 2015
-
      drain_per_tstep=drain_per_tstep+(drain(is)*sfr(is)/NonWaterFraction)   !No water body included
   ENDDO
 
   drain(WaterSurf) = 0  ! Set drainage from water body to zero
 
   ! Distribute water within grid, according to WithinGridWaterDist matrix (Cols 1-7)
+  IF(Diagnose==1) WRITE(*,*) 'Calling ReDistributeWater...'
   CALL ReDistributeWater   !Calculates AddWater(is)
 
   !======== Evaporation and surface state ========
+  IF(Diagnose==1) WRITE(*,*) 'Calling evap_SUEWS and SoilStore...'
   DO is=1,nsurf   !For each surface in turn
      IF (snowCalcSwitch(is)==1) THEN
         IF (sfr(is)/=0) THEN
+           IF(Diagnose==1) WRITE(*,*) 'Calling SnowCalc...'
            CALL snowCalc
         ELSE
            snowFrac(is) = 0
@@ -497,6 +526,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   !=== Horizontal movement between soil stores ===
   ! Now water is allowed to move horizontally between the soil stores
+  IF(Diagnose==1) WRITE(*,*) 'Calling HorizontalSoilWater...'
   CALL HorizontalSoilWater
 
   !========== Calculate soil moisture ============
@@ -651,6 +681,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !if(id==12) pause
   !write(*,*) ' '
 
+  IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_TranslateBack...'
   CALL SUEWS_TranslateBack(Gridiv,ir,irMax)
 
   !  ! store water balance states of the day, by TS 13 Apr 2016

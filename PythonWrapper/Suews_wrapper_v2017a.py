@@ -300,7 +300,8 @@ def wrapper(pathtoplugin):
         gridcode = lines[0]
         data_out = fileinputpath + filecode + gridcode + '_' + str(YYYY) + '_data_5.txt'
         suews_5min = fileoutputpath + filecode + gridcode + '_' + str(YYYY) + '_5.txt'
-        suews_in = np.loadtxt(suews_5min, skiprows=1)
+        suews_in = np.genfromtxt(suews_5min, skip_header=1, missing_values='**********', filling_values=-9999)
+        # suews_in = np.loadtxt(suews_5min, skiprows=1)
         suews_out = fileoutputpath + filecode + gridcode + '_' + str(YYYY) + '_' + str(timeres_min) + '.txt'
 
         # suews_1hour = su.from5minto1hour_v1(suews_in, SumCol, LastCol, TimeCol)

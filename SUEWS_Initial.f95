@@ -58,7 +58,8 @@ SUBROUTINE OverallRunControl
        StorageHeatMethod,&
        OHMIncQF,&
        WaterUseMethod,&
-       Diagnose
+       Diagnose,&
+       DiagQS
        
   ! -------------------------------------
 

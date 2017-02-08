@@ -253,6 +253,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   CALL CO2_anthro(id,ih,imin)
 
   ! =================STORAGE HEAT FLUX=======================================
+
   IF(StorageHeatMethod==1) THEN           !Use OHM to calculate QS
      IF(OHMIncQF == 1) THEN      !Calculate QS using QSTAR+QF
         IF(Diagnose==1) WRITE(*,*) 'Calling OHM...'

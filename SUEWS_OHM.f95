@@ -114,8 +114,8 @@
      ! Store instantaneous qn1 values for previous hour (qn1_store) and average (qn1_av)
      if(nsh > 1) then
         qn1_store(1:(nsh-1),Gridiv) = qn1_store(2:nsh,Gridiv)    
-        qn1_store(nsh,Gridiv) = qn1
-        nsh_nna = sum(qn1_store(:,Gridiv)/qn1_store(:,Gridiv), mask=qn1_store(:,Gridiv) /= -999) !Find how many are not -999s      
+        qn1_store(nsh,Gridiv) = qn1    
+        nsh_nna = sum(spread(1,1,nsh), mask=qn1_store(:,Gridiv) /= -999) !Find how many are not -999s  !bug fixed HCW 08 Feb 2017    
         qn1_av = sum(qn1_store(:,Gridiv), mask=qn1_store(:,Gridiv) /= -999)/nsh_nna
      elseif(nsh==1) then
          qn1_store(:,Gridiv) = qn1
@@ -134,9 +134,11 @@
      else
         dqndt=0.5*(qn1_av_store((2*nsh+1),Gridiv)-qn1_av_store(1,Gridiv))
      endif
-     
+          
      ! Calculate net storage heat flux
      qs = qn1*a1 + dqndt*a2 + a3   !Eq 4, Grimmond et al. 1991
+     
+     IF(DiagQS==1) WRITE(*,*) 'qs: ',qs,'qn1:',qn1,'dqndt: ',dqndt
      
   else
      call ErrorHint(21,'In SUEWS_OHM.f95: bad value for qn found during qs calculation.',qn1,NotUsed,notUsedI)
@@ -165,7 +167,7 @@
         if(nsh > 1) then
            qn1_S_store(1:(nsh-1),Gridiv) = qn1_S_store(2:nsh,Gridiv)    
            qn1_S_store(nsh,Gridiv) = qn1_S
-           nsh_nna = sum(qn1_S_store(:,Gridiv)/qn1_S_store(:,Gridiv), mask=qn1_S_store(:,Gridiv) /= -999) !Find how many are not -999s      
+           nsh_nna = sum(spread(1,1,nsh), mask=qn1_S_store(:,Gridiv) /= -999) !Find how many are not -999s      
            qn1_S_av = sum(qn1_S_store(:,Gridiv), mask=qn1_S_store(:,Gridiv) /= -999)/nsh_nna
         elseif(nsh==1) then
            qn1_S_store(:,Gridiv) = qn1_S

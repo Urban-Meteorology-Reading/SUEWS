@@ -59,6 +59,7 @@ SUBROUTINE OverallRunControl
        OHMIncQF,&
        WaterUseMethod,&
        Diagnose,&
+       DiagQS,&
        ncMode,&
        nRow,&
        nCol
@@ -2118,7 +2119,7 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
 
 END SUBROUTINE InitialState
 
-
+   
 ! ===========================================================================
 FUNCTION NormalizeVegChar(VegCol,Gridiv) RESULT(NormVegResult)
 

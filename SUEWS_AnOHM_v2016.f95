@@ -101,7 +101,7 @@ SUBROUTINE AnOHM_v2016(Gridiv)
      if(nsh > 1) then
         qn1_store(1:(nsh-1),Gridiv) = qn1_store(2:nsh,Gridiv)    
         qn1_store(nsh,Gridiv) = qn1
-        nsh_nna = sum(qn1_store(:,Gridiv)/qn1_store(:,Gridiv), mask=qn1_store(:,Gridiv) /= -999) !Find how many are not -999s      
+        nsh_nna = sum(spread(1,1,nsh), mask=qn1_store(:,Gridiv) /= -999) !Find how many are not -999s      
         qn1_av = sum(qn1_store(:,Gridiv), mask=qn1_store(:,Gridiv) /= -999)/nsh_nna
      elseif(nsh==1) then
          qn1_store(:,Gridiv) = qn1

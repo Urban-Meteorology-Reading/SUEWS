@@ -78,6 +78,7 @@ PROGRAM SUEWS_Program
   OutputFormats = 1
   ! Set Diagnose switch to off (0). If Diagnose = 1 is set in RunControl, model progress will be printed
   Diagnose = 0  
+  DiagQS = 0  
 
   ! Read RunControl.nml and all .txt input files from SiteSelect spreadsheet
 

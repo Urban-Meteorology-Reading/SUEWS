@@ -836,7 +836,8 @@ MODULE data_in
        SMDMethod,&           !Use modelled (0) or observed(1,2) soil moisture
        WaterUseMethod,&            !Use modelled (0) or observed (1) water use
        RoughLenMomMethod,&              !Defines method for calculating z0 & zd
-       Diagnose              !Set to 1 to get print-out of model progress
+       Diagnose,&             !Set to 1 to get print-out of model progress
+       DiagQS,&
        ncMode,&               !Write output file in netCDF (1) or not (0) , TS, 09 Dec 2016
        nRow,&                 !number of rows of checker board layout in the netCDF output, TS, 09 Dec 2016
        nCol                   !number of columns of checker board layout in the netCDF output, TS, 09 Dec 2016

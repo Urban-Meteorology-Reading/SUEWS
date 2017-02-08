@@ -39,7 +39,7 @@ SUBROUTINE ErrorHint(errh,ProblemFile,value,value2,valueI)
   v6=.FALSE.
   v7=.FALSE.
   v8=.FALSE.
-
+    
   CALL ProblemsText(ProblemFile)   !Call the subroutine that opens the problem.txt file
 
   !The list of knows possible problems of the code:
@@ -70,7 +70,11 @@ SUBROUTINE ErrorHint(errh,ProblemFile,value,value2,valueI)
   ELSEIF(errh==14) THEN
      text1= 'Inappropriate value calculated.'
      v1=.TRUE.
-  ! 15,16 
+  ELSEIF(errh==15) THEN
+     text1= 'Check H_Bldgs, H_EveTr and H_DecTr in SUEWS_SiteSelect.txt'
+     v2=.TRUE.
+     returnTrue=.TRUE.
+  ! 16 
   ELSEIF(errh==17) THEN
      text1= 'Problem with (z-zd) and/or z0.'
      v2=.TRUE.
@@ -260,21 +264,21 @@ SUBROUTINE ErrorHint(errh,ProblemFile,value,value2,valueI)
   !This part of the code determines how the error message is written out
 
   IF(v1) THEN ! 1 real
-     WRITE(500,'((a),(f9.4))')'Error value: ', VALUE
+     WRITE(500,'((a),(f9.4))')'Value: ', VALUE
   ELSEIF(v2) THEN ! 2 real
-     WRITE(500,'((a),2(f9.4))')'Error values: ', VALUE, value2
+     WRITE(500,'((a),2(f9.4))')'Values: ', VALUE, value2
   ELSEIF(v3) THEN ! 1 integer
-     WRITE(500,'((a),(i10))')'Error value: ', valueI
+     WRITE(500,'((a),(i10))')'Value: ', valueI
   ELSEIF(v4) THEN ! 2 real, 1 integer
-     WRITE(500,'((a),2(f9.4),(i10))')'Error values: ', VALUE, value2, valueI
+     WRITE(500,'((a),2(f9.4),(i10))')'Values: ', VALUE, value2, valueI
   ELSEIF(v5) THEN ! 1 real 1 integer
-     WRITE(500,'((f9.4),(i10))')'Error values: ', VALUE, valueI
+     WRITE(500,'((f9.4),(i10))')'Values: ', VALUE, valueI
   ELSEIF(v6) THEN ! 2 integer
      valueI2=INT(VALUE)
-     WRITE(500,'((a),2(i10))')'Error values: ', valueI, valueI2
+     WRITE(500,'((a),2(i10))')'Values: ', valueI, valueI2
   ELSEIF(v7) THEN ! 1 real, 2 integer
      valueI2=INT(value2)
-     WRITE(500,'((a),(f9.4),2(i10))')'Error values: ', VALUE, valueI2, valueI
+     WRITE(500,'((a),(f9.4),2(i10))')'Values: ', VALUE, valueI2, valueI
   ELSEIF(v8) THEN
      ! no error values
   ENDIF

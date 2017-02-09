@@ -75,11 +75,15 @@ SUBROUTINE OverallRunControl
   READ(55,nml=RunControl,err=201)
   CLOSE(55)
 
-  IF(Diagnose==1) write(*,*) 'Diagnosis switched on (model progress will be printed to screen)...'
-    
+  IF(Diagnose==1) WRITE(*,*) 'Diagnosis switched on (model progress will be printed to screen)...'
+
   !Check for problems with FileCode
   IF (FileCode=='none') CALL ErrorHint(26,TRIM("RunControl.nml FileCode is missing"),notUsed,notUsed,notUsedI)
 
+  ! check if the output frequency an integer multiple of input time step
+  IF (REAL(1.*ResolutionFilesOut/TSTEP)/=ResolutionFilesOut/TSTEP) &
+     CALL ErrorHint(72,TRIM("RunControl.nml: ResolutionFilesOut must be an integer multiple of TSTEP"),&
+     ResolutionFilesOut*1._8,notUsed,TSTEP)
   !-----------------------------------------------------------------------
 
   !Write RunControl information to FileChoices.txt
@@ -1558,10 +1562,10 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
 
   CHARACTER(len=150):: fileInit   !Initial conditions filename
   INTEGER::DaysSinceRain,Gridiv,& !number of days since rain, grid number,
-           gamma1,gamma2          !switches related to cooling and heating degree days
+       gamma1,gamma2          !switches related to cooling and heating degree days
   INTEGER::wd,seas,date,mb,&      !weekday information, season, date, month
-           year_int,switch=0,&    !year as an integer, switch related to previous day
-           id_next,calc           !next day,counter in irrigation calculations
+       year_int,switch=0,&    !year as an integer, switch related to previous day
+       id_next,calc           !next day,counter in irrigation calculations
 
   REAL (KIND(1d0))::PavedState,BldgsState,EveTrState,DecTrState,GrassState,BSoilState,WaterState,&
        SnowFracPaved,SnowFracBldgs,SnowFracEveTr,SnowFracDecTr,          &
@@ -1578,7 +1582,7 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
   ! Define InitialConditions namelist ---------------------------------------
   NAMELIST/InitialConditions/DaysSinceRain,&
        Temp_C0,&
-       !ID_Prev,&  !Now calculated from met forcing file
+                                !ID_Prev,&  !Now calculated from met forcing file
        LeavesOutInitially,&
        GDD_1_0,&
        GDD_2_0,&
@@ -1699,7 +1703,7 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
   ! Define InitialConditions file -------------------------------------------
   FileInit=TRIM(FileInputPath)//TRIM("InitialConditions")//TRIM(GridName)//'.nml'
   ! On very first InitialConditions for each grid, can use one initial conditions file specified for all grids
-  IF(MultipleInitFiles == 0 .and. GridsInitialised < NumberOfGrids) THEN
+  IF(MultipleInitFiles == 0 .AND. GridsInitialised < NumberOfGrids) THEN
      FileInit=TRIM(FileInputPath)//TRIM("InitialConditions")//TRIM(FileCode)//'_'//TRIM(year_txt)//'.nml'
      GridsInitialised=GridsInitialised+1
   ENDIF
@@ -1727,51 +1731,51 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
   IF(DaysSinceRain == INT(NAN)) DaysSinceRain = 0
 
   ! If average temperature for previous day unknown, use average of first day
-  IF(Temp_C0 == NAN) Temp_C0=sum(MetForcingData(1:(24*nsh),12,Gridiv))/(24*nsh)
+  IF(Temp_C0 == NAN) Temp_C0=SUM(MetForcingData(1:(24*nsh),12,Gridiv))/(24*nsh)
 
   ! Set vegetation-related initial conditions -------------------------------
   ! If LeavesOutInitially is -999, don't use and check all required conditions have been provided
   IF(LeavesOutInitially == INT(NAN)) THEN
-     IF(GDD_1_0 == NAN .or. GDD_2_0 == NAN) THEN
+     IF(GDD_1_0 == NAN .OR. GDD_2_0 == NAN) THEN
         CALL ErrorHint(36,'Specify values for GDD_1_0 and GDD_2_0.', notUsed,notUsed,notUsedI)
      ENDIF
-     IF(LAIinitialEveTr == NAN .or. LAIinitialDecTr == NAN .or. LAIinitialGrass == NAN) THEN
-         CALL ErrorHint(36,'Specify initial values for LAI for all vegetated surface types.', notUsed,notUsed,notUsedI)
+     IF(LAIinitialEveTr == NAN .OR. LAIinitialDecTr == NAN .OR. LAIinitialGrass == NAN) THEN
+        CALL ErrorHint(36,'Specify initial values for LAI for all vegetated surface types.', notUsed,notUsed,notUsedI)
      ENDIF
-     IF(AlbEveTr0 == NAN .or. AlbDecTr0 == NAN .or. AlbGrass0 == NAN) THEN
+     IF(AlbEveTr0 == NAN .OR. AlbDecTr0 == NAN .OR. AlbGrass0 == NAN) THEN
         CALL ErrorHint(36,'Specify initial values for albedo for all vegetated surface types.', notUsed,notUsed,notUsedI)
      ENDIF
      IF(DecidCap0 == NAN) THEN
-         CALL ErrorHint(36,'Specify DecidCap0.', notUsed,notUsed,notUsedI)
+        CALL ErrorHint(36,'Specify DecidCap0.', notUsed,notUsed,notUsedI)
      ENDIF
      IF(Porosity0 == NAN) THEN
         CALL ErrorHint(36,'Specify Porosity0.', notUsed,notUsed,notUsedI)
      ENDIF
   ELSEIF(LeavesOutInitially == 1) THEN   !If leaves out, set to summertime values using SUEWS_Veg.txt
-      GDD_1_0 = NormalizeVegChar(c_GDDFull,Gridiv)
-      GDD_2_0 = 0
-      LAIinitialEveTr = SurfaceChar(Gridiv,c_LAIMax(ivConif))   !Max LAI
-      LAIinitialDecTr = SurfaceChar(Gridiv,c_LAIMax(ivDecid))
-      LAIinitialGrass = SurfaceChar(Gridiv,c_LAIMax(ivGrass))
-      AlbEveTr0 = SurfaceChar(Gridiv,c_AlbMax(ConifSurf))       !Max albedo
-      AlbDecTr0 = SurfaceChar(Gridiv,c_AlbMax(DecidSurf))
-      AlbGrass0 = SurfaceChar(Gridiv,c_AlbMax(GrassSurf))
-      DecidCap0 = SurfaceChar(Gridiv,c_StorMax(DecidSurf))      !Max storage capacity (DecTr only)
-      Porosity0 = SurfaceChar(Gridiv,c_PorosityMin(ivDecid))  !Min porosity (DecTr only)
+     GDD_1_0 = NormalizeVegChar(c_GDDFull,Gridiv)
+     GDD_2_0 = 0
+     LAIinitialEveTr = SurfaceChar(Gridiv,c_LAIMax(ivConif))   !Max LAI
+     LAIinitialDecTr = SurfaceChar(Gridiv,c_LAIMax(ivDecid))
+     LAIinitialGrass = SurfaceChar(Gridiv,c_LAIMax(ivGrass))
+     AlbEveTr0 = SurfaceChar(Gridiv,c_AlbMax(ConifSurf))       !Max albedo
+     AlbDecTr0 = SurfaceChar(Gridiv,c_AlbMax(DecidSurf))
+     AlbGrass0 = SurfaceChar(Gridiv,c_AlbMax(GrassSurf))
+     DecidCap0 = SurfaceChar(Gridiv,c_StorMax(DecidSurf))      !Max storage capacity (DecTr only)
+     Porosity0 = SurfaceChar(Gridiv,c_PorosityMin(ivDecid))  !Min porosity (DecTr only)
   ELSEIF(LeavesOutInitially == 0) THEN   !If leaves off, set to wintertime values using SUEWS_Veg.txt
-      GDD_1_0 = 0
-      GDD_2_0 = NormalizeVegChar(c_SDDFull,Gridiv)
-      LAIinitialEveTr = SurfaceChar(Gridiv,c_LAIMin(ivConif))   !Min LAI
-      LAIinitialDecTr = SurfaceChar(Gridiv,c_LAIMin(ivDecid))
-      LAIinitialGrass = SurfaceChar(Gridiv,c_LAIMin(ivGrass))
-      AlbEveTr0 = SurfaceChar(Gridiv,c_AlbMin(ConifSurf))       !Min albedo
-      AlbDecTr0 = SurfaceChar(Gridiv,c_AlbMin(DecidSurf))
-      AlbGrass0 = SurfaceChar(Gridiv,c_AlbMin(GrassSurf))
-      DecidCap0 = SurfaceChar(Gridiv,c_StorMin(DecidSurf))      !Min storage capacity (DecTr only)
-      Porosity0 = SurfaceChar(Gridiv,c_PorosityMax(ivDecid))  !Max porosity (DecTr only)
+     GDD_1_0 = 0
+     GDD_2_0 = NormalizeVegChar(c_SDDFull,Gridiv)
+     LAIinitialEveTr = SurfaceChar(Gridiv,c_LAIMin(ivConif))   !Min LAI
+     LAIinitialDecTr = SurfaceChar(Gridiv,c_LAIMin(ivDecid))
+     LAIinitialGrass = SurfaceChar(Gridiv,c_LAIMin(ivGrass))
+     AlbEveTr0 = SurfaceChar(Gridiv,c_AlbMin(ConifSurf))       !Min albedo
+     AlbDecTr0 = SurfaceChar(Gridiv,c_AlbMin(DecidSurf))
+     AlbGrass0 = SurfaceChar(Gridiv,c_AlbMin(GrassSurf))
+     DecidCap0 = SurfaceChar(Gridiv,c_StorMin(DecidSurf))      !Min storage capacity (DecTr only)
+     Porosity0 = SurfaceChar(Gridiv,c_PorosityMax(ivDecid))  !Max porosity (DecTr only)
   ELSE
      CALL ErrorHint(36,'LeavesOutInitially must be 0, 1, or -999 (or omitted from InitialConditions namelist)', &
-                    notUsed,notUsed,notUsedI)
+          notUsed,notUsed,notUsedI)
   ENDIF
 
   ! If surface wetness states unknown, set to zero --------------------------
@@ -1785,14 +1789,14 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
   IF(WaterState == NAN) WaterState = SurfaceChar(Gridiv,c_WaterDepth)
 
   ! Check initial soil moisture states are provided -------------------------
-  IF(SoilStorePavedState == NAN .or. SoilStoreBldgsState == NAN .or. SoilStoreEveTrState == NAN .or. &
-     SoilStoreDecTrState == NAN .or. SoilStoreGrassState == NAN .or. SoilStoreBSoilState == NAN) THEN
+  IF(SoilStorePavedState == NAN .OR. SoilStoreBldgsState == NAN .OR. SoilStoreEveTrState == NAN .OR. &
+       SoilStoreDecTrState == NAN .OR. SoilStoreGrassState == NAN .OR. SoilStoreBSoilState == NAN) THEN
      CALL ErrorHint(36,'Initial soil moisture must be provided for all surface types except water.', notUsed,notUsed,notUsedI)
   ENDIF
 
   ! Set snow-related initial conditions -------------------------------
   ! If snow part not used, or no snow initially, set all snow-related initial conditions to zero
-  IF(SnowUse == 0 .or. SnowInitially == 0) THEN
+  IF(SnowUse == 0 .OR. SnowInitially == 0) THEN
      SnowWaterPavedState = 0
      SnowWaterBldgsState = 0
      SnowWaterEveTrState = 0
@@ -1823,24 +1827,24 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
      SnowDensWater = 0
      SnowAlb0 = 0
   ELSEIF(SnowInitially == INT(NAN)) THEN   !Check all required snow-related conditions are provided
-     IF(SnowWaterPavedState == NAN .or. SnowWaterBldgsState == NAN .or. SnowWaterEveTrState == NAN .or. &
-        SnowWaterDecTrState == NAN .or. SnowWaterGrassState == NAN .or. SnowWaterBSoilState == NAN .or. &
-        SnowWaterWaterState == NAN) THEN
+     IF(SnowWaterPavedState == NAN .OR. SnowWaterBldgsState == NAN .OR. SnowWaterEveTrState == NAN .OR. &
+          SnowWaterDecTrState == NAN .OR. SnowWaterGrassState == NAN .OR. SnowWaterBSoilState == NAN .OR. &
+          SnowWaterWaterState == NAN) THEN
         CALL ErrorHint(36,'Specify SnowWater state for all 7 surface types.', notUsed,notUsed,notUsedI)
      ENDIF
-     IF(SnowPackPaved == NAN .or. SnowPackBldgs == NAN .or. SnowPackEveTr == NAN .or. &
-        SnowPackDecTr == NAN .or. SnowPackGrass == NAN .or. SnowPackBSoil == NAN .or. &
-        SnowPackWater == NAN) THEN
+     IF(SnowPackPaved == NAN .OR. SnowPackBldgs == NAN .OR. SnowPackEveTr == NAN .OR. &
+          SnowPackDecTr == NAN .OR. SnowPackGrass == NAN .OR. SnowPackBSoil == NAN .OR. &
+          SnowPackWater == NAN) THEN
         CALL ErrorHint(36,'Specify SnowPack for all 7 surface types.', notUsed,notUsed,notUsedI)
      ENDIF
-     IF(SnowFracPaved == NAN .or. SnowFracBldgs == NAN .or. SnowFracEveTr == NAN .or. &
-        SnowFracDecTr == NAN .or. SnowFracGrass == NAN .or. SnowFracBSoil == NAN .or. &
-        SnowFracWater == NAN) THEN
+     IF(SnowFracPaved == NAN .OR. SnowFracBldgs == NAN .OR. SnowFracEveTr == NAN .OR. &
+          SnowFracDecTr == NAN .OR. SnowFracGrass == NAN .OR. SnowFracBSoil == NAN .OR. &
+          SnowFracWater == NAN) THEN
         CALL ErrorHint(36,'Specify SnowFrac for all 7 surface types.', notUsed,notUsed,notUsedI)
      ENDIF
-     IF(SnowDensPaved == NAN .or. SnowDensBldgs == NAN .or. SnowDensEveTr == NAN .or. &
-        SnowDensDecTr == NAN .or. SnowDensGrass == NAN .or. SnowDensBSoil == NAN .or. &
-        SnowDensWater == NAN) THEN
+     IF(SnowDensPaved == NAN .OR. SnowDensBldgs == NAN .OR. SnowDensEveTr == NAN .OR. &
+          SnowDensDecTr == NAN .OR. SnowDensGrass == NAN .OR. SnowDensBSoil == NAN .OR. &
+          SnowDensWater == NAN) THEN
         CALL ErrorHint(36,'Specify SnowDens for all 7 surface types.', notUsed,notUsed,notUsedI)
      ENDIF
      IF(SnowAlb0 == NAN) THEN
@@ -1848,11 +1852,11 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
      ENDIF
   ELSE
      CALL ErrorHint(36,'SnowInitially must be 0 or -999 (or omitted from InitialConditions namelist)', &
-                    notUsed,notUsed,notUsedI)
+          notUsed,notUsed,notUsedI)
   ENDIF
 
   ! If AnOHM option selected, check initial Bowen ratio is provided ---------
-  IF(StorageHeatMethod==3 .and. BoInit == NAN) THEN
+  IF(StorageHeatMethod==3 .AND. BoInit == NAN) THEN
      CALL ErrorHint(36,'Specify BoInit for AnOHM calculations.', notUsed,notUsed,notUsedI)
   ENDIF
 
@@ -1966,7 +1970,7 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
   ModelOutputData(0,cMOD_SnowFrac(BSoilSurf), Gridiv) = SnowFracBSoil
   ModelOutputData(0,cMOD_SnowFrac(WaterSurf), Gridiv) = SnowFracWater
 
-   
+
   !! Where is this from??
   IceFrac=0.2   !Estimated fraction of ice. Should be improved in the future
 
@@ -2119,7 +2123,7 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
 
 END SUBROUTINE InitialState
 
-   
+
 ! ===========================================================================
 FUNCTION NormalizeVegChar(VegCol,Gridiv) RESULT(NormVegResult)
 
@@ -2133,9 +2137,9 @@ FUNCTION NormalizeVegChar(VegCol,Gridiv) RESULT(NormVegResult)
   REAL(KIND(1d0)):: NormVegResult
 
   NormVegResult = (SurfaceChar(Gridiv,VegCol(ivConif))*SurfaceChar(Gridiv,c_FrEveTr) + &
-                   SurfaceChar(Gridiv,VegCol(ivDecid))*SurfaceChar(Gridiv,c_FrDecTr) + &
-                   SurfaceChar(Gridiv,VegCol(ivGrass))*SurfaceChar(Gridiv,c_FrGrass)) / &
-                    (SurfaceChar(Gridiv,c_FrEveTr) + SurfaceChar(Gridiv,c_FrDecTr) + SurfaceChar(Gridiv,c_FrGrass))
+       SurfaceChar(Gridiv,VegCol(ivDecid))*SurfaceChar(Gridiv,c_FrDecTr) + &
+       SurfaceChar(Gridiv,VegCol(ivGrass))*SurfaceChar(Gridiv,c_FrGrass)) / &
+       (SurfaceChar(Gridiv,c_FrEveTr) + SurfaceChar(Gridiv,c_FrDecTr) + SurfaceChar(Gridiv,c_FrGrass))
 
   RETURN
 END FUNCTION NormalizeVegChar

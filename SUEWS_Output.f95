@@ -20,7 +20,7 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  CurrentGrid)
   !       year_int = Year as a integer
   !       iv       = Block number of met data
   !       irMax    = Maximum number of rows in met data
-  !       CurrentGrid   = Grid ID (according to SiteSelect.txt)
+  !       CurrentGrid = Grid ID (according to SiteSelect.txt)
 
   USE allocateArray
   USE cbl_module
@@ -32,8 +32,13 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  CurrentGrid)
   USE solweig_module
   USE sues_data
   USE time
+  USE strings
 
   IMPLICIT NONE
+
+  INTEGER:: Gridiv, year_int, iv, irMax, CurrentGrid !inputs
+  INTEGER:: i, j, nlinesOut
+  REAL(KIND(1d0)),ALLOCATABLE:: dataOutProc0(:,:),dataOutProc(:)
 
   INTEGER:: Gridiv, year_int, iv, irMax, CurrentGrid   !inputs
   INTEGER:: i
@@ -52,6 +57,7 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  CurrentGrid)
   CHARACTER(len= 1),DIMENSION(nColumnsDataOut):: AggregAll             !Aggregation method required for all output variables
   CHARACTER(len= 3*nColumnsDataOut):: AggregOut                        !Aggregation method required for selected output variables
   CHARACTER(len= 4*nColumnsDataOut):: ColNos
+  CHARACTER(len= 1),ALLOCATABLE:: AggregUseX(:)                        !Aggregation method array required for selected output variables
 
   CHARACTER(len=10):: fy, ft, fd, f94, f104, f106   !Useful formats
   CHARACTER(len= 1):: aT, aA, aS, aL   !Useful formats
@@ -71,7 +77,7 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  CurrentGrid)
   aL = '3'   !last value
 
   !========== Set file path and file names ==========
-  WRITE(str2,'(i2)') TSTEP/60
+  WRITE(str2,'(i4)') ResolutionFilesOut/60
   WRITE(grstr2,'(i10)') CurrentGrid
   WRITE(yrstr2,'(i4)') year_int
 
@@ -252,49 +258,49 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  CurrentGrid)
      FormatAll(80:81) = f94
      AggregAll(80:81) = aS
      LongNmAll(80:81) = (/'   Snow removed from paved surface','Snow removed from building surface' /)
-     
-     
-     ! Select variables to be written out                  
+
+
+     ! Select variables to be written out
      !write(*,*) 'WriteOutOption:', WriteOutOption
      IF(WriteOutOption == 0) THEN   !all (not snow-related)
         ALLOCATE(UseColumnsDataOut(69))
-        UsecolumnsDataOut = (/ (i, i=1,69, 1) /)
+        UseColumnsDataOut = (/ (i, i=1,69, 1) /)
      ELSEIF(WriteOutOption == 1) THEN   !all plus snow-related
         ALLOCATE(UseColumnsDataOut(nColumnsDataOut))
-        UsecolumnsDataOut = (/ (i, i=1,nColumnsDataOut, 1) /)
+        UseColumnsDataOut = (/ (i, i=1,nColumnsDataOut, 1) /)
      ELSEIF(WriteOutOption == 2) THEN   !minimal output
         ALLOCATE(UseColumnsDataOut(33))
-        UsecolumnsDataOut = (/ (i, i=1,15, 1),(i, i=19,28, 1), 53,54,55,56, 57, 60,61, 64 /)
+        UseColumnsDataOut = (/ (i, i=1,15, 1),(i, i=19,28, 1), 53,54,55,56, 57, 60,61, 64 /)
      ELSE
         WRITE(*,*) 'RunControl: WriteOutOption code not recognised, so writing out all variables.'
         ALLOCATE(UseColumnsDataOut(69))
-        UsecolumnsDataOut = (/ (i, i=1,69, 1) /)
+        UseColumnsDataOut = (/ (i, i=1,69, 1) /)
      ENDIF
 
      ! Create subset of HeaderAll and FormatAll for selected variables only
      DO i=1,SIZE(UseColumnsDataOut)
         WRITE(itext,'(i3)') i
         IF(i==1) THEN
-           HeaderOut=ADJUSTL(HeaderAll(UsecolumnsDataOut(i)))
-           HeaderOutNoSep=ADJUSTL(HeaderAll(UsecolumnsDataOut(i)))
-           UnitsOut=ADJUSTL(UnitsAll(UsecolumnsDataOut(i)))
-           FormatOut=ADJUSTL(FormatAll(UsecolumnsDataOut(i)))
-           FormatOutNoSep=ADJUSTL(FormatAll(UsecolumnsDataOut(i)))
-           LongNmOut=ADJUSTL(LongNmAll(UsecolumnsDataOut(i)))
-           AggregOut=ADJUSTL(AggregAll(UsecolumnsDataOut(i)))
+           HeaderOut=ADJUSTL(HeaderAll(UseColumnsDataOut(i)))
+           HeaderOutNoSep=ADJUSTL(HeaderAll(UseColumnsDataOut(i)))
+           UnitsOut=ADJUSTL(UnitsAll(UseColumnsDataOut(i)))
+           FormatOut=ADJUSTL(FormatAll(UseColumnsDataOut(i)))
+           FormatOutNoSep=ADJUSTL(FormatAll(UseColumnsDataOut(i)))
+           LongNmOut=ADJUSTL(LongNmAll(UseColumnsDataOut(i)))
+           AggregOut=ADJUSTL(AggregAll(UseColumnsDataOut(i)))
            ColNos=ADJUSTL(itext)
         ELSE
-           HeaderOut=TRIM(HeaderOut)//';'//ADJUSTL(HeaderAll(UsecolumnsDataOut(i)))
-           HeaderOutNoSep=TRIM(HeaderOutNoSep)//' '//ADJUSTL(HeaderAll(UsecolumnsDataOut(i)))
+           HeaderOut=TRIM(HeaderOut)//';'//ADJUSTL(HeaderAll(UseColumnsDataOut(i)))
+           HeaderOutNoSep=TRIM(HeaderOutNoSep)//' '//ADJUSTL(HeaderAll(UseColumnsDataOut(i)))
            !write(*,*) HeaderOut
-           UnitsOut=TRIM(UnitsOut)//';'//ADJUSTL(UnitsAll(UsecolumnsDataOut(i)))
+           UnitsOut=TRIM(UnitsOut)//';'//ADJUSTL(UnitsAll(UseColumnsDataOut(i)))
            !write(*,*) UnitsOut
-           FormatOut=TRIM(FormatOut)//';'//ADJUSTL(FormatAll(UsecolumnsDataOut(i)))
-           FormatOutNoSep=TRIM(FormatOutNoSep)//' '//ADJUSTL(FormatAll(UsecolumnsDataOut(i)))
+           FormatOut=TRIM(FormatOut)//';'//ADJUSTL(FormatAll(UseColumnsDataOut(i)))
+           FormatOutNoSep=TRIM(FormatOutNoSep)//' '//ADJUSTL(FormatAll(UseColumnsDataOut(i)))
            !write(*,*) FormatOut
-           LongNmOut=TRIM(LongNmOut)//';'//ADJUSTL(LongNmAll(UsecolumnsDataOut(i)))
+           LongNmOut=TRIM(LongNmOut)//';'//ADJUSTL(LongNmAll(UseColumnsDataOut(i)))
            !write(*,*) LongNmOut
-           AggregOut=TRIM(AggregOut)//';'//ADJUSTL(AggregAll(UsecolumnsDataOut(i)))
+           AggregOut=TRIM(AggregOut)//';'//ADJUSTL(AggregAll(UseColumnsDataOut(i)))
            !write(*,*) AggregOut
            ColNos=TRIM(ColNos)//';'//ADJUSTL(itext)
         ENDIF
@@ -332,7 +338,7 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  CurrentGrid)
      !write(*,*) '||',TRIM(HeaderUse),'||'
      !write(*,*) '||',TRIM(FormatUse),'||'
      !write(*,*) '||',TRIM(ColNosUse),'||'
-         
+
 
      !=========== Write output format info to file ===========
      OPEN(50,file=TRIM(FileOutFormat),err=111)
@@ -345,6 +351,11 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  CurrentGrid)
      CLOSE (50)
      OutputFormats = 0
   ENDIF
+
+  ALLOCATE(AggregUseX(SIZE(UseColumnsDataOut)))
+  CALL parse(AggregUse,';',AggregUseX,SIZE(UseColumnsDataOut))
+  PRINT*, 'good 1'
+  PRINT*, AggregUseX
 
   !========== Open output file (and first time print header) ==========
 
@@ -426,37 +437,128 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  CurrentGrid)
   ! 'qn_Paved qn_Bldgs qn_EveTr qn_DecTr qn_Grass qn_BSoil qn_Water ',&
 
   !========== Write out data ==========
-  DO i=1,irMax
-     WRITE(lfnoutC,FormatUseNoSep) INT(dataOut(i,PACK(UseColumnsDataOut, UsecolumnsDataOut < 5),Gridiv)),&
-          dataOut(i,PACK(UseColumnsDataOut, UsecolumnsDataOut >= 5),Gridiv)
-     !WRITE(lfnoutC,301) (INT(dataOut(i,is,Gridiv)),is=1,4),&
-     !      dataOut(i,5:ncolumnsDataOut,Gridiv)
-
-  ENDDO
-
-  IF (SOLWEIGpoi_out==1) THEN
-     DO i=1,SolweigCount-1
-        WRITE(9,304) INT(dataOutSOL(i,1,Gridiv)),(dataOutSOL(i,is,Gridiv),is=2,ncolumnsdataOutSOL)
-     ENDDO
-  ENDIF
-
-  IF(CBLuse>=1) THEN
-     DO i=1,iCBLcount
-        WRITE(53,305)(INT(dataOutBL(i,is,Gridiv)),is=1,4),(dataOutBL(i,is,Gridiv),is=5,ncolumnsdataOutBL)
-     ENDDO
-  ENDIF
-
-  IF(SnowUse>=1) THEN
-     DO i=1,irmax
-        WRITE(54,306)(INT(dataOutSnow(i,is,Gridiv)),is=1,4),(dataOutSnow(i,is,Gridiv),is=5,ncolumnsDataOutSnow)
-     ENDDO
-  ENDIF
-
-  IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14)THEN
+  IF ( ResolutionFilesOut == Tstep ) THEN ! output frequency same as input
+     ! original output
      DO i=1,irMax
-        WRITE(58, 307)(INT(dataOutESTM(i,is,Gridiv)),is=1,4),(dataOutESTM(i,is,Gridiv),is=5,32)
+        WRITE(lfnoutC,FormatUseNoSep) INT(dataOut(i,PACK(UseColumnsDataOut, UseColumnsDataOut < 5),Gridiv)),&
+             dataOut(i,PACK(UseColumnsDataOut, UseColumnsDataOut >= 5),Gridiv)
+        !WRITE(lfnoutC,301) (INT(dataOut(i,is,Gridiv)),is=1,4),&
+        !      dataOut(i,5:ncolumnsDataOut,Gridiv)
+
      ENDDO
-  ENDIF
+
+     IF (SOLWEIGpoi_out==1) THEN
+        DO i=1,SolweigCount-1
+           WRITE(9,304) INT(dataOutSOL(i,1,Gridiv)),(dataOutSOL(i,is,Gridiv),is=2,ncolumnsdataOutSOL)
+        ENDDO
+     ENDIF
+
+     IF(CBLuse>=1) THEN
+        DO i=1,iCBLcount
+           WRITE(53,305)(INT(dataOutBL(i,is,Gridiv)),is=1,4),(dataOutBL(i,is,Gridiv),is=5,ncolumnsdataOutBL)
+        ENDDO
+     ENDIF
+
+     IF(SnowUse>=1) THEN
+        DO i=1,irmax
+           WRITE(54,306)(INT(dataOutSnow(i,is,Gridiv)),is=1,4),(dataOutSnow(i,is,Gridiv),is=5,ncolumnsDataOutSnow)
+        ENDDO
+     ENDIF
+
+     IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14)THEN
+        DO i=1,irMax
+           WRITE(58, 307)(INT(dataOutESTM(i,is,Gridiv)),is=1,4),(dataOutESTM(i,is,Gridiv),is=5,32)
+        ENDDO
+     ENDIF
+
+  ELSE ! if output frequency different from input, TS 09 Feb 2017
+     ! write out every nlinesOut, 60.*60/ResolutionFilesOut = output frequency per hour
+     nlinesOut=INT(nsh/(60.*60/ResolutionFilesOut))
+     !  PRINT*, iv,nlinesOut,irMax
+
+     DO i=nlinesOut,irMax,nlinesOut
+        ALLOCATE(dataOutProc0(nlinesOut,SIZE(UseColumnsDataOut)))
+        ALLOCATE(dataOutProc(SIZE(UseColumnsDataOut)))
+
+        dataOutProc0=dataOut(i-nlinesOut+1:i,1:SIZE(UseColumnsDataOut),Gridiv)
+        ! IF ( Gridiv ==1 .AND. i==100) THEN
+        !    PRINT*, 'line:',i
+        !    PRINT*, SHAPE(dataOut(i-nlinesOut+1:i,1:SIZE(UseColumnsDataOut),Gridiv))
+        !    !  PRINT*, dataOut(i,1:4,Gridiv)
+        !    PRINT*, dataOutProc0(i,:)
+        !    PRINT*, ''
+        ! END IF
+
+        DO j = 1, SIZE(AggregUseX), 1
+           ! print*, i,j
+           ! aggregating different variables
+           SELECT CASE (AggregUseX(j))
+           CASE ('0') !time columns, aT
+              dataOutProc(j)=dataOutProc0(nlinesOut,j)
+           CASE ('1') !average, aA
+              dataOutProc(j)=SUM(dataOutProc0(:,j))/nlinesOut
+           CASE ('2') !sum, aS
+              dataOutProc(j)=SUM(dataOutProc0(:,j))
+           CASE ('3') !last value,aL
+              dataOutProc(j)=dataOutProc0(nlinesOut,j)
+           END SELECT
+           !  IF ( Gridiv ==1 .AND. i==100 ) THEN
+           !     !  PRINT*, INT(dataOutProc(1:4)),dataOutProc(5:)
+           !     PRINT*, j, AggregUseX(j)
+           !     PRINT*, dataOutProc(j),dataOutProc0(:,j)
+           !  END IF
+        END DO
+
+        ! IF ( Gridiv ==1 ) THEN
+        !   ! print*,i, AggregAll
+        !   ! print*,i, AggregOut
+        !   print*, i, AggregUse
+        !   !  PRINT*, INT(dataOutProc(1:4)),dataOutProc(5:)
+        !   !  print*, j, AggregAll(j)
+        !   !  print*, dataOutProc(j),dataOutProc0(:,j)
+        ! END IF
+
+
+        WRITE(lfnoutC,FormatUseNoSep) INT(dataOutProc(1:4)),dataOutProc(5:)
+        !WRITE(lfnoutC,301) (INT(dataOut(i,is,Gridiv)),is=1,4),&
+        !      dataOut(i,5:ncolumnsDataOut,Gridiv)
+        IF (ALLOCATED(dataOutProc0)) DEALLOCATE(dataOutProc0)
+        IF (ALLOCATED(dataOutProc)) DEALLOCATE(dataOutProc)
+
+     ENDDO
+
+
+     !  other outputs not touched at the moment, as of 09 Feb 2017, TS
+     IF (SOLWEIGpoi_out==1) THEN
+        DO i=1,SolweigCount-1
+           WRITE(9,304) INT(dataOutSOL(i,1,Gridiv)),(dataOutSOL(i,is,Gridiv),is=2,ncolumnsdataOutSOL)
+        ENDDO
+     ENDIF
+
+     IF(CBLuse>=1) THEN
+        DO i=1,iCBLcount
+           WRITE(53,305)(INT(dataOutBL(i,is,Gridiv)),is=1,4),(dataOutBL(i,is,Gridiv),is=5,ncolumnsdataOutBL)
+        ENDDO
+     ENDIF
+
+     IF(SnowUse>=1) THEN
+        DO i=1,irmax
+           WRITE(54,306)(INT(dataOutSnow(i,is,Gridiv)),is=1,4),(dataOutSnow(i,is,Gridiv),is=5,ncolumnsDataOutSnow)
+        ENDDO
+     ENDIF
+
+     IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14)THEN
+        DO i=1,irMax
+           WRITE(58, 307)(INT(dataOutESTM(i,is,Gridiv)),is=1,4),(dataOutESTM(i,is,Gridiv),is=5,32)
+        ENDDO
+     ENDIF
+
+
+
+  END IF
+
+  IF (ALLOCATED(AggregUseX)) DEALLOCATE(AggregUseX)
+
 
 304 FORMAT(1(i3,1X),4(f8.4,1X),23(f9.3,1X))          !Solweig output
 305 FORMAT((i4,1X),3(i3,1X),(f8.4,1X),17(f15.7,1x))  !CBL output

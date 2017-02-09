@@ -10,7 +10,9 @@ CFLAGS = -g -Wall -Wtabs -fbounds-check `nc-config --fflags`
 MODULES = LUMPS_Module_constants.o  \
           LUMPS_metRead.o  \
           SOLWEIG_modules.o  \
-          SUEWS_Files_run_Control.o\
+          SUEWS_Files_run_Control.o \
+					precmod.o \
+					stringmod.o \
 					qsort_c_module.o
 # Rest of the files including modules and functions which are independent
 OTHERS =  BLUEWS_CBL.o   \
@@ -71,7 +73,10 @@ TEST = 		SUEWS_IO_nc.o  \
 main: SUEWS_Program.f95 $(MODULES) $(OTHERS) $(TEST)
 	$(CC) SUEWS_Program.f95 $(CFLAGS) -c ; \
 	# $(CC) SUEWS_Program.o $(MODULES) $(OTHERS) $(TEST) -L$(NETCDFLIB) -lnetcdf -o $(TARGET)
+
+# If TEST have changed, compile them again
 	$(CC) SUEWS_Program.o $(MODULES) $(OTHERS) $(TEST) `nc-config --flibs` -o $(TARGET)
+	$(CC) -c $(subst .o,.f95, $@)
 
 # If OTHERS have changed, compile them again
 $(OTHERS): $(MODULES) $(subst .o,.f95, $(OTHERS))

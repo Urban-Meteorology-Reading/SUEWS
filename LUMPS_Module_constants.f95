@@ -74,13 +74,13 @@ MODULE allocateArray
 
   ! ---- Define output file headers --------------------------------------------------------------
   INTEGER,DIMENSION(:),ALLOCATABLE:: UseColumnsDataOut       !Column numbers used to select output variables
-  ! If change lengths in SUEWS_Output.f95, also need to adjust here 
+  ! If change lengths in SUEWS_Output.f95, also need to adjust here
   CHARACTER(len=14*ncolumnsDataOut):: HeaderUse,FormatUse,HeaderUseNoSep,FormatUseNoSep    !Header and format in correct form
   CHARACTER(len=52*ncolumnsDataOut):: LongNmUse
   CHARACTER(len=14*ncolumnsDataOut):: UnitsUse
-  CHARACTER(len=3*ncolumnsDataOut):: AggregUse 
+  CHARACTER(len=3*ncolumnsDataOut):: AggregUse
   CHARACTER(len=4*ncolumnsDataOut):: ColNosUse
-  
+
   ! ---- Define arrays to store input information from SiteInfo spreadsheet ----------------------
   REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::SiteSelect                !Stores info from SiteSelect.txt
   REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::NonVeg_Coeff              !Coefficients for the nonveg surfaces
@@ -115,22 +115,22 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: AHProf_tstep
   REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: WUProfM_tstep, WUProfA_tstep
   REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: CO2m_tstep
-  
+
   ! ---- For ESTM
   REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:,:)::  Ts5mindata     !surface temperature input data
   REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:) ::   Tair24HR
 
   ! Column numbers for TstepProfiles
   INTEGER:: cTP_EnUseWD  = 1,&
-            cTP_EnUseWE  = 2,&
-            cTP_WUManuWD = 3,&
-            cTP_WUManuWE = 4,&
-            cTP_WUAutoWD = 5,&
-            cTP_WUAutoWE = 6,&
-            cTP_SnowCWD  = 7,&
-            cTP_SnowCWE  = 8,&
-            cTP_CO2mWD   = 9,&
-            cTP_CO2mWE   = 10
+       cTP_EnUseWE  = 2,&
+       cTP_WUManuWD = 3,&
+       cTP_WUManuWE = 4,&
+       cTP_WUAutoWD = 5,&
+       cTP_WUAutoWE = 6,&
+       cTP_SnowCWD  = 7,&
+       cTP_SnowCWE  = 8,&
+       cTP_CO2mWD   = 9,&
+       cTP_CO2mWE   = 10
   !-----------------------------------------------------------------------------------------------
 
   ! ---- Surface types ---------------------------------------------------------------------------
@@ -174,9 +174,9 @@ MODULE allocateArray
 
   REAL(KIND(1d0)),DIMENSION(nsurf):: WetThresh      !When State > WetThresh, rs=0 limit in SUEWS_evap [mm] (specified in input files)
   REAL(KIND(1d0)),DIMENSION(nsurf):: StateLimit     !Limit for state of each surface type [mm] (specified in input files)
-  
+
   REAL(KIND(1d0)),DIMENSION(1)::     WaterDepth     !Depth of open water
-  
+
   ! ---- Soil characteristics specified in input files -------------------------------------------
   REAL(KIND(1d0)),DIMENSION(nsurf):: SatHydraulicConduct !Saturated hydraulic conductivity for each soil subsurface [mm s-1]
   REAL(KIND(1d0)),DIMENSION(nsurf):: SoilDepth           !Depth of sub-surface soil store for each surface [mm]
@@ -308,9 +308,9 @@ MODULE allocateArray
   ! ---- OHM coefficients ------------------------------------------------------------------------
   REAL(KIND(1d0)),DIMENSION(9,4,3):: OHM_coef   !Array for OHM coefficients
   REAL(KIND(1d0)),DIMENSION(9)::     OHM_threshSW, OHM_threshWD   !Arrays for OHM thresholds
-  REAL(KIND(1d0)):: a1,a2,a3   !OHM coefficients, a1 [-]; a2 [h]; a3 [W m-2]     
+  REAL(KIND(1d0)):: a1,a2,a3   !OHM coefficients, a1 [-]; a2 [h]; a3 [W m-2]
   REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE:: qn1_store, qn1_S_store   !Q* values for each timestep over previous hr (_S for snow)
-  REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE:: qn1_av_store, qn1_S_av_store  !Hourly Q* values for each timestep over previous 2 hr  
+  REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE:: qn1_av_store, qn1_S_av_store  !Hourly Q* values for each timestep over previous 2 hr
   !-----------------------------------------------------------------------------------------------
 
   ! ---- Snow-related variables ------------------------------------------------------------------
@@ -368,8 +368,8 @@ MODULE allocateArray
 
   ! ESTM variables for SUEWS surfaces
   REAL(KIND(1d0)),DIMENSION(5,nsurfIncSnow):: zSurf_SUEWSsurfs, &
-                                              kSurf_SUEWSsurfs, &
-                                              rSurf_SUEWSsurfs
+       kSurf_SUEWSsurfs, &
+       rSurf_SUEWSsurfs
   !-----------------------------------------------------------------------------------------------
   !---------------------------------- Column numbers ---------------------------------------------
 
@@ -424,10 +424,10 @@ MODULE allocateArray
 
   ! Applicable to water surfaces only
   INTEGER:: c_WaterDepth = (ccEndP+1)
-  
+
   ! Find current column number
   INTEGER,PARAMETER:: ccEndW = (ccEndP+1)
-  
+
   ! Applicable to snow only
   INTEGER:: c_SnowRMFactor = (ccEndW+ 1)
   INTEGER:: c_SnowTMFactor = (ccEndW+ 2)
@@ -474,7 +474,7 @@ MODULE allocateArray
   INTEGER:: c_GsS2  = (ccEndSo+10)
   INTEGER:: c_GsKmax  = (ccEndSo+11)
   INTEGER:: c_gsModel  = (ccEndSo+12)
-  
+
   ! Find current column number
   INTEGER,PARAMETER:: ccEndGs = (ccEndSo+12)
 
@@ -511,15 +511,15 @@ MODULE allocateArray
        ccEndGs+14*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a2 (winter dry)
   INTEGER,DIMENSION(nsurfIncSnow):: c_a3_WDry       =(/(cc, cc=ccEndGs+15*nsurfIncSnow+1,&
        ccEndGs+15*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a3 (winter dry)
-       
+
   INTEGER,DIMENSION(nsurfIncSnow):: c_OHMThresh_SW  =(/(cc, cc=ccEndGs+ 16*nsurfIncSnow+1,&
-       ccEndGs+ 16*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM Threshold (summer/winter)       
+       ccEndGs+ 16*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM Threshold (summer/winter)
   INTEGER,DIMENSION(nsurfIncSnow):: c_OHMThresh_WD  =(/(cc, cc=ccEndGs+ 17*nsurfIncSnow+1,&
-       ccEndGs+ 17*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM Threshold (wet/dry)     
+       ccEndGs+ 17*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM Threshold (wet/dry)
 
   ! ESTM code for each surface inclduing snow
   INTEGER,DIMENSION(nsurfIncSnow):: c_ESTMCode      = (/(cc, cc=ccEndGs+18*nsurfIncSnow+1,&
-                                                             ccEndGs+18*nsurfIncSnow+nsurfIncSnow, 1)/)  !ESTM code
+       ccEndGs+18*nsurfIncSnow+nsurfIncSnow, 1)/)  !ESTM code
 
   ! Find current column number
   INTEGER,PARAMETER:: ccEndO = (ccEndGs+18*nsurfIncSnow+nsurfIncSnow)
@@ -563,7 +563,7 @@ MODULE allocateArray
   INTEGER,DIMENSION(24):: c_HrProfSnowCWE  = (/(cc, cc=ccEndIr+ 7*24+1, ccEndIr+ 7*24+24, 1)/)  ! Snow clearing, weekends
   INTEGER,DIMENSION(24):: c_HrProfCO2mWD   = (/(cc, cc=ccEndIr+ 8*24+1, ccEndIr+ 8*24+24, 1)/)  ! Energy use, weekdays
   INTEGER,DIMENSION(24):: c_HrProfCO2mWE   = (/(cc, cc=ccEndIr+ 9*24+1, ccEndIr+ 9*24+24, 1)/)  ! Energy use, weekends
-  
+
   ! Find current column number
   INTEGER,PARAMETER:: ccEndPr = (ccEndIr+ 9*24+24)
 
@@ -816,10 +816,10 @@ MODULE data_in
 
   INTEGER:: SkipHeaderSiteInfo = 2   !Number of header lines to skip in SiteInfo files
   INTEGER:: SkipHeaderMet = 1        !Number of header lines to skip in met forcing file
-            
+
   ! ---- Model options set in RunControl --------------------------------------------------------
   INTEGER:: AnthropHeatMethod,&    !QF in met file (0); Loridan et al. 2010 (1); Jarvi et al. 2011 (2)
-       AnthropCO2Method,&     !  ! using QF from AnthropHeatMethod=2 (2); using traffic rate and building energy use in SiteSelect 
+       AnthropCO2Method,&     !  ! using QF from AnthropHeatMethod=2 (2); using traffic rate and building energy use in SiteSelect
        CBLuse,&               !CBL slab model used (1) or not used (0)
        MultipleMetFiles,&     !Indicates whether a single met file is used for all grids (0) or one for each grid (1)
        MultipleInitFiles,&      !Indicates whether a single initial conditions file is used for all grids (0) or one for each grid (1)
@@ -859,8 +859,8 @@ MODULE data_in
        lfnoutC,&              !Clean output write units
        lfnOld                 !!Was used for GridConnections
 
-  INTEGER:: OutputFormats   !Used to control writing out of output file format   
- 
+  INTEGER:: OutputFormats   !Used to control writing out of output file format
+
 
   ! ---- Other options set in RunControl --------------------------------------------------------
   REAL (KIND(1d0)):: timezone      !Timezone (GMT=0)
@@ -941,7 +941,7 @@ MODULE data_in
   REAL(KIND(1d0)),DIMENSION(2)::Qf_A,Qf_B,Qf_C   !Qf coefficients
   REAL(KIND(1d0)),DIMENSION(0:23,2):: AHPROF     !Anthropogenic heat profiles for (1)weekdays / (2)weekends
   REAL(KIND(1d0)),DIMENSION(0:23,2):: CO2mProf   !HUman actvity profiles for (1)weekdays / (2)weekends
-  
+
   INTEGER,DIMENSION(2)::DayLightSavingDay   !DOY when daylight saving changes
 
   INTEGER::nCBLstep  !number of time steps of Runge-kutta methods in one hour
@@ -1169,7 +1169,7 @@ MODULE resist  !Variables related surface resistance calculations (P. 1744 in G&
        g5,g6,s1,s2,&    !surface res. calculations
        tc,&             !Temperature parameter 1
        tc2              !Temperature parameter 2
-  INTEGER:: gsModel     !Choice of gs parameterisation (1 = Ja11, 2 = Wa16)       
+  INTEGER:: gsModel     !Choice of gs parameterisation (1 = Ja11, 2 = Wa16)
 END MODULE resist
 
 !**********************************************
@@ -1529,7 +1529,7 @@ MODULE ColNamesInputFiles
        c_PopDensNight = 33,&
        c_TrafficRate  = 34,&    ! Mean traffic rate in modelled area [veh km m-2 s-1]
        c_BuildEnergyUse  = 35,&    ! Building energy use for modelled area [W m-2] - could change units?
-       ! Codes for different surfaces
+                                ! Codes for different surfaces
        c_PavedCode = 36,&  ! Links characteristics in SUEWS_NonVeg.txt
        c_BldgsCode = 37,&  ! Links characteristics in SUEWS_NonVeg.txt
        c_EveTrCode = 38,&  ! Links characteristics in SUEWS_Veg.txt
@@ -1543,7 +1543,7 @@ MODULE ColNamesInputFiles
        c_LUMPSMaxRes = 45,&
                                 ! NARP info
        c_NARPTrans   = 46,&
-                               ! Code for conductances
+                                ! Code for conductances
        c_CondCode    = 47,&       ! Links characteristics in SUEWS_Conductance.txt
                                 ! Code for snow
        c_SnowCode    = 48,&    ! Links characteristics in SUEWS_Snow.txt
@@ -1560,7 +1560,7 @@ MODULE ColNamesInputFiles
        c_WProfManuWE = 58,&  ! Links to water-use profile in SUEWS_Profile.txt (manual irrigation, weekends)
        c_WProfAutoWD = 59,&  ! Links to water-use profile in SUEWS_Profile.txt (automatic irrigation, weekdays)
        c_WProfAutoWE = 60,&  ! Links to water-use profile in SUEWS_Profile.txt (automatic irrigation, weekends)
-                               ! Flow information
+                                ! Flow information
        c_FlowChange    =61,&  ! Difference in input & output flows for water surface
        c_RunoffToWater =62,&    ! Fraction of above-ground runoff flowing to water surface
        c_PipeCapacity  =63,&  ! Pipe capacity [mm]
@@ -1581,7 +1581,7 @@ MODULE ColNamesInputFiles
        c_Fraction7of8       = 77,&
        c_GridConnection8of8 = 78,&
        c_Fraction8of8       = 79,&
-                              ! Runoff within grid (for each surface type)
+                                ! Runoff within grid (for each surface type)
        c_WGPavedCode = 80,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
        c_WGBldgsCode = 81,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
        c_WGEveTrCode = 82,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
@@ -1589,13 +1589,13 @@ MODULE ColNamesInputFiles
        c_WGGrassCode = 84,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
        c_WGBSoilCode = 85,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
        c_WGWaterCode = 86,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
-                               ! Additional info for ESTM
+                                ! Additional info for ESTM
        c_AreaWall = 87   ! Wall surface fraction (Awall/Agridcell)
 
-       INTEGER,DIMENSION(3):: c_Fr_ESTMClass_Paved =   (/(ccc,ccc=88,90,1)/) ! Fraction of Paved surface with ESTM Class 1-5
-       INTEGER,DIMENSION(3)::         c_Code_ESTMClass_Paved = (/(ccc,ccc=91,93,1)/) ! Code for Paved surface ESTM Class 1-5
-       INTEGER,DIMENSION(5):: c_Fr_ESTMClass_Bldgs =   (/(ccc,ccc=94,98,1)/) ! Fraction of Bldgs surface with ESTM Class 1-5
-       INTEGER,DIMENSION(5)::         c_Code_ESTMClass_Bldgs = (/(ccc,ccc=99,103,1)/) ! Code for Bldgs surface ESTM Class 1-5
+  INTEGER,DIMENSION(3):: c_Fr_ESTMClass_Paved =   (/(ccc,ccc=88,90,1)/) ! Fraction of Paved surface with ESTM Class 1-5
+  INTEGER,DIMENSION(3)::         c_Code_ESTMClass_Paved = (/(ccc,ccc=91,93,1)/) ! Code for Paved surface ESTM Class 1-5
+  INTEGER,DIMENSION(5):: c_Fr_ESTMClass_Bldgs =   (/(ccc,ccc=94,98,1)/) ! Fraction of Bldgs surface with ESTM Class 1-5
+  INTEGER,DIMENSION(5)::         c_Code_ESTMClass_Bldgs = (/(ccc,ccc=99,103,1)/) ! Code for Bldgs surface ESTM Class 1-5
 
   !========== Columns for SUEWS_NonVeg.txt ==========================
   INTEGER :: ci_Code   = 1, &
@@ -2046,7 +2046,7 @@ END MODULE ESTM_data
 
 !----------------------------------------------------------------------------------
 MODULE WhereWhen
-! Stores grid and datetime info
+  ! Stores grid and datetime info
 
   INTEGER:: GridID   !Grid number (as specified in SUEWS_SiteSelect.txt)
   !To add:
@@ -2054,7 +2054,7 @@ MODULE WhereWhen
   !Datetime info
 
 END MODULE WhereWhen
-  
+
 !----------------------------------------------------------------------------------
 MODULE MathConstants
 

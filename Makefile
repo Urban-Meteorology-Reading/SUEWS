@@ -8,7 +8,9 @@ CFLAGS = -g -Wall -Wtabs -fbounds-check
 MODULES = LUMPS_Module_constants.o  \
           LUMPS_metRead.o  \
           SOLWEIG_modules.o  \
-          SUEWS_Files_run_Control.o
+          SUEWS_Files_run_Control.o \
+					precmod.o \
+					stringmod.o
 # Rest of the files including modules and functions which are independent
 OTHERS =  BLUEWS_CBL.o   \
           LUMPS_NARP_v3.o \
@@ -16,7 +18,6 @@ OTHERS =  BLUEWS_CBL.o   \
           BLUEWS_Diff.o  \
           SUEWS_translate.o \
           SUEWS_HorizontalSoilWater.o \
-          SUEWS_Initial.o \
           LUMPS_atmos_functions_moist.o \
           SUEWS_OHM.o \
           LUMPS_atmos_functions_stab.o \
@@ -39,7 +40,6 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_error.o \
           SUEWS_waterUse.o \
           SUEWS_evap.o \
-          SUEWS_Output.o  \
           SUEWS_CodeMatch.o \
           SUEWS_InputHeaders.o \
           SUEWS_InterpHourlyProfiles.o \
@@ -61,12 +61,19 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_ESTM_functions.o \
           SUEWS_ESTM_initials.o \
           SUEWS_ESTM_v2016.o \
-	  SUEWS_CO2.o
+	  			SUEWS_CO2.o
+
+TEST =		SUEWS_Initial.o \
+					SUEWS_Output.o
 
 # Build main program - main uses MODULES and OTHERS
-main: SUEWS_Program.f95 $(MODULES) $(OTHERS)
+main: SUEWS_Program.f95 $(MODULES) $(OTHERS) $(TEST)
 	$(CC) SUEWS_Program.f95 $(CFLAGS) -c; \
-	$(CC) SUEWS_Program.o $(MODULES) $(OTHERS) -o $(TARGET)
+	$(CC) SUEWS_Program.o $(MODULES) $(OTHERS) $(TEST) -o $(TARGET)
+
+# If TEST have changed, compile them again
+$(TEST): $(MODULES) $(subst .o,.f95, $(TEST))
+	$(CC) -c $(subst .o,.f95, $@)
 
 # If OTHERS have changed, compile them again
 $(OTHERS): $(MODULES) $(subst .o,.f95, $(OTHERS))

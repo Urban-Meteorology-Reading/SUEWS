@@ -1,4 +1,4 @@
-SUBROUTINE ErrorHint(errh,ProblemFile,value,value2,valueI)
+SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
   !errh        -- Create a numbered code for the situation so get a unique message to help solve the problem
   !ProblemFile -- Filename where the problem occurs/error message
   !value       -- Error value (real number with correct type)
@@ -14,7 +14,7 @@ SUBROUTINE ErrorHint(errh,ProblemFile,value,value2,valueI)
 
   USE defaultNotUsed
   USE WhereWhen
-  
+
   IMPLICIT NONE
 
   REAL(KIND(1d0)):: VALUE,value2
@@ -24,8 +24,8 @@ SUBROUTINE ErrorHint(errh,ProblemFile,value,value2,valueI)
   INTEGER:: errh,ValueI,ValueI2                  ! v7,v8 initialised as false, HCW 28/10/2014
   LOGICAL:: v1=.FALSE.,v2=.FALSE.,v3=.FALSE.,v4=.FALSE.,v5=.FALSE.,v6=.FALSE.,v7=.FALSE.,v8=.FALSE.
   LOGICAL:: returnTrue=.FALSE.
- 
-  
+
+
   ! Initialise returnTrue as false (HCW 29/10/2014)
   ! - need to do this in Fortran as values assigned in declarations are not applied
   ! on subsequent calling of the subroutine
@@ -39,7 +39,7 @@ SUBROUTINE ErrorHint(errh,ProblemFile,value,value2,valueI)
   v6=.FALSE.
   v7=.FALSE.
   v8=.FALSE.
-    
+
   CALL ProblemsText(ProblemFile)   !Call the subroutine that opens the problem.txt file
 
   !The list of knows possible problems of the code:
@@ -49,7 +49,7 @@ SUBROUTINE ErrorHint(errh,ProblemFile,value,value2,valueI)
   IF(errh==1)THEN
      text1='Check value in SUEWS_SiteSelect.txt.'
      v5=.TRUE.
-  ! 2,3,4,5,6,   
+     ! 2,3,4,5,6,
   ELSEIF(errh==7) THEN
      text1='ra value obtained exceeds permitted range.'
      v1=.TRUE.
@@ -66,7 +66,7 @@ SUBROUTINE ErrorHint(errh,ProblemFile,value,value2,valueI)
   ELSEIF(errh==11) THEN
      text1='File not found.'
      v3=.TRUE.
-  ! 12,13
+     ! 12,13
   ELSEIF(errh==14) THEN
      text1= 'Inappropriate value calculated.'
      v1=.TRUE.
@@ -74,7 +74,7 @@ SUBROUTINE ErrorHint(errh,ProblemFile,value,value2,valueI)
      text1= 'Check H_Bldgs, H_EveTr and H_DecTr in SUEWS_SiteSelect.txt'
      v2=.TRUE.
      returnTrue=.TRUE.
-  ! 16 
+     ! 16
   ELSEIF(errh==17) THEN
      text1= 'Problem with (z-zd) and/or z0.'
      v2=.TRUE.
@@ -258,7 +258,10 @@ SUBROUTINE ErrorHint(errh,ProblemFile,value,value2,valueI)
      v8=.TRUE.
   ELSEIF(errh==71) THEN
      text1='Check input file SUEWS_Conductance.txt.'
-     v3=.TRUE.   
+     v3=.TRUE.
+  ELSEIF(errh==72) THEN
+     text1='RunControl.nml: ResolutionFilesOut must be an integer multiple of TSTEP'
+     v6=.TRUE.
   ENDIF
   !---------------------------------------------------------------------
   !This part of the code determines how the error message is written out

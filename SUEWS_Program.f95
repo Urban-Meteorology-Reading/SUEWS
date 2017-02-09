@@ -67,21 +67,21 @@ PROGRAM SUEWS_Program
 
   ! Start counting cpu time
   CALL cpu_TIME(timeStart)
-  
+
   WRITE(*,*) '========================================================'
   WRITE(*,*) 'Running ',progname
-  
+
   ! Initialise error file (0 -> problems.txt file is created)
   errorChoice=0
   ! Initialise OutputFormats to 1 so that output format is written out only once per run
   OutputFormats = 1
   ! Set Diagnose switch to off (0). If Diagnose = 1 is set in RunControl, model progress will be printed
-  Diagnose = 0  
-  DiagQS = 0  
-  
+  Diagnose = 0
+  DiagQS = 0
+
   ! Read RunControl.nml and all .txt input files from SiteSelect spreadsheet
-   
-  CALL overallRunControl  
+
+  CALL overallRunControl
 
   ! Find first and last year of the current run
   FirstYear = MINVAL(INT(SiteSelect(:,c_Year)))
@@ -121,12 +121,12 @@ PROGRAM SUEWS_Program
   ModelDailyState(:,:) = -999
   DailyStateFirstOpen(:) = 1
   !flagRerunAnOHM(:) = .TRUE.
-  
+
   ! -------------------------------------------------------------------------
 
   ! Initialise ESTM (reads ESTM nml, should only run once)
   IF(StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
-     IF(Diagnose==1) write(*,*) 'Calling ESTM_initials...' 
+     IF(Diagnose==1) write(*,*) 'Calling ESTM_initials...'
      CALL ESTM_initials
   ENDIF
 
@@ -146,7 +146,7 @@ PROGRAM SUEWS_Program
      ! within one year
      WRITE(grid_txt,'(I10)') GridIDmatrix(1)  !Get grid as a text string
      WRITE(tstep_txt,'(I5)') tstep/60  !Get tstep (in minutes) as a text string
-     
+
      ! Get met file name for this year for this grid
      FileCodeX = TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt)
      FileMet   = TRIM(FileInputPath)//TRIM(FileCodeX)//'_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
@@ -182,13 +182,13 @@ PROGRAM SUEWS_Program
      ReadLinesMetData = INT(MAX(nsd*(ReadLinesMetData/nsd), nsd))
 
      WRITE(*,*) 'Met data will be read in chunks of ',ReadlinesMetdata,'lines.'
-          
+
      ! Find number of blocks of met data
      ReadBlocksMetData = INT(CEILING(REAL(nlinesMetData,KIND(1d0))/REAL(ReadLinesMetData,KIND(1d0))))
      WRITE(*,*) 'Processing current year in ',ReadBlocksMetData,'blocks.'
 
      ! ---- Allocate arrays--------------------------------------------------
-     IF(Diagnose==1) write(*,*) 'Allocating arrays in SUEWS_Program.f95...' 
+     IF(Diagnose==1) write(*,*) 'Allocating arrays in SUEWS_Program.f95...'
      ALLOCATE(SurfaceChar(NumberOfGrids,MaxNCols_c))                                   !Surface characteristics
      ALLOCATE(MetForcingData(ReadlinesMetdata,ncolumnsMetForcingData,NumberOfGrids))   !Met forcing data
      ALLOCATE(ModelOutputData(0:ReadlinesMetdata,MaxNCols_cMOD,NumberOfGrids))         !Data at model timestep
@@ -209,8 +209,8 @@ PROGRAM SUEWS_Program
      qn1_store(:,:) = NAN ! Initialise to -999
      qn1_av_store(:,:) = NAN ! Initialise to -999
      ! Initialise other arrays here???
-     
-     
+
+
      ! Check number of lines in ESTM forcing file (nlinesESTMdata)
      IF(StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
         IF(MultipleESTMFiles  == 1) THEN  !if separate ESTM files for each grid
@@ -304,12 +304,12 @@ PROGRAM SUEWS_Program
                  MetForcingData(1:ReadlinesMetdata,1:24,GridCounter) = MetForcingData(1:ReadlinesMetdata,1:24,1)
               ENDIF
            ENDIF
-           
+
            ! Only for the first block of met data, read initial conditions (moved from above, HCW 12 Jan 2017)
            IF(iv == 1) THEN
               !write(*,*) ' Now calling InitialState'
               CALL InitialState(FileCodeX,year_int,GridCounter,NumberOfGrids)
-           ENDIF 
+           ENDIF
 
            ! Initialise ESTM if required, TS 05 Jun 2016; moved inside grid loop HCW 27 Jun 2016
            IF(StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
@@ -368,7 +368,7 @@ PROGRAM SUEWS_Program
               IF(PrintPlace) WRITE(*,*) 'Row (ir):', ir,'/',irMax,'of block (iv):', iv,'/',ReadBlocksMetData,&
                    'Grid:',GridIDmatrix(igrid)
               IF(Diagnose==1) WRITE(*,*) 'Row (ir):', ir,'/',irMax,'of block (iv):', iv,'/',ReadBlocksMetData,&
-                   'Grid:',GridIDmatrix(igrid)     
+                   'Grid:',GridIDmatrix(igrid)
 
               !  ! Translate daily state back so as to keep water balance at beginning of a day
               !  IF ( StorageHeatMethod==3 .AND. ir==1) THEN
@@ -385,7 +385,7 @@ PROGRAM SUEWS_Program
               IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_Calculations...'
               CALL SUEWS_Calculations(GridCounter,ir,iv,irMax)
               IF(Diagnose==1) WRITE(*,*) 'SUEWS_Calculations finished...'
-              
+
               ! Record iy and id for current time step to handle last row in yearly files (YYYY 1 0 0)
               !  IF(GridCounter == NumberOfGrids) THEN   !Adjust only when the final grid has been run for this time step
               IF(igrid == NumberOfGrids) THEN   !Adjust only when the final grid has been run for this time step
@@ -497,7 +497,7 @@ PROGRAM SUEWS_Program
   WRITE(500,*) '--------------'
   write(500,*) 'Run completed.'
   write(500,*) '0'  ! Write out error code 0 if run completed
-  
+
   ! Also print to screen
   WRITE(*,*) "----- SUEWS run completed -----"
 

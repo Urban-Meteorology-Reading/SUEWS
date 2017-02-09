@@ -337,8 +337,6 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
 
   ALLOCATE(AggregUseX(SIZE(UseColumnsDataOut)))
   CALL parse(AggregUse,';',AggregUseX,SIZE(UseColumnsDataOut))
-  PRINT*, 'good 1'
-  PRINT*, AggregUseX
 
   !========== Open output file (and first time print header) ==========
 
@@ -457,23 +455,14 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
   ELSE ! if output frequency different from input, TS 09 Feb 2017
      ! write out every nlinesOut, 60.*60/ResolutionFilesOut = output frequency per hour
      nlinesOut=INT(nsh/(60.*60/ResolutionFilesOut))
-     !  PRINT*, iv,nlinesOut,irMax
 
      DO i=nlinesOut,irMax,nlinesOut
         ALLOCATE(dataOutProc0(nlinesOut,SIZE(UseColumnsDataOut)))
         ALLOCATE(dataOutProc(SIZE(UseColumnsDataOut)))
 
         dataOutProc0=dataOut(i-nlinesOut+1:i,1:SIZE(UseColumnsDataOut),Gridiv)
-        ! IF ( Gridiv ==1 .AND. i==100) THEN
-        !    PRINT*, 'line:',i
-        !    PRINT*, SHAPE(dataOut(i-nlinesOut+1:i,1:SIZE(UseColumnsDataOut),Gridiv))
-        !    !  PRINT*, dataOut(i,1:4,Gridiv)
-        !    PRINT*, dataOutProc0(i,:)
-        !    PRINT*, ''
-        ! END IF
 
         DO j = 1, SIZE(AggregUseX), 1
-           ! print*, i,j
            ! aggregating different variables
            SELECT CASE (AggregUseX(j))
            CASE ('0') !time columns, aT
@@ -485,22 +474,14 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
            CASE ('3') !last value,aL
               dataOutProc(j)=dataOutProc0(nlinesOut,j)
            END SELECT
-           !  IF ( Gridiv ==1 .AND. i==100 ) THEN
-           !     !  PRINT*, INT(dataOutProc(1:4)),dataOutProc(5:)
-           !     PRINT*, j, AggregUseX(j)
-           !     PRINT*, dataOutProc(j),dataOutProc0(:,j)
-           !  END IF
+           IF ( Diagnose==1 .AND. Gridiv ==1 .AND. i==irMax ) THEN
+              PRINT*, 'raw data of ',j,':'
+              PRINT*, dataOutProc0(:,j)
+              PRINT*, 'aggregated with method: ',AggregUseX(j)
+              PRINT*, dataOutProc(j)
+              PRINT*, ''
+           END IF
         END DO
-
-        ! IF ( Gridiv ==1 ) THEN
-        !   ! print*,i, AggregAll
-        !   ! print*,i, AggregOut
-        !   print*, i, AggregUse
-        !   !  PRINT*, INT(dataOutProc(1:4)),dataOutProc(5:)
-        !   !  print*, j, AggregAll(j)
-        !   !  print*, dataOutProc(j),dataOutProc0(:,j)
-        ! END IF
-
 
         WRITE(lfnoutC,FormatUseNoSep) INT(dataOutProc(1:4)),dataOutProc(5:)
         !WRITE(lfnoutC,301) (INT(dataOut(i,is,Gridiv)),is=1,4),&

@@ -191,6 +191,12 @@ SUBROUTINE SiteSelect_txt2nc
      CALL check(NF90_SYNC(ncID))
   END DO
   IF (ALLOCATED(varOut)) DEALLOCATE(varOut)
+  IF (ALLOCATED(varSeq0)) DEALLOCATE(varSeq0)
+  IF (ALLOCATED(varSeq)) DEALLOCATE(varSeq)
+  IF (ALLOCATED(xLon)) DEALLOCATE(xLon)
+  IF (ALLOCATED(xLat)) DEALLOCATE(xLat)
+  IF (ALLOCATED(varY)) DEALLOCATE(varY)
+  IF (ALLOCATED(varX)) DEALLOCATE(varX)
 
   ! Close the file. This frees up any internal netCDF resources
   ! associated with the file, and flushes any buffers.
@@ -403,13 +409,26 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
 
   ! Select variables to be written out
   IF(WriteOutOption == 0) THEN   !all (not snow-related)
+     IF ( .NOT. ALLOCATED(UseColumnsDataOut) ) THEN
+        ALLOCATE(UseColumnsDataOut(69-iVarStart+1))
+     END IF
      UsecolumnsDataOut = (/ (i, i=iVarStart,69, 1) /)
   ELSEIF(WriteOutOption == 1) THEN   !all plus snow-related
+     IF ( .NOT. ALLOCATED(UseColumnsDataOut) ) THEN
+        ALLOCATE(UseColumnsDataOut(nColumnsDataOut-iVarStart+1))
+     END IF
+
      UsecolumnsDataOut = (/ (i, i=iVarStart,nColumnsDataOut, 1) /)
   ELSEIF(WriteOutOption == 2) THEN   !minimal output
+     IF ( .NOT. ALLOCATED(UseColumnsDataOut) ) THEN
+        ALLOCATE(UseColumnsDataOut(33-iVarStart+1))
+     END IF
      UsecolumnsDataOut = (/ (i, i=iVarStart,15, 1),(i, i=19,28, 1), 53,54,55,56, 57, 60,61, 64 /)
   ELSE
      WRITE(*,*) 'RunControl: WriteOutOption code not recognised, so writing out all variables.'
+     IF ( .NOT. ALLOCATED(UseColumnsDataOut) ) THEN
+        ALLOCATE(UseColumnsDataOut(69-iVarStart+1))
+     END IF
      UsecolumnsDataOut = (/ (i, i=iVarStart,69, 1) /)
   ENDIF
 
@@ -464,7 +483,7 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
   ALLOCATE(varX(nX,nY))
 
   ! latitude:
-  varSeq0=SiteSelect(:,5)
+  varSeq0=SiteSelect(1:nX*nY,5)
   CALL sortSeqReal(varSeq0,varSeq,nY,nX)
   xLat = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
   ! PRINT*, 'before flipping:',xLat(1:5,1)
@@ -472,7 +491,7 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
   ! PRINT*, 'after flipping:',xLat(1:5,1)
 
   ! longitude:
-  varSeq0=SiteSelect(:,6)
+  varSeq0=SiteSelect(1:nX*nY,6)
   CALL sortSeqReal(varSeq0,varSeq,nY,nX)
   xLon = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
 
@@ -567,7 +586,17 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
      CALL check( nf90_put_var(ncID, varID, varOut) )
      CALL check(NF90_SYNC(ncID))
   END DO
+
   IF (ALLOCATED(varOut)) DEALLOCATE(varOut)
+  IF (ALLOCATED(varSeq0)) DEALLOCATE(varSeq0)
+  IF (ALLOCATED(varSeq)) DEALLOCATE(varSeq)
+  IF (ALLOCATED(xLon)) DEALLOCATE(xLon)
+  IF (ALLOCATED(xLat)) DEALLOCATE(xLat)
+  IF (ALLOCATED(varY)) DEALLOCATE(varY)
+  IF (ALLOCATED(varX)) DEALLOCATE(varX)
+
+  ! IF (ALLOCATED(UseColumnsDataOut)) DEALLOCATE(UseColumnsDataOut)
+
 
   ! Close the file. This frees up any internal netCDF resources
   ! associated with the file, and flushes any buffers.
@@ -575,6 +604,7 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
 
   ! PRINT*, "*** SUCCESS writing netCDF file:"
   ! PRINT*, FileOut
+
 
 END SUBROUTINE SUEWS_Output_nc
 

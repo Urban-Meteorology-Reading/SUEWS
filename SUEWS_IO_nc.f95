@@ -115,7 +115,7 @@ SUBROUTINE SiteSelect_txt2nc
   ALLOCATE(varX(nX,nY))
 
   ! latitude:
-  varSeq0=SiteSelect(:,5)
+  varSeq0=SiteSelect(1:nX*nY,5)
   CALL sortSeqReal(varSeq0,varSeq,nY,nX)
   xLat = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
   ! PRINT*, 'before flipping:',xLat(1:5,1)
@@ -123,7 +123,7 @@ SUBROUTINE SiteSelect_txt2nc
   ! PRINT*, 'after flipping:',xLat(1:5,1)
 
   ! longitude:
-  varSeq0=SiteSelect(:,6)
+  varSeq0=SiteSelect(1:nX*nY,6)
   CALL sortSeqReal(varSeq0,varSeq,nY,nX)
   xLon = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
 
@@ -179,7 +179,7 @@ SUBROUTINE SiteSelect_txt2nc
      !  PRINT*, 'dim1:', SIZE(dataOut(1:irMax,iVar,:), dim=1)
      !  PRINT*, 'dim2:',SIZE(dataOut(1:irMax,iVar,:), dim=2)
      ! reshape dataOut to be aligned in checker board form
-     varSeq0=SiteSelect(:,iVar)
+     varSeq0=SiteSelect(1:nX*nY,iVar)
      CALL sortSeqReal(varSeq0,varSeq,nY,nX)
      varOut = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
      varOut = varOut(:,nY:1:-1)
@@ -292,7 +292,7 @@ END SUBROUTINE SiteSelect_txt2nc
 !      !  PRINT*, 'dim1:', SIZE(dataOut(1:irMax,iVar,:), dim=1)
 !      !  PRINT*, 'dim2:',SIZE(dataOut(1:irMax,iVar,:), dim=2)
 !      ! reshape dataOut to be aligned in checker board form
-!      varSeq0=SiteSelect(:,iVar)
+!      varSeq0=SiteSelect(1:nX*nY,iVar)
 !      CALL sortSeqReal(varSeq0,varSeq,nY,nX)
 !      varOut = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
 !      varOut = varOut(:,nY:1:-1)

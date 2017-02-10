@@ -1,6 +1,7 @@
 !In this subroutine the output files will be opened and the output matrices will be printed out.
 !
 !Last change:
+! TS  10 Feb 2017 - Aggreation added: 1) normal SUEWS output according to the format output; 2) ESTM: average.
 ! HCW 12 Dec 2016 - Restructured writing of output files and introduced families of output variables
 ! HCW 04 Jul 2016 - GridID can now be up to 10 digits long. If file not found or not read correctly, program stops
 ! HCW 29 Jun 2016 - Fixed bug in output file (4 columns were repeated twice)
@@ -79,10 +80,10 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
   WRITE(grstr2,'(i10)') CurrentGrid
   WRITE(yrstr2,'(i4)') year_int
 
-  rawpath=TRIM(FileOutputPath)//TRIM(FileCode)//TRIM(ADJUSTL(grstr2))//'_'//TRIM(ADJUSTL(yrstr2))
+  rawpath=TRIM(FileOutputPath)//TRIM(FileCode)//TRIM(ADJUSTL(grstr2))//'_'//TRIM(ADJUSTL(yrstr2)) ! output resolution added, TS 9 Feb 2017
   FileOut=TRIM(rawpath)//'_'//TRIM(ADJUSTL(str2))//'.txt'
   SOLWEIGpoiOut=TRIM(rawpath)//'_SOLWEIGpoiOut.txt'
-  ESTMOut=TRIM(rawpath)//'_ESTM_5.txt'
+  ESTMOut=TRIM(rawpath)//'_ESTM_'//TRIM(ADJUSTL(str2))//'.txt' ! output resolution added, TS 10 Feb 2017
   BLOut=TRIM(rawpath)//'_BL.txt'
   SnowOut=TRIM(rawpath)//'_snow_5.txt'
   FileOutFormat=TRIM(FileOutputPath)//TRIM(FileCode)//'_YYYY_'//TRIM(ADJUSTL(str2))//'_OutputFormat.txt'
@@ -491,6 +492,48 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
 
      ENDDO
 
+     !  aggregate all ESTM outputs in the way of average, TS 10 Feb 2017
+     IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14)THEN
+        DO i=nlinesOut,irMax,nlinesOut
+           ALLOCATE(dataOutProc0(nlinesOut,32))
+           ALLOCATE(dataOutProc(32))
+
+           dataOutProc0=dataOut(i-nlinesOut+1:i,1:32,Gridiv)
+
+           DO j = 1, 32, 1
+              SELECT CASE (j)
+              CASE (1:4) !time columns, aT
+                 dataOutProc(j)=dataOutProc0(nlinesOut,j)
+              CASE (5:32) !average, aA
+                 dataOutProc(j)=SUM(dataOutProc0(:,j))/nlinesOut
+                 ! CASE ('2') !sum, aS
+                 !    dataOutProc(j)=SUM(dataOutProc0(:,j))
+                 ! CASE ('3') !last value,aL
+                 !    dataOutProc(j)=dataOutProc0(nlinesOut,j)
+              END SELECT
+
+              IF ( Diagnose==1 .AND. Gridiv ==1 .AND. i==irMax ) THEN
+                 PRINT*, 'raw data of ',j,':'
+                 PRINT*, dataOutProc0(:,j)
+                 PRINT*, 'aggregated with method: ','average'
+                 PRINT*, dataOutProc(j)
+                 PRINT*, ''
+              END IF
+
+           END DO
+
+           WRITE(58,307) INT(dataOutProc(1:4)),dataOutProc(5:32)
+           !WRITE(lfnoutC,301) (INT(dataOut(i,is,Gridiv)),is=1,4),&
+           !      dataOut(i,5:ncolumnsDataOut,Gridiv)
+           IF (ALLOCATED(dataOutProc0)) DEALLOCATE(dataOutProc0)
+           IF (ALLOCATED(dataOutProc)) DEALLOCATE(dataOutProc)
+
+        ENDDO
+        ! DO i=1,irMax
+        !    WRITE(58, 307)(INT(dataOutESTM(i,is,Gridiv)),is=1,4),(dataOutESTM(i,is,Gridiv),is=5,32)
+        ! ENDDO
+     ENDIF
+
 
      !  other outputs not touched at the moment, as of 09 Feb 2017, TS
      IF (SOLWEIGpoi_out==1) THEN
@@ -510,14 +553,6 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
            WRITE(54,306)(INT(dataOutSnow(i,is,Gridiv)),is=1,4),(dataOutSnow(i,is,Gridiv),is=5,ncolumnsDataOutSnow)
         ENDDO
      ENDIF
-
-     IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14)THEN
-        DO i=1,irMax
-           WRITE(58, 307)(INT(dataOutESTM(i,is,Gridiv)),is=1,4),(dataOutESTM(i,is,Gridiv),is=5,32)
-        ENDDO
-     ENDIF
-
-
 
   END IF
 

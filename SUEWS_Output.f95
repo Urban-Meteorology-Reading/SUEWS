@@ -1,7 +1,7 @@
 !In this subroutine the output files will be opened and the output matrices will be printed out.
 !
 !Last change:
-! TS  10 Feb 2017 - Aggreation added: 1) normal SUEWS output according to the format output; 2) ESTM: average.
+! TS  10 Feb 2017 - Aggregation added: 1) normal SUEWS output according to the format output; 2) ESTM: average.
 ! HCW 12 Dec 2016 - Restructured writing of output files and introduced families of output variables
 ! HCW 04 Jul 2016 - GridID can now be up to 10 digits long. If file not found or not read correctly, program stops
 ! HCW 29 Jun 2016 - Fixed bug in output file (4 columns were repeated twice)
@@ -145,9 +145,9 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
      UnitsAll (24:28) = 'mm'
      FormatAll(24:28) = (/ f106,f104,f106,f106,f94 /)
      AggregAll(24:28) = (/aS,aL,aL,aS,aL/)
-     LongNmAll(24:28) = (/'                   Surface moisture change','                       SurfaceWetnessState', &
+     LongNmAll(24:28) = (/'                   Surface moisture change','                     Surface wetness state', &
           'Surface wetness state (non-water surfaces)','                                  Drainage', &
-          '                       SoilMoistureDeficit'/)
+          '                     Soil moisture deficit'/)
 
 
      HeaderAll(29:30) = (/'  FlowCh','AddWater'/)                                          !water balance components cont.

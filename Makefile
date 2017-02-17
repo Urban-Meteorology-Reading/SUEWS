@@ -7,10 +7,11 @@ CFLAGS = -g -Wall -Wtabs -fbounds-check
 # needs to be compiled first)
 MODULES = LUMPS_Module_constants.o  \
           LUMPS_metRead.o  \
+		  SUEWS_MetDisagg.o \
           SOLWEIG_modules.o  \
           SUEWS_Files_run_Control.o \
-					precmod.o \
-					stringmod.o
+		  precmod.o \
+		  stringmod.o
 # Rest of the files including modules and functions which are independent
 OTHERS =  BLUEWS_CBL.o   \
           LUMPS_NARP_v3.o \
@@ -61,10 +62,10 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_ESTM_functions.o \
           SUEWS_ESTM_initials.o \
           SUEWS_ESTM_v2016.o \
-	  			SUEWS_CO2.o
+	  	  SUEWS_CO2.o
 
 TEST =		SUEWS_Initial.o \
-					SUEWS_Output.o
+			SUEWS_Output.o
 
 # Build main program - main uses MODULES and OTHERS
 main: SUEWS_Program.f95 $(MODULES) $(OTHERS) $(TEST)

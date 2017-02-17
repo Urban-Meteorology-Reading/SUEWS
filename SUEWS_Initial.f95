@@ -44,6 +44,7 @@ SUBROUTINE OverallRunControl
        KeepTstepFilesIn,&
        KeepTstepFilesOut,&
        WriteOutOption,&
+       ResolutionFilesIn,&
        ResolutionFilesOut,&
        CBLuse,&
        SNOWuse,&
@@ -58,14 +59,38 @@ SUBROUTINE OverallRunControl
        StorageHeatMethod,&
        OHMIncQF,&
        WaterUseMethod,&
+       DisaggMethod,&
+       RainDisaggMethod,&
+       RainAmongN,&
+       KdownZen,&
+       SuppressWarnings,&
        Diagnose,&
+       DiagnoseDisagg,&
+       DiagQN,&
        DiagQS
+       
        
   ! -------------------------------------
 
+  !Initialise namelist with default values
+  KeepTstepFilesIn = 0     
+  KeepTstepFilesIn = 1     
+  DisaggMethod = 1          ! linear disaggregation of averages
+  RainDisaggMethod = 100    ! even distribution among all subintervals
+  RainAmongN = -999         ! no default setting for number of rainy subintervals
+  KdownZen = 1              ! use zenith angle by default 
+  
+  SuppressWarnings=0        ! write warnings file
+  
+  ! Set Diagnose switch to off (0). If Diagnose = 1 is set in RunControl, model progress will be printed
+  Diagnose = 0
+  DiagnoseDisagg = 0 
+  DiagQN = 0  
+  DiagQS = 0
+  
   FileCode='none'
   !smithFile='Smith1966.grd'
-
+  
   !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   !Read in the RunControl.nml file
   OPEN(55,File='RunControl.nml',err=200,status='old') !Change with needs
@@ -2307,8 +2332,9 @@ SUBROUTINE SUEWS_InitializeMetData(lunit)
 
   ! Read in next chunk of met data and fill MetForcingData array with data for every timestep
   !NSHcounter = 1
+  write(*,*) 'ReadlinesMetdata:',ReadlinesMetdata
   DO i=1,ReadlinesMetdata
-     CALL MetRead(MetArray,InputmetFormat,ldown_option,NetRadiationMethod,&
+     CALL MetRead(lunit,MetArray,InputmetFormat,ldown_option,NetRadiationMethod,&
           snowUse,SMDMethod,SoilDepthMeas,SoilRocks,SoilDensity,SmCap)
      !DO iv=1,NSH
      !    MetForcingData(NSHcounter,1:24,GridCounter) = MetArray

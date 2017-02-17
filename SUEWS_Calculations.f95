@@ -586,11 +586,26 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !   !st_per_interval=0
   !endif
 
-  ! Set limit on ResistSurf
-  IF(ResistSurf>9999) ResistSurf=9999
+  !Set limits on output data to avoid formatting issues ---------------------------------
+  ! Set limits as +/-9999, depending on sign of value
+  ! errorHints -> warnings commented out as writing these slow down the code considerably when there are many instances
+  IF(ResistSurf > 9999) THEN
+     !CALL errorHint(6,'rs set to 9999 s m-1 in output; calculated value > 9999 s m-1',ResistSurf,notUsed,notUsedI)
+     ResistSurf=9999
+  ENDIF
 
-  ! Set NA values   !!Why only these variables??  !!ErrorHints here too??
+  IF(l_mod > 9999) THEN
+     !CALL errorHint(6,'Lob set to 9999 m in output; calculated value > 9999 m',L_mod,notUsed,notUsedI)
+     l_mod=9999
+  ELSEIF(l_mod < -9999) THEN
+     !CALL errorHint(6,'Lob set to -9999 m in output; calculated value < -9999 m',L_mod,notUsed,notUsedI)
+     l_mod=-9999
+  ENDIF
+  
+  
+  ! Set NA values   !!Why only these variables??  !!ErrorHints here too - error hints can be very slow here
   IF(ABS(qh)>pNAN) qh=NAN
+  IF(ABS(qh_r)>pNAN) qh_r=NAN
   IF(ABS(qeOut)>pNAN) qeOut=NAN
   IF(ABS(qs)>pNAN) qs=NAN
   IF(ABS(ch_per_interval)>pNAN) ch_per_interval=NAN

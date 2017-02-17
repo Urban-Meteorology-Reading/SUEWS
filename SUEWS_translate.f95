@@ -40,7 +40,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   USE ColNamesModelDailyState
   USE data_in        !defines: lat, lng, PopDaytime, PopNighttime, DayLightSavingDay, QF variables
   USE defaultnotUsed
-  USE gis_data       !defines: areaZh, VegFraction, veg_fr, veg_type, BldgH, TreeH, FAIBldg, FAITree, Alt
+  USE gis_data       !defines: areaZh, VegFraction, veg_fr, veg_type, BldgH, TreeH, FAIBldg, FAITree
   USE initial
   USE mod_z          !defines: z0m, zdm
   USE resist         !defines: G1-G6, TH, TL, S1, S2, Kmax
@@ -67,7 +67,10 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   CHARACTER(len=20):: grid_txt
   CHARACTER(len=4):: year_txt
   CHARACTER(len=12)::SsG_YYYY !Site, grid, year string
-
+  
+  CHARACTER(len=4):: iy_text
+  CHARACTER(len=3):: id_text
+  CHARACTER(len=2):: it_text, imin_text
 
   !write(*,*) '---- SUEWS_Translate ----'
   !write(*,*) 'Year:', SurfaceChar(Gridiv,c_Year)
@@ -1016,7 +1019,14 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
 
      ! Calculate dectime
      dectime = REAL(id,KIND(1d0))+REAL(it,KIND(1d0))/24+REAL(imin,KIND(1d0))/(60*24)
-
+     ! Create datetime stamp for error/warnings file
+     WRITE(iy_text,'(i4)') iy
+     WRITE(id_text,'(i3)') id
+     WRITE(it_text,'(i2)') it
+     WRITE(imin_text,'(i2)') imin
+     datetime = TRIM(ADJUSTL(iy_text))//' '//TRIM(ADJUSTL(id_text))//' '//TRIM(ADJUSTL(it_text))//' '//TRIM(ADJUSTL(imin_text))
+     WRITE(GridID_text,'(i10)') GridID
+     
      ! =============================================================================
      ! === Translate values from ModelDailyState to variable names used in model ===
      ! =============================================================================

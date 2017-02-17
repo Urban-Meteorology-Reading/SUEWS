@@ -5,10 +5,11 @@
 !                 function in MetArray.
 !  Jan 2015, HCW: Precip_hr, wuh and lai_hr changed for generic timesteps
 !  Jan 2016, LJ:  Removal of tabs  
+!  Feb 2017, HCW: Added file unit as argument so MetRead can be used for original met forcing file too
 ! To Do: 
 !       - Check observed SM calculation
 !---------------------------------------------------------------------------------------------------
-  subroutine MetRead(MetArray,InputmetFormat,ldown_option,NetRadiationMethod,&
+  subroutine MetRead(lfn,MetArray,InputmetFormat,ldown_option,NetRadiationMethod,&
                snowUse,SMDMethod,SoilDepthMeas,SoilRocks,SoilDensity,SmCap)
 
   use defaultNotUsed
@@ -60,7 +61,7 @@
                     wu_m3,&     !Water use provided in met forcing file [m3]
                     xsmd        !Measured soil moisture deficit
 
-  integer::iostat_var,lfn=1
+  integer::iostat_var,lfn
  
   !-----------------------------------------------------------------------------------
   !-----------------------------------------------------------------------------------
@@ -109,11 +110,11 @@
   !===============Meteorological variables reading done==========================
   Pres_hPa=Pres_kPa*10. ! convert to hPa
 
-  !If hour is 23, change this to following day
-  if(it==24) then
-     id=id+1
-     it=it+1
-  endif
+  !!If hour is 23, change this to following day
+  !if(it==24) then
+  !   id=id+1
+  !   it=it+1   !HCW commented out 16 Feb 2017. Surely this should be it = 0? Loop should never be used
+  !endif
 
   if(iostat_var<0)THEN
      iostat_var=0

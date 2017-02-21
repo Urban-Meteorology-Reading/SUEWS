@@ -46,6 +46,7 @@ SUBROUTINE OverallRunControl
        WriteOutOption,&
        ResolutionFilesIn,&
        ResolutionFilesOut,&
+       ResolutionFilesInESTM,&
        CBLuse,&
        SNOWuse,&
        SOLWEIGuse,&
@@ -60,12 +61,14 @@ SUBROUTINE OverallRunControl
        OHMIncQF,&
        WaterUseMethod,&
        DisaggMethod,&
+       DisaggMethodESTM,&
        RainDisaggMethod,&
        RainAmongN,&
        KdownZen,&
        SuppressWarnings,&
        Diagnose,&
        DiagnoseDisagg,&
+       DiagnoseDisaggESTM,&
        DiagQN,&
        DiagQS
        
@@ -74,8 +77,9 @@ SUBROUTINE OverallRunControl
 
   !Initialise namelist with default values
   KeepTstepFilesIn = 0     
-  KeepTstepFilesIn = 1     
+  KeepTstepFilesOut = 1     
   DisaggMethod = 1          ! linear disaggregation of averages
+  DisaggMethodESTM = 1      ! linear disaggregation of averages
   RainDisaggMethod = 100    ! even distribution among all subintervals
   RainAmongN = -999         ! no default setting for number of rainy subintervals
   KdownZen = 1              ! use zenith angle by default 
@@ -85,6 +89,7 @@ SUBROUTINE OverallRunControl
   ! Set Diagnose switch to off (0). If Diagnose = 1 is set in RunControl, model progress will be printed
   Diagnose = 0
   DiagnoseDisagg = 0 
+  DiagnoseDisaggESTM = 0 
   DiagQN = 0  
   DiagQS = 0
   
@@ -1730,7 +1735,7 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
   OPEN(56,File=TRIM(FileInit),err=600,status='old')
   READ(56,iostat=ios_out,nml=InitialConditions,err=601)
   CLOSE(56)
-
+    
   ! Write InitialConditions to FileChoices ----------------------------------
   FileChoices=TRIM(FileOutputPath)//TRIM(FileCode)//'_FileChoices.txt'
   OPEN(12,file=FileChoices,position='append')

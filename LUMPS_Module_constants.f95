@@ -113,6 +113,9 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE:: MetForDisagg           !Array for original met forcing data (for disaggregation)
   REAL(KIND(1d0)),DIMENSION(:),  ALLOCATABLE:: MetForDisaggPrev,MetForDisaggNext !Stores last and next row of met data
   
+  REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE:: ESTMForDisagg           !Array for original ESTM forcing data (for disaggregation)
+  REAL(KIND(1d0)),DIMENSION(:),  ALLOCATABLE:: ESTMForDisaggPrev,ESTMForDisaggNext !Stores last and next row of ESTM data
+  
   ! ---- Define array for hourly profiles interpolated to tstep ----------------------------------
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: TstepProfiles
   REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: AHProf_tstep
@@ -776,9 +779,11 @@ MODULE Initial
        ReadBlocksOrigMetData,&  !Number of blocks of original met data to read (for each grid, for each year)
        ReadLinesMetData,&   !Number of lines of met data in each block (for each grid)
        ReadLinesOrigMetData,&   !Number of lines of original met data in each block (before downscaling)
+       ReadLinesOrigESTMData,&   !Number of lines of original ESTM data in each block (before downscaling)
        ReadLinesOrigMetDataMax,&   !No. lines of original met data in each block (adjusts for last block (equivalent of irMax))
-       
+       ReadLinesOrigESTMDataMax,&   !No. lines of original ESTM data in each block
        nlinesOrigMetData,&        !Number of lines in original met data file
+       nlinesOrigESTMData,&        !Number of lines in original ESTM data file
        nlinesMetData,&            !Number of lines in Met Forcing file
        nlinesESTMdata,&           !Number of lines in ESTM Forcing file
        nlinesSiteSelect,&         !Number of lines in SUEWS_SiteSelect.txt
@@ -796,7 +801,8 @@ MODULE Initial
        nlinesWGWaterDist,&        !Number of lines in SUEWS_WGWaterDist.txt
        nlines,&                   !Number of lines in different files
        SkippedLines,&             !Number of lines to skip over before reading each block of met data
-       SkippedLinesOrig,&         !Number of lines to skip over before reading each block of met data from original file
+       SkippedLinesOrig,&         !Number of lines to skip over before reading each block of data from original met file
+       SkippedLinesOrigESTM,&         !Number of lines to skip over before reading each block of data from original ESTM file
        iv5            !Counter for code matching.
 
 END MODULE Initial
@@ -814,15 +820,18 @@ MODULE data_in
   CHARACTER (len=150):: FileInputPath,&   !Filepath for input files (set in RunControl)
        FileOutputPath    !Filepath for output files (set in RunControl)
   ! ---- File names -----------------------------------------------------------------------------
-  CHARACTER (len=150):: FileOut,&         !Output file name
+  CHARACTER (len=150):: FileOut,&         !Output file name 
        FileChoices,&     !Run characteristics file name
        FileMet,&         !Meteorological forcing file name
        FileOrigMet,&     !Original meteorological forcing file name (i.e. before downscaling)
-       FileDscdMet,&     !Downscaled meteorological forcing file
+       FileOrigESTM,&    !Original ESTM forcing file name (i.e. before downscaling)
+       FileDscdMet,&     !Downscaled meteorological forcing file name
+       FileDscdESTM,&    !Downscaled ESTM forcing file name
        FileDaily,&       !Daily State output file name
        FileESTMTs,&      !ESTM input file name
        SOLWEIGpoiOut,&   !SOLWEIG poi file name
-       BLout             !CLB output file name
+       BLout,&             !CLB output file name
+       FileOut_tt        !Output file name (for resolution at model time-step)
 
   INTEGER:: SkipHeaderSiteInfo = 2   !Number of header lines to skip in SiteInfo files
   INTEGER:: SkipHeaderMet = 1        !Number of header lines to skip in met forcing file
@@ -838,6 +847,7 @@ MODULE data_in
        KeepTstepFilesOut,&    !Delete (0) or keep (1) output files at resolution of tstep (used by python, not fortran)
        ResolutionFilesIn,&    !Specify resolution of input file  [s]
        ResolutionFilesOut,&   !Specify resolution of output file [s]
+       ResolutionFilesInESTM,&!Specify resolution of ESTM input file  [s]
        WriteOutOption,&         !Choose variables to include in main output file
        NetRadiationMethod,&   !Options for net all-wave radiation calculation
        OHMIncQF,&             !OHM calculation uses Q* only (0) or Q*+QF (1)
@@ -848,12 +858,14 @@ MODULE data_in
        WaterUseMethod,&            !Use modelled (0) or observed (1) water use
        RoughLenMomMethod,&              !Defines method for calculating z0 & zd
        DisaggMethod,&         ! Sets disaggregation method for original met forcing data 
+       DisaggMethodESTM,&         ! Sets disaggregation method for original met forcing data 
        RainDisaggMethod,&     ! Sets disaggregation method for original met forcing data for rainfall
        RainAmongN,&           ! Number of subintervals over which to disaggregate rainfall
        KdownZen,&             ! Controls whether Kdown disaggregation uses zenith angle (1) or not (0)
        SuppressWarnings,&     ! Set to 1 to prevent warnings.txt file from being written
        Diagnose,&             !Set to 1 to get print-out of model progress
        DiagnoseDisagg,&       !Set to 1 to get print-out of met forcing disaggregation progress
+       DiagnoseDisaggESTM,&   !Set to 1 to get print-out of ESTM forcing disaggregation progress
        DiagQN, DiagQS         !Set to 1 to print values/components  
 
   ! ---- Model options currently set in model, but may be moved to RunControl at a later date
@@ -1253,11 +1265,11 @@ MODULE sues_data
        nsd,&      !Number of timesteps per day
        nsdorig,&  !Number of timesteps per day for original met forcing file
        t_interval,&   !Number of seconds in an hour [s] (now set in OverallRunControl)
-       Nper   ! Number of model time-steps per input resolution (ResolutionFilesIn/Tstep)
+       Nper, NperESTM   ! Number of model time-steps per input resolution (ResolutionFilesIn/Tstep)
 
   REAL(KIND(1d0)):: nsh_real,&   !nsh cast as a real for use in calculations
        tstep_real,&   !tstep cast as a real for use in calculations
-       Nper_real   !Nper as real
+       Nper_real, NperESTM_real   !Nper as real
        
   REAL(KIND(1d0)):: halftimestep   !In decimal time based on interval
 

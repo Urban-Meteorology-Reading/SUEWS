@@ -2,7 +2,7 @@
 ! Subroutine to read in ESTM data in the same way as met data (SUEWS_InitializeMetData)
 ! HCW 30 Jun 2016
 SUBROUTINE SUEWS_GetESTMData(lunit)
-    
+
   USE allocateArray
   USE data_in
   USE sues_data
@@ -13,12 +13,12 @@ SUBROUTINE SUEWS_GetESTMData(lunit)
   IMPLICIT NONE
 
   INTEGER::lunit,i,iyy !,RunNumber,NSHcounter
-  integer::iostat_var
-  REAL (KIND(1d0)),DIMENSION(ncolsESTMdata):: ESTMArray
+  INTEGER :: iostat_var
+  REAL(KIND(1d0)),DIMENSION(ncolsESTMdata):: ESTMArray
   REAL(KIND(1d0)):: imin_prev, ih_prev, iday_prev, tstep_estm   !For checks on temporal resolution of estm data
 
   !---------------------------------------------------------------
- 
+
   !Open the file for reading and read the actual data
   !write(*,*) FileESTMTs
   OPEN(lunit,file=TRIM(FileESTMTs),status='old',err=315)
@@ -58,15 +58,14 @@ SUBROUTINE SUEWS_GetESTMData(lunit)
 END SUBROUTINE SUEWS_GetESTMData
 !======================================================================================
 
-
 !======================================================================================
 SUBROUTINE ESTM_initials
-  
+
   ! Last modified HCW 30 Jun 2016 - reading in now done by SUEWS_GetESTMData subroutine.
   !                                 ESTM_initials now only runs once per run at the very start.
-  ! Last modified HCW 15 Jun 2016 - code now reads in 5-min file (interpolation done beforehand, outside of SUEWS itself)    
-    
-  USE defaultNotUsed  
+  ! Last modified HCW 15 Jun 2016 - code now reads in 5-min file (interpolation done beforehand, outside of SUEWS itself)
+
+  USE defaultNotUsed
   USE heatflux
   USE meteo                                                               !!FO!! :METEOMOD.f95
   USE mod_interp                                                          !!FO!! :mod_interp.f95
@@ -82,7 +81,7 @@ SUBROUTINE ESTM_initials
   USE Initial
 
   IMPLICIT NONE
-    
+
   !=====Read ESTMinput.nml================================
   NAMELIST/ESTMinput/TsurfChoice,&
        evolveTibld,              &
@@ -95,32 +94,32 @@ SUBROUTINE ESTM_initials
   OPEN(511,file=TRIM(FileInputPath)//'ESTMinput.nml',status='old')
   READ(511,nml=ESTMinput)
   CLOSE(511)
- 
+
   !Convert specified temperatures to Kelvin
   THEAT_ON=THEAT_ON+C2K
   THEAT_OFF=THEAT_OFF+C2K
   THEAT_fix=THEAT_fix+C2K
-  
+
   ALLOCATE(Tair2_grids(NumberOfGrids))
   ALLOCATE(lup_ground_grids(NumberOfGrids))
   ALLOCATE(lup_wall_grids(NumberOfGrids))
   ALLOCATE(lup_roof_grids(NumberOfGrids))
-  ALLOCATE(Tievolve_grids(NumberOfGrids))  
-  ALLOCATE(T0_ibld_grids(NumberOfGrids))  
-  ALLOCATE(T0_ground_grids(NumberOfGrids))  
-  ALLOCATE(T0_wall_grids(NumberOfGrids))  
-  ALLOCATE(T0_roof_grids(NumberOfGrids))  
-  ALLOCATE(TN_wall_grids(NumberOfGrids))  
-  ALLOCATE(TN_roof_grids(NumberOfGrids))  
-  
- END SUBROUTINE ESTM_initials
-!======================================================================================
-  
+  ALLOCATE(Tievolve_grids(NumberOfGrids))
+  ALLOCATE(T0_ibld_grids(NumberOfGrids))
+  ALLOCATE(T0_ground_grids(NumberOfGrids))
+  ALLOCATE(T0_wall_grids(NumberOfGrids))
+  ALLOCATE(T0_roof_grids(NumberOfGrids))
+  ALLOCATE(TN_wall_grids(NumberOfGrids))
+  ALLOCATE(TN_roof_grids(NumberOfGrids))
 
- SUBROUTINE ESTM_translate(Gridiv)  
-  ! HCW 30 Jun 2016 
-    
-  USE defaultNotUsed  
+END SUBROUTINE ESTM_initials
+!======================================================================================
+
+
+SUBROUTINE ESTM_translate(Gridiv)
+  ! HCW 30 Jun 2016
+
+  USE defaultNotUsed
   USE heatflux
   USE meteo                                                               !!FO!! :METEOMOD.f95
   USE mod_interp                                                          !!FO!! :mod_interp.f95
@@ -138,105 +137,107 @@ SUBROUTINE ESTM_initials
 
   IMPLICIT NONE
   INTEGER :: i
+  INTEGER:: iv
   !REAL(KIND(1d0)) :: CFLval
   !REAL(KIND(1d0)) :: t5min
   REAL(KIND(1d0))::W,WB
-  !CHARACTER (len=20)::FileCodeX
-  !CHARACTER (len=150):: FileFinalTemp
-  !LOGICAL:: inittemps=.FALSE.
+  CHARACTER (len=20)::FileCodeX
+  CHARACTER (len=150):: FileFinalTemp
+  LOGICAL:: inittemps=.FALSE.
   INTEGER:: ESTMStart=0
   INTEGER:: Gridiv
 
   !Set initial values at the start of each run for each grid
   IF(Gridiv == 1) ESTMStart = ESTMStart+1
-  IF(ESTMStart==1) THEN     
-    
-    !write(*,*) ' ESTMStart: ',ESTMStart, 'initialising ESTM for grid no. ', Gridiv    
-      
-    TFLOOR=20.0 ! This is used only when radforce =T  !HCW should this be put in the namelist instead?
-    TFLOOR=TFLOOR+C2K
-    
-    ! Initial values
-    Tievolve=20.0 + C2K    
-    SHC_air=1230.0
-    minshc_airbld=1300
-     
-    ! ---- Internal view factors ----
-    !constant now but should be calculated in the future
-    IVF_IW =   0.100000
-    IVF_IR =   0.000000
-    IVF_II =   0.900000
-    IVF_IF =   0.000000
-    IVF_WW =   0.050000
-    IVF_WR =   0.000000
-    IVF_WI =   0.950000
-    IVF_WF =   0.000000
-    IVF_RW =   0.050000
-    IVF_RI =   0.950000
-    IVF_RF =   0.000000
-    IVF_FW =   0.050000
-    IVF_FR =   0.000000
-    IVF_FI =   0.950000
-   
-    Tair24HR=C2K
-  
-    !Ts5mindata(1,ncolsESTMdata) = -999
-  ! !Fill Ts5mindata for current grid and met block - this is done in SUEWS_translate
-    Ts5mindata(1,1:ncolsESTMdata) = ESTMForcingData(1,1:ncolsESTMdata,Gridiv) 
- 
-    
-    ! ---- Initialization of variables and parameters for first row of run for each grid ----
-    ! N layers are calculated in SUEWS_translate
-    IF ( .NOT. ALLOCATED(Tibld) ) THEN
-      ! print*, "Nibld",Nibld
-      ! print*, "Nwall",Nwall
-      ! print*, "Nroof",Nroof
-      ! print*, "Nground",Nground  
-       ALLOCATE(Tibld(Nibld),Twall(Nwall),Troof(Nroof),Tground(Nground),Tw_4(Nwall,4))
-       ALLOCATE(Tibld_grids(Nibld,NumberOfGrids), &
-                Twall_grids(Nwall,NumberOfGrids), &
-                Troof_grids(Nroof,NumberOfGrids), &
-                Tground_grids(Nground,NumberOfGrids), &
-                Tw_4_grids(Nwall,4,NumberOfGrids)) 
-    ENDIF
-    
-    ! Transfer variables from Ts5mindata to variable names
-    ! N.B. column numbers here for the following file format - need to change if input columns change!
-    !dectime iy id it imin Tiair Tsurf Troof Troad Twall Twall_n Twall_e Twall_s Twall_w
-    !        1  2  3  4    5     6     7     8     9     10      11      12      13       !new
-     
-    ! Calculate temperature of each layer in Kelvin
-    DO i=1,Nground
-       Tground(i)=(Ts5mindata(1,cTs_Tiair)-Ts5mindata(1,cTs_Troad))*(i-1)/(Nground-1)+Ts5mindata(1,cTs_Troad)+C2K   
-    ENDDO
-    DO i=1,Nwall
-       Twall(i)=(Ts5mindata(1,cTs_Tiair)-Ts5mindata(1,cTs_Twall))*(i-1)/(Nwall-1)+Ts5mindata(1,cTs_Twall)+C2K  
-    ENDDO
-    DO i=1,Nroof
-       Troof(i)=(Ts5mindata(1,cTs_Tiair)-Ts5mindata(1,cTs_Troof))*(i-1)/(Nroof-1)+Ts5mindata(1,cTs_Troof)+C2K
-    ENDDO
-    Tibld(1:Nibld)=Ts5mindata(1,cTs_Tiair)+C2K
-    
+  IF(ESTMStart==1) THEN
+
+     !write(*,*) ' ESTMStart: ',ESTMStart, 'initialising ESTM for grid no. ', Gridiv
+
+     TFLOOR=20.0 ! This is used only when radforce =T  !HCW should this be put in the namelist instead?
+     TFLOOR=TFLOOR+C2K
+
+     ! Initial values
+     Tievolve=20.0 + C2K
+     SHC_air=1230.0
+     minshc_airbld=1300
+
+     ! ---- Internal view factors ----
+     !constant now but should be calculated in the future
+     IVF_IW =   0.100000
+     IVF_IR =   0.000000
+     IVF_II =   0.900000
+     IVF_IF =   0.000000
+     IVF_WW =   0.050000
+     IVF_WR =   0.000000
+     IVF_WI =   0.950000
+     IVF_WF =   0.000000
+     IVF_RW =   0.050000
+     IVF_RI =   0.950000
+     IVF_RF =   0.000000
+     IVF_FW =   0.050000
+     IVF_FR =   0.000000
+     IVF_FI =   0.950000
+
+     Tair24HR=C2K
+
+     !Ts5mindata(1,ncolsESTMdata) = -999
+     ! !Fill Ts5mindata for current grid and met block - this is done in SUEWS_translate
+     Ts5mindata(1,1:ncolsESTMdata) = ESTMForcingData(1,1:ncolsESTMdata,Gridiv)
+
+
+     ! ---- Initialization of variables and parameters for first row of run for each grid ----
+     ! N layers are calculated in SUEWS_translate
+     IF ( .NOT. ALLOCATED(Tibld) ) THEN
+        ! print*, "Nibld",Nibld
+        ! print*, "Nwall",Nwall
+        ! print*, "Nroof",Nroof
+        ! print*, "Nground",Nground
+        ALLOCATE(Tibld(Nibld),Twall(Nwall),Troof(Nroof),Tground(Nground),Tw_4(Nwall,4))
+        ALLOCATE(Tibld_grids(Nibld,NumberOfGrids), &
+             Twall_grids(Nwall,NumberOfGrids), &
+             Troof_grids(Nroof,NumberOfGrids), &
+             Tground_grids(Nground,NumberOfGrids), &
+             Tw_4_grids(Nwall,4,NumberOfGrids))
+     ENDIF
+
+     ! Transfer variables from Ts5mindata to variable names
+     ! N.B. column numbers here for the following file format - need to change if input columns change!
+     ! dectime iy id it imin Tiair Tsurf Troof Troad Twall Twall_n Twall_e Twall_s Twall_w
+     !        1  2  3  4    5     6     7     8     9     10      11      12      13       !new
+     !
+     ! Calculate temperature of each layer in Kelvin
+     DO i=1,Nground
+        ! Tground(i)=(Ts5mindata(1,cTs_Tiair)-Ts5mindata(1,cTs_Troad))*(i-1)/(Nground-1)+Ts5mindata(1,cTs_Troad)+C2K
+        Tground(i)=(LBC_soil-Ts5mindata(1,cTs_Troad))*(i-1)/(Nground-1)+Ts5mindata(1,cTs_Troad)+C2K
+     ENDDO
+     DO i=1,Nwall
+        Twall(i)=(Ts5mindata(1,cTs_Tiair)-Ts5mindata(1,cTs_Twall))*(i-1)/(Nwall-1)+Ts5mindata(1,cTs_Twall)+C2K
+     ENDDO
+     DO i=1,Nroof
+        Troof(i)=(Ts5mindata(1,cTs_Tiair)-Ts5mindata(1,cTs_Troof))*(i-1)/(Nroof-1)+Ts5mindata(1,cTs_Troof)+C2K
+     ENDDO
+     Tibld(1:Nibld)=Ts5mindata(1,cTs_Tiair)+C2K
+
   ENDIF  !End of loop run only at start (for each grid)
-        
+
   ! ---- Parameters related to land surface characteristics ----
   ZREF=2.0*BldgH   !Would Zref=z be more appropriate?                              !!FO!! BldgH: mean bulding hight, zref: local scale reference height (local: ~ 10^2 x 10^2 -- 10^3 x 10^3 m^2)
-  
+
   svf_ground=1.0
   svf_roof=1.0
-  
+
   ! ==== roof (i.e. Bldgs)
   !froof=sfr(BldgSurf)   ! Moved to SUEWS_translate HCW 16 Jun 2016
   alb_roof=alb(BldgSurf)
   em_roof=emis(BldgSurf)
 
-  ! ==== vegetation (i.e. EveTr, DecTr, Grass) 
+  ! ==== vegetation (i.e. EveTr, DecTr, Grass)
   !fveg=sfr(ConifSurf)+sfr(DecidSurf)+sfr(GrassSurf)  ! Moved to SUEWS_translate HCW 16 Jun 2016
   IF(fveg/=0) THEN
      alb_veg=(alb(ConifSurf)*sfr(ConifSurf) + alb(DecidSurf)*sfr(DecidSurf) + alb(GrassSurf)*sfr(GrassSurf))/fveg
      em_veg=(emis(ConifSurf)*sfr(ConifSurf) + emis(DecidSurf)*sfr(DecidSurf) + emis(GrassSurf)*sfr(GrassSurf))/fveg
-  ENDIF 
-  
+  ENDIF
+
   ! ==== ground (i.e. Paved, EveTr, DecTr, Grass, BSoil, Water - all except Bldgs)
   !fground=sfr(ConifSurf)+sfr(DecidSurf)+sfr(GrassSurf)+sfr(PavSurf)+sfr(BsoilSurf)+sfr(WaterSurf) ! Moved to SUEWS_translate HCW 16 Jun 2016
   IF(fground/=0) THEN
@@ -272,7 +273,7 @@ SUBROUTINE ESTM_initials
      RVF_WALL=0
      RVF_VEG=FVEG
   ELSE IF ( Fground==0.0 ) THEN !check fground==0 (or HW==0) scenario to avoid division-by-zero error, TS 21 Jul 2016
-    ! the following values are calculated given HW=0
+     ! the following values are calculated given HW=0
      W=0
      WB=1
      zvf_WALL= 0 !COS(ATAN(2/HW))  when HW=0                                 !!FO!! wall view factor for wall
@@ -341,11 +342,11 @@ SUBROUTINE ESTM_initials
      PRINT*, "At least one internal view factor <> 1. Check ivf in ESTMinput.nml"
   ENDIF
 
-  !!!=======Initial setting==============================================
+!!!=======Initial setting==============================================
   !! Rewritten by HCW 15 Jun 2016 to use existing SUEWS error handling
   !IF(inittemps) THEN
   !   write(*,*) 'inittemps:',inittemps
-  !   FileFinalTemp=TRIM(FileOutputPath)//TRIM(FileCodeX)//'_ESTM_finaltemp.txt' 
+  !   FileFinalTemp=TRIM(FileOutputPath)//TRIM(FileCodeX)//'_ESTM_finaltemp.txt'
   !   OPEN(99,file=TRIM(FileFinalTemp),status='old',err=316)  ! Program stopped if error opening file
   !   READ(99,*) Twall,Troof,Tground,Tibld                    ! Twall, Troof, Tground & Tibld get new values
   !   CLOSE(99)
@@ -365,7 +366,7 @@ SUBROUTINE ESTM_initials
   !!      CLOSE(99)
   !!   ENDIF
   !!ENDIF
-  
+
   !where (isnan(Twall))
   !    Twall = 273
   !endwhere
@@ -378,12 +379,12 @@ SUBROUTINE ESTM_initials
   !where (isnan(Tibld))
   !    Tibld = 293
   !endwhere
-     
-  IF(ESTMStart==1) THEN 
+
+  IF(ESTMStart==1) THEN
      DO i=1,4
         Tw_4(:,i) = Twall  !!FO!! Tw_4 holds three differnet temp:s for each wall layer but the same set for all points of the compass
      ENDDO
-  
+
      !initialize surface temperatures
      T0_ground=Tground(1)
      T0_wall=Twall(1)
@@ -396,7 +397,7 @@ SUBROUTINE ESTM_initials
      LUP_ground=SBConst*EM_ground*T0_ground**4
      LUP_WALL=SBConst*EM_WALL*T0_WALL**4
      LUP_ROOF=SBConst*EM_ROOF*T0_ROOF**4
- 
+
      !  PRINT*,"W,WB= ",W,WB
      !  PRINT*,'SVF_ground ','SVF_WALL ','zvf_WALL ','HW '
      !  PRINT*,SVF_ground,SVF_WALL,zvf_WALL,HW
@@ -405,46 +406,46 @@ SUBROUTINE ESTM_initials
      !  print*,'Alb_avg (VF)=',alb_avg
      !  print*,'Z0m, Zd', Z0M, ZD
 
-  
-  ENDIF 
-    
+
+  ENDIF
+
   first=.TRUE.
-       
-     !======Courant�Friedrichs�Lewy condition=================================
-     !This is comment out by S.O. for now
-     !   CFLval = minval(0.5*zibld*zibld*ribld/kibld)   !!FO!! z*z*r/k => unit [s]
-     !   if (Tstep>CFLval) then !CFL condition   !!FO!! CFL condition:  Courant�Friedrichs�Lewy condition is a necessary condition for convergence while solving
-     !      write(*,*) "IBLD: CFL condition: Tstep=",Tstep,">",CFLval !!FO!! certain partial differential equations numerically by the method of finite differences (like eq 5 in Offerle et al.,2005)
-     !      CFLfail=.TRUE.
-     !   endif
-     !   CFLval = minval(0.5*zroof*zroof*rroof/kroof)
-     !   if (Tstep>CFLval) then !CFL condition
-     !      write(*,*) "ROOF: CFL condition: Tstep=",Tstep,">",CFLval
-     !      CFLfail=.TRUE.
-     !   endif
-     !   CFLval = minval(0.5*zwall*zwall*rwall/kwall)
-     !   if (Tstep>CFLval) then !CFL condition
-     !      write(*,*) "WALL: CFL condition: Tstep=",Tstep,">",CFLval
-     !      CFLfail=.TRUE.
-     !   endif
-     !   CFLval = minval(0.5*zground*zground*rground/kground)
-     !   if (Tstep>CFLval) then !CFL condition
-     !      write(*,*) "ground: CFL condition: Tstep=",Tstep,">",CFLval
-     !      CFLfail=.TRUE.
-     !   endif
-     !   if (CFLfail) then
-     !      write(*,*) "Increase dX or decrease maxtimestep. Hit any key to continue"
-     !      read (*,*)
-     !   endif
+
+  !======Courant�Friedrichs�Lewy condition=================================
+  !This is comment out by S.O. for now
+  !   CFLval = minval(0.5*zibld*zibld*ribld/kibld)   !!FO!! z*z*r/k => unit [s]
+  !   if (Tstep>CFLval) then !CFL condition   !!FO!! CFL condition:  Courant�Friedrichs�Lewy condition is a necessary condition for convergence while solving
+  !      write(*,*) "IBLD: CFL condition: Tstep=",Tstep,">",CFLval !!FO!! certain partial differential equations numerically by the method of finite differences (like eq 5 in Offerle et al.,2005)
+  !      CFLfail=.TRUE.
+  !   endif
+  !   CFLval = minval(0.5*zroof*zroof*rroof/kroof)
+  !   if (Tstep>CFLval) then !CFL condition
+  !      write(*,*) "ROOF: CFL condition: Tstep=",Tstep,">",CFLval
+  !      CFLfail=.TRUE.
+  !   endif
+  !   CFLval = minval(0.5*zwall*zwall*rwall/kwall)
+  !   if (Tstep>CFLval) then !CFL condition
+  !      write(*,*) "WALL: CFL condition: Tstep=",Tstep,">",CFLval
+  !      CFLfail=.TRUE.
+  !   endif
+  !   CFLval = minval(0.5*zground*zground*rground/kground)
+  !   if (Tstep>CFLval) then !CFL condition
+  !      write(*,*) "ground: CFL condition: Tstep=",Tstep,">",CFLval
+  !      CFLfail=.TRUE.
+  !   endif
+  !   if (CFLfail) then
+  !      write(*,*) "Increase dX or decrease maxtimestep. Hit any key to continue"
+  !      read (*,*)
+  !   endif
 
 
-     ! Tiaircyc = (1+(LondonQSJune_Barbican.Tair-Tiair)./(5*Tiair)).*(Tiair + 0.4*sin(LondonQSJune_Barbican.HOUR*2*pi/24-10/24*2*pi))    !!FO!! outdoor temp affected
-      
-    
-      
-     RETURN 
-     
-!     315 CALL errorHint(11,TRIM(fileESTMTs),notUsed,notUsed,NotUsedI)
-!     316 CALL errorHint(11,TRIM(fileFinalTemp),notUsed,notUsed,NotUsedI)
-     
- END SUBROUTINE ESTM_translate
+  ! Tiaircyc = (1+(LondonQSJune_Barbican.Tair-Tiair)./(5*Tiair)).*(Tiair + 0.4*sin(LondonQSJune_Barbican.HOUR*2*pi/24-10/24*2*pi))    !!FO!! outdoor temp affected
+
+
+
+  RETURN
+
+  !     315 CALL errorHint(11,TRIM(fileESTMTs),notUsed,notUsed,NotUsedI)
+316 CALL errorHint(11,TRIM(fileFinalTemp),notUsed,notUsed,NotUsedI)
+
+END SUBROUTINE ESTM_translate

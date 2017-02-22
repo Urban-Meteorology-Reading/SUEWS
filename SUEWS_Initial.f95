@@ -2337,7 +2337,7 @@ SUBROUTINE SUEWS_InitializeMetData(lunit)
 
   ! Read in next chunk of met data and fill MetForcingData array with data for every timestep
   !NSHcounter = 1
-  write(*,*) 'ReadlinesMetdata:',ReadlinesMetdata
+  !write(*,*) 'ReadlinesMetdata:',ReadlinesMetdata
   DO i=1,ReadlinesMetdata
      CALL MetRead(lunit,MetArray,InputmetFormat,ldown_option,NetRadiationMethod,&
           snowUse,SMDMethod,SoilDepthMeas,SoilRocks,SoilDensity,SmCap)

@@ -92,9 +92,7 @@ SUBROUTINE ErrorHint(errh,ProblemFile,value,value2,valueI)
   ELSEIF(errh==17) THEN
      text1= 'Problem with (z-zd) and/or z0.'
      v2=.TRUE.
-  ELSEIF(errh==18) THEN
-     text1='Check soil depth relative to soil moisture and capacity.'
-     v4=.TRUE.
+  ! 18
   ELSEIF(errh==19)THEN
      text1='Caution - check range.'
      v4=.TRUE.

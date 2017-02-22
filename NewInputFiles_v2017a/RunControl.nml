@@ -21,6 +21,12 @@ MultipleESTMFiles=0
 KeepTstepFilesIn=1
 KeepTstepFilesOut=1
 WriteOutOption=0
+ResolutionFilesIn=3600
+ResolutionFilesInESTM=900	!NEW
 ResolutionFilesOut=3600
+DisaggMethod=1			!NEW  (1 = default value, so don't actually need here)
+RainDisaggMethod=100		!NEW  (100 = default value, so don't actually need here)
+DisaggMethodESTM=1		!NEW  (1 = default value, so don't actually need here)
 Tstep=300
+SuppressWarnings=1		!NEW
 /

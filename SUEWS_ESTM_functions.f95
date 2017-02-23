@@ -136,7 +136,7 @@ module modSolarCalc
         latr=lat*pi/180.
 	doy=floor(dectime)
 	hour=floor((dectime-doy)*24.)
-	mn=floor((dectime-doy-hour/24.)*60.)
+	mn=floor((dectime-doy-hour/24.)*60.)   !!!Check this
 	
 	gamma=2.*pi/365.25463*(doy-1.+(hour-12.)/24.)
 	eqtime=229.18*(7.5e-5+1.868e-3*cos(gamma)-0.032077*sin(gamma)&

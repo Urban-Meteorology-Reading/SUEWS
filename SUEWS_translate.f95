@@ -40,7 +40,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   USE ColNamesModelDailyState
   USE data_in        !defines: lat, lng, PopDaytime, PopNighttime, DayLightSavingDay, QF variables
   USE defaultnotUsed
-  USE gis_data       !defines: areaZh, VegFraction, veg_fr, veg_type, BldgH, TreeH, FAIBldg, FAITree, Alt
+  USE gis_data       !defines: areaZh, VegFraction, veg_fr, veg_type, BldgH, TreeH, FAIBldg, FAITree
   USE initial
   USE mod_z          !defines: z0m, zdm
   USE resist         !defines: G1-G6, TH, TL, S1, S2, Kmax
@@ -49,6 +49,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   USE time
   USE ESTM_data
   USE PhysConstants
+  USE WhereWhen
   
   IMPLICIT NONE
 
@@ -66,8 +67,10 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   CHARACTER(len=20):: grid_txt
   CHARACTER(len=4):: year_txt
   CHARACTER(len=12)::SsG_YYYY !Site, grid, year string
-  INTEGER:: GridID
-
+  
+  CHARACTER(len=4):: iy_text
+  CHARACTER(len=3):: id_text
+  CHARACTER(len=2):: it_text, imin_text
 
   !write(*,*) '---- SUEWS_Translate ----'
   !write(*,*) 'Year:', SurfaceChar(Gridiv,c_Year)
@@ -80,7 +83,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   ! =================================================================================
   ! ======= Translate inputs from SurfaceChar to variable names used in model =======
   ! =================================================================================
-  GridID = GridIDmatrix(Gridiv)
+  GridID = GridIDmatrix(Gridiv) !also in SUEWS_Program - could delete here?
   ! ---- Latitude and longitude
   lat = SurfaceChar(Gridiv,c_lat)
   lng = SurfaceChar(Gridiv,c_lng)*(-1.0)  !HCW switched sign of lng 12 Dec 2016. Input should now be -ve for W, +ve for E
@@ -1016,7 +1019,14 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
 
      ! Calculate dectime
      dectime = REAL(id,KIND(1d0))+REAL(it,KIND(1d0))/24+REAL(imin,KIND(1d0))/(60*24)
-
+     ! Create datetime stamp for error/warnings file
+     WRITE(iy_text,'(i4)') iy
+     WRITE(id_text,'(i3)') id
+     WRITE(it_text,'(i2)') it
+     WRITE(imin_text,'(i2)') imin
+     datetime = TRIM(ADJUSTL(iy_text))//' '//TRIM(ADJUSTL(id_text))//' '//TRIM(ADJUSTL(it_text))//' '//TRIM(ADJUSTL(imin_text))
+     WRITE(GridID_text,'(i10)') GridID
+     
      ! =============================================================================
      ! === Translate values from ModelDailyState to variable names used in model ===
      ! =============================================================================

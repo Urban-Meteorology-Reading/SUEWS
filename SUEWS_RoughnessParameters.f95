@@ -1,4 +1,4 @@
-SUBROUTINE RoughnessParameters(Gridiv)
+SUBROUTINE RoughnessParameters
   ! Get surface covers and frontal area fractions (LJ 11/2010)
   ! Last modified by HCW 08 Feb 2017 - fixed bug in Zh between grids, added default z0m, zdm
   !                  HCW 03 Mar 2015
@@ -13,7 +13,6 @@ SUBROUTINE RoughnessParameters(Gridiv)
   USE time
 
   IMPLICIT NONE
-  INTEGER :: Gridiv
 
   REAL(KIND(1D0)):: z0m4Paved,z0m4Grass,z0m4BSoil,z0m4Water   !Default values for roughness lengths [m]
   
@@ -64,14 +63,7 @@ SUBROUTINE RoughnessParameters(Gridiv)
   ZZD=Z-zdm
 
   ! Error messages if aerodynamic parameters negative
-  IF(z0m<0) THEN
-     PRINT*, GridIDmatrix(Gridiv)
-     CALL ErrorHint(14,'In SUEWS_RoughnessParameters.f95, z0 < 0 m.',z0m,notUsed,Gridiv)
-  ENDIF
-
-  IF(zzd<0) THEN
-     PRINT*, GridIDmatrix(Gridiv)
-     CALL ErrorHint(14,'In SUEWS_RoughnessParameters.f95, zd < 0 m.',zzd,notUsed,Gridiv)     
-  ENDIF
-
+  IF(z0m<0) CALL ErrorHint(14,'In SUEWS_RoughnessParameters.f95, z0 < 0 m.',z0m,notUsed,notUsedI)
+  IF(zdm<0) CALL ErrorHint(14,'In SUEWS_RoughnessParameters.f95, zd < 0 m.',zdm,notUsed,notUsedI)
+  IF(zzd<0) CALL ErrorHint(14,'In SUEWS_RoughnessParameters.f95, (z-zd) < 0 m.',zzd,notUsed,notUsedI)
 END SUBROUTINE RoughnessParameters

@@ -106,7 +106,7 @@
     real(kind(1D0))::qn1_cum,kup_cum,lup_cum,tsurf_cum,&   !Cumulative radiation components 
                    qn1_is,kup_is,lup_is,tsurf_is,&       !Sub-surface radiation components 
                    SF_all,ALB1      
-
+                   
     !Initialize variables
     RH=avrh
     DTIME=dectime
@@ -203,7 +203,7 @@
       LUP=EMIS0*SIGMATK4+LUPCORR+(1-EMIS0)*LDOWN              !Eq (16) in Offerle et al. (2002)
       QSTAR=KDOWN-KUP+LDOWN-LUP
       TSURF=TSURF-273.16
-
+      
       !======================================================================
       !Snow related parameters if snow pack existing
       IF (snowFrac(is)>0) THEN
@@ -268,8 +268,6 @@
       kup_cum=kup_cum+(kup_is*sfr(is))
       lup_cum=lup_cum+(lup_is*sfr(is))
       tsurf_cum=tsurf_cum+(tsurf_is*sfr(is))
-      
-      
      
       qn1_ind(is)=qn1_is                !Define sub-surface radiation components
       kup_ind(is)=kup_is
@@ -277,6 +275,7 @@
       Tsurf_ind(is)=tsurf_is
 
    enddo !End of the surface types
+
    
 
    !Set overall radiation components
@@ -299,6 +298,8 @@
    ! write(*,*) Kdown, kup, kup_ind(1),kup_ind(2),kup_ind(3),kup_ind(4),kup_ind(5),kup_ind(6),SnowAlb
    ! pause
    !endif
+   
+   IF(DiagQN==1) WRITE(*,*) 'kdown: ',avkdn,'kup:',kup,'ldown: ',ldown,'lup: ',lup
    
   END SUBROUTINE NARP
 

@@ -6,7 +6,7 @@
 ! --> so if changes are made here, SUEWS_Initial may also need to be updated accordingly
 ! N.B. Currently, daily variables are calculated using 00:00-23:55 timestamps (for 5-min resolution); should use 00:05-00:00
 !
-!Last modified:
+! Last modified:
 !  HCW 04 Jul 2016 - GridID can now be up to 10 digits long
 !  HCW 25 May 2016 - Added extra columns to daily state file (albedo for EveTr and Grass)
 !  HCW 24 May 2016 - Bug fixed in naming of DailyState file (now uses GridIDmatrix(Gridiv) rather than Gridiv)
@@ -192,6 +192,7 @@ SUBROUTINE DailyState(Gridiv)
 
      ! Calculate modelled daily water use ------------------------------------------
      IF (WaterUseMethod==0) THEN   !If water use is to be modelled (rather than observed)
+        
         wd=dayofWeek(id,1)
 
         IF (DayWat(wd)==1.0) THEN      !1 indicates watering permitted on this day

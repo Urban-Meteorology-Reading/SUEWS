@@ -97,7 +97,7 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::WGWaterDist_Coeff         !Coefficients for WithinGridWaterDist
 
   ! ---- Define arrays for model calculations ----------------------------------------------------
-  INTEGER(KIND(1d0)),DIMENSION(:), ALLOCATABLE:: GridIDmatrix         !Array containing GridIDs in SiteSelect
+  INTEGER,DIMENSION(:), ALLOCATABLE:: GridIDmatrix         !Array containing GridIDs in SiteSelect
   REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: SurfaceChar          !Array for surface characteristics
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: MetForcingData       !Array for meteorological forcing data
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: ESTMForcingData      !Array for ESTM forcing data
@@ -109,7 +109,13 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: dataOutSOL           !SOLWEIG POI output matrix
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: dataOutSnow          !Main data output matrix
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: dataOutESTM          !ESTM output matrix
-
+  
+  REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE:: MetForDisagg           !Array for original met forcing data (for disaggregation)
+  REAL(KIND(1d0)),DIMENSION(:),  ALLOCATABLE:: MetForDisaggPrev,MetForDisaggNext !Stores last and next row of met data
+  
+  REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE:: ESTMForDisagg           !Array for original ESTM forcing data (for disaggregation)
+  REAL(KIND(1d0)),DIMENSION(:),  ALLOCATABLE:: ESTMForDisaggPrev,ESTMForDisaggNext !Stores last and next row of ESTM data
+  
   ! ---- Define array for hourly profiles interpolated to tstep ----------------------------------
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: TstepProfiles
   REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: AHProf_tstep
@@ -770,8 +776,14 @@ MODULE Initial
        GridCounter,&        !Counter for grids (i.e. from 1 to NumberOfGrids)
 
        ReadBlocksMetData,&  !Number of blocks of met data to read (for each grid, for each year)
+       ReadBlocksOrigMetData,&  !Number of blocks of original met data to read (for each grid, for each year)
        ReadLinesMetData,&   !Number of lines of met data in each block (for each grid)
-
+       ReadLinesOrigMetData,&   !Number of lines of original met data in each block (before downscaling)
+       ReadLinesOrigESTMData,&   !Number of lines of original ESTM data in each block (before downscaling)
+       ReadLinesOrigMetDataMax,&   !No. lines of original met data in each block (adjusts for last block (equivalent of irMax))
+       ReadLinesOrigESTMDataMax,&   !No. lines of original ESTM data in each block
+       nlinesOrigMetData,&        !Number of lines in original met data file
+       nlinesOrigESTMData,&        !Number of lines in original ESTM data file
        nlinesMetData,&            !Number of lines in Met Forcing file
        nlinesESTMdata,&           !Number of lines in ESTM Forcing file
        nlinesSiteSelect,&         !Number of lines in SUEWS_SiteSelect.txt
@@ -788,7 +800,9 @@ MODULE Initial
        nlinesProfiles,&           !Number of lines in SUEWS_Profiles.txt
        nlinesWGWaterDist,&        !Number of lines in SUEWS_WGWaterDist.txt
        nlines,&                   !Number of lines in different files
-       SkippedLines,&           !Number of lines to skip over before reading each block of met data
+       SkippedLines,&             !Number of lines to skip over before reading each block of met data
+       SkippedLinesOrig,&         !Number of lines to skip over before reading each block of data from original met file
+       SkippedLinesOrigESTM,&         !Number of lines to skip over before reading each block of data from original ESTM file
        iv5            !Counter for code matching.
 
 END MODULE Initial
@@ -806,13 +820,18 @@ MODULE data_in
   CHARACTER (len=150):: FileInputPath,&   !Filepath for input files (set in RunControl)
        FileOutputPath    !Filepath for output files (set in RunControl)
   ! ---- File names -----------------------------------------------------------------------------
-  CHARACTER (len=150):: FileOut,&         !Output file name
+  CHARACTER (len=150):: FileOut,&         !Output file name 
        FileChoices,&     !Run characteristics file name
        FileMet,&         !Meteorological forcing file name
+       FileOrigMet,&     !Original meteorological forcing file name (i.e. before downscaling)
+       FileOrigESTM,&    !Original ESTM forcing file name (i.e. before downscaling)
+       FileDscdMet,&     !Downscaled meteorological forcing file name
+       FileDscdESTM,&    !Downscaled ESTM forcing file name
        FileDaily,&       !Daily State output file name
        FileESTMTs,&      !ESTM input file name
        SOLWEIGpoiOut,&   !SOLWEIG poi file name
-       BLout             !CLB output file name
+       BLout,&             !CLB output file name
+       FileOut_tt        !Output file name (for resolution at model time-step)
 
   INTEGER:: SkipHeaderSiteInfo = 2   !Number of header lines to skip in SiteInfo files
   INTEGER:: SkipHeaderMet = 1        !Number of header lines to skip in met forcing file
@@ -826,7 +845,9 @@ MODULE data_in
        MultipleESTMFiles,&    !Indicates whether a single ESTM input data file is used for all grids (0) or one for each grid (1)
        KeepTstepFilesIn,&     !Delete (0) or keep (1) input met files at resolution of tstep (used by python, not fortran)
        KeepTstepFilesOut,&    !Delete (0) or keep (1) output files at resolution of tstep (used by python, not fortran)
-       ResolutionFilesOut,&   !Specify resolution of output file produced by wrapper [s]
+       ResolutionFilesIn,&    !Specify resolution of input file  [s]
+       ResolutionFilesOut,&   !Specify resolution of output file [s]
+       ResolutionFilesInESTM,&!Specify resolution of ESTM input file  [s]
        WriteOutOption,&         !Choose variables to include in main output file
        NetRadiationMethod,&   !Options for net all-wave radiation calculation
        OHMIncQF,&             !OHM calculation uses Q* only (0) or Q*+QF (1)
@@ -836,11 +857,19 @@ MODULE data_in
        SMDMethod,&           !Use modelled (0) or observed(1,2) soil moisture
        WaterUseMethod,&            !Use modelled (0) or observed (1) water use
        RoughLenMomMethod,&              !Defines method for calculating z0 & zd
+       DisaggMethod,&         ! Sets disaggregation method for original met forcing data 
+       DisaggMethodESTM,&         ! Sets disaggregation method for original met forcing data 
+       RainDisaggMethod,&     ! Sets disaggregation method for original met forcing data for rainfall
+       RainAmongN,&           ! Number of subintervals over which to disaggregate rainfall
+       KdownZen,&             ! Controls whether Kdown disaggregation uses zenith angle (1) or not (0)
+       SuppressWarnings,&     ! Set to 1 to prevent warnings.txt file from being written
        Diagnose,&             !Set to 1 to get print-out of model progress
-       DiagQS,&
+       DiagnoseDisagg,&       !Set to 1 to get print-out of met forcing disaggregation progress
        ncMode,&               !Write output file in netCDF (1) or not (0) , TS, 09 Dec 2016
        nRow,&                 !number of rows of checker board layout in the netCDF output, TS, 09 Dec 2016
        nCol                   !number of columns of checker board layout in the netCDF output, TS, 09 Dec 2016
+       DiagnoseDisaggESTM,&   !Set to 1 to get print-out of ESTM forcing disaggregation progress
+       DiagQN, DiagQS         !Set to 1 to print values/components  
 
   ! ---- Model options currently set in model, but may be moved to RunControl at a later date
   INTEGER:: AlbedoChoice,&         !No additional albedo varaition (0); zenith angle calculation (1)
@@ -873,6 +902,7 @@ MODULE data_in
   REAL (KIND(1d0)):: AH_MIN,&    !Minimum anthropogenic heat flux (AnthropHeatMethod = 1)
        AH_SLOPE,&  !Slope of the antrhropogenic heat flux calculation (AnthropHeatMethod = 1)
        alpha_qhqe,& !Alpha parameter used in LUMPS QH and QE calculations [-]
+       alt,&                        !Altitude in m
        avdens,&    !Average air density
        avkdn,&     !Average downwelling shortwave radiation
        avrh,&      !Average relative humidity
@@ -1097,7 +1127,8 @@ END MODULE snowMod
 MODULE defaultNotUsed
   IMPLICIT NONE
   REAL (KIND(1d0)):: notUsed=-55.55,reall,NAN=-999,pNAN=999
-  INTEGER:: notUsedI=-55, ios_out,errorChoice  !errorChoice defines if the problemfile is opened for the first time
+  INTEGER:: notUsedI=-55, ios_out
+  INTEGER:: errorChoice, warningChoice  !errorChoice/warningChoice defines if problems.txt/warnings.txt is opened for the first time
 END MODULE defaultNotUsed
 !==================================================================================================
 
@@ -1107,11 +1138,9 @@ MODULE time
        id,&            !Day of year
        it,&            !Hour
        imin,&          !Minutes
-       iostat_var,&      !File status from reading data (should not be here)
        DLS                            !day lightsavings =1 + 1h) =0
 
   REAL(KIND(1d0)):: dectime        !Decimal time
-  REAL(KIND(1d0)):: halftimestep   !In decimal time based on interval
   REAL (KIND(1d0)):: tstepcount    !Count number of timesteps in this day
   INTEGER:: nofDaysThisYear        !Based on whether leap year or not
 
@@ -1203,8 +1232,7 @@ END MODULE moist
 MODULE gis_data
   IMPLICIT NONE
 
-  REAL(KIND(1d0)):: Alt,&                        !Altitude in m
-       areaunir,&                   !Unirrigated area
+  REAL(KIND(1d0)):: areaunir,&                   !Unirrigated area
        areair,&                     !Irrigated area
        bldgH,&                      !Mean building height
        FAIbldg,&                    !Frontal area fraction of buildings
@@ -1238,10 +1266,15 @@ MODULE sues_data
   INTEGER:: tstep,&    !Timestep [s] at which the model is run (set in RunControl)
        nsh,&      !Number of timesteps per hour
        nsd,&      !Number of timesteps per day
-       t_interval   !Number of seconds in an hour [s] (now set in OverallRunControl)
+       nsdorig,&  !Number of timesteps per day for original met forcing file
+       t_interval,&   !Number of seconds in an hour [s] (now set in OverallRunControl)
+       Nper, NperESTM   ! Number of model time-steps per input resolution (ResolutionFilesIn/Tstep)
 
   REAL(KIND(1d0)):: nsh_real,&   !nsh cast as a real for use in calculations
-       tstep_real   !tstep cast as a real for use in calculations
+       tstep_real,&   !tstep cast as a real for use in calculations
+       Nper_real, NperESTM_real   !Nper as real
+       
+  REAL(KIND(1d0)):: halftimestep   !In decimal time based on interval
 
   !Options for model setup (switches, etc) mainly set in RunControl
   INTEGER:: StabilityMethod,&   !Defines stability functions used (set in RunControl)
@@ -2053,9 +2086,9 @@ MODULE WhereWhen
   ! Stores grid and datetime info
 
   INTEGER:: GridID   !Grid number (as specified in SUEWS_SiteSelect.txt)
-  !To add:
-  !Grid number (continuous)
-  !Datetime info
+  CHARACTER(LEN=10):: GridID_text !Grid number as a text string
+  CHARACTER(LEN=12):: datetime  ! YYYY DOY HH MM
+
 END MODULE WhereWhen
 
 !----------------------------------------------------------------------------------

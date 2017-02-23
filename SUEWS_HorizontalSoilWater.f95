@@ -3,13 +3,14 @@
  !Transfers water in soil stores of land surfaces LJ (2010)
  !Change the model to use varying hydraulic conductivity instead of constant value LJ (7/2011)
  !If one of the surface's soildepth is zero, no water movement is considered
+ ! HCW 22/02/2017 Modifications:  - Minor bug fixed in VWC1/B_r1 comparison - if statements reversed    
+ ! HCW 13/08/2014 Modifications:  - Order of surfaces reversed (for both is and jj loops)
+ !                                - Number of units (e.g. properties) added to distance calculation
  ! HCW 12/08/2014 Modifications:  - Distance changed from m to mm in dI_dt calculation
  !                                - dI_dt [mm s-1] multiplied by no. seconds in timestep -> dI [mm]
  !                                - if MatPot is set to max. value (100000 mm), Km set to 0 mm s-1
  !                                - Provide parameters for residual volumetric soil moisture [m3 m-3]
  !                                   (currently hard coded as 0.1 m3 m-3 for testing)
- ! HCW 13/08/2014 Modifications:  - Order of surfaces reversed (for both is and jj loops)
- !                                - Number of units (e.g. properties) added to distance calculation
  !
  !------------------------------------------------------
  use SUES_data
@@ -62,19 +63,22 @@
               ! Need to add residual soil moisture values to FunctionalTypes
               !B_r1=VolSoilMoistRes(is) !Residual soil moisture content [m3 m-3]
               
-              if(B_r1<SoilMoist_vol1) then 
+              !Order of if statements reversed HCW 22 Feb 2017
+              !If soil moisture less than or equal to residual value, set MatPot to max and Km to 0 to suppress water movement
+              IF(B_r1 >= SoilMoist_vol1) THEN 
+                 MatPot1 = 100000
+                 Km1 = 0 !Added by LJ in Nov 2013
+              ! Otherwise, there should be enough water in the soil to allow horizontal transfer   
+              ELSE
                  DimenWaterCon1=(SoilMoist_vol1-B_r1)/(SoilMoistCap_Vol1-B_r1) !Dimensionless water content [-]
-                    
+                 
+                 ! If very large or very small, adjust for calculation of MatPot and Km
                  if(DimenWaterCon1>0.99999) then
                     DimenWaterCon1=DimenWaterCon1-0.0001 !This cannot equal 1
                  endif
-                 ! write(*,*)DimenWaterCon1,SoilMoist(is),SoilDepth(is),SoilStoreCap(is), B_r1,is
-                 ! pause
                  
-                 !Check this (HCW 12/08/2014) - is this needed? Why is it not done for other surface?
                  if(DimenWaterCon1<0.00000005) then
-                    call ErrorHint(18,'In HorizontalSoilWater.f95, check soil moisture capacity & soil moisture for this surface.',&
-                        SoilStoreCap(is), soilmoist(is),is)
+                    DimenWaterCon1=DimenWaterCon1+0.0000001   !Added HCW 22 Feb 2017
                  endif
                  
                  !van Genuchten (1980), with n=2 and m = 1-1/n = 1/2
@@ -90,10 +94,7 @@
                     Km1 = 0   !Added by HCW 12/08/2014
                  endif
                 
-              else  !If soil moisture below residual value, set MatPot to maximum
-                 MatPot1 = 100000
-                 Km1 = 0 !Added by LJ in Nov 2013
-              endif
+              ENDIF
               
               ! ---- For surface 2 -----------------------------------------------------
               ! Calculate non-saturated VWC
@@ -105,13 +106,21 @@
               ! Need to add residual soil moisture values to FunctionalTypes
               !B_r2=VolSoilMoistRes(jj) !Residual soil moisture content [m3 m-3]                 
                 
-              if(B_r2<SoilMoist_vol2) then 
+              !If soil moisture below residual value, set MatPot to maximum
+              IF(B_r2>=SoilMoist_vol2) THEN 
+                 MatPot2=100000
+                 Km2 = 0 !Added by LJ in Nov 2013                 
+              ELSE
                  DimenWaterCon2=(SoilMoist_vol2-B_r2)/(SoilMoistCap_Vol2-B_r2) !Dimensionless water content [-]
                 
                  if(DimenWaterCon2>0.99999) then
                     DimenWaterCon2=DimenWaterCon2-0.0001 !This cannot equal 1
                  endif 
       
+                 if(DimenWaterCon2<0.00000005) then
+                    DimenWaterCon2=DimenWaterCon2+0.0000001   !Added HCW 22 Feb 2017
+                 endif
+                 
                  !van Genuchten (1980), with n=2 and m = 1-1/n = 1/2
                  !Water potential of second store [mm] (van Genuchten 1980, Eq 3 rearranged)           
                  MatPot2=sqrt(1/DimenWaterCon2**2-1)/alphavG
@@ -124,10 +133,7 @@
                     Km2 = 0   !Added by HCW 12/08/2014
                  endif
 					
-              else  !If soil moisture below residual value, set MatPot to maximum
-                 MatPot2=100000
-                 Km2 = 0 !Added by LJ in Nov 2013
-              endif
+              ENDIF
               
               ! ------------------------------------------------------------------------
                 

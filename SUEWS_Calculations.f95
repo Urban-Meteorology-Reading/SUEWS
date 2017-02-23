@@ -4,9 +4,9 @@
 !Last modification
 !
 !Last modification:
-! HCW 09 Dec 2016 - Add zenith and azimuth to output file
+! HCW 09 Dec 2016 - Add zenith and azimuth to output file 
 ! HCw 24 Aug 2016 - smd and state for each surface set to NAN in output file if surface does not exist.
-!                 - Added Fc to output file
+!                 - Added Fc to output file 
 ! HCW 21 Jul 2016 - Set soil variables to -999 in output when grid is 100% water surface.
 ! HCW 29 Jun 2016 - Commented out StateDay and SoilMoistDay as creates jumps and should not be needed.
 !                   Would not work unless each met block consists of a whole day for each grid.
@@ -357,7 +357,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !------------------------------------------------------------------
 
   IF(Diagnose==1) WRITE(*,*) 'Calling STAB_lumps...'
-  CALL STAB_lumps(H,StabilityMethod,ustar,L_mod) !u* and monin-obukhov length out
+  CALL STAB_lumps(H,StabilityMethod,ustar,L_mod) !u* and Obukhov length out
 
   IF(Diagnose==1) WRITE(*,*) 'Calling AerodynamicResistance...'
   CALL AerodynamicResistance(RA,AerodynamicResistanceMethod,StabilityMethod,RoughLenHeatMethod,&
@@ -586,11 +586,26 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !   !st_per_interval=0
   !endif
 
-  ! Set limit on ResistSurf
-  IF(ResistSurf>9999) ResistSurf=9999
+  !Set limits on output data to avoid formatting issues ---------------------------------
+  ! Set limits as +/-9999, depending on sign of value
+  ! errorHints -> warnings commented out as writing these slow down the code considerably when there are many instances
+  IF(ResistSurf > 9999) THEN
+     !CALL errorHint(6,'rs set to 9999 s m-1 in output; calculated value > 9999 s m-1',ResistSurf,notUsed,notUsedI)
+     ResistSurf=9999
+  ENDIF
 
-  ! Set NA values   !!Why only these variables??  !!ErrorHints here too??
+  IF(l_mod > 9999) THEN
+     !CALL errorHint(6,'Lob set to 9999 m in output; calculated value > 9999 m',L_mod,notUsed,notUsedI)
+     l_mod=9999
+  ELSEIF(l_mod < -9999) THEN
+     !CALL errorHint(6,'Lob set to -9999 m in output; calculated value < -9999 m',L_mod,notUsed,notUsedI)
+     l_mod=-9999
+  ENDIF
+  
+  
+  ! Set NA values   !!Why only these variables??  !!ErrorHints here too - error hints can be very slow here
   IF(ABS(qh)>pNAN) qh=NAN
+  IF(ABS(qh_r)>pNAN) qh_r=NAN
   IF(ABS(qeOut)>pNAN) qeOut=NAN
   IF(ABS(qs)>pNAN) qs=NAN
   IF(ABS(ch_per_interval)>pNAN) ch_per_interval=NAN
@@ -624,29 +639,29 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   DO is=1,nsurf
      bulkalbedo = bulkalbedo + alb(is)*sfr(is)
   ENDDO
-
+  
   !=====================================================================
   !====================== Write out files ==============================
   !Define the overall output matrix to be printed out step by step
   dataOut(ir,1:ncolumnsDataOut,Gridiv)=(/REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),REAL(it,KIND(1D0)),REAL(imin,KIND(1D0)),dectime,&   !5
        avkdn,kup,ldown,lup,tsurf,&
-       qn1,qf,qs,qh,qeOut,&
-       h_mod,e_mod,qh_r,&
+       qn1,qf,qs,qh,qeOut,&                                      
+       h_mod,e_mod,qh_r,&                                                                                          
        precip,ext_wu,ev_per_tstep,runoff_per_tstep,tot_chang_per_tstep,&
-       surf_chang_per_tstep,state_per_tstep,NWstate_per_tstep,drain_per_tstep,smd,&
+       surf_chang_per_tstep,state_per_tstep,NWstate_per_tstep,drain_per_tstep,smd,&                                      
        FlowChange/nsh_real,AdditionalWater,&
        runoffSoil_per_tstep,runoffPipes,runoffAGimpervious,runoffAGveg,runoffWaterBody,&
-       int_wu,wu_EveTr,wu_DecTr,wu_Grass,&
+       int_wu,wu_EveTr,wu_DecTr,wu_Grass,& 
        (smd_nsurfOut(is),is=1,nsurf-1),&
-       (stateOut(is),is=1,nsurf),&
-       zenith_deg,azimuth,bulkalbedo,Fcld,&
+       (stateOut(is),is=1,nsurf),&                       
+       zenith_deg,azimuth,bulkalbedo,Fcld,&                                                   
        lai_wt,z0m,zdm,&
        ustar,l_mod,ra,ResistSurf,&
        Fc,&
-       Fc_photo,Fc_respi,Fc_metab,Fc_traff,Fc_build,&
+       Fc_photo,Fc_respi,Fc_metab,Fc_traff,Fc_build,&                                               
        qn1_SF,qn1_S,SnowAlb,&
        Qm,QmFreez,QmRain,swe,mwh,MwStore,chSnow_per_interval,&
-       (SnowRemoval(is),is=1,2) /)
+       (SnowRemoval(is),is=1,2) /)                                                                                       
 
   IF (snowUse==1) THEN
      dataOutSnow(ir,1:ncolumnsDataOutSnow,Gridiv)=(/REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),&               !2

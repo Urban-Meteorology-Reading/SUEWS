@@ -1,6 +1,8 @@
 !In this subroutine the output files will be opened and the output matrices will be printed out.
 !
 !Last change:
+! HCW 20 Feb 2017 - Added option to also write out main data file at model time-step
+! TS  10 Feb 2017 - Aggregation added: 1) normal SUEWS output according to the format output; 2) ESTM: average.
 ! HCW 12 Dec 2016 - Restructured writing of output files and introduced families of output variables
 ! HCW 04 Jul 2016 - GridID can now be up to 10 digits long. If file not found or not read correctly, program stops
 ! HCW 29 Jun 2016 - Fixed bug in output file (4 columns were repeated twice)
@@ -15,7 +17,7 @@
 ! HCW 18 Nov 2014
 ! LJ 5 Jan 2015: code cleaned, daily and monthly filesaving added
 !-----------------------------------------------------------------------------------------------
-SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  CurrentGrid)
+SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
   !INPUT: Gridiv   = Grid number
   !       year_int = Year as a integer
   !       iv       = Block number of met data
@@ -43,7 +45,7 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  CurrentGrid)
   INTEGER:: Gridiv, year_int, iv, irMax, CurrentGrid   !inputs
   INTEGER:: i
 
-  CHARACTER(len=10):: str2, grstr2, yrstr2
+  CHARACTER(len=10):: str2, str2_tt, grstr2, yrstr2
   CHARACTER(len=100):: rawpath, SnowOut,ESTMOut, FileOutFormat
 
   ! N.B. if change lengths here, also adjust in MODULE AllocateArray accordingly
@@ -77,18 +79,22 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  CurrentGrid)
   aL = '3'   !last value
 
   !========== Set file path and file names ==========
+  WRITE(str2_tt,'(i4)') tstep/60
   WRITE(str2,'(i4)') ResolutionFilesOut/60
   WRITE(grstr2,'(i10)') CurrentGrid
   WRITE(yrstr2,'(i4)') year_int
 
-  rawpath=TRIM(FileOutputPath)//TRIM(FileCode)//TRIM(ADJUSTL(grstr2))//'_'//TRIM(ADJUSTL(yrstr2))
+  rawpath=TRIM(FileOutputPath)//TRIM(FileCode)//TRIM(ADJUSTL(grstr2))//'_'//TRIM(ADJUSTL(yrstr2)) ! output resolution added, TS 9 Feb 2017
+  ! For files at specified output resolution 
   FileOut=TRIM(rawpath)//'_'//TRIM(ADJUSTL(str2))//'.txt'
   SOLWEIGpoiOut=TRIM(rawpath)//'_SOLWEIGpoiOut.txt'
-  ESTMOut=TRIM(rawpath)//'_ESTM_5.txt'
+  ESTMOut=TRIM(rawpath)//'_ESTM_'//TRIM(ADJUSTL(str2))//'.txt' ! output resolution added, TS 10 Feb 2017
   BLOut=TRIM(rawpath)//'_BL.txt'
   SnowOut=TRIM(rawpath)//'_snow_5.txt'
   FileOutFormat=TRIM(FileOutputPath)//TRIM(FileCode)//'_YYYY_'//TRIM(ADJUSTL(str2))//'_OutputFormat.txt'
 
+  ! For main data file at model time-step (may not be used if KeepTstepFilesOut is 0)
+  FileOut_tt=TRIM(rawpath)//'_'//TRIM(ADJUSTL(str2_tt))//'.txt'
 
   !========== Get headers and write out output info to file ==========
   ! To add extra columns, change all these (Header, Units, LongNm, Format, Agg) together
@@ -146,9 +152,9 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  CurrentGrid)
      UnitsAll (24:28) = 'mm'
      FormatAll(24:28) = (/ f106,f104,f106,f106,f94 /)
      AggregAll(24:28) = (/aS,aL,aL,aS,aL/)
-     LongNmAll(24:28) = (/'                   Surface moisture change','                       SurfaceWetnessState', &
+     LongNmAll(24:28) = (/'                   Surface moisture change','                     Surface wetness state', &
           'Surface wetness state (non-water surfaces)','                                  Drainage', &
-          '                       SoilMoistureDeficit'/)
+          '                     Soil moisture deficit'/)
 
 
      HeaderAll(29:30) = (/'  FlowCh','AddWater'/)                                          !water balance components cont.
@@ -329,7 +335,6 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  CurrentGrid)
 
      HeaderUseNoSep=TRIM(ADJUSTL(HeaderOutNoSep))
      UnitsUse=TRIM(ADJUSTL(UnitsOut))
-
      LongNmUse=TRIM(ADJUSTL(LongNmOut))
      FormatUse=TRIM(ADJUSTL(FormatOut))
      FormatUseNoSep='('//TRIM(ADJUSTL(FormatOutNoSep))//')'
@@ -414,7 +419,7 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  CurrentGrid)
      ENDIF
   ENDIF
 
-  ! ESTM ouput file ---------------------------------------------------
+  ! ESTM output file ---------------------------------------------------
   IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
      IF (iv==1) THEN
         OPEN(58,file=TRIM(ESTMOut),status='unknown')
@@ -437,8 +442,17 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  CurrentGrid)
   ! 'qn_Paved qn_Bldgs qn_EveTr qn_DecTr qn_Grass qn_BSoil qn_Water ',&
 
   !========== Write out data ==========
-  IF ( ResolutionFilesOut == Tstep ) THEN ! output frequency same as input
+  IF ( ResolutionFilesOut == Tstep .or. KeepTstepFilesOut == 1) THEN ! output frequency same as input, or specify to keep raw output files (HCW 20 Feb 2017)
      ! original output
+  
+     lfnOutC=38  !Output file code
+     IF (iv==1) THEN
+        OPEN(lfnOutC,file=TRIM(FileOut_tt),err=110)
+        WRITE(lfnOutC,'(a)') HeaderUseNoSep
+     ELSE
+        OPEN(lfnOutC,file=TRIM(FileOut_tt),position='append')!,err=112)
+     ENDIF
+  
      DO i=1,irMax
         WRITE(lfnoutC,FormatUseNoSep) INT(dataOut(i,PACK(UseColumnsDataOut, UseColumnsDataOut < 5),Gridiv)),&
              dataOut(i,PACK(UseColumnsDataOut, UseColumnsDataOut >= 5),Gridiv)
@@ -446,7 +460,8 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  CurrentGrid)
         !      dataOut(i,5:ncolumnsDataOut,Gridiv)
 
      ENDDO
-
+     CLOSE (lfnoutC)
+     
      IF (SOLWEIGpoi_out==1) THEN
         DO i=1,SolweigCount-1
            WRITE(9,304) INT(dataOutSOL(i,1,Gridiv)),(dataOutSOL(i,is,Gridiv),is=2,ncolumnsdataOutSOL)
@@ -471,10 +486,20 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  CurrentGrid)
         ENDDO
      ENDIF
 
-  ELSE ! if output frequency different from input, TS 09 Feb 2017
+  ENDIF
+  
+  IF ( ResolutionFilesOut /= Tstep ) THEN ! if output frequency different from input, TS 09 Feb 2017
      ! write out every nlinesOut, 60.*60/ResolutionFilesOut = output frequency per hour
      nlinesOut=INT(nsh/(60.*60/ResolutionFilesOut))
-     !  PRINT*, iv,nlinesOut,irMax
+     
+     ! Main output file --------------------------------------------------
+     lfnOutC=39  !Output file code
+     IF (iv==1) THEN
+        OPEN(lfnOutC,file=TRIM(FileOut),err=112)
+        WRITE(lfnOutC,'(a)') HeaderUseNoSep
+     ELSE
+        OPEN(lfnOutC,file=TRIM(FileOut),position='append')!,err=112)
+     ENDIF
 
      DO i=nlinesOut,irMax,nlinesOut
         ALLOCATE(dataOutProc0(nlinesOut,SIZE(UseColumnsDataOut)))
@@ -502,11 +527,13 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  CurrentGrid)
            CASE ('3') !last value,aL
               dataOutProc(j)=dataOutProc0(nlinesOut,j)
            END SELECT
-           !  IF ( Gridiv ==1 .AND. i==100 ) THEN
-           !     !  PRINT*, INT(dataOutProc(1:4)),dataOutProc(5:)
-           !     PRINT*, j, AggregUseX(j)
-           !     PRINT*, dataOutProc(j),dataOutProc0(:,j)
-           !  END IF
+           IF ( Diagnose==1 .AND. Gridiv ==1 .AND. i==irMax ) THEN
+              PRINT*, 'raw data of ',j,':'
+              PRINT*, dataOutProc0(:,j)
+              PRINT*, 'aggregated with method: ',AggregUseX(j)
+              PRINT*, dataOutProc(j)
+              PRINT*, ''
+           END IF
         END DO
 
         ! IF ( Gridiv ==1 ) THEN
@@ -526,6 +553,49 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  CurrentGrid)
         IF (ALLOCATED(dataOutProc)) DEALLOCATE(dataOutProc)
 
      ENDDO
+     CLOSE (lfnoutC)
+
+     !  aggregate all ESTM outputs in the way of average, TS 10 Feb 2017
+     IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14)THEN
+        DO i=nlinesOut,irMax,nlinesOut
+           ALLOCATE(dataOutProc0(nlinesOut,32))
+           ALLOCATE(dataOutProc(32))
+
+           dataOutProc0=dataOut(i-nlinesOut+1:i,1:32,Gridiv)
+
+           DO j = 1, 32, 1
+              SELECT CASE (j)
+              CASE (1:4) !time columns, aT
+                 dataOutProc(j)=dataOutProc0(nlinesOut,j)
+              CASE (5:32) !average, aA
+                 dataOutProc(j)=SUM(dataOutProc0(:,j))/nlinesOut
+                 ! CASE ('2') !sum, aS
+                 !    dataOutProc(j)=SUM(dataOutProc0(:,j))
+                 ! CASE ('3') !last value,aL
+                 !    dataOutProc(j)=dataOutProc0(nlinesOut,j)
+              END SELECT
+
+              IF ( Diagnose==1 .AND. Gridiv ==1 .AND. i==irMax ) THEN
+                 PRINT*, 'raw data of ',j,':'
+                 PRINT*, dataOutProc0(:,j)
+                 PRINT*, 'aggregated with method: ','average'
+                 PRINT*, dataOutProc(j)
+                 PRINT*, ''
+              END IF
+
+           END DO
+
+           WRITE(58,307) INT(dataOutProc(1:4)),dataOutProc(5:32)
+           !WRITE(lfnoutC,301) (INT(dataOut(i,is,Gridiv)),is=1,4),&
+           !      dataOut(i,5:ncolumnsDataOut,Gridiv)
+           IF (ALLOCATED(dataOutProc0)) DEALLOCATE(dataOutProc0)
+           IF (ALLOCATED(dataOutProc)) DEALLOCATE(dataOutProc)
+
+        ENDDO
+        ! DO i=1,irMax
+        !    WRITE(58, 307)(INT(dataOutESTM(i,is,Gridiv)),is=1,4),(dataOutESTM(i,is,Gridiv),is=5,32)
+        ! ENDDO
+     ENDIF
 
 
      !  other outputs not touched at the moment, as of 09 Feb 2017, TS
@@ -547,10 +617,6 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  CurrentGrid)
         ENDDO
      ENDIF
 
-     IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14)THEN
-        DO i=1,irMax
-           WRITE(58, 307)(INT(dataOutESTM(i,is,Gridiv)),is=1,4),(dataOutESTM(i,is,Gridiv),is=5,32)
-        ENDDO
      ENDIF
 
 
@@ -571,7 +637,6 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  CurrentGrid)
 307 FORMAT((i4,1X),3(i3,1X),(f8.4,1X),27(f12.4,1X))  !ESTM out
 
   !================CLOSE OUTPUTFILE================
-  CLOSE (lfnoutC)
   CLOSE (9)
   CLOSE (53)
   CLOSE (54)
@@ -579,8 +644,10 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax,  CurrentGrid)
   RETURN
 
   !Error commands
+110 CALL ErrorHint(52,TRIM(fileOut_tt),notUsed,notUsed,notUsedI)
 111 CALL ErrorHint(52,TRIM(fileOutFormat),notUsed,notUsed,notUsedI)
 112 CALL ErrorHint(52,TRIM(fileOut),notUsed,notUsed,notUsedI)
+
 
 
 END SUBROUTINE SUEWS_Output

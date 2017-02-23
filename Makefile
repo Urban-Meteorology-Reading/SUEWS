@@ -9,6 +9,7 @@ CFLAGS = -g -Wall -Wtabs -fbounds-check `nc-config --fflags`
 # needs to be compiled first)
 MODULES = LUMPS_Module_constants.o  \
           LUMPS_metRead.o  \
+		  SUEWS_MetDisagg.o \
           SOLWEIG_modules.o  \
           SUEWS_Files_run_Control.o \
 					precmod.o \

@@ -42,9 +42,6 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
   INTEGER:: i, j, nlinesOut
   REAL(KIND(1d0)),ALLOCATABLE:: dataOutProc0(:,:),dataOutProc(:)
 
-  INTEGER:: Gridiv, year_int, iv, irMax, CurrentGrid   !inputs
-  INTEGER:: i
-
   CHARACTER(len=10):: str2, str2_tt, grstr2, yrstr2
   CHARACTER(len=100):: rawpath, SnowOut,ESTMOut, FileOutFormat
 
@@ -85,7 +82,7 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
   WRITE(yrstr2,'(i4)') year_int
 
   rawpath=TRIM(FileOutputPath)//TRIM(FileCode)//TRIM(ADJUSTL(grstr2))//'_'//TRIM(ADJUSTL(yrstr2)) ! output resolution added, TS 9 Feb 2017
-  ! For files at specified output resolution 
+  ! For files at specified output resolution
   FileOut=TRIM(rawpath)//'_'//TRIM(ADJUSTL(str2))//'.txt'
   SOLWEIGpoiOut=TRIM(rawpath)//'_SOLWEIGpoiOut.txt'
   ESTMOut=TRIM(rawpath)//'_ESTM_'//TRIM(ADJUSTL(str2))//'.txt' ! output resolution added, TS 10 Feb 2017
@@ -442,9 +439,9 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
   ! 'qn_Paved qn_Bldgs qn_EveTr qn_DecTr qn_Grass qn_BSoil qn_Water ',&
 
   !========== Write out data ==========
-  IF ( ResolutionFilesOut == Tstep .or. KeepTstepFilesOut == 1) THEN ! output frequency same as input, or specify to keep raw output files (HCW 20 Feb 2017)
+  IF ( ResolutionFilesOut == Tstep .OR. KeepTstepFilesOut == 1) THEN ! output frequency same as input, or specify to keep raw output files (HCW 20 Feb 2017)
      ! original output
-  
+
      lfnOutC=38  !Output file code
      IF (iv==1) THEN
         OPEN(lfnOutC,file=TRIM(FileOut_tt),err=110)
@@ -452,7 +449,7 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
      ELSE
         OPEN(lfnOutC,file=TRIM(FileOut_tt),position='append')!,err=112)
      ENDIF
-  
+
      DO i=1,irMax
         WRITE(lfnoutC,FormatUseNoSep) INT(dataOut(i,PACK(UseColumnsDataOut, UseColumnsDataOut < 5),Gridiv)),&
              dataOut(i,PACK(UseColumnsDataOut, UseColumnsDataOut >= 5),Gridiv)
@@ -461,7 +458,7 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
 
      ENDDO
      CLOSE (lfnoutC)
-     
+
      IF (SOLWEIGpoi_out==1) THEN
         DO i=1,SolweigCount-1
            WRITE(9,304) INT(dataOutSOL(i,1,Gridiv)),(dataOutSOL(i,is,Gridiv),is=2,ncolumnsdataOutSOL)
@@ -487,11 +484,11 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
      ENDIF
 
   ENDIF
-  
+
   IF ( ResolutionFilesOut /= Tstep ) THEN ! if output frequency different from input, TS 09 Feb 2017
      ! write out every nlinesOut, 60.*60/ResolutionFilesOut = output frequency per hour
      nlinesOut=INT(nsh/(60.*60/ResolutionFilesOut))
-     
+
      ! Main output file --------------------------------------------------
      lfnOutC=39  !Output file code
      IF (iv==1) THEN
@@ -617,11 +614,11 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
         ENDDO
      ENDIF
 
-     ENDIF
+  ENDIF
 
 
 
-  END IF
+  ! END IF
 
   IF (ALLOCATED(AggregUseX)) DEALLOCATE(AggregUseX)
 

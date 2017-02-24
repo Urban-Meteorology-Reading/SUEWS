@@ -66,7 +66,6 @@ PROGRAM SUEWS_Program
   INTEGER:: iv
 
   REAL::  timeStart, timeFinish ! profiling use, AnOHM TS
-  INTEGER(KIND(1d0)),ALLOCATABLE :: GridIDmatrix0(:)
   ! REAL :: xErr      ! error in Bo iteration, AnOHM TS 20160331
   ! LOGICAL, ALLOCATABLE :: flagRerunAnOHM(:)   ! iteration run to make Bo converge,AnOHM TS
 
@@ -121,9 +120,9 @@ PROGRAM SUEWS_Program
      GridIDmatrix(igrid) = INT(SiteSelect(igrid,c_Grid))
   ENDDO
 
-  ! sort grid matrix to conform the geospatial layout as in QGIS
+  ! sort grid matrix to conform the geospatial layout as in QGIS, TS 14 Dec 2016
   IF (ncMode==1) THEN
-     GridIDmatrix0(igrid) =INT(SiteSelect(igrid,c_Grid))
+     GridIDmatrix0=GridIDmatrix
      CALL sortGrid(GridIDmatrix0,GridIDmatrix,nRow,nCol)
   ENDIF
   ! GridIDmatrix0 stores the grid ID in the original order
@@ -424,8 +423,10 @@ PROGRAM SUEWS_Program
               ! (a) Transfer characteristics from SiteSelect to correct row of SurfaceChar
               DO rr=1,nlinesSiteSelect
                  !Find correct grid and year
+                 IF(Diagnose==1) WRITE(*,*) 'grid found:',SiteSelect(rr,c_Grid), 'grid needed:',GridIDmatrix(igrid)
+                 IF(Diagnose==1) WRITE(*,*) 'year found:',SiteSelect(rr,c_Year), 'year needed:',year_int
                  IF(SiteSelect(rr,c_Grid)==GridIDmatrix(igrid).AND.SiteSelect(rr,c_Year)==year_int) THEN
-                    !write(*,*) 'Match found (grid and year) for rr = ', rr
+                    IF(Diagnose==1) WRITE(*,*) 'Match found (grid and year) for rr = ', rr, 'of',nlinesSiteSelect
                     CALL InitializeSurfaceCharacteristics(GridCounter,rr)
                     EXIT
                  ELSEIF(rr == nlinesSiteSelect) THEN

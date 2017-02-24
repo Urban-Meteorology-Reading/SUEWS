@@ -5,7 +5,7 @@
 SUBROUTINE OverallRunControl
   ! Last modified:
   ! HCW 13 Jan 2017 - Changes to RunControl and InitialConditions
-  ! HCW 04 Nov 2016 - minor bug fix in LAImin/LAImax warnings related to 3 veg surface types out cf 7 surface types  
+  ! HCW 04 Nov 2016 - minor bug fix in LAImin/LAImax warnings related to 3 veg surface types out cf 7 surface types
   ! LJ 27 Jan 2016  - Removal of tabs, cleaning of the code
   ! HCW 06 Mar 2015 - Removed options 10,20,30 (NARPOutput) for NetRadiationMethod
   ! HCW 06 Feb 2015 - File ID numbers changed so they are unique
@@ -37,7 +37,7 @@ SUBROUTINE OverallRunControl
   NAMELIST/RunControl/FileCode,&
        FileInputPath,&
        FileOutputPath,&
-       Tstep,& 
+       Tstep,&
        MultipleMetFiles,&
        MultipleInitFiles,&
        MultipleESTMFiles,&
@@ -53,7 +53,7 @@ SUBROUTINE OverallRunControl
        AnthropHeatMethod,&
        AnthropCo2Method,&
        NetRadiationMethod,&
-       RoughLenHeatMethod,&      
+       RoughLenHeatMethod,&
        RoughLenMomMethod,&
        SMDMethod,&
        StabilityMethod,&
@@ -70,32 +70,35 @@ SUBROUTINE OverallRunControl
        DiagnoseDisagg,&
        DiagnoseDisaggESTM,&
        DiagQN,&
-       DiagQS
-       
-       
+       DiagQS,&
+       ncMode,& ! only needed by netCDF writting, TS 24 Feb 2017
+       nRow,&   ! only needed by netCDF writting, TS 24 Feb 2017
+       nCol     ! only needed by netCDF writting, TS 24 Feb 2017
+
+
   ! -------------------------------------
 
   !Initialise namelist with default values
-  KeepTstepFilesIn = 0     
-  KeepTstepFilesOut = 1     
+  KeepTstepFilesIn = 0
+  KeepTstepFilesOut = 1
   DisaggMethod = 1          ! linear disaggregation of averages
   DisaggMethodESTM = 1      ! linear disaggregation of averages
   RainDisaggMethod = 100    ! even distribution among all subintervals
   RainAmongN = -999         ! no default setting for number of rainy subintervals
-  KdownZen = 1              ! use zenith angle by default 
-  
+  KdownZen = 1              ! use zenith angle by default
+
   SuppressWarnings=0        ! write warnings file
-  
+
   ! Set Diagnose switch to off (0). If Diagnose = 1 is set in RunControl, model progress will be printed
   Diagnose = 0
-  DiagnoseDisagg = 0 
-  DiagnoseDisaggESTM = 0 
-  DiagQN = 0  
+  DiagnoseDisagg = 0
+  DiagnoseDisaggESTM = 0
+  DiagQN = 0
   DiagQS = 0
-  
+
   FileCode='none'
   !smithFile='Smith1966.grd'
-  
+
   !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   !Read in the RunControl.nml file
   OPEN(55,File='RunControl.nml',err=200,status='old') !Change with needs
@@ -153,7 +156,7 @@ SUBROUTINE OverallRunControl
         STOP
      ENDIF
   ENDIF
-  
+
   !------------------------------------------------------------------
   !Print run information on the screen
   WRITE(*,*)'--------------------------------------------------------'
@@ -1457,7 +1460,7 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(gridiv,c_GsS2)       = Conductance_Coeff(iv5,cc_GsS2)
   SurfaceChar(gridiv,c_GsKmax)     = Conductance_Coeff(iv5,cc_GsKmax)
   SurfaceChar(gridiv,c_gsModel)    = Conductance_Coeff(iv5,cc_gsModel)
-  
+
   ! ---- Find code for Anthropogenic heat ----
   CALL CodeMatchAnthropogenicHeat(rr,c_QFCode)
   ! Transfer Anthropogenic heat characteristics to SurfaceChar
@@ -1602,7 +1605,7 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
 
   INTEGER:: LeavesOutInitially   !Allows for quick setting of veg-related initial conditions for full leaf-out (1) or leaf-off (0)
   INTEGER:: SnowInitially        !Allows for quick setting of snow-related initial conditions for no snow initially (0)
-       
+
   INTEGER:: GridsInitialised=0   ! Number of grids initialised at start of model run
   REAL(KIND(1d0)):: NormalizeVegChar  !Function
 
@@ -1666,7 +1669,7 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
        SnowAlb0,&
        BoInit
 
-  ! Initialise namelist to NAN ----------------------------------------------     
+  ! Initialise namelist to NAN ----------------------------------------------
   DaysSinceRain=INT(NAN)
   Temp_C0=NAN
   LeavesOutInitially=INT(NAN)
@@ -1726,7 +1729,7 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
   BoInit=NAN
 
   WRITE(year_txt,'(I4)') year_int  !Get year as a text string
-  
+
   ! Define InitialConditions file -------------------------------------------
   FileInit=TRIM(FileInputPath)//TRIM("InitialConditions")//TRIM(GridName)//'.nml'
   ! On very first InitialConditions for each grid, can use one initial conditions file specified for all grids
@@ -1734,44 +1737,44 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
      FileInit=TRIM(FileInputPath)//TRIM("InitialConditions")//TRIM(FileCode)//'_'//TRIM(year_txt)//'.nml'
      GridsInitialised=GridsInitialised+1
   ENDIF
-    
+
   ! Open, read and close InitialConditions file -----------------------------
   OPEN(56,File=TRIM(FileInit),err=600,status='old')
   READ(56,iostat=ios_out,nml=InitialConditions,err=601)
   CLOSE(56)
-    
+
   ! Write InitialConditions to FileChoices ----------------------------------
   FileChoices=TRIM(FileOutputPath)//TRIM(FileCode)//'_FileChoices.txt'
   OPEN(12,file=FileChoices,position='append')
   WRITE(12,*) '----- '//TRIM("InitialConditions")//TRIM(GridName)//'.nml'//' -----'
   WRITE(12,nml=InitialConditions)
   CLOSE(12)
-  
-  
+
+
   !--------------------------------------------------------------------------
   ! Check initial conditions and assign values if not provided --------------
-  
+
   ! Calculate previous day --------------------------------------------------
   id_prev = INT(MetForcingData(1,2,Gridiv)) - 1
-  
+
   ! If no. days since rainfall unknown, set to zero -------------------------
-  IF(DaysSinceRain == INT(NAN)) DaysSinceRain = 0  
-  
+  IF(DaysSinceRain == INT(NAN)) DaysSinceRain = 0
+
   ! If average temperature for previous day unknown, use average of first day
-  IF(Temp_C0 == NAN) Temp_C0=sum(MetForcingData(1:(24*nsh),12,Gridiv))/(24*nsh) 
-  
+  IF(Temp_C0 == NAN) Temp_C0=sum(MetForcingData(1:(24*nsh),12,Gridiv))/(24*nsh)
+
   ! Set vegetation-related initial conditions -------------------------------
   ! If LeavesOutInitially is -999, don't use and check all required conditions have been provided
-  IF(LeavesOutInitially == INT(NAN)) THEN   
-     IF(GDD_1_0 == NAN .or. GDD_2_0 == NAN) THEN 
+  IF(LeavesOutInitially == INT(NAN)) THEN
+     IF(GDD_1_0 == NAN .or. GDD_2_0 == NAN) THEN
         CALL ErrorHint(36,'Specify values for GDD_1_0 and GDD_2_0.', notUsed,notUsed,notUsedI)
      ENDIF
      IF(LAIinitialEveTr == NAN .or. LAIinitialDecTr == NAN .or. LAIinitialGrass == NAN) THEN
          CALL ErrorHint(36,'Specify initial values for LAI for all vegetated surface types.', notUsed,notUsed,notUsedI)
-     ENDIF    
+     ENDIF
      IF(AlbEveTr0 == NAN .or. AlbDecTr0 == NAN .or. AlbGrass0 == NAN) THEN
         CALL ErrorHint(36,'Specify initial values for albedo for all vegetated surface types.', notUsed,notUsed,notUsedI)
-     ENDIF    
+     ENDIF
      IF(DecidCap0 == NAN) THEN
          CALL ErrorHint(36,'Specify DecidCap0.', notUsed,notUsed,notUsedI)
      ENDIF
@@ -1779,7 +1782,7 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
         CALL ErrorHint(36,'Specify Porosity0.', notUsed,notUsed,notUsedI)
      ENDIF
   ELSEIF(LeavesOutInitially == 1) THEN   !If leaves out, set to summertime values using SUEWS_Veg.txt
-      GDD_1_0 = NormalizeVegChar(c_GDDFull,Gridiv)              
+      GDD_1_0 = NormalizeVegChar(c_GDDFull,Gridiv)
       GDD_2_0 = 0
       LAIinitialEveTr = SurfaceChar(Gridiv,c_LAIMax(ivConif))   !Max LAI
       LAIinitialDecTr = SurfaceChar(Gridiv,c_LAIMax(ivDecid))
@@ -1804,7 +1807,7 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
      CALL ErrorHint(36,'LeavesOutInitially must be 0, 1, or -999 (or omitted from InitialConditions namelist)', &
                     notUsed,notUsed,notUsedI)
   ENDIF
-  
+
   ! If surface wetness states unknown, set to zero --------------------------
   IF(PavedState == NAN) PavedState = 0
   IF(BldgsState == NAN) BldgsState = 0
@@ -1814,13 +1817,13 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
   IF(BSoilState == NAN) BSoilState = 0
   ! except for water surface - set using WaterDepth in SUEWS_Water.txt
   IF(WaterState == NAN) WaterState = SurfaceChar(Gridiv,c_WaterDepth)
-  
+
   ! Check initial soil moisture states are provided -------------------------
   IF(SoilStorePavedState == NAN .or. SoilStoreBldgsState == NAN .or. SoilStoreEveTrState == NAN .or. &
      SoilStoreDecTrState == NAN .or. SoilStoreGrassState == NAN .or. SoilStoreBSoilState == NAN) THEN
      CALL ErrorHint(36,'Initial soil moisture must be provided for all surface types except water.', notUsed,notUsed,notUsedI)
   ENDIF
-  
+
   ! Set snow-related initial conditions -------------------------------
   ! If snow part not used, or no snow initially, set all snow-related initial conditions to zero
   IF(SnowUse == 0 .or. SnowInitially == 0) THEN
@@ -1851,7 +1854,7 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
      SnowDensDecTr = 0
      SnowDensGrass = 0
      SnowDensBSoil = 0
-     SnowDensWater = 0     
+     SnowDensWater = 0
      SnowAlb0 = 0
   ELSEIF(SnowInitially == INT(NAN)) THEN   !Check all required snow-related conditions are provided
      IF(SnowWaterPavedState == NAN .or. SnowWaterBldgsState == NAN .or. SnowWaterEveTrState == NAN .or. &
@@ -1873,7 +1876,7 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
         SnowDensDecTr == NAN .or. SnowDensGrass == NAN .or. SnowDensBSoil == NAN .or. &
         SnowDensWater == NAN) THEN
         CALL ErrorHint(36,'Specify SnowDens for all 7 surface types.', notUsed,notUsed,notUsedI)
-     ENDIF     
+     ENDIF
      IF(SnowAlb0 == NAN) THEN
         CALL ErrorHint(36,'Specify SnowAlb0.', notUsed,notUsed,notUsedI)
      ENDIF
@@ -1881,15 +1884,15 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
      CALL ErrorHint(36,'SnowInitially must be 0 or -999 (or omitted from InitialConditions namelist)', &
                     notUsed,notUsed,notUsedI)
   ENDIF
-  
+
   ! If AnOHM option selected, check initial Bowen ratio is provided ---------
   IF(StorageHeatMethod==3 .and. BoInit == NAN) THEN
      CALL ErrorHint(36,'Specify BoInit for AnOHM calculations.', notUsed,notUsed,notUsedI)
-  ENDIF 
-      
+  ENDIF
+
   ! -------------------------------------------------------------------------
   ! -------------------------------------------------------------------------
-  
+
   ! Previous day DOY number (needed in file allocations)
   IF(id_prev>=364) id_prev=0  !If previous day is larger than 364, set this to zero
 
@@ -1905,11 +1908,11 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
   ModelDailyState(Gridiv,cMDS_albEveTr)    = AlbEveTr0
   ModelDailyState(Gridiv,cMDS_albDecTr)    = AlbDecTr0
   ModelDailyState(Gridiv,cMDS_albGrass)    = AlbGrass0
-  ModelDailyState(Gridiv,cMDS_porosity)    = Porosity0  
+  ModelDailyState(Gridiv,cMDS_porosity)    = Porosity0
   ModelDailyState(Gridiv,cMDS_DecidCap)    = DecidCap0
-  
+
   ModelDailyState(Gridiv,cMDS_CumSnowfall) = 0 !!Check this
-  
+
   ModelDailyState(Gridiv,cMDS_DaysSinceRain) = REAL(DaysSinceRain,KIND(1d0))
   ModelDailyState(Gridiv,cMDS_TempC) = Temp_C0
   ! Assume that the temperature has been the same for the previous days
@@ -1947,9 +1950,9 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
   ModelDailyState(Gridiv,cMDS_SnowDens(WaterSurf))  = SnowDensWater
 
   ModelDailyState(Gridiv,cMDS_SnowAlb)  = SnowAlb0
-  
+
   ! -------------------------------------------------------------------------
-  
+
   ! Saving to ModelOutputData array -----------------------------------------
 
   ! -- Initial wetness status of each surface (above ground) --
@@ -1997,7 +2000,7 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
   ModelOutputData(0,cMOD_SnowFrac(BSoilSurf), Gridiv) = SnowFracBSoil
   ModelOutputData(0,cMOD_SnowFrac(WaterSurf), Gridiv) = SnowFracWater
 
-   
+
   !! Where is this from??
   IceFrac=0.2   !Estimated fraction of ice. Should be improved in the future
 
@@ -2150,24 +2153,24 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
 
 END SUBROUTINE InitialState
 
-   
+
 ! ===========================================================================
 FUNCTION NormalizeVegChar(VegCol,Gridiv) RESULT(NormVegResult)
-        
+
   USE AllocateArray
   USE ColNamesInputFiles
-    
+
   IMPLICIT NONE
-  
+
   INTEGER,DIMENSION(nvegsurf):: VegCol  !Must be column numbers defined for veg surfaces only
   INTEGER:: Gridiv
   REAL(KIND(1d0)):: NormVegResult
-   
+
   NormVegResult = (SurfaceChar(Gridiv,VegCol(ivConif))*SurfaceChar(Gridiv,c_FrEveTr) + &
                    SurfaceChar(Gridiv,VegCol(ivDecid))*SurfaceChar(Gridiv,c_FrDecTr) + &
                    SurfaceChar(Gridiv,VegCol(ivGrass))*SurfaceChar(Gridiv,c_FrGrass)) / &
                     (SurfaceChar(Gridiv,c_FrEveTr) + SurfaceChar(Gridiv,c_FrDecTr) + SurfaceChar(Gridiv,c_FrGrass))
-  
+
   RETURN
 END FUNCTION NormalizeVegChar
 ! ===========================================================================
@@ -2184,7 +2187,7 @@ SUBROUTINE NextInitial(GridName,year_int)
   ! Last day of year is not anymore the number of days on that year, but rather
   ! id == 1. Thus nofDaysThisYear was changed to 1. LJ 9/4/2015
   !------------------------------------------------------------------------
-  
+
   USE allocateArray
   USE ColNamesInputFiles
   USE ColNamesModelDailyState
@@ -2222,7 +2225,7 @@ SUBROUTINE NextInitial(GridName,year_int)
   ENDIF
   ID_Prev_Out=(id-1)
 
-    
+
   !! If last time of day, then DailyState variables will have been updated so can write out arrays for id rather than id-1
   !if(it==23 .and. imin == (nsh_real-1)/nsh_real*60) then  !!LastTimeofday
   !   id=id+1

@@ -320,9 +320,9 @@ END SUBROUTINE SiteSelect_txt2nc
 !   and succesive columns across (i.e., west to east)
 ! the output file frequency is the same as metblocks in the main SUEWS loop
 !===========================================================================!
-SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
+SUBROUTINE SUEWS_Output_nc(year_int,iblock,irMax)
   !INPUT: year_int = Year as a integer
-  !       iv = Block number of met data
+  !       iblock = Block number of met data
   !       irMax = Maximum number of rows in met data
   USE sues_data
   USE data_in
@@ -340,8 +340,8 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
 
   IMPLICIT NONE
 
-  INTEGER:: year_int, iv, irMax, i
-  CHARACTER(len=10):: tstepStr2, ivStr2, yrStr2
+  INTEGER:: year_int, iblock, irMax, i
+  CHARACTER(len=10):: tstepStr2, iblockStr2, yrStr2
   CHARACTER(len=100):: rawpath
 
   ! We are writing 3D data, {time, y, x}
@@ -468,7 +468,7 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
 
   !================DEFINE OUTPUT FILENAME AND ITS PATH================
   WRITE(tstepStr2,'(i2)') TSTEP/60
-  WRITE(ivStr2,'(i10)') iv
+  WRITE(iblockStr2,'(i10)') iblock
   WRITE(yrStr2,'(i4)') year_int
 
   ! define the dimension of spatial array/frame in the output
@@ -503,7 +503,7 @@ SUBROUTINE SUEWS_Output_nc(year_int,iv,irMax)
   ! PRINT*, 'size x dim 2:',SIZE(varX, dim=2)
 
   ! file names
-  rawpath=TRIM(FileOutputPath)//TRIM(FileCode)//TRIM(ADJUSTL(yrStr2))//'_'//TRIM(ADJUSTL(ivStr2))
+  rawpath=TRIM(FileOutputPath)//TRIM(FileCode)//TRIM(ADJUSTL(yrStr2))//'_'//TRIM(ADJUSTL(iblockStr2))
   FileOut=TRIM(rawpath)//'_'//TRIM(ADJUSTL(tstepStr2))//'.nc'
 
   ! Create the netCDF file. The nf90_clobber parameter tells netCDF to

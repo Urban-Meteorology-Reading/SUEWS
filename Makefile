@@ -65,10 +65,10 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_ESTM_functions.o \
           SUEWS_ESTM_initials.o \
           SUEWS_ESTM_v2016.o \
-          SUEWS_CO2.o
-TEST = 		SUEWS_IO_nc.o  \
+          SUEWS_CO2.o \
 					SUEWS_Initial.o \
 					SUEWS_Output.o
+TEST = 		SUEWS_IO_nc.o  
 
 # Build main program - main uses MODULES and OTHERS
 main: SUEWS_Program.f95 $(MODULES) $(OTHERS) $(TEST)

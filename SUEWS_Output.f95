@@ -356,8 +356,8 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
 
   ALLOCATE(AggregUseX(SIZE(UseColumnsDataOut)))
   CALL parse(AggregUse,';',AggregUseX,SIZE(UseColumnsDataOut))
-  PRINT*, 'good 1'
-  PRINT*, AggregUseX
+  ! PRINT*, 'good 1'
+  ! PRINT*, AggregUseX
 
   !========== Open output file (and first time print header) ==========
 

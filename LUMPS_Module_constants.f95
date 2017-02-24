@@ -97,8 +97,8 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::WGWaterDist_Coeff         !Coefficients for WithinGridWaterDist
 
   ! ---- Define arrays for model calculations ----------------------------------------------------
-  INTEGER(KIND(1d0)),DIMENSION(:), ALLOCATABLE:: GridIDmatrix         !Array containing GridIDs in SiteSelect after sorting
-  INTEGER(KIND(1d0)),DIMENSION(:), ALLOCATABLE:: GridIDmatrix0        !Array containing GridIDs in SiteSelect in the original order
+  INTEGER,DIMENSION(:), ALLOCATABLE:: GridIDmatrix         !Array containing GridIDs in SiteSelect after sorting
+  INTEGER,DIMENSION(:), ALLOCATABLE:: GridIDmatrix0        !Array containing GridIDs in SiteSelect in the original order
   REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: SurfaceChar          !Array for surface characteristics
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: MetForcingData       !Array for meteorological forcing data
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: ESTMForcingData      !Array for ESTM forcing data
@@ -2086,7 +2086,7 @@ END MODULE ESTM_data
 MODULE WhereWhen
   ! Stores grid and datetime info
 
-  INTEGER:: GridID   !Grid number (as specified in SUEWS_SiteSelect.txt)
+  INTEGER(KIND(1d0)):: GridID   !Grid number (as specified in SUEWS_SiteSelect.txt)
   CHARACTER(LEN=10):: GridID_text !Grid number as a text string
   CHARACTER(LEN=12):: datetime  ! YYYY DOY HH MM
 

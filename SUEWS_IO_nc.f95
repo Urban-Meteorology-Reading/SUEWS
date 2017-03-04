@@ -338,12 +338,20 @@ SUBROUTINE SUEWS_Output_nc(year_int,iblock,irMax)
   ! USE SetupOutput
   USE netCDF
 
-
   IMPLICIT NONE
+
+  ! define type: variable attributes
+  TYPE varAttr
+     CHARACTER(len = 10) :: header
+     CHARACTER(len = 12) :: unit
+     CHARACTER(len = 14) :: fmt
+     CHARACTER(len = 1)  :: aggreg
+     CHARACTER(len = 50) :: longNm
+  END TYPE varAttr
 
 
   INTEGER:: year_int, iblock, irMax, CurrentGrid !inputs
-  INTEGER:: i, j, nlinesOut,nsize
+  INTEGER:: i, j, k, nlinesOut,nsize
   REAL(KIND(1d0)),ALLOCATABLE:: dataOutProc0(:,:,:),dataOutProc(:,:),dataOutProcX(:,:,:)
 
   CHARACTER(len=10):: str2, str2_tt, grstr2, yrstr2,iblockStr2
@@ -367,6 +375,10 @@ SUBROUTINE SUEWS_Output_nc(year_int,iblock,irMax)
   CHARACTER(len= 1):: aT, aA, aS, aL   !Useful formats
   CHARACTER(len= 3):: itext
 
+  TYPE(varAttr) :: varList(130)
+
+
+
   ! Define useful formats here
   fy   = '(i0004,1X)'   !4 digit integer for year
   ft   = '(i0003,1X)'   !3 digit integer for id, it, imin
@@ -379,6 +391,9 @@ SUBROUTINE SUEWS_Output_nc(year_int,iblock,irMax)
   aA = '1'   !average
   aS = '2'   !sum
   aL = '3'   !last value
+
+
+
 
   !========== Set file path and file names ==========
   WRITE(str2_tt,'(i4)') tstep/60
@@ -410,12 +425,19 @@ SUBROUTINE SUEWS_Output_nc(year_int,iblock,irMax)
      FormatAll(:) = '-'
      AggregAll(:) = '-'
      LongNmAll(:) = '-'
+     varList=varAttr('-','-','-','-','-')
 
      HeaderAll(1:5) = (/'   Year','    DOY','   Hour','    Min','Dectime'/)   !datetime info
      UnitsAll (1:5) = (/'   YYYY','    DOY','     HH','     MM','      -'/)
      FormatAll(1:5) = (/fy,ft,ft,ft,fd/)
      AggregAll(1:5) = aT
      LongNmAll(1:5) = (/'        Year',' Day of Year','        Hour','      Minute','Decimal time'/)
+     varList(1) = varAttr('Year','YYYY',fy,aT,'Year')
+     varList(2) = varAttr('DOY','DOY',ft,aT,'Day of Year')
+     varList(3) = varAttr('Hour','HH',ft,aT,'Hour')
+     varList(4) = varAttr('Min','MM',ft,aT,'Minute')
+     varList(5) = varAttr('Dectime','-',fd,aT,'Decimal time')
+
 
      HeaderAll(6:9) = (/'Kdown','  Kup','Ldown','  Lup'/)  !radiation components
      UnitsAll (6:9) = 'W_m-2'
@@ -424,11 +446,20 @@ SUBROUTINE SUEWS_Output_nc(year_int,iblock,irMax)
      LongNmAll(6:9) = (/'Incoming shortwave radiation','Outgoing shortwave radiation', &
           ' Incoming longwave radiation',' Outgoing longwave radiation'/)
 
+     varList(6) = varAttr('Kdown' ,'W_m-2',f94,aA,'Incoming shortwave radiation')
+     varList(7) = varAttr('Kup'   ,'W_m-2',f94,aA,'Outgoing shortwave radiation')
+     varList(8) = varAttr('Ldown' ,'W_m-2',f94,aA,'Incoming longwave radiation')
+     varList(9) = varAttr('Lup'   ,'W_m-2',f94,aA,' Outgoing longwave radiation')
+
+
      HeaderAll(10) = 'Tsurf'
      UnitsAll (10) = 'degC'
      FormatAll(10) = f94
      AggregAll(10) = aA
      LongNmAll(10) = 'Bulk surface temperature'
+
+     varList(10) = varAttr('Tsurf' ,'degC',f94,aA,'Bulk surface temperature')
+
 
      HeaderAll(11:15) = (/'QN','QF','QS','QH','QE'/)  !energy fluxes
      UnitsAll (11:15) = 'W_m-2'
@@ -436,6 +467,13 @@ SUBROUTINE SUEWS_Output_nc(year_int,iblock,irMax)
      AggregAll(11:15) = aA
      LongNmAll(11:15) = (/' Net all-wave radiation','Anthropogenic heat flux','  Net storage heat flux', &
           '     Sensible heat flux','       Latent heat flux'/)
+
+     varList(11) = varAttr('QN' ,'W_m-2',f94,aA,'Net all-wave radiation')
+     varList(12) = varAttr('QF'   ,'W_m-2',f94,aA,'Anthropogenic heat flux')
+     varList(13) = varAttr('QS' ,'W_m-2',f94,aA,'  Net storage heat flux')
+     varList(14) = varAttr('QH'   ,'W_m-2',f94,aA,'Sensible heat flux')
+     varList(15) = varAttr('QE'   ,'W_m-2',f94,aA,'Latent heat flux')
+
 
      HeaderAll(16:18) = (/'QHlumps','QElumps','QHresis'/)   !energy fluxes (other approaches)
      UnitsAll (16:18)  = 'W_m-2'
@@ -732,29 +770,30 @@ SUBROUTINE SUEWS_Output_nc(year_int,iblock,irMax)
         dataOutProc0=dataOut(i-nlinesOut+1:i,1:SIZE(UseColumnsDataOut),1:NumberOfGrids)
 
         DO j = 1, SIZE(AggregUseX), 1
-           ! print*, i,j
-           ! aggregating different variables
-           SELECT CASE (AggregUseX(j))
-           CASE ('0') !time columns, aT
-              dataOutProc(j,:)=dataOutProc0(nlinesOut,j,:)
-           CASE ('1') !average, aA
-              dataOutProc(j,:)=SUM(dataOutProc0(:,j,:))/nlinesOut
-           CASE ('2') !sum, aS
-              dataOutProc(j,:)=SUM(dataOutProc0(:,j,:))
-           CASE ('3') !last value,aL
-              dataOutProc(j,:)=dataOutProc0(nlinesOut,j,:)
-           END SELECT
-           IF ( Diagnose==1 .AND. i==irMax ) THEN
-              PRINT*, 'raw data of ',j,':'
-              PRINT*, dataOutProc0(:,j,1)
-              PRINT*, 'aggregated with method: ',AggregUseX(j)
-              PRINT*, dataOutProc(j,1)
-              PRINT*, ''
-           END IF
+           DO k = 1, NumberOfGrids, 1
+              ! print*, i,j
+              ! aggregating different variables
+              SELECT CASE (AggregUseX(j))
+              CASE ('0') !time columns, aT
+                 dataOutProc(j,k)=dataOutProc0(nlinesOut,j,k)
+              CASE ('1') !average, aA
+                 dataOutProc(j,k)=SUM(dataOutProc0(:,j,k))/nlinesOut
+              CASE ('2') !sum, aS
+                 dataOutProc(j,k)=SUM(dataOutProc0(:,j,k))
+              CASE ('3') !last value,aL
+                 dataOutProc(j,k)=dataOutProc0(nlinesOut,j,k)
+              END SELECT
+              IF ( Diagnose==1 .AND. i==irMax ) THEN
+                 PRINT*, 'raw data of ',j,':'
+                 PRINT*, dataOutProc0(:,j,1)
+                 PRINT*, 'aggregated with method: ',AggregUseX(j)
+                 PRINT*, dataOutProc(j,1)
+                 PRINT*, ''
+              END IF
+           END DO
+
         END DO
         dataOutProcX(nsize,:,:)=dataOutProc(:,:)
-
-
 
 
         IF (ALLOCATED(dataOutProc0)) DEALLOCATE(dataOutProc0)
@@ -814,22 +853,30 @@ SUBROUTINE SUEWS_Write_nc(fileOutput,header,longNm,units,dataOutput,irMax)
   ! When we create netCDF files, variables and dimensions, we get back
   ! an ID for each one.
   INTEGER :: ncID, varID, dimids(NDIMS),varIDGrid
-  INTEGER :: x_dimid, y_dimid,time_dimid,iVar,varIDx,varIDy
-  REAL(KIND(1d0)) :: dataOutput(1:irMax,1:SIZE(UseColumnsDataOut),1:NumberOfGrids)
+  INTEGER :: x_dimid,y_dimid,time_dimid,iVar,varIDx,varIDy,varIDt
+  REAL(KIND(1d0)) :: dataOutput(1:irMax,1:SIZE(UseColumnsDataOut),1:NumberOfGrids),&
+       xTime(irMax)
   REAL(KIND(1d0)), ALLOCATABLE :: varOut(:,:,:),&
        varX(:,:),varY(:,:),&
        xLat(:,:),xLon(:,:),&
        varSeq0(:),varSeq(:)
+
   INTEGER :: idVar(iVarStart:SIZE(UseColumnsDataOut))
   CHARACTER(len=50):: nameVarList(SIZE(UseColumnsDataOut)),ivarStr2,&
        longNmList(SIZE(UseColumnsDataOut)),ilongNmStr2,&
        unitList(SIZE(UseColumnsDataOut)),iunitStr2
+  CHARACTER(len = 4)  :: yrStr2
+  CHARACTER(len = 40) :: startStr2
 
 
   !================GET THE VARIABLE-RELAED PROPERTIES================
   CALL parse(header,';',nameVarList,SIZE(UseColumnsDataOut))
   CALL parse(longNm,';',longNmList,SIZE(UseColumnsDataOut))
   CALL parse(units,';',unitList,SIZE(UseColumnsDataOut))
+
+  ! set year string
+  WRITE(yrStr2,'(i4)') INT(dataOutput(1,1,1))
+  startStr2=TRIM(yrStr2)//'-01-01 00:00:00'
 
   ! define the dimension of spatial array/frame in the output
   nX   = nCol
@@ -888,6 +935,10 @@ SUBROUTINE SUEWS_Write_nc(fileOutput,header,longNm,units,dataOutput,irMax)
   ALLOCATE(varOut(nX,nY,irMax))
 
   ! define all variables
+  ! define time variable:
+  CALL check( nf90_def_var(ncID,'time', NF90_REAL, time_dimid, varIDt))
+  CALL check( nf90_put_att(ncID,varIDt,'units','minutes since '//startStr2 ) )
+
   ! define coordinate variables:
   CALL check( nf90_def_var(ncID,'xLon', NF90_REAL, (/x_dimid, y_dimid/), varIDx))
   CALL check( nf90_put_att(ncID,varIDx,'units','degree_east') )
@@ -927,6 +978,10 @@ SUBROUTINE SUEWS_Write_nc(fileOutput,header,longNm,units,dataOutput,irMax)
   ! End define mode. This tells netCDF we are done defining metadata.
 
   ! put all variable values into netCDF datasets
+  ! put time variable in minute:
+  xTime=(dataOutput(1:irMax,2,1)-1)*24*60+dataOutput(1:irMax,3,1)*60+dataOutput(1:irMax,4,1)
+  CALL check( nf90_put_var(ncID, varIDt, xTime) )
+
   ! put coordinate variables:
   CALL check( nf90_put_var(ncID, varIDx, varX) )
   CALL check( nf90_put_var(ncID, varIDy, varY) )

@@ -77,14 +77,16 @@ SUBROUTINE OverallRunControl
 
   !Initialise namelist with default values
   KeepTstepFilesIn = 0     
-  KeepTstepFilesOut = 1     
+  KeepTstepFilesOut = 0     
+  WriteOutOption = 0
   DisaggMethod = 1          ! linear disaggregation of averages
   DisaggMethodESTM = 1      ! linear disaggregation of averages
   RainDisaggMethod = 100    ! even distribution among all subintervals
   RainAmongN = -999         ! no default setting for number of rainy subintervals
   KdownZen = 1              ! use zenith angle by default 
   
-  SuppressWarnings=0        ! write warnings file
+  SuppressWarnings=0        ! write warnings file  
+  ResolutionFilesIn=0       ! Set to zero so that if not found, automatically set to Tstep below
   
   ! Set Diagnose switch to off (0). If Diagnose = 1 is set in RunControl, model progress will be printed
   Diagnose = 0
@@ -92,7 +94,7 @@ SUBROUTINE OverallRunControl
   DiagnoseDisaggESTM = 0 
   DiagQN = 0  
   DiagQS = 0
-  
+    
   FileCode='none'
   !smithFile='Smith1966.grd'
   
@@ -107,6 +109,8 @@ SUBROUTINE OverallRunControl
   !Check for problems with FileCode
   IF (FileCode=='none') CALL ErrorHint(26,TRIM("RunControl.nml FileCode is missing"),notUsed,notUsed,notUsedI)
 
+  IF(ResolutionFilesIn==0) ResolutionFilesIn = Tstep   !If ResolutionFilesIn not found, automatically set to Tstep
+  
   !-----------------------------------------------------------------------
 
   !Write RunControl information to FileChoices.txt
@@ -1507,10 +1511,10 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(gridiv,c_HrProfSnowCWE) = Profiles_Coeff(iv5,cPr_Hours)
   !Human activity (weekdays)
   CALL CodeMatchProf(rr,c_CO2mWD)
-  SurfaceChar(gridiv,c_HrProfCO2mWD) = Profiles_Coeff(iv5,cPr_Hours)
+  SurfaceChar(gridiv,c_HrProfHumActivityWD) = Profiles_Coeff(iv5,cPr_Hours)
   !Human activity (weekends)
   CALL CodeMatchProf(rr,c_CO2mWE)
-  SurfaceChar(gridiv,c_HrProfCO2mWE) = Profiles_Coeff(iv5,cPr_Hours)
+  SurfaceChar(gridiv,c_HrProfHumActivityWE) = Profiles_Coeff(iv5,cPr_Hours)
   
   ! ---- Interpolate Hourly Profiles to model timestep and normalise
   TstepProfiles(Gridiv,:,:) = -999   !Initialise TstepProfiles
@@ -1533,14 +1537,14 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   TstepProfiles(Gridiv,cTP_WUAutoWE,:) = TstepProfiles(Gridiv,cTP_WUAutoWE,:) / SUM(TstepProfiles(Gridiv,cTP_WUAutoWE,:))
 
   ! Human activity for CO2 calculations
-  CALL SUEWS_InterpHourlyProfiles(Gridiv,cTP_CO2mWD,c_HrProfCO2mWD)
-  CALL SUEWS_InterpHourlyProfiles(Gridiv,cTP_CO2mWE,c_HrProfCO2mWE)
+  CALL SUEWS_InterpHourlyProfiles(Gridiv,cTP_HumActivityWD,c_HrProfHumActivityWD)
+  CALL SUEWS_InterpHourlyProfiles(Gridiv,cTP_HumActivityWE,c_HrProfHumActivityWE)
   ! For human activity, check values are between 1 (night) and 2 (day)
-  IF(any(TstepProfiles(Gridiv,cTP_CO2mWD,:) < 1 .or. TstepProfiles(Gridiv,cTP_CO2mWD,:) > 2)) THEN
+  IF(any(TstepProfiles(Gridiv,cTP_HumActivityWD,:) < 1 .or. TstepProfiles(Gridiv,cTP_HumActivityWD,:) > 2)) THEN
      CALL ErrorHint(70,'Profile value for human activity (WD) exceeds allowed range 1-2.',NotUsed,NotUsed,notUsedI)    
   ENDIF
-  IF(any(TstepProfiles(Gridiv,cTP_CO2mWE,:) < 1 .or. TstepProfiles(Gridiv,cTP_CO2mWE,:) > 2)) THEN
-     CALL ErrorHint(70,'Profile value for human activity (WD) exceeds allowed range 1-2.',NotUsed,NotUsed,notUsedI)    
+  IF(any(TstepProfiles(Gridiv,cTP_HumActivityWE,:) < 1 .or. TstepProfiles(Gridiv,cTP_HumActivityWE,:) > 2)) THEN
+     CALL ErrorHint(70,'Profile value for human activity (WE) exceeds allowed range 1-2.',NotUsed,NotUsed,notUsedI)    
   ENDIF    
   
 END SUBROUTINE InitializeSurfaceCharacteristics

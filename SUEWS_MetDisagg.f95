@@ -303,7 +303,7 @@
 !======================================================================================        
 
   !======================================================================================
-  SUBROUTINE DisaggregateESTM(iBlock, igrid)
+  SUBROUTINE DisaggregateESTM(iBlock)
   ! Subroutine to disaggregate met forcing data to model time-step     
   ! HCW 10 Feb 2017 
   !======================================================================================
@@ -316,7 +316,7 @@
     INTEGER:: lunit = 101
     INTEGER:: tdiff   !Time difference (in minutes) between first and second rows of original met forcing file
     INTEGER:: i,ii  !counter
-    INTEGER:: iBlock, igrid
+    INTEGER:: iBlock
     INTEGER,DIMENSION(NperESTM):: seq1NperESTM
     INTEGER,DIMENSION(nsd):: seq1nsd
     INTEGER,DIMENSION(ncolsESTMdata):: ESTMDisaggMethod   ! Stores method to use for disaggregating met data
@@ -325,8 +325,7 @@
     CHARACTER(LEN=9),DIMENSION(ncolsESTMdata):: HeaderESTM
     CHARACTER(LEN=10*ncolsESTMdata):: HeaderESTMOut
     REAL(KIND(1d0)),DIMENSION(ReadLinesOrigESTMData):: dectimeOrig
-    REAL(KIND(1d0)),DIMENSION(ReadLinesOrigESTMData*NperESTM):: dectimeDscd, dectimeFast 
-    REAL(KIND(1d0)),DIMENSION(ReadLinesOrigESTMData*NperESTM):: idectime ! sun position at middle of time-step before
+    REAL(KIND(1d0)),DIMENSION(ReadLinesOrigESTMData*NperESTM):: dectimeDscd 
     INTEGER::iostat_var
     
     INTEGER, DIMENSION(NperESTM):: temp_iy, temp_id, temp_ih, temp_im, temp_ihm
@@ -623,7 +622,6 @@ FUNCTION DisaggP_amongN(Slow,amongN, Nper_loc, ReadLinesOrig_loc, ReadLinesOrigM
 
   IMPLICIT NONE
 
-  INTEGER:: MetCol       !Column for met variable to disaggregate, type of disaggregation 
   INTEGER:: amongN       !Number of subintervals over which rain will be distributed
   INTEGER:: Nper_loc     !Number of subintervals per interval (local Nper)
   INTEGER:: ReadLinesOrig_loc,ReadLinesOrigMax_loc   !Number of lines to read in original file (local)

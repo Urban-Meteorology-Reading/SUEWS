@@ -279,7 +279,7 @@ PROGRAM SUEWS_Program
      ALLOCATE(AHProf_tstep(24*NSH,2))                   !Anthropogenic heat profiles at model timestep
      ALLOCATE(WUProfM_tstep(24*NSH,2))                  !Manual water use profiles at model timestep
      ALLOCATE(WUProfA_tstep(24*NSH,2))                  !Automatic water use profiles at model timestep
-     ALLOCATE(CO2m_tstep(24*NSH,2))
+     ALLOCATE(HumActivity_tstep(24*NSH,2))
      ALLOCATE(qn1_store(NSH,NumberOfGrids))
      ALLOCATE(qn1_av_store(2*NSH+1,NumberOfGrids))
      !! Add snow clearing (?)
@@ -508,7 +508,7 @@ PROGRAM SUEWS_Program
                     FileDscdESTM = TRIM(FileInputPath)//TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt) &
                                      //'_ESTM_Ts_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
                     ! Disaggregate ESTM data
-                    CALL DisaggregateESTM(iblock,igrid)                     
+                    CALL DisaggregateESTM(iblock)                     
                  ELSE   
                     ! If each grid has the same ESTM file, ESTM file name does not include grid number, and only need to disaggregate once
                     FileOrigESTM = TRIM(FileInputPath)//TRIM(FileCode)//'_'//TRIM(year_txt)//'_ESTM_Ts_data_'&
@@ -516,7 +516,7 @@ PROGRAM SUEWS_Program
                     FileDscdESTM = TRIM(FileInputPath)//TRIM(FileCode)//'_'//TRIM(year_txt)//'_ESTM_Ts_data_'&
                                      //TRIM(ADJUSTL(tstep_txt))//'.txt'
                     IF(igrid==1) THEN       !Disaggregate for the first grid only
-                       CALL DisaggregateESTM(iblock,igrid)                     
+                       CALL DisaggregateESTM(iblock)                     
                     ELSE                    !Then for subsequent grids simply copy data
                        ESTMForcingData(1:ReadlinesMetdata,1:ncolsESTMdata,GridCounter) = ESTMForcingData(1:ReadlinesMetdata, &
                             1:ncolsESTMdata,1)
@@ -689,7 +689,7 @@ PROGRAM SUEWS_Program
      DEALLOCATE(AHProf_tstep)
      DEALLOCATE(WUProfM_tstep)
      DEALLOCATE(WUProfA_tstep)
-     DEALLOCATE(CO2m_tstep)
+     DEALLOCATE(HumActivity_tstep)
      DEALLOCATE(qn1_store)
      DEALLOCATE(qn1_av_store)
      ! ----------------------------------------------------------------------

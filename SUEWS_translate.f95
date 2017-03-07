@@ -645,8 +645,8 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   WUProfA(0:23,2)  = SurfaceChar(Gridiv,c_HrProfWUAutoWE)  ! Water use, automatic, weekends
   SnowProf(0:23,1) = SurfaceChar(Gridiv,c_HrProfSnowCWD)   ! Snow clearing, weekdays
   SnowProf(0:23,2) = SurfaceChar(Gridiv,c_HrProfSnowCWE)   ! Snow clearing, weekends
-  CO2mProf(0:23,1) = SurfaceChar(Gridiv,c_HrProfCO2mWD)    ! Anthropogenic heat, weekdays
-  CO2mProf(0:23,2) = SurfaceChar(Gridiv,c_HrProfCO2mWE)    ! Anthropogenic heat, weekends
+  HumActivityProf(0:23,1) = SurfaceChar(Gridiv,c_HrProfHumActivityWD)    ! Human activity, weekdays
+  HumActivityProf(0:23,2) = SurfaceChar(Gridiv,c_HrProfHumActivityWE)    ! Human activity, weekends
   
   
   ! ---- Profiles at the resolution of model time step
@@ -656,8 +656,8 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   WUProfM_tstep(:,2) = TstepProfiles(Gridiv,cTP_WUManuWE,:) ! Water use, manual, weekends
   WUProfA_tstep(:,1) = TstepProfiles(Gridiv,cTP_WUAutoWD,:) ! Water use, automatic, weekdays
   WUProfA_tstep(:,2) = TstepProfiles(Gridiv,cTP_WUAutoWE,:) ! Water use, automatic, weekends
-  CO2m_tstep(:,1)  = TstepProfiles(Gridiv,cTP_CO2mWD,:) ! CO2 metabolic  activity, weekdays
-  CO2m_tstep(:,2)  = TstepProfiles(Gridiv,cTP_CO2mWE,:) ! CO2 metabolic activity, weekends
+  HumActivity_tstep(:,1)  = TstepProfiles(Gridiv,cTP_HumActivityWD,:) ! Human activity, weekdays
+  HumActivity_tstep(:,2)  = TstepProfiles(Gridiv,cTP_HumActivityWE,:) ! Human activity, weekends
   
   ! ---- Within-grid water distribution
   ! N.B. Rows and columns of WaterDist are the other way round to the input info

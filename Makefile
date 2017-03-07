@@ -26,7 +26,7 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_RoughnessParameters.o \
           SUEWS_RunoffFromGrid.o \
           NARP_sun_position_v2.o \
-          SUEWS_SAHP_v2015.o \
+          SUEWS_SAHP.o \
           LUMPS_OutputHeaders.o \
           SUEWS_Snow.o \
           LUMPS_QHQE.o \

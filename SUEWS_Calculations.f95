@@ -45,6 +45,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   USE mod_z
   USE mod_k
   USE solweig_module
+  USE WhereWhen
 
 
   IMPLICIT NONE
@@ -229,12 +230,17 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   IF(AnthropHeatMethod==1) THEN
       IF(Diagnose==1) WRITE(*,*) 'Calling SAHP_1...'
-      CALL SAHP_1_v2015(qf_sahp,QF_SAHP_base,QF_SAHP_heat,id,ih,imin)
+      CALL SAHP_1(qf_sahp,QF_SAHP_base,QF_SAHP_heat,id,ih,imin)
      qn1_bup=qn1
      qn1=qn1+QF_SAHP
   ELSEIF(AnthropHeatMethod==2) THEN
      IF(Diagnose==1) WRITE(*,*) 'Calling SAHP_2...'
-     CALL SAHP_2_v2015(qf_sahp,QF_SAHP_base,QF_SAHP_heat,id,ih,imin)
+     CALL SAHP_2(qf_sahp,QF_SAHP_base,QF_SAHP_heat,id,ih,imin)
+     qn1_bup=qn1
+     qn1=qn1+QF_SAHP
+  ELSEIF(AnthropHeatMethod==3) THEN
+     IF(Diagnose==1) WRITE(*,*) 'Calling SAHP_3...'
+     CALL SAHP_3(qf_sahp,id,ih,imin)
      qn1_bup=qn1
      qn1=qn1+QF_SAHP
   ELSE

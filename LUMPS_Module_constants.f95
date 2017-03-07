@@ -120,7 +120,7 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: TstepProfiles
   REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: AHProf_tstep
   REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: WUProfM_tstep, WUProfA_tstep
-  REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: CO2m_tstep
+  REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: HumActivity_tstep
 
   ! ---- For ESTM
   REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:,:)::  Ts5mindata     !surface temperature input data
@@ -135,8 +135,8 @@ MODULE allocateArray
        cTP_WUAutoWE = 6,&
        cTP_SnowCWD  = 7,&
        cTP_SnowCWE  = 8,&
-       cTP_CO2mWD   = 9,&
-       cTP_CO2mWE   = 10
+       cTP_HumActivityWD   = 9,&
+       cTP_HumActivityWE   = 10
   !-----------------------------------------------------------------------------------------------
 
   ! ---- Surface types ---------------------------------------------------------------------------
@@ -567,8 +567,8 @@ MODULE allocateArray
   INTEGER,DIMENSION(24):: c_HrProfWUAutoWE = (/(cc, cc=ccEndIr+ 5*24+1, ccEndIr+ 5*24+24, 1)/)  ! Water use, automatic, weekends
   INTEGER,DIMENSION(24):: c_HrProfSnowCWD  = (/(cc, cc=ccEndIr+ 6*24+1, ccEndIr+ 6*24+24, 1)/)  ! Snow clearing, weekdays
   INTEGER,DIMENSION(24):: c_HrProfSnowCWE  = (/(cc, cc=ccEndIr+ 7*24+1, ccEndIr+ 7*24+24, 1)/)  ! Snow clearing, weekends
-  INTEGER,DIMENSION(24):: c_HrProfCO2mWD   = (/(cc, cc=ccEndIr+ 8*24+1, ccEndIr+ 8*24+24, 1)/)  ! Energy use, weekdays
-  INTEGER,DIMENSION(24):: c_HrProfCO2mWE   = (/(cc, cc=ccEndIr+ 9*24+1, ccEndIr+ 9*24+24, 1)/)  ! Energy use, weekends
+  INTEGER,DIMENSION(24):: c_HrProfHumActivityWD   = (/(cc, cc=ccEndIr+ 8*24+1, ccEndIr+ 8*24+24, 1)/)  ! Human activity, weekdays
+  INTEGER,DIMENSION(24):: c_HrProfHumActivityWE   = (/(cc, cc=ccEndIr+ 9*24+1, ccEndIr+ 9*24+24, 1)/)  ! Human activity, weekends
 
   ! Find current column number
   INTEGER,PARAMETER:: ccEndPr = (ccEndIr+ 9*24+24)
@@ -970,7 +970,7 @@ MODULE data_in
 
   REAL(KIND(1d0)),DIMENSION(2)::Qf_A,Qf_B,Qf_C   !Qf coefficients
   REAL(KIND(1d0)),DIMENSION(0:23,2):: AHPROF     !Anthropogenic heat profiles for (1)weekdays / (2)weekends
-  REAL(KIND(1d0)),DIMENSION(0:23,2):: CO2mProf   !HUman actvity profiles for (1)weekdays / (2)weekends
+  REAL(KIND(1d0)),DIMENSION(0:23,2):: HumActivityProf   !HUman actvity profiles for (1)weekdays / (2)weekends
 
   INTEGER,DIMENSION(2)::DayLightSavingDay   !DOY when daylight saving changes
 
@@ -2084,7 +2084,7 @@ MODULE WhereWhen
 
   INTEGER:: GridID   !Grid number (as specified in SUEWS_SiteSelect.txt)
   CHARACTER(LEN=10):: GridID_text !Grid number as a text string
-  CHARACTER(LEN=12):: datetime  ! YYYY DOY HH MM
+  CHARACTER(LEN=15):: datetime  ! YYYY DOY HH MM
 
 END MODULE WhereWhen
 

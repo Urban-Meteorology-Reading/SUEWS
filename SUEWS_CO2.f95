@@ -93,15 +93,16 @@
   INTEGER:: ih ! hour accounting for DLS
   INTEGER:: id, imin
     
-  REAL(KIND(1d0)):: QF_metab, QF_traff, QF_build    !W m-2
-  REAL(KIND(1d0)):: DorNorT   !Daytime, night-time or transition time
+  REAL(KIND(1d0)):: ActDorNorT, PopDorNorT   !Daytime, night-time or transition time
     
+  REAL(KIND(1d0)):: QF_build, QF_traff, QF_metab
+  
   !!!Move to input file later!!! Rename SUEWS_AnthropogenicHeat.txt to SUEWS_Anthropogenic.txt and add these there?
   REAL(KIND(1d0)):: FcEF_v_kgkm, EnEF_v_Jkm, EF_umolCO2perJ, FracFossilFuel
   
   !AnthropCO2Method
-  !1 - CO2 emissions based on QF calculated according to AnthropHeatMethod=2;
-  !2 - CO2 emissions based on mean traffic rate and building energy use specified in SiteSelect 
+  !2 - CO2 emissions based on QF calculated according to AnthropHeatMethod=2;
+  !3 - CO2 emissions based on mean traffic rate and building energy use specified in SiteSelect 
   
   ! Define coefficients ---------------------------------------   ! Move to inputs?
   ! CO2 emission factors
@@ -123,28 +124,24 @@
   
   ! Calculate CO2 emissions from human metabolism -------------
   ! (Pop densities in ha-1 -> m-2)
-  DorNorT = CO2m_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)   !1=night, 2=day, 1-2=transition
-  IF(iu == 1) THEN !If weekday, switch day/night populations
-     Fc_metab = 120*PopDensNighttime/10000*(2-DorNorT) + 280*PopDensDaytime/10000*(DorNorT-1) !umol m-2 s-1
-     QF_metab = 75*PopDensNighttime/10000*(2-DorNorT) + 175*PopDensDaytime/10000*(DorNorT-1) !W m-2   from Sailor & Lu (2004)
-  ELSEIF(iu == 2) THEN  !If weekend, use night population always
-     Fc_metab = 120*PopDensNighttime/10000*(2-DorNorT) + 280*PopDensNighttime/10000*(DorNorT-1) !umol m-2 s-1
-     QF_metab = 75*PopDensNighttime/10000*(2-DorNorT) + 175*PopDensNighttime/10000*(DorNorT-1) !W m-2
-  ENDIF
+  PopDorNorT = HumActivity_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu) !!! Set separately later !!!
+  ActDorNorT = HumActivity_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)   !1=night, 2=day, 1-2=transition
+  Fc_metab = (PopDensNighttime*(2-PopDorNorT) + PopDensDaytime*(PopDorNorT-1))/10000 * (120*(2-ActDorNorT) + 280*(ActDorNorT-1)) !umol m-2 s-1
     
   ! Calculate CO2 emissions from traffic ----------------------
   IF(AnthropCO2Method == 2) THEN
      ! Assume temperature independent part of QF is traffic + metabolism
-     QF_traff = QF_SAHP_base - QF_metab
+     QF_traff = QF_SAHP_base - QF_metab   ! need to calculate QF_metab here again!!!
      IF(QF_traff < 0) THEN
          CALL ErrorHint(69,'QF metab exceeds base QF in Fc_anthro.',QF_metab,QF_SAHP_base,notUsedI)
          QF_traff = 0
      ENDIF
      Fc_traff = QF_traff / EnEF_v_Jkm * FcEF_v_kgkm*1e3*1e6/44   !Divide QF by energy emission factor and multiply by CO2 factor
   ELSEIF(AnthropCO2Method == 3) THEN
-     ! Calculate using mean traffic rate [veh km m-2 s-1] * emission factor [kg km-1] * 1e3 g kg-1 /44 g mol-1 * 1e6 umol mol-1
-     Fc_traff = TrafficRate * FcEF_v_kgkm*1e3*1e6/44 * AHProf_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)
-     QF_traff = TrafficRate * EnEF_v_Jkm * AHProf_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)  !Also calculate QF 
+     ! Calculate using mean traffic rate [veh km cap-1 day-1] * emission factor [kg km-1] * 1e3 g kg-1 /44 g mol-1 * 1e6 umol mol-1
+     ! Which popdens? !!!
+      Fc_traff = PopDensNighttime/10000 * TrafficRate/(60*60*24) * FcEF_v_kgkm*1e3*1e6/44 * &
+                   AHProf_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)
   ENDIF
      
   ! Calculate CO2 emissions from building energy use ----------
@@ -154,18 +151,15 @@
      ! HDD part is building energy use, split between electric (no local emissions CO2) and combustion (CO2) heating
      Fc_build = QF_SAHP_heat * EF_umolCO2perJ * FracFossilFuel
   ELSEIF(AnthropCO2Method == 3) THEN
-     ! Calculate using building energy use [W m-2]
-     Fc_build = BuildEnergyUse * EF_umolCO2perJ * FracFossilFuel * AHProf_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)
-     QF_build = BuildEnergyUse * AHProf_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)  !Also calculate QF 
+     ! Calculate using building energy use [W cap-1]
+     Fc_build = PopDensNighttime/10000 * BuildEnergyUse * EF_umolCO2perJ * FracFossilFuel * &
+                 AHProf_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)   !Need to work out how to incorporate temp dependence !!!
   ENDIF   
     
-  ! Combine to find anthropogenic CO2 flux
+  ! Sum components to give anthropogenic CO2 flux
   Fc_anthro = Fc_metab + Fc_traff + Fc_build
   
-  IF(AnthropHeatMethod == 3) THEN !!! N.B. need to implement this QF in QS according to OHMIncQF !!!
-     QF = QF_metab + QF_traff + QF_build 
-  ENDIF
-  
+  !write(*,*) Fc_anthro, Fc_metab, Fc_traff, Fc_build
   
   RETURN
   

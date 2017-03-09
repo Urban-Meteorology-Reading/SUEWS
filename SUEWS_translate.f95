@@ -86,7 +86,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   GridID = GridIDmatrix(Gridiv) !also in SUEWS_Program - could delete here?
   ! ---- Latitude and longitude
   lat = SurfaceChar(Gridiv,c_lat)
-  lng = SurfaceChar(Gridiv,c_lng)*(-1.0)  !HCW switched sign of lng 12 Dec 2016. Input should now be -ve for W, +ve for E
+  lng = SurfaceChar(Gridiv,c_lng)
   ! ---- Timezone
   TIMEZONE = SurfaceChar(Gridiv,c_tz)
   ! ---- Altitude [m]

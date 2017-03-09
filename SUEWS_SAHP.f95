@@ -155,6 +155,18 @@ SUBROUTINE SAHP_3(QF_o,id,ih,imin)
   ! Use building energy use [W cap-1]
   QF_build = PopDensNighttime/10000 * BuildEnergyUse * AHProf_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)   !Need to work out how to incorporate temp dependence !!!
   !!! See Allen et al (2010) --> Ruth & Lin
+  !! Use daily mean temperature from previous day
+  !QF_build = QF_build * 0.7 !Allen et al 2010
+  !IF(HDD(id-1,3) < 12.0) THEN      
+  !   QF_build = QF_build * (1.0 + min(12.0-HDD(id-1,3),12.0--4)*0.05)   ! 5% increase in e (N.B. this is for heating only in Allen et al. 2010)!!!
+  !ELSEIF(HDD(id-1,3) > 12.0) THEN
+  !   QF_build = QF_build * (1.0 + min(HDD(id-1,3)-12.0,35-12.0)*0.03)   ! 3% increase in e (N.B. this is for AC only in Allen et al. 2010)!!!
+  !ENDIF
+  
+  ! Pigeon et al. (2007) (approx coeffs)
+  IF(HDD(id-1,3) < 15.0) QF_build = QF_build * (1.0 + (15.0-HDD(id-1,3))*0.5)
+  
+  
   !!! QF_o = (AHProf_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*(Qf_a(iu)+Qf_b(iu)*HDD(id-1,2)+Qf_c(iu)*HDD(id-1,1)))*numCapita
   
   ! Sum components to give QF_o

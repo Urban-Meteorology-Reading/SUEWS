@@ -1,6 +1,6 @@
 
 
-CC = gfortran $(CFLAGS)          # compiler
+CC = gfortran $(CFLAGS)          # compiler 
 TARGET = SUEWS_V2017a      # program name
 CFLAGS = -g -Wall -Wtabs -fbounds-check
 # All the files which include modules used by other modules (these therefore

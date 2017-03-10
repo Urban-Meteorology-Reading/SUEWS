@@ -63,6 +63,8 @@ PROGRAM SUEWS_Program
             ir,irMax,&  !Row number within each block (from 1 to irMax)
             rr !Row of SiteSelect corresponding to current year and grid
             
+  INTEGER:: ios
+
   INTEGER:: iv          
 
   REAL::  timeStart, timeFinish ! profiling use, AnOHM TS
@@ -183,12 +185,13 @@ PROGRAM SUEWS_Program
         ENDIF
      
         ! Find number of lines in orig met file
+        write(*,*) TRIM(FileOrigMet)
         OPEN(UnitOrigMet,file=TRIM(FileOrigMet),status='old',err=313)
         CALL skipHeader(UnitOrigMet,SkipHeaderMet)  !Skip header
         nlinesOrigMetdata = 0   !Initialise nlinesMetdata (total number of lines in met forcing file)
         DO
-           READ(UnitOrigMet,*) iv
-           IF (iv == -9) EXIT
+           READ(UnitOrigMet,*,iostat=ios) iv
+           IF(ios<0 .or. iv == -9) EXIT   !IF (iv == -9) EXIT
            nlinesOrigMetdata = nlinesOrigMetdata + 1
         ENDDO
         CLOSE(UnitOrigMet)
@@ -239,8 +242,8 @@ PROGRAM SUEWS_Program
         ! Find number of lines in met file
         nlinesMetdata = 0   !Initialise nlinesMetdata (total number of lines in met forcing file)
         DO
-           READ(10,*) iv
-           IF (iv == -9) EXIT
+           READ(10,*,iostat=ios) iv
+           IF(ios<0 .or. iv == -9) EXIT   !IF (iv == -9) EXIT
            nlinesMetdata = nlinesMetdata + 1
         ENDDO
         CLOSE(10)
@@ -320,8 +323,8 @@ PROGRAM SUEWS_Program
            ! Find number of lines in original ESTM data file
            nlinesOrigESTMdata = 0
            DO
-              READ(UnitOrigESTM,*) iv
-              IF (iv == -9) EXIT
+              READ(UnitOrigESTM,*,iostat=ios) iv
+              IF(ios<0 .or. iv == -9) EXIT !IF (iv == -9) EXIT
               nlinesOrigESTMdata = nlinesOrigESTMdata + 1
            ENDDO
            CLOSE(UnitOrigESTM)
@@ -361,8 +364,8 @@ PROGRAM SUEWS_Program
            ! Find number of lines in ESTM file
            nlinesESTMdata = 0   !Initialise nlinesESTMdata (total number of lines in ESTM forcing file)
            DO
-              READ(11,*) iv
-              IF (iv == -9) EXIT
+              READ(11,*,iostat=ios) iv
+              IF(ios<0 .or. iv == -9) EXIT   !IF (iv == -9) EXIT
               nlinesESTMdata = nlinesESTMdata + 1
            ENDDO
            CLOSE(11)
@@ -484,6 +487,7 @@ PROGRAM SUEWS_Program
               
            ! Only for the first block of met data, read initial conditions (moved from above, HCW 12 Jan 2017)
            IF(iblock == 1) THEN
+              FileCodeX = TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt)
               !write(*,*) ' Now calling InitialState'
               CALL InitialState(FileCodeX,year_int,GridCounter,NumberOfGrids)
            ENDIF 

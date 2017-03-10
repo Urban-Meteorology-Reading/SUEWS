@@ -630,6 +630,7 @@ SUBROUTINE NumberRows(FileN,SkipHeaderLines)
   CHARACTER(len=50):: FileN
   INTEGER:: SkipHeaderLines, RunNumber
   INTEGER:: SkipCounter
+  INTEGER:: ios
 
   WRITE(*,*) FileN
   OPEN(39,file=TRIM(FileInputPath)//TRIM(FileN),err=204,status='old')
@@ -643,8 +644,8 @@ SUBROUTINE NumberRows(FileN,SkipHeaderLines)
 
   nlines = 0 !Initialize nlines
   DO
-     READ(39,*) RunNumber
-     IF(RunNumber==-9) EXIT
+     READ(39,*, iostat=ios) RunNumber
+     IF(ios<0 .or. RunNumber == -9) EXIT   !IF(RunNumber==-9) EXIT
      nlines = nlines + 1
   END DO
   !write(*,*) 'nlines read: ',nlines
@@ -1604,6 +1605,7 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
   INTEGER:: SnowInitially        !Allows for quick setting of snow-related initial conditions for no snow initially (0)
        
   INTEGER:: GridsInitialised=0   ! Number of grids initialised at start of model run
+  INTEGER:: YearsInitialised=0   ! Number of years initialised at start of model run
   REAL(KIND(1d0)):: NormalizeVegChar  !Function
   
   ! Define InitialConditions namelist ---------------------------------------     
@@ -1730,11 +1732,16 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
   ! Define InitialConditions file -------------------------------------------
   FileInit=TRIM(FileInputPath)//TRIM("InitialConditions")//TRIM(GridName)//'.nml'
   ! On very first InitialConditions for each grid, can use one initial conditions file specified for all grids
-  IF(MultipleInitFiles == 0 .and. GridsInitialised < NumberOfGrids) THEN   
+  IF(MultipleInitFiles == 0 .and. YearsInitialised ==0 ) THEN   
      FileInit=TRIM(FileInputPath)//TRIM("InitialConditions")//TRIM(FileCode)//'_'//TRIM(year_txt)//'.nml'
-     GridsInitialised=GridsInitialised+1
+     GridsInitialised = GridsInitialised+1
+     IF(GridsInitialised == NumberOfGrids) THEN
+        YearsInitialised=YearsInitialised+1
+        GridsInitialised=0   !reset GridsInitialised
+     ENDIF
   ENDIF
-    
+  !write(*,*) TRIM(FileInit)
+  
   ! Open, read and close InitialConditions file -----------------------------
   OPEN(56,File=TRIM(FileInit),err=600,status='old')
   READ(56,iostat=ios_out,nml=InitialConditions,err=601)

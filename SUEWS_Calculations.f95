@@ -130,7 +130,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   idectime=dectime-halftimestep! sun position at middle of timestep before
   IF(Diagnose==1) WRITE(*,*) 'Calling sun_position...'
   CALL sun_position(year,idectime,timezone,lat,lng,alt,azimuth,zenith_deg)
-
+  !write(*,*) DateTime, timezone,lat,lng,alt,azimuth,zenith_deg
+  
   IF(CBLuse>=1)THEN ! If CBL is used, calculated Temp_C and RH are replaced with the obs.
      IF(Diagnose==1) WRITE(*,*) 'Calling CBL...'
      CALL CBL(ir,iMB)   !ir=1 indicates first row of each met data block

@@ -280,10 +280,10 @@
        DO i=1,(ReadLinesOrigMetDataMax*Nper)
           WRITE(78,303) (INT(Met_tt(i,ii)), ii=1,4), Met_tt(i,5:ncolumnsMetForcingData)   
        ENDDO
-       IF(iBlock == ReadBlocksOrigMetData) THEN
-          WRITE(78,'(i2)') -9
-          WRITE(78,'(i2)') -9
-       ENDIF
+       !IF(iBlock == ReadBlocksOrigMetData) THEN
+       !   WRITE(78,'(i2)') -9
+       !   WRITE(78,'(i2)') -9
+       !ENDIF
        CLOSE (78)   !Close output file
     ENDIF 
 
@@ -483,10 +483,10 @@
        DO i=1,(ReadLinesOrigESTMDataMax*NperESTM)
           WRITE(78,304) (INT(ESTM_tt(i,ii)), ii=1,4), ESTM_tt(i,5:ncolsESTMdata)   
        ENDDO
-       IF(iBlock == ReadBlocksOrigMetData) THEN
-          WRITE(78,'(i2)') -9
-          WRITE(78,'(i2)') -9
-       ENDIF
+       !IF(iBlock == ReadBlocksOrigMetData) THEN
+       !   WRITE(78,'(i2)') -9
+       !   WRITE(78,'(i2)') -9
+       !ENDIF
        CLOSE (78)   !Close output file
     ENDIF 
 

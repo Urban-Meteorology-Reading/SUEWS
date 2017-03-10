@@ -180,7 +180,7 @@ SUBROUTINE CBL_ReadInputData
 
   IMPLICIT NONE
 
-  INTEGER::i
+  INTEGER::i, ios
   REAL(KIND(1d0))::l
 
   NAMELIST/CBLInput/EntrainmentType,&
@@ -203,8 +203,8 @@ SUBROUTINE CBL_ReadInputData
      READ(52,*)
      nlineInData = 0   !Initialise nlines
      DO
-        READ(52,*) l
-        IF (l == -9) EXIT
+        READ(52,*, iostat=ios) l
+        IF(ios<0 .or. l == -9) EXIT   !IF (l == -9) EXIT
         nlineInData = nlineInData + 1
      ENDDO
      CLOSE(52)

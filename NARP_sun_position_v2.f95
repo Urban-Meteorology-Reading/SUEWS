@@ -92,7 +92,7 @@
     
     ! 13. Calculate the topocentric local hour angle (in degrees) 
     call topocentric_local_hour_calculate(observer_local_hour, topocentric_sun_positionrigth_ascension_parallax,&
-         & topocentric_local_hour)
+         & topocentric_local_hour)       
 
     ! 14. Calculate the topocentric zenith and azimuth angle (in degrees) 
     call sun_topocentric_zenith_angle_calculate(locationlatitude , topocentric_sun_positiondeclination,&

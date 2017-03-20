@@ -1,6 +1,7 @@
 !In this subroutine the output files will be opened and the output matrices will be printed out.
 !
 !Last change:
+! HCW 20 Mar 2017 - Bug fixed in aggregation of SUEWS output
 ! HCW 20 Feb 2017 - Added option to also write out main data file at model time-step
 ! TS  10 Feb 2017 - Aggregation added: 1) normal SUEWS output according to the format output; 2) ESTM: average.
 ! HCW 12 Dec 2016 - Restructured writing of output files and introduced families of output variables
@@ -42,6 +43,7 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
   INTEGER:: i, j, nlinesOut
   REAL(KIND(1d0)),ALLOCATABLE:: dataOutProc0(:,:),dataOutProc(:)
 
+
   CHARACTER(len=10):: str2, str2_tt, grstr2, yrstr2
   CHARACTER(len=100):: rawpath, SnowOut,ESTMOut, FileOutFormat
 
@@ -82,7 +84,7 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
   WRITE(yrstr2,'(i4)') year_int
 
   rawpath=TRIM(FileOutputPath)//TRIM(FileCode)//TRIM(ADJUSTL(grstr2))//'_'//TRIM(ADJUSTL(yrstr2)) ! output resolution added, TS 9 Feb 2017
-  ! For files at specified output resolution
+  ! For files at specified output resolution 
   FileOut=TRIM(rawpath)//'_'//TRIM(ADJUSTL(str2))//'.txt'
   SOLWEIGpoiOut=TRIM(rawpath)//'_SOLWEIGpoiOut.txt'
   ESTMOut=TRIM(rawpath)//'_ESTM_'//TRIM(ADJUSTL(str2))//'.txt' ! output resolution added, TS 10 Feb 2017
@@ -309,27 +311,13 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
         ENDIF
      ENDDO
      !HeaderUse=trim(adjustl(HeaderOut))//' ' !with extra space at end of header row
-     !  PRINT*, 'mem start'
-
      !ALLOCATE(CHARACTER(LEN(trim(adjustl(HeaderOut)))):: HeaderUse)
-     !  PRINT*, 'mem',1
-
      !ALLOCATE(CHARACTER(LEN(trim(adjustl(UnitsOut)))):: UnitsUse)
      !ALLOCATE(CHARACTER(LEN(trim(adjustl(LongNmOut)))):: LongNmUse)
-
-     !  PRINT*, LEN(TRIM(ADJUSTL(FormatOut)))
-     !  PRINT*, FormatOut
      !ALLOCATE(CHARACTER(LEN(trim(adjustl(FormatOut)))):: FormatUse)
-     !  PRINT*, 'mem',3
-
-     !  PRINT*, LEN(TRIM(ADJUSTL(AggregOut)))
-     !  PRINT*, AggregOut
      !ALLOCATE(CHARACTER(LEN(trim(adjustl(AggregOut)))):: AggregUse)
-     !  PRINT*, 'mem',4
-
      !ALLOCATE(CHARACTER(LEN(trim(adjustl(ColNos)))):: ColNosUse)
      HeaderUse=TRIM(ADJUSTL(HeaderOut))
-
      HeaderUseNoSep=TRIM(ADJUSTL(HeaderOutNoSep))
      UnitsUse=TRIM(ADJUSTL(UnitsOut))
      LongNmUse=TRIM(ADJUSTL(LongNmOut))
@@ -356,19 +344,8 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
 
   ALLOCATE(AggregUseX(SIZE(UseColumnsDataOut)))
   CALL parse(AggregUse,';',AggregUseX,SIZE(UseColumnsDataOut))
-  ! PRINT*, 'good 1'
-  ! PRINT*, AggregUseX
 
   !========== Open output file (and first time print header) ==========
-
-  ! Main output file --------------------------------------------------
-  lfnOutC=39  !Output file code
-  IF (iv==1) THEN
-     OPEN(lfnOutC,file=TRIM(FileOut),err=112)
-     WRITE(lfnOutC,'(a)') HeaderUseNoSep
-  ELSE
-     OPEN(lfnOutC,file=TRIM(FileOut),position='append')!,err=112)
-  ENDIF
 
   ! SOLWEIG output file -----------------------------------------------
   IF (SOLWEIGpoi_out==1) THEN
@@ -439,9 +416,9 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
   ! 'qn_Paved qn_Bldgs qn_EveTr qn_DecTr qn_Grass qn_BSoil qn_Water ',&
 
   !========== Write out data ==========
-  IF ( ResolutionFilesOut == Tstep .OR. KeepTstepFilesOut == 1) THEN ! output frequency same as input, or specify to keep raw output files (HCW 20 Feb 2017)
+  IF ( ResolutionFilesOut == Tstep .or. KeepTstepFilesOut == 1) THEN ! output frequency same as input, or specify to keep raw output files (HCW 20 Feb 2017)
      ! original output
-
+  
      lfnOutC=38  !Output file code
      IF (iv==1) THEN
         OPEN(lfnOutC,file=TRIM(FileOut_tt),err=110)
@@ -449,7 +426,7 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
      ELSE
         OPEN(lfnOutC,file=TRIM(FileOut_tt),position='append')!,err=112)
      ENDIF
-
+  
      DO i=1,irMax
         WRITE(lfnoutC,FormatUseNoSep) INT(dataOut(i,PACK(UseColumnsDataOut, UseColumnsDataOut < 5),Gridiv)),&
              dataOut(i,PACK(UseColumnsDataOut, UseColumnsDataOut >= 5),Gridiv)
@@ -458,7 +435,7 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
 
      ENDDO
      CLOSE (lfnoutC)
-
+     
      IF (SOLWEIGpoi_out==1) THEN
         DO i=1,SolweigCount-1
            WRITE(9,304) INT(dataOutSOL(i,1,Gridiv)),(dataOutSOL(i,is,Gridiv),is=2,ncolumnsdataOutSOL)
@@ -484,11 +461,11 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
      ENDIF
 
   ENDIF
-
+  
   IF ( ResolutionFilesOut /= Tstep ) THEN ! if output frequency different from input, TS 09 Feb 2017
      ! write out every nlinesOut, 60.*60/ResolutionFilesOut = output frequency per hour
      nlinesOut=INT(nsh/(60.*60/ResolutionFilesOut))
-
+     
      ! Main output file --------------------------------------------------
      lfnOutC=39  !Output file code
      IF (iv==1) THEN
@@ -502,17 +479,11 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
         ALLOCATE(dataOutProc0(nlinesOut,SIZE(UseColumnsDataOut)))
         ALLOCATE(dataOutProc(SIZE(UseColumnsDataOut)))
 
-        dataOutProc0=dataOut(i-nlinesOut+1:i,1:SIZE(UseColumnsDataOut),Gridiv)
-        ! IF ( Gridiv ==1 .AND. i==100) THEN
-        !    PRINT*, 'line:',i
-        !    PRINT*, SHAPE(dataOut(i-nlinesOut+1:i,1:SIZE(UseColumnsDataOut),Gridiv))
-        !    !  PRINT*, dataOut(i,1:4,Gridiv)
-        !    PRINT*, dataOutProc0(i,:)
-        !    PRINT*, ''
-        ! END IF
-
+        !dataOutProc0=dataOut(i-nlinesOut+1:i,1:SIZE(UseColumnsDataOut),Gridiv)
+        !Bug corrected HCW 20 Mar 2017
+        dataOutProc0=dataOut(i-nlinesOut+1:i,UseColumnsDataOut,Gridiv)   
+        
         DO j = 1, SIZE(AggregUseX), 1
-           ! print*, i,j
            ! aggregating different variables
            SELECT CASE (AggregUseX(j))
            CASE ('0') !time columns, aT
@@ -532,16 +503,6 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
               PRINT*, ''
            END IF
         END DO
-
-        ! IF ( Gridiv ==1 ) THEN
-        !   ! print*,i, AggregAll
-        !   ! print*,i, AggregOut
-        !   print*, i, AggregUse
-        !   !  PRINT*, INT(dataOutProc(1:4)),dataOutProc(5:)
-        !   !  print*, j, AggregAll(j)
-        !   !  print*, dataOutProc(j),dataOutProc0(:,j)
-        ! END IF
-
 
         WRITE(lfnoutC,FormatUseNoSep) INT(dataOutProc(1:4)),dataOutProc(5:)
         !WRITE(lfnoutC,301) (INT(dataOut(i,is,Gridiv)),is=1,4),&
@@ -615,10 +576,6 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
      ENDIF
 
   ENDIF
-
-
-
-  ! END IF
 
   IF (ALLOCATED(AggregUseX)) DEALLOCATE(AggregUseX)
 

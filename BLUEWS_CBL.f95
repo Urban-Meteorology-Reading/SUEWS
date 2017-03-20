@@ -208,7 +208,7 @@ SUBROUTINE CBL_ReadInputData
         nlineInData = nlineInData + 1
      ENDDO
      CLOSE(52)
-
+    
      ALLOCATE(IniCBLdata(1:nlineInData,1:8))
      OPEN(52,file=TRIM(FileInputPath)//TRIM(InitialDataFileName),status='old', err=25)
      READ(52,*)
@@ -279,7 +279,7 @@ SUBROUTINE CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,iMB)
         nLineDay=nLineDay+1
      ENDIF
   ENDDO
-
+ 
   IF(InitialData_use==2) THEN
      blh_m=IniCBLdata(nLineDay,2)
      gamt_Km=IniCBLdata(nLineDay,3)
@@ -288,7 +288,7 @@ SUBROUTINE CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,iMB)
      qp_gkg=IniCBLdata(nLineDay,6)
      tm_K=IniCBLdata(nLineDay,7)
      qm_gkg=IniCBLdata(nLineDay,8)
-  ELSEIF(InitialData_use==1 .AND. IniCBLdata(i,1)==id)THEN
+  ELSEIF(InitialData_use==1 .AND. IniCBLdata(i,1)==id)THEN   !!!Shouldn't this be nlineDay not i? HCW 17 March 2017
      blh_m=IniCBLdata(nLineDay,2)
      gamt_Km=IniCBLdata(nLineDay,3)
      gamq_gkgm=IniCBLdata(nLineDay,4)

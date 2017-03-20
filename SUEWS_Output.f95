@@ -1,6 +1,7 @@
 !In this subroutine the output files will be opened and the output matrices will be printed out.
 !
 !Last change:
+! HCW 20 Mar 2017 - Bug fixed in aggregation of SUEWS output
 ! HCW 20 Feb 2017 - Added option to also write out main data file at model time-step
 ! TS  10 Feb 2017 - Aggregation added: 1) normal SUEWS output according to the format output; 2) ESTM: average.
 ! HCW 12 Dec 2016 - Restructured writing of output files and introduced families of output variables
@@ -478,8 +479,10 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
         ALLOCATE(dataOutProc0(nlinesOut,SIZE(UseColumnsDataOut)))
         ALLOCATE(dataOutProc(SIZE(UseColumnsDataOut)))
 
-        dataOutProc0=dataOut(i-nlinesOut+1:i,1:SIZE(UseColumnsDataOut),Gridiv)
-
+        !dataOutProc0=dataOut(i-nlinesOut+1:i,1:SIZE(UseColumnsDataOut),Gridiv)
+        !Bug corrected HCW 20 Mar 2017
+        dataOutProc0=dataOut(i-nlinesOut+1:i,UseColumnsDataOut,Gridiv)   
+        
         DO j = 1, SIZE(AggregUseX), 1
            ! aggregating different variables
            SELECT CASE (AggregUseX(j))

@@ -1388,9 +1388,10 @@ MODULE sues_data
        sae,&      !Same
        ev,&       !Evaporation
        rst,&      !Flag in SUEWS_Evap (gets set to 1 if surface dry; 0 if surface wet)
-       qeph,&       !Latent heat flux (W m^-2)
+       qeph,&     !Latent heat flux (W m^-2)
        qeOut      !Latent heat flux [W m-2]
-
+       
+  REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE:: qhforCBL, qeforCBL   ! Stores previous timestep qh and qe for CBL model. Added by HCW 21 Mar 2017
 
   !Water use related variables
   REAL (KIND(1d0)):: ext_wu,&         !External water use for the model timestep [mm] (over whole study area)

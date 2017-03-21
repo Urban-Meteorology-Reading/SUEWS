@@ -18,17 +18,24 @@
   INTEGER:: BiogenCO2Choice = 1  !Move to RunControl later 
   
   REAL(KIND(1d0)):: PAR_umolm2s1
-  REAL(KIND(1d0)):: Schmid2000_Pho, Flanag2002_Pho, Schmid2000_Res
+  REAL(KIND(1d0)):: Schmid2000_Pho, Flanag2002_Pho, Ru1995_Pho, Schmid2000_Res
     
   REAL(KIND(1d0)):: KdnToPAR ! Conversion from Kdn to PAR 
-  REAL(KIND(1d0)):: F02_AMax, F02_alpha ! Coefficients for Flanagan et al. (2002) model
+  REAL(KIND(1d0)):: F02_AMax, F02_alpha ! Flanagan et al. (2002) coefficients for rectangular hyperbola light response curve
+  REAL(KIND(1d0)):: R95_AMax, R95_alpha ! Ruimy et al. (1995) coefficients for rectangular hyperbola light response curve
+  REAL(KIND(1d0)):: Min_respi ! Minimum soil respiration rate (for cold-temperature limit)
   
   REAL(KIND(1d0)),DIMENSION(nvegsurf):: active_veg_fr
   
   ! Define coefficients (could be moved elsewhere) ------------
+  ! Tidy these up (nomenclature and signs)
   KdnToPAR = 0.473  !Papaioannou et al. (1993) (mean annual value)
   F02_AMax  = -16.3     !Flanagan et al. (2002) Mean of summer 1998, 1999, 2000
   F02_alpha = -0.0205   !Flanagan et al. (2002) Mean of summer 1998, 1999, 2000
+  R95_AMax  = 43.35      !Ruimy et al. (1995)
+  R95_alpha = 0.044
+  
+  Min_respi = 0.6   ! LJ & UHEL
   
   ! Calculate PAR from Kdown ----------------------------------
   PAR_umolm2s1 = JtoumolPAR * KdnToPAR * avKdn
@@ -41,21 +48,22 @@
    
   ! Calculate carbon uptake due to photosynthesis -------------
   ! Eq 6 Schmid et al. (2000) empirical model for hardwood forest (GEP)
-  Schmid2000_Pho = -(-1.4 + 35*(PAR_umolm2s1/(590 + PAR_umolm2s1)))  !umol m-2 s-1
-  IF(avKdn <= 0 .or. Schmid2000_Pho > 0) THEN   !uptake in daytime only, and remove any 
-    Schmid2000_Pho = 0  
-  ENDIF
+  Schmid2000_Pho = -(35*(PAR_umolm2s1/(590 + PAR_umolm2s1)))  !umol m-2 s-1 !Removed dark respiration rate
   ! Flanagan et al. (2002) empirical model for temperate grassland (GPP)
   Flanag2002_Pho = F02_AMax*F02_alpha*PAR_umolm2s1/(F02_alpha*PAR_umolm2s1 + F02_AMax)  !umol m-2 s-1
-  IF(avKdn <= 0 .or. Flanag2002_Pho > 0) THEN   !uptake in daytime only, and remove any 
-    Flanag2002_Pho = 0
-  ENDIF
+  ! Ruimy et al. (1995) review for plant canopies
+  Ru1995_Pho = -R95_AMax*R95_alpha*PAR_umolm2s1/(R95_alpha*PAR_umolm2s1 + R95_AMax)  !umol m-2 s-1
     
   ! Calculate ecosystem respiration (for natural surfaces) ----
   ! Eq 5 Schmid et al. (2000)
-  Schmid2000_Res = 1.08*exp(0.064*Temp_C)   !umol m-2 s-1   !!!Switch to using soil temp?
+  Schmid2000_Res = MAX(Min_respi, 1.08*exp(0.064*Temp_C))   !umol m-2 s-1   !!!Switch to using soil temp?
   
-  IF(BiogenCO2Choice == 1) THEN   ! Use Schmid2000 for trees; Flanag2002 for grass
+  IF(BiogenCO2Choice == 1) THEN   ! Use Ruimy1995 for plants
+     Fc_photo = Ru1995_Pho*(active_veg_fr(ConifSurf-2) + active_veg_fr(DecidSurf-2) + active_veg_fr(GrassSurf-2))             
+     Fc_respi = Schmid2000_Res*(sfr(ConifSurf)+sfr(DecidSurf)+sfr(GrassSurf)+sfr(BSoilSurf))        
+  ENDIF
+  
+  IF(BiogenCO2Choice == 2) THEN   ! Use Schmid2000 for trees; Flanag2002 for grass
      Fc_photo = Schmid2000_Pho*active_veg_fr(ConifSurf-2)+ & 
              Schmid2000_Pho*active_veg_fr(DecidSurf-2)+ & 
              Flanag2002_Pho*active_veg_fr(GrassSurf-2)             

@@ -285,10 +285,14 @@ PROGRAM SUEWS_Program
      ALLOCATE(HumActivity_tstep(24*NSH,2))
      ALLOCATE(qn1_store(NSH,NumberOfGrids))
      ALLOCATE(qn1_av_store(2*NSH+1,NumberOfGrids))
+     ALLOCATE(qhforCBL(NumberOfGrids))
+     ALLOCATE(qeforCBL(NumberOfGrids))
      !! Add snow clearing (?)
 
      qn1_store(:,:) = NAN ! Initialise to -999
      qn1_av_store(:,:) = NAN ! Initialise to -999
+     qhforCBL(:) = NAN
+     qeforCBL(:) = NAN
      ! Initialise other arrays here???
      
      
@@ -696,6 +700,8 @@ PROGRAM SUEWS_Program
      DEALLOCATE(HumActivity_tstep)
      DEALLOCATE(qn1_store)
      DEALLOCATE(qn1_av_store)
+     DEALLOCATE(qhforCBL)
+     DEALLOCATE(qeforCBL)
      ! ----------------------------------------------------------------------
 
   ENDDO  !end loop over years

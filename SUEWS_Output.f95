@@ -556,24 +556,25 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
      ENDIF
 
 
-     !  other outputs not touched at the moment, as of 09 Feb 2017, TS
-     IF (SOLWEIGpoi_out==1) THEN
-        DO i=1,SolweigCount-1
-           WRITE(9,304) INT(dataOutSOL(i,1,Gridiv)),(dataOutSOL(i,is,Gridiv),is=2,ncolumnsdataOutSOL)
-        ENDDO
-     ENDIF
-
-     IF(CBLuse>=1) THEN
-        DO i=1,iCBLcount
-           WRITE(53,305)(INT(dataOutBL(i,is,Gridiv)),is=1,4),(dataOutBL(i,is,Gridiv),is=5,ncolumnsdataOutBL)
-        ENDDO
-     ENDIF
-
-     IF(SnowUse>=1) THEN
-        DO i=1,irmax
-           WRITE(54,306)(INT(dataOutSnow(i,is,Gridiv)),is=1,4),(dataOutSnow(i,is,Gridiv),is=5,ncolumnsDataOutSnow)
-        ENDDO
-     ENDIF
+     ! Commented out HCW 21 Mar 2017, otherwise data duplicated in output files at model timestep
+     !!  other outputs not touched at the moment, as of 09 Feb 2017, TS
+     !IF (SOLWEIGpoi_out==1) THEN
+     !   DO i=1,SolweigCount-1
+     !      WRITE(9,304) INT(dataOutSOL(i,1,Gridiv)),(dataOutSOL(i,is,Gridiv),is=2,ncolumnsdataOutSOL)
+     !   ENDDO
+     !ENDIF
+     ! 
+     !IF(CBLuse>=1) THEN
+     !   DO i=1,iCBLcount
+     !      WRITE(53,305)(INT(dataOutBL(i,is,Gridiv)),is=1,4),(dataOutBL(i,is,Gridiv),is=5,ncolumnsdataOutBL)
+     !   ENDDO
+     !ENDIF
+     !
+     !IF(SnowUse>=1) THEN
+     !   DO i=1,irmax
+     !      WRITE(54,306)(INT(dataOutSnow(i,is,Gridiv)),is=1,4),(dataOutSnow(i,is,Gridiv),is=5,ncolumnsDataOutSnow)
+     !   ENDDO
+     !ENDIF
 
   ENDIF
 

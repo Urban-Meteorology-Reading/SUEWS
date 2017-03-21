@@ -2,7 +2,7 @@
 ! Last modified:
 !  LJ 27 Jan 2016 - Removal of tabs
 
-SUBROUTINE CBL(ifirst,iMB)
+SUBROUTINE CBL(ifirst,iMB,Gridiv)
 
   USE mod_z
   USE mod_k
@@ -21,7 +21,7 @@ SUBROUTINE CBL(ifirst,iMB)
   REAL(KIND(1d0))::qh_use,qe_use,tm_K_zm,qm_gkg_zm
   REAL(KIND(1d0))::Temp_C1,avrh1,es_hPa1
   REAL(KIND(1d0))::secs0,secs1,Lv
-  INTEGER::idoy,ifirst,iMB,startflag
+  INTEGER::idoy,ifirst,iMB,Gridiv,startflag
   REAL(KIND(1d0)), PARAMETER::pi=3.141592653589793d+0,d2r=pi/180.
 
 
@@ -44,8 +44,10 @@ SUBROUTINE CBL(ifirst,iMB)
 
   !Heat flux choices
   IF(Qh_choice==1) THEN   !from SUEWS
-     qh_use=qh
-     qe_use=qeph
+     !qh_use=qh
+     !qe_use=qeph
+     qh_use=qhforCBL(Gridiv)   !HCW 21 Mar 2017
+     qe_use=qeforCBL(Gridiv)
   ELSEIF(qh_choice==2)THEN !from LUMPS
      qh_use=H_mod
      qe_use=E_mod
@@ -254,8 +256,10 @@ SUBROUTINE CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,iMB)
 
   !Heat flux choices
   IF(Qh_choice==1) THEN   !from SUEWS
-     qh_use=qh
-     qe_use=qeph
+     !qh_use=qh
+     !qe_use=qeph
+     qh_use=qhforCBL(Gridiv)   !HCW 21 Mar 2017
+     qe_use=qeforCBL(Gridiv)
   ELSEIF(qh_choice==2)THEN !from LUMPS
      qh_use=H_mod
      qe_use=E_mod

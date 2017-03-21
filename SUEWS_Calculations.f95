@@ -134,7 +134,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   
   IF(CBLuse>=1)THEN ! If CBL is used, calculated Temp_C and RH are replaced with the obs.
      IF(Diagnose==1) WRITE(*,*) 'Calling CBL...'
-     CALL CBL(ir,iMB)   !ir=1 indicates first row of each met data block
+     CALL CBL(ir,iMB,Gridiv)   !ir=1 indicates first row of each met data block
   ENDIF
 
   !Call the dailystate routine to get surface characteristics ready
@@ -646,6 +646,10 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   DO is=1,nsurf
      bulkalbedo = bulkalbedo + alb(is)*sfr(is)
   ENDDO
+
+  ! Save qh and qe for CBL in next iteration
+  qhforCBL(Gridiv) = qh
+  qeforCBL(Gridiv) = qeOut
   
   !=====================================================================
   !====================== Write out files ==============================

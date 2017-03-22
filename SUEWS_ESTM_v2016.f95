@@ -152,6 +152,7 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv,ir)
   USE allocateArray
   USE time
   USE defaultNotUsed
+  USE WhereWHen
 
   IMPLICIT NONE
 
@@ -505,6 +506,7 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv,ir)
   Qsground = Qsground*fground
   Qsnet = Qsibld + Qswall + Qsroof + Qsground                              !!FO!! QSair not included; called QSNET in output file (column #10)
 
+    
   !write(*,*) Qsair, QSibld, Qswall, Qsroof, Qsground, Qsnet
   
   !========>Radiation<================
@@ -553,7 +555,7 @@ SUBROUTINE ESTM_v2016(QSnet,Gridiv,ir)
   
   dataOutESTM(ir,1:32,Gridiv)=(/REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),&
        REAL(it,KIND(1D0)),REAL(imin,KIND(1D0)),dectime,Qsnet,Qsair,Qswall,Qsroof,Qsground,Qsibld,&!11
-       Twallout,Troofout,Tgroundout,Tibldout,Tievolve/)!21
+       Twallout,Troofout,Tgroundout,Tibldout,Tievolve/)!32 !N.B. These all have 5 elements except Tievolve (1).
   !kdn_estm,kup_estm,ldown,lup_net,RN,& !10
   !   Qsnet,Qsair,QHestm,QFBld,T0,Qswall,Qsroof,Qsground,Qsibld,RN_WALL,RN_ROOF,RN_ground,&   !12
   !  Twallout,TN_Wall,Troofout,TN_roof,Tgroundout,Tibldout,Tievolve,zenith_deg/)!8+XX

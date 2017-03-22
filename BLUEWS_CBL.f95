@@ -32,7 +32,7 @@ SUBROUTINE CBL(ifirst,iMB,Gridiv)
                                                     (NAN,is=6,ncolumnsdataOutBL)/)
      RETURN
   ELSEIF(avkdn<5)THEN
-     CALL CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,iMb)
+     CALL CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,iMb, Gridiv)
      RETURN
   ENDIF
 
@@ -42,22 +42,27 @@ SUBROUTINE CBL(ifirst,iMB,Gridiv)
      startflag=1
   ENDIF
 
-  !Heat flux choices
-  IF(Qh_choice==1) THEN   !from SUEWS
-     !qh_use=qh
-     !qe_use=qeph
-     qh_use=qhforCBL(Gridiv)   !HCW 21 Mar 2017
-     qe_use=qeforCBL(Gridiv)
-  ELSEIF(qh_choice==2)THEN !from LUMPS
-     qh_use=H_mod
-     qe_use=E_mod
-  ELSEIF(qh_choice==3)THEN  !from OBS
-     IF(qh_obs<-900.OR.qe_obs<-900)THEN  ! observed data has a problem
-        CALL ErrorHint(22,'Unrealistic observed qh or qe_value.',qh_obs,qe_obs,qh_choice)
-     ENDIF
-     qh_use=qh_obs
-     qe_use=qe_obs
+  qh_use=qhforCBL(Gridiv)   !HCW 21 Mar 2017
+  qe_use=qeforCBL(Gridiv)
+  IF(qh_use<-900.OR.qe_use<-900)THEN  ! observed data has a problem
+     CALL ErrorHint(22,'Unrealistic qh or qe_value for CBL.',qh_use,qe_use,qh_choice)
   ENDIF
+  !!Heat flux choices - these are now made in SUEWS_Calculations for qhforCBL and qeCBL, rather than here
+  !IF(Qh_choice==1) THEN   !from SUEWS
+  !  !qh_use=qh
+  !   !qe_use=qeph
+  !   qh_use=qhforCBL(Gridiv)   !HCW 21 Mar 2017
+  !   qe_use=qeforCBL(Gridiv)
+  !ELSEIF(qh_choice==2)THEN !from LUMPS
+  !   qh_use=H_mod
+  !   qe_use=E_mod
+  !ELSEIF(qh_choice==3)THEN  !from OBS
+  !   IF(qh_obs<-900.OR.qe_obs<-900)THEN  ! observed data has a problem
+  !      CALL ErrorHint(22,'Unrealistic observed qh or qe_value.',qh_obs,qe_obs,qh_choice)
+  !   ENDIF
+  !   qh_use=qh_obs
+  !   qe_use=qe_obs
+  !ENDIF
 
   !-------Main loop of CBL calculation--------------------------------------
   !-------------------------------------------------------------------------
@@ -235,7 +240,7 @@ END SUBROUTINE CBL_ReadInputData
 
 !----------------------------------------------------------------------
 !-----------------------------------------------------------------------
-SUBROUTINE CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,iMB)
+SUBROUTINE CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,iMB, Gridiv)
 
   USE mod_z
   USE mod_k
@@ -252,25 +257,31 @@ SUBROUTINE CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,iMB)
 
   REAL(KIND(1d0))::qh_use,qe_use,tm_K_zm,qm_gkg_zm
   REAL(KIND(1d0))::qsatf,sat_vap_press,lv
-  INTEGER::i,nLineDay,iMB,startflag
+  INTEGER::i,nLineDay,iMB,Gridiv,startflag
 
-  !Heat flux choices
-  IF(Qh_choice==1) THEN   !from SUEWS
-     !qh_use=qh
-     !qe_use=qeph
-     qh_use=qhforCBL(Gridiv)   !HCW 21 Mar 2017
-     qe_use=qeforCBL(Gridiv)
-  ELSEIF(qh_choice==2)THEN !from LUMPS
-     qh_use=H_mod
-     qe_use=E_mod
-  ELSEIF(qh_choice==3)THEN  !from OBS
-     IF(qh_obs<-900.OR.qe_obs<-900)THEN  ! observed data has a problem
-        CALL ErrorHint(22,'Unrealistic observed qh or qe_value.',qh_obs,qe_obs,qh_choice)
-     ENDIF
-     qh_use=qh_obs
-     qe_use=qe_obs
+  
+  qh_use=qhforCBL(Gridiv)   !HCW 21 Mar 2017
+  qe_use=qeforCBL(Gridiv)
+  IF(qh_use<-900.OR.qe_use<-900)THEN  ! observed data has a problem
+     CALL ErrorHint(22,'Unrealistic qh or qe_value for CBL.',qh_use,qe_use,qh_choice)
   ENDIF
-
+  !!Heat flux choices - these are now made in SUEWS_Calculations for qhforCBL and qeCBL, rather than here
+  !IF(Qh_choice==1) THEN   !from SUEWS
+  !   !qh_use=qh
+  !   !qe_use=qeph
+  !   qh_use=qhforCBL(Gridiv)   !HCW 21 Mar 2017
+  !   qe_use=qeforCBL(Gridiv)
+  !ELSEIF(qh_choice==2)THEN !from LUMPS
+  !   qh_use=H_mod
+  !   qe_use=E_mod
+  !ELSEIF(qh_choice==3)THEN  !from OBS
+  !   IF(qh_obs<-900.OR.qe_obs<-900)THEN  ! observed data has a problem
+  !      CALL ErrorHint(22,'Unrealistic observed qh or qe_value.',qh_obs,qe_obs,qh_choice)
+  !   ENDIF
+  !   qh_use=qh_obs
+  !   qe_use=qe_obs
+  !ENDIF
+  
 
   blh_m=NAN
   iCBLcount=iCBLcount+1

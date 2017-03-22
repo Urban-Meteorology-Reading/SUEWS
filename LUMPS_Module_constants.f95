@@ -831,8 +831,9 @@ MODULE data_in
        FileESTMTs,&      !ESTM input file name
        SOLWEIGpoiOut,&   !SOLWEIG poi file name
        BLout,&             !CLB output file name
-       FileOut_tt        !Output file name (for resolution at model time-step)
-
+       FileOut_tt,&        !Output file name (for resolution at model time-step)
+       ESTMOut_tt
+       
   INTEGER:: SkipHeaderSiteInfo = 2   !Number of header lines to skip in SiteInfo files
   INTEGER:: SkipHeaderMet = 1        !Number of header lines to skip in met forcing file
 
@@ -1027,7 +1028,7 @@ MODULE cbl_MODULE
   INTEGER::EntrainmentType,&  ! Entrainment type choice
        CO2_included,&     ! CO2 included
        InitialData_use,&  ! 1 read initial data, 0 do not
-       qh_choice,&        ! selection of qh use to drive CBL growth 1=Suews 2=lumps 3=obs
+       !qh_choice,&        ! selection of qh use to drive CBL growth 1=Suews 2=lumps 3=obs  ! moved to sues_data
        sondeflag      ! 1 read sonde or vertical profile data in 0 do not
 
   INTEGER,DIMENSION(366)::cblday=0
@@ -1392,7 +1393,8 @@ MODULE sues_data
        qeOut      !Latent heat flux [W m-2]
        
   REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE:: qhforCBL, qeforCBL   ! Stores previous timestep qh and qe for CBL model. Added by HCW 21 Mar 2017
-
+  INTEGER:: qh_choice        ! selection of qh use to drive CBL growth 1=Suews 2=lumps 3=obs  
+  
   !Water use related variables
   REAL (KIND(1d0)):: ext_wu,&         !External water use for the model timestep [mm] (over whole study area)
        Faut,&           !Fraction of irrigated area using automatic irrigation

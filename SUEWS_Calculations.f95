@@ -132,6 +132,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   CALL sun_position(year,idectime,timezone,lat,lng,alt,azimuth,zenith_deg)
   !write(*,*) DateTime, timezone,lat,lng,alt,azimuth,zenith_deg
   
+  
   IF(CBLuse>=1)THEN ! If CBL is used, calculated Temp_C and RH are replaced with the obs.
      IF(Diagnose==1) WRITE(*,*) 'Calling CBL...'
      CALL CBL(ir,iMB,Gridiv)   !ir=1 indicates first row of each met data block
@@ -648,8 +649,21 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ENDDO
 
   ! Save qh and qe for CBL in next iteration
-  qhforCBL(Gridiv) = qh
-  qeforCBL(Gridiv) = qeOut
+  IF(Qh_choice==1) THEN   !use QH and QE from SUEWS
+     qhforCBL(Gridiv) = qh
+     qeforCBL(Gridiv) = qeOut
+  ELSEIF(Qh_choice==2)THEN   !use QH and QE from LUMPS
+     qhforCBL(Gridiv) = h_mod
+     qeforCBL(Gridiv) = e_mod
+  ELSEIF(qh_choice==3)THEN  !use QH and QE from OBS
+     qhforCBL(Gridiv) = qh_obs
+     qeforCBL(Gridiv) = qe_obs
+     IF(qh_obs<-900.OR.qe_obs<-900)THEN  ! observed data has a problem
+        CALL ErrorHint(22,'Unrealistic observed qh or qe_value.',qh_obs,qe_obs,qh_choice)
+     ENDIF
+  ENDIF
+
+
   
   !=====================================================================
   !====================== Write out files ==============================

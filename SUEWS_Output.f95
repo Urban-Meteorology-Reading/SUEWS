@@ -94,7 +94,8 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
 
   ! For main data file at model time-step (may not be used if KeepTstepFilesOut is 0)
   FileOut_tt=TRIM(rawpath)//'_'//TRIM(ADJUSTL(str2_tt))//'.txt'
-
+  ESTMOut_tt=TRIM(rawpath)//'_ESTM_'//TRIM(ADJUSTL(str2_tt))//'.txt'
+  
   !========== Get headers and write out output info to file ==========
   ! To add extra columns, change all these (Header, Units, LongNm, Format, Agg) together
   ! Could change to read from external file later
@@ -393,22 +394,6 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
      ENDIF
   ENDIF
 
-  ! ESTM output file ---------------------------------------------------
-  IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
-     IF (iv==1) THEN
-        OPEN(58,file=TRIM(ESTMOut),status='unknown')
-        WRITE(58, 115)
-115     FORMAT('%iy id it imin dectime ',&
-             'QSNET QSAIR QSWALL QSROOF QSGROUND QSIBLD ',&
-             'TWALL1 TWALL2 TWALL3 TWALL4 TWALL5 ',&       !T0_WALL TWALL1 TWALL2 TWALL3 TN_WALL
-             'TROOF1 TROOF2 TROOF3 TROOF4 TROOF5 ',&
-             'TGROUND1 TGROUND2 TGROUND3 TGROUND4 TGROUND5 ',&
-             'TiBLD1 TiBLD2 TiBLD3 TiBLD4 TiBLD5 TaBLD ')
-     ELSE
-        OPEN(58,file=TRIM(ESTMOut),position='append')
-     ENDIF
-  ENDIF
-
   !These belong to NARP ouput file
   ! 'kup_Paved kup_Bldgs kup_EveTr kup_DecTr kup_Grass kup_BSoil kup_Water ',&
   ! 'lup_Paved lup_Bldgs lup_EveTr lup_DecTr lup_Grass lup_BSoil lup_Water ',&
@@ -455,9 +440,18 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
      ENDIF
 
      IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14)THEN
+        ! ESTM output file ---------------------------------------------------
+        IF (iv==1) THEN
+           OPEN(58,file=TRIM(ESTMOut_tt),status='unknown')
+           WRITE(58, 115)
+        ELSE
+           OPEN(58,file=TRIM(ESTMOut_tt),position='append')
+        ENDIF
+         
         DO i=1,irMax
            WRITE(58, 307)(INT(dataOutESTM(i,is,Gridiv)),is=1,4),(dataOutESTM(i,is,Gridiv),is=5,32)
         ENDDO
+        CLOSE(58)
      ENDIF
 
   ENDIF
@@ -515,46 +509,53 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
 
      !  aggregate all ESTM outputs in the way of average, TS 10 Feb 2017
      IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14)THEN
+        lfnOutC = 59
+        ! ESTM output file --------------------------------------------------
+        IF (iv==1) THEN
+           OPEN(lfnOutC,file=TRIM(ESTMOut),status='unknown')
+           WRITE(lfnOutC, 115)
+        ELSE
+           OPEN(lfnOutC,file=TRIM(ESTMOut),position='append')
+        ENDIF
+        
         DO i=nlinesOut,irMax,nlinesOut
-           ALLOCATE(dataOutProc0(nlinesOut,32))
-           ALLOCATE(dataOutProc(32))
+            ALLOCATE(dataOutProc0(nlinesOut,32))
+            ALLOCATE(dataOutProc(32))
 
-           dataOutProc0=dataOut(i-nlinesOut+1:i,1:32,Gridiv)
+            dataOutProc0=dataOutESTM(i-nlinesOut+1:i,1:32,Gridiv)  !bug fixed HCW 22 Mar 2017
 
-           DO j = 1, 32, 1
-              SELECT CASE (j)
-              CASE (1:4) !time columns, aT
-                 dataOutProc(j)=dataOutProc0(nlinesOut,j)
-              CASE (5:32) !average, aA
-                 dataOutProc(j)=SUM(dataOutProc0(:,j))/nlinesOut
-                 ! CASE ('2') !sum, aS
-                 !    dataOutProc(j)=SUM(dataOutProc0(:,j))
-                 ! CASE ('3') !last value,aL
-                 !    dataOutProc(j)=dataOutProc0(nlinesOut,j)
-              END SELECT
+            DO j = 1, 32, 1
+               SELECT CASE (j)
+               CASE (1:4) !time columns, aT
+                  dataOutProc(j)=dataOutProc0(nlinesOut,j)
+               CASE (5:32) !average, aA
+                   dataOutProc(j)=SUM(dataOutProc0(:,j))/nlinesOut
+                   ! CASE ('2') !sum, aS
+                   !    dataOutProc(j)=SUM(dataOutProc0(:,j))
+                   ! CASE ('3') !last value,aL
+                   !    dataOutProc(j)=dataOutProc0(nlinesOut,j)
+                END SELECT
 
-              IF ( Diagnose==1 .AND. Gridiv ==1 .AND. i==irMax ) THEN
-                 PRINT*, 'raw data of ',j,':'
-                 PRINT*, dataOutProc0(:,j)
-                 PRINT*, 'aggregated with method: ','average'
-                 PRINT*, dataOutProc(j)
-                 PRINT*, ''
-              END IF
+                IF ( Diagnose==1 .AND. Gridiv ==1 .AND. i==irMax ) THEN
+                   PRINT*, 'raw data of ',j,':'
+                   PRINT*, dataOutProc0(:,j)
+                   PRINT*, 'aggregated with method: ','average'
+                   PRINT*, dataOutProc(j)
+                   PRINT*, ''
+                ENDIF
 
-           END DO
+             ENDDO
 
-           WRITE(58,307) INT(dataOutProc(1:4)),dataOutProc(5:32)
-           !WRITE(lfnoutC,301) (INT(dataOut(i,is,Gridiv)),is=1,4),&
-           !      dataOut(i,5:ncolumnsDataOut,Gridiv)
-           IF (ALLOCATED(dataOutProc0)) DEALLOCATE(dataOutProc0)
-           IF (ALLOCATED(dataOutProc)) DEALLOCATE(dataOutProc)
+             WRITE(lfnoutC,307) INT(dataOutProc(1:4)),dataOutProc(5:32)
+             IF (ALLOCATED(dataOutProc0)) DEALLOCATE(dataOutProc0)
+             IF (ALLOCATED(dataOutProc)) DEALLOCATE(dataOutProc)
 
         ENDDO
         ! DO i=1,irMax
         !    WRITE(58, 307)(INT(dataOutESTM(i,is,Gridiv)),is=1,4),(dataOutESTM(i,is,Gridiv),is=5,32)
         ! ENDDO
+        CLOSE(lfnOutC)
      ENDIF
-
 
      ! Commented out HCW 21 Mar 2017, otherwise data duplicated in output files at model timestep
      !!  other outputs not touched at the moment, as of 09 Feb 2017, TS
@@ -580,6 +581,12 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
 
   IF (ALLOCATED(AggregUseX)) DEALLOCATE(AggregUseX)
 
+115 FORMAT('%iy id it imin dectime ',&
+           'QSNET QSAIR QSWALL QSROOF QSGROUND QSIBLD ',&
+           'TWALL1 TWALL2 TWALL3 TWALL4 TWALL5 ',&       !T0_WALL TWALL1 TWALL2 TWALL3 TN_WALL
+           'TROOF1 TROOF2 TROOF3 TROOF4 TROOF5 ',&
+           'TGROUND1 TGROUND2 TGROUND3 TGROUND4 TGROUND5 ',&
+           'TiBLD1 TiBLD2 TiBLD3 TiBLD4 TiBLD5 TaBLD ')
 
 304 FORMAT(1(i3,1X),4(f8.4,1X),23(f9.3,1X))          !Solweig output
 305 FORMAT((i4,1X),3(i3,1X),(f8.4,1X),17(f15.7,1x))  !CBL output
@@ -591,11 +598,12 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
        7(f10.4,1X),7(f10.4,1X),7(f10.4,1X),7(f10.4,1X))
 307 FORMAT((i4,1X),3(i3,1X),(f8.4,1X),27(f12.4,1X))  !ESTM out
 
+
+
   !================CLOSE OUTPUTFILE================
   CLOSE (9)
   CLOSE (53)
   CLOSE (54)
-  CLOSE (58)
   RETURN
 
   !Error commands

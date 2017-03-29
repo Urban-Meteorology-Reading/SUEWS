@@ -358,16 +358,6 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
           '   Tmrt       I0       CI        gvf      shadow    svf    svfbuveg    Ta    Tg')
   ENDIF
 
-  ! BL ouput file -----------------------------------------------------
-  IF (CBLuse>=1) THEN
-     OPEN(53,file=BLOut,status='unknown')
-     WRITE(53, 102)
-102  FORMAT('iy  id   it imin dectime         z            theta          q',&
-          '               theta+          q+              Temp_C          rh',&
-          '              QH_use          QE_use          Press_hPa       avu1',&
-          '            ustar           avdens          lv_J_kg         avcp',&
-          '            gamt            gamq')
-  ENDIF
 
   ! Snow output file --------------------------------------------------
   IF (SnowUse>=1) THEN
@@ -417,7 +407,6 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
              dataOut(i,PACK(UseColumnsDataOut, UseColumnsDataOut >= 5),Gridiv)
         !WRITE(lfnoutC,301) (INT(dataOut(i,is,Gridiv)),is=1,4),&
         !      dataOut(i,5:ncolumnsDataOut,Gridiv)
-
      ENDDO
      CLOSE (lfnoutC)
      
@@ -427,7 +416,15 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
         ENDDO
      ENDIF
 
-     IF(CBLuse>=1) THEN
+     ! BL ouput file -----------------------------------------------------
+     IF (CBLuse>=1) THEN
+        IF (iv==1) THEN   
+           OPEN(53,file=BLOut,status='unknown')
+           WRITE(53, 102)
+        ELSE
+           OPEN(53,file=BLOut,position='append')
+        ENDIF    
+        !write(*,*) 'Writing...', iCBLcount 
         DO i=1,iCBLcount
            WRITE(53,305)(INT(dataOutBL(i,is,Gridiv)),is=1,4),(dataOutBL(i,is,Gridiv),is=5,ncolumnsdataOutBL)
         ENDDO
@@ -581,6 +578,12 @@ SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
 
   IF (ALLOCATED(AggregUseX)) DEALLOCATE(AggregUseX)
 
+102 FORMAT('iy  id   it imin dectime         z            theta          q',&
+           '               theta+          q+              Temp_C          rh',&
+           '              QH_use          QE_use          Press_hPa       avu1',&
+           '            ustar           avdens          lv_J_kg         avcp',&
+           '            gamt            gamq')
+      
 115 FORMAT('%iy id it imin dectime ',&
            'QSNET QSAIR QSWALL QSROOF QSGROUND QSIBLD ',&
            'TWALL1 TWALL2 TWALL3 TWALL4 TWALL5 ',&       !T0_WALL TWALL1 TWALL2 TWALL3 TN_WALL

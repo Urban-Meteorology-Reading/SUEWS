@@ -185,7 +185,7 @@ PROGRAM SUEWS_Program
         ENDIF
      
         ! Find number of lines in orig met file
-        write(*,*) TRIM(FileOrigMet)
+        !write(*,*) TRIM(FileOrigMet)
         OPEN(UnitOrigMet,file=TRIM(FileOrigMet),status='old',err=313)
         CALL skipHeader(UnitOrigMet,SkipHeaderMet)  !Skip header
         nlinesOrigMetdata = 0   !Initialise nlinesMetdata (total number of lines in met forcing file)

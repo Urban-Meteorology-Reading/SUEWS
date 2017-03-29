@@ -36,6 +36,7 @@ SUBROUTINE CBL(ifirst,iMB,Gridiv)
   !IF((ifirst==1 .AND. iMB==1) .OR. CBLday(id)==0) THEN   !HCW modified condition to check for first timestep of the model run
   IF(ifirst==1 .OR. CBLday(id)==0) THEN   !HCW modified 29/03/2017
      iCBLcount=iCBLcount+1
+  !write(*,*) 'ifirst or nonCBLday', DateTime, iCBLcount   
      dataOutBL(iCBLcount,1:ncolumnsdataOutBL,Gridiv)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime, &
                                                     (NAN,is=6,ncolumnsdataOutBL)/)
      RETURN
@@ -45,6 +46,7 @@ SUBROUTINE CBL(ifirst,iMB,Gridiv)
   ENDIF
 
   IF(startflag==0)THEN !write down initial values in previous time step
+  !write(*,*) 'startflag', DateTime, iCBLcount   
      dataOutBL(iCBLcount,1:ncolumnsdataOutBL,Gridiv)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime,blh_m,tm_K, &
                qm_kgkg*1000,tp_K,qp_kgkg*1000,(NAN,is=11,20),gamt_Km,gamq_kgkgm/)
      startflag=1
@@ -158,6 +160,7 @@ SUBROUTINE CBL(ifirst,iMB,Gridiv)
         avrh=100
      ENDIF
      iCBLcount=iCBLcount+1
+     !write(*,*) 'qh1or2', DateTIme, iCBLcount   
      dataOutBL(iCBLcount,1:ncolumnsdataOutBL,Gridiv)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime,blh_m,tm_K, & 
                 qm_kgkg*1000, tp_K,qp_kgkg*1000,&
           Temp_C,avrh,cbldata(2),cbldata(3),cbldata(9),cbldata(7),cbldata(8),cbldata(4),cbldata(5),cbldata(6),&
@@ -174,6 +177,7 @@ SUBROUTINE CBL(ifirst,iMB,Gridiv)
         avrh1=100
      ENDIF
      iCBLcount=iCBLcount+1
+     !write(*,*) 'qh3', DateTIme, iCBLcount   
      dataOutBL(iCBLcount,1:ncolumnsdataOutBL,Gridiv)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime,blh_m,tm_K, &
           qm_kgkg*1000,tp_K,qp_kgkg*1000,&
           Temp_C1,avrh1,cbldata(2),cbldata(3),cbldata(9),cbldata(7),cbldata(8),cbldata(4),cbldata(5),cbldata(6),&
@@ -262,6 +266,8 @@ SUBROUTINE CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,iMB, Gridiv)
   USE defaultNotUsed
   USE cbl_module
   USE gis_data
+  USE WhereWhen
+  
   IMPLICIT NONE
 
   REAL(KIND(1d0))::qh_use,qe_use,tm_K_zm,qm_gkg_zm
@@ -294,6 +300,7 @@ SUBROUTINE CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,iMB, Gridiv)
 
   blh_m=NAN
   iCBLcount=iCBLcount+1
+  !write(*,*) 'cblinitial', DateTIme, iCBLcount   
   dataOutBL(iCBLcount,1:ncolumnsdataOutBL,Gridiv)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime, &
                                                  (NAN,is=6,ncolumnsdataOutBL)/)
 
@@ -312,7 +319,7 @@ SUBROUTINE CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,iMB, Gridiv)
      qp_gkg=IniCBLdata(nLineDay,6)
      tm_K=IniCBLdata(nLineDay,7)
      qm_gkg=IniCBLdata(nLineDay,8)
-  ELSEIF(InitialData_use==1 .AND. IniCBLdata(i,1)==id)THEN   !!!Shouldn't this be nlineDay not i? HCW 17 March 2017
+  ELSEIF(InitialData_use==1 .AND. IniCBLdata(nlineDay,1)==id)THEN   ! Changed from i to nlineDay, HCW 29 March 2017
      blh_m=IniCBLdata(nLineDay,2)
      gamt_Km=IniCBLdata(nLineDay,3)
      gamq_gkgm=IniCBLdata(nLineDay,4)

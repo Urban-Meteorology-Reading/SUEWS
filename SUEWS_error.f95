@@ -56,7 +56,10 @@ SUBROUTINE ErrorHint(errh,ProblemFile,value,value2,valueI)
   ELSEIF(errh==2) THEN
      text1='Cannot perform disaggregation.'
      v6=.TRUE.   
-  ! 3,4,5
+  ELSEIF(errh==3) THEN
+     text1='Met forcing file should contain only 1 year of data.'
+     v1=.TRUE.   
+  ! 4,5
   ELSEIF(errh==6) THEN
      text1='Value obtained exceeds permitted range, setting to +/-9999 in output file.'
      v1=.TRUE.

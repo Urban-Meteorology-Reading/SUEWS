@@ -568,8 +568,10 @@ PROGRAM SUEWS_Program
         ! Initialise the modules on the first day
         ! if ( iblock==1 ) then
         ! Initialise CBL and SOLWEIG parts if required
-        IF((CBLuse==1).OR.(CBLuse==2)) CALL CBL_ReadInputData
-        IF(SOLWEIGuse==1) CALL SOLWEIG_initial
+        IF (iblock==1) THEN
+           IF((CBLuse==1).OR.(CBLuse==2)) CALL CBL_ReadInputData
+        ENDIF   
+        IF(SOLWEIGuse==1) CALL SOLWEIG_initial   !not sure if solweig should be within iblock if statement too?
 
         !write(*,*) 'Initialisation done'
         ! First stage: initialisation done ----------------------------------

@@ -2330,7 +2330,7 @@ SUBROUTINE SUEWS_InitializeMetData(lunit)
 
   INTEGER::lunit,i,iyy !,RunNumber,NSHcounter
   REAL (KIND(1d0)),DIMENSION(24)::MetArray
-  REAL(KIND(1d0)):: imin_prev, ih_prev, iday_prev, tstep_met   !For checks on temporal resolution of met data
+  REAL(KIND(1d0)):: imin_prev, ih_prev, iday_prev, tstep_met, iy_only   !For checks on temporal resolution of met data
 
   !---------------------------------------------------------------
 
@@ -2361,7 +2361,8 @@ SUBROUTINE SUEWS_InitializeMetData(lunit)
      IF(i==1) THEN
         imin_prev = MetArray(4)
         ih_prev   = MetArray(3)
-        iday_prev   = MetArray(2)
+        iday_prev = MetArray(2)
+        iy_only   = MetArray(1) 
      ELSEIF(i==2) THEN
         tstep_met = ((MetArray(4)+60*MetArray(3)) - (imin_prev+60*ih_prev))*60   !tstep in seconds
         IF(tstep_met.NE.tstep_real.AND.MetArray(2)==iday_prev) THEN
@@ -2369,7 +2370,14 @@ SUBROUTINE SUEWS_InitializeMetData(lunit)
                 INT(MetArray(2)))
         ENDIF
      ENDIF
-
+    
+     ! Check file only contains a single year --------------------------------------------
+     ! Very last data point is allowed to be (should be) timestamped with following year
+     IF(MetArray(1) /= iy_only) THEN
+        CALL errorHint(3,'Problem in SUEWS_Initial: multiple years found in met forcing file.', &
+                         MetArray(1),NotUsed,NotUsedI)
+     ENDIF
+     
   ENDDO
 
   CLOSE(lunit)

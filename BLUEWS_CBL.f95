@@ -1,5 +1,6 @@
 ! Note: INTERVAL is now set to 3600 s in Initial (it is no longer set in RunControl) HCW 29 Jan 2015
 ! Last modified:
+!  HCW 29 Mar 2017 - Changed third dimension of dataOutBL to Gridiv (was previously iMB which seems incorrect)
 !  LJ 27 Jan 2016 - Removal of tabs
 
 SUBROUTINE CBL(ifirst,iMB,Gridiv)
@@ -15,6 +16,8 @@ SUBROUTINE CBL(ifirst,iMB,Gridiv)
   USE defaultNotUsed
   USE cbl_module
   USE gis_data
+  USE WhereWhen
+  
   IMPLICIT NONE
 
   REAL(KIND(1d0))::sat_vap_press
@@ -24,11 +27,16 @@ SUBROUTINE CBL(ifirst,iMB,Gridiv)
   INTEGER::idoy,ifirst,iMB,Gridiv,startflag
   REAL(KIND(1d0)), PARAMETER::pi=3.141592653589793d+0,d2r=pi/180.
 
-
+  ! Reset iCBLcount at start of each metblock (HCW added 29/03/2017)
+  IF(ifirst == 1) THEN
+     iCBLcount = 0
+  ENDIF
+  
   !Skip first loop and unspecified days
-  IF((ifirst==1 .AND. iMB==1) .OR. CBLday(id)==0) THEN   !HCW modified condition to check for first timestep of the model run
+  !IF((ifirst==1 .AND. iMB==1) .OR. CBLday(id)==0) THEN   !HCW modified condition to check for first timestep of the model run
+  IF(ifirst==1 .OR. CBLday(id)==0) THEN   !HCW modified 29/03/2017
      iCBLcount=iCBLcount+1
-     dataOutBL(iCBLcount,1:ncolumnsdataOutBL,iMB)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime, &
+     dataOutBL(iCBLcount,1:ncolumnsdataOutBL,Gridiv)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime, &
                                                     (NAN,is=6,ncolumnsdataOutBL)/)
      RETURN
   ELSEIF(avkdn<5)THEN
@@ -37,8 +45,8 @@ SUBROUTINE CBL(ifirst,iMB,Gridiv)
   ENDIF
 
   IF(startflag==0)THEN !write down initial values in previous time step
-     dataOutBL(iCBLcount,1:ncolumnsdataOutBL,iMB)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime,blh_m,tm_K,qm_kgkg*1000,&
-          tp_K,qp_kgkg*1000,(NAN,is=11,20),gamt_Km,gamq_kgkgm/)
+     dataOutBL(iCBLcount,1:ncolumnsdataOutBL,Gridiv)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime,blh_m,tm_K, &
+               qm_kgkg*1000,tp_K,qp_kgkg*1000,(NAN,is=11,20),gamt_Km,gamq_kgkgm/)
      startflag=1
   ENDIF
 
@@ -150,8 +158,8 @@ SUBROUTINE CBL(ifirst,iMB,Gridiv)
         avrh=100
      ENDIF
      iCBLcount=iCBLcount+1
-     dataOutBL(iCBLcount,1:ncolumnsdataOutBL,iMB)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime,blh_m,tm_K,qm_kgkg*1000,&
-          tp_K,qp_kgkg*1000,&
+     dataOutBL(iCBLcount,1:ncolumnsdataOutBL,Gridiv)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime,blh_m,tm_K, & 
+                qm_kgkg*1000, tp_K,qp_kgkg*1000,&
           Temp_C,avrh,cbldata(2),cbldata(3),cbldata(9),cbldata(7),cbldata(8),cbldata(4),cbldata(5),cbldata(6),&
           gamt_Km,gamq_kgkgm/)
   ELSEIF(qh_choice==3)THEN ! CBL
@@ -166,8 +174,8 @@ SUBROUTINE CBL(ifirst,iMB,Gridiv)
         avrh1=100
      ENDIF
      iCBLcount=iCBLcount+1
-     dataOutBL(iCBLcount,1:ncolumnsdataOutBL,iMB)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime,blh_m,tm_K,qm_kgkg*1000,&
-          tp_K,qp_kgkg*1000,&
+     dataOutBL(iCBLcount,1:ncolumnsdataOutBL,Gridiv)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime,blh_m,tm_K, &
+          qm_kgkg*1000,tp_K,qp_kgkg*1000,&
           Temp_C1,avrh1,cbldata(2),cbldata(3),cbldata(9),cbldata(7),cbldata(8),cbldata(4),cbldata(5),cbldata(6),&
           gamt_Km,gamq_kgkgm/)
   ENDIF
@@ -184,6 +192,7 @@ SUBROUTINE CBL_ReadInputData
   USE sues_data
   USE cbl_module
   USE initial
+  USE WhereWhen
 
   IMPLICIT NONE
 
@@ -285,7 +294,7 @@ SUBROUTINE CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,iMB, Gridiv)
 
   blh_m=NAN
   iCBLcount=iCBLcount+1
-  dataOutBL(iCBLcount,1:ncolumnsdataOutBL,iMB)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime, &
+  dataOutBL(iCBLcount,1:ncolumnsdataOutBL,Gridiv)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime, &
                                                  (NAN,is=6,ncolumnsdataOutBL)/)
 
   nLineDay=0

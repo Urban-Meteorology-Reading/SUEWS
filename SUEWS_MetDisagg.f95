@@ -131,6 +131,13 @@
                         REAL(ResolutionFilesIn,KIND(1d0)),NotUsed,tdiff*60)
     ENDIF
 
+    ! Check file only contains a single year --------------------------------------------
+    ! Very last data point is allowed to be (should be) timestamped with following year
+    IF(ANY(MetForDisagg(1:(ReadLinesOrigMetDataMax-1),1) /= MetForDisagg(1,1))) THEN
+       CALL errorHint(3,'Problem in SUEWS_MetDisagg: multiple years found in original met forcing file.', &
+                      MetForDisagg(1,1),NotUsed,NotUsedI)
+    ENDIF
+    
     ! Disaggregate time columns ---------------------------------------------------------
     write(*,*) 'Disaggregating met forcing data (',TRIM(FileOrigMet),') to model time-step...'
     ! Convert to dectime

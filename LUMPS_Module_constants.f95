@@ -1041,7 +1041,7 @@ MODULE cbl_MODULE
 
   !Parameters in CBL code
   INTEGER::zmax,&
-       nEqn=4,&
+       nEqn=6,&  !NT changed from 4 to 6 
        iCBLcount,&
        nlineInData
   REAL(KIND(1d0))::C2K=273.16
@@ -1073,7 +1073,7 @@ MODULE cbl_MODULE
 
 
   REAL (KIND(1D0)), DIMENSION (0:500,2):: gtheta,ghum ! Vertical gradient of theta and specific humidity from sonde data
-  REAL (KIND(1D0)), DIMENSION(4)::y
+  REAL (KIND(1D0)), DIMENSION(6)::y  ! NT set from 4 to 6
 
 END   MODULE cbl_MODULE
 !===================================================================================

@@ -1,6 +1,7 @@
 ! Note: INTERVAL is now set to 3600 s in Initial (it is no longer set in RunControl) HCW 29 Jan 2015
 ! Last modified:
 !  HCW 29 Mar 2017 - Changed third dimension of dataOutBL to Gridiv (was previously iMB which seems incorrect)
+!  NT 6 Apr 2017 - include top of the CBL variables in RKUTTA scheme + add flag to include or exclude subsidence
 !  LJ 27 Jan 2016 - Removal of tabs
 
 SUBROUTINE CBL(ifirst,iMB,Gridiv)
@@ -99,8 +100,8 @@ SUBROUTINE CBL(ifirst,iMB,Gridiv)
      cm=NAN
   ENDIF
 
-  tpp_K=tp_K
-  qpp_kgkg=qp_kgkg
+!   tpp_K=tp_K
+!   qpp_kgkg=qp_kgkg
 
   IF(sondeflag.EQ.1) THEN
      CALL gamma_sonde
@@ -111,23 +112,27 @@ SUBROUTINE CBL(ifirst,iMB,Gridiv)
   y(2)=tm_K  ! to time s(i) using runge-kutta solution
   y(3)=qm_kgkg   ! of slab CBL equations
   y(4)=cm
+  y(5)=tp_K
+  y(6)=qp_kgkg
 
   !++++++++++++++++++++++++++++++++++++++++++++++++++++++
   CALL rkutta(neqn,secs0,secs1,y,1)
   !++++++++++++++++++++++++++++++++++++++++++++++++++++++
   blh_m   =y(1)
-  tm_K    =y(2)  ! potential temperature, units: deg C
+  tm_K    =y(2)  ! potential temperature, units: deg C  <-NT: shouldn't this be K?
   qm_kgkg =y(3)  ! specific humidity, units: kg/kg
   cm      =y(4)  ! co2 concentration,units: mol/mol
-
+  tp_K    =y(5)  ! potential temperature top of CBL: K
+  qp_kgkg =y(6)  ! specific humidity top of CBL: kg/kg
   !     	compute derived quantities for this time step
 
-  tp_K   = tpp_K     + (gamt_Km*(blh_m-blh1_m))
-  qp_kgkg = qpp_kgkg + (gamq_kgkgm*(blh_m-blh1_m))
-
-  IF (tp_K.LT.tm_K) THEN
-     tp_K = tm_K
-  ENDIF
+!NT: now included in rkutta
+!   tp_K   = tpp_K     + (gamt_Km*(blh_m-blh1_m))
+!   qp_kgkg = qpp_kgkg + (gamq_kgkgm*(blh_m-blh1_m))
+! 
+!   IF (tp_K.LT.tm_K) THEN
+!      tp_K = tm_K
+!   ENDIF
 
   !		th = tm_K - (grav/cbldata(5))*blh_m			 ! actual temp just below z=h
   !		dh = qsatf(th,cbldata(8)) - qm_kgkg           ! deficit just below z=h

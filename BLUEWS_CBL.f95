@@ -210,6 +210,7 @@ SUBROUTINE CBL_ReadInputData
 
   NAMELIST/CBLInput/EntrainmentType,&
        QH_choice,&
+       isubs,&
        CO2_included,&
        cblday,&
        wsb,&
@@ -217,6 +218,7 @@ SUBROUTINE CBL_ReadInputData
        InitialDataFileName,&
        sondeflag,&
        FileSonde
+       
 
   OPEN(51,file=TRIM(FileInputPath)//'CBLInput.nml',status='old', err=24)
   READ(51,nml=CBLInput,err=24)

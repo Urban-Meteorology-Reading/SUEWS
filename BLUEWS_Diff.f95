@@ -107,7 +107,6 @@
     real(kind(1D0)):: ftva_Kms,delb,qs2,qs3
     real(kind(1D0)):: dhds,dtds,dqds,dcds,dtpds,dqpds
     real(kind(1D0)):: conk,conn,cona,conc,cont
-    real(kind(1D0)):: inclsubsid
 
 !    print*,"diff: timestamp:",s
 !    pause
@@ -135,10 +134,7 @@
 
 !       find velocity scale ws
     ftva_Kms = max(ftv_Kms,zero) ! virtual heat flux
-    ws = (h1*ftva_Kms*grav/tm_K)**0.3333333333
-
-    inclsubsid = 1 ! NT: flag whether or not to include subsidence (to be included in namelist)
-    
+    ws = (h1*ftva_Kms*grav/tm_K)**0.3333333333    
     
 !       find dhds using one of 4 alternative schemes chosen by ient:
     if (EntrainmentType.eq.2) then
@@ -161,14 +157,14 @@
    
      else if (EntrainmentType.eq.4) then
 !       EntrainmentType=3: Tennekes 1973 (as in R 1991 eqs 3,4)
-        alpha3=0.2
+        alpha3=0.2   ! alpha changed back to original Tennekes 1973 value
         if (deltv_K.le.0.01) then
             dhds = ftva_Kms/(h1*gamtv_Km)
             call ErrorHint(31, 'subroutine difflfnout: [CBL: deltv_K<0.01 EntrainmentType=4],deltv_K',&
             deltv_K,notUsed,notUsedI)
         else
             ! include the option whether or not to include subsidence
-            if (inclsubsid.eq.1) then
+            if (isubs.eq.1) then
                 dhds = alpha3*ftva_Kms/deltv_k + wsb
             else
                 dhds = alpha3*ftva_Kms/deltv_K  
@@ -200,7 +196,7 @@
     end if
 ! find dtds, dqds, dc/ds:
 !	wsb is the subsidence velocity. Try using: -0.01, -0.05, -0.1.   
-    if (inclsubsid.eq.1) then
+    if (isubs.eq.1) then
         dtds = fhbl_Kms/h1    + delt_K    *(dhds-wsb)/h1
         dqds = febl_kgkgms/h1 + delq_kgkg *(dhds-wsb)/h1
         dcds = fcbl/h1        + delc      *(dhds-wsb)/h1

@@ -9,6 +9,7 @@
 !  - then over rows
 !  - then over grids
 !
+!Last modified by LJ 6 Apr 2017   - Snow initialisation, allocation and deallocation added
 !Last modified by HCW 10 Feb 2017 - Disaggregation of met forcing data
 !Last modified by HCW 12 Jan 2017 - Changes to InitialConditions
 !Last modified by HCW 26 Aug 2016 - CO2 flux added
@@ -164,6 +165,7 @@ PROGRAM SUEWS_Program
      ! Find number of model time-steps per resolution of original met forcing file
      Nper_real = ResolutionFilesIn/REAL(Tstep,KIND(1d0))
      Nper=INT(Nper_real)
+
      IF(Nper /= Nper_real) THEN
         CALL ErrorHint(2,'Problem in SUEWS_Program: check resolution of met forcing data (ResolutionFilesIn)', &
                             'and model time-step (Tstep).', & 
@@ -185,7 +187,7 @@ PROGRAM SUEWS_Program
         ENDIF
      
         ! Find number of lines in orig met file
-        !write(*,*) TRIM(FileOrigMet)
+        write(*,*) TRIM(FileOrigMet)
         OPEN(UnitOrigMet,file=TRIM(FileOrigMet),status='old',err=313)
         CALL skipHeader(UnitOrigMet,SkipHeaderMet)  !Skip header
         nlinesOrigMetdata = 0   !Initialise nlinesMetdata (total number of lines in met forcing file)
@@ -196,11 +198,12 @@ PROGRAM SUEWS_Program
         ENDDO
         CLOSE(UnitOrigMet)
         
-        !write(*,*) 'nlinesOrigMetdata', nlinesOrigMetdata
+        write(*,*) 'nlinesOrigMetdata', nlinesOrigMetdata,nlinesLimit
         ReadLinesOrigMetData = nlinesOrigMetdata   !Initially set limit as the size of  file 
         IF(nlinesOrigMetData*Nper > nlinesLimit) THEN   !But restrict if this limit exceeds memory capacity
            ReadLinesOrigMetData = INT(nlinesLimit/Nper)
         ENDIF
+
         ! make sure the metblocks read in consists of complete diurnal cycles
         nsdorig = nsd/Nper
         ReadLinesOrigMetData = INT(MAX(nsdorig*(ReadLinesOrigMetData/nsdorig), nsdorig))
@@ -277,6 +280,10 @@ PROGRAM SUEWS_Program
      IF (SOLWEIGuse == 1) ALLOCATE(dataOutSOL(ReadlinesMetdata,ncolumnsdataOutSOL,NumberOfGrids))     !SOLWEIG POI output
      IF (CBLuse >= 1)     ALLOCATE(dataOutBL(ReadlinesMetdata,ncolumnsdataOutBL,NumberOfGrids))       !CBL output
      IF (SnowUse == 1)    ALLOCATE(dataOutSnow(ReadlinesMetdata,ncolumnsDataOutSnow,NumberOfGrids))   !Snow output
+         ALLOCATE(qn1_S_store(NSH,NumberOfGrids))
+         ALLOCATE(qn1_S_av_store(2*NSH+1,NumberOfGrids))
+         qn1_S_store(:,:) = NAN
+         qn1_S_av_store(:,:) = NaN
      IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14) ALLOCATE(dataOutESTM(ReadlinesMetdata,32,NumberOfGrids)) !ESTM output
      ALLOCATE(TstepProfiles(NumberOfGrids,10,24*NSH))   !Hourly profiles interpolated to model timestep
      ALLOCATE(AHProf_tstep(24*NSH,2))                   !Anthropogenic heat profiles at model timestep
@@ -568,10 +575,8 @@ PROGRAM SUEWS_Program
         ! Initialise the modules on the first day
         ! if ( iblock==1 ) then
         ! Initialise CBL and SOLWEIG parts if required
-        IF (iblock==1) THEN
-           IF((CBLuse==1).OR.(CBLuse==2)) CALL CBL_ReadInputData
-        ENDIF   
-        IF(SOLWEIGuse==1) CALL SOLWEIG_initial   !not sure if solweig should be within iblock if statement too?
+        IF((CBLuse==1).OR.(CBLuse==2)) CALL CBL_ReadInputData
+        IF(SOLWEIGuse==1) CALL SOLWEIG_initial
 
         !write(*,*) 'Initialisation done'
         ! First stage: initialisation done ----------------------------------
@@ -694,7 +699,10 @@ PROGRAM SUEWS_Program
      DEALLOCATE(MetForcingData)
      DEALLOCATE(ModelOutputData)
      DEALLOCATE(dataOut)
-     IF (SnowUse == 1) DEALLOCATE(dataOutSnow)
+     IF (SnowUse == 1) then
+        DEALLOCATE(dataOutSnow)
+        DEALLOCATE(qn1_S_store)
+     ENDIF
      DEALLOCATE(TstepProfiles)
      DEALLOCATE(AHProf_tstep)
      DEALLOCATE(WUProfM_tstep)

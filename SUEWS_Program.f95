@@ -63,7 +63,7 @@ PROGRAM SUEWS_Program
        iblock,&    !Block number (from 1 to ReadBlocksMetData)
        ir,irMax,&  !Row number within each block (from 1 to irMax)
        rr !Row of SiteSelect corresponding to current year and grid
-            
+
   INTEGER:: ios
 
   INTEGER:: iv
@@ -538,7 +538,7 @@ PROGRAM SUEWS_Program
                     FileDscdESTM = TRIM(FileInputPath)//TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt) &
                          //'_ESTM_Ts_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
                     ! Disaggregate ESTM data
-                    CALL DisaggregateESTM(iblock)                     
+                    CALL DisaggregateESTM(iblock)
                  ELSE
                     ! If each grid has the same ESTM file, ESTM file name does not include grid number, and only need to disaggregate once
                     FileOrigESTM = TRIM(FileInputPath)//TRIM(FileCode)//'_'//TRIM(year_txt)//'_ESTM_Ts_data_'&
@@ -546,7 +546,7 @@ PROGRAM SUEWS_Program
                     FileDscdESTM = TRIM(FileInputPath)//TRIM(FileCode)//'_'//TRIM(year_txt)//'_ESTM_Ts_data_'&
                          //TRIM(ADJUSTL(tstep_txt))//'.txt'
                     IF(igrid==1) THEN       !Disaggregate for the first grid only
-                       CALL DisaggregateESTM(iblock)                     
+                       CALL DisaggregateESTM(iblock)
                     ELSE                    !Then for subsequent grids simply copy data
                        ESTMForcingData(1:ReadlinesMetdata,1:ncolsESTMdata,GridCounter) = ESTMForcingData(1:ReadlinesMetdata, &
                             1:ncolsESTMdata,1)

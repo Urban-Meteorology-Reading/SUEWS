@@ -1,8 +1,9 @@
 ! Note: INTERVAL is now set to 3600 s in Initial (it is no longer set in RunControl) HCW 29 Jan 2015
 ! Last modified:
+!  HCW 29 Mar 2017 - Changed third dimension of dataOutBL to Gridiv (was previously iMB which seems incorrect)
 !  LJ 27 Jan 2016 - Removal of tabs
 
-SUBROUTINE CBL(ifirst,iMB)
+SUBROUTINE CBL(ifirst,iMB,Gridiv)
 
   USE mod_z
   USE mod_k
@@ -15,47 +16,63 @@ SUBROUTINE CBL(ifirst,iMB)
   USE defaultNotUsed
   USE cbl_module
   USE gis_data
+  USE WhereWhen
+  
   IMPLICIT NONE
 
   REAL(KIND(1d0))::sat_vap_press
   REAL(KIND(1d0))::qh_use,qe_use,tm_K_zm,qm_gkg_zm
   REAL(KIND(1d0))::Temp_C1,avrh1,es_hPa1
   REAL(KIND(1d0))::secs0,secs1,Lv
-  INTEGER::idoy,ifirst,iMB,startflag
+  INTEGER::idoy,ifirst,iMB,Gridiv,startflag
   REAL(KIND(1d0)), PARAMETER::pi=3.141592653589793d+0,d2r=pi/180.
 
-
+  ! Reset iCBLcount at start of each metblock (HCW added 29/03/2017)
+  IF(ifirst == 1) THEN
+     iCBLcount = 0
+  ENDIF
+  
   !Skip first loop and unspecified days
-  IF((ifirst==1 .AND. iMB==1) .OR. CBLday(id)==0) THEN   !HCW modified condition to check for first timestep of the model run
+  !IF((ifirst==1 .AND. iMB==1) .OR. CBLday(id)==0) THEN   !HCW modified condition to check for first timestep of the model run
+  IF(ifirst==1 .OR. CBLday(id)==0) THEN   !HCW modified 29/03/2017
      iCBLcount=iCBLcount+1
-     dataOutBL(iCBLcount,1:ncolumnsdataOutBL,iMB)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime, &
+  !write(*,*) 'ifirst or nonCBLday', DateTime, iCBLcount   
+     dataOutBL(iCBLcount,1:ncolumnsdataOutBL,Gridiv)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime, &
                                                     (NAN,is=6,ncolumnsdataOutBL)/)
      RETURN
   ELSEIF(avkdn<5)THEN
-     CALL CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,iMb)
+     CALL CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,iMb, Gridiv)
      RETURN
   ENDIF
 
   IF(startflag==0)THEN !write down initial values in previous time step
-     dataOutBL(iCBLcount,1:ncolumnsdataOutBL,iMB)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime,blh_m,tm_K,qm_kgkg*1000,&
-          tp_K,qp_kgkg*1000,(NAN,is=11,20),gamt_Km,gamq_kgkgm/)
+  !write(*,*) 'startflag', DateTime, iCBLcount   
+     dataOutBL(iCBLcount,1:ncolumnsdataOutBL,Gridiv)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime,blh_m,tm_K, &
+               qm_kgkg*1000,tp_K,qp_kgkg*1000,(NAN,is=11,20),gamt_Km,gamq_kgkgm/)
      startflag=1
   ENDIF
 
-  !Heat flux choices
-  IF(Qh_choice==1) THEN   !from SUEWS
-     qh_use=qh
-     qe_use=qeph
-  ELSEIF(qh_choice==2)THEN !from LUMPS
-     qh_use=H_mod
-     qe_use=E_mod
-  ELSEIF(qh_choice==3)THEN  !from OBS
-     IF(qh_obs<-900.OR.qe_obs<-900)THEN  ! observed data has a problem
-        CALL ErrorHint(22,'Unrealistic observed qh or qe_value.',qh_obs,qe_obs,qh_choice)
-     ENDIF
-     qh_use=qh_obs
-     qe_use=qe_obs
+  qh_use=qhforCBL(Gridiv)   !HCW 21 Mar 2017
+  qe_use=qeforCBL(Gridiv)
+  IF(qh_use<-900.OR.qe_use<-900)THEN  ! observed data has a problem
+     CALL ErrorHint(22,'Unrealistic qh or qe_value for CBL.',qh_use,qe_use,qh_choice)
   ENDIF
+  !!Heat flux choices - these are now made in SUEWS_Calculations for qhforCBL and qeCBL, rather than here
+  !IF(Qh_choice==1) THEN   !from SUEWS
+  !  !qh_use=qh
+  !   !qe_use=qeph
+  !   qh_use=qhforCBL(Gridiv)   !HCW 21 Mar 2017
+  !   qe_use=qeforCBL(Gridiv)
+  !ELSEIF(qh_choice==2)THEN !from LUMPS
+  !   qh_use=H_mod
+  !   qe_use=E_mod
+  !ELSEIF(qh_choice==3)THEN  !from OBS
+  !   IF(qh_obs<-900.OR.qe_obs<-900)THEN  ! observed data has a problem
+  !      CALL ErrorHint(22,'Unrealistic observed qh or qe_value.',qh_obs,qe_obs,qh_choice)
+  !   ENDIF
+  !   qh_use=qh_obs
+  !   qe_use=qe_obs
+  !ENDIF
 
   !-------Main loop of CBL calculation--------------------------------------
   !-------------------------------------------------------------------------
@@ -143,8 +160,9 @@ SUBROUTINE CBL(ifirst,iMB)
         avrh=100
      ENDIF
      iCBLcount=iCBLcount+1
-     dataOutBL(iCBLcount,1:ncolumnsdataOutBL,iMB)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime,blh_m,tm_K,qm_kgkg*1000,&
-          tp_K,qp_kgkg*1000,&
+     !write(*,*) 'qh1or2', DateTIme, iCBLcount   
+     dataOutBL(iCBLcount,1:ncolumnsdataOutBL,Gridiv)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime,blh_m,tm_K, & 
+                qm_kgkg*1000, tp_K,qp_kgkg*1000,&
           Temp_C,avrh,cbldata(2),cbldata(3),cbldata(9),cbldata(7),cbldata(8),cbldata(4),cbldata(5),cbldata(6),&
           gamt_Km,gamq_kgkgm/)
   ELSEIF(qh_choice==3)THEN ! CBL
@@ -159,8 +177,9 @@ SUBROUTINE CBL(ifirst,iMB)
         avrh1=100
      ENDIF
      iCBLcount=iCBLcount+1
-     dataOutBL(iCBLcount,1:ncolumnsdataOutBL,iMB)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime,blh_m,tm_K,qm_kgkg*1000,&
-          tp_K,qp_kgkg*1000,&
+     !write(*,*) 'qh3', DateTIme, iCBLcount   
+     dataOutBL(iCBLcount,1:ncolumnsdataOutBL,Gridiv)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime,blh_m,tm_K, &
+          qm_kgkg*1000,tp_K,qp_kgkg*1000,&
           Temp_C1,avrh1,cbldata(2),cbldata(3),cbldata(9),cbldata(7),cbldata(8),cbldata(4),cbldata(5),cbldata(6),&
           gamt_Km,gamq_kgkgm/)
   ENDIF
@@ -177,6 +196,7 @@ SUBROUTINE CBL_ReadInputData
   USE sues_data
   USE cbl_module
   USE initial
+  USE WhereWhen
 
   IMPLICIT NONE
 
@@ -233,7 +253,7 @@ END SUBROUTINE CBL_ReadInputData
 
 !----------------------------------------------------------------------
 !-----------------------------------------------------------------------
-SUBROUTINE CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,iMB)
+SUBROUTINE CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,iMB, Gridiv)
 
   USE mod_z
   USE mod_k
@@ -246,31 +266,42 @@ SUBROUTINE CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,iMB)
   USE defaultNotUsed
   USE cbl_module
   USE gis_data
+  USE WhereWhen
+  
   IMPLICIT NONE
 
   REAL(KIND(1d0))::qh_use,qe_use,tm_K_zm,qm_gkg_zm
   REAL(KIND(1d0))::qsatf,sat_vap_press,lv
-  INTEGER::i,nLineDay,iMB,startflag
+  INTEGER::i,nLineDay,iMB,Gridiv,startflag
 
-  !Heat flux choices
-  IF(Qh_choice==1) THEN   !from SUEWS
-     qh_use=qh
-     qe_use=qeph
-  ELSEIF(qh_choice==2)THEN !from LUMPS
-     qh_use=H_mod
-     qe_use=E_mod
-  ELSEIF(qh_choice==3)THEN  !from OBS
-     IF(qh_obs<-900.OR.qe_obs<-900)THEN  ! observed data has a problem
-        CALL ErrorHint(22,'Unrealistic observed qh or qe_value.',qh_obs,qe_obs,qh_choice)
-     ENDIF
-     qh_use=qh_obs
-     qe_use=qe_obs
+  
+  qh_use=qhforCBL(Gridiv)   !HCW 21 Mar 2017
+  qe_use=qeforCBL(Gridiv)
+  IF(qh_use<-900.OR.qe_use<-900)THEN  ! observed data has a problem
+     CALL ErrorHint(22,'Unrealistic qh or qe_value for CBL.',qh_use,qe_use,qh_choice)
   ENDIF
-
+  !!Heat flux choices - these are now made in SUEWS_Calculations for qhforCBL and qeCBL, rather than here
+  !IF(Qh_choice==1) THEN   !from SUEWS
+  !   !qh_use=qh
+  !   !qe_use=qeph
+  !   qh_use=qhforCBL(Gridiv)   !HCW 21 Mar 2017
+  !   qe_use=qeforCBL(Gridiv)
+  !ELSEIF(qh_choice==2)THEN !from LUMPS
+  !   qh_use=H_mod
+  !   qe_use=E_mod
+  !ELSEIF(qh_choice==3)THEN  !from OBS
+  !   IF(qh_obs<-900.OR.qe_obs<-900)THEN  ! observed data has a problem
+  !      CALL ErrorHint(22,'Unrealistic observed qh or qe_value.',qh_obs,qe_obs,qh_choice)
+  !   ENDIF
+  !   qh_use=qh_obs
+  !   qe_use=qe_obs
+  !ENDIF
+  
 
   blh_m=NAN
   iCBLcount=iCBLcount+1
-  dataOutBL(iCBLcount,1:ncolumnsdataOutBL,iMB)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime, &
+  !write(*,*) 'cblinitial', DateTIme, iCBLcount   
+  dataOutBL(iCBLcount,1:ncolumnsdataOutBL,Gridiv)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime, &
                                                  (NAN,is=6,ncolumnsdataOutBL)/)
 
   nLineDay=0
@@ -288,7 +319,7 @@ SUBROUTINE CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,iMB)
      qp_gkg=IniCBLdata(nLineDay,6)
      tm_K=IniCBLdata(nLineDay,7)
      qm_gkg=IniCBLdata(nLineDay,8)
-  ELSEIF(InitialData_use==1 .AND. IniCBLdata(i,1)==id)THEN   !!!Shouldn't this be nlineDay not i? HCW 17 March 2017
+  ELSEIF(InitialData_use==1 .AND. IniCBLdata(nlineDay,1)==id)THEN   ! Changed from i to nlineDay, HCW 29 March 2017
      blh_m=IniCBLdata(nLineDay,2)
      gamt_Km=IniCBLdata(nLineDay,3)
      gamq_gkgm=IniCBLdata(nLineDay,4)

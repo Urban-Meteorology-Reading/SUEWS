@@ -121,7 +121,7 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: TstepProfiles
   REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: AHProf_tstep
   REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: WUProfM_tstep, WUProfA_tstep
-  REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: CO2m_tstep
+  REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: HumActivity_tstep
 
   ! ---- For ESTM
   REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:,:)::  Ts5mindata     !surface temperature input data
@@ -136,8 +136,8 @@ MODULE allocateArray
        cTP_WUAutoWE = 6,&
        cTP_SnowCWD  = 7,&
        cTP_SnowCWE  = 8,&
-       cTP_CO2mWD   = 9,&
-       cTP_CO2mWE   = 10
+       cTP_HumActivityWD   = 9,&
+       cTP_HumActivityWE   = 10
   !-----------------------------------------------------------------------------------------------
 
   ! ---- Surface types ---------------------------------------------------------------------------
@@ -568,8 +568,8 @@ MODULE allocateArray
   INTEGER,DIMENSION(24):: c_HrProfWUAutoWE = (/(cc, cc=ccEndIr+ 5*24+1, ccEndIr+ 5*24+24, 1)/)  ! Water use, automatic, weekends
   INTEGER,DIMENSION(24):: c_HrProfSnowCWD  = (/(cc, cc=ccEndIr+ 6*24+1, ccEndIr+ 6*24+24, 1)/)  ! Snow clearing, weekdays
   INTEGER,DIMENSION(24):: c_HrProfSnowCWE  = (/(cc, cc=ccEndIr+ 7*24+1, ccEndIr+ 7*24+24, 1)/)  ! Snow clearing, weekends
-  INTEGER,DIMENSION(24):: c_HrProfCO2mWD   = (/(cc, cc=ccEndIr+ 8*24+1, ccEndIr+ 8*24+24, 1)/)  ! Energy use, weekdays
-  INTEGER,DIMENSION(24):: c_HrProfCO2mWE   = (/(cc, cc=ccEndIr+ 9*24+1, ccEndIr+ 9*24+24, 1)/)  ! Energy use, weekends
+  INTEGER,DIMENSION(24):: c_HrProfHumActivityWD   = (/(cc, cc=ccEndIr+ 8*24+1, ccEndIr+ 8*24+24, 1)/)  ! Human activity, weekdays
+  INTEGER,DIMENSION(24):: c_HrProfHumActivityWE   = (/(cc, cc=ccEndIr+ 9*24+1, ccEndIr+ 9*24+24, 1)/)  ! Human activity, weekends
 
   ! Find current column number
   INTEGER,PARAMETER:: ccEndPr = (ccEndIr+ 9*24+24)
@@ -832,8 +832,9 @@ MODULE data_in
        FileESTMTs,&      !ESTM input file name
        SOLWEIGpoiOut,&   !SOLWEIG poi file name
        BLout,&             !CLB output file name
-       FileOut_tt        !Output file name (for resolution at model time-step)
-
+       FileOut_tt,&        !Output file name (for resolution at model time-step)
+       ESTMOut_tt
+       
   INTEGER:: SkipHeaderSiteInfo = 2   !Number of header lines to skip in SiteInfo files
   INTEGER:: SkipHeaderMet = 1        !Number of header lines to skip in met forcing file
 
@@ -974,7 +975,7 @@ MODULE data_in
 
   REAL(KIND(1d0)),DIMENSION(2)::Qf_A,Qf_B,Qf_C   !Qf coefficients
   REAL(KIND(1d0)),DIMENSION(0:23,2):: AHPROF     !Anthropogenic heat profiles for (1)weekdays / (2)weekends
-  REAL(KIND(1d0)),DIMENSION(0:23,2):: CO2mProf   !HUman actvity profiles for (1)weekdays / (2)weekends
+  REAL(KIND(1d0)),DIMENSION(0:23,2):: HumActivityProf   !HUman actvity profiles for (1)weekdays / (2)weekends
 
   INTEGER,DIMENSION(2)::DayLightSavingDay   !DOY when daylight saving changes
 
@@ -1031,7 +1032,7 @@ MODULE cbl_MODULE
   INTEGER::EntrainmentType,&  ! Entrainment type choice
        CO2_included,&     ! CO2 included
        InitialData_use,&  ! 1 read initial data, 0 do not
-       qh_choice,&        ! selection of qh use to drive CBL growth 1=Suews 2=lumps 3=obs
+       !qh_choice,&        ! selection of qh use to drive CBL growth 1=Suews 2=lumps 3=obs  ! moved to sues_data
        sondeflag      ! 1 read sonde or vertical profile data in 0 do not
 
   INTEGER,DIMENSION(366)::cblday=0
@@ -1392,10 +1393,12 @@ MODULE sues_data
        sae,&      !Same
        ev,&       !Evaporation
        rst,&      !Flag in SUEWS_Evap (gets set to 1 if surface dry; 0 if surface wet)
-       qeph,&       !Latent heat flux (W m^-2)
+       qeph,&     !Latent heat flux (W m^-2)
        qeOut      !Latent heat flux [W m-2]
-
-
+       
+  REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE:: qhforCBL, qeforCBL   ! Stores previous timestep qh and qe for CBL model. Added by HCW 21 Mar 2017
+  INTEGER:: qh_choice        ! selection of qh use to drive CBL growth 1=Suews 2=lumps 3=obs  
+  
   !Water use related variables
   REAL (KIND(1d0)):: ext_wu,&         !External water use for the model timestep [mm] (over whole study area)
        Faut,&           !Fraction of irrigated area using automatic irrigation
@@ -2088,7 +2091,7 @@ MODULE WhereWhen
 
   INTEGER(KIND(1d0)):: GridID   !Grid number (as specified in SUEWS_SiteSelect.txt)
   CHARACTER(LEN=10):: GridID_text !Grid number as a text string
-  CHARACTER(LEN=12):: datetime  ! YYYY DOY HH MM
+  CHARACTER(LEN=15):: datetime  ! YYYY DOY HH MM
 
 END MODULE WhereWhen
 

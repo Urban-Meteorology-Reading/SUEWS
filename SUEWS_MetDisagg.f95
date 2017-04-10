@@ -131,6 +131,13 @@
                         REAL(ResolutionFilesIn,KIND(1d0)),NotUsed,tdiff*60)
     ENDIF
 
+    ! Check file only contains a single year --------------------------------------------
+    ! Very last data point is allowed to be (should be) timestamped with following year
+    IF(ANY(MetForDisagg(1:(ReadLinesOrigMetDataMax-1),1) /= MetForDisagg(1,1))) THEN
+       CALL errorHint(3,'Problem in SUEWS_MetDisagg: multiple years found in original met forcing file.', &
+                      MetForDisagg(1,1),NotUsed,NotUsedI)
+    ENDIF
+    
     ! Disaggregate time columns ---------------------------------------------------------
     write(*,*) 'Disaggregating met forcing data (',TRIM(FileOrigMet),') to model time-step...'
     ! Convert to dectime
@@ -181,73 +188,73 @@
 
     ! Disaggregate other columns --------------------------------------------------------
     DO ii=5,ncolumnsMetForcingData
-    IF(ii == 14) THEN  !Do something different for rainfall and snowfall (if present)
-      IF(MetDisaggMethod(14) == 100) THEN
-         Met_tt(:,14) = DisaggP_amongN(MetForDisagg(:,14),Nper,Nper,ReadLinesOrigMetData,ReadLinesOrigMetDataMax)
-         IF(ALL(MetForDisagg(:,16)==-999)) THEN
-            Met_tt(:,16) = -999
-         ELSE
-            Met_tt(:,16) = DisaggP_amongN(MetForDisagg(:,16),Nper,Nper,ReadLinesOrigMetData,ReadLinesOrigMetDataMax) 
-         ENDIF   
-      ELSEIF(MetDisaggMethod(14) == 101) THEN
-         IF(RainAmongN == -999) THEN
-            CALL ErrorHint(2,'Problem in SUEWS_MetDisagg: RainDisaggMethod requires RainAmongN', &
-                               REAL(RainAmongN,KIND(1d0)),NotUsed,RainDisaggMethod)
-         ELSEIF(RainAmongN > Nper) THEN
-            CALL ErrorHint(2,'Problem in SUEWS_MetDisagg: RainAmongN > Nper',REAL(Nper,KIND(1d0)),NotUsed,RainAmongN)
-         ELSE
-            Met_tt(:,14) = DisaggP_amongN(MetForDisagg(:,14),RainAmongN, Nper,ReadLinesOrigMetData,ReadLinesOrigMetDataMax)
-            IF(ALL(MetForDisagg(:,16)==-999)) THEN
-               Met_tt(:,16) = -999
+       IF(ii == 14) THEN  !Do something different for rainfall and snowfall (if present)
+          IF(MetDisaggMethod(14) == 100) THEN
+             Met_tt(:,14) = DisaggP_amongN(MetForDisagg(:,14),Nper,Nper,ReadLinesOrigMetData,ReadLinesOrigMetDataMax)
+             IF(ALL(MetForDisagg(:,16)==-999)) THEN
+                Met_tt(:,16) = -999
+             ELSE
+             Met_tt(:,16) = DisaggP_amongN(MetForDisagg(:,16),Nper,Nper,ReadLinesOrigMetData,ReadLinesOrigMetDataMax) 
+             ENDIF   
+         ELSEIF(MetDisaggMethod(14) == 101) THEN
+            IF(RainAmongN == -999) THEN
+               CALL ErrorHint(2,'Problem in SUEWS_MetDisagg: RainDisaggMethod requires RainAmongN', &
+                                  REAL(RainAmongN,KIND(1d0)),NotUsed,RainDisaggMethod)
+            ELSEIF(RainAmongN > Nper) THEN
+               CALL ErrorHint(2,'Problem in SUEWS_MetDisagg: RainAmongN > Nper',REAL(Nper,KIND(1d0)),NotUsed,RainAmongN)
             ELSE
-               Met_tt(:,16) = DisaggP_amongN(MetForDisagg(:,16),RainAmongN,Nper,ReadLinesOrigMetData,ReadLinesOrigMetDataMax)
-            ENDIF
-         ENDIF      
-      ELSE
-         write(*,*) 'Disaggregation code for rain not recognised'    
-      ENDIF   
-    ELSEIF(ii == 24) THEN  !wind direction disaggregation not coded yet...
-      IF(ANY(MetForDisagg(:,ii)/=-999)) THEN
-         write(*,*) 'Disaggregation of wind direction not currently implemented!'
-      ENDIF
-    ELSE   
-      IF(ALL(MetForDisagg(:,ii)==-999)) THEN
-         !IF(DiagnoseDisagg==1) write(*,*) 'No data for col.', ii  
-         Met_tt(:,ii) = -999
-      ELSE
-         Met_tt(:,ii) = Disagg_Lin(MetForDisagg(:,ii),MetForDisaggPrev(ii),MetForDisaggNext(ii),MetDisaggMethod(ii), & 
-                                      Nper,ReadLinesOrigMetData,ReadLinesOrigMetDataMax,iBlock)
-      ENDIF
-    ENDIF
+               Met_tt(:,14) = DisaggP_amongN(MetForDisagg(:,14),RainAmongN, Nper,ReadLinesOrigMetData,ReadLinesOrigMetDataMax)
+               IF(ALL(MetForDisagg(:,16)==-999)) THEN
+                  Met_tt(:,16) = -999
+               ELSE
+                  Met_tt(:,16) = DisaggP_amongN(MetForDisagg(:,16),RainAmongN,Nper,ReadLinesOrigMetData,ReadLinesOrigMetDataMax)
+               ENDIF
+            ENDIF      
+         ELSE
+            write(*,*) 'Disaggregation code for rain not recognised'    
+         ENDIF   
+       ELSEIF(ii == 24) THEN  !wind direction disaggregation not coded yet...
+         IF(ANY(MetForDisagg(:,ii)/=-999)) THEN
+            write(*,*) 'Disaggregation of wind direction not currently implemented!'
+         ENDIF
+       ELSE   
+         IF(ALL(MetForDisagg(:,ii)==-999)) THEN
+            !IF(DiagnoseDisagg==1) write(*,*) 'No data for col.', ii  
+            Met_tt(:,ii) = -999
+         ELSE
+            Met_tt(:,ii) = Disagg_Lin(MetForDisagg(:,ii),MetForDisaggPrev(ii),MetForDisaggNext(ii),MetDisaggMethod(ii), & 
+                                         Nper,ReadLinesOrigMetData,ReadLinesOrigMetDataMax,iBlock)
+         ENDIF
+       ENDIF
     ENDDO
 
     ! Adjust kdown disaggregation using zenith angle
     IF(KdownZen == 1) THEN
-    IF(DiagnoseDisagg==1) write(*,*) 'Adjusting disaggregated kdown using zenith angle' 
-    Met_tt_kdownAdj(:) = Met_tt(:,15) 
-    ! Translate location data from SurfaceChar to find solar angles
-    lat = SurfaceChar(igrid,c_lat)
-    lng = SurfaceChar(igrid,c_lng)*(-1.0)  !HCW switched sign of lng 12 Dec 2016. Input should now be -ve for W, +ve for E
-    timezone = SurfaceChar(igrid,c_tz)
-    alt = SurfaceChar(igrid,c_Alt)
-    ! Calculate dectime at downscaled time-step
-    dectimeFast(:) = Met_tt(:,2) + Met_tt(:,3)/24.0 + Met_tt(:,4)/(60.0*24.0)
-    idectime=dectimeFast-halftimestep! sun position at middle of timestep before
-    DO i=1,(ReadLinesOrigMetDataMax*Nper)
-      CALL sun_position(Met_tt(i,2),idectime(i),timezone,lat,lng,alt,azimuth,zenith_deg)
-      ! If sun below horizon, set disaggregated kdown to zero
-      IF(zenith_deg > 90) THEN
-         !write(*,*) Met_tt(i,1:4)
-         Met_tt_kdownAdj(i) = 0.0
-      ENDIF    
-    ENDDO
-    ! Redistribute kdown over each day
-    DO i=1,(ReadLinesOrigMetDataMax*Nper/nsd) ! Loop over each day
-      Met_tt_kdownAdj((i-1)*nsd+seq1nsd) = Met_tt_kdownAdj( (i-1)*nsd+seq1nsd) * &
-                 SUM(Met_tt((i-1)*nsd+seq1nsd,15 ))/SUM(Met_tt_kdownAdj((i-1)*nsd+seq1nsd))   
-    ENDDO
-    ! Copy adjusted kdown back to Met_tt array
-    Met_tt(:,15) = Met_tt_kdownAdj(:)
+       IF(DiagnoseDisagg==1) write(*,*) 'Adjusting disaggregated kdown using zenith angle' 
+       Met_tt_kdownAdj(:) = Met_tt(:,15) 
+       ! Translate location data from SurfaceChar to find solar angles
+       lat = SurfaceChar(igrid,c_lat)
+       lng = SurfaceChar(igrid,c_lng)
+       timezone = SurfaceChar(igrid,c_tz)
+       alt = SurfaceChar(igrid,c_Alt)
+       ! Calculate dectime at downscaled time-step
+       dectimeFast(:) = Met_tt(:,2) + Met_tt(:,3)/24.0 + Met_tt(:,4)/(60.0*24.0)
+       idectime=dectimeFast-halftimestep! sun position at middle of timestep before
+       DO i=1,(ReadLinesOrigMetDataMax*Nper)
+          CALL sun_position(Met_tt(i,2),idectime(i),timezone,lat,lng,alt,azimuth,zenith_deg)
+          ! If sun below horizon, set disaggregated kdown to zero
+          IF(zenith_deg > 90) THEN
+             !write(*,*) Met_tt(i,1:4)
+             Met_tt_kdownAdj(i) = 0.0
+          ENDIF    
+       ENDDO
+       ! Redistribute kdown over each day
+       DO i=1,(ReadLinesOrigMetDataMax*Nper/nsd) ! Loop over each day
+          Met_tt_kdownAdj((i-1)*nsd+seq1nsd) = Met_tt_kdownAdj( (i-1)*nsd+seq1nsd) * &
+                    SUM(Met_tt((i-1)*nsd+seq1nsd,15 ))/SUM(Met_tt_kdownAdj((i-1)*nsd+seq1nsd))   
+       ENDDO
+       ! Copy adjusted kdown back to Met_tt array
+       Met_tt(:,15) = Met_tt_kdownAdj(:)
     ENDIF
 
     ! Copy disaggregated data to MetForcingDataArray
@@ -261,30 +268,30 @@
 
     ! Write out disaggregated file ------------------------------------------------------
     IF(KeepTstepFilesIn == 1) THEN
-    IF (iBlock==1) THEN
-      ! Prepare header     
-      DO i=1,ncolumnsMetForcingData
-         IF(i==1) THEN
-            HeaderMetOut=ADJUSTL(HeaderMet(i))
-         ELSE
-            HeaderMetOut=TRIM(HeaderMetOut)//' '//ADJUSTL(HeaderMet(i))
-         ENDIF
-      ENDDO
-      ! Write out header
-      OPEN(78,file=TRIM(FileDscdMet),err=112)
-      WRITE(78,'(a)') HeaderMetOut
-    ELSE
-      OPEN(78,file=TRIM(FileDscdMet),position='append')!,err=112)
-    ENDIF
-    ! Write out data
-    DO i=1,(ReadLinesOrigMetDataMax*Nper)
-      WRITE(78,303) (INT(Met_tt(i,ii)), ii=1,4), Met_tt(i,5:ncolumnsMetForcingData)   
-    ENDDO
-    IF(iBlock == ReadBlocksOrigMetData) THEN
-     WRITE(78,'(i2)') -9
-     WRITE(78,'(i2)') -9
-    ENDIF
-    CLOSE (78)   !Close output file
+       IF (iBlock==1) THEN
+         ! Prepare header     
+         DO i=1,ncolumnsMetForcingData
+            IF(i==1) THEN
+               HeaderMetOut=ADJUSTL(HeaderMet(i))
+            ELSE
+               HeaderMetOut=TRIM(HeaderMetOut)//' '//ADJUSTL(HeaderMet(i))
+            ENDIF
+         ENDDO
+         ! Write out header
+         OPEN(78,file=TRIM(FileDscdMet),err=112)
+         WRITE(78,'(a)') HeaderMetOut
+       ELSE
+          OPEN(78,file=TRIM(FileDscdMet),position='append')!,err=112)
+       ENDIF
+       ! Write out data
+       DO i=1,(ReadLinesOrigMetDataMax*Nper)
+          WRITE(78,303) (INT(Met_tt(i,ii)), ii=1,4), Met_tt(i,5:ncolumnsMetForcingData)   
+       ENDDO
+       !IF(iBlock == ReadBlocksOrigMetData) THEN
+       !   WRITE(78,'(i2)') -9
+       !   WRITE(78,'(i2)') -9
+       !ENDIF
+       CLOSE (78)   !Close output file
     ENDIF 
 
 
@@ -303,7 +310,7 @@
 !======================================================================================        
 
   !======================================================================================
-  SUBROUTINE DisaggregateESTM(iBlock, igrid)
+  SUBROUTINE DisaggregateESTM(iBlock)
   ! Subroutine to disaggregate met forcing data to model time-step     
   ! HCW 10 Feb 2017 
   !======================================================================================
@@ -316,7 +323,7 @@
     INTEGER:: lunit = 101
     INTEGER:: tdiff   !Time difference (in minutes) between first and second rows of original met forcing file
     INTEGER:: i,ii  !counter
-    INTEGER:: iBlock, igrid
+    INTEGER:: iBlock
     INTEGER,DIMENSION(NperESTM):: seq1NperESTM
     INTEGER,DIMENSION(nsd):: seq1nsd
     INTEGER,DIMENSION(ncolsESTMdata):: ESTMDisaggMethod   ! Stores method to use for disaggregating met data
@@ -325,8 +332,7 @@
     CHARACTER(LEN=9),DIMENSION(ncolsESTMdata):: HeaderESTM
     CHARACTER(LEN=10*ncolsESTMdata):: HeaderESTMOut
     REAL(KIND(1d0)),DIMENSION(ReadLinesOrigESTMData):: dectimeOrig
-    REAL(KIND(1d0)),DIMENSION(ReadLinesOrigESTMData*NperESTM):: dectimeDscd, dectimeFast 
-    REAL(KIND(1d0)),DIMENSION(ReadLinesOrigESTMData*NperESTM):: idectime ! sun position at middle of time-step before
+    REAL(KIND(1d0)),DIMENSION(ReadLinesOrigESTMData*NperESTM):: dectimeDscd 
     INTEGER::iostat_var
     
     INTEGER, DIMENSION(NperESTM):: temp_iy, temp_id, temp_ih, temp_im, temp_ihm
@@ -484,10 +490,10 @@
        DO i=1,(ReadLinesOrigESTMDataMax*NperESTM)
           WRITE(78,304) (INT(ESTM_tt(i,ii)), ii=1,4), ESTM_tt(i,5:ncolsESTMdata)   
        ENDDO
-       IF(iBlock == ReadBlocksOrigMetData) THEN
-          WRITE(78,'(i2)') -9
-          WRITE(78,'(i2)') -9
-       ENDIF
+       !IF(iBlock == ReadBlocksOrigMetData) THEN
+       !   WRITE(78,'(i2)') -9
+       !   WRITE(78,'(i2)') -9
+       !ENDIF
        CLOSE (78)   !Close output file
     ENDIF 
 
@@ -623,7 +629,6 @@ FUNCTION DisaggP_amongN(Slow,amongN, Nper_loc, ReadLinesOrig_loc, ReadLinesOrigM
 
   IMPLICIT NONE
 
-  INTEGER:: MetCol       !Column for met variable to disaggregate, type of disaggregation 
   INTEGER:: amongN       !Number of subintervals over which rain will be distributed
   INTEGER:: Nper_loc     !Number of subintervals per interval (local Nper)
   INTEGER:: ReadLinesOrig_loc,ReadLinesOrigMax_loc   !Number of lines to read in original file (local)

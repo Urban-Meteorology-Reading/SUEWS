@@ -9,6 +9,7 @@
 !  - then over rows
 !  - then over grids
 !
+!Last modified by LJ 6 Apr 2017   - Snow initialisation, allocation and deallocation added
 !Last modified by HCW 10 Feb 2017 - Disaggregation of met forcing data
 !Last modified by HCW 12 Jan 2017 - Changes to InitialConditions
 !Last modified by HCW 26 Aug 2016 - CO2 flux added
@@ -62,6 +63,8 @@ PROGRAM SUEWS_Program
        iblock,&    !Block number (from 1 to ReadBlocksMetData)
        ir,irMax,&  !Row number within each block (from 1 to irMax)
        rr !Row of SiteSelect corresponding to current year and grid
+            
+  INTEGER:: ios
 
   INTEGER:: iv
 
@@ -175,6 +178,7 @@ PROGRAM SUEWS_Program
      ! Find number of model time-steps per resolution of original met forcing file
      Nper_real = ResolutionFilesIn/REAL(Tstep,KIND(1d0))
      Nper=INT(Nper_real)
+
      IF(Nper /= Nper_real) THEN
         CALL ErrorHint(2,'Problem in SUEWS_Program: check resolution of met forcing data (ResolutionFilesIn)', &
              'and model time-step (Tstep).', &
@@ -196,21 +200,23 @@ PROGRAM SUEWS_Program
         ENDIF
 
         ! Find number of lines in orig met file
+        write(*,*) TRIM(FileOrigMet)
         OPEN(UnitOrigMet,file=TRIM(FileOrigMet),status='old',err=313)
         CALL skipHeader(UnitOrigMet,SkipHeaderMet)  !Skip header
         nlinesOrigMetdata = 0   !Initialise nlinesMetdata (total number of lines in met forcing file)
         DO
-           READ(UnitOrigMet,*) iv
-           IF (iv == -9) EXIT
+           READ(UnitOrigMet,*,iostat=ios) iv
+           IF(ios<0 .or. iv == -9) EXIT   !IF (iv == -9) EXIT
            nlinesOrigMetdata = nlinesOrigMetdata + 1
         ENDDO
         CLOSE(UnitOrigMet)
 
-        !write(*,*) 'nlinesOrigMetdata', nlinesOrigMetdata
+        write(*,*) 'nlinesOrigMetdata', nlinesOrigMetdata,nlinesLimit
         ReadLinesOrigMetData = nlinesOrigMetdata   !Initially set limit as the size of  file
         IF(nlinesOrigMetData*Nper > nlinesLimit) THEN   !But restrict if this limit exceeds memory capacity
            ReadLinesOrigMetData = INT(nlinesLimit/Nper)
         ENDIF
+
         ! make sure the metblocks read in consists of complete diurnal cycles
         nsdorig = nsd/Nper
         ReadLinesOrigMetData = INT(MAX(nsdorig*(ReadLinesOrigMetData/nsdorig), nsdorig))
@@ -252,8 +258,8 @@ PROGRAM SUEWS_Program
         ! Find number of lines in met file
         nlinesMetdata = 0   !Initialise nlinesMetdata (total number of lines in met forcing file)
         DO
-           READ(10,*) iv
-           IF (iv == -9) EXIT
+           READ(10,*,iostat=ios) iv
+           IF(ios<0 .or. iv == -9) EXIT   !IF (iv == -9) EXIT
            nlinesMetdata = nlinesMetdata + 1
         ENDDO
         CLOSE(10)
@@ -287,18 +293,26 @@ PROGRAM SUEWS_Program
      IF (SOLWEIGuse == 1) ALLOCATE(dataOutSOL(ReadlinesMetdata,ncolumnsdataOutSOL,NumberOfGrids))     !SOLWEIG POI output
      IF (CBLuse >= 1)     ALLOCATE(dataOutBL(ReadlinesMetdata,ncolumnsdataOutBL,NumberOfGrids))       !CBL output
      IF (SnowUse == 1)    ALLOCATE(dataOutSnow(ReadlinesMetdata,ncolumnsDataOutSnow,NumberOfGrids))   !Snow output
+         ALLOCATE(qn1_S_store(NSH,NumberOfGrids))
+         ALLOCATE(qn1_S_av_store(2*NSH+1,NumberOfGrids))
+         qn1_S_store(:,:) = NAN
+         qn1_S_av_store(:,:) = NaN
      IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14) ALLOCATE(dataOutESTM(ReadlinesMetdata,32,NumberOfGrids)) !ESTM output
      ALLOCATE(TstepProfiles(NumberOfGrids,10,24*NSH))   !Hourly profiles interpolated to model timestep
      ALLOCATE(AHProf_tstep(24*NSH,2))                   !Anthropogenic heat profiles at model timestep
      ALLOCATE(WUProfM_tstep(24*NSH,2))                  !Manual water use profiles at model timestep
      ALLOCATE(WUProfA_tstep(24*NSH,2))                  !Automatic water use profiles at model timestep
-     ALLOCATE(CO2m_tstep(24*NSH,2))
+     ALLOCATE(HumActivity_tstep(24*NSH,2))
      ALLOCATE(qn1_store(NSH,NumberOfGrids))
      ALLOCATE(qn1_av_store(2*NSH+1,NumberOfGrids))
+     ALLOCATE(qhforCBL(NumberOfGrids))
+     ALLOCATE(qeforCBL(NumberOfGrids))
      !! Add snow clearing (?)
 
      qn1_store(:,:) = NAN ! Initialise to -999
      qn1_av_store(:,:) = NAN ! Initialise to -999
+     qhforCBL(:) = NAN
+     qeforCBL(:) = NAN
      ! Initialise other arrays here???
 
 
@@ -333,8 +347,8 @@ PROGRAM SUEWS_Program
            ! Find number of lines in original ESTM data file
            nlinesOrigESTMdata = 0
            DO
-              READ(UnitOrigESTM,*) iv
-              IF (iv == -9) EXIT
+              READ(UnitOrigESTM,*,iostat=ios) iv
+              IF(ios<0 .or. iv == -9) EXIT !IF (iv == -9) EXIT
               nlinesOrigESTMdata = nlinesOrigESTMdata + 1
            ENDDO
            CLOSE(UnitOrigESTM)
@@ -374,8 +388,8 @@ PROGRAM SUEWS_Program
            ! Find number of lines in ESTM file
            nlinesESTMdata = 0   !Initialise nlinesESTMdata (total number of lines in ESTM forcing file)
            DO
-              READ(11,*) iv
-              IF (iv == -9) EXIT
+              READ(11,*,iostat=ios) iv
+              IF(ios<0 .or. iv == -9) EXIT   !IF (iv == -9) EXIT
               nlinesESTMdata = nlinesESTMdata + 1
            ENDDO
            CLOSE(11)
@@ -499,6 +513,7 @@ PROGRAM SUEWS_Program
 
            ! Only for the first block of met data, read initial conditions (moved from above, HCW 12 Jan 2017)
            IF(iblock == 1) THEN
+              FileCodeX = TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt)
               !write(*,*) ' Now calling InitialState'
               CALL InitialState(FileCodeX,year_int,GridCounter,NumberOfGrids)
            ENDIF
@@ -523,7 +538,7 @@ PROGRAM SUEWS_Program
                     FileDscdESTM = TRIM(FileInputPath)//TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt) &
                          //'_ESTM_Ts_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
                     ! Disaggregate ESTM data
-                    CALL DisaggregateESTM(iblock,igrid)
+                    CALL DisaggregateESTM(iblock)                     
                  ELSE
                     ! If each grid has the same ESTM file, ESTM file name does not include grid number, and only need to disaggregate once
                     FileOrigESTM = TRIM(FileInputPath)//TRIM(FileCode)//'_'//TRIM(year_txt)//'_ESTM_Ts_data_'&
@@ -531,7 +546,7 @@ PROGRAM SUEWS_Program
                     FileDscdESTM = TRIM(FileInputPath)//TRIM(FileCode)//'_'//TRIM(year_txt)//'_ESTM_Ts_data_'&
                          //TRIM(ADJUSTL(tstep_txt))//'.txt'
                     IF(igrid==1) THEN       !Disaggregate for the first grid only
-                       CALL DisaggregateESTM(iblock,igrid)
+                       CALL DisaggregateESTM(iblock)                     
                     ELSE                    !Then for subsequent grids simply copy data
                        ESTMForcingData(1:ReadlinesMetdata,1:ncolsESTMdata,GridCounter) = ESTMForcingData(1:ReadlinesMetdata, &
                             1:ncolsESTMdata,1)
@@ -718,14 +733,19 @@ PROGRAM SUEWS_Program
      DEALLOCATE(MetForcingData)
      DEALLOCATE(ModelOutputData)
      DEALLOCATE(dataOut)
-     IF (SnowUse == 1) DEALLOCATE(dataOutSnow)
+     IF (SnowUse == 1) then
+        DEALLOCATE(dataOutSnow)
+        DEALLOCATE(qn1_S_store)
+     ENDIF
      DEALLOCATE(TstepProfiles)
      DEALLOCATE(AHProf_tstep)
      DEALLOCATE(WUProfM_tstep)
      DEALLOCATE(WUProfA_tstep)
-     DEALLOCATE(CO2m_tstep)
+     DEALLOCATE(HumActivity_tstep)
      DEALLOCATE(qn1_store)
      DEALLOCATE(qn1_av_store)
+     DEALLOCATE(qhforCBL)
+     DEALLOCATE(qeforCBL)
      ! ----------------------------------------------------------------------
 
   ENDDO  !end loop over years

@@ -45,6 +45,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   USE mod_z
   USE mod_k
   USE solweig_module
+  USE WhereWhen
 
 
   IMPLICIT NONE
@@ -129,10 +130,12 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   idectime=dectime-halftimestep! sun position at middle of timestep before
   IF(Diagnose==1) WRITE(*,*) 'Calling sun_position...'
   CALL sun_position(year,idectime,timezone,lat,lng,alt,azimuth,zenith_deg)
-
+  !write(*,*) DateTime, timezone,lat,lng,alt,azimuth,zenith_deg
+  
+  
   IF(CBLuse>=1)THEN ! If CBL is used, calculated Temp_C and RH are replaced with the obs.
      IF(Diagnose==1) WRITE(*,*) 'Calling CBL...'
-     CALL CBL(ir,iMB)   !ir=1 indicates first row of each met data block
+     CALL CBL(ir,iMB,Gridiv)   !ir=1 indicates first row of each met data block
   ENDIF
 
   !Call the dailystate routine to get surface characteristics ready
@@ -229,12 +232,17 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   IF(AnthropHeatMethod==1) THEN
       IF(Diagnose==1) WRITE(*,*) 'Calling SAHP_1...'
-      CALL SAHP_1_v2015(qf_sahp,QF_SAHP_base,QF_SAHP_heat,id,ih,imin)
+      CALL SAHP_1(qf_sahp,QF_SAHP_base,QF_SAHP_heat,id,ih,imin)
      qn1_bup=qn1
      qn1=qn1+QF_SAHP
   ELSEIF(AnthropHeatMethod==2) THEN
      IF(Diagnose==1) WRITE(*,*) 'Calling SAHP_2...'
-     CALL SAHP_2_v2015(qf_sahp,QF_SAHP_base,QF_SAHP_heat,id,ih,imin)
+     CALL SAHP_2(qf_sahp,QF_SAHP_base,QF_SAHP_heat,id,ih,imin)
+     qn1_bup=qn1
+     qn1=qn1+QF_SAHP
+  ELSEIF(AnthropHeatMethod==3) THEN
+     IF(Diagnose==1) WRITE(*,*) 'Calling SAHP_3...'
+     CALL SAHP_3(qf_sahp,id,ih,imin)
      qn1_bup=qn1
      qn1=qn1+QF_SAHP
   ELSE
@@ -639,6 +647,23 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   DO is=1,nsurf
      bulkalbedo = bulkalbedo + alb(is)*sfr(is)
   ENDDO
+
+  ! Save qh and qe for CBL in next iteration
+  IF(Qh_choice==1) THEN   !use QH and QE from SUEWS
+     qhforCBL(Gridiv) = qh
+     qeforCBL(Gridiv) = qeOut
+  ELSEIF(Qh_choice==2)THEN   !use QH and QE from LUMPS
+     qhforCBL(Gridiv) = h_mod
+     qeforCBL(Gridiv) = e_mod
+  ELSEIF(qh_choice==3)THEN  !use QH and QE from OBS
+     qhforCBL(Gridiv) = qh_obs
+     qeforCBL(Gridiv) = qe_obs
+     IF(qh_obs<-900.OR.qe_obs<-900)THEN  ! observed data has a problem
+        CALL ErrorHint(22,'Unrealistic observed qh or qe_value.',qh_obs,qe_obs,qh_choice)
+     ENDIF
+  ENDIF
+
+
   
   !=====================================================================
   !====================== Write out files ==============================

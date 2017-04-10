@@ -1,15 +1,14 @@
 CC = gfortran $(CFLAGS)          # compiler
-NETCDFINC = /usr/local/include
-NETCDFLIB = /usr/local/lib
+CC_nc = gfortran $(CFLAGS_nc)    # compiler with netcdf support
 TARGET = SUEWS_V2017a      # program name
-# CFLAGS = -g -Wall -Wtabs -fbounds-check -I$(NETCDFINC)
-CFLAGS = -g -Wall -Wtabs -fbounds-check `nc-config --fflags`
+CFLAGS = -g -Wall -Wtabs -fbounds-check -cpp
+CFLAGS_nc = -g -Wall -Wtabs -fbounds-check -I`nc-config --includedir` -Dnc=1 -cpp
 
 # All the files which include modules used by other modules (these therefore
 # needs to be compiled first)
 MODULES = LUMPS_Module_constants.o  \
           LUMPS_metRead.o  \
-		  SUEWS_MetDisagg.o \
+		  		SUEWS_MetDisagg.o \
           SOLWEIG_modules.o  \
           SUEWS_Files_run_Control.o \
 					precmod.o \
@@ -68,25 +67,29 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_CO2.o \
 					SUEWS_Initial.o \
 					SUEWS_Output.o
-TEST = 		SUEWS_IO_nc.o  
+NETCDF = 		SUEWS_IO_nc.o
 
 # Build main program - main uses MODULES and OTHERS
-main: SUEWS_Program.f95 $(MODULES) $(OTHERS) $(TEST)
+main: SUEWS_Program.f95 $(MODULES) $(OTHERS)
 	$(CC) SUEWS_Program.f95 $(CFLAGS) -c ; \
-	# $(CC) SUEWS_Program.o $(MODULES) $(OTHERS) $(TEST) -L$(NETCDFLIB) -lnetcdf -o $(TARGET)
-	$(CC) SUEWS_Program.o $(MODULES) $(OTHERS) $(TEST) `nc-config --flibs` -o $(TARGET)
+	$(CC) SUEWS_Program.o $(MODULES) $(OTHERS) -o $(TARGET)
+
+# Build main program with NETCDF support - main uses MODULES and OTHERS
+netcdf: SUEWS_Program.f95 $(MODULES) $(OTHERS) $(NETCDF)
+	$(CC_nc) SUEWS_Program.f95 $(CFLAGS_nc) -c ; \
+	$(CC_nc) SUEWS_Program.o $(MODULES) $(OTHERS) $(NETCDF) -L`nc-config --libdir` -lnetcdf -lnetcdff -o $(TARGET)
 
 # If OTHERS have changed, compile them again
 $(OTHERS): $(MODULES) $(subst .o,.f95, $(OTHERS))
 	$(CC) -c $(subst .o,.f95, $@)
 
-# If TEST have changed, compile them again
-$(TEST): $(MODULES) $(subst .o,.f95, $(TEST))
-	$(CC) -c $(subst .o,.f95, $@)
-
 # If MODULES have changed, compile them again
 $(MODULES): $(subst .o,.f95, $(MODULES))
 	$(CC) -c $(subst .o,.f95, $@)
+
+# If NETCDF have changed, compile them again
+$(NETCDF): $(MODULES) $(subst .o,.f95, $(NETCDF))
+	$(CC_nc) -c $(subst .o,.f95, $@)
 
 # If wanted, clean all *.o files after build
 clean:

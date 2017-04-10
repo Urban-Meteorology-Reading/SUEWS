@@ -72,7 +72,7 @@ PROGRAM SUEWS_Program
   !==========================================================================
 
   ! Start counting cpu time
-  CALL cpu_TIME(timeStart)
+  CALL CPU_TIME(timeStart)
 
   WRITE(*,*) '========================================================'
   WRITE(*,*) 'Running ',progname
@@ -120,12 +120,14 @@ PROGRAM SUEWS_Program
      GridIDmatrix(igrid) = INT(SiteSelect(igrid,c_Grid))
   ENDDO
 
+#ifdef nc
   ! sort grid matrix to conform the geospatial layout as in QGIS, TS 14 Dec 2016
   IF (ncMode==1) THEN
      GridIDmatrix0=GridIDmatrix
      CALL sortGrid(GridIDmatrix0,GridIDmatrix,nRow,nCol)
   ENDIF
   ! GridIDmatrix0 stores the grid ID in the original order
+#endif
 
 
   ! GridIDmatrix=GridIDmatrix0
@@ -683,20 +685,28 @@ PROGRAM SUEWS_Program
 
 
         ! Write output files in blocks --------------------------------
+#ifdef nc
         IF ( ncMode .EQ. 0 ) THEN
+#endif
            DO igrid=1,NumberOfGrids
               IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_Output...'
               CALL SUEWS_Output(igrid,year_int,iblock,irMax,GridIDmatrix(igrid))  !GridIDmatrix required for correct naming of output files
            ENDDO
-        ELSE
+#ifdef nc
+        ENDIF
+
+        IF ( ncMode .EQ. 1 ) THEN
            ! write resulst in netCDF
            IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_Output_nc...'
            CALL SUEWS_Output_nc(year_int,iblock,irMax)
            ! write input information in netCDF as well for future development
            IF ( iblock==1 ) THEN
               CALL SiteSelect_txt2nc
+
            ENDIF
         ENDIF
+#endif
+
         ! print*, 'finish output:',iv
 
      ENDDO !end loop over blocks of met data
@@ -728,7 +738,7 @@ PROGRAM SUEWS_Program
   ! -------------------------------------------------------------------------
 
   ! get cpu time consumed
-  CALL cpu_TIME(timeFinish)
+  CALL CPU_TIME(timeFinish)
   WRITE(*,*) "Time = ",timeFinish-timeStart," seconds."
 
   !Write to problems.txt that run has completed

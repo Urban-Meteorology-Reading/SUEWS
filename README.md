@@ -1,6 +1,14 @@
 # README #
 
-This README would normally document whatever steps are necessary to get your application up and running.
+Coding Guidelines
+http://urban-climate.net/umep/DevelopmentGuidelines#Coding_Guidelines%7C
+
+Manual
+http://urban-climate.net/umep/SUEWS
+
+## Actions needed ##
+
+Benchmark data for testind developments
 
 ### What is this repository for? ###
 

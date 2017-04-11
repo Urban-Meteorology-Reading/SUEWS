@@ -1,4 +1,4 @@
-SUBROUTINE ErrorHint(errh,ProblemFile,value,value2,valueI)
+SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
   !errh        -- Create a numbered code for the situation so get a unique message to help solve the problem
   !ProblemFile -- Filename where the problem occurs/error message
   !value       -- Error value (real number with correct type)
@@ -45,6 +45,8 @@ SUBROUTINE ErrorHint(errh,ProblemFile,value,value2,valueI)
   
   
   !CALL ProblemsText(ProblemFile)   !Call the subroutine that opens the problem.txt file !Moved below, HCW 17 Feb 2017
+
+  CALL ProblemsText(ProblemFile)   !Call the subroutine that opens the problem.txt file
 
   !The list of knows possible problems of the code:
   !  text1 is the error message written to the ProblemFile.
@@ -95,7 +97,9 @@ SUBROUTINE ErrorHint(errh,ProblemFile,value,value2,valueI)
   ELSEIF(errh==17) THEN
      text1= 'Problem with (z-zd) and/or z0.'
      v2=.TRUE.
-  ! 18
+  ELSEIF(errh==18) THEN
+     text1='Check soil depth relative to soil moisture and capacity.'
+     v4=.TRUE.
   ELSEIF(errh==19)THEN
      text1='Caution - check range.'
      v4=.TRUE.
@@ -273,7 +277,10 @@ SUBROUTINE ErrorHint(errh,ProblemFile,value,value2,valueI)
      v8=.TRUE.
   ELSEIF(errh==71) THEN
      text1='Check input file SUEWS_Conductance.txt.'
-     v3=.TRUE.   
+     v3=.TRUE.
+  ELSEIF(errh==72) THEN
+     text1='RunControl.nml: ResolutionFilesOut must be an integer multiple of TSTEP'
+     v6=.TRUE.
   ENDIF
   !---------------------------------------------------------------------
   

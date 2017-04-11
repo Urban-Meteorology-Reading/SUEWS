@@ -23,4 +23,7 @@ KeepTstepFilesOut=1
 WriteOutOption=0
 ResolutionFilesOut=3600
 Tstep=300
+ncMode=1
+nRow=36
+nCol=47
 /

@@ -8,7 +8,7 @@
 !  - then over blocks (met data read in and stored for each block)
 !  - then over rows
 !  - then over grids
-!
+!Last modified by TS 10 Apr 2017  - conditional compilation blocks added for netCDF adaptation
 !Last modified by LJ 6 Apr 2017   - Snow initialisation, allocation and deallocation added
 !Last modified by HCW 10 Feb 2017 - Disaggregation of met forcing data
 !Last modified by HCW 12 Jan 2017 - Changes to InitialConditions
@@ -75,7 +75,7 @@ PROGRAM SUEWS_Program
   !==========================================================================
 
   ! Start counting cpu time
-  CALL cpu_TIME(timeStart)
+  CALL CPU_TIME(timeStart)
   
   WRITE(*,*) '========================================================'
   WRITE(*,*) 'Running ',progname
@@ -117,10 +117,23 @@ PROGRAM SUEWS_Program
   ENDIF
 
   ALLOCATE (GridIDmatrix(NumberOfGrids)) !Get the nGrid numbers correctly
+  ALLOCATE (GridIDmatrix0(NumberOfGrids)) !Get the nGrid numbers correctly
+
   DO igrid=1,NumberOfGrids
      GridIDmatrix(igrid) = INT(SiteSelect(igrid,c_Grid))
   ENDDO
 
+#ifdef nc
+  ! sort grid matrix to conform the geospatial layout as in QGIS, TS 14 Dec 2016
+  IF (ncMode==1) THEN
+     GridIDmatrix0=GridIDmatrix
+     CALL sortGrid(GridIDmatrix0,GridIDmatrix,nRow,nCol)
+  ENDIF
+  ! GridIDmatrix0 stores the grid ID in the original order
+#endif
+
+
+  ! GridIDmatrix=GridIDmatrix0
   WRITE(*,*) '--------------------------------------------'
   WRITE(*,*) 'Years identified:',FirstYear,'to',LastYear
   WRITE(*,*) 'No. grids identified:',NumberOfGrids,'grids'
@@ -146,7 +159,7 @@ PROGRAM SUEWS_Program
 
   ! Initialise ESTM (reads ESTM nml, should only run once)
   IF(StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
-     IF(Diagnose==1) write(*,*) 'Calling ESTM_initials...' 
+     IF(Diagnose==1) WRITE(*,*) 'Calling ESTM_initials...'
      CALL ESTM_initials
   ENDIF
 
@@ -173,7 +186,7 @@ PROGRAM SUEWS_Program
      ELSEIF(Nper > 1) THEN
         WRITE(*,*) 'Resolution of met forcing data: ',TRIM(ADJUSTL(ResIn_txt)),' min;', &
                       ' model time-step: ',TRIM(ADJUSTL(tstep_txt)),' min', ' -> SUEWS will perform disaggregation.' 
-        IF(Diagnose==1) write(*,*) 'Getting information for met disaggregation'
+        IF(Diagnose==1) WRITE(*,*) 'Getting information for met disaggregation'
         ! Get names of original met forcing file(s) to disaggregate (using first grid)   
         WRITE(grid_txt,'(I10)') GridIDmatrix(1)  !Get grid as a text string
      
@@ -219,7 +232,7 @@ PROGRAM SUEWS_Program
         nlinesMetdata = nlinesOrigMetdata*Nper
         
      ELSEIF(Nper == 1) THEN
-        write(*,*) 'ResolutionFilesIn = Tstep: no disaggregation needed for met data.'
+        WRITE(*,*) 'ResolutionFilesIn = Tstep: no disaggregation needed for met data.'
      
         !-----------------------------------------------------------------------
         ! Find number of lines in met forcing file for current year (nlinesMetdata)
@@ -271,7 +284,7 @@ PROGRAM SUEWS_Program
      !write(*,*) ReadBlocksMetData, ReadBlocksOrigMetData
           
      ! ---- Allocate arrays--------------------------------------------------
-     IF(Diagnose==1) write(*,*) 'Allocating arrays in SUEWS_Program.f95...' 
+     IF(Diagnose==1) WRITE(*,*) 'Allocating arrays in SUEWS_Program.f95...'
      ALLOCATE(SurfaceChar(NumberOfGrids,MaxNCols_c))                                   !Surface characteristics
      ALLOCATE(MetForcingData(ReadlinesMetdata,ncolumnsMetForcingData,NumberOfGrids))   !Met forcing data
      ALLOCATE(ModelOutputData(0:ReadlinesMetdata,MaxNCols_cMOD,NumberOfGrids))         !Data at model timestep
@@ -310,7 +323,7 @@ PROGRAM SUEWS_Program
         ELSEIF(NperESTM > 1) THEN
            WRITE(*,*) 'Resolution of ESTM forcing data: ',TRIM(ADJUSTL(ResInESTM_txt)),' min;', &
                          ' model time-step: ',TRIM(ADJUSTL(tstep_txt)),' min', ' -> SUEWS will perform disaggregation.' 
-           IF(Diagnose==1) write(*,*) 'Getting information for ESTM disaggregation'
+           IF(Diagnose==1) WRITE(*,*) 'Getting information for ESTM disaggregation'
            ! Get names of original met forcing file(s) to disaggregate (using first grid)   
            WRITE(grid_txt,'(I10)') GridIDmatrix(1)  !Get grid as a text string
      
@@ -350,7 +363,7 @@ PROGRAM SUEWS_Program
            nlinesESTMdata = nlinesOrigESTMdata*NperESTM
         
         ELSEIF(NperESTM == 1) THEN
-           write(*,*) 'ResolutionFilesInESTM = Tstep: no disaggregation needed for met data.'
+           WRITE(*,*) 'ResolutionFilesInESTM = Tstep: no disaggregation needed for met data.'
      
            !-----------------------------------------------------------------------
            ! Find number of lines in ESTM forcing file for current year (nlinesESTMdata)
@@ -402,7 +415,7 @@ PROGRAM SUEWS_Program
      
      DO iblock=1,ReadBlocksMetData   !Loop through blocks of met data
      
-        write(*,*) iblock,'/',ReadBlocksMetData
+        WRITE(*,*) iblock,'/',ReadBlocksMetData
 
         ! Model calculations are made in two stages:
         ! (1) initialise the run for each block of met data (iblock from 1 to ReadBlocksMetData)
@@ -421,8 +434,10 @@ PROGRAM SUEWS_Program
               ! (a) Transfer characteristics from SiteSelect to correct row of SurfaceChar
               DO rr=1,nlinesSiteSelect
                  !Find correct grid and year
+                 IF(Diagnose==1) WRITE(*,*) 'grid found:',SiteSelect(rr,c_Grid), 'grid needed:',GridIDmatrix(igrid)
+                 IF(Diagnose==1) WRITE(*,*) 'year found:',SiteSelect(rr,c_Year), 'year needed:',year_int
                  IF(SiteSelect(rr,c_Grid)==GridIDmatrix(igrid).AND.SiteSelect(rr,c_Year)==year_int) THEN
-                    !write(*,*) 'Match found (grid and year) for rr = ', rr
+                    IF(Diagnose==1) WRITE(*,*) 'Match found (grid and year) for rr = ', rr, 'of',nlinesSiteSelect
                     CALL InitializeSurfaceCharacteristics(GridCounter,rr)
                     EXIT
                  ELSEIF(rr == nlinesSiteSelect) THEN
@@ -682,10 +697,29 @@ PROGRAM SUEWS_Program
 
 
         ! Write output files in blocks --------------------------------
+#ifdef nc
+        IF ( ncMode .EQ. 0 ) THEN
+#endif
         DO igrid=1,NumberOfGrids
            IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_Output...'
            CALL SUEWS_Output(igrid,year_int,iblock,irMax,GridIDmatrix(igrid))  !GridIDmatrix required for correct naming of output files
         ENDDO
+#ifdef nc
+        ENDIF
+
+        IF ( ncMode .EQ. 1 ) THEN
+           ! write resulst in netCDF
+           IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_Output_nc...'
+           CALL SUEWS_Output_nc(year_int,iblock,irMax)
+           ! write input information in netCDF as well for future development
+           IF ( iblock==1 ) THEN
+              CALL SiteSelect_txt2nc
+
+           ENDIF
+        ENDIF
+#endif
+
+        ! print*, 'finish output:',iv
 
      ENDDO !end loop over blocks of met data
      !-----------------------------------------------------------------------
@@ -721,7 +755,7 @@ PROGRAM SUEWS_Program
   ! -------------------------------------------------------------------------
 
   ! get cpu time consumed
-  CALL cpu_TIME(timeFinish)
+  CALL CPU_TIME(timeFinish)
   WRITE(*,*) "Time = ",timeFinish-timeStart," seconds."
 
   !Write to problems.txt that run has completed

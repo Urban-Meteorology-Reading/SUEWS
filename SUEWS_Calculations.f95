@@ -74,7 +74,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !      PRINT*, 'soilmoist', soilmoist
   ! END IF
   IF(Diagnose==1) WRITE(*,*) 'Calling RoughnessParameters...'
-  CALL RoughnessParameters ! Added by HCW 11 Nov 2014
+  CALL RoughnessParameters(Gridiv) ! Added by HCW 11 Nov 2014
 
 
   !=============Get data ready for the qs calculation====================
@@ -386,9 +386,9 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ! Calculate CO2 fluxes from biogenic components
   IF(Diagnose==1) WRITE(*,*) 'Calling CO2_biogen...'
   CALL CO2_biogen
-  ! Sum anthropogenic and biogenic CO2 flux components to find overall CO2 flux 
+  ! Sum anthropogenic and biogenic CO2 flux components to find overall CO2 flux
   Fc = Fc_anthro + Fc_biogen
-  
+
   sae   = s_hPa*(qn1_SF+qf-qs)    !s_haPa - slope of svp vs t curve. qn1 changed to qn1_SF, lj in May 2013
   vdrc  = vpd_hPa*avdens*avcp
   sp    = s_hPa/psyc_hPa
@@ -564,13 +564,13 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !====================== Prepare data for output ======================
 
   ! Check surface composition (HCW 21 Jul 2016)
-  ! if totally water surface, set output to -999 for columns that do not exist 
+  ! if totally water surface, set output to -999 for columns that do not exist
   IF(sfr(WaterSurf)==1) THEN
      NWstate_per_tstep = NAN  !no non-water surface
      smd = NAN   !no soil store beneath water surface
      soilstate = NAN
      runoffSoil_per_tstep = NAN
-     drain_per_tstep = NAN   !no drainage from water surf 
+     drain_per_tstep = NAN   !no drainage from water surf
   ENDIF
 
   ! Remove non-existing surface type from surface and soil outputs   ! Added back in with NANs by HCW 24 Aug 2016

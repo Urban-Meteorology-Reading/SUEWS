@@ -449,7 +449,7 @@ SUBROUTINE SUEWS_Output_nc(year_int,iblock,irMax)
      varList(6) = varAttr('Kdown' ,'W_m-2',f94,aA,'Incoming shortwave radiation')
      varList(7) = varAttr('Kup'   ,'W_m-2',f94,aA,'Outgoing shortwave radiation')
      varList(8) = varAttr('Ldown' ,'W_m-2',f94,aA,'Incoming longwave radiation')
-     varList(9) = varAttr('Lup'   ,'W_m-2',f94,aA,' Outgoing longwave radiation')
+     varList(9) = varAttr('Lup'   ,'W_m-2',f94,aA,'Outgoing longwave radiation')
 
 
      HeaderAll(10) = 'Tsurf'
@@ -469,10 +469,10 @@ SUBROUTINE SUEWS_Output_nc(year_int,iblock,irMax)
           '     Sensible heat flux','       Latent heat flux'/)
 
      varList(11) = varAttr('QN' ,'W_m-2',f94,aA,'Net all-wave radiation')
-     varList(12) = varAttr('QF'   ,'W_m-2',f94,aA,'Anthropogenic heat flux')
-     varList(13) = varAttr('QS' ,'W_m-2',f94,aA,'  Net storage heat flux')
-     varList(14) = varAttr('QH'   ,'W_m-2',f94,aA,'Sensible heat flux')
-     varList(15) = varAttr('QE'   ,'W_m-2',f94,aA,'Latent heat flux')
+     varList(12) = varAttr('QF' ,'W_m-2',f94,aA,'Anthropogenic heat flux')
+     varList(13) = varAttr('QS' ,'W_m-2',f94,aA,' Net storage heat flux')
+     varList(14) = varAttr('QH' ,'W_m-2',f94,aA,'Sensible heat flux')
+     varList(15) = varAttr('QE' ,'W_m-2',f94,aA,'Latent heat flux')
 
 
      HeaderAll(16:18) = (/'QHlumps','QElumps','QHresis'/)   !energy fluxes (other approaches)

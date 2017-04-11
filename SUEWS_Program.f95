@@ -8,7 +8,7 @@
 !  - then over blocks (met data read in and stored for each block)
 !  - then over rows
 !  - then over grids
-!
+!Last modified by TS 10 Apr 2017  - conditional compilation blocks added for netCDF adaptation
 !Last modified by LJ 6 Apr 2017   - Snow initialisation, allocation and deallocation added
 !Last modified by HCW 10 Feb 2017 - Disaggregation of met forcing data
 !Last modified by HCW 12 Jan 2017 - Changes to InitialConditions

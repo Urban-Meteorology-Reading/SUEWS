@@ -19,7 +19,7 @@
 ! HCW 18 Nov 2014
 ! LJ 5 Jan 2015: code cleaned, daily and monthly filesaving added
 !-----------------------------------------------------------------------------------------------
- SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
+SUBROUTINE SUEWS_Output(Gridiv, year_int, iv, irMax, CurrentGrid)
   !INPUT: Gridiv   = Grid number
   !       year_int = Year as a integer
   !       iv       = Block number of met data
@@ -72,7 +72,7 @@
   f94  = '(f09.4,1X)'   !standard output format: 4 dp + 4 digits
   f104 = '(f10.4,1X)'   !standard output format: 4 dp + 5 digits
   f106 = '(f10.6,1X)'   !standard output format: 6 dp + 3 digits
-
+  
   ! Define aggregation methods here (for wrapper)
   aT = '0'   !time columns
   aA = '1'   !average
@@ -360,16 +360,6 @@
           '   Tmrt       I0       CI        gvf      shadow    svf    svfbuveg    Ta    Tg')
   ENDIF
 
-  ! BL ouput file -----------------------------------------------------
-  IF (CBLuse>=1) THEN
-     OPEN(53,file=BLOut,status='unknown')
-     WRITE(53, 102)
-102  FORMAT('iy  id   it imin dectime         z            theta          q',&
-          '               theta+          q+              Temp_C          rh',&
-          '              QH_use          QE_use          Press_hPa       avu1',&
-          '            ustar           avdens          lv_J_kg         avcp',&
-          '            gamt            gamq')
-  ENDIF
 
   ! Snow output file --------------------------------------------------
   IF (SnowUse>=1) THEN
@@ -419,7 +409,6 @@
              dataOut(i,PACK(UseColumnsDataOut, UseColumnsDataOut >= 5),Gridiv)
         !WRITE(lfnoutC,301) (INT(dataOut(i,is,Gridiv)),is=1,4),&
         !      dataOut(i,5:ncolumnsDataOut,Gridiv)
-
      ENDDO
      CLOSE (lfnoutC)
      
@@ -429,7 +418,15 @@
         ENDDO
      ENDIF
 
-     IF(CBLuse>=1) THEN
+     ! BL ouput file -----------------------------------------------------
+     IF (CBLuse>=1) THEN
+        IF (iv==1) THEN   
+           OPEN(53,file=BLOut,status='unknown')
+           WRITE(53, 102)
+        ELSE
+           OPEN(53,file=BLOut,position='append')
+        ENDIF    
+        !write(*,*) 'Writing...', iCBLcount 
         DO i=1,iCBLcount
            WRITE(53,305)(INT(dataOutBL(i,is,Gridiv)),is=1,4),(dataOutBL(i,is,Gridiv),is=5,ncolumnsdataOutBL)
         ENDDO
@@ -583,6 +580,12 @@
 
   IF (ALLOCATED(AggregUseX)) DEALLOCATE(AggregUseX)
 
+102 FORMAT('iy  id   it imin dectime         z            theta          q',&
+           '               theta+          q+              Temp_C          rh',&
+           '              QH_use          QE_use          Press_hPa       avu1',&
+           '            ustar           avdens          lv_J_kg         avcp',&
+           '            gamt            gamq')
+      
 115 FORMAT('%iy id it imin dectime ',&
            'QSNET QSAIR QSWALL QSROOF QSGROUND QSIBLD ',&
            'TWALL1 TWALL2 TWALL3 TWALL4 TWALL5 ',&       !T0_WALL TWALL1 TWALL2 TWALL3 TN_WALL

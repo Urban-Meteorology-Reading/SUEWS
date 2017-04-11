@@ -2374,8 +2374,12 @@ SUBROUTINE SUEWS_InitializeMetData(lunit)
      ! Check file only contains a single year --------------------------------------------
      ! Very last data point is allowed to be (should be) timestamped with following year
      IF(MetArray(1) /= iy_only) THEN
-        CALL errorHint(3,'Problem in SUEWS_Initial: multiple years found in met forcing file.', &
-                         MetArray(1),NotUsed,NotUsedI)
+        IF(MetArray(1) == iy_only+1 .AND. MetArray(2) == 1 .AND. MetArray(3) == 0 .AND. MetArray(4) == 0) THEN
+            !write(*,*) 'end of year - no problem' 
+        ELSE
+           CALL errorHint(3,'Problem in SUEWS_Initial: multiple years found in met forcing file.', &
+                            MetArray(1),NotUsed,NotUsedI)
+        ENDIF
      ENDIF
      
   ENDDO

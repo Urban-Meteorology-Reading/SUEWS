@@ -32,6 +32,7 @@ SUBROUTINE CBL(ifirst,iMB,Gridiv)
      iCBLcount = 0
   ENDIF
   
+  !write(*,*) DateTIme
   !Skip first loop and unspecified days
   !IF((ifirst==1 .AND. iMB==1) .OR. CBLday(id)==0) THEN   !HCW modified condition to check for first timestep of the model run
   IF(ifirst==1 .OR. CBLday(id)==0) THEN   !HCW modified 29/03/2017
@@ -77,6 +78,8 @@ SUBROUTINE CBL(ifirst,iMB,Gridiv)
   !-------Main loop of CBL calculation--------------------------------------
   !-------------------------------------------------------------------------
 
+  !write(*,*) 'Main CBL loop'
+    
   cbldata(1)=float(it)+float(imin)/60.
   cbldata(2)=qh_use
   cbldata(3)=qe_use

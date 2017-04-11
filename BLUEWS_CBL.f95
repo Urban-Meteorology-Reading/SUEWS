@@ -3,7 +3,7 @@
 !  HCW 29 Mar 2017 - Changed third dimension of dataOutBL to Gridiv (was previously iMB which seems incorrect)
 !  NT 6 Apr 2017 - include top of the CBL variables in RKUTTA scheme + add flag to include or exclude subsidence
 !  LJ 27 Jan 2016 - Removal of tabs
-
+! test
 SUBROUTINE CBL(ifirst,iMB,Gridiv)
 
   USE mod_z

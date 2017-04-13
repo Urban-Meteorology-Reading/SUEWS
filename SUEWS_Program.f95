@@ -40,6 +40,10 @@ PROGRAM SUEWS_Program
   USE Sues_Data
   USE Time
   USE WhereWhen
+#ifdef nc
+  USE ctrl_output
+#endif
+
 
   IMPLICIT NONE
 
@@ -200,18 +204,18 @@ PROGRAM SUEWS_Program
         ENDIF
 
         ! Find number of lines in orig met file
-        write(*,*) TRIM(FileOrigMet)
+        WRITE(*,*) TRIM(FileOrigMet)
         OPEN(UnitOrigMet,file=TRIM(FileOrigMet),status='old',err=313)
         CALL skipHeader(UnitOrigMet,SkipHeaderMet)  !Skip header
         nlinesOrigMetdata = 0   !Initialise nlinesMetdata (total number of lines in met forcing file)
         DO
            READ(UnitOrigMet,*,iostat=ios) iv
-           IF(ios<0 .or. iv == -9) EXIT   !IF (iv == -9) EXIT
+           IF(ios<0 .OR. iv == -9) EXIT   !IF (iv == -9) EXIT
            nlinesOrigMetdata = nlinesOrigMetdata + 1
         ENDDO
         CLOSE(UnitOrigMet)
 
-        write(*,*) 'nlinesOrigMetdata', nlinesOrigMetdata,nlinesLimit
+        WRITE(*,*) 'nlinesOrigMetdata', nlinesOrigMetdata,nlinesLimit
         ReadLinesOrigMetData = nlinesOrigMetdata   !Initially set limit as the size of  file
         IF(nlinesOrigMetData*Nper > nlinesLimit) THEN   !But restrict if this limit exceeds memory capacity
            ReadLinesOrigMetData = INT(nlinesLimit/Nper)
@@ -259,7 +263,7 @@ PROGRAM SUEWS_Program
         nlinesMetdata = 0   !Initialise nlinesMetdata (total number of lines in met forcing file)
         DO
            READ(10,*,iostat=ios) iv
-           IF(ios<0 .or. iv == -9) EXIT   !IF (iv == -9) EXIT
+           IF(ios<0 .OR. iv == -9) EXIT   !IF (iv == -9) EXIT
            nlinesMetdata = nlinesMetdata + 1
         ENDDO
         CLOSE(10)
@@ -293,10 +297,10 @@ PROGRAM SUEWS_Program
      IF (SOLWEIGuse == 1) ALLOCATE(dataOutSOL(ReadlinesMetdata,ncolumnsdataOutSOL,NumberOfGrids))     !SOLWEIG POI output
      IF (CBLuse >= 1)     ALLOCATE(dataOutBL(ReadlinesMetdata,ncolumnsdataOutBL,NumberOfGrids))       !CBL output
      IF (SnowUse == 1)    ALLOCATE(dataOutSnow(ReadlinesMetdata,ncolumnsDataOutSnow,NumberOfGrids))   !Snow output
-         ALLOCATE(qn1_S_store(NSH,NumberOfGrids))
-         ALLOCATE(qn1_S_av_store(2*NSH+1,NumberOfGrids))
-         qn1_S_store(:,:) = NAN
-         qn1_S_av_store(:,:) = NaN
+     ALLOCATE(qn1_S_store(NSH,NumberOfGrids))
+     ALLOCATE(qn1_S_av_store(2*NSH+1,NumberOfGrids))
+     qn1_S_store(:,:) = NAN
+     qn1_S_av_store(:,:) = NaN
      IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14) ALLOCATE(dataOutESTM(ReadlinesMetdata,32,NumberOfGrids)) !ESTM output
      ALLOCATE(TstepProfiles(NumberOfGrids,10,24*NSH))   !Hourly profiles interpolated to model timestep
      ALLOCATE(AHProf_tstep(24*NSH,2))                   !Anthropogenic heat profiles at model timestep
@@ -348,7 +352,7 @@ PROGRAM SUEWS_Program
            nlinesOrigESTMdata = 0
            DO
               READ(UnitOrigESTM,*,iostat=ios) iv
-              IF(ios<0 .or. iv == -9) EXIT !IF (iv == -9) EXIT
+              IF(ios<0 .OR. iv == -9) EXIT !IF (iv == -9) EXIT
               nlinesOrigESTMdata = nlinesOrigESTMdata + 1
            ENDDO
            CLOSE(UnitOrigESTM)
@@ -389,7 +393,7 @@ PROGRAM SUEWS_Program
            nlinesESTMdata = 0   !Initialise nlinesESTMdata (total number of lines in ESTM forcing file)
            DO
               READ(11,*,iostat=ios) iv
-              IF(ios<0 .or. iv == -9) EXIT   !IF (iv == -9) EXIT
+              IF(ios<0 .OR. iv == -9) EXIT   !IF (iv == -9) EXIT
               nlinesESTMdata = nlinesESTMdata + 1
            ENDDO
            CLOSE(11)
@@ -710,6 +714,18 @@ PROGRAM SUEWS_Program
 #ifdef nc
         ENDIF
 
+        ! test new generic output subroutines
+        ! call filename_gen(dataOut(:,1:60,:),varList(1:60),1,FileOut)
+        ! print*, FileOut
+        DO igrid=1,NumberOfGrids
+           IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_Output...'
+           call SUEWS_Output_Init(dataOut(:,1:60,:),varList(1:60),igrid,2)
+           call SUEWS_Write_txt(dataOut(:,1:60,:),varList(1:60),irMax,igrid,2)
+
+        ENDDO
+
+        ! test end
+
         IF ( ncMode .EQ. 1 ) THEN
            ! write resulst in netCDF
            IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_Output_nc...'
@@ -733,7 +749,7 @@ PROGRAM SUEWS_Program
      DEALLOCATE(MetForcingData)
      DEALLOCATE(ModelOutputData)
      DEALLOCATE(dataOut)
-     IF (SnowUse == 1) then
+     IF (SnowUse == 1) THEN
         DEALLOCATE(dataOutSnow)
         DEALLOCATE(qn1_S_store)
      ENDIF

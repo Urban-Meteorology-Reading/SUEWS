@@ -67,7 +67,7 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_CO2.o \
 					SUEWS_Initial.o \
 					SUEWS_Output.o
-NETCDF = 		SUEWS_IO_nc.o
+NETCDF = 		SUEWS_ctrl_output.o
 
 # Build main program - main uses MODULES and OTHERS
 main: SUEWS_Program.f95 $(MODULES) $(OTHERS)

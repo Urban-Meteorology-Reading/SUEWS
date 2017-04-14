@@ -719,7 +719,7 @@ PROGRAM SUEWS_Program
            ! write resulst in netCDF
            IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_Output_nc...'
           !  CALL SUEWS_Output_nc0(year_int,iblock,irMax)
-           call SUEWS_Output_nc(iblock,irMax)
+           call SUEWS_Output_nc(irMax)
            ! write input information in netCDF as well for future development
            IF ( iblock==1 ) THEN
               CALL SiteSelect_txt2nc

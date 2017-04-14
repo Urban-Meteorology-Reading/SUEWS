@@ -450,7 +450,7 @@ CONTAINS
     IF ( iv == 1 ) CALL SUEWS_Output_Init(dataOutX_agg,varlist,Gridiv,outLevel)
 
     ! append the aggregated data to the specific txt file
-    CALL SUEWS_Write_txt(dataOutX_agg,varlist,irMax,Gridiv,outLevel)
+    CALL SUEWS_Write_txt(dataOutX_agg,varlist,Gridiv,outLevel)
 
   END SUBROUTINE SUEWS_Output_txt_grp
 
@@ -501,7 +501,7 @@ CONTAINS
     INTEGER,INTENT(in) :: irMax,outFreq_s
     REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE,INTENT(out)::dataOut_agg
 
-    INTEGER ::  nlinesOut,i,j,k,x
+    INTEGER ::  nlinesOut,i,j,x
     REAL(KIND(1d0))::dataOut_aggX(1:SIZE(varlist))
     REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::dataOut_agg0
     nlinesOut=INT(nsh/(60.*60/outFreq_s))
@@ -543,16 +543,16 @@ CONTAINS
 
 
   ! append output data to the specific file at the specified outLevel
-  SUBROUTINE SUEWS_Write_txt(dataOut,varlist,irMax,Gridiv,outLevel)
+  SUBROUTINE SUEWS_Write_txt(dataOut,varlist,Gridiv,outLevel)
     IMPLICIT NONE
     REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOut
     TYPE(varAttr),DIMENSION(:),INTENT(in)::varlist
-    INTEGER,INTENT(in) :: irMax,Gridiv,outLevel
+    INTEGER,INTENT(in) :: Gridiv,outLevel
 
-    REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::dataOutSel,dataOutAgg
+    REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::dataOutSel
     TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varlistSel
     CHARACTER(len=100) :: FileOut
-    INTEGER :: fn,i,xx,err,nlinesout
+    INTEGER :: fn,i,xx,err
     CHARACTER(len=12*SIZE(varlist)) :: FormatOut
 
     !select variables to output
@@ -619,12 +619,11 @@ CONTAINS
     WRITE(str_year,'(i4)') year_int
     WRITE(str_DOY,'(i3)') DOY_int
     str_date='_'//TRIM(ADJUSTL(str_year))
-    print*, '1',str_date,LEN(str_date)
 #ifdef nc
     ! add DOY as a specifier
     IF (ncMode==1) str_date=TRIM(ADJUSTL(str_date))//TRIM(ADJUSTL(str_DOY))
 #endif
-    print*, '2',str_date,LEN(str_date)
+
 
     ! output frequency in minute:
     WRITE(str_out_min,'(i4)') &
@@ -657,8 +656,6 @@ CONTAINS
          TRIM(ADJUSTL(str_out_min))//&
          TRIM(ADJUSTL(str_sfx))
 
-    PRINT*, 'str_date',str_date
-    PRINT*, 'FileOut',FileOut
   END SUBROUTINE filename_gen
 
 
@@ -867,9 +864,9 @@ CONTAINS
   !===========================================================================!
 
 
-  SUBROUTINE SUEWS_Output_nc(iv,irMax)
+  SUBROUTINE SUEWS_Output_nc(irMax)
     IMPLICIT NONE
-    INTEGER,INTENT(in) :: iv,irMax
+    INTEGER,INTENT(in) :: irMax
 
     INTEGER :: xx,err,outLevel
     TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varlistX
@@ -929,20 +926,20 @@ CONTAINS
        ! all output frequency option:
        ! as forcing:
        IF ( ResolutionFilesOut == Tstep .OR. KeepTstepFilesOut == 1 ) THEN
-          CALL SUEWS_Output_nc_grp(iv,irMax,varlistX,outLevel,Tstep)
+          CALL SUEWS_Output_nc_grp(irMax,varlistX,outLevel,Tstep)
        ENDIF
        !  as specified ResolutionFilesOut:
        IF ( ResolutionFilesOut /= Tstep ) THEN
-          CALL SUEWS_Output_nc_grp(iv,irMax,varlistX,outLevel,ResolutionFilesOut)
+          CALL SUEWS_Output_nc_grp(irMax,varlistX,outLevel,ResolutionFilesOut)
        ENDIF
 
     END DO
   END SUBROUTINE SUEWS_Output_nc
 
 
-  SUBROUTINE SUEWS_Output_nc_grp(iv,irMax,varlist,outLevel,outFreq_s)
+  SUBROUTINE SUEWS_Output_nc_grp(irMax,varlist,outLevel,outFreq_s)
     TYPE(varAttr),DIMENSION(:),INTENT(in)::varlist
-    INTEGER,INTENT(in) :: iv,irMax,outLevel,outFreq_s
+    INTEGER,INTENT(in) :: irMax,outLevel,outFreq_s
 
     REAL(KIND(1d0))::dataOutX(irMax,SIZE(varlist),NumberOfGrids)
     REAL(KIND(1d0)),ALLOCATABLE::dataOutX_agg(:,:,:),dataOutX_agg0(:,:)
@@ -981,19 +978,19 @@ CONTAINS
 
 
     ! write out data
-    CALL SUEWS_Write_nc(dataOutX_agg,varlist,irMax,outLevel)
+    CALL SUEWS_Write_nc(dataOutX_agg,varlist,outLevel)
 
   END SUBROUTINE SUEWS_Output_nc_grp
 
 
-  SUBROUTINE SUEWS_Write_nc(dataOut,varlist,irMax,outLevel)
+  SUBROUTINE SUEWS_Write_nc(dataOut,varlist,outLevel)
     ! generic subroutine to write out data in netCDF format
     USE netCDF
 
     IMPLICIT NONE
     REAL(KIND(1d0)),DIMENSION(:,:,:),INTENT(in)::dataOut
     TYPE(varAttr),DIMENSION(:),INTENT(in)::varlist
-    INTEGER,INTENT(in) :: irMax,outLevel
+    INTEGER,INTENT(in) :: outLevel
 
     CHARACTER(len=100):: fileOut
     REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE::dataOutSel
@@ -1013,9 +1010,7 @@ CONTAINS
          varSeq0(:),varSeq(:),xTime(:)
 
     INTEGER :: idVar(iVarStart:SIZE(varlist))
-    CHARACTER(len=50):: nameVarList(SIZE(varlist)),header_str,&
-         longNmList(SIZE(varlist)),longNm_str,&
-         unitList(SIZE(varlist)),unit_str
+    CHARACTER(len=50):: header_str,longNm_str,unit_str
     CHARACTER(len = 4)  :: yrStr2
     CHARACTER(len = 40) :: startStr2
 

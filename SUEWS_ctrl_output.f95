@@ -617,7 +617,7 @@ CONTAINS
     year_int=INT(dataOut(1,1))
     DOY_int=INT(dataOut(1,2))
     WRITE(str_year,'(i4)') year_int
-    WRITE(str_DOY,'(i3)') DOY_int
+    WRITE(str_DOY,'(i3.3)') DOY_int
     str_date='_'//TRIM(ADJUSTL(str_year))
 #ifdef nc
     ! add DOY as a specifier
@@ -921,8 +921,6 @@ CONTAINS
        ! variable
        varlistX(6:5+xx)=PACK(varlist, mask=(varlist%group == TRIM(grpList(i))))
 
-       !  PRINT*, 'varlistX',SIZE(varlistX)
-
        ! all output frequency option:
        ! as forcing:
        IF ( ResolutionFilesOut == Tstep .OR. KeepTstepFilesOut == 1 ) THEN
@@ -1111,7 +1109,7 @@ CONTAINS
     varIDGrid=varID
 
     ! define other 3D variables:
-    DO iVar = iVarStart, SIZE(varListSel), 1
+    DO iVar = iVarStart, nVar
        ! define variable name
        header_str = varListSel(iVar)%header
        unit_str   = varListSel(iVar)%unit
@@ -1153,7 +1151,7 @@ CONTAINS
     CALL check( NF90_SYNC(ncID) )
 
     ! then other 3D variables
-    DO iVar = iVarStart, SIZE(UseColumnsDataOut), 1
+    DO iVar = iVarStart, nVar
        !  PRINT*, 'dim1:', SIZE(dataOut(1:nTime,iVar,:), dim=1)
        !  PRINT*, 'dim2:',SIZE(dataOut(1:nTime,iVar,:), dim=2)
        ! reshape dataOut to be aligned in checker board form

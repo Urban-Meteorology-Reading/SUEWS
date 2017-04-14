@@ -758,9 +758,9 @@ PROGRAM SUEWS_Program
 
   ! ---- Decallocate array --------------------------------------------------
   ! Daily state needs to be outside year loop to transfer states between years
-  DEALLOCATE(ModelDailyState)
+  IF (ALLOCATED(ModelDailyState)) DEALLOCATE(ModelDailyState)
   ! Also needs to happen at the end of the run
-  DEALLOCATE(UseColumnsDataOut)
+  IF (ALLOCATED(UseColumnsDataOut)) DEALLOCATE(UseColumnsDataOut)
   ! -------------------------------------------------------------------------
 
   ! get cpu time consumed

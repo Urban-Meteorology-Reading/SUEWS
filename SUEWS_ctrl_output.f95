@@ -394,7 +394,7 @@ CONTAINS
        ! variable
        varlistX(6:5+xx)=PACK(varlist, mask=(varlist%group == TRIM(grpList(i))))
 
-       !  PRINT*, varlistX%header
+       !  PRINT*, 'varlistX',SIZE(varlistX)
 
        ! all output frequency option:
        ! as forcing:
@@ -407,9 +407,6 @@ CONTAINS
        ENDIF
 
     END DO
-
-
-
   END SUBROUTINE SUEWS_Output_txt
 
 
@@ -420,7 +417,6 @@ CONTAINS
     TYPE(varAttr),DIMENSION(:),INTENT(in)::varlist
     INTEGER,INTENT(in) :: iv,irMax,Gridiv,outLevel,outFreq_s
 
-    ! REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOutX
     REAL(KIND(1d0))::dataOutX(irMax,SIZE(varlist))
     REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::dataOutX_agg
 
@@ -530,7 +526,7 @@ CONTAINS
           CASE (aL) !last value, aL
              dataOut_aggX(j)=dataOut_agg0(nlinesOut,j)
           END SELECT
-          
+
           IF ( Diagnose==1 .AND. i==irMax ) THEN
              ! IF ( i==irMax ) THEN
              PRINT*, 'raw data of ',j,':'
@@ -583,10 +579,6 @@ CONTAINS
     END DO
     FormatOut='('//TRIM(ADJUSTL(FormatOut))//')'
 
-    ! print*, varlistSel%header
-    ! print*, varlistSel%fmt
-
-
     ! get filename
     CALL filename_gen(dataOutSel,varlistSel,Gridiv,FileOut)
 
@@ -617,14 +609,22 @@ CONTAINS
     INTEGER,INTENT(in) :: Gridiv ! to determine grid name as in SiteSelect
     CHARACTER(len=100),INTENT(out) :: FileOut ! the output file name
 
-    CHARACTER(len=10):: str_out_min, str_grid, str_year,str_grp,str_sfx
-    INTEGER :: year_int
+    CHARACTER(len=10):: str_out_min,str_grid,&
+         str_date,str_year,str_DOY,str_grp,str_sfx
+    INTEGER :: year_int,DOY_int
 
-    ! year:
+    ! date:
     year_int=INT(dataOut(1,1))
+    DOY_int=INT(dataOut(1,2))
     WRITE(str_year,'(i4)') year_int
-    str_year='_'//TRIM(ADJUSTL(str_year))
-    ! print*, str_year,LEN(str_year)
+    WRITE(str_DOY,'(i3)') DOY_int
+    str_date='_'//TRIM(ADJUSTL(str_year))
+    print*, '1',str_date,LEN(str_date)
+#ifdef nc
+    ! add DOY as a specifier
+    IF (ncMode==1) str_date=TRIM(ADJUSTL(str_date))//TRIM(ADJUSTL(str_DOY))
+#endif
+    print*, '2',str_date,LEN(str_date)
 
     ! output frequency in minute:
     WRITE(str_out_min,'(i4)') &
@@ -638,6 +638,9 @@ CONTAINS
 
     ! grid name:
     WRITE(str_grid,'(i10)') GridIDmatrix(Gridiv)
+#ifdef nc
+    IF (ncMode==1) str_grid='' ! grid name not needed by nc files
+#endif
 
     ! suffix:
     str_sfx='.txt'
@@ -649,11 +652,13 @@ CONTAINS
     FileOut=TRIM(FileOutputPath)//&
          TRIM(FileCode)//&
          TRIM(ADJUSTL(str_grid))//&
-         TRIM(ADJUSTL(str_year))//&
+         TRIM(ADJUSTL(str_date))//&
          TRIM(ADJUSTL(str_grp))//&
          TRIM(ADJUSTL(str_out_min))//&
          TRIM(ADJUSTL(str_sfx))
 
+    PRINT*, 'str_date',str_date
+    PRINT*, 'FileOut',FileOut
   END SUBROUTINE filename_gen
 
 
@@ -680,18 +685,6 @@ CONTAINS
 
   SUBROUTINE SiteSelect_txt2nc
 
-    ! USE allocateArray
-    ! USE ColNamesInputFiles
-    ! USE data_in
-    ! USE defaultNotUsed
-    ! USE FileName
-    ! USE initial
-    ! USE gis_data
-    ! USE mod_z
-    ! USE resist
-    ! USE snowMod
-    ! USE sues_data
-    ! USE time
     USE netcdf
 
     IMPLICIT NONE
@@ -709,7 +702,7 @@ CONTAINS
     REAL(KIND(1d0)), ALLOCATABLE :: varOut(:,:), varSeq(:),varSeq0(:),&
          varX(:,:),varY(:,:),xLat(:,:),xLon(:,:)
     INTEGER :: idVar(iVarStart:ncolumnsSiteSelect)
-    CHARACTER(len=25):: nameVarList(iVarStart:ncolumnsSiteSelect),ivarStr2
+    CHARACTER(len=25):: nameVarList(iVarStart:ncolumnsSiteSelect),header_str
 
     ! variable names:
     nameVarList=(/&
@@ -815,14 +808,14 @@ CONTAINS
     ! define variables in SiteSelect
     DO iVar = iVarStart, ncolumnsSiteSelect, 1
        ! define variable name
-       ivarStr2=nameVarList(iVar)
+       header_str=nameVarList(iVar)
 
        ! Define the variable. The type of the variable in this case is
        ! NF90_REAL.
-       CALL check( nf90_def_var(ncID,TRIM(ivarStr2), NF90_REAL, dimids, varID) )
+       CALL check( nf90_def_var(ncID,TRIM(header_str), NF90_REAL, dimids, varID) )
        CALL check( nf90_put_att(ncID,varID,'coordinates','xLon xLat') )
        !  print*, 'put att good'
-       !  CALL check( nf90_put_att(ncID,varID,'units',TRIM(ADJUSTL(iunitStr2))) )
+       !  CALL check( nf90_put_att(ncID,varID,'units',TRIM(ADJUSTL(unit_str))) )
        !  print*, 'put unit good'
        idVar(iVar)=varID
     END DO
@@ -872,7 +865,333 @@ CONTAINS
   !   and succesive columns across (i.e., west to east)
   ! the output file frequency is the same as metblocks in the main SUEWS loop
   !===========================================================================!
-  SUBROUTINE SUEWS_Output_nc(year_int,iblock,irMax)
+
+
+  SUBROUTINE SUEWS_Output_nc(iv,irMax)
+    IMPLICIT NONE
+    INTEGER,INTENT(in) :: iv,irMax
+
+    INTEGER :: xx,err,outLevel
+    TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varlistX
+    CHARACTER(len=10) :: grpList0(5)
+    CHARACTER(len=10),DIMENSION(:),ALLOCATABLE :: grpList
+
+    ! determine outLevel
+    SELECT CASE (WriteOutOption)
+    CASE (0) !all (not snow-related)
+       outLevel=1
+    CASE (1) !all plus snow-related
+       outLevel=2
+    CASE (2) !minimal output
+       outLevel=0
+    END SELECT
+
+
+    ! determine groups to output
+    grpList0(1)=''
+    grpList0(2)='SOLWEIG'
+    grpList0(3)='BL'
+    grpList0(4)='snow'
+    grpList0(5)='ESTM'
+    xx=COUNT((/.TRUE.,&
+         SOLWEIGpoi_out==1,&
+         CBLuse>=1,&
+         SnowUse>=1,&
+         StorageHeatMethod==4 .OR. StorageHeatMethod==14/))
+
+    ! PRINT*, grpList0,xx
+
+    ALLOCATE(grpList(xx), stat=err)
+    IF ( err/= 0) PRINT *, "grpList: Allocation request denied"
+
+    grpList=PACK(grpList0, &
+         mask=((/.TRUE.,&
+         SOLWEIGpoi_out==1,&
+         CBLuse>=1,&
+         SnowUse>=1,&
+         StorageHeatMethod==4 .OR. StorageHeatMethod==14/)))
+
+    ! PRINT*, grpList
+
+    ! loop over all groups
+    DO i = 1, SIZE(grpList)
+       xx=COUNT(varlist%group == TRIM(grpList(i)), dim=1)
+       !  PRINT*, 'number of variables:',xx
+       ALLOCATE(varlistX(5+xx), stat=err)
+       IF ( err/= 0) PRINT *, "varlistX: Allocation request denied"
+       ! datetime
+       varlistX(1:5)=varlist(1:5)
+       ! variable
+       varlistX(6:5+xx)=PACK(varlist, mask=(varlist%group == TRIM(grpList(i))))
+
+       !  PRINT*, 'varlistX',SIZE(varlistX)
+
+       ! all output frequency option:
+       ! as forcing:
+       IF ( ResolutionFilesOut == Tstep .OR. KeepTstepFilesOut == 1 ) THEN
+          CALL SUEWS_Output_nc_grp(iv,irMax,varlistX,outLevel,Tstep)
+       ENDIF
+       !  as specified ResolutionFilesOut:
+       IF ( ResolutionFilesOut /= Tstep ) THEN
+          CALL SUEWS_Output_nc_grp(iv,irMax,varlistX,outLevel,ResolutionFilesOut)
+       ENDIF
+
+    END DO
+  END SUBROUTINE SUEWS_Output_nc
+
+
+  SUBROUTINE SUEWS_Output_nc_grp(iv,irMax,varlist,outLevel,outFreq_s)
+    TYPE(varAttr),DIMENSION(:),INTENT(in)::varlist
+    INTEGER,INTENT(in) :: iv,irMax,outLevel,outFreq_s
+
+    REAL(KIND(1d0))::dataOutX(irMax,SIZE(varlist),NumberOfGrids)
+    REAL(KIND(1d0)),ALLOCATABLE::dataOutX_agg(:,:,:),dataOutX_agg0(:,:)
+    INTEGER :: iGrid,err
+
+
+    ! determine dataout array according to variable group
+    SELECT CASE (TRIM(varlist(SIZE(varlist))%group))
+    CASE ('') !default
+       dataOutX=dataout(1:irMax,1:SIZE(varlist),:)
+
+    CASE ('SOLWEIG') !SOLWEIG
+       ! todo: inconsistent data structure
+       dataOutX=dataOutSOL(1:irMax,1:SIZE(varlist),:)
+
+    CASE ('BL') !BL
+       dataOutX=dataOutBL(1:irMax,1:SIZE(varlist),:)
+
+    CASE ('snow')    !snow
+       dataOutX=dataOutSnow(1:irMax,1:SIZE(varlist),:)
+
+    CASE ('ESTM')    !ESTM
+       dataOutX=dataOutESTM(1:irMax,1:SIZE(varlist),:)
+
+    END SELECT
+
+    ! aggregation:
+    DO iGrid = 1, NumberOfGrids
+       CALL SUEWS_Output_Agg(dataOutX_agg0,dataOutX(:,:,iGrid),varlist,irMax,outFreq_s)
+       IF (.NOT. ALLOCATED(dataOutX_agg)) THEN
+          ALLOCATE(dataOutX_agg(SIZE(dataOutX_agg0, dim=1),SIZE(varlist),NumberOfGrids), stat=err)
+          IF ( err/= 0) PRINT *, ": Allocation request denied"
+       ENDIF
+       dataOutX_agg(:,:,iGrid)=dataOutX_agg0
+    END DO
+
+
+    ! write out data
+    CALL SUEWS_Write_nc(dataOutX_agg,varlist,irMax,outLevel)
+
+  END SUBROUTINE SUEWS_Output_nc_grp
+
+
+  SUBROUTINE SUEWS_Write_nc(dataOut,varlist,irMax,outLevel)
+    ! generic subroutine to write out data in netCDF format
+    USE netCDF
+
+    IMPLICIT NONE
+    REAL(KIND(1d0)),DIMENSION(:,:,:),INTENT(in)::dataOut
+    TYPE(varAttr),DIMENSION(:),INTENT(in)::varlist
+    INTEGER,INTENT(in) :: irMax,outLevel
+
+    CHARACTER(len=100):: fileOut
+    REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE::dataOutSel
+    TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varListSel
+
+    ! We are writing 3D data, {time, y, x}
+    INTEGER, PARAMETER :: NDIMS = 3, iVarStart=6
+    INTEGER :: NX,NY,nTime,nVar,err
+
+    ! When we create netCDF files, variables and dimensions, we get back
+    ! an ID for each one.
+    INTEGER :: ncID, varID, dimids(NDIMS),varIDGrid
+    INTEGER :: x_dimid,y_dimid,time_dimid,iVar,varIDx,varIDy,varIDt
+    REAL(KIND(1d0)), ALLOCATABLE :: varOut(:,:,:),&
+         varX(:,:),varY(:,:),&
+         xLat(:,:),xLon(:,:),&
+         varSeq0(:),varSeq(:),xTime(:)
+
+    INTEGER :: idVar(iVarStart:SIZE(varlist))
+    CHARACTER(len=50):: nameVarList(SIZE(varlist)),header_str,&
+         longNmList(SIZE(varlist)),longNm_str,&
+         unitList(SIZE(varlist)),unit_str
+    CHARACTER(len = 4)  :: yrStr2
+    CHARACTER(len = 40) :: startStr2
+
+    ! determine number of times
+    nTime=SIZE(dataOut, dim=1)
+
+    !select variables to output
+    nVar=COUNT((varList%level<= outLevel), dim=1)
+    ALLOCATE(varlistSel(nVar), stat=err)
+    IF ( err/= 0) PRINT *, "varlistSel: Allocation request denied"
+    varlistSel=PACK(varList, mask=(varList%level<= outLevel))
+
+    ! copy data accordingly
+    ALLOCATE(dataOutSel(nTime,nVar,NumberOfGrids), stat=err)
+    IF ( err/= 0) PRINT *, "dataOutSel: Allocation request denied"
+    ! print*, SIZE(varList%level),PACK((/(i,i=1,SIZE(varList%level))/), varList%level <= outLevel)
+    ! print*, nTime,shape(dataOut)
+    dataOutSel=dataOut(:,PACK((/(i,i=1,SIZE(varList))/), varList%level <= outLevel),:)
+
+    ! determine filename
+    CALL filename_gen(dataOutSel(:,:,1),varlistSel,1,FileOut)
+
+    ! set year string
+    WRITE(yrStr2,'(i4)') INT(dataOut(1,1,1))
+    ! get start for later time unit creation
+    startStr2=TRIM(yrStr2)//'-01-01 00:00:00'
+
+    ! define the dimension of spatial array/frame in the output
+    nX = nCol
+    nY = nRow
+
+    ALLOCATE(varSeq0(nX*nY))
+    ALLOCATE(varSeq(nX*nY))
+    ALLOCATE(xLon(nX,nY))
+    ALLOCATE(xLat(nX,nY))
+    ALLOCATE(varY(nX,nY))
+    ALLOCATE(varX(nX,nY))
+
+    ! latitude:
+    varSeq0=SiteSelect(1:nX*nY,5)
+    CALL sortSeqReal(varSeq0,varSeq,nY,nX)
+    xLat = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
+    ! PRINT*, 'before flipping:',xLat(1:2,1)
+    xLat =xLat(:,nY:1:-1)
+    ! PRINT*, 'after flipping:',xLat(1:2,1)
+
+    ! longitude:
+    varSeq0=SiteSelect(1:nX*nY,6)
+    CALL sortSeqReal(varSeq0,varSeq,nY,nX)
+    xLon = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
+
+
+    ! pass values to coordinate variables
+    varY = xLat
+    varX = xLon
+    ! PRINT*, 'size x dim 1:',SIZE(varX, dim=1)
+    ! PRINT*, 'size x dim 2:',SIZE(varX, dim=2)
+
+
+    ! Create the netCDF file. The nf90_clobber parameter tells netCDF to
+    ! overwrite this file, if it already exists.
+    PRINT*, 'writing file:',TRIM(fileOut)
+    CALL check( nf90_create(TRIM(fileOut), NF90_CLOBBER, ncID) )
+
+    ! Define the dimensions. NetCDF will hand back an ID for each.
+    ! nY = ncolumnsDataOut-4
+    ! nx = NumberOfGrids
+    CALL check( nf90_def_dim(ncID, "time", NF90_UNLIMITED, time_dimid) )
+    CALL check( nf90_def_dim(ncID, "west_east", NX, x_dimid) )
+    CALL check( nf90_def_dim(ncID, "south_north", NY, y_dimid) )
+    ! PRINT*, 'good define dim'
+
+    ! The dimids array is used to pass the IDs of the dimensions of
+    ! the variables. Note that in fortran arrays are stored in
+    ! column-major format.
+    dimids =  (/x_dimid, y_dimid, time_dimid/)
+
+    ! write out each variable
+    ALLOCATE(varOut(nX,nY,nTime))
+
+    ! define all variables
+    ! define time variable:
+    CALL check( nf90_def_var(ncID,'time', NF90_REAL, time_dimid, varIDt))
+    CALL check( nf90_put_att(ncID,varIDt,'units','minutes since '//startStr2 ) )
+
+    ! define coordinate variables:
+    CALL check( nf90_def_var(ncID,'xLon', NF90_REAL, (/x_dimid, y_dimid/), varIDx))
+    CALL check( nf90_put_att(ncID,varIDx,'units','degree_east') )
+
+    CALL check( nf90_def_var(ncID,'xLat', NF90_REAL, (/x_dimid, y_dimid/), varIDy))
+    CALL check( nf90_put_att(ncID,varIDy,'units','degree_north') )
+
+    ! PRINT*, 'good define var'
+
+    ! define grid_ID:
+    CALL check( nf90_def_var(ncID,'grid_ID', NF90_INT, (/x_dimid, y_dimid/), varID))
+    CALL check( nf90_put_att(ncID,varID,'coordinates','xLon xLat') )
+    varIDGrid=varID
+
+    ! define other 3D variables:
+    DO iVar = iVarStart, SIZE(varListSel), 1
+       ! define variable name
+       header_str = varListSel(iVar)%header
+       unit_str   = varListSel(iVar)%unit
+       longNm_str = varListSel(iVar)%longNm
+       !  PRINT*, unit_str
+
+       ! Define the variable. The type of the variable in this case is
+       ! NF90_REAL.
+       !  PRINT*, TRIM(ADJUSTL(header_str))
+       CALL check( nf90_def_var(ncID,TRIM(ADJUSTL(header_str)), NF90_REAL, dimids, varID) )
+       !  PRINT*, 'define good'
+       CALL check( nf90_put_att(ncID,varID,'coordinates','xLon xLat') )
+       !  PRINT*, 'put coordinates good'
+       CALL check( nf90_put_att(ncID,varID,'units',TRIM(ADJUSTL(unit_str))) )
+       !  PRINT*, 'put unit good'
+       CALL check( nf90_put_att(ncID,varID,'longname',TRIM(ADJUSTL(longNm_str))) )
+       !  PRINT*, 'put longname good'
+       idVar(iVar)=varID
+    END DO
+    CALL check( nf90_enddef(ncID) )
+    ! End define mode. This tells netCDF we are done defining metadata.
+
+    ! put all variable values into netCDF datasets
+    ! put time variable in minute:
+    xTime=(dataOutSel(1:nTime,2,1)-1)*24*60+dataOutSel(1:nTime,3,1)*60+dataOutSel(1:nTime,4,1)
+    CALL check( nf90_put_var(ncID, varIDt, xTime) )
+
+    ! put coordinate variables:
+    CALL check( nf90_put_var(ncID, varIDx, varX) )
+    CALL check( nf90_put_var(ncID, varIDy, varY) )
+    CALL check( NF90_SYNC(ncID) )
+    ! PRINT*, 'good put var'
+
+
+    ! put grid_ID:
+    CALL check( nf90_put_var(ncID, varIDGrid, RESHAPE(GridIDmatrix,(/nX,nY/),order = (/1,2/))) )
+    ! PRINT*, 'good put varIDGrid',varIDGrid
+
+    CALL check( NF90_SYNC(ncID) )
+
+    ! then other 3D variables
+    DO iVar = iVarStart, SIZE(UseColumnsDataOut), 1
+       !  PRINT*, 'dim1:', SIZE(dataOut(1:nTime,iVar,:), dim=1)
+       !  PRINT*, 'dim2:',SIZE(dataOut(1:nTime,iVar,:), dim=2)
+       ! reshape dataOut to be aligned in checker board form
+       varOut = RESHAPE(dataOutSel(1:nTime,iVar,:),(/nX,nY,nTime/),order = (/3,1,2/) )
+       varOut = varOut(:,nY:1:-1,:)
+       !  get the variable id
+       varID= idVar(iVar)
+       !  PRINT*, 'good put iVar',iVar
+       CALL check( nf90_put_var(ncID, varID, varOut) )
+       !  PRINT*, 'good put var',varID
+       CALL check(NF90_SYNC(ncID))
+    END DO
+
+    IF (ALLOCATED(varOut)) DEALLOCATE(varOut)
+    IF (ALLOCATED(varSeq0)) DEALLOCATE(varSeq0)
+    IF (ALLOCATED(varSeq)) DEALLOCATE(varSeq)
+    IF (ALLOCATED(xLon)) DEALLOCATE(xLon)
+    IF (ALLOCATED(xLat)) DEALLOCATE(xLat)
+    IF (ALLOCATED(varY)) DEALLOCATE(varY)
+    IF (ALLOCATED(varX)) DEALLOCATE(varX)
+
+    ! Close the file. This frees up any internal netCDF resources
+    ! associated with the file, and flushes any buffers.
+    CALL check( nf90_close(ncID) )
+
+    ! PRINT*, "*** SUCCESS writing netCDF file:"
+    ! PRINT*, FileOut
+  END SUBROUTINE SUEWS_Write_nc
+
+
+
+
+  SUBROUTINE SUEWS_Output_nc0(year_int,iblock,irMax)
     !INPUT: year_int = Year as a integer
     !       iblock = Block number of met data
     !       irMax = Maximum number of rows in met data
@@ -1251,7 +1570,7 @@ CONTAINS
        ! original output
 
        ! write out processed/aggregated data
-       CALL SUEWS_Write_nc(TRIM(FileOut_tt),HeaderUse,LongNmUse,UnitsUse,&
+       CALL SUEWS_Write_nc0(TRIM(FileOut_tt),HeaderUse,LongNmUse,UnitsUse,&
             dataOut(1:irMax,1:SIZE(UseColumnsDataOut),1:NumberOfGrids),irMax)
 
        !  IF (SOLWEIGpoi_out==1) THEN
@@ -1274,7 +1593,7 @@ CONTAINS
        !
        !  IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14)THEN
        !     ! write out processed/aggregated data
-       !     CALL SUEWS_Write_nc(TRIM(ESTMOut),HeaderUse,LongNmUse,UnitsUse,&
+       !     CALL SUEWS_Write_nc0(TRIM(ESTMOut),HeaderUse,LongNmUse,UnitsUse,&
        !          dataOutESTM(1:irMax,1:UseColumnsDataOut,1:NumberOfGrids),irMax)
        !
        !     DO i=1,irMax
@@ -1342,7 +1661,7 @@ CONTAINS
 
        ENDDO
        ! write out processed/aggregated data
-       CALL SUEWS_Write_nc(fileOut,HeaderUse,LongNmUse,UnitsUse,dataOutProcX,nsize)
+       CALL SUEWS_Write_nc0(fileOut,HeaderUse,LongNmUse,UnitsUse,dataOutProcX,nsize)
        IF (ALLOCATED(dataOutProcX)) DEALLOCATE(dataOutProcX)
 
 
@@ -1358,11 +1677,9 @@ CONTAINS
     ! 110 CALL ErrorHint(52,TRIM(fileOut_tt),notUsed,notUsed,notUsedI)
 111 CALL ErrorHint(52,TRIM(fileOutFormat),notUsed,notUsed,notUsedI)
     ! 112 CALL ErrorHint(52,TRIM(fileOut),notUsed,notUsed,notUsedI)
+  END SUBROUTINE SUEWS_Output_nc0
 
-
-  END SUBROUTINE SUEWS_Output_nc
-
-  SUBROUTINE SUEWS_Write_nc(fileOutput,header,longNm,units,dataOutput,irMax)
+  SUBROUTINE SUEWS_Write_nc0(fileOutput,header,longNm,units,dataOutput,irMax)
     ! generic subroutine to write out data in netCDF format
 
     USE netCDF
@@ -1391,9 +1708,9 @@ CONTAINS
          varSeq0(:),varSeq(:)
 
     INTEGER :: idVar(iVarStart:SIZE(UseColumnsDataOut))
-    CHARACTER(len=50):: nameVarList(SIZE(UseColumnsDataOut)),ivarStr2,&
-         longNmList(SIZE(UseColumnsDataOut)),ilongNmStr2,&
-         unitList(SIZE(UseColumnsDataOut)),iunitStr2
+    CHARACTER(len=50):: nameVarList(SIZE(UseColumnsDataOut)),header_str,&
+         longNmList(SIZE(UseColumnsDataOut)),longNm_str,&
+         unitList(SIZE(UseColumnsDataOut)),unit_str
     CHARACTER(len = 4)  :: yrStr2
     CHARACTER(len = 40) :: startStr2
 
@@ -1485,21 +1802,21 @@ CONTAINS
     ! define other 3D variables:
     DO iVar = iVarStart, SIZE(UseColumnsDataOut), 1
        ! define variable name
-       ivarStr2=nameVarList(iVar)
-       iunitStr2=unitList(iVar)
-       ilongNmStr2=longNmList(iVar)
-       !  PRINT*, iunitStr2
+       header_str=nameVarList(iVar)
+       unit_str=unitList(iVar)
+       longNm_str=longNmList(iVar)
+       !  PRINT*, unit_str
 
        ! Define the variable. The type of the variable in this case is
        ! NF90_REAL.
-       !  PRINT*, TRIM(ADJUSTL(ivarStr2))
-       CALL check( nf90_def_var(ncID,TRIM(ADJUSTL(ivarStr2)), NF90_REAL, dimids, varID) )
+       !  PRINT*, TRIM(ADJUSTL(header_str))
+       CALL check( nf90_def_var(ncID,TRIM(ADJUSTL(header_str)), NF90_REAL, dimids, varID) )
        !  PRINT*, 'define good'
        CALL check( nf90_put_att(ncID,varID,'coordinates','xLon xLat') )
        !  PRINT*, 'put coordinates good'
-       CALL check( nf90_put_att(ncID,varID,'units',TRIM(ADJUSTL(iunitStr2))) )
+       CALL check( nf90_put_att(ncID,varID,'units',TRIM(ADJUSTL(unit_str))) )
        !  PRINT*, 'put unit good'
-       CALL check( nf90_put_att(ncID,varID,'longname',TRIM(ADJUSTL(ilongNmStr2))) )
+       CALL check( nf90_put_att(ncID,varID,'longname',TRIM(ADJUSTL(longNm_str))) )
        !  PRINT*, 'put longname good'
        idVar(iVar)=varID
     END DO
@@ -1556,8 +1873,7 @@ CONTAINS
 
     ! PRINT*, "*** SUCCESS writing netCDF file:"
     ! PRINT*, FileOut
-  END SUBROUTINE SUEWS_Write_nc
-
+  END SUBROUTINE SUEWS_Write_nc0
 
 
   !===========================================================================!

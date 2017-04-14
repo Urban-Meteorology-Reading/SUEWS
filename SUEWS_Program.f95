@@ -715,24 +715,11 @@ PROGRAM SUEWS_Program
 #ifdef nc
         ENDIF
 
-        ! test new generic output subroutines
-        ! call filename_gen(dataOut(:,1:60,:),varList(1:60),1,FileOut)
-        ! print*, FileOut
-        ! DO igrid=1,NumberOfGrids
-        !    IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_Output...'
-        !    !  call SUEWS_Output_Init(dataOut(:,1:60,igrid),varList(1:60),igrid,2)
-        !    !  call SUEWS_Write_txt(dataOut(:,1:60,igrid),varList(1:60),irMax,igrid,2)
-        !   !  PRINT*, iblock
-        !    CALL SUEWS_Output_txt(iblock,irMax,igrid)
-        !
-        ! ENDDO
-
-        ! test end
-
         IF ( ncMode .EQ. 1 ) THEN
            ! write resulst in netCDF
            IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_Output_nc...'
-           CALL SUEWS_Output_nc(year_int,iblock,irMax)
+          !  CALL SUEWS_Output_nc0(year_int,iblock,irMax)
+           call SUEWS_Output_nc(iblock,irMax)
            ! write input information in netCDF as well for future development
            IF ( iblock==1 ) THEN
               CALL SiteSelect_txt2nc

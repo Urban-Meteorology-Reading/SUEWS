@@ -709,7 +709,8 @@ PROGRAM SUEWS_Program
 #endif
            DO igrid=1,NumberOfGrids
               IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_Output...'
-              CALL SUEWS_Output(igrid,year_int,iblock,irMax,GridIDmatrix(igrid))  !GridIDmatrix required for correct naming of output files
+              ! CALL SUEWS_Output(igrid,year_int,iblock,irMax,GridIDmatrix(igrid))  !GridIDmatrix required for correct naming of output files
+              CALL SUEWS_Output_txt(iblock,irMax,igrid)
            ENDDO
 #ifdef nc
         ENDIF
@@ -717,12 +718,14 @@ PROGRAM SUEWS_Program
         ! test new generic output subroutines
         ! call filename_gen(dataOut(:,1:60,:),varList(1:60),1,FileOut)
         ! print*, FileOut
-        DO igrid=1,NumberOfGrids
-           IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_Output...'
-           call SUEWS_Output_Init(dataOut(:,1:60,:),varList(1:60),igrid,2)
-           call SUEWS_Write_txt(dataOut(:,1:60,:),varList(1:60),irMax,igrid,2)
-
-        ENDDO
+        ! DO igrid=1,NumberOfGrids
+        !    IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_Output...'
+        !    !  call SUEWS_Output_Init(dataOut(:,1:60,igrid),varList(1:60),igrid,2)
+        !    !  call SUEWS_Write_txt(dataOut(:,1:60,igrid),varList(1:60),irMax,igrid,2)
+        !   !  PRINT*, iblock
+        !    CALL SUEWS_Output_txt(iblock,irMax,igrid)
+        !
+        ! ENDDO
 
         ! test end
 

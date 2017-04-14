@@ -1,4 +1,24 @@
 MODULE ctrl_output
+  !========================================================================================
+  ! generic output functions for SUEWS
+  ! authors: Ting Sun (ting.sun@reading.ac.uk)
+  !
+  ! disclamier:
+  !     This code employs the netCDF Fortran 90 API.
+  !     Full documentation of the netCDF Fortran 90 API can be found at:
+  !     http://www.unidata.ucar.edu/software/netcdf/docs/netcdf-f90
+  !     Part of the work is under the help of examples provided by the documentation.
+  !
+  ! purpose:
+  ! these subroutines write out the results of SUEWS in netCDF format.
+  !
+  !
+  ! history:
+  ! TS 20161209: initial version of netcdf function
+  ! TS 20161213: standalise the txt2nc procedure
+  ! TS 20170414: generic output procedures
+  !========================================================================================
+
 
   USE allocateArray
   USE cbl_module
@@ -49,11 +69,11 @@ MODULE ctrl_output
 
   ! datetime:
   DATA(varList(i), i=1,5)/&
-       varAttr('Year'    , 'YYYY' , fy , 'Year'         , aT , '' , 0),&
-       varAttr('DOY'     , 'DOY'  , ft , 'Day of Year'  , aT , '' , 0),&
-       varAttr('Hour'    , 'HH'   , ft , 'Hour'         , aT , '' , 0),&
-       varAttr('Min'     , 'MM'   , ft , 'Minute'       , aT , '' , 0),&
-       varAttr('Dectime' , '-'    , fd , 'Decimal time' , aT , '' , 0)&
+       varAttr('Year'    , 'YYYY' , fy , 'Year'         , aT , 'datetime' , 0),&
+       varAttr('DOY'     , 'DOY'  , ft , 'Day of Year'  , aT , 'datetime' , 0),&
+       varAttr('Hour'    , 'HH'   , ft , 'Hour'         , aT , 'datetime' , 0),&
+       varAttr('Min'     , 'MM'   , ft , 'Minute'       , aT , 'datetime' , 0),&
+       varAttr('Dectime' , '-'    , fd , 'Decimal time' , aT , 'datetime' , 0)&
        /
 
   ! defualt:
@@ -64,76 +84,76 @@ MODULE ctrl_output
        varAttr('Lup'        , 'W_m-2'        , f94  , 'Outgoing longwave radiation'                      , aA , '' , 0)    , &
        varAttr('Tsurf'      , 'degC'         , f94  , 'Bulk surface temperature'                         , aA , '' , 0)    , &
        varAttr('QN'         , 'W_m-2'        , f94  , 'Net all-wave radiation'                           , aA , '' , 0)    , &
-       varAttr('QF'         , 'W_m-2'        , f94  , 'Anthropogenic heat flux'                          , aA , '' , 2)    , &
-       varAttr('QS'         , 'W_m-2'        , f94  , 'Net storage heat flux'                            , aA , '' , 2)    , &
-       varAttr('QH'         , 'W_m-2'        , f94  , 'Sensible heat flux'                               , aA , '' , 2)    , &
-       varAttr('QE'         , 'W_m-2'        , f94  , 'Latent heat flux'                                 , aA , '' , 2)    , &
-       varAttr('QHlumps'    , 'W_m-2'        , f94  , 'Sensible heat flux (using LUMPS)'                 , aA , '' , 2)    , &
-       varAttr('QElumps'    , 'W_m-2'        , f94  , 'Latent heat flux (using LUMPS)'                   , aA , '' , 2)    , &
-       varAttr('QHresis'    , 'W_m-2'        , f94  , 'Sensible heat flux (resistance method)'           , aA , '' , 2)    , &
-       varAttr('Rain'       , 'mm'           , f106 , 'Rain'                                             , aS , '' , 2)    , &
-       varAttr('Irr'        , 'mm'           , f106 , 'Irrigation'                                       , aS , '' , 2)    , &
-       varAttr('Evap'       , 'mm'           , f106 , 'Evaporation'                                      , aS , '' , 2)    , &
-       varAttr('RO'         , 'mm'           , f106 , 'Runoff'                                           , aS , '' , 2)    , &
-       varAttr('TotCh'      , 'mm'           , f106 , 'Surface and soil moisture change'                 , aS , '' , 2)    , &
-       varAttr('SurfCh'     , 'mm'           , f106 , 'Surface moisture change'                          , aS , '' , 2)    , &
-       varAttr('State'      , 'mm'           , f104 , 'SurfaceWetnessState'                              , aL , '' , 2)    , &
-       varAttr('NWtrState'  , 'mm'           , f106 , 'Surface wetness state (non-water surfaces)'       , aL , '' , 2)    , &
-       varAttr('Drainage'   , 'mm'           , f106 , 'Drainage'                                         , aS , '' , 2)    , &
-       varAttr('SMD'        , 'mm'           , f94  , 'SoilMoistureDeficit'                              , aL , '' , 2)    , &
-       varAttr('FlowCh'     , 'mm'           , f104 , 'Additional flow into water body'                  , aS , '' , 2)    , &
-       varAttr('AddWater'   , 'mm'           , f104 , 'Addtional water from other grids'                 , aS , '' , 2)    , &
-       varAttr('ROSoil'     , 'mm'           , f106 , 'Runoff to soil'                                   , aS , '' , 2)    , &
-       varAttr('ROPipe'     , 'mm'           , f106 , 'Runoff to pipes'                                  , aS , '' , 3)    , &
-       varAttr('ROImp'      , 'mm'           , f106 , 'Runoff over impervious surfaces'                  , aS , '' , 3)    , &
-       varAttr('ROVeg'      , 'mm'           , f106 , 'Runoff over vegetated surfaces'                   , aS , '' , 3)    , &
-       varAttr('ROWater'    , 'mm'           , f106 , 'Runoff for water surface'                         , aS , '' , 3)    , &
-       varAttr('WUInt'      , 'mm'           , f94  , 'InternalWaterUse'                                 , aS , '' , 3)    , &
-       varAttr('WUEveTr'    , 'mm'           , f94  , 'Water use for evergreen trees'                    , aS , '' , 3)    , &
-       varAttr('WUDecTr'    , 'mm'           , f94  , 'Water use for deciduous trees'                    , aS , '' , 3)    , &
-       varAttr('WUGrass'    , 'mm'           , f94  , 'Water use for grass'                              , aS , '' , 3)    , &
-       varAttr('SMDPaved'   , 'mm'           , f94  , 'Soil moisture deficit for paved surface'          , aL , '' , 3)    , &
-       varAttr('SMDBldgs'   , 'mm'           , f94  , 'Soil moisture deficit for building surface'       , aL , '' , 3)    , &
-       varAttr('SMDEveTr'   , 'mm'           , f94  , 'Soil moisture deficit for evergreen tree surface' , aL , '' , 0)    , &
-       varAttr('SMDDecTr'   , 'mm'           , f94  , 'Soil moisture deficit for deciduous tree surface' , aL , '' , 0)    , &
-       varAttr('SMDGrass'   , 'mm'           , f94  , 'Soil moisture deficit for grass surface'          , aL , '' , 0)    , &
-       varAttr('SMDBSoil'   , 'mm'           , f94  , 'Soil moisture deficit for bare soil surface'      , aL , '' , 0)    , &
-       varAttr('StPaved'    , 'mm'           , f94  , 'Surface wetness state for paved surface'          , aL , '' , 0)    , &
-       varAttr('StBldgs'    , 'mm'           , f94  , 'Surface wetness state for building surface'       , aL , '' , 0)    , &
-       varAttr('StEveTr'    , 'mm'           , f94  , 'Surface wetness state for evergreen tree surface' , aL , '' , 0)    , &
-       varAttr('StDecTr'    , 'mm'           , f94  , 'Surface wetness state for deciduous tree surface' , aL , '' , 0)    , &
-       varAttr('StGrass'    , 'mm'           , f94  , 'Surface wetness state for grass surface'          , aL , '' , 0)    , &
-       varAttr('StBSoil'    , 'mm'           , f94  , 'Surface wetness state for bare soil surface'      , aL , '' , 0)    , &
-       varAttr('StWater'    , 'mm'           , f104 , 'Surface wetness state for water surface'          , aL , '' , 0)    , &
+       varAttr('QF'         , 'W_m-2'        , f94  , 'Anthropogenic heat flux'                          , aA , '' , 0)    , &
+       varAttr('QS'         , 'W_m-2'        , f94  , 'Net storage heat flux'                            , aA , '' , 0)    , &
+       varAttr('QH'         , 'W_m-2'        , f94  , 'Sensible heat flux'                               , aA , '' , 0)    , &
+       varAttr('QE'         , 'W_m-2'        , f94  , 'Latent heat flux'                                 , aA , '' , 0)    , &
+       varAttr('QHlumps'    , 'W_m-2'        , f94  , 'Sensible heat flux (using LUMPS)'                 , aA , '' , 1)    , &
+       varAttr('QElumps'    , 'W_m-2'        , f94  , 'Latent heat flux (using LUMPS)'                   , aA , '' , 1)    , &
+       varAttr('QHresis'    , 'W_m-2'        , f94  , 'Sensible heat flux (resistance method)'           , aA , '' , 1)    , &
+       varAttr('Rain'       , 'mm'           , f106 , 'Rain'                                             , aS , '' , 0)    , &
+       varAttr('Irr'        , 'mm'           , f106 , 'Irrigation'                                       , aS , '' , 0)    , &
+       varAttr('Evap'       , 'mm'           , f106 , 'Evaporation'                                      , aS , '' , 0)    , &
+       varAttr('RO'         , 'mm'           , f106 , 'Runoff'                                           , aS , '' , 0)    , &
+       varAttr('TotCh'      , 'mm'           , f106 , 'Surface and soil moisture change'                 , aS , '' , 0)    , &
+       varAttr('SurfCh'     , 'mm'           , f106 , 'Surface moisture change'                          , aS , '' , 0)    , &
+       varAttr('State'      , 'mm'           , f104 , 'SurfaceWetnessState'                              , aL , '' , 0)    , &
+       varAttr('NWtrState'  , 'mm'           , f106 , 'Surface wetness state (non-water surfaces)'       , aL , '' , 0)    , &
+       varAttr('Drainage'   , 'mm'           , f106 , 'Drainage'                                         , aS , '' , 0)    , &
+       varAttr('SMD'        , 'mm'           , f94  , 'SoilMoistureDeficit'                              , aL , '' , 0)    , &
+       varAttr('FlowCh'     , 'mm'           , f104 , 'Additional flow into water body'                  , aS , '' , 1)    , &
+       varAttr('AddWater'   , 'mm'           , f104 , 'Addtional water from other grids'                 , aS , '' , 1)    , &
+       varAttr('ROSoil'     , 'mm'           , f106 , 'Runoff to soil'                                   , aS , '' , 1)    , &
+       varAttr('ROPipe'     , 'mm'           , f106 , 'Runoff to pipes'                                  , aS , '' , 1)    , &
+       varAttr('ROImp'      , 'mm'           , f106 , 'Runoff over impervious surfaces'                  , aS , '' , 1)    , &
+       varAttr('ROVeg'      , 'mm'           , f106 , 'Runoff over vegetated surfaces'                   , aS , '' , 1)    , &
+       varAttr('ROWater'    , 'mm'           , f106 , 'Runoff for water surface'                         , aS , '' , 1)    , &
+       varAttr('WUInt'      , 'mm'           , f94  , 'InternalWaterUse'                                 , aS , '' , 1)    , &
+       varAttr('WUEveTr'    , 'mm'           , f94  , 'Water use for evergreen trees'                    , aS , '' , 1)    , &
+       varAttr('WUDecTr'    , 'mm'           , f94  , 'Water use for deciduous trees'                    , aS , '' , 1)    , &
+       varAttr('WUGrass'    , 'mm'           , f94  , 'Water use for grass'                              , aS , '' , 1)    , &
+       varAttr('SMDPaved'   , 'mm'           , f94  , 'Soil moisture deficit for paved surface'          , aL , '' , 1)    , &
+       varAttr('SMDBldgs'   , 'mm'           , f94  , 'Soil moisture deficit for building surface'       , aL , '' , 1)    , &
+       varAttr('SMDEveTr'   , 'mm'           , f94  , 'Soil moisture deficit for evergreen tree surface' , aL , '' , 1)    , &
+       varAttr('SMDDecTr'   , 'mm'           , f94  , 'Soil moisture deficit for deciduous tree surface' , aL , '' , 1)    , &
+       varAttr('SMDGrass'   , 'mm'           , f94  , 'Soil moisture deficit for grass surface'          , aL , '' , 1)    , &
+       varAttr('SMDBSoil'   , 'mm'           , f94  , 'Soil moisture deficit for bare soil surface'      , aL , '' , 1)    , &
+       varAttr('StPaved'    , 'mm'           , f94  , 'Surface wetness state for paved surface'          , aL , '' , 1)    , &
+       varAttr('StBldgs'    , 'mm'           , f94  , 'Surface wetness state for building surface'       , aL , '' , 1)    , &
+       varAttr('StEveTr'    , 'mm'           , f94  , 'Surface wetness state for evergreen tree surface' , aL , '' , 1)    , &
+       varAttr('StDecTr'    , 'mm'           , f94  , 'Surface wetness state for deciduous tree surface' , aL , '' , 1)    , &
+       varAttr('StGrass'    , 'mm'           , f94  , 'Surface wetness state for grass surface'          , aL , '' , 1)    , &
+       varAttr('StBSoil'    , 'mm'           , f94  , 'Surface wetness state for bare soil surface'      , aL , '' , 1)    , &
+       varAttr('StWater'    , 'mm'           , f104 , 'Surface wetness state for water surface'          , aL , '' , 1)    , &
        varAttr('Zenith'     , 'deg'          , f94  , 'Solar zenith angle'                               , aL , '' , 0)    , &
        varAttr('Azimuth'    , 'deg'          , f94  , 'Solar azimuth angle'                              , aL , '' , 0)    , &
        varAttr('AlbBulk'    , '-'            , f94  , 'Bulk albedo'                                      , aA , '' , 0)    , &
        varAttr('Fcld'       , '-'            , f94  , 'Cloud fraction'                                   , aA , '' , 0)    , &
        varAttr('LAI'        , 'm2_m-2'       , f94  , 'Leaf area index'                                  , aA , '' , 0)    , &
-       varAttr('z0m'        , 'm'            , f94  , 'Roughness length for momentum'                    , aA , '' , 0)    , &
-       varAttr('zdm'        , 'm'            , f94  , 'Zero-plane displacement height'                   , aA , '' , 0)    , &
+       varAttr('z0m'        , 'm'            , f94  , 'Roughness length for momentum'                    , aA , '' , 1)    , &
+       varAttr('zdm'        , 'm'            , f94  , 'Zero-plane displacement height'                   , aA , '' , 1)    , &
        varAttr('ustar'      , 'm_s-1'        , f94  , 'Friction velocity'                                , aA , '' , 0)    , &
        varAttr('Lob'        , 'm'            , f104 , 'Obukhov length'                                   , aA , '' , 0)    , &
-       varAttr('ra'         , 's_m-1'        , f94  , 'Aerodynamic resistance'                           , aA , '' , 0)    , &
-       varAttr('rs'         , 's_m-1'        , f94  , 'Surface resistance'                               , aA , '' , 0)    , &
+       varAttr('ra'         , 's_m-1'        , f94  , 'Aerodynamic resistance'                           , aA , '' , 1)    , &
+       varAttr('rs'         , 's_m-1'        , f94  , 'Surface resistance'                               , aA , '' , 1)    , &
        varAttr('Fc'         , 'umol_m-2_s-1' , f94  , 'CO2 flux'                                         , aA , '' , 0)    , &
-       varAttr('FcPhoto'    , 'umol_m-2_s-1' , f94  , 'CO2 flux from photosynthesis'                     , aA , '' , 0)    , &
-       varAttr('FcRespi'    , 'umol_m-2_s-1' , f94  , 'CO2 flux from respiration'                        , aA , '' , 0)    , &
-       varAttr('FcMetab'    , 'umol_m-2_s-1' , f94  , 'CO2 flux from metabolism'                         , aA , '' , 0)    , &
-       varAttr('FcTraff'    , 'umol_m-2_s-1' , f94  , 'CO2 flux from traffic'                            , aA , '' , 0)    , &
-       varAttr('FcBuild'    , 'umol_m-2_s-1' , f94  , 'CO2 flux from buildings'                          , aA , '' , 0)    , &
-       varAttr('QNSnowFr'   , 'W_m-2'        , f94  , 'Net all-wave radiation for non-snow area'         , aA , '' , 0)    , &
-       varAttr('QNSnow'     , 'W_m-2'        , f94  , 'Net all-wave radiation for snow area'             , aA , '' , 0)    , &
-       varAttr('AlbSnow'    , '-'            , f94  , 'Snow albedo'                                      , aA , '' , 0)    , &
-       varAttr('QM'         , 'W_m-2'        , f106 , 'Snow-related heat exchange'                       , aA , '' , 0)    , &
-       varAttr('QMFreeze'   , 'W_m-2'        , f106 , 'Internal energy change'                           , aA , '' , 0)    , &
-       varAttr('QMRain'     , 'W_m-2'        , f106 , 'Heat released by rain on snow'                    , aA , '' , 0)    , &
-       varAttr('SWE'        , 'mm'           , f104 , 'Snow water equivalent'                            , aA , '' , 0)    , &
-       varAttr('MeltWater'  , 'mm'           , f104 , 'Meltwater'                                        , aA , '' , 0)    , &
-       varAttr('MeltWStore' , 'mm'           , f104 , 'Meltwater store'                                  , aA , '' , 0)    , &
-       varAttr('SnowCh'     , 'mm'           , f104 , 'Change in snow pack'                              , aA , '' , 0)    , &
-       varAttr('SnowRPaved' , 'mm'           , f94  , 'Snow removed from paved surface'                  , aS , '' , 0)    , &
-       varAttr('SnowRPaved' , 'mm'           , f94  , 'Snow removed from building surface'               , aS , '' , 0)  &
+       varAttr('FcPhoto'    , 'umol_m-2_s-1' , f94  , 'CO2 flux from photosynthesis'                     , aA , '' , 1)    , &
+       varAttr('FcRespi'    , 'umol_m-2_s-1' , f94  , 'CO2 flux from respiration'                        , aA , '' , 1)    , &
+       varAttr('FcMetab'    , 'umol_m-2_s-1' , f94  , 'CO2 flux from metabolism'                         , aA , '' , 1)    , &
+       varAttr('FcTraff'    , 'umol_m-2_s-1' , f94  , 'CO2 flux from traffic'                            , aA , '' , 1)    , &
+       varAttr('FcBuild'    , 'umol_m-2_s-1' , f94  , 'CO2 flux from buildings'                          , aA , '' , 1)    , &
+       varAttr('QNSnowFr'   , 'W_m-2'        , f94  , 'Net all-wave radiation for non-snow area'         , aA , '' , 2)    , &
+       varAttr('QNSnow'     , 'W_m-2'        , f94  , 'Net all-wave radiation for snow area'             , aA , '' , 2)    , &
+       varAttr('AlbSnow'    , '-'            , f94  , 'Snow albedo'                                      , aA , '' , 2)    , &
+       varAttr('QM'         , 'W_m-2'        , f106 , 'Snow-related heat exchange'                       , aA , '' , 2)    , &
+       varAttr('QMFreeze'   , 'W_m-2'        , f106 , 'Internal energy change'                           , aA , '' , 2)    , &
+       varAttr('QMRain'     , 'W_m-2'        , f106 , 'Heat released by rain on snow'                    , aA , '' , 2)    , &
+       varAttr('SWE'        , 'mm'           , f104 , 'Snow water equivalent'                            , aA , '' , 2)    , &
+       varAttr('MeltWater'  , 'mm'           , f104 , 'Meltwater'                                        , aA , '' , 2)    , &
+       varAttr('MeltWStore' , 'mm'           , f104 , 'Meltwater store'                                  , aA , '' , 2)    , &
+       varAttr('SnowCh'     , 'mm'           , f104 , 'Change in snow pack'                              , aA , '' , 2)    , &
+       varAttr('SnowRPaved' , 'mm'           , f94  , 'Snow removed from paved surface'                  , aS , '' , 2)    , &
+       varAttr('SnowRPaved' , 'mm'           , f94  , 'Snow removed from building surface'               , aS , '' , 2)  &
        /
 
   ! SOLWEIG:
@@ -288,43 +308,336 @@ MODULE ctrl_output
        varAttr('Tsnow_Water'    , 'to_add' , f106 , 'Tsnow_Water'    , aA , 'snow' , 0)&
        /
 
+  ! ESTM:
+  DATA(varList(i), i=222,243)/&
+       varAttr('QSIBLD'   , 'to_add' , f106 , 'QSIBLD'   , aA , 'ESTM' , 0)  , &
+       varAttr('TWALL1'   , 'to_add' , f106 , 'TWALL1'   , aA , 'ESTM' , 0)  , &
+       varAttr('TWALL2'   , 'to_add' , f106 , 'TWALL2'   , aA , 'ESTM' , 0)  , &
+       varAttr('TWALL3'   , 'to_add' , f106 , 'TWALL3'   , aA , 'ESTM' , 0)  , &
+       varAttr('TWALL4'   , 'to_add' , f106 , 'TWALL4'   , aA , 'ESTM' , 0)  , &
+       varAttr('TWALL5'   , 'to_add' , f106 , 'TWALL5'   , aA , 'ESTM' , 0)  , &
+       varAttr('TROOF1'   , 'to_add' , f106 , 'TROOF1'   , aA , 'ESTM' , 0)  , &
+       varAttr('TROOF2'   , 'to_add' , f106 , 'TROOF2'   , aA , 'ESTM' , 0)  , &
+       varAttr('TROOF3'   , 'to_add' , f106 , 'TROOF3'   , aA , 'ESTM' , 0)  , &
+       varAttr('TROOF4'   , 'to_add' , f106 , 'TROOF4'   , aA , 'ESTM' , 0)  , &
+       varAttr('TROOF5'   , 'to_add' , f106 , 'TROOF5'   , aA , 'ESTM' , 0)  , &
+       varAttr('TGROUND1' , 'to_add' , f106 , 'TGROUND1' , aA , 'ESTM' , 0)  , &
+       varAttr('TGROUND2' , 'to_add' , f106 , 'TGROUND2' , aA , 'ESTM' , 0)  , &
+       varAttr('TGROUND3' , 'to_add' , f106 , 'TGROUND3' , aA , 'ESTM' , 0)  , &
+       varAttr('TGROUND4' , 'to_add' , f106 , 'TGROUND4' , aA , 'ESTM' , 0)  , &
+       varAttr('TGROUND5' , 'to_add' , f106 , 'TGROUND5' , aA , 'ESTM' , 0)  , &
+       varAttr('TiBLD1'   , 'to_add' , f106 , 'TiBLD1'   , aA , 'ESTM' , 0)  , &
+       varAttr('TiBLD2'   , 'to_add' , f106 , 'TiBLD2'   , aA , 'ESTM' , 0)  , &
+       varAttr('TiBLD3'   , 'to_add' , f106 , 'TiBLD3'   , aA , 'ESTM' , 0)  , &
+       varAttr('TiBLD4'   , 'to_add' , f106 , 'TiBLD4'   , aA , 'ESTM' , 0)  , &
+       varAttr('TiBLD5'   , 'to_add' , f106 , 'TiBLD5'   , aA , 'ESTM' , 0)  , &
+       varAttr('TaBLD'    , 'to_add' , f106 , 'TaBLD'    , aA , 'ESTM' , 0)&
+       /
+
 CONTAINS
+
+  ! main output wrapper function
+  SUBROUTINE SUEWS_Output_txt(iv,irMax,Gridiv)
+    IMPLICIT NONE
+    INTEGER,INTENT(in) :: iv,irMax,Gridiv
+
+    INTEGER :: xx,err,outLevel
+    TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varlistX
+    CHARACTER(len=10) :: grpList0(5)
+    CHARACTER(len=10),DIMENSION(:),ALLOCATABLE :: grpList
+
+    ! determine outLevel
+    SELECT CASE (WriteOutOption)
+    CASE (0) !all (not snow-related)
+       outLevel=1
+    CASE (1) !all plus snow-related
+       outLevel=2
+    CASE (2) !minimal output
+       outLevel=0
+    END SELECT
+
+
+    ! determine groups to output
+    grpList0(1)=''
+    grpList0(2)='SOLWEIG'
+    grpList0(3)='BL'
+    grpList0(4)='snow'
+    grpList0(5)='ESTM'
+    xx=COUNT((/.TRUE.,&
+         SOLWEIGpoi_out==1,&
+         CBLuse>=1,&
+         SnowUse>=1,&
+         StorageHeatMethod==4 .OR. StorageHeatMethod==14/))
+
+    ! PRINT*, grpList0,xx
+
+    ALLOCATE(grpList(xx), stat=err)
+    IF ( err/= 0) PRINT *, "grpList: Allocation request denied"
+
+    grpList=PACK(grpList0, &
+         mask=((/.TRUE.,&
+         SOLWEIGpoi_out==1,&
+         CBLuse>=1,&
+         SnowUse>=1,&
+         StorageHeatMethod==4 .OR. StorageHeatMethod==14/)))
+
+    ! PRINT*, grpList
+
+    ! loop over all groups
+    DO i = 1, SIZE(grpList)
+       xx=COUNT(varlist%group == TRIM(grpList(i)), dim=1)
+       !  PRINT*, 'number of variables:',xx
+       ALLOCATE(varlistX(5+xx), stat=err)
+       IF ( err/= 0) PRINT *, "varlistX: Allocation request denied"
+       ! datetime
+       varlistX(1:5)=varlist(1:5)
+       ! variable
+       varlistX(6:5+xx)=PACK(varlist, mask=(varlist%group == TRIM(grpList(i))))
+
+       !  PRINT*, varlistX%header
+
+       ! all output frequency option:
+       ! as forcing:
+       IF ( ResolutionFilesOut == Tstep .OR. KeepTstepFilesOut == 1 ) THEN
+          CALL SUEWS_Output_txt_grp(iv,irMax,varlistX,Gridiv,outLevel,Tstep)
+       ENDIF
+       !  as specified ResolutionFilesOut:
+       IF ( ResolutionFilesOut /= Tstep ) THEN
+          CALL SUEWS_Output_txt_grp(iv,irMax,varlistX,Gridiv,outLevel,ResolutionFilesOut)
+       ENDIF
+
+    END DO
+
+
+
+  END SUBROUTINE SUEWS_Output_txt
+
+
+  ! output wrapper function for one group
+  SUBROUTINE SUEWS_Output_txt_grp(iv,irMax,varlist,Gridiv,outLevel,outFreq_s)
+    IMPLICIT NONE
+
+    TYPE(varAttr),DIMENSION(:),INTENT(in)::varlist
+    INTEGER,INTENT(in) :: iv,irMax,Gridiv,outLevel,outFreq_s
+
+    ! REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOutX
+    REAL(KIND(1d0))::dataOutX(irMax,SIZE(varlist))
+    REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::dataOutX_agg
+
+
+    ! determine dataout array according to variable group
+    SELECT CASE (TRIM(varlist(SIZE(varlist))%group))
+    CASE ('') !default
+       dataOutX=dataout(1:irMax,1:SIZE(varlist),Gridiv)
+
+    CASE ('SOLWEIG') !SOLWEIG
+       ! todo: inconsistent data structure
+       dataOutX=dataOutSOL(1:irMax,1:SIZE(varlist),Gridiv)
+
+    CASE ('BL') !BL
+       dataOutX=dataOutBL(1:irMax,1:SIZE(varlist),Gridiv)
+
+    CASE ('snow')    !snow
+       dataOutX=dataOutSnow(1:irMax,1:SIZE(varlist),Gridiv)
+
+    CASE ('ESTM')    !ESTM
+       dataOutX=dataOutESTM(1:irMax,1:SIZE(varlist),Gridiv)
+
+    END SELECT
+
+
+    ! aggregation:
+    CALL SUEWS_Output_Agg(dataOutX_agg,dataOutX,varlist,irMax,outFreq_s)
+
+    ! output:
+    ! initialise file when processing first metblock
+    IF ( iv == 1 ) CALL SUEWS_Output_Init(dataOutX_agg,varlist,Gridiv,outLevel)
+
+    ! append the aggregated data to the specific txt file
+    CALL SUEWS_Write_txt(dataOutX_agg,varlist,irMax,Gridiv,outLevel)
+
+  END SUBROUTINE SUEWS_Output_txt_grp
+
+  ! initialise an output file with file name and headers
+  SUBROUTINE SUEWS_Output_Init(dataOut,varlist,Gridiv,outLevel)
+    ! todo: create files and wrte output format file
+    IMPLICIT NONE
+    REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOut
+    TYPE(varAttr),DIMENSION(:),INTENT(in)::varlist
+    INTEGER,INTENT(in) :: Gridiv,outLevel
+
+    TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varlistSel
+    INTEGER :: xx,err,fn
+    CHARACTER(len=100) :: name_test,FileOut
+    CHARACTER(len=3) :: itext
+
+
+    ! select variables to output
+    xx=COUNT((varList%level<= outLevel), dim=1)
+    WRITE(itext,'(i3)') xx
+    ALLOCATE(varlistSel(xx), stat=err)
+    IF ( err/= 0) PRINT *, "varlistSel: Allocation request denied"
+    varlistSel=PACK(varList, mask=(varList%level<= outLevel))
+
+    ! generate file name
+    CALL filename_gen(dataOut,varList,Gridiv,FileOut)
+    name_test=FileOut
+
+    ! create file
+    fn=9
+    OPEN(fn,file=TRIM(ADJUSTL(FileOut)),status='unknown')
+    ! write out headers
+    WRITE(fn, '('//TRIM(itext)//'a)') varlistSel%header
+    CLOSE(fn)
+
+    ! clean up
+    IF (ALLOCATED(varlistSel)) DEALLOCATE(varlistSel, stat=err)
+    IF ( err/= 0) PRINT *, "varlistSel: Deallocation request denied"
+
+  END SUBROUTINE SUEWS_Output_Init
+
+
+  ! aggregate data to specified resolution
+  SUBROUTINE SUEWS_Output_Agg(dataOut_agg,dataOut,varlist,irMax,outFreq_s)
+    IMPLICIT NONE
+    REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOut
+    TYPE(varAttr),DIMENSION(:),INTENT(in)::varlist
+    INTEGER,INTENT(in) :: irMax,outFreq_s
+    REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE,INTENT(out)::dataOut_agg
+
+    INTEGER ::  nlinesOut,i,j,k,x
+    REAL(KIND(1d0))::dataOut_aggX(1:SIZE(varlist))
+    REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::dataOut_agg0
+    nlinesOut=INT(nsh/(60.*60/outFreq_s))
+    ! nGrid=SIZE(dataOut, dim=3)
+
+    ALLOCATE(dataOut_agg(INT(irMax/nlinesOut),SIZE(varlist)))
+    ALLOCATE(dataOut_agg0(nlinesOut,SIZE(varlist)))
+
+
+    DO i=nlinesOut,irMax,nlinesOut
+       x=i/nlinesOut
+       dataOut_agg0=dataOut(i-nlinesOut+1:i,:)
+       DO j = 1, SIZE(varlist), 1
+          ! aggregating different variables
+          SELECT CASE (varlist(j)%aggreg)
+          CASE (aT) !time columns, aT
+             dataOut_aggX(j)=dataOut_agg0(nlinesOut,j)
+          CASE (aA) !average, aA
+             dataOut_aggX(j)=SUM(dataOut_agg0(:,j))/nlinesOut
+          CASE (aS) !sum, aS
+             dataOut_aggX(j)=SUM(dataOut_agg0(:,j))
+          CASE (aL) !last value, aL
+             dataOut_aggX(j)=dataOut_agg0(nlinesOut,j)
+          END SELECT
+          
+          IF ( Diagnose==1 .AND. i==irMax ) THEN
+             ! IF ( i==irMax ) THEN
+             PRINT*, 'raw data of ',j,':'
+             PRINT*, dataOut_agg0(:,j)
+             PRINT*, 'aggregated with method: ',varlist(j)%aggreg
+             PRINT*, dataOut_aggX(j)
+             PRINT*, ''
+          END IF
+       END DO
+       dataOut_agg(x,:)=dataOut_aggX
+    END DO
+
+  END SUBROUTINE SUEWS_Output_Agg
+
+
+  ! append output data to the specific file at the specified outLevel
+  SUBROUTINE SUEWS_Write_txt(dataOut,varlist,irMax,Gridiv,outLevel)
+    IMPLICIT NONE
+    REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOut
+    TYPE(varAttr),DIMENSION(:),INTENT(in)::varlist
+    INTEGER,INTENT(in) :: irMax,Gridiv,outLevel
+
+    REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::dataOutSel,dataOutAgg
+    TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varlistSel
+    CHARACTER(len=100) :: FileOut
+    INTEGER :: fn,i,xx,err,nlinesout
+    CHARACTER(len=12*SIZE(varlist)) :: FormatOut
+
+    !select variables to output
+    xx=COUNT((varList%level<= outLevel), dim=1)
+    ALLOCATE(varlistSel(xx), stat=err)
+    IF ( err/= 0) PRINT *, "varlistSel: Allocation request denied"
+    varlistSel=PACK(varList, mask=(varList%level<= outLevel))
+
+    ! copy data accordingly
+    ALLOCATE(dataOutSel(SIZE(dataOut, dim=1),xx), stat=err)
+    IF ( err/= 0) PRINT *, "dataOutSel: Allocation request denied"
+    ! print*, SIZE(varList%level),PACK((/(i,i=1,SIZE(varList%level))/), varList%level <= outLevel)
+    ! print*, irMax,shape(dataOut)
+    dataOutSel=dataOut(:,PACK((/(i,i=1,SIZE(varList%level))/), varList%level <= outLevel))
+
+
+    ! create format string:
+    DO i = 1, SIZE(varlistSel)
+       IF ( i==1 ) THEN
+          FormatOut=ADJUSTL(varlistSel(i)%fmt)
+       ELSE
+          FormatOut=TRIM(FormatOut)//' '//ADJUSTL(varlistSel(i)%fmt)
+       END IF
+    END DO
+    FormatOut='('//TRIM(ADJUSTL(FormatOut))//')'
+
+    ! print*, varlistSel%header
+    ! print*, varlistSel%fmt
+
+
+    ! get filename
+    CALL filename_gen(dataOutSel,varlistSel,Gridiv,FileOut)
+
+    ! write out data
+    fn=50
+    OPEN(fn,file=TRIM(fileout),position='append')!,err=112)
+    ! PRINT*, SIZE(dataOutSel, dim=1)
+    DO i=1,SIZE(dataOutSel,dim=1)
+       WRITE(fn,FormatOut) &
+            INT(dataOutSel(i,1:4)),&
+            dataOutSel(i,5:SIZE(varlistSel))
+    ENDDO
+    CLOSE (fn)
+
+    IF (ALLOCATED(varlistSel)) DEALLOCATE(varlistSel, stat=err)
+    IF ( err/= 0) PRINT *, "varlistSel: Deallocation request denied"
+
+    IF (ALLOCATED(dataOutSel)) DEALLOCATE(dataOutSel, stat=err)
+    IF ( err/= 0) PRINT *, "dataOutSel: Deallocation request denied"
+
+  END SUBROUTINE SUEWS_Write_txt
+
 
   SUBROUTINE filename_gen(dataOut,varList,Gridiv,FileOut)
     IMPLICIT NONE
-    REAL(KIND(1d0)),DIMENSION(:,:,:),INTENT(in)::dataout
-    TYPE(varAttr),DIMENSION(:),INTENT(in)::varlist
-    INTEGER,INTENT(in) :: Gridiv
-    CHARACTER(len=100),INTENT(out) :: FileOut
+    REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOut ! to determine year & output frequency
+    TYPE(varAttr),DIMENSION(:),INTENT(in)::varlist ! to determine output group
+    INTEGER,INTENT(in) :: Gridiv ! to determine grid name as in SiteSelect
+    CHARACTER(len=100),INTENT(out) :: FileOut ! the output file name
 
     CHARACTER(len=10):: str_out_min, str_grid, str_year,str_grp,str_sfx
     INTEGER :: year_int
 
-
-    ! ! calculation frequency in minute:
-    ! WRITE(str_in_min,'(i4)') tstep/60
-
-    ! grid name:
-    WRITE(str_grid,'(i10)') GridIDmatrix(Gridiv)
-
     ! year:
-    year_int=INT(dataout(1,1,1))
+    year_int=INT(dataOut(1,1))
     WRITE(str_year,'(i4)') year_int
     str_year='_'//TRIM(ADJUSTL(str_year))
     ! print*, str_year,LEN(str_year)
 
+    ! output frequency in minute:
+    WRITE(str_out_min,'(i4)') &
+         INT(dataOut(2,3)-dataOut(1,3))*60& ! hour
+         +INT(dataOut(2,4)-dataOut(1,4))     !minute
+    str_out_min='_'//TRIM(ADJUSTL(str_out_min))
 
     ! group: output type
     str_grp=varList(6)%group
     IF ( LEN(TRIM(str_grp)) > 0 ) str_grp='_'//TRIM(ADJUSTL(str_grp))
 
-
-    ! output frequency in minute:
-    WRITE(str_out_min,'(i4)') &
-         INT(dataout(2,3,1)-dataout(1,3,1))*60& ! hour
-         +INT(dataout(2,4,1)-dataout(1,4,1))     !minute
-    str_out_min='_'//TRIM(ADJUSTL(str_out_min))
-
+    ! grid name:
+    WRITE(str_grid,'(i10)') GridIDmatrix(Gridiv)
 
     ! suffix:
     str_sfx='.txt'
@@ -342,117 +655,6 @@ CONTAINS
          TRIM(ADJUSTL(str_sfx))
 
   END SUBROUTINE filename_gen
-
-
-  SUBROUTINE SUEWS_Output_Init(dataout,varlist,Gridiv,outLevel)
-    ! todo: create files and wrte output format file
-    IMPLICIT NONE
-    REAL(KIND(1d0)),DIMENSION(:,:,:),INTENT(in)::dataout
-    TYPE(varAttr),DIMENSION(:),INTENT(in)::varlist
-    INTEGER,INTENT(in) :: Gridiv,outLevel
-
-    TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varlistSel
-    INTEGER :: xx,err,fn
-    CHARACTER(len=100) :: name_test,FileOut
-    CHARACTER(len=3) :: itext
-
-
-    ! select variables to output
-    xx=COUNT((varList%level<= outLevel), dim=1)
-    WRITE(itext,'(i3)') xx
-    ALLOCATE(varlistSel(xx), stat=err)
-    IF ( err/= 0) PRINT *, "varlistSel: Allocation request denied"
-    varlistSel=PACK(varList, mask=(varList%level<= outLevel))
-
-
-
-    ! generate file name
-    CALL filename_gen(dataOut,varList,Gridiv,FileOut)
-    name_test=FileOut
-    ! print*, name_test,len(trim(ADJUSTL(name_test)))
-
-
-    ! create file
-    fn=9
-    OPEN(fn,file=TRIM(ADJUSTL(FileOut))//'.txt',status='unknown')
-    ! WRITE(fn, '('//trim(itext)//'a)',advance='no') varlistSel%header
-    WRITE(fn, '('//TRIM(itext)//'a)') varlistSel%header
-    CLOSE(fn)
-
-    ! write out headers
-    IF (ALLOCATED(varlistSel)) DEALLOCATE(varlistSel, stat=err)
-    IF ( err/= 0) PRINT *, "varlistSel: Deallocation request denied"
-
-
-  END SUBROUTINE SUEWS_Output_Init
-
-
-
-  ! SUBROUTINE SUEWS_Output_Agg(dataout_agg,dataout,varlist,irMax)
-  !   ! todo: generic aggregation function
-  !
-  ! END SUBROUTINE SUEWS_Output_Agg
-
-
-  ! append output data to the specific file
-  SUBROUTINE SUEWS_Write_txt(dataout,varlist,irMax,Gridiv,outLevel)
-    IMPLICIT NONE
-    REAL(KIND(1d0)),DIMENSION(:,:,:),INTENT(in)::dataout
-    TYPE(varAttr),DIMENSION(:),INTENT(in)::varlist
-    INTEGER,INTENT(in) :: irMax,Gridiv,outLevel
-
-    REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::dataoutSel
-    TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varlistSel
-    CHARACTER(len=100) :: FileOut
-    INTEGER :: fn,i,xx,err
-    CHARACTER(len=12*SIZE(varlist)) :: FormatOut
-
-    !select variables to output
-    xx=COUNT((varList%level<= outLevel), dim=1)
-    ALLOCATE(varlistSel(xx), stat=err)
-    IF ( err/= 0) PRINT *, "varlistSel: Allocation request denied"
-    varlistSel=PACK(varList, mask=(varList%level<= outLevel))
-
-    ! copy data accordingly
-    ALLOCATE(dataoutSel(irMax,xx), stat=err)
-    IF ( err/= 0) PRINT *, "dataoutSel: Allocation request denied"
-    dataoutSel=dataOut(1:irMax,PACK((/(i,i=1,SIZE(varList))/), varList%level <= outLevel),Gridiv)
-
-
-
-    ! create format string:
-    DO i = 1, SIZE(varlistSel)
-       IF ( i==1 ) THEN
-          FormatOut=ADJUSTL(varlistSel(i)%fmt)
-       ELSE
-          FormatOut=TRIM(FormatOut)//' '//ADJUSTL(varlistSel(i)%fmt)
-       END IF
-    END DO
-    FormatOut='('//TRIM(ADJUSTL(FormatOut))//')'
-
-
-    ! get filename
-    CALL filename_gen(dataOut,varList,Gridiv,FileOut)
-
-    ! write out data
-    fn=50
-    OPEN(fn,file=TRIM(fileout)//'.txt',position='append')!,err=112)
-    DO i=1,irMax
-       WRITE(fn,FormatOut) &
-            INT(dataoutSel(i,1:4)),&
-            dataoutSel(i,5:SIZE(varlistSel))
-    ENDDO
-    CLOSE (fn)
-
-    IF (ALLOCATED(varlistSel)) DEALLOCATE(varlistSel, stat=err)
-    IF ( err/= 0) PRINT *, "varlistSel: Deallocation request denied"
-
-    IF (ALLOCATED(dataoutSel)) DEALLOCATE(dataoutSel, stat=err)
-    IF ( err/= 0) PRINT *, "dataoutSel: Deallocation request denied"
-
-  END SUBROUTINE SUEWS_Write_txt
-
-
 
 
   ! incorporate nc functions

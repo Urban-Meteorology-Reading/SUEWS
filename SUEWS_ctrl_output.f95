@@ -406,6 +406,9 @@ CONTAINS
           CALL SUEWS_Output_txt_grp(iv,irMax,varlistX,Gridiv,outLevel,ResolutionFilesOut)
        ENDIF
 
+       IF (ALLOCATED(varlistX)) DEALLOCATE(varlistX, stat=err)
+       IF ( err/= 0) PRINT *, "varlistX: Deallocation request denied"
+
     END DO
   END SUBROUTINE SUEWS_Output_txt
 
@@ -913,7 +916,7 @@ CONTAINS
     ! loop over all groups
     DO i = 1, SIZE(grpList)
        xx=COUNT(varlist%group == TRIM(grpList(i)), dim=1)
-       !  PRINT*, 'number of variables:',xx
+      !  PRINT*, 'number of variables:',xx
        ALLOCATE(varlistX(5+xx), stat=err)
        IF ( err/= 0) PRINT *, "varlistX: Allocation request denied"
        ! datetime
@@ -930,6 +933,8 @@ CONTAINS
        IF ( ResolutionFilesOut /= Tstep ) THEN
           CALL SUEWS_Output_nc_grp(irMax,varlistX,outLevel,ResolutionFilesOut)
        ENDIF
+       IF (ALLOCATED(varlistX)) DEALLOCATE(varlistX, stat=err)
+       IF ( err/= 0) PRINT *, "varlistX: Deallocation request denied"
 
     END DO
   END SUBROUTINE SUEWS_Output_nc

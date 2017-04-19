@@ -40,9 +40,7 @@ PROGRAM SUEWS_Program
   USE Sues_Data
   USE Time
   USE WhereWhen
-#ifdef nc
   USE ctrl_output
-#endif
 
 
   IMPLICIT NONE
@@ -718,13 +716,13 @@ PROGRAM SUEWS_Program
         IF ( ncMode .EQ. 1 ) THEN
            ! write resulst in netCDF
            IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_Output_nc...'
-          !  CALL SUEWS_Output_nc0(year_int,iblock,irMax)
-           call SUEWS_Output_nc(irMax)
+           !  CALL SUEWS_Output_nc0(year_int,iblock,irMax)
+           CALL SUEWS_Output_nc(irMax)
            ! write input information in netCDF as well for future development
-           IF ( iblock==1 ) THEN
-              CALL SiteSelect_txt2nc
-
-           ENDIF
+          !  IF ( iblock==1 ) THEN
+          !     CALL SiteSelect_txt2nc
+          !     !
+          !  ENDIF
         ENDIF
 #endif
 

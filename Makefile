@@ -65,19 +65,19 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_ESTM_initials.o \
           SUEWS_ESTM_v2016.o \
           SUEWS_CO2.o \
-					SUEWS_Initial.o \
-					SUEWS_Output.o
-NETCDF = 		SUEWS_ctrl_output.o
+					SUEWS_Initial.o
 
 # Build main program - main uses MODULES and OTHERS
 main: SUEWS_Program.f95 $(MODULES) $(OTHERS)
-	$(CC) SUEWS_Program.f95 $(CFLAGS) -c ; \
-	$(CC) SUEWS_Program.o $(MODULES) $(OTHERS) -o $(TARGET)
+	$(CC) SUEWS_ctrl_output.f95  -c ; \
+	$(CC) SUEWS_Program.f95  -c ; \
+	$(CC) SUEWS_Program.o $(MODULES) $(OTHERS) SUEWS_ctrl_output.o -o $(TARGET)
 
 # Build main program with NETCDF support - main uses MODULES and OTHERS
-netcdf: SUEWS_Program.f95 $(MODULES) $(OTHERS) $(NETCDF)
-	$(CC_nc) SUEWS_Program.f95 $(CFLAGS_nc) -c ; \
-	$(CC_nc) SUEWS_Program.o $(MODULES) $(OTHERS) $(NETCDF) -L`nc-config --libdir` -lnetcdf -lnetcdff -o $(TARGET)
+netcdf: SUEWS_Program.f95 $(MODULES) $(OTHERS)
+	$(CC_nc) SUEWS_ctrl_output.f95  -c ; \
+	$(CC_nc) SUEWS_Program.f95  -c ; \
+	$(CC_nc) SUEWS_Program.o $(MODULES) $(OTHERS) SUEWS_ctrl_output.o -L`nc-config --libdir` -lnetcdf -lnetcdff -o $(TARGET)
 
 # If OTHERS have changed, compile them again
 $(OTHERS): $(MODULES) $(subst .o,.f95, $(OTHERS))
@@ -86,10 +86,6 @@ $(OTHERS): $(MODULES) $(subst .o,.f95, $(OTHERS))
 # If MODULES have changed, compile them again
 $(MODULES): $(subst .o,.f95, $(MODULES))
 	$(CC) -c $(subst .o,.f95, $@)
-
-# If NETCDF have changed, compile them again
-$(NETCDF): $(MODULES) $(subst .o,.f95, $(NETCDF))
-	$(CC_nc) -c $(subst .o,.f95, $@)
 
 # If wanted, clean all *.o files after build
 clean:

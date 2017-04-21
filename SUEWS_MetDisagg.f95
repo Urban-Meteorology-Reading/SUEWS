@@ -71,7 +71,7 @@
     seq1nsd = (/(i, i=1,nsd, 1)/)    
 
     ! Get methods to use for disaggregation from RunControl
-    IF(DiagnoseDisagg==1) write(*,*) 'DisaggMethod: ',DisaggMethod, 'RainDisaggMethod:',RainDisaggMethod, 'RainAmongN:',RainAmongN
+    IF(DiagnoseDisagg==1) write(*,*) 'DisaggMethod: ',DisaggMethod, 'RainDisaggMethod:',RainDisaggMethod
     IF(DisaggMethod == 1) THEN
        MetDisaggMethod(:) = 10   !linear disaggregation of averages    
     ELSEIF(DisaggMethod == 2) THEN
@@ -196,20 +196,40 @@
              ELSE
              Met_tt(:,16) = DisaggP_amongN(MetForDisagg(:,16),Nper,Nper,ReadLinesOrigMetData,ReadLinesOrigMetDataMax) 
              ENDIF   
-         ELSEIF(MetDisaggMethod(14) == 101) THEN
-            IF(RainAmongN == -999) THEN
-               CALL ErrorHint(2,'Problem in SUEWS_MetDisagg: RainDisaggMethod requires RainAmongN', &
-                                  REAL(RainAmongN,KIND(1d0)),NotUsed,RainDisaggMethod)
-            ELSEIF(RainAmongN > Nper) THEN
-               CALL ErrorHint(2,'Problem in SUEWS_MetDisagg: RainAmongN > Nper',REAL(Nper,KIND(1d0)),NotUsed,RainAmongN)
+          ELSEIF(MetDisaggMethod(14) == 101) THEN
+             IF(RainAmongN == -999) THEN
+                CALL ErrorHint(2,'Problem in SUEWS_MetDisagg: RainDisaggMethod requires RainAmongN', &
+                                   REAL(RainAmongN,KIND(1d0)),NotUsed,RainDisaggMethod)
+             ELSEIF(RainAmongN > Nper) THEN
+                CALL ErrorHint(2,'Problem in SUEWS_MetDisagg: RainAmongN > Nper',REAL(Nper,KIND(1d0)),NotUsed,RainAmongN)
+             ELSE
+                Met_tt(:,14) = DisaggP_amongN(MetForDisagg(:,14),RainAmongN, Nper,ReadLinesOrigMetData,ReadLinesOrigMetDataMax)
+                IF(ALL(MetForDisagg(:,16)==-999)) THEN
+                   Met_tt(:,16) = -999
+                ELSE
+                   Met_tt(:,16) = DisaggP_amongN(MetForDisagg(:,16),RainAmongN,Nper,ReadLinesOrigMetData,ReadLinesOrigMetDataMax)
+                ENDIF
+            ENDIF      
+          ELSEIF(MetDisaggMethod(14) == 102) THEN
+             IF(ALL(MultRainAmongN == -999)) THEN
+                CALL ErrorHint(2,'Problem in SUEWS_MetDisagg: RainDisaggMethod requires MultRainAmongN', &
+                                   REAL(MultRainAmongN(1),KIND(1d0)),NotUsed,RainDisaggMethod)
+             ELSEIF(ALL(MultRainAmongNUpperI == -999)) THEN
+                CALL ErrorHint(2,'Problem in SUEWS_MetDisagg: RainDisaggMethod requires MultRainAmongNUpperI', &
+                                   MultRainAmongNUpperI(1),NotUsed,RainDisaggMethod)
+             ELSEIF(ANY(MultRainAmongN > Nper)) THEN 
+               CALL ErrorHint(2,'Problem in SUEWS_MetDisagg: MultRainAmongN > Nper',REAL(Nper,KIND(1d0)),NotUsed, &
+                                  MAXVAL(MultRainAmongN))
             ELSE
-               Met_tt(:,14) = DisaggP_amongN(MetForDisagg(:,14),RainAmongN, Nper,ReadLinesOrigMetData,ReadLinesOrigMetDataMax)
+               Met_tt(:,14) = DisaggP_amongNMult(MetForDisagg(:,14),MultRainAmongNUpperI,MultRainAmongN, Nper,&
+                                                    ReadLinesOrigMetData,ReadLinesOrigMetDataMax)
                IF(ALL(MetForDisagg(:,16)==-999)) THEN
                   Met_tt(:,16) = -999
                ELSE
-                  Met_tt(:,16) = DisaggP_amongN(MetForDisagg(:,16),RainAmongN,Nper,ReadLinesOrigMetData,ReadLinesOrigMetDataMax)
+                  Met_tt(:,16) = DisaggP_amongNMult(MetForDisagg(:,16),MultRainAmongNUpperI,MultRainAmongN,Nper, &
+                                                       ReadLinesOrigMetData,ReadLinesOrigMetDataMax)
                ENDIF
-            ENDIF      
+            ENDIF         
          ELSE
             write(*,*) 'Disaggregation code for rain not recognised'    
          ENDIF   
@@ -672,6 +692,82 @@ FUNCTION DisaggP_amongN(Slow,amongN, Nper_loc, ReadLinesOrig_loc, ReadLinesOrigM
   ENDIF
 
 ENDFUNCTION DisaggP_amongN
+!======================================================================================
+
+!======================================================================================
+FUNCTION DisaggP_amongNMult(Slow,multupperI, multamongN, Nper_loc, ReadLinesOrig_loc, ReadLinesOrigMax_loc) RESULT(Fast)
+! Subroutine to disaggregate precipitation by evenly distributing among N subintervals
+!  (i.e. equal intensity in N subintervals) for different intensity bins
+! Based on analsysis by Wen Gu
+! HCW 21 Apr 2017
+!======================================================================================
+
+  USE DefaultNotUsed
+  USE sues_data
+  
+  IMPLICIT NONE
+
+  REAL(KIND(1d0)),DIMENSION(5):: multupperI     !Upper bound of intensity bin
+  INTEGER,DIMENSION(5):: multamongN       !Number of subintervals over which rain will be distributed (array)
+  INTEGER:: thisamongN       !Number of subintervals over which rain will be distributed  
+  INTEGER:: Nper_loc     !Number of subintervals per interval (local Nper)
+  INTEGER:: ReadLinesOrig_loc,ReadLinesOrigMax_loc   !Number of lines to read in original file (local)
+  REAL(KIND(1d0)),DIMENSION(ReadLinesOrig_loc*Nper_loc):: Fast  !Array to receive disaggregated data  
+  REAL(KIND(1d0)),DIMENSION(ReadLinesOrig_loc):: Slow   !Array to disaggregate
+  INTEGER,DIMENSION(:),ALLOCATABLE:: Subintervals  !Array of subintervals that contain rain
+  INTEGER,DIMENSION(Nper_loc):: seq1Nper_loc   !1 to Nper_loc
+  INTEGER:: i
+
+  seq1Nper_loc = (/(i, i=1,Nper_loc, 1)/)
+
+  IF(DiagnoseDisagg==1) write(*,*) 'Distributing over variable subintervals depending on intensity for variable'
+  
+  ! Initialise fast array to -999
+  Fast = -999
+  DO i=1,ReadLinesOrigMax_loc 
+     Fast(Nper_loc*(i-1)+seq1Nper_loc) = 0   !Fill all subintervals with zeros initially
+     IF(Slow(i) > 0) THEN   !If there is some rainfall during this interval...
+        !Use intensity in this interval to decide number of subintervals to fill with rain
+        IF(Slow(i) <= multupperI(1)) THEN
+            thisamongN = multamongN(1)
+        ELSEIF(Slow(i) > multupperI(1) .AND. Slow(i) <= multupperI(2)) THEN
+            thisamongN = multamongN(2)
+        ELSEIF(Slow(i) > multupperI(2) .AND. Slow(i) <= multupperI(3)) THEN
+            thisamongN = multamongN(3)    
+        ELSEIF(Slow(i) > multupperI(3) .AND. Slow(i) <= multupperI(4)) THEN
+            thisamongN = multamongN(4)
+        ELSEIF(Slow(i) > multupperI(4) .AND. Slow(i) <= multupperI(5)) THEN
+            thisamongN = multamongN(5)
+        ELSEIF(Slow(i) > multupperI(5)) THEN
+            thisamongN = multamongN(5)
+            CALL errorHint(4,'Precip in met forcing file exceeds maxiumum MultRainAmongNUpperI',&
+                                 Slow(i),MultRainAmongNUpperI(5),NotUsed)
+        ENDIF
+  
+        ! For each averaging period, get subintervals which will receive rain
+        ALLOCATE(Subintervals(thisamongN))
+        Subintervals(:) = -999
+  
+        IF(thisamongN > Nper_loc) CALL errorHint(2,'Problem in SUEWS_MetDisagg: no. of rainy periods cannot exceed ',&
+                                                      'number of subintervals', REAL(Nper_loc,KIND(1d0)),NotUsed,thisamongN)
+                                            
+        IF(thisamongN == Nper_loc) THEN   ! If all subintervals are to contain rain, don't need to generate random numbers
+           Subintervals(:) = seq1Nper_loc
+        ELSEIF(thisamongN < Nper_loc) THEN
+           Subintervals = RandomSamples(thisamongN,Nper_loc)
+        ENDIF
+        Fast(Nper_loc*(i-1)+SubIntervals) = Slow(i)/thisamongN
+        !write(*,*) Slow(i), thisamongN
+        DEALLOCATE(Subintervals)
+     ENDIF
+  ENDDO
+
+  IF(ANY(Fast(1:ReadLinesOrigMax_loc*Nper_loc) == -999)) THEN
+     write(*,*) 'Problem: -999s (',COUNT(Fast(1:ReadLinesOrigMax_loc*Nper_loc) == -999),') in disaggregated data'
+     CALL errorHint(13,'Problem in SUEWS_MetDisagg: -999 values in disaggregated data.',NotUsed,NotUsed,NotUsedI)
+  ENDIF
+
+ENDFUNCTION DisaggP_amongNMult
 !======================================================================================
 
 !======================================================================================

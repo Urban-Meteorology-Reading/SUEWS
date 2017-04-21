@@ -4,6 +4,7 @@
 
 SUBROUTINE OverallRunControl
   ! Last modified:
+  ! HCW 21 Apr 2017 - Added new method for precip disaggregation
   ! HCW 13 Jan 2017 - Changes to RunControl and InitialConditions
   ! HCW 04 Nov 2016 - minor bug fix in LAImin/LAImax warnings related to 3 veg surface types out cf 7 surface types
   ! LJ 27 Jan 2016  - Removal of tabs, cleaning of the code
@@ -32,7 +33,7 @@ SUBROUTINE OverallRunControl
 
   INTEGER:: iv,i,ii,SkipCounter            !iv and i, ii are integers used in do loops
   CHARACTER(len=50):: FileN
-
+  
   ! ---- Namelist for RunControl.nml ----
   NAMELIST/RunControl/FileCode,&
        FileInputPath,&
@@ -64,6 +65,8 @@ SUBROUTINE OverallRunControl
        DisaggMethodESTM,&
        RainDisaggMethod,&
        RainAmongN,&
+       MultRainAmongN,&
+       MultRainAmongNUpperI,&
        KdownZen,&
        SuppressWarnings,&
        ncMode,&
@@ -86,8 +89,10 @@ SUBROUTINE OverallRunControl
   DisaggMethodESTM = 1      ! linear disaggregation of averages
   RainDisaggMethod = 100    ! even distribution among all subintervals
   RainAmongN = -999         ! no default setting for number of rainy subintervals
-  KdownZen = 1              ! use zenith angle by default
-
+  MultRainAmongN = -999     ! no default setting for number of rainy subintervals
+  MultRainAmongNUpperI = -999   ! no default setting for rain intensity upper bound
+  KdownZen = 1              ! use zenith angle by default  
+  
   SuppressWarnings=0        ! write warnings file
   ResolutionFilesIn=0       ! Set to zero so that if not found, automatically set to Tstep below
 
@@ -157,6 +162,14 @@ SUBROUTINE OverallRunControl
      ENDIF
   ENDIF
 
+  ! Adjust input for precip downscaling using different intensities (HCW 21 Apr 2017)
+  IF(RainDisaggMethod == 102) THEN
+     DO i=1,5   
+        IF(MultRainAmongNUpperI(i) == -999) MultRainAmongNUpperI(i) = MAXVAL(MultRainAmongNUpperI)
+     ENDDO 
+  ENDIF
+  
+  
   !------------------------------------------------------------------
   !Print run information on the screen
   WRITE(*,*)'--------------------------------------------------------'

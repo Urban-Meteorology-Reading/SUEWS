@@ -46,8 +46,6 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
   
   !CALL ProblemsText(ProblemFile)   !Call the subroutine that opens the problem.txt file !Moved below, HCW 17 Feb 2017
 
-  CALL ProblemsText(ProblemFile)   !Call the subroutine that opens the problem.txt file
-
   !The list of knows possible problems of the code:
   !  text1 is the error message written to the ProblemFile.
   !  v1 -v7 are different possibilities for what numbers will be written out
@@ -61,7 +59,11 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
   ELSEIF(errh==3) THEN
      text1='Met forcing file should contain only 1 year of data.'
      v1=.TRUE.   
-  ! 4,5
+  ELSEIF(errh==4) THEN
+     text1='Rainfall in original met forcing file exceeds intensity threshold.'
+     v2=.TRUE.   
+     returnTrue=.TRUE.   
+  !5    
   ELSEIF(errh==6) THEN
      text1='Value obtained exceeds permitted range, setting to +/-9999 in output file.'
      v1=.TRUE.
@@ -338,7 +340,7 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
   ENDIF
   
   
-  !When returnTrue=true, then the program can continue despite the warnigns
+  !When returnTrue=true, then the program can continue despite the warnings
   IF(returnTrue) THEN
      !write(*,*)'Problems.txt has been closed and overwritten if other errors occur'
      RETURN  !Continue program

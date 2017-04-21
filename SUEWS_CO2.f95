@@ -196,6 +196,7 @@
   ! Calculate CO2 emissions from human metabolism -------------
   ! (Pop densities in ha-1 -> m-2)
   PopDorNorT = HumActivity_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu) !!! Set separately later !!!
+  IF (iu==2) PopDorNorT = 1   !!!   
   ActDorNorT = HumActivity_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)   !1=night, 2=day, 1-2=transition
   Fc_metab = (PopDensNighttime*(2-PopDorNorT) + PopDensDaytime*(PopDorNorT-1))/10000 * (120*(2-ActDorNorT) + 280*(ActDorNorT-1)) !umol m-2 s-1
   QF_metab = (PopDensNighttime*(2-PopDorNorT) + PopDensDaytime*(PopDorNorT-1))/10000 * (75*(2-ActDorNorT) + 175*(ActDorNorT-1)) !W m-2 
@@ -218,7 +219,7 @@
      
   ! Calculate CO2 emissions from building energy use ----------
   IF(AnthropCO2Method == 2) THEN
-     ! Assume temperature independent part of QF is traffic + metabolism, 
+     ! Assume temperature independent part of QF is traffic + metabolism, !!! need QB_0_NB here!!!
      ! CDD part is electric A/C (no local CO2 emissions)
      ! HDD part is building energy use, split between electric (no local emissions CO2) and combustion (CO2) heating
      Fc_build = QF_SAHP_heat * EF_umolCO2perJ * FracFossilFuel

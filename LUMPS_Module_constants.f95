@@ -873,6 +873,10 @@ MODULE data_in
        DiagnoseDisaggESTM,&   !Set to 1 to get print-out of ESTM forcing disaggregation progress
        DiagQN, DiagQS         !Set to 1 to print values/components
 
+       ! For more complex downscaling allow different RainAmongN for different intensities
+       INTEGER, DIMENSION(5):: MultRainAmongN           ! RainAmongN for each intensity bin
+       REAL(KIND(1d0)),DIMENSION(5):: MultRainAmongNUpperI   ! Upper bound of intensity bin for which to apply MultRainAmongN
+       
   ! ---- Model options currently set in model, but may be moved to RunControl at a later date
   INTEGER:: AlbedoChoice,&         !No additional albedo varaition (0); zenith angle calculation (1)
                                 !Currently set to 0 in SUEWS_Initial

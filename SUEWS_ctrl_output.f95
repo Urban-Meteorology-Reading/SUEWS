@@ -385,7 +385,7 @@ CONTAINS
 
     ! loop over all groups
     DO i = 1, SIZE(grpList),1
-       PRINT*, 'i',i
+       !PRINT*, 'i',i
        xx=COUNT(varlist%group == TRIM(grpList(i)), dim=1)
        !  PRINT*, 'number of variables:',xx
        ALLOCATE(varlistX(5+xx), stat=err)

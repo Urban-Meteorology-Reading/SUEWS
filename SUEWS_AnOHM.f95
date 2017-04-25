@@ -1,5 +1,5 @@
 !========================================================================================
-SUBROUTINE AnOHM_v2016(Gridiv)
+SUBROUTINE AnOHM(Gridiv)
   ! author: Ting Sun
   !
   ! purpose:
@@ -18,7 +18,7 @@ SUBROUTINE AnOHM_v2016(Gridiv)
   !
   ! history:
   ! 20160301: initial version
-  ! 20170109  updated dqndt calculation in accordance with SUEWS_OHM.f95 (HCW) 
+  ! 20170109  updated dqndt calculation in accordance with SUEWS_OHM.f95 (HCW)
   !========================================================================================
 
   USE allocateArray
@@ -74,8 +74,8 @@ SUBROUTINE AnOHM_v2016(Gridiv)
 
      ENDDO
 
-     PRINT*, 'grid coeff:'
-     PRINT*, a1AnOHM(Gridiv),a2AnOHM(Gridiv),a3AnOHM(Gridiv)
+    !  PRINT*, 'grid coeff:'
+    !  PRINT*, a1AnOHM(Gridiv),a2AnOHM(Gridiv),a3AnOHM(Gridiv)
      !   end of loop over surface types -----------------------------------------
      !  IF ( id>365 ) THEN
      !     PRINT*, '----- OHM coeffs -----'
@@ -95,40 +95,40 @@ SUBROUTINE AnOHM_v2016(Gridiv)
      !q1_grids(Gridiv) = q2_grids(Gridiv) !q1 = net radiation at t-2 (at t-3 when q1 used in next timestep)
      !q2_grids(Gridiv) = q3_grids(Gridiv) !q2 = net radiation at t-1
      !q3_grids(Gridiv) = qn1              !q3 = net radiation at t (at t-1 when q3 used in next timestep)
-     
+
      ! New calculations (HCW Dec 2016)
      ! Store instantaneous qn1 values for previous hour (qn1_store) and average (qn1_av)
      if(nsh > 1) then
-        qn1_store(1:(nsh-1),Gridiv) = qn1_store(2:nsh,Gridiv)    
+        qn1_store(1:(nsh-1),Gridiv) = qn1_store(2:nsh,Gridiv)
         qn1_store(nsh,Gridiv) = qn1
-        nsh_nna = sum(spread(1,1,nsh), mask=qn1_store(:,Gridiv) /= -999) !Find how many are not -999s  !bug fixed HCW 08 Feb 2017    
+        nsh_nna = sum(spread(1,1,nsh), mask=qn1_store(:,Gridiv) /= -999) !Find how many are not -999s  !bug fixed HCW 08 Feb 2017
         qn1_av = sum(qn1_store(:,Gridiv), mask=qn1_store(:,Gridiv) /= -999)/nsh_nna
      elseif(nsh==1) then
          qn1_store(:,Gridiv) = qn1
          qn1_av = qn1
-     endif         
+     endif
      ! Store hourly average values (calculated every timestep) for previous 2 hours
      if(nsh > 1) then
-        qn1_av_store(1:(2*nsh),Gridiv) = qn1_av_store(2:(2*nsh+1),Gridiv)    
+        qn1_av_store(1:(2*nsh),Gridiv) = qn1_av_store(2:(2*nsh+1),Gridiv)
         qn1_av_store(2*nsh+1,Gridiv) = qn1_av
      elseif(nsh==1) then
         qn1_av_store(:,Gridiv) = qn1_av
-     endif    
+     endif
      ! Calculate dQ* per dt for 60 min (using running mean Q* at t hours and (t-2) hours)
      if(any(qn1_av_store == -999)) then
         dqndt=0  ! Set dqndt term to zero for spinup
      else
         dqndt=0.5*(qn1_av_store((2*nsh+1),Gridiv)-qn1_av_store(1,Gridiv))
      endif
-     
+
      ! Calculate net storage heat flux
      qs = qn1*a1AnOHM(Gridiv)+dqndt*a2AnOHM(Gridiv)+a3AnOHM(Gridiv)
-  
+
   ELSE
      CALL ErrorHint(21,'SUEWS_AnOHM.f95: bad value for qn found during qs calculation.',qn1,NotUsed,notUsedI)
   ENDIF
 
-END SUBROUTINE AnOHM_v2016
+END SUBROUTINE AnOHM
 !========================================================================================
 
 
@@ -629,8 +629,8 @@ SUBROUTINE AnOHM_coef_water(sfc_typ,xid,xgrid,&   ! input
   !   skip the first day for quality checking
   IF ( xid == 1 ) flagGood = .TRUE.
 
-  WRITE(*,*) 'sfc_typ_water:', sfc_typ
-  WRITE(*,*) 'a1,a2,a3:', xa1,xa2,xa3
+  ! print*,  'sfc_typ_water:', sfc_typ
+  ! print*, 'a1,a2,a3:', xa1,xa2,xa3
 
 END SUBROUTINE AnOHM_coef_water
 !========================================================================================

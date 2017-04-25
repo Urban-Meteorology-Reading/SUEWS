@@ -277,11 +277,11 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   IF (StorageHeatMethod==3) THEN
      IF ( OHMIncQF == 1 ) THEN    !Calculate QS using QSTAR+QF
         IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'
-        CALL AnOHM_v2016(Gridiv)
+        CALL AnOHM(Gridiv)
      ELSEIF(OHMIncQF == 0) THEN   !Calculate QS using QSTAR
         qn1=qn1_bup
         IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'
-        CALL AnOHM_v2016(Gridiv)
+        CALL AnOHM(Gridiv)
      END IF
   END IF
 

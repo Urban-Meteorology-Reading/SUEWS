@@ -1,8 +1,8 @@
 CC = gfortran $(CFLAGS)          # compiler
 CC_nc = gfortran $(CFLAGS_nc)    # compiler with netcdf support
 TARGET = SUEWS_V2017a      # program name
-CFLAGS = -g -Wall -Wtabs -fbounds-check -cpp
-CFLAGS_nc = -g -Wall -Wtabs -fbounds-check -I`nc-config --includedir` -Dnc=1 -cpp
+CFLAGS = -g -pg -Wall -Wtabs -fbounds-check -cpp
+CFLAGS_nc = -g -pg -Wall -Wtabs -fbounds-check -I`nc-config --includedir` -Dnc=1 -cpp
 
 # All the files which include modules used by other modules (these therefore
 # needs to be compiled first)
@@ -60,7 +60,7 @@ OTHERS =  BLUEWS_CBL.o   \
           SOLWEIG_shadowingfunction_20.o  \
           SOLWEIG_sunonsurface_veg.o  \
           SOLWEIG_wallinsun_veg.o  \
-          SUEWS_AnOHM_v2016.o  \
+          SUEWS_AnOHM.o  \
           SUEWS_ESTM_functions.o \
           SUEWS_ESTM_initials.o \
           SUEWS_ESTM_v2016.o \

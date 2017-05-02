@@ -34,9 +34,9 @@ SUBROUTINE AnOHM(Gridiv)
   !INTEGER :: i,ii
   INTEGER :: Gridiv
 
-  REAL    :: dqndt        ! rate of change of net radiation [W m-2 h-1] at t-2
-  REAL    :: surfrac      ! surface fraction accounting for SnowFrac if appropriate
-  REAL    :: xa1,xa2,xa3  ! temporary AnOHM coefs.
+  REAL(KIND(1d0))    :: dqndt        ! rate of change of net radiation [W m-2 h-1] at t-2
+  REAL(KIND(1d0))    :: surfrac      ! surface fraction accounting for SnowFrac if appropriate
+  REAL(KIND(1d0))    :: xa1,xa2,xa3  ! temporary AnOHM coefs.
   REAL(KIND(1d0))    :: qn1_av       ! average net radiation over previous hour [W m-2]
   REAL(KIND(1d0))    :: nsh_nna      ! number of timesteps per hour with non -999 values (used for spinup)
 
@@ -175,17 +175,17 @@ SUBROUTINE AnOHM_coef(sfc_typ,xid,xgrid,&   ! input
   INTEGER:: sfc_typ, xid, xgrid
 
   !   output
-  REAL :: xa1, xa2, xa3
+  REAL(KIND(1d0)) :: xa1, xa2, xa3
 
   !   constant
-  REAL, PARAMETER :: SIGMA = 5.67e-8          ! Stefan-Boltzman
-  REAL, PARAMETER :: PI    = ATAN(1.0)*4      ! Pi
-  REAL, PARAMETER :: OMEGA = 2*Pi/(24*60*60)  ! augular velocity of Earth
-  REAL, PARAMETER :: C2K   = 273.15           ! degC to K
-  REAL, PARAMETER :: CRA   = 915.483          ! converting RA (aerodyn. res.) to bulk trsf. coeff., [kg s-3]
+  REAL(KIND(1d0)), PARAMETER :: SIGMA = 5.67e-8          ! Stefan-Boltzman
+  REAL(KIND(1d0)), PARAMETER :: PI    = ATAN(1.0)*4      ! Pi
+  REAL(KIND(1d0)), PARAMETER :: OMEGA = 2*Pi/(24*60*60)  ! augular velocity of Earth
+  REAL(KIND(1d0)), PARAMETER :: C2K   = 273.15           ! degC to K
+  REAL(KIND(1d0)), PARAMETER :: CRA   = 915.483          ! converting RA (aerodyn. res.) to bulk trsf. coeff., [kg s-3]
 
   !   sfc. properties:
-  REAL :: xalb,   &    !  albedo,
+  REAL(KIND(1d0)) :: xalb,   &    !  albedo,
        xemis,  &    !  emissivity,
        xcp,    &    !  heat capacity,
        xk,     &    !  thermal conductivity,
@@ -193,7 +193,7 @@ SUBROUTINE AnOHM_coef(sfc_typ,xid,xgrid,&   ! input
        xBo          !  Bowen ratio
 
   !   forcings:
-  REAL, DIMENSION(24) :: Sd,& !   incoming solar radiation
+  REAL(KIND(1d0)), DIMENSION(24) :: Sd,& !   incoming solar radiation
        Ta,& !   air temperature
        WS,& !   wind speed
        WF,& !   anthropogenic heat
@@ -439,16 +439,16 @@ SUBROUTINE AnOHM_coef_water(sfc_typ,xid,xgrid,&   ! input
   INTEGER:: sfc_typ, xid, xgrid
 
   !   output
-  REAL :: xa1, xa2, xa3
+  REAL(KIND(1d0)) :: xa1, xa2, xa3
 
   !   constant
-  REAL, PARAMETER :: SIGMA = 5.67e-8          ! Stefan-Boltzman
-  REAL, PARAMETER :: PI    = ATAN(1.0)*4      ! Pi
-  REAL, PARAMETER :: OMEGA = 2*Pi/(24*60*60)  ! augular velocity of Earth
-  REAL, PARAMETER :: C2K   = 273.15           ! degC to K
+  REAL(KIND(1d0)), PARAMETER :: SIGMA = 5.67e-8          ! Stefan-Boltzman
+  REAL(KIND(1d0)), PARAMETER :: PI    = ATAN(1.0)*4      ! Pi
+  REAL(KIND(1d0)), PARAMETER :: OMEGA = 2*Pi/(24*60*60)  ! augular velocity of Earth
+  REAL(KIND(1d0)), PARAMETER :: C2K   = 273.15           ! degC to K
 
   !   sfc. properties:
-  REAL :: xalb,   &    !  albedo,
+  REAL(KIND(1d0)) :: xalb,   &    !  albedo,
        xemis,  &    !  emissivity,
        xcp,    &    !  heat capacity,
        xk,     &    !  thermal conductivity,
@@ -458,7 +458,7 @@ SUBROUTINE AnOHM_coef_water(sfc_typ,xid,xgrid,&   ! input
        xmu         ! effective absorption fraction
 
   !   forcings:
-  REAL, DIMENSION(24) :: Sd,& !   incoming solar radiation
+  REAL(KIND(1d0)), DIMENSION(24) :: Sd,& !   incoming solar radiation
        Ta,& !   air temperature
        WS,& !   wind speed
        WF,& !   anthropogenic heat
@@ -466,24 +466,24 @@ SUBROUTINE AnOHM_coef_water(sfc_typ,xid,xgrid,&   ! input
 
 
   !   local variables:
-  REAL :: beta                   ! inverse Bowen ratio
-  REAL :: f,fL,fT                ! energy redistribution factors
-  REAL :: lambda,calb            ! temporary use
-  REAL :: delta,m,n              ! sfc. temperature related variables
-  REAL :: xm,xn                  ! m, n related
-  REAL :: gamma,phi              ! phase lag scale
-  REAL :: ASd,mSd                ! solar radiation
-  REAL :: ATa,mTa                ! air temperature
-  REAL :: tau                    ! phase lag between Sd and Ta (Ta-Sd)
-  REAL :: ATs,mTs                ! surface temperature amplitude
-  REAL :: czeta,ctheta           ! phase related temporary variables
-  REAL :: zeta,theta,xlag           ! phase related temporary variables
-  REAL :: mWS,mWF,mAH            ! mean values of WS, WF and AH
-  REAL :: xx1,xx2,xx3            ! temporary use
-  REAL :: kappa                  ! temporary use
-  REAL :: dtau,dpsi,dphi         ! temporary use
-  REAL :: cdtau,cdpsi,cdphi      ! temporary use
-  REAL :: xxT,xxkappa,xxdltphi   ! temporary use
+  REAL(KIND(1d0)) :: beta                   ! inverse Bowen ratio
+  REAL(KIND(1d0)) :: f,fL,fT                ! energy redistribution factors
+  REAL(KIND(1d0)) :: lambda,calb            ! temporary use
+  REAL(KIND(1d0)) :: delta,m,n              ! sfc. temperature related variables
+  REAL(KIND(1d0)) :: xm,xn                  ! m, n related
+  REAL(KIND(1d0)) :: gamma,phi              ! phase lag scale
+  REAL(KIND(1d0)) :: ASd,mSd                ! solar radiation
+  REAL(KIND(1d0)) :: ATa,mTa                ! air temperature
+  REAL(KIND(1d0)) :: tau                    ! phase lag between Sd and Ta (Ta-Sd)
+  REAL(KIND(1d0)) :: ATs,mTs                ! surface temperature amplitude
+  REAL(KIND(1d0)) :: czeta,ctheta           ! phase related temporary variables
+  REAL(KIND(1d0)) :: zeta,theta,xlag           ! phase related temporary variables
+  REAL(KIND(1d0)) :: mWS,mWF,mAH            ! mean values of WS, WF and AH
+  REAL(KIND(1d0)) :: xx1,xx2,xx3            ! temporary use
+  REAL(KIND(1d0)) :: kappa                  ! temporary use
+  REAL(KIND(1d0)) :: dtau,dpsi,dphi         ! temporary use
+  REAL(KIND(1d0)) :: cdtau,cdpsi,cdphi      ! temporary use
+  REAL(KIND(1d0)) :: xxT,xxkappa,xxdltphi   ! temporary use
   LOGICAL :: flagGood = .TRUE.  ! quality flag, T for good, F for bad
 
 
@@ -668,14 +668,14 @@ SUBROUTINE AnOHM_FcCal(Sd,Ta,WS,WF,AH,&                 ! input
   IMPLICIT NONE
 
   !   input
-  REAL :: Sd(24),&    !
+  REAL(KIND(1d0)) :: Sd(24),&    !
        Ta(24),&    !
        WS(24),&    !
        Wf(24),&    !
        AH(24)      !
 
   !   output
-  REAL :: ASd,mSd,&   ! Sd scales
+  REAL(KIND(1d0)) :: ASd,mSd,&   ! Sd scales
        ATa,mTa,&   ! Ta scales
        tau,&       ! phase lag between Sd and Ta
        mWS,&       ! mean WS
@@ -683,10 +683,10 @@ SUBROUTINE AnOHM_FcCal(Sd,Ta,WS,WF,AH,&                 ! input
        mAH         ! mean AH
 
   !   constant
-  REAL, PARAMETER :: SIGMA = 5.67e-8          ! Stefan-Boltzman
-  REAL, PARAMETER :: PI    = ATAN(1.0)*4      ! Pi
-  REAL, PARAMETER :: OMEGA = 2*Pi/(24*60*60)  ! augular velocity of Earth
-  REAL, PARAMETER :: C2K   = 273.15           ! degC to K
+  REAL(KIND(1d0)), PARAMETER :: SIGMA = 5.67e-8          ! Stefan-Boltzman
+  REAL(KIND(1d0)), PARAMETER :: PI    = ATAN(1.0)*4      ! Pi
+  REAL(KIND(1d0)), PARAMETER :: OMEGA = 2*Pi/(24*60*60)  ! augular velocity of Earth
+  REAL(KIND(1d0)), PARAMETER :: C2K   = 273.15           ! degC to K
 
   !   local variables:
   REAL(KIND(1d0)) :: tSd,tTa         ! peaking timestamps
@@ -759,23 +759,23 @@ SUBROUTINE AnOHM_ShapeFit(obs,amp,mean,tpeak)
   IMPLICIT NONE
 
   !   input
-  REAL :: obs(7)  ! observation (daytime 10:00–16:00)
+  REAL(KIND(1d0)) :: obs(7)  ! observation (daytime 10:00–16:00)
 
   !   output
-  REAL :: amp     ! amplitude
-  REAL :: mean    ! average
-  REAL :: tpeak   ! peaking time (h)
+  REAL(KIND(1d0)) :: amp     ! amplitude
+  REAL(KIND(1d0)) :: mean    ! average
+  REAL(KIND(1d0)) :: tpeak   ! peaking time (h)
 
   !   constant
-  REAL, PARAMETER :: SIGMA = 5.67e-8          ! Stefan-Boltzman
-  REAL, PARAMETER :: PI    = ATAN(1.0)*4      ! Pi
-  REAL, PARAMETER :: OMEGA = 2*Pi/(24*60*60)  ! augular velocity of Earth
-  REAL, PARAMETER :: C2K   = 273.15           ! degC to K
+  REAL(KIND(1d0)), PARAMETER :: SIGMA = 5.67e-8          ! Stefan-Boltzman
+  REAL(KIND(1d0)), PARAMETER :: PI    = ATAN(1.0)*4      ! Pi
+  REAL(KIND(1d0)), PARAMETER :: OMEGA = 2*Pi/(24*60*60)  ! augular velocity of Earth
+  REAL(KIND(1d0)), PARAMETER :: C2K   = 273.15           ! degC to K
 
   !   local variables:
-  REAL    :: coefs(3,7)           ! coefficients for least squre solution
-  REAL    :: aCosb,aSinb,a,b,c    ! parameters for fitted shape: a*Sin(Pi/12*t+b)+c
-  REAL    :: xx,mbias,mbiasObs    ! temporary use
+  REAL(KIND(1d0))    :: coefs(3,7)           ! coefficients for least squre solution
+  REAL(KIND(1d0))    :: aCosb,aSinb,a,b,c    ! parameters for fitted shape: a*Sin(Pi/12*t+b)+c
+  REAL(KIND(1d0))    :: xx,mbias,mbiasObs    ! temporary use
   INTEGER :: i                    ! temporary use
 
   !   c coeffs.:
@@ -898,17 +898,17 @@ SUBROUTINE AnOHM_FcLoad(sfc,xid,xgrid,& ! input
   INTEGER :: sfc, xid, xgrid
 
   !   output
-  REAL :: Sd(24),&    !
+  REAL(KIND(1d0)) :: Sd(24),&    !
        Ta(24),&    !
        WS(24),&    !
        WF(24),&    !
        AH(24)      !
 
   !   constant
-  REAL, PARAMETER :: SIGMA = 5.67e-8          ! Stefan-Boltzman
-  REAL, PARAMETER :: PI    = ATAN(1.0)*4      ! Pi
-  REAL, PARAMETER :: OMEGA = 2*Pi/(24*60*60)  ! augular velocity of Earth
-  REAL, PARAMETER :: C2K   = 273.15           ! degC to K
+  REAL(KIND(1d0)), PARAMETER :: SIGMA = 5.67e-8          ! Stefan-Boltzman
+  REAL(KIND(1d0)), PARAMETER :: PI    = ATAN(1.0)*4      ! Pi
+  REAL(KIND(1d0)), PARAMETER :: OMEGA = 2*Pi/(24*60*60)  ! augular velocity of Earth
+  REAL(KIND(1d0)), PARAMETER :: C2K   = 273.15           ! degC to K
 
   !   local variables:
   ! REAL :: tSd,tTa         ! peaking timestamps
@@ -1010,17 +1010,17 @@ SUBROUTINE AnOHM_SfcLoad(sfc,xid,xgrid,&            ! input
 
   !   output:
   !   sfc. properties:
-  REAL :: xalb,       &    !  albedo,
+  REAL(KIND(1d0)) :: xalb,       &    !  albedo,
        xemis,      &    !  emissivity,
        xcp,        &    !  heat capacity,
        xk,         &    !  thermal conductivity,
        xch,        &    !  bulk transfer coef.
        xBo              !  Bowen ratio
   !   constant
-  REAL, PARAMETER :: SIGMA = 5.67e-8          ! Stefan-Boltzman
-  REAL, PARAMETER :: PI    = ATAN(1.0)*4      ! Pi
-  REAL, PARAMETER :: OMEGA = 2*Pi/(24*60*60)  ! augular velocity of Earth
-  REAL, PARAMETER :: C2K   = 273.15           ! degC to K
+  REAL(KIND(1d0)), PARAMETER :: SIGMA = 5.67e-8          ! Stefan-Boltzman
+  REAL(KIND(1d0)), PARAMETER :: PI    = ATAN(1.0)*4      ! Pi
+  REAL(KIND(1d0)), PARAMETER :: OMEGA = 2*Pi/(24*60*60)  ! augular velocity of Earth
+  REAL(KIND(1d0)), PARAMETER :: C2K   = 273.15           ! degC to K
 
 
   !   load properties from global variables

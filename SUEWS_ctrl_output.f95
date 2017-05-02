@@ -39,7 +39,7 @@ MODULE ctrl_output
 
   CHARACTER(len=10),PARAMETER:: & !Define useful formats here
        fy   = '(i0004,1X)',& !4 digit integer for year
-       ft   = '(i0003,1X)',& !3 digit integer for id, it, imin
+       ft   = '(i0004,1X)',& !3 digit integer for id, it, imin
        fd   = '(f08.4,1X)',& !3 digits + 4 dp for dectime
        f94  = '(f09.4,1X)',& !standard output format: 4 dp + 4 digits
        f104 = '(f10.4,1X)',& !standard output format: 4 dp + 5 digits
@@ -467,10 +467,13 @@ CONTAINS
     INTEGER,INTENT(in) :: Gridiv,outLevel
 
     TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varlistSel
-    INTEGER :: xx,err,fn
+    INTEGER :: xx,err,fn,i,nargs
     CHARACTER(len=100) :: FileOut
     CHARACTER(len=3) :: itext
-
+    CHARACTER(len=6) :: args(5)
+    CHARACTER(len=12*SIZE(varlist)) :: FormatOut
+    CHARACTER(len=12) :: formatX,headerX
+    CHARACTER(len=12), DIMENSION(:), ALLOCATABLE:: headerOut
 
     ! select variables to output
     xx=COUNT((varList%level<= outLevel), dim=1)
@@ -483,12 +486,30 @@ CONTAINS
     ! generate file name
     CALL filename_gen(dataOut,varList,Gridiv,FileOut)
 
+    ! store right-aligned headers
+    ALLOCATE(headerOut(xx), stat=err)
+    IF ( err/= 0) PRINT *, "headerOut: Allocation request denied"
+
+    ! create format string:
+    DO i = 1, SIZE(varlistSel)
+       CALL parse(varlistSel(i)%fmt,'if.,',args,nargs)
+       formatX=ADJUSTL('(a'//TRIM(args(2))//',1x)')
+       ! adjust headers to right-aligned
+       WRITE(headerOut(i),formatX) ADJUSTR(TRIM(ADJUSTL(varlistSel(i)%header)))
+       IF ( i==1 ) THEN
+          FormatOut=ADJUSTL(TRIM(formatX))
+       ELSE
+          FormatOut=TRIM(FormatOut)//' '//ADJUSTL(TRIM(formatX))
+       END IF
+    END DO
+    FormatOut='('//TRIM(ADJUSTL(FormatOut))//')'
 
     ! create file
     fn=9
     OPEN(fn,file=TRIM(ADJUSTL(FileOut)),status='unknown')
+
     ! write out headers
-    WRITE(fn, '('//TRIM(itext)//'a)') varlistSel%header
+    WRITE(fn, FormatOut) headerOut
     CLOSE(fn)
 
     ! write out format file
@@ -497,6 +518,8 @@ CONTAINS
     ! clean up
     IF (ALLOCATED(varlistSel)) DEALLOCATE(varlistSel, stat=err)
     IF ( err/= 0) PRINT *, "varlistSel: Deallocation request denied"
+    IF (ALLOCATED(headerOut)) DEALLOCATE(headerOut, stat=err)
+    IF ( err/= 0) PRINT *, "headerOut: Deallocation request denied"
 
   END SUBROUTINE SUEWS_Output_Init
 

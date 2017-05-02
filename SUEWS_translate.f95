@@ -142,11 +142,20 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   BldgH      = SurfaceChar(Gridiv,c_HBldgs)                                                            ! Building height [m]
   EveTreeH   = SurfaceChar(Gridiv,c_HEveTr)                                                            ! Evergreen tree height [m]
   DecTreeH   = SurfaceChar(Gridiv,c_HDecTr)                                                            ! Deciduous tree height [m]
-  TreeH      = (EveTreeH*sfr(ConifSurf) + DecTreeH*sfr(DecidSurf))/(sfr(ConifSurf)+sfr(DecidSurf))     ! Average tree height [m]
+  IF ( sfr(ConifSurf)+sfr(DecidSurf)>0. ) THEN ! avoid arithmetic error
+     TreeH = (EveTreeH*sfr(ConifSurf) + DecTreeH*sfr(DecidSurf))/(sfr(ConifSurf)+sfr(DecidSurf))     ! Average tree height [m]
+  ELSE
+     TreeH = 1.
+  END IF
+
   FAIBldg    = SurfaceChar(Gridiv,c_FAIBldgs)                                                          ! Frontal area index for buildings
   FAIEveTree = SurfaceChar(Gridiv,c_FAIEveTr)                                                          ! Frontal area index for evergreen trees
   FAIDecTree = SurfaceChar(Gridiv,c_FAIDecTr)                                                          ! Frontal area index for deciduous trees
-  FAITree    = (FAIEveTree*sfr(ConifSurf) + FAIDecTree*sfr(DecidSurf))/(sfr(ConifSurf)+sfr(DecidSurf)) ! Frontal area index for trees
+  IF ( sfr(ConifSurf)+sfr(DecidSurf)>0. ) THEN ! avoid arithmetic error
+     FAITree    = (FAIEveTree*sfr(ConifSurf) + FAIDecTree*sfr(DecidSurf))/(sfr(ConifSurf)+sfr(DecidSurf)) ! Frontal area index for trees
+  ELSE
+     FAITree = 1.
+  END IF
 
   z0m        = SurfaceChar(Gridiv,c_z0m)                                                               ! Roughness length [m]
   zdm        = SurfaceChar(Gridiv,c_zdm)                                                               ! Displacement height [m]

@@ -42,9 +42,10 @@ SUBROUTINE InputHeaderCheck(FileName)
   HeaderNonVeg_Reqd(ci_OHMThresh_SW) = "OHMThresh_SW"
   HeaderNonVeg_Reqd(ci_OHMThresh_WD) = "OHMThresh_WD"
   HeaderNonVeg_Reqd(ci_ESTMCode)     = "ESTMCode"
-  HeaderNonVeg_Reqd(ci_cpAnOHM)           = "AnOHM_Cp"		! AnOHM TS
-  HeaderNonVeg_Reqd(ci_kkAnOHM)           = "AnOHM_Kk"		! AnOHM TS
-  HeaderNonVeg_Reqd(ci_chAnOHM)           = "AnOHM_Ch"		! AnOHM TS
+  HeaderNonVeg_Reqd(ci_cpAnOHM)      = "AnOHM_Cp" ! AnOHM TS
+  HeaderNonVeg_Reqd(ci_kkAnOHM)      = "AnOHM_Kk" ! AnOHM TS
+  HeaderNonVeg_Reqd(ci_chAnOHM)      = "AnOHM_Ch" ! AnOHM TS
+
 
   ! ========== SUEWS_Veg.txt ===============
   HeaderVeg_Reqd(cp_Code)         = "Code"
@@ -81,9 +82,9 @@ SUBROUTINE InputHeaderCheck(FileName)
   HeaderVeg_Reqd(cp_OHMThresh_SW) = "OHMThresh_SW"
   HeaderVeg_Reqd(cp_OHMThresh_WD) = "OHMThresh_WD"
   HeaderVeg_Reqd(cp_ESTMCode)     = "ESTMCode"
-  HeaderVeg_Reqd(cp_cpAnOHM)           = "AnOHM_Cp"		! AnOHM TS
-  HeaderVeg_Reqd(cp_kkAnOHM)           = "AnOHM_Kk"		! AnOHM TS
-  HeaderVeg_Reqd(cp_chAnOHM)           = "AnOHM_Ch"		! AnOHM TS
+  HeaderVeg_Reqd(cp_cpAnOHM)      = "AnOHM_Cp" ! AnOHM TS
+  HeaderVeg_Reqd(cp_kkAnOHM)      = "AnOHM_Kk" ! AnOHM TS
+  HeaderVeg_Reqd(cp_chAnOHM)      = "AnOHM_Ch" ! AnOHM TS
 
   ! ========== SUEWS_Water.txt ==================
   HeaderWater_Reqd(cw_Code)         = "Code"
@@ -105,9 +106,9 @@ SUBROUTINE InputHeaderCheck(FileName)
   HeaderWater_Reqd(cw_OHMThresh_SW) = "OHMThresh_SW"
   HeaderWater_Reqd(cw_OHMThresh_WD) = "OHMThresh_WD"
   HeaderWater_Reqd(cw_ESTMCode)     = "ESTMCode"
-  HeaderWater_Reqd(cw_cpAnOHM)           = "AnOHM_Cp"		! AnOHM TS
-  HeaderWater_Reqd(cw_kkAnOHM)           = "AnOHM_Kk"		! AnOHM TS
-  HeaderWater_Reqd(cw_chAnOHM)           = "AnOHM_Ch"		! AnOHM TS
+  HeaderWater_Reqd(cw_cpAnOHM)      = "AnOHM_Cp" ! AnOHM TS
+  HeaderWater_Reqd(cw_kkAnOHM)      = "AnOHM_Kk" ! AnOHM TS
+  HeaderWater_Reqd(cw_chAnOHM)      = "AnOHM_Ch" ! AnOHM TS
 
   ! ========== SUEWS_Snow.txt ===================
   HeaderSnow_Reqd(cs_Code)         = "Code"
@@ -132,9 +133,9 @@ SUBROUTINE InputHeaderCheck(FileName)
   HeaderSnow_Reqd(cs_OHMThresh_SW) = "OHMThresh_SW"
   HeaderSnow_Reqd(cs_OHMThresh_WD) = "OHMThresh_WD"
   HeaderSnow_Reqd(cs_ESTMCode)     = "ESTMCode"
-  HeaderSnow_Reqd(cs_cpAnOHM)           = "AnOHM_Cp"		! AnOHM TS
-  HeaderSnow_Reqd(cs_kkAnOHM)           = "AnOHM_Kk"		! AnOHM TS
-  HeaderSnow_Reqd(cs_chAnOHM)           = "AnOHM_Ch"		! AnOHM TS
+  HeaderSnow_Reqd(cs_cpAnOHM)      = "AnOHM_Cp"    ! AnOHM TS
+  HeaderSnow_Reqd(cs_kkAnOHM)      = "AnOHM_Kk"    ! AnOHM TS
+  HeaderSnow_Reqd(cs_chAnOHM)      = "AnOHM_Ch"    ! AnOHM TS
 
 
   ! ========== SUEWS_Soil.txt ===================
@@ -162,7 +163,7 @@ SUBROUTINE InputHeaderCheck(FileName)
   HeaderCond_Reqd(cc_GsS2)         = "S2"
   HeaderCond_Reqd(cc_GsKmax)       = "Kmax"
   HeaderCond_Reqd(cc_gsModel)       = "gsModel"
-  
+
   ! ========== SUEWS_OHMCoefficients.txt ========
   HeaderOHMCoefficients_Reqd(cO_Code) = "Code"
   HeaderOHMCoefficients_Reqd(cO_a1)   = "a1"
@@ -222,7 +223,7 @@ SUBROUTINE InputHeaderCheck(FileName)
   HeaderESTMCoefficients_Reqd(cE_CH_iwall)   = "Internal_CHwall"
   HeaderESTMCoefficients_Reqd(cE_CH_iroof)   = "Internal_CHroof"
   HeaderESTMCoefficients_Reqd(cE_CH_ibld)    = "Internal_CHbld"
-  
+
   ! ========== SUEWS_AnthropogenicHeat.txt ======
   HeaderAnthropogenicHeat_Reqd(cA_Code)     = "Code"
   HeaderAnthropogenicHeat_Reqd(cA_BaseTHDD) = "BaseTHDD"

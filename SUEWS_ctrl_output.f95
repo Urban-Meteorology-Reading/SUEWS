@@ -189,23 +189,23 @@ MODULE ctrl_output
 
   ! BL:
   DATA(varList(i), i=108,124)/&
-       varAttr('z'         , 'to_add' , f106 , 'z'         , aA , 'BL' , 0)  , &
-       varAttr('theta'     , 'to_add' , f106 , 'theta'     , aA , 'BL' , 0)  , &
-       varAttr('q'         , 'to_add' , f106 , 'q'         , aA , 'BL' , 0)  , &
-       varAttr('theta+'    , 'to_add' , f106 , 'theta+'    , aA , 'BL' , 0)  , &
-       varAttr('q+'        , 'to_add' , f106 , 'q+'        , aA , 'BL' , 0)  , &
-       varAttr('Temp_C'    , 'to_add' , f106 , 'Temp_C'    , aA , 'BL' , 0)  , &
-       varAttr('rh'        , 'to_add' , f106 , 'rh'        , aA , 'BL' , 0)  , &
-       varAttr('QH_use'    , 'to_add' , f106 , 'QH_use'    , aA , 'BL' , 0)  , &
-       varAttr('QE_use'    , 'to_add' , f106 , 'QE_use'    , aA , 'BL' , 0)  , &
-       varAttr('Press_hPa' , 'to_add' , f106 , 'Press_hPa' , aA , 'BL' , 0)  , &
-       varAttr('avu1'      , 'to_add' , f106 , 'avu1'      , aA , 'BL' , 0)  , &
-       varAttr('ustar'     , 'to_add' , f106 , 'ustar'     , aA , 'BL' , 0)  , &
-       varAttr('avdens'    , 'to_add' , f106 , 'avdens'    , aA , 'BL' , 0)  , &
-       varAttr('lv_J_kg'   , 'to_add' , f106 , 'lv_J_kg'   , aA , 'BL' , 0)  , &
-       varAttr('avcp'      , 'to_add' , f106 , 'avcp'      , aA , 'BL' , 0)  , &
-       varAttr('gamt'      , 'to_add' , f106 , 'gamt'      , aA , 'BL' , 0)  , &
-       varAttr('gamq'      , 'to_add' , f106 , 'gamq'      , aA , 'BL' , 0)&
+       varAttr('z'         , 'to_add' , f104 , 'z'         , aA , 'BL' , 0)  , &
+       varAttr('theta'     , 'to_add' , f104 , 'theta'     , aA , 'BL' , 0)  , &
+       varAttr('q'         , 'to_add' , f104 , 'q'         , aA , 'BL' , 0)  , &
+       varAttr('theta+'    , 'to_add' , f104 , 'theta+'    , aA , 'BL' , 0)  , &
+       varAttr('q+'        , 'to_add' , f104 , 'q+'        , aA , 'BL' , 0)  , &
+       varAttr('Temp_C'    , 'to_add' , f104 , 'Temp_C'    , aA , 'BL' , 0)  , &
+       varAttr('rh'        , 'to_add' , f104 , 'rh'        , aA , 'BL' , 0)  , &
+       varAttr('QH_use'    , 'to_add' , f104 , 'QH_use'    , aA , 'BL' , 0)  , &
+       varAttr('QE_use'    , 'to_add' , f104 , 'QE_use'    , aA , 'BL' , 0)  , &
+       varAttr('Press_hPa' , 'to_add' , f104 , 'Press_hPa' , aA , 'BL' , 0)  , &
+       varAttr('avu1'      , 'to_add' , f104 , 'avu1'      , aA , 'BL' , 0)  , &
+       varAttr('ustar'     , 'to_add' , f104 , 'ustar'     , aA , 'BL' , 0)  , &
+       varAttr('avdens'    , 'to_add' , f104 , 'avdens'    , aA , 'BL' , 0)  , &
+       varAttr('lv_J_kg'   , 'to_add' , f104 , 'lv_J_kg'   , aA , 'BL' , 0)  , &
+       varAttr('avcp'      , 'to_add' , f104 , 'avcp'      , aA , 'BL' , 0)  , &
+       varAttr('gamt'      , 'to_add' , f104 , 'gamt'      , aA , 'BL' , 0)  , &
+       varAttr('gamq'      , 'to_add' , f104 , 'gamq'      , aA , 'BL' , 0)&
        /
 
   ! Snow:
@@ -396,7 +396,7 @@ CONTAINS
        ! variable
        varlistX(6:5+xx)=PACK(varlist, mask=(varlist%group == TRIM(grpList(i))))
 
-       !  PRINT*, 'varlistX',SIZE(varlistX)
+
 
        ! all output frequency option:
        ! as forcing:
@@ -446,6 +446,10 @@ CONTAINS
        dataOutX=dataOutESTM(1:irMax,1:SIZE(varlist),Gridiv)
 
     END SELECT
+
+    ! PRINT*, 'n of varlistX: ',SIZE(varlist)
+    ! PRINT*, 'varlistX: ',varlist%header
+    ! PRINT*, 'varlistX group: ',varlist%group
 
 
     ! aggregation:
@@ -725,7 +729,6 @@ CONTAINS
     ! write out data
     fn=50
     OPEN(fn,file=TRIM(fileout),position='append')!,err=112)
-    ! PRINT*, SIZE(dataOutSel, dim=1)
     DO i=1,SIZE(dataOutSel,dim=1)
        WRITE(fn,FormatOut) &
             INT(dataOutSel(i,1:4)),&

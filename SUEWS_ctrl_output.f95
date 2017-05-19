@@ -300,13 +300,13 @@ MODULE ctrl_output
        varAttr('Sd_Grass'       , 'to_add' , f106 , 'Sd_Grass'       , aA , 'snow' , 0)  , &
        varAttr('Sd_BSoil'       , 'to_add' , f106 , 'Sd_BSoil'       , aA , 'snow' , 0)  , &
        varAttr('Sd_Water'       , 'to_add' , f106 , 'Sd_Water'       , aA , 'snow' , 0)  , &
-       varAttr('Tsnow_Paved'    , 'to_add' , f106 , 'Tsnow_Paved'    , aA , 'snow' , 0)  , &
-       varAttr('Tsnow_Bldgs'    , 'to_add' , f106 , 'Tsnow_Bldgs'    , aA , 'snow' , 0)  , &
-       varAttr('Tsnow_EveTr'    , 'to_add' , f106 , 'Tsnow_EveTr'    , aA , 'snow' , 0)  , &
-       varAttr('Tsnow_DecTr'    , 'to_add' , f106 , 'Tsnow_DecTr'    , aA , 'snow' , 0)  , &
-       varAttr('Tsnow_Grass'    , 'to_add' , f106 , 'Tsnow_Grass'    , aA , 'snow' , 0)  , &
-       varAttr('Tsnow_BSoil'    , 'to_add' , f106 , 'Tsnow_BSoil'    , aA , 'snow' , 0)  , &
-       varAttr('Tsnow_Water'    , 'to_add' , f106 , 'Tsnow_Water'    , aA , 'snow' , 0)&
+       varAttr('Tsnow_Paved'    , 'to_add' , f146 , 'Tsnow_Paved'    , aA , 'snow' , 0)  , &
+       varAttr('Tsnow_Bldgs'    , 'to_add' , f146 , 'Tsnow_Bldgs'    , aA , 'snow' , 0)  , &
+       varAttr('Tsnow_EveTr'    , 'to_add' , f146 , 'Tsnow_EveTr'    , aA , 'snow' , 0)  , &
+       varAttr('Tsnow_DecTr'    , 'to_add' , f146 , 'Tsnow_DecTr'    , aA , 'snow' , 0)  , &
+       varAttr('Tsnow_Grass'    , 'to_add' , f146 , 'Tsnow_Grass'    , aA , 'snow' , 0)  , &
+       varAttr('Tsnow_BSoil'    , 'to_add' , f146 , 'Tsnow_BSoil'    , aA , 'snow' , 0)  , &
+       varAttr('Tsnow_Water'    , 'to_add' , f146 , 'Tsnow_Water'    , aA , 'snow' , 0)&
        /
 
   ! ESTM:
@@ -476,9 +476,9 @@ CONTAINS
     CHARACTER(len=100) :: FileOut
     CHARACTER(len=3) :: itext
     CHARACTER(len=6) :: args(5)
-    CHARACTER(len=12*SIZE(varlist)) :: FormatOut
-    CHARACTER(len=12) :: formatX,headerX
-    CHARACTER(len=12), DIMENSION(:), ALLOCATABLE:: headerOut
+    CHARACTER(len=16*SIZE(varlist)) :: FormatOut
+    CHARACTER(len=16) :: formatX,headerX
+    CHARACTER(len=16), DIMENSION(:), ALLOCATABLE:: headerOut
 
     ! select variables to output
     xx=COUNT((varList%level<= outLevel), dim=1)

@@ -743,6 +743,7 @@ PROGRAM SUEWS_Program
      IF (SnowUse == 1) THEN
         DEALLOCATE(dataOutSnow)
         DEALLOCATE(qn1_S_store)
+        DEALLOCATE(qn1_S_av_store)
      ENDIF
      DEALLOCATE(TstepProfiles)
      DEALLOCATE(AHProf_tstep)

@@ -39,7 +39,7 @@ MODULE allocateArray
   INTEGER, PARAMETER:: ncolsESTMdata=13             !ESTM input file (_ESTM_Ts_data.txt))
 
   ! ---- Set number of columns in output files ---------------------------------------------------
-  INTEGER, PARAMETER:: ncolumnsDataOut=81,&    !Main output file (_5.txt). DataOut created in SUEWS_Calculations.f95
+  INTEGER, PARAMETER:: ncolumnsDataOut=84,&    !Main output file (_5.txt). DataOut created in SUEWS_Calculations.f95
        ncolumnsDataOutSnow=102,&
        ncolumnsdataOutSOL=28,&
        ncolumnsdataOutBL=22
@@ -834,7 +834,7 @@ MODULE data_in
        BLout,&             !CLB output file name
        FileOut_tt,&        !Output file name (for resolution at model time-step)
        ESTMOut_tt
-       
+
   INTEGER:: SkipHeaderSiteInfo = 2   !Number of header lines to skip in SiteInfo files
   INTEGER:: SkipHeaderMet = 1        !Number of header lines to skip in met forcing file
 
@@ -876,7 +876,7 @@ MODULE data_in
        ! For more complex downscaling allow different RainAmongN for different intensities
        INTEGER, DIMENSION(5):: MultRainAmongN           ! RainAmongN for each intensity bin
        REAL(KIND(1d0)),DIMENSION(5):: MultRainAmongNUpperI   ! Upper bound of intensity bin for which to apply MultRainAmongN
-       
+
   ! ---- Model options currently set in model, but may be moved to RunControl at a later date
   INTEGER:: AlbedoChoice,&         !No additional albedo varaition (0); zenith angle calculation (1)
                                 !Currently set to 0 in SUEWS_Initial
@@ -914,6 +914,7 @@ MODULE data_in
        avrh,&      !Average relative humidity
        avts,&      !Average surface temperature
        avu1,&      !Average wind speed
+       avU10_ms,&   !Average wind speed at 10 m
        azimuth,&   !Sun azimuth in degrees
        BaseTHDD,&  !Base temperature for QF
        BuildEnergyUse,&  ! Building energy use
@@ -947,6 +948,7 @@ MODULE data_in
        Precip_hr,&    !Precipitation [mm hr-1]
        Press_hPa,&  !Station air pressure in hPa
        Pres_kPa,&   !Station air pressure in kPa
+       q2_gkg,&    ! Specific humidity at 2 m
        qe,&        !Observed latent heat flux
        qe_obs,&
        qf,&        !Observed anthropogenic heat flux
@@ -968,6 +970,7 @@ MODULE data_in
        snow_obs,&  !Observed snow cover
        T_CRITIC,& !Critical temperature
        Temp_C,&    !Air temperature
+       t2_C,&     ! air temperature at 2 m, TS 20 May 2017
        trans_site,&  !Atmospheric transmissivity
        TrafficRate,&  !Traffic rate
        tsurf,&   !Surface temperature
@@ -1399,10 +1402,10 @@ MODULE sues_data
        rst,&      !Flag in SUEWS_Evap (gets set to 1 if surface dry; 0 if surface wet)
        qeph,&     !Latent heat flux (W m^-2)
        qeOut      !Latent heat flux [W m-2]
-       
+
   REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE:: qhforCBL, qeforCBL   ! Stores previous timestep qh and qe for CBL model. Added by HCW 21 Mar 2017
-  INTEGER:: qh_choice        ! selection of qh use to drive CBL growth 1=Suews 2=lumps 3=obs  
-  
+  INTEGER:: qh_choice        ! selection of qh use to drive CBL growth 1=Suews 2=lumps 3=obs
+
   !Water use related variables
   REAL (KIND(1d0)):: ext_wu,&         !External water use for the model timestep [mm] (over whole study area)
        Faut,&           !Fraction of irrigated area using automatic irrigation

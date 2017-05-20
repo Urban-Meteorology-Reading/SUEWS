@@ -4,9 +4,10 @@
 !Last modification
 !
 !Last modification:
-! HCW 09 Dec 2016 - Add zenith and azimuth to output file 
+! TS  20 May 2017 - Add surface-level diagonostics: T2, Q2, U10
+! HCW 09 Dec 2016 - Add zenith and azimuth to output file
 ! HCw 24 Aug 2016 - smd and state for each surface set to NAN in output file if surface does not exist.
-!                 - Added Fc to output file 
+!                 - Added Fc to output file
 ! HCW 21 Jul 2016 - Set soil variables to -999 in output when grid is 100% water surface.
 ! HCW 29 Jun 2016 - Commented out StateDay and SoilMoistDay as creates jumps and should not be needed.
 !                   Would not work unless each met block consists of a whole day for each grid.
@@ -54,7 +55,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   LOGICAL        :: debug=.FALSE.
   REAL(KIND(1d0)):: idectime
   !real(kind(1d0)):: SnowDepletionCurve  !for SUEWS_Snow - not needed here (HCW 24 May 2016)
-  REAL(KIND(1d0)):: lai_wt
+  REAL(KIND(1d0)):: lai_wt,qsatf
   INTEGER        :: irMax
 
   !==================================================================
@@ -131,8 +132,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   IF(Diagnose==1) WRITE(*,*) 'Calling sun_position...'
   CALL sun_position(year,idectime,timezone,lat,lng,alt,azimuth,zenith_deg)
   !write(*,*) DateTime, timezone,lat,lng,alt,azimuth,zenith_deg
-  
-  
+
+
   IF(CBLuse>=1)THEN ! If CBL is used, calculated Temp_C and RH are replaced with the obs.
      IF(Diagnose==1) WRITE(*,*) 'Calling CBL...'
      CALL CBL(ir,iMB,Gridiv)   !ir=1 indicates first row of each met data block
@@ -231,8 +232,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   IF(ih<0) ih=23
 
   IF(AnthropHeatMethod==1) THEN
-      IF(Diagnose==1) WRITE(*,*) 'Calling SAHP_1...'
-      CALL SAHP_1(qf_sahp,QF_SAHP_base,QF_SAHP_heat,id,ih,imin)
+     IF(Diagnose==1) WRITE(*,*) 'Calling SAHP_1...'
+     CALL SAHP_1(qf_sahp,QF_SAHP_base,QF_SAHP_heat,id,ih,imin)
      qn1_bup=qn1
      qn1=qn1+QF_SAHP
   ELSEIF(AnthropHeatMethod==2) THEN
@@ -374,7 +375,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   IF (snowUse==1) THEN
      IF(Diagnose==1) WRITE(*,*) 'Calling AerodynamicResistance...'
      CALL AerodynamicResistance(RAsnow,AerodynamicResistanceMethod,StabilityMethod,3,&
-                                 ZZD,z0m,k2,AVU1,L_mod,Ustar,VegFraction,psyh)      !RA out
+          ZZD,z0m,k2,AVU1,L_mod,Ustar,VegFraction,psyh)      !RA out
   ENDIF
 
   IF(Diagnose==1) WRITE(*,*) 'Calling SurfaceResistance...'
@@ -443,7 +444,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !================== Drainage ===================
   ! Calculate drainage for each soil subsurface (excluding water body)
   IF(Diagnose==1) WRITE(*,*) 'Calling Drainage...'
-  DO is=1,nsurf-1     
+  DO is=1,nsurf-1
      CALL Drainage(surf(6,is),surf(2,is),surf(3,is),surf(4,is))
      !HCW added and changed to surf(6,is) here 20 Feb 2015
      drain_per_tstep=drain_per_tstep+(drain(is)*sfr(is)/NonWaterFraction)   !No water body included
@@ -510,6 +511,18 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
      qh_r=NAN
   ENDIF
 
+
+  !============ surface-level diagonostics ===============
+  ! wind speed:
+  CALL diagSfc(0.,0.,ustar,avU10_ms,0)
+  ! temperature:
+  CALL diagSfc(tsurf,qh,ustar,t2_C,1)
+  ! humidity:
+  CALL diagSfc(qsatf(tsurf,Press_hPa)*1000,& ! Saturation specific humidity at surface in g/kg
+       qeOut,ustar,q2_gkg,2)
+  !============ surface-level diagonostics end ===============
+
+
   !write(*,*) Gridiv, qn1, qf, qh, qeOut, qs, qn1+qf-qs
   !if(ir > 155 .and. ir <165) pause
   !if((qn1+qf-qs) - (qeOut) < -1)  then
@@ -574,19 +587,19 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ENDIF
 
   ! Remove non-existing surface type from surface and soil outputs   ! Added back in with NANs by HCW 24 Aug 2016
-  do is=1,nsurf
-     if (sfr(is)<0.00001) then
+  DO is=1,nsurf
+     IF (sfr(is)<0.00001) THEN
         stateOut(is)= NAN
         smd_nsurfOut(is)= NAN
         !runoffOut(is)= NAN
         !runoffSoilOut(is)= NAN
-     else
+     ELSE
         stateOut(is)=state(is)
         smd_nsurfOut(is)=smd_nsurf(is)
         !runoffOut(is)=runoff(is)
         !runoffSoilOut(is)=runoffSoil(is)
-    endif
-  enddo
+     ENDIF
+  ENDDO
 
   ! Remove negative state   !ErrorHint added, then commented out by HCW 16 Feb 2015 as should never occur
   !if(st_per_interval<0) then
@@ -609,8 +622,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
      !CALL errorHint(6,'Lob set to -9999 m in output; calculated value < -9999 m',L_mod,notUsed,notUsedI)
      l_mod=-9999
   ENDIF
-  
-  
+
+
   ! Set NA values   !!Why only these variables??  !!ErrorHints here too - error hints can be very slow here
   IF(ABS(qh)>pNAN) qh=NAN
   IF(ABS(qh_r)>pNAN) qh_r=NAN
@@ -664,29 +677,31 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ENDIF
 
 
-  
+
   !=====================================================================
   !====================== Write out files ==============================
   !Define the overall output matrix to be printed out step by step
   dataOut(ir,1:ncolumnsDataOut,Gridiv)=(/REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),REAL(it,KIND(1D0)),REAL(imin,KIND(1D0)),dectime,&   !5
        avkdn,kup,ldown,lup,tsurf,&
-       qn1,qf,qs,qh,qeOut,&                                      
-       h_mod,e_mod,qh_r,&                                                                                          
+       qn1,qf,qs,qh,qeOut,&
+       h_mod,e_mod,qh_r,&
        precip,ext_wu,ev_per_tstep,runoff_per_tstep,tot_chang_per_tstep,&
-       surf_chang_per_tstep,state_per_tstep,NWstate_per_tstep,drain_per_tstep,smd,&                                      
+       surf_chang_per_tstep,state_per_tstep,NWstate_per_tstep,drain_per_tstep,smd,&
        FlowChange/nsh_real,AdditionalWater,&
        runoffSoil_per_tstep,runoffPipes,runoffAGimpervious,runoffAGveg,runoffWaterBody,&
-       int_wu,wu_EveTr,wu_DecTr,wu_Grass,& 
+       int_wu,wu_EveTr,wu_DecTr,wu_Grass,&
        (smd_nsurfOut(is),is=1,nsurf-1),&
-       (stateOut(is),is=1,nsurf),&                       
-       zenith_deg,azimuth,bulkalbedo,Fcld,&                                                   
+       (stateOut(is),is=1,nsurf),&
+       zenith_deg,azimuth,bulkalbedo,Fcld,&
        lai_wt,z0m,zdm,&
        ustar,l_mod,ra,ResistSurf,&
        Fc,&
-       Fc_photo,Fc_respi,Fc_metab,Fc_traff,Fc_build,&                                               
+       Fc_photo,Fc_respi,Fc_metab,Fc_traff,Fc_build,&
        qn1_SF,qn1_S,SnowAlb,&
        Qm,QmFreez,QmRain,swe,mwh,MwStore,chSnow_per_interval,&
-       (SnowRemoval(is),is=1,2) /)                                                                                       
+       (SnowRemoval(is),is=1,2),&
+       t2_C,q2_gkg,avU10_ms& ! surface-level diagonostics
+      /)
 
   IF (snowUse==1) THEN
      dataOutSnow(ir,1:ncolumnsDataOutSnow,Gridiv)=(/REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),&               !2

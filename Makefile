@@ -69,18 +69,20 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_ESTM_v2016.o \
           SUEWS_CO2.o \
 					SUEWS_Initial.o
+# modules under rapid development
+TEST = SUEWS_Diagnostics.o
 
 # Build main program - main uses MODULES and OTHERS
-main: SUEWS_Program.f95 $(MODULES) $(OTHERS)
+main: SUEWS_Program.f95 $(MODULES) $(OTHERS) $(TEST)
 	$(CC) SUEWS_ctrl_output.f95  -c ; \
 	$(CC) SUEWS_Program.f95  -c ; \
-	$(CC) SUEWS_Program.o $(MODULES) $(OTHERS) SUEWS_ctrl_output.o -o $(TARGET)
+	$(CC) SUEWS_Program.o $(MODULES) $(OTHERS) $(TEST) SUEWS_ctrl_output.o -o $(TARGET)
 
 # Build main program with NETCDF support - main uses MODULES and OTHERS
-netcdf: SUEWS_Program.f95 $(MODULES) $(OTHERS)
+netcdf: SUEWS_Program.f95 $(MODULES) $(OTHERS) $(TEST)
 	$(CC_nc) SUEWS_ctrl_output.f95  -c ; \
 	$(CC_nc) SUEWS_Program.f95  -c ; \
-	$(CC_nc) SUEWS_Program.o $(MODULES) $(OTHERS) SUEWS_ctrl_output.o -L`nc-config --libdir` -lnetcdf -lnetcdff -o $(TARGET)
+	$(CC_nc) SUEWS_Program.o $(MODULES) $(OTHERS) $(TEST) SUEWS_ctrl_output.o -L`nc-config --libdir` -lnetcdf -lnetcdff -o $(TARGET)
 
 # If OTHERS have changed, compile them again
 $(OTHERS): $(MODULES) $(subst .o,.f95, $(OTHERS))
@@ -88,6 +90,10 @@ $(OTHERS): $(MODULES) $(subst .o,.f95, $(OTHERS))
 
 # If MODULES have changed, compile them again
 $(MODULES): $(subst .o,.f95, $(MODULES))
+	$(CC) -c $(subst .o,.f95, $@)
+
+# If TEST have changed, compile them again
+$(TEST): $(subst .o,.f95, $(TEST))
 	$(CC) -c $(subst .o,.f95, $@)
 
 # If wanted, clean all *.o files after build

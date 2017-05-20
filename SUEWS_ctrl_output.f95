@@ -78,87 +78,91 @@ MODULE ctrl_output
        /
 
   ! defualt:
-  DATA(varList(i), i=6,81)/&
-       varAttr('Kdown'      , 'W_m-2'        , f94  , 'Incoming shortwave radiation'                     , aA , '' , 0)    , &
-       varAttr('Kup'        , 'W_m-2'        , f94  , 'Outgoing shortwave radiation'                     , aA , '' , 0)    , &
-       varAttr('Ldown'      , 'W_m-2'        , f94  , 'Incoming longwave radiation'                      , aA , '' , 0)    , &
-       varAttr('Lup'        , 'W_m-2'        , f94  , 'Outgoing longwave radiation'                      , aA , '' , 0)    , &
-       varAttr('Tsurf'      , 'degC'         , f94  , 'Bulk surface temperature'                         , aA , '' , 0)    , &
-       varAttr('QN'         , 'W_m-2'        , f94  , 'Net all-wave radiation'                           , aA , '' , 0)    , &
-       varAttr('QF'         , 'W_m-2'        , f94  , 'Anthropogenic heat flux'                          , aA , '' , 0)    , &
-       varAttr('QS'         , 'W_m-2'        , f94  , 'Net storage heat flux'                            , aA , '' , 0)    , &
-       varAttr('QH'         , 'W_m-2'        , f94  , 'Sensible heat flux'                               , aA , '' , 0)    , &
-       varAttr('QE'         , 'W_m-2'        , f94  , 'Latent heat flux'                                 , aA , '' , 0)    , &
-       varAttr('QHlumps'    , 'W_m-2'        , f94  , 'Sensible heat flux (using LUMPS)'                 , aA , '' , 1)    , &
-       varAttr('QElumps'    , 'W_m-2'        , f94  , 'Latent heat flux (using LUMPS)'                   , aA , '' , 1)    , &
-       varAttr('QHresis'    , 'W_m-2'        , f94  , 'Sensible heat flux (resistance method)'           , aA , '' , 1)    , &
-       varAttr('Rain'       , 'mm'           , f106 , 'Rain'                                             , aS , '' , 0)    , &
-       varAttr('Irr'        , 'mm'           , f106 , 'Irrigation'                                       , aS , '' , 0)    , &
-       varAttr('Evap'       , 'mm'           , f106 , 'Evaporation'                                      , aS , '' , 0)    , &
-       varAttr('RO'         , 'mm'           , f106 , 'Runoff'                                           , aS , '' , 0)    , &
-       varAttr('TotCh'      , 'mm'           , f106 , 'Surface and soil moisture change'                 , aS , '' , 0)    , &
-       varAttr('SurfCh'     , 'mm'           , f106 , 'Surface moisture change'                          , aS , '' , 0)    , &
-       varAttr('State'      , 'mm'           , f104 , 'SurfaceWetnessState'                              , aL , '' , 0)    , &
-       varAttr('NWtrState'  , 'mm'           , f106 , 'Surface wetness state (non-water surfaces)'       , aL , '' , 0)    , &
-       varAttr('Drainage'   , 'mm'           , f106 , 'Drainage'                                         , aS , '' , 0)    , &
-       varAttr('SMD'        , 'mm'           , f94  , 'SoilMoistureDeficit'                              , aL , '' , 0)    , &
-       varAttr('FlowCh'     , 'mm'           , f104 , 'Additional flow into water body'                  , aS , '' , 1)    , &
-       varAttr('AddWater'   , 'mm'           , f104 , 'Addtional water from other grids'                 , aS , '' , 1)    , &
-       varAttr('ROSoil'     , 'mm'           , f106 , 'Runoff to soil'                                   , aS , '' , 1)    , &
-       varAttr('ROPipe'     , 'mm'           , f106 , 'Runoff to pipes'                                  , aS , '' , 1)    , &
-       varAttr('ROImp'      , 'mm'           , f106 , 'Runoff over impervious surfaces'                  , aS , '' , 1)    , &
-       varAttr('ROVeg'      , 'mm'           , f106 , 'Runoff over vegetated surfaces'                   , aS , '' , 1)    , &
-       varAttr('ROWater'    , 'mm'           , f106 , 'Runoff for water surface'                         , aS , '' , 1)    , &
-       varAttr('WUInt'      , 'mm'           , f94  , 'InternalWaterUse'                                 , aS , '' , 1)    , &
-       varAttr('WUEveTr'    , 'mm'           , f94  , 'Water use for evergreen trees'                    , aS , '' , 1)    , &
-       varAttr('WUDecTr'    , 'mm'           , f94  , 'Water use for deciduous trees'                    , aS , '' , 1)    , &
-       varAttr('WUGrass'    , 'mm'           , f94  , 'Water use for grass'                              , aS , '' , 1)    , &
-       varAttr('SMDPaved'   , 'mm'           , f94  , 'Soil moisture deficit for paved surface'          , aL , '' , 1)    , &
-       varAttr('SMDBldgs'   , 'mm'           , f94  , 'Soil moisture deficit for building surface'       , aL , '' , 1)    , &
-       varAttr('SMDEveTr'   , 'mm'           , f94  , 'Soil moisture deficit for evergreen tree surface' , aL , '' , 1)    , &
-       varAttr('SMDDecTr'   , 'mm'           , f94  , 'Soil moisture deficit for deciduous tree surface' , aL , '' , 1)    , &
-       varAttr('SMDGrass'   , 'mm'           , f94  , 'Soil moisture deficit for grass surface'          , aL , '' , 1)    , &
-       varAttr('SMDBSoil'   , 'mm'           , f94  , 'Soil moisture deficit for bare soil surface'      , aL , '' , 1)    , &
-       varAttr('StPaved'    , 'mm'           , f94  , 'Surface wetness state for paved surface'          , aL , '' , 1)    , &
-       varAttr('StBldgs'    , 'mm'           , f94  , 'Surface wetness state for building surface'       , aL , '' , 1)    , &
-       varAttr('StEveTr'    , 'mm'           , f94  , 'Surface wetness state for evergreen tree surface' , aL , '' , 1)    , &
-       varAttr('StDecTr'    , 'mm'           , f94  , 'Surface wetness state for deciduous tree surface' , aL , '' , 1)    , &
-       varAttr('StGrass'    , 'mm'           , f94  , 'Surface wetness state for grass surface'          , aL , '' , 1)    , &
-       varAttr('StBSoil'    , 'mm'           , f94  , 'Surface wetness state for bare soil surface'      , aL , '' , 1)    , &
-       varAttr('StWater'    , 'mm'           , f104 , 'Surface wetness state for water surface'          , aL , '' , 1)    , &
-       varAttr('Zenith'     , 'deg'          , f94  , 'Solar zenith angle'                               , aL , '' , 0)    , &
-       varAttr('Azimuth'    , 'deg'          , f94  , 'Solar azimuth angle'                              , aL , '' , 0)    , &
-       varAttr('AlbBulk'    , '-'            , f94  , 'Bulk albedo'                                      , aA , '' , 0)    , &
-       varAttr('Fcld'       , '-'            , f94  , 'Cloud fraction'                                   , aA , '' , 0)    , &
-       varAttr('LAI'        , 'm2_m-2'       , f94  , 'Leaf area index'                                  , aA , '' , 0)    , &
-       varAttr('z0m'        , 'm'            , f94  , 'Roughness length for momentum'                    , aA , '' , 1)    , &
-       varAttr('zdm'        , 'm'            , f94  , 'Zero-plane displacement height'                   , aA , '' , 1)    , &
-       varAttr('ustar'      , 'm_s-1'        , f94  , 'Friction velocity'                                , aA , '' , 0)    , &
-       varAttr('Lob'        , 'm'            , f104 , 'Obukhov length'                                   , aA , '' , 0)    , &
-       varAttr('ra'         , 's_m-1'        , f94  , 'Aerodynamic resistance'                           , aA , '' , 1)    , &
-       varAttr('rs'         , 's_m-1'        , f94  , 'Surface resistance'                               , aA , '' , 1)    , &
-       varAttr('Fc'         , 'umol_m-2_s-1' , f94  , 'CO2 flux'                                         , aA , '' , 0)    , &
-       varAttr('FcPhoto'    , 'umol_m-2_s-1' , f94  , 'CO2 flux from photosynthesis'                     , aA , '' , 1)    , &
-       varAttr('FcRespi'    , 'umol_m-2_s-1' , f94  , 'CO2 flux from respiration'                        , aA , '' , 1)    , &
-       varAttr('FcMetab'    , 'umol_m-2_s-1' , f94  , 'CO2 flux from metabolism'                         , aA , '' , 1)    , &
-       varAttr('FcTraff'    , 'umol_m-2_s-1' , f94  , 'CO2 flux from traffic'                            , aA , '' , 1)    , &
-       varAttr('FcBuild'    , 'umol_m-2_s-1' , f94  , 'CO2 flux from buildings'                          , aA , '' , 1)    , &
-       varAttr('QNSnowFr'   , 'W_m-2'        , f94  , 'Net all-wave radiation for non-snow area'         , aA , '' , 2)    , &
-       varAttr('QNSnow'     , 'W_m-2'        , f94  , 'Net all-wave radiation for snow area'             , aA , '' , 2)    , &
-       varAttr('AlbSnow'    , '-'            , f94  , 'Snow albedo'                                      , aA , '' , 2)    , &
-       varAttr('QM'         , 'W_m-2'        , f106 , 'Snow-related heat exchange'                       , aA , '' , 2)    , &
-       varAttr('QMFreeze'   , 'W_m-2'        , f106 , 'Internal energy change'                           , aA , '' , 2)    , &
-       varAttr('QMRain'     , 'W_m-2'        , f106 , 'Heat released by rain on snow'                    , aA , '' , 2)    , &
-       varAttr('SWE'        , 'mm'           , f104 , 'Snow water equivalent'                            , aA , '' , 2)    , &
-       varAttr('MeltWater'  , 'mm'           , f104 , 'Meltwater'                                        , aA , '' , 2)    , &
-       varAttr('MeltWStore' , 'mm'           , f104 , 'Meltwater store'                                  , aA , '' , 2)    , &
-       varAttr('SnowCh'     , 'mm'           , f104 , 'Change in snow pack'                              , aA , '' , 2)    , &
-       varAttr('SnowRPaved' , 'mm'           , f94  , 'Snow removed from paved surface'                  , aS , '' , 2)    , &
-       varAttr('SnowRPaved' , 'mm'           , f94  , 'Snow removed from building surface'               , aS , '' , 2)  &
+  DATA(varList(i), i=6,84)/&
+       varAttr('Kdown'      , 'W_m-2'        , f94  , 'Incoming shortwave radiation'                     , aA , '' , 0)     , &
+       varAttr('Kup'        , 'W_m-2'        , f94  , 'Outgoing shortwave radiation'                     , aA , '' , 0)     , &
+       varAttr('Ldown'      , 'W_m-2'        , f94  , 'Incoming longwave radiation'                      , aA , '' , 0)     , &
+       varAttr('Lup'        , 'W_m-2'        , f94  , 'Outgoing longwave radiation'                      , aA , '' , 0)     , &
+       varAttr('Tsurf'      , 'degC'         , f94  , 'Bulk surface temperature'                         , aA , '' , 0)     , &
+       varAttr('QN'         , 'W_m-2'        , f94  , 'Net all-wave radiation'                           , aA , '' , 0)     , &
+       varAttr('QF'         , 'W_m-2'        , f94  , 'Anthropogenic heat flux'                          , aA , '' , 0)     , &
+       varAttr('QS'         , 'W_m-2'        , f94  , 'Net storage heat flux'                            , aA , '' , 0)     , &
+       varAttr('QH'         , 'W_m-2'        , f94  , 'Sensible heat flux'                               , aA , '' , 0)     , &
+       varAttr('QE'         , 'W_m-2'        , f94  , 'Latent heat flux'                                 , aA , '' , 0)     , &
+       varAttr('QHlumps'    , 'W_m-2'        , f94  , 'Sensible heat flux (using LUMPS)'                 , aA , '' , 1)     , &
+       varAttr('QElumps'    , 'W_m-2'        , f94  , 'Latent heat flux (using LUMPS)'                   , aA , '' , 1)     , &
+       varAttr('QHresis'    , 'W_m-2'        , f94  , 'Sensible heat flux (resistance method)'           , aA , '' , 1)     , &
+       varAttr('Rain'       , 'mm'           , f106 , 'Rain'                                             , aS , '' , 0)     , &
+       varAttr('Irr'        , 'mm'           , f106 , 'Irrigation'                                       , aS , '' , 0)     , &
+       varAttr('Evap'       , 'mm'           , f106 , 'Evaporation'                                      , aS , '' , 0)     , &
+       varAttr('RO'         , 'mm'           , f106 , 'Runoff'                                           , aS , '' , 0)     , &
+       varAttr('TotCh'      , 'mm'           , f106 , 'Surface and soil moisture change'                 , aS , '' , 0)     , &
+       varAttr('SurfCh'     , 'mm'           , f106 , 'Surface moisture change'                          , aS , '' , 0)     , &
+       varAttr('State'      , 'mm'           , f104 , 'SurfaceWetnessState'                              , aL , '' , 0)     , &
+       varAttr('NWtrState'  , 'mm'           , f106 , 'Surface wetness state (non-water surfaces)'       , aL , '' , 0)     , &
+       varAttr('Drainage'   , 'mm'           , f106 , 'Drainage'                                         , aS , '' , 0)     , &
+       varAttr('SMD'        , 'mm'           , f94  , 'SoilMoistureDeficit'                              , aL , '' , 0)     , &
+       varAttr('FlowCh'     , 'mm'           , f104 , 'Additional flow into water body'                  , aS , '' , 1)     , &
+       varAttr('AddWater'   , 'mm'           , f104 , 'Addtional water from other grids'                 , aS , '' , 1)     , &
+       varAttr('ROSoil'     , 'mm'           , f106 , 'Runoff to soil'                                   , aS , '' , 1)     , &
+       varAttr('ROPipe'     , 'mm'           , f106 , 'Runoff to pipes'                                  , aS , '' , 1)     , &
+       varAttr('ROImp'      , 'mm'           , f106 , 'Runoff over impervious surfaces'                  , aS , '' , 1)     , &
+       varAttr('ROVeg'      , 'mm'           , f106 , 'Runoff over vegetated surfaces'                   , aS , '' , 1)     , &
+       varAttr('ROWater'    , 'mm'           , f106 , 'Runoff for water surface'                         , aS , '' , 1)     , &
+       varAttr('WUInt'      , 'mm'           , f94  , 'InternalWaterUse'                                 , aS , '' , 1)     , &
+       varAttr('WUEveTr'    , 'mm'           , f94  , 'Water use for evergreen trees'                    , aS , '' , 1)     , &
+       varAttr('WUDecTr'    , 'mm'           , f94  , 'Water use for deciduous trees'                    , aS , '' , 1)     , &
+       varAttr('WUGrass'    , 'mm'           , f94  , 'Water use for grass'                              , aS , '' , 1)     , &
+       varAttr('SMDPaved'   , 'mm'           , f94  , 'Soil moisture deficit for paved surface'          , aL , '' , 1)     , &
+       varAttr('SMDBldgs'   , 'mm'           , f94  , 'Soil moisture deficit for building surface'       , aL , '' , 1)     , &
+       varAttr('SMDEveTr'   , 'mm'           , f94  , 'Soil moisture deficit for evergreen tree surface' , aL , '' , 1)     , &
+       varAttr('SMDDecTr'   , 'mm'           , f94  , 'Soil moisture deficit for deciduous tree surface' , aL , '' , 1)     , &
+       varAttr('SMDGrass'   , 'mm'           , f94  , 'Soil moisture deficit for grass surface'          , aL , '' , 1)     , &
+       varAttr('SMDBSoil'   , 'mm'           , f94  , 'Soil moisture deficit for bare soil surface'      , aL , '' , 1)     , &
+       varAttr('StPaved'    , 'mm'           , f94  , 'Surface wetness state for paved surface'          , aL , '' , 1)     , &
+       varAttr('StBldgs'    , 'mm'           , f94  , 'Surface wetness state for building surface'       , aL , '' , 1)     , &
+       varAttr('StEveTr'    , 'mm'           , f94  , 'Surface wetness state for evergreen tree surface' , aL , '' , 1)     , &
+       varAttr('StDecTr'    , 'mm'           , f94  , 'Surface wetness state for deciduous tree surface' , aL , '' , 1)     , &
+       varAttr('StGrass'    , 'mm'           , f94  , 'Surface wetness state for grass surface'          , aL , '' , 1)     , &
+       varAttr('StBSoil'    , 'mm'           , f94  , 'Surface wetness state for bare soil surface'      , aL , '' , 1)     , &
+       varAttr('StWater'    , 'mm'           , f104 , 'Surface wetness state for water surface'          , aL , '' , 1)     , &
+       varAttr('Zenith'     , 'deg'          , f94  , 'Solar zenith angle'                               , aL , '' , 0)     , &
+       varAttr('Azimuth'    , 'deg'          , f94  , 'Solar azimuth angle'                              , aL , '' , 0)     , &
+       varAttr('AlbBulk'    , '-'            , f94  , 'Bulk albedo'                                      , aA , '' , 0)     , &
+       varAttr('Fcld'       , '-'            , f94  , 'Cloud fraction'                                   , aA , '' , 0)     , &
+       varAttr('LAI'        , 'm2_m-2'       , f94  , 'Leaf area index'                                  , aA , '' , 0)     , &
+       varAttr('z0m'        , 'm'            , f94  , 'Roughness length for momentum'                    , aA , '' , 1)     , &
+       varAttr('zdm'        , 'm'            , f94  , 'Zero-plane displacement height'                   , aA , '' , 1)     , &
+       varAttr('ustar'      , 'm_s-1'        , f94  , 'Friction velocity'                                , aA , '' , 0)     , &
+       varAttr('Lob'        , 'm'            , f104 , 'Obukhov length'                                   , aA , '' , 0)     , &
+       varAttr('ra'         , 's_m-1'        , f94  , 'Aerodynamic resistance'                           , aA , '' , 1)     , &
+       varAttr('rs'         , 's_m-1'        , f94  , 'Surface resistance'                               , aA , '' , 1)     , &
+       varAttr('Fc'         , 'umol_m-2_s-1' , f94  , 'CO2 flux'                                         , aA , '' , 0)     , &
+       varAttr('FcPhoto'    , 'umol_m-2_s-1' , f94  , 'CO2 flux from photosynthesis'                     , aA , '' , 1)     , &
+       varAttr('FcRespi'    , 'umol_m-2_s-1' , f94  , 'CO2 flux from respiration'                        , aA , '' , 1)     , &
+       varAttr('FcMetab'    , 'umol_m-2_s-1' , f94  , 'CO2 flux from metabolism'                         , aA , '' , 1)     , &
+       varAttr('FcTraff'    , 'umol_m-2_s-1' , f94  , 'CO2 flux from traffic'                            , aA , '' , 1)     , &
+       varAttr('FcBuild'    , 'umol_m-2_s-1' , f94  , 'CO2 flux from buildings'                          , aA , '' , 1)     , &
+       varAttr('QNSnowFr'   , 'W_m-2'        , f94  , 'Net all-wave radiation for non-snow area'         , aA , '' , 2)     , &
+       varAttr('QNSnow'     , 'W_m-2'        , f94  , 'Net all-wave radiation for snow area'             , aA , '' , 2)     , &
+       varAttr('AlbSnow'    , '-'            , f94  , 'Snow albedo'                                      , aA , '' , 2)     , &
+       varAttr('QM'         , 'W_m-2'        , f106 , 'Snow-related heat exchange'                       , aA , '' , 2)     , &
+       varAttr('QMFreeze'   , 'W_m-2'        , f106 , 'Internal energy change'                           , aA , '' , 2)     , &
+       varAttr('QMRain'     , 'W_m-2'        , f106 , 'Heat released by rain on snow'                    , aA , '' , 2)     , &
+       varAttr('SWE'        , 'mm'           , f104 , 'Snow water equivalent'                            , aA , '' , 2)     , &
+       varAttr('MeltWater'  , 'mm'           , f104 , 'Meltwater'                                        , aA , '' , 2)     , &
+       varAttr('MeltWStore' , 'mm'           , f104 , 'Meltwater store'                                  , aA , '' , 2)     , &
+       varAttr('SnowCh'     , 'mm'           , f104 , 'Change in snow pack'                              , aA , '' , 2)     , &
+       varAttr('SnowRPaved' , 'mm'           , f94  , 'Snow removed from paved surface'                  , aS , '' , 2)     , &
+       varAttr('SnowRBldg'  , 'mm'           , f94  , 'Snow removed from building surface'               , aS , '' , 2)     , &
+       varAttr('T2'         , 'degC'         , f94  , 'Air temperature at 2 m'                           , aA , '' , 0)     , &
+       varAttr('Q2'         , 'g_kg-1'       , f94  , 'Specific humidity at 2 m'                         , aA , '' , 0)     , &
+       varAttr('U10'        , 'm_s-1'        , f94  , 'Wind speed at 10 m'                               , aA , '' , 0)   &
+
        /
 
   ! SOLWEIG:
-  DATA(varList(i), i=82,107)/&
+  DATA(varList(i), i=85,110)/&
        varAttr('azimuth'    , 'to_add' , f106 , 'azimuth'    , aA , 'SOLWEIG' , 0)  , &
        varAttr('altitude'   , 'to_add' , f106 , 'altitude'   , aA , 'SOLWEIG' , 0)  , &
        varAttr('GlobalRad'  , 'to_add' , f106 , 'GlobalRad'  , aA , 'SOLWEIG' , 0)  , &
@@ -188,7 +192,7 @@ MODULE ctrl_output
        /
 
   ! BL:
-  DATA(varList(i), i=108,124)/&
+  DATA(varList(i), i=111,127)/&
        varAttr('z'         , 'to_add' , f104 , 'z'         , aA , 'BL' , 0)  , &
        varAttr('theta'     , 'to_add' , f104 , 'theta'     , aA , 'BL' , 0)  , &
        varAttr('q'         , 'to_add' , f104 , 'q'         , aA , 'BL' , 0)  , &
@@ -209,7 +213,7 @@ MODULE ctrl_output
        /
 
   ! Snow:
-  DATA(varList(i), i=125,221)/&
+  DATA(varList(i), i=128,224)/&
        varAttr('SWE_Paved'      , 'to_add' , f106 , 'SWE_Paved'      , aA , 'snow' , 0)  , &
        varAttr('SWE_Bldgs'      , 'to_add' , f106 , 'SWE_Bldgs'      , aA , 'snow' , 0)  , &
        varAttr('SWE_EveTr'      , 'to_add' , f106 , 'SWE_EveTr'      , aA , 'snow' , 0)  , &
@@ -310,7 +314,7 @@ MODULE ctrl_output
        /
 
   ! ESTM:
-  DATA(varList(i), i=222,243)/&
+  DATA(varList(i), i=225,246)/&
        varAttr('QSIBLD'   , 'to_add' , f106 , 'QSIBLD'   , aA , 'ESTM' , 0)  , &
        varAttr('TWALL1'   , 'to_add' , f106 , 'TWALL1'   , aA , 'ESTM' , 0)  , &
        varAttr('TWALL2'   , 'to_add' , f106 , 'TWALL2'   , aA , 'ESTM' , 0)  , &

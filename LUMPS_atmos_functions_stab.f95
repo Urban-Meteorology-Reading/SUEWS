@@ -26,7 +26,7 @@ SUBROUTINE STAB_lumps(H,StabilityMethod,ustar,L)
   IF(debug) WRITE(*,*)StabilityMethod,z0M,avU1,h,USTAR,L
   G_T_k=(Grav/(Temp_C+273.16))*k !gravity constant/(Temperature*Von Karman Constant)
   KUZ=k*AvU1                     !Von Karman constant*mean wind speed
-  IF(zzd<0) CALL ErrorHint(32,'Windspeed Ht too low relative to z0 [Stability calc]- values [z-z0d, z0m]',Zzd,z0m,notUsedI)
+  IF(zzd<0) CALL ErrorHint(32,'Windspeed Ht too low relative to zdm [Stability calc]- values [z-zdm, zdm]',Zzd,zdm,notUsedI)
 
   USTAR=KUZ/LOG(Zzd/Z0M)      !Initial setting of u* and calc. of L (neutral situation)
   Tstar=(-H/ustar)

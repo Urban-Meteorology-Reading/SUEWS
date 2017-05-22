@@ -4,8 +4,10 @@
 !  NT 6 Apr 2017 - include top of the CBL variables in RKUTTA scheme + add flag to include or exclude subsidence
 !  LJ 27 Jan 2016 - Removal of tabs
 
-SUBROUTINE CBL(ifirst,iMB,Gridiv)
+!Test of push
 
+SUBROUTINE CBL(ifirst,iMB,Gridiv)
+  
   USE mod_z
   USE mod_k
   USE gas
@@ -25,7 +27,7 @@ SUBROUTINE CBL(ifirst,iMB,Gridiv)
   REAL(KIND(1d0))::qh_use,qe_use,tm_K_zm,qm_gkg_zm
   REAL(KIND(1d0))::Temp_C1,avrh1,es_hPa1
   REAL(KIND(1d0))::secs0,secs1,Lv
-  INTEGER::idoy,ifirst,iMB,Gridiv,startflag
+  INTEGER::idoy,ifirst,iMB,Gridiv,startflag,iNBL
   REAL(KIND(1d0)), PARAMETER::pi=3.141592653589793d+0,d2r=pi/180.
 
   ! Reset iCBLcount at start of each metblock (HCW added 29/03/2017)
@@ -42,8 +44,16 @@ SUBROUTINE CBL(ifirst,iMB,Gridiv)
                                                     (NAN,is=6,ncolumnsdataOutBL)/)
      RETURN
   ELSEIF(avkdn<5)THEN
-     CALL CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,iMb, Gridiv)
-     RETURN
+   
+   iNBL=1
+   IF (iNBL==-9) THEN
+    CALL CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,iMb, Gridiv)
+    RETURN 
+   ELSE
+    !ADD NBL for Night:(1)Fixed input/output NBL; (2) Input Fixed Theta,Q to SUEWS; (3) Currently NBL eq 200 m
+    CALL NBL(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,iMb, Gridiv,blh_m)
+    RETURN
+   ENDIF
   ENDIF
 
   IF(startflag==0)THEN !write down initial values in previous time step
@@ -260,7 +270,7 @@ END SUBROUTINE CBL_ReadInputData
 
 !----------------------------------------------------------------------
 !-----------------------------------------------------------------------
-SUBROUTINE CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,iMB, Gridiv)
+SUBROUTINE CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,iMB,Gridiv)
 
   USE mod_z
   USE mod_k
@@ -382,6 +392,115 @@ SUBROUTINE CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,iMB, Gridiv)
 
 END SUBROUTINE CBL_initial
 
+SUBROUTINE NBL
+ 
+  USE mod_z
+  USE mod_k
+  USE gas
+  USE time
+  USE data_in
+  USE sues_data
+  USE moist
+  USE allocateArray
+  USE defaultNotUsed
+  USE cbl_module
+  USE gis_data
+  USE WhereWhen
+  
+  IMPLICIT NONE
+  REAL(KIND(1d0))::qh_use,qe_use,tm_K_zm,qm_gkg_zm
+  REAL(KIND(1d0))::qsatf,sat_vap_press,lv
+  INTEGER::i,nLineDay,Gridiv,startflag
+
+  qh_use=qhforCBL(Gridiv)   !HCW 21 Mar 2017
+  qe_use=qeforCBL(Gridiv)
+  IF(qh_use<-900.OR.qe_use<-900)THEN  ! observed data has a problem
+     CALL ErrorHint(22,'Unrealistic qh or qe_value for CBL.',qh_use,qe_use,qh_choice)
+  ENDIF
+  
+  nLineDay=0
+  DO i=1,nlineInData
+     IF (INT(IniCBLdata(i,1))<=id)THEN
+        nLineDay=nLineDay+1
+     ENDIF
+  ENDDO
+  
+  !Assume Theta and Q in the night constantly Equal to the ones in the morning for CBL to run
+  tm_K=IniCBLdata(nLineDay,7)*1000
+  qm_gkg=IniCBLdata(nLineDay,8)*1000
+  !NBL currently fixed to 200 m
+  blh_m=200
+
+  iCBLcount=iCBLcount+1
+  dataOutBL(iCBLcount,1:ncolumnsdataOutBL,Gridiv)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime,blh_m,tm_K, & 
+                qm_gkg,& 
+                (NAN,is=9,ncolumnsdataOutBL)/)
+  
+  IF(InitialData_use==2) THEN
+     blh_m=IniCBLdata(nLineDay,2)
+     gamt_Km=IniCBLdata(nLineDay,3)
+     gamq_gkgm=IniCBLdata(nLineDay,4)
+     tp_K=IniCBLdata(nLineDay,5)
+     qp_gkg=IniCBLdata(nLineDay,6)
+     tm_K=IniCBLdata(nLineDay,7)
+     qm_gkg=IniCBLdata(nLineDay,8)
+  ELSEIF(InitialData_use==1 .AND. IniCBLdata(nlineDay,1)==id)THEN   ! Changed from i to nlineDay, HCW 29 March 2017
+     blh_m=IniCBLdata(nLineDay,2)
+     gamt_Km=IniCBLdata(nLineDay,3)
+     gamq_gkgm=IniCBLdata(nLineDay,4)
+     tm_K_zm=(Temp_C+C2K)*((1000/Press_hPa)**(gas_ct_dry/avcp))
+     tm_K=tm_K_zm-psyh*qh_use/(k*ustar*avcp*avdens)
+     es_hPa=sat_vap_press(Temp_C,Press_hPa,1)
+     qm_gkg_zm=622*avrh/(100*Press_hPa/es_hPa-avrh)
+     lv=(2500.25-2.365*temp_C)*1000
+     qm_gkg=qm_gkg_zm-psyh*qe_use/(k*ustar*avdens*lv)
+     tp_K=tm_K
+     qp_gkg=qm_gkg
+  ELSEIF(InitialData_use==0)THEN
+     blh_m=241.5
+     gamt_Km=0.043
+     gamq_gkgm=0.0092
+     tm_K_zm=(Temp_C+C2K)*((1000/Press_hPa)**(gas_ct_dry/avcp))
+     tm_K=tm_K_zm-psyh*qh_use/(k*ustar*avcp*avdens)
+     es_hPa=sat_vap_press(Temp_C,Press_hPa,1)
+     qm_gkg_zm=622*avrh/(100*Press_hPa/es_hPa-avrh)
+     lv=(2500.25-2.365*temp_C)*1000
+     qm_gkg=es_hPa-psyh*qe_use/(k*ustar*avdens*lv)
+     tp_K=tm_K
+     qp_gkg=qm_gkg
+  ENDIF
+
+  gamq_kgkgm=gamq_gkgm/1000.
+  qp_kgkg=qp_gkg/1000    !humidities: g/kg -> kg/kg   q+
+  qm_kgkg=qm_gkg/1000    !conc at mixing layer height h
+  tp_C=tp_K-C2K
+  tm_C=tm_K-C2K
+
+  IF(sondeflag==1 .AND. cblday(id)==1) THEN
+     !if gamma theta varies with z (selected by setting gthetaflag=1)
+     !if gamma q varies with z (selected by setting ghumflag=1)
+     CALL sonde(id)
+     gamt_Km=0
+     gamq_kgkgm=0
+  ENDIF
+
+  !adjusting qp and pm in case of saturation
+  IF(qp_kgkg.GT.qsatf(tp_C,Press_hPa).OR.qp_kgkg.LT.0)THEN
+     qp_kgkg = qsatf(tp_C,Press_hPa)
+  ENDIF
+  IF(qm_kgkg.GT.qsatf(tm_C,Press_hPa).OR.qm_kgkg.LT.0) THEN
+     qm_kgkg = qsatf(tm_C,Press_hPa)
+  ENDIF
+                
+  startflag=0
+END SUBROUTINE NBL
+
+
+
+
+
+
+
 !------------------------------------------------------------------------
 !------------------------------------------------------------------------
 FUNCTION qsatf(T,PMB) RESULT(qsat)
@@ -402,3 +521,4 @@ FUNCTION qsatf(T,PMB) RESULT(qsat)
   ES = A*dEXP(B*T/(C+T))
   qsat = (molar_wat_vap/molar)*ES/PMB!(rmh2o/rmair)*ES/PMB
 END FUNCTION qsatf
+

@@ -1,4 +1,4 @@
-SUBROUTINE ErrorHint(errh,ProblemFile,value,value2,valueI)
+SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
   !errh        -- Create a numbered code for the situation so get a unique message to help solve the problem
   !ProblemFile -- Filename where the problem occurs/error message
   !value       -- Error value (real number with correct type)
@@ -59,7 +59,11 @@ SUBROUTINE ErrorHint(errh,ProblemFile,value,value2,valueI)
   ELSEIF(errh==3) THEN
      text1='Met forcing file should contain only 1 year of data.'
      v1=.TRUE.   
-  ! 4,5
+  ELSEIF(errh==4) THEN
+     text1='Rainfall in original met forcing file exceeds intensity threshold.'
+     v2=.TRUE.   
+     returnTrue=.TRUE.   
+  !5    
   ELSEIF(errh==6) THEN
      text1='Value obtained exceeds permitted range, setting to +/-9999 in output file.'
      v1=.TRUE.
@@ -95,7 +99,9 @@ SUBROUTINE ErrorHint(errh,ProblemFile,value,value2,valueI)
   ELSEIF(errh==17) THEN
      text1= 'Problem with (z-zd) and/or z0.'
      v2=.TRUE.
-  ! 18
+  ELSEIF(errh==18) THEN
+     text1='Check soil depth relative to soil moisture and capacity.'
+     v4=.TRUE.
   ELSEIF(errh==19)THEN
      text1='Caution - check range.'
      v4=.TRUE.
@@ -273,7 +279,10 @@ SUBROUTINE ErrorHint(errh,ProblemFile,value,value2,valueI)
      v8=.TRUE.
   ELSEIF(errh==71) THEN
      text1='Check input file SUEWS_Conductance.txt.'
-     v3=.TRUE.   
+     v3=.TRUE.
+  ELSEIF(errh==72) THEN
+     text1='RunControl.nml: ResolutionFilesOut must be an integer multiple of TSTEP'
+     v6=.TRUE.
   ENDIF
   !---------------------------------------------------------------------
   
@@ -331,7 +340,7 @@ SUBROUTINE ErrorHint(errh,ProblemFile,value,value2,valueI)
   ENDIF
   
   
-  !When returnTrue=true, then the program can continue despite the warnigns
+  !When returnTrue=true, then the program can continue despite the warnings
   IF(returnTrue) THEN
      !write(*,*)'Problems.txt has been closed and overwritten if other errors occur'
      RETURN  !Continue program

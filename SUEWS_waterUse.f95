@@ -1,11 +1,13 @@
 ! Conversion of water use (irrigation)
 ! Last modified:
+!  LJ  6 Apr 2017  - WUchoice changed to WaterUseMethod
+!  TK 14 Mar 2017  - Corrected the variable name WUAreaEveTr_m2 -> WUAreaGrass_m2 (row 35)
+!                    Corrected conversion from m to mm /1000 -> *1000 (row 47 and 60)
 !  LJ 27 Jan 2016  - Removing Tab:s and cleaning the code
 !  HCW 12 Feb 2015 - Water use [mm] now inidcates the amount of water supplied for each surface
 !  HCW 26 Jan 2015 - Water use [mm] is the same for each surface at the moment and indicates the
 !                    amount of water supplied for each irrigated area
-!  TK 14 Mar 2017  - Corrected the variable name WUAreaEveTr_m2 -> WUAreaGrass_m2 (row 35)
-!                    Corrected conversion from m to mm /1000 -> *1000 (row 47 and 60)
+!
 ! To Do:
 !	- Add functionality for water on paved surfaces (street cleaning, fountains)
 !===================================================================================
@@ -105,7 +107,7 @@
      ! Total water use for the whole study area [mm]
      wu = wu_EveTr*sfr(ConifSurf) + wu_DecTr*sfr(DecidSurf) + wu_Grass*sfr(GrassSurf)
   
-  endif   !End WaterUseMethod
+  endif   !End WU_choice
   ! --------------------------------------------------------------------------------
 
   ! Internal water use is supplied in SUEWS_Irrigation in mm h-1

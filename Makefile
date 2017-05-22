@@ -1,17 +1,22 @@
-
-
-CC = gfortran $(CFLAGS)          # compiler 
+CC = gfortran $(CFLAGS)          # compiler
+CC_nc = gfortran $(CFLAGS_nc)    # compiler with netcdf support
 TARGET = SUEWS_V2017a      # program name
-CFLAGS = -g -Wall -Wtabs -fbounds-check
+CFLAGS = -g -pg -Wall -Wtabs -fbounds-check -cpp -Wno-unused-dummy-argument -Wno-unused-variable \
+				-fbacktrace -ffpe-trap=zero,overflow,underflow,invalid
+CFLAGS_nc = -g -pg -Wall -Wtabs -fbounds-check -I`nc-config --includedir` -Dnc=1 -cpp \
+				-Wno-unused-dummy-argument -Wno-unused-variable\
+				-fbacktrace -ffpe-trap=zero,overflow,underflow,invalid
+
 # All the files which include modules used by other modules (these therefore
 # needs to be compiled first)
 MODULES = LUMPS_Module_constants.o  \
           LUMPS_metRead.o  \
-		  SUEWS_MetDisagg.o \
+		  		SUEWS_MetDisagg.o \
           SOLWEIG_modules.o  \
           SUEWS_Files_run_Control.o \
-		  precmod.o \
-		  stringmod.o
+					precmod.o \
+					stringmod.o \
+					qsort_c_module.o
 # Rest of the files including modules and functions which are independent
 OTHERS =  BLUEWS_CBL.o   \
           LUMPS_NARP_v3.o \
@@ -45,11 +50,11 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_InputHeaders.o \
           SUEWS_InterpHourlyProfiles.o \
           SOLWEIG_2014a_core.o  \
+					SOLWEIG_Initial.o  \
           SOLWEIG_clearnessindex_2013b.o  \
           SOLWEIG_cylindric_wedge.o  \
           SOLWEIG_diffusefraction.o  \
           SOLWEIG_EsriAsciiGrid.o  \
-          SOLWEIG_Initial.o  \
           SOLWEIG_Kside_veg_v24.o  \
           SOLWEIG_Lside_veg_v2.o  \
           SOLWEIG_Lvikt_veg.o  \
@@ -58,23 +63,26 @@ OTHERS =  BLUEWS_CBL.o   \
           SOLWEIG_shadowingfunction_20.o  \
           SOLWEIG_sunonsurface_veg.o  \
           SOLWEIG_wallinsun_veg.o  \
-          SUEWS_AnOHM_v2016.o  \
+          SUEWS_AnOHM.o  \
           SUEWS_ESTM_functions.o \
           SUEWS_ESTM_initials.o \
           SUEWS_ESTM_v2016.o \
-	  	  SUEWS_CO2.o
-
-TEST =		SUEWS_Initial.o \
-			SUEWS_Output.o
+          SUEWS_CO2.o \
+					SUEWS_Initial.o
+# modules under rapid development
+TEST = SUEWS_Diagnostics.o
 
 # Build main program - main uses MODULES and OTHERS
 main: SUEWS_Program.f95 $(MODULES) $(OTHERS) $(TEST)
-	$(CC) SUEWS_Program.f95 $(CFLAGS) -c; \
-	$(CC) SUEWS_Program.o $(MODULES) $(OTHERS) $(TEST) -o $(TARGET)
+	$(CC) SUEWS_ctrl_output.f95  -c ; \
+	$(CC) SUEWS_Program.f95  -c ; \
+	$(CC) SUEWS_Program.o $(MODULES) $(OTHERS) $(TEST) SUEWS_ctrl_output.o -o $(TARGET)
 
-# If TEST have changed, compile them again
-$(TEST): $(MODULES) $(subst .o,.f95, $(TEST))
-	$(CC) -c $(subst .o,.f95, $@)
+# Build main program with NETCDF support - main uses MODULES and OTHERS
+netcdf: SUEWS_Program.f95 $(MODULES) $(OTHERS) $(TEST)
+	$(CC_nc) SUEWS_ctrl_output.f95  -c ; \
+	$(CC_nc) SUEWS_Program.f95  -c ; \
+	$(CC_nc) SUEWS_Program.o $(MODULES) $(OTHERS) $(TEST) SUEWS_ctrl_output.o -L`nc-config --libdir` -lnetcdf -lnetcdff -o $(TARGET)
 
 # If OTHERS have changed, compile them again
 $(OTHERS): $(MODULES) $(subst .o,.f95, $(OTHERS))
@@ -82,6 +90,10 @@ $(OTHERS): $(MODULES) $(subst .o,.f95, $(OTHERS))
 
 # If MODULES have changed, compile them again
 $(MODULES): $(subst .o,.f95, $(MODULES))
+	$(CC) -c $(subst .o,.f95, $@)
+
+# If TEST have changed, compile them again
+$(TEST): $(subst .o,.f95, $(TEST))
 	$(CC) -c $(subst .o,.f95, $@)
 
 # If wanted, clean all *.o files after build

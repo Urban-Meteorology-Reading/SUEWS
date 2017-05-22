@@ -1,6 +1,6 @@
  subroutine drainage(StorCap,DrainEq,DrainCoef1,DrainCoef2)
 !Calculation of drainage for each land surface. 
-!INPUT: Storage capasity, type of drainage equation used, drainage coefficients
+!INPUT: Storage capacity, type of drainage equation used, drainage coefficients
 !       used in the equation
 !Modified by HCW 16 Feb 2015
 !  Removed option of Eq 4 (calculation needs to be checked before re-implementing).

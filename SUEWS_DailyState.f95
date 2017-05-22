@@ -78,7 +78,8 @@ SUBROUTINE DailyState(Gridiv)
 
   !------------------------------------------------------------------------------------------------
 
-  REAL(KIND(1d0)):: capChange,porChange,albChangeDecTr,albChangeEveTr,albChangeGrass,deltaLAI,deltaLAIEveTr,deltaLAIGrass
+  ! REAL(KIND(1d0)):: capChange,porChange,albChangeDecTr,albChangeEveTr,albChangeGrass,deltaLAI,deltaLAIEveTr,deltaLAIGrass
+  REAL(KIND(1d0)):: capChange,porChange,albChangeDecTr,albChangeEveTr,albChangeGrass,deltaLAIEveTr,deltaLAIGrass
   REAL(KIND(1d0)):: no,yes,indHelp   !Switches and checks for GDD
   CHARACTER(len=10):: grstr2
 
@@ -480,7 +481,7 @@ SUBROUTINE DailyState(Gridiv)
      !--------------------------------------------------------------------------
      !Write out DailyState file (1 row per day)
 
-     IF (writedailyState==1) THEN     
+     IF (writedailyState==1 .AND. ncMode==0) THEN
         !write(*,*) 'writing out daily state for day id:',id 
         !Define filename
         ! WRITE(grstr2,'(i5)') Gridiv      !Convert grid number for output file name
@@ -531,6 +532,9 @@ SUBROUTINE DailyState(Gridiv)
         ! Close the daily state file
         CLOSE(60)
      ENDIF  !End writedailystate
+     IF ( writedailyState==1 .AND. ncMode==1 ) THEN
+        ! SUEWS_DailyStateOut_nc(iy, Gridiv)
+     END IF
 
      ! Set Daylight Saving ---------------------------------------------------------
      IF (id>=DayLightSavingDay(1).AND.id<=DayLightSavingDay(2)) THEN   !Summer time

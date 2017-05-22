@@ -3,8 +3,19 @@
 ! Created by HCW Aug 2016 to calculate biogenic component of CO2 flux.
 ! -ve Fc for uptake; +ve Fc for emission      
 !
+! Last modified:
+! HCW 11 Apr 2017 - Tidied and merged with LJ code 
+! LJ   6 Apr 2017 - Minimum limit for soil respiration with BiogenCO2Choice = 2 was set to 0.6 umol m-2 s-1
+!                 - Choice for non-rectancular hyperbola to calculate the biogenic CO2 flux added (BiogenCO2Choice = 2)
+!                    (Bellucco et al. 2017, Agric. Forest. Met. 236, 113-122).
+!                 - Both the "local Helsinki model" (BiogenCO2Choice = 2)) and "general model" BiogenCO2Choice = 3) are implemented
+!                 - Snow fraction added to the calculation of active vegetation fraction and the soil respiration
+!
 ! To Do:
-!   - Add different options
+!  - Active vegetation goes to zero with LAI minimum, but this needs to be changed so some minimum value
+!    especially in the case of evergreentrees
+!  - Move some of the parameters to input files
+!  - Now on weekend nighttime population is used throughout the day. Do we need extra column in SiteSelect for daytime weekend population?
 !========================================================================================
 
   USE AllocateArray   
@@ -16,58 +27,108 @@
   
   INTEGER:: iv ! counter
   INTEGER:: BiogenCO2Choice = 1  !Move to RunControl later 
+  ! 1 - Rectangular hyperbola (Ruimy, Schmid, Flanagan)
+  ! 2 - Non-rectangular hyperbola, Helsinki (Bellucco et al. 2016)
+  ! 3 - Non-rectangular hyperbola, general  (Bellucco et al. 2016)
   
   REAL(KIND(1d0)):: PAR_umolm2s1
-  REAL(KIND(1d0)):: Schmid2000_Pho, Flanag2002_Pho, Ru1995_Pho, Schmid2000_Res
-    
+       
   REAL(KIND(1d0)):: KdnToPAR ! Conversion from Kdn to PAR 
-  REAL(KIND(1d0)):: F02_AMax, F02_alpha ! Flanagan et al. (2002) coefficients for rectangular hyperbola light response curve
-  REAL(KIND(1d0)):: R95_AMax, R95_alpha ! Ruimy et al. (1995) coefficients for rectangular hyperbola light response curve
+  
   REAL(KIND(1d0)):: Min_respi ! Minimum soil respiration rate (for cold-temperature limit)
   
+  ! Coefficients for rectangular hyperbola light response curve (for each surface)
+  REAL(KIND(1d0)),DIMENSION(nvegsurf):: RecHyp_AMax    ! umol CO2 m-2 s-1
+  REAL(KIND(1d0)),DIMENSION(nvegsurf):: RecHyp_alpha   ! umol CO2 (umol photons)-1
+  
+  ! Coefficients for non-rectangular hyperbola (Bellucco et al. 2016)
+  REAL(KIND(1d0)):: alpha_NRH, beta_NRH, theta_NRH
+
+  REAL(KIND(1d0)):: Bellucco2016_Pho, Bellucco2016_Res
+  
   REAL(KIND(1d0)),DIMENSION(nvegsurf):: active_veg_fr
+  REAL(KIND(1d0)),DIMENSION(nvegsurf):: Fc_photo_surf   ! Photosynthesis for each vegetated surface
   
   ! Define coefficients (could be moved elsewhere) ------------
-  ! Tidy these up (nomenclature and signs)
-  KdnToPAR = 0.473  !Papaioannou et al. (1993) (mean annual value)
-  F02_AMax  = -16.3     !Flanagan et al. (2002) Mean of summer 1998, 1999, 2000
-  F02_alpha = -0.0205   !Flanagan et al. (2002) Mean of summer 1998, 1999, 2000
-  R95_AMax  = 43.35      !Ruimy et al. (1995)
-  R95_alpha = 0.044
+  !!! Tidy these up (nomenclature and signs)
+  !KdnToPAR = 0.473  !Papaioannou et al. (1993) (mean annual value)
+  KdnToPAR  = 0.46   !From Tsubo and Walker, 2005: PAR is on average 0.46 Kdown
   
-  Min_respi = 0.6   ! LJ & UHEL
+  Min_respi = 0.6   ! LJ & UHEL (0.6 umol m-2 s-1 estimated from Hyytiala forest site)
   
   ! Calculate PAR from Kdown ----------------------------------
   PAR_umolm2s1 = JtoumolPAR * KdnToPAR * avKdn
-  
-  ! Get active vegetation surface -----------------------------  
-  DO iv=ivConif,ivGrass   !For vegetated surfaces
-     !active_veg_fr(iv) = (sfr(iv+2)*(1-snowFrac(iv+2)))*(lai(id-1,iv)-LaiMin(iv))/(LaiMax(iv)-LaiMin(iv)) !LJ - snow?
-     active_veg_fr(iv) = (sfr(iv+2))*(lai(id-1,iv)-LaiMin(iv))/(LaiMax(iv)-LaiMin(iv)) !LJ - snow?
-  ENDDO  
-   
-  ! Calculate carbon uptake due to photosynthesis -------------
-  ! Eq 6 Schmid et al. (2000) empirical model for hardwood forest (GEP)
-  Schmid2000_Pho = -(35*(PAR_umolm2s1/(590 + PAR_umolm2s1)))  !umol m-2 s-1 !Removed dark respiration rate
-  ! Flanagan et al. (2002) empirical model for temperate grassland (GPP)
-  Flanag2002_Pho = F02_AMax*F02_alpha*PAR_umolm2s1/(F02_alpha*PAR_umolm2s1 + F02_AMax)  !umol m-2 s-1
-  ! Ruimy et al. (1995) review for plant canopies
-  Ru1995_Pho = -R95_AMax*R95_alpha*PAR_umolm2s1/(R95_alpha*PAR_umolm2s1 + R95_AMax)  !umol m-2 s-1
+ 
+  ! Calculate active vegetation surface -----------------------
+  !Now this is zero always when LAI in its minimum values. This needs to vary between the summer time maximum and some minimum value
+  !especially in the case of evergreen trees (i.e. in early March LAI can be in its minimum value, but air temperature and radiation
+  !such that uptake can take place)
+  DO iv=ivConif,ivGrass   !For vegetated surfaces. Snow included although quite often LAI will be in its minimum when snow on ground
+     active_veg_fr(iv) = (sfr(iv+2)*(1-snowFrac(iv+2)))*(lai(id-1,iv)-LaiMin(iv))/(LaiMax(iv)-LaiMin(iv))
+  ENDDO
+
     
-  ! Calculate ecosystem respiration (for natural surfaces) ----
-  ! Eq 5 Schmid et al. (2000)
-  Schmid2000_Res = MAX(Min_respi, 1.08*exp(0.064*Temp_C))   !umol m-2 s-1   !!!Switch to using soil temp?
+  IF(BiogenCO2Choice == 1) THEN   ! Rectangular hyperbola         
+     ! Set these in input files 
+     !! Schmid et al. (2000) empirical model for hardwood forest (Eq 6. with dark respiration rate removed)
+     !RecHyp_AMax(:)  = 35     
+     !RecHyp_alpha(:) = 0.0593 
+     !! Flanagan et al. (2002) empirical model for temperate grassland (mean of summer 1998, 1999, 2000)
+     !RecHyp_AMax(:)  = 16.3     
+     !RecHyp_alpha(:) = 0.0205
+     ! Ruimy et al. (1995) review for plant canopies
+     RecHyp_AMax(:)  = 43.35      
+     RecHyp_alpha(:) = 0.044
+     
+     ! Calculate carbon uptake due to photosynthesis -------------
+     Fc_photo = 0
+     DO iv=ivConif,ivGrass   
+        Fc_photo_surf(iv) = -RecHyp_AMax(iv)*RecHyp_alpha(iv)*PAR_umolm2s1/(RecHyp_alpha(iv)*PAR_umolm2s1 + RecHyp_AMax(iv))  
+        ! For active vegetation fraction only
+        Fc_photo = Fc_photo + Fc_photo_surf(iv)*active_veg_fr(iv)  !umol m-2 s-1
+     ENDDO
+         
+     ! Calculate ecosystem respiration ---------------------------
+     ! Eq 5 Schmid et al. (2000), with minimum value from UHEL
+     Fc_respi = MAX(Min_respi, 1.08*exp(0.064*Temp_C))   !umol m-2 s-1   !!!Switch to using soil temp?
+     ! For natural surfaces only (with no snow)
+     Fc_respi = Fc_respi* (sfr(ConifSurf)*(1-snowFrac(ConifSurf))+sfr(DecidSurf)*(1-snowFrac(DecidSurf))+ &
+                                sfr(GrassSurf)*(1-snowFrac(GrassSurf))+sfr(BSoilSurf)*(1-snowFrac(BSoilSurf)))
   
-  IF(BiogenCO2Choice == 1) THEN   ! Use Ruimy1995 for plants
-     Fc_photo = Ru1995_Pho*(active_veg_fr(ConifSurf-2) + active_veg_fr(DecidSurf-2) + active_veg_fr(GrassSurf-2))             
-     Fc_respi = Schmid2000_Res*(sfr(ConifSurf)+sfr(DecidSurf)+sfr(GrassSurf)+sfr(BSoilSurf))        
-  ENDIF
-  
-  IF(BiogenCO2Choice == 2) THEN   ! Use Schmid2000 for trees; Flanag2002 for grass
-     Fc_photo = Schmid2000_Pho*active_veg_fr(ConifSurf-2)+ & 
-             Schmid2000_Pho*active_veg_fr(DecidSurf-2)+ & 
-             Flanag2002_Pho*active_veg_fr(GrassSurf-2)             
-     Fc_respi = Schmid2000_Res*(sfr(ConifSurf)+sfr(DecidSurf)+sfr(GrassSurf)+sfr(BSoilSurf))        
+  ELSEIF(BiogenCO2Choice == 2 .OR. BiogenCO2Choice == 3) THEN   !Bellucco et al. (2016)
+     IF(BiogenCO2Choice == 2) THEN   ! Local Helsinki model       
+        alpha_NRH = 0.031  ! umol CO2 umol photons-1
+        beta_NRH  = 17.793 ! umol m^-2 s^-1
+        theta_NRH = 0.723  ! -
+
+        ! Respiration calculated from Helsinki (Järvi et al. 2012), 0.6 limit estimated from Hyytiala forest site
+        Bellucco2016_Res = MAX(Min_respi, 3.229*exp(0.0329*Temp_C)) 
+
+     ELSEIF (BiogenCO2Choice == 3) THEN ! General model 
+        ! Not currently recommended as includes also some anthropogenic impacts. Should maybe be separate from other biogen choices?
+
+        ! Alpha and beta calculated as a function of vegetation cover fraction
+        alpha_NRH = 0.005 + 0.016*(sfr(ConifSurf)+sfr(DecidSurf)+sfr(GrassSurf)+sfr(BSoilSurf))   !umol CO2 umol photons-1
+        beta_NRH  = -8.474 + 33.454*(sfr(ConifSurf)+sfr(DecidSurf)+sfr(GrassSurf)+sfr(BSoilSurf)) !umol m^-2 s^-1
+        
+        theta_NRH = 0.96   ! -
+
+        ! Respiration set as fixed value
+        Bellucco2016_Res = 2.43   ! umol m^-2 s^-1
+
+     ENDIF
+
+     ! Photosynthesis calculated using NRH
+     Bellucco2016_Pho = -(1/(2*theta_NRH)*(alpha_NRH*PAR_umolm2s1+beta_NRH- &
+                           sqrt((alpha_NRH*PAR_umolm2s1+beta_NRH)**2-4*alpha_NRH*beta_NRH*theta_NRH*PAR_umolm2s1)))
+
+     Fc_photo = Bellucco2016_Pho*active_veg_fr(ConifSurf-2)+ &
+                Bellucco2016_Pho*active_veg_fr(DecidSurf-2)+ &
+                Bellucco2016_Pho*active_veg_fr(GrassSurf-2)
+
+     Fc_respi = Bellucco2016_Res * (sfr(ConifSurf)*(1-snowFrac(ConifSurf))+sfr(DecidSurf)*(1-snowFrac(DecidSurf))+ &
+                                    sfr(GrassSurf)*(1-snowFrac(GrassSurf))+sfr(BSoilSurf)*(1-snowFrac(BSoilSurf)))
+            
   ENDIF
   
   ! Combine to find biogenic CO2 flux
@@ -135,6 +196,7 @@
   ! Calculate CO2 emissions from human metabolism -------------
   ! (Pop densities in ha-1 -> m-2)
   PopDorNorT = HumActivity_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu) !!! Set separately later !!!
+  IF (iu==2) PopDorNorT = 1   !!!   
   ActDorNorT = HumActivity_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)   !1=night, 2=day, 1-2=transition
   Fc_metab = (PopDensNighttime*(2-PopDorNorT) + PopDensDaytime*(PopDorNorT-1))/10000 * (120*(2-ActDorNorT) + 280*(ActDorNorT-1)) !umol m-2 s-1
   QF_metab = (PopDensNighttime*(2-PopDorNorT) + PopDensDaytime*(PopDorNorT-1))/10000 * (75*(2-ActDorNorT) + 175*(ActDorNorT-1)) !W m-2 
@@ -157,7 +219,7 @@
      
   ! Calculate CO2 emissions from building energy use ----------
   IF(AnthropCO2Method == 2) THEN
-     ! Assume temperature independent part of QF is traffic + metabolism, 
+     ! Assume temperature independent part of QF is traffic + metabolism, !!! need QB_0_NB here!!!
      ! CDD part is electric A/C (no local CO2 emissions)
      ! HDD part is building energy use, split between electric (no local emissions CO2) and combustion (CO2) heating
      Fc_build = QF_SAHP_heat * EF_umolCO2perJ * FracFossilFuel

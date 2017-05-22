@@ -8,7 +8,8 @@
 !  - then over blocks (met data read in and stored for each block)
 !  - then over rows
 !  - then over grids
-!
+!Last modified by TS 10 Apr 2017  - conditional compilation blocks added for netCDF adaptation
+!Last modified by LJ 6 Apr 2017   - Snow initialisation, allocation and deallocation added
 !Last modified by HCW 10 Feb 2017 - Disaggregation of met forcing data
 !Last modified by HCW 12 Jan 2017 - Changes to InitialConditions
 !Last modified by HCW 26 Aug 2016 - CO2 flux added
@@ -39,33 +40,35 @@ PROGRAM SUEWS_Program
   USE Sues_Data
   USE Time
   USE WhereWhen
+  USE ctrl_output
+
 
   IMPLICIT NONE
 
   CHARACTER(len = 4) :: year_txt  !Year as a text string
 
   CHARACTER(len = 20):: FileCodeX,& !Current file code
-                        FileCodeXWY,& !File code without year
-                        FileCodeXWG !File code without grid
+       FileCodeXWY,& !File code without year
+       FileCodeXWG !File code without grid
   CHARACTER(len = 20):: grid_txt,&    !Grid number as a text string (from FirstGrid to LastGrid)
-                        tstep_txt,&   !Model timestep (in minutes) as a text string (minutes)
-                        ResIn_txt, ResInESTM_txt     !Resolution of Original met/ESTM forcing file as a text string (minutes)
+       tstep_txt,&   !Model timestep (in minutes) as a text string (minutes)
+       ResIn_txt, ResInESTM_txt     !Resolution of Original met/ESTM forcing file as a text string (minutes)
 
   INTEGER:: nlinesLimit,&   !Max number of lines that can be read in one go for each grid
-            NumberOfYears   !Number of years to be run
+       NumberOfYears   !Number of years to be run
 
   INTEGER:: UnitOrigMet = 100       !Unit number for original met forcing files (arbitrary)
-  INTEGER:: UnitOrigESTM = 101      !Unit number for original ESTM forcing files (arbitrary)  
-  
+  INTEGER:: UnitOrigESTM = 101      !Unit number for original ESTM forcing files (arbitrary)
+
   INTEGER:: year_int, & ! Year as an integer (from SiteSelect rather than met forcing file)
-            igrid,&     !Grid number (from 1 to NumberOfGrids)
-            iblock,&    !Block number (from 1 to ReadBlocksMetData)
-            ir,irMax,&  !Row number within each block (from 1 to irMax)
-            rr !Row of SiteSelect corresponding to current year and grid
-            
+       igrid,&     !Grid number (from 1 to NumberOfGrids)
+       iblock,&    !Block number (from 1 to ReadBlocksMetData)
+       ir,irMax,&  !Row number within each block (from 1 to irMax)
+       rr !Row of SiteSelect corresponding to current year and grid
+
   INTEGER:: ios
 
-  INTEGER:: iv          
+  INTEGER:: iv
 
   REAL::  timeStart, timeFinish ! profiling use, AnOHM TS
   ! REAL :: xErr      ! error in Bo iteration, AnOHM TS 20160331
@@ -74,29 +77,29 @@ PROGRAM SUEWS_Program
   !==========================================================================
 
   ! Start counting cpu time
-  CALL cpu_TIME(timeStart)
-  
+  CALL CPU_TIME(timeStart)
+
   WRITE(*,*) '========================================================'
   WRITE(*,*) 'Running ',progname
-  
+
   ! Initialise error file (0 -> problems.txt file will be newly created)
   errorChoice=0
   ! Initialise error file (0 -> warnings.txt file will be newly created)
   warningChoice=0
   ! Initialise OutputFormats to 1 so that output format is written out only once per run
   OutputFormats = 1
-  
+
   ! Initialise WhereWhen variables for error handling
   GridID_text = '00000'
   datetime = '00000'
-  
-  ! Read RunControl.nml and all .txt input files from SiteSelect spreadsheet 
-  CALL overallRunControl  
- 
+
+  ! Read RunControl.nml and all .txt input files from SiteSelect spreadsheet
+  CALL overallRunControl
+
   WRITE(tstep_txt,'(I5)') tstep/60  !Get tstep (in minutes) as a text string
   WRITE(ResIn_txt,'(I5)') ResolutionFilesIn/60  !Get ResolutionFilesIn (in minutes) as a text string
-  WRITE(ResInESTM_txt,'(I5)') ResolutionFilesInESTM/60  
-  
+  WRITE(ResInESTM_txt,'(I5)') ResolutionFilesInESTM/60
+
   ! Find first and last year of the current run
   FirstYear = MINVAL(INT(SiteSelect(:,c_Year)))
   LastYear  = MAXVAL(INT(SiteSelect(:,c_Year)))
@@ -107,7 +110,7 @@ PROGRAM SUEWS_Program
   ! N.B. need to have the same grids for each year
   NumberOfGrids = INT(nlinesSiteSelect/NumberOfYears)
 
-    
+
   !! Find the first and last grid numbers (N.B. need to have the same grids for each year)
   !FirstGrid = minval(int(SiteSelect(:,c_Grid)))
   !LastGrid  = maxval(int(SiteSelect(:,c_Grid)))
@@ -116,10 +119,23 @@ PROGRAM SUEWS_Program
   ENDIF
 
   ALLOCATE (GridIDmatrix(NumberOfGrids)) !Get the nGrid numbers correctly
+  ALLOCATE (GridIDmatrix0(NumberOfGrids)) !Get the nGrid numbers correctly
+
   DO igrid=1,NumberOfGrids
      GridIDmatrix(igrid) = INT(SiteSelect(igrid,c_Grid))
   ENDDO
 
+#ifdef nc
+  ! sort grid matrix to conform the geospatial layout as in QGIS, TS 14 Dec 2016
+  IF (ncMode==1) THEN
+     GridIDmatrix0=GridIDmatrix
+     CALL sortGrid(GridIDmatrix0,GridIDmatrix,nRow,nCol)
+  ENDIF
+  ! GridIDmatrix0 stores the grid ID in the original order
+#endif
+
+
+  ! GridIDmatrix=GridIDmatrix0
   WRITE(*,*) '--------------------------------------------'
   WRITE(*,*) 'Years identified:',FirstYear,'to',LastYear
   WRITE(*,*) 'No. grids identified:',NumberOfGrids,'grids'
@@ -127,7 +143,7 @@ PROGRAM SUEWS_Program
   ! Set limit on number of lines to read
   nlinesLimit = INT(FLOOR(MaxLinesMet/REAL(NumberOfGrids,KIND(1d0))))  !Uncommented HCW 29 Jun 2016
   !nlinesLimit = 24*nsh  !Commented out HCW 29 Jun 2016
-  
+
   ! ---- Allocate arrays ----------------------------------------------------
   ! Daily state needs to be outside year loop to transfer states between years
   ALLOCATE(ModelDailyState(NumberOfGrids,MaxNCols_cMDS))   !DailyState
@@ -140,17 +156,17 @@ PROGRAM SUEWS_Program
   ModelDailyState(:,:) = -999
   DailyStateFirstOpen(:) = 1
   !flagRerunAnOHM(:) = .TRUE.
-  
+
   ! -------------------------------------------------------------------------
 
   ! Initialise ESTM (reads ESTM nml, should only run once)
   IF(StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
-     IF(Diagnose==1) write(*,*) 'Calling ESTM_initials...' 
+     IF(Diagnose==1) WRITE(*,*) 'Calling ESTM_initials...'
      CALL ESTM_initials
   ENDIF
 
   ! -------------------------------------------------------------------------
-  
+
   !==========================================================================
   DO year_int=FirstYear,LastYear   !Loop through years
 
@@ -164,26 +180,27 @@ PROGRAM SUEWS_Program
      ! Find number of model time-steps per resolution of original met forcing file
      Nper_real = ResolutionFilesIn/REAL(Tstep,KIND(1d0))
      Nper=INT(Nper_real)
+
      IF(Nper /= Nper_real) THEN
         CALL ErrorHint(2,'Problem in SUEWS_Program: check resolution of met forcing data (ResolutionFilesIn)', &
-                            'and model time-step (Tstep).', & 
-                              REAL(Tstep,KIND(1d0)),NotUsed,ResolutionFilesIn)
+             'and model time-step (Tstep).', &
+             REAL(Tstep,KIND(1d0)),NotUsed,ResolutionFilesIn)
      ELSEIF(Nper > 1) THEN
         WRITE(*,*) 'Resolution of met forcing data: ',TRIM(ADJUSTL(ResIn_txt)),' min;', &
-                      ' model time-step: ',TRIM(ADJUSTL(tstep_txt)),' min', ' -> SUEWS will perform disaggregation.' 
-        IF(Diagnose==1) write(*,*) 'Getting information for met disaggregation'
-        ! Get names of original met forcing file(s) to disaggregate (using first grid)   
+             ' model time-step: ',TRIM(ADJUSTL(tstep_txt)),' min', ' -> SUEWS will perform disaggregation.'
+        IF(Diagnose==1) WRITE(*,*) 'Getting information for met disaggregation'
+        ! Get names of original met forcing file(s) to disaggregate (using first grid)
         WRITE(grid_txt,'(I10)') GridIDmatrix(1)  !Get grid as a text string
-     
+
         ! Get met file name for this grid: SSss_YYYY_data_RR.txt
         FileOrigMet = TRIM(FileInputPath)//TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt)//'_data_' &
-                         //TRIM(ADJUSTL(ResIn_txt))//'.txt'
+             //TRIM(ADJUSTL(ResIn_txt))//'.txt'
         ! But if each grid has the same met file, met file name does not include grid number
         IF(MultipleMetFiles /= 1) THEN
            FileOrigMet=TRIM(FileInputPath)//TRIM(FileCode)//'_'//TRIM(year_txt)//'_data_' &
-                          //TRIM(ADJUSTL(ResIn_txt))//'.txt'
+                //TRIM(ADJUSTL(ResIn_txt))//'.txt'
         ENDIF
-     
+
         ! Find number of lines in orig met file
         !write(*,*) TRIM(FileOrigMet)
         OPEN(UnitOrigMet,file=TRIM(FileOrigMet),status='old',err=313)
@@ -191,13 +208,13 @@ PROGRAM SUEWS_Program
         nlinesOrigMetdata = 0   !Initialise nlinesMetdata (total number of lines in met forcing file)
         DO
            READ(UnitOrigMet,*,iostat=ios) iv
-           IF(ios<0 .or. iv == -9) EXIT   !IF (iv == -9) EXIT
+           IF(ios<0 .OR. iv == -9) EXIT   !IF (iv == -9) EXIT
            nlinesOrigMetdata = nlinesOrigMetdata + 1
         ENDDO
         CLOSE(UnitOrigMet)
-        
+
         !write(*,*) 'nlinesOrigMetdata', nlinesOrigMetdata
-        ReadLinesOrigMetData = nlinesOrigMetdata   !Initially set limit as the size of  file 
+        ReadLinesOrigMetData = nlinesOrigMetdata   !Initially set limit as the size of  file
         IF(nlinesOrigMetData*Nper > nlinesLimit) THEN   !But restrict if this limit exceeds memory capacity
            ReadLinesOrigMetData = INT(nlinesLimit/Nper)
         ENDIF
@@ -206,26 +223,26 @@ PROGRAM SUEWS_Program
         ReadLinesOrigMetData = INT(MAX(nsdorig*(ReadLinesOrigMetData/nsdorig), nsdorig))
         !WRITE(*,*) 'ReadlinesOrigMetdata', ReadlinesOrigMetdata
         WRITE(*,*) 'Original met data will be read in chunks of ',ReadlinesOrigMetdata,'lines.'
-     
+
         ReadBlocksOrigMetData = INT(CEILING(REAL(nlinesOrigMetData,KIND(1d0))/REAL(ReadLinesOrigMetData,KIND(1d0))))
 
         ! Set ReadLinesMetData and ReadBlocksMetData
-        ReadLinesMetData = ReadLinesOrigMetdata*Nper   
+        ReadLinesMetData = ReadLinesOrigMetdata*Nper
         ReadBlocksMetData = INT(CEILING(REAL(nlinesOrigMetData*Nper,KIND(1d0))/REAL(ReadLinesMetData,KIND(1d0))))
         WRITE(*,*) 'Processing current year in ',ReadBlocksMetData,'blocks.'
-        
+
         nlinesMetdata = nlinesOrigMetdata*Nper
-        
+
      ELSEIF(Nper == 1) THEN
-        write(*,*) 'ResolutionFilesIn = Tstep: no disaggregation needed for met data.'
-     
+        WRITE(*,*) 'ResolutionFilesIn = Tstep: no disaggregation needed for met data.'
+
         !-----------------------------------------------------------------------
         ! Find number of lines in met forcing file for current year (nlinesMetdata)
         ! Need to know how many lines will be read each iteration
         ! Use first grid as an example as the number of lines is the same for all grids
-         ! within one year
+        ! within one year
         WRITE(grid_txt,'(I10)') GridIDmatrix(1)  !Get grid as a text string
-             
+
         ! Get met file name for this year for this grid
         FileCodeX = TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt)
         FileMet   = TRIM(FileInputPath)//TRIM(FileCodeX)//'_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
@@ -238,12 +255,12 @@ PROGRAM SUEWS_Program
         ! Open this example met file
         OPEN(10,file=TRIM(FileMet),status='old',err=314)
         CALL skipHeader(10,SkipHeaderMet)  !Skip header
-        
+
         ! Find number of lines in met file
         nlinesMetdata = 0   !Initialise nlinesMetdata (total number of lines in met forcing file)
         DO
            READ(10,*,iostat=ios) iv
-           IF(ios<0 .or. iv == -9) EXIT   !IF (iv == -9) EXIT
+           IF(ios<0 .OR. iv == -9) EXIT   !IF (iv == -9) EXIT
            nlinesMetdata = nlinesMetdata + 1
         ENDDO
         CLOSE(10)
@@ -263,20 +280,26 @@ PROGRAM SUEWS_Program
         ! Find number of blocks of met data
         ReadBlocksMetData = INT(CEILING(REAL(nlinesMetData,KIND(1d0))/REAL(ReadLinesMetData,KIND(1d0))))
         WRITE(*,*) 'Processing current year in ',ReadBlocksMetData,'blocks.'
-        
+
      ENDIF
-     
+
      !write(*,*) ReadBlocksMetData, ReadBlocksOrigMetData
-          
+
      ! ---- Allocate arrays--------------------------------------------------
-     IF(Diagnose==1) write(*,*) 'Allocating arrays in SUEWS_Program.f95...' 
+     IF(Diagnose==1) WRITE(*,*) 'Allocating arrays in SUEWS_Program.f95...'
      ALLOCATE(SurfaceChar(NumberOfGrids,MaxNCols_c))                                   !Surface characteristics
      ALLOCATE(MetForcingData(ReadlinesMetdata,ncolumnsMetForcingData,NumberOfGrids))   !Met forcing data
      ALLOCATE(ModelOutputData(0:ReadlinesMetdata,MaxNCols_cMOD,NumberOfGrids))         !Data at model timestep
      ALLOCATE(dataOut(ReadlinesMetdata,ncolumnsDataOut,NumberOfGrids))                 !Main output array
      IF (SOLWEIGuse == 1) ALLOCATE(dataOutSOL(ReadlinesMetdata,ncolumnsdataOutSOL,NumberOfGrids))     !SOLWEIG POI output
      IF (CBLuse >= 1)     ALLOCATE(dataOutBL(ReadlinesMetdata,ncolumnsdataOutBL,NumberOfGrids))       !CBL output
-     IF (SnowUse == 1)    ALLOCATE(dataOutSnow(ReadlinesMetdata,ncolumnsDataOutSnow,NumberOfGrids))   !Snow output
+     IF (SnowUse == 1) THEN
+        ALLOCATE(dataOutSnow(ReadlinesMetdata,ncolumnsDataOutSnow,NumberOfGrids))   !Snow output
+        ALLOCATE(qn1_S_store(NSH,NumberOfGrids))
+        ALLOCATE(qn1_S_av_store(2*NSH+1,NumberOfGrids))
+        qn1_S_store(:,:) = NAN
+        qn1_S_av_store(:,:) = NaN
+     ENDIF
      IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14) ALLOCATE(dataOutESTM(ReadlinesMetdata,32,NumberOfGrids)) !ESTM output
      ALLOCATE(TstepProfiles(NumberOfGrids,10,24*NSH))   !Hourly profiles interpolated to model timestep
      ALLOCATE(AHProf_tstep(24*NSH,2))                   !Anthropogenic heat profiles at model timestep
@@ -294,8 +317,8 @@ PROGRAM SUEWS_Program
      qhforCBL(:) = NAN
      qeforCBL(:) = NAN
      ! Initialise other arrays here???
-     
-     
+
+
      IF(StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
         ! Prepare to disaggregate ESTM data to model time-step (if required) ------
         ! Find number of model time-steps per resolution of original met forcing file
@@ -303,24 +326,24 @@ PROGRAM SUEWS_Program
         NperESTM=INT(NperESTM_real)
         IF(NperESTM /= NperESTM_real) THEN
            CALL ErrorHint(2,'Problem in SUEWS_Program: check resolution of ESTM forcing data (ResolutionFilesInESTM)', &
-                               'and model time-step (Tstep).', & 
-                                 REAL(Tstep,KIND(1d0)),NotUsed,ResolutionFilesInESTM)
+                'and model time-step (Tstep).', &
+                REAL(Tstep,KIND(1d0)),NotUsed,ResolutionFilesInESTM)
         ELSEIF(NperESTM > 1) THEN
            WRITE(*,*) 'Resolution of ESTM forcing data: ',TRIM(ADJUSTL(ResInESTM_txt)),' min;', &
-                         ' model time-step: ',TRIM(ADJUSTL(tstep_txt)),' min', ' -> SUEWS will perform disaggregation.' 
-           IF(Diagnose==1) write(*,*) 'Getting information for ESTM disaggregation'
-           ! Get names of original met forcing file(s) to disaggregate (using first grid)   
+                ' model time-step: ',TRIM(ADJUSTL(tstep_txt)),' min', ' -> SUEWS will perform disaggregation.'
+           IF(Diagnose==1) WRITE(*,*) 'Getting information for ESTM disaggregation'
+           ! Get names of original met forcing file(s) to disaggregate (using first grid)
            WRITE(grid_txt,'(I10)') GridIDmatrix(1)  !Get grid as a text string
-     
+
            ! Get met file name for this grid
            FileESTMTs = TRIM(FileInputPath)//TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt)//'_ESTM_Ts_data_' &
-                           //TRIM(ADJUSTL(ResInESTM_txt))//'.txt'
+                //TRIM(ADJUSTL(ResInESTM_txt))//'.txt'
            ! But if each grid has the same ESTM file, file name does not include grid number
            IF(MultipleESTMFiles /= 1) THEN
               FileESTMTs = TRIM(FileInputPath)//TRIM(FileCode)//'_'//TRIM(year_txt)//'_ESTM_Ts_data_' &
-                              //TRIM(ADJUSTL(ResInESTM_txt))//'.txt'
+                   //TRIM(ADJUSTL(ResInESTM_txt))//'.txt'
            ENDIF
-     
+
            ! Find number of lines in orig ESTM file
            OPEN(UnitOrigESTM,file=TRIM(FileESTMTs),status='old',action='read',err=315)
            CALL skipHeader(UnitOrigESTM,SkipHeaderMet)  !Skip header
@@ -328,15 +351,15 @@ PROGRAM SUEWS_Program
            nlinesOrigESTMdata = 0
            DO
               READ(UnitOrigESTM,*,iostat=ios) iv
-              IF(ios<0 .or. iv == -9) EXIT !IF (iv == -9) EXIT
+              IF(ios<0 .OR. iv == -9) EXIT !IF (iv == -9) EXIT
               nlinesOrigESTMdata = nlinesOrigESTMdata + 1
            ENDDO
            CLOSE(UnitOrigESTM)
-           
+
            ! Check ESTM data and met data will have the same length (so that ESTM file can be read in same blocks as met data)
            IF(nlinesOrigESTMdata*NperESTM /= nlinesMetData) THEN
               CALL ErrorHint(66,'Downscaled ESTM and met input files will have different lengths',REAL(nlinesMetdata,KIND(1d0)), &
-                                   NotUsed,nlinesESTMdata*NperESTM)
+                   NotUsed,nlinesESTMdata*NperESTM)
            ENDIF
 
            !write(*,*) 'nlinesOrigESTMdata', nlinesOrigESTMdata
@@ -344,12 +367,12 @@ PROGRAM SUEWS_Program
            ReadLinesOrigESTMData = ReadlinesMetdata/NperESTM
            !WRITE(*,*) 'ReadlinesOrigESTMdata', ReadlinesOrigESTMdata
            WRITE(*,*) 'Original ESTM data will be read in chunks of ',ReadlinesOrigESTMdata,'lines.'
-           
+
            nlinesESTMdata = nlinesOrigESTMdata*NperESTM
-        
+
         ELSEIF(NperESTM == 1) THEN
-           write(*,*) 'ResolutionFilesInESTM = Tstep: no disaggregation needed for met data.'
-     
+           WRITE(*,*) 'ResolutionFilesInESTM = Tstep: no disaggregation needed for met data.'
+
            !-----------------------------------------------------------------------
            ! Find number of lines in ESTM forcing file for current year (nlinesESTMdata)
            WRITE(grid_txt,'(I10)') GridIDmatrix(1)  !Get grid as a text string (use first grid as example)
@@ -369,7 +392,7 @@ PROGRAM SUEWS_Program
            nlinesESTMdata = 0   !Initialise nlinesESTMdata (total number of lines in ESTM forcing file)
            DO
               READ(11,*,iostat=ios) iv
-              IF(ios<0 .or. iv == -9) EXIT   !IF (iv == -9) EXIT
+              IF(ios<0 .OR. iv == -9) EXIT   !IF (iv == -9) EXIT
               nlinesESTMdata = nlinesESTMdata + 1
            ENDDO
            CLOSE(11)
@@ -378,29 +401,29 @@ PROGRAM SUEWS_Program
            ! Check ESTM data and met data are same length (so that ESTM file can be read in same blocks as met data)
            IF(nlinesESTMdata /= nlinesMetdata) THEN
               CALL ErrorHint(66,'ESTM input file different length to met forcing file',REAL(nlinesMetdata,KIND(1d0)), &
-                                   NotUsed,nlinesESTMdata)
+                   NotUsed,nlinesESTMdata)
            ENDIF
-        
-        ENDIF   
-        
+
+        ENDIF
+
         ! Allocate arrays to receive ESTM forcing data
         ALLOCATE(ESTMForcingData(1:ReadlinesMetdata,ncolsESTMdata,NumberOfGrids))
         ALLOCATE(Ts5mindata(1:ReadlinesMetdata,ncolsESTMdata))
         ALLOCATE(Tair24HR(24*nsh))
-     
+
      ENDIF
      ! ------------------------------------------------------------------------
-     
-     
+
+
      !-----------------------------------------------------------------------
      !-----------------------------------------------------------------------
      SkippedLines=0  !Initialise lines to be skipped in met forcing file
      SkippedLinesOrig=0  !Initialise lines to be skipped in original met forcing file
      SkippedLinesOrigESTM=0  !Initialise lines to be skipped in original met forcing file
-     
+
      DO iblock=1,ReadBlocksMetData   !Loop through blocks of met data
-     
-        write(*,*) iblock,'/',ReadBlocksMetData
+
+        WRITE(*,*) iblock,'/',ReadBlocksMetData
 
         ! Model calculations are made in two stages:
         ! (1) initialise the run for each block of met data (iblock from 1 to ReadBlocksMetData)
@@ -419,8 +442,10 @@ PROGRAM SUEWS_Program
               ! (a) Transfer characteristics from SiteSelect to correct row of SurfaceChar
               DO rr=1,nlinesSiteSelect
                  !Find correct grid and year
+                 IF(Diagnose==1) WRITE(*,*) 'grid found:',SiteSelect(rr,c_Grid), 'grid needed:',GridIDmatrix(igrid)
+                 IF(Diagnose==1) WRITE(*,*) 'year found:',SiteSelect(rr,c_Year), 'year needed:',year_int
                  IF(SiteSelect(rr,c_Grid)==GridIDmatrix(igrid).AND.SiteSelect(rr,c_Year)==year_int) THEN
-                    !write(*,*) 'Match found (grid and year) for rr = ', rr
+                    IF(Diagnose==1) WRITE(*,*) 'Match found (grid and year) for rr = ', rr, 'of',nlinesSiteSelect
                     CALL InitializeSurfaceCharacteristics(GridCounter,rr)
                     EXIT
                  ELSEIF(rr == nlinesSiteSelect) THEN
@@ -429,11 +454,11 @@ PROGRAM SUEWS_Program
                  ENDIF
               ENDDO
            ENDIF   !end first block of met data
-           
+
            ! (1b) Initialise met data
            IF(Nper > 1) THEN
               ! Disaggregate met data ---------------------------------------------------
-               
+
               ! Set maximum value for ReadLinesOrigMetData to handle end of file (i.e. small final block)
               IF(iblock == ReadBlocksMetData) THEN   !For last block of data in file
                  ReadLinesOrigMetDataMAX = nlinesOrigMetdata - (iblock-1)*ReadLinesOrigMetdata
@@ -441,26 +466,26 @@ PROGRAM SUEWS_Program
                  ReadLinesOrigMetDataMAX = ReadLinesOrigMetData
               ENDIF
               !write(*,*) ReadLinesOrigMetDataMAX, ReadLinesOrigMetData
-              ! Get names of original met forcing file(s) to disaggregate    
+              ! Get names of original met forcing file(s) to disaggregate
               ! Get met file name for this grid: SSss_YYYY_data_RR.txt
               IF(MultipleMetFiles == 1) THEN   !If each grid has its own met file
                  FileOrigMet = TRIM(FileInputPath)//TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt)//'_data_' &
-                                  //TRIM(ADJUSTL(ResIn_txt))//'.txt'
+                      //TRIM(ADJUSTL(ResIn_txt))//'.txt'
                  ! Also set file name for downscaled file
                  FileDscdMet = TRIM(FileInputPath)//TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt)//'_data_' &
-                                  //TRIM(ADJUSTL(tstep_txt))//'.txt'
+                      //TRIM(ADJUSTL(tstep_txt))//'.txt'
                  ! Disaggregate met data
-                 CALL DisaggregateMet(iblock,igrid)                     
-              ELSE   
-              ! If each grid has the same met file, met file name does not include grid number, and only need to disaggregate once
+                 CALL DisaggregateMet(iblock,igrid)
+              ELSE
+                 ! If each grid has the same met file, met file name does not include grid number, and only need to disaggregate once
                  FileOrigMet=TRIM(FileInputPath)//TRIM(FileCode)//'_'//TRIM(year_txt)//'_data_' &
-                                //TRIM(ADJUSTL(ResIn_txt))//'.txt'
+                      //TRIM(ADJUSTL(ResIn_txt))//'.txt'
                  FileDscdMet = TRIM(FileInputPath)//TRIM(FileCode)//'_'//TRIM(year_txt)//'_data_' &
-                                  //TRIM(ADJUSTL(tstep_txt))//'.txt'
+                      //TRIM(ADJUSTL(tstep_txt))//'.txt'
                  IF(igrid==1) THEN       !Disaggregate for the first grid only
-                    CALL DisaggregateMet(iblock,igrid)                     
+                    CALL DisaggregateMet(iblock,igrid)
                  ELSE                    !Then for subsequent grids simply copy data
-                    MetForcingData(1:ReadlinesMetdata,1:24,GridCounter) = MetForcingData(1:ReadlinesMetdata,1:24,1)    
+                    MetForcingData(1:ReadlinesMetdata,1:24,GridCounter) = MetForcingData(1:ReadlinesMetdata,1:24,1)
                  ENDIF
               ENDIF
 
@@ -488,43 +513,43 @@ PROGRAM SUEWS_Program
                  ENDIF
               ENDIF
            ENDIF   !end of nper statement
-              
+
            ! Only for the first block of met data, read initial conditions (moved from above, HCW 12 Jan 2017)
            IF(iblock == 1) THEN
               FileCodeX = TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt)
               !write(*,*) ' Now calling InitialState'
               CALL InitialState(FileCodeX,year_int,GridCounter,NumberOfGrids)
-           ENDIF 
+           ENDIF
 
            ! Initialise ESTM if required, TS 05 Jun 2016; moved inside grid loop HCW 27 Jun 2016
            IF(StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
               IF(NperESTM > 1) THEN
-              ! Disaggregate ESTM data --------------------------------------------------
-              ! Set maximum value for ReadLinesOrigESTMData to handle end of file (i.e. small final block)
+                 ! Disaggregate ESTM data --------------------------------------------------
+                 ! Set maximum value for ReadLinesOrigESTMData to handle end of file (i.e. small final block)
                  IF(iblock == ReadBlocksMetData) THEN   !For last block of data in file
                     ReadLinesOrigESTMDataMAX = nlinesOrigESTMdata - (iblock-1)*ReadLinesOrigESTMdata
                  ELSE
                     ReadLinesOrigESTMDataMAX = ReadLinesOrigESTMData
                  ENDIF
                  !write(*,*) ReadLinesOrigESTMDataMAX, ReadLinesOrigESTMData
-                 ! Get names of original ESTM forcing file(s) to disaggregate    
+                 ! Get names of original ESTM forcing file(s) to disaggregate
                  ! Get ESTM file name for this grid: SSss_YYYY_ESTM_Ts_data_RR.txt
                  IF(MultipleESTMFiles == 1) THEN   !If each grid has its own ESTM file
                     FileOrigESTM = TRIM(FileInputPath)//TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt) &
-                                     //'_ESTM_Ts_data_'//TRIM(ADJUSTL(ResInESTM_txt))//'.txt'
+                         //'_ESTM_Ts_data_'//TRIM(ADJUSTL(ResInESTM_txt))//'.txt'
                     ! Also set file name for downscaled file
                     FileDscdESTM = TRIM(FileInputPath)//TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt) &
-                                     //'_ESTM_Ts_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
+                         //'_ESTM_Ts_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
                     ! Disaggregate ESTM data
-                    CALL DisaggregateESTM(iblock)                     
-                 ELSE   
+                    CALL DisaggregateESTM(iblock)
+                 ELSE
                     ! If each grid has the same ESTM file, ESTM file name does not include grid number, and only need to disaggregate once
                     FileOrigESTM = TRIM(FileInputPath)//TRIM(FileCode)//'_'//TRIM(year_txt)//'_ESTM_Ts_data_'&
-                                     //TRIM(ADJUSTL(ResInESTM_txt))//'.txt'
+                         //TRIM(ADJUSTL(ResInESTM_txt))//'.txt'
                     FileDscdESTM = TRIM(FileInputPath)//TRIM(FileCode)//'_'//TRIM(year_txt)//'_ESTM_Ts_data_'&
-                                     //TRIM(ADJUSTL(tstep_txt))//'.txt'
+                         //TRIM(ADJUSTL(tstep_txt))//'.txt'
                     IF(igrid==1) THEN       !Disaggregate for the first grid only
-                       CALL DisaggregateESTM(iblock)                     
+                       CALL DisaggregateESTM(iblock)
                     ELSE                    !Then for subsequent grids simply copy data
                        ESTMForcingData(1:ReadlinesMetdata,1:ncolsESTMdata,GridCounter) = ESTMForcingData(1:ReadlinesMetdata, &
                             1:ncolsESTMdata,1)
@@ -548,13 +573,13 @@ PROGRAM SUEWS_Program
                     IF(igrid == 1) THEN       !Read for the first grid only
                        CALL SUEWS_GetESTMData(101)
                     ELSE                          !Then for subsequent grids simply copy data
-                    ESTMForcingData(1:ReadlinesMetdata,1:ncolsESTMdata,GridCounter) = ESTMForcingData(1:ReadlinesMetdata, &
-                                                                                                       1:ncolsESTMdata,1)
+                       ESTMForcingData(1:ReadlinesMetdata,1:ncolsESTMdata,GridCounter) = ESTMForcingData(1:ReadlinesMetdata, &
+                            1:ncolsESTMdata,1)
                     ENDIF
                  ENDIF
-              ENDIF   !end of nperESTM statement    
-           ENDIF     
-               
+              ENDIF   !end of nperESTM statement
+           ENDIF
+
            GridCounter = GridCounter+1   !Increase GridCounter by 1 for next grid
 
         ENDDO !end loop over grids
@@ -564,13 +589,13 @@ PROGRAM SUEWS_Program
         !write(*,*) iblock
         !write(*,*) ReadlinesMetdata, readlinesorigmetdata
         !write(*,*) skippedLines, skippedLinesOrig, skippedLinesOrig*Nper
-        
+
         ! Initialise the modules on the first day
         ! if ( iblock==1 ) then
         ! Initialise CBL and SOLWEIG parts if required
         IF (iblock==1) THEN
            IF((CBLuse==1).OR.(CBLuse==2)) CALL CBL_ReadInputData
-        ENDIF   
+        ENDIF
         IF(SOLWEIGuse==1) CALL SOLWEIG_initial   !not sure if solweig should be within iblock if statement too?
 
         !write(*,*) 'Initialisation done'
@@ -599,7 +624,7 @@ PROGRAM SUEWS_Program
 
            DO igrid=1,NumberOfGrids   !Loop through grids
               IF(Diagnose==1) WRITE(*,*) 'Row (ir):', ir,'/',irMax,'of block (iblock):', iblock,'/',ReadBlocksMetData,&
-                   'Grid:',GridIDmatrix(igrid)     
+                   'Grid:',GridIDmatrix(igrid)
 
               !  ! Translate daily state back so as to keep water balance at beginning of a day
               !  IF ( StorageHeatMethod==3 .AND. ir==1) THEN
@@ -610,13 +635,13 @@ PROGRAM SUEWS_Program
               !  IF(ir==1) WRITE(*,*) 'Now running block ',iblock,'/',ReadBlocksMetData,' of year ',year_int,'...'
               WRITE(grid_txt,'(I10)') GridIDmatrix(igrid)   !Get grid ID as a text string
               FileCodeX=TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt)
-              IF(ir==1) THEN
+              IF(ir==1 .and. igrid==1) THEN
                  WRITE(*,*) TRIM(ADJUSTL(FileCodeX)),': Now running block ',iblock,'/',ReadBlocksMetData,' of ',TRIM(year_txt),'...'
               ENDIF
               IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_Calculations...'
               CALL SUEWS_Calculations(GridCounter,ir,iblock,irMax)
               IF(Diagnose==1) WRITE(*,*) 'SUEWS_Calculations finished...'
-              
+
               ! Record iy and id for current time step to handle last row in yearly files (YYYY 1 0 0)
               !  IF(GridCounter == NumberOfGrids) THEN   !Adjust only when the final grid has been run for this time step
               IF(igrid == NumberOfGrids) THEN   !Adjust only when the final grid has been run for this time step
@@ -680,10 +705,31 @@ PROGRAM SUEWS_Program
 
 
         ! Write output files in blocks --------------------------------
-        DO igrid=1,NumberOfGrids
-           IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_Output...'
-           CALL SUEWS_Output(igrid,year_int,iblock,irMax,GridIDmatrix(igrid))  !GridIDmatrix required for correct naming of output files
-        ENDDO
+#ifdef nc
+        IF ( ncMode .EQ. 0 ) THEN
+#endif
+           DO igrid=1,NumberOfGrids
+              IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_Output...'
+              ! CALL SUEWS_Output(igrid,year_int,iblock,irMax,GridIDmatrix(igrid))  !GridIDmatrix required for correct naming of output files
+              CALL SUEWS_Output_txt(iblock,irMax,igrid)
+           ENDDO
+#ifdef nc
+        ENDIF
+
+        IF ( ncMode .EQ. 1 ) THEN
+           ! write resulst in netCDF
+           IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_Output_nc...'
+           !  CALL SUEWS_Output_nc0(year_int,iblock,irMax)
+           CALL SUEWS_Output_nc(irMax)
+           ! write input information in netCDF as well for future development
+           !  IF ( iblock==1 ) THEN
+           !     CALL SiteSelect_txt2nc
+           !     !
+           !  ENDIF
+        ENDIF
+#endif
+
+        ! print*, 'finish output:',iv
 
      ENDDO !end loop over blocks of met data
      !-----------------------------------------------------------------------
@@ -694,7 +740,11 @@ PROGRAM SUEWS_Program
      DEALLOCATE(MetForcingData)
      DEALLOCATE(ModelOutputData)
      DEALLOCATE(dataOut)
-     IF (SnowUse == 1) DEALLOCATE(dataOutSnow)
+     IF (SnowUse == 1) THEN
+        DEALLOCATE(dataOutSnow)
+        DEALLOCATE(qn1_S_store)
+        DEALLOCATE(qn1_S_av_store)
+     ENDIF
      DEALLOCATE(TstepProfiles)
      DEALLOCATE(AHProf_tstep)
      DEALLOCATE(WUProfM_tstep)
@@ -710,13 +760,13 @@ PROGRAM SUEWS_Program
 
   ! ---- Decallocate array --------------------------------------------------
   ! Daily state needs to be outside year loop to transfer states between years
-  DEALLOCATE(ModelDailyState)
+  IF (ALLOCATED(ModelDailyState)) DEALLOCATE(ModelDailyState)
   ! Also needs to happen at the end of the run
-  DEALLOCATE(UseColumnsDataOut)
+  IF (ALLOCATED(UseColumnsDataOut)) DEALLOCATE(UseColumnsDataOut)
   ! -------------------------------------------------------------------------
 
   ! get cpu time consumed
-  CALL cpu_TIME(timeFinish)
+  CALL CPU_TIME(timeFinish)
   WRITE(*,*) "Time = ",timeFinish-timeStart," seconds."
 
   !Write to problems.txt that run has completed
@@ -731,7 +781,7 @@ PROGRAM SUEWS_Program
   WRITE(500,*) 'Run completed.'
   WRITE(500,*) '0'  ! Write out error code 0 if run completed
   CLOSE(500)
-  
+
   ! Also print to screen
   WRITE(*,*) "----- SUEWS run completed -----"
 

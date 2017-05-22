@@ -39,7 +39,7 @@ MODULE allocateArray
   INTEGER, PARAMETER:: ncolsESTMdata=13             !ESTM input file (_ESTM_Ts_data.txt))
 
   ! ---- Set number of columns in output files ---------------------------------------------------
-  INTEGER, PARAMETER:: ncolumnsDataOut=81,&    !Main output file (_5.txt). DataOut created in SUEWS_Calculations.f95
+  INTEGER, PARAMETER:: ncolumnsDataOut=84,&    !Main output file (_5.txt). DataOut created in SUEWS_Calculations.f95
        ncolumnsDataOutSnow=102,&
        ncolumnsdataOutSOL=28,&
        ncolumnsdataOutBL=22
@@ -97,7 +97,8 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::WGWaterDist_Coeff         !Coefficients for WithinGridWaterDist
 
   ! ---- Define arrays for model calculations ----------------------------------------------------
-  INTEGER,DIMENSION(:), ALLOCATABLE:: GridIDmatrix         !Array containing GridIDs in SiteSelect
+  INTEGER,DIMENSION(:), ALLOCATABLE:: GridIDmatrix         !Array containing GridIDs in SiteSelect after sorting
+  INTEGER,DIMENSION(:), ALLOCATABLE:: GridIDmatrix0        !Array containing GridIDs in SiteSelect in the original order
   REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: SurfaceChar          !Array for surface characteristics
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: MetForcingData       !Array for meteorological forcing data
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: ESTMForcingData      !Array for ESTM forcing data
@@ -109,13 +110,13 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: dataOutSOL           !SOLWEIG POI output matrix
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: dataOutSnow          !Main data output matrix
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: dataOutESTM          !ESTM output matrix
-  
+
   REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE:: MetForDisagg           !Array for original met forcing data (for disaggregation)
   REAL(KIND(1d0)),DIMENSION(:),  ALLOCATABLE:: MetForDisaggPrev,MetForDisaggNext !Stores last and next row of met data
-  
+
   REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE:: ESTMForDisagg           !Array for original ESTM forcing data (for disaggregation)
   REAL(KIND(1d0)),DIMENSION(:),  ALLOCATABLE:: ESTMForDisaggPrev,ESTMForDisaggNext !Stores last and next row of ESTM data
-  
+
   ! ---- Define array for hourly profiles interpolated to tstep ----------------------------------
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: TstepProfiles
   REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: AHProf_tstep
@@ -820,7 +821,7 @@ MODULE data_in
   CHARACTER (len=150):: FileInputPath,&   !Filepath for input files (set in RunControl)
        FileOutputPath    !Filepath for output files (set in RunControl)
   ! ---- File names -----------------------------------------------------------------------------
-  CHARACTER (len=150):: FileOut,&         !Output file name 
+  CHARACTER (len=150):: FileOut,&         !Output file name
        FileChoices,&     !Run characteristics file name
        FileMet,&         !Meteorological forcing file name
        FileOrigMet,&     !Original meteorological forcing file name (i.e. before downscaling)
@@ -833,7 +834,7 @@ MODULE data_in
        BLout,&             !CLB output file name
        FileOut_tt,&        !Output file name (for resolution at model time-step)
        ESTMOut_tt
-       
+
   INTEGER:: SkipHeaderSiteInfo = 2   !Number of header lines to skip in SiteInfo files
   INTEGER:: SkipHeaderMet = 1        !Number of header lines to skip in met forcing file
 
@@ -858,16 +859,23 @@ MODULE data_in
        SMDMethod,&           !Use modelled (0) or observed(1,2) soil moisture
        WaterUseMethod,&            !Use modelled (0) or observed (1) water use
        RoughLenMomMethod,&              !Defines method for calculating z0 & zd
-       DisaggMethod,&         ! Sets disaggregation method for original met forcing data 
-       DisaggMethodESTM,&         ! Sets disaggregation method for original met forcing data 
+       DisaggMethod,&         ! Sets disaggregation method for original met forcing data
+       DisaggMethodESTM,&         ! Sets disaggregation method for original met forcing data
        RainDisaggMethod,&     ! Sets disaggregation method for original met forcing data for rainfall
        RainAmongN,&           ! Number of subintervals over which to disaggregate rainfall
        KdownZen,&             ! Controls whether Kdown disaggregation uses zenith angle (1) or not (0)
        SuppressWarnings,&     ! Set to 1 to prevent warnings.txt file from being written
        Diagnose,&             !Set to 1 to get print-out of model progress
        DiagnoseDisagg,&       !Set to 1 to get print-out of met forcing disaggregation progress
+       ncMode,&               !Write output file in netCDF (1) or not (0) , TS, 09 Dec 2016
+       nRow,&                 !number of rows of checker board layout in the netCDF output, TS, 09 Dec 2016
+       nCol,&                 !number of columns of checker board layout in the netCDF output, TS, 09 Dec 2016
        DiagnoseDisaggESTM,&   !Set to 1 to get print-out of ESTM forcing disaggregation progress
-       DiagQN, DiagQS         !Set to 1 to print values/components  
+       DiagQN, DiagQS         !Set to 1 to print values/components
+
+       ! For more complex downscaling allow different RainAmongN for different intensities
+       INTEGER, DIMENSION(5):: MultRainAmongN           ! RainAmongN for each intensity bin
+       REAL(KIND(1d0)),DIMENSION(5):: MultRainAmongNUpperI   ! Upper bound of intensity bin for which to apply MultRainAmongN
 
   ! ---- Model options currently set in model, but may be moved to RunControl at a later date
   INTEGER:: AlbedoChoice,&         !No additional albedo varaition (0); zenith angle calculation (1)
@@ -906,6 +914,7 @@ MODULE data_in
        avrh,&      !Average relative humidity
        avts,&      !Average surface temperature
        avu1,&      !Average wind speed
+       avU10_ms,&   !Average wind speed at 10 m
        azimuth,&   !Sun azimuth in degrees
        BaseTHDD,&  !Base temperature for QF
        BuildEnergyUse,&  ! Building energy use
@@ -939,6 +948,7 @@ MODULE data_in
        Precip_hr,&    !Precipitation [mm hr-1]
        Press_hPa,&  !Station air pressure in hPa
        Pres_kPa,&   !Station air pressure in kPa
+       q2_gkg,&    ! Specific humidity at 2 m
        qe,&        !Observed latent heat flux
        qe_obs,&
        qf,&        !Observed anthropogenic heat flux
@@ -960,6 +970,7 @@ MODULE data_in
        snow_obs,&  !Observed snow cover
        T_CRITIC,& !Critical temperature
        Temp_C,&    !Air temperature
+       t2_C,&     ! air temperature at 2 m, TS 20 May 2017
        trans_site,&  !Atmospheric transmissivity
        TrafficRate,&  !Traffic rate
        tsurf,&   !Surface temperature
@@ -1272,7 +1283,7 @@ MODULE sues_data
   REAL(KIND(1d0)):: nsh_real,&   !nsh cast as a real for use in calculations
        tstep_real,&   !tstep cast as a real for use in calculations
        Nper_real, NperESTM_real   !Nper as real
-       
+
   REAL(KIND(1d0)):: halftimestep   !In decimal time based on interval
 
   !Options for model setup (switches, etc) mainly set in RunControl
@@ -1392,10 +1403,10 @@ MODULE sues_data
        rst,&      !Flag in SUEWS_Evap (gets set to 1 if surface dry; 0 if surface wet)
        qeph,&     !Latent heat flux (W m^-2)
        qeOut      !Latent heat flux [W m-2]
-       
+
   REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE:: qhforCBL, qeforCBL   ! Stores previous timestep qh and qe for CBL model. Added by HCW 21 Mar 2017
-  INTEGER:: qh_choice        ! selection of qh use to drive CBL growth 1=Suews 2=lumps 3=obs  
-  
+  INTEGER:: qh_choice        ! selection of qh use to drive CBL growth 1=Suews 2=lumps 3=obs
+
   !Water use related variables
   REAL (KIND(1d0)):: ext_wu,&         !External water use for the model timestep [mm] (over whole study area)
        Faut,&           !Fraction of irrigated area using automatic irrigation
@@ -1420,7 +1431,7 @@ END MODULE sues_data
 !===================================================================================
 MODULE VegPhenogy
   IMPLICIT NONE
-  REAL (KIND(1d0)):: VegPhenLumps
+  REAL (KIND(1d0)):: VegPhenLumps,deltaLAI
 END MODULE VegPhenogy
 
 MODULE filename
@@ -2086,7 +2097,7 @@ END MODULE ESTM_data
 MODULE WhereWhen
   ! Stores grid and datetime info
 
-  INTEGER:: GridID   !Grid number (as specified in SUEWS_SiteSelect.txt)
+  INTEGER(KIND(1d0)):: GridID   !Grid number (as specified in SUEWS_SiteSelect.txt)
   CHARACTER(LEN=10):: GridID_text !Grid number as a text string
   CHARACTER(LEN=15):: datetime  ! YYYY DOY HH MM
 

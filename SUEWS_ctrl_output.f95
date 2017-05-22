@@ -313,30 +313,30 @@ MODULE ctrl_output
        varAttr('Tsnow_Water'    , 'to_add' , f146 , 'Tsnow_Water'    , aA , 'snow' , 0)&
        /
 
-  ! ESTM:
+! ESTM:
   DATA(varList(i), i=225,246)/&
-       varAttr('QSIBLD'   , 'to_add' , f106 , 'QSIBLD'   , aA , 'ESTM' , 0)  , &
-       varAttr('TWALL1'   , 'to_add' , f106 , 'TWALL1'   , aA , 'ESTM' , 0)  , &
-       varAttr('TWALL2'   , 'to_add' , f106 , 'TWALL2'   , aA , 'ESTM' , 0)  , &
-       varAttr('TWALL3'   , 'to_add' , f106 , 'TWALL3'   , aA , 'ESTM' , 0)  , &
-       varAttr('TWALL4'   , 'to_add' , f106 , 'TWALL4'   , aA , 'ESTM' , 0)  , &
-       varAttr('TWALL5'   , 'to_add' , f106 , 'TWALL5'   , aA , 'ESTM' , 0)  , &
-       varAttr('TROOF1'   , 'to_add' , f106 , 'TROOF1'   , aA , 'ESTM' , 0)  , &
-       varAttr('TROOF2'   , 'to_add' , f106 , 'TROOF2'   , aA , 'ESTM' , 0)  , &
-       varAttr('TROOF3'   , 'to_add' , f106 , 'TROOF3'   , aA , 'ESTM' , 0)  , &
-       varAttr('TROOF4'   , 'to_add' , f106 , 'TROOF4'   , aA , 'ESTM' , 0)  , &
-       varAttr('TROOF5'   , 'to_add' , f106 , 'TROOF5'   , aA , 'ESTM' , 0)  , &
-       varAttr('TGROUND1' , 'to_add' , f106 , 'TGROUND1' , aA , 'ESTM' , 0)  , &
-       varAttr('TGROUND2' , 'to_add' , f106 , 'TGROUND2' , aA , 'ESTM' , 0)  , &
-       varAttr('TGROUND3' , 'to_add' , f106 , 'TGROUND3' , aA , 'ESTM' , 0)  , &
-       varAttr('TGROUND4' , 'to_add' , f106 , 'TGROUND4' , aA , 'ESTM' , 0)  , &
-       varAttr('TGROUND5' , 'to_add' , f106 , 'TGROUND5' , aA , 'ESTM' , 0)  , &
-       varAttr('TiBLD1'   , 'to_add' , f106 , 'TiBLD1'   , aA , 'ESTM' , 0)  , &
-       varAttr('TiBLD2'   , 'to_add' , f106 , 'TiBLD2'   , aA , 'ESTM' , 0)  , &
-       varAttr('TiBLD3'   , 'to_add' , f106 , 'TiBLD3'   , aA , 'ESTM' , 0)  , &
-       varAttr('TiBLD4'   , 'to_add' , f106 , 'TiBLD4'   , aA , 'ESTM' , 0)  , &
-       varAttr('TiBLD5'   , 'to_add' , f106 , 'TiBLD5'   , aA , 'ESTM' , 0)  , &
-       varAttr('TaBLD'    , 'to_add' , f106 , 'TaBLD'    , aA , 'ESTM' , 0)&
+       varAttr('QSIBLD'   , 'W_m-2' , f106 , 'QSIBLD'   , aA , 'Storage Internal building'                , 0)   , &
+       varAttr('TWALL1'   , 'degK'  , f106 , 'TWALL1'   , aA , 'Temperature in wall layer 1'              , 0)   , &
+       varAttr('TWALL2'   , 'degK'  , f106 , 'TWALL2'   , aA , 'Temperature in wall layer 2'              , 0)   , &
+       varAttr('TWALL3'   , 'degK'  , f106 , 'TWALL3'   , aA , 'Temperature in wall layer 3'              , 0)   , &
+       varAttr('TWALL4'   , 'degK'  , f106 , 'TWALL4'   , aA , 'Temperature in wall layer 4'              , 0)   , &
+       varAttr('TWALL5'   , 'degK'  , f106 , 'TWALL5'   , aA , 'Temperature in wall layer 5'              , 0)   , &
+       varAttr('TROOF1'   , 'degK'  , f106 , 'TROOF1'   , aA , 'Temperature in roof layer 1'              , 0)   , &
+       varAttr('TROOF2'   , 'degK'  , f106 , 'TROOF2'   , aA , 'Temperature in roof layer 2'              , 0)   , &
+       varAttr('TROOF3'   , 'degK'  , f106 , 'TROOF3'   , aA , 'Temperature in roof layer 3'              , 0)   , &
+       varAttr('TROOF4'   , 'degK'  , f106 , 'TROOF4'   , aA , 'Temperature in roof layer 4'              , 0)   , &
+       varAttr('TROOF5'   , 'degK'  , f106 , 'TROOF5'   , aA , 'Temperature in roof layer 5'              , 0)   , &
+       varAttr('TGROUND1' , 'degK'  , f106 , 'TGROUND1' , aA , 'Temperature in ground layer 1'            , 0)   , &
+       varAttr('TGROUND2' , 'degK'  , f106 , 'TGROUND2' , aA , 'Temperature in ground layer 2'            , 0)   , &
+       varAttr('TGROUND3' , 'degK'  , f106 , 'TGROUND3' , aA , 'Temperature in ground layer 3'            , 0)   , &
+       varAttr('TGROUND4' , 'degK'  , f106 , 'TGROUND4' , aA , 'Temperature in ground layer 4'            , 0)   , &
+       varAttr('TGROUND5' , 'degK'  , f106 , 'TGROUND5' , aA , 'Temperature in ground layer 5'            , 0)   , &
+       varAttr('TiBLD1'   , 'degK'  , f106 , 'TiBLD1'   , aA , 'Temperature in internal building layer 1' , 0)   , &
+       varAttr('TiBLD2'   , 'degK'  , f106 , 'TiBLD2'   , aA , 'Temperature in internal building layer 2' , 0)   , &
+       varAttr('TiBLD3'   , 'degK'  , f106 , 'TiBLD3'   , aA , 'Temperature in internal building layer 3' , 0)   , &
+       varAttr('TiBLD4'   , 'degK'  , f106 , 'TiBLD4'   , aA , 'Temperature in internal building layer 4' , 0)   , &
+       varAttr('TiBLD5'   , 'degK'  , f106 , 'TiBLD5'   , aA , 'Temperature in internal building layer 5' , 0)   , &
+       varAttr('TaBLD'    , 'degK'  , f106 , 'TaBLD'    , aA , 'Indoor air temperature'                   , 0) &
        /
 
 CONTAINS

@@ -168,7 +168,11 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ! Calculate soil moisture for vegetated surfaces only (for use in surface conductance)
   vsmd=0
   DO is=ConifSurf,GrassSurf  !Vegetated surfaces only
-     vsmd=vsmd+(soilstoreCap(is) - soilmoist(is))*sfr(is)/(sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf))
+     IF ( sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) ==0 ) THEN
+        vsmd=0
+     ELSE
+        vsmd=vsmd+(soilstoreCap(is) - soilmoist(is))*sfr(is)/(sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf))
+     END IF
      !write(*,*) is, vsmd, smd
   ENDDO
 
@@ -701,7 +705,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        Qm,QmFreez,QmRain,swe,mwh,MwStore,chSnow_per_interval,&
        (SnowRemoval(is),is=1,2),&
        t2_C,q2_gkg,avU10_ms& ! surface-level diagonostics
-      /)
+       /)
 
   IF (snowUse==1) THEN
      dataOutSnow(ir,1:ncolumnsDataOutSnow,Gridiv)=(/REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),&               !2

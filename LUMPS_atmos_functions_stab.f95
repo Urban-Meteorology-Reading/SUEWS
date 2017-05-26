@@ -29,6 +29,9 @@ SUBROUTINE STAB_lumps(H,StabilityMethod,ustar,L)
   IF(zzd<0) CALL ErrorHint(32,'Windspeed Ht too low relative to zdm [Stability calc]- values [z-zdm, zdm]',Zzd,zdm,notUsedI)
 
   USTAR=KUZ/LOG(Zzd/Z0M)      !Initial setting of u* and calc. of L (neutral situation)
+  if ( abs(H)<0.001 ) then    ! prevent zero Tstar
+    H=0.001
+  end if
   Tstar=(-H/ustar)
   L=(USTAR**2)/(G_T_K*Tstar)
 

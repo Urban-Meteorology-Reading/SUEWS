@@ -7,6 +7,7 @@
 ! N.B. Currently, daily variables are calculated using 00:00-23:55 timestamps (for 5-min resolution); should use 00:05-00:00
 !
 ! Last modified:
+!  TS 07 Jun 2017  - Improve the format of output with more friendly alignment
 !  HCW 04 Jul 2016 - GridID can now be up to 10 digits long
 !  HCW 25 May 2016 - Added extra columns to daily state file (albedo for EveTr and Grass)
 !  HCW 24 May 2016 - Bug fixed in naming of DailyState file (now uses GridIDmatrix(Gridiv) rather than Gridiv)
@@ -82,6 +83,7 @@ SUBROUTINE DailyState(Gridiv)
   REAL(KIND(1d0)):: capChange,porChange,albChangeDecTr,albChangeEveTr,albChangeGrass,deltaLAIEveTr,deltaLAIGrass
   REAL(KIND(1d0)):: no,yes,indHelp   !Switches and checks for GDD
   CHARACTER(len=10):: grstr2
+  CHARACTER(len=10):: headerDaily(60)='' ! headers of daily variables
 
   ! --------------------------------------------------------------------------------
   ! ------------- Key to daily arrays ----------------------------------------------
@@ -192,7 +194,7 @@ SUBROUTINE DailyState(Gridiv)
 
      ! Calculate modelled daily water use ------------------------------------------
      IF (WaterUseMethod==0) THEN   !If water use is to be modelled (rather than observed)
-        
+
         wd=dayofWeek(id,1)
 
         IF (DayWat(wd)==1.0) THEN      !1 indicates watering permitted on this day
@@ -482,7 +484,7 @@ SUBROUTINE DailyState(Gridiv)
      !Write out DailyState file (1 row per day)
 
      IF (writedailyState==1 .AND. ncMode==0) THEN
-        !write(*,*) 'writing out daily state for day id:',id 
+        !write(*,*) 'writing out daily state for day id:',id
         !Define filename
         ! WRITE(grstr2,'(i5)') Gridiv      !Convert grid number for output file name
         WRITE(grstr2,'(i10)') GridIDmatrix(Gridiv)      !Bug fix HCW 24/05/2016 - name file with Grid as in SiteSelect
@@ -491,20 +493,21 @@ SUBROUTINE DailyState(Gridiv)
 
         ! If first modelled day, open the file and save header
         IF (DailyStateFirstOpen(Gridiv)==1) THEN
+           headerDaily(1:44)=[CHARACTER(len=10) ::'Year','DOY',&                !2
+                'HDD1_h','HDD2_c','HDD3_Tmean','HDD4_T5d','P/day','DaysSR',&    !8
+                'GDD1_g','GDD2_s','GDD3_Tmin','GDD4_Tmax','GDD5_DLHrs',&    !13
+                'LAI_EveTr','LAI_DecTr','LAI_Grass',&                     !16
+                'DecidCap','Porosity','AlbEveTr','AlbDecTr','AlbGrass',&      !21
+                'WU_EveTr1','WU_EveTr2','WU_EveTr3',&               !24
+                'WU_DecTr1','WU_DecTr2','WU_DecTr3',&               !27
+                'WU_Grass1','WU_Grass2','WU_Grass3',&               !30
+                'deltaLAI','LAIlumps','AlbSnow','DSnowPvd',&        !34
+                'DSnowBldgs','DSnowEveTr','DSnowDecTr',&    !37
+                'DSnowGrass','DSnowBSoil','DSnowWater',&    !40
+                'BoAnOHMEnd','a1AnOHM','a2AnOHM','a3AnOHM'] !44 TS AnOHM 05 Mar 2016
+
            OPEN(60,file=FileDaily)
-           WRITE(60,142)
-142        FORMAT('%iy id ',&                                          !2
-                'HDD1_h HDD2_c HDD3_Tmean HDD4_T5d P/day DaysSR ',&    !8
-                'GDD1_g GDD2_s GDD3_Tmin GDD4_Tmax GDD5_DayLHrs ',&    !13
-                'LAI_EveTr LAI_DecTr LAI_Grass ',&                     !16
-                'DecidCap Porosity AlbEveTr AlbDecTr AlbGrass ',&      !21
-                'WU_EveTr(1) WU_EveTr(2) WU_EveTr(3) ',&               !24
-                'WU_DecTr(1) WU_DecTr(2) WU_DecTr(3) ',&               !27
-                'WU_Grass(1) WU_Grass(2) WU_Grass(3) ',&               !30
-                'deltaLAI LAIlumps AlbSnow Dens_Snow_Paved ',&         !34
-                'Dens_Snow_Bldgs Dens_Snow_EveTr Dens_Snow_DecTr ',&   !37
-                'Dens_Snow_Grass Dens_Snow_BSoil Dens_Snow_Water ',&   !40
-                'BoAnOHMEnd a1AnOHM a2AnOHM a3AnOHM')                  !44 TS AnOHM 05 Mar 2016
+           WRITE(60,602) ADJUSTR(headerDaily(1:44))
 
            DailyStateFirstOpen(Gridiv)=0
            ! Otherwise open file to append
@@ -521,14 +524,20 @@ SUBROUTINE DailyState(Gridiv)
              deltaLAI,VegPhenLumps,SnowAlb,SnowDens(1:7),&
              BoAnOHMEnd(Gridiv),a1AnOHM(Gridiv),a2AnOHM(Gridiv),a3AnOHM(Gridiv)
 
-601     FORMAT(2(i4,1X),&
-             4(f6.1,1X),1(f8.4,1X),1(f6.1,1X), 5(f6.1,1X),&
-             3(f6.2,1X),&
-             5(f6.2,1X),&
-             9(f7.3,1X),&
-             2(f7.2,1X),8(f7.2,1X),&
-             4(f7.2,1X))
-
+601     FORMAT(2(i10,1X),&
+             4(f10.1,1X),1(f10.4,1X),1(f10.1,1X), 5(f10.1,1X),&
+             3(f10.2,1X),&
+             5(f10.2,1X),&
+             9(f10.3,1X),&
+             2(f10.2,1X),8(f10.2,1X),&
+             4(f10.2,1X))
+602     FORMAT(2(a10,1X),&
+             4(a10,1X),1(a10,1X),1(a10,1X), 5(a10,1X),&
+             3(a10,1X),&
+             5(a10,1X),&
+             9(a10,1X),&
+             2(a10,1X),8(a10,1X),&
+             4(a10,1X))
         ! Close the daily state file
         CLOSE(60)
      ENDIF  !End writedailystate

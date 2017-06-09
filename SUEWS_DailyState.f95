@@ -85,6 +85,8 @@ SUBROUTINE DailyState(Gridiv)
   CHARACTER(len=10):: grstr2
   CHARACTER(len=10):: headerDaily(60)='' ! headers of daily variables
 
+  LOGICAL        :: debug=.TRUE.
+
   ! --------------------------------------------------------------------------------
   ! ------------- Key to daily arrays ----------------------------------------------
   ! HDD(,1) ---- Heating         [degC] ! GDD(,1) ---- Growing      [degC]
@@ -429,17 +431,24 @@ SUBROUTINE DailyState(Gridiv)
         !   load the sublist into forcings:
         !   QH and QE for Bowen ratio
 
-        xQH  = dataOut(irRange(1):irRange(2):nsh,16,Gridiv)
-        xQE  = dataOut(irRange(1):irRange(2):nsh,17,Gridiv)
+        ! needs improvement:
+        ! TODO: include all timesteps as in the calculations
+        xQH  = dataOut(irRange(1):irRange(2):nsh,14,Gridiv)
+        xQE  = dataOut(irRange(1):irRange(2):nsh,15,Gridiv)
         mxQH = SUM(xQH(10:16))/7
         mxQE = SUM(xQE(10:16))/7
+
+
+        ! handle extreme dry condition to prevent NAN
+        IF ( ABS(mxQE) < 0.1 ) mxQE = 0.1
+
         xBo  = mxQH/mxQE
         !   calculate daily mean AH
         xAH  = dataOut(irRange(1):irRange(2):nsh,15,Gridiv)
         xmAH  = SUM(xAH(:))/24
      ELSE
         !   give a default Bo as 2 if no enough flux data to update with:
-        xBo  = 2.
+        xBo  = 10.
         xmAH = 25.
      END IF
      !   handle NAN
@@ -454,8 +463,13 @@ SUBROUTINE DailyState(Gridiv)
      BoAnOHMEnd(Gridiv)  = xBo
      Bo_grids(id,Gridiv) = BoAnOHMEnd(Gridiv)
      BoInit              = Bo_grids(id,Gridiv) ! BoInit will be written out to InitialConditions of next year
-     !IF ( ABS(xBo) > 30 ) WRITE(unit=*, fmt=*) "mean QH, QE:", mxQH,mxQE
-     !IF ( ABS(xBo) < 1/30 ) WRITE(unit=*, fmt=*) "mean QH, QE:", mxQH,mxQE
+
+     IF(debug) THEN
+        IF ( ABS(xBo) > 30. ) WRITE(unit=*, fmt=*) "mean QH, QE:", mxQH,mxQE
+        IF ( ABS(xBo) < 1/30. ) WRITE(unit=*, fmt=*) "mean QH, QE:", mxQH,mxQE
+        IF ( HDD(id,5)>0 ) PRINT*, 'Rainfall',HDD(id,5)
+        PRINT*, 'xBo is',xBo
+     ENDIF
 
      mAHAnOHM(Gridiv)     = xmAH
      mAH_grids(id,Gridiv) = mAHAnOHM(Gridiv)

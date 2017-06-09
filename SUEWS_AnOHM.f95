@@ -348,8 +348,8 @@ SUBROUTINE AnOHM_coef(sfc_typ,xid,xgrid,&   ! input
   !   quality checking of a2
   IF ( .NOT. (xa2>-0.5 .AND. xa2<0.5)) THEN
      flagGood = .FALSE.
-     IF ( xa2>0.5) xa2 = 0.5
-     IF (xa2<-0.5) xa2 = -0.5
+    !  IF ( xa2>0.5) xa2 = 0.5
+    !  IF (xa2<-0.5) xa2 = -0.5
   ENDIF
   !   quality checking of a3
   IF ( .NOT. (xa3<0)) flagGood = .FALSE.
@@ -620,8 +620,8 @@ SUBROUTINE AnOHM_coef_water(sfc_typ,xid,xgrid,&   ! input
   !   quality checking of a2
   IF ( .NOT. (xa2>-0.5 .AND. xa2<0.5)) THEN
      flagGood = .FALSE.
-     IF ( xa2>0.5) xa2 = 0.5
-     IF (xa2<-0.5) xa2 = -0.5
+    !  IF ( xa2>0.5) xa2 = 0.5
+    !  IF (xa2<-0.5) xa2 = -0.5
   ENDIF
   !   quality checking of a3
   IF ( .NOT. (xa3<0)) flagGood = .FALSE.

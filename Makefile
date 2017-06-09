@@ -39,7 +39,6 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_store.o \
           SUEWS_BL_Resist.o \
           SUEWS_SurfaceResistance.o \
-          SUEWS_DailyState.o \
           SUEWS_SnowUpdate.o \
           SUEWS_drain.o \
           SUEWS_TimeRelatedSubroutines.o \
@@ -63,14 +62,15 @@ OTHERS =  BLUEWS_CBL.o   \
           SOLWEIG_shadowingfunction_20.o  \
           SOLWEIG_sunonsurface_veg.o  \
           SOLWEIG_wallinsun_veg.o  \
-          SUEWS_AnOHM.o  \
           SUEWS_ESTM_functions.o \
           SUEWS_ESTM_initials.o \
           SUEWS_ESTM_v2016.o \
           SUEWS_CO2.o \
-					SUEWS_Initial.o
+					SUEWS_Initial.o\
+					SUEWS_Diagnostics.o
 # modules under rapid development
-TEST = SUEWS_Diagnostics.o
+TEST =		SUEWS_AnOHM.o  \
+SUEWS_DailyState.o
 
 # Build main program - main uses MODULES and OTHERS
 main: SUEWS_Program.f95 $(MODULES) $(OTHERS) $(TEST)

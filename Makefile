@@ -18,7 +18,7 @@ MODULES = LUMPS_Module_constants.o  \
 					stringmod.o \
 					qsort_c_module.o
 # Rest of the files including modules and functions which are independent
-OTHERS =  BLUEWS_CBL.o   \
+OTHERS =  SUEWS_SAHP.o \
           LUMPS_NARP_v3.o \
           SUEWS_Calculations.o  \
           BLUEWS_Diff.o  \
@@ -31,7 +31,6 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_RoughnessParameters.o \
           SUEWS_RunoffFromGrid.o \
           NARP_sun_position_v2.o \
-          SUEWS_SAHP.o \
           LUMPS_OutputHeaders.o \
           SUEWS_Snow.o \
           LUMPS_QHQE.o \
@@ -68,9 +67,10 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_ESTM_initials.o \
           SUEWS_ESTM_v2016.o \
           SUEWS_CO2.o \
-					SUEWS_Initial.o
+					SUEWS_Initial.o\
+					SUEWS_Diagnostics.o
 # modules under rapid development
-TEST = SUEWS_Diagnostics.o
+TEST = BLUEWS_CBL.o
 
 # Build main program - main uses MODULES and OTHERS
 main: SUEWS_Program.f95 $(MODULES) $(OTHERS) $(TEST)

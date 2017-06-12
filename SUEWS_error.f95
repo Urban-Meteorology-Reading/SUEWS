@@ -1,10 +1,11 @@
-SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
+ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
   !errh        -- Create a numbered code for the situation so get a unique message to help solve the problem
   !ProblemFile -- Filename where the problem occurs/error message
   !value       -- Error value (real number with correct type)
   !value2      -- Second error value (real number with correct type)
   !valueI      -- Error value (integer)
   ! Last modified -----------------------------------------------------
+  ! MH  12 Apr 2017: Error code for stability added
   ! HCW 17 Feb 2017: Write (serious) errors to problems.txt; write warnings to warnings.txt (program continues)
   ! HCW 13 Dec 2016: Tidied up and improved error hints
   ! HCW 25 May 2016: Added warning/error labels to distinguish serious errors (that stop program)
@@ -283,6 +284,10 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
   ELSEIF(errh==72) THEN
      text1='RunControl.nml: ResolutionFilesOut must be an integer multiple of TSTEP'
      v6=.TRUE.
+  ELSEIF(errh==73) THEN
+     text1='Iteration loop stopped for too stable conditions.'
+     returnTrue=.TRUE.
+     v2=.TRUE.
   ENDIF
   !---------------------------------------------------------------------
   

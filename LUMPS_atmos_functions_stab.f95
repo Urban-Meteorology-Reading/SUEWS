@@ -1,6 +1,7 @@
 !.c!! For Lumps Version 2 - no stability calculations
 !==========================================================
 !     Last change:
+!     MH   12 April 2017: Stable limit to exit do-loop
 !     LJ   25 Nov 2014: Limits for L
 !     LJ   19 Feb 2010
 !     SG   27 Mar 2000    4:44 pm
@@ -41,6 +42,12 @@ SUBROUTINE STAB_lumps(H,StabilityMethod,ustar,L)
      LOLD=L
      zL=zzd/L
      z0L=z0M/L  !z0M roughness length
+
+     if (zL>2)then
+       CALL ErrorHint(73,'LUMPS_atmos_functions_stab.f95: stability parameter, ustar',zL,USTAR,notUsedI)
+       return !MO-theory not necessarily valid above zL>2. Still causes problematic ustar values and correct limit might be 0.3.
+               !Needs more investigations.
+     end if
 
      psim=stab_fn_mom(StabilityMethod,zL,zL)
      psimz0=stab_fn_mom(StabilityMethod,zL,z0L)

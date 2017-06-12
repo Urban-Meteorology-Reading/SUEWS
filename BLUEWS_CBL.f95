@@ -164,6 +164,7 @@
     IF(it==0 .AND. imin==(nsh_real-1)/nsh_real*60) idoy=id-1  !Modified by HCW 04 Mar 2015 in case model timestep is not 5-min
 
 
+    ! NB: any difference between the two options? code looks the same in the two branches.
     IF((qh_choice==1).OR.(qh_choice==2))THEN !BLUEWS or BLUMPS
        !Stability correction
        !tm_K_zm=tm_K+cbldata(10)*cbldata(2)/(k*cbldata(8)*cbldata(6)*cbldata(4))
@@ -188,7 +189,8 @@
        es_hPa1=sat_vap_press(Temp_C1,cbldata(9),1)
        lv=(2500.25-2.365*Temp_C1)*1000
        !qm_gkg_zm=qm_gkg+cbldata(10)*cbldata(3)/(k*cbldata(8)*cbldata(4)*lv)
-       avrh1=100*((qm_gkg*cbldata(8)/(622+qm_gkg))/es_hPa1) !check pressure
+       !  avrh1=100*((qm_gkg*cbldata(8)/(622+qm_gkg))/es_hPa1) !check pressure
+       avrh1=100*((qm_gkg*cbldata(9)/(622+qm_gkg))/es_hPa1) ! should be cbldata(9), i.e., Press_hPa
        IF(avrh1>100)THEN
           CALL errorHint(34,'subroutine CBL dectime, relative humidity',idoy+cbldata(1)/24.0,avrh,100)
           avrh1=100
@@ -440,10 +442,35 @@
     !NBL currently fixed to 200 m
     blh_m=200
 
+    ! also fill in other variables
+    gamt_Km=IniCBLdata(nLineDay,3)
+    gamq_gkgm=IniCBLdata(nLineDay,4)
+    tp_K=IniCBLdata(nLineDay,5)
+    qp_gkg=IniCBLdata(nLineDay,6)
+    tm_K=IniCBLdata(nLineDay,7)
+    qm_gkg=IniCBLdata(nLineDay,8)
+
     iCBLcount=iCBLcount+1
-    dataOutBL(iCBLcount,1:ncolumnsdataOutBL,Gridiv)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),&
-    dectime,blh_m,tm_K,qm_gkg,&
-    (NAN,is=9,ncolumnsdataOutBL)/)
+    ! dataOutBL(iCBLcount,1:ncolumnsdataOutBL,Gridiv)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),&
+    ! dectime,blh_m,tm_K,qm_gkg,&
+    ! (NAN,is=9,ncolumnsdataOutBL)/)
+
+    Temp_C=tm_K/((1000/Press_hPa)**(gas_ct_dry/avcp))-C2K
+    es_hPa=sat_vap_press(Temp_C,Press_hPa,1)
+    lv=(2500.25-2.365*Temp_C)*1000
+    !qm_gkg_zm=qm_gkg+cbldata(10)*cbldata(3)/(k*cbldata(8)*cbldata(4)*lv)
+    avrh=100*((qm_gkg*Press_hPa/(622+qm_gkg))/es_hPa) !check pressure
+    IF(avrh>100)THEN
+       CALL errorHint(34,'subroutine CBL dectime, relative humidity',dectime,avrh,100)
+       avrh=100
+    ENDIF
+
+    dataOutBL(iCBLcount,1:ncolumnsdataOutBL,Gridiv)=&
+    (/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime,&
+    blh_m,tm_K,qm_gkg,&
+    tp_K,qp_gkg,&
+    Temp_C,avrh,qh_use,qe_use,Press_hPa,avu1,ustar,avdens,lv_J_kg,avcp,&
+    gamt_Km,gamq_kgkgm/)
 
     IF(InitialData_use==2) THEN
        blh_m=IniCBLdata(nLineDay,2)

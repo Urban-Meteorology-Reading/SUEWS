@@ -1,7 +1,8 @@
 !.c!! For Lumps Version 2 - no stability calculations
 !==========================================================
 !     Last change:
-!     MH   12 April 2017: Stable limit to exit do-loop
+!     TS   13 Jun 2017: corrections to the integral of stability functions
+!     MH   12 Apr 2017: Stable limit to exit do-loop
 !     LJ   25 Nov 2014: Limits for L
 !     LJ   19 Feb 2010
 !     SG   27 Mar 2000    4:44 pm
@@ -30,9 +31,9 @@ SUBROUTINE STAB_lumps(H,StabilityMethod,ustar,L)
   IF(zzd<0) CALL ErrorHint(32,'Windspeed Ht too low relative to zdm [Stability calc]- values [z-zdm, zdm]',Zzd,zdm,notUsedI)
 
   USTAR=KUZ/LOG(Zzd/Z0M)      !Initial setting of u* and calc. of L (neutral situation)
-  if ( abs(H)<0.001 ) then    ! prevent zero Tstar
-    H=0.001
-  end if
+  IF ( ABS(H)<0.001 ) THEN    ! prevent zero Tstar
+     H=0.001
+  END IF
   Tstar=(-H/ustar)
   L=(USTAR**2)/(G_T_K*Tstar)
 
@@ -43,11 +44,11 @@ SUBROUTINE STAB_lumps(H,StabilityMethod,ustar,L)
      zL=zzd/L
      z0L=z0M/L  !z0M roughness length
 
-     if (zL>2)then
-       CALL ErrorHint(73,'LUMPS_atmos_functions_stab.f95: stability parameter, ustar',zL,USTAR,notUsedI)
-       return !MO-theory not necessarily valid above zL>2. Still causes problematic ustar values and correct limit might be 0.3.
-               !Needs more investigations.
-     end if
+     IF (zL>2)THEN
+        CALL ErrorHint(73,'LUMPS_atmos_functions_stab.f95: stability parameter, ustar',zL,USTAR,notUsedI)
+        RETURN !MO-theory not necessarily valid above zL>2. Still causes problematic ustar values and correct limit might be 0.3.
+        !Needs more investigations.
+     END IF
 
      psim=stab_fn_mom(StabilityMethod,zL,zL)
      psimz0=stab_fn_mom(StabilityMethod,zL,z0L)
@@ -139,13 +140,13 @@ FUNCTION stab_fn_mom(StabilityMethod,ZL,zl_f) RESULT(psym)
      IF(StabilityMethod==1)THEN         !Dyer (1974) k=0.35 x=1+5*zl Mod. Hogstrom (1988)
         psym=(-4.8)*zl_f
      ELSEIF(StabilityMethod==2)THEN     !Van Ulden & Holtslag (1985) p 1206
-       if ( zl_f >1000. ) then
-         zl_f=1000.
-
-       end if
+        IF ( zl_f >1000. ) THEN
+           zl_f=1000.
+        END IF
         PSYM=(-17.*(1.-EXP(-0.29*zl_f)))
      ELSEIF(StabilityMethod==4)THEN ! Businger et al (1971) modifed  Hogstrom (1988)
-        psym=1+6*zl_f
+        ! psym=1+6*zl_f  ! this is NOT the integral form but the stability function, TS 13 Jun 2017
+        psym=(-6)*zl_f   ! this is the integral form, TS 13 Jun 2017
      ELSEIF(StabilityMethod==3)THEN ! campbell & norman eqn 7.27 p 97
         psym=(-6)*LOG(1+zl_f)
 
@@ -183,11 +184,22 @@ FUNCTION stab_fn_heat(StabilityMethod,ZL,zl_f) RESULT (psyh)
      ENDIF
 
   ELSE IF (zL>neut_limit) THEN    !Stable
-     IF(StabilityMethod==4)THEN !Businger et al (1971) modifed  Hogstrom (1988)
-        psyh=0.95+(7.8*zl_f)
-     ELSE !Dyer (1974)  PSYH=(-5)*ZL	modifed  Hogstrom (1988)
-        PSYH=(-4.5)*Zl_f
-     ENDIF
+     IF ( zL<=1 ) THEN ! weak/moderate stable
+        IF(StabilityMethod==4)THEN !Businger et al (1971) modifed  Hogstrom (1988)
+           ! psyh=0.95+(7.8*zl_f) ! this is NOT the integral form but the stability function, TS 13 Jun 2017
+           psyh=(-7.8)*zl_f   ! this is the integral form, TS 13 Jun 2017
+        ELSE !Dyer (1974)  PSYH=(-5)*ZL	modifed  Hogstrom (1988)
+           PSYH=(-4.5)*Zl_f
+        ENDIF
+     ELSE !zL>1, very stable. otherwise psyh would be too large. TS 13 Jun 2017
+      ! adopt the form as Brutasert (1982) eqn 4.58. but following the coeffs. of the above eqns
+        IF(StabilityMethod==4)THEN !Businger et al (1971) modifed  Hogstrom (1988)
+           psyh=(-7.8)*(1+LOG(zl_f))
+        ELSE !Dyer (1974)  PSYH=(-5)*ZL	modifed  Hogstrom (1988)
+           PSYH=(-4.5)*(1+LOG(zl_f))
+        ENDIF
+     END IF
+
   ENDIF
 
   RETURN

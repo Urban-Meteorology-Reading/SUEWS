@@ -85,7 +85,7 @@ SUBROUTINE DailyState(Gridiv)
   CHARACTER(len=10):: grstr2
   CHARACTER(len=10):: headerDaily(60)='' ! headers of daily variables
 
-  LOGICAL        :: debug=.TRUE.
+  LOGICAL        :: debug=.FALSE.
 
   ! --------------------------------------------------------------------------------
   ! ------------- Key to daily arrays ----------------------------------------------

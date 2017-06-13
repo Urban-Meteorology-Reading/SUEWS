@@ -2,7 +2,7 @@ SUBROUTINE diagSfc(xSurf,xFlux,us,xDiag,opt)
   ! Ting Sun 20 May 2017: calculate surface-level diagonostics
 
   USE mod_k
-  use mod_z
+  USE mod_z
   USE sues_data
   USE data_in
   USE moist
@@ -44,16 +44,28 @@ SUBROUTINE diagSfc(xSurf,xFlux,us,xDiag,opt)
      xDiag=ustar/k*(LOG(z10zd/z0m)-psymz10+psymz0)
 
   CASE (1) ! temperature at 2 m
-    !  PRINT*, 'xSurf',xSurf
-    !  PRINT*, 'xFlux',xFlux
-    !  PRINT*, 'k*us*avdens*avcp',k*us*avdens*avcp
-    !  PRINT*, 'k',k
-    !  PRINT*, 'us',us
-    !  PRINT*, 'avdens',avdens
-    !  PRINT*, 'avcp',avcp
-    !  PRINT*, 'stab',(LOG(z2zd/z0h)-psyhz2+psyhz0)
      xDiag=xSurf-xFlux/(k*us*avdens*avcp)*(LOG(z2zd/z0h)-psyhz2+psyhz0)
-    !  PRINT*, 'xDiag',xDiag
+    !  IF ( ABS((LOG(z2zd/z0h)-psyhz2+psyhz0))>10 ) THEN
+    !     PRINT*, '#####################################'
+    !     PRINT*, 'xSurf',xSurf
+    !     PRINT*, 'xFlux',xFlux
+    !     PRINT*, 'k*us*avdens*avcp',k*us*avdens*avcp
+    !     PRINT*, 'k',k
+    !     PRINT*, 'us',us
+    !     PRINT*, 'avdens',avdens
+    !     PRINT*, 'avcp',avcp
+    !     PRINT*, 'xFlux/X',xFlux/(k*us*avdens*avcp)
+    !     PRINT*, 'stab',(LOG(z2zd/z0h)-psyhz2+psyhz0)
+    !     PRINT*, 'LOG(z2zd/z0h)',LOG(z2zd/z0h)
+    !     PRINT*, 'z2zd',z2zd,'L_mod',L_mod
+    !     PRINT*, 'z2zd/L_mod',z2zd/L_mod
+    !     PRINT*, 'psyhz2',psyhz2
+    !     PRINT*, 'psyhz0',psyhz0
+    !     PRINT*, 'psyhz2-psyhz0',psyhz2-psyhz0
+    !     PRINT*, 'xDiag',xDiag
+    !     PRINT*, '*************************************'
+    !  END IF
+
 
   CASE (2) ! humidity at 2 m
      xDiag=xSurf-xFlux/(k*us*avdens*tlv)*(LOG(z2zd/z0h)-psyhz2+psyhz0)

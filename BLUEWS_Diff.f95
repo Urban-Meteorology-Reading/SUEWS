@@ -1,5 +1,6 @@
 !-----------------------------------------------------------------------
 ! from CBL modelling Cleugh and Grimmond (2000) BLM
+! NT 6 Apr 2017: include iteration over top of CBL scalars and include subsidence flag
 ! Last modified: LJ 27 Jan 2016 - Removal of tabs
 !-----------------------------------------------------------------------
  SUBROUTINE RKUTTA(neqn,XA,XB,Y,NSTEPS)
@@ -9,6 +10,8 @@
 !       Y(2)=tm_K
 !       Y(3)=qm_kgkg
 !       Y(4)=cm    
+!       Y(5)=tp_K
+!       Y(6)=qp_kgkg
 !       JOHN KNIGHT, 1985 (AMENDED BY MRR, 23-SEP-85)
 !       EXPLICIT FOURTH-ORDER RUNGE-KUTTA METHOD FOR FIRST-ORDER ODE SYSTEM
 !       OF NE EQUATIONS, WITH INITIAL VALUES SUPPLIED.
@@ -98,10 +101,11 @@
     real(kind(1D0)), dimension(neqn)::dyds,y1
     real(kind(1d0)) :: zero=0.0
     real(kind(1d0)) :: h1,t_K,q_kgkg,c,cp,ws,s
+!     real(kind(1D0)) :: tp_K,qp_kgkg
     real(kind(1D0)):: delt_K,delq_kgkg,delc
     real(kind(1D0)):: gamtv_Km,deltv_K,ftv_Kms
     real(kind(1D0)):: ftva_Kms,delb,qs2,qs3
-    real(kind(1D0)):: dhds,dtds,dqds,dcds
+    real(kind(1D0)):: dhds,dtds,dqds,dcds,dtpds,dqpds
     real(kind(1D0)):: conk,conn,cona,conc,cont
 
 !    print*,"diff: timestamp:",s
@@ -110,6 +114,8 @@
     t_K    = y1(2)!K
     q_kgkg = y1(3)!kg/kg
     c      = y1(4)
+    tp_K   = y1(5)!K
+    qp_kgkg= y1(6)!kg/kg
     
 !       find t, q, c above inversion, and jumps across inversion
 !       tp = tp + gamt*h
@@ -117,8 +123,8 @@
 
     cp        = 0 ! cp0 + gamc* h1   ! todo
     
-    delt_K    = tpp_K    - t_K
-    delq_kgkg = qpp_kgkg - q_kgkg
+    delt_K    = tp_K    - t_K
+    delq_kgkg = qp_kgkg - q_kgkg
     delc      = cp - c
 
 !       find potential virtual temperature flux, gradient and jump
@@ -128,8 +134,8 @@
 
 !       find velocity scale ws
     ftva_Kms = max(ftv_Kms,zero) ! virtual heat flux
-    ws = (h1*ftva_Kms*grav/tm_K)**0.3333333333
-
+    ws = (h1*ftva_Kms*grav/tm_K)**0.3333333333    
+    
 !       find dhds using one of 4 alternative schemes chosen by ient:
     if (EntrainmentType.eq.2) then
 !       EntrainmentType=1: encroachment (as in McN and S 1986 eq 16))
@@ -151,13 +157,18 @@
    
      else if (EntrainmentType.eq.4) then
 !       EntrainmentType=3: Tennekes 1973 (as in R 1991 eqs 3,4)
-        alpha3=0.7
+        alpha3=0.2   ! alpha changed back to original Tennekes 1973 value
         if (deltv_K.le.0.01) then
-          dhds = ftva_Kms/(h1*gamtv_Km)
-          call ErrorHint(31, 'subroutine difflfnout: [CBL: deltv_K<0.01 EntrainmentType=4],deltv_K',&
-          deltv_K,notUsed,notUsedI)
-       else
-          dhds = alpha3*ftva_Kms/deltv_K
+            dhds = ftva_Kms/(h1*gamtv_Km)
+            call ErrorHint(31, 'subroutine difflfnout: [CBL: deltv_K<0.01 EntrainmentType=4],deltv_K',&
+            deltv_K,notUsed,notUsedI)
+        else
+            ! include the option whether or not to include subsidence
+            if (isubs.eq.1) then
+                dhds = alpha3*ftva_Kms/deltv_k + wsb
+            else
+                dhds = alpha3*ftva_Kms/deltv_K  
+            end if 
        end if
 
 !       write (4,*) tpp, gamq, dhds, deltv
@@ -185,15 +196,29 @@
     end if
 ! find dtds, dqds, dc/ds:
 !	wsb is the subsidence velocity. Try using: -0.01, -0.05, -0.1.   
-
-    dtds = fhbl_Kms/h1    + delt_K    *(dhds-wsb)/h1
-    dqds = febl_kgkgms/h1 + delq_kgkg *(dhds-wsb)/h1
-    dcds = fcbl/h1        + delc      *(dhds-wsb)/h1
+    if (isubs.eq.1) then
+        dtds = fhbl_Kms/h1    + delt_K    *(dhds-wsb)/h1
+        dqds = febl_kgkgms/h1 + delq_kgkg *(dhds-wsb)/h1
+        dcds = fcbl/h1        + delc      *(dhds-wsb)/h1
+        ! also iterate the top of CBL scalars
+        dtpds = gamt_Km * (dhds-wsb)
+        dqpds = gamq_kgkgm * (dhds-wsb)
+    else 
+        dtds = fhbl_Kms/h1    + delt_K    *(dhds)/h1
+        dqds = febl_kgkgms/h1 + delq_kgkg *(dhds)/h1
+        dcds = fcbl/h1        + delc      *(dhds)/h1
+        ! also iterate the top of CBL scalars
+        dtpds = gamt_Km * (dhds)
+        dqpds = gamq_kgkgm * (dhds)
+    end if
     
     dyds(1) = dhds
     dyds(2) = dtds
     dyds(3) = dqds
     dyds(4) = dcds
+    dyds(5) = dtpds
+    dyds(6) = dqpds
+    
     
     return
    end subroutine diff

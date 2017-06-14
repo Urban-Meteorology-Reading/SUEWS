@@ -1040,7 +1040,8 @@ MODULE cbl_MODULE
        CO2_included,&     ! CO2 included
        InitialData_use,&  ! 1 read initial data, 0 do not
        !qh_choice,&        ! selection of qh use to drive CBL growth 1=Suews 2=lumps 3=obs  ! moved to sues_data
-       sondeflag      ! 1 read sonde or vertical profile data in 0 do not
+       sondeflag,&      ! 1 read sonde or vertical profile data in 0 do not
+       isubs          ! 1 include subsidence in equations
 
   INTEGER,DIMENSION(366)::cblday=0
 
@@ -1052,7 +1053,7 @@ MODULE cbl_MODULE
 
   !Parameters in CBL code
   INTEGER::zmax,&
-       nEqn=4,&
+       nEqn=6,&  !NT changed from 4 to 6 
        iCBLcount,&
        nlineInData
   REAL(KIND(1d0))::C2K=273.16
@@ -1084,7 +1085,7 @@ MODULE cbl_MODULE
 
 
   REAL (KIND(1D0)), DIMENSION (0:500,2):: gtheta,ghum ! Vertical gradient of theta and specific humidity from sonde data
-  REAL (KIND(1D0)), DIMENSION(4)::y
+  REAL (KIND(1D0)), DIMENSION(6)::y  ! NT set from 4 to 6
 
 END   MODULE cbl_MODULE
 !===================================================================================

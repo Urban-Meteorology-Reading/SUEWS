@@ -206,7 +206,7 @@ MODULE ctrl_output
        varAttr('avu1'      , 'to_add' , f104 , 'avu1'      , aA , 'BL' , 0)  , &
        varAttr('ustar'     , 'to_add' , f104 , 'ustar'     , aA , 'BL' , 0)  , &
        varAttr('avdens'    , 'to_add' , f104 , 'avdens'    , aA , 'BL' , 0)  , &
-       varAttr('lv_J_kg'   , 'to_add' , f104 , 'lv_J_kg'   , aA , 'BL' , 0)  , &
+       varAttr('lv_J_kg'   , 'to_add' , f146 , 'lv_J_kg'   , aA , 'BL' , 0)  , &
        varAttr('avcp'      , 'to_add' , f104 , 'avcp'      , aA , 'BL' , 0)  , &
        varAttr('gamt'      , 'to_add' , f104 , 'gamt'      , aA , 'BL' , 0)  , &
        varAttr('gamq'      , 'to_add' , f104 , 'gamq'      , aA , 'BL' , 0)&

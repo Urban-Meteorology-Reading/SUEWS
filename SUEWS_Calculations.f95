@@ -518,12 +518,12 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   !============ surface-level diagonostics ===============
   ! wind speed:
-  CALL diagSfc(0.,0.,ustar,avU10_ms,0)
+  CALL diagSfc(0.,0.,ustar,veg_fr,avU10_ms,0)
   ! temperature:
-  CALL diagSfc(tsurf,qh,ustar,t2_C,1)
+  CALL diagSfc(tsurf,qh,ustar,veg_fr,t2_C,1)
   ! humidity:
   CALL diagSfc(qsatf(tsurf,Press_hPa)*1000,& ! Saturation specific humidity at surface in g/kg
-       qeOut,ustar,q2_gkg,2)
+       qeOut,ustar,veg_fr,q2_gkg,2)
   !============ surface-level diagonostics end ===============
 
 

@@ -3,6 +3,7 @@
  !Transfers water in soil stores of land surfaces LJ (2010)
  !Change the model to use varying hydraulic conductivity instead of constant value LJ (7/2011)
  !If one of the surface's soildepth is zero, no water movement is considered
+ ! LJ  15/06/2017 Modification:   - Moved location of runoffSoil_per_tstep within previous if-loop to avoid dividing with zero with 100% water surface
  ! HCW 22/02/2017 Modifications:  - Minor bug fixed in VWC1/B_r1 comparison - if statements reversed    
  ! HCW 13/08/2014 Modifications:  - Order of surfaces reversed (for both is and jj loops)
  !                                - Number of units (e.g. properties) added to distance calculation
@@ -190,10 +191,12 @@
            endif  !end if second surface exists and is capable of storing water
           
         enddo  !end jj loop over second surface
-    
+
+        runoffSoil_per_tstep=runoffSoil_per_tstep+(runoffSoil(is)*sfr(is)/NonWaterFraction)  !Excludes water body. Moved here as otherwise code crashed when NonWaterFraction=0
+
     endif  !end if first surface exists and is capable of storing water
  
- runoffSoil_per_tstep=runoffSoil_per_tstep+(runoffSoil(is)*sfr(is)/NonWaterFraction)  !Excludes water body
+ !runoffSoil_per_tstep=runoffSoil_per_tstep+(runoffSoil(is)*sfr(is)/NonWaterFraction)  !Excludes water body
      
  enddo !is loop over first surface
 

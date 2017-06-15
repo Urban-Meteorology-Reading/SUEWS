@@ -4,7 +4,6 @@
 !Last modification
 !
 !Last modification:
-! LJ  15 Jun 2017 - Add parts where NonWaterFraction=0 is used as a divider so that the code won't crash with 100% water
 ! TS  20 May 2017 - Add surface-level diagonostics: T2, Q2, U10
 ! HCW 09 Dec 2016 - Add zenith and azimuth to output file
 ! HCw 24 Aug 2016 - smd and state for each surface set to NAN in output file if surface does not exist.
@@ -156,13 +155,10 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !======== Calculate soil moisture =========
   SoilMoistCap=0   !Maximum capacity of soil store [mm] for whole surface
   soilstate=0      !Area-averaged soil moisture [mm] for whole surface
-
-  IF (NonWaterFraction/=0) THEN !Soil states only calculated if soil exists. LJ June 2017
-     DO is=1,nsurf-1   !No water body included
-       soilmoistCap=soilMoistCap+(soilstoreCap(is)*sfr(is)/NonWaterFraction)
-       soilstate=soilstate+(soilmoist(is)*sfr(is)/NonWaterFraction)
-     ENDDO
-  ENDIF
+  DO is=1,nsurf-1   !No water body included
+     soilmoistCap=soilMoistCap+(soilstoreCap(is)*sfr(is)/NonWaterFraction)
+     soilstate=soilstate+(soilmoist(is)*sfr(is)/NonWaterFraction)
+  ENDDO
 
   !If loop removed HCW 26 Feb 2015
   !if (ir==1) then  !Calculate initial smd
@@ -180,7 +176,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
      !write(*,*) is, vsmd, smd
   ENDDO
 
-  
   ! ===================NET ALLWAVE RADIATION================================
   IF(NetRadiationMethod>0)THEN
 
@@ -453,16 +448,11 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !================== Drainage ===================
   ! Calculate drainage for each soil subsurface (excluding water body)
   IF(Diagnose==1) WRITE(*,*) 'Calling Drainage...'
-
-  IF (NonWaterFraction/=0) THEN !Soil states only calculated if soil exists. LJ June 2017
-     DO is=1,nsurf-1
-        CALL Drainage(surf(6,is),surf(2,is),surf(3,is),surf(4,is))
-        !HCW added and changed to surf(6,is) here 20 Feb 2015
-        drain_per_tstep=drain_per_tstep+(drain(is)*sfr(is)/NonWaterFraction)   !No water body included
-     ENDDO
-  ELSE
-     drain(1:nsurf-1)=0
-  ENDIF
+  DO is=1,nsurf-1
+     CALL Drainage(surf(6,is),surf(2,is),surf(3,is),surf(4,is))
+     !HCW added and changed to surf(6,is) here 20 Feb 2015
+     drain_per_tstep=drain_per_tstep+(drain(is)*sfr(is)/NonWaterFraction)   !No water body included
+  ENDDO
 
   drain(WaterSurf) = 0  ! Set drainage from water body to zero
 
@@ -486,9 +476,11 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
         CALL Evap_SUEWS   !Calculates ev [mm]
         rss_nsurf(is) = rss !Store rss for each surface
         CALL soilstore    !Surface water balance and soil store updates (can modify ev, updates state)
+        ! if ( id>160 ) then
+        !   stop "stop after Evap_SUEWS"
+        ! end if
 
         evap(is)     = ev !Store ev for each surface
-
         ! Sum evaporation from different surfaces to find total evaporation [mm]
         ev_per_tstep = ev_per_tstep+evap(is)*sfr(is)
 
@@ -499,10 +491,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
         ! Calculate total state (including water body)
         state_per_tstep      = state_per_tstep+(state(is)*sfr(is))
         ! Calculate total state (excluding water body)
-
-        IF (NonWaterFraction/=0) THEN
-           IF (is.NE.WaterSurf) NWstate_per_tstep=NWstate_per_tstep+(state(is)*sfr(is)/NonWaterFraction)
-        ENDIF
+        IF (is.NE.WaterSurf) NWstate_per_tstep=NWstate_per_tstep+(state(is)*sfr(is)/NonWaterFraction)
 
         ChangSnow(is)  = 0
         runoffSnow(is) = 0
@@ -568,21 +557,18 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   !========== Calculate soil moisture ============
   soilstate=0       !Area-averaged soil moisture [mm] for whole surface
-  IF (NonWaterFraction/=0) THEN !Fixed for water surfaces only
-     DO is=1,nsurf-1   !No water body included
-        soilstate=soilstate+(soilmoist(is)*sfr(is)/NonWaterFraction)
-        IF (soilstate<0) THEN
-           CALL ErrorHint(62,'SUEWS_Calculations: total soilstate < 0 (just added surface is) ',soilstate,NotUsed,is)
-        ELSEIF (soilstate>SoilMoistCap) THEN
-           CALL ErrorHint(62,'SUEWS_Calculations: total soilstate > capacity (just added surface is) ',soilstate,NotUsed,is)
-           !SoilMoist_state=soilMoistCap !What is this LJ 10/2010 - SM exceeds capacity, but where does extra go?HCW 11/2014
-        ENDIF
-     ENDDO  !end loop over surfaces
-  ENDIF
+  DO is=1,nsurf-1   !No water body included
+     soilstate=soilstate+(soilmoist(is)*sfr(is)/NonWaterFraction)
+     IF (soilstate<0) THEN
+        CALL ErrorHint(62,'SUEWS_Calculations: total soilstate < 0 (just added surface is) ',soilstate,NotUsed,is)
+     ELSEIF (soilstate>SoilMoistCap) THEN
+        CALL ErrorHint(62,'SUEWS_Calculations: total soilstate > capacity (just added surface is) ',soilstate,NotUsed,is)
+        !SoilMoist_state=soilMoistCap !What is this LJ 10/2010 - SM exceeds capacity, but where does extra go?HCW 11/2014
+     ENDIF
+  ENDDO  !end loop over surfaces
   ! Calculate soil moisture deficit
   smd=soilMoistCap-soilstate   !One value for whole surface
   smd_nsurf=SoilstoreCap-soilmoist   !smd for each surface
-
 
   ! Soil stores can change after horizontal water movements
   ! Calculate total change in surface and soil state

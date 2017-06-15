@@ -315,28 +315,28 @@ MODULE ctrl_output
 
 ! ESTM:
   DATA(varList(i), i=225,246)/&
-       varAttr('QSIBLD'   , 'W_m-2' , f106 , 'QSIBLD'   , aA , 'Storage Internal building'                , 0)   , &
-       varAttr('TWALL1'   , 'degK'  , f106 , 'TWALL1'   , aA , 'Temperature in wall layer 1'              , 0)   , &
-       varAttr('TWALL2'   , 'degK'  , f106 , 'TWALL2'   , aA , 'Temperature in wall layer 2'              , 0)   , &
-       varAttr('TWALL3'   , 'degK'  , f106 , 'TWALL3'   , aA , 'Temperature in wall layer 3'              , 0)   , &
-       varAttr('TWALL4'   , 'degK'  , f106 , 'TWALL4'   , aA , 'Temperature in wall layer 4'              , 0)   , &
-       varAttr('TWALL5'   , 'degK'  , f106 , 'TWALL5'   , aA , 'Temperature in wall layer 5'              , 0)   , &
-       varAttr('TROOF1'   , 'degK'  , f106 , 'TROOF1'   , aA , 'Temperature in roof layer 1'              , 0)   , &
-       varAttr('TROOF2'   , 'degK'  , f106 , 'TROOF2'   , aA , 'Temperature in roof layer 2'              , 0)   , &
-       varAttr('TROOF3'   , 'degK'  , f106 , 'TROOF3'   , aA , 'Temperature in roof layer 3'              , 0)   , &
-       varAttr('TROOF4'   , 'degK'  , f106 , 'TROOF4'   , aA , 'Temperature in roof layer 4'              , 0)   , &
-       varAttr('TROOF5'   , 'degK'  , f106 , 'TROOF5'   , aA , 'Temperature in roof layer 5'              , 0)   , &
-       varAttr('TGROUND1' , 'degK'  , f106 , 'TGROUND1' , aA , 'Temperature in ground layer 1'            , 0)   , &
-       varAttr('TGROUND2' , 'degK'  , f106 , 'TGROUND2' , aA , 'Temperature in ground layer 2'            , 0)   , &
-       varAttr('TGROUND3' , 'degK'  , f106 , 'TGROUND3' , aA , 'Temperature in ground layer 3'            , 0)   , &
-       varAttr('TGROUND4' , 'degK'  , f106 , 'TGROUND4' , aA , 'Temperature in ground layer 4'            , 0)   , &
-       varAttr('TGROUND5' , 'degK'  , f106 , 'TGROUND5' , aA , 'Temperature in ground layer 5'            , 0)   , &
-       varAttr('TiBLD1'   , 'degK'  , f106 , 'TiBLD1'   , aA , 'Temperature in internal building layer 1' , 0)   , &
-       varAttr('TiBLD2'   , 'degK'  , f106 , 'TiBLD2'   , aA , 'Temperature in internal building layer 2' , 0)   , &
-       varAttr('TiBLD3'   , 'degK'  , f106 , 'TiBLD3'   , aA , 'Temperature in internal building layer 3' , 0)   , &
-       varAttr('TiBLD4'   , 'degK'  , f106 , 'TiBLD4'   , aA , 'Temperature in internal building layer 4' , 0)   , &
-       varAttr('TiBLD5'   , 'degK'  , f106 , 'TiBLD5'   , aA , 'Temperature in internal building layer 5' , 0)   , &
-       varAttr('TaBLD'    , 'degK'  , f106 , 'TaBLD'    , aA , 'Indoor air temperature'                   , 0) &
+       varAttr('QSIBLD'   , 'W_m-2' , f106 , 'Storage Internal building'                , aA , 'ESTM' , 0)   , &
+       varAttr('TWALL1'   , 'degK'  , f106 , 'Temperature in wall layer 1'              , aA , 'ESTM' , 0)   , &
+       varAttr('TWALL2'   , 'degK'  , f106 , 'Temperature in wall layer 2'              , aA , 'ESTM' , 0)   , &
+       varAttr('TWALL3'   , 'degK'  , f106 , 'Temperature in wall layer 3'              , aA , 'ESTM' , 0)   , &
+       varAttr('TWALL4'   , 'degK'  , f106 , 'Temperature in wall layer 4'              , aA , 'ESTM' , 0)   , &
+       varAttr('TWALL5'   , 'degK'  , f106 , 'Temperature in wall layer 5'              , aA , 'ESTM' , 0)   , &
+       varAttr('TROOF1'   , 'degK'  , f106 , 'Temperature in roof layer 1'              , aA , 'ESTM' , 0)   , &
+       varAttr('TROOF2'   , 'degK'  , f106 , 'Temperature in roof layer 2'              , aA , 'ESTM' , 0)   , &
+       varAttr('TROOF3'   , 'degK'  , f106 , 'Temperature in roof layer 3'              , aA , 'ESTM' , 0)   , &
+       varAttr('TROOF4'   , 'degK'  , f106 , 'Temperature in roof layer 4'              , aA , 'ESTM' , 0)   , &
+       varAttr('TROOF5'   , 'degK'  , f106 , 'Temperature in roof layer 5'              , aA , 'ESTM' , 0)   , &
+       varAttr('TGROUND1' , 'degK'  , f106 , 'Temperature in ground layer 1'            , aA , 'ESTM' , 0)   , &
+       varAttr('TGROUND2' , 'degK'  , f106 , 'Temperature in ground layer 2'            , aA , 'ESTM' , 0)   , &
+       varAttr('TGROUND3' , 'degK'  , f106 , 'Temperature in ground layer 3'            , aA , 'ESTM' , 0)   , &
+       varAttr('TGROUND4' , 'degK'  , f106 , 'Temperature in ground layer 4'            , aA , 'ESTM' , 0)   , &
+       varAttr('TGROUND5' , 'degK'  , f106 , 'Temperature in ground layer 5'            , aA , 'ESTM' , 0)   , &
+       varAttr('TiBLD1'   , 'degK'  , f106 , 'Temperature in internal building layer 1' , aA , 'ESTM' , 0)   , &
+       varAttr('TiBLD2'   , 'degK'  , f106 , 'Temperature in internal building layer 2' , aA , 'ESTM' , 0)   , &
+       varAttr('TiBLD3'   , 'degK'  , f106 , 'Temperature in internal building layer 3' , aA , 'ESTM' , 0)   , &
+       varAttr('TiBLD4'   , 'degK'  , f106 , 'Temperature in internal building layer 4' , aA , 'ESTM' , 0)   , &
+       varAttr('TiBLD5'   , 'degK'  , f106 , 'Temperature in internal building layer 5' , aA , 'ESTM' , 0)   , &
+       varAttr('TaBLD'    , 'degK'  , f106 , 'Indoor air temperature'                   , aA , 'ESTM' , 0) &
        /
 
 CONTAINS
@@ -347,7 +347,7 @@ CONTAINS
     INTEGER,INTENT(in) :: iv,irMax,Gridiv
 
     INTEGER :: xx,err,outLevel,i
-    TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varlistX
+    TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varListX
     CHARACTER(len=10) :: grpList0(5)
     CHARACTER(len=10),DIMENSION(:),ALLOCATABLE :: grpList
 
@@ -391,29 +391,30 @@ CONTAINS
     ! loop over all groups
     DO i = 1, SIZE(grpList),1
        !PRINT*, 'i',i
-       xx=COUNT(varlist%group == TRIM(grpList(i)), dim=1)
-       !  PRINT*, 'number of variables:',xx
-       ALLOCATE(varlistX(5+xx), stat=err)
-       IF ( err/= 0) PRINT *, "varlistX: Allocation request denied"
+       xx=COUNT(varList%group == TRIM(grpList(i)), dim=1)
+      !  PRINT*, 'number of variables:',xx, 'in group: ',grpList(i)
+      !  print*, 'all group names: ',varList%group
+       ALLOCATE(varListX(5+xx), stat=err)
+       IF ( err/= 0) PRINT *, "varListX: Allocation request denied"
        ! datetime
-       varlistX(1:5)=varlist(1:5)
+       varListX(1:5)=varList(1:5)
        ! variable
-       varlistX(6:5+xx)=PACK(varlist, mask=(varlist%group == TRIM(grpList(i))))
+       varListX(6:5+xx)=PACK(varList, mask=(varList%group == TRIM(grpList(i))))
 
 
 
        ! all output frequency option:
        ! as forcing:
        IF ( ResolutionFilesOut == Tstep .OR. KeepTstepFilesOut == 1 ) THEN
-          CALL SUEWS_Output_txt_grp(iv,irMax,varlistX,Gridiv,outLevel,Tstep)
+          CALL SUEWS_Output_txt_grp(iv,irMax,varListX,Gridiv,outLevel,Tstep)
        ENDIF
        !  as specified ResolutionFilesOut:
        IF ( ResolutionFilesOut /= Tstep ) THEN
-          CALL SUEWS_Output_txt_grp(iv,irMax,varlistX,Gridiv,outLevel,ResolutionFilesOut)
+          CALL SUEWS_Output_txt_grp(iv,irMax,varListX,Gridiv,outLevel,ResolutionFilesOut)
        ENDIF
 
-       IF (ALLOCATED(varlistX)) DEALLOCATE(varlistX, stat=err)
-       IF ( err/= 0) PRINT *, "varlistX: Deallocation request denied"
+       IF (ALLOCATED(varListX)) DEALLOCATE(varListX, stat=err)
+       IF ( err/= 0) PRINT *, "varListX: Deallocation request denied"
        !  PRINT*, 'i',i,'end'
 
     END DO
@@ -421,75 +422,76 @@ CONTAINS
 
 
   ! output wrapper function for one group
-  SUBROUTINE SUEWS_Output_txt_grp(iv,irMax,varlist,Gridiv,outLevel,outFreq_s)
+  SUBROUTINE SUEWS_Output_txt_grp(iv,irMax,varList,Gridiv,outLevel,outFreq_s)
     IMPLICIT NONE
 
-    TYPE(varAttr),DIMENSION(:),INTENT(in)::varlist
+    TYPE(varAttr),DIMENSION(:),INTENT(in)::varList
     INTEGER,INTENT(in) :: iv,irMax,Gridiv,outLevel,outFreq_s
 
-    REAL(KIND(1d0))::dataOutX(irMax,SIZE(varlist))
+    REAL(KIND(1d0))::dataOutX(irMax,SIZE(varList))
     REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::dataOutX_agg
 
 
     ! determine dataout array according to variable group
-    SELECT CASE (TRIM(varlist(SIZE(varlist))%group))
+    SELECT CASE (TRIM(varList(SIZE(varList))%group))
     CASE ('') !default
-       dataOutX=dataout(1:irMax,1:SIZE(varlist),Gridiv)
+       dataOutX=dataout(1:irMax,1:SIZE(varList),Gridiv)
 
     CASE ('SOLWEIG') !SOLWEIG
        ! todo: inconsistent data structure
-       dataOutX=dataOutSOL(1:irMax,1:SIZE(varlist),Gridiv)
+       dataOutX=dataOutSOL(1:irMax,1:SIZE(varList),Gridiv)
 
     CASE ('BL') !BL
-       dataOutX=dataOutBL(1:irMax,1:SIZE(varlist),Gridiv)
+       dataOutX=dataOutBL(1:irMax,1:SIZE(varList),Gridiv)
 
     CASE ('snow')    !snow
-       dataOutX=dataOutSnow(1:irMax,1:SIZE(varlist),Gridiv)
+       dataOutX=dataOutSnow(1:irMax,1:SIZE(varList),Gridiv)
 
     CASE ('ESTM')    !ESTM
-       dataOutX=dataOutESTM(1:irMax,1:SIZE(varlist),Gridiv)
+       dataOutX=dataOutESTM(1:irMax,1:SIZE(varList),Gridiv)
 
     END SELECT
 
-    ! PRINT*, 'n of varlistX: ',SIZE(varlist)
-    ! PRINT*, 'varlistX: ',varlist%header
-    ! PRINT*, 'varlistX group: ',varlist%group
+    ! PRINT*, 'n of varListX: ',SIZE(varList)
+    ! PRINT*, 'varListX: ',varList%header
+    ! PRINT*, 'varListX group: ',varList%group
 
 
     ! aggregation:
-    CALL SUEWS_Output_Agg(dataOutX_agg,dataOutX,varlist,irMax,outFreq_s)
+    CALL SUEWS_Output_Agg(dataOutX_agg,dataOutX,varList,irMax,outFreq_s)
 
     ! output:
     ! initialise file when processing first metblock
-    IF ( iv == 1 ) CALL SUEWS_Output_Init(dataOutX_agg,varlist,Gridiv,outLevel)
+    ! print*, 'before init, size of varList:', size(varList, dim=1)
+    IF ( iv == 1 ) CALL SUEWS_Output_Init(dataOutX_agg,varList,Gridiv,outLevel)
 
     ! append the aggregated data to the specific txt file
-    CALL SUEWS_Write_txt(dataOutX_agg,varlist,Gridiv,outLevel)
+    CALL SUEWS_Write_txt(dataOutX_agg,varList,Gridiv,outLevel)
 
   END SUBROUTINE SUEWS_Output_txt_grp
 
   ! initialise an output file with file name and headers
-  SUBROUTINE SUEWS_Output_Init(dataOut,varlist,Gridiv,outLevel)
+  SUBROUTINE SUEWS_Output_Init(dataOut,varList,Gridiv,outLevel)
     IMPLICIT NONE
     REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOut
-    TYPE(varAttr),DIMENSION(:),INTENT(in)::varlist
+    TYPE(varAttr),DIMENSION(:),INTENT(in)::varList
     INTEGER,INTENT(in) :: Gridiv,outLevel
 
-    TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varlistSel
+    TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varListSel
     INTEGER :: xx,err,fn,i,nargs
     CHARACTER(len=100) :: FileOut
     CHARACTER(len=3) :: itext
     CHARACTER(len=6) :: args(5)
-    CHARACTER(len=16*SIZE(varlist)) :: FormatOut
+    CHARACTER(len=16*SIZE(varList)) :: FormatOut
     CHARACTER(len=16) :: formatX,headerX
     CHARACTER(len=16), DIMENSION(:), ALLOCATABLE:: headerOut
 
     ! select variables to output
     xx=COUNT((varList%level<= outLevel), dim=1)
     WRITE(itext,'(i3)') xx
-    ALLOCATE(varlistSel(xx), stat=err)
-    IF ( err/= 0) PRINT *, "varlistSel: Allocation request denied"
-    varlistSel=PACK(varList, mask=(varList%level<= outLevel))
+    ALLOCATE(varListSel(xx), stat=err)
+    IF ( err/= 0) PRINT *, "varListSel: Allocation request denied"
+    varListSel=PACK(varList, mask=(varList%level<= outLevel))
 
 
     ! generate file name
@@ -500,11 +502,11 @@ CONTAINS
     IF ( err/= 0) PRINT *, "headerOut: Allocation request denied"
 
     ! create format string:
-    DO i = 1, SIZE(varlistSel)
-       CALL parse(varlistSel(i)%fmt,'if.,',args,nargs)
+    DO i = 1, SIZE(varListSel)
+       CALL parse(varListSel(i)%fmt,'if.,',args,nargs)
        formatX=ADJUSTL('(a'//TRIM(args(2))//',1x)')
        ! adjust headers to right-aligned
-       WRITE(headerOut(i),formatX) ADJUSTR(TRIM(ADJUSTL(varlistSel(i)%header)))
+       WRITE(headerOut(i),formatX) ADJUSTR(TRIM(ADJUSTL(varListSel(i)%header)))
        IF ( i==1 ) THEN
           FormatOut=ADJUSTL(TRIM(formatX))
        ELSE
@@ -522,24 +524,24 @@ CONTAINS
     CLOSE(fn)
 
     ! write out format file
-    CALL formatFile_gen(dataOut,varlist,Gridiv,outLevel)
+    CALL formatFile_gen(dataOut,varList,Gridiv,outLevel)
 
     ! clean up
-    IF (ALLOCATED(varlistSel)) DEALLOCATE(varlistSel, stat=err)
-    IF ( err/= 0) PRINT *, "varlistSel: Deallocation request denied"
+    IF (ALLOCATED(varListSel)) DEALLOCATE(varListSel, stat=err)
+    IF ( err/= 0) PRINT *, "varListSel: Deallocation request denied"
     IF (ALLOCATED(headerOut)) DEALLOCATE(headerOut, stat=err)
     IF ( err/= 0) PRINT *, "headerOut: Deallocation request denied"
 
   END SUBROUTINE SUEWS_Output_Init
 
   ! generate output format file
-  SUBROUTINE formatFile_gen(dataOut,varlist,Gridiv,outLevel)
+  SUBROUTINE formatFile_gen(dataOut,varList,Gridiv,outLevel)
     IMPLICIT NONE
     REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOut
-    TYPE(varAttr),DIMENSION(:),INTENT(in)::varlist
+    TYPE(varAttr),DIMENSION(:),INTENT(in)::varList
     INTEGER,INTENT(in) :: Gridiv,outLevel
 
-    TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varlistSel
+    TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varListSel
     INTEGER :: xx,err,fn
     CHARACTER(len=100) :: FileOut
     CHARACTER(len=50*300) :: str_cat
@@ -551,9 +553,9 @@ CONTAINS
 
     !select variables to output
     xx=COUNT((varList%level<= outLevel), dim=1)
-    ALLOCATE(varlistSel(xx), stat=err)
-    IF ( err/= 0) PRINT *, "varlistSel: Allocation request denied"
-    varlistSel=PACK(varList, mask=(varList%level<= outLevel))
+    ALLOCATE(varListSel(xx), stat=err)
+    IF ( err/= 0) PRINT *, "varListSel: Allocation request denied"
+    varListSel=PACK(varList, mask=(varList%level<= outLevel))
 
     ! create file
     fn=9
@@ -562,7 +564,7 @@ CONTAINS
     ! write out format strings
     ! column number:
     str_cat=''
-    DO i = 1, SIZE(varlistSel)
+    DO i = 1, SIZE(varListSel)
        WRITE(itext,'(i3)') i
        IF ( i==1 ) THEN
           str_cat=TRIM(ADJUSTL(itext))
@@ -574,8 +576,8 @@ CONTAINS
 
     ! header:
     str_cat=''
-    DO i = 1, SIZE(varlistSel)
-       str_x=varlistSel(i)%header
+    DO i = 1, SIZE(varListSel)
+       str_x=varListSel(i)%header
        IF ( i==1 ) THEN
           str_cat=TRIM(ADJUSTL(str_x))
        ELSE
@@ -586,8 +588,8 @@ CONTAINS
 
     ! long name:
     str_cat=''
-    DO i = 1, SIZE(varlistSel)
-       str_x=varlistSel(i)%longNm
+    DO i = 1, SIZE(varListSel)
+       str_x=varListSel(i)%longNm
        IF ( i==1 ) THEN
           str_cat=TRIM(ADJUSTL(str_x))
        ELSE
@@ -598,8 +600,8 @@ CONTAINS
 
     ! unit:
     str_cat=''
-    DO i = 1, SIZE(varlistSel)
-       str_x=varlistSel(i)%unit
+    DO i = 1, SIZE(varListSel)
+       str_x=varListSel(i)%unit
        IF ( i==1 ) THEN
           str_cat=TRIM(ADJUSTL(str_x))
        ELSE
@@ -610,8 +612,8 @@ CONTAINS
 
     ! format:
     str_cat=''
-    DO i = 1, SIZE(varlistSel)
-       str_x=varlistSel(i)%fmt
+    DO i = 1, SIZE(varListSel)
+       str_x=varListSel(i)%fmt
        IF ( i==1 ) THEN
           str_cat=TRIM(ADJUSTL(str_x))
        ELSE
@@ -622,8 +624,8 @@ CONTAINS
 
     ! aggregation method:
     str_cat=''
-    DO i = 1, SIZE(varlistSel)
-       str_x=varlistSel(i)%aggreg
+    DO i = 1, SIZE(varListSel)
+       str_x=varListSel(i)%aggreg
        IF ( i==1 ) THEN
           str_cat=TRIM(ADJUSTL(str_x))
        ELSE
@@ -636,35 +638,35 @@ CONTAINS
     CLOSE(fn)
 
     ! clean up
-    IF (ALLOCATED(varlistSel)) DEALLOCATE(varlistSel, stat=err)
-    IF ( err/= 0) PRINT *, "varlistSel: Deallocation request denied"
+    IF (ALLOCATED(varListSel)) DEALLOCATE(varListSel, stat=err)
+    IF ( err/= 0) PRINT *, "varListSel: Deallocation request denied"
 
   END SUBROUTINE formatFile_gen
 
   ! aggregate data to specified resolution
-  SUBROUTINE SUEWS_Output_Agg(dataOut_agg,dataOut,varlist,irMax,outFreq_s)
+  SUBROUTINE SUEWS_Output_Agg(dataOut_agg,dataOut,varList,irMax,outFreq_s)
     IMPLICIT NONE
     REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOut
-    TYPE(varAttr),DIMENSION(:),INTENT(in)::varlist
+    TYPE(varAttr),DIMENSION(:),INTENT(in)::varList
     INTEGER,INTENT(in) :: irMax,outFreq_s
     REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE,INTENT(out)::dataOut_agg
 
     INTEGER ::  nlinesOut,i,j,x
-    REAL(KIND(1d0))::dataOut_aggX(1:SIZE(varlist))
+    REAL(KIND(1d0))::dataOut_aggX(1:SIZE(varList))
     REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::dataOut_agg0
     nlinesOut=INT(nsh/(60.*60/outFreq_s))
     ! nGrid=SIZE(dataOut, dim=3)
 
-    ALLOCATE(dataOut_agg(INT(irMax/nlinesOut),SIZE(varlist)))
-    ALLOCATE(dataOut_agg0(nlinesOut,SIZE(varlist)))
+    ALLOCATE(dataOut_agg(INT(irMax/nlinesOut),SIZE(varList)))
+    ALLOCATE(dataOut_agg0(nlinesOut,SIZE(varList)))
 
 
     DO i=nlinesOut,irMax,nlinesOut
        x=i/nlinesOut
        dataOut_agg0=dataOut(i-nlinesOut+1:i,:)
-       DO j = 1, SIZE(varlist), 1
+       DO j = 1, SIZE(varList), 1
           ! aggregating different variables
-          SELECT CASE (varlist(j)%aggreg)
+          SELECT CASE (varList(j)%aggreg)
           CASE (aT) !time columns, aT
              dataOut_aggX(j)=dataOut_agg0(nlinesOut,j)
           CASE (aA) !average, aA
@@ -679,7 +681,7 @@ CONTAINS
              ! IF ( i==irMax ) THEN
              PRINT*, 'raw data of ',j,':'
              PRINT*, dataOut_agg0(:,j)
-             PRINT*, 'aggregated with method: ',varlist(j)%aggreg
+             PRINT*, 'aggregated with method: ',varList(j)%aggreg
              PRINT*, dataOut_aggX(j)
              PRINT*, ''
           END IF
@@ -691,23 +693,23 @@ CONTAINS
 
 
   ! append output data to the specific file at the specified outLevel
-  SUBROUTINE SUEWS_Write_txt(dataOut,varlist,Gridiv,outLevel)
+  SUBROUTINE SUEWS_Write_txt(dataOut,varList,Gridiv,outLevel)
     IMPLICIT NONE
     REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOut
-    TYPE(varAttr),DIMENSION(:),INTENT(in)::varlist
+    TYPE(varAttr),DIMENSION(:),INTENT(in)::varList
     INTEGER,INTENT(in) :: Gridiv,outLevel
 
     REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::dataOutSel
-    TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varlistSel
+    TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varListSel
     CHARACTER(len=100) :: FileOut
     INTEGER :: fn,i,xx,err
-    CHARACTER(len=12*SIZE(varlist)) :: FormatOut
+    CHARACTER(len=12*SIZE(varList)) :: FormatOut
 
     !select variables to output
     xx=COUNT((varList%level<= outLevel), dim=1)
-    ALLOCATE(varlistSel(xx), stat=err)
-    IF ( err/= 0) PRINT *, "varlistSel: Allocation request denied"
-    varlistSel=PACK(varList, mask=(varList%level<= outLevel))
+    ALLOCATE(varListSel(xx), stat=err)
+    IF ( err/= 0) PRINT *, "varListSel: Allocation request denied"
+    varListSel=PACK(varList, mask=(varList%level<= outLevel))
 
     ! copy data accordingly
     ALLOCATE(dataOutSel(SIZE(dataOut, dim=1),xx), stat=err)
@@ -718,17 +720,17 @@ CONTAINS
 
 
     ! create format string:
-    DO i = 1, SIZE(varlistSel)
+    DO i = 1, SIZE(varListSel)
        IF ( i==1 ) THEN
-          FormatOut=ADJUSTL(varlistSel(i)%fmt)
+          FormatOut=ADJUSTL(varListSel(i)%fmt)
        ELSE
-          FormatOut=TRIM(FormatOut)//' '//ADJUSTL(varlistSel(i)%fmt)
+          FormatOut=TRIM(FormatOut)//' '//ADJUSTL(varListSel(i)%fmt)
        END IF
     END DO
     FormatOut='('//TRIM(ADJUSTL(FormatOut))//')'
 
     ! get filename
-    CALL filename_gen(dataOutSel,varlistSel,Gridiv,FileOut)
+    CALL filename_gen(dataOutSel,varListSel,Gridiv,FileOut)
 
     ! write out data
     fn=50
@@ -736,12 +738,12 @@ CONTAINS
     DO i=1,SIZE(dataOutSel,dim=1)
        WRITE(fn,FormatOut) &
             INT(dataOutSel(i,1:4)),&
-            dataOutSel(i,5:SIZE(varlistSel))
+            dataOutSel(i,5:SIZE(varListSel))
     ENDDO
     CLOSE (fn)
 
-    IF (ALLOCATED(varlistSel)) DEALLOCATE(varlistSel, stat=err)
-    IF ( err/= 0) PRINT *, "varlistSel: Deallocation request denied"
+    IF (ALLOCATED(varListSel)) DEALLOCATE(varListSel, stat=err)
+    IF ( err/= 0) PRINT *, "varListSel: Deallocation request denied"
 
     IF (ALLOCATED(dataOutSel)) DEALLOCATE(dataOutSel, stat=err)
     IF ( err/= 0) PRINT *, "dataOutSel: Deallocation request denied"
@@ -752,7 +754,7 @@ CONTAINS
   SUBROUTINE filename_gen(dataOut,varList,Gridiv,FileOut,opt_fmt)
     IMPLICIT NONE
     REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOut ! to determine year & output frequency
-    TYPE(varAttr),DIMENSION(:),INTENT(in)::varlist ! to determine output group
+    TYPE(varAttr),DIMENSION(:),INTENT(in)::varList ! to determine output group
     INTEGER,INTENT(in) :: Gridiv ! to determine grid name as in SiteSelect
     INTEGER,INTENT(in),OPTIONAL :: opt_fmt ! to determine if a format file
     CHARACTER(len=100),INTENT(out) :: FileOut ! the output file name
@@ -851,7 +853,7 @@ CONTAINS
     INTEGER,INTENT(in) :: irMax
 
     INTEGER :: xx,err,outLevel
-    TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varlistX
+    TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varListX
     CHARACTER(len=10) :: grpList0(5)
     CHARACTER(len=10),DIMENSION(:),ALLOCATABLE :: grpList
 
@@ -895,67 +897,67 @@ CONTAINS
 
     ! loop over all groups
     DO i = 1, SIZE(grpList)
-       xx=COUNT(varlist%group == TRIM(grpList(i)), dim=1)
+       xx=COUNT(varList%group == TRIM(grpList(i)), dim=1)
        !  PRINT*, 'number of variables:',xx
-       ALLOCATE(varlistX(5+xx), stat=err)
-       IF ( err/= 0) PRINT *, "varlistX: Allocation request denied"
+       ALLOCATE(varListX(5+xx), stat=err)
+       IF ( err/= 0) PRINT *, "varListX: Allocation request denied"
        ! datetime
-       varlistX(1:5)=varlist(1:5)
+       varListX(1:5)=varList(1:5)
        ! variable
-       varlistX(6:5+xx)=PACK(varlist, mask=(varlist%group == TRIM(grpList(i))))
+       varListX(6:5+xx)=PACK(varList, mask=(varList%group == TRIM(grpList(i))))
 
        ! all output frequency option:
        ! as forcing:
        IF ( ResolutionFilesOut == Tstep .OR. KeepTstepFilesOut == 1 ) THEN
-          CALL SUEWS_Output_nc_grp(irMax,varlistX,outLevel,Tstep)
+          CALL SUEWS_Output_nc_grp(irMax,varListX,outLevel,Tstep)
        ENDIF
        !  as specified ResolutionFilesOut:
        IF ( ResolutionFilesOut /= Tstep ) THEN
-          CALL SUEWS_Output_nc_grp(irMax,varlistX,outLevel,ResolutionFilesOut)
+          CALL SUEWS_Output_nc_grp(irMax,varListX,outLevel,ResolutionFilesOut)
        ENDIF
-       IF (ALLOCATED(varlistX)) DEALLOCATE(varlistX, stat=err)
-       IF ( err/= 0) PRINT *, "varlistX: Deallocation request denied"
+       IF (ALLOCATED(varListX)) DEALLOCATE(varListX, stat=err)
+       IF ( err/= 0) PRINT *, "varListX: Deallocation request denied"
     END DO
 
   END SUBROUTINE SUEWS_Output_nc
 
 
-  SUBROUTINE SUEWS_Output_nc_grp(irMax,varlist,outLevel,outFreq_s)
+  SUBROUTINE SUEWS_Output_nc_grp(irMax,varList,outLevel,outFreq_s)
     IMPLICIT NONE
 
-    TYPE(varAttr),DIMENSION(:),INTENT(in)::varlist
+    TYPE(varAttr),DIMENSION(:),INTENT(in)::varList
     INTEGER,INTENT(in) :: irMax,outLevel,outFreq_s
 
-    REAL(KIND(1d0))::dataOutX(irMax,SIZE(varlist),NumberOfGrids)
+    REAL(KIND(1d0))::dataOutX(irMax,SIZE(varList),NumberOfGrids)
     REAL(KIND(1d0)),ALLOCATABLE::dataOutX_agg(:,:,:),dataOutX_agg0(:,:)
     INTEGER :: iGrid,err
 
 
     ! determine dataout array according to variable group
-    SELECT CASE (TRIM(varlist(SIZE(varlist))%group))
+    SELECT CASE (TRIM(varList(SIZE(varList))%group))
     CASE ('') !default
-       dataOutX=dataout(1:irMax,1:SIZE(varlist),:)
+       dataOutX=dataout(1:irMax,1:SIZE(varList),:)
 
     CASE ('SOLWEIG') !SOLWEIG
        ! todo: inconsistent data structure
-       dataOutX=dataOutSOL(1:irMax,1:SIZE(varlist),:)
+       dataOutX=dataOutSOL(1:irMax,1:SIZE(varList),:)
 
     CASE ('BL') !BL
-       dataOutX=dataOutBL(1:irMax,1:SIZE(varlist),:)
+       dataOutX=dataOutBL(1:irMax,1:SIZE(varList),:)
 
     CASE ('snow')    !snow
-       dataOutX=dataOutSnow(1:irMax,1:SIZE(varlist),:)
+       dataOutX=dataOutSnow(1:irMax,1:SIZE(varList),:)
 
     CASE ('ESTM')    !ESTM
-       dataOutX=dataOutESTM(1:irMax,1:SIZE(varlist),:)
+       dataOutX=dataOutESTM(1:irMax,1:SIZE(varList),:)
 
     END SELECT
 
     ! aggregation:
     DO iGrid = 1, NumberOfGrids
-       CALL SUEWS_Output_Agg(dataOutX_agg0,dataOutX(:,:,iGrid),varlist,irMax,outFreq_s)
+       CALL SUEWS_Output_Agg(dataOutX_agg0,dataOutX(:,:,iGrid),varList,irMax,outFreq_s)
        IF (.NOT. ALLOCATED(dataOutX_agg)) THEN
-          ALLOCATE(dataOutX_agg(SIZE(dataOutX_agg0, dim=1),SIZE(varlist),NumberOfGrids), stat=err)
+          ALLOCATE(dataOutX_agg(SIZE(dataOutX_agg0, dim=1),SIZE(varList),NumberOfGrids), stat=err)
           IF ( err/= 0) PRINT *, ": Allocation request denied"
        ENDIF
        dataOutX_agg(:,:,iGrid)=dataOutX_agg0
@@ -963,17 +965,17 @@ CONTAINS
 
 
     ! write out data
-    CALL SUEWS_Write_nc(dataOutX_agg,varlist,outLevel)
+    CALL SUEWS_Write_nc(dataOutX_agg,varList,outLevel)
   END SUBROUTINE SUEWS_Output_nc_grp
 
 
-  SUBROUTINE SUEWS_Write_nc(dataOut,varlist,outLevel)
+  SUBROUTINE SUEWS_Write_nc(dataOut,varList,outLevel)
     ! generic subroutine to write out data in netCDF format
     USE netCDF
 
     IMPLICIT NONE
     REAL(KIND(1d0)),DIMENSION(:,:,:),INTENT(in)::dataOut
-    TYPE(varAttr),DIMENSION(:),INTENT(in)::varlist
+    TYPE(varAttr),DIMENSION(:),INTENT(in)::varList
     INTEGER,INTENT(in) :: outLevel
 
     CHARACTER(len=100):: fileOut
@@ -993,7 +995,7 @@ CONTAINS
          xLat(:,:),xLon(:,:),&
          varSeq0(:),varSeq(:),xTime(:)
 
-    INTEGER :: idVar(iVarStart:SIZE(varlist))
+    INTEGER :: idVar(iVarStart:SIZE(varList))
     CHARACTER(len=50):: header_str,longNm_str,unit_str
     CHARACTER(len = 4)  :: yrStr2
     CHARACTER(len = 40) :: startStr2
@@ -1003,9 +1005,9 @@ CONTAINS
 
     !select variables to output
     nVar=COUNT((varList%level<= outLevel), dim=1)
-    ALLOCATE(varlistSel(nVar), stat=err)
-    IF ( err/= 0) PRINT *, "varlistSel: Allocation request denied"
-    varlistSel=PACK(varList, mask=(varList%level<= outLevel))
+    ALLOCATE(varListSel(nVar), stat=err)
+    IF ( err/= 0) PRINT *, "varListSel: Allocation request denied"
+    varListSel=PACK(varList, mask=(varList%level<= outLevel))
 
     ! copy data accordingly
     ALLOCATE(dataOutSel(nTime,nVar,NumberOfGrids), stat=err)
@@ -1015,7 +1017,7 @@ CONTAINS
     dataOutSel=dataOut(:,PACK((/(i,i=1,SIZE(varList))/), varList%level <= outLevel),:)
 
     ! determine filename
-    CALL filename_gen(dataOutSel(:,:,1),varlistSel,1,FileOut)
+    CALL filename_gen(dataOutSel(:,:,1),varListSel,1,FileOut)
 
     ! set year string
     WRITE(yrStr2,'(i4)') INT(dataOut(1,1,1))

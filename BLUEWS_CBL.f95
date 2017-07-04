@@ -4,7 +4,6 @@
   !  NT 6 Apr 2017 - include top of the CBL variables in RKUTTA scheme + add flag to include or exclude subsidence
   !  LJ 27 Jan 2016 - Removal of tabs
 
-  !Test of push
 
   SUBROUTINE CBL(ifirst,iMB,Gridiv)
 
@@ -38,7 +37,7 @@
     !write(*,*) DateTIme
     !Skip first loop and unspecified days
     !IF((ifirst==1 .AND. iMB==1) .OR. CBLday(id)==0) THEN   !HCW modified condition to check for first timestep of the model run
-    IF(ifirst==1 .OR. CBLday(id)==0) THEN   !HCW modified 29/03/2017
+    IF(ifirst==1 .OR. IniCBLdata(id,2)==-999) THEN   !TS modified to adapt the format of the new CBL_initial file
        iCBLcount=iCBLcount+1
        !write(*,*) 'ifirst or nonCBLday', DateTime, iCBLcount
        dataOutBL(iCBLcount,1:ncolumnsdataOutBL,Gridiv)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime, &
@@ -373,7 +372,8 @@
     tp_C=tp_K-C2K
     tm_C=tm_K-C2K
 
-    IF(sondeflag==1 .AND. cblday(id)==1) THEN
+    ! IF(sondeflag==1 .AND. cblday(id)==1) THEN
+    IF(sondeflag==1 .AND. IniCBLdata(id,2)/=-999) THEN
        !if gamma theta varies with z (selected by setting gthetaflag=1)
        !if gamma q varies with z (selected by setting ghumflag=1)
        CALL sonde(id)
@@ -512,7 +512,8 @@
     tp_C=tp_K-C2K
     tm_C=tm_K-C2K
 
-    IF(sondeflag==1 .AND. cblday(id)==1) THEN
+    ! IF(sondeflag==1 .AND. cblday(id)==1) THEN
+    IF(sondeflag==1 .AND. IniCBLdata(id,2)/=-999) THEN
        !if gamma theta varies with z (selected by setting gthetaflag=1)
        !if gamma q varies with z (selected by setting ghumflag=1)
        CALL sonde(id)

@@ -14,7 +14,7 @@ SUBROUTINE AnOHM(Gridiv)
   ! QS = a1*(Q*)+a2*(dQ*/dt)+a3
   !
   ! ref:
-  ! the AnOHM paper to be added.
+  ! https://doi.org/10.5194/gmd-2016-300
   !
   ! history:
   ! 20160301: initial version
@@ -74,8 +74,8 @@ SUBROUTINE AnOHM(Gridiv)
 
      ENDDO
 
-    !  PRINT*, 'grid coeff:'
-    !  PRINT*, a1AnOHM(Gridiv),a2AnOHM(Gridiv),a3AnOHM(Gridiv)
+     !  PRINT*, 'grid coeff:'
+     !  PRINT*, a1AnOHM(Gridiv),a2AnOHM(Gridiv),a3AnOHM(Gridiv)
      !   end of loop over surface types -----------------------------------------
      !  IF ( id>365 ) THEN
      !     PRINT*, '----- OHM coeffs -----'
@@ -98,28 +98,28 @@ SUBROUTINE AnOHM(Gridiv)
 
      ! New calculations (HCW Dec 2016)
      ! Store instantaneous qn1 values for previous hour (qn1_store) and average (qn1_av)
-     if(nsh > 1) then
+     IF(nsh > 1) THEN
         qn1_store(1:(nsh-1),Gridiv) = qn1_store(2:nsh,Gridiv)
         qn1_store(nsh,Gridiv) = qn1
-        nsh_nna = sum(spread(1,1,nsh), mask=qn1_store(:,Gridiv) /= -999) !Find how many are not -999s  !bug fixed HCW 08 Feb 2017
-        qn1_av = sum(qn1_store(:,Gridiv), mask=qn1_store(:,Gridiv) /= -999)/nsh_nna
-     elseif(nsh==1) then
-         qn1_store(:,Gridiv) = qn1
-         qn1_av = qn1
-     endif
+        nsh_nna = SUM(SPREAD(1,1,nsh), mask=qn1_store(:,Gridiv) /= -999) !Find how many are not -999s  !bug fixed HCW 08 Feb 2017
+        qn1_av = SUM(qn1_store(:,Gridiv), mask=qn1_store(:,Gridiv) /= -999)/nsh_nna
+     ELSEIF(nsh==1) THEN
+        qn1_store(:,Gridiv) = qn1
+        qn1_av = qn1
+     ENDIF
      ! Store hourly average values (calculated every timestep) for previous 2 hours
-     if(nsh > 1) then
+     IF(nsh > 1) THEN
         qn1_av_store(1:(2*nsh),Gridiv) = qn1_av_store(2:(2*nsh+1),Gridiv)
         qn1_av_store(2*nsh+1,Gridiv) = qn1_av
-     elseif(nsh==1) then
+     ELSEIF(nsh==1) THEN
         qn1_av_store(:,Gridiv) = qn1_av
-     endif
+     ENDIF
      ! Calculate dQ* per dt for 60 min (using running mean Q* at t hours and (t-2) hours)
-     if(any(qn1_av_store == -999)) then
+     IF(ANY(qn1_av_store == -999)) THEN
         dqndt=0  ! Set dqndt term to zero for spinup
-     else
+     ELSE
         dqndt=0.5*(qn1_av_store((2*nsh+1),Gridiv)-qn1_av_store(1,Gridiv))
-     endif
+     ENDIF
 
      ! Calculate net storage heat flux
      qs = qn1*a1AnOHM(Gridiv)+dqndt*a2AnOHM(Gridiv)+a3AnOHM(Gridiv)
@@ -248,17 +248,19 @@ SUBROUTINE AnOHM_coef(sfc_typ,xid,xgrid,&   ! input
   !   print*, Sd,Ta,WS,WF,AH
 
   !   load forcing characteristics:
+  ! PRINT*, 'id',id,'forcing:'
   CALL AnOHM_FcCal(Sd,Ta,WS,WF,AH,&               ! input
        ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH)  ! output
-  !   print*, ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH
+  ! IF ( sfc_typ==PavSurf ) PRINT*, 'id',id,ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH
   ! if ( sfc_typ==1 ) then
   ! print*, 'AH of sfc',sfc_typ,':', mAH
   ! end if
   !   load sfc. properties:
   CALL AnOHM_SfcLoad(sfc_typ,xid,xgrid,&          ! input
        xalb,xemis,xcp,xk,xch,xBo)  ! output
-  !   print*, 'here the properties:'
-  !   print*, xalb,xemis,xcp,xk,xch,xBo
+
+  ! PRINT*, 'here the properties of sfc.',sfc_typ,':'
+  ! PRINT*, xalb,xemis,xcp,xk,xch,xBo
 
 
   !   initial Bowen ratio
@@ -348,8 +350,8 @@ SUBROUTINE AnOHM_coef(sfc_typ,xid,xgrid,&   ! input
   !   quality checking of a2
   IF ( .NOT. (xa2>-0.5 .AND. xa2<0.5)) THEN
      flagGood = .FALSE.
-    !  IF ( xa2>0.5) xa2 = 0.5
-    !  IF (xa2<-0.5) xa2 = -0.5
+     !  IF ( xa2>0.5) xa2 = 0.5
+     !  IF (xa2<-0.5) xa2 = -0.5
   ENDIF
   !   quality checking of a3
   IF ( .NOT. (xa3<0)) flagGood = .FALSE.
@@ -620,8 +622,8 @@ SUBROUTINE AnOHM_coef_water(sfc_typ,xid,xgrid,&   ! input
   !   quality checking of a2
   IF ( .NOT. (xa2>-0.5 .AND. xa2<0.5)) THEN
      flagGood = .FALSE.
-    !  IF ( xa2>0.5) xa2 = 0.5
-    !  IF (xa2<-0.5) xa2 = -0.5
+     !  IF ( xa2>0.5) xa2 = 0.5
+     !  IF (xa2<-0.5) xa2 = -0.5
   ENDIF
   !   quality checking of a3
   IF ( .NOT. (xa3<0)) flagGood = .FALSE.
@@ -657,8 +659,8 @@ SUBROUTINE AnOHM_FcCal(Sd,Ta,WS,WF,AH,&                 ! input
   ! 2) ATa, mTa: amplitude and mean value of Ta
   ! 3) tau: phase lag between Sd and Ta
   ! 4) mWS: mean value of WS
-  ! 4) mWF: mean value of WF
-  ! 4) mAH: mean value of AH
+  ! 5) mWF: mean value of WF
+  ! 6) mAH: mean value of AH
   !
   ! ref:
   !
@@ -702,9 +704,10 @@ SUBROUTINE AnOHM_FcCal(Sd,Ta,WS,WF,AH,&                 ! input
   !         ASd = abs(ASd)
   !         tSd = 12 ! assume Sd peaks at 12:00LST
   !     end if
-  !   print*, 'ASd:', ASd
-  !   print*, 'mSd:', mSd
-  !   print*, 'tSd:', tSd
+  ! PRINT*, 'Sd:', Sd(10:16)
+  ! PRINT*, 'ASd:', ASd
+  ! PRINT*, 'mSd:', mSd
+  ! PRINT*, 'tSd:', tSd
 
   !   calculate sinusoidal scales of Ta:
   !     print*, 'Calc. Ta...'
@@ -715,19 +718,20 @@ SUBROUTINE AnOHM_FcCal(Sd,Ta,WS,WF,AH,&                 ! input
   !         ATa = abs(ATa)
   !         tTa = 14 ! assume Ta peaks at 14:00LST
   !     end if
-  !   print*, 'ATa:', ATa
-  !   print*, 'mTa:', mTa
-  !   print*, 'tTa:', tTa
+  ! PRINT*, 'Ta:', Ta(10:16)
+  ! PRINT*, 'ATa:', ATa
+  ! PRINT*, 'mTa:', mTa
+  ! PRINT*, 'tTa:', tTa
 
   !   calculate the phase lag between Sd and Ta:
   tau = (tTa-tSd)/24*2*PI
-  !   print*, 'tau:', tau
+  ! PRINT*, 'tau:', tau
 
   !   calculate the mean values:
   mWS = SUM(WS(10:16))/7  ! mean value of WS
   mWF = SUM(WF(10:16))/7  ! mean value of WF
   mAH = SUM(AH(10:16))/7  ! mean value of AH
-  !     print*, 'mWS:', mWS
+  ! PRINT*, 'mWS:', mWS
   !     print*, 'mWF:', mWF
   !     print*, 'mAH:', mAH
 
@@ -790,7 +794,7 @@ SUBROUTINE AnOHM_ShapeFit(obs,amp,mean,tpeak)
   !   coefs(1,:) = coefs(1,:)/(-9450 + 534*Sqrt(2.) + 3584*Sqrt(3.) + 980*Sqrt(6.))
   !   apprx. values:
   coefs(1,:) = (/1.72649, 0.165226, -0.816223, -1.15098, -0.816223, 0.165226, 1.72649/)
-  c          = dot_PRODUCT(coefs(1,:),obs)
+  c          = DOT_PRODUCT(coefs(1,:),obs)
 
   !   aCos coeffs.:
   !   exact values:
@@ -804,7 +808,7 @@ SUBROUTINE AnOHM_ShapeFit(obs,amp,mean,tpeak)
   !   coefs(2,:) = coefs(2,:)/(-9450 + 534*Sqrt(2.) + 3584*Sqrt(3.) + 980*Sqrt(6.))
   !   apprx. values:
   coefs(2,:) = (/0.890047, 0.302243, -0.132877, -0.385659, -0.438879, -0.288908, 0.054033/)
-  aCosb      = dot_PRODUCT(coefs(2,:),obs)
+  aCosb      = DOT_PRODUCT(coefs(2,:),obs)
 
   !   cSin coeffs.:
   !   exact values:
@@ -818,7 +822,7 @@ SUBROUTINE AnOHM_ShapeFit(obs,amp,mean,tpeak)
   !   coefs(3,:) = coefs(3,:)/(-224 + 36*Sqrt(2.) + 58*Sqrt(3.) + 28*Sqrt(6.))
   !   apprx. values:
   coefs(3,:) = (/1.64967, -0.0543156, -1.10791, -1.4393, -1.02591, 0.104083, 1.87368/)
-  aSinb      = dot_PRODUCT(coefs(3,:),obs)
+  aSinb      = DOT_PRODUCT(coefs(3,:),obs)
 
   !   calculate b and a:
   b = ATAN(aSinb/aCosb)

@@ -22,7 +22,6 @@ OTHERS =  BLUEWS_CBL.o   \
           LUMPS_NARP_v3.o \
           SUEWS_Calculations.o  \
           BLUEWS_Diff.o  \
-          SUEWS_translate.o \
           SUEWS_HorizontalSoilWater.o \
           LUMPS_atmos_functions_moist.o \
           SUEWS_OHM.o \
@@ -67,10 +66,11 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_ESTM_v2016.o \
           SUEWS_CO2.o \
 					SUEWS_Initial.o\
-					SUEWS_DailyState.o
+					SUEWS_DailyState.o\
+					SUEWS_Diagnostics.o
 # modules under rapid development
 TEST =		SUEWS_AnOHM.o  \
-SUEWS_Diagnostics.o
+SUEWS_translate.o
 
 
 # Build main program - main uses MODULES and OTHERS

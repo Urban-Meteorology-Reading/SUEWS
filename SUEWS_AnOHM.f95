@@ -196,8 +196,9 @@ SUBROUTINE AnOHM_coef(sfc_typ,xid,xgrid,&   ! input
   REAL(KIND(1d0)), DIMENSION(24) :: Sd,& !   incoming solar radiation
        Ta,& !   air temperature
        WS,& !   wind speed
-       WF,& !   anthropogenic heat
-       AH   !   water flux density
+       WF,& !   water flux density
+       AH,& !   anthropogenic heat
+       tHr  !   time in hour
 
 
   !   local variables:
@@ -243,13 +244,13 @@ SUBROUTINE AnOHM_coef(sfc_typ,xid,xgrid,&   ! input
 
   !   load met. forcing data:
   CALL AnOHM_FcLoad(sfc_typ,xid,xgrid,&   ! input
-       Sd,Ta,WS,WF,AH)         ! output
+       Sd,Ta,WS,WF,AH,tHr)         ! output
   !   print*, 'here the forcings:'
   !   print*, Sd,Ta,WS,WF,AH
 
   !   load forcing characteristics:
   ! PRINT*, 'id',id,'forcing:'
-  CALL AnOHM_FcCal(Sd,Ta,WS,WF,AH,&               ! input
+  CALL AnOHM_FcCal(Sd,Ta,WS,WF,AH,tHr,&               ! input
        ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH)  ! output
   ! IF ( sfc_typ==PavSurf ) PRINT*, 'id',id,ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH
   ! if ( sfc_typ==1 ) then
@@ -463,9 +464,9 @@ SUBROUTINE AnOHM_coef_water(sfc_typ,xid,xgrid,&   ! input
   REAL(KIND(1d0)), DIMENSION(24) :: Sd,& !   incoming solar radiation
        Ta,& !   air temperature
        WS,& !   wind speed
-       WF,& !   anthropogenic heat
-       AH   !   water flux density
-
+       WF,& !   water flux density
+       AH,& !   anthropogenic heat
+       tHr  !   time in hour
 
   !   local variables:
   REAL(KIND(1d0)) :: beta                   ! inverse Bowen ratio
@@ -512,16 +513,18 @@ SUBROUTINE AnOHM_coef_water(sfc_typ,xid,xgrid,&   ! input
   ! AH  = 0
   ! Wf  = 0
 
+  PRINT*,  ''
+  PRINT*,  '******************'
+  PRINT*,  'DOY:', xid
+
   !   load met. forcing data:
   CALL AnOHM_FcLoad(sfc_typ,xid,xgrid,&   ! input
-       Sd,Ta,WS,WF,AH)         ! output
+       Sd,Ta,WS,WF,AH,tHr)         ! output
   !   write(*,*) 'here the forcings:'
   !   write(*,*) Sd,Ta,WS,WF,AH
 
-  !   write(unit=*, fmt=*) 'DOY:', xid
-
   ! load forcing characteristics:
-  CALL AnOHM_FcCal(Sd,Ta,WS,WF,AH,&               ! input
+  CALL AnOHM_FcCal(Sd,Ta,WS,WF,AH,tHr,&               ! input
        ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH)  ! output
   !   write(*,*) ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH
   !   load sfc. properties:
@@ -638,7 +641,7 @@ END SUBROUTINE AnOHM_coef_water
 !========================================================================================
 
 !========================================================================================
-SUBROUTINE AnOHM_FcCal(Sd,Ta,WS,WF,AH,&                 ! input
+SUBROUTINE AnOHM_FcCal(Sd,Ta,WS,WF,AH,tHr,&                 ! input
      ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH)    ! output
   ! author: Ting Sun
   !
@@ -674,7 +677,8 @@ SUBROUTINE AnOHM_FcCal(Sd,Ta,WS,WF,AH,&                 ! input
        Ta(24),&    !
        WS(24),&    !
        Wf(24),&    !
-       AH(24)      !
+       AH(24),&      !
+       tHr(24)
 
   !   output
   REAL(KIND(1d0)) :: ASd,mSd,&   ! Sd scales
@@ -691,46 +695,94 @@ SUBROUTINE AnOHM_FcCal(Sd,Ta,WS,WF,AH,&                 ! input
   REAL(KIND(1d0)), PARAMETER :: C2K   = 273.15           ! degC to K
 
   !   local variables:
-  REAL(KIND(1d0)) :: tSd,tTa         ! peaking timestamps
-  ! REAL(KIND(1d0)) :: aCosb,aSinb,b,c ! parameters for fitted shape: a*Sin(Pi/12*t+b)+c
+  REAL(KIND(1d0)) :: tSd,tTa                ! peaking timestamps
+  REAL(KIND(1d0)),ALLOCATABLE :: &
+       tHrDay(:),& ! daytime tHr when Sd>0
+       selX(:)     ! daytime sublist of met variable when Sd>0
+
   ! REAL(KIND(1d0)) :: xx              ! temporary use
+  INTEGER :: err,lenDay
+
+  INTERFACE
+     SUBROUTINE AnOHM_ShapeFit(tHr,obs,amp,mean,tpeak)
+       IMPLICIT NONE
+       !   input
+       REAL(KIND(1d0)),INTENT(in) :: tHr(:)  ! time in hour
+       REAL(KIND(1d0)),INTENT(in) :: obs(:)  ! observation
+       !   output
+       REAL(KIND(1d0)),INTENT(out) :: amp     ! amplitude
+       REAL(KIND(1d0)),INTENT(out) :: mean    ! average
+       REAL(KIND(1d0)),INTENT(out) :: tpeak   ! peaking time (h)
+
+     END SUBROUTINE AnOHM_ShapeFit
+
+  END INTERFACE
+
+  lenDay=COUNT(Sd>0, dim=1)
+  ! CALL r8vec_print(24,Sd,'Sd')
+  ! CALL r8vec_print(24,tHr,'tHr')
+  ALLOCATE(tHrDay(lenDay), stat=err)
+  IF ( err/= 0) PRINT *, "tHrDay: Allocation request denied"
+  tHrDay=PACK(tHr, mask=(Sd>0))
+
+
+  ALLOCATE(selX(lenDay), stat=err)
+  IF ( err/= 0) PRINT *, "selX: Allocation request denied"
 
 
   !   calculate sinusoidal scales of Sd:
-  !     print*, 'Calc. Sd...'
-  CALL AnOHM_ShapeFit(Sd(10:16),ASd,mSd,tSd)
+  ! PRINT*, 'Calc. Sd...'
+  selX=PACK(Sd, mask=(Sd>0))
+  ASd=MAXVAL(selX)
+  mSd=SUM(selX)/lenDay
+  tSd=12
+  CALL AnOHM_ShapeFit(tHrDay,selX,ASd,mSd,tSd)
   !   modify ill-shaped days to go through
-  !     if ( ASd < 0 ) then
-  !         ASd = abs(ASd)
-  !         tSd = 12 ! assume Sd peaks at 12:00LST
-  !     end if
-  ! PRINT*, 'Sd:', Sd(10:16)
-  ! PRINT*, 'ASd:', ASd
-  ! PRINT*, 'mSd:', mSd
-  ! PRINT*, 'tSd:', tSd
+  IF ( ASd < 0 .OR. tSd > 15) THEN
+     !         ASd = abs(ASd)
+     !         tSd = 12 ! assume Sd peaks at 12:00LST
+     CALL r8vec_print(lenDay,selX,'Sd Day:')
+     PRINT*, 'ASd:', ASd
+     PRINT*, 'mSd:', mSd
+     PRINT*, 'tSd:', tSd
+  END IF
+  ! PRINT*, 'Sd Day:', selX
+
+
 
   !   calculate sinusoidal scales of Ta:
-  !     print*, 'Calc. Ta...'
-  CALL AnOHM_ShapeFit(Ta(10:16),ATa,mTa,tTa)
+  ! PRINT*, 'Calc. Ta...'
+  selX=PACK(Ta, mask=(Sd>0))
+  ATa=MAXVAL(selX)
+  mTa=SUM(selX)/lenDay
+  tTa=12
+  CALL AnOHM_ShapeFit(tHrDay,selX,ATa,mTa,tTa)
   IF ( mTa < 60 ) mTa = mTa+C2K ! correct the Celsius to Kelvin
   !   modify ill-shaped days to go through
-  !     if ( ATa < 0 ) then
-  !         ATa = abs(ATa)
-  !         tTa = 14 ! assume Ta peaks at 14:00LST
-  !     end if
+  IF ( ATa < 0 ) THEN
+     !         ATa = abs(ATa)
+     !         tTa = 14 ! assume Ta peaks at 14:00LST
+     CALL r8vec_print(lenDay,selX,'Ta Day:')
+     PRINT*, 'ATa:', ATa
+     PRINT*, 'mTa:', mTa
+     PRINT*, 'tTa:', tTa
+  END IF
   ! PRINT*, 'Ta:', Ta(10:16)
-  ! PRINT*, 'ATa:', ATa
-  ! PRINT*, 'mTa:', mTa
-  ! PRINT*, 'tTa:', tTa
+
 
   !   calculate the phase lag between Sd and Ta:
   tau = (tTa-tSd)/24*2*PI
   ! PRINT*, 'tau:', tau
 
   !   calculate the mean values:
-  mWS = SUM(WS(10:16))/7  ! mean value of WS
-  mWF = SUM(WF(10:16))/7  ! mean value of WF
-  mAH = SUM(AH(10:16))/7  ! mean value of AH
+  selX=PACK(WS, mask=(Sd>0))
+  mWS = SUM(selX)/lenDay  ! mean value of WS
+
+  selX=PACK(WF, mask=(Sd>0))
+  mWF = SUM(WF)/lenDay  ! mean value of WF
+
+  selX=PACK(AH, mask=(Sd>0))
+  mAH = SUM(AH)/lenDay  ! mean value of AH
   ! PRINT*, 'mWS:', mWS
   !     print*, 'mWF:', mWF
   !     print*, 'mAH:', mAH
@@ -740,7 +792,7 @@ END SUBROUTINE AnOHM_FcCal
 !========================================================================================
 
 !========================================================================================
-SUBROUTINE AnOHM_ShapeFit(obs,amp,mean,tpeak)
+SUBROUTINE AnOHM_ShapeFit(tHr,obs,amp,mean,tpeak)
   ! author: Ting Sun
   !
   ! purpose:
@@ -759,108 +811,195 @@ SUBROUTINE AnOHM_ShapeFit(obs,amp,mean,tpeak)
   !
   ! history:
   ! 20160224: initial version
+  ! 20170719: use minpack to approximate the sinusoidal shape
   !========================================================================================
   IMPLICIT NONE
 
   !   input
-  REAL(KIND(1d0)) :: obs(7)  ! observation (daytime 10:00–16:00)
+  REAL(KIND(1d0)),INTENT(in) :: tHr(:)  ! time in hour
+  REAL(KIND(1d0)),INTENT(in) :: obs(:)  ! observation
 
   !   output
-  REAL(KIND(1d0)) :: amp     ! amplitude
-  REAL(KIND(1d0)) :: mean    ! average
-  REAL(KIND(1d0)) :: tpeak   ! peaking time (h)
+  REAL(KIND(1d0)),INTENT(out) :: amp     ! amplitude
+  REAL(KIND(1d0)),INTENT(out) :: mean    ! average
+  REAL(KIND(1d0)),INTENT(out) :: tpeak   ! peaking time (h)
 
   !   constant
-  REAL(KIND(1d0)), PARAMETER :: SIGMA = 5.67e-8          ! Stefan-Boltzman
-  REAL(KIND(1d0)), PARAMETER :: PI    = ATAN(1.0)*4      ! Pi
-  REAL(KIND(1d0)), PARAMETER :: OMEGA = 2*Pi/(24*60*60)  ! augular velocity of Earth
-  REAL(KIND(1d0)), PARAMETER :: C2K   = 273.15           ! degC to K
+  ! REAL(KIND(1d0)), PARAMETER :: SIGMA = 5.67e-8          ! Stefan-Boltzman
+  ! REAL(KIND(1d0)), PARAMETER :: PI    = ATAN(1.0)*4      ! Pi
+  ! REAL(KIND(1d0)), PARAMETER :: OMEGA = 2*Pi/(24*60*60)  ! augular velocity of Earth
+  ! REAL(KIND(1d0)), PARAMETER :: C2K   = 273.15           ! degC to K
 
   !   local variables:
-  REAL(KIND(1d0))    :: coefs(3,7)           ! coefficients for least squre solution
-  REAL(KIND(1d0))    :: aCosb,aSinb,a,b,c    ! parameters for fitted shape: a*Sin(Pi/12*t+b)+c
-  REAL(KIND(1d0))    :: xx,mbias,mbiasObs    ! temporary use
-  INTEGER :: i                    ! temporary use
+  ! REAL(KIND(1d0))    :: coefs(3,7)           ! coefficients for least squre solution
+  ! REAL(KIND(1d0))    :: aCosb,aSinb,a,b,c    ! parameters for fitted shape: a*Sin(Pi/12*t+b)+c
+  ! REAL(KIND(1d0))    :: xx,mbias,mbiasObs    ! temporary use
+  INTEGER :: m,n,info,err         ! temporary use
 
-  !   c coeffs.:
-  !   exact values:
-  !   coefs(1,:) = (/2*(-615 - 15*Sqrt(2.) + 211*Sqrt(3.) + 80*Sqrt(6.)), &
-  !                 3*(-414 - 12*Sqrt(2.) + 140*Sqrt(3.) + 75*Sqrt(6.)),      &
-  !                 -1437 + 156*Sqrt(2.) + 613*Sqrt(3.) + 92*Sqrt(6.),        &
-  !                 2*(-816 + 177*Sqrt(2.) + 337*Sqrt(3.) + 13*Sqrt(6.)), &
-  !                 -1437 + 156*Sqrt(2.) + 613*Sqrt(3.) + 92*Sqrt(6.),        &
-  !                 3*(-414 - 12*Sqrt(2.) + 140*Sqrt(3.) + 75*Sqrt(6.)),      &
-  !                 2*(-615 - 15*Sqrt(2.) + 211*Sqrt(3.) + 80*Sqrt(6.))/)
-  !   coefs(1,:) = coefs(1,:)/(-9450 + 534*Sqrt(2.) + 3584*Sqrt(3.) + 980*Sqrt(6.))
-  !   apprx. values:
-  coefs(1,:) = (/1.72649, 0.165226, -0.816223, -1.15098, -0.816223, 0.165226, 1.72649/)
-  c          = DOT_PRODUCT(coefs(1,:),obs)
+  ! INTEGER ( kind = 4 ), PARAMETER :: m = 11
+  ! INTEGER ( kind = 4 ), PARAMETER :: n = 3
+  ! INTEGER ( kind = 4 ) :: ldfjac = m
 
-  !   aCos coeffs.:
-  !   exact values:
-  !   coefs(2,:) = (/249*(-6 + Sqrt(2.)) + Sqrt(3.)*(124 + 347*Sqrt(2.)), &
-  !                  -3*(-263 - 372*Sqrt(2.) + Sqrt(3.) + 325*Sqrt(6.)),      &
-  !                  81 - 48*Sqrt(2.) - 247*Sqrt(3.) + 174*Sqrt(6.),          &
-  !                  3*(27 - 545*Sqrt(2.) - 45*Sqrt(3.) + 340*Sqrt(6.)),      &
-  !                  1740 - 303*Sqrt(2.) - 632*Sqrt(3.) - 73*Sqrt(6.),        &
-  !                  -207 + 1368*Sqrt(2.) - 505*Sqrt(3.) - 338*Sqrt(6.),      &
-  !                  -990 - 747*Sqrt(2.) + 1398*Sqrt(3.) - 155*Sqrt(6.)/)
-  !   coefs(2,:) = coefs(2,:)/(-9450 + 534*Sqrt(2.) + 3584*Sqrt(3.) + 980*Sqrt(6.))
-  !   apprx. values:
-  coefs(2,:) = (/0.890047, 0.302243, -0.132877, -0.385659, -0.438879, -0.288908, 0.054033/)
-  aCosb      = DOT_PRODUCT(coefs(2,:),obs)
+  EXTERNAL fSin
+  REAL ( KIND(1d0) ),ALLOCATABLE:: fvec(:),x(:)
 
-  !   cSin coeffs.:
-  !   exact values:
-  !   coefs(3,:) = (/-28 - 13*Sqrt(2.) - 5*Sqrt(3.)*(-6 + Sqrt(2.)),  &
-  !                  -15 + Sqrt(2.) - 9*Sqrt(3.) + 12*Sqrt(6.),       &
-  !                  63 - 7*Sqrt(2.) - 21*Sqrt(3.) - 5*Sqrt(6.),      &
-  !                  -9 - 7*Sqrt(3.) + 11*Sqrt(6.),                   &
-  !                  -32 - 7*Sqrt(2.) + 28*Sqrt(3.) - Sqrt(6.),       &
-  !                  -3 + 27*Sqrt(2.) - 5*Sqrt(3.) - 11*Sqrt(6.), &
-  !                  24 - Sqrt(2.) - 16*Sqrt(3.) - Sqrt(6.)/)
-  !   coefs(3,:) = coefs(3,:)/(-224 + 36*Sqrt(2.) + 58*Sqrt(3.) + 28*Sqrt(6.))
-  !   apprx. values:
-  coefs(3,:) = (/1.64967, -0.0543156, -1.10791, -1.4393, -1.02591, 0.104083, 1.87368/)
-  aSinb      = DOT_PRODUCT(coefs(3,:),obs)
+  ! INTEGER ( kind = 4 ) iflag
+  ! INTEGER ( kind = 4 ) info
+  REAL ( KIND(1d0) ):: tol= 0.00001D+00 ! tolerance
 
-  !   calculate b and a:
-  b = ATAN(aSinb/aCosb)
-  IF ( b>0 ) b = b-Pi     ! handle over Pi/2 phase lag
-  a = aSinb/SIN(b)
-
-  mbias    = 0.
-  mbiasObs = 0.
-  !     write(*, *) '      obs        ','     sim       ','     diff     '
-  DO i = 1, 7, 1
-     !     print out the sim and obs pairs
-     xx       = a*SIN(Pi/12*(9+i)+b)+c
-     mbias    = mbias+ABS((xx-obs(i)))
-     mbiasObs = mbiasObs+ABS(obs(i))
-     !         write(*, *) obs(i),xx,xx-obs(i)
-  END DO
-  mbias = mbias/mbiasObs*100
-  !     write(*, *) 'mean bias (%): ', mbias
+  n=3 ! number of parameters to determine
+  m=SIZE(tHr, dim=1) ! number of observation pairs
+  ! PRINT*, 'm',m
 
 
-  !   get results:
-  amp=a                   ! amplitude
-  mean=c                  ! mean value
-  tpeak=(PI/2-b)/PI*12    ! convert to timestamp (h)
+  ALLOCATE(fvec(m), stat=err)
+  IF ( err/= 0) PRINT *, "fvec: Allocation request denied"
 
-  IF ( a<0 ) THEN
-     !         print*, 'mean bias (%): ', mbias
-     !         print*, 'obs: ', obs
-     !         stop
-  ENDIF
+  ALLOCATE(x(n), stat=err)
+  IF ( err/= 0) PRINT *, "x: Allocation request denied"
+
+
+  ! initial guess for fitting
+  x=(/mean,amp,tpeak/)
+
+  ! PRINT*, 'x',x
+  ! iflag=1
+  ! CALL fSin(m,n,x,tHr,obs,fvec,iflag)
+  ! CALL r8vec_print(3,x,'x')
+
+  ! use minpack subroutine lmstr1 to fit the sinusoidal form
+  CALL lmdif1( fSin, m, n, x, tHr, obs, fvec, tol, info )
+
+  ! x   = (/mean,amp,tpeak/)
+  mean  = x(1)
+  amp   = x(2)
+  tpeak = x(3)+6
+
+  ! adjust fitted parameters to physical range:
+  ! amp>0
+  IF ( amp<0 ) THEN
+    !  PRINT*, 'before:'
+    !  PRINT*, amp,tpeak
+     amp=ABS(amp)
+     tpeak=x(3)-12+6+24
+  END IF
+  tpeak=MOD(tpeak,24.)
+  ! PRINT*, 'after:'
+  ! PRINT*, amp,tpeak
+
+
+
+
+  ! ! old version: ABANDONED
+  !   !   c coeffs.:
+  !   !   exact values:
+  !   !   coefs(1,:) = (/2*(-615 - 15*Sqrt(2.) + 211*Sqrt(3.) + 80*Sqrt(6.)), &
+  !   !                 3*(-414 - 12*Sqrt(2.) + 140*Sqrt(3.) + 75*Sqrt(6.)),      &
+  !   !                 -1437 + 156*Sqrt(2.) + 613*Sqrt(3.) + 92*Sqrt(6.),        &
+  !   !                 2*(-816 + 177*Sqrt(2.) + 337*Sqrt(3.) + 13*Sqrt(6.)), &
+  !   !                 -1437 + 156*Sqrt(2.) + 613*Sqrt(3.) + 92*Sqrt(6.),        &
+  !   !                 3*(-414 - 12*Sqrt(2.) + 140*Sqrt(3.) + 75*Sqrt(6.)),      &
+  !   !                 2*(-615 - 15*Sqrt(2.) + 211*Sqrt(3.) + 80*Sqrt(6.))/)
+  !   !   coefs(1,:) = coefs(1,:)/(-9450 + 534*Sqrt(2.) + 3584*Sqrt(3.) + 980*Sqrt(6.))
+  !   !   apprx. values:
+  !   coefs(1,:) = (/1.72649, 0.165226, -0.816223, -1.15098, -0.816223, 0.165226, 1.72649/)
+  !   c          = DOT_PRODUCT(coefs(1,:),obs)
+  !
+  !   !   aCos coeffs.:
+  !   !   exact values:
+  !   !   coefs(2,:) = (/249*(-6 + Sqrt(2.)) + Sqrt(3.)*(124 + 347*Sqrt(2.)), &
+  !   !                  -3*(-263 - 372*Sqrt(2.) + Sqrt(3.) + 325*Sqrt(6.)),      &
+  !   !                  81 - 48*Sqrt(2.) - 247*Sqrt(3.) + 174*Sqrt(6.),          &
+  !   !                  3*(27 - 545*Sqrt(2.) - 45*Sqrt(3.) + 340*Sqrt(6.)),      &
+  !   !                  1740 - 303*Sqrt(2.) - 632*Sqrt(3.) - 73*Sqrt(6.),        &
+  !   !                  -207 + 1368*Sqrt(2.) - 505*Sqrt(3.) - 338*Sqrt(6.),      &
+  !   !                  -990 - 747*Sqrt(2.) + 1398*Sqrt(3.) - 155*Sqrt(6.)/)
+  !   !   coefs(2,:) = coefs(2,:)/(-9450 + 534*Sqrt(2.) + 3584*Sqrt(3.) + 980*Sqrt(6.))
+  !   !   apprx. values:
+  !   coefs(2,:) = (/0.890047, 0.302243, -0.132877, -0.385659, -0.438879, -0.288908, 0.054033/)
+  !   aCosb      = DOT_PRODUCT(coefs(2,:),obs)
+  !
+  !   !   cSin coeffs.:
+  !   !   exact values:
+  !   !   coefs(3,:) = (/-28 - 13*Sqrt(2.) - 5*Sqrt(3.)*(-6 + Sqrt(2.)),  &
+  !   !                  -15 + Sqrt(2.) - 9*Sqrt(3.) + 12*Sqrt(6.),       &
+  !   !                  63 - 7*Sqrt(2.) - 21*Sqrt(3.) - 5*Sqrt(6.),      &
+  !   !                  -9 - 7*Sqrt(3.) + 11*Sqrt(6.),                   &
+  !   !                  -32 - 7*Sqrt(2.) + 28*Sqrt(3.) - Sqrt(6.),       &
+  !   !                  -3 + 27*Sqrt(2.) - 5*Sqrt(3.) - 11*Sqrt(6.), &
+  !   !                  24 - Sqrt(2.) - 16*Sqrt(3.) - Sqrt(6.)/)
+  !   !   coefs(3,:) = coefs(3,:)/(-224 + 36*Sqrt(2.) + 58*Sqrt(3.) + 28*Sqrt(6.))
+  !   !   apprx. values:
+  !   coefs(3,:) = (/1.64967, -0.0543156, -1.10791, -1.4393, -1.02591, 0.104083, 1.87368/)
+  !   aSinb      = DOT_PRODUCT(coefs(3,:),obs)
+  !
+  !   !   calculate b and a:
+  !   b = ATAN(aSinb/aCosb)
+  !   IF ( b>0 ) b = b-Pi     ! handle over Pi/2 phase lag
+  !   a = aSinb/SIN(b)
+  !
+  !   mbias    = 0.
+  !   mbiasObs = 0.
+  !   !     write(*, *) '      obs        ','     sim       ','     diff     '
+  !   DO i = 1, 7, 1
+  !      !     print out the sim and obs pairs
+  !      xx       = a*SIN(Pi/12*(9+i)+b)+c
+  !      mbias    = mbias+ABS((xx-obs(i)))
+  !      mbiasObs = mbiasObs+ABS(obs(i))
+  !      !         write(*, *) obs(i),xx,xx-obs(i)
+  !   END DO
+  !   mbias = mbias/mbiasObs*100
+  !   !     write(*, *) 'mean bias (%): ', mbias
+  !
+  !
+  !   !   get results:
+  !   amp=a                   ! amplitude
+  !   mean=c                  ! mean value
+  !   tpeak=(PI/2-b)/PI*12    ! convert to timestamp (h)
+  !
+  !   IF ( a<0 ) THEN
+  !      !         print*, 'mean bias (%): ', mbias
+  !      !         print*, 'obs: ', obs
+  !      !         stop
+  !   ENDIF
 
 
 END SUBROUTINE AnOHM_ShapeFit
 !========================================================================================
 
 !========================================================================================
+SUBROUTINE fSin(m, n, x, xdat, ydat, fvec, iflag)
+  IMPLICIT NONE
+  INTEGER ( kind = 4 ) m
+  INTEGER ( kind = 4 ) n
+
+  ! REAL ( kind = 8 ) fjrow(n)
+  REAL ( kind = 8 ) fvec(m),xdat(m),ydat(m)
+
+  INTEGER ( kind = 4 ) iflag,i
+  REAL ( kind = 8 ) x(n)
+  REAL(KIND(1d0)), PARAMETER :: PI  = ATAN(1.0)*4      ! Pi
+
+  IF ( iflag == 0 ) THEN
+
+     WRITE ( *, '(a)' ) ''
+     DO i = 1, n
+        WRITE ( *, '(g14.6)' ) x(i)
+     END DO
+
+  ELSE  IF ( iflag == 1 ) THEN
+     fvec(1:m) = x(1) + x(2) * SIN(2*PI/24*(xdat(1:m)-x(3))) - ydat(1:m)
+
+  END IF
+  RETURN
+
+END SUBROUTINE fSin
+!========================================================================================
+
+
+!========================================================================================
 SUBROUTINE AnOHM_FcLoad(sfc,xid,xgrid,& ! input
-     Sd,Ta,WS,WF,AH) ! output
+     Sd,Ta,WS,WF,AH,tHr) ! output
   ! author: Ting Sun
   !
   ! purpose:
@@ -879,11 +1018,12 @@ SUBROUTINE AnOHM_FcLoad(sfc,xid,xgrid,& ! input
   ! 4) WF: water flux density, ???
   ! 5) AH: anthropogenic heat, W m-2
   !
-  ! ref:
   !
   !
-  ! todo:
-  ! check the completeness of forcings of given day (i.e., xid)
+  ! TODO:
+  ! 1. make the list length flexible
+  ! 2. use PACK to collect data
+  ! 3. check the completeness of forcings of given day (i.e., xid)
   !
   ! history:
   ! 20160226: initial version
@@ -906,7 +1046,8 @@ SUBROUTINE AnOHM_FcLoad(sfc,xid,xgrid,& ! input
        Ta(24),&    !
        WS(24),&    !
        WF(24),&    !
-       AH(24)      !
+       AH(24),&    !
+       tHr(24)     ! time in hour
 
   !   constant
   REAL(KIND(1d0)), PARAMETER :: SIGMA = 5.67e-8          ! Stefan-Boltzman
@@ -960,12 +1101,17 @@ SUBROUTINE AnOHM_FcLoad(sfc,xid,xgrid,& ! input
   ELSE
      AH = mAH_grids(xid-1,xgrid)
   END IF
+  tHr = MetForcingData(irRange(1):irRange(2):nsh,3,xgrid)&
+       +MetForcingData(irRange(1):irRange(2):nsh,4,xgrid)/60.
 
-  !   print*, 'Sd:', Sd
-  !   print*, 'Ta:', Ta
-  !   print*, 'WS:', WS
-  !   print*, 'WF:', WF
-  !   print*, 'AH:', AH
+  ! PRINT*, 'id:',xid
+  ! PRINT*, 'Sd:', Sd
+  ! PRINT*, 'Ta:', Ta
+  ! PRINT*, 'WS:', WS
+  ! PRINT*, 'WF:', WF
+  ! PRINT*, 'AH:', AH
+  ! PRINT*, 'tHr:', tHr
+
 
 END SUBROUTINE AnOHM_FcLoad
 !========================================================================================

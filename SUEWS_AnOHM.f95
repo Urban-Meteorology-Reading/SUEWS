@@ -55,6 +55,13 @@ SUBROUTINE AnOHM(Gridiv)
      DO is=1,nsurf
         surfrac=sfr(is)
         !   print*, 'surfrac of ', is, 'is: ',surfrac
+        ! IF ( is==1 ) THEN
+        !    PRINT*,  ''
+        !    PRINT*,  '******************'
+        !    PRINT*,  'DOY:', id
+        !
+        ! END IF
+
         !   initialize the coefs.
         xa1 = 0.1
         xa2 = 0.2
@@ -132,6 +139,7 @@ END SUBROUTINE AnOHM
 !========================================================================================
 
 
+
 !========================================================================================
 SUBROUTINE AnOHM_coef(sfc_typ,xid,xgrid,&   ! input
      xa1,xa2,xa3)            ! output
@@ -157,7 +165,7 @@ SUBROUTINE AnOHM_coef(sfc_typ,xid,xgrid,&   ! input
   ! delta_QS = a1*(Q*)+a2*(dQ*/dt)+a3
   !
   ! ref:
-  ! the AnOHM paper to be added.
+  ! https://doi.org/10.5194/gmd-2016-300
   !
   ! history:
   ! 20160222: initial version
@@ -172,10 +180,10 @@ SUBROUTINE AnOHM_coef(sfc_typ,xid,xgrid,&   ! input
   IMPLICIT NONE
 
   !   input
-  INTEGER:: sfc_typ, xid, xgrid
+  INTEGER,INTENT(in):: sfc_typ, xid, xgrid
 
   !   output
-  REAL(KIND(1d0)) :: xa1, xa2, xa3
+  REAL(KIND(1d0)),INTENT(out) :: xa1, xa2, xa3
 
   !   constant
   REAL(KIND(1d0)), PARAMETER :: SIGMA = 5.67e-8          ! Stefan-Boltzman
@@ -185,7 +193,8 @@ SUBROUTINE AnOHM_coef(sfc_typ,xid,xgrid,&   ! input
   REAL(KIND(1d0)), PARAMETER :: CRA   = 915.483          ! converting RA (aerodyn. res.) to bulk trsf. coeff., [kg s-3]
 
   !   sfc. properties:
-  REAL(KIND(1d0)) :: xalb,   &    !  albedo,
+  REAL(KIND(1d0)) :: &
+       xalb,   &    !  albedo,
        xemis,  &    !  emissivity,
        xcp,    &    !  heat capacity,
        xk,     &    !  thermal conductivity,
@@ -193,7 +202,8 @@ SUBROUTINE AnOHM_coef(sfc_typ,xid,xgrid,&   ! input
        xBo          !  Bowen ratio
 
   !   forcings:
-  REAL(KIND(1d0)), DIMENSION(24) :: Sd,& !   incoming solar radiation
+  REAL(KIND(1d0)), DIMENSION(:),ALLOCATABLE ::&
+       Sd,& !   incoming solar radiation
        Ta,& !   air temperature
        WS,& !   wind speed
        WF,& !   water flux density
@@ -218,6 +228,25 @@ SUBROUTINE AnOHM_coef(sfc_typ,xid,xgrid,&   ! input
   REAL(KIND(1d0))    :: xx1,xx2,xx3        ! temporary use
   !REAL(KIND(1d0))    :: solTs              ! surface temperature
   LOGICAL :: flagGood = .TRUE.  ! quality flag, T for good, F for bad
+  INTEGER :: lenDay=24,err
+  INTERFACE
+     SUBROUTINE AnOHM_FcLoad(sfc,xid,xgrid,Sd,Ta,WS,WF,AH,tHr)
+       IMPLICIT NONE
+       INTEGER,INTENT(in) :: sfc, xid, xgrid
+       REAL(KIND(1d0)),DIMENSION(:),INTENT(inout),ALLOCATABLE :: Sd,Ta,WS,WF,AH,tHr
+     END SUBROUTINE AnOHM_FcLoad
+     SUBROUTINE AnOHM_FcCal(Sd,Ta,WS,WF,AH,tHr,& ! input
+          ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH)       ! output
+       REAL(KIND(1d0)),DIMENSION(:),INTENT(in):: Sd,Ta,WS,WF,AH,tHr
+       REAL(KIND(1d0)),INTENT(out) ::&
+            ASd,mSd,&   ! Sd scales
+            ATa,mTa,&   ! Ta scales
+            tau,&       ! phase lag between Sd and Ta
+            mWS,&       ! mean WS
+            mWF,&       ! mean WF
+            mAH         ! mean AH
+     END SUBROUTINE AnOHM_FcCal
+  END INTERFACE
 
   !   give fixed values for test
   !   properties
@@ -241,12 +270,29 @@ SUBROUTINE AnOHM_coef(sfc_typ,xid,xgrid,&   ! input
   !   initialize flagGood as .TRUE.
   flagGood = .TRUE.
   ! PRINT*, flagGood
+  ALLOCATE(Sd(lenDay), stat=err)
+  IF ( err/= 0) PRINT *, "Sd: Allocation request denied"
+  ALLOCATE(Ta(lenDay), stat=err)
+  IF ( err/= 0) PRINT *, "Ta: Allocation request denied"
+  ALLOCATE(WS(lenDay), stat=err)
+  IF ( err/= 0) PRINT *, "WS: Allocation request denied"
+  ALLOCATE(WF(lenDay), stat=err)
+  IF ( err/= 0) PRINT *, "WF: Allocation request denied"
+  ALLOCATE(AH(lenDay), stat=err)
+  IF ( err/= 0) PRINT *, "AH: Allocation request denied"
+  ALLOCATE(tHr(lenDay), stat=err)
+  IF ( err/= 0) PRINT *, "tHr: Allocation request denied"
+
+  ! TODO: change the Forcing part to
+  ! CALL AnOHM_FcLoad(sfc_typ,xid,xgrid,&   ! input
+      !  ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH)
+
 
   !   load met. forcing data:
   CALL AnOHM_FcLoad(sfc_typ,xid,xgrid,&   ! input
        Sd,Ta,WS,WF,AH,tHr)         ! output
-  !   print*, 'here the forcings:'
-  !   print*, Sd,Ta,WS,WF,AH
+  ! PRINT*, 'here the forcings:'
+  ! PRINT*, Sd,Ta,WS,WF,AH
 
   !   load forcing characteristics:
   ! PRINT*, 'id',id,'forcing:'
@@ -404,6 +450,7 @@ SUBROUTINE AnOHM_coef_water(sfc_typ,xid,xgrid,&   ! input
   ! purpose:
   ! designed for water surface
   ! calculate the OHM coefs. (a1, a2, and a3) based on forcings and sfc. conditions
+  ! NB: this SUBROUTINE hasn't been well tested.
   !
   ! input:
   ! 1) sfc_typ: surface type.
@@ -424,7 +471,7 @@ SUBROUTINE AnOHM_coef_water(sfc_typ,xid,xgrid,&   ! input
   ! delta_QS = a1*(Q*)+a2*(dQ*/dt)+a3
   !
   ! ref:
-  ! the AnOHM paper to be added.
+  ! the AnOHM-water paper to be added.
   !
   ! history:
   ! 20161124: initial version
@@ -461,7 +508,7 @@ SUBROUTINE AnOHM_coef_water(sfc_typ,xid,xgrid,&   ! input
        xmu         ! effective absorption fraction
 
   !   forcings:
-  REAL(KIND(1d0)), DIMENSION(24) :: Sd,& !   incoming solar radiation
+  REAL(KIND(1d0)), DIMENSION(:),ALLOCATABLE:: Sd,& !   incoming solar radiation
        Ta,& !   air temperature
        WS,& !   wind speed
        WF,& !   water flux density
@@ -489,6 +536,24 @@ SUBROUTINE AnOHM_coef_water(sfc_typ,xid,xgrid,&   ! input
   REAL(KIND(1d0)) :: xxT,xxkappa,xxdltphi   ! temporary use
   LOGICAL :: flagGood = .TRUE.  ! quality flag, T for good, F for bad
 
+  INTERFACE
+     SUBROUTINE AnOHM_FcLoad(sfc,xid,xgrid,Sd,Ta,WS,WF,AH,tHr)
+       IMPLICIT NONE
+       INTEGER,INTENT(in) :: sfc, xid, xgrid
+       REAL(KIND(1d0)),DIMENSION(:),INTENT(inout),ALLOCATABLE :: Sd,Ta,WS,WF,AH,tHr
+     END SUBROUTINE AnOHM_FcLoad
+     SUBROUTINE AnOHM_FcCal(Sd,Ta,WS,WF,AH,tHr,& ! input
+          ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH)       ! output
+       REAL(KIND(1d0)),DIMENSION(:),INTENT(in):: Sd,Ta,WS,WF,AH,tHr
+       REAL(KIND(1d0)),INTENT(out) ::&
+            ASd,mSd,&   ! Sd scales
+            ATa,mTa,&   ! Ta scales
+            tau,&       ! phase lag between Sd and Ta
+            mWS,&       ! mean WS
+            mWF,&       ! mean WF
+            mAH         ! mean AH
+     END SUBROUTINE AnOHM_FcCal
+  END INTERFACE
 
   ! !   give fixed values for test
   !
@@ -513,9 +578,7 @@ SUBROUTINE AnOHM_coef_water(sfc_typ,xid,xgrid,&   ! input
   ! AH  = 0
   ! Wf  = 0
 
-  PRINT*,  ''
-  PRINT*,  '******************'
-  PRINT*,  'DOY:', xid
+
 
   !   load met. forcing data:
   CALL AnOHM_FcLoad(sfc_typ,xid,xgrid,&   ! input
@@ -656,6 +719,7 @@ SUBROUTINE AnOHM_FcCal(Sd,Ta,WS,WF,AH,tHr,&                 ! input
   ! 3) WS: wind speed, m s-1
   ! 4) WF: water flux density, ???
   ! 5) AH: anthropogenic heat, W m-2
+  ! 6) tHr: time in hour, hr
   !
   ! output:
   ! 1) ASd, mSd: amplitude and mean value of Sd
@@ -673,15 +737,11 @@ SUBROUTINE AnOHM_FcCal(Sd,Ta,WS,WF,AH,tHr,&                 ! input
   IMPLICIT NONE
 
   !   input
-  REAL(KIND(1d0)) :: Sd(24),&    !
-       Ta(24),&    !
-       WS(24),&    !
-       Wf(24),&    !
-       AH(24),&      !
-       tHr(24)
+  REAL(KIND(1d0)),DIMENSION(:),INTENT(in):: Sd,Ta,WS,WF,AH,tHr
 
   !   output
-  REAL(KIND(1d0)) :: ASd,mSd,&   ! Sd scales
+  REAL(KIND(1d0)),INTENT(out) ::&
+       ASd,mSd,&   ! Sd scales
        ATa,mTa,&   ! Ta scales
        tau,&       ! phase lag between Sd and Ta
        mWS,&       ! mean WS
@@ -702,6 +762,7 @@ SUBROUTINE AnOHM_FcCal(Sd,Ta,WS,WF,AH,tHr,&                 ! input
 
   ! REAL(KIND(1d0)) :: xx              ! temporary use
   INTEGER :: err,lenDay
+  LOGICAL,DIMENSION(:),ALLOCATABLE::SdMask
 
   INTERFACE
      SUBROUTINE AnOHM_ShapeFit(tHr,obs,amp,mean,tpeak)
@@ -718,12 +779,19 @@ SUBROUTINE AnOHM_FcCal(Sd,Ta,WS,WF,AH,tHr,&                 ! input
 
   END INTERFACE
 
-  lenDay=COUNT(Sd>0, dim=1)
+
+  lenDay=COUNT(Sd>5, dim=1)
+  ALLOCATE(SdMask(lenDay), stat=err)
+  IF ( err/= 0) PRINT *, "SdMask: Allocation request denied"
+  SdMask=Sd>0.1
+
+
+
   ! CALL r8vec_print(24,Sd,'Sd')
   ! CALL r8vec_print(24,tHr,'tHr')
   ALLOCATE(tHrDay(lenDay), stat=err)
   IF ( err/= 0) PRINT *, "tHrDay: Allocation request denied"
-  tHrDay=PACK(tHr, mask=(Sd>0))
+  tHrDay=PACK(tHr, mask=SdMask)
 
 
   ALLOCATE(selX(lenDay), stat=err)
@@ -732,8 +800,8 @@ SUBROUTINE AnOHM_FcCal(Sd,Ta,WS,WF,AH,tHr,&                 ! input
 
   !   calculate sinusoidal scales of Sd:
   ! PRINT*, 'Calc. Sd...'
-  selX=PACK(Sd, mask=(Sd>0))
-  ASd=MAXVAL(selX)
+  selX=PACK(Sd, mask=SdMask)
+  ASd=(MAXVAL(selX)-MINVAL(selX))/2
   mSd=SUM(selX)/lenDay
   tSd=12
   CALL AnOHM_ShapeFit(tHrDay,selX,ASd,mSd,tSd)
@@ -741,6 +809,7 @@ SUBROUTINE AnOHM_FcCal(Sd,Ta,WS,WF,AH,tHr,&                 ! input
   IF ( ASd < 0 .OR. tSd > 15) THEN
      !         ASd = abs(ASd)
      !         tSd = 12 ! assume Sd peaks at 12:00LST
+     CALL r8vec_print(lenDay,tHrDay,'tHrDay:')
      CALL r8vec_print(lenDay,selX,'Sd Day:')
      PRINT*, 'ASd:', ASd
      PRINT*, 'mSd:', mSd
@@ -752,8 +821,8 @@ SUBROUTINE AnOHM_FcCal(Sd,Ta,WS,WF,AH,tHr,&                 ! input
 
   !   calculate sinusoidal scales of Ta:
   ! PRINT*, 'Calc. Ta...'
-  selX=PACK(Ta, mask=(Sd>0))
-  ATa=MAXVAL(selX)
+  selX=PACK(Ta, mask=SdMask)
+  ATa=(MAXVAL(selX)-MINVAL(selX))/2
   mTa=SUM(selX)/lenDay
   tTa=12
   CALL AnOHM_ShapeFit(tHrDay,selX,ATa,mTa,tTa)
@@ -775,18 +844,25 @@ SUBROUTINE AnOHM_FcCal(Sd,Ta,WS,WF,AH,tHr,&                 ! input
   ! PRINT*, 'tau:', tau
 
   !   calculate the mean values:
-  selX=PACK(WS, mask=(Sd>0))
+  selX=PACK(WS, mask=SdMask)
   mWS = SUM(selX)/lenDay  ! mean value of WS
 
-  selX=PACK(WF, mask=(Sd>0))
-  mWF = SUM(WF)/lenDay  ! mean value of WF
+  selX=PACK(WF, mask=SdMask)
+  mWF = SUM(selX)/lenDay  ! mean value of WF
 
-  selX=PACK(AH, mask=(Sd>0))
-  mAH = SUM(AH)/lenDay  ! mean value of AH
+  selX=PACK(AH, mask=SdMask)
+  mAH = SUM(selX)/lenDay  ! mean value of AH
   ! PRINT*, 'mWS:', mWS
   !     print*, 'mWF:', mWF
   !     print*, 'mAH:', mAH
+  IF (ALLOCATED(SdMask)) DEALLOCATE(SdMask, stat=err)
+  IF ( err/= 0) PRINT *, "SdMask: Deallocation request denied"
 
+  IF (ALLOCATED(tHrDay)) DEALLOCATE(tHrDay, stat=err)
+  IF ( err/= 0) PRINT *, "tHrDay: Deallocation request denied"
+
+  IF (ALLOCATED(selX)) DEALLOCATE(selX, stat=err)
+  IF ( err/= 0) PRINT *, "selX: Deallocation request denied"
 
 END SUBROUTINE AnOHM_FcCal
 !========================================================================================
@@ -878,14 +954,19 @@ SUBROUTINE AnOHM_ShapeFit(tHr,obs,amp,mean,tpeak)
   ! adjust fitted parameters to physical range:
   ! amp>0
   IF ( amp<0 ) THEN
-    !  PRINT*, 'before:'
-    !  PRINT*, amp,tpeak
+     !  PRINT*, ''
+     !  PRINT*, 'before:'
+     !  PRINT*, amp,tpeak,mean
+     !  CALL r8vec_print(SIZE(tHR, dim=1),tHR,'tHR')
+     !  CALL r8vec_print(SIZE(obs, dim=1),obs,'obs')
      amp=ABS(amp)
      tpeak=x(3)-12+6+24
+     tpeak=MOD(tpeak,24.)
+     !  PRINT*, 'after:'
+     !  PRINT*, amp,tpeak,mean
   END IF
   tpeak=MOD(tpeak,24.)
-  ! PRINT*, 'after:'
-  ! PRINT*, amp,tpeak
+
 
 
 
@@ -969,6 +1050,7 @@ END SUBROUTINE AnOHM_ShapeFit
 
 !========================================================================================
 SUBROUTINE fSin(m, n, x, xdat, ydat, fvec, iflag)
+
   IMPLICIT NONE
   INTEGER ( kind = 4 ) m
   INTEGER ( kind = 4 ) n
@@ -1017,6 +1099,7 @@ SUBROUTINE AnOHM_FcLoad(sfc,xid,xgrid,& ! input
   ! 3) WS: wind speed, m s-1
   ! 4) WF: water flux density, ???
   ! 5) AH: anthropogenic heat, W m-2
+  ! 6) tHr: time in hour, hr
   !
   !
   !
@@ -1039,15 +1122,10 @@ SUBROUTINE AnOHM_FcLoad(sfc,xid,xgrid,& ! input
   IMPLICIT NONE
 
   !   input
-  INTEGER :: sfc, xid, xgrid
+  INTEGER,INTENT(in) :: sfc, xid, xgrid
 
   !   output
-  REAL(KIND(1d0)) :: Sd(24),&    !
-       Ta(24),&    !
-       WS(24),&    !
-       WF(24),&    !
-       AH(24),&    !
-       tHr(24)     ! time in hour
+  REAL(KIND(1d0)),DIMENSION(:),INTENT(inout), ALLOCATABLE:: Sd,Ta,WS,WF,AH,tHr
 
   !   constant
   REAL(KIND(1d0)), PARAMETER :: SIGMA = 5.67e-8          ! Stefan-Boltzman
@@ -1056,53 +1134,101 @@ SUBROUTINE AnOHM_FcLoad(sfc,xid,xgrid,& ! input
   REAL(KIND(1d0)), PARAMETER :: C2K   = 273.15           ! degC to K
 
   !   local variables:
-  ! REAL :: tSd,tTa         ! peaking timestamps
-  ! REAL :: aCosb,aSinb,b,c ! parameters for fitted shape: a*Sin(Pi/12*t+b)+c
-  ! REAL :: xx              ! temporary use
+  REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE :: subMet !
 
-  INTEGER :: i            ! temporary use
-
-
-  INTEGER :: irRange(2)   ! row range in MetData containing id values
+  INTEGER :: i,xx(8),err            ! temporary use
   INTEGER :: lenMetData
 
-  INTEGER, ALLOCATABLE :: lSub(:) ! array to retrieve data of the specific day (id)
+  INTEGER :: irRange(2)   ! row range in MetData containing id values
 
-  lenMetData = SIZE(MetForcingData(:,2,xgrid))
 
-  ! determine the positions of met forcings of xid in the whole met chunk
-  ALLOCATE(lSub(lenMetData))
-  lSub = (/(i,i=1,lenMetData)/)
-  ! select pieces of xid
-  WHERE (MetForcingData(:,2,xgrid) == xid)
-     lSub = 1
-  ELSEWHERE
-     lSub = 0
-  END WHERE
-  irRange = (/MAXLOC(lSub),MAXLOC(lSub)+nsd-1/)
-  ! PRINT*, 'irRange:', irRange
+  ! INTEGER, ALLOCATABLE :: lSub(:) ! array to retrieve data of the specific day (id)
+  LOGICAL, ALLOCATABLE :: metMask(:)
 
-  ! IF ( sfc==1 .AND. xid ==366 ) THEN
-  !    PRINT*, 'irRange:', irRange
-  !    PRINT*, 'id:',xid
-  !   !  print*, 'id:', MetForcingData(:,2,xgrid)
+  ! determine the length of subset
+  lenMetData = COUNT(&
+       MetForcingData(:,2,xgrid)==xid & ! day=xid
+       .AND. MetForcingData(:,4,xgrid)==0)! tmin=0
+
+  ! construct mask
+  ALLOCATE(metMask(lenMetData))
+  metMask=(MetForcingData(:,2,xgrid)==xid & ! day=xid
+       .AND. MetForcingData(:,4,xgrid)==0)! tmin=0
+
+  ! construct array for time and met variables
+  ALLOCATE(subMet(lenMetData,6))
+  subMet=RESHAPE(PACK(MetForcingData(:,(/3,& !time: hour
+       15,12,10,12,9& ! met: Sd, Ta, WS, WF, AH
+       /),xgrid),&
+       SPREAD(metMask, dim=2, ncopies=6)),& ! replicate mask vector to 2D array
+       (/lenMetData,6/)) ! convert to target shape
+
+  ! re-allocate arrays as their sizes may change during passing
+  IF (ALLOCATED(tHr)) DEALLOCATE(tHr, stat=err)
+  ALLOCATE(tHr(lenMetData))
+  IF (ALLOCATED(Sd)) DEALLOCATE(Sd, stat=err)
+  ALLOCATE(Sd(lenMetData))
+  IF (ALLOCATED(Ta)) DEALLOCATE(Ta, stat=err)
+  ALLOCATE(Ta(lenMetData))
+  IF (ALLOCATED(WS)) DEALLOCATE(WS, stat=err)
+  ALLOCATE(WS(lenMetData))
+  IF (ALLOCATED(WF)) DEALLOCATE(WF, stat=err)
+  ALLOCATE(WF(lenMetData))
+  IF (ALLOCATED(AH)) DEALLOCATE(AH, stat=err)
+  ALLOCATE(AH(lenMetData))
+
+  ! load the sublist into forcing variables
+  tHr = subMet(:,1)! time in hour:
+  Sd  = subMet(:,2)
+  Ta  = subMet(:,3)
+  WS  = subMet(:,4)
+  WF  = 0 ! set as 0 for the moment
+  IF ( AnthropHeatMethod == 0 ) THEN
+     AH = subMet(:,6)    ! read in from MetForcingData,
+  ELSE
+     AH = mAH_grids(xid-1,xgrid)
+  END IF
+
+  ! DEALLOCATE(subMet)
+  ! DEALLOCATE(metMask)
+  ! DEALLOCATE(tHr)
+  ! DEALLOCATE(Sd)
+  ! DEALLOCATE(Ta)
+  ! DEALLOCATE(WS)
+  ! DEALLOCATE(WF)
+  ! DEALLOCATE(AH)
+
+  ! below is the deprecated code:
+  ! ! select pieces of xid
+  ! WHERE (MetForcingData(:,2,xgrid) == xid)
+  !    lSub = 1
+  ! ELSEWHERE
+  !    lSub = 0
+  ! END WHERE
+  ! irRange = (/MAXLOC(lSub),MAXLOC(lSub)+nsd-1/)
+  ! ! PRINT*, 'irRange:', irRange
   !
-  ! END IF
+  ! ! IF ( sfc==1 .AND. xid ==366 ) THEN
+  ! !    PRINT*, 'irRange:', irRange
+  ! !    PRINT*, 'id:',xid
+  ! !   !  print*, 'id:', MetForcingData(:,2,xgrid)
+  ! !
+  ! ! END IF
 
 
 
   !   load the sublist into forcings:
-  Sd = MetForcingData(irRange(1):irRange(2):nsh,15,xgrid)     ! nsh is timesteps per hour, a global var.
-  Ta = MetForcingData(irRange(1):irRange(2):nsh,12,xgrid)
-  WS = MetForcingData(irRange(1):irRange(2):nsh,10,xgrid)
-  WF = MetForcingData(irRange(1):irRange(2):nsh,12,xgrid)*0   ! set as 0 for debug
-  IF ( AnthropHeatMethod == 0 ) THEN
-     AH = MetForcingData(irRange(1):irRange(2):nsh,9,xgrid)*0    ! read in from MetForcingData,
-  ELSE
-     AH = mAH_grids(xid-1,xgrid)
-  END IF
-  tHr = MetForcingData(irRange(1):irRange(2):nsh,3,xgrid)&
-       +MetForcingData(irRange(1):irRange(2):nsh,4,xgrid)/60.
+  ! Sd = MetForcingData(irRange(1):irRange(2):nsh,15,xgrid)     ! nsh is timesteps per hour, a global var.
+  ! Ta = MetForcingData(irRange(1):irRange(2):nsh,12,xgrid)
+  ! WS = MetForcingData(irRange(1):irRange(2):nsh,10,xgrid)
+  ! WF = MetForcingData(irRange(1):irRange(2):nsh,12,xgrid)*0   ! set as 0 for the moment
+  ! IF ( AnthropHeatMethod == 0 ) THEN
+  !    AH = MetForcingData(irRange(1):irRange(2):nsh,9,xgrid)*0    ! read in from MetForcingData,
+  ! ELSE
+  !    AH = mAH_grids(xid-1,xgrid)
+  ! END IF
+  ! tHr = MetForcingData(irRange(1):irRange(2):nsh,3,xgrid)&
+  !      +MetForcingData(irRange(1):irRange(2):nsh,4,xgrid)/60.
 
   ! PRINT*, 'id:',xid
   ! PRINT*, 'Sd:', Sd

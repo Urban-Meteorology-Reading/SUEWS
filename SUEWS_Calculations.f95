@@ -180,7 +180,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
      !write(*,*) is, vsmd, smd
   ENDDO
 
-  
+
   ! ===================NET ALLWAVE RADIATION================================
   IF(NetRadiationMethod>0)THEN
 

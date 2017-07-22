@@ -66,14 +66,10 @@ SUBROUTINE AnOHM(Gridiv)
         xa1 = 0.1
         xa2 = 0.2
         xa3 = 10
+
         !   call AnOHM to calculate the coefs.
-        IF ( is<nsurf ) THEN
-           !  land surfaces
-           CALL AnOHM_coef(is,id,Gridiv,xa1,xa2,xa3)
-        ELSE
-           !  water surface
-           CALL AnOHM_coef_water(nsurf,id,Gridiv,xa1,xa2,xa3)
-        END IF
+        CALL AnOHM_coef(is,id,Gridiv,xa1,xa2,xa3)
+
         !   calculate the areally-weighted OHM coefficients
         a1AnOHM(Gridiv) = a1AnOHM(Gridiv)+surfrac*xa1
         a2AnOHM(Gridiv) = a2AnOHM(Gridiv)+surfrac*xa2
@@ -141,7 +137,32 @@ END SUBROUTINE AnOHM
 
 
 !========================================================================================
-SUBROUTINE AnOHM_coef(sfc_typ,xid,xgrid,&   ! input
+SUBROUTINE AnOHM_coef(sfc_typ,xid,xgrid,& !input
+     xa1,xa2,xa3)                         ! output
+  USE allocateArray
+  IMPLICIT NONE
+
+  !   input
+  INTEGER,INTENT(in):: sfc_typ, xid, xgrid
+
+  !   output
+  REAL(KIND(1d0)),INTENT(out) :: xa1, xa2, xa3
+
+  IF ( sfc_typ<WaterSurf ) THEN
+     CALL AnOHM_coef_land(sfc_typ,xid,xgrid,xa1,xa2,xa3)
+  ELSE
+     CALL AnOHM_coef_water(sfc_typ,xid,xgrid,xa1,xa2,xa3)
+  END IF
+
+
+END SUBROUTINE AnOHM_coef
+!========================================================================================
+
+
+
+
+!========================================================================================
+SUBROUTINE AnOHM_coef_land(sfc_typ,xid,xgrid,&   ! input
      xa1,xa2,xa3)            ! output
   ! author: Ting Sun
   !
@@ -285,7 +306,7 @@ SUBROUTINE AnOHM_coef(sfc_typ,xid,xgrid,&   ! input
 
   ! TODO: change the Forcing part to
   ! CALL AnOHM_FcLoad(sfc_typ,xid,xgrid,&   ! input
-      !  ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH)
+  !  ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH)
 
 
   !   load met. forcing data:
@@ -438,7 +459,7 @@ SUBROUTINE AnOHM_coef(sfc_typ,xid,xgrid,&   ! input
 
   ! PRINT*, '********sfc_typ: ',sfc_typ,' end********'
 
-END SUBROUTINE AnOHM_coef
+END SUBROUTINE AnOHM_coef_land
 !========================================================================================
 
 !========================================================================================

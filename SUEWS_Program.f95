@@ -635,7 +635,7 @@ PROGRAM SUEWS_Program
               !  IF(ir==1) WRITE(*,*) 'Now running block ',iblock,'/',ReadBlocksMetData,' of year ',year_int,'...'
               WRITE(grid_txt,'(I10)') GridIDmatrix(igrid)   !Get grid ID as a text string
               FileCodeX=TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt)
-              IF(ir==1 .and. igrid==1) THEN
+              IF(ir==1 .AND. igrid==1) THEN
                  WRITE(*,*) TRIM(ADJUSTL(FileCodeX)),': Now running block ',iblock,'/',ReadBlocksMetData,' of ',TRIM(year_txt),'...'
               ENDIF
               IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_Calculations...'

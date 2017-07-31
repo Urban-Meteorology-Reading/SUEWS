@@ -1053,7 +1053,7 @@ MODULE cbl_MODULE
 
   !Parameters in CBL code
   INTEGER::zmax,&
-       nEqn=6,&  !NT changed from 4 to 6 
+       nEqn=6,&  !NT changed from 4 to 6
        iCBLcount,&
        nlineInData
   REAL(KIND(1d0))::C2K=273.16

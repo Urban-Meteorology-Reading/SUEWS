@@ -352,11 +352,11 @@ SUBROUTINE AnOHM_coef_land_cal(&
   REAL(KIND(1d0))    :: delta,m,n          ! water flux related variables
   REAL(KIND(1d0))    :: ms,ns              ! m, n related
   REAL(KIND(1d0))    :: gamma              ! phase lag scale
-  REAL(KIND(1d0))    :: ATs!,mTs            ! surface temperature amplitude
+  REAL(KIND(1d0))    :: ATs,mTs            ! amplitude and mean value of surface temperature
   REAL(KIND(1d0))    :: ceta,cphi          ! phase related temporary variables
   REAL(KIND(1d0))    :: eta,phi,xlag       ! phase related temporary variables
   REAL(KIND(1d0))    :: xx1,xx2,xx3,xchWS  ! temporary use
-  !REAL(KIND(1d0))    :: solTs              ! surface temperature
+  REAL(KIND(1d0))    :: solTs              ! surface temperature
   LOGICAL :: flagGood = .TRUE.  ! quality flag, T for good, F for bad
   INTEGER :: lenDay=24,err
 
@@ -452,7 +452,7 @@ SUBROUTINE AnOHM_coef_land_cal(&
 
 
   !   calculate surface temperature related parameters:
-  !   mTs   = (mSd*(1-xalb)/f)+mTa
+  mTs   = (mSd*(1-xalb)/f)+mTa
   ms    = 1+xk/(f*m)
   ns    = xk/(f*n)
   !     print*, 'ms,ns:', ms,ns
@@ -919,8 +919,7 @@ SUBROUTINE AnOHM_FcLoad(xid,xgrid,& ! input
   ! author: Ting Sun
   !
   ! purpose:
-  ! calculate the key parameters of a sinusoidal curve for AnOHM forcings
-  ! i.e., a, b, c in a*Sin(Pi/12*t+b)+c
+  ! load forcing series for AnOHM_FcCal
   !
   ! input:
   ! 1) xid : day of year
@@ -936,7 +935,7 @@ SUBROUTINE AnOHM_FcLoad(xid,xgrid,& ! input
   ! 6) tHr: time in hour, hr
   !
   ! history:
-  ! 20160226: initial version
+  ! 20170720: initial version
   !========================================================================================
   USE allocateArray
   USE ColNamesInputFiles
@@ -1263,13 +1262,13 @@ SUBROUTINE AnOHM_ShapeFit(tHr,obs,amp,mean,tpeak)
   ! CALL fSin(m,n,x,tHr,obs,fvec,iflag)
   ! CALL r8vec_print(3,x,'x')
 
-  ! use minpack subroutine lmstr1 to fit the sinusoidal form
+  ! use minpack subroutine 'lmstr1' to fit the sinusoidal form
   CALL lmdif1( fSin, m, n, x, tHr, obs, fvec, tol, info )
 
-  ! x   = (/mean,amp,tpeak/)
+  ! x   = (/mean,amp,delta/), see subroutine 'fSin' for the meaning of this vector
   mean  = x(1)
   amp   = x(2)
-  tpeak = x(3)+6
+  tpeak = x(3)+6 ! when t = delta + 6 (hr of LST), t is tpeak.
 
   ! adjust fitted parameters to physical range:
   ! amp>0
@@ -1287,16 +1286,15 @@ SUBROUTINE AnOHM_ShapeFit(tHr,obs,amp,mean,tpeak)
   END IF
   tpeak=MOD(tpeak,24.)
 
-
 END SUBROUTINE AnOHM_ShapeFit
 !========================================================================================
 
 !========================================================================================
 SUBROUTINE fSin(m, n, x, xdat, ydat, fvec, iflag)
   ! purpose:
-  ! sinusoidal function for fitting:
-  ! mean+amp*Sin(Pi/12(t-delta))
-  ! x=(/mean,amp,delta/)
+  ! sinusoidal function f(t) for fitting:
+  ! f(t) = mean+amp*Sin(Pi/12(t-delta))
+  ! x    = (/mean,amp,delta/) contains the fitting parameters
 
 
   IMPLICIT NONE
@@ -1305,7 +1303,7 @@ SUBROUTINE fSin(m, n, x, xdat, ydat, fvec, iflag)
 
   ! REAL ( kind = 8 ) fjrow(n)
   REAL ( kind = 8 ) fvec(m),& ! residual vector
-  xdat(m),ydat(m) ! (x,y) observations for fitting
+       xdat(m),ydat(m) ! (x,y) observations for fitting
 
   INTEGER ( kind = 4 ) iflag,i
   REAL ( kind = 8 ) x(n)

@@ -25,11 +25,11 @@ zip_mac="${exe}_${dir_mac}.zip"
 
 # Win10x64 bundle
 zip -rq ${zip_win} Input Output Manual -x .DS_*
-zip -urjq ${zip_win} Executable/${dir_mac}/${exe} RunControl.nml
+zip -urjq ${zip_win} Executable/${dir_win}/${exe}.exe RunControl.nml
 echo "${zip_win} done."
 # macOS bundle
 zip -rq ${zip_mac} Input Output Manual -x .DS_*
-zip -urjq ${zip_mac} Executable/macOS/${exe} RunControl.nml
+zip -urjq ${zip_mac} Executable/${dir_mac}/${exe} RunControl.nml
 echo "${zip_mac} done."
 
 

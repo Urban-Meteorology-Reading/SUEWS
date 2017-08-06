@@ -48,6 +48,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   USE mod_k
   USE solweig_module
   USE WhereWhen
+  use OHM_module
 
 
   IMPLICIT NONE

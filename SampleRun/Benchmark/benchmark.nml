@@ -1,0 +1,14 @@
+&file
+    input_basefile = './xh1_2013_60.txt'
+    input_reffile = './xh1_2013_60.txt'
+    output_pdf = './test.pdf'
+    input_cfgfiles(1) = '../Output/xh1_2013_60.txt'
+    !input_cfgfiles(2) ='/Users/sunt05/Documents/BenchmarkSystemSUEWS/data-test/Shanghai/xh1_2013_60_CBLoff_7DAYS.txt'
+    !input_cfgfiles(3) ='/Users/sunt05/Documents/BenchmarkSystemSUEWS/data-test/Shanghai/xh_2013_60_LQF_test.txt'
+/
+
+&benchmark
+    list_var = 0
+    list_metric = 'MAE', 'MBE', 'RMSE'
+    method_score = 1
+/

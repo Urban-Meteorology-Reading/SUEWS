@@ -46,7 +46,7 @@ CONTAINS
        DTIME,ZENITH_deg,kdown,Temp_C,RH,Press_hPa,qn1_obs,&
        SnowAlb,&
        AlbedoChoice,ldown_option,NetRadiationMethod,DiagQN,&
-                                ! output:
+! output:
        QSTARall,QSTAR_SF,QSTAR_S,kclear,KUPall,LDown,LUPall,fcld,TSURFall)
     !KCLEAR,FCLD,DTIME,KDOWN,QSTARall,KUPall,LDOWN,LUPall,TSURFall,&
     !AlbedoChoice,ldown_option,Temp_C,Press_hPa,Ea_hPa,qn1_obs,RH,&
@@ -108,10 +108,10 @@ CONTAINS
          AlbedoChoice,ldown_option,NetRadiationMethod,DiagQN
     REAL(KIND(1D0)),INTENT(out)  ::QSTARall,QSTAR_SF,QSTAR_S,kclear,KUPall,ldown,LUPall,fcld,TSURFall
 
-    REAL(KIND(1D0))              ::Temp_K,TD,ZENITH,QSTAR,QSTAR_SNOW,KUP_SNOW,LUP_SNOW,TSURF_SNOW,KUP,LUP,TSURF
-    REAL(KIND(1D0))              ::ALB0,EMIS0,EMIS_A,TRANS!,RH,DTIME,KDOWN
-    REAL(KIND(1D0))              ::LUPCORR,SIGMATK4,KDOWN_HR=0.
-    INTEGER                      ::DOY, is
+    REAL(KIND(1D0)) ::Temp_K,TD,ZENITH,QSTAR,QSTAR_SNOW,KUP_SNOW,LUP_SNOW,TSURF_SNOW,KUP,LUP,TSURF
+    REAL(KIND(1D0)) ::ALB0,EMIS0,EMIS_A,TRANS!,RH,DTIME,KDOWN
+    REAL(KIND(1D0)) ::LUPCORR,SIGMATK4,KDOWN_HR=0.
+    INTEGER         ::DOY, is
 
     REAL(KIND(1D0))::qn1_cum,kup_cum,lup_cum,tsurf_cum,&   !Cumulative radiation components
          qn1_is,kup_is,lup_is,tsurf_is,&       !Sub-surface radiation components

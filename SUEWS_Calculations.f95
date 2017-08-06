@@ -211,7 +211,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
             SnowAlb,&
             AlbedoChoice,ldown_option,NetRadiationMethod,DiagQN,&
             ! output:
-            qn1,qn1_SF,qn1_S,kclear,kup,LDown,lup,fcld,tsurf)
+            qn1,qn1_SF,qn1_S,kclear,kup,LDown,lup,fcld,TSURF)
      !Temp_C,kclear,fcld,dectime,avkdn,avRH,qn1,kup,ldown,lup,tsurf,&
      !AlbedoChoice,ldown_option,Press_hPa,Ea_hPa,qn1_obs,&
      !zenith_deg,NetRadiationMethod,

@@ -27,7 +27,8 @@ MODULES = LUMPS_Module_constants.o  \
           SUEWS_Files_run_Control.o \
 					precmod.o \
 					stringmod.o \
-					qsort_c_module.o
+					qsort_c_module.o\
+					LUMPS_NARP_v3.o
 # Rest of the files including modules and functions which are independent
 OTHERS =  BLUEWS_CBL.o   \
           SUEWS_Calculations.o  \
@@ -78,10 +79,9 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_CO2.o \
 					SUEWS_Initial.o \
 					SUEWS_DailyState.o \
-					SUEWS_AnOHM.o \
-					SUEWS_Diagnostics.o
+					SUEWS_AnOHM.o
 # modules under rapid development
-TEST =		LUMPS_NARP_v3.o
+TEST =		SUEWS_Diagnostics.o
 
 
 # Build main program - main uses MODULES and OTHERS

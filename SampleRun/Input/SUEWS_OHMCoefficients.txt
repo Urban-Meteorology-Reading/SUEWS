@@ -19,7 +19,7 @@ Code	a1	a2	a3	!	Surface type	Reference	Not recommended (NR)
 60	0.5	0.21	-39.1	!	Water (shallow - turbid)	Souch et al. (1998)		
 601	0.534	0.178	-33.31	!	Code 60 x Multiplier for summer			
 602	0.627	-0.281	13.05	!	Code 60 x Multiplier for winter			
-61	0.25	0.6	-30	!	Snow	J?rvi et al. (2014)		
+61	0.25	0.6	-30	!	Snow	Järvi et al. (2014)		
 713	0.17	0.1	-17	!	"Roof (tar and gravel, summer)"	summer		
 701	0.3	0.96	-24	!	"Roof (commerical or industrial, gravel, dry, WS < 1 m/s, Vancouver)"	"Meyn & Oke (2009) Table 4, Pg 750"		
 702	0.26	0.89	-21	!	"Roof (commerical or industrial, gravel, dry, WS 1-1.4 m/s, Vancouver)"	"Meyn & Oke (2009) Table 4, Pg 750"		
@@ -33,9 +33,9 @@ Code	a1	a2	a3	!	Surface type	Reference	Not recommended (NR)
 710	0.07	0.26	-6	!	"Roof (STAR, Japanese ceramic tile)"	"Meyn & Oke (2009) Table 4, Pg 750"		
 711	0.06	0.43	-4	!	"Roof (STAR, slate tile, dry, WS 1.0-1.4 m/s)"	"Meyn & Oke (2009) Table 4, Pg 750"		
 712	0.07	0.06	-5	!	"Roof (STAR, clay tile, dry, WS 1.0-1.4 m/s)"	"Meyn & Oke (2009) Table 4, Pg 750"		
-750	0.19	0.54	-15.125	!	"Roof (own for SMEAR III, Helsinki)"	J?rvi et al. (2014)		
-751	0.12	0.24	-4.5	!	Own for Montreal suburban (calculated as a average from shingle types) 	J?rvi et al. (2014)		
-752	0.26	0.85	-21.4	!	Own for Montreal urban (calculated as a average from gravel)	J?rvi et al. (2014)		
+750	0.19	0.54	-15.125	!	"Roof (own for SMEAR III, Helsinki)"	Järvi et al. (2014)		
+751	0.12	0.24	-4.5	!	Own for Montreal suburban (calculated as a average from shingle types) 	Järvi et al. (2014)		
+752	0.26	0.85	-21.4	!	Own for Montreal urban (calculated as a average from gravel)	Järvi et al. (2014)		
 790	0.44	0.57	-28.9	!	Roof (Uppsala)	Taseler (1980)	NR	
 791	0.82	0.34	-55.7	!	Roof (membrane & concrete)	Yoshida et al. (1990/91) 	NR	
 798	0.477	0.337	-33.87	!	"Rooftop average (of Taesler, Yap and Yoshida, as in Grimmond et al. 1992)"	Keogh et al. (2012)		

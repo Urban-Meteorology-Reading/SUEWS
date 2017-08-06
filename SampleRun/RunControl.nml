@@ -1,28 +1,33 @@
 &RunControl
-CBLUse=1
+CBLUse=0
 SnowUse=0
 SOLWEIGUse=0
 NetRadiationMethod=3 
-AnthropHeatMethod=0
+AnthropHeatMethod=2
 AnthropCO2Method=2
-StorageHeatMethod=1
-OHMIncQF=1
+StorageHeatMethod=3
+OHMIncQF=0
 StabilityMethod=2
 RoughLenHeatMethod=2
-RoughLenMomMethod=1
+RoughLenMomMethod=2
 SMDMethod=0
 WaterUseMethod=0
-FileCode='xh'
+FileCode='Saeve'
 FileInputPath="./Input/"
 FileOutputPath="./Output/"
 MultipleMetFiles=0
 MultipleInitFiles=0
-MultipleESTMFiles=0
+MultipleESTMFiles=1
 KeepTstepFilesIn=1
 KeepTstepFilesOut=1
-WriteOutOption=0
-ResolutionFilesIn=300
+WriteOutOption=2
 ResolutionFilesOut=3600
 Tstep=300
-Diagnose=0
+ResolutionFilesIn=3600
+ResolutionFilesInESTM=3600	!NEW
+DisaggMethod=1			!NEW  (1 = default value, so don't actually need here)
+RainDisaggMethod=100		!NEW  (100 = default value, so don't actually need here)
+DisaggMethodESTM=1		!NEW  (1 = default value, so don't actually need here)
+SuppressWarnings=1		!NEW
+KdownZen=0
 /

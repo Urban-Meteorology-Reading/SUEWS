@@ -24,13 +24,5 @@ Code	ToPaved	ToBldgs	ToEveTr	ToDecTr	ToGrass	ToBSoil	ToWater	ToRunoff	ToSoilStor
 665	0	0	0	0	0	0	0	0	1	!	Grass	London	
 666	0	0	0	0	0	0	0	0	1	!	Bsoil	London	(not present)
 667	0	0	0	0	0	0	0	0	0	!	Water	London	
-													
-101	0	0	0	0	0	0	0	1	0	!	Paved	Shanghai	
-102	0.06	0	0.01	0.01	0.01	0.01	0	0.9	0	!	Bldgs	Shanghai	
-103	0	0	0	0	0	0	0	0	1	!	EveTr	Shanghai	
-104	0	0	0	0	0	0	0	0	1	!	DecTr	Shanghai	
-105	0	0	0	0	0	0	0	0	1	!	Grass	Shanghai	
-106	0	0	0	0	0	0	0	0	1	!	Bsoil	Shanghai	
-107	0	0	0	0	0	0	0	0	0	!	Water	Shanghai	
 -9													
 -9													

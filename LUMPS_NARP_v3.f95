@@ -95,7 +95,7 @@ CONTAINS
     !Modified by LJ to calcuate snow free and snowpack components (May 2013)
     !Modified to define variables in data_in module
     !-------------------------------------------------------------------------------
-    USE allocateArray
+    ! USE allocateArray
     ! use gis_data
     ! use data_in ! Included 20140701, FL
     ! use moist   ! Included 20140701, FL

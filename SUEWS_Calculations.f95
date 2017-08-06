@@ -180,7 +180,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
      !write(*,*) is, vsmd, smd
   ENDDO
 
-  
+
   ! ===================NET ALLWAVE RADIATION================================
   IF(NetRadiationMethod>0)THEN
 
@@ -206,7 +206,12 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
      alb(GrassSurf) = albGrass(id)
 
      IF(Diagnose==1) WRITE(*,*) 'Calling NARP...'
-     CALL NARP(SnowAlb,qn1_SF,qn1_S)
+     CALL NARP(&! input:
+            dectime,ZENITH_deg,avKdn,Temp_C,avRH,Press_hPa,qn1_obs,&
+            SnowAlb,&
+            AlbedoChoice,ldown_option,NetRadiationMethod,DiagQN,&
+            ! output:
+            qn1,qn1_SF,qn1_S,kclear,kup,LDown,lup,fcld,tsurf)
      !Temp_C,kclear,fcld,dectime,avkdn,avRH,qn1,kup,ldown,lup,tsurf,&
      !AlbedoChoice,ldown_option,Press_hPa,Ea_hPa,qn1_obs,&
      !zenith_deg,NetRadiationMethod,

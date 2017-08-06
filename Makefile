@@ -7,7 +7,7 @@ TARGET = SUEWS_V2017b      # program name
 # but netCDF is still linked in the dynamic way as suggested by UCAR
 ifeq ($(OS),Windows_NT)
   	STATIC = -static # mingw
-		STATICLIB = 
+		STATICLIB =
 else
 		STATIC = -static-libgfortran -static-libgcc # single -static won't work on macOS
 		STATICLIB = libquadmath.a # force-ship this static lib
@@ -30,7 +30,6 @@ MODULES = LUMPS_Module_constants.o  \
 					qsort_c_module.o
 # Rest of the files including modules and functions which are independent
 OTHERS =  BLUEWS_CBL.o   \
-          LUMPS_NARP_v3.o \
           SUEWS_Calculations.o  \
           BLUEWS_Diff.o  \
           SUEWS_translate.o \
@@ -78,10 +77,11 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_ESTM_v2016.o \
           SUEWS_CO2.o \
 					SUEWS_Initial.o \
-					SUEWS_DailyState.o
-# modules under rapid development
-TEST =		SUEWS_AnOHM.o  \
+					SUEWS_DailyState.o \
+					SUEWS_AnOHM.o \
 					SUEWS_Diagnostics.o
+# modules under rapid development
+TEST =		LUMPS_NARP_v3.o
 
 
 # Build main program - main uses MODULES and OTHERS

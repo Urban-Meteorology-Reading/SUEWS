@@ -13,10 +13,10 @@
  Porosity0=  0.59907368023193963     
  SoilStorePavedState=   150.00000000000000     
  SoilStoreBldgsState=   150.00000000000000     
- SoilStoreEveTrState=   149.90270404110970     
- SoilStoreDecTrState=   149.88863984229201     
- SoilStoreGrassState=   149.91803165216913     
- SoilStoreBSoilState=   149.89463780214106     
+ SoilStoreEveTrState=   149.84281516125003     
+ SoilStoreDecTrState=   149.83403377229956     
+ SoilStoreGrassState=   149.85499455045451     
+ SoilStoreBSoilState=   149.83679620730913     
  PavedState=   0.0000000000000000     
  BldgsState=   0.0000000000000000     
  EveTrState=   0.0000000000000000     
@@ -24,5 +24,5 @@
  GrassState=   0.0000000000000000     
  BSoilState=   0.0000000000000000     
  WaterState=   20000.000000000000     
- BoInit=   801.73284297744033     
+ BoInit=   992.00805493685107     
  /

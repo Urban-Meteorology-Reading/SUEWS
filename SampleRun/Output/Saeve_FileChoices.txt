@@ -23,7 +23,7 @@
  ROUGHLENMOMMETHOD=          2,
  SMDMETHOD=          0,
  STABILITYMETHOD=          2,
- STORAGEHEATMETHOD=          3,
+ STORAGEHEATMETHOD=          1,
  OHMINCQF=          0,
  WATERUSEMETHOD=          0,
  DISAGGMETHOD=          1,

@@ -281,11 +281,33 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   IF(StorageHeatMethod==1) THEN           !Use OHM to calculate QS
      IF(OHMIncQF == 1) THEN      !Calculate QS using QSTAR+QF
         IF(Diagnose==1) WRITE(*,*) 'Calling OHM...'
-        CALL OHM(Gridiv)
+        CALL OHM(qn1,qn1_store,qn1_av_store,&
+             qn1_S,qn1_S_store,qn1_S_av_store,&
+             nsh,&
+             sfr,nsurf,&
+             HDD(id-1,4),&
+             OHM_coef,&
+             OHM_threshSW,OHM_threshWD,&
+             soilmoist,soilstoreCap,state,&
+             BldgSurf,WaterSurf,&
+             SnowUse,SnowFrac,&
+             DiagQS,&
+             qs,deltaQi)
      ELSEIF(OHMIncQF == 0) THEN  !Calculate QS using QSTAR
         qn1=qn1_bup
         IF(Diagnose==1) WRITE(*,*) 'Calling OHM...'
-        CALL OHM(Gridiv)
+        CALL OHM(qn1,qn1_store,qn1_av_store,&
+             qn1_S,qn1_S_store,qn1_S_av_store,&
+             nsh,&
+             sfr,nsurf,&
+             HDD(id-1,4),&
+             OHM_coef,&
+             OHM_threshSW,OHM_threshWD,&
+             soilmoist,soilstoreCap,state,&
+             BldgSurf,WaterSurf,&
+             SnowUse,SnowFrac,&
+             DiagQS,&
+             qs,deltaQi)
      ENDIF
   ENDIF
 

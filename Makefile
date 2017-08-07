@@ -28,7 +28,8 @@ MODULES = LUMPS_Module_constants.o  \
 					precmod.o \
 					stringmod.o \
 					qsort_c_module.o\
-					LUMPS_NARP_v3.o
+					LUMPS_NARP_v3.o \
+					SUEWS_OHM.o
 # Rest of the files including modules and functions which are independent
 OTHERS =  BLUEWS_CBL.o   \
           SUEWS_Calculations.o  \
@@ -36,7 +37,6 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_translate.o \
           SUEWS_HorizontalSoilWater.o \
           LUMPS_atmos_functions_moist.o \
-          SUEWS_OHM.o \
           LUMPS_atmos_functions_stab.o \
           SUEWS_ReDistributeWater.o \
           SUEWS_RoughnessParameters.o \

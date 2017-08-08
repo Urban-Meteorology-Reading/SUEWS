@@ -19,9 +19,9 @@ SUBROUTINE STAB_lumps(&
      z0M,&     !Aerodynamic roughness length
      zdm,&     !Displacement height
      avU1,&    !Average wind speed
-     Temp_C,&    !Air temperature
+     Temp_C,&  !Air temperature
                                 ! output:
-         L,&
+         L,& !Obukhov length
      Tstar,& !T*
      USTAR,& !Friction velocity
      h,    & !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity

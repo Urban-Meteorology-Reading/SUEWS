@@ -15,7 +15,7 @@ SUBROUTINE AerodynamicResistance(&
 
   ! Returns Aerodynamic resistance (RA) to the main program SUEWS_Calculations
   ! All ra equations reported in Thom & Oliver (1977)
-  ! Modified by TS - interface modified
+  ! Modified by TS 08 Aug 2017 - interface modified
   ! Modified by LJ
   !   -Removal of tabs and cleaning the code
   ! Modified by HCW 03 Dec 2015 - changed lower limit on ra from 2 s m-1 to 10 s m-1 (to avoid unrealistically high evaporation rates)

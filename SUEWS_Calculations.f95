@@ -151,8 +151,9 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   !Calculation of density and other water related parameters
   IF(Diagnose==1) WRITE(*,*) 'Calling atmos_moist_lumps...'
-  CALL atmos_moist_lumps(avdens)
-
+  CALL atmos_moist_lumps(&
+       Temp_C,Press_hPa,avRh,dectime,&
+       lv_J_kg,lvS_J_kg,es_hPa,Ea_hPa,VPd_hpa,VPD_Pa,dq,dens_dry,avcp,avdens)
 
   !======== Calculate soil moisture =========
   SoilMoistCap=0   !Maximum capacity of soil store [mm] for whole surface

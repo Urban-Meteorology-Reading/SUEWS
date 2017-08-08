@@ -1,6 +1,7 @@
 !.c!! For Lumps Version 2 - no stability calculations
 !==========================================================
 !     Last change:
+!     TS   08 Aug 2017: added explicit interface
 !     TS   13 Jun 2017: corrections to the integral of stability functions
 !     MH   12 Apr 2017: Stable limit to exit do-loop
 !     LJ   25 Nov 2014: Limits for L

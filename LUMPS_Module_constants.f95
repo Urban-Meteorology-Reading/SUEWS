@@ -1053,7 +1053,7 @@ MODULE cbl_MODULE
 
   !Parameters in CBL code
   INTEGER::zmax,&
-       nEqn=6,&  !NT changed from 4 to 6 
+       nEqn=6,&  !NT changed from 4 to 6
        iCBLcount,&
        nlineInData
   REAL(KIND(1d0))::C2K=273.16
@@ -1148,7 +1148,7 @@ MODULE time
        id,&            !Day of year
        it,&            !Hour
        imin,&          !Minutes
-       DLS                            !day lightsavings =1 + 1h) =0
+       DLS             !day lightsavings =1 + 1h) =0
 
   REAL(KIND(1d0)):: dectime        !Decimal time
   REAL (KIND(1d0)):: tstepcount    !Count number of timesteps in this day

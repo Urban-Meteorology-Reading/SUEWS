@@ -389,7 +389,38 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   IF(debug)WRITE(*,*)press_Hpa,psyc_hPA,i
 
   IF(Diagnose==1) WRITE(*,*) 'Calling WaterUse...'
-  CALL WaterUse !Gives the external and internal water uses per timestep
+  !Gives the external and internal water uses per timestep
+  CALL WaterUse(&
+  ! input:
+       SurfaceArea,&
+       sfr,&
+       IrrFracConif,&
+       IrrFracDecid,&
+       IrrFracGrass,&
+       DayofWeek(id,:),&
+       WUProfA_tstep,&
+       WUProfM_tstep,&
+       InternalWaterUse_h,&
+       HDD(id-1,:),&
+       WU_Day(id-1,:),&
+       WaterUseMethod,&
+       ConifSurf,&
+       DecidSurf,&
+       GrassSurf,&
+       NSH,&
+       it,imin,DLS,nsurf,&
+       OverUse,&
+  !  output:
+       WUAreaEveTr_m2,&
+       WUAreaDecTr_m2,&
+       WUAreaGrass_m2,&
+       WUAreaTotal_m2,&
+       wu_EveTr,&
+       wu_DecTr,&
+       wu_Grass,&
+       wu_m3,&
+       int_wu,&
+       ext_wu)
 
   IF(Precip>0) THEN   !Initiate rain data [mm]
      pin=Precip

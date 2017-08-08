@@ -48,13 +48,13 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   USE mod_k
   USE solweig_module
   USE WhereWhen
-  use OHM_module
+  USE OHM_module
 
 
   IMPLICIT NONE
 
   INTEGER        :: Gridiv,ir,i,ih,iMB
-  LOGICAL        :: debug=.FALSE.
+  LOGICAL        :: debug=.TRUE.
   REAL(KIND(1d0)):: idectime
   !real(kind(1d0)):: SnowDepletionCurve  !for SUEWS_Snow - not needed here (HCW 24 May 2016)
   REAL(KIND(1d0)):: lai_wt,qsatf
@@ -161,8 +161,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   IF (NonWaterFraction/=0) THEN !Soil states only calculated if soil exists. LJ June 2017
      DO is=1,nsurf-1   !No water body included
-       soilmoistCap=soilMoistCap+(soilstoreCap(is)*sfr(is)/NonWaterFraction)
-       soilstate=soilstate+(soilmoist(is)*sfr(is)/NonWaterFraction)
+        soilmoistCap=soilMoistCap+(soilstoreCap(is)*sfr(is)/NonWaterFraction)
+        soilstate=soilstate+(soilmoist(is)*sfr(is)/NonWaterFraction)
      ENDDO
   ENDIF
 
@@ -209,11 +209,11 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
      IF(Diagnose==1) WRITE(*,*) 'Calling NARP...'
      CALL NARP(&! input:
-            dectime,ZENITH_deg,avKdn,Temp_C,avRH,Press_hPa,qn1_obs,&
-            SnowAlb,&
-            AlbedoChoice,ldown_option,NetRadiationMethod,DiagQN,&
-            ! output:
-            qn1,qn1_SF,qn1_S,kclear,kup,LDown,lup,fcld,TSURF)
+          dectime,ZENITH_deg,avKdn,Temp_C,avRH,Press_hPa,qn1_obs,&
+          SnowAlb,&
+          AlbedoChoice,ldown_option,NetRadiationMethod,DiagQN,&
+                                ! output:
+          qn1,qn1_SF,qn1_S,kclear,kup,LDown,lup,fcld,TSURF)
      !Temp_C,kclear,fcld,dectime,avkdn,avRH,qn1,kup,ldown,lup,tsurf,&
      !AlbedoChoice,ldown_option,Press_hPa,Ea_hPa,qn1_obs,&
      !zenith_deg,NetRadiationMethod,
@@ -375,7 +375,17 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   tlv=lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
 
   IF(Diagnose==1) WRITE(*,*) 'Calling LUMPS_QHQE...'
-  CALL LUMPS_QHQE !Calculate QH and QE from LUMPS
+  !Calculate QH and QE from LUMPS
+  CALL LUMPS_QHQE(&
+                                !input:
+       qn1,qf,qs,Qm,Temp_C,avcp,Press_hPa,lv_J_kg,tlv,&
+       DRAINRT,Precip,&
+       RainBucket,RainMaxRes,RAINCOVER,&
+       Veg_Fr,sfr(ivConif+2:ivGrass+2),lai(id-1,Gridiv),LAImax,LAImin,&
+       nsh_real,veg_type,snowUse,&
+                                !output:
+       H_mod,E_mod,&
+       psyc_hPa,s_hPa,sIce_hpa,TempVeg)
   IF(debug)WRITE(*,*)press_Hpa,psyc_hPA,i
 
   IF(Diagnose==1) WRITE(*,*) 'Calling WaterUse...'

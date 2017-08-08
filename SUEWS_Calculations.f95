@@ -446,9 +446,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   IF(Diagnose==1) WRITE(*,*) 'Calling STAB_lumps...'
   !u* and Obukhov length out
-  CALL STAB_lumps(&
-
-! input
+  CALL STAB_lumps(&       
+                                ! input
        StabilityMethod,&
        dectime,& !Decimal time
        zzd,&     !Active measurement height (meas. height-displac. height)
@@ -456,7 +455,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        zdm,&     !Displacement height
        avU1,&    !Average wind speed
        Temp_C,&    !Air temperature
-! output:
+                                ! output:
        L_mod,&
        Tstar,&
        USTAR,&
@@ -464,13 +463,37 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        psim)
 
   IF(Diagnose==1) WRITE(*,*) 'Calling AerodynamicResistance...'
-  CALL AerodynamicResistance(RA,AerodynamicResistanceMethod,StabilityMethod,RoughLenHeatMethod,&
-       ZZD,z0m,k2,AVU1,L_mod,Ustar,VegFraction,psyh)      !RA out
+  CALL AerodynamicResistance(&
+                                ! input:
+       ZZD,&
+       z0m,&
+       AVU1,&
+       L_mod,&
+       Ustar,&
+       VegFraction,&
+       AerodynamicResistanceMethod,&
+       StabilityMethod,&
+       RoughLenHeatMethod,&
+                                ! output:
+       RA)     !RA out
 
   IF (snowUse==1) THEN
      IF(Diagnose==1) WRITE(*,*) 'Calling AerodynamicResistance...'
-     CALL AerodynamicResistance(RAsnow,AerodynamicResistanceMethod,StabilityMethod,3,&
-          ZZD,z0m,k2,AVU1,L_mod,Ustar,VegFraction,psyh)      !RA out
+     !  CALL AerodynamicResistance(RAsnow,AerodynamicResistanceMethod,StabilityMethod,3,&
+     ! ZZD,z0m,k2,AVU1,L_mod,Ustar,VegFraction,psyh)      !RA out
+     CALL AerodynamicResistance(&
+                                ! input:
+          ZZD,&
+          z0m,&
+          AVU1,&
+          L_mod,&
+          Ustar,&
+          VegFraction,&
+          AerodynamicResistanceMethod,&
+          StabilityMethod,&
+          3,&
+                                ! output:
+          RAsnow)     !RA out
   ENDIF
 
   IF(Diagnose==1) WRITE(*,*) 'Calling SurfaceResistance...'

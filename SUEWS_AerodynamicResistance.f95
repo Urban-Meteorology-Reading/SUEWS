@@ -1,8 +1,21 @@
-SUBROUTINE AerodynamicResistance(RA,AerodynamicResistanceMethod,StabilityMethod,RoughLenHeatMethod,&
-     ZZD,z0m,k2,AVU1,L_mod,Ustar,VegFraction,psyh) ! psyh is added. shiho
+SUBROUTINE AerodynamicResistance(&
+
+     ! input:
+     ZZD,&
+     z0m,&
+     AVU1,&
+     L_mod,&
+     Ustar,&
+     VegFraction,&
+     AerodynamicResistanceMethod,&
+     StabilityMethod,&
+     RoughLenHeatMethod,&
+     ! output:
+     RA)
 
   ! Returns Aerodynamic resistance (RA) to the main program SUEWS_Calculations
   ! All ra equations reported in Thom & Oliver (1977)
+  ! Modified by TS - interface modified
   ! Modified by LJ
   !   -Removal of tabs and cleaning the code
   ! Modified by HCW 03 Dec 2015 - changed lower limit on ra from 2 s m-1 to 10 s m-1 (to avoid unrealistically high evaporation rates)
@@ -23,13 +36,32 @@ SUBROUTINE AerodynamicResistance(RA,AerodynamicResistanceMethod,StabilityMethod,
   !               (changed from veg_fr which also includes water surface by HCW 05 Nov 2015)
 
 
-  USE DefaultNotUsed
+  ! USE DefaultNotUsed
 
   IMPLICIT NONE
 
-  REAL (KIND(1d0))::psym,psyh,stab_fn_heat,stab_fn_mom,ZZD,z0m,k2,AVU1,L_mod,Ustar,RA,z0V,VegFraction, &
+  REAL(KIND(1d0)),INTENT(in)::&
+       ZZD,&      !Active measurement height (meas. height-displac. height)
+       z0m,&      !Aerodynamic roughness length
+       AVU1,&     !Average wind speed
+       L_mod,&    !Monin-Obukhov length (either measured or modelled)
+       Ustar,&    !Friction velocity
+       VegFraction!Fraction of vegetation
+  INTEGER,INTENT(in)::&
+       AerodynamicResistanceMethod,&
+       StabilityMethod,&
+       RoughLenHeatMethod
+
+  REAL(KIND(1d0)),INTENT(out)::RA !Aerodynamic resistance [s m^-1]
+
+  INTEGER, PARAMETER :: notUsedI=-55
+  REAL(KIND(1d0)), PARAMETER :: &
+       notUsed=-55.5,&
+       k2=0.16,& !Power of Van Karman's constant (= 0.16 = 0.4^2)
        muu=1.46e-5 !molecular viscosity
-  INTEGER::AerodynamicResistanceMethod,StabilityMethod,RoughLenHeatMethod
+  REAL(KIND(1d0))::stab_fn_heat,stab_fn_mom,&
+       psym,&
+       psyh,z0V
 
 
   !1)Monteith (1965)-neutral stability

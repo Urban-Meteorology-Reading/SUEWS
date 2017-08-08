@@ -60,7 +60,8 @@ SUBROUTINE LUMPS_QHQE(&
        H_mod,E_mod,& !turbulent fluxes: QH, QE
        psyc_hPa,& !Psychometric constant in hPa
        s_hPa,& !Vapour pressure versus temperature slope in hPa
-       sIce_hpa,TempVeg
+       sIce_hpa,&!Vapour pressure versus temperature slope in hPa above ice/snow
+       TempVeg !TEMPORARY VEGETATIVE SURFACE FRACTION ADJUSTED BY RAINFALL
 
 
   INTEGER::iv                                 !,start

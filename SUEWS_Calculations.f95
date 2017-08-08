@@ -446,7 +446,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   IF(Diagnose==1) WRITE(*,*) 'Calling STAB_lumps...'
   !u* and Obukhov length out
-  CALL STAB_lumps(&       
+  CALL STAB_lumps(&
                                 ! input
        StabilityMethod,&
        dectime,& !Decimal time
@@ -499,7 +499,16 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   IF(Diagnose==1) WRITE(*,*) 'Calling SurfaceResistance...'
   CALL SurfaceResistance(id,it)   !qsc and surface resistance out
   IF(Diagnose==1) WRITE(*,*) 'Calling BoundaryLayerResistance...'
-  CALL BoundaryLayerResistance
+  CALL BoundaryLayerResistance(&
+       ! input:
+       zzd,&     !Active measurement height (meas. height-displac. height)
+       z0M,&     !Aerodynamic roughness length
+       avU1,&    !Average wind speed
+
+       ! input/output:
+       USTAR,&
+       ! output:
+       rb)
 
 
   ! Calculate CO2 fluxes from biogenic components

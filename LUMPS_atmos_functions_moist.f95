@@ -1,6 +1,6 @@
 !.c!! For Lumps Version 2 - no stability calculations
 ! Latent heat of sublimation when air temperature below zero added. LJ Nov 2012
-
+! explict interface added to all subroutines, TS 08 Aug 2017
 SUBROUTINE atmos_moist_lumps(&
 ! input:
      Temp_C,Press_hPa,avRh,dectime,&

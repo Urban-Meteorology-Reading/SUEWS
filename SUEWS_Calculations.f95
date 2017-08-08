@@ -391,7 +391,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   IF(Diagnose==1) WRITE(*,*) 'Calling WaterUse...'
   !Gives the external and internal water uses per timestep
   CALL WaterUse(&
-  ! input:
+                                ! input:
        SurfaceArea,&
        sfr,&
        IrrFracConif,&
@@ -410,7 +410,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        NSH,&
        it,imin,DLS,nsurf,&
        OverUse,&
-  !  output:
+                                !  output:
        WUAreaEveTr_m2,&
        WUAreaDecTr_m2,&
        WUAreaGrass_m2,&
@@ -445,7 +445,23 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !------------------------------------------------------------------
 
   IF(Diagnose==1) WRITE(*,*) 'Calling STAB_lumps...'
-  CALL STAB_lumps(H,StabilityMethod,ustar,L_mod) !u* and Obukhov length out
+  !u* and Obukhov length out
+  CALL STAB_lumps(&
+
+! input
+       StabilityMethod,&
+       dectime,& !Decimal time
+       zzd,&     !Active measurement height (meas. height-displac. height)
+       z0M,&     !Aerodynamic roughness length
+       zdm,&     !Displacement height
+       avU1,&    !Average wind speed
+       Temp_C,&    !Air temperature
+! output:
+       L_mod,&
+       Tstar,&
+       USTAR,&
+       h,&
+       psim)
 
   IF(Diagnose==1) WRITE(*,*) 'Calling AerodynamicResistance...'
   CALL AerodynamicResistance(RA,AerodynamicResistanceMethod,StabilityMethod,RoughLenHeatMethod,&

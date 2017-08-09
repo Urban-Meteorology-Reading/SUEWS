@@ -648,7 +648,20 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   ! Distribute water within grid, according to WithinGridWaterDist matrix (Cols 1-7)
   IF(Diagnose==1) WRITE(*,*) 'Calling ReDistributeWater...'
-  CALL ReDistributeWater   !Calculates AddWater(is)
+  ! CALL ReDistributeWater   
+  !Calculates AddWater(is)
+  CALL ReDistributeWater(&
+       ! input:
+       nsurf,& ! surface type number
+       WaterSurf,&
+       snowUse,&
+       WaterDist,  &
+       sfr,   &!
+       Drain,&
+       ! output:
+       AddWaterRunoff,&
+       addWater&
+       )
 
   !======== Evaporation and surface state ========
   IF(Diagnose==1) WRITE(*,*) 'Calling evap_SUEWS and SoilStore...'

@@ -623,7 +623,20 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   IF (NonWaterFraction/=0) THEN !Soil states only calculated if soil exists. LJ June 2017
      DO is=1,nsurf-1
-        CALL Drainage(surf(6,is),surf(2,is),surf(3,is),surf(4,is))
+
+        CALL drainage(&
+                                ! input:
+             is,&
+             state(is),&
+             surf(6,is),&
+             surf(2,is),&
+             surf(3,is),&
+             surf(4,is),&
+             nsh_real,&
+                                ! output:
+             drain(is)&
+             )
+
         !HCW added and changed to surf(6,is) here 20 Feb 2015
         drain_per_tstep=drain_per_tstep+(drain(is)*sfr(is)/NonWaterFraction)   !No water body included
      ENDDO

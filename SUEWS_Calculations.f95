@@ -54,7 +54,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   IMPLICIT NONE
 
   INTEGER        :: Gridiv,ir,i,ih,iMB
-  LOGICAL        :: debug=.TRUE.
+  LOGICAL        :: debug=.FALSE.
   REAL(KIND(1d0)):: idectime
   !real(kind(1d0)):: SnowDepletionCurve  !for SUEWS_Snow - not needed here (HCW 24 May 2016)
   REAL(KIND(1d0)):: lai_wt,qsatf
@@ -392,6 +392,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !Gives the external and internal water uses per timestep
   CALL WaterUse(&
                                 ! input:
+       nsh_real,&
        SurfaceArea,&
        sfr,&
        IrrFracConif,&
@@ -501,6 +502,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   CALL  SurfaceResistance(&
 
                                 ! input:
+       id,it,&
        SMDMethod,&
        ConifSurf,&
        DecidSurf,&
@@ -544,7 +546,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
                                 !  gs,&
        gsc,&
        ResistSurf)
-  PRINT*, c_GsG1
+
   IF(Diagnose==1) WRITE(*,*) 'Calling BoundaryLayerResistance...'
   CALL BoundaryLayerResistance(&
                                 ! input:

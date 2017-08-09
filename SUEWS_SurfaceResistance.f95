@@ -1,13 +1,14 @@
 SUBROUTINE SurfaceResistance(&
 
-     ! input:
+                                ! input:
+     id,it,&
      SMDMethod,&
      ConifSurf,&
      DecidSurf,&
      GrassSurf,&
      WaterSurf,&
-    !  ivConif,&
-    !  ivGrass,&
+                                !  ivConif,&
+                                !  ivGrass,&
      snowFrac,&
      sfr,&
      nsurf,&
@@ -31,16 +32,16 @@ SUBROUTINE SurfaceResistance(&
      TL,&
      S1,&
      S2,&
-     ! output:
-    !  gl,&
-    !  QNM,&
-    !  gq,&
-    !  gdq,&
-    !  TC,&
-    !  TC2,&
-    !  gtemp,&
-    !  sdp,&
-    !  gs,&
+                                ! output:
+                                !  gl,&
+                                !  QNM,&
+                                !  gq,&
+                                !  gdq,&
+                                !  TC,&
+                                !  TC2,&
+                                !  gtemp,&
+                                !  sdp,&
+                                !  gs,&
      gsc,&
      ResistSurf)
   ! Calculates bulk surface resistance (ResistSurf [s m-1]) based on Jarvis 1976 approach
@@ -65,14 +66,15 @@ SUBROUTINE SurfaceResistance(&
   IMPLICIT NONE
 
   INTEGER,INTENT(in):: &
+       id,it,& ! time: day of year and hour
        gsModel,&!Choice of gs parameterisation (1 = Ja11, 2 = Wa16)
        SMDMethod,&!Method of measured soil moisture
        ConifSurf,&!= 3, surface code
        DecidSurf,&!= 4, surface code
        GrassSurf,&!= 5, surface code
        WaterSurf,&!= 7, surface code
-      !  ivConif,&!= 1, When only vegetated surfaces considered (1-3)
-      !  ivGrass,&!= 3, When only vegetated surfaces considered (1-3)
+                                !  ivConif,&!= 1, When only vegetated surfaces considered (1-3)
+                                !  ivGrass,&!= 3, When only vegetated surfaces considered (1-3)
        nsurf!= 7, Total number of surfaces
 
 
@@ -101,32 +103,32 @@ SUBROUTINE SurfaceResistance(&
 
 
   REAL(KIND(1d0)),INTENT(out):: &
-      !  gl,&!G(LAI)
-      !  gsc,&!Surface Layer Conductance
-      !  QNM,&!QMAX/(QMAX+G2)
-      !  gq,&!G(Q*)
-      !  gdq,&!G(dq)
-      !  TC,&!Temperature parameter 1
-      !  TC2,&!Temperature parameter 2
-      !  gtemp,&!G(T)
-      !  sdp,&!S1/G6+S2
-      !  gs,&!G(Soil moisture deficit)
-      gsc,&!Surface Layer Conductance
+                                !  gl,&!G(LAI)
+                                !  gsc,&!Surface Layer Conductance
+                                !  QNM,&!QMAX/(QMAX+G2)
+                                !  gq,&!G(Q*)
+                                !  gdq,&!G(dq)
+                                !  TC,&!Temperature parameter 1
+                                !  TC2,&!Temperature parameter 2
+                                !  gtemp,&!G(T)
+                                !  sdp,&!S1/G6+S2
+                                !  gs,&!G(Soil moisture deficit)
+       gsc,&!Surface Layer Conductance
        ResistSurf!Surface resistance
 
-REAL(KIND(1d0)):: &
-     gl,&!G(LAI)
-     QNM,&!QMAX/(QMAX+G2)
-     gq,&!G(Q*)
-     gdq,&!G(dq)
-     TC,&!Temperature parameter 1
-     TC2,&!Temperature parameter 2
-     gtemp,&!G(T)
-     sdp,&!S1/G6+S2
-     gs!G(Soil moisture deficit)
+  REAL(KIND(1d0)):: &
+       gl,&!G(LAI)
+       QNM,&!QMAX/(QMAX+G2)
+       gq,&!G(Q*)
+       gdq,&!G(dq)
+       TC,&!Temperature parameter 1
+       TC2,&!Temperature parameter 2
+       gtemp,&!G(T)
+       sdp,&!S1/G6+S2
+       gs!G(Soil moisture deficit)
 
 
-  INTEGER:: id,it,iv
+  INTEGER:: iv
   REAL(KIND(1d0)):: id_real
 
   INTEGER,PARAMETER :: notUsed=-55
@@ -269,7 +271,7 @@ REAL(KIND(1d0)):: &
         ! ---- g(LAI) ----
         gl=0    !Initialise
         ! DO iv=ivConif,ivGrass   !For vegetated surfaces
-          DO iv=1,3   !For vegetated surfaces
+        DO iv=1,3   !For vegetated surfaces
            !  gl=gl+(sfr(iv+2)*(1-snowFrac(iv+2)))*lai(id-1,iv)/LaiMax(iv)*MaxConductance(iv)
            gl=gl+(sfr(iv+2)*(1-snowFrac(iv+2)))*lai_id(iv)/LaiMax(iv)*MaxConductance(iv)
         ENDDO

@@ -13,7 +13,8 @@
 !	- Add functionality for water on paved surfaces (street cleaning, fountains)
 !===================================================================================
 SUBROUTINE WaterUse(&
-! input:
+     ! input:
+     nsh_real,&
      SurfaceArea,&
      sfr,&
      IrrFracConif,&
@@ -32,7 +33,7 @@ SUBROUTINE WaterUse(&
      NSH,&
      it,imin,DLS,nsurf,&
      OverUse,&
-!  output:
+     !  output:
      WUAreaEveTr_m2,&
      WUAreaDecTr_m2,&
      WUAreaGrass_m2,&
@@ -53,6 +54,7 @@ SUBROUTINE WaterUse(&
   IMPLICIT NONE
 
   REAL(KIND(1d0)),INTENT(in):: &
+       nsh_real,&
        SurfaceArea,& !Surface area of the study area [m2]
        sfr(nsurf),& !Surface fractions [-]
        IrrFracConif,&!Fraction of evergreen trees which are irrigated
@@ -95,8 +97,7 @@ SUBROUTINE WaterUse(&
   REAL(KIND(1d0)):: &
        InternalWaterUse,&    !Internal water use for the model timestep [mm]
        WuFr=1,&
-       wu,&!Water use for the model timestep [mm]
-       nsh_real
+       wu!Water use for the model timestep [mm]
   INTEGER:: ih   !Hour corrected for Daylight savings
   INTEGER:: iu   !1=weekday OR 2=weekend
   REAL(KIND(1d0)),PARAMETER::NAN=-999.

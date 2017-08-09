@@ -497,17 +497,64 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ENDIF
 
   IF(Diagnose==1) WRITE(*,*) 'Calling SurfaceResistance...'
-  CALL SurfaceResistance(id,it)   !qsc and surface resistance out
+  ! CALL SurfaceResistance(id,it)   !qsc and surface resistance out
+  CALL  SurfaceResistance(&
+
+                                ! input:
+       SMDMethod,&
+       ConifSurf,&
+       DecidSurf,&
+       GrassSurf,&
+       WaterSurf,&
+                                !  ivConif,&
+                                !  ivGrass,&
+       snowFrac,&
+       sfr,&
+       nsurf,&
+       avkdn,&
+       Temp_C,&
+       dq,&
+       xsmd,&
+       vsmd,&
+       MaxConductance,&
+       LaiMax,&
+       lai(id-1,:),&
+       INT(SurfaceChar(Gridiv,c_gsModel)),&!  gsModel,&
+       SurfaceChar(Gridiv,c_GsKmax),&!  Kmax,&
+       SurfaceChar(Gridiv,c_GsG1),&! G1,&
+       SurfaceChar(Gridiv,c_GsG2),&! G2,&
+       SurfaceChar(Gridiv,c_GsG3),&! G3,&
+       SurfaceChar(Gridiv,c_GsG4),&! G4,&
+       SurfaceChar(Gridiv,c_GsG5),&! G5,&
+       SurfaceChar(Gridiv,c_GsG6),&! G6,&
+       SurfaceChar(Gridiv,c_GsTH),&! TH,&
+       SurfaceChar(Gridiv,c_GsTL),&! TL,&
+       SurfaceChar(Gridiv,c_GsS1),&! S1,&
+       SurfaceChar(Gridiv,c_GsS2),&! S2,&
+
+                                ! output:
+                                !  gl,&
+                                !  QNM,&
+                                !  gq,&
+                                !  gdq,&
+                                !  TC,&
+                                !  TC2,&
+                                !  gtemp,&
+                                !  sdp,&
+                                !  gs,&
+       gsc,&
+       ResistSurf)
+  PRINT*, c_GsG1
   IF(Diagnose==1) WRITE(*,*) 'Calling BoundaryLayerResistance...'
   CALL BoundaryLayerResistance(&
-       ! input:
+                                ! input:
        zzd,&     !Active measurement height (meas. height-displac. height)
        z0M,&     !Aerodynamic roughness length
        avU1,&    !Average wind speed
 
-       ! input/output:
+                                ! input/output:
        USTAR,&
-       ! output:
+                                ! output:
        rb)
 
 

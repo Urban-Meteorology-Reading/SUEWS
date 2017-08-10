@@ -267,7 +267,14 @@ SUBROUTINE soilstore
 
      ! Add runoff to pipes
      runoffPipes=runoffPipes+(runoff(is)*sfr(is))
-     CALL updateFlood
+     !  CALL updateFlood
+     CALL updateFlood(&
+                                ! input:
+          nsurf,is,PavSurf,BldgSurf,WaterSurf,ConifSurf,BSoilSurf,&
+          sfr,PipeCapacity,RunoffToWater,&
+                                ! inout:
+          runoffAGimpervious,surplusWaterBody,runoffAGveg,runoffPipes&
+          )
   ENDIF
 
   runoff_per_interval=runoff_per_interval+(runoff(is)*sfr(is)) !The total runoff from the area !!Check (HCW)
@@ -275,12 +282,22 @@ SUBROUTINE soilstore
 END SUBROUTINE soilstore
 !------------------------------------------------------------------------------
 !------------------------------------------------------------------------------
- SUBROUTINE updateFlood
+ SUBROUTINE updateFlood(&
 
-  USE allocateArray
-  USE sues_data
+! input:
+   nsurf,is,PavSurf,BldgSurf,WaterSurf,ConifSurf,BSoilSurf,&
+   sfr,PipeCapacity,RunoffToWater,&
+! inout:
+runoffAGimpervious,surplusWaterBody,runoffAGveg,runoffPipes&
+   )
+
+  ! USE allocateArray
+  ! USE sues_data
 
   IMPLICIT NONE
+  INTEGER, INTENT(in) :: nsurf,is,PavSurf,BldgSurf,WaterSurf,ConifSurf,BSoilSurf
+  REAL(KIND(1d0)), INTENT(in) :: sfr(nsurf),PipeCapacity,RunoffToWater
+  REAL(KIND(1d0)), INTENT(inout) :: runoffAGimpervious,surplusWaterBody,runoffAGveg,runoffPipes
 
   ! If pipe capacity is full, surface runoff occurs
   ! N.B. this will happen each loop (replicates pipes filling up)

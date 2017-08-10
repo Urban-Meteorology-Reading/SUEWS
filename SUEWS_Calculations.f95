@@ -676,30 +676,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
            SnowPack(is) = 0
         ENDIF
      ELSE
-        ! PRINT*, ''
-        ! CALL Evap_SUEWS   !Calculates ev [mm]
-        ! PRINT*, 'old Evap_SUEWS'
-        ! PRINT*, &
-        !
-        !                         ! input:
-        !      state(is),& ! wetness status
-        !      WetThresh(is),&!When State > WetThresh, rs=0 limit in SUEWS_evap [mm] (specified in input files)
-        !      surf(6,is),& ! = surf(is,6), current storage capacity [mm]
-        !      ity,&!Evaporation calculated according to Rutter (1) or Shuttleworth (2)
-        !      numPM,&!numerator of P-M eqn
-        !      s_hPa,&!Vapour pressure versus temperature slope in hPa
-        !      psyc_hPa,&!Psychometric constant in hPa
-        !      ResistSurf,&!Surface resistance
-        !      sp,&!Term in calculation of E
-        !      ra,&!Aerodynamic resistance
-        !      rb,&!Boundary layer resistance
-        !      tlv,&!Latent heat of vaporization per timestep [J kg-1 s-1], (tlv=lv_J_kg/tstep_real)
-        !
-        !                         ! output:
-        !      rss,&
-        !      ev,&
-        !                         !  rsrbsg,&
-        !      qe ! latent heat flux [W m-2]
+
+        !Calculates ev [mm]
         CALL Evap_SUEWS(&
 
                                 ! input:
@@ -721,28 +699,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
              ev,&
              qe& ! latent heat flux [W m-2]
              )
-        ! PRINT*, 'new Evap_SUEWS'
-        ! PRINT*, &
-        !
-        !                         ! input:
-        !      state(is),& ! wetness status
-        !      WetThresh(is),&!When State > WetThresh, rs=0 limit in SUEWS_evap [mm] (specified in input files)
-        !      surf(6,is),& ! = surf(is,6), current storage capacity [mm]
-        !      ity,&!Evaporation calculated according to Rutter (1) or Shuttleworth (2)
-        !      numPM,&!numerator of P-M eqn
-        !      s_hPa,&!Vapour pressure versus temperature slope in hPa
-        !      psyc_hPa,&!Psychometric constant in hPa
-        !      ResistSurf,&!Surface resistance
-        !      sp,&!Term in calculation of E
-        !      ra,&!Aerodynamic resistance
-        !      rb,&!Boundary layer resistance
-        !      tlv,&!Latent heat of vaporization per timestep [J kg-1 s-1], (tlv=lv_J_kg/tstep_real)
-        !
-        !                         ! output:
-        !      rss,&
-        !      ev,&
-        !                         !  rsrbsg,&
-        !      qe ! latent heat flux [W m-2]
+
 
         rss_nsurf(is) = rss !Store rss for each surface
         CALL soilstore    !Surface water balance and soil store updates (can modify ev, updates state)

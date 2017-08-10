@@ -14,7 +14,7 @@ else
 endif
 
 CFLAGS = $(STATIC) -g -pg -Wall -Wtabs -fbounds-check -cpp -Wno-unused-dummy-argument -Wno-unused-variable \
-				-fbacktrace -ffpe-trap=zero,overflow,underflow,invalid
+				-fbacktrace -ffpe-trap=zero,overflow,underflow,invalid,denormal
 CFLAGS_nc = $(CFLAGS) \
 				-I`nc-config --includedir` -Dnc=1 # options for netcdf build
 

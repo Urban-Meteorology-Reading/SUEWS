@@ -13,7 +13,7 @@
 !	- Add functionality for water on paved surfaces (street cleaning, fountains)
 !===================================================================================
 SUBROUTINE WaterUse(&
-     ! input:
+                                ! input:
      nsh_real,&
      SurfaceArea,&
      sfr,&
@@ -33,7 +33,7 @@ SUBROUTINE WaterUse(&
      NSH,&
      it,imin,DLS,nsurf,&
      OverUse,&
-     !  output:
+                                !  output:
      WUAreaEveTr_m2,&
      WUAreaDecTr_m2,&
      WUAreaGrass_m2,&
@@ -60,7 +60,6 @@ SUBROUTINE WaterUse(&
        IrrFracConif,&!Fraction of evergreen trees which are irrigated
        IrrFracDecid,&!Fraction of deciduous trees which are irrigated
        IrrFracGrass,&!Fraction of grass which is irrigated
-       DayofWeek_id(3),& !DayofWeek(id) 1 - day of week; 2 - month; 3 - season
        WUProfA_tstep(24*NSH,2),& !Automatic water use profiles at model timestep
        WUProfM_tstep(24*NSH,2),& !Manual water use profiles at model timestep
        InternalWaterUse_h,& !Internal water use [mm h-1]
@@ -68,6 +67,7 @@ SUBROUTINE WaterUse(&
        WU_Day_id(9) !WU_Day(id-1), Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
 
   INTEGER,INTENT(in):: &
+       DayofWeek_id(3),& !DayofWeek(id) 1 - day of week; 2 - month; 3 - season
        WaterUseMethod,& !Use modelled (0) or observed (1) water use
        ConifSurf,& !surface code
        DecidSurf,& !surface code

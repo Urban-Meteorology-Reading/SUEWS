@@ -208,7 +208,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
      alb(GrassSurf) = albGrass(id)
 
      IF(Diagnose==1) WRITE(*,*) 'Calling NARP...'
-     CALL NARP(&! input:
+     CALL NARP(&
+                                ! input:
           dectime,ZENITH_deg,avKdn,Temp_C,avRH,Press_hPa,qn1_obs,&
           SnowAlb,&
           AlbedoChoice,ldown_option,NetRadiationMethod,DiagQN,&
@@ -508,8 +509,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        DecidSurf,&
        GrassSurf,&
        WaterSurf,&
-                                !  ivConif,&
-                                !  ivGrass,&
        snowFrac,&
        sfr,&
        nsurf,&
@@ -535,15 +534,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        SurfaceChar(Gridiv,c_GsS2),&! S2,&
 
                                 ! output:
-                                !  gl,&
-                                !  QNM,&
-                                !  gq,&
-                                !  gdq,&
-                                !  TC,&
-                                !  TC2,&
-                                !  gtemp,&
-                                !  sdp,&
-                                !  gs,&
        gsc,&
        ResistSurf)
 
@@ -724,7 +714,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
              wu_Grass,&!Water use for grass [mm]
              AddWater,&!Water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
              addImpervious,&!Water from impervious surfaces of other grids [mm] for whole surface area
-                                !  drain,&!Drainage of each surface type [mm]
              nsh_real,&!nsh cast as a real for use in calculations
              stateOld,&!Wetness status of each surface type from previous timestep [mm]
              AddWaterRunoff,&!Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
@@ -829,7 +818,24 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !=== Horizontal movement between soil stores ===
   ! Now water is allowed to move horizontally between the soil stores
   IF(Diagnose==1) WRITE(*,*) 'Calling HorizontalSoilWater...'
-  CALL HorizontalSoilWater
+  ! CALL HorizontalSoilWater
+  CALL HorizontalSoilWater(&
+
+                                  ! input:
+       nsurf,&
+       sfr,&! surface fractions
+       SoilStoreCap,&!Capacity of soil store for each surface [mm]
+       SoilDepth,&!Depth of sub-surface soil store for each surface [mm]
+       SatHydraulicConduct,&!Saturated hydraulic conductivity for each soil subsurface [mm s-1]
+       SurfaceArea,&!Surface area of the study area [m2]
+       NonWaterFraction,&! sum of surface cover fractions for all except water surfaces
+       tstep_real,& !tstep cast as a real for use in calculations
+
+                                  ! inout:
+       SoilMoist,&!Soil moisture of each surface type [mm]
+       runoffSoil,&!Soil runoff from each soil sub-surface [mm]
+       runoffSoil_per_tstep&!Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
+       )
 
   !========== Calculate soil moisture ============
   soilstate=0       !Area-averaged soil moisture [mm] for whole surface

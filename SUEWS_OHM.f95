@@ -69,15 +69,15 @@ CONTAINS
 
     REAL(KIND(1d0)):: a1,a2,a3 ! OHM coefficients of grid
 
-    REAL(KIND(1d0)):: nsh_nna ! number of timesteps per hour with non -999 values (used for spinup)
+    ! REAL(KIND(1d0)):: nsh_nna ! number of timesteps per hour with non -999 values (used for spinup)
 
     REAL(KIND(1d0)):: dqndt    !Rate of change of net radiation [W m-2 h-1] at t-1
-    REAL(KIND(1d0)):: surfrac  !Surface fraction accounting for SnowFrac if appropriate
+    ! REAL(KIND(1d0)):: surfrac  !Surface fraction accounting for SnowFrac if appropriate
 
-    REAL(KIND(1d0)):: qn1_av, qn1_S_av    !Average net radiation over previous hour [W m-2]
+    ! REAL(KIND(1d0)):: qn1_av, qn1_S_av    !Average net radiation over previous hour [W m-2]
     REAL(KIND(1d0)):: deltaQi0 ! temporarily store
 
-    REAL(KIND(1d0)):: qn1_store0(nsh), qn1_av_store0(2*nsh+1) ! temporarily store
+    ! REAL(KIND(1d0)):: qn1_store0(nsh), qn1_av_store0(2*nsh+1) ! temporarily store
 
     !These are now provided in SiteInfo (OHMthresh for Summer/Winter and Wet/Dry)
     !!real(kind(1d0)):: OHM_TForSummer = 5  !Use summer coefficients if 5-day Tair >= 5 degC

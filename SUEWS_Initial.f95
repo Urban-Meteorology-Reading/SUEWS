@@ -2028,7 +2028,32 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
   CALL SUEWS_Translate(Gridiv,0,0)
 
   !Calculation of roughness parameters (N.B. uses porosity)
-  CALL RoughnessParameters
+  CALL RoughnessParameters(&
+
+                                  ! input:
+
+       RoughLenMomMethod,&
+       nsurf,& ! number of surface types
+       PavSurf,&! surface type code
+       BldgSurf,&! surface type code
+       WaterSurf,&! surface type code
+       ConifSurf,&! surface type code
+       BSoilSurf,&! surface type code
+       DecidSurf,&! surface type code
+       GrassSurf,&! surface type code
+       sfr,&! surface fractions
+       areaZh,&
+       bldgH,&
+       EveTreeH,&
+       DecTreeH,&
+       porosity(id),&
+       FAIBldg,FAIEveTree,FAIDecTree,Z,&
+
+       ! output:
+       planF,&
+       Zh,Z0m,Zdm,ZZD&
+
+       )
 
 
   !=============================================================================

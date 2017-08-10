@@ -77,7 +77,33 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !      PRINT*, 'soilmoist', soilmoist
   ! END IF
   IF(Diagnose==1) WRITE(*,*) 'Calling RoughnessParameters...'
-  CALL RoughnessParameters(Gridiv) ! Added by HCW 11 Nov 2014
+  ! CALL RoughnessParameters(Gridiv) ! Added by HCW 11 Nov 2014
+  CALL RoughnessParameters(&
+
+                                  ! input:
+
+       RoughLenMomMethod,&
+       nsurf,& ! number of surface types
+       PavSurf,&! surface type code
+       BldgSurf,&! surface type code
+       WaterSurf,&! surface type code
+       ConifSurf,&! surface type code
+       BSoilSurf,&! surface type code
+       DecidSurf,&! surface type code
+       GrassSurf,&! surface type code
+       sfr,&! surface fractions
+       areaZh,&
+       bldgH,&
+       EveTreeH,&
+       DecTreeH,&
+       porosity(id),&
+       FAIBldg,FAIEveTree,FAIDecTree,Z,&
+
+       ! output:
+       planF,&
+       Zh,Z0m,Zdm,ZZD&
+
+       )
 
 
   !=============Get data ready for the qs calculation====================

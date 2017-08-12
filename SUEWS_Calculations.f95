@@ -80,7 +80,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ! CALL RoughnessParameters(Gridiv) ! Added by HCW 11 Nov 2014
   CALL RoughnessParameters(&
 
-                                  ! input:
+                                ! input:
 
        RoughLenMomMethod,&
        nsurf,& ! number of surface types
@@ -99,7 +99,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        porosity(id),&
        FAIBldg,FAIEveTree,FAIDecTree,Z,&
 
-       ! output:
+                                ! output:
        planF,&
        Zh,Z0m,Zdm,ZZD&
 
@@ -158,7 +158,11 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ! Calculate sun position
   idectime=dectime-halftimestep! sun position at middle of timestep before
   IF(Diagnose==1) WRITE(*,*) 'Calling sun_position...'
-  CALL sun_position(year,idectime,timezone,lat,lng,alt,azimuth,zenith_deg)
+  CALL sun_position(&
+!input:
+       year,idectime,timezone,lat,lng,alt,&
+!output:
+       azimuth,zenith_deg)
   !write(*,*) DateTime, timezone,lat,lng,alt,azimuth,zenith_deg
 
 
@@ -178,8 +182,18 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !Calculation of density and other water related parameters
   IF(Diagnose==1) WRITE(*,*) 'Calling atmos_moist_lumps...'
   CALL atmos_moist_lumps(&
+                                ! input:
        Temp_C,Press_hPa,avRh,dectime,&
-       lv_J_kg,lvS_J_kg,es_hPa,Ea_hPa,VPd_hpa,VPD_Pa,dq,dens_dry,avcp,avdens)
+                                ! output:
+       lv_J_kg,lvS_J_kg,&
+       es_hPa,&
+       Ea_hPa,&
+       VPd_hpa,&
+       VPD_Pa,&
+       dq,&
+       dens_dry,&
+       avcp,&
+       avdens)
 
   !======== Calculate soil moisture =========
   SoilMoistCap=0   !Maximum capacity of soil store [mm] for whole surface
@@ -847,7 +861,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ! CALL HorizontalSoilWater
   CALL HorizontalSoilWater(&
 
-                                  ! input:
+                                ! input:
        nsurf,&
        sfr,&! surface fractions
        SoilStoreCap,&!Capacity of soil store for each surface [mm]
@@ -857,7 +871,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        NonWaterFraction,&! sum of surface cover fractions for all except water surfaces
        tstep_real,& !tstep cast as a real for use in calculations
 
-                                  ! inout:
+                                ! inout:
        SoilMoist,&!Soil moisture of each surface type [mm]
        runoffSoil,&!Soil runoff from each soil sub-surface [mm]
        runoffSoil_per_tstep&!Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)

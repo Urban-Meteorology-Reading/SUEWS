@@ -1,36 +1,39 @@
  subroutine sun_position(year,idectime,UTC,locationlatitude,locationlongitude,locationaltitude,sunazimuth,sunzenith)
-    implicit none 
- 
+    implicit none
+
     integer :: month,day,hour,min,seas,dayofyear
-    REAL(KIND(1D0)) :: sec,year,idectime,UTC
+    REAL(KIND(1D0)),intent(in) :: year,idectime,UTC,locationlatitude,locationlongitude,locationaltitude
+    REAL(KIND(1D0)),intent(out) ::sunazimuth,sunzenith
+    REAL(KIND(1D0)):: sec
+
     REAL(KIND(1D0)) :: juliancentury,julianday,julianephemeris_century,julianephemeris_day,&
                        julianephemeris_millenium
     REAL(KIND(1D0)) :: earth_heliocentric_positionlatitude,earth_heliocentric_positionlongitude,&
                        earth_heliocentric_positionradius
-    REAL(KIND(1D0)) :: sun_geocentric_positionlatitude, sun_geocentric_positionlongitude    
-    REAL(KIND(1D0)) :: nutationlongitude,nutationobliquity    
-    REAL(KIND(1D0)) :: corr_obliquity    
-    REAL(KIND(1D0)) :: aberration_correction    
-    REAL(KIND(1D0)) :: apparent_sun_longitude    
-    REAL(KIND(1D0)) :: apparent_stime_at_greenwich    
-    REAL(KIND(1D0)) :: sun_rigth_ascension    
-    REAL(KIND(1D0)) :: sun_geocentric_declination    
-    REAL(KIND(1D0)) :: locationlongitude, observer_local_hour    
+    REAL(KIND(1D0)) :: sun_geocentric_positionlatitude, sun_geocentric_positionlongitude
+    REAL(KIND(1D0)) :: nutationlongitude,nutationobliquity
+    REAL(KIND(1D0)) :: corr_obliquity
+    REAL(KIND(1D0)) :: aberration_correction
+    REAL(KIND(1D0)) :: apparent_sun_longitude
+    REAL(KIND(1D0)) :: apparent_stime_at_greenwich
+    REAL(KIND(1D0)) :: sun_rigth_ascension
+    REAL(KIND(1D0)) :: sun_geocentric_declination
+    REAL(KIND(1D0)) :: observer_local_hour
     REAL(KIND(1D0)) :: topocentric_sun_positionrigth_ascension ,topocentric_sun_positionrigth_ascension_parallax
-    REAL(KIND(1D0)) :: topocentric_sun_positiondeclination,locationlatitude,locationaltitude    
-    REAL(KIND(1D0)) :: topocentric_local_hour    
-    REAL(KIND(1D0)) :: sunazimuth,sunzenith
+    REAL(KIND(1D0)) :: topocentric_sun_positiondeclination
+    REAL(KIND(1D0)) :: topocentric_local_hour
+    ! REAL(KIND(1D0)) :: sunazimuth,sunzenith
 
-    ! This function compute the sun position (zenith and azimuth angle (in degrees) at the observer 
-    ! location) as a function of the observer local time and position. 
+    ! This function compute the sun position (zenith and azimuth angle (in degrees) at the observer
+    ! location) as a function of the observer local time and position.
     !
-    ! Input lat and lng should be in degrees, alt in meters. 
-    ! 
-    ! It is an implementation of the algorithm presented by Reda et Andreas in: 
-    ! Reda, I., Andreas, A. (2003) Solar position algorithm for solar 
-    ! radiation application. National Renewable Energy Laboratory (NREL) 
-    ! Technical report NREL/TP-560-34302. 
-    ! This document is avalaible at www.osti.gov/bridge  
+    ! Input lat and lng should be in degrees, alt in meters.
+    !
+    ! It is an implementation of the algorithm presented by Reda et Andreas in:
+    ! Reda, I., Andreas, A. (2003) Solar position algorithm for solar
+    ! radiation application. National Renewable Energy Laboratory (NREL)
+    ! Technical report NREL/TP-560-34302.
+    ! This document is avalaible at www.osti.gov/bridge
     ! Code is translated from matlab code by Fredrik Lindberg (fredrikl@gvc.gu.se)
     ! Last modified: LJ 27 Jan 2016 - Tabs removed
 
@@ -40,102 +43,102 @@
     dayofyear=floor(idectime)
     call day2month(dayofyear,month,day,seas,year,locationlatitude)
 
-    ! 1. Calculate the Julian Day, and Century. Julian Ephemeris day, century 
-    ! and millenium are calculated using a mean delta_t of 33.184 seconds. 
+    ! 1. Calculate the Julian Day, and Century. Julian Ephemeris day, century
+    ! and millenium are calculated using a mean delta_t of 33.184 seconds.
     call julian_calculation(year,month,day,hour,min,sec,UTC,juliancentury,julianday,julianephemeris_century,&
          &julianephemeris_day,julianephemeris_millenium)
-    
-    ! 2. Calculate the Earth heliocentric longitude, latitude, and radius 
-    ! vector (L, B, and R) 
+
+    ! 2. Calculate the Earth heliocentric longitude, latitude, and radius
+    ! vector (L, B, and R)
     call earth_heliocentric_position_calculation(julianephemeris_millenium,earth_heliocentric_positionlatitude,&
          &earth_heliocentric_positionlongitude,earth_heliocentric_positionradius)
 
-    ! 3. Calculate the geocentric longitude and latitude 
+    ! 3. Calculate the geocentric longitude and latitude
     call sun_geocentric_position_calculation(earth_heliocentric_positionlongitude,earth_heliocentric_positionlatitude,&
          & sun_geocentric_positionlatitude, sun_geocentric_positionlongitude)
 
-    ! 4. Calculate the nutation in longitude and obliquity (in degrees). 
+    ! 4. Calculate the nutation in longitude and obliquity (in degrees).
     call nutation_calculation(julianephemeris_century,nutationlongitude,nutationobliquity)
 
-    ! 5. Calculate the true obliquity of the ecliptic (in degrees). 
+    ! 5. Calculate the true obliquity of the ecliptic (in degrees).
     call corr_obliquity_calculation(julianephemeris_millenium, nutationobliquity, corr_obliquity)
 
-    ! 6. Calculate the aberration correction (in degrees) 
+    ! 6. Calculate the aberration correction (in degrees)
     call abberation_correction_calculation(earth_heliocentric_positionradius, aberration_correction)
-    
-    ! 7. Calculate the apparent sun longitude in degrees) 
+
+    ! 7. Calculate the apparent sun longitude in degrees)
     call apparent_sun_longitude_calculation(sun_geocentric_positionlongitude, nutationlongitude,&
          & aberration_correction, apparent_sun_longitude)
-    
-    ! 8. Calculate the apparent sideral time at Greenwich (in degrees) 
+
+    ! 8. Calculate the apparent sideral time at Greenwich (in degrees)
     call apparent_stime_at_greenwich_calculation(julianday,juliancentury, nutationlongitude, &
          &corr_obliquity, apparent_stime_at_greenwich)
 
-    ! 9. Calculate the sun rigth ascension (in degrees) 
+    ! 9. Calculate the sun rigth ascension (in degrees)
     call sun_rigth_ascension_calculation(apparent_sun_longitude, corr_obliquity, sun_geocentric_positionlatitude, &
          &sun_rigth_ascension)
 
-    ! 10. Calculate the geocentric sun declination (in degrees). Positive or 
-    ! negative if the sun is north or south of the celestial equator. 
+    ! 10. Calculate the geocentric sun declination (in degrees). Positive or
+    ! negative if the sun is north or south of the celestial equator.
     call sun_geocentric_declination_calculation(apparent_sun_longitude, corr_obliquity, sun_geocentric_positionlatitude, &
          &sun_geocentric_declination)
-    
-    ! 11. Calculate the observer local hour angle (in degrees, westward from south). 
+
+    ! 11. Calculate the observer local hour angle (in degrees, westward from south).
     call observer_local_hour_calculation(apparent_stime_at_greenwich, locationlongitude, sun_rigth_ascension, observer_local_hour)
 
-    ! 12. Calculate the topocentric sun position (rigth ascension, declination and 
-    ! rigth ascension parallax in degrees) 
+    ! 12. Calculate the topocentric sun position (rigth ascension, declination and
+    ! rigth ascension parallax in degrees)
     call topocentric_sun_position_calculate(topocentric_sun_positionrigth_ascension,&
          &topocentric_sun_positionrigth_ascension_parallax,topocentric_sun_positiondeclination,locationaltitude,&
          &locationlatitude,observer_local_hour,sun_rigth_ascension,sun_geocentric_declination,&
          &earth_heliocentric_positionradius)
-    
-    ! 13. Calculate the topocentric local hour angle (in degrees) 
-    call topocentric_local_hour_calculate(observer_local_hour, topocentric_sun_positionrigth_ascension_parallax,&
-         & topocentric_local_hour)       
 
-    ! 14. Calculate the topocentric zenith and azimuth angle (in degrees) 
+    ! 13. Calculate the topocentric local hour angle (in degrees)
+    call topocentric_local_hour_calculate(observer_local_hour, topocentric_sun_positionrigth_ascension_parallax,&
+         & topocentric_local_hour)
+
+    ! 14. Calculate the topocentric zenith and azimuth angle (in degrees)
     call sun_topocentric_zenith_angle_calculate(locationlatitude , topocentric_sun_positiondeclination,&
          & topocentric_local_hour, sunazimuth,sunzenith)
 
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!! 
-! Subfunction definitions ! 
-!!!!!!!!!!!!!!!!!!!!!!!!!!! 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Subfunction definitions !
+!!!!!!!!!!!!!!!!!!!!!!!!!!!
 CONTAINS
 
 subroutine julian_calculation(year,month,day,hour,min,sec,UTC,juliancentury,julianday,julianephemeris_century&
      &,julianephemeris_day,julianephemeris_millenium)
-    implicit none 
+    implicit none
 
-    REAL(KIND(1D0)) :: A,B,D,delta_t      
-    REAL(KIND(1D0)) :: juliancentury      
-    REAL(KIND(1D0)) :: julianday      
-    REAL(KIND(1D0)) :: julianephemeris_century   
-    REAL(KIND(1D0)) :: julianephemeris_day   
-    REAL(KIND(1D0)) :: julianephemeris_millenium     
-    REAL(KIND(1D0)) :: M,sec,year,UTC 
+    REAL(KIND(1D0)) :: A,B,D,delta_t
+    REAL(KIND(1D0)) :: juliancentury
+    REAL(KIND(1D0)) :: julianday
+    REAL(KIND(1D0)) :: julianephemeris_century
+    REAL(KIND(1D0)) :: julianephemeris_day
+    REAL(KIND(1D0)) :: julianephemeris_millenium
+    REAL(KIND(1D0)) :: M,sec,year,UTC
     integer :: day,hour,min,month
-    !REAL(KIND(1D0)) :: time      !>   
+    !REAL(KIND(1D0)) :: time      !>
     REAL(KIND(1D0)) :: ut_time ,Y !tt,
-    ! 
-    ! This function compute the julian day and julian century from the local 
-    ! time and timezone information. Ephemeris are calculated with a delta_t=0 
-    ! seconds. 
+    !
+    ! This function compute the julian day and julian century from the local
+    ! time and timezone information. Ephemeris are calculated with a delta_t=0
+    ! seconds.
 
-    if (month == 1 .or. month == 2) then 
+    if (month == 1 .or. month == 2) then
     Y = year - 1.
     M = month + 12
     else
     Y = year
     M = month
-    end if 
+    end if
     ut_time = ((float(hour) - UTC)/24.) + (float(min)/(60.*24.)) + (sec/(60.*60.*24.)) ! time of day in UT time.
     D = day + ut_time ! Day of month in decimal time, ex. 2sd day of month at 12:30:30UT, D=2.521180556
 
-    ! In 1582, the gregorian calendar was adopted 
-    if (year == 1582.) then 
-    if (month == 10) then 
+    ! In 1582, the gregorian calendar was adopted
+    if (year == 1582.) then
+    if (month == 10) then
     if (day <= 4) then ! The Julian calendar ended on October 4, 1582
         B = 0
     else if (day >= 15) then ! The Gregorian calendar started on October 15, 1582
@@ -146,20 +149,20 @@ subroutine julian_calculation(year,month,day,hour,min,sec,UTC,juliancentury,juli
         month = 10
         day = 4
         B = 0
-    end if 
+    end if
     else if (month<10) then ! Julian calendar
         B = 0
     else ! Gregorian calendar
         A = floor(Y/100)
         B = 2 - A + floor(A/4)
-    end if 
+    end if
 
     else if (year<1582.) then ! Julian calendar
     B = 0
     else
     A = floor(Y/100) ! Gregorian calendar
     B = 2 - A + floor(A/4)
-    end if 
+    end if
 
     julianday = floor(365.25*(Y+4716.)) + floor(30.6001*(M+1)) + D + B - 1524.5
 
@@ -171,79 +174,79 @@ subroutine julian_calculation(year,month,day,hour,min,sec,UTC,juliancentury,juli
     julianephemeris_century = (julianephemeris_day - 2451545.) / 36525.
 
     julianephemeris_millenium = julianephemeris_century / 10.
-    
-end subroutine  julian_calculation 
- 
+
+end subroutine  julian_calculation
+
 subroutine earth_heliocentric_position_calculation(julianephemeris_millenium,earth_heliocentric_positionlatitude&
      &,earth_heliocentric_positionlongitude,earth_heliocentric_positionradius)
-implicit none 
+implicit none
 
-    REAL(KIND(1D0)) :: julianephemeris_millenium      !>  
+    REAL(KIND(1D0)) :: julianephemeris_millenium      !>
 
-    REAL(KIND(1D0)),dimension(64) :: A0      !>  
-    REAL(KIND(1D0)),dimension(34) :: A1      !>  
-    REAL(KIND(1D0)),dimension(20) :: A2      !>  
-    REAL(KIND(1D0)),dimension(7) :: A3      !>  
-    REAL(KIND(1D0)),dimension(3) :: A4      !>  
-    REAL(KIND(1D0)) :: A5      !>  
-    REAL(KIND(1D0)),dimension(64) :: B0      !>  
-    REAL(KIND(1D0)),dimension(34) :: B1      !>  
-    REAL(KIND(1D0)),dimension(20) :: B2      !>  
-    REAL(KIND(1D0)),dimension(7) :: B3      !>  
-    REAL(KIND(1D0)),dimension(3) :: B4      !>  
-    REAL(KIND(1D0)) :: B5      !>  
-    REAL(KIND(1D0)),dimension(64) :: C0      !>  
-    REAL(KIND(1D0)),dimension(34) :: C1      !>  
-    REAL(KIND(1D0)),dimension(20) :: C2      !>  
-    REAL(KIND(1D0)),dimension(7) :: C3      !>  
-    REAL(KIND(1D0)),dimension(3) :: C4      !>  
-    REAL(KIND(1D0)) :: C5     
-    REAL(KIND(1D0)),dimension(40) :: A0j      !>  
-    REAL(KIND(1D0)),dimension(10) :: A1j     !>  
-    REAL(KIND(1D0)),dimension(6) :: A2j      !>  
-    REAL(KIND(1D0)),dimension(2) :: A3j      !>  
-    REAL(KIND(1D0)) :: A4j      !>  
-    REAL(KIND(1D0)),dimension(40) :: B0j      !>   
-    REAL(KIND(1D0)),dimension(10) :: B1j      !>   
-    REAL(KIND(1D0)),dimension(6) :: B2j      !>  
-    REAL(KIND(1D0)),dimension(2) :: B3j      !>  
-    REAL(KIND(1D0)) :: B4j      !>  
-    REAL(KIND(1D0)),dimension(40) :: C0j      !>  
-    REAL(KIND(1D0)),dimension(10) :: C1j      !>  
-    REAL(KIND(1D0)),dimension(6) :: C2j      !>  
-    REAL(KIND(1D0)),dimension(2) :: C3j      !>  
-    REAL(KIND(1D0)) :: C4j      !>  
+    REAL(KIND(1D0)),dimension(64) :: A0      !>
+    REAL(KIND(1D0)),dimension(34) :: A1      !>
+    REAL(KIND(1D0)),dimension(20) :: A2      !>
+    REAL(KIND(1D0)),dimension(7) :: A3      !>
+    REAL(KIND(1D0)),dimension(3) :: A4      !>
+    REAL(KIND(1D0)) :: A5      !>
+    REAL(KIND(1D0)),dimension(64) :: B0      !>
+    REAL(KIND(1D0)),dimension(34) :: B1      !>
+    REAL(KIND(1D0)),dimension(20) :: B2      !>
+    REAL(KIND(1D0)),dimension(7) :: B3      !>
+    REAL(KIND(1D0)),dimension(3) :: B4      !>
+    REAL(KIND(1D0)) :: B5      !>
+    REAL(KIND(1D0)),dimension(64) :: C0      !>
+    REAL(KIND(1D0)),dimension(34) :: C1      !>
+    REAL(KIND(1D0)),dimension(20) :: C2      !>
+    REAL(KIND(1D0)),dimension(7) :: C3      !>
+    REAL(KIND(1D0)),dimension(3) :: C4      !>
+    REAL(KIND(1D0)) :: C5
+    REAL(KIND(1D0)),dimension(40) :: A0j      !>
+    REAL(KIND(1D0)),dimension(10) :: A1j     !>
+    REAL(KIND(1D0)),dimension(6) :: A2j      !>
+    REAL(KIND(1D0)),dimension(2) :: A3j      !>
+    REAL(KIND(1D0)) :: A4j      !>
+    REAL(KIND(1D0)),dimension(40) :: B0j      !>
+    REAL(KIND(1D0)),dimension(10) :: B1j      !>
+    REAL(KIND(1D0)),dimension(6) :: B2j      !>
+    REAL(KIND(1D0)),dimension(2) :: B3j      !>
+    REAL(KIND(1D0)) :: B4j      !>
+    REAL(KIND(1D0)),dimension(40) :: C0j      !>
+    REAL(KIND(1D0)),dimension(10) :: C1j      !>
+    REAL(KIND(1D0)),dimension(6) :: C2j      !>
+    REAL(KIND(1D0)),dimension(2) :: C3j      !>
+    REAL(KIND(1D0)) :: C4j      !>
     REAL(KIND(1D0)),dimension(5) ::  A0i
-    REAL(KIND(1D0)),dimension(5) ::  B0i 
+    REAL(KIND(1D0)),dimension(5) ::  B0i
     REAL(KIND(1D0)),dimension(5) ::  C0i
     REAL(KIND(1D0)),dimension(2) ::  A1i
     REAL(KIND(1D0)),dimension(2) ::  B1i
     REAL(KIND(1D0)),dimension(2) ::   C1i
-    REAL(KIND(1D0)) :: earth_heliocentric_positionlatitude      !>  
-    REAL(KIND(1D0)) :: earth_heliocentric_positionlongitude      !>  
-    REAL(KIND(1D0)) :: earth_heliocentric_positionradius      !>  
-    REAL(KIND(1D0)) :: JME      !>  
-    REAL(KIND(1D0)) :: L0      !>  
-    !REAL(KIND(1D0)) :: L0_terms      !>  
-    REAL(KIND(1D0)) :: L1      !>  
-    !REAL(KIND(1D0)) :: L1_terms      !>  
-    REAL(KIND(1D0)) :: L2      !>  
-    !REAL(KIND(1D0)) :: L2_terms      !>  
-    REAL(KIND(1D0)) :: L3      !>  
-    !REAL(KIND(1D0)) :: L3_terms      !>  
-    REAL(KIND(1D0)) :: L4      !>  
-    !REAL(KIND(1D0)) :: L4_terms      !>  
-    REAL(KIND(1D0)) :: L5      !>  
-    !REAL(KIND(1D0)), dimension(3) :: L5_terms      !>  
-    !REAL(KIND(1D0)) :: R0_terms      !>  
-    !REAL(KIND(1D0)) :: R1_terms      !>  
-    !REAL(KIND(1D0)) :: R2_terms      !>  
-    !REAL(KIND(1D0)) :: R3_terms      !>  
-    !REAL(KIND(1D0)), dimension(3) :: R4_terms      !>  
+    REAL(KIND(1D0)) :: earth_heliocentric_positionlatitude      !>
+    REAL(KIND(1D0)) :: earth_heliocentric_positionlongitude      !>
+    REAL(KIND(1D0)) :: earth_heliocentric_positionradius      !>
+    REAL(KIND(1D0)) :: JME      !>
+    REAL(KIND(1D0)) :: L0      !>
+    !REAL(KIND(1D0)) :: L0_terms      !>
+    REAL(KIND(1D0)) :: L1      !>
+    !REAL(KIND(1D0)) :: L1_terms      !>
+    REAL(KIND(1D0)) :: L2      !>
+    !REAL(KIND(1D0)) :: L2_terms      !>
+    REAL(KIND(1D0)) :: L3      !>
+    !REAL(KIND(1D0)) :: L3_terms      !>
+    REAL(KIND(1D0)) :: L4      !>
+    !REAL(KIND(1D0)) :: L4_terms      !>
+    REAL(KIND(1D0)) :: L5      !>
+    !REAL(KIND(1D0)), dimension(3) :: L5_terms      !>
+    !REAL(KIND(1D0)) :: R0_terms      !>
+    !REAL(KIND(1D0)) :: R1_terms      !>
+    !REAL(KIND(1D0)) :: R2_terms      !>
+    !REAL(KIND(1D0)) :: R3_terms      !>
+    !REAL(KIND(1D0)), dimension(3) :: R4_terms      !>
     REAL(KIND(1D0)),PARAMETER       :: pi=3.141592653589793d+0
-    
-    ! This function compute the earth position relative to the sun, using 
-    ! tabulated values. 
+
+    ! This function compute the earth position relative to the sun, using
+    ! tabulated values.
 
     A0=(/175347046,3341656,34894,3497,3418,3136,2676,2343,1324,1273,1199,990,902,857,780,753,505,&
          &492,357,317,284,271,243,206,205,202,156,132,126,115,103,102,102,99,98,86,85,85,80,79,71,&
@@ -279,15 +282,15 @@ implicit none
     B3 = (/5.8440,0.,5.4900,5.2000,4.7200,5.3000,5.9700/)
     C3 = (/6283.076,0.,12566.15,155.4200,3.52,18849.23,242.7300/)
     A4 = (/114,8,1/)
-    B4 = (/3.1420,4.1300,3.8400/) 
+    B4 = (/3.1420,4.1300,3.8400/)
     C4 =  (/0.,6283.08,12566.15/)
     A5 =1.
     B5 =3.1400
     C5 =0.
-    
+
     JME = julianephemeris_millenium
 
-    ! Compute the Earth Heliochentric longitude from the tabulated values. 
+    ! Compute the Earth Heliochentric longitude from the tabulated values.
     L0 = sum(A0 * cos(B0 + (C0 * JME)))
     L1 = sum(A1 * cos(B1 + (C1 * JME)))
     L2 = sum(A2 * cos(B2 + (C2 * JME)))
@@ -297,9 +300,9 @@ implicit none
 
     earth_heliocentric_positionlongitude = &
          &(L0 + (L1 * JME) + (L2 * JME**2) + (L3 * JME**3) + (L4 * JME**4) + (L5 * JME**5)) / 1e8
-    ! Convert the longitude to degrees. 
+    ! Convert the longitude to degrees.
     earth_heliocentric_positionlongitude = earth_heliocentric_positionlongitude * 180./pi
-    ! Limit the range to [0,360[; 
+    ! Limit the range to [0,360[;
     earth_heliocentric_positionlongitude=set_to_range(earth_heliocentric_positionlongitude)
 
     A0i = (/280,102,80,44,32/)
@@ -313,9 +316,9 @@ implicit none
     L1 = sum(A1i * cos(B1i + (C1i * JME)))
 
     earth_heliocentric_positionlatitude = (L0 + (L1 * JME)) / 1e8
-    ! Convert the latitude to degrees. 
+    ! Convert the latitude to degrees.
     earth_heliocentric_positionlatitude = earth_heliocentric_positionlatitude * 180/pi
-    ! Limit the range to [0,360]; 
+    ! Limit the range to [0,360];
     earth_heliocentric_positionlatitude=set_to_range(earth_heliocentric_positionlatitude)
 
     A0j = (/100013989,1670700,13956,3084,1628,1576,925,542,472,346,329,307,243,212,186,175,110,&
@@ -342,99 +345,99 @@ implicit none
     B4j = 2.56
     C4j = 6283.08000
 
-    ! Compute the Earth heliocentric radius vector 
+    ! Compute the Earth heliocentric radius vector
     L0 = sum(A0j * cos(B0j + (C0j * JME)))
     L1 = sum(A1j * cos(B1j + (C1j * JME)))
     L2 = sum(A2j * cos(B2j + (C2j * JME)))
     L3 = sum(A3j * cos(B3j + (C3j * JME)))
     L4 = A4j * cos(B4j + (C4j * JME))
 
-    ! Units are in AU 
+    ! Units are in AU
     earth_heliocentric_positionradius = &
          &(L0 + (L1 * JME) + (L2 * JME**2) + (L3 * JME**3) + (L4 * JME**4)) / 1e8
 
-end subroutine  earth_heliocentric_position_calculation 
+end subroutine  earth_heliocentric_position_calculation
 
 subroutine sun_geocentric_position_calculation(earth_heliocentric_positionlongitude,&
      &earth_heliocentric_positionlatitude, sun_geocentric_positionlatitude, &
      &sun_geocentric_positionlongitude)
-    implicit none 
+    implicit none
 
-    REAL(KIND(1D0)), intent(in) :: earth_heliocentric_positionlongitude      !>  
-    REAL(KIND(1D0)), intent(in) :: earth_heliocentric_positionlatitude      !> 
-    REAL(KIND(1D0)) :: sun_geocentric_positionlatitude      !>  
-    REAL(KIND(1D0)) :: sun_geocentric_positionlongitude      !>  
-    
-    ! This function compute the sun position relative to the earth. 
+    REAL(KIND(1D0)), intent(in) :: earth_heliocentric_positionlongitude      !>
+    REAL(KIND(1D0)), intent(in) :: earth_heliocentric_positionlatitude      !>
+    REAL(KIND(1D0)) :: sun_geocentric_positionlatitude      !>
+    REAL(KIND(1D0)) :: sun_geocentric_positionlongitude      !>
+
+    ! This function compute the sun position relative to the earth.
 
     sun_geocentric_positionlongitude = earth_heliocentric_positionlongitude + 180.0
-    ! Limit the range to [0,360]; 
+    ! Limit the range to [0,360];
     sun_geocentric_positionlongitude=set_to_range(sun_geocentric_positionlongitude)
 
     sun_geocentric_positionlatitude = -earth_heliocentric_positionlatitude
-    ! Limit the range to [0,360] 
+    ! Limit the range to [0,360]
     sun_geocentric_positionlatitude=set_to_range(sun_geocentric_positionlatitude)
-end subroutine  sun_geocentric_position_calculation 
+end subroutine  sun_geocentric_position_calculation
 
 subroutine nutation_calculation(julianephemeris_century,nutationlongitude,nutationobliquity)
-    implicit none 
- 
-    REAL(KIND(1D0)), intent(in) :: julianephemeris_century      !>  
-    REAL(KIND(1D0)), dimension(63) :: delta_longitude      !>  
-    REAL(KIND(1D0)), dimension(63) :: delta_obliquity      !>  
-    REAL(KIND(1D0)) :: JCE      !>  
-    REAL(KIND(1D0)) :: nutationlongitude      !>  
-    REAL(KIND(1D0)) :: nutationobliquity      !>  
-    REAL(KIND(1D0)) , dimension(4) :: p0,p1,p2,p3,p4 
-    REAL(KIND(1D0)), dimension(63) ::tabulated_argument      !>  
-    REAL(KIND(1D0)) :: X0      !>  
-    REAL(KIND(1D0)) :: X1      !>  
-    REAL(KIND(1D0)) :: X2      !>  
-    REAL(KIND(1D0)) :: X3      !>  
-    REAL(KIND(1D0)) :: X4      !>  
-    REAL(KIND(1D0)), dimension(5) :: Xi      !>  
-    integer, dimension(315) :: Y_terms1     !>  
+    implicit none
+
+    REAL(KIND(1D0)), intent(in) :: julianephemeris_century      !>
+    REAL(KIND(1D0)), dimension(63) :: delta_longitude      !>
+    REAL(KIND(1D0)), dimension(63) :: delta_obliquity      !>
+    REAL(KIND(1D0)) :: JCE      !>
+    REAL(KIND(1D0)) :: nutationlongitude      !>
+    REAL(KIND(1D0)) :: nutationobliquity      !>
+    REAL(KIND(1D0)) , dimension(4) :: p0,p1,p2,p3,p4
+    REAL(KIND(1D0)), dimension(63) ::tabulated_argument      !>
+    REAL(KIND(1D0)) :: X0      !>
+    REAL(KIND(1D0)) :: X1      !>
+    REAL(KIND(1D0)) :: X2      !>
+    REAL(KIND(1D0)) :: X3      !>
+    REAL(KIND(1D0)) :: X4      !>
+    REAL(KIND(1D0)), dimension(5) :: Xi      !>
+    integer, dimension(315) :: Y_terms1     !>
     integer, dimension(5,63) ::Y_terms
-    REAL(KIND(1D0)), dimension(252) :: nutation_terms1     !>  
+    REAL(KIND(1D0)), dimension(252) :: nutation_terms1     !>
     REAL(KIND(1D0)), dimension(4,63) ::nutation_terms
     integer :: i
-    REAL(KIND(1D0)),PARAMETER       :: pi=3.141592653589793d+0 
-    
-    ! This function compute the nutation in longtitude and in obliquity, in 
-    ! degrees. 
+    REAL(KIND(1D0)),PARAMETER       :: pi=3.141592653589793d+0
 
-    ! All Xi are in degrees. 
+    ! This function compute the nutation in longtitude and in obliquity, in
+    ! degrees.
+
+    ! All Xi are in degrees.
     JCE = julianephemeris_century
 
-    ! 1. Mean elongation of the moon from the sun 
-    p0 = (/ (1/189474.),-0.0019142,445267.11148,297.85036 /) 
-    ! X0 = polyval(p, JCE); 
+    ! 1. Mean elongation of the moon from the sun
+    p0 = (/ (1/189474.),-0.0019142,445267.11148,297.85036 /)
+    ! X0 = polyval(p, JCE);
     X0 = p0(1) * JCE**3 + p0(2) * JCE**2 + p0(3) * JCE + p0(4) ! This is faster than polyval...
 
-    ! 2. Mean anomaly of the sun (earth) 
+    ! 2. Mean anomaly of the sun (earth)
     p1 = (/ -(1/300000.),-0.0001603,35999.05034,357.52772 /)
-    ! X1 = polyval(p, JCE); 
+    ! X1 = polyval(p, JCE);
     X1 = p1(1) * JCE**3 + p1(2) * JCE**2 + p1(3) * JCE + p1(4)
 
-    ! 3. Mean anomaly of the moon 
+    ! 3. Mean anomaly of the moon
     p2 = (/(1/56250.),0.0086972,477198.867398,134.96298 /)
-    ! X2 = polyval(p, JCE); 
+    ! X2 = polyval(p, JCE);
     X2 = p2(1) * JCE**3 + p2(2) * JCE**2 + p2(3) * JCE + p2(4)
 
-    ! 4. Moon argument of latitude 
-    p3 = (/ (1/327270.),-0.0036825,483202.017538,93.27191 /) 
-    ! X3 = polyval(p, JCE); 
+    ! 4. Moon argument of latitude
+    p3 = (/ (1/327270.),-0.0036825,483202.017538,93.27191 /)
+    ! X3 = polyval(p, JCE);
     X3 = p3(1) * JCE**3 + p3(2) * JCE**2 + p3(3) * JCE + p3(4)
 
-    ! 5. Longitude of the ascending node of the moon's mean orbit on the 
-    ! ecliptic, measured from the mean equinox of the date 
+    ! 5. Longitude of the ascending node of the moon's mean orbit on the
+    ! ecliptic, measured from the mean equinox of the date
     p4 = (/ (1/450000.),0.0020708,-1934.136261,125.04452 /)
-    ! X4 = polyval(p, JCE); 
+    ! X4 = polyval(p, JCE);
     X4 = p4(1) * JCE**3 + p4(2) * JCE**2 + p4(3) * JCE + p4(4)
 
-    ! Y tabulated terms from the original code 
+    ! Y tabulated terms from the original code
     Y_terms1 =  (/0,0,0,0,1,-2,0,0,2,2,0,0,0,2,2,0,0,0,0,2,0,1,0,0,0,0,0,1,0,0,-2,1,0,2,2,0,0,0,2,1, &
-                0,0,1,2,2,-2,-1,0,2,2,-2,0,1,0,0,-2,0,0,2,1,0,0,-1,2,2,2,0,0,0,0,0,0,1,0,1,2,0,-1,2,2,& 
+                0,0,1,2,2,-2,-1,0,2,2,-2,0,1,0,0,-2,0,0,2,1,0,0,-1,2,2,2,0,0,0,0,0,0,1,0,1,2,0,-1,2,2,&
                 0,0,-1,0,1,0,0,1,2,1,-2,0,2,0,0,0,0,-2,2,1,2,0,0,2,2,0,0,2,2,2,0,0,2,0,0,-2,0,1,2,2,0,&
                 0,0,2,0,-2,0,0,2,0,0,0,-1,2,1,0,2,0,0,0,2,0,-1,0,1,-2,2,0,2,2,0,1,0,0,1,-2,0,1,0,1,0,-1,0,0,1,0,0,&
                 2,-2,0,2,0,-1,2,1,2,0,1,2,2,0,1,0,2,2,-2,1,1,0,0,0,-1,0,2,2,2,0,0,2,1,2,0,1,0,0,-2,0,2,2,2,-2,0,1,&
@@ -452,41 +455,41 @@ subroutine nutation_calculation(julianephemeris_century,nutationlongitude,nutati
                     3.,0.,-5.,0.,3.,0.,-5.,0.,3.,0.,4.,0.,0.,0.,4.,0.,0.,0.,4.,0.,0.,0.,-4.,0.,0.,0.,-4.,0.,0.,0.,-4.,0.,0.,0.,&
                     3.,0.,0.,0.,-3.,0.,0.,0.,-3.,0.,0.,0.,-3.,0.,0.,0.,-3.,0.,0.,0.,-3.,0.,0.,0.,-3.,0.,0.,0.,-3.,0.,0.,0./)
     nutation_terms=reshape(nutation_terms1,(/4,63/))
-    ! Using the tabulated values, compute the delta_longitude and 
-    ! delta_obliquity. 
+    ! Using the tabulated values, compute the delta_longitude and
+    ! delta_obliquity.
     Xi = (/X0, X1, X2, X3, X4/)
-    
+
     do i=1,63
         tabulated_argument(i)=&
              &((Y_terms(1,i)*Xi(1))+(Y_terms(2,i)*Xi(2))+(Y_terms(3,i)*Xi(3))+(Y_terms(4,i)*Xi(4))+(Y_terms(5,i)*Xi(5)))*pi/180
     end do
-    
+
     delta_longitude = ((nutation_terms(1,:) + (nutation_terms(2,:) * JCE))) * sin(tabulated_argument)
     delta_obliquity = ((nutation_terms(3,:) + (nutation_terms(4,:) * JCE))) * cos(tabulated_argument)
 
-    ! Nutation in longitude 
+    ! Nutation in longitude
     nutationlongitude = sum(delta_longitude) / 36000000.0
 
-    ! Nutation in obliquity 
+    ! Nutation in obliquity
     nutationobliquity = sum(delta_obliquity) / 36000000.0
 
-end subroutine  nutation_calculation 
+end subroutine  nutation_calculation
 
 subroutine corr_obliquity_calculation(julianephemeris_millenium, nutationobliquity, corr_obliquity)
-    implicit none 
+    implicit none
 
-    REAL(KIND(1D0)), intent(out) :: corr_obliquity      !>  
-    REAL(KIND(1D0)), intent(in) :: julianephemeris_millenium     !>  
-    REAL(KIND(1D0)), intent(in) :: nutationobliquity     !>  
-    REAL(KIND(1D0)) :: mean_obliquity      !>  
-    REAL(KIND(1D0)), dimension(11) :: p      !>  
-    REAL(KIND(1D0)) :: U      !>  
+    REAL(KIND(1D0)), intent(out) :: corr_obliquity      !>
+    REAL(KIND(1D0)), intent(in) :: julianephemeris_millenium     !>
+    REAL(KIND(1D0)), intent(in) :: nutationobliquity     !>
+    REAL(KIND(1D0)) :: mean_obliquity      !>
+    REAL(KIND(1D0)), dimension(11) :: p      !>
+    REAL(KIND(1D0)) :: U      !>
 
-    ! This function compute the true obliquity of the ecliptic. 
+    ! This function compute the true obliquity of the ecliptic.
 
 
-    p = (/ 2.45,5.79,27.87,7.12,-39.05,-249.67,-51.38,1999.25,-1.55,-4680.93,84381.448 /) 
-    ! mean_obliquity = polyval(p, julian.ephemeris_millenium/10); 
+    p = (/ 2.45,5.79,27.87,7.12,-39.05,-249.67,-51.38,1999.25,-1.55,-4680.93,84381.448 /)
+    ! mean_obliquity = polyval(p, julian.ephemeris_millenium/10);
 
     U = julianephemeris_millenium/10
     mean_obliquity =&
@@ -494,261 +497,259 @@ subroutine corr_obliquity_calculation(julianephemeris_millenium, nutationobliqui
          &p(8)*U**3 + p(9)*U**2 + p(10)*U + p(11)
 
     corr_obliquity = (mean_obliquity/3600) + nutationobliquity
-end subroutine  corr_obliquity_calculation 
- 
-subroutine abberation_correction_calculation(earth_heliocentric_positionradius, aberration_correction)
-    implicit none 
+end subroutine  corr_obliquity_calculation
 
-    REAL(KIND(1D0)), intent(out) :: aberration_correction      !>  
-    REAL(KIND(1D0)), intent(in) :: earth_heliocentric_positionradius     !>  
- 
-    ! This function compute the aberration_correction, as a function of the 
-    ! earth-sun distance. 
+subroutine abberation_correction_calculation(earth_heliocentric_positionradius, aberration_correction)
+    implicit none
+
+    REAL(KIND(1D0)), intent(out) :: aberration_correction      !>
+    REAL(KIND(1D0)), intent(in) :: earth_heliocentric_positionradius     !>
+
+    ! This function compute the aberration_correction, as a function of the
+    ! earth-sun distance.
 
     aberration_correction = -20.4898/(3600*earth_heliocentric_positionradius)
 
-end subroutine  abberation_correction_calculation 
+end subroutine  abberation_correction_calculation
 
 subroutine apparent_sun_longitude_calculation(sun_geocentric_positionlongitude, nutationlongitude,&
      & aberration_correction, apparent_sun_longitude)
-    implicit none 
+    implicit none
 
-    REAL(KIND(1D0)), intent(in) :: aberration_correction      !>  
-    REAL(KIND(1D0)), intent(out) :: apparent_sun_longitude      !>  
-    REAL(KIND(1D0)), intent(in) :: nutationlongitude      !>  
-    REAL(KIND(1D0)), intent(in) :: sun_geocentric_positionlongitude      !>  
+    REAL(KIND(1D0)), intent(in) :: aberration_correction      !>
+    REAL(KIND(1D0)), intent(out) :: apparent_sun_longitude      !>
+    REAL(KIND(1D0)), intent(in) :: nutationlongitude      !>
+    REAL(KIND(1D0)), intent(in) :: sun_geocentric_positionlongitude      !>
 
-    ! This function compute the sun apparent longitude 
+    ! This function compute the sun apparent longitude
 
     apparent_sun_longitude = sun_geocentric_positionlongitude + nutationlongitude + aberration_correction
-    
-end subroutine  apparent_sun_longitude_calculation 
+
+end subroutine  apparent_sun_longitude_calculation
 
 subroutine apparent_stime_at_greenwich_calculation(julianday,juliancentury, nutationlongitude,&
      & corr_obliquity, apparent_stime_at_greenwich)
-    implicit none 
+    implicit none
 
-    REAL(KIND(1D0)), intent(out) :: apparent_stime_at_greenwich      !>  
-    REAL(KIND(1D0)), intent(in) :: corr_obliquity      !>  
-    REAL(KIND(1D0)), intent(in) :: julianday     !> 
-    REAL(KIND(1D0)), intent(in) :: juliancentury     !>  
-    REAL(KIND(1D0)), intent(in) :: nutationlongitude      !>  
-    REAL(KIND(1D0)) :: JC      !>  
-    REAL(KIND(1D0)) :: JD      !>  
-    REAL(KIND(1D0)) :: mean_stime      !>  
-    REAL(KIND(1D0)),PARAMETER       :: pi=3.14159265358979d+0 
-    
-    ! This function compute the apparent sideral time at Greenwich. 
+    REAL(KIND(1D0)), intent(out) :: apparent_stime_at_greenwich      !>
+    REAL(KIND(1D0)), intent(in) :: corr_obliquity      !>
+    REAL(KIND(1D0)), intent(in) :: julianday     !>
+    REAL(KIND(1D0)), intent(in) :: juliancentury     !>
+    REAL(KIND(1D0)), intent(in) :: nutationlongitude      !>
+    REAL(KIND(1D0)) :: JC      !>
+    REAL(KIND(1D0)) :: JD      !>
+    REAL(KIND(1D0)) :: mean_stime      !>
+    REAL(KIND(1D0)),PARAMETER       :: pi=3.14159265358979d+0
+
+    ! This function compute the apparent sideral time at Greenwich.
 
     JD = julianday
     JC = juliancentury
 
-    ! Mean sideral time, in degrees 
+    ! Mean sideral time, in degrees
     mean_stime = 280.46061837d+0 + (360.98564736629d+0*(JD-2451545.0d+0)) + (0.000387933d+0*JC**2) - (JC**3/38710000.0d+0)
 
-    ! Limit the range to [0-360]; 
+    ! Limit the range to [0-360];
     mean_stime=set_to_range(mean_stime)
 
     apparent_stime_at_greenwich = mean_stime + (nutationlongitude * cos(corr_obliquity * pi/180))
-end subroutine  apparent_stime_at_greenwich_calculation 
+end subroutine  apparent_stime_at_greenwich_calculation
 
 subroutine sun_rigth_ascension_calculation(apparent_sun_longitude, corr_obliquity, &
      &sun_geocentric_positionlatitude, sun_rigth_ascension)
-    implicit none 
- 
-    REAL(KIND(1D0)), intent(in) :: apparent_sun_longitude      !>  
-    REAL(KIND(1D0)), intent(in) :: corr_obliquity      !>  
-    REAL(KIND(1D0)), intent(in) :: sun_geocentric_positionlatitude      !>  
-    REAL(KIND(1D0)), intent(out) :: sun_rigth_ascension      !>  
-    REAL(KIND(1D0)) :: argument_denominator      !>  
-    REAL(KIND(1D0)) :: argument_numerator      !>  
-    REAL(KIND(1D0)),PARAMETER       :: pi=3.141592653589793d+0 
-    
-    ! This function compute the sun rigth ascension. 
+    implicit none
+
+    REAL(KIND(1D0)), intent(in) :: apparent_sun_longitude      !>
+    REAL(KIND(1D0)), intent(in) :: corr_obliquity      !>
+    REAL(KIND(1D0)), intent(in) :: sun_geocentric_positionlatitude      !>
+    REAL(KIND(1D0)), intent(out) :: sun_rigth_ascension      !>
+    REAL(KIND(1D0)) :: argument_denominator      !>
+    REAL(KIND(1D0)) :: argument_numerator      !>
+    REAL(KIND(1D0)),PARAMETER       :: pi=3.141592653589793d+0
+
+    ! This function compute the sun rigth ascension.
 
     argument_numerator = (sin(apparent_sun_longitude * pi/180.0) * cos(corr_obliquity * pi/180.0)) - &
     (tan(sun_geocentric_positionlatitude * pi/180.0) * sin(corr_obliquity * pi/180.0))
     argument_denominator = cos(apparent_sun_longitude * pi/180.0)
 
     sun_rigth_ascension = atan2(argument_numerator, argument_denominator) * 180.0/pi
-    ! Limit the range to [0,360]; 
+    ! Limit the range to [0,360];
     sun_rigth_ascension=set_to_range(sun_rigth_ascension)
-end subroutine  sun_rigth_ascension_calculation 
+end subroutine  sun_rigth_ascension_calculation
 
 subroutine sun_geocentric_declination_calculation(apparent_sun_longitude, corr_obliquity, &
      &sun_geocentric_positionlatitude, sun_geocentric_declination)
-    implicit none 
+    implicit none
 
-    REAL(KIND(1D0)), intent(in) :: apparent_sun_longitude      !>  
-    REAL(KIND(1D0)), intent(in) :: corr_obliquity      !>  
-    REAL(KIND(1D0)), intent(out) :: sun_geocentric_declination      !>  
-    REAL(KIND(1D0)), intent(in) :: sun_geocentric_positionlatitude     !>  
-    REAL(KIND(1D0)) :: argument      !>  
-    REAL(KIND(1D0)),PARAMETER       :: pi=3.141592653589793d+0  
+    REAL(KIND(1D0)), intent(in) :: apparent_sun_longitude      !>
+    REAL(KIND(1D0)), intent(in) :: corr_obliquity      !>
+    REAL(KIND(1D0)), intent(out) :: sun_geocentric_declination      !>
+    REAL(KIND(1D0)), intent(in) :: sun_geocentric_positionlatitude     !>
+    REAL(KIND(1D0)) :: argument      !>
+    REAL(KIND(1D0)),PARAMETER       :: pi=3.141592653589793d+0
 
     argument = (sin(sun_geocentric_positionlatitude * pi/180.0) * cos(corr_obliquity * pi/180.0)) + &
     (cos(sun_geocentric_positionlatitude * pi/180.0) * sin(corr_obliquity * pi/180) * sin(apparent_sun_longitude * pi/180.0))
 
     sun_geocentric_declination = asin(argument) * 180.0/pi
-end subroutine  sun_geocentric_declination_calculation 
+end subroutine  sun_geocentric_declination_calculation
 
 subroutine observer_local_hour_calculation(apparent_stime_at_greenwich, locationlongitude, &
      &sun_rigth_ascension, observer_local_hour)
-    implicit none 
- 
-    REAL(KIND(1D0)), intent(in) :: apparent_stime_at_greenwich      !>  
-    REAL(KIND(1D0)), intent(in) :: locationlongitude     !>  
-    REAL(KIND(1D0)), intent(out) :: observer_local_hour      !>  
-    REAL(KIND(1D0)), intent(in) :: sun_rigth_ascension      !>  
+    implicit none
+
+    REAL(KIND(1D0)), intent(in) :: apparent_stime_at_greenwich      !>
+    REAL(KIND(1D0)), intent(in) :: locationlongitude     !>
+    REAL(KIND(1D0)), intent(out) :: observer_local_hour      !>
+    REAL(KIND(1D0)), intent(in) :: sun_rigth_ascension      !>
 
 
     observer_local_hour = apparent_stime_at_greenwich + locationlongitude - sun_rigth_ascension
-    ! Set the range to [0-360] 
+    ! Set the range to [0-360]
     observer_local_hour=set_to_range(observer_local_hour)
-end subroutine  observer_local_hour_calculation 
+end subroutine  observer_local_hour_calculation
 
 subroutine topocentric_sun_position_calculate(topocentric_sun_positionrigth_ascension &
      &,topocentric_sun_positionrigth_ascension_parallax,topocentric_sun_positiondeclination,&
      &locationaltitude,locationlatitude,observer_local_hour,sun_rigth_ascension,&
      &sun_geocentric_declination,earth_heliocentric_positionradius)
-    implicit none 
+    implicit none
 
-    REAL(KIND(1D0)), intent(in) :: earth_heliocentric_positionradius   
-    REAL(KIND(1D0)), intent(in) :: locationlatitude      !>  
+    REAL(KIND(1D0)), intent(in) :: earth_heliocentric_positionradius
+    REAL(KIND(1D0)), intent(in) :: locationlatitude      !>
     REAL(KIND(1D0)), intent(in) :: locationaltitude
-    REAL(KIND(1D0)), intent(in) :: observer_local_hour      !>  
-    REAL(KIND(1D0)),  intent(in) :: sun_geocentric_declination      !>  
-    REAL(KIND(1D0)),  intent(in) :: sun_rigth_ascension      !>  
-    REAL(KIND(1D0)) :: denominator      !>  
-    REAL(KIND(1D0)) :: eq_horizontal_parallax      !>  
-    REAL(KIND(1D0)) :: nominator      !>  
-    REAL(KIND(1D0)) :: sun_rigth_ascension_parallax      !>  
-    REAL(KIND(1D0)) :: topocentric_sun_positiondeclination      !>  
-    REAL(KIND(1D0)) :: topocentric_sun_positionrigth_ascension      !>  
-    REAL(KIND(1D0)) :: topocentric_sun_positionrigth_ascension_parallax      !>  
-    REAL(KIND(1D0)) :: u      !>  
-    REAL(KIND(1D0)) :: x      !>  
+    REAL(KIND(1D0)), intent(in) :: observer_local_hour      !>
+    REAL(KIND(1D0)),  intent(in) :: sun_geocentric_declination      !>
+    REAL(KIND(1D0)),  intent(in) :: sun_rigth_ascension      !>
+    REAL(KIND(1D0)) :: denominator      !>
+    REAL(KIND(1D0)) :: eq_horizontal_parallax      !>
+    REAL(KIND(1D0)) :: nominator      !>
+    REAL(KIND(1D0)) :: sun_rigth_ascension_parallax      !>
+    REAL(KIND(1D0)) :: topocentric_sun_positiondeclination      !>
+    REAL(KIND(1D0)) :: topocentric_sun_positionrigth_ascension      !>
+    REAL(KIND(1D0)) :: topocentric_sun_positionrigth_ascension_parallax      !>
+    REAL(KIND(1D0)) :: u      !>
+    REAL(KIND(1D0)) :: x      !>
     REAL(KIND(1D0)) :: y      !>
     REAL(KIND(1D0)),PARAMETER       :: pi=3.141592653589793d+0
-    
-    ! topocentric_sun_positionrigth_ascension_parallax
-    ! This function compute the sun position (rigth ascension and declination) 
-    ! with respect to the observer local position at the Earth surface. 
 
-    ! Equatorial horizontal parallax of the sun in degrees 
+    ! topocentric_sun_positionrigth_ascension_parallax
+    ! This function compute the sun position (rigth ascension and declination)
+    ! with respect to the observer local position at the Earth surface.
+
+    ! Equatorial horizontal parallax of the sun in degrees
     eq_horizontal_parallax = 8.794 / (3600 * earth_heliocentric_positionradius)
 
-    ! Term u, used in the following calculations (in radians) 
+    ! Term u, used in the following calculations (in radians)
     u = atan(0.99664719 * tan(locationlatitude * pi/180))
 
-    ! Term x, used in the following calculations 
+    ! Term x, used in the following calculations
     x = cos(u) + ((locationaltitude/6378140) * cos(locationaltitude * pi/180))
 
-    ! Term y, used in the following calculations 
+    ! Term y, used in the following calculations
     y = (0.99664719d+0 * sin(u)) + ((locationaltitude/6378140) * sin(locationlatitude * pi/180))
 
-    ! Parallax in the sun rigth ascension (in radians) 
+    ! Parallax in the sun rigth ascension (in radians)
     nominator = -x * sin(eq_horizontal_parallax * pi/180.0) * sin(observer_local_hour * pi/180.0)
     denominator = cos(sun_geocentric_declination * pi/180.0) - &
     (x * sin(eq_horizontal_parallax * pi/180.0) * cos(observer_local_hour * pi/180.0))
     sun_rigth_ascension_parallax = atan2(nominator, denominator)
-    ! Conversion to degrees. 
+    ! Conversion to degrees.
     topocentric_sun_positionrigth_ascension_parallax = sun_rigth_ascension_parallax * 180.0/pi
 
-    ! Topocentric sun rigth ascension (in degrees) 
+    ! Topocentric sun rigth ascension (in degrees)
     topocentric_sun_positionrigth_ascension = sun_rigth_ascension + (sun_rigth_ascension_parallax * 180.0/pi)
 
-    ! Topocentric sun declination (in degrees) 
+    ! Topocentric sun declination (in degrees)
     nominator = (sin(sun_geocentric_declination * pi/180.0) - (y*sin(eq_horizontal_parallax * pi/180.0)))&
          & * cos(sun_rigth_ascension_parallax)
     denominator = cos(sun_geocentric_declination * pi/180.0) - (y*sin(eq_horizontal_parallax * pi/180.0))&
          & * cos(observer_local_hour * pi/180.0)
     topocentric_sun_positiondeclination = atan2(nominator, denominator) * 180.0/pi
-end subroutine  topocentric_sun_position_calculate 
+end subroutine  topocentric_sun_position_calculate
 
 subroutine topocentric_local_hour_calculate(observer_local_hour, topocentric_sun_positionrigth_ascension_parallax,&
      & topocentric_local_hour)
-    implicit none 
+    implicit none
 
-    REAL(KIND(1D0)), intent(in) :: observer_local_hour      !>  
-    REAL(KIND(1D0)), intent(out) :: topocentric_local_hour      !>  
-    REAL(KIND(1D0)), intent(in) :: topocentric_sun_positionrigth_ascension_parallax     !>  
+    REAL(KIND(1D0)), intent(in) :: observer_local_hour      !>
+    REAL(KIND(1D0)), intent(out) :: topocentric_local_hour      !>
+    REAL(KIND(1D0)), intent(in) :: topocentric_sun_positionrigth_ascension_parallax     !>
 
-    ! This function compute the topocentric local jour angle in degrees 
+    ! This function compute the topocentric local jour angle in degrees
 
     topocentric_local_hour = observer_local_hour - topocentric_sun_positionrigth_ascension_parallax
-end subroutine  topocentric_local_hour_calculate 
- 
+end subroutine  topocentric_local_hour_calculate
+
 subroutine sun_topocentric_zenith_angle_calculate(locationlatitude , topocentric_sun_positiondeclination, &
      &topocentric_local_hour, sunazimuth,sunzenith)
-    implicit none 
+    implicit none
 
-    REAL(KIND(1D0)), intent(in) :: locationlatitude     !>  
-    REAL(KIND(1D0)), intent(in) :: topocentric_local_hour      !>  
-    REAL(KIND(1D0)), intent(in) :: topocentric_sun_positiondeclination   
-    REAL(KIND(1D0)) :: corr_elevation      !>  
-    REAL(KIND(1D0)) :: apparent_elevation      !>  
-    REAL(KIND(1D0)) :: argument      !>  
-    REAL(KIND(1D0)) :: denominator      !>  
-    REAL(KIND(1D0)) :: nominator      !>  
-    REAL(KIND(1D0)) :: refraction_corr      !>  
-    REAL(KIND(1D0)) :: sunazimuth      !>  
-    REAL(KIND(1D0)) :: sunzenith      !>  
+    REAL(KIND(1D0)), intent(in) :: locationlatitude     !>
+    REAL(KIND(1D0)), intent(in) :: topocentric_local_hour      !>
+    REAL(KIND(1D0)), intent(in) :: topocentric_sun_positiondeclination
+    REAL(KIND(1D0)) :: corr_elevation      !>
+    REAL(KIND(1D0)) :: apparent_elevation      !>
+    REAL(KIND(1D0)) :: argument      !>
+    REAL(KIND(1D0)) :: denominator      !>
+    REAL(KIND(1D0)) :: nominator      !>
+    REAL(KIND(1D0)) :: refraction_corr      !>
+    REAL(KIND(1D0)) :: sunazimuth      !>
+    REAL(KIND(1D0)) :: sunzenith      !>
      REAL(KIND(1D0)),PARAMETER       :: pi=3.141592653589793d+0
-    ! This function compute the sun zenith angle, taking into account the 
-    ! atmospheric refraction. A default temperature of 283K and a 
-    ! default pressure of 1010 mbar are used. 
+    ! This function compute the sun zenith angle, taking into account the
+    ! atmospheric refraction. A default temperature of 283K and a
+    ! default pressure of 1010 mbar are used.
 
-    ! Topocentric elevation, without atmospheric refraction 
+    ! Topocentric elevation, without atmospheric refraction
     argument = (sin(locationlatitude * pi/180.0) * sin(topocentric_sun_positiondeclination * pi/180.0)) + &
     (cos(locationlatitude * pi/180.0) * cos(topocentric_sun_positiondeclination * pi/180.0) * &
          &cos(topocentric_local_hour * pi/180.0))
     corr_elevation = asin(argument) * 180.0/pi
 
-    ! Atmospheric refraction correction (in degrees) 
+    ! Atmospheric refraction correction (in degrees)
     argument = corr_elevation + (10.3/(corr_elevation + 5.11))
     refraction_corr = 1.02 / (60 * tan(argument * pi/180.0))
 
-    ! For exact pressure and temperature correction, use this, 
-    ! with P the pressure in mbar amd T the temperature in Kelvins: 
-    ! refraction_corr = (P/1010) * (283/T) * 1.02 / (60 * tan(argument * pi/180)); 
+    ! For exact pressure and temperature correction, use this,
+    ! with P the pressure in mbar amd T the temperature in Kelvins:
+    ! refraction_corr = (P/1010) * (283/T) * 1.02 / (60 * tan(argument * pi/180));
 
-    ! Apparent elevation 
+    ! Apparent elevation
     apparent_elevation = corr_elevation + refraction_corr
 
     sunzenith = 90.0 - apparent_elevation
 
-    ! Topocentric azimuth angle. The +180 conversion is to pass from astronomer 
-    ! notation (westward from south) to navigation notation (eastward from 
-    ! north); 
+    ! Topocentric azimuth angle. The +180 conversion is to pass from astronomer
+    ! notation (westward from south) to navigation notation (eastward from
+    ! north);
     nominator = sin(topocentric_local_hour * pi/180.0)
     denominator = (cos(topocentric_local_hour * pi/180.0) * sin(locationlatitude * pi/180.0)) - &
     (tan(topocentric_sun_positiondeclination * pi/180.0) * cos(locationlatitude * pi/180.0))
     sunazimuth = (atan2(nominator, denominator) * 180.0/pi) + 180.0
-    ! Set the range to [0-360] 
+    ! Set the range to [0-360]
     sunazimuth=set_to_range(sunazimuth)
 
-end subroutine  sun_topocentric_zenith_angle_calculate 
+end subroutine  sun_topocentric_zenith_angle_calculate
 
 FUNCTION set_to_range(var) RESULT(vari)
-! This function make sure the variable is in the specified range.     
+! This function make sure the variable is in the specified range.
 
-    REAL(KIND(1D0)) :: max_interval      !>  
-    REAL(KIND(1D0)) :: min_interval      !>  
-    REAL(KIND(1D0)) :: var 
-    REAL(KIND(1D0)) :: vari 
-    ! 
+    REAL(KIND(1D0)) :: max_interval      !>
+    REAL(KIND(1D0)) :: min_interval      !>
+    REAL(KIND(1D0)) :: var
+    REAL(KIND(1D0)) :: vari
+    !
     max_interval=360.0
     min_interval=0.0
 
     vari = var - max_interval * floor(var/max_interval)
 
-    if (vari<min_interval) then 
+    if (vari<min_interval) then
     vari = vari + max_interval
-    end if 
+    end if
 
-END FUNCTION  set_to_range 
+END FUNCTION  set_to_range
 
-end subroutine  sun_position 
-
-
+end subroutine  sun_position

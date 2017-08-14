@@ -60,6 +60,7 @@ SUBROUTINE AnOHM(Gridiv)
         !    PRINT*,  'DOY:', id
         !
         ! END IF
+        !   print*, 'surfrac of ', is, 'is: ',surfrac
 
         !   initialize the coefs.
         xa1 = 0.1
@@ -358,24 +359,7 @@ SUBROUTINE AnOHM_coef_land_cal(&
   REAL(KIND(1d0))    :: solTs              ! surface temperature
   LOGICAL :: flagGood = .TRUE.  ! quality flag, T for good, F for bad
   INTEGER :: lenDay=24,err
-  INTERFACE
-     SUBROUTINE AnOHM_FcLoad(sfc,xid,xgrid,Sd,Ta,WS,WF,AH,tHr)
-       IMPLICIT NONE
-       INTEGER,INTENT(in) :: sfc, xid, xgrid
-       REAL(KIND(1d0)),DIMENSION(:),INTENT(inout),ALLOCATABLE :: Sd,Ta,WS,WF,AH,tHr
-     END SUBROUTINE AnOHM_FcLoad
-     SUBROUTINE AnOHM_FcCal(Sd,Ta,WS,WF,AH,tHr,& ! input
-          ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH)       ! output
-       REAL(KIND(1d0)),DIMENSION(:),INTENT(in):: Sd,Ta,WS,WF,AH,tHr
-       REAL(KIND(1d0)),INTENT(out) ::&
-            ASd,mSd,&   ! Sd scales
-            ATa,mTa,&   ! Ta scales
-            tau,&       ! phase lag between Sd and Ta
-            mWS,&       ! mean WS
-            mWF,&       ! mean WF
-            mAH         ! mean AH
-     END SUBROUTINE AnOHM_FcCal
-  END INTERFACE
+
 
   !   give fixed values for test
   !   properties
@@ -747,48 +731,6 @@ SUBROUTINE AnOHM_coef_water_cal(&
   REAL(KIND(1d0)) :: cdtau,cdpsi,cdphi      ! temporary use
   REAL(KIND(1d0)) :: xxT,xxkappa,xxdltphi,xchWS   ! temporary use
   LOGICAL :: flagGood = .TRUE.  ! quality flag, T for good, F for bad
-
-  INTERFACE
-     SUBROUTINE AnOHM_FcLoad(sfc,xid,xgrid,Sd,Ta,WS,WF,AH,tHr)
-       IMPLICIT NONE
-       INTEGER,INTENT(in) :: sfc, xid, xgrid
-       REAL(KIND(1d0)),DIMENSION(:),INTENT(inout),ALLOCATABLE :: Sd,Ta,WS,WF,AH,tHr
-     END SUBROUTINE AnOHM_FcLoad
-     SUBROUTINE AnOHM_FcCal(Sd,Ta,WS,WF,AH,tHr,& ! input
-          ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH)       ! output
-       REAL(KIND(1d0)),DIMENSION(:),INTENT(in):: Sd,Ta,WS,WF,AH,tHr
-       REAL(KIND(1d0)),INTENT(out) ::&
-            ASd,mSd,&   ! Sd scales
-            ATa,mTa,&   ! Ta scales
-            tau,&       ! phase lag between Sd and Ta
-            mWS,&       ! mean WS
-            mWF,&       ! mean WF
-            mAH         ! mean AH
-     END SUBROUTINE AnOHM_FcCal
-  END INTERFACE
-
-  ! !   give fixed values for test
-  !
-  ! !   properties
-  ! xalb  = .05
-  ! xemis = .95
-  ! xcp   = 2e6
-  ! xk    = 1.5
-  ! xch   = 2
-  ! xBo   = 1/3.
-  xeta  = 0.3
-  xmu   = 0.2
-  !
-  !
-  ! !   forcings
-  ! ASd = 400
-  ! mSd = 200
-  ! ATa = 5
-  ! mTa = 25+C2K
-  ! tau = PI/6
-  ! WS  = 2.1
-  ! AH  = 0
-  ! Wf  = 0
 
 
   !   calculate sfc properties related parameters:
@@ -1166,8 +1108,6 @@ SUBROUTINE AnOHM_FcCal(Sd,Ta,WS,WF,AH,tHr,& ! input
   ALLOCATE(SdMask(lenDay), stat=err)
   IF ( err/= 0) PRINT *, "SdMask: Allocation request denied"
   SdMask=Sd>0.1
-
-
 
   ! CALL r8vec_print(24,Sd,'Sd')
   ! CALL r8vec_print(24,tHr,'tHr')

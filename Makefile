@@ -1,11 +1,22 @@
 CC = gfortran $(CFLAGS)          # compiler
 CC_nc = gfortran $(CFLAGS_nc)    # compiler with netcdf support
 TARGET = SUEWS_V2017b      # program name
-CFLAGS = -g -pg -Wall -Wtabs -fbounds-check -cpp -Wno-unused-dummy-argument -Wno-unused-variable \
-				-fbacktrace -ffpe-trap=zero,overflow,underflow,invalid
-CFLAGS_nc = -g -pg -Wall -Wtabs -fbounds-check -I`nc-config --includedir` -Dnc=1 -cpp \
-				-Wno-unused-dummy-argument -Wno-unused-variable\
-				-fbacktrace -ffpe-trap=zero,overflow,underflow,invalid
+
+# static flag for different OS to correctly link static libs
+# so gfortran dependency can be relaxed
+# but netCDF is still linked in the dynamic way as suggested by UCAR
+ifeq ($(OS),Windows_NT)
+  	STATIC = -static # mingw
+		STATICLIB =
+else
+		STATIC = -static-libgfortran -static-libgcc # single -static won't work on macOS
+		STATICLIB = libquadmath.a # force-ship this static lib
+endif
+
+CFLAGS = $(STATIC) -g -pg -Wall -Wtabs -fbounds-check -cpp -Wno-unused-dummy-argument -Wno-unused-variable \
+				-fbacktrace -ffpe-trap=zero,overflow,underflow,invalid,denormal
+CFLAGS_nc = $(CFLAGS) \
+				-I`nc-config --includedir` -Dnc=1 # options for netcdf build
 
 # All the files which include modules used by other modules (these therefore
 # needs to be compiled first)
@@ -17,16 +28,17 @@ MODULES = LUMPS_Module_constants.o  \
 					precmod.o \
 					stringmod.o \
 					qsort_c_module.o\
+					LUMPS_NARP_v3.o \
+					SUEWS_OHM.o \
 					minpack.o
 
 # Rest of the files including modules and functions which are independent
 OTHERS =  BLUEWS_CBL.o   \
-          LUMPS_NARP_v3.o \
           SUEWS_Calculations.o  \
           BLUEWS_Diff.o  \
+          SUEWS_translate.o \
           SUEWS_HorizontalSoilWater.o \
           LUMPS_atmos_functions_moist.o \
-          SUEWS_OHM.o \
           LUMPS_atmos_functions_stab.o \
           SUEWS_ReDistributeWater.o \
           SUEWS_RoughnessParameters.o \
@@ -67,26 +79,31 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_ESTM_initials.o \
           SUEWS_ESTM_v2016.o \
           SUEWS_CO2.o \
-					SUEWS_Initial.o\
-					SUEWS_DailyState.o\
-					SUEWS_Diagnostics.o\
+					SUEWS_Initial.o \
+					SUEWS_DailyState.o \
+					SUEWS_AnOHM.o \
 					SUEWS_translate.o
 # modules under rapid development
-TEST =		SUEWS_AnOHM.o
-
+TEST =		SUEWS_Diagnostics.o
 
 
 # Build main program - main uses MODULES and OTHERS
 main: SUEWS_Program.f95 $(MODULES) $(OTHERS) $(TEST)
 	$(CC) SUEWS_ctrl_output.f95  -c ; \
 	$(CC) SUEWS_Program.f95  -c ; \
-	$(CC) SUEWS_Program.o $(MODULES) $(OTHERS) $(TEST) SUEWS_ctrl_output.o -o $(TARGET)
+	$(CC) SUEWS_Program.o $(MODULES) $(OTHERS) $(TEST) \
+	$(STATICLIB) \
+	SUEWS_ctrl_output.o	-o $(TARGET)
 
 # Build main program with NETCDF support - main uses MODULES and OTHERS
 netcdf: SUEWS_Program.f95 $(MODULES) $(OTHERS) $(TEST)
 	$(CC_nc) SUEWS_ctrl_output.f95  -c ; \
 	$(CC_nc) SUEWS_Program.f95  -c ; \
-	$(CC_nc) SUEWS_Program.o $(MODULES) $(OTHERS) $(TEST) SUEWS_ctrl_output.o -L`nc-config --libdir` -lnetcdf -lnetcdff -o $(TARGET)
+	$(CC_nc) SUEWS_Program.o $(MODULES) $(OTHERS) $(TEST) \
+	$(STATICLIB) \
+	SUEWS_ctrl_output.o \
+	-L`nc-config --libdir` -lnetcdf -lnetcdff \
+	-o $(TARGET)
 
 # If OTHERS have changed, compile them again
 $(OTHERS): $(MODULES) $(subst .o,.f95, $(OTHERS))

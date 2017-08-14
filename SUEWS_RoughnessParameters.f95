@@ -1,35 +1,83 @@
-SUBROUTINE RoughnessParameters
+SUBROUTINE RoughnessParameters(&
+
+                                ! input:
+     RoughLenMomMethod,&
+     nsurf,& ! number of surface types
+     PavSurf,&! surface type code
+     BldgSurf,&! surface type code
+     WaterSurf,&! surface type code
+     ConifSurf,&! surface type code
+     BSoilSurf,&! surface type code
+     DecidSurf,&! surface type code
+     GrassSurf,&! surface type code
+     sfr,&! surface fractions
+     areaZh,&
+     bldgH,&
+     EveTreeH,&
+     DecTreeH,&
+     porosity_id,&
+     FAIBldg,FAIEveTree,FAIDecTree,Z,&
+
+     ! output:
+     planF,&
+     Zh,Z0m,Zdm,ZZD&
+
+     )
   ! Get surface covers and frontal area fractions (LJ 11/2010)
   ! Last modified by HCW 08 Feb 2017 - fixed bug in Zh between grids, added default z0m, zdm
   !                  HCW 03 Mar 2015
   !                  sg feb 2012 - made separate subroutine
   !--------------------------------------------------------------------------------
-  USE data_in
-  USE gis_data
-  USE sues_data
-  USE allocateArray
-  USE mod_z
-  USE defaultNotUsed
-  USE time
+  ! USE data_in
+  ! USE gis_data
+  ! USE sues_data
+  ! USE allocateArray
+  ! USE mod_z
+  ! USE defaultNotUsed
+  ! USE time
 
   IMPLICIT NONE
+  INTEGER, INTENT(in) ::&
+       RoughLenMomMethod,&
+       nsurf,& ! number of surface types
+       PavSurf,&! surface type code
+       BldgSurf,&! surface type code
+       WaterSurf,&! surface type code
+       ConifSurf,&! surface type code
+       BSoilSurf,&! surface type code
+       DecidSurf,&! surface type code
+       GrassSurf! surface type code
+  REAL(KIND(1d0)), INTENT(in) ::&
+       sfr(nsurf),&! surface fractions
+       areaZh,&
+       bldgH,&
+       EveTreeH,&
+       DecTreeH,&
+       porosity_id,&
+       FAIBldg,FAIEveTree,FAIDecTree,Z
+  REAL(KIND(1d0)), INTENT(out) ::&
+       planF,&
+       Zh,Z0m,Zdm,ZZD
 
+
+  INTEGER, PARAMETER :: notUsedI=-55
+  REAL(KIND(1d0)),PARAMETER:: notUsed=-55.5
   REAL(KIND(1D0)):: z0m4Paved,z0m4Grass,z0m4BSoil,z0m4Water   !Default values for roughness lengths [m]
-  
+
   ! Set default values (using Moene & van Dam 2013, Atmos-Veg-Soil Interactions, Table 3.3)
-  Z0m4Paved = 0.003 !estimate 
+  Z0m4Paved = 0.003 !estimate
   Z0m4Grass = 0.02
   Z0m4BSoil = 0.002
   Z0m4Water = 0.0005
-  
+
   !------------------------------------------------------------------------------
   !If total area of buildings and trees is larger than zero, use tree heights and building heights to calculate zH
   IF (areaZh/=0) THEN
-     Zh=bldgH*sfr(BldgSurf)/areaZh + EveTreeH*sfr(ConifSurf)/areaZh + DecTreeH*(1-porosity(id))*sfr(DecidSurf)/areaZh
+     Zh=bldgH*sfr(BldgSurf)/areaZh + EveTreeH*sfr(ConifSurf)/areaZh + DecTreeH*(1-porosity_id)*sfr(DecidSurf)/areaZh
   ELSE
      Zh=0   !Set Zh to zero if areaZh = 0
   ENDIF
-  
+
   IF(Zh/=0)THEN
      !Calculate Z0m and Zdm depending on the Z0 method
      IF(RoughLenMomMethod==2) THEN  !Rule of thumb (G&O 1999)
@@ -37,8 +85,8 @@ SUBROUTINE RoughnessParameters
         Zdm=0.7*Zh
      ELSEIF(RoughLenMomMethod==3)THEN !MacDonald 1998
         IF (areaZh/=0)THEN  !Plan area fraction
-           !planF=FAIBldg*sfr(BldgSurf)/areaZh+FAItree*sfr(ConifSurf)/areaZh+FAItree*(1-porosity(id))*sfr(DecidSurf)/areaZh
-           planF=FAIBldg*sfr(BldgSurf)/areaZh + FAIEveTree*sfr(ConifSurf)/areaZh + FAIDecTree*(1-porosity(id))*sfr(DecidSurf)/areaZh
+           !planF=FAIBldg*sfr(BldgSurf)/areaZh+FAItree*sfr(ConifSurf)/areaZh+FAItree*(1-porosity_id)*sfr(DecidSurf)/areaZh
+           planF=FAIBldg*sfr(BldgSurf)/areaZh + FAIEveTree*sfr(ConifSurf)/areaZh + FAIDecTree*(1-porosity_id)*sfr(DecidSurf)/areaZh
         ELSE
            planF=0.00001
            Zh=1
@@ -56,10 +104,10 @@ SUBROUTINE RoughnessParameters
      ELSEIF(areaZh==1)THEN  !If, for some reason, Zh = 0 and areaZh == 1, assume height of 10 m and use rule-of-thumb
         z0m = 1
         zdm = 7
-        CALL ErrorHint(15,'Assuming mean height = 10 m, Setting z0m and zdm to default value',z0m,zdm,notUsedI)   
-     ENDIF 
+        CALL ErrorHint(15,'Assuming mean height = 10 m, Setting z0m and zdm to default value',z0m,zdm,notUsedI)
+     ENDIF
   ENDIF
-     
+
   ZZD=Z-zdm
 
   ! Error messages if aerodynamic parameters negative

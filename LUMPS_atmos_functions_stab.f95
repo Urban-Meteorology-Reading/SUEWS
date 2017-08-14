@@ -1,6 +1,7 @@
 !.c!! For Lumps Version 2 - no stability calculations
 !==========================================================
 !     Last change:
+!     TS   08 Aug 2017: added explicit interface
 !     TS   13 Jun 2017: corrections to the integral of stability functions
 !     MH   12 Apr 2017: Stable limit to exit do-loop
 !     LJ   25 Nov 2014: Limits for L
@@ -10,19 +11,66 @@
 !     L - monin obukhov stability length
 !       Van Ulden & Holtslag (1985) JCAM: 24: 1196-1207
 
-SUBROUTINE STAB_lumps(H,StabilityMethod,ustar,L)
-  USE mod_k
-  USE mod_z
-  USE mod_grav
-  USE data_in
-  USE time
-  USE defaultnotUsed
-  USE WhereWhen
-  IMPLICIT NONE
+SUBROUTINE STAB_lumps(&
 
-  REAL(KIND(1d0))::h,ustar,tstar,l,g_t_K,kuz,zl,&!zl_f, &
-       psim,stab_fn_mom,z0l,psimz0,lold
-  INTEGER ::i,StabilityMethod
+                                ! input
+     StabilityMethod,&
+     dectime,& !Decimal time
+     zzd,&     !Active measurement height (meas. height-displac. height)
+     z0M,&     !Aerodynamic roughness length
+     zdm,&     !Displacement height
+     avU1,&    !Average wind speed
+     Temp_C,&  !Air temperature
+                                ! output:
+         L,& !Obukhov length
+     Tstar,& !T*
+     USTAR,& !Friction velocity
+     h,    & !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
+     psim  & !Stability function of momentum
+     )
+  ! USE mod_k
+  ! USE mod_z
+  ! USE mod_grav
+  ! USE data_in
+  ! USE time
+  ! USE defaultnotUsed
+  ! USE WhereWhen
+  IMPLICIT NONE
+  INTEGER,INTENT(in):: StabilityMethod
+
+  REAL(KIND(1d0)),INTENT(in)::&
+       dectime,& !Decimal time
+       zzd,&     !Active measurement height (meas. height-displac. height)
+       z0M,&     !Aerodynamic roughness length
+       zdm,&     !Displacement height
+       avU1,&    !Average wind speed
+       Temp_C    !Air temperature
+
+
+  REAL(KIND(1d0)),INTENT(out)::&
+       L,    &!Obukhov length
+       Tstar,&!T*
+       USTAR,&!Friction velocity
+       h,&    !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
+       psim   !Stability function of momentum
+
+  REAL(KIND(1d0))::stab_fn_mom,&
+       G_T_k,&
+       KUZ,&
+       LOLD,&
+       zL,&
+       z0l,&
+       stab_f,&
+       psimz0
+  REAL(KIND(1d0)),PARAMETER :: &
+       k=0.4,&             !Von Karman's contant
+       k2=0.16,&           !Power of Van Karman's contant
+       neut_limit=0.001000,& !Limit for neutral stability
+       grav=9.80665,&  !g - gravity - physics today august 1987
+       notUsedI=-55
+
+  INTEGER :: i
+
   LOGICAL :: debug=.FALSE.
 
   IF(debug) WRITE(*,*)StabilityMethod,z0M,avU1,h,USTAR,L
@@ -86,10 +134,15 @@ FUNCTION stab_fn_mom(StabilityMethod,ZL,zl_f) RESULT(psym)
   !Modified by LJ Mar 2010
   !Input:Used stability method, stability (z-d)/L, zeta (either (z-d)/L or z0/L)
 
-  USE mod_z
-  USE mod_k
+  ! USE mod_z
+  ! USE mod_k
 
   IMPLICIT NONE
+  REAL(KIND(1d0)),PARAMETER :: &
+       k=0.4,&             !Von Karman's contant
+       k2=0.16,&           !Power of Van Karman's contant
+       neut_limit=0.001000,& !Limit for neutral stability
+       notUsedI=-55
 
   REAL (KIND(1d0)):: piover2,psym,zl,zl_f,x,x2
   INTEGER ::StabilityMethod
@@ -159,8 +212,13 @@ END FUNCTION stab_fn_mom
 !
 ! PSYH - stability function for heat
 FUNCTION stab_fn_heat(StabilityMethod,ZL,zl_f) RESULT (psyh)
-  USE mod_k
+  ! USE mod_k
   IMPLICIT NONE
+  REAL(KIND(1d0)),PARAMETER :: &
+       k=0.4,&             !Von Karman's contant
+       k2=0.16,&           !Power of Van Karman's contant
+       neut_limit=0.001000,& !Limit for neutral stability
+       notUsedI=-55
 
   REAL (KIND(1d0)):: zl,zl_f,psyh,x
   INTEGER :: StabilityMethod
@@ -192,7 +250,7 @@ FUNCTION stab_fn_heat(StabilityMethod,ZL,zl_f) RESULT (psyh)
            PSYH=(-4.5)*Zl_f
         ENDIF
      ELSE !zL>1, very stable. otherwise psyh would be too large. TS 13 Jun 2017
-      ! adopt the form as Brutasert (1982) eqn 4.58. but following the coeffs. of the above eqns
+        ! adopt the form as Brutasert (1982) eqn 4.58. but following the coeffs. of the above eqns
         IF(StabilityMethod==4)THEN !Businger et al (1971) modifed  Hogstrom (1988)
            psyh=(-7.8)*(1+LOG(zl_f))
         ELSE !Dyer (1974)  PSYH=(-5)*ZL	modifed  Hogstrom (1988)

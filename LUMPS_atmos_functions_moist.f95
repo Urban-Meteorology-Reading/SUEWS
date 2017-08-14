@@ -1,22 +1,64 @@
 !.c!! For Lumps Version 2 - no stability calculations
 ! Latent heat of sublimation when air temperature below zero added. LJ Nov 2012
-
-SUBROUTINE atmos_moist_lumps(air_dens)
-  USE data_in
-  USE moist
-  USE gas
-  USE time
-  USE snowMod
-  USE defaultnotUsed
+! explict interface added to all subroutines, TS 08 Aug 2017
+SUBROUTINE atmos_moist_lumps(&
+! input:
+     Temp_C,Press_hPa,avRh,dectime,&
+! output:
+     lv_J_kg,lvS_J_kg,&
+     es_hPa,&
+     Ea_hPa,&
+     VPd_hpa,&
+     VPD_Pa,&
+     dq,&
+     dens_dry,&
+     avcp,&
+     air_dens)
+  ! USE data_in
+  ! USE moist
+  ! USE gas
+  ! USE time
+  ! use snowMod
+  ! use defaultnotUsed
 
   IMPLICIT NONE
-  REAL(KIND(1d0))::vap_dens, air_dens
+  REAL(KIND(1d0))::vap_dens
+
+  REAL(KIND(1d0)),INTENT(in)::&
+       Temp_C,&
+       Press_hPa,&
+       avRh,dectime
+  REAL(KIND(1d0)),INTENT(out)::&
+       lv_J_kg,&!Latent heat of vaporization in [J kg-1]
+       lvS_J_kg,&!Latent heat of sublimation in J/kg
+       es_hPa,&!Saturation vapour pressure over water in hPa
+       Ea_hPa,&!Vapour pressure of water in hPa
+       VPd_hpa,& !vapour pressure deficit in hPa
+       VPD_Pa,& !vapour pressure deficit in Pa
+       dq,&!Specific humidity deficit in g/kg
+       dens_dry,& !Vap density or absolute humidity	 (kg/m3)
+       avcp,&!specific heat capacity in J kg-1 K-1
+       air_dens!Air density in kg/m3
+
   REAL(KIND(1d0))::sat_vap_press,spec_heat_beer,lat_vap,lat_vapSublim   ! functions
   REAL(KIND(1d0))::SPEC_HUM_DEF
+
+
+  REAL (KIND(1d0)),PARAMETER:: &
+       comp          = 0.9995, &
+       epsil         = 0.62197,&           !ratio molecular weight of water vapor/dry air (kg/mol/kg/mol)
+       epsil_gkg     = 621.97, &           !ratio molecular weight of water vapor/dry air in g/kg
+       dry_gas       = 8.31451,&           !Dry gas constant (J/k/mol)
+       gas_ct_wat    = 461.05,&            !Gas constant for water (J/kg/K)
+       molar         = 0.028965,&          !Dry air molar fraction in kg/mol
+       molar_wat_vap = 0.0180153,&         !Molar fraction of water vapor in kg/mol
+       gas_ct_dry    = 8.31451/0.028965,&  !j/kg/k=dry_gas/molar
+       gas_ct_wv     = 8.31451/0.0180153,& !j/kg/kdry_gas/molar_wat_vap
+       waterDens     = 999.8395            !Density of water in 0 cel deg
   INTEGER::from=1
 
   !Saturation vapour pressure over water in hPa
-  es_hPa = sat_vap_press(Temp_C,Press_hPa,from)
+  es_hPa = sat_vap_press(Temp_C,Press_hPa,from,dectime) ! dectime is more or less unnecessary here
 
   !Vapour pressure of water in hPa
   Ea_hPa=avRh/100*es_hPa
@@ -40,15 +82,17 @@ SUBROUTINE atmos_moist_lumps(air_dens)
   !Calculate specific heat capacity in J kg-1 K-1
   avcp=spec_heat_beer(Temp_C,avRh,vap_dens,dens_dry)
 
-  lv_J_kg=lat_vap(Temp_C,Ea_hPa,Press_hPa,avcp)
+  !Latent heat of vaporization in [J kg-1]
+  lv_J_kg=lat_vap(Temp_C,Ea_hPa,Press_hPa,avcp,dectime)
 
+  !Latent heat of sublimation in J/kg
   IF(Temp_C<0.000) THEN
-     lvS_J_kg=lat_vapSublim(Temp_C,Ea_hPa,Press_hPa,avcp)
+     lvS_J_kg=lat_vapSublim(Temp_C,Ea_hPa,Press_hPa,avcp,dectime)
   ENDIF
 
   !if(debug)write(*,*)lv_J_kg,Temp_C,'lv2'
   IF(press_hPa<900) THEN
-     CALL ErrorHint(46, 'Function Atmos_moist_Lumps',press_hPa,notUsed, notUsedI)
+     CALL ErrorHint(46, 'Function Atmos_moist_Lumps',press_hPa,-55.55, -55)
   ENDIF
   RETURN
 END SUBROUTINE atmos_moist_lumps
@@ -62,13 +106,15 @@ END SUBROUTINE atmos_moist_lumps
 !Changed to use the updated version (Buck research manual, 1996) from Buck (1981)
 !For water different equations in cold and warm temperatures
 
-FUNCTION sat_vap_press(Temp_c,PRESS_hPa,from) RESULT(es_hPa)
-  USE time
-  USE defaultnotUsed
+FUNCTION sat_vap_press(Temp_c,PRESS_hPa,from,dectime) RESULT(es_hPa)
+  ! USE time
+  ! USE defaultnotUsed
   IMPLICIT NONE
 
-  REAL(KIND(1d0))::e_mb,f,temp_C,press_hpa,press_kpa,es_hPA!,pw
+  REAL(KIND(1d0))::temp_C,press_hpa,dectime!,pw
+  REAL(KIND(1d0))::e_mb,f,press_kpa,es_hPA
   INTEGER:: from,iv
+  INTEGER,PARAMETER::notUsedI=-55
 
   !If air temperature between -0.001 -
   IF(ABS(temp_C)<0.001000)THEN
@@ -106,13 +152,14 @@ FUNCTION sat_vap_press(Temp_c,PRESS_hPa,from) RESULT(es_hPa)
 END FUNCTION sat_vap_press
 
 
-FUNCTION sat_vap_pressIce(Temp_c,PRESS_hPa,from) RESULT(es_hPa)
-  USE time
-  USE defaultnotUsed
+FUNCTION sat_vap_pressIce(Temp_c,PRESS_hPa,from,dectime) RESULT(es_hPa)
+  ! USE time
+  ! USE defaultnotUsed
   IMPLICIT NONE
 
-  REAL(KIND(1d0))::e_mb,f,temp_C,press_hpa,press_kpa,es_hPA!,pw
+  REAL(KIND(1d0))::e_mb,f,temp_C,press_hpa,press_kpa,es_hPA,dectime!,pw
   INTEGER:: from,iv
+  INTEGER,PARAMETER::notUsedI=-55
 
   !If air temperature between -0.001 -
   IF(ABS(temp_C)<0.001000)THEN
@@ -143,9 +190,10 @@ END FUNCTION sat_vap_pressIce
 !Output: specific humidity deficit in g/kg
 !Input: Dry air density and air pressure in hPa
 FUNCTION spec_hum_def(vpd_hPa,press_hPa) RESULT(dq)
-  USE gas
+  ! USE gas
   IMPLICIT NONE
-  REAL(KIND(1d0))::press_hPa,vpd_hPa,dq
+  REAL(KIND(1d0))           :: press_hPa,vpd_hPa,dq
+  REAL(KIND(1d0)),PARAMETER :: epsil_gkg = 621.97 !ratio molecular weight of water vapor/dry air in g/kg
   dq=epsil_gkg*vpd_hPa/press_hPa ! Phd Thesis II.13 p 196
 END FUNCTION spec_hum_def
 
@@ -157,7 +205,7 @@ FUNCTION spec_heat_beer(Temp_C,rh,rho_v,rho_d) RESULT (cp)
   ! Can be found from SG:s office from Atmmos Moist map
   !-------------------------------------------------------------------------------
 
-  USE defaultnotUsed
+  ! USE defaultnotUsed
   IMPLICIT NONE
 
   REAL(KIND(1d0))::cp,cpd,cpm,rho_v,rho_d,rh,temp_C
@@ -183,21 +231,22 @@ END FUNCTION spec_heat_beer
 !sg sep 99 converted f90 FUNCTION
 !Added calcualation of latent heat of sublimation, LJ June 2012
 
-FUNCTION Lat_vap(Temp_C,Ea_hPa,Press_hPa,cp) RESULT (lv_J_kg)
+FUNCTION Lat_vap(Temp_C,Ea_hPa,Press_hPa,cp,dectime) RESULT (lv_J_kg)
   !Input: Air temperature, Water vapour pressure, Air pressure, heat capacity
   !Output: latent heat of vaporization
 
-  USE time
-  USE SnowMod
-  USE defaultnotUsed
+  ! USE time
+  ! USE SnowMod
+  ! USE defaultnotUsed
 
   IMPLICIT NONE
   REAL(KIND(1d0))::cp,lv_J_kg,ea_fix,tw,&
-       incr,es_tw,psyc,ea_est,press_hPa,ea_HPa, temp_C!,Temp_K
-  REAL (KIND(1d0))::sat_vap_press,psyc_const ! functions
+       incr,es_tw,psyc,ea_est,press_hPa,ea_HPa, temp_C,dectime!,Temp_K
+  REAL(KIND(1d0))::sat_vap_press,psyc_const ! functions
 
   LOGICAL:: switch1=.FALSE.,switch2=.FALSE.!,debug=.true.
   INTEGER:: ii,from=2
+  REAL(KIND(1d0)),PARAMETER::notUsed=-55.55
 
   ea_fix=ea_hPa
   !if(debug) write(*,*)Temp_C, 'LV'
@@ -217,7 +266,7 @@ FUNCTION Lat_vap(Temp_C,Ea_hPa,Press_hPa,cp) RESULT (lv_J_kg)
 
      ! if(debug.and.dectime>55.13.and.dectime<55.2)write(35,*)'% 1',Tw
 
-     es_tw=sat_vap_press(Tw,Press_hPa,from)  !Calculate saturation vapour pressure in hPa
+     es_tw=sat_vap_press(Tw,Press_hPa,from,dectime)  !Calculate saturation vapour pressure in hPa
 
      !if(debug.and.dectime>55.13.and.dectime<55.2)write(35,*)'% 2',Tw
 
@@ -255,15 +304,15 @@ FUNCTION Lat_vap(Temp_C,Ea_hPa,Press_hPa,cp) RESULT (lv_J_kg)
 END FUNCTION lat_vap
 
 
-FUNCTION Lat_vapSublim(Temp_C,Ea_hPa,Press_hPa,cp) RESULT (lvS_J_kg)
+FUNCTION Lat_vapSublim(Temp_C,Ea_hPa,Press_hPa,cp,dectime) RESULT (lvS_J_kg)
   !Input: Air temperature, Water vapour pressure, Air pressure, heat capacity
   !Output: latent heat of sublimation in units J/kg
 
-  USE time
+  ! USE time
 
   IMPLICIT NONE
 
-  REAL(KIND(1d0))::lvS_J_kg,temp_C,tw,incr,Ea_hPa,Press_hPa,cp
+  REAL(KIND(1d0))::lvS_J_kg,temp_C,tw,incr,Ea_hPa,Press_hPa,cp,dectime
   !REAL(KIND(1d0))::ea_fix,es_tw,psyc,ea_est,Temp_K
   !REAL(KIND(1d0))::sat_vap_pressIce,psyc_const ! functions
   !LOGICAL:: switch1=.FALSE.,switch2=.FALSE.!,debug=.true.

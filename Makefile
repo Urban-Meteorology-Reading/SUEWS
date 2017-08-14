@@ -81,10 +81,10 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_CO2.o \
 					SUEWS_Initial.o \
 					SUEWS_DailyState.o \
-					SUEWS_AnOHM.o \
-					SUEWS_translate.o
+					SUEWS_Diagnostics.o
+
 # modules under rapid development
-TEST =		SUEWS_Diagnostics.o
+TEST =		SUEWS_AnOHM.o 
 
 
 # Build main program - main uses MODULES and OTHERS

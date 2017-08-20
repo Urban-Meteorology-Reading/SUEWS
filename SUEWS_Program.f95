@@ -57,8 +57,8 @@ PROGRAM SUEWS_Program
   INTEGER:: nlinesLimit,&   !Max number of lines that can be read in one go for each grid
        NumberOfYears   !Number of years to be run
 
-  INTEGER:: UnitOrigMet = 100       !Unit number for original met forcing files (arbitrary)
-  INTEGER:: UnitOrigESTM = 101      !Unit number for original ESTM forcing files (arbitrary)
+  ! INTEGER:: UnitOrigMet = 100       !Unit number for original met forcing files (arbitrary)
+  ! INTEGER:: UnitOrigESTM = 101      !Unit number for original ESTM forcing files (arbitrary)
 
   INTEGER:: year_int, & ! Year as an integer (from SiteSelect rather than met forcing file)
        igrid,&     !Grid number (from 1 to NumberOfGrids)
@@ -66,9 +66,9 @@ PROGRAM SUEWS_Program
        ir,irMax,&  !Row number within each block (from 1 to irMax)
        rr !Row of SiteSelect corresponding to current year and grid
 
-  INTEGER:: ios
+  ! INTEGER:: ios
 
-  INTEGER:: iv
+  ! INTEGER:: iv
 
   REAL::  timeStart, timeFinish ! profiling use, AnOHM TS
   ! REAL :: xErr      ! error in Bo iteration, AnOHM TS 20160331
@@ -203,17 +203,22 @@ PROGRAM SUEWS_Program
 
         ! Find number of lines in orig met file
         !write(*,*) TRIM(FileOrigMet)
-        OPEN(UnitOrigMet,file=TRIM(FileOrigMet),status='old',err=313)
-        CALL skipHeader(UnitOrigMet,SkipHeaderMet)  !Skip header
-        nlinesOrigMetdata = 0   !Initialise nlinesMetdata (total number of lines in met forcing file)
-        DO
-           READ(UnitOrigMet,*,iostat=ios) iv
-           IF(ios<0 .OR. iv == -9) EXIT   !IF (iv == -9) EXIT
-           nlinesOrigMetdata = nlinesOrigMetdata + 1
-        ENDDO
-        CLOSE(UnitOrigMet)
+        ! OPEN(UnitOrigMet,file=TRIM(FileOrigMet),status='old',err=313)
+        ! CALL skipHeader(UnitOrigMet,SkipHeaderMet)  !Skip header
+        ! nlinesOrigMetdata = 0   !Initialise nlinesMetdata (total number of lines in met forcing file)
+        ! DO
+        !    READ(UnitOrigMet,*,iostat=ios) iv
+        !    IF(ios<0 .OR. iv == -9) EXIT   !IF (iv == -9) EXIT
+        !    nlinesOrigMetdata = nlinesOrigMetdata + 1
+        ! ENDDO
+        ! CLOSE(UnitOrigMet)
+        !
+        ! WRITE(*,*) 'nlinesOrigMetdata', nlinesOrigMetdata
 
-        !write(*,*) 'nlinesOrigMetdata', nlinesOrigMetdata
+        nlinesOrigMetdata = 0   !Initialise nlinesMetdata (total number of lines in met forcing file)
+        nlinesOrigMetdata=count_lines(TRIM(FileOrigMet))
+        ! WRITE(*,*) 'nlinesOrigMetdata', nlinesOrigMetdata
+
         ReadLinesOrigMetData = nlinesOrigMetdata   !Initially set limit as the size of  file
         IF(nlinesOrigMetData*Nper > nlinesLimit) THEN   !But restrict if this limit exceeds memory capacity
            ReadLinesOrigMetData = INT(nlinesLimit/Nper)
@@ -252,18 +257,20 @@ PROGRAM SUEWS_Program
            FileMet=TRIM(FileInputPath)//TRIM(FileCodeXWG)//'_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
         ENDIF
 
-        ! Open this example met file
-        OPEN(10,file=TRIM(FileMet),status='old',err=314)
-        CALL skipHeader(10,SkipHeaderMet)  !Skip header
-
-        ! Find number of lines in met file
+        ! ! Open this example met file
+        ! OPEN(10,file=TRIM(FileMet),status='old',err=314)
+        ! CALL skipHeader(10,SkipHeaderMet)  !Skip header
+        !
+        ! ! Find number of lines in met file
+        ! nlinesMetdata = 0   !Initialise nlinesMetdata (total number of lines in met forcing file)
+        ! DO
+        !    READ(10,*,iostat=ios) iv
+        !    IF(ios<0 .OR. iv == -9) EXIT   !IF (iv == -9) EXIT
+        !    nlinesMetdata = nlinesMetdata + 1
+        ! ENDDO
+        ! CLOSE(10)
         nlinesMetdata = 0   !Initialise nlinesMetdata (total number of lines in met forcing file)
-        DO
-           READ(10,*,iostat=ios) iv
-           IF(ios<0 .OR. iv == -9) EXIT   !IF (iv == -9) EXIT
-           nlinesMetdata = nlinesMetdata + 1
-        ENDDO
-        CLOSE(10)
+        nlinesMetdata=count_lines(TRIM(FileMet))
         !-----------------------------------------------------------------------
 
         ! To conserve memory, read met data in blocks
@@ -344,17 +351,20 @@ PROGRAM SUEWS_Program
                    //TRIM(ADJUSTL(ResInESTM_txt))//'.txt'
            ENDIF
 
+           !  ! Find number of lines in orig ESTM file
+           !  OPEN(UnitOrigESTM,file=TRIM(FileESTMTs),status='old',action='read',err=315)
+           !  CALL skipHeader(UnitOrigESTM,SkipHeaderMet)  !Skip header
+           !  ! Find number of lines in original ESTM data file
+           !  nlinesOrigESTMdata = 0
+           !  DO
+           !     READ(UnitOrigESTM,*,iostat=ios) iv
+           !     IF(ios<0 .OR. iv == -9) EXIT !IF (iv == -9) EXIT
+           !     nlinesOrigESTMdata = nlinesOrigESTMdata + 1
+           !  ENDDO
+           !  CLOSE(UnitOrigESTM)
            ! Find number of lines in orig ESTM file
-           OPEN(UnitOrigESTM,file=TRIM(FileESTMTs),status='old',action='read',err=315)
-           CALL skipHeader(UnitOrigESTM,SkipHeaderMet)  !Skip header
-           ! Find number of lines in original ESTM data file
-           nlinesOrigESTMdata = 0
-           DO
-              READ(UnitOrigESTM,*,iostat=ios) iv
-              IF(ios<0 .OR. iv == -9) EXIT !IF (iv == -9) EXIT
-              nlinesOrigESTMdata = nlinesOrigESTMdata + 1
-           ENDDO
-           CLOSE(UnitOrigESTM)
+           nlinesOrigESTMdata = 0   !Initialise nlinesMetdata (total number of lines in met forcing file)
+           nlinesOrigESTMdata=count_lines(TRIM(FileESTMTs))
 
            ! Check ESTM data and met data will have the same length (so that ESTM file can be read in same blocks as met data)
            IF(nlinesOrigESTMdata*NperESTM /= nlinesMetData) THEN
@@ -385,17 +395,21 @@ PROGRAM SUEWS_Program
               FileESTMTs=TRIM(FileInputPath)//TRIM(FileCodeXWG)//'_ESTM_Ts_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
            ENDIF
 
-           ! Open this example ESTM file
-           OPEN(11,file=TRIM(FileESTMTs),status='old',err=315)
-           CALL skipHeader(11,SkipHeaderMet)  !Skip header
+           !  Open this example ESTM file
+           !  OPEN(11,file=TRIM(FileESTMTs),status='old',err=315)
+           !  CALL skipHeader(11,SkipHeaderMet)  !Skip header
+           !  ! Find number of lines in ESTM file
+           !  nlinesESTMdata = 0   !Initialise nlinesESTMdata (total number of lines in ESTM forcing file)
+           !  DO
+           !     READ(11,*,iostat=ios) iv
+           !     IF(ios<0 .OR. iv == -9) EXIT   !IF (iv == -9) EXIT
+           !     nlinesESTMdata = nlinesESTMdata + 1
+           !  ENDDO
+           !  CLOSE(11)
+
            ! Find number of lines in ESTM file
-           nlinesESTMdata = 0   !Initialise nlinesESTMdata (total number of lines in ESTM forcing file)
-           DO
-              READ(11,*,iostat=ios) iv
-              IF(ios<0 .OR. iv == -9) EXIT   !IF (iv == -9) EXIT
-              nlinesESTMdata = nlinesESTMdata + 1
-           ENDDO
-           CLOSE(11)
+           nlinesESTMdata = 0   !Initialise nlinesMetdata (total number of lines in met forcing file)
+           nlinesESTMdata=count_lines(TRIM(FileESTMTs))
            !-----------------------------------------------------------------------
 
            ! Check ESTM data and met data are same length (so that ESTM file can be read in same blocks as met data)
@@ -609,15 +623,9 @@ PROGRAM SUEWS_Program
            irMax = ReadLinesMetdata
         ENDIF
 
-        ! ! iteration for AnOHM running by do-while, 12 Mar 2016 TS ------------
-        ! iter       = 0
-        ! BoAnOHMEnd = NAN
 
-        ! flagRerunAnOHM = .TRUE.
-
-        ! DO WHILE ( ANY(flagRerunAnOHM) .AND. iter < 20 )
-        !    iter = iter+1
-        !  PRINT*, 'iteration:',iter
+        ! PRINT*, 'MetForcingData first 3 lines'
+        ! PRINT*, MetForcingData(1:3,1:4,1)
 
         DO ir=1,irMax   !Loop through rows of current block of met data
            GridCounter=1    !Initialise counter for grids in each year
@@ -663,36 +671,6 @@ PROGRAM SUEWS_Program
 
                  ENDIF
               ENDIF
-
-
-              ! print AnOHM coeffs. info.:
-              !  IF ( it == 0 .AND. imin == 5 )  THEN
-              !     WRITE(*, '(a13,2f10.4)') 'Start: a1, a2',a1AnOHM_grids(id,igrid),a2AnOHM_grids(id,igrid)
-              !  ENDIF
-
-              ! IF ( ir == irMax-10) THEN
-              !    xErr = ABS(a1AnOHM(igrid)-a1AnOHM_grids(id,igrid))/ABS(a1AnOHM(igrid))+&
-              !         ABS(a2AnOHM(igrid)-a2AnOHM_grids(id,igrid))/ABS(a2AnOHM(igrid))
-              !    xErr = ABS(xErr/2)
-              !    !     WRITE(*, '(a13,2f10.4)') 'End: a1, a2',a1AnOHM(igrid),a2AnOHM(igrid)
-              !    !     WRITE(*, '(a10,f10.4,2x,i2,x,i2)') 'Error(%)',xErr*100,it,imin
-              ! ENDIF
-
-
-
-              ! IF ( StorageHeatMethod == 3 .AND. ir == irMax .AND. xErr < 0.1) THEN
-              !    flagRerunAnOHM(igrid)=.FALSE.
-              !    ! WRITE(unit=*, fmt=*) '*********'
-              !    ! WRITE(unit=*, fmt=*) 'converged:'
-              !    ! WRITE(*, '(a8,f10.6)') 'a1 Start',a1AnOHM_grids(id,igrid)
-              !    ! WRITE(*, '(a8,f10.6)') 'a1 End',a1AnOHM(igrid)
-              !    ! WRITE(*, '(a8,f10.6)') 'diff.',ABS(a1AnOHM(igrid)-a1AnOHM_grids(id,igrid))
-              !    ! WRITE(unit=*, fmt=*) '*********'
-              ! ENDIF
-
-              ! bypass the do-while loop for converge checking
-              ! IF ( StorageHeatMethod /= 3 ) flagRerunAnOHM(igrid)=.FALSE.
-
 
               GridCounter = GridCounter+1   !Increase GridCounter by 1 for next grid
            ENDDO !end loop over grids
@@ -788,8 +766,8 @@ PROGRAM SUEWS_Program
   STOP 'finished'
 
 
-313 CALL errorHint(11,TRIM(FileOrigMet),notUsed,notUsed,ios_out)
-314 CALL errorHint(11,TRIM(FileMet),notUsed,notUsed,ios_out)
-315 CALL errorHint(11,TRIM(fileESTMTs),notUsed,notUsed,NotUsedI)
+  ! 313 CALL errorHint(11,TRIM(FileOrigMet),notUsed,notUsed,ios_out)
+! 314 CALL errorHint(11,TRIM(FileMet),notUsed,notUsed,ios_out)
+! 315 CALL errorHint(11,TRIM(fileESTMTs),notUsed,notUsed,NotUsedI)
 
 END PROGRAM SUEWS_Program

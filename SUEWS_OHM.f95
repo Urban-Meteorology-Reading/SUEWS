@@ -1,13 +1,13 @@
-MODULE OHM_module
-  ! USE allocateArray
-  ! USE data_in
-  ! USE defaultNotUsed
-  ! USE gis_data
-  ! USE sues_data
-  ! USE time
-
-  IMPLICIT NONE
-CONTAINS
+! MODULE OHM_module
+!   ! USE allocateArray
+!   ! USE data_in
+!   ! USE defaultNotUsed
+!   ! USE gis_data
+!   ! USE sues_data
+!   ! USE time
+!
+!   IMPLICIT NONE
+! CONTAINS
   !========================================================================================
   SUBROUTINE OHM(qn1,qn1_store,qn1_av_store,&
        qn1_S,qn1_S_store,qn1_S_av_store,&
@@ -288,4 +288,4 @@ CONTAINS
   END SUBROUTINE OHM_QS_cal
 
 
-END MODULE OHM_module
+! END MODULE OHM_module

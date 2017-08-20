@@ -474,21 +474,21 @@ SUBROUTINE DailyState(Gridiv)
      mAHAnOHM(Gridiv)     = xmAH
      mAH_grids(id,Gridiv) = mAHAnOHM(Gridiv)
      ! load current AnOHM coef.:
-     IF ( StorageHeatMethod==3 ) THEN
-        !  if ( id>364 ) then
-        !    print*, 'test in DailyState'
-        !    print*, a1AnOHM(Gridiv),a2AnOHM(Gridiv),a3AnOHM(Gridiv)
-        !
-        !  end if
-        a1AnOHM_grids(id,Gridiv) = a1AnOHM(Gridiv)
-        a2AnOHM_grids(id,Gridiv) = a2AnOHM(Gridiv)
-        a3AnOHM_grids(id,Gridiv) = a3AnOHM(Gridiv)
-     ELSE
+    !  IF ( StorageHeatMethod==3 ) THEN
+    !     !  if ( id>364 ) then
+    !     !    print*, 'test in DailyState'
+    !     !    print*, a1AnOHM(Gridiv),a2AnOHM(Gridiv),a3AnOHM(Gridiv)
+    !     !
+    !     !  end if
+    !     a1AnOHM(Gridiv) = a1AnOHM_grids(id,Gridiv)
+    !     a2AnOHM(Gridiv) = a2AnOHM_grids(id,Gridiv)
+    !     a3AnOHM(Gridiv) = a3AnOHM_grids(id,Gridiv)
+    !  ELSE
         ! output the normal OHM coeff.:
         a1AnOHM(Gridiv) = a1
         a2AnOHM(Gridiv) = a2
         a3AnOHM(Gridiv) = a3
-     END IF
+    !  END IF
 
      ! --------- AnOHM related End ----------------------------------------------------
 

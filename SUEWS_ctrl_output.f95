@@ -313,7 +313,7 @@ MODULE ctrl_output
        varAttr('Tsnow_Water'    , 'to_add' , f146 , 'Tsnow_Water'    , aA , 'snow' , 0)&
        /
 
-! ESTM:
+  ! ESTM:
   DATA(varList(i), i=225,246)/&
        varAttr('QSIBLD'   , 'W_m-2' , f106 , 'Storage Internal building'                , aA , 'ESTM' , 0)   , &
        varAttr('TWALL1'   , 'degK'  , f106 , 'Temperature in wall layer 1'              , aA , 'ESTM' , 0)   , &
@@ -392,8 +392,8 @@ CONTAINS
     DO i = 1, SIZE(grpList),1
        !PRINT*, 'i',i
        xx=COUNT(varList%group == TRIM(grpList(i)), dim=1)
-      !  PRINT*, 'number of variables:',xx, 'in group: ',grpList(i)
-      !  print*, 'all group names: ',varList%group
+       !  PRINT*, 'number of variables:',xx, 'in group: ',grpList(i)
+       !  print*, 'all group names: ',varList%group
        ALLOCATE(varListX(5+xx), stat=err)
        IF ( err/= 0) PRINT *, "varListX: Allocation request denied"
        ! datetime
@@ -818,6 +818,39 @@ CONTAINS
 
 
   END SUBROUTINE filename_gen
+
+
+  !========================================================================================
+  FUNCTION count_lines(filename) RESULT(nlines)
+    ! count the number of valid lines in a file
+    ! invalid line starting with -9
+
+    !========================================================================================
+    IMPLICIT NONE
+    CHARACTER(len=*)    :: filename
+    INTEGER             :: nlines
+    INTEGER             :: io,iv
+
+    OPEN(10,file=filename, iostat=io, status='old')
+
+    ! if io error found, report iostat and exit
+    IF (io/=0) THEN
+       PRINT*, 'io', io, 'for', filename
+       STOP 'Cannot open file! '
+    ENDIF
+
+    nlines = 0
+    DO
+       READ(10,*,iostat=io) iv
+       IF (io < 0 .OR. iv ==-9) EXIT
+
+       nlines = nlines + 1
+    END DO
+    CLOSE(10)
+    nlines=nlines-1 ! skip header
+  END FUNCTION count_lines
+
+
 
   !========================================================================================
   ! netCDF conversion subroutines for SUEWS

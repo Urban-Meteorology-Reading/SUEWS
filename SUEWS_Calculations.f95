@@ -48,7 +48,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   USE mod_k
   USE solweig_module
   USE WhereWhen
-  USE OHM_module
+  USE AnOHM_module
 
 
   IMPLICIT NONE
@@ -159,9 +159,9 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   idectime=dectime-halftimestep! sun position at middle of timestep before
   IF(Diagnose==1) WRITE(*,*) 'Calling sun_position...'
   CALL sun_position(&
-!input:
+                                !input:
        year,idectime,timezone,lat,lng,alt,&
-!output:
+                                !output:
        azimuth,zenith_deg)
   !write(*,*) DateTime, timezone,lat,lng,alt,azimuth,zenith_deg
 
@@ -323,8 +323,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   IF(StorageHeatMethod==1) THEN           !Use OHM to calculate QS
      IF(OHMIncQF == 1) THEN      !Calculate QS using QSTAR+QF
         IF(Diagnose==1) WRITE(*,*) 'Calling OHM...'
-        CALL OHM(qn1,qn1_store,qn1_av_store,&
-             qn1_S,qn1_S_store,qn1_S_av_store,&
+        CALL OHM(qn1,qn1_store(:,Gridiv),qn1_av_store(:,Gridiv),&
+             qn1_S,qn1_S_store(:,Gridiv),qn1_S_av_store(:,Gridiv),&
              nsh,&
              sfr,nsurf,&
              HDD(id-1,4),&
@@ -338,8 +338,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
      ELSEIF(OHMIncQF == 0) THEN  !Calculate QS using QSTAR
         qn1=qn1_bup
         IF(Diagnose==1) WRITE(*,*) 'Calling OHM...'
-        CALL OHM(qn1,qn1_store,qn1_av_store,&
-             qn1_S,qn1_S_store,qn1_S_av_store,&
+        CALL OHM(qn1_bup,qn1_store(:,Gridiv),qn1_av_store(:,Gridiv),&
+             qn1_S,qn1_S_store(:,Gridiv),qn1_S_av_store(:,Gridiv),&
              nsh,&
              sfr,nsurf,&
              HDD(id-1,4),&
@@ -354,14 +354,24 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ENDIF
 
   ! use AnOHM to calculate QS, TS 14 Mar 2016
+  ! print*, 'id and time',id,it,imin
+
   IF (StorageHeatMethod==3) THEN
      IF ( OHMIncQF == 1 ) THEN    !Calculate QS using QSTAR+QF
         IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'
-        CALL AnOHM(Gridiv)
+        CALL AnOHM(qn1,qn1_store(:,Gridiv),qn1_av_store(:,Gridiv),&
+             MetForcingData(:,:,Gridiv),&
+             alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&
+             sfr,nsurf,nsh,AnthropHeatMethod,id,&
+             a1,a2,a3,qs)
      ELSEIF(OHMIncQF == 0) THEN   !Calculate QS using QSTAR
         qn1=qn1_bup
         IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'
-        CALL AnOHM(Gridiv)
+        CALL AnOHM(qn1_bup,qn1_store(:,Gridiv),qn1_av_store(:,Gridiv),&
+             MetForcingData(:,:,Gridiv),&
+             alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&
+             sfr,nsurf,nsh,AnthropHeatMethod,id,&
+             a1,a2,a3,qs)
      END IF
   END IF
 

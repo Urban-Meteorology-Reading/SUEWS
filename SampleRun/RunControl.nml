@@ -24,10 +24,10 @@ WriteOutOption=2
 ResolutionFilesOut=3600
 Tstep=300
 ResolutionFilesIn=3600
-ResolutionFilesInESTM=3600	!NEW
-DisaggMethod=1			!NEW  (1 = default value, so don't actually need here)
-RainDisaggMethod=100		!NEW  (100 = default value, so don't actually need here)
-DisaggMethodESTM=1		!NEW  (1 = default value, so don't actually need here)
-SuppressWarnings=1		!NEW
+ResolutionFilesInESTM=3600  !NEW
+DisaggMethod=1          !NEW  (1 = default value, so don't actually need here)
+RainDisaggMethod=100    !NEW  (100 = default value, so don't actually need here)
+DisaggMethodESTM=1      !NEW  (1 = default value, so don't actually need here)
+SuppressWarnings=1      !NEW
 KdownZen=0
 /

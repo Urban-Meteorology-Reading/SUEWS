@@ -35,8 +35,8 @@ zip -urjq ${zip_mac} Executable/${dir_mac}/${exe} RunControl.nml
 echo "${zip_mac} done."
 # linux bundle
 zip -rq ${zip_linux} Input Output Manual -x .DS_*
-zip -urjq ${zip_linux} Executable/${zip_linux}/${exe} RunControl.nml
-echo "${zip_mac} done."
+zip -urjq ${zip_linux} Executable/${dir_linux}/${exe} RunControl.nml
+echo "${zip_linux} done."
 
 
 # make dir of version, omit if exist

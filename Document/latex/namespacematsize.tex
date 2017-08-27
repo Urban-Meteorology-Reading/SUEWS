@@ -1,0 +1,644 @@
+\hypertarget{namespacematsize}{}\section{matsize Module Reference}
+\label{namespacematsize}\index{matsize@{matsize}}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+integer \hyperlink{namespacematsize_ab94e75e382a77f33021c061c1fd031ba}{sizex}
+\item 
+integer \hyperlink{namespacematsize_a2e4c4ca15fba50043654eaca59568a8f}{sizey}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_ac6b0576a44123086ec1fcb4fd07ae0cf}{a}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_a8646e77bed1b06a41e4d3d230df88854}{sh}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_a9f51b3ddaf5ee62ef1f8ded44384e64a}{vbshvegsh}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_ae17419ca9fd6657bfc2f993e9caa074e}{vegsh}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_a3891f5a70b2d3e3f1ce049f9ab702e87}{bush}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_a0be49d58735406c79599404544199438}{vegdem}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_a2265584cbc20b4787247165648ac5fdc}{vegdem2}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_aabcb952c227c31fd4f5f61afd2fd52cd}{tempgrid}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_a2787e88d9e90f148065c39be4439c550}{buildings}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_a94334e57071e6a8dc83f66b04f8ea8fe}{svf}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_a890ca1fcc0cc7dce50caad1a19886268}{svfe}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_a13810d151375d64bd53a45cd89fad066}{svfs}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_a2741fe4703b92bb6ec505998bace4876}{svfw}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_a9be189162686f197e78ed45b00840619}{svfn}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_a6017bc4aa42fb2d8ee48357bcdfe5cc0}{svfveg}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_a0f7143b0902f59ee105a54c791da8bae}{svfeveg}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_abb71084c2bde226d0a5b7227fd1fc5ce}{svfsveg}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_ae38605d352d15e1892af2d300eed4767}{svfwveg}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_a7bfc9412546968d3a74b4956b47c8b44}{svfnveg}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_a8d3d2ca849f0c0098a529191de39e6e2}{svfaveg}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_abd5b108fa6d58f69e170177ddc18ee1e}{svfeaveg}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_adecb9ebed13e9583195d044af20c81c6}{svfsaveg}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_a3633eecab7a13f6237b02654e68b38be}{svfwaveg}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_a258fb6132f8bd0d53c601353e796c424}{svfnaveg}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_ab5b5bdd8732edafafedd05776e25e011}{last}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_a965c1a4db75855ca038aef657921cec9}{kdown2d}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_a27c05e9fb7688530f45b12163914f2f4}{keast}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_aeee3798c5f6672da6ea25aa8787b4ab4}{knorth}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_ad03d6ca2c8d26a947785c9dc94aa61db}{ksouth}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_a6f666c13da51f22100a0043f53e724ca}{kup2d}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_ac52a8cfa3a58b4aff078294cbdb70ed5}{kwest}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_aaf966c70b77fe5646eb3ca89701232e8}{ldown2d}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_aa87a43379aac21f08eec99b01c93823a}{least}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_a5adfcfca2aa462e55a6ed15deb4c0138}{lnorth}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_aa28ab3bf60483b5f18b3785b75b8f859}{lsouth}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_a3337225f5c7bd795ed48fc7811611a59}{lup2d}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_a8fe9b02501cb74972025943f45f742b1}{lwest}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_a30597ac2227214d3724f34f551f3c904}{gvf}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_a9154a4703b2d439f695e33201e46f231}{tmrt}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_a3d9d89d00fce455db2334993b50c5e74}{shadow}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_acd84773bbc050ab317186fe55d403afe}{sstr}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_a6ab950e24bfe92c823016e8ed6e52873}{f\+\_\+sh}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_acb0719b5e8d656e7faaac0470f8b9008}{sunwall}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_a8fd9348664bd661da87ca40af12bed50}{svfalfa}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_a1449eeb1e7360b8c66d2b3d039acf99b}{sos}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_a86f180bc19d9a733d20cd41559fc9c15}{tgmap1}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_ad54fb3efcdbb5a40c1d00fb2795c4482}{viktveg}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_a0e44ed5f655a5ed08b631369eee6d6e6}{viktsky}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_ab651f44e70ead8097cd71733bf545246}{viktrefl}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_a2268200b373b89fec089619c8f9d777e}{viktwall}
+\item 
+real(kind(1d0)), dimension(\+:,\+:), allocatable \hyperlink{namespacematsize_a955b428c1737be712b663eeca12e7446}{savegrid}
+\end{DoxyCompactItemize}
+
+
+\subsection{Variable Documentation}
+\mbox{\Hypertarget{namespacematsize_ac6b0576a44123086ec1fcb4fd07ae0cf}\label{namespacematsize_ac6b0576a44123086ec1fcb4fd07ae0cf}} 
+\index{matsize@{matsize}!a@{a}}
+\index{a@{a}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{a}{a}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::a}
+
+
+
+Definition at line 7 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_a2787e88d9e90f148065c39be4439c550}\label{namespacematsize_a2787e88d9e90f148065c39be4439c550}} 
+\index{matsize@{matsize}!buildings@{buildings}}
+\index{buildings@{buildings}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{buildings}{buildings}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::buildings}
+
+
+
+Definition at line 9 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_a3891f5a70b2d3e3f1ce049f9ab702e87}\label{namespacematsize_a3891f5a70b2d3e3f1ce049f9ab702e87}} 
+\index{matsize@{matsize}!bush@{bush}}
+\index{bush@{bush}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{bush}{bush}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::bush}
+
+
+
+Definition at line 8 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_a6ab950e24bfe92c823016e8ed6e52873}\label{namespacematsize_a6ab950e24bfe92c823016e8ed6e52873}} 
+\index{matsize@{matsize}!f\+\_\+sh@{f\+\_\+sh}}
+\index{f\+\_\+sh@{f\+\_\+sh}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{f\+\_\+sh}{f\_sh}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::f\+\_\+sh}
+
+
+
+Definition at line 14 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_a30597ac2227214d3724f34f551f3c904}\label{namespacematsize_a30597ac2227214d3724f34f551f3c904}} 
+\index{matsize@{matsize}!gvf@{gvf}}
+\index{gvf@{gvf}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{gvf}{gvf}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::gvf}
+
+
+
+Definition at line 14 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_a965c1a4db75855ca038aef657921cec9}\label{namespacematsize_a965c1a4db75855ca038aef657921cec9}} 
+\index{matsize@{matsize}!kdown2d@{kdown2d}}
+\index{kdown2d@{kdown2d}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{kdown2d}{kdown2d}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::kdown2d}
+
+
+
+Definition at line 12 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_a27c05e9fb7688530f45b12163914f2f4}\label{namespacematsize_a27c05e9fb7688530f45b12163914f2f4}} 
+\index{matsize@{matsize}!keast@{keast}}
+\index{keast@{keast}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{keast}{keast}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::keast}
+
+
+
+Definition at line 12 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_aeee3798c5f6672da6ea25aa8787b4ab4}\label{namespacematsize_aeee3798c5f6672da6ea25aa8787b4ab4}} 
+\index{matsize@{matsize}!knorth@{knorth}}
+\index{knorth@{knorth}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{knorth}{knorth}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::knorth}
+
+
+
+Definition at line 12 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_ad03d6ca2c8d26a947785c9dc94aa61db}\label{namespacematsize_ad03d6ca2c8d26a947785c9dc94aa61db}} 
+\index{matsize@{matsize}!ksouth@{ksouth}}
+\index{ksouth@{ksouth}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{ksouth}{ksouth}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::ksouth}
+
+
+
+Definition at line 12 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_a6f666c13da51f22100a0043f53e724ca}\label{namespacematsize_a6f666c13da51f22100a0043f53e724ca}} 
+\index{matsize@{matsize}!kup2d@{kup2d}}
+\index{kup2d@{kup2d}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{kup2d}{kup2d}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::kup2d}
+
+
+
+Definition at line 12 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_ac52a8cfa3a58b4aff078294cbdb70ed5}\label{namespacematsize_ac52a8cfa3a58b4aff078294cbdb70ed5}} 
+\index{matsize@{matsize}!kwest@{kwest}}
+\index{kwest@{kwest}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{kwest}{kwest}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::kwest}
+
+
+
+Definition at line 12 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_ab5b5bdd8732edafafedd05776e25e011}\label{namespacematsize_ab5b5bdd8732edafafedd05776e25e011}} 
+\index{matsize@{matsize}!last@{last}}
+\index{last@{last}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{last}{last}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::last}
+
+
+
+Definition at line 11 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_aaf966c70b77fe5646eb3ca89701232e8}\label{namespacematsize_aaf966c70b77fe5646eb3ca89701232e8}} 
+\index{matsize@{matsize}!ldown2d@{ldown2d}}
+\index{ldown2d@{ldown2d}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{ldown2d}{ldown2d}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::ldown2d}
+
+
+
+Definition at line 13 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_aa87a43379aac21f08eec99b01c93823a}\label{namespacematsize_aa87a43379aac21f08eec99b01c93823a}} 
+\index{matsize@{matsize}!least@{least}}
+\index{least@{least}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{least}{least}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::least}
+
+
+
+Definition at line 13 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_a5adfcfca2aa462e55a6ed15deb4c0138}\label{namespacematsize_a5adfcfca2aa462e55a6ed15deb4c0138}} 
+\index{matsize@{matsize}!lnorth@{lnorth}}
+\index{lnorth@{lnorth}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{lnorth}{lnorth}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::lnorth}
+
+
+
+Definition at line 13 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_aa28ab3bf60483b5f18b3785b75b8f859}\label{namespacematsize_aa28ab3bf60483b5f18b3785b75b8f859}} 
+\index{matsize@{matsize}!lsouth@{lsouth}}
+\index{lsouth@{lsouth}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{lsouth}{lsouth}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::lsouth}
+
+
+
+Definition at line 13 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_a3337225f5c7bd795ed48fc7811611a59}\label{namespacematsize_a3337225f5c7bd795ed48fc7811611a59}} 
+\index{matsize@{matsize}!lup2d@{lup2d}}
+\index{lup2d@{lup2d}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{lup2d}{lup2d}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::lup2d}
+
+
+
+Definition at line 13 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_a8fe9b02501cb74972025943f45f742b1}\label{namespacematsize_a8fe9b02501cb74972025943f45f742b1}} 
+\index{matsize@{matsize}!lwest@{lwest}}
+\index{lwest@{lwest}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{lwest}{lwest}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::lwest}
+
+
+
+Definition at line 13 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_a955b428c1737be712b663eeca12e7446}\label{namespacematsize_a955b428c1737be712b663eeca12e7446}} 
+\index{matsize@{matsize}!savegrid@{savegrid}}
+\index{savegrid@{savegrid}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{savegrid}{savegrid}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::savegrid}
+
+
+
+Definition at line 16 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_a8646e77bed1b06a41e4d3d230df88854}\label{namespacematsize_a8646e77bed1b06a41e4d3d230df88854}} 
+\index{matsize@{matsize}!sh@{sh}}
+\index{sh@{sh}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{sh}{sh}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::sh}
+
+
+
+Definition at line 7 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_a3d9d89d00fce455db2334993b50c5e74}\label{namespacematsize_a3d9d89d00fce455db2334993b50c5e74}} 
+\index{matsize@{matsize}!shadow@{shadow}}
+\index{shadow@{shadow}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{shadow}{shadow}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::shadow}
+
+
+
+Definition at line 14 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_ab94e75e382a77f33021c061c1fd031ba}\label{namespacematsize_ab94e75e382a77f33021c061c1fd031ba}} 
+\index{matsize@{matsize}!sizex@{sizex}}
+\index{sizex@{sizex}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{sizex}{sizex}}
+{\footnotesize\ttfamily integer matsize\+::sizex}
+
+
+
+Definition at line 6 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_a2e4c4ca15fba50043654eaca59568a8f}\label{namespacematsize_a2e4c4ca15fba50043654eaca59568a8f}} 
+\index{matsize@{matsize}!sizey@{sizey}}
+\index{sizey@{sizey}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{sizey}{sizey}}
+{\footnotesize\ttfamily integer matsize\+::sizey}
+
+
+
+Definition at line 6 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_a1449eeb1e7360b8c66d2b3d039acf99b}\label{namespacematsize_a1449eeb1e7360b8c66d2b3d039acf99b}} 
+\index{matsize@{matsize}!sos@{sos}}
+\index{sos@{sos}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{sos}{sos}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::sos}
+
+
+
+Definition at line 15 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_acd84773bbc050ab317186fe55d403afe}\label{namespacematsize_acd84773bbc050ab317186fe55d403afe}} 
+\index{matsize@{matsize}!sstr@{sstr}}
+\index{sstr@{sstr}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{sstr}{sstr}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::sstr}
+
+
+
+Definition at line 14 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_acb0719b5e8d656e7faaac0470f8b9008}\label{namespacematsize_acb0719b5e8d656e7faaac0470f8b9008}} 
+\index{matsize@{matsize}!sunwall@{sunwall}}
+\index{sunwall@{sunwall}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{sunwall}{sunwall}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::sunwall}
+
+
+
+Definition at line 14 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_a94334e57071e6a8dc83f66b04f8ea8fe}\label{namespacematsize_a94334e57071e6a8dc83f66b04f8ea8fe}} 
+\index{matsize@{matsize}!svf@{svf}}
+\index{svf@{svf}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{svf}{svf}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::svf}
+
+
+
+Definition at line 9 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_a8fd9348664bd661da87ca40af12bed50}\label{namespacematsize_a8fd9348664bd661da87ca40af12bed50}} 
+\index{matsize@{matsize}!svfalfa@{svfalfa}}
+\index{svfalfa@{svfalfa}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{svfalfa}{svfalfa}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::svfalfa}
+
+
+
+Definition at line 15 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_a8d3d2ca849f0c0098a529191de39e6e2}\label{namespacematsize_a8d3d2ca849f0c0098a529191de39e6e2}} 
+\index{matsize@{matsize}!svfaveg@{svfaveg}}
+\index{svfaveg@{svfaveg}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{svfaveg}{svfaveg}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::svfaveg}
+
+
+
+Definition at line 11 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_a890ca1fcc0cc7dce50caad1a19886268}\label{namespacematsize_a890ca1fcc0cc7dce50caad1a19886268}} 
+\index{matsize@{matsize}!svfe@{svfe}}
+\index{svfe@{svfe}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{svfe}{svfe}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::svfe}
+
+
+
+Definition at line 9 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_abd5b108fa6d58f69e170177ddc18ee1e}\label{namespacematsize_abd5b108fa6d58f69e170177ddc18ee1e}} 
+\index{matsize@{matsize}!svfeaveg@{svfeaveg}}
+\index{svfeaveg@{svfeaveg}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{svfeaveg}{svfeaveg}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::svfeaveg}
+
+
+
+Definition at line 11 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_a0f7143b0902f59ee105a54c791da8bae}\label{namespacematsize_a0f7143b0902f59ee105a54c791da8bae}} 
+\index{matsize@{matsize}!svfeveg@{svfeveg}}
+\index{svfeveg@{svfeveg}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{svfeveg}{svfeveg}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::svfeveg}
+
+
+
+Definition at line 10 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_a9be189162686f197e78ed45b00840619}\label{namespacematsize_a9be189162686f197e78ed45b00840619}} 
+\index{matsize@{matsize}!svfn@{svfn}}
+\index{svfn@{svfn}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{svfn}{svfn}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::svfn}
+
+
+
+Definition at line 9 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_a258fb6132f8bd0d53c601353e796c424}\label{namespacematsize_a258fb6132f8bd0d53c601353e796c424}} 
+\index{matsize@{matsize}!svfnaveg@{svfnaveg}}
+\index{svfnaveg@{svfnaveg}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{svfnaveg}{svfnaveg}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::svfnaveg}
+
+
+
+Definition at line 11 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_a7bfc9412546968d3a74b4956b47c8b44}\label{namespacematsize_a7bfc9412546968d3a74b4956b47c8b44}} 
+\index{matsize@{matsize}!svfnveg@{svfnveg}}
+\index{svfnveg@{svfnveg}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{svfnveg}{svfnveg}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::svfnveg}
+
+
+
+Definition at line 10 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_a13810d151375d64bd53a45cd89fad066}\label{namespacematsize_a13810d151375d64bd53a45cd89fad066}} 
+\index{matsize@{matsize}!svfs@{svfs}}
+\index{svfs@{svfs}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{svfs}{svfs}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::svfs}
+
+
+
+Definition at line 9 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_adecb9ebed13e9583195d044af20c81c6}\label{namespacematsize_adecb9ebed13e9583195d044af20c81c6}} 
+\index{matsize@{matsize}!svfsaveg@{svfsaveg}}
+\index{svfsaveg@{svfsaveg}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{svfsaveg}{svfsaveg}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::svfsaveg}
+
+
+
+Definition at line 11 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_abb71084c2bde226d0a5b7227fd1fc5ce}\label{namespacematsize_abb71084c2bde226d0a5b7227fd1fc5ce}} 
+\index{matsize@{matsize}!svfsveg@{svfsveg}}
+\index{svfsveg@{svfsveg}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{svfsveg}{svfsveg}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::svfsveg}
+
+
+
+Definition at line 10 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_a6017bc4aa42fb2d8ee48357bcdfe5cc0}\label{namespacematsize_a6017bc4aa42fb2d8ee48357bcdfe5cc0}} 
+\index{matsize@{matsize}!svfveg@{svfveg}}
+\index{svfveg@{svfveg}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{svfveg}{svfveg}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::svfveg}
+
+
+
+Definition at line 10 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_a2741fe4703b92bb6ec505998bace4876}\label{namespacematsize_a2741fe4703b92bb6ec505998bace4876}} 
+\index{matsize@{matsize}!svfw@{svfw}}
+\index{svfw@{svfw}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{svfw}{svfw}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::svfw}
+
+
+
+Definition at line 9 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_a3633eecab7a13f6237b02654e68b38be}\label{namespacematsize_a3633eecab7a13f6237b02654e68b38be}} 
+\index{matsize@{matsize}!svfwaveg@{svfwaveg}}
+\index{svfwaveg@{svfwaveg}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{svfwaveg}{svfwaveg}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::svfwaveg}
+
+
+
+Definition at line 11 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_ae38605d352d15e1892af2d300eed4767}\label{namespacematsize_ae38605d352d15e1892af2d300eed4767}} 
+\index{matsize@{matsize}!svfwveg@{svfwveg}}
+\index{svfwveg@{svfwveg}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{svfwveg}{svfwveg}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::svfwveg}
+
+
+
+Definition at line 10 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_aabcb952c227c31fd4f5f61afd2fd52cd}\label{namespacematsize_aabcb952c227c31fd4f5f61afd2fd52cd}} 
+\index{matsize@{matsize}!tempgrid@{tempgrid}}
+\index{tempgrid@{tempgrid}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{tempgrid}{tempgrid}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::tempgrid}
+
+
+
+Definition at line 8 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_a86f180bc19d9a733d20cd41559fc9c15}\label{namespacematsize_a86f180bc19d9a733d20cd41559fc9c15}} 
+\index{matsize@{matsize}!tgmap1@{tgmap1}}
+\index{tgmap1@{tgmap1}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{tgmap1}{tgmap1}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::tgmap1}
+
+
+
+Definition at line 15 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_a9154a4703b2d439f695e33201e46f231}\label{namespacematsize_a9154a4703b2d439f695e33201e46f231}} 
+\index{matsize@{matsize}!tmrt@{tmrt}}
+\index{tmrt@{tmrt}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{tmrt}{tmrt}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::tmrt}
+
+
+
+Definition at line 14 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_a9f51b3ddaf5ee62ef1f8ded44384e64a}\label{namespacematsize_a9f51b3ddaf5ee62ef1f8ded44384e64a}} 
+\index{matsize@{matsize}!vbshvegsh@{vbshvegsh}}
+\index{vbshvegsh@{vbshvegsh}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{vbshvegsh}{vbshvegsh}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::vbshvegsh}
+
+
+
+Definition at line 7 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_a0be49d58735406c79599404544199438}\label{namespacematsize_a0be49d58735406c79599404544199438}} 
+\index{matsize@{matsize}!vegdem@{vegdem}}
+\index{vegdem@{vegdem}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{vegdem}{vegdem}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::vegdem}
+
+
+
+Definition at line 8 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_a2265584cbc20b4787247165648ac5fdc}\label{namespacematsize_a2265584cbc20b4787247165648ac5fdc}} 
+\index{matsize@{matsize}!vegdem2@{vegdem2}}
+\index{vegdem2@{vegdem2}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{vegdem2}{vegdem2}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::vegdem2}
+
+
+
+Definition at line 8 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_ae17419ca9fd6657bfc2f993e9caa074e}\label{namespacematsize_ae17419ca9fd6657bfc2f993e9caa074e}} 
+\index{matsize@{matsize}!vegsh@{vegsh}}
+\index{vegsh@{vegsh}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{vegsh}{vegsh}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::vegsh}
+
+
+
+Definition at line 7 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_ab651f44e70ead8097cd71733bf545246}\label{namespacematsize_ab651f44e70ead8097cd71733bf545246}} 
+\index{matsize@{matsize}!viktrefl@{viktrefl}}
+\index{viktrefl@{viktrefl}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{viktrefl}{viktrefl}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::viktrefl}
+
+
+
+Definition at line 16 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_a0e44ed5f655a5ed08b631369eee6d6e6}\label{namespacematsize_a0e44ed5f655a5ed08b631369eee6d6e6}} 
+\index{matsize@{matsize}!viktsky@{viktsky}}
+\index{viktsky@{viktsky}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{viktsky}{viktsky}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::viktsky}
+
+
+
+Definition at line 16 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_ad54fb3efcdbb5a40c1d00fb2795c4482}\label{namespacematsize_ad54fb3efcdbb5a40c1d00fb2795c4482}} 
+\index{matsize@{matsize}!viktveg@{viktveg}}
+\index{viktveg@{viktveg}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{viktveg}{viktveg}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::viktveg}
+
+
+
+Definition at line 16 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+
+\mbox{\Hypertarget{namespacematsize_a2268200b373b89fec089619c8f9d777e}\label{namespacematsize_a2268200b373b89fec089619c8f9d777e}} 
+\index{matsize@{matsize}!viktwall@{viktwall}}
+\index{viktwall@{viktwall}!matsize@{matsize}}
+\subsubsection{\texorpdfstring{viktwall}{viktwall}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(\+:,\+:), allocatable matsize\+::viktwall}
+
+
+
+Definition at line 16 of file S\+O\+L\+W\+E\+I\+G\+\_\+modules.\+f95.
+

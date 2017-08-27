@@ -1,0 +1,11 @@
+<map id="anohm_module::anohm_fccal" name="anohm_module::anohm_fccal">
+<area shape="rect" id="node2" href="$namespaceanohm__module.html#aec263fe8fda2e14111cd3f27a607cff0" title="calculate the key parameters of a sinusoidal curve for AnOHM forcings i.e., a, b, c in a*Sin(Pi/12*t+..." alt="" coords="215,72,376,111"/>
+<area shape="rect" id="node10" href="$minpack_8f95.html#adc196cc5030b2eb1660c061fd85bfe0a" title="r8vec_print" alt="" coords="252,135,339,160"/>
+<area shape="rect" id="node3" href="$minpack_8f95.html#a700bf6f1bdcace537df37252fd26c723" title="lmdif1" alt="" coords="466,55,523,80"/>
+<area shape="rect" id="node9" href="$namespaceanohm__module.html#a8d56836cb99e49028266fac2beaf5b95" title="sinusoidal function f(t) for fitting: f(t) = mean+amp*Sin(Pi/12(t&#45;delta)) x = (/mean,amp,delta/) contains the fitting parameters " alt="" coords="424,104,566,129"/>
+<area shape="rect" id="node4" href="$minpack_8f95.html#a4689c4ce455cf0795081e88c004b48ff" title="lmdif" alt="" coords="614,55,663,80"/>
+<area shape="rect" id="node5" href="$minpack_8f95.html#a49e6c47697604e26b8f5aae0c4fd9aef" title="fdjac2" alt="" coords="711,5,768,31"/>
+<area shape="rect" id="node6" href="$minpack_8f95.html#a64d35f73f2a85378c24dd7b99ddb0c0f" title="qrfac" alt="" coords="714,55,765,80"/>
+<area shape="rect" id="node7" href="$minpack_8f95.html#a1dc1e9adda30350383f28f6cc6361365" title="lmpar" alt="" coords="712,104,767,129"/>
+<area shape="rect" id="node8" href="$minpack_8f95.html#a0dd208e826a2526722a40eab1724ac83" title="qrsolv" alt="" coords="816,104,873,129"/>
+</map>

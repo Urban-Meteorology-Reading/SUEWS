@@ -1,0 +1,840 @@
+\hypertarget{namespaceanohm__module}{}\section{anohm\+\_\+module Module Reference}
+\label{namespaceanohm__module}\index{anohm\+\_\+module@{anohm\+\_\+module}}
+
+
+An\+O\+HM\+: Analytical Objective Hysteresis Model.  
+
+
+\subsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \hyperlink{namespaceanohm__module_a12150b343f1a4a8c3210e499cb9db9d9}{anohm} (qn1, qn1\+\_\+store, qn1\+\_\+av\+\_\+store, Met\+Forcing\+Data\+\_\+grid, moist\+\_\+surf, alb, emis, cp, kk, ch, sfr, nsurf, nsh, Anthrop\+Heat\+Method, id, a1, a2, a3, qs)
+\begin{DoxyCompactList}\small\item\em High level wrapper for An\+O\+HM calculation. \end{DoxyCompactList}\item 
+subroutine \hyperlink{namespaceanohm__module_a5aa773c6b5c4a66155eaeb1c86c70471}{anohm\+\_\+coef} (sfc\+\_\+typ, xid, xgrid, Met\+Forcing\+Data\+\_\+grid, moist\+\_\+surf, Anthrop\+Heat\+Method, alb, emis, cp, kk, ch, xa1, xa2, xa3)
+\begin{DoxyCompactList}\small\item\em High level wrapper for An\+O\+HM coefficients calculation. \end{DoxyCompactList}\item 
+subroutine \hyperlink{namespaceanohm__module_abe3a233f6e7d95775554ccc25e1cac45}{anohm\+\_\+coef\+\_\+land} (sfc\+\_\+typ, xid, Met\+Forcing\+Data\+\_\+grid, Anthrop\+Heat\+Method, moist\+\_\+surf, alb, emis, cp, kk, ch, xa1, xa2, xa3)
+\begin{DoxyCompactList}\small\item\em a procedure for calculating An\+O\+HM coefficients of land surfaces \end{DoxyCompactList}\item 
+subroutine \hyperlink{namespaceanohm__module_a20235f7bc1aada21135014d0e942e59f}{anohm\+\_\+coef\+\_\+land\+\_\+cal} (A\+Sd, m\+Sd, A\+Ta, m\+Ta, tau, m\+WS, m\+WF, m\+AH, xalb, xemis, xcp, xk, xch, x\+Bo, xa1, xa2, xa3)
+\begin{DoxyCompactList}\small\item\em a wrapper for retrieving An\+O\+HM coefficients \end{DoxyCompactList}\item 
+subroutine \hyperlink{namespaceanohm__module_a3f1a576bdde691f251c98f56d28b6c5e}{anohm\+\_\+tsurf\+\_\+land\+\_\+cal} (A\+Sd, m\+Sd, A\+Ta, m\+Ta, tau, m\+WS, m\+WF, m\+AH, xalb, xemis, xcp, xk, xch, x\+Bo, A\+Ts, m\+Ts, gamma)
+\begin{DoxyCompactList}\small\item\em a wrapper for calculating surface temperature scales \end{DoxyCompactList}\item 
+subroutine \hyperlink{namespaceanohm__module_a54c27af87baa1736fd40590bed6c081e}{anohm\+\_\+xts} (A\+Sd, m\+Sd, A\+Ta, m\+Ta, tau, m\+WS, m\+WF, m\+AH, xalb, xemis, xcp, xk, xch, x\+Bo, t\+Sd, x\+T\+Hr, x\+Ts)
+\begin{DoxyCompactList}\small\item\em calculate the surface temperature related parameters (A\+Ts, m\+Ts, gamma) based on forcings and sfc. conditions \end{DoxyCompactList}\item 
+subroutine \hyperlink{namespaceanohm__module_ab96821e3f733aae01d895aa8830085b7}{anohm\+\_\+coef\+\_\+land\+\_\+cal\+\_\+extra} (A\+Sd, m\+Sd, A\+Ta, m\+Ta, tau, m\+WS, m\+WF, m\+AH, xalb, xemis, xcp, xk, xch, x\+Bo, xa1, xa2, xa3, A\+Ts, m\+Ts, gamma)
+\item 
+subroutine \hyperlink{namespaceanohm__module_a5b0b99ebb9db9ec50d904cc7a9802779}{anohm\+\_\+coef\+\_\+water} (sfc\+\_\+typ, xid, Met\+Forcing\+Data\+\_\+grid, Anthrop\+Heat\+Method, moist\+\_\+surf, alb, emis, cp, kk, ch, xa1, xa2, xa3)
+\begin{DoxyCompactList}\small\item\em a procedure for calculating An\+O\+HM coefficients of water body based on forcings and sfc. conditions \end{DoxyCompactList}\item 
+subroutine \hyperlink{namespaceanohm__module_aeb16132909e9aae5549d9ce6adcf389f}{anohm\+\_\+coef\+\_\+water\+\_\+cal} (A\+Sd, m\+Sd, A\+Ta, m\+Ta, tau, m\+WS, m\+WF, m\+AH, xalb, xemis, xcp, xk, xch, x\+Bo, xeta, xmu, xa1, xa2, xa3)
+\begin{DoxyCompactList}\small\item\em a wrapper for retrieving An\+O\+HM coefficients of water body \end{DoxyCompactList}\item 
+subroutine \hyperlink{namespaceanohm__module_aeb3eededd40f7c2bb12213c747c93513}{anohm\+\_\+fc} (xid, Met\+Forcing\+Data\+\_\+grid, Anthrop\+Heat\+Method, A\+Sd, m\+Sd, t\+Sd, A\+Ta, m\+Ta, t\+Ta, tau, m\+WS, m\+WF, m\+AH)
+\item 
+subroutine \hyperlink{namespaceanohm__module_ae189523211fd4b943a0e75cbc1e7b7d1}{anohm\+\_\+fcload} (xid, Met\+Forcing\+Data\+\_\+grid, Anthrop\+Heat\+Method, Sd, Ta, RH, pres, WS, WF, AH, t\+Hr)
+\begin{DoxyCompactList}\small\item\em load forcing series for An\+O\+H\+M\+\_\+\+Fc\+Cal \end{DoxyCompactList}\item 
+subroutine \hyperlink{namespaceanohm__module_afed396f8cec94d18f3c6bec4a2a879eb}{anohm\+\_\+fccal} (Sd, Ta, WS, WF, AH, t\+Hr, A\+Sd, m\+Sd, t\+Sd, A\+Ta, m\+Ta, t\+Ta, tau, m\+WS, m\+WF, m\+AH)
+\begin{DoxyCompactList}\small\item\em calculate the key parameters of a sinusoidal curve for An\+O\+HM forcings i.\+e., a, b, c in a$\ast$\+Sin(Pi/12$\ast$t+b)+c \end{DoxyCompactList}\item 
+subroutine \hyperlink{namespaceanohm__module_aec263fe8fda2e14111cd3f27a607cff0}{anohm\+\_\+shapefit} (t\+Hr, obs, amp, mean, tpeak)
+\begin{DoxyCompactList}\small\item\em calculate the key parameters of a sinusoidal curve for An\+O\+HM forcings i.\+e., a, b, c in a$\ast$\+Sin(Pi/12$\ast$t+b)+c, where t is in hour \end{DoxyCompactList}\item 
+subroutine \hyperlink{namespaceanohm__module_a8d56836cb99e49028266fac2beaf5b95}{fsin} (m, n, x, xdat, ydat, fvec, iflag)
+\begin{DoxyCompactList}\small\item\em sinusoidal function f(t) for fitting\+: f(t) = mean+amp$\ast$\+Sin(Pi/12(t-\/delta)) x = (/mean,amp,delta/) contains the fitting parameters \end{DoxyCompactList}\item 
+subroutine \hyperlink{namespaceanohm__module_aa417a23b56e0ed503452ac26f3de9886}{anohm\+\_\+sfcload} (sfc\+\_\+typ, alb, emis, cp, kk, ch, xalb, xemis, xcp, xk, xch, x\+Bo)
+\begin{DoxyCompactList}\small\item\em load surface properties. \end{DoxyCompactList}\item 
+subroutine \hyperlink{namespaceanohm__module_a7c747a2204089f0681ae47c92bf7d1e0}{anohm\+\_\+bo\+\_\+cal} (Ta, RH, pres, t\+Hr, A\+Sd, m\+Sd, A\+Ta, m\+Ta, tau, m\+WS, m\+WF, m\+AH, xalb, xemis, xcp, xk, xch, x\+SM, t\+Sd, x\+Bo)
+\begin{DoxyCompactList}\small\item\em estimate daytime Bowen ratio for calculation of An\+O\+HM coefficients \end{DoxyCompactList}\item 
+subroutine \hyperlink{namespaceanohm__module_a6111dd73f21e92071faa29d426ae84f9}{fcnbo} (n, x, fvec, iflag)
+\begin{DoxyCompactList}\small\item\em this fucntion will construct an equaiton for Bo calculation \end{DoxyCompactList}\item 
+real(kind(1d0)) function \hyperlink{namespaceanohm__module_a0db1439a632619dd005b69ce0fcb9cbe}{qsat\+\_\+fn} (Ta, pres)
+\begin{DoxyCompactList}\small\item\em calculate saturation specific humidity (qsat) at air temperature (Ta) and atmospheric pressure (pres) \end{DoxyCompactList}\item 
+real(kind(1d0)) function \hyperlink{namespaceanohm__module_ac9feb33254cb5595d19ad7f8a012ef92}{qa\+\_\+fn} (Ta, RH, pres)
+\begin{DoxyCompactList}\small\item\em convert relative humidity (RH) to specific humidity (qa) at air temperature (Ta) and atmospheric pressure (pres) \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+An\+O\+HM\+: Analytical Objective Hysteresis Model. 
+
+\begin{DoxyAuthor}{Author}
+Ting Sun, \href{mailto:ting.sun@reading.ac.uk}{\tt ting.\+sun@reading.\+ac.\+uk}
+\end{DoxyAuthor}
+calculate heat storage. model details refer to \href{https://doi.org/10.5194/gmd-2016-300}{\tt https\+://doi.\+org/10.\+5194/gmd-\/2016-\/300} 
+
+\subsection{Function/\+Subroutine Documentation}
+\mbox{\Hypertarget{namespaceanohm__module_a12150b343f1a4a8c3210e499cb9db9d9}\label{namespaceanohm__module_a12150b343f1a4a8c3210e499cb9db9d9}} 
+\index{anohm\+\_\+module@{anohm\+\_\+module}!anohm@{anohm}}
+\index{anohm@{anohm}!anohm\+\_\+module@{anohm\+\_\+module}}
+\subsubsection{\texorpdfstring{anohm()}{anohm()}}
+{\footnotesize\ttfamily subroutine anohm\+\_\+module\+::anohm (\begin{DoxyParamCaption}\item[{real(kind(1d0)), intent(in)}]{qn1,  }\item[{real(kind(1d0)), dimension(nsh), intent(inout)}]{qn1\+\_\+store,  }\item[{real(kind(1d0)), dimension(2$\ast$nsh+1), intent(inout)}]{qn1\+\_\+av\+\_\+store,  }\item[{real(kind(1d0)), dimension(\+:,\+:), intent(in)}]{Met\+Forcing\+Data\+\_\+grid,  }\item[{real(kind(1d0)), dimension(nsurf), intent(in)}]{moist\+\_\+surf,  }\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{alb,  }\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{emis,  }\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{cp,  }\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{kk,  }\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{ch,  }\item[{real(kind(1d0)), dimension(nsurf), intent(in)}]{sfr,  }\item[{integer, intent(in)}]{nsurf,  }\item[{integer, intent(in)}]{nsh,  }\item[{integer, intent(in)}]{Anthrop\+Heat\+Method,  }\item[{integer, intent(in)}]{id,  }\item[{real(kind(1d0)), intent(out)}]{a1,  }\item[{real(kind(1d0)), intent(out)}]{a2,  }\item[{real(kind(1d0)), intent(out)}]{a3,  }\item[{real(kind(1d0)), intent(out)}]{qs }\end{DoxyParamCaption})}
+
+
+
+High level wrapper for An\+O\+HM calculation. 
+
+calculate heat storage based within An\+O\+HM framework. \begin{DoxyReturn}{Returns}
+
+\begin{DoxyEnumerate}
+\item grid ensemble heat storage\+: QS = a1$\ast$(Q$\ast$)+a2$\ast$(d\+Q$\ast$/dt)+a3
+\item grid ensemble O\+HM coefficients\+: a1, a2 and a3
+\end{DoxyEnumerate}
+\end{DoxyReturn}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em metforcingdata\+\_\+grid} & met forcing array of grid\\
+\hline
+\mbox{\tt in}  & {\em qn1} & qn1 net all-\/wave radiation\\
+\hline
+\mbox{\tt in}  & {\em sfr} & sfr surface fraction\\
+\hline
+\mbox{\tt in}  & {\em moist\+\_\+surf} & moist\+\_\+surf surface wetness status\\
+\hline
+\mbox{\tt in}  & {\em alb} & alb albedo,\\
+\hline
+\mbox{\tt in}  & {\em emis} & emis emissivity,\\
+\hline
+\mbox{\tt in}  & {\em cp} & cp heat capacity,\\
+\hline
+\mbox{\tt in}  & {\em kk} & kk thermal conductivity\\
+\hline
+\mbox{\tt in}  & {\em ch} & ch bulk transfer coef.\\
+\hline
+\mbox{\tt in}  & {\em id} & day of year\\
+\hline
+\mbox{\tt in}  & {\em anthropheatmethod} & Anthrop\+Heat option\\
+\hline
+\mbox{\tt in}  & {\em nsurf} & number of surfaces\\
+\hline
+\mbox{\tt in}  & {\em nsh} & number of timesteps in one hour\\
+\hline
+\mbox{\tt in,out}  & {\em qn1\+\_\+av\+\_\+store} & some other ones\\
+\hline
+\mbox{\tt out}  & {\em a1} & An\+O\+HM coefficients of grid\\
+\hline
+\mbox{\tt out}  & {\em a2} & An\+O\+HM coefficients of grid\\
+\hline
+\mbox{\tt out}  & {\em a3} & An\+O\+HM coefficients of grid\\
+\hline
+\mbox{\tt out}  & {\em qs} & storage heat flux \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 33 of file S\+U\+E\+W\+S\+\_\+\+An\+O\+H\+M.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceanohm__module_a12150b343f1a4a8c3210e499cb9db9d9_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespaceanohm__module_a7c747a2204089f0681ae47c92bf7d1e0}\label{namespaceanohm__module_a7c747a2204089f0681ae47c92bf7d1e0}} 
+\index{anohm\+\_\+module@{anohm\+\_\+module}!anohm\+\_\+bo\+\_\+cal@{anohm\+\_\+bo\+\_\+cal}}
+\index{anohm\+\_\+bo\+\_\+cal@{anohm\+\_\+bo\+\_\+cal}!anohm\+\_\+module@{anohm\+\_\+module}}
+\subsubsection{\texorpdfstring{anohm\+\_\+bo\+\_\+cal()}{anohm\_bo\_cal()}}
+{\footnotesize\ttfamily subroutine anohm\+\_\+module\+::anohm\+\_\+bo\+\_\+cal (\begin{DoxyParamCaption}\item[{real(kind = 8), dimension(\+:), intent(in)}]{Ta,  }\item[{real(kind = 8), dimension(\+:), intent(in)}]{RH,  }\item[{real(kind = 8), dimension(\+:), intent(in)}]{pres,  }\item[{real(kind = 8), dimension(\+:), intent(in)}]{t\+Hr,  }\item[{real(kind(1d0)), intent(in)}]{A\+Sd,  }\item[{real(kind(1d0)), intent(in)}]{m\+Sd,  }\item[{real(kind(1d0)), intent(in)}]{A\+Ta,  }\item[{real(kind(1d0)), intent(in)}]{m\+Ta,  }\item[{real(kind(1d0)), intent(in)}]{tau,  }\item[{real(kind(1d0)), intent(in)}]{m\+WS,  }\item[{real(kind(1d0)), intent(in)}]{m\+WF,  }\item[{real(kind(1d0)), intent(in)}]{m\+AH,  }\item[{real(kind(1d0)), intent(in)}]{xalb,  }\item[{real(kind(1d0)), intent(in)}]{xemis,  }\item[{real(kind(1d0)), intent(in)}]{xcp,  }\item[{real(kind(1d0)), intent(in)}]{xk,  }\item[{real(kind(1d0)), intent(in)}]{xch,  }\item[{real(kind(1d0)), intent(in)}]{x\+SM,  }\item[{real(kind(1d0)), intent(in)}]{t\+Sd,  }\item[{real(kind=8), intent(out)}]{x\+Bo }\end{DoxyParamCaption})}
+
+
+
+estimate daytime Bowen ratio for calculation of An\+O\+HM coefficients 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em ta} & air temperature, degC\\
+\hline
+\mbox{\tt in}  & {\em rh} & relative humidity, \%\\
+\hline
+\mbox{\tt in}  & {\em pres} & Atmospheric pressure, mbar\\
+\hline
+\mbox{\tt in}  & {\em thr} & time, hour\\
+\hline
+\mbox{\tt in}  & {\em asd} & daily amplitude of solar radiation\\
+\hline
+\mbox{\tt in}  & {\em msd} & daily mean solar radiation\\
+\hline
+\mbox{\tt in}  & {\em tsd} & local peaking time of solar radiation, hour\\
+\hline
+\mbox{\tt in}  & {\em ata} & daily amplitude of air temperature\\
+\hline
+\mbox{\tt in}  & {\em mta} & daily mean air temperature\\
+\hline
+\mbox{\tt in}  & {\em tau} & phase lag between Sd and Ta (Ta-\/\+Sd)\\
+\hline
+\mbox{\tt in}  & {\em mws} & daily mean wind speed\\
+\hline
+\mbox{\tt in}  & {\em mwf} & daily mean underground moisture flux\\
+\hline
+\mbox{\tt in}  & {\em mah} & daily mean anthropogenic heat flux\\
+\hline
+\mbox{\tt in}  & {\em xalb} & albedo,\\
+\hline
+\mbox{\tt in}  & {\em xemis} & emissivity,\\
+\hline
+\mbox{\tt in}  & {\em xcp} & heat capacity,\\
+\hline
+\mbox{\tt in}  & {\em xk} & thermal conductivity,\\
+\hline
+\mbox{\tt in}  & {\em xch} & bulk transfer coef.\\
+\hline
+\mbox{\tt in}  & {\em xsm} & surface moisture status, non-\/dimensional \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 1375 of file S\+U\+E\+W\+S\+\_\+\+An\+O\+H\+M.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceanohm__module_a7c747a2204089f0681ae47c92bf7d1e0_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespaceanohm__module_a5aa773c6b5c4a66155eaeb1c86c70471}\label{namespaceanohm__module_a5aa773c6b5c4a66155eaeb1c86c70471}} 
+\index{anohm\+\_\+module@{anohm\+\_\+module}!anohm\+\_\+coef@{anohm\+\_\+coef}}
+\index{anohm\+\_\+coef@{anohm\+\_\+coef}!anohm\+\_\+module@{anohm\+\_\+module}}
+\subsubsection{\texorpdfstring{anohm\+\_\+coef()}{anohm\_coef()}}
+{\footnotesize\ttfamily subroutine anohm\+\_\+module\+::anohm\+\_\+coef (\begin{DoxyParamCaption}\item[{integer, intent(in)}]{sfc\+\_\+typ,  }\item[{integer, intent(in)}]{xid,  }\item[{integer, intent(in)}]{xgrid,  }\item[{real(kind(1d0)), dimension(\+:,\+:), intent(in)}]{Met\+Forcing\+Data\+\_\+grid,  }\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{moist\+\_\+surf,  }\item[{integer, intent(in)}]{Anthrop\+Heat\+Method,  }\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{alb,  }\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{emis,  }\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{cp,  }\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{kk,  }\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{ch,  }\item[{real(kind(1d0)), intent(out)}]{xa1,  }\item[{real(kind(1d0)), intent(out)}]{xa2,  }\item[{real(kind(1d0)), intent(out)}]{xa3 }\end{DoxyParamCaption})}
+
+
+
+High level wrapper for An\+O\+HM coefficients calculation. 
+
+calculate O\+HM coefficients within An\+O\+HM framework. \begin{DoxyReturn}{Returns}
+
+\begin{DoxyEnumerate}
+\item O\+HM coefficients of a given surface type\+: a1, a2 and a3
+\end{DoxyEnumerate}
+\end{DoxyReturn}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em moist\+\_\+surf} & surface wetness status \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 150 of file S\+U\+E\+W\+S\+\_\+\+An\+O\+H\+M.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceanohm__module_a5aa773c6b5c4a66155eaeb1c86c70471_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespaceanohm__module_abe3a233f6e7d95775554ccc25e1cac45}\label{namespaceanohm__module_abe3a233f6e7d95775554ccc25e1cac45}} 
+\index{anohm\+\_\+module@{anohm\+\_\+module}!anohm\+\_\+coef\+\_\+land@{anohm\+\_\+coef\+\_\+land}}
+\index{anohm\+\_\+coef\+\_\+land@{anohm\+\_\+coef\+\_\+land}!anohm\+\_\+module@{anohm\+\_\+module}}
+\subsubsection{\texorpdfstring{anohm\+\_\+coef\+\_\+land()}{anohm\_coef\_land()}}
+{\footnotesize\ttfamily subroutine anohm\+\_\+module\+::anohm\+\_\+coef\+\_\+land (\begin{DoxyParamCaption}\item[{integer, intent(in)}]{sfc\+\_\+typ,  }\item[{integer, intent(in)}]{xid,  }\item[{real(kind(1d0)), dimension(\+:,\+:), intent(in)}]{Met\+Forcing\+Data\+\_\+grid,  }\item[{integer, intent(in)}]{Anthrop\+Heat\+Method,  }\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{moist\+\_\+surf,  }\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{alb,  }\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{emis,  }\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{cp,  }\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{kk,  }\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{ch,  }\item[{real(kind(1d0)), intent(out)}]{xa1,  }\item[{real(kind(1d0)), intent(out)}]{xa2,  }\item[{real(kind(1d0)), intent(out)}]{xa3 }\end{DoxyParamCaption})}
+
+
+
+a procedure for calculating An\+O\+HM coefficients of land surfaces 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em moist\+\_\+surf} & surface wetness status \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 218 of file S\+U\+E\+W\+S\+\_\+\+An\+O\+H\+M.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceanohm__module_abe3a233f6e7d95775554ccc25e1cac45_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespaceanohm__module_a20235f7bc1aada21135014d0e942e59f}\label{namespaceanohm__module_a20235f7bc1aada21135014d0e942e59f}} 
+\index{anohm\+\_\+module@{anohm\+\_\+module}!anohm\+\_\+coef\+\_\+land\+\_\+cal@{anohm\+\_\+coef\+\_\+land\+\_\+cal}}
+\index{anohm\+\_\+coef\+\_\+land\+\_\+cal@{anohm\+\_\+coef\+\_\+land\+\_\+cal}!anohm\+\_\+module@{anohm\+\_\+module}}
+\subsubsection{\texorpdfstring{anohm\+\_\+coef\+\_\+land\+\_\+cal()}{anohm\_coef\_land\_cal()}}
+{\footnotesize\ttfamily subroutine anohm\+\_\+module\+::anohm\+\_\+coef\+\_\+land\+\_\+cal (\begin{DoxyParamCaption}\item[{real(kind(1d0)), intent(in)}]{A\+Sd,  }\item[{real(kind(1d0)), intent(in)}]{m\+Sd,  }\item[{real(kind(1d0)), intent(in)}]{A\+Ta,  }\item[{real(kind(1d0)), intent(in)}]{m\+Ta,  }\item[{real(kind(1d0)), intent(in)}]{tau,  }\item[{real(kind(1d0)), intent(in)}]{m\+WS,  }\item[{real(kind(1d0)), intent(in)}]{m\+WF,  }\item[{real(kind(1d0)), intent(in)}]{m\+AH,  }\item[{real(kind(1d0)), intent(in)}]{xalb,  }\item[{real(kind(1d0)), intent(in)}]{xemis,  }\item[{real(kind(1d0)), intent(in)}]{xcp,  }\item[{real(kind(1d0)), intent(in)}]{xk,  }\item[{real(kind(1d0)), intent(in)}]{xch,  }\item[{real(kind(1d0)), intent(in)}]{x\+Bo,  }\item[{real(kind(1d0)), intent(out)}]{xa1,  }\item[{real(kind(1d0)), intent(out)}]{xa2,  }\item[{real(kind(1d0)), intent(out)}]{xa3 }\end{DoxyParamCaption})}
+
+
+
+a wrapper for retrieving An\+O\+HM coefficients 
+
+\begin{DoxyReturn}{Returns}
+
+\begin{DoxyEnumerate}
+\item O\+HM coefficients of a given surface type\+: a1, a2 and a3
+\end{DoxyEnumerate}
+\end{DoxyReturn}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em asd} & daily amplitude of solar radiation\\
+\hline
+\mbox{\tt in}  & {\em msd} & daily mean solar radiation\\
+\hline
+\mbox{\tt in}  & {\em ata} & daily amplitude of air temperature\\
+\hline
+\mbox{\tt in}  & {\em mta} & daily mean air temperature\\
+\hline
+\mbox{\tt in}  & {\em tau} & phase lag between Sd and Ta (Ta-\/\+Sd)\\
+\hline
+\mbox{\tt in}  & {\em mws} & daily mean wind speed\\
+\hline
+\mbox{\tt in}  & {\em mwf} & daily mean underground moisture flux\\
+\hline
+\mbox{\tt in}  & {\em mah} & daily mean anthropogenic heat flux\\
+\hline
+\mbox{\tt in}  & {\em xalb} & albedo\\
+\hline
+\mbox{\tt in}  & {\em xemis} & emissivity\\
+\hline
+\mbox{\tt in}  & {\em xcp} & heat capacity\\
+\hline
+\mbox{\tt in}  & {\em xk} & thermal conductivity\\
+\hline
+\mbox{\tt in}  & {\em xch} & bulk transfer coef\\
+\hline
+\mbox{\tt in}  & {\em xbo} & Bowen ratio\\
+\hline
+\mbox{\tt out}  & {\em xa1} & a1\\
+\hline
+\mbox{\tt out}  & {\em xa2} & a2\\
+\hline
+\mbox{\tt out}  & {\em xa3} & a3 \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 312 of file S\+U\+E\+W\+S\+\_\+\+An\+O\+H\+M.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceanohm__module_a20235f7bc1aada21135014d0e942e59f_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespaceanohm__module_ab96821e3f733aae01d895aa8830085b7}\label{namespaceanohm__module_ab96821e3f733aae01d895aa8830085b7}} 
+\index{anohm\+\_\+module@{anohm\+\_\+module}!anohm\+\_\+coef\+\_\+land\+\_\+cal\+\_\+extra@{anohm\+\_\+coef\+\_\+land\+\_\+cal\+\_\+extra}}
+\index{anohm\+\_\+coef\+\_\+land\+\_\+cal\+\_\+extra@{anohm\+\_\+coef\+\_\+land\+\_\+cal\+\_\+extra}!anohm\+\_\+module@{anohm\+\_\+module}}
+\subsubsection{\texorpdfstring{anohm\+\_\+coef\+\_\+land\+\_\+cal\+\_\+extra()}{anohm\_coef\_land\_cal\_extra()}}
+{\footnotesize\ttfamily subroutine anohm\+\_\+module\+::anohm\+\_\+coef\+\_\+land\+\_\+cal\+\_\+extra (\begin{DoxyParamCaption}\item[{real(kind(1d0)), intent(in)}]{A\+Sd,  }\item[{real(kind(1d0)), intent(in)}]{m\+Sd,  }\item[{real(kind(1d0)), intent(in)}]{A\+Ta,  }\item[{real(kind(1d0)), intent(in)}]{m\+Ta,  }\item[{real(kind(1d0)), intent(in)}]{tau,  }\item[{real(kind(1d0)), intent(in)}]{m\+WS,  }\item[{real(kind(1d0)), intent(in)}]{m\+WF,  }\item[{real(kind(1d0)), intent(in)}]{m\+AH,  }\item[{real(kind(1d0)), intent(in)}]{xalb,  }\item[{real(kind(1d0)), intent(in)}]{xemis,  }\item[{real(kind(1d0)), intent(in)}]{xcp,  }\item[{real(kind(1d0)), intent(in)}]{xk,  }\item[{real(kind(1d0)), intent(in)}]{xch,  }\item[{real(kind(1d0)), intent(in)}]{x\+Bo,  }\item[{real(kind(1d0)), intent(out)}]{xa1,  }\item[{real(kind(1d0)), intent(out)}]{xa2,  }\item[{real(kind(1d0)), intent(out)}]{xa3,  }\item[{real(kind(1d0)), intent(out)}]{A\+Ts,  }\item[{real(kind(1d0)), intent(out)}]{m\+Ts,  }\item[{real(kind(1d0)), intent(out)}]{gamma }\end{DoxyParamCaption})}
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em asd} & daily amplitude of solar radiation\\
+\hline
+\mbox{\tt in}  & {\em msd} & daily mean solar radiation\\
+\hline
+\mbox{\tt in}  & {\em ata} & daily amplitude of air temperature\\
+\hline
+\mbox{\tt in}  & {\em mta} & daily mean air temperature\\
+\hline
+\mbox{\tt in}  & {\em tau} & phase lag between Sd and Ta (Ta-\/\+Sd)\\
+\hline
+\mbox{\tt in}  & {\em mws} & daily mean wind speed\\
+\hline
+\mbox{\tt in}  & {\em mwf} & daily mean underground moisture flux\\
+\hline
+\mbox{\tt in}  & {\em mah} & daily mean anthropogenic heat flux\\
+\hline
+\mbox{\tt in}  & {\em xalb} & albedo\\
+\hline
+\mbox{\tt in}  & {\em xemis} & emissivity\\
+\hline
+\mbox{\tt in}  & {\em xcp} & heat capacity\\
+\hline
+\mbox{\tt in}  & {\em xk} & thermal conductivity\\
+\hline
+\mbox{\tt in}  & {\em xch} & bulk transfer coef\\
+\hline
+\mbox{\tt in}  & {\em xbo} & Bowen ratio\\
+\hline
+\mbox{\tt out}  & {\em xa1} & a1\\
+\hline
+\mbox{\tt out}  & {\em xa2} & a2\\
+\hline
+\mbox{\tt out}  & {\em xa3} & a3\\
+\hline
+\mbox{\tt out}  & {\em ats} & daily amplitude of surface temperature\\
+\hline
+\mbox{\tt out}  & {\em mts} & daily mean of surface temperature\\
+\hline
+\mbox{\tt out}  & {\em gamma} & phase difference between Ts and Sd \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 464 of file S\+U\+E\+W\+S\+\_\+\+An\+O\+H\+M.\+f95.
+
+\mbox{\Hypertarget{namespaceanohm__module_a5b0b99ebb9db9ec50d904cc7a9802779}\label{namespaceanohm__module_a5b0b99ebb9db9ec50d904cc7a9802779}} 
+\index{anohm\+\_\+module@{anohm\+\_\+module}!anohm\+\_\+coef\+\_\+water@{anohm\+\_\+coef\+\_\+water}}
+\index{anohm\+\_\+coef\+\_\+water@{anohm\+\_\+coef\+\_\+water}!anohm\+\_\+module@{anohm\+\_\+module}}
+\subsubsection{\texorpdfstring{anohm\+\_\+coef\+\_\+water()}{anohm\_coef\_water()}}
+{\footnotesize\ttfamily subroutine anohm\+\_\+module\+::anohm\+\_\+coef\+\_\+water (\begin{DoxyParamCaption}\item[{integer, intent(in)}]{sfc\+\_\+typ,  }\item[{integer, intent(in)}]{xid,  }\item[{real(kind(1d0)), dimension(\+:,\+:), intent(in)}]{Met\+Forcing\+Data\+\_\+grid,  }\item[{integer, intent(in)}]{Anthrop\+Heat\+Method,  }\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{moist\+\_\+surf,  }\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{alb,  }\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{emis,  }\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{cp,  }\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{kk,  }\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{ch,  }\item[{real(kind(1d0)), intent(out)}]{xa1,  }\item[{real(kind(1d0)), intent(out)}]{xa2,  }\item[{real(kind(1d0)), intent(out)}]{xa3 }\end{DoxyParamCaption})}
+
+
+
+a procedure for calculating An\+O\+HM coefficients of water body based on forcings and sfc. conditions 
+
+\+: NB\+: this S\+U\+B\+R\+O\+U\+T\+I\+NE hasn\textquotesingle{}t been well tested.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em moist\+\_\+surf} & surface wetness status \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 638 of file S\+U\+E\+W\+S\+\_\+\+An\+O\+H\+M.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceanohm__module_a5b0b99ebb9db9ec50d904cc7a9802779_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespaceanohm__module_aeb16132909e9aae5549d9ce6adcf389f}\label{namespaceanohm__module_aeb16132909e9aae5549d9ce6adcf389f}} 
+\index{anohm\+\_\+module@{anohm\+\_\+module}!anohm\+\_\+coef\+\_\+water\+\_\+cal@{anohm\+\_\+coef\+\_\+water\+\_\+cal}}
+\index{anohm\+\_\+coef\+\_\+water\+\_\+cal@{anohm\+\_\+coef\+\_\+water\+\_\+cal}!anohm\+\_\+module@{anohm\+\_\+module}}
+\subsubsection{\texorpdfstring{anohm\+\_\+coef\+\_\+water\+\_\+cal()}{anohm\_coef\_water\_cal()}}
+{\footnotesize\ttfamily subroutine anohm\+\_\+module\+::anohm\+\_\+coef\+\_\+water\+\_\+cal (\begin{DoxyParamCaption}\item[{real(kind(1d0)), intent(in)}]{A\+Sd,  }\item[{real(kind(1d0)), intent(in)}]{m\+Sd,  }\item[{real(kind(1d0)), intent(in)}]{A\+Ta,  }\item[{real(kind(1d0)), intent(in)}]{m\+Ta,  }\item[{real(kind(1d0)), intent(in)}]{tau,  }\item[{real(kind(1d0)), intent(in)}]{m\+WS,  }\item[{real(kind(1d0)), intent(in)}]{m\+WF,  }\item[{real(kind(1d0)), intent(in)}]{m\+AH,  }\item[{real(kind(1d0)), intent(in)}]{xalb,  }\item[{real(kind(1d0)), intent(in)}]{xemis,  }\item[{real(kind(1d0)), intent(in)}]{xcp,  }\item[{real(kind(1d0)), intent(in)}]{xk,  }\item[{real(kind(1d0)), intent(in)}]{xch,  }\item[{real(kind(1d0)), intent(in)}]{x\+Bo,  }\item[{real(kind(1d0)), intent(in)}]{xeta,  }\item[{real(kind(1d0)), intent(in)}]{xmu,  }\item[{real(kind(1d0)), intent(out)}]{xa1,  }\item[{real(kind(1d0)), intent(out)}]{xa2,  }\item[{real(kind(1d0)), intent(out)}]{xa3 }\end{DoxyParamCaption})}
+
+
+
+a wrapper for retrieving An\+O\+HM coefficients of water body 
+
+\begin{DoxyReturn}{Returns}
+
+\begin{DoxyEnumerate}
+\item O\+HM coefficients of a given surface type\+: a1, a2 and a3 \+: NB\+: this S\+U\+B\+R\+O\+U\+T\+I\+NE hasn\textquotesingle{}t been well tested.
+\end{DoxyEnumerate}
+\end{DoxyReturn}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em asd} & daily amplitude of solar radiation\\
+\hline
+\mbox{\tt in}  & {\em msd} & daily mean solar radiation\\
+\hline
+\mbox{\tt in}  & {\em ata} & daily amplitude of air temperature\\
+\hline
+\mbox{\tt in}  & {\em mta} & daily mean air temperature\\
+\hline
+\mbox{\tt in}  & {\em tau} & phase lag between Sd and Ta (Ta-\/\+Sd)\\
+\hline
+\mbox{\tt in}  & {\em mws} & daily mean wind speed\\
+\hline
+\mbox{\tt in}  & {\em mwf} & daily mean underground moisture flux\\
+\hline
+\mbox{\tt in}  & {\em mah} & daily mean anthropogenic heat flux\\
+\hline
+\mbox{\tt in}  & {\em xalb} & albedo\\
+\hline
+\mbox{\tt in}  & {\em xemis} & emissivity\\
+\hline
+\mbox{\tt in}  & {\em xcp} & heat capacity\\
+\hline
+\mbox{\tt in}  & {\em xk} & thermal conductivity\\
+\hline
+\mbox{\tt in}  & {\em xch} & bulk transfer coef\\
+\hline
+\mbox{\tt in}  & {\em xbo} & Bowen ratio\\
+\hline
+\mbox{\tt in}  & {\em xeta} & effective absorption coefficient\\
+\hline
+\mbox{\tt in}  & {\em xmu} & effective absorption fraction\\
+\hline
+\mbox{\tt out}  & {\em xa1} & a1\\
+\hline
+\mbox{\tt out}  & {\em xa2} & a2\\
+\hline
+\mbox{\tt out}  & {\em xa3} & a3 \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 735 of file S\+U\+E\+W\+S\+\_\+\+An\+O\+H\+M.\+f95.
+
+\mbox{\Hypertarget{namespaceanohm__module_aeb3eededd40f7c2bb12213c747c93513}\label{namespaceanohm__module_aeb3eededd40f7c2bb12213c747c93513}} 
+\index{anohm\+\_\+module@{anohm\+\_\+module}!anohm\+\_\+fc@{anohm\+\_\+fc}}
+\index{anohm\+\_\+fc@{anohm\+\_\+fc}!anohm\+\_\+module@{anohm\+\_\+module}}
+\subsubsection{\texorpdfstring{anohm\+\_\+fc()}{anohm\_fc()}}
+{\footnotesize\ttfamily subroutine anohm\+\_\+module\+::anohm\+\_\+fc (\begin{DoxyParamCaption}\item[{integer, intent(in)}]{xid,  }\item[{real(kind(1d0)), dimension(\+:,\+:), intent(in)}]{Met\+Forcing\+Data\+\_\+grid,  }\item[{integer, intent(in)}]{Anthrop\+Heat\+Method,  }\item[{real(kind(1d0)), intent(out)}]{A\+Sd,  }\item[{real(kind(1d0)), intent(out)}]{m\+Sd,  }\item[{real(kind(1d0)), intent(out)}]{t\+Sd,  }\item[{real(kind(1d0)), intent(out)}]{A\+Ta,  }\item[{real(kind(1d0)), intent(out)}]{m\+Ta,  }\item[{real(kind(1d0)), intent(out)}]{t\+Ta,  }\item[{real(kind(1d0)), intent(out)}]{tau,  }\item[{real(kind(1d0)), intent(out)}]{m\+WS,  }\item[{real(kind(1d0)), intent(out)}]{m\+WF,  }\item[{real(kind(1d0)), intent(out)}]{m\+AH }\end{DoxyParamCaption})}
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em asd} & daily amplitude of solar radiation\\
+\hline
+\mbox{\tt out}  & {\em msd} & daily mean solar radiation\\
+\hline
+\mbox{\tt out}  & {\em tsd} & local peaking time of solar radiation, hour\\
+\hline
+\mbox{\tt out}  & {\em ata} & daily amplitude of air temperature\\
+\hline
+\mbox{\tt out}  & {\em mta} & daily mean air temperature\\
+\hline
+\mbox{\tt out}  & {\em tta} & local peaking time of air temperature, hour\\
+\hline
+\mbox{\tt out}  & {\em tau} & phase lag between Sd and Ta (Ta-\/\+Sd)\\
+\hline
+\mbox{\tt out}  & {\em mws} & daily mean wind speed\\
+\hline
+\mbox{\tt out}  & {\em mwf} & daily mean underground moisture flux\\
+\hline
+\mbox{\tt out}  & {\em mah} & daily mean anthropogenic heat flux \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 900 of file S\+U\+E\+W\+S\+\_\+\+An\+O\+H\+M.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceanohm__module_aeb3eededd40f7c2bb12213c747c93513_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespaceanohm__module_afed396f8cec94d18f3c6bec4a2a879eb}\label{namespaceanohm__module_afed396f8cec94d18f3c6bec4a2a879eb}} 
+\index{anohm\+\_\+module@{anohm\+\_\+module}!anohm\+\_\+fccal@{anohm\+\_\+fccal}}
+\index{anohm\+\_\+fccal@{anohm\+\_\+fccal}!anohm\+\_\+module@{anohm\+\_\+module}}
+\subsubsection{\texorpdfstring{anohm\+\_\+fccal()}{anohm\_fccal()}}
+{\footnotesize\ttfamily subroutine anohm\+\_\+module\+::anohm\+\_\+fccal (\begin{DoxyParamCaption}\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{Sd,  }\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{Ta,  }\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{WS,  }\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{WF,  }\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{AH,  }\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{t\+Hr,  }\item[{real(kind(1d0)), intent(out)}]{A\+Sd,  }\item[{real(kind(1d0)), intent(out)}]{m\+Sd,  }\item[{real(kind(1d0)), intent(out)}]{t\+Sd,  }\item[{real(kind(1d0)), intent(out)}]{A\+Ta,  }\item[{real(kind(1d0)), intent(out)}]{m\+Ta,  }\item[{real(kind(1d0)), intent(out)}]{t\+Ta,  }\item[{real(kind(1d0)), intent(out)}]{tau,  }\item[{real(kind(1d0)), intent(out)}]{m\+WS,  }\item[{real(kind(1d0)), intent(out)}]{m\+WF,  }\item[{real(kind(1d0)), intent(out)}]{m\+AH }\end{DoxyParamCaption})}
+
+
+
+calculate the key parameters of a sinusoidal curve for An\+O\+HM forcings i.\+e., a, b, c in a$\ast$\+Sin(Pi/12$\ast$t+b)+c 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em sd} & incoming shortwave radiation, W m-\/2\\
+\hline
+\mbox{\tt in}  & {\em ta} & air temperature, K\\
+\hline
+\mbox{\tt in}  & {\em ws} & wind speed, m s-\/1\\
+\hline
+\mbox{\tt in}  & {\em wf} & water flux density, ???\\
+\hline
+\mbox{\tt in}  & {\em ah} & anthropogenic heat, W m-\/2\\
+\hline
+\mbox{\tt in}  & {\em thr} & time in hour, hr\\
+\hline
+\mbox{\tt out}  & {\em asd} & daily amplitude of solar radiation\\
+\hline
+\mbox{\tt out}  & {\em msd} & daily mean solar radiation\\
+\hline
+\mbox{\tt out}  & {\em tsd} & local peaking time of solar radiation, hour\\
+\hline
+\mbox{\tt out}  & {\em ata} & daily amplitude of air temperature\\
+\hline
+\mbox{\tt out}  & {\em mta} & daily mean air temperature\\
+\hline
+\mbox{\tt out}  & {\em tta} & local peaking time of air temperature, hour\\
+\hline
+\mbox{\tt out}  & {\em tau} & phase lag between Sd and Ta (Ta-\/\+Sd)\\
+\hline
+\mbox{\tt out}  & {\em mws} & daily mean wind speed\\
+\hline
+\mbox{\tt out}  & {\em mwf} & daily mean underground moisture flux\\
+\hline
+\mbox{\tt out}  & {\em mah} & daily mean anthropogenic heat flux \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 1058 of file S\+U\+E\+W\+S\+\_\+\+An\+O\+H\+M.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceanohm__module_afed396f8cec94d18f3c6bec4a2a879eb_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespaceanohm__module_ae189523211fd4b943a0e75cbc1e7b7d1}\label{namespaceanohm__module_ae189523211fd4b943a0e75cbc1e7b7d1}} 
+\index{anohm\+\_\+module@{anohm\+\_\+module}!anohm\+\_\+fcload@{anohm\+\_\+fcload}}
+\index{anohm\+\_\+fcload@{anohm\+\_\+fcload}!anohm\+\_\+module@{anohm\+\_\+module}}
+\subsubsection{\texorpdfstring{anohm\+\_\+fcload()}{anohm\_fcload()}}
+{\footnotesize\ttfamily subroutine anohm\+\_\+module\+::anohm\+\_\+fcload (\begin{DoxyParamCaption}\item[{integer, intent(in)}]{xid,  }\item[{real(kind(1d0)), dimension(\+:,\+:), intent(in)}]{Met\+Forcing\+Data\+\_\+grid,  }\item[{integer, intent(in)}]{Anthrop\+Heat\+Method,  }\item[{real(kind(1d0)), dimension(\+:), intent(out), allocatable}]{Sd,  }\item[{real(kind(1d0)), dimension(\+:), intent(out), allocatable}]{Ta,  }\item[{real(kind(1d0)), dimension(\+:), intent(out), allocatable}]{RH,  }\item[{real(kind(1d0)), dimension(\+:), intent(out), allocatable}]{pres,  }\item[{real(kind(1d0)), dimension(\+:), intent(out), allocatable}]{WS,  }\item[{real(kind(1d0)), dimension(\+:), intent(out), allocatable}]{WF,  }\item[{real(kind(1d0)), dimension(\+:), intent(out), allocatable}]{AH,  }\item[{real(kind(1d0)), dimension(\+:), intent(out), allocatable}]{t\+Hr }\end{DoxyParamCaption})}
+
+
+
+load forcing series for An\+O\+H\+M\+\_\+\+Fc\+Cal 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em xid} & T\+O\+DO\\
+\hline
+\mbox{\tt in}  & {\em anthropheatmethod} & T\+O\+DO\\
+\hline
+\mbox{\tt in}  & {\em metforcingdata\+\_\+grid} & T\+O\+DO\\
+\hline
+\mbox{\tt out}  & {\em sd} & T\+O\+DO\\
+\hline
+\mbox{\tt out}  & {\em ta} & T\+O\+DO\\
+\hline
+\mbox{\tt out}  & {\em rh} & T\+O\+DO\\
+\hline
+\mbox{\tt out}  & {\em pres} & T\+O\+DO\\
+\hline
+\mbox{\tt out}  & {\em ws} & T\+O\+DO\\
+\hline
+\mbox{\tt out}  & {\em wf} & T\+O\+DO\\
+\hline
+\mbox{\tt out}  & {\em ah} & T\+O\+DO\\
+\hline
+\mbox{\tt out}  & {\em thr} & T\+O\+DO \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 945 of file S\+U\+E\+W\+S\+\_\+\+An\+O\+H\+M.\+f95.
+
+\mbox{\Hypertarget{namespaceanohm__module_aa417a23b56e0ed503452ac26f3de9886}\label{namespaceanohm__module_aa417a23b56e0ed503452ac26f3de9886}} 
+\index{anohm\+\_\+module@{anohm\+\_\+module}!anohm\+\_\+sfcload@{anohm\+\_\+sfcload}}
+\index{anohm\+\_\+sfcload@{anohm\+\_\+sfcload}!anohm\+\_\+module@{anohm\+\_\+module}}
+\subsubsection{\texorpdfstring{anohm\+\_\+sfcload()}{anohm\_sfcload()}}
+{\footnotesize\ttfamily subroutine anohm\+\_\+module\+::anohm\+\_\+sfcload (\begin{DoxyParamCaption}\item[{integer, intent(in)}]{sfc\+\_\+typ,  }\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{alb,  }\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{emis,  }\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{cp,  }\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{kk,  }\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{ch,  }\item[{real(kind(1d0)), intent(out)}]{xalb,  }\item[{real(kind(1d0)), intent(out)}]{xemis,  }\item[{real(kind(1d0)), intent(out)}]{xcp,  }\item[{real(kind(1d0)), intent(out)}]{xk,  }\item[{real(kind(1d0)), intent(out)}]{xch,  }\item[{real(kind(1d0)), intent(out)}]{x\+Bo }\end{DoxyParamCaption})}
+
+
+
+load surface properties. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em xalb} & albedo,\\
+\hline
+\mbox{\tt out}  & {\em xemis} & emissivity,\\
+\hline
+\mbox{\tt out}  & {\em xcp} & heat capacity,\\
+\hline
+\mbox{\tt out}  & {\em xk} & thermal conductivity,\\
+\hline
+\mbox{\tt out}  & {\em xch} & bulk transfer coef.\\
+\hline
+\mbox{\tt out}  & {\em xbo} & Bowen ratio \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 1287 of file S\+U\+E\+W\+S\+\_\+\+An\+O\+H\+M.\+f95.
+
+\mbox{\Hypertarget{namespaceanohm__module_aec263fe8fda2e14111cd3f27a607cff0}\label{namespaceanohm__module_aec263fe8fda2e14111cd3f27a607cff0}} 
+\index{anohm\+\_\+module@{anohm\+\_\+module}!anohm\+\_\+shapefit@{anohm\+\_\+shapefit}}
+\index{anohm\+\_\+shapefit@{anohm\+\_\+shapefit}!anohm\+\_\+module@{anohm\+\_\+module}}
+\subsubsection{\texorpdfstring{anohm\+\_\+shapefit()}{anohm\_shapefit()}}
+{\footnotesize\ttfamily subroutine anohm\+\_\+module\+::anohm\+\_\+shapefit (\begin{DoxyParamCaption}\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{t\+Hr,  }\item[{real(kind(1d0)), dimension(\+:), intent(in)}]{obs,  }\item[{real(kind(1d0)), intent(out)}]{amp,  }\item[{real(kind(1d0)), intent(out)}]{mean,  }\item[{real(kind(1d0)), intent(out)}]{tpeak }\end{DoxyParamCaption})}
+
+
+
+calculate the key parameters of a sinusoidal curve for An\+O\+HM forcings i.\+e., a, b, c in a$\ast$\+Sin(Pi/12$\ast$t+b)+c, where t is in hour 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em thr} & time in hour\\
+\hline
+\mbox{\tt in}  & {\em obs} & observation\\
+\hline
+\mbox{\tt out}  & {\em amp} & amplitude\\
+\hline
+\mbox{\tt out}  & {\em mean} & average\\
+\hline
+\mbox{\tt out}  & {\em tpeak} & peaking time (h) \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 1182 of file S\+U\+E\+W\+S\+\_\+\+An\+O\+H\+M.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceanohm__module_aec263fe8fda2e14111cd3f27a607cff0_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespaceanohm__module_a3f1a576bdde691f251c98f56d28b6c5e}\label{namespaceanohm__module_a3f1a576bdde691f251c98f56d28b6c5e}} 
+\index{anohm\+\_\+module@{anohm\+\_\+module}!anohm\+\_\+tsurf\+\_\+land\+\_\+cal@{anohm\+\_\+tsurf\+\_\+land\+\_\+cal}}
+\index{anohm\+\_\+tsurf\+\_\+land\+\_\+cal@{anohm\+\_\+tsurf\+\_\+land\+\_\+cal}!anohm\+\_\+module@{anohm\+\_\+module}}
+\subsubsection{\texorpdfstring{anohm\+\_\+tsurf\+\_\+land\+\_\+cal()}{anohm\_tsurf\_land\_cal()}}
+{\footnotesize\ttfamily subroutine anohm\+\_\+module\+::anohm\+\_\+tsurf\+\_\+land\+\_\+cal (\begin{DoxyParamCaption}\item[{real(kind(1d0)), intent(in)}]{A\+Sd,  }\item[{real(kind(1d0)), intent(in)}]{m\+Sd,  }\item[{real(kind(1d0)), intent(in)}]{A\+Ta,  }\item[{real(kind(1d0)), intent(in)}]{m\+Ta,  }\item[{real(kind(1d0)), intent(in)}]{tau,  }\item[{real(kind(1d0)), intent(in)}]{m\+WS,  }\item[{real(kind(1d0)), intent(in)}]{m\+WF,  }\item[{real(kind(1d0)), intent(in)}]{m\+AH,  }\item[{real(kind(1d0)), intent(in)}]{xalb,  }\item[{real(kind(1d0)), intent(in)}]{xemis,  }\item[{real(kind(1d0)), intent(in)}]{xcp,  }\item[{real(kind(1d0)), intent(in)}]{xk,  }\item[{real(kind(1d0)), intent(in)}]{xch,  }\item[{real(kind(1d0)), intent(in)}]{x\+Bo,  }\item[{real(kind(1d0)), intent(out)}]{A\+Ts,  }\item[{real(kind(1d0)), intent(out)}]{m\+Ts,  }\item[{real(kind(1d0)), intent(out)}]{gamma }\end{DoxyParamCaption})}
+
+
+
+a wrapper for calculating surface temperature scales 
+
+\begin{DoxyReturn}{Returns}
+
+\begin{DoxyEnumerate}
+\item A\+Ts coefficients of a given surface type\+: a1, a2 and a3
+\item m\+Ts coefficients of a given surface type\+: a1, a2 and a3
+\item gamma coefficients of a given surface type\+: a1, a2 and a3
+\end{DoxyEnumerate}
+\end{DoxyReturn}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em asd} & daily amplitude of solar radiation\\
+\hline
+\mbox{\tt in}  & {\em msd} & daily mean solar radiation\\
+\hline
+\mbox{\tt in}  & {\em ata} & daily amplitude of air temperature\\
+\hline
+\mbox{\tt in}  & {\em mta} & daily mean air temperature\\
+\hline
+\mbox{\tt in}  & {\em tau} & phase lag between Sd and Ta (Ta-\/\+Sd)\\
+\hline
+\mbox{\tt in}  & {\em mws} & daily mean wind speed\\
+\hline
+\mbox{\tt in}  & {\em mwf} & daily mean underground moisture flux\\
+\hline
+\mbox{\tt in}  & {\em mah} & daily mean anthropogenic heat flux\\
+\hline
+\mbox{\tt in}  & {\em xalb} & albedo\\
+\hline
+\mbox{\tt in}  & {\em xemis} & emissivity\\
+\hline
+\mbox{\tt in}  & {\em xcp} & heat capacity\\
+\hline
+\mbox{\tt in}  & {\em xk} & thermal conductivity\\
+\hline
+\mbox{\tt in}  & {\em xch} & bulk transfer coef\\
+\hline
+\mbox{\tt in}  & {\em xbo} & Bowen ratio\\
+\hline
+\mbox{\tt out}  & {\em ats} & a1\\
+\hline
+\mbox{\tt out}  & {\em mts} & a2\\
+\hline
+\mbox{\tt out}  & {\em gamma} & a3 \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 358 of file S\+U\+E\+W\+S\+\_\+\+An\+O\+H\+M.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceanohm__module_a3f1a576bdde691f251c98f56d28b6c5e_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespaceanohm__module_a54c27af87baa1736fd40590bed6c081e}\label{namespaceanohm__module_a54c27af87baa1736fd40590bed6c081e}} 
+\index{anohm\+\_\+module@{anohm\+\_\+module}!anohm\+\_\+xts@{anohm\+\_\+xts}}
+\index{anohm\+\_\+xts@{anohm\+\_\+xts}!anohm\+\_\+module@{anohm\+\_\+module}}
+\subsubsection{\texorpdfstring{anohm\+\_\+xts()}{anohm\_xts()}}
+{\footnotesize\ttfamily subroutine anohm\+\_\+module\+::anohm\+\_\+xts (\begin{DoxyParamCaption}\item[{real(kind(1d0)), intent(in)}]{A\+Sd,  }\item[{real(kind(1d0)), intent(in)}]{m\+Sd,  }\item[{real(kind(1d0)), intent(in)}]{A\+Ta,  }\item[{real(kind(1d0)), intent(in)}]{m\+Ta,  }\item[{real(kind(1d0)), intent(in)}]{tau,  }\item[{real(kind(1d0)), intent(in)}]{m\+WS,  }\item[{real(kind(1d0)), intent(in)}]{m\+WF,  }\item[{real(kind(1d0)), intent(in)}]{m\+AH,  }\item[{real(kind(1d0)), intent(in)}]{xalb,  }\item[{real(kind(1d0)), intent(in)}]{xemis,  }\item[{real(kind(1d0)), intent(in)}]{xcp,  }\item[{real(kind(1d0)), intent(in)}]{xk,  }\item[{real(kind(1d0)), intent(in)}]{xch,  }\item[{real(kind(1d0)), intent(in)}]{x\+Bo,  }\item[{real(kind(1d0)), intent(in)}]{t\+Sd,  }\item[{real(kind(1d0)), intent(in)}]{x\+T\+Hr,  }\item[{real(kind(1d0)), intent(out)}]{x\+Ts }\end{DoxyParamCaption})}
+
+
+
+calculate the surface temperature related parameters (A\+Ts, m\+Ts, gamma) based on forcings and sfc. conditions 
+
+\begin{DoxyReturn}{Returns}
+{\bfseries x\+Ts} surface temperature at local time
+\end{DoxyReturn}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em asd} & daily amplitude of solar radiation\\
+\hline
+\mbox{\tt in}  & {\em msd} & daily mean solar radiation\\
+\hline
+\mbox{\tt in}  & {\em ata} & daily amplitude of air temperature\\
+\hline
+\mbox{\tt in}  & {\em mta} & daily mean air temperature\\
+\hline
+\mbox{\tt in}  & {\em tau} & phase lag between Sd and Ta (Ta-\/\+Sd)\\
+\hline
+\mbox{\tt in}  & {\em mws} & daily mean wind speed\\
+\hline
+\mbox{\tt in}  & {\em mwf} & daily mean underground moisture flux\\
+\hline
+\mbox{\tt in}  & {\em mah} & daily mean anthropogenic heat flux\\
+\hline
+\mbox{\tt in}  & {\em xalb} & albedo\\
+\hline
+\mbox{\tt in}  & {\em xemis} & emissivity\\
+\hline
+\mbox{\tt in}  & {\em xcp} & heat capacity\\
+\hline
+\mbox{\tt in}  & {\em xk} & thermal conductivity\\
+\hline
+\mbox{\tt in}  & {\em xch} & bulk transfer coef\\
+\hline
+\mbox{\tt in}  & {\em xbo} & Bowen ratio\\
+\hline
+\mbox{\tt in}  & {\em tsd} & local peaking time of Sd, hour\\
+\hline
+\mbox{\tt in}  & {\em xthr} & local time to calculate Ts, hour\\
+\hline
+\mbox{\tt out}  & {\em xts} & surface temperature at x\+T\+Hr(hr) \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line 411 of file S\+U\+E\+W\+S\+\_\+\+An\+O\+H\+M.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceanohm__module_a54c27af87baa1736fd40590bed6c081e_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespaceanohm__module_a6111dd73f21e92071faa29d426ae84f9}\label{namespaceanohm__module_a6111dd73f21e92071faa29d426ae84f9}} 
+\index{anohm\+\_\+module@{anohm\+\_\+module}!fcnbo@{fcnbo}}
+\index{fcnbo@{fcnbo}!anohm\+\_\+module@{anohm\+\_\+module}}
+\subsubsection{\texorpdfstring{fcnbo()}{fcnbo()}}
+{\footnotesize\ttfamily subroutine anohm\+\_\+module\+::fcnbo (\begin{DoxyParamCaption}\item[{integer ( kind = 4 )}]{n,  }\item[{real ( kind = 8 ), dimension(n)}]{x,  }\item[{real ( kind = 8 ), dimension(n)}]{fvec,  }\item[{integer ( kind = 4 )}]{iflag }\end{DoxyParamCaption})}
+
+
+
+this fucntion will construct an equaiton for Bo calculation 
+
+
+
+Definition at line 1473 of file S\+U\+E\+W\+S\+\_\+\+An\+O\+H\+M.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespaceanohm__module_a6111dd73f21e92071faa29d426ae84f9_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespaceanohm__module_a8d56836cb99e49028266fac2beaf5b95}\label{namespaceanohm__module_a8d56836cb99e49028266fac2beaf5b95}} 
+\index{anohm\+\_\+module@{anohm\+\_\+module}!fsin@{fsin}}
+\index{fsin@{fsin}!anohm\+\_\+module@{anohm\+\_\+module}}
+\subsubsection{\texorpdfstring{fsin()}{fsin()}}
+{\footnotesize\ttfamily subroutine anohm\+\_\+module\+::fsin (\begin{DoxyParamCaption}\item[{integer ( kind = 4 )}]{m,  }\item[{integer ( kind = 4 )}]{n,  }\item[{real ( kind = 8 ), dimension(n)}]{x,  }\item[{real ( kind = 8 ), dimension(m)}]{xdat,  }\item[{real ( kind = 8 ), dimension(m)}]{ydat,  }\item[{real ( kind = 8 ), dimension(m)}]{fvec,  }\item[{integer ( kind = 4 )}]{iflag }\end{DoxyParamCaption})}
+
+
+
+sinusoidal function f(t) for fitting\+: f(t) = mean+amp$\ast$\+Sin(Pi/12(t-\/delta)) x = (/mean,amp,delta/) contains the fitting parameters 
+
+
+
+Definition at line 1252 of file S\+U\+E\+W\+S\+\_\+\+An\+O\+H\+M.\+f95.
+
+\mbox{\Hypertarget{namespaceanohm__module_ac9feb33254cb5595d19ad7f8a012ef92}\label{namespaceanohm__module_ac9feb33254cb5595d19ad7f8a012ef92}} 
+\index{anohm\+\_\+module@{anohm\+\_\+module}!qa\+\_\+fn@{qa\+\_\+fn}}
+\index{qa\+\_\+fn@{qa\+\_\+fn}!anohm\+\_\+module@{anohm\+\_\+module}}
+\subsubsection{\texorpdfstring{qa\+\_\+fn()}{qa\_fn()}}
+{\footnotesize\ttfamily real (kind(1d0)) function anohm\+\_\+module\+::qa\+\_\+fn (\begin{DoxyParamCaption}\item[{real (kind(1d0))}]{Ta,  }\item[{real (kind(1d0))}]{RH,  }\item[{real (kind(1d0))}]{pres }\end{DoxyParamCaption})}
+
+
+
+convert relative humidity (RH) to specific humidity (qa) at air temperature (Ta) and atmospheric pressure (pres) 
+
+
+
+Definition at line 1660 of file S\+U\+E\+W\+S\+\_\+\+An\+O\+H\+M.\+f95.
+
+\mbox{\Hypertarget{namespaceanohm__module_a0db1439a632619dd005b69ce0fcb9cbe}\label{namespaceanohm__module_a0db1439a632619dd005b69ce0fcb9cbe}} 
+\index{anohm\+\_\+module@{anohm\+\_\+module}!qsat\+\_\+fn@{qsat\+\_\+fn}}
+\index{qsat\+\_\+fn@{qsat\+\_\+fn}!anohm\+\_\+module@{anohm\+\_\+module}}
+\subsubsection{\texorpdfstring{qsat\+\_\+fn()}{qsat\_fn()}}
+{\footnotesize\ttfamily real (kind(1d0)) function anohm\+\_\+module\+::qsat\+\_\+fn (\begin{DoxyParamCaption}\item[{real (kind(1d0))}]{Ta,  }\item[{real (kind(1d0))}]{pres }\end{DoxyParamCaption})}
+
+
+
+calculate saturation specific humidity (qsat) at air temperature (Ta) and atmospheric pressure (pres) 
+
+
+
+Definition at line 1639 of file S\+U\+E\+W\+S\+\_\+\+An\+O\+H\+M.\+f95.
+

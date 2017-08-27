@@ -1,0 +1,463 @@
+\hypertarget{namespacectrl__output}{}\section{ctrl\+\_\+output Module Reference}
+\label{namespacectrl__output}\index{ctrl\+\_\+output@{ctrl\+\_\+output}}
+\subsection*{Data Types}
+\begin{DoxyCompactItemize}
+\item 
+type \hyperlink{structctrl__output_1_1varattr}{varattr}
+\end{DoxyCompactItemize}
+\subsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \hyperlink{namespacectrl__output_a33e3b788edad27be3211458c4388f8e5}{suews\+\_\+output\+\_\+txt} (iv, ir\+Max, Gridiv)
+\item 
+subroutine \hyperlink{namespacectrl__output_ac3541cbdb88f9028bc3592ee65b64980}{suews\+\_\+output\+\_\+txt\+\_\+grp} (iv, ir\+Max, var\+List, Gridiv, out\+Level, out\+Freq\+\_\+s)
+\item 
+subroutine \hyperlink{namespacectrl__output_aa089b1e6d88c1556fb0d0f645face272}{suews\+\_\+output\+\_\+init} (data\+Out, var\+List, Gridiv, out\+Level)
+\item 
+subroutine \hyperlink{namespacectrl__output_a754f1fcb7692b22f531bcbd7fffd2634}{formatfile\+\_\+gen} (data\+Out, var\+List, Gridiv, out\+Level)
+\item 
+subroutine \hyperlink{namespacectrl__output_ae9a62c39f1b7598a639718dd95127977}{suews\+\_\+output\+\_\+agg} (data\+Out\+\_\+agg, data\+Out, var\+List, ir\+Max, out\+Freq\+\_\+s)
+\item 
+subroutine \hyperlink{namespacectrl__output_a84e30d3564e406535ea078c470a62668}{suews\+\_\+write\+\_\+txt} (data\+Out, var\+List, Gridiv, out\+Level)
+\item 
+subroutine \hyperlink{namespacectrl__output_a01d8b0b36afd96d4fe5ff45436e13782}{filename\+\_\+gen} (data\+Out, var\+List, Gridiv, File\+Out, opt\+\_\+fmt)
+\item 
+integer function \hyperlink{namespacectrl__output_ad7bc76aa43873e663835c8d008f7d548}{count\+\_\+lines} (filename)
+\item 
+subroutine \hyperlink{namespacectrl__output_abe2b9152111665466982f35349bf24d8}{suews\+\_\+output\+\_\+nc} (ir\+Max)
+\item 
+subroutine \hyperlink{namespacectrl__output_a333bec5a308bd89762292b7f695bdb9b}{suews\+\_\+output\+\_\+nc\+\_\+grp} (ir\+Max, var\+List, out\+Level, out\+Freq\+\_\+s)
+\item 
+subroutine \hyperlink{namespacectrl__output_a34f8d939c96cb60cdf1f9739e1ea4672}{suews\+\_\+write\+\_\+nc} (data\+Out, var\+List, out\+Level)
+\item 
+subroutine \hyperlink{namespacectrl__output_a7c804abccd932d50e4938262f22f586e}{grid2mat} (seq\+Grid2\+Sort, seq\+Grid\+Sorted, mat\+Grid, n\+Row, n\+Col)
+\item 
+subroutine \hyperlink{namespacectrl__output_a06abc3039b8c610cb65b9cd42817d064}{seq2mat} (seq2\+Sort, seq\+Sorted, mat\+Grid, n\+Row, n\+Col)
+\item 
+subroutine \hyperlink{namespacectrl__output_a1807dd1d886e5fd090461e140156758b}{sortgrid} (seq\+Grid2\+Sort, seq\+Grid\+Sorted, n\+Row, n\+Col)
+\item 
+subroutine \hyperlink{namespacectrl__output_a093211a59ed2a27d1d853afc548146df}{sortseqreal} (seq\+Real2\+Sort, seq\+Real\+Sorted, n\+Row, n\+Col)
+\item 
+subroutine \hyperlink{namespacectrl__output_a0fbef481d73d1ca11f59121aadf9cb87}{check} (status)
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+integer \hyperlink{namespacectrl__output_a0e436b9299ebba225dbe6a2f4eff2eed}{i}
+\item 
+character(len=10), parameter \hyperlink{namespacectrl__output_a250aeaca42269ac3898762523ec86e22}{fy} = \textquotesingle{}(i0004,1\+X)\textquotesingle{}
+\item 
+character(len=10), parameter \hyperlink{namespacectrl__output_a2b5a74f7a69e74fed45533d69b5fcf81}{ft} = \textquotesingle{}(i0004,1\+X)\textquotesingle{}
+\item 
+character(len=10), parameter \hyperlink{namespacectrl__output_aa27783daf4b75a43cae98a60ce884744}{fd} = \textquotesingle{}(f08.\+4,1\+X)\textquotesingle{}
+\item 
+character(len=10), parameter \hyperlink{namespacectrl__output_a11f0b66275fc65047967ff8b2050ad25}{f94} = \textquotesingle{}(f09.\+4,1\+X)\textquotesingle{}
+\item 
+character(len=10), parameter \hyperlink{namespacectrl__output_a8653fec4faca8b39551da13d93a3f223}{f104} = \textquotesingle{}(f10.\+4,1\+X)\textquotesingle{}
+\item 
+character(len=10), parameter \hyperlink{namespacectrl__output_a191786067cffb2dc5dcfcafb12b2ead6}{f106} = \textquotesingle{}(f10.\+6,1\+X)\textquotesingle{}
+\item 
+character(len=10), parameter \hyperlink{namespacectrl__output_a524b25246e690cfbc8f75fe72938fb06}{f146} = \textquotesingle{}(f14.\+6,1\+X)\textquotesingle{}
+\item 
+character(len=1), parameter \hyperlink{namespacectrl__output_a18321fc13d7efb9b006ac70cece45909}{at} = \textquotesingle{}0\textquotesingle{}
+\item 
+character(len=1), parameter \hyperlink{namespacectrl__output_a51a0e846694f677a954a439b2d0069ce}{aa} = \textquotesingle{}1\textquotesingle{}
+\item 
+character(len=1), parameter \hyperlink{namespacectrl__output_a27bc52c96e692d0dbe7f6f73a3aea7e7}{as} = \textquotesingle{}2\textquotesingle{}
+\item 
+character(len=1), parameter \hyperlink{namespacectrl__output_a0cab13c6b1b664657d53f54bcaaf0b93}{al} = \textquotesingle{}3\textquotesingle{}
+\item 
+character(len=3) \hyperlink{namespacectrl__output_a4c25bfab41d6433c78b76c0a0d9c03b8}{itext}
+\item 
+type(\hyperlink{structctrl__output_1_1varattr}{varattr}), dimension(300) \hyperlink{namespacectrl__output_abf54926f3da30aea81f0d2ddfc9f4649}{varlist}
+\end{DoxyCompactItemize}
+
+
+\subsection{Function/\+Subroutine Documentation}
+\mbox{\Hypertarget{namespacectrl__output_a0fbef481d73d1ca11f59121aadf9cb87}\label{namespacectrl__output_a0fbef481d73d1ca11f59121aadf9cb87}} 
+\index{ctrl\+\_\+output@{ctrl\+\_\+output}!check@{check}}
+\index{check@{check}!ctrl\+\_\+output@{ctrl\+\_\+output}}
+\subsubsection{\texorpdfstring{check()}{check()}}
+{\footnotesize\ttfamily subroutine ctrl\+\_\+output\+::check (\begin{DoxyParamCaption}\item[{integer, intent(in)}]{status }\end{DoxyParamCaption})}
+
+
+
+Definition at line 1442 of file S\+U\+E\+W\+S\+\_\+ctrl\+\_\+output.\+f95.
+
+\mbox{\Hypertarget{namespacectrl__output_ad7bc76aa43873e663835c8d008f7d548}\label{namespacectrl__output_ad7bc76aa43873e663835c8d008f7d548}} 
+\index{ctrl\+\_\+output@{ctrl\+\_\+output}!count\+\_\+lines@{count\+\_\+lines}}
+\index{count\+\_\+lines@{count\+\_\+lines}!ctrl\+\_\+output@{ctrl\+\_\+output}}
+\subsubsection{\texorpdfstring{count\+\_\+lines()}{count\_lines()}}
+{\footnotesize\ttfamily integer function ctrl\+\_\+output\+::count\+\_\+lines (\begin{DoxyParamCaption}\item[{character(len=$\ast$)}]{filename }\end{DoxyParamCaption})}
+
+
+
+Definition at line 825 of file S\+U\+E\+W\+S\+\_\+ctrl\+\_\+output.\+f95.
+
+\mbox{\Hypertarget{namespacectrl__output_a01d8b0b36afd96d4fe5ff45436e13782}\label{namespacectrl__output_a01d8b0b36afd96d4fe5ff45436e13782}} 
+\index{ctrl\+\_\+output@{ctrl\+\_\+output}!filename\+\_\+gen@{filename\+\_\+gen}}
+\index{filename\+\_\+gen@{filename\+\_\+gen}!ctrl\+\_\+output@{ctrl\+\_\+output}}
+\subsubsection{\texorpdfstring{filename\+\_\+gen()}{filename\_gen()}}
+{\footnotesize\ttfamily subroutine ctrl\+\_\+output\+::filename\+\_\+gen (\begin{DoxyParamCaption}\item[{real(kind(1d0)), dimension(\+:,\+:), intent(in)}]{data\+Out,  }\item[{type(\hyperlink{structctrl__output_1_1varattr}{varattr}), dimension(\+:), intent(in)}]{var\+List,  }\item[{integer, intent(in)}]{Gridiv,  }\item[{character(len=100), intent(out)}]{File\+Out,  }\item[{integer, intent(in), optional}]{opt\+\_\+fmt }\end{DoxyParamCaption})}
+
+
+
+Definition at line 755 of file S\+U\+E\+W\+S\+\_\+ctrl\+\_\+output.\+f95.
+
+\mbox{\Hypertarget{namespacectrl__output_a754f1fcb7692b22f531bcbd7fffd2634}\label{namespacectrl__output_a754f1fcb7692b22f531bcbd7fffd2634}} 
+\index{ctrl\+\_\+output@{ctrl\+\_\+output}!formatfile\+\_\+gen@{formatfile\+\_\+gen}}
+\index{formatfile\+\_\+gen@{formatfile\+\_\+gen}!ctrl\+\_\+output@{ctrl\+\_\+output}}
+\subsubsection{\texorpdfstring{formatfile\+\_\+gen()}{formatfile\_gen()}}
+{\footnotesize\ttfamily subroutine ctrl\+\_\+output\+::formatfile\+\_\+gen (\begin{DoxyParamCaption}\item[{real(kind(1d0)), dimension(\+:,\+:), intent(in)}]{data\+Out,  }\item[{type(\hyperlink{structctrl__output_1_1varattr}{varattr}), dimension(\+:), intent(in)}]{var\+List,  }\item[{integer, intent(in)}]{Gridiv,  }\item[{integer, intent(in)}]{out\+Level }\end{DoxyParamCaption})}
+
+
+
+Definition at line 539 of file S\+U\+E\+W\+S\+\_\+ctrl\+\_\+output.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespacectrl__output_a754f1fcb7692b22f531bcbd7fffd2634_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespacectrl__output_a7c804abccd932d50e4938262f22f586e}\label{namespacectrl__output_a7c804abccd932d50e4938262f22f586e}} 
+\index{ctrl\+\_\+output@{ctrl\+\_\+output}!grid2mat@{grid2mat}}
+\index{grid2mat@{grid2mat}!ctrl\+\_\+output@{ctrl\+\_\+output}}
+\subsubsection{\texorpdfstring{grid2mat()}{grid2mat()}}
+{\footnotesize\ttfamily subroutine ctrl\+\_\+output\+::grid2mat (\begin{DoxyParamCaption}\item[{integer, dimension(nrow$\ast$ncol)}]{seq\+Grid2\+Sort,  }\item[{integer, dimension(nrow$\ast$ncol)}]{seq\+Grid\+Sorted,  }\item[{integer, dimension(nrow,ncol)}]{mat\+Grid,  }\item[{integer}]{n\+Row,  }\item[{integer}]{n\+Col }\end{DoxyParamCaption})}
+
+
+
+Definition at line 1213 of file S\+U\+E\+W\+S\+\_\+ctrl\+\_\+output.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespacectrl__output_a7c804abccd932d50e4938262f22f586e_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespacectrl__output_a06abc3039b8c610cb65b9cd42817d064}\label{namespacectrl__output_a06abc3039b8c610cb65b9cd42817d064}} 
+\index{ctrl\+\_\+output@{ctrl\+\_\+output}!seq2mat@{seq2mat}}
+\index{seq2mat@{seq2mat}!ctrl\+\_\+output@{ctrl\+\_\+output}}
+\subsubsection{\texorpdfstring{seq2mat()}{seq2mat()}}
+{\footnotesize\ttfamily subroutine ctrl\+\_\+output\+::seq2mat (\begin{DoxyParamCaption}\item[{real(kind(1d0)), dimension(nrow$\ast$ncol)}]{seq2\+Sort,  }\item[{real(kind(1d0)), dimension(nrow$\ast$ncol)}]{seq\+Sorted,  }\item[{real(kind(1d0)), dimension(nrow,ncol)}]{mat\+Grid,  }\item[{integer}]{n\+Row,  }\item[{integer}]{n\+Col }\end{DoxyParamCaption})}
+
+
+
+Definition at line 1244 of file S\+U\+E\+W\+S\+\_\+ctrl\+\_\+output.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespacectrl__output_a06abc3039b8c610cb65b9cd42817d064_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespacectrl__output_a1807dd1d886e5fd090461e140156758b}\label{namespacectrl__output_a1807dd1d886e5fd090461e140156758b}} 
+\index{ctrl\+\_\+output@{ctrl\+\_\+output}!sortgrid@{sortgrid}}
+\index{sortgrid@{sortgrid}!ctrl\+\_\+output@{ctrl\+\_\+output}}
+\subsubsection{\texorpdfstring{sortgrid()}{sortgrid()}}
+{\footnotesize\ttfamily subroutine ctrl\+\_\+output\+::sortgrid (\begin{DoxyParamCaption}\item[{integer, dimension(nrow$\ast$ncol), intent(in)}]{seq\+Grid2\+Sort,  }\item[{integer, dimension(nrow$\ast$ncol), intent(out)}]{seq\+Grid\+Sorted,  }\item[{integer}]{n\+Row,  }\item[{integer}]{n\+Col }\end{DoxyParamCaption})}
+
+
+
+Definition at line 1271 of file S\+U\+E\+W\+S\+\_\+ctrl\+\_\+output.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=338pt]{namespacectrl__output_a1807dd1d886e5fd090461e140156758b_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespacectrl__output_a093211a59ed2a27d1d853afc548146df}\label{namespacectrl__output_a093211a59ed2a27d1d853afc548146df}} 
+\index{ctrl\+\_\+output@{ctrl\+\_\+output}!sortseqreal@{sortseqreal}}
+\index{sortseqreal@{sortseqreal}!ctrl\+\_\+output@{ctrl\+\_\+output}}
+\subsubsection{\texorpdfstring{sortseqreal()}{sortseqreal()}}
+{\footnotesize\ttfamily subroutine ctrl\+\_\+output\+::sortseqreal (\begin{DoxyParamCaption}\item[{real(kind(1d0)), dimension(nrow$\ast$ncol), intent(in)}]{seq\+Real2\+Sort,  }\item[{real(kind(1d0)), dimension(nrow$\ast$ncol), intent(out)}]{seq\+Real\+Sorted,  }\item[{integer}]{n\+Row,  }\item[{integer}]{n\+Col }\end{DoxyParamCaption})}
+
+
+
+Definition at line 1356 of file S\+U\+E\+W\+S\+\_\+ctrl\+\_\+output.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespacectrl__output_a093211a59ed2a27d1d853afc548146df_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespacectrl__output_ae9a62c39f1b7598a639718dd95127977}\label{namespacectrl__output_ae9a62c39f1b7598a639718dd95127977}} 
+\index{ctrl\+\_\+output@{ctrl\+\_\+output}!suews\+\_\+output\+\_\+agg@{suews\+\_\+output\+\_\+agg}}
+\index{suews\+\_\+output\+\_\+agg@{suews\+\_\+output\+\_\+agg}!ctrl\+\_\+output@{ctrl\+\_\+output}}
+\subsubsection{\texorpdfstring{suews\+\_\+output\+\_\+agg()}{suews\_output\_agg()}}
+{\footnotesize\ttfamily subroutine ctrl\+\_\+output\+::suews\+\_\+output\+\_\+agg (\begin{DoxyParamCaption}\item[{real(kind(1d0)), dimension(\+:,\+:), intent(out), allocatable}]{data\+Out\+\_\+agg,  }\item[{real(kind(1d0)), dimension(\+:,\+:), intent(in)}]{data\+Out,  }\item[{type(\hyperlink{structctrl__output_1_1varattr}{varattr}), dimension(\+:), intent(in)}]{var\+List,  }\item[{integer, intent(in)}]{ir\+Max,  }\item[{integer, intent(in)}]{out\+Freq\+\_\+s }\end{DoxyParamCaption})}
+
+
+
+Definition at line 648 of file S\+U\+E\+W\+S\+\_\+ctrl\+\_\+output.\+f95.
+
+\mbox{\Hypertarget{namespacectrl__output_aa089b1e6d88c1556fb0d0f645face272}\label{namespacectrl__output_aa089b1e6d88c1556fb0d0f645face272}} 
+\index{ctrl\+\_\+output@{ctrl\+\_\+output}!suews\+\_\+output\+\_\+init@{suews\+\_\+output\+\_\+init}}
+\index{suews\+\_\+output\+\_\+init@{suews\+\_\+output\+\_\+init}!ctrl\+\_\+output@{ctrl\+\_\+output}}
+\subsubsection{\texorpdfstring{suews\+\_\+output\+\_\+init()}{suews\_output\_init()}}
+{\footnotesize\ttfamily subroutine ctrl\+\_\+output\+::suews\+\_\+output\+\_\+init (\begin{DoxyParamCaption}\item[{real(kind(1d0)), dimension(\+:,\+:), intent(in)}]{data\+Out,  }\item[{type(\hyperlink{structctrl__output_1_1varattr}{varattr}), dimension(\+:), intent(in)}]{var\+List,  }\item[{integer, intent(in)}]{Gridiv,  }\item[{integer, intent(in)}]{out\+Level }\end{DoxyParamCaption})}
+
+
+
+Definition at line 475 of file S\+U\+E\+W\+S\+\_\+ctrl\+\_\+output.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespacectrl__output_aa089b1e6d88c1556fb0d0f645face272_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespacectrl__output_abe2b9152111665466982f35349bf24d8}\label{namespacectrl__output_abe2b9152111665466982f35349bf24d8}} 
+\index{ctrl\+\_\+output@{ctrl\+\_\+output}!suews\+\_\+output\+\_\+nc@{suews\+\_\+output\+\_\+nc}}
+\index{suews\+\_\+output\+\_\+nc@{suews\+\_\+output\+\_\+nc}!ctrl\+\_\+output@{ctrl\+\_\+output}}
+\subsubsection{\texorpdfstring{suews\+\_\+output\+\_\+nc()}{suews\_output\_nc()}}
+{\footnotesize\ttfamily subroutine ctrl\+\_\+output\+::suews\+\_\+output\+\_\+nc (\begin{DoxyParamCaption}\item[{integer, intent(in)}]{ir\+Max }\end{DoxyParamCaption})}
+
+
+
+Definition at line 885 of file S\+U\+E\+W\+S\+\_\+ctrl\+\_\+output.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespacectrl__output_abe2b9152111665466982f35349bf24d8_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespacectrl__output_a333bec5a308bd89762292b7f695bdb9b}\label{namespacectrl__output_a333bec5a308bd89762292b7f695bdb9b}} 
+\index{ctrl\+\_\+output@{ctrl\+\_\+output}!suews\+\_\+output\+\_\+nc\+\_\+grp@{suews\+\_\+output\+\_\+nc\+\_\+grp}}
+\index{suews\+\_\+output\+\_\+nc\+\_\+grp@{suews\+\_\+output\+\_\+nc\+\_\+grp}!ctrl\+\_\+output@{ctrl\+\_\+output}}
+\subsubsection{\texorpdfstring{suews\+\_\+output\+\_\+nc\+\_\+grp()}{suews\_output\_nc\_grp()}}
+{\footnotesize\ttfamily subroutine ctrl\+\_\+output\+::suews\+\_\+output\+\_\+nc\+\_\+grp (\begin{DoxyParamCaption}\item[{integer, intent(in)}]{ir\+Max,  }\item[{type(\hyperlink{structctrl__output_1_1varattr}{varattr}), dimension(\+:), intent(in)}]{var\+List,  }\item[{integer, intent(in)}]{out\+Level,  }\item[{integer, intent(in)}]{out\+Freq\+\_\+s }\end{DoxyParamCaption})}
+
+
+
+Definition at line 959 of file S\+U\+E\+W\+S\+\_\+ctrl\+\_\+output.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespacectrl__output_a333bec5a308bd89762292b7f695bdb9b_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespacectrl__output_a33e3b788edad27be3211458c4388f8e5}\label{namespacectrl__output_a33e3b788edad27be3211458c4388f8e5}} 
+\index{ctrl\+\_\+output@{ctrl\+\_\+output}!suews\+\_\+output\+\_\+txt@{suews\+\_\+output\+\_\+txt}}
+\index{suews\+\_\+output\+\_\+txt@{suews\+\_\+output\+\_\+txt}!ctrl\+\_\+output@{ctrl\+\_\+output}}
+\subsubsection{\texorpdfstring{suews\+\_\+output\+\_\+txt()}{suews\_output\_txt()}}
+{\footnotesize\ttfamily subroutine ctrl\+\_\+output\+::suews\+\_\+output\+\_\+txt (\begin{DoxyParamCaption}\item[{integer, intent(in)}]{iv,  }\item[{integer, intent(in)}]{ir\+Max,  }\item[{integer, intent(in)}]{Gridiv }\end{DoxyParamCaption})}
+
+
+
+Definition at line 346 of file S\+U\+E\+W\+S\+\_\+ctrl\+\_\+output.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespacectrl__output_a33e3b788edad27be3211458c4388f8e5_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespacectrl__output_ac3541cbdb88f9028bc3592ee65b64980}\label{namespacectrl__output_ac3541cbdb88f9028bc3592ee65b64980}} 
+\index{ctrl\+\_\+output@{ctrl\+\_\+output}!suews\+\_\+output\+\_\+txt\+\_\+grp@{suews\+\_\+output\+\_\+txt\+\_\+grp}}
+\index{suews\+\_\+output\+\_\+txt\+\_\+grp@{suews\+\_\+output\+\_\+txt\+\_\+grp}!ctrl\+\_\+output@{ctrl\+\_\+output}}
+\subsubsection{\texorpdfstring{suews\+\_\+output\+\_\+txt\+\_\+grp()}{suews\_output\_txt\_grp()}}
+{\footnotesize\ttfamily subroutine ctrl\+\_\+output\+::suews\+\_\+output\+\_\+txt\+\_\+grp (\begin{DoxyParamCaption}\item[{integer, intent(in)}]{iv,  }\item[{integer, intent(in)}]{ir\+Max,  }\item[{type(\hyperlink{structctrl__output_1_1varattr}{varattr}), dimension(\+:), intent(in)}]{var\+List,  }\item[{integer, intent(in)}]{Gridiv,  }\item[{integer, intent(in)}]{out\+Level,  }\item[{integer, intent(in)}]{out\+Freq\+\_\+s }\end{DoxyParamCaption})}
+
+
+
+Definition at line 426 of file S\+U\+E\+W\+S\+\_\+ctrl\+\_\+output.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespacectrl__output_ac3541cbdb88f9028bc3592ee65b64980_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespacectrl__output_a34f8d939c96cb60cdf1f9739e1ea4672}\label{namespacectrl__output_a34f8d939c96cb60cdf1f9739e1ea4672}} 
+\index{ctrl\+\_\+output@{ctrl\+\_\+output}!suews\+\_\+write\+\_\+nc@{suews\+\_\+write\+\_\+nc}}
+\index{suews\+\_\+write\+\_\+nc@{suews\+\_\+write\+\_\+nc}!ctrl\+\_\+output@{ctrl\+\_\+output}}
+\subsubsection{\texorpdfstring{suews\+\_\+write\+\_\+nc()}{suews\_write\_nc()}}
+{\footnotesize\ttfamily subroutine ctrl\+\_\+output\+::suews\+\_\+write\+\_\+nc (\begin{DoxyParamCaption}\item[{real(kind(1d0)), dimension(\+:,\+:,\+:), intent(in)}]{data\+Out,  }\item[{type(\hyperlink{structctrl__output_1_1varattr}{varattr}), dimension(\+:), intent(in)}]{var\+List,  }\item[{integer, intent(in)}]{out\+Level }\end{DoxyParamCaption})}
+
+
+
+Definition at line 1006 of file S\+U\+E\+W\+S\+\_\+ctrl\+\_\+output.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespacectrl__output_a34f8d939c96cb60cdf1f9739e1ea4672_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespacectrl__output_a84e30d3564e406535ea078c470a62668}\label{namespacectrl__output_a84e30d3564e406535ea078c470a62668}} 
+\index{ctrl\+\_\+output@{ctrl\+\_\+output}!suews\+\_\+write\+\_\+txt@{suews\+\_\+write\+\_\+txt}}
+\index{suews\+\_\+write\+\_\+txt@{suews\+\_\+write\+\_\+txt}!ctrl\+\_\+output@{ctrl\+\_\+output}}
+\subsubsection{\texorpdfstring{suews\+\_\+write\+\_\+txt()}{suews\_write\_txt()}}
+{\footnotesize\ttfamily subroutine ctrl\+\_\+output\+::suews\+\_\+write\+\_\+txt (\begin{DoxyParamCaption}\item[{real(kind(1d0)), dimension(\+:,\+:), intent(in)}]{data\+Out,  }\item[{type(\hyperlink{structctrl__output_1_1varattr}{varattr}), dimension(\+:), intent(in)}]{var\+List,  }\item[{integer, intent(in)}]{Gridiv,  }\item[{integer, intent(in)}]{out\+Level }\end{DoxyParamCaption})}
+
+
+
+Definition at line 697 of file S\+U\+E\+W\+S\+\_\+ctrl\+\_\+output.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=341pt]{namespacectrl__output_a84e30d3564e406535ea078c470a62668_cgraph}
+\end{center}
+\end{figure}
+
+
+\subsection{Variable Documentation}
+\mbox{\Hypertarget{namespacectrl__output_a51a0e846694f677a954a439b2d0069ce}\label{namespacectrl__output_a51a0e846694f677a954a439b2d0069ce}} 
+\index{ctrl\+\_\+output@{ctrl\+\_\+output}!aa@{aa}}
+\index{aa@{aa}!ctrl\+\_\+output@{ctrl\+\_\+output}}
+\subsubsection{\texorpdfstring{aa}{aa}}
+{\footnotesize\ttfamily character(len= 1), parameter ctrl\+\_\+output\+::aa = \textquotesingle{}1\textquotesingle{}}
+
+
+
+Definition at line 49 of file S\+U\+E\+W\+S\+\_\+ctrl\+\_\+output.\+f95.
+
+\mbox{\Hypertarget{namespacectrl__output_a0cab13c6b1b664657d53f54bcaaf0b93}\label{namespacectrl__output_a0cab13c6b1b664657d53f54bcaaf0b93}} 
+\index{ctrl\+\_\+output@{ctrl\+\_\+output}!al@{al}}
+\index{al@{al}!ctrl\+\_\+output@{ctrl\+\_\+output}}
+\subsubsection{\texorpdfstring{al}{al}}
+{\footnotesize\ttfamily character(len= 1), parameter ctrl\+\_\+output\+::al = \textquotesingle{}3\textquotesingle{}}
+
+
+
+Definition at line 49 of file S\+U\+E\+W\+S\+\_\+ctrl\+\_\+output.\+f95.
+
+\mbox{\Hypertarget{namespacectrl__output_a27bc52c96e692d0dbe7f6f73a3aea7e7}\label{namespacectrl__output_a27bc52c96e692d0dbe7f6f73a3aea7e7}} 
+\index{ctrl\+\_\+output@{ctrl\+\_\+output}!as@{as}}
+\index{as@{as}!ctrl\+\_\+output@{ctrl\+\_\+output}}
+\subsubsection{\texorpdfstring{as}{as}}
+{\footnotesize\ttfamily character(len= 1), parameter ctrl\+\_\+output\+::as = \textquotesingle{}2\textquotesingle{}}
+
+
+
+Definition at line 49 of file S\+U\+E\+W\+S\+\_\+ctrl\+\_\+output.\+f95.
+
+\mbox{\Hypertarget{namespacectrl__output_a18321fc13d7efb9b006ac70cece45909}\label{namespacectrl__output_a18321fc13d7efb9b006ac70cece45909}} 
+\index{ctrl\+\_\+output@{ctrl\+\_\+output}!at@{at}}
+\index{at@{at}!ctrl\+\_\+output@{ctrl\+\_\+output}}
+\subsubsection{\texorpdfstring{at}{at}}
+{\footnotesize\ttfamily character(len= 1), parameter ctrl\+\_\+output\+::at = \textquotesingle{}0\textquotesingle{}}
+
+
+
+Definition at line 49 of file S\+U\+E\+W\+S\+\_\+ctrl\+\_\+output.\+f95.
+
+\mbox{\Hypertarget{namespacectrl__output_a8653fec4faca8b39551da13d93a3f223}\label{namespacectrl__output_a8653fec4faca8b39551da13d93a3f223}} 
+\index{ctrl\+\_\+output@{ctrl\+\_\+output}!f104@{f104}}
+\index{f104@{f104}!ctrl\+\_\+output@{ctrl\+\_\+output}}
+\subsubsection{\texorpdfstring{f104}{f104}}
+{\footnotesize\ttfamily character(len=10), parameter ctrl\+\_\+output\+::f104 = \textquotesingle{}(f10.\+4,1\+X)\textquotesingle{}}
+
+
+
+Definition at line 40 of file S\+U\+E\+W\+S\+\_\+ctrl\+\_\+output.\+f95.
+
+\mbox{\Hypertarget{namespacectrl__output_a191786067cffb2dc5dcfcafb12b2ead6}\label{namespacectrl__output_a191786067cffb2dc5dcfcafb12b2ead6}} 
+\index{ctrl\+\_\+output@{ctrl\+\_\+output}!f106@{f106}}
+\index{f106@{f106}!ctrl\+\_\+output@{ctrl\+\_\+output}}
+\subsubsection{\texorpdfstring{f106}{f106}}
+{\footnotesize\ttfamily character(len=10), parameter ctrl\+\_\+output\+::f106 = \textquotesingle{}(f10.\+6,1\+X)\textquotesingle{}}
+
+
+
+Definition at line 40 of file S\+U\+E\+W\+S\+\_\+ctrl\+\_\+output.\+f95.
+
+\mbox{\Hypertarget{namespacectrl__output_a524b25246e690cfbc8f75fe72938fb06}\label{namespacectrl__output_a524b25246e690cfbc8f75fe72938fb06}} 
+\index{ctrl\+\_\+output@{ctrl\+\_\+output}!f146@{f146}}
+\index{f146@{f146}!ctrl\+\_\+output@{ctrl\+\_\+output}}
+\subsubsection{\texorpdfstring{f146}{f146}}
+{\footnotesize\ttfamily character(len=10), parameter ctrl\+\_\+output\+::f146 = \textquotesingle{}(f14.\+6,1\+X)\textquotesingle{}}
+
+
+
+Definition at line 40 of file S\+U\+E\+W\+S\+\_\+ctrl\+\_\+output.\+f95.
+
+\mbox{\Hypertarget{namespacectrl__output_a11f0b66275fc65047967ff8b2050ad25}\label{namespacectrl__output_a11f0b66275fc65047967ff8b2050ad25}} 
+\index{ctrl\+\_\+output@{ctrl\+\_\+output}!f94@{f94}}
+\index{f94@{f94}!ctrl\+\_\+output@{ctrl\+\_\+output}}
+\subsubsection{\texorpdfstring{f94}{f94}}
+{\footnotesize\ttfamily character(len=10), parameter ctrl\+\_\+output\+::f94 = \textquotesingle{}(f09.\+4,1\+X)\textquotesingle{}}
+
+
+
+Definition at line 40 of file S\+U\+E\+W\+S\+\_\+ctrl\+\_\+output.\+f95.
+
+\mbox{\Hypertarget{namespacectrl__output_aa27783daf4b75a43cae98a60ce884744}\label{namespacectrl__output_aa27783daf4b75a43cae98a60ce884744}} 
+\index{ctrl\+\_\+output@{ctrl\+\_\+output}!fd@{fd}}
+\index{fd@{fd}!ctrl\+\_\+output@{ctrl\+\_\+output}}
+\subsubsection{\texorpdfstring{fd}{fd}}
+{\footnotesize\ttfamily character(len=10), parameter ctrl\+\_\+output\+::fd = \textquotesingle{}(f08.\+4,1\+X)\textquotesingle{}}
+
+
+
+Definition at line 40 of file S\+U\+E\+W\+S\+\_\+ctrl\+\_\+output.\+f95.
+
+\mbox{\Hypertarget{namespacectrl__output_a2b5a74f7a69e74fed45533d69b5fcf81}\label{namespacectrl__output_a2b5a74f7a69e74fed45533d69b5fcf81}} 
+\index{ctrl\+\_\+output@{ctrl\+\_\+output}!ft@{ft}}
+\index{ft@{ft}!ctrl\+\_\+output@{ctrl\+\_\+output}}
+\subsubsection{\texorpdfstring{ft}{ft}}
+{\footnotesize\ttfamily character(len=10), parameter ctrl\+\_\+output\+::ft = \textquotesingle{}(i0004,1\+X)\textquotesingle{}}
+
+
+
+Definition at line 40 of file S\+U\+E\+W\+S\+\_\+ctrl\+\_\+output.\+f95.
+
+\mbox{\Hypertarget{namespacectrl__output_a250aeaca42269ac3898762523ec86e22}\label{namespacectrl__output_a250aeaca42269ac3898762523ec86e22}} 
+\index{ctrl\+\_\+output@{ctrl\+\_\+output}!fy@{fy}}
+\index{fy@{fy}!ctrl\+\_\+output@{ctrl\+\_\+output}}
+\subsubsection{\texorpdfstring{fy}{fy}}
+{\footnotesize\ttfamily character(len=10), parameter ctrl\+\_\+output\+::fy = \textquotesingle{}(i0004,1\+X)\textquotesingle{}}
+
+
+
+Definition at line 40 of file S\+U\+E\+W\+S\+\_\+ctrl\+\_\+output.\+f95.
+
+\mbox{\Hypertarget{namespacectrl__output_a0e436b9299ebba225dbe6a2f4eff2eed}\label{namespacectrl__output_a0e436b9299ebba225dbe6a2f4eff2eed}} 
+\index{ctrl\+\_\+output@{ctrl\+\_\+output}!i@{i}}
+\index{i@{i}!ctrl\+\_\+output@{ctrl\+\_\+output}}
+\subsubsection{\texorpdfstring{i}{i}}
+{\footnotesize\ttfamily integer ctrl\+\_\+output\+::i}
+
+
+
+Definition at line 38 of file S\+U\+E\+W\+S\+\_\+ctrl\+\_\+output.\+f95.
+
+\mbox{\Hypertarget{namespacectrl__output_a4c25bfab41d6433c78b76c0a0d9c03b8}\label{namespacectrl__output_a4c25bfab41d6433c78b76c0a0d9c03b8}} 
+\index{ctrl\+\_\+output@{ctrl\+\_\+output}!itext@{itext}}
+\index{itext@{itext}!ctrl\+\_\+output@{ctrl\+\_\+output}}
+\subsubsection{\texorpdfstring{itext}{itext}}
+{\footnotesize\ttfamily character(len= 3) ctrl\+\_\+output\+::itext}
+
+
+
+Definition at line 55 of file S\+U\+E\+W\+S\+\_\+ctrl\+\_\+output.\+f95.
+
+\mbox{\Hypertarget{namespacectrl__output_abf54926f3da30aea81f0d2ddfc9f4649}\label{namespacectrl__output_abf54926f3da30aea81f0d2ddfc9f4649}} 
+\index{ctrl\+\_\+output@{ctrl\+\_\+output}!varlist@{varlist}}
+\index{varlist@{varlist}!ctrl\+\_\+output@{ctrl\+\_\+output}}
+\subsubsection{\texorpdfstring{varlist}{varlist}}
+{\footnotesize\ttfamily type(\hyperlink{structctrl__output_1_1varattr}{varattr}), dimension(300) ctrl\+\_\+output\+::varlist}
+
+
+
+Definition at line 69 of file S\+U\+E\+W\+S\+\_\+ctrl\+\_\+output.\+f95.
+

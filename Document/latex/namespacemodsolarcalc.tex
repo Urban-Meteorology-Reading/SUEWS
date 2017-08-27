@@ -1,0 +1,142 @@
+\hypertarget{namespacemodsolarcalc}{}\section{modsolarcalc Module Reference}
+\label{namespacemodsolarcalc}\index{modsolarcalc@{modsolarcalc}}
+\subsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+real(8) function \hyperlink{namespacemodsolarcalc_adfed66792e245bded2293250a0436520}{min\+\_\+zenith} (lat, doy)
+\item 
+real(8) function \hyperlink{namespacemodsolarcalc_a9ea53ee8fa5b7be8f0e7d919cc846182}{local\+\_\+apparent\+\_\+time} (lng, dectime)
+\item 
+subroutine \hyperlink{namespacemodsolarcalc_a6f49f02608586154b6a3b3cddcd6aa5e}{solar\+\_\+angles} (lat, lng, timezone, dectime, decl, zenith, azimuth)
+\item 
+subroutine \hyperlink{namespacemodsolarcalc_a2fbd1d33b3bd03fd930a2a3d93b83599}{solar\+\_\+times} (lat, lng, timezone, dectime, sunrise, sunset, snoon)
+\item 
+real(8) function \hyperlink{namespacemodsolarcalc_af8c3c752c506d880efae84070a189a71}{kdown\+\_\+surface} (doy, zenith)
+\item 
+real function, dimension(365) \hyperlink{namespacemodsolarcalc_abf0aac3f480ad1b6dbfdac598c453fa5}{smithlambda} (lat)
+\item 
+real(8) function \hyperlink{namespacemodsolarcalc_ad567772df0c379c013b1bec090be214a}{transmissivity\+\_\+cd} (P, Td, G, zenith)
+\item 
+real function \hyperlink{namespacemodsolarcalc_aaddec454c9882fef35b57ee1fa6206b2}{kdown\+\_\+niemala} (S0, vap\+\_\+press, Tk)
+\item 
+subroutine \hyperlink{namespacemodsolarcalc_a8e5e61f1a3537693aa4ca5527f74233e}{transmissivity} (vap\+\_\+press, Tk, theta, tr, tg, tw, ta, toz)
+\item 
+real(8) function \hyperlink{namespacemodsolarcalc_a17e233516e1b3514fd9d46a9ebe44e5e}{solar\+\_\+esdist} (doy)
+\end{DoxyCompactItemize}
+
+
+\subsection{Function/\+Subroutine Documentation}
+\mbox{\Hypertarget{namespacemodsolarcalc_aaddec454c9882fef35b57ee1fa6206b2}\label{namespacemodsolarcalc_aaddec454c9882fef35b57ee1fa6206b2}} 
+\index{modsolarcalc@{modsolarcalc}!kdown\+\_\+niemala@{kdown\+\_\+niemala}}
+\index{kdown\+\_\+niemala@{kdown\+\_\+niemala}!modsolarcalc@{modsolarcalc}}
+\subsubsection{\texorpdfstring{kdown\+\_\+niemala()}{kdown\_niemala()}}
+{\footnotesize\ttfamily real function modsolarcalc\+::kdown\+\_\+niemala (\begin{DoxyParamCaption}\item[{real}]{S0,  }\item[{real}]{vap\+\_\+press,  }\item[{real}]{Tk }\end{DoxyParamCaption})}
+
+
+
+Definition at line 250 of file S\+U\+E\+W\+S\+\_\+\+E\+S\+T\+M\+\_\+functions.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespacemodsolarcalc_aaddec454c9882fef35b57ee1fa6206b2_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespacemodsolarcalc_af8c3c752c506d880efae84070a189a71}\label{namespacemodsolarcalc_af8c3c752c506d880efae84070a189a71}} 
+\index{modsolarcalc@{modsolarcalc}!kdown\+\_\+surface@{kdown\+\_\+surface}}
+\index{kdown\+\_\+surface@{kdown\+\_\+surface}!modsolarcalc@{modsolarcalc}}
+\subsubsection{\texorpdfstring{kdown\+\_\+surface()}{kdown\_surface()}}
+{\footnotesize\ttfamily real(8) function modsolarcalc\+::kdown\+\_\+surface (\begin{DoxyParamCaption}\item[{integer}]{doy,  }\item[{real(8)}]{zenith }\end{DoxyParamCaption})}
+
+
+
+Definition at line 185 of file S\+U\+E\+W\+S\+\_\+\+E\+S\+T\+M\+\_\+functions.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=328pt]{namespacemodsolarcalc_af8c3c752c506d880efae84070a189a71_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespacemodsolarcalc_a9ea53ee8fa5b7be8f0e7d919cc846182}\label{namespacemodsolarcalc_a9ea53ee8fa5b7be8f0e7d919cc846182}} 
+\index{modsolarcalc@{modsolarcalc}!local\+\_\+apparent\+\_\+time@{local\+\_\+apparent\+\_\+time}}
+\index{local\+\_\+apparent\+\_\+time@{local\+\_\+apparent\+\_\+time}!modsolarcalc@{modsolarcalc}}
+\subsubsection{\texorpdfstring{local\+\_\+apparent\+\_\+time()}{local\_apparent\_time()}}
+{\footnotesize\ttfamily real(8) function modsolarcalc\+::local\+\_\+apparent\+\_\+time (\begin{DoxyParamCaption}\item[{real(8)}]{lng,  }\item[{real(8)}]{dectime }\end{DoxyParamCaption})}
+
+
+
+Definition at line 116 of file S\+U\+E\+W\+S\+\_\+\+E\+S\+T\+M\+\_\+functions.\+f95.
+
+\mbox{\Hypertarget{namespacemodsolarcalc_adfed66792e245bded2293250a0436520}\label{namespacemodsolarcalc_adfed66792e245bded2293250a0436520}} 
+\index{modsolarcalc@{modsolarcalc}!min\+\_\+zenith@{min\+\_\+zenith}}
+\index{min\+\_\+zenith@{min\+\_\+zenith}!modsolarcalc@{modsolarcalc}}
+\subsubsection{\texorpdfstring{min\+\_\+zenith()}{min\_zenith()}}
+{\footnotesize\ttfamily real(8) function modsolarcalc\+::min\+\_\+zenith (\begin{DoxyParamCaption}\item[{real(8)}]{lat,  }\item[{integer}]{doy }\end{DoxyParamCaption})}
+
+
+
+Definition at line 102 of file S\+U\+E\+W\+S\+\_\+\+E\+S\+T\+M\+\_\+functions.\+f95.
+
+\mbox{\Hypertarget{namespacemodsolarcalc_abf0aac3f480ad1b6dbfdac598c453fa5}\label{namespacemodsolarcalc_abf0aac3f480ad1b6dbfdac598c453fa5}} 
+\index{modsolarcalc@{modsolarcalc}!smithlambda@{smithlambda}}
+\index{smithlambda@{smithlambda}!modsolarcalc@{modsolarcalc}}
+\subsubsection{\texorpdfstring{smithlambda()}{smithlambda()}}
+{\footnotesize\ttfamily real function, dimension(365) modsolarcalc\+::smithlambda (\begin{DoxyParamCaption}\item[{integer}]{lat }\end{DoxyParamCaption})}
+
+
+
+Definition at line 206 of file S\+U\+E\+W\+S\+\_\+\+E\+S\+T\+M\+\_\+functions.\+f95.
+
+\mbox{\Hypertarget{namespacemodsolarcalc_a6f49f02608586154b6a3b3cddcd6aa5e}\label{namespacemodsolarcalc_a6f49f02608586154b6a3b3cddcd6aa5e}} 
+\index{modsolarcalc@{modsolarcalc}!solar\+\_\+angles@{solar\+\_\+angles}}
+\index{solar\+\_\+angles@{solar\+\_\+angles}!modsolarcalc@{modsolarcalc}}
+\subsubsection{\texorpdfstring{solar\+\_\+angles()}{solar\_angles()}}
+{\footnotesize\ttfamily subroutine modsolarcalc\+::solar\+\_\+angles (\begin{DoxyParamCaption}\item[{real, intent(in)}]{lat,  }\item[{real, intent(in)}]{lng,  }\item[{real, intent(in)}]{timezone,  }\item[{real, intent(in)}]{dectime,  }\item[{real(8), intent(out)}]{decl,  }\item[{real(8), intent(out)}]{zenith,  }\item[{real(8), intent(out)}]{azimuth }\end{DoxyParamCaption})}
+
+
+
+Definition at line 129 of file S\+U\+E\+W\+S\+\_\+\+E\+S\+T\+M\+\_\+functions.\+f95.
+
+\mbox{\Hypertarget{namespacemodsolarcalc_a17e233516e1b3514fd9d46a9ebe44e5e}\label{namespacemodsolarcalc_a17e233516e1b3514fd9d46a9ebe44e5e}} 
+\index{modsolarcalc@{modsolarcalc}!solar\+\_\+esdist@{solar\+\_\+esdist}}
+\index{solar\+\_\+esdist@{solar\+\_\+esdist}!modsolarcalc@{modsolarcalc}}
+\subsubsection{\texorpdfstring{solar\+\_\+esdist()}{solar\_esdist()}}
+{\footnotesize\ttfamily real(8) function modsolarcalc\+::solar\+\_\+esdist (\begin{DoxyParamCaption}\item[{integer}]{doy }\end{DoxyParamCaption})}
+
+
+
+Definition at line 295 of file S\+U\+E\+W\+S\+\_\+\+E\+S\+T\+M\+\_\+functions.\+f95.
+
+\mbox{\Hypertarget{namespacemodsolarcalc_a2fbd1d33b3bd03fd930a2a3d93b83599}\label{namespacemodsolarcalc_a2fbd1d33b3bd03fd930a2a3d93b83599}} 
+\index{modsolarcalc@{modsolarcalc}!solar\+\_\+times@{solar\+\_\+times}}
+\index{solar\+\_\+times@{solar\+\_\+times}!modsolarcalc@{modsolarcalc}}
+\subsubsection{\texorpdfstring{solar\+\_\+times()}{solar\_times()}}
+{\footnotesize\ttfamily subroutine modsolarcalc\+::solar\+\_\+times (\begin{DoxyParamCaption}\item[{real(8), intent(in)}]{lat,  }\item[{real(8), intent(in)}]{lng,  }\item[{real(8), intent(in)}]{timezone,  }\item[{real(8), intent(in)}]{dectime,  }\item[{real(8), intent(out)}]{sunrise,  }\item[{real(8), intent(out)}]{sunset,  }\item[{real(8), intent(out)}]{snoon }\end{DoxyParamCaption})}
+
+
+
+Definition at line 160 of file S\+U\+E\+W\+S\+\_\+\+E\+S\+T\+M\+\_\+functions.\+f95.
+
+\mbox{\Hypertarget{namespacemodsolarcalc_a8e5e61f1a3537693aa4ca5527f74233e}\label{namespacemodsolarcalc_a8e5e61f1a3537693aa4ca5527f74233e}} 
+\index{modsolarcalc@{modsolarcalc}!transmissivity@{transmissivity}}
+\index{transmissivity@{transmissivity}!modsolarcalc@{modsolarcalc}}
+\subsubsection{\texorpdfstring{transmissivity()}{transmissivity()}}
+{\footnotesize\ttfamily subroutine modsolarcalc\+::transmissivity (\begin{DoxyParamCaption}\item[{real}]{vap\+\_\+press,  }\item[{real}]{Tk,  }\item[{real}]{theta,  }\item[{real}]{tr,  }\item[{real}]{tg,  }\item[{real}]{tw,  }\item[{real}]{ta,  }\item[{real}]{toz }\end{DoxyParamCaption})}
+
+
+
+Definition at line 276 of file S\+U\+E\+W\+S\+\_\+\+E\+S\+T\+M\+\_\+functions.\+f95.
+
+\mbox{\Hypertarget{namespacemodsolarcalc_ad567772df0c379c013b1bec090be214a}\label{namespacemodsolarcalc_ad567772df0c379c013b1bec090be214a}} 
+\index{modsolarcalc@{modsolarcalc}!transmissivity\+\_\+cd@{transmissivity\+\_\+cd}}
+\index{transmissivity\+\_\+cd@{transmissivity\+\_\+cd}!modsolarcalc@{modsolarcalc}}
+\subsubsection{\texorpdfstring{transmissivity\+\_\+cd()}{transmissivity\_cd()}}
+{\footnotesize\ttfamily real(8) function modsolarcalc\+::transmissivity\+\_\+cd (\begin{DoxyParamCaption}\item[{real(8)}]{P,  }\item[{real(8)}]{Td,  }\item[{real(8)}]{G,  }\item[{real(8)}]{zenith }\end{DoxyParamCaption})}
+
+
+
+Definition at line 221 of file S\+U\+E\+W\+S\+\_\+\+E\+S\+T\+M\+\_\+functions.\+f95.
+

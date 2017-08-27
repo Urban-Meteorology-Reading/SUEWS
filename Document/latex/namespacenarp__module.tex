@@ -1,0 +1,161 @@
+\hypertarget{namespacenarp__module}{}\section{narp\+\_\+module Module Reference}
+\label{namespacenarp__module}\index{narp\+\_\+module@{narp\+\_\+module}}
+\subsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \hyperlink{namespacenarp__module_ac480c3115a6413b9e79770f601e68895}{narp} (D\+T\+I\+ME, Z\+E\+N\+I\+T\+H\+\_\+deg, kdown, Temp\+\_\+C, RH, Press\+\_\+h\+Pa, qn1\+\_\+obs, Snow\+Alb, Albedo\+Choice, ldown\+\_\+option, Net\+Radiation\+Method, Diag\+QN, Q\+S\+T\+A\+Rall, Q\+S\+T\+A\+R\+\_\+\+SF, Q\+S\+T\+A\+R\+\_\+S, kclear, K\+U\+Pall, L\+Down, L\+U\+Pall, fcld, T\+S\+U\+R\+Fall)
+\item 
+real(kind(1d0)) function \hyperlink{namespacenarp__module_a29289ed438f8c8f40bb9cafd90c8f87c}{dewpoint} (Temp\+\_\+C, rh)
+\item 
+real(kind(1d0)) function \hyperlink{namespacenarp__module_acfe7f0cf64c053bc528f54bde3ce8194}{prata\+\_\+emis} (Temp\+\_\+K, E\+A\+\_\+h\+Pa)
+\item 
+real(kind(1d0)) function \hyperlink{namespacenarp__module_aa7b0905bdc9e31e2a01ef14da0f281d5}{emis\+\_\+cloud} (E\+M\+I\+S\+\_\+A, F\+C\+LD)
+\item 
+real(kind(1d0)) function \hyperlink{namespacenarp__module_a51caa7fe09922df4896ec5e4b7c564a8}{emis\+\_\+cloud\+\_\+sq} (E\+M\+I\+S\+\_\+A, F\+C\+LD)
+\item 
+real(kind(1d0)) function \hyperlink{namespacenarp__module_a94b9c5403af8719752cf8b8f995cd207}{cloud\+\_\+fraction} (K\+D\+O\+WN, K\+C\+L\+E\+AR)
+\item 
+real(kind(1d0)) function \hyperlink{namespacenarp__module_a1774d32db350c89aad964f2f45ceb46e}{wc\+\_\+fraction} (RH, Temp)
+\item 
+real(kind(1d0)) function \hyperlink{namespacenarp__module_a67c38c5ffd466f983c36961a978ca980}{isurface} (doy, zenith)
+\item 
+real(kind(1d0)) function \hyperlink{namespacenarp__module_ada3ea94f7e9dc6f9fc5bc22c4b1d8a68}{solar\+\_\+esdist} (doy)
+\item 
+real(kind(1d0)) function, dimension(365) \hyperlink{namespacenarp__module_a2855b93202c40f690a05a6febcdc8067}{smithlambda} (lat)
+\item 
+real(kind(1d0)) function \hyperlink{namespacenarp__module_aeae3a1e345682a38338ecdf71bcf1c8e}{transmissivity} (Press\+\_\+h\+Pa, Temp\+\_\+\+C\+\_\+dew, G, zenith)
+\end{DoxyCompactItemize}
+
+
+\subsection{Function/\+Subroutine Documentation}
+\mbox{\Hypertarget{namespacenarp__module_a94b9c5403af8719752cf8b8f995cd207}\label{namespacenarp__module_a94b9c5403af8719752cf8b8f995cd207}} 
+\index{narp\+\_\+module@{narp\+\_\+module}!cloud\+\_\+fraction@{cloud\+\_\+fraction}}
+\index{cloud\+\_\+fraction@{cloud\+\_\+fraction}!narp\+\_\+module@{narp\+\_\+module}}
+\subsubsection{\texorpdfstring{cloud\+\_\+fraction()}{cloud\_fraction()}}
+{\footnotesize\ttfamily real(kind(1d0)) function narp\+\_\+module\+::cloud\+\_\+fraction (\begin{DoxyParamCaption}\item[{real(kind(1d0))}]{K\+D\+O\+WN,  }\item[{real(kind(1d0))}]{K\+C\+L\+E\+AR }\end{DoxyParamCaption})}
+
+
+
+Definition at line 358 of file L\+U\+M\+P\+S\+\_\+\+N\+A\+R\+P\+\_\+v3.\+f95.
+
+\mbox{\Hypertarget{namespacenarp__module_a29289ed438f8c8f40bb9cafd90c8f87c}\label{namespacenarp__module_a29289ed438f8c8f40bb9cafd90c8f87c}} 
+\index{narp\+\_\+module@{narp\+\_\+module}!dewpoint@{dewpoint}}
+\index{dewpoint@{dewpoint}!narp\+\_\+module@{narp\+\_\+module}}
+\subsubsection{\texorpdfstring{dewpoint()}{dewpoint()}}
+{\footnotesize\ttfamily real(kind(1d0)) function narp\+\_\+module\+::dewpoint (\begin{DoxyParamCaption}\item[{real(kind(1d0))}]{Temp\+\_\+C,  }\item[{real(kind(1d0))}]{rh }\end{DoxyParamCaption})}
+
+
+
+Definition at line 321 of file L\+U\+M\+P\+S\+\_\+\+N\+A\+R\+P\+\_\+v3.\+f95.
+
+\mbox{\Hypertarget{namespacenarp__module_aa7b0905bdc9e31e2a01ef14da0f281d5}\label{namespacenarp__module_aa7b0905bdc9e31e2a01ef14da0f281d5}} 
+\index{narp\+\_\+module@{narp\+\_\+module}!emis\+\_\+cloud@{emis\+\_\+cloud}}
+\index{emis\+\_\+cloud@{emis\+\_\+cloud}!narp\+\_\+module@{narp\+\_\+module}}
+\subsubsection{\texorpdfstring{emis\+\_\+cloud()}{emis\_cloud()}}
+{\footnotesize\ttfamily real(kind(1d0)) function narp\+\_\+module\+::emis\+\_\+cloud (\begin{DoxyParamCaption}\item[{real(kind(1d0))}]{E\+M\+I\+S\+\_\+A,  }\item[{real(kind(1d0))}]{F\+C\+LD }\end{DoxyParamCaption})}
+
+
+
+Definition at line 344 of file L\+U\+M\+P\+S\+\_\+\+N\+A\+R\+P\+\_\+v3.\+f95.
+
+\mbox{\Hypertarget{namespacenarp__module_a51caa7fe09922df4896ec5e4b7c564a8}\label{namespacenarp__module_a51caa7fe09922df4896ec5e4b7c564a8}} 
+\index{narp\+\_\+module@{narp\+\_\+module}!emis\+\_\+cloud\+\_\+sq@{emis\+\_\+cloud\+\_\+sq}}
+\index{emis\+\_\+cloud\+\_\+sq@{emis\+\_\+cloud\+\_\+sq}!narp\+\_\+module@{narp\+\_\+module}}
+\subsubsection{\texorpdfstring{emis\+\_\+cloud\+\_\+sq()}{emis\_cloud\_sq()}}
+{\footnotesize\ttfamily real(kind(1d0)) function narp\+\_\+module\+::emis\+\_\+cloud\+\_\+sq (\begin{DoxyParamCaption}\item[{real(kind(1d0))}]{E\+M\+I\+S\+\_\+A,  }\item[{real(kind(1d0))}]{F\+C\+LD }\end{DoxyParamCaption})}
+
+
+
+Definition at line 352 of file L\+U\+M\+P\+S\+\_\+\+N\+A\+R\+P\+\_\+v3.\+f95.
+
+\mbox{\Hypertarget{namespacenarp__module_a67c38c5ffd466f983c36961a978ca980}\label{namespacenarp__module_a67c38c5ffd466f983c36961a978ca980}} 
+\index{narp\+\_\+module@{narp\+\_\+module}!isurface@{isurface}}
+\index{isurface@{isurface}!narp\+\_\+module@{narp\+\_\+module}}
+\subsubsection{\texorpdfstring{isurface()}{isurface()}}
+{\footnotesize\ttfamily real(kind(1d0)) function narp\+\_\+module\+::isurface (\begin{DoxyParamCaption}\item[{integer}]{doy,  }\item[{real(kind(1d0))}]{zenith }\end{DoxyParamCaption})}
+
+
+
+Definition at line 409 of file L\+U\+M\+P\+S\+\_\+\+N\+A\+R\+P\+\_\+v3.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=333pt]{namespacenarp__module_a67c38c5ffd466f983c36961a978ca980_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespacenarp__module_ac480c3115a6413b9e79770f601e68895}\label{namespacenarp__module_ac480c3115a6413b9e79770f601e68895}} 
+\index{narp\+\_\+module@{narp\+\_\+module}!narp@{narp}}
+\index{narp@{narp}!narp\+\_\+module@{narp\+\_\+module}}
+\subsubsection{\texorpdfstring{narp()}{narp()}}
+{\footnotesize\ttfamily subroutine narp\+\_\+module\+::narp (\begin{DoxyParamCaption}\item[{real(kind(1d0)), intent(in)}]{D\+T\+I\+ME,  }\item[{real(kind(1d0)), intent(in)}]{Z\+E\+N\+I\+T\+H\+\_\+deg,  }\item[{real(kind(1d0)), intent(in)}]{kdown,  }\item[{real(kind(1d0)), intent(in)}]{Temp\+\_\+C,  }\item[{real(kind(1d0)), intent(in)}]{RH,  }\item[{real(kind(1d0)), intent(in)}]{Press\+\_\+h\+Pa,  }\item[{real(kind(1d0)), intent(in)}]{qn1\+\_\+obs,  }\item[{real(kind(1d0)), intent(in)}]{Snow\+Alb,  }\item[{integer, intent(in)}]{Albedo\+Choice,  }\item[{integer, intent(in)}]{ldown\+\_\+option,  }\item[{integer, intent(in)}]{Net\+Radiation\+Method,  }\item[{integer, intent(in)}]{Diag\+QN,  }\item[{real(kind(1d0)), intent(out)}]{Q\+S\+T\+A\+Rall,  }\item[{real(kind(1d0)), intent(out)}]{Q\+S\+T\+A\+R\+\_\+\+SF,  }\item[{real(kind(1d0)), intent(out)}]{Q\+S\+T\+A\+R\+\_\+S,  }\item[{real(kind(1d0)), intent(out)}]{kclear,  }\item[{real(kind(1d0)), intent(out)}]{K\+U\+Pall,  }\item[{real(kind(1d0)), intent(out)}]{L\+Down,  }\item[{real(kind(1d0)), intent(out)}]{L\+U\+Pall,  }\item[{real(kind(1d0)), intent(out)}]{fcld,  }\item[{real(kind(1d0)), intent(out)}]{T\+S\+U\+R\+Fall }\end{DoxyParamCaption})}
+
+
+
+Definition at line 51 of file L\+U\+M\+P\+S\+\_\+\+N\+A\+R\+P\+\_\+v3.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespacenarp__module_ac480c3115a6413b9e79770f601e68895_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespacenarp__module_acfe7f0cf64c053bc528f54bde3ce8194}\label{namespacenarp__module_acfe7f0cf64c053bc528f54bde3ce8194}} 
+\index{narp\+\_\+module@{narp\+\_\+module}!prata\+\_\+emis@{prata\+\_\+emis}}
+\index{prata\+\_\+emis@{prata\+\_\+emis}!narp\+\_\+module@{narp\+\_\+module}}
+\subsubsection{\texorpdfstring{prata\+\_\+emis()}{prata\_emis()}}
+{\footnotesize\ttfamily real(kind(1d0)) function narp\+\_\+module\+::prata\+\_\+emis (\begin{DoxyParamCaption}\item[{real(kind(1d0))}]{Temp\+\_\+K,  }\item[{real(kind(1d0))}]{E\+A\+\_\+h\+Pa }\end{DoxyParamCaption})}
+
+
+
+Definition at line 335 of file L\+U\+M\+P\+S\+\_\+\+N\+A\+R\+P\+\_\+v3.\+f95.
+
+\mbox{\Hypertarget{namespacenarp__module_a2855b93202c40f690a05a6febcdc8067}\label{namespacenarp__module_a2855b93202c40f690a05a6febcdc8067}} 
+\index{narp\+\_\+module@{narp\+\_\+module}!smithlambda@{smithlambda}}
+\index{smithlambda@{smithlambda}!narp\+\_\+module@{narp\+\_\+module}}
+\subsubsection{\texorpdfstring{smithlambda()}{smithlambda()}}
+{\footnotesize\ttfamily real(kind(1d0)) function, dimension(365) narp\+\_\+module\+::smithlambda (\begin{DoxyParamCaption}\item[{integer}]{lat }\end{DoxyParamCaption})}
+
+
+
+Definition at line 446 of file L\+U\+M\+P\+S\+\_\+\+N\+A\+R\+P\+\_\+v3.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{namespacenarp__module_a2855b93202c40f690a05a6febcdc8067_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{namespacenarp__module_ada3ea94f7e9dc6f9fc5bc22c4b1d8a68}\label{namespacenarp__module_ada3ea94f7e9dc6f9fc5bc22c4b1d8a68}} 
+\index{narp\+\_\+module@{narp\+\_\+module}!solar\+\_\+esdist@{solar\+\_\+esdist}}
+\index{solar\+\_\+esdist@{solar\+\_\+esdist}!narp\+\_\+module@{narp\+\_\+module}}
+\subsubsection{\texorpdfstring{solar\+\_\+esdist()}{solar\_esdist()}}
+{\footnotesize\ttfamily real(kind(1d0)) function narp\+\_\+module\+::solar\+\_\+esdist (\begin{DoxyParamCaption}\item[{integer}]{doy }\end{DoxyParamCaption})}
+
+
+
+Definition at line 430 of file L\+U\+M\+P\+S\+\_\+\+N\+A\+R\+P\+\_\+v3.\+f95.
+
+\mbox{\Hypertarget{namespacenarp__module_aeae3a1e345682a38338ecdf71bcf1c8e}\label{namespacenarp__module_aeae3a1e345682a38338ecdf71bcf1c8e}} 
+\index{narp\+\_\+module@{narp\+\_\+module}!transmissivity@{transmissivity}}
+\index{transmissivity@{transmissivity}!narp\+\_\+module@{narp\+\_\+module}}
+\subsubsection{\texorpdfstring{transmissivity()}{transmissivity()}}
+{\footnotesize\ttfamily real(kind(1d0)) function narp\+\_\+module\+::transmissivity (\begin{DoxyParamCaption}\item[{real(kind(1d0))}]{Press\+\_\+h\+Pa,  }\item[{real(kind(1d0))}]{Temp\+\_\+\+C\+\_\+dew,  }\item[{real(kind(1d0))}]{G,  }\item[{real(kind(1d0))}]{zenith }\end{DoxyParamCaption})}
+
+
+
+Definition at line 467 of file L\+U\+M\+P\+S\+\_\+\+N\+A\+R\+P\+\_\+v3.\+f95.
+
+\mbox{\Hypertarget{namespacenarp__module_a1774d32db350c89aad964f2f45ceb46e}\label{namespacenarp__module_a1774d32db350c89aad964f2f45ceb46e}} 
+\index{narp\+\_\+module@{narp\+\_\+module}!wc\+\_\+fraction@{wc\+\_\+fraction}}
+\index{wc\+\_\+fraction@{wc\+\_\+fraction}!narp\+\_\+module@{narp\+\_\+module}}
+\subsubsection{\texorpdfstring{wc\+\_\+fraction()}{wc\_fraction()}}
+{\footnotesize\ttfamily real(kind(1d0)) function narp\+\_\+module\+::wc\+\_\+fraction (\begin{DoxyParamCaption}\item[{real(kind(1d0)), intent(in)}]{RH,  }\item[{real(kind(1d0)), intent(in)}]{Temp }\end{DoxyParamCaption})}
+
+
+
+Definition at line 366 of file L\+U\+M\+P\+S\+\_\+\+N\+A\+R\+P\+\_\+v3.\+f95.
+

@@ -1,0 +1,416 @@
+\hypertarget{namespacesnowmod}{}\section{snowmod Module Reference}
+\label{namespacesnowmod}\index{snowmod@{snowmod}}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+real(kind(1d0)) \hyperlink{namespacesnowmod_a5c337bba47f88549ed03afb42d5d097d}{adjmeltfact}
+\item 
+real(kind(1d0)) \hyperlink{namespacesnowmod_a78e0393f653cfdebf0ccab83abc0b800}{cumsnowfall}
+\item 
+real(kind(1d0)) \hyperlink{namespacesnowmod_a67018a3202a62ad0d4e7715dbfcf5e50}{fwh}
+\item 
+real(kind(1d0)) \hyperlink{namespacesnowmod_aa988f82274f056c6d2f7ed3d37457b24}{lvs\+\_\+j\+\_\+kg}
+\item 
+real(kind(1d0)) \hyperlink{namespacesnowmod_a7e8123e5b32bedfb676ea5c6ca62272a}{mwh}
+\item 
+real(kind(1d0)) \hyperlink{namespacesnowmod_affe56e4e5f1d5df5d7f4bbae7ae22541}{mwstore}
+\item 
+real(kind(1d0)) \hyperlink{namespacesnowmod_a9e24791cb966600bc8e20739bc1f36b3}{preciplimit}
+\item 
+real(kind(1d0)) \hyperlink{namespacesnowmod_a5dcda7794eeea3753a3f14cd6fdf47b8}{preciplimitalb}
+\item 
+real(kind(1d0)) \hyperlink{namespacesnowmod_a1d7e7d0b8974783e0320cde393e09594}{qm}
+\item 
+real(kind(1d0)) \hyperlink{namespacesnowmod_adbb58215814d438f2486f880958737be}{qmfreez}
+\item 
+real(kind(1d0)) \hyperlink{namespacesnowmod_a35fe883b6ebd9767f44c27354160afd3}{qmrain}
+\item 
+real(kind(1d0)) \hyperlink{namespacesnowmod_ad0e97f4f3c91c80ab519eab77750a5c0}{qn1\+\_\+snow}
+\item 
+real(kind(1d0)) \hyperlink{namespacesnowmod_adfca55100f9a2262f228ea1e39d61271}{qn1\+\_\+nosnow}
+\item 
+real(kind(1d0)) \hyperlink{namespacesnowmod_abb043edcfd004e81969e16e07ed0d646}{radmeltfact}
+\item 
+real(kind(1d0)) \hyperlink{namespacesnowmod_a269fc9eb4dcd8dc77888c370c046a3c2}{snowalb}
+\item 
+real(kind(1d0)) \hyperlink{namespacesnowmod_a96e2ce7900b7310542876993d72547ef}{snowalbmin}
+\item 
+real(kind(1d0)) \hyperlink{namespacesnowmod_abce33f4b342130e8ac52ef51369bc801}{snowalbmax}
+\item 
+real(kind(1d0)) \hyperlink{namespacesnowmod_a4b6de2a8e2186c8f314bbbfe6e78d345}{snowdensmin}
+\item 
+real(kind(1d0)) \hyperlink{namespacesnowmod_a8a8b8429973d4227f3f1af64ebce2e79}{snowdensmax}
+\item 
+real(kind(1d0)) \hyperlink{namespacesnowmod_a0462c0f187d9c6a590598f728f776991}{snowlimbuild}
+\item 
+real(kind(1d0)) \hyperlink{namespacesnowmod_a7e327a63642bd081c76b33340881ae7b}{snowlimpaved}
+\item 
+real(kind(1d0)) \hyperlink{namespacesnowmod_a216f7ed83c0474b708443eddfa6c574e}{swe}
+\item 
+real(kind(1d0)) \hyperlink{namespacesnowmod_a98e11e8fda25e951b1c7a65ec1d36e9f}{tau\+\_\+a}
+\item 
+real(kind(1d0)) \hyperlink{namespacesnowmod_adcf5755398c1385d35ef29e6f780ff9c}{tau\+\_\+f}
+\item 
+real(kind(1d0)) \hyperlink{namespacesnowmod_aaf08f7c00b0d87b2135341ca3f63f0d7}{tau\+\_\+r}
+\item 
+real(kind(1d0)) \hyperlink{namespacesnowmod_a963e4ef23aef666f3afb12096ef952b8}{tempmeltfact}
+\item 
+real(kind(1d0)) \hyperlink{namespacesnowmod_aef00a57fa640ad627fb60de11644e20d}{volday}
+\item 
+real(kind(1d0)) \hyperlink{namespacesnowmod_ab1cf232aa719c4c447ac11c210889e66}{zf}
+\item 
+real(kind(1d0)) \hyperlink{namespacesnowmod_a8cda7b30a924d03ee30f2bde6c9e41bc}{waterholdcapfrac}
+\item 
+real(kind(1d0)) \hyperlink{namespacesnowmod_ab2e9b89164bc8dd89eadb546e3ef57fa}{crwmin}
+\item 
+real(kind(1d0)) \hyperlink{namespacesnowmod_adec694ca0cbc2092f2c5d16238b4d0a9}{crwmax}
+\item 
+real(kind(1d0)), dimension(2) \hyperlink{namespacesnowmod_a9c7d574d109596d16542b38123065e66}{snowremoval} =0
+\item 
+real(kind(1d0)), dimension(0\+:23, 2) \hyperlink{namespacesnowmod_a1c6363fdf19c43957a62d24fa22ea25e}{snowprof}
+\item 
+integer \hyperlink{namespacesnowmod_afb1d5c1c466c1cb87fcf8548322581a1}{snowfractionchoice} =2
+\end{DoxyCompactItemize}
+
+
+\subsection{Variable Documentation}
+\mbox{\Hypertarget{namespacesnowmod_a5c337bba47f88549ed03afb42d5d097d}\label{namespacesnowmod_a5c337bba47f88549ed03afb42d5d097d}} 
+\index{snowmod@{snowmod}!adjmeltfact@{adjmeltfact}}
+\index{adjmeltfact@{adjmeltfact}!snowmod@{snowmod}}
+\subsubsection{\texorpdfstring{adjmeltfact}{adjmeltfact}}
+{\footnotesize\ttfamily real (kind(1d0)) snowmod\+::adjmeltfact}
+
+
+
+Definition at line 1096 of file L\+U\+M\+P\+S\+\_\+\+Module\+\_\+constants.\+f95.
+
+\mbox{\Hypertarget{namespacesnowmod_adec694ca0cbc2092f2c5d16238b4d0a9}\label{namespacesnowmod_adec694ca0cbc2092f2c5d16238b4d0a9}} 
+\index{snowmod@{snowmod}!crwmax@{crwmax}}
+\index{crwmax@{crwmax}!snowmod@{snowmod}}
+\subsubsection{\texorpdfstring{crwmax}{crwmax}}
+{\footnotesize\ttfamily real (kind(1d0)) snowmod\+::crwmax}
+
+
+
+Definition at line 1096 of file L\+U\+M\+P\+S\+\_\+\+Module\+\_\+constants.\+f95.
+
+\mbox{\Hypertarget{namespacesnowmod_ab2e9b89164bc8dd89eadb546e3ef57fa}\label{namespacesnowmod_ab2e9b89164bc8dd89eadb546e3ef57fa}} 
+\index{snowmod@{snowmod}!crwmin@{crwmin}}
+\index{crwmin@{crwmin}!snowmod@{snowmod}}
+\subsubsection{\texorpdfstring{crwmin}{crwmin}}
+{\footnotesize\ttfamily real (kind(1d0)) snowmod\+::crwmin}
+
+
+
+Definition at line 1096 of file L\+U\+M\+P\+S\+\_\+\+Module\+\_\+constants.\+f95.
+
+\mbox{\Hypertarget{namespacesnowmod_a78e0393f653cfdebf0ccab83abc0b800}\label{namespacesnowmod_a78e0393f653cfdebf0ccab83abc0b800}} 
+\index{snowmod@{snowmod}!cumsnowfall@{cumsnowfall}}
+\index{cumsnowfall@{cumsnowfall}!snowmod@{snowmod}}
+\subsubsection{\texorpdfstring{cumsnowfall}{cumsnowfall}}
+{\footnotesize\ttfamily real (kind(1d0)) snowmod\+::cumsnowfall}
+
+
+
+Definition at line 1096 of file L\+U\+M\+P\+S\+\_\+\+Module\+\_\+constants.\+f95.
+
+\mbox{\Hypertarget{namespacesnowmod_a67018a3202a62ad0d4e7715dbfcf5e50}\label{namespacesnowmod_a67018a3202a62ad0d4e7715dbfcf5e50}} 
+\index{snowmod@{snowmod}!fwh@{fwh}}
+\index{fwh@{fwh}!snowmod@{snowmod}}
+\subsubsection{\texorpdfstring{fwh}{fwh}}
+{\footnotesize\ttfamily real (kind(1d0)) snowmod\+::fwh}
+
+
+
+Definition at line 1096 of file L\+U\+M\+P\+S\+\_\+\+Module\+\_\+constants.\+f95.
+
+\mbox{\Hypertarget{namespacesnowmod_aa988f82274f056c6d2f7ed3d37457b24}\label{namespacesnowmod_aa988f82274f056c6d2f7ed3d37457b24}} 
+\index{snowmod@{snowmod}!lvs\+\_\+j\+\_\+kg@{lvs\+\_\+j\+\_\+kg}}
+\index{lvs\+\_\+j\+\_\+kg@{lvs\+\_\+j\+\_\+kg}!snowmod@{snowmod}}
+\subsubsection{\texorpdfstring{lvs\+\_\+j\+\_\+kg}{lvs\_j\_kg}}
+{\footnotesize\ttfamily real (kind(1d0)) snowmod\+::lvs\+\_\+j\+\_\+kg}
+
+
+
+Definition at line 1096 of file L\+U\+M\+P\+S\+\_\+\+Module\+\_\+constants.\+f95.
+
+\mbox{\Hypertarget{namespacesnowmod_a7e8123e5b32bedfb676ea5c6ca62272a}\label{namespacesnowmod_a7e8123e5b32bedfb676ea5c6ca62272a}} 
+\index{snowmod@{snowmod}!mwh@{mwh}}
+\index{mwh@{mwh}!snowmod@{snowmod}}
+\subsubsection{\texorpdfstring{mwh}{mwh}}
+{\footnotesize\ttfamily real (kind(1d0)) snowmod\+::mwh}
+
+
+
+Definition at line 1096 of file L\+U\+M\+P\+S\+\_\+\+Module\+\_\+constants.\+f95.
+
+\mbox{\Hypertarget{namespacesnowmod_affe56e4e5f1d5df5d7f4bbae7ae22541}\label{namespacesnowmod_affe56e4e5f1d5df5d7f4bbae7ae22541}} 
+\index{snowmod@{snowmod}!mwstore@{mwstore}}
+\index{mwstore@{mwstore}!snowmod@{snowmod}}
+\subsubsection{\texorpdfstring{mwstore}{mwstore}}
+{\footnotesize\ttfamily real (kind(1d0)) snowmod\+::mwstore}
+
+
+
+Definition at line 1096 of file L\+U\+M\+P\+S\+\_\+\+Module\+\_\+constants.\+f95.
+
+\mbox{\Hypertarget{namespacesnowmod_a9e24791cb966600bc8e20739bc1f36b3}\label{namespacesnowmod_a9e24791cb966600bc8e20739bc1f36b3}} 
+\index{snowmod@{snowmod}!preciplimit@{preciplimit}}
+\index{preciplimit@{preciplimit}!snowmod@{snowmod}}
+\subsubsection{\texorpdfstring{preciplimit}{preciplimit}}
+{\footnotesize\ttfamily real (kind(1d0)) snowmod\+::preciplimit}
+
+
+
+Definition at line 1096 of file L\+U\+M\+P\+S\+\_\+\+Module\+\_\+constants.\+f95.
+
+\mbox{\Hypertarget{namespacesnowmod_a5dcda7794eeea3753a3f14cd6fdf47b8}\label{namespacesnowmod_a5dcda7794eeea3753a3f14cd6fdf47b8}} 
+\index{snowmod@{snowmod}!preciplimitalb@{preciplimitalb}}
+\index{preciplimitalb@{preciplimitalb}!snowmod@{snowmod}}
+\subsubsection{\texorpdfstring{preciplimitalb}{preciplimitalb}}
+{\footnotesize\ttfamily real (kind(1d0)) snowmod\+::preciplimitalb}
+
+
+
+Definition at line 1096 of file L\+U\+M\+P\+S\+\_\+\+Module\+\_\+constants.\+f95.
+
+\mbox{\Hypertarget{namespacesnowmod_a1d7e7d0b8974783e0320cde393e09594}\label{namespacesnowmod_a1d7e7d0b8974783e0320cde393e09594}} 
+\index{snowmod@{snowmod}!qm@{qm}}
+\index{qm@{qm}!snowmod@{snowmod}}
+\subsubsection{\texorpdfstring{qm}{qm}}
+{\footnotesize\ttfamily real (kind(1d0)) snowmod\+::qm}
+
+
+
+Definition at line 1096 of file L\+U\+M\+P\+S\+\_\+\+Module\+\_\+constants.\+f95.
+
+\mbox{\Hypertarget{namespacesnowmod_adbb58215814d438f2486f880958737be}\label{namespacesnowmod_adbb58215814d438f2486f880958737be}} 
+\index{snowmod@{snowmod}!qmfreez@{qmfreez}}
+\index{qmfreez@{qmfreez}!snowmod@{snowmod}}
+\subsubsection{\texorpdfstring{qmfreez}{qmfreez}}
+{\footnotesize\ttfamily real (kind(1d0)) snowmod\+::qmfreez}
+
+
+
+Definition at line 1096 of file L\+U\+M\+P\+S\+\_\+\+Module\+\_\+constants.\+f95.
+
+\mbox{\Hypertarget{namespacesnowmod_a35fe883b6ebd9767f44c27354160afd3}\label{namespacesnowmod_a35fe883b6ebd9767f44c27354160afd3}} 
+\index{snowmod@{snowmod}!qmrain@{qmrain}}
+\index{qmrain@{qmrain}!snowmod@{snowmod}}
+\subsubsection{\texorpdfstring{qmrain}{qmrain}}
+{\footnotesize\ttfamily real (kind(1d0)) snowmod\+::qmrain}
+
+
+
+Definition at line 1096 of file L\+U\+M\+P\+S\+\_\+\+Module\+\_\+constants.\+f95.
+
+\mbox{\Hypertarget{namespacesnowmod_adfca55100f9a2262f228ea1e39d61271}\label{namespacesnowmod_adfca55100f9a2262f228ea1e39d61271}} 
+\index{snowmod@{snowmod}!qn1\+\_\+nosnow@{qn1\+\_\+nosnow}}
+\index{qn1\+\_\+nosnow@{qn1\+\_\+nosnow}!snowmod@{snowmod}}
+\subsubsection{\texorpdfstring{qn1\+\_\+nosnow}{qn1\_nosnow}}
+{\footnotesize\ttfamily real (kind(1d0)) snowmod\+::qn1\+\_\+nosnow}
+
+
+
+Definition at line 1096 of file L\+U\+M\+P\+S\+\_\+\+Module\+\_\+constants.\+f95.
+
+\mbox{\Hypertarget{namespacesnowmod_ad0e97f4f3c91c80ab519eab77750a5c0}\label{namespacesnowmod_ad0e97f4f3c91c80ab519eab77750a5c0}} 
+\index{snowmod@{snowmod}!qn1\+\_\+snow@{qn1\+\_\+snow}}
+\index{qn1\+\_\+snow@{qn1\+\_\+snow}!snowmod@{snowmod}}
+\subsubsection{\texorpdfstring{qn1\+\_\+snow}{qn1\_snow}}
+{\footnotesize\ttfamily real (kind(1d0)) snowmod\+::qn1\+\_\+snow}
+
+
+
+Definition at line 1096 of file L\+U\+M\+P\+S\+\_\+\+Module\+\_\+constants.\+f95.
+
+\mbox{\Hypertarget{namespacesnowmod_abb043edcfd004e81969e16e07ed0d646}\label{namespacesnowmod_abb043edcfd004e81969e16e07ed0d646}} 
+\index{snowmod@{snowmod}!radmeltfact@{radmeltfact}}
+\index{radmeltfact@{radmeltfact}!snowmod@{snowmod}}
+\subsubsection{\texorpdfstring{radmeltfact}{radmeltfact}}
+{\footnotesize\ttfamily real (kind(1d0)) snowmod\+::radmeltfact}
+
+
+
+Definition at line 1096 of file L\+U\+M\+P\+S\+\_\+\+Module\+\_\+constants.\+f95.
+
+\mbox{\Hypertarget{namespacesnowmod_a269fc9eb4dcd8dc77888c370c046a3c2}\label{namespacesnowmod_a269fc9eb4dcd8dc77888c370c046a3c2}} 
+\index{snowmod@{snowmod}!snowalb@{snowalb}}
+\index{snowalb@{snowalb}!snowmod@{snowmod}}
+\subsubsection{\texorpdfstring{snowalb}{snowalb}}
+{\footnotesize\ttfamily real (kind(1d0)) snowmod\+::snowalb}
+
+
+
+Definition at line 1096 of file L\+U\+M\+P\+S\+\_\+\+Module\+\_\+constants.\+f95.
+
+\mbox{\Hypertarget{namespacesnowmod_abce33f4b342130e8ac52ef51369bc801}\label{namespacesnowmod_abce33f4b342130e8ac52ef51369bc801}} 
+\index{snowmod@{snowmod}!snowalbmax@{snowalbmax}}
+\index{snowalbmax@{snowalbmax}!snowmod@{snowmod}}
+\subsubsection{\texorpdfstring{snowalbmax}{snowalbmax}}
+{\footnotesize\ttfamily real (kind(1d0)) snowmod\+::snowalbmax}
+
+
+
+Definition at line 1096 of file L\+U\+M\+P\+S\+\_\+\+Module\+\_\+constants.\+f95.
+
+\mbox{\Hypertarget{namespacesnowmod_a96e2ce7900b7310542876993d72547ef}\label{namespacesnowmod_a96e2ce7900b7310542876993d72547ef}} 
+\index{snowmod@{snowmod}!snowalbmin@{snowalbmin}}
+\index{snowalbmin@{snowalbmin}!snowmod@{snowmod}}
+\subsubsection{\texorpdfstring{snowalbmin}{snowalbmin}}
+{\footnotesize\ttfamily real (kind(1d0)) snowmod\+::snowalbmin}
+
+
+
+Definition at line 1096 of file L\+U\+M\+P\+S\+\_\+\+Module\+\_\+constants.\+f95.
+
+\mbox{\Hypertarget{namespacesnowmod_a8a8b8429973d4227f3f1af64ebce2e79}\label{namespacesnowmod_a8a8b8429973d4227f3f1af64ebce2e79}} 
+\index{snowmod@{snowmod}!snowdensmax@{snowdensmax}}
+\index{snowdensmax@{snowdensmax}!snowmod@{snowmod}}
+\subsubsection{\texorpdfstring{snowdensmax}{snowdensmax}}
+{\footnotesize\ttfamily real (kind(1d0)) snowmod\+::snowdensmax}
+
+
+
+Definition at line 1096 of file L\+U\+M\+P\+S\+\_\+\+Module\+\_\+constants.\+f95.
+
+\mbox{\Hypertarget{namespacesnowmod_a4b6de2a8e2186c8f314bbbfe6e78d345}\label{namespacesnowmod_a4b6de2a8e2186c8f314bbbfe6e78d345}} 
+\index{snowmod@{snowmod}!snowdensmin@{snowdensmin}}
+\index{snowdensmin@{snowdensmin}!snowmod@{snowmod}}
+\subsubsection{\texorpdfstring{snowdensmin}{snowdensmin}}
+{\footnotesize\ttfamily real (kind(1d0)) snowmod\+::snowdensmin}
+
+
+
+Definition at line 1096 of file L\+U\+M\+P\+S\+\_\+\+Module\+\_\+constants.\+f95.
+
+\mbox{\Hypertarget{namespacesnowmod_afb1d5c1c466c1cb87fcf8548322581a1}\label{namespacesnowmod_afb1d5c1c466c1cb87fcf8548322581a1}} 
+\index{snowmod@{snowmod}!snowfractionchoice@{snowfractionchoice}}
+\index{snowfractionchoice@{snowfractionchoice}!snowmod@{snowmod}}
+\subsubsection{\texorpdfstring{snowfractionchoice}{snowfractionchoice}}
+{\footnotesize\ttfamily integer snowmod\+::snowfractionchoice =2}
+
+
+
+Definition at line 1131 of file L\+U\+M\+P\+S\+\_\+\+Module\+\_\+constants.\+f95.
+
+\mbox{\Hypertarget{namespacesnowmod_a0462c0f187d9c6a590598f728f776991}\label{namespacesnowmod_a0462c0f187d9c6a590598f728f776991}} 
+\index{snowmod@{snowmod}!snowlimbuild@{snowlimbuild}}
+\index{snowlimbuild@{snowlimbuild}!snowmod@{snowmod}}
+\subsubsection{\texorpdfstring{snowlimbuild}{snowlimbuild}}
+{\footnotesize\ttfamily real (kind(1d0)) snowmod\+::snowlimbuild}
+
+
+
+Definition at line 1096 of file L\+U\+M\+P\+S\+\_\+\+Module\+\_\+constants.\+f95.
+
+\mbox{\Hypertarget{namespacesnowmod_a7e327a63642bd081c76b33340881ae7b}\label{namespacesnowmod_a7e327a63642bd081c76b33340881ae7b}} 
+\index{snowmod@{snowmod}!snowlimpaved@{snowlimpaved}}
+\index{snowlimpaved@{snowlimpaved}!snowmod@{snowmod}}
+\subsubsection{\texorpdfstring{snowlimpaved}{snowlimpaved}}
+{\footnotesize\ttfamily real (kind(1d0)) snowmod\+::snowlimpaved}
+
+
+
+Definition at line 1096 of file L\+U\+M\+P\+S\+\_\+\+Module\+\_\+constants.\+f95.
+
+\mbox{\Hypertarget{namespacesnowmod_a1c6363fdf19c43957a62d24fa22ea25e}\label{namespacesnowmod_a1c6363fdf19c43957a62d24fa22ea25e}} 
+\index{snowmod@{snowmod}!snowprof@{snowprof}}
+\index{snowprof@{snowprof}!snowmod@{snowmod}}
+\subsubsection{\texorpdfstring{snowprof}{snowprof}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(0\+:23,2) snowmod\+::snowprof}
+
+
+
+Definition at line 1129 of file L\+U\+M\+P\+S\+\_\+\+Module\+\_\+constants.\+f95.
+
+\mbox{\Hypertarget{namespacesnowmod_a9c7d574d109596d16542b38123065e66}\label{namespacesnowmod_a9c7d574d109596d16542b38123065e66}} 
+\index{snowmod@{snowmod}!snowremoval@{snowremoval}}
+\index{snowremoval@{snowremoval}!snowmod@{snowmod}}
+\subsubsection{\texorpdfstring{snowremoval}{snowremoval}}
+{\footnotesize\ttfamily real(kind(1d0)), dimension(2) snowmod\+::snowremoval =0}
+
+
+
+Definition at line 1128 of file L\+U\+M\+P\+S\+\_\+\+Module\+\_\+constants.\+f95.
+
+\mbox{\Hypertarget{namespacesnowmod_a216f7ed83c0474b708443eddfa6c574e}\label{namespacesnowmod_a216f7ed83c0474b708443eddfa6c574e}} 
+\index{snowmod@{snowmod}!swe@{swe}}
+\index{swe@{swe}!snowmod@{snowmod}}
+\subsubsection{\texorpdfstring{swe}{swe}}
+{\footnotesize\ttfamily real (kind(1d0)) snowmod\+::swe}
+
+
+
+Definition at line 1096 of file L\+U\+M\+P\+S\+\_\+\+Module\+\_\+constants.\+f95.
+
+\mbox{\Hypertarget{namespacesnowmod_a98e11e8fda25e951b1c7a65ec1d36e9f}\label{namespacesnowmod_a98e11e8fda25e951b1c7a65ec1d36e9f}} 
+\index{snowmod@{snowmod}!tau\+\_\+a@{tau\+\_\+a}}
+\index{tau\+\_\+a@{tau\+\_\+a}!snowmod@{snowmod}}
+\subsubsection{\texorpdfstring{tau\+\_\+a}{tau\_a}}
+{\footnotesize\ttfamily real (kind(1d0)) snowmod\+::tau\+\_\+a}
+
+
+
+Definition at line 1096 of file L\+U\+M\+P\+S\+\_\+\+Module\+\_\+constants.\+f95.
+
+\mbox{\Hypertarget{namespacesnowmod_adcf5755398c1385d35ef29e6f780ff9c}\label{namespacesnowmod_adcf5755398c1385d35ef29e6f780ff9c}} 
+\index{snowmod@{snowmod}!tau\+\_\+f@{tau\+\_\+f}}
+\index{tau\+\_\+f@{tau\+\_\+f}!snowmod@{snowmod}}
+\subsubsection{\texorpdfstring{tau\+\_\+f}{tau\_f}}
+{\footnotesize\ttfamily real (kind(1d0)) snowmod\+::tau\+\_\+f}
+
+
+
+Definition at line 1096 of file L\+U\+M\+P\+S\+\_\+\+Module\+\_\+constants.\+f95.
+
+\mbox{\Hypertarget{namespacesnowmod_aaf08f7c00b0d87b2135341ca3f63f0d7}\label{namespacesnowmod_aaf08f7c00b0d87b2135341ca3f63f0d7}} 
+\index{snowmod@{snowmod}!tau\+\_\+r@{tau\+\_\+r}}
+\index{tau\+\_\+r@{tau\+\_\+r}!snowmod@{snowmod}}
+\subsubsection{\texorpdfstring{tau\+\_\+r}{tau\_r}}
+{\footnotesize\ttfamily real (kind(1d0)) snowmod\+::tau\+\_\+r}
+
+
+
+Definition at line 1096 of file L\+U\+M\+P\+S\+\_\+\+Module\+\_\+constants.\+f95.
+
+\mbox{\Hypertarget{namespacesnowmod_a963e4ef23aef666f3afb12096ef952b8}\label{namespacesnowmod_a963e4ef23aef666f3afb12096ef952b8}} 
+\index{snowmod@{snowmod}!tempmeltfact@{tempmeltfact}}
+\index{tempmeltfact@{tempmeltfact}!snowmod@{snowmod}}
+\subsubsection{\texorpdfstring{tempmeltfact}{tempmeltfact}}
+{\footnotesize\ttfamily real (kind(1d0)) snowmod\+::tempmeltfact}
+
+
+
+Definition at line 1096 of file L\+U\+M\+P\+S\+\_\+\+Module\+\_\+constants.\+f95.
+
+\mbox{\Hypertarget{namespacesnowmod_aef00a57fa640ad627fb60de11644e20d}\label{namespacesnowmod_aef00a57fa640ad627fb60de11644e20d}} 
+\index{snowmod@{snowmod}!volday@{volday}}
+\index{volday@{volday}!snowmod@{snowmod}}
+\subsubsection{\texorpdfstring{volday}{volday}}
+{\footnotesize\ttfamily real (kind(1d0)) snowmod\+::volday}
+
+
+
+Definition at line 1096 of file L\+U\+M\+P\+S\+\_\+\+Module\+\_\+constants.\+f95.
+
+\mbox{\Hypertarget{namespacesnowmod_a8cda7b30a924d03ee30f2bde6c9e41bc}\label{namespacesnowmod_a8cda7b30a924d03ee30f2bde6c9e41bc}} 
+\index{snowmod@{snowmod}!waterholdcapfrac@{waterholdcapfrac}}
+\index{waterholdcapfrac@{waterholdcapfrac}!snowmod@{snowmod}}
+\subsubsection{\texorpdfstring{waterholdcapfrac}{waterholdcapfrac}}
+{\footnotesize\ttfamily real (kind(1d0)) snowmod\+::waterholdcapfrac}
+
+
+
+Definition at line 1096 of file L\+U\+M\+P\+S\+\_\+\+Module\+\_\+constants.\+f95.
+
+\mbox{\Hypertarget{namespacesnowmod_ab1cf232aa719c4c447ac11c210889e66}\label{namespacesnowmod_ab1cf232aa719c4c447ac11c210889e66}} 
+\index{snowmod@{snowmod}!zf@{zf}}
+\index{zf@{zf}!snowmod@{snowmod}}
+\subsubsection{\texorpdfstring{zf}{zf}}
+{\footnotesize\ttfamily real (kind(1d0)) snowmod\+::zf}
+
+
+
+Definition at line 1096 of file L\+U\+M\+P\+S\+\_\+\+Module\+\_\+constants.\+f95.
+

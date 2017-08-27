@@ -30,7 +30,6 @@ MODULES = LUMPS_Module_constants.o  \
 					qsort_c_module.o\
 					LUMPS_NARP_v3.o \
 					SUEWS_OHM.o \
-					SUEWS_AnOHM.o \
 					minpack.o
 
 # Rest of the files including modules and functions which are independent
@@ -84,7 +83,8 @@ OTHERS =  BLUEWS_CBL.o   \
 					SUEWS_Diagnostics.o
 
 # modules under rapid development
-TEST =		SUEWS_Calculations.o 
+TEST =		SUEWS_AnOHM.o \
+					SUEWS_Calculations.o 
 
 
 # Build main program - main uses MODULES and OTHERS

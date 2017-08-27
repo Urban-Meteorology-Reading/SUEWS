@@ -360,7 +360,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
      IF ( OHMIncQF == 1 ) THEN    !Calculate QS using QSTAR+QF
         IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'
         CALL AnOHM(qn1,qn1_store(:,Gridiv),qn1_av_store(:,Gridiv),&
-             MetForcingData(:,:,Gridiv),&
+             MetForcingData(:,:,Gridiv),state,&
              alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&
              sfr,nsurf,nsh,AnthropHeatMethod,id,&
              a1,a2,a3,qs)
@@ -368,7 +368,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
         qn1=qn1_bup
         IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'
         CALL AnOHM(qn1_bup,qn1_store(:,Gridiv),qn1_av_store(:,Gridiv),&
-             MetForcingData(:,:,Gridiv),&
+             MetForcingData(:,:,Gridiv),state,&
              alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&
              sfr,nsurf,nsh,AnthropHeatMethod,id,&
              a1,a2,a3,qs)

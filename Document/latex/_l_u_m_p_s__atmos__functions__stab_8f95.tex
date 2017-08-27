@@ -1,0 +1,63 @@
+\hypertarget{_l_u_m_p_s__atmos__functions__stab_8f95}{}\section{L\+U\+M\+P\+S\+\_\+atmos\+\_\+functions\+\_\+stab.\+f95 File Reference}
+\label{_l_u_m_p_s__atmos__functions__stab_8f95}\index{L\+U\+M\+P\+S\+\_\+atmos\+\_\+functions\+\_\+stab.\+f95@{L\+U\+M\+P\+S\+\_\+atmos\+\_\+functions\+\_\+stab.\+f95}}
+\subsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \hyperlink{_l_u_m_p_s__atmos__functions__stab_8f95_a1783dde883ce9c28084bad6ce0af4b7d}{stab\+\_\+lumps} (Stability\+Method, dectime, zzd, z0M, zdm, av\+U1, Temp\+\_\+C, L, Tstar, U\+S\+T\+AR, h, psim)
+\item 
+real(kind(1d0)) function \hyperlink{_l_u_m_p_s__atmos__functions__stab_8f95_a4747157b11ced3df83f22e214a254047}{stab\+\_\+fn\+\_\+mom} (Stability\+Method, ZL, zl\+\_\+f)
+\item 
+real(kind(1d0)) function \hyperlink{_l_u_m_p_s__atmos__functions__stab_8f95_a1a003755868a85b5befce4b5fb537bf6}{stab\+\_\+fn\+\_\+heat} (Stability\+Method, ZL, zl\+\_\+f)
+\item 
+real(kind(1d0)) function \hyperlink{_l_u_m_p_s__atmos__functions__stab_8f95_a0fea4a2d8a629eb786f16e661f9973a6}{stab\+\_\+fn\+\_\+rou} (z, zstar)
+\end{DoxyCompactItemize}
+
+
+\subsection{Function/\+Subroutine Documentation}
+\mbox{\Hypertarget{_l_u_m_p_s__atmos__functions__stab_8f95_a1a003755868a85b5befce4b5fb537bf6}\label{_l_u_m_p_s__atmos__functions__stab_8f95_a1a003755868a85b5befce4b5fb537bf6}} 
+\index{L\+U\+M\+P\+S\+\_\+atmos\+\_\+functions\+\_\+stab.\+f95@{L\+U\+M\+P\+S\+\_\+atmos\+\_\+functions\+\_\+stab.\+f95}!stab\+\_\+fn\+\_\+heat@{stab\+\_\+fn\+\_\+heat}}
+\index{stab\+\_\+fn\+\_\+heat@{stab\+\_\+fn\+\_\+heat}!L\+U\+M\+P\+S\+\_\+atmos\+\_\+functions\+\_\+stab.\+f95@{L\+U\+M\+P\+S\+\_\+atmos\+\_\+functions\+\_\+stab.\+f95}}
+\subsubsection{\texorpdfstring{stab\+\_\+fn\+\_\+heat()}{stab\_fn\_heat()}}
+{\footnotesize\ttfamily real (kind(1d0)) function stab\+\_\+fn\+\_\+heat (\begin{DoxyParamCaption}\item[{integer}]{Stability\+Method,  }\item[{real (kind(1d0))}]{ZL,  }\item[{real (kind(1d0))}]{zl\+\_\+f }\end{DoxyParamCaption})}
+
+
+
+Definition at line 215 of file L\+U\+M\+P\+S\+\_\+atmos\+\_\+functions\+\_\+stab.\+f95.
+
+\mbox{\Hypertarget{_l_u_m_p_s__atmos__functions__stab_8f95_a4747157b11ced3df83f22e214a254047}\label{_l_u_m_p_s__atmos__functions__stab_8f95_a4747157b11ced3df83f22e214a254047}} 
+\index{L\+U\+M\+P\+S\+\_\+atmos\+\_\+functions\+\_\+stab.\+f95@{L\+U\+M\+P\+S\+\_\+atmos\+\_\+functions\+\_\+stab.\+f95}!stab\+\_\+fn\+\_\+mom@{stab\+\_\+fn\+\_\+mom}}
+\index{stab\+\_\+fn\+\_\+mom@{stab\+\_\+fn\+\_\+mom}!L\+U\+M\+P\+S\+\_\+atmos\+\_\+functions\+\_\+stab.\+f95@{L\+U\+M\+P\+S\+\_\+atmos\+\_\+functions\+\_\+stab.\+f95}}
+\subsubsection{\texorpdfstring{stab\+\_\+fn\+\_\+mom()}{stab\_fn\_mom()}}
+{\footnotesize\ttfamily real (kind(1d0)) function stab\+\_\+fn\+\_\+mom (\begin{DoxyParamCaption}\item[{integer}]{Stability\+Method,  }\item[{real (kind(1d0))}]{ZL,  }\item[{real (kind(1d0))}]{zl\+\_\+f }\end{DoxyParamCaption})}
+
+
+
+Definition at line 132 of file L\+U\+M\+P\+S\+\_\+atmos\+\_\+functions\+\_\+stab.\+f95.
+
+\mbox{\Hypertarget{_l_u_m_p_s__atmos__functions__stab_8f95_a0fea4a2d8a629eb786f16e661f9973a6}\label{_l_u_m_p_s__atmos__functions__stab_8f95_a0fea4a2d8a629eb786f16e661f9973a6}} 
+\index{L\+U\+M\+P\+S\+\_\+atmos\+\_\+functions\+\_\+stab.\+f95@{L\+U\+M\+P\+S\+\_\+atmos\+\_\+functions\+\_\+stab.\+f95}!stab\+\_\+fn\+\_\+rou@{stab\+\_\+fn\+\_\+rou}}
+\index{stab\+\_\+fn\+\_\+rou@{stab\+\_\+fn\+\_\+rou}!L\+U\+M\+P\+S\+\_\+atmos\+\_\+functions\+\_\+stab.\+f95@{L\+U\+M\+P\+S\+\_\+atmos\+\_\+functions\+\_\+stab.\+f95}}
+\subsubsection{\texorpdfstring{stab\+\_\+fn\+\_\+rou()}{stab\_fn\_rou()}}
+{\footnotesize\ttfamily real(kind(1d0)) function stab\+\_\+fn\+\_\+rou (\begin{DoxyParamCaption}\item[{real(kind(1d0))}]{z,  }\item[{real(kind(1d0))}]{zstar }\end{DoxyParamCaption})}
+
+
+
+Definition at line 271 of file L\+U\+M\+P\+S\+\_\+atmos\+\_\+functions\+\_\+stab.\+f95.
+
+\mbox{\Hypertarget{_l_u_m_p_s__atmos__functions__stab_8f95_a1783dde883ce9c28084bad6ce0af4b7d}\label{_l_u_m_p_s__atmos__functions__stab_8f95_a1783dde883ce9c28084bad6ce0af4b7d}} 
+\index{L\+U\+M\+P\+S\+\_\+atmos\+\_\+functions\+\_\+stab.\+f95@{L\+U\+M\+P\+S\+\_\+atmos\+\_\+functions\+\_\+stab.\+f95}!stab\+\_\+lumps@{stab\+\_\+lumps}}
+\index{stab\+\_\+lumps@{stab\+\_\+lumps}!L\+U\+M\+P\+S\+\_\+atmos\+\_\+functions\+\_\+stab.\+f95@{L\+U\+M\+P\+S\+\_\+atmos\+\_\+functions\+\_\+stab.\+f95}}
+\subsubsection{\texorpdfstring{stab\+\_\+lumps()}{stab\_lumps()}}
+{\footnotesize\ttfamily subroutine stab\+\_\+lumps (\begin{DoxyParamCaption}\item[{integer, intent(in)}]{Stability\+Method,  }\item[{real(kind(1d0)), intent(in)}]{dectime,  }\item[{real(kind(1d0)), intent(in)}]{zzd,  }\item[{real(kind(1d0)), intent(in)}]{z0M,  }\item[{real(kind(1d0)), intent(in)}]{zdm,  }\item[{real(kind(1d0)), intent(in)}]{av\+U1,  }\item[{real(kind(1d0)), intent(in)}]{Temp\+\_\+C,  }\item[{real(kind(1d0)), intent(out)}]{L,  }\item[{real(kind(1d0)), intent(out)}]{Tstar,  }\item[{real(kind(1d0)), intent(out)}]{U\+S\+T\+AR,  }\item[{real(kind(1d0)), intent(out)}]{h,  }\item[{real(kind(1d0)), intent(out)}]{psim }\end{DoxyParamCaption})}
+
+
+
+Definition at line 31 of file L\+U\+M\+P\+S\+\_\+atmos\+\_\+functions\+\_\+stab.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{_l_u_m_p_s__atmos__functions__stab_8f95_a1783dde883ce9c28084bad6ce0af4b7d_cgraph}
+\end{center}
+\end{figure}

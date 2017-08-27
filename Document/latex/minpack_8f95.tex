@@ -1,0 +1,385 @@
+\hypertarget{minpack_8f95}{}\section{minpack.\+f95 File Reference}
+\label{minpack_8f95}\index{minpack.\+f95@{minpack.\+f95}}
+\subsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \hyperlink{minpack_8f95_a0850d60ecd544bc0acd3fc391ff375ac}{chkder} (m, n, x, fvec, fjac, ldfjac, xp, fvecp, mode, err)
+\item 
+subroutine \hyperlink{minpack_8f95_ab5a1319962e4855e0a2b7a7431085275}{dogleg} (n, r, lr, diag, qtb, delta, x)
+\item 
+real(kind=8) function \hyperlink{minpack_8f95_a77bab828c23542feaca9eb2756475b89}{enorm} (n, x)
+\item 
+real(kind=8) function \hyperlink{minpack_8f95_a83e8b436deaf6a3de9bdf38fc2962d9a}{enorm2} (n, x)
+\item 
+subroutine \hyperlink{minpack_8f95_a327303574ddecf90e74bf7aaa64b5509}{fdjac1} (fcn, n, x, fvec, fjac, ldfjac, iflag, ml, mu, epsfcn)
+\item 
+subroutine \hyperlink{minpack_8f95_a49e6c47697604e26b8f5aae0c4fd9aef}{fdjac2} (fcn, m, n, x, xdat, ydat, fvec, fjac, ldfjac, iflag, epsfcn)
+\item 
+subroutine \hyperlink{minpack_8f95_a1e525d0d69e43bfda5f82e3bc4745b2f}{hybrd} (fcn, n, x, fvec, xtol, maxfev, ml, mu, epsfcn, diag, mode, factor, nprint, info, nfev, fjac, ldfjac, r, lr, qtf)
+\item 
+subroutine \hyperlink{minpack_8f95_a314aebdd90b16a874c0879d291a2190d}{hybrd1} (fcn, n, x, fvec, tol, info)
+\item 
+subroutine \hyperlink{minpack_8f95_a53ab26dfa98e1e91ba7a8c3e5f83ad13}{hybrj} (fcn, n, x, fvec, fjac, ldfjac, xtol, maxfev, diag, mode, factor, nprint, info, nfev, njev, r, lr, qtf)
+\item 
+subroutine \hyperlink{minpack_8f95_afefee19843910dca7f59c228bf69749d}{hybrj1} (fcn, n, x, fvec, fjac, ldfjac, tol, info)
+\item 
+subroutine \hyperlink{minpack_8f95_a29cf549303bc0ced9cb2e1ef2da0234b}{lmder} (fcn, m, n, x, fvec, fjac, ldfjac, ftol, xtol, gtol, maxfev, diag, mode, factor, nprint, info, nfev, njev, ipvt, qtf)
+\item 
+subroutine \hyperlink{minpack_8f95_ab4dbf9a20a957dfb72d70219dd6ad6d4}{lmder1} (fcn, m, n, x, fvec, fjac, ldfjac, tol, info)
+\item 
+subroutine \hyperlink{minpack_8f95_a4689c4ce455cf0795081e88c004b48ff}{lmdif} (fcn, m, n, x, xdat, ydat, fvec, ftol, xtol, gtol, maxfev, epsfcn, diag, mode, factor, nprint, info, nfev, fjac, ldfjac, ipvt, qtf)
+\item 
+subroutine \hyperlink{minpack_8f95_a700bf6f1bdcace537df37252fd26c723}{lmdif1} (fcn, m, n, x, xdat, ydat, fvec, tol, info)
+\item 
+subroutine \hyperlink{minpack_8f95_a1dc1e9adda30350383f28f6cc6361365}{lmpar} (n, r, ldr, ipvt, diag, qtb, delta, par, x, sdiag)
+\item 
+subroutine \hyperlink{minpack_8f95_a178ff688f77b7192504790b6741ecd4d}{lmstr} (fcn, m, n, x, fvec, fjac, ldfjac, ftol, xtol, gtol, maxfev, diag, mode, factor, nprint, info, nfev, njev, ipvt, qtf)
+\item 
+subroutine \hyperlink{minpack_8f95_acee42ee803b3870261fa529dc123a892}{lmstr1} (fcn, m, n, x, fvec, fjac, ldfjac, tol, info)
+\item 
+subroutine \hyperlink{minpack_8f95_a12e8db1e181463d5c3af21f2b1b6b5a7}{qform} (m, n, q, ldq)
+\item 
+subroutine \hyperlink{minpack_8f95_a64d35f73f2a85378c24dd7b99ddb0c0f}{qrfac} (m, n, a, lda, pivot, ipvt, lipvt, rdiag, acnorm)
+\item 
+subroutine \hyperlink{minpack_8f95_a0dd208e826a2526722a40eab1724ac83}{qrsolv} (n, r, ldr, ipvt, diag, qtb, x, sdiag)
+\item 
+subroutine \hyperlink{minpack_8f95_ab7f6e61d92cfd9ea516435ad523b989b}{r1mpyq} (m, n, a, lda, v, w)
+\item 
+subroutine \hyperlink{minpack_8f95_a8ff726029b3ff9037b390910744ee58b}{r1updt} (m, n, s, ls, u, v, w, sing)
+\item 
+subroutine \hyperlink{minpack_8f95_adc196cc5030b2eb1660c061fd85bfe0a}{r8vec\+\_\+print} (n, a, title)
+\item 
+subroutine \hyperlink{minpack_8f95_adbcfef20d552d8c5e7dc5925c975eb23}{rwupdt} (n, r, ldr, w, b, alpha, c, s)
+\item 
+subroutine \hyperlink{minpack_8f95_a44fdaa08281ed3009542bc9257fa965d}{timestamp} ()
+\end{DoxyCompactItemize}
+
+
+\subsection{Function/\+Subroutine Documentation}
+\mbox{\Hypertarget{minpack_8f95_a0850d60ecd544bc0acd3fc391ff375ac}\label{minpack_8f95_a0850d60ecd544bc0acd3fc391ff375ac}} 
+\index{minpack.\+f95@{minpack.\+f95}!chkder@{chkder}}
+\index{chkder@{chkder}!minpack.\+f95@{minpack.\+f95}}
+\subsubsection{\texorpdfstring{chkder()}{chkder()}}
+{\footnotesize\ttfamily subroutine chkder (\begin{DoxyParamCaption}\item[{integer ( kind = 4 )}]{m,  }\item[{integer ( kind = 4 )}]{n,  }\item[{real ( kind = 8 ), dimension(n)}]{x,  }\item[{real ( kind = 8 ), dimension(m)}]{fvec,  }\item[{real ( kind = 8 ), dimension(ldfjac,n)}]{fjac,  }\item[{integer ( kind = 4 )}]{ldfjac,  }\item[{real ( kind = 8 ), dimension(n)}]{xp,  }\item[{real ( kind = 8 ), dimension(m)}]{fvecp,  }\item[{integer ( kind = 4 )}]{mode,  }\item[{real ( kind = 8 ), dimension(m)}]{err }\end{DoxyParamCaption})}
+
+
+
+Definition at line 2 of file minpack.\+f95.
+
+\mbox{\Hypertarget{minpack_8f95_ab5a1319962e4855e0a2b7a7431085275}\label{minpack_8f95_ab5a1319962e4855e0a2b7a7431085275}} 
+\index{minpack.\+f95@{minpack.\+f95}!dogleg@{dogleg}}
+\index{dogleg@{dogleg}!minpack.\+f95@{minpack.\+f95}}
+\subsubsection{\texorpdfstring{dogleg()}{dogleg()}}
+{\footnotesize\ttfamily subroutine dogleg (\begin{DoxyParamCaption}\item[{integer ( kind = 4 )}]{n,  }\item[{real ( kind = 8 ), dimension(lr)}]{r,  }\item[{integer ( kind = 4 )}]{lr,  }\item[{real ( kind = 8 ), dimension(n)}]{diag,  }\item[{real ( kind = 8 ), dimension(n)}]{qtb,  }\item[{real ( kind = 8 )}]{delta,  }\item[{real ( kind = 8 ), dimension(n)}]{x }\end{DoxyParamCaption})}
+
+
+
+Definition at line 172 of file minpack.\+f95.
+
+\mbox{\Hypertarget{minpack_8f95_a77bab828c23542feaca9eb2756475b89}\label{minpack_8f95_a77bab828c23542feaca9eb2756475b89}} 
+\index{minpack.\+f95@{minpack.\+f95}!enorm@{enorm}}
+\index{enorm@{enorm}!minpack.\+f95@{minpack.\+f95}}
+\subsubsection{\texorpdfstring{enorm()}{enorm()}}
+{\footnotesize\ttfamily real ( kind = 8 ) function enorm (\begin{DoxyParamCaption}\item[{integer ( kind = 4 )}]{n,  }\item[{real ( kind = 8 ), dimension(n)}]{x }\end{DoxyParamCaption})}
+
+
+
+Definition at line 382 of file minpack.\+f95.
+
+\mbox{\Hypertarget{minpack_8f95_a83e8b436deaf6a3de9bdf38fc2962d9a}\label{minpack_8f95_a83e8b436deaf6a3de9bdf38fc2962d9a}} 
+\index{minpack.\+f95@{minpack.\+f95}!enorm2@{enorm2}}
+\index{enorm2@{enorm2}!minpack.\+f95@{minpack.\+f95}}
+\subsubsection{\texorpdfstring{enorm2()}{enorm2()}}
+{\footnotesize\ttfamily real ( kind = 8 ) function enorm2 (\begin{DoxyParamCaption}\item[{integer ( kind = 4 )}]{n,  }\item[{real ( kind = 8 ), dimension(n)}]{x }\end{DoxyParamCaption})}
+
+
+
+Definition at line 431 of file minpack.\+f95.
+
+\mbox{\Hypertarget{minpack_8f95_a327303574ddecf90e74bf7aaa64b5509}\label{minpack_8f95_a327303574ddecf90e74bf7aaa64b5509}} 
+\index{minpack.\+f95@{minpack.\+f95}!fdjac1@{fdjac1}}
+\index{fdjac1@{fdjac1}!minpack.\+f95@{minpack.\+f95}}
+\subsubsection{\texorpdfstring{fdjac1()}{fdjac1()}}
+{\footnotesize\ttfamily subroutine fdjac1 (\begin{DoxyParamCaption}\item[{external}]{fcn,  }\item[{integer ( kind = 4 )}]{n,  }\item[{real ( kind = 8 ), dimension(n)}]{x,  }\item[{real ( kind = 8 ), dimension(n)}]{fvec,  }\item[{real ( kind = 8 ), dimension(ldfjac,n)}]{fjac,  }\item[{integer ( kind = 4 )}]{ldfjac,  }\item[{integer ( kind = 4 )}]{iflag,  }\item[{integer ( kind = 4 )}]{ml,  }\item[{integer ( kind = 4 )}]{mu,  }\item[{real ( kind = 8 )}]{epsfcn }\end{DoxyParamCaption})}
+
+
+
+Definition at line 561 of file minpack.\+f95.
+
+\mbox{\Hypertarget{minpack_8f95_a49e6c47697604e26b8f5aae0c4fd9aef}\label{minpack_8f95_a49e6c47697604e26b8f5aae0c4fd9aef}} 
+\index{minpack.\+f95@{minpack.\+f95}!fdjac2@{fdjac2}}
+\index{fdjac2@{fdjac2}!minpack.\+f95@{minpack.\+f95}}
+\subsubsection{\texorpdfstring{fdjac2()}{fdjac2()}}
+{\footnotesize\ttfamily subroutine fdjac2 (\begin{DoxyParamCaption}\item[{external}]{fcn,  }\item[{integer ( kind = 4 )}]{m,  }\item[{integer ( kind = 4 )}]{n,  }\item[{real ( kind = 8 ), dimension(n)}]{x,  }\item[{real ( kind = 8 ), dimension(m)}]{xdat,  }\item[{real ( kind = 8 ), dimension(m)}]{ydat,  }\item[{real ( kind = 8 ), dimension(m)}]{fvec,  }\item[{real ( kind = 8 ), dimension(ldfjac,n)}]{fjac,  }\item[{integer ( kind = 4 )}]{ldfjac,  }\item[{integer ( kind = 4 )}]{iflag,  }\item[{real ( kind = 8 )}]{epsfcn }\end{DoxyParamCaption})}
+
+
+
+Definition at line 738 of file minpack.\+f95.
+
+\mbox{\Hypertarget{minpack_8f95_a1e525d0d69e43bfda5f82e3bc4745b2f}\label{minpack_8f95_a1e525d0d69e43bfda5f82e3bc4745b2f}} 
+\index{minpack.\+f95@{minpack.\+f95}!hybrd@{hybrd}}
+\index{hybrd@{hybrd}!minpack.\+f95@{minpack.\+f95}}
+\subsubsection{\texorpdfstring{hybrd()}{hybrd()}}
+{\footnotesize\ttfamily subroutine hybrd (\begin{DoxyParamCaption}\item[{external}]{fcn,  }\item[{integer ( kind = 4 )}]{n,  }\item[{real ( kind = 8 ), dimension(n)}]{x,  }\item[{real ( kind = 8 ), dimension(n)}]{fvec,  }\item[{real ( kind = 8 )}]{xtol,  }\item[{integer ( kind = 4 )}]{maxfev,  }\item[{integer ( kind = 4 )}]{ml,  }\item[{integer ( kind = 4 )}]{mu,  }\item[{real ( kind = 8 )}]{epsfcn,  }\item[{real ( kind = 8 ), dimension(n)}]{diag,  }\item[{integer ( kind = 4 )}]{mode,  }\item[{real ( kind = 8 )}]{factor,  }\item[{integer ( kind = 4 )}]{nprint,  }\item[{integer ( kind = 4 )}]{info,  }\item[{integer ( kind = 4 )}]{nfev,  }\item[{real ( kind = 8 ), dimension(ldfjac,n)}]{fjac,  }\item[{integer ( kind = 4 )}]{ldfjac,  }\item[{real ( kind = 8 ), dimension(lr)}]{r,  }\item[{integer ( kind = 4 )}]{lr,  }\item[{real ( kind = 8 ), dimension(n)}]{qtf }\end{DoxyParamCaption})}
+
+
+
+Definition at line 860 of file minpack.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=206pt]{minpack_8f95_a1e525d0d69e43bfda5f82e3bc4745b2f_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{minpack_8f95_a314aebdd90b16a874c0879d291a2190d}\label{minpack_8f95_a314aebdd90b16a874c0879d291a2190d}} 
+\index{minpack.\+f95@{minpack.\+f95}!hybrd1@{hybrd1}}
+\index{hybrd1@{hybrd1}!minpack.\+f95@{minpack.\+f95}}
+\subsubsection{\texorpdfstring{hybrd1()}{hybrd1()}}
+{\footnotesize\ttfamily subroutine hybrd1 (\begin{DoxyParamCaption}\item[{external}]{fcn,  }\item[{integer ( kind = 4 )}]{n,  }\item[{real ( kind = 8 ), dimension(n)}]{x,  }\item[{real ( kind = 8 ), dimension(n)}]{fvec,  }\item[{real ( kind = 8 )}]{tol,  }\item[{integer ( kind = 4 )}]{info }\end{DoxyParamCaption})}
+
+
+
+Definition at line 1407 of file minpack.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=289pt]{minpack_8f95_a314aebdd90b16a874c0879d291a2190d_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{minpack_8f95_a53ab26dfa98e1e91ba7a8c3e5f83ad13}\label{minpack_8f95_a53ab26dfa98e1e91ba7a8c3e5f83ad13}} 
+\index{minpack.\+f95@{minpack.\+f95}!hybrj@{hybrj}}
+\index{hybrj@{hybrj}!minpack.\+f95@{minpack.\+f95}}
+\subsubsection{\texorpdfstring{hybrj()}{hybrj()}}
+{\footnotesize\ttfamily subroutine hybrj (\begin{DoxyParamCaption}\item[{external}]{fcn,  }\item[{integer ( kind = 4 )}]{n,  }\item[{real ( kind = 8 ), dimension(n)}]{x,  }\item[{real ( kind = 8 ), dimension(n)}]{fvec,  }\item[{real ( kind = 8 ), dimension(ldfjac,n)}]{fjac,  }\item[{integer ( kind = 4 )}]{ldfjac,  }\item[{real ( kind = 8 )}]{xtol,  }\item[{integer ( kind = 4 )}]{maxfev,  }\item[{real ( kind = 8 ), dimension(n)}]{diag,  }\item[{integer ( kind = 4 )}]{mode,  }\item[{real ( kind = 8 )}]{factor,  }\item[{integer ( kind = 4 )}]{nprint,  }\item[{integer ( kind = 4 )}]{info,  }\item[{integer ( kind = 4 )}]{nfev,  }\item[{integer ( kind = 4 )}]{njev,  }\item[{real ( kind = 8 ), dimension(lr)}]{r,  }\item[{integer ( kind = 4 )}]{lr,  }\item[{real ( kind = 8 ), dimension(n)}]{qtf }\end{DoxyParamCaption})}
+
+
+
+Definition at line 1544 of file minpack.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=203pt]{minpack_8f95_a53ab26dfa98e1e91ba7a8c3e5f83ad13_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{minpack_8f95_afefee19843910dca7f59c228bf69749d}\label{minpack_8f95_afefee19843910dca7f59c228bf69749d}} 
+\index{minpack.\+f95@{minpack.\+f95}!hybrj1@{hybrj1}}
+\index{hybrj1@{hybrj1}!minpack.\+f95@{minpack.\+f95}}
+\subsubsection{\texorpdfstring{hybrj1()}{hybrj1()}}
+{\footnotesize\ttfamily subroutine hybrj1 (\begin{DoxyParamCaption}\item[{external}]{fcn,  }\item[{integer ( kind = 4 )}]{n,  }\item[{real ( kind = 8 ), dimension(n)}]{x,  }\item[{real ( kind = 8 ), dimension(n)}]{fvec,  }\item[{real ( kind = 8 ), dimension(ldfjac,n)}]{fjac,  }\item[{integer ( kind = 4 )}]{ldfjac,  }\item[{real ( kind = 8 )}]{tol,  }\item[{integer ( kind = 4 )}]{info }\end{DoxyParamCaption})}
+
+
+
+Definition at line 2112 of file minpack.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=282pt]{minpack_8f95_afefee19843910dca7f59c228bf69749d_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{minpack_8f95_a29cf549303bc0ced9cb2e1ef2da0234b}\label{minpack_8f95_a29cf549303bc0ced9cb2e1ef2da0234b}} 
+\index{minpack.\+f95@{minpack.\+f95}!lmder@{lmder}}
+\index{lmder@{lmder}!minpack.\+f95@{minpack.\+f95}}
+\subsubsection{\texorpdfstring{lmder()}{lmder()}}
+{\footnotesize\ttfamily subroutine lmder (\begin{DoxyParamCaption}\item[{external}]{fcn,  }\item[{integer ( kind = 4 )}]{m,  }\item[{integer ( kind = 4 )}]{n,  }\item[{real ( kind = 8 ), dimension(n)}]{x,  }\item[{real ( kind = 8 ), dimension(m)}]{fvec,  }\item[{real ( kind = 8 ), dimension(ldfjac,n)}]{fjac,  }\item[{integer ( kind = 4 )}]{ldfjac,  }\item[{real ( kind = 8 )}]{ftol,  }\item[{real ( kind = 8 )}]{xtol,  }\item[{real ( kind = 8 )}]{gtol,  }\item[{integer ( kind = 4 )}]{maxfev,  }\item[{real ( kind = 8 ), dimension(n)}]{diag,  }\item[{integer ( kind = 4 )}]{mode,  }\item[{real ( kind = 8 )}]{factor,  }\item[{integer ( kind = 4 )}]{nprint,  }\item[{integer ( kind = 4 )}]{info,  }\item[{integer ( kind = 4 )}]{nfev,  }\item[{integer ( kind = 4 )}]{njev,  }\item[{integer ( kind = 4 ), dimension(n)}]{ipvt,  }\item[{real ( kind = 8 ), dimension(n)}]{qtf }\end{DoxyParamCaption})}
+
+
+
+Definition at line 2248 of file minpack.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=277pt]{minpack_8f95_a29cf549303bc0ced9cb2e1ef2da0234b_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{minpack_8f95_ab4dbf9a20a957dfb72d70219dd6ad6d4}\label{minpack_8f95_ab4dbf9a20a957dfb72d70219dd6ad6d4}} 
+\index{minpack.\+f95@{minpack.\+f95}!lmder1@{lmder1}}
+\index{lmder1@{lmder1}!minpack.\+f95@{minpack.\+f95}}
+\subsubsection{\texorpdfstring{lmder1()}{lmder1()}}
+{\footnotesize\ttfamily subroutine lmder1 (\begin{DoxyParamCaption}\item[{external}]{fcn,  }\item[{integer ( kind = 4 )}]{m,  }\item[{integer ( kind = 4 )}]{n,  }\item[{real ( kind = 8 ), dimension(n)}]{x,  }\item[{real ( kind = 8 ), dimension(m)}]{fvec,  }\item[{real ( kind = 8 ), dimension(ldfjac,n)}]{fjac,  }\item[{integer ( kind = 4 )}]{ldfjac,  }\item[{real ( kind = 8 )}]{tol,  }\item[{integer ( kind = 4 )}]{info }\end{DoxyParamCaption})}
+
+
+
+Definition at line 2775 of file minpack.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{minpack_8f95_ab4dbf9a20a957dfb72d70219dd6ad6d4_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{minpack_8f95_a4689c4ce455cf0795081e88c004b48ff}\label{minpack_8f95_a4689c4ce455cf0795081e88c004b48ff}} 
+\index{minpack.\+f95@{minpack.\+f95}!lmdif@{lmdif}}
+\index{lmdif@{lmdif}!minpack.\+f95@{minpack.\+f95}}
+\subsubsection{\texorpdfstring{lmdif()}{lmdif()}}
+{\footnotesize\ttfamily subroutine lmdif (\begin{DoxyParamCaption}\item[{external}]{fcn,  }\item[{integer ( kind = 4 )}]{m,  }\item[{integer ( kind = 4 )}]{n,  }\item[{real ( kind = 8 ), dimension(n)}]{x,  }\item[{real ( kind = 8 ), dimension(m)}]{xdat,  }\item[{real ( kind = 8 ), dimension(m)}]{ydat,  }\item[{real ( kind = 8 ), dimension(m)}]{fvec,  }\item[{real ( kind = 8 )}]{ftol,  }\item[{real ( kind = 8 )}]{xtol,  }\item[{real ( kind = 8 )}]{gtol,  }\item[{integer ( kind = 4 )}]{maxfev,  }\item[{real ( kind = 8 )}]{epsfcn,  }\item[{real ( kind = 8 ), dimension(n)}]{diag,  }\item[{integer ( kind = 4 )}]{mode,  }\item[{real ( kind = 8 )}]{factor,  }\item[{integer ( kind = 4 )}]{nprint,  }\item[{integer ( kind = 4 )}]{info,  }\item[{integer ( kind = 4 )}]{nfev,  }\item[{real ( kind = 8 ), dimension(ldfjac,n)}]{fjac,  }\item[{integer ( kind = 4 )}]{ldfjac,  }\item[{integer ( kind = 4 ), dimension(n)}]{ipvt,  }\item[{real ( kind = 8 ), dimension(n)}]{qtf }\end{DoxyParamCaption})}
+
+
+
+Definition at line 2928 of file minpack.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=274pt]{minpack_8f95_a4689c4ce455cf0795081e88c004b48ff_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{minpack_8f95_a700bf6f1bdcace537df37252fd26c723}\label{minpack_8f95_a700bf6f1bdcace537df37252fd26c723}} 
+\index{minpack.\+f95@{minpack.\+f95}!lmdif1@{lmdif1}}
+\index{lmdif1@{lmdif1}!minpack.\+f95@{minpack.\+f95}}
+\subsubsection{\texorpdfstring{lmdif1()}{lmdif1()}}
+{\footnotesize\ttfamily subroutine lmdif1 (\begin{DoxyParamCaption}\item[{external}]{fcn,  }\item[{integer ( kind = 4 )}]{m,  }\item[{integer ( kind = 4 )}]{n,  }\item[{real ( kind = 8 ), dimension(n)}]{x,  }\item[{real ( kind = 8 ), dimension(m)}]{xdat,  }\item[{real ( kind = 8 ), dimension(m)}]{ydat,  }\item[{real ( kind = 8 ), dimension(m)}]{fvec,  }\item[{real ( kind = 8 )}]{tol,  }\item[{integer ( kind = 4 )}]{info }\end{DoxyParamCaption})}
+
+
+
+Definition at line 3462 of file minpack.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{minpack_8f95_a700bf6f1bdcace537df37252fd26c723_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{minpack_8f95_a1dc1e9adda30350383f28f6cc6361365}\label{minpack_8f95_a1dc1e9adda30350383f28f6cc6361365}} 
+\index{minpack.\+f95@{minpack.\+f95}!lmpar@{lmpar}}
+\index{lmpar@{lmpar}!minpack.\+f95@{minpack.\+f95}}
+\subsubsection{\texorpdfstring{lmpar()}{lmpar()}}
+{\footnotesize\ttfamily subroutine lmpar (\begin{DoxyParamCaption}\item[{integer ( kind = 4 )}]{n,  }\item[{real ( kind = 8 ), dimension(ldr,n)}]{r,  }\item[{integer ( kind = 4 )}]{ldr,  }\item[{integer ( kind = 4 ), dimension(n)}]{ipvt,  }\item[{real ( kind = 8 ), dimension(n)}]{diag,  }\item[{real ( kind = 8 ), dimension(n)}]{qtb,  }\item[{real ( kind = 8 )}]{delta,  }\item[{real ( kind = 8 )}]{par,  }\item[{real ( kind = 8 ), dimension(n)}]{x,  }\item[{real ( kind = 8 ), dimension(n)}]{sdiag }\end{DoxyParamCaption})}
+
+
+
+Definition at line 3602 of file minpack.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=200pt]{minpack_8f95_a1dc1e9adda30350383f28f6cc6361365_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{minpack_8f95_a178ff688f77b7192504790b6741ecd4d}\label{minpack_8f95_a178ff688f77b7192504790b6741ecd4d}} 
+\index{minpack.\+f95@{minpack.\+f95}!lmstr@{lmstr}}
+\index{lmstr@{lmstr}!minpack.\+f95@{minpack.\+f95}}
+\subsubsection{\texorpdfstring{lmstr()}{lmstr()}}
+{\footnotesize\ttfamily subroutine lmstr (\begin{DoxyParamCaption}\item[{external}]{fcn,  }\item[{integer ( kind = 4 )}]{m,  }\item[{integer ( kind = 4 )}]{n,  }\item[{real ( kind = 8 ), dimension(n)}]{x,  }\item[{real ( kind = 8 ), dimension(m)}]{fvec,  }\item[{real ( kind = 8 ), dimension(ldfjac,n)}]{fjac,  }\item[{integer ( kind = 4 )}]{ldfjac,  }\item[{real ( kind = 8 )}]{ftol,  }\item[{real ( kind = 8 )}]{xtol,  }\item[{real ( kind = 8 )}]{gtol,  }\item[{integer ( kind = 4 )}]{maxfev,  }\item[{real ( kind = 8 ), dimension(n)}]{diag,  }\item[{integer ( kind = 4 )}]{mode,  }\item[{real ( kind = 8 )}]{factor,  }\item[{integer ( kind = 4 )}]{nprint,  }\item[{integer ( kind = 4 )}]{info,  }\item[{integer ( kind = 4 )}]{nfev,  }\item[{integer ( kind = 4 )}]{njev,  }\item[{integer ( kind = 4 ), dimension(n)}]{ipvt,  }\item[{real ( kind = 8 ), dimension(n)}]{qtf }\end{DoxyParamCaption})}
+
+
+
+Definition at line 3907 of file minpack.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=278pt]{minpack_8f95_a178ff688f77b7192504790b6741ecd4d_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{minpack_8f95_acee42ee803b3870261fa529dc123a892}\label{minpack_8f95_acee42ee803b3870261fa529dc123a892}} 
+\index{minpack.\+f95@{minpack.\+f95}!lmstr1@{lmstr1}}
+\index{lmstr1@{lmstr1}!minpack.\+f95@{minpack.\+f95}}
+\subsubsection{\texorpdfstring{lmstr1()}{lmstr1()}}
+{\footnotesize\ttfamily subroutine lmstr1 (\begin{DoxyParamCaption}\item[{external}]{fcn,  }\item[{integer ( kind = 4 )}]{m,  }\item[{integer ( kind = 4 )}]{n,  }\item[{real ( kind = 8 ), dimension(n)}]{x,  }\item[{real ( kind = 8 ), dimension(m)}]{fvec,  }\item[{real ( kind = 8 ), dimension(ldfjac,n)}]{fjac,  }\item[{integer ( kind = 4 )}]{ldfjac,  }\item[{real ( kind = 8 )}]{tol,  }\item[{integer ( kind = 4 )}]{info }\end{DoxyParamCaption})}
+
+
+
+Definition at line 4455 of file minpack.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{minpack_8f95_acee42ee803b3870261fa529dc123a892_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{minpack_8f95_a12e8db1e181463d5c3af21f2b1b6b5a7}\label{minpack_8f95_a12e8db1e181463d5c3af21f2b1b6b5a7}} 
+\index{minpack.\+f95@{minpack.\+f95}!qform@{qform}}
+\index{qform@{qform}!minpack.\+f95@{minpack.\+f95}}
+\subsubsection{\texorpdfstring{qform()}{qform()}}
+{\footnotesize\ttfamily subroutine qform (\begin{DoxyParamCaption}\item[{integer ( kind = 4 )}]{m,  }\item[{integer ( kind = 4 )}]{n,  }\item[{real ( kind = 8 ), dimension(ldq,m)}]{q,  }\item[{integer ( kind = 4 )}]{ldq }\end{DoxyParamCaption})}
+
+
+
+Definition at line 4626 of file minpack.\+f95.
+
+\mbox{\Hypertarget{minpack_8f95_a64d35f73f2a85378c24dd7b99ddb0c0f}\label{minpack_8f95_a64d35f73f2a85378c24dd7b99ddb0c0f}} 
+\index{minpack.\+f95@{minpack.\+f95}!qrfac@{qrfac}}
+\index{qrfac@{qrfac}!minpack.\+f95@{minpack.\+f95}}
+\subsubsection{\texorpdfstring{qrfac()}{qrfac()}}
+{\footnotesize\ttfamily subroutine qrfac (\begin{DoxyParamCaption}\item[{integer ( kind = 4 )}]{m,  }\item[{integer ( kind = 4 )}]{n,  }\item[{real ( kind = 8 ), dimension(lda,n)}]{a,  }\item[{integer ( kind = 4 )}]{lda,  }\item[{logical}]{pivot,  }\item[{integer ( kind = 4 ), dimension(lipvt)}]{ipvt,  }\item[{integer ( kind = 4 )}]{lipvt,  }\item[{real ( kind = 8 ), dimension(n)}]{rdiag,  }\item[{real ( kind = 8 ), dimension(n)}]{acnorm }\end{DoxyParamCaption})}
+
+
+
+Definition at line 4727 of file minpack.\+f95.
+
+\mbox{\Hypertarget{minpack_8f95_a0dd208e826a2526722a40eab1724ac83}\label{minpack_8f95_a0dd208e826a2526722a40eab1724ac83}} 
+\index{minpack.\+f95@{minpack.\+f95}!qrsolv@{qrsolv}}
+\index{qrsolv@{qrsolv}!minpack.\+f95@{minpack.\+f95}}
+\subsubsection{\texorpdfstring{qrsolv()}{qrsolv()}}
+{\footnotesize\ttfamily subroutine qrsolv (\begin{DoxyParamCaption}\item[{integer ( kind = 4 )}]{n,  }\item[{real ( kind = 8 ), dimension(ldr,n)}]{r,  }\item[{integer ( kind = 4 )}]{ldr,  }\item[{integer ( kind = 4 ), dimension(n)}]{ipvt,  }\item[{real ( kind = 8 ), dimension(n)}]{diag,  }\item[{real ( kind = 8 ), dimension(n)}]{qtb,  }\item[{real ( kind = 8 ), dimension(n)}]{x,  }\item[{real ( kind = 8 ), dimension(n)}]{sdiag }\end{DoxyParamCaption})}
+
+
+
+Definition at line 4921 of file minpack.\+f95.
+
+\mbox{\Hypertarget{minpack_8f95_ab7f6e61d92cfd9ea516435ad523b989b}\label{minpack_8f95_ab7f6e61d92cfd9ea516435ad523b989b}} 
+\index{minpack.\+f95@{minpack.\+f95}!r1mpyq@{r1mpyq}}
+\index{r1mpyq@{r1mpyq}!minpack.\+f95@{minpack.\+f95}}
+\subsubsection{\texorpdfstring{r1mpyq()}{r1mpyq()}}
+{\footnotesize\ttfamily subroutine r1mpyq (\begin{DoxyParamCaption}\item[{integer ( kind = 4 )}]{m,  }\item[{integer ( kind = 4 )}]{n,  }\item[{real ( kind = 8 ), dimension(lda,n)}]{a,  }\item[{integer ( kind = 4 )}]{lda,  }\item[{real ( kind = 8 ), dimension(n)}]{v,  }\item[{real ( kind = 8 ), dimension(n)}]{w }\end{DoxyParamCaption})}
+
+
+
+Definition at line 5139 of file minpack.\+f95.
+
+\mbox{\Hypertarget{minpack_8f95_a8ff726029b3ff9037b390910744ee58b}\label{minpack_8f95_a8ff726029b3ff9037b390910744ee58b}} 
+\index{minpack.\+f95@{minpack.\+f95}!r1updt@{r1updt}}
+\index{r1updt@{r1updt}!minpack.\+f95@{minpack.\+f95}}
+\subsubsection{\texorpdfstring{r1updt()}{r1updt()}}
+{\footnotesize\ttfamily subroutine r1updt (\begin{DoxyParamCaption}\item[{integer ( kind = 4 )}]{m,  }\item[{integer ( kind = 4 )}]{n,  }\item[{real ( kind = 8 ), dimension(ls)}]{s,  }\item[{integer ( kind = 4 )}]{ls,  }\item[{real ( kind = 8 ), dimension(m)}]{u,  }\item[{real ( kind = 8 ), dimension(n)}]{v,  }\item[{real ( kind = 8 ), dimension(m)}]{w,  }\item[{logical}]{sing }\end{DoxyParamCaption})}
+
+
+
+Definition at line 5250 of file minpack.\+f95.
+
+\mbox{\Hypertarget{minpack_8f95_adc196cc5030b2eb1660c061fd85bfe0a}\label{minpack_8f95_adc196cc5030b2eb1660c061fd85bfe0a}} 
+\index{minpack.\+f95@{minpack.\+f95}!r8vec\+\_\+print@{r8vec\+\_\+print}}
+\index{r8vec\+\_\+print@{r8vec\+\_\+print}!minpack.\+f95@{minpack.\+f95}}
+\subsubsection{\texorpdfstring{r8vec\+\_\+print()}{r8vec\_print()}}
+{\footnotesize\ttfamily subroutine r8vec\+\_\+print (\begin{DoxyParamCaption}\item[{integer ( kind = 4 )}]{n,  }\item[{real ( kind = 8 ), dimension(n)}]{a,  }\item[{character ( len = $\ast$ )}]{title }\end{DoxyParamCaption})}
+
+
+
+Definition at line 5484 of file minpack.\+f95.
+
+\mbox{\Hypertarget{minpack_8f95_adbcfef20d552d8c5e7dc5925c975eb23}\label{minpack_8f95_adbcfef20d552d8c5e7dc5925c975eb23}} 
+\index{minpack.\+f95@{minpack.\+f95}!rwupdt@{rwupdt}}
+\index{rwupdt@{rwupdt}!minpack.\+f95@{minpack.\+f95}}
+\subsubsection{\texorpdfstring{rwupdt()}{rwupdt()}}
+{\footnotesize\ttfamily subroutine rwupdt (\begin{DoxyParamCaption}\item[{integer ( kind = 4 )}]{n,  }\item[{real ( kind = 8 ), dimension(ldr,n)}]{r,  }\item[{integer ( kind = 4 )}]{ldr,  }\item[{real ( kind = 8 ), dimension(n)}]{w,  }\item[{real ( kind = 8 ), dimension(n)}]{b,  }\item[{real ( kind = 8 )}]{alpha,  }\item[{real ( kind = 8 ), dimension(n)}]{c,  }\item[{real ( kind = 8 ), dimension(n)}]{s }\end{DoxyParamCaption})}
+
+
+
+Definition at line 5531 of file minpack.\+f95.
+
+\mbox{\Hypertarget{minpack_8f95_a44fdaa08281ed3009542bc9257fa965d}\label{minpack_8f95_a44fdaa08281ed3009542bc9257fa965d}} 
+\index{minpack.\+f95@{minpack.\+f95}!timestamp@{timestamp}}
+\index{timestamp@{timestamp}!minpack.\+f95@{minpack.\+f95}}
+\subsubsection{\texorpdfstring{timestamp()}{timestamp()}}
+{\footnotesize\ttfamily subroutine timestamp (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 5657 of file minpack.\+f95.
+

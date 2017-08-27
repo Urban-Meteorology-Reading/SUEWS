@@ -1,0 +1,80 @@
+\hypertarget{_s_u_e_w_s___time_related_subroutines_8f95}{}\section{S\+U\+E\+W\+S\+\_\+\+Time\+Related\+Subroutines.\+f95 File Reference}
+\label{_s_u_e_w_s___time_related_subroutines_8f95}\index{S\+U\+E\+W\+S\+\_\+\+Time\+Related\+Subroutines.\+f95@{S\+U\+E\+W\+S\+\_\+\+Time\+Related\+Subroutines.\+f95}}
+\subsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \hyperlink{_s_u_e_w_s___time_related_subroutines_8f95_accca788adc351c09ee533486e596087f}{day2month} (b, mb, md, seas, year, latitude)
+\item 
+subroutine \hyperlink{_s_u_e_w_s___time_related_subroutines_8f95_afdee38b1c29d0a50a81cd92530f44dd4}{month2day} (mon, ne, k, b)
+\item 
+subroutine \hyperlink{_s_u_e_w_s___time_related_subroutines_8f95_a588412655d85d00760c060237b7d6675}{leapyearcalc} (year\+\_\+int, nro\+Days)
+\item 
+subroutine \hyperlink{_s_u_e_w_s___time_related_subroutines_8f95_a6159824d400b46f56440f07f15e9dca6}{day\+\_\+of\+\_\+week} (D\+A\+TE, M\+O\+N\+TH, Y\+E\+AR, D\+OW)
+\item 
+subroutine \hyperlink{_s_u_e_w_s___time_related_subroutines_8f95_ae44eae3097f823efa27d37cb4bdf1a1c}{dectime\+\_\+to\+\_\+timevec} (dectime, H\+O\+U\+RS, M\+I\+NS, S\+E\+CS)
+\item 
+subroutine \hyperlink{_s_u_e_w_s___time_related_subroutines_8f95_aa942778e50079323e7fb7ede6f63ebce}{daylen} (D\+OY, X\+L\+AT, D\+A\+YL, D\+EC, S\+N\+DN, S\+N\+UP)
+\end{DoxyCompactItemize}
+
+
+\subsection{Function/\+Subroutine Documentation}
+\mbox{\Hypertarget{_s_u_e_w_s___time_related_subroutines_8f95_accca788adc351c09ee533486e596087f}\label{_s_u_e_w_s___time_related_subroutines_8f95_accca788adc351c09ee533486e596087f}} 
+\index{S\+U\+E\+W\+S\+\_\+\+Time\+Related\+Subroutines.\+f95@{S\+U\+E\+W\+S\+\_\+\+Time\+Related\+Subroutines.\+f95}!day2month@{day2month}}
+\index{day2month@{day2month}!S\+U\+E\+W\+S\+\_\+\+Time\+Related\+Subroutines.\+f95@{S\+U\+E\+W\+S\+\_\+\+Time\+Related\+Subroutines.\+f95}}
+\subsubsection{\texorpdfstring{day2month()}{day2month()}}
+{\footnotesize\ttfamily subroutine day2month (\begin{DoxyParamCaption}\item[{integer}]{b,  }\item[{integer}]{mb,  }\item[{integer}]{md,  }\item[{integer}]{seas,  }\item[{integer}]{year,  }\item[{real (kind(1d0))}]{latitude }\end{DoxyParamCaption})}
+
+
+
+Definition at line 25 of file S\+U\+E\+W\+S\+\_\+\+Time\+Related\+Subroutines.\+f95.
+
+\mbox{\Hypertarget{_s_u_e_w_s___time_related_subroutines_8f95_a6159824d400b46f56440f07f15e9dca6}\label{_s_u_e_w_s___time_related_subroutines_8f95_a6159824d400b46f56440f07f15e9dca6}} 
+\index{S\+U\+E\+W\+S\+\_\+\+Time\+Related\+Subroutines.\+f95@{S\+U\+E\+W\+S\+\_\+\+Time\+Related\+Subroutines.\+f95}!day\+\_\+of\+\_\+week@{day\+\_\+of\+\_\+week}}
+\index{day\+\_\+of\+\_\+week@{day\+\_\+of\+\_\+week}!S\+U\+E\+W\+S\+\_\+\+Time\+Related\+Subroutines.\+f95@{S\+U\+E\+W\+S\+\_\+\+Time\+Related\+Subroutines.\+f95}}
+\subsubsection{\texorpdfstring{day\+\_\+of\+\_\+week()}{day\_of\_week()}}
+{\footnotesize\ttfamily subroutine day\+\_\+of\+\_\+week (\begin{DoxyParamCaption}\item[{integer}]{D\+A\+TE,  }\item[{integer}]{M\+O\+N\+TH,  }\item[{integer}]{Y\+E\+AR,  }\item[{integer}]{D\+OW }\end{DoxyParamCaption})}
+
+
+
+Definition at line 152 of file S\+U\+E\+W\+S\+\_\+\+Time\+Related\+Subroutines.\+f95.
+
+\mbox{\Hypertarget{_s_u_e_w_s___time_related_subroutines_8f95_aa942778e50079323e7fb7ede6f63ebce}\label{_s_u_e_w_s___time_related_subroutines_8f95_aa942778e50079323e7fb7ede6f63ebce}} 
+\index{S\+U\+E\+W\+S\+\_\+\+Time\+Related\+Subroutines.\+f95@{S\+U\+E\+W\+S\+\_\+\+Time\+Related\+Subroutines.\+f95}!daylen@{daylen}}
+\index{daylen@{daylen}!S\+U\+E\+W\+S\+\_\+\+Time\+Related\+Subroutines.\+f95@{S\+U\+E\+W\+S\+\_\+\+Time\+Related\+Subroutines.\+f95}}
+\subsubsection{\texorpdfstring{daylen()}{daylen()}}
+{\footnotesize\ttfamily subroutine daylen (\begin{DoxyParamCaption}\item[{integer}]{D\+OY,  }\item[{real(kind(1d0))}]{X\+L\+AT,  }\item[{real(kind(1d0))}]{D\+A\+YL,  }\item[{real(kind(1d0))}]{D\+EC,  }\item[{real(kind(1d0))}]{S\+N\+DN,  }\item[{real(kind(1d0))}]{S\+N\+UP }\end{DoxyParamCaption})}
+
+
+
+Definition at line 209 of file S\+U\+E\+W\+S\+\_\+\+Time\+Related\+Subroutines.\+f95.
+
+\mbox{\Hypertarget{_s_u_e_w_s___time_related_subroutines_8f95_ae44eae3097f823efa27d37cb4bdf1a1c}\label{_s_u_e_w_s___time_related_subroutines_8f95_ae44eae3097f823efa27d37cb4bdf1a1c}} 
+\index{S\+U\+E\+W\+S\+\_\+\+Time\+Related\+Subroutines.\+f95@{S\+U\+E\+W\+S\+\_\+\+Time\+Related\+Subroutines.\+f95}!dectime\+\_\+to\+\_\+timevec@{dectime\+\_\+to\+\_\+timevec}}
+\index{dectime\+\_\+to\+\_\+timevec@{dectime\+\_\+to\+\_\+timevec}!S\+U\+E\+W\+S\+\_\+\+Time\+Related\+Subroutines.\+f95@{S\+U\+E\+W\+S\+\_\+\+Time\+Related\+Subroutines.\+f95}}
+\subsubsection{\texorpdfstring{dectime\+\_\+to\+\_\+timevec()}{dectime\_to\_timevec()}}
+{\footnotesize\ttfamily subroutine dectime\+\_\+to\+\_\+timevec (\begin{DoxyParamCaption}\item[{real(kind(1d0))}]{dectime,  }\item[{integer}]{H\+O\+U\+RS,  }\item[{integer}]{M\+I\+NS,  }\item[{real(kind(1d0))}]{S\+E\+CS }\end{DoxyParamCaption})}
+
+
+
+Definition at line 181 of file S\+U\+E\+W\+S\+\_\+\+Time\+Related\+Subroutines.\+f95.
+
+\mbox{\Hypertarget{_s_u_e_w_s___time_related_subroutines_8f95_a588412655d85d00760c060237b7d6675}\label{_s_u_e_w_s___time_related_subroutines_8f95_a588412655d85d00760c060237b7d6675}} 
+\index{S\+U\+E\+W\+S\+\_\+\+Time\+Related\+Subroutines.\+f95@{S\+U\+E\+W\+S\+\_\+\+Time\+Related\+Subroutines.\+f95}!leapyearcalc@{leapyearcalc}}
+\index{leapyearcalc@{leapyearcalc}!S\+U\+E\+W\+S\+\_\+\+Time\+Related\+Subroutines.\+f95@{S\+U\+E\+W\+S\+\_\+\+Time\+Related\+Subroutines.\+f95}}
+\subsubsection{\texorpdfstring{leapyearcalc()}{leapyearcalc()}}
+{\footnotesize\ttfamily subroutine leapyearcalc (\begin{DoxyParamCaption}\item[{integer}]{year\+\_\+int,  }\item[{integer}]{nro\+Days }\end{DoxyParamCaption})}
+
+
+
+Definition at line 135 of file S\+U\+E\+W\+S\+\_\+\+Time\+Related\+Subroutines.\+f95.
+
+\mbox{\Hypertarget{_s_u_e_w_s___time_related_subroutines_8f95_afdee38b1c29d0a50a81cd92530f44dd4}\label{_s_u_e_w_s___time_related_subroutines_8f95_afdee38b1c29d0a50a81cd92530f44dd4}} 
+\index{S\+U\+E\+W\+S\+\_\+\+Time\+Related\+Subroutines.\+f95@{S\+U\+E\+W\+S\+\_\+\+Time\+Related\+Subroutines.\+f95}!month2day@{month2day}}
+\index{month2day@{month2day}!S\+U\+E\+W\+S\+\_\+\+Time\+Related\+Subroutines.\+f95@{S\+U\+E\+W\+S\+\_\+\+Time\+Related\+Subroutines.\+f95}}
+\subsubsection{\texorpdfstring{month2day()}{month2day()}}
+{\footnotesize\ttfamily subroutine month2day (\begin{DoxyParamCaption}\item[{integer}]{mon,  }\item[{integer}]{ne,  }\item[{integer}]{k,  }\item[{integer}]{b }\end{DoxyParamCaption})}
+
+
+
+Definition at line 102 of file S\+U\+E\+W\+S\+\_\+\+Time\+Related\+Subroutines.\+f95.
+

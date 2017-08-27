@@ -1,0 +1,8 @@
+<map id="hybrd" name="hybrd">
+<area shape="rect" id="node2" href="$minpack_8f95.html#a327303574ddecf90e74bf7aaa64b5509" title="fdjac1" alt="" coords="112,5,169,31"/>
+<area shape="rect" id="node3" href="$minpack_8f95.html#a64d35f73f2a85378c24dd7b99ddb0c0f" title="qrfac" alt="" coords="115,55,166,80"/>
+<area shape="rect" id="node4" href="$minpack_8f95.html#a12e8db1e181463d5c3af21f2b1b6b5a7" title="qform" alt="" coords="113,104,169,129"/>
+<area shape="rect" id="node5" href="$minpack_8f95.html#ab5a1319962e4855e0a2b7a7431085275" title="dogleg" alt="" coords="110,153,172,179"/>
+<area shape="rect" id="node6" href="$minpack_8f95.html#a8ff726029b3ff9037b390910744ee58b" title="r1updt" alt="" coords="111,203,170,228"/>
+<area shape="rect" id="node7" href="$minpack_8f95.html#ab7f6e61d92cfd9ea516435ad523b989b" title="r1mpyq" alt="" coords="108,252,174,277"/>
+</map>

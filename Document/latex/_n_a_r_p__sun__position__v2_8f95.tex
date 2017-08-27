@@ -1,0 +1,249 @@
+\hypertarget{_n_a_r_p__sun__position__v2_8f95}{}\section{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95 File Reference}
+\label{_n_a_r_p__sun__position__v2_8f95}\index{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95@{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95}}
+\subsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \hyperlink{_n_a_r_p__sun__position__v2_8f95_a2b388ff5a9cd5447020b0ef32065c86b}{sun\+\_\+position} (year, idectime, U\+TC, locationlatitude, locationlongitude, locationaltitude, sunazimuth, sunzenith)
+\item 
+subroutine \hyperlink{_n_a_r_p__sun__position__v2_8f95_abca94c8e1d4fac1a6f3d41cb0f89157f}{julian\+\_\+calculation} (year, month, day, hour, min, sec, U\+TC, juliancentury, julianday, julianephemeris\+\_\+century, julianephemeris\+\_\+day, julianephemeris\+\_\+millenium)
+\item 
+subroutine \hyperlink{_n_a_r_p__sun__position__v2_8f95_a92e554f1813215c40dce31d2ce961649}{earth\+\_\+heliocentric\+\_\+position\+\_\+calculation} (julianephemeris\+\_\+millenium, earth\+\_\+heliocentric\+\_\+positionlatitude, earth\+\_\+heliocentric\+\_\+positionlongitude, earth\+\_\+heliocentric\+\_\+positionradius)
+\item 
+subroutine \hyperlink{_n_a_r_p__sun__position__v2_8f95_a86f9dbc3900dfe3ace869bf59bc6de68}{sun\+\_\+geocentric\+\_\+position\+\_\+calculation} (earth\+\_\+heliocentric\+\_\+positionlongitude, earth\+\_\+heliocentric\+\_\+positionlatitude, sun\+\_\+geocentric\+\_\+positionlatitude, sun\+\_\+geocentric\+\_\+positionlongitude)
+\item 
+subroutine \hyperlink{_n_a_r_p__sun__position__v2_8f95_afd4a13d3b6e58ce419603face1516751}{nutation\+\_\+calculation} (julianephemeris\+\_\+century, nutationlongitude, nutationobliquity)
+\item 
+subroutine \hyperlink{_n_a_r_p__sun__position__v2_8f95_ac86a544be72626a952ea0d3f32e1a2e6}{corr\+\_\+obliquity\+\_\+calculation} (julianephemeris\+\_\+millenium, nutationobliquity, corr\+\_\+obliquity)
+\item 
+subroutine \hyperlink{_n_a_r_p__sun__position__v2_8f95_ade6217dd76a6d6c6b714ece4c7d3d3e3}{abberation\+\_\+correction\+\_\+calculation} (earth\+\_\+heliocentric\+\_\+positionradius, aberration\+\_\+correction)
+\item 
+subroutine \hyperlink{_n_a_r_p__sun__position__v2_8f95_acff843ecba5d172c4f05df7eede5ac9e}{apparent\+\_\+sun\+\_\+longitude\+\_\+calculation} (sun\+\_\+geocentric\+\_\+positionlongitude, nutationlongitude, aberration\+\_\+correction, apparent\+\_\+sun\+\_\+longitude)
+\item 
+subroutine \hyperlink{_n_a_r_p__sun__position__v2_8f95_a0ed15a11ed5c5996a2c4fbe71b31d52d}{apparent\+\_\+stime\+\_\+at\+\_\+greenwich\+\_\+calculation} (julianday, juliancentury, nutationlongitude, corr\+\_\+obliquity, apparent\+\_\+stime\+\_\+at\+\_\+greenwich)
+\item 
+subroutine \hyperlink{_n_a_r_p__sun__position__v2_8f95_a2f8a78070378bcea144d0fac36d574f6}{sun\+\_\+rigth\+\_\+ascension\+\_\+calculation} (apparent\+\_\+sun\+\_\+longitude, corr\+\_\+obliquity, sun\+\_\+geocentric\+\_\+positionlatitude, sun\+\_\+rigth\+\_\+ascension)
+\item 
+subroutine \hyperlink{_n_a_r_p__sun__position__v2_8f95_a481de193e415240af11e74ec22e50570}{sun\+\_\+geocentric\+\_\+declination\+\_\+calculation} (apparent\+\_\+sun\+\_\+longitude, corr\+\_\+obliquity, sun\+\_\+geocentric\+\_\+positionlatitude, sun\+\_\+geocentric\+\_\+declination)
+\item 
+subroutine \hyperlink{_n_a_r_p__sun__position__v2_8f95_a424caca5b8ba1c7b5f230c2808d623bd}{observer\+\_\+local\+\_\+hour\+\_\+calculation} (apparent\+\_\+stime\+\_\+at\+\_\+greenwich, locationlongitude, sun\+\_\+rigth\+\_\+ascension, observer\+\_\+local\+\_\+hour)
+\item 
+subroutine \hyperlink{_n_a_r_p__sun__position__v2_8f95_ace8944aaa83c0cdac9ffc5bf8569f2fe}{topocentric\+\_\+sun\+\_\+position\+\_\+calculate} (topocentric\+\_\+sun\+\_\+positionrigth\+\_\+ascension, topocentric\+\_\+sun\+\_\+positionrigth\+\_\+ascension\+\_\+parallax, topocentric\+\_\+sun\+\_\+positiondeclination, locationaltitude, locationlatitude, observer\+\_\+local\+\_\+hour, sun\+\_\+rigth\+\_\+ascension, sun\+\_\+geocentric\+\_\+declination, earth\+\_\+heliocentric\+\_\+positionradius)
+\item 
+subroutine \hyperlink{_n_a_r_p__sun__position__v2_8f95_ae9ec08d0b901309126e9f9750f1beaf5}{topocentric\+\_\+local\+\_\+hour\+\_\+calculate} (observer\+\_\+local\+\_\+hour, topocentric\+\_\+sun\+\_\+positionrigth\+\_\+ascension\+\_\+parallax, topocentric\+\_\+local\+\_\+hour)
+\item 
+subroutine \hyperlink{_n_a_r_p__sun__position__v2_8f95_a71be86eba8ca05519a30c0544be877e8}{sun\+\_\+topocentric\+\_\+zenith\+\_\+angle\+\_\+calculate} (locationlatitude, topocentric\+\_\+sun\+\_\+positiondeclination, topocentric\+\_\+local\+\_\+hour, sunazimuth, sunzenith)
+\item 
+real(kind(1d0)) function \hyperlink{_n_a_r_p__sun__position__v2_8f95_a000bdf57aa5a15bc65fc0b3521f461e7}{set\+\_\+to\+\_\+range} (var)
+\end{DoxyCompactItemize}
+
+
+\subsection{Function/\+Subroutine Documentation}
+\mbox{\Hypertarget{_n_a_r_p__sun__position__v2_8f95_ade6217dd76a6d6c6b714ece4c7d3d3e3}\label{_n_a_r_p__sun__position__v2_8f95_ade6217dd76a6d6c6b714ece4c7d3d3e3}} 
+\index{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95@{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95}!abberation\+\_\+correction\+\_\+calculation@{abberation\+\_\+correction\+\_\+calculation}}
+\index{abberation\+\_\+correction\+\_\+calculation@{abberation\+\_\+correction\+\_\+calculation}!N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95@{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95}}
+\subsubsection{\texorpdfstring{abberation\+\_\+correction\+\_\+calculation()}{abberation\_correction\_calculation()}}
+{\footnotesize\ttfamily subroutine sun\+\_\+position\+::abberation\+\_\+correction\+\_\+calculation (\begin{DoxyParamCaption}\item[{real(kind(1d0)), intent(in)}]{earth\+\_\+heliocentric\+\_\+positionradius,  }\item[{real(kind(1d0)), intent(out)}]{aberration\+\_\+correction }\end{DoxyParamCaption})}
+
+
+
+Definition at line 503 of file N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95.
+
+\mbox{\Hypertarget{_n_a_r_p__sun__position__v2_8f95_a0ed15a11ed5c5996a2c4fbe71b31d52d}\label{_n_a_r_p__sun__position__v2_8f95_a0ed15a11ed5c5996a2c4fbe71b31d52d}} 
+\index{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95@{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95}!apparent\+\_\+stime\+\_\+at\+\_\+greenwich\+\_\+calculation@{apparent\+\_\+stime\+\_\+at\+\_\+greenwich\+\_\+calculation}}
+\index{apparent\+\_\+stime\+\_\+at\+\_\+greenwich\+\_\+calculation@{apparent\+\_\+stime\+\_\+at\+\_\+greenwich\+\_\+calculation}!N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95@{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95}}
+\subsubsection{\texorpdfstring{apparent\+\_\+stime\+\_\+at\+\_\+greenwich\+\_\+calculation()}{apparent\_stime\_at\_greenwich\_calculation()}}
+{\footnotesize\ttfamily subroutine sun\+\_\+position\+::apparent\+\_\+stime\+\_\+at\+\_\+greenwich\+\_\+calculation (\begin{DoxyParamCaption}\item[{real(kind(1d0)), intent(in)}]{julianday,  }\item[{real(kind(1d0)), intent(in)}]{juliancentury,  }\item[{real(kind(1d0)), intent(in)}]{nutationlongitude,  }\item[{real(kind(1d0)), intent(in)}]{corr\+\_\+obliquity,  }\item[{real(kind(1d0)), intent(out)}]{apparent\+\_\+stime\+\_\+at\+\_\+greenwich }\end{DoxyParamCaption})}
+
+
+
+Definition at line 532 of file N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=340pt]{_n_a_r_p__sun__position__v2_8f95_a0ed15a11ed5c5996a2c4fbe71b31d52d_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{_n_a_r_p__sun__position__v2_8f95_acff843ecba5d172c4f05df7eede5ac9e}\label{_n_a_r_p__sun__position__v2_8f95_acff843ecba5d172c4f05df7eede5ac9e}} 
+\index{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95@{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95}!apparent\+\_\+sun\+\_\+longitude\+\_\+calculation@{apparent\+\_\+sun\+\_\+longitude\+\_\+calculation}}
+\index{apparent\+\_\+sun\+\_\+longitude\+\_\+calculation@{apparent\+\_\+sun\+\_\+longitude\+\_\+calculation}!N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95@{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95}}
+\subsubsection{\texorpdfstring{apparent\+\_\+sun\+\_\+longitude\+\_\+calculation()}{apparent\_sun\_longitude\_calculation()}}
+{\footnotesize\ttfamily subroutine sun\+\_\+position\+::apparent\+\_\+sun\+\_\+longitude\+\_\+calculation (\begin{DoxyParamCaption}\item[{real(kind(1d0)), intent(in)}]{sun\+\_\+geocentric\+\_\+positionlongitude,  }\item[{real(kind(1d0)), intent(in)}]{nutationlongitude,  }\item[{real(kind(1d0)), intent(in)}]{aberration\+\_\+correction,  }\item[{real(kind(1d0)), intent(out)}]{apparent\+\_\+sun\+\_\+longitude }\end{DoxyParamCaption})}
+
+
+
+Definition at line 517 of file N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95.
+
+\mbox{\Hypertarget{_n_a_r_p__sun__position__v2_8f95_ac86a544be72626a952ea0d3f32e1a2e6}\label{_n_a_r_p__sun__position__v2_8f95_ac86a544be72626a952ea0d3f32e1a2e6}} 
+\index{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95@{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95}!corr\+\_\+obliquity\+\_\+calculation@{corr\+\_\+obliquity\+\_\+calculation}}
+\index{corr\+\_\+obliquity\+\_\+calculation@{corr\+\_\+obliquity\+\_\+calculation}!N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95@{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95}}
+\subsubsection{\texorpdfstring{corr\+\_\+obliquity\+\_\+calculation()}{corr\_obliquity\_calculation()}}
+{\footnotesize\ttfamily subroutine sun\+\_\+position\+::corr\+\_\+obliquity\+\_\+calculation (\begin{DoxyParamCaption}\item[{real(kind(1d0)), intent(in)}]{julianephemeris\+\_\+millenium,  }\item[{real(kind(1d0)), intent(in)}]{nutationobliquity,  }\item[{real(kind(1d0)), intent(out)}]{corr\+\_\+obliquity }\end{DoxyParamCaption})}
+
+
+
+Definition at line 479 of file N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95.
+
+\mbox{\Hypertarget{_n_a_r_p__sun__position__v2_8f95_a92e554f1813215c40dce31d2ce961649}\label{_n_a_r_p__sun__position__v2_8f95_a92e554f1813215c40dce31d2ce961649}} 
+\index{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95@{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95}!earth\+\_\+heliocentric\+\_\+position\+\_\+calculation@{earth\+\_\+heliocentric\+\_\+position\+\_\+calculation}}
+\index{earth\+\_\+heliocentric\+\_\+position\+\_\+calculation@{earth\+\_\+heliocentric\+\_\+position\+\_\+calculation}!N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95@{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95}}
+\subsubsection{\texorpdfstring{earth\+\_\+heliocentric\+\_\+position\+\_\+calculation()}{earth\_heliocentric\_position\_calculation()}}
+{\footnotesize\ttfamily subroutine sun\+\_\+position\+::earth\+\_\+heliocentric\+\_\+position\+\_\+calculation (\begin{DoxyParamCaption}\item[{real(kind(1d0))}]{julianephemeris\+\_\+millenium,  }\item[{real(kind(1d0))}]{earth\+\_\+heliocentric\+\_\+positionlatitude,  }\item[{real(kind(1d0))}]{earth\+\_\+heliocentric\+\_\+positionlongitude,  }\item[{real(kind(1d0))}]{earth\+\_\+heliocentric\+\_\+positionradius }\end{DoxyParamCaption})}
+
+
+
+Definition at line 182 of file N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=299pt]{_n_a_r_p__sun__position__v2_8f95_a92e554f1813215c40dce31d2ce961649_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{_n_a_r_p__sun__position__v2_8f95_abca94c8e1d4fac1a6f3d41cb0f89157f}\label{_n_a_r_p__sun__position__v2_8f95_abca94c8e1d4fac1a6f3d41cb0f89157f}} 
+\index{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95@{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95}!julian\+\_\+calculation@{julian\+\_\+calculation}}
+\index{julian\+\_\+calculation@{julian\+\_\+calculation}!N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95@{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95}}
+\subsubsection{\texorpdfstring{julian\+\_\+calculation()}{julian\_calculation()}}
+{\footnotesize\ttfamily subroutine sun\+\_\+position\+::julian\+\_\+calculation (\begin{DoxyParamCaption}\item[{real(kind(1d0))}]{year,  }\item[{integer}]{month,  }\item[{integer}]{day,  }\item[{integer}]{hour,  }\item[{integer}]{min,  }\item[{real(kind(1d0))}]{sec,  }\item[{real(kind(1d0))}]{U\+TC,  }\item[{real(kind(1d0))}]{juliancentury,  }\item[{real(kind(1d0))}]{julianday,  }\item[{real(kind(1d0))}]{julianephemeris\+\_\+century,  }\item[{real(kind(1d0))}]{julianephemeris\+\_\+day,  }\item[{real(kind(1d0))}]{julianephemeris\+\_\+millenium }\end{DoxyParamCaption})}
+
+
+
+Definition at line 112 of file N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95.
+
+\mbox{\Hypertarget{_n_a_r_p__sun__position__v2_8f95_afd4a13d3b6e58ce419603face1516751}\label{_n_a_r_p__sun__position__v2_8f95_afd4a13d3b6e58ce419603face1516751}} 
+\index{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95@{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95}!nutation\+\_\+calculation@{nutation\+\_\+calculation}}
+\index{nutation\+\_\+calculation@{nutation\+\_\+calculation}!N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95@{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95}}
+\subsubsection{\texorpdfstring{nutation\+\_\+calculation()}{nutation\_calculation()}}
+{\footnotesize\ttfamily subroutine sun\+\_\+position\+::nutation\+\_\+calculation (\begin{DoxyParamCaption}\item[{real(kind(1d0)), intent(in)}]{julianephemeris\+\_\+century,  }\item[{real(kind(1d0))}]{nutationlongitude,  }\item[{real(kind(1d0))}]{nutationobliquity }\end{DoxyParamCaption})}
+
+
+
+Definition at line 383 of file N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95.
+
+\mbox{\Hypertarget{_n_a_r_p__sun__position__v2_8f95_a424caca5b8ba1c7b5f230c2808d623bd}\label{_n_a_r_p__sun__position__v2_8f95_a424caca5b8ba1c7b5f230c2808d623bd}} 
+\index{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95@{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95}!observer\+\_\+local\+\_\+hour\+\_\+calculation@{observer\+\_\+local\+\_\+hour\+\_\+calculation}}
+\index{observer\+\_\+local\+\_\+hour\+\_\+calculation@{observer\+\_\+local\+\_\+hour\+\_\+calculation}!N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95@{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95}}
+\subsubsection{\texorpdfstring{observer\+\_\+local\+\_\+hour\+\_\+calculation()}{observer\_local\_hour\_calculation()}}
+{\footnotesize\ttfamily subroutine sun\+\_\+position\+::observer\+\_\+local\+\_\+hour\+\_\+calculation (\begin{DoxyParamCaption}\item[{real(kind(1d0)), intent(in)}]{apparent\+\_\+stime\+\_\+at\+\_\+greenwich,  }\item[{real(kind(1d0)), intent(in)}]{locationlongitude,  }\item[{real(kind(1d0)), intent(in)}]{sun\+\_\+rigth\+\_\+ascension,  }\item[{real(kind(1d0)), intent(out)}]{observer\+\_\+local\+\_\+hour }\end{DoxyParamCaption})}
+
+
+
+Definition at line 600 of file N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=297pt]{_n_a_r_p__sun__position__v2_8f95_a424caca5b8ba1c7b5f230c2808d623bd_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{_n_a_r_p__sun__position__v2_8f95_a000bdf57aa5a15bc65fc0b3521f461e7}\label{_n_a_r_p__sun__position__v2_8f95_a000bdf57aa5a15bc65fc0b3521f461e7}} 
+\index{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95@{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95}!set\+\_\+to\+\_\+range@{set\+\_\+to\+\_\+range}}
+\index{set\+\_\+to\+\_\+range@{set\+\_\+to\+\_\+range}!N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95@{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95}}
+\subsubsection{\texorpdfstring{set\+\_\+to\+\_\+range()}{set\_to\_range()}}
+{\footnotesize\ttfamily real(kind(1d0)) function sun\+\_\+position\+::set\+\_\+to\+\_\+range (\begin{DoxyParamCaption}\item[{real(kind(1d0))}]{var }\end{DoxyParamCaption})}
+
+
+
+Definition at line 737 of file N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95.
+
+\mbox{\Hypertarget{_n_a_r_p__sun__position__v2_8f95_a481de193e415240af11e74ec22e50570}\label{_n_a_r_p__sun__position__v2_8f95_a481de193e415240af11e74ec22e50570}} 
+\index{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95@{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95}!sun\+\_\+geocentric\+\_\+declination\+\_\+calculation@{sun\+\_\+geocentric\+\_\+declination\+\_\+calculation}}
+\index{sun\+\_\+geocentric\+\_\+declination\+\_\+calculation@{sun\+\_\+geocentric\+\_\+declination\+\_\+calculation}!N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95@{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95}}
+\subsubsection{\texorpdfstring{sun\+\_\+geocentric\+\_\+declination\+\_\+calculation()}{sun\_geocentric\_declination\_calculation()}}
+{\footnotesize\ttfamily subroutine sun\+\_\+position\+::sun\+\_\+geocentric\+\_\+declination\+\_\+calculation (\begin{DoxyParamCaption}\item[{real(kind(1d0)), intent(in)}]{apparent\+\_\+sun\+\_\+longitude,  }\item[{real(kind(1d0)), intent(in)}]{corr\+\_\+obliquity,  }\item[{real(kind(1d0)), intent(in)}]{sun\+\_\+geocentric\+\_\+positionlatitude,  }\item[{real(kind(1d0)), intent(out)}]{sun\+\_\+geocentric\+\_\+declination }\end{DoxyParamCaption})}
+
+
+
+Definition at line 583 of file N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95.
+
+\mbox{\Hypertarget{_n_a_r_p__sun__position__v2_8f95_a86f9dbc3900dfe3ace869bf59bc6de68}\label{_n_a_r_p__sun__position__v2_8f95_a86f9dbc3900dfe3ace869bf59bc6de68}} 
+\index{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95@{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95}!sun\+\_\+geocentric\+\_\+position\+\_\+calculation@{sun\+\_\+geocentric\+\_\+position\+\_\+calculation}}
+\index{sun\+\_\+geocentric\+\_\+position\+\_\+calculation@{sun\+\_\+geocentric\+\_\+position\+\_\+calculation}!N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95@{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95}}
+\subsubsection{\texorpdfstring{sun\+\_\+geocentric\+\_\+position\+\_\+calculation()}{sun\_geocentric\_position\_calculation()}}
+{\footnotesize\ttfamily subroutine sun\+\_\+position\+::sun\+\_\+geocentric\+\_\+position\+\_\+calculation (\begin{DoxyParamCaption}\item[{real(kind(1d0)), intent(in)}]{earth\+\_\+heliocentric\+\_\+positionlongitude,  }\item[{real(kind(1d0)), intent(in)}]{earth\+\_\+heliocentric\+\_\+positionlatitude,  }\item[{real(kind(1d0))}]{sun\+\_\+geocentric\+\_\+positionlatitude,  }\item[{real(kind(1d0))}]{sun\+\_\+geocentric\+\_\+positionlongitude }\end{DoxyParamCaption})}
+
+
+
+Definition at line 364 of file N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=314pt]{_n_a_r_p__sun__position__v2_8f95_a86f9dbc3900dfe3ace869bf59bc6de68_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{_n_a_r_p__sun__position__v2_8f95_a2b388ff5a9cd5447020b0ef32065c86b}\label{_n_a_r_p__sun__position__v2_8f95_a2b388ff5a9cd5447020b0ef32065c86b}} 
+\index{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95@{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95}!sun\+\_\+position@{sun\+\_\+position}}
+\index{sun\+\_\+position@{sun\+\_\+position}!N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95@{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95}}
+\subsubsection{\texorpdfstring{sun\+\_\+position()}{sun\_position()}}
+{\footnotesize\ttfamily subroutine sun\+\_\+position (\begin{DoxyParamCaption}\item[{real(kind(1d0)), intent(in)}]{year,  }\item[{real(kind(1d0)), intent(in)}]{idectime,  }\item[{real(kind(1d0)), intent(in)}]{U\+TC,  }\item[{real(kind(1d0)), intent(in)}]{locationlatitude,  }\item[{real(kind(1d0)), intent(in)}]{locationlongitude,  }\item[{real(kind(1d0)), intent(in)}]{locationaltitude,  }\item[{real(kind(1d0)), intent(out)}]{sunazimuth,  }\item[{real(kind(1d0)), intent(out)}]{sunzenith }\end{DoxyParamCaption})}
+
+
+
+Definition at line 2 of file N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=550pt]{_n_a_r_p__sun__position__v2_8f95_a2b388ff5a9cd5447020b0ef32065c86b_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{_n_a_r_p__sun__position__v2_8f95_a2f8a78070378bcea144d0fac36d574f6}\label{_n_a_r_p__sun__position__v2_8f95_a2f8a78070378bcea144d0fac36d574f6}} 
+\index{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95@{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95}!sun\+\_\+rigth\+\_\+ascension\+\_\+calculation@{sun\+\_\+rigth\+\_\+ascension\+\_\+calculation}}
+\index{sun\+\_\+rigth\+\_\+ascension\+\_\+calculation@{sun\+\_\+rigth\+\_\+ascension\+\_\+calculation}!N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95@{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95}}
+\subsubsection{\texorpdfstring{sun\+\_\+rigth\+\_\+ascension\+\_\+calculation()}{sun\_rigth\_ascension\_calculation()}}
+{\footnotesize\ttfamily subroutine sun\+\_\+position\+::sun\+\_\+rigth\+\_\+ascension\+\_\+calculation (\begin{DoxyParamCaption}\item[{real(kind(1d0)), intent(in)}]{apparent\+\_\+sun\+\_\+longitude,  }\item[{real(kind(1d0)), intent(in)}]{corr\+\_\+obliquity,  }\item[{real(kind(1d0)), intent(in)}]{sun\+\_\+geocentric\+\_\+positionlatitude,  }\item[{real(kind(1d0)), intent(out)}]{sun\+\_\+rigth\+\_\+ascension }\end{DoxyParamCaption})}
+
+
+
+Definition at line 560 of file N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=298pt]{_n_a_r_p__sun__position__v2_8f95_a2f8a78070378bcea144d0fac36d574f6_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{_n_a_r_p__sun__position__v2_8f95_a71be86eba8ca05519a30c0544be877e8}\label{_n_a_r_p__sun__position__v2_8f95_a71be86eba8ca05519a30c0544be877e8}} 
+\index{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95@{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95}!sun\+\_\+topocentric\+\_\+zenith\+\_\+angle\+\_\+calculate@{sun\+\_\+topocentric\+\_\+zenith\+\_\+angle\+\_\+calculate}}
+\index{sun\+\_\+topocentric\+\_\+zenith\+\_\+angle\+\_\+calculate@{sun\+\_\+topocentric\+\_\+zenith\+\_\+angle\+\_\+calculate}!N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95@{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95}}
+\subsubsection{\texorpdfstring{sun\+\_\+topocentric\+\_\+zenith\+\_\+angle\+\_\+calculate()}{sun\_topocentric\_zenith\_angle\_calculate()}}
+{\footnotesize\ttfamily subroutine sun\+\_\+position\+::sun\+\_\+topocentric\+\_\+zenith\+\_\+angle\+\_\+calculate (\begin{DoxyParamCaption}\item[{real(kind(1d0)), intent(in)}]{locationlatitude,  }\item[{real(kind(1d0)), intent(in)}]{topocentric\+\_\+sun\+\_\+positiondeclination,  }\item[{real(kind(1d0)), intent(in)}]{topocentric\+\_\+local\+\_\+hour,  }\item[{real(kind(1d0))}]{sunazimuth,  }\item[{real(kind(1d0))}]{sunzenith }\end{DoxyParamCaption})}
+
+
+
+Definition at line 687 of file N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95.
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=309pt]{_n_a_r_p__sun__position__v2_8f95_a71be86eba8ca05519a30c0544be877e8_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{_n_a_r_p__sun__position__v2_8f95_ae9ec08d0b901309126e9f9750f1beaf5}\label{_n_a_r_p__sun__position__v2_8f95_ae9ec08d0b901309126e9f9750f1beaf5}} 
+\index{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95@{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95}!topocentric\+\_\+local\+\_\+hour\+\_\+calculate@{topocentric\+\_\+local\+\_\+hour\+\_\+calculate}}
+\index{topocentric\+\_\+local\+\_\+hour\+\_\+calculate@{topocentric\+\_\+local\+\_\+hour\+\_\+calculate}!N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95@{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95}}
+\subsubsection{\texorpdfstring{topocentric\+\_\+local\+\_\+hour\+\_\+calculate()}{topocentric\_local\_hour\_calculate()}}
+{\footnotesize\ttfamily subroutine sun\+\_\+position\+::topocentric\+\_\+local\+\_\+hour\+\_\+calculate (\begin{DoxyParamCaption}\item[{real(kind(1d0)), intent(in)}]{observer\+\_\+local\+\_\+hour,  }\item[{real(kind(1d0)), intent(in)}]{topocentric\+\_\+sun\+\_\+positionrigth\+\_\+ascension\+\_\+parallax,  }\item[{real(kind(1d0)), intent(out)}]{topocentric\+\_\+local\+\_\+hour }\end{DoxyParamCaption})}
+
+
+
+Definition at line 674 of file N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95.
+
+\mbox{\Hypertarget{_n_a_r_p__sun__position__v2_8f95_ace8944aaa83c0cdac9ffc5bf8569f2fe}\label{_n_a_r_p__sun__position__v2_8f95_ace8944aaa83c0cdac9ffc5bf8569f2fe}} 
+\index{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95@{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95}!topocentric\+\_\+sun\+\_\+position\+\_\+calculate@{topocentric\+\_\+sun\+\_\+position\+\_\+calculate}}
+\index{topocentric\+\_\+sun\+\_\+position\+\_\+calculate@{topocentric\+\_\+sun\+\_\+position\+\_\+calculate}!N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95@{N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95}}
+\subsubsection{\texorpdfstring{topocentric\+\_\+sun\+\_\+position\+\_\+calculate()}{topocentric\_sun\_position\_calculate()}}
+{\footnotesize\ttfamily subroutine sun\+\_\+position\+::topocentric\+\_\+sun\+\_\+position\+\_\+calculate (\begin{DoxyParamCaption}\item[{real(kind(1d0))}]{topocentric\+\_\+sun\+\_\+positionrigth\+\_\+ascension,  }\item[{real(kind(1d0))}]{topocentric\+\_\+sun\+\_\+positionrigth\+\_\+ascension\+\_\+parallax,  }\item[{real(kind(1d0))}]{topocentric\+\_\+sun\+\_\+positiondeclination,  }\item[{real(kind(1d0)), intent(in)}]{locationaltitude,  }\item[{real(kind(1d0)), intent(in)}]{locationlatitude,  }\item[{real(kind(1d0)), intent(in)}]{observer\+\_\+local\+\_\+hour,  }\item[{real(kind(1d0)), intent(in)}]{sun\+\_\+rigth\+\_\+ascension,  }\item[{real(kind(1d0)), intent(in)}]{sun\+\_\+geocentric\+\_\+declination,  }\item[{real(kind(1d0)), intent(in)}]{earth\+\_\+heliocentric\+\_\+positionradius }\end{DoxyParamCaption})}
+
+
+
+Definition at line 617 of file N\+A\+R\+P\+\_\+sun\+\_\+position\+\_\+v2.\+f95.
+

@@ -532,24 +532,24 @@
     startflag=0
   END SUBROUTINE NBL
 
-
-
-
-
-
-
   !------------------------------------------------------------------------
   !------------------------------------------------------------------------
   FUNCTION qsatf(T,PMB) RESULT(qsat)
     !       MRR, 1987
-    ! AT TEMP T (DEG C) AND PRESSURE PMB (MB), GET SATURATION SPECIFIC
+    ! AT TEMPERATURE T (DEG C) AND PRESSURE PMB (MB), GET SATURATION SPECIFIC
     !       HUMIDITY (KG/KG) FROM TETEN FORMULA
-    !$$$$$$     use mod_parameter
-    !$$$$$$     use mod_teten
-    USE gas
-    !$$$$$$     real (kind(1D0)):: T,es,qsat,pmb
+
     REAL (KIND(1D0))::T,es,qsat,PMB
-    REAL (KIND(1D0))::A=6.106, B=17.27, C=237.3  !Teten coefficients
+
+    REAL (KIND(1D0)),PARAMETER::&
+
+    !Teten coefficients
+    A=6.106,&
+    B=17.27,&
+    C=237.3,&
+    molar=0.028965,& !Dry air molar fraction in kg/mol
+         molar_wat_vap=0.0180153 !Molar fraction of water vapor in kg/mol
+
 
     IF(t.GT.55)THEN
        CALL ErrorHint(34,'Function qsatf',T,0.00D0,notUsedI)

@@ -557,7 +557,7 @@ function enorm2 ( n, x )
 
   return
 end
-subroutine fdjac1 ( fcn, n, x, fvec, fjac, ldfjac, iflag, ml, mu, epsfcn )
+subroutine fdjac1 ( fcn, n, x, fvec, fjac, ldfjac, iflag, ml, mu, epsfcn, m, prms )
 
 !*****************************************************************************80
 !
@@ -578,6 +578,7 @@ subroutine fdjac1 ( fcn, n, x, fvec, fjac, ldfjac, iflag, ml, mu, epsfcn )
 !  Modified:
 !
 !    06 April 2010
+!    30 Aug 2017: added `prms` to pass Parameters for constructing `FCN`
 !
 !  Author:
 !
@@ -637,6 +638,7 @@ subroutine fdjac1 ( fcn, n, x, fvec, fjac, ldfjac, iflag, ml, mu, epsfcn )
 
   integer ( kind = 4 ) ldfjac
   integer ( kind = 4 ) n
+  integer ( kind = 4 ) m
 
   real ( kind = 8 ) eps
   real ( kind = 8 ) epsfcn
@@ -656,6 +658,7 @@ subroutine fdjac1 ( fcn, n, x, fvec, fjac, ldfjac, iflag, ml, mu, epsfcn )
   real ( kind = 8 ) wa1(n)
   real ( kind = 8 ) wa2(n)
   real ( kind = 8 ) x(n)
+  real ( kind = 8 ) prms(m)
 
   epsmch = epsilon ( epsmch )
 
@@ -676,7 +679,7 @@ subroutine fdjac1 ( fcn, n, x, fvec, fjac, ldfjac, iflag, ml, mu, epsfcn )
 
         iflag = 1
         x(j) = temp + h
-        call fcn ( n, x, wa1, iflag )
+        call fcn ( n, x, wa1, iflag, m, prms )
 
         if ( iflag < 0 ) then
           exit
@@ -703,7 +706,7 @@ subroutine fdjac1 ( fcn, n, x, fvec, fjac, ldfjac, iflag, ml, mu, epsfcn )
         end do
 
         iflag = 1
-        call fcn ( n, x, wa1, iflag )
+        call fcn ( n, x, wa1, iflag, m, prms )
 
         if ( iflag < 0 ) then
           exit
@@ -821,7 +824,7 @@ subroutine fdjac2 ( fcn, m, n, x, xdat, ydat, fvec, fjac, ldfjac, iflag, epsfcn 
   real ( kind = 8 ) fjac(ldfjac,n)
   real ( kind = 8 ) fvec(m),xdat(m),ydat(m)
   real ( kind = 8 ) h
-  integer ( kind = 4 ) i
+  ! integer ( kind = 4 ) i
   integer ( kind = 4 ) iflag
   integer ( kind = 4 ) j
   real ( kind = 8 ) temp
@@ -855,8 +858,10 @@ subroutine fdjac2 ( fcn, m, n, x, xdat, ydat, fvec, fjac, ldfjac, iflag, epsfcn 
 
   return
 end
+
+
 subroutine hybrd ( fcn, n, x, fvec, xtol, maxfev, ml, mu, epsfcn, diag, mode, &
-  factor, nprint, info, nfev, fjac, ldfjac, r, lr, qtf )
+  factor, nprint, info, nfev, fjac, ldfjac, r, lr, qtf, m, prms )
 
 !*****************************************************************************80
 !
@@ -987,6 +992,7 @@ subroutine hybrd ( fcn, n, x, fvec, xtol, maxfev, ml, mu, epsfcn, diag, mode, &
   integer ( kind = 4 ) ldfjac
   integer ( kind = 4 ) lr
   integer ( kind = 4 ) n
+  integer ( kind = 4 ) m
 
   real ( kind = 8 ) actred
   real ( kind = 8 ) delta
@@ -1035,6 +1041,7 @@ subroutine hybrd ( fcn, n, x, fvec, xtol, maxfev, ml, mu, epsfcn, diag, mode, &
   real ( kind = 8 ) x(n)
   real ( kind = 8 ) xnorm
   real ( kind = 8 ) xtol
+  real ( kind = 8 ) prms(m)
 
   epsmch = epsilon ( epsmch )
 
@@ -1076,7 +1083,7 @@ subroutine hybrd ( fcn, n, x, fvec, xtol, maxfev, ml, mu, epsfcn, diag, mode, &
 !  and calculate its norm.
 !
   iflag = 1
-  call fcn ( n, x, fvec, iflag )
+  call fcn ( n, x, fvec, iflag, m, prms )
   nfev = 1
 
   if ( iflag < 0 ) then
@@ -1106,7 +1113,7 @@ subroutine hybrd ( fcn, n, x, fvec, xtol, maxfev, ml, mu, epsfcn, diag, mode, &
 !  Calculate the jacobian matrix.
 !
     iflag = 2
-    call fdjac1 ( fcn, n, x, fvec, fjac, ldfjac, iflag, ml, mu, epsfcn )
+    call fdjac1 ( fcn, n, x, fvec, fjac, ldfjac, iflag, ml, mu, epsfcn, m, prms )
 
     nfev = nfev + msum
 
@@ -1197,7 +1204,7 @@ subroutine hybrd ( fcn, n, x, fvec, xtol, maxfev, ml, mu, epsfcn, diag, mode, &
         if ( 0 < nprint ) then
           iflag = 0
           if ( mod ( iter - 1, nprint ) == 0 ) then
-            call fcn ( n, x, fvec, iflag )
+            call fcn ( n, x, fvec, iflag, m, prms )
           end if
           if ( iflag < 0 ) then
             go to 300
@@ -1226,7 +1233,7 @@ subroutine hybrd ( fcn, n, x, fvec, xtol, maxfev, ml, mu, epsfcn, diag, mode, &
 !  Evaluate the function at X + P and calculate its norm.
 !
         iflag = 1
-        call fcn ( n, wa2, wa4, iflag )
+        call fcn ( n, wa2, wa4, iflag, m, prms )
         nfev = nfev + 1
 
         if ( iflag < 0 ) then
@@ -1398,12 +1405,14 @@ subroutine hybrd ( fcn, n, x, fvec, xtol, maxfev, ml, mu, epsfcn, diag, mode, &
   iflag = 0
 
   if ( 0 < nprint ) then
-    call fcn ( n, x, fvec, iflag )
+    call fcn ( n, x, fvec, iflag, m, prms )
   end if
 
   return
 end
-subroutine hybrd1 ( fcn, n, x, fvec, tol, info )
+
+
+subroutine hybrd1 ( fcn, n, x, fvec, tol, info, m, prms )
 
 !*****************************************************************************80
 !
@@ -1424,6 +1433,7 @@ subroutine hybrd1 ( fcn, n, x, fvec, tol, info )
 !  Modified:
 !
 !    19 August 2016
+!    30 Aug 2017: added `prms` to pass paramters for constructing `fcn`
 !
 !  Author:
 !
@@ -1446,6 +1456,8 @@ subroutine hybrd1 ( fcn, n, x, fvec, tol, info )
 !      real ( kind = 8 ) fvec(n)
 !      integer ( kind = 4 ) iflag
 !      real ( kind = 8 ) x(n)
+!      integer ( kind = 4 ) m
+!      real ( kind = 8 ) prm(m)
 !    If IFLAG = 0 on input, then FCN is only being called to allow the user
 !    to print out the current iterate.
 !    If IFLAG = 1 on input, FCN should calculate the functions at X and
@@ -1458,7 +1470,11 @@ subroutine hybrd1 ( fcn, n, x, fvec, tol, info )
 !    estimate of the solution vector.  On output X contains the final
 !    estimate of the solution vector.
 !
-!    Output, real ( kind = 8 ) FVEC(N), the functions evaluated at the output X.
+!    Input, real ( kind = 8 ) FVEC(N), the functions evaluated at the output X.
+!
+!    Input, integer ( kind = 4 ) M, the number of parameters for constructing FCN.
+!
+!    Input, real ( kind = 8 ) PRMS(M), static paramters for constructing FCN.
 !
 !    Input, real ( kind = 8 ) TOL.  Termination occurs when the algorithm
 !    estimates that the relative error between X and the solution is at
@@ -1478,8 +1494,9 @@ subroutine hybrd1 ( fcn, n, x, fvec, tol, info )
 !
   implicit none
 
-  integer ( kind = 4 ) lwa
+  ! integer ( kind = 4 ) lwa
   integer ( kind = 4 ) n
+  integer ( kind = 4 ) m
 
   real ( kind = 8 ) diag(n)
   real ( kind = 8 ) epsfcn
@@ -1488,7 +1505,7 @@ subroutine hybrd1 ( fcn, n, x, fvec, tol, info )
   real ( kind = 8 ) fjac(n,n)
   real ( kind = 8 ) fvec(n)
   integer ( kind = 4 ) info
-  integer ( kind = 4 ) j
+  ! integer ( kind = 4 ) j
   integer ( kind = 4 ) ldfjac
   integer ( kind = 4 ) lr
   integer ( kind = 4 ) maxfev
@@ -1502,6 +1519,7 @@ subroutine hybrd1 ( fcn, n, x, fvec, tol, info )
   real ( kind = 8 ) tol
   real ( kind = 8 ) x(n)
   real ( kind = 8 ) xtol
+  real ( kind = 8 ) prms(m)
 
   if ( n <= 0 ) then
     info = 0
@@ -1531,7 +1549,7 @@ subroutine hybrd1 ( fcn, n, x, fvec, tol, info )
   qtf(1:n) = 0.0D+00
 
   call hybrd ( fcn, n, x, fvec, xtol, maxfev, ml, mu, epsfcn, diag, mode, &
-    factor, nprint, info, nfev, fjac, ldfjac, r, lr, qtf )
+    factor, nprint, info, nfev, fjac, ldfjac, r, lr, qtf, m, prms )
 
   if ( info == 5 ) then
     info = 4
@@ -2203,7 +2221,7 @@ subroutine hybrj1 ( fcn, n, x, fvec, fjac, ldfjac, tol, info )
   real ( kind = 8 ) fjac(ldfjac,n)
   real ( kind = 8 ) fvec(n)
   integer ( kind = 4 ) info
-  integer ( kind = 4 ) j
+  ! integer ( kind = 4 ) j
   integer ( kind = 4 ) lr
   integer ( kind = 4 ) maxfev
   integer ( kind = 4 ) mode
@@ -2411,7 +2429,7 @@ subroutine lmder ( fcn, m, n, x, fvec, fjac, ldfjac, ftol, xtol, gtol, maxfev, &
   real ( kind = 8 ) fvec(m)
   real ( kind = 8 ) gnorm
   real ( kind = 8 ) gtol
-  integer ( kind = 4 ) i
+  ! integer ( kind = 4 ) i
   integer ( kind = 4 ) iflag
   integer ( kind = 4 ) info
   integer ( kind = 4 ) ipvt(n)
@@ -3708,7 +3726,7 @@ subroutine lmpar ( n, r, ldr, ipvt, diag, qtb, delta, par, x, sdiag )
   real ( kind = 8 ) enorm
   real ( kind = 8 ) gnorm
   real ( kind = 8 ) fp
-  integer ( kind = 4 ) i
+  ! integer ( kind = 4 ) i
   integer ( kind = 4 ) ipvt(n)
   integer ( kind = 4 ) iter
   integer ( kind = 4 ) j
@@ -3719,7 +3737,7 @@ subroutine lmpar ( n, r, ldr, ipvt, diag, qtb, delta, par, x, sdiag )
   real ( kind = 8 ) parc
   real ( kind = 8 ) parl
   real ( kind = 8 ) paru
-  real ( kind = 8 ) qnorm
+  ! real ( kind = 8 ) qnorm
   real ( kind = 8 ) qtb(n)
   real ( kind = 8 ) r(ldr,n)
   real ( kind = 8 ) sdiag(n)
@@ -4808,7 +4826,7 @@ subroutine qrfac ( m, n, a, lda, pivot, ipvt, lipvt, rdiag, acnorm )
   real ( kind = 8 ) ajnorm
   real ( kind = 8 ) enorm
   real ( kind = 8 ) epsmch
-  integer ( kind = 4 ) i
+  ! integer ( kind = 4 ) i
   integer ( kind = 4 ) i4_temp
   integer ( kind = 4 ) ipvt(lipvt)
   integer ( kind = 4 ) j

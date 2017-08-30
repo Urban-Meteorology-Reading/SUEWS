@@ -1673,10 +1673,14 @@ CONTAINS
        ! deallocate arrays
        IF (ALLOCATED(dayArray)) DEALLOCATE(dayArray, stat=err)
        IF ( err/= 0) PRINT *, "dayArray: Deallocation request denied"
+       IF (ALLOCATED(Sd)) DEALLOCATE(Sd, stat=err)
+       IF ( err/= 0) PRINT *, "Sd: Deallocation request denied"
        IF (ALLOCATED(Ta)) DEALLOCATE(Ta, stat=err)
        IF ( err/= 0) PRINT *, "Ta: Deallocation request denied"
        IF (ALLOCATED(RH)) DEALLOCATE(RH, stat=err)
        IF ( err/= 0) PRINT *, "RH: Deallocation request denied"
+       IF (ALLOCATED(pres)) DEALLOCATE(pres, stat=err)
+       IF ( err/= 0) PRINT *, "pres: Deallocation request denied"
        IF (ALLOCATED(tHr)) DEALLOCATE(tHr, stat=err)
        IF ( err/= 0) PRINT *, "tHr: Deallocation request denied"
        IF (ALLOCATED(Ts)) DEALLOCATE(Ts, stat=err)

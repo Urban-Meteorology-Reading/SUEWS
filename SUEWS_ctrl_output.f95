@@ -98,10 +98,10 @@ MODULE ctrl_output
        varAttr('RO'         , 'mm'           , f106 , 'Runoff'                                           , aS , '' , 0)     , &
        varAttr('TotCh'      , 'mm'           , f106 , 'Surface and soil moisture change'                 , aS , '' , 0)     , &
        varAttr('SurfCh'     , 'mm'           , f106 , 'Surface moisture change'                          , aS , '' , 0)     , &
-       varAttr('State'      , 'mm'           , f104 , 'SurfaceWetnessState'                              , aL , '' , 0)     , &
+       varAttr('State'      , 'mm'           , f104 , 'Surface Wetness State'                            , aL , '' , 0)     , &
        varAttr('NWtrState'  , 'mm'           , f106 , 'Surface wetness state (non-water surfaces)'       , aL , '' , 0)     , &
        varAttr('Drainage'   , 'mm'           , f106 , 'Drainage'                                         , aS , '' , 0)     , &
-       varAttr('SMD'        , 'mm'           , f94  , 'SoilMoistureDeficit'                              , aL , '' , 0)     , &
+       varAttr('SMD'        , 'mm'           , f94  , 'Soil Moisture Deficit'                            , aL , '' , 0)     , &
        varAttr('FlowCh'     , 'mm'           , f104 , 'Additional flow into water body'                  , aS , '' , 1)     , &
        varAttr('AddWater'   , 'mm'           , f104 , 'Addtional water from other grids'                 , aS , '' , 1)     , &
        varAttr('ROSoil'     , 'mm'           , f106 , 'Runoff to soil'                                   , aS , '' , 1)     , &

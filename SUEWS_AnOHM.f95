@@ -28,15 +28,15 @@ CONTAINS
   SUBROUTINE AnOHM(qn1,qn1_store,qn1_av_store,&
        MetForcingData_grid,moist_surf,&
        alb, emis, cp, kk, ch,&! input
-       sfr,nsurf,nsh,AnthropHeatMethod,id,&
+       sfr,nsurf,nsh,AnthropHeatMethod,id,Gridiv,&
        a1,a2,a3,qs)! output
 
     IMPLICIT NONE
     REAL(KIND(1d0)),INTENT(in),DIMENSION(:,:)::MetForcingData_grid !< met forcing array of grid
 
-    REAL(KIND(1d0)),INTENT(in):: qn1               !< qn1 net all-wave radiation
-    REAL(KIND(1d0)),INTENT(in):: sfr(nsurf)        !< sfr surface fraction
-    REAL(KIND(1d0)),INTENT(in):: moist_surf(nsurf) !< moist_surf surface wetness status
+    REAL(KIND(1d0)),INTENT(in):: qn1               !< net all-wave radiation
+    REAL(KIND(1d0)),INTENT(in):: sfr(nsurf)        !< surface fraction
+    REAL(KIND(1d0)),INTENT(in):: moist_surf(nsurf) !< non-dimensional surface wetness status (0–1) [-]
 
     REAL(KIND(1d0)),INTENT(in),DIMENSION(:)::alb     !< alb albedo,
     REAL(KIND(1d0)),INTENT(in),DIMENSION(:)::emis    !< emis emissivity,
@@ -45,6 +45,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in),DIMENSION(:)::ch !< ch bulk transfer coef.
 
     INTEGER,INTENT(in):: id                !< day of year
+    INTEGER,INTENT(in):: Gridiv            !< grid id
     INTEGER,INTENT(in):: AnthropHeatMethod !< AnthropHeat option
     INTEGER,INTENT(in):: nsurf             !< number of surfaces
     INTEGER,INTENT(in):: nsh               !< number of timesteps in one hour
@@ -57,7 +58,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(out):: a3 !< AnOHM coefficients of grid [W m-2]
     REAL(KIND(1d0)),INTENT(out):: qs !< storage heat flux
 
-    INTEGER :: Gridiv,is,xid !< @var qn1 net all-wave radiation
+    INTEGER :: is,xid !< @var qn1 net all-wave radiation
     REAL(KIND(1d0)),PARAMETER::NotUsed=-55.5!< @var qn1 net all-wave radiation
     INTEGER,PARAMETER::notUsedI=-55!< @var qn1 net all-wave radiation
     LOGICAL :: idQ ! whether id contains enough data
@@ -93,12 +94,17 @@ CONTAINS
     END IF
 
     DO is=1,nsurf
-
+       !  IF ( sfr(is) > .001 ) THEN
        !   call AnOHM to calculate the coefs.
        CALL AnOHM_coef(is,xid,Gridiv,MetForcingData_grid,moist_surf,AnthropHeatMethod,& !input
             alb, emis, cp, kk, ch,&! input
             xa1(is),xa2(is),xa3(is))                         ! output
        ! print*, 'AnOHM_coef are: ',xa1,xa2,xa3
+       !  ELSE
+       !     xa1(is  )=0.1
+       !     xa2(is)=0.1
+       !     xa3(is)=1
+       !  END IF
 
     ENDDO
 
@@ -161,7 +167,7 @@ CONTAINS
     ! locally saved variables:
     ! if coefficients have been calculated, just reload them
     ! otherwise, do the calculation
-    INTEGER,SAVE :: id_save=-999,grid_save= -999
+    INTEGER,SAVE :: id_save,grid_save
     REAL(KIND(1d0)), SAVE:: coeff_grid_day(7,3)=-999.
 
     INTEGER :: WaterSurf=7
@@ -172,10 +178,15 @@ CONTAINS
     ! PRINT*, 'coeff_grid_day',coeff_grid_day(sfc_typ,:)
     IF ( xid==id_save .AND. xgrid ==grid_save) THEN
        ! if coefficients have been calculated, just reload them
+      !  print*, 'here no repetition'
        xa1=coeff_grid_day(sfc_typ,1)
        xa2=coeff_grid_day(sfc_typ,2)
        xa3=coeff_grid_day(sfc_typ,3)
     ELSE
+       PRINT*, ''
+       PRINT*, 'surface:',sfc_typ
+       PRINT*, 'xid',xid,id_save
+      !  PRINT*, 'xgrid',xgrid,grid_save
        ! otherwise, do the calculation
        IF ( sfc_typ<WaterSurf ) THEN
           CALL AnOHM_coef_land(sfc_typ,xid,MetForcingData_grid,AnthropHeatMethod,moist_surf,&   ! input
@@ -268,18 +279,17 @@ CONTAINS
          xid,MetForcingData_grid,AnthropHeatMethod,& ! input
          Sd,Ta,RH,pres,WS,WF,AH,tHr)                 ! output
 
-    PRINT*, ''
-    PRINT*, 'surface:',sfc_typ
-    PRINT*, 'xBo before:',xBo
+
+    ! PRINT*, 'xBo before:',xBo
     ! calculate Bowen ratio:
     CALL AnOHM_Bo_cal(&
-         Sd,Ta,RH,pres,tHr,                           & ! input: forcing
+         Sd,Ta,RH,pres,tHr,                        & ! input: forcing
          ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH,          & ! input: forcing
          xalb,xemis,xcp,xk,xch,moist_surf(sfc_typ),& ! input: sfc properties
-         tSd,                                      & !input: peaking time of Sd in hour
-         xBo)                                        !output: Bowen ratio
-    PRINT*, 'xBo after:',xBo
-    PRINT*, ''
+         tSd,                                      & ! input: peaking time of Sd in hour
+         xBo)                                        ! output: Bowen ratio
+    ! PRINT*, 'xBo after:',xBo
+    ! PRINT*, ''
 
     ! calculate coefficients:
     CALL AnOHM_coef_land_cal(&
@@ -440,7 +450,7 @@ CONTAINS
          ATs,mTs,gamma)                    ! output: surface temperature related scales by AnOHM
 
     ! for a local time xTHr (in hour):
-    xTs=ATs*SIN(OMEGA*(xTHr-tSd+6)-gamma)+mTs
+    xTs=ATs*SIN(OMEGA*(xTHr-tSd+6)*3600-gamma)+mTs
 
   END SUBROUTINE AnOHM_xTs
   !========================================================================================
@@ -522,7 +532,7 @@ CONTAINS
 
     !   calculate sfc properties related parameters:
     xchWS = xch*mWS
-    xchWS = 0.5*xchWS
+    ! xchWS = 0.5*xchWS
 
     !     xch    = CRA/RA !update bulk trsf. coeff. with RA (aerodyn. res.)
     beta   = 1/xBo
@@ -923,6 +933,12 @@ CONTAINS
     ! calculate forcing scales for AnOHM:
     CALL AnOHM_FcCal(Sd,Ta,WS,WF,AH,tHr,ASd,mSd,tSd,ATa,mTa,tTa,tau,mWS,mWF,mAH)
 
+    ! CALL r8vec_print(SIZE(sd, dim=1),sd,'Sd')
+    ! PRINT*, ASd,mSd,tSd
+
+    ! CALL r8vec_print(SIZE(ta, dim=1),ta,'Ta')
+    ! PRINT*, ATa,mTa,tTa
+
   END SUBROUTINE AnOHM_Fc
   !========================================================================================
 
@@ -1083,7 +1099,7 @@ CONTAINS
     lenDay=COUNT(Sd>5, dim=1)
     ALLOCATE(SdMask(lenDay), stat=err)
     IF ( err/= 0) PRINT *, "SdMask: Allocation request denied"
-    SdMask=Sd>0.1
+    SdMask=Sd>5
 
     ! CALL r8vec_print(24,Sd,'Sd')
     ! CALL r8vec_print(24,tHr,'tHr')
@@ -1102,6 +1118,7 @@ CONTAINS
     mSd=SUM(selX)/lenDay
     tSd=12
     CALL AnOHM_ShapeFit(tHrDay,selX,ASd,mSd,tSd)
+    ! CALL r8vec_print(lenDay,selX,'Sd Day:')
     !   modify ill-shaped days to go through
     IF ( ASd < 0 .OR. tSd > 15) THEN
        !         ASd = abs(ASd)
@@ -1121,6 +1138,7 @@ CONTAINS
     mTa=SUM(selX)/lenDay
     tTa=12
     CALL AnOHM_ShapeFit(tHrDay,selX,ATa,mTa,tTa)
+    ! CALL r8vec_print(lenDay,selX,'Ta Day:')
     IF ( mTa < 60 ) mTa = mTa+C2K ! correct the Celsius to Kelvin
     !   modify ill-shaped days to go through
     IF ( ATa < 0 ) THEN
@@ -1269,6 +1287,7 @@ CONTAINS
 
   !========================================================================================
   !> load surface properties.
+  ! TODO: this SUBROUTINE can be abandoned
   SUBROUTINE AnOHM_SfcLoad(&
        sfc_typ,& ! input
        alb, emis, cp, kk, ch, & ! input
@@ -1400,12 +1419,16 @@ CONTAINS
          x(:),fvec(:)
 
     INTEGER :: lenDay,n,info,err,nVar
-    REAL(kind=8) :: tol=1E-4
+    LOGICAL, DIMENSION(:),ALLOCATABLE :: maskDay
+    REAL(kind=8) :: tol=1E-20
 
     ! LOGICAL, ALLOCATABLE,DIMENSION(:) :: metMask
 
+    ! daytime mask
+    ALLOCATE(maskDay(SIZE(sd)),stat=err)
+    maskDay=sd>5
     ! length of daytime series
-    lenDay=SIZE(PACK(sd, mask=(sd>0)), dim=1)
+    lenDay=SIZE(PACK(sd, mask=maskDay), dim=1)
     ! ! daytime mask
     ! IF (ALLOCATED(metMask)) DEALLOCATE(metMask, stat=err)
     ! ALLOCATE(metMask(lenDay))
@@ -1424,6 +1447,7 @@ CONTAINS
     IF ( err/= 0) PRINT *, "fvec: Allocation request denied"
 
     ! pass initial Bowen ratio:
+    xBo=10
     x(1)= xBo
 
     ! pass forcing scales:
@@ -1448,19 +1472,17 @@ CONTAINS
     x(16)=tSd
 
     ! extract daytime series
-
-
     x(17:n)=PACK((/Sd,Ta,RH,pres,tHr/), &
-         mask=PACK(SPREAD(sd>0, dim=2, ncopies=nVar),.TRUE.))
+         mask=PACK(SPREAD(maskDay, dim=2, ncopies=nVar),.TRUE.))
 
-    PRINT*, 'xBo before solve:',x(1)
-    PRINT*, 'fvec before solve:',fvec(1)
-    PRINT*, 'xSM:',xSM
+    ! PRINT*, 'xBo before solve:',x(1)
+    ! PRINT*, 'fvec before solve:',fvec(1)
+    ! PRINT*, 'xSM:',xSM
     ! solve nonlinear equation fcnBo(x)=0
     CALL hybrd1(fcnBo,n,x,fvec,tol,info)
     xBo=x(1)
-    PRINT*, 'xBo after solve: ',x(1)
-    PRINT*, 'fvec after solve:',fvec(1)
+    ! PRINT*, 'xBo after solve: ',x(1)
+    ! PRINT*, 'fvec after solve:',fvec(1)
 
     IF (ALLOCATED(x)) DEALLOCATE(x, stat=err)
     IF ( err/= 0) PRINT *, "x: Deallocation request denied"
@@ -1541,7 +1563,7 @@ CONTAINS
        xcp   = x(12)
        xk    = x(13)
        xch   = x(14)
-       xSM   = min(x(15),1.0)
+       xSM   = MIN(x(15),1.0)
 
        ! pass tSd:
        tSd=x(16)
@@ -1560,7 +1582,6 @@ CONTAINS
        ALLOCATE(Sd(lenDay), stat=err)
        IF ( err/= 0) PRINT *, "Sd: Allocation request denied"
        Sd(:)=dayArray(1,:)
-
        ! Ta:
        ALLOCATE(Ta(lenDay), stat=err)
        IF ( err/= 0) PRINT *, "Ta: Allocation request denied"
@@ -1597,7 +1618,7 @@ CONTAINS
        IF ( xSM==0 ) THEN
           xBo=1000 ! extremely arid
        ELSE
-          PRINT*, 'lenDay',lenDay
+          ! PRINT*, 'lenDay',lenDay
           DO i = 1, lenDay, 1
              ! calculate surface temperature
              CALL AnOHM_xTs(&
@@ -1616,27 +1637,27 @@ CONTAINS
              ! calculate specific humidity
              qa(i)=qa_fn(Ta(i),RH(i),pres(i))
 
-             PRINT*,''
-             PRINT*, 'tHr',tHr(i)
-             PRINT*, 'Sd',Sd(i)
-             PRINT*, 'Ts',Ts(i)
-             PRINT*, 'pres',pres(i)
-             PRINT*, 'qs',qs(i)
-             PRINT*, 'Ta',Ta(i)
-             PRINT*, 'RH',RH(i)
-             PRINT*, 'pres',pres(i)
-             PRINT*, 'qa',qa(i)
+              ! PRINT*,''
+              ! PRINT*, 'tHr',tHr(i)
+              ! PRINT*, 'Sd',Sd(i)
+              ! PRINT*, 'Ts',Ts(i)
+              ! PRINT*, 'pres',pres(i)
+              ! PRINT*, 'qs',qs(i)
+              ! PRINT*, 'Ta',Ta(i)
+              ! PRINT*, 'RH',RH(i)
+              ! PRINT*, 'pres',pres(i)
+              ! PRINT*, 'qa',qa(i)
 
           END DO
 
           ! below for testing:
           ! rho_air=1.293, air density, kg m-3
           ! ra=60, nominal aerodynamic resistence, s m-1
-          PRINT*,''
-          PRINT*, 'QH:',SUM(cp_air*(Ts-Ta)*1.293/60)/lenDay
-          PRINT*, 'xSM:',xSM
-          PRINT*, 'QE:',SUM(xSM*Lv_air*(qs-qa)*1.293/60)/lenDay
-          PRINT*,''
+          ! PRINT*,''
+          ! PRINT*, 'QH:',SUM(cp_air*(Ts-Ta)*1.293/60)/lenDay
+          ! PRINT*, 'xSM:',xSM
+          ! PRINT*, 'QE:',SUM(xSM*Lv_air*(qs-qa)*1.293/60)/lenDay
+          ! PRINT*,''
 
           xBo = SUM(cp_air*(Ts-Ta))/& ! sum(QH)
                SUM(xSM*Lv_air*(qs-qa))! sum(QE)

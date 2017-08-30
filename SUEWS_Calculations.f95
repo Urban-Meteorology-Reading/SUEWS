@@ -354,23 +354,36 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ENDIF
 
   ! use AnOHM to calculate QS, TS 14 Mar 2016
-  ! print*, 'id and time',id,it,imin
+
+  ! IF ( it==0 .AND. imin ==5 ) THEN
+  !    PRINT*, 'id and time',id,it,imin
+  !    CALL r8vec_print(SIZE(state, dim=1),state,'state')
+  !    ! call r8vec_print(size(state, dim=1),state,'state')
+  !    CALL r8vec_print(SIZE(surf(6,:), dim=1),surf(6,:),'capacity')
+  ! END IF
+
+  IF ( ir==1 ) THEN
+     CALL r8vec_print(SIZE(cpAnOHM),cpAnOHM,'cpAnOHM')
+     CALL r8vec_print(SIZE(kkAnOHM),kkAnOHM,'kkAnOHM')
+     CALL r8vec_print(SIZE(sfr),sfr,'surface fraction')
+  END IF
+
 
   IF (StorageHeatMethod==3) THEN
      IF ( OHMIncQF == 1 ) THEN    !Calculate QS using QSTAR+QF
         IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'
         CALL AnOHM(qn1,qn1_store(:,Gridiv),qn1_av_store(:,Gridiv),&
-             MetForcingData(:,:,Gridiv),state,&
+             MetForcingData(:,:,Gridiv),state/surf(6,:),&
              alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&
-             sfr,nsurf,nsh,AnthropHeatMethod,id,&
+             sfr,nsurf,nsh,AnthropHeatMethod,id,Gridiv,&
              a1,a2,a3,qs)
      ELSEIF(OHMIncQF == 0) THEN   !Calculate QS using QSTAR
         qn1=qn1_bup
         IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'
         CALL AnOHM(qn1_bup,qn1_store(:,Gridiv),qn1_av_store(:,Gridiv),&
-             MetForcingData(:,:,Gridiv),state,&
+             MetForcingData(:,:,Gridiv),state/surf(6,:),&
              alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&
-             sfr,nsurf,nsh,AnthropHeatMethod,id,&
+             sfr,nsurf,nsh,AnthropHeatMethod,id,Gridiv,&
              a1,a2,a3,qs)
      END IF
   END IF
@@ -737,8 +750,14 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
                                 ! output:
              rss,&
              ev,&
-             qe& ! latent heat flux [W m-2]
-             )
+             qe) ! latent heat flux [W m-2]
+
+        ! IF ( is==5 ) THEN ! debug info
+        !    PRINT*, 'ity',ity
+        !    PRINT*, 'qe',qe
+        !    PRINT*, 'moisture',state(is),WetThresh(is)
+        !
+        ! END IF
 
 
         rss_nsurf(is) = rss !Store rss for each surface

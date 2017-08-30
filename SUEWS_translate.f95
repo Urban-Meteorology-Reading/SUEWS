@@ -622,8 +622,8 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   ! ENDIF ! ESTM related translation finished here.
 
   ! ---- AnOHM related ------------------------------
-  ! cpAnOHM(1:nsurf) = SurfaceChar(Gridiv,c_cpAnOHM) ! AnOHM TS
-  ! kkAnOHM(1:nsurf) = SurfaceChar(Gridiv,c_kkAnOHM) ! AnOHM TS
+  cpAnOHM(1:nsurf) = SurfaceChar(Gridiv,c_cpAnOHM) ! AnOHM TS
+  kkAnOHM(1:nsurf) = SurfaceChar(Gridiv,c_kkAnOHM) ! AnOHM TS
   chAnOHM(1:nsurf) = SurfaceChar(Gridiv,c_chAnOHM) ! AnOHM TS
   ! cp and k are estimated from ESTM coefficients:
   ! cpAnOHM(1:nsurf)=rSurf_SUEWSsurfs(1,1:nsurf)
@@ -638,41 +638,41 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   !    PRINT'(a10,x,5es10.2)', 'avg_Ch',chAnOHM(i)
   !
   ! END IF
-  DO i = 1, nsurf, 1
-     ! filter out invalid z values
-     WHERE (  zSurf_SUEWSsurfs(:,i) == -999. ) zSurf_SUEWSsurfs(:,i)=0
-
-     ! cp: weight-averaged by depth
-     cpAnOHM(i)=DOT_PRODUCT(rSurf_SUEWSsurfs(:,i),zSurf_SUEWSsurfs(:,i))/SUM(zSurf_SUEWSsurfs(:,i))
-    !  IF ( i==PavSurf .AND. ir ==1 .AND. iMb ==1) THEN
-    !     PRINT*, 'surf',i,':'
-    !     PRINT'(a10,x,5f10.2)', 'Depth',zSurf_SUEWSsurfs(:,i)
-    !     PRINT'(a10,x,5es10.2)', 'RhoCp',rSurf_SUEWSsurfs(:,i)
-    !     PRINT'(a10,x,5es10.2)', 'avg_RhoCp',cpAnOHM(i)
-     !
-    !  END IF
-
-     ! 1/k: weight-averaged by depth
-     kkAnOHM(i)=DOT_PRODUCT(1/kSurf_SUEWSsurfs(:,i),zSurf_SUEWSsurfs(:,i))/SUM(zSurf_SUEWSsurfs(:,i))
-     kkAnOHM(i)=1/kkAnOHM(i)
-    !  IF ( i==PavSurf .AND. ir ==1 .AND. iMb ==1) THEN
-    !     PRINT'(a10,x,5es10.2)', 'k',kSurf_SUEWSsurfs(:,i)
-    !     PRINT'(a10,x,5es10.2)', 'avg_k',kkAnOHM(i)
-    !     PRINT'(a10,x,5es10.2)', 'avg_Ch',chAnOHM(i)
-     !
-    !     PRINT'(a10,x,7f10.2)', 'fractions:',sfr
-     !
-    !  END IF
-
-
-     ! restore invalid z values
-     WHERE (  zSurf_SUEWSsurfs(:,i) == 0 ) zSurf_SUEWSsurfs(:,i)=nan
-    !  IF ( i==PavSurf .AND. ir ==1 .AND. iMb ==1) THEN
-    !     PRINT'(a10,x,5f10.2)', 'Depth',zSurf_SUEWSsurfs(:,i)
-    !     PRINT*, '*****************'
-    !  END IF
-
-  END DO
+  ! DO i = 1, nsurf, 1
+  !    ! filter out invalid z values
+  !    WHERE (  zSurf_SUEWSsurfs(:,i) == -999. ) zSurf_SUEWSsurfs(:,i)=0
+  !
+  !    ! cp: weight-averaged by depth
+  !    cpAnOHM(i)=DOT_PRODUCT(rSurf_SUEWSsurfs(:,i),zSurf_SUEWSsurfs(:,i))/SUM(zSurf_SUEWSsurfs(:,i))
+  !   !  IF ( i==PavSurf .AND. ir ==1 .AND. iMb ==1) THEN
+  !   !     PRINT*, 'surf',i,':'
+  !   !     PRINT'(a10,x,5f10.2)', 'Depth',zSurf_SUEWSsurfs(:,i)
+  !   !     PRINT'(a10,x,5es10.2)', 'RhoCp',rSurf_SUEWSsurfs(:,i)
+  !   !     PRINT'(a10,x,5es10.2)', 'avg_RhoCp',cpAnOHM(i)
+  !    !
+  !   !  END IF
+  !
+  !    ! 1/k: weight-averaged by depth
+  !    kkAnOHM(i)=DOT_PRODUCT(1/kSurf_SUEWSsurfs(:,i),zSurf_SUEWSsurfs(:,i))/SUM(zSurf_SUEWSsurfs(:,i))
+  !    kkAnOHM(i)=1/kkAnOHM(i)
+  !   !  IF ( i==PavSurf .AND. ir ==1 .AND. iMb ==1) THEN
+  !   !     PRINT'(a10,x,5es10.2)', 'k',kSurf_SUEWSsurfs(:,i)
+  !   !     PRINT'(a10,x,5es10.2)', 'avg_k',kkAnOHM(i)
+  !   !     PRINT'(a10,x,5es10.2)', 'avg_Ch',chAnOHM(i)
+  !    !
+  !   !     PRINT'(a10,x,7f10.2)', 'fractions:',sfr
+  !    !
+  !   !  END IF
+  !
+  !
+  !    ! restore invalid z values
+  !    WHERE (  zSurf_SUEWSsurfs(:,i) == 0 ) zSurf_SUEWSsurfs(:,i)=nan
+  !   !  IF ( i==PavSurf .AND. ir ==1 .AND. iMb ==1) THEN
+  !   !     PRINT'(a10,x,5f10.2)', 'Depth',zSurf_SUEWSsurfs(:,i)
+  !   !     PRINT*, '*****************'
+  !   !  END IF
+  !
+  ! END DO
 
 
   ! ---- QF coeffs (was in SUEWS_SAHP.f95, subroutine SAHP_Coefs)

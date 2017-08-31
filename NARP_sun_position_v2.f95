@@ -1,10 +1,11 @@
  subroutine sun_position(year,idectime,UTC,locationlatitude,locationlongitude,locationaltitude,sunazimuth,sunzenith)
     implicit none
 
-    integer :: month,day,hour,min,seas,dayofyear
     REAL(KIND(1D0)),intent(in) :: year,idectime,UTC,locationlatitude,locationlongitude,locationaltitude
     REAL(KIND(1D0)),intent(out) ::sunazimuth,sunzenith
+
     REAL(KIND(1D0)):: sec
+    integer :: month,day,hour,min,seas,dayofyear
 
     REAL(KIND(1D0)) :: juliancentury,julianday,julianephemeris_century,julianephemeris_day,&
                        julianephemeris_millenium

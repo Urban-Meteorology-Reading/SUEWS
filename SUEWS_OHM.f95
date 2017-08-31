@@ -243,12 +243,11 @@
 
   SUBROUTINE OHM_dqndt_cal(nsh,qn1,qn1_store,qn1_av_store,dqndt)
     IMPLICIT NONE
-    INTEGER, INTENT(in)            :: nsh ! number of timesteps in one hour
-    REAL(KIND(1d0)), INTENT(in) ::qn1
-    REAL(KIND(1d0)), INTENT(inout) :: &
-         qn1_store(nsh),& ! instantaneous qn1 values for previous hour
-         qn1_av_store(2*nsh+1) ! average qn1 values for previous hour
-    REAL(KIND(1d0)), INTENT(out)   :: dqndt !dQ* per dt for 60 min
+    INTEGER, INTENT(in)            :: nsh                   ! number of timesteps in one hour
+    REAL(KIND(1d0)), INTENT(in)    :: qn1
+    REAL(KIND(1d0)), INTENT(inout) :: qn1_store(nsh)        ! instantaneous qn1 values for previous hour
+    REAL(KIND(1d0)), INTENT(inout) :: qn1_av_store(2*nsh+1) ! average qn1 values for previous hour
+    REAL(KIND(1d0)), INTENT(out)   :: dqndt                 !dQ* per dt for 60 min
 
     REAL(KIND(1d0)) :: qn1_av
     INTEGER :: nsh_nna

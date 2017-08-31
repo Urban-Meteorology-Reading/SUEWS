@@ -70,66 +70,71 @@ SUBROUTINE MeltHeat(&!input
 
   IMPLICIT NONE
 
-  INTEGER,INTENT(in)::bldgsurf,&
-       nsurf,&
-       PavSurf,&
-       WaterSurf
+  INTEGER,INTENT(in)::bldgsurf
+  INTEGER,INTENT(in)::nsurf
+  INTEGER,INTENT(in)::PavSurf
+  INTEGER,INTENT(in)::WaterSurf
 
-  INTEGER,DIMENSION(nsurf),INTENT(out)::snowCalcSwitch
+
 
   !These are input to the module
-  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::sfr,&
-       Tsurf_ind,&
-       state,&
-       qn1_ind_snow,&
-       Meltwaterstore,&
-       deltaQi
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::sfr
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::Tsurf_ind
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::state
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::qn1_ind_snow
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::Meltwaterstore
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::deltaQi
 
+
+  REAL(KIND(1d0)),INTENT(in)::lvS_J_kg
+  REAL(KIND(1d0)),INTENT(in)::lv_J_kg
+  REAL(KIND(1d0)),INTENT(in)::tstep_real
+  REAL(KIND(1d0)),INTENT(in)::RadMeltFact
+  REAL(KIND(1d0)),INTENT(in)::TempMeltFact
+  REAL(KIND(1d0)),INTENT(in)::SnowAlbMax
+  REAL(KIND(1d0)),INTENT(in)::SnowDensMin
+  REAL(KIND(1d0)),INTENT(in)::Temp_C
+  REAL(KIND(1d0)),INTENT(in)::Precip
+  REAL(KIND(1d0)),INTENT(in)::PrecipLimit
+  REAL(KIND(1d0)),INTENT(in)::PrecipLimitAlb
+  REAL(KIND(1d0)),INTENT(in)::nsh_real
+  REAL(KIND(1d0)),INTENT(in)::waterdens
+
+  !Output:
+  REAL(KIND(1d0)),INTENT(out)::mwh
+  REAL(KIND(1d0)),INTENT(out)::fwh
+  REAL(KIND(1d0)),INTENT(out)::Qm
+  REAL(KIND(1d0)),INTENT(out)::QmFreez
+  REAL(KIND(1d0)),INTENT(out)::QmRain
+  REAL(KIND(1d0)),INTENT(out)::CumSnowfall
 
   !Output, dimension nsurf
-  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::Qm_melt,&
-       Qm_freezState,&
-       Qm_rain,&
-       FreezMelt,&
-       FreezState,&
-       FreezStateVol,&
-       rainOnSnow,&
-       SnowDepth
+  INTEGER,DIMENSION(nsurf),INTENT(out)::snowCalcSwitch
+
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::Qm_melt
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::Qm_freezState
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::Qm_rain
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::FreezMelt
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::FreezState
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::FreezStateVol
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::rainOnSnow
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::SnowDepth
+
+
 
   !Input and output as this is updated in this subroutine
-  REAL(KIND(1d0)),DIMENSION(nsurf)::SnowPack,&
-       snowFrac,&
-       mw_ind,&
-       SnowAlb,&
-       SnowDens
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowPack
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::snowFrac
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::mw_ind
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowAlb
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowDens
 
 
-  REAL(KIND(1d0)),INTENT(in)::&
-       lvS_J_kg,&
-       lv_J_kg,&
-       tstep_real,&
-       RadMeltFact,&
-       TempMeltFact,&
-       SnowAlbMax,&
-       SnowDensMin,&
-       Temp_C,&
-       Precip,&
-       PrecipLimit,&
-       PrecipLimitAlb,&
-       nsh_real,&
-       waterdens
+  ! local variables:
+  REAL(KIND(1d0))::AdjMeltFact
+  REAL(KIND(1d0))::Watfreeze
 
-  REAL(KIND(1d0)),INTENT(out)::&
-       mwh,&
-       fwh,&
-       Qm,&
-       QmFreez,&
-       QmRain,&
-       CumSnowfall
-
-  REAL(KIND(1d0))::AdjMeltFact,&
-       cw=4190,&  !,ci=2090   !Specific heat capacity of water
-       Watfreeze
+  REAL(KIND(1d0)),PARAMETER::cw=4190  !,ci=2090   !Specific heat capacity of water
 
   INTEGER::is
 

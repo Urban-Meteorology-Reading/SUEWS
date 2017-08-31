@@ -625,6 +625,8 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   cpAnOHM(1:nsurf) = SurfaceChar(Gridiv,c_cpAnOHM) ! AnOHM TS
   kkAnOHM(1:nsurf) = SurfaceChar(Gridiv,c_kkAnOHM) ! AnOHM TS
   chAnOHM(1:nsurf) = SurfaceChar(Gridiv,c_chAnOHM) ! AnOHM TS
+
+
   ! cp and k are estimated from ESTM coefficients:
   ! cpAnOHM(1:nsurf)=rSurf_SUEWSsurfs(1,1:nsurf)
   ! kkAnOHM(1:nsurf)=kSurf_SUEWSsurfs(1,1:nsurf)

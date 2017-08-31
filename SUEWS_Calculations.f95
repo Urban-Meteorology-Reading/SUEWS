@@ -55,7 +55,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   INTEGER        :: Gridiv,ir,i,ih,iMB
   LOGICAL        :: debug=.FALSE.
-  REAL(KIND(1d0)):: idectime
+  ! REAL(KIND(1d0)):: idectime
   !real(kind(1d0)):: SnowDepletionCurve  !for SUEWS_Snow - not needed here (HCW 24 May 2016)
   REAL(KIND(1d0)):: lai_wt,qsatf
   INTEGER        :: irMax
@@ -67,19 +67,10 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !Translate all data to the variables used in the model calculations
   IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_Translate...'
   CALL SUEWS_Translate(Gridiv,ir,iMB)
-  ! ! load the final water states of the previous day to keep water balance, by TS 13 Apr 2016
-  ! IF ( ir==1 ) THEN
-  !      PRINT*, '********************************'
-  !      PRINT*, 'starting state of', id,it,imin
-  !    state(1:nsurf)     = stateDay(id-1,Gridiv,1:nsurf)
-  !    soilmoist(1:nsurf) = soilmoistDay(id-1,Gridiv,1:nsurf)
-  !      PRINT*, 'state:', state
-  !      PRINT*, 'soilmoist', soilmoist
-  ! END IF
+
   IF(Diagnose==1) WRITE(*,*) 'Calling RoughnessParameters...'
   ! CALL RoughnessParameters(Gridiv) ! Added by HCW 11 Nov 2014
   CALL RoughnessParameters(&
-
                                 ! input:
 
        RoughLenMomMethod,&
@@ -101,9 +92,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
                                 ! output:
        planF,&
-       Zh,Z0m,Zdm,ZZD&
-
-       )
+       Zh,Z0m,Zdm,ZZD)
 
 
   !=============Get data ready for the qs calculation====================
@@ -156,11 +145,12 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   H  = -999 ! Added HCW 26 Feb 2015
 
   ! Calculate sun position
-  idectime=dectime-halftimestep! sun position at middle of timestep before
   IF(Diagnose==1) WRITE(*,*) 'Calling sun_position...'
   CALL sun_position(&
                                 !input:
-       year,idectime,timezone,lat,lng,alt,&
+       year,&
+       dectime-halftimestep,&! sun position at middle of timestep before
+       timezone,lat,lng,alt,&
                                 !output:
        azimuth,zenith_deg)
   !write(*,*) DateTime, timezone,lat,lng,alt,azimuth,zenith_deg
@@ -196,31 +186,37 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        avdens)
 
   !======== Calculate soil moisture =========
-  SoilMoistCap=0   !Maximum capacity of soil store [mm] for whole surface
-  soilstate=0      !Area-averaged soil moisture [mm] for whole surface
-
-  IF (NonWaterFraction/=0) THEN !Soil states only calculated if soil exists. LJ June 2017
-     DO is=1,nsurf-1   !No water body included
-        soilmoistCap=soilMoistCap+(soilstoreCap(is)*sfr(is)/NonWaterFraction)
-        soilstate=soilstate+(soilmoist(is)*sfr(is)/NonWaterFraction)
-     ENDDO
-  ENDIF
-
-  !If loop removed HCW 26 Feb 2015
-  !if (ir==1) then  !Calculate initial smd
-  smd=soilmoistCap-soilstate
-  !endif
-
-  ! Calculate soil moisture for vegetated surfaces only (for use in surface conductance)
-  vsmd=0
-  DO is=ConifSurf,GrassSurf  !Vegetated surfaces only
-     IF ( sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) ==0 ) THEN
-        vsmd=0
-     ELSE
-        vsmd=vsmd+(soilstoreCap(is) - soilmoist(is))*sfr(is)/(sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf))
-     END IF
-     !write(*,*) is, vsmd, smd
-  ENDDO
+  call soilMoist_update(&
+       nsurf,ConifSurf,DecidSurf,GrassSurf,&!input
+       NonWaterFraction,&
+       soilstoreCap,sfr,soilmoist,&
+       soilmoistCap,soilstate,&!output
+       vsmd,smd)
+  ! SoilMoistCap=0   !Maximum capacity of soil store [mm] for whole surface
+  ! soilstate=0      !Area-averaged soil moisture [mm] for whole surface
+  !
+  ! IF (NonWaterFraction/=0) THEN !Soil states only calculated if soil exists. LJ June 2017
+  !    DO is=1,nsurf-1   !No water body included
+  !       soilmoistCap=soilMoistCap+(soilstoreCap(is)*sfr(is)/NonWaterFraction)
+  !       soilstate=soilstate+(soilmoist(is)*sfr(is)/NonWaterFraction)
+  !    ENDDO
+  ! ENDIF
+  !
+  ! !If loop removed HCW 26 Feb 2015
+  ! !if (ir==1) then  !Calculate initial smd
+  ! smd=soilmoistCap-soilstate
+  ! !endif
+  !
+  ! ! Calculate soil moisture for vegetated surfaces only (for use in surface conductance)
+  ! vsmd=0
+  ! DO is=ConifSurf,GrassSurf  !Vegetated surfaces only
+  !    IF ( sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) ==0 ) THEN
+  !       vsmd=0
+  !    ELSE
+  !       vsmd=vsmd+(soilstoreCap(is) - soilmoist(is))*sfr(is)/(sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf))
+  !    END IF
+  !    !write(*,*) is, vsmd, smd
+  ! ENDDO
 
 
   ! ===================NET ALLWAVE RADIATION================================
@@ -318,6 +314,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   IF(Diagnose==1) WRITE(*,*) 'Calling CO2_anthro...'
   CALL CO2_anthro(id,ih,imin)
 
+
   ! =================STORAGE HEAT FLUX=======================================
 
   IF(StorageHeatMethod==1) THEN           !Use OHM to calculate QS
@@ -354,21 +351,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ENDIF
 
   ! use AnOHM to calculate QS, TS 14 Mar 2016
-
-  ! IF ( it==0 .AND. imin ==5 ) THEN
-  !    PRINT*, 'id and time',id,it,imin
-  !    CALL r8vec_print(SIZE(state, dim=1),state,'state')
-  !    ! call r8vec_print(size(state, dim=1),state,'state')
-  !    CALL r8vec_print(SIZE(surf(6,:), dim=1),surf(6,:),'capacity')
-  ! END IF
-
-  ! IF ( ir==1 ) THEN
-  !    CALL r8vec_print(SIZE(cpAnOHM),cpAnOHM,'cpAnOHM')
-  !    CALL r8vec_print(SIZE(kkAnOHM),kkAnOHM,'kkAnOHM')
-  !    CALL r8vec_print(SIZE(sfr),sfr,'surface fraction')
-  ! END IF
-
-
   IF (StorageHeatMethod==3) THEN
      IF ( OHMIncQF == 1 ) THEN    !Calculate QS using QSTAR+QF
         IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'

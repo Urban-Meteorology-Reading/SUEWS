@@ -217,9 +217,9 @@ CONTAINS
        xa2=coeff_grid_day(sfc_typ,2)
        xa3=coeff_grid_day(sfc_typ,3)
     ELSE
-       PRINT*, ''
-       PRINT*, 'surface:',sfc_typ
-       PRINT*, 'xid',xid,id_save
+      !  PRINT*, ''
+      !  PRINT*, 'surface:',sfc_typ
+      !  PRINT*, 'xid',xid,id_save
 
 
        ! load forcing characteristics:
@@ -1212,14 +1212,14 @@ CONTAINS
     prms(nPrm+1:m)=PACK((/Sd,Ta,RH,pres,tHr/), &
          mask=PACK(SPREAD(maskDay, dim=2, ncopies=nVar),.TRUE.))
 
-    PRINT*, 'xBo before solve:',x(1)
-    PRINT*, 'fvec before solve:',fvec(1)
-    PRINT*, 'xSM:',xSM
+    ! PRINT*, 'xBo before solve:',x(1)
+    ! PRINT*, 'fvec before solve:',fvec(1)
+    ! PRINT*, 'xSM:',xSM
     ! solve nonlinear equation fcnBo(x)=0
     CALL hybrd1(fcnBo,n,x,fvec,tol,info,m,prms)
     xBo=x(1)
-    PRINT*, 'xBo after solve: ',x(1)
-    PRINT*, 'fvec after solve:',fvec(1)
+    ! PRINT*, 'xBo after solve: ',x(1)
+    ! PRINT*, 'fvec after solve:',fvec(1)
 
     IF (ALLOCATED(x)) DEALLOCATE(x, stat=err)
     IF ( err/= 0) PRINT *, "x: Deallocation request denied"

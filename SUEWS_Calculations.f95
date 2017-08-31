@@ -362,11 +362,11 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !    CALL r8vec_print(SIZE(surf(6,:), dim=1),surf(6,:),'capacity')
   ! END IF
 
-  IF ( ir==1 ) THEN
-     CALL r8vec_print(SIZE(cpAnOHM),cpAnOHM,'cpAnOHM')
-     CALL r8vec_print(SIZE(kkAnOHM),kkAnOHM,'kkAnOHM')
-     CALL r8vec_print(SIZE(sfr),sfr,'surface fraction')
-  END IF
+  ! IF ( ir==1 ) THEN
+  !    CALL r8vec_print(SIZE(cpAnOHM),cpAnOHM,'cpAnOHM')
+  !    CALL r8vec_print(SIZE(kkAnOHM),kkAnOHM,'kkAnOHM')
+  !    CALL r8vec_print(SIZE(sfr),sfr,'surface fraction')
+  ! END IF
 
 
   IF (StorageHeatMethod==3) THEN

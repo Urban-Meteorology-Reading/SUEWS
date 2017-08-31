@@ -25,7 +25,8 @@ CONTAINS
   !! -# grid ensemble heat storage:
   !! QS = a1*(Q*)+a2*(dQ*/dt)+a3
   !! -# grid ensemble OHM coefficients: a1, a2 and a3
-  SUBROUTINE AnOHM(qn1,qn1_store,qn1_av_store,&
+  SUBROUTINE AnOHM(&
+       qn1,qn1_store,qn1_av_store,&
        MetForcingData_grid,moist_surf,&
        alb, emis, cp, kk, ch,&! input
        sfr,nsurf,nsh,AnthropHeatMethod,id,Gridiv,&
@@ -34,29 +35,29 @@ CONTAINS
     IMPLICIT NONE
     REAL(KIND(1d0)),INTENT(in),DIMENSION(:,:)::MetForcingData_grid !< met forcing array of grid
 
-    REAL(KIND(1d0)),INTENT(in):: qn1               !< net all-wave radiation
-    REAL(KIND(1d0)),INTENT(in):: sfr(nsurf)        !< surface fraction
-    REAL(KIND(1d0)),INTENT(in):: moist_surf(nsurf) !< non-dimensional surface wetness status (0â€“1) [-]
+    REAL(KIND(1d0)),INTENT(in):: qn1               !< net all-wave radiation [W m-2]
+    REAL(KIND(1d0)),INTENT(in):: sfr(nsurf)        !< surface fraction (0-1) [-]
+    REAL(KIND(1d0)),INTENT(in):: moist_surf(nsurf) !< non-dimensional surface wetness status (0-1) [-]
 
-    REAL(KIND(1d0)),INTENT(in),DIMENSION(:)::alb     !< alb albedo,
-    REAL(KIND(1d0)),INTENT(in),DIMENSION(:)::emis    !< emis emissivity,
-    REAL(KIND(1d0)),INTENT(in),DIMENSION(:)::cp !< cp heat capacity,
-    REAL(KIND(1d0)),INTENT(in),DIMENSION(:)::kk !< kk thermal conductivity
-    REAL(KIND(1d0)),INTENT(in),DIMENSION(:)::ch !< ch bulk transfer coef.
+    REAL(KIND(1d0)),INTENT(in),DIMENSION(:)::alb  !< albedo [-]
+    REAL(KIND(1d0)),INTENT(in),DIMENSION(:)::emis !< emissivity [-]
+    REAL(KIND(1d0)),INTENT(in),DIMENSION(:)::cp   !< heat capacity [J m-3 K-1]
+    REAL(KIND(1d0)),INTENT(in),DIMENSION(:)::kk   !< thermal conductivity [W m-1 K-1]
+    REAL(KIND(1d0)),INTENT(in),DIMENSION(:)::ch   !< bulk transfer coef [J m-3 K-1]
 
-    INTEGER,INTENT(in):: id                !< day of year
-    INTEGER,INTENT(in):: Gridiv            !< grid id
-    INTEGER,INTENT(in):: AnthropHeatMethod !< AnthropHeat option
-    INTEGER,INTENT(in):: nsurf             !< number of surfaces
-    INTEGER,INTENT(in):: nsh               !< number of timesteps in one hour
+    INTEGER,INTENT(in):: id                !< day of year [-]
+    INTEGER,INTENT(in):: Gridiv            !< grid id [-]
+    INTEGER,INTENT(in):: AnthropHeatMethod !< AnthropHeat option [-]
+    INTEGER,INTENT(in):: nsurf             !< number of surfaces [-]
+    INTEGER,INTENT(in):: nsh               !< number of timesteps in one hour [-]
 
-    REAL(KIND(1d0)),INTENT(inout)::qn1_store(nsh)
-    REAL(KIND(1d0)),INTENT(inout)::qn1_av_store(2*nsh+1) !< some other ones
+    REAL(KIND(1d0)),INTENT(inout)::qn1_store(nsh) !< stored qn1 [W m-2]
+    REAL(KIND(1d0)),INTENT(inout)::qn1_av_store(2*nsh+1) !< average net radiation over previous hour [W m-2]
 
     REAL(KIND(1d0)),INTENT(out):: a1 !< AnOHM coefficients of grid [-]
     REAL(KIND(1d0)),INTENT(out):: a2 !< AnOHM coefficients of grid [h]
     REAL(KIND(1d0)),INTENT(out):: a3 !< AnOHM coefficients of grid [W m-2]
-    REAL(KIND(1d0)),INTENT(out):: qs !< storage heat flux
+    REAL(KIND(1d0)),INTENT(out):: qs !< storage heat flux [W m-2]
 
     INTEGER :: is,xid !< @var qn1 net all-wave radiation
     REAL(KIND(1d0)),PARAMETER::NotUsed=-55.5!< @var qn1 net all-wave radiation
@@ -69,20 +70,18 @@ CONTAINS
     ! REAL(KIND(1d0))                  :: qn1_av      ! average net radiation over previous hour [W m-2]
     ! REAL(KIND(1d0))                  :: nsh_nna     ! number of timesteps per hour with non -999 values (used for spinup)
 
+    ! initialize the coefficients
     xa1 = 0.1
     xa2 = 0.2
     xa3 = 10
-    ! PRINT*, 'MetForcingData_grid in AnOHM, shape:',SHAPE(MetForcingData_grid)
-    ! PRINT*, MetForcingData_grid(1,1)
-    ! PRINT*, 'qn1_store info in AnOHM, shape',SHAPE(qn1_store)
-    ! PRINT*, 'qn1_av_store info in AnOHM, shape',SHAPE(qn1_av_store)
 
     ! to test if the current met block contains enough data for AnOHM
-    ! daylight hours >= 8
+    ! TODO: more robust selection should be implemented
+    ! daylight hours >= 6
     idQ=COUNT(MetForcingData_grid(:,2)==id .AND. & ! day of year
          MetForcingData_grid(:,4)==0 .AND. & ! minutes
          MetForcingData_grid(:,15)>0) & ! Sd
-         .GE. 8
+         .GE. 6
 
     ! PRINT*, idQ
     IF ( idQ ) THEN
@@ -139,62 +138,63 @@ CONTAINS
   !! -# OHM coefficients of a given surface type: a1, a2 and a3
   SUBROUTINE AnOHM_coef(&
        sfc_typ,xid,xgrid,&!input
-       MetForcingData_grid,moist_surf,AnthropHeatMethod,& !input
+       MetForcingData_grid,moist,AnthropHeatMethod,& !input
        alb, emis, cp, kk, ch,&! input
        xa1,xa2,xa3)                         ! output
 
     IMPLICIT NONE
 
     ! input
-    INTEGER,INTENT(in):: sfc_typ
-    INTEGER,INTENT(in):: xid
-    INTEGER,INTENT(in):: xgrid
-    INTEGER,INTENT(in):: AnthropHeatMethod
+    INTEGER,INTENT(in):: sfc_typ           !< surface type [-]
+    INTEGER,INTENT(in):: xid               !< day of year [-]
+    INTEGER,INTENT(in):: xgrid             !< grid id [-]
+    INTEGER,INTENT(in):: AnthropHeatMethod !< AnthropHeat option [-]
 
-    REAL(KIND(1d0)),INTENT(in),DIMENSION(:) :: alb
-    REAL(KIND(1d0)),INTENT(in),DIMENSION(:) :: emis
-    REAL(KIND(1d0)),INTENT(in),DIMENSION(:) :: cp
-    REAL(KIND(1d0)),INTENT(in),DIMENSION(:) :: kk
-    REAL(KIND(1d0)),INTENT(in),DIMENSION(:) :: ch
-    REAL(KIND(1d0)),INTENT(in),DIMENSION(:) :: moist_surf!< surface wetness status
-    REAL(KIND(1d0)),INTENT(in),DIMENSION(:,:) ::MetForcingData_grid
+    REAL(KIND(1d0)),INTENT(in),DIMENSION(:)   :: alb                 !< albedo [-]
+    REAL(KIND(1d0)),INTENT(in),DIMENSION(:)   :: emis                !< emissivity [-]
+    REAL(KIND(1d0)),INTENT(in),DIMENSION(:)   :: cp                  !< heat capacity [J m-3 K-1]
+    REAL(KIND(1d0)),INTENT(in),DIMENSION(:)   :: kk                  !< thermal conductivity [W m-1 K-1]
+    REAL(KIND(1d0)),INTENT(in),DIMENSION(:)   :: ch                  !< bulk transfer coef [J m-3 K-1]
+    REAL(KIND(1d0)),INTENT(in),DIMENSION(:)   :: moist               !< surface wetness status [-]
+    REAL(KIND(1d0)),INTENT(in),DIMENSION(:,:) :: MetForcingData_grid !< met forcing array of grid
 
     ! output
-    REAL(KIND(1d0)),INTENT(out) :: xa1
-    REAL(KIND(1d0)),INTENT(out) :: xa2
-    REAL(KIND(1d0)),INTENT(out) :: xa3
+    REAL(KIND(1d0)),INTENT(out) :: xa1 !< AnOHM coefficients of grid [-]
+    REAL(KIND(1d0)),INTENT(out) :: xa2 !< AnOHM coefficients of grid [h]
+    REAL(KIND(1d0)),INTENT(out) :: xa3 !< AnOHM coefficients of grid [W m-2]
 
     ! surface temperature related scales:
-    REAL(KIND(1d0)):: ATs !< daily amplitude of surface temperature
-    REAL(KIND(1d0)):: mTs !< daily mean of surface temperature
-    REAL(KIND(1d0)):: gamma !< phase difference between Ts and Sd
+    REAL(KIND(1d0)):: ATs   !< daily amplitude of surface temperature [K]
+    REAL(KIND(1d0)):: mTs   !< daily mean of surface temperature [K]
+    REAL(KIND(1d0)):: gamma !< phase difference between Ts and Sd [rad]
 
     !   forcing scales
-    REAL(KIND(1d0)):: &
-         ASd,mSd,tSd,& ! solar radiation
-         ATa,mTa,tTa,& ! air temperature
-         tau,        & ! phase lag between Sd and Ta (Ta-Sd)
-         mWS,mWF,mAH ! mean values of WS, WF and AH
+    REAL(KIND(1d0))::ASd,mSd,tSd !< solar radiation
+    REAL(KIND(1d0))::ATa,mTa,tTa !< air temperature
+    REAL(KIND(1d0))::tau         !< phase lag between Sd and Ta (Ta-Sd)
+    REAL(KIND(1d0))::mWS,mWF,mAH !< mean values of WS, WF and AH
+
 
     !   forcings:
-    REAL(KIND(1d0)), DIMENSION(:),ALLOCATABLE::Sd   ! incoming solar radiation
-    REAL(KIND(1d0)), DIMENSION(:),ALLOCATABLE::Ta   ! air temperature
-    REAL(KIND(1d0)), DIMENSION(:),ALLOCATABLE::RH   ! relative humidity
-    REAL(KIND(1d0)), DIMENSION(:),ALLOCATABLE::pres ! air pressure
-    REAL(KIND(1d0)), DIMENSION(:),ALLOCATABLE::WS   ! wind speed
-    REAL(KIND(1d0)), DIMENSION(:),ALLOCATABLE::WF   ! water flux density
-    REAL(KIND(1d0)), DIMENSION(:),ALLOCATABLE::AH   ! anthropogenic heat
-    REAL(KIND(1d0)), DIMENSION(:),ALLOCATABLE::tHr  ! time in hour
+    REAL(KIND(1d0)), DIMENSION(:),ALLOCATABLE::Sd   ! incoming solar radiation [W m-2]
+    REAL(KIND(1d0)), DIMENSION(:),ALLOCATABLE::Ta   ! air temperature [degC]
+    REAL(KIND(1d0)), DIMENSION(:),ALLOCATABLE::RH   ! relative humidity [%]
+    REAL(KIND(1d0)), DIMENSION(:),ALLOCATABLE::pres ! air pressure [hPa]
+    REAL(KIND(1d0)), DIMENSION(:),ALLOCATABLE::WS   ! wind speed [m s-1]
+    REAL(KIND(1d0)), DIMENSION(:),ALLOCATABLE::WF   ! water flux density [m3 s-1 m-2]
+    REAL(KIND(1d0)), DIMENSION(:),ALLOCATABLE::AH   ! anthropogenic heat [W m-2]
+    REAL(KIND(1d0)), DIMENSION(:),ALLOCATABLE::tHr  ! time [hr]
 
     !   sfc. properties:
-    REAL(KIND(1d0)) ::xalb  ! albedo,
-    REAL(KIND(1d0)) ::xemis ! emissivity,
-    REAL(KIND(1d0)) ::xcp   ! heat capacity,
-    REAL(KIND(1d0)) ::xk    ! thermal conductivity,
-    REAL(KIND(1d0)) ::xch   ! bulk transfer coef.
-    REAL(KIND(1d0)) ::xBo   ! Bowen ratio
-    REAL(KIND(1d0)) ::xeta  ! effective absorption coefficient
-    REAL(KIND(1d0)) ::xmu   ! effective absorption fraction
+    REAL(KIND(1d0)) ::xalb   ! albedo,
+    REAL(KIND(1d0)) ::xemis  ! emissivity,
+    REAL(KIND(1d0)) ::xcp    ! heat capacity,
+    REAL(KIND(1d0)) ::xk     ! thermal conductivity,
+    REAL(KIND(1d0)) ::xch    ! bulk transfer coef.
+    REAL(KIND(1d0)) ::xBo    ! Bowen ratio
+    REAL(KIND(1d0)) ::xeta   ! effective absorption coefficient
+    REAL(KIND(1d0)) ::xmu    ! effective absorption fraction
+    REAL(KIND(1d0)) ::xmoist ! surface wetness
 
 
 
@@ -224,7 +224,7 @@ CONTAINS
 
        ! load forcing characteristics:
        CALL AnOHM_Fc(&
-            xid,MetForcingData_grid,AnthropHeatMethod,& !input
+            xid,MetForcingData_grid,AnthropHeatMethod,& ! input
             ASd,mSd,tSd,ATa,mTa,tTa,tau,mWS,mWF,mAH)    ! output
 
        ! load forcing variables:
@@ -233,24 +233,25 @@ CONTAINS
             Sd,Ta,RH,pres,WS,WF,AH,tHr)                 ! output
 
        ! load sfc. properties:
-       xalb  = alb(sfc_typ)
-       xemis = emis(sfc_typ)
-       xcp   = cp(sfc_typ)
-       xk    = kk(sfc_typ)
-       xch   = ch(sfc_typ)
+       xalb   = alb(sfc_typ)
+       xemis  = emis(sfc_typ)
+       xcp    = cp(sfc_typ)
+       xk     = kk(sfc_typ)
+       xch    = ch(sfc_typ)
+       xmoist = moist(sfc_typ)
 
-      !  PRINT*, 'xBo before:',xBo
+       !  PRINT*, 'xBo before:',xBo
        ! calculate Bowen ratio:
        CALL AnOHM_Bo_cal(&
             sfc_typ,&
-            Sd,Ta,RH,pres,tHr,                        & ! input: forcing
-            ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH,          & ! input: forcing
-            xalb,xemis,xcp,xk,xch,moist_surf(sfc_typ),& ! input: sfc properties
-            tSd,                                      & ! input: peaking time of Sd in hour
-            xBo)                                        ! output: Bowen ratio
-      !  PRINT*, 'xBo after:',xBo
+            Sd,Ta,RH,pres,tHr,               & ! input: forcing
+            ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH, & ! input: forcing
+            xalb,xemis,xcp,xk,xch,xmoist,    & ! input: sfc properties
+            tSd,                             & ! input: peaking time of Sd in hour
+            xBo)                               ! output: Bowen ratio
+       !  PRINT*, 'xBo after:',xBo
 
-      !  calculate AnOHM coefficients
+       !  calculate AnOHM coefficients
        SELECT CASE (sfc_typ)
        CASE (1:6) ! land surfaces
           CALL  AnOHM_coef_land_cal(&
@@ -260,8 +261,8 @@ CONTAINS
 
        CASE (7) ! water surface
           ! NB:give fixed values for the moment
-          xeta  = 0.3
-          xmu   = 0.2
+          xeta = 0.3
+          xmu  = 0.2
           CALL  AnOHM_coef_water_cal(&
                ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH,&   ! input: forcing
                xalb,xemis,xcp,xk,xch,xBo,xeta,xmu,&   ! input: sfc properties
@@ -279,208 +280,6 @@ CONTAINS
   END SUBROUTINE AnOHM_coef
   !========================================================================================
 
-  ! !========================================================================================
-  ! !> a procedure for calculating AnOHM coefficients of land surfaces
-  ! SUBROUTINE AnOHM_coef_land(&
-  !      sfc_typ,xid,MetForcingData_grid,AnthropHeatMethod,moist_surf,&   ! input
-  !      alb, emis, cp, kk, ch,&! input
-  !      xa1,xa2,xa3)            ! output
-  !   IMPLICIT NONE
-  !
-  !   ! input
-  !   INTEGER,INTENT(in):: sfc_typ
-  !   INTEGER,INTENT(in):: xid
-  !   ! INTEGER,INTENT(in):: xgrid
-  !   INTEGER,INTENT(in):: AnthropHeatMethod
-  !
-  !   REAL(KIND(1d0)),INTENT(in),DIMENSION(:) :: alb
-  !   REAL(KIND(1d0)),INTENT(in),DIMENSION(:) :: emis
-  !   REAL(KIND(1d0)),INTENT(in),DIMENSION(:) :: cp
-  !   REAL(KIND(1d0)),INTENT(in),DIMENSION(:) :: kk
-  !   REAL(KIND(1d0)),INTENT(in),DIMENSION(:) :: ch
-  !   REAL(KIND(1d0)),INTENT(in),DIMENSION(:) :: moist_surf!< surface wetness status
-  !   REAL(KIND(1d0)),INTENT(in),DIMENSION(:,:) ::MetForcingData_grid
-  !
-  !   ! output
-  !   REAL(KIND(1d0)),INTENT(out) :: xa1
-  !   REAL(KIND(1d0)),INTENT(out) :: xa2
-  !   REAL(KIND(1d0)),INTENT(out) :: xa3
-  !
-  !   ! surface temperature related scales:
-  !   REAL(KIND(1d0)):: ATs !< daily amplitude of surface temperature
-  !   REAL(KIND(1d0)):: mTs !< daily mean of surface temperature
-  !   REAL(KIND(1d0)):: gamma !< phase difference between Ts and Sd
-  !
-  !
-  !   !   forcing scales
-  !   REAL(KIND(1d0)):: &
-  !        ASd,mSd,tSd,& ! solar radiation
-  !        ATa,mTa,tTa,& ! air temperature
-  !        tau,        & ! phase lag between Sd and Ta (Ta-Sd)
-  !        mWS,mWF,mAH ! mean values of WS, WF and AH
-  !
-  !   !   forcings:
-  !   REAL(KIND(1d0)), DIMENSION(:),ALLOCATABLE:: &
-  !        Sd,  & ! incoming solar radiation
-  !        Ta,  & ! air temperature
-  !        RH,  & ! relative humidity
-  !        pres,& ! air pressure
-  !        WS,  & ! wind speed
-  !        WF,  & ! water flux density
-  !        AH,  & ! anthropogenic heat
-  !        tHr    ! time in hour
-  !
-  !   !   sfc. properties:
-  !   REAL(KIND(1d0)) :: &
-  !        xalb,   &    !  albedo,
-  !        xemis,  &    !  emissivity,
-  !        xcp,    &    !  heat capacity,
-  !        xk,     &    !  thermal conductivity,
-  !        xch,    &    !  bulk transfer coef.
-  !        xBo          !  Bowen ratio
-  !
-  !
-  !   ! load forcing characteristics:
-  !   CALL AnOHM_Fc(&
-  !        xid,MetForcingData_grid,AnthropHeatMethod,& !input
-  !        ASd,mSd,tSd,ATa,mTa,tTa,tau,mWS,mWF,mAH)    ! output
-  !
-  !
-  !
-  !   ! load forcing variables:
-  !   CALL AnOHM_FcLoad(&
-  !        xid,MetForcingData_grid,AnthropHeatMethod,& ! input
-  !        Sd,Ta,RH,pres,WS,WF,AH,tHr)                 ! output
-  !
-  !
-  !   !   load sfc. properties:
-  !   ! CALL AnOHM_SfcLoad(&
-  !   !      sfc_typ,              &    ! input
-  !   !      alb, emis, cp, kk, ch,&    ! input
-  !   !      xalb,xemis,xcp,xk,xch,xBo) ! output
-  !   xalb  = alb(sfc_typ)
-  !   xemis = emis(sfc_typ)
-  !   xcp   = cp(sfc_typ)
-  !   xk    = kk(sfc_typ)
-  !   xch   = ch(sfc_typ)
-  !
-  !   ! PRINT*, 'xBo before:',xBo
-  !   ! calculate Bowen ratio:
-  !   CALL AnOHM_Bo_cal(&
-  !        sfc_typ,&
-  !        Sd,Ta,RH,pres,tHr,                        & ! input: forcing
-  !        ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH,          & ! input: forcing
-  !        xalb,xemis,xcp,xk,xch,moist_surf(sfc_typ),& ! input: sfc properties
-  !        tSd,                                      & ! input: peaking time of Sd in hour
-  !        xBo)                                        ! output: Bowen ratio
-  !   ! PRINT*, 'xBo after:',xBo
-  !   ! PRINT*, ''
-  !
-  !   ! calculate coefficients:
-  !   CALL AnOHM_coef_land_cal(&
-  !        ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH,& ! input: forcing
-  !        xalb,xemis,xcp,xk,xch,xBo,      & ! input: sfc properties
-  !        xa1,xa2,xa3,ATs,mTs,gamma)                      ! output
-  !
-  ! END SUBROUTINE AnOHM_coef_land
-  ! !========================================================================================
-
-  ! !========================================================================================
-  ! !> a wrapper for retrieving AnOHM coefficients
-  ! !> @returns
-  ! !! -# OHM coefficients of a given surface type: a1, a2 and a3
-  ! SUBROUTINE AnOHM_coef_land_cal(&
-  !      ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH,&   ! input: forcing
-  !      xalb,xemis,xcp,xk,xch,xBo,&   ! input: sfc properties
-  !      xa1,xa2,xa3)            ! output
-  !
-  !   IMPLICIT NONE
-  !
-  !   ! input: forcing scales
-  !   REAL(KIND(1d0)),INTENT(in):: ASd !< daily amplitude of solar radiation
-  !   REAL(KIND(1d0)),INTENT(in):: mSd !< daily mean solar radiation
-  !   REAL(KIND(1d0)),INTENT(in):: ATa !< daily amplitude of air temperature
-  !   REAL(KIND(1d0)),INTENT(in):: mTa !< daily mean air temperature
-  !   REAL(KIND(1d0)),INTENT(in):: tau !< phase lag between Sd and Ta (Ta-Sd)
-  !   REAL(KIND(1d0)),INTENT(in):: mWS !< daily mean wind speed
-  !   REAL(KIND(1d0)),INTENT(in):: mWF !< daily mean underground moisture flux
-  !   REAL(KIND(1d0)),INTENT(in):: mAH !< daily mean anthropogenic heat flux
-  !   ! input: sfc properties
-  !   REAL(KIND(1d0)),INTENT(in):: xalb  !< albedo
-  !   REAL(KIND(1d0)),INTENT(in):: xemis !< emissivity
-  !   REAL(KIND(1d0)),INTENT(in):: xcp   !< heat capacity
-  !   REAL(KIND(1d0)),INTENT(in):: xk    !< thermal conductivity
-  !   REAL(KIND(1d0)),INTENT(in):: xch   !< bulk transfer coef
-  !   REAL(KIND(1d0)),INTENT(in):: xBo   !< Bowen ratio
-  !
-  !   ! output
-  !   REAL(KIND(1d0)),INTENT(out) :: xa1 !< a1
-  !   REAL(KIND(1d0)),INTENT(out) :: xa2 !< a2
-  !   REAL(KIND(1d0)),INTENT(out) :: xa3 !< a3
-  !
-  !   ! local dummy variables
-  !   REAL(KIND(1d0)):: ATs,mTs,gamma
-  !
-  !   CALL  AnOHM_coef_land_cal_extra(&
-  !        ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH,&   ! input: forcing
-  !        xalb,xemis,xcp,xk,xch,xBo,&   ! input: sfc properties
-  !        xa1,xa2,xa3,ATs,mTs,gamma)
-  !
-  ! END SUBROUTINE AnOHM_coef_land_cal
-  !========================================================================================
-
-  ! !========================================================================================
-  ! !> a wrapper for calculating surface temperature scales
-  ! !> @returns
-  ! !! -# ATs coefficients of a given surface type: a1, a2 and a3
-  ! !! -# mTs coefficients of a given surface type: a1, a2 and a3
-  ! !! -# gamma coefficients of a given surface type: a1, a2 and a3
-  ! SUBROUTINE AnOHM_tsurf_land_cal(&
-  !      ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH,&   ! input: forcing
-  !      xalb,xemis,xcp,xk,xch,xBo,&   ! input: sfc properties
-  !      ATs, mTs, gamma)            ! output
-  !
-  !   IMPLICIT NONE
-  !
-  !   ! input: forcing scales
-  !   REAL(KIND(1d0)),INTENT(in):: ASd !< daily amplitude of solar radiation
-  !   REAL(KIND(1d0)),INTENT(in):: mSd !< daily mean solar radiation
-  !   REAL(KIND(1d0)),INTENT(in):: ATa !< daily amplitude of air temperature
-  !   REAL(KIND(1d0)),INTENT(in):: mTa !< daily mean air temperature
-  !   REAL(KIND(1d0)),INTENT(in):: tau !< phase lag between Sd and Ta (Ta-Sd)
-  !   REAL(KIND(1d0)),INTENT(in):: mWS !< daily mean wind speed
-  !   REAL(KIND(1d0)),INTENT(in):: mWF !< daily mean underground moisture flux
-  !   REAL(KIND(1d0)),INTENT(in):: mAH !< daily mean anthropogenic heat flux
-  !   ! input: sfc properties
-  !   REAL(KIND(1d0)),INTENT(in):: xalb  !< albedo
-  !   REAL(KIND(1d0)),INTENT(in):: xemis !< emissivity
-  !   REAL(KIND(1d0)),INTENT(in):: xcp   !< heat capacity
-  !   REAL(KIND(1d0)),INTENT(in):: xk    !< thermal conductivity
-  !   REAL(KIND(1d0)),INTENT(in):: xch   !< bulk transfer coef
-  !   REAL(KIND(1d0)),INTENT(in):: xBo   !< Bowen ratio
-  !
-  !   ! output
-  !   REAL(KIND(1d0)),INTENT(out) :: ATs !< a1
-  !   REAL(KIND(1d0)),INTENT(out) :: mTs !< a2
-  !   REAL(KIND(1d0)),INTENT(out) :: gamma !< a3
-  !
-  !
-  !   ! local dummy variables
-  !   REAL(KIND(1d0)):: xa1,xa2,xa3
-  !
-  !
-  !   CALL  AnOHM_coef_land_cal_extra(&
-  !        ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH,&   ! input: forcing
-  !        xalb,xemis,xcp,xk,xch,xBo,&   ! input: sfc properties
-  !        xa1,xa2,xa3,ATs,mTs,gamma)
-  !
-  !   ! for a time t (in seconds) since sunrise :
-  !   ! Ts(t)= ATs*sin(OMEGA*t-gamma)+mTs,
-  !   ! where OMEGA = 2*Pi/(24*60*60)  (augular velocity of Earth)
-  !
-  ! END SUBROUTINE AnOHM_tsurf_land_cal
-  !========================================================================================
-
   !========================================================================================
   !> calculate the surface temperature related parameters (ATs, mTs, gamma)
   !> based on forcings and sfc. conditions
@@ -496,27 +295,27 @@ CONTAINS
 
     IMPLICIT NONE
     ! input:
-    INTEGER,INTENT(in):: sfc_typ !< surface type (land: 1–6, water: 7)
+    INTEGER,INTENT(in):: sfc_typ !< surface type (land: 1-6, water: 7)
 
     ! input: forcing scales
-    REAL(KIND(1d0)),INTENT(in):: ASd !< daily amplitude of solar radiation
-    REAL(KIND(1d0)),INTENT(in):: mSd !< daily mean solar radiation
-    REAL(KIND(1d0)),INTENT(in):: ATa !< daily amplitude of air temperature
-    REAL(KIND(1d0)),INTENT(in):: mTa !< daily mean air temperature
-    REAL(KIND(1d0)),INTENT(in):: tau !< phase lag between Sd and Ta (Ta-Sd)
-    REAL(KIND(1d0)),INTENT(in):: mWS !< daily mean wind speed
-    REAL(KIND(1d0)),INTENT(in):: mWF !< daily mean underground moisture flux
-    REAL(KIND(1d0)),INTENT(in):: mAH !< daily mean anthropogenic heat flux
+    REAL(KIND(1d0)),INTENT(in):: ASd !< daily amplitude of solar radiation [W m-2]
+    REAL(KIND(1d0)),INTENT(in):: mSd !< daily mean solar radiation [W m-2]
+    REAL(KIND(1d0)),INTENT(in):: ATa !< daily amplitude of air temperature [K]
+    REAL(KIND(1d0)),INTENT(in):: mTa !< daily mean air temperature [K]
+    REAL(KIND(1d0)),INTENT(in):: tau !< phase lag between Sd and Ta (Ta-Sd) [rad]
+    REAL(KIND(1d0)),INTENT(in):: mWS !< daily mean wind speed [m s-1]
+    REAL(KIND(1d0)),INTENT(in):: mWF !< daily mean underground moisture flux [m3 s-1 m-2]
+    REAL(KIND(1d0)),INTENT(in):: mAH !< daily mean anthropogenic heat flux [W m-2]
 
     ! input: sfc properties
-    REAL(KIND(1d0)),INTENT(in):: xalb  !< albedo
-    REAL(KIND(1d0)),INTENT(in):: xemis !< emissivity
-    REAL(KIND(1d0)),INTENT(in):: xcp   !< heat capacity
-    REAL(KIND(1d0)),INTENT(in):: xk    !< thermal conductivity
-    REAL(KIND(1d0)),INTENT(in):: xch   !< bulk transfer coef
-    REAL(KIND(1d0)),INTENT(in):: xBo   !< Bowen ratio
-    REAL(KIND(1d0)):: xeta  !< effective absorption coefficient
-    REAL(KIND(1d0)):: xmu   !< effective absorption fraction
+    REAL(KIND(1d0)),INTENT(in):: xalb  !< albedo [-]
+    REAL(KIND(1d0)),INTENT(in):: xemis !< emissivity [-]
+    REAL(KIND(1d0)),INTENT(in):: xcp   !< heat capacity [J m-3 K-1]
+    REAL(KIND(1d0)),INTENT(in):: xk    !< thermal conductivity [W m-1 K-1]
+    REAL(KIND(1d0)),INTENT(in):: xch   !< bulk transfer coef [J m-3 K-1]
+    REAL(KIND(1d0)),INTENT(in):: xBo   !< Bowen ratio [-]
+    REAL(KIND(1d0)):: xeta  !< effective absorption fraction [-]
+    REAL(KIND(1d0)):: xmu   !< effective absorption coefficient [m-1]
 
     ! input: temporal-related
     REAL(KIND(1d0)),INTENT(in):: tSd  !< local peaking time of Sd, hour
@@ -568,29 +367,29 @@ CONTAINS
     IMPLICIT NONE
 
     ! input: forcing scales
-    REAL(KIND(1d0)),INTENT(in):: ASd !< daily amplitude of solar radiation
-    REAL(KIND(1d0)),INTENT(in):: mSd !< daily mean solar radiation
-    REAL(KIND(1d0)),INTENT(in):: ATa !< daily amplitude of air temperature
-    REAL(KIND(1d0)),INTENT(in):: mTa !< daily mean air temperature
-    REAL(KIND(1d0)),INTENT(in):: tau !< phase lag between Sd and Ta (Ta-Sd)
-    REAL(KIND(1d0)),INTENT(in):: mWS !< daily mean wind speed
-    REAL(KIND(1d0)),INTENT(in):: mWF !< daily mean underground moisture flux
-    REAL(KIND(1d0)),INTENT(in):: mAH !< daily mean anthropogenic heat flux
+    REAL(KIND(1d0)),INTENT(in):: ASd !< daily amplitude of solar radiation [W m-2]
+    REAL(KIND(1d0)),INTENT(in):: mSd !< daily mean solar radiation [W m-2]
+    REAL(KIND(1d0)),INTENT(in):: ATa !< daily amplitude of air temperature [K]
+    REAL(KIND(1d0)),INTENT(in):: mTa !< daily mean air temperature [K]
+    REAL(KIND(1d0)),INTENT(in):: tau !< phase lag between Sd and Ta (Ta-Sd) [rad]
+    REAL(KIND(1d0)),INTENT(in):: mWS !< daily mean wind speed [m s-1]
+    REAL(KIND(1d0)),INTENT(in):: mWF !< daily mean underground moisture flux [m3 s-1 m-2]
+    REAL(KIND(1d0)),INTENT(in):: mAH !< daily mean anthropogenic heat flux [W m-2]
     ! input: sfc properties
-    REAL(KIND(1d0)),INTENT(in):: xalb  !< albedo
-    REAL(KIND(1d0)),INTENT(in):: xemis !< emissivity
-    REAL(KIND(1d0)),INTENT(in):: xcp   !< heat capacity
-    REAL(KIND(1d0)),INTENT(in):: xk    !< thermal conductivity
-    REAL(KIND(1d0)),INTENT(in):: xch   !< bulk transfer coef
-    REAL(KIND(1d0)),INTENT(in):: xBo   !< Bowen ratio
+    REAL(KIND(1d0)),INTENT(in):: xalb  !< albedo [-]
+    REAL(KIND(1d0)),INTENT(in):: xemis !< emissivity [-]
+    REAL(KIND(1d0)),INTENT(in):: xcp   !< heat capacity [J m-3 K-1]
+    REAL(KIND(1d0)),INTENT(in):: xk    !< thermal conductivity [W m-1 K-1]
+    REAL(KIND(1d0)),INTENT(in):: xch   !< bulk transfer coef [J m-3 K-1]
+    REAL(KIND(1d0)),INTENT(in):: xBo   !< Bowen ratio [-]
 
     ! output
-    REAL(KIND(1d0)),INTENT(out) :: xa1 !< a1
-    REAL(KIND(1d0)),INTENT(out) :: xa2 !< a2
-    REAL(KIND(1d0)),INTENT(out) :: xa3 !< a3
-    REAL(KIND(1d0)),INTENT(out) :: ATs !< daily amplitude of surface temperature
-    REAL(KIND(1d0)),INTENT(out) :: mTs !< daily mean of surface temperature
-    REAL(KIND(1d0)),INTENT(out) :: gamma !< phase difference between Ts and Sd
+    REAL(KIND(1d0)),INTENT(out) :: xa1   !< AnOHM coefficients of grid [-]
+    REAL(KIND(1d0)),INTENT(out) :: xa2   !< AnOHM coefficients of grid [h]
+    REAL(KIND(1d0)),INTENT(out) :: xa3   !< AnOHM coefficients of grid [W m-2]
+    REAL(KIND(1d0)),INTENT(out) :: ATs   !< daily amplitude of surface temperature [K]
+    REAL(KIND(1d0)),INTENT(out) :: mTs   !< daily mean of surface temperature [K]
+    REAL(KIND(1d0)),INTENT(out) :: gamma !< phase difference between Ts and Sd [K]
 
 
     !   constant
@@ -729,108 +528,6 @@ CONTAINS
   END SUBROUTINE AnOHM_coef_land_cal
   !========================================================================================
 
-  ! !========================================================================================
-  ! !> a procedure for calculating AnOHM coefficients of water body
-  ! !> based on forcings and sfc. conditions
-  ! !>
-  ! !> @caution: NB: this SUBROUTINE hasn't been well tested.
-  ! SUBROUTINE AnOHM_coef_water(&
-  !      sfc_typ,xid,MetForcingData_grid,AnthropHeatMethod,moist_surf,&   ! input
-  !      alb, emis, cp, kk, ch,&! input
-  !      xa1,xa2,xa3)            ! output
-  !
-  !   IMPLICIT NONE
-  !
-  !   ! input
-  !   INTEGER,INTENT(in):: sfc_typ
-  !   INTEGER,INTENT(in):: xid
-  !   ! INTEGER,INTENT(in):: xgrid
-  !   INTEGER,INTENT(in):: AnthropHeatMethod
-  !   REAL(KIND(1d0)),INTENT(in),DIMENSION(:) :: alb
-  !   REAL(KIND(1d0)),INTENT(in),DIMENSION(:) :: emis
-  !   REAL(KIND(1d0)),INTENT(in),DIMENSION(:) :: cp
-  !   REAL(KIND(1d0)),INTENT(in),DIMENSION(:) :: kk
-  !   REAL(KIND(1d0)),INTENT(in),DIMENSION(:) :: ch
-  !   REAL(KIND(1d0)),INTENT(in),DIMENSION(:) :: moist_surf!< surface wetness status
-  !   REAL(KIND(1d0)),INTENT(in),DIMENSION(:,:) ::MetForcingData_grid
-  !
-  !   ! output
-  !   REAL(KIND(1d0)),INTENT(out) :: xa1
-  !   REAL(KIND(1d0)),INTENT(out) :: xa2
-  !   REAL(KIND(1d0)),INTENT(out) :: xa3
-  !
-  !   !   forcing scales
-  !   REAL(KIND(1d0))::  &
-  !        ASd,mSd,tSd,  & ! solar radiation
-  !        ATa,mTa,tTa,  & ! air temperature
-  !        tau,          & ! phase lag between Sd and Ta (Ta-Sd)
-  !        ATs,mTs,gamma,& ! surface temperature
-  !        mWS,mWF,mAH ! mean values of WS, WF and AH
-  !
-  !   !   forcings:
-  !   REAL(KIND(1d0)), DIMENSION(:),ALLOCATABLE:: &
-  !        Sd,  & ! incoming solar radiation
-  !        Ta,  & ! air temperature
-  !        RH,  & ! relative humidity
-  !        pres,& ! air pressure
-  !        WS,  & ! wind speed
-  !        WF,  & ! water flux density
-  !        AH,  & ! anthropogenic heat
-  !        tHr    ! time in hour
-  !
-  !   !   sfc. properties:
-  !   REAL(KIND(1d0)) ::xalb  ! albedo,
-  !   REAL(KIND(1d0)) ::xemis ! emissivity,
-  !   REAL(KIND(1d0)) ::xcp   ! heat capacity,
-  !   REAL(KIND(1d0)) ::xk    ! thermal conductivity,
-  !   REAL(KIND(1d0)) ::xch   ! bulk transfer coef.
-  !   REAL(KIND(1d0)) ::xBo   ! Bowen ratio
-  !   REAL(KIND(1d0)) ::xeta  ! effective absorption coefficient
-  !   REAL(KIND(1d0)) ::xmu   ! effective absorption fraction
-  !
-  !
-  !   ! load forcing characteristics:
-  !   CALL AnOHM_Fc(xid,MetForcingData_grid,AnthropHeatMethod,& ! input
-  !        ASd,mSd,tSd,ATa,mTa,tTa,tau,mWS,mWF,mAH)                     ! output
-  !   !   write(*,*) ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH
-  !
-  !
-  !   ! load forcing variables:
-  !   CALL AnOHM_FcLoad(xid,MetForcingData_grid,AnthropHeatMethod,Sd,Ta,RH,pres,WS,WF,AH,tHr)
-  !
-  !   ! calculate Bowen ratio:
-  !   CALL AnOHM_Bo_cal(&
-  !        sfc_typ,&
-  !        Sd,Ta,RH,pres,tHr,&! input: forcing
-  !        ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH,&   ! input: forcing
-  !        xalb,xemis,xcp,xk,xch,moist_surf(sfc_typ),&   ! input: sfc properties
-  !        tSd,& !input: peaking time of Sd in hour
-  !        xBo & !output: Bowen ratio
-  !        )
-  !
-  !   !   load sfc. properties:
-  !   ! CALL AnOHM_SfcLoad(sfc_typ,     & ! input
-  !   !      alb, emis, cp, kk, ch,& ! input
-  !   !      xalb,xemis,xcp,xk,xch,xBo)             ! output
-  !   !   write(*,*) 'here the properties:'
-  !   !   write(*,*) xalb,xemis,xcp,xk,xch,xBo
-  !   xalb  = alb(sfc_typ)
-  !   xemis = emis(sfc_typ)
-  !   xcp   = cp(sfc_typ)
-  !   xk   = kk(sfc_typ)
-  !   xch   = ch(sfc_typ)
-  !   ! !   NB:give fixed values for the moment
-  !   xeta  = 0.3
-  !   xmu   = 0.2
-  !
-  !   ! calculate coefficients:
-  !   CALL AnOHM_coef_water_cal(ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH,&
-  !        xalb,xemis,xcp,xk,xch,xBo,xeta,xmu,&
-  !        xa1,xa2,xa3,ATs,mTs,gamma)
-  !
-  ! END SUBROUTINE AnOHM_coef_water
-  ! !========================================================================================
-
   !========================================================================================
   !> a wrapper for retrieving AnOHM coefficients of water body
   !> @returns
@@ -845,31 +542,32 @@ CONTAINS
     IMPLICIT NONE
 
     ! input: forcing scales
-    REAL(KIND(1d0)),INTENT(in):: ASd !< daily amplitude of solar radiation
-    REAL(KIND(1d0)),INTENT(in):: mSd !< daily mean solar radiation
-    REAL(KIND(1d0)),INTENT(in):: ATa !< daily amplitude of air temperature
-    REAL(KIND(1d0)),INTENT(in):: mTa !< daily mean air temperature
-    REAL(KIND(1d0)),INTENT(in):: tau !< phase lag between Sd and Ta (Ta-Sd)
-    REAL(KIND(1d0)),INTENT(in):: mWS !< daily mean wind speed
-    REAL(KIND(1d0)),INTENT(in):: mWF !< daily mean underground moisture flux
-    REAL(KIND(1d0)),INTENT(in):: mAH !< daily mean anthropogenic heat flux
+    REAL(KIND(1d0)),INTENT(in):: ASd !< daily amplitude of solar radiation [W m-2]
+    REAL(KIND(1d0)),INTENT(in):: mSd !< daily mean solar radiation [W m-2]
+    REAL(KIND(1d0)),INTENT(in):: ATa !< daily amplitude of air temperature [K]
+    REAL(KIND(1d0)),INTENT(in):: mTa !< daily mean air temperature [K]
+    REAL(KIND(1d0)),INTENT(in):: tau !< phase lag between Sd and Ta (Ta-Sd) [rad]
+    REAL(KIND(1d0)),INTENT(in):: mWS !< daily mean wind speed [m s-1]
+    REAL(KIND(1d0)),INTENT(in):: mWF !< daily mean underground moisture flux [m3 s-1 m-2]
+    REAL(KIND(1d0)),INTENT(in):: mAH !< daily mean anthropogenic heat flux [W m-2]
+
     ! input: sfc properties
-    REAL(KIND(1d0)),INTENT(in):: xalb  !< albedo
-    REAL(KIND(1d0)),INTENT(in):: xemis !< emissivity
-    REAL(KIND(1d0)),INTENT(in):: xcp   !< heat capacity
-    REAL(KIND(1d0)),INTENT(in):: xk    !< thermal conductivity
-    REAL(KIND(1d0)),INTENT(in):: xch   !< bulk transfer coef
-    REAL(KIND(1d0)),INTENT(in):: xBo   !< Bowen ratio
-    REAL(KIND(1d0)),INTENT(in):: xeta  !< effective absorption coefficient
-    REAL(KIND(1d0)),INTENT(in):: xmu   !< effective absorption fraction
+    REAL(KIND(1d0)),INTENT(in):: xalb  !< albedo [-]
+    REAL(KIND(1d0)),INTENT(in):: xemis !< emissivity [-]
+    REAL(KIND(1d0)),INTENT(in):: xcp   !< heat capacity [J m-3 K-1]
+    REAL(KIND(1d0)),INTENT(in):: xk    !< thermal conductivity [W m-1 K-1]
+    REAL(KIND(1d0)),INTENT(in):: xch   !< bulk transfer coef [J m-3 K-1]
+    REAL(KIND(1d0)),INTENT(in):: xBo   !< Bowen ratio [-]
+    REAL(KIND(1d0)),INTENT(in):: xeta  !< effective absorption fraction [-]
+    REAL(KIND(1d0)),INTENT(in):: xmu   !< effective absorption coefficient [m-1]
 
     ! output
-    REAL(KIND(1d0)),INTENT(out) :: xa1 !< a1
-    REAL(KIND(1d0)),INTENT(out) :: xa2 !< a2
-    REAL(KIND(1d0)),INTENT(out) :: xa3 !< a3
-    REAL(KIND(1d0)),INTENT(out) :: ATs !< daily amplitude of surface temperature
-    REAL(KIND(1d0)),INTENT(out) :: mTs !< daily mean of surface temperature
-    REAL(KIND(1d0)),INTENT(out) :: gamma !< phase difference between Ts and Sd
+    REAL(KIND(1d0)),INTENT(out) :: xa1   !< AnOHM coefficients of grid [-]
+    REAL(KIND(1d0)),INTENT(out) :: xa2   !< AnOHM coefficients of grid [h]
+    REAL(KIND(1d0)),INTENT(out) :: xa3   !< AnOHM coefficients of grid [W m-2]
+    REAL(KIND(1d0)),INTENT(out) :: ATs   !< daily amplitude of surface temperature [K]
+    REAL(KIND(1d0)),INTENT(out) :: mTs   !< daily mean of surface temperature [K]
+    REAL(KIND(1d0)),INTENT(out) :: gamma !< phase difference between Ts and Sd [K]
 
     !   constant
     REAL(KIND(1d0)), PARAMETER :: SIGMA = 5.67e-8          ! Stefan-Boltzman
@@ -1018,27 +716,26 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in),DIMENSION(:,:) ::MetForcingData_grid
 
     !   output
-    REAL(KIND(1d0)),INTENT(out):: ASd !< daily amplitude of solar radiation
-    REAL(KIND(1d0)),INTENT(out):: mSd !< daily mean solar radiation
-    REAL(KIND(1d0)),INTENT(out):: tSd !< local peaking time of solar radiation, hour
-    REAL(KIND(1d0)),INTENT(out):: ATa !< daily amplitude of air temperature
-    REAL(KIND(1d0)),INTENT(out):: mTa !< daily mean air temperature
-    REAL(KIND(1d0)),INTENT(out):: tTa !< local peaking time of air temperature, hour
-    REAL(KIND(1d0)),INTENT(out):: tau !< phase lag between Sd and Ta (Ta-Sd)
-    REAL(KIND(1d0)),INTENT(out):: mWS !< daily mean wind speed
-    REAL(KIND(1d0)),INTENT(out):: mWF !< daily mean underground moisture flux
-    REAL(KIND(1d0)),INTENT(out):: mAH !< daily mean anthropogenic heat flux
+    REAL(KIND(1d0)),INTENT(out):: ASd !< daily amplitude of solar radiation [W m-2]
+    REAL(KIND(1d0)),INTENT(out):: mSd !< daily mean solar radiation [W m-2]
+    REAL(KIND(1d0)),INTENT(out):: tSd !< local peaking time of solar radiation [hr]
+    REAL(KIND(1d0)),INTENT(out):: ATa !< daily amplitude of air temperature [degC]
+    REAL(KIND(1d0)),INTENT(out):: mTa !< daily mean air temperature [degC]
+    REAL(KIND(1d0)),INTENT(out):: tTa !< local peaking time of air temperature [hour]
+    REAL(KIND(1d0)),INTENT(out):: tau !< phase lag between Sd and Ta (Ta-Sd) [rad]
+    REAL(KIND(1d0)),INTENT(out):: mWS !< daily mean wind speed [m s-1]
+    REAL(KIND(1d0)),INTENT(out):: mWF !< daily mean underground moisture flux [m3 s-1 m-2]
+    REAL(KIND(1d0)),INTENT(out):: mAH !< daily mean anthropogenic heat flux [W m-2]
 
     !   forcings:
-    REAL(KIND(1d0)), DIMENSION(:),ALLOCATABLE:: &
-         Sd,  & ! incoming solar radiation
-         Ta,  & ! air temperature
-         RH,  & ! relative humidity
-         pres,& ! air pressure
-         WS,  & ! wind speed
-         WF,  & ! water flux density
-         AH,  & ! anthropogenic heat
-         tHr    ! time in hour
+    REAL(KIND(1d0)), DIMENSION(:),ALLOCATABLE:: Sd   !< incoming solar radiation [W m-2]
+    REAL(KIND(1d0)), DIMENSION(:),ALLOCATABLE:: Ta   !< air temperature [degC]
+    REAL(KIND(1d0)), DIMENSION(:),ALLOCATABLE:: RH   !< relative humidity [%]
+    REAL(KIND(1d0)), DIMENSION(:),ALLOCATABLE:: pres !< Atmospheric pressure [hPa]
+    REAL(KIND(1d0)), DIMENSION(:),ALLOCATABLE:: WS   ! wind speed [m s-1]
+    REAL(KIND(1d0)), DIMENSION(:),ALLOCATABLE:: WF   ! water flux density [m3 s-1 m-2]
+    REAL(KIND(1d0)), DIMENSION(:),ALLOCATABLE:: AH   ! anthropogenic heat [W m-2]
+    REAL(KIND(1d0)), DIMENSION(:),ALLOCATABLE:: tHr  ! local time [hr]
 
 
     ! load forcing variables:
@@ -1064,19 +761,19 @@ CONTAINS
     IMPLICIT NONE
 
     !   input
-    INTEGER,INTENT(in):: xid !< TODO
-    INTEGER,INTENT(in):: AnthropHeatMethod !< TODO
-    REAL(KIND(1d0)),INTENT(in),DIMENSION(:,:) ::MetForcingData_grid !< TODO
+    INTEGER,INTENT(in):: xid !< day of year
+    INTEGER,INTENT(in):: AnthropHeatMethod !< AnthropHeat option
+    REAL(KIND(1d0)),INTENT(in),DIMENSION(:,:) ::MetForcingData_grid !< met forcing array of grid
 
     !   output
-    REAL(KIND(1d0)),DIMENSION(:),INTENT(out), ALLOCATABLE:: Sd  !< TODO
-    REAL(KIND(1d0)),DIMENSION(:),INTENT(out), ALLOCATABLE:: Ta  !< TODO
-    REAL(KIND(1d0)),DIMENSION(:),INTENT(out), ALLOCATABLE:: RH  !< TODO
-    REAL(KIND(1d0)),DIMENSION(:),INTENT(out), ALLOCATABLE:: pres!< TODO
-    REAL(KIND(1d0)),DIMENSION(:),INTENT(out), ALLOCATABLE:: WS  !< TODO
-    REAL(KIND(1d0)),DIMENSION(:),INTENT(out), ALLOCATABLE:: WF  !< TODO
-    REAL(KIND(1d0)),DIMENSION(:),INTENT(out), ALLOCATABLE:: AH  !< TODO
-    REAL(KIND(1d0)),DIMENSION(:),INTENT(out), ALLOCATABLE:: tHr !< TODO
+    REAL(KIND(1d0)),DIMENSION(:),INTENT(out), ALLOCATABLE:: Sd  !< incoming solar radiation [W m-2]
+    REAL(KIND(1d0)),DIMENSION(:),INTENT(out), ALLOCATABLE:: Ta  !< air temperature [degC]
+    REAL(KIND(1d0)),DIMENSION(:),INTENT(out), ALLOCATABLE:: RH  !< relative humidity [%]
+    REAL(KIND(1d0)),DIMENSION(:),INTENT(out), ALLOCATABLE:: pres!< atmospheric pressure [mbar]
+    REAL(KIND(1d0)),DIMENSION(:),INTENT(out), ALLOCATABLE:: WS  !< wind speed [m s-1]
+    REAL(KIND(1d0)),DIMENSION(:),INTENT(out), ALLOCATABLE:: WF  !< water flux density [m3 s-1 m-2]
+    REAL(KIND(1d0)),DIMENSION(:),INTENT(out), ALLOCATABLE:: AH  !< anthropogenic heat [W m-2]
+    REAL(KIND(1d0)),DIMENSION(:),INTENT(out), ALLOCATABLE:: tHr !< local time  [hr]
 
 
     !   local variables:
@@ -1176,33 +873,33 @@ CONTAINS
     IMPLICIT NONE
 
     ! input
-    REAL(KIND(1d0)),DIMENSION(:),INTENT(in):: Sd  !< incoming shortwave radiation, W m-2
-    REAL(KIND(1d0)),DIMENSION(:),INTENT(in):: Ta  !< air temperature, K
-    REAL(KIND(1d0)),DIMENSION(:),INTENT(in):: WS  !< wind speed, m s-1
-    REAL(KIND(1d0)),DIMENSION(:),INTENT(in):: WF  !< water flux density, ???
-    REAL(KIND(1d0)),DIMENSION(:),INTENT(in):: AH  !< anthropogenic heat, W m-2
-    REAL(KIND(1d0)),DIMENSION(:),INTENT(in):: tHr !< time in hour, hr
+    REAL(KIND(1d0)),DIMENSION(:),INTENT(in):: Sd  !< incoming shortwave radiation [W m-2]
+    REAL(KIND(1d0)),DIMENSION(:),INTENT(in):: Ta  !< air temperature [degC]
+    REAL(KIND(1d0)),DIMENSION(:),INTENT(in):: WS  !< wind speed [m s-1]
+    REAL(KIND(1d0)),DIMENSION(:),INTENT(in):: WF  !< water flux density [m3 s-1 m-2]
+    REAL(KIND(1d0)),DIMENSION(:),INTENT(in):: AH  !< anthropogenic heat [W m-2]
+    REAL(KIND(1d0)),DIMENSION(:),INTENT(in):: tHr !< time [hr]
 
     ! output
-    REAL(KIND(1d0)),INTENT(out):: ASd !< daily amplitude of solar radiation
-    REAL(KIND(1d0)),INTENT(out):: mSd !< daily mean solar radiation
-    REAL(KIND(1d0)),INTENT(out):: tSd !< local peaking time of solar radiation, hour
-    REAL(KIND(1d0)),INTENT(out):: ATa !< daily amplitude of air temperature
-    REAL(KIND(1d0)),INTENT(out):: mTa !< daily mean air temperature
-    REAL(KIND(1d0)),INTENT(out):: tTa !< local peaking time of air temperature, hour
-    REAL(KIND(1d0)),INTENT(out):: tau !< phase lag between Sd and Ta (Ta-Sd)
-    REAL(KIND(1d0)),INTENT(out):: mWS !< daily mean wind speed
-    REAL(KIND(1d0)),INTENT(out):: mWF !< daily mean underground moisture flux
-    REAL(KIND(1d0)),INTENT(out):: mAH !< daily mean anthropogenic heat flux
+    REAL(KIND(1d0)),INTENT(out):: ASd !< daily amplitude of solar radiation [W m-2]
+    REAL(KIND(1d0)),INTENT(out):: mSd !< daily mean solar radiation [W m-2]
+    REAL(KIND(1d0)),INTENT(out):: tSd !< local peaking time of solar radiation [hr]
+    REAL(KIND(1d0)),INTENT(out):: ATa !< daily amplitude of air temperature [degC]
+    REAL(KIND(1d0)),INTENT(out):: mTa !< daily mean air temperature [degC]
+    REAL(KIND(1d0)),INTENT(out):: tTa !< local peaking time of air temperature [hr]
+    REAL(KIND(1d0)),INTENT(out):: tau !< phase lag between Sd and Ta (Ta-Sd) [rad]
+    REAL(KIND(1d0)),INTENT(out):: mWS !< daily mean wind speed [m s-1]
+    REAL(KIND(1d0)),INTENT(out):: mWF !< daily mean underground moisture flux [m3 s-1 m-2]
+    REAL(KIND(1d0)),INTENT(out):: mAH !< daily mean anthropogenic heat flux [W m-2]
 
     !   constant
     REAL(KIND(1d0)), PARAMETER :: PI  = ATAN(1.0)*4 ! Pi
     REAL(KIND(1d0)), PARAMETER :: C2K = 273.15      ! degC to K
 
     !   local variables:
-    REAL(KIND(1d0)),ALLOCATABLE :: &
-         tHrDay(:),& ! daytime tHr when Sd>0
-         selX(:)     ! daytime sublist of met variable when Sd>0
+    REAL(KIND(1d0)),ALLOCATABLE :: tHrDay(:) ! daytime tHr when Sd>0
+    REAL(KIND(1d0)),ALLOCATABLE :: selX(:)   ! daytime sublist of met variable when Sd>0
+
 
     ! REAL(KIND(1d0)) :: xx              ! temporary use
     INTEGER :: err,lenDay
@@ -1398,93 +1095,6 @@ CONTAINS
   END SUBROUTINE fSin
   !========================================================================================
 
-  ! !========================================================================================
-  ! !> load surface properties.
-  ! ! TODO: this SUBROUTINE can be abandoned
-  ! SUBROUTINE AnOHM_SfcLoad(&
-  !      sfc_typ,& ! input
-  !      alb, emis, cp, kk, ch, & ! input
-  !      xalb,xemis,xcp,xk,xch,xBo)              ! output
-  !
-  !
-  !   IMPLICIT NONE
-  !
-  !   !   input
-  !   INTEGER,INTENT(in):: sfc_typ
-  !   ! INTEGER,INTENT(in):: xid
-  !   ! INTEGER,INTENT(in):: xgrid
-  !
-  !   REAL(KIND(1d0)),INTENT(in),DIMENSION(:) :: alb
-  !   REAL(KIND(1d0)),INTENT(in),DIMENSION(:) :: emis
-  !   REAL(KIND(1d0)),INTENT(in),DIMENSION(:) :: cp
-  !   REAL(KIND(1d0)),INTENT(in),DIMENSION(:) :: kk
-  !   REAL(KIND(1d0)),INTENT(in),DIMENSION(:) :: ch
-  !
-  !   !   output:
-  !   !   sfc_typ. properties:
-  !   REAL(KIND(1d0)),INTENT(out) :: xalb  !< albedo,
-  !   REAL(KIND(1d0)),INTENT(out) :: xemis !< emissivity,
-  !   REAL(KIND(1d0)),INTENT(out) :: xcp   !< heat capacity,
-  !   REAL(KIND(1d0)),INTENT(out) :: xk    !< thermal conductivity,
-  !   REAL(KIND(1d0)),INTENT(out) :: xch   !< bulk transfer coef.
-  !   REAL(KIND(1d0)),INTENT(out) :: xBo   !< Bowen ratio
-  !
-  !   ! INTEGER :: xxx
-  !   !   constant
-  !   ! REAL(KIND(1d0)), PARAMETER :: SIGMA = 5.67e-8          ! Stefan-Boltzman
-  !   ! REAL(KIND(1d0)), PARAMETER :: PI    = ATAN(1.0)*4      ! Pi
-  !   ! REAL(KIND(1d0)), PARAMETER :: OMEGA = 2*Pi/(24*60*60)  ! augular velocity of Earth
-  !   ! REAL(KIND(1d0)), PARAMETER :: C2K   = 273.15           ! degC to K
-  !
-  !
-  !   !   load properties from global variables
-  !   xalb  = alb(sfc_typ)
-  !   xemis = emis(sfc_typ)
-  !   xcp   = cp(sfc_typ)
-  !   xk    = kk(sfc_typ)
-  !   xch   = ch(sfc_typ)
-  !
-  !   !   print*, 'xalb:', xalb
-  !   !   print*, 'xemis:', xemis
-  !   !   print*, 'sfc_typ:', sfc_typ
-  !   !   print*, 'xcp:', xcp
-  !   !   print*, 'xk:', xk
-  !   !   print*, 'xch:', xch
-  !
-  !
-  !   !   load Bowen ratio of yesterday from DailyState calculation
-  !   ! IF ( BoInit==NAN ) THEN
-  !   !    CALL ErrorHint(68,'No initial Bowen ratio found in InitialConditions.',BoInit,notUsed,notUsedI)
-  !   ! ELSE
-  !   !    xBo = BoInit ! get Initial value from initial condition namelist
-  !   ! END IF
-  !   ! set as previous day's Bo, 20160708 TS
-  !   ! xBo = Bo_grids(xid-1,xgrid) ! default Bo will be read in when xid = 0
-  !   xBo=0
-  !   ! IF ( xid==1 ) THEN
-  !   !
-  !   !    !  xBo = Bo_grids(xid-1,xgrid)
-  !   ! ELSE
-  !   !    !  IF ( BoAnOHMEnd(xgrid) > BoAnOHMStart(xgrid) ) THEN
-  !   !    !     xBo = BoAnOHMEnd(xgrid)/2+BoAnOHMStart(xgrid)/2
-  !   !    !  ELSE
-  !   !    !     xBo = (BoAnOHMStart(xgrid)+BoAnOHMEnd(xgrid))/2
-  !   !    !  END IF
-  !   !
-  !   ! END IF
-  !   !     if ( xBo>30 .or. xBo<-1 ) write(unit=*, fmt=*) "Bo",xBo
-  !
-  !   !     xBo = 2.
-  !   xBo = MAX(MIN(xBo,30.),0.1)
-  !
-  !   ! if ( xid==1 ) then
-  !   !   print*, 'xBo:', xBo
-  !   ! end if
-  !   !   print*, 'xBo:', xBo
-  !
-  ! END SUBROUTINE AnOHM_SfcLoad
-  ! !========================================================================================
-
   !========================================================================================
   !> estimate daytime Bowen ratio for calculation of AnOHM coefficients
   SUBROUTINE AnOHM_Bo_cal(&
@@ -1502,41 +1112,40 @@ CONTAINS
     INTEGER, INTENT(in) :: sfc_typ ! unknown Bowen ratio
 
     ! input: daytime series
-    REAL(kind = 8), INTENT(in), DIMENSION(:) ::Sd  !< incoming solar radiation, W m-2
-    REAL(kind = 8), INTENT(in), DIMENSION(:) ::Ta  !< air temperature, degC
-    REAL(kind = 8), INTENT(in), DIMENSION(:) ::RH  !< relative humidity, %
-    REAL(kind = 8), INTENT(in), DIMENSION(:) ::pres!< Atmospheric pressure, mbar
-    REAL(kind = 8), INTENT(in), DIMENSION(:) ::tHr !< time, hour
+    REAL(kind = 8), INTENT(in), DIMENSION(:) ::Sd  !< incoming solar radiation [W m-2]
+    REAL(kind = 8), INTENT(in), DIMENSION(:) ::Ta  !< air temperature [degC]
+    REAL(kind = 8), INTENT(in), DIMENSION(:) ::RH  !< relative humidity [%]
+    REAL(kind = 8), INTENT(in), DIMENSION(:) ::pres!< Atmospheric pressure [mbar]
+    REAL(kind = 8), INTENT(in), DIMENSION(:) ::tHr !< local time  [hr]
 
     ! input: forcing scales
-    REAL(KIND(1d0)),INTENT(in):: ASd !< daily amplitude of solar radiation
-    REAL(KIND(1d0)),INTENT(in):: mSd !< daily mean solar radiation
-    REAL(KIND(1d0)),INTENT(in):: tSd !< local peaking time of solar radiation, hour
-    REAL(KIND(1d0)),INTENT(in):: ATa !< daily amplitude of air temperature
-    REAL(KIND(1d0)),INTENT(in):: mTa !< daily mean air temperature
-    REAL(KIND(1d0)),INTENT(in):: tau !< phase lag between Sd and Ta (Ta-Sd)
-    REAL(KIND(1d0)),INTENT(in):: mWS !< daily mean wind speed
-    REAL(KIND(1d0)),INTENT(in):: mWF !< daily mean underground moisture flux
-    REAL(KIND(1d0)),INTENT(in):: mAH !< daily mean anthropogenic heat flux
+    REAL(KIND(1d0)),INTENT(in):: ASd !< daily amplitude of solar radiation [W m-2]
+    REAL(KIND(1d0)),INTENT(in):: mSd !< daily mean solar radiation [W m-2]
+    REAL(KIND(1d0)),INTENT(in):: tSd !< local peaking time of solar radiation [hr]
+    REAL(KIND(1d0)),INTENT(in):: ATa !< daily amplitude of air temperature [degC]
+    REAL(KIND(1d0)),INTENT(in):: mTa !< daily mean air temperature [degC]
+    REAL(KIND(1d0)),INTENT(in):: tau !< phase lag between Sd and Ta (Ta-Sd) [rad]
+    REAL(KIND(1d0)),INTENT(in):: mWS !< daily mean wind speed [m s-1]
+    REAL(KIND(1d0)),INTENT(in):: mWF !< daily mean underground moisture flux [m3 s-1 m-2]
+    REAL(KIND(1d0)),INTENT(in):: mAH !< daily mean anthropogenic heat flux [W m-2]
 
     ! input: surface properties
-    REAL(KIND(1d0)),INTENT(in) :: xalb  !< albedo,
-    REAL(KIND(1d0)),INTENT(in) :: xemis !< emissivity,
-    REAL(KIND(1d0)),INTENT(in) :: xcp   !< heat capacity,
-    REAL(KIND(1d0)),INTENT(in) :: xk    !< thermal conductivity,
-    REAL(KIND(1d0)),INTENT(in) :: xch   !< bulk transfer coef.
-    REAL(KIND(1d0)),INTENT(in) :: xSM   !< surface moisture status, non-dimensional
+    REAL(KIND(1d0)),INTENT(in) :: xalb  !< albedo [-]
+    REAL(KIND(1d0)),INTENT(in) :: xemis !< emissivity [-]
+    REAL(KIND(1d0)),INTENT(in) :: xcp   !< heat capacity [J m-3 K-1]
+    REAL(KIND(1d0)),INTENT(in) :: xk    !< thermal conductivity [W m-1 K-1]
+    REAL(KIND(1d0)),INTENT(in) :: xch   !< bulk transfer coef [J m-3 K-1]
+    REAL(KIND(1d0)),INTENT(in) :: xSM   !< surface moisture status [-]
 
     ! output:
-    REAL(kind=8), INTENT(out) :: xBo ! unknown Bowen ratio
+    REAL(kind=8), INTENT(out) :: xBo ! unknown Bowen ratio [-]
 
     ! EXTERNAL fcnBo
 
-    REAL(kind=8), ALLOCATABLE :: &
-         x(:),fvec(:),prms(:)
+    REAL(kind=8), ALLOCATABLE :: x(:),fvec(:),prms(:)
 
     INTEGER :: lenDay,n,m,info,err,nVar,nPrm
-    LOGICAL, DIMENSION(:),ALLOCATABLE :: maskDay
+    LOGICAL, DIMENSION(:), ALLOCATABLE :: maskDay
     REAL(kind=8) :: tol=1E-20
 
     ! LOGICAL, ALLOCATABLE,DIMENSION(:) :: metMask
@@ -1550,8 +1159,6 @@ CONTAINS
     ! IF (ALLOCATED(metMask)) DEALLOCATE(metMask, stat=err)
     ! ALLOCATE(metMask(lenDay))
     ! metMask=(Sd>0)
-
-
 
 
     ! assign x vector:
@@ -1727,7 +1334,7 @@ CONTAINS
        ! pass tSd:
        sfc_typ=INT(prms(16))
 
-       ! set number of parameters
+       ! set number of parameters according to the above code
        nPrm=16
 
        ! number of met variables to pass:
@@ -1827,11 +1434,8 @@ CONTAINS
 
        END IF
 
-
        ! f(Bo)-Bo==0
        fvec(1)=x(1)-xBo
-       ! force others as zero
-       !  fvec(2:n)=0
 
        ! deallocate arrays
        IF (ALLOCATED(dayArray)) DEALLOCATE(dayArray, stat=err)
@@ -1860,24 +1464,36 @@ CONTAINS
   !========================================================================================
 
   !========================================================================================
+  !> calculate saturation vapor pressure (es)
+  !> at air temperature (Ta)
+  !> (MRR, 1987)
+  FUNCTION esat_fn(Ta) RESULT(esat)
+    REAL (KIND(1D0))::Ta  !< air temperature [degC]
+    REAL (KIND(1D0))::esat  !< saturation vapor pressure [hPa]
+
+    REAL (KIND(1D0)),PARAMETER::A=6.106 !< Teten coefficients
+    REAL (KIND(1D0)),PARAMETER::B=17.27 !< Teten coefficients
+    REAL (KIND(1D0)),PARAMETER::C=237.3 !< Teten coefficients
+
+    esat = A*EXP(B*Ta/(C+Ta))
+  END FUNCTION esat_fn
+  !========================================================================================
+
+  !========================================================================================
   !> calculate saturation specific humidity (qsat)
   !> at air temperature (Ta) and atmospheric pressure (pres)
   !> (MRR, 1987)
   FUNCTION qsat_fn(Ta,pres) RESULT(qsat)
-    REAL (KIND(1D0))::Ta  !< air temperature, degC
-    REAL (KIND(1D0))::es  !< saturation vapor pressure, hPa
-    REAL (KIND(1D0))::qsat!< saturation specific humidity, kg kg-1
-    REAL (KIND(1D0))::pres!< atmospheric pressure, hPa
+    REAL (KIND(1D0))::Ta  !< air temperature [degC]
+    REAL (KIND(1D0))::es  !< saturation vapor pressure [hPa]
+    REAL (KIND(1D0))::qsat!< saturation specific humidity [kg kg-1]
+    REAL (KIND(1D0))::pres!< atmospheric pressure [hPa]
 
-    REAL (KIND(1D0)),PARAMETER::&
-         A=6.106,&!< Teten coefficients
-         B=17.27,&!< Teten coefficients
-         C=237.3,&!< Teten coefficients
-         molar=0.028965,& !< Dry air molar fraction, kg mol-1
-         molar_wat_vap=0.0180153 !< Molar fraction of water vapor, kg mol-1
+    REAL (KIND(1D0)),PARAMETER::molar         = 0.028965  !< Dry air molar fraction [kg mol-1]
+    REAL (KIND(1D0)),PARAMETER::molar_wat_vap = 0.0180153 !< Molar fraction of water vapor [kg mol-1]
 
-    ES = A*EXP(B*Ta/(C+Ta))
-    qsat = (molar_wat_vap/molar)*ES/pres!(rmh2o/rmair)*ES/PMB
+    es = esat_fn(Ta)
+    qsat = (molar_wat_vap/molar)*es/pres!(rmh2o/rmair)*ES/PMB
   END FUNCTION qsat_fn
   !========================================================================================
 
@@ -1885,22 +1501,18 @@ CONTAINS
   !> convert relative humidity (RH) to specific humidity (qa)
   !> at air temperature (Ta) and atmospheric pressure (pres)
   FUNCTION qa_fn(Ta,RH,pres) RESULT(qa)
-    REAL (KIND(1D0))::&
-         Ta,  & !< air temperature, degC
-         RH,  & !< relative humidity, %
-         ea,  & !< vapor pressure, hPa
-         es,  & !< saturation vapor pressure, hPa
-         pres,& !< Atmospheric pressure, hPa
-         qa     !< saturation specific humidity, kg kg-1
 
-    REAL (KIND(1D0)),PARAMETER::&
-         A=6.106,& !< Teten coefficients
-         B=17.27,& !< Teten coefficients
-         C=237.3,& !< Teten coefficients
-         molar=0.028965,& !< Dry air molar fraction, kg mol-1
-         molar_wat_vap=0.0180153 !< Molar fraction of water vapor, kg mol-1
+    REAL (KIND(1D0))::Ta  !< air temperature [degC]
+    REAL (KIND(1D0))::RH  !< relative humidity [%]
+    REAL (KIND(1D0))::ea  !< vapor pressure [hPa]
+    REAL (KIND(1D0))::es  !< saturation vapor pressure [hPa]
+    REAL (KIND(1D0))::pres!< atmospheric pressure [hPa]
+    REAL (KIND(1D0))::qa  !< saturation specific humidity [kg kg-1]
 
-    ES = A*EXP(B*Ta/(C+Ta))
+    REAL (KIND(1D0)),PARAMETER::molar         = 0.028965  !< Dry air molar fraction [kg mol-1]
+    REAL (KIND(1D0)),PARAMETER::molar_wat_vap = 0.0180153 !< Molar fraction of water vapor [kg mol-1]
+
+    es = esat_fn(Ta)
     ea = es*RH/100
     qa = (molar_wat_vap/molar)*ea/pres!(rmh2o/rmair)*ES/PMB
   END FUNCTION qa_fn

@@ -930,15 +930,15 @@ CONTAINS
     CALL AnOHM_ShapeFit(tHrDay,selX,ASd,mSd,tSd)
     ! CALL r8vec_print(lenDay,selX,'Sd Day:')
     !   modify ill-shaped days to go through
-    IF ( ASd < 0 .OR. tSd > 15) THEN
-       !         ASd = abs(ASd)
-       !         tSd = 12 ! assume Sd peaks at 12:00LST
-       CALL r8vec_print(lenDay,tHrDay,'tHrDay:')
-       CALL r8vec_print(lenDay,selX,'Sd Day:')
-       PRINT*, 'ASd:', ASd
-       PRINT*, 'mSd:', mSd
-       PRINT*, 'tSd:', tSd
-    END IF
+    ! IF ( ASd < 0 .OR. tSd > 15) THEN
+    !    !         ASd = abs(ASd)
+    !    !         tSd = 12 ! assume Sd peaks at 12:00LST
+    !    CALL r8vec_print(lenDay,tHrDay,'tHrDay:')
+    !    CALL r8vec_print(lenDay,selX,'Sd Day:')
+    !    PRINT*, 'ASd:', ASd
+    !    PRINT*, 'mSd:', mSd
+    !    PRINT*, 'tSd:', tSd
+    ! END IF
     ! PRINT*, 'Sd Day:', selX
 
     !   calculate sinusoidal scales of Ta:

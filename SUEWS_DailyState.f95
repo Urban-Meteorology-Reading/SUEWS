@@ -149,7 +149,8 @@ SUBROUTINE DailyState(Gridiv)
   !      6 ------------------------------------!   !Days since rain
 
   ! Update snow density, albedo surface fraction
-  IF (snowUse==1) CALL SnowUpdate(Temp_C)
+  IF (snowUse==1) CALL SnowUpdate(Temp_C,nsurf,tstep,SnowPack,SnowDens,&
+                   snowAlb,tau_a,tau_f,tau_r,SnowDensMax,SnowAlbMin,SnowDensMin)
 
 
   ! ================================================================================

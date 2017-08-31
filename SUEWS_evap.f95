@@ -46,8 +46,7 @@ SUBROUTINE Evap_SUEWS(&
   ! USE sues_data
 
   IMPLICIT NONE
-  INTEGER,INTENT(in) :: &
-       ity!Evaporation calculated according to Rutter (1) or Shuttleworth (2)
+  INTEGER,INTENT(in) :: ity!Evaporation calculated according to Rutter (1) or Shuttleworth (2)
 
   REAL (KIND(1d0)),INTENT(in)::&
        state_is,& ! wetness status

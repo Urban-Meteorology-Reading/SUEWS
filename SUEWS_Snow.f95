@@ -7,6 +7,8 @@
 !  snowRem - Removal of snow my snow clearing
 !  SnowDepletionCurve - Calculation of snow fractions
 !Last modified
+!  TS 31 Aug 2017 - fixed the incomplete explicit interfaces
+!  LJ 24 Aug 2017 - added explicit interfaces
 !  LJ 3 May 2016  - Changed so that not all surface water freezes in 5-min timestep.
 !                    Re-organization of the snow routine due to this change
 !                    Calculation of albedo moved from MeltHeat to SnowCalc
@@ -19,26 +21,120 @@
 !                        to use qn1_ind_snow(surf)
 !=======================================================================================
 
-SUBROUTINE MeltHeat
+SUBROUTINE MeltHeat(&!input
+     nsurf,&
+     bldgsurf,&
+     PavSurf,&
+     WaterSurf,&
+     nsh_real,&
+     lvS_J_kg,&
+     lv_J_kg,&
+     tstep_real,&
+     RadMeltFact,&
+     TempMeltFact,&
+     SnowAlb,&
+     SnowDens,&
+     SnowAlbMax,&
+     SnowDensMin,&
+     Qm_melt,&
+     Qm_freezState,&
+     Qm_rain,&
+     deltaQi,&
+     FreezMelt,&
+     FreezState,&
+     FreezStateVol,&
+     rainOnSnow,&
+     Tsurf_ind,&
+     state,&
+     sfr,&
+     Temp_C,&
+     Precip,&
+     PrecipLimit,&
+     PrecipLimitAlb,&
+     qn1_ind_snow,&
+     SnowDepth,&
+     Meltwaterstore,&
+     waterdens,&
+     SnowPack,&      !updated state
+     CumSnowfall,&
+     snowFrac,&
+     mwh,&
+     fwh,&
+     Qm,&
+     QmFreez,&
+     QmRain,&
+     snowCalcSwitch,&
+     mw_ind)       !output
 
-  USE allocateArray
-  USE snowMod
-  USE data_in
-  USE snowMod
-  USE time
-  USE moist
-  USE sues_data
-  USE gis_data
+
 
   IMPLICIT NONE
 
-  REAL(KIND(1d0)):: Watfreeze,&        !State of snow on ith surface, total energy exchange (not exported!)
-       cw=4190!,ci=2090   !Specific heat capacity of water
+  INTEGER,INTENT(in)::bldgsurf,&
+       nsurf,&
+       PavSurf,&
+       WaterSurf
+
+  INTEGER,DIMENSION(nsurf),INTENT(out)::snowCalcSwitch
+
+  !These are input to the module
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::sfr,&
+       Tsurf_ind,&
+       state,&
+       qn1_ind_snow,&
+       Meltwaterstore,&
+       deltaQi
+
+
+  !Output, dimension nsurf
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::Qm_melt,&
+       Qm_freezState,&
+       Qm_rain,&
+       FreezMelt,&
+       FreezState,&
+       FreezStateVol,&
+       rainOnSnow,&
+       SnowDepth
+
+  !Input and output as this is updated in this subroutine
+  REAL(KIND(1d0)),DIMENSION(nsurf)::SnowPack,&
+       snowFrac,&
+       mw_ind,&
+       SnowAlb,&
+       SnowDens
+
+
+  REAL(KIND(1d0)),INTENT(in)::&
+       lvS_J_kg,&
+       lv_J_kg,&
+       tstep_real,&
+       RadMeltFact,&
+       TempMeltFact,&
+       SnowAlbMax,&
+       SnowDensMin,&
+       Temp_C,&
+       Precip,&
+       PrecipLimit,&
+       PrecipLimitAlb,&
+       nsh_real,&
+       waterdens
+
+  REAL(KIND(1d0)),INTENT(out)::&
+       mwh,&
+       fwh,&
+       Qm,&
+       QmFreez,&
+       QmRain,&
+       CumSnowfall
+
+  REAL(KIND(1d0))::AdjMeltFact,&
+       cw=4190,&  !,ci=2090   !Specific heat capacity of water
+       Watfreeze
+
+  INTEGER::is
 
   !Initialize snow variables
   snowCalcSwitch=0
-  StateFraction=0
-  snowCoverForms=0
   Qm_melt=0
   Qm_freezState=0
   Qm_rain=0
@@ -47,9 +143,6 @@ SUBROUTINE MeltHeat
   FreezStateVol=0
   rainOnSnow = 0
 
-  !Initialize mechanical snow removal
-  SnowRemoval(PavSurf)=0
-  SnowRemoval(BldgSurf)=0
 
   !=========================================================================================
   DO is=1,nsurf  !Go each surface type through
@@ -207,7 +300,99 @@ END SUBROUTINE MeltHeat
 
 !===============================================================================================
 !===============================================================================================
-SUBROUTINE SnowCalc
+SUBROUTINE SnowCalc(&
+     ity,&
+     id,&  !input
+     nsurf,&
+     tstep,&
+     imin,&
+     it,&
+     is,&
+     snowfractionchoice,&
+     nsh_real,&
+     DayofWeek,&
+     CRWmin,&
+     CRWmax,&
+     lvS_J_kg,&
+     lv_j_kg,&
+     avdens,&
+     waterdens,&
+     avRh,&
+     Press_hPa,&
+     precip,&
+     Temp_C,&
+     RAsnow,&
+     psyc_hPa,&
+     avcp,&
+     sIce_hPa,&
+     surf,&
+     ConifSurf,&
+     BSoilSurf,&
+     BldgSurf,&
+     PavSurf,&
+     WaterSurf,&
+     PervFraction,&
+     VegFraction,&
+     addimpervious,&
+     soilstorecap,&
+     sfr,&
+     SnowDens,&
+     snowdensmin,&
+     Qm_Melt,&
+     Qm_rain,&
+     Tsurf_ind,&
+     drain,&
+     SurplusEvap,&
+     snowPack,&
+     snowFrac,&
+     mw_ind,&
+     rainonsnow,&
+     freezmelt,&
+     freezstate,&
+     freezstatevol,&
+     MeltWaterStore,&
+     runoffPipes,&
+     mwstore,&
+     runoffwaterbody,&
+     iceFrac,&
+     addwater,&
+     addwaterrunoff,&
+     SnowDepth,&
+     WetThresh,&
+     numPM,&
+     s_hPa,&
+     ResistSurf,&
+     sp,&
+     ra,&
+     rb,&
+     tlv,&
+     runoffSnow,&   !Output
+     runoff,&
+     runoffSoil,&
+     chang,&
+     changSnow,&
+     SnowToSurf,&
+     addVeg,&
+     ev,&
+     ev_snow,&
+     state,&
+     stateold,&
+     swe,&
+     chSnow_per_interval,&
+     ev_per_tstep,&
+     qe_per_tstep,&
+     runoff_per_tstep,&
+     surf_chang_per_tstep,&
+     PipeCapacity,&
+     RunoffToWater,&
+     runoffAGimpervious,&
+     runoffAGveg,&
+     FlowChange,&
+     surpluswaterbody,&
+     snowprof,&
+     soilmoist,&
+     snowD)
+
   !Calculation of snow and water balance on 5 min timestep. Treats snowfree and snow covered
   !areas separately. Weighting is taken into account in the overall values.
   !Last modified:
@@ -217,21 +402,130 @@ SUBROUTINE SnowCalc
   !  LJ in 24 May 2013
   !========================================================================
 
-  USE allocateArray
-  USE defaultNotUsed
-  USE data_in
-  USE gis_data
-  USE mod_k
-  USE mod_z
-  USE moist
-  USE snowMod
-  USE sues_data
-  USE thresh
-  USE time
+  !USE allocateArray
+  !USE defaultNotUsed
+  !USE data_in
+  !USE gis_data
+  !USE mod_k
+  !USE mod_z
+  !USE moist
+  !USE snowMod
+  !USE sues_data
+  !USE thresh
+  !USE time
 
   IMPLICIT NONE
 
-  REAL(KIND(1d0)):: Evap_SUEWS_Snow,&
+
+
+  INTEGER,INTENT(in)::id,&
+       nsurf,&
+       tstep,&
+       imin,&
+       it,&
+       is,&
+       snowfractionchoice,&
+       ConifSurf,&
+       BSoilSurf,&
+       BldgSurf,&
+       PavSurf,&
+       WaterSurf
+  INTEGER,INTENT(in) :: ity!Evaporation calculated according to Rutter (1) or Shuttleworth (2)
+
+  REAL(KIND(1d0)),INTENT(in)::CRWmin,&
+       CRWmax,&
+       nsh_real,&
+       lvS_J_kg,&
+       lv_j_kg,&
+       avdens,&
+       waterdens,&
+       avRh,&
+       Press_hPa,&
+       Temp_C,&
+       RAsnow,&
+       psyc_hPa,&
+       avcp,&
+       sIce_hPa,&
+       PervFraction,&
+       vegfraction,&
+       addimpervious,&
+       numPM,&
+       s_hPa,&
+       ResistSurf,&
+       sp,&
+       ra,&
+       rb,&
+       tlv,&
+       snowdensmin,&
+       precip,&
+       PipeCapacity,&
+       RunoffToWater,&
+       runoffAGimpervious,&
+       runoffAGveg,&
+       surpluswaterbody
+
+  REAL(KIND(1d0)),DIMENSION(366,2),INTENT(in)::DayofWeek
+  REAL(KIND(1d0)),DIMENSION(6,nsurf),INTENT(in):: surf
+
+
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::runoffSnow,& !Initialize for runoff caused by snowmelting
+       runoff,&
+       runoffSoil,&
+       chang,&
+       changSnow,&
+       SnowToSurf,&
+       state,&
+       snowD,&
+       ev_snow,&
+       soilmoist
+
+  REAL(KIND(1d0)), DIMENSION(0:23,2),INTENT(out):: snowProf
+
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::drain,&
+       WetThresh,&
+       stateold,&
+       mw_ind,&
+       soilstorecap,&
+       rainonsnow,&
+       freezmelt,&
+       freezstate,&
+       freezstatevol,&
+       Qm_Melt,&
+       Qm_rain,&
+       Tsurf_ind,&
+       sfr
+
+
+  REAL(KIND(1d0)),INTENT(out)::swe,ev
+
+  !Updated status: input and output
+  REAL(KIND(1d0)),DIMENSION(nsurf)::snowPack,&
+       snowFrac,&
+       MeltWaterStore,&
+       SnowDepth,&
+       iceFrac,&
+       addwater,&
+       addwaterrunoff,&
+       SnowDens
+
+  REAL(KIND(1d0))::chSnow_per_interval,&
+       ev_per_tstep,&
+       qe_per_tstep,&
+       runoff_per_tstep,&
+       surf_chang_per_tstep,&
+       runoffPipes,&
+       mwstore,&
+       runoffwaterbody,&
+       FlowChange
+
+  REAL(KIND(1d0)),DIMENSION(2):: SurplusEvap
+
+
+  REAL(KIND(1d0))::&
+       qe,&
+       rss,&
+       addVeg,&
+       Evap_SUEWS_Snow,&
        MeltExcess,&      !Excess melt water that needs to leave snowpack
        snowTotInit,&
        EvPart,&
@@ -239,10 +533,13 @@ SUBROUTINE SnowCalc
        snowFracFresh1,&   !Snow fraction for newly formed snowpack
        snowFracFresh2,&   !Snow fraction for newly formed snowpack from state only
        snowFracOld,&
-       FWC               !Water holding capacity of snow in mm
+       WaterHoldCapFrac,&
+       FWC                !Water holding capacity of snow in mm
+
   REAL(KIND(1d0)):: SnowDepletionCurve
 
   INTEGER:: iu                        !1=weekday OR 2=weekend
+  REAL(KIND(1d0)),PARAMETER :: IPThreshold_mmhr = 10   !Threshold for intense precipitation [mm hr-1]
   !========================================================================
   !Initialize variables for the calculation of water storages and evaporation
 
@@ -250,6 +547,7 @@ SUBROUTINE SnowCalc
   iu=1     !Set to 1=weekday
   IF(DayofWeek(id,1)==1.OR.DayofWeek(id,1)==7) iu=2  !Set to 2=weekend
 
+  !write(*,*) is
   runoffSnow(is)=0 !Initialize for runoff caused by snowmelting
   runoff(is)=0
   runoffSoil(is)=0
@@ -275,7 +573,28 @@ SUBROUTINE SnowCalc
 
   !======================================================================
   ! Calculate evaporation from snowpack and snow free surfaces (in mm)
-  IF (snowFrac(is)<1) CALL Evap_SUEWS !ev and qe for snow free surface out
+  ! IF (snowFrac(is)<1) CALL Evap_SUEWS !ev and qe for snow free surface out
+
+  IF (snowFrac(is)<1) CALL Evap_SUEWS(&
+
+                                ! input:
+       ity,&!Evaporation calculated according to Rutter (1) or Shuttleworth (2)
+       state(is),& ! wetness status
+       WetThresh(is),&!When State > WetThresh, rs=0 limit in SUEWS_evap [mm] (specified in input files)
+       surf(6,is),& ! = surf(is,6), current storage capacity [mm]
+       numPM,&!numerator of P-M eqn
+       s_hPa,&!Vapour pressure versus temperature slope in hPa
+       psyc_hPa,&!Psychometric constant in hPa
+       ResistSurf,&!Surface resistance
+       sp,&!Term in calculation of E
+       ra,&!Aerodynamic resistance
+       rb,&!Boundary layer resistance
+       tlv,&!Latent heat of vaporization per timestep [J kg-1 s-1], (tlv=lv_J_kg/tstep_real)
+
+                                ! output:
+       rss,&
+       ev,&
+       qe) ! latent heat flux [W m-2]
 
   IF (snowFrac(is)>0) THEN
      ev_snow(is) = Evap_SUEWS_Snow(Qm_Melt(is),Qm_rain(is),lvS_J_kg,avdens,avRh,Press_hPa,Temp_C,RAsnow,&
@@ -595,7 +914,14 @@ SUBROUTINE SnowCalc
   !Add runoff to pipes
   runoffPipes=runoffPipes+runoffSnow(is)*sfr(is)*MAX(snowFrac(is),snowfracOld)+runoff(is)*sfr(is)*(1-snowFrac(is))&
        +runoffTest*sfr(is)
-  CALL updateFlood
+  CALL updateFlood(&
+                                ! input:
+       nsurf,is,PavSurf,BldgSurf,WaterSurf,ConifSurf,BSoilSurf,&
+       sfr,PipeCapacity,RunoffToWater,&
+                                ! inout:
+       runoffAGimpervious,surplusWaterBody,runoffAGveg,runoffPipes&
+       )
+
   runoff_per_tstep=runoff_per_tstep+runoffSnow(is)*sfr(is)*MAX(snowFrac(is),snowfracOld)+runoff(is)*sfr(is)*(1-snowFrac(is))&
        +runoffTest*sfr(is)
 

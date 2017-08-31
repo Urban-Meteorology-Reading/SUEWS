@@ -417,9 +417,51 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   !==================Energy related to snow melting/freezing processes=======
   IF (snowUse==1)  THEN
-
      IF(Diagnose==1) WRITE(*,*) 'Calling MeltHeat'
-     CALL MeltHeat
+     CALL MeltHeat(&!input
+          nsurf,&
+          bldgsurf,&
+          PavSurf,&
+          WaterSurf,&
+          nsh_real,&
+          lvS_J_kg,&
+          lv_J_kg,&
+          tstep_real,&
+          RadMeltFact,&
+          TempMeltFact,&
+          SnowAlb,&
+          SnowDens,&
+          SnowAlbMax,&
+          SnowDensMin,&
+          Qm_melt,&
+          Qm_freezState,&
+          Qm_rain,&
+          deltaQi,&
+          FreezMelt,&
+          FreezState,&
+          FreezStateVol,&
+          rainOnSnow,&
+          Tsurf_ind,&
+          state,&
+          sfr,&
+          Temp_C,&
+          Precip,&
+          PrecipLimit,&
+          PrecipLimitAlb,&
+          qn1_ind_snow,&
+          SnowDepth,&
+          Meltwaterstore,&
+          waterdens,&
+          SnowPack,&      !updated state
+          CumSnowfall,&
+          snowFrac,&
+          mwh,&
+          fwh,&
+          Qm,&
+          QmFreez,&
+          QmRain,&
+          snowCalcSwitch,&
+          mw_ind)       !output
 
      ! If snow on ground, no irrigation, so veg_fr same in each case
      !New fraction of vegetation.
@@ -722,7 +764,98 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
      IF (snowCalcSwitch(is)==1) THEN
         IF (sfr(is)/=0) THEN
            IF(Diagnose==1) WRITE(*,*) 'Calling SnowCalc...'
-           CALL snowCalc
+           CALL SnowCalc(&
+                ity,&
+                id,&  !input
+                nsurf,&
+                tstep,&
+                imin,&
+                it,&
+                is,&
+                snowfractionchoice,&
+                nsh_real,&
+                DayofWeek,&
+                CRWmin,&
+                CRWmax,&
+                lvS_J_kg,&
+                lv_j_kg,&
+                avdens,&
+                waterdens,&
+                avRh,&
+                Press_hPa,&
+                precip,&
+                Temp_C,&
+                RAsnow,&
+                psyc_hPa,&
+                avcp,&
+                sIce_hPa,&
+                surf,&
+                ConifSurf,&
+                BSoilSurf,&
+                BldgSurf,&
+                PavSurf,&
+                WaterSurf,&
+                PervFraction,&
+                VegFraction,&
+                addimpervious,&
+                soilstorecap,&
+                sfr,&
+                SnowDens,&
+                snowdensmin,&
+                Qm_Melt,&
+                Qm_rain,&
+                Tsurf_ind,&
+                drain,&
+                SurplusEvap,&
+                snowPack,&
+                snowFrac,&
+                mw_ind,&
+                rainonsnow,&
+                freezmelt,&
+                freezstate,&
+                freezstatevol,&
+                MeltWaterStore,&
+                runoffPipes,&
+                mwstore,&
+                runoffwaterbody,&
+                iceFrac,&
+                addwater,&
+                addwaterrunoff,&
+                SnowDepth,&
+                WetThresh,&
+                numPM,&
+                s_hPa,&
+                ResistSurf,&
+                sp,&
+                ra,&
+                rb,&
+                tlv,&
+                runoffSnow,&   !Output
+                runoff,&
+                runoffSoil,&
+                chang,&
+                changSnow,&
+                SnowToSurf,&
+                addVeg,&
+                ev,&
+                ev_snow,&
+                state,&
+                stateold,&
+                swe,&
+                chSnow_per_interval,&
+                ev_per_tstep,&
+                qe_per_tstep,&
+                runoff_per_tstep,&
+                surf_chang_per_tstep,&
+                PipeCapacity,&
+                RunoffToWater,&
+                runoffAGimpervious,&
+                runoffAGveg,&
+                FlowChange,&
+                surpluswaterbody,&
+                snowprof,&
+                soilmoist,&
+                snowD)
         ELSE
            snowFrac(is) = 0
            SnowDens(is) = 0

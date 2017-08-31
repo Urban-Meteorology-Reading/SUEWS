@@ -7,18 +7,33 @@
 !
 !========================================================================
 
- subroutine SnowUpdate(Temp_C_hr)
+ subroutine SnowUpdate(Temp_C_hr,nsurf,tstep,SnowPack,SnowDens,snowAlb,tau_a,tau_f,tau_r,SnowDensMax,SnowAlbMin,SnowDensMin)
 
-  use allocateArray
-  use snowMod
-  use sues_data
+  !use allocateArray
+  !use snowMod
+  !use sues_data
 
   IMPLICIT NONE
 
+  INTEGER,intent(in)::nsurf,tstep
+
+  REAL(KIND(1D0)),intent(in)::Temp_C_hr,&        !Air temperature
+                              tau_a,&
+                              tau_f,&
+                              tau_r,&
+                              SnowDensMax,&
+                              SnowDensMin,&
+                              SnowAlbMin
+
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::SnowPack
+  REAL(KIND(1d0)),DIMENSION(nsurf)::SnowDens
+
+
+INTEGER::is
   REAL(KIND(1D0))::alb_change,&     !Change in snow albedo
                    dens_change,&    !Change in snow density
                    tau_1,&          !Number of seconds in a day
-                   Temp_C_hr        !Air temperature
+                   snowAlb
 
   !Initialize
   alb_change=0
@@ -26,7 +41,7 @@
   tau_1=24*60*60
 
   !==========================================================
-  !Calculation of snow albedo by Lemonsu et al. 2010 
+  !Calculation of snow albedo by Lemonsu et al. 2010
   !(org: Verseghy (1991)&Baker et al.(1990))
   if (sum(SnowPack)>0) then !Check if snow on any of the surfaces
       if (Temp_C_hr<0) then
@@ -56,8 +71,9 @@
     endif
   enddo
 
+  ! write(*,*) snowAlb
+
  end subroutine SnowUpdate
 
 !====================================================================================
 !====================================================================================
-  

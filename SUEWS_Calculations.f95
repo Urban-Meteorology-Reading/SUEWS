@@ -186,7 +186,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        avdens)
 
   !======== Calculate soil moisture =========
-  call soilMoist_update(&
+  CALL soilMoist_update(&
        nsurf,ConifSurf,DecidSurf,GrassSurf,&!input
        NonWaterFraction,&
        soilstoreCap,sfr,soilmoist,&
@@ -326,45 +326,45 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
 
   ! =================STORAGE HEAT FLUX=======================================
-call SUEWS_cal_Qs(&
-     nsurf,&
-     StorageHeatMethod,&
-     OHMIncQF,&
-     Gridiv,&
-     id,&
-     Diagnose,&
-     sfr,&
-     OHM_coef,&
-     OHM_threshSW,OHM_threshWD,&
-     soilmoist,&
-     soilstoreCap,&
-     state,&
-     nsh,&
-     BldgSurf,&
-     WaterSurf,&
-     SnowUse,&
-     DiagQS,&
-     HDD(id-1,4),&
-     MetForcingData(:,:,Gridiv),&
-     qn1,qn1_bup,&
-     alb,&
-     emis,&
-     cpAnOHM,&
-     kkAnOHM,&
-     chAnOHM,&
-     AnthropHeatMethod,&
-     qn1_store,&
-     qn1_S_store,&
-     qn1_av_store,&
-     qn1_S_av_store,&
-     surf,&
-     qn1_S,&
-     snowFrac,&
-     qs,&
-     deltaQi,&
-     a1,&
-     a2,&
-     a3)
+  CALL SUEWS_cal_Qs(&
+       nsurf,&
+       StorageHeatMethod,&
+       OHMIncQF,&
+       Gridiv,&
+       id,&
+       Diagnose,&
+       sfr,&
+       OHM_coef,&
+       OHM_threshSW,OHM_threshWD,&
+       soilmoist,&
+       soilstoreCap,&
+       state,&
+       nsh,&
+       BldgSurf,&
+       WaterSurf,&
+       SnowUse,&
+       DiagQS,&
+       HDD(id-1,4),&
+       MetForcingData(:,:,Gridiv),&
+       qn1,qn1_bup,&
+       alb,&
+       emis,&
+       cpAnOHM,&
+       kkAnOHM,&
+       chAnOHM,&
+       AnthropHeatMethod,&
+       qn1_store,&
+       qn1_S_store,&
+       qn1_av_store,&
+       qn1_S_av_store,&
+       surf,&
+       qn1_S,&
+       snowFrac,&
+       qs,&
+       deltaQi,&
+       a1,&
+       a2,&
+       a3)
 
   ! IF(StorageHeatMethod==1) THEN           !Use OHM to calculate QS
   !    IF(OHMIncQF == 1) THEN      !Calculate QS using QSTAR+QF

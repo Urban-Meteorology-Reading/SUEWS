@@ -220,46 +220,56 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
 
   ! ===================NET ALLWAVE RADIATION================================
-  IF(NetRadiationMethod>0)THEN
-
-     IF (snowUse==0) snowFrac=snow_obs
-
-     IF(ldown_option==1) THEN !Observed ldown provided as forcing
-        ldown=ldown_obs
-     ELSE
-        ldown=-9              !to be filled in NARP
-     ENDIF
-
-     IF(ldown_option==2) THEN !observed cloud fraction provided as forcing
-        fcld=fcld_obs
-     ENDIF
-
-     !write(*,*) DecidCap(id), id, it, imin, 'Calc - near start'
-
-     ! Update variables that change daily and represent seasonal variability
-     alb(DecidSurf)    = albDecTr(id) !Change deciduous albedo
-     surf(6,DecidSurf) = DecidCap(id) !Change current storage capacity of deciduous trees
-     ! Change EveTr and Grass albedo too
-     alb(ConifSurf) = albEveTr(id)
-     alb(GrassSurf) = albGrass(id)
-
-     IF(Diagnose==1) WRITE(*,*) 'Calling NARP...'
-     CALL NARP(&
-                                ! input:
-          dectime,ZENITH_deg,avKdn,Temp_C,avRH,Press_hPa,qn1_obs,&
-          SnowAlb,&
-          AlbedoChoice,ldown_option,NetRadiationMethod,DiagQN,&
-                                ! output:
-          qn1,qn1_SF,qn1_S,kclear,kup,LDown,lup,fcld,TSURF)
-     !Temp_C,kclear,fcld,dectime,avkdn,avRH,qn1,kup,ldown,lup,tsurf,&
-     !AlbedoChoice,ldown_option,Press_hPa,Ea_hPa,qn1_obs,&
-     !zenith_deg,NetRadiationMethod,
-  ELSE
-     snowFrac = snow_obs
-     qn1      = qn1_obs
-     qn1_sf   = qn1_obs
-     qn1_s    = qn1_obs
-  ENDIF
+  CALL SUEWS_cal_Qn(&
+       nsurf,NetRadiationMethod,snowUse,ldown_option,id,&!input
+       DecidSurf,ConifSurf,GrassSurf,Diagnose,&
+       snow_obs,ldown_obs,fcld_obs,&
+       dectime,ZENITH_deg,avKdn,Temp_C,avRH,Press_hPa,qn1_obs,&
+       SnowAlb,&
+       AlbedoChoice,DiagQN,&
+       alb,albDecTr,DecidCap,albEveTr,albGrass,surf,&!inout
+       snowFrac,ldown,fcld,&!output
+       qn1,qn1_SF,qn1_S,kclear,kup,lup,TSURF)
+  ! IF(NetRadiationMethod>0)THEN
+  !
+  !    IF (snowUse==0) snowFrac=snow_obs
+  !
+  !    IF(ldown_option==1) THEN !Observed ldown provided as forcing
+  !       ldown=ldown_obs
+  !    ELSE
+  !       ldown=-9              !to be filled in NARP
+  !    ENDIF
+  !
+  !    IF(ldown_option==2) THEN !observed cloud fraction provided as forcing
+  !       fcld=fcld_obs
+  !    ENDIF
+  !
+  !    !write(*,*) DecidCap(id), id, it, imin, 'Calc - near start'
+  !
+  !    ! Update variables that change daily and represent seasonal variability
+  !    alb(DecidSurf)    = albDecTr(id) !Change deciduous albedo
+  !    surf(6,DecidSurf) = DecidCap(id) !Change current storage capacity of deciduous trees
+  !    ! Change EveTr and Grass albedo too
+  !    alb(ConifSurf) = albEveTr(id)
+  !    alb(GrassSurf) = albGrass(id)
+  !
+  !    IF(Diagnose==1) WRITE(*,*) 'Calling NARP...'
+  !    CALL NARP(&
+  !                               ! input:
+  !         dectime,ZENITH_deg,avKdn,Temp_C,avRH,Press_hPa,qn1_obs,&
+  !         SnowAlb,&
+  !         AlbedoChoice,ldown_option,NetRadiationMethod,DiagQN,&
+  !                               ! output:
+  !         qn1,qn1_SF,qn1_S,kclear,kup,LDown,lup,fcld,TSURF)
+  !    !Temp_C,kclear,fcld,dectime,avkdn,avRH,qn1,kup,ldown,lup,tsurf,&
+  !    !AlbedoChoice,ldown_option,Press_hPa,Ea_hPa,qn1_obs,&
+  !    !zenith_deg,NetRadiationMethod,
+  ! ELSE
+  !    snowFrac = snow_obs
+  !    qn1      = qn1_obs
+  !    qn1_sf   = qn1_obs
+  !    qn1_s    = qn1_obs
+  ! ENDIF
 
   ! ===================SOLWEIG OUTPUT ========================================
   IF (SOLWEIGuse==1) THEN
@@ -316,77 +326,116 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
 
   ! =================STORAGE HEAT FLUX=======================================
+call SUEWS_cal_Qs(&
+     nsurf,&
+     StorageHeatMethod,&
+     OHMIncQF,&
+     Gridiv,&
+     id,&
+     Diagnose,&
+     sfr,&
+     OHM_coef,&
+     OHM_threshSW,OHM_threshWD,&
+     soilmoist,&
+     soilstoreCap,&
+     state,&
+     nsh,&
+     BldgSurf,&
+     WaterSurf,&
+     SnowUse,&
+     DiagQS,&
+     HDD(id-1,4),&
+     MetForcingData(:,:,Gridiv),&
+     qn1,qn1_bup,&
+     alb,&
+     emis,&
+     cpAnOHM,&
+     kkAnOHM,&
+     chAnOHM,&
+     AnthropHeatMethod,&
+     qn1_store,&
+     qn1_S_store,&
+     qn1_av_store,&
+     qn1_S_av_store,&
+     surf,&
+     qn1_S,&
+     snowFrac,&
+     qs,&
+     deltaQi,&
+     a1,&
+     a2,&
+     a3)
 
-  IF(StorageHeatMethod==1) THEN           !Use OHM to calculate QS
-     IF(OHMIncQF == 1) THEN      !Calculate QS using QSTAR+QF
-        IF(Diagnose==1) WRITE(*,*) 'Calling OHM...'
-        CALL OHM(qn1,qn1_store(:,Gridiv),qn1_av_store(:,Gridiv),&
-             qn1_S,qn1_S_store(:,Gridiv),qn1_S_av_store(:,Gridiv),&
-             nsh,&
-             sfr,nsurf,&
-             HDD(id-1,4),&
-             OHM_coef,&
-             OHM_threshSW,OHM_threshWD,&
-             soilmoist,soilstoreCap,state,&
-             BldgSurf,WaterSurf,&
-             SnowUse,SnowFrac,&
-             DiagQS,&
-             qs,deltaQi)
-     ELSEIF(OHMIncQF == 0) THEN  !Calculate QS using QSTAR
-        qn1=qn1_bup
-        IF(Diagnose==1) WRITE(*,*) 'Calling OHM...'
-        CALL OHM(qn1_bup,qn1_store(:,Gridiv),qn1_av_store(:,Gridiv),&
-             qn1_S,qn1_S_store(:,Gridiv),qn1_S_av_store(:,Gridiv),&
-             nsh,&
-             sfr,nsurf,&
-             HDD(id-1,4),&
-             OHM_coef,&
-             OHM_threshSW,OHM_threshWD,&
-             soilmoist,soilstoreCap,state,&
-             BldgSurf,WaterSurf,&
-             SnowUse,SnowFrac,&
-             DiagQS,&
-             qs,deltaQi)
-     ENDIF
-  ENDIF
-
-  ! use AnOHM to calculate QS, TS 14 Mar 2016
-  IF (StorageHeatMethod==3) THEN
-     IF ( OHMIncQF == 1 ) THEN    !Calculate QS using QSTAR+QF
-        IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'
-        CALL AnOHM(qn1,qn1_store(:,Gridiv),qn1_av_store(:,Gridiv),&
-             MetForcingData(:,:,Gridiv),state/surf(6,:),&
-             alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&
-             sfr,nsurf,nsh,AnthropHeatMethod,id,Gridiv,&
-             a1,a2,a3,qs)
-     ELSEIF(OHMIncQF == 0) THEN   !Calculate QS using QSTAR
-        qn1=qn1_bup
-        IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'
-        CALL AnOHM(qn1_bup,qn1_store(:,Gridiv),qn1_av_store(:,Gridiv),&
-             MetForcingData(:,:,Gridiv),state/surf(6,:),&
-             alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&
-             sfr,nsurf,nsh,AnthropHeatMethod,id,Gridiv,&
-             a1,a2,a3,qs)
-     END IF
-  END IF
-
-  !Calculate QS using ESTM
-  IF(StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
-     !CALL ESTM_v2016(QSestm,iMB)
-     IF(Diagnose==1) WRITE(*,*) 'Calling ESTM...'
-     CALL ESTM_v2016(QSestm,Gridiv,ir)  ! iMB corrected to Gridiv, TS 09 Jun 2016
-     QS=QSestm   ! Use ESTM qs
-  ENDIF
-
-  ! don't use these composite QS options at the moment, TS 10 Jun 2016
-  ! IF (StorageHeatMethod>=10)THEN ! Chose which QS will be used in SUEWS and output file
-  !    !write(800,*)id,it,QS,QSanOHM,QSestm
-  !    IF(StorageHeatMethod==14)THEN
-  !       QS=QSestm
-  !    ELSEIF(StorageHeatMethod==13)THEN
-  !       QS=QSanOHM
+  ! IF(StorageHeatMethod==1) THEN           !Use OHM to calculate QS
+  !    IF(OHMIncQF == 1) THEN      !Calculate QS using QSTAR+QF
+  !       IF(Diagnose==1) WRITE(*,*) 'Calling OHM...'
+  !       CALL OHM(qn1,qn1_store(:,Gridiv),qn1_av_store(:,Gridiv),&
+  !            qn1_S,qn1_S_store(:,Gridiv),qn1_S_av_store(:,Gridiv),&
+  !            nsh,&
+  !            sfr,nsurf,&
+  !            HDD(id-1,4),&
+  !            OHM_coef,&
+  !            OHM_threshSW,OHM_threshWD,&
+  !            soilmoist,soilstoreCap,state,&
+  !            BldgSurf,WaterSurf,&
+  !            SnowUse,SnowFrac,&
+  !            DiagQS,&
+  !            qs,deltaQi)
+  !    ELSEIF(OHMIncQF == 0) THEN  !Calculate QS using QSTAR
+  !       qn1=qn1_bup
+  !       IF(Diagnose==1) WRITE(*,*) 'Calling OHM...'
+  !       CALL OHM(qn1_bup,qn1_store(:,Gridiv),qn1_av_store(:,Gridiv),&
+  !            qn1_S,qn1_S_store(:,Gridiv),qn1_S_av_store(:,Gridiv),&
+  !            nsh,&
+  !            sfr,nsurf,&
+  !            HDD(id-1,4),&
+  !            OHM_coef,&
+  !            OHM_threshSW,OHM_threshWD,&
+  !            soilmoist,soilstoreCap,state,&
+  !            BldgSurf,WaterSurf,&
+  !            SnowUse,SnowFrac,&
+  !            DiagQS,&
+  !            qs,deltaQi)
   !    ENDIF
   ! ENDIF
+  !
+  ! ! use AnOHM to calculate QS, TS 14 Mar 2016
+  ! IF (StorageHeatMethod==3) THEN
+  !    IF ( OHMIncQF == 1 ) THEN    !Calculate QS using QSTAR+QF
+  !       IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'
+  !       CALL AnOHM(qn1,qn1_store(:,Gridiv),qn1_av_store(:,Gridiv),&
+  !            MetForcingData(:,:,Gridiv),state/surf(6,:),&
+  !            alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&
+  !            sfr,nsurf,nsh,AnthropHeatMethod,id,Gridiv,&
+  !            a1,a2,a3,qs)
+  !    ELSEIF(OHMIncQF == 0) THEN   !Calculate QS using QSTAR
+  !       qn1=qn1_bup
+  !       IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'
+  !       CALL AnOHM(qn1_bup,qn1_store(:,Gridiv),qn1_av_store(:,Gridiv),&
+  !            MetForcingData(:,:,Gridiv),state/surf(6,:),&
+  !            alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&
+  !            sfr,nsurf,nsh,AnthropHeatMethod,id,Gridiv,&
+  !            a1,a2,a3,qs)
+  !    END IF
+  ! END IF
+  !
+  ! !Calculate QS using ESTM
+  ! IF(StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
+  !    !CALL ESTM_v2016(QSestm,iMB)
+  !    IF(Diagnose==1) WRITE(*,*) 'Calling ESTM...'
+  !    CALL ESTM_v2016(QSestm,Gridiv,ir)  ! iMB corrected to Gridiv, TS 09 Jun 2016
+  !    QS=QSestm   ! Use ESTM qs
+  ! ENDIF
+  !
+  ! ! don't use these composite QS options at the moment, TS 10 Jun 2016
+  ! ! IF (StorageHeatMethod>=10)THEN ! Chose which QS will be used in SUEWS and output file
+  ! !    !write(800,*)id,it,QS,QSanOHM,QSestm
+  ! !    IF(StorageHeatMethod==14)THEN
+  ! !       QS=QSestm
+  ! !    ELSEIF(StorageHeatMethod==13)THEN
+  ! !       QS=QSanOHM
+  ! !    ENDIF
+  ! ! ENDIF
 
 
 

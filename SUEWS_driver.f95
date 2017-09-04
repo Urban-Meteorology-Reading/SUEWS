@@ -139,8 +139,7 @@ SUBROUTINE SUEWS_cal_Qs(&
      deltaQi,&
      a1,&
      a2,&
-     a3&
-     )
+     a3)
 
 
   IMPLICIT NONE

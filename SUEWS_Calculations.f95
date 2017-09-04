@@ -497,9 +497,12 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
      ! If snow on ground, no irrigation, so veg_fr same in each case
      !New fraction of vegetation.
      !IF(veg_type==1)THEN         ! area vegetated
-     veg_fr = sfr(ConifSurf)*(1-snowFrac(ConifSurf))+sfr(DecidSurf)*(1-snowFrac(DecidSurf))+&
-          sfr(GrassSurf)*(1-snowFrac(GrassSurf))+sfr(BSoilSurf)*(1-snowFrac(BSoilSurf))+&
-          sfr(WaterSurf)*(1-snowFrac(WaterSurf))
+     CALL veg_fr_snow(&
+          sfr,snowFrac,&!input
+          veg_fr)!output
+    !  veg_fr = sfr(ConifSurf)*(1-snowFrac(ConifSurf))+sfr(DecidSurf)*(1-snowFrac(DecidSurf))+&
+    !       sfr(GrassSurf)*(1-snowFrac(GrassSurf))+sfr(BSoilSurf)*(1-snowFrac(BSoilSurf))+&
+    !       sfr(WaterSurf)*(1-snowFrac(WaterSurf))
 
      !ELSEIF(veg_type==2)THEN     ! area irrigated
      !   !!!veg_fr=sfr(GrassISurf)*(1-snowFrac(GrassUSurf))

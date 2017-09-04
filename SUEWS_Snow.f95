@@ -7,6 +7,7 @@
 !  snowRem - Removal of snow my snow clearing
 !  SnowDepletionCurve - Calculation of snow fractions
 !Last modified
+!  TS 04 Sep 2017 - added `veg_fr_snow` to update VegFractions with snow effect included
 !  TS 31 Aug 2017 - fixed the incomplete explicit interfaces
 !  LJ 24 Aug 2017 - added explicit interfaces
 !  LJ 3 May 2016  - Changed so that not all surface water freezes in 5-min timestep.
@@ -136,7 +137,7 @@ SUBROUTINE MeltHeat(&!input
 
   REAL(KIND(1d0)),PARAMETER::cw=4190  !,ci=2090   !Specific heat capacity of water
 
-  INTEGER::is
+  INTEGER::is,xx
 
   !Initialize snow variables
   snowCalcSwitch=0
@@ -148,6 +149,10 @@ SUBROUTINE MeltHeat(&!input
   FreezStateVol=0
   rainOnSnow = 0
 
+  !===dummy calculations===
+  xx=bldgsurf
+  xx=PavSurf
+  !===dummy calculations end===
 
   !=========================================================================================
   DO is=1,nsurf  !Go each surface type through
@@ -1184,3 +1189,17 @@ FUNCTION SnowDepletionCurve(is,swe,sweD) RESULT(asc)
 
   RETURN
 END FUNCTION SnowDepletionCurve
+
+SUBROUTINE veg_fr_snow(&
+     sfr,snowFrac,&!input
+     veg_fr)!output
+
+  IMPLICIT NONE
+
+  REAL(KIND(1d0)),INTENT(in),DIMENSION(:) :: sfr      !< surface fractions
+  REAL(KIND(1d0)),INTENT(in),DIMENSION(:) :: snowFrac !< snowy surface fractions [-]
+  REAL(KIND(1d0)),INTENT(out)             :: veg_fr   !< vegetated surface fractions [-]
+
+  veg_fr = dot_product(sfr(3:7),1-snowFrac(3:7))
+
+END SUBROUTINE veg_fr_snow

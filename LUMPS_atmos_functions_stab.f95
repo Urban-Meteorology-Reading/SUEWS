@@ -21,13 +21,13 @@ SUBROUTINE STAB_lumps(&
      zdm,&     !Displacement height
      avU1,&    !Average wind speed
      Temp_C,&  !Air temperature
+     h_init,    & !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
                                 ! output:
-         L,& !Obukhov length
+     L,& !Obukhov length
      Tstar,& !T*
      USTAR,& !Friction velocity
-     h,    & !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
-     psim  & !Stability function of momentum
-     )
+     psim)!Stability function of momentum
+
   ! USE mod_k
   ! USE mod_z
   ! USE mod_grav
@@ -38,21 +38,20 @@ SUBROUTINE STAB_lumps(&
   IMPLICIT NONE
   INTEGER,INTENT(in):: StabilityMethod
 
-  REAL(KIND(1d0)),INTENT(in)::&
-       dectime,& !Decimal time
-       zzd,&     !Active measurement height (meas. height-displac. height)
-       z0M,&     !Aerodynamic roughness length
-       zdm,&     !Displacement height
-       avU1,&    !Average wind speed
-       Temp_C    !Air temperature
+
+  REAL(KIND(1d0)),INTENT(in)::dectime !Decimal time
+  REAL(KIND(1d0)),INTENT(in)::zzd     !Active measurement height (meas. height-displac. height)
+  REAL(KIND(1d0)),INTENT(in)::z0M     !Aerodynamic roughness length
+  REAL(KIND(1d0)),INTENT(in)::zdm     !Displacement height
+  REAL(KIND(1d0)),INTENT(in)::avU1    !Average wind speed
+  REAL(KIND(1d0)),INTENT(in)::Temp_C    !Air temperature
+  REAL(KIND(1d0)),INTENT(in)::h_init    !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
 
 
-  REAL(KIND(1d0)),INTENT(out)::&
-       L,    &!Obukhov length
-       Tstar,&!T*
-       USTAR,&!Friction velocity
-       h,&    !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
-       psim   !Stability function of momentum
+  REAL(KIND(1d0)),INTENT(out)::L!Obukhov length
+  REAL(KIND(1d0)),INTENT(out)::Tstar!T*
+  REAL(KIND(1d0)),INTENT(out)::USTAR!Friction velocity
+  REAL(KIND(1d0)),INTENT(out)::psim   !Stability function of momentum
 
   REAL(KIND(1d0))::stab_fn_mom,&
        G_T_k,&
@@ -60,12 +59,10 @@ SUBROUTINE STAB_lumps(&
        LOLD,&
        zL,&
        z0l,&
-       stab_f,&
-       psimz0
+       psimz0,&
+       h
   REAL(KIND(1d0)),PARAMETER :: &
        k=0.4,&             !Von Karman's contant
-       k2=0.16,&           !Power of Van Karman's contant
-       neut_limit=0.001000,& !Limit for neutral stability
        grav=9.80665,&  !g - gravity - physics today august 1987
        notUsedI=-55
 
@@ -73,14 +70,16 @@ SUBROUTINE STAB_lumps(&
 
   LOGICAL :: debug=.FALSE.
 
-  IF(debug) WRITE(*,*)StabilityMethod,z0M,avU1,h,USTAR,L
+  IF(debug) WRITE(*,*)StabilityMethod,z0M,avU1,h_init,USTAR,L
   G_T_k=(Grav/(Temp_C+273.16))*k !gravity constant/(Temperature*Von Karman Constant)
   KUZ=k*AvU1                     !Von Karman constant*mean wind speed
   IF(zzd<0) CALL ErrorHint(32,'Windspeed Ht too low relative to zdm [Stability calc]- values [z-zdm, zdm]',Zzd,zdm,notUsedI)
 
   USTAR=KUZ/LOG(Zzd/Z0M)      !Initial setting of u* and calc. of L (neutral situation)
-  IF ( ABS(H)<0.001 ) THEN    ! prevent zero Tstar
-     H=0.001
+  IF ( ABS(h_init)<0.001 ) THEN    ! prevent zero Tstar
+     h=0.001
+  ELSE
+     h=h_init
   END IF
   Tstar=(-H/ustar)
   L=(USTAR**2)/(G_T_K*Tstar)
@@ -126,7 +125,7 @@ SUBROUTINE STAB_lumps(&
   RETURN
 END SUBROUTINE stab_lumps
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!==================================================================
 
 FUNCTION stab_fn_mom(StabilityMethod,ZL,zl_f) RESULT(psym)
   !     StabilityMethod = 1-4 -
@@ -139,10 +138,10 @@ FUNCTION stab_fn_mom(StabilityMethod,ZL,zl_f) RESULT(psym)
 
   IMPLICIT NONE
   REAL(KIND(1d0)),PARAMETER :: &
-       k=0.4,&             !Von Karman's contant
-       k2=0.16,&           !Power of Van Karman's contant
-       neut_limit=0.001000,& !Limit for neutral stability
-       notUsedI=-55
+                                !  k=0.4,&             !Von Karman's contant
+                                !  k2=0.16,&           !Power of Van Karman's contant
+       neut_limit=0.001000 !Limit for neutral stability
+  !  notUsedI=-55
 
   REAL (KIND(1d0)):: piover2,psym,zl,zl_f,x,x2
   INTEGER ::StabilityMethod
@@ -215,10 +214,10 @@ FUNCTION stab_fn_heat(StabilityMethod,ZL,zl_f) RESULT (psyh)
   ! USE mod_k
   IMPLICIT NONE
   REAL(KIND(1d0)),PARAMETER :: &
-       k=0.4,&             !Von Karman's contant
-       k2=0.16,&           !Power of Van Karman's contant
-       neut_limit=0.001000,& !Limit for neutral stability
-       notUsedI=-55
+                                !  k=0.4,&             !Von Karman's contant
+                                !  k2=0.16,&           !Power of Van Karman's contant
+       neut_limit=0.001000 !Limit for neutral stability
+  !  notUsedI=-55
 
   REAL (KIND(1d0)):: zl,zl_f,psyh,x
   INTEGER :: StabilityMethod

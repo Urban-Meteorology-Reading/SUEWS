@@ -48,26 +48,21 @@ SUBROUTINE Evap_SUEWS(&
   IMPLICIT NONE
   INTEGER,INTENT(in) :: ity!Evaporation calculated according to Rutter (1) or Shuttleworth (2)
 
-  REAL (KIND(1d0)),INTENT(in)::&
-       state_is,& ! wetness status
-       WetThresh_is,&!When State > WetThresh, rs=0 limit in SUEWS_evap [mm] (specified in input files)
-       capStore,& ! = surf(6,is), current storage capacity [mm]
-       numPM,&!numerator of P-M eqn
-       s_hPa,&!Vapour pressure versus temperature slope in hPa
-       psyc_hPa,&!Psychometric constant in hPa
-       ResistSurf,&!Surface resistance
-       sp,&!Term in calculation of E
-       ra,&!Aerodynamic resistance
-       rb,&!Boundary layer resistance
-       tlv!Latent heat of vaporization per timestep [J kg-1 s-1], (tlv=lv_J_kg/tstep_real)
+  REAL(KIND(1d0)),INTENT(in)::state_is ! wetness status
+  REAL(KIND(1d0)),INTENT(in)::WetThresh_is!When State > WetThresh, rs=0 limit in SUEWS_evap [mm] (specified in input files)
+  REAL(KIND(1d0)),INTENT(in)::capStore ! = surf(6,is), current storage capacity [mm]
+  REAL(KIND(1d0)),INTENT(in)::numPM!numerator of P-M eqn
+  REAL(KIND(1d0)),INTENT(in)::s_hPa!Vapour pressure versus temperature slope in hPa
+  REAL(KIND(1d0)),INTENT(in)::psyc_hPa!Psychometric constant in hPa
+  REAL(KIND(1d0)),INTENT(in)::ResistSurf!Surface resistance
+  REAL(KIND(1d0)),INTENT(in)::sp!Term in calculation of E
+  REAL(KIND(1d0)),INTENT(in)::ra!Aerodynamic resistance
+  REAL(KIND(1d0)),INTENT(in)::rb!Boundary layer resistance
+  REAL(KIND(1d0)),INTENT(in)::tlv!Latent heat of vaporization per timestep [J kg-1 s-1], (tlv=lv_J_kg/tstep_real)
 
-
-  REAL (KIND(1d0)),INTENT(out)::&
-       rss,&
-       ev,&
-      !  rsrbsg,&  !rs + rbsg [s m-1]
-                                !  rbsg,&  !Boundary-layer resistance x (slope/psychrometric const + 1) [s m-1]
-       qe ! latent heat flux [W m-2]
+  REAL(KIND(1d0)),INTENT(out)::rss
+  REAL(KIND(1d0)),INTENT(out)::ev
+  REAL(KIND(1d0)),INTENT(out)::qe ! latent heat flux [W m-2]
 
   REAL(KIND(1d0)):: &
        rbsg,&  !Boundary-layer resistance x (slope/psychrometric const + 1) [s m-1]
@@ -84,8 +79,8 @@ SUBROUTINE Evap_SUEWS(&
   ! Uses value of rs for whole area (calculated based on LAI of veg surfaces in SUEWS_SurfaceResistance.f95)
 
   ! PRINT*, 'is',is,'SMOIS',state(is)
-    ! PRINT*, 'SMOIS',state_is,state_is<=0.001
-    ! PRINT*, 'ity',ity
+  ! PRINT*, 'SMOIS',state_is,state_is<=0.001
+  ! PRINT*, 'ity',ity
 
   ! Dry surface ---------------------------------------------------------------
   IF(state_is<=0.001) THEN

@@ -1,16 +1,13 @@
 SUBROUTINE drainage(&
-
-     ! input:
-     is,&
+     is,& !input
      state_is,&
      StorCap,&
      DrainEq,&
      DrainCoef1,&
      DrainCoef2,&
-
      nsh_real,&
-     ! output:
-     drain_is)
+     drain_is)!output
+     
   !Calculation of drainage for each land surface.
   !INPUT: Storage capacity, type of drainage equation used, drainage coefficients
   !       used in the equation

@@ -7,8 +7,6 @@ SUBROUTINE SurfaceResistance(&
      DecidSurf,&
      GrassSurf,&
      WaterSurf,&
-                                !  ivConif,&
-                                !  ivGrass,&
      snowFrac,&
      sfr,&
      nsurf,&
@@ -32,16 +30,7 @@ SUBROUTINE SurfaceResistance(&
      TL,&
      S1,&
      S2,&
-                                ! output:
-                                !  gl,&
-                                !  QNM,&
-                                !  gq,&
-                                !  gdq,&
-                                !  TC,&
-                                !  TC2,&
-                                !  gtemp,&
-                                !  sdp,&
-                                !  gs,&
+! output:
      gsc,&
      ResistSurf)
   ! Calculates bulk surface resistance (ResistSurf [s m-1]) based on Jarvis 1976 approach
@@ -73,8 +62,6 @@ SUBROUTINE SurfaceResistance(&
        DecidSurf,&!= 4, surface code
        GrassSurf,&!= 5, surface code
        WaterSurf,&!= 7, surface code
-                                !  ivConif,&!= 1, When only vegetated surfaces considered (1-3)
-                                !  ivGrass,&!= 3, When only vegetated surfaces considered (1-3)
        nsurf!= 7, Total number of surfaces
 
 
@@ -103,16 +90,6 @@ SUBROUTINE SurfaceResistance(&
 
 
   REAL(KIND(1d0)),INTENT(out):: &
-                                !  gl,&!G(LAI)
-                                !  gsc,&!Surface Layer Conductance
-                                !  QNM,&!QMAX/(QMAX+G2)
-                                !  gq,&!G(Q*)
-                                !  gdq,&!G(dq)
-                                !  TC,&!Temperature parameter 1
-                                !  TC2,&!Temperature parameter 2
-                                !  gtemp,&!G(T)
-                                !  sdp,&!S1/G6+S2
-                                !  gs,&!G(Soil moisture deficit)
        gsc,&!Surface Layer Conductance
        ResistSurf!Surface resistance
 
@@ -132,7 +109,7 @@ SUBROUTINE SurfaceResistance(&
   REAL(KIND(1d0)):: id_real
 
   INTEGER,PARAMETER :: notUsed=-55
-  REAL(KIND(1d0)),PARAMETER :: notUsedi=-55.5
+  ! REAL(KIND(1d0)),PARAMETER :: notUsedi=-55.5
 
   id_real = REAL(id) !Day of year in real number
 

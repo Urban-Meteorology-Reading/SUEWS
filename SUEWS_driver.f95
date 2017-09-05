@@ -651,6 +651,9 @@ SUBROUTINE SUEWS_cal_QE(&
   INTEGER :: is
 
   ! Initialize the output variables
+  qe=0
+  ev=0
+  ev_snow=0
   ev_per_tstep=0
   surf_chang_per_tstep=0
   runoff_per_tstep=0

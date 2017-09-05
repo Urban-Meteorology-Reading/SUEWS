@@ -809,7 +809,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !      )
 
   !======== Evaporation and surface state ========
-  ! IF(Diagnose==1) WRITE(*,*) 'Calling evap_SUEWS and SoilStore...'
   CALL SUEWS_cal_QE(&
        Diagnose,&
        id,&
@@ -929,7 +928,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        runoffAGveg_m3,&
        runoffWaterBody_m3,&
        runoffPipes_m3)
-
   ! DO is=1,nsurf   !For each surface in turn
   !    IF (snowCalcSwitch(is)==1) THEN
   !       IF (sfr(is)/=0) THEN

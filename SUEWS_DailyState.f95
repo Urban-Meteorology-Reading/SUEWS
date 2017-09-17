@@ -152,7 +152,7 @@ SUBROUTINE DailyState(Gridiv)
   IF (snowUse==1) CALL SnowUpdate(&
        nsurf,tstep,Temp_C,tau_a,tau_f,tau_r,&
        SnowDensMax,SnowDensMin,SnowAlbMin,SnowPack,&
-       SnowDens)
+       SnowAlb,SnowDens)
 
   ! ================================================================================
   ! This next part occurs only on the first or last timestep of each day ===========

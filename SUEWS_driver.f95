@@ -15,6 +15,8 @@ SUBROUTINE SUEWS_cal_Qn(&
      snowFrac,ldown,fcld,&!output
      qn1,qn1_SF,qn1_S,kclear,kup,lup,tsurf)
 
+  USE NARP_MODULE, ONLY: NARP
+
   IMPLICIT NONE
 
   INTEGER,INTENT(in)::nsurf
@@ -26,6 +28,9 @@ SUBROUTINE SUEWS_cal_Qn(&
   INTEGER,INTENT(in)::ConifSurf
   INTEGER,INTENT(in)::GrassSurf
   INTEGER,INTENT(in)::Diagnose
+  INTEGER,INTENT(in)::AlbedoChoice
+  INTEGER,INTENT(in)::DiagQN
+
   REAL(KIND(1d0)),INTENT(in)::snow_obs
   REAL(KIND(1d0)),INTENT(in)::ldown_obs
   REAL(KIND(1d0)),INTENT(in)::fcld_obs
@@ -37,13 +42,10 @@ SUBROUTINE SUEWS_cal_Qn(&
   REAL(KIND(1d0)),INTENT(in)::Press_hPa
   REAL(KIND(1d0)),INTENT(in)::qn1_obs
   REAL(KIND(1d0)),INTENT(in)::SnowAlb
-  REAL(KIND(1d0)),INTENT(in)::AlbedoChoice
-  REAL(KIND(1d0)),INTENT(in)::DiagQN
-
-  REAL(KIND(1d0)),INTENT(in)::NARP_G
-  REAL(KIND(1d0)),INTENT(in)::NARP_TRANS_SITE
   REAL(KIND(1d0)),INTENT(in)::NARP_EMIS_SNOW
+  REAL(KIND(1d0)),INTENT(in)::NARP_TRANS_SITE
 
+  REAL(KIND(1d0)),DIMENSION(365),INTENT(in)::NARP_G
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in):: IceFrac
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in):: sfr
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in):: emis
@@ -176,6 +178,7 @@ SUBROUTINE SUEWS_cal_Qs(&
      a2,&
      a3)
 
+  USE AnOHM_module, ONLY: AnOHM
 
   IMPLICIT NONE
 
@@ -752,6 +755,7 @@ SUBROUTINE SUEWS_cal_QE(&
                 RunoffToWater,&
                 runoffAGimpervious,&
                 runoffAGveg,&
+                addVeg,&
                 surpluswaterbody,&
                 SnowLimPaved,&
                 SnowLimBuild,&

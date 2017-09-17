@@ -18,6 +18,7 @@ SUBROUTINE SnowUpdate(&
      SnowDensMin,&
      SnowAlbMin,&
      SnowPack,&
+     SnowAlb,&
      SnowDens)!inout
 
 
@@ -36,14 +37,15 @@ SUBROUTINE SnowUpdate(&
 
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::SnowPack
 
+  REAL(KIND(1d0)),INTENT(inout)::SnowAlb
+
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowDens
 
 
   INTEGER::is
   REAL(KIND(1D0))::alb_change,&     !Change in snow albedo
        dens_change,&    !Change in snow density
-       tau_1,&          !Number of seconds in a day
-       snowAlb
+       tau_1         !Number of seconds in a day
 
   !Initialize
   alb_change=0

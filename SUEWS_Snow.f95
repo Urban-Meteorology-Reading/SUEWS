@@ -505,6 +505,7 @@ SUBROUTINE SnowCalc(&
      RunoffToWater,&
      runoffAGimpervious,&
      runoffAGveg,&
+     addVeg,&
      surpluswaterbody,&
      SnowLimPaved,&
      SnowLimBuild,&
@@ -610,6 +611,7 @@ SUBROUTINE SnowCalc(&
   REAL(KIND(1d0)),INTENT(in)::PipeCapacity
   REAL(KIND(1d0)),INTENT(in)::RunoffToWater
   REAL(KIND(1d0)),INTENT(in)::runoffAGveg
+  REAL(KIND(1d0)),INTENT(in)::addVeg
   REAL(KIND(1d0)),INTENT(in)::surpluswaterbody
   REAL(KIND(1d0)),INTENT(in)::SnowLimPaved
   REAL(KIND(1d0)),INTENT(in)::SnowLimBuild
@@ -676,7 +678,7 @@ SUBROUTINE SnowCalc(&
 
   REAL(KIND(1d0))::qe
   REAL(KIND(1d0))::rss
-  REAL(KIND(1d0))::addVeg
+
   REAL(KIND(1d0))::Evap_SUEWS_Snow
   REAL(KIND(1d0))::MeltExcess      !Excess melt water that needs to leave snowpack
   REAL(KIND(1d0))::snowTotInit

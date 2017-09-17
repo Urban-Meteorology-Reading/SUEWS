@@ -29,6 +29,7 @@ MODULES = LUMPS_Module_constants.o  \
 					stringmod.o \
 					qsort_c_module.o\
 					LUMPS_NARP_v3.o \
+					SUEWS_AnOHM.o \
 					SUEWS_OHM.o \
 					minpack.o
 
@@ -51,7 +52,6 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_store.o \
           SUEWS_BL_Resist.o \
           SUEWS_SurfaceResistance.o \
-          SUEWS_SnowUpdate.o \
           SUEWS_drain.o \
           SUEWS_TimeRelatedSubroutines.o \
           SUEWS_error.o \
@@ -79,12 +79,16 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_ESTM_v2016.o \
           SUEWS_CO2.o \
 					SUEWS_Initial.o \
+					SUEWS_SoilMoist.o \
+					SUEWS_driver.o \
 					SUEWS_DailyState.o \
+					SUEWS_SnowUpdate.o \
 					SUEWS_Diagnostics.o
 
 # modules under rapid development
-TEST =		SUEWS_AnOHM.o \
-					SUEWS_Calculations.o 
+TEST =		SUEWS_Calculations.o
+
+
 
 
 # Build main program - main uses MODULES and OTHERS
@@ -119,4 +123,4 @@ $(TEST): $(subst .o,.f95, $(TEST))
 
 # If wanted, clean all *.o files after build
 clean:
-	-rm -rf *.o *.mod *.dSYM
+	-rm -rf *.o *.mod *.dSYM $(TARGET)

@@ -290,7 +290,6 @@ SUBROUTINE MeltHeat(&
   QmFreez=0
   QmRain=0
   mw_ind=0
-  deltaQi=0
 
   snowCalcSwitch=0
   Qm_melt=0

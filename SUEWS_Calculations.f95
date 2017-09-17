@@ -108,6 +108,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   IF(ldown_option==1) THEN
      Fcld = NAN
   ENDIF
+  qh = -999 ! Added HCW 26 Feb 2015
+  H  = -999 ! Added HCW 26 Feb 2015
   !=====================================================================
   ! Initialisation for OAF's water bucket scheme
   ! LUMPS only (Loridan et al. (2012))
@@ -137,8 +139,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ! MwStore                 = 0
   ! WaterHoldCapFrac        = 0
 
-  qh = -999 ! Added HCW 26 Feb 2015
-  H  = -999 ! Added HCW 26 Feb 2015
+
 
   ! Calculate sun position
   IF(Diagnose==1) WRITE(*,*) 'Calling sun_position...'

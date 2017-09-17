@@ -91,25 +91,27 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        Zh,Z0m,Zdm,ZZD)
 
 
-  !=============Get data ready for the qs calculation====================
-  IF(NetRadiationMethod==0) THEN !Radiative components are provided as forcing
-     !avkdn=NAN                  !Needed for resistances for SUEWS.
-     ldown     = NAN
-     lup       = NAN
-     kup       = NAN
-     tsurf     = NAN
-     lup_ind   = NAN
-     kup_ind   = NAN
-     tsurf_ind = NAN
-     qn1_ind   = NAN
-     Fcld      = NAN
-  ENDIF
+  ! !=============Get data ready for the qs calculation====================
 
-  IF(ldown_option==1) THEN
-     Fcld = NAN
-  ENDIF
-  qh = -999 ! Added HCW 26 Feb 2015
-  H  = -999 ! Added HCW 26 Feb 2015
+  ! IF(NetRadiationMethod==0) THEN !Radiative components are provided as forcing
+  !    !avkdn=NAN                  !Needed for resistances for SUEWS.
+  !    ldown     = NAN
+  !    lup       = NAN
+  !    kup       = NAN
+  !    tsurf     = NAN
+  !    lup_ind   = NAN
+  !    kup_ind   = NAN
+  !    tsurf_ind = NAN
+  !    qn1_ind   = NAN
+  !    Fcld      = NAN
+  ! ENDIF
+  !
+
+  ! IF(ldown_option==1) THEN
+  !    Fcld = NAN
+  ! ENDIF
+  ! qh = -999 ! Added HCW 26 Feb 2015
+  ! H  = -999 ! Added HCW 26 Feb 2015
   !=====================================================================
   ! Initialisation for OAF's water bucket scheme
   ! LUMPS only (Loridan et al. (2012))
@@ -222,9 +224,10 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        dectime,ZENITH_deg,avKdn,Temp_C,avRH,Press_hPa,qn1_obs,&
        SnowAlb,&
        AlbedoChoice,DiagQN,&
+       NARP_G,NARP_TRANS_SITE,NARP_EMIS_SNOW,IceFrac,sfr,emis,&
        alb,albDecTr,DecidCap,albEveTr,albGrass,surf,&!inout
        snowFrac,ldown,fcld,&!output
-       qn1,qn1_SF,qn1_S,kclear,kup,lup,TSURF)
+       qn1,qn1_SF,qn1_S,kclear,kup,lup,tsurf)
   ! IF(NetRadiationMethod>0)THEN
   !
   !    IF (snowUse==0) snowFrac=snow_obs

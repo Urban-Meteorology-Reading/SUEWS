@@ -35,19 +35,20 @@ MODULE NARP_MODULE
   ! sg feb 2012 - Allocatable array module added
 
   !==============================================================================================
-  USE allocateArray
+  ! USE allocateArray
 
   IMPLICIT NONE
 
 CONTAINS
 
   !==============================================================================
-  SUBROUTINE NARP(&! input:
+  SUBROUTINE NARP(&
+       nsurf,sfr,snowFrac,alb,emis,IceFrac,&! input:
+       NARP_G,NARP_TRANS_SITE,NARP_EMIS_SNOW,&
        DTIME,ZENITH_deg,kdown,Temp_C,RH,Press_hPa,qn1_obs,&
        SnowAlb,&
        AlbedoChoice,ldown_option,NetRadiationMethod,DiagQN,&
-! output:
-       QSTARall,QSTAR_SF,QSTAR_S,kclear,KUPall,LDown,LUPall,fcld,TSURFall)
+       QSTARall,QSTAR_SF,QSTAR_S,kclear,KUPall,LDown,LUPall,fcld,TSURFall)! output:
     !KCLEAR,FCLD,DTIME,KDOWN,QSTARall,KUPall,LDOWN,LUPall,TSURFall,&
     !AlbedoChoice,ldown_option,Temp_C,Press_hPa,Ea_hPa,qn1_obs,RH,&
     !,zenith_degnetRadiationChoice,
@@ -100,13 +101,53 @@ CONTAINS
     ! use data_in ! Included 20140701, FL
     ! use moist   ! Included 20140701, FL
     ! use time    ! Included 20140701, FL
+    REAL(KIND(1D0)),DIMENSION(nsurf),INTENT(in) ::sfr
+    REAL(KIND(1D0)),DIMENSION(nsurf),INTENT(in) ::snowFrac
+    REAL(KIND(1D0)),DIMENSION(nsurf),INTENT(in) ::alb
+    REAL(KIND(1D0)),DIMENSION(nsurf),INTENT(in) ::emis
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in) ::IceFrac
+    REAL(KIND(1D0)),DIMENSION(365),INTENT(in) ::NARP_G
 
-    REAL(KIND(1D0)),INTENT(in)   ::&
-         DTIME,ZENITH_deg,kdown,Temp_C,RH,Press_hPa,qn1_obs,&
-         SnowAlb
-    INTEGER,INTENT(in)   ::&
-         AlbedoChoice,ldown_option,NetRadiationMethod,DiagQN
-    REAL(KIND(1D0)),INTENT(out)  ::QSTARall,QSTAR_SF,QSTAR_S,kclear,KUPall,ldown,LUPall,fcld,TSURFall
+    REAL(KIND(1D0)),INTENT(in) ::DTIME
+    REAL(KIND(1D0)),INTENT(in) ::ZENITH_deg
+    REAL(KIND(1D0)),INTENT(in) ::kdown
+    REAL(KIND(1D0)),INTENT(in) ::Temp_C
+    REAL(KIND(1D0)),INTENT(in) ::RH
+    REAL(KIND(1D0)),INTENT(in) ::Press_hPa
+    REAL(KIND(1D0)),INTENT(in) ::qn1_obs
+    REAL(KIND(1D0)),INTENT(in) ::SnowAlb
+    REAL(KIND(1D0)),INTENT(in) ::NARP_TRANS_SITE
+    REAL(KIND(1D0)),INTENT(in) ::NARP_EMIS_SNOW
+
+    INTEGER,INTENT(in) ::nsurf
+    INTEGER,INTENT(in) ::AlbedoChoice
+    INTEGER,INTENT(in) ::ldown_option
+    INTEGER,INTENT(in) ::NetRadiationMethod
+    INTEGER,INTENT(in) ::DiagQN
+
+    REAL(KIND(1D0)),INTENT(out) ::QSTARall
+    REAL(KIND(1D0)),INTENT(out) ::QSTAR_SF
+    REAL(KIND(1D0)),INTENT(out) ::QSTAR_S
+    REAL(KIND(1D0)),INTENT(out) ::kclear
+    REAL(KIND(1D0)),INTENT(out) ::KUPall
+    REAL(KIND(1D0)),INTENT(out) ::ldown
+    REAL(KIND(1D0)),INTENT(out) ::LUPall
+    REAL(KIND(1D0)),INTENT(out) ::fcld
+    REAL(KIND(1D0)),INTENT(out) ::TSURFall
+
+    REAL(KIND(1d0)),DIMENSION(nsurf) ::qn1_ind
+    REAL(KIND(1d0)),DIMENSION(nsurf) ::kup_ind
+    REAL(KIND(1d0)),DIMENSION(nsurf) ::lup_ind
+    REAL(KIND(1d0)),DIMENSION(nsurf) ::Tsurf_ind
+
+    REAL(KIND(1d0)),DIMENSION(nsurf) ::qn1_ind_nosnow
+    REAL(KIND(1d0)),DIMENSION(nsurf) ::kup_ind_nosnow
+    REAL(KIND(1d0)),DIMENSION(nsurf) ::lup_ind_nosnow
+    REAL(KIND(1d0)),DIMENSION(nsurf) ::Tsurf_ind_nosnow
+    REAL(KIND(1d0)),DIMENSION(nsurf) ::qn1_ind_snow
+    REAL(KIND(1d0)),DIMENSION(nsurf) ::kup_ind_snow
+    REAL(KIND(1d0)),DIMENSION(nsurf) ::lup_ind_snow
+    REAL(KIND(1d0)),DIMENSION(nsurf) ::Tsurf_ind_snow
 
     REAL(KIND(1D0)) ::Temp_K,TD,ZENITH,QSTAR,QSTAR_SNOW,KUP_SNOW,LUP_SNOW,TSURF_SNOW,KUP,LUP,TSURF
     REAL(KIND(1D0)) ::ALB0,EMIS0,EMIS_A,TRANS!,RH,DTIME,KDOWN
@@ -116,6 +157,10 @@ CONTAINS
     REAL(KIND(1D0))::qn1_cum,kup_cum,lup_cum,tsurf_cum,&   !Cumulative radiation components
          qn1_is,kup_is,lup_is,tsurf_is,&       !Sub-surface radiation components
          SF_all,ALB1
+
+    REAL(KIND(1D0)),PARAMETER   :: DEG2RAD=0.017453292,&
+        !  RAD2DEG=57.29577951,&
+         SIGMA_SB=5.67E-8
 
     !Initialize variables
     ! RH=avrh
@@ -412,6 +457,7 @@ CONTAINS
     REAL(KIND(1d0))::zenith,Isurf
     INTEGER::doy
     REAL(KIND(1d0))::Rmean, Rse, cosZ,Itoa
+    REAL(KIND(1D0)),PARAMETER   :: DEG2RAD=0.017453292
 
     Rmean = 149.6                 !Stull 1998
     Rse=solar_ESdist(doy)
@@ -474,6 +520,8 @@ CONTAINS
     REAL(KIND(1d0)) ::Press_hPa,TemP_C_dew,zenith,G,trans
     REAL(KIND(1d0))::m,TrTpg,u,Tw,Ta,cosZ
     REAL(KIND(1d0))::Tdf
+    REAL(KIND(1D0)),PARAMETER   :: DEG2RAD=0.017453292
+
 
     IF (zenith>80.*DEG2RAD) THEN
        cosZ=COS(80.*DEG2RAD)

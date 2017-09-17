@@ -2,8 +2,6 @@
 ! SUEWS driver subroutines
 ! TS 31 Aug 2017: initial version
 
-
-
 !========================================================================================
 SUBROUTINE SUEWS_cal_Qn(&
      nsurf,NetRadiationMethod,snowUse,ldown_option,id,&!input
@@ -12,11 +10,10 @@ SUBROUTINE SUEWS_cal_Qn(&
      dectime,ZENITH_deg,avKdn,Temp_C,avRH,Press_hPa,qn1_obs,&
      SnowAlb,&
      AlbedoChoice,DiagQN,&
+     NARP_G,NARP_TRANS_SITE,NARP_EMIS_SNOW,IceFrac,sfr,emis,&
      alb,albDecTr,DecidCap,albEveTr,albGrass,surf,&!inout
      snowFrac,ldown,fcld,&!output
-     qn1,qn1_SF,qn1_S,kclear,kup,lup,TSURF)
-
-
+     qn1,qn1_SF,qn1_S,kclear,kup,lup,tsurf)
 
   IMPLICIT NONE
 
@@ -43,14 +40,23 @@ SUBROUTINE SUEWS_cal_Qn(&
   REAL(KIND(1d0)),INTENT(in)::AlbedoChoice
   REAL(KIND(1d0)),INTENT(in)::DiagQN
 
-  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout):: alb
-  REAL(KIND(1d0)),DIMENSION(0:366),INTENT(inout)::albDecTr
-  REAL(KIND(1d0)),DIMENSION(0:366),INTENT(inout)::DecidCap
-  REAL(KIND(1d0)),DIMENSION(0:366),INTENT(inout)::albEveTr
-  REAL(KIND(1d0)),DIMENSION(0:366),INTENT(inout)::albGrass
-  REAL(KIND(1d0)),DIMENSION(6,nsurf),INTENT(inout):: surf
+  REAL(KIND(1d0)),INTENT(in)::NARP_G
+  REAL(KIND(1d0)),INTENT(in)::NARP_TRANS_SITE
+  REAL(KIND(1d0)),INTENT(in)::NARP_EMIS_SNOW
 
-  REAL(KIND(1d0)),INTENT(out)::snowFrac
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in):: IceFrac
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in):: sfr
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in):: emis
+
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)  ::alb
+  REAL(KIND(1d0)),DIMENSION(0:366),INTENT(inout)  ::albDecTr
+  REAL(KIND(1d0)),DIMENSION(0:366),INTENT(inout)  ::DecidCap
+  REAL(KIND(1d0)),DIMENSION(0:366),INTENT(inout)  ::albEveTr
+  REAL(KIND(1d0)),DIMENSION(0:366),INTENT(inout)  ::albGrass
+  REAL(KIND(1d0)),DIMENSION(6,nsurf),INTENT(inout)::surf
+
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::snowFrac
+
   REAL(KIND(1d0)),INTENT(out)::ldown
   REAL(KIND(1d0)),INTENT(out)::fcld
   REAL(KIND(1d0)),INTENT(out)::qn1
@@ -59,7 +65,15 @@ SUBROUTINE SUEWS_cal_Qn(&
   REAL(KIND(1d0)),INTENT(out)::kclear
   REAL(KIND(1d0)),INTENT(out)::kup
   REAL(KIND(1d0)),INTENT(out)::lup
-  REAL(KIND(1d0)),INTENT(out)::TSURF
+  REAL(KIND(1d0)),INTENT(out)::tsurf
+
+
+  REAL(KIND(1d0)),DIMENSION(nsurf):: lup_ind
+  REAL(KIND(1d0)),DIMENSION(nsurf):: kup_ind
+  REAL(KIND(1d0)),DIMENSION(nsurf):: tsurf_ind
+  REAL(KIND(1d0)),DIMENSION(nsurf):: qn1_ind
+
+  REAL(KIND(1d0)),PARAMETER::NAN=-999
 
 
   IF(NetRadiationMethod>0)THEN
@@ -86,21 +100,36 @@ SUBROUTINE SUEWS_cal_Qn(&
      alb(GrassSurf) = albGrass(id)
 
      IF(Diagnose==1) WRITE(*,*) 'Calling NARP...'
+
+
      CALL NARP(&
-                                ! input:
+          nsurf,sfr,snowFrac,alb,emis,IceFrac,&! input:
+          NARP_G,NARP_TRANS_SITE,NARP_EMIS_SNOW,&
           dectime,ZENITH_deg,avKdn,Temp_C,avRH,Press_hPa,qn1_obs,&
           SnowAlb,&
           AlbedoChoice,ldown_option,NetRadiationMethod,DiagQN,&
-                                ! output:
-          qn1,qn1_SF,qn1_S,kclear,kup,LDown,lup,fcld,TSURF)
+          qn1,qn1_SF,qn1_S,kclear,kup,LDown,lup,fcld,tsurf)! output:
      !Temp_C,kclear,fcld,dectime,avkdn,avRH,qn1,kup,ldown,lup,tsurf,&
      !AlbedoChoice,ldown_option,Press_hPa,Ea_hPa,qn1_obs,&
      !zenith_deg,NetRadiationMethod,
-  ELSE
-     snowFrac = snow_obs
-     qn1      = qn1_obs
-     qn1_sf   = qn1_obs
-     qn1_s    = qn1_obs
+  ELSE ! NetRadiationMethod==0
+     snowFrac  = snow_obs
+     qn1       = qn1_obs
+     qn1_sf    = qn1_obs
+     qn1_s     = qn1_obs
+     ldown     = NAN
+     lup       = NAN
+     kup       = NAN
+     tsurf     = NAN
+     lup_ind   = NAN
+     kup_ind   = NAN
+     tsurf_ind = NAN
+     qn1_ind   = NAN
+     Fcld      = NAN
+  ENDIF
+
+  IF(ldown_option==1) THEN
+     Fcld = NAN
   ENDIF
 
 END SUBROUTINE SUEWS_cal_Qn
@@ -397,8 +426,8 @@ END SUBROUTINE SUEWS_cal_Hinit
 !================latent heat flux and surface wetness===================
 ! TODO: optimise the structure of this function
 SUBROUTINE SUEWS_cal_QE(&
-!
-  !in
+                                !
+                                !in
      Diagnose,&
      id,&
      nsurf,&
@@ -443,8 +472,8 @@ SUBROUTINE SUEWS_cal_QE(&
      precip,&
      PipeCapacity,&
      RunoffToWater,&
-    !  runoffAGimpervious,&
-    !  runoffAGveg,&
+                                !  runoffAGimpervious,&
+                                !  runoffAGveg,&
      surpluswaterbody,&
      pin,&
      NonWaterFraction,&
@@ -652,7 +681,7 @@ SUBROUTINE SUEWS_cal_QE(&
   REAL(KIND(1d0)),INTENT(out)::runoffPipes_m3
 
 
-! local:
+  ! local:
   INTEGER :: is
   REAL(KIND(1d0))::runoffAGveg,runoffAGimpervious
 
@@ -669,8 +698,8 @@ SUBROUTINE SUEWS_cal_QE(&
   runoffwaterbody=0
   chSnow_per_interval=0
 
-runoffAGveg=0
-runoffAGimpervious=0
+  runoffAGveg=0
+  runoffAGimpervious=0
 
 
 

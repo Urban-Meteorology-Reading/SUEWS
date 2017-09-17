@@ -149,9 +149,10 @@ SUBROUTINE DailyState(Gridiv)
   !      6 ------------------------------------!   !Days since rain
 
   ! Update snow density, albedo surface fraction
-  IF (snowUse==1) CALL SnowUpdate(Temp_C,nsurf,tstep,SnowPack,SnowDens,&
-                   snowAlb,tau_a,tau_f,tau_r,SnowDensMax,SnowAlbMin,SnowDensMin)
-
+  IF (snowUse==1) CALL SnowUpdate(&
+       nsurf,tstep,Temp_C,tau_a,tau_f,tau_r,&
+       SnowDensMax,SnowDensMin,SnowAlbMin,SnowPack,&
+       SnowDens)
 
   ! ================================================================================
   ! This next part occurs only on the first or last timestep of each day ===========
@@ -475,21 +476,21 @@ SUBROUTINE DailyState(Gridiv)
      mAHAnOHM(Gridiv)     = xmAH
      mAH_grids(id,Gridiv) = mAHAnOHM(Gridiv)
      ! load current AnOHM coef.:
-    !  IF ( StorageHeatMethod==3 ) THEN
-    !     !  if ( id>364 ) then
-    !     !    print*, 'test in DailyState'
-    !     !    print*, a1AnOHM(Gridiv),a2AnOHM(Gridiv),a3AnOHM(Gridiv)
-    !     !
-    !     !  end if
-    !     a1AnOHM(Gridiv) = a1AnOHM_grids(id,Gridiv)
-    !     a2AnOHM(Gridiv) = a2AnOHM_grids(id,Gridiv)
-    !     a3AnOHM(Gridiv) = a3AnOHM_grids(id,Gridiv)
-    !  ELSE
-        ! output the normal OHM coeff.:
-        a1AnOHM(Gridiv) = a1
-        a2AnOHM(Gridiv) = a2
-        a3AnOHM(Gridiv) = a3
-    !  END IF
+     !  IF ( StorageHeatMethod==3 ) THEN
+     !     !  if ( id>364 ) then
+     !     !    print*, 'test in DailyState'
+     !     !    print*, a1AnOHM(Gridiv),a2AnOHM(Gridiv),a3AnOHM(Gridiv)
+     !     !
+     !     !  end if
+     !     a1AnOHM(Gridiv) = a1AnOHM_grids(id,Gridiv)
+     !     a2AnOHM(Gridiv) = a2AnOHM_grids(id,Gridiv)
+     !     a3AnOHM(Gridiv) = a3AnOHM_grids(id,Gridiv)
+     !  ELSE
+     ! output the normal OHM coeff.:
+     a1AnOHM(Gridiv) = a1
+     a2AnOHM(Gridiv) = a2
+     a3AnOHM(Gridiv) = a3
+     !  END IF
 
      ! --------- AnOHM related End ----------------------------------------------------
 

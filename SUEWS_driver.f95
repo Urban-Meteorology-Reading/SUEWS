@@ -190,12 +190,12 @@ SUBROUTINE SUEWS_cal_Qs(&
   REAL(KIND(1d0)),DIMENSION(2*nsh+1),INTENT(inout)::qn1_av_store
   REAL(KIND(1d0)),DIMENSION(2*nsh+1),INTENT(inout)::qn1_S_av_store !< average net radiation over previous hour [W m-2]
   REAL(KIND(1d0)),DIMENSION(6,nsurf),INTENT(inout)::surf
-  REAL(KIND(1d0)),DIMENSION(6,nsurf),INTENT(out)::deltaQi(nsurf+2) ! storage heat flux of snow surfaces
+
+  REAL(KIND(1d0)),DIMENSION(6,nsurf+2),INTENT(out)::deltaQi ! storage heat flux of snow surfaces
 
   REAL(KIND(1d0)),INTENT(out)::qn1_S
   REAL(KIND(1d0)),INTENT(out)::snowFrac
   REAL(KIND(1d0)),INTENT(out):: qs ! storage heat flux
-
   REAL(KIND(1d0)),INTENT(out):: a1 !< AnOHM coefficients of grid [-]
   REAL(KIND(1d0)),INTENT(out):: a2 !< AnOHM coefficients of grid [h]
   REAL(KIND(1d0)),INTENT(out):: a3 !< AnOHM coefficients of grid [W m-2]
@@ -397,6 +397,8 @@ END SUBROUTINE SUEWS_cal_Hinit
 !================latent heat flux and surface wetness===================
 ! TODO: optimise the structure of this function
 SUBROUTINE SUEWS_cal_QE(&
+!
+  !in
      Diagnose,&
      id,&
      nsurf,&
@@ -441,8 +443,8 @@ SUBROUTINE SUEWS_cal_QE(&
      precip,&
      PipeCapacity,&
      RunoffToWater,&
-     runoffAGimpervious,&
-     runoffAGveg,&
+    !  runoffAGimpervious,&
+    !  runoffAGveg,&
      surpluswaterbody,&
      pin,&
      NonWaterFraction,&
@@ -470,6 +472,8 @@ SUBROUTINE SUEWS_cal_QE(&
      StateLimit,&
      DayofWeek,&
      surf,&
+                                !inout:
+     runoff_per_interval,&
      snowPack,&
      snowFrac,&
      MeltWaterStore,&
@@ -478,6 +482,9 @@ SUBROUTINE SUEWS_cal_QE(&
      addwater,&
      addwaterrunoff,&
      SnowDens,&
+     SurplusEvap,&
+                                !out:
+     snowProf,&
      runoffSnow,&
      runoff,&
      runoffSoil,&
@@ -489,9 +496,6 @@ SUBROUTINE SUEWS_cal_QE(&
      ev_snow,&
      soilmoist,&
      SnowRemoval,&
-     snowProf,&
-     runoff_per_interval,&
-     SurplusEvap,&
      evap,&
      rss_nsurf,&
      p_mm,&
@@ -518,21 +522,20 @@ SUBROUTINE SUEWS_cal_QE(&
 
   IMPLICIT NONE
   INTEGER,INTENT(in) ::Diagnose
-
-  INTEGER,INTENT(in)::id
-  INTEGER,INTENT(in)::nsurf
-  INTEGER,INTENT(in)::tstep
-  INTEGER,INTENT(in)::imin
-  INTEGER,INTENT(in)::it
-  INTEGER,INTENT(in)::ity!Evaporation calculated according to Rutter (1) or Shuttleworth (2)
-  INTEGER,INTENT(in)::snowfractionchoice
-  INTEGER,INTENT(in)::ConifSurf
-  INTEGER,INTENT(in)::BSoilSurf
-  INTEGER,INTENT(in)::BldgSurf
-  INTEGER,INTENT(in)::PavSurf
-  INTEGER,INTENT(in)::WaterSurf
-  INTEGER,INTENT(in)::DecidSurf! surface type code
-  INTEGER,INTENT(in)::GrassSurf! surface type code
+  INTEGER,INTENT(in) ::id
+  INTEGER,INTENT(in) ::nsurf
+  INTEGER,INTENT(in) ::tstep
+  INTEGER,INTENT(in) ::imin
+  INTEGER,INTENT(in) ::it
+  INTEGER,INTENT(in) ::ity !Evaporation calculated according to Rutter (1) or Shuttleworth (2)
+  INTEGER,INTENT(in) ::snowfractionchoice
+  INTEGER,INTENT(in) ::ConifSurf
+  INTEGER,INTENT(in) ::BSoilSurf
+  INTEGER,INTENT(in) ::BldgSurf
+  INTEGER,INTENT(in) ::PavSurf
+  INTEGER,INTENT(in) ::WaterSurf
+  INTEGER,INTENT(in) ::DecidSurf! surface type code
+  INTEGER,INTENT(in) ::GrassSurf! surface type code
 
   INTEGER,INTENT(in),DIMENSION(nsurf)::snowCalcSwitch
 
@@ -564,8 +567,8 @@ SUBROUTINE SUEWS_cal_QE(&
   REAL(KIND(1d0)),INTENT(in)::precip
   REAL(KIND(1d0)),INTENT(in)::PipeCapacity
   REAL(KIND(1d0)),INTENT(in)::RunoffToWater
-  REAL(KIND(1d0)),INTENT(in)::runoffAGimpervious
-  REAL(KIND(1d0)),INTENT(in)::runoffAGveg
+  ! REAL(KIND(1d0)),INTENT(in)::runoffAGimpervious
+  ! REAL(KIND(1d0)),INTENT(in)::runoffAGveg
   REAL(KIND(1d0)),INTENT(in)::surpluswaterbody
   REAL(KIND(1d0)),INTENT(in)::pin!Rain per time interval
   REAL(KIND(1d0)),INTENT(in)::NonWaterFraction
@@ -607,7 +610,10 @@ SUBROUTINE SUEWS_cal_QE(&
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::addwater
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::addwaterrunoff
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowDens
-  REAL(KIND(1d0)),DIMENSION(2),INTENT(inout)    ::SurplusEvap!Surplus for evaporation in 5 min timestep
+  REAL(KIND(1d0)),DIMENSION(2),INTENT(inout)    ::SurplusEvap        !Surplus for evaporation in 5 min timestep
+
+  ! output:
+  REAL(KIND(1d0)), DIMENSION(0:23,2),INTENT(out):: snowProf
 
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::runoffSnow !Initialize for runoff caused by snowmelting
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::runoff
@@ -620,9 +626,6 @@ SUBROUTINE SUEWS_cal_QE(&
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::ev_snow
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::soilmoist
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::SnowRemoval
-
-  REAL(KIND(1d0)), DIMENSION(0:23,2),INTENT(out):: snowProf
-
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::evap
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::rss_nsurf
 
@@ -648,7 +651,10 @@ SUBROUTINE SUEWS_cal_QE(&
   REAL(KIND(1d0)),INTENT(out)::runoffWaterBody_m3
   REAL(KIND(1d0)),INTENT(out)::runoffPipes_m3
 
+
+! local:
   INTEGER :: is
+  REAL(KIND(1d0))::runoffAGveg,runoffAGimpervious
 
   ! Initialize the output variables
   qe=0
@@ -660,6 +666,12 @@ SUBROUTINE SUEWS_cal_QE(&
   state_per_tstep=0
   NWstate_per_tstep=0
   qeOut=0
+  runoffwaterbody=0
+  chSnow_per_interval=0
+
+runoffAGveg=0
+runoffAGimpervious=0
+
 
 
   IF(Diagnose==1) WRITE(*,*) 'Calling evap_SUEWS and SoilStore...'

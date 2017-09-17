@@ -53,8 +53,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   IMPLICIT NONE
 
-  INTEGER        :: Gridiv,ir,i,ih,iMB
-  LOGICAL        :: debug=.FALSE.
+  INTEGER        :: Gridiv,ir,ih,iMB
+  ! LOGICAL        :: debug=.FALSE.
   ! REAL(KIND(1d0)):: idectime
   !real(kind(1d0)):: SnowDepletionCurve  !for SUEWS_Snow - not needed here (HCW 24 May 2016)
   REAL(KIND(1d0)):: lai_wt
@@ -71,9 +71,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   IF(Diagnose==1) WRITE(*,*) 'Calling RoughnessParameters...'
   ! CALL RoughnessParameters(Gridiv) ! Added by HCW 11 Nov 2014
   CALL RoughnessParameters(&
-                                ! input:
-
-       RoughLenMomMethod,&
+       RoughLenMomMethod,&! input
        nsurf,& ! number of surface types
        PavSurf,&! surface type code
        BldgSurf,&! surface type code
@@ -89,9 +87,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        DecTreeH,&
        porosity(id),&
        FAIBldg,FAIEveTree,FAIDecTree,Z,&
-
-                                ! output:
-       planF,&
+       planF,&! output
        Zh,Z0m,Zdm,ZZD)
 
 
@@ -115,31 +111,31 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !=====================================================================
   ! Initialisation for OAF's water bucket scheme
   ! LUMPS only (Loridan et al. (2012))
-  RAINRES = 0.
-  RAINBUCKET = 0.
-  E_MOD=0 !RAIN24HR = 0.;
+  ! RAINRES = 0.
+  ! RAINBUCKET = 0.
+  ! E_MOD=0 !RAIN24HR = 0.;
 
   !=====================================================================
 
   !Initialize variables calculated at each 5-min timestep
-  runoffAGveg             = 0
-  runoffAGimpervious      = 0
-  runoffWaterBody         = 0
-  runoffSoil_per_tstep    = 0
-  runoffSoil_per_interval = 0
-  chSnow_per_interval     = 0
-  mwh                     = 0 !Initialize snow melt and heat related to snowmelt
-  fwh                     = 0
-  Qm                      = 0 !Heat related to melting/freezing
-  QmFreez                 = 0
-  QmRain                  = 0
-  Mw_ind                  = 0
-  SnowDepth               = 0
-  zf                      = 0
-  deltaQi                 = 0
-  swe                     = 0
-  MwStore                 = 0
-  WaterHoldCapFrac        = 0
+  ! runoffAGveg             = 0
+  ! runoffAGimpervious      = 0
+  ! runoffWaterBody         = 0
+  ! runoffSoil_per_tstep    = 0
+  ! runoffSoil_per_interval = 0
+  ! chSnow_per_interval     = 0
+  ! mwh                     = 0 !Initialize snow melt and heat related to snowmelt
+  ! fwh                     = 0
+  ! Qm                      = 0 !Heat related to melting/freezing
+  ! QmFreez                 = 0
+  ! QmRain                  = 0
+  ! Mw_ind                  = 0
+  ! SnowDepth               = 0
+  ! zf                      = 0
+  ! deltaQi                 = 0
+  ! swe                     = 0
+  ! MwStore                 = 0
+  ! WaterHoldCapFrac        = 0
 
   qh = -999 ! Added HCW 26 Feb 2015
   H  = -999 ! Added HCW 26 Feb 2015
@@ -147,12 +143,10 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ! Calculate sun position
   IF(Diagnose==1) WRITE(*,*) 'Calling sun_position...'
   CALL sun_position(&
-                                !input:
-       year,&
+       year,&!input:
        dectime-halftimestep,&! sun position at middle of timestep before
        timezone,lat,lng,alt,&
-                                !output:
-       azimuth,zenith_deg)
+       azimuth,zenith_deg)!output:
   !write(*,*) DateTime, timezone,lat,lng,alt,azimuth,zenith_deg
 
 
@@ -447,70 +441,83 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
 
   !==================Energy related to snow melting/freezing processes=======
-  IF (snowUse==1)  THEN
-     IF(Diagnose==1) WRITE(*,*) 'Calling MeltHeat'
-     CALL MeltHeat(&!input
-          nsurf,&
-          bldgsurf,&
-          PavSurf,&
-          WaterSurf,&
-          nsh_real,&
-          lvS_J_kg,&
-          lv_J_kg,&
-          tstep_real,&
-          RadMeltFact,&
-          TempMeltFact,&
-          SnowAlb,&
-          SnowDens,&
-          SnowAlbMax,&
-          SnowDensMin,&
-          Qm_melt,&
-          Qm_freezState,&
-          Qm_rain,&
-          deltaQi,&
-          FreezMelt,&
-          FreezState,&
-          FreezStateVol,&
-          rainOnSnow,&
-          Tsurf_ind,&
-          state,&
-          sfr,&
-          Temp_C,&
-          Precip,&
-          PrecipLimit,&
-          PrecipLimitAlb,&
-          qn1_ind_snow,&
-          SnowDepth,&
-          Meltwaterstore,&
-          waterdens,&
-          SnowPack,&      !updated state
-          CumSnowfall,&
-          snowFrac,&
-          mwh,&
-          fwh,&
-          Qm,&
-          QmFreez,&
-          QmRain,&
-          snowCalcSwitch,&
-          mw_ind)       !output
-
-     ! If snow on ground, no irrigation, so veg_fr same in each case
-     !New fraction of vegetation.
-     !IF(veg_type==1)THEN         ! area vegetated
-
-     CALL veg_fr_snow(&
-          sfr,snowFrac,&!input
-          veg_fr)!output
-
-     !  veg_fr = sfr(ConifSurf)*(1-snowFrac(ConifSurf))+sfr(DecidSurf)*(1-snowFrac(DecidSurf))+&
-     !       sfr(GrassSurf)*(1-snowFrac(GrassSurf))+sfr(BSoilSurf)*(1-snowFrac(BSoilSurf))+&
-     !       sfr(WaterSurf)*(1-snowFrac(WaterSurf))
-
-     !ELSEIF(veg_type==2)THEN     ! area irrigated
-     !   !!!veg_fr=sfr(GrassISurf)*(1-snowFrac(GrassUSurf))
-     !END IF
-
-  END IF
+  IF(Diagnose==1) WRITE(*,*) 'Calling MeltHeat'
+  CALL MeltHeat_cal(&
+       snowUse,&!input
+       bldgsurf,nsurf,PavSurf,WaterSurf,&
+       lvS_J_kg,lv_J_kg,tstep_real,&
+       RadMeltFact,TempMeltFact,SnowAlbMax,SnowDensMin,&
+       Temp_C,Precip,PrecipLimit,PrecipLimitAlb,&
+       nsh_real,waterdens,&
+       sfr,Tsurf_ind,state,qn1_ind_snow,Meltwaterstore,deltaQi,&
+       SnowPack,snowFrac,SnowAlb,SnowDens,& ! inout
+       mwh,fwh,Qm,QmFreez,QmRain,CumSnowfall,snowCalcSwitch,&!output
+       Qm_melt,Qm_freezState,Qm_rain,FreezMelt,FreezState,FreezStateVol,&
+       rainOnSnow,SnowDepth,mw_ind)
+  ! IF (snowUse==1)  THEN
+  !    IF(Diagnose==1) WRITE(*,*) 'Calling MeltHeat'
+  !    CALL MeltHeat(&
+  !         bldgsurf,&!input
+  !         nsurf,&
+  !         PavSurf,&
+  !         WaterSurf,&
+  !         lvS_J_kg,&
+  !         lv_J_kg,&
+  !         tstep_real,&
+  !         RadMeltFact,&
+  !         TempMeltFact,&
+  !         SnowAlbMax,&
+  !         SnowDensMin,&
+  !         Temp_C,&
+  !         Precip,&
+  !         PrecipLimit,&
+  !         PrecipLimitAlb,&
+  !         nsh_real,&
+  !         waterdens,&
+  !         sfr,&
+  !         Tsurf_ind,&
+  !         state,&
+  !         qn1_ind_snow,&
+  !         Meltwaterstore,&
+  !         deltaQi,&
+  !         SnowPack,&!inoout
+  !         snowFrac,&
+  !         SnowAlb,&
+  !         SnowDens,&
+  !         mwh,&!output
+  !         fwh,&
+  !         Qm,&
+  !         QmFreez,&
+  !         QmRain,&
+  !         CumSnowfall,&
+  !         snowCalcSwitch,&
+  !         Qm_melt,&
+  !         Qm_freezState,&
+  !         Qm_rain,&
+  !         FreezMelt,&
+  !         FreezState,&
+  !         FreezStateVol,&
+  !         rainOnSnow,&
+  !         SnowDepth,&
+  !         mw_ind)
+  !
+  !    ! If snow on ground, no irrigation, so veg_fr same in each case
+  !    !New fraction of vegetation.
+  !    !IF(veg_type==1)THEN         ! area vegetated
+  !
+  !    CALL veg_fr_snow(&
+  !         sfr,snowFrac,&!input
+  !         veg_fr)!output
+  !
+  !    !  veg_fr = sfr(ConifSurf)*(1-snowFrac(ConifSurf))+sfr(DecidSurf)*(1-snowFrac(DecidSurf))+&
+  !    !       sfr(GrassSurf)*(1-snowFrac(GrassSurf))+sfr(BSoilSurf)*(1-snowFrac(BSoilSurf))+&
+  !    !       sfr(WaterSurf)*(1-snowFrac(WaterSurf))
+  !
+  !    !ELSEIF(veg_type==2)THEN     ! area irrigated
+  !    !   !!!veg_fr=sfr(GrassISurf)*(1-snowFrac(GrassUSurf))
+  !    !END IF
+  !
+  ! END IF
 
   !==========================Turbulent Fluxes================================
 
@@ -519,22 +526,49 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   IF(Diagnose==1) WRITE(*,*) 'Calling LUMPS_QHQE...'
   !Calculate QH and QE from LUMPS
   CALL LUMPS_QHQE(&
-                                !input:
-       qn1,qf,qs,Qm,Temp_C,avcp,Press_hPa,lv_J_kg,tlv,&
-       DRAINRT,Precip,&
-       RainBucket,RainMaxRes,RAINCOVER,&
-       Veg_Fr,sfr(ivConif+2:ivGrass+2),lai(id-1,Gridiv),LAImax,LAImin,&
-       nsh_real,veg_type,snowUse,&
-                                !output:
-       H_mod,E_mod,&
-       psyc_hPa,s_hPa,sIce_hpa,TempVeg)
-  IF(debug)WRITE(*,*)press_Hpa,psyc_hPA,i
+       veg_type,& !input
+       snowUse,&
+       qn1,&
+       qf,&
+       qs,&
+       Qm,&
+       Temp_C,&
+       Veg_Fr,&
+       avcp,&
+       Press_hPa,&
+       lv_J_kg,&
+       tlv,&
+       DRAINRT,&
+       nsh_real,&
+       Precip,&
+       RainMaxRes,&
+       RAINCOVER,&
+       sfr(ivConif+2:ivGrass+2),&
+       lai(id-1,Gridiv),&
+       LAImax,&
+       LAImin,&
+       H_mod,& !output
+       E_mod,&
+       psyc_hPa,&
+       s_hPa,&
+       sIce_hpa,&
+       TempVeg)
+  ! CALL LUMPS_QHQE(&
+  !                               !input:
+  !      qn1,qf,qs,Qm,Temp_C,avcp,Press_hPa,lv_J_kg,tlv,&
+  !      DRAINRT,Precip,&
+  !      RainBucket,RainMaxRes,RAINCOVER,&
+  !      Veg_Fr,sfr(ivConif+2:ivGrass+2),lai(id-1,Gridiv),LAImax,LAImin,&
+  !      nsh_real,veg_type,snowUse,&
+  !                               !output:
+  !      H_mod,E_mod,&
+  !      psyc_hPa,s_hPa,sIce_hpa,TempVeg)
+  ! IF(debug)WRITE(*,*)press_Hpa,psyc_hPA,i
 
   IF(Diagnose==1) WRITE(*,*) 'Calling WaterUse...'
   !Gives the external and internal water uses per timestep
   CALL WaterUse(&
-                                ! input:
-       nsh_real,&
+       nsh_real,&! input:
        SurfaceArea,&
        sfr,&
        IrrFracConif,&
@@ -553,8 +587,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        NSH,&
        it,imin,DLS,nsurf,&
        OverUse,&
-                                !  output:
-       WUAreaEveTr_m2,&
+       WUAreaEveTr_m2,&!  output:
        WUAreaDecTr_m2,&
        WUAreaGrass_m2,&
        WUAreaTotal_m2,&
@@ -810,7 +843,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   !======== Evaporation and surface state ========
   CALL SUEWS_cal_QE(&
-       Diagnose,&
+       Diagnose,&!input
        id,&
        nsurf,&
        tstep,&
@@ -854,8 +887,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        precip,&
        PipeCapacity,&
        RunoffToWater,&
-       runoffAGimpervious,&
-       runoffAGveg,&
        surpluswaterbody,&
        pin,&
        NonWaterFraction,&
@@ -883,6 +914,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        StateLimit,&
        DayofWeek,&
        surf,&
+       runoff_per_interval,&!inout:
        snowPack,&
        snowFrac,&
        MeltWaterStore,&
@@ -891,6 +923,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        addwater,&
        addwaterrunoff,&
        SnowDens,&
+       SurplusEvap,&
+       snowProf,&  !out:
        runoffSnow,&
        runoff,&
        runoffSoil,&
@@ -902,9 +936,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        ev_snow,&
        soilmoist,&
        SnowRemoval,&
-       snowProf,&
-       runoff_per_interval,&
-       SurplusEvap,&
        evap,&
        rss_nsurf,&
        p_mm,&
@@ -1138,7 +1169,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ! qeOut        = qe_per_tstep
 
   !============ Sensible heat flux ===============
-  call SUEWS_cal_QH(&
+  CALL SUEWS_cal_QH(&
        1,&
        qn1,&
        qf,&
@@ -1192,9 +1223,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   IF(Diagnose==1) WRITE(*,*) 'Calling HorizontalSoilWater...'
   ! CALL HorizontalSoilWater
   CALL HorizontalSoilWater(&
-
-                                ! input:
-       nsurf,&
+       nsurf,&! input:
        sfr,&! surface fractions
        SoilStoreCap,&!Capacity of soil store for each surface [mm]
        SoilDepth,&!Depth of sub-surface soil store for each surface [mm]
@@ -1202,7 +1231,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        SurfaceArea,&!Surface area of the study area [m2]
        NonWaterFraction,&! sum of surface cover fractions for all except water surfaces
        tstep_real,& !tstep cast as a real for use in calculations
-
                                 ! inout:
        SoilMoist,&!Soil moisture of each surface type [mm]
        runoffSoil,&!Soil runoff from each soil sub-surface [mm]
@@ -1243,13 +1271,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        ustar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,&
        RoughLenHeatMethod,StabilityMethod,&
        avU10_ms,t2_C,q2_gkg)!output
-  ! ! wind speed:
-  ! CALL diagSfc(0.,0.,ustar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,avU10_ms,0,RoughLenHeatMethod,StabilityMethod)
-  ! ! temperature:
-  ! CALL diagSfc(tsurf,qh,ustar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,t2_C,1,RoughLenHeatMethod,StabilityMethod)
-  ! ! humidity:
-  ! CALL diagSfc(qsatf(tsurf,Press_hPa)*1000,& ! Saturation specific humidity at surface in g/kg
-  !      qeOut,ustar,veg_fr,q2_gkg,z0m,L_mod,k,avdens,avcp,tlv,2,RoughLenHeatMethod,StabilityMethod)
   !============ surface-level diagonostics end ===============
 
 

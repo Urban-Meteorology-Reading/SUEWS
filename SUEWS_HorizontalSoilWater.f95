@@ -1,4 +1,3 @@
-
 SUBROUTINE HorizontalSoilWater(&
 
                                 ! input:
@@ -14,6 +13,7 @@ SUBROUTINE HorizontalSoilWater(&
                                 ! inout:
      SoilMoist,&!Soil moisture of each surface type [mm]
      runoffSoil,&!Soil runoff from each soil sub-surface [mm]
+                                !  output:
      runoffSoil_per_tstep&!Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
      )
   !Transfers water in soil stores of land surfaces LJ (2010)
@@ -36,24 +36,20 @@ SUBROUTINE HorizontalSoilWater(&
   ! use allocateArray
 
   IMPLICIT NONE
-  INTEGER , INTENT(in) ::&
-       nsurf! number of surface types
+  INTEGER , INTENT(in) :: nsurf! number of surface types
 
-  REAL(KIND(1d0)), INTENT(in) ::&
-       sfr(nsurf),&! surface fractions
-       SoilStoreCap(nsurf),&!Capacity of soil store for each surface [mm]
-       SoilDepth(nsurf),&!Depth of sub-surface soil store for each surface [mm]
-       SatHydraulicConduct(nsurf),&!Saturated hydraulic conductivity for each soil subsurface [mm s-1]
-       SurfaceArea,&!Surface area of the study area [m2]
-       NonWaterFraction,&! sum of surface cover fractions for all except water surfaces
-       tstep_real !tstep cast as a real for use in calculations
+  REAL(KIND(1d0)), INTENT(in) ::sfr(nsurf)! surface fractions
+  REAL(KIND(1d0)), INTENT(in) ::SoilStoreCap(nsurf)!Capacity of soil store for each surface [mm]
+  REAL(KIND(1d0)), INTENT(in) ::SoilDepth(nsurf)!Depth of sub-surface soil store for each surface [mm]
+  REAL(KIND(1d0)), INTENT(in) ::SatHydraulicConduct(nsurf)!Saturated hydraulic conductivity for each soil subsurface [mm s-1]
+  REAL(KIND(1d0)), INTENT(in) ::SurfaceArea!Surface area of the study area [m2]
+  REAL(KIND(1d0)), INTENT(in) ::NonWaterFraction! sum of surface cover fractions for all except water surfaces
+  REAL(KIND(1d0)), INTENT(in) ::tstep_real !tstep cast as a real for use in calculations
 
+  REAL(KIND(1d0)),DIMENSION(nsurf), INTENT(inout) ::SoilMoist!Soil moisture of each surface type [mm]
+  REAL(KIND(1d0)),DIMENSION(nsurf), INTENT(inout) ::runoffSoil!Soil runoff from each soil sub-surface [mm]
 
-  REAL(KIND(1d0)), INTENT(inout) ::&
-       SoilMoist(nsurf),&!Soil moisture of each surface type [mm]
-       runoffSoil(nsurf),&!Soil runoff from each soil sub-surface [mm]
-       runoffSoil_per_tstep!Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
-
+  REAL(KIND(1d0)), INTENT(out) :: runoffSoil_per_tstep!Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
 
 
 
@@ -91,7 +87,7 @@ SUBROUTINE HorizontalSoilWater(&
   ! NUnits               = Number of repeating units (e.g. properties, blocks) for distance calculation [-]
 
 
-
+  runoffSoil_per_tstep=0
 
 
   DO is=1,nsurf-1 !nsurf-1,1,-1  !Loop through each surface, excluding water surface (runs backwards as of 13/08/2014, HCW)

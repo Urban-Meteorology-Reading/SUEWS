@@ -1,13 +1,32 @@
 SUBROUTINE LUMPS_QHQE(&
-                                !input:
-     qn1,qf,qs,Qm,Temp_C,avcp,Press_hPa,lv_J_kg,tlv,&
-     DRAINRT,Precip,&
-     RainBucket,RainMaxRes,RAINCOVER,&
-     Veg_Fr,sfrVeg,laiDay,LAImax,LAImin,&
-     nsh_real,veg_type,snowUse,&
-                                !output:
-     H_mod,E_mod,&
-     psyc_hPa,s_hPa,sIce_hpa,TempVeg)
+     veg_type,& !input
+     snowUse,&
+     qn1,&
+     qf,&
+     qs,&
+     Qm,&
+     Temp_C,&
+     Veg_Fr,&
+     avcp,&
+     Press_hPa,&
+     lv_J_kg,&
+     tlv,&
+     DRAINRT,&
+     nsh_real,&
+     Precip,&
+     RainMaxRes,&
+     RAINCOVER,&
+     sfrVeg,&
+     laiDay,&
+     LAImax,&
+     LAImin,&
+     H_mod,& !output
+     E_mod,&
+     psyc_hPa,&
+     s_hPa,&
+     sIce_hpa,&
+     TempVeg)
+
   !Calculates QH and QE for LUMPS. See Loridan et al. (2011)
   ! ref: Grimmond and Oke (2002) JAM and references within that
   !      Offerle (2003) -- add water bucket
@@ -32,45 +51,50 @@ SUBROUTINE LUMPS_QHQE(&
   ! USE VegPhenogy
 
   IMPLICIT NONE
-  REAL(KIND(1d0)),INTENT(in)   ::&
-       qn1,&        ! net all-wave radiation
-       qf,&         ! anthropogenic heat flux
-       qs,&         ! storage heat flux
-       Qm,&         !Snow melt associated heat flux
-       Temp_C,&     !air temperature in degC
-       Veg_Fr,&     !Vegetation fraction from land area
-       avcp,&       !Specific heat capacity
-       Press_hPa,&  !Station air pressure in hPa
-       lv_J_kg,&    !Latent heat of vaporization in [J kg-1]
-       tlv,&        !Latent heat of vaporization per timestep
-       DRAINRT,&    !Drainage rate of the water bucket [mm hr-1]
-       nsh_real,&   ! real cast of Number of timesteps per hour
-       Precip,&     !Precipitation per timestep [mm]
-       RainMaxRes,& !Maximum water bucket reservoir [mm]
-       RAINCOVER,&  ! LUMPS Limit when surface totally wet [mm]
-       sfrVeg(3),&  ! veg surface fractions [-]
-       laiDay(3),&  ! lai(id-1,iv), LAI at the beginning of today
-       LAImax(3),&  !Max LAI [m2 m-2]
-       LAImin(3)    !Min LAI [m2 m-2]
-  REAL(KIND(1d0)),INTENT(inout) ::RainBucket !RAINFALL RESERVOIR [mm]
-  INTEGER,INTENT(in) ::&
-       veg_type,&  !Defines how vegetation is calculated for LUMPS
-       snowUse ! option of snow module
-  REAL(KIND(1d0)),INTENT(out)   ::&
-       H_mod,E_mod,& !turbulent fluxes: QH, QE
-       psyc_hPa,& !Psychometric constant in hPa
-       s_hPa,& !Vapour pressure versus temperature slope in hPa
-       sIce_hpa,&!Vapour pressure versus temperature slope in hPa above ice/snow
-       TempVeg !TEMPORARY VEGETATIVE SURFACE FRACTION ADJUSTED BY RAINFALL
 
+  INTEGER,INTENT(in) :: veg_type  !Defines how vegetation is calculated for LUMPS
+  INTEGER,INTENT(in) :: snowUse ! option of snow module
 
-  INTEGER::iv                                 !,start
+  REAL(KIND(1d0)),INTENT(in) :: qn1! net all-wave radiation
+  REAL(KIND(1d0)),INTENT(in) :: qf! anthropogenic heat flux
+  REAL(KIND(1d0)),INTENT(in) :: qs! storage heat flux
+  REAL(KIND(1d0)),INTENT(in) :: Qm!Snow melt associated heat flux
+  REAL(KIND(1d0)),INTENT(in) :: Temp_C!air temperature in degC
+  REAL(KIND(1d0)),INTENT(in) :: Veg_Fr!Vegetation fraction from land area
+  REAL(KIND(1d0)),INTENT(in) :: avcp!Specific heat capacity
+  REAL(KIND(1d0)),INTENT(in) :: Press_hPa!Station air pressure in hPa
+  REAL(KIND(1d0)),INTENT(in) :: lv_J_kg!Latent heat of vaporization in [J kg-1]
+  REAL(KIND(1d0)),INTENT(in) :: tlv!Latent heat of vaporization per timestep
+  REAL(KIND(1d0)),INTENT(in) :: DRAINRT!Drainage rate of the water bucket [mm hr-1]
+  REAL(KIND(1d0)),INTENT(in) :: nsh_real! real cast of Number of timesteps per hour
+  REAL(KIND(1d0)),INTENT(in) :: Precip!Precipitation per timestep [mm]
+  REAL(KIND(1d0)),INTENT(in) :: RainMaxRes!Maximum water bucket reservoir [mm]
+  REAL(KIND(1d0)),INTENT(in) :: RAINCOVER! LUMPS Limit when surface totally wet [mm]
+
+  REAL(KIND(1d0)),DIMENSION(3),INTENT(in) :: sfrVeg! veg surface fractions [-]
+  REAL(KIND(1d0)),DIMENSION(3),INTENT(in) :: laiDay! lai(id-1,iv), LAI at the beginning of today
+  REAL(KIND(1d0)),DIMENSION(3),INTENT(in) :: LAImax!Max LAI [m2 m-2]
+  REAL(KIND(1d0)),DIMENSION(3),INTENT(in) :: LAImin    !Min LAI [m2 m-2]
+
+  REAL(KIND(1d0)),INTENT(out) ::H_mod
+  REAL(KIND(1d0)),INTENT(out) ::E_mod !turbulent fluxes: QH, QE
+  REAL(KIND(1d0)),INTENT(out) ::psyc_hPa !Psychometric constant in hPa
+  REAL(KIND(1d0)),INTENT(out) ::s_hPa!Vapour pressure versus temperature slope in hPa
+  REAL(KIND(1d0)),INTENT(out) ::sIce_hpa!Vapour pressure versus temperature slope in hPa above ice/snow
+  REAL(KIND(1d0)),INTENT(out) ::TempVeg !TEMPORARY VEGETATIVE SURFACE FRACTION ADJUSTED BY RAINFALL
+
+  ! REAL(KIND(1d0)),INTENT(inout) ::RainBucket !RAINFALL RESERVOIR [mm]
+  ! INTEGER::iv                                 !,start
   REAL(KIND(1d0))::VegPhen,VegMax,VegMin,&   !Vegetation phenology for LUMPS
        slope_svp, slopeIce_svp,& !Slope of the saturation vapour pressure curve above watre and ice
        psyc_s,psyc_const,&       !Psychometric constant
        alpha_sl,alpha_in,&    	  !Parameters used in LUMPS QH and QE calculations
        beta,&                      !Beta parameter used in LUMPS QH and QE calculations [W m-2]
-       alpha_qhqe,VegPhenLumps,RAINRES
+       alpha_qhqe,VegPhenLumps,RAINRES,RainBucket
+
+
+  ! initialize rain-related variables
+  RainBucket=0.
 
   ! Calculate slope of the saturation vapour pressure vs air temp.
   s_hPa=slope_svp(Temp_C)

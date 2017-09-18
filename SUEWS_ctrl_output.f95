@@ -133,7 +133,7 @@ MODULE ctrl_output
        varAttr('LAI'        , 'm2_m-2'       , f94  , 'Leaf area index'                                  , aA , '' , 0)     , &
        varAttr('z0m'        , 'm'            , f94  , 'Roughness length for momentum'                    , aA , '' , 1)     , &
        varAttr('zdm'        , 'm'            , f94  , 'Zero-plane displacement height'                   , aA , '' , 1)     , &
-       varAttr('ustar'      , 'm_s-1'        , f94  , 'Friction velocity'                                , aA , '' , 0)     , &
+       varAttr('UStar'      , 'm_s-1'        , f94  , 'Friction velocity'                                , aA , '' , 0)     , &
        varAttr('Lob'        , 'm'            , f104 , 'Obukhov length'                                   , aA , '' , 0)     , &
        varAttr('ra'         , 's_m-1'        , f94  , 'Aerodynamic resistance'                           , aA , '' , 1)     , &
        varAttr('rs'         , 's_m-1'        , f94  , 'Surface resistance'                               , aA , '' , 1)     , &
@@ -204,7 +204,7 @@ MODULE ctrl_output
        varAttr('QE_use'    , 'to_add' , f104 , 'QE_use'    , aA , 'BL' , 0)  , &
        varAttr('Press_hPa' , 'to_add' , f104 , 'Press_hPa' , aA , 'BL' , 0)  , &
        varAttr('avu1'      , 'to_add' , f104 , 'avu1'      , aA , 'BL' , 0)  , &
-       varAttr('ustar'     , 'to_add' , f104 , 'ustar'     , aA , 'BL' , 0)  , &
+       varAttr('UStar'     , 'to_add' , f104 , 'UStar'     , aA , 'BL' , 0)  , &
        varAttr('avdens'    , 'to_add' , f104 , 'avdens'    , aA , 'BL' , 0)  , &
        varAttr('lv_J_kg'   , 'to_add' , f146 , 'lv_J_kg'   , aA , 'BL' , 0)  , &
        varAttr('avcp'      , 'to_add' , f104 , 'avcp'      , aA , 'BL' , 0)  , &

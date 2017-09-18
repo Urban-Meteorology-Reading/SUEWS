@@ -25,7 +25,7 @@ SUBROUTINE STAB_lumps(&
                                 ! output:
      L,& !Obukhov length
      Tstar,& !T*
-     USTAR,& !Friction velocity
+     UStar,& !Friction velocity
      psim)!Stability function of momentum
 
   ! USE mod_k
@@ -50,7 +50,7 @@ SUBROUTINE STAB_lumps(&
 
   REAL(KIND(1d0)),INTENT(out)::L!Obukhov length
   REAL(KIND(1d0)),INTENT(out)::Tstar!T*
-  REAL(KIND(1d0)),INTENT(out)::USTAR!Friction velocity
+  REAL(KIND(1d0)),INTENT(out)::UStar!Friction velocity
   REAL(KIND(1d0)),INTENT(out)::psim   !Stability function of momentum
 
   REAL(KIND(1d0))::stab_fn_mom,&
@@ -70,19 +70,19 @@ SUBROUTINE STAB_lumps(&
 
   LOGICAL :: debug=.FALSE.
 
-  IF(debug) WRITE(*,*)StabilityMethod,z0M,avU1,h_init,USTAR,L
+  IF(debug) WRITE(*,*)StabilityMethod,z0M,avU1,h_init,UStar,L
   G_T_k=(Grav/(Temp_C+273.16))*k !gravity constant/(Temperature*Von Karman Constant)
   KUZ=k*AvU1                     !Von Karman constant*mean wind speed
   IF(zzd<0) CALL ErrorHint(32,'Windspeed Ht too low relative to zdm [Stability calc]- values [z-zdm, zdm]',Zzd,zdm,notUsedI)
 
-  USTAR=KUZ/LOG(Zzd/Z0M)      !Initial setting of u* and calc. of L (neutral situation)
+  UStar=KUZ/LOG(Zzd/Z0M)      !Initial setting of u* and calc. of L (neutral situation)
   IF ( ABS(h_init)<0.001 ) THEN    ! prevent zero Tstar
      h=0.001
   ELSE
      h=h_init
   END IF
-  Tstar=(-H/ustar)
-  L=(USTAR**2)/(G_T_K*Tstar)
+  Tstar=(-H/UStar)
+  L=(UStar**2)/(G_T_K*Tstar)
 
 
   IF(LOG(zzd/z0M)<0.001000) CALL ErrorHint(17,'In stability subroutine, (z-zd) < z0.',zzd,z0m,notUsedI)
@@ -92,8 +92,8 @@ SUBROUTINE STAB_lumps(&
      z0L=z0M/L  !z0M roughness length
 
      IF (zL>2)THEN
-        CALL ErrorHint(73,'LUMPS_atmos_functions_stab.f95: stability parameter, ustar',zL,USTAR,notUsedI)
-        RETURN !MO-theory not necessarily valid above zL>2. Still causes problematic ustar values and correct limit might be 0.3.
+        CALL ErrorHint(73,'LUMPS_atmos_functions_stab.f95: stability parameter, UStar',zL,UStar,notUsedI)
+        RETURN !MO-theory not necessarily valid above zL>2. Still causes problematic UStar values and correct limit might be 0.3.
         !Needs more investigations.
      END IF
 
@@ -101,20 +101,20 @@ SUBROUTINE STAB_lumps(&
      psimz0=stab_fn_mom(StabilityMethod,zL,z0L)
 
 
-     USTAR=KUZ/(LOG(Zzd/Z0M)-PSIM+psimz0) !Friction velocity in non-neutral situation
+     UStar=KUZ/(LOG(Zzd/Z0M)-PSIM+psimz0) !Friction velocity in non-neutral situation
 
-     IF(ustar<0.001000)THEN       !If u* too small
-        USTAR=KUZ/(LOG(Zzd/Z0M))
+     IF(UStar<0.001000)THEN       !If u* too small
+        UStar=KUZ/(LOG(Zzd/Z0M))
         CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.001] zl,dectime',zl,dectime,notUsedI)
-        CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.001] z0l,ustar',z0l,ustar,notUsedI)
+        CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.001] z0l,UStar',z0l,UStar,notUsedI)
         CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.001] psim,psimz0',psim,psimz0,notUsedI)
         CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.001] AVU1,log(zzd/z0m)',AVU1,LOG(zzd/z0m),notUsedI)
 
         RETURN
      ENDIF
 
-     tstar=(-H/ustar)
-     L=(Ustar**2)/(G_T_K*Tstar)
+     tstar=(-H/UStar)
+     L=(UStar**2)/(G_T_K*Tstar)
 
      IF(ABS(LOLD-L)<0.01)THEN
         IF (ABS(L)>1e6) L = L/ABS(L)*1e6

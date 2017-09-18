@@ -13,7 +13,7 @@
 
     30 format('%id it  dectime    kdown     kup    ldown     lup     Tsurf     qn      h_mod    e_mod',&
             '     qs        QF       QH       QE      P/i      Ie/i     E/i      DR/i    Ch/i', &
-            '     ST/i    ROsoil/i  RO/i    ROpipe   ROpav     ROveg   ROwater    RA      RS     ustar',&
+            '     ST/i    ROsoil/i  RO/i    ROpipe   ROpav     ROveg   ROwater    RA      RS     UStar',&
             '    L_mod SoilSt_pav SoilSt_bldg SoilSt_ET SoilSt_DT SoilSt_IG SoilSt_UG St_pav ',&
             'St_bldg   St_ET    St_DT    St_IG    St_UG   St_wtr     Fcld SoilState    smd       LAI',&
             '       Fw     addWater Iegrass/i Ietrees/i qn1_SF    qn1_S     Qm ',&

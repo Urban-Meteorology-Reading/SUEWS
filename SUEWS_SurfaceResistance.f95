@@ -1,7 +1,5 @@
 SUBROUTINE SurfaceResistance(&
-
-                                ! input:
-     id,it,&
+     id,it,&! input:
      SMDMethod,&
      ConifSurf,&
      DecidSurf,&
@@ -30,8 +28,7 @@ SUBROUTINE SurfaceResistance(&
      TL,&
      S1,&
      S2,&
-! output:
-     gsc,&
+     gsc,&! output:
      ResistSurf)
   ! Calculates bulk surface resistance (ResistSurf [s m-1]) based on Jarvis 1976 approach
   ! Last modified -----------------------------------------------------
@@ -54,44 +51,42 @@ SUBROUTINE SurfaceResistance(&
 
   IMPLICIT NONE
 
-  INTEGER,INTENT(in):: &
-       id,it,& ! time: day of year and hour
-       gsModel,&!Choice of gs parameterisation (1 = Ja11, 2 = Wa16)
-       SMDMethod,&!Method of measured soil moisture
-       ConifSurf,&!= 3, surface code
-       DecidSurf,&!= 4, surface code
-       GrassSurf,&!= 5, surface code
-       WaterSurf,&!= 7, surface code
-       nsurf!= 7, Total number of surfaces
 
+  INTEGER,INTENT(in)::id
+  INTEGER,INTENT(in)::it ! time: day of year and hour
+  INTEGER,INTENT(in)::gsModel!Choice of gs parameterisation (1 = Ja11, 2 = Wa16)
+  INTEGER,INTENT(in)::SMDMethod!Method of measured soil moisture
+  INTEGER,INTENT(in)::ConifSurf!= 3, surface code
+  INTEGER,INTENT(in)::DecidSurf!= 4, surface code
+  INTEGER,INTENT(in)::GrassSurf!= 5, surface code
+  INTEGER,INTENT(in)::WaterSurf!= 7, surface code
+  INTEGER,INTENT(in)::nsurf!= 7, Total number of surfaces
 
-  REAL(KIND(1d0)),INTENT(in):: &
-       avkdn,&!Average downwelling shortwave radiation
-       Temp_C,&!Air temperature
-       Kmax,&!Annual maximum hourly solar radiation
-       G1,&!Fitted parameters related to surface res. calculations
-       G2,&!Fitted parameters related to surface res. calculations
-       G3,&!Fitted parameters related to surface res. calculations
-       G4,&!Fitted parameters related to surface res. calculations
-       G5,&!Fitted parameters related to surface res. calculations
-       G6,&!Fitted parameters related to surface res. calculations
-       S1,&!Fitted parameters related to surface res. calculations
-       S2,&!Fitted parameters related to surface res. calculations
-       TH,&!Maximum temperature limit
-       TL,&!Minimum temperature limit
-       dq,&!Specific humidity deficit
-       xsmd,&!Measured soil moisture deficit
-       vsmd,&!Soil moisture deficit for vegetated surfaces only (what about BSoil?)
-       MaxConductance(3),&!Max conductance [mm s-1]
-       LaiMax(3),&!Max LAI  [m2 m-2]
-       lai_id(3),&!=lai_id(id-1,:), LAI for each veg surface [m2 m-2]
-       snowFrac(nsurf),&!Surface fraction of snow cover
-       sfr(nsurf)!Surface fractions [-]
+  REAL(KIND(1d0)),INTENT(in)::avkdn!Average downwelling shortwave radiation
+  REAL(KIND(1d0)),INTENT(in)::Temp_C!Air temperature
+  REAL(KIND(1d0)),INTENT(in)::Kmax!Annual maximum hourly solar radiation
+  REAL(KIND(1d0)),INTENT(in)::G1!Fitted parameters related to surface res. calculations
+  REAL(KIND(1d0)),INTENT(in)::G2!Fitted parameters related to surface res. calculations
+  REAL(KIND(1d0)),INTENT(in)::G3!Fitted parameters related to surface res. calculations
+  REAL(KIND(1d0)),INTENT(in)::G4!Fitted parameters related to surface res. calculations
+  REAL(KIND(1d0)),INTENT(in)::G5!Fitted parameters related to surface res. calculations
+  REAL(KIND(1d0)),INTENT(in)::G6!Fitted parameters related to surface res. calculations
+  REAL(KIND(1d0)),INTENT(in)::S1!Fitted parameters related to surface res. calculations
+  REAL(KIND(1d0)),INTENT(in)::S2!Fitted parameters related to surface res. calculations
+  REAL(KIND(1d0)),INTENT(in)::TH!Maximum temperature limit
+  REAL(KIND(1d0)),INTENT(in)::TL!Minimum temperature limit
+  REAL(KIND(1d0)),INTENT(in)::dq!Specific humidity deficit
+  REAL(KIND(1d0)),INTENT(in)::xsmd!Measured soil moisture deficit
+  REAL(KIND(1d0)),INTENT(in)::vsmd!Soil moisture deficit for vegetated surfaces only (what about BSoil?)
 
+  REAL(KIND(1d0)),DIMENSION(3),INTENT(in)    ::MaxConductance!Max conductance [mm s-1]
+  REAL(KIND(1d0)),DIMENSION(3),INTENT(in)    ::LaiMax        !Max LAI [m2 m-2]
+  REAL(KIND(1d0)),DIMENSION(3),INTENT(in)    ::lai_id        !=lai(id-1,:), LAI for each veg surface [m2 m-2]
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::snowFrac      !Surface fraction of snow cover
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::sfr           !Surface fractions [-]
 
-  REAL(KIND(1d0)),INTENT(out):: &
-       gsc,&!Surface Layer Conductance
-       ResistSurf!Surface resistance
+  REAL(KIND(1d0)),INTENT(out)::gsc!Surface Layer Conductance
+  REAL(KIND(1d0)),INTENT(out)::ResistSurf!Surface resistance
 
   REAL(KIND(1d0)):: &
        gl,&!G(LAI)

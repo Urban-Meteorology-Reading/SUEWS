@@ -1377,7 +1377,7 @@ MODULE sues_data
        RA,&         !Aerodynamic resistance
        RAsnow,&     !Aerodynamic resistance over snow
        tstar,&      !T*
-       ustar,&      !Friction velocity
+       UStar,&      !Friction velocity
        z0_gis       !Roughness length for momentum from gis input file
 
   !Surface resistance related variables

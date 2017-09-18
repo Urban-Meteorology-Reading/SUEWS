@@ -952,8 +952,7 @@ CONTAINS
   END SUBROUTINE SUEWS_cal_QE
   !========================================================================
 
-
-  !===============sensible heat flux============================
+  !===============sensible heat flux======================================
   SUBROUTINE SUEWS_cal_QH(&
        opt_QH,&
        qn1,&
@@ -1008,5 +1007,224 @@ CONTAINS
 
   END SUBROUTINE SUEWS_cal_QH
   !========================================================================
+
+  !===============Resistance Calculations=======================
+  SUBROUTINE SUEWS_cal_Resistance(&
+       StabilityMethod,&!input:
+       Diagnose,&
+       AerodynamicResistanceMethod,&
+       RoughLenHeatMethod,&
+       snowUse,&
+       id,&
+       it,&
+       gsModel,&
+       SMDMethod,&
+       ConifSurf,&
+       DecidSurf,&
+       GrassSurf,&
+       WaterSurf,&
+       nsurf,&
+       qh_obs,&
+       avdens,&
+       avcp,&
+       h_mod,&
+       qn1_bup,&
+       dectime,&
+       zzd,&
+       z0M,&
+       zdm,&
+       avU1,&
+       Temp_C,&
+       L_mod,&
+       UStar,&
+       VegFraction,&
+       avkdn,&
+       Kmax,&
+       G1,&
+       G2,&
+       G3,&
+       G4,&
+       G5,&
+       G6,&
+       S1,&
+       S2,&
+       TH,&
+       TL,&
+       dq,&
+       xsmd,&
+       vsmd,&
+       MaxConductance,&
+       LaiMax,&
+       lai_id,&
+       snowFrac,&
+       sfr,&
+       Tstar,&!output:
+       psim,&
+       gsc,&
+       ResistSurf,&
+       RA,&
+       RAsnow,&
+       rb)
+
+    IMPLICIT NONE
+
+    INTEGER,INTENT(in)::StabilityMethod
+    INTEGER,INTENT(in)::Diagnose
+    INTEGER,INTENT(in)::AerodynamicResistanceMethod
+    INTEGER,INTENT(in)::RoughLenHeatMethod
+    INTEGER,INTENT(in)::snowUse
+    INTEGER,INTENT(in)::id
+    INTEGER,INTENT(in)::it       !time: day of year and hour
+    INTEGER,INTENT(in)::gsModel  !Choice of gs parameterisation (1 = Ja11, 2 = Wa16)
+    INTEGER,INTENT(in)::SMDMethod!Method of measured soil moisture
+    INTEGER,INTENT(in)::ConifSurf!= 3, surface code
+    INTEGER,INTENT(in)::DecidSurf!= 4, surface code
+    INTEGER,INTENT(in)::GrassSurf!= 5, surface code
+    INTEGER,INTENT(in)::WaterSurf!= 7, surface code
+    INTEGER,INTENT(in)::nsurf    != 7, Total number of surfaces
+
+    REAL(KIND(1d0)),INTENT(in)::qh_obs
+    REAL(KIND(1d0)),INTENT(in)::avdens
+    REAL(KIND(1d0)),INTENT(in)::avcp
+    REAL(KIND(1d0)),INTENT(in)::h_mod
+    REAL(KIND(1d0)),INTENT(in)::qn1_bup
+    REAL(KIND(1d0)),INTENT(in)::dectime    !Decimal time
+    REAL(KIND(1d0)),INTENT(in)::zzd        !Active measurement height (meas. height-displac. height)
+    REAL(KIND(1d0)),INTENT(in)::z0M        !Aerodynamic roughness length
+    REAL(KIND(1d0)),INTENT(in)::zdm        !Displacement height
+    REAL(KIND(1d0)),INTENT(in)::avU1       !Average wind speed
+    REAL(KIND(1d0)),INTENT(in)::Temp_C     !Air temperature
+    REAL(KIND(1d0)),INTENT(in)::VegFraction!Fraction of vegetation
+    REAL(KIND(1d0)),INTENT(in)::avkdn      !Average downwelling shortwave radiation
+    REAL(KIND(1d0)),INTENT(in)::Kmax       !Annual maximum hourly solar radiation
+    REAL(KIND(1d0)),INTENT(in)::G1         !Fitted parameters related to surface res. calculations
+    REAL(KIND(1d0)),INTENT(in)::G2         !Fitted parameters related to surface res. calculations
+    REAL(KIND(1d0)),INTENT(in)::G3         !Fitted parameters related to surface res. calculations
+    REAL(KIND(1d0)),INTENT(in)::G4         !Fitted parameters related to surface res. calculations
+    REAL(KIND(1d0)),INTENT(in)::G5         !Fitted parameters related to surface res. calculations
+    REAL(KIND(1d0)),INTENT(in)::G6         !Fitted parameters related to surface res. calculations
+    REAL(KIND(1d0)),INTENT(in)::S1         !Fitted parameters related to surface res. calculations
+    REAL(KIND(1d0)),INTENT(in)::S2         !Fitted parameters related to surface res. calculations
+    REAL(KIND(1d0)),INTENT(in)::TH         !Maximum temperature limit
+    REAL(KIND(1d0)),INTENT(in)::TL         !Minimum temperature limit
+    REAL(KIND(1d0)),INTENT(in)::dq         !Specific humidity deficit
+    REAL(KIND(1d0)),INTENT(in)::xsmd       !Measured soil moisture deficit
+    REAL(KIND(1d0)),INTENT(in)::vsmd       !Soil moisture deficit for vegetated surfaces only (what about BSoil?)
+
+    REAL(KIND(1d0)),DIMENSION(3),INTENT(in) ::MaxConductance!Max conductance [mm s-1]
+    REAL(KIND(1d0)),DIMENSION(3),INTENT(in) ::LaiMax        !Max LAI [m2 m-2]
+    REAL(KIND(1d0)),DIMENSION(3),INTENT(in) ::lai_id        !=lai_id(id-1,:), LAI for each veg surface [m2 m-2]
+
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::snowFrac      !Surface fraction of snow cover
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::sfr           !Surface fractions [-]
+
+    REAL(KIND(1d0)),INTENT(out)::Tstar     !T*
+    REAL(KIND(1d0)),INTENT(out)::UStar     !Friction velocity
+    REAL(KIND(1d0)),INTENT(out)::psim      !Stability function of momentum
+    REAL(KIND(1d0)),INTENT(out)::gsc       !Surface Layer Conductance
+    REAL(KIND(1d0)),INTENT(out)::ResistSurf!Surface resistance
+    REAL(KIND(1d0)),INTENT(out)::RA        !Aerodynamic resistance [s m^-1]
+    REAL(KIND(1d0)),INTENT(out)::RAsnow    !Aerodynamic resistance for snow [s m^-1]
+    REAL(KIND(1d0)),INTENT(out)::rb        !boundary layer resistance shuttleworth
+
+    REAL(KIND(1d0))::H_init !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
+    REAL(KIND(1d0))::L_mod  !Obukhov length
+
+    ! Get first estimate of sensible heat flux. Modified by HCW 26 Feb 2015
+    CALL SUEWS_cal_Hinit(&
+         qh_obs,avdens,avcp,h_mod,qn1_bup,dectime,&
+         H_init)
+
+    IF(Diagnose==1) WRITE(*,*) 'Calling STAB_lumps...'
+    !u* and Obukhov length out
+    CALL STAB_lumps(&
+         StabilityMethod,&  ! input
+         dectime,& !Decimal time
+         zzd,&     !Active measurement height (meas. height-displac. height)
+         z0M,&     !Aerodynamic roughness length
+         zdm,&     !Displacement height
+         avU1,&    !Average wind speed
+         Temp_C,&  !Air temperature
+         H_init,& !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
+         L_mod,&! output: !Obukhov length
+         Tstar,& !T*
+         UStar,& !Friction velocity
+         psim)!Stability function of momentum
+
+    IF(Diagnose==1) WRITE(*,*) 'Calling AerodynamicResistance...'
+    CALL AerodynamicResistance(&
+         ZZD,&! input:
+         z0m,&
+         AVU1,&
+         L_mod,&
+         UStar,&
+         VegFraction,&
+         AerodynamicResistanceMethod,&
+         StabilityMethod,&
+         RoughLenHeatMethod,&
+         RA) ! output:
+
+    IF (snowUse==1) THEN
+       IF(Diagnose==1) WRITE(*,*) 'Calling AerodynamicResistance for snow...'
+       CALL AerodynamicResistance(&
+            ZZD,&! input:
+            z0m,&
+            AVU1,&
+            L_mod,&
+            UStar,&
+            VegFraction,&
+            AerodynamicResistanceMethod,&
+            StabilityMethod,&
+            3,&
+            RAsnow)     ! output:
+    ENDIF
+
+    IF(Diagnose==1) WRITE(*,*) 'Calling SurfaceResistance...'
+    ! CALL SurfaceResistance(id,it)   !qsc and surface resistance out
+    CALL  SurfaceResistance(&
+         id,it,&! input:
+         SMDMethod,&
+         ConifSurf,&
+         DecidSurf,&
+         GrassSurf,&
+         WaterSurf,&
+         snowFrac,&
+         sfr,&
+         nsurf,&
+         avkdn,&
+         Temp_C,&
+         dq,&
+         xsmd,&
+         vsmd,&
+         MaxConductance,&
+         LaiMax,&
+         lai_id,&
+         gsModel,&
+         Kmax,&
+         G1,&
+         G2,&
+         G3,&
+         G4,&
+         G5,&
+         G6,&
+         TH,&
+         TL,&
+         S1,&
+         S2,&
+         gsc,&! output:
+         ResistSurf)
+
+    IF(Diagnose==1) WRITE(*,*) 'Calling BoundaryLayerResistance...'
+    CALL BoundaryLayerResistance(&
+         zzd,&! input:     !Active measurement height (meas. height-displac. height)
+         z0M,&     !Aerodynamic roughness length
+         avU1,&    !Average wind speed
+         UStar,&  ! input/output:
+         rb)  ! output:
+
+  END SUBROUTINE SUEWS_cal_Resistance
+
+  !================================================================
+
 
 END MODULE SUEWS_Driver

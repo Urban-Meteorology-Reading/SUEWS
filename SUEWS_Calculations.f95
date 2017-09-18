@@ -389,100 +389,160 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        ext_wu)
 
 
-  ! Get first estimate of sensible heat flux. Modified by HCW 26 Feb 2015
-  CALL SUEWS_cal_Hinit(&
-       qh_obs,avdens,avcp,h_mod,qn1_bup,dectime,&
-       H)
-
-  !===========================================================================
-  IF(Diagnose==1) WRITE(*,*) 'Calling STAB_lumps...'
-  !u* and Obukhov length out
-  CALL STAB_lumps(&
-       StabilityMethod,&  ! input
-       dectime,& !Decimal time
-       zzd,&     !Active measurement height (meas. height-displac. height)
-       z0M,&     !Aerodynamic roughness length
-       zdm,&     !Displacement height
-       avU1,&    !Average wind speed
-       Temp_C,&  !Air temperature
-       H,    & !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
-       L_mod,&! output: !Obukhov length
-       Tstar,& !T*
-       USTAR,& !Friction velocity
-       psim)!Stability function of momentum
-
-  IF(Diagnose==1) WRITE(*,*) 'Calling AerodynamicResistance...'
-  CALL AerodynamicResistance(&
-       ZZD,&! input:
-       z0m,&
-       AVU1,&
-       L_mod,&
-       Ustar,&
-       VegFraction,&
+  !===============Resistance Calculations=======================
+  CALL SUEWS_cal_Resistance(&
+       StabilityMethod,&!input:
+       Diagnose,&
        AerodynamicResistanceMethod,&
-       StabilityMethod,&
        RoughLenHeatMethod,&
-       RA) ! output:
-
-  IF (snowUse==1) THEN
-     IF(Diagnose==1) WRITE(*,*) 'Calling AerodynamicResistance for snow...'
-     !  CALL AerodynamicResistance(RAsnow,AerodynamicResistanceMethod,StabilityMethod,3,&
-     ! ZZD,z0m,k2,AVU1,L_mod,Ustar,VegFraction,psyh)      !RA out
-     CALL AerodynamicResistance(&
-          ZZD,&! input:
-          z0m,&
-          AVU1,&
-          L_mod,&
-          Ustar,&
-          VegFraction,&
-          AerodynamicResistanceMethod,&
-          StabilityMethod,&
-          3,&
-          RAsnow)     ! output:
-  ENDIF
-
-  IF(Diagnose==1) WRITE(*,*) 'Calling SurfaceResistance...'
-  ! CALL SurfaceResistance(id,it)   !qsc and surface resistance out
-  CALL  SurfaceResistance(&
-       id,it,&! input:
+       snowUse,&
+       id,&
+       it,&
+       INT(SurfaceChar(Gridiv,c_gsModel)),&
        SMDMethod,&
        ConifSurf,&
        DecidSurf,&
        GrassSurf,&
        WaterSurf,&
-       snowFrac,&
-       sfr,&
        nsurf,&
-       avkdn,&
+       qh_obs,&
+       avdens,&
+       avcp,&
+       h_mod,&
+       qn1_bup,&
+       dectime,&
+       zzd,&
+       z0M,&
+       zdm,&
+       avU1,&
        Temp_C,&
+       L_mod,&
+       UStar,&
+       VegFraction,&
+       avkdn,&
+       SurfaceChar(Gridiv,c_GsKmax),&
+       SurfaceChar(Gridiv,c_GsG1),&
+       SurfaceChar(Gridiv,c_GsG2),&
+       SurfaceChar(Gridiv,c_GsG3),&
+       SurfaceChar(Gridiv,c_GsG4),&
+       SurfaceChar(Gridiv,c_GsG5),&
+       SurfaceChar(Gridiv,c_GsG6),&
+       SurfaceChar(Gridiv,c_GsS1),&
+       SurfaceChar(Gridiv,c_GsS2),&
+       SurfaceChar(Gridiv,c_GsTH),&
+       SurfaceChar(Gridiv,c_GsTL),&
        dq,&
        xsmd,&
        vsmd,&
        MaxConductance,&
        LaiMax,&
        lai(id-1,:),&
-       INT(SurfaceChar(Gridiv,c_gsModel)),&!  gsModel,&
-       SurfaceChar(Gridiv,c_GsKmax),&!  Kmax,&
-       SurfaceChar(Gridiv,c_GsG1),&! G1,&
-       SurfaceChar(Gridiv,c_GsG2),&! G2,&
-       SurfaceChar(Gridiv,c_GsG3),&! G3,&
-       SurfaceChar(Gridiv,c_GsG4),&! G4,&
-       SurfaceChar(Gridiv,c_GsG5),&! G5,&
-       SurfaceChar(Gridiv,c_GsG6),&! G6,&
-       SurfaceChar(Gridiv,c_GsTH),&! TH,&
-       SurfaceChar(Gridiv,c_GsTL),&! TL,&
-       SurfaceChar(Gridiv,c_GsS1),&! S1,&
-       SurfaceChar(Gridiv,c_GsS2),&! S2,&
-       gsc,&! output:
-       ResistSurf)
+       snowFrac,&
+       sfr,&
+       Tstar,&!output:
+       psim,&
+       gsc,&
+       ResistSurf,&
+       RA,&
+       RAsnow,&
+       rb)
 
-  IF(Diagnose==1) WRITE(*,*) 'Calling BoundaryLayerResistance...'
-  CALL BoundaryLayerResistance(&
-       zzd,&! input:     !Active measurement height (meas. height-displac. height)
-       z0M,&     !Aerodynamic roughness length
-       avU1,&    !Average wind speed
-       USTAR,&  ! input/output:
-       rb)  ! output:
+  !
+  !
+  ! ! Get first estimate of sensible heat flux. Modified by HCW 26 Feb 2015
+  ! CALL SUEWS_cal_Hinit(&
+  !      qh_obs,avdens,avcp,h_mod,qn1_bup,dectime,&
+  !      H)
+  !
+  ! IF(Diagnose==1) WRITE(*,*) 'Calling STAB_lumps...'
+  ! !u* and Obukhov length out
+  ! CALL STAB_lumps(&
+  !      StabilityMethod,&  ! input
+  !      dectime,& !Decimal time
+  !      zzd,&     !Active measurement height (meas. height-displac. height)
+  !      z0M,&     !Aerodynamic roughness length
+  !      zdm,&     !Displacement height
+  !      avU1,&    !Average wind speed
+  !      Temp_C,&  !Air temperature
+  !      H,    & !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
+  !      L_mod,&! output: !Obukhov length
+  !      Tstar,& !T*
+  !      UStar,& !Friction velocity
+  !      psim)!Stability function of momentum
+  !
+  ! IF(Diagnose==1) WRITE(*,*) 'Calling AerodynamicResistance...'
+  ! CALL AerodynamicResistance(&
+  !      ZZD,&! input:
+  !      z0m,&
+  !      AVU1,&
+  !      L_mod,&
+  !      UStar,&
+  !      VegFraction,&
+  !      AerodynamicResistanceMethod,&
+  !      StabilityMethod,&
+  !      RoughLenHeatMethod,&
+  !      RA) ! output:
+  !
+  ! IF (snowUse==1) THEN
+  !    IF(Diagnose==1) WRITE(*,*) 'Calling AerodynamicResistance for snow...'
+  !    !  CALL AerodynamicResistance(RAsnow,AerodynamicResistanceMethod,StabilityMethod,3,&
+  !    ! ZZD,z0m,k2,AVU1,L_mod,UStar,VegFraction,psyh)      !RA out
+  !    CALL AerodynamicResistance(&
+  !         ZZD,&! input:
+  !         z0m,&
+  !         AVU1,&
+  !         L_mod,&
+  !         UStar,&
+  !         VegFraction,&
+  !         AerodynamicResistanceMethod,&
+  !         StabilityMethod,&
+  !         3,&
+  !         RAsnow)     ! output:
+  ! ENDIF
+  !
+  ! IF(Diagnose==1) WRITE(*,*) 'Calling SurfaceResistance...'
+  ! ! CALL SurfaceResistance(id,it)   !qsc and surface resistance out
+  ! CALL  SurfaceResistance(&
+  !      id,it,&! input:
+  !      SMDMethod,&
+  !      ConifSurf,&
+  !      DecidSurf,&
+  !      GrassSurf,&
+  !      WaterSurf,&
+  !      snowFrac,&
+  !      sfr,&
+  !      nsurf,&
+  !      avkdn,&
+  !      Temp_C,&
+  !      dq,&
+  !      xsmd,&
+  !      vsmd,&
+  !      MaxConductance,&
+  !      LaiMax,&
+  !      lai(id-1,:),&
+  !      INT(SurfaceChar(Gridiv,c_gsModel)),&!  gsModel,&
+  !      SurfaceChar(Gridiv,c_GsKmax),&!  Kmax,&
+  !      SurfaceChar(Gridiv,c_GsG1),&! G1,&
+  !      SurfaceChar(Gridiv,c_GsG2),&! G2,&
+  !      SurfaceChar(Gridiv,c_GsG3),&! G3,&
+  !      SurfaceChar(Gridiv,c_GsG4),&! G4,&
+  !      SurfaceChar(Gridiv,c_GsG5),&! G5,&
+  !      SurfaceChar(Gridiv,c_GsG6),&! G6,&
+  !      SurfaceChar(Gridiv,c_GsTH),&! TH,&
+  !      SurfaceChar(Gridiv,c_GsTL),&! TL,&
+  !      SurfaceChar(Gridiv,c_GsS1),&! S1,&
+  !      SurfaceChar(Gridiv,c_GsS2),&! S2,&
+  !      gsc,&! output:
+  !      ResistSurf)
+  !
+  ! IF(Diagnose==1) WRITE(*,*) 'Calling BoundaryLayerResistance...'
+  ! CALL BoundaryLayerResistance(&
+  !      zzd,&! input:     !Active measurement height (meas. height-displac. height)
+  !      z0M,&     !Aerodynamic roughness length
+  !      avU1,&    !Average wind speed
+  !      UStar,&  ! input/output:
+  !      rb)  ! output:
+
 
   !========= CO2-related calculations ================================
   ! Calculate CO2 fluxes from biogenic components
@@ -510,7 +570,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        AdditionalWater,runoffPipes,runoff_per_interval,&
        addWater,stateOld,soilmoistOld)
   !============= calculate water balance end =============
-
 
   !======== Evaporation and surface state ========
   CALL SUEWS_cal_QE(&
@@ -675,7 +734,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        0.,0.,&!input
        tsurf,qh,&
        Press_hPa,qeOut,&
-       ustar,veg_fr,z0m,L_mod,k,avdens,avcp,lv_J_kg,tstep_real,&
+       UStar,veg_fr,z0m,L_mod,k,avdens,avcp,lv_J_kg,tstep_real,&
        RoughLenHeatMethod,StabilityMethod,&
        avU10_ms,t2_C,q2_gkg)!output
   !============ surface-level diagonostics end ===============
@@ -802,7 +861,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        (stateOut(is),is=1,nsurf),&
        zenith_deg,azimuth,bulkalbedo,Fcld,&
        lai_wt,z0m,zdm,&
-       ustar,l_mod,ra,ResistSurf,&
+       UStar,l_mod,ra,ResistSurf,&
        Fc,&
        Fc_photo,Fc_respi,Fc_metab,Fc_traff,Fc_build,&
        qn1_SF,qn1_S,SnowAlb,&

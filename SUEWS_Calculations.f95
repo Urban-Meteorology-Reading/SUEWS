@@ -263,7 +263,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ! =================STORAGE HEAT FLUX=======================================
   CALL SUEWS_cal_Qs(&
        nsurf,&
-                                !  size(MetForcingData(:,:,Gridiv), dim=1),&
        StorageHeatMethod,&
        OHMIncQF,&
        Gridiv,&
@@ -328,9 +327,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
 
   !==========================Turbulent Fluxes================================
-
-  tlv=lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
-
   IF(Diagnose==1) WRITE(*,*) 'Calling LUMPS_QHQE...'
   !Calculate QH and QE from LUMPS
   CALL LUMPS_QHQE(&
@@ -345,7 +341,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        avcp,&
        Press_hPa,&
        lv_J_kg,&
-       tlv,&
+       tstep_real,&
        DRAINRT,&
        nsh_real,&
        Precip,&
@@ -565,7 +561,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        ResistSurf,&
        ra,&
        rb,&
-       tlv,&
+       tstep_real,&
        snowdensmin,&
        precip,&
        PipeCapacity,&
@@ -691,7 +687,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        0.,0.,&!input
        tsurf,qh,&
        Press_hPa,qeOut,&
-       ustar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,&
+       ustar,veg_fr,z0m,L_mod,k,avdens,avcp,lv_J_kg,tstep_real,&
        RoughLenHeatMethod,StabilityMethod,&
        avU10_ms,t2_C,q2_gkg)!output
   !============ surface-level diagonostics end ===============

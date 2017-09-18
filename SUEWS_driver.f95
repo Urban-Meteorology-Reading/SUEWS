@@ -484,7 +484,7 @@ CONTAINS
        ResistSurf,&
        ra,&
        rb,&
-       tlv,&
+       tstep_real,&
        snowdensmin,&
        precip,&
        PipeCapacity,&
@@ -597,7 +597,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::ResistSurf
     REAL(KIND(1d0)),INTENT(in)::ra
     REAL(KIND(1d0)),INTENT(in)::rb
-    REAL(KIND(1d0)),INTENT(in)::tlv
+    REAL(KIND(1d0)),INTENT(in)::tstep_real
     REAL(KIND(1d0)),INTENT(in)::snowdensmin
     REAL(KIND(1d0)),INTENT(in)::precip
     REAL(KIND(1d0)),INTENT(in)::PipeCapacity
@@ -687,7 +687,7 @@ CONTAINS
     INTEGER :: is
     REAL(KIND(1d0))::runoffAGveg,runoffAGimpervious,surplusWaterBody
     REAL(KIND(1d0))::pin!Rain per time interval
-    REAL(KIND(1d0))::sae,vdrc,sp,numPM
+    REAL(KIND(1d0))::sae,vdrc,sp,numPM,tlv
 
     INTEGER,PARAMETER:: PavSurf   = 1,&   !When all surfaces considered together (1-7)
          BldgSurf  = 2,&
@@ -696,6 +696,9 @@ CONTAINS
          GrassSurf = 5,&   !New surface classes: Grass = 5th/7 surfaces
          BSoilSurf = 6,&   !New surface classes: Bare soil = 6th/7 surfaces
          WaterSurf = 7
+
+tlv=lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
+
 
     IF(Precip>0) THEN   !Initiate rain data [mm]
        pin=Precip

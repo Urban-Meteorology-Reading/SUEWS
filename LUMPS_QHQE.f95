@@ -10,7 +10,7 @@ SUBROUTINE LUMPS_QHQE(&
      avcp,&
      Press_hPa,&
      lv_J_kg,&
-     tlv,&
+     tstep_real,&
      DRAINRT,&
      nsh_real,&
      Precip,&
@@ -64,7 +64,7 @@ SUBROUTINE LUMPS_QHQE(&
   REAL(KIND(1d0)),INTENT(in) :: avcp!Specific heat capacity
   REAL(KIND(1d0)),INTENT(in) :: Press_hPa!Station air pressure in hPa
   REAL(KIND(1d0)),INTENT(in) :: lv_J_kg!Latent heat of vaporization in [J kg-1]
-  REAL(KIND(1d0)),INTENT(in) :: tlv!Latent heat of vaporization per timestep
+  REAL(KIND(1d0)),INTENT(in) :: tstep_real ! time step in REAL
   REAL(KIND(1d0)),INTENT(in) :: DRAINRT!Drainage rate of the water bucket [mm hr-1]
   REAL(KIND(1d0)),INTENT(in) :: nsh_real! real cast of Number of timesteps per hour
   REAL(KIND(1d0)),INTENT(in) :: Precip!Precipitation per timestep [mm]
@@ -90,8 +90,9 @@ SUBROUTINE LUMPS_QHQE(&
        psyc_s,psyc_const,&       !Psychometric constant
        alpha_sl,alpha_in,&    	  !Parameters used in LUMPS QH and QE calculations
        beta,&                      !Beta parameter used in LUMPS QH and QE calculations [W m-2]
-       alpha_qhqe,VegPhenLumps,RAINRES,RainBucket
+       alpha_qhqe,VegPhenLumps,RAINRES,RainBucket,tlv
 
+  tlv=lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
 
   ! initialize rain-related variables
   RainBucket=0.

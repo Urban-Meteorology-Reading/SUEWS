@@ -2,21 +2,22 @@ SUBROUTINE SUEWS_cal_diag(&
      usurf,uflux,&!input
      tsurf,qh,&
      Press_hPa,qe,&
-     ustar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,&
+     ustar,veg_fr,z0m,L_mod,k,avdens,avcp,lv_J_kg,tstep_real,&
      RoughLenHeatMethod,StabilityMethod,&
      avU10_ms,t2_C,q2_gkg)!output
   IMPLICIT NONE
   REAL(KIND(1d0)),INTENT(in) ::usurf,uflux
   REAL(KIND(1d0)),INTENT(in) ::tsurf,qh
   REAL(KIND(1d0)),INTENT(in) ::Press_hPa,qe
-  REAL(KIND(1d0)),INTENT(in) :: ustar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv
+  REAL(KIND(1d0)),INTENT(in) :: ustar,veg_fr,z0m,L_mod,k,avdens,avcp,lv_J_kg,tstep_real
 
   ! INTEGER,INTENT(in)         :: opt ! 0 for momentum, 1 for temperature, 2 for humidity
   INTEGER,INTENT(in)         :: RoughLenHeatMethod,StabilityMethod
 
   REAL(KIND(1d0)),INTENT(out):: avU10_ms,t2_C,q2_gkg
-  REAL(KIND(1d0))::qsatf
+  REAL(KIND(1d0))::qsatf,tlv
 
+  tlv=lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
   ! wind speed:
   CALL diagSfc(usurf,uflux,ustar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,avU10_ms,0,RoughLenHeatMethod,StabilityMethod)
   ! temperature:
@@ -53,6 +54,7 @@ SUBROUTINE diagSfc(&
        z2zd,z10zd,&
        muu=1.46e-5,& !molecular viscosity
        stab_fn_mom,stab_fn_heat !stability correction functions
+
 
   !***************************************************************
   ! log-law based stability corrections:

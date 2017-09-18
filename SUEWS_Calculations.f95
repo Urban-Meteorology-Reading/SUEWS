@@ -71,24 +71,30 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   IF(Diagnose==1) WRITE(*,*) 'Calling RoughnessParameters...'
   ! CALL RoughnessParameters(Gridiv) ! Added by HCW 11 Nov 2014
   CALL RoughnessParameters(&
-       RoughLenMomMethod,&! input
-       nsurf,& ! number of surface types
-       PavSurf,&! surface type code
-       BldgSurf,&! surface type code
-       WaterSurf,&! surface type code
-       ConifSurf,&! surface type code
-       BSoilSurf,&! surface type code
-       DecidSurf,&! surface type code
-       GrassSurf,&! surface type code
-       sfr,&! surface fractions
-       areaZh,&
-       bldgH,&
-       EveTreeH,&
-       DecTreeH,&
-       porosity(id),&
-       FAIBldg,FAIEveTree,FAIDecTree,Z,&
-       planF,&! output
+       RoughLenMomMethod,sfr,areaZh,&!input
+       bldgH,EveTreeH,DecTreeH,&
+       porosity(id),FAIBldg,FAIEveTree,FAIDecTree,Z,&
+       planF,&!output
        Zh,Z0m,Zdm,ZZD)
+  ! CALL RoughnessParameters(&
+  !      RoughLenMomMethod,&! input
+  !      nsurf,& ! number of surface types
+  !      PavSurf,&! surface type code
+  !      BldgSurf,&! surface type code
+  !      WaterSurf,&! surface type code
+  !      ConifSurf,&! surface type code
+  !      BSoilSurf,&! surface type code
+  !      DecidSurf,&! surface type code
+  !      GrassSurf,&! surface type code
+  !      sfr,&! surface fractions
+  !      areaZh,&
+  !      bldgH,&
+  !      EveTreeH,&
+  !      DecTreeH,&
+  !      porosity(id),&
+  !      FAIBldg,FAIEveTree,FAIDecTree,Z,&
+  !      planF,&! output
+  !      Zh,Z0m,Zdm,ZZD)
 
 
   ! !=============Get data ready for the qs calculation====================
@@ -169,10 +175,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !Calculation of density and other water related parameters
   IF(Diagnose==1) WRITE(*,*) 'Calling atmos_moist_lumps...'
   CALL atmos_moist_lumps(&
-                                ! input:
-       Temp_C,Press_hPa,avRh,dectime,&
-                                ! output:
-       lv_J_kg,lvS_J_kg,&
+       Temp_C,Press_hPa,avRh,dectime,&! input:
+       lv_J_kg,lvS_J_kg,&! output:
        es_hPa,&
        Ea_hPa,&
        VPd_hpa,&
@@ -181,6 +185,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        dens_dry,&
        avcp,&
        avdens)
+
 
   !======== Calculate soil moisture =========
   CALL soilMoist_update(&
@@ -223,6 +228,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ELSE
      SOLWEIGpoi_out=0
   ENDIF
+  ! ===================SOLWEIG END================================
+
 
   ! ===================ANTHROPOGENIC HEAT FLUX================================
   ih=it-DLS
@@ -261,7 +268,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   qn1=qn1_bup  !Remove QF from QSTAR
 
   ! -- qn1 is now QSTAR only
-
+  ! ===================ANTHROPOGENIC HEAT FLUX END================================
 
 
   ! =================STORAGE HEAT FLUX=======================================
@@ -446,102 +453,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        RA,&
        RAsnow,&
        rb)
-
-  !
-  !
-  ! ! Get first estimate of sensible heat flux. Modified by HCW 26 Feb 2015
-  ! CALL SUEWS_cal_Hinit(&
-  !      qh_obs,avdens,avcp,h_mod,qn1_bup,dectime,&
-  !      H)
-  !
-  ! IF(Diagnose==1) WRITE(*,*) 'Calling STAB_lumps...'
-  ! !u* and Obukhov length out
-  ! CALL STAB_lumps(&
-  !      StabilityMethod,&  ! input
-  !      dectime,& !Decimal time
-  !      zzd,&     !Active measurement height (meas. height-displac. height)
-  !      z0M,&     !Aerodynamic roughness length
-  !      zdm,&     !Displacement height
-  !      avU1,&    !Average wind speed
-  !      Temp_C,&  !Air temperature
-  !      H,    & !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
-  !      L_mod,&! output: !Obukhov length
-  !      Tstar,& !T*
-  !      UStar,& !Friction velocity
-  !      psim)!Stability function of momentum
-  !
-  ! IF(Diagnose==1) WRITE(*,*) 'Calling AerodynamicResistance...'
-  ! CALL AerodynamicResistance(&
-  !      ZZD,&! input:
-  !      z0m,&
-  !      AVU1,&
-  !      L_mod,&
-  !      UStar,&
-  !      VegFraction,&
-  !      AerodynamicResistanceMethod,&
-  !      StabilityMethod,&
-  !      RoughLenHeatMethod,&
-  !      RA) ! output:
-  !
-  ! IF (snowUse==1) THEN
-  !    IF(Diagnose==1) WRITE(*,*) 'Calling AerodynamicResistance for snow...'
-  !    !  CALL AerodynamicResistance(RAsnow,AerodynamicResistanceMethod,StabilityMethod,3,&
-  !    ! ZZD,z0m,k2,AVU1,L_mod,UStar,VegFraction,psyh)      !RA out
-  !    CALL AerodynamicResistance(&
-  !         ZZD,&! input:
-  !         z0m,&
-  !         AVU1,&
-  !         L_mod,&
-  !         UStar,&
-  !         VegFraction,&
-  !         AerodynamicResistanceMethod,&
-  !         StabilityMethod,&
-  !         3,&
-  !         RAsnow)     ! output:
-  ! ENDIF
-  !
-  ! IF(Diagnose==1) WRITE(*,*) 'Calling SurfaceResistance...'
-  ! ! CALL SurfaceResistance(id,it)   !qsc and surface resistance out
-  ! CALL  SurfaceResistance(&
-  !      id,it,&! input:
-  !      SMDMethod,&
-  !      ConifSurf,&
-  !      DecidSurf,&
-  !      GrassSurf,&
-  !      WaterSurf,&
-  !      snowFrac,&
-  !      sfr,&
-  !      nsurf,&
-  !      avkdn,&
-  !      Temp_C,&
-  !      dq,&
-  !      xsmd,&
-  !      vsmd,&
-  !      MaxConductance,&
-  !      LaiMax,&
-  !      lai(id-1,:),&
-  !      INT(SurfaceChar(Gridiv,c_gsModel)),&!  gsModel,&
-  !      SurfaceChar(Gridiv,c_GsKmax),&!  Kmax,&
-  !      SurfaceChar(Gridiv,c_GsG1),&! G1,&
-  !      SurfaceChar(Gridiv,c_GsG2),&! G2,&
-  !      SurfaceChar(Gridiv,c_GsG3),&! G3,&
-  !      SurfaceChar(Gridiv,c_GsG4),&! G4,&
-  !      SurfaceChar(Gridiv,c_GsG5),&! G5,&
-  !      SurfaceChar(Gridiv,c_GsG6),&! G6,&
-  !      SurfaceChar(Gridiv,c_GsTH),&! TH,&
-  !      SurfaceChar(Gridiv,c_GsTL),&! TL,&
-  !      SurfaceChar(Gridiv,c_GsS1),&! S1,&
-  !      SurfaceChar(Gridiv,c_GsS2),&! S2,&
-  !      gsc,&! output:
-  !      ResistSurf)
-  !
-  ! IF(Diagnose==1) WRITE(*,*) 'Calling BoundaryLayerResistance...'
-  ! CALL BoundaryLayerResistance(&
-  !      zzd,&! input:     !Active measurement height (meas. height-displac. height)
-  !      z0M,&     !Aerodynamic roughness length
-  !      avU1,&    !Average wind speed
-  !      UStar,&  ! input/output:
-  !      rb)  ! output:
 
 
   !========= CO2-related calculations ================================

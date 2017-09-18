@@ -1,15 +1,5 @@
 SUBROUTINE RoughnessParameters(&
-
-                                ! input:
-     RoughLenMomMethod,&
-     nsurf,& ! number of surface types
-     PavSurf,&! surface type code
-     BldgSurf,&! surface type code
-     WaterSurf,&! surface type code
-     ConifSurf,&! surface type code
-     BSoilSurf,&! surface type code
-     DecidSurf,&! surface type code
-     GrassSurf,&! surface type code
+     RoughLenMomMethod,&! input:
      sfr,&! surface fractions
      areaZh,&
      bldgH,&
@@ -17,47 +7,42 @@ SUBROUTINE RoughnessParameters(&
      DecTreeH,&
      porosity_id,&
      FAIBldg,FAIEveTree,FAIDecTree,Z,&
-
-     ! output:
-     planF,&
-     Zh,Z0m,Zdm,ZZD&
-
-     )
+     planF,&! output:
+     Zh,Z0m,Zdm,ZZD)
   ! Get surface covers and frontal area fractions (LJ 11/2010)
   ! Last modified by HCW 08 Feb 2017 - fixed bug in Zh between grids, added default z0m, zdm
   !                  HCW 03 Mar 2015
   !                  sg feb 2012 - made separate subroutine
   !--------------------------------------------------------------------------------
-  ! USE data_in
-  ! USE gis_data
-  ! USE sues_data
-  ! USE allocateArray
-  ! USE mod_z
-  ! USE defaultNotUsed
-  ! USE time
 
   IMPLICIT NONE
-  INTEGER, INTENT(in) ::&
-       RoughLenMomMethod,&
-       nsurf,& ! number of surface types
-       PavSurf,&! surface type code
-       BldgSurf,&! surface type code
-       WaterSurf,&! surface type code
-       ConifSurf,&! surface type code
-       BSoilSurf,&! surface type code
-       DecidSurf,&! surface type code
-       GrassSurf! surface type code
-  REAL(KIND(1d0)), INTENT(in) ::&
-       sfr(nsurf),&! surface fractions
-       areaZh,&
-       bldgH,&
-       EveTreeH,&
-       DecTreeH,&
-       porosity_id,&
-       FAIBldg,FAIEveTree,FAIDecTree,Z
-  REAL(KIND(1d0)), INTENT(out) ::&
-       planF,&
-       Zh,Z0m,Zdm,ZZD
+  INTEGER,PARAMETER:: nsurf     = 7 ! number of surface types
+  INTEGER,PARAMETER:: PavSurf   = 1 !When all surfaces considered together (1-7)
+  INTEGER,PARAMETER:: BldgSurf  = 2
+  INTEGER,PARAMETER:: ConifSurf = 3
+  INTEGER,PARAMETER:: DecidSurf = 4
+  INTEGER,PARAMETER:: GrassSurf = 5 !New surface classes: Grass = 5th/7 surfaces
+  INTEGER,PARAMETER:: BSoilSurf = 6 !New surface classes: Bare soil = 6th/7 surfaces
+  INTEGER,PARAMETER:: WaterSurf = 7
+
+  INTEGER, INTENT(in) ::RoughLenMomMethod
+
+  REAL(KIND(1d0)), DIMENSION(nsurf),INTENT(in) ::sfr! surface fractions
+
+  REAL(KIND(1d0)), INTENT(in) ::areaZh
+  REAL(KIND(1d0)), INTENT(in) ::bldgH
+  REAL(KIND(1d0)), INTENT(in) ::EveTreeH
+  REAL(KIND(1d0)), INTENT(in) ::DecTreeH
+  REAL(KIND(1d0)), INTENT(in) ::porosity_id
+  REAL(KIND(1d0)), INTENT(in) ::FAIBldg,FAIEveTree,FAIDecTree,Z
+
+  REAL(KIND(1d0)), INTENT(out) ::planF
+  REAL(KIND(1d0)), INTENT(out) ::Zh
+  REAL(KIND(1d0)), INTENT(out) ::Z0m
+  REAL(KIND(1d0)), INTENT(out) ::Zdm
+  REAL(KIND(1d0)), INTENT(out) ::ZZD
+
+
 
 
   INTEGER, PARAMETER :: notUsedI=-55

@@ -7,7 +7,7 @@ MODULE SUEWS_Driver
   IMPLICIT NONE
 
 CONTAINS
-  !========================================================================================
+  !=============net all-wave radiation=====================================
   SUBROUTINE SUEWS_cal_Qn(&
        nsurf,NetRadiationMethod,snowUse,ldown_option,id,&!input
        DecidSurf,ConifSurf,GrassSurf,Diagnose,&
@@ -140,9 +140,9 @@ CONTAINS
     ENDIF
 
   END SUBROUTINE SUEWS_cal_Qn
-  !========================================================================================
+  !========================================================================
 
-  !========================================================================================
+  !=============storage heat flux=========================================
   SUBROUTINE SUEWS_cal_Qs(&
        nsurf,&
                                 !  nMetLines,&
@@ -303,7 +303,7 @@ CONTAINS
     ! ENDIF
 
   END SUBROUTINE SUEWS_cal_Qs
-
+  !=======================================================================
 
   !==========================water balance================================
   SUBROUTINE SUEWS_cal_water(&
@@ -311,26 +311,31 @@ CONTAINS
        nsurf,&
        snowUse,&
        NonWaterFraction,addPipes,addImpervious,addVeg,addWaterBody,&
-       state,&
+       state,soilmoist,&
        sfr,&
        surf,&
        WaterDist,&
        nsh_real,&
-       drain_per_tstep,&  !inout
-       drain,&         !output
+       drain_per_tstep,&  !output
+       drain,&
        AddWaterRunoff,&
        AdditionalWater,runoffPipes,runoff_per_interval,&
-       addWater)
+       addWater,stateOld,soilmoistOld)
 
     IMPLICIT NONE
     INTEGER,INTENT(in) ::Diagnose
     INTEGER,INTENT(in) ::nsurf
     INTEGER,INTENT(in) ::snowUse
 
-    REAL(KIND(1d0)),INTENT(in) ::NonWaterFraction,addPipes,addImpervious,addVeg,addWaterBody
+    REAL(KIND(1d0)),INTENT(in)::NonWaterFraction
+    REAL(KIND(1d0)),INTENT(in)::addPipes
+    REAL(KIND(1d0)),INTENT(in)::addImpervious
+    REAL(KIND(1d0)),INTENT(in)::addVeg
+    REAL(KIND(1d0)),INTENT(in)::addWaterBody
     REAL(KIND(1d0)),INTENT(in)::nsh_real !nsh cast as a real for use in calculations
 
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)          ::state
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)          ::soilmoist
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)          ::sfr
     REAL(KIND(1d0)),DIMENSION(6,nsurf),INTENT(in)        ::surf
     REAL(KIND(1d0)),DIMENSION(nsurf+1,nsurf-1),INTENT(in)::WaterDist
@@ -338,6 +343,8 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out):: drain         !Drainage of surface type "is" [mm]
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out):: AddWaterRunoff!Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out):: addWater      !water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out):: stateOld
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out):: soilmoistOld
 
     REAL(KIND(1d0)),INTENT(out)::drain_per_tstep
     REAL(KIND(1d0)),INTENT(out)::AdditionalWater
@@ -345,6 +352,11 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(out)::runoff_per_interval
     INTEGER,PARAMETER ::      WaterSurf = 7
     INTEGER :: is
+
+    ! Retain previous surface state and soil moisture state
+    stateOld     = state     !State of each surface [mm] for the previous timestep
+    soilmoistOld = soilmoist !Soil moisture of each surface [mm] for the previous timestep
+
 
     !============= Grid-to-grid runoff =============
     ! Calculate additional water coming from other grids
@@ -404,9 +416,9 @@ CONTAINS
          addWater)
 
   END SUBROUTINE SUEWS_cal_water
+  !=======================================================================
 
-
-  !==========================estimate QH================================
+  !===============initialize sensible heat flux============================
   SUBROUTINE SUEWS_cal_Hinit(&
        qh_obs,avdens,avcp,h_mod,qn1,dectime,&
        H_init)
@@ -432,7 +444,7 @@ CONTAINS
     ENDIF
 
   END SUBROUTINE SUEWS_cal_Hinit
-
+  !========================================================================
 
   !================latent heat flux and surface wetness===================
   ! TODO: optimise the structure of this function
@@ -445,14 +457,8 @@ CONTAINS
        it,&
        ity,&
        snowfractionchoice,&
-       ConifSurf,&
-       BSoilSurf,&
-       BldgSurf,&
-       PavSurf,&
-       WaterSurf,&
-       DecidSurf,&
-       GrassSurf,&
        snowCalcSwitch,&
+       DayofWeek,&
        CRWmin,&
        CRWmax,&
        nsh_real,&
@@ -470,10 +476,12 @@ CONTAINS
        PervFraction,&
        vegfraction,&
        addimpervious,&
-       numPM,&
+       qn1_SF,&
+       qf,&
+       qs,&
+       vpd_hPa,&
        s_hPa,&
        ResistSurf,&
-       sp,&
        ra,&
        rb,&
        tlv,&
@@ -481,7 +489,6 @@ CONTAINS
        precip,&
        PipeCapacity,&
        RunoffToWater,&
-       pin,&
        NonWaterFraction,&
        wu_EveTr,&
        wu_DecTr,&
@@ -493,7 +500,7 @@ CONTAINS
        SurfaceArea,&
        drain,&
        WetThresh,&
-       stateold,&
+       stateOld,&
        mw_ind,&
        soilstorecap,&
        rainonsnow,&
@@ -505,9 +512,10 @@ CONTAINS
        Tsurf_ind,&
        sfr,&
        StateLimit,&
-       DayofWeek,&
        surf,&
-       runoff_per_interval,&!inout:
+       runoff_per_interval,& ! inout:
+       state,&
+       soilmoist,&
        snowPack,&
        snowFrac,&
        MeltWaterStore,&
@@ -517,17 +525,15 @@ CONTAINS
        addwaterrunoff,&
        SnowDens,&
        SurplusEvap,&
-       snowProf,&!out:
+       snowProf,& ! output:
        runoffSnow,&
        runoff,&
        runoffSoil,&
        chang,&
        changSnow,&
        SnowToSurf,&
-       state,&
        snowD,&
        ev_snow,&
-       soilmoist,&
        SnowRemoval,&
        evap,&
        rss_nsurf,&
@@ -562,13 +568,6 @@ CONTAINS
     INTEGER,INTENT(in) ::it
     INTEGER,INTENT(in) ::ity !Evaporation calculated according to Rutter (1) or Shuttleworth (2)
     INTEGER,INTENT(in) ::snowfractionchoice
-    INTEGER,INTENT(in) ::ConifSurf
-    INTEGER,INTENT(in) ::BSoilSurf
-    INTEGER,INTENT(in) ::BldgSurf
-    INTEGER,INTENT(in) ::PavSurf
-    INTEGER,INTENT(in) ::WaterSurf
-    INTEGER,INTENT(in) ::DecidSurf! surface type code
-    INTEGER,INTENT(in) ::GrassSurf! surface type code
 
     INTEGER,DIMENSION(nsurf),INTENT(in)::snowCalcSwitch
     INTEGER,DIMENSION(366,2),INTENT(in)::DayofWeek
@@ -590,10 +589,12 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::PervFraction
     REAL(KIND(1d0)),INTENT(in)::vegfraction
     REAL(KIND(1d0)),INTENT(in)::addimpervious
-    REAL(KIND(1d0)),INTENT(in)::numPM
+    REAL(KIND(1d0)),INTENT(in)::qn1_SF
+    REAL(KIND(1d0)),INTENT(in)::qf
+    REAL(KIND(1d0)),INTENT(in)::qs
+    REAL(KIND(1d0)),INTENT(in)::vpd_hPa
     REAL(KIND(1d0)),INTENT(in)::s_hPa
     REAL(KIND(1d0)),INTENT(in)::ResistSurf
-    REAL(KIND(1d0)),INTENT(in)::sp
     REAL(KIND(1d0)),INTENT(in)::ra
     REAL(KIND(1d0)),INTENT(in)::rb
     REAL(KIND(1d0)),INTENT(in)::tlv
@@ -601,7 +602,6 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::precip
     REAL(KIND(1d0)),INTENT(in)::PipeCapacity
     REAL(KIND(1d0)),INTENT(in)::RunoffToWater
-    REAL(KIND(1d0)),INTENT(in)::pin!Rain per time interval
     REAL(KIND(1d0)),INTENT(in)::NonWaterFraction
     REAL(KIND(1d0)),INTENT(in)::wu_EveTr!Water use for evergreen trees/shrubs [mm]
     REAL(KIND(1d0)),INTENT(in)::wu_DecTr!Water use for deciduous trees/shrubs [mm]
@@ -614,7 +614,7 @@ CONTAINS
 
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::drain
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::WetThresh
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::stateold
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::stateOld
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::mw_ind
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::soilstorecap
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::rainonsnow
@@ -627,12 +627,13 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::sfr
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::StateLimit !Limit for state of each surface type [mm] (specified in input files)
 
-
     REAL(KIND(1d0)),DIMENSION(6,nsurf),INTENT(in)::surf
 
     !Updated status: input and output
     REAL(KIND(1d0)),INTENT(inout)::runoff_per_interval! Total water transported to each grid for grid-to-grid connectivity
 
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::state
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::soilmoist
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::snowPack
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::snowFrac
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::MeltWaterStore
@@ -652,10 +653,9 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::chang
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::changSnow
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::SnowToSurf
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::state
+
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::snowD
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::ev_snow
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::soilmoist
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::SnowRemoval
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::evap
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::rss_nsurf
@@ -686,6 +686,22 @@ CONTAINS
     ! local:
     INTEGER :: is
     REAL(KIND(1d0))::runoffAGveg,runoffAGimpervious,surplusWaterBody
+    REAL(KIND(1d0))::pin!Rain per time interval
+    REAL(KIND(1d0))::sae,vdrc,sp,numPM
+
+    INTEGER,PARAMETER:: PavSurf   = 1,&   !When all surfaces considered together (1-7)
+         BldgSurf  = 2,&
+         ConifSurf = 3,&
+         DecidSurf = 4,&
+         GrassSurf = 5,&   !New surface classes: Grass = 5th/7 surfaces
+         BSoilSurf = 6,&   !New surface classes: Bare soil = 6th/7 surfaces
+         WaterSurf = 7
+
+    IF(Precip>0) THEN   !Initiate rain data [mm]
+       pin=Precip
+    ELSE
+       pin=0
+    ENDIF
 
     ! Initialize the output variables
     qe=0
@@ -708,7 +724,13 @@ CONTAINS
     chang              = 0
     SurplusEvap        = 0
 
-
+    !========= these need to be wrapped================================
+    sae   = s_hPa*(qn1_SF+qf-qs)    !s_haPa - slope of svp vs t curve. qn1 changed to qn1_SF, lj in May 2013
+    vdrc  = vpd_hPa*avdens*avcp
+    sp    = s_hPa/psyc_hPa
+    numPM = sae+vdrc/ra
+    !write(*,*) numPM, sae, vdrc/ra, s_hPA+psyc_hPa, NumPM/(s_hPA+psyc_hPa)
+    !========= these need to be wrapped end================================
 
     IF(Diagnose==1) WRITE(*,*) 'Calling evap_SUEWS and SoilStore...'
     DO is=1,nsurf   !For each surface in turn
@@ -765,7 +787,7 @@ CONTAINS
                   SnowLimBuild,&
                   drain,&
                   WetThresh,&
-                  stateold,&
+                  stateOld,&
                   mw_ind,&
                   soilstorecap,&
                   rainonsnow,&
@@ -925,11 +947,13 @@ CONTAINS
     runoffWaterBody_m3    = runoffWaterBody/1000 *SurfaceArea
     runoffPipes_m3        = runoffPipes/1000 *SurfaceArea
 
-
   END SUBROUTINE SUEWS_cal_QE
+  !========================================================================
 
+
+  !===============sensible heat flux============================
   SUBROUTINE SUEWS_cal_QH(&
-       opt,&
+       opt_QH,&
        qn1,&
        qf,&
        QmRain,&
@@ -945,7 +969,7 @@ CONTAINS
        qh)
     IMPLICIT NONE
 
-    INTEGER,INTENT(in) :: opt ! option for QH calculation: 1, residual; 2, resistance-based
+    INTEGER,INTENT(in) :: opt_QH ! option for QH calculation: 1, residual; 2, resistance-based
 
     REAL(KIND(1d0)),INTENT(in)::qn1
     REAL(KIND(1d0)),INTENT(in)::qf
@@ -967,7 +991,7 @@ CONTAINS
 
     ! ! Calculate QH using resistance method (for testing HCW 06 Jul 2016)
 
-    SELECT CASE (opt)
+    SELECT CASE (opt_QH)
     CASE (1)
        ! Calculate sensible heat flux as a residual (Modified by LJ in Nov 2012)
        qh=(qn1+qf+QmRain)-(qeOut+qs+Qm+QmFreez)     !qh=(qn1+qf+QmRain+QmFreez)-(qeOut+qs+Qm)
@@ -980,8 +1004,7 @@ CONTAINS
        ENDIF
     END SELECT
 
-
   END SUBROUTINE SUEWS_cal_QH
-
+  !========================================================================
 
 END MODULE SUEWS_Driver

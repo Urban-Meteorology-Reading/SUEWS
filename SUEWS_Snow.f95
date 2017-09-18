@@ -513,7 +513,7 @@ SUBROUTINE SnowCalc(&
      SnowLimBuild,&
      drain,&
      WetThresh,&
-     stateold,&
+     stateOld,&
      mw_ind,&
      soilstorecap,&
      rainonsnow,&
@@ -620,7 +620,7 @@ SUBROUTINE SnowCalc(&
 
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::drain
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::WetThresh
-  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::stateold
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::stateOld
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::mw_ind
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::soilstorecap
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::rainonsnow

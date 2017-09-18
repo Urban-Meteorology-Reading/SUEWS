@@ -257,9 +257,13 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ! Calculate CO2 fluxes from anthropogenic components
   IF(Diagnose==1) WRITE(*,*) 'Calling CO2_anthro...'
   CALL CO2_anthro(id,ih,imin)
+  ! For the purpose of turbulent fluxes, remove QF from the net all-wave radiation
+  qn1=qn1_bup  !Remove QF from QSTAR
 
-  ! PRINT*, 'alb in calculations', SHAPE(alb)
-  ! PRINT*, 'MetForcingData in calculations', SHAPE(MetForcingData(:,:,Gridiv))
+  ! -- qn1 is now QSTAR only
+
+
+
   ! =================STORAGE HEAT FLUX=======================================
   CALL SUEWS_cal_Qs(&
        nsurf,&
@@ -281,7 +285,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        DiagQS,&
        HDD(id-1,4),&
        MetForcingData(:,:,Gridiv),&
-       qn1,qn1_bup,&
+       qf,qn1_bup,&
        alb,&
        emis,&
        cpAnOHM,&
@@ -300,14 +304,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        a1,&
        a2,&
        a3)
-
-
-
-  ! For the purpose of turbulent fluxes, remove QF from the net all-wave radiation
-  qn1=qn1_bup  !Remove QF from QSTAR
-
-  ! -- qn1 is now QSTAR only
-
 
 
   !==================Energy related to snow melting/freezing processes=======
@@ -332,7 +328,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   CALL LUMPS_QHQE(&
        veg_type,& !input
        snowUse,&
-       qn1,&
+       qn1_bup,&
        qf,&
        qs,&
        Qm,&
@@ -395,34 +391,29 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   ! Get first estimate of sensible heat flux. Modified by HCW 26 Feb 2015
   CALL SUEWS_cal_Hinit(&
-       qh_obs,avdens,avcp,h_mod,qn1,dectime,&
+       qh_obs,avdens,avcp,h_mod,qn1_bup,dectime,&
        H)
 
-  !------------------------------------------------------------------
-
+  !===========================================================================
   IF(Diagnose==1) WRITE(*,*) 'Calling STAB_lumps...'
   !u* and Obukhov length out
   CALL STAB_lumps(&
-
-                                ! input
-       StabilityMethod,&
+       StabilityMethod,&  ! input
        dectime,& !Decimal time
        zzd,&     !Active measurement height (meas. height-displac. height)
        z0M,&     !Aerodynamic roughness length
        zdm,&     !Displacement height
        avU1,&    !Average wind speed
        Temp_C,&  !Air temperature
-       h,    & !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
-                                ! output:
-       L_mod,& !Obukhov length
+       H,    & !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
+       L_mod,&! output: !Obukhov length
        Tstar,& !T*
        USTAR,& !Friction velocity
        psim)!Stability function of momentum
 
   IF(Diagnose==1) WRITE(*,*) 'Calling AerodynamicResistance...'
   CALL AerodynamicResistance(&
-                                ! input:
-       ZZD,&
+       ZZD,&! input:
        z0m,&
        AVU1,&
        L_mod,&
@@ -431,16 +422,14 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        AerodynamicResistanceMethod,&
        StabilityMethod,&
        RoughLenHeatMethod,&
-                                ! output:
-       RA)     !RA out
+       RA) ! output:
 
   IF (snowUse==1) THEN
      IF(Diagnose==1) WRITE(*,*) 'Calling AerodynamicResistance for snow...'
      !  CALL AerodynamicResistance(RAsnow,AerodynamicResistanceMethod,StabilityMethod,3,&
      ! ZZD,z0m,k2,AVU1,L_mod,Ustar,VegFraction,psyh)      !RA out
      CALL AerodynamicResistance(&
-                                ! input:
-          ZZD,&
+          ZZD,&! input:
           z0m,&
           AVU1,&
           L_mod,&
@@ -449,8 +438,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
           AerodynamicResistanceMethod,&
           StabilityMethod,&
           3,&
-                                ! output:
-          RAsnow)     !RA out
+          RAsnow)     ! output:
   ENDIF
 
   IF(Diagnose==1) WRITE(*,*) 'Calling SurfaceResistance...'
@@ -640,7 +628,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !============ Sensible heat flux ===============
   CALL SUEWS_cal_QH(&
        1,&
-       qn1,&
+       qn1_bup,&
        qf,&
        QmRain,&
        qeOut,&
@@ -803,7 +791,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !Define the overall output matrix to be printed out step by step
   dataOut(ir,1:ncolumnsDataOut,Gridiv)=(/REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),REAL(it,KIND(1D0)),REAL(imin,KIND(1D0)),dectime,&   !5
        avkdn,kup,ldown,lup,tsurf,&
-       qn1,qf,qs,qh,qeOut,&
+       qn1_bup,qf,qs,qh,qeOut,&
        h_mod,e_mod,qh_r,&
        precip,ext_wu,ev_per_tstep,runoff_per_tstep,tot_chang_per_tstep,&
        surf_chang_per_tstep,state_per_tstep,NWstate_per_tstep,drain_per_tstep,smd,&

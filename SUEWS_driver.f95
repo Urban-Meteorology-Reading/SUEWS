@@ -145,7 +145,6 @@ CONTAINS
   !=============storage heat flux=========================================
   SUBROUTINE SUEWS_cal_Qs(&
        nsurf,&
-                                !  nMetLines,&
        StorageHeatMethod,&
        OHMIncQF,&
        Gridiv,&
@@ -164,7 +163,7 @@ CONTAINS
        DiagQS,&
        HDDday,&
        MetForcingData_grid,&
-       qn1,qn1_bup,&
+       qf,qn1_bup,&
        alb,&
        emis,&
        cp,&
@@ -211,7 +210,7 @@ CONTAINS
 
 
     REAL(KIND(1d0)),INTENT(in)::HDDday  ! HDDday=HDD(id-1,4) HDD at the begining of today (id-1)
-    REAL(KIND(1d0)),INTENT(in)::qn1
+    REAL(KIND(1d0)),INTENT(in)::qf
     REAL(KIND(1d0)),INTENT(in)::qn1_bup
 
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::sfr
@@ -244,7 +243,7 @@ CONTAINS
     IF(StorageHeatMethod==1) THEN           !Use OHM to calculate QS
        IF(OHMIncQF == 1) THEN      !Calculate QS using QSTAR+QF
           IF(Diagnose==1) WRITE(*,*) 'Calling OHM...'
-          CALL OHM(qn1,qn1_store,qn1_av_store,&
+          CALL OHM(qf+qn1_bup,qn1_store,qn1_av_store,&
                qn1_S,qn1_S_store,qn1_S_av_store,&
                nsh,&
                sfr,nsurf,&
@@ -278,7 +277,7 @@ CONTAINS
     IF (StorageHeatMethod==3) THEN
        IF ( OHMIncQF == 1 ) THEN    !Calculate QS using QSTAR+QF
           IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'
-          CALL AnOHM(qn1,qn1_store,qn1_av_store,&
+          CALL AnOHM(qf+qn1_bup,qn1_store,qn1_av_store,&
                MetForcingData_grid,state/surf(6,:),&
                alb, emis, cp, kk, ch,&
                sfr,nsurf,nsh,AnthropHeatMethod,id,Gridiv,&
@@ -697,7 +696,7 @@ CONTAINS
          BSoilSurf = 6,&   !New surface classes: Bare soil = 6th/7 surfaces
          WaterSurf = 7
 
-tlv=lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
+    tlv=lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
 
 
     IF(Precip>0) THEN   !Initiate rain data [mm]

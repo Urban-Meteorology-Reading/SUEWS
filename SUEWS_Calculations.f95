@@ -189,31 +189,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        soilstoreCap,sfr,soilmoist,&
        soilmoistCap,soilstate,&!output
        vsmd,smd)
-  ! SoilMoistCap=0   !Maximum capacity of soil store [mm] for whole surface
-  ! soilstate=0      !Area-averaged soil moisture [mm] for whole surface
-  !
-  ! IF (NonWaterFraction/=0) THEN !Soil states only calculated if soil exists. LJ June 2017
-  !    DO is=1,nsurf-1   !No water body included
-  !       soilmoistCap=soilMoistCap+(soilstoreCap(is)*sfr(is)/NonWaterFraction)
-  !       soilstate=soilstate+(soilmoist(is)*sfr(is)/NonWaterFraction)
-  !    ENDDO
-  ! ENDIF
-  !
-  ! !If loop removed HCW 26 Feb 2015
-  ! !if (ir==1) then  !Calculate initial smd
-  ! smd=soilmoistCap-soilstate
-  ! !endif
-  !
-  ! ! Calculate soil moisture for vegetated surfaces only (for use in surface conductance)
-  ! vsmd=0
-  ! DO is=ConifSurf,GrassSurf  !Vegetated surfaces only
-  !    IF ( sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) ==0 ) THEN
-  !       vsmd=0
-  !    ELSE
-  !       vsmd=vsmd+(soilstoreCap(is) - soilmoist(is))*sfr(is)/(sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf))
-  !    END IF
-  !    !write(*,*) is, vsmd, smd
-  ! ENDDO
 
 
   ! ===================NET ALLWAVE RADIATION================================
@@ -228,46 +203,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        alb,albDecTr,DecidCap,albEveTr,albGrass,surf,&!inout
        snowFrac,ldown,fcld,&!output
        qn1,qn1_SF,qn1_S,kclear,kup,lup,tsurf)
-  ! IF(NetRadiationMethod>0)THEN
-  !
-  !    IF (snowUse==0) snowFrac=snow_obs
-  !
-  !    IF(ldown_option==1) THEN !Observed ldown provided as forcing
-  !       ldown=ldown_obs
-  !    ELSE
-  !       ldown=-9              !to be filled in NARP
-  !    ENDIF
-  !
-  !    IF(ldown_option==2) THEN !observed cloud fraction provided as forcing
-  !       fcld=fcld_obs
-  !    ENDIF
-  !
-  !    !write(*,*) DecidCap(id), id, it, imin, 'Calc - near start'
-  !
-  !    ! Update variables that change daily and represent seasonal variability
-  !    alb(DecidSurf)    = albDecTr(id) !Change deciduous albedo
-  !    surf(6,DecidSurf) = DecidCap(id) !Change current storage capacity of deciduous trees
-  !    ! Change EveTr and Grass albedo too
-  !    alb(ConifSurf) = albEveTr(id)
-  !    alb(GrassSurf) = albGrass(id)
-  !
-  !    IF(Diagnose==1) WRITE(*,*) 'Calling NARP...'
-  !    CALL NARP(&
-  !                               ! input:
-  !         dectime,ZENITH_deg,avKdn,Temp_C,avRH,Press_hPa,qn1_obs,&
-  !         SnowAlb,&
-  !         AlbedoChoice,ldown_option,NetRadiationMethod,DiagQN,&
-  !                               ! output:
-  !         qn1,qn1_SF,qn1_S,kclear,kup,LDown,lup,fcld,TSURF)
-  !    !Temp_C,kclear,fcld,dectime,avkdn,avRH,qn1,kup,ldown,lup,tsurf,&
-  !    !AlbedoChoice,ldown_option,Press_hPa,Ea_hPa,qn1_obs,&
-  !    !zenith_deg,NetRadiationMethod,
-  ! ELSE
-  !    snowFrac = snow_obs
-  !    qn1      = qn1_obs
-  !    qn1_sf   = qn1_obs
-  !    qn1_s    = qn1_obs
-  ! ENDIF
+
 
   ! ===================SOLWEIG OUTPUT ========================================
   IF (SOLWEIGuse==1) THEN
@@ -322,12 +258,12 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   IF(Diagnose==1) WRITE(*,*) 'Calling CO2_anthro...'
   CALL CO2_anthro(id,ih,imin)
 
-! PRINT*, 'alb in calculations', SHAPE(alb)
+  ! PRINT*, 'alb in calculations', SHAPE(alb)
   ! PRINT*, 'MetForcingData in calculations', SHAPE(MetForcingData(:,:,Gridiv))
   ! =================STORAGE HEAT FLUX=======================================
   CALL SUEWS_cal_Qs(&
        nsurf,&
-      !  size(MetForcingData(:,:,Gridiv), dim=1),&
+                                !  size(MetForcingData(:,:,Gridiv), dim=1),&
        StorageHeatMethod,&
        OHMIncQF,&
        Gridiv,&
@@ -366,77 +302,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        a2,&
        a3)
 
-  ! IF(StorageHeatMethod==1) THEN           !Use OHM to calculate QS
-  !    IF(OHMIncQF == 1) THEN      !Calculate QS using QSTAR+QF
-  !       IF(Diagnose==1) WRITE(*,*) 'Calling OHM...'
-  !       CALL OHM(qn1,qn1_store(:,Gridiv),qn1_av_store(:,Gridiv),&
-  !            qn1_S,qn1_S_store(:,Gridiv),qn1_S_av_store(:,Gridiv),&
-  !            nsh,&
-  !            sfr,nsurf,&
-  !            HDD(id-1,4),&
-  !            OHM_coef,&
-  !            OHM_threshSW,OHM_threshWD,&
-  !            soilmoist,soilstoreCap,state,&
-  !            BldgSurf,WaterSurf,&
-  !            SnowUse,SnowFrac,&
-  !            DiagQS,&
-  !            qs,deltaQi)
-  !    ELSEIF(OHMIncQF == 0) THEN  !Calculate QS using QSTAR
-  !       qn1=qn1_bup
-  !       IF(Diagnose==1) WRITE(*,*) 'Calling OHM...'
-  !       CALL OHM(qn1_bup,qn1_store(:,Gridiv),qn1_av_store(:,Gridiv),&
-  !            qn1_S,qn1_S_store(:,Gridiv),qn1_S_av_store(:,Gridiv),&
-  !            nsh,&
-  !            sfr,nsurf,&
-  !            HDD(id-1,4),&
-  !            OHM_coef,&
-  !            OHM_threshSW,OHM_threshWD,&
-  !            soilmoist,soilstoreCap,state,&
-  !            BldgSurf,WaterSurf,&
-  !            SnowUse,SnowFrac,&
-  !            DiagQS,&
-  !            qs,deltaQi)
-  !    ENDIF
-  ! ENDIF
-  !
-  ! ! use AnOHM to calculate QS, TS 14 Mar 2016
-  ! IF (StorageHeatMethod==3) THEN
-  !    IF ( OHMIncQF == 1 ) THEN    !Calculate QS using QSTAR+QF
-  !       IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'
-  !       CALL AnOHM(qn1,qn1_store(:,Gridiv),qn1_av_store(:,Gridiv),&
-  !            MetForcingData(:,:,Gridiv),state/surf(6,:),&
-  !            alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&
-  !            sfr,nsurf,nsh,AnthropHeatMethod,id,Gridiv,&
-  !            a1,a2,a3,qs)
-  !    ELSEIF(OHMIncQF == 0) THEN   !Calculate QS using QSTAR
-  !       qn1=qn1_bup
-  !       IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'
-  !       CALL AnOHM(qn1_bup,qn1_store(:,Gridiv),qn1_av_store(:,Gridiv),&
-  !            MetForcingData(:,:,Gridiv),state/surf(6,:),&
-  !            alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&
-  !            sfr,nsurf,nsh,AnthropHeatMethod,id,Gridiv,&
-  !            a1,a2,a3,qs)
-  !    END IF
-  ! END IF
-  !
-  ! !Calculate QS using ESTM
-  ! IF(StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
-  !    !CALL ESTM_v2016(QSestm,iMB)
-  !    IF(Diagnose==1) WRITE(*,*) 'Calling ESTM...'
-  !    CALL ESTM_v2016(QSestm,Gridiv,ir)  ! iMB corrected to Gridiv, TS 09 Jun 2016
-  !    QS=QSestm   ! Use ESTM qs
-  ! ENDIF
-  !
-  ! ! don't use these composite QS options at the moment, TS 10 Jun 2016
-  ! ! IF (StorageHeatMethod>=10)THEN ! Chose which QS will be used in SUEWS and output file
-  ! !    !write(800,*)id,it,QS,QSanOHM,QSestm
-  ! !    IF(StorageHeatMethod==14)THEN
-  ! !       QS=QSestm
-  ! !    ELSEIF(StorageHeatMethod==13)THEN
-  ! !       QS=QSanOHM
-  ! !    ENDIF
-  ! ! ENDIF
-
 
 
   ! For the purpose of turbulent fluxes, remove QF from the net all-wave radiation
@@ -460,70 +325,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        mwh,fwh,Qm,QmFreez,QmRain,CumSnowfall,snowCalcSwitch,&!output
        Qm_melt,Qm_freezState,Qm_rain,FreezMelt,FreezState,FreezStateVol,&
        rainOnSnow,SnowDepth,mw_ind,veg_fr)
-  ! IF (snowUse==1)  THEN
-  !    IF(Diagnose==1) WRITE(*,*) 'Calling MeltHeat'
-  !    CALL MeltHeat(&
-  !         bldgsurf,&!input
-  !         nsurf,&
-  !         PavSurf,&
-  !         WaterSurf,&
-  !         lvS_J_kg,&
-  !         lv_J_kg,&
-  !         tstep_real,&
-  !         RadMeltFact,&
-  !         TempMeltFact,&
-  !         SnowAlbMax,&
-  !         SnowDensMin,&
-  !         Temp_C,&
-  !         Precip,&
-  !         PrecipLimit,&
-  !         PrecipLimitAlb,&
-  !         nsh_real,&
-  !         waterdens,&
-  !         sfr,&
-  !         Tsurf_ind,&
-  !         state,&
-  !         qn1_ind_snow,&
-  !         Meltwaterstore,&
-  !         deltaQi,&
-  !         SnowPack,&!inoout
-  !         snowFrac,&
-  !         SnowAlb,&
-  !         SnowDens,&
-  !         mwh,&!output
-  !         fwh,&
-  !         Qm,&
-  !         QmFreez,&
-  !         QmRain,&
-  !         CumSnowfall,&
-  !         snowCalcSwitch,&
-  !         Qm_melt,&
-  !         Qm_freezState,&
-  !         Qm_rain,&
-  !         FreezMelt,&
-  !         FreezState,&
-  !         FreezStateVol,&
-  !         rainOnSnow,&
-  !         SnowDepth,&
-  !         mw_ind)
-  !
-  !    ! If snow on ground, no irrigation, so veg_fr same in each case
-  !    !New fraction of vegetation.
-  !    !IF(veg_type==1)THEN         ! area vegetated
-  !
-  !    CALL veg_fr_snow(&
-  !         sfr,snowFrac,&!input
-  !         veg_fr)!output
-  !
-  !    !  veg_fr = sfr(ConifSurf)*(1-snowFrac(ConifSurf))+sfr(DecidSurf)*(1-snowFrac(DecidSurf))+&
-  !    !       sfr(GrassSurf)*(1-snowFrac(GrassSurf))+sfr(BSoilSurf)*(1-snowFrac(BSoilSurf))+&
-  !    !       sfr(WaterSurf)*(1-snowFrac(WaterSurf))
-  !
-  !    !ELSEIF(veg_type==2)THEN     ! area irrigated
-  !    !   !!!veg_fr=sfr(GrassISurf)*(1-snowFrac(GrassUSurf))
-  !    !END IF
-  !
-  ! END IF
+
 
   !==========================Turbulent Fluxes================================
 
@@ -559,17 +361,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        s_hPa,&
        sIce_hpa,&
        TempVeg)
-  ! CALL LUMPS_QHQE(&
-  !                               !input:
-  !      qn1,qf,qs,Qm,Temp_C,avcp,Press_hPa,lv_J_kg,tlv,&
-  !      DRAINRT,Precip,&
-  !      RainBucket,RainMaxRes,RAINCOVER,&
-  !      Veg_Fr,sfr(ivConif+2:ivGrass+2),lai(id-1,Gridiv),LAImax,LAImin,&
-  !      nsh_real,veg_type,snowUse,&
-  !                               !output:
-  !      H_mod,E_mod,&
-  !      psyc_hPa,s_hPa,sIce_hpa,TempVeg)
-  ! IF(debug)WRITE(*,*)press_Hpa,psyc_hPA,i
+
 
   IF(Diagnose==1) WRITE(*,*) 'Calling WaterUse...'
   !Gives the external and internal water uses per timestep
@@ -675,8 +467,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   IF(Diagnose==1) WRITE(*,*) 'Calling SurfaceResistance...'
   ! CALL SurfaceResistance(id,it)   !qsc and surface resistance out
   CALL  SurfaceResistance(&
-                                ! input:
-       id,it,&
+       id,it,&! input:
        SMDMethod,&
        ConifSurf,&
        DecidSurf,&
@@ -705,22 +496,16 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        SurfaceChar(Gridiv,c_GsTL),&! TL,&
        SurfaceChar(Gridiv,c_GsS1),&! S1,&
        SurfaceChar(Gridiv,c_GsS2),&! S2,&
-
-                                ! output:
-       gsc,&
+       gsc,&! output:
        ResistSurf)
 
   IF(Diagnose==1) WRITE(*,*) 'Calling BoundaryLayerResistance...'
   CALL BoundaryLayerResistance(&
-                                ! input:
-       zzd,&     !Active measurement height (meas. height-displac. height)
+       zzd,&! input:     !Active measurement height (meas. height-displac. height)
        z0M,&     !Aerodynamic roughness length
        avU1,&    !Average wind speed
-
-                                ! input/output:
-       USTAR,&
-                                ! output:
-       rb)
+       USTAR,&  ! input/output:
+       rb)  ! output:
 
   !========= CO2-related calculations ================================
   ! Calculate CO2 fluxes from biogenic components
@@ -746,15 +531,15 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ! Now whole model runs at a resolution of tstep
 
   ! Initialise water balance variables
-  qe               = 0
-  ev               = 0
-  ev_snow          = 0
-  SurplusEvap      = 0
-  evap             = 0
-  chang            = 0
-  runoff           = 0
-  runoffSoil       = 0
-  surplusWaterBody = 0
+  ! qe               = 0
+  ! ev               = 0
+  ! ev_snow          = 0
+  ! SurplusEvap      = 0
+  ! evap             = 0
+  ! chang            = 0
+  ! runoff           = 0
+  ! runoffSoil       = 0
+  ! surplusWaterBody = 0
 
   ! Added by HCW 13 Feb 2015
   ! qe_per_tstep         = 0     ![W m-2]
@@ -788,67 +573,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        addWater)
   !============= calculate water balance end =============
 
-  ! !============= Grid-to-grid runoff =============
-  ! ! Calculate additional water coming from other grids
-  ! ! i.e. the variables addImpervious, addVeg, addWaterBody, addPipes
-  ! !call RunoffFromGrid(GridFromFrac)  !!Need to code between-grid water transfer
-  !
-  ! ! Sum water coming from other grids (these are expressed as depths over the whole surface)
-  ! AdditionalWater = addPipes+addImpervious+addVeg+addWaterBody  ![mm]
-  !
-  ! ! Initialise runoff in pipes
-  ! runoffPipes         = addPipes !Water flowing in pipes from other grids. No need for scaling??
-  ! !! CHECK p_i
-  ! runoff_per_interval = addPipes !pipe plor added to total runoff.
-  !
-  ! !================== Drainage ===================
-  ! ! Calculate drainage for each soil subsurface (excluding water body)
-  ! IF(Diagnose==1) WRITE(*,*) 'Calling Drainage...'
-  !
-  ! IF (NonWaterFraction/=0) THEN !Soil states only calculated if soil exists. LJ June 2017
-  !    DO is=1,nsurf-1
-  !
-  !       CALL drainage(&
-  !                               ! input:
-  !            is,&
-  !            state(is),&
-  !            surf(6,is),&
-  !            surf(2,is),&
-  !            surf(3,is),&
-  !            surf(4,is),&
-  !            nsh_real,&
-  !                               ! output:
-  !            drain(is)&
-  !            )
-  !
-  !       !HCW added and changed to surf(6,is) here 20 Feb 2015
-  !       drain_per_tstep=drain_per_tstep+(drain(is)*sfr(is)/NonWaterFraction)   !No water body included
-  !    ENDDO
-  ! ELSE
-  !    drain(1:nsurf-1)=0
-  ! ENDIF
-  !
-  ! drain(WaterSurf) = 0  ! Set drainage from water body to zero
-  !
-  ! ! Distribute water within grid, according to WithinGridWaterDist matrix (Cols 1-7)
-  ! IF(Diagnose==1) WRITE(*,*) 'Calling ReDistributeWater...'
-  ! ! CALL ReDistributeWater
-  ! !Calculates AddWater(is)
-  ! CALL ReDistributeWater(&
-  !                               ! input:
-  !      nsurf,& ! surface type number
-  !      WaterSurf,&
-  !      snowUse,&
-  !      WaterDist,  &
-  !      sfr,   &!
-  !      Drain,&
-  !                               ! output:
-  !      AddWaterRunoff,&
-  !      addWater&
-  !      )
 
   !======== Evaporation and surface state ========
-
   CALL SUEWS_cal_QE(&
        Diagnose,&!input
        id,&
@@ -894,7 +620,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        precip,&
        PipeCapacity,&
        RunoffToWater,&
-       surpluswaterbody,&
        pin,&
        NonWaterFraction,&
        wu_EveTr,&
@@ -966,214 +691,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        runoffAGveg_m3,&
        runoffWaterBody_m3,&
        runoffPipes_m3)
-  ! DO is=1,nsurf   !For each surface in turn
-  !    IF (snowCalcSwitch(is)==1) THEN
-  !       IF (sfr(is)/=0) THEN
-  !          IF(Diagnose==1) WRITE(*,*) 'Calling SnowCalc...'
-  !          CALL SnowCalc(&
-  !               id,& !input
-  !               nsurf,&
-  !               tstep,&
-  !               imin,&
-  !               it,&
-  !               is,&
-  !               snowfractionchoice,&
-  !               ConifSurf,&
-  !               BSoilSurf,&
-  !               BldgSurf,&
-  !               PavSurf,&
-  !               WaterSurf,&
-  !               ity,&
-  !               CRWmin,&
-  !               CRWmax,&
-  !               nsh_real,&
-  !               lvS_J_kg,&
-  !               lv_j_kg,&
-  !               avdens,&
-  !               waterdens,&
-  !               avRh,&
-  !               Press_hPa,&
-  !               Temp_C,&
-  !               RAsnow,&
-  !               psyc_hPa,&
-  !               avcp,&
-  !               sIce_hPa,&
-  !               PervFraction,&
-  !               vegfraction,&
-  !               addimpervious,&
-  !               numPM,&
-  !               s_hPa,&
-  !               ResistSurf,&
-  !               sp,&
-  !               ra,&
-  !               rb,&
-  !               tlv,&
-  !               snowdensmin,&
-  !               precip,&
-  !               PipeCapacity,&
-  !               RunoffToWater,&
-  !               runoffAGimpervious,&
-  !               runoffAGveg,&
-  !               surpluswaterbody,&
-  !               drain,&
-  !               WetThresh,&
-  !               stateold,&
-  !               mw_ind,&
-  !               soilstorecap,&
-  !               rainonsnow,&
-  !               freezmelt,&
-  !               freezstate,&
-  !               freezstatevol,&
-  !               Qm_Melt,&
-  !               Qm_rain,&
-  !               Tsurf_ind,&
-  !               sfr,&
-  !               DayofWeek,&
-  !               surf,&
-  !               snowPack,&!inout
-  !               snowFrac,&
-  !               MeltWaterStore,&
-  !               SnowDepth,&
-  !               iceFrac,&
-  !               addwater,&
-  !               addwaterrunoff,&
-  !               SnowDens,&
-  !               runoffSnow,& ! output
-  !               runoff,&
-  !               runoffSoil,&
-  !               chang,&
-  !               changSnow,&
-  !               SnowToSurf,&
-  !               state,&
-  !               snowD,&
-  !               ev_snow,&
-  !               soilmoist,&
-  !               snowProf,&
-  !               swe,&
-  !               ev,&
-  !               chSnow_per_interval,&
-  !               ev_per_tstep,&
-  !               qe_per_tstep,&
-  !               runoff_per_tstep,&
-  !               surf_chang_per_tstep,&
-  !               runoffPipes,&
-  !               mwstore,&
-  !               runoffwaterbody,&
-  !               FlowChange)
-  !       ELSE
-  !          snowFrac(is) = 0
-  !          SnowDens(is) = 0
-  !          SnowPack(is) = 0
-  !       ENDIF
-  !    ELSE
-  !
-  !       !Calculates ev [mm]
-  !       CALL Evap_SUEWS(&
-  !
-  !                               ! input:
-  !            ity,&!Evaporation calculated according to Rutter (1) or Shuttleworth (2)
-  !            state(is),& ! wetness status
-  !            WetThresh(is),&!When State > WetThresh, rs=0 limit in SUEWS_evap [mm] (specified in input files)
-  !            surf(6,is),& ! = surf(is,6), current storage capacity [mm]
-  !            numPM,&!numerator of P-M eqn
-  !            s_hPa,&!Vapour pressure versus temperature slope in hPa
-  !            psyc_hPa,&!Psychometric constant in hPa
-  !            ResistSurf,&!Surface resistance
-  !            sp,&!Term in calculation of E
-  !            ra,&!Aerodynamic resistance
-  !            rb,&!Boundary layer resistance
-  !            tlv,&!Latent heat of vaporization per timestep [J kg-1 s-1], (tlv=lv_J_kg/tstep_real)
-  !
-  !                               ! output:
-  !            rss,&
-  !            ev,&
-  !            qe) ! latent heat flux [W m-2]
-  !
-  !       ! IF ( is==5 ) THEN ! debug info
-  !       !    PRINT*, 'ity',ity
-  !       !    PRINT*, 'qe',qe
-  !       !    PRINT*, 'moisture',state(is),WetThresh(is)
-  !       !
-  !       ! END IF
-  !
-  !
-  !       rss_nsurf(is) = rss !Store rss for each surface
-  !       ! CALL soilstore    !Surface water balance and soil store updates (can modify ev, updates state)
-  !       !Surface water balance and soil store updates (can modify ev, updates state)
-  !       CALL soilstore(&
-  !                               ! input:
-  !            nsurf,& ! number of surface types
-  !            is,& ! surface type
-  !            PavSurf,&! surface type code
-  !            BldgSurf,&! surface type code
-  !            WaterSurf,&! surface type code
-  !            ConifSurf,&! surface type code
-  !            BSoilSurf,&! surface type code
-  !            DecidSurf,&! surface type code
-  !            GrassSurf,&! surface type code
-  !            sfr,&! surface fractions
-  !            PipeCapacity,&!Capacity of pipes to transfer water
-  !            RunoffToWater,&!Fraction of surface runoff going to water body
-  !            pin,&!Rain per time interval
-  !            wu_EveTr,&!Water use for evergreen trees/shrubs [mm]
-  !            wu_DecTr,&!Water use for deciduous trees/shrubs [mm]
-  !            wu_Grass,&!Water use for grass [mm]
-  !            AddWater,&!Water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
-  !            addImpervious,&!Water from impervious surfaces of other grids [mm] for whole surface area
-  !            nsh_real,&!nsh cast as a real for use in calculations
-  !            stateOld,&!Wetness status of each surface type from previous timestep [mm]
-  !            AddWaterRunoff,&!Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
-  !            PervFraction,&! sum of surface cover fractions for impervious surfaces
-  !            addVeg,&!Water from vegetated surfaces of other grids [mm] for whole surface area
-  !            soilstoreCap,&!Capacity of soil store for each surface [mm]
-  !            addWaterBody,&!Water from water surface of other grids [mm] for whole surface area
-  !            FlowChange,&!Difference between the input and output flow in the water body
-  !            StateLimit,&!Limit for state of each surface type [mm] (specified in input files)
-  !                               !  inout:
-  !            runoffAGimpervious,&!Above ground runoff from impervious surface [mm] for whole surface area
-  !            surplusWaterBody,&!Extra runoff that goes to water body [mm] as specified by RunoffToWater
-  !            runoffAGveg,&!Above ground runoff from vegetated surfaces [mm] for whole surface area
-  !            runoffPipes,&!Runoff in pipes [mm] for whole surface area
-  !            ev,&!Evaporation
-  !            soilmoist,&!Soil moisture of each surface type [mm]
-  !            SurplusEvap,&!Surplus for evaporation in 5 min timestep
-  !            runoffWaterBody,&!Above ground runoff from water surface [mm] for whole surface area
-  !            runoff_per_interval,&! Total water transported to each grid for grid-to-grid connectivity
-  !                               !  output:
-  !            p_mm,&!Inputs to surface water balance
-  !            chang,&!Change in state [mm]
-  !            runoff,&!Runoff from each surface type [mm]
-  !            drain,&!Drainage of each surface type [mm]
-  !            state&!Wetness status of each surface type [mm]
-  !            )
-  !
-  !       evap(is)     = ev !Store ev for each surface
-  !
-  !       ! Sum evaporation from different surfaces to find total evaporation [mm]
-  !       ev_per_tstep = ev_per_tstep+evap(is)*sfr(is)
-  !
-  !       ! Sum change from different surfaces to find total change to surface state
-  !       surf_chang_per_tstep = surf_chang_per_tstep+(state(is)-stateOld(is))*sfr(is)
-  !       ! Sum runoff from different surfaces to find total runoff
-  !       runoff_per_tstep     = runoff_per_tstep+runoff(is)*sfr(is)
-  !       ! Calculate total state (including water body)
-  !       state_per_tstep      = state_per_tstep+(state(is)*sfr(is))
-  !       ! Calculate total state (excluding water body)
-  !
-  !       IF (NonWaterFraction/=0) THEN
-  !          IF (is.NE.WaterSurf) NWstate_per_tstep=NWstate_per_tstep+(state(is)*sfr(is)/NonWaterFraction)
-  !       ENDIF
-  !
-  !       ChangSnow(is)  = 0
-  !       runoffSnow(is) = 0
-  !
-  !    ENDIF
-  ! ENDDO  !end loop over surfaces
-  !
-  !
-  ! ! Convert evaporation to latent heat flux [W m-2]
-  ! qe_per_tstep = ev_per_tstep*tlv
-  ! qeOut        = qe_per_tstep
+
 
   !============ Sensible heat flux ===============
   CALL SUEWS_cal_QH(&
@@ -1191,38 +709,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        Temp_C,&
        ra,&
        qh)
-  ! ! Calculate sensible heat flux as a residual (Modified by LJ in Nov 2012)
-  ! qh=(qn1+qf+QmRain)-(qeOut+qs+Qm+QmFreez)     !qh=(qn1+qf+QmRain+QmFreez)-(qeOut+qs+Qm)
-  !
-  ! ! Calculate QH using resistance method (for testing HCW 06 Jul 2016)
-  ! IF(ra/=0) THEN
-  !    qh_r = avdens*avcp*(tsurf-Temp_C)/ra
-  ! ELSE
-  !    qh_r=NAN
-  ! ENDIF
-
-
-  !write(*,*) Gridiv, qn1, qf, qh, qeOut, qs, qn1+qf-qs
-  !if(ir > 155 .and. ir <165) pause
-  !if((qn1+qf-qs) - (qeOut) < -1)  then
-  !    write(*,*) '!!', (qn1+qf-qs),(qeOut)
-  !    pause
-  !endif
-  !if(ir > 600) pause
-  !if(Gridiv == 3) write(*,*) ''
-  !if(Gridiv == 3 .and. ir == 100) pause
-  !!if(Gridiv == 3 .and.ir == 200) pause
-  !!if(Gridiv == 3 .and.ir == 300) pause
-  !if(Gridiv == 3 .and.ir == 400) pause
-  !if(Gridiv == 3 .and. ir == irMax ) pause
-
-  ! ! Calculate volume of water that will move between grids
-  ! ! Volume [m3] = Depth relative to whole area [mm] / 1000 [mm m-1] * SurfaceArea [m2]
-  ! ! Need to use these volumes when converting back to addImpervious, AddVeg and AddWater
-  ! runoffAGimpervious_m3 = runoffAGimpervious/1000 *SurfaceArea
-  ! runoffAGveg_m3        = runoffAGveg/1000 *SurfaceArea
-  ! runoffWaterBody_m3    = runoffWaterBody/1000 *SurfaceArea
-  ! runoffPipes_m3        = runoffPipes/1000 *SurfaceArea
 
 
   !=== Horizontal movement between soil stores ===

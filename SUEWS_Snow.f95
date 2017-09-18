@@ -508,7 +508,7 @@ SUBROUTINE SnowCalc(&
      runoffAGimpervious,&
      runoffAGveg,&
      addVeg,&
-     surpluswaterbody,&
+     surplusWaterBody,&
      SnowLimPaved,&
      SnowLimBuild,&
      drain,&
@@ -614,7 +614,7 @@ SUBROUTINE SnowCalc(&
   REAL(KIND(1d0)),INTENT(in)::RunoffToWater
   REAL(KIND(1d0)),INTENT(in)::runoffAGveg
   REAL(KIND(1d0)),INTENT(in)::addVeg
-  REAL(KIND(1d0)),INTENT(in)::surpluswaterbody
+  REAL(KIND(1d0)),INTENT(in)::surplusWaterBody
   REAL(KIND(1d0)),INTENT(in)::SnowLimPaved
   REAL(KIND(1d0)),INTENT(in)::SnowLimBuild
 

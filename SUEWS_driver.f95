@@ -481,7 +481,6 @@ CONTAINS
        precip,&
        PipeCapacity,&
        RunoffToWater,&
-       surpluswaterbody,&
        pin,&
        NonWaterFraction,&
        wu_EveTr,&
@@ -572,7 +571,7 @@ CONTAINS
     INTEGER,INTENT(in) ::GrassSurf! surface type code
 
     INTEGER,DIMENSION(nsurf),INTENT(in)::snowCalcSwitch
-    integer,DIMENSION(366,2),INTENT(in)::DayofWeek
+    INTEGER,DIMENSION(366,2),INTENT(in)::DayofWeek
 
     REAL(KIND(1d0)),INTENT(in)::CRWmin
     REAL(KIND(1d0)),INTENT(in)::CRWmax
@@ -602,9 +601,6 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::precip
     REAL(KIND(1d0)),INTENT(in)::PipeCapacity
     REAL(KIND(1d0)),INTENT(in)::RunoffToWater
-    ! REAL(KIND(1d0)),INTENT(in)::runoffAGimpervious
-    ! REAL(KIND(1d0)),INTENT(in)::runoffAGveg
-    REAL(KIND(1d0)),INTENT(in)::surpluswaterbody
     REAL(KIND(1d0)),INTENT(in)::pin!Rain per time interval
     REAL(KIND(1d0)),INTENT(in)::NonWaterFraction
     REAL(KIND(1d0)),INTENT(in)::wu_EveTr!Water use for evergreen trees/shrubs [mm]
@@ -689,7 +685,7 @@ CONTAINS
 
     ! local:
     INTEGER :: is
-    REAL(KIND(1d0))::runoffAGveg,runoffAGimpervious
+    REAL(KIND(1d0))::runoffAGveg,runoffAGimpervious,surplusWaterBody
 
     ! Initialize the output variables
     qe=0
@@ -704,8 +700,13 @@ CONTAINS
     runoffwaterbody=0
     chSnow_per_interval=0
 
-    runoffAGveg=0
-    runoffAGimpervious=0
+    runoffAGveg        = 0
+    runoffAGimpervious = 0
+    surplusWaterBody   = 0
+    runoffSoil         = 0
+    runoff             = 0
+    chang              = 0
+    SurplusEvap        = 0
 
 
 
@@ -759,7 +760,7 @@ CONTAINS
                   runoffAGimpervious,&
                   runoffAGveg,&
                   addVeg,&
-                  surpluswaterbody,&
+                  surplusWaterBody,&
                   SnowLimPaved,&
                   SnowLimBuild,&
                   drain,&

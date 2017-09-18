@@ -14,7 +14,7 @@
 !Last modified by HCW 12 Jan 2017 - Changes to InitialConditions
 !Last modified by HCW 26 Aug 2016 - CO2 flux added
 !Last modified by HCW 04 Jul 2016 - GridID can now be up to 10 digits long
-!Last modified by HCW 29 Jun 2016 - Reversed over-ruling of ReadLinesMetData so this is not restricted here to one day
+!Last modified by HCW 29 Jun 2016 - Reversed over-ruling of ReadLinesMetdata so this is not restricted here to one day
 !Last modified by HCW 27 Jun 2016 - Re-corrected grid number for output files. N.B. Gridiv seems to have been renamed iGrid
 !                                 - Met file no longer has grid number attached if same met data used for all grids
 !Last modified by HCW 24 May 2016 - InitialConditions file naming altered
@@ -231,9 +231,9 @@ PROGRAM SUEWS_Program
 
         ReadBlocksOrigMetData = INT(CEILING(REAL(nlinesOrigMetData,KIND(1d0))/REAL(ReadLinesOrigMetData,KIND(1d0))))
 
-        ! Set ReadLinesMetData and ReadBlocksMetData
-        ReadLinesMetData = ReadLinesOrigMetdata*Nper
-        ReadBlocksMetData = INT(CEILING(REAL(nlinesOrigMetData*Nper,KIND(1d0))/REAL(ReadLinesMetData,KIND(1d0))))
+        ! Set ReadLinesMetdata and ReadBlocksMetData
+        ReadLinesMetdata = ReadLinesOrigMetdata*Nper
+        ReadBlocksMetData = INT(CEILING(REAL(nlinesOrigMetData*Nper,KIND(1d0))/REAL(ReadLinesMetdata,KIND(1d0))))
         WRITE(*,*) 'Processing current year in ',ReadBlocksMetData,'blocks.'
 
         nlinesMetdata = nlinesOrigMetdata*Nper
@@ -275,17 +275,17 @@ PROGRAM SUEWS_Program
 
         ! To conserve memory, read met data in blocks
         ! Find number of lines that can be read in each block (i.e. read in at once)
-        ReadLinesMetData = nlinesMetData   !Initially set limit as the size of the met file (N.B.solves problem with Intel fortran)
+        ReadLinesMetdata = nlinesMetData   !Initially set limit as the size of the met file (N.B.solves problem with Intel fortran)
         IF(nlinesMetData > nlinesLimit) THEN   !But restrict if this limit exceeds memory capacity
-           ReadLinesMetData = nlinesLimit
+           ReadLinesMetdata = nlinesLimit
         ENDIF
         ! make sure the metblocks read in consists of complete diurnal cycles, TS 08 Jul 2016
-        ReadLinesMetData = INT(MAX(nsd*(ReadLinesMetData/nsd), nsd))
+        ReadLinesMetdata = INT(MAX(nsd*(ReadLinesMetdata/nsd), nsd))
 
-        WRITE(*,*) 'Met data will be read in blocks of ',ReadlinesMetdata,'lines.'
+        WRITE(*,*) 'Met data will be read in blocks of ',ReadLinesMetdata,'lines.'
 
         ! Find number of blocks of met data
-        ReadBlocksMetData = INT(CEILING(REAL(nlinesMetData,KIND(1d0))/REAL(ReadLinesMetData,KIND(1d0))))
+        ReadBlocksMetData = INT(CEILING(REAL(nlinesMetData,KIND(1d0))/REAL(ReadLinesMetdata,KIND(1d0))))
         WRITE(*,*) 'Processing current year in ',ReadBlocksMetData,'blocks.'
 
      ENDIF
@@ -295,19 +295,19 @@ PROGRAM SUEWS_Program
      ! ---- Allocate arrays--------------------------------------------------
      IF(Diagnose==1) WRITE(*,*) 'Allocating arrays in SUEWS_Program.f95...'
      ALLOCATE(SurfaceChar(NumberOfGrids,MaxNCols_c))                                   !Surface characteristics
-     ALLOCATE(MetForcingData(ReadlinesMetdata,ncolumnsMetForcingData,NumberOfGrids))   !Met forcing data
-     ALLOCATE(ModelOutputData(0:ReadlinesMetdata,MaxNCols_cMOD,NumberOfGrids))         !Data at model timestep
-     ALLOCATE(dataOut(ReadlinesMetdata,ncolumnsDataOut,NumberOfGrids))                 !Main output array
-     IF (SOLWEIGuse == 1) ALLOCATE(dataOutSOL(ReadlinesMetdata,ncolumnsdataOutSOL,NumberOfGrids))     !SOLWEIG POI output
-     IF (CBLuse >= 1)     ALLOCATE(dataOutBL(ReadlinesMetdata,ncolumnsdataOutBL,NumberOfGrids))       !CBL output
+     ALLOCATE(MetForcingData(ReadLinesMetdata,ncolumnsMetForcingData,NumberOfGrids))   !Met forcing data
+     ALLOCATE(ModelOutputData(0:ReadLinesMetdata,MaxNCols_cMOD,NumberOfGrids))         !Data at model timestep
+     ALLOCATE(dataOut(ReadLinesMetdata,ncolumnsDataOut,NumberOfGrids))                 !Main output array
+     IF (SOLWEIGuse == 1) ALLOCATE(dataOutSOL(ReadLinesMetdata,ncolumnsdataOutSOL,NumberOfGrids))     !SOLWEIG POI output
+     IF (CBLuse >= 1)     ALLOCATE(dataOutBL(ReadLinesMetdata,ncolumnsdataOutBL,NumberOfGrids))       !CBL output
      IF (SnowUse == 1) THEN
-        ALLOCATE(dataOutSnow(ReadlinesMetdata,ncolumnsDataOutSnow,NumberOfGrids))   !Snow output
+        ALLOCATE(dataOutSnow(ReadLinesMetdata,ncolumnsDataOutSnow,NumberOfGrids))   !Snow output
         ALLOCATE(qn1_S_store(NSH,NumberOfGrids))
         ALLOCATE(qn1_S_av_store(2*NSH+1,NumberOfGrids))
         qn1_S_store(:,:) = NAN
         qn1_S_av_store(:,:) = NaN
      ENDIF
-     IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14) ALLOCATE(dataOutESTM(ReadlinesMetdata,32,NumberOfGrids)) !ESTM output
+     IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14) ALLOCATE(dataOutESTM(ReadLinesMetdata,32,NumberOfGrids)) !ESTM output
      ALLOCATE(TstepProfiles(NumberOfGrids,10,24*NSH))   !Hourly profiles interpolated to model timestep
      ALLOCATE(AHProf_tstep(24*NSH,2))                   !Anthropogenic heat profiles at model timestep
      ALLOCATE(WUProfM_tstep(24*NSH,2))                  !Manual water use profiles at model timestep
@@ -374,7 +374,7 @@ PROGRAM SUEWS_Program
 
            !write(*,*) 'nlinesOrigESTMdata', nlinesOrigESTMdata
            ! Set number of lines to read from original ESTM file using met data blocks
-           ReadLinesOrigESTMData = ReadlinesMetdata/NperESTM
+           ReadLinesOrigESTMData = ReadLinesMetdata/NperESTM
            !WRITE(*,*) 'ReadlinesOrigESTMdata', ReadlinesOrigESTMdata
            WRITE(*,*) 'Original ESTM data will be read in chunks of ',ReadlinesOrigESTMdata,'lines.'
 
@@ -421,8 +421,8 @@ PROGRAM SUEWS_Program
         ENDIF
 
         ! Allocate arrays to receive ESTM forcing data
-        ALLOCATE(ESTMForcingData(1:ReadlinesMetdata,ncolsESTMdata,NumberOfGrids))
-        ALLOCATE(Ts5mindata(1:ReadlinesMetdata,ncolsESTMdata))
+        ALLOCATE(ESTMForcingData(1:ReadLinesMetdata,ncolsESTMdata,NumberOfGrids))
+        ALLOCATE(Ts5mindata(1:ReadLinesMetdata,ncolsESTMdata))
         ALLOCATE(Tair24HR(24*nsh))
 
      ENDIF
@@ -499,7 +499,7 @@ PROGRAM SUEWS_Program
                  IF(igrid==1) THEN       !Disaggregate for the first grid only
                     CALL DisaggregateMet(iblock,igrid)
                  ELSE                    !Then for subsequent grids simply copy data
-                    MetForcingData(1:ReadlinesMetdata,1:24,GridCounter) = MetForcingData(1:ReadlinesMetdata,1:24,1)
+                    MetForcingData(1:ReadLinesMetdata,1:24,GridCounter) = MetForcingData(1:ReadLinesMetdata,1:24,1)
                  ENDIF
               ENDIF
 
@@ -523,7 +523,7 @@ PROGRAM SUEWS_Program
                  IF(igrid == 1) THEN       !Read for the first grid only
                     CALL SUEWS_InitializeMetData(1)
                  ELSE                          !Then for subsequent grids simply copy data
-                    MetForcingData(1:ReadlinesMetdata,1:24,GridCounter) = MetForcingData(1:ReadlinesMetdata,1:24,1)
+                    MetForcingData(1:ReadLinesMetdata,1:24,GridCounter) = MetForcingData(1:ReadLinesMetdata,1:24,1)
                  ENDIF
               ENDIF
            ENDIF   !end of nper statement
@@ -565,7 +565,7 @@ PROGRAM SUEWS_Program
                     IF(igrid==1) THEN       !Disaggregate for the first grid only
                        CALL DisaggregateESTM(iblock)
                     ELSE                    !Then for subsequent grids simply copy data
-                       ESTMForcingData(1:ReadlinesMetdata,1:ncolsESTMdata,GridCounter) = ESTMForcingData(1:ReadlinesMetdata, &
+                       ESTMForcingData(1:ReadLinesMetdata,1:ncolsESTMdata,GridCounter) = ESTMForcingData(1:ReadLinesMetdata, &
                             1:ncolsESTMdata,1)
                     ENDIF
                  ENDIF
@@ -587,7 +587,7 @@ PROGRAM SUEWS_Program
                     IF(igrid == 1) THEN       !Read for the first grid only
                        CALL SUEWS_GetESTMData(101)
                     ELSE                          !Then for subsequent grids simply copy data
-                       ESTMForcingData(1:ReadlinesMetdata,1:ncolsESTMdata,GridCounter) = ESTMForcingData(1:ReadlinesMetdata, &
+                       ESTMForcingData(1:ReadLinesMetdata,1:ncolsESTMdata,GridCounter) = ESTMForcingData(1:ReadLinesMetdata, &
                             1:ncolsESTMdata,1)
                     ENDIF
                  ENDIF
@@ -597,11 +597,11 @@ PROGRAM SUEWS_Program
            GridCounter = GridCounter+1   !Increase GridCounter by 1 for next grid
 
         ENDDO !end loop over grids
-        skippedLines = skippedLines + ReadlinesMetdata   !Increase skippedLines ready for next block
+        skippedLines = skippedLines + ReadLinesMetdata   !Increase skippedLines ready for next block
         skippedLinesOrig = skippedLinesOrig + ReadlinesOrigMetdata   !Increase skippedLinesOrig ready for next block
         skippedLinesOrigESTM = skippedLinesOrigESTM + ReadlinesOrigESTMdata   !Increase skippedLinesOrig ready for next block
         !write(*,*) iblock
-        !write(*,*) ReadlinesMetdata, readlinesorigmetdata
+        !write(*,*) ReadLinesMetdata, readlinesorigmetdata
         !write(*,*) skippedLines, skippedLinesOrig, skippedLinesOrig*Nper
 
         ! Initialise the modules on the first day

@@ -48,7 +48,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   USE mod_k
   USE solweig_module
   USE WhereWhen
-  USE AnOHM_module
+  USE SUEWS_Driver
 
 
   IMPLICIT NONE
@@ -322,10 +322,12 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   IF(Diagnose==1) WRITE(*,*) 'Calling CO2_anthro...'
   CALL CO2_anthro(id,ih,imin)
 
-
+! PRINT*, 'alb in calculations', SHAPE(alb)
+  ! PRINT*, 'MetForcingData in calculations', SHAPE(MetForcingData(:,:,Gridiv))
   ! =================STORAGE HEAT FLUX=======================================
   CALL SUEWS_cal_Qs(&
        nsurf,&
+      !  size(MetForcingData(:,:,Gridiv), dim=1),&
        StorageHeatMethod,&
        OHMIncQF,&
        Gridiv,&
@@ -457,7 +459,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        SnowPack,snowFrac,SnowAlb,SnowDens,& ! inout
        mwh,fwh,Qm,QmFreez,QmRain,CumSnowfall,snowCalcSwitch,&!output
        Qm_melt,Qm_freezState,Qm_rain,FreezMelt,FreezState,FreezStateVol,&
-       rainOnSnow,SnowDepth,mw_ind)
+       rainOnSnow,SnowDepth,mw_ind,veg_fr)
   ! IF (snowUse==1)  THEN
   !    IF(Diagnose==1) WRITE(*,*) 'Calling MeltHeat'
   !    CALL MeltHeat(&
@@ -846,6 +848,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !      )
 
   !======== Evaporation and surface state ========
+
   CALL SUEWS_cal_QE(&
        Diagnose,&!input
        id,&

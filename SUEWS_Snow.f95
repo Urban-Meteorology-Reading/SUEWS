@@ -143,6 +143,8 @@ SUBROUTINE MeltHeat_cal(&
      CALL veg_fr_snow(&
           sfr,snowFrac,nsurf,&!input
           veg_fr)!output
+
+
   ELSE ! no snow calculation
      mwh=0
      fwh=0
@@ -1349,6 +1351,7 @@ FUNCTION SnowDepletionCurve(is,swe,sweD) RESULT(asc)
   RETURN
 END FUNCTION SnowDepletionCurve
 
+
 SUBROUTINE veg_fr_snow(&
      sfr,snowFrac,nsurf,&!input
      veg_fr)!output
@@ -1357,9 +1360,10 @@ SUBROUTINE veg_fr_snow(&
 
   INTEGER,INTENT(in) :: nsurf !< number of surface types
 
-  REAL(KIND(1d0)),INTENT(in),DIMENSION(nsurf) :: sfr      !< surface fractions
-  REAL(KIND(1d0)),INTENT(in),DIMENSION(nsurf) :: snowFrac !< snowy surface fractions [-]
-  REAL(KIND(1d0)),INTENT(out)             :: veg_fr   !< vegetated surface fractions [-]
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in) :: sfr      !< surface fractions
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in) :: snowFrac !< snowy surface fractions [-]
+
+  REAL(KIND(1d0)),INTENT(out) :: veg_fr   !< vegetated surface fractions [-]
 
   veg_fr = DOT_PRODUCT(sfr(3:7),1-snowFrac(3:7))
 

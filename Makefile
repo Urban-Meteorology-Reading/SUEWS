@@ -31,6 +31,7 @@ MODULES = LUMPS_Module_constants.o  \
 					LUMPS_NARP_v3.o \
 					SUEWS_AnOHM.o \
 					SUEWS_OHM.o \
+					SUEWS_driver.o \
 					minpack.o
 
 # Rest of the files including modules and functions which are independent
@@ -46,7 +47,6 @@ OTHERS =  BLUEWS_CBL.o   \
           NARP_sun_position_v2.o \
           SUEWS_SAHP.o \
           LUMPS_OutputHeaders.o \
-          SUEWS_Snow.o \
           LUMPS_QHQE.o \
           SUEWS_AerodynamicResistance.o \
           SUEWS_store.o \
@@ -80,15 +80,13 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_CO2.o \
 					SUEWS_Initial.o \
 					SUEWS_SoilMoist.o \
-					SUEWS_driver.o \
 					SUEWS_DailyState.o \
 					SUEWS_SnowUpdate.o \
 					SUEWS_Diagnostics.o
 
 # modules under rapid development
-TEST =		SUEWS_Calculations.o
-
-
+TEST =		SUEWS_Calculations.o \
+					SUEWS_Snow.o
 
 
 # Build main program - main uses MODULES and OTHERS

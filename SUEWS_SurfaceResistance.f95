@@ -14,8 +14,8 @@ SUBROUTINE SurfaceResistance(&
      xsmd,&
      vsmd,&
      MaxConductance,&
-     LaiMax,&
-     lai_id,&
+     LAIMax,&
+     LAI_id,&
      gsModel,&
      Kmax,&
      G1,&
@@ -80,8 +80,8 @@ SUBROUTINE SurfaceResistance(&
   REAL(KIND(1d0)),INTENT(in)::vsmd!Soil moisture deficit for vegetated surfaces only (what about BSoil?)
 
   REAL(KIND(1d0)),DIMENSION(3),INTENT(in)    ::MaxConductance!Max conductance [mm s-1]
-  REAL(KIND(1d0)),DIMENSION(3),INTENT(in)    ::LaiMax        !Max LAI [m2 m-2]
-  REAL(KIND(1d0)),DIMENSION(3),INTENT(in)    ::lai_id        !=lai(id-1,:), LAI for each veg surface [m2 m-2]
+  REAL(KIND(1d0)),DIMENSION(3),INTENT(in)    ::LAIMax        !Max LAI [m2 m-2]
+  REAL(KIND(1d0)),DIMENSION(3),INTENT(in)    ::LAI_id        !=LAI(id-1,:), LAI for each veg surface [m2 m-2]
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::snowFrac      !Surface fraction of snow cover
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::sfr           !Surface fractions [-]
 
@@ -169,7 +169,7 @@ SUBROUTINE SurfaceResistance(&
 
         !LAI
         !Original way
-        !gl=((lai(id,2)*areaunir/lm)+areair)/(areair+areaunir)
+        !gl=((LAI(id,2)*areaunir/lm)+areair)/(areair+areaunir)
         !New way
         gl=0    !First initialize
         ! vegetated surfaces
@@ -177,8 +177,8 @@ SUBROUTINE SurfaceResistance(&
         !  print*,id,it,sfr
         ! DO iv=ivConif,ivGrass
         DO iv=1,3
-           ! gl=gl+(sfr(iv+2)*(1-snowFrac(iv+2)))*lai(id-1,iv)/LaiMax(iv)*MaxConductance(iv)
-           gl=gl+(sfr(iv+2)*(1-snowFrac(iv+2)))*lai_id(iv)/LaiMax(iv)*MaxConductance(iv)
+           ! gl=gl+(sfr(iv+2)*(1-snowFrac(iv+2)))*LAI(id-1,iv)/LAIMax(iv)*MaxConductance(iv)
+           gl=gl+(sfr(iv+2)*(1-snowFrac(iv+2)))*LAI_id(iv)/LAIMax(iv)*MaxConductance(iv)
         ENDDO
 
         ! Multiply parts together
@@ -244,8 +244,8 @@ SUBROUTINE SurfaceResistance(&
         gl=0    !Initialise
         ! DO iv=ivConif,ivGrass   !For vegetated surfaces
         DO iv=1,3   !For vegetated surfaces
-           !  gl=gl+(sfr(iv+2)*(1-snowFrac(iv+2)))*lai(id-1,iv)/LaiMax(iv)*MaxConductance(iv)
-           gl=gl+(sfr(iv+2)*(1-snowFrac(iv+2)))*lai_id(iv)/LaiMax(iv)*MaxConductance(iv)
+           !  gl=gl+(sfr(iv+2)*(1-snowFrac(iv+2)))*LAI(id-1,iv)/LAIMax(iv)*MaxConductance(iv)
+           gl=gl+(sfr(iv+2)*(1-snowFrac(iv+2)))*LAI_id(iv)/LAIMax(iv)*MaxConductance(iv)
         ENDDO
 
         ! Multiply parts together

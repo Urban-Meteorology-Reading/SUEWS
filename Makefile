@@ -80,13 +80,13 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_CO2.o \
 					SUEWS_Initial.o \
 					SUEWS_SoilMoist.o \
-					SUEWS_DailyState.o \
+					SUEWS_Snow.o \
 					SUEWS_SnowUpdate.o \
 					SUEWS_Diagnostics.o
 
 # modules under rapid development
 TEST =		SUEWS_Calculations.o \
-					SUEWS_Snow.o
+					SUEWS_DailyState.o
 
 
 # Build main program - main uses MODULES and OTHERS

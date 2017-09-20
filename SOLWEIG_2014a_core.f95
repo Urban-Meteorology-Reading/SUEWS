@@ -83,9 +83,9 @@
     radD=kdiff
     radI=kdir
 
-    ! Transmissivity of shortwave radiation through vegetation based on decid lai
+    ! Transmissivity of shortwave radiation through vegetation based on decid LAI
     if (it==firstTimeofDay) then
-        trans=TransMin+(laimax(2)-lai(id-1,2))*transperlai
+        trans=TransMin+(LAImax(2)-LAI(id-1,2))*transperLAI
     endif
 
     ! Radiation sensor setup offset in degrees

@@ -18,8 +18,8 @@ SUBROUTINE SnowUpdate(&
      SnowDensMin,&
      SnowAlbMin,&
      SnowPack,&
-     SnowAlb,&
-     SnowDens)!inout
+     SnowAlb,&!inout
+     SnowDens)
 
 
   IMPLICIT NONE

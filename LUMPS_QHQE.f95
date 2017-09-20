@@ -17,7 +17,7 @@ SUBROUTINE LUMPS_QHQE(&
      RainMaxRes,&
      RAINCOVER,&
      sfrVeg,&
-     laiDay,&
+     LAIDay,&
      LAImax,&
      LAImin,&
      H_mod,& !output
@@ -72,7 +72,7 @@ SUBROUTINE LUMPS_QHQE(&
   REAL(KIND(1d0)),INTENT(in) :: RAINCOVER! LUMPS Limit when surface totally wet [mm]
 
   REAL(KIND(1d0)),DIMENSION(3),INTENT(in) :: sfrVeg! veg surface fractions [-]
-  REAL(KIND(1d0)),DIMENSION(3),INTENT(in) :: laiDay! lai(id-1,iv), LAI at the beginning of today
+  REAL(KIND(1d0)),DIMENSION(3),INTENT(in) :: LAIDay! LAI(id-1,iv), LAI at the beginning of today
   REAL(KIND(1d0)),DIMENSION(3),INTENT(in) :: LAImax!Max LAI [m2 m-2]
   REAL(KIND(1d0)),DIMENSION(3),INTENT(in) :: LAImin    !Min LAI [m2 m-2]
 
@@ -133,11 +133,11 @@ SUBROUTINE LUMPS_QHQE(&
   ! VegPhen=0
   ! VegMax=0
   ! VegMin=0
-  VegPhen=DOT_PRODUCT(sfrVeg,laiDay)
+  VegPhen=DOT_PRODUCT(sfrVeg,LAIDay)
   VegMax=DOT_PRODUCT(sfrVeg,LAImax)
   VegMin=DOT_PRODUCT(sfrVeg,LAImin)
   ! DO iv=ivConif,ivGrass   !Normalized LAI for vegetation
-  !    VegPhen = sfr(iv+2)*lai(id-1,iv) + VegPhen
+  !    VegPhen = sfr(iv+2)*LAI(id-1,iv) + VegPhen
   !    VegMax  = sfr(iv+2)*LAImax(iv) + VegMax
   !    VegMin  = sfr(iv+2)*LAImax(iv) + VegMin
   ! ENDDO

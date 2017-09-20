@@ -828,10 +828,10 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      SnowAlb     = ModelDailyState(Gridiv,cMDS_SnowAlb)
 
      ! ---- LAI
-     lai=0
-     lai(id_prev,ivConif)  = ModelDailyState(Gridiv,cMDS_LAIInitialEveTr)
-     lai(id_prev,ivDecid)  = ModelDailyState(Gridiv,cMDS_LAIInitialDecTr)
-     lai(id_prev,ivGrass) = ModelDailyState(Gridiv,cMDS_LAIInitialGrass)
+     LAI=0
+     LAI(id_prev,ivConif)  = ModelDailyState(Gridiv,cMDS_LAIInitialEveTr)
+     LAI(id_prev,ivDecid)  = ModelDailyState(Gridiv,cMDS_LAIInitialDecTr)
+     LAI(id_prev,ivGrass) = ModelDailyState(Gridiv,cMDS_LAIInitialGrass)
 
      ! ---- Growing degree days, GDD
      GDD = 0
@@ -1080,7 +1080,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      fcld_obs  = MetForcingData(ir,18,Gridiv)
      wu_m3     = MetForcingData(ir,19,Gridiv)
      xsmd      = MetForcingData(ir,20,Gridiv)
-     lai_obs   = MetForcingData(ir,21,Gridiv)
+     LAI_obs   = MetForcingData(ir,21,Gridiv)
      kdiff     = MetForcingData(ir,22,Gridiv)
      kdir      = MetForcingData(ir,23,Gridiv)
      wdir      = MetForcingData(ir,24,Gridiv)

@@ -844,7 +844,7 @@ CONTAINS
     IF ( AnthropHeatMethod == 0 ) THEN
        AH = subMet(:,8)    ! read in from MetForcingData_grid,
     ELSE
-       AH = 0 ! temporarily change to zero; TODO: chenge back to modelled value
+       AH = 0 ! temporarily change to zero; TODO: change back to modelled value
        !  AH = mAH_grids(xid-1,xgrid)
     END IF
 

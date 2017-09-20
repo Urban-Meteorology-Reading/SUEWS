@@ -1054,8 +1054,8 @@ CONTAINS
        xsmd,&
        vsmd,&
        MaxConductance,&
-       LaiMax,&
-       lai_id,&
+       LAIMax,&
+       LAI_id,&
        snowFrac,&
        sfr,&
        Tstar,&!output:
@@ -1112,8 +1112,8 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::vsmd       !Soil moisture deficit for vegetated surfaces only (what about BSoil?)
 
     REAL(KIND(1d0)),DIMENSION(3),INTENT(in) ::MaxConductance!Max conductance [mm s-1]
-    REAL(KIND(1d0)),DIMENSION(3),INTENT(in) ::LaiMax        !Max LAI [m2 m-2]
-    REAL(KIND(1d0)),DIMENSION(3),INTENT(in) ::lai_id        !=lai_id(id-1,:), LAI for each veg surface [m2 m-2]
+    REAL(KIND(1d0)),DIMENSION(3),INTENT(in) ::LAIMax        !Max LAI [m2 m-2]
+    REAL(KIND(1d0)),DIMENSION(3),INTENT(in) ::LAI_id        !=LAI_id(id-1,:), LAI for each veg surface [m2 m-2]
 
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::snowFrac      !Surface fraction of snow cover
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::sfr           !Surface fractions [-]
@@ -1197,8 +1197,8 @@ CONTAINS
          xsmd,&
          vsmd,&
          MaxConductance,&
-         LaiMax,&
-         lai_id,&
+         LAIMax,&
+         LAI_id,&
          gsModel,&
          Kmax,&
          G1,&

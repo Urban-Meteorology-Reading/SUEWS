@@ -266,10 +266,10 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(nvegsurf):: BaseTe           !Base temperature for senescence degree days [degC]
   REAL(KIND(1d0)),DIMENSION(nvegsurf):: GDDFull          !Growing degree days needed for full capacity [degC]
   REAL(KIND(1d0)),DIMENSION(nvegsurf):: SDDFull          !Senescence degree days needed to initiate leaf off [degC]
-  REAL(KIND(1d0)),DIMENSION(nvegsurf):: LaiMin           !Min LAI [m2 m-2]
-  REAL(KIND(1d0)),DIMENSION(nvegsurf):: LaiMax           !Max LAI  [m2 m-2]
+  REAL(KIND(1d0)),DIMENSION(nvegsurf):: LAIMin           !Min LAI [m2 m-2]
+  REAL(KIND(1d0)),DIMENSION(nvegsurf):: LAIMax           !Max LAI  [m2 m-2]
   REAL(KIND(1d0)),DIMENSION(nvegsurf):: MaxConductance   !Max conductance [mm s-1]
-  REAL(KIND(1d0)),DIMENSION(4,nvegsurf):: LaiPower       !Coeffs for LAI equation: 1,2 - leaf growth; 3,4 - leaf off
+  REAL(KIND(1d0)),DIMENSION(4,nvegsurf):: LAIPower       !Coeffs for LAI equation: 1,2 - leaf growth; 3,4 - leaf off
   !! N.B. currently DecTr only, although input provided for all veg types
   INTEGER,DIMENSION(nvegsurf):: LAIType                  !LAI equation to use: original (0) or new (1)
   !real(kind(1d0))::GDDmax,SDDMax                        ! Max GDD and SDD across all veg types [degC] (removed HCW 03 Mar 2015)
@@ -884,7 +884,7 @@ MODULE data_in
                                 !Currently set to 10 in SUEWS_Initial
        ity,&                  !Evaporation calculated according to Rutter (1) or Shuttleworth (2)
                                 !Currently set to 2 in OverallRunControl
-       LAIcalcYes,&           !Use observed (0) or modelled (1) LAI
+       LAICalcYes,&           !Use observed (0) or modelled (1) LAI
                                 !Currently set to 1 in OverallRunControl
        WriteDailyState        !Daily state file written (1)
   !Currently set to 1 in SUEWS_Initial
@@ -935,7 +935,7 @@ MODULE data_in
        kdiff,&     !Diffuse shortwave radiation
        kdir,&      !Direct shortwave radiation
        kup,&       !Upward shortwave radiation
-       lai_obs,&   !LAI for study area provided in met forcing file
+       LAI_obs,&   !LAI for study area provided in met forcing file
        lat,&       !Latitude
        ldown, &    !Downward longwave radiation
        ldown_obs,& !Downwelling longwave radiation

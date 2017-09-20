@@ -57,7 +57,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ! LOGICAL        :: debug=.FALSE.
   ! REAL(KIND(1d0)):: idectime
   !real(kind(1d0)):: SnowDepletionCurve  !for SUEWS_Snow - not needed here (HCW 24 May 2016)
-  REAL(KIND(1d0)):: lai_wt
+  REAL(KIND(1d0)):: LAI_wt
   INTEGER        :: irMax
 
   !==================================================================
@@ -76,77 +76,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        porosity(id),FAIBldg,FAIEveTree,FAIDecTree,Z,&
        planF,&!output
        Zh,Z0m,Zdm,ZZD)
-  ! CALL RoughnessParameters(&
-  !      RoughLenMomMethod,&! input
-  !      nsurf,& ! number of surface types
-  !      PavSurf,&! surface type code
-  !      BldgSurf,&! surface type code
-  !      WaterSurf,&! surface type code
-  !      ConifSurf,&! surface type code
-  !      BSoilSurf,&! surface type code
-  !      DecidSurf,&! surface type code
-  !      GrassSurf,&! surface type code
-  !      sfr,&! surface fractions
-  !      areaZh,&
-  !      bldgH,&
-  !      EveTreeH,&
-  !      DecTreeH,&
-  !      porosity(id),&
-  !      FAIBldg,FAIEveTree,FAIDecTree,Z,&
-  !      planF,&! output
-  !      Zh,Z0m,Zdm,ZZD)
-
-
-  ! !=============Get data ready for the qs calculation====================
-
-  ! IF(NetRadiationMethod==0) THEN !Radiative components are provided as forcing
-  !    !avkdn=NAN                  !Needed for resistances for SUEWS.
-  !    ldown     = NAN
-  !    lup       = NAN
-  !    kup       = NAN
-  !    tsurf     = NAN
-  !    lup_ind   = NAN
-  !    kup_ind   = NAN
-  !    tsurf_ind = NAN
-  !    qn1_ind   = NAN
-  !    Fcld      = NAN
-  ! ENDIF
-  !
-
-  ! IF(ldown_option==1) THEN
-  !    Fcld = NAN
-  ! ENDIF
-  ! qh = -999 ! Added HCW 26 Feb 2015
-  ! H  = -999 ! Added HCW 26 Feb 2015
-  !=====================================================================
-  ! Initialisation for OAF's water bucket scheme
-  ! LUMPS only (Loridan et al. (2012))
-  ! RAINRES = 0.
-  ! RAINBUCKET = 0.
-  ! E_MOD=0 !RAIN24HR = 0.;
-
-  !=====================================================================
-
-  !Initialize variables calculated at each 5-min timestep
-  ! runoffAGveg             = 0
-  ! runoffAGimpervious      = 0
-  ! runoffWaterBody         = 0
-  ! runoffSoil_per_tstep    = 0
-  ! runoffSoil_per_interval = 0
-  ! chSnow_per_interval     = 0
-  ! mwh                     = 0 !Initialize snow melt and heat related to snowmelt
-  ! fwh                     = 0
-  ! Qm                      = 0 !Heat related to melting/freezing
-  ! QmFreez                 = 0
-  ! QmRain                  = 0
-  ! Mw_ind                  = 0
-  ! SnowDepth               = 0
-  ! zf                      = 0
-  ! deltaQi                 = 0
-  ! swe                     = 0
-  ! MwStore                 = 0
-  ! WaterHoldCapFrac        = 0
-
 
 
   ! Calculate sun position
@@ -159,18 +88,83 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !write(*,*) DateTime, timezone,lat,lng,alt,azimuth,zenith_deg
 
 
-  IF(CBLuse>=1)THEN ! If CBL is used, calculated Temp_C and RH are replaced with the obs.
-     IF(Diagnose==1) WRITE(*,*) 'Calling CBL...'
-     CALL CBL(ir,iMB,Gridiv)   !ir=1 indicates first row of each met data block
-  ENDIF
+  ! IF(CBLuse>=1)THEN ! If CBL is used, calculated Temp_C and RH are replaced with the obs.
+  !    IF(Diagnose==1) WRITE(*,*) 'Calling CBL...'
+  !    CALL CBL(ir,iMB,Gridiv)   !ir=1 indicates first row of each met data block
+  ! ENDIF
 
   !Call the dailystate routine to get surface characteristics ready
   IF(Diagnose==1) WRITE(*,*) 'Calling DailyState...'
-  CALL DailyState(Gridiv)
+  ! CALL DailyState(Gridiv)
+  CALL DailyState(&
+       iy,id,it,imin,Gridiv,tstep,&!input
+       WaterUseMethod,snowUse,Ie_start,Ie_end,&
+       ReadLinesMetdata,&
+       ncolumnsDataOut,&
+       NumberOfGrids,&
+       LAICalcYes,&
+       LAIType,&
+       GridIDmatrix,&
+       nsh_real,&
+       avkdn,&
+       Temp_C,&
+       Precip,&
+       BaseTHDD,&
+       lat,&
+       Faut,&
+       LAI_obs,&
+       tau_a,&
+       tau_f,&
+       tau_r,&
+       SnowDensMax,&
+       SnowDensMin,&
+       SnowAlbMin,&
+       alBMax_DecTr,&
+       alBMax_EveTr,&
+       alBMax_Grass,&
+       AlbMin_DecTr,&
+       AlbMin_EveTr,&
+       AlbMin_Grass,&
+       CapMax_dec,&
+       CapMin_dec,&
+       PorMax_dec,&
+       PorMin_dec,&
+       lat,&!VegPhenLumps set as 0 for the moment,TODO: to revert to the modelled value
+       Ie_a,&
+       Ie_m,&
+       DayWatPer,&
+       DayWat,&
+       SnowPack,&
+       BaseT,&
+       BaseTe,&
+       GDDFull,&
+       SDDFull,&
+       LAIMin,&
+       LAIMax,&
+       LAIPower,&
+       dataOut ,&
+       FileCode,&
+       FileOutputPath,&
 
-  IF(LAICalcYes==0)THEN
-     lai(id-1,:)=lai_obs ! check -- this is going to be a problem as it is not for each vegetation class
-  ENDIF
+       a1,& !inout
+       a2,&
+       a3,&
+       tstepcount,&
+       SnowAlb,&
+       DecidCap,&
+       albDecTr,&
+       albEveTr,&
+       albGrass,&
+       porosity,&
+       GDD,&
+       HDD,&
+       SnowDens,&
+       LAI,&
+       DailyStateFirstOpen,&
+
+       DayofWeek,&!output
+       WU_Day)
+
 
   !Calculation of density and other water related parameters
   IF(Diagnose==1) WRITE(*,*) 'Calling atmos_moist_lumps...'
@@ -351,7 +345,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        RainMaxRes,&
        RAINCOVER,&
        sfr(ivConif+2:ivGrass+2),&
-       lai(id-1,Gridiv),&
+       LAI(id-1,Gridiv),&
        LAImax,&
        LAImin,&
        H_mod,& !output
@@ -442,8 +436,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        xsmd,&
        vsmd,&
        MaxConductance,&
-       LaiMax,&
-       lai(id-1,:),&
+       LAIMax,&
+       LAI(id-1,:),&
        snowFrac,&
        sfr,&
        Tstar,&!output:
@@ -722,15 +716,15 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ENDIF
 
   ! Calculate areally-weighted LAI
-  IF(iy == (iy_prev_t+1) .AND. (id-1) == 0) THEN   !Check for start of next year and avoid using lai(id-1) as this is at the start of the year
-     lai_wt=0
+  IF(iy == (iy_prev_t+1) .AND. (id-1) == 0) THEN   !Check for start of next year and avoid using LAI(id-1) as this is at the start of the year
+     LAI_wt=0
      DO is=1,nvegsurf
-        lai_wt=lai_wt+lai(id_prev_t,is)*sfr(is+2)
+        LAI_wt=LAI_wt+LAI(id_prev_t,is)*sfr(is+2)
      ENDDO
   ELSE
-     lai_wt=0
+     LAI_wt=0
      DO is=1,nvegsurf
-        lai_wt=lai_wt+lai(id-1,is)*sfr(is+2)
+        LAI_wt=LAI_wt+LAI(id-1,is)*sfr(is+2)
      ENDDO
   ENDIF
 
@@ -771,7 +765,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        (smd_nsurfOut(is),is=1,nsurf-1),&
        (stateOut(is),is=1,nsurf),&
        zenith_deg,azimuth,bulkalbedo,Fcld,&
-       lai_wt,z0m,zdm,&
+       LAI_wt,z0m,zdm,&
        UStar,l_mod,ra,ResistSurf,&
        Fc,&
        Fc_photo,Fc_respi,Fc_metab,Fc_traff,Fc_build,&

@@ -10,12 +10,15 @@ SUBROUTINE RoughnessParameters(&
      planF,&! output:
      Zh,Z0m,Zdm,ZZD)
   ! Get surface covers and frontal area fractions (LJ 11/2010)
-  ! Last modified by HCW 08 Feb 2017 - fixed bug in Zh between grids, added default z0m, zdm
-  !                  HCW 03 Mar 2015
-  !                  sg feb 2012 - made separate subroutine
+  ! Last modified:
+  ! TS  18 Sep 2017 - added explicit interface
+  ! HCW 08 Feb 2017 - fixed bug in Zh between grids, added default z0m, zdm
+  ! HCW 03 Mar 2015
+  ! sg feb 2012 - made separate subroutine
   !--------------------------------------------------------------------------------
 
   IMPLICIT NONE
+
   INTEGER,PARAMETER:: nsurf     = 7 ! number of surface types
   INTEGER,PARAMETER:: PavSurf   = 1 !When all surfaces considered together (1-7)
   INTEGER,PARAMETER:: BldgSurf  = 2

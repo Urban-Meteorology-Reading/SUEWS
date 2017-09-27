@@ -141,6 +141,6 @@
     deallocate(tempb)
     deallocate(sh1)  
 
-end subroutine  sunonsurface_veg 
+end subroutine sunonsurface_veg 
 
 

@@ -176,7 +176,7 @@ subroutine julian_calculation(year,month,day,hour,min,sec,UTC,juliancentury,juli
 
     julianephemeris_millenium = julianephemeris_century / 10.
 
-end subroutine  julian_calculation
+end subroutine julian_calculation
 
 subroutine earth_heliocentric_position_calculation(julianephemeris_millenium,earth_heliocentric_positionlatitude&
      &,earth_heliocentric_positionlongitude,earth_heliocentric_positionradius)
@@ -357,7 +357,7 @@ implicit none
     earth_heliocentric_positionradius = &
          &(L0 + (L1 * JME) + (L2 * JME**2) + (L3 * JME**3) + (L4 * JME**4)) / 1e8
 
-end subroutine  earth_heliocentric_position_calculation
+end subroutine earth_heliocentric_position_calculation
 
 subroutine sun_geocentric_position_calculation(earth_heliocentric_positionlongitude,&
      &earth_heliocentric_positionlatitude, sun_geocentric_positionlatitude, &
@@ -378,7 +378,7 @@ subroutine sun_geocentric_position_calculation(earth_heliocentric_positionlongit
     sun_geocentric_positionlatitude = -earth_heliocentric_positionlatitude
     ! Limit the range to [0,360]
     sun_geocentric_positionlatitude=set_to_range(sun_geocentric_positionlatitude)
-end subroutine  sun_geocentric_position_calculation
+end subroutine sun_geocentric_position_calculation
 
 subroutine nutation_calculation(julianephemeris_century,nutationlongitude,nutationobliquity)
     implicit none
@@ -474,7 +474,7 @@ subroutine nutation_calculation(julianephemeris_century,nutationlongitude,nutati
     ! Nutation in obliquity
     nutationobliquity = sum(delta_obliquity) / 36000000.0
 
-end subroutine  nutation_calculation
+end subroutine nutation_calculation
 
 subroutine corr_obliquity_calculation(julianephemeris_millenium, nutationobliquity, corr_obliquity)
     implicit none
@@ -498,7 +498,7 @@ subroutine corr_obliquity_calculation(julianephemeris_millenium, nutationobliqui
          &p(8)*U**3 + p(9)*U**2 + p(10)*U + p(11)
 
     corr_obliquity = (mean_obliquity/3600) + nutationobliquity
-end subroutine  corr_obliquity_calculation
+end subroutine corr_obliquity_calculation
 
 subroutine abberation_correction_calculation(earth_heliocentric_positionradius, aberration_correction)
     implicit none
@@ -511,7 +511,7 @@ subroutine abberation_correction_calculation(earth_heliocentric_positionradius, 
 
     aberration_correction = -20.4898/(3600*earth_heliocentric_positionradius)
 
-end subroutine  abberation_correction_calculation
+end subroutine abberation_correction_calculation
 
 subroutine apparent_sun_longitude_calculation(sun_geocentric_positionlongitude, nutationlongitude,&
      & aberration_correction, apparent_sun_longitude)
@@ -526,7 +526,7 @@ subroutine apparent_sun_longitude_calculation(sun_geocentric_positionlongitude, 
 
     apparent_sun_longitude = sun_geocentric_positionlongitude + nutationlongitude + aberration_correction
 
-end subroutine  apparent_sun_longitude_calculation
+end subroutine apparent_sun_longitude_calculation
 
 subroutine apparent_stime_at_greenwich_calculation(julianday,juliancentury, nutationlongitude,&
      & corr_obliquity, apparent_stime_at_greenwich)
@@ -554,7 +554,7 @@ subroutine apparent_stime_at_greenwich_calculation(julianday,juliancentury, nuta
     mean_stime=set_to_range(mean_stime)
 
     apparent_stime_at_greenwich = mean_stime + (nutationlongitude * cos(corr_obliquity * pi/180))
-end subroutine  apparent_stime_at_greenwich_calculation
+end subroutine apparent_stime_at_greenwich_calculation
 
 subroutine sun_rigth_ascension_calculation(apparent_sun_longitude, corr_obliquity, &
      &sun_geocentric_positionlatitude, sun_rigth_ascension)
@@ -577,7 +577,7 @@ subroutine sun_rigth_ascension_calculation(apparent_sun_longitude, corr_obliquit
     sun_rigth_ascension = atan2(argument_numerator, argument_denominator) * 180.0/pi
     ! Limit the range to [0,360];
     sun_rigth_ascension=set_to_range(sun_rigth_ascension)
-end subroutine  sun_rigth_ascension_calculation
+end subroutine sun_rigth_ascension_calculation
 
 subroutine sun_geocentric_declination_calculation(apparent_sun_longitude, corr_obliquity, &
      &sun_geocentric_positionlatitude, sun_geocentric_declination)
@@ -594,7 +594,7 @@ subroutine sun_geocentric_declination_calculation(apparent_sun_longitude, corr_o
     (cos(sun_geocentric_positionlatitude * pi/180.0) * sin(corr_obliquity * pi/180) * sin(apparent_sun_longitude * pi/180.0))
 
     sun_geocentric_declination = asin(argument) * 180.0/pi
-end subroutine  sun_geocentric_declination_calculation
+end subroutine sun_geocentric_declination_calculation
 
 subroutine observer_local_hour_calculation(apparent_stime_at_greenwich, locationlongitude, &
      &sun_rigth_ascension, observer_local_hour)
@@ -609,7 +609,7 @@ subroutine observer_local_hour_calculation(apparent_stime_at_greenwich, location
     observer_local_hour = apparent_stime_at_greenwich + locationlongitude - sun_rigth_ascension
     ! Set the range to [0-360]
     observer_local_hour=set_to_range(observer_local_hour)
-end subroutine  observer_local_hour_calculation
+end subroutine observer_local_hour_calculation
 
 subroutine topocentric_sun_position_calculate(topocentric_sun_positionrigth_ascension &
      &,topocentric_sun_positionrigth_ascension_parallax,topocentric_sun_positiondeclination,&
@@ -668,7 +668,7 @@ subroutine topocentric_sun_position_calculate(topocentric_sun_positionrigth_asce
     denominator = cos(sun_geocentric_declination * pi/180.0) - (y*sin(eq_horizontal_parallax * pi/180.0))&
          & * cos(observer_local_hour * pi/180.0)
     topocentric_sun_positiondeclination = atan2(nominator, denominator) * 180.0/pi
-end subroutine  topocentric_sun_position_calculate
+end subroutine topocentric_sun_position_calculate
 
 subroutine topocentric_local_hour_calculate(observer_local_hour, topocentric_sun_positionrigth_ascension_parallax,&
      & topocentric_local_hour)
@@ -681,7 +681,7 @@ subroutine topocentric_local_hour_calculate(observer_local_hour, topocentric_sun
     ! This function compute the topocentric local jour angle in degrees
 
     topocentric_local_hour = observer_local_hour - topocentric_sun_positionrigth_ascension_parallax
-end subroutine  topocentric_local_hour_calculate
+end subroutine topocentric_local_hour_calculate
 
 subroutine sun_topocentric_zenith_angle_calculate(locationlatitude , topocentric_sun_positiondeclination, &
      &topocentric_local_hour, sunazimuth,sunzenith)
@@ -732,7 +732,7 @@ subroutine sun_topocentric_zenith_angle_calculate(locationlatitude , topocentric
     ! Set the range to [0-360]
     sunazimuth=set_to_range(sunazimuth)
 
-end subroutine  sun_topocentric_zenith_angle_calculate
+end subroutine sun_topocentric_zenith_angle_calculate
 
 FUNCTION set_to_range(var) RESULT(vari)
 ! This function make sure the variable is in the specified range.
@@ -751,6 +751,6 @@ FUNCTION set_to_range(var) RESULT(vari)
     vari = vari + max_interval
     end if
 
-END FUNCTION  set_to_range
+END FUNCTION set_to_range
 
-end subroutine  sun_position
+end subroutine sun_position

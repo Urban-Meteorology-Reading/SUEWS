@@ -123,7 +123,7 @@ SUBROUTINE STAB_lumps(&
   ENDDO
 
   RETURN
-END SUBROUTINE stab_lumps
+END SUBROUTINE STAB_lumps
 
 !==================================================================
 

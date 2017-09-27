@@ -301,7 +301,7 @@ FUNCTION Lat_vap(Temp_C,Ea_hPa,Press_hPa,cp,dectime) RESULT (lv_J_kg)
   ENDDO
 
   RETURN
-END FUNCTION lat_vap
+END FUNCTION Lat_vap
 
 
 FUNCTION Lat_vapSublim(Temp_C,Ea_hPa,Press_hPa,cp,dectime) RESULT (lvS_J_kg)
@@ -359,7 +359,7 @@ FUNCTION Lat_vapSublim(Temp_C,Ea_hPa,Press_hPa,cp,dectime) RESULT (lvS_J_kg)
   ! ENDDO
 
   RETURN
-END FUNCTION lat_vapSublim
+END FUNCTION Lat_vapSublim
 
 
 

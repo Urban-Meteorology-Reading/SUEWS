@@ -49,6 +49,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   USE solweig_module
   USE WhereWhen
   USE SUEWS_Driver
+  USE VegPhenogy
 
 
   IMPLICIT NONE
@@ -58,6 +59,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ! REAL(KIND(1d0)):: idectime
   !real(kind(1d0)):: SnowDepletionCurve  !for SUEWS_Snow - not needed here (HCW 24 May 2016)
   REAL(KIND(1d0)):: LAI_wt
+  REAL(KIND(1d0))::xBo
   INTEGER        :: irMax
 
   !==================================================================
@@ -104,7 +106,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        NumberOfGrids,&
        LAICalcYes,&
        LAIType,&
-       GridIDmatrix,&
+                                !  GridIDmatrix,&
        nsh_real,&
        avkdn,&
        Temp_C,&
@@ -129,7 +131,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        CapMin_dec,&
        PorMax_dec,&
        PorMin_dec,&
-       lat,&!VegPhenLumps set as 0 for the moment,TODO: to revert to the modelled value
+                                !  lat,&!VegPhenLumps set as lat for the moment,TODO: to revert to the modelled value
        Ie_a,&
        Ie_m,&
        DayWatPer,&
@@ -143,8 +145,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        LAIMax,&
        LAIPower,&
        dataOut ,&
-       FileCode,&
-       FileOutputPath,&
+                                !  FileCode,&
+                                !  FileOutputPath,&
 
        a1,& !inout
        a2,&
@@ -160,10 +162,11 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        HDD,&
        SnowDens,&
        LAI,&
-       DailyStateFirstOpen,&
+                                !  DailyStateFirstOpen,&
 
        DayofWeek,&!output
-       WU_Day)
+       WU_Day,&
+       xBo)
 
 
   !Calculation of density and other water related parameters
@@ -205,23 +208,23 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
 
   ! ===================SOLWEIG OUTPUT ========================================
-  IF (SOLWEIGuse==1) THEN
-     IF (OutInterval==imin) THEN
-        IF (RunForGrid==-999) THEN
-           IF(Diagnose==1) WRITE(*,*) 'Calling SOLWEIG_2014a_core...'
-           CALL SOLWEIG_2014a_core(iMB)
-           SolweigCount=SolweigCount+1
-        ELSE
-           IF (Gridiv == RunForGrid) THEN
-              IF(Diagnose==1) WRITE(*,*) 'Calling SOLWEIG_2014a_core...'
-              CALL SOLWEIG_2014a_core(iMB)
-              SolweigCount=SolweigCount+1
-           ENDIF
-        ENDIF
-     ENDIF
-  ELSE
-     SOLWEIGpoi_out=0
-  ENDIF
+  ! IF (SOLWEIGuse==1) THEN
+  !    IF (OutInterval==imin) THEN
+  !       IF (RunForGrid==-999) THEN
+  !          IF(Diagnose==1) WRITE(*,*) 'Calling SOLWEIG_2014a_core...'
+  !          CALL SOLWEIG_2014a_core(iMB)
+  !          SolweigCount=SolweigCount+1
+  !       ELSE
+  !          IF (Gridiv == RunForGrid) THEN
+  !             IF(Diagnose==1) WRITE(*,*) 'Calling SOLWEIG_2014a_core...'
+  !             CALL SOLWEIG_2014a_core(iMB)
+  !             SolweigCount=SolweigCount+1
+  !          ENDIF
+  !       ENDIF
+  !    ENDIF
+  ! ELSE
+  SOLWEIGpoi_out=0 ! NB: turn off SOLWEIG for the moment
+  ! ENDIF
   ! ===================SOLWEIG END================================
 
 
@@ -353,7 +356,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        psyc_hPa,&
        s_hPa,&
        sIce_hpa,&
-       TempVeg)
+       TempVeg,&
+       VegPhenLumps)
 
 
   IF(Diagnose==1) WRITE(*,*) 'Calling WaterUse...'
@@ -644,6 +648,20 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        avU10_ms,t2_C,q2_gkg)!output
   !============ surface-level diagonostics end ===============
 
+  !============ write out DailyState ===============
+  ! only works at the last timestep of a day
+  CALL SUEWS_output_DailyState(&
+       iy,id,it,imin,&!input
+       GDD,HDD,LAI,&
+       DecidCap,albDecTr,albEveTr,albGrass,porosity,&
+       WU_Day,&
+       nsh_real,deltaLAI,VegPhenLumps,&
+       SnowAlb,SnowDens,&
+       xBo,a1,a2,a3,&
+       Gridiv,GridIDmatrix,&!input
+       FileCode,FileOutputPath,&
+       DailyStateFirstOpen)
+  !============ write out DailyState end ===============
 
   !=====================================================================
   !====================== Prepare data for output ======================

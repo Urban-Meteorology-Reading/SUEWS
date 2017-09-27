@@ -73,7 +73,7 @@
     a2=17.27
     b2=237.7
     Td=(b2*(((a2*Ta)/(b2+Ta))+log(RH)))/(a2-(((a2*Ta)/(b2+Ta))+log(RH)))
-    Td=(Td*1.8)+32 !Dewpoint (°F)
+    Td=(Td*1.8)+32 !Dewpoint (ï¿½F)
     u=exp(0.1133-log(iG+1)+0.0393*Td) !Precipitable water
     Tw=1-0.077*((u*m)**0.3) !Transmission coefficient for water vapor
     Tar=0.935**m !Transmission coefficient for aerosols

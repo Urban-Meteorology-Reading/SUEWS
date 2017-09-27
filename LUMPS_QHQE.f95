@@ -25,7 +25,8 @@ SUBROUTINE LUMPS_QHQE(&
      psyc_hPa,&
      s_hPa,&
      sIce_hpa,&
-     TempVeg)
+     TempVeg,&
+     VegPhenLumps)
 
   !Calculates QH and QE for LUMPS. See Loridan et al. (2011)
   ! ref: Grimmond and Oke (2002) JAM and references within that
@@ -82,7 +83,7 @@ SUBROUTINE LUMPS_QHQE(&
   REAL(KIND(1d0)),INTENT(out) ::s_hPa!Vapour pressure versus temperature slope in hPa
   REAL(KIND(1d0)),INTENT(out) ::sIce_hpa!Vapour pressure versus temperature slope in hPa above ice/snow
   REAL(KIND(1d0)),INTENT(out) ::TempVeg !TEMPORARY VEGETATIVE SURFACE FRACTION ADJUSTED BY RAINFALL
-
+  REAL(KIND(1d0)),INTENT(out) ::VegPhenLumps
   ! REAL(KIND(1d0)),INTENT(inout) ::RainBucket !RAINFALL RESERVOIR [mm]
   ! INTEGER::iv                                 !,start
   REAL(KIND(1d0))::VegPhen,VegMax,VegMin,&   !Vegetation phenology for LUMPS
@@ -90,7 +91,7 @@ SUBROUTINE LUMPS_QHQE(&
        psyc_s,psyc_const,&       !Psychometric constant
        alpha_sl,alpha_in,&    	  !Parameters used in LUMPS QH and QE calculations
        beta,&                      !Beta parameter used in LUMPS QH and QE calculations [W m-2]
-       alpha_qhqe,VegPhenLumps,RAINRES,RainBucket,tlv
+       alpha_qhqe,RAINRES,RainBucket,tlv
 
   tlv=lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
 

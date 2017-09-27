@@ -2119,5 +2119,3 @@ MODULE PhysConstants
   REAL (KIND(1d0)),PARAMETER :: JtoumolPAR = 4.6   ! Convert PAR from W m-2 to umol m-2 s-1
 
 END MODULE PhysConstants
-
-!C:\Users\sue\Dropbox\BLUEWS\2012av\LUMPS_Module_constants_v6_0.f95C:\Users\sue\Dropbox\BLUEWS\2012av\LUMPS_Module_constants_v6_0.f95

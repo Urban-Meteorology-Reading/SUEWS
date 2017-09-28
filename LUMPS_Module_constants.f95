@@ -321,13 +321,13 @@ MODULE allocateArray
   !-----------------------------------------------------------------------------------------------
 
   ! ---- Snow-related variables ------------------------------------------------------------------
-  REAL(KIND(1d0)),DIMENSION(nsurf):: changSnow,&       !Change in snowpack in mm
+  REAL(KIND(1d0)),DIMENSION(nsurf):: changSnow,&       !Change in SnowPack in mm
        maxSnowVol,&      !! Maximum snow volume
        MeltWaterStore,&  !!Liquid water in the snow pack of ith surface
-       ev_snow,&          !!Evaporation from snowpack in mm
+       ev_snow,&          !!Evaporation from SnowPack in mm
        mw_ind,&           !Melt water from individual surface in mm
        mw_indDay,&        !!Melt water per day from each surface type in m3
-       runoffSnow,&       !!Runoff from snowpack in mm and in m3
+       runoffSnow,&       !!Runoff from SnowPack in mm and in m3
        SnowDens,&        !Density of snow
        SnowFrac,&         !!Surface fraction of snow cover
        iceFrac,&
@@ -346,7 +346,7 @@ MODULE allocateArray
        snowD,&
        deltaQi
 
-  REAL(KIND(1d0)),DIMENSION(nsurf):: snowPack,&        !Amount of snow on each surface in mm
+  REAL(KIND(1d0)),DIMENSION(nsurf):: SnowPack,&        !Amount of snow on each surface in mm
        snowPackOld
   INTEGER,DIMENSION(nsurf):: heiG,&                    !snow layer height
        snowCoverForms,&
@@ -961,7 +961,7 @@ MODULE data_in
        qn1,&       !Net all-wave radiation for the study area
        qn1_bup,&
        qn1_obs,&   !Observed new all-wave radiation
-       qn1_S,&     !Total net all-wave radiation for the snowpack
+       qn1_S,&     !Total net all-wave radiation for the SnowPack
        qn1_SF,&    !Total net all-wave radiation for the snowfree surface
        qs,&        !Observed storage heat flux
        QSanOHM,&   !Simulated storage heat flux by AnOHM, TS 30 May 2016
@@ -1104,7 +1104,7 @@ MODULE snowMod
        Qm,&               !Snow melt associated heat flux
        QmFreez,&          !Energy released in freezing of meltwater or surface state
        QmRain,&
-       qn1_snow,&         !Net all-wave radiation of snowpack
+       qn1_snow,&         !Net all-wave radiation of SnowPack
        qn1_nosnow,&       !Same for the snow free surface
        RadMeltFact,&      !Radiation melt factor
        SnowAlb,&          !Snow albedo
@@ -1122,8 +1122,8 @@ MODULE snowMod
        volDay,&           !Volume of the melted water per day
        zf,&
        WaterHoldCapFrac,& !Water holding capacity factor
-       CRWmin,& !Free water holding capacity of deep snowpack
-       CRWmax  !Free water holding capacity of shallow snowpack
+       CRWmin,& !Free water holding capacity of deep SnowPack
+       CRWmax  !Free water holding capacity of shallow SnowPack
 
   REAL(KIND(1D0)), DIMENSION(2)::  SnowRemoval=0 ! Removal of snow in mm
   REAL(KIND(1d0)), DIMENSION(0:23,2):: snowProf  ! Timing of snow removal (0 or 1) Hourly, WD/WE
@@ -1331,7 +1331,7 @@ MODULE sues_data
        dr_per_interval,&     !Drainage per interval
        ev_per_interval,&     !Evaporation per interval
        surf_chang_per_tstep,& !Change in surface state per timestep [mm] (for whole surface)
-       tot_chang_per_tstep,&  !Change in surface and soilstate per timestep [mm] (for whole surface)
+       tot_chang_per_tstep,&  !Change in surface and SoilState per timestep [mm] (for whole surface)
        NWstate_per_tstep,&     !State per timestep [mm] (for whole surface, excluding water body)
        state_per_tstep,&     !State per timestep [mm] (for whole surface)
        drain_per_tstep,&     !Drainage per timestep [mm] (for whole surface, excluding water body)
@@ -1361,8 +1361,8 @@ MODULE sues_data
 
        runoffSoil_per_interval,&
        qe_per_interval,&     !latent heat per interval
-       soilmoistcap,&
-       soilstate,&        !Area-averaged soil moisture [mm] for whole surface
+       SoilMoistCap,&
+       SoilState,&        !Area-averaged soil moisture [mm] for whole surface
        st_per_interval,&!Surface state per interval
        surplusWaterBody,&  !Extra runoff that goes to water body [mm] as specified by RunoffToWater
        tlv_sub,&

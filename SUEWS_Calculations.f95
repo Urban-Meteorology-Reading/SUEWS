@@ -23,7 +23,7 @@
 ! HCW 27 Apr 2015 - Correction to tot_chang_per_tstep calculation (water balance should now close)
 ! HCW 16 Feb 2015 - Updated water balance calculations
 !                 - Corrected area-averaged calculations (soil moisture, drain, two versions of state with/out water)
-!                 - Replaced soilmoist_state variable with soilstate (as seems to be duplicate)
+!                 - Replaced soilmoist_state variable with SoilState (as seems to be duplicate)
 ! HCW 15 Jan 2015 - Added switch OHMIncQF to calculate QS with (1, default) or without (0) QF added to QSTAR
 ! To do
 !      - add iy and imin to output files (may impact LUMPS_RunoffFromGrid)
@@ -54,13 +54,16 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   IMPLICIT NONE
 
-  INTEGER        :: Gridiv,ir,ih,iMB
+  INTEGER:: Gridiv
+  INTEGER::ir
+  INTEGER::ih
+  INTEGER::iMB
   ! LOGICAL        :: debug=.FALSE.
   ! REAL(KIND(1d0)):: idectime
   !real(kind(1d0)):: SnowDepletionCurve  !for SUEWS_Snow - not needed here (HCW 24 May 2016)
-  REAL(KIND(1d0)):: LAI_wt
+  ! REAL(KIND(1d0)):: LAI_wt
   REAL(KIND(1d0))::xBo
-  INTEGER        :: irMax
+  INTEGER:: irMax
 
   !==================================================================
   !==================================================================
@@ -90,6 +93,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !write(*,*) DateTime, timezone,lat,lng,alt,azimuth,zenith_deg
 
 
+  ! NB: CBL disabled for the moment for interface improvement
   ! IF(CBLuse>=1)THEN ! If CBL is used, calculated Temp_C and RH are replaced with the obs.
   !    IF(Diagnose==1) WRITE(*,*) 'Calling CBL...'
   !    CALL CBL(ir,iMB,Gridiv)   !ir=1 indicates first row of each met data block
@@ -106,7 +110,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        NumberOfGrids,&
        LAICalcYes,&
        LAIType,&
-                                !  GridIDmatrix,&
        nsh_real,&
        avkdn,&
        Temp_C,&
@@ -131,7 +134,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        CapMin_dec,&
        PorMax_dec,&
        PorMin_dec,&
-                                !  lat,&!VegPhenLumps set as lat for the moment,TODO: to revert to the modelled value
        Ie_a,&
        Ie_m,&
        DayWatPer,&
@@ -145,9 +147,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        LAIMax,&
        LAIPower,&
        dataOut ,&
-                                !  FileCode,&
-                                !  FileOutputPath,&
-
        a1,& !inout
        a2,&
        a3,&
@@ -162,8 +161,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        HDD,&
        SnowDens,&
        LAI,&
-                                !  DailyStateFirstOpen,&
-
        DayofWeek,&!output
        WU_Day,&
        xBo)
@@ -189,7 +186,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        nsurf,ConifSurf,DecidSurf,GrassSurf,&!input
        NonWaterFraction,&
        soilstoreCap,sfr,soilmoist,&
-       soilmoistCap,soilstate,&!output
+       SoilMoistCap,SoilState,&!output
        vsmd,smd)
 
 
@@ -549,7 +546,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        runoff_per_interval,& ! inout:
        state,&
        soilmoist,&
-       snowPack,&
+       SnowPack,&
        snowFrac,&
        MeltWaterStore,&
        SnowDepth,&
@@ -632,10 +629,10 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   !========== Calculate soil moisture ============
   CALL SUEWS_cal_SoilMoist(&
-       nsurf,&
-       NonWaterFraction,SoilMoistCap,SoilStoreCap,surf_chang_per_tstep,&
+       nsurf,SMDMethod,&
+       xsmd,NonWaterFraction,SoilMoistCap,SoilStoreCap,surf_chang_per_tstep,&
        soilmoist,soilmoistOld,sfr,smd,smd_nsurf,tot_chang_per_tstep,&
-       soilstate)
+       SoilState)
 
 
   !============ surface-level diagonostics ===============
@@ -661,164 +658,107 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        Gridiv,GridIDmatrix,&!input
        FileCode,FileOutputPath,&
        DailyStateFirstOpen)
-  !============ write out DailyState end ===============
 
-  !=====================================================================
-  !====================== Prepare data for output ======================
-
-  ! Check surface composition (HCW 21 Jul 2016)
-  ! if totally water surface, set output to -999 for columns that do not exist
-  !IF(sfr(WaterSurf)==1) THEN
-  !   NWstate_per_tstep = NAN    !no non-water surface
-  !   smd = NAN                  !no soil store beneath water surface
-  !   soilstate = NAN
-  !   runoffSoil_per_tstep = NAN
-  !   drain_per_tstep = NAN      !no drainage from water surf
-  !ENDIF
-  !These removed as now all these get a value of 0. LJ 15/06/2017
-
-  ! Remove non-existing surface type from surface and soil outputs   ! Added back in with NANs by HCW 24 Aug 2016
-  DO is=1,nsurf
-     IF (sfr(is)<0.00001) THEN
-        stateOut(is)= NAN
-        smd_nsurfOut(is)= NAN
-        !runoffOut(is)= NAN
-        !runoffSoilOut(is)= NAN
-     ELSE
-        stateOut(is)=state(is)
-        smd_nsurfOut(is)=smd_nsurf(is)
-        !runoffOut(is)=runoff(is)
-        !runoffSoilOut(is)=runoffSoil(is)
-     ENDIF
-  ENDDO
-
-  ! Remove negative state   !ErrorHint added, then commented out by HCW 16 Feb 2015 as should never occur
-  !if(st_per_interval<0) then
-  !   call ErrorHint(63,'SUEWS_Calculations: st_per_interval < 0',st_per_interval,NotUsed,NotUsedI)
-  !   !st_per_interval=0
-  !endif
-
-  !Set limits on output data to avoid formatting issues ---------------------------------
-  ! Set limits as +/-9999, depending on sign of value
-  ! errorHints -> warnings commented out as writing these slow down the code considerably when there are many instances
-  IF(ResistSurf > 9999) THEN
-     !CALL errorHint(6,'rs set to 9999 s m-1 in output; calculated value > 9999 s m-1',ResistSurf,notUsed,notUsedI)
-     ResistSurf=9999
-  ENDIF
-
-  IF(l_mod > 9999) THEN
-     !CALL errorHint(6,'Lob set to 9999 m in output; calculated value > 9999 m',L_mod,notUsed,notUsedI)
-     l_mod=9999
-  ELSEIF(l_mod < -9999) THEN
-     !CALL errorHint(6,'Lob set to -9999 m in output; calculated value < -9999 m',L_mod,notUsed,notUsedI)
-     l_mod=-9999
-  ENDIF
-
-
-  ! Set NA values   !!Why only these variables??  !!ErrorHints here too - error hints can be very slow here
-  IF(ABS(qh)>pNAN) qh=NAN
-  IF(ABS(qh_r)>pNAN) qh_r=NAN
-  IF(ABS(qeOut)>pNAN) qeOut=NAN
-  IF(ABS(qs)>pNAN) qs=NAN
-  IF(ABS(ch_per_interval)>pNAN) ch_per_interval=NAN
-  IF(ABS(surf_chang_per_tstep)>pNAN) surf_chang_per_tstep=NAN
-  IF(ABS(tot_chang_per_tstep)>pNAN) tot_chang_per_tstep=NAN
-  IF(ABS(soilstate)>pNAN) soilstate=NAN
-  IF(ABS(smd)>pNAN) smd=NAN
-
-  ! If measured smd is used, set components to -999 and smd output to measured one
-  IF (SMDMethod>0) THEN
-     smd_nsurf=NAN
-     smd_nsurfOut=NAN
-     smd=xsmd
-  ENDIF
-
-  ! Calculate areally-weighted LAI
-  IF(iy == (iy_prev_t+1) .AND. (id-1) == 0) THEN   !Check for start of next year and avoid using LAI(id-1) as this is at the start of the year
-     LAI_wt=0
-     DO is=1,nvegsurf
-        LAI_wt=LAI_wt+LAI(id_prev_t,is)*sfr(is+2)
-     ENDDO
-  ELSE
-     LAI_wt=0
-     DO is=1,nvegsurf
-        LAI_wt=LAI_wt+LAI(id-1,is)*sfr(is+2)
-     ENDDO
-  ENDIF
-
-  ! Calculate areally-weighted albedo
-  bulkalbedo = 0
-  DO is=1,nsurf
-     bulkalbedo = bulkalbedo + alb(is)*sfr(is)
-  ENDDO
-
-  ! Save qh and qe for CBL in next iteration
-  IF(Qh_choice==1) THEN   !use QH and QE from SUEWS
-     qhforCBL(Gridiv) = qh
-     qeforCBL(Gridiv) = qeOut
-  ELSEIF(Qh_choice==2)THEN   !use QH and QE from LUMPS
-     qhforCBL(Gridiv) = h_mod
-     qeforCBL(Gridiv) = e_mod
-  ELSEIF(qh_choice==3)THEN  !use QH and QE from OBS
-     qhforCBL(Gridiv) = qh_obs
-     qeforCBL(Gridiv) = qe_obs
-     IF(qh_obs<-900.OR.qe_obs<-900)THEN  ! observed data has a problem
-        CALL ErrorHint(22,'Unrealistic observed qh or qe_value.',qh_obs,qe_obs,qh_choice)
-     ENDIF
-  ENDIF
-
-
-  !=====================================================================
-  !====================== Write out files ==============================
-  !Define the overall output matrix to be printed out step by step
-  dataOut(ir,1:ncolumnsDataOut,Gridiv)=(/REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),REAL(it,KIND(1D0)),REAL(imin,KIND(1D0)),dectime,&   !5
-       avkdn,kup,ldown,lup,tsurf,&
-       qn1_bup,qf,qs,qh,qeOut,&
-       h_mod,e_mod,qh_r,&
-       precip,ext_wu,ev_per_tstep,runoff_per_tstep,tot_chang_per_tstep,&
-       surf_chang_per_tstep,state_per_tstep,NWstate_per_tstep,drain_per_tstep,smd,&
-       FlowChange/nsh_real,AdditionalWater,&
-       runoffSoil_per_tstep,runoffPipes,runoffAGimpervious,runoffAGveg,runoffWaterBody,&
-       int_wu,wu_EveTr,wu_DecTr,wu_Grass,&
-       (smd_nsurfOut(is),is=1,nsurf-1),&
-       (stateOut(is),is=1,nsurf),&
-       zenith_deg,azimuth,bulkalbedo,Fcld,&
-       LAI_wt,z0m,zdm,&
-       UStar,l_mod,ra,ResistSurf,&
+  !============ write out results ===============
+  ! works at each timestep
+  CALL SUEWS_update_output(&
+       ReadLinesMetdata,ncolumnsDataOut,ncolumnsDataOutSnow,NumberOfGrids,&
+       Gridiv,&
+       iy,&
+       iy_prev_t,&
+       id,&
+       id_prev_t,&
+       it,&
+       imin,&
+       SNOWuse,&
+       ir,&
+       AdditionalWater,&
+       alb,&
+       avkdn,&
+       avU10_ms,&
+       azimuth,&
+       chSnow_per_interval,&
+       dectime,&
+       drain_per_tstep,&
+       E_mod,&
+       ev_per_tstep,&
+       ext_wu,&
        Fc,&
-       Fc_photo,Fc_respi,Fc_metab,Fc_traff,Fc_build,&
-       qn1_SF,qn1_S,SnowAlb,&
-       Qm,QmFreez,QmRain,swe,mwh,MwStore,chSnow_per_interval,&
-       (SnowRemoval(is),is=1,2),&
-       t2_C,q2_gkg,avU10_ms& ! surface-level diagonostics
-       /)
+       Fc_build,&
+       Fc_metab,&
+       Fc_photo,&
+       Fc_respi,&
+       Fc_traff,&
+       fcld,&
+       FlowChange,&
+       freezMelt,&
+       h_mod,&
+       int_wu,&
+       kup,&
+       kup_ind_snow,&
+       l_mod,&
+       LAI,&
+       ldown,&
+       lup,&
+       MeltWaterStore,&
+       mw_ind,&
+       mwh,&
+       MwStore,&
+       nsh_real,&
+       NWstate_per_tstep,&
+       Precip,&
+       q2_gkg,&
+       qeOut,&
+       qf,&
+       qh,&
+       QH_r,&
+       Qm,&
+       Qm_freezState,&
+       Qm_melt,&
+       Qm_rain,&
+       QmFreez,&
+       QmRain,&
+       qn1_bup,&
+       qn1_ind_snow,&
+       qn1_S,&
+       qn1_SF,&
+       qs,&
+       RA,&
+       rainOnSnow,&
+       resistsurf,&
+       runoff_per_tstep,&
+       runoffAGimpervious,&
+       runoffAGveg,&
+       runoffPipes,&
+       runoffSoil_per_tstep,&
+       runoffWaterBody,&
+       sfr,&
+       smd,&
+       smd_nsurf,&
+       SnowAlb,&
+       SnowDens,&
+       snowDepth,&
+       SnowRemoval,&
+       SoilState,&
+       state,&
+       state_per_tstep,&
+       surf_chang_per_tstep,&
+       swe,&
+       t2_C,&
+       tot_chang_per_tstep,&
+       tsurf,&
+       Tsurf_ind_snow,&
+       UStar,&
+       wu_DecTr,&
+       wu_EveTr,&
+       wu_Grass,&
+       z0m,&
+       zdm,&
+       zenith_deg,&
+       SnowFrac,&
+       SnowPack,&
+       dataOut,dataOutSnow)
 
-  IF (snowUse==1) THEN
-     dataOutSnow(ir,1:ncolumnsDataOutSnow,Gridiv)=(/REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),&               !2
-          REAL(it,KIND(1D0)),REAL(imin,KIND(1D0)),dectime,&                                        !5
-          SnowPack(1:nsurf),mw_ind(1:nsurf),Qm_melt(1:nsurf),&                                     !26
-          Qm_rain(1:nsurf),Qm_freezState(1:nsurf),snowFrac(1:(nsurf-1)),&                          !46
-          rainOnSnow(1:nsurf),&                                                                    !53
-          qn1_ind_snow(1:nsurf),kup_ind_snow(1:nsurf),freezMelt(1:nsurf),&                         !74
-          MeltWaterStore(1:nsurf),SnowDens(1:nsurf),&                                              !88
-          snowDepth(1:nsurf),Tsurf_ind_snow(1:nsurf)/)                                             !102
-  ENDIF
-
-  !Calculate new snow fraction used in the next timestep if snowUse==1
-  !Calculated only at end of each hour.
-  !if (SnowFractionChoice==2.and.snowUse==1.and.it==23.and.imin==(nsh_real-1)/nsh_real*60) then
-  !   do is=1,nsurf-1
-  !      if ((snowPack(is)>0.and.mw_ind(is)>0)) then
-  !         write(*,*) is,snowPack(is),snowD(is),mw_ind(is),snowFrac(is)!
-
-  !         snowFrac(is)=SnowDepletionCurve(is,snowPack(is),snowD(is))
-  !         write(*,*) snowFrac(is)
-  !         pause
-  !      elseif (snowPack(is)==0) then
-  !         snowFrac(is)=0
-  !      endif
-  !   enddo
-  !endif
 
 
   !write(*,*) DecidCap(id), id, it, imin, 'Calc - before translate back'
@@ -830,19 +770,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_TranslateBack...'
   CALL SUEWS_TranslateBack(Gridiv,ir,irMax)
 
-  !  ! store water balance states of the day, by TS 13 Apr 2016
-  !  IF ( ir==irMax ) THEN
-  !       PRINT*, 'ending end of', id,it,imin
-  !     stateDay(id,Gridiv,:)     = state(:)
-  !     soilmoistDay(id,Gridiv,:) = soilmoist(:)
-  !       PRINT*, 'state:', state
-  !       PRINT*, 'soilmoist', soilmoist
-  !       PRINT*, '********************************'
-  !  END IF
-
-  ! if ( id>10 ) then
-  !   stop "stop to test state"
-  ! end if
 
 !!!if((id <=3 .or. id > 364).and. it == 0 .and. imin == 0) pause
 !!!if((id <=3 .or. id > 364).and. it == 23 .and. imin == 55) pause

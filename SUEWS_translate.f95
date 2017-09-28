@@ -881,9 +881,9 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      !     soilmoistDay(0,Gridiv,1:nsurf) = ModelOutputData(0,cMOD_SoilState(1:nsurf),Gridiv)
      ! ---- Snow fraction
      SnowFrac(1:nsurf)  = ModelOutputData(0,cMOD_SnowFrac(1:nsurf), Gridiv)
-     ! ---- Snow water equivalent in snowpack
+     ! ---- Snow water equivalent in SnowPack
      SnowPack(1:nsurf)  = ModelOutputData(0,cMOD_SnowPack(1:nsurf), Gridiv)
-     ! ---- Liquid (melted) water in snowpack
+     ! ---- Liquid (melted) water in SnowPack
      MeltWaterStore(1:nsurf)  = ModelOutputData(0,cMOD_SnowWaterState(1:nsurf), Gridiv)
 
   ENDIF  !ir = 0
@@ -1116,9 +1116,9 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      SoilMoist(1:nsurf)      = ModelOutputData(ir-1,cMOD_SoilState(1:nsurf),Gridiv)
      ! ---- Snow fraction
      SnowFrac(1:nsurf)       = ModelOutputData(ir-1,cMOD_SnowFrac(1:nsurf), Gridiv)
-     ! ---- Snow water equivalent in snowpack
+     ! ---- Snow water equivalent in SnowPack
      SnowPack(1:nsurf)       = ModelOutputData(ir-1,cMOD_SnowPack(1:nsurf), Gridiv)
-     ! ---- Liquid (melted) water in snowpack
+     ! ---- Liquid (melted) water in SnowPack
      MeltWaterStore(1:nsurf) = ModelOutputData(ir-1,cMOD_SnowWaterState(1:nsurf), Gridiv)
 
 

@@ -94,7 +94,7 @@
   !write(*,*) 'iy',iy
 
 
-      !Calculate observed soil moisture deficits from either volumetric or gravimetric soilstates
+      !Calculate observed soil moisture deficits from either volumetric or gravimetric SoilStates
       if (SMDMethod==1.and.xsmd/=-999) then !Soil moisture - volumetric
          xsmd=(SmCap-xsmd)*SoilDepthMeas*SoilRocks
       elseif (SMDMethod==2.and.xsmd/=-999) then !Soil moisture -gravimetric

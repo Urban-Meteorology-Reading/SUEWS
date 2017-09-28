@@ -67,7 +67,7 @@ CONTAINS
     !                  FCLD USED AS INPUT ALSO
     !TSURFall (DEG C)= estimated surface temperature
     !QSTAR_SF        = net all wave radiation for snow free surface
-    !QSTAR_S         = net all wave radiation for snowpack
+    !QSTAR_S         = net all wave radiation for SnowPack
 
     !INPUT FIELDS
     !DTIME (days) = local time, not daylight savings
@@ -93,7 +93,7 @@ CONTAINS
     ! KDOWN_HR = hourly average insolation
     ! DOY = day of year
 
-    !Modified by LJ to calcuate snow free and snowpack components (May 2013)
+    !Modified by LJ to calcuate snow free and SnowPack components (May 2013)
     !Modified to define variables in data_in module
     !-------------------------------------------------------------------------------
     ! USE allocateArray

@@ -515,7 +515,7 @@ CONTAINS
        runoff_per_interval,& ! inout:
        state,&
        soilmoist,&
-       snowPack,&
+       SnowPack,&
        snowFrac,&
        MeltWaterStore,&
        SnowDepth,&
@@ -633,7 +633,7 @@ CONTAINS
 
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::state
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::soilmoist
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::snowPack
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowPack
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::snowFrac
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::MeltWaterStore
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowDepth
@@ -802,7 +802,7 @@ CONTAINS
                   sfr,&
                   DayofWeek,&
                   surf,&
-                  snowPack,&!inout
+                  SnowPack,&!inout
                   snowFrac,&
                   MeltWaterStore,&
                   SnowDepth,&
@@ -1224,7 +1224,415 @@ CONTAINS
 
   END SUBROUTINE SUEWS_cal_Resistance
 
-  !================================================================
 
+
+  !================================================================
+  SUBROUTINE SUEWS_update_output(&
+       ReadLinesMetdata,ncolumnsDataOut,ncolumnsDataOutSnow,NumberOfGrids,&
+       Gridiv,&
+       iy,&
+       iy_prev_t,&
+       id,&
+       id_prev_t,&
+       it,&
+       imin,&
+       SNOWuse,&
+       ir,&
+       AdditionalWater,&
+       alb,&
+       avkdn,&
+       avU10_ms,&
+       azimuth,&
+       chSnow_per_interval,&
+       dectime,&
+       drain_per_tstep,&
+       E_mod,&
+       ev_per_tstep,&
+       ext_wu,&
+       Fc,&
+       Fc_build,&
+       Fc_metab,&
+       Fc_photo,&
+       Fc_respi,&
+       Fc_traff,&
+       fcld,&
+       FlowChange,&
+       freezMelt,&
+       h_mod,&
+       int_wu,&
+       kup,&
+       kup_ind_snow,&
+       l_mod,&
+       LAI,&
+       ldown,&
+       lup,&
+       MeltWaterStore,&
+       mw_ind,&
+       mwh,&
+       MwStore,&
+       nsh_real,&
+       NWstate_per_tstep,&
+       Precip,&
+       q2_gkg,&
+       qeOut,&
+       qf,&
+       qh,&
+       QH_r,&
+       Qm,&
+       Qm_freezState,&
+       Qm_melt,&
+       Qm_rain,&
+       QmFreez,&
+       QmRain,&
+       qn1_bup,&
+       qn1_ind_snow,&
+       qn1_S,&
+       qn1_SF,&
+       qs,&
+       RA,&
+       rainOnSnow,&
+       resistsurf,&
+       runoff_per_tstep,&
+       runoffAGimpervious,&
+       runoffAGveg,&
+       runoffPipes,&
+       runoffSoil_per_tstep,&
+       runoffWaterBody,&
+       sfr,&
+       smd,&
+       smd_nsurf,&
+       SnowAlb,&
+       SnowDens,&
+       snowDepth,&
+       SnowRemoval,&
+       SoilState,&
+       state,&
+       state_per_tstep,&
+       surf_chang_per_tstep,&
+       swe,&
+       t2_C,&
+       tot_chang_per_tstep,&
+       tsurf,&
+       Tsurf_ind_snow,&
+       UStar,&
+       wu_DecTr,&
+       wu_EveTr,&
+       wu_Grass,&
+       z0m,&
+       zdm,&
+       zenith_deg,&
+       SnowFrac,&
+       SnowPack,&
+       dataOut,dataOutSnow)
+    IMPLICIT NONE
+
+    INTEGER,PARAMETER::ndays    = 366
+    INTEGER,PARAMETER::nvegsurf = 3
+    INTEGER,PARAMETER::nsurf    = 7
+    REAL(KIND(1d0)),PARAMETER :: NAN=-999
+    ! REAL(KIND(1d0)),PARAMETER :: pNAN=999
+
+    INTEGER,INTENT(in) ::ReadLinesMetdata
+    INTEGER,INTENT(in) ::ncolumnsDataOut
+    INTEGER,INTENT(in) ::ncolumnsDataOutSnow
+    INTEGER,INTENT(in) ::NumberOfGrids
+    INTEGER,INTENT(in) :: Gridiv
+    INTEGER,INTENT(in) :: iy
+    INTEGER,INTENT(in) :: iy_prev_t
+    INTEGER,INTENT(in) :: id
+    INTEGER,INTENT(in) :: id_prev_t
+    INTEGER,INTENT(in) :: it
+    INTEGER,INTENT(in) :: imin
+    INTEGER,INTENT(in) :: SNOWuse
+    INTEGER,INTENT(in) :: ir
+
+    REAL(KIND(1d0)),INTENT(in) :: AdditionalWater
+    REAL(KIND(1d0)),INTENT(in) :: alb(nsurf)
+    REAL(KIND(1d0)),INTENT(in) :: avkdn
+    REAL(KIND(1d0)),INTENT(in) :: avU10_ms
+    REAL(KIND(1d0)),INTENT(in) :: azimuth
+    REAL(KIND(1d0)),INTENT(in) :: chSnow_per_interval
+    REAL(KIND(1d0)),INTENT(in) :: dectime
+    REAL(KIND(1d0)),INTENT(in) :: drain_per_tstep
+    REAL(KIND(1d0)),INTENT(in) :: E_mod
+    REAL(KIND(1d0)),INTENT(in) :: ev_per_tstep
+    REAL(KIND(1d0)),INTENT(in) :: ext_wu
+    REAL(KIND(1d0)),INTENT(in) :: Fc
+    REAL(KIND(1d0)),INTENT(in) :: Fc_build
+    REAL(KIND(1d0)),INTENT(in) :: Fc_metab
+    REAL(KIND(1d0)),INTENT(in) :: Fc_photo
+    REAL(KIND(1d0)),INTENT(in) :: Fc_respi
+    REAL(KIND(1d0)),INTENT(in) :: Fc_traff
+    REAL(KIND(1d0)),INTENT(in) :: fcld
+    REAL(KIND(1d0)),INTENT(in) :: FlowChange
+    REAL(KIND(1d0)),INTENT(in) :: freezMelt(nsurf)
+    REAL(KIND(1d0)),INTENT(in) :: h_mod
+    REAL(KIND(1d0)),INTENT(in) :: int_wu
+    REAL(KIND(1d0)),INTENT(in) :: kup
+    REAL(KIND(1d0)),INTENT(in) :: kup_ind_snow(nsurf)
+    REAL(KIND(1d0)),INTENT(in) :: l_mod
+    REAL(KIND(1d0)),INTENT(in) :: LAI(-4:ndays, nvegsurf)
+    REAL(KIND(1d0)),INTENT(in) :: ldown
+    REAL(KIND(1d0)),INTENT(in) :: lup
+    REAL(KIND(1d0)),INTENT(in) :: MeltWaterStore(nsurf)
+    REAL(KIND(1d0)),INTENT(in) :: mw_ind(nsurf)
+    REAL(KIND(1d0)),INTENT(in) :: mwh
+    REAL(KIND(1d0)),INTENT(in) :: MwStore
+    REAL(KIND(1d0)),INTENT(in) :: nsh_real
+    REAL(KIND(1d0)),INTENT(in) :: NWstate_per_tstep
+    REAL(KIND(1d0)),INTENT(in) :: Precip
+    REAL(KIND(1d0)),INTENT(in) :: q2_gkg
+    REAL(KIND(1d0)),INTENT(in) :: qeOut
+    REAL(KIND(1d0)),INTENT(in) :: qf
+    REAL(KIND(1d0)),INTENT(in) :: qh
+    REAL(KIND(1d0)),INTENT(in) :: QH_r
+    REAL(KIND(1d0)),INTENT(in) :: Qm
+    REAL(KIND(1d0)),INTENT(in) :: Qm_freezState(nsurf)
+    REAL(KIND(1d0)),INTENT(in) :: Qm_melt(nsurf)
+    REAL(KIND(1d0)),INTENT(in) :: Qm_rain(nsurf)
+    REAL(KIND(1d0)),INTENT(in) :: QmFreez
+    REAL(KIND(1d0)),INTENT(in) :: QmRain
+    REAL(KIND(1d0)),INTENT(in) :: qn1_bup
+    REAL(KIND(1d0)),INTENT(in) :: qn1_ind_snow(nsurf)
+    REAL(KIND(1d0)),INTENT(in) :: qn1_S
+    REAL(KIND(1d0)),INTENT(in) :: qn1_SF
+    REAL(KIND(1d0)),INTENT(in) :: qs
+    REAL(KIND(1d0)),INTENT(in) :: RA
+    REAL(KIND(1d0)),INTENT(in) :: rainOnSnow(nsurf)
+    REAL(KIND(1d0)),INTENT(in) :: resistsurf
+    REAL(KIND(1d0)),INTENT(in) :: runoff_per_tstep
+    REAL(KIND(1d0)),INTENT(in) :: runoffAGimpervious
+    REAL(KIND(1d0)),INTENT(in) :: runoffAGveg
+    REAL(KIND(1d0)),INTENT(in) :: runoffPipes
+    REAL(KIND(1d0)),INTENT(in) :: runoffSoil_per_tstep
+    REAL(KIND(1d0)),INTENT(in) :: runoffWaterBody
+    REAL(KIND(1d0)),INTENT(in) :: sfr(nsurf)
+    REAL(KIND(1d0)),INTENT(in) :: smd
+    REAL(KIND(1d0)),INTENT(in) :: smd_nsurf(nsurf)
+    REAL(KIND(1d0)),INTENT(in) :: SnowAlb
+    REAL(KIND(1d0)),INTENT(in) :: SnowDens(nsurf)
+    REAL(KIND(1d0)),INTENT(in) :: snowDepth(nsurf)
+    REAL(KIND(1d0)),INTENT(in) :: SnowRemoval(2)
+    REAL(KIND(1d0)),INTENT(in) :: SoilState
+    REAL(KIND(1d0)),INTENT(in) :: state(nsurf)
+    REAL(KIND(1d0)),INTENT(in) :: state_per_tstep
+    REAL(KIND(1d0)),INTENT(in) :: surf_chang_per_tstep
+    REAL(KIND(1d0)),INTENT(in) :: swe
+    REAL(KIND(1d0)),INTENT(in) :: t2_C
+    REAL(KIND(1d0)),INTENT(in) :: tot_chang_per_tstep
+    REAL(KIND(1d0)),INTENT(in) :: tsurf
+    REAL(KIND(1d0)),INTENT(in) :: Tsurf_ind_snow(nsurf)
+    REAL(KIND(1d0)),INTENT(in) :: UStar
+    REAL(KIND(1d0)),INTENT(in) :: wu_DecTr
+    REAL(KIND(1d0)),INTENT(in) :: wu_EveTr
+    REAL(KIND(1d0)),INTENT(in) :: wu_Grass
+    REAL(KIND(1d0)),INTENT(in) :: z0m
+    REAL(KIND(1d0)),INTENT(in) :: zdm
+    REAL(KIND(1d0)),INTENT(in) :: zenith_deg
+    REAL(KIND(1d0)),INTENT(in) :: SnowFrac(nsurf)
+    REAL(KIND(1d0)),INTENT(in) :: SnowPack(nsurf)
+
+
+    REAL(KIND(1d0)),INTENT(inout) :: dataOut(ReadLinesMetdata,ncolumnsDataOut,NumberOfGrids)
+    REAL(KIND(1d0)),INTENT(inout) :: dataOutSnow(ReadLinesMetdata,ncolumnsDataOutSnow,NumberOfGrids)
+
+    ! INTEGER:: is
+    REAL(KIND(1d0)) :: LAI_wt
+
+    ! the variables below with '_x' endings stand for 'exported' values
+    REAL(KIND(1d0))::ResistSurf_x
+    REAL(KIND(1d0))::l_mod_x
+    REAL(KIND(1d0))::bulkalbedo
+    REAL(KIND(1d0))::qh_x
+    REAL(KIND(1d0))::qh_r_x
+    REAL(KIND(1d0))::qeOut_x
+    REAL(KIND(1d0))::qs_x
+    REAL(KIND(1d0))::surf_chang_per_tstep_x
+    REAL(KIND(1d0))::tot_chang_per_tstep_x
+    REAL(KIND(1d0))::SoilState_x
+    REAL(KIND(1d0))::smd_x
+    REAL(KIND(1d0))::smd_nsurf_x(nsurf)
+    REAL(KIND(1d0))::state_x(nsurf)
+
+
+    !=====================================================================
+    !====================== Prepare data for output ======================
+
+    ! Check surface composition (HCW 21 Jul 2016)
+    ! if totally water surface, set output to -999 for columns that do not exist
+    !IF(sfr(WaterSurf)==1) THEN
+    !   NWstate_per_tstep = NAN    !no non-water surface
+    !   smd = NAN                  !no soil store beneath water surface
+    !   SoilState = NAN
+    !   runoffSoil_per_tstep = NAN
+    !   drain_per_tstep = NAN      !no drainage from water surf
+    !ENDIF
+    !These removed as now all these get a value of 0. LJ 15/06/2017
+
+    ! Remove non-existing surface type from surface and soil outputs   ! Added back in with NANs by HCW 24 Aug 2016
+    ! DO is=1,nsurf
+    !    IF (sfr(is)<0.00001) THEN
+    !       state_x(is)= NAN
+    !       smd_nsurf_x(is)= NAN
+    !       !runoffOut(is)= NAN
+    !       !runoffSoilOut(is)= NAN
+    !    ELSE
+    !       state_x(is)=state(is)
+    !       smd_nsurf_x(is)=smd_nsurf(is)
+    !       !runoffOut(is)=runoff(is)
+    !       !runoffSoilOut(is)=runoffSoil(is)
+    !    ENDIF
+    ! ENDDO
+    state_x=UNPACK(SPREAD(NAN, dim=1, ncopies=SIZE(sfr)), mask=(sfr<0.00001), field=state)
+    smd_nsurf_x=UNPACK(SPREAD(NAN, dim=1, ncopies=SIZE(sfr)), mask=(sfr<0.00001), field=smd_nsurf)
+
+
+    ! Remove negative state   !ErrorHint added, then commented out by HCW 16 Feb 2015 as should never occur
+    !if(st_per_interval<0) then
+    !   call ErrorHint(63,'SUEWS_Calculations: st_per_interval < 0',st_per_interval,NotUsed,NotUsedI)
+    !   !st_per_interval=0
+    !endif
+
+    !Set limits on output data to avoid formatting issues ---------------------------------
+    ! Set limits as +/-9999, depending on sign of value
+    ! errorHints -> warnings commented out as writing these slow down the code considerably when there are many instances
+    ! IF(ResistSurf > 9999) THEN
+    !    !CALL errorHint(6,'rs set to 9999 s m-1 in output; calculated value > 9999 s m-1',ResistSurf,notUsed,notUsedI)
+    !    ResistSurf_x=MIN(9999.,ResistSurf)
+    ! ENDIF
+    ResistSurf_x=MIN(9999.,ResistSurf)
+
+    ! IF(l_mod > 9999) THEN
+    !    !CALL errorHint(6,'Lob set to 9999 m in output; calculated value > 9999 m',L_mod,notUsed,notUsedI)
+    !    l_mod_x=MIN(9999.,l_mod)
+    ! ELSEIF(l_mod < -9999) THEN
+    !    !CALL errorHint(6,'Lob set to -9999 m in output; calculated value < -9999 m',L_mod,notUsed,notUsedI)
+    !    l_mod_x=MAX(-9999.,l_mod)
+    ! ENDIF
+    l_mod_x=MAX(MIN(9999.,l_mod), -9999.)
+
+    ! Set NA values   !!Why only these variables??  !!ErrorHints here too - error hints can be very slow here
+    ! IF(ABS(qh)>pNAN) qh=NAN
+    ! IF(ABS(qh_r)>pNAN) qh_r=NAN
+    ! IF(ABS(qeOut)>pNAN) qeOut=NAN
+    ! IF(ABS(qs)>pNAN) qs=NAN
+    ! ! IF(ABS(ch_per_interval)>pNAN) ch_per_interval=NAN
+    ! IF(ABS(surf_chang_per_tstep)>pNAN) surf_chang_per_tstep=NAN
+    ! IF(ABS(tot_chang_per_tstep)>pNAN) tot_chang_per_tstep=NAN
+    ! IF(ABS(SoilState)>pNAN) SoilState=NAN
+    ! IF(ABS(smd)>pNAN) smd=NAN
+    ! casting invalid values to NANs
+    qh_x                   = set_nan(qh)
+    qh_r_x                 = set_nan(qh_r)
+    qeOut_x                = set_nan(qeOut)
+    qs_x                   = set_nan(qs)
+    surf_chang_per_tstep_x = set_nan(surf_chang_per_tstep)
+    tot_chang_per_tstep_x  = set_nan(tot_chang_per_tstep)
+    SoilState_x            = set_nan(SoilState)
+    smd_x                  = set_nan(smd)
+
+    ! this part is now handled in `SUEWS_cal_SoilMoist`
+    ! ! If measured smd is used, set components to -999 and smd output to measured one
+    ! IF (SMDMethod>0) THEN
+    !    !  smd_nsurf=NAN
+    !    smd_nsurf_x=NAN
+    !    smd_x=xsmd
+    ! ENDIF
+
+    ! Calculate areally-weighted LAI
+    IF(iy == (iy_prev_t+1) .AND. (id-1) == 0) THEN   !Check for start of next year and avoid using LAI(id-1) as this is at the start of the year
+       !  LAI_wt=0
+       !  DO is=1,nvegsurf
+       !     LAI_wt=LAI_wt+LAI(id_prev_t,is)*sfr(is+2)
+       !  ENDDO
+       LAI_wt=DOT_PRODUCT(LAI(id_prev_t,:),sfr(1+2:nvegsurf+2))
+    ELSE
+       !  LAI_wt=0
+       !  DO is=1,nvegsurf
+       !     LAI_wt=LAI_wt+LAI(id-1,is)*sfr(is+2)
+       !  ENDDO
+       LAI_wt=DOT_PRODUCT(LAI(id-1,:),sfr(1+2:nvegsurf+2))
+    ENDIF
+
+    ! Calculate areally-weighted albedo
+    bulkalbedo=DOT_PRODUCT(alb,sfr)
+    ! bulkalbedo = 0
+    ! DO is=1,nsurf
+    !    bulkalbedo = bulkalbedo + alb(is)*sfr(is)
+    ! ENDDO
+
+    ! NB: this part needs to be reconsidered for calculation logic:
+    ! where to put it? seems to be better placed somewhere near TS, 20170927
+    ! ! Save qh and qe for CBL in next iteration
+    ! IF(Qh_choice==1) THEN   !use QH and QE from SUEWS
+    !    qhforCBL(Gridiv) = qh
+    !    qeforCBL(Gridiv) = qeOut
+    ! ELSEIF(Qh_choice==2)THEN   !use QH and QE from LUMPS
+    !    qhforCBL(Gridiv) = h_mod
+    !    qeforCBL(Gridiv) = e_mod
+    ! ELSEIF(qh_choice==3)THEN  !use QH and QE from OBS
+    !    qhforCBL(Gridiv) = qh_obs
+    !    qeforCBL(Gridiv) = qe_obs
+    !    IF(qh_obs<-900.OR.qe_obs<-900)THEN  ! observed data has a problem
+    !       CALL ErrorHint(22,'Unrealistic observed qh or qe_value.',qh_obs,qe_obs,qh_choice)
+    !    ENDIF
+    ! ENDIF
+
+
+
+    !====================== update output arrays ==============================
+    !Define the overall output matrix to be printed out step by step
+    dataOut(ir,1:ncolumnsDataOut,Gridiv)=[&
+         REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),REAL(it,KIND(1D0)),REAL(imin,KIND(1D0)),dectime,&   !5
+         avkdn,kup,ldown,lup,tsurf,&
+         qn1_bup,qf,qs_x,qh_x,qeOut_x,&
+         h_mod,e_mod,qh_r_x,&
+         precip,ext_wu,ev_per_tstep,runoff_per_tstep,tot_chang_per_tstep_x,&
+         surf_chang_per_tstep_x,state_per_tstep,NWstate_per_tstep,drain_per_tstep,smd_x,&
+         FlowChange/nsh_real,AdditionalWater,&
+         runoffSoil_per_tstep,runoffPipes,runoffAGimpervious,runoffAGveg,runoffWaterBody,&
+         int_wu,wu_EveTr,wu_DecTr,wu_Grass,&
+         smd_nsurf_x(1:nsurf-1),&
+         state_x(1:nsurf),&
+         zenith_deg,azimuth,bulkalbedo,Fcld,&
+         LAI_wt,z0m,zdm,&
+         UStar,l_mod_x,ra,ResistSurf_x,&
+         Fc,&
+         Fc_photo,Fc_respi,Fc_metab,Fc_traff,Fc_build,&
+         qn1_SF,qn1_S,SnowAlb,&
+         Qm,QmFreez,QmRain,swe,mwh,MwStore,chSnow_per_interval,&
+         SnowRemoval(1:2),&
+         t2_C,q2_gkg,avU10_ms& ! surface-level diagonostics
+         ]
+
+    IF (snowUse==1) THEN
+       dataOutSnow(ir,1:ncolumnsDataOutSnow,Gridiv)=[&
+            REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),REAL(it,KIND(1D0)),REAL(imin,KIND(1D0)),dectime,& !5
+            SnowPack(1:nsurf),mw_ind(1:nsurf),Qm_melt(1:nsurf),            & !26
+            Qm_rain(1:nsurf),Qm_freezState(1:nsurf),snowFrac(1:(nsurf-1)), & !46
+            rainOnSnow(1:nsurf),                                           & !53
+            qn1_ind_snow(1:nsurf),kup_ind_snow(1:nsurf),freezMelt(1:nsurf),& !74
+            MeltWaterStore(1:nsurf),SnowDens(1:nsurf),                     & !88
+            snowDepth(1:nsurf),Tsurf_ind_snow(1:nsurf)]
+    END IF
+    !====================update output arrays end==============================
+
+
+  END SUBROUTINE SUEWS_update_output
+
+
+  ELEMENTAL FUNCTION set_nan(x) RESULT(xx)
+    IMPLICIT NONE
+    REAL(KIND(1d0)),PARAMETER::pNAN=999,NAN=-999
+    REAL(KIND(1d0)),INTENT(in)::x
+    REAL(KIND(1d0))::xx
+
+    IF(ABS(x)>pNAN) THEN
+       xx=NAN
+    ELSE
+       xx=x
+    ENDIF
+
+  END FUNCTION set_nan
 
 END MODULE SUEWS_Driver

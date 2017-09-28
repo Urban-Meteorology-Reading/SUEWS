@@ -73,10 +73,10 @@ SUBROUTINE SnowUpdate(&
   !Update snow density: There is a mistake in Järvi et al. (2014): tau_h should be tau_1
   DO is=1,nsurf
 
-     !If snowPack existing
-     IF (snowPack(is)>0) THEN
+     !If SnowPack existing
+     IF (SnowPack(is)>0) THEN
         dens_change = EXP(-tau_r*(tstep)/tau_1)
-        IF (snowpack(is)>0) SnowDens(is) = (SnowDens(is)-SnowDensMax)*dens_change+SnowDensMax
+        IF (SnowPack(is)>0) SnowDens(is) = (SnowDens(is)-SnowDensMax)*dens_change+SnowDensMax
         IF (SnowDens(is)>SnowDensMax) SnowDens(is)=SnowDensMax
      ELSE
         SnowDens(is) = SnowDensMin

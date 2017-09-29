@@ -1,4 +1,4 @@
-SUBROUTINE soilMoist_update(&
+SUBROUTINE SUEWS_update_SoilMoist(&
      nsurf,ConifSurf,DecidSurf,GrassSurf,&!input
      NonWaterFraction,&
      soilstoreCap,sfr,soilmoist,&
@@ -42,7 +42,7 @@ SUBROUTINE soilMoist_update(&
      !write(*,*) is, vsmd, smd
   ENDDO
 
-END SUBROUTINE soilMoist_update
+END SUBROUTINE SUEWS_update_SoilMoist
 
 
 !========== Calculate soil moisture ============

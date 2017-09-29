@@ -56,7 +56,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   INTEGER:: Gridiv
   INTEGER::ir
-  INTEGER::ih
+  ! INTEGER::ih
   INTEGER::iMB
   ! LOGICAL        :: debug=.FALSE.
   ! REAL(KIND(1d0)):: idectime
@@ -73,19 +73,20 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_Translate...'
   CALL SUEWS_Translate(Gridiv,ir,iMB)
 
-  IF(Diagnose==1) WRITE(*,*) 'Calling RoughnessParameters...'
-  ! CALL RoughnessParameters(Gridiv) ! Added by HCW 11 Nov 2014
-  CALL RoughnessParameters(&
+
+  !==============main calculation start=======================
+  IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_cal_RoughnessParameters...'
+  ! CALL SUEWS_cal_RoughnessParameters(Gridiv) ! Added by HCW 11 Nov 2014
+  CALL SUEWS_cal_RoughnessParameters(&
        RoughLenMomMethod,sfr,areaZh,&!input
        bldgH,EveTreeH,DecTreeH,&
        porosity(id),FAIBldg,FAIEveTree,FAIDecTree,Z,&
        planF,&!output
        Zh,Z0m,Zdm,ZZD)
 
-
   ! Calculate sun position
-  IF(Diagnose==1) WRITE(*,*) 'Calling sun_position...'
-  CALL sun_position(&
+  IF(Diagnose==1) WRITE(*,*) 'Calling NARP_cal_SunPosition...'
+  CALL NARP_cal_SunPosition(&
        year,&!input:
        dectime-halftimestep,&! sun position at middle of timestep before
        timezone,lat,lng,alt,&
@@ -93,16 +94,10 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !write(*,*) DateTime, timezone,lat,lng,alt,azimuth,zenith_deg
 
 
-  ! NB: CBL disabled for the moment for interface improvement
-  ! IF(CBLuse>=1)THEN ! If CBL is used, calculated Temp_C and RH are replaced with the obs.
-  !    IF(Diagnose==1) WRITE(*,*) 'Calling CBL...'
-  !    CALL CBL(ir,iMB,Gridiv)   !ir=1 indicates first row of each met data block
-  ! ENDIF
-
-  !Call the dailystate routine to get surface characteristics ready
-  IF(Diagnose==1) WRITE(*,*) 'Calling DailyState...'
-  ! CALL DailyState(Gridiv)
-  CALL DailyState(&
+  !Call the SUEWS_cal_DailyState routine to get surface characteristics ready
+  IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_cal_DailyState...'
+  ! CALL SUEWS_cal_DailyState(Gridiv)
+  CALL SUEWS_cal_DailyState(&
        iy,id,it,imin,Gridiv,tstep,&!input
        WaterUseMethod,snowUse,Ie_start,Ie_end,&
        ReadLinesMetdata,&
@@ -167,8 +162,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
 
   !Calculation of density and other water related parameters
-  IF(Diagnose==1) WRITE(*,*) 'Calling atmos_moist_lumps...'
-  CALL atmos_moist_lumps(&
+  IF(Diagnose==1) WRITE(*,*) 'Calling LUMPS_cal_AtmMoist...'
+  CALL LUMPS_cal_AtmMoist(&
        Temp_C,Press_hPa,avRh,dectime,&! input:
        lv_J_kg,lvS_J_kg,&! output:
        es_hPa,&
@@ -182,7 +177,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
 
   !======== Calculate soil moisture =========
-  CALL soilMoist_update(&
+  CALL SUEWS_update_SoilMoist(&
        nsurf,ConifSurf,DecidSurf,GrassSurf,&!input
        NonWaterFraction,&
        soilstoreCap,sfr,soilmoist,&
@@ -192,124 +187,73 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   ! ===================NET ALLWAVE RADIATION================================
   CALL SUEWS_cal_Qn(&
-       nsurf,NetRadiationMethod,snowUse,ldown_option,id,&!input
-       DecidSurf,ConifSurf,GrassSurf,Diagnose,&
-       snow_obs,ldown_obs,fcld_obs,&
+       NetRadiationMethod,snowUse,ldown_option,id,&!input
+       Diagnose,snow_obs,ldown_obs,fcld_obs,&
        dectime,ZENITH_deg,avKdn,Temp_C,avRH,Press_hPa,qn1_obs,&
-       SnowAlb,&
-       AlbedoChoice,DiagQN,&
+       SnowAlb,AlbedoChoice,DiagQN,&
        NARP_G,NARP_TRANS_SITE,NARP_EMIS_SNOW,IceFrac,sfr,emis,&
        alb,albDecTr,DecidCap,albEveTr,albGrass,surf,&!inout
        snowFrac,ldown,fcld,&!output
        qn1,qn1_SF,qn1_S,kclear,kup,lup,tsurf)
 
 
-  ! ===================SOLWEIG OUTPUT ========================================
-  ! IF (SOLWEIGuse==1) THEN
-  !    IF (OutInterval==imin) THEN
-  !       IF (RunForGrid==-999) THEN
-  !          IF(Diagnose==1) WRITE(*,*) 'Calling SOLWEIG_2014a_core...'
-  !          CALL SOLWEIG_2014a_core(iMB)
-  !          SolweigCount=SolweigCount+1
-  !       ELSE
-  !          IF (Gridiv == RunForGrid) THEN
-  !             IF(Diagnose==1) WRITE(*,*) 'Calling SOLWEIG_2014a_core...'
-  !             CALL SOLWEIG_2014a_core(iMB)
-  !             SolweigCount=SolweigCount+1
-  !          ENDIF
-  !       ENDIF
-  !    ENDIF
-  ! ELSE
-  SOLWEIGpoi_out=0 ! NB: turn off SOLWEIG for the moment
-  ! ENDIF
-  ! ===================SOLWEIG END================================
-
-
   ! ===================ANTHROPOGENIC HEAT FLUX================================
-  ih=it-DLS
-  IF(ih<0) ih=23
-
-  IF(AnthropHeatMethod==1) THEN
-     IF(Diagnose==1) WRITE(*,*) 'Calling SAHP_1...'
-     CALL SAHP_1(qf_sahp,QF_SAHP_base,QF_SAHP_heat,id,ih,imin)
-     qn1_bup=qn1
-     qn1=qn1+QF_SAHP
-  ELSEIF(AnthropHeatMethod==2) THEN
-     IF(Diagnose==1) WRITE(*,*) 'Calling SAHP_2...'
-     CALL SAHP_2(qf_sahp,QF_SAHP_base,QF_SAHP_heat,id,ih,imin)
-     qn1_bup=qn1
-     qn1=qn1+QF_SAHP
-  ELSEIF(AnthropHeatMethod==3) THEN
-     IF(Diagnose==1) WRITE(*,*) 'Calling SAHP_3...'
-     CALL SAHP_3(qf_sahp,id,ih,imin)
-     qn1_bup=qn1
-     qn1=qn1+QF_SAHP
-  ELSE
-     qn1_bup=qn1
-     qn1=qn1+qf
-  ENDIF
-
-  ! -- qn1 is now QSTAR+QF (net all-wave radiation + anthropogenic heat flux)
-  ! -- qn1_bup is QSTAR only
-  IF(AnthropHeatMethod>=1) THEN
-     qf=QF_SAHP
-  ENDIF
-
-  ! Calculate CO2 fluxes from anthropogenic components
-  IF(Diagnose==1) WRITE(*,*) 'Calling CO2_anthro...'
-  CALL CO2_anthro(id,ih,imin)
-  ! For the purpose of turbulent fluxes, remove QF from the net all-wave radiation
-  qn1=qn1_bup  !Remove QF from QSTAR
-
-  ! -- qn1 is now QSTAR only
-  ! ===================ANTHROPOGENIC HEAT FLUX END================================
+  ! ih=it-DLS
+  ! IF(ih<0) ih=23
+  !
+  ! IF(AnthropHeatMethod==1) THEN
+  !    IF(Diagnose==1) WRITE(*,*) 'Calling SAHP_1...'
+  !    CALL SAHP_1(qf_sahp,QF_SAHP_base,QF_SAHP_heat,id,ih,imin)
+  !    qn1_bup=qn1
+  !    qn1=qn1+QF_SAHP
+  ! ELSEIF(AnthropHeatMethod==2) THEN
+  !    IF(Diagnose==1) WRITE(*,*) 'Calling SAHP_2...'
+  !    CALL SAHP_2(qf_sahp,QF_SAHP_base,QF_SAHP_heat,id,ih,imin)
+  !    qn1_bup=qn1
+  !    qn1=qn1+QF_SAHP
+  ! ELSEIF(AnthropHeatMethod==3) THEN
+  !    IF(Diagnose==1) WRITE(*,*) 'Calling SAHP_3...'
+  !    CALL SAHP_3(qf_sahp,id,ih,imin)
+  !    qn1_bup=qn1
+  !    qn1=qn1+QF_SAHP
+  ! ELSE
+  !    qn1_bup=qn1
+  !    qn1=qn1+qf
+  ! ENDIF
+  !
+  ! ! -- qn1 is now QSTAR+QF (net all-wave radiation + anthropogenic heat flux)
+  ! ! -- qn1_bup is QSTAR only
+  ! IF(AnthropHeatMethod>=1) THEN
+  !    qf=QF_SAHP
+  ! ENDIF
+  !
+  ! ! Calculate CO2 fluxes from anthropogenic components
+  ! IF(Diagnose==1) WRITE(*,*) 'Calling CO2_anthro...'
+  ! CALL CO2_anthro(id,ih,imin)
+  ! ! For the purpose of turbulent fluxes, remove QF from the net all-wave radiation
+  ! qn1=qn1_bup  !Remove QF from QSTAR
+  ! ! -- qn1 is now QSTAR only
+  qf=0 ! AH disabled for the moment, TS 28 Sep 2017
+  ! ! ===================ANTHROPOGENIC HEAT FLUX END================================
 
 
   ! =================STORAGE HEAT FLUX=======================================
   CALL SUEWS_cal_Qs(&
-       nsurf,&
-       StorageHeatMethod,&
-       OHMIncQF,&
-       Gridiv,&
-       id,&
-       Diagnose,&
-       sfr,&
-       OHM_coef,&
-       OHM_threshSW,OHM_threshWD,&
-       soilmoist,&
-       soilstoreCap,&
-       state,&
-       nsh,&
-       BldgSurf,&
-       WaterSurf,&
-       SnowUse,&
-       DiagQS,&
-       HDD(id-1,4),&
-       MetForcingData(:,:,Gridiv),&
-       qf,qn1_bup,&
-       alb,&
-       emis,&
-       cpAnOHM,&
-       kkAnOHM,&
-       chAnOHM,&
+       StorageHeatMethod,OHMIncQF,Gridiv,id,Diagnose,sfr,&!input
+       OHM_coef,OHM_threshSW,OHM_threshWD,&
+       soilmoist,soilstoreCap,state,nsh,SnowUse,DiagQS,&
+       HDD(id-1,4),MetForcingData(:,:,Gridiv),qf,qn1_bup,&
+       alb,emis,cpAnOHM,kkAnOHM,chAnOHM,&
        AnthropHeatMethod,&
-       qn1_store,&
-       qn1_S_store,&
-       qn1_av_store,&
-       qn1_S_av_store,&
-       surf,&
-       qn1_S,&
-       snowFrac,&
-       qs,&
-       deltaQi,&
-       a1,&
-       a2,&
-       a3)
+       qn1_store,qn1_S_store,qn1_av_store,qn1_S_av_store,&!inout
+       surf,qn1_S,snowFrac,qs,&
+       deltaQi,a1,a2,a3)!output
+
 
 
   !==================Energy related to snow melting/freezing processes=======
   IF(Diagnose==1) WRITE(*,*) 'Calling MeltHeat'
-  CALL MeltHeat_cal(&
+  CALL Snow_cal_MeltHeat(&
        snowUse,&!input
        bldgsurf,nsurf,PavSurf,WaterSurf,&
        lvS_J_kg,lv_J_kg,tstep_real,&
@@ -324,9 +268,9 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
 
   !==========================Turbulent Fluxes================================
-  IF(Diagnose==1) WRITE(*,*) 'Calling LUMPS_QHQE...'
+  IF(Diagnose==1) WRITE(*,*) 'Calling LUMPS_cal_QHQE...'
   !Calculate QH and QE from LUMPS
-  CALL LUMPS_QHQE(&
+  CALL LUMPS_cal_QHQE(&
        veg_type,& !input
        snowUse,&
        qn1_bup,&
@@ -357,9 +301,9 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        VegPhenLumps)
 
 
-  IF(Diagnose==1) WRITE(*,*) 'Calling WaterUse...'
+  IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_cal_WaterUse...'
   !Gives the external and internal water uses per timestep
-  CALL WaterUse(&
+  CALL SUEWS_cal_WaterUse(&
        nsh_real,&! input:
        SurfaceArea,&
        sfr,&
@@ -394,85 +338,38 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !===============Resistance Calculations=======================
   CALL SUEWS_cal_Resistance(&
        StabilityMethod,&!input:
-       Diagnose,&
-       AerodynamicResistanceMethod,&
-       RoughLenHeatMethod,&
-       snowUse,&
-       id,&
-       it,&
-       INT(SurfaceChar(Gridiv,c_gsModel)),&
-       SMDMethod,&
-       ConifSurf,&
-       DecidSurf,&
-       GrassSurf,&
-       WaterSurf,&
-       nsurf,&
-       qh_obs,&
-       avdens,&
-       avcp,&
-       h_mod,&
-       qn1_bup,&
-       dectime,&
-       zzd,&
-       z0M,&
-       zdm,&
-       avU1,&
-       Temp_C,&
-       L_mod,&
-       UStar,&
-       VegFraction,&
-       avkdn,&
+       Diagnose,AerodynamicResistanceMethod,RoughLenHeatMethod,snowUse,&
+       id,it,INT(SurfaceChar(Gridiv,c_gsModel)),SMDMethod,&
+       qh_obs,avdens,avcp,h_mod,qn1_bup,dectime,zzd,z0M,zdm,&
+       avU1,Temp_C,L_mod,UStar,VegFraction,avkdn,&
        SurfaceChar(Gridiv,c_GsKmax),&
-       SurfaceChar(Gridiv,c_GsG1),&
-       SurfaceChar(Gridiv,c_GsG2),&
-       SurfaceChar(Gridiv,c_GsG3),&
-       SurfaceChar(Gridiv,c_GsG4),&
-       SurfaceChar(Gridiv,c_GsG5),&
-       SurfaceChar(Gridiv,c_GsG6),&
-       SurfaceChar(Gridiv,c_GsS1),&
-       SurfaceChar(Gridiv,c_GsS2),&
-       SurfaceChar(Gridiv,c_GsTH),&
-       SurfaceChar(Gridiv,c_GsTL),&
-       dq,&
-       xsmd,&
-       vsmd,&
-       MaxConductance,&
-       LAIMax,&
-       LAI(id-1,:),&
-       snowFrac,&
-       sfr,&
-       Tstar,&!output:
-       psim,&
-       gsc,&
-       ResistSurf,&
-       RA,&
-       RAsnow,&
-       rb)
+       SurfaceChar(Gridiv,c_GsG1),SurfaceChar(Gridiv,c_GsG2),&
+       SurfaceChar(Gridiv,c_GsG3),SurfaceChar(Gridiv,c_GsG4),&
+       SurfaceChar(Gridiv,c_GsG5),SurfaceChar(Gridiv,c_GsG6),&
+       SurfaceChar(Gridiv,c_GsS1),SurfaceChar(Gridiv,c_GsS2),&
+       SurfaceChar(Gridiv,c_GsTH),SurfaceChar(Gridiv,c_GsTL),&
+       dq,xsmd,vsmd,MaxConductance,LAIMax,LAI(id-1,:),snowFrac,sfr,&
+       Tstar,&!output
+       psim,gsc,ResistSurf,RA,RAsnow,rb)
 
 
   !========= CO2-related calculations ================================
   ! Calculate CO2 fluxes from biogenic components
-  IF(Diagnose==1) WRITE(*,*) 'Calling CO2_biogen...'
-  CALL CO2_biogen
-  ! Sum anthropogenic and biogenic CO2 flux components to find overall CO2 flux
-  Fc = Fc_anthro + Fc_biogen
+  ! IF(Diagnose==1) WRITE(*,*) 'Calling CO2_biogen...'
+  ! CALL CO2_biogen
+  ! ! Sum anthropogenic and biogenic CO2 flux components to find overall CO2 flux
+  ! Fc = Fc_anthro + Fc_biogen
+  Fc=0 ! disbled for the moment. TS 28 Sep 2017
   !========= CO2-related calculations end================================
 
 
   !============= calculate water balance =============
-  CALL SUEWS_cal_water(&
+  CALL SUEWS_cal_Water(&
        Diagnose,&!input
-       nsurf,&
-       snowUse,&
-       NonWaterFraction,addPipes,addImpervious,addVeg,addWaterBody,&
-       state,soilmoist,&
-       sfr,&
-       surf,&
-       WaterDist,&
-       nsh_real,&
+       snowUse,NonWaterFraction,addPipes,addImpervious,addVeg,addWaterBody,&
+       state,soilmoist,sfr,surf,WaterDist,nsh_real,&
        drain_per_tstep,&  !output
-       drain,&
-       AddWaterRunoff,&
+       drain,AddWaterRunoff,&
        AdditionalWater,runoffPipes,runoff_per_interval,&
        addWater,stateOld,soilmoistOld)
   !============= calculate water balance end =============
@@ -480,114 +377,24 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !======== Evaporation and surface state ========
   CALL SUEWS_cal_QE(&
        Diagnose,&!input
-       id,&
-       nsurf,&
-       tstep,&
-       imin,&
-       it,&
-       ity,&
-       snowfractionchoice,&
-       snowCalcSwitch,&
-       DayofWeek,&
-       CRWmin,&
-       CRWmax,&
-       nsh_real,&
-       lvS_J_kg,&
-       lv_j_kg,&
-       avdens,&
-       waterdens,&
-       avRh,&
-       Press_hPa,&
-       Temp_C,&
-       RAsnow,&
-       psyc_hPa,&
-       avcp,&
-       sIce_hPa,&
-       PervFraction,&
-       vegfraction,&
-       addimpervious,&
-       qn1_SF,&
-       qf,&
-       qs,&
-       vpd_hPa,&
-       s_hPa,&
-       ResistSurf,&
-       ra,&
-       rb,&
-       tstep_real,&
-       snowdensmin,&
-       precip,&
-       PipeCapacity,&
-       RunoffToWater,&
-       NonWaterFraction,&
-       wu_EveTr,&
-       wu_DecTr,&
-       wu_Grass,&
-       addVeg,&
-       addWaterBody,&
-       SnowLimPaved,&
-       SnowLimBuild,&
-       SurfaceArea,&
-       drain,&
-       WetThresh,&
-       stateOld,&
-       mw_ind,&
-       soilstorecap,&
-       rainonsnow,&
-       freezmelt,&
-       freezstate,&
-       freezstatevol,&
-       Qm_Melt,&
-       Qm_rain,&
-       Tsurf_ind,&
-       sfr,&
-       StateLimit,&
-       surf,&
+       id,tstep,imin,it,ity,snowfractionchoice,snowCalcSwitch,DayofWeek,CRWmin,CRWmax,&
+       nsh_real,lvS_J_kg,lv_j_kg,avdens,waterdens,avRh,Press_hPa,Temp_C,&
+       RAsnow,psyc_hPa,avcp,sIce_hPa,&
+       PervFraction,vegfraction,addimpervious,qn1_SF,qf,qs,vpd_hPa,s_hPa,&
+       ResistSurf,ra,rb,tstep_real,snowdensmin,precip,PipeCapacity,RunoffToWater,&
+       NonWaterFraction,wu_EveTr,wu_DecTr,wu_Grass,addVeg,addWaterBody,SnowLimPaved,SnowLimBuild,&
+       SurfaceArea,drain,WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
+       freezmelt,freezstate,freezstatevol,Qm_Melt,Qm_rain,Tsurf_ind,sfr,StateLimit,surf,&
        runoff_per_interval,& ! inout:
-       state,&
-       soilmoist,&
-       SnowPack,&
-       snowFrac,&
-       MeltWaterStore,&
-       SnowDepth,&
-       iceFrac,&
-       addwater,&
-       addwaterrunoff,&
-       SnowDens,&
-       SurplusEvap,&
+       state,soilmoist,SnowPack,snowFrac,MeltWaterStore,&
+       SnowDepth,iceFrac,addwater,addwaterrunoff,SnowDens,SurplusEvap,&
        snowProf,& ! output:
-       runoffSnow,&
-       runoff,&
-       runoffSoil,&
-       chang,&
-       changSnow,&
-       SnowToSurf,&
-       snowD,&
-       ev_snow,&
-       SnowRemoval,&
-       evap,&
-       rss_nsurf,&
-       p_mm,&
-       rss,&
-       qe,&
-       state_per_tstep,&
-       NWstate_per_tstep,&
-       qeOut,&
-       swe,&
-       ev,&
-       chSnow_per_interval,&
-       ev_per_tstep,&
-       qe_per_tstep,&
-       runoff_per_tstep,&
-       surf_chang_per_tstep,&
-       runoffPipes,&
-       mwstore,&
-       runoffwaterbody,&
-       FlowChange,&
-       runoffAGimpervious_m3,&
-       runoffAGveg_m3,&
-       runoffWaterBody_m3,&
-       runoffPipes_m3)
+       runoffSnow,runoff,runoffSoil,chang,changSnow,SnowToSurf,snowD,ev_snow,SnowRemoval,&
+       evap,rss_nsurf,p_mm,rss,qe,state_per_tstep,NWstate_per_tstep,qeOut,&
+       swe,ev,chSnow_per_interval,ev_per_tstep,qe_per_tstep,runoff_per_tstep,&
+       surf_chang_per_tstep,runoffPipes,mwstore,runoffwaterbody,FlowChange,&
+       runoffAGimpervious_m3,runoffAGveg_m3,runoffWaterBody_m3,runoffPipes_m3)
+
   !======== Evaporation and surface state end========
 
   !============ Sensible heat flux ===============
@@ -610,21 +417,19 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   !=== Horizontal movement between soil stores ===
   ! Now water is allowed to move horizontally between the soil stores
-  IF(Diagnose==1) WRITE(*,*) 'Calling HorizontalSoilWater...'
-  ! CALL HorizontalSoilWater
-  CALL HorizontalSoilWater(&
-       nsurf,&! input:
-       sfr,&! surface fractions
+  IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_cal_HorizontalSoilWater...'
+  ! CALL SUEWS_cal_HorizontalSoilWater
+  CALL SUEWS_cal_HorizontalSoilWater(&
+       sfr,&! input: ! surface fractions
        SoilStoreCap,&!Capacity of soil store for each surface [mm]
        SoilDepth,&!Depth of sub-surface soil store for each surface [mm]
        SatHydraulicConduct,&!Saturated hydraulic conductivity for each soil subsurface [mm s-1]
        SurfaceArea,&!Surface area of the study area [m2]
        NonWaterFraction,&! sum of surface cover fractions for all except water surfaces
        tstep_real,& !tstep cast as a real for use in calculations
-                                ! inout:
-       SoilMoist,&!Soil moisture of each surface type [mm]
+       SoilMoist,&! inout:!Soil moisture of each surface type [mm]
        runoffSoil,&!Soil runoff from each soil sub-surface [mm]
-       runoffSoil_per_tstep&!Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
+       runoffSoil_per_tstep&!  output:!Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
        )
 
   !========== Calculate soil moisture ============
@@ -636,8 +441,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
 
   !============ surface-level diagonostics ===============
-  CALL SUEWS_cal_diag(&
-       0.,0.,&!input
+  CALL SUEWS_cal_Diagnostics(&
        tsurf,qh,&
        Press_hPa,qeOut,&
        UStar,veg_fr,z0m,L_mod,k,avdens,avcp,lv_J_kg,tstep_real,&
@@ -645,9 +449,9 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        avU10_ms,t2_C,q2_gkg)!output
   !============ surface-level diagonostics end ===============
 
-  !============ write out DailyState ===============
+  !============ update and write out SUEWS_cal_DailyState ===============
   ! only works at the last timestep of a day
-  CALL SUEWS_output_DailyState(&
+  CALL SUEWS_update_DailyState(&
        iy,id,it,imin,&!input
        GDD,HDD,LAI,&
        DecidCap,albDecTr,albEveTr,albGrass,porosity,&
@@ -658,6 +462,9 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        Gridiv,GridIDmatrix,&!input
        FileCode,FileOutputPath,&
        DailyStateFirstOpen)
+
+
+  !==============main calculation end=======================
 
   !============ write out results ===============
   ! works at each timestep
@@ -760,6 +567,34 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        dataOut,dataOutSnow)
 
 
+  ! NB: CBL disabled for the moment for interface improvement
+  ! can be decoupled from SUEWS? TS 28 Sep 2017
+  ! IF(CBLuse>=1)THEN ! If CBL is used, calculated Temp_C and RH are replaced with the obs.
+  !    IF(Diagnose==1) WRITE(*,*) 'Calling CBL...'
+  !    CALL CBL(ir,iMB,Gridiv)   !ir=1 indicates first row of each met data block
+  ! ENDIF
+
+
+  ! NB: SOLWEIG can be treated as a separate part: can be decoupled from SUEWS? TS 28 Sep 2017
+  ! ===================SOLWEIG OUTPUT ========================================
+  ! IF (SOLWEIGuse==1) THEN
+  !    IF (OutInterval==imin) THEN
+  !       IF (RunForGrid==-999) THEN
+  !          IF(Diagnose==1) WRITE(*,*) 'Calling SOLWEIG_2014a_core...'
+  !          CALL SOLWEIG_2014a_core(iMB)
+  !          SolweigCount=SolweigCount+1
+  !       ELSE
+  !          IF (Gridiv == RunForGrid) THEN
+  !             IF(Diagnose==1) WRITE(*,*) 'Calling SOLWEIG_2014a_core...'
+  !             CALL SOLWEIG_2014a_core(iMB)
+  !             SolweigCount=SolweigCount+1
+  !          ENDIF
+  !       ENDIF
+  !    ENDIF
+  ! ELSE
+  ! SOLWEIGpoi_out=0 ! NB: turn off SOLWEIG for the moment
+  ! ENDIF
+  ! ===================SOLWEIG END================================
 
   !write(*,*) DecidCap(id), id, it, imin, 'Calc - before translate back'
   !write(*,*) iy, id, it, imin, 'Calc - before translate back'

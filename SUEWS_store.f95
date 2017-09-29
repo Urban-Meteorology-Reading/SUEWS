@@ -1,15 +1,5 @@
 SUBROUTINE soilstore(&
-
-                                ! input:
-     nsurf,& ! number of surface types
-     is,& ! surface type
-     PavSurf,&! surface type code
-     BldgSurf,&! surface type code
-     WaterSurf,&! surface type code
-     ConifSurf,&! surface type code
-     BSoilSurf,&! surface type code
-     DecidSurf,&! surface type code
-     GrassSurf,&! surface type code
+     is,& ! input: ! surface type
      sfr,&! surface fractions
      PipeCapacity,&!Capacity of pipes to transfer water
      RunoffToWater,&!Fraction of surface runoff going to water body
@@ -19,7 +9,6 @@ SUBROUTINE soilstore(&
      wu_Grass,&!Water use for grass [mm]
      AddWater,&!Water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
      addImpervious,&!Water from impervious surfaces of other grids [mm] for whole surface area
-                                !  drain,&!Drainage of each surface type [mm]
      nsh_real,&!nsh cast as a real for use in calculations
      stateOld,&!Wetness status of each surface type from previous timestep [mm]
      AddWaterRunoff,&!Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
@@ -29,8 +18,7 @@ SUBROUTINE soilstore(&
      addWaterBody,&!Water from water surface of other grids [mm] for whole surface area
      FlowChange,&!Difference between the input and output flow in the water body
      StateLimit,&!Limit for state of each surface type [mm] (specified in input files)
-                                !  inout:
-     runoffAGimpervious,&!Above ground runoff from impervious surface [mm] for whole surface area
+     runoffAGimpervious,&!  inout:!Above ground runoff from impervious surface [mm] for whole surface area
      surplusWaterBody,&!Extra runoff that goes to water body [mm] as specified by RunoffToWater
      runoffAGveg,&!Above ground runoff from vegetated surfaces [mm] for whole surface area
      runoffPipes,&!Runoff in pipes [mm] for whole surface area
@@ -39,8 +27,7 @@ SUBROUTINE soilstore(&
      SurplusEvap,&!Surplus for evaporation in 5 min timestep
      runoffWaterBody,&!Above ground runoff from water surface [mm] for whole surface area
      runoff_per_interval,&! Total water transported to each grid for grid-to-grid connectivity
-                                !  output:
-     p_mm,&!Inputs to surface water balance
+     p_mm,&!output: !Inputs to surface water balance
      chang,&!Change in state [mm]
      runoff,&!Runoff from each surface type [mm]
      drain,&!Drainage of each surface type [mm]
@@ -96,16 +83,24 @@ SUBROUTINE soilstore(&
 
   !Stores flood water when surface state exceeds storage capacity [mm]
   !real(kind(1d0)),dimension(nsurf):: SurfaceFlood
+  INTEGER, PARAMETER:: nsurf=7                !Total number of surfaces
+  INTEGER, PARAMETER:: NVegSurf=3             !Number of surfaces that are vegetated
+  INTEGER, PARAMETER:: nsurfIncSnow=nsurf+1   !Number of surfaces + snow
 
-  INTEGER,INTENT(in)::nsurf ! number of surface types
+  INTEGER:: PavSurf   = 1,&   !When all surfaces considered together (1-7)
+       BldgSurf  = 2,&
+       ConifSurf = 3,&
+       DecidSurf = 4,&
+       GrassSurf = 5,&   !New surface classes: Grass = 5th/7 surfaces
+       BSoilSurf = 6,&   !New surface classes: Bare soil = 6th/7 surfaces
+       WaterSurf = 7,&
+       ExcessSurf= 8,&   !Runoff or subsurface soil in WGWaterDist
+       NSurfDoNotReceiveDrainage=0,&   !Number of surfaces that do not receive drainage water (green roof)
+       ivConif = 1,&     !When only vegetated surfaces considered (1-3)
+       ivDecid = 2,&
+       ivGrass = 3
+
   INTEGER,INTENT(in)::is ! surface type
-  INTEGER,INTENT(in)::PavSurf! surface type code
-  INTEGER,INTENT(in)::BldgSurf! surface type code
-  INTEGER,INTENT(in)::WaterSurf! surface type code
-  INTEGER,INTENT(in)::ConifSurf! surface type code
-  INTEGER,INTENT(in)::BSoilSurf! surface type code
-  INTEGER,INTENT(in)::DecidSurf! surface type code
-  INTEGER,INTENT(in)::GrassSurf! surface type code
 
 
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::sfr(nsurf)! surface fractions

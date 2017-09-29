@@ -609,7 +609,7 @@ SUBROUTINE OverallRunControl
   nsd=24*nsh
 
   !! Check this is still valid for v2016a
-  HalfTimeStep=REAL(tstep_real)/2/(24*3600)   !Used in sun_position to get sunpos in the middle of timestep
+  HalfTimeStep=REAL(tstep_real)/2/(24*3600)   !Used in NARP_cal_SunPosition to get sunpos in the middle of timestep
 
   RETURN
 
@@ -2024,17 +2024,17 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
   !! Where is this from??
   IceFrac=0.2   !Estimated fraction of ice. Should be improved in the future
 
-  ! At this point translate arrays to variables (needed for RoughnessParameters)
+  ! At this point translate arrays to variables (needed for SUEWS_cal_RoughnessParameters)
   CALL SUEWS_Translate(Gridiv,0,0)
 
   !Calculation of roughness parameters (N.B. uses porosity)
-  CALL RoughnessParameters(&
+  CALL SUEWS_cal_RoughnessParameters(&
        RoughLenMomMethod,sfr,areaZh,&!input
        bldgH,EveTreeH,DecTreeH,&
        porosity(id),FAIBldg,FAIEveTree,FAIDecTree,Z,&
        planF,&!output
        Zh,Z0m,Zdm,ZZD)
-  ! CALL RoughnessParameters(&
+  ! CALL SUEWS_cal_RoughnessParameters(&
   !
   !                                 ! input:
   !

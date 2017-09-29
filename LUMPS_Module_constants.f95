@@ -1435,7 +1435,7 @@ MODULE VegPhenogy
 END MODULE VegPhenogy
 
 MODULE filename
-  CHARACTER (len=90)::  smithfile     !file for narp
+  CHARACTER (len=90)::  smithfile     !file for NARP
 END MODULE filename
 
 

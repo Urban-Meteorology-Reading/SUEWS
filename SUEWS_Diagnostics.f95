@@ -1,12 +1,11 @@
-SUBROUTINE SUEWS_cal_diag(&
-     usurf,uflux,&!input
-     tsurf,qh,&
+SUBROUTINE SUEWS_cal_Diagnostics(&
+     tsurf,qh,&!input
      Press_hPa,qe,&
      UStar,veg_fr,z0m,L_mod,k,avdens,avcp,lv_J_kg,tstep_real,&
      RoughLenHeatMethod,StabilityMethod,&
      avU10_ms,t2_C,q2_gkg)!output
   IMPLICIT NONE
-  REAL(KIND(1d0)),INTENT(in) ::usurf,uflux
+  ! REAL(KIND(1d0)),INTENT(in) ::usurf,uflux
   REAL(KIND(1d0)),INTENT(in) ::tsurf,qh
   REAL(KIND(1d0)),INTENT(in) ::Press_hPa,qe
   REAL(KIND(1d0)),INTENT(in) :: UStar,veg_fr,z0m,L_mod,k,avdens,avcp,lv_J_kg,tstep_real
@@ -19,14 +18,14 @@ SUBROUTINE SUEWS_cal_diag(&
 
   tlv=lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
   ! wind speed:
-  CALL diagSfc(usurf,uflux,UStar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,avU10_ms,0,RoughLenHeatMethod,StabilityMethod)
+  CALL diagSfc(0d0,0d0,UStar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,avU10_ms,0,RoughLenHeatMethod,StabilityMethod)
   ! temperature:
   CALL diagSfc(tsurf,qh,UStar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,t2_C,1,RoughLenHeatMethod,StabilityMethod)
   ! humidity:
   CALL diagSfc(qsatf(tsurf,Press_hPa)*1000,& ! Saturation specific humidity at surface in g/kg
        qe,UStar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,q2_gkg,2,RoughLenHeatMethod,StabilityMethod)
 
-END SUBROUTINE SUEWS_cal_diag
+END SUBROUTINE SUEWS_cal_Diagnostics
 
 
 SUBROUTINE diagSfc(&

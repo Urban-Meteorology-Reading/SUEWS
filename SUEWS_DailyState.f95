@@ -11,10 +11,10 @@
 !  TS 07 Jun 2017  - Improve the format of output with more friendly alignment
 !  HCW 04 Jul 2016 - GridID can now be up to 10 digits long
 !  HCW 25 May 2016 - Added extra columns to daily state file (albedo for EveTr and Grass)
-!  HCW 24 May 2016 - Bug fixed in naming of DailyState file (now uses GridIDmatrix(Gridiv) rather than Gridiv)
+!  HCW 24 May 2016 - Bug fixed in naming of SUEWS_cal_DailyState file (now uses GridIDmatrix(Gridiv) rather than Gridiv)
 !  LJ 27 Jan 2016  - Removal of tabs
 !  HCW 20 Aug 2015 - Sign of the porosity change corrected so that porosity is greatest when LAI is smallest
-!  HCW 03 Jul 2015 - Increased output resolution of P/day in DailyState file to avoid rounding errors.
+!  HCW 03 Jul 2015 - Increased output resolution of P/day in SUEWS_cal_DailyState file to avoid rounding errors.
 !                    Albedo of EveTr and Grass now adjusted based on change in LAI for EveTr and Grass
 !                    (rather than DecTr)
 !  HCW 29 Jun 2015 - Added albChange for EveTr and Grass surfaces
@@ -24,8 +24,8 @@
 !  LJ 11 Mar 2015  - Removed switch as no longer necessary
 !  HCW 06 Mar 2015 - iy used instead of year which does not have a value here
 !  HCW 20 Feb 2015 - Added surf(6,is) for the current storage capacity
-!  Updated and corrected DailyState output file
-!  LJ 05 Feb 2015  - DailyState saving fixed. Now header is printed and the file closed and opened as suggested.
+!  Updated and corrected SUEWS_cal_DailyState output file
+!  LJ 05 Feb 2015  - SUEWS_cal_DailyState saving fixed. Now header is printed and the file closed and opened as suggested.
 ! N.B. Bug in daily Precip - needs fixing!!! - HCW thinks this is fixed 20 Feb 2015
 !  HCW 26 Jan 2015 - sfr and IrrFracs deleted from WU_Day calculations, so that WU_Day is not spread over
 !  the total area
@@ -42,7 +42,7 @@
 !       - Take out doy limits (140,170, etc) and code as parameters
 !   - Could add different coefficients (Ie_m, Ie_a) for each vegetation type
 !==============================================================================
-SUBROUTINE DailyState(&
+SUBROUTINE SUEWS_cal_DailyState(&
      iy,id,it,imin,Gridiv,tstep,&!input
      WaterUseMethod,snowUse,Ie_start,Ie_end,&
      ReadLinesMetdata,&
@@ -302,7 +302,7 @@ SUBROUTINE DailyState(&
 
   RETURN
 
-END SUBROUTINE DailyState
+END SUBROUTINE SUEWS_cal_DailyState
 
 
 SUBROUTINE Cal_DailyStateEnd(&
@@ -902,7 +902,7 @@ SUBROUTINE update_GDDLAI(&
 
   ENDDO   !End of loop over veg surfaces
 
-  IF(LAICalcYes==0)THEN ! moved to DailyState, TS 18 Sep 2017
+  IF(LAICalcYes==0)THEN ! moved to SUEWS_cal_DailyState, TS 18 Sep 2017
      LAI(id-1,:)=LAI_obs ! check -- this is going to be a problem as it is not for each vegetation class
   ENDIF
   !------------------------------------------------------------------------------
@@ -1064,7 +1064,7 @@ SUBROUTINE Cal_DailyStateStart(&
 END SUBROUTINE Cal_DailyStateStart
 
 
-SUBROUTINE SUEWS_output_DailyState(&
+SUBROUTINE SUEWS_update_DailyState(&
      iy,id,it,imin,&!input
      GDD,HDD,LAI,&
      DecidCap,albDecTr,albEveTr,albGrass,porosity,&
@@ -1134,10 +1134,10 @@ SUBROUTINE SUEWS_output_DailyState(&
           DailyStateLine,&
           DailyStateFirstOpen)
   ENDIF
-END SUBROUTINE SUEWS_output_DailyState
+END SUBROUTINE SUEWS_update_DailyState
 
 
-! transfer results to a one-line output for DailyState
+! transfer results to a one-line output for SUEWS_cal_DailyState
 SUBROUTINE update_DailyState(&
      iy,id,&!input
      GDD,HDD,LAI,&
@@ -1194,7 +1194,7 @@ END SUBROUTINE update_DailyState
 
 
 !===================================================================================
-!TODO: to implement a generic SUBROUTINE for DailyState output
+!TODO: to implement a generic SUBROUTINE for SUEWS_cal_DailyState output
 SUBROUTINE output_DailyState(&
      Gridiv,GridIDmatrix,&!input
      FileCode,FileOutputPath,&

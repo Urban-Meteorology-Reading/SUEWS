@@ -1,4 +1,4 @@
-SUBROUTINE RoughnessParameters(&
+SUBROUTINE SUEWS_cal_RoughnessParameters(&
      RoughLenMomMethod,&! input:
      sfr,&! surface fractions
      areaZh,&
@@ -102,4 +102,4 @@ SUBROUTINE RoughnessParameters(&
   IF(z0m<0) CALL ErrorHint(14,'In SUEWS_RoughnessParameters.f95, z0 < 0 m.',z0m,notUsed,notUsedI)
   IF(zdm<0) CALL ErrorHint(14,'In SUEWS_RoughnessParameters.f95, zd < 0 m.',zdm,notUsed,notUsedI)
   IF(zzd<0) CALL ErrorHint(14,'In SUEWS_RoughnessParameters.f95, (z-zd) < 0 m.',zzd,notUsed,notUsedI)
-END SUBROUTINE RoughnessParameters
+END SUBROUTINE SUEWS_cal_RoughnessParameters

@@ -1,20 +1,14 @@
-SUBROUTINE HorizontalSoilWater(&
-
-                                ! input:
-     nsurf,&
-     sfr,&! surface fractions
+SUBROUTINE SUEWS_cal_HorizontalSoilWater(&
+     sfr,&! input: ! surface fractions
      SoilStoreCap,&!Capacity of soil store for each surface [mm]
      SoilDepth,&!Depth of sub-surface soil store for each surface [mm]
      SatHydraulicConduct,&!Saturated hydraulic conductivity for each soil subsurface [mm s-1]
      SurfaceArea,&!Surface area of the study area [m2]
      NonWaterFraction,&! sum of surface cover fractions for all except water surfaces
      tstep_real,& !tstep cast as a real for use in calculations
-
-                                ! inout:
-     SoilMoist,&!Soil moisture of each surface type [mm]
+     SoilMoist,&! inout: !Soil moisture of each surface type [mm]
      runoffSoil,&!Soil runoff from each soil sub-surface [mm]
-                                !  output:
-     runoffSoil_per_tstep&!Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
+     runoffSoil_per_tstep&!  output:!Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
      )
   !Transfers water in soil stores of land surfaces LJ (2010)
   !Change the model to use varying hydraulic conductivity instead of constant value LJ (7/2011)
@@ -36,7 +30,7 @@ SUBROUTINE HorizontalSoilWater(&
   ! use allocateArray
 
   IMPLICIT NONE
-  INTEGER , INTENT(in) :: nsurf! number of surface types
+  INTEGER , PARAMETER :: nsurf=7! number of surface types
 
   REAL(KIND(1d0)), INTENT(in) ::sfr(nsurf)! surface fractions
   REAL(KIND(1d0)), INTENT(in) ::SoilStoreCap(nsurf)!Capacity of soil store for each surface [mm]
@@ -69,9 +63,6 @@ SUBROUTINE HorizontalSoilWater(&
        alphavG=0.0005,&  !Set alphavG to match value in van Genuchten (1980) [mm-1]
        NUnits = 1   !Can change to represent plot/base unit size
 
-  ! REAL(KIND(1d0))::SoilMoist_vol1,SoilMoistCap_vol1,SoilMoist_vol2,SoilMoistCap_vol2,&
-  !      MatPot1,DimenWaterCon1,MatPot2,DimenWaterCon2,Distance,B_r1,B_r2,Km1,Km2,KmWeight,&
-  !      alphavG,dI, NUnits
 
   ! SoilMoist_vol1,2     = Volumetric soil moisture [m3 m-3]
   ! SoilMoistCap_vol1,2  = Volumetric soil moisture capacity [m3 m-3] (from FunctionalTypes)
@@ -245,4 +236,4 @@ SUBROUTINE HorizontalSoilWater(&
 
   ENDDO !is loop over first surface
 
-END SUBROUTINE HorizontalSoilWater
+END SUBROUTINE SUEWS_cal_HorizontalSoilWater

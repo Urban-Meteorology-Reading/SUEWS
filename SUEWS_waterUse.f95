@@ -12,7 +12,7 @@
 ! To Do:
 !	- Add functionality for water on paved surfaces (street cleaning, fountains)
 !===================================================================================
-SUBROUTINE WaterUse(&
+SUBROUTINE SUEWS_cal_WaterUse(&
                                 ! input:
      nsh_real,&
      SurfaceArea,&
@@ -209,5 +209,5 @@ SUBROUTINE WaterUse(&
      wu_Grass = wu_Grass*ext_wu/wu
   ENDIF
 
-endsubroutine WaterUse
+endsubroutine SUEWS_cal_WaterUse
 !===================================================================================

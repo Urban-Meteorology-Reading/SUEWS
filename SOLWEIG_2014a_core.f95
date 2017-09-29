@@ -216,11 +216,11 @@
             !!    call ConvertMetData(ith+j) ! read data at sunrise ??
             !    j=j+1
             !end do
-            !call sun_position(year,dectime,timezone,lat,lng,alt,azimuth,zenith_deg)!this is not good
+            !call NARP_cal_SunPosition(year,dectime,timezone,lat,lng,alt,azimuth,zenith_deg)!this is not good
             !zen=zenith_deg*DEG2RAD
             !call clearnessindex_2013b(zen,DOY,Temp_C,RH/100,avkdn,lat,Press_hPa,I0,CI,Kt,I0et,CIuncorr)
             !!call ConvertMetData(ith) ! read data at current timestep again ??
-            !call sun_position(year,dectime,timezone,lat,lng,alt,azimuth,zenith_deg)!this is not good
+            !call NARP_cal_SunPosition(year,dectime,timezone,lat,lng,alt,azimuth,zenith_deg)!this is not good
 
             CI=1.0
         else

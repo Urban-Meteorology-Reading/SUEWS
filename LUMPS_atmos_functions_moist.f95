@@ -1,11 +1,9 @@
 !.c!! For Lumps Version 2 - no stability calculations
 ! Latent heat of sublimation when air temperature below zero added. LJ Nov 2012
 ! explict interface added to all subroutines, TS 08 Aug 2017
-SUBROUTINE atmos_moist_lumps(&
-! input:
-     Temp_C,Press_hPa,avRh,dectime,&
-! output:
-     lv_J_kg,lvS_J_kg,&
+SUBROUTINE LUMPS_cal_AtmMoist(&
+     Temp_C,Press_hPa,avRh,dectime,&! input:
+     lv_J_kg,lvS_J_kg,&! output:
      es_hPa,&
      Ea_hPa,&
      VPd_hpa,&
@@ -45,16 +43,16 @@ SUBROUTINE atmos_moist_lumps(&
 
 
   REAL (KIND(1d0)),PARAMETER:: &
-       comp          = 0.9995, &
-       epsil         = 0.62197,&           !ratio molecular weight of water vapor/dry air (kg/mol/kg/mol)
-       epsil_gkg     = 621.97, &           !ratio molecular weight of water vapor/dry air in g/kg
-       dry_gas       = 8.31451,&           !Dry gas constant (J/k/mol)
-       gas_ct_wat    = 461.05,&            !Gas constant for water (J/kg/K)
-       molar         = 0.028965,&          !Dry air molar fraction in kg/mol
-       molar_wat_vap = 0.0180153,&         !Molar fraction of water vapor in kg/mol
+      !  comp          = 0.9995, &
+      !  epsil         = 0.62197,&           !ratio molecular weight of water vapor/dry air (kg/mol/kg/mol)
+      !  epsil_gkg     = 621.97, &           !ratio molecular weight of water vapor/dry air in g/kg
+      !  dry_gas       = 8.31451,&           !Dry gas constant (J/k/mol)
+      !  gas_ct_wat    = 461.05,&            !Gas constant for water (J/kg/K)
+      !  molar         = 0.028965,&          !Dry air molar fraction in kg/mol
+      !  molar_wat_vap = 0.0180153,&         !Molar fraction of water vapor in kg/mol
        gas_ct_dry    = 8.31451/0.028965,&  !j/kg/k=dry_gas/molar
-       gas_ct_wv     = 8.31451/0.0180153,& !j/kg/kdry_gas/molar_wat_vap
-       waterDens     = 999.8395            !Density of water in 0 cel deg
+       gas_ct_wv     = 8.31451/0.0180153 !j/kg/kdry_gas/molar_wat_vap
+      !  waterDens     = 999.8395            !Density of water in 0 cel deg
   INTEGER::from=1
 
   !Saturation vapour pressure over water in hPa
@@ -87,15 +85,15 @@ SUBROUTINE atmos_moist_lumps(&
 
   !Latent heat of sublimation in J/kg
   IF(Temp_C<0.000) THEN
-     lvS_J_kg=lat_vapSublim(Temp_C,Ea_hPa,Press_hPa,avcp,dectime)
+     lvS_J_kg=lat_vapSublim(Temp_C,Ea_hPa,Press_hPa,avcp)
   ENDIF
 
   !if(debug)write(*,*)lv_J_kg,Temp_C,'lv2'
   IF(press_hPa<900) THEN
-     CALL ErrorHint(46, 'Function Atmos_moist_Lumps',press_hPa,-55.55, -55)
+     CALL ErrorHint(46, 'Function LUMPS_cal_AtmMoist',press_hPa,-55.55, -55)
   ENDIF
   RETURN
-END SUBROUTINE atmos_moist_lumps
+END SUBROUTINE LUMPS_cal_AtmMoist
 
 !=====================================================================
 ! sg sept 99 f90
@@ -304,7 +302,7 @@ FUNCTION Lat_vap(Temp_C,Ea_hPa,Press_hPa,cp,dectime) RESULT (lv_J_kg)
 END FUNCTION Lat_vap
 
 
-FUNCTION Lat_vapSublim(Temp_C,Ea_hPa,Press_hPa,cp,dectime) RESULT (lvS_J_kg)
+FUNCTION Lat_vapSublim(Temp_C,Ea_hPa,Press_hPa,cp) RESULT (lvS_J_kg)
   !Input: Air temperature, Water vapour pressure, Air pressure, heat capacity
   !Output: latent heat of sublimation in units J/kg
 
@@ -312,7 +310,7 @@ FUNCTION Lat_vapSublim(Temp_C,Ea_hPa,Press_hPa,cp,dectime) RESULT (lvS_J_kg)
 
   IMPLICIT NONE
 
-  REAL(KIND(1d0))::lvS_J_kg,temp_C,tw,incr,Ea_hPa,Press_hPa,cp,dectime
+  REAL(KIND(1d0))::lvS_J_kg,temp_C,tw,incr,Ea_hPa,Press_hPa,cp
   !REAL(KIND(1d0))::ea_fix,es_tw,psyc,ea_est,Temp_K
   !REAL(KIND(1d0))::sat_vap_pressIce,psyc_const ! functions
   !LOGICAL:: switch1=.FALSE.,switch2=.FALSE.!,debug=.true.

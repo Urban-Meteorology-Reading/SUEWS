@@ -7,7 +7,7 @@
 !  snowRem - Removal of snow my snow clearing
 !  SnowDepletionCurve - Calculation of snow fractions
 !Last modified
-!  TS 17 Sep 2017 - added wrapper `MeltHeat_cal` for `SUEWS_driver`
+!  TS 17 Sep 2017 - added wrapper `Snow_cal_MeltHeat` for `SUEWS_driver`
 !  TS 04 Sep 2017 - added `veg_fr_snow` to update VegFractions with snow effect included
 !  TS 31 Aug 2017 - fixed the incomplete explicit interfaces
 !  LJ 24 Aug 2017 - added explicit interfaces
@@ -22,7 +22,7 @@
 !  LJ May 2013     - Calculation of the energy balance for the SnowPack was modified
 !                        to use qn1_ind_snow(surf)
 !=======================================================================================
-SUBROUTINE MeltHeat_cal(&
+SUBROUTINE Snow_cal_MeltHeat(&
      snowUse,&!input
      bldgsurf,&
      nsurf,&
@@ -171,7 +171,7 @@ SUBROUTINE MeltHeat_cal(&
 
   END IF
 
-END SUBROUTINE MeltHeat_cal
+END SUBROUTINE Snow_cal_MeltHeat
 
 
 SUBROUTINE MeltHeat(&
@@ -465,97 +465,22 @@ END SUBROUTINE MeltHeat
 !===============================================================================================
 SUBROUTINE SnowCalc(&
      id,& !input
-     nsurf,&
-     tstep,&
-     imin,&
-     it,&
-     is,&
-     snowfractionchoice,&
-     ConifSurf,&
-     BSoilSurf,&
-     BldgSurf,&
-     PavSurf,&
-     WaterSurf,&
-     ity,&
-     CRWmin,&
-     CRWmax,&
-     nsh_real,&
-     lvS_J_kg,&
-     lv_j_kg,&
-     avdens,&
-     waterdens,&
-     avRh,&
-     Press_hPa,&
-     Temp_C,&
-     RAsnow,&
-     psyc_hPa,&
-     avcp,&
-     sIce_hPa,&
-     PervFraction,&
-     vegfraction,&
-     addimpervious,&
-     numPM,&
-     s_hPa,&
-     ResistSurf,&
-     sp,&
-     ra,&
-     rb,&
-     tlv,&
-     snowdensmin,&
-     precip,&
-     PipeCapacity,&
-     RunoffToWater,&
-     runoffAGimpervious,&
-     runoffAGveg,&
-     addVeg,&
-     surplusWaterBody,&
-     SnowLimPaved,&
-     SnowLimBuild,&
-     drain,&
-     WetThresh,&
-     stateOld,&
-     mw_ind,&
-     soilstorecap,&
-     rainonsnow,&
-     freezmelt,&
-     freezstate,&
-     freezstatevol,&
-     Qm_Melt,&
-     Qm_rain,&
-     Tsurf_ind,&
-     sfr,&
-     DayofWeek,&
-     surf,&
+     tstep,imin,it,is,&
+     snowfractionchoice,ity,CRWmin,CRWmax,nsh_real,lvS_J_kg,lv_j_kg,avdens,waterdens,&
+     avRh,Press_hPa,Temp_C,RAsnow,psyc_hPa,avcp,sIce_hPa,&
+     PervFraction,vegfraction,addimpervious,&
+     numPM,s_hPa,ResistSurf,sp,ra,rb,tlv,snowdensmin,precip,&
+     PipeCapacity,RunoffToWater,runoffAGimpervious,runoffAGveg,&
+     addVeg,surplusWaterBody,SnowLimPaved,SnowLimBuild,drain,&
+     WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
+     freezmelt,freezstate,freezstatevol,&
+     Qm_Melt,Qm_rain,Tsurf_ind,sfr,DayofWeek,surf,&
      SnowPack,&!inout
-     snowFrac,&
-     MeltWaterStore,&
-     SnowDepth,&
-     iceFrac,&
-     addwater,&
-     addwaterrunoff,&
-     SnowDens,&
+     snowFrac,MeltWaterStore,SnowDepth,iceFrac,addwater,addwaterrunoff,SnowDens,&
      runoffSnow,& ! output
-     runoff,&
-     runoffSoil,&
-     chang,&
-     changSnow,&
-     SnowToSurf,&
-     state,&
-     snowD,&
-     ev_snow,&
-     soilmoist,&
-     SnowRemoval,&
-     snowProf,&
-     swe,&
-     ev,&
-     chSnow_per_interval,&
-     ev_per_tstep,&
-     qe_per_tstep,&
-     runoff_per_tstep,&
-     surf_chang_per_tstep,&
-     runoffPipes,&
-     mwstore,&
-     runoffwaterbody,&
+     runoff,runoffSoil,chang,changSnow,SnowToSurf,state,snowD,ev_snow,soilmoist,&
+     SnowRemoval,snowProf,swe,ev,chSnow_per_interval,ev_per_tstep,qe_per_tstep,&
+     runoff_per_tstep,surf_chang_per_tstep,runoffPipes,mwstore,runoffwaterbody,&
      FlowChange)
 
   !Calculation of snow and water balance on 5 min timestep. Treats snowfree and snow covered
@@ -569,19 +494,27 @@ SUBROUTINE SnowCalc(&
 
 
   IMPLICIT NONE
+  INTEGER,PARAMETER::nsurf=7! number of surface types
+  INTEGER,PARAMETER::PavSurf   = 1  !New surface classes: Grass = 5th/7 surfaces
+  INTEGER,PARAMETER::BldgSurf  = 2  !New surface classes: Grass = 5th/7 surfaces
+  INTEGER,PARAMETER::ConifSurf = 3  !New surface classes: Grass = 5th/7 surfaces
+  ! INTEGER,PARAMETER::DecidSurf = 4  !New surface classes: Grass = 5th/7 surfaces
+  ! INTEGER,PARAMETER::GrassSurf = 5
+  INTEGER,PARAMETER::BSoilSurf = 6!New surface classes: Grass = 5th/7 surfaces
+  INTEGER,PARAMETER::WaterSurf = 7
 
   INTEGER,INTENT(in)::id
-  INTEGER,INTENT(in)::nsurf
+  ! INTEGER,INTENT(in)::nsurf
   INTEGER,INTENT(in)::tstep
   INTEGER,INTENT(in)::imin
   INTEGER,INTENT(in)::it
   INTEGER,INTENT(in)::is
   INTEGER,INTENT(in)::snowfractionchoice
-  INTEGER,INTENT(in)::ConifSurf
-  INTEGER,INTENT(in)::BSoilSurf
-  INTEGER,INTENT(in)::BldgSurf
-  INTEGER,INTENT(in)::PavSurf
-  INTEGER,INTENT(in)::WaterSurf
+  ! INTEGER,INTENT(in)::ConifSurf
+  ! INTEGER,INTENT(in)::BSoilSurf
+  ! INTEGER,INTENT(in)::BldgSurf
+  ! INTEGER,INTENT(in)::PavSurf
+  ! INTEGER,INTENT(in)::WaterSurf
   INTEGER,INTENT(in)::ity!Evaporation calculated according to Rutter (1) or Shuttleworth (2)
 
   REAL(KIND(1d0)),INTENT(in)::CRWmin

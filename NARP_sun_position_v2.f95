@@ -1,4 +1,4 @@
- subroutine sun_position(year,idectime,UTC,locationlatitude,locationlongitude,locationaltitude,sunazimuth,sunzenith)
+ subroutine NARP_cal_SunPosition(year,idectime,UTC,locationlatitude,locationlongitude,locationaltitude,sunazimuth,sunzenith)
     implicit none
 
     REAL(KIND(1D0)),intent(in) :: year,idectime,UTC,locationlatitude,locationlongitude,locationaltitude
@@ -753,4 +753,4 @@ FUNCTION set_to_range(var) RESULT(vari)
 
 END FUNCTION set_to_range
 
-end subroutine sun_position
+end subroutine NARP_cal_SunPosition

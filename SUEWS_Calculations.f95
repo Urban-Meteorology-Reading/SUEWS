@@ -50,6 +50,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   USE WhereWhen
   USE SUEWS_Driver
   USE VegPhenogy
+  use resist
 
 
   IMPLICIT NONE
@@ -339,15 +340,19 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   CALL SUEWS_cal_Resistance(&
        StabilityMethod,&!input:
        Diagnose,AerodynamicResistanceMethod,RoughLenHeatMethod,snowUse,&
-       id,it,INT(SurfaceChar(Gridiv,c_gsModel)),SMDMethod,&
+       id,it,gsModel,SMDMethod,&
        qh_obs,avdens,avcp,h_mod,qn1_bup,dectime,zzd,z0M,zdm,&
        avU1,Temp_C,L_mod,UStar,VegFraction,avkdn,&
-       SurfaceChar(Gridiv,c_GsKmax),&
-       SurfaceChar(Gridiv,c_GsG1),SurfaceChar(Gridiv,c_GsG2),&
-       SurfaceChar(Gridiv,c_GsG3),SurfaceChar(Gridiv,c_GsG4),&
-       SurfaceChar(Gridiv,c_GsG5),SurfaceChar(Gridiv,c_GsG6),&
-       SurfaceChar(Gridiv,c_GsS1),SurfaceChar(Gridiv,c_GsS2),&
-       SurfaceChar(Gridiv,c_GsTH),SurfaceChar(Gridiv,c_GsTL),&
+       Kmax,&
+       g1,g2,g3,g4,&
+       g5,g6,s1,s2,&
+       th,tl,&
+      !  SurfaceChar(Gridiv,c_GsKmax),&
+      !  SurfaceChar(Gridiv,c_GsG1),SurfaceChar(Gridiv,c_GsG2),&
+      !  SurfaceChar(Gridiv,c_GsG3),SurfaceChar(Gridiv,c_GsG4),&
+      !  SurfaceChar(Gridiv,c_GsG5),SurfaceChar(Gridiv,c_GsG6),&
+      !  SurfaceChar(Gridiv,c_GsS1),SurfaceChar(Gridiv,c_GsS2),&
+      !  SurfaceChar(Gridiv,c_GsTH),SurfaceChar(Gridiv,c_GsTL),&
        dq,xsmd,vsmd,MaxConductance,LAIMax,LAI(id-1,:),snowFrac,sfr,&
        Tstar,&!output
        psim,gsc,ResistSurf,RA,RAsnow,rb)

@@ -7,6 +7,14 @@ MODULE SUEWS_Driver
   IMPLICIT NONE
 
 CONTAINS
+subroutine SUEWS_cal_Main
+  implicit none
+
+
+end subroutine SUEWS_cal_Main
+
+
+
   !=============net all-wave radiation=====================================
   SUBROUTINE SUEWS_cal_Qn(&
        NetRadiationMethod,snowUse,ldown_option,id,&!input
@@ -147,7 +155,7 @@ CONTAINS
        StorageHeatMethod,OHMIncQF,Gridiv,id,Diagnose,sfr,&!input
        OHM_coef,OHM_threshSW,OHM_threshWD,&
        soilmoist,soilstoreCap,state,nsh,SnowUse,DiagQS,&
-       HDDday,MetForcingData_grid,qf,qn1_bup,alb,emis,cp,kk,ch,&
+       HDD,MetForcingData,qf,qn1_bup,alb,emis,cp,kk,ch,&
        AnthropHeatMethod,&
        qn1_store,qn1_S_store,qn1_av_store,qn1_S_av_store,&!inout
        surf,qn1_S,snowFrac,qs,&
@@ -159,6 +167,7 @@ CONTAINS
     INTEGER,PARAMETER :: nsurf    = 7      ! number of surface types
     INTEGER,PARAMETER ::BldgSurf  = 2      !New surface classes: Grass = 5th/7 surfaces
     INTEGER,PARAMETER ::WaterSurf = 7
+    INTEGER, PARAMETER:: ndays = 366
 
     INTEGER,INTENT(in)::StorageHeatMethod
     INTEGER,INTENT(in)::OHMIncQF
@@ -179,7 +188,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::state(nsurf) ! wetness status
 
 
-    REAL(KIND(1d0)),INTENT(in)::HDDday  ! HDDday=HDD(id-1,4) HDD at the begining of today (id-1)
+    REAL(KIND(1d0)),DIMENSION(-4:ndays, 6),INTENT(in)::HDD
     REAL(KIND(1d0)),INTENT(in)::qf
     REAL(KIND(1d0)),INTENT(in)::qn1_bup
 
@@ -190,7 +199,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::kk   !< thermal conductivity [W m-1 K-1]
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::ch   !< bulk transfer coef [J m-3 K-1]
 
-    REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::MetForcingData_grid !< met forcing array of grid
+    REAL(KIND(1d0)),DIMENSION(:,:,:),INTENT(in)::MetForcingData !< met forcing array of grid
 
     REAL(KIND(1d0)),DIMENSION(nsh),INTENT(inout) ::qn1_store
     REAL(KIND(1d0)),DIMENSION(nsh),INTENT(inout) ::qn1_S_store !< stored qn1 [W m-2]
@@ -209,8 +218,14 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(out):: a3 !< AnOHM coefficients of grid [W m-2]
 
 
+    REAL(KIND(1d0))::HDDday ! HDDday=HDD(id-1,4) HDD at the begining of today (id-1)
+    ! REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::MetForcingData_grid
+    ! INTEGER :: err
+
+
 
     IF(StorageHeatMethod==1) THEN           !Use OHM to calculate QS
+       HDDday=HDD(id-1,4)
        IF(OHMIncQF == 1) THEN      !Calculate QS using QSTAR+QF
           IF(Diagnose==1) WRITE(*,*) 'Calling OHM...'
           CALL OHM(qf+qn1_bup,qn1_store,qn1_av_store,&
@@ -245,10 +260,16 @@ CONTAINS
 
     ! use AnOHM to calculate QS, TS 14 Mar 2016
     IF (StorageHeatMethod==3) THEN
+       !  ALLOCATE(MetForcingData_grid(&
+       !       SIZE(MetForcingData, dim=1),&
+       !       SIZE(MetForcingData, dim=2)), stat=err)
+       !  IF ( err/= 0) PRINT *, "MetForcingData_grid: Allocation request denied"
+
+      !  MetForcingData_grid=MetForcingData(:,:,Gridiv)
        IF ( OHMIncQF == 1 ) THEN    !Calculate QS using QSTAR+QF
           IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'
           CALL AnOHM(qf+qn1_bup,qn1_store,qn1_av_store,&
-               MetForcingData_grid,state/surf(6,:),&
+               MetForcingData(:,:,Gridiv),state/surf(6,:),&
                alb, emis, cp, kk, ch,&
                sfr,nsurf,nsh,AnthropHeatMethod,id,Gridiv,&
                a1,a2,a3,qs)
@@ -256,12 +277,16 @@ CONTAINS
           ! qn1=qn1_bup
           IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'
           CALL AnOHM(qn1_bup,qn1_store,qn1_av_store,&
-               MetForcingData_grid,state/surf(6,:),&
+               MetForcingData(:,:,Gridiv),state/surf(6,:),&
                alb, emis, cp, kk, ch,&
                sfr,nsurf,nsh,AnthropHeatMethod,id,Gridiv,&
                a1,a2,a3,qs)
        END IF
+
+       !  IF (ALLOCATED(MetForcingData_grid)) DEALLOCATE(MetForcingData_grid, stat=err)
+       !  IF ( err/= 0) PRINT *, "MetForcingData_grid: Deallocation request denied"
     END IF
+
 
     ! !Calculate QS using ESTM
     ! IF(StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN

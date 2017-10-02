@@ -77,40 +77,44 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   CALL SUEWS_cal_Main(&
        a1,a2,a3,addImpervious,AdditionalWater,addPipes,addVeg,addWater,addWaterBody,&
-       AddWaterRunoff,AerodynamicResistanceMethod,alb,albDecTr,AlbedoChoice,&
-       albEveTr,albGrass,alBMax_DecTr,alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,&
-       AlbMin_EveTr,AlbMin_Grass,alt,AnthropHeatMethod,areaZh,avdens,avkdn,avRh,avU1,&
-       avU10_ms,azimuth,BaseT,BaseTe,BaseTHDD,bldgH,CapMax_dec,CapMin_dec,chAnOHM,chang,&
-       changSnow,chSnow_per_interval,cpAnOHM,CRWmax,CRWmin,CumSnowfall,DailyStateFirstOpen,&
-       dataOut,DayofWeek,DayWat,DayWatPer,DecidCap,dectime,DecTreeH,deltaLAI,&
-       dens_dry,Diagnose,DiagQN,DiagQS,DLS,drain_per_tstep,DRAINRT,Ea_hPa,emis,E_mod,&
+       AddWaterRunoff,AerodynamicResistanceMethod,alb,albDecTr,AlbedoChoice,albEveTr,&
+       albGrass,alBMax_DecTr,alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,AlbMin_EveTr,&
+       AlbMin_Grass,alt,AnthropHeatMethod,areaZh,avcp,avdens,avkdn,avRh,avU1,avU10_ms,&
+       azimuth,BaseT,BaseTe,BaseTHDD,bldgH,CapMax_dec,CapMin_dec,chAnOHM,chang,changSnow,&
+       chSnow_per_interval,cpAnOHM,CRWmax,CRWmin,CumSnowfall,DailyStateFirstOpen,dataOut,&
+       DayofWeek,DayWat,DayWatPer,DecidCap,dectime,DecTreeH,deltaLAI,deltaQi,dens_dry,&
+       Diagnose,DiagQN,DiagQS,DLS,dq,drain,drain_per_tstep,DRAINRT,Ea_hPa,emis,E_mod,&
        es_hPa,ev,evap,EveTreeH,ev_per_tstep,ev_snow,ext_wu,FAIBldg,FAIDecTree,&
-       FAIEveTree,Faut,Fc,fcld,fcld_obs,FileCode,FileOutputPath,FlowChange,fwh,G1,G2,&
-       G3,G4,G5,G6,GDD,GDDFull,GridIDmatrix,Gridiv,gsc,gsModel,halftimestep,HDD,&
-       IceFrac,id,Ie_a,Ie_end,Ie_m,Ie_start,imin,InternalWaterUse_h,int_wu,&
-       IrrFracConif,IrrFracDecid,IrrFracGrass,it,ity,iy,k,kclear,kkAnOHM,Kmax,kup,LAI,&
-       LAICalcYes,LAIMax,LAIMin,LAI_obs,LAIPower,LAIType,lat,ldown,&
-       ldown_obs,ldown_option,L_mod,lng,lup,MaxConductance,Meltwaterstore,&
-       MetForcingData,mwh,mwstore,NARP_EMIS_SNOW,NARP_G,NARP_TRANS_SITE,&
-       ncolumnsDataOut,NetRadiationMethod,NonWaterFraction,nsh,nsh_real,NumberOfGrids,&
-       NWstate_per_tstep,OHM_coef,OHMIncQF,OHM_threshSW,OHM_threshWD,OverUse,&
-       PervFraction,PipeCapacity,planF,p_mm,PorMax_dec,PorMin_dec,porosity,&
-       Precip,PrecipLimit,PrecipLimitAlb,Press_hPa,psim,q2_gkg,qe_per_tstep,qf,qh_obs,&
-       Qm_freezState,qn1_av_store,qn1_bup,qn1_ind_snow,qn1_obs,qn1_S,qn1_S_av_store,&
-       qn1_S_store,qn1_store,RadMeltFact,RAINCOVER,RainMaxRes,ReadLinesMetdata,&
-       RoughLenHeatMethod,RoughLenMomMethod,rss,rss_nsurf,runoff,runoffAGimpervious_m3,&
-       runoffAGveg_m3,runoff_per_interval,runoff_per_tstep,runoffPipes,runoffPipes_m3,&
-       runoffSnow,runoffSoil,runoffSoil_per_tstep,RunoffToWater,runoffwaterbody,&
-       runoffWaterBody_m3,S1,S2,SatHydraulicConduct,SDDFull,sfr,smd,SMDMethod,&
-       smd_nsurf,SnowAlb,SnowAlbMax,SnowAlbMin,snowD,SnowDens,SnowDensMax,&
-       SnowDensMin,SnowDepth,snowFrac,snowfractionchoice,SnowLimBuild,SnowLimPaved,&
-       snow_obs,SnowPack,snowProf,SnowRemoval,SnowToSurf,snowUse,SoilDepth,soilmoist,&
-       SoilState,soilstoreCap,StabilityMethod,state,StateLimit,state_per_tstep,&
-       StorageHeatMethod,surf,SurfaceArea,SurplusEvap,swe,t2_C,tau_a,tau_f,tau_r,&
-       Temp_C,TempMeltFact,TempVeg,TH,timezone,TL,tot_chang_per_tstep,Tstar,tstep,&
-       tstepcount,tstep_real,tsurf_ind,VegFraction,veg_type,VPD_Pa,waterdens,WaterDist,&
-       WaterUseMethod,WetThresh,WUAreaDecTr_m2,WUAreaEveTr_m2,WUAreaGrass_m2,&
-       WUAreaTotal_m2,wu_m3,WU_Day,WUProfA_tstep,WUProfM_tstep,xsmd,year,Z,ZENITH_deg,Zh)
+       FAIEveTree,Faut,Fc,fcld,fcld_obs,FileCode,FileOutputPath,FlowChange,FreezMelt,&
+       FreezState,FreezStateVol,fwh,G1,G2,G3,G4,G5,G6,GDD,GDDFull,GridIDmatrix,Gridiv,&
+       gsc,gsModel,halftimestep,HDD,H_mod,IceFrac,id,Ie_a,Ie_end,Ie_m,Ie_start,imin,&
+       InternalWaterUse_h,int_wu,IrrFracConif,IrrFracDecid,IrrFracGrass,it,ity,iy,k,&
+       kclear,kkAnOHM,Kmax,kup,LAI,LAICalcYes,LAIMax,LAIMin,LAI_obs,LAIPower,LAIType,lat,&
+       ldown,ldown_obs,ldown_option,L_mod,lng,lup,lv_J_kg,lvS_J_kg,MaxConductance,&
+       Meltwaterstore,MetForcingData,mwh,mw_ind,mwstore,NARP_EMIS_SNOW,NARP_G,&
+       NARP_TRANS_SITE,ncolumnsDataOut,NetRadiationMethod,NonWaterFraction,nsh,&
+       nsh_real,NumberOfGrids,NWstate_per_tstep,OHM_coef,OHMIncQF,OHM_threshSW,&
+       OHM_threshWD,OverUse,PervFraction,PipeCapacity,planF,p_mm,PorMax_dec,PorMin_dec&
+       ,porosity,Precip,PrecipLimit,PrecipLimitAlb,Press_hPa,psim,psyc_hPa,q2_gkg,qe,&
+       qeOut,qe_per_tstep,qf,qh,qh_obs,Qm,QmFreez,Qm_freezState,Qm_melt,Qm_rain,QmRain&
+       ,qn1,qn1_av_store,qn1_bup,qn1_ind_snow,qn1_obs,qn1_S,qn1_S_av_store,qn1_SF,&
+       qn1_S_store,qn1_store,qs,RA,RadMeltFact,RAINCOVER,RainMaxRes,rainOnSnow,RAsnow,&
+       rb,ReadLinesMetdata,ResistSurf,RoughLenHeatMethod,RoughLenMomMethod,rss,&
+       rss_nsurf,runoff,runoffAGimpervious_m3,runoffAGveg_m3,runoff_per_interval,&
+       runoff_per_tstep,runoffPipes,runoffPipes_m3,runoffSnow,runoffSoil,&
+       runoffSoil_per_tstep,RunoffToWater,runoffwaterbody,runoffWaterBody_m3,S1,S2,&
+       SatHydraulicConduct,SDDFull,sfr,s_hPa,sIce_hpa,smd,SMDMethod,smd_nsurf,SnowAlb,&
+       SnowAlbMax,SnowAlbMin,snowCalcSwitch,snowD,SnowDens,SnowDensMax,SnowDensMin,&
+       SnowDepth,snowFrac,snowfractionchoice,SnowLimBuild,SnowLimPaved,snow_obs,&
+       SnowPack,snowProf,SnowRemoval,SnowToSurf,snowUse,SoilDepth,soilmoist,&
+       SoilMoistCap,soilmoistOld,SoilState,soilstoreCap,StabilityMethod,state,&
+       StateLimit,stateOld,state_per_tstep,StorageHeatMethod,surf,SurfaceArea,&
+       surf_chang_per_tstep,SurplusEvap,swe,t2_C,tau_a,tau_f,tau_r,Temp_C,TempMeltFact&
+       ,TempVeg,TH,timezone,TL,tot_chang_per_tstep,Tstar,tstep,tstepcount,tstep_real,&
+       tsurf,tsurf_ind,UStar,veg_fr,VegFraction,VegPhenLumps,veg_type,VPd_hpa,VPD_Pa,&
+       vsmd,waterdens,WaterDist,WaterUseMethod,WetThresh,WUAreaDecTr_m2,WUAreaEveTr_m2&
+       ,WUAreaGrass_m2,WUAreaTotal_m2,WU_Day,wu_DecTr,wu_EveTr,wu_Grass,wu_m3,&
+       WUProfA_tstep,WUProfM_tstep,xBo,xsmd,year,Z,Z0m,Zdm,ZENITH_deg,Zh,ZZD)
 
   ! !==============main calculation start=======================
   ! IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_cal_RoughnessParameters...'
@@ -509,7 +513,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        Qm_rain,&
        QmFreez,&
        QmRain,&
-       qn1_bup,&
+       qn1,&
        qn1_ind_snow,&
        qn1_S,&
        qn1_SF,&

@@ -28,7 +28,7 @@ CONTAINS
   SUBROUTINE AnOHM(&
        qn1,qn1_store,qn1_av_store,&
        MetForcingData_grid,moist_surf,&
-       alb, emis, cp, kk, ch,&! input
+       alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&! input
        sfr,nsurf,nsh,AnthropHeatMethod,id,Gridiv,&
        a1,a2,a3,qs)! output
 
@@ -41,9 +41,9 @@ CONTAINS
 
     REAL(KIND(1d0)),INTENT(in),DIMENSION(:)::alb  !< albedo [-]
     REAL(KIND(1d0)),INTENT(in),DIMENSION(:)::emis !< emissivity [-]
-    REAL(KIND(1d0)),INTENT(in),DIMENSION(:)::cp   !< heat capacity [J m-3 K-1]
-    REAL(KIND(1d0)),INTENT(in),DIMENSION(:)::kk   !< thermal conductivity [W m-1 K-1]
-    REAL(KIND(1d0)),INTENT(in),DIMENSION(:)::ch   !< bulk transfer coef [J m-3 K-1]
+    REAL(KIND(1d0)),INTENT(in),DIMENSION(:)::cpAnOHM   !< heat capacity [J m-3 K-1]
+    REAL(KIND(1d0)),INTENT(in),DIMENSION(:)::kkAnOHM   !< thermal conductivity [W m-1 K-1]
+    REAL(KIND(1d0)),INTENT(in),DIMENSION(:)::chAnOHM   !< bulk transfer coef [J m-3 K-1]
 
     INTEGER,INTENT(in):: id                !< day of year [-]
     INTEGER,INTENT(in):: Gridiv            !< grid id [-]
@@ -96,7 +96,7 @@ CONTAINS
        !  IF ( sfr(is) > .001 ) THEN
        !   call AnOHM to calculate the coefs.
        CALL AnOHM_coef(is,xid,Gridiv,MetForcingData_grid,moist_surf,AnthropHeatMethod,& !input
-            alb, emis, cp, kk, ch,&! input
+            alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&! input
             xa1(is),xa2(is),xa3(is))                         ! output
        ! print*, 'AnOHM_coef are: ',xa1,xa2,xa3
        !  ELSE
@@ -139,7 +139,7 @@ CONTAINS
   SUBROUTINE AnOHM_coef(&
        sfc_typ,xid,xgrid,&!input
        MetForcingData_grid,moist,AnthropHeatMethod,& !input
-       alb, emis, cp, kk, ch,&! input
+       alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&! input
        xa1,xa2,xa3)                         ! output
 
     IMPLICIT NONE
@@ -152,9 +152,9 @@ CONTAINS
 
     REAL(KIND(1d0)),INTENT(in),DIMENSION(:)   :: alb                 !< albedo [-]
     REAL(KIND(1d0)),INTENT(in),DIMENSION(:)   :: emis                !< emissivity [-]
-    REAL(KIND(1d0)),INTENT(in),DIMENSION(:)   :: cp                  !< heat capacity [J m-3 K-1]
-    REAL(KIND(1d0)),INTENT(in),DIMENSION(:)   :: kk                  !< thermal conductivity [W m-1 K-1]
-    REAL(KIND(1d0)),INTENT(in),DIMENSION(:)   :: ch                  !< bulk transfer coef [J m-3 K-1]
+    REAL(KIND(1d0)),INTENT(in),DIMENSION(:)   :: cpAnOHM                  !< heat capacity [J m-3 K-1]
+    REAL(KIND(1d0)),INTENT(in),DIMENSION(:)   :: kkAnOHM                  !< thermal conductivity [W m-1 K-1]
+    REAL(KIND(1d0)),INTENT(in),DIMENSION(:)   :: chAnOHM                  !< bulk transfer coef [J m-3 K-1]
     REAL(KIND(1d0)),INTENT(in),DIMENSION(:)   :: moist               !< surface wetness status [-]
     REAL(KIND(1d0)),INTENT(in),DIMENSION(:,:) :: MetForcingData_grid !< met forcing array of grid
 
@@ -235,9 +235,9 @@ CONTAINS
        ! load sfc. properties:
        xalb   = alb(sfc_typ)
        xemis  = emis(sfc_typ)
-       xcp    = cp(sfc_typ)
-       xk     = kk(sfc_typ)
-       xch    = ch(sfc_typ)
+       xcp    = cpAnOHM(sfc_typ)
+       xk     = kkAnOHM(sfc_typ)
+       xch    = chAnOHM(sfc_typ)
        xmoist = moist(sfc_typ)
 
        !  PRINT*, 'xBo before:',xBo

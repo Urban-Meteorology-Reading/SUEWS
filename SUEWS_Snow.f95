@@ -103,7 +103,7 @@ SUBROUTINE Snow_cal_MeltHeat(&
   !Input and output as this is updated in this subroutine
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowPack
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::snowFrac
-  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowAlb
+  REAL(KIND(1d0)),INTENT(inout)::SnowAlb
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowDens
 
 
@@ -252,7 +252,7 @@ SUBROUTINE MeltHeat(&
   !Input and output as this is updated in this subroutine
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowPack
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::snowFrac
-  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowAlb
+  REAL(KIND(1d0)),INTENT(inout)::SnowAlb
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowDens
 
 

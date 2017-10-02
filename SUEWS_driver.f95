@@ -7,11 +7,737 @@ MODULE SUEWS_Driver
   IMPLICIT NONE
 
 CONTAINS
-subroutine SUEWS_cal_Main
-  implicit none
+  SUBROUTINE SUEWS_cal_Main(&
+       a1,a2,a3,addImpervious,AdditionalWater,addPipes,addVeg,addWater,addWaterBody,&
+       AddWaterRunoff,AerodynamicResistanceMethod,alb,albDecTr,AlbedoChoice,&
+       albEveTr,albGrass,alBMax_DecTr,alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,&
+       AlbMin_EveTr,AlbMin_Grass,alt,AnthropHeatMethod,areaZh,avdens,avkdn,avRh,avU1,&
+       avU10_ms,azimuth,BaseT,BaseTe,BaseTHDD,bldgH,CapMax_dec,CapMin_dec,ch,chang,&
+       changSnow,chSnow_per_interval,cp,CRWmax,CRWmin,CumSnowfall,DailyStateFirstOpen,&
+       dataOut,DayofWeek,DayWat,DayWatPer,DecidCap,dectime,DecTreeH,deltaLAI,&
+       dens_dry,Diagnose,DiagQN,DiagQS,DLS,drain_per_tstep,DRAINRT,Ea_hPa,emis,E_mod,&
+       es_hPa,ev,evap,EveTreeH,ev_per_tstep,ev_snow,ext_wu,FAIBldg,FAIDecTree,&
+       FAIEveTree,Faut,Fc,fcld,fcld_obs,FileCode,FileOutputPath,FlowChange,fwh,G1,G2,&
+       G3,G4,G5,G6,GDD,GDDFull,GridIDmatrix,Gridiv,gsc,gsModel,halftimestep,HDD,&
+       IceFrac,id,Ie_a,Ie_end,Ie_m,Ie_start,imin,InternalWaterUse_h,int_wu,&
+       IrrFracConif,IrrFracDecid,IrrFracGrass,it,ity,iy,k,kclear,kk,Kmax,kup,LAI,&
+       LAICalcYes,LAIMax,LAIMin,LAI_obs,LAIPower,LAIType,lat,ldown,&
+       ldown_obs,ldown_option,L_mod,lng,lup,MaxConductance,Meltwaterstore,&
+       MetForcingData,mwh,mwstore,NARP_EMIS_SNOW,NARP_G,NARP_TRANS_SITE,&
+       ncolumnsDataOut,NetRadiationMethod,NonWaterFraction,nsh,nsh_real,NumberOfGrids,&
+       NWstate_per_tstep,OHM_coef,OHMIncQF,OHM_threshSW,OHM_threshWD,OverUse,&
+       PervFraction,PipeCapacity,planF,p_mm,PorMax_dec,PorMin_dec,porosity,&
+       Precip,PrecipLimit,PrecipLimitAlb,Press_hPa,psim,q2_gkg,qe_per_tstep,qf,qh_obs,&
+       Qm_freezState,qn1_av_store,qn1_bup,qn1_ind_snow,qn1_obs,qn1_S,qn1_S_av_store,&
+       qn1_S_store,qn1_store,RadMeltFact,RAINCOVER,RainMaxRes,ReadLinesMetdata,&
+       RoughLenHeatMethod,RoughLenMomMethod,rss,rss_nsurf,runoff,runoffAGimpervious_m3,&
+       runoffAGveg_m3,runoff_per_interval,runoff_per_tstep,runoffPipes,runoffPipes_m3,&
+       runoffSnow,runoffSoil,runoffSoil_per_tstep,RunoffToWater,runoffwaterbody,&
+       runoffWaterBody_m3,S1,S2,SatHydraulicConduct,SDDFull,sfr,smd,SMDMethod,&
+       smd_nsurf,SnowAlb,SnowAlbMax,SnowAlbMin,snowD,SnowDens,SnowDensMax,&
+       SnowDensMin,SnowDepth,snowFrac,snowfractionchoice,SnowLimBuild,SnowLimPaved,&
+       snow_obs,SnowPack,snowProf,SnowRemoval,SnowToSurf,snowUse,SoilDepth,soilmoist,&
+       SoilState,soilstoreCap,StabilityMethod,state,StateLimit,state_per_tstep,&
+       StorageHeatMethod,surf,SurfaceArea,SurplusEvap,swe,t2_C,tau_a,tau_f,tau_r,&
+       Temp_C,TempMeltFact,TempVeg,TH,timezone,TL,tot_chang_per_tstep,Tstar,tstep,&
+       tstepcount,tstep_real,tsurf_ind,VegFraction,veg_type,VPD_Pa,waterdens,WaterDist,&
+       WaterUseMethod,WetThresh,WUAreaDecTr_m2,WUAreaEveTr_m2,WUAreaGrass_m2,&
+       WUAreaTotal_m2,wu_m3,WU_Day,WUProfA_tstep,WUProfM_tstep,xsmd,year,Z,ZENITH_deg,Zh)
+
+    IMPLICIT NONE
+
+    INTEGER, PARAMETER:: ndays=366
+    INTEGER, PARAMETER:: nsurf=7                !Total number of surfaces
+    INTEGER, PARAMETER:: NVegSurf=3             !Number of surfaces that are vegetated
 
 
-end subroutine SUEWS_cal_Main
+    INTEGER,PARAMETER:: PavSurf   = 1   !When all surfaces considered together (1-7)
+    INTEGER,PARAMETER::BldgSurf  = 2
+    INTEGER,PARAMETER::ConifSurf = 3
+    INTEGER,PARAMETER::DecidSurf = 4
+    INTEGER,PARAMETER::GrassSurf = 5   !New surface classes: Grass = 5th/7 surfaces
+    ! INTEGER,PARAMETER::BSoilSurf = 6   !New surface classes: Bare soil = 6th/7 surfaces
+    INTEGER,PARAMETER::WaterSurf = 7
+    ! INTEGER,PARAMETER::ExcessSurf= 8   !Runoff or subsurface soil in WGWaterDist
+    ! INTEGER,PARAMETER::NSurfDoNotReceiveDrainage=0   !Number of surfaces that do not receive drainage water (green roof)
+    INTEGER,PARAMETER::ivConif = 1    !When only vegetated surfaces considered (1-3)
+    ! INTEGER,PARAMETER::ivDecid = 2
+    INTEGER,PARAMETER::ivGrass = 3
+    INTEGER, PARAMETER:: MaxNumberOfGrids=2000
+
+
+
+    CHARACTER(LEN=150),INTENT(IN)::FileOutputPath
+    CHARACTER(LEN=20),INTENT(IN)::FileCode
+    INTEGER,INTENT(IN)::AerodynamicResistanceMethod
+    INTEGER,INTENT(IN)::AlbedoChoice
+    INTEGER,INTENT(IN)::AnthropHeatMethod
+    INTEGER,INTENT(IN)::Diagnose
+    INTEGER,INTENT(IN)::DiagQN
+    INTEGER,INTENT(IN)::DiagQS
+    INTEGER,INTENT(IN)::DLS
+    INTEGER,INTENT(IN)::Gridiv
+    INTEGER,INTENT(IN)::gsModel
+    INTEGER,INTENT(IN)::id
+    INTEGER,INTENT(IN)::Ie_end
+    INTEGER,INTENT(IN)::Ie_start
+    INTEGER,INTENT(IN)::imin
+    INTEGER,INTENT(IN)::it
+    INTEGER,INTENT(IN)::ity
+    INTEGER,INTENT(IN)::iy
+    INTEGER,INTENT(IN)::LAICalcYes
+    INTEGER,INTENT(IN)::ldown_option
+    INTEGER,INTENT(IN)::ncolumnsDataOut
+    INTEGER,INTENT(IN)::NetRadiationMethod
+    INTEGER,INTENT(IN)::nsh
+
+    INTEGER,INTENT(IN)::NumberOfGrids
+    INTEGER,INTENT(IN)::OHMIncQF
+    ! INTEGER,INTENT(IN)::opt_QH
+
+    INTEGER,INTENT(IN)::ReadLinesMetdata
+    INTEGER,INTENT(IN)::RoughLenHeatMethod
+    INTEGER,INTENT(IN)::RoughLenMomMethod
+    INTEGER,INTENT(IN)::SMDMethod
+    INTEGER,INTENT(IN)::snowfractionchoice
+    INTEGER,INTENT(IN)::snowUse
+    INTEGER,INTENT(IN)::StabilityMethod
+    INTEGER,INTENT(IN)::StorageHeatMethod
+    INTEGER,INTENT(IN)::tstep
+    INTEGER,INTENT(IN)::veg_type
+
+    INTEGER,INTENT(IN)::WaterUseMethod
+    REAL(KIND(1d0)),INTENT(IN)::addImpervious
+    REAL(KIND(1d0)),INTENT(IN)::addPipes
+    REAL(KIND(1d0)),INTENT(IN)::addVeg
+    REAL(KIND(1d0)),INTENT(IN)::addWaterBody
+    REAL(KIND(1d0)),INTENT(IN)::alBMax_DecTr
+    REAL(KIND(1d0)),INTENT(IN)::alBMax_EveTr
+    REAL(KIND(1d0)),INTENT(IN)::alBMax_Grass
+    REAL(KIND(1d0)),INTENT(IN)::AlbMin_DecTr
+    REAL(KIND(1d0)),INTENT(IN)::AlbMin_EveTr
+    REAL(KIND(1d0)),INTENT(IN)::AlbMin_Grass
+    REAL(KIND(1d0)),INTENT(IN)::areaZh
+    REAL(KIND(1d0)),INTENT(IN)::avdens
+    REAL(KIND(1d0)),INTENT(IN)::avkdn
+    REAL(KIND(1d0)),INTENT(IN)::avRh
+    REAL(KIND(1d0)),INTENT(IN)::avU1
+    REAL(KIND(1d0)),INTENT(IN)::BaseTHDD
+    REAL(KIND(1d0)),INTENT(IN)::bldgH
+    REAL(KIND(1d0)),INTENT(IN)::CapMax_dec
+    REAL(KIND(1d0)),INTENT(IN)::CapMin_dec
+    REAL(KIND(1d0)),INTENT(IN)::CRWmax
+    REAL(KIND(1d0)),INTENT(IN)::CRWmin
+    REAL(KIND(1d0)),INTENT(IN)::dectime
+    REAL(KIND(1d0)),INTENT(IN)::DecTreeH
+    REAL(KIND(1d0)),INTENT(IN)::deltaLAI
+    REAL(KIND(1d0)),INTENT(IN)::DRAINRT
+    REAL(KIND(1d0)),INTENT(IN)::EveTreeH
+    REAL(KIND(1d0)),INTENT(IN)::FAIBldg
+    REAL(KIND(1d0)),INTENT(IN)::FAIDecTree
+    REAL(KIND(1d0)),INTENT(IN)::FAIEveTree
+    REAL(KIND(1d0)),INTENT(IN)::Faut
+    REAL(KIND(1d0)),INTENT(IN)::fcld_obs
+    REAL(KIND(1d0)),INTENT(IN)::G1
+    REAL(KIND(1d0)),INTENT(IN)::G2
+    REAL(KIND(1d0)),INTENT(IN)::G3
+    REAL(KIND(1d0)),INTENT(IN)::G4
+    REAL(KIND(1d0)),INTENT(IN)::G5
+    REAL(KIND(1d0)),INTENT(IN)::G6
+    REAL(KIND(1d0)),INTENT(IN)::InternalWaterUse_h
+    REAL(KIND(1d0)),INTENT(IN)::IrrFracConif
+    REAL(KIND(1d0)),INTENT(IN)::IrrFracDecid
+    REAL(KIND(1d0)),INTENT(IN)::IrrFracGrass
+    REAL(KIND(1d0)),INTENT(IN)::k
+    REAL(KIND(1d0)),INTENT(IN)::Kmax
+    REAL(KIND(1d0)),INTENT(IN)::LAI_obs
+    REAL(KIND(1d0)),INTENT(IN)::lat
+    REAL(KIND(1d0)),INTENT(IN)::lng
+    REAL(KIND(1d0)),INTENT(IN)::alt
+    REAL(KIND(1d0)),INTENT(IN)::timezone
+    REAL(KIND(1d0)),INTENT(IN)::halftimestep
+    REAL(KIND(1d0)),INTENT(IN)::ldown_obs
+    REAL(KIND(1d0)),INTENT(IN)::L_mod
+    REAL(KIND(1d0)),INTENT(IN)::NARP_EMIS_SNOW
+    REAL(KIND(1d0)),INTENT(IN)::NARP_TRANS_SITE
+    REAL(KIND(1d0)),INTENT(IN)::NonWaterFraction
+    REAL(KIND(1d0)),INTENT(IN)::nsh_real
+    REAL(KIND(1d0)),INTENT(IN)::PervFraction
+    REAL(KIND(1d0)),INTENT(IN)::PipeCapacity
+    REAL(KIND(1d0)),INTENT(IN)::PorMax_dec
+    REAL(KIND(1d0)),INTENT(IN)::PorMin_dec
+    ! REAL(KIND(1d0)),INTENT(IN)::porosity_id
+    REAL(KIND(1d0)),INTENT(IN)::Precip
+    REAL(KIND(1d0)),INTENT(IN)::PrecipLimit
+    REAL(KIND(1d0)),INTENT(IN)::PrecipLimitAlb
+    REAL(KIND(1d0)),INTENT(IN)::Press_hPa
+    REAL(KIND(1d0)),INTENT(out)::qf
+    REAL(KIND(1d0)),INTENT(IN)::qh_obs
+    REAL(KIND(1d0)),INTENT(IN)::qn1_bup
+    REAL(KIND(1d0)),INTENT(IN)::qn1_obs
+    REAL(KIND(1d0)),INTENT(IN)::RadMeltFact
+    REAL(KIND(1d0)),INTENT(IN)::RAINCOVER
+    REAL(KIND(1d0)),INTENT(IN)::RainMaxRes
+    REAL(KIND(1d0)),INTENT(IN)::RunoffToWater
+    REAL(KIND(1d0)),INTENT(IN)::S1
+    REAL(KIND(1d0)),INTENT(IN)::S2
+    REAL(KIND(1d0)),INTENT(IN)::SnowAlbMax
+    REAL(KIND(1D0)),INTENT(IN)::SnowAlbMin
+    REAL(KIND(1D0)),INTENT(IN)::SnowDensMax
+    REAL(KIND(1D0)),INTENT(IN)::SnowDensMin
+    REAL(KIND(1d0)),INTENT(IN)::SnowLimBuild
+    REAL(KIND(1d0)),INTENT(IN)::SnowLimPaved
+    REAL(KIND(1d0)),INTENT(IN)::snow_obs
+    REAL(KIND(1d0)),INTENT(IN)::SurfaceArea
+    REAL(KIND(1D0)),INTENT(IN)::tau_a
+    REAL(KIND(1D0)),INTENT(IN)::tau_f
+    REAL(KIND(1D0)),INTENT(IN)::tau_r
+    REAL(KIND(1d0)),INTENT(IN)::Temp_C
+    REAL(KIND(1d0)),INTENT(IN)::TempMeltFact
+    REAL(KIND(1d0)),INTENT(IN)::TH
+    REAL(KIND(1d0)),INTENT(IN)::TL
+    REAL(KIND(1d0)),INTENT(IN)::tstep_real
+    REAL(KIND(1d0)),INTENT(IN)::VegFraction
+    REAL(KIND(1d0)),INTENT(IN)::waterdens
+    REAL(KIND(1d0)),INTENT(IN)::xsmd
+    REAL(KIND(1d0)),INTENT(IN)::year
+    REAL(KIND(1d0)),INTENT(IN)::Z
+    REAL(KIND(1d0)),INTENT(IN)::ZENITH_deg
+    REAL(KIND(1d0)),INTENT(INOUT)::a1
+    REAL(KIND(1d0)),INTENT(INOUT)::a2
+    REAL(KIND(1d0)),INTENT(INOUT)::a3
+    REAL(KIND(1d0)),INTENT(INOUT)::OverUse
+    REAL(KIND(1d0)),INTENT(INOUT)::runoff_per_interval
+    REAL(KIND(1d0)),INTENT(INOUT)::tstepcount
+    REAL(KIND(1d0)),INTENT(OUT)::AdditionalWater
+    ! REAL(KIND(1d0))::air_dens
+    REAL(KIND(1d0)),INTENT(OUT)::avU10_ms
+    REAL(KIND(1d0)),INTENT(OUT)::chSnow_per_interval
+    REAL(KIND(1d0)),INTENT(OUT)::CumSnowfall
+    REAL(KIND(1d0)),INTENT(OUT)::dens_dry
+    REAL(KIND(1d0)),INTENT(OUT)::drain_per_tstep
+    REAL(KIND(1d0)),INTENT(OUT)::Ea_hPa
+    REAL(KIND(1d0)),INTENT(OUT)::E_mod
+    REAL(KIND(1d0)),INTENT(OUT)::es_hPa
+    REAL(KIND(1d0)),INTENT(OUT)::ev
+    REAL(KIND(1d0)),INTENT(OUT)::ev_per_tstep
+    REAL(KIND(1d0)),INTENT(OUT)::ext_wu
+    REAL(KIND(1d0)),INTENT(OUT)::fcld
+    REAL(KIND(1d0)),INTENT(OUT)::FlowChange
+    REAL(KIND(1d0)),INTENT(OUT)::fwh
+    REAL(KIND(1d0)),INTENT(OUT)::gsc
+    REAL(KIND(1d0)),INTENT(OUT)::int_wu
+    REAL(KIND(1d0)),INTENT(OUT)::kclear
+    REAL(KIND(1d0)),INTENT(OUT)::kup
+    REAL(KIND(1d0)),INTENT(OUT)::ldown
+    REAL(KIND(1d0)),INTENT(OUT)::lup
+    REAL(KIND(1d0)),INTENT(OUT)::mwh
+    REAL(KIND(1d0)),INTENT(OUT)::mwstore
+    REAL(KIND(1d0)),INTENT(OUT)::NWstate_per_tstep
+    REAL(KIND(1d0)),INTENT(OUT)::planF
+    REAL(KIND(1d0)),INTENT(OUT)::p_mm
+    REAL(KIND(1d0)),INTENT(OUT)::psim
+    REAL(KIND(1d0)),INTENT(OUT)::q2_gkg
+    REAL(KIND(1d0)),INTENT(OUT)::qe_per_tstep
+    REAL(KIND(1d0)),INTENT(OUT)::qn1_S
+    REAL(KIND(1d0)),INTENT(OUT)::rss
+    REAL(KIND(1d0)),INTENT(OUT)::runoffAGimpervious_m3
+    REAL(KIND(1d0)),INTENT(OUT)::runoffAGveg_m3
+    REAL(KIND(1d0)),INTENT(OUT)::runoff_per_tstep
+    REAL(KIND(1d0)),INTENT(OUT)::runoffPipes
+    REAL(KIND(1d0)),INTENT(OUT)::runoffPipes_m3
+    REAL(KIND(1d0)),INTENT(OUT)::runoffSoil_per_tstep
+    REAL(KIND(1d0)),INTENT(OUT)::runoffwaterbody
+    REAL(KIND(1d0)),INTENT(OUT)::runoffWaterBody_m3
+    REAL(KIND(1d0)),INTENT(OUT)::smd
+    REAL(KIND(1d0)),INTENT(OUT)::SoilState
+    REAL(KIND(1d0)),INTENT(OUT)::state_per_tstep
+    REAL(KIND(1d0)),INTENT(OUT)::swe
+    REAL(KIND(1d0)),INTENT(OUT)::t2_C
+    REAL(KIND(1d0)),INTENT(OUT)::TempVeg
+    REAL(KIND(1d0)),INTENT(OUT)::tot_chang_per_tstep
+    REAL(KIND(1d0)),INTENT(OUT)::Tstar
+    REAL(KIND(1d0)),INTENT(OUT)::VPD_Pa
+    REAL(KIND(1d0)),INTENT(OUT)::WUAreaDecTr_m2
+    REAL(KIND(1d0)),INTENT(OUT)::WUAreaEveTr_m2
+    REAL(KIND(1d0)),INTENT(OUT)::WUAreaGrass_m2
+    REAL(KIND(1d0)),INTENT(OUT)::WUAreaTotal_m2
+    REAL(KIND(1d0)),INTENT(OUT)::wu_m3
+    REAL(KIND(1d0)),INTENT(OUT)::Zh
+    REAL(KIND(1d0)),INTENT(OUT)::Fc
+    REAL(KIND(1d0)),INTENT(OUT)::azimuth
+    ! REAL(KIND(1d0)),INTENT(INOUT)::SnowAlb
+    REAL(KIND(1d0)),DIMENSION(0:ndays),INTENT(INOUT)::albDecTr
+    REAL(KIND(1d0)),DIMENSION(0:ndays),INTENT(INOUT)::albEveTr
+    REAL(KIND(1d0)),DIMENSION(0:ndays),INTENT(INOUT)::albGrass
+    REAL(KIND(1d0)),DIMENSION(0:ndays),INTENT(INOUT)::DecidCap
+    REAL(KIND(1d0)),DIMENSION(0:ndays),INTENT(INOUT)::porosity
+    REAL(KIND(1d0)),DIMENSION(2),INTENT(INOUT)::SurplusEvap
+    REAL(KIND(1d0)),DIMENSION(2),INTENT(OUT)::SnowRemoval
+    REAL(KIND(1d0)),DIMENSION(2*nsh+1),INTENT(INOUT)::qn1_av_store
+    REAL(KIND(1d0)),DIMENSION(2*nsh+1),INTENT(INOUT)::qn1_S_av_store
+    REAL(KIND(1d0)),DIMENSION(3),INTENT(IN)::Ie_a
+    REAL(KIND(1d0)),DIMENSION(3),INTENT(IN)::Ie_m
+    ! REAL(KIND(1d0)),DIMENSION(3),INTENT(IN)::LAIDay
+    ! REAL(KIND(1d0)),DIMENSION(3),INTENT(IN)::LAI_id
+    REAL(KIND(1d0)),DIMENSION(3),INTENT(IN)::MaxConductance
+    ! REAL(KIND(1d0)),DIMENSION(3),INTENT(IN)::sfrVeg
+    ! INTEGER,INTENT(IN),DIMENSION(3)::DayofWeek_id
+    REAL(KIND(1d0)),DIMENSION(365),INTENT(IN)::NARP_G
+    ! REAL(KIND(1d0)),INTENT(IN),DIMENSION(6)::HDD_id
+    REAL(KIND(1d0)),DIMENSION(7),INTENT(IN)::DayWat
+    REAL(KIND(1d0)),DIMENSION(7),INTENT(IN)::DayWatPer
+    REAL(KIND(1d0)),INTENT(IN),DIMENSION(9)::OHM_threshSW
+    REAL(KIND(1d0)),INTENT(IN),DIMENSION(9)::OHM_threshWD
+    ! REAL(KIND(1d0)),INTENT(IN),DIMENSION(9)::WU_Day_id
+    INTEGER,DIMENSION(MaxNumberOfGrids),INTENT(IN)::GridIDmatrix
+    REAL(KIND(1d0)),DIMENSION(MaxNumberOfGrids),INTENT(INOUT)::DailyStateFirstOpen
+    REAL(KIND(1d0)),DIMENSION(nsh),INTENT(INOUT)::qn1_S_store
+    REAL(KIND(1d0)),DIMENSION(nsh),INTENT(INOUT)::qn1_store
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(IN)::ch
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(IN)::cp
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(IN)::emis
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(IN)::kk
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(IN)::qn1_ind_snow
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(IN)::sfr
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(IN)::StateLimit
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(IN)::tsurf_ind
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(IN)::WetThresh
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(INOUT)::addWater
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(INOUT)::AddWaterRunoff
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(INOUT)::alb
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(INOUT)::IceFrac
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(INOUT)::Meltwaterstore
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(INOUT)::runoffSoil
+    REAL(KIND(1d0)),INTENT(INOUT)::SnowAlb
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(INOUT)::SnowDens
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(INOUT)::SnowDepth
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(INOUT)::snowFrac
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(INOUT)::SnowPack
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(INOUT)::soilmoist
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(INOUT)::state
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(OUT)::chang
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(OUT)::changSnow
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(OUT)::evap
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(OUT)::ev_snow
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(OUT)::Qm_freezState
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(OUT)::rss_nsurf
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(OUT)::runoff
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(OUT)::runoffSnow
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(OUT)::smd_nsurf
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(OUT)::snowD
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(OUT)::SnowToSurf
+    REAL(KIND(1d0)),INTENT(IN),DIMENSION(nsurf)::SatHydraulicConduct
+    REAL(KIND(1d0)),INTENT(IN),DIMENSION(nsurf)::SoilDepth
+    REAL(KIND(1d0)),INTENT(IN),DIMENSION(nsurf)::soilstoreCap
+    INTEGER,DIMENSION(nvegsurf),INTENT(IN)::LAIType
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN)::BaseT
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN)::BaseTe
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN)::GDDFull
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN)::LAIMax
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN)::LAIMin
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN)::SDDFull
+    REAL(KIND(1d0)),DIMENSION(0:23,2),INTENT(OUT)::snowProf
+    REAL(KIND(1d0)),INTENT(IN),DIMENSION(24*NSH,2)::WUProfA_tstep
+    REAL(KIND(1d0)),INTENT(IN),DIMENSION(24*NSH,2)::WUProfM_tstep
+    REAL(KIND(1d0)),DIMENSION(0:ndays,5),INTENT(INOUT)::GDD
+    REAL(KIND(1d0)),DIMENSION(-4:ndays,6),INTENT(INOUT)::HDD
+    REAL(KIND(1d0)),DIMENSION(4,nvegsurf),INTENT(IN)::LAIPower
+    REAL(KIND(1d0)),DIMENSION(-4:ndays,nvegsurf),INTENT(INOUT)::LAI
+    REAL(KIND(1d0)),DIMENSION(6,nsurf),INTENT(INOUT)::surf
+    REAL(KIND(1d0)),DIMENSION(nsurf+1,nsurf-1),INTENT(IN)::WaterDist
+    REAL(KIND(1d0)),DIMENSION(:,:,:),INTENT(IN)::MetForcingData
+    REAL(KIND(1d0)),INTENT(IN),DIMENSION(9,4,3)::OHM_coef
+    REAL(KIND(1d0)),DIMENSION(ReadLinesMetdata,ncolumnsDataOut,NumberOfGrids),INTENT(IN)::dataOut
+
+    REAL(KIND(1d0))::avcp
+    REAL(KIND(1d0))::dq
+    REAL(KIND(1d0))::H_mod
+    REAL(KIND(1d0))::lv_J_kg
+    REAL(KIND(1d0))::lvS_J_kg
+    REAL(KIND(1d0))::psyc_hPa
+    REAL(KIND(1d0))::qe
+    REAL(KIND(1d0))::qeOut
+    REAL(KIND(1d0))::qh
+    REAL(KIND(1d0))::Qm
+    REAL(KIND(1d0))::QmFreez
+    REAL(KIND(1d0))::QmRain
+    REAL(KIND(1d0))::qn1
+    REAL(KIND(1d0))::qn1_SF
+    REAL(KIND(1d0))::qs
+    REAL(KIND(1d0))::RA
+    REAL(KIND(1d0))::RAsnow
+    REAL(KIND(1d0))::rb
+    REAL(KIND(1d0))::ResistSurf
+    REAL(KIND(1d0))::s_hPa
+    REAL(KIND(1d0))::sIce_hpa
+    REAL(KIND(1d0))::SoilMoistCap
+    REAL(KIND(1d0))::surf_chang_per_tstep
+    REAL(KIND(1d0))::tsurf
+    REAL(KIND(1d0))::UStar
+    REAL(KIND(1d0))::veg_fr
+    REAL(KIND(1d0))::VegPhenLumps
+    REAL(KIND(1d0))::VPd_hpa
+    REAL(KIND(1d0))::vsmd
+    REAL(KIND(1d0))::wu_DecTr
+    REAL(KIND(1d0))::wu_EveTr
+    REAL(KIND(1d0))::wu_Grass
+    REAL(KIND(1d0))::xBo
+    REAL(KIND(1d0))::Z0m
+    REAL(KIND(1d0))::Zdm
+    REAL(KIND(1d0))::ZZD
+    INTEGER,DIMENSION(nsurf)::snowCalcSwitch
+    REAL(KIND(1d0)),DIMENSION(nsurf)::deltaQi
+    REAL(KIND(1d0)),DIMENSION(nsurf)::drain
+    REAL(KIND(1d0)),DIMENSION(nsurf)::FreezMelt
+    REAL(KIND(1d0)),DIMENSION(nsurf)::FreezState
+    REAL(KIND(1d0)),DIMENSION(nsurf)::FreezStateVol
+    REAL(KIND(1d0)),DIMENSION(nsurf)::mw_ind
+    REAL(KIND(1d0)),DIMENSION(nsurf)::Qm_melt
+    REAL(KIND(1d0)),DIMENSION(nsurf)::Qm_rain
+    REAL(KIND(1d0)),DIMENSION(nsurf)::rainOnSnow
+    REAL(KIND(1d0)),DIMENSION(nsurf)::soilmoistOld
+    REAL(KIND(1d0)),DIMENSION(nsurf)::stateOld
+    INTEGER,DIMENSION(0:ndays,3),INTENT(INOUT)::DayofWeek
+    REAL(KIND(1d0)),DIMENSION(0:ndays,9),INTENT(INOUT)::WU_Day
+
+
+
+    !==============main calculation start=======================
+    IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_cal_RoughnessParameters...'
+    ! CALL SUEWS_cal_RoughnessParameters(Gridiv) ! Added by HCW 11 Nov 2014
+    CALL SUEWS_cal_RoughnessParameters(&
+         RoughLenMomMethod,sfr,areaZh,&!input
+         bldgH,EveTreeH,DecTreeH,&
+         porosity(id),FAIBldg,FAIEveTree,FAIDecTree,Z,&
+         planF,&!output
+         Zh,Z0m,Zdm,ZZD)
+
+    ! Calculate sun position
+    IF(Diagnose==1) WRITE(*,*) 'Calling NARP_cal_SunPosition...'
+    CALL NARP_cal_SunPosition(&
+         year,&!input:
+         dectime-halftimestep,&! sun position at middle of timestep before
+         timezone,lat,lng,alt,&
+         azimuth,zenith_deg)!output:
+    !write(*,*) DateTime, timezone,lat,lng,alt,azimuth,zenith_deg
+
+
+    !Call the SUEWS_cal_DailyState routine to get surface characteristics ready
+    IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_cal_DailyState...'
+    ! CALL SUEWS_cal_DailyState(Gridiv)
+    CALL SUEWS_cal_DailyState(&
+         iy,id,it,imin,Gridiv,tstep,&!input
+         WaterUseMethod,snowUse,Ie_start,Ie_end,&
+         ReadLinesMetdata,ncolumnsDataOut,NumberOfGrids,LAICalcYes,LAIType,&
+         nsh_real,avkdn,Temp_C,Precip,BaseTHDD,&
+         lat,Faut,LAI_obs,tau_a,tau_f,tau_r,&
+         SnowDensMax,SnowDensMin,SnowAlbMin,&
+         alBMax_DecTr,alBMax_EveTr,alBMax_Grass,&
+         AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
+         CapMax_dec,CapMin_dec,PorMax_dec,PorMin_dec,&
+         Ie_a,Ie_m,DayWatPer,DayWat,SnowPack,&
+         BaseT,BaseTe,GDDFull,SDDFull,LAIMin,LAIMax,LAIPower,dataOut,&
+         a1,a2,a3,tstepcount,SnowAlb,DecidCap,albDecTr,albEveTr,albGrass,&!inout
+         porosity,GDD,HDD,SnowDens,LAI,DayofWeek,WU_Day,&
+         xBo)!output
+
+
+    !Calculation of density and other water related parameters
+    IF(Diagnose==1) WRITE(*,*) 'Calling LUMPS_cal_AtmMoist...'
+    CALL LUMPS_cal_AtmMoist(&
+         Temp_C,Press_hPa,avRh,dectime,&! input:
+         lv_J_kg,lvS_J_kg,&! output:
+         es_hPa,Ea_hPa,VPd_hpa,VPD_Pa,dq,dens_dry,avcp,avdens)
+
+
+    !======== Calculate soil moisture =========
+    CALL SUEWS_update_SoilMoist(&
+         nsurf,ConifSurf,DecidSurf,GrassSurf,&!input
+         NonWaterFraction,&
+         soilstoreCap,sfr,soilmoist,&
+         SoilMoistCap,SoilState,&!output
+         vsmd,smd)
+
+
+    ! ===================NET ALLWAVE RADIATION================================
+    CALL SUEWS_cal_Qn(&
+         NetRadiationMethod,snowUse,ldown_option,id,&!input
+         Diagnose,snow_obs,ldown_obs,fcld_obs,&
+         dectime,ZENITH_deg,avKdn,Temp_C,avRH,Press_hPa,qn1_obs,&
+         SnowAlb,AlbedoChoice,DiagQN,&
+         NARP_G,NARP_TRANS_SITE,NARP_EMIS_SNOW,IceFrac,sfr,emis,&
+         alb,albDecTr,DecidCap,albEveTr,albGrass,surf,&!inout
+         snowFrac,ldown,fcld,&!output
+         qn1,qn1_SF,qn1_S,kclear,kup,lup,tsurf)
+
+
+    ! ===================ANTHROPOGENIC HEAT FLUX================================
+    ! ih=it-DLS
+    ! IF(ih<0) ih=23
+    !
+    ! IF(AnthropHeatMethod==1) THEN
+    !    IF(Diagnose==1) WRITE(*,*) 'Calling SAHP_1...'
+    !    CALL SAHP_1(qf_sahp,QF_SAHP_base,QF_SAHP_heat,id,ih,imin)
+    !    qn1_bup=qn1
+    !    qn1=qn1+QF_SAHP
+    ! ELSEIF(AnthropHeatMethod==2) THEN
+    !    IF(Diagnose==1) WRITE(*,*) 'Calling SAHP_2...'
+    !    CALL SAHP_2(qf_sahp,QF_SAHP_base,QF_SAHP_heat,id,ih,imin)
+    !    qn1_bup=qn1
+    !    qn1=qn1+QF_SAHP
+    ! ELSEIF(AnthropHeatMethod==3) THEN
+    !    IF(Diagnose==1) WRITE(*,*) 'Calling SAHP_3...'
+    !    CALL SAHP_3(qf_sahp,id,ih,imin)
+    !    qn1_bup=qn1
+    !    qn1=qn1+QF_SAHP
+    ! ELSE
+    !    qn1_bup=qn1
+    !    qn1=qn1+qf
+    ! ENDIF
+    !
+    ! ! -- qn1 is now QSTAR+QF (net all-wave radiation + anthropogenic heat flux)
+    ! ! -- qn1_bup is QSTAR only
+    ! IF(AnthropHeatMethod>=1) THEN
+    !    qf=QF_SAHP
+    ! ENDIF
+    !
+    ! ! Calculate CO2 fluxes from anthropogenic components
+    ! IF(Diagnose==1) WRITE(*,*) 'Calling CO2_anthro...'
+    ! CALL CO2_anthro(id,ih,imin)
+    ! ! For the purpose of turbulent fluxes, remove QF from the net all-wave radiation
+    ! qn1=qn1_bup  !Remove QF from QSTAR
+    ! ! -- qn1 is now QSTAR only
+    qf=0 ! AH disabled for the moment, TS 28 Sep 2017
+    ! ! ===================ANTHROPOGENIC HEAT FLUX END================================
+
+
+    ! =================STORAGE HEAT FLUX=======================================
+    CALL SUEWS_cal_Qs(&
+         StorageHeatMethod,OHMIncQF,Gridiv,id,Diagnose,sfr,&!input
+         OHM_coef,OHM_threshSW,OHM_threshWD,&
+         soilmoist,soilstoreCap,state,nsh,SnowUse,DiagQS,&
+         HDD,MetForcingData,qf,qn1_bup,&
+         alb,emis,cp,kk,ch,&
+         AnthropHeatMethod,&
+         qn1_store,qn1_S_store,qn1_av_store,qn1_S_av_store,&!inout
+         surf,qn1_S,snowFrac,qs,&
+         deltaQi,a1,a2,a3)!output
+
+
+
+    !==================Energy related to snow melting/freezing processes=======
+    IF(Diagnose==1) WRITE(*,*) 'Calling MeltHeat'
+    CALL Snow_cal_MeltHeat(&
+         snowUse,&!input
+         bldgsurf,nsurf,PavSurf,WaterSurf,&
+         lvS_J_kg,lv_J_kg,tstep_real,&
+         RadMeltFact,TempMeltFact,SnowAlbMax,SnowDensMin,&
+         Temp_C,Precip,PrecipLimit,PrecipLimitAlb,&
+         nsh_real,waterdens,&
+         sfr,Tsurf_ind,state,qn1_ind_snow,Meltwaterstore,deltaQi,&
+         SnowPack,snowFrac,SnowAlb,SnowDens,& ! inout
+         mwh,fwh,Qm,QmFreez,QmRain,CumSnowfall,snowCalcSwitch,&!output
+         Qm_melt,Qm_freezState,Qm_rain,FreezMelt,FreezState,FreezStateVol,&
+         rainOnSnow,SnowDepth,mw_ind,veg_fr)
+
+
+    !==========================Turbulent Fluxes================================
+    IF(Diagnose==1) WRITE(*,*) 'Calling LUMPS_cal_QHQE...'
+    !Calculate QH and QE from LUMPS
+    CALL LUMPS_cal_QHQE(&
+         veg_type,& !input
+         snowUse,&
+         qn1_bup,&
+         qf,&
+         qs,&
+         Qm,&
+         Temp_C,&
+         Veg_Fr,&
+         avcp,&
+         Press_hPa,&
+         lv_J_kg,&
+         tstep_real,&
+         DRAINRT,&
+         nsh_real,&
+         Precip,&
+         RainMaxRes,&
+         RAINCOVER,&
+         sfr(ivConif+2:ivGrass+2),&
+         LAI(id-1,Gridiv),&
+         LAImax,&
+         LAImin,&
+         H_mod,& !output
+         E_mod,&
+         psyc_hPa,&
+         s_hPa,&
+         sIce_hpa,&
+         TempVeg,&
+         VegPhenLumps)
+
+
+
+    IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_cal_WaterUse...'
+    !Gives the external and internal water uses per timestep
+    CALL SUEWS_cal_WaterUse(&
+         nsh_real,&! input:
+         SurfaceArea,&
+         sfr,&
+         IrrFracConif,&
+         IrrFracDecid,&
+         IrrFracGrass,&
+         DayofWeek(id,:),&
+         WUProfA_tstep,&
+         WUProfM_tstep,&
+         InternalWaterUse_h,&
+         HDD(id-1,:),&
+         WU_Day(id-1,:),&
+         WaterUseMethod,&
+         NSH,it,imin,DLS,&
+         OverUse,&
+         WUAreaEveTr_m2,&!  output:
+         WUAreaDecTr_m2,&
+         WUAreaGrass_m2,&
+         WUAreaTotal_m2,&
+         wu_EveTr,&
+         wu_DecTr,&
+         wu_Grass,&
+         wu_m3,&
+         int_wu,&
+         ext_wu)
+
+
+    !===============Resistance Calculations=======================
+    CALL SUEWS_cal_Resistance(&
+         StabilityMethod,&!input:
+         Diagnose,AerodynamicResistanceMethod,RoughLenHeatMethod,snowUse,&
+         id,it,gsModel,SMDMethod,&
+         qh_obs,avdens,avcp,h_mod,qn1_bup,dectime,zzd,z0M,zdm,&
+         avU1,Temp_C,L_mod,UStar,VegFraction,avkdn,&
+         Kmax,&
+         g1,g2,g3,g4,&
+         g5,g6,s1,s2,&
+         th,tl,&
+         dq,xsmd,vsmd,MaxConductance,LAIMax,LAI(id-1,:),snowFrac,sfr,&
+         Tstar,&!output
+         psim,gsc,ResistSurf,RA,RAsnow,rb)
+
+
+    !========= CO2-related calculations ================================
+    ! Calculate CO2 fluxes from biogenic components
+    ! IF(Diagnose==1) WRITE(*,*) 'Calling CO2_biogen...'
+    ! CALL CO2_biogen
+    ! ! Sum anthropogenic and biogenic CO2 flux components to find overall CO2 flux
+    ! Fc = Fc_anthro + Fc_biogen
+    Fc=0 ! disbled for the moment. TS 28 Sep 2017
+    !========= CO2-related calculations end================================
+
+
+    !============= calculate water balance =============
+    CALL SUEWS_cal_Water(&
+         Diagnose,&!input
+         snowUse,NonWaterFraction,addPipes,addImpervious,addVeg,addWaterBody,&
+         state,soilmoist,sfr,surf,WaterDist,nsh_real,&
+         drain_per_tstep,&  !output
+         drain,AddWaterRunoff,&
+         AdditionalWater,runoffPipes,runoff_per_interval,&
+         addWater,stateOld,soilmoistOld)
+    !============= calculate water balance end =============
+
+    !======== Evaporation and surface state ========
+    CALL SUEWS_cal_QE(&
+         Diagnose,&!input
+         id,tstep,imin,it,ity,snowfractionchoice,snowCalcSwitch,DayofWeek,CRWmin,CRWmax,&
+         nsh_real,lvS_J_kg,lv_j_kg,avdens,waterdens,avRh,Press_hPa,Temp_C,&
+         RAsnow,psyc_hPa,avcp,sIce_hPa,&
+         PervFraction,vegfraction,addimpervious,qn1_SF,qf,qs,vpd_hPa,s_hPa,&
+         ResistSurf,ra,rb,tstep_real,snowdensmin,precip,PipeCapacity,RunoffToWater,&
+         NonWaterFraction,wu_EveTr,wu_DecTr,wu_Grass,addVeg,addWaterBody,SnowLimPaved,SnowLimBuild,&
+         SurfaceArea,drain,WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
+         freezmelt,freezstate,freezstatevol,Qm_Melt,Qm_rain,Tsurf_ind,sfr,StateLimit,surf,&
+         runoff_per_interval,& ! inout:
+         state,soilmoist,SnowPack,snowFrac,MeltWaterStore,&
+         SnowDepth,iceFrac,addwater,addwaterrunoff,SnowDens,SurplusEvap,&
+         snowProf,& ! output:
+         runoffSnow,runoff,runoffSoil,chang,changSnow,SnowToSurf,snowD,ev_snow,SnowRemoval,&
+         evap,rss_nsurf,p_mm,rss,qe,state_per_tstep,NWstate_per_tstep,qeOut,&
+         swe,ev,chSnow_per_interval,ev_per_tstep,qe_per_tstep,runoff_per_tstep,&
+         surf_chang_per_tstep,runoffPipes,mwstore,runoffwaterbody,FlowChange,&
+         runoffAGimpervious_m3,runoffAGveg_m3,runoffWaterBody_m3,runoffPipes_m3)
+
+    !======== Evaporation and surface state end========
+
+    !============ Sensible heat flux ===============
+    CALL SUEWS_cal_QH(&
+         1,&
+         qn1_bup,&
+         qf,&
+         QmRain,&
+         qeOut,&
+         qs,&
+         QmFreez,&
+         qm,&
+         avdens,&
+         avcp,&
+         tsurf,&
+         Temp_C,&
+         ra,&
+         qh)
+    !============ Sensible heat flux end===============
+
+    !=== Horizontal movement between soil stores ===
+    ! Now water is allowed to move horizontally between the soil stores
+    IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_cal_HorizontalSoilWater...'
+    ! CALL SUEWS_cal_HorizontalSoilWater
+    CALL SUEWS_cal_HorizontalSoilWater(&
+         sfr,&! input: ! surface fractions
+         SoilStoreCap,&!Capacity of soil store for each surface [mm]
+         SoilDepth,&!Depth of sub-surface soil store for each surface [mm]
+         SatHydraulicConduct,&!Saturated hydraulic conductivity for each soil subsurface [mm s-1]
+         SurfaceArea,&!Surface area of the study area [m2]
+         NonWaterFraction,&! sum of surface cover fractions for all except water surfaces
+         tstep_real,& !tstep cast as a real for use in calculations
+         SoilMoist,&! inout:!Soil moisture of each surface type [mm]
+         runoffSoil,&!Soil runoff from each soil sub-surface [mm]
+         runoffSoil_per_tstep&!  output:!Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
+         )
+
+    !========== Calculate soil moisture ============
+    CALL SUEWS_cal_SoilMoist(&
+         nsurf,SMDMethod,&
+         xsmd,NonWaterFraction,SoilMoistCap,SoilStoreCap,surf_chang_per_tstep,&
+         soilmoist,soilmoistOld,sfr,smd,smd_nsurf,tot_chang_per_tstep,&
+         SoilState)
+
+
+    !============ surface-level diagonostics ===============
+    CALL SUEWS_cal_Diagnostics(&
+         tsurf,qh,&
+         Press_hPa,qeOut,&
+         UStar,veg_fr,z0m,L_mod,k,avdens,avcp,lv_J_kg,tstep_real,&
+         RoughLenHeatMethod,StabilityMethod,&
+         avU10_ms,t2_C,q2_gkg)!output
+    !============ surface-level diagonostics end ===============
+
+    !============ update and write out SUEWS_cal_DailyState ===============
+    ! only works at the last timestep of a day
+    CALL SUEWS_update_DailyState(&
+         iy,id,it,imin,&!input
+         GDD,HDD,LAI,&
+         DecidCap,albDecTr,albEveTr,albGrass,porosity,&
+         WU_Day,&
+         nsh_real,deltaLAI,VegPhenLumps,&
+         SnowAlb,SnowDens,&
+         xBo,a1,a2,a3,&
+         Gridiv,GridIDmatrix,&!input
+         FileCode,FileOutputPath,&
+         DailyStateFirstOpen)
+
+
+    !==============main calculation end=======================
+
+
+  END SUBROUTINE SUEWS_cal_Main
 
 
 
@@ -265,7 +991,7 @@ end subroutine SUEWS_cal_Main
        !       SIZE(MetForcingData, dim=2)), stat=err)
        !  IF ( err/= 0) PRINT *, "MetForcingData_grid: Allocation request denied"
 
-      !  MetForcingData_grid=MetForcingData(:,:,Gridiv)
+       !  MetForcingData_grid=MetForcingData(:,:,Gridiv)
        IF ( OHMIncQF == 1 ) THEN    !Calculate QS using QSTAR+QF
           IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'
           CALL AnOHM(qf+qn1_bup,qn1_store,qn1_av_store,&

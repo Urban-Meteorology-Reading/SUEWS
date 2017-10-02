@@ -30,4 +30,5 @@ RainDisaggMethod=100    !NEW  (100 = default value, so don't actually need here)
 DisaggMethodESTM=1      !NEW  (1 = default value, so don't actually need here)
 SuppressWarnings=1      !NEW
 KdownZen=0
+diagnose=0
 /

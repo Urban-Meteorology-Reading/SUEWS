@@ -980,7 +980,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
           Ie_a(1:3),Ie_m(1:3)
 
      WRITE(12,*) '----- '//TRIM(ADJUSTL(SsG_YYYY))//' Weekly profiles'//' -----'
-     WRITE(12,'(a12,7a10,  a16)') 'Grid','1_Sun','2_Mon','3_Tue','4_Wed','5_Thu','6_Fri','7_Sat', ' DayOfWeek'
+     WRITE(12,'(a12,7a10,  a16)') 'Grid','1_Sun','2_Mon','3_Tue','4_Wed','5_Thu','6_Fri','7_Sat', ' DayofWeek'
      WRITE(12,'(a12,7f10.3,a16)') SsG_YYYY,DayWat(1:7), ' Irr allowed'
      WRITE(12,'(a12,7f10.3,a16)') SsG_YYYY,DayWatPer(1:7), ' Frac properties'
 

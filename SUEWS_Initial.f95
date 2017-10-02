@@ -2067,7 +2067,7 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
   ! in that year.
 
   !First we need to know if the previous day given in initial conditions (id_prev) is
-  !on previous year as this is needed in the initialization of dayofWeek matrix.
+  !on previous year as this is needed in the initialization of DayofWeek matrix.
   !In this case switch is set to one for date calculations.
   IF(id_prev==0)THEN                     !If id_prev = 0, means that the first modelled day is 1 Jan
      year_int=year_int-1                  !1) find the number of days on that year
@@ -2080,7 +2080,7 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
 
   !After the day in previous year switch is changed back to zero:
   !    ie not previous day anymore
-  !Also the size of dayofweek is from 0:NdaysinYear meaning
+  !Also the size of DayofWeek is from 0:NdaysinYear meaning
   !that in zero slot is the previous day information
   IF(switch==1)THEN
      year_int=year_int+1
@@ -2088,11 +2088,11 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
      switch=0
   ENDIF
 
-  dayofWeek(id_prev,1)=wd   ! day of week
-  dayofWeek(id_prev,2)=mb   ! month
-  dayofweek(id_prev,3)=seas ! season (summer=1, winter=2) needed for accumulation
+  DayofWeek(id_prev,1)=wd   ! day of week
+  DayofWeek(id_prev,2)=mb   ! month
+  DayofWeek(id_prev,3)=seas ! season (summer=1, winter=2) needed for accumulation
 
-  ! in case next day goes to next year calculate again the date information for dayofweek matrix.
+  ! in case next day goes to next year calculate again the date information for DayofWeek matrix.
   id_next=id_prev+1
   IF(id_next>nofDaysThisYear) THEN
      id_next=1
@@ -2109,9 +2109,9 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
      switch=0
   ENDIF
 
-  dayofWeek(id_next,1)=wd  ! day of week
-  dayofWeek(id_next,2)=mb  ! month
-  dayofweek(id_next,3)=seas ! season
+  DayofWeek(id_next,1)=wd  ! day of week
+  DayofWeek(id_next,2)=mb  ! month
+  DayofWeek(id_next,3)=seas ! season
 
   !=============================================================================
 

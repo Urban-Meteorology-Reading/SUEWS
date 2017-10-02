@@ -94,7 +94,8 @@ SUBROUTINE LUMPS_cal_QHQE(&
        alpha_qhqe,RAINRES,RainBucket,tlv
 
   tlv=lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
-
+! initialize VegPhenLumps to output
+VegPhenLumps=0
   ! initialize rain-related variables
   RainBucket=0.
 
@@ -137,6 +138,7 @@ SUBROUTINE LUMPS_cal_QHQE(&
   VegPhen=DOT_PRODUCT(sfrVeg,LAIDay)
   VegMax=DOT_PRODUCT(sfrVeg,LAImax)
   VegMin=DOT_PRODUCT(sfrVeg,LAImin)
+
   ! DO iv=ivConif,ivGrass   !Normalized LAI for vegetation
   !    VegPhen = sfr(iv+2)*LAI(id-1,iv) + VegPhen
   !    VegMax  = sfr(iv+2)*LAImax(iv) + VegMax

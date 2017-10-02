@@ -50,7 +50,6 @@ SUBROUTINE SUEWS_cal_DailyState(&
      NumberOfGrids,&
      LAICalcYes,&
      LAIType,&
-                                !  GridIDmatrix,&
      nsh_real,&
      avkdn,&
      Temp_C,&
@@ -75,7 +74,6 @@ SUBROUTINE SUEWS_cal_DailyState(&
      CapMin_dec,&
      PorMax_dec,&
      PorMin_dec,&
-                                !  VegPhenLumps,&
      Ie_a,&
      Ie_m,&
      DayWatPer,&
@@ -89,9 +87,6 @@ SUBROUTINE SUEWS_cal_DailyState(&
      LAIMax,&
      LAIPower,&
      dataOut ,&
-                                !  FileCode,&
-                                !  FileOutputPath,&
-
      a1,& !inout
      a2,&
      a3,&
@@ -106,11 +101,9 @@ SUBROUTINE SUEWS_cal_DailyState(&
      HDD,&
      SnowDens,&
      LAI,&
-                                !  DailyStateFirstOpen,&
-
-     DayofWeek,&!output
+     DayofWeek,&
      WU_Day,&
-     xBo)
+     xBo)!output
 
 
   IMPLICIT NONE
@@ -209,9 +202,9 @@ SUBROUTINE SUEWS_cal_DailyState(&
   ! REAL(KIND(1d0)),DIMENSION(MaxNumberOfGrids),INTENT(INOUT) ::DailyStateFirstOpen
 
 
-  INTEGER,DIMENSION(0:ndays,3),INTENT(OUT)::DayofWeek
+  INTEGER,DIMENSION(0:ndays,3),INTENT(inout)::DayofWeek
+  REAL(KIND(1d0)),DIMENSION(0:ndays,9),INTENT(inOUT):: WU_Day       !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
 
-  REAL(KIND(1d0)),DIMENSION(0:ndays,9),INTENT(OUT):: WU_Day       !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
   REAL(KIND(1d0)),INTENT(OUT)::xBo
 
   INTEGER::date
@@ -219,6 +212,10 @@ SUBROUTINE SUEWS_cal_DailyState(&
 
 
   REAL(KIND(1d0))::xmAH
+
+  !initiate `out` variables to output
+  xBo=10
+
   ! REAL(KIND(1d0)),DIMENSION(44) ::DailyStateLine
 
   ! --------------------------------------------------------------------------------
@@ -270,7 +267,7 @@ SUBROUTINE SUEWS_cal_DailyState(&
   IF (it==0.AND.imin==0) THEN
      CALL Cal_DailyStateStart(&
           id,date,iy,lat,&!input
-          dayofWeek(id,:))!output
+          DayofWeek(id,:))!output
 
      ! --------------------------------------------------------------------------------
      ! On last timestep, perform the daily calculations -------------------------------
@@ -311,19 +308,13 @@ SUBROUTINE Cal_DailyStateEnd(&
      a1, a2, a3, albDecTr, albEveTr, albGrass, alBMax_DecTr, alBMax_EveTr, alBMax_Grass, &
      AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
      BaseT, BaseTe, CapMax_dec, CapMin_dec, &
-                                !  DailyStateFirstOpen, DailyStateLine, &
      dataOut, DayofWeek, DayWat, DayWatPer, DecidCap, deltaLAI, Faut, &
-                                !  FileCode, FileOutputPath, &
      GDD, GDDFull, &
-                                !  GridIDmatrix, &
      Gridiv, HDD, &
      id, Ie_a, Ie_end, Ie_m, Ie_start, &
-                                !  iy, &
      LAI, LAI_obs, LAICalcYes, LAIMax, LAIMin, LAIPower, LAIType, lat, &
      PorMax_dec, PorMin_dec, porosity, SDDFull, &
-                                !  SnowAlb, SnowDens, &
      tstepcount, &
-                                !  VegPhenLumps, &
      WaterUseMethod, WU_Day, xBo, xmAH)
   IMPLICIT NONE
   INTEGER,PARAMETER::ndays    = 366
@@ -375,7 +366,7 @@ SUBROUTINE Cal_DailyStateEnd(&
   ! CHARACTER (LEN = 20), INTENT(IN) :: FileCode
   ! CHARACTER (LEN = 150), INTENT(IN) :: FileOutputPath
 
-  INTEGER, INTENT(OUT) :: DayofWeek(0:ndays,3)
+  INTEGER, INTENT(in) :: DayofWeek(0:ndays,3)
 
   REAL(KIND(1d0)), INTENT(OUT) :: WU_Day(0:ndays,9)
 
@@ -941,7 +932,7 @@ SUBROUTINE update_WaterUse(&
 
   IF (WaterUseMethod==0) THEN   !If water use is to be modelled (rather than observed)
 
-     wd=dayofWeek(id,1)
+     wd=DayofWeek(id,1)
 
      IF (DayWat(wd)==1.0) THEN      !1 indicates watering permitted on this day
         calc=0
@@ -1117,6 +1108,8 @@ SUBROUTINE SUEWS_update_DailyState(&
   REAL(KIND(1d0)),DIMENSION(MaxNumberOfGrids),INTENT(INOUT):: DailyStateFirstOpen
 
   REAL(KIND(1d0)),DIMENSION(44) :: DailyStateLine
+  DailyStateLine=0
+
   IF (it==23 .AND. imin==(nsh_real-1)/nsh_real*60) THEN
      CALL update_DailyState(&
           iy,id,&!input
@@ -1132,7 +1125,7 @@ SUBROUTINE SUEWS_update_DailyState(&
           Gridiv,GridIDmatrix,&!input
           FileCode,FileOutputPath,&
           DailyStateLine,&
-          DailyStateFirstOpen)
+          DailyStateFirstOpen)!inout
   ENDIF
 END SUBROUTINE SUEWS_update_DailyState
 
@@ -1146,7 +1139,7 @@ SUBROUTINE update_DailyState(&
      deltaLAI,VegPhenLumps,&
      SnowAlb,SnowDens,&
      xBo,a1,a2,a3,&
-     DailyStateLine)!output
+     DailyStateLine)!out
 
   IMPLICIT NONE
   INTEGER,PARAMETER::ndays=366
@@ -1176,7 +1169,6 @@ SUBROUTINE update_DailyState(&
   REAL(KIND(1d0)),INTENT(IN) ::a3
 
   REAL(KIND(1d0)),DIMENSION(44),INTENT(OUT) :: DailyStateLine
-
 
   ! Write actual data
   DailyStateLine(1:2)   = [iy,id]

@@ -81,6 +81,8 @@ OTHERS =  BLUEWS_CBL.o   \
 					SUEWS_Initial.o \
 					SUEWS_SoilMoist.o \
 					SUEWS_Snow.o \
+					SUEWS_AnthropogenicEmissions.o \
+					SUEWS_BiogenCO2.o \
 					SUEWS_SnowUpdate.o \
 					SUEWS_Diagnostics.o
 

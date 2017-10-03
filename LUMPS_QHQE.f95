@@ -1,33 +1,10 @@
 SUBROUTINE LUMPS_cal_QHQE(&
      veg_type,& !input
-     snowUse,&
-     qn1,&
-     qf,&
-     qs,&
-     Qm,&
-     Temp_C,&
-     Veg_Fr,&
-     avcp,&
-     Press_hPa,&
-     lv_J_kg,&
-     tstep_real,&
-     DRAINRT,&
-     nsh_real,&
-     Precip,&
-     RainMaxRes,&
-     RAINCOVER,&
-     sfrVeg,&
-     LAIDay,&
-     LAImax,&
-     LAImin,&
+     snowUse,qn1,qf,qs,Qm,Temp_C,Veg_Fr,avcp,Press_hPa,lv_J_kg,&
+     tstep_real,DRAINRT,nsh_real,&
+     Precip,RainMaxRes,RAINCOVER,sfrVeg,LAIDay,LAImax,LAImin,&
      H_mod,& !output
-     E_mod,&
-     psyc_hPa,&
-     s_hPa,&
-     sIce_hpa,&
-     TempVeg,&
-     VegPhenLumps)
-
+     E_mod,psyc_hPa,s_hPa,sIce_hpa,TempVeg,VegPhenLumps)
   !Calculates QH and QE for LUMPS. See Loridan et al. (2011)
   ! ref: Grimmond and Oke (2002) JAM and references within that
   !      Offerle (2003) -- add water bucket
@@ -40,16 +17,6 @@ SUBROUTINE LUMPS_cal_QHQE(&
   ! LJ June 2012    - Modified to work with snow (Qm added in the equations!)
   ! SG Feb 2012     - added some comments
   ! --------------------------------------------------------------
-
-  ! USE allocateArray
-  ! USE data_in
-  ! USE defaultNotUsed
-  ! USE gis_data
-  ! USE moist
-  ! USE snowMod
-  ! USE sues_data
-  ! use time
-  ! USE VegPhenogy
 
   IMPLICIT NONE
 
@@ -94,8 +61,8 @@ SUBROUTINE LUMPS_cal_QHQE(&
        alpha_qhqe,RAINRES,RainBucket,tlv
 
   tlv=lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
-! initialize VegPhenLumps to output
-VegPhenLumps=0
+  ! initialize VegPhenLumps to output
+  VegPhenLumps=0
   ! initialize rain-related variables
   RainBucket=0.
 

@@ -2,6 +2,7 @@
 ! SUEWS driver subroutines
 ! TS 31 Aug 2017: initial version
 ! TS 02 Oct 2017: added `SUEWS_cal_Main` as the generic wrapper
+! TS 03 Oct 2017: added `SUEWS_cal_AnthropogenicEmission`
 MODULE SUEWS_Driver
 
 
@@ -739,6 +740,188 @@ CONTAINS
   END SUBROUTINE SUEWS_cal_Main
 
 
+  SUBROUTINE SUEWS_cal_AnthropogenicEmission(&
+       AH_MIN,AHProf_tstep,AH_SLOPE_Cooling,AH_SLOPE_Heating,alpha_bioCO2,&
+       alpha_enh_bioCO2,avkdn,beta_bioCO2,beta_enh_bioCO2,BiogenCO2Code,DayofWeek,&
+       Diagnose,DLS,EF_umolCO2perJ,EmissionsMethod,EnEF_v_Jkm,Fc,Fc_anthro,Fc_biogen,&
+       Fc_build,FcEF_v_kgkm,Fc_metab,Fc_photo,Fc_respi,Fc_traff,FrFossilFuel_Heat,&
+       FrFossilFuel_NonHeat,HDD,HumActivity_tstep,id,imin,it,LAI, LaiMax,LaiMin,&
+       MaxQFMetab,MinQFMetab,min_res_bioCO2,notUsed,notUsedI,nsh,NumCapita,&
+       PopDensDaytime,PopDensNighttime,PopProf_tstep,QF,QF0_BEU,Qf_A,Qf_B,Qf_C,QF_SAHP,&
+       resp_a,resp_b,sfr,snowFrac,T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,&
+       theta_bioCO2,TrafficRate,TrafficUnits,TraffProf_tstep)
+
+    IMPLICIT NONE
+    ! INTEGER,PARAMETER::BldgSurf=2
+    INTEGER,PARAMETER::ConifSurf=3
+    INTEGER,PARAMETER::DecidSurf=4
+    INTEGER,PARAMETER::GrassSurf=5
+    INTEGER,PARAMETER::ivConif=1
+    INTEGER,PARAMETER::ivDecid=2
+    INTEGER,PARAMETER::ivGrass=3
+    ! INTEGER,PARAMETER::MaxNumberOfGrids=2000
+    INTEGER,PARAMETER::ndays=366
+    INTEGER,PARAMETER::nsurf=7
+    INTEGER,PARAMETER::NVegSurf=3
+    ! INTEGER,PARAMETER::PavSurf=1
+    ! INTEGER,PARAMETER::WaterSurf=7
+    INTEGER,PARAMETER::BSoilSurf = 6!New surface classes: Grass = 5th/7 surfaces
+
+    INTEGER,INTENT(in)::Diagnose
+    INTEGER,INTENT(in)::EmissionsMethod
+    INTEGER,INTENT(in)::id
+    INTEGER,INTENT(in)::it
+    INTEGER,INTENT(in)::imin
+    INTEGER,INTENT(in)::DLS
+    INTEGER,INTENT(in)::nsh
+    INTEGER,INTENT(in)::notUsedI
+    INTEGER,DIMENSION(0:ndays,3),INTENT(in)::DayofWeek
+    REAL(KIND(1d0)),DIMENSION(-4:ndays, 6),INTENT(in)::HDD
+    REAL(KIND(1d0)),DIMENSION(2),INTENT(in)::Qf_A
+    REAL(KIND(1d0)),DIMENSION(2),INTENT(in)::Qf_B
+    REAL(KIND(1d0)),DIMENSION(2),INTENT(in)::Qf_C
+    REAL(KIND(1d0)),DIMENSION(2),INTENT(in)::AH_MIN
+    REAL(KIND(1d0)),DIMENSION(2),INTENT(in)::AH_SLOPE_Heating
+    REAL(KIND(1d0)),DIMENSION(2),INTENT(in)::AH_SLOPE_Cooling
+    REAL(KIND(1d0)),DIMENSION(2),INTENT(in)::T_CRITIC_Heating
+    REAL(KIND(1d0)),DIMENSION(2),INTENT(in)::T_CRITIC_Cooling
+    REAL(KIND(1d0)),DIMENSION(2),INTENT(in)::TrafficRate
+    REAL(KIND(1d0)),DIMENSION(2),INTENT(in)::QF0_BEU
+    REAL(KIND(1d0)),DIMENSION(24*nsh,2),INTENT(in)::AHProf_tstep
+    REAL(KIND(1d0)),DIMENSION(24*nsh,2),INTENT(in)::HumActivity_tstep
+    REAL(KIND(1d0)),DIMENSION(24*nsh,2),INTENT(in)::TraffProf_tstep
+    REAL(KIND(1d0)),DIMENSION(24*nsh,2),INTENT(in)::PopProf_tstep
+    REAL(KIND(1D0)),INTENT(in)::EF_umolCO2perJ
+    REAL(KIND(1D0)),INTENT(in)::FcEF_v_kgkm
+    REAL(KIND(1D0)),INTENT(in)::EnEF_v_Jkm
+    REAL(KIND(1D0)),INTENT(in)::TrafficUnits
+    REAL(KIND(1D0)),INTENT(in)::FrFossilFuel_Heat
+    REAL(KIND(1D0)),INTENT(in)::FrFossilFuel_NonHeat
+    REAL(KIND(1D0)),INTENT(in)::MinQFMetab
+    REAL(KIND(1D0)),INTENT(in)::MaxQFMetab
+    REAL(KIND(1D0)),INTENT(in)::NumCapita
+    REAL(KIND(1D0)),INTENT(in)::PopDensDaytime
+    REAL(KIND(1D0)),INTENT(in)::PopDensNighttime
+    REAL(KIND(1D0)),INTENT(in)::Temp_C
+    REAL(KIND(1D0)),INTENT(in)::notUsed
+    REAL(KIND(1D0)),INTENT(out)::QF
+    REAL(KIND(1D0)),INTENT(out)::QF_SAHP
+    REAL(KIND(1D0)),INTENT(out)::Fc_anthro
+    REAL(KIND(1D0)),INTENT(out)::Fc_metab
+    REAL(KIND(1D0)),INTENT(out)::Fc_traff
+    REAL(KIND(1D0)),INTENT(out)::Fc_build
+    REAL(KIND(1d0)),INTENT(in)::avkdn
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::sfr
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::snowFrac
+    REAL(KIND(1d0)),DIMENSION(-4:ndays, nvegsurf),INTENT(in)::LAI
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(in)::LaiMin
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(in):: LaiMax
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(in)::BiogenCO2Code
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(in)::alpha_bioCO2
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(in)::beta_bioCO2
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(in)::theta_bioCO2
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(in)::alpha_enh_bioCO2
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(in)::beta_enh_bioCO2
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(in)::resp_a
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(in)::resp_b
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(in)::min_res_bioCO2
+    REAL(KIND(1D0)),INTENT(out)::Fc_biogen
+    REAL(KIND(1D0)),INTENT(out)::Fc_respi
+    REAL(KIND(1D0)),INTENT(out)::Fc_photo
+    REAL(KIND(1D0)),INTENT(out)::Fc
+
+
+    ! ===================ANTHROPOGENIC HEAT + CO2 FLUX================================
+    !ih=it-DLS           !Moved to subroutine AnthropogenicEmissions MH 29 June 2017
+    !IF(ih<0) ih=23
+
+    IF(EmissionsMethod>0 .AND. EmissionsMethod<=6)THEN
+       IF(Diagnose==1) WRITE(*,*) 'Calling AnthropogenicEmissions...'
+       CALL AnthropogenicEmissions(&
+            EmissionsMethod,&
+            id,it,imin,DLS,nsh,DayofWeek,ndays,&
+            EF_umolCO2perJ,FcEF_v_kgkm,EnEF_v_Jkm,TrafficUnits,&
+            FrFossilFuel_Heat,FrFossilFuel_NonHeat,&
+            MinQFMetab,MaxQFMetab,&
+            NumCapita,PopDensDaytime,PopDensNighttime,&
+            Temp_C,HDD,Qf_A,Qf_B,Qf_C,&
+            AH_MIN,AH_SLOPE_Heating,AH_SLOPE_Cooling,&
+            T_CRITIC_Heating,T_CRITIC_Cooling,&
+            TrafficRate,&
+            QF0_BEU,QF_SAHP,&
+            Fc_anthro,Fc_metab,Fc_traff,Fc_build,&
+            AHProf_tstep,HumActivity_tstep,TraffProf_tstep,PopProf_tstep,&
+            notUsed,notUsedI)
+
+       !  qn1_bup=qn1
+       Fc_anthro=0
+       Fc_metab=0
+       Fc_traff=0
+       Fc_build=0
+       Fc_biogen=0
+       Fc_respi=0
+       Fc_photo=0
+    ELSEIF(EmissionsMethod>=11)THEN
+       IF(Diagnose==1) WRITE(*,*) 'Calling AnthropogenicEmissions...'
+       CALL AnthropogenicEmissions(&
+            EmissionsMethod,&
+            id,it,imin,DLS,nsh,DayofWeek,ndays,&
+            EF_umolCO2perJ,FcEF_v_kgkm,EnEF_v_Jkm,TrafficUnits,&
+            FrFossilFuel_Heat,FrFossilFuel_NonHeat,&
+            MinQFMetab,MaxQFMetab,&
+            NumCapita,PopDensDaytime,PopDensNighttime,&
+            Temp_C,HDD,Qf_A,Qf_B,Qf_C,&
+            AH_MIN,AH_SLOPE_Heating,AH_SLOPE_Cooling,&
+            T_CRITIC_Heating,T_CRITIC_Cooling,&
+            TrafficRate,&
+            QF0_BEU,QF_SAHP,&
+            Fc_anthro,Fc_metab,Fc_traff,Fc_build,&
+            AHProf_tstep,HumActivity_tstep,TraffProf_tstep,PopProf_tstep,&
+            notUsed,notUsedI)
+
+       !  qn1_bup=qn1
+    ELSEIF(EmissionsMethod==0)THEN
+       IF(Diagnose==1) WRITE(*,*) 'Calling AnthropogenicEmissions...'
+       CALL AnthropogenicEmissions(&
+            EmissionsMethod,&
+            id,it,imin,DLS,nsh,DayofWeek,ndays,&
+            EF_umolCO2perJ,FcEF_v_kgkm,EnEF_v_Jkm,TrafficUnits,&
+            FrFossilFuel_Heat,FrFossilFuel_NonHeat,&
+            MinQFMetab,MaxQFMetab,&
+            NumCapita,PopDensDaytime,PopDensNighttime,&
+            Temp_C,HDD,Qf_A,Qf_B,Qf_C,&
+            AH_MIN,AH_SLOPE_Heating,AH_SLOPE_Cooling,&
+            T_CRITIC_Heating,T_CRITIC_Cooling,&
+            TrafficRate,&
+            QF0_BEU,QF_SAHP,&
+            Fc_anthro,Fc_metab,Fc_traff,Fc_build,&
+            AHProf_tstep,HumActivity_tstep,TraffProf_tstep,PopProf_tstep,&
+            notUsed,notUsedI)
+
+       !  qn1_bup=qn1
+       !  qn1=qn1+qf
+    ELSE
+       CALL ErrorHint(73,'RunControl.nml:EmissionsMethod unusable',notUsed,notUsed,EmissionsMethod)
+    ENDIF
+    ! -- qn1 is now QSTAR+QF (net all-wave radiation + anthropogenic heat flux)
+    ! -- qn1_bup is QSTAR only
+    IF(EmissionsMethod>=1) qf = QF_SAHP
+
+    IF(EmissionsMethod>=11) THEN
+       ! Calculate CO2 fluxes from biogenic components
+       IF(Diagnose==1) WRITE(*,*) 'Calling CO2_biogen...'
+       CALL CO2_biogen(EmissionsMethod,id,ndays,ivConif,ivDecid,ivGrass,ConifSurf,DecidSurf,GrassSurf,BSoilSurf,&
+            snowFrac,nsurf,NVegSurf,avkdn,Temp_C,sfr,LAI,LaiMin,LaiMax,&
+            BiogenCO2Code,alpha_bioCO2,beta_bioCO2,theta_bioCO2,alpha_enh_bioCO2,beta_enh_bioCO2,&
+            resp_a,resp_b,min_res_bioCO2,Fc_biogen,Fc_respi,Fc_photo,&
+            notUsed,notUsedI)
+    ENDIF
+    ! Sum anthropogenic and biogenic CO2 flux components to find overall CO2 flux
+    Fc = Fc_anthro + Fc_biogen
+
+    ! =================STORAGE HEAT FLUX=======================================
+
+  END SUBROUTINE SUEWS_cal_AnthropogenicEmission
 
   !=============net all-wave radiation=====================================
   SUBROUTINE SUEWS_cal_Qn(&

@@ -1,6 +1,7 @@
 !========================================================================================
 ! SUEWS driver subroutines
 ! TS 31 Aug 2017: initial version
+! TS 02 Oct 2017: added `SUEWS_cal_Main` as the generic wrapper
 MODULE SUEWS_Driver
 
 
@@ -50,29 +51,26 @@ CONTAINS
 
     IMPLICIT NONE
 
-    INTEGER, PARAMETER:: ndays=366
-    INTEGER, PARAMETER:: nsurf=7                !Total number of surfaces
-    INTEGER, PARAMETER:: NVegSurf=3             !Number of surfaces that are vegetated
+    INTEGER,PARAMETER::BldgSurf=2
+    INTEGER,PARAMETER::ConifSurf=3
+    INTEGER,PARAMETER::DecidSurf=4
+    INTEGER,PARAMETER::GrassSurf=5
+    INTEGER,PARAMETER::ivConif=1
+    INTEGER,PARAMETER::ivGrass=3
+    INTEGER,PARAMETER::MaxNumberOfGrids=2000
+    INTEGER,PARAMETER::ndays=366
+    INTEGER,PARAMETER::nsurf=7
+    INTEGER,PARAMETER::NVegSurf=3
+    INTEGER,PARAMETER::PavSurf=1
+    INTEGER,PARAMETER::WaterSurf=7
 
 
-    INTEGER,PARAMETER:: PavSurf   = 1   !When all surfaces considered together (1-7)
-    INTEGER,PARAMETER::BldgSurf  = 2
-    INTEGER,PARAMETER::ConifSurf = 3
-    INTEGER,PARAMETER::DecidSurf = 4
-    INTEGER,PARAMETER::GrassSurf = 5   !New surface classes: Grass = 5th/7 surfaces
-    ! INTEGER,PARAMETER::BSoilSurf = 6   !New surface classes: Bare soil = 6th/7 surfaces
-    INTEGER,PARAMETER::WaterSurf = 7
-    ! INTEGER,PARAMETER::ExcessSurf= 8   !Runoff or subsurface soil in WGWaterDist
-    ! INTEGER,PARAMETER::NSurfDoNotReceiveDrainage=0   !Number of surfaces that do not receive drainage water (green roof)
-    INTEGER,PARAMETER::ivConif = 1    !When only vegetated surfaces considered (1-3)
-    ! INTEGER,PARAMETER::ivDecid = 2
-    INTEGER,PARAMETER::ivGrass = 3
-    INTEGER, PARAMETER:: MaxNumberOfGrids=2000
 
-
+    INTEGER,DIMENSION(NSURF)::snowCalcSwitch
 
     CHARACTER(LEN=150),INTENT(IN)::FileOutputPath
     CHARACTER(LEN=20),INTENT(IN)::FileCode
+
     INTEGER,INTENT(IN)::AerodynamicResistanceMethod
     INTEGER,INTENT(IN)::AlbedoChoice
     INTEGER,INTENT(IN)::AnthropHeatMethod
@@ -94,11 +92,8 @@ CONTAINS
     INTEGER,INTENT(IN)::ncolumnsDataOut
     INTEGER,INTENT(IN)::NetRadiationMethod
     INTEGER,INTENT(IN)::nsh
-
     INTEGER,INTENT(IN)::NumberOfGrids
     INTEGER,INTENT(IN)::OHMIncQF
-
-
     INTEGER,INTENT(IN)::ReadLinesMetdata
     INTEGER,INTENT(IN)::RoughLenHeatMethod
     INTEGER,INTENT(IN)::RoughLenMomMethod
@@ -109,304 +104,301 @@ CONTAINS
     INTEGER,INTENT(IN)::StorageHeatMethod
     INTEGER,INTENT(IN)::tstep
     INTEGER,INTENT(IN)::veg_type
-
     INTEGER,INTENT(IN)::WaterUseMethod
-    REAL(KIND(1d0)),INTENT(IN)::addImpervious
-    REAL(KIND(1d0)),INTENT(IN)::addPipes
-    REAL(KIND(1d0)),INTENT(IN)::addVeg
-    REAL(KIND(1d0)),INTENT(IN)::addWaterBody
-    REAL(KIND(1d0)),INTENT(IN)::alBMax_DecTr
-    REAL(KIND(1d0)),INTENT(IN)::alBMax_EveTr
-    REAL(KIND(1d0)),INTENT(IN)::alBMax_Grass
-    REAL(KIND(1d0)),INTENT(IN)::AlbMin_DecTr
-    REAL(KIND(1d0)),INTENT(IN)::AlbMin_EveTr
-    REAL(KIND(1d0)),INTENT(IN)::AlbMin_Grass
-    REAL(KIND(1d0)),INTENT(IN)::areaZh
-    REAL(KIND(1d0)),INTENT(IN)::avdens
-    REAL(KIND(1d0)),INTENT(IN)::avkdn
-    REAL(KIND(1d0)),INTENT(IN)::avRh
-    REAL(KIND(1d0)),INTENT(IN)::avU1
-    REAL(KIND(1d0)),INTENT(IN)::BaseTHDD
-    REAL(KIND(1d0)),INTENT(IN)::bldgH
-    REAL(KIND(1d0)),INTENT(IN)::CapMax_dec
-    REAL(KIND(1d0)),INTENT(IN)::CapMin_dec
-    REAL(KIND(1d0)),INTENT(IN)::CRWmax
-    REAL(KIND(1d0)),INTENT(IN)::CRWmin
-    REAL(KIND(1d0)),INTENT(IN)::dectime
-    REAL(KIND(1d0)),INTENT(IN)::DecTreeH
-    REAL(KIND(1d0)),INTENT(IN)::deltaLAI
-    REAL(KIND(1d0)),INTENT(IN)::DRAINRT
-    REAL(KIND(1d0)),INTENT(IN)::EveTreeH
-    REAL(KIND(1d0)),INTENT(IN)::FAIBldg
-    REAL(KIND(1d0)),INTENT(IN)::FAIDecTree
-    REAL(KIND(1d0)),INTENT(IN)::FAIEveTree
-    REAL(KIND(1d0)),INTENT(IN)::Faut
-    REAL(KIND(1d0)),INTENT(IN)::fcld_obs
-    REAL(KIND(1d0)),INTENT(IN)::G1
-    REAL(KIND(1d0)),INTENT(IN)::G2
-    REAL(KIND(1d0)),INTENT(IN)::G3
-    REAL(KIND(1d0)),INTENT(IN)::G4
-    REAL(KIND(1d0)),INTENT(IN)::G5
-    REAL(KIND(1d0)),INTENT(IN)::G6
-    REAL(KIND(1d0)),INTENT(IN)::InternalWaterUse_h
-    REAL(KIND(1d0)),INTENT(IN)::IrrFracConif
-    REAL(KIND(1d0)),INTENT(IN)::IrrFracDecid
-    REAL(KIND(1d0)),INTENT(IN)::IrrFracGrass
-    REAL(KIND(1d0)),INTENT(IN)::k
-    REAL(KIND(1d0)),INTENT(IN)::Kmax
-    REAL(KIND(1d0)),INTENT(IN)::LAI_obs
-    REAL(KIND(1d0)),INTENT(IN)::lat
-    REAL(KIND(1d0)),INTENT(IN)::lng
-    REAL(KIND(1d0)),INTENT(IN)::alt
-    REAL(KIND(1d0)),INTENT(IN)::timezone
-    REAL(KIND(1d0)),INTENT(IN)::halftimestep
-    REAL(KIND(1d0)),INTENT(IN)::ldown_obs
-    REAL(KIND(1d0)),INTENT(IN)::L_mod
-    REAL(KIND(1d0)),INTENT(IN)::NARP_EMIS_SNOW
-    REAL(KIND(1d0)),INTENT(IN)::NARP_TRANS_SITE
-    REAL(KIND(1d0)),INTENT(IN)::NonWaterFraction
-    REAL(KIND(1d0)),INTENT(IN)::nsh_real
-    REAL(KIND(1d0)),INTENT(IN)::PervFraction
-    REAL(KIND(1d0)),INTENT(IN)::PipeCapacity
-    REAL(KIND(1d0)),INTENT(IN)::PorMax_dec
-    REAL(KIND(1d0)),INTENT(IN)::PorMin_dec
 
-    REAL(KIND(1d0)),INTENT(IN)::Precip
-    REAL(KIND(1d0)),INTENT(IN)::PrecipLimit
-    REAL(KIND(1d0)),INTENT(IN)::PrecipLimitAlb
-    REAL(KIND(1d0)),INTENT(IN)::Press_hPa
-    REAL(KIND(1d0)),INTENT(out)::qf
-    REAL(KIND(1d0)),INTENT(IN)::qh_obs
-    REAL(KIND(1d0)),INTENT(IN)::qn1_bup
-    REAL(KIND(1d0)),INTENT(IN)::qn1_obs
-    REAL(KIND(1d0)),INTENT(IN)::RadMeltFact
-    REAL(KIND(1d0)),INTENT(IN)::RAINCOVER
-    REAL(KIND(1d0)),INTENT(IN)::RainMaxRes
-    REAL(KIND(1d0)),INTENT(IN)::RunoffToWater
-    REAL(KIND(1d0)),INTENT(IN)::S1
-    REAL(KIND(1d0)),INTENT(IN)::S2
-    REAL(KIND(1d0)),INTENT(IN)::SnowAlbMax
+    INTEGER,DIMENSION(MAXNUMBEROFGRIDS),INTENT(IN)::GridIDmatrix
+    INTEGER,DIMENSION(NVEGSURF),INTENT(IN)::LAIType
+    INTEGER,DIMENSION(0:NDAYS,3),INTENT(INOUT)::DayofWeek
+
+    REAL(KIND(1D0)),DIMENSION(NSURF)::deltaQi
+    REAL(KIND(1D0)),DIMENSION(NSURF)::drain
+    REAL(KIND(1D0)),DIMENSION(NSURF)::FreezState
+    REAL(KIND(1D0)),DIMENSION(NSURF)::FreezStateVol
+    REAL(KIND(1D0)),DIMENSION(NSURF)::soilmoistOld
+    REAL(KIND(1D0)),DIMENSION(NSURF)::stateOld
+
+    REAL(KIND(1D0)),INTENT(IN)::addImpervious
+    REAL(KIND(1D0)),INTENT(IN)::addPipes
+    REAL(KIND(1D0)),INTENT(IN)::addVeg
+    REAL(KIND(1D0)),INTENT(IN)::addWaterBody
+    REAL(KIND(1D0)),INTENT(IN)::alBMax_DecTr
+    REAL(KIND(1D0)),INTENT(IN)::alBMax_EveTr
+    REAL(KIND(1D0)),INTENT(IN)::alBMax_Grass
+    REAL(KIND(1D0)),INTENT(IN)::AlbMin_DecTr
+    REAL(KIND(1D0)),INTENT(IN)::AlbMin_EveTr
+    REAL(KIND(1D0)),INTENT(IN)::AlbMin_Grass
+    REAL(KIND(1D0)),INTENT(IN)::alt
+    REAL(KIND(1D0)),INTENT(IN)::areaZh
+    REAL(KIND(1D0)),INTENT(IN)::avdens
+    REAL(KIND(1D0)),INTENT(IN)::avkdn
+    REAL(KIND(1D0)),INTENT(IN)::avRh
+    REAL(KIND(1D0)),INTENT(IN)::avU1
+    REAL(KIND(1D0)),INTENT(IN)::BaseTHDD
+    REAL(KIND(1D0)),INTENT(IN)::bldgH
+    REAL(KIND(1D0)),INTENT(IN)::CapMax_dec
+    REAL(KIND(1D0)),INTENT(IN)::CapMin_dec
+    REAL(KIND(1D0)),INTENT(IN)::CRWmax
+    REAL(KIND(1D0)),INTENT(IN)::CRWmin
+    REAL(KIND(1D0)),INTENT(IN)::dectime
+    REAL(KIND(1D0)),INTENT(IN)::DecTreeH
+    REAL(KIND(1D0)),INTENT(IN)::deltaLAI
+    REAL(KIND(1D0)),INTENT(IN)::DRAINRT
+    REAL(KIND(1D0)),INTENT(IN)::EveTreeH
+    REAL(KIND(1D0)),INTENT(IN)::FAIBldg
+    REAL(KIND(1D0)),INTENT(IN)::FAIDecTree
+    REAL(KIND(1D0)),INTENT(IN)::FAIEveTree
+    REAL(KIND(1D0)),INTENT(IN)::Faut
+    REAL(KIND(1D0)),INTENT(IN)::fcld_obs
+    REAL(KIND(1D0)),INTENT(IN)::G1
+    REAL(KIND(1D0)),INTENT(IN)::G2
+    REAL(KIND(1D0)),INTENT(IN)::G3
+    REAL(KIND(1D0)),INTENT(IN)::G4
+    REAL(KIND(1D0)),INTENT(IN)::G5
+    REAL(KIND(1D0)),INTENT(IN)::G6
+    REAL(KIND(1D0)),INTENT(IN)::halftimestep
+    REAL(KIND(1D0)),INTENT(IN)::InternalWaterUse_h
+    REAL(KIND(1D0)),INTENT(IN)::IrrFracConif
+    REAL(KIND(1D0)),INTENT(IN)::IrrFracDecid
+    REAL(KIND(1D0)),INTENT(IN)::IrrFracGrass
+    REAL(KIND(1D0)),INTENT(IN)::k
+    REAL(KIND(1D0)),INTENT(IN)::Kmax
+    REAL(KIND(1D0)),INTENT(IN)::LAI_obs
+    REAL(KIND(1D0)),INTENT(IN)::lat
+    REAL(KIND(1D0)),INTENT(IN)::ldown_obs
+    REAL(KIND(1D0)),INTENT(IN)::L_mod
+    REAL(KIND(1D0)),INTENT(IN)::lng
+    REAL(KIND(1D0)),INTENT(IN)::NARP_EMIS_SNOW
+    REAL(KIND(1D0)),INTENT(IN)::NARP_TRANS_SITE
+    REAL(KIND(1D0)),INTENT(IN)::NonWaterFraction
+    REAL(KIND(1D0)),INTENT(IN)::nsh_real
+    REAL(KIND(1D0)),INTENT(IN)::PervFraction
+    REAL(KIND(1D0)),INTENT(IN)::PipeCapacity
+    REAL(KIND(1D0)),INTENT(IN)::PorMax_dec
+    REAL(KIND(1D0)),INTENT(IN)::PorMin_dec
+    REAL(KIND(1D0)),INTENT(IN)::Precip
+    REAL(KIND(1D0)),INTENT(IN)::PrecipLimit
+    REAL(KIND(1D0)),INTENT(IN)::PrecipLimitAlb
+    REAL(KIND(1D0)),INTENT(IN)::Press_hPa
+    REAL(KIND(1D0)),INTENT(IN)::qh_obs
+    REAL(KIND(1D0)),INTENT(IN)::qn1_bup
+    REAL(KIND(1D0)),INTENT(IN)::qn1_obs
+    REAL(KIND(1D0)),INTENT(IN)::RadMeltFact
+    REAL(KIND(1D0)),INTENT(IN)::RAINCOVER
+    REAL(KIND(1D0)),INTENT(IN)::RainMaxRes
+    REAL(KIND(1D0)),INTENT(IN)::RunoffToWater
+    REAL(KIND(1D0)),INTENT(IN)::S1
+    REAL(KIND(1D0)),INTENT(IN)::S2
+    REAL(KIND(1D0)),INTENT(IN)::SnowAlbMax
     REAL(KIND(1D0)),INTENT(IN)::SnowAlbMin
     REAL(KIND(1D0)),INTENT(IN)::SnowDensMax
     REAL(KIND(1D0)),INTENT(IN)::SnowDensMin
-    REAL(KIND(1d0)),INTENT(IN)::SnowLimBuild
-    REAL(KIND(1d0)),INTENT(IN)::SnowLimPaved
-    REAL(KIND(1d0)),INTENT(IN)::snow_obs
-    REAL(KIND(1d0)),INTENT(IN)::SurfaceArea
+    REAL(KIND(1D0)),INTENT(IN)::SnowLimBuild
+    REAL(KIND(1D0)),INTENT(IN)::SnowLimPaved
+    REAL(KIND(1D0)),INTENT(IN)::snow_obs
+    REAL(KIND(1D0)),INTENT(IN)::SurfaceArea
     REAL(KIND(1D0)),INTENT(IN)::tau_a
     REAL(KIND(1D0)),INTENT(IN)::tau_f
     REAL(KIND(1D0)),INTENT(IN)::tau_r
-    REAL(KIND(1d0)),INTENT(IN)::Temp_C
-    REAL(KIND(1d0)),INTENT(IN)::TempMeltFact
-    REAL(KIND(1d0)),INTENT(IN)::TH
-    REAL(KIND(1d0)),INTENT(IN)::TL
-    REAL(KIND(1d0)),INTENT(IN)::tstep_real
-    REAL(KIND(1d0)),INTENT(IN)::VegFraction
-    REAL(KIND(1d0)),INTENT(IN)::waterdens
-    REAL(KIND(1d0)),INTENT(IN)::xsmd
-    REAL(KIND(1d0)),INTENT(IN)::year
-    REAL(KIND(1d0)),INTENT(IN)::Z
-    REAL(KIND(1d0)),INTENT(IN)::ZENITH_deg
-    REAL(KIND(1d0)),INTENT(INOUT)::a1
-    REAL(KIND(1d0)),INTENT(INOUT)::a2
-    REAL(KIND(1d0)),INTENT(INOUT)::a3
-    REAL(KIND(1d0)),INTENT(INOUT)::OverUse
-    REAL(KIND(1d0)),INTENT(INOUT)::runoff_per_interval
-    REAL(KIND(1d0)),INTENT(INOUT)::tstepcount
-    REAL(KIND(1d0)),INTENT(OUT)::AdditionalWater
+    REAL(KIND(1D0)),INTENT(IN)::Temp_C
+    REAL(KIND(1D0)),INTENT(IN)::TempMeltFact
+    REAL(KIND(1D0)),INTENT(IN)::TH
+    REAL(KIND(1D0)),INTENT(IN)::timezone
+    REAL(KIND(1D0)),INTENT(IN)::TL
+    REAL(KIND(1D0)),INTENT(IN)::tstep_real
+    REAL(KIND(1D0)),INTENT(IN)::VegFraction
+    REAL(KIND(1D0)),INTENT(IN)::waterdens
+    REAL(KIND(1D0)),INTENT(IN)::xsmd
+    REAL(KIND(1D0)),INTENT(IN)::year
+    REAL(KIND(1D0)),INTENT(IN)::Z
+    REAL(KIND(1D0)),INTENT(IN)::ZENITH_deg
 
-    REAL(KIND(1d0)),DIMENSION(0:ndays,9),INTENT(INOUT)::WU_Day
+    REAL(KIND(1D0)),INTENT(INOUT)::a1
+    REAL(KIND(1D0)),INTENT(INOUT)::a2
+    REAL(KIND(1D0)),INTENT(INOUT)::a3
+    REAL(KIND(1D0)),INTENT(INOUT)::OverUse
+    REAL(KIND(1D0)),INTENT(INOUT)::runoff_per_interval
+    REAL(KIND(1D0)),INTENT(INOUT)::SnowAlb
+    REAL(KIND(1D0)),INTENT(INOUT)::tstepcount
 
-    REAL(KIND(1d0)),INTENT(OUT)::avU10_ms
-    REAL(KIND(1d0)),INTENT(OUT)::chSnow_per_interval
-    REAL(KIND(1d0)),INTENT(OUT)::CumSnowfall
-    REAL(KIND(1d0)),INTENT(OUT)::dens_dry
-    REAL(KIND(1d0)),INTENT(OUT)::drain_per_tstep
-    REAL(KIND(1d0)),INTENT(OUT)::Ea_hPa
-    REAL(KIND(1d0)),INTENT(OUT)::E_mod
-    REAL(KIND(1d0)),INTENT(OUT)::es_hPa
-    REAL(KIND(1d0)),INTENT(OUT)::ev
-    REAL(KIND(1d0)),INTENT(OUT)::ev_per_tstep
-    REAL(KIND(1d0)),INTENT(OUT)::ext_wu
-    REAL(KIND(1d0)),INTENT(OUT)::fcld
-    REAL(KIND(1d0)),INTENT(OUT)::FlowChange
-    REAL(KIND(1d0)),INTENT(OUT)::fwh
-    REAL(KIND(1d0)),INTENT(OUT)::gsc
-    REAL(KIND(1d0)),INTENT(OUT)::int_wu
-    REAL(KIND(1d0)),INTENT(OUT)::kclear
-    REAL(KIND(1d0)),INTENT(OUT)::kup
-    REAL(KIND(1d0)),INTENT(OUT)::ldown
-    REAL(KIND(1d0)),INTENT(OUT)::lup
-    REAL(KIND(1d0)),INTENT(OUT)::mwh
-    REAL(KIND(1d0)),INTENT(OUT)::mwstore
-    REAL(KIND(1d0)),INTENT(OUT)::NWstate_per_tstep
-    REAL(KIND(1d0)),INTENT(OUT)::planF
-    REAL(KIND(1d0)),INTENT(OUT)::p_mm
-    REAL(KIND(1d0)),INTENT(OUT)::psim
-    REAL(KIND(1d0)),INTENT(OUT)::q2_gkg
-    REAL(KIND(1d0)),INTENT(OUT)::qe_per_tstep
-    REAL(KIND(1d0)),INTENT(OUT)::qn1_S
-    REAL(KIND(1d0)),INTENT(OUT)::rss
-    REAL(KIND(1d0)),INTENT(OUT)::runoffAGimpervious_m3
-    REAL(KIND(1d0)),INTENT(OUT)::runoffAGveg_m3
-    REAL(KIND(1d0)),INTENT(OUT)::runoff_per_tstep
-    REAL(KIND(1d0)),INTENT(OUT)::runoffPipes
-    REAL(KIND(1d0)),INTENT(OUT)::runoffPipes_m3
-    REAL(KIND(1d0)),INTENT(OUT)::runoffSoil_per_tstep
-    REAL(KIND(1d0)),INTENT(OUT)::runoffwaterbody
-    REAL(KIND(1d0)),INTENT(OUT)::runoffWaterBody_m3
-    REAL(KIND(1d0)),INTENT(OUT)::smd
-    REAL(KIND(1d0)),INTENT(OUT)::SoilState
-    REAL(KIND(1d0)),INTENT(OUT)::state_per_tstep
-    REAL(KIND(1d0)),INTENT(OUT)::swe
-    REAL(KIND(1d0)),INTENT(OUT)::t2_C
-    REAL(KIND(1d0)),INTENT(OUT)::TempVeg
-    REAL(KIND(1d0)),INTENT(OUT)::tot_chang_per_tstep
-    REAL(KIND(1d0)),INTENT(OUT)::Tstar
-    REAL(KIND(1d0)),INTENT(OUT)::VPD_Pa
-    REAL(KIND(1d0)),INTENT(OUT)::WUAreaDecTr_m2
-    REAL(KIND(1d0)),INTENT(OUT)::WUAreaEveTr_m2
-    REAL(KIND(1d0)),INTENT(OUT)::WUAreaGrass_m2
-    REAL(KIND(1d0)),INTENT(OUT)::WUAreaTotal_m2
-    REAL(KIND(1d0)),INTENT(OUT)::wu_m3
-    REAL(KIND(1d0)),INTENT(OUT)::Zh
-    REAL(KIND(1d0)),INTENT(OUT)::Fc
-    REAL(KIND(1d0)),INTENT(OUT)::azimuth
-
-    REAL(KIND(1d0)),INTENT(out)::H_mod
-    REAL(KIND(1d0)),INTENT(out)::qeOut
-    REAL(KIND(1d0)),INTENT(out)::qh
-    REAL(KIND(1d0)),INTENT(out)::Qm
-    REAL(KIND(1d0)),INTENT(out)::QmFreez
-    REAL(KIND(1d0)),INTENT(out)::QmRain
-    REAL(KIND(1d0)),INTENT(out)::qn1_SF
-    REAL(KIND(1d0)),INTENT(out)::qs
-    REAL(KIND(1d0)),INTENT(out)::RA
-    REAL(KIND(1d0)),INTENT(out)::ResistSurf
-    REAL(KIND(1d0)),INTENT(out)::surf_chang_per_tstep
-    REAL(KIND(1d0)),INTENT(out)::tsurf
-    REAL(KIND(1d0)),INTENT(out)::UStar
-    REAL(KIND(1d0)),INTENT(out)::wu_DecTr
-    REAL(KIND(1d0)),INTENT(out)::wu_EveTr
-    REAL(KIND(1d0)),INTENT(out)::wu_Grass
-    REAL(KIND(1d0)),INTENT(out)::Z0m
-    REAL(KIND(1d0)),INTENT(out)::Zdm
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::FreezMelt
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::mw_ind
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::Qm_melt
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::Qm_rain
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::rainOnSnow
-
-    REAL(KIND(1d0)),DIMENSION(0:ndays),INTENT(INOUT)::albDecTr
-    REAL(KIND(1d0)),DIMENSION(0:ndays),INTENT(INOUT)::albEveTr
-    REAL(KIND(1d0)),DIMENSION(0:ndays),INTENT(INOUT)::albGrass
-    REAL(KIND(1d0)),DIMENSION(0:ndays),INTENT(INOUT)::DecidCap
-    REAL(KIND(1d0)),DIMENSION(0:ndays),INTENT(INOUT)::porosity
-    REAL(KIND(1d0)),DIMENSION(2),INTENT(INOUT)::SurplusEvap
-    REAL(KIND(1d0)),DIMENSION(2),INTENT(OUT)::SnowRemoval
-    REAL(KIND(1d0)),DIMENSION(2*nsh+1),INTENT(INOUT)::qn1_av_store
-    REAL(KIND(1d0)),DIMENSION(2*nsh+1),INTENT(INOUT)::qn1_S_av_store
-    REAL(KIND(1d0)),DIMENSION(3),INTENT(IN)::Ie_a
-    REAL(KIND(1d0)),DIMENSION(3),INTENT(IN)::Ie_m
-
-    REAL(KIND(1d0)),DIMENSION(3),INTENT(IN)::MaxConductance
-
-    REAL(KIND(1d0)),DIMENSION(365),INTENT(IN)::NARP_G
-
-    REAL(KIND(1d0)),DIMENSION(7),INTENT(IN)::DayWat
-    REAL(KIND(1d0)),DIMENSION(7),INTENT(IN)::DayWatPer
-    REAL(KIND(1d0)),INTENT(IN),DIMENSION(9)::OHM_threshSW
-    REAL(KIND(1d0)),INTENT(IN),DIMENSION(9)::OHM_threshWD
-
-    INTEGER,DIMENSION(MaxNumberOfGrids),INTENT(IN)::GridIDmatrix
-    INTEGER,DIMENSION(0:ndays,3),INTENT(INOUT)::DayofWeek
-    REAL(KIND(1d0)),DIMENSION(MaxNumberOfGrids),INTENT(INOUT)::DailyStateFirstOpen
-    REAL(KIND(1d0)),DIMENSION(nsh),INTENT(INOUT)::qn1_S_store
-    REAL(KIND(1d0)),DIMENSION(nsh),INTENT(INOUT)::qn1_store
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(IN)::chAnOHM
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(IN)::cpAnOHM
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(IN)::emis
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(IN)::kkAnOHM
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(IN)::qn1_ind_snow
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(IN)::sfr
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(IN)::StateLimit
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(IN)::tsurf_ind
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(IN)::WetThresh
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(INOUT)::addWater
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(INOUT)::AddWaterRunoff
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(INOUT)::alb
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(INOUT)::IceFrac
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(INOUT)::Meltwaterstore
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(INOUT)::runoffSoil
-    REAL(KIND(1d0)),INTENT(INOUT)::SnowAlb
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(INOUT)::SnowDens
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(INOUT)::SnowDepth
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(INOUT)::snowFrac
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(INOUT)::SnowPack
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(INOUT)::soilmoist
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(INOUT)::state
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(OUT)::chang
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(OUT)::changSnow
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(OUT)::evap
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(OUT)::ev_snow
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(OUT)::Qm_freezState
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(OUT)::rss_nsurf
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(OUT)::runoff
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(OUT)::runoffSnow
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(OUT)::smd_nsurf
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(OUT)::snowD
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(OUT)::SnowToSurf
-    REAL(KIND(1d0)),INTENT(IN),DIMENSION(nsurf)::SatHydraulicConduct
-    REAL(KIND(1d0)),INTENT(IN),DIMENSION(nsurf)::SoilDepth
-    REAL(KIND(1d0)),INTENT(IN),DIMENSION(nsurf)::soilstoreCap
-    INTEGER,DIMENSION(nvegsurf),INTENT(IN)::LAIType
-    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN)::BaseT
-    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN)::BaseTe
-    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN)::GDDFull
-    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN)::LAIMax
-    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN)::LAIMin
-    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN)::SDDFull
-    REAL(KIND(1d0)),DIMENSION(0:23,2),INTENT(OUT)::snowProf
-    REAL(KIND(1d0)),INTENT(IN),DIMENSION(24*NSH,2)::WUProfA_tstep
-    REAL(KIND(1d0)),INTENT(IN),DIMENSION(24*NSH,2)::WUProfM_tstep
-    REAL(KIND(1d0)),DIMENSION(0:ndays,5),INTENT(INOUT)::GDD
-    REAL(KIND(1d0)),DIMENSION(-4:ndays,6),INTENT(INOUT)::HDD
-    REAL(KIND(1d0)),DIMENSION(4,nvegsurf),INTENT(IN)::LAIPower
-    REAL(KIND(1d0)),DIMENSION(-4:ndays,nvegsurf),INTENT(INOUT)::LAI
-    REAL(KIND(1d0)),DIMENSION(6,nsurf),INTENT(INOUT)::surf
-    REAL(KIND(1d0)),DIMENSION(nsurf+1,nsurf-1),INTENT(IN)::WaterDist
-    REAL(KIND(1d0)),DIMENSION(:,:,:),INTENT(IN)::MetForcingData
-    REAL(KIND(1d0)),INTENT(IN),DIMENSION(9,4,3)::OHM_coef
-    REAL(KIND(1d0)),DIMENSION(ReadLinesMetdata,ncolumnsDataOut,NumberOfGrids),INTENT(IN)::dataOut
-
-    REAL(KIND(1d0))::avcp
-    REAL(KIND(1d0))::dq
-    REAL(KIND(1d0))::lv_J_kg
-    REAL(KIND(1d0))::lvS_J_kg
-    REAL(KIND(1d0))::psyc_hPa
-    REAL(KIND(1d0))::qe
-    REAL(KIND(1d0))::qn1
-    REAL(KIND(1d0))::RAsnow
-    REAL(KIND(1d0))::rb
-    REAL(KIND(1d0))::s_hPa
-    REAL(KIND(1d0))::sIce_hpa
-    REAL(KIND(1d0))::SoilMoistCap
-    REAL(KIND(1d0))::veg_fr
-    REAL(KIND(1d0))::VegPhenLumps
-    REAL(KIND(1d0))::VPd_hpa
-    REAL(KIND(1d0))::vsmd
-    REAL(KIND(1d0))::xBo
-    REAL(KIND(1d0))::ZZD
-    INTEGER,DIMENSION(nsurf)::snowCalcSwitch
-    REAL(KIND(1d0)),DIMENSION(nsurf)::deltaQi
-    REAL(KIND(1d0)),DIMENSION(nsurf)::drain
-    REAL(KIND(1d0)),DIMENSION(nsurf)::FreezState
-    REAL(KIND(1d0)),DIMENSION(nsurf)::FreezStateVol
-    REAL(KIND(1d0)),DIMENSION(nsurf)::soilmoistOld
-    REAL(KIND(1d0)),DIMENSION(nsurf)::stateOld
+    REAL(KIND(1D0)),INTENT(OUT)::AdditionalWater
+    REAL(KIND(1D0)),INTENT(OUT)::avU10_ms
+    REAL(KIND(1D0)),INTENT(OUT)::azimuth
+    REAL(KIND(1D0)),INTENT(OUT)::chSnow_per_interval
+    REAL(KIND(1D0)),INTENT(OUT)::CumSnowfall
+    REAL(KIND(1D0)),INTENT(OUT)::dens_dry
+    REAL(KIND(1D0)),INTENT(OUT)::drain_per_tstep
+    REAL(KIND(1D0)),INTENT(OUT)::Ea_hPa
+    REAL(KIND(1D0)),INTENT(OUT)::E_mod
+    REAL(KIND(1D0)),INTENT(OUT)::es_hPa
+    REAL(KIND(1D0)),INTENT(OUT)::ev
+    REAL(KIND(1D0)),INTENT(OUT)::ev_per_tstep
+    REAL(KIND(1D0)),INTENT(OUT)::ext_wu
+    REAL(KIND(1D0)),INTENT(OUT)::Fc
+    REAL(KIND(1D0)),INTENT(OUT)::fcld
+    REAL(KIND(1D0)),INTENT(OUT)::FlowChange
+    REAL(KIND(1D0)),INTENT(OUT)::fwh
+    REAL(KIND(1D0)),INTENT(OUT)::gsc
+    REAL(KIND(1D0)),INTENT(OUT)::H_mod
+    REAL(KIND(1D0)),INTENT(OUT)::int_wu
+    REAL(KIND(1D0)),INTENT(OUT)::kclear
+    REAL(KIND(1D0)),INTENT(OUT)::kup
+    REAL(KIND(1D0)),INTENT(OUT)::ldown
+    REAL(KIND(1D0)),INTENT(OUT)::lup
+    REAL(KIND(1D0)),INTENT(OUT)::mwh
+    REAL(KIND(1D0)),INTENT(OUT)::mwstore
+    REAL(KIND(1D0)),INTENT(OUT)::NWstate_per_tstep
+    REAL(KIND(1D0)),INTENT(OUT)::planF
+    REAL(KIND(1D0)),INTENT(OUT)::p_mm
+    REAL(KIND(1D0)),INTENT(OUT)::psim
+    REAL(KIND(1D0)),INTENT(OUT)::q2_gkg
+    REAL(KIND(1D0)),INTENT(OUT)::qeOut
+    REAL(KIND(1D0)),INTENT(OUT)::qe_per_tstep
+    REAL(KIND(1D0)),INTENT(OUT)::qf
+    REAL(KIND(1D0)),INTENT(OUT)::qh
+    REAL(KIND(1D0)),INTENT(OUT)::Qm
+    REAL(KIND(1D0)),INTENT(OUT)::QmFreez
+    REAL(KIND(1D0)),INTENT(OUT)::QmRain
+    REAL(KIND(1D0)),INTENT(OUT)::qn1_S
+    REAL(KIND(1D0)),INTENT(OUT)::qn1_SF
+    REAL(KIND(1D0)),INTENT(OUT)::qs
+    REAL(KIND(1D0)),INTENT(OUT)::RA
+    REAL(KIND(1D0)),INTENT(OUT)::ResistSurf
+    REAL(KIND(1D0)),INTENT(OUT)::rss
+    REAL(KIND(1D0)),INTENT(OUT)::runoffAGimpervious_m3
+    REAL(KIND(1D0)),INTENT(OUT)::runoffAGveg_m3
+    REAL(KIND(1D0)),INTENT(OUT)::runoff_per_tstep
+    REAL(KIND(1D0)),INTENT(OUT)::runoffPipes
+    REAL(KIND(1D0)),INTENT(OUT)::runoffPipes_m3
+    REAL(KIND(1D0)),INTENT(OUT)::runoffSoil_per_tstep
+    REAL(KIND(1D0)),INTENT(OUT)::runoffwaterbody
+    REAL(KIND(1D0)),INTENT(OUT)::runoffWaterBody_m3
+    REAL(KIND(1D0)),INTENT(OUT)::smd
+    REAL(KIND(1D0)),INTENT(OUT)::SoilState
+    REAL(KIND(1D0)),INTENT(OUT)::state_per_tstep
+    REAL(KIND(1D0)),INTENT(OUT)::surf_chang_per_tstep
+    REAL(KIND(1D0)),INTENT(OUT)::swe
+    REAL(KIND(1D0)),INTENT(OUT)::t2_C
+    REAL(KIND(1D0)),INTENT(OUT)::TempVeg
+    REAL(KIND(1D0)),INTENT(OUT)::tot_chang_per_tstep
+    REAL(KIND(1D0)),INTENT(OUT)::Tstar
+    REAL(KIND(1D0)),INTENT(OUT)::tsurf
+    REAL(KIND(1D0)),INTENT(OUT)::UStar
+    REAL(KIND(1D0)),INTENT(OUT)::VPD_Pa
+    REAL(KIND(1D0)),INTENT(OUT)::WUAreaDecTr_m2
+    REAL(KIND(1D0)),INTENT(OUT)::WUAreaEveTr_m2
+    REAL(KIND(1D0)),INTENT(OUT)::WUAreaGrass_m2
+    REAL(KIND(1D0)),INTENT(OUT)::WUAreaTotal_m2
+    REAL(KIND(1D0)),INTENT(OUT)::wu_DecTr
+    REAL(KIND(1D0)),INTENT(OUT)::wu_EveTr
+    REAL(KIND(1D0)),INTENT(OUT)::wu_Grass
+    REAL(KIND(1D0)),INTENT(OUT)::wu_m3
+    REAL(KIND(1D0)),INTENT(OUT)::Z0m
+    REAL(KIND(1D0)),INTENT(OUT)::Zdm
+    REAL(KIND(1D0)),INTENT(OUT)::Zh
 
 
+    REAL(KIND(1D0)),DIMENSION(:,:,:),INTENT(IN)::MetForcingData
+    REAL(KIND(1D0)),DIMENSION(24*NSH,2),INTENT(IN)::WUProfA_tstep
+    REAL(KIND(1D0)),DIMENSION(24*NSH,2),INTENT(IN)::WUProfM_tstep
+    REAL(KIND(1D0)),DIMENSION(3),INTENT(IN)::Ie_a
+    REAL(KIND(1D0)),DIMENSION(3),INTENT(IN)::Ie_m
+    REAL(KIND(1D0)),DIMENSION(3),INTENT(IN)::MaxConductance
+    REAL(KIND(1D0)),DIMENSION(365),INTENT(IN)::NARP_G
+    REAL(KIND(1D0)),DIMENSION(4,NVEGSURF),INTENT(IN)::LAIPower
+    REAL(KIND(1D0)),DIMENSION(7),INTENT(IN)::DayWat
+    REAL(KIND(1D0)),DIMENSION(7),INTENT(IN)::DayWatPer
+    REAL(KIND(1D0)),DIMENSION(9),INTENT(IN)::OHM_threshSW
+    REAL(KIND(1D0)),DIMENSION(9),INTENT(IN)::OHM_threshWD
+    REAL(KIND(1D0)),DIMENSION(9,4,3),INTENT(IN)::OHM_coef
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)::chAnOHM
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)::cpAnOHM
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)::emis
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)::kkAnOHM
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)::qn1_ind_snow
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)::SatHydraulicConduct
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)::sfr
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)::SoilDepth
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)::soilstoreCap
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)::StateLimit
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)::tsurf_ind
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)::WetThresh
+    REAL(KIND(1D0)),DIMENSION(NSURF+1,NSURF-1),INTENT(IN)::WaterDist
+    REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(IN)::BaseT
+    REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(IN)::BaseTe
+    REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(IN)::GDDFull
+    REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(IN)::LAIMax
+    REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(IN)::LAIMin
+    REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(IN)::SDDFull
+    REAL(KIND(1D0)),DIMENSION(READLINESMETDATA,NCOLUMNSDATAOUT,NUMBEROFGRIDS),INTENT(IN)::dataOut
 
+
+    REAL(KIND(1D0)),DIMENSION(0:NDAYS),INTENT(INOUT)::albDecTr
+    REAL(KIND(1D0)),DIMENSION(0:NDAYS),INTENT(INOUT)::albEveTr
+    REAL(KIND(1D0)),DIMENSION(0:NDAYS),INTENT(INOUT)::albGrass
+    REAL(KIND(1D0)),DIMENSION(0:NDAYS),INTENT(INOUT)::DecidCap
+    REAL(KIND(1D0)),DIMENSION(0:NDAYS),INTENT(INOUT)::porosity
+    REAL(KIND(1D0)),DIMENSION(0:NDAYS,5),INTENT(INOUT)::GDD
+    REAL(KIND(1D0)),DIMENSION(0:NDAYS,9),INTENT(INOUT)::WU_Day
+    REAL(KIND(1D0)),DIMENSION(2),INTENT(INOUT)::SurplusEvap
+    REAL(KIND(1D0)),DIMENSION(2*NSH+1),INTENT(INOUT)::qn1_av_store
+    REAL(KIND(1D0)),DIMENSION(2*NSH+1),INTENT(INOUT)::qn1_S_av_store
+    REAL(KIND(1D0)),DIMENSION(-4:NDAYS,6),INTENT(INOUT)::HDD
+    REAL(KIND(1D0)),DIMENSION(-4:NDAYS,NVEGSURF),INTENT(INOUT)::LAI
+    REAL(KIND(1D0)),DIMENSION(6,NSURF),INTENT(INOUT)::surf
+    REAL(KIND(1D0)),DIMENSION(MAXNUMBEROFGRIDS),INTENT(INOUT)::DailyStateFirstOpen
+    REAL(KIND(1D0)),DIMENSION(NSH),INTENT(INOUT)::qn1_S_store
+    REAL(KIND(1D0)),DIMENSION(NSH),INTENT(INOUT)::qn1_store
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)::addWater
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)::AddWaterRunoff
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)::alb
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)::IceFrac
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)::Meltwaterstore
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)::runoffSoil
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)::SnowDens
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)::SnowDepth
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)::snowFrac
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)::SnowPack
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)::soilmoist
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)::state
+
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(OUT)::chang
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(OUT)::changSnow
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(OUT)::evap
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(OUT)::ev_snow
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(OUT)::FreezMelt
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(OUT)::mw_ind
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(OUT)::Qm_freezState
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(OUT)::Qm_melt
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(OUT)::Qm_rain
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(OUT)::rainOnSnow
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(OUT)::rss_nsurf
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(OUT)::runoff
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(OUT)::runoffSnow
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(OUT)::smd_nsurf
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(OUT)::snowD
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(OUT)::SnowToSurf
+    REAL(KIND(1D0)),DIMENSION(0:23,2),INTENT(OUT)::snowProf
+    REAL(KIND(1D0)),DIMENSION(2),INTENT(OUT)::SnowRemoval
+
+
+    REAL(KIND(1D0))::avcp
+    REAL(KIND(1D0))::dq
+    REAL(KIND(1D0))::lv_J_kg
+    REAL(KIND(1D0))::lvS_J_kg
+    REAL(KIND(1D0))::psyc_hPa
+    REAL(KIND(1D0))::qe
+    REAL(KIND(1D0))::qn1
+    REAL(KIND(1D0))::RAsnow
+    REAL(KIND(1D0))::rb
+    REAL(KIND(1D0))::s_hPa
+    REAL(KIND(1D0))::sIce_hpa
+    REAL(KIND(1D0))::SoilMoistCap
+    REAL(KIND(1D0))::veg_fr
+    REAL(KIND(1D0))::VegPhenLumps
+    REAL(KIND(1D0))::VPd_hpa
+    REAL(KIND(1D0))::vsmd
+    REAL(KIND(1D0))::xBo
+    REAL(KIND(1D0))::ZZD
 
 
 

@@ -217,9 +217,9 @@ CONTAINS
        xa2=coeff_grid_day(sfc_typ,2)
        xa3=coeff_grid_day(sfc_typ,3)
     ELSE
-      !  PRINT*, ''
-      !  PRINT*, 'surface:',sfc_typ
-      !  PRINT*, 'xid',xid,id_save
+       !  PRINT*, ''
+       !  PRINT*, 'surface:',sfc_typ
+       !  PRINT*, 'xid',xid,id_save
 
 
        ! load forcing characteristics:
@@ -438,7 +438,12 @@ CONTAINS
     ! xchWS = 0.5*xchWS
 
     !     xch    = CRA/RA !update bulk trsf. coeff. with RA (aerodyn. res.)
-    beta   = 1/xBo
+    IF ( ABS(xBo)<0.001 ) THEN
+       beta   = 1/0.001
+    ELSE
+       beta   = 1/xBo
+    END IF
+
     ! PRINT*, 'beta:', beta
     f      = ((1+beta)*xchWS+4*SIGMA*xemis*mTa**3)
     !     print*, 'xch',xch,'mTa',mTa,'dLu',4*SIGMA*xemis*mTa**3

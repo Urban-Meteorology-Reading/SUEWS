@@ -3,6 +3,8 @@
 !           - between arrays for different grids and the model variables
 !Made by HW&LJ Oct 2014
 !-----------------------------------------------------------------------------------
+! MH 21 Jun 2017 : Added anthropogenic CO2 charasteristic
+! MH 16 Jun 2017 : Added biogenic CO2 characteristic
 ! HCW 13 Dec 2016 : LAIPower and LAIType for all vegetation types now used (previously only DecTr were used)
 ! HCW 12 Dec 2016 : Switched sign of lng so that input should be -ve for W, +ve for E, as is conventional
 !Last modified HCW 26 Aug 2016
@@ -50,6 +52,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   USE ESTM_data
   USE PhysConstants
   USE WhereWhen
+
 
   IMPLICIT NONE
 
@@ -172,9 +175,9 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   IF(PopDensDaytime >= 0 .AND. PopDensNighttime >= 0) NumCapita = (PopDensDaytime+PopDensNighttime)/2  !If both, use average
 
   ! ---- Traffic rate
-  TrafficRate = SurfaceChar(Gridiv,c_TrafficRate) ! Mean traffic rate within modelled area
+  TrafficRate = SurfaceChar(Gridiv,(/c_TrafficRate_WD,c_TrafficRate_WE/)) ! Mean traffic rate within modelled area
   ! ---- Building energy use
-  BuildEnergyUse = SurfaceChar(Gridiv,c_BuildEnergyUse) ! Building energy use within modelled area
+  QF0_BEU          = SurfaceChar(Gridiv,(/c_QF0_BEU_WD,c_QF0_BEU_WE/))   ! Building energy use within modelled area
 
   ! ---- Albedo [-]
   alb(1:nsurf) = SurfaceChar(Gridiv,c_AlbMax)   !Use maximum albedos as default value (albmin for veg surfaces handled below)
@@ -254,6 +257,15 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   LAIMax (1:nvegsurf) = SurfaceChar(Gridiv,c_LAIMax)
   MaxConductance(1:nvegsurf) = SurfaceChar(Gridiv,c_GsMax)
 
+  alpha_bioCO2(1:nvegsurf)     = SurfaceChar(Gridiv,c_alpha_bioCO2)
+  beta_bioCO2(1:nvegsurf)      = SurfaceChar(Gridiv,c_beta_bioCO2)
+  theta_bioCO2(1:nvegsurf)     = SurfaceChar(Gridiv,c_theta_bioCO2)
+  alpha_enh_bioCO2(1:nvegsurf) = SurfaceChar(Gridiv,c_alpha_enh_bioCO2)
+  beta_enh_bioCO2(1:nvegsurf)  = SurfaceChar(Gridiv,c_beta_enh_bioCO2)
+  resp_a(1:nvegsurf)           = SurfaceChar(Gridiv,c_resp_a)
+  resp_b(1:nvegsurf)           = SurfaceChar(Gridiv,c_resp_b)
+  min_res_bioCO2(1:nvegsurf)   = SurfaceChar(Gridiv,c_min_res_bioCO2)  
+  
   ! ---- LAI characteristics (updated HCW 13 Dec 2016)
   LAItype(1:nvegsurf) = INT(SurfaceChar(Gridiv,c_LAIEq(1:nvegsurf)))
   LAIPower(1,1:nvegsurf) = SurfaceChar(Gridiv,c_LeafGP1(1:nvegsurf))
@@ -353,7 +365,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   ! ---- ESTM characteristics -------------------------
   ! HCW 16 Jun 2016
   ! Wall fraction for ESTM (in SiteSelect.txt)
-  ! IF(StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
+  IF(StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
   AreaWall = SurfaceChar(Gridiv,c_AreaWall)
   fwall=AreaWall/SurfaceArea
 
@@ -619,13 +631,12 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
         EXIT
      ENDIF
   ENDDO
-  ! ENDIF ! ESTM related translation finished here.
+  ENDIF ! ESTM related translation finished here.
 
   ! ---- AnOHM related ------------------------------
   cpAnOHM(1:nsurf) = SurfaceChar(Gridiv,c_cpAnOHM) ! AnOHM TS
   kkAnOHM(1:nsurf) = SurfaceChar(Gridiv,c_kkAnOHM) ! AnOHM TS
   chAnOHM(1:nsurf) = SurfaceChar(Gridiv,c_chAnOHM) ! AnOHM TS
-
 
   ! cp and k are estimated from ESTM coefficients:
   ! cpAnOHM(1:nsurf)=rSurf_SUEWSsurfs(1,1:nsurf)
@@ -683,16 +694,36 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   QF_B=0
   QF_C=0
   AH_min=0
-  AH_slope=0
-  T_Critic=0
+  T_CRITIC_Heating=0
+  T_CRITIC_Cooling=0
+  AH_slope_Heating=0
+  AH_slope_Cooling=0
 
-  BaseTHDD = SurfaceChar(Gridiv,c_BaseTHDD)
-  QF_A = SurfaceChar(Gridiv,(/c_QF_A1,c_QF_A2/))
-  QF_B = SurfaceChar(Gridiv,(/c_QF_B1,c_QF_B2/))
-  QF_C = SurfaceChar(Gridiv,(/c_QF_C1,c_QF_C2/))
-  AH_min = SurfaceChar(Gridiv,c_AHMin)
-  AH_slope = SurfaceChar(Gridiv,c_AHSlope)
-  T_Critic = SurfaceChar(Gridiv,c_TCritic)
+  BaseTHDD         = SurfaceChar(Gridiv,c_BaseTHDD)
+  QF_A             = SurfaceChar(Gridiv,(/c_QF_A1,c_QF_A2/))
+  QF_B             = SurfaceChar(Gridiv,(/c_QF_B1,c_QF_B2/))
+  QF_C             = SurfaceChar(Gridiv,(/c_QF_C1,c_QF_C2/))
+  AH_min           = SurfaceChar(Gridiv,(/c_AHMin_WD,c_AHMin_WE/))
+  AH_slope_Heating = SurfaceChar(Gridiv,(/c_AHSlopeHeating_WD,c_AHSlopeHeating_WE/))
+  AH_slope_Cooling = SurfaceChar(Gridiv,(/c_AHSlopeCooling_WD,c_AHSlopeCooling_WE/))
+  T_Critic_Heating = SurfaceChar(Gridiv,(/c_TCriticHeating_WD,c_TCriticHeating_WE/))
+  T_Critic_Cooling = SurfaceChar(Gridiv,(/c_TCriticCooling_WD,c_TCriticCooling_WE/))
+  EnProfWD         = SurfaceChar(Gridiv,c_EnProfWD)
+  EnProfWE         = SurfaceChar(Gridiv,c_EnProfWE)
+  CO2mWD           = SurfaceChar(Gridiv,c_CO2mWD)
+  CO2mWE           = SurfaceChar(Gridiv,c_CO2mWE)
+  TraffProfWD      = SurfaceChar(Gridiv,c_TraffProfWD)
+  TraffProfWE      = SurfaceChar(Gridiv,c_TraffProfWE)
+  PopProfWD        = SurfaceChar(Gridiv,c_PopProfWD)
+  PopProfWE        = SurfaceChar(Gridiv,c_PopProfWE)
+  MinQFMetab       = SurfaceChar(Gridiv,c_MinQFMetab)
+  MaxQFMetab       = SurfaceChar(Gridiv,c_MaxQFMetab)
+  FrFossilFuel_heat = SurfaceChar(Gridiv,c_FrFossilFuel_heat)
+  FrFossilFuel_NonHeat = SurfaceChar(Gridiv,c_FrFossilFuel_NonHeat)
+  EF_umolCO2perJ   = SurfaceChar(Gridiv,c_EF_umolCO2perJ)
+  EnEF_v_Jkm       = SurfaceChar(Gridiv,c_EnEF_v_Jkm)
+  FcEF_v_kgkm      = SurfaceChar(Gridiv,c_FcEF_v_kgkm)
+  TrafficUnits     = SurfaceChar(Gridiv,c_TrafficUnits)
 
   ! ---- Irrigation
   Ie_start           = INT(SurfaceChar(Gridiv,c_IeStart))
@@ -715,6 +746,11 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   SnowProf(0:23,2) = SurfaceChar(Gridiv,c_HrProfSnowCWE)   ! Snow clearing, weekends
   HumActivityProf(0:23,1) = SurfaceChar(Gridiv,c_HrProfHumActivityWD)    ! Human activity, weekdays
   HumActivityProf(0:23,2) = SurfaceChar(Gridiv,c_HrProfHumActivityWE)    ! Human activity, weekends
+  TraffProf(0:23,1) = SurfaceChar(Gridiv,c_HrProfTraffWD)  ! Traffic, weekdays
+  TraffProf(0:23,2) = SurfaceChar(Gridiv,c_HRProfTraffWE)  ! Traffic, weekends
+  PopProf(0:23,1) = SurfaceChar(Gridiv,c_HRProfPopWD)      ! Population, weekdays
+  PopProf(0:23,2) = SurfaceChar(Gridiv,c_HRProfPopWE)      ! Population, weekends
+
 
 
   ! ---- Profiles at the resolution of model time step
@@ -726,6 +762,11 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   WUProfA_tstep(:,2) = TstepProfiles(Gridiv,cTP_WUAutoWE,:) ! Water use, automatic, weekends
   HumActivity_tstep(:,1)  = TstepProfiles(Gridiv,cTP_HumActivityWD,:) ! Human activity, weekdays
   HumActivity_tstep(:,2)  = TstepProfiles(Gridiv,cTP_HumActivityWE,:) ! Human activity, weekends
+  TraffProf_tstep(:,1) = TstepProfiles(Gridiv,cTP_TraffProfWD,:) !Traffic, weekdays
+  TraffProf_tstep(:,2) = TstepProfiles(Gridiv,cTP_TraffProfWE,:) !Traffic, weekends
+  PopProf_tstep(:,1) = TstepProfiles(Gridiv,cTP_PopProfWD,:) !Population, weekdays
+  PopProf_tstep(:,2) = TstepProfiles(Gridiv,cTP_PopProfWE,:) !Population, weekends
+
 
   ! ---- Within-grid water distribution
   ! N.B. Rows and columns of WaterDist are the other way round to the input info
@@ -969,9 +1010,9 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
 
      WRITE(12,*) '----- '//TRIM(ADJUSTL(SsG_YYYY))//' Energy-use parameters'//' -----'
      WRITE(12,'(a12,11a10)') 'Grid','NumCapita','BaseTHDD','QF_A_WD','QF_A_WE','QF_B_WD','QF_B_WE','QF_C_WD','QF_C_WE', &
-          'AH_Min','AH_Slope','T_critic'
+          'AH_Min','AH_Slope','T_critic_Heating'
      WRITE(12,'(a12,11f10.3)') SsG_YYYY,NumCapita,BaseTHDD,QF_A(1:2),QF_B(1:2),QF_C(1:2), &
-          AH_Min,AH_Slope,T_critic
+          AH_Min,AH_Slope_Heating,T_critic_Heating
 
      WRITE(12,*) '----- '//TRIM(ADJUSTL(SsG_YYYY))//' Water-use parameters'//' -----'
      WRITE(12,'(a12,10a10)') 'Grid','IeStart','IeEnd','IntWatUse','Faut', &
@@ -980,7 +1021,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
           Ie_a(1:3),Ie_m(1:3)
 
      WRITE(12,*) '----- '//TRIM(ADJUSTL(SsG_YYYY))//' Weekly profiles'//' -----'
-     WRITE(12,'(a12,7a10,  a16)') 'Grid','1_Sun','2_Mon','3_Tue','4_Wed','5_Thu','6_Fri','7_Sat', ' DayofWeek'
+     WRITE(12,'(a12,7a10,  a16)') 'Grid','1_Sun','2_Mon','3_Tue','4_Wed','5_Thu','6_Fri','7_Sat', ' DayOfWeek'
      WRITE(12,'(a12,7f10.3,a16)') SsG_YYYY,DayWat(1:7), ' Irr allowed'
      WRITE(12,'(a12,7f10.3,a16)') SsG_YYYY,DayWatPer(1:7), ' Frac properties'
 
@@ -1027,14 +1068,14 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      ! Check input values are reasonable ===========================================
 
      ! Coefficients for anthropogenic heat models ----------------------------------
-     IF(AnthropHeatMethod==1) THEN   !Loridan et al. (2011) calculation
-        IF(AH_min==0.AND.Ah_slope==0.AND.T_Critic==0) THEN
-           CALL ErrorHint(53,'Check QF calculation coefficients.',notUsed,notUsed,AnthropHeatMethod)
+     IF(EmissionsMethod==1) THEN   !Loridan et al. (2011) calculation
+        IF(AH_min(1)==0.AND.Ah_slope_Heating(1)==0.AND.T_Critic_Heating(1)==0) THEN
+           CALL ErrorHint(53,'Check QF calculation coefficients.',notUsed,notUsed,EmissionsMethod)
         ENDIF
 
-     ELSEIF(AnthropHeatMethod==2) THEN   !Jarvi et al. (2011) calculation
+     ELSEIF(EmissionsMethod==2) THEN   !Jarvi et al. (2011) calculation
         IF(SUM(QF_A)==0.AND.SUM(QF_B)==0.AND.SUM(QF_C)==0) THEN
-           CALL ErrorHint(54,'Check QF calculation coefficients.',notUsed,notUsed,AnthropHeatMethod)
+           CALL ErrorHint(54,'Check QF calculation coefficients.',notUsed,notUsed,EmissionsMethod)
         ENDIF
      ENDIF
 

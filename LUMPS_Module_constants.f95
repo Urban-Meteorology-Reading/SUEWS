@@ -11,6 +11,8 @@
 ! HCW 14 Jun 2016 - updated columns for ESTM and column names for AnOHM
 ! HCW 26 Aug 2016 - CO2 flux added
 ! HCW 16 Jan 2017 - WhereWhen module added to store info relating to grid and datetime
+! MH 16 Jun 2017 - Added biogenic CO2 and edited Site_Select
+! MH 21 Jun 2017 - Added anthropogenic CO2 and edited Site_Select
 
 !==================================================================================================
 MODULE allocateArray
@@ -22,24 +24,26 @@ MODULE allocateArray
   INTEGER, PARAMETER:: MaxLinesMet=8640        !Max no. lines to read in one go (for all grids, ie MaxLinesMet/NumberOfGrids each)
 
   ! ---- Set number of columns in input files ----------------------------------------------------
-  INTEGER, PARAMETER:: ncolumnsSiteSelect=103       !SUEWS_SiteSelect.txt
+  INTEGER, PARAMETER:: ncolumnsSiteSelect=101       !SUEWS_SiteSelect.txt
   INTEGER, PARAMETER:: ncolumnsNonVeg=24            !SUEWS_NonVeg.txt
-  INTEGER, PARAMETER:: ncolumnsVeg=37               !SUEWS_Veg.txt
+  INTEGER, PARAMETER:: ncolumnsVeg=38               !SUEWS_Veg.txt
   INTEGER, PARAMETER:: ncolumnsWater=22             !SUEWS_Water.txt
   INTEGER, PARAMETER:: ncolumnsSnow=25              !SUEWS_Snow.txt
   INTEGER, PARAMETER:: ncolumnsSoil=9               !SUEWS_Soil.txt
   INTEGER, PARAMETER:: ncolumnsConductance=13       !SUEWS_Conductance.txt
   INTEGER, PARAMETER:: ncolumnsOHMCoefficients=4    !SUEWS_OHMCoefficients.txt
   INTEGER, PARAMETER:: ncolumnsESTMCoefficients=52  !SUEWS_ESTMCoefficients.txt ! S.O. 04 Feb 2016
-  INTEGER, PARAMETER:: ncolumnsAnthropogenicHeat=11 !SUEWS_AnthropogenicHeat.txt
+  INTEGER, PARAMETER:: ncolumnsAnthropogenic=34     !SUEWS_AnthropogenicHeat.txt
   INTEGER, PARAMETER:: ncolumnsIrrigation=25        !SUEWS_Irrigation.txt
   INTEGER, PARAMETER:: ncolumnsProfiles=25          !SUEWS_Profiles.txt
   INTEGER, PARAMETER:: ncolumnsWGWaterDist=10       !SUEWS_WithinGridWaterDist.txt
+  INTEGER, PARAMETER:: ncolumnsBiogen=9             !SUEWS_BiogenCO2.txt
   INTEGER, PARAMETER:: ncolumnsMetForcingData=24    !Meteorological forcing file (_data.txt)
   INTEGER, PARAMETER:: ncolsESTMdata=13             !ESTM input file (_ESTM_Ts_data.txt))
 
+
   ! ---- Set number of columns in output files ---------------------------------------------------
-  INTEGER, PARAMETER:: ncolumnsDataOut=84,&    !Main output file (_5.txt). DataOut created in SUEWS_Calculations.f95
+  INTEGER, PARAMETER:: ncolumnsDataOut=81,&    !Main output file (_5.txt). DataOut created in SUEWS_Calculations.f95
        ncolumnsDataOutSnow=102,&
        ncolumnsdataOutSOL=28,&
        ncolumnsdataOutBL=22
@@ -62,15 +66,16 @@ MODULE allocateArray
   CHARACTER(len=20),DIMENSION(ncolumnsOHMCoefficients)::   HeaderOHMCoefficients_Reqd     !Expected header for soils
   CHARACTER(len=20),DIMENSION(ncolumnsESTMCoefficients)::  HeaderESTMCoefficients_File    !Header for soils            ! S.O. 04 Feb 2016
   CHARACTER(len=20),DIMENSION(ncolumnsESTMCoefficients)::  HeaderESTMCoefficients_Reqd    !Expected header for soils   ! S.O. 04 Feb 2016
-  CHARACTER(len=20),DIMENSION(ncolumnsAnthropogenicHeat):: HeaderAnthropogenicHeat_File   !Header for QF
-  CHARACTER(len=20),DIMENSION(ncolumnsAnthropogenicHeat):: HeaderAnthropogenicHeat_Reqd   !Expected header for QF
+  CHARACTER(len=20),DIMENSION(ncolumnsAnthropogenic)::     HeaderAnthropogenic_File       !Header for QF
+  CHARACTER(len=20),DIMENSION(ncolumnsAnthropogenic)::     HeaderAnthropogenic_Reqd       !Expected header for QF
   CHARACTER(len=20),DIMENSION(ncolumnsIrrigation)::        HeaderIrrigation_File          !Header for Irrigation
   CHARACTER(len=20),DIMENSION(ncolumnsIrrigation)::        HeaderIrrigation_Reqd          !Expected header for Irrigation
   CHARACTER(len=20),DIMENSION(ncolumnsProfiles)::          HeaderProfiles_File            !Header for Profiles
   CHARACTER(len=20),DIMENSION(ncolumnsProfiles)::          HeaderProfiles_Reqd            !Expected header for Profiles
   CHARACTER(len=20),DIMENSION(ncolumnsWGWaterDist)::       HeaderWGWaterDist_File         !Header for Profiles
   CHARACTER(len=20),DIMENSION(ncolumnsWGWaterDist)::       HeaderWGWaterDist_Reqd         !Expected header for Profiles
-
+  CHARACTER(len=20),DIMENSION(ncolumnsBiogen)::            HeaderBiogen_File              !Header for Biogen
+  CHARACTER(len=20),DIMENSION(ncolumnsBiogen)::            HeaderBiogen_Reqd              !Expected header for Biogen
 
   ! ---- Define output file headers --------------------------------------------------------------
   INTEGER,DIMENSION(:),ALLOCATABLE:: UseColumnsDataOut       !Column numbers used to select output variables
@@ -91,10 +96,11 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::Conductance_Coeff         !Coefficients for conductances
   REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::OHMCoefficients_Coeff     !Coefficients for OHMCoefficients
   REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::ESTMCoefficients_Coeff    !Coefficients for ESTMCoefficients   ! S.O. 04 Feb 2016
-  REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::AnthropogenicHeat_Coeff   !Coefficients for AnthropogenicHeat
+  REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::Anthropogenic_Coeff       !Coefficients for AnthropogenicEmissions
   REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::Irrigation_Coeff          !Coefficients for Irrigation
   REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::Profiles_Coeff            !Coefficients for Profiles
   REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::WGWaterDist_Coeff         !Coefficients for WithinGridWaterDist
+  REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::Biogen_Coeff              !Coefficients for BiogenCO2
 
   ! ---- Define arrays for model calculations ----------------------------------------------------
   INTEGER,DIMENSION(:), ALLOCATABLE:: GridIDmatrix         !Array containing GridIDs in SiteSelect after sorting
@@ -122,6 +128,8 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: AHProf_tstep
   REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: WUProfM_tstep, WUProfA_tstep
   REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: HumActivity_tstep
+  REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: TraffProf_tstep
+  REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: PopProf_tstep
 
   ! ---- For ESTM
   REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:,:)::  Ts5mindata     !surface temperature input data
@@ -129,15 +137,19 @@ MODULE allocateArray
 
   ! Column numbers for TstepProfiles
   INTEGER:: cTP_EnUseWD  = 1,&
-       cTP_EnUseWE  = 2,&
-       cTP_WUManuWD = 3,&
-       cTP_WUManuWE = 4,&
-       cTP_WUAutoWD = 5,&
-       cTP_WUAutoWE = 6,&
-       cTP_SnowCWD  = 7,&
-       cTP_SnowCWE  = 8,&
-       cTP_HumActivityWD   = 9,&
-       cTP_HumActivityWE   = 10
+       cTP_EnUseWE       = 2,&
+       cTP_WUManuWD      = 3,&
+       cTP_WUManuWE      = 4,&
+       cTP_WUAutoWD      = 5,&
+       cTP_WUAutoWE      = 6,&
+       cTP_SnowCWD       = 7,&
+       cTP_SnowCWE       = 8,&
+       cTP_HumActivityWD = 9,&
+       cTP_HumActivityWE = 10,&
+       cTP_TraffProfWD   = 11,&
+       cTP_TraffProfWE   = 12,&
+       cTP_PopProfWD     = 13,&
+       cTP_PopProfWE     = 14
   !-----------------------------------------------------------------------------------------------
 
   ! ---- Surface types ---------------------------------------------------------------------------
@@ -266,13 +278,23 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(nvegsurf):: BaseTe           !Base temperature for senescence degree days [degC]
   REAL(KIND(1d0)),DIMENSION(nvegsurf):: GDDFull          !Growing degree days needed for full capacity [degC]
   REAL(KIND(1d0)),DIMENSION(nvegsurf):: SDDFull          !Senescence degree days needed to initiate leaf off [degC]
-  REAL(KIND(1d0)),DIMENSION(nvegsurf):: LAIMin           !Min LAI [m2 m-2]
-  REAL(KIND(1d0)),DIMENSION(nvegsurf):: LAIMax           !Max LAI  [m2 m-2]
+  REAL(KIND(1d0)),DIMENSION(nvegsurf):: LaiMin           !Min LAI [m2 m-2]
+  REAL(KIND(1d0)),DIMENSION(nvegsurf):: LaiMax           !Max LAI  [m2 m-2]
   REAL(KIND(1d0)),DIMENSION(nvegsurf):: MaxConductance   !Max conductance [mm s-1]
-  REAL(KIND(1d0)),DIMENSION(4,nvegsurf):: LAIPower       !Coeffs for LAI equation: 1,2 - leaf growth; 3,4 - leaf off
+  REAL(KIND(1d0)),DIMENSION(4,nvegsurf):: LaiPower       !Coeffs for LAI equation: 1,2 - leaf growth; 3,4 - leaf off
   !! N.B. currently DecTr only, although input provided for all veg types
   INTEGER,DIMENSION(nvegsurf):: LAIType                  !LAI equation to use: original (0) or new (1)
   !real(kind(1d0))::GDDmax,SDDMax                        ! Max GDD and SDD across all veg types [degC] (removed HCW 03 Mar 2015)
+
+  REAL(KIND(1d0)),DIMENSION(nvegsurf):: BiogenCO2Code,&    !Biogenic CO2 Code for SUEWS_BiogenCO2.txt
+    alpha_bioCO2,&
+    beta_bioCO2,&
+    theta_bioCO2,&
+    alpha_enh_bioCO2,&
+    beta_enh_bioCO2,&
+    resp_a,&
+    resp_b,&
+    min_res_bioCO2
 
   !No longer used (removed HCW 27 Nov 2014)
   !real(kind(1d0)),dimension(0:23)::runT           ! running average T for the day
@@ -321,13 +343,13 @@ MODULE allocateArray
   !-----------------------------------------------------------------------------------------------
 
   ! ---- Snow-related variables ------------------------------------------------------------------
-  REAL(KIND(1d0)),DIMENSION(nsurf):: changSnow,&       !Change in SnowPack in mm
+  REAL(KIND(1d0)),DIMENSION(nsurf):: changSnow,&       !Change in snowpack in mm
        maxSnowVol,&      !! Maximum snow volume
        MeltWaterStore,&  !!Liquid water in the snow pack of ith surface
-       ev_snow,&          !!Evaporation from SnowPack in mm
+       ev_snow,&          !!Evaporation from snowpack in mm
        mw_ind,&           !Melt water from individual surface in mm
        mw_indDay,&        !!Melt water per day from each surface type in m3
-       runoffSnow,&       !!Runoff from SnowPack in mm and in m3
+       runoffSnow,&       !!Runoff from snowpack in mm and in m3
        SnowDens,&        !Density of snow
        SnowFrac,&         !!Surface fraction of snow cover
        iceFrac,&
@@ -346,7 +368,7 @@ MODULE allocateArray
        snowD,&
        deltaQi
 
-  REAL(KIND(1d0)),DIMENSION(nsurf):: SnowPack,&        !Amount of snow on each surface in mm
+  REAL(KIND(1d0)),DIMENSION(nsurf):: snowPack,&        !Amount of snow on each surface in mm
        snowPackOld
   INTEGER,DIMENSION(nsurf):: heiG,&                    !snow layer height
        snowCoverForms,&
@@ -407,6 +429,8 @@ MODULE allocateArray
   INTEGER,DIMENSION(nsurf):: c_KkAnOHM = (/(cc, cc=ccEndSI+14*nsurf+1,ccEndSI+14*nsurf+nsurf, 1)/) !heat conductivity, AnOHM TS
   INTEGER,DIMENSION(nsurf):: c_ChAnOHM = (/(cc, cc=ccEndSI+15*nsurf+1,ccEndSI+15*nsurf+nsurf, 1)/) !bulk transfer coef., AnOHM TS
 
+
+
   ! Find current column number
   INTEGER,PARAMETER:: ccEndI = (ccEndSI+15*nsurf+nsurf) !add columns for AnOHM, AnOHM TS
 
@@ -425,9 +449,9 @@ MODULE allocateArray
   INTEGER,DIMENSION(NVegSurf):: c_LeafGP2 =(/(cc, cc=ccEndI+11*nvegsurf+1,ccEndI+11*nvegsurf+nvegsurf, 1)/) !Leaf growth power 2
   INTEGER,DIMENSION(NVegSurf):: c_LeafOP1 =(/(cc, cc=ccEndI+12*nvegsurf+1,ccEndI+12*nvegsurf+nvegsurf, 1)/) !Leaf-off power 1
   INTEGER,DIMENSION(NVegSurf):: c_LeafOP2 =(/(cc, cc=ccEndI+13*nvegsurf+1,ccEndI+13*nvegsurf+nvegsurf, 1)/) !Leaf-off power 2
-
+  INTEGER,DIMENSION(NVegSurf):: c_BiogenCO2Code = (/(cc, cc=ccEndI+14*nvegsurf+1,ccEndI+14*nvegsurf+nvegsurf, 1)/) !Biogenic CO2 Code
   ! Find current column number
-  INTEGER,PARAMETER:: ccEndP = (ccEndI+13*nvegsurf+nvegsurf)
+  INTEGER,PARAMETER:: ccEndP = (ccEndI+14*nvegsurf+nvegsurf)
 
   ! Applicable to water surfaces only
   INTEGER:: c_WaterDepth = (ccEndP+1)
@@ -531,20 +555,43 @@ MODULE allocateArray
   ! Find current column number
   INTEGER,PARAMETER:: ccEndO = (ccEndGs+18*nsurfIncSnow+nsurfIncSnow)
 
-  ! Anthropogenic heat
-  INTEGER :: c_BaseTHDD  = (ccEndO+ 1)
-  INTEGER :: c_QF_A1     = (ccEndO+ 2)
-  INTEGER :: c_QF_B1     = (ccEndO+ 3)
-  INTEGER :: c_QF_C1     = (ccEndO+ 4)
-  INTEGER :: c_QF_A2     = (ccEndO+ 5)
-  INTEGER :: c_QF_B2     = (ccEndO+ 6)
-  INTEGER :: c_QF_C2     = (ccEndO+ 7)
-  INTEGER :: c_AHMin     = (ccEndO+ 8)
-  INTEGER :: c_AHSlope   = (ccEndO+ 9)
-  INTEGER :: c_TCritic   = (ccEndO+10)
+  ! Anthropogenic Emissions
+  INTEGER :: c_BaseTHDD               = (ccEndO+ 1)
+  INTEGER :: c_QF_A1                  = (ccEndO+ 2)
+  INTEGER :: c_QF_B1                  = (ccEndO+ 3)
+  INTEGER :: c_QF_C1                  = (ccEndO+ 4)
+  INTEGER :: c_QF_A2                  = (ccEndO+ 5)
+  INTEGER :: c_QF_B2                  = (ccEndO+ 6)
+  INTEGER :: c_QF_C2                  = (ccEndO+ 7)
+  INTEGER :: c_AHMin_WD               = (ccEndO+ 8)
+  INTEGER :: c_AHMin_WE               = (ccEndO+ 9)
+  INTEGER :: c_AHSlopeHeating_WD      = (ccEndO+10)
+  INTEGER :: c_AHSlopeHeating_WE      = (ccEndO+11)
+  INTEGER :: c_AHSlopeCooling_WD      = (ccEndO+12)
+  INTEGER :: c_AHSlopeCooling_WE      = (ccEndO+13)
+  INTEGER :: c_TCriticHeating_WE      = (ccEndO+14)
+  INTEGER :: c_TCriticHeating_WD      = (ccEndO+15)
+  INTEGER :: c_TCriticCooling_WE      = (ccEndO+16)
+  INTEGER :: c_TCriticCooling_WD      = (ccEndO+17)
+  INTEGER :: c_EnProfWD               = (ccEndO+18)
+  INTEGER :: c_EnProfWE               = (ccEndO+19)
+  INTEGER :: c_CO2mWD                 = (ccEndO+20)
+  INTEGER :: c_CO2mWE                 = (ccEndO+21)
+  INTEGER :: c_TraffProfWD            = (ccEndO+22)
+  INTEGER :: c_TraffProfWE            = (ccEndO+23)
+  INTEGER :: c_PopProfWD              = (ccEndO+24)
+  INTEGER :: c_PopProfWE              = (ccEndO+25)
+  INTEGER :: c_MinQFMetab             = (ccEndO+26)
+  INTEGER :: c_MaxQFMetab             = (ccEndO+27)
+  INTEGER :: c_FrFossilFuel_Heat      = (ccEndO+28)
+  INTEGER :: c_FrFossilFuel_NonHeat   = (ccEndO+29)
+  INTEGER :: c_EF_umolCO2perJ         = (ccEndO+30)
+  INTEGER :: c_EnEF_v_Jkm             = (ccEndO+31)
+  INTEGER :: c_FcEF_v_kgkm            = (ccEndO+32)
+  INTEGER :: c_TrafficUnits           = (ccEndO+33)
 
   ! Find current column number
-  INTEGER,PARAMETER:: ccEndA = (ccEndO+10)
+  INTEGER,PARAMETER:: ccEndA = (ccEndO+33)
 
   ! Irrigation
   INTEGER :: c_IeStart    = (ccEndA+ 1)
@@ -568,11 +615,16 @@ MODULE allocateArray
   INTEGER,DIMENSION(24):: c_HrProfWUAutoWE = (/(cc, cc=ccEndIr+ 5*24+1, ccEndIr+ 5*24+24, 1)/)  ! Water use, automatic, weekends
   INTEGER,DIMENSION(24):: c_HrProfSnowCWD  = (/(cc, cc=ccEndIr+ 6*24+1, ccEndIr+ 6*24+24, 1)/)  ! Snow clearing, weekdays
   INTEGER,DIMENSION(24):: c_HrProfSnowCWE  = (/(cc, cc=ccEndIr+ 7*24+1, ccEndIr+ 7*24+24, 1)/)  ! Snow clearing, weekends
-  INTEGER,DIMENSION(24):: c_HrProfHumActivityWD   = (/(cc, cc=ccEndIr+ 8*24+1, ccEndIr+ 8*24+24, 1)/)  ! Human activity, weekdays
-  INTEGER,DIMENSION(24):: c_HrProfHumActivityWE   = (/(cc, cc=ccEndIr+ 9*24+1, ccEndIr+ 9*24+24, 1)/)  ! Human activity, weekends
+  INTEGER,DIMENSION(24):: c_HrProfHumActivityWD = (/(cc, cc=ccEndIr+ 8*24+1, ccEndIr+ 8*24+24, 1)/)  ! Human activity, weekdays
+  INTEGER,DIMENSION(24):: c_HrProfHumActivityWE = (/(cc, cc=ccEndIr+ 9*24+1, ccEndIr+ 9*24+24, 1)/)  ! Human activity, weekends
+  INTEGER,DIMENSION(24):: c_HrProfTraffWD  = (/(cc, cc=ccEndIr+ 10*24+1, ccEndIr+ 10*24+24, 1)/) ! Traffic, weekdays
+  INTEGER,DIMENSION(24):: c_HrProfTraffWE  = (/(cc, cc=ccEndIr+ 11*24+1, ccEndIr+ 11*24+24, 1)/) ! Traffic, weekends
+  INTEGER,DIMENSION(24):: c_HrProfPopWD    = (/(cc, cc=ccEndIr+ 12*24+1, ccEndIr+ 12*24+24, 1)/) ! Population, weekdays
+  INTEGER,DIMENSION(24):: c_HrProfPopWE    = (/(cc, cc=ccEndIr+ 13*24+1, ccEndIr+ 13*24+24, 1)/) ! Population, weekends
+
 
   ! Find current column number
-  INTEGER,PARAMETER:: ccEndPr = (ccEndIr+ 9*24+24)
+  INTEGER,PARAMETER:: ccEndPr = (ccEndIr+ 13*24+24)
 
   ! Within-grid water distribution (for each surface)
   INTEGER,DIMENSION(nsurf):: c_WGToPaved = (/(cc, cc=ccEndPr+ 0*nsurf+1,ccEndPr+ 0*nsurf+nsurf, 1)/) !Water dist to Paved
@@ -586,27 +638,40 @@ MODULE allocateArray
   INTEGER,DIMENSION(nsurf):: c_WGToSoilStore = (/(cc, cc=ccEndPr+ 8*nsurf+1,ccEndPr+ 8*nsurf+nsurf, 1)/) !Water dist to sub-surface soil
 
   ! Find current column number
-  INTEGER,PARAMETER:: ccEndWG = (ccEndPr+ 8*nsurf+nsurf)
+  INTEGER,PARAMETER:: cBEndWG = (ccEndPr+ 8*nsurf+nsurf)
+
+  ! Biogenic CO2
+  INTEGER,DIMENSION(nvegsurf):: c_alpha_bioCO2     = (/(cc, cc=cBEndWG+ 0*nvegsurf+1,cBEndWG+ 0*nvegsurf+nvegsurf, 1)/)
+  INTEGER,DIMENSION(nvegsurf):: c_beta_bioCO2      = (/(cc, cc=cBEndWG+ 1*nvegsurf+1,cBEndWG+ 1*nvegsurf+nvegsurf, 1)/)
+  INTEGER,DIMENSION(nvegsurf):: c_theta_bioCO2     = (/(cc, cc=cBEndWG+ 2*nvegsurf+1,cBEndWG+ 2*nvegsurf+nvegsurf, 1)/)
+  INTEGER,DIMENSION(nvegsurf):: c_alpha_enh_bioCO2 = (/(cc, cc=cBEndWG+ 3*nvegsurf+1,cBEndWG+ 3*nvegsurf+nvegsurf, 1)/)
+  INTEGER,DIMENSION(nvegsurf):: c_beta_enh_bioCO2  = (/(cc, cc=cBEndWG+ 4*nvegsurf+1,cBEndWG+ 4*nvegsurf+nvegsurf, 1)/)
+  INTEGER,DIMENSION(nvegsurf):: c_resp_a           = (/(cc, cc=cBEndWG+ 5*nvegsurf+1,cBEndWG+ 5*nvegsurf+nvegsurf, 1)/)
+  INTEGER,DIMENSION(nvegsurf):: c_resp_b           = (/(cc, cc=cBEndWG+ 6*nvegsurf+1,cBEndWG+ 6*nvegsurf+nvegsurf, 1)/)
+  INTEGER,DIMENSION(nvegsurf):: c_min_res_bioCO2   = (/(cc, cc=cBEndWG+ 7*nvegsurf+1,cBEndWG+ 7*nvegsurf+nvegsurf, 1)/)
+
+  ! Find current column number
+  INTEGER,PARAMETER:: ccEndB = (cBEndWG+7*nvegsurf+nvegsurf)
 
   !ESTM
   ! Roof/surface characteristics for all surfaces including snow
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_thick1  = (/(cc, cc=ccEndWG+ 0*nsurfIncSnow+1,ccEndWG+ 0*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_k1      = (/(cc, cc=ccEndWG+ 1*nsurfIncSnow+1,ccEndWG+ 1*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_rhoCp1  = (/(cc, cc=ccEndWG+ 2*nsurfIncSnow+1,ccEndWG+ 2*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_thick2  = (/(cc, cc=ccEndWG+ 3*nsurfIncSnow+1,ccEndWG+ 3*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_k2      = (/(cc, cc=ccEndWG+ 4*nsurfIncSnow+1,ccEndWG+ 4*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_rhoCp2  = (/(cc, cc=ccEndWG+ 5*nsurfIncSnow+1,ccEndWG+ 5*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_thick3  = (/(cc, cc=ccEndWG+ 6*nsurfIncSnow+1,ccEndWG+ 6*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_k3      = (/(cc, cc=ccEndWG+ 7*nsurfIncSnow+1,ccEndWG+ 7*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_rhoCp3  = (/(cc, cc=ccEndWG+ 8*nsurfIncSnow+1,ccEndWG+ 8*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_thick4  = (/(cc, cc=ccEndWG+ 9*nsurfIncSnow+1,ccEndWG+ 9*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_k4      = (/(cc, cc=ccEndWG+10*nsurfIncSnow+1,ccEndWG+10*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_rhoCp4  = (/(cc, cc=ccEndWG+11*nsurfIncSnow+1,ccEndWG+11*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_thick5  = (/(cc, cc=ccEndWG+12*nsurfIncSnow+1,ccEndWG+12*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_k5      = (/(cc, cc=ccEndWG+13*nsurfIncSnow+1,ccEndWG+13*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_rhoCp5  = (/(cc, cc=ccEndWG+14*nsurfIncSnow+1,ccEndWG+14*nsurfIncSnow+nsurfIncSnow, 1)/)
+  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_thick1  = (/(cc, cc=ccEndB+ 0*nsurfIncSnow+1,ccEndB+ 0*nsurfIncSnow+nsurfIncSnow, 1)/)
+  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_k1      = (/(cc, cc=ccEndB+ 1*nsurfIncSnow+1,ccEndB+ 1*nsurfIncSnow+nsurfIncSnow, 1)/)
+  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_rhoCp1  = (/(cc, cc=ccEndB+ 2*nsurfIncSnow+1,ccEndB+ 2*nsurfIncSnow+nsurfIncSnow, 1)/)
+  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_thick2  = (/(cc, cc=ccEndB+ 3*nsurfIncSnow+1,ccEndB+ 3*nsurfIncSnow+nsurfIncSnow, 1)/)
+  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_k2      = (/(cc, cc=ccEndB+ 4*nsurfIncSnow+1,ccEndB+ 4*nsurfIncSnow+nsurfIncSnow, 1)/)
+  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_rhoCp2  = (/(cc, cc=ccEndB+ 5*nsurfIncSnow+1,ccEndB+ 5*nsurfIncSnow+nsurfIncSnow, 1)/)
+  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_thick3  = (/(cc, cc=ccEndB+ 6*nsurfIncSnow+1,ccEndB+ 6*nsurfIncSnow+nsurfIncSnow, 1)/)
+  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_k3      = (/(cc, cc=ccEndB+ 7*nsurfIncSnow+1,ccEndB+ 7*nsurfIncSnow+nsurfIncSnow, 1)/)
+  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_rhoCp3  = (/(cc, cc=ccEndB+ 8*nsurfIncSnow+1,ccEndB+ 8*nsurfIncSnow+nsurfIncSnow, 1)/)
+  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_thick4  = (/(cc, cc=ccEndB+ 9*nsurfIncSnow+1,ccEndB+ 9*nsurfIncSnow+nsurfIncSnow, 1)/)
+  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_k4      = (/(cc, cc=ccEndB+10*nsurfIncSnow+1,ccEndB+10*nsurfIncSnow+nsurfIncSnow, 1)/)
+  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_rhoCp4  = (/(cc, cc=ccEndB+11*nsurfIncSnow+1,ccEndB+11*nsurfIncSnow+nsurfIncSnow, 1)/)
+  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_thick5  = (/(cc, cc=ccEndB+12*nsurfIncSnow+1,ccEndB+12*nsurfIncSnow+nsurfIncSnow, 1)/)
+  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_k5      = (/(cc, cc=ccEndB+13*nsurfIncSnow+1,ccEndB+13*nsurfIncSnow+nsurfIncSnow, 1)/)
+  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_rhoCp5  = (/(cc, cc=ccEndB+14*nsurfIncSnow+1,ccEndB+14*nsurfIncSnow+nsurfIncSnow, 1)/)
   ! Find current column number
-  INTEGER,PARAMETER:: ccEndESTMB = (ccEndWG+14*nsurfIncSnow+nsurfIncSnow)
+  INTEGER,PARAMETER:: ccEndESTMB = (ccEndB+14*nsurfIncSnow+nsurfIncSnow)
   ! Other ESTM characteristics are for built surfaces only
   INTEGER:: c_Wall_thick1  = (ccEndESTMB+ 1)
   INTEGER:: c_Wall_k1      = (ccEndESTMB+ 2)
@@ -796,10 +861,11 @@ MODULE Initial
        nlinesConductance,&        !Number of lines in SUEWS_Conductance.txt
        nlinesOHMCoefficients,&    !Number of lines in SUEWS_OHMCoefficients.txt
        nlinesESTMCoefficients,&   !Number of lines in SUEWS_ESTMCoefficients.txt
-       nlinesAnthropogenicHeat,&  !Number of lines in SUEWS_AnthropogenicHeat.txt
+       nlinesAnthropogenic,&      !Number of lines in SUEWS_AnthropogenicHeat.txt
        nlinesIrrigation,&         !Number of lines in SUEWS_Irrigation.txt
        nlinesProfiles,&           !Number of lines in SUEWS_Profiles.txt
        nlinesWGWaterDist,&        !Number of lines in SUEWS_WGWaterDist.txt
+       nlinesBiogen,&             !Number of lines in SUEWS_BiogenCO2.txt
        nlines,&                   !Number of lines in different files
        SkippedLines,&             !Number of lines to skip over before reading each block of met data
        SkippedLinesOrig,&         !Number of lines to skip over before reading each block of data from original met file
@@ -839,8 +905,7 @@ MODULE data_in
   INTEGER:: SkipHeaderMet = 1        !Number of header lines to skip in met forcing file
 
   ! ---- Model options set in RunControl --------------------------------------------------------
-  INTEGER:: AnthropHeatMethod,&    !QF in met file (0); Loridan et al. 2010 (1); Jarvi et al. 2011 (2)
-       AnthropCO2Method,&     !  ! using QF from AnthropHeatMethod=2 (2); using traffic rate and building energy use in SiteSelect
+  INTEGER:: EmissionsMethod,& !
        CBLuse,&               !CBL slab model used (1) or not used (0)
        MultipleMetFiles,&     !Indicates whether a single met file is used for all grids (0) or one for each grid (1)
        MultipleInitFiles,&      !Indicates whether a single initial conditions file is used for all grids (0) or one for each grid (1)
@@ -884,7 +949,7 @@ MODULE data_in
                                 !Currently set to 10 in SUEWS_Initial
        ity,&                  !Evaporation calculated according to Rutter (1) or Shuttleworth (2)
                                 !Currently set to 2 in OverallRunControl
-       LAICalcYes,&           !Use observed (0) or modelled (1) LAI
+       LAIcalcYes,&           !Use observed (0) or modelled (1) LAI
                                 !Currently set to 1 in OverallRunControl
        WriteDailyState        !Daily state file written (1)
   !Currently set to 1 in SUEWS_Initial
@@ -905,9 +970,7 @@ MODULE data_in
 
   ! ---- Variables in alphabetical order --------------------------------------------------------
   !! Add units
-  REAL (KIND(1d0)):: AH_MIN,&    !Minimum anthropogenic heat flux (AnthropHeatMethod = 1)
-       AH_SLOPE,&  !Slope of the antrhropogenic heat flux calculation (AnthropHeatMethod = 1)
-       alpha_qhqe,& !Alpha parameter used in LUMPS QH and QE calculations [-]
+  REAL (KIND(1d0))::  alpha_qhqe,& !Alpha parameter used in LUMPS QH and QE calculations [-]
        alt,&                        !Altitude in m
        avdens,&    !Average air density
        avkdn,&     !Average downwelling shortwave radiation
@@ -955,6 +1018,7 @@ MODULE data_in
        QF_SAHP,&    !Anthropogenic heat flux calculated by SAHP
        QF_SAHP_base,&    !Anthropogenic heat flux calculated by SAHP (temp independent part)
        QF_SAHP_heat,&    !Anthropogenic heat flux calculated by SAHP (heating part only)
+       QF_SAHP_ac,& !AC contribution
        qh,&        !Observed sensible heat flux
        qh_obs,&
        QH_r,&      !Sensible heat flux calculated using resistance method
@@ -968,11 +1032,28 @@ MODULE data_in
        QSestm,&    !Simulated storage heat flux by ESTM, TS 30 May 2016
        snow,&      !snow cover
        snow_obs,&  !Observed snow cover
-       T_CRITIC,& !Critical temperature
+       CO2mWD,&
+       CO2mWE,&
+       EF_umolCO2perJ,&
+       EnEF_v_Jkm,&
+       EnProfWD, &
+       EnProfWE,&
+       TrafficUnits,&
+       TraffProfWD,&
+       TraffProfWE,&
+       PopProfWD,&
+       PopProfWE,&
+       FcEF_v_kgkm,&
+       FrFossilFuel_Heat,&
+       FrFossilFuel_NonHeat,&
+       MinQFMetab,&
+       MaxQFMetab,&
+       QF_build,&
+       QF_metab,&
+       QF_traff,&
        Temp_C,&    !Air temperature
        t2_C,&     ! air temperature at 2 m, TS 20 May 2017
        trans_site,&  !Atmospheric transmissivity
-       TrafficRate,&  !Traffic rate
        tsurf,&   !Surface temperature
        wdir,&      ! Wind direction
        wu_m3,&     !Water use provided in met forcing file [m3]
@@ -980,9 +1061,20 @@ MODULE data_in
        year,&      !Year of the measurements
        zenith_deg  !Sun zenith angle in degrees
 
-  REAL(KIND(1d0)),DIMENSION(2)::Qf_A,Qf_B,Qf_C   !Qf coefficients
+  REAL(KIND(1d0)),DIMENSION(2)::Qf_A,Qf_B,Qf_C,&   !Qf coefficients
+       AH_MIN,&    !Minimum anthropogenic heat flux (AnthropHeatMethod = 1)
+       AH_SLOPE_Heating,&  !Slope of the antrhropogenic heat flux calculation (AnthropHeatMethod = 1)
+       AH_SLOPE_Cooling,&
+       T_CRITIC_Heating,& !Critical temperature
+       T_CRITIC_Cooling,& !Critical cooling temperature
+       TrafficRate,& !Traffic rate
+       QF0_BEU
+
   REAL(KIND(1d0)),DIMENSION(0:23,2):: AHPROF     !Anthropogenic heat profiles for (1)weekdays / (2)weekends
-  REAL(KIND(1d0)),DIMENSION(0:23,2):: HumActivityProf   !HUman actvity profiles for (1)weekdays / (2)weekends
+  REAL(KIND(1d0)),DIMENSION(0:23,2):: HumActivityProf   !Human actvity profiles for (1)weekdays / (2)weekends
+  REAL(KIND(1d0)),DIMENSION(0:23,2):: TraffProf   !Traffic profiles for (1)weekdays / (2)weekends
+  REAL(KIND(1d0)),DIMENSION(0:23,2):: PopProf   !Population profiles for (1)weekdays / (2)weekends
+
 
   INTEGER,DIMENSION(2)::DayLightSavingDay   !DOY when daylight saving changes
 
@@ -1576,75 +1668,73 @@ MODULE ColNamesInputFiles
                                 ! Population
        c_PopDensDay   = 32,&
        c_PopDensNight = 33,&
-       c_TrafficRate  = 34,&    ! Mean traffic rate in modelled area [veh km m-2 s-1]
-       c_BuildEnergyUse  = 35,&    ! Building energy use for modelled area [W m-2] - could change units?
+       c_TrafficRate_WD  = 34,&    ! Mean traffic rate in modelled area [veh km m-2 s-1] Weekday
+       c_TrafficRate_WE  = 35,&    ! Mean traffic rate in modelled area [veh km m-2 s-1] Weekend
+       c_QF0_BEU_WD  = 36,&    ! Building energy use for modelled area [W m-2] - could change units?
+       c_QF0_BEU_WE = 37,&
                                 ! Codes for different surfaces
-       c_PavedCode = 36,&  ! Links characteristics in SUEWS_NonVeg.txt
-       c_BldgsCode = 37,&  ! Links characteristics in SUEWS_NonVeg.txt
-       c_EveTrCode = 38,&  ! Links characteristics in SUEWS_Veg.txt
-       c_DecTrCode = 39,&    ! Links characteristics in SUEWS_Veg.txt
-       c_GrassCode = 40,&     ! Links characteristics in SUEWS_Veg.txt
-       c_BSoilCode = 41,&  ! Links characteristics in SUEWS_Veg.txt
-       c_WaterCode = 42,&       ! Links characteristics in SUEWS_Water.txt
+       c_PavedCode = 38,&  ! Links characteristics in SUEWS_NonVeg.txt
+       c_BldgsCode = 39,&  ! Links characteristics in SUEWS_NonVeg.txt
+       c_EveTrCode = 40,&  ! Links characteristics in SUEWS_Veg.txt
+       c_DecTrCode = 41,&    ! Links characteristics in SUEWS_Veg.txt
+       c_GrassCode = 42,&     ! Links characteristics in SUEWS_Veg.txt
+       c_BSoilCode = 43,&  ! Links characteristics in SUEWS_Veg.txt
+       c_WaterCode = 44,&       ! Links characteristics in SUEWS_Water.txt
                                 ! LUMPS info
-       c_LUMPSDr     = 43,&
-       c_LUMPSCover  = 44,&
-       c_LUMPSMaxRes = 45,&
+       c_LUMPSDr     = 45,&
+       c_LUMPSCover  = 46,&
+       c_LUMPSMaxRes = 47,&
                                 ! NARP info
-       c_NARPTrans   = 46,&
+       c_NARPTrans   = 48,&
                                 ! Code for conductances
-       c_CondCode    = 47,&       ! Links characteristics in SUEWS_Conductance.txt
+       c_CondCode    = 49,&       ! Links characteristics in SUEWS_Conductance.txt
                                 ! Code for snow
-       c_SnowCode    = 48,&    ! Links characteristics in SUEWS_Snow.txt
+       c_SnowCode    = 50,&    ! Links characteristics in SUEWS_Snow.txt
                                 ! Codes for human impacts on energy, water and snow
-       c_SnowProfWD  = 49,&  ! Snow-clearing profile in SUEWS_Profile.txt (weekdays)
-       c_SnowProfWE  = 50,&  ! Snow-clearing profile in SUEWS_Profile.txt (weekends)
-       c_QFCode      = 51,&       ! Links anthropogenic heat info in SUEWS_AnthropogenicHeat.txt
-       c_EnProfWD    = 52,&  ! Links to energy-use profile in SUEWS_Profile.txt (weekdays)
-       c_EnProfWE    = 53,&  ! Links to energy-use profile in SUEWS_Profile.txt (weekends)
-       c_CO2mWD      = 54,&  ! Links to human activity profile in SUEWS_Profile.txt (weekdays)
-       c_CO2mWE      = 55,&  ! Links to human activity profile in SUEWS_Profile.txt (weekends)
-       c_IrrCode     = 56,&       ! Links irrigation info in SUEWS_Irrigation.txt
-       c_WProfManuWD = 57,&  ! Links to water-use profile in SUEWS_Profile.txt (manual irrigation, weekdays)
-       c_WProfManuWE = 58,&  ! Links to water-use profile in SUEWS_Profile.txt (manual irrigation, weekends)
-       c_WProfAutoWD = 59,&  ! Links to water-use profile in SUEWS_Profile.txt (automatic irrigation, weekdays)
-       c_WProfAutoWE = 60,&  ! Links to water-use profile in SUEWS_Profile.txt (automatic irrigation, weekends)
+       c_SnowProfWD  = 51,&  ! Snow-clearing profile in SUEWS_Profile.txt (weekdays)
+       c_SnowProfWE  = 52,&  ! Snow-clearing profile in SUEWS_Profile.txt (weekends)
+       c_QFCode      = 53,&  ! Links anthropogenic heat info in SUEWS_AnthropogenicHeat.txt
+       c_IrrCode     = 54,&  ! Links irrigation info in SUEWS_Irrigation.txt
+       c_WProfManuWD = 55,&  ! Links to water-use profile in SUEWS_Profile.txt (manual irrigation, weekdays)
+       c_WProfManuWE = 56,&  ! Links to water-use profile in SUEWS_Profile.txt (manual irrigation, weekends)
+       c_WProfAutoWD = 57,&  ! Links to water-use profile in SUEWS_Profile.txt (automatic irrigation, weekdays)
+       c_WProfAutoWE = 58,&  ! Links to water-use profile in SUEWS_Profile.txt (automatic irrigation, weekends)
                                 ! Flow information
-       c_FlowChange    =61,&  ! Difference in input & output flows for water surface
-       c_RunoffToWater =62,&    ! Fraction of above-ground runoff flowing to water surface
-       c_PipeCapacity  =63,&  ! Pipe capacity [mm]
+       c_FlowChange    =59,&  ! Difference in input & output flows for water surface
+       c_RunoffToWater =60,&    ! Fraction of above-ground runoff flowing to water surface
+       c_PipeCapacity  =61,&  ! Pipe capacity [mm]
                                 ! Runoff (to 8 adjacent grids)
-       c_GridConnection1of8 = 64,&
-       c_Fraction1of8       = 65,&
-       c_GridConnection2of8 = 66,&
-       c_Fraction2of8       = 67,&
-       c_GridConnection3of8 = 68,&
-       c_Fraction3of8       = 69,&
-       c_GridConnection4of8 = 70,&
-       c_Fraction4of8       = 71,&
-       c_GridConnection5of8 = 72,&
-       c_Fraction5of8       = 73,&
-       c_GridConnection6of8 = 74,&
-       c_Fraction6of8       = 75,&
-       c_GridConnection7of8 = 76,&
-       c_Fraction7of8       = 77,&
-       c_GridConnection8of8 = 78,&
-       c_Fraction8of8       = 79,&
+       c_GridConnection1of8 = 62,&
+       c_Fraction1of8       = 63,&
+       c_GridConnection2of8 = 64,&
+       c_Fraction2of8       = 65,&
+       c_GridConnection3of8 = 66,&
+       c_Fraction3of8       = 67,&
+       c_GridConnection4of8 = 68,&
+       c_Fraction4of8       = 69,&
+       c_GridConnection5of8 = 70,&
+       c_Fraction5of8       = 71,&
+       c_GridConnection6of8 = 72,&
+       c_Fraction6of8       = 73,&
+       c_GridConnection7of8 = 74,&
+       c_Fraction7of8       = 75,&
+       c_GridConnection8of8 = 76,&
+       c_Fraction8of8       = 77,&
                                 ! Runoff within grid (for each surface type)
-       c_WGPavedCode = 80,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
-       c_WGBldgsCode = 81,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
-       c_WGEveTrCode = 82,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
-       c_WGDecTrCode = 83,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
-       c_WGGrassCode = 84,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
-       c_WGBSoilCode = 85,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
-       c_WGWaterCode = 86,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
+       c_WGPavedCode = 78,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
+       c_WGBldgsCode = 79,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
+       c_WGEveTrCode = 80,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
+       c_WGDecTrCode = 81,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
+       c_WGGrassCode = 82,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
+       c_WGBSoilCode = 83,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
+       c_WGWaterCode = 84,&   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
                                 ! Additional info for ESTM
-       c_AreaWall = 87   ! Wall surface fraction (Awall/Agridcell)
+       c_AreaWall = 85   ! Wall surface fraction (Awall/Agridcell)
 
-  INTEGER,DIMENSION(3):: c_Fr_ESTMClass_Paved =   (/(ccc,ccc=88,90,1)/) ! Fraction of Paved surface with ESTM Class 1-5
-  INTEGER,DIMENSION(3)::         c_Code_ESTMClass_Paved = (/(ccc,ccc=91,93,1)/) ! Code for Paved surface ESTM Class 1-5
-  INTEGER,DIMENSION(5):: c_Fr_ESTMClass_Bldgs =   (/(ccc,ccc=94,98,1)/) ! Fraction of Bldgs surface with ESTM Class 1-5
-  INTEGER,DIMENSION(5)::         c_Code_ESTMClass_Bldgs = (/(ccc,ccc=99,103,1)/) ! Code for Bldgs surface ESTM Class 1-5
+  INTEGER,DIMENSION(3):: c_Fr_ESTMClass_Paved =   (/(ccc,ccc=86,88,1)/) ! Fraction of Paved surface with ESTM Class 1-5
+  INTEGER,DIMENSION(3)::         c_Code_ESTMClass_Paved = (/(ccc,ccc=89,91,1)/) ! Code for Paved surface ESTM Class 1-5
+  INTEGER,DIMENSION(5):: c_Fr_ESTMClass_Bldgs =   (/(ccc,ccc=92,96,1)/) ! Fraction of Bldgs surface with ESTM Class 1-5
+  INTEGER,DIMENSION(5)::         c_Code_ESTMClass_Bldgs = (/(ccc,ccc=97,101,1)/) ! Code for Bldgs surface ESTM Class 1-5
 
   !========== Columns for SUEWS_NonVeg.txt ==========================
   INTEGER :: ci_Code   = 1, &
@@ -1709,7 +1799,8 @@ MODULE ColNamesInputFiles
        cp_ESTMCode     = 34,&
        cp_CpAnOHM      = 35,& ! heat capacity, added by TS AnOHM
        cp_KkAnOHM      = 36,& ! heat conductivity, added by TS AnOHM
-       cp_ChAnOHM      = 37 ! bulk transfer coef., added by TS AnOHM
+       cp_ChAnOHM      = 37,& ! bulk transfer coef., added by TS AnOHM
+       cp_BiogenCO2Code = 38
 
 
   !========== Columns for SUEWS_Water.txt ===============================
@@ -1851,16 +1942,40 @@ MODULE ColNamesInputFiles
 
   !========== Columns for SUEWS_AnthropogenicHeat.txt ===================
   INTEGER ::   cA_Code    = 1,&
-       cA_BaseTHDD = 2,&
-       cA_QF_A1    = 3,&   !Weekday
-       cA_QF_B1    = 4,&   !Weekday
-       cA_QF_C1    = 5,&   !Weekday
-       cA_QF_A2    = 6,&   !Weekend
-       cA_QF_B2    = 7,&   !Weekend
-       cA_QF_C2    = 8,&   !Weekend
-       cA_AHMin    = 9,&
-       cA_AHSlope  = 10,&
-       cA_TCritic  = 11
+       cA_BaseTHDD               = 2,&
+       cA_QF_A1                  = 3,&   !Weekday
+       cA_QF_B1                  = 4,&   !Weekday
+       cA_QF_C1                  = 5,&   !Weekday
+       cA_QF_A2                  = 6,&   !Weekend
+       cA_QF_B2                  = 7,&   !Weekend
+       cA_QF_C2                  = 8,&   !Weekend
+       cA_AHMin_WD               = 9,&   !Weekday
+       cA_AHMin_WE               = 10,&  !Weekend
+       cA_AHSlopeHeating_WD      = 11,&  !Weekday
+       cA_AHSlopeHeating_WE      = 12,&  !Weekend
+       cA_AHSlopeCooling_WD      = 13,&  !Weekday
+       cA_AHSlopeCooling_WE      = 14,&  !Weekend
+       cA_TCriticHeating_WD      = 15,&  !Weekday
+       cA_TCriticHeating_WE      = 16,&  !Weekend
+       cA_TCriticCooling_WD      = 17,&  !Weekday
+       cA_TCriticCooling_WE      = 18,&  !Weekend
+       cA_EnProfWD               = 19,&  !Weekday
+       cA_EnProfWE               = 20,&  !Weekday
+       cA_CO2mWD                 = 21,&  !Weekday
+       cA_CO2mWE                 = 22,&  !Weekend
+       cA_TraffProfWD            = 23,&  !Weekday
+       cA_TraffProfWE            = 24,&  !Weekend
+       cA_PopProfWD              = 25,&  !Weekday
+       cA_PopProfWE              = 26,&  !Weekend
+       cA_MinQFMetab             = 27,&
+       cA_MaxQFMetab             = 28,&
+       cA_FrFossilFuel_Heat      = 29,&
+       cA_FrFossilFuel_NonHeat   = 30,&
+       cA_EF_umolCO2perJ         = 31,&
+       cA_EnEF_v_Jkm             = 32,&
+       cA_FcEF_v_kgkm            = 33,&
+       cA_TrafficUnits           = 34
+
 
   !========== Columns for SUEWS_Irrigation.txt ==========================
 
@@ -1909,6 +2024,18 @@ MODULE ColNamesInputFiles
        cWG_ToWater     = 8,&
        cWG_ToRunoff    = 9,&
        cWG_ToSoilStore = 10
+
+  !========== Columns for SUEWS_BiogenCO2.txt ===================
+  INTEGER ::   cB_Code    = 1,&
+       cB_alpha           = 2,&
+       cB_beta            = 3,&
+       cB_theta           = 4,&
+       cB_alpha_enh       = 5,&
+       cB_beta_enh        = 6,&
+       cB_resp_a          = 7,&
+       cB_resp_b          = 8,&
+       cB_min_r           = 9
+
 
 END MODULE ColNamesInputFiles
 
@@ -2117,5 +2244,6 @@ MODULE PhysConstants
   REAL (KIND(1d0)),PARAMETER :: C2K = 273.15   !Celsius to Kelvin
   REAL (KIND(1d0)),PARAMETER :: SBConst = 5.67051e-8   !Stefan Boltzmann constant [W m-2 K-4]
   REAL (KIND(1d0)),PARAMETER :: JtoumolPAR = 4.6   ! Convert PAR from W m-2 to umol m-2 s-1
+  REAL (KIND(1d0)),PARAMETER :: KdntoPAR = 0.46    ! Conversion from Kdn to PAR, originally from Tsubo and Walker (2005), used in Bellucco et al. (2017)
 
 END MODULE PhysConstants

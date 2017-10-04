@@ -14,7 +14,7 @@ CONTAINS
        AddWaterRunoff,AerodynamicResistanceMethod,AH_MIN,AHProf_tstep,&
        AH_SLOPE_Cooling,AH_SLOPE_Heating,alb,albDecTr,AlbedoChoice,albEveTr,albGrass,&
        alBMax_DecTr,alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
-       alpha_bioCO2,alpha_enh_bioCO2,alt,AnthropHeatMethod,areaZh,avdens,avkdn,avRh,&
+       alpha_bioCO2,alpha_enh_bioCO2,alt,areaZh,avdens,avkdn,avRh,&
        avU1,avU10_ms,azimuth,BaseT,BaseTe,BaseTHDD,beta_bioCO2,beta_enh_bioCO2,&
        BiogenCO2Code,bldgH,CapMax_dec,CapMin_dec,chang,changSnow,chAnOHM,&
        chSnow_per_interval,cpAnOHM,CRWmax,CRWmin,CumSnowfall,DailyStateFirstOpen,&
@@ -79,7 +79,6 @@ CONTAINS
     INTEGER,DIMENSION(NSURF)::snowCalcSwitch
     INTEGER,INTENT(IN)::AerodynamicResistanceMethod
     INTEGER,INTENT(IN)::AlbedoChoice
-    INTEGER,INTENT(IN)::AnthropHeatMethod
     INTEGER,INTENT(IN)::Diagnose
     INTEGER,INTENT(IN)::DiagQN
     INTEGER,INTENT(IN)::DiagQS
@@ -540,7 +539,7 @@ CONTAINS
          soilmoist,soilstoreCap,state,nsh,SnowUse,DiagQS,&
          HDD,MetForcingData,qf,qn1,&
          alb,emis,cpAnOHM,kkAnOHM,chAnOHM,&
-         AnthropHeatMethod,&
+         EmissionsMethod,&
          qn1_store,qn1_S_store,qn1_av_store,qn1_S_av_store,surf,&!inout
          qn1_S,snowFrac,qs,&!output
          deltaQi,a1,a2,a3)
@@ -1088,7 +1087,7 @@ CONTAINS
        OHM_coef,OHM_threshSW,OHM_threshWD,&
        soilmoist,soilstoreCap,state,nsh,SnowUse,DiagQS,&
        HDD,MetForcingData,qf,qn1,alb,emis,cpAnOHM,kkAnOHM,chAnOHM,&
-       AnthropHeatMethod,&
+       EmissionsMethod,&
        qn1_store,qn1_S_store,qn1_av_store,qn1_S_av_store,surf,&!inout
        qn1_S,snowFrac,qs,&!output
        deltaQi,a1,a2,a3)
@@ -1109,7 +1108,7 @@ CONTAINS
     INTEGER,INTENT(in)::nsh                ! number of timesteps in one hour
     INTEGER,INTENT(in)::SnowUse            ! option for snow related calculations
     INTEGER,INTENT(in)::DiagQS             ! diagnostic option
-    INTEGER,INTENT(in):: AnthropHeatMethod !< AnthropHeat option [-]
+    INTEGER,INTENT(in):: EmissionsMethod !< AnthropHeat option [-]
 
 
     REAL(KIND(1d0)),INTENT(in)::OHM_coef(9,4,3)                 ! OHM coefficients
@@ -1203,7 +1202,7 @@ CONTAINS
           CALL AnOHM(qf+qn1,qn1_store,qn1_av_store,&
                MetForcingData(:,:,Gridiv),state/surf(6,:),&
                alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&
-               sfr,nsurf,nsh,AnthropHeatMethod,id,Gridiv,&
+               sfr,nsurf,nsh,EmissionsMethod,id,Gridiv,&
                a1,a2,a3,qs)
        ELSEIF(OHMIncQF == 0) THEN   !Calculate QS using QSTAR
           ! qn1=qn1
@@ -1211,7 +1210,7 @@ CONTAINS
           CALL AnOHM(qn1,qn1_store,qn1_av_store,&
                MetForcingData(:,:,Gridiv),state/surf(6,:),&
                alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&
-               sfr,nsurf,nsh,AnthropHeatMethod,id,Gridiv,&
+               sfr,nsurf,nsh,EmissionsMethod,id,Gridiv,&
                a1,a2,a3,qs)
        END IF
 

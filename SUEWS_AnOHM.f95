@@ -29,7 +29,7 @@ CONTAINS
        qn1,qn1_store,qn1_av_store,&
        MetForcingData_grid,moist_surf,&
        alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&! input
-       sfr,nsurf,nsh,AnthropHeatMethod,id,Gridiv,&
+       sfr,nsurf,nsh,EmissionsMethod,id,Gridiv,&
        a1,a2,a3,qs)! output
 
     IMPLICIT NONE
@@ -47,7 +47,7 @@ CONTAINS
 
     INTEGER,INTENT(in):: id                !< day of year [-]
     INTEGER,INTENT(in):: Gridiv            !< grid id [-]
-    INTEGER,INTENT(in):: AnthropHeatMethod !< AnthropHeat option [-]
+    INTEGER,INTENT(in):: EmissionsMethod !< AnthropHeat option [-]
     INTEGER,INTENT(in):: nsurf             !< number of surfaces [-]
     INTEGER,INTENT(in):: nsh               !< number of timesteps in one hour [-]
 
@@ -95,7 +95,7 @@ CONTAINS
     DO is=1,nsurf
        !  IF ( sfr(is) > .001 ) THEN
        !   call AnOHM to calculate the coefs.
-       CALL AnOHM_coef(is,xid,Gridiv,MetForcingData_grid,moist_surf,AnthropHeatMethod,& !input
+       CALL AnOHM_coef(is,xid,Gridiv,MetForcingData_grid,moist_surf,EmissionsMethod,& !input
             alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&! input
             xa1(is),xa2(is),xa3(is))                         ! output
        ! print*, 'AnOHM_coef are: ',xa1,xa2,xa3
@@ -138,7 +138,7 @@ CONTAINS
   !! -# OHM coefficients of a given surface type: a1, a2 and a3
   SUBROUTINE AnOHM_coef(&
        sfc_typ,xid,xgrid,&!input
-       MetForcingData_grid,moist,AnthropHeatMethod,& !input
+       MetForcingData_grid,moist,EmissionsMethod,& !input
        alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&! input
        xa1,xa2,xa3)                         ! output
 
@@ -148,7 +148,7 @@ CONTAINS
     INTEGER,INTENT(in):: sfc_typ           !< surface type [-]
     INTEGER,INTENT(in):: xid               !< day of year [-]
     INTEGER,INTENT(in):: xgrid             !< grid id [-]
-    INTEGER,INTENT(in):: AnthropHeatMethod !< AnthropHeat option [-]
+    INTEGER,INTENT(in):: EmissionsMethod !< AnthropHeat option [-]
 
     REAL(KIND(1d0)),INTENT(in),DIMENSION(:)   :: alb                 !< albedo [-]
     REAL(KIND(1d0)),INTENT(in),DIMENSION(:)   :: emis                !< emissivity [-]
@@ -224,12 +224,12 @@ CONTAINS
 
        ! load forcing characteristics:
        CALL AnOHM_Fc(&
-            xid,MetForcingData_grid,AnthropHeatMethod,& ! input
+            xid,MetForcingData_grid,EmissionsMethod,& ! input
             ASd,mSd,tSd,ATa,mTa,tTa,tau,mWS,mWF,mAH)    ! output
 
        ! load forcing variables:
        CALL AnOHM_FcLoad(&
-            xid,MetForcingData_grid,AnthropHeatMethod,& ! input
+            xid,MetForcingData_grid,EmissionsMethod,& ! input
             Sd,Ta,RH,pres,WS,WF,AH,tHr)                 ! output
 
        ! load sfc. properties:
@@ -705,14 +705,14 @@ CONTAINS
 
   !========================================================================================
   SUBROUTINE AnOHM_Fc(&
-       xid,MetForcingData_grid,AnthropHeatMethod,& ! input
+       xid,MetForcingData_grid,EmissionsMethod,& ! input
        ASd,mSd,tSd,ATa,mTa,tTa,tau,mWS,mWF,mAH)    ! output
 
     IMPLICIT NONE
 
     !   input
     INTEGER,INTENT(in):: xid
-    INTEGER,INTENT(in):: AnthropHeatMethod
+    INTEGER,INTENT(in):: EmissionsMethod
     REAL(KIND(1d0)),INTENT(in),DIMENSION(:,:) ::MetForcingData_grid
 
     !   output
@@ -739,7 +739,7 @@ CONTAINS
 
 
     ! load forcing variables:
-    CALL AnOHM_FcLoad(xid,MetForcingData_grid,AnthropHeatMethod,Sd,Ta,RH,pres,WS,WF,AH,tHr)
+    CALL AnOHM_FcLoad(xid,MetForcingData_grid,EmissionsMethod,Sd,Ta,RH,pres,WS,WF,AH,tHr)
     ! calculate forcing scales for AnOHM:
     CALL AnOHM_FcCal(Sd,Ta,WS,WF,AH,tHr,ASd,mSd,tSd,ATa,mTa,tTa,tau,mWS,mWF,mAH)
 
@@ -755,14 +755,14 @@ CONTAINS
   !========================================================================================
   !> load forcing series for AnOHM_FcCal
   SUBROUTINE AnOHM_FcLoad(&
-       xid,MetForcingData_grid,AnthropHeatMethod,& ! input
+       xid,MetForcingData_grid,EmissionsMethod,& ! input
        Sd,Ta,RH,pres,WS,WF,AH,tHr) ! output
 
     IMPLICIT NONE
 
     !   input
     INTEGER,INTENT(in):: xid !< day of year
-    INTEGER,INTENT(in):: AnthropHeatMethod !< AnthropHeat option
+    INTEGER,INTENT(in):: EmissionsMethod !< AnthropHeat option
     REAL(KIND(1d0)),INTENT(in),DIMENSION(:,:) ::MetForcingData_grid !< met forcing array of grid
 
     !   output
@@ -841,7 +841,7 @@ CONTAINS
     pres = subMet(:,5)
     WS   = subMet(:,6)
     WF   = 0          ! set as 0 for the moment
-    IF ( AnthropHeatMethod == 0 ) THEN
+    IF ( EmissionsMethod == 0 ) THEN
        AH = subMet(:,8)    ! read in from MetForcingData_grid,
     ELSE
        AH = 0 ! temporarily change to zero; TODO: change back to modelled value

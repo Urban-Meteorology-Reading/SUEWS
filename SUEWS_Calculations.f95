@@ -63,16 +63,11 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ! REAL(KIND(1d0)):: idectime
   !real(kind(1d0)):: SnowDepletionCurve  !for SUEWS_Snow - not needed here (HCW 24 May 2016)
   ! REAL(KIND(1d0)):: LAI_wt
-  REAL(KIND(1d0))::xBo,&
-       alpha_bioCO2,alpha_enh_bioCO2,beta_bioCO2,&
-       beta_enh_bioCO2,EF_umolCO2perJ,EnEF_v_Jkm,FcEF_v_kgkm,FrFossilFuel_Heat,&
-       FrFossilFuel_NonHeat,MaxQFMetab,MinQFMetab,min_res_bioCO2,PopProf_tstep,&
-       QF0_BEU,resp_a,resp_b,T_CRITIC_Cooling,T_CRITIC_Heating,theta_bioCO2,&
-       TrafficUnits,TraffProf_tstep
+  REAL(KIND(1d0))::xBo
 
 
 
-  INTEGER:: irMax,BiogenCO2Code,EmissionsMethod
+  INTEGER:: irMax
 
   !==================================================================
   !==================================================================
@@ -88,7 +83,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        AddWaterRunoff,AerodynamicResistanceMethod,AH_MIN,AHProf_tstep,&
        AH_SLOPE_Cooling,AH_SLOPE_Heating,alb,albDecTr,AlbedoChoice,albEveTr,albGrass,&
        alBMax_DecTr,alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
-       alpha_bioCO2,alpha_enh_bioCO2,alt,AnthropHeatMethod,areaZh,avdens,avkdn,avRh,&
+       alpha_bioCO2,alpha_enh_bioCO2,alt,areaZh,avdens,avkdn,avRh,&
        avU1,avU10_ms,azimuth,BaseT,BaseTe,BaseTHDD,beta_bioCO2,beta_enh_bioCO2,&
        BiogenCO2Code,bldgH,CapMax_dec,CapMin_dec,chang,changSnow,chAnOHM,&
        chSnow_per_interval,cpAnOHM,CRWmax,CRWmin,CumSnowfall,DailyStateFirstOpen,&

@@ -43,7 +43,7 @@ MODULE allocateArray
 
 
   ! ---- Set number of columns in output files ---------------------------------------------------
-  INTEGER, PARAMETER:: ncolumnsDataOut=81,&    !Main output file (_5.txt). DataOut created in SUEWS_Calculations.f95
+  INTEGER, PARAMETER:: ncolumnsDataOut=84,&    !Main output file (_5.txt). DataOut created in SUEWS_Calculations.f95
        ncolumnsDataOutSnow=102,&
        ncolumnsdataOutSOL=28,&
        ncolumnsdataOutBL=22

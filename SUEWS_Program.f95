@@ -307,12 +307,14 @@ PROGRAM SUEWS_Program
         qn1_S_store(:,:) = NAN
         qn1_S_av_store(:,:) = NaN
      ENDIF
-     IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14) ALLOCATE(dataOutESTM(ReadLinesMetdata,32,NumberOfGrids)) !ESTM output
-     ALLOCATE(TstepProfiles(NumberOfGrids,10,24*NSH))   !Hourly profiles interpolated to model timestep
+     IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14) ALLOCATE(dataOutESTM(ReadlinesMetdata,32,NumberOfGrids)) !ESTM output
+     ALLOCATE(TstepProfiles(NumberOfGrids,14,24*NSH))   !Hourly profiles interpolated to model timestep
      ALLOCATE(AHProf_tstep(24*NSH,2))                   !Anthropogenic heat profiles at model timestep
      ALLOCATE(WUProfM_tstep(24*NSH,2))                  !Manual water use profiles at model timestep
      ALLOCATE(WUProfA_tstep(24*NSH,2))                  !Automatic water use profiles at model timestep
-     ALLOCATE(HumActivity_tstep(24*NSH,2))
+     ALLOCATE(HumActivity_tstep(24*NSH,2))              !Human activity profiles at model timestep
+     ALLOCATE(TraffProf_tstep(24*NSH,2))                !Traffic profiles at model timestep
+     ALLOCATE(PopProf_tstep(24*NSH,2))                  !Population profiles at model timestep
      ALLOCATE(qn1_store(NSH,NumberOfGrids))
      ALLOCATE(qn1_av_store(2*NSH+1,NumberOfGrids))
      ALLOCATE(qhforCBL(NumberOfGrids))
@@ -728,6 +730,8 @@ PROGRAM SUEWS_Program
      DEALLOCATE(WUProfM_tstep)
      DEALLOCATE(WUProfA_tstep)
      DEALLOCATE(HumActivity_tstep)
+     DEALLOCATE(TraffProf_tstep)
+     DEALLOCATE(PopProf_tstep)
      DEALLOCATE(qn1_store)
      DEALLOCATE(qn1_av_store)
      DEALLOCATE(qhforCBL)

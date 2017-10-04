@@ -584,7 +584,7 @@ CONTAINS
          RainMaxRes,&
          RAINCOVER,&
          sfr(ivConif+2:ivGrass+2),&
-         LAI(id-1,Gridiv),&
+         LAI(id-1,veg_type),&
          LAImax,&
          LAImin,&
          H_mod,& !output

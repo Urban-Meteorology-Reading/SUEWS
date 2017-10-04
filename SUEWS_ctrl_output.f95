@@ -455,10 +455,14 @@ CONTAINS
     ! PRINT*, 'n of varListX: ',SIZE(varList)
     ! PRINT*, 'varListX: ',varList%header
     ! PRINT*, 'varListX group: ',varList%group
+    ! print*, 'date info of grid',Gridiv,':',dataout(1,1:4,Gridiv)
+    ! print*, 'in dataOutX:',dataOutX(1,1:4)
+
 
 
     ! aggregation:
     CALL SUEWS_Output_Agg(dataOutX_agg,dataOutX,varList,irMax,outFreq_s)
+    ! print*, 'in dataOutX_agg:',dataOutX_agg(1,1:4)
 
     ! output:
     ! initialise file when processing first metblock
@@ -496,6 +500,8 @@ CONTAINS
 
     ! generate file name
     CALL filename_gen(dataOut,varList,Gridiv,FileOut)
+    ! print*, 'date info in dataOut',dataOut(1,1:4)
+    ! PRINT*, 'FileOut in SUEWS_Output_Init: ',FileOut
 
     ! store right-aligned headers
     ALLOCATE(headerOut(xx), stat=err)
@@ -731,6 +737,7 @@ CONTAINS
 
     ! get filename
     CALL filename_gen(dataOutSel,varListSel,Gridiv,FileOut)
+    ! PRINT*, 'FileOut in SUEWS_Write_txt: ',FileOut
 
     ! write out data
     fn=50
@@ -762,6 +769,9 @@ CONTAINS
     CHARACTER(len=10):: str_out_min,str_grid,&
          str_date,str_year,str_DOY,str_grp,str_sfx
     INTEGER :: year_int,DOY_int,val_fmt
+
+    ! initialise with a default value
+    val_fmt=-999
 
     IF( PRESENT(opt_fmt) ) val_fmt = opt_fmt
 

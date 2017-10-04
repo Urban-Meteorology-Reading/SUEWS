@@ -63,7 +63,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ! REAL(KIND(1d0)):: idectime
   !real(kind(1d0)):: SnowDepletionCurve  !for SUEWS_Snow - not needed here (HCW 24 May 2016)
   ! REAL(KIND(1d0)):: LAI_wt
-  REAL(KIND(1d0))::xBo
+  ! REAL(KIND(1d0))::xBo
 
 
 
@@ -562,6 +562,11 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        SnowFrac,&
        SnowPack,&
        dataOut,dataOutSnow)
+
+      !  if ( Gridiv>1 .and. ir == 10 ) then
+      !    print*, 'after update:',Gridiv,dataOut(1,1:4,Gridiv)
+       !
+      !  end if
 
 
   ! NB: CBL disabled for the moment for interface improvement

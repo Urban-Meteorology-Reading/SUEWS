@@ -20,6 +20,7 @@
  USE ColNamesInputFiles
  USE Data_In
  USE Initial
+ use NARP_MODULE,ONLY:NARP_cal_SunPosition
 
  IMPLICIT NONE
 

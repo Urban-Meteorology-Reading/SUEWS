@@ -22,13 +22,13 @@ CFLAGS_nc = $(CFLAGS) \
 # needs to be compiled first)
 MODULES = LUMPS_Module_constants.o  \
           LUMPS_metRead.o  \
+					LUMPS_NARP_v3.o \
 		  		SUEWS_MetDisagg.o \
           SOLWEIG_modules.o  \
           SUEWS_Files_run_Control.o \
 					precmod.o \
 					stringmod.o \
 					qsort_c_module.o\
-					LUMPS_NARP_v3.o \
 					SUEWS_AnOHM.o \
 					SUEWS_OHM.o \
 					SUEWS_driver.o \
@@ -44,7 +44,6 @@ OTHERS =  BLUEWS_CBL.o   \
           SUEWS_ReDistributeWater.o \
           SUEWS_RoughnessParameters.o \
           SUEWS_RunoffFromGrid.o \
-          NARP_sun_position_v2.o \
           LUMPS_QHQE.o \
           SUEWS_AerodynamicResistance.o \
           SUEWS_store.o \

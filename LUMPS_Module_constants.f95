@@ -263,6 +263,7 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: a2AnOHM_grids
   REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: a3AnOHM_grids
   REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids,nsurf,3):: a123AnOHM_gs
+  REAL(KIND(1d0)):: xBo ! daily Bowen ratio
   !! store water states for AnOHM iteration, by TS 13 Apr 2016
   !REAL(KIND(1d0)),DIMENSION(0:ndays,MaxNumberOfGrids,nsurf):: soilmoistDay   !Soil moisture of each surface type at the end of a day [mm], 13 Apr 2016 TS
   !REAL(KIND(1d0)),DIMENSION(0:ndays,MaxNumberOfGrids,nsurf):: stateDay       !Wetness status of each existing surface type at the end of a day [mm], 13 Apr 2016 TS

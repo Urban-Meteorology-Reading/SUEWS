@@ -12,32 +12,16 @@
 ! To Do:
 !	- Add functionality for water on paved surfaces (street cleaning, fountains)
 !===================================================================================
-SUBROUTINE SUEWS_cal_WaterUse(&                
+SUBROUTINE SUEWS_cal_WaterUse(&
      nsh_real,& ! input:
-     SurfaceArea,&
-     sfr,&
-     IrrFracConif,&
-     IrrFracDecid,&
-     IrrFracGrass,&
-     DayofWeek_id,&
-     WUProfA_tstep,&
-     WUProfM_tstep,&
-     InternalWaterUse_h,&
-     HDD_id,&
-     WU_Day_id,&
-     WaterUseMethod,&
-     NSH,it,imin,DLS,&
-     OverUse,&
-     WUAreaEveTr_m2,&!  output:
-     WUAreaDecTr_m2,&
-     WUAreaGrass_m2,&
-     WUAreaTotal_m2,&
-     wu_EveTr,&
-     wu_DecTr,&
-     wu_Grass,&
-     wu_m3,&
-     int_wu,&
-     ext_wu)
+     SurfaceArea,sfr,&
+     IrrFracConif,IrrFracDecid,IrrFracGrass,&
+     DayofWeek_id,WUProfA_tstep,WUProfM_tstep,&
+     InternalWaterUse_h,HDD_id,WU_Day_id,&
+     WaterUseMethod,NSH,it,imin,DLS,OverUse,&
+     WUAreaEveTr_m2,WUAreaDecTr_m2,& ! output:
+     WUAreaGrass_m2,WUAreaTotal_m2,&
+     wu_EveTr,wu_DecTr,wu_Grass,wu_m3,int_wu,ext_wu)
 
   ! USE allocateArray
   ! USE data_in
@@ -47,18 +31,18 @@ SUBROUTINE SUEWS_cal_WaterUse(&
 
   IMPLICIT NONE
   INTEGER,PARAMETER:: nsurf   = 7
-  INTEGER,PARAMETER:: PavSurf   = 1,&   !When all surfaces considered together (1-7)
-       BldgSurf  = 2,&
-       ConifSurf = 3,&
-       DecidSurf = 4,&
-       GrassSurf = 5,&   !New surface classes: Grass = 5th/7 surfaces
-       BSoilSurf = 6,&   !New surface classes: Bare soil = 6th/7 surfaces
-       WaterSurf = 7,&
-       ExcessSurf= 8,&   !Runoff or subsurface soil in WGWaterDist
-       NSurfDoNotReceiveDrainage=0,&   !Number of surfaces that do not receive drainage water (green roof)
-       ivConif = 1,&     !When only vegetated surfaces considered (1-3)
-       ivDecid = 2,&
-       ivGrass = 3
+  ! INTEGER,PARAMETER:: PavSurf   = 1  !When all surfaces considered together (1-7)
+  ! INTEGER,PARAMETER::BldgSurf  = 2
+  INTEGER,PARAMETER::ConifSurf = 3
+  INTEGER,PARAMETER::DecidSurf = 4
+  INTEGER,PARAMETER::GrassSurf = 5 !New surface classes: Grass = 5th/7 surfaces
+  ! INTEGER,PARAMETER::BSoilSurf = 6 !New surface classes: Bare soil = 6th/7 surfaces
+  ! INTEGER,PARAMETER::WaterSurf = 7
+  ! INTEGER,PARAMETER::ExcessSurf= 8   !Runoff or subsurface soil in WGWaterDist
+  ! INTEGER,PARAMETER::NSurfDoNotReceiveDrainage=0  !Number of surfaces that do not receive drainage water (green roof)
+  ! INTEGER,PARAMETER::ivConif = 1!When only vegetated surfaces considered (1-3)
+  ! INTEGER,PARAMETER::ivDecid = 2
+  ! INTEGER,PARAMETER::ivGrass = 3
 
   REAL(KIND(1d0)),INTENT(in):: &
        nsh_real,&
@@ -76,14 +60,14 @@ SUBROUTINE SUEWS_cal_WaterUse(&
   INTEGER,INTENT(in):: &
        DayofWeek_id(3),& !DayofWeek(id) 1 - day of week; 2 - month; 3 - season
        WaterUseMethod,& !Use modelled (0) or observed (1) water use
-      !  ConifSurf,& !surface code
-      !  DecidSurf,& !surface code
-      !  GrassSurf,& !surface code
+                                !  ConifSurf,& !surface code
+                                !  DecidSurf,& !surface code
+                                !  GrassSurf,& !surface code
        NSH,&!Number of timesteps per hour
        it,& !Hour
        imin,& !Minutes
        DLS !day lightsavings =1 + 1h) =0
-      !  nsurf
+  !  nsurf
 
   REAL(KIND(1d0)),INTENT(inout):: &
        OverUse

@@ -4,7 +4,8 @@
 ! TS 02 Oct 2017: added `SUEWS_cal_Main` as the generic wrapper
 ! TS 03 Oct 2017: added `SUEWS_cal_AnthropogenicEmission`
 MODULE SUEWS_Driver
-
+  USE NARP_MODULE,ONLY:NARP_cal_SunPosition
+  USE AnOHM_module,ONLY:AnOHM
 
   IMPLICIT NONE
 
@@ -17,14 +18,14 @@ CONTAINS
        alpha_bioCO2,alpha_enh_bioCO2,alt,areaZh,avdens,avkdn,avRh,&
        avU1,avU10_ms,azimuth,BaseT,BaseTe,BaseTHDD,beta_bioCO2,beta_enh_bioCO2,&
        BiogenCO2Code,bldgH,CapMax_dec,CapMin_dec,chang,changSnow,chAnOHM,&
-       chSnow_per_interval,cpAnOHM,CRWmax,CRWmin,CumSnowfall,DailyStateFirstOpen,&
-       dataOut,DayofWeek,DayWat,DayWatPer,DecidCap,dectime,DecTreeH,deltaLAI,dens_dry,&
+       chSnow_per_interval,cpAnOHM,CRWmax,CRWmin,CumSnowfall,&
+       dataOut,DayofWeek,DayWat,DayWatPer,DecidCap,dectime,DecTreeH,dens_dry,&
        Diagnose,DiagQN,DiagQS,DLS,drain_per_tstep,DRAINRT,Ea_hPa,EF_umolCO2perJ,emis,&
        EmissionsMethod,E_mod,EnEF_v_Jkm,es_hPa,ev,evap,EveTreeH,ev_per_tstep,ev_snow,&
        ext_wu,FAIBldg,FAIDecTree,FAIEveTree,Faut,Fc,Fc_anthro,Fc_biogen,Fc_build,&
-       FcEF_v_kgkm,fcld,fcld_obs,Fc_metab,Fc_photo,Fc_respi,Fc_traff,FileCode,&
-       FileOutputPath,FlowChange,FreezMelt,FrFossilFuel_Heat,FrFossilFuel_NonHeat,fwh,&
-       G1,G2,G3,G4,G5,G6,GDD,GDDFull,GridIDmatrix,Gridiv,gsc,gsModel,halftimestep,HDD,&
+       FcEF_v_kgkm,fcld,fcld_obs,Fc_metab,Fc_photo,Fc_respi,Fc_traff,&
+       FlowChange,FreezMelt,FrFossilFuel_Heat,FrFossilFuel_NonHeat,fwh,&
+       G1,G2,G3,G4,G5,G6,GDD,GDDFull,Gridiv,gsc,gsModel,halftimestep,HDD,&
        H_mod,HumActivity_tstep,IceFrac,id,Ie_a,Ie_end,Ie_m,Ie_start,imin,&
        InternalWaterUse_h,int_wu,IrrFracConif,IrrFracDecid,IrrFracGrass,it,ity,iy,k,&
        kclear,kkAnOHM,Kmax,kup,LAI,LAICalcYes,LAIMax,LAIMin,LAI_obs,LAIPower,LAIType,&
@@ -54,7 +55,7 @@ CONTAINS
        tstep,tstepcount,tstep_real,tsurf,tsurf_ind,UStar,VegFraction,veg_type,VPD_Pa,&
        waterdens,WaterDist,WaterUseMethod,WetThresh,WUAreaDecTr_m2,WUAreaEveTr_m2,&
        WUAreaGrass_m2,WUAreaTotal_m2,WU_Day,wu_DecTr,wu_EveTr,wu_Grass,wu_m3,&
-       WUProfA_tstep,WUProfM_tstep,xsmd,year,Z,Z0m,Zdm,ZENITH_deg,Zh)
+       WUProfA_tstep,WUProfM_tstep,xBo,xsmd,year,Z,Z0m,Zdm,zenith_deg,Zh)
 
     IMPLICIT NONE
 
@@ -64,7 +65,7 @@ CONTAINS
     ! INTEGER,PARAMETER::GrassSurf=5
     ! INTEGER,PARAMETER::ivConif=1
     ! INTEGER,PARAMETER::ivGrass=3
-    INTEGER,PARAMETER::MaxNumberOfGrids=2000
+    ! INTEGER,PARAMETER::MaxNumberOfGrids=2000
     INTEGER,PARAMETER::ndays=366
     INTEGER,PARAMETER::nsurf=7
     INTEGER,PARAMETER::NVegSurf=3
@@ -73,8 +74,8 @@ CONTAINS
 
 
 
-    CHARACTER(LEN=150),INTENT(IN)::FileOutputPath
-    CHARACTER(LEN=20),INTENT(IN)::FileCode
+    ! CHARACTER(LEN=150),INTENT(IN)::FileOutputPath
+    ! CHARACTER(LEN=20),INTENT(IN)::FileCode
 
     INTEGER,INTENT(IN)::AerodynamicResistanceMethod
     INTEGER,INTENT(IN)::AlbedoChoice
@@ -136,7 +137,7 @@ CONTAINS
     REAL(KIND(1D0)),INTENT(IN)::CRWmin
     REAL(KIND(1D0)),INTENT(IN)::dectime
     REAL(KIND(1D0)),INTENT(IN)::DecTreeH
-    REAL(KIND(1D0)),INTENT(IN)::deltaLAI
+    ! REAL(KIND(1D0)),INTENT(IN)::deltaLAI
     REAL(KIND(1D0)),INTENT(IN)::DRAINRT
     REAL(KIND(1D0)),INTENT(IN)::EF_umolCO2perJ
     REAL(KIND(1D0)),INTENT(IN)::EnEF_v_Jkm
@@ -215,9 +216,9 @@ CONTAINS
     REAL(KIND(1D0)),INTENT(IN)::xsmd
     REAL(KIND(1D0)),INTENT(IN)::year
     REAL(KIND(1D0)),INTENT(IN)::Z
-    REAL(KIND(1D0)),INTENT(IN)::ZENITH_deg
 
-    INTEGER,DIMENSION(MAXNUMBEROFGRIDS),INTENT(IN)::GridIDmatrix
+
+    ! INTEGER,DIMENSION(MAXNUMBEROFGRIDS),INTENT(IN)::GridIDmatrix
     INTEGER,DIMENSION(NVEGSURF),INTENT(IN)::LAIType
 
     REAL(KIND(1D0)),DIMENSION(2),INTENT(IN)::AH_MIN
@@ -312,7 +313,7 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)::SnowPack
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)::soilmoist
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)::state
-    REAL(KIND(1D0)),DIMENSION(MAXNUMBEROFGRIDS),INTENT(INOUT)::DailyStateFirstOpen
+    ! REAL(KIND(1D0)),DIMENSION(MAXNUMBEROFGRIDS),INTENT(INOUT)::DailyStateFirstOpen
     REAL(KIND(1D0)),DIMENSION(NSH),INTENT(INOUT)::qn1_S_store
     REAL(KIND(1D0)),DIMENSION(NSH),INTENT(INOUT)::qn1_store
 
@@ -397,8 +398,10 @@ CONTAINS
     REAL(KIND(1D0)),INTENT(OUT)::wu_EveTr
     REAL(KIND(1D0)),INTENT(OUT)::wu_Grass
     REAL(KIND(1D0)),INTENT(OUT)::wu_m3
+    REAL(KIND(1D0)),INTENT(out)::xBo
     REAL(KIND(1D0)),INTENT(OUT)::Z0m
     REAL(KIND(1D0)),INTENT(OUT)::Zdm
+    REAL(KIND(1D0)),INTENT(OUT)::ZENITH_deg
     REAL(KIND(1D0)),INTENT(OUT)::Zh
 
     REAL(KIND(1D0)),DIMENSION(2),INTENT(OUT)::SnowRemoval
@@ -438,7 +441,6 @@ CONTAINS
     REAL(KIND(1D0))::VegPhenLumps
     REAL(KIND(1D0))::VPd_hpa
     REAL(KIND(1D0))::vsmd
-    REAL(KIND(1D0))::xBo
     REAL(KIND(1D0))::ZZD
 
     REAL(KIND(1D0)),DIMENSION(NSURF)::deltaQi
@@ -567,38 +569,21 @@ CONTAINS
          snowUse,id,qn1,qf,qs,Qm,Temp_C,Veg_Fr,avcp,Press_hPa,lv_J_kg,&
          tstep_real,DRAINRT,nsh_real,&
          Precip,RainMaxRes,RAINCOVER,sfr,LAI,LAImax,LAImin,&
-         H_mod,& !output
-         E_mod,psyc_hPa,s_hPa,sIce_hpa,TempVeg,VegPhenLumps)
+         H_mod,E_mod,psyc_hPa,s_hPa,sIce_hpa,TempVeg,VegPhenLumps)!output
 
 
     IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_cal_WaterUse...'
     !Gives the external and internal water uses per timestep
     CALL SUEWS_cal_WaterUse(&
-         nsh_real,&! input:
-         SurfaceArea,&
-         sfr,&
-         IrrFracConif,&
-         IrrFracDecid,&
-         IrrFracGrass,&
-         DayofWeek(id,:),&
-         WUProfA_tstep,&
-         WUProfM_tstep,&
-         InternalWaterUse_h,&
-         HDD(id-1,:),&
-         WU_Day(id-1,:),&
-         WaterUseMethod,&
-         NSH,it,imin,DLS,&
-         OverUse,&
-         WUAreaEveTr_m2,&!  output:
-         WUAreaDecTr_m2,&
-         WUAreaGrass_m2,&
-         WUAreaTotal_m2,&
-         wu_EveTr,&
-         wu_DecTr,&
-         wu_Grass,&
-         wu_m3,&
-         int_wu,&
-         ext_wu)
+         nsh_real,& ! input:
+         SurfaceArea,sfr,&
+         IrrFracConif,IrrFracDecid,IrrFracGrass,&
+         DayofWeek(id,:),WUProfA_tstep,WUProfM_tstep,&
+         InternalWaterUse_h,HDD(id-1,:),WU_Day(id-1,:),&
+         WaterUseMethod,NSH,it,imin,DLS,OverUse,&
+         WUAreaEveTr_m2,WUAreaDecTr_m2,& ! output:
+         WUAreaGrass_m2,WUAreaTotal_m2,&
+         wu_EveTr,wu_DecTr,wu_Grass,wu_m3,int_wu,ext_wu)
 
 
     !===============Resistance Calculations=======================
@@ -616,15 +601,6 @@ CONTAINS
          Tstar,&!output
          psim,gsc,ResistSurf,RA,RAsnow,rb)
 
-
-    ! !========= CO2-related calculations ================================
-    ! ! Calculate CO2 fluxes from biogenic components
-    ! ! IF(Diagnose==1) WRITE(*,*) 'Calling CO2_biogen...'
-    ! ! CALL CO2_biogen
-    ! ! ! Sum anthropogenic and biogenic CO2 flux components to find overall CO2 flux
-    ! ! Fc = Fc_anthro + Fc_biogen
-    ! Fc=0 ! disbled for the moment. TS 28 Sep 2017
-    ! !========= CO2-related calculations end================================
 
 
     !============= calculate water balance =============
@@ -658,7 +634,6 @@ CONTAINS
          swe,ev,chSnow_per_interval,ev_per_tstep,qe_per_tstep,runoff_per_tstep,&
          surf_chang_per_tstep,runoffPipes,mwstore,runoffwaterbody,FlowChange,&
          runoffAGimpervious_m3,runoffAGveg_m3,runoffWaterBody_m3,runoffPipes_m3)
-
     !======== Evaporation and surface state end========
 
     !============ Sensible heat flux ===============
@@ -703,24 +678,14 @@ CONTAINS
     !============ surface-level diagonostics end ===============
 
 
-    !============ update and write out SUEWS_cal_DailyState ===============
-    ! only works at the last timestep of a day
-    CALL SUEWS_update_DailyState(&
-         iy,id,it,imin,&!input
-         GDD,HDD,LAI,&
-         DecidCap,albDecTr,albEveTr,albGrass,porosity,&
-         WU_Day,&
-         nsh_real,deltaLAI,VegPhenLumps,&
-         SnowAlb,SnowDens,&
-         xBo,a1,a2,a3,&
-         Gridiv,GridIDmatrix,&!input
-         FileCode,FileOutputPath,&
-         DailyStateFirstOpen)
+
 
     !==============main calculation end=======================
 
 
   END SUBROUTINE SUEWS_cal_Main
+
+
 
   ! ===================ANTHROPOGENIC HEAT + CO2 FLUX================================
   SUBROUTINE SUEWS_cal_AnthropogenicEmission(&
@@ -1054,7 +1019,6 @@ CONTAINS
        qn1_store,qn1_S_store,qn1_av_store,qn1_S_av_store,surf,&!inout
        qn1_S,snowFrac,qs,&!output
        deltaQi,a1,a2,a3)
-    USE AnOHM_module, ONLY: anohm
 
     IMPLICIT NONE
 
@@ -1888,8 +1852,8 @@ CONTAINS
 
   !==============Update output arrays=========================
   SUBROUTINE SUEWS_update_output(&
-       AdditionalWater,alb,avkdn,avU10_ms,azimuth,&
-       chSnow_per_interval,dataOut,dataOutSnow,dectime,&
+       AdditionalWater,alb,avkdn,avU10_ms,azimuth,&!input
+       chSnow_per_interval,dectime,&
        drain_per_tstep,E_mod,ev_per_tstep,ext_wu,Fc,Fc_build,fcld,&
        Fc_metab,Fc_photo,Fc_respi,Fc_traff,FlowChange,freezMelt,&
        Gridiv,h_mod,id,id_prev_t,imin,int_wu,ir,it,iy,iy_prev_t,&
@@ -1904,7 +1868,8 @@ CONTAINS
        snowDepth,SnowFrac,SnowPack,SnowRemoval,SNOWuse,SoilState,&
        state,state_per_tstep,surf_chang_per_tstep,swe,t2_C,&
        tot_chang_per_tstep,tsurf,Tsurf_ind_snow,UStar,wu_DecTr,&
-       wu_EveTr,wu_Grass,z0m,zdm,zenith_deg)
+       wu_EveTr,wu_Grass,z0m,zdm,zenith_deg,&
+       dataOut,dataOutSnow)!inout
     IMPLICIT NONE
 
     INTEGER,PARAMETER::ndays    = 366

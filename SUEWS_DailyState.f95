@@ -275,25 +275,15 @@ SUBROUTINE SUEWS_cal_DailyState(&
      !  so main program should use values from the previous day
   ELSEIF (it==23 .AND. imin==(nsh_real-1)/nsh_real*60) THEN
      CALL Cal_DailyStateEnd(&
-          ncolumnsDataOut, &
-          NumberOfGrids, ReadLinesMetdata,&
-          a1, a2, a3, albDecTr, albEveTr, albGrass, alBMax_DecTr, alBMax_EveTr, alBMax_Grass, &
-          AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
-          BaseT, BaseTe, CapMax_dec, CapMin_dec, &
-                                !  DailyStateFirstOpen, DailyStateLine, &
-          dataOut, DayofWeek, DayWat, DayWatPer, DecidCap, deltaLAI, Faut, &
-                                !  FileCode, FileOutputPath, &
-          GDD, GDDFull, &
-                                !  GridIDmatrix, &
-          Gridiv, HDD, &
-          id, Ie_a, Ie_end, Ie_m, Ie_start, &
-                                !  iy, &
-          LAI, LAI_obs, LAICalcYes, LAIMax, LAIMin, LAIPower, LAIType, lat, &
-          PorMax_dec, PorMin_dec, porosity, SDDFull, &
-                                !  SnowAlb, SnowDens, &
-          tstepcount, &
-                                !  VegPhenLumps, &
-          WaterUseMethod, WU_Day, xBo, xmAH)
+          ncolumnsDataOut,&!input
+          NumberOfGrids,ReadLinesMetdata,Gridiv,id,LAIType,Ie_end,Ie_start,LAICalcYes,&
+          WaterUseMethod,DayofWeek,&
+          alBMax_DecTr,alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
+          BaseT,BaseTe,CapMax_dec,CapMin_dec,dataOut,DayWat,DayWatPer,Faut,GDDFull,&
+          Ie_a,Ie_m,LAIMax,LAIMin,LAIPower,lat,PorMax_dec,PorMin_dec,SDDFull,LAI_obs,&
+          a1,a2,a3,albDecTr,albEveTr,albGrass,tstepcount,porosity,DecidCap,deltaLAI,&!inout
+          xmAH,GDD,HDD,LAI,&
+          WU_Day,xBo)!output
 
   ENDIF   !End of section done only at the end of each day (i.e. only once per day)
 
@@ -303,92 +293,76 @@ END SUBROUTINE SUEWS_cal_DailyState
 
 
 SUBROUTINE Cal_DailyStateEnd(&
-     ncolumnsDataOut, &
-     NumberOfGrids, ReadLinesMetdata,&
-     a1, a2, a3, albDecTr, albEveTr, albGrass, alBMax_DecTr, alBMax_EveTr, alBMax_Grass, &
-     AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
-     BaseT, BaseTe, CapMax_dec, CapMin_dec, &
-     dataOut, DayofWeek, DayWat, DayWatPer, DecidCap, deltaLAI, Faut, &
-     GDD, GDDFull, &
-     Gridiv, HDD, &
-     id, Ie_a, Ie_end, Ie_m, Ie_start, &
-     LAI, LAI_obs, LAICalcYes, LAIMax, LAIMin, LAIPower, LAIType, lat, &
-     PorMax_dec, PorMin_dec, porosity, SDDFull, &
-     tstepcount, &
-     WaterUseMethod, WU_Day, xBo, xmAH)
+     ncolumnsDataOut,&!input
+     NumberOfGrids,ReadLinesMetdata,Gridiv,id,LAIType,Ie_end,Ie_start,LAICalcYes,&
+     WaterUseMethod,DayofWeek,&
+     alBMax_DecTr,alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
+     BaseT,BaseTe,CapMax_dec,CapMin_dec,dataOut,DayWat,DayWatPer,Faut,GDDFull,&
+     Ie_a,Ie_m,LAIMax,LAIMin,LAIPower,lat,PorMax_dec,PorMin_dec,SDDFull,LAI_obs,&
+     a1,a2,a3,albDecTr,albEveTr,albGrass,tstepcount,porosity,DecidCap,deltaLAI,&!inout
+     xmAH,GDD,HDD,LAI,&
+     WU_Day,xBo)!output
   IMPLICIT NONE
   INTEGER,PARAMETER::ndays    = 366
   INTEGER,PARAMETER::nvegsurf = 3
-  ! INTEGER,PARAMETER::MaxNumberOfGrids=2000   !Max no. grids   !HCW changed to 2000 from 10000 so prog can run on windows (2GB lim)
-  ! INTEGER,PARAMETER:: nsurf=7
 
-  INTEGER, INTENT(IN) :: ncolumnsDataOut
-  INTEGER, INTENT(IN) :: NumberOfGrids
-  INTEGER, INTENT(IN) :: ReadLinesMetdata
-  ! INTEGER, INTENT(IN) :: GridIDmatrix(MaxNumberOfGrids)
-  INTEGER, INTENT(IN) :: Gridiv
-  INTEGER, INTENT(IN) :: id
-  INTEGER, INTENT(IN) :: LAIType(nvegsurf)
-  INTEGER, INTENT(IN) :: Ie_end
-  INTEGER, INTENT(IN) :: Ie_start
-  ! INTEGER, INTENT(IN) :: iy
-  INTEGER, INTENT(IN) :: LAICalcYes
-  INTEGER, INTENT(IN) :: WaterUseMethod
 
-  REAL(KIND(1d0)), INTENT(IN) :: alBMax_DecTr
-  REAL(KIND(1d0)), INTENT(IN) :: alBMax_EveTr
-  REAL(KIND(1d0)), INTENT(IN) :: alBMax_Grass
-  REAL(KIND(1d0)), INTENT(IN) :: AlbMin_DecTr
-  REAL(KIND(1d0)), INTENT(IN) :: AlbMin_EveTr
-  REAL(KIND(1d0)), INTENT(IN) :: AlbMin_Grass
-  REAL(KIND(1d0)), INTENT(IN) :: BaseT(nvegsurf)
-  REAL(KIND(1d0)), INTENT(IN) :: BaseTe(nvegsurf)
-  REAL(KIND(1d0)), INTENT(IN) :: CapMax_dec
-  REAL(KIND(1d0)), INTENT(IN) :: CapMin_dec
-  REAL(KIND(1d0)), INTENT(IN) :: dataOut(ReadLinesMetdata,ncolumnsDataOut,NumberOfGrids)
-  REAL(KIND(1d0)), INTENT(IN) :: DayWat(7)
-  REAL(KIND(1d0)), INTENT(IN) :: DayWatPer(7)
-  REAL(KIND(1d0)), INTENT(IN) :: Faut
-  REAL(KIND(1d0)), INTENT(IN) :: GDDFull(nvegsurf)
-  REAL(KIND(1d0)), INTENT(IN) :: Ie_a(3)
-  REAL(KIND(1d0)), INTENT(IN) :: Ie_m(3)
-  REAL(KIND(1d0)), INTENT(IN) :: LAIMax(nvegsurf)
-  REAL(KIND(1d0)), INTENT(IN) :: LAIMin(nvegsurf)
-  REAL(KIND(1d0)), INTENT(IN) :: LAIPower(4,nvegsurf)
-  REAL(KIND(1d0)), INTENT(IN) :: lat
-  REAL(KIND(1d0)), INTENT(IN) :: PorMax_dec
-  REAL(KIND(1d0)), INTENT(IN) :: PorMin_dec
-  REAL(KIND(1d0)), INTENT(IN) :: SDDFull(nvegsurf)
-  ! REAL(KIND(1d0)), INTENT(IN) :: VegPhenLumps
-  REAL(KIND(1d0)), INTENT(IN) :: LAI_obs
-  ! REAL(KIND(1d0)), INTENT(IN):: SnowAlb
+  INTEGER,INTENT(IN)::ncolumnsDataOut
+  INTEGER,INTENT(IN)::NumberOfGrids
+  INTEGER,INTENT(IN)::ReadLinesMetdata
+  INTEGER,INTENT(IN)::Gridiv
+  INTEGER,INTENT(IN)::id
+  INTEGER,INTENT(IN)::LAIType(nvegsurf)
+  INTEGER,INTENT(IN)::Ie_end
+  INTEGER,INTENT(IN)::Ie_start
+  INTEGER,INTENT(IN)::LAICalcYes
+  INTEGER,INTENT(IN)::WaterUseMethod
+  INTEGER,INTENT(in)::DayofWeek(0:ndays,3)
 
-  ! CHARACTER (LEN = 20), INTENT(IN) :: FileCode
-  ! CHARACTER (LEN = 150), INTENT(IN) :: FileOutputPath
+  REAL(KIND(1d0)),INTENT(IN)::alBMax_DecTr
+  REAL(KIND(1d0)),INTENT(IN)::alBMax_EveTr
+  REAL(KIND(1d0)),INTENT(IN)::alBMax_Grass
+  REAL(KIND(1d0)),INTENT(IN)::AlbMin_DecTr
+  REAL(KIND(1d0)),INTENT(IN)::AlbMin_EveTr
+  REAL(KIND(1d0)),INTENT(IN)::AlbMin_Grass
+  REAL(KIND(1d0)),INTENT(IN)::BaseT(nvegsurf)
+  REAL(KIND(1d0)),INTENT(IN)::BaseTe(nvegsurf)
+  REAL(KIND(1d0)),INTENT(IN)::CapMax_dec
+  REAL(KIND(1d0)),INTENT(IN)::CapMin_dec
+  REAL(KIND(1d0)),INTENT(IN)::dataOut(ReadLinesMetdata,ncolumnsDataOut,NumberOfGrids)
+  REAL(KIND(1d0)),INTENT(IN)::DayWat(7)
+  REAL(KIND(1d0)),INTENT(IN)::DayWatPer(7)
+  REAL(KIND(1d0)),INTENT(IN)::Faut
+  REAL(KIND(1d0)),INTENT(IN)::GDDFull(nvegsurf)
+  REAL(KIND(1d0)),INTENT(IN)::Ie_a(3)
+  REAL(KIND(1d0)),INTENT(IN)::Ie_m(3)
+  REAL(KIND(1d0)),INTENT(IN)::LAIMax(nvegsurf)
+  REAL(KIND(1d0)),INTENT(IN)::LAIMin(nvegsurf)
+  REAL(KIND(1d0)),INTENT(IN)::LAIPower(4,nvegsurf)
+  REAL(KIND(1d0)),INTENT(IN)::lat
+  REAL(KIND(1d0)),INTENT(IN)::PorMax_dec
+  REAL(KIND(1d0)),INTENT(IN)::PorMin_dec
+  REAL(KIND(1d0)),INTENT(IN)::SDDFull(nvegsurf)
+  REAL(KIND(1d0)),INTENT(IN)::LAI_obs
 
-  INTEGER, INTENT(in) :: DayofWeek(0:ndays,3)
+  REAL(KIND(1d0)),INTENT(INOUT)::a1
+  REAL(KIND(1d0)),INTENT(INOUT)::a2
+  REAL(KIND(1d0)),INTENT(INOUT)::a3
+  REAL(KIND(1d0)),INTENT(INOUT)::albDecTr( 0:ndays)
+  REAL(KIND(1d0)),INTENT(INOUT)::albEveTr( 0:ndays)
+  REAL(KIND(1d0)),INTENT(INOUT)::albGrass( 0:ndays)
+  REAL(KIND(1d0)),INTENT(INOUT)::tstepcount
+  REAL(KIND(1d0)),INTENT(INOUT)::porosity( 0:ndays)
+  REAL(KIND(1d0)),INTENT(INOUT)::DecidCap( 0:ndays)
+  REAL(KIND(1d0)),INTENT(INOUT)::deltaLAI
+  REAL(KIND(1d0)),INTENT(INOUT)::xmAH
+  REAL(KIND(1d0)),INTENT(INOUT)::GDD( 0:ndays, 5)
+  REAL(KIND(1d0)),INTENT(INOUT)::HDD(-4:ndays, 6)
+  REAL(KIND(1d0)),INTENT(INOUT)::LAI(-4:ndays, nvegsurf)
 
-  REAL(KIND(1d0)), INTENT(OUT) :: WU_Day(0:ndays,9)
-
+  REAL(KIND(1d0)),INTENT(OUT):: WU_Day(0:ndays,9)
   REAL(KIND(1d0)),INTENT(OUT):: xBo
-  REAL(KIND(1d0)),INTENT(INOUT):: xmAH
-  REAL(KIND(1d0)),INTENT(INOUT):: a1
-  REAL(KIND(1d0)),INTENT(INOUT):: a2
-  REAL(KIND(1d0)),INTENT(INOUT):: a3
-  REAL(KIND(1d0)),INTENT(INOUT):: albDecTr( 0:ndays)
-  REAL(KIND(1d0)),INTENT(INOUT):: albEveTr( 0:ndays)
-  REAL(KIND(1d0)),INTENT(INOUT):: albGrass( 0:ndays)
-  ! REAL(KIND(1d0)),INTENT(INOUT):: DailyStateFirstOpen(MaxNumberOfGrids)
-  ! REAL(KIND(1d0)),INTENT(INOUT):: DailyStateLine(44)
 
-  ! REAL(KIND(1d0)),INTENT(INOUT):: SnowDens(nsurf)
-  REAL(KIND(1d0)),INTENT(INOUT):: tstepcount
-  REAL(KIND(1d0)),INTENT(INOUT):: porosity( 0:ndays)
-  REAL(KIND(1d0)),INTENT(INOUT):: DecidCap( 0:ndays)
-  REAL(KIND(1d0)),INTENT(INOUT):: deltaLAI
-  REAL(KIND(1d0)),INTENT(INOUT):: GDD( 0:ndays, 5)
-  REAL(KIND(1d0)),INTENT(INOUT):: HDD(-4:ndays, 6)
-  REAL(KIND(1d0)),INTENT(INOUT):: LAI(-4:ndays, nvegsurf)
 
   !write(*,*) 'Last timestep of day'
 
@@ -448,21 +422,6 @@ SUBROUTINE Cal_DailyStateEnd(&
        a1,a2,a3,&!inout
        xBo,xmAH) !output
 
-  ! CALL update_DailyState(&
-  !      iy,id,&!input
-  !      GDD,HDD,LAI,&
-  !      DecidCap,albDecTr,albEveTr,albGrass,porosity,&
-  !      WU_Day,&
-  !      deltaLAI,VegPhenLumps,&
-  !      SnowAlb,SnowDens,&
-  !      xBo,a1,a2,a3,&
-  !      DailyStateLine)!output
-  !
-  ! CALL output_DailyState(&
-  !      Gridiv,GridIDmatrix,&!input
-  !      FileCode,FileOutputPath,&
-  !      DailyStateLine,&
-  !      DailyStateFirstOpen)
 
 END SUBROUTINE Cal_DailyStateEnd
 
@@ -1063,9 +1022,9 @@ SUBROUTINE SUEWS_update_DailyState(&
      nsh_real,deltaLAI,VegPhenLumps,&
      SnowAlb,SnowDens,&
      xBo,a1,a2,a3,&
-     Gridiv,GridIDmatrix,&!input
+     Gridiv,GridIDmatrix,&
      FileCode,FileOutputPath,&
-     DailyStateFirstOpen)
+     DailyStateFirstOpen)!inout
 
   IMPLICIT NONE
   INTEGER,PARAMETER::ndays=366

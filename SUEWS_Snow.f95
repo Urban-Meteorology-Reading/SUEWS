@@ -24,10 +24,6 @@
 !=======================================================================================
 SUBROUTINE Snow_cal_MeltHeat(&
      snowUse,&!input
-     bldgsurf,&
-     nsurf,&
-     PavSurf,&
-     WaterSurf,&
      lvS_J_kg,&
      lv_J_kg,&
      tstep_real,&
@@ -70,13 +66,17 @@ SUBROUTINE Snow_cal_MeltHeat(&
      veg_fr)
 
   IMPLICIT NONE
+  INTEGER,PARAMETER::nsurf=7
+  INTEGER,PARAMETER::PavSurf=1
+  INTEGER,PARAMETER::BldgSurf=2
+  INTEGER,PARAMETER::WaterSurf=7
 
   !These are input to the module
   INTEGER,INTENT(in)::snowUse
-  INTEGER,INTENT(in)::bldgsurf
-  INTEGER,INTENT(in)::nsurf
-  INTEGER,INTENT(in)::PavSurf
-  INTEGER,INTENT(in)::WaterSurf
+  ! INTEGER,INTENT(in)::bldgsurf
+  ! INTEGER,INTENT(in)::nsurf
+  ! INTEGER,INTENT(in)::PavSurf
+  ! INTEGER,INTENT(in)::WaterSurf
 
   REAL(KIND(1d0)),INTENT(in)::lvS_J_kg
   REAL(KIND(1d0)),INTENT(in)::lv_J_kg

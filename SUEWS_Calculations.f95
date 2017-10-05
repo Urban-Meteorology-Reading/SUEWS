@@ -105,7 +105,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        PervFraction,PipeCapacity,planF,p_mm,PopDensDaytime,PopDensNighttime,&
        PopProf_tstep,PorMax_dec,PorMin_dec,porosity,Precip,PrecipLimit,PrecipLimitAlb,&
        Press_hPa,psim,q2_gkg,qeOut,qe_per_tstep,qf,QF0_BEU,Qf_A,Qf_B,Qf_C,QF_SAHP,qh,&
-       qh_obs,Qm,QmFreez,Qm_freezState,Qm_melt,Qm_rain,QmRain,qn1_av_store,qn1_bup,&
+       qh_obs,Qm,QmFreez,Qm_freezState,Qm_melt,Qm_rain,QmRain,qn1,qn1_av_store,&
        qn1_ind_snow,qn1_obs,qn1_S,qn1_S_av_store,qn1_SF,qn1_S_store,qn1_store,qs,RA,&
        RadMeltFact,RAINCOVER,RainMaxRes,rainOnSnow,ReadLinesMetdata,ResistSurf,resp_a,&
        resp_b,RoughLenHeatMethod,RoughLenMomMethod,rss,rss_nsurf,runoff,&
@@ -113,7 +113,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        runoffPipes,runoffPipes_m3,runoffSnow,runoffSoil,runoffSoil_per_tstep,&
        RunoffToWater,runoffwaterbody,runoffWaterBody_m3,S1,S2,SatHydraulicConduct,&
        SDDFull,sfr,smd,SMDMethod,smd_nsurf,SnowAlb,SnowAlbMax,SnowAlbMin,&
-       snowCalcSwitch,snowD,SnowDens,SnowDensMax,SnowDensMin,SnowDepth,snowFrac,&
+       snowD,SnowDens,SnowDensMax,SnowDensMin,SnowDepth,snowFrac,&
        snowfractionchoice,SnowLimBuild,SnowLimPaved,snow_obs,SnowPack,snowProf,&
        SnowRemoval,SnowToSurf,snowUse,SoilDepth,soilmoist,SoilState,soilstoreCap,&
        StabilityMethod,state,StateLimit,state_per_tstep,StorageHeatMethod,surf,&
@@ -466,107 +466,28 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !============ write out results ===============
   ! works at each timestep
   CALL SUEWS_update_output(&
-       ReadLinesMetdata,ncolumnsDataOut,ncolumnsDataOutSnow,NumberOfGrids,&
-       Gridiv,&
-       iy,&
-       iy_prev_t,&
-       id,&
-       id_prev_t,&
-       it,&
-       imin,&
-       SNOWuse,&
-       ir,&
-       AdditionalWater,&
-       alb,&
-       avkdn,&
-       avU10_ms,&
-       azimuth,&
-       chSnow_per_interval,&
-       dectime,&
-       drain_per_tstep,&
-       E_mod,&
-       ev_per_tstep,&
-       ext_wu,&
-       Fc,&
-       Fc_build,&
-       Fc_metab,&
-       Fc_photo,&
-       Fc_respi,&
-       Fc_traff,&
-       fcld,&
-       FlowChange,&
-       freezMelt,&
-       h_mod,&
-       int_wu,&
-       kup,&
-       kup_ind_snow,&
-       l_mod,&
-       LAI,&
-       ldown,&
-       lup,&
-       MeltWaterStore,&
-       mw_ind,&
-       mwh,&
-       MwStore,&
-       nsh_real,&
-       NWstate_per_tstep,&
-       Precip,&
-       q2_gkg,&
-       qeOut,&
-       qf,&
-       qh,&
-       QH_r,&
-       Qm,&
-       Qm_freezState,&
-       Qm_melt,&
-       Qm_rain,&
-       QmFreez,&
-       QmRain,&
-       qn1,&
-       qn1_ind_snow,&
-       qn1_S,&
-       qn1_SF,&
-       qs,&
-       RA,&
-       rainOnSnow,&
-       resistsurf,&
-       runoff_per_tstep,&
-       runoffAGimpervious,&
-       runoffAGveg,&
-       runoffPipes,&
-       runoffSoil_per_tstep,&
-       runoffWaterBody,&
-       sfr,&
-       smd,&
-       smd_nsurf,&
-       SnowAlb,&
-       SnowDens,&
-       snowDepth,&
-       SnowRemoval,&
-       SoilState,&
-       state,&
-       state_per_tstep,&
-       surf_chang_per_tstep,&
-       swe,&
-       t2_C,&
-       tot_chang_per_tstep,&
-       tsurf,&
-       Tsurf_ind_snow,&
-       UStar,&
-       wu_DecTr,&
-       wu_EveTr,&
-       wu_Grass,&
-       z0m,&
-       zdm,&
-       zenith_deg,&
-       SnowFrac,&
-       SnowPack,&
-       dataOut,dataOutSnow)
+       AdditionalWater,alb,avkdn,avU10_ms,azimuth,&
+       chSnow_per_interval,dataOut,dataOutSnow,dectime,&
+       drain_per_tstep,E_mod,ev_per_tstep,ext_wu,Fc,Fc_build,fcld,&
+       Fc_metab,Fc_photo,Fc_respi,Fc_traff,FlowChange,freezMelt,&
+       Gridiv,h_mod,id,id_prev_t,imin,int_wu,ir,it,iy,iy_prev_t,&
+       kup,kup_ind_snow,LAI,ldown,l_mod,lup,MeltWaterStore,mwh,&
+       mw_ind,MwStore,ncolumnsDataOut,ncolumnsDataOutSnow,&
+       nsh_real,NumberOfGrids,NWstate_per_tstep,Precip,q2_gkg,&
+       qeOut,qf,qh,QH_r,Qm,QmFreez,Qm_freezState,Qm_melt,Qm_rain,&
+       QmRain,qn1,qn1_ind_snow,qn1_S,qn1_SF,qs,RA,rainOnSnow,&
+       ReadLinesMetdata,resistsurf,runoffAGimpervious,runoffAGveg,&
+       runoff_per_tstep,runoffPipes,runoffSoil_per_tstep,&
+       runoffWaterBody,sfr,smd,smd_nsurf,SnowAlb,SnowDens,&
+       snowDepth,SnowFrac,SnowPack,SnowRemoval,SNOWuse,SoilState,&
+       state,state_per_tstep,surf_chang_per_tstep,swe,t2_C,&
+       tot_chang_per_tstep,tsurf,Tsurf_ind_snow,UStar,wu_DecTr,&
+       wu_EveTr,wu_Grass,z0m,zdm,zenith_deg)
 
-      !  if ( Gridiv>1 .and. ir == 10 ) then
-      !    print*, 'after update:',Gridiv,dataOut(1,1:4,Gridiv)
-       !
-      !  end if
+  !  if ( Gridiv>1 .and. ir == 10 ) then
+  !    print*, 'after update:',Gridiv,dataOut(1,1:4,Gridiv)
+  !
+  !  end if
 
 
   ! NB: CBL disabled for the moment for interface improvement

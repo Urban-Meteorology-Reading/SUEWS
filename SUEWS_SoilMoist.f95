@@ -1,12 +1,15 @@
 SUBROUTINE SUEWS_update_SoilMoist(&
-     nsurf,ConifSurf,DecidSurf,GrassSurf,&!input
-     NonWaterFraction,&
+     NonWaterFraction,&!input
      soilstoreCap,sfr,soilmoist,&
      SoilMoistCap,SoilState,&!output
      vsmd,smd)
   IMPLICIT NONE
+  INTEGER,PARAMETER ::nsurf     = 7 ! number of surface types
+  INTEGER,PARAMETER ::ConifSurf = 3 !New surface classes: Grass = 5th/7 surfaces
+  INTEGER,PARAMETER ::DecidSurf = 4 !New surface classes: Grass = 5th/7 surfaces
+  INTEGER,PARAMETER ::GrassSurf = 5
 
-  INTEGER,INTENT(in)::nsurf,ConifSurf,DecidSurf,GrassSurf
+  ! INTEGER,INTENT(in)::nsurf,ConifSurf,DecidSurf,GrassSurf
   REAL(KIND(1d0)),INTENT(in)::NonWaterFraction
   REAL(KIND(1d0)),INTENT(in),DIMENSION(nsurf)::soilstoreCap,sfr,soilmoist
 
@@ -47,13 +50,16 @@ END SUBROUTINE SUEWS_update_SoilMoist
 
 !========== Calculate soil moisture ============
 SUBROUTINE SUEWS_cal_SoilMoist(&
-  nsurf,SMDMethod,&
-  xsmd,NonWaterFraction,SoilMoistCap,SoilStoreCap,surf_chang_per_tstep,&
-  soilmoist,soilmoistOld,sfr,smd,smd_nsurf,tot_chang_per_tstep,&
-  SoilState)
+     SMDMethod,xsmd,NonWaterFraction,SoilMoistCap,&!input
+     SoilStoreCap,surf_chang_per_tstep,&
+     soilmoist,soilmoistOld,sfr,&
+     smd,smd_nsurf,tot_chang_per_tstep,SoilState)!output
 
   IMPLICIT NONE
-  INTEGER,INTENT(in) ::nsurf,SMDMethod
+  INTEGER,PARAMETER::nsurf=7
+
+
+  INTEGER,INTENT(in) ::SMDMethod
   REAL(KIND(1d0)),INTENT(in)::xsmd
   REAL(KIND(1d0)),INTENT(in)::NonWaterFraction
   REAL(KIND(1d0)),INTENT(in)::SoilMoistCap
@@ -65,7 +71,6 @@ SUBROUTINE SUEWS_cal_SoilMoist(&
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::SoilStoreCap        !Capacity of soil store for each surface [mm]
 
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::smd_nsurf
-
   REAL(KIND(1d0)),INTENT(out)::SoilState
   REAL(KIND(1d0)),INTENT(out)::smd
   REAL(KIND(1d0)),INTENT(out)::tot_chang_per_tstep

@@ -1,8 +1,8 @@
 SUBROUTINE LUMPS_cal_QHQE(&
      veg_type,& !input
-     snowUse,qn1,qf,qs,Qm,Temp_C,Veg_Fr,avcp,Press_hPa,lv_J_kg,&
+     snowUse,id,qn1,qf,qs,Qm,Temp_C,Veg_Fr,avcp,Press_hPa,lv_J_kg,&
      tstep_real,DRAINRT,nsh_real,&
-     Precip,RainMaxRes,RAINCOVER,sfrVeg,LAIDay,LAImax,LAImin,&
+     Precip,RainMaxRes,RAINCOVER,sfr,LAI,LAImax,LAImin,&
      H_mod,& !output
      E_mod,psyc_hPa,s_hPa,sIce_hpa,TempVeg,VegPhenLumps)
   !Calculates QH and QE for LUMPS. See Loridan et al. (2011)
@@ -19,9 +19,15 @@ SUBROUTINE LUMPS_cal_QHQE(&
   ! --------------------------------------------------------------
 
   IMPLICIT NONE
+  INTEGER,PARAMETER::ndays=366
+  INTEGER,PARAMETER::NSurf=7
+  INTEGER,PARAMETER::NVegSurf=3
+  INTEGER,PARAMETER::ivConif=1
+  INTEGER,PARAMETER::ivGrass=3
 
   INTEGER,INTENT(in) :: veg_type  !Defines how vegetation is calculated for LUMPS
   INTEGER,INTENT(in) :: snowUse ! option of snow module
+  INTEGER,INTENT(in) :: id ! day of year
 
   REAL(KIND(1d0)),INTENT(in) :: qn1! net all-wave radiation
   REAL(KIND(1d0)),INTENT(in) :: qf! anthropogenic heat flux
@@ -39,8 +45,8 @@ SUBROUTINE LUMPS_cal_QHQE(&
   REAL(KIND(1d0)),INTENT(in) :: RainMaxRes!Maximum water bucket reservoir [mm]
   REAL(KIND(1d0)),INTENT(in) :: RAINCOVER! LUMPS Limit when surface totally wet [mm]
 
-  REAL(KIND(1d0)),DIMENSION(3),INTENT(in) :: sfrVeg! veg surface fractions [-]
-  REAL(KIND(1d0)),DIMENSION(3),INTENT(in) :: LAIDay! LAI(id-1,iv), LAI at the beginning of today
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in) :: sfr! veg surface fractions [-]
+  REAL(KIND(1D0)),DIMENSION(-4:NDAYS,NVEGSURF),INTENT(in) :: LAI! LAI(id-1,iv), LAI at the beginning of today
   REAL(KIND(1d0)),DIMENSION(3),INTENT(in) :: LAImax!Max LAI [m2 m-2]
   REAL(KIND(1d0)),DIMENSION(3),INTENT(in) :: LAImin    !Min LAI [m2 m-2]
 
@@ -52,7 +58,9 @@ SUBROUTINE LUMPS_cal_QHQE(&
   REAL(KIND(1d0)),INTENT(out) ::TempVeg !TEMPORARY VEGETATIVE SURFACE FRACTION ADJUSTED BY RAINFALL
   REAL(KIND(1d0)),INTENT(out) ::VegPhenLumps
   ! REAL(KIND(1d0)),INTENT(inout) ::RainBucket !RAINFALL RESERVOIR [mm]
-  ! INTEGER::iv                                 !,start
+  ! INTEGER::iv
+  REAL(KIND(1d0)),DIMENSION(3) :: sfrVeg! veg surface fractions [-]                             !,start
+  REAL(KIND(1d0)),DIMENSION(3) :: LAIDay! LAI(id-1,iv), LAI at the beginning of today
   REAL(KIND(1d0))::VegPhen,VegMax,VegMin,&   !Vegetation phenology for LUMPS
        slope_svp, slopeIce_svp,& !Slope of the saturation vapour pressure curve above watre and ice
        psyc_s,psyc_const,&       !Psychometric constant
@@ -65,6 +73,10 @@ SUBROUTINE LUMPS_cal_QHQE(&
   VegPhenLumps=0
   ! initialize rain-related variables
   RainBucket=0.
+
+  sfrVeg=sfr(ivConif+2:ivGrass+2)
+
+  LAIDay= LAI(id-1,veg_type)
 
   ! Calculate slope of the saturation vapour pressure vs air temp.
   s_hPa=slope_svp(Temp_C)

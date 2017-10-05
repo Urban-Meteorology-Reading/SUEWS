@@ -4,14 +4,7 @@
 SUBROUTINE LUMPS_cal_AtmMoist(&
      Temp_C,Press_hPa,avRh,dectime,&! input:
      lv_J_kg,lvS_J_kg,&! output:
-     es_hPa,&
-     Ea_hPa,&
-     VPd_hpa,&
-     VPD_Pa,&
-     dq,&
-     dens_dry,&
-     avcp,&
-     air_dens)
+     es_hPa,Ea_hPa,VPd_hpa,VPD_Pa,dq,dens_dry,avcp,air_dens)
   ! USE data_in
   ! USE moist
   ! USE gas

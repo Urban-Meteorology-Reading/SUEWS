@@ -414,7 +414,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !
   !
   ! !==============main calculation end=======================
-
   CALL SUEWS_cal_Main(&
        a1,a2,a3,addImpervious,AdditionalWater,addPipes,addVeg,addWater,addWaterBody,&
        AddWaterRunoff,AerodynamicResistanceMethod,AH_MIN,AHProf_tstep,&
@@ -433,7 +432,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        G1,G2,G3,G4,G5,G6,GDD,GDDFull,Gridiv,gsc,gsModel,halftimestep,HDD,&
        H_mod,HumActivity_tstep,IceFrac,id,Ie_a,Ie_end,Ie_m,Ie_start,imin,&
        InternalWaterUse_h,int_wu,IrrFracConif,IrrFracDecid,IrrFracGrass,it,ity,iy,k,&
-       kclear,kkAnOHM,Kmax,kup,LAI,LAICalcYes,LAIMax,LAIMin,LAI_obs,LAIPower,LAIType,&
+       kclear,kkAnOHM,Kmax,kup,kup_ind_snow,LAI,LAICalcYes,LAIMax,LAIMin,LAI_obs,LAIPower,LAIType,&
        lat,ldown,ldown_obs,ldown_option,L_mod,lng,lup,MaxConductance,MaxQFMetab,&
        Meltwaterstore,MetForcingData,MinQFMetab,min_res_bioCO2,mwh,mw_ind,mwstore,&
        NARP_EMIS_SNOW,NARP_G,NARP_TRANS_SITE,ncolumnsDataOut,NetRadiationMethod,&
@@ -442,7 +441,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        PervFraction,PipeCapacity,planF,p_mm,PopDensDaytime,PopDensNighttime,&
        PopProf_tstep,PorMax_dec,PorMin_dec,porosity,Precip,PrecipLimit,PrecipLimitAlb,&
        Press_hPa,psim,q2_gkg,qeOut,qe_per_tstep,qf,QF0_BEU,Qf_A,Qf_B,Qf_C,QF_SAHP,qh,&
-       qh_obs,Qm,QmFreez,Qm_freezState,Qm_melt,Qm_rain,QmRain,qn1,qn1_av_store,&
+       qh_obs,qh_r,Qm,QmFreez,Qm_freezState,Qm_melt,Qm_rain,QmRain,qn1,qn1_av_store,&
        qn1_ind_snow,qn1_obs,qn1_S,qn1_S_av_store,qn1_SF,qn1_S_store,qn1_store,qs,RA,&
        RadMeltFact,RAINCOVER,RainMaxRes,rainOnSnow,ReadLinesMetdata,ResistSurf,resp_a,&
        resp_b,RoughLenHeatMethod,RoughLenMomMethod,rss,rss_nsurf,runoff,&
@@ -457,7 +456,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        SurfaceArea,surf_chang_per_tstep,SurplusEvap,swe,t2_C,tau_a,tau_f,tau_r,&
        T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,TempMeltFact,TempVeg,TH,theta_bioCO2,&
        timezone,TL,tot_chang_per_tstep,TrafficRate,TrafficUnits,TraffProf_tstep,Tstar,&
-       tstep,tstepcount,tstep_real,tsurf,tsurf_ind,UStar,VegFraction,veg_type,VPD_Pa,&
+       tstep,tstepcount,tstep_real,tsurf,tsurf_ind,Tsurf_ind_snow,UStar,VegFraction,veg_type,VPD_Pa,&
        waterdens,WaterDist,WaterUseMethod,WetThresh,WUAreaDecTr_m2,WUAreaEveTr_m2,&
        WUAreaGrass_m2,WUAreaTotal_m2,WU_Day,wu_DecTr,wu_EveTr,wu_Grass,wu_m3,&
        WUProfA_tstep,WUProfM_tstep,xBo,xsmd,year,Z,Z0m,Zdm,zenith_deg,Zh)
@@ -500,10 +499,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        wu_EveTr,wu_Grass,z0m,zdm,zenith_deg,&
        dataOut,dataOutSnow)!inout
 
-  !  if ( Gridiv>1 .and. ir == 10 ) then
-  !    print*, 'after update:',Gridiv,dataOut(1,1:4,Gridiv)
-  !
-  !  end if
 
 
   ! NB: CBL disabled for the moment for interface improvement

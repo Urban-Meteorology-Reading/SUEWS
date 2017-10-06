@@ -1,35 +1,9 @@
 SUBROUTINE SurfaceResistance(&
      id,it,&! input:
-     SMDMethod,&
-     ConifSurf,&
-     DecidSurf,&
-     GrassSurf,&
-     WaterSurf,&
-     snowFrac,&
-     sfr,&
-     nsurf,&
-     avkdn,&
-     Temp_C,&
-     dq,&
-     xsmd,&
-     vsmd,&
-     MaxConductance,&
-     LAIMax,&
-     LAI_id,&
-     gsModel,&
-     Kmax,&
-     G1,&
-     G2,&
-     G3,&
-     G4,&
-     G5,&
-     G6,&
-     TH,&
-     TL,&
-     S1,&
-     S2,&
-     gsc,&! output:
-     ResistSurf)
+     SMDMethod,snowFrac,sfr,avkdn,Temp_C,dq,xsmd,vsmd,MaxConductance,&
+     LAIMax,LAI_id,gsModel,Kmax,&
+     G1,G2,G3,G4,G5,G6,TH,TL,S1,S2,&
+     gsc,ResistSurf)! output:
   ! Calculates bulk surface resistance (ResistSurf [s m-1]) based on Jarvis 1976 approach
   ! Last modified -----------------------------------------------------
   ! HCW 21 Jul 2016: If no veg surfaces, vsmd = NaN so QE & QH = NaN; if water surfaces only, smd = NaN so QE & QH = NaN.
@@ -50,17 +24,29 @@ SUBROUTINE SurfaceResistance(&
   ! USE sues_data
 
   IMPLICIT NONE
+  ! INTEGER,PARAMETER::BldgSurf=2
+  INTEGER,PARAMETER::ConifSurf=3
+  INTEGER,PARAMETER::DecidSurf=4
+  INTEGER,PARAMETER::GrassSurf=5
+  ! INTEGER,PARAMETER::ivConif=1
+  ! INTEGER,PARAMETER::ivGrass=3
+  ! INTEGER,PARAMETER::MaxNumberOfGrids=2000
+  ! INTEGER,PARAMETER::ndays=366
+  INTEGER,PARAMETER::nsurf=7
+  ! INTEGER,PARAMETER::NVegSurf=3
+  ! INTEGER,PARAMETER::PavSurf=1
+  INTEGER,PARAMETER::WaterSurf=7
 
 
   INTEGER,INTENT(in)::id
   INTEGER,INTENT(in)::it ! time: day of year and hour
   INTEGER,INTENT(in)::gsModel!Choice of gs parameterisation (1 = Ja11, 2 = Wa16)
   INTEGER,INTENT(in)::SMDMethod!Method of measured soil moisture
-  INTEGER,INTENT(in)::ConifSurf!= 3, surface code
-  INTEGER,INTENT(in)::DecidSurf!= 4, surface code
-  INTEGER,INTENT(in)::GrassSurf!= 5, surface code
-  INTEGER,INTENT(in)::WaterSurf!= 7, surface code
-  INTEGER,INTENT(in)::nsurf!= 7, Total number of surfaces
+  ! INTEGER,INTENT(in)::ConifSurf!= 3, surface code
+  ! INTEGER,INTENT(in)::DecidSurf!= 4, surface code
+  ! INTEGER,INTENT(in)::GrassSurf!= 5, surface code
+  ! INTEGER,INTENT(in)::WaterSurf!= 7, surface code
+  ! INTEGER,INTENT(in)::nsurf!= 7, Total number of surfaces
 
   REAL(KIND(1d0)),INTENT(in)::avkdn!Average downwelling shortwave radiation
   REAL(KIND(1d0)),INTENT(in)::Temp_C!Air temperature

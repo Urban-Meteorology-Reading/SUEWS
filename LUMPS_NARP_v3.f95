@@ -48,7 +48,8 @@ CONTAINS
        DTIME,ZENITH_deg,kdown,Temp_C,RH,Press_hPa,qn1_obs,&
        SnowAlb,&
        AlbedoChoice,ldown_option,NetRadiationMethod,DiagQN,&
-       QSTARall,QSTAR_SF,QSTAR_S,kclear,KUPall,LDown,LUPall,fcld,TSURFall)! output:
+       QSTARall,QSTAR_SF,QSTAR_S,kclear,KUPall,LDown,LUPall,fcld,TSURFall,&! output:
+       qn1_ind_snow,kup_ind_snow,Tsurf_ind_snow)
     !KCLEAR,FCLD,DTIME,KDOWN,QSTARall,KUPall,LDOWN,LUPall,TSURFall,&
     !AlbedoChoice,ldown_option,Temp_C,Press_hPa,Ea_hPa,qn1_obs,RH,&
     !,zenith_degnetRadiationChoice,
@@ -135,6 +136,10 @@ CONTAINS
     REAL(KIND(1D0)),INTENT(out) ::fcld
     REAL(KIND(1D0)),INTENT(out) ::TSURFall
 
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out) ::qn1_ind_snow
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out) ::kup_ind_snow  
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out) ::Tsurf_ind_snow
+
     REAL(KIND(1d0)),DIMENSION(nsurf) ::qn1_ind
     REAL(KIND(1d0)),DIMENSION(nsurf) ::kup_ind
     REAL(KIND(1d0)),DIMENSION(nsurf) ::lup_ind
@@ -144,10 +149,8 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf) ::kup_ind_nosnow
     REAL(KIND(1d0)),DIMENSION(nsurf) ::lup_ind_nosnow
     REAL(KIND(1d0)),DIMENSION(nsurf) ::Tsurf_ind_nosnow
-    REAL(KIND(1d0)),DIMENSION(nsurf) ::qn1_ind_snow
-    REAL(KIND(1d0)),DIMENSION(nsurf) ::kup_ind_snow
     REAL(KIND(1d0)),DIMENSION(nsurf) ::lup_ind_snow
-    REAL(KIND(1d0)),DIMENSION(nsurf) ::Tsurf_ind_snow
+
 
     REAL(KIND(1D0)) ::Temp_K,TD,ZENITH,QSTAR,QSTAR_SNOW,KUP_SNOW,LUP_SNOW,TSURF_SNOW,KUP,LUP,TSURF
     REAL(KIND(1D0)) ::ALB0,EMIS0,EMIS_A,TRANS!,RH,DTIME,KDOWN

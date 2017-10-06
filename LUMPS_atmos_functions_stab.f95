@@ -23,7 +23,7 @@ SUBROUTINE STAB_lumps(&
      Temp_C,&  !Air temperature
      h_init,    & !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
                                 ! output:
-     L,& !Obukhov length
+     L_MOD,& !Obukhov length
      Tstar,& !T*
      UStar,& !Friction velocity
      psim)!Stability function of momentum
@@ -48,7 +48,7 @@ SUBROUTINE STAB_lumps(&
   REAL(KIND(1d0)),INTENT(in)::h_init    !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
 
 
-  REAL(KIND(1d0)),INTENT(out)::L!Obukhov length
+  REAL(KIND(1d0)),INTENT(out)::L_MOD!Obukhov length
   REAL(KIND(1d0)),INTENT(out)::Tstar!T*
   REAL(KIND(1d0)),INTENT(out)::UStar!Friction velocity
   REAL(KIND(1d0)),INTENT(out)::psim   !Stability function of momentum
@@ -70,26 +70,26 @@ SUBROUTINE STAB_lumps(&
 
   LOGICAL :: debug=.FALSE.
 
-  IF(debug) WRITE(*,*)StabilityMethod,z0M,avU1,h_init,UStar,L
+  IF(debug) WRITE(*,*)StabilityMethod,z0M,avU1,h_init,UStar,L_MOD
   G_T_k=(Grav/(Temp_C+273.16))*k !gravity constant/(Temperature*Von Karman Constant)
   KUZ=k*AvU1                     !Von Karman constant*mean wind speed
   IF(zzd<0) CALL ErrorHint(32,'Windspeed Ht too low relative to zdm [Stability calc]- values [z-zdm, zdm]',Zzd,zdm,notUsedI)
 
-  UStar=KUZ/LOG(Zzd/Z0M)      !Initial setting of u* and calc. of L (neutral situation)
+  UStar=KUZ/LOG(Zzd/Z0M)      !Initial setting of u* and calc. of L_MOD (neutral situation)
   IF ( ABS(h_init)<0.001 ) THEN    ! prevent zero Tstar
      h=0.001
   ELSE
      h=h_init
   END IF
   Tstar=(-H/UStar)
-  L=(UStar**2)/(G_T_K*Tstar)
+  L_MOD=(UStar**2)/(G_T_K*Tstar)
 
 
   IF(LOG(zzd/z0M)<0.001000) CALL ErrorHint(17,'In stability subroutine, (z-zd) < z0.',zzd,z0m,notUsedI)
   DO i=1,330 !Iteration starts
-     LOLD=L
-     zL=zzd/L
-     z0L=z0M/L  !z0M roughness length
+     LOLD=L_MOD
+     zL=zzd/L_MOD
+     z0L=z0M/L_MOD  !z0M roughness length
 
      IF (zL>2)THEN
         CALL ErrorHint(73,'LUMPS_atmos_functions_stab.f95: stability parameter, UStar',zL,UStar,notUsedI)
@@ -114,10 +114,10 @@ SUBROUTINE STAB_lumps(&
      ENDIF
 
      tstar=(-H/UStar)
-     L=(UStar**2)/(G_T_K*Tstar)
+     L_MOD=(UStar**2)/(G_T_K*Tstar)
 
-     IF(ABS(LOLD-L)<0.01)THEN
-        IF (ABS(L)>1e6) L = L/ABS(L)*1e6
+     IF(ABS(LOLD-L_MOD)<0.01)THEN
+        IF (ABS(L_MOD)>1e6) L_MOD = L_MOD/ABS(L_MOD)*1e6
         RETURN
      ENDIF
   ENDDO

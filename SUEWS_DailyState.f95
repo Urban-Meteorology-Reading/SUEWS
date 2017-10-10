@@ -45,64 +45,17 @@
 SUBROUTINE SUEWS_cal_DailyState(&
      iy,id,it,imin,Gridiv,tstep,&!input
      WaterUseMethod,snowUse,Ie_start,Ie_end,&
-     ReadLinesMetdata,&
-     ncolumnsDataOut,&
-     NumberOfGrids,&
-     LAICalcYes,&
-     LAIType,&
-     nsh_real,&
-     avkdn,&
-     Temp_C,&
-     Precip,&
-     BaseTHDD,&
-     lat,&
-     Faut,&
-     LAI_obs,&
-     tau_a,&
-     tau_f,&
-     tau_r,&
-     SnowDensMax,&
-     SnowDensMin,&
-     SnowAlbMin,&
-     alBMax_DecTr,&
-     alBMax_EveTr,&
-     alBMax_Grass,&
-     AlbMin_DecTr,&
-     AlbMin_EveTr,&
-     AlbMin_Grass,&
-     CapMax_dec,&
-     CapMin_dec,&
-     PorMax_dec,&
-     PorMin_dec,&
-     Ie_a,&
-     Ie_m,&
-     DayWatPer,&
-     DayWat,&
-     SnowPack,&
-     BaseT,&
-     BaseTe,&
-     GDDFull,&
-     SDDFull,&
-     LAIMin,&
-     LAIMax,&
-     LAIPower,&
-     dataOut ,&
-     a1,& !inout
-     a2,&
-     a3,&
-     tstepcount,&
-     SnowAlb,&
-     DecidCap,&
-     albDecTr,&
-     albEveTr,&
-     albGrass,&
-     porosity,&
-     GDD,&
-     HDD,&
-     SnowDens,&
-     LAI,&
-     DayofWeek,&
-     WU_Day,&
+     ReadLinesMetdata,ncolumnsDataOut,NumberOfGrids,LAICalcYes,LAIType,&
+     nsh_real,avkdn,Temp_C,Precip,BaseTHDD,&
+     lat,Faut,LAI_obs,tau_a,tau_f,tau_r,&
+     SnowDensMax,SnowDensMin,SnowAlbMin,&
+     alBMax_DecTr,alBMax_EveTr,alBMax_Grass,&
+     AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
+     CapMax_dec,CapMin_dec,PorMax_dec,PorMin_dec,&
+     Ie_a,Ie_m,DayWatPer,DayWat,SnowPack,&
+     BaseT,BaseTe,GDDFull,SDDFull,LAIMin,LAIMax,LAIPower,dataOut,&
+     a1,a2,a3,tstepcount,SnowAlb,DecidCap,albDecTr,albEveTr,albGrass,&!inout
+     porosity,GDD,HDD,SnowDens,LAI,DayofWeek,WU_Day,&
      xBo)!output
 
 

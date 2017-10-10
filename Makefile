@@ -30,6 +30,7 @@ MODULES = LUMPS_Module_constants.o  \
 					stringmod.o \
 					qsort_c_module.o\
 					SUEWS_AnOHM.o \
+					SUEWS_ESTM.o \
 					SUEWS_OHM.o \
 					SUEWS_driver.o \
 					minpack.o
@@ -71,9 +72,7 @@ OTHERS =  BLUEWS_CBL.o   \
           SOLWEIG_shadowingfunction_20.o  \
           SOLWEIG_sunonsurface_veg.o  \
           SOLWEIG_wallinsun_veg.o  \
-          SUEWS_ESTM_functions.o \
           SUEWS_ESTM_initials.o \
-          SUEWS_ESTM_v2016.o \
 					SUEWS_Initial.o \
 					SUEWS_SoilMoist.o \
 					SUEWS_Snow.o \

@@ -425,6 +425,7 @@ PROGRAM SUEWS_Program
         ! Allocate arrays to receive ESTM forcing data
         ALLOCATE(ESTMForcingData(1:ReadLinesMetdata,ncolsESTMdata,NumberOfGrids))
         ALLOCATE(Ts5mindata(1:ReadLinesMetdata,ncolsESTMdata))
+        ALLOCATE(Ts5mindata_ir(ncolsESTMdata))
         ALLOCATE(Tair24HR(24*nsh))
 
      ENDIF

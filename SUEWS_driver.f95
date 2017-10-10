@@ -6,6 +6,7 @@
 MODULE SUEWS_Driver
   USE NARP_MODULE,ONLY:NARP_cal_SunPosition
   USE AnOHM_module,ONLY:AnOHM
+  USE ESTM_module,ONLY:ESTM
 
   IMPLICIT NONE
 
@@ -20,7 +21,7 @@ CONTAINS
        avU1,avU10_ms,azimuth,BaseT,BaseTe,BaseTHDD,beta_bioCO2,beta_enh_bioCO2,&
        BiogenCO2Code,bldgH,CapMax_dec,CapMin_dec,chang,changSnow,chAnOHM,&
        chSnow_per_interval,cpAnOHM,CRWmax,CRWmin,CumSnowfall,&
-       dataOut,DayofWeek,DayWat,DayWatPer,DecidCap,dectime,DecTreeH,dens_dry,&
+       dataOut,dataOutESTM,DayofWeek,DayWat,DayWatPer,DecidCap,dectime,DecTreeH,dens_dry,&
        Diagnose,DiagQN,DiagQS,DLS,drain_per_tstep,DRAINRT,Ea_hPa,EF_umolCO2perJ,emis,&
        EmissionsMethod,E_mod,EnEF_v_Jkm,es_hPa,ev,evap,EveTreeH,ev_per_tstep,ev_snow,&
        ext_wu,FAIBldg,FAIDecTree,FAIEveTree,Faut,Fc,Fc_anthro,Fc_biogen,Fc_build,&
@@ -50,10 +51,10 @@ CONTAINS
        snowfractionchoice,SnowLimBuild,SnowLimPaved,snow_obs,SnowPack,snowProf,&
        SnowRemoval,SnowToSurf,snowUse,SoilDepth,soilmoist,SoilState,soilstoreCap,&
        StabilityMethod,state,StateLimit,state_per_tstep,StorageHeatMethod,surf,&
-       SurfaceArea,surf_chang_per_tstep,SurplusEvap,swe,t2_C,tau_a,tau_f,tau_r,&
+       SurfaceArea,surf_chang_per_tstep,SurplusEvap,swe,t2_C,Tair24HR,tau_a,tau_f,tau_r,&
        T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,TempMeltFact,TempVeg,TH,theta_bioCO2,&
-       timezone,TL,tot_chang_per_tstep,TrafficRate,TrafficUnits,TraffProf_tstep,Tstar,&
-       tstep,tstepcount,tstep_real,tsurf,tsurf_ind,Tsurf_ind_snow,UStar,VegFraction,veg_type,VPD_Pa,&
+       timezone,TL,tot_chang_per_tstep,TrafficRate,TrafficUnits,TraffProf_tstep,Ts5mindata_ir,&
+       Tstar,tstep,tstepcount,tstep_real,tsurf,tsurf_ind,Tsurf_ind_snow,UStar,VegFraction,veg_type,VPD_Pa,&
        waterdens,WaterDist,WaterUseMethod,WetThresh,WUAreaDecTr_m2,WUAreaEveTr_m2,&
        WUAreaGrass_m2,WUAreaTotal_m2,WU_Day,wu_DecTr,wu_EveTr,wu_Grass,wu_m3,&
        WUProfA_tstep,WUProfM_tstep,xBo,xsmd,year,Z,Z0m,Zdm,zenith_deg,Zh)
@@ -271,6 +272,7 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(IN)::resp_b
     REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(IN)::SDDFull
     REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(IN)::theta_bioCO2
+    REAL(KIND(1d0)),DIMENSION(:),INTENT(in)::Ts5mindata_ir
     REAL(KIND(1D0)),DIMENSION(NSURF+1,NSURF-1),INTENT(IN)::WaterDist
     REAL(KIND(1D0)),DIMENSION(9,4,3),INTENT(IN)::OHM_coef
     REAL(KIND(1D0)),DIMENSION(4,NVEGSURF),INTENT(IN)::LAIPower
@@ -287,6 +289,8 @@ CONTAINS
 
     INTEGER,DIMENSION(0:NDAYS,3),INTENT(INOUT)::DayofWeek
 
+    REAL(KIND(1d0)),DIMENSION(24*nsh),INTENT(inout):: Tair24HR
+    REAL(KIND(1d0)),DIMENSION(ReadlinesMetdata,32,NumberOfGrids),INTENT(inout)::dataOutESTM
     REAL(KIND(1D0)),DIMENSION(2*NSH+1),INTENT(INOUT)::qn1_av_store
     REAL(KIND(1D0)),DIMENSION(2*NSH+1),INTENT(INOUT)::qn1_S_av_store
     REAL(KIND(1D0)),DIMENSION(2),INTENT(INOUT)::SurplusEvap
@@ -538,16 +542,20 @@ CONTAINS
 
     ! =================STORAGE HEAT FLUX=======================================
     CALL SUEWS_cal_Qs(&
-         StorageHeatMethod,OHMIncQF,Gridiv,id,Diagnose,sfr,&!input
+         StorageHeatMethod,OHMIncQF,Gridiv,&
+         NumberOfGrids,ReadLinesMetdata,&
+         iy,id,it,imin,tstep,Diagnose,sfr,&!input
          OHM_coef,OHM_threshSW,OHM_threshWD,&
          soilmoist,soilstoreCap,state,nsh,SnowUse,DiagQS,&
-         HDD,MetForcingData,qf,qn1,&
+         HDD,MetForcingData,Ts5mindata_ir,qf,qn1,&
+         avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown,&
+         bldgh,dectime,&
          alb,emis,cpAnOHM,kkAnOHM,chAnOHM,&
          EmissionsMethod,&
-         qn1_store,qn1_S_store,qn1_av_store,qn1_S_av_store,surf,&!inout
+         Tair24HR,qn1_store,qn1_S_store,&!inout
+         qn1_av_store,qn1_S_av_store,surf,dataOutESTM,&
          qn1_S,snowFrac,qs,&!output
          deltaQi,a1,a2,a3)
-
 
 
     !==================Energy related to snow melting/freezing processes=======
@@ -604,7 +612,6 @@ CONTAINS
          dq,xsmd,vsmd,MaxConductance,LAIMax,LAI(id-1,:),snowFrac,sfr,&
          Tstar,L_mod,&!output
          psim,gsc,ResistSurf,RA,RAsnow,rb)
-
 
 
     !============= calculate water balance =============
@@ -1016,12 +1023,18 @@ CONTAINS
 
   !=============storage heat flux=========================================
   SUBROUTINE SUEWS_cal_Qs(&
-       StorageHeatMethod,OHMIncQF,Gridiv,id,Diagnose,sfr,&!input
+       StorageHeatMethod,OHMIncQF,Gridiv,&
+       NumberOfGrids,ReadLinesMetdata,&
+       iy,id,it,imin,tstep,Diagnose,sfr,&!input
        OHM_coef,OHM_threshSW,OHM_threshWD,&
        soilmoist,soilstoreCap,state,nsh,SnowUse,DiagQS,&
-       HDD,MetForcingData,qf,qn1,alb,emis,cpAnOHM,kkAnOHM,chAnOHM,&
+       HDD,MetForcingData,Ts5mindata_ir,qf,qn1,&
+       avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown,&
+       bldgh,dectime,&
+       alb,emis,cpAnOHM,kkAnOHM,chAnOHM,&
        EmissionsMethod,&
-       qn1_store,qn1_S_store,qn1_av_store,qn1_S_av_store,surf,&!inout
+       Tair24HR,qn1_store,qn1_S_store,&!inout
+       qn1_av_store,qn1_S_av_store,surf,dataOutESTM,&
        qn1_S,snowFrac,qs,&!output
        deltaQi,a1,a2,a3)
 
@@ -1035,7 +1048,9 @@ CONTAINS
     INTEGER,INTENT(in)::StorageHeatMethod
     INTEGER,INTENT(in)::OHMIncQF
     INTEGER,INTENT(in)::Gridiv
-    INTEGER,INTENT(in)::id
+    INTEGER,INTENT(in)::NumberOfGrids,ReadLinesMetdata
+    INTEGER,INTENT(in)::iy,id,it,imin
+    INTEGER,INTENT(in)::tstep
     INTEGER,INTENT(in)::Diagnose
     INTEGER,INTENT(in)::nsh                ! number of timesteps in one hour
     INTEGER,INTENT(in)::SnowUse            ! option for snow related calculations
@@ -1054,6 +1069,8 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(-4:ndays, 6),INTENT(in)::HDD
     REAL(KIND(1d0)),INTENT(in)::qf
     REAL(KIND(1d0)),INTENT(in)::qn1
+    REAL(KIND(1d0)),INTENT(in)::avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown
+    REAL(KIND(1d0)),INTENT(in)::bldgh,dectime
 
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::sfr
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::alb  !< albedo [-]
@@ -1064,12 +1081,16 @@ CONTAINS
 
     REAL(KIND(1d0)),DIMENSION(:,:,:),INTENT(in)::MetForcingData !< met forcing array of grid
 
+    REAL(KIND(1d0)),DIMENSION(:),INTENT(in)::Ts5mindata_ir
+
+    REAL(KIND(1d0)),DIMENSION(24*nsh),INTENT(inout):: Tair24HR
     REAL(KIND(1d0)),DIMENSION(nsh),INTENT(inout) ::qn1_store
     REAL(KIND(1d0)),DIMENSION(nsh),INTENT(inout) ::qn1_S_store !< stored qn1 [W m-2]
 
     REAL(KIND(1d0)),DIMENSION(2*nsh+1),INTENT(inout)::qn1_av_store
     REAL(KIND(1d0)),DIMENSION(2*nsh+1),INTENT(inout)::qn1_S_av_store !< average net radiation over previous hour [W m-2]
     REAL(KIND(1d0)),DIMENSION(6,nsurf),INTENT(inout)::surf
+    REAL(KIND(1d0)),DIMENSION(ReadlinesMetdata,32,NumberOfGrids),INTENT(inout)::dataOutESTM
 
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::deltaQi ! storage heat flux of snow surfaces
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::snowFrac
@@ -1152,12 +1173,19 @@ CONTAINS
 
 
     ! !Calculate QS using ESTM
-    ! IF(StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
-    !    !CALL ESTM_v2016(QSestm,iMB)
-    !    IF(Diagnose==1) WRITE(*,*) 'Calling ESTM...'
-    !    CALL ESTM_v2016(QSestm,Gridiv,ir)  ! iMB corrected to Gridiv, TS 09 Jun 2016
-    !    QS=QSestm   ! Use ESTM qs
-    ! ENDIF
+    IF(StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
+       !    !CALL ESTM(QSestm,iMB)
+       IF(Diagnose==1) WRITE(*,*) 'Calling ESTM...'
+       CALL ESTM(&
+            iy,id,it,imin,Gridiv,tstep,nsh,&
+            Gridiv,NumberOfGrids,ReadLinesMetdata,&!input
+            avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown,&
+            bldgh,Ts5mindata_ir,dectime,&
+            Tair24HR,dataOutESTM,&!inout
+            QS)!output
+       !    CALL ESTM(QSestm,Gridiv,ir)  ! iMB corrected to Gridiv, TS 09 Jun 2016
+       !    QS=QSestm   ! Use ESTM qs
+    ENDIF
 
   END SUBROUTINE SUEWS_cal_Qs
   !=======================================================================

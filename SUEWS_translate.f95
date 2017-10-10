@@ -264,8 +264,8 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   beta_enh_bioCO2(1:nvegsurf)  = SurfaceChar(Gridiv,c_beta_enh_bioCO2)
   resp_a(1:nvegsurf)           = SurfaceChar(Gridiv,c_resp_a)
   resp_b(1:nvegsurf)           = SurfaceChar(Gridiv,c_resp_b)
-  min_res_bioCO2(1:nvegsurf)   = SurfaceChar(Gridiv,c_min_res_bioCO2)  
-  
+  min_res_bioCO2(1:nvegsurf)   = SurfaceChar(Gridiv,c_min_res_bioCO2)
+
   ! ---- LAI characteristics (updated HCW 13 Dec 2016)
   LAItype(1:nvegsurf) = INT(SurfaceChar(Gridiv,c_LAIEq(1:nvegsurf)))
   LAIPower(1,1:nvegsurf) = SurfaceChar(Gridiv,c_LeafGP1(1:nvegsurf))
@@ -1167,6 +1167,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      IF(StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
         !write(*,*) 'Translating ESTM forcing data'
         Ts5mindata(ir,1:ncolsESTMdata) = ESTMForcingData(ir,1:ncolsESTMdata,Gridiv)
+        Ts5mindata_ir(1:ncolsESTMdata) = ESTMForcingData(ir,1:ncolsESTMdata,Gridiv)
         CALL ESTM_translate(Gridiv)
      ENDIF
 

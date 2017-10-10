@@ -132,8 +132,9 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: PopProf_tstep
 
   ! ---- For ESTM
-  REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:,:)::  Ts5mindata     !surface temperature input data
-  REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:) ::   Tair24HR
+  REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:,:):: Ts5mindata   !surface temperature input data
+  REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:)  :: ts5mindata_ir !=ts5mindata(ir,:), ts input for the current timestep
+  REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:)  :: Tair24HR
 
   ! Column numbers for TstepProfiles
   INTEGER:: cTP_EnUseWD  = 1,&
@@ -2119,7 +2120,7 @@ MODULE ESTM_data !S.O. and FO
        AreaWall   ! Area of wall within grid [m2]
 
   !=======ESTM Ts input=================================
-  REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:)  ::  Tibld,Twall,Troof,Tground
+  REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:)::  Tibld,Twall,Troof,Tground
   REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:,:)::  Tw_4
 
   REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:,:)  ::  Tibld_grids,Twall_grids,Troof_grids,Tground_grids

@@ -2,17 +2,16 @@
 ! Subroutine to read in ESTM data in the same way as met data (SUEWS_InitializeMetData)
 ! HCW 30 Jun 2016
 SUBROUTINE SUEWS_GetESTMData(lunit)
-
-  USE allocateArray
-  USE data_in
-  USE sues_data
-  USE time
-  USE defaultnotUsed
-  USE Initial
+  USE allocateArray, ONLY:ncolsestmdata, estmforcingdata
+  USE data_in, ONLY: fileestmts, skipheadermet
+  USE sues_data, ONLY: tstep_real, tstep
+  USE defaultnotUsed, ONLY: notused, ios_out
+  USE Initial, ONLY: skippedlines, readlinesmetdata, gridcounter
 
   IMPLICIT NONE
 
-  INTEGER::lunit,i,iyy !,RunNumber,NSHcounter
+  INTEGER,INTENT(in)::lunit
+  INTEGER::i,iyy !,RunNumber,NSHcounter
   INTEGER :: iostat_var
   REAL(KIND(1d0)),DIMENSION(ncolsESTMdata):: ESTMArray
   REAL(KIND(1d0)):: imin_prev, ih_prev, iday_prev, tstep_estm   !For checks on temporal resolution of estm data
@@ -445,6 +444,6 @@ SUBROUTINE ESTM_translate(Gridiv)
   RETURN
 
   !     315 CALL errorHint(11,TRIM(fileESTMTs),notUsed,notUsed,NotUsedI)
-! 316 CALL errorHint(11,TRIM(fileFinalTemp),notUsed,notUsed,NotUsedI)
+  ! 316 CALL errorHint(11,TRIM(fileFinalTemp),notUsed,notUsed,NotUsedI)
 
 END SUBROUTINE ESTM_translate

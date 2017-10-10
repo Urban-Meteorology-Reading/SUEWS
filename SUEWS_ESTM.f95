@@ -504,7 +504,8 @@ MODULE ESTM_module
 CONTAINS
   !===============================================================================
   SUBROUTINE ESTM(&
-       Gridiv,ir,NumberOfGrids,iy,id,it,imin,nsh,tstep,ReadLinesMetdata,&!input
+       Gridiv,ir,NumberOfGrids,&!input
+       iy,id,it,imin,nsh,tstep,ReadLinesMetdata,&
        avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown,&
        bldgh,Ts5mindata_ir,dectime,&
        Tair24HR,dataOutESTM,&!inout
@@ -675,7 +676,7 @@ CONTAINS
     INTEGER, PARAMETER:: cTs_Twall_w = 13
     REAL(KIND(1d0)),PARAMETER::NAN=-999
 
-    INTEGER,INTENT(in)::Gridiv, ir,NumberOfGrids
+    INTEGER,INTENT(in)::Gridiv,ir,NumberOfGrids
     INTEGER,INTENT(in)::nsh,tstep,ReadLinesMetdata
     INTEGER,INTENT(in)::iy !Year
     INTEGER,INTENT(in)::id !Day of year

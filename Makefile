@@ -22,7 +22,7 @@ CFLAGS_nc = $(CFLAGS) \
 # needs to be compiled first)
 MODULES = LUMPS_Module_constants.o  \
           LUMPS_metRead.o  \
-					LUMPS_NARP_v3.o \
+					LUMPS_NARP.o \
 		  		SUEWS_MetDisagg.o \
           SOLWEIG_modules.o  \
           SUEWS_Files_run_Control.o \

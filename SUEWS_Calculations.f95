@@ -431,7 +431,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        FlowChange,FreezMelt,FrFossilFuel_Heat,FrFossilFuel_NonHeat,fwh,&
        G1,G2,G3,G4,G5,G6,GDD,GDDFull,Gridiv,gsc,gsModel,halftimestep,HDD,&
        H_mod,HumActivity_tstep,IceFrac,id,Ie_a,Ie_end,Ie_m,Ie_start,imin,&
-       InternalWaterUse_h,int_wu,IrrFracConif,IrrFracDecid,IrrFracGrass,it,ity,iy,k,&
+       InternalWaterUse_h,int_wu,ir,IrrFracConif,IrrFracDecid,IrrFracGrass,it,ity,iy,k,&
        kclear,kkAnOHM,Kmax,kup,kup_ind_snow,LAI,LAICalcYes,LAIMax,LAIMin,LAI_obs,LAIPower,LAIType,&
        lat,ldown,ldown_obs,ldown_option,L_mod,lng,lup,MaxConductance,MaxQFMetab,&
        Meltwaterstore,MetForcingData,MinQFMetab,min_res_bioCO2,mwh,mw_ind,mwstore,&
@@ -460,8 +460,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        waterdens,WaterDist,WaterUseMethod,WetThresh,WUAreaDecTr_m2,WUAreaEveTr_m2,&
        WUAreaGrass_m2,WUAreaTotal_m2,WU_Day,wu_DecTr,wu_EveTr,wu_Grass,wu_m3,&
        WUProfA_tstep,WUProfM_tstep,xBo,xsmd,year,Z,Z0m,Zdm,zenith_deg,Zh)
-
-
 
   !============ update and write out SUEWS_cal_DailyState ===============
   ! only works at the last timestep of a day

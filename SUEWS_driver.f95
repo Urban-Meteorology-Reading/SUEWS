@@ -29,7 +29,7 @@ CONTAINS
        FlowChange,FreezMelt,FrFossilFuel_Heat,FrFossilFuel_NonHeat,fwh,&
        G1,G2,G3,G4,G5,G6,GDD,GDDFull,Gridiv,gsc,gsModel,halftimestep,HDD,&
        H_mod,HumActivity_tstep,IceFrac,id,Ie_a,Ie_end,Ie_m,Ie_start,imin,&
-       InternalWaterUse_h,int_wu,IrrFracConif,IrrFracDecid,IrrFracGrass,it,ity,iy,k,&
+       InternalWaterUse_h,int_wu,ir,IrrFracConif,IrrFracDecid,IrrFracGrass,it,ity,iy,k,&
        kclear,kkAnOHM,Kmax,kup,kup_ind_snow,LAI,LAICalcYes,LAIMax,LAIMin,LAI_obs,LAIPower,LAIType,&
        lat,ldown,ldown_obs,ldown_option,L_mod,lng,lup,MaxConductance,MaxQFMetab,&
        Meltwaterstore,MetForcingData,MinQFMetab,min_res_bioCO2,mwh,mw_ind,mwstore,&
@@ -92,6 +92,7 @@ CONTAINS
     INTEGER,INTENT(IN)::Ie_end
     INTEGER,INTENT(IN)::Ie_start
     INTEGER,INTENT(IN)::imin
+    INTEGER,INTENT(IN)::ir
     INTEGER,INTENT(IN)::it
     INTEGER,INTENT(IN)::ity
     INTEGER,INTENT(IN)::iy
@@ -544,7 +545,7 @@ CONTAINS
     CALL SUEWS_cal_Qs(&
          StorageHeatMethod,OHMIncQF,Gridiv,&
          NumberOfGrids,ReadLinesMetdata,&
-         iy,id,it,imin,tstep,Diagnose,sfr,&!input
+         iy,id,it,imin,ir,tstep,Diagnose,sfr,&!input
          OHM_coef,OHM_threshSW,OHM_threshWD,&
          soilmoist,soilstoreCap,state,nsh,SnowUse,DiagQS,&
          HDD,MetForcingData,Ts5mindata_ir,qf,qn1,&
@@ -1025,7 +1026,7 @@ CONTAINS
   SUBROUTINE SUEWS_cal_Qs(&
        StorageHeatMethod,OHMIncQF,Gridiv,&
        NumberOfGrids,ReadLinesMetdata,&
-       iy,id,it,imin,tstep,Diagnose,sfr,&!input
+       iy,id,it,imin,ir,tstep,Diagnose,sfr,&!input
        OHM_coef,OHM_threshSW,OHM_threshWD,&
        soilmoist,soilstoreCap,state,nsh,SnowUse,DiagQS,&
        HDD,MetForcingData,Ts5mindata_ir,qf,qn1,&
@@ -1049,7 +1050,7 @@ CONTAINS
     INTEGER,INTENT(in)::OHMIncQF
     INTEGER,INTENT(in)::Gridiv
     INTEGER,INTENT(in)::NumberOfGrids,ReadLinesMetdata
-    INTEGER,INTENT(in)::iy,id,it,imin
+    INTEGER,INTENT(in)::iy,id,it,imin,ir
     INTEGER,INTENT(in)::tstep
     INTEGER,INTENT(in)::Diagnose
     INTEGER,INTENT(in)::nsh                ! number of timesteps in one hour
@@ -1177,8 +1178,8 @@ CONTAINS
        !    !CALL ESTM(QSestm,iMB)
        IF(Diagnose==1) WRITE(*,*) 'Calling ESTM...'
        CALL ESTM(&
-            iy,id,it,imin,Gridiv,tstep,nsh,&
-            Gridiv,NumberOfGrids,ReadLinesMetdata,&!input
+            Gridiv,ir,NumberOfGrids,&!input
+            iy,id,it,imin,nsh,tstep,ReadLinesMetdata,&
             avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown,&
             bldgh,Ts5mindata_ir,dectime,&
             Tair24HR,dataOutESTM,&!inout

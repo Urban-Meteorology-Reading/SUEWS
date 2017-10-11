@@ -26,14 +26,14 @@ MODULES = LUMPS_Module_constants.o  \
 		  		SUEWS_MetDisagg.o \
           SOLWEIG_modules.o  \
           SUEWS_Files_run_Control.o \
-					precmod.o \
 					stringmod.o \
+					minpack.o\
 					qsort_c_module.o\
 					SUEWS_AnOHM.o \
 					SUEWS_ESTM.o \
 					SUEWS_OHM.o \
-					SUEWS_driver.o \
-					minpack.o
+					SUEWS_driver.o
+
 
 # Rest of the files including modules and functions which are independent
 OTHERS =  BLUEWS_CBL.o   \
@@ -72,7 +72,6 @@ OTHERS =  BLUEWS_CBL.o   \
           SOLWEIG_shadowingfunction_20.o  \
           SOLWEIG_sunonsurface_veg.o  \
           SOLWEIG_wallinsun_veg.o  \
-          SUEWS_ESTM_initials.o \
 					SUEWS_Initial.o \
 					SUEWS_SoilMoist.o \
 					SUEWS_Snow.o \

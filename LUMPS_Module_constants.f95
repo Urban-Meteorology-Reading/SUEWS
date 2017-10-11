@@ -46,7 +46,8 @@ MODULE allocateArray
   INTEGER, PARAMETER:: ncolumnsDataOut=84,&    !Main output file (_5.txt). DataOut created in SUEWS_Calculations.f95
        ncolumnsDataOutSnow=102,&
        ncolumnsdataOutSOL=28,&
-       ncolumnsdataOutBL=22
+       ncolumnsdataOutBL=22,&
+       ncolumnsdataOutESTM=32
 
   ! ---- Define input file headers ---------------------------------------------------------------
   CHARACTER(len=20),DIMENSION(ncolumnsSiteSelect)::        HeaderSiteSelect_File          !Header for SiteSelect.txt

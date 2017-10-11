@@ -23,10 +23,10 @@ MODULE mod_interp
 
 CONTAINS
   ELEMENTAL FUNCTION interp1d(x1,x2,y1,y2,xi) RESULT(yi)
-    REAL(8),INTENT(in) ::x1,x2,xi
-    REAL(8),INTENT(in) ::y1,y2
+    REAL(KIND(1d0)),INTENT(in) ::x1,x2,xi
+    REAL(KIND(1d0)),INTENT(in) ::y1,y2
     REAL (KIND(1D0))::b0,b1
-    REAL(8)         ::yi
+    REAL(KIND(1d0))         ::yi
     !integer         ::ny                 !!!!!FO!!!!!
     b1=(y2-y1)/(x2-x1)
     b0=y1-b1*x1
@@ -53,9 +53,9 @@ CONTAINS
     !conv is the level required for convergence
     !maxiter is the maximum allowed iterations
     !----------------------------------------------------
-    REAL(8) ::x0,x,conv
-    REAL(8) ::Pcoeff(:)
-    REAL(8) ::e, xprev
+    REAL(KIND(1d0)) ::x0,x,conv
+    REAL(KIND(1d0)) ::Pcoeff(:)
+    REAL(KIND(1d0)) ::e, xprev
     REAL (KIND(1D0))::f,fp
     INTEGER ::maxiter
     INTEGER ::niter
@@ -101,8 +101,8 @@ CONTAINS
   FUNCTION min_zenith(lat,doy) RESULT(zmin)
     !returns max zenith
     !returns zenith in radians for lat, lng in degrees
-    REAL(8) ::lat,dectime,zmin
-    REAL(8) ::latr,decl
+    REAL(KIND(1d0)) ::lat,dectime,zmin
+    REAL(KIND(1d0)) ::latr,decl
     INTEGER :: doy
     dectime=float(doy)
     latr=lat*dtr
@@ -114,8 +114,8 @@ CONTAINS
   !=======================================================
   FUNCTION Local_apparent_time(lng,dectime) RESULT(la_time)
     !Oke, 1989, equation of time elsewhere
-    REAL(8) ::lng,dectime,la_time
-    REAL(8) ::gamma,eqtime,lmst
+    REAL(KIND(1d0)) ::lng,dectime,la_time
+    REAL(KIND(1d0)) ::gamma,eqtime,lmst
 
     lmst=dectime-4.*lng/60./1440.
     gamma=2.*pi/365.*(lmst-1.)
@@ -129,7 +129,7 @@ CONTAINS
 
     REAL, INTENT(in)  ::lat,lng,timezone,dectime
     INTEGER                 ::doy,hour,mn
-    REAL(8), INTENT(out)  ::decl,zenith,azimuth
+    REAL(KIND(1d0)), INTENT(out)  ::decl,zenith,azimuth
     REAL (KIND(1d0))  ::ha,latr,eqtime,tst,&
          time_offset,gamma           !!!!!FO!!!!! lngr, phi, theta
 
@@ -160,10 +160,10 @@ CONTAINS
     !  for sunrise and sunset ha = ha(zenith=90)
     !  timezone is offset to GMT e.g. -5 for EST
 
-    REAL(8), INTENT(in)  ::lat,lng,timezone,dectime
+    REAL(KIND(1d0)), INTENT(in)  ::lat,lng,timezone,dectime
     INTEGER                 ::doy
-    REAL(8), INTENT(out)  ::sunrise, sunset, snoon
-    REAL(8)  :: ha, latr, eqtime, gamma, zenith, decl
+    REAL(KIND(1d0)), INTENT(out)  ::sunrise, sunset, snoon
+    REAL(KIND(1d0))  :: ha, latr, eqtime, gamma, zenith, decl
     latr = lat*dtr
     zenith=90.833*dtr
     doy=FLOOR(dectime)
@@ -185,7 +185,7 @@ CONTAINS
     ! Calculates ground level solar irradiance clear sky
     ! assuming transmissivity = 1
     ! let it report zero if zenith >= 90
-    REAL(8)    ::zenith,Isurf
+    REAL(KIND(1d0))    ::zenith,Isurf
     INTEGER    ::doy
     REAL (KIND(1d0))::Rmean, Rse, cosZ,Itoa
 
@@ -226,7 +226,7 @@ CONTAINS
     ! if zenith > 80 use the value for 80?
 
     !        integer         ::doy           !!!!!FO!!!!!
-    REAL(8)    ::P,Td,zenith,G,trans
+    REAL(KIND(1d0))    ::P,Td,zenith,G,trans
     REAL (KIND(1d0))::m,TrTpg,u,Tw,Ta,cosZ
     REAL (KIND(1d0))::Tdf
 
@@ -298,7 +298,7 @@ CONTAINS
   FUNCTION solar_ESdist(doy) RESULT(Rse)
     !from Stull, 1998
     INTEGER  ::doy
-    REAL(8)  ::Rse
+    REAL(KIND(1d0))  ::Rse
     REAL (KIND(1d0)) ::MA,nu,e,a
 
     e = 0.0167
@@ -319,12 +319,12 @@ MODULE heatflux
 CONTAINS
 
   SUBROUTINE heatcond1d(T,Qs,dx,dt,k,rhocp,bc,bctype)
-    REAL(8),INTENT(inout)::T(:)
-    REAL(8),INTENT(in)::dx(:),dt,k(:),rhocp(:),bc(2)
-    REAL(8),INTENT(out)::Qs
+    REAL(KIND(1d0)),INTENT(inout)::T(:)
+    REAL(KIND(1d0)),INTENT(in)::dx(:),dt,k(:),rhocp(:),bc(2)
+    REAL(KIND(1d0)),INTENT(out)::Qs
     LOGICAL,INTENT(in)::bctype(2)
     INTEGER         ::i,n!,j       !!!!!FO!!!!!
-    REAL(8),ALLOCATABLE::w(:),a(:),T1(:)
+    REAL(KIND(1d0)),ALLOCATABLE::w(:),a(:),T1(:)
     n=SIZE(T)
     ALLOCATE(w(0:n),a(n),T1(n))
     !w = interface tempea
@@ -382,7 +382,7 @@ CONTAINS
     !c     This uses eqns from Buck (1981) JAM 20, 1527-1532
     !c     units T (K) e (mb) P (mb)
     !c     f corrects for the fact that we are not dealing with pure water
-    REAL(8)    :: TK,P,TC,es,e,f
+    REAL(KIND(1d0))    :: TK,P,TC,es,e,f
     TC=TK-273.15
     IF(TC.EQ.0)THEN
        TC=0.001
@@ -393,52 +393,52 @@ CONTAINS
     es=e*f
   END FUNCTION sat_vap_press
 
-  REAL(8) FUNCTION SOS_DRYAIR(TK)
+  REAL(KIND(1d0)) FUNCTION SOS_DRYAIR(TK)
     !SPEED OF SOUND IN DRY AIR, BEER (1991)
-    REAL(8) ::TK
+    REAL(KIND(1d0)) ::TK
     SOS_DRYAIR=SQRT(1.4*R_DRY_MOL*TK/(MOLMASS_AIR*1000.))
   END FUNCTION SOS_DRYAIR
   !============================================================================
-  REAL(8) FUNCTION POTENTIAL_TEMP(TK,P)
+  REAL(KIND(1d0)) FUNCTION POTENTIAL_TEMP(TK,P)
     !TK = ABSOLUTE TEMPERATURE
     !P  = PRESS (hPa)
-    REAL(8)    ::TK,P
+    REAL(KIND(1d0))    ::TK,P
     POTENTIAL_TEMP=TK*(1000./P)**0.286
   END FUNCTION POTENTIAL_TEMP
 
-  REAL(8) FUNCTION LATENTHEAT_V(TK)
+  REAL(KIND(1d0)) FUNCTION LATENTHEAT_V(TK)
     !LATENT HEAT OF VAPORIZATION (J/kg) BOLTON(1980)
     !TK = ABSOLUTE TEMPERATURE
-    REAL(8) ::TK
+    REAL(KIND(1d0)) ::TK
     LATENTHEAT_V=2.501E6-2370.*(TK-273.15)
   END FUNCTION LATENTHEAT_V
 
-  REAL(8) FUNCTION LATENTHEAT_M(TK)
+  REAL(KIND(1d0)) FUNCTION LATENTHEAT_M(TK)
     !LATENT HEAT OF MELTING (J/kg) VALID BELOW 0C BOLTON(1980)
     !TK = ABSOLUTE TEMPERATURE
-    REAL(8) ::TK,TC
+    REAL(KIND(1d0)) ::TK,TC
     TC=TK-273.15
     LATENTHEAT_M=3.3358E5+TC*(2030.-10.46*TC)
   END FUNCTION LATENTHEAT_M
 
-  REAL(8) FUNCTION SPEC_HEAT_DRYAIR(TK)
+  REAL(KIND(1d0)) FUNCTION SPEC_HEAT_DRYAIR(TK)
     ! BEER (1991) APPLIED ENVIRONMETRICS METEOROLOGICAL TABLES
-    REAL(8) ::TK,TC
+    REAL(KIND(1d0)) ::TK,TC
     TC=TK-273.15
     SPEC_HEAT_DRYAIR=1005.+((TC+23.15)**2)/3364.
   END FUNCTION SPEC_HEAT_DRYAIR
 
-  REAL(8) FUNCTION SPEC_HEAT_VAPOR(TK,RH)
+  REAL(KIND(1d0)) FUNCTION SPEC_HEAT_VAPOR(TK,RH)
     ! BEER (1991) APPLIED ENVIRONMETRICS METEOROLOGICAL TABLES
-    REAL(8) ::TK,TC_100,RH
+    REAL(KIND(1d0)) ::TK,TC_100,RH
     TC_100=(TK-273.15)/100.
     SPEC_HEAT_VAPOR=1859.+0.13*RH+(19.3+0.569*RH)*TC_100+(10.+0.5*RH)*TC_100**2
   END FUNCTION SPEC_HEAT_VAPOR
 
-  REAL(8) FUNCTION HEATCAPACITY_AIR(TK,RH,P)
-    REAL(8) ::TK,RH,P
-    REAL(8) ::RHO_D,RHO_V
-    REAL(8) ::CPD,CPV
+  REAL(KIND(1d0)) FUNCTION HEATCAPACITY_AIR(TK,RH,P)
+    REAL(KIND(1d0)) ::TK,RH,P
+    REAL(KIND(1d0)) ::RHO_D,RHO_V
+    REAL(KIND(1d0)) ::CPD,CPV
     RHO_D=DENSITY_DRYAIR(TK,P)
     RHO_V=DENSITY_VAPOR(TK,RH,P)
     CPD=SPEC_HEAT_DRYAIR(TK)
@@ -446,47 +446,47 @@ CONTAINS
     HEATCAPACITY_AIR=RHO_D*CPD+RHO_V*CPV
   END FUNCTION HEATCAPACITY_AIR
 
-  REAL(8) FUNCTION DENSITY_MOIST(TVK,P)
+  REAL(KIND(1d0)) FUNCTION DENSITY_MOIST(TVK,P)
     ! density of moist air FROM VIRTUAL TEMPERATURE
     !TVK = VIRTUAL TEMPERATURE (K)
     != = PRESSURE (hPa)
-    REAL(8) ::TVK,P
+    REAL(KIND(1d0)) ::TVK,P
     DENSITY_MOIST=P*100./(R_DRY_MASS*TVK)
   END FUNCTION DENSITY_MOIST
 
-  REAL(8) FUNCTION DENSITY_VAPOR(TK,RH,P)
+  REAL(KIND(1d0)) FUNCTION DENSITY_VAPOR(TK,RH,P)
     !WATER VAPOR DENSITY
-    REAL(8)    ::TK,P,RH,EA
+    REAL(KIND(1d0))    ::TK,P,RH,EA
     EA=SAT_VAP_PRESS(TK,P)*RH/100.
     DENSITY_VAPOR=(EA*100.*EPSIL)/(R_DRY_MASS*TK)
   END FUNCTION DENSITY_VAPOR
 
-  REAL(8) FUNCTION DENSITY_DRYAIR(TK,P)
-    REAL(8) ::TK,P
+  REAL(KIND(1d0)) FUNCTION DENSITY_DRYAIR(TK,P)
+    REAL(KIND(1d0)) ::TK,P
     DENSITY_DRYAIR=P*100./(R_DRY_MASS*TK)
   END FUNCTION DENSITY_DRYAIR
 
-  REAL(8) FUNCTION DENSITY_GAS(TK,PP,MOLMASS)
+  REAL(KIND(1d0)) FUNCTION DENSITY_GAS(TK,PP,MOLMASS)
     !DENSITY FOR IDEAL GAS SPECIES GIVEN ITS PARTIAL PRESSURE (hPa) AND MOLAR MASS (kg)
-    REAL(8) ::TK,PP,MOLMASS
+    REAL(KIND(1d0)) ::TK,PP,MOLMASS
     DENSITY_GAS=PP*MOLMASS/(R_DRY_MOL*TK)
   END FUNCTION DENSITY_GAS
 
-  REAL(8) FUNCTION PARTIAL_PRESSURE(TK,N)
+  REAL(KIND(1d0)) FUNCTION PARTIAL_PRESSURE(TK,N)
     !PARTIAL PRESSURE OF IDEAL GAS (hPa)
-    REAL(8) ::TK,N !N IS THE NUMBER DENSITY IN mol/m3
+    REAL(KIND(1d0)) ::TK,N !N IS THE NUMBER DENSITY IN mol/m3
     PARTIAL_PRESSURE=N*KB*TK
   END FUNCTION PARTIAL_PRESSURE
 
-  REAL(8) FUNCTION SCALE_HEIGHT(TK)
-    REAL(8) ::TK
+  REAL(KIND(1d0)) FUNCTION SCALE_HEIGHT(TK)
+    REAL(KIND(1d0)) ::TK
     !SCALE HEIGHT FOR DRY ATMOSPHERE IN km BEER (1991)
     SCALE_HEIGHT=R_DRY_MOL*TK/(MOLMASS_AIR*9.81)
   END FUNCTION SCALE_HEIGHT
 
-  REAL(8) FUNCTION VAISALA_BRUNT_F(TK)
+  REAL(KIND(1d0)) FUNCTION VAISALA_BRUNT_F(TK)
     !BEER (1991)
-    REAL(8) ::TK
+    REAL(KIND(1d0)) ::TK
     VAISALA_BRUNT_F=SQRT(0.4/1.4*9.81/SCALE_HEIGHT(TK))
   END FUNCTION VAISALA_BRUNT_F
 
@@ -495,13 +495,447 @@ END MODULE METEO
 MODULE ESTM_module
   !===============================================================================
   ! revision history:
-  ! TS 09 Oct 2017: re-organised ESTM into a module
-  !
+  ! TS 09 Oct 2017: re-organised ESTM subroutines into a module
   !===============================================================================
 
   IMPLICIT NONE
 
+
 CONTAINS
+  !======================================================================================
+  ! Subroutine to read in ESTM data in the same way as met data (SUEWS_InitializeMetData)
+  ! HCW 30 Jun 2016
+  SUBROUTINE SUEWS_GetESTMData(lunit)
+    USE allocateArray, ONLY:ncolsestmdata, estmforcingdata
+    USE data_in, ONLY: fileestmts, skipheadermet
+    USE sues_data, ONLY: tstep_real, tstep
+    USE defaultnotUsed, ONLY: notused, ios_out
+    USE Initial, ONLY: skippedlines, readlinesmetdata, gridcounter
+
+    IMPLICIT NONE
+
+    INTEGER,INTENT(in)::lunit
+    INTEGER::i,iyy !,RunNumber,NSHcounter
+    INTEGER :: iostat_var
+    REAL(KIND(1d0)),DIMENSION(ncolsESTMdata):: ESTMArray
+    REAL(KIND(1d0)):: imin_prev, ih_prev, iday_prev, tstep_estm   !For checks on temporal resolution of estm data
+
+    !---------------------------------------------------------------
+
+    !Open the file for reading and read the actual data
+    !write(*,*) FileESTMTs
+    OPEN(lunit,file=TRIM(FileESTMTs),status='old',err=315)
+    CALL skipHeader(lunit,SkipHeaderMet)
+
+    ! Skip to the right place in the ESTM file, depending on how many chunks have been read already
+    IF (skippedLines>0) THEN
+       DO iyy=1,skippedLines
+          READ(lunit,*)
+       ENDDO
+    ENDIF
+
+    ! Read in next chunk of ESTM data and fill ESTMForcingData array with data for every timestep
+    DO i=1,ReadlinesMetdata
+       READ(lunit,*,iostat=iostat_var) ESTMArray
+       ESTMForcingData(i,1:ncolsESTMdata,GridCounter) = ESTMArray
+       ! Check timestamp of met data file matches TSTEP specified in RunControl
+       IF(i==1) THEN
+          imin_prev = ESTMArray(4)
+          ih_prev   = ESTMArray(3)
+          iday_prev = ESTMArray(2)
+       ELSEIF(i==2) THEN
+          tstep_estm = ((ESTMArray(4)+60*ESTMArray(3)) - (imin_prev+60*ih_prev))*60   !tstep in seconds
+          IF(tstep_estm.NE.tstep_real.AND.ESTMArray(2)==iday_prev) THEN
+             CALL ErrorHint(39,'TSTEP in RunControl does not match TSTEP of ESTM data (DOY).',REAL(tstep,KIND(1d0)),tstep_estm,&
+                  INT(ESTMArray(2)))
+          ENDIF
+       ENDIF
+    ENDDO
+
+    CLOSE(lunit)
+
+    RETURN
+
+315 CALL errorHint(11,TRIM(fileESTMTs),notUsed,notUsed,ios_out)
+
+  END SUBROUTINE SUEWS_GetESTMData
+  !======================================================================================
+
+  !======================================================================================
+  SUBROUTINE ESTM_initials
+
+    ! Last modified HCW 30 Jun 2016 - reading in now done by SUEWS_GetESTMData subroutine.
+    !                                 ESTM_initials now only runs once per run at the very start.
+    ! Last modified HCW 15 Jun 2016 - code now reads in 5-min file (interpolation done beforehand, outside of SUEWS itself)
+
+    USE defaultNotUsed
+    USE PhysConstants, ONLY: c2k
+    USE ESTM_data
+    USE allocateArray
+    USE data_in, ONLY: fileinputpath
+    USE Initial, ONLY: numberofgrids
+
+    IMPLICIT NONE
+
+    !=====Read ESTMinput.nml================================
+    NAMELIST/ESTMinput/TsurfChoice,&
+         evolveTibld,              &
+         ibldCHmod,                &
+         LBC_soil,                 &
+         THEAT_ON,                 &
+         THEAT_OFF,                &
+         THEAT_fix
+
+    OPEN(511,file=TRIM(FileInputPath)//'ESTMinput.nml',status='old')
+    READ(511,nml=ESTMinput)
+    CLOSE(511)
+
+    !Convert specified temperatures to Kelvin
+    THEAT_ON=THEAT_ON+C2K
+    THEAT_OFF=THEAT_OFF+C2K
+    THEAT_fix=THEAT_fix+C2K
+
+    ALLOCATE(Tair2_grids(NumberOfGrids))
+    ALLOCATE(lup_ground_grids(NumberOfGrids))
+    ALLOCATE(lup_wall_grids(NumberOfGrids))
+    ALLOCATE(lup_roof_grids(NumberOfGrids))
+    ALLOCATE(Tievolve_grids(NumberOfGrids))
+    ALLOCATE(T0_ibld_grids(NumberOfGrids))
+    ALLOCATE(T0_ground_grids(NumberOfGrids))
+    ALLOCATE(T0_wall_grids(NumberOfGrids))
+    ALLOCATE(T0_roof_grids(NumberOfGrids))
+    ALLOCATE(TN_wall_grids(NumberOfGrids))
+    ALLOCATE(TN_roof_grids(NumberOfGrids))
+
+  END SUBROUTINE ESTM_initials
+  !======================================================================================
+
+
+  SUBROUTINE ESTM_translate(Gridiv)
+    ! HCW 30 Jun 2016
+
+    USE defaultNotUsed,ONLY: nan
+    USE PhysConstants, ONLY: c2k, sbconst
+    USE ESTM_data
+    USE allocateArray
+    USE gis_data, ONLY: bldgh
+    USE Initial, ONLY: numberofgrids
+
+    IMPLICIT NONE
+    INTEGER :: i
+    !REAL(KIND(1d0)) :: CFLval
+    !REAL(KIND(1d0)) :: t5min
+    REAL(KIND(1d0))::W,WB
+    !CHARACTER (len=20)::FileCodeX
+    !CHARACTER (len=150):: FileFinalTemp
+    !LOGICAL:: inittemps=.FALSE.
+    INTEGER:: ESTMStart=0
+    INTEGER:: Gridiv
+
+    !Set initial values at the start of each run for each grid
+    IF(Gridiv == 1) ESTMStart = ESTMStart+1
+    IF(ESTMStart==1) THEN
+
+       !write(*,*) ' ESTMStart: ',ESTMStart, 'initialising ESTM for grid no. ', Gridiv
+
+       TFLOOR=20.0 ! This is used only when radforce =T  !HCW should this be put in the namelist instead?
+       TFLOOR=TFLOOR+C2K
+
+       ! Initial values
+       Tievolve=20.0 + C2K
+       SHC_air=1230.0
+       minshc_airbld=1300
+
+       ! ---- Internal view factors ----
+       !constant now but should be calculated in the future
+       IVF_IW =   0.100000
+       IVF_IR =   0.000000
+       IVF_II =   0.900000
+       IVF_IF =   0.000000
+       IVF_WW =   0.050000
+       IVF_WR =   0.000000
+       IVF_WI =   0.950000
+       IVF_WF =   0.000000
+       IVF_RW =   0.050000
+       IVF_RI =   0.950000
+       IVF_RF =   0.000000
+       IVF_FW =   0.050000
+       IVF_FR =   0.000000
+       IVF_FI =   0.950000
+
+       Tair24HR=C2K
+
+       !Ts5mindata(1,ncolsESTMdata) = -999
+       ! !Fill Ts5mindata for current grid and met block - this is done in SUEWS_translate
+       Ts5mindata(1,1:ncolsESTMdata) = ESTMForcingData(1,1:ncolsESTMdata,Gridiv)
+
+
+       ! ---- Initialization of variables and parameters for first row of run for each grid ----
+       ! N layers are calculated in SUEWS_translate
+       IF ( .NOT. ALLOCATED(Tibld) ) THEN
+          ! print*, "Nibld",Nibld
+          ! print*, "Nwall",Nwall
+          ! print*, "Nroof",Nroof
+          ! print*, "Nground",Nground
+          ALLOCATE(Tibld(Nibld),Twall(Nwall),Troof(Nroof),Tground(Nground),Tw_4(Nwall,4))
+          ALLOCATE(Tibld_grids(Nibld,NumberOfGrids), &
+               Twall_grids(Nwall,NumberOfGrids), &
+               Troof_grids(Nroof,NumberOfGrids), &
+               Tground_grids(Nground,NumberOfGrids), &
+               Tw_4_grids(Nwall,4,NumberOfGrids))
+       ENDIF
+
+       ! Transfer variables from Ts5mindata to variable names
+       ! N.B. column numbers here for the following file format - need to change if input columns change!
+       ! dectime iy id it imin Tiair Tsurf Troof Troad Twall Twall_n Twall_e Twall_s Twall_w
+       !        1  2  3  4    5     6     7     8     9     10      11      12      13       !new
+       !
+       ! Calculate temperature of each layer in Kelvin
+       DO i=1,Nground
+          ! Tground(i)=(Ts5mindata(1,cTs_Tiair)-Ts5mindata(1,cTs_Troad))*(i-1)/(Nground-1)+Ts5mindata(1,cTs_Troad)+C2K
+          Tground(i)=(LBC_soil-Ts5mindata(1,cTs_Troad))*(i-1)/(Nground-1)+Ts5mindata(1,cTs_Troad)+C2K
+       ENDDO
+       DO i=1,Nwall
+          Twall(i)=(Ts5mindata(1,cTs_Tiair)-Ts5mindata(1,cTs_Twall))*(i-1)/(Nwall-1)+Ts5mindata(1,cTs_Twall)+C2K
+       ENDDO
+       DO i=1,Nroof
+          Troof(i)=(Ts5mindata(1,cTs_Tiair)-Ts5mindata(1,cTs_Troof))*(i-1)/(Nroof-1)+Ts5mindata(1,cTs_Troof)+C2K
+       ENDDO
+       Tibld(1:Nibld)=Ts5mindata(1,cTs_Tiair)+C2K
+
+    ENDIF  !End of loop run only at start (for each grid)
+
+    ! ---- Parameters related to land surface characteristics ----
+    ZREF=2.0*BldgH   !Would Zref=z be more appropriate?                              !!FO!! BldgH: mean bulding hight, zref: local scale reference height (local: ~ 10^2 x 10^2 -- 10^3 x 10^3 m^2)
+
+    svf_ground=1.0
+    svf_roof=1.0
+
+    ! ==== roof (i.e. Bldgs)
+    !froof=sfr(BldgSurf)   ! Moved to SUEWS_translate HCW 16 Jun 2016
+    alb_roof=alb(BldgSurf)
+    em_roof=emis(BldgSurf)
+
+    ! ==== vegetation (i.e. EveTr, DecTr, Grass)
+    !fveg=sfr(ConifSurf)+sfr(DecidSurf)+sfr(GrassSurf)  ! Moved to SUEWS_translate HCW 16 Jun 2016
+    IF(fveg/=0) THEN
+       alb_veg=(alb(ConifSurf)*sfr(ConifSurf) + alb(DecidSurf)*sfr(DecidSurf) + alb(GrassSurf)*sfr(GrassSurf))/fveg
+       em_veg=(emis(ConifSurf)*sfr(ConifSurf) + emis(DecidSurf)*sfr(DecidSurf) + emis(GrassSurf)*sfr(GrassSurf))/fveg
+    ENDIF
+
+    ! ==== ground (i.e. Paved, EveTr, DecTr, Grass, BSoil, Water - all except Bldgs)
+    !fground=sfr(ConifSurf)+sfr(DecidSurf)+sfr(GrassSurf)+sfr(PavSurf)+sfr(BsoilSurf)+sfr(WaterSurf) ! Moved to SUEWS_translate HCW 16 Jun 2016
+    IF(fground/=0) THEN
+       alb_ground=(alb(ConifSurf)*sfr(ConifSurf)+alb(DecidSurf)*sfr(DecidSurf)&
+            +alb(GrassSurf)*sfr(GrassSurf)+alb(PavSurf)*sfr(PavSurf)&
+            +alb(BsoilSurf)*sfr(BsoilSurf)+alb(WaterSurf)*sfr(WaterSurf))/fground
+       em_ground=(emis(ConifSurf)*sfr(ConifSurf)+emis(DecidSurf)*sfr(DecidSurf)&
+            +emis(GrassSurf)*sfr(GrassSurf)+emis(PavSurf)*sfr(PavSurf)&
+            +emis(BsoilSurf)*sfr(BsoilSurf)+emis(WaterSurf)*sfr(WaterSurf))/fground
+    ELSE ! check fground==0 scenario to avoid division-by-zero error, TS 21 Jul 2016
+       alb_ground=NAN
+       em_ground=NAN
+    ENDIF
+
+    IF(froof<1.0) THEN
+       HW=fwall/(2.0*(1.0-froof))
+    ELSE
+       HW=0  !HCW if only roof, no ground
+    ENDIF
+
+    IF (Fground==1.0) THEN   !!FO!! if only ground, i.e. no houses
+       W=1
+       WB=0
+       SVF_ground=1.
+       zvf_WALL=0.
+       SVF_WALL=0.
+       SVF_ROOF=1.
+       zvf_ground=0.
+       xvf_wall=0.
+       RVF_CANYON=1.
+       RVF_ground=1.-FVEG
+       RVF_ROOF=0
+       RVF_WALL=0
+       RVF_VEG=FVEG
+    ELSE IF ( Fground==0.0 ) THEN !check fground==0 (or HW==0) scenario to avoid division-by-zero error, TS 21 Jul 2016
+       ! the following values are calculated given HW=0
+       W=0
+       WB=1
+       zvf_WALL= 0 !COS(ATAN(2/HW))  when HW=0                                 !!FO!! wall view factor for wall
+       HW=0
+       SVF_ground=COS(ATAN(2*HW))                                              !!FO!! sky view factor for ground
+       SVF_WALL=(1-zvf_WALL)/2                                                 !!FO!! sky view factor for wall
+       zvf_ground=1-svf_ground                                                 !!FO!! wall view factor for ground
+       xvf_wall=svf_wall                                                       !!FO!! ground view factor
+       !   RVF_CANYON=COS(ATAN(2*ZREF/W))
+       !   RVF_ROOF=1-RVF_CANYON
+       !   RVF_WALL=(COS(ATAN(2*(ZREF-BldgH)/W))-RVF_CANYON)*RVF_CANYON
+       !   RVF_ground=RVF_CANYON-RVF_WALL
+       RVF_ground=(fground-fveg)*SVF_ground
+       RVF_veg=fveg*SVF_ground
+       RVF_ROOF=froof
+       RVF_Wall=1-RVF_ROOF-RVF_ground-RVF_VEG
+    ELSE
+       W=BldgH/HW   !What about if HW = 0 ! need to add IF(Fground ==0) option?
+       WB=W*SQRT(FROOF/Fground)
+       SVF_ground=COS(ATAN(2*HW))                                              !!FO!! sky view factor for ground
+       zvf_WALL=COS(ATAN(2/HW))                                                !!FO!! wall view factor for wall
+       SVF_WALL=(1-zvf_WALL)/2                                                 !!FO!! sky view factor for wall
+       zvf_ground=1-svf_ground                                                 !!FO!! wall view factor for ground
+       xvf_wall=svf_wall                                                       !!FO!! ground view factor
+       !   RVF_CANYON=COS(ATAN(2*ZREF/W))
+       !   RVF_ROOF=1-RVF_CANYON
+       !   RVF_WALL=(COS(ATAN(2*(ZREF-BldgH)/W))-RVF_CANYON)*RVF_CANYON
+       !   RVF_ground=RVF_CANYON-RVF_WALL
+       RVF_ground=(fground-fveg)*SVF_ground
+       RVF_veg=fveg*SVF_ground
+       RVF_ROOF=froof
+       RVF_Wall=1-RVF_ROOF-RVF_ground-RVF_VEG
+    ENDIF
+
+    alb_avg=alb_ground*RVF_ground + alb_wall*RVF_WALL + alb_roof*RVF_ROOF + alb_veg*RVF_VEG
+
+    sumalb=0.; nalb=0
+    sumemis=0.; nemis=0
+
+    !set emissivity for ceiling, wall and floor inside of buildings
+    em_r = em_ibld; em_w=em_ibld; em_i=em_ibld; em_f=em_ibld
+
+    !internal elements
+    IF (nroom==0) THEN
+       fibld = (FLOOR(BldgH/3.1-0.5)-1)*froof
+    ELSE
+       fibld = (2.-2./nroom)*fwall + (FLOOR(BldgH/3.1-0.5)-1)*froof
+    ENDIF
+
+    IF (fibld==0) fibld=0.00001 !this just ensures a solution to radiation
+    finternal = froof+fibld+fwall
+    fair=zref-BldgH*froof
+    !ivf_ii=1.-ivf_iw-ivf_ir-ivf_if    !S.O. I do not know these are should be calculated or read from input files
+    !ivf_ww=1.-ivf_wi-ivf_wr-ivf_wf
+    !ivf_rw=1.-ivf_ri-ivf_rf;
+    !ivf_fr=ivf_rf;
+
+    IF ((ivf_ii+ivf_iw+ivf_ir+ivf_if > 1.0001) .OR. &
+         (ivf_wi+ivf_ww+ivf_wr+ivf_wf > 1.0001) .OR. &
+         (ivf_ri+ivf_rw+ivf_rf > 1.0001) .OR. &
+         (ivf_fi+ivf_fw+ivf_fr > 1.0001) .OR. &
+         (ivf_ii+ivf_iw+ivf_ir+ivf_if < 0.9999) .OR. &
+         (ivf_wi+ivf_ww+ivf_wr+ivf_wf < 0.9999) .OR. &
+         (ivf_ri+ivf_rw+ivf_rf < 0.9999) .OR. &
+         (ivf_fi+ivf_fw+ivf_fr < 0.9999)) THEN
+       PRINT*, "At least one internal view factor <> 1. Check ivf in ESTMinput.nml"
+    ENDIF
+
+!!!=======Initial setting==============================================
+    !! Rewritten by HCW 15 Jun 2016 to use existing SUEWS error handling
+    !IF(inittemps) THEN
+    !   write(*,*) 'inittemps:',inittemps
+    !   FileFinalTemp=TRIM(FileOutputPath)//TRIM(FileCodeX)//'_ESTM_finaltemp.txt'
+    !   OPEN(99,file=TRIM(FileFinalTemp),status='old',err=316)  ! Program stopped if error opening file
+    !   READ(99,*) Twall,Troof,Tground,Tibld                    ! Twall, Troof, Tground & Tibld get new values
+    !   CLOSE(99)
+    !ENDIF
+    !
+    !!IF (inittemps) THEN                                                        !!FO!! inittemps=.true. set in nml file
+    !!   OPEN(99,file='outputfiles/finaltemp.txt',status='old',iostat=ios)       !!FO!! has to exist
+    !!
+    !!   IF (ios/=0) CALL error('outputfiles/finaltemp.txt',ios,1)               !!FO!! calls mod_error.f95, writes that the opening failed and stops prg
+    !!   IF (ios/=0) THEN
+    !!      Twall   = (/273., 285., 291./)
+    !!      Troof   = (/273., 285., 291./)
+    !!      Tground = (/273., 275., 280., 290./)
+    !!      Tibld   = (/293., 293., 293./)
+    !!   ELSE
+    !!      READ(99,*) Twall,Troof,Tground,Tibld                             !!FO!! if finaltemp.txt exists Twall[3], Troof[3], Tground[4] & Tibld[3] get new values
+    !!      CLOSE(99)
+    !!   ENDIF
+    !!ENDIF
+
+    !where (isnan(Twall))
+    !    Twall = 273
+    !endwhere
+    !where (isnan(Troof))
+    !    Troof = 273
+    !endwhere
+    !where (isnan(Tground))
+    !    Tground = 281
+    !endwhere
+    !where (isnan(Tibld))
+    !    Tibld = 293
+    !endwhere
+
+    IF(ESTMStart==1) THEN
+       DO i=1,4
+          Tw_4(:,i) = Twall  !!FO!! Tw_4 holds three differnet temp:s for each wall layer but the same set for all points of the compass
+       ENDDO
+
+       !initialize surface temperatures
+       T0_ground=Tground(1)
+       T0_wall=Twall(1)
+       T0_roof=Troof(1)
+       T0_ibld=Tibld(1)
+       TN_roof=Troof(nroof)
+       TN_wall=Twall(nwall)
+
+       !initialize outgoing longwave   !HCW - Are these calculations compatible with those in LUMPS_NARP?
+       LUP_ground=SBConst*EM_ground*T0_ground**4
+       LUP_WALL=SBConst*EM_WALL*T0_WALL**4
+       LUP_ROOF=SBConst*EM_ROOF*T0_ROOF**4
+
+       !  PRINT*,"W,WB= ",W,WB
+       !  PRINT*,'SVF_ground ','SVF_WALL ','zvf_WALL ','HW '
+       !  PRINT*,SVF_ground,SVF_WALL,zvf_WALL,HW
+       !  PRINT*,'RVF_ground ','RVF_WALL ','RVF_ROOF ','RVF_VEG'
+       !  PRINT*,RVF_ground,RVF_WALL,RVF_ROOF,RVF_VEG
+       !  print*,'Alb_avg (VF)=',alb_avg
+       !  print*,'Z0m, Zd', Z0M, ZD
+
+
+    ENDIF
+
+    first=.TRUE.
+
+    !======Courant-Friedrichs-Lewy condition=================================
+    !This is comment out by S.O. for now
+    ! NB: should be recovered for calculation stability, FO and TS, 11 Oct 2017
+    !   CFLval = minval(0.5*zibld*zibld*ribld/kibld)   !!FO!! z*z*r/k => unit [s]
+    !   if (Tstep>CFLval) then !CFL condition   !!FO!! CFL condition:  Courant�Friedrichs�Lewy condition is a necessary condition for convergence while solving
+    !      write(*,*) "IBLD: CFL condition: Tstep=",Tstep,">",CFLval !!FO!! certain partial differential equations numerically by the method of finite differences (like eq 5 in Offerle et al.,2005)
+    !      CFLfail=.TRUE.
+    !   endif
+    !   CFLval = minval(0.5*zroof*zroof*rroof/kroof)
+    !   if (Tstep>CFLval) then !CFL condition
+    !      write(*,*) "ROOF: CFL condition: Tstep=",Tstep,">",CFLval
+    !      CFLfail=.TRUE.
+    !   endif
+    !   CFLval = minval(0.5*zwall*zwall*rwall/kwall)
+    !   if (Tstep>CFLval) then !CFL condition
+    !      write(*,*) "WALL: CFL condition: Tstep=",Tstep,">",CFLval
+    !      CFLfail=.TRUE.
+    !   endif
+    !   CFLval = minval(0.5*zground*zground*rground/kground)
+    !   if (Tstep>CFLval) then !CFL condition
+    !      write(*,*) "ground: CFL condition: Tstep=",Tstep,">",CFLval
+    !      CFLfail=.TRUE.
+    !   endif
+    !   if (CFLfail) then
+    !      write(*,*) "Increase dX or decrease maxtimestep. Hit any key to continue"
+    !      read (*,*)
+    !   endif
+
+
+    ! Tiaircyc = (1+(LondonQSJune_Barbican.Tair-Tiair)./(5*Tiair)).*(Tiair + 0.4*sin(LondonQSJune_Barbican.HOUR*2*pi/24-10/24*2*pi))    !!FO!! outdoor temp affected
+
+
+
+    RETURN
+
+    !     315 CALL errorHint(11,TRIM(fileESTMTs),notUsed,notUsed,NotUsedI)
+    ! 316 CALL errorHint(11,TRIM(fileFinalTemp),notUsed,notUsed,NotUsedI)
+
+  END SUBROUTINE ESTM_translate
+
   !===============================================================================
   SUBROUTINE ESTM(&
        Gridiv,ir,NumberOfGrids,&!input
@@ -654,17 +1088,11 @@ CONTAINS
     USE PhysConstants
     USE heatflux
     USE ESTM_data
-    ! USE data_in, ONLY: avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown
-    ! USE sues_data, ONLY: nsh, tstep
-    ! USE gis_data, ONLY: bldgh
-    ! USE allocateArray, ONLY:&
-    !      ts5mindata, cts_tiair, cts_tsurf, cts_troof, cts_troad, &
-    !      cts_twall, cts_twall_n, cts_twall_e, cts_twall_s, cts_twall_w, tair24hr, dataoutestm
-    ! USE time, ONLY: iy, id, it, imin, dectime
-    ! USE defaultNotUsed, ONLY: nan
+    USE SUEWS_driver,ONLY:set_nan
 
     IMPLICIT NONE
     INTEGER, PARAMETER:: ncolsESTMdata=13
+    INTEGER, PARAMETER:: ncolumnsdataOutESTM=32
     INTEGER, PARAMETER:: cTs_Tiair = 5
     INTEGER, PARAMETER:: cTs_Tsurf = 6
     INTEGER, PARAMETER:: cTs_Troof = 7
@@ -693,7 +1121,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::bldgh
     REAL(KIND(1d0)),INTENT(in):: dectime        !Decimal time
     REAL(KIND(1d0)),DIMENSION(ncolsESTMdata),INTENT(in)::  Ts5mindata_ir     !surface temperature input data
-    REAL(KIND(1d0)),DIMENSION(24*nsh),INTENT(inout) ::   Tair24HR
+    REAL(KIND(1d0)),DIMENSION(24*nsh),INTENT(inout) ::   Tair24HR ! may be replaced with MetForcingData by extracting the Tiar part
 
     REAL(KIND(1d0)),DIMENSION(ReadlinesMetdata,32,NumberOfGrids),INTENT(inout):: dataOutESTM
     !Output to SUEWS
@@ -1105,14 +1533,14 @@ CONTAINS
        Tibldout=Tibld
     ENDIF
 
-    dataOutESTM(ir,1:32,Gridiv)=(/REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),&
-         REAL(it,KIND(1D0)),REAL(imin,KIND(1D0)),dectime,QS,Qsair,Qswall,Qsroof,Qsground,Qsibld,&!11
-         Twallout,Troofout,Tgroundout,Tibldout,Tievolve/)!32 !N.B. These all have 5 elements except Tievolve (1).
-    !kdn_estm,kup_estm,ldown,lup_net,RN,& !10
-    !   QS,Qsair,QHestm,QFBld,T0,Qswall,Qsroof,Qsground,Qsibld,RN_WALL,RN_ROOF,RN_ground,&   !12
-    !  Twallout,TN_Wall,Troofout,TN_roof,Tgroundout,Tibldout,Tievolve,zenith_deg/)!8+XX
-    ! WRITE(30,'(1F8.4,10F10.1)') dectime, kdn_estm, rs_wall, rs_roof, rs_ground, ldown,rl_wall, rl_roof, rl_ground
-    !endif
+    dataOutESTM(ir,1:ncolumnsdataOutESTM,Gridiv)=[&
+         REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),REAL(it,KIND(1D0)),REAL(imin,KIND(1D0)), dectime,&!5
+         QS,Qsair,Qswall,Qsroof,Qsground,Qsibld,&!11
+         Twallout,Troofout,Tgroundout,Tibldout,Tievolve]!32 !NB. These all have 5 elements except Tievolve (1).
+    ! set invalid values to nan
+    dataOutESTM(ir,6:ncolumnsdataOutESTM,Gridiv)=set_nan(dataOutESTM(ir,6:ncolumnsdataOutESTM,Gridiv))
+    ! call r8vec_print(ncolumnsdataOutESTM-5,dataOutESTM(ir,6:ncolumnsdataOutESTM,Gridiv),'dataOutESTM')
+
 
     Tair2=Tair1
 

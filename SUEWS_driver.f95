@@ -1877,7 +1877,7 @@ CONTAINS
        ReadLinesMetdata,resistsurf,runoffAGimpervious,runoffAGveg,&
        runoff_per_tstep,runoffPipes,runoffSoil_per_tstep,&
        runoffWaterBody,sfr,smd,smd_nsurf,SnowAlb,SnowDens,&
-       snowDepth,SnowFrac,SnowPack,SnowRemoval,SNOWuse,SoilState,&
+       snowDepth,SnowFrac,SnowPack,SnowRemoval,SNOWuse,&
        state,state_per_tstep,surf_chang_per_tstep,swe,t2_C,&
        tot_chang_per_tstep,tsurf,Tsurf_ind_snow,UStar,wu_DecTr,&
        wu_EveTr,wu_Grass,z0m,zdm,zenith_deg,&
@@ -1970,7 +1970,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in) :: SnowDens(nsurf)
     REAL(KIND(1d0)),INTENT(in) :: snowDepth(nsurf)
     REAL(KIND(1d0)),INTENT(in) :: SnowRemoval(2)
-    REAL(KIND(1d0)),INTENT(in) :: SoilState
+    ! REAL(KIND(1d0)),INTENT(in) :: SoilState
     REAL(KIND(1d0)),INTENT(in) :: state(nsurf)
     REAL(KIND(1d0)),INTENT(in) :: state_per_tstep
     REAL(KIND(1d0)),INTENT(in) :: surf_chang_per_tstep
@@ -2000,14 +2000,14 @@ CONTAINS
     REAL(KIND(1d0))::ResistSurf_x
     REAL(KIND(1d0))::l_mod_x
     REAL(KIND(1d0))::bulkalbedo
-    REAL(KIND(1d0))::qh_x
-    REAL(KIND(1d0))::qh_r_x
-    REAL(KIND(1d0))::qeOut_x
-    REAL(KIND(1d0))::qs_x
-    REAL(KIND(1d0))::surf_chang_per_tstep_x
-    REAL(KIND(1d0))::tot_chang_per_tstep_x
-    REAL(KIND(1d0))::SoilState_x
-    REAL(KIND(1d0))::smd_x
+    ! REAL(KIND(1d0))::qh_x
+    ! REAL(KIND(1d0))::qh_r_x
+    ! REAL(KIND(1d0))::qeOut_x
+    ! REAL(KIND(1d0))::qs_x
+    ! REAL(KIND(1d0))::surf_chang_per_tstep_x
+    ! REAL(KIND(1d0))::tot_chang_per_tstep_x
+    ! REAL(KIND(1d0))::SoilState_x
+    ! REAL(KIND(1d0))::smd_x
     REAL(KIND(1d0))::smd_nsurf_x(nsurf)
     REAL(KIND(1d0))::state_x(nsurf)
 
@@ -2040,6 +2040,7 @@ CONTAINS
     !       !runoffSoilOut(is)=runoffSoil(is)
     !    ENDIF
     ! ENDDO
+    ! Remove non-existing surface type from surface and soil outputs   ! Added back in with NANs by HCW 24 Aug 2016
     state_x=UNPACK(SPREAD(NAN, dim=1, ncopies=SIZE(sfr)), mask=(sfr<0.00001), field=state)
     smd_nsurf_x=UNPACK(SPREAD(NAN, dim=1, ncopies=SIZE(sfr)), mask=(sfr<0.00001), field=smd_nsurf)
 
@@ -2079,14 +2080,14 @@ CONTAINS
     ! IF(ABS(SoilState)>pNAN) SoilState=NAN
     ! IF(ABS(smd)>pNAN) smd=NAN
     ! casting invalid values to NANs
-    qh_x                   = set_nan(qh)
-    qh_r_x                 = set_nan(qh_r)
-    qeOut_x                = set_nan(qeOut)
-    qs_x                   = set_nan(qs)
-    surf_chang_per_tstep_x = set_nan(surf_chang_per_tstep)
-    tot_chang_per_tstep_x  = set_nan(tot_chang_per_tstep)
-    SoilState_x            = set_nan(SoilState)
-    smd_x                  = set_nan(smd)
+    ! qh_x                   = set_nan(qh)
+    ! qh_r_x                 = set_nan(qh_r)
+    ! qeOut_x                = set_nan(qeOut)
+    ! qs_x                   = set_nan(qs)
+    ! surf_chang_per_tstep_x = set_nan(surf_chang_per_tstep)
+    ! tot_chang_per_tstep_x  = set_nan(tot_chang_per_tstep)
+    ! SoilState_x            = set_nan(SoilState)
+    ! smd_x                  = set_nan(smd)
 
     ! this part is now handled in `SUEWS_cal_SoilMoist`
     ! ! If measured smd is used, set components to -999 and smd output to measured one
@@ -2142,10 +2143,10 @@ CONTAINS
     dataOut(ir,1:ncolumnsDataOut,Gridiv)=[&
          REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),REAL(it,KIND(1D0)),REAL(imin,KIND(1D0)),dectime,&   !5
          avkdn,kup,ldown,lup,tsurf,&
-         qn1,qf,qs_x,qh_x,qeOut_x,&
-         h_mod,e_mod,qh_r_x,&
-         precip,ext_wu,ev_per_tstep,runoff_per_tstep,tot_chang_per_tstep_x,&
-         surf_chang_per_tstep_x,state_per_tstep,NWstate_per_tstep,drain_per_tstep,smd_x,&
+         qn1,qf,qs,qh,qeOut,&
+         h_mod,e_mod,qh_r,&
+         precip,ext_wu,ev_per_tstep,runoff_per_tstep,tot_chang_per_tstep,&
+         surf_chang_per_tstep,state_per_tstep,NWstate_per_tstep,drain_per_tstep,smd,&
          FlowChange/nsh_real,AdditionalWater,&
          runoffSoil_per_tstep,runoffPipes,runoffAGimpervious,runoffAGveg,runoffWaterBody,&
          int_wu,wu_EveTr,wu_DecTr,wu_Grass,&
@@ -2153,7 +2154,7 @@ CONTAINS
          state_x(1:nsurf),&
          zenith_deg,azimuth,bulkalbedo,Fcld,&
          LAI_wt,z0m,zdm,&
-         UStar,l_mod_x,ra,ResistSurf_x,&
+         UStar,l_mod,ra,ResistSurf,&
          Fc,&
          Fc_photo,Fc_respi,Fc_metab,Fc_traff,Fc_build,&
          qn1_SF,qn1_S,SnowAlb,&
@@ -2161,6 +2162,8 @@ CONTAINS
          SnowRemoval(1:2),&
          t2_C,q2_gkg,avU10_ms& ! surface-level diagonostics
          ]
+    ! set invalid values to NAN
+    dataOut(ir,6:ncolumnsDataOut,Gridiv)=set_nan(dataOut(ir,6:ncolumnsDataOut,Gridiv))
 
     IF (snowUse==1) THEN
        dataOutSnow(ir,1:ncolumnsDataOutSnow,Gridiv)=[&
@@ -2171,7 +2174,9 @@ CONTAINS
             qn1_ind_snow(1:nsurf),kup_ind_snow(1:nsurf),freezMelt(1:nsurf),& !74
             MeltWaterStore(1:nsurf),SnowDens(1:nsurf),                     & !88
             snowDepth(1:nsurf),Tsurf_ind_snow(1:nsurf)]
+    dataOutSnow(ir,6:ncolumnsDataOutSnow,Gridiv)=set_nan(dataOut(ir,6:ncolumnsDataOut,Gridiv))
     END IF
+
     !====================update output arrays end==============================
 
   END SUBROUTINE SUEWS_update_output
@@ -2180,7 +2185,7 @@ CONTAINS
   !===============set variable of invalid value to NAN====================================
   ELEMENTAL FUNCTION set_nan(x) RESULT(xx)
     IMPLICIT NONE
-    REAL(KIND(1d0)),PARAMETER::pNAN=999
+    REAL(KIND(1d0)),PARAMETER::pNAN=9999
     REAL(KIND(1d0)),PARAMETER::NAN=-999
     REAL(KIND(1d0)),INTENT(in)::x
     REAL(KIND(1d0))::xx

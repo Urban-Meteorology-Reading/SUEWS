@@ -41,6 +41,7 @@ PROGRAM SUEWS_Program
   USE Time
   USE WhereWhen
   USE ctrl_output
+  use ESTM_module,only:SUEWS_GetESTMData,ESTM_initials
 
 
   IMPLICIT NONE

@@ -52,6 +52,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   USE ESTM_data
   USE PhysConstants
   USE WhereWhen
+  use ESTM_module,only:ESTM_translate
 
 
   IMPLICIT NONE

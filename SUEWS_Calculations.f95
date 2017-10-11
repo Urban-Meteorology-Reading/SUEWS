@@ -491,7 +491,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        ReadLinesMetdata,resistsurf,runoffAGimpervious,runoffAGveg,&
        runoff_per_tstep,runoffPipes,runoffSoil_per_tstep,&
        runoffWaterBody,sfr,smd,smd_nsurf,SnowAlb,SnowDens,&
-       snowDepth,SnowFrac,SnowPack,SnowRemoval,SNOWuse,SoilState,&
+       snowDepth,SnowFrac,SnowPack,SnowRemoval,SNOWuse,&
        state,state_per_tstep,surf_chang_per_tstep,swe,t2_C,&
        tot_chang_per_tstep,tsurf,Tsurf_ind_snow,UStar,wu_DecTr,&
        wu_EveTr,wu_Grass,z0m,zdm,zenith_deg,&

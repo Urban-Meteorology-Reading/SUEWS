@@ -65,19 +65,11 @@ SUBROUTINE ESTM_initials
   ! Last modified HCW 15 Jun 2016 - code now reads in 5-min file (interpolation done beforehand, outside of SUEWS itself)
 
   USE defaultNotUsed
-  USE heatflux
-  USE meteo                                                               !!FO!! :METEOMOD.f95
-  USE mod_interp                                                          !!FO!! :mod_interp.f95
-  USE mod_solver                                                          !!FO!! :mod_solver.f95
-  USE modSolarCalc                                                        !!FO!! :modsolarcalc.f95
-  USE MathConstants                                                       !!FO!! :MathConstants_module.f95
-  USE PhysConstants
+  USE PhysConstants, ONLY: c2k
   USE ESTM_data
   USE allocateArray
-  USE gis_data
-  USE sues_data
-  USE data_in
-  USE Initial
+  USE data_in, ONLY: fileinputpath
+  USE Initial, ONLY: numberofgrids
 
   IMPLICIT NONE
 
@@ -118,21 +110,12 @@ END SUBROUTINE ESTM_initials
 SUBROUTINE ESTM_translate(Gridiv)
   ! HCW 30 Jun 2016
 
-  USE defaultNotUsed
-  USE heatflux
-  USE meteo                                                               !!FO!! :METEOMOD.f95
-  USE mod_interp                                                          !!FO!! :mod_interp.f95
-  USE mod_solver                                                          !!FO!! :mod_solver.f95
-  !USE mod_error
-  USE modSolarCalc                                                        !!FO!! :modsolarcalc.f95
-  USE MathConstants                                                       !!FO!! :MathConstants_module.f95
-  USE PhysConstants
+  USE defaultNotUsed,ONLY: nan
+  USE PhysConstants, ONLY: c2k, sbconst
   USE ESTM_data
   USE allocateArray
-  USE gis_data
-  USE sues_data
-  USE data_in
-  USE Initial
+  USE gis_data, ONLY: bldgh
+  USE Initial, ONLY: numberofgrids
 
   IMPLICIT NONE
   INTEGER :: i
@@ -409,8 +392,9 @@ SUBROUTINE ESTM_translate(Gridiv)
 
   first=.TRUE.
 
-  !======Courant�Friedrichs�Lewy condition=================================
+  !======Courant-Friedrichs-Lewy condition=================================
   !This is comment out by S.O. for now
+  ! NB: should be recovered for calculation stability, FO and TS, 11 Oct 2017
   !   CFLval = minval(0.5*zibld*zibld*ribld/kibld)   !!FO!! z*z*r/k => unit [s]
   !   if (Tstep>CFLval) then !CFL condition   !!FO!! CFL condition:  Courant�Friedrichs�Lewy condition is a necessary condition for convergence while solving
   !      write(*,*) "IBLD: CFL condition: Tstep=",Tstep,">",CFLval !!FO!! certain partial differential equations numerically by the method of finite differences (like eq 5 in Offerle et al.,2005)

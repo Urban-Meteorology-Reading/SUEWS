@@ -1088,7 +1088,6 @@ CONTAINS
     USE PhysConstants
     USE heatflux
     USE ESTM_data
-    USE SUEWS_driver,ONLY:set_nan
 
     IMPLICIT NONE
     INTEGER, PARAMETER:: ncolsESTMdata=13
@@ -1564,6 +1563,21 @@ CONTAINS
 
   END SUBROUTINE ESTM
 
+  !===============set variable of invalid value to NAN====================================
+  ELEMENTAL FUNCTION set_nan(x) RESULT(xx)
+    IMPLICIT NONE
+    REAL(KIND(1d0)),PARAMETER::pNAN=9999
+    REAL(KIND(1d0)),PARAMETER::NAN=-999
+    REAL(KIND(1d0)),INTENT(in)::x
+    REAL(KIND(1d0))::xx
 
+    IF(ABS(x)>pNAN) THEN
+       xx=NAN
+    ELSE
+       xx=x
+    ENDIF
+
+  END FUNCTION set_nan
+  !========================================================================
 
 END MODULE ESTM_module

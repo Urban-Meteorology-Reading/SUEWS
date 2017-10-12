@@ -2199,4 +2199,30 @@ CONTAINS
   END FUNCTION set_nan
   !========================================================================
 
+FUNCTION square(x) RESULT(xx)
+  IMPLICIT NONE
+  REAL(KIND(1d0)),PARAMETER::pNAN=9999
+  REAL(KIND(1d0)),PARAMETER::NAN=-999
+  REAL(KIND(1d0)),INTENT(in)::x
+  REAL(KIND(1d0))::xx
+
+  xx=x**2+nan/pNAN
+  xx=x**2
+
+
+END FUNCTION square
+
+FUNCTION square_real(x) RESULT(xx)
+  IMPLICIT NONE
+  REAL,PARAMETER::pNAN=9999
+  REAL,PARAMETER::NAN=-999
+  REAL,INTENT(in)::x
+  REAL::xx
+
+  xx=x**2+nan/pNAN
+  xx=x**2
+
+
+END FUNCTION square_real
+
 END MODULE SUEWS_Driver

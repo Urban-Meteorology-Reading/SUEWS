@@ -23,7 +23,7 @@
    IMPLICIT NONE
    INTEGER::eval,i,lowerlimit,upperlimit
    CHARACTER (len=4)::check
-  
+
    IF(file_qs)THEN
       101  READ(lfn_us,*)check
       write(*,*)check
@@ -39,7 +39,7 @@
         ENDIF
       ENDDO
    ENDIF
- 
+
    WRITE(12,120)eval,text(1)
 
    IF(eval<Lowerlimit.OR.eval>upperlimit)THEN
@@ -65,8 +65,7 @@
    end do
 
    RETURN
-   
+
    201  reall=real(skip)
    call ErrorHint(20,'In SkipHeader subroutine.',reall,notUsed,ios_out)
  END SUBROUTINE SkipHeader
-

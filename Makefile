@@ -1,6 +1,6 @@
 CC = gfortran $(CFLAGS)          # compiler
 CC_nc = gfortran $(CFLAGS_nc)    # compiler with netcdf support
-TARGET = SUEWS_V2017b      # program name
+TARGET = SUEWS_V2017c      # program name
 
 # static flag for different OS to correctly link static libs
 # so gfortran dependency can be relaxed

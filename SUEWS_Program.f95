@@ -694,7 +694,8 @@ PROGRAM SUEWS_Program
            DO igrid=1,NumberOfGrids
               IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_Output...'
               ! CALL SUEWS_Output(igrid,year_int,iblock,irMax,GridIDmatrix(igrid))  !GridIDmatrix required for correct naming of output files
-              CALL SUEWS_Output_txt(iblock,irMax,igrid)
+              ! CALL SUEWS_Output_txt(iblock,irMax,igrid)
+              CALL SUEWS_Output(irMax,iblock,igrid)
            ENDDO
 #ifdef nc
         ENDIF
@@ -703,11 +704,11 @@ PROGRAM SUEWS_Program
            ! write resulst in netCDF
            IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_Output_nc...'
            !  CALL SUEWS_Output_nc0(year_int,iblock,irMax)
-           CALL SUEWS_Output_nc(irMax)
+           !  CALL SUEWS_Output_nc(irMax)
+           CALL SUEWS_Output(irMax)
            ! write input information in netCDF as well for future development
            !  IF ( iblock==1 ) THEN
            !     CALL SiteSelect_txt2nc
-           !     !
            !  ENDIF
         ENDIF
 #endif

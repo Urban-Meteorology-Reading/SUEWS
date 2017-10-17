@@ -1,12 +1,12 @@
 MODULE ctrl_output
-  !========================================================================================
+  !===========================================================================================
   ! generic output functions for SUEWS
   ! authors: Ting Sun (ting.sun@reading.ac.uk)
   !
   ! disclamier:
   !     This code employs the netCDF Fortran 90 API.
   !     Full documentation of the netCDF Fortran 90 API can be found at:
-  !     http://www.unidata.ucar.edu/software/netcdf/docs/netcdf-f90
+  !     https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/netcdf-f90/
   !     Part of the work is under the help of examples provided by the documentation.
   !
   ! purpose:
@@ -17,7 +17,9 @@ MODULE ctrl_output
   ! TS 20161209: initial version of netcdf function
   ! TS 20161213: standalise the txt2nc procedure
   ! TS 20170414: generic output procedures
-  !========================================================================================
+  ! TS 20171016: added support for DailyState
+  ! TS 20171017: combined txt and nc wrappers into one: reduced duplicate code at two places
+  !===========================================================================================
 
 
   USE allocateArray
@@ -387,11 +389,15 @@ MODULE ctrl_output
 
 
 CONTAINS
-
-  ! main output wrapper function
-  SUBROUTINE SUEWS_Output_txt(iv,irMax,Gridiv)
+  ! main wrapper that handles both txt and nc files
+  SUBROUTINE SUEWS_Output(irMax,iv,Gridiv)
     IMPLICIT NONE
-    INTEGER,INTENT(in) :: iv,irMax,Gridiv
+    INTEGER,INTENT(in) :: irMax
+#ifdef nc
+    INTEGER,INTENT(in),OPTIONAL ::iv,Gridiv
+#else
+    INTEGER,INTENT(in) ::iv,Gridiv
+#endif
 
     INTEGER :: xx,err,outLevel,i
     TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varListX
@@ -453,15 +459,40 @@ CONTAINS
           ! all output frequency option:
           ! as forcing:
           IF ( ResolutionFilesOut == Tstep .OR. KeepTstepFilesOut == 1 ) THEN
-             CALL SUEWS_Output_txt_grp(iv,irMax,varListX,Gridiv,outLevel,Tstep)
+#ifdef nc
+             IF ( PRESENT(Gridiv) ) THEN
+#endif
+                CALL SUEWS_Output_txt_grp(iv,irMax,varListX,Gridiv,outLevel,Tstep)
+#ifdef nc
+             ELSE
+                CALL SUEWS_Output_nc_grp(irMax,varListX,outLevel,Tstep)
+             ENDIF
+#endif
+
           ENDIF
           !  as specified ResolutionFilesOut:
           IF ( ResolutionFilesOut /= Tstep ) THEN
-             CALL SUEWS_Output_txt_grp(iv,irMax,varListX,Gridiv,outLevel,ResolutionFilesOut)
+#ifdef nc
+             IF ( PRESENT(Gridiv) ) THEN
+#endif
+                CALL SUEWS_Output_txt_grp(iv,irMax,varListX,Gridiv,outLevel,ResolutionFilesOut)
+#ifdef nc
+             ELSE
+                CALL SUEWS_Output_nc_grp(irMax,varListX,outLevel,ResolutionFilesOut)
+             ENDIF
+#endif
           ENDIF
        ELSE
           !  DailyState array, which does not need aggregation
-          CALL SUEWS_Output_txt_grp(iv,irMax,varListX,Gridiv,outLevel,Tstep)
+#ifdef nc
+          IF ( PRESENT(Gridiv) ) THEN
+#endif
+             CALL SUEWS_Output_txt_grp(iv,irMax,varListX,Gridiv,outLevel,Tstep)
+#ifdef nc
+          ELSE
+             CALL SUEWS_Output_nc_grp(irMax,varListX,outLevel,Tstep)
+          ENDIF
+#endif
        ENDIF
 
        IF (ALLOCATED(varListX)) DEALLOCATE(varListX, stat=err)
@@ -469,7 +500,90 @@ CONTAINS
        !  PRINT*, 'i',i,'end'
 
     END DO
-  END SUBROUTINE SUEWS_Output_txt
+  END SUBROUTINE SUEWS_Output
+
+  ! ! main output wrapper function
+  ! SUBROUTINE SUEWS_Output_txt(iv,irMax,Gridiv)
+  !   IMPLICIT NONE
+  !   INTEGER,INTENT(in) :: iv,irMax,Gridiv
+  !
+  !   INTEGER :: xx,err,outLevel,i
+  !   TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varListX
+  !   CHARACTER(len=10) :: grpList0(6)
+  !   CHARACTER(len=10),DIMENSION(:),ALLOCATABLE :: grpList
+  !   LOGICAL :: grpCond(6)
+  !
+  !   ! determine outLevel
+  !   SELECT CASE (WriteOutOption)
+  !   CASE (0) !all (not snow-related)
+  !      outLevel=1
+  !   CASE (1) !all plus snow-related
+  !      outLevel=2
+  !   CASE (2) !minimal output
+  !      outLevel=0
+  !   END SELECT
+  !
+  !
+  !   ! determine groups to output
+  !   ! todo: needs to be smarter, automate this filtering
+  !   grpList0(1)=''
+  !   grpList0(2)='SOLWEIG'
+  !   grpList0(3)='BL'
+  !   grpList0(4)='snow'
+  !   grpList0(5)='ESTM'
+  !   grpList0(6)='DailyState'
+  !   grpCond=(/.TRUE.,&
+  !        SOLWEIGpoi_out==1,&
+  !        CBLuse>=1,&
+  !        SnowUse>=1,&
+  !        StorageHeatMethod==4 .OR. StorageHeatMethod==14,&
+  !        .TRUE./)
+  !   xx=COUNT(grpCond)
+  !
+  !   ! PRINT*, grpList0,xx
+  !
+  !   ALLOCATE(grpList(xx), stat=err)
+  !   IF ( err/= 0) PRINT *, "grpList: Allocation request denied"
+  !
+  !   grpList=PACK(grpList0, mask=grpCond)
+  !
+  !   ! PRINT*, grpList,SIZE(grpList, dim=1)
+  !
+  !   ! loop over all groups
+  !   DO i = 1, SIZE(grpList),1
+  !      !PRINT*, 'i',i
+  !      xx=COUNT(varList%group == TRIM(grpList(i)), dim=1)
+  !      !  PRINT*, 'number of variables:',xx, 'in group: ',grpList(i)
+  !      !  print*, 'all group names: ',varList%group
+  !      ALLOCATE(varListX(5+xx), stat=err)
+  !      IF ( err/= 0) PRINT *, "varListX: Allocation request denied"
+  !      ! datetime
+  !      varListX(1:5)=varList(1:5)
+  !      ! variable
+  !      varListX(6:5+xx)=PACK(varList, mask=(varList%group == TRIM(grpList(i))))
+  !
+  !      IF  (TRIM(varListX(SIZE(varListX))%group) /= 'DailyState') THEN
+  !         ! all output arrays but DailyState
+  !         ! all output frequency option:
+  !         ! as forcing:
+  !         IF ( ResolutionFilesOut == Tstep .OR. KeepTstepFilesOut == 1 ) THEN
+  !            CALL SUEWS_Output_txt_grp(iv,irMax,varListX,Gridiv,outLevel,Tstep)
+  !         ENDIF
+  !         !  as specified ResolutionFilesOut:
+  !         IF ( ResolutionFilesOut /= Tstep ) THEN
+  !            CALL SUEWS_Output_txt_grp(iv,irMax,varListX,Gridiv,outLevel,ResolutionFilesOut)
+  !         ENDIF
+  !      ELSE
+  !         !  DailyState array, which does not need aggregation
+  !         CALL SUEWS_Output_txt_grp(iv,irMax,varListX,Gridiv,outLevel,Tstep)
+  !      ENDIF
+  !
+  !      IF (ALLOCATED(varListX)) DEALLOCATE(varListX, stat=err)
+  !      IF ( err/= 0) PRINT *, "varListX: Deallocation request denied"
+  !      !  PRINT*, 'i',i,'end'
+  !
+  !   END DO
+  ! END SUBROUTINE SUEWS_Output_txt
 
 
   ! output wrapper function for one group
@@ -511,8 +625,8 @@ CONTAINS
        ! get correct day index
        idMin=INT(MINVAL(dataout(1:irMax,2,Gridiv)))
        idMax=INT(MAXVAL(dataout(1:irMax,2,Gridiv)))
-      !  print*, 'idMin',idMin
-      !  print*, 'idMax',idMax
+       !  print*, 'idMin',idMin
+       !  print*, 'idMax',idMax
        IF (ALLOCATED(dataOutX)) THEN
           DEALLOCATE(dataOutX)
           IF ( err/= 0) PRINT *, "dataOutX: Deallocation request denied"
@@ -524,8 +638,8 @@ CONTAINS
        ENDIF
 
        dataOutX=dataOutDailyState(idMin:idMax-1,1:SIZE(varList),Gridiv)
-      !  print*, 'idMin line',dataOutDailyState(idMin,1:4,Gridiv)
-      !  print*, 'idMax line',dataOutDailyState(idMax-1,1:4,Gridiv)
+       !  print*, 'idMin line',dataOutDailyState(idMin,1:4,Gridiv)
+       !  print*, 'idMax line',dataOutDailyState(idMax-1,1:4,Gridiv)
     END SELECT
 
     ! PRINT*, 'n of varListX: ',SIZE(varList)
@@ -956,7 +1070,7 @@ CONTAINS
   ! disclamier:
   !     This code employs the netCDF Fortran 90 API.
   !     Full documentation of the netCDF Fortran 90 API can be found at:
-  !     http://www.unidata.ucar.edu/software/netcdf/docs/netcdf-f90
+  !     https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/netcdf-f90/
   !     Part of the work is under the help of examples provided by the documentation.
   !
   ! purpose:
@@ -978,83 +1092,84 @@ CONTAINS
   !===========================================================================!
 
 #ifdef nc
-  SUBROUTINE SUEWS_Output_nc(irMax)
-    IMPLICIT NONE
-    INTEGER,INTENT(in) :: irMax
-
-    INTEGER :: xx,err,outLevel
-    TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varListX
-    CHARACTER(len=10) :: grpList0(6)
-    CHARACTER(len=10),DIMENSION(:),ALLOCATABLE :: grpList
-    LOGICAL :: grpCond(6)
-
-    ! determine outLevel
-    SELECT CASE (WriteOutOption)
-    CASE (0) !all (not snow-related)
-       outLevel=1
-    CASE (1) !all plus snow-related
-       outLevel=2
-    CASE (2) !minimal output
-       outLevel=0
-    END SELECT
-
-
-    ! determine groups to output
-    ! todo: needs to be smarter, automate this filtering
-    grpList0(1)=''
-    grpList0(2)='SOLWEIG'
-    grpList0(3)='BL'
-    grpList0(4)='snow'
-    grpList0(5)='ESTM'
-    grpList0(6)='DailyState'
-    grpCond=(/.TRUE.,&
-         SOLWEIGpoi_out==1,&
-         CBLuse>=1,&
-         SnowUse>=1,&
-         StorageHeatMethod==4 .OR. StorageHeatMethod==14,&
-         .TRUE./)
-    xx=COUNT(grpCond)
-
-    ! PRINT*, grpList0,xx
-
-    ALLOCATE(grpList(xx), stat=err)
-    IF ( err/= 0) PRINT *, "grpList: Allocation request denied"
-
-    grpList=PACK(grpList0, mask=grpCond)
-
-    ! PRINT*, grpList
-
-    ! loop over all groups
-    DO i = 1, SIZE(grpList)
-       xx=COUNT(varList%group == TRIM(grpList(i)), dim=1)
-       !  PRINT*, 'number of variables:',xx
-       ALLOCATE(varListX(5+xx), stat=err)
-       IF ( err/= 0) PRINT *, "varListX: Allocation request denied"
-       ! datetime
-       varListX(1:5)=varList(1:5)
-       ! variable
-       varListX(6:5+xx)=PACK(varList, mask=(varList%group == TRIM(grpList(i))))
-
-       IF  (TRIM(varListX(SIZE(varListX))%group) /= 'DailyState') THEN
-          ! all output arrays but DailyState
-          ! all output frequency option:
-          ! as forcing:
-          IF ( ResolutionFilesOut == Tstep .OR. KeepTstepFilesOut == 1 ) THEN
-             CALL SUEWS_Output_nc_grp(irMax,varListX,outLevel,Tstep)
-          ENDIF
-          !  as specified ResolutionFilesOut:
-          IF ( ResolutionFilesOut /= Tstep ) THEN
-             CALL SUEWS_Output_nc_grp(irMax,varListX,outLevel,ResolutionFilesOut)
-          ENDIF
-       ELSE
-          !  DailyState array, which does not need aggregation
-          CALL SUEWS_Output_nc_grp(irMax,varListX,outLevel,Tstep)
-       ENDIF
-       IF (ALLOCATED(varListX)) DEALLOCATE(varListX, stat=err)
-       IF ( err/= 0) PRINT *, "varListX: Deallocation request denied"
-    END DO
-
-  END SUBROUTINE SUEWS_Output_nc
+  ! SUBROUTINE SUEWS_Output_nc(irMax)
+  !   IMPLICIT NONE
+  !   INTEGER,INTENT(in) :: irMax
+  !
+  !   INTEGER :: xx,err,outLevel
+  !   TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varListX
+  !   CHARACTER(len=10) :: grpList0(6)
+  !   CHARACTER(len=10),DIMENSION(:),ALLOCATABLE :: grpList
+  !   LOGICAL :: grpCond(6)
+  !
+  !   ! determine outLevel
+  !   SELECT CASE (WriteOutOption)
+  !   CASE (0) !all (not snow-related)
+  !      outLevel=1
+  !   CASE (1) !all plus snow-related
+  !      outLevel=2
+  !   CASE (2) !minimal output
+  !      outLevel=0
+  !   END SELECT
+  !
+  !
+  !   ! determine groups to output
+  !   ! todo: needs to be smarter, automate this filtering
+  !   grpList0(1)=''
+  !   grpList0(2)='SOLWEIG'
+  !   grpList0(3)='BL'
+  !   grpList0(4)='snow'
+  !   grpList0(5)='ESTM'
+  !   grpList0(6)='DailyState'
+  !   grpCond=(/.TRUE.,&
+  !        SOLWEIGpoi_out==1,&
+  !        CBLuse>=1,&
+  !        SnowUse>=1,&
+  !        StorageHeatMethod==4 .OR. StorageHeatMethod==14,&
+  !        .TRUE./)
+  !   xx=COUNT(grpCond)
+  !
+  !   ! PRINT*, grpList0,xx
+  !
+  !   ALLOCATE(grpList(xx), stat=err)
+  !   IF ( err/= 0) PRINT *, "grpList: Allocation request denied"
+  !
+  !   grpList=PACK(grpList0, mask=grpCond)
+  !
+  !   ! PRINT*, grpList
+  !
+  !   ! loop over all groups
+  !   DO i = 1, SIZE(grpList)
+  !      xx=COUNT(varList%group == TRIM(grpList(i)), dim=1)
+  !      !  PRINT*, 'number of variables:',xx
+  !      ALLOCATE(varListX(5+xx), stat=err)
+  !      IF ( err/= 0) PRINT *, "varListX: Allocation request denied"
+  !      ! datetime
+  !      varListX(1:5)=varList(1:5)
+  !      ! variable
+  !      varListX(6:5+xx)=PACK(varList, mask=(varList%group == TRIM(grpList(i))))
+  !
+  !      IF  (TRIM(varListX(SIZE(varListX))%group) /= 'DailyState') THEN
+  !         ! all output arrays but DailyState
+  !         ! all output frequency option:
+  !         ! as forcing:
+  !         IF ( ResolutionFilesOut == Tstep .OR. KeepTstepFilesOut == 1 ) THEN
+  !            CALL SUEWS_Output_nc_grp(irMax,varListX,outLevel,Tstep)
+  !         ENDIF
+  !         !  as specified ResolutionFilesOut:
+  !         IF ( ResolutionFilesOut /= Tstep ) THEN
+  !            CALL SUEWS_Output_nc_grp(irMax,varListX,outLevel,ResolutionFilesOut)
+  !         ENDIF
+  !      ELSE
+  !         !  DailyState array, which does not need aggregation
+  !         CALL SUEWS_Output_nc_grp(irMax,varListX,outLevel,Tstep)
+  !      ENDIF
+  !
+  !      IF (ALLOCATED(varListX)) DEALLOCATE(varListX, stat=err)
+  !      IF ( err/= 0) PRINT *, "varListX: Deallocation request denied"
+  !   END DO
+  !
+  ! END SUBROUTINE SUEWS_Output_nc
 
 
   SUBROUTINE SUEWS_Output_nc_grp(irMax,varList,outLevel,outFreq_s)
@@ -1094,8 +1209,8 @@ CONTAINS
        ! get correct day index
        idMin=INT(MINVAL(dataout(1:irMax,2,1)))
        idMax=INT(MAXVAL(dataout(1:irMax,2,1)))
-      !  print*, 'idMin',idMin
-      !  print*, 'idMax',idMax
+       !  print*, 'idMin',idMin
+       !  print*, 'idMax',idMax
        IF (ALLOCATED(dataOutX)) THEN
           DEALLOCATE(dataOutX)
           IF ( err/= 0) PRINT *, "dataOutX: Deallocation request denied"
@@ -1107,8 +1222,8 @@ CONTAINS
        ENDIF
 
        dataOutX=dataOutDailyState(idMin:idMax-1,1:SIZE(varList),:)
-      !  print*, 'idMin line',dataOutX(idMin,1:4,1)
-      !  print*, 'idMax line',dataOutX(idMax,1:4,1)
+       !  print*, 'idMin line',dataOutX(idMin,1:4,1)
+       !  print*, 'idMax line',dataOutX(idMax,1:4,1)
 
     END SELECT
 

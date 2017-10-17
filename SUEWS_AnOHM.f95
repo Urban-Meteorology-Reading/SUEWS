@@ -803,7 +803,7 @@ CONTAINS
 
     ! construct mask
     IF (ALLOCATED(metMask)) DEALLOCATE(metMask, stat=err)
-    ALLOCATE(metMask(lenMetData))
+    ALLOCATE(metMask(size(MetForcingData_grid, dim=1)))
     metMask=(MetForcingData_grid(:,2)==xid & ! day=xid
          .AND. MetForcingData_grid(:,4)==0)! tmin=0
 
@@ -912,7 +912,7 @@ CONTAINS
 
 
     lenDay=COUNT(Sd>5, dim=1)
-    ALLOCATE(SdMask(lenDay), stat=err)
+    ALLOCATE(SdMask(size(Sd, dim=1)), stat=err)
     IF ( err/= 0) PRINT *, "SdMask: Allocation request denied"
     SdMask=Sd>5
 

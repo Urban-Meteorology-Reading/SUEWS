@@ -633,7 +633,7 @@ CONTAINS
        ENDIF
 
        IF (.NOT. ALLOCATED(dataOutX)) THEN
-          ALLOCATE(dataOutX(idMax-idmin+1,SIZE(varList)), stat=err)
+          ALLOCATE(dataOutX(idMax-idmin,SIZE(varList)), stat=err)
           IF ( err/= 0) PRINT *, "dataOutX: Allocation request denied"
        ENDIF
 
@@ -687,7 +687,7 @@ CONTAINS
     CHARACTER(len=3) :: itext
     CHARACTER(len=6) :: args(5)
     CHARACTER(len=16*SIZE(varList)) :: FormatOut
-    CHARACTER(len=16) :: formatX,headerX
+    CHARACTER(len=16) :: formatX
     CHARACTER(len=16), DIMENSION(:), ALLOCATABLE:: headerOut
 
     ! select variables to output
@@ -1217,7 +1217,7 @@ CONTAINS
        ENDIF
 
        IF (.NOT. ALLOCATED(dataOutX)) THEN
-          ALLOCATE(dataOutX(idMax-idmin+1,SIZE(varList),NumberOfGrids), stat=err)
+          ALLOCATE(dataOutX(idMax-idmin,SIZE(varList),NumberOfGrids), stat=err)
           IF ( err/= 0) PRINT *, "dataOutX: Allocation request denied"
        ENDIF
 
@@ -1279,7 +1279,8 @@ CONTAINS
     REAL(KIND(1d0)), ALLOCATABLE :: varOut(:,:,:),&
          varX(:,:),varY(:,:),&
          xLat(:,:),xLon(:,:),&
-         varSeq0(:),varSeq(:),xTime(:)
+         varSeq0(:),varSeq(:),&
+         xTime(:)
 
     INTEGER :: idVar(iVarStart:SIZE(varList))
     CHARACTER(len=50):: header_str,longNm_str,unit_str
@@ -1320,6 +1321,7 @@ CONTAINS
     ALLOCATE(xLat(nX,nY))
     ALLOCATE(varY(nX,nY))
     ALLOCATE(varX(nX,nY))
+    ALLOCATE(xTime(nTime))
 
     ! latitude:
     varSeq0=SiteSelect(1:nX*nY,5)
@@ -1446,6 +1448,7 @@ CONTAINS
     IF (ALLOCATED(xLat)) DEALLOCATE(xLat)
     IF (ALLOCATED(varY)) DEALLOCATE(varY)
     IF (ALLOCATED(varX)) DEALLOCATE(varX)
+    IF (ALLOCATED(xTime)) DEALLOCATE(xTime)
 
     ! Close the file. This frees up any internal netCDF resources
     ! associated with the file, and flushes any buffers.

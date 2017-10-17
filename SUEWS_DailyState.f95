@@ -495,7 +495,7 @@ SUBROUTINE update_AnOHM(&
 
   ! construct mask
   IF (ALLOCATED(metMask)) DEALLOCATE(metMask, STAT=err)
-  ALLOCATE(metMask(lenMetData))
+  ALLOCATE(metMask(size(dataOut, dim=1)))
   metMask=(dataOut(:,2,Gridiv)==id & ! day=xid
        .AND. dataOut(:,4,Gridiv)==0)! tmin=0
 

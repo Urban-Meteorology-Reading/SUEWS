@@ -317,7 +317,6 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)::SnowPack
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)::soilmoist
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)::state
-    ! REAL(KIND(1D0)),DIMENSION(MAXNUMBEROFGRIDS),INTENT(INOUT)::DailyStateFirstOpen
     REAL(KIND(1D0)),DIMENSION(NSH),INTENT(INOUT)::qn1_S_store
     REAL(KIND(1D0)),DIMENSION(NSH),INTENT(INOUT)::qn1_store
 
@@ -2174,7 +2173,7 @@ CONTAINS
             qn1_ind_snow(1:nsurf),kup_ind_snow(1:nsurf),freezMelt(1:nsurf),& !74
             MeltWaterStore(1:nsurf),SnowDens(1:nsurf),                     & !88
             snowDepth(1:nsurf),Tsurf_ind_snow(1:nsurf)]
-    dataOutSnow(ir,6:ncolumnsDataOutSnow,Gridiv)=set_nan(dataOut(ir,6:ncolumnsDataOut,Gridiv))
+       dataOutSnow(ir,6:ncolumnsDataOutSnow,Gridiv)=set_nan(dataOut(ir,6:ncolumnsDataOut,Gridiv))
     END IF
 
     !====================update output arrays end==============================
@@ -2182,7 +2181,7 @@ CONTAINS
   END SUBROUTINE SUEWS_update_output
   !========================================================================
 
-  !===============set variable of invalid value to NAN====================================
+  !===============set variable of invalid value to NAN=====================
   ELEMENTAL FUNCTION set_nan(x) RESULT(xx)
     IMPLICIT NONE
     REAL(KIND(1d0)),PARAMETER::pNAN=9999
@@ -2199,30 +2198,29 @@ CONTAINS
   END FUNCTION set_nan
   !========================================================================
 
-FUNCTION square(x) RESULT(xx)
-  IMPLICIT NONE
-  REAL(KIND(1d0)),PARAMETER::pNAN=9999
-  REAL(KIND(1d0)),PARAMETER::NAN=-999
-  REAL(KIND(1d0)),INTENT(in)::x
-  REAL(KIND(1d0))::xx
+  !===============the functions below are only for test in f2py conversion===
+  FUNCTION square(x) RESULT(xx)
+    IMPLICIT NONE
+    REAL(KIND(1d0)),PARAMETER::pNAN=9999
+    REAL(KIND(1d0)),PARAMETER::NAN=-999
+    REAL(KIND(1d0)),INTENT(in)::x
+    REAL(KIND(1d0))::xx
 
-  xx=x**2+nan/pNAN
-  xx=x**2
+    xx=x**2+nan/pNAN
+    xx=x**2
 
+  END FUNCTION square
 
-END FUNCTION square
+  FUNCTION square_real(x) RESULT(xx)
+    IMPLICIT NONE
+    REAL,PARAMETER::pNAN=9999
+    REAL,PARAMETER::NAN=-999
+    REAL,INTENT(in)::x
+    REAL::xx
 
-FUNCTION square_real(x) RESULT(xx)
-  IMPLICIT NONE
-  REAL,PARAMETER::pNAN=9999
-  REAL,PARAMETER::NAN=-999
-  REAL,INTENT(in)::x
-  REAL::xx
+    xx=x**2+nan/pNAN
+    xx=x**2
 
-  xx=x**2+nan/pNAN
-  xx=x**2
-
-
-END FUNCTION square_real
+  END FUNCTION square_real
 
 END MODULE SUEWS_Driver

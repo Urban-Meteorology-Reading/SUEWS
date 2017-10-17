@@ -502,6 +502,7 @@ MODULE ESTM_module
 
 
 CONTAINS
+
   !======================================================================================
   ! Subroutine to read in ESTM data in the same way as met data (SUEWS_InitializeMetData)
   ! HCW 30 Jun 2016
@@ -560,6 +561,7 @@ CONTAINS
 
   END SUBROUTINE SUEWS_GetESTMData
   !======================================================================================
+
 
   !======================================================================================
   SUBROUTINE ESTM_initials
@@ -827,7 +829,7 @@ CONTAINS
        PRINT*, "At least one internal view factor <> 1. Check ivf in ESTMinput.nml"
     ENDIF
 
-!!!=======Initial setting==============================================
+    !=======Initial setting==============================================
     !! Rewritten by HCW 15 Jun 2016 to use existing SUEWS error handling
     !IF(inittemps) THEN
     !   write(*,*) 'inittemps:',inittemps

@@ -339,6 +339,53 @@ MODULE ctrl_output
        varAttr('TaBLD'    , 'degK'  , f104 , 'Indoor air temperature'                   , aA , 'ESTM' , 0) &
        /
 
+  ! DailyState:
+  DATA(varList(i), i=247,288)/&
+       varAttr('HDD1_h'     , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('HDD2_c'     , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('HDD3_Tmean' , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('HDD4_T5d'   , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('P_day'      , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('DaysSR'     , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('GDD1_g'     , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('GDD2_s'     , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('GDD3_Tmin'  , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('GDD4_Tmax'  , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('GDD5_DLHrs' , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('LAI_EveTr'  , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('LAI_DecTr'  , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('LAI_Grass'  , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('DecidCap'   , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('Porosity'   , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('AlbEveTr'   , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('AlbDecTr'   , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('AlbGrass'   , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('WU_EveTr1'  , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('WU_EveTr2'  , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('WU_EveTr3'  , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('WU_DecTr1'  , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('WU_DecTr2'  , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('WU_DecTr3'  , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('WU_Grass1'  , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('WU_Grass2'  , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('WU_Grass3'  , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('deltaLAI'   , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('LAIlumps'   , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('AlbSnow'    , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('DSnowPvd'   , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('DSnowBldgs' , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('DSnowEveTr' , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('DSnowDecTr' , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('DSnowGrass' , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('DSnowBSoil' , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('DSnowWater' , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('BoAnOHMEnd' , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('a1'         , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('a2'         , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('a3'         , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0)  &
+       /
+
+
 CONTAINS
 
   ! main output wrapper function
@@ -348,8 +395,9 @@ CONTAINS
 
     INTEGER :: xx,err,outLevel,i
     TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varListX
-    CHARACTER(len=10) :: grpList0(5)
+    CHARACTER(len=10) :: grpList0(6)
     CHARACTER(len=10),DIMENSION(:),ALLOCATABLE :: grpList
+    LOGICAL :: grpCond(6)
 
     ! determine outLevel
     SELECT CASE (WriteOutOption)
@@ -363,28 +411,27 @@ CONTAINS
 
 
     ! determine groups to output
+    ! todo: needs to be smarter, automate this filtering
     grpList0(1)=''
     grpList0(2)='SOLWEIG'
     grpList0(3)='BL'
     grpList0(4)='snow'
     grpList0(5)='ESTM'
-    xx=COUNT((/.TRUE.,&
+    grpList0(6)='DailyState'
+    grpCond=(/.TRUE.,&
          SOLWEIGpoi_out==1,&
          CBLuse>=1,&
          SnowUse>=1,&
-         StorageHeatMethod==4 .OR. StorageHeatMethod==14/))
+         StorageHeatMethod==4 .OR. StorageHeatMethod==14,&
+         .TRUE./)
+    xx=COUNT(grpCond)
 
     ! PRINT*, grpList0,xx
 
     ALLOCATE(grpList(xx), stat=err)
     IF ( err/= 0) PRINT *, "grpList: Allocation request denied"
 
-    grpList=PACK(grpList0, &
-         mask=((/.TRUE.,&
-         SOLWEIGpoi_out==1,&
-         CBLuse>=1,&
-         SnowUse>=1,&
-         StorageHeatMethod==4 .OR. StorageHeatMethod==14/)))
+    grpList=PACK(grpList0, mask=grpCond)
 
     ! PRINT*, grpList,SIZE(grpList, dim=1)
 
@@ -401,16 +448,20 @@ CONTAINS
        ! variable
        varListX(6:5+xx)=PACK(varList, mask=(varList%group == TRIM(grpList(i))))
 
-
-
-       ! all output frequency option:
-       ! as forcing:
-       IF ( ResolutionFilesOut == Tstep .OR. KeepTstepFilesOut == 1 ) THEN
+       IF  (TRIM(varListX(SIZE(varListX))%group) /= 'DailyState') THEN
+          ! all output arrays but DailyState
+          ! all output frequency option:
+          ! as forcing:
+          IF ( ResolutionFilesOut == Tstep .OR. KeepTstepFilesOut == 1 ) THEN
+             CALL SUEWS_Output_txt_grp(iv,irMax,varListX,Gridiv,outLevel,Tstep)
+          ENDIF
+          !  as specified ResolutionFilesOut:
+          IF ( ResolutionFilesOut /= Tstep ) THEN
+             CALL SUEWS_Output_txt_grp(iv,irMax,varListX,Gridiv,outLevel,ResolutionFilesOut)
+          ENDIF
+       ELSE
+          !  DailyState array, which does not need aggregation
           CALL SUEWS_Output_txt_grp(iv,irMax,varListX,Gridiv,outLevel,Tstep)
-       ENDIF
-       !  as specified ResolutionFilesOut:
-       IF ( ResolutionFilesOut /= Tstep ) THEN
-          CALL SUEWS_Output_txt_grp(iv,irMax,varListX,Gridiv,outLevel,ResolutionFilesOut)
        ENDIF
 
        IF (ALLOCATED(varListX)) DEALLOCATE(varListX, stat=err)
@@ -428,9 +479,15 @@ CONTAINS
     TYPE(varAttr),DIMENSION(:),INTENT(in)::varList
     INTEGER,INTENT(in) :: iv,irMax,Gridiv,outLevel,outFreq_s
 
-    REAL(KIND(1d0))::dataOutX(irMax,SIZE(varList))
+    INTEGER :: err,idMin,idMax
+
+    REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::dataOutX
     REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::dataOutX_agg
 
+    IF (.NOT. ALLOCATED(dataOutX)) THEN
+       ALLOCATE(dataOutX(irMax,SIZE(varList)), stat=err)
+       IF ( err/= 0) PRINT *, "dataOutX: Allocation request denied"
+    ENDIF
 
     ! determine dataout array according to variable group
     SELECT CASE (TRIM(varList(SIZE(varList))%group))
@@ -450,6 +507,25 @@ CONTAINS
     CASE ('ESTM')    !ESTM
        dataOutX=dataOutESTM(1:irMax,1:SIZE(varList),Gridiv)
 
+    CASE ('DailyState')    !DailyState
+       ! get correct day index
+       idMin=INT(MINVAL(dataout(1:irMax,2,Gridiv)))
+       idMax=INT(MAXVAL(dataout(1:irMax,2,Gridiv)))
+      !  print*, 'idMin',idMin
+      !  print*, 'idMax',idMax
+       IF (ALLOCATED(dataOutX)) THEN
+          DEALLOCATE(dataOutX)
+          IF ( err/= 0) PRINT *, "dataOutX: Deallocation request denied"
+       ENDIF
+
+       IF (.NOT. ALLOCATED(dataOutX)) THEN
+          ALLOCATE(dataOutX(idMax-idmin+1,SIZE(varList)), stat=err)
+          IF ( err/= 0) PRINT *, "dataOutX: Allocation request denied"
+       ENDIF
+
+       dataOutX=dataOutDailyState(idMin:idMax-1,1:SIZE(varList),Gridiv)
+      !  print*, 'idMin line',dataOutDailyState(idMin,1:4,Gridiv)
+      !  print*, 'idMax line',dataOutDailyState(idMax-1,1:4,Gridiv)
     END SELECT
 
     ! PRINT*, 'n of varListX: ',SIZE(varList)
@@ -461,8 +537,18 @@ CONTAINS
 
 
     ! aggregation:
-    CALL SUEWS_Output_Agg(dataOutX_agg,dataOutX,varList,irMax,outFreq_s)
-    ! print*, 'in dataOutX_agg:',dataOutX_agg(1,1:4)
+    ! aggregation is only done for every group but 'DailyState'
+    IF  (TRIM(varList(SIZE(varList))%group) /= 'DailyState') THEN
+
+       CALL SUEWS_Output_Agg(dataOutX_agg,dataOutX,varList,irMax,outFreq_s)
+       ! print*, 'in dataOutX_agg:',dataOutX_agg(1,1:4)
+    ELSE
+       IF (.NOT. ALLOCATED(dataOutX_agg)) THEN
+          ALLOCATE(dataOutX_agg(SIZE(dataOutX, dim=1),SIZE(varList)), stat=err)
+          IF ( err/= 0) PRINT *, ": Allocation request denied"
+       ENDIF
+       dataOutX_agg=dataOutX
+    ENDIF
 
     ! output:
     ! initialise file when processing first metblock
@@ -766,7 +852,7 @@ CONTAINS
     INTEGER,INTENT(in),OPTIONAL :: opt_fmt ! to determine if a format file
     CHARACTER(len=100),INTENT(out) :: FileOut ! the output file name
 
-    CHARACTER(len=10):: str_out_min,str_grid,&
+    CHARACTER(len=20):: str_out_min,str_grid,&
          str_date,str_year,str_DOY,str_grp,str_sfx
     INTEGER :: year_int,DOY_int,val_fmt
 
@@ -792,6 +878,7 @@ CONTAINS
          INT(dataOut(2,3)-dataOut(1,3))*60& ! hour
          +INT(dataOut(2,4)-dataOut(1,4))     !minute
     str_out_min='_'//TRIM(ADJUSTL(str_out_min))
+    IF ( varList(6)%group == 'DailyState' ) str_out_min='' ! ignore this for DailyState
 
     ! group: output type
     str_grp=varList(6)%group
@@ -897,8 +984,9 @@ CONTAINS
 
     INTEGER :: xx,err,outLevel
     TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varListX
-    CHARACTER(len=10) :: grpList0(5)
+    CHARACTER(len=10) :: grpList0(6)
     CHARACTER(len=10),DIMENSION(:),ALLOCATABLE :: grpList
+    LOGICAL :: grpCond(6)
 
     ! determine outLevel
     SELECT CASE (WriteOutOption)
@@ -918,23 +1006,21 @@ CONTAINS
     grpList0(3)='BL'
     grpList0(4)='snow'
     grpList0(5)='ESTM'
-    xx=COUNT((/.TRUE.,&
+    grpList0(6)='DailyState'
+    grpCond=(/.TRUE.,&
          SOLWEIGpoi_out==1,&
          CBLuse>=1,&
          SnowUse>=1,&
-         StorageHeatMethod==4 .OR. StorageHeatMethod==14/))
+         StorageHeatMethod==4 .OR. StorageHeatMethod==14,&
+         .TRUE./)
+    xx=COUNT(grpCond)
 
     ! PRINT*, grpList0,xx
 
     ALLOCATE(grpList(xx), stat=err)
     IF ( err/= 0) PRINT *, "grpList: Allocation request denied"
 
-    grpList=PACK(grpList0, &
-         mask=((/.TRUE.,&
-         SOLWEIGpoi_out==1,&
-         CBLuse>=1,&
-         SnowUse>=1,&
-         StorageHeatMethod==4 .OR. StorageHeatMethod==14/)))
+    grpList=PACK(grpList0, mask=grpCond)
 
     ! PRINT*, grpList
 
@@ -949,14 +1035,20 @@ CONTAINS
        ! variable
        varListX(6:5+xx)=PACK(varList, mask=(varList%group == TRIM(grpList(i))))
 
-       ! all output frequency option:
-       ! as forcing:
-       IF ( ResolutionFilesOut == Tstep .OR. KeepTstepFilesOut == 1 ) THEN
+       IF  (TRIM(varListX(SIZE(varListX))%group) /= 'DailyState') THEN
+          ! all output arrays but DailyState
+          ! all output frequency option:
+          ! as forcing:
+          IF ( ResolutionFilesOut == Tstep .OR. KeepTstepFilesOut == 1 ) THEN
+             CALL SUEWS_Output_nc_grp(irMax,varListX,outLevel,Tstep)
+          ENDIF
+          !  as specified ResolutionFilesOut:
+          IF ( ResolutionFilesOut /= Tstep ) THEN
+             CALL SUEWS_Output_nc_grp(irMax,varListX,outLevel,ResolutionFilesOut)
+          ENDIF
+       ELSE
+          !  DailyState array, which does not need aggregation
           CALL SUEWS_Output_nc_grp(irMax,varListX,outLevel,Tstep)
-       ENDIF
-       !  as specified ResolutionFilesOut:
-       IF ( ResolutionFilesOut /= Tstep ) THEN
-          CALL SUEWS_Output_nc_grp(irMax,varListX,outLevel,ResolutionFilesOut)
        ENDIF
        IF (ALLOCATED(varListX)) DEALLOCATE(varListX, stat=err)
        IF ( err/= 0) PRINT *, "varListX: Deallocation request denied"
@@ -971,10 +1063,14 @@ CONTAINS
     TYPE(varAttr),DIMENSION(:),INTENT(in)::varList
     INTEGER,INTENT(in) :: irMax,outLevel,outFreq_s
 
-    REAL(KIND(1d0))::dataOutX(irMax,SIZE(varList),NumberOfGrids)
+    REAL(KIND(1d0)),ALLOCATABLE::dataOutX(:,:,:)
     REAL(KIND(1d0)),ALLOCATABLE::dataOutX_agg(:,:,:),dataOutX_agg0(:,:)
-    INTEGER :: iGrid,err
+    INTEGER :: iGrid,err,idMin,idMax
 
+    IF (.NOT. ALLOCATED(dataOutX)) THEN
+       ALLOCATE(dataOutX(irMax,SIZE(varList),NumberOfGrids), stat=err)
+       IF ( err/= 0) PRINT *, "dataOutX: Allocation request denied"
+    ENDIF
 
     ! determine dataout array according to variable group
     SELECT CASE (TRIM(varList(SIZE(varList))%group))
@@ -994,21 +1090,53 @@ CONTAINS
     CASE ('ESTM')    !ESTM
        dataOutX=dataOutESTM(1:irMax,1:SIZE(varList),:)
 
+    CASE ('DailyState')    !DailyState
+       ! get correct day index
+       idMin=INT(MINVAL(dataout(1:irMax,2,1)))
+       idMax=INT(MAXVAL(dataout(1:irMax,2,1)))
+      !  print*, 'idMin',idMin
+      !  print*, 'idMax',idMax
+       IF (ALLOCATED(dataOutX)) THEN
+          DEALLOCATE(dataOutX)
+          IF ( err/= 0) PRINT *, "dataOutX: Deallocation request denied"
+       ENDIF
+
+       IF (.NOT. ALLOCATED(dataOutX)) THEN
+          ALLOCATE(dataOutX(idMax-idmin+1,SIZE(varList),NumberOfGrids), stat=err)
+          IF ( err/= 0) PRINT *, "dataOutX: Allocation request denied"
+       ENDIF
+
+       dataOutX=dataOutDailyState(idMin:idMax-1,1:SIZE(varList),:)
+      !  print*, 'idMin line',dataOutX(idMin,1:4,1)
+      !  print*, 'idMax line',dataOutX(idMax,1:4,1)
+
     END SELECT
 
+
     ! aggregation:
-    DO iGrid = 1, NumberOfGrids
-       CALL SUEWS_Output_Agg(dataOutX_agg0,dataOutX(:,:,iGrid),varList,irMax,outFreq_s)
+    IF  (TRIM(varList(SIZE(varList))%group) /= 'DailyState') THEN
+       DO iGrid = 1, NumberOfGrids
+          CALL SUEWS_Output_Agg(dataOutX_agg0,dataOutX(:,:,iGrid),varList,irMax,outFreq_s)
+          IF (.NOT. ALLOCATED(dataOutX_agg)) THEN
+             ALLOCATE(dataOutX_agg(SIZE(dataOutX_agg0, dim=1),SIZE(varList),NumberOfGrids), stat=err)
+             IF ( err/= 0) PRINT *, ": Allocation request denied"
+          ENDIF
+          dataOutX_agg(:,:,iGrid)=dataOutX_agg0
+       END DO
+    ELSE
        IF (.NOT. ALLOCATED(dataOutX_agg)) THEN
-          ALLOCATE(dataOutX_agg(SIZE(dataOutX_agg0, dim=1),SIZE(varList),NumberOfGrids), stat=err)
+          ALLOCATE(dataOutX_agg(SIZE(dataOutX, dim=1),SIZE(varList),NumberOfGrids), stat=err)
           IF ( err/= 0) PRINT *, ": Allocation request denied"
        ENDIF
-       dataOutX_agg(:,:,iGrid)=dataOutX_agg0
-    END DO
-
+       dataOutX_agg=dataOutX
+    ENDIF
 
     ! write out data
     CALL SUEWS_Write_nc(dataOutX_agg,varList,outLevel)
+    IF ( ALLOCATED(dataOutX_agg)) THEN
+       DEALLOCATE(dataOutX_agg)
+       IF ( err/= 0) PRINT *, "dataOutX_agg: Deallocation request denied"
+    ENDIF
   END SUBROUTINE SUEWS_Output_nc_grp
 
 

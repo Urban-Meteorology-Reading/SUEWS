@@ -464,16 +464,15 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !============ update and write out SUEWS_cal_DailyState ===============
   ! only works at the last timestep of a day
   CALL SUEWS_update_DailyState(&
-       iy,id,it,imin,&!input
+       iy,id,it,imin,dectime,&!input
        GDD,HDD,LAI,&
        DecidCap,albDecTr,albEveTr,albGrass,porosity,&
        WU_Day,&
        nsh_real,deltaLAI,VegPhenLumps,&
        SnowAlb,SnowDens,&
        xBo,a1,a2,a3,&
-       Gridiv,GridIDmatrix,&
-       FileCode,FileOutputPath,&
-       DailyStateFirstOpen)!inout
+       Gridiv,NumberOfGrids,&
+       dataOutDailyState)!inout
 
   !============ write out results ===============
   ! works at each timestep

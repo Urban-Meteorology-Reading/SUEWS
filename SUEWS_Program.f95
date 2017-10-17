@@ -299,6 +299,7 @@ PROGRAM SUEWS_Program
      ALLOCATE(MetForcingData(ReadLinesMetdata,ncolumnsMetForcingData,NumberOfGrids))   !Met forcing data
      ALLOCATE(ModelOutputData(0:ReadLinesMetdata,MaxNCols_cMOD,NumberOfGrids))         !Data at model timestep
      ALLOCATE(dataOut(ReadLinesMetdata,ncolumnsDataOut,NumberOfGrids))                 !Main output array
+     ALLOCATE(dataOutDailyState(ndays,ncolumnsDataOutDailyState,NumberOfGrids))                 !Main output array
      IF (SOLWEIGuse == 1) ALLOCATE(dataOutSOL(ReadLinesMetdata,ncolumnsdataOutSOL,NumberOfGrids))     !SOLWEIG POI output
      IF (CBLuse >= 1)     ALLOCATE(dataOutBL(ReadLinesMetdata,ncolumnsdataOutBL,NumberOfGrids))       !CBL output
      IF (SnowUse == 1) THEN

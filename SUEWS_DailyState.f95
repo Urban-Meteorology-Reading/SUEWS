@@ -966,28 +966,28 @@ SUBROUTINE Cal_DailyStateStart(&
 
 END SUBROUTINE Cal_DailyStateStart
 
-
 SUBROUTINE SUEWS_update_DailyState(&
-     iy,id,it,imin,&!input
+     iy,id,it,imin,dectime,&!input
      GDD,HDD,LAI,&
      DecidCap,albDecTr,albEveTr,albGrass,porosity,&
      WU_Day,&
      nsh_real,deltaLAI,VegPhenLumps,&
      SnowAlb,SnowDens,&
      xBo,a1,a2,a3,&
-     Gridiv,GridIDmatrix,&
-     FileCode,FileOutputPath,&
-     DailyStateFirstOpen)!inout
+     Gridiv,NumberOfGrids,&
+     dataOutDailyState)!inout
 
   IMPLICIT NONE
   INTEGER,PARAMETER::ndays=366
   INTEGER,PARAMETER::nvegsurf=3
-  INTEGER,PARAMETER:: MaxNumberOfGrids=2000   !Max no. grids   !HCW changed to 2000 from 10000 so prog can run on windows (2GB lim)
+  INTEGER,PARAMETER::ncolumnsDataOutDailyState=47
+  ! INTEGER,PARAMETER:: MaxNumberOfGrids=2000   !Max no. grids   !HCW changed to 2000 from 10000 so prog can run on windows (2GB lim)
 
   INTEGER,INTENT(IN) ::iy
   INTEGER,INTENT(IN) ::id
   INTEGER,INTENT(IN) ::it
   INTEGER,INTENT(IN) ::imin
+  REAL(KIND(1d0)),INTENT(IN)::dectime
 
   REAL(KIND(1d0)),DIMENSION( 0:ndays, 5),INTENT(IN):: GDD          !Growing Degree Days (see SUEWS_DailyState.f95)
   REAL(KIND(1d0)),DIMENSION(-4:ndays, 6),INTENT(IN):: HDD          !Heating Degree Days (see SUEWS_DailyState.f95)
@@ -1011,13 +1011,14 @@ SUBROUTINE SUEWS_update_DailyState(&
   REAL(KIND(1d0)),INTENT(IN) ::a3
 
   INTEGER,INTENT(IN)::Gridiv
-  INTEGER,DIMENSION(MaxNumberOfGrids),INTENT(IN):: GridIDmatrix         !Array containing GridIDs in SiteSelect after sorting
+  INTEGER,INTENT(IN)::NumberOfGrids
+  ! INTEGER,DIMENSION(MaxNumberOfGrids),INTENT(IN):: GridIDmatrix         !Array containing GridIDs in SiteSelect after sorting
 
-  CHARACTER (LEN = 20),INTENT(IN) :: FileCode       !Set in RunControl
-  CHARACTER (LEN = 150),INTENT(IN):: FileOutputPath !Filepath for output files (set in RunControl)
+  ! CHARACTER (LEN = 20),INTENT(IN) :: FileCode       !Set in RunControl
+  ! CHARACTER (LEN = 150),INTENT(IN):: FileOutputPath !Filepath for output files (set in RunControl)
 
 
-  REAL(KIND(1d0)),DIMENSION(MaxNumberOfGrids),INTENT(INOUT):: DailyStateFirstOpen
+  REAL(KIND(1d0)),DIMENSION(ndays,ncolumnsDataOutDailyState,NumberOfGrids),INTENT(INOUT):: dataOutDailyState
 
   REAL(KIND(1d0)),DIMENSION(44) :: DailyStateLine
   DailyStateLine=0
@@ -1033,13 +1034,93 @@ SUBROUTINE SUEWS_update_DailyState(&
           xBo,a1,a2,a3,&
           DailyStateLine)!output
 
-     CALL output_DailyState(&
-          Gridiv,GridIDmatrix,&!input
-          FileCode,FileOutputPath,&
-          DailyStateLine,&
-          DailyStateFirstOpen)!inout
+     ! write out to dataOutDailyState
+     dataOutDailyState(id,1:4,Gridiv)=[iy,id,it,imin]
+     dataOutDailyState(id,5,Gridiv)=dectime
+     dataOutDailyState(id,6:SIZE(dataOutDailyState, dim=2),Gridiv)=DailyStateLine(3:SIZE(DailyStateLine, dim=1))
+
+     !  CALL output_DailyState(&
+     !       Gridiv,GridIDmatrix,&!input
+     !       FileCode,FileOutputPath,&
+     !       DailyStateLine,&
+     !       DailyStateFirstOpen)!inout
   ENDIF
 END SUBROUTINE SUEWS_update_DailyState
+
+
+! SUBROUTINE SUEWS_update_DailyState(&
+!      iy,id,it,imin,&!input
+!      GDD,HDD,LAI,&
+!      DecidCap,albDecTr,albEveTr,albGrass,porosity,&
+!      WU_Day,&
+!      nsh_real,deltaLAI,VegPhenLumps,&
+!      SnowAlb,SnowDens,&
+!      xBo,a1,a2,a3,&
+!      Gridiv,GridIDmatrix,&
+!      FileCode,FileOutputPath,&
+!      DailyStateFirstOpen)!inout
+!
+!   IMPLICIT NONE
+!   INTEGER,PARAMETER::ndays=366
+!   INTEGER,PARAMETER::nvegsurf=3
+!   INTEGER,PARAMETER:: MaxNumberOfGrids=2000   !Max no. grids   !HCW changed to 2000 from 10000 so prog can run on windows (2GB lim)
+!
+!   INTEGER,INTENT(IN) ::iy
+!   INTEGER,INTENT(IN) ::id
+!   INTEGER,INTENT(IN) ::it
+!   INTEGER,INTENT(IN) ::imin
+!
+!   REAL(KIND(1d0)),DIMENSION( 0:ndays, 5),INTENT(IN):: GDD          !Growing Degree Days (see SUEWS_DailyState.f95)
+!   REAL(KIND(1d0)),DIMENSION(-4:ndays, 6),INTENT(IN):: HDD          !Heating Degree Days (see SUEWS_DailyState.f95)
+!   REAL(KIND(1d0)),DIMENSION(-4:ndays, nvegsurf),INTENT(IN):: LAI   !LAI for each veg surface [m2 m-2]
+!
+!   REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(IN) ::DecidCap
+!   REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(IN) ::albDecTr
+!   REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(IN) ::albEveTr
+!   REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(IN) ::albGrass
+!   REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(IN) ::porosity
+!   REAL(KIND(1d0)),DIMENSION(0:ndays,9),INTENT(IN):: WU_Day !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
+!
+!   REAL(KIND(1d0)),INTENT(IN) ::nsh_real
+!   REAL(KIND(1d0)),INTENT(IN) ::deltaLAI
+!   REAL(KIND(1d0)),INTENT(IN) ::VegPhenLumps
+!   REAL(KIND(1d0)),INTENT(IN) ::SnowAlb
+!   REAL(KIND(1d0)),DIMENSION(7),INTENT(IN)::SnowDens
+!   REAL(KIND(1d0)),INTENT(IN) ::xBo
+!   REAL(KIND(1d0)),INTENT(IN) ::a1
+!   REAL(KIND(1d0)),INTENT(IN) ::a2
+!   REAL(KIND(1d0)),INTENT(IN) ::a3
+!
+!   INTEGER,INTENT(IN)::Gridiv
+!   INTEGER,DIMENSION(MaxNumberOfGrids),INTENT(IN):: GridIDmatrix         !Array containing GridIDs in SiteSelect after sorting
+!
+!   CHARACTER (LEN = 20),INTENT(IN) :: FileCode       !Set in RunControl
+!   CHARACTER (LEN = 150),INTENT(IN):: FileOutputPath !Filepath for output files (set in RunControl)
+!
+!
+!   REAL(KIND(1d0)),DIMENSION(MaxNumberOfGrids),INTENT(INOUT):: DailyStateFirstOpen
+!
+!   REAL(KIND(1d0)),DIMENSION(44) :: DailyStateLine
+!   DailyStateLine=0
+!
+!   IF (it==23 .AND. imin==(nsh_real-1)/nsh_real*60) THEN
+!      CALL update_DailyState(&
+!           iy,id,&!input
+!           GDD,HDD,LAI,&
+!           DecidCap,albDecTr,albEveTr,albGrass,porosity,&
+!           WU_Day,&
+!           deltaLAI,VegPhenLumps,&
+!           SnowAlb,SnowDens,&
+!           xBo,a1,a2,a3,&
+!           DailyStateLine)!output
+!
+!      CALL output_DailyState(&
+!           Gridiv,GridIDmatrix,&!input
+!           FileCode,FileOutputPath,&
+!           DailyStateLine,&
+!           DailyStateFirstOpen)!inout
+!   ENDIF
+! END SUBROUTINE SUEWS_update_DailyState
 
 
 ! transfer results to a one-line output for SUEWS_cal_DailyState
@@ -1107,8 +1188,9 @@ SUBROUTINE output_DailyState(&
 
   IMPLICIT NONE
 
-  INTEGER,PARAMETER:: MaxNumberOfGrids=2000   !Max no. grids   !HCW changed to 2000 from 10000 so prog can run on windows (2GB lim)
-
+  INTEGER,PARAMETER::MaxNumberOfGrids=2000   !Max no. grids   !HCW changed to 2000 from 10000 so prog can run on windows (2GB lim)
+  ! INTEGER,PARAMETER::ndays=366
+  ! INTEGER,PARAMETER::ncolumnsDataOut=46
   INTEGER,INTENT(IN)::Gridiv
   INTEGER,DIMENSION(MaxNumberOfGrids),INTENT(IN):: GridIDmatrix         !Array containing GridIDs in SiteSelect after sorting
 
@@ -1117,6 +1199,7 @@ SUBROUTINE output_DailyState(&
 
   REAL(KIND(1d0)),DIMENSION(44),INTENT(IN) :: DailyStateLine
   REAL(KIND(1d0)),DIMENSION(MaxNumberOfGrids),INTENT(INOUT):: DailyStateFirstOpen
+  ! REAL(KIND(1d0)),DIMENSION(ndays,ncolumnsDataOut,NumberOfGrids),INTENT(INOUT):: dataOutDailyState
 
   CHARACTER(LEN = 10):: grstr2
   CHARACTER(LEN = 150)::FileDaily !Daily State output file name
@@ -1143,7 +1226,7 @@ SUBROUTINE output_DailyState(&
           'deltaLAI','LAIlumps','AlbSnow','DSnowPvd',&        !34
           'DSnowBldgs','DSnowEveTr','DSnowDecTr',&    !37
           'DSnowGrass','DSnowBSoil','DSnowWater',&    !40
-          'BoAnOHMEnd','a1AnOHM','a2AnOHM','a3AnOHM'] !44 TS AnOHM 05 Mar 2016
+          'BoAnOHMEnd','a1','a2','a3'] !44 TS AnOHM 05 Mar 2016
 
      OPEN(60,FILE=FileDaily)
      WRITE(60,602) ADJUSTR(headerDaily(1:44))

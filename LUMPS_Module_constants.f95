@@ -47,7 +47,8 @@ MODULE allocateArray
        ncolumnsDataOutSnow=102,&
        ncolumnsdataOutSOL=28,&
        ncolumnsdataOutBL=22,&
-       ncolumnsdataOutESTM=32
+       ncolumnsdataOutESTM=32,&
+       ncolumnsDataOutDailyState=47
 
   ! ---- Define input file headers ---------------------------------------------------------------
   CHARACTER(len=20),DIMENSION(ncolumnsSiteSelect)::        HeaderSiteSelect_File          !Header for SiteSelect.txt
@@ -117,6 +118,7 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: dataOutSOL           !SOLWEIG POI output matrix
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: dataOutSnow          !Main data output matrix
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: dataOutESTM          !ESTM output matrix
+  REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: dataOutDailyState    !DailyState output array
 
   REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE:: MetForDisagg           !Array for original met forcing data (for disaggregation)
   REAL(KIND(1d0)),DIMENSION(:),  ALLOCATABLE:: MetForDisaggPrev,MetForDisaggNext !Stores last and next row of met data

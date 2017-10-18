@@ -316,33 +316,38 @@ MODULE ctrl_output
        /
 
   ! ESTM:
-  DATA(varList(i), i=225,246)/&
-       varAttr('QSIBLD'   , 'W_m-2' , f104 , 'Storage Internal building'                , aA , 'ESTM' , 0)   , &
-       varAttr('TWALL1'   , 'degK'  , f104 , 'Temperature in wall layer 1'              , aA , 'ESTM' , 0)   , &
-       varAttr('TWALL2'   , 'degK'  , f104 , 'Temperature in wall layer 2'              , aA , 'ESTM' , 0)   , &
-       varAttr('TWALL3'   , 'degK'  , f104 , 'Temperature in wall layer 3'              , aA , 'ESTM' , 0)   , &
-       varAttr('TWALL4'   , 'degK'  , f104 , 'Temperature in wall layer 4'              , aA , 'ESTM' , 0)   , &
-       varAttr('TWALL5'   , 'degK'  , f104 , 'Temperature in wall layer 5'              , aA , 'ESTM' , 0)   , &
-       varAttr('TROOF1'   , 'degK'  , f104 , 'Temperature in roof layer 1'              , aA , 'ESTM' , 0)   , &
-       varAttr('TROOF2'   , 'degK'  , f104 , 'Temperature in roof layer 2'              , aA , 'ESTM' , 0)   , &
-       varAttr('TROOF3'   , 'degK'  , f104 , 'Temperature in roof layer 3'              , aA , 'ESTM' , 0)   , &
-       varAttr('TROOF4'   , 'degK'  , f104 , 'Temperature in roof layer 4'              , aA , 'ESTM' , 0)   , &
-       varAttr('TROOF5'   , 'degK'  , f104 , 'Temperature in roof layer 5'              , aA , 'ESTM' , 0)   , &
-       varAttr('TGROUND1' , 'degK'  , f104 , 'Temperature in ground layer 1'            , aA , 'ESTM' , 0)   , &
-       varAttr('TGROUND2' , 'degK'  , f104 , 'Temperature in ground layer 2'            , aA , 'ESTM' , 0)   , &
-       varAttr('TGROUND3' , 'degK'  , f104 , 'Temperature in ground layer 3'            , aA , 'ESTM' , 0)   , &
-       varAttr('TGROUND4' , 'degK'  , f104 , 'Temperature in ground layer 4'            , aA , 'ESTM' , 0)   , &
-       varAttr('TGROUND5' , 'degK'  , f104 , 'Temperature in ground layer 5'            , aA , 'ESTM' , 0)   , &
-       varAttr('TiBLD1'   , 'degK'  , f104 , 'Temperature in internal building layer 1' , aA , 'ESTM' , 0)   , &
-       varAttr('TiBLD2'   , 'degK'  , f104 , 'Temperature in internal building layer 2' , aA , 'ESTM' , 0)   , &
-       varAttr('TiBLD3'   , 'degK'  , f104 , 'Temperature in internal building layer 3' , aA , 'ESTM' , 0)   , &
-       varAttr('TiBLD4'   , 'degK'  , f104 , 'Temperature in internal building layer 4' , aA , 'ESTM' , 0)   , &
-       varAttr('TiBLD5'   , 'degK'  , f104 , 'Temperature in internal building layer 5' , aA , 'ESTM' , 0)   , &
+  DATA(varList(i), i=225,251)/&
+       varAttr('QS'       , 'W_m-2' , f104 , 'Total Storage'                            , aA , 'ESTM' , 0) , &
+       varAttr('QSAir'    , 'W_m-2' , f104 , 'Storage air'                              , aA , 'ESTM' , 0) , &
+       varAttr('QSWall'   , 'W_m-2' , f104 , 'Storage Wall'                             , aA , 'ESTM' , 0) , &
+       varAttr('QSRoof'   , 'W_m-2' , f104 , 'Storage Roof'                             , aA , 'ESTM' , 0) , &
+       varAttr('QSGround' , 'W_m-2' , f104 , 'Storage Ground'                           , aA , 'ESTM' , 0) , &
+       varAttr('QSIBld'   , 'W_m-2' , f104 , 'Storage Internal building'                , aA , 'ESTM' , 0) , &
+       varAttr('TWALL1'   , 'degK'  , f104 , 'Temperature in wall layer 1'              , aA , 'ESTM' , 0) , &
+       varAttr('TWALL2'   , 'degK'  , f104 , 'Temperature in wall layer 2'              , aA , 'ESTM' , 0) , &
+       varAttr('TWALL3'   , 'degK'  , f104 , 'Temperature in wall layer 3'              , aA , 'ESTM' , 0) , &
+       varAttr('TWALL4'   , 'degK'  , f104 , 'Temperature in wall layer 4'              , aA , 'ESTM' , 0) , &
+       varAttr('TWALL5'   , 'degK'  , f104 , 'Temperature in wall layer 5'              , aA , 'ESTM' , 0) , &
+       varAttr('TROOF1'   , 'degK'  , f104 , 'Temperature in roof layer 1'              , aA , 'ESTM' , 0) , &
+       varAttr('TROOF2'   , 'degK'  , f104 , 'Temperature in roof layer 2'              , aA , 'ESTM' , 0) , &
+       varAttr('TROOF3'   , 'degK'  , f104 , 'Temperature in roof layer 3'              , aA , 'ESTM' , 0) , &
+       varAttr('TROOF4'   , 'degK'  , f104 , 'Temperature in roof layer 4'              , aA , 'ESTM' , 0) , &
+       varAttr('TROOF5'   , 'degK'  , f104 , 'Temperature in roof layer 5'              , aA , 'ESTM' , 0) , &
+       varAttr('TGROUND1' , 'degK'  , f104 , 'Temperature in ground layer 1'            , aA , 'ESTM' , 0) , &
+       varAttr('TGROUND2' , 'degK'  , f104 , 'Temperature in ground layer 2'            , aA , 'ESTM' , 0) , &
+       varAttr('TGROUND3' , 'degK'  , f104 , 'Temperature in ground layer 3'            , aA , 'ESTM' , 0) , &
+       varAttr('TGROUND4' , 'degK'  , f104 , 'Temperature in ground layer 4'            , aA , 'ESTM' , 0) , &
+       varAttr('TGROUND5' , 'degK'  , f104 , 'Temperature in ground layer 5'            , aA , 'ESTM' , 0) , &
+       varAttr('TiBLD1'   , 'degK'  , f104 , 'Temperature in internal building layer 1' , aA , 'ESTM' , 0) , &
+       varAttr('TiBLD2'   , 'degK'  , f104 , 'Temperature in internal building layer 2' , aA , 'ESTM' , 0) , &
+       varAttr('TiBLD3'   , 'degK'  , f104 , 'Temperature in internal building layer 3' , aA , 'ESTM' , 0) , &
+       varAttr('TiBLD4'   , 'degK'  , f104 , 'Temperature in internal building layer 4' , aA , 'ESTM' , 0) , &
+       varAttr('TiBLD5'   , 'degK'  , f104 , 'Temperature in internal building layer 5' , aA , 'ESTM' , 0) , &
        varAttr('TaBLD'    , 'degK'  , f104 , 'Indoor air temperature'                   , aA , 'ESTM' , 0) &
        /
 
   ! DailyState:
-  DATA(varList(i), i=247,288)/&
+  DATA(varList(i), i=252,293)/&
        varAttr('HDD1_h'     , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
        varAttr('HDD2_c'     , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
        varAttr('HDD3_Tmean' , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &

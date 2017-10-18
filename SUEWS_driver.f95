@@ -507,6 +507,7 @@ CONTAINS
 
 
     !======== Calculate soil moisture =========
+    IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_update_SoilMoist...'
     CALL SUEWS_update_SoilMoist(&
          NonWaterFraction,&!input
          soilstoreCap,sfr,soilmoist,&
@@ -648,6 +649,7 @@ CONTAINS
     !======== Evaporation and surface state end========
 
     !============ Sensible heat flux ===============
+    IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_cal_QH...'
     CALL SUEWS_cal_QH(&
          1,&
          qn1,qf,QmRain,qeOut,qs,QmFreez,qm,avdens,avcp,tsurf,Temp_C,ra,&
@@ -671,6 +673,7 @@ CONTAINS
          )
 
     !========== Calculate soil moisture ============
+    IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_cal_SoilMoist...'
     CALL SUEWS_cal_SoilMoist(&
          SMDMethod,xsmd,NonWaterFraction,SoilMoistCap,&!input
          SoilStoreCap,surf_chang_per_tstep,&
@@ -679,6 +682,7 @@ CONTAINS
 
 
     !============ surface-level diagonostics ===============
+    IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_cal_Diagnostics...'
     CALL SUEWS_cal_Diagnostics(&
          tsurf,qh,&
          Press_hPa,qeOut,&

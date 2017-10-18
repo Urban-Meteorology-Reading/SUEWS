@@ -22,6 +22,7 @@ ln -sf ../*.o .
 # remove duplicate SUEWS_driver to avoid symbol conflict
 rm SUEWS_driver.o
 # direct compilation without f2py header file
+# f2py -m SUEWS_driver -c --debug-capi ../SUEWS_driver.f95 *.o
 f2py -m SUEWS_driver -c ../SUEWS_driver.f95 *.o
 
 # cleaning

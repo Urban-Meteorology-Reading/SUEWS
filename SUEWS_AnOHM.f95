@@ -796,16 +796,14 @@ CONTAINS
     ! END IF
 
 
-    ! determine the length of subset
-    lenMetData = COUNT(&
-         MetForcingData_grid(:,2)==xid & ! day=xid
-         .AND. MetForcingData_grid(:,4)==0)! tmin=0
-
     ! construct mask
     IF (ALLOCATED(metMask)) DEALLOCATE(metMask, stat=err)
     ALLOCATE(metMask(size(MetForcingData_grid, dim=1)))
     metMask=(MetForcingData_grid(:,2)==xid & ! day=xid
          .AND. MetForcingData_grid(:,4)==0)! tmin=0
+
+    ! determine the length of subset
+    lenMetData = COUNT(metMask)
 
     ! construct array for time and met variables
     nVar=8! number of variables to retrieve
@@ -911,10 +909,11 @@ CONTAINS
     LOGICAL,DIMENSION(:),ALLOCATABLE::SdMask
 
 
-    lenDay=COUNT(Sd>5, dim=1)
+
     ALLOCATE(SdMask(size(Sd, dim=1)), stat=err)
     IF ( err/= 0) PRINT *, "SdMask: Allocation request denied"
     SdMask=Sd>5
+    lenDay=COUNT(SdMask)
 
     ! CALL r8vec_print(24,Sd,'Sd')
     ! CALL r8vec_print(24,tHr,'tHr')

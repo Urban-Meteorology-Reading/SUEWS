@@ -1157,11 +1157,14 @@ CONTAINS
     REAL(KIND(1d0))::Rs_iwall,Rl_iwall
     REAL(KIND(1d0))::zenith_rad
     REAL(KIND(1d0))::dum(50)
+    REAL(KIND(1d0))::bldgHX ! local bldgHX=max(bldgH,0.001)
     REAL(KIND(1d0)),PARAMETER::WSmin=0.1  ! Check why there is this condition. S.O.
     LOGICAL::radforce, groundradforce
 
     radforce       = .FALSE.
     groundradforce = .FALSE. !Close the radiation scheme in original ESTM S.O.O.
+
+    bldgHX=max(bldgH,0.001) ! this is to prevent zero building height
 
     ! Set -999s for first row
     dum=(/-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,&
@@ -1321,10 +1324,10 @@ CONTAINS
     !ASSUMES THE CH_BLD INCLUDES THE EFFECT OF VENTILATION RATE IN m/s (e.g. if a normal CH is .005 and
     !the value here is .003 the assumed ventilation is 0.6 m/s                                 !!FO!! CH_ibld=0.0015 from heatstorage_Barbican.nml => ventilation=0.3 m/s
     Tairmix =  (Tievolve + TAIR1*AIREXDT)/(1.0+AIREXDT)
-    QFBld= froof*(Tievolve-Tairmix)*shc_airbld*BldgH/Tstep !heat added or lost, requires cooling or heating if HVAC on
+    QFBld= froof*(Tievolve-Tairmix)*shc_airbld*bldgHX/Tstep !heat added or lost, requires cooling or heating if HVAC on
 
     !!FO!! CH_xxxx has unit [m/s]  !!**HCW what is going on with tstep here??
-    Tievolve = Tairmix+Tstep/BldgH/finternal* &                                                                         !!FO!! finternal(=froof+fibld+fwall) => normalisation of fractions
+    Tievolve = Tairmix+Tstep/bldgHX/finternal* &                                                                         !!FO!! finternal(=froof+fibld+fwall) => normalisation of fractions
          (CH_ibld*fibld*(T0_ibld-Tievolve)+CH_iroof*froof*(TN_roof-Tievolve)+CH_iwall*fwall*(TN_wall-Tievolve))      !!FO!! [K] = [K] + [s/m]*([m/s]*([K]))
 
     IF (.NOT.diagnoseTi) Tievolve=Tinternal+C2K

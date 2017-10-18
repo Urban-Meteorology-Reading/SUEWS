@@ -488,16 +488,14 @@ SUBROUTINE update_AnOHM(&
   LOGICAL, ALLOCATABLE :: metMask(:)
 
 
-  ! determine the length of subset
-  lenMetData = COUNT(&
-       dataOut(:,2,Gridiv)==id & ! day=xid
-       .AND. dataOut(:,4,Gridiv)==0)! tmin=0
-
   ! construct mask
   IF (ALLOCATED(metMask)) DEALLOCATE(metMask, STAT=err)
-  ALLOCATE(metMask(size(dataOut, dim=1)))
+  ALLOCATE(metMask(SIZE(dataOut, dim=1)))
   metMask=(dataOut(:,2,Gridiv)==id & ! day=xid
        .AND. dataOut(:,4,Gridiv)==0)! tmin=0
+
+  ! determine the length of subset
+  lenMetData = COUNT(metMask)
 
   ! construct array for time and met variables
   nVar=3! number of variables to retrieve

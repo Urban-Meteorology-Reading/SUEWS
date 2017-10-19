@@ -916,6 +916,8 @@ CONTAINS
     INTEGER :: fn,i,xx,err
     CHARACTER(len=12*SIZE(varList)) :: FormatOut
 
+    IF(Diagnose==1) WRITE(*,*) 'Writting data of group: ',varList(SIZE(varList))%group
+
     !select variables to output
     xx=COUNT((varList%level<= outLevel), dim=1)
     ALLOCATE(varListSel(xx), stat=err)
@@ -993,11 +995,16 @@ CONTAINS
 
 
     ! output frequency in minute:
-    WRITE(str_out_min,'(i4)') &
-         INT(dataOut(2,3)-dataOut(1,3))*60& ! hour
-         +INT(dataOut(2,4)-dataOut(1,4))     !minute
-    str_out_min='_'//TRIM(ADJUSTL(str_out_min))
-    IF ( varList(6)%group == 'DailyState' ) str_out_min='' ! ignore this for DailyState
+    IF ( varList(6)%group == 'DailyState' ) THEN
+       str_out_min='' ! ignore this for DailyState
+    ELSE
+       WRITE(str_out_min,'(i4)') &
+            INT(dataOut(2,3)-dataOut(1,3))*60& ! hour
+            +INT(dataOut(2,4)-dataOut(1,4))     !minute
+       str_out_min='_'//TRIM(ADJUSTL(str_out_min))
+    ENDIF
+
+
 
     ! group: output type
     str_grp=varList(6)%group

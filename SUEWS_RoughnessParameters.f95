@@ -1,7 +1,6 @@
 SUBROUTINE SUEWS_cal_RoughnessParameters(&
      RoughLenMomMethod,&! input:
      sfr,&! surface fractions
-     areaZh,&
      bldgH,&
      EveTreeH,&
      DecTreeH,&
@@ -32,7 +31,7 @@ SUBROUTINE SUEWS_cal_RoughnessParameters(&
 
   REAL(KIND(1d0)), DIMENSION(nsurf),INTENT(in) ::sfr! surface fractions
 
-  REAL(KIND(1d0)), INTENT(in) ::areaZh
+
   REAL(KIND(1d0)), INTENT(in) ::bldgH
   REAL(KIND(1d0)), INTENT(in) ::EveTreeH
   REAL(KIND(1d0)), INTENT(in) ::DecTreeH
@@ -47,10 +46,12 @@ SUBROUTINE SUEWS_cal_RoughnessParameters(&
 
 
 
-
+  REAL(KIND(1d0)) ::areaZh
   INTEGER, PARAMETER :: notUsedI=-55
   REAL(KIND(1d0)),PARAMETER:: notUsed=-55.5
   REAL(KIND(1D0)):: z0m4Paved,z0m4Grass,z0m4BSoil,z0m4Water   !Default values for roughness lengths [m]
+
+  areaZh =(sfr(BldgSurf)+sfr(ConifSurf)+sfr(DecidSurf)) !Total area of buildings and trees
 
   ! Set default values (using Moene & van Dam 2013, Atmos-Veg-Soil Interactions, Table 3.3)
   Z0m4Paved = 0.003 !estimate

@@ -40,6 +40,59 @@ MODULE NARP_MODULE
   IMPLICIT NONE
 
 CONTAINS
+  !==============================================================================
+  SUBROUTINE RadMethod(&
+       NetRadiationMethod,&!inout
+       snowUse,&!input
+       NetRadiationMethodX,AlbedoChoice,ldown_option)!output
+    IMPLICIT NONE
+    INTEGER,INTENT(in) :: NetRadiationMethod ! the one from RunControl setting
+    INTEGER,INTENT(in) ::snowUse
+    INTEGER,INTENT(out)::NetRadiationMethodX ! processed NetRadiationMethod to be used for other radiation calculations
+    INTEGER,INTENT(out)::AlbedoChoice,ldown_option
+    !Determine what should be done with respect to radiation
+    ! TODO: this can be wrapped into a subroutine, TS 20 Oct 2017
+    AlbedoChoice=0
+    ldown_option=0
+    IF(NetRadiationMethod==0)THEN    !Observed Q* from the met input file will be used
+       IF(snowUse==1) THEN            !If snow is modelled, NARP is needed for surface temperature
+          ! NetRadiationMethod=3000
+          NetRadiationMethodX=3000
+          ldown_option=3              !Ldown will be modelled
+          !NetRadiationMethod=NetRadiationMethod/1000
+       ENDIF
+
+    ELSEIF(NetRadiationMethod>0)THEN  !Modelled Q* is used (NARP)
+       AlbedoChoice=-9
+       IF(NetRadiationMethod<10) THEN
+          AlbedoChoice=0
+          IF(NetRadiationMethod==1)ldown_option=1
+          IF(NetRadiationMethod==2)ldown_option=2
+          IF(NetRadiationMethod==3)ldown_option=3
+          NetRadiationMethodX=NetRadiationMethod
+
+       ELSEIF(NetRadiationMethod>=100.AND.NetRadiationMethod<1000) THEN
+          AlbedoChoice=1
+          IF(NetRadiationMethod==100)ldown_option=1
+          IF(NetRadiationMethod==200)ldown_option=2
+          IF(NetRadiationMethod==300)ldown_option=3
+          ! NetRadiationMethod=NetRadiationMethod/100
+          NetRadiationMethodX=NetRadiationMethod/100
+       ENDIF
+
+       !If bad NetRadiationMethod value
+       IF(NetRadiationMethodX>3.OR. AlbedoChoice==-9)THEN
+          WRITE(*,*) 'NetRadiationMethod=',NetRadiationMethodX
+          WRITE(*,*) 'Value not usable'
+          STOP
+       ENDIF
+    ENDIF
+
+
+  END SUBROUTINE RadMethod
+
+
+
 
   !==============================================================================
   SUBROUTINE NARP(&
@@ -47,7 +100,8 @@ CONTAINS
        NARP_G,NARP_TRANS_SITE,NARP_EMIS_SNOW,&
        DTIME,ZENITH_deg,kdown,Temp_C,RH,Press_hPa,qn1_obs,&
        SnowAlb,&
-       AlbedoChoice,ldown_option,NetRadiationMethod,DiagQN,&
+       AlbedoChoice,ldown_option,&
+       NetRadiationMethodX,DiagQN,&
        QSTARall,QSTAR_SF,QSTAR_S,kclear,KUPall,LDown,LUPall,fcld,TSURFall,&! output:
        qn1_ind_snow,kup_ind_snow,Tsurf_ind_snow)
     !KCLEAR,FCLD,DTIME,KDOWN,QSTARall,KUPall,LDOWN,LUPall,TSURFall,&
@@ -121,9 +175,9 @@ CONTAINS
     REAL(KIND(1D0)),INTENT(in) ::NARP_EMIS_SNOW
 
     INTEGER,INTENT(in) ::nsurf
+    INTEGER,INTENT(in) ::NetRadiationMethodX ! the one processed by RadMethod
     INTEGER,INTENT(in) ::AlbedoChoice
     INTEGER,INTENT(in) ::ldown_option
-    INTEGER,INTENT(in) ::NetRadiationMethod
     INTEGER,INTENT(in) ::DiagQN
 
     REAL(KIND(1D0)),INTENT(out) ::QSTARall
@@ -137,7 +191,7 @@ CONTAINS
     REAL(KIND(1D0)),INTENT(out) ::TSURFall
 
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out) ::qn1_ind_snow
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out) ::kup_ind_snow  
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out) ::kup_ind_snow
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out) ::Tsurf_ind_snow
 
     REAL(KIND(1d0)),DIMENSION(nsurf) ::qn1_ind
@@ -164,6 +218,7 @@ CONTAINS
     REAL(KIND(1D0)),PARAMETER   :: DEG2RAD=0.017453292,&
                                 !  RAD2DEG=57.29577951,&
          SIGMA_SB=5.67E-8
+
 
     !Initialize variables
     ! RH=avrh
@@ -337,7 +392,7 @@ CONTAINS
 
 
     !Set overall radiation components
-    IF (NetRadiationMethod/=3000) THEN !Observed Q* used and snow is modeled
+    IF (NetRadiationMethodX/=3000) THEN !Observed Q* used and snow is modeled
        QSTARall=qn1_cum
     ELSE
        QSTARall=qn1_obs

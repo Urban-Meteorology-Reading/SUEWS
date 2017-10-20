@@ -4,8 +4,8 @@
 
 SUBROUTINE OverallRunControl
   ! Last modified:
-  ! MH 21 Jun 2017 - Added anthropogenic CO2 parameters and changed AnthropogenicHeat to Anthropogenic	  
-  ! MH 16 Jun 2017 - Added biogenic CO2 parameters	  
+  ! MH 21 Jun 2017 - Added anthropogenic CO2 parameters and changed AnthropogenicHeat to Anthropogenic
+  ! MH 16 Jun 2017 - Added biogenic CO2 parameters
   ! HCW 21 Apr 2017 - Added new method for precip disaggregation
   ! HCW 13 Jan 2017 - Changes to RunControl and InitialConditions
   ! HCW 04 Nov 2016 - minor bug fix in LAImin/LAImax warnings related to 3 veg surface types out cf 7 surface types
@@ -129,39 +129,40 @@ SUBROUTINE OverallRunControl
   WRITE(12,nml=RunControl)
   CLOSE(12)
 
-  !Determine what should be done with respect to radiation
-  AlbedoChoice=0
-  ldown_option=0
-  IF(NetRadiationMethod==0)THEN    !Observed Q* from the met input file will be used
-     IF(snowUse==1) THEN            !If snow is modelled, NARP is needed for surface temperature
-        NetRadiationMethod=3000
-        ldown_option=3              !Ldown will be modelled
-        !NetRadiationMethod=NetRadiationMethod/1000
-     ENDIF
-
-  ELSEIF(NetRadiationMethod>0)THEN  !Modelled Q* is used (NARP)
-     AlbedoChoice=-9
-     IF(NetRadiationMethod<10) THEN
-        AlbedoChoice=0
-        IF(NetRadiationMethod==1)ldown_option=1
-        IF(NetRadiationMethod==2)ldown_option=2
-        IF(NetRadiationMethod==3)ldown_option=3
-
-     ELSEIF(NetRadiationMethod>=100.AND.NetRadiationMethod<1000) THEN
-        AlbedoChoice=1
-        IF(NetRadiationMethod==100)ldown_option=1
-        IF(NetRadiationMethod==200)ldown_option=2
-        IF(NetRadiationMethod==300)ldown_option=3
-        NetRadiationMethod=NetRadiationMethod/100
-     ENDIF
-
-     !If bad NetRadiationMethod value
-     IF(NetRadiationMethod>3.OR. AlbedoChoice==-9)THEN
-        WRITE(*,*) 'NetRadiationMethod=',NetRadiationMethod
-        WRITE(*,*) 'Value not usable'
-        STOP
-     ENDIF
-  ENDIF
+  ! !Determine what should be done with respect to radiation
+  ! ! TODO: this can be wrapped into a subroutine, TS 20 Oct 2017
+  ! AlbedoChoice=0
+  ! ldown_option=0
+  ! IF(NetRadiationMethod==0)THEN    !Observed Q* from the met input file will be used
+  !    IF(snowUse==1) THEN            !If snow is modelled, NARP is needed for surface temperature
+  !       NetRadiationMethod=3000
+  !       ldown_option=3              !Ldown will be modelled
+  !       !NetRadiationMethod=NetRadiationMethod/1000
+  !    ENDIF
+  !
+  ! ELSEIF(NetRadiationMethod>0)THEN  !Modelled Q* is used (NARP)
+  !    AlbedoChoice=-9
+  !    IF(NetRadiationMethod<10) THEN
+  !       AlbedoChoice=0
+  !       IF(NetRadiationMethod==1)ldown_option=1
+  !       IF(NetRadiationMethod==2)ldown_option=2
+  !       IF(NetRadiationMethod==3)ldown_option=3
+  !
+  !    ELSEIF(NetRadiationMethod>=100.AND.NetRadiationMethod<1000) THEN
+  !       AlbedoChoice=1
+  !       IF(NetRadiationMethod==100)ldown_option=1
+  !       IF(NetRadiationMethod==200)ldown_option=2
+  !       IF(NetRadiationMethod==300)ldown_option=3
+  !       NetRadiationMethod=NetRadiationMethod/100
+  !    ENDIF
+  !
+  !    !If bad NetRadiationMethod value
+  !    IF(NetRadiationMethod>3.OR. AlbedoChoice==-9)THEN
+  !       WRITE(*,*) 'NetRadiationMethod=',NetRadiationMethod
+  !       WRITE(*,*) 'Value not usable'
+  !       STOP
+  !    ENDIF
+  ! ENDIF
 
   ! Adjust input for precip downscaling using different intensities (HCW 21 Apr 2017)
   IF(RainDisaggMethod == 102) THEN
@@ -936,21 +937,21 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(Gridiv,c_CpAnOHM(ConifSurf))      = Veg_Coeff(iv5,cp_CpAnOHM) ! heat capacity, AnOHM TS
   SurfaceChar(Gridiv,c_KkAnOHM(ConifSurf))      = Veg_Coeff(iv5,cp_KkAnOHM)  ! heat conductivity, AnOHM TS
   SurfaceChar(Gridiv,c_ChAnOHM(ConifSurf))      = Veg_Coeff(iv5,cp_ChAnOHM)  ! bulk transfer coef., AnOHM TS
-  
+
   SurfaceChar(Gridiv,c_BiogenCO2Code(ivConif)) = Veg_Coeff(iv5,cp_BiogenCO2Code)
-  
+
 
       ! ---- Find code for Biogenic CO2 Method ----
   CALL CodeMatchBiogen(gridiv,c_BiogenCO2Code(ivConif))
   ! Transfer Biogenic CO2 characteristics to SurfaceChar
   SurfaceChar(gridiv,c_alpha_bioCO2(ivConif))     = Biogen_Coeff(iv5,cB_alpha)
   SurfaceChar(gridiv,c_beta_bioCO2(ivConif))      = Biogen_Coeff(iv5,cB_beta)
-  SurfaceChar(gridiv,c_theta_bioCO2(ivConif))     = Biogen_Coeff(iv5,cB_theta)  
+  SurfaceChar(gridiv,c_theta_bioCO2(ivConif))     = Biogen_Coeff(iv5,cB_theta)
   SurfaceChar(gridiv,c_alpha_enh_bioCO2(ivConif)) = Biogen_Coeff(iv5,cB_alpha_enh)
   SurfaceChar(gridiv,c_beta_enh_bioCO2(ivConif))  = Biogen_Coeff(iv5,cB_alpha_enh)
-  SurfaceChar(gridiv,c_resp_a(ivConif))           = Biogen_Coeff(iv5,cB_resp_a)  
+  SurfaceChar(gridiv,c_resp_a(ivConif))           = Biogen_Coeff(iv5,cB_resp_a)
   SurfaceChar(gridiv,c_resp_b(ivConif))           = Biogen_Coeff(iv5,cB_resp_b)
-  SurfaceChar(gridiv,c_min_res_bioCO2(ivConif))   = Biogen_Coeff(iv5,cB_min_r)  
+  SurfaceChar(gridiv,c_min_res_bioCO2(ivConif))   = Biogen_Coeff(iv5,cB_min_r)
 
   ! Use SoilCode for EveTr to find code for soil characteristics
   CALL CodeMatchSoil(Gridiv,c_SoilTCode(ConifSurf))
@@ -1042,21 +1043,21 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(Gridiv,c_CpAnOHM(DecidSurf))           = Veg_Coeff(iv5,cp_CpAnOHM) ! heat capacity, AnOHM TS
   SurfaceChar(Gridiv,c_KkAnOHM(DecidSurf))           = Veg_Coeff(iv5,cp_KkAnOHM)  ! heat conductivity, AnOHM TS
   SurfaceChar(Gridiv,c_ChAnOHM(DecidSurf))           = Veg_Coeff(iv5,cp_ChAnOHM)  ! bulk transfer coef., AnOHM TS
-  
+
   SurfaceChar(Gridiv,c_BiogenCO2Code(ivDecid)) = Veg_Coeff(iv5,cp_BiogenCO2Code)
-  
+
       ! ---- Find code for Biogenic CO2 Method ----
   CALL CodeMatchBiogen(gridiv,c_BiogenCO2Code(ivDecid))
   ! Transfer Biogenic CO2 characteristics to SurfaceChar
   SurfaceChar(gridiv,c_alpha_bioCO2(ivDecid))     = Biogen_Coeff(iv5,cB_alpha)
   SurfaceChar(gridiv,c_beta_bioCO2(ivDecid))      = Biogen_Coeff(iv5,cB_beta)
-  SurfaceChar(gridiv,c_theta_bioCO2(ivDecid))     = Biogen_Coeff(iv5,cB_theta)  
+  SurfaceChar(gridiv,c_theta_bioCO2(ivDecid))     = Biogen_Coeff(iv5,cB_theta)
   SurfaceChar(gridiv,c_alpha_enh_bioCO2(ivDecid)) = Biogen_Coeff(iv5,cB_alpha_enh)
   SurfaceChar(gridiv,c_beta_enh_bioCO2(ivDecid))  = Biogen_Coeff(iv5,cB_alpha_enh)
-  SurfaceChar(gridiv,c_resp_a(ivDecid))           = Biogen_Coeff(iv5,cB_resp_a)  
-  SurfaceChar(gridiv,c_resp_b(ivDecid))           = Biogen_Coeff(iv5,cB_resp_b)  
+  SurfaceChar(gridiv,c_resp_a(ivDecid))           = Biogen_Coeff(iv5,cB_resp_a)
+  SurfaceChar(gridiv,c_resp_b(ivDecid))           = Biogen_Coeff(iv5,cB_resp_b)
   SurfaceChar(gridiv,c_min_res_bioCO2(ivDecid))   = Biogen_Coeff(iv5,cB_min_r)
-  
+
   ! Use SoilCode for DecTr to find code for soil characteristics
   CALL CodeMatchSoil(Gridiv,c_SoilTCode(DecidSurf))
   ! Transfer soil characteristics to SurfaceChar
@@ -1147,21 +1148,21 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(Gridiv,c_CpAnOHM(GrassSurf))           = Veg_Coeff(iv5,cp_CpAnOHM) ! heat capacity, AnOHM TS
   SurfaceChar(Gridiv,c_KkAnOHM(GrassSurf))           = Veg_Coeff(iv5,cp_KkAnOHM)  ! heat conductivity, AnOHM TS
   SurfaceChar(Gridiv,c_ChAnOHM(GrassSurf))           = Veg_Coeff(iv5,cp_ChAnOHM)  ! bulk transfer coef., AnOHM TS
-  
+
   SurfaceChar(Gridiv,c_BiogenCO2Code(ivGrass)) = Veg_Coeff(iv5,cp_BiogenCO2Code)
-  
+
       ! ---- Find code for Biogenic CO2 Method ----
   CALL CodeMatchBiogen(gridiv,c_BiogenCO2Code(ivGrass))
   ! Transfer Biogenic CO2 characteristics to SurfaceChar
   SurfaceChar(gridiv,c_alpha_bioCO2(ivGrass))     = Biogen_Coeff(iv5,cB_alpha)
   SurfaceChar(gridiv,c_beta_bioCO2(ivGrass))      = Biogen_Coeff(iv5,cB_beta)
-  SurfaceChar(gridiv,c_theta_bioCO2(ivGrass))     = Biogen_Coeff(iv5,cB_theta)  
+  SurfaceChar(gridiv,c_theta_bioCO2(ivGrass))     = Biogen_Coeff(iv5,cB_theta)
   SurfaceChar(gridiv,c_alpha_enh_bioCO2(ivGrass)) = Biogen_Coeff(iv5,cB_alpha_enh)
   SurfaceChar(gridiv,c_beta_enh_bioCO2(ivGrass))  = Biogen_Coeff(iv5,cB_alpha_enh)
-  SurfaceChar(gridiv,c_resp_a(ivGrass))           = Biogen_Coeff(iv5,cB_resp_a)  
-  SurfaceChar(gridiv,c_resp_b(ivGrass))           = Biogen_Coeff(iv5,cB_resp_b)  
+  SurfaceChar(gridiv,c_resp_a(ivGrass))           = Biogen_Coeff(iv5,cB_resp_a)
+  SurfaceChar(gridiv,c_resp_b(ivGrass))           = Biogen_Coeff(iv5,cB_resp_b)
   SurfaceChar(gridiv,c_min_res_bioCO2(ivGrass))   = Biogen_Coeff(iv5,cB_min_r)
-  
+
   ! Use SoilCode for Grass to find code for soil characteristics
   CALL CodeMatchSoil(Gridiv,c_SoilTCode(GrassSurf))
   ! Transfer soil characteristics to SurfaceChar
@@ -1235,8 +1236,8 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(Gridiv,c_CpAnOHM(BSoilSurf))           = NonVeg_Coeff(iv5,ci_CpAnOHM) ! heat capacity, AnOHM TS
   SurfaceChar(Gridiv,c_KkAnOHM(BSoilSurf))           = NonVeg_Coeff(iv5,ci_KkAnOHM)  ! heat conductivity, AnOHM TS
   SurfaceChar(Gridiv,c_ChAnOHM(BSoilSurf))           = NonVeg_Coeff(iv5,ci_ChAnOHM)  ! bulk transfer coef., AnOHM TS
-  
-    
+
+
   ! Use SoilCode for BSoil to find code for soil characteristics
   CALL CodeMatchSoil(Gridiv,c_SoilTCode(BSoilSurf))
   ! Transfer soil characteristics to SurfaceChar
@@ -1248,8 +1249,8 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(gridiv,c_ObsSMDepth(BSoilSurf))  = Soil_Coeff(iv5,cSo_ObsSMDepth)
   SurfaceChar(gridiv,c_ObsSMMax(BSoilSurf))    = Soil_Coeff(iv5,cSo_ObsSMMax)
   SurfaceChar(gridiv,c_ObsSNRFrac(BSoilSurf))  = Soil_Coeff(iv5,cSo_ObsSNRFrac)
-  
-  
+
+
   ! Get OHM characteristics for BSoil
   CALL CodeMatchOHM(Gridiv,BSoilSurf,'SWet')  !Summer wet
   ! Transfer OHM characteristics to SurfaceChar
@@ -1566,11 +1567,11 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(gridiv,c_QF_B2)             = Anthropogenic_Coeff(iv5,cA_QF_B2)
   SurfaceChar(gridiv,c_QF_C2)             = Anthropogenic_Coeff(iv5,cA_QF_C2)
   SurfaceChar(gridiv,c_AHMin_WD)          = Anthropogenic_Coeff(iv5,cA_AHMin_WD)
-  SurfaceChar(gridiv,c_AHMin_WE)          = Anthropogenic_Coeff(iv5,cA_AHMin_WE)  
+  SurfaceChar(gridiv,c_AHMin_WE)          = Anthropogenic_Coeff(iv5,cA_AHMin_WE)
   SurfaceChar(gridiv,c_AHSlopeHeating_WD) = Anthropogenic_Coeff(iv5,cA_AHSlopeHeating_WD)
-  SurfaceChar(gridiv,c_AHSlopeHeating_WE) = Anthropogenic_Coeff(iv5,cA_AHSlopeHeating_WE)  
+  SurfaceChar(gridiv,c_AHSlopeHeating_WE) = Anthropogenic_Coeff(iv5,cA_AHSlopeHeating_WE)
   SurfaceChar(gridiv,c_AHSlopeCooling_WD) = Anthropogenic_Coeff(iv5,cA_AHSlopeCooling_WD)
-  SurfaceChar(gridiv,c_AHSlopeCooling_WE) = Anthropogenic_Coeff(iv5,cA_AHSlopeCooling_WE)  
+  SurfaceChar(gridiv,c_AHSlopeCooling_WE) = Anthropogenic_Coeff(iv5,cA_AHSlopeCooling_WE)
   SurfaceChar(gridiv,c_TCriticHeating_WD) = Anthropogenic_Coeff(iv5,cA_TCriticHeating_WD)
   SurfaceChar(gridiv,c_TCriticHeating_WE) = Anthropogenic_Coeff(iv5,cA_TCriticHeating_WE)
   SurfaceChar(gridiv,c_TCriticCooling_WD) = Anthropogenic_Coeff(iv5,cA_TCriticCooling_WD)
@@ -1582,11 +1583,11 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(gridiv,c_TraffProfWD)       = Anthropogenic_Coeff(iv5,cA_TraffProfWD)
   SurfaceChar(gridiv,c_TraffProfWE)       = Anthropogenic_Coeff(iv5,cA_TraffProfWE)
   SurfaceChar(gridiv,c_PopProfWD)         = Anthropogenic_Coeff(iv5,cA_PopProfWD)
-  SurfaceChar(gridiv,c_PopProfWE)         = Anthropogenic_Coeff(iv5,cA_PopProfWE)     
+  SurfaceChar(gridiv,c_PopProfWE)         = Anthropogenic_Coeff(iv5,cA_PopProfWE)
   SurfaceChar(gridiv,c_MinQFMetab)        = Anthropogenic_Coeff(iv5,cA_MinQFMetab)
   SurfaceChar(gridiv,c_MaxQFMetab)        = Anthropogenic_Coeff(iv5,cA_MaxQFMetab)
   SurfaceChar(gridiv,c_FrFossilFuel_Heat) = Anthropogenic_Coeff(iv5,cA_FrFossilFuel_Heat)
-  SurfaceChar(gridiv,c_FrFossilFuel_NonHeat) = Anthropogenic_Coeff(iv5,cA_FrFossilFuel_NonHeat)  
+  SurfaceChar(gridiv,c_FrFossilFuel_NonHeat) = Anthropogenic_Coeff(iv5,cA_FrFossilFuel_NonHeat)
   SurfaceChar(gridiv,c_EF_umolCO2perJ)    = Anthropogenic_Coeff(iv5,cA_EF_umolCO2perJ)
   SurfaceChar(gridiv,c_EnEF_v_Jkm)        = Anthropogenic_Coeff(iv5,cA_EnEF_v_Jkm)
   SurfaceChar(gridiv,c_FcEF_v_kgkm)       = Anthropogenic_Coeff(iv5,cA_FcEF_v_kgkm)
@@ -1647,14 +1648,14 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(gridiv,c_HrProfPopWD) = Profiles_Coeff(iv5,cPr_Hours)
   !Population (weekends)
   CALL CodeMatchProf(gridiv,c_PopProfWE)
-  SurfaceChar(gridiv,c_HrProfPopWE) = Profiles_Coeff(iv5,cPr_Hours) 
+  SurfaceChar(gridiv,c_HrProfPopWE) = Profiles_Coeff(iv5,cPr_Hours)
 
   ! ---- Interpolate Hourly Profiles to model timestep and normalise
   TstepProfiles(Gridiv,:,:) = -999   !Initialise TstepProfiles
   ! Energy use
   CALL SUEWS_InterpHourlyProfiles(Gridiv,cTP_EnUseWD,c_HrProfEnUseWD)
   CALL SUEWS_InterpHourlyProfiles(Gridiv,cTP_EnUseWE,c_HrProfEnUseWE)
-  
+
   ! For energy use, normalise so the AVERAGE of the multipliers is equal to 1
   TstepProfiles(Gridiv,cTP_EnUseWD,:) = TstepProfiles(Gridiv,cTP_EnUseWD,:) / SUM(TstepProfiles(Gridiv,cTP_EnUseWD,:))*24*nsh_real
   TstepProfiles(Gridiv,cTP_EnUseWE,:) = TstepProfiles(Gridiv,cTP_EnUseWE,:) / SUM(TstepProfiles(Gridiv,cTP_EnUseWE,:))*24*nsh_real
@@ -1673,7 +1674,7 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   ! Human activity for CO2 calculations
   CALL SUEWS_InterpHourlyProfiles(Gridiv,cTP_HumActivityWD,c_HrProfHumActivityWD)
   CALL SUEWS_InterpHourlyProfiles(Gridiv,cTP_HumActivityWE,c_HrProfHumActivityWE)
-  
+
   ! For human activity, check values are between 1 (night) and 2 (day)
   IF(ANY(TstepProfiles(Gridiv,cTP_HumActivityWD,:) < 1 .OR. TstepProfiles(Gridiv,cTP_HumActivityWD,:) > 2)) THEN
      CALL ErrorHint(70,'Profile value for human activity (WD) exceeds allowed range 1-2.',NotUsed,NotUsed,notUsedI)
@@ -1681,14 +1682,14 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   IF(ANY(TstepProfiles(Gridiv,cTP_HumActivityWE,:) < 1 .OR. TstepProfiles(Gridiv,cTP_HumActivityWE,:) > 2)) THEN
      CALL ErrorHint(70,'Profile value for human activity (WE) exceeds allowed range 1-2.',NotUsed,NotUsed,notUsedI)
   ENDIF
-  
+
   CALL SUEWS_InterpHourlyProfiles(Gridiv,cTP_TraffProfWD,c_HrProfTraffWD)
   CALL SUEWS_InterpHourlyProfiles(Gridiv,cTP_TraffProfWE,c_HrProfTraffWE)
   ! For traffic, normalise so the AVERAGE of the multipliers is equal to 1
   TstepProfiles(Gridiv,cTP_TraffProfWD,:) = TstepProfiles(Gridiv,cTP_TraffProfWD,:) &
   / SUM(TstepProfiles(Gridiv,cTP_TraffProfWD,:))*24*nsh_real
   TstepProfiles(Gridiv,cTP_TraffProfWE,:) = TstepProfiles(Gridiv,cTP_TraffProfWE,:) &
-  / SUM(TstepProfiles(Gridiv,cTP_TraffProfWE,:))*24*nsh_real  
+  / SUM(TstepProfiles(Gridiv,cTP_TraffProfWE,:))*24*nsh_real
 
   ! Population for CO2 calculations
   CALL SUEWS_InterpHourlyProfiles(Gridiv,cTP_PopProfWD,c_HrProfPopWD)
@@ -2159,7 +2160,7 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
 
   !Calculation of roughness parameters (N.B. uses porosity)
   CALL SUEWS_cal_RoughnessParameters(&
-       RoughLenMomMethod,sfr,areaZh,&!input
+       RoughLenMomMethod,sfr,&!input
        bldgH,EveTreeH,DecTreeH,&
        porosity(id),FAIBldg,FAIEveTree,FAIDecTree,Z,&
        planF,&!output

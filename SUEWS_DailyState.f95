@@ -54,7 +54,7 @@ SUBROUTINE SUEWS_cal_DailyState(&
      CapMax_dec,CapMin_dec,PorMax_dec,PorMin_dec,&
      Ie_a,Ie_m,DayWatPer,DayWat,SnowPack,&
      BaseT,BaseTe,GDDFull,SDDFull,LAIMin,LAIMax,LAIPower,dataOut,&
-     a1,a2,a3,tstepcount,SnowAlb,DecidCap,albDecTr,albEveTr,albGrass,&!inout
+     tstepcount,SnowAlb,DecidCap,albDecTr,albEveTr,albGrass,&!inout
      porosity,GDD,HDD,SnowDens,LAI,DayofWeek,WU_Day,&
      xBo)!output
 
@@ -136,9 +136,9 @@ SUBROUTINE SUEWS_cal_DailyState(&
   ! CHARACTER (LEN = 20),INTENT(IN) :: FileCode       !Set in RunControl
   ! CHARACTER (LEN = 150),INTENT(IN):: FileOutputPath !Filepath for output files (set in RunControl)
 
-  REAL(KIND(1d0)),INTENT(INOUT)::a1
-  REAL(KIND(1d0)),INTENT(INOUT)::a2
-  REAL(KIND(1d0)),INTENT(INOUT)::a3
+  ! REAL(KIND(1d0)),INTENT(INOUT)::a1
+  ! REAL(KIND(1d0)),INTENT(INOUT)::a2
+  ! REAL(KIND(1d0)),INTENT(INOUT)::a3
   REAL(KIND(1d0)),INTENT(INOUT)::tstepcount
   REAL(KIND(1d0)),INTENT(INOUT)::SnowAlb
 
@@ -234,7 +234,7 @@ SUBROUTINE SUEWS_cal_DailyState(&
           alBMax_DecTr,alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
           BaseT,BaseTe,CapMax_dec,CapMin_dec,dataOut,DayWat,DayWatPer,Faut,GDDFull,&
           Ie_a,Ie_m,LAIMax,LAIMin,LAIPower,lat,PorMax_dec,PorMin_dec,SDDFull,LAI_obs,&
-          a1,a2,a3,albDecTr,albEveTr,albGrass,tstepcount,porosity,DecidCap,deltaLAI,&!inout
+          albDecTr,albEveTr,albGrass,tstepcount,porosity,DecidCap,deltaLAI,&!inout
           xmAH,GDD,HDD,LAI,&
           WU_Day,xBo)!output
 
@@ -252,7 +252,7 @@ SUBROUTINE Cal_DailyStateEnd(&
      alBMax_DecTr,alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
      BaseT,BaseTe,CapMax_dec,CapMin_dec,dataOut,DayWat,DayWatPer,Faut,GDDFull,&
      Ie_a,Ie_m,LAIMax,LAIMin,LAIPower,lat,PorMax_dec,PorMin_dec,SDDFull,LAI_obs,&
-     a1,a2,a3,albDecTr,albEveTr,albGrass,tstepcount,porosity,DecidCap,deltaLAI,&!inout
+     albDecTr,albEveTr,albGrass,tstepcount,porosity,DecidCap,deltaLAI,&!inout
      xmAH,GDD,HDD,LAI,&
      WU_Day,xBo)!output
   IMPLICIT NONE
@@ -298,9 +298,9 @@ SUBROUTINE Cal_DailyStateEnd(&
   REAL(KIND(1d0)),INTENT(IN)::SDDFull(nvegsurf)
   REAL(KIND(1d0)),INTENT(IN)::LAI_obs
 
-  REAL(KIND(1d0)),INTENT(INOUT)::a1
-  REAL(KIND(1d0)),INTENT(INOUT)::a2
-  REAL(KIND(1d0)),INTENT(INOUT)::a3
+  ! REAL(KIND(1d0)),INTENT(INOUT)::a1
+  ! REAL(KIND(1d0)),INTENT(INOUT)::a2
+  ! REAL(KIND(1d0)),INTENT(INOUT)::a3
   REAL(KIND(1d0)),INTENT(INOUT)::albDecTr( 0:ndays)
   REAL(KIND(1d0)),INTENT(INOUT)::albEveTr( 0:ndays)
   REAL(KIND(1d0)),INTENT(INOUT)::albGrass( 0:ndays)
@@ -372,7 +372,7 @@ SUBROUTINE Cal_DailyStateEnd(&
   CALL update_AnOHM(&
        Gridiv,id,& !input
        ReadLinesMetdata,ncolumnsDataOut,NumberOfGrids,dataOut,&
-       a1,a2,a3,&!inout
+      !  a1,a2,a3,&!inout
        xBo,xmAH) !output
 
 
@@ -451,7 +451,7 @@ END SUBROUTINE init_DailyState
 SUBROUTINE update_AnOHM(&
      Gridiv,id,& !input
      ReadLinesMetdata,ncolumnsDataOut,NumberOfGrids,dataOut,&
-     a1,a2,a3,&!inout
+    !  a1,a2,a3,&!inout
      xBo,xmAH) !output
   IMPLICIT NONE
   INTEGER,INTENT(IN) :: Gridiv
@@ -462,9 +462,9 @@ SUBROUTINE update_AnOHM(&
 
   REAL(KIND(1d0)),DIMENSION(ReadLinesMetdata,ncolumnsDataOut,NumberOfGrids),INTENT(IN)::dataOut
 
-  REAL(KIND(1d0)),INTENT(INOUT)::a1
-  REAL(KIND(1d0)),INTENT(INOUT)::a2
-  REAL(KIND(1d0)),INTENT(INOUT)::a3
+  ! REAL(KIND(1d0)),INTENT(INOUT)::a1
+  ! REAL(KIND(1d0)),INTENT(INOUT)::a2
+  ! REAL(KIND(1d0)),INTENT(INOUT)::a3
 
   REAL(KIND(1d0)),INTENT(OUT)::xBo
   REAL(KIND(1d0)),INTENT(OUT)::xmAH
@@ -476,9 +476,9 @@ SUBROUTINE update_AnOHM(&
   REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE ::xAH
   REAL(KIND(1d0))::mxQH
   REAL(KIND(1d0))::mxQE
-  REAL(KIND(1d0))::xa1
-  REAL(KIND(1d0))::xa2
-  REAL(KIND(1d0))::xa3
+  ! REAL(KIND(1d0))::xa1
+  ! REAL(KIND(1d0))::xa2
+  ! REAL(KIND(1d0))::xa3
 
   INTEGER:: err
   INTEGER:: lenMetData
@@ -527,9 +527,9 @@ SUBROUTINE update_AnOHM(&
   xAH  = subMet(:,3)
   xmAH  = SUM(xAH(:))/24
 
-  xa1=a1
-  xa2=a2
-  xa3=a3
+  ! xa1=a1
+  ! xa2=a2
+  ! xa3=a3
 
 END SUBROUTINE update_AnOHM
 

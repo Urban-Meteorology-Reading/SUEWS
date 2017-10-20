@@ -15,9 +15,9 @@ CONTAINS
   SUBROUTINE SUEWS_cal_Main(&
        a1,a2,a3,addImpervious,AdditionalWater,addPipes,addVeg,addWater,addWaterBody,&
        AddWaterRunoff,AerodynamicResistanceMethod,AH_MIN,AHProf_tstep,&
-       AH_SLOPE_Cooling,AH_SLOPE_Heating,alb,albDecTr,AlbedoChoice,albEveTr,albGrass,&
+       AH_SLOPE_Cooling,AH_SLOPE_Heating,alb,albDecTr,albEveTr,albGrass,&
        alBMax_DecTr,alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
-       alpha_bioCO2,alpha_enh_bioCO2,alt,areaZh,avdens,avkdn,avRh,&
+       alpha_bioCO2,alpha_enh_bioCO2,alt,avdens,avkdn,avRh,&
        avU1,avU10_ms,azimuth,BaseT,BaseTe,BaseTHDD,beta_bioCO2,beta_enh_bioCO2,&
        BiogenCO2Code,bldgH,CapMax_dec,CapMin_dec,chang,changSnow,chAnOHM,&
        chSnow_per_interval,cpAnOHM,CRWmax,CRWmin,CumSnowfall,&
@@ -31,7 +31,7 @@ CONTAINS
        H_mod,HumActivity_tstep,IceFrac,id,Ie_a,Ie_end,Ie_m,Ie_start,imin,&
        InternalWaterUse_h,int_wu,ir,IrrFracConif,IrrFracDecid,IrrFracGrass,it,ity,iy,k,&
        kclear,kkAnOHM,Kmax,kup,kup_ind_snow,LAI,LAICalcYes,LAIMax,LAIMin,LAI_obs,LAIPower,LAIType,&
-       lat,ldown,ldown_obs,ldown_option,L_mod,lng,lup,MaxConductance,MaxQFMetab,&
+       lat,ldown,ldown_obs,L_mod,lng,lup,MaxConductance,MaxQFMetab,&
        Meltwaterstore,MetForcingData,MinQFMetab,min_res_bioCO2,mwh,mw_ind,mwstore,&
        NARP_EMIS_SNOW,NARP_G,NARP_TRANS_SITE,ncolumnsDataOut,NetRadiationMethod,&
        NonWaterFraction,nsh,nsh_real,NumberOfGrids,NumCapita,&
@@ -80,7 +80,7 @@ CONTAINS
     ! CHARACTER(LEN=20),INTENT(IN)::FileCode
 
     INTEGER,INTENT(IN)::AerodynamicResistanceMethod
-    INTEGER,INTENT(IN)::AlbedoChoice
+    ! INTEGER,INTENT(IN)::AlbedoChoice
     INTEGER,INTENT(IN)::Diagnose
     INTEGER,INTENT(IN)::DiagQN
     INTEGER,INTENT(IN)::DiagQS
@@ -97,7 +97,7 @@ CONTAINS
     INTEGER,INTENT(IN)::ity
     INTEGER,INTENT(IN)::iy
     INTEGER,INTENT(IN)::LAICalcYes
-    INTEGER,INTENT(IN)::ldown_option
+    ! INTEGER,INTENT(IN)::ldown_option
     INTEGER,INTENT(IN)::ncolumnsDataOut
     INTEGER,INTENT(IN)::NetRadiationMethod
     INTEGER,INTENT(IN)::nsh
@@ -127,7 +127,7 @@ CONTAINS
     REAL(KIND(1D0)),INTENT(IN)::AlbMin_EveTr
     REAL(KIND(1D0)),INTENT(IN)::AlbMin_Grass
     REAL(KIND(1D0)),INTENT(IN)::alt
-    REAL(KIND(1D0)),INTENT(IN)::areaZh
+    ! REAL(KIND(1D0)),INTENT(IN)::areaZh
     REAL(KIND(1D0)),INTENT(IN)::avdens
     REAL(KIND(1D0)),INTENT(IN)::avkdn
     REAL(KIND(1D0)),INTENT(IN)::avRh
@@ -280,9 +280,7 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(:,:,:),INTENT(IN)::MetForcingData
     REAL(KIND(1D0)),DIMENSION(READLINESMETDATA,NCOLUMNSDATAOUT,NUMBEROFGRIDS),INTENT(IN)::dataOut
 
-    REAL(KIND(1D0)),INTENT(INOUT)::a1
-    REAL(KIND(1D0)),INTENT(INOUT)::a2
-    REAL(KIND(1D0)),INTENT(INOUT)::a3
+
     REAL(KIND(1D0)),INTENT(INOUT)::OverUse
     REAL(KIND(1D0)),INTENT(INOUT)::runoff_per_interval
     REAL(KIND(1D0)),INTENT(INOUT)::SnowAlb
@@ -320,6 +318,9 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(NSH),INTENT(INOUT)::qn1_S_store
     REAL(KIND(1D0)),DIMENSION(NSH),INTENT(INOUT)::qn1_store
 
+    REAL(KIND(1D0)),INTENT(OUT)::a1
+    REAL(KIND(1D0)),INTENT(OUT)::a2
+    REAL(KIND(1D0)),INTENT(OUT)::a3
     REAL(KIND(1D0)),INTENT(OUT)::AdditionalWater
     REAL(KIND(1D0)),INTENT(OUT)::avU10_ms
     REAL(KIND(1D0)),INTENT(OUT)::azimuth
@@ -464,7 +465,7 @@ CONTAINS
     IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_cal_RoughnessParameters...'
     ! CALL SUEWS_cal_RoughnessParameters(Gridiv) ! Added by HCW 11 Nov 2014
     CALL SUEWS_cal_RoughnessParameters(&
-         RoughLenMomMethod,sfr,areaZh,&!input
+         RoughLenMomMethod,sfr,&!input
          bldgH,EveTreeH,DecTreeH,&
          porosity(id),FAIBldg,FAIEveTree,FAIDecTree,Z,&
          planF,&!output
@@ -493,7 +494,8 @@ CONTAINS
          CapMax_dec,CapMin_dec,PorMax_dec,PorMin_dec,&
          Ie_a,Ie_m,DayWatPer,DayWat,SnowPack,&
          BaseT,BaseTe,GDDFull,SDDFull,LAIMin,LAIMax,LAIPower,dataOut,&
-         a1,a2,a3,tstepcount,SnowAlb,DecidCap,albDecTr,albEveTr,albGrass,&!inout
+                                !  a1,a2,a3,
+         tstepcount,SnowAlb,DecidCap,albDecTr,albEveTr,albGrass,&!inout
          porosity,GDD,HDD,SnowDens,LAI,DayofWeek,WU_Day,&
          xBo)!output
 
@@ -517,10 +519,10 @@ CONTAINS
 
     ! ===================NET ALLWAVE RADIATION================================
     CALL SUEWS_cal_Qn(&
-         NetRadiationMethod,snowUse,ldown_option,id,&!input
+         NetRadiationMethod,snowUse,id,&!input
          Diagnose,snow_obs,ldown_obs,fcld_obs,&
          dectime,ZENITH_deg,avKdn,Temp_C,avRH,Press_hPa,qn1_obs,&
-         SnowAlb,AlbedoChoice,DiagQN,&
+         SnowAlb,DiagQN,&
          NARP_G,NARP_TRANS_SITE,NARP_EMIS_SNOW,IceFrac,sfr,emis,&
          alb,albDecTr,DecidCap,albEveTr,albGrass,surf,&!inout
          snowFrac,ldown,fcld,&!output
@@ -886,16 +888,16 @@ CONTAINS
 
   !=============net all-wave radiation=====================================
   SUBROUTINE SUEWS_cal_Qn(&
-       NetRadiationMethod,snowUse,ldown_option,id,&!input
+       NetRadiationMethod,snowUse,id,&!input
        Diagnose,snow_obs,ldown_obs,fcld_obs,&
        dectime,ZENITH_deg,avKdn,Temp_C,avRH,Press_hPa,qn1_obs,&
-       SnowAlb,AlbedoChoice,DiagQN,&
+       SnowAlb,DiagQN,&
        NARP_G,NARP_TRANS_SITE,NARP_EMIS_SNOW,IceFrac,sfr,emis,&
        alb,albDecTr,DecidCap,albEveTr,albGrass,surf,&!inout
        snowFrac,ldown,fcld,&!output
        qn1,qn1_SF,qn1_S,kclear,kup,lup,tsurf,&
        qn1_ind_snow,kup_ind_snow,Tsurf_ind_snow)
-    USE NARP_MODULE, ONLY: NARP
+    USE NARP_MODULE, ONLY: RadMethod,NARP
 
     IMPLICIT NONE
     INTEGER,PARAMETER ::nsurf     = 7 ! number of surface types
@@ -905,13 +907,13 @@ CONTAINS
 
     INTEGER,INTENT(in)::NetRadiationMethod
     INTEGER,INTENT(in)::snowUse
-    INTEGER,INTENT(in)::ldown_option
+    ! INTEGER,INTENT(in)::ldown_option
     INTEGER,INTENT(in)::id
     ! INTEGER,INTENT(in)::DecidSurf
     ! INTEGER,INTENT(in)::ConifSurf
     ! INTEGER,INTENT(in)::GrassSurf
     INTEGER,INTENT(in)::Diagnose
-    INTEGER,INTENT(in)::AlbedoChoice
+    ! INTEGER,INTENT(in)::AlbedoChoice
     INTEGER,INTENT(in)::DiagQN
 
     REAL(KIND(1d0)),INTENT(in)::snow_obs
@@ -963,9 +965,16 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf):: qn1_ind
 
     REAL(KIND(1d0)),PARAMETER::NAN=-999
+    INTEGER :: NetRadiationMethodX
+    INTEGER::AlbedoChoice,ldown_option
 
 
-    IF(NetRadiationMethod>0)THEN
+    CALL RadMethod(&
+         NetRadiationMethod,&!inout
+         snowUse,&!input
+         NetRadiationMethodX,AlbedoChoice,ldown_option)!output
+
+    IF(NetRadiationMethodX>0)THEN
 
        IF (snowUse==0) snowFrac=snow_obs
 
@@ -996,7 +1005,7 @@ CONTAINS
             NARP_G,NARP_TRANS_SITE,NARP_EMIS_SNOW,&
             dectime,ZENITH_deg,avKdn,Temp_C,avRH,Press_hPa,qn1_obs,&
             SnowAlb,&
-            AlbedoChoice,ldown_option,NetRadiationMethod,DiagQN,&
+            AlbedoChoice,ldown_option,NetRadiationMethodX,DiagQN,&
             qn1,qn1_SF,qn1_S,kclear,kup,LDown,lup,fcld,tsurf,&! output:
             qn1_ind_snow,kup_ind_snow,Tsurf_ind_snow)
        !Temp_C,kclear,fcld,dectime,avkdn,avRH,qn1,kup,ldown,lup,tsurf,&
@@ -1127,7 +1136,7 @@ CONTAINS
                BldgSurf,WaterSurf,&
                SnowUse,SnowFrac,&
                DiagQS,&
-               qs,deltaQi)
+               a1,a2,a3,qs,deltaQi)
        ELSEIF(OHMIncQF == 0) THEN  !Calculate QS using QSTAR
           ! qn1=qn1
           IF(Diagnose==1) WRITE(*,*) 'Calling OHM...'
@@ -1142,7 +1151,7 @@ CONTAINS
                BldgSurf,WaterSurf,&
                SnowUse,SnowFrac,&
                DiagQS,&
-               qs,deltaQi)
+               a1,a2,a3,qs,deltaQi)
        ENDIF
     ENDIF
 

@@ -20,7 +20,7 @@ SUBROUTINE OHM(qn1,qn1_store,qn1_av_store,&
      BldgSurf,WaterSurf,&
      SnowUse,SnowFrac,&
      DiagQS,&
-     qs,deltaQi)
+     a1,a2,a3,qs,deltaQi)
   ! Made by HCW Jan 2015 to replace OHMnew (no longer needed).
   ! Calculates net storage heat flux (QS) from Eq 4, Grimmond et al. 1991, Atm Env.
   ! Accounts for variable timesteps in dQ*/dt term.
@@ -71,7 +71,7 @@ SUBROUTINE OHM(qn1,qn1_store,qn1_av_store,&
   REAL(KIND(1d0)),INTENT(out):: qs ! storage heat flux
   REAL(KIND(1d0)),INTENT(out)::deltaQi(nsurf+2) ! storage heat flux of snow surfaces
 
-  REAL(KIND(1d0)):: a1,a2,a3 ! OHM coefficients of grid
+  REAL(KIND(1d0)),INTENT(out):: a1,a2,a3 ! OHM coefficients of grid
 
   ! REAL(KIND(1d0)):: nsh_nna ! number of timesteps per hour with non -999 values (used for spinup)
 

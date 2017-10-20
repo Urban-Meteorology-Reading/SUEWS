@@ -417,9 +417,9 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   CALL SUEWS_cal_Main(&
        a1,a2,a3,addImpervious,AdditionalWater,addPipes,addVeg,addWater,addWaterBody,&
        AddWaterRunoff,AerodynamicResistanceMethod,AH_MIN,AHProf_tstep,&
-       AH_SLOPE_Cooling,AH_SLOPE_Heating,alb,albDecTr,AlbedoChoice,albEveTr,albGrass,&
+       AH_SLOPE_Cooling,AH_SLOPE_Heating,alb,albDecTr,albEveTr,albGrass,&
        alBMax_DecTr,alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
-       alpha_bioCO2,alpha_enh_bioCO2,alt,areaZh,avdens,avkdn,avRh,&
+       alpha_bioCO2,alpha_enh_bioCO2,alt,avdens,avkdn,avRh,&
        avU1,avU10_ms,azimuth,BaseT,BaseTe,BaseTHDD,beta_bioCO2,beta_enh_bioCO2,&
        BiogenCO2Code,bldgH,CapMax_dec,CapMin_dec,chang,changSnow,chAnOHM,&
        chSnow_per_interval,cpAnOHM,CRWmax,CRWmin,CumSnowfall,&
@@ -433,7 +433,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        H_mod,HumActivity_tstep,IceFrac,id,Ie_a,Ie_end,Ie_m,Ie_start,imin,&
        InternalWaterUse_h,int_wu,ir,IrrFracConif,IrrFracDecid,IrrFracGrass,it,ity,iy,k,&
        kclear,kkAnOHM,Kmax,kup,kup_ind_snow,LAI,LAICalcYes,LAIMax,LAIMin,LAI_obs,LAIPower,LAIType,&
-       lat,ldown,ldown_obs,ldown_option,L_mod,lng,lup,MaxConductance,MaxQFMetab,&
+       lat,ldown,ldown_obs,L_mod,lng,lup,MaxConductance,MaxQFMetab,&
        Meltwaterstore,MetForcingData,MinQFMetab,min_res_bioCO2,mwh,mw_ind,mwstore,&
        NARP_EMIS_SNOW,NARP_G,NARP_TRANS_SITE,ncolumnsDataOut,NetRadiationMethod,&
        NonWaterFraction,nsh,nsh_real,NumberOfGrids,NumCapita,&

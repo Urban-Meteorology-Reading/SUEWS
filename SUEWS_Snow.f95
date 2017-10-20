@@ -576,8 +576,8 @@ SUBROUTINE SnowCalc(&
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::MeltWaterStore
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowDepth
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::iceFrac
-  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::addwater
-  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::addwaterrunoff
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::addwater
+  REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::addwaterrunoff
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowDens
 
 

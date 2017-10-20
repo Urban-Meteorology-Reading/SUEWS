@@ -17,6 +17,7 @@ SUBROUTINE LUMPS_cal_QHQE(&
   ! LJ June 2012    - Modified to work with snow (Qm added in the equations!)
   ! SG Feb 2012     - added some comments
   ! --------------------------------------------------------------
+  use AtmMoist_module,only:psyc_const,slope_svp,slopeice_svp
 
   IMPLICIT NONE
   INTEGER,PARAMETER::ndays=366
@@ -62,8 +63,7 @@ SUBROUTINE LUMPS_cal_QHQE(&
   REAL(KIND(1d0)),DIMENSION(3) :: sfrVeg! veg surface fractions [-]                             !,start
   REAL(KIND(1d0)),DIMENSION(3) :: LAIDay! LAI(id-1,iv), LAI at the beginning of today
   REAL(KIND(1d0))::VegPhen,VegMax,VegMin,&   !Vegetation phenology for LUMPS
-       slope_svp, slopeIce_svp,& !Slope of the saturation vapour pressure curve above watre and ice
-       psyc_s,psyc_const,&       !Psychometric constant
+       psyc_s,&       !Psychometric constant
        alpha_sl,alpha_in,&    	  !Parameters used in LUMPS QH and QE calculations
        beta,&                      !Beta parameter used in LUMPS QH and QE calculations [W m-2]
        alpha_qhqe,RAINRES,RainBucket,tlv

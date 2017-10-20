@@ -4,9 +4,11 @@
 ! TS 02 Oct 2017: added `SUEWS_cal_Main` as the generic wrapper
 ! TS 03 Oct 2017: added `SUEWS_cal_AnthropogenicEmission`
 MODULE SUEWS_Driver
+  USE AtmMoist_module,ONLY:LUMPS_cal_AtmMoist
   USE NARP_MODULE,ONLY:NARP_cal_SunPosition
   USE AnOHM_module,ONLY:AnOHM
   USE ESTM_module,ONLY:ESTM
+  USE Snow_module,ONLY:SnowCalc,Snow_cal_MeltHeat
 
   IMPLICIT NONE
 
@@ -17,7 +19,7 @@ CONTAINS
        AddWaterRunoff,AerodynamicResistanceMethod,AH_MIN,AHProf_tstep,&
        AH_SLOPE_Cooling,AH_SLOPE_Heating,alb,albDecTr,albEveTr,albGrass,&
        alBMax_DecTr,alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
-       alpha_bioCO2,alpha_enh_bioCO2,alt,avdens,avkdn,avRh,&
+       alpha_bioCO2,alpha_enh_bioCO2,alt,avkdn,avRh,&
        avU1,avU10_ms,azimuth,BaseT,BaseTe,BaseTHDD,beta_bioCO2,beta_enh_bioCO2,&
        BiogenCO2Code,bldgH,CapMax_dec,CapMin_dec,chang,changSnow,chAnOHM,&
        chSnow_per_interval,cpAnOHM,CRWmax,CRWmin,CumSnowfall,&
@@ -128,7 +130,7 @@ CONTAINS
     REAL(KIND(1D0)),INTENT(IN)::AlbMin_Grass
     REAL(KIND(1D0)),INTENT(IN)::alt
     ! REAL(KIND(1D0)),INTENT(IN)::areaZh
-    REAL(KIND(1D0)),INTENT(IN)::avdens
+
     REAL(KIND(1D0)),INTENT(IN)::avkdn
     REAL(KIND(1D0)),INTENT(IN)::avRh
     REAL(KIND(1D0)),INTENT(IN)::avU1
@@ -437,6 +439,7 @@ CONTAINS
     INTEGER,DIMENSION(NSURF)::snowCalcSwitch
 
     REAL(KIND(1D0))::avcp
+    REAL(KIND(1D0))::avdens
     REAL(KIND(1D0))::dq
     REAL(KIND(1D0))::lv_J_kg
     REAL(KIND(1D0))::lvS_J_kg
@@ -632,7 +635,7 @@ CONTAINS
     CALL SUEWS_cal_QE(&
          Diagnose,&!input
          id,tstep,imin,it,ity,snowfractionchoice,snowCalcSwitch,DayofWeek,CRWmin,CRWmax,&
-         nsh_real,lvS_J_kg,lv_j_kg,avdens,waterdens,avRh,Press_hPa,Temp_C,&
+         nsh_real,dectime,lvS_J_kg,lv_j_kg,avdens,waterdens,avRh,Press_hPa,Temp_C,&
          RAsnow,psyc_hPa,avcp,sIce_hPa,&
          PervFraction,vegfraction,addimpervious,qn1_SF,qf,qs,vpd_hPa,s_hPa,&
          ResistSurf,ra,rb,tstep_real,snowdensmin,precip,PipeCapacity,RunoffToWater,&
@@ -1347,7 +1350,7 @@ CONTAINS
   SUBROUTINE SUEWS_cal_QE(&
        Diagnose,&!input
        id,tstep,imin,it,ity,snowfractionchoice,snowCalcSwitch,DayofWeek,CRWmin,CRWmax,&
-       nsh_real,lvS_J_kg,lv_j_kg,avdens,waterdens,avRh,Press_hPa,Temp_C,&
+       nsh_real,dectime,lvS_J_kg,lv_j_kg,avdens,waterdens,avRh,Press_hPa,Temp_C,&
        RAsnow,psyc_hPa,avcp,sIce_hPa,&
        PervFraction,vegfraction,addimpervious,qn1_SF,qf,qs,vpd_hPa,s_hPa,&
        ResistSurf,ra,rb,tstep_real,snowdensmin,precip,PipeCapacity,RunoffToWater,&
@@ -1389,6 +1392,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::CRWmin
     REAL(KIND(1d0)),INTENT(in)::CRWmax
     REAL(KIND(1d0)),INTENT(in)::nsh_real
+    REAL(KIND(1d0)),INTENT(in)::dectime
     REAL(KIND(1d0)),INTENT(in)::lvS_J_kg
     REAL(KIND(1d0)),INTENT(in)::lv_j_kg
     REAL(KIND(1d0)),INTENT(in)::avdens
@@ -1555,7 +1559,7 @@ CONTAINS
              IF(Diagnose==1) WRITE(*,*) 'Calling SnowCalc...'
              CALL SnowCalc(&
                   id,& !input
-                  tstep,imin,it,is,&
+                  tstep,imin,it,dectime,is,&
                   snowfractionchoice,ity,CRWmin,CRWmax,nsh_real,lvS_J_kg,lv_j_kg,avdens,waterdens,&
                   avRh,Press_hPa,Temp_C,RAsnow,psyc_hPa,avcp,sIce_hPa,&
                   PervFraction,vegfraction,addimpervious,&

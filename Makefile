@@ -24,6 +24,7 @@ MODULES = LUMPS_Module_constants.o  \
           LUMPS_metRead.o  \
 					LUMPS_NARP.o \
 		  		SUEWS_MetDisagg.o \
+					LUMPS_atmos_functions_moist.o \
           SOLWEIG_modules.o  \
           SUEWS_Files_run_Control.o \
 					stringmod.o \
@@ -32,6 +33,7 @@ MODULES = LUMPS_Module_constants.o  \
 					SUEWS_AnOHM.o \
 					SUEWS_ESTM.o \
 					SUEWS_OHM.o \
+					SUEWS_Snow.o \
 					SUEWS_driver.o
 
 
@@ -40,7 +42,6 @@ OTHERS =  BLUEWS_CBL.o   \
           BLUEWS_Diff.o  \
           SUEWS_translate.o \
           SUEWS_HorizontalSoilWater.o \
-          LUMPS_atmos_functions_moist.o \
           LUMPS_atmos_functions_stab.o \
           SUEWS_ReDistributeWater.o \
           SUEWS_RoughnessParameters.o \
@@ -74,7 +75,6 @@ OTHERS =  BLUEWS_CBL.o   \
           SOLWEIG_wallinsun_veg.o  \
 					SUEWS_Initial.o \
 					SUEWS_SoilMoist.o \
-					SUEWS_Snow.o \
 					SUEWS_AnthropogenicEmissions.o \
 					SUEWS_BiogenCO2.o \
 					SUEWS_SnowUpdate.o \

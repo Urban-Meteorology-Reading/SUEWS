@@ -21,7 +21,7 @@ CONTAINS
        alBMax_DecTr,alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
        alpha_bioCO2,alpha_enh_bioCO2,alt,avkdn,avRh,&
        avU1,avU10_ms,azimuth,BaseT,BaseTe,BaseTHDD,beta_bioCO2,beta_enh_bioCO2,&
-       BiogenCO2Code,bldgH,CapMax_dec,CapMin_dec,chang,changSnow,chAnOHM,&
+       bldgH,CapMax_dec,CapMin_dec,chang,changSnow,chAnOHM,&
        chSnow_per_interval,cpAnOHM,CRWmax,CRWmin,CumSnowfall,&
        dataOut,dataOutESTM,DayofWeek,DayWat,DayWatPer,DecidCap,dectime,DecTreeH,dens_dry,&
        Diagnose,DiagQN,DiagQS,DLS,drain_per_tstep,DRAINRT,Ea_hPa,EF_umolCO2perJ,emis,&
@@ -266,7 +266,7 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(IN)::BaseTe
     REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(IN)::beta_bioCO2
     REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(IN)::beta_enh_bioCO2
-    REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(IN)::BiogenCO2Code
+    ! REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(IN)::BiogenCO2Code
     REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(IN)::GDDFull
     REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(IN)::LAIMax
     REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(IN)::LAIMin
@@ -536,7 +536,7 @@ CONTAINS
     ! ===================ANTHROPOGENIC HEAT FLUX================================
     CALL SUEWS_cal_AnthropogenicEmission(&
          AH_MIN,AHProf_tstep,AH_SLOPE_Cooling,AH_SLOPE_Heating,alpha_bioCO2,&
-         alpha_enh_bioCO2,avkdn,beta_bioCO2,beta_enh_bioCO2,BiogenCO2Code,DayofWeek,&
+         alpha_enh_bioCO2,avkdn,beta_bioCO2,beta_enh_bioCO2,DayofWeek,&
          Diagnose,DLS,EF_umolCO2perJ,EmissionsMethod,EnEF_v_Jkm,Fc,Fc_anthro,Fc_biogen,&
          Fc_build,FcEF_v_kgkm,Fc_metab,Fc_photo,Fc_respi,Fc_traff,FrFossilFuel_Heat,&
          FrFossilFuel_NonHeat,HDD,HumActivity_tstep,id,imin,it,LAI, LaiMax,LaiMin,&
@@ -705,7 +705,7 @@ CONTAINS
   ! ===================ANTHROPOGENIC HEAT + CO2 FLUX================================
   SUBROUTINE SUEWS_cal_AnthropogenicEmission(&
        AH_MIN,AHProf_tstep,AH_SLOPE_Cooling,AH_SLOPE_Heating,alpha_bioCO2,&
-       alpha_enh_bioCO2,avkdn,beta_bioCO2,beta_enh_bioCO2,BiogenCO2Code,DayofWeek,&
+       alpha_enh_bioCO2,avkdn,beta_bioCO2,beta_enh_bioCO2,DayofWeek,&
        Diagnose,DLS,EF_umolCO2perJ,EmissionsMethod,EnEF_v_Jkm,Fc,Fc_anthro,Fc_biogen,&
        Fc_build,FcEF_v_kgkm,Fc_metab,Fc_photo,Fc_respi,Fc_traff,FrFossilFuel_Heat,&
        FrFossilFuel_NonHeat,HDD,HumActivity_tstep,id,imin,it,LAI, LaiMax,LaiMin,&
@@ -779,7 +779,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(-4:ndays, nvegsurf),INTENT(in)::LAI
     REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(in)::LaiMin
     REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(in):: LaiMax
-    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(in)::BiogenCO2Code
+    ! REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(in)::BiogenCO2Code
     REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(in)::alpha_bioCO2
     REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(in)::beta_bioCO2
     REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(in)::theta_bioCO2
@@ -877,7 +877,7 @@ CONTAINS
        IF(Diagnose==1) WRITE(*,*) 'Calling CO2_biogen...'
        CALL CO2_biogen(EmissionsMethod,id,ndays,ivConif,ivDecid,ivGrass,ConifSurf,DecidSurf,GrassSurf,BSoilSurf,&
             snowFrac,nsurf,NVegSurf,avkdn,Temp_C,sfr,LAI,LaiMin,LaiMax,&
-            BiogenCO2Code,alpha_bioCO2,beta_bioCO2,theta_bioCO2,alpha_enh_bioCO2,beta_enh_bioCO2,&
+            alpha_bioCO2,beta_bioCO2,theta_bioCO2,alpha_enh_bioCO2,beta_enh_bioCO2,&
             resp_a,resp_b,min_res_bioCO2,Fc_biogen,Fc_respi,Fc_photo,&
             notUsed,notUsedI)
     ENDIF

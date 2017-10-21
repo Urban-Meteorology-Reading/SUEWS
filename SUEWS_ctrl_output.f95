@@ -1535,7 +1535,7 @@ CONTAINS
   !===========================================================================!
   ! sort a sequence of LONG values into the specially aligned sequence per QGIS
   !===========================================================================!
-  SUBROUTINE sortGrid(seqGrid2Sort, seqGridSorted, nRow, nCol)
+  SUBROUTINE sortGrid(seqGrid2Sort0, seqGridSorted, nRow, nCol)
     USE qsort_c_module
     ! convert a vector of grids to a matrix
     ! the grid IDs in seqGrid2Sort follow the QGIS convention
@@ -1546,9 +1546,9 @@ CONTAINS
     IMPLICIT NONE
     INTEGER :: nRow, nCol,i=1,j=1,xInd,len
 
-    INTEGER,DIMENSION(nRow*nCol),INTENT(in) :: seqGrid2Sort
+    INTEGER,DIMENSION(nRow*nCol),INTENT(in) :: seqGrid2Sort0
     INTEGER,DIMENSION(nRow*nCol),INTENT(out) :: seqGridSorted
-    INTEGER,DIMENSION(nRow*nCol) :: locSorted
+    INTEGER,DIMENSION(nRow*nCol) :: seqGrid2Sort,locSorted
     INTEGER :: loc
     REAL:: ind(nRow*nCol,2)
     REAL :: seqGridSortedReal(nRow*nCol),val
@@ -1565,6 +1565,10 @@ CONTAINS
     ! PRINT*, 'seqGridSorted:'
     ! PRINT*, seqGridSorted(1:5)
     ! PRINT*, '****'
+
+    !sort the input array to make sure the grid order is in QGIS convention
+    ! i.e., diagonally ascending
+    seqGrid2Sort=int(QsortC(seqGrid2Sort0*1.))
 
 
     ! fill in an nRow*nCol array with values to determine sequence

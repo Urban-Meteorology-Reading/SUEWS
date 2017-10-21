@@ -16,7 +16,7 @@ os.chdir('SampleRun')
 # run SUEWS_V2017b
 print(os.getcwd())
 # call('SUEWS_V2017b')
-os.system('./SUEWS_V2017b')
+os.system('./SUEWS_V2017c')
 
 # return to the Benchmark folder and do benchmarking
 os.chdir('Benchmark')

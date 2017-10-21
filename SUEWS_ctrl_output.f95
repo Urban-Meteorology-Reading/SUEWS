@@ -1551,7 +1551,8 @@ CONTAINS
     INTEGER,DIMENSION(nRow*nCol) :: seqGrid2Sort,locSorted
     INTEGER :: loc
     REAL:: ind(nRow*nCol,2)
-    REAL :: seqGridSortedReal(nRow*nCol),val
+    REAL,DIMENSION(nRow*nCol) :: seqGrid2SortReal,seqGridSortedReal
+    real :: val
 
     ! number of grids
     len=nRow*nCol
@@ -1568,7 +1569,9 @@ CONTAINS
 
     !sort the input array to make sure the grid order is in QGIS convention
     ! i.e., diagonally ascending
-    seqGrid2Sort=int(QsortC(seqGrid2Sort0*1.))
+    seqGrid2SortReal=seqGrid2Sort0*1.
+    CALL QsortC(seqGrid2SortReal)
+    seqGrid2Sort=int(seqGrid2SortReal)
 
 
     ! fill in an nRow*nCol array with values to determine sequence

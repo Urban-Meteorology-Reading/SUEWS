@@ -340,8 +340,8 @@ MODULE allocateArray
   !-----------------------------------------------------------------------------------------------
 
   ! ---- OHM coefficients ------------------------------------------------------------------------
-  REAL(KIND(1d0)),DIMENSION(9,4,3):: OHM_coef   !Array for OHM coefficients
-  REAL(KIND(1d0)),DIMENSION(9)::     OHM_threshSW, OHM_threshWD   !Arrays for OHM thresholds
+  REAL(KIND(1d0)),DIMENSION(nsurf+1,4,3):: OHM_coef   !Array for OHM coefficients
+  REAL(KIND(1d0)),DIMENSION(nsurf+1)::     OHM_threshSW, OHM_threshWD   !Arrays for OHM thresholds
   REAL(KIND(1d0)):: a1,a2,a3   !OHM coefficients, a1 [-]; a2 [h]; a3 [W m-2]
   REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE:: qn1_store, qn1_S_store   !Q* values for each timestep over previous hr (_S for snow)
   REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE:: qn1_av_store, qn1_S_av_store  !Hourly Q* values for each timestep over previous 2 hr

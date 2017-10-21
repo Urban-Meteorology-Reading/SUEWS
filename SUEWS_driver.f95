@@ -277,7 +277,7 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(IN)::theta_bioCO2
     REAL(KIND(1d0)),DIMENSION(:),INTENT(in)::Ts5mindata_ir
     REAL(KIND(1D0)),DIMENSION(NSURF+1,NSURF-1),INTENT(IN)::WaterDist
-    REAL(KIND(1D0)),DIMENSION(9,4,3),INTENT(IN)::OHM_coef
+    REAL(KIND(1D0)),DIMENSION(nsurf+1,4,3),INTENT(IN)::OHM_coef
     REAL(KIND(1D0)),DIMENSION(4,NVEGSURF),INTENT(IN)::LAIPower
     REAL(KIND(1D0)),DIMENSION(:,:,:),INTENT(IN)::MetForcingData
     REAL(KIND(1D0)),DIMENSION(READLINESMETDATA,NCOLUMNSDATAOUT,NUMBEROFGRIDS),INTENT(IN)::dataOut
@@ -1074,7 +1074,7 @@ CONTAINS
     INTEGER,INTENT(in):: EmissionsMethod !< AnthropHeat option [-]
 
 
-    REAL(KIND(1d0)),INTENT(in)::OHM_coef(9,4,3)                 ! OHM coefficients
+    REAL(KIND(1d0)),INTENT(in)::OHM_coef(nsurf+1,4,3)                 ! OHM coefficients
     REAL(KIND(1d0)),INTENT(in)::OHM_threshSW(9) ! OHM thresholds
     REAL(KIND(1d0)),INTENT(in)::OHM_threshWD(9) ! OHM thresholds
     REAL(KIND(1d0)),INTENT(in)::soilmoist(nsurf)                ! soil moisture

@@ -723,6 +723,9 @@ CONTAINS
     IF(fveg/=0) THEN
        alb_veg=(alb(ConifSurf)*sfr(ConifSurf) + alb(DecidSurf)*sfr(DecidSurf) + alb(GrassSurf)*sfr(GrassSurf))/fveg
        em_veg=(emis(ConifSurf)*sfr(ConifSurf) + emis(DecidSurf)*sfr(DecidSurf) + emis(GrassSurf)*sfr(GrassSurf))/fveg
+    ELSE ! check fveg==0 scenario to avoid division-by-zero error, TS 21 Oct 2017
+       alb_veg=NAN
+       em_veg=NAN
     ENDIF
 
     ! ==== ground (i.e. Paved, EveTr, DecTr, Grass, BSoil, Water - all except Bldgs)
@@ -742,7 +745,8 @@ CONTAINS
     IF(froof<1.0) THEN
        HW=fwall/(2.0*(1.0-froof))
     ELSE
-       HW=0  !HCW if only roof, no ground
+       !  HW=0  !HCW if only roof, no ground
+       HW=0.00001  ! to avoid zero-HW scenario TS 21 Oct 2017
     ENDIF
 
     IF (Fground==1.0) THEN   !!FO!! if only ground, i.e. no houses
@@ -765,7 +769,7 @@ CONTAINS
        WB=1
        zvf_WALL= 0 !COS(ATAN(2/HW))  when HW=0                                 !!FO!! wall view factor for wall
        HW=0
-       SVF_ground=COS(ATAN(2*HW))                                              !!FO!! sky view factor for ground
+       SVF_ground=MAX(COS(ATAN(2*HW)),0.00001)!!FO!! sky view factor for ground ! to avoid zero-division scenario TS 21 Oct 2017                                              
        SVF_WALL=(1-zvf_WALL)/2                                                 !!FO!! sky view factor for wall
        zvf_ground=1-svf_ground                                                 !!FO!! wall view factor for ground
        xvf_wall=svf_wall                                                       !!FO!! ground view factor
@@ -778,7 +782,7 @@ CONTAINS
        RVF_ROOF=froof
        RVF_Wall=1-RVF_ROOF-RVF_ground-RVF_VEG
     ELSE
-       W=BldgH/HW   !What about if HW = 0 ! need to add IF(Fground ==0) option?
+       W=BldgH/HW   !What about if HW = 0 ! need to add IF(Fground ==0) option? ! fixed by setting a small number, TS 21 Oct 2017
        WB=W*SQRT(FROOF/Fground)
        SVF_ground=COS(ATAN(2*HW))                                              !!FO!! sky view factor for ground
        zvf_WALL=COS(ATAN(2/HW))                                                !!FO!! wall view factor for wall
@@ -812,7 +816,9 @@ CONTAINS
 
     IF (fibld==0) fibld=0.00001 !this just ensures a solution to radiation
     finternal = froof+fibld+fwall
+    IF (finternal==0) finternal=0.00001 ! to avoid zero-devision error TS 21 Oct 2017
     fair=zref-BldgH*froof
+    IF (fair==0) fair=0.00001 ! to avoid zero-devision error TS 21 Oct 2017
     !ivf_ii=1.-ivf_iw-ivf_ir-ivf_if    !S.O. I do not know these are should be calculated or read from input files
     !ivf_ww=1.-ivf_wi-ivf_wr-ivf_wf
     !ivf_rw=1.-ivf_ri-ivf_rf;
@@ -1164,7 +1170,7 @@ CONTAINS
     radforce       = .FALSE.
     groundradforce = .FALSE. !Close the radiation scheme in original ESTM S.O.O.
 
-    bldgHX=max(bldgH,0.001) ! this is to prevent zero building height
+    bldgHX=MAX(bldgH,0.001) ! this is to prevent zero building height
 
     ! Set -999s for first row
     dum=(/-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,&
@@ -1303,7 +1309,7 @@ CONTAINS
     ENDIF
 
     AIREXDT=AIREXHR*(Tstep/3600.0)
-    shc_airbld=HEATCAPACITY_AIR(TiEVOLVE,avrh,Press_hPa)
+    shc_airbld=MAX(HEATCAPACITY_AIR(TiEVOLVE,avrh,Press_hPa),0.00001) ! to avoid zero-division scenario TS 21 Oct 2017
     IF (shc_airbld<minshc_airbld) minshc_airbld=shc_airbld
 
     !internal convective exchange coefficients                         !!FO!! ibldCHmod = 0 originally

@@ -49,8 +49,8 @@ SUBROUTINE OHM(qn1,qn1_store,qn1_av_store,&
   REAL(KIND(1d0)),INTENT(in)::sfr(nsurf)                      ! surface fractions
   REAL(KIND(1d0)),INTENT(in)::SnowFrac(nsurf)                 ! snow fractions of each surface
   REAL(KIND(1d0)),INTENT(in)::HDDday                          ! HDDday=HDD(id-1,4) HDD at the begining of today (id-1)
-  REAL(KIND(1d0)),INTENT(in)::OHM_coef(9,4,3)                 ! OHM coefficients
-  REAL(KIND(1d0)),INTENT(in)::OHM_threshSW(9),OHM_threshWD(9) ! OHM thresholds
+  REAL(KIND(1d0)),INTENT(in)::OHM_coef(nsurf+1,4,3)                 ! OHM coefficients
+  REAL(KIND(1d0)),INTENT(in)::OHM_threshSW(nsurf+1),OHM_threshWD(nsurf+1) ! OHM thresholds
   REAL(KIND(1d0)),INTENT(in)::soilmoist(nsurf)                ! soil moisture
   REAL(KIND(1d0)),INTENT(in)::soilstoreCap(nsurf)             ! capacity of soil store
   REAL(KIND(1d0)),INTENT(in)::state(nsurf) ! wetness status
@@ -69,7 +69,7 @@ SUBROUTINE OHM(qn1,qn1_store,qn1_av_store,&
 
 
   REAL(KIND(1d0)),INTENT(out):: qs ! storage heat flux
-  REAL(KIND(1d0)),INTENT(out)::deltaQi(nsurf+2) ! storage heat flux of snow surfaces
+  REAL(KIND(1d0)),INTENT(out)::deltaQi(nsurf+1) ! storage heat flux of snow surfaces
 
   REAL(KIND(1d0)),INTENT(out):: a1,a2,a3 ! OHM coefficients of grid
 
@@ -151,7 +151,7 @@ SUBROUTINE OHM(qn1,qn1_store,qn1_av_store,&
         !   !dqndt = 0.5*(r3-r1)*nsh_real    !gradient at t-2
         !   dqndt = 0.5*(qn1_S-r2_grids(Gridiv))*nsh_real     !gradient at t-1
         !   ! Calculate net storage heat flux for snow surface (winter wet conditions HCW 15/01/2015)
-        !   deltaQi = qn1_S*OHM_coef(nsurf+2,3,1) + dqndt*OHM_coef(nsurf+2,3,2) + OHM_coef(nsurf+2,3,3)
+        !   deltaQi = qn1_S*OHM_coef(nsurf+1,3,1) + dqndt*OHM_coef(nsurf+1,3,2) + OHM_coef(nsurf+1,3,3)
         !!endif
         !r1_grids(Gridiv)=r2_grids(Gridiv)
         !r2_grids(Gridiv)=r3_grids(Gridiv)
@@ -162,7 +162,7 @@ SUBROUTINE OHM(qn1,qn1_store,qn1_av_store,&
 
         ! Calculate net storage heat flux for snow surface (winter wet conditions)
         CALL OHM_QS_cal(qn1_S,dqndt,&
-             OHM_coef(nsurf+2,3,1),OHM_coef(nsurf+2,3,2),OHM_coef(nsurf+2,3,3),&
+             OHM_coef(nsurf+1,3,1),OHM_coef(nsurf+1,3,2),OHM_coef(nsurf+1,3,3),&
              deltaQi0)
         deltaQi=deltaQi0
 
@@ -192,8 +192,8 @@ SUBROUTINE OHM_coef_cal(sfr,nsurf,&
        sfr(nsurf),& ! surface cover fractions
        SnowFrac(nsurf),& ! snow fractions of each surface
        HDDday,& ! HDDday=HDD(id-1,4) HDD at the begining of today (id-1)
-       OHM_coef(9,4,3),&
-       OHM_threshSW(9),OHM_threshWD(9),& ! OHM thresholds
+       OHM_coef(nsurf+1,4,3),&
+       OHM_threshSW(nsurf+1),OHM_threshWD(nsurf+1),& ! OHM thresholds
        soilmoist(nsurf),& ! soil moisture
        soilstoreCap(nsurf),&! capacity of soil store
        state(nsurf) ! wetness status

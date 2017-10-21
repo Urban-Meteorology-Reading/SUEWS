@@ -331,37 +331,37 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   !  then transfer coeffs for snow surface (8th surface in SurfaceChar; 9th surface in OHM_Coefs)
   ! Summer wet
   OHM_coef(1:nsurf,1,1) = SurfaceChar(Gridiv,c_a1_SWet(1:nsurf)) !1:nsurf a1 Summer wet
-  OHM_coef(nsurf+2,1,1) = SurfaceChar(Gridiv,c_a1_SWet(nsurf+1)) !Snow    a1 Summer wet
+  OHM_coef(nsurf+1,1,1) = SurfaceChar(Gridiv,c_a1_SWet(nsurf+1)) !Snow    a1 Summer wet
   OHM_coef(1:nsurf,1,2) = SurfaceChar(Gridiv,c_a2_SWet(1:nsurf)) !1:nsurf a2 Summer wet
-  OHM_coef(nsurf+2,1,2) = SurfaceChar(Gridiv,c_a2_SWet(nsurf+1)) !Snow    a2 Summer wet
+  OHM_coef(nsurf+1,1,2) = SurfaceChar(Gridiv,c_a2_SWet(nsurf+1)) !Snow    a2 Summer wet
   OHM_coef(1:nsurf,1,3) = SurfaceChar(Gridiv,c_a3_SWet(1:nsurf)) !1:nsurf a3 Summer wet
-  OHM_coef(nsurf+2,1,3) = SurfaceChar(Gridiv,c_a3_SWet(nsurf+1)) !Snow    a3 Summer wet
+  OHM_coef(nsurf+1,1,3) = SurfaceChar(Gridiv,c_a3_SWet(nsurf+1)) !Snow    a3 Summer wet
   ! Summer dry
   OHM_coef(1:nsurf,2,1) = SurfaceChar(Gridiv,c_a1_SDry(1:nsurf)) !1:nsurf a1 Summer dry
-  OHM_coef(nsurf+2,2,1) = SurfaceChar(Gridiv,c_a1_SDry(nsurf+1)) !Snow    a1 Summer dry
+  OHM_coef(nsurf+1,2,1) = SurfaceChar(Gridiv,c_a1_SDry(nsurf+1)) !Snow    a1 Summer dry
   OHM_coef(1:nsurf,2,2) = SurfaceChar(Gridiv,c_a2_SDry(1:nsurf)) !1:nsurf a2 Summer dry
-  OHM_coef(nsurf+2,2,2) = SurfaceChar(Gridiv,c_a2_SDry(nsurf+1)) !Snow    a2 Summer dry
+  OHM_coef(nsurf+1,2,2) = SurfaceChar(Gridiv,c_a2_SDry(nsurf+1)) !Snow    a2 Summer dry
   OHM_coef(1:nsurf,2,3) = SurfaceChar(Gridiv,c_a3_SDry(1:nsurf)) !1:nsurf a3 Summer dry
-  OHM_coef(nsurf+2,2,3) = SurfaceChar(Gridiv,c_a3_SDry(nsurf+1)) !Snow    a3 Summer dry
+  OHM_coef(nsurf+1,2,3) = SurfaceChar(Gridiv,c_a3_SDry(nsurf+1)) !Snow    a3 Summer dry
   ! Winter wet
   OHM_coef(1:nsurf,3,1) = SurfaceChar(Gridiv,c_a1_WWet(1:nsurf)) !1:nsurf a1 Winter wet
-  OHM_coef(nsurf+2,3,1) = SurfaceChar(Gridiv,c_a1_WWet(nsurf+1)) !Snow    a1 Winter wet
+  OHM_coef(nsurf+1,3,1) = SurfaceChar(Gridiv,c_a1_WWet(nsurf+1)) !Snow    a1 Winter wet
   OHM_coef(1:nsurf,3,2) = SurfaceChar(Gridiv,c_a2_WWet(1:nsurf)) !1:nsurf a2 Winter wet
-  OHM_coef(nsurf+2,3,2) = SurfaceChar(Gridiv,c_a2_WWet(nsurf+1)) !Snow    a2 Winter wet
+  OHM_coef(nsurf+1,3,2) = SurfaceChar(Gridiv,c_a2_WWet(nsurf+1)) !Snow    a2 Winter wet
   OHM_coef(1:nsurf,3,3) = SurfaceChar(Gridiv,c_a3_WWet(1:nsurf)) !1:nsurf a3 Winter wet
-  OHM_coef(nsurf+2,3,3) = SurfaceChar(Gridiv,c_a3_WWet(nsurf+1)) !Snow    a3 Winter wet
+  OHM_coef(nsurf+1,3,3) = SurfaceChar(Gridiv,c_a3_WWet(nsurf+1)) !Snow    a3 Winter wet
   ! Winter dry
   OHM_coef(1:nsurf,4,1) = SurfaceChar(Gridiv,c_a1_WDry(1:nsurf)) !1:nsurf a1 Winter dry
-  OHM_coef(nsurf+2,4,1) = SurfaceChar(Gridiv,c_a1_WDry(nsurf+1)) !Snow    a1 Winter dry
+  OHM_coef(nsurf+1,4,1) = SurfaceChar(Gridiv,c_a1_WDry(nsurf+1)) !Snow    a1 Winter dry
   OHM_coef(1:nsurf,4,2) = SurfaceChar(Gridiv,c_a2_WDry(1:nsurf)) !1:nsurf a2 Winter dry
-  OHM_coef(nsurf+2,4,2) = SurfaceChar(Gridiv,c_a2_WDry(nsurf+1)) !Snow    a2 Winter dry
+  OHM_coef(nsurf+1,4,2) = SurfaceChar(Gridiv,c_a2_WDry(nsurf+1)) !Snow    a2 Winter dry
   OHM_coef(1:nsurf,4,3) = SurfaceChar(Gridiv,c_a3_WDry(1:nsurf)) !1:nsurf a3 Winter dry
-  OHM_coef(nsurf+2,4,3) = SurfaceChar(Gridiv,c_a3_WDry(nsurf+1)) !Snow    a3 Winter dry
+  OHM_coef(nsurf+1,4,3) = SurfaceChar(Gridiv,c_a3_WDry(nsurf+1)) !Snow    a3 Winter dry
   ! OHM thresholds
   OHM_threshSW(1:nsurf) = SurfaceChar(Gridiv,c_OHMThresh_SW(1:nsurf)) !1:nsurf
-  OHM_threshSW(nsurf+2) = SurfaceChar(Gridiv,c_OHMThresh_SW(nsurf+1)) !Snow
+  OHM_threshSW(nsurf+1) = SurfaceChar(Gridiv,c_OHMThresh_SW(nsurf+1)) !Snow
   OHM_threshWD(1:nsurf) = SurfaceChar(Gridiv,c_OHMThresh_WD(1:nsurf)) !1:nsurf
-  OHM_threshWD(nsurf+2) = SurfaceChar(Gridiv,c_OHMThresh_WD(nsurf+1)) !Snow
+  OHM_threshWD(nsurf+1) = SurfaceChar(Gridiv,c_OHMThresh_WD(nsurf+1)) !Snow
 
   ! ---- ESTM characteristics -------------------------
   ! HCW 16 Jun 2016
@@ -984,20 +984,20 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      ! Not currently coded, but add these later: SoilDensity, InfiltrationRate, OBS_SMDept, OBS_SMCap, OBS_SoilNotRocks
      WRITE(12,120) (snowD(iv),iv=1,(nsurf-1)),FCskip,FCskip, ' SnowLimPatch'
      WRITE(12,120) SnowLimPaved,SnowLimBuild,FCskip,FCskip,FCskip,FCskip,FCskip,FCskip, ' SnowLimRemove'
-     WRITE(12,120) (OHM_coef(1:nsurf,1,1)),OHM_coef(nsurf+2,1,1), ' OHM_a1_Sum_Wet'
-     WRITE(12,120) (OHM_coef(1:nsurf,2,1)),OHM_coef(nsurf+2,2,1), ' OHM_a1_Sum_Dry'
-     WRITE(12,120) (OHM_coef(1:nsurf,3,1)),OHM_coef(nsurf+2,3,1), ' OHM_a1_Win_Wet'
-     WRITE(12,120) (OHM_coef(1:nsurf,4,1)),OHM_coef(nsurf+2,4,1), ' OHM_a1_Win_Dry'
-     WRITE(12,120) (OHM_coef(1:nsurf,1,2)),OHM_coef(nsurf+2,1,2), ' OHM_a2_Sum_Wet'
-     WRITE(12,120) (OHM_coef(1:nsurf,2,2)),OHM_coef(nsurf+2,2,2), ' OHM_a2_Sum_Dry'
-     WRITE(12,120) (OHM_coef(1:nsurf,3,2)),OHM_coef(nsurf+2,3,2), ' OHM_a2_Win_Wet'
-     WRITE(12,120) (OHM_coef(1:nsurf,4,2)),OHM_coef(nsurf+2,4,2), ' OHM_a2_Win_Dry'
-     WRITE(12,120) (OHM_coef(1:nsurf,1,3)),OHM_coef(nsurf+2,1,3), ' OHM_a3_Sum_Wet'
-     WRITE(12,120) (OHM_coef(1:nsurf,2,3)),OHM_coef(nsurf+2,2,3), ' OHM_a3_Sum_Dry'
-     WRITE(12,120) (OHM_coef(1:nsurf,3,3)),OHM_coef(nsurf+2,3,3), ' OHM_a3_Win_Wet'
-     WRITE(12,120) (OHM_coef(1:nsurf,4,3)),OHM_coef(nsurf+2,4,3), ' OHM_a3_Win_Dry'
-     WRITE(12,120) (OHM_threshSW(1:nsurf)),OHM_threshSW(nsurf+2), ' OHMthreshold_SW'
-     WRITE(12,120) (OHM_threshWD(1:nsurf)),OHM_threshWD(nsurf+2), ' OHMthreshold_WD'
+     WRITE(12,120) (OHM_coef(1:nsurf,1,1)),OHM_coef(nsurf+1,1,1), ' OHM_a1_Sum_Wet'
+     WRITE(12,120) (OHM_coef(1:nsurf,2,1)),OHM_coef(nsurf+1,2,1), ' OHM_a1_Sum_Dry'
+     WRITE(12,120) (OHM_coef(1:nsurf,3,1)),OHM_coef(nsurf+1,3,1), ' OHM_a1_Win_Wet'
+     WRITE(12,120) (OHM_coef(1:nsurf,4,1)),OHM_coef(nsurf+1,4,1), ' OHM_a1_Win_Dry'
+     WRITE(12,120) (OHM_coef(1:nsurf,1,2)),OHM_coef(nsurf+1,1,2), ' OHM_a2_Sum_Wet'
+     WRITE(12,120) (OHM_coef(1:nsurf,2,2)),OHM_coef(nsurf+1,2,2), ' OHM_a2_Sum_Dry'
+     WRITE(12,120) (OHM_coef(1:nsurf,3,2)),OHM_coef(nsurf+1,3,2), ' OHM_a2_Win_Wet'
+     WRITE(12,120) (OHM_coef(1:nsurf,4,2)),OHM_coef(nsurf+1,4,2), ' OHM_a2_Win_Dry'
+     WRITE(12,120) (OHM_coef(1:nsurf,1,3)),OHM_coef(nsurf+1,1,3), ' OHM_a3_Sum_Wet'
+     WRITE(12,120) (OHM_coef(1:nsurf,2,3)),OHM_coef(nsurf+1,2,3), ' OHM_a3_Sum_Dry'
+     WRITE(12,120) (OHM_coef(1:nsurf,3,3)),OHM_coef(nsurf+1,3,3), ' OHM_a3_Win_Wet'
+     WRITE(12,120) (OHM_coef(1:nsurf,4,3)),OHM_coef(nsurf+1,4,3), ' OHM_a3_Win_Dry'
+     WRITE(12,120) (OHM_threshSW(1:nsurf)),OHM_threshSW(nsurf+1), ' OHMthreshold_SW'
+     WRITE(12,120) (OHM_threshWD(1:nsurf)),OHM_threshWD(nsurf+1), ' OHMthreshold_WD'
 
      WRITE(12,*) '----- '//TRIM(ADJUSTL(SsG_YYYY))//' Snow parameters'//' -----'
      WRITE(12,'(a12,11a10)') 'Grid','RadMeltF','TempMeltF','tau_a','tau_f','PLimAlb','SDensMin','SDensMax', &

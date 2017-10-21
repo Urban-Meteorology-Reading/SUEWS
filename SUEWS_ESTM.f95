@@ -693,6 +693,7 @@ CONTAINS
        !        1  2  3  4    5     6     7     8     9     10      11      12      13       !new
        !
        ! Calculate temperature of each layer in Kelvin
+       !  NB: what if (Nground/Nwall/Nroof-1)==0? TS 21 Oct 2017
        DO i=1,Nground
           ! Tground(i)=(Ts5mindata(1,cTs_Tiair)-Ts5mindata(1,cTs_Troad))*(i-1)/(Nground-1)+Ts5mindata(1,cTs_Troad)+C2K
           Tground(i)=(LBC_soil-Ts5mindata(1,cTs_Troad))*(i-1)/(Nground-1)+Ts5mindata(1,cTs_Troad)+C2K
@@ -769,7 +770,7 @@ CONTAINS
        WB=1
        zvf_WALL= 0 !COS(ATAN(2/HW))  when HW=0                                 !!FO!! wall view factor for wall
        HW=0
-       SVF_ground=MAX(COS(ATAN(2*HW)),0.00001)!!FO!! sky view factor for ground ! to avoid zero-division scenario TS 21 Oct 2017                                              
+       SVF_ground=MAX(COS(ATAN(2*HW)),0.00001)!!FO!! sky view factor for ground ! to avoid zero-division scenario TS 21 Oct 2017
        SVF_WALL=(1-zvf_WALL)/2                                                 !!FO!! sky view factor for wall
        zvf_ground=1-svf_ground                                                 !!FO!! wall view factor for ground
        xvf_wall=svf_wall                                                       !!FO!! ground view factor

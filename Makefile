@@ -29,6 +29,7 @@ MODULES = LUMPS_Module_constants.o  \
           SUEWS_Files_run_Control.o \
 					stringmod.o \
 					minpack.o\
+					SUEWS_DailyState.o \
 					qsort_c_module.o\
 					SUEWS_AnOHM.o \
 					SUEWS_ESTM.o \
@@ -81,8 +82,7 @@ OTHERS =  BLUEWS_CBL.o   \
 					SUEWS_Diagnostics.o
 
 # modules under rapid development
-TEST =		SUEWS_Calculations.o \
-					SUEWS_DailyState.o
+TEST =		SUEWS_Calculations.o
 
 
 # Build main program - main uses MODULES and OTHERS

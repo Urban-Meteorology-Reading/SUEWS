@@ -18,7 +18,7 @@ SUBROUTINE SUEWS_cal_WaterUse(&
      IrrFracConif,IrrFracDecid,IrrFracGrass,&
      DayofWeek_id,WUProfA_tstep,WUProfM_tstep,&
      InternalWaterUse_h,HDD_id,WU_Day_id,&
-     WaterUseMethod,NSH,it,imin,DLS,OverUse,&
+     WaterUseMethod,NSH,it,imin,DLS,&
      WUAreaEveTr_m2,WUAreaDecTr_m2,& ! output:
      WUAreaGrass_m2,WUAreaTotal_m2,&
      wu_EveTr,wu_DecTr,wu_Grass,wu_m3,int_wu,ext_wu)
@@ -69,8 +69,6 @@ SUBROUTINE SUEWS_cal_WaterUse(&
        DLS !day lightsavings =1 + 1h) =0
   !  nsurf
 
-  REAL(KIND(1d0)),INTENT(inout):: &
-       OverUse
 
   REAL(KIND(1d0)),INTENT(out):: &
        WUAreaEveTr_m2,&
@@ -92,6 +90,11 @@ SUBROUTINE SUEWS_cal_WaterUse(&
   INTEGER:: ih   !Hour corrected for Daylight savings
   INTEGER:: iu   !1=weekday OR 2=weekend
   REAL(KIND(1d0)),PARAMETER::NAN=-999.
+  REAL(KIND(1d0)):: OverUse
+
+  ! NB: set OverUse as 0 as done module_constants, TS 22 Oct 2017
+  ! and the logic for calculating OverUse to be determined
+  OverUse=0
 
   ! --------------------------------------------------------------------------------
   ! If water used is observed and provided in the met forcing file, units are m3

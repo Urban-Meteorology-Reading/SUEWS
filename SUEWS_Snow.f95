@@ -40,7 +40,6 @@ CONTAINS
        PrecipLimit,&
        PrecipLimitAlb,&
        nsh_real,&
-       waterdens,&
        sfr,&
        Tsurf_ind,&
        state,&
@@ -74,6 +73,7 @@ CONTAINS
     INTEGER,PARAMETER::PavSurf=1
     INTEGER,PARAMETER::BldgSurf=2
     INTEGER,PARAMETER::WaterSurf=7
+    REAL(KIND(1d0)),PARAMETER::waterDens=999.8395 !Density of water in 0 cel deg
 
     !These are input to the module
     INTEGER,INTENT(in)::snowUse
@@ -94,7 +94,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::PrecipLimit
     REAL(KIND(1d0)),INTENT(in)::PrecipLimitAlb
     REAL(KIND(1d0)),INTENT(in)::nsh_real
-    REAL(KIND(1d0)),INTENT(in)::waterdens
+    ! REAL(KIND(1d0)),INTENT(in)::waterdens
 
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::sfr
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::Tsurf_ind
@@ -470,7 +470,7 @@ CONTAINS
   SUBROUTINE SnowCalc(&
        id,& !input
        tstep,imin,it,dectime,is,&
-       snowfractionchoice,ity,CRWmin,CRWmax,nsh_real,lvS_J_kg,lv_j_kg,avdens,waterdens,&
+       ity,CRWmin,CRWmax,nsh_real,lvS_J_kg,lv_j_kg,avdens,&
        avRh,Press_hPa,Temp_C,RAsnow,psyc_hPa,avcp,sIce_hPa,&
        PervFraction,vegfraction,addimpervious,&
        numPM,s_hPa,ResistSurf,sp,ra,rb,tlv,snowdensmin,precip,&
@@ -479,7 +479,7 @@ CONTAINS
        WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
        freezmelt,freezstate,freezstatevol,&
        Qm_Melt,Qm_rain,Tsurf_ind,sfr,DayofWeek,surf,&
-       SnowPack,&!inout
+       SnowPack,SurplusEvap,&!inout
        snowFrac,MeltWaterStore,SnowDepth,iceFrac,addwater,addwaterrunoff,SnowDens,&
        runoffSnow,& ! output
        runoff,runoffSoil,chang,changSnow,SnowToSurf,state,snowD,ev_snow,soilmoist,&
@@ -507,13 +507,16 @@ CONTAINS
     INTEGER,PARAMETER::BSoilSurf = 6!New surface classes: Grass = 5th/7 surfaces
     INTEGER,PARAMETER::WaterSurf = 7
 
+    INTEGER,PARAMETER::snowfractionchoice=2 ! this PARAMETER is used all through the model
+    REAL(KIND(1d0)),PARAMETER::waterDens=999.8395 !Density of water in 0 cel deg
+
     INTEGER,INTENT(in)::id
     ! INTEGER,INTENT(in)::nsurf
     INTEGER,INTENT(in)::tstep
     INTEGER,INTENT(in)::imin
     INTEGER,INTENT(in)::it
     INTEGER,INTENT(in)::is
-    INTEGER,INTENT(in)::snowfractionchoice
+
     ! INTEGER,INTENT(in)::ConifSurf
     ! INTEGER,INTENT(in)::BSoilSurf
     ! INTEGER,INTENT(in)::BldgSurf
@@ -529,7 +532,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::lvS_J_kg
     REAL(KIND(1d0)),INTENT(in)::lv_j_kg
     REAL(KIND(1d0)),INTENT(in)::avdens
-    REAL(KIND(1d0)),INTENT(in)::waterdens
+    ! REAL(KIND(1d0)),INTENT(in)::waterdens
     REAL(KIND(1d0)),INTENT(in)::avRh
     REAL(KIND(1d0)),INTENT(in)::Press_hPa
     REAL(KIND(1d0)),INTENT(in)::Temp_C
@@ -612,7 +615,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(out)::runoffwaterbody
     REAL(KIND(1d0)),INTENT(out)::FlowChange
 
-    REAL(KIND(1d0)),DIMENSION(2):: SurplusEvap
+    REAL(KIND(1d0)),DIMENSION(2),INTENT(inout):: SurplusEvap
 
 
     REAL(KIND(1d0))::qe
@@ -1079,7 +1082,7 @@ CONTAINS
     !==========================================================================
     !WATERBODY is treated separately as state always below ice if ice existing
     !Calculate change in SnowPack
-    606 changSnow(WaterSurf)=(Precip+freezMelt(WaterSurf)+freezState(WaterSurf))-&
+606 changSnow(WaterSurf)=(Precip+freezMelt(WaterSurf)+freezState(WaterSurf))-&
          (mw_ind(WaterSurf)+ev_snow(WaterSurf))
 
     SnowPack(WaterSurf)=SnowPack(WaterSurf)+changSnow(WaterSurf) !Update SnowPack

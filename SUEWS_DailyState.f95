@@ -1,3 +1,9 @@
+module DailyState_module
+
+  implicit none
+
+CONTAINS
+
 ! Calculation of daily state variables
 ! Responds to what has happened in the past (temperature, rainfall, etc)
 ! Updates each time step, but for many variables, correct values are calculated only at the end of each day!
@@ -54,7 +60,7 @@ SUBROUTINE SUEWS_cal_DailyState(&
      CapMax_dec,CapMin_dec,PorMax_dec,PorMin_dec,&
      Ie_a,Ie_m,DayWatPer,DayWat,SnowPack,&
      BaseT,BaseTe,GDDFull,SDDFull,LAIMin,LAIMax,LAIPower,dataOut,&
-     tstepcount,SnowAlb,DecidCap,albDecTr,albEveTr,albGrass,&!inout
+     SnowAlb,DecidCap,albDecTr,albEveTr,albGrass,&!inout
      porosity,GDD,HDD,SnowDens,LAI,DayofWeek,WU_Day,&
      xBo)!output
 
@@ -139,7 +145,7 @@ SUBROUTINE SUEWS_cal_DailyState(&
   ! REAL(KIND(1d0)),INTENT(INOUT)::a1
   ! REAL(KIND(1d0)),INTENT(INOUT)::a2
   ! REAL(KIND(1d0)),INTENT(INOUT)::a3
-  REAL(KIND(1d0)),INTENT(INOUT)::tstepcount
+  ! REAL(KIND(1d0)),INTENT(INOUT)::tstepcount
   REAL(KIND(1d0)),INTENT(INOUT)::SnowAlb
 
   REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(INOUT)::DecidCap
@@ -152,12 +158,10 @@ SUBROUTINE SUEWS_cal_DailyState(&
 
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(INOUT)::SnowDens
   REAL(KIND(1d0)),DIMENSION(-4:ndays, nvegsurf),INTENT(INOUT):: LAI !LAI for each veg surface [m2 m-2]
-  ! REAL(KIND(1d0)),DIMENSION(MaxNumberOfGrids),INTENT(INOUT) ::DailyStateFirstOpen
-
-
   INTEGER,DIMENSION(0:ndays,3),INTENT(inout)::DayofWeek
-  REAL(KIND(1d0)),DIMENSION(0:ndays,9),INTENT(inOUT):: WU_Day       !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
 
+  !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
+  REAL(KIND(1d0)),DIMENSION(0:ndays,9),INTENT(OUT):: WU_Day
   REAL(KIND(1d0)),INTENT(OUT)::xBo
 
   INTEGER::date
@@ -195,14 +199,12 @@ SUBROUTINE SUEWS_cal_DailyState(&
 
   CALL init_DailyState(&
        id,& !input
-       Gridiv,&
        avkdn,&
        Temp_C,&
        Precip,&
        BaseTHDD,&
        nsh_real,&
-       tstepcount,& !inout
-       GDD,&
+       GDD,&!inout
        HDD)
 
 
@@ -229,15 +231,14 @@ SUBROUTINE SUEWS_cal_DailyState(&
   ELSEIF (it==23 .AND. imin==(nsh_real-1)/nsh_real*60) THEN
      CALL Cal_DailyStateEnd(&
           ncolumnsDataOut,&!input
-          NumberOfGrids,ReadLinesMetdata,Gridiv,id,LAIType,Ie_end,Ie_start,LAICalcYes,&
-          WaterUseMethod,DayofWeek,&
+          NumberOfGrids,ReadLinesMetdata,Gridiv,id,it,imin,tstep,&
+          LAIType,Ie_end,Ie_start,LAICalcYes,WaterUseMethod,DayofWeek,&
           alBMax_DecTr,alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
           BaseT,BaseTe,CapMax_dec,CapMin_dec,dataOut,DayWat,DayWatPer,Faut,GDDFull,&
           Ie_a,Ie_m,LAIMax,LAIMin,LAIPower,lat,PorMax_dec,PorMin_dec,SDDFull,LAI_obs,&
-          albDecTr,albEveTr,albGrass,tstepcount,porosity,DecidCap,deltaLAI,&!inout
+          albDecTr,albEveTr,albGrass,porosity,DecidCap,deltaLAI,&!inout
           xmAH,GDD,HDD,LAI,&
           WU_Day,xBo)!output
-
   ENDIF   !End of section done only at the end of each day (i.e. only once per day)
 
   RETURN
@@ -247,12 +248,13 @@ END SUBROUTINE SUEWS_cal_DailyState
 
 SUBROUTINE Cal_DailyStateEnd(&
      ncolumnsDataOut,&!input
-     NumberOfGrids,ReadLinesMetdata,Gridiv,id,LAIType,Ie_end,Ie_start,LAICalcYes,&
+     NumberOfGrids,ReadLinesMetdata,Gridiv,id,it,imin,tstep,&
+     LAIType,Ie_end,Ie_start,LAICalcYes,&
      WaterUseMethod,DayofWeek,&
      alBMax_DecTr,alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
      BaseT,BaseTe,CapMax_dec,CapMin_dec,dataOut,DayWat,DayWatPer,Faut,GDDFull,&
      Ie_a,Ie_m,LAIMax,LAIMin,LAIPower,lat,PorMax_dec,PorMin_dec,SDDFull,LAI_obs,&
-     albDecTr,albEveTr,albGrass,tstepcount,porosity,DecidCap,deltaLAI,&!inout
+     albDecTr,albEveTr,albGrass,porosity,DecidCap,deltaLAI,&!inout
      xmAH,GDD,HDD,LAI,&
      WU_Day,xBo)!output
   IMPLICIT NONE
@@ -265,6 +267,9 @@ SUBROUTINE Cal_DailyStateEnd(&
   INTEGER,INTENT(IN)::ReadLinesMetdata
   INTEGER,INTENT(IN)::Gridiv
   INTEGER,INTENT(IN)::id
+  INTEGER,INTENT(IN)::it
+  INTEGER,INTENT(IN)::imin
+  INTEGER,INTENT(IN)::tstep
   INTEGER,INTENT(IN)::LAIType(nvegsurf)
   INTEGER,INTENT(IN)::Ie_end
   INTEGER,INTENT(IN)::Ie_start
@@ -304,7 +309,7 @@ SUBROUTINE Cal_DailyStateEnd(&
   REAL(KIND(1d0)),INTENT(INOUT)::albDecTr( 0:ndays)
   REAL(KIND(1d0)),INTENT(INOUT)::albEveTr( 0:ndays)
   REAL(KIND(1d0)),INTENT(INOUT)::albGrass( 0:ndays)
-  REAL(KIND(1d0)),INTENT(INOUT)::tstepcount
+  ! REAL(KIND(1d0)),INTENT(INOUT)::tstepcount
   REAL(KIND(1d0)),INTENT(INOUT)::porosity( 0:ndays)
   REAL(KIND(1d0)),INTENT(INOUT)::DecidCap( 0:ndays)
   REAL(KIND(1d0)),INTENT(INOUT)::deltaLAI
@@ -320,10 +325,10 @@ SUBROUTINE Cal_DailyStateEnd(&
   !write(*,*) 'Last timestep of day'
 
   CALL update_HDD(&
-       id,tstepcount,& !input
+       id,it,imin,tstep,& !input
        HDD) !inout
 
-  IF(Gridiv == NumberOfGrids) tstepcount=0  !Set to zero only after last grid has run
+  ! IF(Gridiv == NumberOfGrids) tstepcount=0  !Set to zero only after last grid has run
 
   ! Calculate modelled daily water use ------------------------------------------
   CALL update_WaterUse(&
@@ -372,7 +377,7 @@ SUBROUTINE Cal_DailyStateEnd(&
   CALL update_AnOHM(&
        Gridiv,id,& !input
        ReadLinesMetdata,ncolumnsDataOut,NumberOfGrids,dataOut,&
-      !  a1,a2,a3,&!inout
+                                !  a1,a2,a3,&!inout
        xBo,xmAH) !output
 
 
@@ -381,27 +386,28 @@ END SUBROUTINE Cal_DailyStateEnd
 
 SUBROUTINE init_DailyState(&
      id,& !input
-     Gridiv,&
      avkdn,&
      Temp_C,&
      Precip,&
      BaseTHDD,&
      nsh_real,&
-     tstepcount,& !inout
-     GDD,&
+     GDD,&!inout
      HDD)
   IMPLICIT NONE
   INTEGER,PARAMETER::ndays    = 366
 
   INTEGER,INTENT(IN)::id
-  INTEGER,INTENT(IN)::Gridiv
+  ! INTEGER,INTENT(IN)::it
+  ! INTEGER,INTENT(IN)::imin
+  ! INTEGER,INTENT(IN)::tstep
+  ! INTEGER,INTENT(IN)::Gridiv
   REAL(KIND(1d0)),INTENT(IN)::avkdn
   REAL(KIND(1d0)),INTENT(IN)::Temp_C
   REAL(KIND(1d0)),INTENT(IN)::Precip
   REAL(KIND(1d0)),INTENT(IN)::BaseTHDD
   REAL(KIND(1d0)),INTENT(IN)::nsh_real
 
-  REAL(KIND(1d0)),INTENT(INOUT)::tstepcount
+  ! REAL(KIND(1d0))::tstepcount
   REAL(KIND(1d0)),DIMENSION( 0:ndays, 5),INTENT(INOUT):: GDD !Growing Degree Days (see SUEWS_DailyState.f95)
   REAL(KIND(1d0)),DIMENSION(-4:ndays, 6),INTENT(INOUT):: HDD          !Heating Degree Days (see SUEWS_DailyState.f95)
 
@@ -436,7 +442,9 @@ SUBROUTINE init_DailyState(&
      gamma2=0
   ENDIF
 
-  IF(Gridiv == 1) tstepcount=tstepcount+1   !Add 1 to tstepcount only once for all grids
+  ! count of timesteps performed during day `id`
+  ! tstepcount=(it*60+imin)*60/tstep
+  ! IF(Gridiv == 1) tstepcount=tstepcount+1   !Add 1 to tstepcount only once for all grids
 
   HDD(id,1)=HDD(id,1) + gamma1*(BaseTHDD-Temp_C)   !Heating
   HDD(id,2)=HDD(id,2) + gamma2*(Temp_C-BaseTHDD)   !Cooling
@@ -451,7 +459,7 @@ END SUBROUTINE init_DailyState
 SUBROUTINE update_AnOHM(&
      Gridiv,id,& !input
      ReadLinesMetdata,ncolumnsDataOut,NumberOfGrids,dataOut,&
-    !  a1,a2,a3,&!inout
+                                !  a1,a2,a3,&!inout
      xBo,xmAH) !output
   IMPLICIT NONE
   INTEGER,INTENT(IN) :: Gridiv
@@ -909,16 +917,18 @@ END SUBROUTINE update_WaterUse
 
 
 SUBROUTINE update_HDD(&
-     id,tstepcount,& !input
+     id,it,imin,tstep,& !input
      HDD) !inout
   IMPLICIT NONE
-  INTEGER,INTENT(IN)::id
-  REAL(KIND(1d0)),INTENT(IN)::tstepcount
+  INTEGER,INTENT(IN)::id,it,imin,tstep
+
   REAL(KIND(1d0)),DIMENSION(-4:366,6),INTENT(INOUT):: HDD
 
   INTEGER:: jj
+  REAL(KIND(1d0))::tstepcount
 
-
+  ! count of timesteps performed during day `id`
+  tstepcount=(it*60+imin)*60/tstep*1.
   ! Heating degree days (HDD) -------------
   HDD(id,1)=HDD(id,1)/tstepcount   !Heating
   HDD(id,2)=HDD(id,2)/tstepcount   !Cooling
@@ -1257,3 +1267,6 @@ SUBROUTINE output_DailyState(&
        4(a10,1X))
 
 END SUBROUTINE output_DailyState
+
+
+end module DailyState_module

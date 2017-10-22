@@ -51,6 +51,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   USE SUEWS_Driver
   USE VegPhenogy
   USE resist
+  USE DailyState_module,ONLY:SUEWS_update_DailyState
 
 
   IMPLICIT NONE
@@ -437,7 +438,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        Meltwaterstore,MetForcingData,MinQFMetab,min_res_bioCO2,mwh,mw_ind,mwstore,&
        NARP_EMIS_SNOW,NARP_G,NARP_TRANS_SITE,ncolumnsDataOut,NetRadiationMethod,&
        NonWaterFraction,nsh,nsh_real,NumberOfGrids,NumCapita,&
-       NWstate_per_tstep,OHM_coef,OHMIncQF,OHM_threshSW,OHM_threshWD,OverUse,&
+       NWstate_per_tstep,OHM_coef,OHMIncQF,OHM_threshSW,OHM_threshWD,&
        PervFraction,PipeCapacity,planF,p_mm,PopDensDaytime,PopDensNighttime,&
        PopProf_tstep,PorMax_dec,PorMin_dec,porosity,Precip,PrecipLimit,PrecipLimitAlb,&
        Press_hPa,psim,q2_gkg,qeOut,qe_per_tstep,qf,QF0_BEU,Qf_A,Qf_B,Qf_C,QF_SAHP,qh,&
@@ -450,14 +451,14 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        RunoffToWater,runoffwaterbody,runoffWaterBody_m3,S1,S2,SatHydraulicConduct,&
        SDDFull,sfr,smd,SMDMethod,smd_nsurf,SnowAlb,SnowAlbMax,SnowAlbMin,&
        snowD,SnowDens,SnowDensMax,SnowDensMin,SnowDepth,snowFrac,&
-       snowfractionchoice,SnowLimBuild,SnowLimPaved,snow_obs,SnowPack,snowProf,&
+       SnowLimBuild,SnowLimPaved,snow_obs,SnowPack,snowProf,&
        SnowRemoval,SnowToSurf,snowUse,SoilDepth,soilmoist,SoilState,soilstoreCap,&
        StabilityMethod,state,StateLimit,state_per_tstep,StorageHeatMethod,surf,&
-       SurfaceArea,surf_chang_per_tstep,SurplusEvap,swe,t2_C,Tair24HR,tau_a,tau_f,tau_r,&
+       SurfaceArea,surf_chang_per_tstep,swe,t2_C,Tair24HR,tau_a,tau_f,tau_r,&
        T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,TempMeltFact,TempVeg,TH,theta_bioCO2,&
        timezone,TL,tot_chang_per_tstep,TrafficRate,TrafficUnits,TraffProf_tstep,Ts5mindata_ir,&
-       Tstar,tstep,tstepcount,tstep_real,tsurf,tsurf_ind,Tsurf_ind_snow,UStar,VegFraction,veg_type,VPD_Pa,&
-       waterdens,WaterDist,WaterUseMethod,WetThresh,WUAreaDecTr_m2,WUAreaEveTr_m2,&
+       Tstar,tstep,tstep_real,tsurf,tsurf_ind,Tsurf_ind_snow,UStar,VegFraction,veg_type,VPD_Pa,&
+       WaterDist,WaterUseMethod,WetThresh,WUAreaDecTr_m2,WUAreaEveTr_m2,&
        WUAreaGrass_m2,WUAreaTotal_m2,WU_Day,wu_DecTr,wu_EveTr,wu_Grass,wu_m3,&
        WUProfA_tstep,WUProfM_tstep,xBo,xsmd,year,Z,Z0m,Zdm,zenith_deg,Zh)
 

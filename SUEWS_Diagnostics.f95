@@ -1,20 +1,21 @@
 SUBROUTINE SUEWS_cal_Diagnostics(&
      tsurf,qh,&!input
      Press_hPa,qe,&
-     UStar,veg_fr,z0m,L_mod,k,avdens,avcp,lv_J_kg,tstep_real,&
+     UStar,veg_fr,z0m,L_mod,avdens,avcp,lv_J_kg,tstep_real,&
      RoughLenHeatMethod,StabilityMethod,&
      avU10_ms,t2_C,q2_gkg)!output
   IMPLICIT NONE
   ! REAL(KIND(1d0)),INTENT(in) ::usurf,uflux
   REAL(KIND(1d0)),INTENT(in) ::tsurf,qh
   REAL(KIND(1d0)),INTENT(in) ::Press_hPa,qe
-  REAL(KIND(1d0)),INTENT(in) :: UStar,veg_fr,z0m,L_mod,k,avdens,avcp,lv_J_kg,tstep_real
+  REAL(KIND(1d0)),INTENT(in) :: UStar,veg_fr,z0m,L_mod,avdens,avcp,lv_J_kg,tstep_real
 
   ! INTEGER,INTENT(in)         :: opt ! 0 for momentum, 1 for temperature, 2 for humidity
   INTEGER,INTENT(in)         :: RoughLenHeatMethod,StabilityMethod
 
   REAL(KIND(1d0)),INTENT(out):: avU10_ms,t2_C,q2_gkg
   REAL(KIND(1d0))::qsatf,tlv
+  REAL(KIND(1d0)),parameter::k=0.4
 
   tlv=lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
   ! wind speed:

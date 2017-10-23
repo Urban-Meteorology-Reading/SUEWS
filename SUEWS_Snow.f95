@@ -478,11 +478,11 @@ CONTAINS
        addVeg,surplusWaterBody,SnowLimPaved,SnowLimBuild,drain,&
        WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
        freezmelt,freezstate,freezstatevol,&
-       Qm_Melt,Qm_rain,Tsurf_ind,sfr,DayofWeek,surf,&
+       Qm_Melt,Qm_rain,Tsurf_ind,sfr,DayofWeek,surf,snowD,&
        SnowPack,SurplusEvap,&!inout
        snowFrac,MeltWaterStore,SnowDepth,iceFrac,addwater,addwaterrunoff,SnowDens,&
        runoffSnow,& ! output
-       runoff,runoffSoil,chang,changSnow,SnowToSurf,state,snowD,ev_snow,soilmoist,&
+       runoff,runoffSoil,chang,changSnow,SnowToSurf,state,ev_snow,soilmoist,&
        SnowRemoval,snowProf,swe,ev,chSnow_per_interval,ev_per_tstep,qe_per_tstep,&
        runoff_per_tstep,surf_chang_per_tstep,runoffPipes,mwstore,runoffwaterbody,&
        FlowChange)
@@ -574,6 +574,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::Tsurf_ind
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::sfr
     REAL(KIND(1d0)),DIMENSION(6,nsurf),INTENT(in)::surf
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::snowD
 
     !Updated status: input and output
     REAL(KIND(1d0)),INTENT(inout)::runoffAGimpervious
@@ -581,7 +582,6 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowPack
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::snowFrac
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::MeltWaterStore
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowDepth
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::iceFrac
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::addwater
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::addwaterrunoff
@@ -596,7 +596,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::changSnow
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::SnowToSurf
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::state
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::snowD
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::SnowDepth
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::ev_snow
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::soilmoist
     REAL(KIND(1d0)),DIMENSION(2),INTENT(out)::SnowRemoval

@@ -41,7 +41,8 @@ PROGRAM SUEWS_Program
   USE Time
   USE WhereWhen
   USE ctrl_output
-  use ESTM_module,only:SUEWS_GetESTMData,ESTM_initials
+  USE ESTM_module,ONLY:SUEWS_GetESTMData,ESTM_initials
+  USE BLUEWS_module,ONLY:CBL_ReadInputData
 
 
   IMPLICIT NONE
@@ -775,7 +776,7 @@ PROGRAM SUEWS_Program
 
 
   ! 313 CALL errorHint(11,TRIM(FileOrigMet),notUsed,notUsed,ios_out)
-! 314 CALL errorHint(11,TRIM(FileMet),notUsed,notUsed,ios_out)
-! 315 CALL errorHint(11,TRIM(fileESTMTs),notUsed,notUsed,NotUsedI)
+  ! 314 CALL errorHint(11,TRIM(FileMet),notUsed,notUsed,ios_out)
+  ! 315 CALL errorHint(11,TRIM(fileESTMTs),notUsed,notUsed,NotUsedI)
 
 END PROGRAM SUEWS_Program

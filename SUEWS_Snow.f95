@@ -480,12 +480,12 @@ CONTAINS
        freezmelt,freezstate,freezstatevol,&
        Qm_Melt,Qm_rain,Tsurf_ind,sfr,DayofWeek,surf,snowD,&
        SnowPack,SurplusEvap,&!inout
-       snowFrac,MeltWaterStore,SnowDepth,iceFrac,addwater,addwaterrunoff,SnowDens,&
+       snowFrac,MeltWaterStore,iceFrac,addwater,addwaterrunoff,SnowDens,&
        runoffSnow,& ! output
        runoff,runoffSoil,chang,changSnow,SnowToSurf,state,ev_snow,soilmoist,&
-       SnowRemoval,snowProf,swe,ev,chSnow_per_interval,ev_per_tstep,qe_per_tstep,&
-       runoff_per_tstep,surf_chang_per_tstep,runoffPipes,mwstore,runoffwaterbody,&
-       FlowChange)
+       SnowDepth,SnowRemoval,snowProf,swe,ev,chSnow_per_interval,&
+       ev_per_tstep,qe_per_tstep,runoff_per_tstep,surf_chang_per_tstep,&
+       runoffPipes,mwstore,runoffwaterbody,FlowChange)
 
     !Calculation of snow and water balance on 5 min timestep. Treats snowfree and snow covered
     !areas separately. Weighting is taken into account in the overall values.
@@ -495,6 +495,7 @@ CONTAINS
     !  HCW 26 Jan 2015 - Added weekday/weekend option for snow clearing profiles
     !  LJ in 24 May 2013
     !========================================================================
+    use WaterDist_module,only:updateFlood
 
 
     IMPLICIT NONE
@@ -554,9 +555,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::precip
     REAL(KIND(1d0)),INTENT(in)::PipeCapacity
     REAL(KIND(1d0)),INTENT(in)::RunoffToWater
-    REAL(KIND(1d0)),INTENT(in)::runoffAGveg
     REAL(KIND(1d0)),INTENT(in)::addVeg
-    REAL(KIND(1d0)),INTENT(in)::surplusWaterBody
     REAL(KIND(1d0)),INTENT(in)::SnowLimPaved
     REAL(KIND(1d0)),INTENT(in)::SnowLimBuild
 
@@ -577,7 +576,9 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::snowD
 
     !Updated status: input and output
+    REAL(KIND(1d0)),INTENT(inout)::runoffAGveg
     REAL(KIND(1d0)),INTENT(inout)::runoffAGimpervious
+    REAL(KIND(1d0)),INTENT(inout)::surplusWaterBody
 
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowPack
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::snowFrac
@@ -586,6 +587,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::addwater
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::addwaterrunoff
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowDens
+
 
 
 
@@ -1028,8 +1030,7 @@ CONTAINS
          nsurf,is,PavSurf,BldgSurf,WaterSurf,ConifSurf,BSoilSurf,&
          sfr,PipeCapacity,RunoffToWater,&
                                 ! inout:
-         runoffAGimpervious,surplusWaterBody,runoffAGveg,runoffPipes&
-         )
+         runoffAGimpervious,surplusWaterBody,runoffAGveg,runoffPipes)
 
     runoff_per_tstep=runoff_per_tstep+runoffSnow(is)*sfr(is)*MAX(snowFrac(is),snowfracOld)+runoff(is)*sfr(is)*(1-snowFrac(is))&
          +runoffTest*sfr(is)

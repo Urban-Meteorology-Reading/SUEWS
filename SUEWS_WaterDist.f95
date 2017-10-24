@@ -115,6 +115,7 @@ CONTAINS
        soilmoist,&!Soil moisture of each surface type [mm]
        SurplusEvap,&!Surplus for evaporation in 5 min timestep
        runoffWaterBody,&!Above ground runoff from water surface [mm] for whole surface area
+       runoff_per_interval,&! Total water transported to each grid for grid-to-grid connectivity
        p_mm,&!output: !Inputs to surface water balance
        chang,&!Change in state [mm]
        runoff,&!Runoff from each surface type [mm]
@@ -217,6 +218,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(inout)::runoffPipes!Runoff in pipes [mm] for whole surface area
     REAL(KIND(1d0)),INTENT(inout)::ev!Evaporation
     REAL(KIND(1d0)),INTENT(inout)::runoffWaterBody!Above ground runoff from water surface [mm] for whole surface area
+    REAL(KIND(1d0)),INTENT(inout)::runoff_per_interval! Total water transported to each grid for grid-to-grid connectivity
 
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::soilmoist  !Soil moisture of each surface type [mm]
     REAL(KIND(1d0)),DIMENSION(2),INTENT(inout)    ::SurplusEvap!Surplus for evaporation in 5 min timestep
@@ -457,7 +459,7 @@ CONTAINS
             )
     ENDIF
 
-    ! runoff_per_interval=runoff_per_interval+(runoff(is)*sfr(is)) !The total runoff from the area !!Check (HCW)
+    runoff_per_interval=runoff_per_interval+(runoff(is)*sfr(is)) !The total runoff from the area !!Check (HCW)
 
   END SUBROUTINE soilstore
   !------------------------------------------------------------------------------

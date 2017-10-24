@@ -38,7 +38,7 @@ CONTAINS
        kclear,kkAnOHM,Kmax,kup,kup_ind_snow,LAI,LAICalcYes,LAIMax,LAIMin,LAI_obs,LAIPower,LAIType,&
        lat,ldown,ldown_obs,L_mod,lng,lup,MaxConductance,MaxQFMetab,&
        Meltwaterstore,MetForcingData,MinQFMetab,min_res_bioCO2,mwh,mw_ind,mwstore,&
-       NARP_EMIS_SNOW,NARP_G,NARP_TRANS_SITE,ncolumnsDataOut,NetRadiationMethod,&
+       NARP_EMIS_SNOW,NARP_TRANS_SITE,ncolumnsDataOut,NetRadiationMethod,&
        NonWaterFraction,nsh,nsh_real,NumberOfGrids,NumCapita,&
        NWstate_per_tstep,OHM_coef,OHMIncQF,OHM_threshSW,OHM_threshWD,&
        PervFraction,PipeCapacity,planF,p_mm,PopDensDaytime,PopDensNighttime,&
@@ -241,7 +241,7 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(3),INTENT(IN)::Ie_a
     REAL(KIND(1D0)),DIMENSION(3),INTENT(IN)::Ie_m
     REAL(KIND(1D0)),DIMENSION(3),INTENT(IN)::MaxConductance
-    REAL(KIND(1D0)),DIMENSION(365),INTENT(IN)::NARP_G
+    ! REAL(KIND(1D0)),DIMENSION(365),INTENT(IN)::NARP_G
     REAL(KIND(1D0)),DIMENSION(24*NSH,2),INTENT(IN)::AHProf_tstep
     REAL(KIND(1D0)),DIMENSION(24*NSH,2),INTENT(IN)::HumActivity_tstep
     REAL(KIND(1D0)),DIMENSION(24*NSH,2),INTENT(IN)::PopProf_tstep
@@ -530,7 +530,7 @@ CONTAINS
          Diagnose,snow_obs,ldown_obs,fcld_obs,&
          dectime,ZENITH_deg,avKdn,Temp_C,avRH,Ea_hPa,qn1_obs,&
          SnowAlb,DiagQN,&
-         NARP_G,NARP_TRANS_SITE,NARP_EMIS_SNOW,IceFrac,sfr,emis,&
+         NARP_TRANS_SITE,NARP_EMIS_SNOW,IceFrac,sfr,emis,&
          alb,albDecTr,DecidCap,albEveTr,albGrass,surf,&!inout
          snowFrac,ldown,fcld,&!output
          qn1,qn1_SF,qn1_S,kclear,kup,lup,tsurf,&
@@ -899,7 +899,7 @@ CONTAINS
        Diagnose,snow_obs,ldown_obs,fcld_obs,&
        dectime,ZENITH_deg,avKdn,Temp_C,avRH,ea_hPa,qn1_obs,&
        SnowAlb,DiagQN,&
-       NARP_G,NARP_TRANS_SITE,NARP_EMIS_SNOW,IceFrac,sfr,emis,&
+       NARP_TRANS_SITE,NARP_EMIS_SNOW,IceFrac,sfr,emis,&
        alb,albDecTr,DecidCap,albEveTr,albGrass,surf,&!inout
        snowFrac,ldown,fcld,&!output
        qn1,qn1_SF,qn1_S,kclear,kup,lup,tsurf,&
@@ -937,7 +937,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::NARP_EMIS_SNOW
     REAL(KIND(1d0)),INTENT(in)::NARP_TRANS_SITE
 
-    REAL(KIND(1d0)),DIMENSION(365),INTENT(in)::NARP_G
+    ! REAL(KIND(1d0)),DIMENSION(365),INTENT(in)::NARP_G
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in):: IceFrac
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in):: sfr
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in):: emis
@@ -1009,7 +1009,7 @@ CONTAINS
 
        CALL NARP(&
             nsurf,sfr,snowFrac,alb,emis,IceFrac,&! input:
-            NARP_G,NARP_TRANS_SITE,NARP_EMIS_SNOW,&
+            NARP_TRANS_SITE,NARP_EMIS_SNOW,&
             dectime,ZENITH_deg,avKdn,Temp_C,avRH,ea_hPa,qn1_obs,&
             SnowAlb,&
             AlbedoChoice,ldown_option,NetRadiationMethodX,DiagQN,&

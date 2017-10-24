@@ -26,33 +26,30 @@ MODULES = LUMPS_Module_constants.o  \
 		  		SUEWS_MetDisagg.o \
 					LUMPS_atmos_functions_moist.o \
           SOLWEIG_modules.o  \
+					BLUEWS_module.o \
           SUEWS_Files_run_Control.o \
 					stringmod.o \
 					minpack.o\
 					SUEWS_DailyState.o \
 					qsort_c_module.o\
-					SUEWS_AnOHM.o \
 					SUEWS_ESTM.o \
+					SUEWS_AnOHM.o \
 					SUEWS_OHM.o \
+					SUEWS_WaterDist.o \
 					SUEWS_Snow.o \
 					SUEWS_driver.o
 
 
 # Rest of the files including modules and functions which are independent
-OTHERS =  BLUEWS_CBL.o   \
-          BLUEWS_Diff.o  \
-          SUEWS_translate.o \
+OTHERS =  SUEWS_translate.o \
           SUEWS_HorizontalSoilWater.o \
           LUMPS_atmos_functions_stab.o \
-          SUEWS_ReDistributeWater.o \
           SUEWS_RoughnessParameters.o \
           SUEWS_RunoffFromGrid.o \
           LUMPS_QHQE.o \
           SUEWS_AerodynamicResistance.o \
-          SUEWS_store.o \
           SUEWS_BL_Resist.o \
           SUEWS_SurfaceResistance.o \
-          SUEWS_drain.o \
           SUEWS_TimeRelatedSubroutines.o \
           SUEWS_error.o \
           SUEWS_waterUse.o \
@@ -75,11 +72,9 @@ OTHERS =  BLUEWS_CBL.o   \
           SOLWEIG_sunonsurface_veg.o  \
           SOLWEIG_wallinsun_veg.o  \
 					SUEWS_Initial.o \
-					SUEWS_SoilMoist.o \
 					SUEWS_AnthropogenicEmissions.o \
 					SUEWS_BiogenCO2.o \
-					SUEWS_SnowUpdate.o \
-					SUEWS_Diagnostics.o
+					SUEWS_SnowUpdate.o
 
 # modules under rapid development
 TEST =		SUEWS_Calculations.o

@@ -446,6 +446,30 @@ CONTAINS
     RETURN
   END FUNCTION slopeIce_svp
 
+  !------------------------------------------------------------------------
+  FUNCTION qsatf(T,PMB) RESULT(qsat)
+    !       MRR, 1987
+    ! AT TEMPERATURE T (DEG C) AND PRESSURE PMB (MB), GET SATURATION SPECIFIC
+    !       HUMIDITY (KG/KG) FROM TETEN FORMULA
 
+    REAL (KIND(1D0))::T,es,qsat,PMB
+
+    REAL (KIND(1D0)),PARAMETER::&
+
+                                !Teten coefficients
+         A=6.106,&
+         B=17.27,&
+         C=237.3,&
+         molar=0.028965,& !Dry air molar fraction in kg/mol
+         molar_wat_vap=0.0180153 !Molar fraction of water vapor in kg/mol
+
+
+    IF(t.GT.55)THEN
+       CALL ErrorHint(34,'Function qsatf',T,0.00D0,-55)
+    ENDIF
+
+    ES = A*dEXP(B*T/(C+T))
+    qsat = (molar_wat_vap/molar)*ES/PMB!(rmh2o/rmair)*ES/PMB
+  END FUNCTION qsatf
 
 END MODULE AtmMoist_module

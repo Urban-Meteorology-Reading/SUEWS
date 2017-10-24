@@ -4,12 +4,14 @@
 ! TS 02 Oct 2017: added `SUEWS_cal_Main` as the generic wrapper
 ! TS 03 Oct 2017: added `SUEWS_cal_AnthropogenicEmission`
 MODULE SUEWS_Driver
-  USE AtmMoist_module,ONLY:LUMPS_cal_AtmMoist
+  USE AtmMoist_module,ONLY:LUMPS_cal_AtmMoist,qsatf
   USE NARP_MODULE,ONLY:NARP_cal_SunPosition
   USE AnOHM_module,ONLY:AnOHM
   USE ESTM_module,ONLY:ESTM
   USE Snow_module,ONLY:SnowCalc,Snow_cal_MeltHeat
   USE DailyState_module,ONLY:SUEWS_cal_DailyState
+  use WaterDist_module,only:drainage,soilstore,SUEWS_cal_SoilMoist,SUEWS_update_SoilMoist,ReDistributeWater
+
 
   IMPLICIT NONE
 
@@ -314,7 +316,6 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)::Meltwaterstore
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)::runoffSoil
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)::SnowDens
-    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)::SnowDepth
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)::snowFrac
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)::SnowPack
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)::soilmoist
@@ -433,6 +434,7 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(OUT)::runoffSnow
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(OUT)::smd_nsurf
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(OUT)::SnowToSurf
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(OUT)::SnowDepth
     REAL(KIND(1D0)),DIMENSION(0:23,2),INTENT(OUT)::snowProf
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::Tsurf_ind_snow
 
@@ -525,7 +527,7 @@ CONTAINS
     CALL SUEWS_cal_Qn(&
          NetRadiationMethod,snowUse,id,&!input
          Diagnose,snow_obs,ldown_obs,fcld_obs,&
-         dectime,ZENITH_deg,avKdn,Temp_C,avRH,Press_hPa,qn1_obs,&
+         dectime,ZENITH_deg,avKdn,Temp_C,avRH,Ea_hPa,qn1_obs,&
          SnowAlb,DiagQN,&
          NARP_G,NARP_TRANS_SITE,NARP_EMIS_SNOW,IceFrac,sfr,emis,&
          alb,albDecTr,DecidCap,albEveTr,albGrass,surf,&!inout
@@ -643,11 +645,11 @@ CONTAINS
          NonWaterFraction,wu_EveTr,wu_DecTr,wu_Grass,addVeg,addWaterBody,SnowLimPaved,SnowLimBuild,&
          SurfaceArea,drain,WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
          freezmelt,freezstate,freezstatevol,Qm_Melt,Qm_rain,Tsurf_ind,sfr,StateLimit,surf,snowD,&
-         runoff_per_interval,& ! inout:
-         state,soilmoist,SnowPack,snowFrac,MeltWaterStore,&
-         SnowDepth,iceFrac,addwater,addwaterrunoff,SnowDens,&
+         state,soilmoist,SnowPack,snowFrac,MeltWaterStore,&! inout:
+         iceFrac,addwater,addwaterrunoff,SnowDens,&
          snowProf,& ! output:
-         runoffSnow,runoff,runoffSoil,chang,changSnow,SnowToSurf,ev_snow,SnowRemoval,&
+         runoffSnow,runoff,runoffSoil,chang,changSnow,&
+         SnowDepth,SnowToSurf,ev_snow,SnowRemoval,&
          evap,rss_nsurf,p_mm,rss,qe,state_per_tstep,NWstate_per_tstep,qeOut,&
          swe,ev,chSnow_per_interval,ev_per_tstep,qe_per_tstep,runoff_per_tstep,&
          surf_chang_per_tstep,runoffPipes,mwstore,runoffwaterbody,FlowChange,&
@@ -894,7 +896,7 @@ CONTAINS
   SUBROUTINE SUEWS_cal_Qn(&
        NetRadiationMethod,snowUse,id,&!input
        Diagnose,snow_obs,ldown_obs,fcld_obs,&
-       dectime,ZENITH_deg,avKdn,Temp_C,avRH,Press_hPa,qn1_obs,&
+       dectime,ZENITH_deg,avKdn,Temp_C,avRH,ea_hPa,qn1_obs,&
        SnowAlb,DiagQN,&
        NARP_G,NARP_TRANS_SITE,NARP_EMIS_SNOW,IceFrac,sfr,emis,&
        alb,albDecTr,DecidCap,albEveTr,albGrass,surf,&!inout
@@ -928,7 +930,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::avKdn
     REAL(KIND(1d0)),INTENT(in)::Temp_C
     REAL(KIND(1d0)),INTENT(in)::avRH
-    REAL(KIND(1d0)),INTENT(in)::Press_hPa
+    REAL(KIND(1d0)),INTENT(in)::ea_hPa
     REAL(KIND(1d0)),INTENT(in)::qn1_obs
     REAL(KIND(1d0)),INTENT(in)::SnowAlb
     REAL(KIND(1d0)),INTENT(in)::NARP_EMIS_SNOW
@@ -1007,7 +1009,7 @@ CONTAINS
        CALL NARP(&
             nsurf,sfr,snowFrac,alb,emis,IceFrac,&! input:
             NARP_G,NARP_TRANS_SITE,NARP_EMIS_SNOW,&
-            dectime,ZENITH_deg,avKdn,Temp_C,avRH,Press_hPa,qn1_obs,&
+            dectime,ZENITH_deg,avKdn,Temp_C,avRH,ea_hPa,qn1_obs,&
             SnowAlb,&
             AlbedoChoice,ldown_option,NetRadiationMethodX,DiagQN,&
             qn1,qn1_SF,qn1_S,kclear,kup,LDown,lup,fcld,tsurf,&! output:
@@ -1358,11 +1360,11 @@ CONTAINS
        NonWaterFraction,wu_EveTr,wu_DecTr,wu_Grass,addVeg,addWaterBody,SnowLimPaved,SnowLimBuild,&
        SurfaceArea,drain,WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
        freezmelt,freezstate,freezstatevol,Qm_Melt,Qm_rain,Tsurf_ind,sfr,StateLimit,surf,snowD,&
-       runoff_per_interval,& ! inout:
-       state,soilmoist,SnowPack,snowFrac,MeltWaterStore,&
-       SnowDepth,iceFrac,addwater,addwaterrunoff,SnowDens,&
+       state,soilmoist,SnowPack,snowFrac,MeltWaterStore,&! inout:
+       iceFrac,addwater,addwaterrunoff,SnowDens,&
        snowProf,& ! output:
-       runoffSnow,runoff,runoffSoil,chang,changSnow,SnowToSurf,ev_snow,SnowRemoval,&
+       runoffSnow,runoff,runoffSoil,chang,changSnow,&
+       SnowDepth,SnowToSurf,ev_snow,SnowRemoval,&
        evap,rss_nsurf,p_mm,rss,qe,state_per_tstep,NWstate_per_tstep,qeOut,&
        swe,ev,chSnow_per_interval,ev_per_tstep,qe_per_tstep,runoff_per_tstep,&
        surf_chang_per_tstep,runoffPipes,mwstore,runoffwaterbody,FlowChange,&
@@ -1450,14 +1452,14 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(6,nsurf),INTENT(in)::surf
 
     !Updated status: input and output
-    REAL(KIND(1d0)),INTENT(inout)::runoff_per_interval! Total water transported to each grid for grid-to-grid connectivity
+    ! REAL(KIND(1d0)),INTENT(inout)::runoff_per_interval! Total water transported to each grid for grid-to-grid connectivity
 
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::state
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::soilmoist
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowPack
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::snowFrac
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::MeltWaterStore
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowDepth
+
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::iceFrac
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::addwater
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::addwaterrunoff
@@ -1472,6 +1474,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::runoffSoil
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::chang
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::changSnow
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::SnowDepth
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::SnowToSurf
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::ev_snow
     REAL(KIND(1d0)),DIMENSION(2),INTENT(out)::SnowRemoval
@@ -1525,17 +1528,17 @@ CONTAINS
     ! ENDIF
 
     ! Initialize the output variables
-    qe=0
-    ev=0
-    ev_snow=0
-    ev_per_tstep=0
-    surf_chang_per_tstep=0
+    qe                   = 0
+    ev                   = 0
+    ev_snow              = 0
+    ev_per_tstep         = 0
+    surf_chang_per_tstep = 0
     runoff_per_tstep=0
-    state_per_tstep=0
-    NWstate_per_tstep=0
-    qeOut=0
-    runoffwaterbody=0
-    chSnow_per_interval=0
+    state_per_tstep      = 0
+    NWstate_per_tstep    = 0
+    qeOut                = 0
+    runoffwaterbody      = 0
+    chSnow_per_interval  = 0
 
     runoffAGveg        = 0
     runoffAGimpervious = 0
@@ -1571,12 +1574,12 @@ CONTAINS
                   freezmelt,freezstate,freezstatevol,&
                   Qm_Melt,Qm_rain,Tsurf_ind,sfr,DayofWeek,surf,snowD,&
                   SnowPack,SurplusEvap,&!inout
-                  snowFrac,MeltWaterStore,SnowDepth,iceFrac,addwater,addwaterrunoff,SnowDens,&
+                  snowFrac,MeltWaterStore,iceFrac,addwater,addwaterrunoff,SnowDens,&
                   runoffSnow,& ! output
                   runoff,runoffSoil,chang,changSnow,SnowToSurf,state,ev_snow,soilmoist,&
-                  SnowRemoval,snowProf,swe,ev,chSnow_per_interval,ev_per_tstep,qe_per_tstep,&
-                  runoff_per_tstep,surf_chang_per_tstep,runoffPipes,mwstore,runoffwaterbody,&
-                  FlowChange)
+                  SnowDepth,SnowRemoval,snowProf,swe,ev,chSnow_per_interval,&
+                  ev_per_tstep,qe_per_tstep,runoff_per_tstep,surf_chang_per_tstep,&
+                  runoffPipes,mwstore,runoffwaterbody,FlowChange)
           ELSE
              snowFrac(is) = 0
              SnowDens(is) = 0
@@ -1615,6 +1618,7 @@ CONTAINS
                wu_EveTr,&!Water use for evergreen trees/shrubs [mm]
                wu_DecTr,&!Water use for deciduous trees/shrubs [mm]
                wu_Grass,&!Water use for grass [mm]
+               drain,&!Drainage of each surface type [mm]
                AddWater,&!Water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
                addImpervious,&!Water from impervious surfaces of other grids [mm] for whole surface area
                nsh_real,&!nsh cast as a real for use in calculations
@@ -1634,11 +1638,9 @@ CONTAINS
                soilmoist,&!Soil moisture of each surface type [mm]
                SurplusEvap,&!Surplus for evaporation in 5 min timestep
                runoffWaterBody,&!Above ground runoff from water surface [mm] for whole surface area
-               runoff_per_interval,&! Total water transported to each grid for grid-to-grid connectivity
                p_mm,&!output: !Inputs to surface water balance
                chang,&!Change in state [mm]
                runoff,&!Runoff from each surface type [mm]
-               drain,&!Drainage of each surface type [mm]
                state&!Wetness status of each surface type [mm]
                )
 
@@ -2198,6 +2200,136 @@ CONTAINS
 
   END SUBROUTINE SUEWS_update_output
   !========================================================================
+
+
+SUBROUTINE SUEWS_cal_Diagnostics(&
+     tsurf,qh,&!input
+     Press_hPa,qe,&
+     UStar,veg_fr,z0m,L_mod,avdens,avcp,lv_J_kg,tstep_real,&
+     RoughLenHeatMethod,StabilityMethod,&
+     avU10_ms,t2_C,q2_gkg)!output
+  IMPLICIT NONE
+  ! REAL(KIND(1d0)),INTENT(in) ::usurf,uflux
+  REAL(KIND(1d0)),INTENT(in) ::tsurf,qh
+  REAL(KIND(1d0)),INTENT(in) ::Press_hPa,qe
+  REAL(KIND(1d0)),INTENT(in) :: UStar,veg_fr,z0m,L_mod,avdens,avcp,lv_J_kg,tstep_real
+
+  ! INTEGER,INTENT(in)         :: opt ! 0 for momentum, 1 for temperature, 2 for humidity
+  INTEGER,INTENT(in)         :: RoughLenHeatMethod,StabilityMethod
+
+  REAL(KIND(1d0)),INTENT(out):: avU10_ms,t2_C,q2_gkg
+  REAL(KIND(1d0))::tlv
+  REAL(KIND(1d0)),parameter::k=0.4
+
+  tlv=lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
+  ! wind speed:
+  CALL diagSfc(0d0,0d0,UStar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,avU10_ms,0,RoughLenHeatMethod,StabilityMethod)
+  ! temperature:
+  CALL diagSfc(tsurf,qh,UStar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,t2_C,1,RoughLenHeatMethod,StabilityMethod)
+  ! humidity:
+  CALL diagSfc(qsatf(tsurf,Press_hPa)*1000,& ! Saturation specific humidity at surface in g/kg
+       qe,UStar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,q2_gkg,2,RoughLenHeatMethod,StabilityMethod)
+
+END SUBROUTINE SUEWS_cal_Diagnostics
+
+
+SUBROUTINE diagSfc(&
+  xSurf,xFlux,us,VegFraction,z0m,L_mod,k,avdens,avcp,tlv,&
+  xDiag,opt,RoughLenHeatMethod,StabilityMethod)
+  ! TS 05 Sep 2017: improved interface
+  ! TS 20 May 2017: calculate surface-level diagonostics
+
+  ! USE mod_k
+  ! USE mod_z
+  ! USE sues_data
+  ! USE data_in
+  ! USE moist
+
+  IMPLICIT NONE
+
+  REAL(KIND(1d0)),INTENT(in) :: xSurf,xFlux,us,VegFraction,z0m,L_mod,k,avdens,avcp,tlv
+  REAL(KIND(1d0)),INTENT(out):: xDiag
+  INTEGER,INTENT(in)         :: opt ! 0 for momentum, 1 for temperature, 2 for humidity
+  INTEGER,INTENT(in)         :: RoughLenHeatMethod,StabilityMethod
+
+  REAL(KIND(1d0))            :: &
+       psymz2,psymz10,psymz0,psyhz2,psyhz0,& ! stability correction functions
+       z0h,& ! Roughness length for heat
+       z2zd,z10zd,&
+       muu=1.46e-5,& !molecular viscosity
+       stab_fn_mom,stab_fn_heat !stability correction functions
+
+
+  !***************************************************************
+  ! log-law based stability corrections:
+  ! Roughness length for heat
+  IF (RoughLenHeatMethod==1) THEN !Brutasert (1982) z0h=z0/10(see Grimmond & Oke, 1986)
+     z0h=z0m/10
+  ELSEIF (RoughLenHeatMethod==2) THEN ! Kawai et al. (2007)
+     !z0h=z0m*exp(2-(1.2-0.9*veg_fr**0.29)*(us*z0m/muu)**0.25)
+     ! Changed by HCW 05 Nov 2015 (veg_fr includes water; VegFraction = veg + bare soil)
+     z0h=z0m*EXP(2-(1.2-0.9*VegFraction**0.29)*(us*z0m/muu)**0.25)
+  ELSEIF (RoughLenHeatMethod==3) THEN
+     z0h=z0m*EXP(-20.) ! Voogt and Grimmond, JAM, 2000
+  ELSEIF (RoughLenHeatMethod==4) THEN
+     z0h=z0m*EXP(2-1.29*(us*z0m/muu)**0.25) !See !Kanda and Moriwaki (2007),Loridan et al. (2010)
+  ENDIF
+
+  ! z0h=z0m/5
+
+
+  ! zX-z0
+  z2zd=2+z0h   ! set lower limit as z0h to prevent arithmetic error
+  z10zd=10+z0m ! set lower limit as z0m to prevent arithmetic error
+
+  ! stability correction functions
+  ! momentum:
+  psymz10=stab_fn_mom(StabilityMethod,z10zd/L_mod,z10zd/L_mod)
+  psymz2=stab_fn_mom(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
+  psymz0=stab_fn_mom(StabilityMethod,z0m/L_mod,z0m/L_mod)
+
+  ! heat and vapor: assuming both are the same
+
+  psyhz2=stab_fn_heat(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
+  psyhz0=stab_fn_heat(StabilityMethod,z0h/L_mod,z0h/L_mod)
+  !***************************************************************
+
+  SELECT CASE (opt)
+  CASE (0) ! wind (momentum) at 10 m
+     xDiag=us/k*(LOG(z10zd/z0m)-psymz10+psymz0)
+
+  CASE (1) ! temperature at 2 m
+     xDiag=xSurf-xFlux/(k*us*avdens*avcp)*(LOG(z2zd/z0h)-psyhz2+psyhz0)
+    !  IF ( ABS((LOG(z2zd/z0h)-psyhz2+psyhz0))>10 ) THEN
+    !     PRINT*, '#####################################'
+    !     PRINT*, 'xSurf',xSurf
+    !     PRINT*, 'xFlux',xFlux
+    !     PRINT*, 'k*us*avdens*avcp',k*us*avdens*avcp
+    !     PRINT*, 'k',k
+    !     PRINT*, 'us',us
+    !     PRINT*, 'avdens',avdens
+    !     PRINT*, 'avcp',avcp
+    !     PRINT*, 'xFlux/X',xFlux/(k*us*avdens*avcp)
+    !     PRINT*, 'stab',(LOG(z2zd/z0h)-psyhz2+psyhz0)
+    !     PRINT*, 'LOG(z2zd/z0h)',LOG(z2zd/z0h)
+    !     PRINT*, 'z2zd',z2zd,'L_mod',L_mod,'z0h',z0h
+    !     PRINT*, 'z2zd/L_mod',z2zd/L_mod
+    !     PRINT*, 'psyhz2',psyhz2
+    !     PRINT*, 'psyhz0',psyhz0
+    !     PRINT*, 'psyhz2-psyhz0',psyhz2-psyhz0
+    !     PRINT*, 'xDiag',xDiag
+    !     PRINT*, '*************************************'
+    !  END IF
+
+
+  CASE (2) ! humidity at 2 m
+     xDiag=xSurf-xFlux/(k*us*avdens*tlv)*(LOG(z2zd/z0h)-psyhz2+psyhz0)
+
+  END SELECT
+
+END SUBROUTINE diagSfc
+
+
 
   !===============set variable of invalid value to NAN=====================
   ELEMENTAL FUNCTION set_nan(x) RESULT(xx)

@@ -1,3 +1,8 @@
+MODULE BLUEWS_module
+  use AtmMoist_module,only:qsatf
+
+  IMPLICIT NONE
+CONTAINS
   ! Note: INTERVAL is now set to 3600 s in Initial (it is no longer set in RunControl) HCW 29 Jan 2015
   ! Last modified:
   !  HCW 29 Mar 2017 - Changed third dimension of dataOutBL to Gridiv (was previously iMB which seems incorrect)
@@ -5,7 +10,7 @@
   !  LJ 27 Jan 2016 - Removal of tabs
 
 
-  SUBROUTINE CBL(ifirst,iMB,Gridiv)
+  SUBROUTINE CBL(ifirst,Gridiv)
 
     USE mod_z
     USE mod_k
@@ -19,7 +24,7 @@
     USE cbl_module
     USE gis_data
     USE WhereWhen
-    use AtmMoist_module,only:sat_vap_press
+    USE AtmMoist_module,ONLY:sat_vap_press
 
     IMPLICIT NONE
 
@@ -27,7 +32,7 @@
     REAL(KIND(1d0))::qh_use,qe_use,tm_K_zm,qm_gkg_zm
     REAL(KIND(1d0))::Temp_C1,avrh1,es_hPa1
     REAL(KIND(1d0))::secs0,secs1,Lv
-    INTEGER::idoy,ifirst,iMB,Gridiv,startflag,iNBL
+    INTEGER::idoy,ifirst,Gridiv,startflag,iNBL
 
 
     ! Reset iCBLcount at start of each metblock (HCW added 29/03/2017)
@@ -42,16 +47,16 @@
        iCBLcount=iCBLcount+1
        !write(*,*) 'ifirst or nonCBLday', DateTime, iCBLcount
        dataOutBL(iCBLcount,1:ncolumnsdataOutBL,Gridiv)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime, &
-       (NAN,is=6,ncolumnsdataOutBL)/)
+            (NAN,is=6,ncolumnsdataOutBL)/)
        RETURN
     ELSEIF(avkdn<5)THEN
        iNBL=1
        IF (iNBL==-9) THEN
-          CALL CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,iMb, Gridiv)
+          CALL CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag, Gridiv)
           RETURN
        ELSE
           !ADD NBL for Night:(1)Fixed input/output NBL; (2) Input Fixed Theta,Q to SUEWS; (3) Currently NBL eq 200 m
-          CALL NBL(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,iMb, Gridiv)
+          CALL NBL(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag, Gridiv)
           RETURN
        ENDIF
     ENDIF
@@ -59,7 +64,7 @@
     IF(startflag==0)THEN !write down initial values in previous time step
        !write(*,*) 'startflag', DateTime, iCBLcount
        dataOutBL(iCBLcount,1:ncolumnsdataOutBL,Gridiv)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime,blh_m,tm_K, &
-       qm_kgkg*1000,tp_K,qp_kgkg*1000,(NAN,is=11,20),gamt_Km,gamq_kgkgm/)
+            qm_kgkg*1000,tp_K,qp_kgkg*1000,(NAN,is=11,20),gamt_Km,gamq_kgkgm/)
        startflag=1
     ENDIF
 
@@ -180,9 +185,9 @@
        iCBLcount=iCBLcount+1
        !write(*,*) 'qh1or2', DateTIme, iCBLcount
        dataOutBL(iCBLcount,1:ncolumnsdataOutBL,Gridiv)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime,blh_m,tm_K, &
-       qm_kgkg*1000, tp_K,qp_kgkg*1000,&
-       Temp_C,avrh,cbldata(2),cbldata(3),cbldata(9),cbldata(7),cbldata(8),cbldata(4),cbldata(5),cbldata(6),&
-       gamt_Km,gamq_kgkgm/)
+            qm_kgkg*1000, tp_K,qp_kgkg*1000,&
+            Temp_C,avrh,cbldata(2),cbldata(3),cbldata(9),cbldata(7),cbldata(8),cbldata(4),cbldata(5),cbldata(6),&
+            gamt_Km,gamq_kgkgm/)
     ELSEIF(qh_choice==3)THEN ! CBL
        !tm_K_zm=tm_K+cbldata(10)*cbldata(2)/(k*cbldata(8)*cbldata(6)*cbldata(4))
        Temp_C1=tm_K/((1000/cbldata(9))**(gas_ct_dry/cbldata(6)))-C2K
@@ -198,9 +203,9 @@
        iCBLcount=iCBLcount+1
        !write(*,*) 'qh3', DateTIme, iCBLcount
        dataOutBL(iCBLcount,1:ncolumnsdataOutBL,Gridiv)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime,blh_m,tm_K, &
-       qm_kgkg*1000,tp_K,qp_kgkg*1000,&
-       Temp_C1,avrh1,cbldata(2),cbldata(3),cbldata(9),cbldata(7),cbldata(8),cbldata(4),cbldata(5),cbldata(6),&
-       gamt_Km,gamq_kgkgm/)
+            qm_kgkg*1000,tp_K,qp_kgkg*1000,&
+            Temp_C1,avrh1,cbldata(2),cbldata(3),cbldata(9),cbldata(7),cbldata(8),cbldata(4),cbldata(5),cbldata(6),&
+            gamt_Km,gamq_kgkgm/)
     ENDIF
 
     RETURN
@@ -223,15 +228,15 @@
     REAL(KIND(1d0))::l
 
     NAMELIST/CBLInput/EntrainmentType,&
-    QH_choice,&
-    isubs,&
-    CO2_included,&
-    cblday,&
-    wsb,&
-    InitialData_use,&
-    InitialDataFileName,&
-    sondeflag,&
-    FileSonde
+         QH_choice,&
+         isubs,&
+         CO2_included,&
+         cblday,&
+         wsb,&
+         InitialData_use,&
+         InitialDataFileName,&
+         sondeflag,&
+         FileSonde
 
 
     OPEN(51,file=TRIM(FileInputPath)//'CBLInput.nml',status='old', err=24)
@@ -274,7 +279,7 @@
 
   !----------------------------------------------------------------------
   !-----------------------------------------------------------------------
-  SUBROUTINE CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,iMB,Gridiv)
+  SUBROUTINE CBL_initial(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,Gridiv)
 
     USE mod_z
     USE mod_k
@@ -288,13 +293,13 @@
     USE cbl_module
     USE gis_data
     USE WhereWhen
-    use AtmMoist_module,only:sat_vap_press
+    USE AtmMoist_module,ONLY:sat_vap_press
 
     IMPLICIT NONE
 
     REAL(KIND(1d0))::qh_use,qe_use,tm_K_zm,qm_gkg_zm
-    REAL(KIND(1d0))::qsatf,lv
-    INTEGER::i,nLineDay,iMB,Gridiv,startflag
+    REAL(KIND(1d0))::lv
+    INTEGER::i,nLineDay,Gridiv,startflag
 
 
     qh_use=qhforCBL(Gridiv)   !HCW 21 Mar 2017
@@ -324,7 +329,7 @@
     iCBLcount=iCBLcount+1
     !write(*,*) 'cblinitial', DateTIme, iCBLcount
     dataOutBL(iCBLcount,1:ncolumnsdataOutBL,Gridiv)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime, &
-    (NAN,is=6,ncolumnsdataOutBL)/)
+         (NAN,is=6,ncolumnsdataOutBL)/)
 
     nLineDay=0
     DO i=1,nlineInData
@@ -399,7 +404,7 @@
 
   END SUBROUTINE CBL_initial
 
-  SUBROUTINE NBL(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,iMb,Gridiv)
+  SUBROUTINE NBL(qh_use,qe_use,tm_K_zm,qm_gkg_zm,startflag,Gridiv)
 
     USE mod_z
     USE mod_k
@@ -413,12 +418,12 @@
     USE cbl_module
     USE gis_data
     USE WhereWhen
-    use AtmMoist_module,only:sat_vap_press
+    USE AtmMoist_module,ONLY:sat_vap_press
 
     IMPLICIT NONE
     REAL(KIND(1d0))::qh_use,qe_use,tm_K_zm,qm_gkg_zm
-    REAL(KIND(1d0))::qsatf,lv
-    INTEGER::i,iMb,nLineDay,Gridiv,startflag
+    REAL(KIND(1d0))::lv
+    INTEGER::i,nLineDay,Gridiv,startflag
 
     qh_use=qhforCBL(Gridiv)   !HCW 21 Mar 2017
     qe_use=qeforCBL(Gridiv)
@@ -469,11 +474,11 @@
     ENDIF
 
     dataOutBL(iCBLcount,1:ncolumnsdataOutBL,Gridiv)=&
-    (/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime,&
-    blh_m,tm_K,qm_gkg,&
-    tp_K,qp_gkg,&
-    Temp_C,avrh,qh_use,qe_use,Press_hPa,avu1,UStar,avdens,lv_J_kg,avcp,&
-    gamt_Km,gamq_kgkgm/)
+         (/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime,&
+         blh_m,tm_K,qm_gkg,&
+         tp_K,qp_gkg,&
+         Temp_C,avrh,qh_use,qe_use,Press_hPa,avu1,UStar,avdens,lv_J_kg,avcp,&
+         gamt_Km,gamq_kgkgm/)
 
     IF(InitialData_use==2) THEN
        blh_m=IniCBLdata(nLineDay,2)
@@ -536,28 +541,299 @@
   END SUBROUTINE NBL
 
   !------------------------------------------------------------------------
-  !------------------------------------------------------------------------
-  FUNCTION qsatf(T,PMB) RESULT(qsat)
-    !       MRR, 1987
-    ! AT TEMPERATURE T (DEG C) AND PRESSURE PMB (MB), GET SATURATION SPECIFIC
-    !       HUMIDITY (KG/KG) FROM TETEN FORMULA
-
-    REAL (KIND(1D0))::T,es,qsat,PMB
-
-    REAL (KIND(1D0)),PARAMETER::&
-
-    !Teten coefficients
-    A=6.106,&
-    B=17.27,&
-    C=237.3,&
-    molar=0.028965,& !Dry air molar fraction in kg/mol
-         molar_wat_vap=0.0180153 !Molar fraction of water vapor in kg/mol
 
 
-    IF(t.GT.55)THEN
-       CALL ErrorHint(34,'Function qsatf',T,0.00D0,notUsedI)
+  !-----------------------------------------------------------------------
+  ! from CBL modelling Cleugh and Grimmond (2000) BLM
+  ! NT 6 Apr 2017: include iteration over top of CBL scalars and include subsidence flag
+  ! Last modified: LJ 27 Jan 2016 - Removal of tabs
+  !-----------------------------------------------------------------------
+  SUBROUTINE RKUTTA(neqn,XA,XB,Y,NSTEPS)
+    !       XA=s0
+    !       XB=s1
+    !       Y(1)=blh_m
+    !       Y(2)=tm_K
+    !       Y(3)=qm_kgkg
+    !       Y(4)=cm
+    !       Y(5)=tp_K
+    !       Y(6)=qp_kgkg
+    !       JOHN KNIGHT, 1985 (AMENDED BY MRR, 23-SEP-85)
+    !       EXPLICIT FOURTH-ORDER RUNGE-KUTTA METHOD FOR FIRST-ORDER ODE SYSTEM
+    !       OF NE EQUATIONS, WITH INITIAL VALUES SUPPLIED.
+    !       MEANING OF PARAMETERS:
+    !       NE     = NUMBER OF EQUATIONS (MAX 21)
+    !       XA     = VALUE OF INDEPENDENT VARIABLE ON ENTRY
+    !       XB     = VALUE OF INDEPENDENT VARIABLE AT END OF INTERVAL
+    !       Y(NE)  = ON ENTRY: INITIAL VALUES OF DEPENDENT VARIABLES AT XA
+    !       ON EXIT:  CALCULATED VALUES OF DEPENDENT VARIABLES AT XB
+    !       NSTEPS = NUMBER OF INTEGRATION STEPS OVER INTERVAL (XA,XB)
+    !       DIFF  = NAME OF USER-SUPPLIED SUBROUTINE TO CALCULATE DERIVATIVES
+    !       DYDX (DIFF MUST BE DECLARED EXTERNAL IN CALLING PROGRAM).
+    !       PARAMETERS IN SUBROUTINE DIFF(NE,X,Y,DYDX):
+    !       NEqn = NUMBER OF EQUATIONS
+    !       X = INDEPENDENT VARIABLE
+    !       Y = ARRAY (LENGTH NE) OF VALUES OF DEPENDENT VARIABLES
+    !       DYDX = ON EXIT, ARRAY (LENGTH NE) OF VALUES OF DERIVATIVES
+    !	IMPLICIT real*8 (A-H,O-Z)
+    IMPLICIT NONE
+    INTEGER::ns,nsteps, nj,n,neqn
+    REAL(KIND(1D0)), DIMENSION (neqn):: y
+    REAL(KIND(1D0)), DIMENSION (21):: dydx,arg
+    REAL(KIND(1D0)), DIMENSION (21,5):: rk
+    REAL(KIND(1D0)), DIMENSION (4):: coef
+    REAL (KIND(1D0)):: XA,XB,step,X,xx
+
+    coef(1)=1.0
+    coef(2)=0.5
+    coef(3)=0.5
+    coef(4)=1.0
+    !	print*,"rk1: ",xa,xb,y
+    STEP = (XB-XA)/NSTEPS
+
+    DO NS = 1,NSTEPS
+       DO  NJ = 1,nEqn
+          RK(NJ,1) = 0
+       ENDDO
+       X = XA+(NS-1)*STEP
+       DO N = 1,4
+          IF (N.EQ.1)THEN
+             XX = X
+          ELSEIF (N.GT.1)THEN
+             XX = X + COEF(N)*STEP
+          ENDIF
+
+          DO NJ = 1,nEqn
+             ARG(NJ) = Y(NJ) + COEF(N)*RK(NJ,N)
+          ENDDO
+
+          CALL DIFF(xx,ARG,DYDX)
+
+          DO NJ = 1,nEqn
+             RK(NJ,N+1) = STEP*DYDX(NJ)
+          ENDDO
+       ENDDO
+
+       DO  NJ = 1,nEqn
+          DO  N = 1,4
+             Y(NJ) = Y(NJ) + RK(NJ,N+1)/(6*COEF(N))
+          ENDDO
+       ENDDO
+    ENDDO
+
+    RETURN
+  END SUBROUTINE RKUTTA
+  !---------------------------------------------------------------------
+  !---------------------------------------------------------------------
+
+  SUBROUTINE diff(s,y1,dyds)
+    ! in y1,neqn
+    ! out dyds
+
+    !       calculates derivatives for cbl slab model
+    !       y(1) = h = cbl depth(m)
+    !       y(2) = t = potential temp(K)
+    !       y(3) = q = specific humidity(kg/kg)
+    !       y(4) = c = CO2 concentration
+    USE data_in
+    USE sues_data
+    !    use allocateArray
+    USE time
+    USE CBL_MODULE
+    USE defaultnotUsed
+    USE mod_grav
+
+    IMPLICIT NONE
+    REAL(KIND(1D0)), DIMENSION(neqn)::dyds,y1
+    REAL(KIND(1d0)) :: zero=0.0
+    REAL(KIND(1d0)) :: h1,t_K,q_kgkg,c,cp,ws,s
+    !     real(kind(1D0)) :: tp_K,qp_kgkg
+    REAL(KIND(1D0)):: delt_K,delq_kgkg,delc
+    REAL(KIND(1D0)):: gamtv_Km,deltv_K,ftv_Kms
+    REAL(KIND(1D0)):: ftva_Kms,delb,qs2,qs3
+    REAL(KIND(1D0)):: dhds,dtds,dqds,dcds,dtpds,dqpds
+    REAL(KIND(1D0)):: conk,conn,cona,conc,cont
+
+    !    print*,"diff: timestamp:",s
+    !    pause
+    h1     = y1(1)!m
+    t_K    = y1(2)!K
+    q_kgkg = y1(3)!kg/kg
+    c      = y1(4)
+    tp_K   = y1(5)!K
+    qp_kgkg= y1(6)!kg/kg
+
+    !       find t, q, c above inversion, and jumps across inversion
+    !       tp = tp + gamt*h
+    !       qp = qp0 + gamq*h
+
+    cp        = 0 ! cp0 + gamc* h1   ! todo
+
+    delt_K    = tp_K    - t_K
+    delq_kgkg = qp_kgkg - q_kgkg
+    delc      = cp - c
+
+    !       find potential virtual temperature flux, gradient and jump
+    ftv_Kms  = fhbl_Kms + 0.61 * tm_K * febl_kgkgms
+    gamtv_Km = gamt_Km  + 0.61 * tm_K * gamq_kgkgm!/1000
+    deltv_K  = delt_K   + 0.61 * tm_K * delq_kgkg
+
+    !       find velocity scale ws
+    ftva_Kms = MAX(ftv_Kms,zero) ! virtual heat flux
+    ws = (h1*ftva_Kms*grav/tm_K)**0.3333333333
+
+    !       find dhds using one of 4 alternative schemes chosen by ient:
+    IF (EntrainmentType.EQ.2) THEN
+       !       EntrainmentType=1: encroachment (as in McN and S 1986 eq 16))
+       dhds = ftva_Kms/(h1*gamtv_Km)
+
+    ELSE IF (EntrainmentType.EQ.1) THEN
+       !       EntrainmentType=2: Driedonks 1981 (as in McN and S 1986 eq 13)
+       IF (deltv_K.LE.0.01) THEN
+          dhds = ftva_Kms/(h1*gamtv_Km)
+          CALL errorHint(30,"subroutine diff [CBL: Deltv_K<0.01 EntrainmentType=1], deltv_K,delt_K,",deltv_K,delt_K,notUsedI)
+          CALL errorHint(30,"subroutine diff [CBL: Deltv_K<0.01 EntrainmentType=1], tm_K,TPP_K,y1",tm_K,TPP_K, notUsedI)
+          ! call errorHint(31,"subroutine diff [CBL: Deltv_K<0.01 EntrainmentType=1], y1",real(y1(1),kind(1d0)),notUsed,notUsedI)
+       ELSE
+          delb = grav*deltv_K/tm_K
+          conc = 0.2
+          cona = 5.0
+          dhds = (conc*ws**3 + cona*cbldata(8)**3)/(h1*delb)
+       END IF
+
+    ELSE IF (EntrainmentType.EQ.4) THEN
+       !       EntrainmentType=3: Tennekes 1973 (as in R 1991 eqs 3,4)
+       alpha3=0.2   ! alpha changed back to original Tennekes 1973 value
+       IF (deltv_K.LE.0.01) THEN
+          dhds = ftva_Kms/(h1*gamtv_Km)
+          CALL ErrorHint(31, 'subroutine difflfnout: [CBL: deltv_K<0.01 EntrainmentType=4],deltv_K',&
+               deltv_K,notUsed,notUsedI)
+       ELSE
+          ! include the option whether or not to include subsidence
+          IF (isubs.EQ.1) THEN
+             dhds = alpha3*ftva_Kms/deltv_k + wsb
+          ELSE
+             dhds = alpha3*ftva_Kms/deltv_K
+          END IF
+       END IF
+
+       !       write (4,*) tpp, gamq, dhds, deltv
+
+    ELSE IF (EntrainmentType.EQ.3) THEN
+       !       EntrainmentType=4: Rayner and Watson 1991 eq 21
+       conn = 1.33
+       conk = 0.18
+       cont = 0.80
+       qs3 = ws**3 + (conn*cbldata(8))**3
+       qs2 = qs3**(0.6666666667)
+
+       IF (deltv_K.LE.0.01) THEN
+          dhds = ftva_Kms/(h1*gamtv_Km)
+          CALL ErrorHint(31, 'subroutine difflfnout: [CBL: deltv_K<0.01 EntrainmentType=3],deltv_K',&
+               deltv_K,notUsed,notUsedI)
+
+       ELSE
+          delb = grav*deltv_K/tm_K
+          dhds = (conk*qs3) / (cont*qs2 + h1*delb)
+       END IF
+
+    ELSE
+       CALL ErrorHint(24, 'BLUEWS_DIff- CBL- illegal alpha',notUsed,notUsed,notUsedI)
+    END IF
+    ! find dtds, dqds, dc/ds:
+    !	wsb is the subsidence velocity. Try using: -0.01, -0.05, -0.1.
+    IF (isubs.EQ.1) THEN
+       dtds = fhbl_Kms/h1    + delt_K    *(dhds-wsb)/h1
+       dqds = febl_kgkgms/h1 + delq_kgkg *(dhds-wsb)/h1
+       dcds = fcbl/h1        + delc      *(dhds-wsb)/h1
+       ! also iterate the top of CBL scalars
+       dtpds = gamt_Km * (dhds-wsb)
+       dqpds = gamq_kgkgm * (dhds-wsb)
+    ELSE
+       dtds = fhbl_Kms/h1    + delt_K    *(dhds)/h1
+       dqds = febl_kgkgms/h1 + delq_kgkg *(dhds)/h1
+       dcds = fcbl/h1        + delc      *(dhds)/h1
+       ! also iterate the top of CBL scalars
+       dtpds = gamt_Km * (dhds)
+       dqpds = gamq_kgkgm * (dhds)
+    END IF
+
+    dyds(1) = dhds
+    dyds(2) = dtds
+    dyds(3) = dqds
+    dyds(4) = dcds
+    dyds(5) = dtpds
+    dyds(6) = dqpds
+
+
+    RETURN
+  END SUBROUTINE diff
+
+  !--------------------------------------------------------------------------
+  !--------------------------------------------------------------------------
+  SUBROUTINE sonde(id)
+    ! read sonde or vertical profile data - when available
+    !use allocateArray
+    USE data_in
+    USE cbl_module
+    IMPLICIT NONE
+    INTEGER::i,fn=101,izm=500,notUsedI=-9999,id
+    CHARACTER (len=200)::FileN
+    REAL (KIND(1d0)):: dxx
+    REAL (KIND(1d0)),PARAMETER::notUsed=-9999.99
+
+    FileN=TRIM(FileInputPath)//TRIM(FileSonde(id))
+    OPEN(fn,file=FileN,status="old",err=24)
+    ! todo gneric skip header
+    READ(fn,*)
+    READ(fn,*)
+    READ(fn,*)
+
+    DO i=1,1000
+       READ(fn,*,END=900,err=25)gtheta(i,1),dxx,gtheta(i,2),ghum(i,1),dxx,ghum(i,2)
+       ghum(i,2) = ghum(i,2)
+    ENDDO
+900 zmax=i-1
+    IF(zmax.GT.izm)THEN
+       CALL ErrorHint(23,FileN,REAL(zmax,KIND(1D0)),notUsed,izm)
     ENDIF
+    CLOSE(fn)
+    RETURN
+24  CALL ErrorHint(24,FileN,notUsed,notUsed, notUsedI)
+25  CALL ErrorHint(25,FileN,notUsed,notUsed,i)
+    RETURN
+  END SUBROUTINE sonde
+  !------------------------------------------------------------------------------
+  !------------------------------------------------------------------------------
+  SUBROUTINE gamma_sonde
+    USE cbl_module
+    !use allocateArray
 
-    ES = A*dEXP(B*T/(C+T))
-    qsat = (molar_wat_vap/molar)*ES/PMB!(rmh2o/rmair)*ES/PMB
-  END FUNCTION qsatf
+    IMPLICIT NONE
+    REAL(KIND(1D0))::gamtt,gamqq
+    INTEGER::j
+    ! gtheta(i,1),dxx,gtheta(i,2),ghum(i,1),dxx,ghum(i,2)
+    !search for correct gamma theta, depends on h(i-1),
+    !               ie current value for mixed layer depth
+    IF (sondeflag.EQ.1) THEN
+       DO j=2,zmax
+          IF (blh_m.GE.gtheta(j-1,1)) THEN
+             gamtt = gtheta(j-1,2)
+          ENDIF
+          gamt_Km = gamtt
+       ENDDO
+
+       DO j=2,zmax
+          IF (blh_m.GE.ghum(j-1,1)) THEN
+             gamqq = ghum(j-1,2)
+          ENDIF
+          gamq_kgkgm = gamqq/1000.
+       ENDDO
+    ENDIF
+    RETURN
+
+  END SUBROUTINE gamma_sonde
+
+
+
+
+END MODULE BLUEWS_module

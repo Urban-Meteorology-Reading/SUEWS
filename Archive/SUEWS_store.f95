@@ -26,7 +26,7 @@ SUBROUTINE soilstore(&
      soilmoist,&!Soil moisture of each surface type [mm]
      SurplusEvap,&!Surplus for evaporation in 5 min timestep
      runoffWaterBody,&!Above ground runoff from water surface [mm] for whole surface area
-     runoff_per_interval,&! Total water transported to each grid for grid-to-grid connectivity
+    !  runoff_per_interval,&! Total water transported to each grid for grid-to-grid connectivity
      p_mm,&!output: !Inputs to surface water balance
      chang,&!Change in state [mm]
      runoff,&!Runoff from each surface type [mm]
@@ -84,8 +84,8 @@ SUBROUTINE soilstore(&
   !Stores flood water when surface state exceeds storage capacity [mm]
   !real(kind(1d0)),dimension(nsurf):: SurfaceFlood
   INTEGER, PARAMETER:: nsurf=7                !Total number of surfaces
-  INTEGER, PARAMETER:: NVegSurf=3             !Number of surfaces that are vegetated
-  INTEGER, PARAMETER:: nsurfIncSnow=nsurf+1   !Number of surfaces + snow
+  ! INTEGER, PARAMETER:: NVegSurf=3             !Number of surfaces that are vegetated
+  ! INTEGER, PARAMETER:: nsurfIncSnow=nsurf+1   !Number of surfaces + snow
 
   INTEGER:: PavSurf   = 1,&   !When all surfaces considered together (1-7)
        BldgSurf  = 2,&
@@ -93,12 +93,12 @@ SUBROUTINE soilstore(&
        DecidSurf = 4,&
        GrassSurf = 5,&   !New surface classes: Grass = 5th/7 surfaces
        BSoilSurf = 6,&   !New surface classes: Bare soil = 6th/7 surfaces
-       WaterSurf = 7,&
-       ExcessSurf= 8,&   !Runoff or subsurface soil in WGWaterDist
-       NSurfDoNotReceiveDrainage=0,&   !Number of surfaces that do not receive drainage water (green roof)
-       ivConif = 1,&     !When only vegetated surfaces considered (1-3)
-       ivDecid = 2,&
-       ivGrass = 3
+       WaterSurf = 7
+      !  ExcessSurf= 8,&   !Runoff or subsurface soil in WGWaterDist
+      !  NSurfDoNotReceiveDrainage=0,&   !Number of surfaces that do not receive drainage water (green roof)
+      !  ivConif = 1,&     !When only vegetated surfaces considered (1-3)
+      !  ivDecid = 2,&
+      !  ivGrass = 3
 
   INTEGER,INTENT(in)::is ! surface type
 
@@ -130,7 +130,7 @@ SUBROUTINE soilstore(&
   REAL(KIND(1d0)),INTENT(inout)::runoffPipes!Runoff in pipes [mm] for whole surface area
   REAL(KIND(1d0)),INTENT(inout)::ev!Evaporation
   REAL(KIND(1d0)),INTENT(inout)::runoffWaterBody!Above ground runoff from water surface [mm] for whole surface area
-  REAL(KIND(1d0)),INTENT(inout)::runoff_per_interval! Total water transported to each grid for grid-to-grid connectivity
+  ! REAL(KIND(1d0)),INTENT(inout)::runoff_per_interval! Total water transported to each grid for grid-to-grid connectivity
 
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::soilmoist  !Soil moisture of each surface type [mm]
   REAL(KIND(1d0)),DIMENSION(2),INTENT(inout)    ::SurplusEvap!Surplus for evaporation in 5 min timestep
@@ -371,7 +371,7 @@ SUBROUTINE soilstore(&
           )
   ENDIF
 
-  runoff_per_interval=runoff_per_interval+(runoff(is)*sfr(is)) !The total runoff from the area !!Check (HCW)
+  ! runoff_per_interval=runoff_per_interval+(runoff(is)*sfr(is)) !The total runoff from the area !!Check (HCW)
 
 END SUBROUTINE soilstore
 !------------------------------------------------------------------------------

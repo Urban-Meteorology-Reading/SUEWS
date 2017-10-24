@@ -97,7 +97,7 @@ CONTAINS
   !==============================================================================
   SUBROUTINE NARP(&
        nsurf,sfr,snowFrac,alb,emis,IceFrac,&! input:
-       NARP_G,NARP_TRANS_SITE,NARP_EMIS_SNOW,&
+       NARP_TRANS_SITE,NARP_EMIS_SNOW,&
        DTIME,ZENITH_deg,kdown,Temp_C,RH,Press_hPa,qn1_obs,&
        SnowAlb,&
        AlbedoChoice,ldown_option,&
@@ -161,7 +161,7 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(nsurf),INTENT(in) ::alb
     REAL(KIND(1D0)),DIMENSION(nsurf),INTENT(in) ::emis
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in) ::IceFrac
-    REAL(KIND(1D0)),DIMENSION(365),INTENT(in) ::NARP_G
+    ! REAL(KIND(1D0)),DIMENSION(365),INTENT(in) ::NARP_G
 
     REAL(KIND(1D0)),INTENT(in) ::DTIME
     REAL(KIND(1D0)),INTENT(in) ::ZENITH_deg
@@ -220,7 +220,9 @@ CONTAINS
                                 !  RAD2DEG=57.29577951,&
          SIGMA_SB=5.67E-8
 
-
+    ! NB: NARP_G is not assigned with a value in SUEWS_translate.
+    ! 3.0 is used here as annual average for mid-latitude areas. TS 24 Oct 2017
+    REAL(KIND(1D0)),DIMENSION(365),PARAMETER ::  NARP_G=3.0
     !Initialize variables
     ! RH=avrh
     ! DTIME=dectime
@@ -1304,6 +1306,9 @@ CONTAINS
     USE FileName
     USE defaultnotUsed
     !read kriged data based on Smith 1966 (JAM)
+    ! Smith, William L.
+    ! "Note on the relationship between total precipitable water and surface dew point."
+    ! Journal of Applied Meteorology 5.5 (1966): 726-727.
     INTEGER :: lat,ios,ilat
     REAL(KIND(1d0)),DIMENSION(365):: G
 

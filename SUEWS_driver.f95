@@ -48,7 +48,7 @@ CONTAINS
        qn1_ind_snow,qn1_obs,qn1_S,qn1_S_av_store,qn1_SF,qn1_S_store,qn1_store,qs,RA,&
        RadMeltFact,RAINCOVER,RainMaxRes,rainOnSnow,ReadLinesMetdata,ResistSurf,resp_a,&
        resp_b,RoughLenHeatMethod,RoughLenMomMethod,rss,rss_nsurf,runoff,&
-       runoffAGimpervious,runoffAGveg,runoff_per_interval,runoff_per_tstep,&
+       runoffAGimpervious,runoffAGveg,runoff_per_tstep,&
        runoffPipes,runoffPipes_m3,runoffSnow,runoffSoil,runoffSoil_per_tstep,&
        RunoffToWater,runoffwaterbody,runoffWaterBody_m3,S1,S2,SatHydraulicConduct,&
        SDDFull,sfr,smd,SMDMethod,smd_nsurf,SnowAlb,SnowAlbMax,SnowAlbMin,&
@@ -288,7 +288,7 @@ CONTAINS
 
 
     ! REAL(KIND(1D0)),INTENT(INOUT)::OverUse
-    REAL(KIND(1D0)),INTENT(INOUT)::runoff_per_interval
+
     REAL(KIND(1D0)),INTENT(INOUT)::SnowAlb
     ! REAL(KIND(1D0)),INTENT(INOUT)::tstepcount
 
@@ -450,6 +450,7 @@ CONTAINS
     REAL(KIND(1D0))::qe
     REAL(KIND(1D0))::RAsnow
     REAL(KIND(1D0))::rb
+    REAL(KIND(1D0))::runoff_per_interval
     REAL(KIND(1D0))::s_hPa
     REAL(KIND(1D0))::sIce_hpa
     REAL(KIND(1D0))::SoilMoistCap
@@ -645,7 +646,7 @@ CONTAINS
          NonWaterFraction,wu_EveTr,wu_DecTr,wu_Grass,addVeg,addWaterBody,SnowLimPaved,SnowLimBuild,&
          SurfaceArea,drain,WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
          freezmelt,freezstate,freezstatevol,Qm_Melt,Qm_rain,Tsurf_ind,sfr,StateLimit,surf,snowD,&
-         state,soilmoist,SnowPack,snowFrac,MeltWaterStore,&! inout:
+         runoff_per_interval,state,soilmoist,SnowPack,snowFrac,MeltWaterStore,&! inout:
          iceFrac,addwater,addwaterrunoff,SnowDens,&
          snowProf,& ! output:
          runoffSnow,runoff,runoffSoil,chang,changSnow,&
@@ -1360,7 +1361,7 @@ CONTAINS
        NonWaterFraction,wu_EveTr,wu_DecTr,wu_Grass,addVeg,addWaterBody,SnowLimPaved,SnowLimBuild,&
        SurfaceArea,drain,WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
        freezmelt,freezstate,freezstatevol,Qm_Melt,Qm_rain,Tsurf_ind,sfr,StateLimit,surf,snowD,&
-       state,soilmoist,SnowPack,snowFrac,MeltWaterStore,&! inout:
+       runoff_per_interval,state,soilmoist,SnowPack,snowFrac,MeltWaterStore,&! inout:
        iceFrac,addwater,addwaterrunoff,SnowDens,&
        snowProf,& ! output:
        runoffSnow,runoff,runoffSoil,chang,changSnow,&
@@ -1452,7 +1453,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(6,nsurf),INTENT(in)::surf
 
     !Updated status: input and output
-    ! REAL(KIND(1d0)),INTENT(inout)::runoff_per_interval! Total water transported to each grid for grid-to-grid connectivity
+    REAL(KIND(1d0)),INTENT(inout)::runoff_per_interval! Total water transported to each grid for grid-to-grid connectivity
 
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::state
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::soilmoist
@@ -1638,6 +1639,7 @@ CONTAINS
                soilmoist,&!Soil moisture of each surface type [mm]
                SurplusEvap,&!Surplus for evaporation in 5 min timestep
                runoffWaterBody,&!Above ground runoff from water surface [mm] for whole surface area
+               runoff_per_interval,&! Total water transported to each grid for grid-to-grid connectivity
                p_mm,&!output: !Inputs to surface water balance
                chang,&!Change in state [mm]
                runoff,&!Runoff from each surface type [mm]

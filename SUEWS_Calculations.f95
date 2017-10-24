@@ -446,7 +446,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        qn1_ind_snow,qn1_obs,qn1_S,qn1_S_av_store,qn1_SF,qn1_S_store,qn1_store,qs,RA,&
        RadMeltFact,RAINCOVER,RainMaxRes,rainOnSnow,ReadLinesMetdata,ResistSurf,resp_a,&
        resp_b,RoughLenHeatMethod,RoughLenMomMethod,rss,rss_nsurf,runoff,&
-       runoffAGimpervious,runoffAGveg,runoff_per_interval,runoff_per_tstep,&
+       runoffAGimpervious,runoffAGveg,runoff_per_tstep,&
        runoffPipes,runoffPipes_m3,runoffSnow,runoffSoil,runoffSoil_per_tstep,&
        RunoffToWater,runoffwaterbody,runoffWaterBody_m3,S1,S2,SatHydraulicConduct,&
        SDDFull,sfr,smd,SMDMethod,smd_nsurf,SnowAlb,SnowAlbMax,SnowAlbMin,&

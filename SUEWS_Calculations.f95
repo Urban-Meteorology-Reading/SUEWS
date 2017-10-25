@@ -321,7 +321,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !      drain_per_tstep,&  !output
   !      drain,AddWaterRunoff,&
   !      AdditionalWater,runoffPipes,runoff_per_interval,&
-  !      addWater,stateOld,soilmoistOld)
+  !      AddWater,stateOld,soilmoistOld)
   ! !============= calculate water balance end =============
   !
   ! !======== Evaporation and surface state ========
@@ -337,7 +337,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !      freezmelt,freezstate,freezstatevol,Qm_Melt,Qm_rain,Tsurf_ind,sfr,StateLimit,surf,&
   !      runoff_per_interval,& ! inout:
   !      state,soilmoist,SnowPack,snowFrac,MeltWaterStore,&
-  !      SnowDepth,iceFrac,addwater,addwaterrunoff,SnowDens,SurplusEvap,&
+  !      SnowDepth,iceFrac,AddWater,addwaterrunoff,SnowDens,SurplusEvap,&
   !      snowProf,& ! output:
   !      runoffSnow,runoff,runoffSoil,chang,changSnow,SnowToSurf,snowD,ev_snow,SnowRemoval,&
   !      evap,rss_nsurf,p_mm,rss,qe,state_per_tstep,NWstate_per_tstep,qeOut,&
@@ -416,8 +416,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   !
   ! !==============main calculation end=======================
   CALL SUEWS_cal_Main(&
-       a1,a2,a3,addImpervious,AdditionalWater,addPipes,addVeg,addWater,addWaterBody,&
-       AddWaterRunoff,AerodynamicResistanceMethod,AH_MIN,AHProf_tstep,&
+       a1,a2,a3,AdditionalWater,&
+       AerodynamicResistanceMethod,AH_MIN,AHProf_tstep,&
        AH_SLOPE_Cooling,AH_SLOPE_Heating,alb,albDecTr,albEveTr,albGrass,&
        alBMax_DecTr,alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
        alpha_bioCO2,alpha_enh_bioCO2,alt,avkdn,avRh,&

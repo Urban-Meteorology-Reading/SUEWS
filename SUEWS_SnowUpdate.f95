@@ -59,7 +59,7 @@ SUBROUTINE SnowUpdate(&
      IF (Temp_C_hr<0) THEN
         !alb_change = tau_a*(60*60)/tau_1
         alb_change = tau_a*(tstep)/tau_1
-        snowAlb = SnowAlb-alb_change
+        SnowAlb = SnowAlb-alb_change
      ELSE
         !alb_change = exp(-tau_f*(60*60)/tau_1)
         alb_change = EXP(-tau_f*(tstep)/tau_1)
@@ -83,7 +83,7 @@ SUBROUTINE SnowUpdate(&
      ENDIF
   ENDDO
 
-  ! write(*,*) snowAlb
+  ! write(*,*) SnowAlb
 
 END SUBROUTINE SnowUpdate
 

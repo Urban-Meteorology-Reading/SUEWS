@@ -479,8 +479,9 @@ CONTAINS
        WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
        freezmelt,freezstate,freezstatevol,&
        Qm_Melt,Qm_rain,Tsurf_ind,sfr,DayofWeek,surf,snowD,&
+       AddWater,addwaterrunoff,&
        SnowPack,SurplusEvap,&!inout
-       snowFrac,MeltWaterStore,iceFrac,addwater,addwaterrunoff,SnowDens,&
+       snowFrac,MeltWaterStore,iceFrac,SnowDens,&
        runoffSnow,& ! output
        runoff,runoffSoil,chang,changSnow,SnowToSurf,state,ev_snow,soilmoist,&
        SnowDepth,SnowRemoval,snowProf,swe,ev,chSnow_per_interval,&
@@ -572,8 +573,11 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::Qm_rain
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::Tsurf_ind
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::sfr
-    REAL(KIND(1d0)),DIMENSION(6,nsurf),INTENT(in)::surf
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::snowD
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::AddWater
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::addwaterrunoff
+    REAL(KIND(1d0)),DIMENSION(6,nsurf),INTENT(in)::surf
+
 
     !Updated status: input and output
     REAL(KIND(1d0)),INTENT(inout)::runoffAGveg
@@ -584,8 +588,6 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::snowFrac
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::MeltWaterStore
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::iceFrac
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::addwater
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::addwaterrunoff
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowDens
 
 

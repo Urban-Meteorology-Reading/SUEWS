@@ -10,7 +10,7 @@ MODULE SUEWS_Driver
   USE ESTM_module,ONLY:ESTM
   USE Snow_module,ONLY:SnowCalc,Snow_cal_MeltHeat
   USE DailyState_module,ONLY:SUEWS_cal_DailyState
-  use WaterDist_module,only:drainage,soilstore,SUEWS_cal_SoilMoist,SUEWS_update_SoilMoist,ReDistributeWater
+  USE WaterDist_module,ONLY:drainage,soilstore,SUEWS_cal_SoilMoist,SUEWS_update_SoilMoist,ReDistributeWater
 
 
   IMPLICIT NONE
@@ -18,8 +18,8 @@ MODULE SUEWS_Driver
 CONTAINS
   ! ===================MAIN CALCULATION WRAPPER FOR ENERGY AND WATER FLUX===========
   SUBROUTINE SUEWS_cal_Main(&
-       a1,a2,a3,addImpervious,AdditionalWater,addPipes,addVeg,addWater,addWaterBody,&
-       AddWaterRunoff,AerodynamicResistanceMethod,AH_MIN,AHProf_tstep,&
+       a1,a2,a3,AdditionalWater,&
+       AerodynamicResistanceMethod,AH_MIN,AHProf_tstep,&
        AH_SLOPE_Cooling,AH_SLOPE_Heating,alb,albDecTr,albEveTr,albGrass,&
        alBMax_DecTr,alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
        alpha_bioCO2,alpha_enh_bioCO2,alt,avkdn,avRh,&
@@ -121,10 +121,7 @@ CONTAINS
     INTEGER,INTENT(IN)::WaterUseMethod
 
 
-    REAL(KIND(1D0)),INTENT(IN)::addImpervious
-    REAL(KIND(1D0)),INTENT(IN)::addPipes
-    REAL(KIND(1D0)),INTENT(IN)::addVeg
-    REAL(KIND(1D0)),INTENT(IN)::addWaterBody
+
     REAL(KIND(1D0)),INTENT(IN)::alBMax_DecTr
     REAL(KIND(1D0)),INTENT(IN)::alBMax_EveTr
     REAL(KIND(1D0)),INTENT(IN)::alBMax_Grass
@@ -309,12 +306,10 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(6,NSURF),INTENT(INOUT)::surf
     REAL(KIND(1D0)),DIMENSION(-4:NDAYS,6),INTENT(INOUT)::HDD
     REAL(KIND(1D0)),DIMENSION(-4:NDAYS,NVEGSURF),INTENT(INOUT)::LAI
-    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)::addWater
-    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)::AddWaterRunoff
+
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)::alb
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)::IceFrac
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)::Meltwaterstore
-    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)::runoffSoil
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)::SnowDens
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)::snowFrac
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)::SnowPack
@@ -432,6 +427,7 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(OUT)::rss_nsurf
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(OUT)::runoff
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(OUT)::runoffSnow
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(OUT)::runoffSoil
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(OUT)::smd_nsurf
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(OUT)::SnowToSurf
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(OUT)::SnowDepth
@@ -467,6 +463,16 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(NSURF)::soilmoistOld
     REAL(KIND(1D0)),DIMENSION(NSURF)::stateOld
     REAL(KIND(1D0)),DIMENSION(NSURF)::tsurf_ind
+
+    ! TODO: TS 25 Oct 2017
+    ! the `add-*` variables are not used currently as grid-to-grid connection is NOT set up.
+    ! set these variables as zero.
+    REAL(KIND(1D0))::addImpervious=0
+    REAL(KIND(1D0))::addPipes=0
+    REAL(KIND(1D0))::addVeg=0
+    REAL(KIND(1D0))::addWaterBody=0
+    REAL(KIND(1D0)),DIMENSION(NSURF)::AddWater=0
+    REAL(KIND(1D0)),DIMENSION(NSURF)::AddWaterRunoff=0
 
 
     !==============main calculation start=======================
@@ -632,7 +638,7 @@ CONTAINS
          drain_per_tstep,&  !output
          drain,AddWaterRunoff,&
          AdditionalWater,runoffPipes,runoff_per_interval,&
-         addWater,stateOld,soilmoistOld)
+         AddWater,stateOld,soilmoistOld)
     !============= calculate water balance end =============
 
     !======== Evaporation and surface state ========
@@ -645,9 +651,10 @@ CONTAINS
          ResistSurf,ra,rb,tstep_real,snowdensmin,precip,PipeCapacity,RunoffToWater,&
          NonWaterFraction,wu_EveTr,wu_DecTr,wu_Grass,addVeg,addWaterBody,SnowLimPaved,SnowLimBuild,&
          SurfaceArea,drain,WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
-         freezmelt,freezstate,freezstatevol,Qm_Melt,Qm_rain,Tsurf_ind,sfr,StateLimit,surf,snowD,&
+         freezmelt,freezstate,freezstatevol,Qm_Melt,Qm_rain,Tsurf_ind,sfr,&
+         StateLimit,AddWater,addwaterrunoff,surf,snowD,&
          runoff_per_interval,state,soilmoist,SnowPack,snowFrac,MeltWaterStore,&! inout:
-         iceFrac,addwater,addwaterrunoff,SnowDens,&
+         iceFrac,SnowDens,&
          snowProf,& ! output:
          runoffSnow,runoff,runoffSoil,chang,changSnow,&
          SnowDepth,SnowToSurf,ev_snow,SnowRemoval,&
@@ -1218,7 +1225,7 @@ CONTAINS
        drain_per_tstep,&  !output
        drain,AddWaterRunoff,&
        AdditionalWater,runoffPipes,runoff_per_interval,&
-       addWater,stateOld,soilmoistOld)
+       AddWater,stateOld,soilmoistOld)
 
     IMPLICIT NONE
     INTEGER,PARAMETER :: nsurf=7! number of surface types
@@ -1241,7 +1248,7 @@ CONTAINS
 
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out):: drain         !Drainage of surface type "is" [mm]
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out):: AddWaterRunoff!Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out):: addWater      !water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out):: AddWater      !water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out):: stateOld
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out):: soilmoistOld
 
@@ -1302,16 +1309,10 @@ CONTAINS
     ! CALL ReDistributeWater
     !Calculates AddWater(is)
     CALL ReDistributeWater(&
-                                ! input:
-         nsurf,& ! surface type number
-         WaterSurf,&
-         snowUse,&
-         WaterDist,  &
-         sfr,   &!
-         Drain,&
-                                ! output:
-         AddWaterRunoff,&
-         addWater)
+         nsurf,& ! input:
+         WaterSurf, snowUse, WaterDist,  sfr,   Drain,&
+         AddWaterRunoff,&  ! output:
+         AddWater)
 
   END SUBROUTINE SUEWS_cal_Water
   !=======================================================================
@@ -1360,9 +1361,10 @@ CONTAINS
        ResistSurf,ra,rb,tstep_real,snowdensmin,precip,PipeCapacity,RunoffToWater,&
        NonWaterFraction,wu_EveTr,wu_DecTr,wu_Grass,addVeg,addWaterBody,SnowLimPaved,SnowLimBuild,&
        SurfaceArea,drain,WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
-       freezmelt,freezstate,freezstatevol,Qm_Melt,Qm_rain,Tsurf_ind,sfr,StateLimit,surf,snowD,&
+       freezmelt,freezstate,freezstatevol,Qm_Melt,Qm_rain,Tsurf_ind,sfr,&
+       StateLimit,AddWater,addwaterrunoff,surf,snowD,&
        runoff_per_interval,state,soilmoist,SnowPack,snowFrac,MeltWaterStore,&! inout:
-       iceFrac,addwater,addwaterrunoff,SnowDens,&
+       iceFrac,SnowDens,&
        snowProf,& ! output:
        runoffSnow,runoff,runoffSoil,chang,changSnow,&
        SnowDepth,SnowToSurf,ev_snow,SnowRemoval,&
@@ -1449,7 +1451,8 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::sfr
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::snowD
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::StateLimit !Limit for state of each surface type [mm] (specified in input files)
-
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::AddWater
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::addwaterrunoff
     REAL(KIND(1d0)),DIMENSION(6,nsurf),INTENT(in)::surf
 
     !Updated status: input and output
@@ -1462,8 +1465,6 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::MeltWaterStore
 
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::iceFrac
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::addwater
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::addwaterrunoff
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowDens
     REAL(KIND(1d0)),DIMENSION(2)    ::SurplusEvap        !Surplus for evaporation in 5 min timestep
 
@@ -1574,8 +1575,9 @@ CONTAINS
                   WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
                   freezmelt,freezstate,freezstatevol,&
                   Qm_Melt,Qm_rain,Tsurf_ind,sfr,DayofWeek,surf,snowD,&
+                  AddWater,addwaterrunoff,&
                   SnowPack,SurplusEvap,&!inout
-                  snowFrac,MeltWaterStore,iceFrac,addwater,addwaterrunoff,SnowDens,&
+                  snowFrac,MeltWaterStore,iceFrac,SnowDens,&
                   runoffSnow,& ! output
                   runoff,runoffSoil,chang,changSnow,SnowToSurf,state,ev_snow,soilmoist,&
                   SnowDepth,SnowRemoval,snowProf,swe,ev,chSnow_per_interval,&
@@ -2204,132 +2206,132 @@ CONTAINS
   !========================================================================
 
 
-SUBROUTINE SUEWS_cal_Diagnostics(&
-     tsurf,qh,&!input
-     Press_hPa,qe,&
-     UStar,veg_fr,z0m,L_mod,avdens,avcp,lv_J_kg,tstep_real,&
-     RoughLenHeatMethod,StabilityMethod,&
-     avU10_ms,t2_C,q2_gkg)!output
-  IMPLICIT NONE
-  ! REAL(KIND(1d0)),INTENT(in) ::usurf,uflux
-  REAL(KIND(1d0)),INTENT(in) ::tsurf,qh
-  REAL(KIND(1d0)),INTENT(in) ::Press_hPa,qe
-  REAL(KIND(1d0)),INTENT(in) :: UStar,veg_fr,z0m,L_mod,avdens,avcp,lv_J_kg,tstep_real
+  SUBROUTINE SUEWS_cal_Diagnostics(&
+       tsurf,qh,&!input
+       Press_hPa,qe,&
+       UStar,veg_fr,z0m,L_mod,avdens,avcp,lv_J_kg,tstep_real,&
+       RoughLenHeatMethod,StabilityMethod,&
+       avU10_ms,t2_C,q2_gkg)!output
+    IMPLICIT NONE
+    ! REAL(KIND(1d0)),INTENT(in) ::usurf,uflux
+    REAL(KIND(1d0)),INTENT(in) ::tsurf,qh
+    REAL(KIND(1d0)),INTENT(in) ::Press_hPa,qe
+    REAL(KIND(1d0)),INTENT(in) :: UStar,veg_fr,z0m,L_mod,avdens,avcp,lv_J_kg,tstep_real
 
-  ! INTEGER,INTENT(in)         :: opt ! 0 for momentum, 1 for temperature, 2 for humidity
-  INTEGER,INTENT(in)         :: RoughLenHeatMethod,StabilityMethod
+    ! INTEGER,INTENT(in)         :: opt ! 0 for momentum, 1 for temperature, 2 for humidity
+    INTEGER,INTENT(in)         :: RoughLenHeatMethod,StabilityMethod
 
-  REAL(KIND(1d0)),INTENT(out):: avU10_ms,t2_C,q2_gkg
-  REAL(KIND(1d0))::tlv
-  REAL(KIND(1d0)),parameter::k=0.4
+    REAL(KIND(1d0)),INTENT(out):: avU10_ms,t2_C,q2_gkg
+    REAL(KIND(1d0))::tlv
+    REAL(KIND(1d0)),PARAMETER::k=0.4
 
-  tlv=lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
-  ! wind speed:
-  CALL diagSfc(0d0,0d0,UStar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,avU10_ms,0,RoughLenHeatMethod,StabilityMethod)
-  ! temperature:
-  CALL diagSfc(tsurf,qh,UStar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,t2_C,1,RoughLenHeatMethod,StabilityMethod)
-  ! humidity:
-  CALL diagSfc(qsatf(tsurf,Press_hPa)*1000,& ! Saturation specific humidity at surface in g/kg
-       qe,UStar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,q2_gkg,2,RoughLenHeatMethod,StabilityMethod)
+    tlv=lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
+    ! wind speed:
+    CALL diagSfc(0d0,0d0,UStar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,avU10_ms,0,RoughLenHeatMethod,StabilityMethod)
+    ! temperature:
+    CALL diagSfc(tsurf,qh,UStar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,t2_C,1,RoughLenHeatMethod,StabilityMethod)
+    ! humidity:
+    CALL diagSfc(qsatf(tsurf,Press_hPa)*1000,& ! Saturation specific humidity at surface in g/kg
+         qe,UStar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,q2_gkg,2,RoughLenHeatMethod,StabilityMethod)
 
-END SUBROUTINE SUEWS_cal_Diagnostics
-
-
-SUBROUTINE diagSfc(&
-  xSurf,xFlux,us,VegFraction,z0m,L_mod,k,avdens,avcp,tlv,&
-  xDiag,opt,RoughLenHeatMethod,StabilityMethod)
-  ! TS 05 Sep 2017: improved interface
-  ! TS 20 May 2017: calculate surface-level diagonostics
-
-  ! USE mod_k
-  ! USE mod_z
-  ! USE sues_data
-  ! USE data_in
-  ! USE moist
-
-  IMPLICIT NONE
-
-  REAL(KIND(1d0)),INTENT(in) :: xSurf,xFlux,us,VegFraction,z0m,L_mod,k,avdens,avcp,tlv
-  REAL(KIND(1d0)),INTENT(out):: xDiag
-  INTEGER,INTENT(in)         :: opt ! 0 for momentum, 1 for temperature, 2 for humidity
-  INTEGER,INTENT(in)         :: RoughLenHeatMethod,StabilityMethod
-
-  REAL(KIND(1d0))            :: &
-       psymz2,psymz10,psymz0,psyhz2,psyhz0,& ! stability correction functions
-       z0h,& ! Roughness length for heat
-       z2zd,z10zd,&
-       muu=1.46e-5,& !molecular viscosity
-       stab_fn_mom,stab_fn_heat !stability correction functions
+  END SUBROUTINE SUEWS_cal_Diagnostics
 
 
-  !***************************************************************
-  ! log-law based stability corrections:
-  ! Roughness length for heat
-  IF (RoughLenHeatMethod==1) THEN !Brutasert (1982) z0h=z0/10(see Grimmond & Oke, 1986)
-     z0h=z0m/10
-  ELSEIF (RoughLenHeatMethod==2) THEN ! Kawai et al. (2007)
-     !z0h=z0m*exp(2-(1.2-0.9*veg_fr**0.29)*(us*z0m/muu)**0.25)
-     ! Changed by HCW 05 Nov 2015 (veg_fr includes water; VegFraction = veg + bare soil)
-     z0h=z0m*EXP(2-(1.2-0.9*VegFraction**0.29)*(us*z0m/muu)**0.25)
-  ELSEIF (RoughLenHeatMethod==3) THEN
-     z0h=z0m*EXP(-20.) ! Voogt and Grimmond, JAM, 2000
-  ELSEIF (RoughLenHeatMethod==4) THEN
-     z0h=z0m*EXP(2-1.29*(us*z0m/muu)**0.25) !See !Kanda and Moriwaki (2007),Loridan et al. (2010)
-  ENDIF
+  SUBROUTINE diagSfc(&
+       xSurf,xFlux,us,VegFraction,z0m,L_mod,k,avdens,avcp,tlv,&
+       xDiag,opt,RoughLenHeatMethod,StabilityMethod)
+    ! TS 05 Sep 2017: improved interface
+    ! TS 20 May 2017: calculate surface-level diagonostics
 
-  ! z0h=z0m/5
+    ! USE mod_k
+    ! USE mod_z
+    ! USE sues_data
+    ! USE data_in
+    ! USE moist
 
+    IMPLICIT NONE
 
-  ! zX-z0
-  z2zd=2+z0h   ! set lower limit as z0h to prevent arithmetic error
-  z10zd=10+z0m ! set lower limit as z0m to prevent arithmetic error
+    REAL(KIND(1d0)),INTENT(in) :: xSurf,xFlux,us,VegFraction,z0m,L_mod,k,avdens,avcp,tlv
+    REAL(KIND(1d0)),INTENT(out):: xDiag
+    INTEGER,INTENT(in)         :: opt ! 0 for momentum, 1 for temperature, 2 for humidity
+    INTEGER,INTENT(in)         :: RoughLenHeatMethod,StabilityMethod
 
-  ! stability correction functions
-  ! momentum:
-  psymz10=stab_fn_mom(StabilityMethod,z10zd/L_mod,z10zd/L_mod)
-  psymz2=stab_fn_mom(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
-  psymz0=stab_fn_mom(StabilityMethod,z0m/L_mod,z0m/L_mod)
-
-  ! heat and vapor: assuming both are the same
-
-  psyhz2=stab_fn_heat(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
-  psyhz0=stab_fn_heat(StabilityMethod,z0h/L_mod,z0h/L_mod)
-  !***************************************************************
-
-  SELECT CASE (opt)
-  CASE (0) ! wind (momentum) at 10 m
-     xDiag=us/k*(LOG(z10zd/z0m)-psymz10+psymz0)
-
-  CASE (1) ! temperature at 2 m
-     xDiag=xSurf-xFlux/(k*us*avdens*avcp)*(LOG(z2zd/z0h)-psyhz2+psyhz0)
-    !  IF ( ABS((LOG(z2zd/z0h)-psyhz2+psyhz0))>10 ) THEN
-    !     PRINT*, '#####################################'
-    !     PRINT*, 'xSurf',xSurf
-    !     PRINT*, 'xFlux',xFlux
-    !     PRINT*, 'k*us*avdens*avcp',k*us*avdens*avcp
-    !     PRINT*, 'k',k
-    !     PRINT*, 'us',us
-    !     PRINT*, 'avdens',avdens
-    !     PRINT*, 'avcp',avcp
-    !     PRINT*, 'xFlux/X',xFlux/(k*us*avdens*avcp)
-    !     PRINT*, 'stab',(LOG(z2zd/z0h)-psyhz2+psyhz0)
-    !     PRINT*, 'LOG(z2zd/z0h)',LOG(z2zd/z0h)
-    !     PRINT*, 'z2zd',z2zd,'L_mod',L_mod,'z0h',z0h
-    !     PRINT*, 'z2zd/L_mod',z2zd/L_mod
-    !     PRINT*, 'psyhz2',psyhz2
-    !     PRINT*, 'psyhz0',psyhz0
-    !     PRINT*, 'psyhz2-psyhz0',psyhz2-psyhz0
-    !     PRINT*, 'xDiag',xDiag
-    !     PRINT*, '*************************************'
-    !  END IF
+    REAL(KIND(1d0))            :: &
+         psymz2,psymz10,psymz0,psyhz2,psyhz0,& ! stability correction functions
+         z0h,& ! Roughness length for heat
+         z2zd,z10zd,&
+         muu=1.46e-5,& !molecular viscosity
+         stab_fn_mom,stab_fn_heat !stability correction functions
 
 
-  CASE (2) ! humidity at 2 m
-     xDiag=xSurf-xFlux/(k*us*avdens*tlv)*(LOG(z2zd/z0h)-psyhz2+psyhz0)
+    !***************************************************************
+    ! log-law based stability corrections:
+    ! Roughness length for heat
+    IF (RoughLenHeatMethod==1) THEN !Brutasert (1982) z0h=z0/10(see Grimmond & Oke, 1986)
+       z0h=z0m/10
+    ELSEIF (RoughLenHeatMethod==2) THEN ! Kawai et al. (2007)
+       !z0h=z0m*exp(2-(1.2-0.9*veg_fr**0.29)*(us*z0m/muu)**0.25)
+       ! Changed by HCW 05 Nov 2015 (veg_fr includes water; VegFraction = veg + bare soil)
+       z0h=z0m*EXP(2-(1.2-0.9*VegFraction**0.29)*(us*z0m/muu)**0.25)
+    ELSEIF (RoughLenHeatMethod==3) THEN
+       z0h=z0m*EXP(-20.) ! Voogt and Grimmond, JAM, 2000
+    ELSEIF (RoughLenHeatMethod==4) THEN
+       z0h=z0m*EXP(2-1.29*(us*z0m/muu)**0.25) !See !Kanda and Moriwaki (2007),Loridan et al. (2010)
+    ENDIF
 
-  END SELECT
+    ! z0h=z0m/5
 
-END SUBROUTINE diagSfc
+
+    ! zX-z0
+    z2zd=2+z0h   ! set lower limit as z0h to prevent arithmetic error
+    z10zd=10+z0m ! set lower limit as z0m to prevent arithmetic error
+
+    ! stability correction functions
+    ! momentum:
+    psymz10=stab_fn_mom(StabilityMethod,z10zd/L_mod,z10zd/L_mod)
+    psymz2=stab_fn_mom(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
+    psymz0=stab_fn_mom(StabilityMethod,z0m/L_mod,z0m/L_mod)
+
+    ! heat and vapor: assuming both are the same
+
+    psyhz2=stab_fn_heat(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
+    psyhz0=stab_fn_heat(StabilityMethod,z0h/L_mod,z0h/L_mod)
+    !***************************************************************
+
+    SELECT CASE (opt)
+    CASE (0) ! wind (momentum) at 10 m
+       xDiag=us/k*(LOG(z10zd/z0m)-psymz10+psymz0)
+
+    CASE (1) ! temperature at 2 m
+       xDiag=xSurf-xFlux/(k*us*avdens*avcp)*(LOG(z2zd/z0h)-psyhz2+psyhz0)
+       !  IF ( ABS((LOG(z2zd/z0h)-psyhz2+psyhz0))>10 ) THEN
+       !     PRINT*, '#####################################'
+       !     PRINT*, 'xSurf',xSurf
+       !     PRINT*, 'xFlux',xFlux
+       !     PRINT*, 'k*us*avdens*avcp',k*us*avdens*avcp
+       !     PRINT*, 'k',k
+       !     PRINT*, 'us',us
+       !     PRINT*, 'avdens',avdens
+       !     PRINT*, 'avcp',avcp
+       !     PRINT*, 'xFlux/X',xFlux/(k*us*avdens*avcp)
+       !     PRINT*, 'stab',(LOG(z2zd/z0h)-psyhz2+psyhz0)
+       !     PRINT*, 'LOG(z2zd/z0h)',LOG(z2zd/z0h)
+       !     PRINT*, 'z2zd',z2zd,'L_mod',L_mod,'z0h',z0h
+       !     PRINT*, 'z2zd/L_mod',z2zd/L_mod
+       !     PRINT*, 'psyhz2',psyhz2
+       !     PRINT*, 'psyhz0',psyhz0
+       !     PRINT*, 'psyhz2-psyhz0',psyhz2-psyhz0
+       !     PRINT*, 'xDiag',xDiag
+       !     PRINT*, '*************************************'
+       !  END IF
+
+
+    CASE (2) ! humidity at 2 m
+       xDiag=xSurf-xFlux/(k*us*avdens*tlv)*(LOG(z2zd/z0h)-psyhz2+psyhz0)
+
+    END SELECT
+
+  END SUBROUTINE diagSfc
 
 
 

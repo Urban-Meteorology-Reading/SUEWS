@@ -20,7 +20,7 @@
 !Last modified: TS 13 Apr 2016
 ! Added AnOHM required variables.
 !Last modified: LJ 06 Jul 2015
-! Changed to read snowAlb from ModelDailyState instead of SurfaceChar. Location also moved.
+! Changed to read SnowAlb from ModelDailyState instead of SurfaceChar. Location also moved.
 !Last modified: HCW 03 Jul 2015
 ! Use PopDensNighttime by default (not PopDensDaytime)
 !Last modified: HCW 26 Jun 2015

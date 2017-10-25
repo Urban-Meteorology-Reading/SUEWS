@@ -55,6 +55,9 @@ CONTAINS
     AlbedoChoice=0
     ldown_option=0
     IF(NetRadiationMethod==0)THEN    !Observed Q* from the met input file will be used
+       NetRadiationMethodX=0
+       !  ldown_option is not required if NetRadiationMethodX=0 as ldown calculations are skipped
+       
        IF(snowUse==1) THEN            !If snow is modelled, NARP is needed for surface temperature
           ! NetRadiationMethod=3000
           NetRadiationMethodX=3000

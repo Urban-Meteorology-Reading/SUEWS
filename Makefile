@@ -61,7 +61,6 @@ OTHERS =  SUEWS_translate.o \
           SUEWS_HorizontalSoilWater.o \
           LUMPS_atmos_functions_stab.o \
           SUEWS_RoughnessParameters.o \
-          SUEWS_RunoffFromGrid.o \
           LUMPS_QHQE.o \
           SUEWS_AerodynamicResistance.o \
           SUEWS_BL_Resist.o \

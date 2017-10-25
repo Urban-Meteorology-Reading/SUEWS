@@ -524,10 +524,10 @@ CONTAINS
        Drain,&
                                 ! output:
        AddWaterRunoff,&
-       addWater&
+       AddWater&
        )
     !Drainage moves into different parts defined by WaterDistSS_YYYY.txt. LJ 2010
-    !addWater(is) is that amount of water that is gained for each surface
+    !AddWater(is) is that amount of water that is gained for each surface
     !Latest update takes snow into account. 22/03/2013 LJ
     !-------------------------------------------------------------------
 
@@ -547,7 +547,7 @@ CONTAINS
     REAL (KIND(1d0)),INTENT(in)::Drain(nsurf)               !Drainage of each surface type [mm]
 
     REAL (KIND(1d0)),INTENT(out)::AddWaterRunoff(nsurf)!Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
-    REAL (KIND(1d0)),INTENT(out)::addWater(nsurf)        !Water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
+    REAL (KIND(1d0)),INTENT(out)::AddWater(nsurf)        !Water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
 
     INTEGER::ii,jj,&
          NSurfDoNotReceiveDrainage=0!Number of surfaces that do not receive drainage water (green roof)
@@ -557,7 +557,7 @@ CONTAINS
        AddWaterRunoff(ii)=WaterDist(8,ii)
     ENDDO
     AddWaterRunoff(WaterSurf)=0
-    addWater=0
+    AddWater=0
 
     DO ii=1,nsurf-NSurfDoNotReceiveDrainage !go through surfaces from 1 to 7. These gain water through drainage
        DO jj=1,nsurf-(NSurfDoNotReceiveDrainage+1) !From where surface ii can gain water - can't gain water from itself

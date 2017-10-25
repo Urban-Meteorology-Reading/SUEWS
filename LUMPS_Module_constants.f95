@@ -1449,8 +1449,7 @@ MODULE sues_data
        runoffAGveg_m3,&         !Volume of above ground runoff from vegetated surfaces [m3]
        runoffWaterBody_m3,&     !Volume of above ground runoff from water surface [m3]
        runoffPipes_m3,&         !Volume of runoff in pipes [m3]
-       runoff_per_interval,&
-                                ! Total water transported to each grid for grid-to-grid connectivity
+       runoff_per_interval,&  ! Total water transported to each grid for grid-to-grid connectivity
        addImpervious,&      !Water from impervious surfaces of other grids [mm] for whole surface area
        addVeg,&             !Water from vegetated surfaces of other grids [mm] for whole surface area
        addWaterbody,&       !Water from water surface of other grids [mm] for whole surface area

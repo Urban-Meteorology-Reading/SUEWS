@@ -748,7 +748,9 @@ CONTAINS
     ELSE
        !  HW=0  !HCW if only roof, no ground
        HW=0.00001  ! to avoid zero-HW scenario TS 21 Oct 2017
-    ENDIF
+
+    END IF
+    HW=max(0.00001,HW)! to avoid zero-HW scenario TS 27 Oct 2017
 
     IF (Fground==1.0) THEN   !!FO!! if only ground, i.e. no houses
        W=1

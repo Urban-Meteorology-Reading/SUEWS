@@ -76,8 +76,15 @@ def load_SUEWS_nml(file):
 # RunControl.nml
 lib_RunControl = load_SUEWS_nml(os.path.join(dir_input, 'RunControl.nml'))
 
-# for cmd in lib_RunControl:
-#     exec(cmd)
+for var in lib_RunControl.index:
+    val = lib_RunControl.loc[var, 'runcontrol']
+    if type(val) == str:
+        cmd = '{var}={val:{c}^{n}}'.format(
+            var=var, val=val, n=len(val) + 2, c='\'')
+    else:
+        cmd = '{var}={val}'.format(var=var, val=val)
+    # print cmd
+    exec(cmd)
 
 
 # load all tables (i.e., txt files)
@@ -677,10 +684,10 @@ df_gridSurfaceChar.shape
 docLines = np.array(
     sd.suews_cal_main.__doc__.splitlines(),
     dtype=str)
-pos = np.where(
+posInput = np.where(
     np.logical_or(
         docLines == 'Parameters', docLines == 'Other Parameters'))
-varInputLines = docLines[pos[0][0] + 2:pos[0][1] - 1]
+varInputLines = docLines[posInput[0][0] + 2:posInput[0][1] - 1]
 varInputInfo = np.array([[xx.rstrip() for xx in x.split(':')]
                          for x in varInputLines])
 len(varInputInfo)
@@ -717,21 +724,61 @@ list_varSetting = [
 
 # model-tstep-state-related:
 list_varModelState = [
-    'qn1_av_store', 'icefrac', 'tsurf_ind', 'qn1_s_av_store',
+    'qn1_av_store', 'icefrac', 'qn1_s_av_store',
     'qn1_store', 'tair24hr', 'qn1_s_store', 'meltwaterstore',
     'snowfrac', 'snowpack', 'soilmoist', 'state']
 
 # output-related:
 list_varModelOut = [
-    'dataoutestm', 'dataout', 'tsurf_ind']
+    'dataoutestm', 'dataout']
 
 # model-control-related:
 list_varModelCtrl = [
     'ir', 'gridiv', 'veg_type']
 
-# extra surface characteristics variables:
+# extra surface characteristics variables in addition to df_gridSurfaceChar:
 list_varGridSurfaceCharX = [
     'nonwaterfraction', 'pervfraction', 'vegfraction']
+# a complete list of surface characteristics variables
+list_varGridSurfaceChar=(
+    df_gridSurfaceChar.columns.tolist()
+    +list_varGridSurfaceCharX)
+
+
+
+
+# now we proceed to construct several arrays for suews_cal_main
+# mod_state: runtime states as initial conditions for successive steps
+list_var_mod_state = (
+    list_varModelState
+    +list_varDailyState
+    +list_varModelOut)  # note list_varModelOut is in fact used as model states here
+
+
+# mod_forcing: forcing condition and other control variables needed for each time step
+list_var_mod_forcing = list_varMetForcing
+
+
+# mod_config: configuration info for each run/simulation
+list_var_mod_config=(
+    list_varModelCtrl
+    +list_varMethod
+    +list_varGridSurfaceChar)
+
+
+# mod_output: outputs of each time step
+# this should be parsed from suews_cal_main.__doc__
+# get the information of output variables for SUEWS_driver
+docLines = np.array(
+    sd.suews_cal_main.__doc__.splitlines(),
+    dtype=str)
+posOutput = np.where(docLines == 'Returns')
+varOutputLines = docLines[posOutput[0][0] + 2:]
+varOutputInfo = np.array([[xx.rstrip() for xx in x.split(':')]
+                          for x in varOutputLines])
+len(varOutputInfo)
+# transfer variable names from varOutputInfo to list_varModelOut
+list_var_mod_output = varOutputInfo[:, 0]
 
 
 # load meterological forcing data: met_forcing_array

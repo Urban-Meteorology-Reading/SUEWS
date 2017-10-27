@@ -971,11 +971,11 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out) ::qn1_ind_snow
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out) ::kup_ind_snow
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out) ::Tsurf_ind_snow
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out):: tsurf_ind
 
 
     REAL(KIND(1d0)),DIMENSION(nsurf):: lup_ind
     REAL(KIND(1d0)),DIMENSION(nsurf):: kup_ind
-    REAL(KIND(1d0)),DIMENSION(nsurf):: tsurf_ind
     REAL(KIND(1d0)),DIMENSION(nsurf):: qn1_ind
 
     REAL(KIND(1d0)),PARAMETER::NAN=-999
@@ -1229,7 +1229,7 @@ CONTAINS
 
     IMPLICIT NONE
     INTEGER,PARAMETER :: nsurf=7! number of surface types
-    INTEGER,PARAMETER::WaterSurf = 7
+    INTEGER,PARAMETER ::WaterSurf = 7
     INTEGER,INTENT(in) ::Diagnose
     INTEGER,INTENT(in) ::snowUse
 
@@ -2260,8 +2260,10 @@ CONTAINS
          psymz2,psymz10,psymz0,psyhz2,psyhz0,& ! stability correction functions
          z0h,& ! Roughness length for heat
          z2zd,z10zd,&
-         muu=1.46e-5,& !molecular viscosity
          stab_fn_mom,stab_fn_heat !stability correction functions
+    REAL(KIND(1d0)),PARAMETER :: muu=1.46e-5 !molecular viscosity
+    REAL(KIND(1d0)),PARAMETER :: nan=-999
+
 
 
     !***************************************************************
@@ -2297,39 +2299,46 @@ CONTAINS
     psyhz2=stab_fn_heat(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
     psyhz0=stab_fn_heat(StabilityMethod,z0h/L_mod,z0h/L_mod)
     !***************************************************************
+    IF ( xSurf==nan ) THEN
+       ! xSurf can be nan e.g. when TSurf is not calculated
+       ! if so xDiag is set as nan as well
+       xDiag=nan
+    ELSE
+       SELECT CASE (opt)
+       CASE (0) ! wind (momentum) at 10 m
+          xDiag=us/k*(LOG(z10zd/z0m)-psymz10+psymz0)
 
-    SELECT CASE (opt)
-    CASE (0) ! wind (momentum) at 10 m
-       xDiag=us/k*(LOG(z10zd/z0m)-psymz10+psymz0)
-
-    CASE (1) ! temperature at 2 m
-       xDiag=xSurf-xFlux/(k*us*avdens*avcp)*(LOG(z2zd/z0h)-psyhz2+psyhz0)
-       !  IF ( ABS((LOG(z2zd/z0h)-psyhz2+psyhz0))>10 ) THEN
-       !     PRINT*, '#####################################'
-       !     PRINT*, 'xSurf',xSurf
-       !     PRINT*, 'xFlux',xFlux
-       !     PRINT*, 'k*us*avdens*avcp',k*us*avdens*avcp
-       !     PRINT*, 'k',k
-       !     PRINT*, 'us',us
-       !     PRINT*, 'avdens',avdens
-       !     PRINT*, 'avcp',avcp
-       !     PRINT*, 'xFlux/X',xFlux/(k*us*avdens*avcp)
-       !     PRINT*, 'stab',(LOG(z2zd/z0h)-psyhz2+psyhz0)
-       !     PRINT*, 'LOG(z2zd/z0h)',LOG(z2zd/z0h)
-       !     PRINT*, 'z2zd',z2zd,'L_mod',L_mod,'z0h',z0h
-       !     PRINT*, 'z2zd/L_mod',z2zd/L_mod
-       !     PRINT*, 'psyhz2',psyhz2
-       !     PRINT*, 'psyhz0',psyhz0
-       !     PRINT*, 'psyhz2-psyhz0',psyhz2-psyhz0
-       !     PRINT*, 'xDiag',xDiag
-       !     PRINT*, '*************************************'
-       !  END IF
+       CASE (1) ! temperature at 2 m
+          xDiag=xSurf-xFlux/(k*us*avdens*avcp)*(LOG(z2zd/z0h)-psyhz2+psyhz0)
+          !  IF ( ABS((LOG(z2zd/z0h)-psyhz2+psyhz0))>10 ) THEN
+          !     PRINT*, '#####################################'
+          !     PRINT*, 'xSurf',xSurf
+          !     PRINT*, 'xFlux',xFlux
+          !     PRINT*, 'k*us*avdens*avcp',k*us*avdens*avcp
+          !     PRINT*, 'k',k
+          !     PRINT*, 'us',us
+          !     PRINT*, 'avdens',avdens
+          !     PRINT*, 'avcp',avcp
+          !     PRINT*, 'xFlux/X',xFlux/(k*us*avdens*avcp)
+          !     PRINT*, 'stab',(LOG(z2zd/z0h)-psyhz2+psyhz0)
+          !     PRINT*, 'LOG(z2zd/z0h)',LOG(z2zd/z0h)
+          !     PRINT*, 'z2zd',z2zd,'L_mod',L_mod,'z0h',z0h
+          !     PRINT*, 'z2zd/L_mod',z2zd/L_mod
+          !     PRINT*, 'psyhz2',psyhz2
+          !     PRINT*, 'psyhz0',psyhz0
+          !     PRINT*, 'psyhz2-psyhz0',psyhz2-psyhz0
+          !     PRINT*, 'xDiag',xDiag
+          !     PRINT*, '*************************************'
+          !  END IF
 
 
-    CASE (2) ! humidity at 2 m
-       xDiag=xSurf-xFlux/(k*us*avdens*tlv)*(LOG(z2zd/z0h)-psyhz2+psyhz0)
+       CASE (2) ! humidity at 2 m
+          xDiag=xSurf-xFlux/(k*us*avdens*tlv)*(LOG(z2zd/z0h)-psyhz2+psyhz0)
 
-    END SELECT
+       END SELECT
+
+
+    END IF
 
   END SUBROUTINE diagSfc
 

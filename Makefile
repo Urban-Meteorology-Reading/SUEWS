@@ -120,7 +120,7 @@ nc4fr: SUEWS_Program.f95 $(MODULES) $(OTHERS) $(TEST)
 	$(CC_nc4fr) SUEWS_Program.o $(MODULES) $(OTHERS) $(TEST) \
 	$(STATICLIB) \
 	SUEWS_ctrl_output.o \
-	-L/usr/local/netcdf-gfortran/lib -Wl,--rpath -Wl,/usr/local/netcdf-gfortran/lib -lnetcdff -lnetcdf \
+	-L$(NETCDFLIB) -Wl,--rpath -Wl,$(NETCDFLIB) -lnetcdff -lnetcdf \
 	-o $(TARGET)
 
 # If OTHERS have changed, compile them again

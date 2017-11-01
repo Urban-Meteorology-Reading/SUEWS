@@ -20,7 +20,11 @@ MODULE allocateArray
   IMPLICIT NONE
 
   ! ---- Set parameters for reading in data ------------------------------------------------------
+#ifdef nc
+  INTEGER, PARAMETER:: MaxNumberOfGrids=90000   !Max no. grids   !TS changed to 90000 for large-scale simulation based on netCDF IO
+#else
   INTEGER, PARAMETER:: MaxNumberOfGrids=2000   !Max no. grids   !HCW changed to 2000 from 10000 so prog can run on windows (2GB lim)
+#endif
   INTEGER, PARAMETER:: MaxLinesMet=8640        !Max no. lines to read in one go (for all grids, ie MaxLinesMet/NumberOfGrids each)
 
   ! ---- Set number of columns in input files ----------------------------------------------------
@@ -292,14 +296,14 @@ MODULE allocateArray
   !real(kind(1d0))::GDDmax,SDDMax                        ! Max GDD and SDD across all veg types [degC] (removed HCW 03 Mar 2015)
 
   REAL(KIND(1d0)),DIMENSION(nvegsurf):: BiogenCO2Code,&    !Biogenic CO2 Code for SUEWS_BiogenCO2.txt
-    alpha_bioCO2,&
-    beta_bioCO2,&
-    theta_bioCO2,&
-    alpha_enh_bioCO2,&
-    beta_enh_bioCO2,&
-    resp_a,&
-    resp_b,&
-    min_res_bioCO2
+       alpha_bioCO2,&
+       beta_bioCO2,&
+       theta_bioCO2,&
+       alpha_enh_bioCO2,&
+       beta_enh_bioCO2,&
+       resp_a,&
+       resp_b,&
+       min_res_bioCO2
 
   !No longer used (removed HCW 27 Nov 2014)
   !real(kind(1d0)),dimension(0:23)::runT           ! running average T for the day
@@ -943,9 +947,9 @@ MODULE data_in
        DiagnoseDisaggESTM,&   !Set to 1 to get print-out of ESTM forcing disaggregation progress
        DiagQN, DiagQS         !Set to 1 to print values/components
 
-       ! For more complex downscaling allow different RainAmongN for different intensities
-       INTEGER, DIMENSION(5):: MultRainAmongN           ! RainAmongN for each intensity bin
-       REAL(KIND(1d0)),DIMENSION(5):: MultRainAmongNUpperI   ! Upper bound of intensity bin for which to apply MultRainAmongN
+  ! For more complex downscaling allow different RainAmongN for different intensities
+  INTEGER, DIMENSION(5):: MultRainAmongN           ! RainAmongN for each intensity bin
+  REAL(KIND(1d0)),DIMENSION(5):: MultRainAmongNUpperI   ! Upper bound of intensity bin for which to apply MultRainAmongN
 
   ! ---- Model options currently set in model, but may be moved to RunControl at a later date
   INTEGER:: AlbedoChoice,&         !No additional albedo varaition (0); zenith angle calculation (1)
@@ -1136,7 +1140,7 @@ MODULE cbl_MODULE
   INTEGER::EntrainmentType,&  ! Entrainment type choice
        CO2_included,&     ! CO2 included
        InitialData_use,&  ! 1 read initial data, 0 do not
-       !qh_choice,&        ! selection of qh use to drive CBL growth 1=Suews 2=lumps 3=obs  ! moved to sues_data
+                                !qh_choice,&        ! selection of qh use to drive CBL growth 1=Suews 2=lumps 3=obs  ! moved to sues_data
        sondeflag,&      ! 1 read sonde or vertical profile data in 0 do not
        isubs          ! 1 include subsidence in equations
 

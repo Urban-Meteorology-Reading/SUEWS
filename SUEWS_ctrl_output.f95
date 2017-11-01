@@ -1292,7 +1292,7 @@ CONTAINS
          varX(:,:),varY(:,:),&
          xLat(:,:),xLon(:,:),&
          varSeq0(:),varSeq(:),&
-         xTime(:)
+         xTime(:),xGridID(:,:)
 
     INTEGER :: idVar(iVarStart:SIZE(varList))
     CHARACTER(len=50):: header_str,longNm_str,unit_str
@@ -1329,23 +1329,45 @@ CONTAINS
 
     ALLOCATE(varSeq0(nX*nY))
     ALLOCATE(varSeq(nX*nY))
+    ALLOCATE(xGridID(nX,nY))
     ALLOCATE(xLon(nX,nY))
     ALLOCATE(xLat(nX,nY))
     ALLOCATE(varY(nX,nY))
     ALLOCATE(varX(nX,nY))
     ALLOCATE(xTime(nTime))
 
+    ! ! latitude:
+    ! varSeq0=SiteSelect(1:nX*nY,5)
+    ! CALL sortSeqReal(varSeq0,varSeq,nY,nX)
+    ! xLat = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
+    ! ! PRINT*, 'before flipping:',xLat(1:2,1)
+    ! xLat =xLat(:,nY:1:-1)
+    ! ! PRINT*, 'after flipping:',xLat(1:2,1)
+    !
+    ! ! longitude:
+    ! varSeq0=SiteSelect(1:nX*nY,6)
+    ! CALL sortSeqReal(varSeq0,varSeq,nY,nX)
+    ! xLon = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
+
+
+    ! GridID:
+    varSeq=SurfaceChar(1:nX*nY,1)
+    ! CALL sortSeqReal(varSeq0,varSeq,nY,nX)
+    xGridID = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
+    ! PRINT*, 'before flipping:',xLat(1:2,1)
+    xGridID =xGridID(:,nY:1:-1)
+
     ! latitude:
-    varSeq0=SiteSelect(1:nX*nY,5)
-    CALL sortSeqReal(varSeq0,varSeq,nY,nX)
+    varSeq=SurfaceChar(1:nX*nY,5)
+    ! CALL sortSeqReal(varSeq0,varSeq,nY,nX)
     xLat = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
     ! PRINT*, 'before flipping:',xLat(1:2,1)
     xLat =xLat(:,nY:1:-1)
     ! PRINT*, 'after flipping:',xLat(1:2,1)
 
     ! longitude:
-    varSeq0=SiteSelect(1:nX*nY,6)
-    CALL sortSeqReal(varSeq0,varSeq,nY,nX)
+    varSeq=SurfaceChar(1:nX*nY,6)
+    ! CALL sortSeqReal(varSeq0,varSeq,nY,nX)
     xLon = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
 
 
@@ -1433,7 +1455,7 @@ CONTAINS
 
 
     ! put grid_ID:
-    CALL check( nf90_put_var(ncID, varIDGrid, RESHAPE(GridIDmatrix,(/nX,nY/),order = (/1,2/))) )
+    CALL check( nf90_put_var(ncID, varIDGrid, xGridID ))
     ! PRINT*, 'good put varIDGrid',varIDGrid
 
     CALL check( NF90_SYNC(ncID) )
@@ -1456,6 +1478,7 @@ CONTAINS
     IF (ALLOCATED(varOut)) DEALLOCATE(varOut)
     IF (ALLOCATED(varSeq0)) DEALLOCATE(varSeq0)
     IF (ALLOCATED(varSeq)) DEALLOCATE(varSeq)
+    IF (ALLOCATED(xGridID)) DEALLOCATE(xGridID)
     IF (ALLOCATED(xLon)) DEALLOCATE(xLon)
     IF (ALLOCATED(xLat)) DEALLOCATE(xLat)
     IF (ALLOCATED(varY)) DEALLOCATE(varY)

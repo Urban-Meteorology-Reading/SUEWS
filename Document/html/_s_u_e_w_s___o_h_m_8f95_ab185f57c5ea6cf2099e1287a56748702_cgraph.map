@@ -1,9 +1,0 @@
-<map id="ohm" name="ohm">
-<area shape="rect" id="node2" href="$_s_u_e_w_s___o_h_m_8f95.html#afb34d8d06c1f1fcb2543f89f53185ffd" title="ohm_coef_cal" alt="" coords="105,5,209,31"/>
-<area shape="rect" id="node3" href="$_s_u_e_w_s___o_h_m_8f95.html#aab92e372bc8d7a7394e70e0c6e7a1f21" title="ohm_dqndt_cal" alt="" coords="101,55,213,80"/>
-<area shape="rect" id="node4" href="$_s_u_e_w_s___o_h_m_8f95.html#a02a2622429b5a1d1ccc282269bc2aa0d" title="ohm_qs_cal" alt="" coords="110,104,203,129"/>
-<area shape="rect" id="node5" href="$_s_u_e_w_s__error_8f95.html#ac54090fb3ca221d8f45ec0a2a714e6c9" title="errorhint" alt="" coords="121,153,192,179"/>
-<area shape="rect" id="node6" href="$_s_u_e_w_s__error_8f95.html#a94f39ecfb93ed25b35ef27d1467e9a5f" title="gen_warningstext" alt="" coords="262,104,388,129"/>
-<area shape="rect" id="node7" href="$_s_u_e_w_s__error_8f95.html#a36739091b898d2822d0668fb68791963" title="gen_problemstext" alt="" coords="261,153,388,179"/>
-<area shape="rect" id="node8" href="$_s_u_e_w_s__error_8f95.html#a4b8296fcae72f02e79743ba9e6b75619" title="pausestop" alt="" coords="283,203,366,228"/>
-</map>

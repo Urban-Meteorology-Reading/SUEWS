@@ -1,9 +1,0 @@
-<map id="anohm_module::anohm_shapefit" name="anohm_module::anohm_shapefit">
-<area shape="rect" id="node2" href="$minpack_8f95.html#a700bf6f1bdcace537df37252fd26c723" title="lmdif1" alt="" coords="257,55,314,80"/>
-<area shape="rect" id="node8" href="$namespaceanohm__module.html#a8d56836cb99e49028266fac2beaf5b95" title="sinusoidal function f(t) for fitting: f(t) = mean+amp*Sin(Pi/12(t&#45;delta)) x = (/mean,amp,delta/) contains the fitting parameters " alt="" coords="215,104,356,129"/>
-<area shape="rect" id="node3" href="$minpack_8f95.html#a4689c4ce455cf0795081e88c004b48ff" title="lmdif" alt="" coords="404,55,454,80"/>
-<area shape="rect" id="node4" href="$minpack_8f95.html#a49e6c47697604e26b8f5aae0c4fd9aef" title="fdjac2" alt="" coords="502,5,559,31"/>
-<area shape="rect" id="node5" href="$minpack_8f95.html#a64d35f73f2a85378c24dd7b99ddb0c0f" title="qrfac" alt="" coords="505,55,556,80"/>
-<area shape="rect" id="node6" href="$minpack_8f95.html#a1dc1e9adda30350383f28f6cc6361365" title="lmpar" alt="" coords="503,104,557,129"/>
-<area shape="rect" id="node7" href="$minpack_8f95.html#a0dd208e826a2526722a40eab1724ac83" title="qrsolv" alt="" coords="607,104,663,129"/>
-</map>

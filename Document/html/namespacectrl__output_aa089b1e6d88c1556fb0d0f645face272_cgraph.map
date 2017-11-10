@@ -1,7 +1,0 @@
-<map id="ctrl_output::suews_output_init" name="ctrl_output::suews_output_init">
-<area shape="rect" id="node2" href="$namespacectrl__output.html#a01d8b0b36afd96d4fe5ff45436e13782" title="ctrl_output::filename_gen" alt="" coords="406,5,577,31"/>
-<area shape="rect" id="node3" href="$namespacestrings.html#a6905131fa6e36e7e719b2f3c5f499d93" title="strings::parse" alt="" coords="219,93,321,119"/>
-<area shape="rect" id="node6" href="$namespacectrl__output.html#a754f1fcb7692b22f531bcbd7fffd2634" title="ctrl_output::formatfile_gen" alt="" coords="182,44,358,69"/>
-<area shape="rect" id="node4" href="$namespacestrings.html#a31b0ac7636006c8c80397649219c6eaf" title="strings::compact" alt="" coords="625,105,743,131"/>
-<area shape="rect" id="node5" href="$namespacestrings.html#a12ec697adfa3201deadb7777456db11c" title="strings::split" alt="" coords="445,131,537,156"/>
-</map>

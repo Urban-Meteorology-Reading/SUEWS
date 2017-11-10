@@ -3,8 +3,8 @@ CC_nc = gfortran $(CFLAGS_nc)    # compiler with netcdf support
 
 
 CC_nc4fr= gfortran $(CFLAGS_nc4fr) # compiler with netcdf support for Fredrik
-NETCDFINC = /usr/local/netcdf-gfortran/include # path only valid with Fredrik's HPC
-NETCDFLIB = /usr/local/netcdf-gfortran/lib # path only valid with Fredrik's HPC
+NETCDFINC = /home/xlinfr/apps/include # path only valid with Fredrik's HPC
+NETCDFLIB = /home/xlinfr/apps/lib # path only valid with Fredrik's HPC
 
 TARGET = SUEWS_V2017c      # program name
 
@@ -30,9 +30,11 @@ endif
 CFLAGS = $(STATIC) -g -pg -Wall -Wtabs -fbounds-check -cpp -Wno-unused-dummy-argument -Wno-unused-variable \
 				-fbacktrace -ffpe-trap=zero,overflow,underflow,invalid,denormal
 CFLAGS_nc = $(CFLAGS) \
-				-I`nc-config --includedir` -Dnc=1 # options for netcdf build
+				-Dnc=1 \
+				-I`nc-config --includedir` # options for netcdf build
 CFLAGS_nc4fr=$(CFLAGS) \
-				-I$(NETCDFINC) -Dnc=1 # options for netcdf build for Fredrik
+				-Dnc=1 \
+				-I$(NETCDFINC) # options for netcdf build for Fredrik
 
 # All the files which include modules used by other modules (these therefore
 # needs to be compiled first)

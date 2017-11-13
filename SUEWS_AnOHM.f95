@@ -217,9 +217,13 @@ CONTAINS
        xa2=coeff_grid_day(sfc_typ,2)
        xa3=coeff_grid_day(sfc_typ,3)
     ELSE
-       !  PRINT*, ''
-       !  PRINT*, 'surface:',sfc_typ
-       !  PRINT*, 'xid',xid,id_save
+       ! IF ( sfc_typ==1 ) THEN
+       !    PRINT*, ''
+       !    PRINT*, 'surface:',sfc_typ
+       !    PRINT*, 'xid',xid,id_save
+       !
+       ! END IF
+
 
 
        ! load forcing characteristics:
@@ -238,9 +242,20 @@ CONTAINS
        xcp    = cpAnOHM(sfc_typ)
        xk     = kkAnOHM(sfc_typ)
        xch    = chAnOHM(sfc_typ)
-       xmoist = moist(sfc_typ)
+       xmoist = MIN(moist(sfc_typ),1.)
 
-       !  PRINT*, 'xBo before:',xBo
+
+       ! calculate water flux:
+       CALL AnOHM_WF_cal(&
+            xmoist,&!input
+            mWF)    !output
+       ! IF ( sfc_typ==1 ) THEN
+       !    PRINT*, 'mWF after:',mWF
+       !
+       ! END IF
+
+
+       ! PRINT*, 'xBo before:',xBo
        ! calculate Bowen ratio:
        CALL AnOHM_Bo_cal(&
             sfc_typ,&
@@ -249,7 +264,7 @@ CONTAINS
             xalb,xemis,xcp,xk,xch,xmoist,    & ! input: sfc properties
             tSd,                             & ! input: peaking time of Sd in hour
             xBo)                               ! output: Bowen ratio
-       !  PRINT*, 'xBo after:',xBo
+       ! PRINT*, 'xBo after:',xBo
 
        !  calculate AnOHM coefficients
        SELECT CASE (sfc_typ)
@@ -257,7 +272,7 @@ CONTAINS
           CALL  AnOHM_coef_land_cal(&
                ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH,& ! input: forcing
                xalb,xemis,xcp,xk,xch,xBo,      & ! input: sfc properties
-               xa1,xa2,xa3,ATs,mTs,gamma)                    ! output: surface temperature related scales by AnOHM
+               xa1,xa2,xa3,ATs,mTs,gamma)        ! output: surface temperature related scales by AnOHM
 
        CASE (7) ! water surface
           ! NB:give fixed values for the moment
@@ -338,7 +353,7 @@ CONTAINS
        CALL  AnOHM_coef_land_cal(&
             ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH,& ! input: forcing
             xalb,xemis,xcp,xk,xch,xBo,      & ! input: sfc properties
-            xa1,xa2,xa3,ATs,mTs,gamma)                    ! output: surface temperature related scales by AnOHM
+            xa1,xa2,xa3,ATs,mTs,gamma)        ! output: surface temperature related scales by AnOHM
 
 
     CASE (7) ! water surface
@@ -354,6 +369,7 @@ CONTAINS
 
     ! for a local time xTHr (in hour):
     xTs=ATs*SIN(OMEGA*(xTHr-tSd+6)*3600-gamma)+mTs
+    ! PRINT*, 'ATs,mTs,gamma in xTs:',ATs,mTs,gamma
 
   END SUBROUTINE AnOHM_xTs
   !========================================================================================
@@ -489,13 +505,76 @@ CONTAINS
     xx1  = m*COS(gamma)-n*SIN(gamma)
     xx2  = m*SIN(gamma)+n*COS(gamma)
     eta  = ATAN(xx1/xx2)
+
+    !   key phase lag:
+    xlag = eta-phi
+    PRINT*, ''
+    PRINT*, 'phi=atan(xx1/xx2):',phi
+    PRINT*, 'xx1',(ns*COS(gamma)+SIN(gamma)-ms*SIN(gamma))*SIN(tau)*ATa*fL
+    PRINT*, 'xx2',(xalb-1)*(ns*COS(gamma)-ms*SIN(gamma))*ASd&
+         -(-ms*COS(tau)*SIN(tau)+COS(gamma)*(ns*COS(tau)+SIN(tau)))*ATa*fL
+    PRINT*, 'x21',(xalb-1)*(ns*COS(gamma)-ms*SIN(gamma))*ASd
+    PRINT*, 'x22',(-ms*COS(tau)*SIN(tau)+COS(gamma)*(ns*COS(tau)+SIN(tau)))*ATa*fL
+    PRINT*, 'gamma:',gamma
+    PRINT*, 'ns,ms',ns,ms
+    PRINT*, 'm,n:',m,n
+    PRINT*,'ASd,tau,ATa',ASd,tau,ATa
+    PRINT*,'mWF',mWF
+
+    IF ( ABS(xlag)>PI/4 ) THEN
+       PRINT*, ''
+       PRINT*, ''
+       PRINT*, 'eta:',eta
+       PRINT*, 'm*COS(gamma):',m*COS(gamma)
+       PRINT*, 'n*SIN(gamma):',n*SIN(gamma)
+       PRINT*, 'm,n:',m,n
+       PRINT*, 'gamma:',gamma
+       PRINT*,'ATAN(ns/ms)',ATAN(ns/ms)
+       PRINT*, 'ns,ms',ns,ms
+       PRINT*, 'ns,f,n',ns,f,n
+       PRINT*, 'ms,f,m',ms,f,m
+       PRINT*, 'delta',delta
+       PRINT*,'ATAN(xx1/xx2)',gamma-ATAN(ns/ms)
+       PRINT*, 'xx1,xx2',f*SIN(tau)*ATa,(1-xalb)*ASd+f*COS(tau)*ATa
+       PRINT*,'ASd,tau,ATa',ASd,tau,ATa
+       ! IF ( ABS(eta)>PI/4 ) STOP "ABS(eta)>PI/4"
+       PRINT*, 'phi=atan(xx1/xx2):',phi
+       PRINT*, 'xx1',(ns*COS(gamma)+SIN(gamma)-ms*SIN(gamma))*SIN(tau)*ATa*fL
+       PRINT*, 'xx2',(xalb-1)*(ns*COS(gamma)-ms*SIN(gamma))*ASd&
+            -(-ms*COS(tau)*SIN(tau)+COS(gamma)*(ns*COS(tau)+SIN(tau)))*ATa*fL
+       PRINT*, 'x21',(xalb-1)*(ns*COS(gamma)-ms*SIN(gamma))*ASd
+       PRINT*, 'x22',(-ms*COS(tau)*SIN(tau)+COS(gamma)*(ns*COS(tau)+SIN(tau)))*ATa*fL
+       PRINT*,'fL,f',fL,f
+
+       PRINT*, 'xlag, cos, sin:',xlag,COS(xlag),SIN(xlag)
+
+       STOP "ABS(xlag)>PI/4"
+
+    ENDIF
+    ! IF ( ABS(eta)>PI/4 ) THEN
+    !    PRINT*, ''
+    !    PRINT*, 'eta:',eta
+    !    PRINT*, 'm*COS(gamma):',m*COS(gamma)
+    !    PRINT*, 'n*SIN(gamma):',n*SIN(gamma)
+    !    PRINT*, 'm,n:',m,n
+    !    PRINT*, 'gamma:',gamma
+    !    PRINT*,'ATAN(ns/ms)',ATAN(ns/ms)
+    !    PRINT*, 'ns,ms',ns,ms
+    !    PRINT*, 'ns,f,n',ns,f,n
+    !    PRINT*, 'ms,f,m',ms,f,m
+    !    PRINT*, 'delta',delta
+    !    PRINT*,'ATAN(xx1/xx2)',ATAN(xx1/xx2)
+    !    PRINT*, 'xx1,xx2',xx1,xx2
+    !    STOP "ABS(eta)>PI/4"
+    !
+    ! END IF
     !     if ( eta<0 ) print*, 'lambda,delta,m,n,gamma:', lambda,delta,m,n,gamma
     xx1  = xk**2*(m**2+n**2)*ATs**2
     xx2  = m**2*n**2
     ceta = SQRT(xx1/xx2)
 
-    !   key phase lag:
-    xlag = eta-phi
+
+
 
     !   calculate the OHM coeffs.:
     !   a1:
@@ -507,6 +586,29 @@ CONTAINS
 
     !   a3:
     xa3  = -xa1*(fT/f)*(mSd*(1-xalb))-mAH
+
+    ! debug info:
+    ! IF ( &
+    !                             ! xa2<0 &
+    !                             ! .OR. &
+    !      ABS(xa1)>1 &
+    !      .OR. ABS(xa2)>1 &
+    !      ) THEN
+    !    PRINT*, ''
+    !    PRINT*, 'eta:',eta
+    !    PRINT*, 'phi:',phi
+    !    PRINT*, 'xlag, cos, sin:',xlag,COS(xlag),SIN(xlag)
+    !    PRINT*, 'xx1,xx2',xx1,xx2
+    !    PRINT*, 'ATs',ATs
+    !    PRINT*, 'm2,n2:',m**2,n**2
+    !    PRINT*, 'ceta:',ceta
+    !    PRINT*, 'cphi:',cphi
+    !    PRINT*, 'ceta/(OMEGA*cphi):',ceta/(OMEGA*cphi)/3600
+    !    PRINT*, 'a1,a2,a3',xa1,xa2,xa3
+    !    PRINT*, 'forcing:',ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH  ! input: forcing
+    !    PRINT*, 'sfc. :',  xalb,xemis,xcp,xk,xch,xBo   ! input: sfc properties
+    ! END IF
+
 
     ! !   quality checking:
     ! !   quality checking of forcing conditions
@@ -798,7 +900,7 @@ CONTAINS
 
     ! construct mask
     IF (ALLOCATED(metMask)) DEALLOCATE(metMask, stat=err)
-    ALLOCATE(metMask(size(MetForcingData_grid, dim=1)))
+    ALLOCATE(metMask(SIZE(MetForcingData_grid, dim=1)))
     metMask=(MetForcingData_grid(:,2)==xid & ! day=xid
          .AND. MetForcingData_grid(:,4)==0)! tmin=0
 
@@ -910,7 +1012,7 @@ CONTAINS
 
 
 
-    ALLOCATE(SdMask(size(Sd, dim=1)), stat=err)
+    ALLOCATE(SdMask(SIZE(Sd, dim=1)), stat=err)
     IF ( err/= 0) PRINT *, "SdMask: Allocation request denied"
     SdMask=Sd>5
     lenDay=COUNT(SdMask)
@@ -945,6 +1047,17 @@ CONTAINS
     ! END IF
     ! PRINT*, 'Sd Day:', selX
 
+    ! add corrections on mSd to fix the overestimated a3 during cold periods
+    IF ( mSd+ASd<MAXVAL(selX) ) THEN
+       ! PRINT*, 'Sd max:', MAXVAL(selX)
+       ! PRINT*, 'ASd:', ASd
+       ! PRINT*, 'mSd before:', mSd
+       mSd=MAXVAL(selX)-ASd
+       ! PRINT*, 'mSd after:', mSd
+       ! PRINT*,''
+    END IF
+
+
     !   calculate sinusoidal scales of Ta:
     ! PRINT*, 'Calc. Ta...'
     selX=PACK(Ta, mask=SdMask)
@@ -968,7 +1081,19 @@ CONTAINS
 
     !   calculate the phase lag between Sd and Ta:
     tau = (tTa-tSd)/24*2*PI
-    ! PRINT*, 'tau:', tau
+    IF ( tau>PI/3 ) THEN
+       ! PRINT*, ''
+       ! PRINT*, 'tau:', tau
+       ! PRINT*, 'tTa:', tTa
+       ! PRINT*, 'tSd:', tSd
+       tau=MIN(tau,PI/3)! avoid Unrealistic phase lag
+
+    ELSEIF ( tau<-PI/6 ) THEN
+       tau=MAX(tau,-PI/6)! avoid Unrealistic phase lag
+
+       ! stop "abs(tau)>PI/3"
+    END IF
+
 
     !   calculate the mean values:
     selX=PACK(WS, mask=SdMask)
@@ -1312,7 +1437,7 @@ CONTAINS
     ELSE  IF ( iflag == 1 ) THEN
        ! calculate fvec at x:
        ! pass unknown:
-       xBo=x(1)
+       xBo = MAX(x(1),0.0001) ! avoid negative Bowen ratio
 
        ! pass forcing scales:
        ASd = prms(1)
@@ -1401,9 +1526,21 @@ CONTAINS
                   tSd,& !input: peaking time of Sd in hour
                   tHr(i),&! input: time in hour
                   Ts(i))! output: surface temperature, K
+             ! if ( sfc_typ==6 ) then
+             !   print*,''
+             ! print*,'tHr(i)',tHr(i)
+             ! print*, ASd,mSd,ATa,mTa,tau,mWS,mWF
+             ! print*,xalb,xemis,xcp,xk,xch,xBo
+             !   ! print*,' Ts(i)',Ts(i)
+             ! end if
 
              ! convert K to degC
              Ts(i)=Ts(i)-C2K
+
+             ! if ( sfc_t  yp==6 ) THEN
+             !   print*,' Ts(i) in degC',Ts(i)
+             ! end if
+
 
              ! calculate saturation specific humidity
              qs(i)=qsat_fn(Ts(i),pres(i))
@@ -1466,6 +1603,20 @@ CONTAINS
 
   END SUBROUTINE fcnBo
   !========================================================================================
+
+
+  SUBROUTINE AnOHM_WF_cal(xSM,mWF)
+
+    IMPLICIT NONE
+    REAL(KIND(1d0)),INTENT(in) :: xSM !< surface moisture status [-]
+    REAL(KIND(1d0)),INTENT(out):: mWF !< mean values of WF
+
+    ! REAL(KIND(1d0)),PARAMETER:: WF0=1E-4 !< reference value of mean WF
+
+    ! mWF=10**(2*xSM-8)
+    mWF=0.*xSM
+
+  END SUBROUTINE AnOHM_WF_cal
 
   !========================================================================================
   !> calculate saturation vapor pressure (es)

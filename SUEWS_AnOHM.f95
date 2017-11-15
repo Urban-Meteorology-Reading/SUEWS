@@ -945,6 +945,16 @@ CONTAINS
     ! END IF
     ! PRINT*, 'Sd Day:', selX
 
+    ! add corrections on mSd to fix the overestimated a3 during cold periods
+    IF ( mSd+ASd<MAXVAL(selX) ) THEN
+       ! PRINT*, 'Sd max:', MAXVAL(selX)
+       ! PRINT*, 'ASd:', ASd
+       ! PRINT*, 'mSd before:', mSd
+       mSd=MAXVAL(selX)-ASd
+       ! PRINT*, 'mSd after:', mSd
+       ! PRINT*,''
+    END IF
+
     !   calculate sinusoidal scales of Ta:
     ! PRINT*, 'Calc. Ta...'
     selX=PACK(Ta, mask=SdMask)
@@ -1403,7 +1413,7 @@ CONTAINS
                   Ts(i))! output: surface temperature, K
 
              ! convert K to degC
-             Ts(i)=Ts(i)-C2K
+             Ts(i)=min(Ts(i)-C2K,-40.)
 
              ! calculate saturation specific humidity
              qs(i)=qsat_fn(Ts(i),pres(i))

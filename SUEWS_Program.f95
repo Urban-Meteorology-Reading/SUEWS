@@ -725,6 +725,7 @@ PROGRAM SUEWS_Program
      DEALLOCATE(MetForcingData)
      DEALLOCATE(ModelOutputData)
      DEALLOCATE(dataOut)
+     DEALLOCATE(dataOutDailyState)
      IF (SnowUse == 1) THEN
         DEALLOCATE(dataOutSnow)
         DEALLOCATE(qn1_S_store)

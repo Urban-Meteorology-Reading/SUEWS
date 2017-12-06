@@ -81,19 +81,19 @@ MODULE ctrl_output
 
   ! defualt:
   DATA(varList(i), i=6,84)/&
-       varAttr('Kdown'      , 'W_m-2'        , f94  , 'Incoming shortwave radiation'                     , aA , '' , 0)     , &
-       varAttr('Kup'        , 'W_m-2'        , f94  , 'Outgoing shortwave radiation'                     , aA , '' , 0)     , &
-       varAttr('Ldown'      , 'W_m-2'        , f94  , 'Incoming longwave radiation'                      , aA , '' , 0)     , &
-       varAttr('Lup'        , 'W_m-2'        , f94  , 'Outgoing longwave radiation'                      , aA , '' , 0)     , &
+       varAttr('Kdown'      , 'W m-2'        , f94  , 'Incoming shortwave radiation'                     , aA , '' , 0)     , &
+       varAttr('Kup'        , 'W m-2'        , f94  , 'Outgoing shortwave radiation'                     , aA , '' , 0)     , &
+       varAttr('Ldown'      , 'W m-2'        , f94  , 'Incoming longwave radiation'                      , aA , '' , 0)     , &
+       varAttr('Lup'        , 'W m-2'        , f94  , 'Outgoing longwave radiation'                      , aA , '' , 0)     , &
        varAttr('Tsurf'      , 'degC'         , f94  , 'Bulk surface temperature'                         , aA , '' , 0)     , &
-       varAttr('QN'         , 'W_m-2'        , f94  , 'Net all-wave radiation'                           , aA , '' , 0)     , &
-       varAttr('QF'         , 'W_m-2'        , f94  , 'Anthropogenic heat flux'                          , aA , '' , 0)     , &
-       varAttr('QS'         , 'W_m-2'        , f94  , 'Net storage heat flux'                            , aA , '' , 0)     , &
-       varAttr('QH'         , 'W_m-2'        , f94  , 'Sensible heat flux'                               , aA , '' , 0)     , &
-       varAttr('QE'         , 'W_m-2'        , f94  , 'Latent heat flux'                                 , aA , '' , 0)     , &
-       varAttr('QHlumps'    , 'W_m-2'        , f94  , 'Sensible heat flux (using LUMPS)'                 , aA , '' , 1)     , &
-       varAttr('QElumps'    , 'W_m-2'        , f94  , 'Latent heat flux (using LUMPS)'                   , aA , '' , 1)     , &
-       varAttr('QHresis'    , 'W_m-2'        , f94  , 'Sensible heat flux (resistance method)'           , aA , '' , 1)     , &
+       varAttr('QN'         , 'W m-2'        , f94  , 'Net all-wave radiation'                           , aA , '' , 0)     , &
+       varAttr('QF'         , 'W m-2'        , f94  , 'Anthropogenic heat flux'                          , aA , '' , 0)     , &
+       varAttr('QS'         , 'W m-2'        , f94  , 'Net storage heat flux'                            , aA , '' , 0)     , &
+       varAttr('QH'         , 'W m-2'        , f94  , 'Sensible heat flux'                               , aA , '' , 0)     , &
+       varAttr('QE'         , 'W m-2'        , f94  , 'Latent heat flux'                                 , aA , '' , 0)     , &
+       varAttr('QHlumps'    , 'W m-2'        , f94  , 'Sensible heat flux (using LUMPS)'                 , aA , '' , 1)     , &
+       varAttr('QElumps'    , 'W m-2'        , f94  , 'Latent heat flux (using LUMPS)'                   , aA , '' , 1)     , &
+       varAttr('QHresis'    , 'W m-2'        , f94  , 'Sensible heat flux (resistance method)'           , aA , '' , 1)     , &
        varAttr('Rain'       , 'mm'           , f106 , 'Rain'                                             , aS , '' , 0)     , &
        varAttr('Irr'        , 'mm'           , f106 , 'Irrigation'                                       , aS , '' , 0)     , &
        varAttr('Evap'       , 'mm'           , f106 , 'Evaporation'                                      , aS , '' , 0)     , &
@@ -128,29 +128,29 @@ MODULE ctrl_output
        varAttr('StGrass'    , 'mm'           , f94  , 'Surface wetness state for grass surface'          , aL , '' , 1)     , &
        varAttr('StBSoil'    , 'mm'           , f94  , 'Surface wetness state for bare soil surface'      , aL , '' , 1)     , &
        varAttr('StWater'    , 'mm'           , f104 , 'Surface wetness state for water surface'          , aL , '' , 1)     , &
-       varAttr('Zenith'     , 'deg'          , f94  , 'Solar zenith angle'                               , aL , '' , 0)     , &
-       varAttr('Azimuth'    , 'deg'          , f94  , 'Solar azimuth angle'                              , aL , '' , 0)     , &
-       varAttr('AlbBulk'    , '-'            , f94  , 'Bulk albedo'                                      , aA , '' , 0)     , &
-       varAttr('Fcld'       , '-'            , f94  , 'Cloud fraction'                                   , aA , '' , 0)     , &
-       varAttr('LAI'        , 'm2_m-2'       , f94  , 'Leaf area index'                                  , aA , '' , 0)     , &
+       varAttr('Zenith'     , 'degree'       , f94  , 'Solar zenith angle'                               , aL , '' , 0)     , &
+       varAttr('Azimuth'    , 'degree'       , f94  , 'Solar azimuth angle'                              , aL , '' , 0)     , &
+       varAttr('AlbBulk'    , '1'            , f94  , 'Bulk albedo'                                      , aA , '' , 0)     , &
+       varAttr('Fcld'       , '1'            , f94  , 'Cloud fraction'                                   , aA , '' , 0)     , &
+       varAttr('LAI'        , 'm2 m-2'       , f94  , 'Leaf area index'                                  , aA , '' , 0)     , &
        varAttr('z0m'        , 'm'            , f94  , 'Roughness length for momentum'                    , aA , '' , 1)     , &
        varAttr('zdm'        , 'm'            , f94  , 'Zero-plane displacement height'                   , aA , '' , 1)     , &
-       varAttr('UStar'      , 'm_s-1'        , f94  , 'Friction velocity'                                , aA , '' , 0)     , &
+       varAttr('UStar'      , 'm s-1'        , f94  , 'Friction velocity'                                , aA , '' , 0)     , &
        varAttr('Lob'        , 'm'            , f104 , 'Obukhov length'                                   , aA , '' , 0)     , &
-       varAttr('ra'         , 's_m-1'        , f94  , 'Aerodynamic resistance'                           , aA , '' , 1)     , &
-       varAttr('rs'         , 's_m-1'        , f94  , 'Surface resistance'                               , aA , '' , 1)     , &
-       varAttr('Fc'         , 'umol_m-2_s-1' , f94  , 'CO2 flux'                                         , aA , '' , 0)     , &
-       varAttr('FcPhoto'    , 'umol_m-2_s-1' , f94  , 'CO2 flux from photosynthesis'                     , aA , '' , 1)     , &
-       varAttr('FcRespi'    , 'umol_m-2_s-1' , f94  , 'CO2 flux from respiration'                        , aA , '' , 1)     , &
-       varAttr('FcMetab'    , 'umol_m-2_s-1' , f94  , 'CO2 flux from metabolism'                         , aA , '' , 1)     , &
-       varAttr('FcTraff'    , 'umol_m-2_s-1' , f94  , 'CO2 flux from traffic'                            , aA , '' , 1)     , &
-       varAttr('FcBuild'    , 'umol_m-2_s-1' , f94  , 'CO2 flux from buildings'                          , aA , '' , 1)     , &
-       varAttr('QNSnowFr'   , 'W_m-2'        , f94  , 'Net all-wave radiation for non-snow area'         , aA , '' , 2)     , &
-       varAttr('QNSnow'     , 'W_m-2'        , f94  , 'Net all-wave radiation for snow area'             , aA , '' , 2)     , &
+       varAttr('ra'         , 's m-1'        , f94  , 'Aerodynamic resistance'                           , aA , '' , 1)     , &
+       varAttr('rs'         , 's m-1'        , f94  , 'Surface resistance'                               , aA , '' , 1)     , &
+       varAttr('Fc'         , 'umol m-2 s-1' , f94  , 'CO2 flux'                                         , aA , '' , 0)     , &
+       varAttr('FcPhoto'    , 'umol m-2 s-1' , f94  , 'CO2 flux from photosynthesis'                     , aA , '' , 1)     , &
+       varAttr('FcRespi'    , 'umol m-2 s-1' , f94  , 'CO2 flux from respiration'                        , aA , '' , 1)     , &
+       varAttr('FcMetab'    , 'umol m-2 s-1' , f94  , 'CO2 flux from metabolism'                         , aA , '' , 1)     , &
+       varAttr('FcTraff'    , 'umol m-2 s-1' , f94  , 'CO2 flux from traffic'                            , aA , '' , 1)     , &
+       varAttr('FcBuild'    , 'umol m-2 s-1' , f94  , 'CO2 flux from buildings'                          , aA , '' , 1)     , &
+       varAttr('QNSnowFr'   , 'W m-2'        , f94  , 'Net all-wave radiation for non-snow area'         , aA , '' , 2)     , &
+       varAttr('QNSnow'     , 'W m-2'        , f94  , 'Net all-wave radiation for snow area'             , aA , '' , 2)     , &
        varAttr('AlbSnow'    , '-'            , f94  , 'Snow albedo'                                      , aA , '' , 2)     , &
-       varAttr('QM'         , 'W_m-2'        , f106 , 'Snow-related heat exchange'                       , aA , '' , 2)     , &
-       varAttr('QMFreeze'   , 'W_m-2'        , f106 , 'Internal energy change'                           , aA , '' , 2)     , &
-       varAttr('QMRain'     , 'W_m-2'        , f106 , 'Heat released by rain on snow'                    , aA , '' , 2)     , &
+       varAttr('QM'         , 'W m-2'        , f106 , 'Snow-related heat exchange'                       , aA , '' , 2)     , &
+       varAttr('QMFreeze'   , 'W m-2'        , f106 , 'Internal energy change'                           , aA , '' , 2)     , &
+       varAttr('QMRain'     , 'W m-2'        , f106 , 'Heat released by rain on snow'                    , aA , '' , 2)     , &
        varAttr('SWE'        , 'mm'           , f104 , 'Snow water equivalent'                            , aA , '' , 2)     , &
        varAttr('MeltWater'  , 'mm'           , f104 , 'Meltwater'                                        , aA , '' , 2)     , &
        varAttr('MeltWStore' , 'mm'           , f104 , 'Meltwater store'                                  , aA , '' , 2)     , &
@@ -158,8 +158,8 @@ MODULE ctrl_output
        varAttr('SnowRPaved' , 'mm'           , f94  , 'Snow removed from paved surface'                  , aS , '' , 2)     , &
        varAttr('SnowRBldg'  , 'mm'           , f94  , 'Snow removed from building surface'               , aS , '' , 2)     , &
        varAttr('T2'         , 'degC'         , f94  , 'Air temperature at 2 m'                           , aA , '' , 0)     , &
-       varAttr('Q2'         , 'g_kg-1'       , f94  , 'Specific humidity at 2 m'                         , aA , '' , 0)     , &
-       varAttr('U10'        , 'm_s-1'        , f94  , 'Wind speed at 10 m'                               , aA , '' , 0)   &
+       varAttr('Q2'         , 'g kg-1'       , f94  , 'Specific humidity at 2 m'                         , aA , '' , 0)     , &
+       varAttr('U10'        , 'm s-1'        , f94  , 'Wind speed at 10 m'                               , aA , '' , 0)   &
 
        /
 
@@ -317,12 +317,12 @@ MODULE ctrl_output
 
   ! ESTM:
   DATA(varList(i), i=225,251)/&
-       varAttr('QS'       , 'W_m-2' , f104 , 'Total Storage'                            , aA , 'ESTM' , 0) , &
-       varAttr('QSAir'    , 'W_m-2' , f104 , 'Storage air'                              , aA , 'ESTM' , 0) , &
-       varAttr('QSWall'   , 'W_m-2' , f104 , 'Storage Wall'                             , aA , 'ESTM' , 0) , &
-       varAttr('QSRoof'   , 'W_m-2' , f104 , 'Storage Roof'                             , aA , 'ESTM' , 0) , &
-       varAttr('QSGround' , 'W_m-2' , f104 , 'Storage Ground'                           , aA , 'ESTM' , 0) , &
-       varAttr('QSIBld'   , 'W_m-2' , f104 , 'Storage Internal building'                , aA , 'ESTM' , 0) , &
+       varAttr('QS'       , 'W m-2' , f104 , 'Total Storage'                            , aA , 'ESTM' , 0) , &
+       varAttr('QSAir'    , 'W m-2' , f104 , 'Storage air'                              , aA , 'ESTM' , 0) , &
+       varAttr('QSWall'   , 'W m-2' , f104 , 'Storage Wall'                             , aA , 'ESTM' , 0) , &
+       varAttr('QSRoof'   , 'W m-2' , f104 , 'Storage Roof'                             , aA , 'ESTM' , 0) , &
+       varAttr('QSGround' , 'W m-2' , f104 , 'Storage Ground'                           , aA , 'ESTM' , 0) , &
+       varAttr('QSIBld'   , 'W m-2' , f104 , 'Storage Internal building'                , aA , 'ESTM' , 0) , &
        varAttr('TWALL1'   , 'degK'  , f104 , 'Temperature in wall layer 1'              , aA , 'ESTM' , 0) , &
        varAttr('TWALL2'   , 'degK'  , f104 , 'Temperature in wall layer 2'              , aA , 'ESTM' , 0) , &
        varAttr('TWALL3'   , 'degK'  , f104 , 'Temperature in wall layer 3'              , aA , 'ESTM' , 0) , &
@@ -1287,10 +1287,10 @@ CONTAINS
     ! When we create netCDF files, variables and dimensions, we get back
     ! an ID for each one.
     INTEGER :: ncID, varID, dimids(NDIMS),varIDGrid
-    INTEGER :: x_dimid,y_dimid,time_dimid,iVar,varIDx,varIDy,varIDt
+    INTEGER :: x_dimid,y_dimid,time_dimid,iVar,varIDx,varIDy,varIDt,varIDCRS
     REAL(KIND(1d0)), ALLOCATABLE :: varOut(:,:,:),&
          varX(:,:),varY(:,:),&
-         xLat(:,:),xLon(:,:),&
+         lat(:,:),lon(:,:),&
          varSeq0(:),varSeq(:),&
          xTime(:),xGridID(:,:)
 
@@ -1298,6 +1298,9 @@ CONTAINS
     CHARACTER(len=50):: header_str,longNm_str,unit_str
     CHARACTER(len = 4)  :: yrStr2
     CHARACTER(len = 40) :: startStr2
+    REAL(KIND(1d0)) :: minLat,maxLat,dLat,minLon,maxLon,dLon
+    REAL(KIND(1d0)),DIMENSION(1:6) :: geoTrans
+    CHARACTER(len = 80) :: strGeoTrans
 
     ! determine number of times
     nTime=SIZE(dataOut, dim=1)
@@ -1330,8 +1333,8 @@ CONTAINS
     ALLOCATE(varSeq0(nX*nY))
     ALLOCATE(varSeq(nX*nY))
     ALLOCATE(xGridID(nX,nY))
-    ALLOCATE(xLon(nX,nY))
-    ALLOCATE(xLat(nX,nY))
+    ALLOCATE(lon(nX,nY))
+    ALLOCATE(lat(nX,nY))
     ALLOCATE(varY(nX,nY))
     ALLOCATE(varX(nX,nY))
     ALLOCATE(xTime(nTime))
@@ -1339,49 +1342,80 @@ CONTAINS
     ! ! latitude:
     ! varSeq0=SiteSelect(1:nX*nY,5)
     ! CALL sortSeqReal(varSeq0,varSeq,nY,nX)
-    ! xLat = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
-    ! ! PRINT*, 'before flipping:',xLat(1:2,1)
-    ! xLat =xLat(:,nY:1:-1)
-    ! ! PRINT*, 'after flipping:',xLat(1:2,1)
+    ! lat = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
+    ! ! PRINT*, 'before flipping:',lat(1:2,1)
+    ! lat =lat(:,nY:1:-1)
+    ! ! PRINT*, 'after flipping:',lat(1:2,1)
     !
     ! ! longitude:
     ! varSeq0=SiteSelect(1:nX*nY,6)
     ! CALL sortSeqReal(varSeq0,varSeq,nY,nX)
-    ! xLon = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
+    ! lon = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
 
 
     ! GridID:
     varSeq=SurfaceChar(1:nX*nY,1)
     ! CALL sortSeqReal(varSeq0,varSeq,nY,nX)
     xGridID = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
-    ! PRINT*, 'before flipping:',xLat(1:2,1)
+    ! PRINT*, 'before flipping:',lat(1:2,1)
     xGridID =xGridID(:,nY:1:-1)
 
     ! latitude:
     varSeq=SurfaceChar(1:nX*nY,5)
     ! CALL sortSeqReal(varSeq0,varSeq,nY,nX)
-    xLat = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
-    ! PRINT*, 'before flipping:',xLat(1:2,1)
-    xLat =xLat(:,nY:1:-1)
-    ! PRINT*, 'after flipping:',xLat(1:2,1)
+    lat = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
+    ! PRINT*, 'before flipping:',lat(1:2,1)
+    lat =lat(:,nY:1:-1)
+    ! PRINT*, 'after flipping:',lat(1:2,1)
 
     ! longitude:
     varSeq=SurfaceChar(1:nX*nY,6)
     ! CALL sortSeqReal(varSeq0,varSeq,nY,nX)
-    xLon = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
+    lon = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
+    lon =lon(:,nY:1:-1)
 
 
     ! pass values to coordinate variables
-    varY = xLat
-    varX = xLon
+    varY = lat
+    varX = lon
     ! PRINT*, 'size x dim 1:',SIZE(varX, dim=1)
     ! PRINT*, 'size x dim 2:',SIZE(varX, dim=2)
+
+    ! calculate GeoTransform array as needed by GDAL
+    ! ref: http://www.perrygeo.com/python-affine-transforms.html
+    ! the values below are different from the above ref,
+    ! as the layout of SUEWS output is different from the schematic shown there
+    ! SUEWS output is arranged northward down the page
+    ! if data are formatted as a normal matrix
+    minLat      = lat(1,1)               ! the lower-left pixel
+    maxLat      = lat(1,NY)              ! the upper-left pixel
+    dLat        = (maxLat-minLat)/(nY-1) ! height of a pixel
+    ! PRINT*, 'lat:',minLat,maxLat,dLat
+    minLon      = lon(1,1)              ! the lower-left pixel
+    maxLon      = lon(NX,1)             ! the lower-right pixel
+    dLon        = (maxLon-minLon)/(nX-1) ! width of a pixel
+    ! PRINT*, 'lon:',minLon,maxLon,dLon
+    geoTrans(1) = minLon-dLon/2          ! x-coordinate of the lower-left corner of the lower-left pixel
+    geoTrans(2) = dLon                   ! width of a pixel
+    geoTrans(3) = 0.                     ! row rotation (typically zero)
+    geoTrans(4) = minLat-dLat/2          ! y-coordinate of the of the lower-left corner of the lower-left pixel
+    geoTrans(5) = 0.                     ! column rotation (typically zero)
+    geoTrans(6) = dLat                   ! height of a pixel (typically negative, but here positive)
+    ! write GeoTransform to strGeoTrans
+    WRITE(strGeoTrans,'(6(f12.8,1x))') geoTrans
+    ! PRINT*, TRIM(strGeoTrans)
 
 
     ! Create the netCDF file. The nf90_clobber parameter tells netCDF to
     ! overwrite this file, if it already exists.
     PRINT*, 'writing file:',TRIM(fileOut)
     CALL check( nf90_create(TRIM(fileOut), NF90_CLOBBER, ncID) )
+
+    ! put global attributes
+    CALL check( nf90_put_att(ncID,NF90_GLOBAL,'Conventions','CF1.6' ) )
+    CALL check( nf90_put_att(ncID,NF90_GLOBAL,'title','SUEWS output' ) )
+    CALL check( nf90_put_att(ncID,NF90_GLOBAL,'source','Micromet Group, University of Reading' ) )
+    CALL check( nf90_put_att(ncID,NF90_GLOBAL,'references','http://urban-climate.net/umep/SUEWS' ) )
 
     ! Define the dimensions. NetCDF will hand back an ID for each.
     ! nY = ncolumnsDataOut-4
@@ -1403,20 +1437,52 @@ CONTAINS
     ! define time variable:
     CALL check( nf90_def_var(ncID,'time', NF90_REAL, time_dimid, varIDt))
     CALL check( nf90_put_att(ncID,varIDt,'units','minutes since '//startStr2 ) )
+    CALL check( nf90_put_att(ncID,varIDt,'long_name','time') )
+    CALL check( nf90_put_att(ncID,varIDt,'standard_name','time') )
+    CALL check( nf90_put_att(ncID,varIDt,'calendar','gregorian') )
+    CALL check( nf90_put_att(ncID,varIDt,'axis','T') )
 
     ! define coordinate variables:
-    CALL check( nf90_def_var(ncID,'xLon', NF90_REAL, (/x_dimid, y_dimid/), varIDx))
+    CALL check( nf90_def_var(ncID,'lon', NF90_REAL, (/x_dimid, y_dimid/), varIDx))
     CALL check( nf90_put_att(ncID,varIDx,'units','degree_east') )
+    CALL check( nf90_put_att(ncID,varIDx,'long_name','longitude') )
+    CALL check( nf90_put_att(ncID,varIDx,'standard_name','longitude') )
+    CALL check( nf90_put_att(ncID,varIDx,'axis','X') )
 
-    CALL check( nf90_def_var(ncID,'xLat', NF90_REAL, (/x_dimid, y_dimid/), varIDy))
+    CALL check( nf90_def_var(ncID,'lat', NF90_REAL, (/x_dimid, y_dimid/), varIDy))
     CALL check( nf90_put_att(ncID,varIDy,'units','degree_north') )
+    CALL check( nf90_put_att(ncID,varIDy,'long_name','latitude') )
+    CALL check( nf90_put_att(ncID,varIDy,'standard_name','latitude') )
+    CALL check( nf90_put_att(ncID,varIDy,'axis','Y') )
+
+    ! define coordinate referencing system:
+    CALL check( nf90_def_var(ncID,'crsWGS84', NF90_INT, varIDCRS))
+    CALL check( nf90_put_att(ncID,varIDCRS,'grid_mapping_name','latitude_longitude') )
+    CALL check( nf90_put_att(ncID,varIDCRS,'long_name','CRS definition') )
+    CALL check( nf90_put_att(ncID,varIDCRS,'longitude_of_prime_meridian','0.0') )
+    CALL check( nf90_put_att(ncID,varIDCRS,'semi_major_axis','6378137.0') )
+    CALL check( nf90_put_att(ncID,varIDCRS,'inverse_flattening','298.257223563') )
+    CALL check( nf90_put_att(ncID,varIDCRS,'epsg_code','EPSG:4326') )
+    CALL check( nf90_put_att(ncID,varIDCRS,'GeoTransform',TRIM(strGeoTrans)) )
+    CALL check( nf90_put_att(ncID,varIDCRS,'spatial_ref',&
+         &'GEOGCS["WGS 84",&
+         &    DATUM["WGS_1984",&
+         &        SPHEROID["WGS 84",6378137,298.257223563,&
+         &            AUTHORITY["EPSG","7030"]],&
+         &        AUTHORITY["EPSG","6326"]],&
+         &    PRIMEM["Greenwich",0],&
+         &    UNIT["degree",0.0174532925199433],&
+         &    AUTHORITY["EPSG","4326"]]'&
+         ) )
 
     ! PRINT*, 'good define var'
 
     ! define grid_ID:
-    CALL check( nf90_def_var(ncID,'grid_ID', NF90_INT, (/x_dimid, y_dimid/), varID))
-    CALL check( nf90_put_att(ncID,varID,'coordinates','xLon xLat') )
-    varIDGrid=varID
+    CALL check( nf90_def_var(ncID,'grid_ID', NF90_INT, (/x_dimid, y_dimid/), varIDGrid))
+    CALL check( nf90_put_att(ncID,varIDGrid,'coordinates','lon lat') )
+    CALL check( nf90_put_att(ncID,varIDGrid,'long_name','Grid ID as in SiteSelect') )
+    CALL check( nf90_put_att(ncID,varIDGrid,'grid_mapping', 'crsWGS84' ))
+    ! varIDGrid=varID
 
     ! define other 3D variables:
     DO iVar = iVarStart, nVar
@@ -1431,12 +1497,14 @@ CONTAINS
        !  PRINT*, TRIM(ADJUSTL(header_str))
        CALL check( nf90_def_var(ncID,TRIM(ADJUSTL(header_str)), NF90_REAL, dimids, varID) )
        !  PRINT*, 'define good'
-       CALL check( nf90_put_att(ncID,varID,'coordinates','xLon xLat') )
+       CALL check( nf90_put_att(ncID,varID,'coordinates','lon lat') )
        !  PRINT*, 'put coordinates good'
        CALL check( nf90_put_att(ncID,varID,'units',TRIM(ADJUSTL(unit_str))) )
        !  PRINT*, 'put unit good'
-       CALL check( nf90_put_att(ncID,varID,'longname',TRIM(ADJUSTL(longNm_str))) )
-       !  PRINT*, 'put longname good'
+       CALL check( nf90_put_att(ncID,varID,'long_name',TRIM(ADJUSTL(longNm_str))) )
+       !  PRINT*, 'put long_name good'
+       CALL check( nf90_put_att(ncID,varID,'grid_mapping', 'crsWGS84' ))
+       !  PRINT*, 'put grid_mapping good'
        idVar(iVar)=varID
     END DO
     CALL check( nf90_enddef(ncID) )
@@ -1450,6 +1518,11 @@ CONTAINS
     ! put coordinate variables:
     CALL check( nf90_put_var(ncID, varIDx, varX) )
     CALL check( nf90_put_var(ncID, varIDy, varY) )
+
+    ! put CRS variable:
+    CALL check( nf90_put_var(ncID, varIDCRS, 9999) )
+
+
     CALL check( NF90_SYNC(ncID) )
     ! PRINT*, 'good put var'
 
@@ -1479,8 +1552,8 @@ CONTAINS
     IF (ALLOCATED(varSeq0)) DEALLOCATE(varSeq0)
     IF (ALLOCATED(varSeq)) DEALLOCATE(varSeq)
     IF (ALLOCATED(xGridID)) DEALLOCATE(xGridID)
-    IF (ALLOCATED(xLon)) DEALLOCATE(xLon)
-    IF (ALLOCATED(xLat)) DEALLOCATE(xLat)
+    IF (ALLOCATED(lon)) DEALLOCATE(lon)
+    IF (ALLOCATED(lat)) DEALLOCATE(lat)
     IF (ALLOCATED(varY)) DEALLOCATE(varY)
     IF (ALLOCATED(varX)) DEALLOCATE(varX)
     IF (ALLOCATED(xTime)) DEALLOCATE(xTime)
@@ -1575,7 +1648,7 @@ CONTAINS
     INTEGER :: loc
     REAL:: ind(nRow*nCol,2)
     REAL,DIMENSION(nRow*nCol) :: seqGrid2SortReal,seqGridSortedReal
-    real :: val
+    REAL :: val
 
     ! number of grids
     len=nRow*nCol
@@ -1594,7 +1667,7 @@ CONTAINS
     ! i.e., diagonally ascending
     seqGrid2SortReal=seqGrid2Sort0*1.
     CALL QsortC(seqGrid2SortReal)
-    seqGrid2Sort=int(seqGrid2SortReal)
+    seqGrid2Sort=INT(seqGrid2SortReal)
 
 
     ! fill in an nRow*nCol array with values to determine sequence

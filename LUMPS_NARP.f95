@@ -15,15 +15,15 @@ MODULE NARP_MODULE
   !
   !6.0  T. Loridan - June 2009
   !     Different longwave down options (ldown_option)
-  ! 1 - Ldown Observed (add data as last column in met file)
-  ! 2 - Ldown modelled from observed FCLD (add data as last column in met file)
-  ! 3 - Ldown modelled from FCLD(RH,TA)
-  ! 4 - Ldown modelled from FCLD(Kdown); i.e. day FCLD only
+  ! 1 - LDOWN Observed (add data as last column in met file)
+  ! 2 - LDOWN modelled from observed FCLD (add data as last column in met file)
+  ! 3 - LDOWN modelled from FCLD(RH,TA)
+  ! 4 - LDOWN modelled from FCLD(Kdown); i.e. day FCLD only
   !     cloud fraction is kept constant throught the night (Offerle et al. 2003, JAM)
-  ! 5 - Option 3 at night and 4 during the day (might cause discontinuities in Ldown)
+  ! 5 - Option 3 at night and 4 during the day (might cause discontinuities in LDOWN)
 
   !SUEWS   L. Jarvi - Oct 2010
-  !Currently Ldown options 4 and 5 commented out in order to reduce input files.
+  !Currently LDOWN options 4 and 5 commented out in order to reduce input files.
   !Last modified:
   ! TS 06 Aug 2017 - interface modified to receive explict input and output arguments
   ! LJ 27 Jan 2016 - Removal of tabs, cleaning of the code
@@ -56,12 +56,12 @@ CONTAINS
     ldown_option=0
     IF(NetRadiationMethod==0)THEN    !Observed Q* from the met input file will be used
        NetRadiationMethodX=0
-       !  ldown_option is not required if NetRadiationMethodX=0 as ldown calculations are skipped
-       
+       !  ldown_option is not required if NetRadiationMethodX=0 as LDOWN calculations are skipped
+
        IF(snowUse==1) THEN            !If snow is modelled, NARP is needed for surface temperature
           ! NetRadiationMethod=3000
           NetRadiationMethodX=3000
-          ldown_option=3              !Ldown will be modelled
+          ldown_option=3              !LDOWN will be modelled
           !NetRadiationMethod=NetRadiationMethod/1000
        ENDIF
 
@@ -105,7 +105,7 @@ CONTAINS
        SnowAlb,&
        AlbedoChoice,ldown_option,&
        NetRadiationMethodX,DiagQN,&
-       QSTARall,QSTAR_SF,QSTAR_S,kclear,KUPall,LDown,LUPall,fcld,TSURFall,&! output:
+       QSTARall,QSTAR_SF,QSTAR_S,kclear,KUPall,LDOWN,LUPall,fcld,TSURFall,&! output:
        qn1_ind_snow,kup_ind_snow,Tsurf_ind_snow,Tsurf_ind)
     !KCLEAR,FCLD,DTIME,KDOWN,QSTARall,KUPall,LDOWN,LUPall,TSURFall,&
     !AlbedoChoice,ldown_option,Temp_C,Press_hPa,Ea_hPa,qn1_obs,RH,&
@@ -188,7 +188,7 @@ CONTAINS
     REAL(KIND(1D0)),INTENT(out) ::QSTAR_S
     REAL(KIND(1D0)),INTENT(out) ::kclear
     REAL(KIND(1D0)),INTENT(out) ::KUPall
-    REAL(KIND(1D0)),INTENT(out) ::ldown
+    REAL(KIND(1D0)),INTENT(out) ::LDOWN
     REAL(KIND(1D0)),INTENT(out) ::LUPall
     REAL(KIND(1D0)),INTENT(out) ::fcld
     REAL(KIND(1D0)),INTENT(out) ::TSURFall
@@ -302,10 +302,13 @@ CONTAINS
        ELSEIF(ldown_option==2) THEN ! FCLD obs, came from input
           EMIS_A=EMIS_CLOUD(EMIS_A,FCLD)
        ENDIF
+       IF(DiagQN==1) WRITE(*,*) 'ldown_option: ',ldown_option,'FCLD:',FCLD
 
        IF(ldown_option>1) THEN ! Forcing available if ldown_option=1, model otherwise
           LDOWN=EMIS_A*SIGMATK4
+          IF(DiagQN==1) WRITE(*,*) 'EMIS_A: ',EMIS_A,'SIGMATK4:',SIGMATK4,'LDOWN: ',LDOWN
        ENDIF
+
 
        !----------------------------------------------------------------------------
        !Note that this is not averaged over the hour for cases where time step < 1hr
@@ -411,14 +414,14 @@ CONTAINS
     ! qn1=QSTARall
     ! kup=KUPall
     !LDOWN has same name
-    ! lup=LUPall
+    ! LUP=LUPall
     tsurf=TSURFall
     !if (kup>500) then
     ! write(*,*) Kdown, kup, kup_ind(1),kup_ind(2),kup_ind(3),kup_ind(4),kup_ind(5),kup_ind(6),SnowAlb
     ! pause
     !endif
 
-    IF(DiagQN==1) WRITE(*,*) 'kdown: ',kdown,'kup:',kup,'ldown: ',ldown,'lup: ',lup
+    IF(DiagQN==1) WRITE(*,*) 'kdown: ',kdown,'kup:',kup,'LDOWN: ',LDOWN,'LUP: ',LUP
 
   END SUBROUTINE NARP
 

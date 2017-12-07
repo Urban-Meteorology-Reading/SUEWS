@@ -3,8 +3,8 @@ CC_nc = gfortran $(CFLAGS_nc)    # compiler with netcdf support
 
 
 CC_nc4fr= gfortran $(CFLAGS_nc4fr) # compiler with netcdf support for Fredrik
-NETCDFINC = /home/xlinfr/apps/include # path only valid with Fredrik's HPC
-NETCDFLIB = /home/xlinfr/apps/lib # path only valid with Fredrik's HPC
+NETCDFINC = /home/xlinfr/apps/lib4cdo/include # path only valid with Fredrik's HPC
+NETCDFLIB = /home/xlinfr/apps/lib4cdo/lib # path only valid with Fredrik's HPC
 
 TARGET = SUEWS_V2017c      # program name
 

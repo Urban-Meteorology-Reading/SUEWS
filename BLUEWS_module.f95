@@ -645,7 +645,7 @@ CONTAINS
     IMPLICIT NONE
     REAL(KIND(1D0)), DIMENSION(neqn)::dyds,y1
     REAL(KIND(1d0)) :: zero=0.0
-    REAL(KIND(1d0)) :: h1,t_K,q_kgkg,c,cp,ws,s
+    REAL(KIND(1d0)) :: h1,t_K,q_kgkg,c,cp,ws,s,foo
     !     real(kind(1D0)) :: tp_K,qp_kgkg
     REAL(KIND(1D0)):: delt_K,delq_kgkg,delc
     REAL(KIND(1D0)):: gamtv_Km,deltv_K,ftv_Kms
@@ -654,6 +654,7 @@ CONTAINS
     REAL(KIND(1D0)):: conk,conn,cona,conc,cont
 
     !    print*,"diff: timestamp:",s
+    foo=s
     !    pause
     h1     = y1(1)!m
     t_K    = y1(2)!K

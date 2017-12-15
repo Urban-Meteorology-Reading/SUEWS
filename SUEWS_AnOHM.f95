@@ -60,6 +60,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(out):: qs !< storage heat flux [W m-2]
 
     INTEGER :: is,xid !< @var qn1 net all-wave radiation
+    INTEGER,SAVE :: id_save ! store index of the valid day with enough data
     REAL(KIND(1d0)),PARAMETER::NotUsed=-55.5!< @var qn1 net all-wave radiation
     INTEGER,PARAMETER::notUsedI=-55!< @var qn1 net all-wave radiation
     LOGICAL :: idQ ! whether id contains enough data
@@ -87,9 +88,10 @@ CONTAINS
     IF ( idQ ) THEN
        ! given enough data, calculate coefficients of day `id`
        xid=id
+       id_save=id ! store index of the valid day with enough data
     ELSE
        ! otherwise calculate coefficients of yesterday: `id-1`
-       xid=id-1
+       xid=id_save
     END IF
 
     DO is=1,nsurf
@@ -798,7 +800,7 @@ CONTAINS
 
     ! construct mask
     IF (ALLOCATED(metMask)) DEALLOCATE(metMask, stat=err)
-    ALLOCATE(metMask(size(MetForcingData_grid, dim=1)))
+    ALLOCATE(metMask(SIZE(MetForcingData_grid, dim=1)))
     metMask=(MetForcingData_grid(:,2)==xid & ! day=xid
          .AND. MetForcingData_grid(:,4)==0)! tmin=0
 
@@ -910,7 +912,7 @@ CONTAINS
 
 
 
-    ALLOCATE(SdMask(size(Sd, dim=1)), stat=err)
+    ALLOCATE(SdMask(SIZE(Sd, dim=1)), stat=err)
     IF ( err/= 0) PRINT *, "SdMask: Allocation request denied"
     SdMask=Sd>5
     lenDay=COUNT(SdMask)
@@ -1413,7 +1415,7 @@ CONTAINS
                   Ts(i))! output: surface temperature, K
 
              ! convert K to degC
-             Ts(i)=min(Ts(i)-C2K,-40.)
+             Ts(i)=MIN(Ts(i)-C2K,-40.)
 
              ! calculate saturation specific humidity
              qs(i)=qsat_fn(Ts(i),pres(i))

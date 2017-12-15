@@ -310,7 +310,9 @@ PROGRAM SUEWS_Program
         qn1_S_store(:,:) = NAN
         qn1_S_av_store(:,:) = NaN
      ENDIF
-     IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14) ALLOCATE(dataOutESTM(ReadlinesMetdata,32,NumberOfGrids)) !ESTM output
+     IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
+        ALLOCATE(dataOutESTM(ReadlinesMetdata,32,NumberOfGrids)) !ESTM output
+     ENDIF
      ALLOCATE(TstepProfiles(NumberOfGrids,14,24*NSH))   !Hourly profiles interpolated to model timestep
      ALLOCATE(AHProf_tstep(24*NSH,2))                   !Anthropogenic heat profiles at model timestep
      ALLOCATE(WUProfM_tstep(24*NSH,2))                  !Manual water use profiles at model timestep
@@ -731,6 +733,13 @@ PROGRAM SUEWS_Program
         DEALLOCATE(qn1_S_store)
         DEALLOCATE(qn1_S_av_store)
      ENDIF
+     IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
+        DEALLOCATE(dataOutESTM) !ESTM output
+        deALLOCATE(ESTMForcingData)
+        deALLOCATE(Ts5mindata)
+        deALLOCATE(Ts5mindata_ir)
+        deALLOCATE(Tair24HR)
+     ENDIF
      DEALLOCATE(TstepProfiles)
      DEALLOCATE(AHProf_tstep)
      DEALLOCATE(WUProfM_tstep)
@@ -742,6 +751,7 @@ PROGRAM SUEWS_Program
      DEALLOCATE(qn1_av_store)
      DEALLOCATE(qhforCBL)
      DEALLOCATE(qeforCBL)
+
      ! ----------------------------------------------------------------------
 
   ENDDO  !end loop over years

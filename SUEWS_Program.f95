@@ -431,7 +431,10 @@ PROGRAM SUEWS_Program
         ALLOCATE(ESTMForcingData(1:ReadLinesMetdata,ncolsESTMdata,NumberOfGrids))
         ALLOCATE(Ts5mindata(1:ReadLinesMetdata,ncolsESTMdata))
         ALLOCATE(Ts5mindata_ir(ncolsESTMdata))
-        ALLOCATE(Tair24HR(24*nsh))
+
+        IF (.NOT. ALLOCATED(Tair24HR)) ALLOCATE(Tair24HR(24*nsh))
+        ! if ( /= 0) print *, ": Deallocation request denied"
+        ! ALLOCATE(Tair24HR(24*nsh))
 
      ENDIF
      ! ------------------------------------------------------------------------
@@ -445,7 +448,7 @@ PROGRAM SUEWS_Program
 
      DO iblock=1,ReadBlocksMetData   !Loop through blocks of met data
 
-        WRITE(*,*) iblock,'/',ReadBlocksMetData
+        ! WRITE(*,*) iblock,'/',ReadBlocksMetData
 
         ! Model calculations are made in two stages:
         ! (1) initialise the run for each block of met data (iblock from 1 to ReadBlocksMetData)
@@ -655,7 +658,9 @@ PROGRAM SUEWS_Program
                  WRITE(*,*) TRIM(ADJUSTL(FileCodeX)),': Now running block ',iblock,'/',ReadBlocksMetData,' of ',TRIM(year_txt),'...'
               ENDIF
               IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_Calculations...'
+              ! print*, 'before cal:',sum(Tair24HR)
               CALL SUEWS_Calculations(GridCounter,ir,iblock,irMax)
+              ! print*, 'after cal:',sum(Tair24HR)
               IF(Diagnose==1) WRITE(*,*) 'SUEWS_Calculations finished...'
 
               ! Record iy and id for current time step to handle last row in yearly files (YYYY 1 0 0)
@@ -735,10 +740,10 @@ PROGRAM SUEWS_Program
      ENDIF
      IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
         DEALLOCATE(dataOutESTM) !ESTM output
-        deALLOCATE(ESTMForcingData)
-        deALLOCATE(Ts5mindata)
-        deALLOCATE(Ts5mindata_ir)
-        deALLOCATE(Tair24HR)
+        DEALLOCATE(ESTMForcingData)
+        DEALLOCATE(Ts5mindata)
+        DEALLOCATE(Ts5mindata_ir)
+        ! DEALLOCATE(Tair24HR)
      ENDIF
      DEALLOCATE(TstepProfiles)
      DEALLOCATE(AHProf_tstep)

@@ -1280,7 +1280,7 @@ CONTAINS
     ENDIF
 
     SHC_air=HEATCAPACITY_AIR(Tair1,avrh,Press_hPa)   ! Use SUEWS version
-    Tair24HR=EOSHIFT(Tair24hr, 1, Tair1, 1) !!!*** NB: Check this. and is this the tair of past 24 hrs? TS 10 Oct 2017
+    Tair24HR=EOSHIFT(Tair24HR, 1, Tair1, 1) !!!*** NB: Check this. and is this the tair of past 24 hrs? TS 10 Oct 2017
     Tairday=SUM(Tair24HR)/(24*nsh)
 
 

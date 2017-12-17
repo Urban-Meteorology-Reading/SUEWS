@@ -81,19 +81,19 @@ MODULE ctrl_output
 
   ! defualt:
   DATA(varList(i), i=6,84)/&
-       varAttr('Kdown'      , 'W m-2'        , f94  , 'Incoming shortwave radiation'                     , aA , '' , 0)     , &
-       varAttr('Kup'        , 'W m-2'        , f94  , 'Outgoing shortwave radiation'                     , aA , '' , 0)     , &
-       varAttr('Ldown'      , 'W m-2'        , f94  , 'Incoming longwave radiation'                      , aA , '' , 0)     , &
-       varAttr('Lup'        , 'W m-2'        , f94  , 'Outgoing longwave radiation'                      , aA , '' , 0)     , &
-       varAttr('Tsurf'      , 'degC'         , f94  , 'Bulk surface temperature'                         , aA , '' , 0)     , &
-       varAttr('QN'         , 'W m-2'        , f94  , 'Net all-wave radiation'                           , aA , '' , 0)     , &
-       varAttr('QF'         , 'W m-2'        , f94  , 'Anthropogenic heat flux'                          , aA , '' , 0)     , &
-       varAttr('QS'         , 'W m-2'        , f94  , 'Net storage heat flux'                            , aA , '' , 0)     , &
-       varAttr('QH'         , 'W m-2'        , f94  , 'Sensible heat flux'                               , aA , '' , 0)     , &
-       varAttr('QE'         , 'W m-2'        , f94  , 'Latent heat flux'                                 , aA , '' , 0)     , &
-       varAttr('QHlumps'    , 'W m-2'        , f94  , 'Sensible heat flux (using LUMPS)'                 , aA , '' , 1)     , &
-       varAttr('QElumps'    , 'W m-2'        , f94  , 'Latent heat flux (using LUMPS)'                   , aA , '' , 1)     , &
-       varAttr('QHresis'    , 'W m-2'        , f94  , 'Sensible heat flux (resistance method)'           , aA , '' , 1)     , &
+       varAttr('Kdown'      , 'W m-2'        , f104  , 'Incoming shortwave radiation'                     , aA , '' , 0)     , &
+       varAttr('Kup'        , 'W m-2'        , f104  , 'Outgoing shortwave radiation'                     , aA , '' , 0)     , &
+       varAttr('Ldown'      , 'W m-2'        , f104  , 'Incoming longwave radiation'                      , aA , '' , 0)     , &
+       varAttr('Lup'        , 'W m-2'        , f104  , 'Outgoing longwave radiation'                      , aA , '' , 0)     , &
+       varAttr('Tsurf'      , 'degC'         , f104  , 'Bulk surface temperature'                         , aA , '' , 0)     , &
+       varAttr('QN'         , 'W m-2'        , f104  , 'Net all-wave radiation'                           , aA , '' , 0)     , &
+       varAttr('QF'         , 'W m-2'        , f104  , 'Anthropogenic heat flux'                          , aA , '' , 0)     , &
+       varAttr('QS'         , 'W m-2'        , f104  , 'Net storage heat flux'                            , aA , '' , 0)     , &
+       varAttr('QH'         , 'W m-2'        , f104  , 'Sensible heat flux'                               , aA , '' , 0)     , &
+       varAttr('QE'         , 'W m-2'        , f104  , 'Latent heat flux'                                 , aA , '' , 0)     , &
+       varAttr('QHlumps'    , 'W m-2'        , f104  , 'Sensible heat flux (using LUMPS)'                 , aA , '' , 1)     , &
+       varAttr('QElumps'    , 'W m-2'        , f104  , 'Latent heat flux (using LUMPS)'                   , aA , '' , 1)     , &
+       varAttr('QHresis'    , 'W m-2'        , f104  , 'Sensible heat flux (resistance method)'           , aA , '' , 1)     , &
        varAttr('Rain'       , 'mm'           , f106 , 'Rain'                                             , aS , '' , 0)     , &
        varAttr('Irr'        , 'mm'           , f106 , 'Irrigation'                                       , aS , '' , 0)     , &
        varAttr('Evap'       , 'mm'           , f106 , 'Evaporation'                                      , aS , '' , 0)     , &
@@ -422,7 +422,7 @@ CONTAINS
 
 
     ! determine groups to output
-    ! todo: needs to be smarter, automate this filtering
+    ! TODO: needs to be smarter, automate this filtering
     grpList0(1)=''
     grpList0(2)='SOLWEIG'
     grpList0(3)='BL'
@@ -627,22 +627,24 @@ CONTAINS
        dataOutX=dataOutESTM(1:irMax,1:SIZE(varList),Gridiv)
 
     CASE ('DailyState')    !DailyState
+       ! PRINT*, SHAPE(dataout)
+       ! print*, dataout(1:irMax,2,Gridiv)
        ! get correct day index
-       idMin=INT(MINVAL(dataout(1:irMax,2,Gridiv)))
-       idMax=INT(MAXVAL(dataout(1:irMax,2,Gridiv)))
-       !  print*, 'idMin',idMin
-       !  print*, 'idMax',idMax
+       idMin=INT(MINVAL(dataout(1:irMax-1,2,Gridiv)))
+       idMax=INT(MAXVAL(dataout(1:irMax-1,2,Gridiv)))
+       ! PRINT*, 'idMin in SUEWS_Output_txt_grp',idMin
+       ! PRINT*, 'idMax in SUEWS_Output_txt_grp',idMax
        IF (ALLOCATED(dataOutX)) THEN
           DEALLOCATE(dataOutX)
           IF ( err/= 0) PRINT *, "dataOutX: Deallocation request denied"
        ENDIF
 
        IF (.NOT. ALLOCATED(dataOutX)) THEN
-          ALLOCATE(dataOutX(idMax-idmin,SIZE(varList)), stat=err)
+          ALLOCATE(dataOutX(idMax-idMin+1,SIZE(varList)), stat=err)
           IF ( err/= 0) PRINT *, "dataOutX: Allocation request denied"
        ENDIF
 
-       dataOutX=dataOutDailyState(idMin:idMax-1,1:SIZE(varList),Gridiv)
+       dataOutX=dataOutDailyState(idMin:idMax,1:SIZE(varList),Gridiv)
        !  print*, 'idMin line',dataOutDailyState(idMin,1:4,Gridiv)
        !  print*, 'idMax line',dataOutDailyState(idMax-1,1:4,Gridiv)
     END SELECT

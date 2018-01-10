@@ -1050,9 +1050,9 @@ CONTAINS
 
   !=============storage heat flux=========================================
   SUBROUTINE SUEWS_cal_Qs(&
-       StorageHeatMethod,OHMIncQF,Gridiv,&
+       StorageHeatMethod,OHMIncQF,Gridiv,&!input
        NumberOfGrids,ReadLinesMetdata,&
-       iy,id,it,imin,ir,tstep,Diagnose,sfr,&!input
+       iy,id,it,imin,ir,tstep,Diagnose,sfr,&
        OHM_coef,OHM_threshSW,OHM_threshWD,&
        soilmoist,soilstoreCap,state,nsh,SnowUse,DiagQS,&
        HDD,MetForcingData,Ts5mindata_ir,qf,qn1,&

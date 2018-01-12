@@ -2201,7 +2201,7 @@ CONTAINS
             qn1_ind_snow(1:nsurf),kup_ind_snow(1:nsurf),freezMelt(1:nsurf),& !74
             MeltWaterStore(1:nsurf),SnowDens(1:nsurf),                     & !88
             snowDepth(1:nsurf),Tsurf_ind_snow(1:nsurf)]
-       dataOutSnow(ir,6:ncolumnsDataOutSnow,Gridiv)=set_nan(dataOut(ir,6:ncolumnsDataOut,Gridiv))
+       dataOutSnow(ir,6:ncolumnsDataOutSnow,Gridiv)=set_nan(dataOutSnow(ir,6:ncolumnsDataOutSnow,Gridiv))
     END IF
 
     !====================update output arrays end==============================

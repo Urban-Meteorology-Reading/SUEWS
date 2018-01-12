@@ -13,17 +13,34 @@
 # History:
 # 18 Oct 2017, TS and SS: initial version
 # 22 Oct 2017, TS: added dictionary for looking up surface Characteristics
+# 12 Jan 2018, TS: a working version for OHM with arguments sorted out
 ##########################################################################
 
 # load dependency modules
+import os
+dir_path = os.path.dirname(os.path.realpath(__file__))
+# os.chdir(os.getcwd()+'/f2py')
+os.chdir(dir_path)
 import numpy as np
 import pandas as pd
 import os
 import glob
 import f90nml
+import datetime
 import SUEWS_driver
 reload(SUEWS_driver)
 from SUEWS_driver import suews_driver as sd
+from sklearn.preprocessing import normalize
+from sklearn.preprocessing import MinMaxScaler
+from scipy import interpolate
+
+
+def insensitive_glob(pattern):
+    def either(c):
+        return '[%s%s]' % (c.lower(), c.upper()) if c.isalpha() else c
+    return glob.glob(''.join(map(either, pattern)))
+
+
 # load configurations: mod_config
 dir_input = './input'
 # os.listdir(os.path.join(dir_input))
@@ -100,7 +117,7 @@ for k, v in dict_libVar2File.iteritems():
     v = os.path.join(dir_input, v)
     cmd = '{var}=load_SUEWS_table({val:{c}^{n}})'.format(
         var=k, val=v, n=len(v) + 2, c='\'')
-    print cmd
+    # print cmd
     exec(cmd)
 
 # lib_BiogenCO2
@@ -150,10 +167,6 @@ dict_Code2File = {
     'SnowClearingProfWE': 'SUEWS_Profiles.txt',
     'AnthropogenicCode': 'SUEWS_AnthropogenicHeat.txt',
     'IrrigationCode': 'SUEWS_Irrigation.txt',
-    'WaterUseProfManuWD': 'SUEWS_Profiles.txt',
-    'WaterUseProfManuWE': 'SUEWS_Profiles.txt',
-    'WaterUseProfAutoWD': 'SUEWS_Profiles.txt',
-    'WaterUseProfAutoWE': 'SUEWS_Profiles.txt',
     'WithinGridPavedCode': 'SUEWS_WithinGridWaterDist.txt',
     'WithinGridBldgsCode': 'SUEWS_WithinGridWaterDist.txt',
     'WithinGridEveTrCode': 'SUEWS_WithinGridWaterDist.txt',
@@ -182,6 +195,10 @@ dict_Code2File = {
     'TraffProfWE': 'SUEWS_Profiles.txt',
     'PopProfWD': 'SUEWS_Profiles.txt',
     'PopProfWE': 'SUEWS_Profiles.txt',
+    'WaterUseProfManuWD': 'SUEWS_Profiles.txt',
+    'WaterUseProfManuWE': 'SUEWS_Profiles.txt',
+    'WaterUseProfAutoWD': 'SUEWS_Profiles.txt',
+    'WaterUseProfAutoWE': 'SUEWS_Profiles.txt',
     'BiogenCO2Code': 'SUEWS_BiogenCO2.txt',
     'SoilTypeCode': 'SUEWS_Soil.txt'}
 
@@ -227,6 +244,20 @@ dict_var2SiteSelect = {
     'timezone': 'Timezone',
     'alt': 'Alt',
     'z': 'z',
+    'ahprof':
+        {'AnthropogenicCode': [
+            {'EnergyUseProfWD': ':'}, {'EnergyUseProfWE': ':'}]},
+    'popprof':
+        {'AnthropogenicCode': [{'PopProfWD': ':'}, {'PopProfWE': ':'}]},
+    'traffprof':
+        {'AnthropogenicCode': [{'TraffProfWD': ':'}, {'TraffProfWE': ':'}]},
+    'humactivity':
+        {'AnthropogenicCode': [
+            {'ActivityProfWD': ':'}, {'ActivityProfWE': ':'}]},
+    'wuprofa':
+        [{'WaterUseProfAutoWD': ':'}, {'WaterUseProfAutoWE': ':'}],
+    'wuprofm':
+        [{'WaterUseProfManuWD': ':'}, {'WaterUseProfManuWE': ':'}],
     'ah_min': {'AnthropogenicCode': ['AHMin_WD', 'AHMin_WE']},
     'ah_slope_cooling':
     {'AnthropogenicCode': ['AHSlope_Cooling_WD', 'AHSlope_Cooling_WE']},
@@ -247,12 +278,12 @@ dict_var2SiteSelect = {
     'albmin_grass': {'Code_Grass': 'AlbedoMin'},
     'alpha_bioco2':
     [{'Code_EveTr': {'BiogenCO2Code': 'alpha'}},
-     {'Code_DecTr': {'BiogenCO2Code': 'alpha'}},
-     {'Code_Grass': {'BiogenCO2Code': 'alpha'}}],
+            {'Code_DecTr': {'BiogenCO2Code': 'alpha'}},
+            {'Code_Grass': {'BiogenCO2Code': 'alpha'}}],
     'alpha_enh_bioco2':
     [{'Code_EveTr': {'BiogenCO2Code': 'alpha_enh'}},
-     {'Code_DecTr': {'BiogenCO2Code': 'alpha_enh'}},
-     {'Code_Grass': {'BiogenCO2Code': 'alpha_enh'}}],
+            {'Code_DecTr': {'BiogenCO2Code': 'alpha_enh'}},
+            {'Code_Grass': {'BiogenCO2Code': 'alpha_enh'}}],
     'alt': 'Alt',
     'baset': [{'Code_EveTr': 'BaseT'},
               {'Code_DecTr': 'BaseT'},
@@ -263,12 +294,12 @@ dict_var2SiteSelect = {
     'basethdd': {'AnthropogenicCode': 'BaseTHDD'},
     'beta_bioco2':
     [{'Code_EveTr': {'BiogenCO2Code': 'beta'}},
-     {'Code_DecTr': {'BiogenCO2Code': 'beta'}},
-     {'Code_Grass': {'BiogenCO2Code': 'beta'}}],
+            {'Code_DecTr': {'BiogenCO2Code': 'beta'}},
+            {'Code_Grass': {'BiogenCO2Code': 'beta'}}],
     'beta_enh_bioco2':
     [{'Code_EveTr': {'BiogenCO2Code': 'beta_enh'}},
-     {'Code_DecTr': {'BiogenCO2Code': 'beta_enh'}},
-     {'Code_Grass': {'BiogenCO2Code': 'beta_enh'}}],
+            {'Code_DecTr': {'BiogenCO2Code': 'beta_enh'}},
+            {'Code_Grass': {'BiogenCO2Code': 'beta_enh'}}],
     'bldgh': 'H_Bldgs',
     'capmax_dec': {'Code_DecTr': 'StorageMax'},
     'capmin_dec': {'Code_DecTr': 'StorageMin'},
@@ -331,8 +362,8 @@ dict_var2SiteSelect = {
     'g6': {'CondCode': 'G6'},
     'gddfull':
     [{'Code_EveTr': 'GDDFull'},
-     {'Code_DecTr': 'GDDFull'},
-     {'Code_Grass': 'GDDFull'}],
+            {'Code_DecTr': 'GDDFull'},
+            {'Code_Grass': 'GDDFull'}],
     'gsmodel': {'CondCode': 'gsModel'},
     'ie_a': {'IrrigationCode': ['Ie_a1', 'Ie_a2', 'Ie_a3']},
     'ie_end': {'IrrigationCode': 'Ie_end'},
@@ -383,52 +414,52 @@ dict_var2SiteSelect = {
                      {'OHMCode_SummerDry': ['a1', 'a2', 'a3']},
                      {'OHMCode_WinterWet': ['a1', 'a2', 'a3']},
                      {'OHMCode_WinterDry': ['a1', 'a2', 'a3']}]},
-     {'Code_Bldgs': [{'OHMCode_SummerWet': ['a1', 'a2', 'a3']},
-                     {'OHMCode_SummerDry': ['a1', 'a2', 'a3']},
-                     {'OHMCode_WinterWet': ['a1', 'a2', 'a3']},
-                     {'OHMCode_WinterDry': ['a1', 'a2', 'a3']}]},
-     {'Code_EveTr': [{'OHMCode_SummerWet': ['a1', 'a2', 'a3']},
-                     {'OHMCode_SummerDry': ['a1', 'a2', 'a3']},
-                     {'OHMCode_WinterWet': ['a1', 'a2', 'a3']},
-                     {'OHMCode_WinterDry': ['a1', 'a2', 'a3']}]},
-     {'Code_DecTr': [{'OHMCode_SummerWet': ['a1', 'a2', 'a3']},
-                     {'OHMCode_SummerDry': ['a1', 'a2', 'a3']},
-                     {'OHMCode_WinterWet': ['a1', 'a2', 'a3']},
-                     {'OHMCode_WinterDry': ['a1', 'a2', 'a3']}]},
-     {'Code_Grass': [{'OHMCode_SummerWet': ['a1', 'a2', 'a3']},
-                     {'OHMCode_SummerDry': ['a1', 'a2', 'a3']},
-                     {'OHMCode_WinterWet': ['a1', 'a2', 'a3']},
-                     {'OHMCode_WinterDry': ['a1', 'a2', 'a3']}]},
-     {'Code_Bsoil': [{'OHMCode_SummerWet': ['a1', 'a2', 'a3']},
-                     {'OHMCode_SummerDry': ['a1', 'a2', 'a3']},
-                     {'OHMCode_WinterWet': ['a1', 'a2', 'a3']},
-                     {'OHMCode_WinterDry': ['a1', 'a2', 'a3']}]},
-     {'Code_Water': [{'OHMCode_SummerWet': ['a1', 'a2', 'a3']},
-                     {'OHMCode_SummerDry': ['a1', 'a2', 'a3']},
-                     {'OHMCode_WinterWet': ['a1', 'a2', 'a3']},
-                     {'OHMCode_WinterDry': ['a1', 'a2', 'a3']}]},
-     {'SnowCode': [{'OHMCode_SummerWet': ['a1', 'a2', 'a3']},
-                   {'OHMCode_SummerDry': ['a1', 'a2', 'a3']},
-                   {'OHMCode_WinterWet': ['a1', 'a2', 'a3']},
-                   {'OHMCode_WinterDry': ['a1', 'a2', 'a3']}]}],
+            {'Code_Bldgs': [{'OHMCode_SummerWet': ['a1', 'a2', 'a3']},
+                            {'OHMCode_SummerDry': ['a1', 'a2', 'a3']},
+                            {'OHMCode_WinterWet': ['a1', 'a2', 'a3']},
+                            {'OHMCode_WinterDry': ['a1', 'a2', 'a3']}]},
+            {'Code_EveTr': [{'OHMCode_SummerWet': ['a1', 'a2', 'a3']},
+                            {'OHMCode_SummerDry': ['a1', 'a2', 'a3']},
+                            {'OHMCode_WinterWet': ['a1', 'a2', 'a3']},
+                            {'OHMCode_WinterDry': ['a1', 'a2', 'a3']}]},
+            {'Code_DecTr': [{'OHMCode_SummerWet': ['a1', 'a2', 'a3']},
+                            {'OHMCode_SummerDry': ['a1', 'a2', 'a3']},
+                            {'OHMCode_WinterWet': ['a1', 'a2', 'a3']},
+                            {'OHMCode_WinterDry': ['a1', 'a2', 'a3']}]},
+            {'Code_Grass': [{'OHMCode_SummerWet': ['a1', 'a2', 'a3']},
+                            {'OHMCode_SummerDry': ['a1', 'a2', 'a3']},
+                            {'OHMCode_WinterWet': ['a1', 'a2', 'a3']},
+                            {'OHMCode_WinterDry': ['a1', 'a2', 'a3']}]},
+            {'Code_Bsoil': [{'OHMCode_SummerWet': ['a1', 'a2', 'a3']},
+                            {'OHMCode_SummerDry': ['a1', 'a2', 'a3']},
+                            {'OHMCode_WinterWet': ['a1', 'a2', 'a3']},
+                            {'OHMCode_WinterDry': ['a1', 'a2', 'a3']}]},
+            {'Code_Water': [{'OHMCode_SummerWet': ['a1', 'a2', 'a3']},
+                            {'OHMCode_SummerDry': ['a1', 'a2', 'a3']},
+                            {'OHMCode_WinterWet': ['a1', 'a2', 'a3']},
+                            {'OHMCode_WinterDry': ['a1', 'a2', 'a3']}]},
+            {'SnowCode': [{'OHMCode_SummerWet': ['a1', 'a2', 'a3']},
+                          {'OHMCode_SummerDry': ['a1', 'a2', 'a3']},
+                          {'OHMCode_WinterWet': ['a1', 'a2', 'a3']},
+                          {'OHMCode_WinterDry': ['a1', 'a2', 'a3']}]}],
     'ohm_threshsw':
     [{'Code_Paved': 'OHMThresh_SW'},
-     {'Code_Bldgs': 'OHMThresh_SW'},
-     {'Code_EveTr': 'OHMThresh_SW'},
-     {'Code_DecTr': 'OHMThresh_SW'},
-     {'Code_Grass': 'OHMThresh_SW'},
-     {'Code_Bsoil': 'OHMThresh_SW'},
-     {'Code_Water': 'OHMThresh_SW'},
-     {'SnowCode': 'OHMThresh_SW'}],
+            {'Code_Bldgs': 'OHMThresh_SW'},
+            {'Code_EveTr': 'OHMThresh_SW'},
+            {'Code_DecTr': 'OHMThresh_SW'},
+            {'Code_Grass': 'OHMThresh_SW'},
+            {'Code_Bsoil': 'OHMThresh_SW'},
+            {'Code_Water': 'OHMThresh_SW'},
+            {'SnowCode': 'OHMThresh_SW'}],
     'ohm_threshwd':
     [{'Code_Paved': 'OHMThresh_WD'},
-     {'Code_Bldgs': 'OHMThresh_WD'},
-     {'Code_EveTr': 'OHMThresh_WD'},
-     {'Code_DecTr': 'OHMThresh_WD'},
-     {'Code_Grass': 'OHMThresh_WD'},
-     {'Code_Bsoil': 'OHMThresh_WD'},
-     {'Code_Water': 'OHMThresh_WD'},
-     {'SnowCode': 'OHMThresh_WD'}],
+            {'Code_Bldgs': 'OHMThresh_WD'},
+            {'Code_EveTr': 'OHMThresh_WD'},
+            {'Code_DecTr': 'OHMThresh_WD'},
+            {'Code_Grass': 'OHMThresh_WD'},
+            {'Code_Bsoil': 'OHMThresh_WD'},
+            {'Code_Water': 'OHMThresh_WD'},
+            {'SnowCode': 'OHMThresh_WD'}],
     'pipecapacity': 'PipeCapacity',
     'popdensdaytime': 'PopDensDay',
     'popdensnighttime': 'PopDensNight',
@@ -454,11 +485,12 @@ dict_var2SiteSelect = {
     's2': {'CondCode': 'S2'},
     'sathydraulicconduct':
     [{'Code_Paved': {'SoilTypeCode': 'SatHydraulicCond'}},
-     {'Code_Bldgs': {'SoilTypeCode': 'SatHydraulicCond'}},
-     {'Code_EveTr': {'SoilTypeCode': 'SatHydraulicCond'}},
-     {'Code_DecTr': {'SoilTypeCode': 'SatHydraulicCond'}},
-     {'Code_Grass': {'SoilTypeCode': 'SatHydraulicCond'}},
-     {'Code_Bsoil': {'SoilTypeCode': 'SatHydraulicCond'}}],
+            {'Code_Bldgs': {'SoilTypeCode': 'SatHydraulicCond'}},
+            {'Code_EveTr': {'SoilTypeCode': 'SatHydraulicCond'}},
+            {'Code_DecTr': {'SoilTypeCode': 'SatHydraulicCond'}},
+            {'Code_Grass': {'SoilTypeCode': 'SatHydraulicCond'}},
+            {'Code_Bsoil': {'SoilTypeCode': 'SatHydraulicCond'}},
+            {'Code_Bsoil': {'SoilTypeCode': 'SatHydraulicCond'}}],
     'sddfull': [{'Code_EveTr': 'SDDFull'},
                 {'Code_DecTr': 'SDDFull'},
                 {'Code_Grass': 'SDDFull'}],
@@ -473,38 +505,42 @@ dict_var2SiteSelect = {
     'snowalbmin': {'SnowCode': 'AlbedoMin'},
     'snowd':
     [{'Code_Paved': 'SnowLimPatch'},
-     {'Code_Bldgs': 'SnowLimPatch'},
-     {'Code_EveTr': 'SnowLimPatch'},
-     {'Code_DecTr': 'SnowLimPatch'},
-     {'Code_Grass': 'SnowLimPatch'},
-     {'Code_Bsoil': 'SnowLimPatch'},
-     {'Code_Bsoil': 'SnowLimPatch'}],
+            {'Code_Bldgs': 'SnowLimPatch'},
+            {'Code_EveTr': 'SnowLimPatch'},
+            {'Code_DecTr': 'SnowLimPatch'},
+            {'Code_Grass': 'SnowLimPatch'},
+            {'Code_Bsoil': 'SnowLimPatch'},
+            {'Code_Bsoil': 'SnowLimPatch'}],
     'snowdensmax': {'SnowCode': 'SnowDensMax'},
     'snowdensmin': {'SnowCode': 'SnowDensMin'},
     'snowlimbuild': {'Code_Bldgs': 'SnowLimRemove'},
     'snowlimpaved': {'Code_Paved': 'SnowLimRemove'},
     'soildepth':
     [{'Code_Paved': {'SoilTypeCode': 'SoilDepth'}},
-     {'Code_Bldgs': {'SoilTypeCode': 'SoilDepth'}},
-     {'Code_EveTr': {'SoilTypeCode': 'SoilDepth'}},
-     {'Code_DecTr': {'SoilTypeCode': 'SoilDepth'}},
-     {'Code_Grass': {'SoilTypeCode': 'SoilDepth'}},
-     {'Code_Bsoil': {'SoilTypeCode': 'SoilDepth'}}],
+            {'Code_Bldgs': {'SoilTypeCode': 'SoilDepth'}},
+            {'Code_EveTr': {'SoilTypeCode': 'SoilDepth'}},
+            {'Code_DecTr': {'SoilTypeCode': 'SoilDepth'}},
+            {'Code_Grass': {'SoilTypeCode': 'SoilDepth'}},
+            {'Code_Bsoil': {'SoilTypeCode': 'SoilDepth'}},
+            {'Code_Bsoil': {'SoilTypeCode': 'SoilDepth'}}],
     'soilstorecap':
     [{'Code_Paved': {'SoilTypeCode': 'SoilStoreCap'}},
-     {'Code_Bldgs': {'SoilTypeCode': 'SoilStoreCap'}},
-     {'Code_EveTr': {'SoilTypeCode': 'SoilStoreCap'}},
-     {'Code_DecTr': {'SoilTypeCode': 'SoilStoreCap'}},
-     {'Code_Grass': {'SoilTypeCode': 'SoilStoreCap'}},
-     {'Code_Bsoil': {'SoilTypeCode': 'SoilStoreCap'}}],
+            {'Code_Bldgs': {'SoilTypeCode': 'SoilStoreCap'}},
+            {'Code_EveTr': {'SoilTypeCode': 'SoilStoreCap'}},
+            {'Code_DecTr': {'SoilTypeCode': 'SoilStoreCap'}},
+            {'Code_Grass': {'SoilTypeCode': 'SoilStoreCap'}},
+            {'Code_Bsoil': {'SoilTypeCode': 'SoilStoreCap'}},
+            {'Code_Bsoil': {'SoilTypeCode': 'SoilStoreCap'}}],
+    'startDLS': 'StartDLS',
+    'endDLS': 'EndDLS',
     'statelimit':
     [{'Code_Paved': 'StateLimit'},
-     {'Code_Bldgs': 'StateLimit'},
-     {'Code_EveTr': 'StateLimit'},
-     {'Code_DecTr': 'StateLimit'},
-     {'Code_Grass': 'StateLimit'},
-     {'Code_Bsoil': 'StateLimit'},
-     {'Code_Water': 'StateLimit'}],
+            {'Code_Bldgs': 'StateLimit'},
+            {'Code_EveTr': 'StateLimit'},
+            {'Code_DecTr': 'StateLimit'},
+            {'Code_Grass': 'StateLimit'},
+            {'Code_Bsoil': 'StateLimit'},
+            {'Code_Water': 'StateLimit'}],
     'surf':
     [[{'Code_Paved': 'StorageMin'},
       {'Code_Bldgs': 'StorageMin'},
@@ -513,41 +549,41 @@ dict_var2SiteSelect = {
       {'Code_Grass': 'StorageMin'},
       {'Code_Bsoil': 'StorageMin'},
       {'Code_Water': 'StorageMin'}],
-     [{'Code_Paved': 'DrainageEq'},
-      {'Code_Bldgs': 'DrainageEq'},
-      {'Code_EveTr': 'DrainageEq'},
-      {'Code_DecTr': 'DrainageEq'},
-      {'Code_Grass': 'DrainageEq'},
-      {'Code_Bsoil': 'DrainageEq'},
-      {'Code_Water': 'DrainageEq'}],
-     [{'Code_Paved': 'DrainageCoef1'},
-      {'Code_Bldgs': 'DrainageCoef1'},
-      {'Code_EveTr': 'DrainageCoef1'},
-      {'Code_DecTr': 'DrainageCoef1'},
-      {'Code_Grass': 'DrainageCoef1'},
-      {'Code_Bsoil': 'DrainageCoef1'},
-      {'Code_Water': 'DrainageCoef1'}],
-     [{'Code_Paved': 'DrainageCoef2'},
-      {'Code_Bldgs': 'DrainageCoef2'},
-      {'Code_EveTr': 'DrainageCoef2'},
-      {'Code_DecTr': 'DrainageCoef2'},
-      {'Code_Grass': 'DrainageCoef2'},
-      {'Code_Bsoil': 'DrainageCoef2'},
-      {'Code_Water': 'DrainageCoef2'}],
-     [{'Code_Paved': 'StorageMax'},
-      {'Code_Bldgs': 'StorageMax'},
-      {'Code_EveTr': 'StorageMax'},
-      {'Code_DecTr': 'StorageMax'},
-      {'Code_Grass': 'StorageMax'},
-      {'Code_Bsoil': 'StorageMax'},
-      {'Code_Water': 'StorageMax'}],
-     [{'Code_Paved': 'StorageMin'},
-      {'Code_Bldgs': 'StorageMin'},
-      {'Code_EveTr': 'StorageMin'},
-      {'Code_DecTr': 'StorageMin'},
-      {'Code_Grass': 'StorageMin'},
-      {'Code_Bsoil': 'StorageMin'},
-      {'Code_Water': 'StorageMin'}]],
+            [{'Code_Paved': 'DrainageEq'},
+             {'Code_Bldgs': 'DrainageEq'},
+             {'Code_EveTr': 'DrainageEq'},
+             {'Code_DecTr': 'DrainageEq'},
+             {'Code_Grass': 'DrainageEq'},
+             {'Code_Bsoil': 'DrainageEq'},
+             {'Code_Water': 'DrainageEq'}],
+            [{'Code_Paved': 'DrainageCoef1'},
+             {'Code_Bldgs': 'DrainageCoef1'},
+             {'Code_EveTr': 'DrainageCoef1'},
+             {'Code_DecTr': 'DrainageCoef1'},
+             {'Code_Grass': 'DrainageCoef1'},
+             {'Code_Bsoil': 'DrainageCoef1'},
+             {'Code_Water': 'DrainageCoef1'}],
+            [{'Code_Paved': 'DrainageCoef2'},
+             {'Code_Bldgs': 'DrainageCoef2'},
+             {'Code_EveTr': 'DrainageCoef2'},
+             {'Code_DecTr': 'DrainageCoef2'},
+             {'Code_Grass': 'DrainageCoef2'},
+             {'Code_Bsoil': 'DrainageCoef2'},
+             {'Code_Water': 'DrainageCoef2'}],
+            [{'Code_Paved': 'StorageMax'},
+             {'Code_Bldgs': 'StorageMax'},
+             {'Code_EveTr': 'StorageMax'},
+             {'Code_DecTr': 'StorageMax'},
+             {'Code_Grass': 'StorageMax'},
+             {'Code_Bsoil': 'StorageMax'},
+             {'Code_Water': 'StorageMax'}],
+            [{'Code_Paved': 'StorageMin'},
+             {'Code_Bldgs': 'StorageMin'},
+             {'Code_EveTr': 'StorageMin'},
+             {'Code_DecTr': 'StorageMin'},
+             {'Code_Grass': 'StorageMin'},
+             {'Code_Bsoil': 'StorageMin'},
+             {'Code_Water': 'StorageMin'}]],
     'surfacearea': 'SurfaceArea',
     'tau_a': {'SnowCode': 'tau_a'},
     'tau_f': {'SnowCode': 'tau_f'},
@@ -572,59 +608,59 @@ dict_var2SiteSelect = {
       {'WithinGridDecTrCode': 'ToPaved'},
       {'WithinGridGrassCode': 'ToPaved'},
       {'WithinGridUnmanBSoilCode': 'ToPaved'}],
-     [{'WithinGridPavedCode': 'ToBldgs'},
-      {'WithinGridBldgsCode': 'ToBldgs'},
-      {'WithinGridEveTrCode': 'ToBldgs'},
-      {'WithinGridDecTrCode': 'ToBldgs'},
-      {'WithinGridGrassCode': 'ToBldgs'},
-      {'WithinGridUnmanBSoilCode': 'ToBldgs'}],
-     [{'WithinGridPavedCode': 'ToEveTr'},
-      {'WithinGridBldgsCode': 'ToEveTr'},
-      {'WithinGridEveTrCode': 'ToEveTr'},
-      {'WithinGridDecTrCode': 'ToEveTr'},
-      {'WithinGridGrassCode': 'ToEveTr'},
-      {'WithinGridUnmanBSoilCode': 'ToEveTr'}],
-     [{'WithinGridPavedCode': 'ToDecTr'},
-      {'WithinGridBldgsCode': 'ToDecTr'},
-      {'WithinGridEveTrCode': 'ToDecTr'},
-      {'WithinGridDecTrCode': 'ToDecTr'},
-      {'WithinGridGrassCode': 'ToDecTr'},
-      {'WithinGridUnmanBSoilCode': 'ToDecTr'}],
-     [{'WithinGridPavedCode': 'ToGrass'},
-      {'WithinGridBldgsCode': 'ToGrass'},
-      {'WithinGridEveTrCode': 'ToGrass'},
-      {'WithinGridDecTrCode': 'ToGrass'},
-      {'WithinGridGrassCode': 'ToGrass'},
-      {'WithinGridUnmanBSoilCode': 'ToGrass'}],
-     [{'WithinGridPavedCode': 'ToBSoil'},
-      {'WithinGridBldgsCode': 'ToBSoil'},
-      {'WithinGridEveTrCode': 'ToBSoil'},
-      {'WithinGridDecTrCode': 'ToBSoil'},
-      {'WithinGridGrassCode': 'ToBSoil'},
-      {'WithinGridUnmanBSoilCode': 'ToBSoil'}],
-     [{'WithinGridPavedCode': 'ToWater'},
-      {'WithinGridBldgsCode': 'ToWater'},
-      {'WithinGridEveTrCode': 'ToWater'},
-      {'WithinGridDecTrCode': 'ToWater'},
-      {'WithinGridGrassCode': 'ToWater'},
-      {'WithinGridUnmanBSoilCode': 'ToWater'}],
-     # the last surface type is tricky: needs to determine which goes in:
-     # if ToRunoff !=0, use ToRunoff, otherwise use ToSoilStore
-     [{'WithinGridPavedCode': ['ToRunoff', 'ToSoilStore']},
-      {'WithinGridBldgsCode': ['ToRunoff', 'ToSoilStore']},
-      {'WithinGridEveTrCode': ['ToRunoff', 'ToSoilStore']},
-      {'WithinGridDecTrCode': ['ToRunoff', 'ToSoilStore']},
-      {'WithinGridGrassCode': ['ToRunoff', 'ToSoilStore']},
-      {'WithinGridUnmanBSoilCode': ['ToRunoff', 'ToSoilStore']}]
+            [{'WithinGridPavedCode': 'ToBldgs'},
+             {'WithinGridBldgsCode': 'ToBldgs'},
+             {'WithinGridEveTrCode': 'ToBldgs'},
+             {'WithinGridDecTrCode': 'ToBldgs'},
+             {'WithinGridGrassCode': 'ToBldgs'},
+             {'WithinGridUnmanBSoilCode': 'ToBldgs'}],
+            [{'WithinGridPavedCode': 'ToEveTr'},
+             {'WithinGridBldgsCode': 'ToEveTr'},
+             {'WithinGridEveTrCode': 'ToEveTr'},
+             {'WithinGridDecTrCode': 'ToEveTr'},
+             {'WithinGridGrassCode': 'ToEveTr'},
+             {'WithinGridUnmanBSoilCode': 'ToEveTr'}],
+            [{'WithinGridPavedCode': 'ToDecTr'},
+             {'WithinGridBldgsCode': 'ToDecTr'},
+             {'WithinGridEveTrCode': 'ToDecTr'},
+             {'WithinGridDecTrCode': 'ToDecTr'},
+             {'WithinGridGrassCode': 'ToDecTr'},
+             {'WithinGridUnmanBSoilCode': 'ToDecTr'}],
+            [{'WithinGridPavedCode': 'ToGrass'},
+             {'WithinGridBldgsCode': 'ToGrass'},
+             {'WithinGridEveTrCode': 'ToGrass'},
+             {'WithinGridDecTrCode': 'ToGrass'},
+             {'WithinGridGrassCode': 'ToGrass'},
+             {'WithinGridUnmanBSoilCode': 'ToGrass'}],
+            [{'WithinGridPavedCode': 'ToBSoil'},
+             {'WithinGridBldgsCode': 'ToBSoil'},
+             {'WithinGridEveTrCode': 'ToBSoil'},
+             {'WithinGridDecTrCode': 'ToBSoil'},
+             {'WithinGridGrassCode': 'ToBSoil'},
+             {'WithinGridUnmanBSoilCode': 'ToBSoil'}],
+            [{'WithinGridPavedCode': 'ToWater'},
+             {'WithinGridBldgsCode': 'ToWater'},
+             {'WithinGridEveTrCode': 'ToWater'},
+             {'WithinGridDecTrCode': 'ToWater'},
+             {'WithinGridGrassCode': 'ToWater'},
+             {'WithinGridUnmanBSoilCode': 'ToWater'}],
+            # the last surface type is tricky: needs to determine which goes in:
+            # if ToRunoff !=0, use ToRunoff, otherwise use ToSoilStore
+            [{'WithinGridPavedCode': ['ToRunoff', 'ToSoilStore']},
+             {'WithinGridBldgsCode': ['ToRunoff', 'ToSoilStore']},
+             {'WithinGridEveTrCode': ['ToRunoff', 'ToSoilStore']},
+             {'WithinGridDecTrCode': ['ToRunoff', 'ToSoilStore']},
+             {'WithinGridGrassCode': ['ToRunoff', 'ToSoilStore']},
+             {'WithinGridUnmanBSoilCode': ['ToRunoff', 'ToSoilStore']}]
      ],
     'wetthresh':
     [{'Code_Paved': 'WetThreshold'},
-     {'Code_Bldgs': 'WetThreshold'},
-     {'Code_EveTr': 'WetThreshold'},
-     {'Code_DecTr': 'WetThreshold'},
-     {'Code_Grass': 'WetThreshold'},
-     {'Code_Bsoil': 'WetThreshold'},
-     {'Code_Water': 'WetThreshold'}],
+            {'Code_Bldgs': 'WetThreshold'},
+            {'Code_EveTr': 'WetThreshold'},
+            {'Code_DecTr': 'WetThreshold'},
+            {'Code_Grass': 'WetThreshold'},
+            {'Code_Bsoil': 'WetThreshold'},
+            {'Code_Water': 'WetThreshold'}],
     'year': 'Year',
     'z': 'z'}
 
@@ -640,8 +676,11 @@ def lookup_code_sub(codeName, codeKey, codeValue):
     str_lib = dict_Code2File[codeName].replace(
         '.txt', '').replace('SUEWS', 'lib')
     str_code = '{:d}'.format(int(codeValue))
-    cmd = '{lib}.loc[{code},{key:{c}^{n}}]'.format(
-        lib=str_lib, code=str_code, key=codeKey, n=len(codeKey) + 2, c='\'')
+    if codeKey == ':':
+        cmd = '{lib}.loc[{code},:].tolist()'.format(lib=str_lib, code=str_code)
+    else:
+        cmd = '{lib}.loc[{code},{key:{c}^{n}}]'.format(
+            lib=str_lib, code=str_code, key=codeKey, n=len(codeKey) + 2, c='\'')
     # print cmd
     res = eval(cmd)
     return res
@@ -677,7 +716,7 @@ dict_gridSurfaceChar = {
 # convert the above dict to DataFrame
 df_gridSurfaceChar = pd.DataFrame.from_dict(dict_gridSurfaceChar).T
 
-df_gridSurfaceChar.shape
+# df_gridSurfaceChar.shape
 
 
 # get the information of input variables for SUEWS_driver
@@ -699,7 +738,7 @@ list_varToDo = np.array(
 # method-related options:
 list_varMethod = [x for x in list_varToDo if 'method' in x.lower()]
 
-# TODO: profile-related:
+# profile-related:
 list_varTstep = [x for x in list_varToDo if '_tstep' in x.lower()]
 
 # time-related:
@@ -734,36 +773,96 @@ list_varModelOut = [
 
 # model-control-related:
 list_varModelCtrl = [
-    'ir', 'gridiv', 'veg_type']
+    'ir', 'gridiv', 'veg_type',
+    'ncolumnsdataout', 'readlinesmetdata', 'numberofgrids']
+
+ncolumnsdataout = 84  # set according to SUEWS V2017c
 
 # extra surface characteristics variables in addition to df_gridSurfaceChar:
 list_varGridSurfaceCharX = [
     'nonwaterfraction', 'pervfraction', 'vegfraction']
 # a complete list of surface characteristics variables
-list_varGridSurfaceChar=(
+list_varGridSurfaceChar = (
     df_gridSurfaceChar.columns.tolist()
-    +list_varGridSurfaceCharX)
+    + list_varGridSurfaceCharX)
 
+# load values into list_varGridSurfaceChar
+list_grid = df_gridSurfaceChar.index  # list of grid
+numberofgrids = len(list_grid)
+for grid in list_grid:  # this is only for testing;
+    # need to be moved to main loop
+    for var in df_gridSurfaceChar.columns.tolist():
+        # print var
+        val = df_gridSurfaceChar.loc[grid, var]
+        # print type(val)
+        if type(val) == str:
+            # print val
+            cmd = '{var}={val:{c}^{n}}'.format(
+                var=var, val=val, n=len(val) + 2, c='\'')
+        else:
+            # valX=list(val)
+            # print valX
+            cmd = '{var}={val}'.format(var=var, val=val)
+        # print cmd
+        exec(cmd)
 
+# modify some variables by correcting dimensions
+# transpoe laipower:
+laipower = np.array(laipower).T
+# select non-zero values for waterdist of water surface:
+waterdist_water = np.array(waterdist[-1])
+waterdist_water = waterdist_water[np.nonzero(waterdist_water)]
+waterdist[-1] = waterdist_water
+# surf order as F:
+surf = np.array(surf, order='F')
+# convert to np.array
+alb = np.array(alb)
+
+# derive surface fractions
+PavSurf = 1 - 1
+BldgSurf = 2 - 1
+ConifSurf = 3 - 1
+DecidSurf = 4 - 1
+GrassSurf = 5 - 1
+BSoilSurf = 6 - 1
+WaterSurf = 7 - 1
+vegfraction = (sfr[ConifSurf] + sfr[DecidSurf] + sfr[GrassSurf])
+impervfraction = sfr[PavSurf] + sfr[BldgSurf]
+pervfraction = (sfr[ConifSurf] + sfr[DecidSurf]
+                + sfr[GrassSurf] + sfr[BSoilSurf] + sfr[WaterSurf])
+nonwaterfraction = 1 - sfr[WaterSurf]
+
+# profiles:
+t_tstep = np.linspace(0, 24, num=3600 / tstep * 24, endpoint=False)
+for var in list_varTstep:
+    var0 = var.replace('_tstep', '')
+    var0 = eval('np.array({var0}).T'.format(var0=var0))
+    var0 = np.vstack((var0, var0))
+    # interpolator:
+    f = interpolate.interp1d(np.arange(0, 48), var0, axis=0)
+    cmd = '{var}=f(t_tstep)'.format(var=var)
+    # print cmd
+    exec(cmd)
 
 
 # now we proceed to construct several arrays for suews_cal_main
 # mod_state: runtime states as initial conditions for successive steps
 list_var_mod_state = (
     list_varModelState
-    +list_varDailyState
-    +list_varModelOut)  # note list_varModelOut is in fact used as model states here
+    + list_varDailyState
+    + list_varModelOut)  # list_varModelOut is in fact used as model states
 
 
-# mod_forcing: forcing condition and other control variables needed for each time step
+# mod_forcing: forcing condition and other control variables needed for
+# each time step
 list_var_mod_forcing = list_varMetForcing
 
 
 # mod_config: configuration info for each run/simulation
-list_var_mod_config=(
+list_var_mod_config = (
     list_varModelCtrl
-    +list_varMethod
-    +list_varGridSurfaceChar)
+    + list_varMethod
+    + list_varGridSurfaceChar)
 
 
 # mod_output: outputs of each time step
@@ -776,48 +875,188 @@ posOutput = np.where(docLines == 'Returns')
 varOutputLines = docLines[posOutput[0][0] + 2:]
 varOutputInfo = np.array([[xx.rstrip() for xx in x.split(':')]
                           for x in varOutputLines])
-len(varOutputInfo)
+dict_InputInfo = {xx[0]: xx[1] for xx in varInputInfo}
+
+# len(varOutputInfo)
+
 # transfer variable names from varOutputInfo to list_varModelOut
 list_var_mod_output = varOutputInfo[:, 0]
 
 
 # load meterological forcing data: met_forcing_array
-# filecode gives the name to locate met forcing file
-filecode
-
-resolutionfilesin
+# filecode and resolutionfilesin gives the name to locate met forcing file
+# filecode
+# resolutionfilesin
 list_file_MetForcing = glob.glob(os.path.join(
-    'input', '*{}*{}*txt'.format(filecode, resolutionfilesin / 60)))
+    'Input', '{}*{}*txt'.format(filecode, resolutionfilesin / 60)))
 
 
 def func_parse_date(year, doy, hour, sec):
     dt = datetime.datetime.strptime(
         ' '.join([year, doy, hour, sec]), '%Y %j %H %M')
-    # dt_base = datetime.datetime(int(year), 1, 1)
-    # dt_delta = datetime.timedelta(int(doy),
-    #                               np.dot(np.array([hour, sec],
-    #                                   dtype=np.float),
-    #                               [3600, 1]))
-    # dt = dt_base + dt_delta
     return dt
 
 
 def load_SUEWS_MetForcing(fileX):
     rawdata = pd.read_table(fileX, delim_whitespace=True,
                             comment='!', error_bad_lines=True,
-                            parse_dates={'datetime': [0, 1, 2, 3]}, keep_date_col=True,
+                            parse_dates={'datetime': [0, 1, 2, 3]},
+                            keep_date_col=True,
                             date_parser=func_parse_date).dropna()
     return rawdata
 
 
-xx = load_SUEWS_MetForcing(list_file_MetForcing[0])
-for x in xx.iloc[1, 1:]:
-    print type(x)
+xForcing = load_SUEWS_MetForcing(list_file_MetForcing[0])
+# for x in xForcing.iloc[1, 1:]:
+#     print type(x)
 # initial state: state_init
 
 
 # higher-level wrapper for suews_cal_main
 # [state_new,output_tstep]=suews_cal_tstep(state_old,met_forcing_tstep,mod_config)
+sfr
+
+# some constant values
+ndays = 366
+aerodynamicresistancemethod = 2
+halftimestep = tstep / 2.
+nsh = 3600 / tstep
+nsh_real = 3600. / tstep
+ity = 2
+laicalcyes = 1
+tstep_real = tstep * 1.
+veg_type = 1
+
+# initialise model state
+diagqn = 0
+diagqs = 0
+gdd = 0 * np.ones((ndays + 1, 5), order='F')
+hdd = 0 * np.ones((ndays + 5, 6), order='F')
+icefrac = 0 * np.ones(7)
+lai = 0. * np.ones((ndays + 5, 3), order='F')
+meltwaterstore = 0 * np.ones(7, order='F')  # snow TODO
+numcapita = (popdensdaytime + popdensnighttime) / 2.
+porosity = pormax_dec * np.ones(ndays + 1, order='F')
+qn1_av_store = -999. * np.ones(2 * nsh + 1)
+qn1_s_av_store = -999. * np.ones(2 * nsh + 1)
+qn1_s_store = -999. * np.ones(nsh)
+qn1_store = -999. * np.ones(nsh)
+snowalb = 0. * np.ones(7)
+snowdens = 0. * np.ones(7)
+snowfrac = 0. * np.ones(7)
+snowpack = 0. * np.ones(7)
+soilmoist = 0.5 * np.ones(7)
+state = -999. * np.ones(7)
+tair24hr = 273.15 * np.ones(24 * nsh)
+dayofweek = np.ones((ndays + 1, 3), order='F', dtype=np.int32)
+albdectr = albmax_dectr * np.ones(ndays + 1, order='F')
+albevetr = albmax_evetr * np.ones(ndays + 1, order='F')
+albgrass = albmax_grass * np.ones(ndays + 1, order='F')
+decidcap = surf[DecidSurf][5 - 1] * np.ones(ndays + 1, order='F')
+# loop over time
+
+ir = 1
+# forcing
+metforcingdata = xForcing.loc[ir, 'Wind']  # to correct TODO
+ts5mindata_ir = xForcing.loc[ir, 'Td']  # to correct TODO
+avkdn = xForcing.loc[ir, 'Kdn']
+avrh = xForcing.loc[ir, 'RH']
+avu1 = xForcing.loc[ir, 'Wind']
+fcld_obs = xForcing.loc[ir, 'fcld']
+lai_obs = xForcing.loc[ir, 'lai_hr']
+ldown_obs = xForcing.loc[ir, 'ldown']
+precip = xForcing.loc[ir, 'rain']
+press_hpa = xForcing.loc[ir, 'press'] * 10
+qh_obs = xForcing.loc[ir, 'QH']
+qn1_obs = xForcing.loc[ir, 'Q*']
+snow_obs = xForcing.loc[ir, 'snow']
+temp_c = xForcing.loc[ir, 'Td']
+xsmd = xForcing.loc[ir, 'xsmd']
+
+# initialise output:
+readlinesmetdata = 100
+dataout = np.zeros(
+    (readlinesmetdata, ncolumnsdataout, numberofgrids), order='F')
+dataoutestm = np.zeros((readlinesmetdata, 32, numberofgrids), order='F')
+
+# time-related:
+dectime = (float(xForcing.loc[ir, 'id']) + float(xForcing.loc[ir, 'it']) / 24.
+           + float(xForcing.loc[ir, 'imin']) / 60.)
+iy = int(xForcing.loc[ir, '%' + 'iy'])
+id = int(xForcing.loc[ir, 'id'])
+it = int(xForcing.loc[ir, 'it'])
+imin = int(xForcing.loc[ir, 'imin'])
+dayofweek[id, 0] = xForcing.loc[ir, 'datetime'].dayofweek
+dayofweek[id, 1] = xForcing.loc[ir, 'datetime'].month
+if 3 < dayofweek[id, 1] < 10:  # season: 1 for summer
+    dayofweek[id, 2] = 1
+else:
+    dayofweek[id, 2] = 0
+
+# specify dls:
+if startDLS < id < endDLS:
+    dls = 1
+else:
+    dls = 0
+
+# loop over grid
+gridiv = 1
+
+
+a1, a2, a3, additionalwater, \
+    avu10_ms, azimuth, chang, changsnow, chsnow_per_interval, cumsnowfall, \
+    dens_dry,\
+    drain_per_tstep, ea_hpa, e_mod, es_hpa, ev, evap, ev_per_tstep, ev_snow, \
+    ext_wu,\
+    fc, fc_anthro, fc_biogen, fc_build, fcld, fc_metab, fc_photo, fc_respi, \
+    fc_traff,\
+    flowchange, freezmelt, fwh, gsc, h_mod, int_wu, kclear, kup, kup_ind_snow,\
+    ldown, l_mod, lup, mwh, mw_ind, mwstore, nwstate_per_tstep, planf, p_mm, \
+    psim, q2_gkg,\
+    qeout, qe_per_tstep, qf, qf_sahp, qh, qh_r,\
+    qm, qmfreez, qm_freezstate, qm_melt, qm_rain, qmrain,\
+    qn1, qn1_ind_snow, qn1_s, qn1_sf, qs, ra, rainonsnow, resistsurf, rss, \
+    rss_nsurf,\
+    runoff, runoffagimpervious, runoffagveg, runoff_per_tstep,\
+    runoffpipes, runoffpipes_m3, runoffsnow, runoffsoil, runoffsoil_per_tstep,\
+    runoffwaterbody, runoffwaterbody_m3, smd, smd_nsurf, snowdepth, snowprof,\
+    snowremoval, snowtosurf, soilstate, state_per_tstep, surf_chang_per_tstep,\
+    swe,\
+    t2_c, tempveg, tot_chang_per_tstep, tstar, tsurf, tsurf_ind_snow, ustar,\
+    vpd_pa,\
+    wuareadectr_m2, wuareaevetr_m2, wuareagrass_m2, wuareatotal_m2, wu_day,\
+    wu_dectr, wu_evetr, wu_grass, wu_m3, xbo, z0m, zdm, zenith_deg, zh \
+    = sd.suews_cal_main(aerodynamicresistancemethod, ah_min, ahprof_tstep,
+                        ah_slope_cooling, ah_slope_heating, alb, albdectr, albevetr, albgrass,
+                        albmax_dectr, albmax_evetr, albmax_grass, albmin_dectr, albmin_evetr,
+                        albmin_grass, alpha_bioco2, alpha_enh_bioco2, alt, avkdn, avrh, avu1, baset,
+                        basete, basethdd, beta_bioco2, beta_enh_bioco2, bldgh, capmax_dec,
+                        capmin_dec, chanohm, cpanohm, crwmax, crwmin, dataout, dataoutestm, dayofweek,
+                        daywat, daywatper, decidcap, dectime, dectreeh, diagnose, diagqn, diagqs, dls,
+                        drainrt, ef_umolco2perj, emis, emissionsmethod, enef_v_jkm, evetreeh,
+                        faibldg, faidectree, faievetree, faut, fcef_v_kgkm, fcld_obs,
+                        frfossilfuel_heat, frfossilfuel_nonheat, g1, g2, g3, g4, g5, g6, gdd, gddfull,
+                        gridiv, gsmodel, halftimestep, hdd, humactivity_tstep, icefrac, id, ie_a,
+                        ie_end, ie_m, ie_start, imin, internalwateruse_h, ir, irrfracconif,
+                        irrfracdecid, irrfracgrass, it, ity, iy, kkanohm, kmax, lai, laicalcyes,
+                        laimax, laimin, lai_obs, laipower, laitype, lat, ldown_obs, lng, maxconductance,
+                        maxqfmetab, meltwaterstore, metforcingdata, minqfmetab, min_res_bioco2,
+                        narp_emis_snow, narp_trans_site, netradiationmethod, nonwaterfraction,
+                        nsh_real, numcapita, ohm_coef, ohmincqf, ohm_threshsw, ohm_threshwd,
+                        pervfraction, pipecapacity, popdensdaytime, popdensnighttime, popprof_tstep,
+                        pormax_dec, pormin_dec, porosity, precip, preciplimit, preciplimitalb,
+                        press_hpa, qf0_beu, qf_a, qf_b, qf_c, qh_obs, qn1_av_store, qn1_obs,
+                        qn1_s_av_store, qn1_s_store, qn1_store, radmeltfact, raincover, rainmaxres,
+                        resp_a, resp_b, roughlenheatmethod, roughlenmommethod, runofftowater,
+                        s1, s2, sathydraulicconduct, sddfull, sfr, smdmethod, snowalb, snowalbmax,
+                        snowalbmin, snowd, snowdens, snowdensmax, snowdensmin, snowfrac, snowlimbuild,
+                        snowlimpaved, snow_obs, snowpack, snowuse, soildepth, soilmoist, soilstorecap,
+                        stabilitymethod, state, statelimit, storageheatmethod, surf, surfacearea,
+                        tair24hr, tau_a, tau_f, tau_r, t_critic_cooling, t_critic_heating, temp_c,
+                        tempmeltfact, th, theta_bioco2, timezone, tl, trafficrate, trafficunits,
+                        traffprof_tstep, ts5mindata_ir, tstep, tstep_real, vegfraction, veg_type,
+                        waterdist, waterusemethod, wetthresh, wuprofa_tstep, wuprofm_tstep, xsmd,
+                        year, z, [ncolumnsdataout, nsh, numberofgrids, readlinesmetdata])
 
 
 # end

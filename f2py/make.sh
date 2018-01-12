@@ -9,7 +9,7 @@ export CFLAGS='-fno-strict-aliasing -fno-common -dynamic -g -O2 -DNDEBUG -g -fwr
 export FFLAGS='-g -pg -Wall -Wtabs -fbounds-check -cpp -Wno-unused-dummy-argument -Wno-unused-variable -fbacktrace -ffpe-trap=zero,overflow,underflow,invalid,denormal'
 
 # clean existing built modules
-rm SUEWS_driver.so*
+rm -rf SUEWS_driver.so*
 
 # compile SUEWS with Makefile
 cd ..

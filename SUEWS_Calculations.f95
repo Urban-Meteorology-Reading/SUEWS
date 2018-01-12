@@ -437,7 +437,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        lat,ldown,ldown_obs,L_mod,lng,lup,MaxConductance,MaxQFMetab,&
        Meltwaterstore,MetForcingData,MinQFMetab,min_res_bioCO2,mwh,mw_ind,mwstore,&
        NARP_EMIS_SNOW,NARP_TRANS_SITE,NetRadiationMethod,&
-       NonWaterFraction,nsh,nsh_real,NumberOfGrids,NumCapita,&
+       NonWaterFraction,nsh,NumberOfGrids,NumCapita,&
        NWstate_per_tstep,OHM_coef,OHMIncQF,OHM_threshSW,OHM_threshWD,&
        PervFraction,PipeCapacity,planF,p_mm,PopDensDaytime,PopDensNighttime,&
        PopProf_tstep,PorMax_dec,PorMin_dec,porosity,Precip,PrecipLimit,PrecipLimitAlb,&
@@ -457,7 +457,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        SurfaceArea,surf_chang_per_tstep,swe,t2_C,Tair24HR,tau_a,tau_f,tau_r,&
        T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,TempMeltFact,TempVeg,TH,theta_bioCO2,&
        timezone,TL,tot_chang_per_tstep,TrafficRate,TrafficUnits,TraffProf_tstep,Ts5mindata_ir,&
-       Tstar,tstep,tstep_real,tsurf,Tsurf_ind_snow,UStar,VegFraction,veg_type,VPD_Pa,&
+       Tstar,tstep,tsurf,Tsurf_ind_snow,UStar,VegFraction,veg_type,VPD_Pa,&
        WaterDist,WaterUseMethod,WetThresh,WUAreaDecTr_m2,WUAreaEveTr_m2,&
        WUAreaGrass_m2,WUAreaTotal_m2,WU_Day,wu_DecTr,wu_EveTr,wu_Grass,wu_m3,&
        WUProfA_tstep,WUProfM_tstep,xsmd,year,Z,Z0m,Zdm,zenith_deg,Zh)

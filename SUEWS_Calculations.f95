@@ -424,7 +424,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        avU1,avU10_ms,azimuth,BaseT,BaseTe,BaseTHDD,beta_bioCO2,beta_enh_bioCO2,&
        bldgH,CapMax_dec,CapMin_dec,chang,changSnow,chAnOHM,&
        chSnow_per_interval,cpAnOHM,CRWmax,CRWmin,CumSnowfall,&
-       dataOut,dataOutESTM,DayofWeek,DayWat,DayWatPer,DecidCap,dectime,DecTreeH,dens_dry,&
+       dataOutESTM,DayofWeek,DayWat,DayWatPer,DecidCap,dectime,DecTreeH,dens_dry,&
        Diagnose,DiagQN,DiagQS,DLS,drain_per_tstep,DRAINRT,Ea_hPa,EF_umolCO2perJ,emis,&
        EmissionsMethod,E_mod,EnEF_v_Jkm,es_hPa,ev,evap,EveTreeH,ev_per_tstep,ev_snow,&
        ext_wu,FAIBldg,FAIDecTree,FAIEveTree,Faut,Fc,Fc_anthro,Fc_biogen,Fc_build,&
@@ -436,7 +436,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        kclear,kkAnOHM,Kmax,kup,kup_ind_snow,LAI,LAICalcYes,LAIMax,LAIMin,LAI_obs,LAIPower,LAIType,&
        lat,ldown,ldown_obs,L_mod,lng,lup,MaxConductance,MaxQFMetab,&
        Meltwaterstore,MetForcingData,MinQFMetab,min_res_bioCO2,mwh,mw_ind,mwstore,&
-       NARP_EMIS_SNOW,NARP_TRANS_SITE,ncolumnsDataOut,NetRadiationMethod,&
+       NARP_EMIS_SNOW,NARP_TRANS_SITE,NetRadiationMethod,&
        NonWaterFraction,nsh,nsh_real,NumberOfGrids,NumCapita,&
        NWstate_per_tstep,OHM_coef,OHMIncQF,OHM_threshSW,OHM_threshWD,&
        PervFraction,PipeCapacity,planF,p_mm,PopDensDaytime,PopDensNighttime,&
@@ -460,7 +460,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        Tstar,tstep,tstep_real,tsurf,Tsurf_ind_snow,UStar,VegFraction,veg_type,VPD_Pa,&
        WaterDist,WaterUseMethod,WetThresh,WUAreaDecTr_m2,WUAreaEveTr_m2,&
        WUAreaGrass_m2,WUAreaTotal_m2,WU_Day,wu_DecTr,wu_EveTr,wu_Grass,wu_m3,&
-       WUProfA_tstep,WUProfM_tstep,xBo,xsmd,year,Z,Z0m,Zdm,zenith_deg,Zh)
+       WUProfA_tstep,WUProfM_tstep,xsmd,year,Z,Z0m,Zdm,zenith_deg,Zh)
 
   !============ update and write out SUEWS_cal_DailyState ===============
   ! only works at the last timestep of a day
@@ -471,7 +471,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        WU_Day,&
        nsh_real,deltaLAI,VegPhenLumps,&
        SnowAlb,SnowDens,&
-       xBo,a1,a2,a3,&
+       a1,a2,a3,&
        Gridiv,NumberOfGrids,&
        dataOutDailyState)!inout
 

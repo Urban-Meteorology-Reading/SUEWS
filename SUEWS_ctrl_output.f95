@@ -347,7 +347,7 @@ MODULE ctrl_output
        /
 
   ! DailyState:
-  DATA(varList(i), i=252,293)/&
+  DATA(varList(i), i=252,292)/&
        varAttr('HDD1_h'     , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
        varAttr('HDD2_c'     , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
        varAttr('HDD3_Tmean' , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
@@ -386,7 +386,7 @@ MODULE ctrl_output
        varAttr('DSnowGrass' , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
        varAttr('DSnowBSoil' , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
        varAttr('DSnowWater' , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
-       varAttr('BoAnOHMEnd' , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       ! varAttr('BoAnOHMEnd' , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
        varAttr('a1'         , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
        varAttr('a2'         , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
        varAttr('a3'         , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0)  &

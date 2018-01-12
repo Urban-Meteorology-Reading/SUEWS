@@ -49,9 +49,9 @@ CONTAINS
   !   - Could add different coefficients (Ie_m, Ie_a) for each vegetation type
   !==============================================================================
   SUBROUTINE SUEWS_cal_DailyState(&
-       iy,id,it,imin,Gridiv,tstep,&!input
+       iy,id,it,imin,tstep,&!input
        WaterUseMethod,snowUse,Ie_start,Ie_end,&
-       ReadLinesMetdata,ncolumnsDataOut,NumberOfGrids,LAICalcYes,LAIType,&
+       LAICalcYes,LAIType,&
        nsh_real,avkdn,Temp_C,Precip,BaseTHDD,&
        lat,Faut,LAI_obs,tau_a,tau_f,tau_r,&
        SnowDensMax,SnowDensMin,SnowAlbMin,&
@@ -59,10 +59,10 @@ CONTAINS
        AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
        CapMax_dec,CapMin_dec,PorMax_dec,PorMin_dec,&
        Ie_a,Ie_m,DayWatPer,DayWat,SnowPack,&
-       BaseT,BaseTe,GDDFull,SDDFull,LAIMin,LAIMax,LAIPower,dataOut,&
+       BaseT,BaseTe,GDDFull,SDDFull,LAIMin,LAIMax,LAIPower,&
        SnowAlb,DecidCap,albDecTr,albEveTr,albGrass,&!inout
-       porosity,GDD,HDD,SnowDens,LAI,DayofWeek,WU_Day,&
-       xBo)!output
+       porosity,GDD,HDD,SnowDens,LAI,DayofWeek,&
+       WU_Day)!output
 
 
     IMPLICIT NONE
@@ -79,15 +79,15 @@ CONTAINS
     INTEGER,INTENT(IN)::it
     INTEGER,INTENT(IN)::imin
 
-    INTEGER,INTENT(IN)::Gridiv
+    ! INTEGER,INTENT(IN)::Gridiv
     INTEGER,INTENT(IN)::tstep
     INTEGER,INTENT(IN)::WaterUseMethod
     INTEGER,INTENT(IN)::snowUse
     INTEGER,INTENT(IN)::Ie_start   !Starting time of water use (DOY)
     INTEGER,INTENT(IN)::Ie_end       !Ending time of water use (DOY)
-    INTEGER,INTENT(IN)::ReadLinesMetdata
-    INTEGER,INTENT(IN)::ncolumnsDataOut
-    INTEGER,INTENT(IN)::NumberOfGrids
+    ! INTEGER,INTENT(IN)::ReadLinesMetdata
+    ! INTEGER,INTENT(IN)::ncolumnsDataOut
+    ! INTEGER,INTENT(IN)::NumberOfGrids
     INTEGER,INTENT(IN)::LAICalcYes
 
 
@@ -137,7 +137,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(4,nvegsurf),INTENT(IN) ::LAIPower !Coeffs for LAI equation: 1,2 - leaf growth; 3,4 - leaf off
 
 
-    REAL(KIND(1d0)),DIMENSION(ReadLinesMetdata,ncolumnsDataOut,NumberOfGrids),INTENT(IN)::dataOut
+    ! REAL(KIND(1d0)),DIMENSION(ReadLinesMetdata,ncolumnsDataOut,NumberOfGrids),INTENT(IN)::dataOut
 
     ! CHARACTER (LEN = 20),INTENT(IN) :: FileCode       !Set in RunControl
     ! CHARACTER (LEN = 150),INTENT(IN):: FileOutputPath !Filepath for output files (set in RunControl)
@@ -162,16 +162,16 @@ CONTAINS
 
     !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
     REAL(KIND(1d0)),DIMENSION(0:ndays,9),INTENT(OUT):: WU_Day
-    REAL(KIND(1d0)),INTENT(OUT)::xBo
+    ! REAL(KIND(1d0)),INTENT(OUT)::xBo
 
     INTEGER::date
     REAL(KIND(1d0))::deltaLAI
 
 
-    REAL(KIND(1d0))::xmAH
+    ! REAL(KIND(1d0))::xmAH
 
     !initiate `out` variables to output
-    xBo=10
+    ! xBo=10
 
     ! REAL(KIND(1d0)),DIMENSION(44) ::DailyStateLine
 
@@ -230,15 +230,15 @@ CONTAINS
        !  so main program should use values from the previous day
     ELSEIF (it==23 .AND. imin==(nsh_real-1)/nsh_real*60) THEN
        CALL Cal_DailyStateEnd(&
-            ncolumnsDataOut,&!input
-            NumberOfGrids,ReadLinesMetdata,Gridiv,id,it,imin,tstep,&
+            id,it,imin,tstep,&!input
             LAIType,Ie_end,Ie_start,LAICalcYes,WaterUseMethod,DayofWeek,&
             alBMax_DecTr,alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
-            BaseT,BaseTe,CapMax_dec,CapMin_dec,dataOut,DayWat,DayWatPer,Faut,GDDFull,&
+            BaseT,BaseTe,CapMax_dec,CapMin_dec,DayWat,DayWatPer,Faut,GDDFull,&
             Ie_a,Ie_m,LAIMax,LAIMin,LAIPower,lat,PorMax_dec,PorMin_dec,SDDFull,LAI_obs,&
             albDecTr,albEveTr,albGrass,porosity,DecidCap,deltaLAI,&!inout
-            xmAH,GDD,HDD,LAI,&
-            WU_Day,xBo)!output
+            GDD,HDD,LAI,&
+            WU_Day)!output
+            ! ,xBo)!output
     ENDIF   !End of section done only at the end of each day (i.e. only once per day)
 
     RETURN
@@ -247,25 +247,24 @@ CONTAINS
 
 
   SUBROUTINE Cal_DailyStateEnd(&
-       ncolumnsDataOut,&!input
-       NumberOfGrids,ReadLinesMetdata,Gridiv,id,it,imin,tstep,&
+       id,it,imin,tstep,&!input
        LAIType,Ie_end,Ie_start,LAICalcYes,&
        WaterUseMethod,DayofWeek,&
        alBMax_DecTr,alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
-       BaseT,BaseTe,CapMax_dec,CapMin_dec,dataOut,DayWat,DayWatPer,Faut,GDDFull,&
+       BaseT,BaseTe,CapMax_dec,CapMin_dec,DayWat,DayWatPer,Faut,GDDFull,&
        Ie_a,Ie_m,LAIMax,LAIMin,LAIPower,lat,PorMax_dec,PorMin_dec,SDDFull,LAI_obs,&
        albDecTr,albEveTr,albGrass,porosity,DecidCap,deltaLAI,&!inout
-       xmAH,GDD,HDD,LAI,&
-       WU_Day,xBo)!output
+       GDD,HDD,LAI,&
+       WU_Day)!output
     IMPLICIT NONE
     INTEGER,PARAMETER::ndays    = 366
     INTEGER,PARAMETER::nvegsurf = 3
 
 
-    INTEGER,INTENT(IN)::ncolumnsDataOut
-    INTEGER,INTENT(IN)::NumberOfGrids
-    INTEGER,INTENT(IN)::ReadLinesMetdata
-    INTEGER,INTENT(IN)::Gridiv
+    ! INTEGER,INTENT(IN)::ncolumnsDataOut
+    ! INTEGER,INTENT(IN)::NumberOfGrids
+    ! INTEGER,INTENT(IN)::ReadLinesMetdata
+    ! INTEGER,INTENT(IN)::Gridiv
     INTEGER,INTENT(IN)::id
     INTEGER,INTENT(IN)::it
     INTEGER,INTENT(IN)::imin
@@ -287,7 +286,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(IN)::BaseTe(nvegsurf)
     REAL(KIND(1d0)),INTENT(IN)::CapMax_dec
     REAL(KIND(1d0)),INTENT(IN)::CapMin_dec
-    REAL(KIND(1d0)),INTENT(IN)::dataOut(ReadLinesMetdata,ncolumnsDataOut,NumberOfGrids)
+    ! REAL(KIND(1d0)),INTENT(IN)::dataOut(ReadLinesMetdata,ncolumnsDataOut,NumberOfGrids)
     REAL(KIND(1d0)),INTENT(IN)::DayWat(7)
     REAL(KIND(1d0)),INTENT(IN)::DayWatPer(7)
     REAL(KIND(1d0)),INTENT(IN)::Faut
@@ -313,13 +312,13 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(INOUT)::porosity( 0:ndays)
     REAL(KIND(1d0)),INTENT(INOUT)::DecidCap( 0:ndays)
     REAL(KIND(1d0)),INTENT(INOUT)::deltaLAI
-    REAL(KIND(1d0)),INTENT(INOUT)::xmAH
+    ! REAL(KIND(1d0)),INTENT(INOUT)::xmAH
     REAL(KIND(1d0)),INTENT(INOUT)::GDD( 0:ndays, 5)
     REAL(KIND(1d0)),INTENT(INOUT)::HDD(-4:ndays, 6)
     REAL(KIND(1d0)),INTENT(INOUT)::LAI(-4:ndays, nvegsurf)
 
     REAL(KIND(1d0)),INTENT(OUT):: WU_Day(0:ndays,9)
-    REAL(KIND(1d0)),INTENT(OUT):: xBo
+    ! REAL(KIND(1d0)),INTENT(OUT):: xBo
 
 
     !write(*,*) 'Last timestep of day'
@@ -374,11 +373,11 @@ CONTAINS
          LAI,&
          deltaLAI)!output
 
-    CALL update_AnOHM(&
-         Gridiv,id,& !input
-         ReadLinesMetdata,ncolumnsDataOut,NumberOfGrids,dataOut,&
-                                !  a1,a2,a3,&!inout
-         xBo,xmAH) !output
+    ! CALL update_AnOHM(&
+    !      Gridiv,id,& !input
+    !      ReadLinesMetdata,ncolumnsDataOut,NumberOfGrids,dataOut,&
+    !                             !  a1,a2,a3,&!inout
+    !      xBo,xmAH) !output
 
 
   END SUBROUTINE Cal_DailyStateEnd
@@ -981,7 +980,7 @@ CONTAINS
        WU_Day,&
        nsh_real,deltaLAI,VegPhenLumps,&
        SnowAlb,SnowDens,&
-       xBo,a1,a2,a3,&
+       a1,a2,a3,&
        Gridiv,NumberOfGrids,&
        dataOutDailyState)!inout
 
@@ -1013,7 +1012,6 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(IN) ::VegPhenLumps
     REAL(KIND(1d0)),INTENT(IN) ::SnowAlb
     REAL(KIND(1d0)),DIMENSION(7),INTENT(IN)::SnowDens
-    REAL(KIND(1d0)),INTENT(IN) ::xBo
     REAL(KIND(1d0)),INTENT(IN) ::a1
     REAL(KIND(1d0)),INTENT(IN) ::a2
     REAL(KIND(1d0)),INTENT(IN) ::a3
@@ -1039,7 +1037,7 @@ CONTAINS
             WU_Day,&
             deltaLAI,VegPhenLumps,&
             SnowAlb,SnowDens,&
-            xBo,a1,a2,a3,&
+            a1,a2,a3,&
             DailyStateLine)!output
 
        ! write out to dataOutDailyState
@@ -1139,7 +1137,7 @@ CONTAINS
        WU_Day,&
        deltaLAI,VegPhenLumps,&
        SnowAlb,SnowDens,&
-       xBo,a1,a2,a3,&
+       a1,a2,a3,&
        DailyStateLine)!out
 
     IMPLICIT NONE
@@ -1164,7 +1162,6 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(IN) ::VegPhenLumps
     REAL(KIND(1d0)),INTENT(IN) ::SnowAlb
     REAL(KIND(1d0)),DIMENSION(7),INTENT(IN)::SnowDens
-    REAL(KIND(1d0)),INTENT(IN) ::xBo
     REAL(KIND(1d0)),INTENT(IN) ::a1
     REAL(KIND(1d0)),INTENT(IN) ::a2
     REAL(KIND(1d0)),INTENT(IN) ::a3
@@ -1181,7 +1178,7 @@ CONTAINS
     DailyStateLine(31)    = deltaLAI
     DailyStateLine(32)    = VegPhenLumps
     DailyStateLine(33:40) = [SnowAlb,SnowDens(1:7)]
-    DailyStateLine(41:44) = [xBo,a1,a2,a3]
+    DailyStateLine(41:43) = [a1,a2,a3]
 
   END SUBROUTINE update_DailyState
 

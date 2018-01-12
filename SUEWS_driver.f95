@@ -26,7 +26,7 @@ CONTAINS
        avU1,avU10_ms,azimuth,BaseT,BaseTe,BaseTHDD,beta_bioCO2,beta_enh_bioCO2,&
        bldgH,CapMax_dec,CapMin_dec,chang,changSnow,chAnOHM,&
        chSnow_per_interval,cpAnOHM,CRWmax,CRWmin,CumSnowfall,&
-       dataOut,dataOutESTM,DayofWeek,DayWat,DayWatPer,DecidCap,dectime,DecTreeH,dens_dry,&
+       dataOutESTM,DayofWeek,DayWat,DayWatPer,DecidCap,dectime,DecTreeH,dens_dry,&
        Diagnose,DiagQN,DiagQS,DLS,drain_per_tstep,DRAINRT,Ea_hPa,EF_umolCO2perJ,emis,&
        EmissionsMethod,E_mod,EnEF_v_Jkm,es_hPa,ev,evap,EveTreeH,ev_per_tstep,ev_snow,&
        ext_wu,FAIBldg,FAIDecTree,FAIEveTree,Faut,Fc,Fc_anthro,Fc_biogen,Fc_build,&
@@ -38,7 +38,7 @@ CONTAINS
        kclear,kkAnOHM,Kmax,kup,kup_ind_snow,LAI,LAICalcYes,LAIMax,LAIMin,LAI_obs,LAIPower,LAIType,&
        lat,ldown,ldown_obs,L_mod,lng,lup,MaxConductance,MaxQFMetab,&
        Meltwaterstore,MetForcingData,MinQFMetab,min_res_bioCO2,mwh,mw_ind,mwstore,&
-       NARP_EMIS_SNOW,NARP_TRANS_SITE,ncolumnsDataOut,NetRadiationMethod,&
+       NARP_EMIS_SNOW,NARP_TRANS_SITE,NetRadiationMethod,&
        NonWaterFraction,nsh,nsh_real,NumberOfGrids,NumCapita,&
        NWstate_per_tstep,OHM_coef,OHMIncQF,OHM_threshSW,OHM_threshWD,&
        PervFraction,PipeCapacity,planF,p_mm,PopDensDaytime,PopDensNighttime,&
@@ -62,7 +62,7 @@ CONTAINS
        Tstar,tstep,tstep_real,tsurf,Tsurf_ind_snow,UStar,VegFraction,veg_type,VPD_Pa,&
        WaterDist,WaterUseMethod,WetThresh,WUAreaDecTr_m2,WUAreaEveTr_m2,&
        WUAreaGrass_m2,WUAreaTotal_m2,WU_Day,wu_DecTr,wu_EveTr,wu_Grass,wu_m3,&
-       WUProfA_tstep,WUProfM_tstep,xBo,xsmd,year,Z,Z0m,Zdm,zenith_deg,Zh)
+       WUProfA_tstep,WUProfM_tstep,xsmd,year,Z,Z0m,Zdm,zenith_deg,Zh)
 
     IMPLICIT NONE
 
@@ -103,7 +103,7 @@ CONTAINS
     INTEGER,INTENT(IN)::iy
     INTEGER,INTENT(IN)::LAICalcYes
     ! INTEGER,INTENT(IN)::ldown_option
-    INTEGER,INTENT(IN)::ncolumnsDataOut
+    ! INTEGER,INTENT(IN)::ncolumnsDataOut
     INTEGER,INTENT(IN)::NetRadiationMethod
     INTEGER,INTENT(IN)::nsh
     INTEGER,INTENT(IN)::NumberOfGrids
@@ -281,7 +281,7 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(nsurf+1,4,3),INTENT(IN)::OHM_coef
     REAL(KIND(1D0)),DIMENSION(4,NVEGSURF),INTENT(IN)::LAIPower
     REAL(KIND(1D0)),DIMENSION(:,:,:),INTENT(IN)::MetForcingData
-    REAL(KIND(1D0)),DIMENSION(READLINESMETDATA,NCOLUMNSDATAOUT,NUMBEROFGRIDS),INTENT(IN)::dataOut
+    ! REAL(KIND(1D0)),DIMENSION(READLINESMETDATA,NCOLUMNSDATAOUT,NUMBEROFGRIDS),INTENT(IN)::dataOut
 
 
     ! REAL(KIND(1D0)),INTENT(INOUT)::OverUse
@@ -404,7 +404,7 @@ CONTAINS
     REAL(KIND(1D0)),INTENT(OUT)::wu_EveTr
     REAL(KIND(1D0)),INTENT(OUT)::wu_Grass
     REAL(KIND(1D0)),INTENT(OUT)::wu_m3
-    REAL(KIND(1D0)),INTENT(out)::xBo
+    ! REAL(KIND(1D0)),INTENT(out)::xBo
     REAL(KIND(1D0)),INTENT(OUT)::Z0m
     REAL(KIND(1D0)),INTENT(OUT)::Zdm
     REAL(KIND(1D0)),INTENT(OUT)::ZENITH_deg
@@ -497,9 +497,9 @@ CONTAINS
     !Call the SUEWS_cal_DailyState routine to get surface characteristics ready
     IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_cal_DailyState...'
     CALL SUEWS_cal_DailyState(&
-         iy,id,it,imin,Gridiv,tstep,&!input
+         iy,id,it,imin,tstep,&!input
          WaterUseMethod,snowUse,Ie_start,Ie_end,&
-         ReadLinesMetdata,ncolumnsDataOut,NumberOfGrids,LAICalcYes,LAIType,&
+         LAICalcYes,LAIType,&
          nsh_real,avkdn,Temp_C,Precip,BaseTHDD,&
          lat,Faut,LAI_obs,tau_a,tau_f,tau_r,&
          SnowDensMax,SnowDensMin,SnowAlbMin,&
@@ -507,10 +507,10 @@ CONTAINS
          AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
          CapMax_dec,CapMin_dec,PorMax_dec,PorMin_dec,&
          Ie_a,Ie_m,DayWatPer,DayWat,SnowPack,&
-         BaseT,BaseTe,GDDFull,SDDFull,LAIMin,LAIMax,LAIPower,dataOut,&
+         BaseT,BaseTe,GDDFull,SDDFull,LAIMin,LAIMax,LAIPower,&
          SnowAlb,DecidCap,albDecTr,albEveTr,albGrass,&!inout
          porosity,GDD,HDD,SnowDens,LAI,DayofWeek,&
-         WU_Day,xBo)!output
+         WU_Day)!output
 
 
     !Calculation of density and other water related parameters

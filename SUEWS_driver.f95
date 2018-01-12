@@ -990,7 +990,8 @@ CONTAINS
 
     IF(NetRadiationMethodX>0)THEN
 
-       IF (snowUse==0) snowFrac=snow_obs
+       ! IF (snowUse==0) snowFrac=snow_obs
+       IF (snowUse==0) snowFrac=0
 
        IF(ldown_option==1) THEN !Observed ldown provided as forcing
           ldown=ldown_obs

@@ -257,7 +257,8 @@ CONTAINS
     ENDDO
 
     DO is=1,nsurf
-
+       IF(DiagQN==1) WRITE(*,*) 'is ',is
+       
        EMIS_A=PRATA_EMIS(Temp_K,Press_hPa)
 
        !--------------------------------------------------
@@ -386,6 +387,8 @@ CONTAINS
        lup_is = LUP*(1-snowFrac(is))+LUP_SNOW*snowFrac(is)
        tsurf_is = TSURF*(1-snowFrac(is))+TSURF_SNOW*snowFrac(is)
 
+       IF(DiagQN==1) WRITE(*,*) 'QSTAR',QSTAR,'QSTAR_SNOW',QSTAR_SNOW,'snowFrac',snowFrac(is)
+
        qn1_cum=qn1_cum+(qn1_is*sfr(is))  !Calculate cumulative radiation components
        kup_cum=kup_cum+(kup_is*sfr(is))
        lup_cum=lup_cum+(lup_is*sfr(is))
@@ -395,6 +398,8 @@ CONTAINS
        kup_ind(is)=kup_is
        lup_ind(is)=lup_is
        Tsurf_ind(is)=tsurf_is
+
+       IF(DiagQN==1) WRITE(*,*) 'qn1_is: ',qn1_is
 
     ENDDO !End of the surface types
 
@@ -422,6 +427,7 @@ CONTAINS
     !endif
 
     IF(DiagQN==1) WRITE(*,*) 'kdown: ',kdown,'kup:',kup,'LDOWN: ',LDOWN,'LUP: ',LUP
+    IF(DiagQN==1) WRITE(*,*) 'Qn: ',QSTARall
 
   END SUBROUTINE NARP
 

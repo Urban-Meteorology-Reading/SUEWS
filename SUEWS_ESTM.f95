@@ -750,7 +750,7 @@ CONTAINS
        HW=0.00001  ! to avoid zero-HW scenario TS 21 Oct 2017
 
     END IF
-    HW=max(0.00001,HW)! to avoid zero-HW scenario TS 27 Oct 2017
+    HW=MAX(0.00001,HW)! to avoid zero-HW scenario TS 27 Oct 2017
 
     IF (Fground==1.0) THEN   !!FO!! if only ground, i.e. no houses
        W=1
@@ -949,12 +949,12 @@ CONTAINS
 
   !===============================================================================
   SUBROUTINE ESTM(&
-       Gridiv,ir,NumberOfGrids,&!input
-       iy,id,it,imin,nsh,tstep,ReadLinesMetdata,&
+       Gridiv,&!input
+       nsh,tstep,&
        avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown,&
-       bldgh,Ts5mindata_ir,dectime,&
-       Tair24HR,dataOutESTM,&!inout
-       QS)!output
+       bldgh,Ts5mindata_ir,&
+       Tair24HR,&!inout
+       dataOutLineESTM,QS)!output
     ! NB: HCW Questions:
     !                - should TFloor be set in namelist instead of hard-coded here?
     !                - zref used for radiation calculation and fair is set to 2*BldgH here. For compatibility with the rest of the
@@ -1102,7 +1102,7 @@ CONTAINS
 
     IMPLICIT NONE
     INTEGER, PARAMETER:: ncolsESTMdata=13
-    INTEGER, PARAMETER:: ncolumnsdataOutESTM=32
+    ! INTEGER, PARAMETER:: ncolumnsdataOutESTM=32
     INTEGER, PARAMETER:: cTs_Tiair = 5
     INTEGER, PARAMETER:: cTs_Tsurf = 6
     INTEGER, PARAMETER:: cTs_Troof = 7
@@ -1114,12 +1114,12 @@ CONTAINS
     INTEGER, PARAMETER:: cTs_Twall_w = 13
     REAL(KIND(1d0)),PARAMETER::NAN=-999
 
-    INTEGER,INTENT(in)::Gridiv,ir,NumberOfGrids
-    INTEGER,INTENT(in)::nsh,tstep,ReadLinesMetdata
-    INTEGER,INTENT(in)::iy !Year
-    INTEGER,INTENT(in)::id !Day of year
-    INTEGER,INTENT(in)::it !Hour
-    INTEGER,INTENT(in)::imin          !Minutes
+    INTEGER,INTENT(in)::Gridiv
+    INTEGER,INTENT(in)::nsh,tstep
+    ! INTEGER,INTENT(in)::iy !Year
+    ! INTEGER,INTENT(in)::id !Day of year
+    ! INTEGER,INTENT(in)::it !Hour
+    ! INTEGER,INTENT(in)::imin          !Minutes
 
     REAL(KIND(1d0)),INTENT(in)::avkdn
     REAL(KIND(1d0)),INTENT(in)::avu1
@@ -1129,11 +1129,11 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::press_hpa
     REAL(KIND(1d0)),INTENT(in)::ldown
     REAL(KIND(1d0)),INTENT(in)::bldgh
-    REAL(KIND(1d0)),INTENT(in):: dectime        !Decimal time
+    ! REAL(KIND(1d0)),INTENT(in):: dectime        !Decimal time
     REAL(KIND(1d0)),DIMENSION(ncolsESTMdata),INTENT(in)::  Ts5mindata_ir     !surface temperature input data
     REAL(KIND(1d0)),DIMENSION(24*nsh),INTENT(inout) ::   Tair24HR ! may be replaced with MetForcingData by extracting the Tiar part
 
-    REAL(KIND(1d0)),DIMENSION(ReadlinesMetdata,32,NumberOfGrids),INTENT(inout):: dataOutESTM
+    REAL(KIND(1d0)),DIMENSION(27),INTENT(out):: dataOutLineESTM
     !Output to SUEWS
     REAL(KIND(1d0)),INTENT(out)::QS
     !Input from SUEWS, corrected as Gridiv by TS 09 Jun 2016
@@ -1546,12 +1546,15 @@ CONTAINS
        Tibldout=Tibld
     ENDIF
 
-    dataOutESTM(ir,1:ncolumnsdataOutESTM,Gridiv)=[&
-         REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),REAL(it,KIND(1D0)),REAL(imin,KIND(1D0)), dectime,&!5
-         QS,Qsair,Qswall,Qsroof,Qsground,Qsibld,&!11
-         Twallout,Troofout,Tgroundout,Tibldout,Tievolve]!32 !NB. These all have 5 elements except Tievolve (1).
+    ! dataOutESTM(ir,1:ncolumnsdataOutESTM,Gridiv)=[&
+    !      REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),REAL(it,KIND(1D0)),REAL(imin,KIND(1D0)), dectime,&!5
+    !      QS,Qsair,Qswall,Qsroof,Qsground,Qsibld,&!11
+    !      Twallout,Troofout,Tgroundout,Tibldout,Tievolve]!32 !NB. These all have 5 elements except Tievolve (1).
+    dataOutLineESTM=[&
+         QS,Qsair,Qswall,Qsroof,Qsground,Qsibld,&!6
+         Twallout,Troofout,Tgroundout,Tibldout,Tievolve]!27 !NB. These all have 5 elements except Tievolve (1).
     ! set invalid values to nan
-    dataOutESTM(ir,6:ncolumnsdataOutESTM,Gridiv)=set_nan(dataOutESTM(ir,6:ncolumnsdataOutESTM,Gridiv))
+    dataOutLineESTM=set_nan(dataOutLineESTM)
     ! call r8vec_print(ncolumnsdataOutESTM-5,dataOutESTM(ir,6:ncolumnsdataOutESTM,Gridiv),'dataOutESTM')
 
 

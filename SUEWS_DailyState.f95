@@ -238,7 +238,7 @@ CONTAINS
             albDecTr,albEveTr,albGrass,porosity,DecidCap,deltaLAI,&!inout
             GDD,HDD,LAI,&
             WU_Day)!output
-            ! ,xBo)!output
+       ! ,xBo)!output
     ENDIF   !End of section done only at the end of each day (i.e. only once per day)
 
     RETURN
@@ -1186,85 +1186,85 @@ CONTAINS
   !===================================================================================
   !to implement a generic SUBROUTINE for SUEWS_cal_DailyState output
   ! this has been done: `output_DailyState` no longer needed. TS 12 Jan 2018
-  SUBROUTINE output_DailyState(&
-       Gridiv,GridIDmatrix,&!input
-       FileCode,FileOutputPath,&
-       DailyStateLine,&
-       DailyStateFirstOpen)!inout
-
-    IMPLICIT NONE
-
-    INTEGER,PARAMETER::MaxNumberOfGrids=2000   !Max no. grids   !HCW changed to 2000 from 10000 so prog can run on windows (2GB lim)
-    ! INTEGER,PARAMETER::ndays=366
-    ! INTEGER,PARAMETER::ncolumnsDataOut=46
-    INTEGER,INTENT(IN)::Gridiv
-    INTEGER,DIMENSION(MaxNumberOfGrids),INTENT(IN):: GridIDmatrix         !Array containing GridIDs in SiteSelect after sorting
-
-    CHARACTER (LEN = 20),INTENT(IN) :: FileCode       !Set in RunControl
-    CHARACTER (LEN = 150),INTENT(IN):: FileOutputPath !Filepath for output files (set in RunControl)
-
-    REAL(KIND(1d0)),DIMENSION(44),INTENT(IN) :: DailyStateLine
-    REAL(KIND(1d0)),DIMENSION(MaxNumberOfGrids),INTENT(INOUT):: DailyStateFirstOpen
-    ! REAL(KIND(1d0)),DIMENSION(ndays,ncolumnsDataOut,NumberOfGrids),INTENT(INOUT):: dataOutDailyState
-
-    CHARACTER(LEN = 10):: grstr2
-    CHARACTER(LEN = 150)::FileDaily !Daily State output file name
-    CHARACTER(LEN = 10):: headerDaily(60)='' ! headers of daily variables
-
-    ! integer :: i
-
-    !write(*,*) 'writing out daily state for day id:',id
-    !Define filename
-    WRITE(grstr2,'(i10)') GridIDmatrix(Gridiv)      !Bug fix HCW 24/05/2016 - name file with Grid as in SiteSelect
-
-    FileDaily=TRIM(FileOutputPath)//TRIM(FileCode)//TRIM(ADJUSTL(grstr2))//'_DailyState.txt'
-
-    ! If first modelled day, open the file and save header
-    IF (DailyStateFirstOpen(Gridiv)==1) THEN
-       headerDaily(1:44)=[CHARACTER(len=10) ::'Year','DOY',&                !2
-            'HDD1_h','HDD2_c','HDD3_Tmean','HDD4_T5d','P/day','DaysSR',&    !8
-            'GDD1_g','GDD2_s','GDD3_Tmin','GDD4_Tmax','GDD5_DLHrs',&    !13
-            'LAI_EveTr','LAI_DecTr','LAI_Grass',&                     !16
-            'DecidCap','Porosity','AlbEveTr','AlbDecTr','AlbGrass',&      !21
-            'WU_EveTr1','WU_EveTr2','WU_EveTr3',&               !24
-            'WU_DecTr1','WU_DecTr2','WU_DecTr3',&               !27
-            'WU_Grass1','WU_Grass2','WU_Grass3',&               !30
-            'deltaLAI','LAIlumps','AlbSnow','DSnowPvd',&        !34
-            'DSnowBldgs','DSnowEveTr','DSnowDecTr',&    !37
-            'DSnowGrass','DSnowBSoil','DSnowWater',&    !40
-            'BoAnOHMEnd','a1','a2','a3'] !44 TS AnOHM 05 Mar 2016
-
-       OPEN(60,FILE=FileDaily)
-       WRITE(60,602) ADJUSTR(headerDaily(1:44))
-
-       DailyStateFirstOpen(Gridiv)=0
-       ! Otherwise open file to append
-    ELSE
-       OPEN(60,FILE=FileDaily,POSITION='append')
-       ! Write actual data
-       WRITE(60,601) INT(DailyStateLine(1)),INT(DailyStateLine(2)),&
-            DailyStateLine(3:44)
-    ENDIF
-
-    ! Close the daily state file
-    CLOSE(60)
-
-601 FORMAT(2(i10,1X),&
-         4(f10.1,1X),1(f10.4,1X),1(f10.1,1X), 5(f10.1,1X),&
-         3(f10.2,1X),&
-         5(f10.2,1X),&
-         9(f10.3,1X),&
-         2(f10.2,1X),8(f10.2,1X),&
-         4(f10.2,1X))
-602 FORMAT(2(a10,1X),&
-         4(a10,1X),1(a10,1X),1(a10,1X), 5(a10,1X),&
-         3(a10,1X),&
-         5(a10,1X),&
-         9(a10,1X),&
-         2(a10,1X),8(a10,1X),&
-         4(a10,1X))
-
-  END SUBROUTINE output_DailyState
+  !   SUBROUTINE output_DailyState(&
+  !        Gridiv,GridIDmatrix,&!input
+  !        FileCode,FileOutputPath,&
+  !        DailyStateLine,&
+  !        DailyStateFirstOpen)!inout
+  !
+  !     IMPLICIT NONE
+  !
+  !     INTEGER,PARAMETER::MaxNumberOfGrids=2000   !Max no. grids   !HCW changed to 2000 from 10000 so prog can run on windows (2GB lim)
+  !     ! INTEGER,PARAMETER::ndays=366
+  !     ! INTEGER,PARAMETER::ncolumnsDataOut=46
+  !     INTEGER,INTENT(IN)::Gridiv
+  !     INTEGER,DIMENSION(MaxNumberOfGrids),INTENT(IN):: GridIDmatrix         !Array containing GridIDs in SiteSelect after sorting
+  !
+  !     CHARACTER (LEN = 20),INTENT(IN) :: FileCode       !Set in RunControl
+  !     CHARACTER (LEN = 150),INTENT(IN):: FileOutputPath !Filepath for output files (set in RunControl)
+  !
+  !     REAL(KIND(1d0)),DIMENSION(44),INTENT(IN) :: DailyStateLine
+  !     REAL(KIND(1d0)),DIMENSION(MaxNumberOfGrids),INTENT(INOUT):: DailyStateFirstOpen
+  !     ! REAL(KIND(1d0)),DIMENSION(ndays,ncolumnsDataOut,NumberOfGrids),INTENT(INOUT):: dataOutDailyState
+  !
+  !     CHARACTER(LEN = 10):: grstr2
+  !     CHARACTER(LEN = 150)::FileDaily !Daily State output file name
+  !     CHARACTER(LEN = 10):: headerDaily(60)='' ! headers of daily variables
+  !
+  !     ! integer :: i
+  !
+  !     !write(*,*) 'writing out daily state for day id:',id
+  !     !Define filename
+  !     WRITE(grstr2,'(i10)') GridIDmatrix(Gridiv)      !Bug fix HCW 24/05/2016 - name file with Grid as in SiteSelect
+  !
+  !     FileDaily=TRIM(FileOutputPath)//TRIM(FileCode)//TRIM(ADJUSTL(grstr2))//'_DailyState.txt'
+  !
+  !     ! If first modelled day, open the file and save header
+  !     IF (DailyStateFirstOpen(Gridiv)==1) THEN
+  !        headerDaily(1:44)=[CHARACTER(len=10) ::'Year','DOY',&                !2
+  !             'HDD1_h','HDD2_c','HDD3_Tmean','HDD4_T5d','P/day','DaysSR',&    !8
+  !             'GDD1_g','GDD2_s','GDD3_Tmin','GDD4_Tmax','GDD5_DLHrs',&    !13
+  !             'LAI_EveTr','LAI_DecTr','LAI_Grass',&                     !16
+  !             'DecidCap','Porosity','AlbEveTr','AlbDecTr','AlbGrass',&      !21
+  !             'WU_EveTr1','WU_EveTr2','WU_EveTr3',&               !24
+  !             'WU_DecTr1','WU_DecTr2','WU_DecTr3',&               !27
+  !             'WU_Grass1','WU_Grass2','WU_Grass3',&               !30
+  !             'deltaLAI','LAIlumps','AlbSnow','DSnowPvd',&        !34
+  !             'DSnowBldgs','DSnowEveTr','DSnowDecTr',&    !37
+  !             'DSnowGrass','DSnowBSoil','DSnowWater',&    !40
+  !             'BoAnOHMEnd','a1','a2','a3'] !44 TS AnOHM 05 Mar 2016
+  !
+  !        OPEN(60,FILE=FileDaily)
+  !        WRITE(60,602) ADJUSTR(headerDaily(1:44))
+  !
+  !        DailyStateFirstOpen(Gridiv)=0
+  !        ! Otherwise open file to append
+  !     ELSE
+  !        OPEN(60,FILE=FileDaily,POSITION='append')
+  !        ! Write actual data
+  !        WRITE(60,601) INT(DailyStateLine(1)),INT(DailyStateLine(2)),&
+  !             DailyStateLine(3:44)
+  !     ENDIF
+  !
+  !     ! Close the daily state file
+  !     CLOSE(60)
+  !
+  ! 601 FORMAT(2(i10,1X),&
+  !          4(f10.1,1X),1(f10.4,1X),1(f10.1,1X), 5(f10.1,1X),&
+  !          3(f10.2,1X),&
+  !          5(f10.2,1X),&
+  !          9(f10.3,1X),&
+  !          2(f10.2,1X),8(f10.2,1X),&
+  !          4(f10.2,1X))
+  ! 602 FORMAT(2(a10,1X),&
+  !          4(a10,1X),1(a10,1X),1(a10,1X), 5(a10,1X),&
+  !          3(a10,1X),&
+  !          5(a10,1X),&
+  !          9(a10,1X),&
+  !          2(a10,1X),8(a10,1X),&
+  !          4(a10,1X))
+  !
+  !   END SUBROUTINE output_DailyState
 
 
 END MODULE DailyState_module

@@ -17,7 +17,7 @@ SUBROUTINE LUMPS_cal_QHQE(&
   ! LJ June 2012    - Modified to work with snow (Qm added in the equations!)
   ! SG Feb 2012     - added some comments
   ! --------------------------------------------------------------
-  use AtmMoist_module,only:psyc_const,slope_svp,slopeice_svp
+  USE AtmMoist_module,ONLY:psyc_const,slope_svp,slopeice_svp
 
   IMPLICIT NONE
   INTEGER,PARAMETER::ndays=366
@@ -101,14 +101,14 @@ SUBROUTINE LUMPS_cal_QHQE(&
   !ASSUMES THE SURFACE IS VEGETATION COVERED WITH RAIN > RAINCOVER mm/DAY
   !OTHERWISE INCREASES VEGETATION LINEAR WITH AMOUNT OF RAIN.
 
-  !IF (E_MOD>0.) RainBucket=RainBucket-E_MOD*1.44E-3 !1.44E-3 MM/(W/M^2)/HR (i.e. 3600/(lv_J_kg))
-  IF (E_MOD>0.) RainBucket=RainBucket-E_MOD/tlv   !Adjusted for per model timestep instead of per hour HCW 04 Mar 2015
-  IF (Temp_C>0.) RainBucket=RainBucket - DRAINRT/nsh_real  !DRAINRT is specified in mm h-1
-  IF (RainBucket<0.) RainBucket=0.
-  IF (Precip>0) RainBucket=MIN(RainMaxRes,RainBucket+Precip)
-
-  RAINRES = RainBucket
-  IF (RAINRES>RAINCOVER) RAINRES=RAINCOVER
+  ! !IF (E_MOD>0.) RainBucket=RainBucket-E_MOD*1.44E-3 !1.44E-3 MM/(W/M^2)/HR (i.e. 3600/(lv_J_kg))
+  ! IF (E_MOD>0.) RainBucket=RainBucket-E_MOD/tlv   !Adjusted for per model timestep instead of per hour HCW 04 Mar 2015
+  ! IF (Temp_C>0.) RainBucket=RainBucket - DRAINRT/nsh_real  !DRAINRT is specified in mm h-1
+  ! IF (RainBucket<0.) RainBucket=0.
+  ! IF (Precip>0) RainBucket=MIN(RainMaxRes,RainBucket+Precip)
+  !
+  ! RAINRES = RainBucket
+  ! IF (RAINRES>RAINCOVER) RAINRES=RAINCOVER
 
   !--------Calculate vegetation phenology for LUMPS------------------------
   ! VegPhen=0
@@ -149,6 +149,17 @@ SUBROUTINE LUMPS_cal_QHQE(&
   ! Calculate the actual heat fluxes
   H_mod= ((1-alpha_qhqe)+psyc_s)/(1+psyc_s)*(qn1+qf-qs-Qm)-beta   !Eq 3, Grimmond & Oke (2002)
   E_mod= (alpha_qhqe/(1+psyc_s)*(qn1+qf-qs-Qm))+beta              !Eq 4, Grimmond & Oke (2002)
+
+  ! adjust RAINRES after E_mod calculation is done: ! moved here from above. TS, 13 Jan 2018
+  !IF (E_MOD>0.) RainBucket=RainBucket-E_MOD*1.44E-3 !1.44E-3 MM/(W/M^2)/HR (i.e. 3600/(lv_J_kg))
+  IF (E_MOD>0.) RainBucket=RainBucket-E_MOD/tlv   !Adjusted for per model timestep instead of per hour HCW 04 Mar 2015
+  IF (Temp_C>0.) RainBucket=RainBucket - DRAINRT/nsh_real  !DRAINRT is specified in mm h-1
+  IF (RainBucket<0.) RainBucket=0.
+  IF (Precip>0) RainBucket=MIN(RainMaxRes,RainBucket+Precip)
+
+  RAINRES = RainBucket
+  IF (RAINRES>RAINCOVER) RAINRES=RAINCOVER
+
 
   RETURN
 

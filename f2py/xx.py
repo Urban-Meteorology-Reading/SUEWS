@@ -7,6 +7,11 @@ from SUEWS_driver import suews_driver as sd
 print sd.suews_cal_main.__doc__
 pd.options.display.max_rows = 4000
 
+os.getcwd()
+
+dens_dry
+
+varInputInfo
 lib_Profiles
 dict_SiteSelect[1]['AnthropogenicCode']
 dict_SiteSelect[1]['Code_Paved']
@@ -32,8 +37,8 @@ pd.Series(lib_Veg.columns)
 pd.Series(lib_Snow.columns)
 
 pd.Series(lib_OHMCoefficients.columns)
-
-
+list_file_MetForcing
+list_file_MetForcing
 pd.Series(lib_Soil.columns)
 pd.Series(lib_Water.columns)
 
@@ -46,7 +51,12 @@ pd.Series(lib_AnthropogenicHeat.columns)
 
 
 pd.Series(lib_Snow.columns)
+list_varGridSurfaceChar
+list_var_mod_state
 
+list_var_mod_forcing
+
+list_var_mod_config
 
 pd.Series(lib_AnthropogenicHeat.columns)
 
@@ -209,7 +219,7 @@ for var in lib_RunControl.index:
 
 lib_RunControl.loc[:,'runcontrol']
 
-
+lib_RunControl
 
 
 
@@ -233,6 +243,122 @@ print '\n'.join(docLines)
 
 
 varOutputInfo
+
+os.getcwd()
+
+
+
+
+
+
+os.path.join(
+    'Input', '{}*{}*txt'.format(filecode, resolutionfilesin / 60))
+
+
+get
+#
+os.path.join(
+    'Input', '{}*{}*txt'.format(filecode, resolutionfilesin / 60))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+list_file_MetForcing
+
+os.getcwd()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

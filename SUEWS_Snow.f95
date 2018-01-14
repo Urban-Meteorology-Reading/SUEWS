@@ -28,51 +28,22 @@ CONTAINS
   !=======================================================================================
   SUBROUTINE Snow_cal_MeltHeat(&
        snowUse,&!input
-       lvS_J_kg,&
-       lv_J_kg,&
-       tstep_real,&
-       RadMeltFact,&
-       TempMeltFact,&
-       SnowAlbMax,&
-       SnowDensMin,&
-       Temp_C,&
-       Precip,&
-       PrecipLimit,&
-       PrecipLimitAlb,&
-       nsh_real,&
-       sfr,&
-       Tsurf_ind,&
-       state,&
-       qn1_ind_snow,&
-       Meltwaterstore,&
-       deltaQi,&
-       SnowPack,&!inoout
-       snowFrac,&
-       SnowAlb,&
-       SnowDens,&
-       mwh,&!output
-       fwh,&
-       Qm,&
-       QmFreez,&
-       QmRain,&
-       CumSnowfall,&
-       snowCalcSwitch,&
-       Qm_melt,&
-       Qm_freezState,&
-       Qm_rain,&
-       FreezMelt,&
-       FreezState,&
-       FreezStateVol,&
-       rainOnSnow,&
-       SnowDepth,&
-       mw_ind,&
-       veg_fr)
+       lvS_J_kg,lv_J_kg,tstep_real,RadMeltFact,TempMeltFact,SnowAlbMax,&
+       SnowDensMin,Temp_C,Precip,PrecipLimit,PrecipLimitAlb,&
+       nsh_real,sfr,Tsurf_ind,Tsurf_ind_snow,state,qn1_ind_snow,&
+       kup_ind_snow,Meltwaterstore,deltaQi,&
+       SnowPack,snowFrac,SnowAlb,SnowDens,&!inout
+       mwh,fwh,Qm,QmFreez,QmRain,CumSnowfall,&! output
+       veg_fr,snowCalcSwitch,Qm_melt,Qm_freezState,Qm_rain,FreezMelt,&
+       FreezState,FreezStateVol,rainOnSnow,SnowDepth,mw_ind,&
+       dataOutLineSnow)!output
 
     IMPLICIT NONE
     INTEGER,PARAMETER::nsurf=7
     INTEGER,PARAMETER::PavSurf=1
     INTEGER,PARAMETER::BldgSurf=2
     INTEGER,PARAMETER::WaterSurf=7
+    INTEGER,PARAMETER::ncolumnsDataOutSnow=102-5
     REAL(KIND(1d0)),PARAMETER::waterDens=999.8395 !Density of water in 0 cel deg
 
     !These are input to the module
@@ -98,8 +69,10 @@ CONTAINS
 
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::sfr
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::Tsurf_ind
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::Tsurf_ind_snow
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::state
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::qn1_ind_snow
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::kup_ind_snow
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::Meltwaterstore
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::deltaQi
 
@@ -131,6 +104,8 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::rainOnSnow
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::SnowDepth
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::mw_ind
+
+    REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutSnow),INTENT(out) :: dataOutLineSnow
 
 
     IF ( snowUse==1 ) THEN
@@ -174,6 +149,16 @@ CONTAINS
             veg_fr)!output
 
     END IF
+
+    ! pack output into one line
+    dataOutLineSnow=[&
+         SnowPack(1:nsurf),mw_ind(1:nsurf),Qm_melt(1:nsurf),            & !26
+         Qm_rain(1:nsurf),Qm_freezState(1:nsurf),snowFrac(1:(nsurf-1)), & !46
+         rainOnSnow(1:nsurf),                                           & !53
+         qn1_ind_snow(1:nsurf),kup_ind_snow(1:nsurf),freezMelt(1:nsurf),& !74
+         MeltWaterStore(1:nsurf),SnowDens(1:nsurf),                     & !88
+         snowDepth(1:nsurf),Tsurf_ind_snow(1:nsurf)]
+    ! dataOutLineSnow=set_nan(dataOutLineSnow)
 
   END SUBROUTINE Snow_cal_MeltHeat
 
@@ -475,7 +460,7 @@ CONTAINS
        PervFraction,vegfraction,addimpervious,&
        numPM,s_hPa,ResistSurf,sp,ra,rb,tlv,snowdensmin,precip,&
        PipeCapacity,RunoffToWater,runoffAGimpervious,runoffAGveg,&
-       addVeg,surplusWaterBody,SnowLimPaved,SnowLimBuild,drain,&
+       addVeg,surplusWaterBody,SnowLimPaved,SnowLimBuild,FlowChange,drain,&
        WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
        freezmelt,freezstate,freezstatevol,&
        Qm_Melt,Qm_rain,Tsurf_ind,sfr,DayofWeek,surf,snowD,&
@@ -486,7 +471,7 @@ CONTAINS
        runoff,runoffSoil,chang,changSnow,SnowToSurf,state,ev_snow,soilmoist,&
        SnowDepth,SnowRemoval,snowProf,swe,ev,chSnow_per_interval,&
        ev_per_tstep,qe_per_tstep,runoff_per_tstep,surf_chang_per_tstep,&
-       runoffPipes,mwstore,runoffwaterbody,FlowChange)
+       runoffPipes,mwstore,runoffwaterbody)
 
     !Calculation of snow and water balance on 5 min timestep. Treats snowfree and snow covered
     !areas separately. Weighting is taken into account in the overall values.
@@ -496,7 +481,7 @@ CONTAINS
     !  HCW 26 Jan 2015 - Added weekday/weekend option for snow clearing profiles
     !  LJ in 24 May 2013
     !========================================================================
-    use WaterDist_module,only:updateFlood
+    USE WaterDist_module,ONLY:updateFlood
 
 
     IMPLICIT NONE
@@ -559,6 +544,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::addVeg
     REAL(KIND(1d0)),INTENT(in)::SnowLimPaved
     REAL(KIND(1d0)),INTENT(in)::SnowLimBuild
+    REAL(KIND(1d0)),INTENT(in)::FlowChange
 
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::drain
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::WetThresh
@@ -617,7 +603,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(out)::runoffPipes
     REAL(KIND(1d0)),INTENT(out)::mwstore
     REAL(KIND(1d0)),INTENT(out)::runoffwaterbody
-    REAL(KIND(1d0)),INTENT(out)::FlowChange
+
 
     REAL(KIND(1d0)),DIMENSION(2),INTENT(inout):: SurplusEvap
 

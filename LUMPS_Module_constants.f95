@@ -124,6 +124,10 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: dataOutESTM          !ESTM output matrix
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: dataOutDailyState    !DailyState output array
 
+  REAL(KIND(1D0)),DIMENSION(5)::datetimeLine
+  REAL(KIND(1D0)),DIMENSION(ncolumnsDataOut-5)::dataOutLine
+  REAL(KIND(1D0)),DIMENSION(ncolumnsDataOutSnow-5)::dataOutLineSnow
+
   REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE:: MetForDisagg           !Array for original met forcing data (for disaggregation)
   REAL(KIND(1d0)),DIMENSION(:),  ALLOCATABLE:: MetForDisaggPrev,MetForDisaggNext !Stores last and next row of met data
 
@@ -142,6 +146,7 @@ MODULE allocateArray
   REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:,:):: Ts5mindata   !surface temperature input data
   REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:)  :: ts5mindata_ir !=ts5mindata(ir,:), ts input for the current timestep
   REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:)  :: Tair24HR
+  REAL(KIND(1d0)),DIMENSION(27)  :: dataOutLineESTM !ESTM output for the current timestep and grid
 
   ! Column numbers for TstepProfiles
   INTEGER:: cTP_EnUseWD  = 1,&

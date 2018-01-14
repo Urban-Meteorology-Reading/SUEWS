@@ -81,19 +81,19 @@ MODULE ctrl_output
 
   ! defualt:
   DATA(varList(i), i=6,84)/&
-       varAttr('Kdown'      , 'W m-2'        , f104  , 'Incoming shortwave radiation'                     , aA , '' , 0)     , &
-       varAttr('Kup'        , 'W m-2'        , f104  , 'Outgoing shortwave radiation'                     , aA , '' , 0)     , &
-       varAttr('Ldown'      , 'W m-2'        , f104  , 'Incoming longwave radiation'                      , aA , '' , 0)     , &
-       varAttr('Lup'        , 'W m-2'        , f104  , 'Outgoing longwave radiation'                      , aA , '' , 0)     , &
-       varAttr('Tsurf'      , 'degC'         , f104  , 'Bulk surface temperature'                         , aA , '' , 0)     , &
-       varAttr('QN'         , 'W m-2'        , f104  , 'Net all-wave radiation'                           , aA , '' , 0)     , &
-       varAttr('QF'         , 'W m-2'        , f104  , 'Anthropogenic heat flux'                          , aA , '' , 0)     , &
-       varAttr('QS'         , 'W m-2'        , f104  , 'Net storage heat flux'                            , aA , '' , 0)     , &
-       varAttr('QH'         , 'W m-2'        , f104  , 'Sensible heat flux'                               , aA , '' , 0)     , &
-       varAttr('QE'         , 'W m-2'        , f104  , 'Latent heat flux'                                 , aA , '' , 0)     , &
-       varAttr('QHlumps'    , 'W m-2'        , f104  , 'Sensible heat flux (using LUMPS)'                 , aA , '' , 1)     , &
-       varAttr('QElumps'    , 'W m-2'        , f104  , 'Latent heat flux (using LUMPS)'                   , aA , '' , 1)     , &
-       varAttr('QHresis'    , 'W m-2'        , f104  , 'Sensible heat flux (resistance method)'           , aA , '' , 1)     , &
+       varAttr('Kdown'      , 'W m-2'        , f104 , 'Incoming shortwave radiation'                     , aA , '' , 0)     , &
+       varAttr('Kup'        , 'W m-2'        , f104 , 'Outgoing shortwave radiation'                     , aA , '' , 0)     , &
+       varAttr('Ldown'      , 'W m-2'        , f104 , 'Incoming longwave radiation'                      , aA , '' , 0)     , &
+       varAttr('Lup'        , 'W m-2'        , f104 , 'Outgoing longwave radiation'                      , aA , '' , 0)     , &
+       varAttr('Tsurf'      , 'degC'         , f104 , 'Bulk surface temperature'                         , aA , '' , 0)     , &
+       varAttr('QN'         , 'W m-2'        , f104 , 'Net all-wave radiation'                           , aA , '' , 0)     , &
+       varAttr('QF'         , 'W m-2'        , f104 , 'Anthropogenic heat flux'                          , aA , '' , 0)     , &
+       varAttr('QS'         , 'W m-2'        , f104 , 'Net storage heat flux'                            , aA , '' , 0)     , &
+       varAttr('QH'         , 'W m-2'        , f104 , 'Sensible heat flux'                               , aA , '' , 0)     , &
+       varAttr('QE'         , 'W m-2'        , f104 , 'Latent heat flux'                                 , aA , '' , 0)     , &
+       varAttr('QHlumps'    , 'W m-2'        , f104 , 'Sensible heat flux (using LUMPS)'                 , aA , '' , 1)     , &
+       varAttr('QElumps'    , 'W m-2'        , f104 , 'Latent heat flux (using LUMPS)'                   , aA , '' , 1)     , &
+       varAttr('QHresis'    , 'W m-2'        , f104 , 'Sensible heat flux (resistance method)'           , aA , '' , 1)     , &
        varAttr('Rain'       , 'mm'           , f106 , 'Rain'                                             , aS , '' , 0)     , &
        varAttr('Irr'        , 'mm'           , f106 , 'Irrigation'                                       , aS , '' , 0)     , &
        varAttr('Evap'       , 'mm'           , f106 , 'Evaporation'                                      , aS , '' , 0)     , &
@@ -160,7 +160,6 @@ MODULE ctrl_output
        varAttr('T2'         , 'degC'         , f94  , 'Air temperature at 2 m'                           , aA , '' , 0)     , &
        varAttr('Q2'         , 'g kg-1'       , f94  , 'Specific humidity at 2 m'                         , aA , '' , 0)     , &
        varAttr('U10'        , 'm s-1'        , f94  , 'Wind speed at 10 m'                               , aA , '' , 0)   &
-
        /
 
   ! SOLWEIG:

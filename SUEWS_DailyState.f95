@@ -61,8 +61,7 @@ CONTAINS
        Ie_a,Ie_m,DayWatPer,DayWat,SnowPack,&
        BaseT,BaseTe,GDDFull,SDDFull,LAIMin,LAIMax,LAIPower,&
        SnowAlb,DecidCap,albDecTr,albEveTr,albGrass,&!inout
-       porosity,GDD,HDD,SnowDens,LAI,DayofWeek,&
-       WU_Day)!output
+       porosity,GDD,HDD,SnowDens,LAI,DayofWeek,WU_Day)
 
 
     IMPLICIT NONE
@@ -161,7 +160,7 @@ CONTAINS
     INTEGER,DIMENSION(0:ndays,3),INTENT(inout)::DayofWeek
 
     !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
-    REAL(KIND(1d0)),DIMENSION(0:ndays,9),INTENT(OUT):: WU_Day
+    REAL(KIND(1d0)),DIMENSION(0:ndays,9),INTENT(INOUT):: WU_Day
     ! REAL(KIND(1d0)),INTENT(OUT)::xBo
 
     INTEGER::date
@@ -236,8 +235,7 @@ CONTAINS
             BaseT,BaseTe,CapMax_dec,CapMin_dec,DayWat,DayWatPer,Faut,GDDFull,&
             Ie_a,Ie_m,LAIMax,LAIMin,LAIPower,lat,PorMax_dec,PorMin_dec,SDDFull,LAI_obs,&
             albDecTr,albEveTr,albGrass,porosity,DecidCap,deltaLAI,&!inout
-            GDD,HDD,LAI,&
-            WU_Day)!output
+            GDD,HDD,LAI,WU_Day)
        ! ,xBo)!output
     ENDIF   !End of section done only at the end of each day (i.e. only once per day)
 
@@ -254,8 +252,7 @@ CONTAINS
        BaseT,BaseTe,CapMax_dec,CapMin_dec,DayWat,DayWatPer,Faut,GDDFull,&
        Ie_a,Ie_m,LAIMax,LAIMin,LAIPower,lat,PorMax_dec,PorMin_dec,SDDFull,LAI_obs,&
        albDecTr,albEveTr,albGrass,porosity,DecidCap,deltaLAI,&!inout
-       GDD,HDD,LAI,&
-       WU_Day)!output
+       GDD,HDD,LAI,WU_Day)!output
     IMPLICIT NONE
     INTEGER,PARAMETER::ndays    = 366
     INTEGER,PARAMETER::nvegsurf = 3
@@ -317,7 +314,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(INOUT)::HDD(-4:ndays, 6)
     REAL(KIND(1d0)),INTENT(INOUT)::LAI(-4:ndays, nvegsurf)
 
-    REAL(KIND(1d0)),INTENT(OUT):: WU_Day(0:ndays,9)
+    REAL(KIND(1d0)),INTENT(INOUT):: WU_Day(0:ndays,9)
     ! REAL(KIND(1d0)),INTENT(OUT):: xBo
 
 
@@ -332,8 +329,7 @@ CONTAINS
     ! Calculate modelled daily water use ------------------------------------------
     CALL update_WaterUse(&
          id,WaterUseMethod,DayofWeek,lat,Faut,HDD,&!input
-         Ie_a,Ie_m,Ie_start,Ie_end,DayWatPer,DayWat,&
-         WU_Day) !output
+         Ie_a,Ie_m,Ie_start,Ie_end,DayWatPer,DayWat,WU_Day) !output
 
     !------------------------------------------------------------------------------
     ! Calculation of LAI from growing degree days
@@ -820,8 +816,7 @@ CONTAINS
 
   SUBROUTINE update_WaterUse(&
        id,WaterUseMethod,DayofWeek,lat,Faut,HDD,&!input
-       Ie_a,Ie_m,Ie_start,Ie_end,DayWatPer,DayWat,&
-       WU_Day) !output
+       Ie_a,Ie_m,Ie_start,Ie_end,DayWatPer,DayWat,WU_Day) !output
 
     IMPLICIT NONE
     INTEGER,PARAMETER :: ndays=366
@@ -841,7 +836,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(7),INTENT(IN)::DayWatPer  !% of houses following daily water
     REAL(KIND(1d0)),DIMENSION(7),INTENT(IN)::DayWat       !Days of watering allowed
 
-    REAL(KIND(1d0)),DIMENSION(0:ndays,9),INTENT(OUT):: WU_Day       !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
+    REAL(KIND(1d0)),DIMENSION(0:ndays,9),INTENT(INOUT):: WU_Day       !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
 
     INTEGER::wd        !Water use calculation is done when calc = 1
     INTEGER::&

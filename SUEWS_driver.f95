@@ -1170,7 +1170,7 @@ CONTAINS
        !  MetForcingData_grid=MetForcingData(:,:,Gridiv)
        IF ( OHMIncQF == 1 ) THEN    !Calculate QS using QSTAR+QF
           IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'
-          CALL AnOHM(qf+qn1,qn1_store,qn1_av_store,&
+          CALL AnOHM(qf+qn1,qn1_store,qn1_av_store,qf,&
                MetForcingData(:,:,Gridiv),state/surf(6,:),&
                alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&
                sfr,nsurf,nsh,EmissionsMethod,id,Gridiv,&
@@ -1178,7 +1178,7 @@ CONTAINS
        ELSEIF(OHMIncQF == 0) THEN   !Calculate QS using QSTAR
           ! qn1=qn1
           IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'
-          CALL AnOHM(qn1,qn1_store,qn1_av_store,&
+          CALL AnOHM(qn1,qn1_store,qn1_av_store,qf,&
                MetForcingData(:,:,Gridiv),state/surf(6,:),&
                alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&
                sfr,nsurf,nsh,EmissionsMethod,id,Gridiv,&

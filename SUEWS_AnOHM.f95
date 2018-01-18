@@ -26,7 +26,7 @@ CONTAINS
   !! QS = a1*(Q*)+a2*(dQ*/dt)+a3
   !! -# grid ensemble OHM coefficients: a1, a2 and a3
   SUBROUTINE AnOHM(&
-       qn1,qn1_store,qn1_av_store,&
+       qn1,qn1_store,qn1_av_store,qf,&
        MetForcingData_grid,moist_surf,&
        alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&! input
        sfr,nsurf,nsh,EmissionsMethod,id,Gridiv,&
@@ -36,6 +36,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in),DIMENSION(:,:)::MetForcingData_grid !< met forcing array of grid
 
     REAL(KIND(1d0)),INTENT(in):: qn1               !< net all-wave radiation [W m-2]
+    REAL(KIND(1d0)),INTENT(in):: qf                !< anthropogenic heat flux [W m-2]
     REAL(KIND(1d0)),INTENT(in):: sfr(nsurf)        !< surface fraction (0-1) [-]
     REAL(KIND(1d0)),INTENT(in):: moist_surf(nsurf) !< non-dimensional surface wetness status (0-1) [-]
 
@@ -97,7 +98,7 @@ CONTAINS
     DO is=1,nsurf
        !  IF ( sfr(is) > .001 ) THEN
        !   call AnOHM to calculate the coefs.
-       CALL AnOHM_coef(is,xid,Gridiv,MetForcingData_grid,moist_surf,EmissionsMethod,& !input
+       CALL AnOHM_coef(is,xid,Gridiv,MetForcingData_grid,moist_surf,EmissionsMethod,qf,& !input
             alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&! input
             xa1(is),xa2(is),xa3(is))                         ! output
        ! print*, 'AnOHM_coef are: ',xa1,xa2,xa3
@@ -140,7 +141,7 @@ CONTAINS
   !! -# OHM coefficients of a given surface type: a1, a2 and a3
   SUBROUTINE AnOHM_coef(&
        sfc_typ,xid,xgrid,&!input
-       MetForcingData_grid,moist,EmissionsMethod,& !input
+       MetForcingData_grid,moist,EmissionsMethod,qf,& !input
        alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&! input
        xa1,xa2,xa3)                         ! output
 
@@ -152,6 +153,7 @@ CONTAINS
     INTEGER,INTENT(in):: xgrid             !< grid id [-]
     INTEGER,INTENT(in):: EmissionsMethod !< AnthropHeat option [-]
 
+    REAL(KIND(1d0)),INTENT(in):: qf                !< anthropogenic heat flux [W m-2]
     REAL(KIND(1d0)),INTENT(in),DIMENSION(:)   :: alb                 !< albedo [-]
     REAL(KIND(1d0)),INTENT(in),DIMENSION(:)   :: emis                !< emissivity [-]
     REAL(KIND(1d0)),INTENT(in),DIMENSION(:)   :: cpAnOHM                  !< heat capacity [J m-3 K-1]
@@ -226,12 +228,12 @@ CONTAINS
 
        ! load forcing characteristics:
        CALL AnOHM_Fc(&
-            xid,MetForcingData_grid,EmissionsMethod,& ! input
+            xid,MetForcingData_grid,EmissionsMethod,qf,& ! input
             ASd,mSd,tSd,ATa,mTa,tTa,tau,mWS,mWF,mAH)    ! output
 
        ! load forcing variables:
        CALL AnOHM_FcLoad(&
-            xid,MetForcingData_grid,EmissionsMethod,& ! input
+            xid,MetForcingData_grid,EmissionsMethod,qf,& ! input
             Sd,Ta,RH,pres,WS,WF,AH,tHr)                 ! output
 
        ! load sfc. properties:
@@ -712,7 +714,7 @@ CONTAINS
 
   !========================================================================================
   SUBROUTINE AnOHM_Fc(&
-       xid,MetForcingData_grid,EmissionsMethod,& ! input
+       xid,MetForcingData_grid,EmissionsMethod,qf,& ! input
        ASd,mSd,tSd,ATa,mTa,tTa,tau,mWS,mWF,mAH)    ! output
 
     IMPLICIT NONE
@@ -721,6 +723,7 @@ CONTAINS
     INTEGER,INTENT(in):: xid
     INTEGER,INTENT(in):: EmissionsMethod
     REAL(KIND(1d0)),INTENT(in),DIMENSION(:,:) ::MetForcingData_grid
+    REAL(KIND(1d0)),INTENT(in):: qf                !< anthropogenic heat flux [W m-2]
 
     !   output
     REAL(KIND(1d0)),INTENT(out):: ASd !< daily amplitude of solar radiation [W m-2]
@@ -746,7 +749,7 @@ CONTAINS
 
 
     ! load forcing variables:
-    CALL AnOHM_FcLoad(xid,MetForcingData_grid,EmissionsMethod,Sd,Ta,RH,pres,WS,WF,AH,tHr)
+    CALL AnOHM_FcLoad(xid,MetForcingData_grid,EmissionsMethod,qf,Sd,Ta,RH,pres,WS,WF,AH,tHr)
     ! calculate forcing scales for AnOHM:
     CALL AnOHM_FcCal(Sd,Ta,WS,WF,AH,tHr,ASd,mSd,tSd,ATa,mTa,tTa,tau,mWS,mWF,mAH)
 
@@ -762,7 +765,7 @@ CONTAINS
   !========================================================================================
   !> load forcing series for AnOHM_FcCal
   SUBROUTINE AnOHM_FcLoad(&
-       xid,MetForcingData_grid,EmissionsMethod,& ! input
+       xid,MetForcingData_grid,EmissionsMethod,qf,& ! input
        Sd,Ta,RH,pres,WS,WF,AH,tHr) ! output
 
     IMPLICIT NONE
@@ -771,6 +774,7 @@ CONTAINS
     INTEGER,INTENT(in):: xid !< day of year
     INTEGER,INTENT(in):: EmissionsMethod !< AnthropHeat option
     REAL(KIND(1d0)),INTENT(in),DIMENSION(:,:) ::MetForcingData_grid !< met forcing array of grid
+    REAL(KIND(1d0)),INTENT(in):: qf                !< anthropogenic heat flux [W m-2]
 
     !   output
     REAL(KIND(1d0)),DIMENSION(:),INTENT(out), ALLOCATABLE:: Sd  !< incoming solar radiation [W m-2]
@@ -849,7 +853,8 @@ CONTAINS
     IF ( EmissionsMethod == 0 ) THEN
        AH = subMet(:,8)    ! read in from MetForcingData_grid,
     ELSE
-       AH = 0 ! temporarily change to zero; TODO: change back to modelled value
+       ! AH = 0 ! temporarily change to zero; TODO: change back to modelled value
+       AH =  qf ! use modelled value
        !  AH = mAH_grids(xid-1,xgrid)
     END IF
 

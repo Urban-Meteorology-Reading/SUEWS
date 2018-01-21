@@ -298,6 +298,7 @@ PROGRAM SUEWS_Program
      IF(Diagnose==1) WRITE(*,*) 'Allocating arrays in SUEWS_Program.f95...'
      ALLOCATE(SurfaceChar(NumberOfGrids,MaxNCols_c))                                   !Surface characteristics
      ALLOCATE(MetForcingData(ReadLinesMetdata,ncolumnsMetForcingData,NumberOfGrids))   !Met forcing data
+     ALLOCATE(MetForcingData_grid(ReadLinesMetdata,ncolumnsMetForcingData))   !Met forcing data
      ALLOCATE(ModelOutputData(0:ReadLinesMetdata,MaxNCols_cMOD,NumberOfGrids))         !Data at model timestep
      ALLOCATE(dataOut(ReadLinesMetdata,ncolumnsDataOut,NumberOfGrids))                 !Main output array
      ALLOCATE(dataOutDailyState(ndays,ncolumnsDataOutDailyState,NumberOfGrids))                 !Main output array
@@ -730,6 +731,7 @@ PROGRAM SUEWS_Program
      IF(Diagnose==1) WRITE(*,*) 'Deallocating arrays in SUEWS_Program.f95...'
      DEALLOCATE(SurfaceChar)
      DEALLOCATE(MetForcingData)
+     DEALLOCATE(MetForcingData_grid)
      DEALLOCATE(ModelOutputData)
      DEALLOCATE(dataOut)
      DEALLOCATE(dataOutDailyState)

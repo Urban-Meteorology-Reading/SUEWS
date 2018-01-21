@@ -1129,6 +1129,9 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      kdir      = MetForcingData(ir,23,Gridiv)
      wdir      = MetForcingData(ir,24,Gridiv)
 
+     ! get met array for one grid used in AnOHM
+     MetForcingData_grid=MetForcingData(:,:,Gridiv)
+
      ! Calculate dectime
      dectime = REAL(id,KIND(1d0))+REAL(it,KIND(1d0))/24+REAL(imin,KIND(1d0))/(60*24)
      ! Create datetime stamp for error/warnings file

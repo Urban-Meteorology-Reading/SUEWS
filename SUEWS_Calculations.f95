@@ -90,15 +90,15 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        EF_umolCO2perJ,emis,EmissionsMethod,EnEF_v_Jkm,EveTreeH,FAIBldg,&
        FAIDecTree,FAIEveTree,Faut,FcEF_v_kgkm,fcld_obs,FlowChange,&
        FrFossilFuel_Heat,FrFossilFuel_NonHeat,G1,G2,G3,G4,G5,G6,GDD,&
-       GDDFull,Gridiv,gsModel,halftimestep,HDD,HumActivity_tstep,&
+       GDDFull,Gridiv,gsModel,HDD,HumActivity_tstep,&
        IceFrac,id,id_prev_t,Ie_a,Ie_end,Ie_m,Ie_start,imin,&
        InternalWaterUse_h,IrrFracConif,IrrFracDecid,IrrFracGrass,it,ity,&
        iy,iy_prev_t,kkAnOHM,Kmax,LAI,LAICalcYes,LAIMax,LAIMin,LAI_obs,&
        LAIPower,LAIType,lat,ldown_obs,lng,MaxConductance,MaxQFMetab,&
-       MeltWaterStore,MetForcingData,MinQFMetab,min_res_bioCO2,&
+       MeltWaterStore,MetForcingData_grid,MinQFMetab,min_res_bioCO2,&
        NARP_EMIS_SNOW,NARP_TRANS_SITE,NetRadiationMethod,&
-       NonWaterFraction,nsh,NumCapita,OHM_coef,OHMIncQF,OHM_threshSW,&
-       OHM_threshWD,PervFraction,PipeCapacity,PopDensDaytime,&
+       NumCapita,OHM_coef,OHMIncQF,OHM_threshSW,&
+       OHM_threshWD,PipeCapacity,PopDensDaytime,&
        PopDensNighttime,PopProf_tstep,PorMax_dec,PorMin_dec,porosity,&
        Precip,PrecipLimit,PrecipLimitAlb,Press_hPa,QF0_BEU,Qf_A,Qf_B,&
        Qf_C,qh_obs,qn1_av_store,qn1_obs,qn1_S_av_store,qn1_S_store,&
@@ -111,7 +111,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        StorageHeatMethod,surf,SurfaceArea,Tair24HR,tau_a,tau_f,tau_r,&
        T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,TempMeltFact,TH,&
        theta_bioCO2,timezone,TL,TrafficRate,TrafficUnits,&
-       TraffProf_tstep,Ts5mindata_ir,tstep,VegFraction,veg_type,&
+       TraffProf_tstep,Ts5mindata_ir,tstep,veg_type,&
        WaterDist,WaterUseMethod,WetThresh,WU_Day,WUProfA_tstep,&
        WUProfM_tstep,xsmd,year,Z,&
        datetimeLine,dataOutLine,dataOutLineSnow,dataOutLineESTM)!output

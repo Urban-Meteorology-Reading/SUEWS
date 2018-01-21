@@ -112,7 +112,8 @@ MODULE allocateArray
   INTEGER,DIMENSION(:), ALLOCATABLE:: GridIDmatrix         !Array containing GridIDs in SiteSelect after sorting
   INTEGER,DIMENSION(:), ALLOCATABLE:: GridIDmatrix0        !Array containing GridIDs in SiteSelect in the original order
   REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: SurfaceChar          !Array for surface characteristics
-  REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: MetForcingData       !Array for meteorological forcing data
+  REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: MetForcingData      !Array for meteorological forcing data
+  REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE  :: MetForcingData_grid !Array for meteorological forcing data of one grid used by AnOHM
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: ESTMForcingData      !Array for ESTM forcing data
   REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: ModelDailyState      !DailyState array
   REAL(KIND(1d0)),DIMENSION(:),    ALLOCATABLE:: DailyStateFirstOpen

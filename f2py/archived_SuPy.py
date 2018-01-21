@@ -23,15 +23,12 @@ import os
 # os.chdir(dir_path)
 import numpy as np
 import pandas as pd
-import os
 import glob
 import f90nml
 import datetime
-import SUEWS_driver
-reload(SUEWS_driver)
+# import SUEWS_driver
+# reload(SUEWS_driver)
 from SUEWS_driver import suews_driver as sd
-from sklearn.preprocessing import normalize
-from sklearn.preprocessing import MinMaxScaler
 from scipy import interpolate
 
 
@@ -72,22 +69,9 @@ list_filepath = [os.path.join(dir_input, fileX) for fileX in list_file_input]
 
 
 # this function can handle all SUEWS nml files
-def load_SUEWS_nml(file):
-    df = pd.DataFrame(f90nml.read(os.path.join(dir_input, 'RunControl.nml')))
+def load_SUEWS_nml(xfile):
+    df = pd.DataFrame(f90nml.read(xfile))
     return df
-    # list_cmd=[]
-    # for x in df.iloc[:, 0].iteritems():
-    #     # print 'set ', x[0], '=', x[1]
-    #     if type(x[1]) == str:
-    #         cmd = '{var}={val:{c}^{n}}'.format(
-    #             var=x[0], val=x[1], n=len(x[1]) + 2, c='\'')
-    #     else:
-    #         cmd = '{var}={val}'.format(var=x[0], val=x[1])
-    #
-    #     # append cmd to final list
-    #     list_cmd.append(cmd)
-    #
-    # return list_cmd
 
 
 # RunControl.nml
@@ -224,17 +208,6 @@ def get_property(varName, varVal):
         res = varVal
     return res
 
-
-# # construct a dict with all surface properties included
-# dict_SiteSelect = {ir: {k: get_property(k, v)
-#                         for k, v in row.iteritems()}
-#                         for ir, row in lib_SiteSelect.iterrows()}
-#
-# sorted(dict_SiteSelect[1].keys())
-# # for k, v in lib_SiteSelect.iloc[0].iteritems():
-# #     print k, v
-# #     if k in dict_Code2File.keys():
-# #         print k, v, lookup_code(k, v)
 
 
 # variable translation as done in Fortran-SUEWS
@@ -726,12 +699,12 @@ docLines = np.array(
     dtype=str)
 posInput = np.where(
     np.logical_or(
-        docLines == 'Parameters', docLines == 'Other Parameters'))
+        docLines == 'Parameters', docLines == 'Returns'))
 varInputLines = docLines[posInput[0][0] + 2:posInput[0][1] - 1]
 varInputInfo = np.array([[xx.rstrip() for xx in x.split(':')]
                          for x in varInputLines])
 dict_InputInfo = {xx[0]: xx[1] for xx in varInputInfo}
-print len(dict_InputInfo)
+# print len(dict_InputInfo)
 
 # variables to be fed in:
 list_varToDo = np.array(
@@ -778,7 +751,7 @@ list_varModelCtrl = [
     'ir', 'gridiv', 'veg_type',
     'ncolumnsdataout', 'readlinesmetdata', 'numberofgrids']
 
-ncolumnsdataout = 84  # set according to SUEWS V2017c
+# ncolumnsdataout = 84  # set according to SUEWS V2017c
 
 # extra surface characteristics variables in addition to df_gridSurfaceChar:
 list_varGridSurfaceCharX = [
@@ -821,18 +794,18 @@ surf = np.array(surf, order='F')
 alb = np.array(alb)
 
 # derive surface fractions
-PavSurf = 1 - 1
-BldgSurf = 2 - 1
-ConifSurf = 3 - 1
+# PavSurf = 1 - 1
+# BldgSurf = 2 - 1
+# ConifSurf = 3 - 1
 DecidSurf = 4 - 1
-GrassSurf = 5 - 1
-BSoilSurf = 6 - 1
-WaterSurf = 7 - 1
-vegfraction = (sfr[ConifSurf] + sfr[DecidSurf] + sfr[GrassSurf])
-impervfraction = sfr[PavSurf] + sfr[BldgSurf]
-pervfraction = (sfr[ConifSurf] + sfr[DecidSurf]
-                + sfr[GrassSurf] + sfr[BSoilSurf] + sfr[WaterSurf])
-nonwaterfraction = 1 - sfr[WaterSurf]
+# GrassSurf = 5 - 1
+# BSoilSurf = 6 - 1
+# WaterSurf = 7 - 1
+# vegfraction = (sfr[ConifSurf] + sfr[DecidSurf] + sfr[GrassSurf])
+# impervfraction = sfr[PavSurf] + sfr[BldgSurf]
+# pervfraction = (sfr[ConifSurf] + sfr[DecidSurf]
+#                 + sfr[GrassSurf] + sfr[BSoilSurf] + sfr[WaterSurf])
+# nonwaterfraction = 1 - sfr[WaterSurf]
 
 # profiles:
 t_tstep = np.linspace(0, 24, num=3600 / tstep * 24, endpoint=False)
@@ -863,7 +836,7 @@ list_var_mod_forcing = list_varMetForcing
 # mod_config: configuration info for each run/simulation
 list_var_mod_config = (
     list_varModelCtrl
-    + list_varMethod
+    + list(lib_RunControl.index)
     + list_varGridSurfaceChar)
 
 
@@ -919,17 +892,17 @@ df_forcing = load_SUEWS_MetForcing(list_file_MetForcing[0])
 # some constant values
 ndays = 366
 aerodynamicresistancemethod = 2
-halftimestep = tstep / 2.
+# halftimestep = tstep / 2.
 nsh = 3600 / tstep
-nsh_real = nsh * 1.
+# nsh_real = nsh * 1.
 ity = 2
 laicalcyes = 1
 tstep_real = tstep * 1.
 veg_type = 1
-
-# initialise model state
 diagqn = 0
 diagqs = 0
+
+# initialise model state
 gdd = 0 * np.ones((ndays + 1, 5), order='F')
 hdd = 0 * np.ones((ndays + 5, 6), order='F')
 icefrac = 0 * np.ones(7)
@@ -956,20 +929,35 @@ albgrass = albmax_grass * np.ones(ndays + 1, order='F')
 decidcap = surf[DecidSurf][5 - 1] * np.ones(ndays + 1, order='F')
 
 
-# initialise output:
-readlinesmetdata = 100
-dataout = np.zeros(
-    (readlinesmetdata, ncolumnsdataout, numberofgrids), order='F')
-dataoutestm = np.zeros((readlinesmetdata, 32, numberofgrids), order='F')
 
 # begin running:
 nlines = len(df_forcing)
 # loop over time
-for ir in range(nlines):
+for ir in df_forcing.index:
     # ir = 1
 
-    # forcing
-    metforcingdata = df_forcing.loc[ir, 'Wind']  # to correct TODO
+    # time-related:
+    dectime = (float(df_forcing.loc[ir, 'id'])
+               + float(df_forcing.loc[ir, 'it']) / 24.
+               + float(df_forcing.loc[ir, 'imin']) / 60.)
+
+    # print dectime
+    iy = int(df_forcing.loc[ir, '%' + 'iy'])
+    id = int(df_forcing.loc[ir, 'id'])
+    it = int(df_forcing.loc[ir, 'it'])
+    imin = int(df_forcing.loc[ir, 'imin'])
+    id_prev_t = id
+    iy_prev_t = iy
+    # dayofweek:
+    dayofweek[id, 0] = df_forcing.loc[ir, 'datetime'].dayofweek
+    dayofweek[id, 1] = df_forcing.loc[ir, 'datetime'].month
+    # season: 1 for summer; 0 for winter.
+    dayofweek[id, 2] = (1 if 3 < dayofweek[id, 1] < 10 else 0)
+    # specify dls:
+    dls = (1 if startDLS < id < endDLS else 0)
+
+    # met forcing variables:
+    metforcingdata_grid = np.array(df_forcing.iloc[:,1:],dtype=np.float)
     ts5mindata_ir = df_forcing.loc[ir, 'Td']  # to correct TODO
     avkdn = df_forcing.loc[ir, 'Kdn']
     avrh = df_forcing.loc[ir, 'RH']
@@ -985,71 +973,54 @@ for ir in range(nlines):
     temp_c = df_forcing.loc[ir, 'Td']
     xsmd = df_forcing.loc[ir, 'xsmd']
 
-    # time-related:
-    dectime = (float(df_forcing.loc[ir, 'id']) + float(df_forcing.loc[ir, 'it']) / 24.
-               + float(df_forcing.loc[ir, 'imin']) / 60.)
-
-    # print dectime
-    iy = int(df_forcing.loc[ir, '%' + 'iy'])
-    id = int(df_forcing.loc[ir, 'id'])
-    it = int(df_forcing.loc[ir, 'it'])
-    imin = int(df_forcing.loc[ir, 'imin'])
-    id_prev_t=id
-    iy_prev_t=iy
-    # dayofweek:
-    dayofweek[id, 0] = df_forcing.loc[ir, 'datetime'].dayofweek
-    dayofweek[id, 1] = df_forcing.loc[ir, 'datetime'].month
-    # season: 1 for summer; 0 for winter.
-    dayofweek[id, 2] = (1 if 3 < dayofweek[id, 1] < 10 else 0)
-    # specify dls:
-    dls = (1 if startDLS < id < endDLS else 0)
-
     # loop over grid
     for gridiv in df_gridSurfaceChar.index:
         # gridiv = 1
 
         # main calculation:
         datetimeline, dataoutline, dataoutlinesnow, dataoutlineestm = \
-            sd.suews_cal_main(aerodynamicresistancemethod,
-                              ah_min, ahprof_tstep, ah_slope_cooling, ah_slope_heating,
-                              alb, albdectr, albevetr, albgrass, albmax_dectr, albmax_evetr,
-                              albmax_grass, albmin_dectr, albmin_evetr, albmin_grass,
-                              alpha_bioco2, alpha_enh_bioco2, alt, avkdn, avrh, avu1,
-                              baset, basete, basethdd, beta_bioco2, beta_enh_bioco2, bldgh,
-                              capmax_dec, capmin_dec, chanohm, cpanohm, crwmax, crwmin,
-                              dayofweek, daywat, daywatper, decidcap, dectime, dectreeh,
-                              diagnose, diagqn, diagqs, dls, drainrt, ef_umolco2perj,
-                              emis, emissionsmethod, enef_v_jkm, evetreeh, faibldg,
-                              faidectree, faievetree, faut, fcef_v_kgkm, fcld_obs, flowchange,
-                              frfossilfuel_heat, frfossilfuel_nonheat, g1, g2, g3, g4, g5, g6,
-                              gdd, gddfull, gridiv, gsmodel, halftimestep, hdd,
-                              humactivity_tstep, icefrac, id, id_prev_t,
-                              ie_a, ie_end, ie_m, ie_start, imin, internalwateruse_h,
-                              irrfracconif, irrfracdecid, irrfracgrass, it, ity,
-                              iy, iy_prev_t, kkanohm, kmax, lai, laicalcyes, laimax, laimin,
-                              lai_obs, laipower, laitype, lat, ldown_obs, lng, maxconductance,
-                              maxqfmetab, meltwaterstore, metforcingdata, minqfmetab,
-                              min_res_bioco2, narp_emis_snow, narp_trans_site,
-                              netradiationmethod, nonwaterfraction, numcapita, ohm_coef,
-                              ohmincqf, ohm_threshsw, ohm_threshwd, pervfraction, pipecapacity,
-                              popdensdaytime, popdensnighttime, popprof_tstep,
-                              pormax_dec, pormin_dec, porosity, precip, preciplimit,
-                              preciplimitalb, press_hpa, qf0_beu, qf_a, qf_b, qf_c, qh_obs,
-                              qn1_av_store, qn1_obs, qn1_s_av_store, qn1_s_store, qn1_store,
-                              radmeltfact, raincover, rainmaxres, resp_a, resp_b,
-                              roughlenheatmethod, roughlenmommethod, runofftowater,
-                              s1, s2, sathydraulicconduct, sddfull, sfr, smdmethod, snowalb,
-                              snowalbmax, snowalbmin, snowd, snowdens, snowdensmax, snowdensmin,
-                              snowfrac, snowlimbuild, snowlimpaved, snow_obs, snowpack,
-                              snowuse, soildepth, soilmoist, soilstorecap, stabilitymethod,
-                              state, statelimit, storageheatmethod, surf, surfacearea,
-                              tair24hr, tau_a, tau_f, tau_r, t_critic_cooling, t_critic_heating,
-                              temp_c, tempmeltfact, th, theta_bioco2, timezone, tl, trafficrate,
-                              trafficunits, traffprof_tstep, ts5mindata_ir, tstep, vegfraction,
-                              veg_type, waterdist, waterusemethod, wetthresh,
-                              wu_day, wuprofa_tstep, wuprofm_tstep, xsmd, year, z, [nsh])
+            sd.suews_cal_main(aerodynamicresistancemethod, ah_min,
+            ahprof_tstep, ah_slope_cooling, ah_slope_heating,
+            alb, albdectr, albevetr, albgrass,
+            albmax_dectr, albmax_evetr, albmax_grass,
+            albmin_dectr, albmin_evetr, albmin_grass,
+            alpha_bioco2, alpha_enh_bioco2, alt, avkdn, avrh, avu1,
+            baset, basete, basethdd, beta_bioco2, beta_enh_bioco2, bldgh,
+            capmax_dec, capmin_dec, chanohm, cpanohm, crwmax, crwmin,
+            dayofweek, daywat, daywatper, decidcap, dectime, dectreeh,
+            diagnose, diagqn, diagqs, dls, drainrt, ef_umolco2perj,
+            emis, emissionsmethod, enef_v_jkm, evetreeh, faibldg,
+            faidectree, faievetree, faut, fcef_v_kgkm, fcld_obs, flowchange,
+            frfossilfuel_heat, frfossilfuel_nonheat, g1, g2, g3, g4, g5, g6,
+            gdd, gddfull, gridiv, gsmodel, hdd, humactivity_tstep, icefrac,
+            id, id_prev_t, ie_a, ie_end, ie_m, ie_start, imin,
+            internalwateruse_h, irrfracconif, irrfracdecid, irrfracgrass,
+            it, ity, iy, iy_prev_t, kkanohm, kmax, lai, laicalcyes,
+            laimax, laimin, lai_obs, laipower, laitype, lat, ldown_obs,
+            lng, maxconductance, maxqfmetab, meltwaterstore,
+            metforcingdata_grid, minqfmetab,min_res_bioco2,
+            narp_emis_snow, narp_trans_site, netradiationmethod, numcapita,
+            ohm_coef, ohmincqf, ohm_threshsw, ohm_threshwd, pipecapacity,
+            popdensdaytime, popdensnighttime, popprof_tstep,
+            pormax_dec, pormin_dec, porosity, precip,
+            preciplimit, preciplimitalb, press_hpa, qf0_beu,
+            qf_a, qf_b, qf_c, qh_obs, qn1_av_store, qn1_obs,
+            qn1_s_av_store, qn1_s_store, qn1_store, radmeltfact,
+            raincover, rainmaxres, resp_a, resp_b,
+            roughlenheatmethod, roughlenmommethod, runofftowater, s1, s2,
+            sathydraulicconduct, sddfull, sfr, smdmethod,
+            snowalb, snowalbmax, snowalbmin, snowd,
+            snowdens, snowdensmax, snowdensmin, snowfrac,
+            snowlimbuild, snowlimpaved, snow_obs, snowpack, snowuse,
+            soildepth, soilmoist, soilstorecap, stabilitymethod,
+            state, statelimit, storageheatmethod, surf, surfacearea,
+            tair24hr, tau_a, tau_f, tau_r, t_critic_cooling, t_critic_heating,
+            temp_c, tempmeltfact, th, theta_bioco2, timezone, tl,
+            trafficrate, trafficunits, traffprof_tstep, ts5mindata_ir,
+            tstep, veg_type, waterdist, waterusemethod, wetthresh,
+            wu_day, wuprofa_tstep, wuprofm_tstep, xsmd, year, z)
 
-        # print dectime, dataoutline[0:2]
+        # print dectime, dataoutline[4:10]
 
         # end grid loop
     # end time loop

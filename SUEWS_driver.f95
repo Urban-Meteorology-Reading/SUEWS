@@ -11,6 +11,7 @@ MODULE SUEWS_Driver
   USE Snow_module,ONLY:SnowCalc,Snow_cal_MeltHeat
   USE DailyState_module,ONLY:SUEWS_cal_DailyState
   USE WaterDist_module,ONLY:drainage,soilstore,SUEWS_cal_SoilMoist,SUEWS_update_SoilMoist,ReDistributeWater
+  USE ctrl_output,ONLY:varList
 
 
   IMPLICIT NONE
@@ -2460,5 +2461,74 @@ CONTAINS
     xx=x**2
 
   END FUNCTION square_real
+
+  SUBROUTINE output_name_n(i,name,group,aggreg)
+    ! used by f2py module `SuPy` to handle output names
+    IMPLICIT NONE
+    ! the dimension is potentially incorrect,
+    ! which should be consistent with that in output module
+    ! CHARACTER(len = 50),DIMENSION(300,5),INTENT(out) :: names
+    ! CHARACTER(len = *),DIMENSION(300),INTENT(out) :: names
+    INTEGER,INTENT(in) :: i
+    CHARACTER(len = 15),INTENT(out) :: name,group,aggreg
+
+    INTEGER :: n
+    n=SIZE(varList, dim=1)
+    IF ( i<n .AND.i>0  ) THEN
+       name   = TRIM(varList(i)%header)
+       group  = TRIM(varList(i)%group)
+       aggreg = TRIM(varList(i)%aggreg)
+    ELSE
+       name   = ''
+       group  = ''
+       aggreg = ''
+    END IF
+
+
+    ! DO i = 1, SIZE(varList, dim=1), 1
+    !    names(i)=TRIM(varList(i)%header)
+    !    ! names(i,1)=trim(varList(i)%header)
+    !    ! names(i,2)=trim(varList(i)%unit)
+    !    ! ! names(i,3)=trim(varList(i)%fmt)
+    !    ! names(i,3)=trim(varList(i)%longNm)
+    !    ! names(i,4)=trim(varList(i)%aggreg)
+    !    ! names(i,5)=trim(varList(i)%group)
+    !    ! print*, names(i,:)
+    ! END DO
+    ! print*, varList
+
+  END SUBROUTINE output_name_n
+
+  ! SUBROUTINE output_names(names)
+  !   ! used by f2py module `SuPy` to handle output names
+  !   IMPLICIT NONE
+  !   ! the dimension is potentially incorrect,
+  !   ! which should be consistent with that in output module
+  !   ! CHARACTER(len = 50),DIMENSION(300,5),INTENT(out) :: names
+  !   ! CHARACTER(len = *),DIMENSION(300),INTENT(out) :: names
+  !   CHARACTER(len = 12),INTENT(out) :: names(300)
+  !
+  !   INTEGER :: i,n,err,stat
+  !   ! name=TRIM(varList(1)%header)
+  !   n=SIZE(varList, dim=1)
+  !   ! ALLOCATE(names(10,n), stat=err)
+  !   ! IF (stat /= 0) PRINT *, "names: Allocation request denied"
+  !
+  !
+  !   DO i = 1, n
+  !      names(i)=TRIM(varList(i)%header)
+  !      ! names(i,1)=trim(varList(i)%header)
+  !      ! names(i,2)=trim(varList(i)%unit)
+  !      ! ! names(i,3)=trim(varList(i)%fmt)
+  !      ! names(i,3)=trim(varList(i)%longNm)
+  !      ! names(i,4)=trim(varList(i)%aggreg)
+  !      ! names(i,5)=trim(varList(i)%group)
+  !      ! print*, names(i,:)
+  !   END DO
+  !   ! print*, varList
+  !   ! IF (ALLOCATED(names)) DEALLOCATE(names)
+  !   ! IF (stat /= 0) PRINT *, "names: Deallocation request denied"
+  !
+  ! END SUBROUTINE output_names
 
 END MODULE SUEWS_Driver

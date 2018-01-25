@@ -49,10 +49,10 @@ MODULE ctrl_output
        f146 = '(f14.6,1X)'   !standard output format: 6 dp + 7 digits
 
   CHARACTER(len= 1),PARAMETER:: & ! Define aggregation methods here
-       aT = '0',&   !time columns
-       aA = '1',&   !average
-       aS = '2',&   !sum
-       aL = '3'     !last value
+       aT = 'T',&   !time columns
+       aA = 'A',&   !average
+       aS = 'S',&   !sum
+       aL = 'L'     !last value
 
   CHARACTER(len= 3):: itext
 

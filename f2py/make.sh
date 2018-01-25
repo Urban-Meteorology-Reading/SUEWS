@@ -32,3 +32,6 @@ f2py -m SUEWS_driver -c ../SUEWS_driver.f95 *.o
 
 # cleaning
 rm *.o
+
+# copy updated version to SuPy folder
+cp SUEWS_driver.so SuPy/.

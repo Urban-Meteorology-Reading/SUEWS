@@ -422,7 +422,7 @@ CONTAINS
 
     ! determine groups to output
     ! TODO: needs to be smarter, automate this filtering
-    grpList0(1)=''
+    grpList0(1)='SUEWS'
     grpList0(2)='SOLWEIG'
     grpList0(3)='BL'
     grpList0(4)='snow'

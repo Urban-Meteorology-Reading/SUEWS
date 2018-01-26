@@ -2499,6 +2499,21 @@ CONTAINS
 
   END SUBROUTINE output_name_n
 
+
+  SUBROUTINE output_size(n)
+    ! used by f2py module `SuPy` to get size of the output list
+    IMPLICIT NONE
+    ! the dimension is potentially incorrect,
+    ! which should be consistent with that in output module
+    ! CHARACTER(len = 50),DIMENSION(300,5),INTENT(out) :: names
+    ! CHARACTER(len = *),DIMENSION(300),INTENT(out) :: names
+    INTEGER,INTENT(out) :: n
+    ! CHARACTER(len = 15),INTENT(out) :: name,group,aggreg
+
+    n=SIZE(varList, dim=1)
+
+  END SUBROUTINE output_size
+
   ! SUBROUTINE output_names(names)
   !   ! used by f2py module `SuPy` to handle output names
   !   IMPLICIT NONE

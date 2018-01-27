@@ -15,7 +15,7 @@ import f90nml
 import datetime
 from SUEWS_driver import suews_driver as sd
 from scipy import interpolate
-
+import collections
 
 # descriptive list/dicts for variables
 # minimal required input files for configuration:
@@ -638,11 +638,12 @@ def load_SUEWS_SurfaceChar(dir_input):
 
         # select non-zero values for waterdist of water surface:
         x = np.array(df_gridSurfaceChar.loc[xgrid, 'waterdist'][-1])
-        df_gridSurfaceChar.loc[xgrid, 'waterdist'][-1] = x[np.nonzero(x)]
+        df_gridSurfaceChar.loc[xgrid, 'waterdist'][-1] = (
+            x[np.nonzero(x)])
 
         # surf order as F:
         df_gridSurfaceChar.loc[xgrid, 'surf'] = np.array(
-            df_gridSurfaceChar.loc[xgrid, 'surf'])
+            df_gridSurfaceChar.loc[xgrid, 'surf'], order='F')
 
         # convert to np.array
         df_gridSurfaceChar.loc[xgrid, 'alb'] = np.array(
@@ -669,7 +670,7 @@ def load_SUEWS_SurfaceChar(dir_input):
             var0 = np.vstack((var0, var0))
             # interpolator:
             f = interpolate.interp1d(np.arange(0, 48), var0, axis=0)
-            cmd = 'dict_x.update({var}=f(t_tstep))'.format(
+            cmd = 'dict_x.update({var}=f(t_tstep).tolist())'.format(
                 var=var, n=len(var) + 2, c='\'')
             exec(cmd, locals())
             # print cmd
@@ -737,7 +738,7 @@ def init_SUEWS_dict(dir_input):  # return dict
                           'state': -999. * np.ones(7),
                           'tair24hr': 273.15 * np.ones(24 * nsh),
                           'dayofweek': np.ones((ndays + 1, 3), order='F',
-                                               dtype=np.int32),
+                                               dtype=int),
                           'albdectr': albmax_dectr * np.ones(ndays + 1,
                                                              order='F'),
                           'albevetr': albmax_evetr * np.ones(ndays + 1,
@@ -747,6 +748,8 @@ def init_SUEWS_dict(dir_input):  # return dict
                           'decidcap': surf[DecidSurf][5 - 1] * np.ones(
             ndays + 1,
             order='F')}
+
+        # dict_StateInit = {k: v.tolist() for k, v in dict_StateInit.items()}
 
         # dict with static properties:
         # 1. model settings: dict_ModConfig
@@ -775,141 +778,239 @@ def init_SUEWS_df(dir_input):  # return pd.DataFrame
 
 
 # create met forcing conditions
-def func_parse_date(year, doy, hour, sec):
+def func_parse_date(year, doy, hour, min):
     dt = datetime.datetime.strptime(
-        ' '.join([year, doy, hour, sec]), '%Y %j %H %M')
+        ' '.join([year, doy, hour, min]), '%Y %j %H %M')
     return dt
 
 
-def load_SUEWS_MetForcing(fileX):
-    rawdata = pd.read_table(fileX, delim_whitespace=True,
-                            comment='!', error_bad_lines=True,
-                            parse_dates={'datetime': [0, 1, 2, 3]},
-                            keep_date_col=True,
-                            date_parser=func_parse_date).dropna()
-    return rawdata
+def load_SUEWS_MetForcing_df(fileX):
+    df_forcing = pd.read_table(fileX, delim_whitespace=True,
+                               comment='!',
+                               error_bad_lines=True,
+                               # parse_dates={'datetime': [0, 1, 2, 3]},
+                               # keep_date_col=True,
+                               date_parser=func_parse_date
+                               ).dropna()
+    df_grp = df_forcing.groupby('id')
+    id_all = df_forcing['id'].apply(lambda xid: df_grp.get_group(xid))
+    df_merged = df_forcing.merge(id_all.to_frame(name='all'),
+                                 left_index=True,
+                                 right_index=True)
+
+    # rename column names to conform with calling function
+    df_merged = df_merged.rename(columns={
+        '%' + 'iy': 'iy',
+        'id': 'id',
+        'it': 'it',
+        'imin': 'imin',
+        'Kdn': 'avkdn',
+        'RH': 'avrh',
+        'Wind': 'avu1',
+        'fcld': 'fcld_obs',
+        'lai_hr': 'lai_obs',
+        'ldown': 'ldown_obs',
+        'rain': 'precip',
+        'press': 'press_hpa',
+        'QH': 'qh_obs',
+        'Q*': 'qn1_obs',
+        'snow': 'snow_obs',
+        'Td': 'temp_c',
+        'xsmd': 'xsmd',
+        'all': 'metforcingdata_grid'})
+
+    # new columns for later use in main calculation
+    df_merged['dectime'] = df_merged['id'] + \
+        df_merged['it'] / 24. + df_merged['imin'] / 60.
+    df_merged['id_prev_t'] = df_merged['id']
+    df_merged['iy_prev_t'] = df_merged['iy']
+    df_merged['ts5mindata_ir'] = df_merged['temp_c']
+
+    # convert unit
+    df_merged['press_hpa'] = df_merged['press_hpa'] * 10.
+
+    return df_merged
+
+
+def load_SUEWS_MetForcing_dict(fileX):
+    rawdata_df = load_SUEWS_MetForcing_df(fileX).iloc[:, 1:]
+    cols = rawdata_df.columns.tolist()
+    rows = rawdata_df.index.tolist()
+    vals = rawdata_df.values.tolist()
+
+    # dict to hold final result
+    rawdata_dict = {}
+    irow = 0
+    for row in rows:
+        row_dict = {}
+        icol = 0
+        for col in cols:
+            row_dict.update({col: vals[irow][icol]})
+            icol += 1
+        rawdata_dict.update({row: row_dict})
+        irow += 1
+
+    return rawdata_dict
 
 
 def proc_met_forcing(df_met_forcing, step_count):
-    met_forcing_tstep = df_met_forcing.loc[step_count].to_dict()
-    met_forcing_tstep.update({'all': np.array(df_met_forcing.iloc[:, 1:],
-                                              dtype=np.float)})
+    met_forcing_tstep = df_met_forcing.iloc[step_count].to_dict()
+    id_x = met_forcing_tstep['id']
+    df_grp = df_met_forcing.groupby('id')
+    all_id = df_grp.get_group(id_x)
+    met_forcing_tstep.update({'all': all_id.values})
     return met_forcing_tstep
 
+
+# get variable information from Fortran
+def get_output_info_df():
+    size_var_list = sd.output_size()
+    var_list_x = [np.array(sd.output_name_n(i))
+                  for i in np.arange(size_var_list) + 1]
+    var_list = np.apply_along_axis(np.vectorize(np.str.strip), 0, var_list_x)
+
+    var_list = np.array(
+        filter(lambda var_info: filter(None, var_info), var_list))
+    var_df = pd.DataFrame(var_list, columns=['var', 'group', 'aggm'])
+    var_dfm = var_df.set_index(['group', 'var'])
+    return var_dfm
+
+
 # high-level wrapper: suews_cal_tstep
-# [state_new,output_tstep]=suews_cal_tstep(state_old,met_forcing_tstep,mod_config)
-
-
 def suews_cal_tstep(state_old, met_forcing_tstep, mod_config):
-    # state_old = df_InitCond_grid.loc[1, 'state_init']
+    # use single dict as input for suews_cal_main
+    dict_input = met_forcing_tstep.to_dict()
+    dict_input.update(state_old)
+    dict_input.update(mod_config)
+
     # assign state variables:
     list_var_state = state_old.keys()
-    for var in list_var_state:
-        cmd = '{varX}=np.array(state_old[{varX:{c}^{n}}],order={fmt:{c}^{m}})'.\
-            format(varX=var, fmt='F', n=len(var) + 2, m=3, c='\'')
-        exec(cmd)
-    # print locals().keys()
 
-    # assign mod_config variables:
-    for var in mod_config.keys():
-        cmd = '{varX}=np.array(mod_config[{varX:{c}^{n}}],order={fmt:{c}^{m}})'.\
-            format(varX=var, fmt='F', n=len(var) + 2, m=3, c='\'')
-        exec(cmd)
+    # TODO: ts5mindata_ir needs to be read in from Ts files
+    # dict_met['ts5mindata_ir'] = np.array(
+    #     dict_met['temp_c'], dtype=np.float, order='F')
 
-    # assign met_forcing variables
-    iy = int(met_forcing_tstep['%' + 'iy'])
-    id = int(met_forcing_tstep['id'])
-    it = int(met_forcing_tstep['it'])
-    imin = int(met_forcing_tstep['imin'])
-    avkdn = met_forcing_tstep['Kdn']
-    avrh = met_forcing_tstep['RH']
-    avu1 = met_forcing_tstep['Wind']
-    fcld_obs = met_forcing_tstep['fcld']
-    lai_obs = met_forcing_tstep['lai_hr']
-    ldown_obs = met_forcing_tstep['ldown']
-    precip = met_forcing_tstep['rain']
-    press_hpa = met_forcing_tstep['press'] * 10
-    qh_obs = met_forcing_tstep['QH']
-    qn1_obs = met_forcing_tstep['Q*']
-    snow_obs = met_forcing_tstep['snow']
-    temp_c = met_forcing_tstep['Td']
-    xsmd = met_forcing_tstep['xsmd']
-    metforcingdata_grid = np.array(
-        met_forcing_tstep['all'], dtype=np.float, order='F')
-    ts5mindata_ir = np.array(
-        met_forcing_tstep['Td'], dtype=np.float, order='F')
+    # date and time
+    date_time = pd.to_datetime(' '.join(
+        [str(dict_input[k]) for k in ['iy', 'id', 'it', 'imin']]),
+        format='%Y %j %H %M')
 
-    # process temporal variables
-    dectime = id + it / 24. + imin / 60.
-    id_prev_t = id
-    iy_prev_t = iy
     # dayofweek:
-    dayofweek[id, 0] = met_forcing_tstep['datetime'].dayofweek
-    dayofweek[id, 1] = met_forcing_tstep['datetime'].month
+    dict_input['dayofweek'] = np.array(
+        dict_input['dayofweek']).astype(np.int32)
+    id = dict_input['id']
+    dict_input['dayofweek'][id, 0] = date_time.dayofweek + 1
+    dict_input['dayofweek'][id, 1] = date_time.month
     # season: 1 for summer; 0 for winter.
-    dayofweek[id, 2] = (1 if 3 < dayofweek[id, 1] < 10 else 0)
+    dict_input['dayofweek'][id, 2] = (
+        1 if 3 < dict_input['dayofweek'][id, 1] < 10 else 0)
+
     # specify dls:
-    dls = (1 if startDLS < id < endDLS else 0)
+    dict_input['dls'] = (1 if dict_input['startDLS'] <
+                         id < dict_input['endDLS'] else 0)
+
+    # remove unnecessary keys in dict_input
+    # redundant keys:
+    list_todel = ['ahprof', 'cbluse', 'disaggmethod', 'disaggmethodestm',
+                  'endDLS', 'filecode', 'fileinputpath', 'fileoutputpath',
+                  'humactivity',
+                  'Kdiff', 'Kdir', 'kdownzen', 'keeptstepfilesin',
+                  'keeptstepfilesout',
+                  'multipleestmfiles', 'multipleinitfiles', 'multiplemetfiles',
+                  'popprof',
+                  'QE', 'Qf', 'Qs', 'raindisaggmethod', 'resolutionfilesin',
+                  'resolutionfilesinestm', 'resolutionfilesout', 'solweiguse',
+                  'startDLS', 'suppresswarnings', 'traffprof', 'Wd',
+                  'writeoutoption', 'wuh', 'wuprofa', 'wuprofm']
+    # delete them:
+    for k in list_todel:
+        dict_input.pop(k, None)
 
     # main calculation:
-    datetimeline, dataoutline, dataoutlinesnow, dataoutlineestm = \
-        sd.suews_cal_main(aerodynamicresistancemethod, ah_min,
-                          ahprof_tstep, ah_slope_cooling, ah_slope_heating,
-                          alb, albdectr, albevetr, albgrass,
-                          albmax_dectr, albmax_evetr, albmax_grass,
-                          albmin_dectr, albmin_evetr, albmin_grass,
-                          alpha_bioco2, alpha_enh_bioco2, alt, avkdn, avrh, avu1,
-                          baset, basete, basethdd, beta_bioco2, beta_enh_bioco2, bldgh,
-                          capmax_dec, capmin_dec, chanohm, cpanohm, crwmax, crwmin,
-                          dayofweek, daywat, daywatper, decidcap, dectime, dectreeh,
-                          diagnose, diagqn, diagqs, dls, drainrt, ef_umolco2perj,
-                          emis, emissionsmethod, enef_v_jkm, evetreeh, faibldg,
-                          faidectree, faievetree, faut, fcef_v_kgkm, fcld_obs, flowchange,
-                          frfossilfuel_heat, frfossilfuel_nonheat, g1, g2, g3, g4, g5, g6,
-                          gdd, gddfull, gridiv, gsmodel, hdd, humactivity_tstep, icefrac,
-                          id, id_prev_t, ie_a, ie_end, ie_m, ie_start, imin,
-                          internalwateruse_h, irrfracconif, irrfracdecid, irrfracgrass,
-                          it, ity, iy, iy_prev_t, kkanohm, kmax, lai, laicalcyes,
-                          laimax, laimin, lai_obs, laipower, laitype, lat, ldown_obs,
-                          lng, maxconductance, maxqfmetab, meltwaterstore,
-                          metforcingdata_grid, minqfmetab, min_res_bioco2,
-                          narp_emis_snow, narp_trans_site, netradiationmethod, numcapita,
-                          ohm_coef, ohmincqf, ohm_threshsw, ohm_threshwd, pipecapacity,
-                          popdensdaytime, popdensnighttime, popprof_tstep,
-                          pormax_dec, pormin_dec, porosity, precip,
-                          preciplimit, preciplimitalb, press_hpa, qf0_beu,
-                          qf_a, qf_b, qf_c, qh_obs, qn1_av_store, qn1_obs,
-                          qn1_s_av_store, qn1_s_store, qn1_store, radmeltfact,
-                          raincover, rainmaxres, resp_a, resp_b,
-                          roughlenheatmethod, roughlenmommethod, runofftowater, s1, s2,
-                          sathydraulicconduct, sddfull, sfr, smdmethod,
-                          snowalb, snowalbmax, snowalbmin, snowd,
-                          snowdens, snowdensmax, snowdensmin, snowfrac,
-                          snowlimbuild, snowlimpaved, snow_obs, snowpack, snowuse,
-                          soildepth, soilmoist, soilstorecap, stabilitymethod,
-                          state, statelimit, storageheatmethod, surf, surfacearea,
-                          tair24hr, tau_a, tau_f, tau_r, t_critic_cooling, t_critic_heating,
-                          temp_c, tempmeltfact, th, theta_bioco2, timezone, tl,
-                          trafficrate, trafficunits, traffprof_tstep, ts5mindata_ir,
-                          tstep, veg_type, waterdist, waterusemethod, wetthresh,
-                          wu_day, wuprofa_tstep, wuprofm_tstep, xsmd, year, z)
+    datetimeline, dataoutline, dataoutlinesnow, dataoutlineestm = sd.suews_cal_main(
+        **dict_input)
 
     # update state variables
-    state_new = state_old
-    for var in list_var_state:
-        cmd = 'state_new.update({varX}={varX})'.format(varX=var)
+    # state_new = state_old
+    # for var in state_old.keys():
+    #     state_new[var] = dict_input[var]
         # print cmd
-        exec(cmd)
-    dict_state = state_new
+        # exec(cmd, locals())
+    dict_state = {var:dict_input[var] for var in state_old.keys()}
 
     # pack output
     dict_output = {'datetime': datetimeline,
-                   'dataoutline': dataoutline,
+                   'dataoutlinesuews': dataoutline,
                    'dataoutlinesnow': dataoutlinesnow,
                    'dataoutlineestm': dataoutlineestm}
 
-    # return dict_state
     return dict_state, dict_output
+
+
+# main calculation
+def run_suews(df_forcing, dict_init):
+    # initialise dicts for holding results and model states
+    dict_output = {}
+    dict_state_grid = {grid: sub_dict['state_init']
+                       for grid, sub_dict in dict_init.items()}
+    # temporal loop
+    for tstep in df_forcing.index:
+        # print 'cal at: ',tstep
+        # initialise output of tstep:
+        dict_output.update({tstep: {}})
+        # load met_forcing if the same across all grids:
+        # met_forcing_tstep = proc_met_forcing(df_forcing, tstep)
+        met_forcing_tstep = df_forcing.iloc[tstep]
+        # spatial loop
+        for grid in dict_state_grid.keys():
+            state_old = dict_state_grid[grid]
+            mod_config = dict_init[grid]['mod_config']
+            # xx=sp.suews_cal_tstep(
+            #     state_old, met_forcing_tstep, mod_config)
+            # calculation at one step:
+            state_new, output_tstep = suews_cal_tstep(
+                state_old, met_forcing_tstep, mod_config)
+            # update model state
+            dict_state_grid[grid].update(state_new)
+            # update output at tstep for the current grid
+            dict_output[tstep].update({grid: output_tstep})
+            # print 'end at ',tstep,'for',grid
+
+    # convert dict_output to DataFrame
+    df_res = pd.DataFrame.from_dict(dict_output)
+
+    return df_res
+
+
+# pack up output one grid of all tsteps of
+def pack_dict_output_grid(df_grid):
+    # get variable info as a DataFrame
+    var_df = get_output_info_df()
+    # merge dicts of all tsteps
+    dict_group = collections.defaultdict(list)
+    for d in df_grid:
+        for k, v in d.iteritems():  # d.items() in Python 3+
+            dict_group[k].append(v)
+    # pick groups except for `datatime`
+    group_out = (group for group in dict_group.keys()
+                 if not group == 'datetime')
+    # initialise dict for holding packed output
+    dict_output_group = {}
+    # pack up output of all tsteps into output groups
+    for group_x in group_out:
+        # get correct group name by cleaning and swapping case
+        group = group_x.replace('dataoutline', '')
+        group = (
+            group if group in var_df.index.levels[0].drop('datetime')
+            else group.swapcase())
+        header_group = np.apply_along_axis(
+            list, 0, var_df.loc[['datetime', group]].index.values)[:, 1]
+        df_group = pd.DataFrame(
+            np.hstack((dict_group['datetime'], dict_group[group_x])),
+            columns=header_group)
+        dict_output_group.update({group: df_group})
+    # final result: {group:df_group}
+    return dict_output_group
 
 
 # # test part
@@ -924,7 +1025,7 @@ def suews_cal_tstep(state_old, met_forcing_tstep, mod_config):
 # # resolutionfilesin
 # list_file_MetForcing = glob.glob(os.path.join(
 #     'Input', '{}*{}*txt'.format(filecode, resolutionfilesin / 60)))
-# df_forcing = load_SUEWS_MetForcing(list_file_MetForcing[0])
+# df_forcing = load_SUEWS_MetForcing_df(list_file_MetForcing[0])
 # met_forcing = df_forcing
 # state_old = df_InitCond_grid.loc[1, 'state_init']
 # met_forcing_tstep = met_forcing.loc[1].to_dict()

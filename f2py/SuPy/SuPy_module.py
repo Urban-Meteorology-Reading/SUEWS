@@ -16,6 +16,7 @@ import datetime
 from SUEWS_driver import suews_driver as sd
 from scipy import interpolate
 import collections
+import copy
 
 # descriptive list/dicts for variables
 # minimal required input files for configuration:
@@ -779,8 +780,11 @@ def init_SUEWS_df(dir_input):  # return pd.DataFrame
 
 # create met forcing conditions
 def func_parse_date(year, doy, hour, min):
-    dt = datetime.datetime.strptime(
-        ' '.join([year, doy, hour, min]), '%Y %j %H %M')
+    # dt = datetime.datetime.strptime(
+    #     ' '.join([year, doy, hour, min]), '%Y %j %H %M')
+    dt = pd.to_datetime(' '.join(
+        [str(k) for k in [year, doy, hour, min]]),
+        format='%Y %j %H %M')
     return dt
 
 
@@ -788,11 +792,11 @@ def load_SUEWS_MetForcing_df(fileX):
     df_forcing = pd.read_table(fileX, delim_whitespace=True,
                                comment='!',
                                error_bad_lines=True,
-                               # parse_dates={'datetime': [0, 1, 2, 3]},
-                               # keep_date_col=True,
+                               parse_dates={'datetime': [0, 1, 2, 3]},
+                               keep_date_col=True,
                                date_parser=func_parse_date
                                ).dropna()
-    df_grp = df_forcing.groupby('id')
+    df_grp = df_forcing.iloc[:, 1:].groupby('id')
     id_all = df_forcing['id'].apply(lambda xid: df_grp.get_group(xid))
     df_merged = df_forcing.merge(id_all.to_frame(name='all'),
                                  left_index=True,
@@ -820,6 +824,9 @@ def load_SUEWS_MetForcing_df(fileX):
         'all': 'metforcingdata_grid'})
 
     # new columns for later use in main calculation
+    # df_merged['datetime'] = pd.to_datetime()
+    df_merged[['iy', 'id', 'it', 'imin']] = df_merged[[
+        'iy', 'id', 'it', 'imin']].astype(np.int64)
     df_merged['dectime'] = df_merged['id'] + \
         df_merged['it'] / 24. + df_merged['imin'] / 60.
     df_merged['id_prev_t'] = df_merged['id']
@@ -833,24 +840,24 @@ def load_SUEWS_MetForcing_df(fileX):
 
 
 def load_SUEWS_MetForcing_dict(fileX):
-    rawdata_df = load_SUEWS_MetForcing_df(fileX).iloc[:, 1:]
-    cols = rawdata_df.columns.tolist()
-    rows = rawdata_df.index.tolist()
-    vals = rawdata_df.values.tolist()
+    rawdata_df = load_SUEWS_MetForcing_df(fileX)
+    # cols = rawdata_df.columns.tolist()
+    # rows = rawdata_df.index.tolist()
+    # vals = rawdata_df.values.tolist()
+    #
+    # # dict to hold final result
+    # rawdata_dict = {}
+    # irow = 0
+    # for row in rows:
+    #     row_dict = {}
+    #     icol = 0
+    #     for col in cols:
+    #         row_dict.update({col: vals[irow][icol]})
+    #         icol += 1
+    #     rawdata_dict.update({row: row_dict})
+    #     irow += 1
 
-    # dict to hold final result
-    rawdata_dict = {}
-    irow = 0
-    for row in rows:
-        row_dict = {}
-        icol = 0
-        for col in cols:
-            row_dict.update({col: vals[irow][icol]})
-            icol += 1
-        rawdata_dict.update({row: row_dict})
-        irow += 1
-
-    return rawdata_dict
+    return rawdata_df.T.to_dict()
 
 
 def proc_met_forcing(df_met_forcing, step_count):
@@ -879,7 +886,9 @@ def get_output_info_df():
 # high-level wrapper: suews_cal_tstep
 def suews_cal_tstep(state_old, met_forcing_tstep, mod_config):
     # use single dict as input for suews_cal_main
-    dict_input = met_forcing_tstep.to_dict()
+    # dict_input = met_forcing_tstep.to_dict()
+    # dict_input = copy.deepcopy(met_forcing_tstep)
+    dict_input = met_forcing_tstep.copy()
     dict_input.update(state_old)
     dict_input.update(mod_config)
 
@@ -890,10 +899,7 @@ def suews_cal_tstep(state_old, met_forcing_tstep, mod_config):
     # dict_met['ts5mindata_ir'] = np.array(
     #     dict_met['temp_c'], dtype=np.float, order='F')
 
-    # date and time
-    date_time = pd.to_datetime(' '.join(
-        [str(dict_input[k]) for k in ['iy', 'id', 'it', 'imin']]),
-        format='%Y %j %H %M')
+    date_time = dict_input['datetime']
 
     # dayofweek:
     dict_input['dayofweek'] = np.array(
@@ -911,32 +917,30 @@ def suews_cal_tstep(state_old, met_forcing_tstep, mod_config):
 
     # remove unnecessary keys in dict_input
     # redundant keys:
-    list_todel = ['ahprof', 'cbluse', 'disaggmethod', 'disaggmethodestm',
-                  'endDLS', 'filecode', 'fileinputpath', 'fileoutputpath',
-                  'humactivity',
-                  'Kdiff', 'Kdir', 'kdownzen', 'keeptstepfilesin',
-                  'keeptstepfilesout',
-                  'multipleestmfiles', 'multipleinitfiles', 'multiplemetfiles',
-                  'popprof',
-                  'QE', 'Qf', 'Qs', 'raindisaggmethod', 'resolutionfilesin',
-                  'resolutionfilesinestm', 'resolutionfilesout', 'solweiguse',
-                  'startDLS', 'suppresswarnings', 'traffprof', 'Wd',
-                  'writeoutoption', 'wuh', 'wuprofa', 'wuprofm']
+    list_var2del = ['ahprof', 'cbluse', 'disaggmethod', 'disaggmethodestm',
+                    'endDLS', 'filecode', 'fileinputpath', 'fileoutputpath',
+                    'humactivity', 'datetime',
+                    'Kdiff', 'Kdir', 'kdownzen', 'keeptstepfilesin',
+                    'keeptstepfilesout',
+                    'multipleestmfiles', 'multipleinitfiles',
+                    'multiplemetfiles',
+                    'popprof',
+                    'QE', 'Qf', 'Qs', 'raindisaggmethod', 'resolutionfilesin',
+                    'resolutionfilesinestm', 'resolutionfilesout',
+                    'solweiguse',
+                    'startDLS', 'suppresswarnings', 'traffprof', 'Wd',
+                    'writeoutoption', 'wuh', 'wuprofa', 'wuprofm']
+
     # delete them:
-    for k in list_todel:
+    for k in list_var2del:
         dict_input.pop(k, None)
 
     # main calculation:
-    datetimeline, dataoutline, dataoutlinesnow, dataoutlineestm = sd.suews_cal_main(
-        **dict_input)
+    datetimeline, dataoutline, dataoutlinesnow, dataoutlineestm = \
+        sd.suews_cal_main(**dict_input)
 
     # update state variables
-    # state_new = state_old
-    # for var in state_old.keys():
-    #     state_new[var] = dict_input[var]
-        # print cmd
-        # exec(cmd, locals())
-    dict_state = {var:dict_input[var] for var in state_old.keys()}
+    dict_state = {var: dict_input[var] for var in state_old.keys()}
 
     # pack output
     dict_output = {'datetime': datetimeline,
@@ -948,22 +952,30 @@ def suews_cal_tstep(state_old, met_forcing_tstep, mod_config):
 
 
 # main calculation
-def run_suews(df_forcing, dict_init):
+def run_suews(dict_forcing, dict_init):
     # initialise dicts for holding results and model states
     dict_output = {}
+    # dict_state = {}
     dict_state_grid = {grid: sub_dict['state_init']
-                       for grid, sub_dict in dict_init.items()}
+                       for grid, sub_dict in copy.deepcopy(dict_init).items()}
+    # dict_state is used to save model states for later use
+    dict_state = {0: copy.deepcopy(dict_state_grid)}
     # temporal loop
-    for tstep in df_forcing.index:
-        # print 'cal at: ',tstep
+    for tstep in dict_forcing.keys():
+        # print 'tstep at', tstep
         # initialise output of tstep:
         dict_output.update({tstep: {}})
+        # dict_state is used to save model states for later use
+        dict_state.update({tstep + 1: {}})
         # load met_forcing if the same across all grids:
-        # met_forcing_tstep = proc_met_forcing(df_forcing, tstep)
-        met_forcing_tstep = df_forcing.iloc[tstep]
+        met_forcing_tstep = dict_forcing[tstep]
+        # met_forcing_tstep = df_forcing.iloc[tstep]
+
         # spatial loop
         for grid in dict_state_grid.keys():
             state_old = dict_state_grid[grid]
+            # print 'start', dict_state_grid[grid]['state']
+            # print 'start', dict_state[tstep][grid]['state'][0]
             mod_config = dict_init[grid]['mod_config']
             # xx=sp.suews_cal_tstep(
             #     state_old, met_forcing_tstep, mod_config)
@@ -972,14 +984,17 @@ def run_suews(df_forcing, dict_init):
                 state_old, met_forcing_tstep, mod_config)
             # update model state
             dict_state_grid[grid].update(state_new)
-            # update output at tstep for the current grid
+            # print 'end', dict_state_grid[grid]['state'][0]
+
+            # update output & model state at tstep for the current grid
             dict_output[tstep].update({grid: output_tstep})
-            # print 'end at ',tstep,'for',grid
+            # dict_state[tstep + 1].update({grid: copy.deepcopy(state_new)})
+            dict_state[tstep + 1].update(
+                {grid: {k: v.copy() for k, v in state_new.items()}})
+            # print 'dict_state', dict_state[tstep][grid]['state'][0],dict_state[tstep + 1][grid]['state'][0]
+            # print ''
 
-    # convert dict_output to DataFrame
-    df_res = pd.DataFrame.from_dict(dict_output)
-
-    return df_res
+    return dict_output, dict_state
 
 
 # pack up output one grid of all tsteps of

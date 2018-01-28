@@ -997,7 +997,7 @@ def run_suews(dict_forcing, dict_init):
     return dict_output, dict_state
 
 
-# pack up output one grid of all tsteps of
+# pack up output of one grid of all tsteps
 def pack_dict_output_grid(df_grid):
     # get variable info as a DataFrame
     var_df = get_output_info_df()
@@ -1026,6 +1026,15 @@ def pack_dict_output_grid(df_grid):
         dict_output_group.update({group: df_group})
     # final result: {group:df_group}
     return dict_output_group
+
+# pack up output of `run_suews`
+def pack_df_output(dict_output):
+    # dict_output is the first value returned by `run_suews`
+    df_res_grid = pd.DataFrame(dict_output).T.stack().swaplevel()
+    dict_grid_time = {grid: pack_dict_output_grid(
+        df_res_grid[grid]) for grid in df_res_grid.index.get_level_values(0)}
+    df_grid_group = pd.DataFrame(dict_grid_time).T
+    return df_grid_group
 
 
 # # test part

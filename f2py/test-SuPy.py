@@ -18,43 +18,20 @@ filecode = dict_init[1]['mod_config']['filecode']
 resolutionfilesin = dict_init[1]['mod_config']['resolutionfilesin']
 list_file_MetForcing = glob.glob(os.path.join(
     dir_input, '{}*{}*txt'.format(filecode, resolutionfilesin / 60 / 12)))
+# load as DataFrame:
 df_forcing = sp.load_SUEWS_MetForcing_df(list_file_MetForcing[0])
-# print df_forcing.columns
-# df_forcing.rename(columns={
-#     '%' + 'iy': 'iy',
-#     'id': 'id',
-#     'it': 'it',
-#     'imin': 'imin',
-#     'Kdn': 'avkdn',
-#     'RH': 'avrh',
-#     'Wind': 'avu1',
-#     'fcld': 'fcld_obs',
-#     'lai_hr': 'lai_obs',
-#     'ldown': 'ldown_obs',
-#     'rain': 'precip',
-#     'press': 'press_hpa',
-#     'QH': 'qh_obs',
-#     'Q*': 'qn1_obs',
-#     'snow': 'snow_obs',
-#     'Td': 'temp_c',
-#     'xsmd': 'xsmd',
-#     'all': 'metforcingdata_grid'})
-# print df_forcing.columns
-#
-#
-# df_forcing[['id', 'imin']] = df_forcing[['id', 'imin']].apply(
-#     lambda ss: ss.astype(int))
-# df_forcing['id']
+# load as dict (faster if performance is heavily concerned)
+# dict_forcing = sp.load_SUEWS_MetForcing_dict(list_file_MetForcing[0])
 
 
-# pd.to_numeric(df_forcing['id'],downcast='int16')
+# main calulation:
+# compact form:
+dict_output, dict_state = sp.run_suews(
+    df_forcing.iloc[:1000].T.to_dict(), dict_init)
+# dict_res = sp.run_suews(dict(dict_forcing.items()[:10]), dict_init)
 
-df_res = sp.run_suews(df_forcing.iloc[:], dict_init)
-#
-# reload(sp)
-# sp.proc_met_forcing(df_forcing, 100)
-# sp.proc_met_forcing(df_forcing, 3333)
-# # main calculation
+
+# line-by-line form (better control if manipulation is needed):
 # # initialise dicts for holding results and model states
 # dict_output = {}
 # dict_state_grid = {grid: sub_dict['state_init']
@@ -83,6 +60,17 @@ df_res = sp.run_suews(df_forcing.iloc[:], dict_init)
 #
 # # convert dict_output to DataFrame
 # df_res = pd.DataFrame.from_dict(dict_output)
+
+
+
+
+# post-processing:
+# convert dict of raw output to easier DataFrame:
+# sp.pack_dict_output_grid(dict_res[1])
+df_output=sp.pack_df_output(dict_output)
+
+xx=df_output['SUEWS'][1]['T2'][100:].plot.line()
+plt.show(xx)
 
 # sp.pack_dict_output_grid(df_res.loc[1])['SUEWS']
 # # plot some variables

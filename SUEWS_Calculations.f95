@@ -85,7 +85,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
        alpha_bioCO2,alpha_enh_bioCO2,alt,avkdn,avRh,avU1,BaseT,BaseTe,&
        BaseTHDD,beta_bioCO2,beta_enh_bioCO2,bldgH,CapMax_dec,CapMin_dec,&
-       chAnOHM,cpAnOHM,CRWmax,CRWmin,DayofWeek,DayWat,DayWatPer,&
+       chAnOHM,cpAnOHM,CRWmax,CRWmin,CumSnowfall,DayofWeek,DayWat,DayWatPer,&
        DecidCap,dectime,DecTreeH,Diagnose,DiagQN,DiagQS,DLS,DRAINRT,&
        EF_umolCO2perJ,emis,EmissionsMethod,EnEF_v_Jkm,EveTreeH,FAIBldg,&
        FAIDecTree,FAIEveTree,Faut,FcEF_v_kgkm,fcld_obs,FlowChange,&
@@ -106,7 +106,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        RoughLenHeatMethod,RoughLenMomMethod,RunoffToWater,S1,S2,&
        SatHydraulicConduct,SDDFull,sfr,SMDMethod,SnowAlb,SnowAlbMax,&
        SnowAlbMin,snowD,SnowDens,SnowDensMax,SnowDensMin,snowFrac,&
-       SnowLimBuild,SnowLimPaved,snow_obs,SnowPack,snowUse,SoilDepth,&
+       SnowLimBuild,SnowLimPaved,snow_obs,SnowPack,SnowProf,snowUse,SoilDepth,&
        soilmoist,soilstoreCap,StabilityMethod,state,StateLimit,&
        StorageHeatMethod,surf,SurfaceArea,Tair24HR,tau_a,tau_f,tau_r,&
        T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,TempMeltFact,TH,&
@@ -115,6 +115,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        WaterDist,WaterUseMethod,WetThresh,WU_Day,WUProfA_tstep,&
        WUProfM_tstep,xsmd,year,Z,&
        datetimeLine,dataOutLine,dataOutLineSnow,dataOutLineESTM)!output
+       
 
   !============ update and write out SUEWS_cal_DailyState ===============
   ! only works at the last timestep of a day
@@ -137,7 +138,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        ncolumnsDataOut,ncolumnsDataOutSnow,ncolumnsDataOutESTM,&
        ir,gridiv,datetimeLine,dataOutLine,dataOutLineSnow,dataOutLineESTM,&!input
        dataOut,dataOutSnow,dataOutESTM)!inout
-
 
 
   ! NB: CBL disabled for the moment for interface improvement

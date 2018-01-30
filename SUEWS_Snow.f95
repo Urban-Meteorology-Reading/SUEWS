@@ -32,8 +32,8 @@ CONTAINS
        SnowDensMin,Temp_C,Precip,PrecipLimit,PrecipLimitAlb,&
        nsh_real,sfr,Tsurf_ind,Tsurf_ind_snow,state,qn1_ind_snow,&
        kup_ind_snow,Meltwaterstore,deltaQi,&
-       SnowPack,snowFrac,SnowAlb,SnowDens,&!inout
-       mwh,fwh,Qm,QmFreez,QmRain,CumSnowfall,&! output
+       SnowPack,snowFrac,SnowAlb,SnowDens,CumSnowfall,&!inout
+       mwh,fwh,Qm,QmFreez,QmRain,&! output
        veg_fr,snowCalcSwitch,Qm_melt,Qm_freezState,Qm_rain,FreezMelt,&
        FreezState,FreezStateVol,rainOnSnow,SnowDepth,mw_ind,&
        dataOutLineSnow)!output
@@ -82,7 +82,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::snowFrac
     REAL(KIND(1d0)),INTENT(inout)::SnowAlb
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowDens
-
+    REAL(KIND(1d0)),INTENT(inout)::CumSnowfall
 
     !Output:
     REAL(KIND(1d0)),INTENT(out)::mwh
@@ -90,7 +90,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(out)::Qm
     REAL(KIND(1d0)),INTENT(out)::QmFreez
     REAL(KIND(1d0)),INTENT(out)::QmRain
-    REAL(KIND(1d0)),INTENT(out)::CumSnowfall
+
     REAL(KIND(1d0)),INTENT(out)::veg_fr
 
     INTEGER,DIMENSION(nsurf),INTENT(out)::snowCalcSwitch
@@ -107,18 +107,18 @@ CONTAINS
 
     REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutSnow),INTENT(out) :: dataOutLineSnow
 
-
     IF ( snowUse==1 ) THEN
+
        CALL MeltHeat(&
             bldgsurf,nsurf,PavSurf,WaterSurf,&
             lvS_J_kg,lv_J_kg,tstep_real,RadMeltFact,TempMeltFact,&
             SnowAlbMax,SnowDensMin,Temp_C,Precip,PrecipLimit,PrecipLimitAlb,&
             nsh_real,waterdens,sfr,Tsurf_ind,state,qn1_ind_snow,&
-            Meltwaterstore,deltaQi,SnowPack,snowFrac,SnowAlb,SnowDens,&
-            mwh,fwh,Qm,QmFreez,QmRain,CumSnowfall,snowCalcSwitch,&
+            Meltwaterstore,deltaQi,SnowPack,snowFrac,SnowAlb,SnowDens,CumSnowfall,&
+            mwh,fwh,Qm,QmFreez,QmRain,snowCalcSwitch,&
             Qm_melt,Qm_freezState,Qm_rain,FreezMelt,FreezState,FreezStateVol,&
             rainOnSnow,SnowDepth,mw_ind)
-
+            
        CALL veg_fr_snow(&
             sfr,snowFrac,nsurf,&!input
             veg_fr)!output
@@ -191,12 +191,12 @@ CONTAINS
        snowFrac,&
        SnowAlb,&
        SnowDens,&
+       CumSnowfall,&
        mwh,&!output
        fwh,&
        Qm,&
        QmFreez,&
        QmRain,&
-       CumSnowfall,&
        snowCalcSwitch,&
        Qm_melt,&
        Qm_freezState,&
@@ -243,7 +243,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::snowFrac
     REAL(KIND(1d0)),INTENT(inout)::SnowAlb
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowDens
-
+    REAL(KIND(1d0)),INTENT(inout)::CumSnowfall
 
     !Output:
     REAL(KIND(1d0)),INTENT(out)::mwh
@@ -251,7 +251,6 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(out)::Qm
     REAL(KIND(1d0)),INTENT(out)::QmFreez
     REAL(KIND(1d0)),INTENT(out)::QmRain
-    REAL(KIND(1d0)),INTENT(out)::CumSnowfall
 
     !Output, dimension nsurf
     INTEGER,DIMENSION(nsurf),INTENT(out)::snowCalcSwitch
@@ -296,6 +295,7 @@ CONTAINS
     xx=PavSurf
     !===dummy calculations end===
 
+   
     !=========================================================================================
     DO is=1,nsurf  !Go each surface type through
        IF (sfr(is)/=0) THEN  !If surface type existing,
@@ -318,17 +318,16 @@ CONTAINS
                 AdjMeltFact=1  !Relationship between the temperature melt and freezing factors
                 mw_ind(is) = TempMeltFact*Temp_C*AdjMeltFact ! in mm h-1
              ENDIF
-
              !Previous equation give the hourly values, divide these with the timestep number
              mw_ind(is) = mw_ind(is)/nsh_real
-
+             
              IF (mw_ind(is)>SnowPack(is)) mw_ind(is) = SnowPack(is)!Limited by the previous timestep SnowPack
-
+             
              !-----------------------------------------------------
              ! Heat consumed to snowmelt/refreezing within Tstep.
              ! Converted from mm nsh-1 to mm nsh-1 and to m s-1
              Qm_melt(is) = waterDens*((mw_ind(is)/tstep_real)/1000)*(lvS_J_kg-lv_J_kg)
-
+             
              !If melt is negative this means freezing water in the SnowPack
              IF (mw_ind(is)<0) THEN
 
@@ -430,21 +429,24 @@ CONTAINS
           QmRain = QmRain + Qm_rain(is)*sfr(is)*snowFrac(is) !Rain on snow
           QmFreez=QmFreez+deltaQi(is)*sfr(is)*snowFrac(is)+Qm_freezState(is)*sfr(is)*(1-snowFrac(is)) !Freezing water
        ENDIF
-
+ 
     ENDDO !End surface type
-
+ 
     !Update snow albedo to its maximum value if precipitation exists
     IF (Precip>0.AND.SUM(SnowPack)>0.AND.Temp_C<0) THEN
-
+    
        CumSnowfall=CumSnowfall + Precip
-
+       
        IF (CumSnowfall>PrecipLimitAlb) THEN
+ 
           SnowAlb=SnowAlbMax
           CumSnowfall=0
        ENDIF
     ELSE
+
        CumSnowfall=0
     ENDIF
+
 
 
   END SUBROUTINE MeltHeat
@@ -458,7 +460,7 @@ CONTAINS
        ity,CRWmin,CRWmax,nsh_real,lvS_J_kg,lv_j_kg,avdens,&
        avRh,Press_hPa,Temp_C,RAsnow,psyc_hPa,avcp,sIce_hPa,&
        PervFraction,vegfraction,addimpervious,&
-       numPM,s_hPa,ResistSurf,sp,ra,rb,tlv,snowdensmin,precip,&
+       numPM,s_hPa,ResistSurf,sp,ra,rb,tlv,snowdensmin,SnowProf,precip,&
        PipeCapacity,RunoffToWater,runoffAGimpervious,runoffAGveg,&
        addVeg,surplusWaterBody,SnowLimPaved,SnowLimBuild,FlowChange,drain,&
        WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
@@ -469,7 +471,7 @@ CONTAINS
        snowFrac,MeltWaterStore,iceFrac,SnowDens,&
        runoffSnow,& ! output
        runoff,runoffSoil,chang,changSnow,SnowToSurf,state,ev_snow,soilmoist,&
-       SnowDepth,SnowRemoval,snowProf,swe,ev,chSnow_per_interval,&
+       SnowDepth,SnowRemoval,swe,ev,chSnow_per_interval,&
        ev_per_tstep,qe_per_tstep,runoff_per_tstep,surf_chang_per_tstep,&
        runoffPipes,mwstore,runoffwaterbody)
 
@@ -563,7 +565,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::AddWater
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::addwaterrunoff
     REAL(KIND(1d0)),DIMENSION(6,nsurf),INTENT(in)::surf
-
+    REAL(KIND(1d0)),DIMENSION(0:23,2),INTENT(in)::snowProf
 
     !Updated status: input and output
     REAL(KIND(1d0)),INTENT(inout)::runoffAGveg
@@ -575,9 +577,6 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::MeltWaterStore
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::iceFrac
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowDens
-
-
-
 
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::runoffSnow !Initialize for runoff caused by snowmelting
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::runoff
@@ -591,7 +590,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::soilmoist
     REAL(KIND(1d0)),DIMENSION(2),INTENT(out)::SnowRemoval
 
-    REAL(KIND(1d0)), DIMENSION(0:23,2),INTENT(out):: snowProf
+    
 
     REAL(KIND(1d0)),INTENT(out)::swe
     REAL(KIND(1d0)),INTENT(out)::ev
@@ -749,7 +748,6 @@ CONTAINS
                snowfrac,sfr,&
                SnowPack, SnowRemoval,&
                SnowLimPaved,SnowLimBuild)
-
           !----------If SnowPack is negative, it melts at this timestep
        ELSEIF (SnowPack(is)<0) THEN
 
@@ -1182,7 +1180,6 @@ CONTAINS
     EaIce_hPa=avRh/100*esIce_hPa                       !Vapour pressure of water
     vdrcIce=(esIce_hPa-eaIce_hpa)*avdens*avcp          !Vapour pressure deficit
     tlv_sub=lvS_J_kg/tstep_real                        !Latent heat for sublimation
-
     e_snow=sae_snow+vdrcIce/RAsnow                     !PM equation
     qe_snow=e_snow/(sIce_hPa+psyc_hPa)                 !Latent heat (W/m^2)
     ev_snow=qe_snow/tlv_sub                            !Evaporation (in mm)

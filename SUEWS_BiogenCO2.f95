@@ -199,12 +199,14 @@
   DO iv=ivConif,ivGrass
     Bellucco2017_Res_surf(iv) = MAX(min_res_bioCO2(iv), resp_a(iv)*exp(resp_b(iv)*Temp_C))
     ! For active vegetation fraction only
-    Bellucco2017_Res = Bellucco2017_Res + Bellucco2017_Res_surf(iv)*active_veg_fr(iv)
+    !Bellucco2017_Res = Bellucco2017_Res + Bellucco2017_Res_surf(iv)*active_veg_fr(iv)
+     Bellucco2017_Res = Bellucco2017_Res + Bellucco2017_Res_surf(iv) * sfr(2+iv)/VegFracSum
+
   ENDDO
 
-  Fc_respi = Bellucco2017_Res * (sfr(ConifSurf)*(1-snowFrac(ConifSurf))+sfr(DecidSurf)*(1-snowFrac(DecidSurf))+ &
-                                    sfr(GrassSurf)*(1-snowFrac(GrassSurf))+sfr(BSoilSurf)*(1-snowFrac(BSoilSurf)))
-  !Fc_respi = Bellucco2017_Res * (sfr(ConifSurf)+sfr(DecidSurf)+sfr(GrassSurf)+sfr(BSoilSurf))
+  !Fc_respi = Bellucco2017_Res * (sfr(ConifSurf)*(1-snowFrac(ConifSurf))+sfr(DecidSurf)*(1-snowFrac(DecidSurf))+ &
+  !                                  sfr(GrassSurf)*(1-snowFrac(GrassSurf))+sfr(BSoilSurf)*(1-snowFrac(BSoilSurf)))
+  Fc_respi = Bellucco2017_Res * (sfr(ConifSurf)+sfr(DecidSurf)+sfr(GrassSurf)+sfr(BSoilSurf))
 
   ! Combine to find biogenic CO2 flux
   Fc_biogen = Fc_photo + Fc_respi

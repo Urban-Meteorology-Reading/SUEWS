@@ -24,7 +24,7 @@ CONTAINS
        alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
        alpha_bioCO2,alpha_enh_bioCO2,alt,avkdn,avRh,avU1,BaseT,BaseTe,&
        BaseTHDD,beta_bioCO2,beta_enh_bioCO2,bldgH,CapMax_dec,CapMin_dec,&
-       chAnOHM,cpAnOHM,CRWmax,CRWmin,DayofWeek,DayWat,DayWatPer,&
+       chAnOHM,cpAnOHM,CRWmax,CRWmin,CumSnowfall,DayofWeek,DayWat,DayWatPer,&
        DecidCap,dectime,DecTreeH,Diagnose,DiagQN,DiagQS,DLS,DRAINRT,&
        EF_umolCO2perJ,emis,EmissionsMethod,EnEF_v_Jkm,EveTreeH,FAIBldg,&
        FAIDecTree,FAIEveTree,Faut,FcEF_v_kgkm,fcld_obs,FlowChange,&
@@ -45,7 +45,7 @@ CONTAINS
        RoughLenHeatMethod,RoughLenMomMethod,RunoffToWater,S1,S2,&
        SatHydraulicConduct,SDDFull,sfr,SMDMethod,SnowAlb,SnowAlbMax,&
        SnowAlbMin,snowD,SnowDens,SnowDensMax,SnowDensMin,snowFrac,&
-       SnowLimBuild,SnowLimPaved,snow_obs,SnowPack,snowUse,SoilDepth,&
+       SnowLimBuild,SnowLimPaved,snow_obs,SnowPack,SnowProf,snowUse,SoilDepth,&
        soilmoist,soilstoreCap,StabilityMethod,state,StateLimit,&
        StorageHeatMethod,surf,SurfaceArea,Tair24HR,tau_a,tau_f,tau_r,&
        T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,TempMeltFact,TH,&
@@ -249,7 +249,7 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(4,NVEGSURF),INTENT(IN)     ::LAIPower
     REAL(KIND(1D0)),DIMENSION(:,:),INTENT(IN)            ::MetForcingData_grid
 
-
+    REAL(KIND(1D0)),INTENT(INOUT) ::CumSnowfall
     REAL(KIND(1D0)),INTENT(INOUT)                             ::SnowAlb
     INTEGER,DIMENSION(0:NDAYS,3),INTENT(INOUT)                ::DayofWeek
     REAL(KIND(1d0)),DIMENSION(24*3600/tstep),INTENT(inout)    ::Tair24HR
@@ -288,7 +288,7 @@ CONTAINS
     REAL(KIND(1D0))::avU10_ms
     REAL(KIND(1D0))::azimuth
     REAL(KIND(1D0))::chSnow_per_interval
-    REAL(KIND(1D0))::CumSnowfall
+    
     REAL(KIND(1D0))::dens_dry
     REAL(KIND(1D0))::drain_per_tstep
     REAL(KIND(1D0))::Ea_hPa
@@ -551,7 +551,7 @@ CONTAINS
          qn1_S,snowFrac,dataOutLineESTM,qs,&!output
          deltaQi,a1,a2,a3)
 
-
+      
     !==================Energy related to snow melting/freezing processes=======
     IF(Diagnose==1) WRITE(*,*) 'Calling MeltHeat'
     CALL Snow_cal_MeltHeat(&
@@ -560,11 +560,13 @@ CONTAINS
          SnowDensMin,Temp_C,Precip,PrecipLimit,PrecipLimitAlb,&
          nsh_real,sfr,Tsurf_ind,Tsurf_ind_snow,state,qn1_ind_snow,&
          kup_ind_snow,Meltwaterstore,deltaQi,&
-         SnowPack,snowFrac,SnowAlb,SnowDens,&!inout
-         mwh,fwh,Qm,QmFreez,QmRain,CumSnowfall,&! output
+         SnowPack,snowFrac,SnowAlb,SnowDens,CumSnowfall,&!inout
+         mwh,fwh,Qm,QmFreez,QmRain,&! output
          veg_fr,snowCalcSwitch,Qm_melt,Qm_freezState,Qm_rain,FreezMelt,&
          FreezState,FreezStateVol,rainOnSnow,SnowDepth,mw_ind,&
          dataOutLineSnow)!output
+         
+   
 
     !==========================Turbulent Fluxes================================
     IF(Diagnose==1) WRITE(*,*) 'Calling LUMPS_cal_QHQE...'
@@ -707,7 +709,6 @@ CONTAINS
          datetimeLine,dataOutLine)!output
 
     ! model state:
-
 
     ! daily state:
 
@@ -1473,7 +1474,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(2)    ::SurplusEvap        !Surplus for evaporation in 5 min timestep
 
     ! output:
-    REAL(KIND(1d0)), DIMENSION(0:23,2),INTENT(out):: snowProf
+    REAL(KIND(1d0)), DIMENSION(0:23,2),INTENT(in):: snowProf
 
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::runoffSnow !Initialize for runoff caused by snowmelting
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::runoff
@@ -1574,7 +1575,7 @@ CONTAINS
                   ity,CRWmin,CRWmax,nsh_real,lvS_J_kg,lv_j_kg,avdens,&
                   avRh,Press_hPa,Temp_C,RAsnow,psyc_hPa,avcp,sIce_hPa,&
                   PervFraction,vegfraction,addimpervious,&
-                  numPM,s_hPa,ResistSurf,sp,ra,rb,tlv,snowdensmin,precip,&
+                  numPM,s_hPa,ResistSurf,sp,ra,rb,tlv,snowdensmin,SnowProf,precip,&
                   PipeCapacity,RunoffToWater,runoffAGimpervious,runoffAGveg,&
                   addVeg,surplusWaterBody,SnowLimPaved,SnowLimBuild,FlowChange,drain,&
                   WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
@@ -1585,7 +1586,7 @@ CONTAINS
                   snowFrac,MeltWaterStore,iceFrac,SnowDens,&
                   runoffSnow,& ! output
                   runoff,runoffSoil,chang,changSnow,SnowToSurf,state,ev_snow,soilmoist,&
-                  SnowDepth,SnowRemoval,snowProf,swe,ev,chSnow_per_interval,&
+                  SnowDepth,SnowRemoval,swe,ev,chSnow_per_interval,&
                   ev_per_tstep,qe_per_tstep,runoff_per_tstep,surf_chang_per_tstep,&
                   runoffPipes,mwstore,runoffwaterbody)
           ELSE
@@ -2020,7 +2021,6 @@ CONTAINS
     ! REAL(KIND(1d0))::smd_x
     REAL(KIND(1d0))::smd_nsurf_x(nsurf)
     REAL(KIND(1d0))::state_x(nsurf)
-
 
     !=====================================================================
     !====================== Prepare data for output ======================
@@ -2547,3 +2547,5 @@ CONTAINS
   ! END SUBROUTINE output_names
 
 END MODULE SUEWS_Driver
+
+

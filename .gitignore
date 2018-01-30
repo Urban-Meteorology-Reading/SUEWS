@@ -5,3 +5,4 @@
 *_LOCAL_*.f95
 *_REMOTE_*.f95
 warnings.txt
+profiling-checkpoint.ipynb

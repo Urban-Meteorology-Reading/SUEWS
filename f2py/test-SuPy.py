@@ -20,15 +20,17 @@ list_file_MetForcing = glob.glob(os.path.join(
     dir_input, '{}*{}*txt'.format(filecode, resolutionfilesin / 60 / 12)))
 # load as DataFrame:
 df_forcing = sp.load_SUEWS_MetForcing_df(list_file_MetForcing[0])
-# load as dict (faster if performance is heavily concerned)
-# dict_forcing = sp.load_SUEWS_MetForcing_dict(list_file_MetForcing[0])
+# load as dict (faster for simulation if performance is heavily concerned)
+dict_forcing = sp.load_SUEWS_MetForcing_dict(list_file_MetForcing[0])
 
 
 # main calulation:
 # compact form:
 dict_output, dict_state = sp.run_suews(
     df_forcing.iloc[:1000].T.to_dict(), dict_init)
+
 # dict_res = sp.run_suews(dict(dict_forcing.items()[:10]), dict_init)
+
 
 
 # line-by-line form (better control if manipulation is needed):
@@ -66,10 +68,11 @@ dict_output, dict_state = sp.run_suews(
 
 # post-processing:
 # convert dict of raw output to easier DataFrame:
-# sp.pack_dict_output_grid(dict_res[1])
+# {grid: Dataframe by group ({'SUEWS','ESTM','snow'})}
 df_output=sp.pack_df_output(dict_output)
-
-xx=df_output['SUEWS'][1]['T2'][100:].plot.line()
+#
+type(df_output)
+xx=df_output.loc[1,'SUEWS'].loc[:,['Lup','Ldown']].plot.line()
 plt.show(xx)
 
 # sp.pack_dict_output_grid(df_res.loc[1])['SUEWS']

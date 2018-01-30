@@ -141,6 +141,7 @@ PROGRAM SUEWS_Program
   WRITE(*,*) '--------------------------------------------'
   WRITE(*,*) 'Years identified:',FirstYear,'to',LastYear
   WRITE(*,*) 'No. grids identified:',NumberOfGrids,'grids'
+  WRITE(*,*) 'Maximum No. grids allowed:',MaxNumberOfGrids,'grids'
 
   ! Set limit on number of lines to read
   nlinesLimit = INT(FLOOR(MaxLinesMet/REAL(NumberOfGrids,KIND(1d0))))  !Uncommented HCW 29 Jun 2016

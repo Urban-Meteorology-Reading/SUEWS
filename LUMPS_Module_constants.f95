@@ -47,12 +47,12 @@ MODULE allocateArray
 
 
   ! ---- Set number of columns in output files ---------------------------------------------------
-  INTEGER, PARAMETER:: ncolumnsDataOut=84,&    !Main output file (_5.txt). DataOut created in SUEWS_Calculations.f95
+  INTEGER, PARAMETER:: ncolumnsDataOutSUEWS=84,&    !Main output file (_5.txt). dataOutSUEWS created in SUEWS_Calculations.f95
        ncolumnsDataOutSnow=102,&
-       ncolumnsdataOutSOL=28,&
+       ncolumnsdataOutSOL=31,&
        ncolumnsdataOutBL=22,&
-       ncolumnsdataOutESTM=32,&
-       ncolumnsDataOutDailyState=47
+       ncolumnsDataOutESTM=32,&
+       ncolumnsDataOutDailyState=46
 
   ! ---- Define input file headers ---------------------------------------------------------------
   CHARACTER(len=20),DIMENSION(ncolumnsSiteSelect)::        HeaderSiteSelect_File          !Header for SiteSelect.txt
@@ -86,11 +86,11 @@ MODULE allocateArray
   ! ---- Define output file headers --------------------------------------------------------------
   INTEGER,DIMENSION(:),ALLOCATABLE:: UseColumnsDataOut       !Column numbers used to select output variables
   ! If change lengths in SUEWS_Output.f95, also need to adjust here
-  CHARACTER(len=14*ncolumnsDataOut):: HeaderUse,FormatUse,HeaderUseNoSep,FormatUseNoSep    !Header and format in correct form
-  CHARACTER(len=52*ncolumnsDataOut):: LongNmUse
-  CHARACTER(len=14*ncolumnsDataOut):: UnitsUse
-  CHARACTER(len=3*ncolumnsDataOut):: AggregUse
-  CHARACTER(len=4*ncolumnsDataOut):: ColNosUse
+  CHARACTER(len=14*ncolumnsDataOutSUEWS):: HeaderUse,FormatUse,HeaderUseNoSep,FormatUseNoSep    !Header and format in correct form
+  CHARACTER(len=52*ncolumnsDataOutSUEWS):: LongNmUse
+  CHARACTER(len=14*ncolumnsDataOutSUEWS):: UnitsUse
+  CHARACTER(len=3*ncolumnsDataOutSUEWS):: AggregUse
+  CHARACTER(len=4*ncolumnsDataOutSUEWS):: ColNosUse
 
   ! ---- Define arrays to store input information from SiteInfo spreadsheet ----------------------
   REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::SiteSelect                !Stores info from SiteSelect.txt
@@ -118,7 +118,7 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: ModelDailyState      !DailyState array
   REAL(KIND(1d0)),DIMENSION(:),    ALLOCATABLE:: DailyStateFirstOpen
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: ModelOutputData      !Output data matrix
-  REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: dataOut              !Main data output matrix
+  REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: dataOutSUEWS              !Main data output matrix
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: dataOutBL            !CBL output matrix
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: dataOutSOL           !SOLWEIG POI output matrix
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: dataOutSnow          !Main data output matrix
@@ -126,8 +126,9 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: dataOutDailyState    !DailyState output array
 
   REAL(KIND(1D0)),DIMENSION(5)::datetimeLine
-  REAL(KIND(1D0)),DIMENSION(ncolumnsDataOut-5)::dataOutLine
+  REAL(KIND(1D0)),DIMENSION(ncolumnsDataOutSUEWS-5)::dataOutLineSUEWS
   REAL(KIND(1D0)),DIMENSION(ncolumnsDataOutSnow-5)::dataOutLineSnow
+  REAL(KIND(1D0)),DIMENSION(ncolumnsDataOutDailyState-5)::DailyStateLine
 
   REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE:: MetForDisagg           !Array for original met forcing data (for disaggregation)
   REAL(KIND(1d0)),DIMENSION(:),  ALLOCATABLE:: MetForDisaggPrev,MetForDisaggNext !Stores last and next row of met data

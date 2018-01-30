@@ -1102,7 +1102,7 @@ CONTAINS
 
     IMPLICIT NONE
     INTEGER, PARAMETER:: ncolsESTMdata=13
-    ! INTEGER, PARAMETER:: ncolumnsdataOutESTM=32
+    ! INTEGER, PARAMETER:: ncolumnsDataOutESTM=32
     INTEGER, PARAMETER:: cTs_Tiair = 5
     INTEGER, PARAMETER:: cTs_Tsurf = 6
     INTEGER, PARAMETER:: cTs_Troof = 7
@@ -1547,7 +1547,7 @@ CONTAINS
        Tibldout=Tibld
     ENDIF
 
-    ! dataOutESTM(ir,1:ncolumnsdataOutESTM,Gridiv)=[&
+    ! dataOutESTM(ir,1:ncolumnsDataOutESTM,Gridiv)=[&
     !      REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),REAL(it,KIND(1D0)),REAL(imin,KIND(1D0)), dectime,&!5
     !      QS,Qsair,Qswall,Qsroof,Qsground,Qsibld,&!11
     !      Twallout,Troofout,Tgroundout,Tibldout,Tievolve]!32 !NB. These all have 5 elements except Tievolve (1).
@@ -1556,7 +1556,7 @@ CONTAINS
          Twallout,Troofout,Tgroundout,Tibldout,Tievolve]!27 !NB. These all have 5 elements except Tievolve (1).
     ! set invalid values to nan
     dataOutLineESTM=set_nan(dataOutLineESTM)
-    ! call r8vec_print(ncolumnsdataOutESTM-5,dataOutESTM(ir,6:ncolumnsdataOutESTM,Gridiv),'dataOutESTM')
+    ! call r8vec_print(ncolumnsDataOutESTM-5,dataOutESTM(ir,6:ncolumnsDataOutESTM,Gridiv),'dataOutESTM')
 
 
     Tair2=Tair1

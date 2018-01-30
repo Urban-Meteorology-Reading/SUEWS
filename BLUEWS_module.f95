@@ -1,5 +1,5 @@
 MODULE BLUEWS_module
-  use AtmMoist_module,only:qsatf
+  USE AtmMoist_module,ONLY:qsatf
 
   IMPLICIT NONE
 CONTAINS
@@ -34,6 +34,8 @@ CONTAINS
     REAL(KIND(1d0))::secs0,secs1,Lv
     INTEGER::idoy,ifirst,Gridiv,startflag,iNBL
 
+    ! initialise startflag
+    startflag=0
 
     ! Reset iCBLcount at start of each metblock (HCW added 29/03/2017)
     IF(ifirst == 1) THEN

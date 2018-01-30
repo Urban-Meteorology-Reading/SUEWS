@@ -30,4 +30,7 @@ DisaggMethodESTM=1      !NEW  (1 = default value, so don't actually need here)
 SuppressWarnings=1      !NEW
 KdownZen=0
 diagnose=0
+ncmode=1
+nrow=1
+ncol=1
 /

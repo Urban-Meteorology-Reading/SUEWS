@@ -16,8 +16,7 @@
  CBLUSE=          0,
  SNOWUSE=          0,
  SOLWEIGUSE=          0,
- ANTHROPHEATMETHOD=          2,
- ANTHROPCO2METHOD=          2,
+ EMISSIONSMETHOD=          2,
  NETRADIATIONMETHOD=          3,
  ROUGHLENHEATMETHOD=          2,
  ROUGHLENMOMMETHOD=          2,
@@ -34,9 +33,9 @@
  MULTRAINAMONGNUPPERI= 5*-999.00000000000000      ,
  KDOWNZEN=          0,
  SUPPRESSWARNINGS=          1,
- NCMODE=          0,
- NROW=          0,
- NCOL=          0,
+ NCMODE=          1,
+ NROW=          1,
+ NCOL=          1,
  DIAGNOSE=          0,
  DIAGNOSEDISAGG=          0,
  DIAGNOSEDISAGGESTM=          0,
@@ -101,7 +100,6 @@
  SNOWDENSBSOIL= -999.00000000000000     ,
  SNOWDENSWATER= -999.00000000000000     ,
  SNOWALB0= -999.00000000000000     ,
- BOINIT=  10.000000000000000     ,
  /
  ----- Saeve1_2004 Surface characteristics -----
      Paved     Bldgs     EveTr     DecTr     Grass     BSoil     Water      Snow        SurfType
@@ -160,8 +158,9 @@
         Grid        G1        G2        G3        G4        G5        G6        TH        TL        S1        S2      Kmax   gsModel
  Saeve1_2004     3.500   200.000     0.130     0.700    30.000     0.050    55.000   -10.000     5.560     0.000  1200.000  2
  ----- Saeve1_2004 Energy-use parameters -----
-        Grid NumCapita  BaseTHDD   QF_A_WD   QF_A_WE   QF_B_WD   QF_B_WE   QF_C_WD   QF_C_WE    AH_Min  AH_Slope  T_critic
- Saeve1_2004     0.000    18.200     0.308     0.308     0.010     0.010     0.010     0.010    15.000     2.700     7.000
+        Grid NumCapita  BaseTHDD   QF_A_WD   QF_A_WE   QF_B_WD   QF_B_WE   QF_C_WD   QF_C_WE    AH_Min  AH_SlopeT_critic_H
+ Saeve1_2004     0.000    18.200     0.308     0.308     0.010     0.010     0.010     0.010    15.000    15.000     2.700
+    š™™™™™@     7.000     7.000
  ----- Saeve1_2004 Water-use parameters -----
         Grid   IeStart     IeEnd IntWatUse      Faut     Ie_a1     Ie_a2     Ie_a3     Ie_m1     Ie_m2     Ie_m3
  Saeve1_2004         1       366     0.000     0.000     0.000     0.000     0.000     0.000     0.000     0.000

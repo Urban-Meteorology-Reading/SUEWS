@@ -80,7 +80,7 @@ MODULE ctrl_output
        /
 
   ! defualt:
-  DATA(varList(i), i=6,84)/&
+  DATA(varList(i), i=5+1,ncolumnsDataOutSUEWS)/&
        varAttr('Kdown'      , 'W m-2'        , f104 , 'Incoming shortwave radiation'                     , aA , 'SUEWS' , 0)     , &
        varAttr('Kup'        , 'W m-2'        , f104 , 'Outgoing shortwave radiation'                     , aA , 'SUEWS' , 0)     , &
        varAttr('Ldown'      , 'W m-2'        , f104 , 'Incoming longwave radiation'                      , aA , 'SUEWS' , 0)     , &
@@ -163,7 +163,7 @@ MODULE ctrl_output
        /
 
   ! SOLWEIG:
-  DATA(varList(i), i=85,110)/&
+  DATA(varList(i), i=84+1,84+ncolumnsdataOutSOL-5)/&
        varAttr('azimuth'    , 'to_add' , f106 , 'azimuth'    , aA , 'SOLWEIG' , 0)  , &
        varAttr('altitude'   , 'to_add' , f106 , 'altitude'   , aA , 'SOLWEIG' , 0)  , &
        varAttr('GlobalRad'  , 'to_add' , f106 , 'GlobalRad'  , aA , 'SOLWEIG' , 0)  , &
@@ -193,7 +193,7 @@ MODULE ctrl_output
        /
 
   ! BL:
-  DATA(varList(i), i=111,127)/&
+  DATA(varList(i), i=110+1,110+ncolumnsdataOutBL-5)/&
        varAttr('z'         , 'to_add' , f104 , 'z'         , aA , 'BL' , 0)  , &
        varAttr('theta'     , 'to_add' , f104 , 'theta'     , aA , 'BL' , 0)  , &
        varAttr('q'         , 'to_add' , f104 , 'q'         , aA , 'BL' , 0)  , &
@@ -214,7 +214,7 @@ MODULE ctrl_output
        /
 
   ! Snow:
-  DATA(varList(i), i=128,224)/&
+  DATA(varList(i), i=127+1,127+ncolumnsDataOutSnow-5)/&
        varAttr('SWE_Paved'      , 'to_add' , f106 , 'SWE_Paved'      , aA , 'snow' , 0)  , &
        varAttr('SWE_Bldgs'      , 'to_add' , f106 , 'SWE_Bldgs'      , aA , 'snow' , 0)  , &
        varAttr('SWE_EveTr'      , 'to_add' , f106 , 'SWE_EveTr'      , aA , 'snow' , 0)  , &
@@ -315,7 +315,7 @@ MODULE ctrl_output
        /
 
   ! ESTM:
-  DATA(varList(i), i=225,251)/&
+  DATA(varList(i), i=224+1,224+ncolumnsDataOutESTM-5)/&
        varAttr('QS'       , 'W m-2' , f104 , 'Total Storage'                            , aA , 'ESTM' , 0) , &
        varAttr('QSAir'    , 'W m-2' , f104 , 'Storage air'                              , aA , 'ESTM' , 0) , &
        varAttr('QSWall'   , 'W m-2' , f104 , 'Storage Wall'                             , aA , 'ESTM' , 0) , &
@@ -346,7 +346,7 @@ MODULE ctrl_output
        /
 
   ! DailyState:
-  DATA(varList(i), i=252,292)/&
+  DATA(varList(i), i=251+1,251+ncolumnsDataOutDailyState-5)/&
        varAttr('HDD1_h'     , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
        varAttr('HDD2_c'     , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
        varAttr('HDD3_Tmean' , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
@@ -385,7 +385,6 @@ MODULE ctrl_output
        varAttr('DSnowGrass' , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
        varAttr('DSnowBSoil' , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
        varAttr('DSnowWater' , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
-       ! varAttr('BoAnOHMEnd' , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
        varAttr('a1'         , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
        varAttr('a2'         , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
        varAttr('a3'         , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0)  &
@@ -607,10 +606,10 @@ CONTAINS
        IF ( err/= 0) PRINT *, "dataOutX: Allocation request denied"
     ENDIF
 
-    ! determine dataout array according to variable group
+    ! determine dataOutX array according to variable group
     SELECT CASE (TRIM(varList(SIZE(varList))%group))
     CASE ('SUEWS') !default
-       dataOutX=dataout(1:irMax,1:SIZE(varList),Gridiv)
+       dataOutX=dataOutSUEWS(1:irMax,1:SIZE(varList),Gridiv)
 
     CASE ('SOLWEIG') !SOLWEIG
        ! todo: inconsistent data structure
@@ -626,13 +625,19 @@ CONTAINS
        dataOutX=dataOutESTM(1:irMax,1:SIZE(varList),Gridiv)
 
     CASE ('DailyState')    !DailyState
-       ! PRINT*, SHAPE(dataout)
-       ! print*, dataout(1:irMax,2,Gridiv)
+       ! PRINT*, SHAPE(dataOutSUEWS)
+       ! print*, dataOutSUEWS(1:irMax,2,Gridiv)
        ! get correct day index
-       idMin=INT(MINVAL(dataout(1:irMax-1,2,Gridiv)))
-       idMax=INT(MAXVAL(dataout(1:irMax-1,2,Gridiv)))
-       ! PRINT*, 'idMin in SUEWS_Output_txt_grp',idMin
-       ! PRINT*, 'idMax in SUEWS_Output_txt_grp',idMax
+       idMin=MAX(1, &
+            INT(MINVAL(dataOutSUEWS(1:irMax,2,Gridiv))), &
+            INT(MINVAL(PACK(dataOutDailyState(:,2,Gridiv), &
+            mask=(dataOutDailyState(:,6,Gridiv)/=-999)))))
+       idMax=MIN(366,&
+            INT(MAXVAL(dataOutSUEWS(1:irMax,2,Gridiv))), &
+            INT(MAXVAL(PACK(dataOutDailyState(:,2,Gridiv), &
+            mask=(dataOutDailyState(:,6,Gridiv)/=-999)))))
+       ! PRINT*, 'idMin in dataOutDailyState',idMin
+       ! PRINT*, 'idMax in dataOutDailyState',idMax
        IF (ALLOCATED(dataOutX)) THEN
           DEALLOCATE(dataOutX)
           IF ( err/= 0) PRINT *, "dataOutX: Deallocation request denied"
@@ -644,20 +649,20 @@ CONTAINS
        ENDIF
 
        dataOutX=dataOutDailyState(idMin:idMax,1:SIZE(varList),Gridiv)
-       !  print*, 'idMin line',dataOutDailyState(idMin,1:4,Gridiv)
-       !  print*, 'idMax line',dataOutDailyState(idMax-1,1:4,Gridiv)
+       ! PRINT*, 'idMin line',dataOutDailyState(idMin,1:4,Gridiv)
+       ! PRINT*, 'idMax line',dataOutDailyState(idMax,1:4,Gridiv)
     END SELECT
 
     ! PRINT*, 'n of varListX: ',SIZE(varList)
     ! PRINT*, 'varListX: ',varList%header
     ! PRINT*, 'varListX group: ',varList%group
-    ! print*, 'date info of grid',Gridiv,':',dataout(1,1:4,Gridiv)
+    ! print*, 'date info of grid',Gridiv,':',dataOutSUEWS(1,1:4,Gridiv)
     ! print*, 'in dataOutX:',dataOutX(1,1:4)
 
 
 
     ! aggregation:
-    ! aggregation is only done for every group but 'DailyState'
+    ! aggregation is done for every group but 'DailyState'
     IF  (TRIM(varList(SIZE(varList))%group) /= 'DailyState') THEN
 
        CALL SUEWS_Output_Agg(dataOutX_agg,dataOutX,varList,irMax,outFreq_s)
@@ -681,9 +686,9 @@ CONTAINS
   END SUBROUTINE SUEWS_Output_txt_grp
 
   ! initialise an output file with file name and headers
-  SUBROUTINE SUEWS_Output_Init(dataOut,varList,Gridiv,outLevel)
+  SUBROUTINE SUEWS_Output_Init(dataOutX,varList,Gridiv,outLevel)
     IMPLICIT NONE
-    REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOut
+    REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOutX
     TYPE(varAttr),DIMENSION(:),INTENT(in)::varList
     INTEGER,INTENT(in) :: Gridiv,outLevel
 
@@ -705,8 +710,8 @@ CONTAINS
 
 
     ! generate file name
-    CALL filename_gen(dataOut,varList,Gridiv,FileOut)
-    ! print*, 'date info in dataOut',dataOut(1,1:4)
+    CALL filename_gen(dataOutX,varList,Gridiv,FileOut)
+    ! print*, 'date info in dataOutX',dataOutX(1,1:4)
     ! PRINT*, 'FileOut in SUEWS_Output_Init: ',FileOut
 
     ! store right-aligned headers
@@ -736,7 +741,7 @@ CONTAINS
     CLOSE(fn)
 
     ! write out format file
-    CALL formatFile_gen(dataOut,varList,Gridiv,outLevel)
+    CALL formatFile_gen(dataOutX,varList,Gridiv,outLevel)
 
     ! clean up
     IF (ALLOCATED(varListSel)) DEALLOCATE(varListSel, stat=err)
@@ -747,9 +752,9 @@ CONTAINS
   END SUBROUTINE SUEWS_Output_Init
 
   ! generate output format file
-  SUBROUTINE formatFile_gen(dataOut,varList,Gridiv,outLevel)
+  SUBROUTINE formatFile_gen(dataOutX,varList,Gridiv,outLevel)
     IMPLICIT NONE
-    REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOut
+    REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOutX
     TYPE(varAttr),DIMENSION(:),INTENT(in)::varList
     INTEGER,INTENT(in) :: Gridiv,outLevel
 
@@ -761,7 +766,7 @@ CONTAINS
     CHARACTER(len=3) :: itext
 
     ! get filename
-    CALL filename_gen(dataOut,varList,Gridiv,FileOut,1)
+    CALL filename_gen(dataOutX,varList,Gridiv,FileOut,1)
 
     !select variables to output
     xx=COUNT((varList%level<= outLevel), dim=1)
@@ -856,9 +861,9 @@ CONTAINS
   END SUBROUTINE formatFile_gen
 
   ! aggregate data to specified resolution
-  SUBROUTINE SUEWS_Output_Agg(dataOut_agg,dataOut,varList,irMax,outFreq_s)
+  SUBROUTINE SUEWS_Output_Agg(dataOut_agg,dataOutX,varList,irMax,outFreq_s)
     IMPLICIT NONE
-    REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOut
+    REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOutX
     TYPE(varAttr),DIMENSION(:),INTENT(in)::varList
     INTEGER,INTENT(in) :: irMax,outFreq_s
     REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE,INTENT(out)::dataOut_agg
@@ -867,7 +872,7 @@ CONTAINS
     REAL(KIND(1d0))::dataOut_aggX(1:SIZE(varList))
     REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::dataOut_agg0
     nlinesOut=INT(nsh/(60.*60/outFreq_s))
-    ! nGrid=SIZE(dataOut, dim=3)
+    ! nGrid=SIZE(dataOutX, dim=3)
 
     ALLOCATE(dataOut_agg(INT(irMax/nlinesOut),SIZE(varList)))
     ALLOCATE(dataOut_agg0(nlinesOut,SIZE(varList)))
@@ -875,7 +880,7 @@ CONTAINS
 
     DO i=nlinesOut,irMax,nlinesOut
        x=i/nlinesOut
-       dataOut_agg0=dataOut(i-nlinesOut+1:i,:)
+       dataOut_agg0=dataOutX(i-nlinesOut+1:i,:)
        DO j = 1, SIZE(varList), 1
           ! aggregating different variables
           SELECT CASE (varList(j)%aggreg)
@@ -905,9 +910,9 @@ CONTAINS
 
 
   ! append output data to the specific file at the specified outLevel
-  SUBROUTINE SUEWS_Write_txt(dataOut,varList,Gridiv,outLevel)
+  SUBROUTINE SUEWS_Write_txt(dataOutX,varList,Gridiv,outLevel)
     IMPLICIT NONE
-    REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOut
+    REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOutX
     TYPE(varAttr),DIMENSION(:),INTENT(in)::varList
     INTEGER,INTENT(in) :: Gridiv,outLevel
 
@@ -926,11 +931,11 @@ CONTAINS
     varListSel=PACK(varList, mask=(varList%level<= outLevel))
 
     ! copy data accordingly
-    ALLOCATE(dataOutSel(SIZE(dataOut, dim=1),xx), stat=err)
+    ALLOCATE(dataOutSel(SIZE(dataOutX, dim=1),xx), stat=err)
     IF ( err/= 0) PRINT *, "dataOutSel: Allocation request denied"
     ! print*, SIZE(varList%level),PACK((/(i,i=1,SIZE(varList%level))/), varList%level <= outLevel)
-    ! print*, irMax,shape(dataOut)
-    dataOutSel=dataOut(:,PACK((/(i,i=1,SIZE(varList%level))/), varList%level <= outLevel))
+    ! print*, irMax,shape(dataOutX)
+    dataOutSel=dataOutX(:,PACK((/(i,i=1,SIZE(varList%level))/), varList%level <= outLevel))
 
 
     ! create format string:
@@ -951,6 +956,8 @@ CONTAINS
     fn=50
     OPEN(fn,file=TRIM(fileout),position='append')!,err=112)
     DO i=1,SIZE(dataOutSel,dim=1)
+       ! print*, 'Writting',i
+       ! print*, dataOutSel(i,:)
        WRITE(fn,FormatOut) &
             INT(dataOutSel(i,1:4)),&
             dataOutSel(i,5:SIZE(varListSel))
@@ -966,9 +973,9 @@ CONTAINS
   END SUBROUTINE SUEWS_Write_txt
 
 
-  SUBROUTINE filename_gen(dataOut,varList,Gridiv,FileOut,opt_fmt)
+  SUBROUTINE filename_gen(dataOutX,varList,Gridiv,FileOut,opt_fmt)
     IMPLICIT NONE
-    REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOut ! to determine year & output frequency
+    REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOutX ! to determine year & output frequency
     TYPE(varAttr),DIMENSION(:),INTENT(in)::varList ! to determine output group
     INTEGER,INTENT(in) :: Gridiv ! to determine grid name as in SiteSelect
     INTEGER,INTENT(in),OPTIONAL :: opt_fmt ! to determine if a format file
@@ -983,9 +990,11 @@ CONTAINS
 
     IF( PRESENT(opt_fmt) ) val_fmt = opt_fmt
 
+    PRINT*, varList(:)%header
+    PRINT*, 'dataOutX(1)',dataOutX(1,:)
     ! date:
-    year_int=INT(dataOut(1,1))
-    DOY_int=INT(dataOut(1,2))
+    year_int=INT(dataOutX(1,1))
+    DOY_int=INT(dataOutX(1,2))
     WRITE(str_year,'(i4)') year_int
     WRITE(str_DOY,'(i3.3)') DOY_int
     str_date='_'//TRIM(ADJUSTL(str_year))
@@ -1000,8 +1009,8 @@ CONTAINS
        str_out_min='' ! ignore this for DailyState
     ELSE
        WRITE(str_out_min,'(i4)') &
-            INT(dataOut(2,3)-dataOut(1,3))*60& ! hour
-            +INT(dataOut(2,4)-dataOut(1,4))     !minute
+            INT(dataOutX(2,3)-dataOutX(1,3))*60& ! hour
+            +INT(dataOutX(2,4)-dataOutX(1,4))     !minute
        str_out_min='_'//TRIM(ADJUSTL(str_out_min))
     ENDIF
 
@@ -1200,10 +1209,10 @@ CONTAINS
        IF ( err/= 0) PRINT *, "dataOutX: Allocation request denied"
     ENDIF
 
-    ! determine dataout array according to variable group
+    ! determine dataOutX array according to variable group
     SELECT CASE (TRIM(varList(SIZE(varList))%group))
-    CASE ('') !default
-       dataOutX=dataout(1:irMax,1:SIZE(varList),:)
+    CASE ('SUEWS') !default
+       dataOutX=dataOutSUEWS(1:irMax,1:SIZE(varList),:)
 
     CASE ('SOLWEIG') !SOLWEIG
        ! todo: inconsistent data structure
@@ -1220,23 +1229,29 @@ CONTAINS
 
     CASE ('DailyState')    !DailyState
        ! get correct day index
-       idMin=INT(MINVAL(dataout(1:irMax,2,1)))
-       idMax=INT(MAXVAL(dataout(1:irMax,2,1)))
-       !  print*, 'idMin',idMin
-       !  print*, 'idMax',idMax
+       idMin=MAX(1, &
+            INT(MINVAL(dataOutSUEWS(1:irMax,2,1))), &
+            INT(MINVAL(PACK(dataOutDailyState(:,2,1), &
+            mask=(dataOutDailyState(:,6,1)/=-999)))))
+       idMax=MIN(366,&
+            INT(MAXVAL(dataOutSUEWS(1:irMax,2,1))), &
+            INT(MAXVAL(PACK(dataOutDailyState(:,2,1), &
+            mask=(dataOutDailyState(:,6,1)/=-999)))))
+       ! print*, 'idMin',idMin
+       ! print*, 'idMax',idMax
        IF (ALLOCATED(dataOutX)) THEN
           DEALLOCATE(dataOutX)
           IF ( err/= 0) PRINT *, "dataOutX: Deallocation request denied"
        ENDIF
 
        IF (.NOT. ALLOCATED(dataOutX)) THEN
-          ALLOCATE(dataOutX(idMax-idmin,SIZE(varList),NumberOfGrids), stat=err)
+          ALLOCATE(dataOutX(idMax-idMin+1,SIZE(varList),NumberOfGrids), stat=err)
           IF ( err/= 0) PRINT *, "dataOutX: Allocation request denied"
        ENDIF
 
-       dataOutX=dataOutDailyState(idMin:idMax-1,1:SIZE(varList),:)
-       !  print*, 'idMin line',dataOutX(idMin,1:4,1)
-       !  print*, 'idMax line',dataOutX(idMax,1:4,1)
+       dataOutX=dataOutDailyState(idMin:idMax,1:SIZE(varList),:)
+       ! print*, 'idMin line',dataOutX(idMin,1:4,1)
+       ! print*, 'idMax line',dataOutX(idMax,1:4,1)
 
     END SELECT
 
@@ -1268,12 +1283,12 @@ CONTAINS
   END SUBROUTINE SUEWS_Output_nc_grp
 
 
-  SUBROUTINE SUEWS_Write_nc(dataOut,varList,outLevel)
+  SUBROUTINE SUEWS_Write_nc(dataOutX,varList,outLevel)
     ! generic subroutine to write out data in netCDF format
     USE netCDF
 
     IMPLICIT NONE
-    REAL(KIND(1d0)),DIMENSION(:,:,:),INTENT(in)::dataOut
+    REAL(KIND(1d0)),DIMENSION(:,:,:),INTENT(in)::dataOutX
     TYPE(varAttr),DIMENSION(:),INTENT(in)::varList
     INTEGER,INTENT(in) :: outLevel
 
@@ -1304,7 +1319,7 @@ CONTAINS
     CHARACTER(len = 80) :: strGeoTrans
 
     ! determine number of times
-    nTime=SIZE(dataOut, dim=1)
+    nTime=SIZE(dataOutX, dim=1)
 
     !select variables to output
     nVar=COUNT((varList%level<= outLevel), dim=1)
@@ -1316,14 +1331,15 @@ CONTAINS
     ALLOCATE(dataOutSel(nTime,nVar,NumberOfGrids), stat=err)
     IF ( err/= 0) PRINT *, "dataOutSel: Allocation request denied"
     ! print*, SIZE(varList%level),PACK((/(i,i=1,SIZE(varList%level))/), varList%level <= outLevel)
-    ! print*, nTime,shape(dataOut)
-    dataOutSel=dataOut(:,PACK((/(i,i=1,SIZE(varList))/), varList%level <= outLevel),:)
+    ! print*, nTime,shape(dataOutX)
+    dataOutSel=dataOutX(:,PACK((/(i,i=1,SIZE(varList))/), varList%level <= outLevel),:)
 
     ! determine filename
     CALL filename_gen(dataOutSel(:,:,1),varListSel,1,FileOut)
+    PRINT*, 'writing file:',TRIM(fileOut)
 
     ! set year string
-    WRITE(yrStr2,'(i4)') INT(dataOut(1,1,1))
+    WRITE(yrStr2,'(i4)') INT(dataOutX(1,1,1))
     ! get start for later time unit creation
     startStr2=TRIM(yrStr2)//'-01-01 00:00:00'
 
@@ -1390,11 +1406,21 @@ CONTAINS
     ! if data are formatted as a normal matrix
     minLat      = lat(1,1)               ! the lower-left pixel
     maxLat      = lat(1,NY)              ! the upper-left pixel
-    dLat        = (maxLat-minLat)/(nY-1) ! height of a pixel
+    IF ( nY>1 ) THEN
+       dLat = (maxLat-minLat)/(nY-1) ! height of a pixel
+    ELSE
+       dLat = 1
+    END IF
+
     ! PRINT*, 'lat:',minLat,maxLat,dLat
     minLon      = lon(1,1)              ! the lower-left pixel
     maxLon      = lon(NX,1)             ! the lower-right pixel
-    dLon        = (maxLon-minLon)/(nX-1) ! width of a pixel
+    IF ( nY>1 ) THEN
+       dLon = (maxLon-minLon)/(nX-1) ! width of a pixel
+    ELSE
+       dLon = 1
+    END IF
+
     ! PRINT*, 'lon:',minLon,maxLon,dLon
     geoTrans(1) = minLon-dLon/2          ! x-coordinate of the lower-left corner of the lower-left pixel
     geoTrans(2) = dLon                   ! width of a pixel
@@ -1409,7 +1435,6 @@ CONTAINS
 
     ! Create the netCDF file. The nf90_clobber parameter tells netCDF to
     ! overwrite this file, if it already exists.
-    PRINT*, 'writing file:',TRIM(fileOut)
     CALL check( nf90_create(TRIM(fileOut), NF90_CLOBBER, ncID) )
 
     ! put global attributes
@@ -1419,7 +1444,7 @@ CONTAINS
     CALL check( nf90_put_att(ncID,NF90_GLOBAL,'references','http://urban-climate.net/umep/SUEWS' ) )
 
     ! Define the dimensions. NetCDF will hand back an ID for each.
-    ! nY = ncolumnsDataOut-4
+    ! nY = ncolumnsDataOutSUEWS-4
     ! nx = NumberOfGrids
     CALL check( nf90_def_dim(ncID, "time", NF90_UNLIMITED, time_dimid) )
     CALL check( nf90_def_dim(ncID, "west_east", NX, x_dimid) )
@@ -1536,9 +1561,9 @@ CONTAINS
 
     ! then other 3D variables
     DO iVar = iVarStart, nVar
-       !  PRINT*, 'dim1:', SIZE(dataOut(1:nTime,iVar,:), dim=1)
-       !  PRINT*, 'dim2:',SIZE(dataOut(1:nTime,iVar,:), dim=2)
-       ! reshape dataOut to be aligned in checker board form
+       !  PRINT*, 'dim1:', SIZE(dataOutX(1:nTime,iVar,:), dim=1)
+       !  PRINT*, 'dim2:',SIZE(dataOutX(1:nTime,iVar,:), dim=2)
+       ! reshape dataOutX to be aligned in checker board form
        varOut = RESHAPE(dataOutSel(1:nTime,iVar,:),(/nX,nY,nTime/),order = (/3,1,2/) )
        varOut = varOut(:,nY:1:-1,:)
        !  get the variable id

@@ -9,9 +9,10 @@ MODULE SUEWS_Driver
   USE AnOHM_module,ONLY:AnOHM
   USE ESTM_module,ONLY:ESTM
   USE Snow_module,ONLY:SnowCalc,Snow_cal_MeltHeat
-  USE DailyState_module,ONLY:SUEWS_cal_DailyState
+  USE DailyState_module,ONLY:SUEWS_cal_DailyState,update_DailyState
   USE WaterDist_module,ONLY:drainage,soilstore,SUEWS_cal_SoilMoist,SUEWS_update_SoilMoist,ReDistributeWater
   USE ctrl_output,ONLY:varList
+  USE allocateArray,ONLY:ncolumnsDataOutSUEWS,ncolumnsDataOutSnow,ncolumnsDataOutESTM,ncolumnsDataOutDailyState
 
 
   IMPLICIT NONE
@@ -53,7 +54,8 @@ CONTAINS
        TraffProf_tstep,Ts5mindata_ir,tstep,veg_type,&
        WaterDist,WaterUseMethod,WetThresh,WU_Day,WUProfA_tstep,&
        WUProfM_tstep,xsmd,year,Z,&
-       datetimeLine,dataOutLine,dataOutLineSnow,dataOutLineESTM)!output
+       datetimeLine,dataOutLineSUEWS,dataOutLineSnow,dataOutLineESTM,&!output
+       DailyStateLine)!output
 
     IMPLICIT NONE
 
@@ -67,7 +69,7 @@ CONTAINS
     INTEGER,PARAMETER::ndays=366
     INTEGER,PARAMETER::nsurf=7
     INTEGER,PARAMETER::NVegSurf=3
-    INTEGER,PARAMETER::ncolumnsDataOut=84
+    INTEGER,PARAMETER::ncolumnsDataOutSUEWS=84
     INTEGER,PARAMETER::ncolumnsDataOutSnow=102
     INTEGER,PARAMETER::ncolumnsDataOutESTM=32
     ! INTEGER,PARAMETER::PavSurf=1
@@ -276,10 +278,11 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(3600/tstep),INTENT(INOUT)       ::qn1_S_store
     REAL(KIND(1D0)),DIMENSION(3600/tstep),INTENT(INOUT)       ::qn1_store
 
-    REAL(KIND(1D0)),DIMENSION(5),INTENT(OUT)                    ::datetimeLine
-    REAL(KIND(1D0)),DIMENSION(ncolumnsDataOut-5),INTENT(OUT)    ::dataOutLine
-    REAL(KIND(1D0)),DIMENSION(ncolumnsDataOutSnow-5),INTENT(OUT)::dataOutLineSnow
-    REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutESTM-5),INTENT(OUT)                   ::dataOutLineESTM
+    REAL(KIND(1D0)),DIMENSION(5),INTENT(OUT)                     ::datetimeLine
+    REAL(KIND(1D0)),DIMENSION(ncolumnsDataOutSUEWS-5),INTENT(OUT)     ::dataOutLineSUEWS
+    REAL(KIND(1D0)),DIMENSION(ncolumnsDataOutSnow-5),INTENT(OUT) ::dataOutLineSnow
+    REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutESTM-5),INTENT(OUT) ::dataOutLineESTM
+    REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutDailyState-5),INTENT(OUT) :: DailyStateLine
 
     REAL(KIND(1D0))::a1
     REAL(KIND(1D0))::a2
@@ -288,8 +291,9 @@ CONTAINS
     REAL(KIND(1D0))::avU10_ms
     REAL(KIND(1D0))::azimuth
     REAL(KIND(1D0))::chSnow_per_interval
-    
+
     REAL(KIND(1D0))::dens_dry
+    REAL(KIND(1d0))::deltaLAI
     REAL(KIND(1D0))::drain_per_tstep
     REAL(KIND(1D0))::Ea_hPa
     REAL(KIND(1D0))::E_mod
@@ -490,8 +494,8 @@ CONTAINS
          Ie_a,Ie_m,DayWatPer,DayWat,SnowPack,&
          BaseT,BaseTe,GDDFull,SDDFull,LAIMin,LAIMax,LAIPower,&
          SnowAlb,DecidCap,albDecTr,albEveTr,albGrass,&!inout
-         porosity,GDD,HDD,SnowDens,LAI,DayofWeek,&
-         WU_Day)!output
+         porosity,GDD,HDD,SnowDens,LAI,DayofWeek,WU_Day,&
+         deltaLAI)!output
 
 
     !Calculation of density and other water related parameters
@@ -551,7 +555,7 @@ CONTAINS
          qn1_S,snowFrac,dataOutLineESTM,qs,&!output
          deltaQi,a1,a2,a3)
 
-      
+
     !==================Energy related to snow melting/freezing processes=======
     IF(Diagnose==1) WRITE(*,*) 'Calling MeltHeat'
     CALL Snow_cal_MeltHeat(&
@@ -565,8 +569,8 @@ CONTAINS
          veg_fr,snowCalcSwitch,Qm_melt,Qm_freezState,Qm_rain,FreezMelt,&
          FreezState,FreezStateVol,rainOnSnow,SnowDepth,mw_ind,&
          dataOutLineSnow)!output
-         
-   
+
+
 
     !==========================Turbulent Fluxes================================
     IF(Diagnose==1) WRITE(*,*) 'Calling LUMPS_cal_QHQE...'
@@ -696,7 +700,7 @@ CONTAINS
          drain_per_tstep,E_mod,ev_per_tstep,ext_wu,Fc,Fc_build,fcld,&
          Fc_metab,Fc_photo,Fc_respi,Fc_traff,FlowChange,&
          h_mod,id,id_prev_t,imin,int_wu,it,iy,iy_prev_t,&
-         kup,LAI,ldown,l_mod,lup,mwh,MwStore,ncolumnsDataOut,&
+         kup,LAI,ldown,l_mod,lup,mwh,MwStore,ncolumnsDataOutSUEWS,&
          nsh_real,NWstate_per_tstep,Precip,q2_gkg,&
          qeOut,qf,qh,QH_r,Qm,QmFreez,&
          QmRain,qn1,qn1_S,qn1_SF,qs,RA,&
@@ -706,11 +710,20 @@ CONTAINS
          state,state_per_tstep,surf_chang_per_tstep,swe,t2_C,&
          tot_chang_per_tstep,tsurf,UStar,wu_DecTr,&
          wu_EveTr,wu_Grass,z0m,zdm,zenith_deg,&
-         datetimeLine,dataOutLine)!output
+         datetimeLine,dataOutLineSUEWS)!output
 
     ! model state:
 
     ! daily state:
+    CALL update_DailyState(&
+         iy,id,it,imin,nsh_real,&!input
+         GDD,HDD,LAI,&
+         DecidCap,albDecTr,albEveTr,albGrass,porosity,&
+         WU_Day,&
+         deltaLAI,VegPhenLumps,&
+         SnowAlb,SnowDens,&
+         a1,a2,a3,&
+         DailyStateLine)!out
 
     !==============translation end ================
 
@@ -1900,7 +1913,7 @@ CONTAINS
        Fc_metab,Fc_photo,Fc_respi,Fc_traff,FlowChange,&
        h_mod,id,id_prev_t,imin,int_wu,it,iy,iy_prev_t,&
        kup,LAI,ldown,l_mod,lup,mwh,&
-       MwStore,ncolumnsDataOut,&
+       MwStore,ncolumnsDataOutSUEWS,&
        nsh_real,NWstate_per_tstep,Precip,q2_gkg,&
        qeOut,qf,qh,QH_r,Qm,QmFreez,&
        QmRain,qn1,qn1_S,qn1_SF,qs,RA,&
@@ -1910,7 +1923,7 @@ CONTAINS
        state,state_per_tstep,surf_chang_per_tstep,swe,t2_C,&
        tot_chang_per_tstep,tsurf,UStar,wu_DecTr,&
        wu_EveTr,wu_Grass,z0m,zdm,zenith_deg,&
-       datetimeLine,dataOutLine)!output
+       datetimeLine,dataOutLineSUEWS)!output
     IMPLICIT NONE
 
     INTEGER,PARAMETER::ndays    = 366
@@ -1919,7 +1932,7 @@ CONTAINS
     REAL(KIND(1d0)),PARAMETER :: NAN=-999
 
 
-    INTEGER,INTENT(in) ::ncolumnsDataOut
+    INTEGER,INTENT(in) ::ncolumnsDataOutSUEWS
     INTEGER,INTENT(in) :: iy
     INTEGER,INTENT(in) :: iy_prev_t
     INTEGER,INTENT(in) :: id
@@ -2000,7 +2013,7 @@ CONTAINS
 
 
     REAL(KIND(1D0)),DIMENSION(5),INTENT(OUT)::datetimeLine
-    REAL(KIND(1d0)),DIMENSION(ncolumnsDataOut-5),INTENT(out) :: dataOutLine
+    REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutSUEWS-5),INTENT(out) :: dataOutLineSUEWS
     ! REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutSnow-5),INTENT(out) :: dataOutLineSnow
     ! REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutESTM-5),INTENT(out) :: dataOutLineESTM
 
@@ -2154,7 +2167,7 @@ CONTAINS
          REAL(iy,KIND(1D0)),REAL(id,KIND(1D0)),&
          REAL(it,KIND(1D0)),REAL(imin,KIND(1D0)),dectime]
     !Define the overall output matrix to be printed out step by step
-    dataOutLine=[&
+    dataOutLineSUEWS=[&
          avkdn,kup,ldown,lup,tsurf,&
          qn1,qf,qs,qh,qeOut,&
          h_mod,e_mod,qh_r,&
@@ -2176,7 +2189,7 @@ CONTAINS
          t2_C,q2_gkg,avU10_ms& ! surface-level diagonostics
          ]
     ! set invalid values to NAN
-    dataOutLine=set_nan(dataOutLine)
+    ! dataOutLineSUEWS=set_nan(dataOutLineSUEWS)
 
 
     !====================update output line end==============================
@@ -2188,9 +2201,9 @@ CONTAINS
   SUBROUTINE SUEWS_update_output(&
        SnowUse,storageheatmethod,&!input
        ReadLinesMetdata,NumberOfGrids,&
-       ncolumnsDataOut,ncolumnsDataOutSnow,ncolumnsDataOutESTM,&
-       ir,gridiv,datetimeLine,dataOutLine,dataOutLineSnow,dataOutLineESTM,&!input
-       dataOut,dataOutSnow,dataOutESTM)!inout
+       ncolumnsDataOutSUEWS,ncolumnsDataOutSnow,ncolumnsDataOutESTM,&
+       ir,gridiv,datetimeLine,dataOutLineSUEWS,dataOutLineSnow,dataOutLineESTM,&!input
+       dataOutSUEWS,dataOutSnow,dataOutESTM)!inout
     IMPLICIT NONE
 
     ! INTEGER,PARAMETER::ndays    = 366
@@ -2199,7 +2212,7 @@ CONTAINS
     ! REAL(KIND(1d0)),PARAMETER :: NAN=-999
 
     INTEGER,INTENT(in) ::ReadLinesMetdata
-    INTEGER,INTENT(in) ::ncolumnsDataOut
+    INTEGER,INTENT(in) ::ncolumnsDataOutSUEWS
     INTEGER,INTENT(in) ::ncolumnsDataOutSnow
     INTEGER,INTENT(in) ::ncolumnsDataOutESTM
     INTEGER,INTENT(in) ::NumberOfGrids
@@ -2209,28 +2222,28 @@ CONTAINS
     INTEGER,INTENT(in) ::ir
 
     REAL(KIND(1d0)),DIMENSION(5),INTENT(in) :: datetimeLine
-    REAL(KIND(1d0)),DIMENSION(ncolumnsDataOut-5),INTENT(in) :: dataOutLine(27)
-    REAL(KIND(1d0)),DIMENSION(ncolumnsdataOutESTM-5),INTENT(in) :: dataOutLineESTM(27)
-    REAL(KIND(1d0)),DIMENSION(ncolumnsdataOutsNOW-5),INTENT(in) :: dataOutLineSnow(27)
+    REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutSUEWS-5),INTENT(in) :: dataOutLineSUEWS
+    REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutESTM-5),INTENT(in) :: dataOutLineESTM
+    REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutSnow-5),INTENT(in) :: dataOutLineSnow
 
 
-    REAL(KIND(1d0)),INTENT(inout) :: dataOut(ReadLinesMetdata,ncolumnsDataOut,NumberOfGrids)
+    REAL(KIND(1d0)),INTENT(inout) :: dataOutSUEWS(ReadLinesMetdata,ncolumnsDataOutSUEWS,NumberOfGrids)
     REAL(KIND(1d0)),INTENT(inout) :: dataOutSnow(ReadLinesMetdata,ncolumnsDataOutSnow,NumberOfGrids)
     REAL(KIND(1d0)),INTENT(inout) :: dataOutESTM(ReadLinesMetdata,ncolumnsDataOutESTM,NumberOfGrids)
 
 
     !====================== update output arrays ==============================
     !Define the overall output matrix to be printed out step by step
-    dataOut(ir,1:ncolumnsDataOut,Gridiv)=[datetimeLine,set_nan(dataOutLine)]
+    dataOutSUEWS(ir,1:ncolumnsDataOutSUEWS,Gridiv)=[datetimeLine,set_nan(dataOutLineSUEWS)]
     ! ! set invalid values to NAN
-    ! dataOut(ir,6:ncolumnsDataOut,Gridiv)=set_nan(dataOut(ir,6:ncolumnsDataOut,Gridiv))
+    ! dataOutSUEWS(ir,6:ncolumnsDataOutSUEWS,Gridiv)=set_nan(dataOutSUEWS(ir,6:ncolumnsDataOutSUEWS,Gridiv))
 
     IF (snowUse==1) THEN
        dataOutSnow(ir,1:ncolumnsDataOutSnow,Gridiv)=[datetimeLine,set_nan(dataOutLineSnow)]
     END IF
 
     IF (storageheatmethod==4) THEN
-       dataOutESTM(ir,1:ncolumnsdataOutESTM,Gridiv)=[datetimeLine,set_nan(dataOutLineESTM)]
+       dataOutESTM(ir,1:ncolumnsDataOutESTM,Gridiv)=[datetimeLine,set_nan(dataOutLineESTM)]
     END IF
 
     !====================update output arrays end==============================
@@ -2547,5 +2560,3 @@ CONTAINS
   ! END SUBROUTINE output_names
 
 END MODULE SUEWS_Driver
-
-

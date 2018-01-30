@@ -114,20 +114,16 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        TraffProf_tstep,Ts5mindata_ir,tstep,veg_type,&
        WaterDist,WaterUseMethod,WetThresh,WU_Day,WUProfA_tstep,&
        WUProfM_tstep,xsmd,year,Z,&
-       datetimeLine,dataOutLine,dataOutLineSnow,dataOutLineESTM)!output
-       
+       datetimeLine,dataOutLineSUEWS,dataOutLineSnow,dataOutLineESTM,&!output
+       DailyStateLine)!output
+
 
   !============ update and write out SUEWS_cal_DailyState ===============
   ! only works at the last timestep of a day
   CALL SUEWS_update_DailyState(&
        iy,id,it,imin,dectime,&!input
-       GDD,HDD,LAI,&
-       DecidCap,albDecTr,albEveTr,albGrass,porosity,&
-       WU_Day,&
-       nsh_real,deltaLAI,VegPhenLumps,&
-       SnowAlb,SnowDens,&
-       a1,a2,a3,&
-       Gridiv,NumberOfGrids,&
+       Gridiv,NumberOfGrids,nsh_real,&
+       DailyStateLine,&
        dataOutDailyState)!inout
 
   !============ write out results ===============
@@ -135,9 +131,9 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   CALL SUEWS_update_output(&
        SnowUse,storageheatmethod,&!input
        ReadLinesMetdata,NumberOfGrids,&
-       ncolumnsDataOut,ncolumnsDataOutSnow,ncolumnsDataOutESTM,&
-       ir,gridiv,datetimeLine,dataOutLine,dataOutLineSnow,dataOutLineESTM,&!input
-       dataOut,dataOutSnow,dataOutESTM)!inout
+       ncolumnsDataOutSUEWS,ncolumnsDataOutSnow,ncolumnsDataOutESTM,&
+       ir,gridiv,datetimeLine,dataOutLineSUEWS,dataOutLineSnow,dataOutLineESTM,&!input
+       dataOutSUEWS,dataOutSnow,dataOutESTM)!inout
 
 
   ! NB: CBL disabled for the moment for interface improvement

@@ -235,7 +235,7 @@ CONTAINS
             BaseT,BaseTe,CapMax_dec,CapMin_dec,DayWat,DayWatPer,Faut,GDDFull,&
             Ie_a,Ie_m,LAIMax,LAIMin,LAIPower,lat,PorMax_dec,PorMin_dec,SDDFull,LAI_obs,&
             albDecTr,albEveTr,albGrass,porosity,DecidCap,deltaLAI,&!inout
-            GDD,HDD,LAI,WU_Day)
+            GDD,HDD,LAI,WU_Day)!output
        ! ,xBo)!output
     ENDIF   !End of section done only at the end of each day (i.e. only once per day)
 
@@ -329,7 +329,8 @@ CONTAINS
     ! Calculate modelled daily water use ------------------------------------------
     CALL update_WaterUse(&
          id,WaterUseMethod,DayofWeek,lat,Faut,HDD,&!input
-         Ie_a,Ie_m,Ie_start,Ie_end,DayWatPer,DayWat,WU_Day) !output
+         Ie_a,Ie_m,Ie_start,Ie_end,DayWatPer,DayWat,&
+         WU_Day) !inout
 
     !------------------------------------------------------------------------------
     ! Calculation of LAI from growing degree days
@@ -816,7 +817,8 @@ CONTAINS
 
   SUBROUTINE update_WaterUse(&
        id,WaterUseMethod,DayofWeek,lat,Faut,HDD,&!input
-       Ie_a,Ie_m,Ie_start,Ie_end,DayWatPer,DayWat,WU_Day) !output
+       Ie_a,Ie_m,Ie_start,Ie_end,DayWatPer,DayWat,&
+       WU_Day) !inout
 
     IMPLICIT NONE
     INTEGER,PARAMETER :: ndays=366

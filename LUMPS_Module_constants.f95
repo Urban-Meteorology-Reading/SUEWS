@@ -1578,8 +1578,8 @@ MODULE InitialCond
        SnowPackGrass,&
        SnowPackBSoil,&
        SnowPackWater,&
-       SnowAlb0,&
-       BoInit !initial Bo for AnOHM, TS 13 Jul 2016
+       SnowAlb0!,&
+       ! BoInit !initial Bo for AnOHM, TS 13 Jul 2016 ! removed, TS 30 Jan 2018
 
   INTEGER::ID_Prev
 

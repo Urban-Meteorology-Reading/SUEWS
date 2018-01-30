@@ -1812,8 +1812,8 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
        SnowDensGrass,&
        SnowDensBSoil,&
        SnowDensWater,&
-       SnowAlb0,&
-       BoInit
+       SnowAlb0!,&
+       ! BoInit ! removed as no longer needed by AnOHM
 
   ! Initialise namelist to NAN ----------------------------------------------
   DaysSinceRain=INT(NAN)

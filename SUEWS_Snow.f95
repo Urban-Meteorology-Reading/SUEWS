@@ -118,7 +118,7 @@ CONTAINS
             mwh,fwh,Qm,QmFreez,QmRain,snowCalcSwitch,&
             Qm_melt,Qm_freezState,Qm_rain,FreezMelt,FreezState,FreezStateVol,&
             rainOnSnow,SnowDepth,mw_ind)
-            
+
        CALL veg_fr_snow(&
             sfr,snowFrac,nsurf,&!input
             veg_fr)!output
@@ -279,8 +279,6 @@ CONTAINS
     Qm=0
     QmFreez=0
     QmRain=0
-    mw_ind=0
-
     snowCalcSwitch=0
     Qm_melt=0
     Qm_freezState=0
@@ -289,13 +287,15 @@ CONTAINS
     FreezState=0
     FreezStateVol=0
     rainOnSnow = 0
+    SnowDepth = 0
+    mw_ind=0
 
     !===dummy calculations===
     xx=bldgsurf
     xx=PavSurf
     !===dummy calculations end===
 
-   
+
     !=========================================================================================
     DO is=1,nsurf  !Go each surface type through
        IF (sfr(is)/=0) THEN  !If surface type existing,
@@ -320,14 +320,14 @@ CONTAINS
              ENDIF
              !Previous equation give the hourly values, divide these with the timestep number
              mw_ind(is) = mw_ind(is)/nsh_real
-             
+
              IF (mw_ind(is)>SnowPack(is)) mw_ind(is) = SnowPack(is)!Limited by the previous timestep SnowPack
-             
+
              !-----------------------------------------------------
              ! Heat consumed to snowmelt/refreezing within Tstep.
              ! Converted from mm nsh-1 to mm nsh-1 and to m s-1
              Qm_melt(is) = waterDens*((mw_ind(is)/tstep_real)/1000)*(lvS_J_kg-lv_J_kg)
-             
+
              !If melt is negative this means freezing water in the SnowPack
              IF (mw_ind(is)<0) THEN
 
@@ -429,16 +429,16 @@ CONTAINS
           QmRain = QmRain + Qm_rain(is)*sfr(is)*snowFrac(is) !Rain on snow
           QmFreez=QmFreez+deltaQi(is)*sfr(is)*snowFrac(is)+Qm_freezState(is)*sfr(is)*(1-snowFrac(is)) !Freezing water
        ENDIF
- 
+
     ENDDO !End surface type
- 
+
     !Update snow albedo to its maximum value if precipitation exists
     IF (Precip>0.AND.SUM(SnowPack)>0.AND.Temp_C<0) THEN
-    
+
        CumSnowfall=CumSnowfall + Precip
-       
+
        IF (CumSnowfall>PrecipLimitAlb) THEN
- 
+
           SnowAlb=SnowAlbMax
           CumSnowfall=0
        ENDIF
@@ -590,7 +590,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::soilmoist
     REAL(KIND(1d0)),DIMENSION(2),INTENT(out)::SnowRemoval
 
-    
+
 
     REAL(KIND(1d0)),INTENT(out)::swe
     REAL(KIND(1d0)),INTENT(out)::ev

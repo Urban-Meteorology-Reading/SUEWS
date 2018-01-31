@@ -990,8 +990,9 @@ CONTAINS
 
     IF( PRESENT(opt_fmt) ) val_fmt = opt_fmt
 
-    PRINT*, varList(:)%header
-    PRINT*, 'dataOutX(1)',dataOutX(1,:)
+    ! PRINT*, varList(:)%header
+    ! PRINT*, 'dataOutX(1)',dataOutX(1,:)
+
     ! date:
     year_int=INT(dataOutX(1,1))
     DOY_int=INT(dataOutX(1,2))
@@ -1336,7 +1337,7 @@ CONTAINS
 
     ! determine filename
     CALL filename_gen(dataOutSel(:,:,1),varListSel,1,FileOut)
-    PRINT*, 'writing file:',TRIM(fileOut)
+    ! PRINT*, 'writing file:',TRIM(fileOut)
 
     ! set year string
     WRITE(yrStr2,'(i4)') INT(dataOutX(1,1,1))

@@ -12,7 +12,12 @@ MODULE SUEWS_Driver
   USE DailyState_module,ONLY:SUEWS_cal_DailyState,update_DailyState
   USE WaterDist_module,ONLY:drainage,soilstore,SUEWS_cal_SoilMoist,SUEWS_update_SoilMoist,ReDistributeWater
   USE ctrl_output,ONLY:varList
-  USE allocateArray,ONLY:ncolumnsDataOutSUEWS,ncolumnsDataOutSnow,ncolumnsDataOutESTM,ncolumnsDataOutDailyState
+  USE allocateArray,ONLY:&
+       ndays,nsurf,nvegsurf,&
+       PavSurf,BldgSurf,ConifSurf,DecidSurf,GrassSurf,BSoilSurf,WaterSurf,&
+       ivConif,ivDecid,ivGrass,&
+       ncolumnsDataOutSUEWS,ncolumnsDataOutSnow,ncolumnsDataOutESTM,&
+       ncolumnsDataOutDailyState
 
 
   IMPLICIT NONE
@@ -66,12 +71,12 @@ CONTAINS
     ! INTEGER,PARAMETER::ivConif=1
     ! INTEGER,PARAMETER::ivGrass=3
     ! INTEGER,PARAMETER::MaxNumberOfGrids=2000
-    INTEGER,PARAMETER::ndays=366
-    INTEGER,PARAMETER::nsurf=7
-    INTEGER,PARAMETER::NVegSurf=3
-    INTEGER,PARAMETER::ncolumnsDataOutSUEWS=84
-    INTEGER,PARAMETER::ncolumnsDataOutSnow=102
-    INTEGER,PARAMETER::ncolumnsDataOutESTM=32
+    ! INTEGER,PARAMETER::ndays=366
+    ! INTEGER,PARAMETER::nsurf=7
+    ! INTEGER,PARAMETER::NVegSurf=3
+    ! INTEGER,PARAMETER::ncolumnsDataOutSUEWS=84
+    ! INTEGER,PARAMETER::ncolumnsDataOutSnow=102
+    ! INTEGER,PARAMETER::ncolumnsDataOutESTM=32
     ! INTEGER,PARAMETER::PavSurf=1
     ! INTEGER,PARAMETER::WaterSurf=7
 
@@ -700,7 +705,7 @@ CONTAINS
          drain_per_tstep,E_mod,ev_per_tstep,ext_wu,Fc,Fc_build,fcld,&
          Fc_metab,Fc_photo,Fc_respi,Fc_traff,FlowChange,&
          h_mod,id,id_prev_t,imin,int_wu,it,iy,iy_prev_t,&
-         kup,LAI,ldown,l_mod,lup,mwh,MwStore,ncolumnsDataOutSUEWS,&
+         kup,LAI,ldown,l_mod,lup,mwh,MwStore,&
          nsh_real,NWstate_per_tstep,Precip,q2_gkg,&
          qeOut,qf,qh,QH_r,Qm,QmFreez,&
          QmRain,qn1,qn1_S,qn1_SF,qs,RA,&
@@ -744,19 +749,19 @@ CONTAINS
 
     IMPLICIT NONE
     ! INTEGER,PARAMETER::BldgSurf=2
-    INTEGER,PARAMETER::ConifSurf=3
-    INTEGER,PARAMETER::DecidSurf=4
-    INTEGER,PARAMETER::GrassSurf=5
-    INTEGER,PARAMETER::ivConif=1
-    INTEGER,PARAMETER::ivDecid=2
-    INTEGER,PARAMETER::ivGrass=3
+    ! INTEGER,PARAMETER::ConifSurf=3
+    ! INTEGER,PARAMETER::DecidSurf=4
+    ! INTEGER,PARAMETER::GrassSurf=5
+    ! INTEGER,PARAMETER::ivConif=1
+    ! INTEGER,PARAMETER::ivDecid=2
+    ! INTEGER,PARAMETER::ivGrass=3
     ! INTEGER,PARAMETER::MaxNumberOfGrids=2000
-    INTEGER,PARAMETER::ndays=366
-    INTEGER,PARAMETER::nsurf=7
-    INTEGER,PARAMETER::NVegSurf=3
+    ! INTEGER,PARAMETER::ndays=366
+    ! INTEGER,PARAMETER::nsurf=7
+    ! INTEGER,PARAMETER::NVegSurf=3
     ! INTEGER,PARAMETER::PavSurf=1
     ! INTEGER,PARAMETER::WaterSurf=7
-    INTEGER,PARAMETER::BSoilSurf = 6!New surface classes: Grass = 5th/7 surfaces
+    ! INTEGER,PARAMETER::BSoilSurf = 6!New surface classes: Grass = 5th/7 surfaces
 
     INTEGER,INTENT(in)::Diagnose
     INTEGER,INTENT(in)::EmissionsMethod
@@ -931,7 +936,7 @@ CONTAINS
     USE NARP_MODULE, ONLY: RadMethod,NARP
 
     IMPLICIT NONE
-    INTEGER,PARAMETER ::nsurf     = 7 ! number of surface types
+    ! INTEGER,PARAMETER ::nsurf     = 7 ! number of surface types
     INTEGER,PARAMETER ::ConifSurf = 3 !New surface classes: Grass = 5th/7 surfaces
     INTEGER,PARAMETER ::DecidSurf = 4 !New surface classes: Grass = 5th/7 surfaces
     INTEGER,PARAMETER ::GrassSurf = 5
@@ -1082,10 +1087,10 @@ CONTAINS
 
     IMPLICIT NONE
 
-    INTEGER,PARAMETER :: nsurf    = 7      ! number of surface types
+    ! INTEGER,PARAMETER :: nsurf    = 7      ! number of surface types
     INTEGER,PARAMETER ::BldgSurf  = 2      !New surface classes: Grass = 5th/7 surfaces
     INTEGER,PARAMETER ::WaterSurf = 7
-    INTEGER, PARAMETER:: ndays = 366
+    ! INTEGER, PARAMETER:: ndays = 366
 
     INTEGER,INTENT(in)::StorageHeatMethod
     INTEGER,INTENT(in)::OHMIncQF
@@ -1245,8 +1250,8 @@ CONTAINS
        AddWater,stateOld,soilmoistOld)
 
     IMPLICIT NONE
-    INTEGER,PARAMETER :: nsurf=7! number of surface types
-    INTEGER,PARAMETER ::WaterSurf = 7
+    ! INTEGER,PARAMETER :: nsurf=7! number of surface types
+    ! INTEGER,PARAMETER ::WaterSurf = 7
     INTEGER,INTENT(in) ::Diagnose
     INTEGER,INTENT(in) ::snowUse
 
@@ -1392,7 +1397,7 @@ CONTAINS
 
     IMPLICIT NONE
 
-    INTEGER,PARAMETER::nsurf=7! number of surface types
+    ! INTEGER,PARAMETER::nsurf=7! number of surface types
     ! INTEGER,PARAMETER::PavSurf   = 1  !New surface classes: Grass = 5th/7 surfaces
     ! INTEGER,PARAMETER::BldgSurf  = 2  !New surface classes: Grass = 5th/7 surfaces
     ! INTEGER,PARAMETER::ConifSurf = 3  !New surface classes: Grass = 5th/7 surfaces
@@ -1768,7 +1773,7 @@ CONTAINS
        psim,gsc,ResistSurf,RA,RAsnow,rb)
 
     IMPLICIT NONE
-    INTEGER,PARAMETER :: nsurf=7! number of surface types
+    ! INTEGER,PARAMETER :: nsurf=7! number of surface types
 
 
     ! INTEGER,PARAMETER::ConifSurf = 3  !New surface classes: Grass = 5th/7 surfaces
@@ -1913,7 +1918,7 @@ CONTAINS
        Fc_metab,Fc_photo,Fc_respi,Fc_traff,FlowChange,&
        h_mod,id,id_prev_t,imin,int_wu,it,iy,iy_prev_t,&
        kup,LAI,ldown,l_mod,lup,mwh,&
-       MwStore,ncolumnsDataOutSUEWS,&
+       MwStore,&
        nsh_real,NWstate_per_tstep,Precip,q2_gkg,&
        qeOut,qf,qh,QH_r,Qm,QmFreez,&
        QmRain,qn1,qn1_S,qn1_SF,qs,RA,&
@@ -1926,13 +1931,13 @@ CONTAINS
        datetimeLine,dataOutLineSUEWS)!output
     IMPLICIT NONE
 
-    INTEGER,PARAMETER::ndays    = 366
-    INTEGER,PARAMETER::nvegsurf = 3
-    INTEGER,PARAMETER::nsurf    = 7
+    ! INTEGER,PARAMETER::ndays    = 366
+    ! INTEGER,PARAMETER::nvegsurf = 3
+    ! INTEGER,PARAMETER::nsurf    = 7
     REAL(KIND(1d0)),PARAMETER :: NAN=-999
 
 
-    INTEGER,INTENT(in) ::ncolumnsDataOutSUEWS
+    ! INTEGER,INTENT(in) ::ncolumnsDataOutSUEWS
     INTEGER,INTENT(in) :: iy
     INTEGER,INTENT(in) :: iy_prev_t
     INTEGER,INTENT(in) :: id
@@ -2201,7 +2206,6 @@ CONTAINS
   SUBROUTINE SUEWS_update_output(&
        SnowUse,storageheatmethod,&!input
        ReadLinesMetdata,NumberOfGrids,&
-       ncolumnsDataOutSUEWS,ncolumnsDataOutSnow,ncolumnsDataOutESTM,&
        ir,gridiv,datetimeLine,dataOutLineSUEWS,dataOutLineSnow,dataOutLineESTM,&!input
        dataOutSUEWS,dataOutSnow,dataOutESTM)!inout
     IMPLICIT NONE
@@ -2212,9 +2216,9 @@ CONTAINS
     ! REAL(KIND(1d0)),PARAMETER :: NAN=-999
 
     INTEGER,INTENT(in) ::ReadLinesMetdata
-    INTEGER,INTENT(in) ::ncolumnsDataOutSUEWS
-    INTEGER,INTENT(in) ::ncolumnsDataOutSnow
-    INTEGER,INTENT(in) ::ncolumnsDataOutESTM
+    ! INTEGER,INTENT(in) ::ncolumnsDataOutSUEWS
+    ! INTEGER,INTENT(in) ::ncolumnsDataOutSnow
+    ! INTEGER,INTENT(in) ::ncolumnsDataOutESTM
     INTEGER,INTENT(in) ::NumberOfGrids
     INTEGER,INTENT(in) ::Gridiv
     INTEGER,INTENT(in) ::SnowUse
@@ -2303,7 +2307,7 @@ CONTAINS
        sfr,& !input
        vegfraction,ImpervFraction,PervFraction,NonWaterFraction) ! output
     IMPLICIT NONE
-    INTEGER,PARAMETER::nsurf=7
+    ! INTEGER,PARAMETER::nsurf=7
     INTEGER,PARAMETER::PavSurf=1
     INTEGER,PARAMETER::BldgSurf=2
     INTEGER,PARAMETER::ConifSurf=3

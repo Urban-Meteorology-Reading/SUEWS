@@ -20,7 +20,7 @@ SUBROUTINE OHM(qn1,qn1_store,qn1_av_store,&
      BldgSurf,WaterSurf,&
      SnowUse,SnowFrac,&
      DiagQS,&
-     a1,a2,a3,qs,deltaQi)
+     a1,a2,a3,qs,deltaQi)!output
   ! Made by HCW Jan 2015 to replace OHMnew (no longer needed).
   ! Calculates net storage heat flux (QS) from Eq 4, Grimmond et al. 1991, Atm Env.
   ! Accounts for variable timesteps in dQ*/dt term.
@@ -257,6 +257,8 @@ SUBROUTINE OHM_dqndt_cal(nsh,qn1,qn1_store,qn1_av_store,dqndt)
   REAL(KIND(1d0)) :: qn1_av
   INTEGER :: nsh_nna
 
+  dqndt=-999 ! initialise as -999
+
   ! Store instantaneous qn1 values for previous hour (qn1_store) and average (qn1_av)
   IF(nsh > 1) THEN
      qn1_store=CSHIFT(qn1_store,1) ! shift to left with one place
@@ -287,6 +289,7 @@ SUBROUTINE OHM_QS_cal(qn1,dqndt,a1,a2,a3,qs)
   IMPLICIT NONE
   REAL(KIND(1d0)), INTENT(in) :: qn1,dqndt,a1,a2,a3
   REAL(KIND(1d0)), INTENT(out):: qs
+  qs=-999 ! initialise as -999
   qs = qn1*a1 + dqndt*a2 + a3   !Eq 4, Grimmond et al. 1991
 
 END SUBROUTINE OHM_QS_cal

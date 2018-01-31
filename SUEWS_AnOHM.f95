@@ -30,7 +30,7 @@ CONTAINS
        MetForcingData_grid,moist_surf,&
        alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&! input
        sfr,nsurf,nsh,EmissionsMethod,id,Gridiv,&
-       a1,a2,a3,qs)! output
+       a1,a2,a3,qs,deltaQi)! output
 
     IMPLICIT NONE
     REAL(KIND(1d0)),INTENT(in),DIMENSION(:,:)::MetForcingData_grid !< met forcing array of grid
@@ -59,6 +59,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(out):: a2 !< AnOHM coefficients of grid [h]
     REAL(KIND(1d0)),INTENT(out):: a3 !< AnOHM coefficients of grid [W m-2]
     REAL(KIND(1d0)),INTENT(out):: qs !< storage heat flux [W m-2]
+    REAL(KIND(1d0)),INTENT(out):: deltaQi(nsurf) !< storage heat flux of snow surfaces
 
     INTEGER :: is,xid !< @var qn1 net all-wave radiation
     INTEGER,SAVE :: id_save ! store index of the valid day with enough data
@@ -72,10 +73,12 @@ CONTAINS
     ! REAL(KIND(1d0))                  :: qn1_av      ! average net radiation over previous hour [W m-2]
     ! REAL(KIND(1d0))                  :: nsh_nna     ! number of timesteps per hour with non -999 values (used for spinup)
 
-    ! initialize the coefficients
-    xa1 = 0.1
-    xa2 = 0.2
-    xa3 = 10
+    ! initialize output variables
+    xa1     = 0.1
+    xa2     = 0.2
+    xa3     = 10
+    qs      = -999
+    deltaQi = 0 ! NB: as snow part is not implemented within AnOHM yet, this is just a placeholder
 
     ! to test if the current met block contains enough data for AnOHM
     ! TODO: more robust selection should be implemented

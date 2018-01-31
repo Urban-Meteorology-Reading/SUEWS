@@ -1152,69 +1152,105 @@ CONTAINS
 
 
     REAL(KIND(1d0))::HDDday ! HDDday=HDD(id-1,4) HDD at the begining of today (id-1)
+    REAL(KIND(1d0))::qn1_use ! qn used in OHM calculations
     ! REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::MetForcingData_grid
     ! INTEGER :: err
 
+    ! initialise output variables
+    deltaQi=0
+    snowFrac=0
+    qn1_S=0
+    dataOutLineESTM=-999
+    qs=-999
+    a1=-999
+    a2=-999
+    a3=-999
 
+
+    ! calculate qn if qf should be included
+    IF(OHMIncQF == 1) THEN
+       qn1_use= qf+qn1
+    ELSEIF(OHMIncQF == 0) THEN
+       qn1_use= qn1
+    ENDIF
 
     IF(StorageHeatMethod==1) THEN           !Use OHM to calculate QS
        HDDday=HDD(id-1,4)
-       IF(OHMIncQF == 1) THEN      !Calculate QS using QSTAR+QF
-          IF(Diagnose==1) WRITE(*,*) 'Calling OHM...'
-          CALL OHM(qf+qn1,qn1_store,qn1_av_store,&
-               qn1_S,qn1_S_store,qn1_S_av_store,&
-               nsh,&
-               sfr,nsurf,&
-               HDDday,&
-               OHM_coef,&
-               OHM_threshSW,OHM_threshWD,&
-               soilmoist,soilstoreCap,state,&
-               BldgSurf,WaterSurf,&
-               SnowUse,SnowFrac,&
-               DiagQS,&
-               a1,a2,a3,qs,deltaQi)
-       ELSEIF(OHMIncQF == 0) THEN  !Calculate QS using QSTAR
-          ! qn1=qn1
-          IF(Diagnose==1) WRITE(*,*) 'Calling OHM...'
-          CALL OHM(qn1,qn1_store,qn1_av_store,&
-               qn1_S,qn1_S_store,qn1_S_av_store,&
-               nsh,&
-               sfr,nsurf,&
-               HDDday,&
-               OHM_coef,&
-               OHM_threshSW,OHM_threshWD,&
-               soilmoist,soilstoreCap,state,&
-               BldgSurf,WaterSurf,&
-               SnowUse,SnowFrac,&
-               DiagQS,&
-               a1,a2,a3,qs,deltaQi)
-       ENDIF
+       IF(Diagnose==1) WRITE(*,*) 'Calling OHM...'
+       CALL OHM(qn1_use,qn1_store,qn1_av_store,&
+            qn1_S,qn1_S_store,qn1_S_av_store,&
+            nsh,&
+            sfr,nsurf,&
+            HDDday,&
+            OHM_coef,&
+            OHM_threshSW,OHM_threshWD,&
+            soilmoist,soilstoreCap,state,&
+            BldgSurf,WaterSurf,&
+            SnowUse,SnowFrac,&
+            DiagQS,&
+            a1,a2,a3,qs,deltaQi)
+       ! IF(OHMIncQF == 1) THEN      !Calculate QS using QSTAR+QF
+       !    IF(Diagnose==1) WRITE(*,*) 'Calling OHM...'
+       !    CALL OHM(qf+qn1,qn1_store,qn1_av_store,&
+       !         qn1_S,qn1_S_store,qn1_S_av_store,&
+       !         nsh,&
+       !         sfr,nsurf,&
+       !         HDDday,&
+       !         OHM_coef,&
+       !         OHM_threshSW,OHM_threshWD,&
+       !         soilmoist,soilstoreCap,state,&
+       !         BldgSurf,WaterSurf,&
+       !         SnowUse,SnowFrac,&
+       !         DiagQS,&
+       !         a1,a2,a3,qs,deltaQi)
+       ! ELSEIF(OHMIncQF == 0) THEN  !Calculate QS using QSTAR
+       !    ! qn1=qn1
+       !    IF(Diagnose==1) WRITE(*,*) 'Calling OHM...'
+       !    CALL OHM(qn1,qn1_store,qn1_av_store,&
+       !         qn1_S,qn1_S_store,qn1_S_av_store,&
+       !         nsh,&
+       !         sfr,nsurf,&
+       !         HDDday,&
+       !         OHM_coef,&
+       !         OHM_threshSW,OHM_threshWD,&
+       !         soilmoist,soilstoreCap,state,&
+       !         BldgSurf,WaterSurf,&
+       !         SnowUse,SnowFrac,&
+       !         DiagQS,&
+       !         a1,a2,a3,qs,deltaQi)
+       ! ENDIF
     ENDIF
 
     ! use AnOHM to calculate QS, TS 14 Mar 2016
     IF (StorageHeatMethod==3) THEN
+      IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'
+      CALL AnOHM(qn1_use,qn1_store,qn1_av_store,qf,&
+           MetForcingData_grid,state/surf(6,:),&
+           alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&
+           sfr,nsurf,nsh,EmissionsMethod,id,Gridiv,&
+           a1,a2,a3,qs,deltaQi)
        !  ALLOCATE(MetForcingData_grid(&
        !       SIZE(MetForcingData, dim=1),&
        !       SIZE(MetForcingData, dim=2)), stat=err)
        !  IF ( err/= 0) PRINT *, "MetForcingData_grid: Allocation request denied"
 
        !  MetForcingData_grid=MetForcingData(:,:,Gridiv)
-       IF ( OHMIncQF == 1 ) THEN    !Calculate QS using QSTAR+QF
-          IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'
-          CALL AnOHM(qf+qn1,qn1_store,qn1_av_store,qf,&
-               MetForcingData_grid,state/surf(6,:),&
-               alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&
-               sfr,nsurf,nsh,EmissionsMethod,id,Gridiv,&
-               a1,a2,a3,qs)
-       ELSEIF(OHMIncQF == 0) THEN   !Calculate QS using QSTAR
-          ! qn1=qn1
-          IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'
-          CALL AnOHM(qn1,qn1_store,qn1_av_store,qf,&
-               MetForcingData_grid,state/surf(6,:),&
-               alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&
-               sfr,nsurf,nsh,EmissionsMethod,id,Gridiv,&
-               a1,a2,a3,qs)
-       END IF
+       ! IF ( OHMIncQF == 1 ) THEN    !Calculate QS using QSTAR+QF
+       !    IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'
+       !    CALL AnOHM(qf+qn1,qn1_store,qn1_av_store,qf,&
+       !         MetForcingData_grid,state/surf(6,:),&
+       !         alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&
+       !         sfr,nsurf,nsh,EmissionsMethod,id,Gridiv,&
+       !         a1,a2,a3,qs)
+       ! ELSEIF(OHMIncQF == 0) THEN   !Calculate QS using QSTAR
+       !    ! qn1=qn1
+       !    IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'
+       !    CALL AnOHM(qn1,qn1_store,qn1_av_store,qf,&
+       !         MetForcingData_grid,state/surf(6,:),&
+       !         alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&
+       !         sfr,nsurf,nsh,EmissionsMethod,id,Gridiv,&
+       !         a1,a2,a3,qs)
+       ! END IF
 
        !  IF (ALLOCATED(MetForcingData_grid)) DEALLOCATE(MetForcingData_grid, stat=err)
        !  IF ( err/= 0) PRINT *, "MetForcingData_grid: Deallocation request denied"

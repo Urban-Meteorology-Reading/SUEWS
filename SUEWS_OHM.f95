@@ -69,7 +69,8 @@ SUBROUTINE OHM(qn1,qn1_store,qn1_av_store,&
 
 
   REAL(KIND(1d0)),INTENT(out):: qs ! storage heat flux
-  REAL(KIND(1d0)),INTENT(out)::deltaQi(nsurf+1) ! storage heat flux of snow surfaces
+  ! REAL(KIND(1d0)),INTENT(out)::deltaQi(nsurf+1) ! storage heat flux of snow surfaces
+  REAL(KIND(1d0)),INTENT(out)::deltaQi(nsurf) ! storage heat flux of snow surfaces
 
   REAL(KIND(1d0)),INTENT(out):: a1,a2,a3 ! OHM coefficients of grid
 

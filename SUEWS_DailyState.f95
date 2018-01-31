@@ -1,9 +1,12 @@
 MODULE DailyState_module
+  USE allocateArray,ONLY:&
+       ndays,nsurf,nvegsurf,ivConif,ivDecid,ivGrass,ncolumnsDataOutDailyState
+
 
   IMPLICIT NONE
-  INTEGER,PARAMETER::ndays=366
-  INTEGER,PARAMETER::nvegsurf=3
-  INTEGER,PARAMETER::ncolumnsDataOutDailyState=46
+  ! INTEGER,PARAMETER::ndays=366
+  ! INTEGER,PARAMETER::nvegsurf=3
+  ! INTEGER,PARAMETER::ncolumnsDataOutDailyState=46
 
 CONTAINS
 
@@ -70,7 +73,7 @@ CONTAINS
 
     IMPLICIT NONE
     ! INTEGER, PARAMETER:: ndays = 366   !Max no. days in a year used to specify size of daily arrays
-    INTEGER, PARAMETER:: nsurf=7                !Total number of surfaces
+    ! INTEGER, PARAMETER:: nsurf=7                !Total number of surfaces
     ! INTEGER, PARAMETER:: NVegSurf=3             !Number of surfaces that are vegetated
     ! INTEGER, PARAMETER:: nsurfIncSnow=nsurf+1   !Number of surfaces + snow
     ! INTEGER, PARAMETER:: MaxNumberOfGrids=2000   !Max no. grids   !HCW changed to 2000 from 10000 so prog can run on windows (2GB lim)
@@ -1031,29 +1034,29 @@ CONTAINS
     ! DailyStateLine=0
 
     ! IF (it==23 .AND. imin==(nsh_real-1)/nsh_real*60) THEN
-       ! CALL update_DailyState(&
-       !      iy,id,&
-       !      GDD,HDD,LAI,&!input
-       !      DecidCap,albDecTr,albEveTr,albGrass,porosity,&
-       !      WU_Day,&
-       !      deltaLAI,VegPhenLumps,&
-       !      SnowAlb,SnowDens,&
-       !      a1,a2,a3,&
-       !      DailyStateLine)!output
-       ! PRINT*,'a1,a2,a3',a1,a2,a3
-       ! PRINT*, 'DailyStateLine',DailyStateLine(ncolumnsDataOutDailyState-2-5:ncolumnsDataOutDailyState-5)
+    ! CALL update_DailyState(&
+    !      iy,id,&
+    !      GDD,HDD,LAI,&!input
+    !      DecidCap,albDecTr,albEveTr,albGrass,porosity,&
+    !      WU_Day,&
+    !      deltaLAI,VegPhenLumps,&
+    !      SnowAlb,SnowDens,&
+    !      a1,a2,a3,&
+    !      DailyStateLine)!output
+    ! PRINT*,'a1,a2,a3',a1,a2,a3
+    ! PRINT*, 'DailyStateLine',DailyStateLine(ncolumnsDataOutDailyState-2-5:ncolumnsDataOutDailyState-5)
 
-       ! write out to dataOutDailyState
-       dataOutDailyState(id,1:4,Gridiv)=[iy,id,it,imin]
-       dataOutDailyState(id,5,Gridiv)=dectime
-       ! DailyStateLine will be -999 unless realistic values are calculated at the last timestep of each day
-       dataOutDailyState(id,6:ncolumnsDataOutDailyState,Gridiv)=DailyStateLine
+    ! write out to dataOutDailyState
+    dataOutDailyState(id,1:4,Gridiv)=[iy,id,it,imin]
+    dataOutDailyState(id,5,Gridiv)=dectime
+    ! DailyStateLine will be -999 unless realistic values are calculated at the last timestep of each day
+    dataOutDailyState(id,6:ncolumnsDataOutDailyState,Gridiv)=DailyStateLine
 
-       !  CALL output_DailyState(&
-       !       Gridiv,GridIDmatrix,&!input
-       !       FileCode,FileOutputPath,&
-       !       DailyStateLine,&
-       !       DailyStateFirstOpen)!inout
+    !  CALL output_DailyState(&
+    !       Gridiv,GridIDmatrix,&!input
+    !       FileCode,FileOutputPath,&
+    !       DailyStateLine,&
+    !       DailyStateFirstOpen)!inout
     ! ENDIF
   END SUBROUTINE SUEWS_update_DailyState
 
@@ -1178,19 +1181,19 @@ CONTAINS
     ! initialise DailyStateLine
     DailyStateLine=-999
     IF (it==23 .AND. imin==(nsh_real-1)/nsh_real*60) THEN
-      ! Write actual data only at the last timesstep of each day
-      ! DailyStateLine(1:2)   = [iy,id]
-      DailyStateLine(1:6)   = HDD(id,1:6)
-      DailyStateLine(6+1:6+5)  = GDD(id,1:5)
-      DailyStateLine(11+1:11+3) = LAI(id,1:nvegsurf)
-      DailyStateLine(14+1:14+5) = [DecidCap(id),Porosity(id),AlbEveTr(id),AlbDecTr(id),AlbGrass(id)]
-      DailyStateLine(19+1:19+9) = WU_day(id-1,1:9)
-      DailyStateLine(28+1)    = deltaLAI
-      DailyStateLine(29+1)    = VegPhenLumps
-      DailyStateLine(30+1:30+8) = [SnowAlb,SnowDens(1:7)]
-      DailyStateLine(38+1:38+3) = [a1,a2,a3]
+       ! Write actual data only at the last timesstep of each day
+       ! DailyStateLine(1:2)   = [iy,id]
+       DailyStateLine(1:6)   = HDD(id,1:6)
+       DailyStateLine(6+1:6+5)  = GDD(id,1:5)
+       DailyStateLine(11+1:11+3) = LAI(id,1:nvegsurf)
+       DailyStateLine(14+1:14+5) = [DecidCap(id),Porosity(id),AlbEveTr(id),AlbDecTr(id),AlbGrass(id)]
+       DailyStateLine(19+1:19+9) = WU_day(id-1,1:9)
+       DailyStateLine(28+1)    = deltaLAI
+       DailyStateLine(29+1)    = VegPhenLumps
+       DailyStateLine(30+1:30+8) = [SnowAlb,SnowDens(1:7)]
+       DailyStateLine(38+1:38+3) = [a1,a2,a3]
 
-    end if
+    END IF
 
 
   END SUBROUTINE update_DailyState

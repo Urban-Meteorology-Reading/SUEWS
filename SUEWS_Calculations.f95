@@ -131,7 +131,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   CALL SUEWS_update_output(&
        SnowUse,storageheatmethod,&!input
        ReadLinesMetdata,NumberOfGrids,&
-       ncolumnsDataOutSUEWS,ncolumnsDataOutSnow,ncolumnsDataOutESTM,&
        ir,gridiv,datetimeLine,dataOutLineSUEWS,dataOutLineSnow,dataOutLineESTM,&!input
        dataOutSUEWS,dataOutSnow,dataOutESTM)!inout
 

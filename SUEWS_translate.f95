@@ -869,7 +869,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      albEveTr    = ModelDailyState(Gridiv,cMDS_albEveTr)
      albGrass    = ModelDailyState(Gridiv,cMDS_albGrass)
      DecidCap    = ModelDailyState(Gridiv,cMDS_DecidCap)
-     CumSnowfall = ModelDailyState(Gridiv,cMDS_CumSnowfall)
+     SnowfallCum = ModelDailyState(Gridiv,cMDS_SnowfallCum)
      SnowAlb     = ModelDailyState(Gridiv,cMDS_SnowAlb)
 
      ! ---- LAI
@@ -1150,7 +1150,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      albEveTr(id) = ModelDailyState(Gridiv,cMDS_albEveTr)
      albGrass(id) = ModelDailyState(Gridiv,cMDS_albGrass)
      DecidCap(id) = ModelDailyState(Gridiv,cMDS_DecidCap)
-     CumSnowfall  = ModelDailyState(Gridiv,cMDS_CumSnowfall)
+     SnowfallCum  = ModelDailyState(Gridiv,cMDS_SnowfallCum)
      ! ---- Snow density of each surface
      SnowDens(1:nsurf) = ModelDailyState(Gridiv,cMDS_SnowDens(1:nsurf))
 
@@ -1232,7 +1232,7 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv,ir,irMax)
   ModelDailyState(Gridiv,cMDS_albEveTr)    = albEveTr(id)
   ModelDailyState(Gridiv,cMDS_albGrass)    = albGrass(id)
   ModelDailyState(Gridiv,cMDS_DecidCap)    = DecidCap(id)
-  ModelDailyState(Gridiv,cMDS_CumSnowfall) = CumSnowfall
+  ModelDailyState(Gridiv,cMDS_SnowfallCum) = SnowfallCum
 
   ! Save required DailyState variables for the current grid (HCW 27 Nov 2014)
   HDD_grids(:,:,Gridiv)    = HDD(:,:)

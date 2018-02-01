@@ -172,7 +172,7 @@ MODULE allocateArray
   INTEGER, PARAMETER:: NVegSurf=3             !Number of surfaces that are vegetated
   INTEGER, PARAMETER:: nsurfIncSnow=nsurf+1   !Number of surfaces + snow
 
-  INTEGER:: PavSurf   = 1,&   !When all surfaces considered together (1-7)
+  INTEGER,PARAMETER:: PavSurf   = 1,&   !When all surfaces considered together (1-7)
        BldgSurf  = 2,&
        ConifSurf = 3,&
        DecidSurf = 4,&
@@ -1202,7 +1202,7 @@ MODULE snowMod
   IMPLICIT NONE
 
   REAL (KIND(1D0))::AdjMeltFact,&    !Factor between melt and freezing factors
-       CumSnowfall,&        !Cumulative snowfall
+       SnowfallCum,&        !Cumulative snowfall
        fwh,&              !Weighted freezing water
        lvS_J_kg,&         !Latent heat of sublimation in J/kg
        mwh,&              !Weighted hourly water melt
@@ -1619,7 +1619,7 @@ MODULE ColNamesModelDailyState
        cMDS_albDecTr        = 22,&
        cMDS_albGrass        = 23,&
        cMDS_DecidCap        = 24,&
-       cMDS_CumSnowfall     = 25,&
+       cMDS_SnowfallCum     = 25,&
        cMDS_LAIEveTr        = 26,&
        cMDS_LAIDecTr        = 27,&
        cMDS_LAIGrass        = 28,&

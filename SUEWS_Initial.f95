@@ -2063,7 +2063,7 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
   ModelDailyState(Gridiv,cMDS_porosity)    = Porosity0
   ModelDailyState(Gridiv,cMDS_DecidCap)    = DecidCap0
 
-  ModelDailyState(Gridiv,cMDS_CumSnowfall) = 0 !!Check this
+  ModelDailyState(Gridiv,cMDS_SnowfallCum) = 0 !!Check this
 
   ModelDailyState(Gridiv,cMDS_DaysSinceRain) = REAL(DaysSinceRain,KIND(1d0))
   ModelDailyState(Gridiv,cMDS_TempC) = Temp_C0

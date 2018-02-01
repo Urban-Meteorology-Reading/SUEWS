@@ -35,4 +35,4 @@ f2py -m SUEWS_driver -c ../LUMPS_Module_constants.f95 ../SUEWS_driver.f95  *.o
 rm *.o
 
 # copy updated version to SuPy folder
-cp SUEWS_driver.so SuPy/.
+mv SUEWS_driver.so SuPy/.

@@ -32,7 +32,7 @@ CONTAINS
        SnowDensMin,Temp_C,Precip,PrecipLimit,PrecipLimitAlb,&
        nsh_real,sfr,Tsurf_ind,Tsurf_ind_snow,state,qn1_ind_snow,&
        kup_ind_snow,Meltwaterstore,deltaQi,&
-       SnowPack,snowFrac,SnowAlb,SnowDens,CumSnowfall,&!inout
+       SnowPack,snowFrac,SnowAlb,SnowDens,SnowfallCum,&!inout
        mwh,fwh,Qm,QmFreez,QmRain,&! output
        veg_fr,snowCalcSwitch,Qm_melt,Qm_freezState,Qm_rain,FreezMelt,&
        FreezState,FreezStateVol,rainOnSnow,SnowDepth,mw_ind,&
@@ -82,7 +82,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::snowFrac
     REAL(KIND(1d0)),INTENT(inout)::SnowAlb
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowDens
-    REAL(KIND(1d0)),INTENT(inout)::CumSnowfall
+    REAL(KIND(1d0)),INTENT(inout)::SnowfallCum
 
     !Output:
     REAL(KIND(1d0)),INTENT(out)::mwh
@@ -114,7 +114,7 @@ CONTAINS
             lvS_J_kg,lv_J_kg,tstep_real,RadMeltFact,TempMeltFact,&
             SnowAlbMax,SnowDensMin,Temp_C,Precip,PrecipLimit,PrecipLimitAlb,&
             nsh_real,waterdens,sfr,Tsurf_ind,state,qn1_ind_snow,&
-            Meltwaterstore,deltaQi,SnowPack,snowFrac,SnowAlb,SnowDens,CumSnowfall,&
+            Meltwaterstore,deltaQi,SnowPack,snowFrac,SnowAlb,SnowDens,SnowfallCum,&
             mwh,fwh,Qm,QmFreez,QmRain,snowCalcSwitch,&
             Qm_melt,Qm_freezState,Qm_rain,FreezMelt,FreezState,FreezStateVol,&
             rainOnSnow,SnowDepth,mw_ind)
@@ -130,7 +130,7 @@ CONTAINS
        Qm=0
        QmFreez=0
        QmRain=0
-       CumSnowfall=0
+       SnowfallCum=0
        snowCalcSwitch=0
        Qm_melt=0
        Qm_freezState=0
@@ -191,7 +191,7 @@ CONTAINS
        snowFrac,&
        SnowAlb,&
        SnowDens,&
-       CumSnowfall,&
+       SnowfallCum,&
        mwh,&!output
        fwh,&
        Qm,&
@@ -243,7 +243,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::snowFrac
     REAL(KIND(1d0)),INTENT(inout)::SnowAlb
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowDens
-    REAL(KIND(1d0)),INTENT(inout)::CumSnowfall
+    REAL(KIND(1d0)),INTENT(inout)::SnowfallCum
 
     !Output:
     REAL(KIND(1d0)),INTENT(out)::mwh
@@ -435,16 +435,16 @@ CONTAINS
     !Update snow albedo to its maximum value if precipitation exists
     IF (Precip>0.AND.SUM(SnowPack)>0.AND.Temp_C<0) THEN
 
-       CumSnowfall=CumSnowfall + Precip
+       SnowfallCum=SnowfallCum + Precip
 
-       IF (CumSnowfall>PrecipLimitAlb) THEN
+       IF (SnowfallCum>PrecipLimitAlb) THEN
 
           SnowAlb=SnowAlbMax
-          CumSnowfall=0
+          SnowfallCum=0
        ENDIF
     ELSE
 
-       CumSnowfall=0
+       SnowfallCum=0
     ENDIF
 
 

@@ -125,7 +125,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
        alpha_bioCO2,alpha_enh_bioCO2,alt,avkdn,avRh,avU1,BaseT,BaseTe,&
        BaseTHDD,beta_bioCO2,beta_enh_bioCO2,bldgH,CapMax_dec,CapMin_dec,&
-       chAnOHM,cpAnOHM,CRWmax,CRWmin,SnowfallCum,DayofWeek,DayWat,DayWatPer,&
+       chAnOHM,cpAnOHM,CRWmax,CRWmin,SnowfallCum,DayWat,DayWatPer,&
        DecidCap,dectime,DecTreeH,Diagnose,DiagQN,DiagQS,DLS,DRAINRT,&
        EF_umolCO2perJ,emis,EmissionsMethod,EnEF_v_Jkm,EveTreeH,FAIBldg,&
        FAIDecTree,FAIEveTree,Faut,FcEF_v_kgkm,fcld_obs,FlowChange,&

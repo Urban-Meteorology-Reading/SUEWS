@@ -30,7 +30,7 @@ CONTAINS
        alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
        alpha_bioCO2,alpha_enh_bioCO2,alt,avkdn,avRh,avU1,BaseT,BaseTe,&
        BaseTHDD,beta_bioCO2,beta_enh_bioCO2,bldgH,CapMax_dec,CapMin_dec,&
-       chAnOHM,cpAnOHM,CRWmax,CRWmin,SnowfallCum,DayofWeek,DayWat,DayWatPer,&
+       chAnOHM,cpAnOHM,CRWmax,CRWmin,SnowfallCum,DayWat,DayWatPer,&
        DecidCap,dectime,DecTreeH,Diagnose,DiagQN,DiagQS,DLS,DRAINRT,&
        EF_umolCO2perJ,emis,EmissionsMethod,EnEF_v_Jkm,EveTreeH,FAIBldg,&
        FAIDecTree,FAIEveTree,Faut,FcEF_v_kgkm,fcld_obs,FlowChange,&
@@ -259,7 +259,7 @@ CONTAINS
 
     REAL(KIND(1D0)),INTENT(INOUT) ::SnowfallCum
     REAL(KIND(1D0)),INTENT(INOUT)                             ::SnowAlb
-    INTEGER,DIMENSION(0:NDAYS,3),INTENT(INOUT)                ::DayofWeek
+    ! INTEGER,DIMENSION(0:NDAYS,3),INTENT(INOUT)                ::DayofWeek
     REAL(KIND(1d0)),DIMENSION(24*3600/tstep),INTENT(inout)    ::Tair24HR
     REAL(KIND(1D0)),DIMENSION(2*3600/tstep+1),INTENT(INOUT)   ::qn1_av_store
     REAL(KIND(1D0)),DIMENSION(2*3600/tstep+1),INTENT(INOUT)   ::qn1_S_av_store
@@ -406,6 +406,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf)::Tsurf_ind_snow
 
     INTEGER,DIMENSION(NSURF)::snowCalcSwitch
+    INTEGER,DIMENSION(3)    ::dayofWeek_id
 
     REAL(KIND(1D0))::avcp
     REAL(KIND(1D0))::avdens
@@ -465,6 +466,11 @@ CONTAINS
          sfr,& !input
          VegFraction,ImpervFraction,PervFraction,NonWaterFraction) ! output
 
+    ! calculate dayofweek information
+    CALL SUEWS_cal_weekday(&
+         iy,id,lat,& !input
+         dayofWeek_id) !output
+
 
     !==============main calculation start=======================
     IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_cal_RoughnessParameters...'
@@ -488,7 +494,7 @@ CONTAINS
     !Call the SUEWS_cal_DailyState routine to get surface characteristics ready
     IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_cal_DailyState...'
     CALL SUEWS_cal_DailyState(&
-         iy,id,it,imin,tstep,&!input
+         iy,id,it,imin,tstep,DayofWeek_id,&!input
          WaterUseMethod,snowUse,Ie_start,Ie_end,&
          LAICalcYes,LAIType,&
          nsh_real,avkdn,Temp_C,Precip,BaseTHDD,&
@@ -500,7 +506,8 @@ CONTAINS
          Ie_a,Ie_m,DayWatPer,DayWat,SnowPack,&
          BaseT,BaseTe,GDDFull,SDDFull,LAIMin,LAIMax,LAIPower,&
          SnowAlb,DecidCap,albDecTr,albEveTr,albGrass,&!inout
-         porosity,GDD,HDD,SnowDens,LAI,DayofWeek,WU_Day,&
+                                ! porosity,GDD,HDD,SnowDens,LAI,DayofWeek,WU_Day,&
+         porosity,GDD,HDD,SnowDens,LAI,WU_Day,&
          deltaLAI)!output
 
 
@@ -537,7 +544,8 @@ CONTAINS
     ! ===================ANTHROPOGENIC HEAT FLUX================================
     CALL SUEWS_cal_AnthropogenicEmission(&
          AH_MIN,AHProf_tstep,AH_SLOPE_Cooling,AH_SLOPE_Heating,alpha_bioCO2,&
-         alpha_enh_bioCO2,avkdn,beta_bioCO2,beta_enh_bioCO2,DayofWeek,&
+                                ! alpha_enh_bioCO2,avkdn,beta_bioCO2,beta_enh_bioCO2,DayofWeek,&
+         alpha_enh_bioCO2,avkdn,beta_bioCO2,beta_enh_bioCO2,DayofWeek_id,&
          Diagnose,DLS,EF_umolCO2perJ,EmissionsMethod,EnEF_v_Jkm,Fc,Fc_anthro,Fc_biogen,&
          Fc_build,FcEF_v_kgkm,Fc_metab,Fc_photo,Fc_respi,Fc_traff,FrFossilFuel_Heat,&
          FrFossilFuel_NonHeat,HDD,HumActivity_tstep,id,imin,it,LAI, LaiMax,LaiMin,&
@@ -595,7 +603,7 @@ CONTAINS
          nsh_real,& ! input:
          SurfaceArea,sfr,&
          IrrFracConif,IrrFracDecid,IrrFracGrass,&
-         DayofWeek(id,:),WUProfA_tstep,WUProfM_tstep,&
+         dayofWeek_id,WUProfA_tstep,WUProfM_tstep,&
          InternalWaterUse_h,HDD(id-1,:),WU_Day(id-1,:),&
          WaterUseMethod,NSH,it,imin,DLS,&
          WUAreaEveTr_m2,WUAreaDecTr_m2,& ! output:
@@ -633,7 +641,8 @@ CONTAINS
     !======== Evaporation and surface state ========
     CALL SUEWS_cal_QE(&
          Diagnose,&!input
-         id,tstep,imin,it,ity,snowCalcSwitch,DayofWeek,CRWmin,CRWmax,&
+                                ! id,tstep,imin,it,ity,snowCalcSwitch,DayofWeek,CRWmin,CRWmax,&
+         id,tstep,imin,it,ity,snowCalcSwitch,DayofWeek_id,CRWmin,CRWmax,&
          nsh_real,dectime,lvS_J_kg,lv_j_kg,avdens,avRh,Press_hPa,Temp_C,&
          RAsnow,psyc_hPa,avcp,sIce_hPa,&
          PervFraction,vegfraction,addimpervious,qn1_SF,qf,qs,vpd_hPa,s_hPa,&
@@ -739,7 +748,7 @@ CONTAINS
   ! ===================ANTHROPOGENIC HEAT + CO2 FLUX================================
   SUBROUTINE SUEWS_cal_AnthropogenicEmission(&
        AH_MIN,AHProf_tstep,AH_SLOPE_Cooling,AH_SLOPE_Heating,alpha_bioCO2,&
-       alpha_enh_bioCO2,avkdn,beta_bioCO2,beta_enh_bioCO2,DayofWeek,&
+       alpha_enh_bioCO2,avkdn,beta_bioCO2,beta_enh_bioCO2,dayofWeek_id,&
        Diagnose,DLS,EF_umolCO2perJ,EmissionsMethod,EnEF_v_Jkm,Fc,Fc_anthro,Fc_biogen,&
        Fc_build,FcEF_v_kgkm,Fc_metab,Fc_photo,Fc_respi,Fc_traff,FrFossilFuel_Heat,&
        FrFossilFuel_NonHeat,HDD,HumActivity_tstep,id,imin,it,LAI, LaiMax,LaiMin,&
@@ -772,7 +781,7 @@ CONTAINS
     INTEGER,INTENT(in)::DLS
     INTEGER,INTENT(in)::nsh
     ! INTEGER,INTENT(in)::notUsedI
-    INTEGER,DIMENSION(0:ndays,3),INTENT(in)::DayofWeek
+    INTEGER,DIMENSION(3),INTENT(in)::dayofWeek_id
     REAL(KIND(1d0)),DIMENSION(-4:ndays, 6),INTENT(in)::HDD
     REAL(KIND(1d0)),DIMENSION(2),INTENT(in)::Qf_A
     REAL(KIND(1d0)),DIMENSION(2),INTENT(in)::Qf_B
@@ -838,7 +847,8 @@ CONTAINS
        IF(Diagnose==1) WRITE(*,*) 'Calling AnthropogenicEmissions...'
        CALL AnthropogenicEmissions(&
             EmissionsMethod,&
-            id,it,imin,DLS,nsh,DayofWeek,ndays,&
+                                ! id,it,imin,DLS,nsh,DayofWeek,ndays,&
+            id,it,imin,DLS,nsh,dayofWeek_id,ndays,&
             EF_umolCO2perJ,FcEF_v_kgkm,EnEF_v_Jkm,TrafficUnits,&
             FrFossilFuel_Heat,FrFossilFuel_NonHeat,&
             MinQFMetab,MaxQFMetab,&
@@ -864,7 +874,7 @@ CONTAINS
        IF(Diagnose==1) WRITE(*,*) 'Calling AnthropogenicEmissions...'
        CALL AnthropogenicEmissions(&
             EmissionsMethod,&
-            id,it,imin,DLS,nsh,DayofWeek,ndays,&
+            id,it,imin,DLS,nsh,dayofWeek_id,ndays,&
             EF_umolCO2perJ,FcEF_v_kgkm,EnEF_v_Jkm,TrafficUnits,&
             FrFossilFuel_Heat,FrFossilFuel_NonHeat,&
             MinQFMetab,MaxQFMetab,&
@@ -883,7 +893,7 @@ CONTAINS
        IF(Diagnose==1) WRITE(*,*) 'Calling AnthropogenicEmissions...'
        CALL AnthropogenicEmissions(&
             EmissionsMethod,&
-            id,it,imin,DLS,nsh,DayofWeek,ndays,&
+            id,it,imin,DLS,nsh,dayofWeek_id,ndays,&
             EF_umolCO2perJ,FcEF_v_kgkm,EnEF_v_Jkm,TrafficUnits,&
             FrFossilFuel_Heat,FrFossilFuel_NonHeat,&
             MinQFMetab,MaxQFMetab,&
@@ -1413,7 +1423,7 @@ CONTAINS
   ! TODO: optimise the structure of this function
   SUBROUTINE SUEWS_cal_QE(&
        Diagnose,&!input
-       id,tstep,imin,it,ity,snowCalcSwitch,DayofWeek,CRWmin,CRWmax,&
+       id,tstep,imin,it,ity,snowCalcSwitch,dayofWeek_id,CRWmin,CRWmax,&
        nsh_real,dectime,lvS_J_kg,lv_j_kg,avdens,avRh,Press_hPa,Temp_C,&
        RAsnow,psyc_hPa,avcp,sIce_hPa,&
        PervFraction,vegfraction,addimpervious,qn1_SF,qf,qs,vpd_hPa,s_hPa,&
@@ -1443,7 +1453,7 @@ CONTAINS
     ! INTEGER,INTENT(in) ::snowfractionchoice
 
     INTEGER,DIMENSION(nsurf),INTENT(in)::snowCalcSwitch
-    INTEGER,DIMENSION(366,2),INTENT(in)::DayofWeek
+    INTEGER,DIMENSION(3),INTENT(in)::dayofWeek_id
 
     REAL(KIND(1d0)),INTENT(in)::CRWmin
     REAL(KIND(1d0)),INTENT(in)::CRWmax
@@ -1628,7 +1638,7 @@ CONTAINS
                   addVeg,surplusWaterBody,SnowLimPaved,SnowLimBuild,FlowChange,drain,&
                   WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
                   freezmelt,freezstate,freezstatevol,&
-                  Qm_Melt,Qm_rain,Tsurf_ind,sfr,DayofWeek,surf,snowD,&
+                  Qm_Melt,Qm_rain,Tsurf_ind,sfr,dayofWeek_id,surf,snowD,&
                   AddWater,addwaterrunoff,&
                   SnowPack,SurplusEvap,&!inout
                   snowFrac,MeltWaterStore,iceFrac,SnowDens,&
@@ -2337,14 +2347,6 @@ CONTAINS
        sfr,& !input
        vegfraction,ImpervFraction,PervFraction,NonWaterFraction) ! output
     IMPLICIT NONE
-    ! ! INTEGER,PARAMETER::nsurf=7
-    ! INTEGER,PARAMETER::PavSurf=1
-    ! INTEGER,PARAMETER::BldgSurf=2
-    ! INTEGER,PARAMETER::ConifSurf=3
-    ! INTEGER,PARAMETER::DecidSurf=4
-    ! INTEGER,PARAMETER::GrassSurf=5
-    ! ! INTEGER,PARAMETER::BSoilSurf=6
-    ! INTEGER,PARAMETER::WaterSurf=7
 
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)::sfr
     REAL(KIND(1D0)),INTENT(OUT)::VegFraction
@@ -2359,6 +2361,34 @@ CONTAINS
     NonWaterFraction=1 - sfr(WaterSurf)
 
   END SUBROUTINE SUEWS_cal_surf
+
+
+  SUBROUTINE SUEWS_cal_weekday(&
+       iy,id,lat,& !input
+       dayofWeek_id) !output
+    IMPLICIT NONE
+
+    INTEGER,INTENT(in) :: iy  ! year
+    INTEGER,INTENT(in) :: id  ! day of year
+    REAL(KIND(1d0)),INTENT(in):: lat
+
+    INTEGER,DIMENSION(3),INTENT(OUT) ::dayofWeek_id
+
+    INTEGER::wd
+    INTEGER::mb
+    INTEGER::date
+    INTEGER::seas
+
+
+
+    CALL day2month(id,mb,date,seas,iy,lat) !Calculate real date from doy
+    CALL Day_of_Week(date,mb,iy,wd)        !Calculate weekday (1=Sun, ..., 7=Sat)
+
+    dayofWeek_id(1)=wd      !Day of week
+    dayofWeek_id(2)=mb      !Month
+    dayofweek_id(3)=seas    !Season
+
+  END SUBROUTINE SUEWS_cal_weekday
 
   SUBROUTINE diagSfc(&
        xSurf,xFlux,us,VegFraction,z0m,L_mod,k,avdens,avcp,tlv,&
@@ -2599,7 +2629,7 @@ CONTAINS
        alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
        alpha_bioCO2,alpha_enh_bioCO2,alt,avkdn,avRh,avU1,BaseT,BaseTe,&
        BaseTHDD,beta_bioCO2,beta_enh_bioCO2,bldgH,CapMax_dec,CapMin_dec,&
-       chAnOHM,cpAnOHM,CRWmax,CRWmin,SnowfallCum,DayofWeek,DayWat,DayWatPer,&
+       chAnOHM,cpAnOHM,CRWmax,CRWmin,SnowfallCum,dayofWeek_id,DayWat,DayWatPer,&
        DecidCap,dectime,DecTreeH,Diagnose,DiagQN,DiagQS,DLS,DRAINRT,&
        EF_umolCO2perJ,emis,EmissionsMethod,EnEF_v_Jkm,EveTreeH,FAIBldg,&
        FAIDecTree,FAIEveTree,Faut,FcEF_v_kgkm,fcld_obs,FlowChange,&
@@ -2811,7 +2841,7 @@ CONTAINS
 
     REAL(KIND(1D0)),INTENT(INOUT)                             ::SnowfallCum
     REAL(KIND(1D0)),INTENT(INOUT)                             ::SnowAlb
-    INTEGER,DIMENSION(0:NDAYS,3),INTENT(INOUT)                ::DayofWeek
+    INTEGER,DIMENSION(0:NDAYS,3),INTENT(INOUT)                ::dayofWeek_id
     REAL(KIND(1d0)),DIMENSION(24*3600/tstep),INTENT(inout)    ::Tair24HR
     REAL(KIND(1D0)),DIMENSION(2*3600/tstep+1),INTENT(INOUT)   ::qn1_av_store
     REAL(KIND(1D0)),DIMENSION(2*3600/tstep+1),INTENT(INOUT)   ::qn1_S_av_store
@@ -3025,7 +3055,7 @@ CONTAINS
        WRITE(fn,*)'MetForcingData_grid',MetForcingData_grid
        WRITE(fn,*)'SnowfallCum',SnowfallCum
        WRITE(fn,*)'SnowAlb',SnowAlb
-       WRITE(fn,*)'DayofWeek',DayofWeek
+       WRITE(fn,*)'dayofWeek_id',dayofWeek_id
        WRITE(fn,*)'Tair24HR',Tair24HR
        WRITE(fn,*)'qn1_av_store',qn1_av_store
        WRITE(fn,*)'qn1_S_av_store',qn1_S_av_store
@@ -3058,9 +3088,6 @@ CONTAINS
        PRINT*, 'see:', FileOut
 
     END IF
-
-
-
 
   END SUBROUTINE SUEWS_write_model_state
 

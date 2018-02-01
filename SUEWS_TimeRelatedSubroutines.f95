@@ -1,20 +1,20 @@
 ! subroutines included:
 ! day2month
-!   
+!
 ! month2day
-! leapYearCalc 
+! leapYearCalc
 !       returns -- number of days in actual year
 !    	used    -- LUMPS phenology (initalization)
 !
-! DayofWeek   
+! DayofWeek
 !       returns -- day of week
 !       used    -- for water use and anthropogenic heat
-! 
+!
 ! dectime_to_timevec
-!       This subroutine converts dectime to individual 
+!       This subroutine converts dectime to individual
 !       hours, minutes and seconds
 !
-! daylen 
+! daylen
 !       Computes solar day length
 !
 !sg feb 2012 - moved all time related subroutines together
@@ -23,22 +23,24 @@
 
  subroutine day2month(b,mb,md,seas,year,latitude)
    IMPLICIT NONE
-   integer ::b,mb,md,k,seas,year,t1,t2,t3
+   integer,intent(in) ::b  !b=doy   --IN
+   integer,intent(out) ::mb !month=mb  --OUT
+   integer,intent(out) ::md !date=md --OUT
+   integer,intent(out) ::seas
+   integer,intent(in) ::year
+   integer::t1,t2,t3
+   integer::k ! k- accounts for leap year
 
    real (kind(1d0))::latitude
 
-   !b=doy   --IN
-   !month=mb  --OUT
-   !date=md
-   !k- accounts for leap year
    !Corrected and calculation of date added LJ (Jun 2010)
- 
+
    t1=4
    t2=100
    t3=400
 
    if ((modulo(year,t1)==0).and.(modulo(year,t2)/=0).or.(modulo(year,t3)==0)) then
-      K=1 
+      K=1
    else
       K=0
    endif
@@ -77,7 +79,7 @@
      MB=11
      md=B-(304+K)
    ELSEIF(B>334+K) THEN
-     MB=12 
+     MB=12
      md=B-(334+K)
    ENDIF
 
@@ -101,7 +103,7 @@
  subroutine month2day(mon,ne,k,b)
   IMPLICIT NONE
   integer:: mon,ne,k,b
-							
+
   IF(mon== 1)THEN
     NE=32-B
   ELSE IF(mon==2)THEN
@@ -178,27 +180,27 @@
 
 !FL
 subroutine dectime_to_timevec(dectime,HOURS,MINS,SECS)
-    !This subroutine converts dectime to individual 
+    !This subroutine converts dectime to individual
     !hours, minutes and seconds
     INTEGER :: HOURS, MINS, doy
     REAL(kind(1d0))    :: dectime,SECS,DH,DM,DS
     !INTEGER :: year
-    
+
         doy=FLOOR(dectime)
-        
+
         DH=dectime-doy !Decimal hours
         HOURS=int(24*DH)
-        
+
         DM=24*DH-HOURS !Decimal minutes
         MINS=int(60*DM)
-        
+
         DS=60*DM-MINS
         SECS=int(60*DS)
 
-end subroutine dectime_to_timevec    
-    
+end subroutine dectime_to_timevec
+
 !==============================================================================
-    
+
 !FL
 !=======================================================================
 !  DAYLEN, Real Function, N.B. Pickering, 09/23/1993

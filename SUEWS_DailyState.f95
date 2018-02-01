@@ -55,7 +55,7 @@ CONTAINS
   !   - Could add different coefficients (Ie_m, Ie_a) for each vegetation type
   !==============================================================================
   SUBROUTINE SUEWS_cal_DailyState(&
-       iy,id,it,imin,tstep,&!input
+       iy,id,it,imin,tstep,DayofWeek_id,&!input
        WaterUseMethod,snowUse,Ie_start,Ie_end,&
        LAICalcYes,LAIType,&
        nsh_real,avkdn,Temp_C,Precip,BaseTHDD,&
@@ -67,7 +67,7 @@ CONTAINS
        Ie_a,Ie_m,DayWatPer,DayWat,SnowPack,&
        BaseT,BaseTe,GDDFull,SDDFull,LAIMin,LAIMax,LAIPower,&
        SnowAlb,DecidCap,albDecTr,albEveTr,albGrass,&!inout
-       porosity,GDD,HDD,SnowDens,LAI,DayofWeek,WU_Day,&
+       porosity,GDD,HDD,SnowDens,LAI,WU_Day,&
        deltaLAI)!output
 
 
@@ -164,7 +164,7 @@ CONTAINS
 
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(INOUT)::SnowDens
     REAL(KIND(1d0)),DIMENSION(-4:ndays, nvegsurf),INTENT(INOUT):: LAI !LAI for each veg surface [m2 m-2]
-    INTEGER,DIMENSION(0:ndays,3),INTENT(inout)::DayofWeek
+    INTEGER,DIMENSION(3),INTENT(in)::DayofWeek_id
 
     !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
     REAL(KIND(1d0)),DIMENSION(0:ndays,9),INTENT(INOUT):: WU_Day
@@ -227,9 +227,9 @@ CONTAINS
     ! --------------------------------------------------------------------------------
     ! On first timestep of each day, define whether the day each a workday or weekend
     IF (it==0.AND.imin==0) THEN
-       CALL Cal_DailyStateStart(&
-            id,date,iy,lat,&!input
-            DayofWeek(id,:))!output
+       ! CALL Cal_DailyStateStart(&
+       !      id,iy,lat,&!input
+       !      DayofWeek_id)!output
 
        ! --------------------------------------------------------------------------------
        ! On last timestep, perform the daily calculations -------------------------------
@@ -239,7 +239,7 @@ CONTAINS
        CALL Cal_DailyStateEnd(&
             id,it,imin,tstep,&!input
             LAIType,Ie_end,Ie_start,LAICalcYes,&
-            WaterUseMethod,DayofWeek,&
+            WaterUseMethod,DayofWeek_id,&
             alBMax_DecTr,alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
             BaseT,BaseTe,CapMax_dec,CapMin_dec,DayWat,DayWatPer,Faut,GDDFull,&
             Ie_a,Ie_m,LAIMax,LAIMin,LAIPower,lat,PorMax_dec,PorMin_dec,SDDFull,LAI_obs,&
@@ -257,7 +257,7 @@ CONTAINS
   SUBROUTINE Cal_DailyStateEnd(&
        id,it,imin,tstep,&!input
        LAIType,Ie_end,Ie_start,LAICalcYes,&
-       WaterUseMethod,DayofWeek,&
+       WaterUseMethod,DayofWeek_id,&
        alBMax_DecTr,alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
        BaseT,BaseTe,CapMax_dec,CapMin_dec,DayWat,DayWatPer,Faut,GDDFull,&
        Ie_a,Ie_m,LAIMax,LAIMin,LAIPower,lat,PorMax_dec,PorMin_dec,SDDFull,LAI_obs,&
@@ -282,7 +282,7 @@ CONTAINS
     INTEGER,INTENT(IN)::Ie_start
     INTEGER,INTENT(IN)::LAICalcYes
     INTEGER,INTENT(IN)::WaterUseMethod
-    INTEGER,INTENT(in)::DayofWeek(0:ndays,3)
+    INTEGER,INTENT(in)::DayofWeek_id(3)
 
     REAL(KIND(1d0)),INTENT(IN)::alBMax_DecTr
     REAL(KIND(1d0)),INTENT(IN)::alBMax_EveTr
@@ -339,7 +339,7 @@ CONTAINS
 
     ! Calculate modelled daily water use ------------------------------------------
     CALL update_WaterUse(&
-         id,WaterUseMethod,DayofWeek,lat,Faut,HDD,&!input
+         id,WaterUseMethod,DayofWeek_id,lat,Faut,HDD,&!input
          Ie_a,Ie_m,Ie_start,Ie_end,DayWatPer,DayWat,&
          WU_Day) !inout
 
@@ -574,9 +574,9 @@ CONTAINS
     IMPLICIT NONE
     ! INTEGER,PARAMETER::ndays    = 366
     ! INTEGER,PARAMETER::nvegsurf = 3
-    INTEGER,PARAMETER::ivConif  = 1 !When only vegetated surfaces considered (1-3)
-    INTEGER,PARAMETER::ivDecid  = 2
-    INTEGER,PARAMETER::ivGrass  = 3
+    ! INTEGER,PARAMETER::ivConif  = 1 !When only vegetated surfaces considered (1-3)
+    ! INTEGER,PARAMETER::ivDecid  = 2
+    ! INTEGER,PARAMETER::ivGrass  = 3
 
     INTEGER,INTENT(IN)::id
     REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN)::LAImax
@@ -827,7 +827,7 @@ CONTAINS
 
 
   SUBROUTINE update_WaterUse(&
-       id,WaterUseMethod,DayofWeek,lat,Faut,HDD,&!input
+       id,WaterUseMethod,DayofWeek_id,lat,Faut,HDD,&!input
        Ie_a,Ie_m,Ie_start,Ie_end,DayWatPer,DayWat,&
        WU_Day) !inout
 
@@ -838,7 +838,7 @@ CONTAINS
     INTEGER,INTENT(IN) :: WaterUseMethod
     INTEGER,INTENT(IN)::Ie_start   !Starting time of water use (DOY)
     INTEGER,INTENT(IN)::Ie_end       !Ending time of water use (DOY)
-    INTEGER,DIMENSION(0:ndays,3),INTENT(IN)::DayofWeek
+    INTEGER,DIMENSION(3),INTENT(IN)::DayofWeek_id
 
     REAL(KIND(1d0)),INTENT(IN)::lat
     REAL(KIND(1d0)),INTENT(IN)::Faut          !Fraction of irrigated area using automatic irrigation
@@ -857,7 +857,7 @@ CONTAINS
 
     IF (WaterUseMethod==0) THEN   !If water use is to be modelled (rather than observed)
 
-       wd=DayofWeek(id,1)
+       wd=DayofWeek_id(1)
 
        IF (DayWat(wd)==1.0) THEN      !1 indicates watering permitted on this day
           calc=0
@@ -958,11 +958,10 @@ CONTAINS
 
 
   SUBROUTINE Cal_DailyStateStart(&
-       id,date,iy,lat,&!input
+       id,iy,lat,&!input
        dayofWeek_id)!output
     IMPLICIT NONE
     INTEGER,INTENT(IN) :: id
-    INTEGER,INTENT(IN) ::date
     INTEGER,INTENT(IN) ::iy
     REAL(KIND(1d0)),INTENT(IN) ::lat
 
@@ -970,6 +969,7 @@ CONTAINS
 
     INTEGER::wd
     INTEGER::mb
+    INTEGER::date
     INTEGER::seas
 
     CALL day2month(id,mb,date,seas,iy,lat) !Calculate real date from doy

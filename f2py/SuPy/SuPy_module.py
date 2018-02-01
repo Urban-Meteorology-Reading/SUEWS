@@ -18,6 +18,54 @@ from scipy import interpolate
 import collections
 import copy
 
+
+######################################################################
+# get_args_suews can get the interface informaiton
+# of the f2py-converted Fortran interface
+def get_args_suews():
+    # split doc lines for processing
+    docLines = np.array(
+        sd.suews_cal_main.__doc__.splitlines(),
+        dtype=str)
+
+    # get the information of input variables for SUEWS_driver
+    posInput = np.where(
+        np.logical_or(
+            docLines == 'Parameters', docLines == 'Returns'))
+    varInputLines = docLines[posInput[0][0] + 2:posInput[0][1] - 1]
+    varInputInfo = np.array([[xx.rstrip() for xx in x.split(':')]
+                             for x in varInputLines])
+    dict_InputInfo = {xx[0]: xx[1] for xx in varInputInfo}
+
+    # get the information of output variables for SUEWS_driver
+    posOutput = np.where(docLines == 'Returns')
+    varOutputLines = docLines[posOutput[0][0] + 2:]
+    varOutputInfo = np.array([[xx.rstrip() for xx in x.split(':')]
+                              for x in varOutputLines])
+    dict_OutputInfo = {xx[0]: xx[1] for xx in varOutputInfo}
+
+    # pack in/out results:
+    dict_inout_sd = {
+        # 'input' and 'output' are dict's that store variable information:
+        # 1. intent: e.g., input, in/output
+        # 2. dimension: e.g., (366,7)
+        'input': dict_InputInfo,
+        'output': dict_OutputInfo,
+        # 'var_input' and 'var_output' are tuples,
+        # that keep the order of arguments as in the Fortran subroutine
+        'var_input': tuple(varInputInfo[:, 0]),
+        'var_output': tuple(varOutputInfo[:, 0])}
+
+    return dict_inout_sd
+
+
+##############################################################################
+# input processor
+# 1. surface properties will be retrieved and packed together for later use
+# 2. met forcing conditions will splitted into time steps and used to derive
+# other information
+
+
 # descriptive list/dicts for variables
 # minimal required input files for configuration:
 list_file_input = ['SUEWS_AnthropogenicHeat.txt',
@@ -100,6 +148,8 @@ dict_var2SiteSelect = {
     'timezone': 'Timezone',
     'alt': 'Alt',
     'z': 'z',
+    'snowprof':
+        [{'SnowClearingProfWD': ':'}, {'SnowClearingProfWE': ':'}],
     'ahprof':
         {'AnthropogenicCode': [
             {'EnergyUseProfWD': ':'}, {'EnergyUseProfWE': ':'}]},
@@ -501,7 +551,7 @@ dict_var2SiteSelect = {
              {'WithinGridDecTrCode': 'ToWater'},
              {'WithinGridGrassCode': 'ToWater'},
              {'WithinGridUnmanBSoilCode': 'ToWater'}],
-            # the last surface type is tricky: needs to determine which goes in:
+            # the last surface type is tricky: needs to determine which goes in
             # if ToRunoff !=0, use ToRunoff, otherwise use ToSoilStore
             [{'WithinGridPavedCode': ['ToRunoff', 'ToSoilStore']},
              {'WithinGridBldgsCode': ['ToRunoff', 'ToSoilStore']},
@@ -630,9 +680,13 @@ def load_SUEWS_SurfaceChar(dir_input):
     dict_x_grid = {}
     # modify some variables to be compliant with SUEWS requirement
     for xgrid in df_gridSurfaceChar.index:
+        # transpoe snowprof:
+        df_gridSurfaceChar.loc[xgrid, 'snowprof'] = np.array(
+            df_gridSurfaceChar.loc[xgrid, 'snowprof'], order='F').T
+
         # transpoe laipower:
         df_gridSurfaceChar.loc[xgrid, 'laipower'] = np.array(
-            df_gridSurfaceChar.loc[xgrid, 'laipower']).T
+            df_gridSurfaceChar.loc[xgrid, 'laipower'], order='F').T
         # print df_gridSurfaceChar.loc[xgrid, 'laipower'].shape
 
         # select non-zero values for waterdist of water surface:
@@ -809,9 +863,10 @@ def init_SUEWS_dict(dir_input):  # return dict
             'qn1_store': nan * np.ones(nsh),
 
             # snow:
-            # Initial liquid (melted) water for each surface
             'snowalb': dict_InitCond['snowalb0'],
+            'snowfallcum': 0.,
             'icefrac': 0.2 * np.ones(7),
+            # Initial liquid (melted) water for each surface
             'meltwaterstore': snowflag * np.array(
                 [dict_InitCond[var] for var in ['snowwaterpavedstate',
                                                 'snowwaterbldgsstate',
@@ -1042,21 +1097,17 @@ def proc_met_forcing(df_met_forcing, step_count):
     met_forcing_tstep.update({'all': all_id.values})
     return met_forcing_tstep
 
-
-# get variable information from Fortran
-def get_output_info_df():
-    size_var_list = sd.output_size()
-    var_list_x = [np.array(sd.output_name_n(i))
-                  for i in np.arange(size_var_list) + 1]
-    var_list = np.apply_along_axis(np.vectorize(np.str.strip), 0, var_list_x)
-
-    var_list = np.array(
-        filter(lambda var_info: filter(None, var_info), var_list))
-    var_df = pd.DataFrame(var_list, columns=['var', 'group', 'aggm'])
-    var_dfm = var_df.set_index(['group', 'var'])
-    return var_dfm
+# input processing code end here
+##############################################################################
 
 
+
+##############################################################################
+# main calculation
+# 1. calculation code for one time step
+# 2. compact wrapper for running a whole simulation
+
+# 1. calculation code for one time step
 # high-level wrapper: suews_cal_tstep
 def suews_cal_tstep(state_old, met_forcing_tstep, mod_config):
     # use single dict as input for suews_cal_main
@@ -1094,27 +1145,33 @@ def suews_cal_tstep(state_old, met_forcing_tstep, mod_config):
 
     # remove unnecessary keys in dict_input
     # redundant keys:
-    list_var2del = ['ahprof', 'cbluse', 'disaggmethod', 'disaggmethodestm',
-                    'endDLS', 'filecode', 'fileinputpath', 'fileoutputpath',
-                    'humactivity', 'datetime',
-                    'Kdiff', 'Kdir', 'kdownzen', 'keeptstepfilesin',
-                    'keeptstepfilesout',
-                    'multipleestmfiles', 'multipleinitfiles',
-                    'multiplemetfiles',
-                    'popprof',
-                    'QE', 'Qf', 'Qs', 'raindisaggmethod', 'resolutionfilesin',
-                    'resolutionfilesinestm', 'resolutionfilesout',
-                    'solweiguse',
-                    'startDLS', 'suppresswarnings', 'traffprof', 'Wd',
-                    'writeoutoption', 'wuh', 'wuprofa', 'wuprofm']
+    list_var2del = list(set(dict_input.keys()) -
+                        set(get_args_suews()['var_input']))
+    # list_var2del = ['ahprof', 'cbluse', 'disaggmethod', 'disaggmethodestm',
+    #                 'endDLS', 'filecode', 'fileinputpath', 'fileoutputpath',
+    #                 'humactivity', 'datetime',
+    #                 'Kdiff', 'Kdir', 'kdownzen', 'keeptstepfilesin',
+    #                 'keeptstepfilesout',
+    #                 'multipleestmfiles', 'multipleinitfiles',
+    #                 'multiplemetfiles',
+    #                 'popprof',
+    #                 'QE', 'Qf', 'Qs', 'raindisaggmethod', 'resolutionfilesin',
+    #                 'resolutionfilesinestm', 'resolutionfilesout',
+    #                 'solweiguse',
+    #                 'startDLS', 'suppresswarnings', 'traffprof', 'Wd',
+    #                 'writeoutoption', 'wuh', 'wuprofa', 'wuprofm']
 
     # delete them:
     for k in list_var2del:
         dict_input.pop(k, None)
+    # dict_input_x = {k: dict_input[k].copy()
+    #                 for k in get_args_suews()['input'].keys()}
 
     # main calculation:
-    datetimeline, dataoutline, dataoutlinesnow, dataoutlineestm = sd.suews_cal_main(
-        **dict_input)
+    # (datetimeline, dataoutline,
+    #  dataoutlinesnow, dataoutlineestm, dailystateline) = sd.suews_cal_main(
+    #     **dict_input)
+    res_suews_tstep = sd.suews_cal_main(**dict_input)
 
     # update state variables
     dict_state = {var: dict_input[var] for var in state_old.keys()}
@@ -1122,14 +1179,18 @@ def suews_cal_tstep(state_old, met_forcing_tstep, mod_config):
     # print ''
 
     # pack output
-    dict_output = {'datetime': datetimeline,
-                   'dataoutlinesuews': dataoutline,
-                   'dataoutlinesnow': dataoutlinesnow,
-                   'dataoutlineestm': dataoutlineestm}
+    dict_output = {k: v for k, v in zip(
+        get_args_suews()['var_output'], res_suews_tstep)}
+    # dict_output = {'datetime': datetimeline,
+    #                'dataoutlinesuews': dataoutline,
+    #                'dataoutlinesnow': dataoutlinesnow,
+    #                'dataoutlineestm': dataoutlineestm,
+    #                'dailystateline': dailystateline}
 
     return dict_state, dict_output
 
 
+# 2. compact wrapper for running a whole simulation
 # main calculation
 def run_suews(dict_forcing, dict_init):
     # initialise dicts for holding results and model states
@@ -1178,6 +1239,25 @@ def run_suews(dict_forcing, dict_init):
 
     return dict_output, dict_state
 
+# main calculation end here
+##############################################################################
+
+
+##############################################################################
+# post-processing part
+# get variable information from Fortran
+def get_output_info_df():
+    size_var_list = sd.output_size()
+    var_list_x = [np.array(sd.output_name_n(i))
+                  for i in np.arange(size_var_list) + 1]
+    var_list = np.apply_along_axis(np.vectorize(np.str.strip), 0, var_list_x)
+
+    var_list = np.array(
+        filter(lambda var_info: filter(None, var_info), var_list))
+    var_df = pd.DataFrame(var_list, columns=['var', 'group', 'aggm'])
+    var_dfm = var_df.set_index(['group', 'var'])
+    return var_dfm
+
 
 # pack up output of one grid of all tsteps
 def pack_dict_output_grid(df_grid):
@@ -1188,22 +1268,24 @@ def pack_dict_output_grid(df_grid):
     for d in df_grid:
         for k, v in d.iteritems():  # d.items() in Python 3+
             dict_group[k].append(v)
-    # pick groups except for `datatime`
+    # pick groups except for `datetimeline`
     group_out = (group for group in dict_group.keys()
-                 if not group == 'datetime')
+                 if not group == 'datetimeline')
     # initialise dict for holding packed output
     dict_output_group = {}
+    # group names in lower case
+    var_df_lower = {group.lower(): group for group in var_df.index.levels[0]}
     # pack up output of all tsteps into output groups
     for group_x in group_out:
         # get correct group name by cleaning and swapping case
-        group = group_x.replace('dataoutline', '')
-        group = (
-            group if group in var_df.index.levels[0].drop('datetime')
-            else group.swapcase())
+        group = group_x.replace('dataoutline', '').replace('line', '')
+        # print group
+        group = var_df_lower[group]
         header_group = np.apply_along_axis(
             list, 0, var_df.loc[['datetime', group]].index.values)[:, 1]
+        # print 'header_group', header_group
         df_group = pd.DataFrame(
-            np.hstack((dict_group['datetime'], dict_group[group_x])),
+            np.hstack((dict_group['datetimeline'], dict_group[group_x])),
             columns=header_group)
         df_group[[
             'Year', 'DOY', 'Hour', 'Min']] = df_group[[

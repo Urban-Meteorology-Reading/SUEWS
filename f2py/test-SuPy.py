@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame as df
 import matplotlib.pyplot as plt
-import collections
+# import collections
 reload(sp)
 
 # initialise SUEWS settings
@@ -21,16 +21,15 @@ list_file_MetForcing = glob.glob(os.path.join(
 # load as DataFrame:
 df_forcing = sp.load_SUEWS_MetForcing_df(list_file_MetForcing[0])
 # load as dict (faster for simulation if performance is heavily concerned)
-dict_forcing = sp.load_SUEWS_MetForcing_dict(list_file_MetForcing[0])
+# dict_forcing = sp.load_SUEWS_MetForcing_dict(list_file_MetForcing[0])
 
 
 # main calulation:
 # compact form:
 dict_output, dict_state = sp.run_suews(
-    df_forcing.iloc[:1000].T.to_dict(), dict_init)
+    df_forcing.iloc[:10].T.to_dict(), dict_init)
 
 # dict_res = sp.run_suews(dict(dict_forcing.items()[:10]), dict_init)
-
 
 
 # line-by-line form (better control if manipulation is needed):
@@ -62,16 +61,19 @@ dict_output, dict_state = sp.run_suews(
 #
 # # convert dict_output to DataFrame
 # df_res = pd.DataFrame.from_dict(dict_output)
-
-
-
+#
+# df_res_grid = pd.DataFrame(dict_output).T.stack().swaplevel()
+# df_res_grid.index.get_level_values(0).unique().tolist()
+# dict_grid_time = {grid: sp.pack_dict_output_grid(
+#     df_res_grid[grid]) for grid in df_res_grid.index.get_level_values(0).unique().tolist()}
+#
+# sp.pack_dict_output_grid(df_res_grid[1])
 
 # post-processing:
 # convert dict of raw output to easier DataFrame:
 # {grid: Dataframe by group ({'SUEWS','ESTM','snow'})}
 df_output=sp.pack_df_output(dict_output)
-#
-type(df_output)
+
 xx=df_output.loc[1,'SUEWS'].loc[:,['Lup','Ldown']].plot.line()
 plt.show(xx)
 

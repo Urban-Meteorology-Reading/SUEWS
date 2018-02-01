@@ -465,7 +465,7 @@ CONTAINS
        addVeg,surplusWaterBody,SnowLimPaved,SnowLimBuild,FlowChange,drain,&
        WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
        freezmelt,freezstate,freezstatevol,&
-       Qm_Melt,Qm_rain,Tsurf_ind,sfr,DayofWeek,surf,snowD,&
+       Qm_Melt,Qm_rain,Tsurf_ind,sfr,dayofWeek_id,surf,snowD,&
        AddWater,addwaterrunoff,&
        SnowPack,SurplusEvap,&!inout
        snowFrac,MeltWaterStore,iceFrac,SnowDens,&
@@ -512,7 +512,7 @@ CONTAINS
     ! INTEGER,INTENT(in)::PavSurf
     ! INTEGER,INTENT(in)::WaterSurf
     INTEGER,INTENT(in)::ity!Evaporation calculated according to Rutter (1) or Shuttleworth (2)
-    INTEGER,DIMENSION(366,2),INTENT(in)  ::DayofWeek
+    INTEGER,DIMENSION(3),INTENT(in)  ::DayofWeek_id
 
     REAL(KIND(1d0)),INTENT(in)::dectime
     REAL(KIND(1d0)),INTENT(in)::CRWmin
@@ -633,7 +633,7 @@ CONTAINS
 
     ! Use weekday or weekend snow clearing profile
     iu=1     !Set to 1=weekday
-    IF(DayofWeek(id,1)==1.OR.DayofWeek(id,1)==7) iu=2  !Set to 2=weekend
+    IF(DayofWeek_id(1)==1.OR.DayofWeek_id(1)==7) iu=2  !Set to 2=weekend
 
     !write(*,*) is
     runoffSnow(is)=0 !Initialize for runoff caused by snowmelting

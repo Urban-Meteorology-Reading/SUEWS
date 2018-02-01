@@ -1,10 +1,10 @@
 &RunControl
 CBLUse=0
-SnowUse=0
+SnowUse=1
 SOLWEIGUse=0
-NetRadiationMethod=3 
+NetRadiationMethod=3
 EmissionsMethod=2
-StorageHeatMethod=3
+StorageHeatMethod=1
 OHMIncQF=0
 StabilityMethod=2
 RoughLenHeatMethod=2
@@ -30,7 +30,8 @@ DisaggMethodESTM=1      !NEW  (1 = default value, so don't actually need here)
 SuppressWarnings=1      !NEW
 KdownZen=0
 diagnose=0
-ncmode=1
+ncmode=0
 nrow=1
 ncol=1
+diagnose=0
 /

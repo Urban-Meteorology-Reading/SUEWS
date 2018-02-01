@@ -2629,7 +2629,7 @@ CONTAINS
        alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
        alpha_bioCO2,alpha_enh_bioCO2,alt,avkdn,avRh,avU1,BaseT,BaseTe,&
        BaseTHDD,beta_bioCO2,beta_enh_bioCO2,bldgH,CapMax_dec,CapMin_dec,&
-       chAnOHM,cpAnOHM,CRWmax,CRWmin,SnowfallCum,dayofWeek_id,DayWat,DayWatPer,&
+       chAnOHM,cpAnOHM,CRWmax,CRWmin,SnowfallCum,DayWat,DayWatPer,&
        DecidCap,dectime,DecTreeH,Diagnose,DiagQN,DiagQS,DLS,DRAINRT,&
        EF_umolCO2perJ,emis,EmissionsMethod,EnEF_v_Jkm,EveTreeH,FAIBldg,&
        FAIDecTree,FAIEveTree,Faut,FcEF_v_kgkm,fcld_obs,FlowChange,&
@@ -2841,7 +2841,6 @@ CONTAINS
 
     REAL(KIND(1D0)),INTENT(INOUT)                             ::SnowfallCum
     REAL(KIND(1D0)),INTENT(INOUT)                             ::SnowAlb
-    INTEGER,DIMENSION(0:NDAYS,3),INTENT(INOUT)                ::dayofWeek_id
     REAL(KIND(1d0)),DIMENSION(24*3600/tstep),INTENT(inout)    ::Tair24HR
     REAL(KIND(1D0)),DIMENSION(2*3600/tstep+1),INTENT(INOUT)   ::qn1_av_store
     REAL(KIND(1D0)),DIMENSION(2*3600/tstep+1),INTENT(INOUT)   ::qn1_S_av_store
@@ -3055,7 +3054,6 @@ CONTAINS
        WRITE(fn,*)'MetForcingData_grid',MetForcingData_grid
        WRITE(fn,*)'SnowfallCum',SnowfallCum
        WRITE(fn,*)'SnowAlb',SnowAlb
-       WRITE(fn,*)'dayofWeek_id',dayofWeek_id
        WRITE(fn,*)'Tair24HR',Tair24HR
        WRITE(fn,*)'qn1_av_store',qn1_av_store
        WRITE(fn,*)'qn1_S_av_store',qn1_S_av_store

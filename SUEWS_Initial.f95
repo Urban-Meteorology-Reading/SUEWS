@@ -2223,7 +2223,7 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
 
   !id=id_prev
   !it= 23 !!LastTimeOfDay
-  IF (id_prev>=DayLightSavingDay(1).AND.id_prev<=DayLightSavingDay(2)) THEN  !Summertime
+  IF (id_prev>=startDLS.AND.id_prev<=endDLS) THEN  !Summertime
      DLS=1
   ELSE
      DLS=0

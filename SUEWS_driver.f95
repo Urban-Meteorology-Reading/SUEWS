@@ -30,9 +30,9 @@ CONTAINS
        alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
        alpha_bioCO2,alpha_enh_bioCO2,alt,avkdn,avRh,avU1,BaseT,BaseTe,&
        BaseTHDD,beta_bioCO2,beta_enh_bioCO2,bldgH,CapMax_dec,CapMin_dec,&
-       chAnOHM,cpAnOHM,CRWmax,CRWmin,SnowfallCum,DayWat,DayWatPer,&
-       DecidCap,dectime,DecTreeH,Diagnose,DiagQN,DiagQS,DLS,DRAINRT,&
-       EF_umolCO2perJ,emis,EmissionsMethod,EnEF_v_Jkm,EveTreeH,FAIBldg,&
+       chAnOHM,cpAnOHM,CRWmax,CRWmin,DayWat,DayWatPer,&
+       DecidCap,dectime,DecTreeH,Diagnose,DiagQN,DiagQS,DRAINRT,&
+       EF_umolCO2perJ,emis,EmissionsMethod,EnEF_v_Jkm,endDLS,EveTreeH,FAIBldg,&
        FAIDecTree,FAIEveTree,Faut,FcEF_v_kgkm,fcld_obs,FlowChange,&
        FrFossilFuel_Heat,FrFossilFuel_NonHeat,G1,G2,G3,G4,G5,G6,GDD,&
        GDDFull,Gridiv,gsModel,HDD,HumActivity_tstep,&
@@ -50,9 +50,9 @@ CONTAINS
        qn1_store,RadMeltFact,RAINCOVER,RainMaxRes,resp_a,resp_b,&
        RoughLenHeatMethod,RoughLenMomMethod,RunoffToWater,S1,S2,&
        SatHydraulicConduct,SDDFull,sfr,SMDMethod,SnowAlb,SnowAlbMax,&
-       SnowAlbMin,snowD,SnowDens,SnowDensMax,SnowDensMin,snowFrac,&
+       SnowAlbMin,snowD,SnowDens,SnowDensMax,SnowDensMin,SnowfallCum,snowFrac,&
        SnowLimBuild,SnowLimPaved,snow_obs,SnowPack,SnowProf,snowUse,SoilDepth,&
-       soilmoist,soilstoreCap,StabilityMethod,state,StateLimit,&
+       soilmoist,soilstoreCap,StabilityMethod,startDLS,state,StateLimit,&
        StorageHeatMethod,surf,SurfaceArea,Tair24HR,tau_a,tau_f,tau_r,&
        T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,TempMeltFact,TH,&
        theta_bioCO2,timezone,TL,TrafficRate,TrafficUnits,&
@@ -85,7 +85,8 @@ CONTAINS
     INTEGER,INTENT(IN)::Diagnose
     INTEGER,INTENT(IN)::DiagQN
     INTEGER,INTENT(IN)::DiagQS
-    INTEGER,INTENT(IN)::DLS
+    INTEGER,INTENT(IN)::startDLS
+    INTEGER,INTENT(IN)::endDLS
     INTEGER,INTENT(IN)::EmissionsMethod
     INTEGER,INTENT(IN)::Gridiv
     INTEGER,INTENT(IN)::gsModel
@@ -407,6 +408,7 @@ CONTAINS
 
     INTEGER,DIMENSION(NSURF)::snowCalcSwitch
     INTEGER,DIMENSION(3)    ::dayofWeek_id
+    INTEGER::DLS
 
     REAL(KIND(1D0))::avcp
     REAL(KIND(1D0))::avdens
@@ -470,6 +472,11 @@ CONTAINS
     CALL SUEWS_cal_weekday(&
          iy,id,lat,& !input
          dayofWeek_id) !output
+
+    ! calculate dayofweek information
+    CALL SUEWS_cal_DLS(&
+         id,startDLS,endDLS,& !input
+         DLS) !output
 
 
     !==============main calculation start=======================
@@ -2390,6 +2397,20 @@ CONTAINS
 
   END SUBROUTINE SUEWS_cal_weekday
 
+
+  SUBROUTINE SUEWS_cal_DLS(&
+       id,startDLS,endDLS,& !input
+       DLS) !output
+    IMPLICIT NONE
+
+    INTEGER, INTENT(in) :: id,startDLS,endDLS
+    INTEGER, INTENT(out) :: DLS
+
+    DLS=0
+    IF ( id>startDLS .AND. id<endDLS ) dls=1
+
+  END SUBROUTINE SUEWS_cal_DLS
+
   SUBROUTINE diagSfc(&
        xSurf,xFlux,us,VegFraction,z0m,L_mod,k,avdens,avcp,tlv,&
        xDiag,opt,RoughLenHeatMethod,StabilityMethod)
@@ -2629,9 +2650,9 @@ CONTAINS
        alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
        alpha_bioCO2,alpha_enh_bioCO2,alt,avkdn,avRh,avU1,BaseT,BaseTe,&
        BaseTHDD,beta_bioCO2,beta_enh_bioCO2,bldgH,CapMax_dec,CapMin_dec,&
-       chAnOHM,cpAnOHM,CRWmax,CRWmin,SnowfallCum,DayWat,DayWatPer,&
-       DecidCap,dectime,DecTreeH,Diagnose,DiagQN,DiagQS,DLS,DRAINRT,&
-       EF_umolCO2perJ,emis,EmissionsMethod,EnEF_v_Jkm,EveTreeH,FAIBldg,&
+       chAnOHM,cpAnOHM,CRWmax,CRWmin,DayWat,DayWatPer,&
+       DecidCap,dectime,DecTreeH,Diagnose,DiagQN,DiagQS,DRAINRT,&
+       EF_umolCO2perJ,emis,EmissionsMethod,EnEF_v_Jkm,endDLS,EveTreeH,FAIBldg,&
        FAIDecTree,FAIEveTree,Faut,FcEF_v_kgkm,fcld_obs,FlowChange,&
        FrFossilFuel_Heat,FrFossilFuel_NonHeat,G1,G2,G3,G4,G5,G6,GDD,&
        GDDFull,Gridiv,gsModel,HDD,HumActivity_tstep,&
@@ -2649,9 +2670,9 @@ CONTAINS
        qn1_store,RadMeltFact,RAINCOVER,RainMaxRes,resp_a,resp_b,&
        RoughLenHeatMethod,RoughLenMomMethod,RunoffToWater,S1,S2,&
        SatHydraulicConduct,SDDFull,sfr,SMDMethod,SnowAlb,SnowAlbMax,&
-       SnowAlbMin,snowD,SnowDens,SnowDensMax,SnowDensMin,snowFrac,&
+       SnowAlbMin,snowD,SnowDens,SnowDensMax,SnowDensMin,SnowfallCum,snowFrac,&
        SnowLimBuild,SnowLimPaved,snow_obs,SnowPack,SnowProf,snowUse,SoilDepth,&
-       soilmoist,soilstoreCap,StabilityMethod,state,StateLimit,&
+       soilmoist,soilstoreCap,StabilityMethod,startDLS,state,StateLimit,&
        StorageHeatMethod,surf,SurfaceArea,Tair24HR,tau_a,tau_f,tau_r,&
        T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,TempMeltFact,TH,&
        theta_bioCO2,timezone,TL,TrafficRate,TrafficUnits,&
@@ -2667,7 +2688,8 @@ CONTAINS
     INTEGER,INTENT(IN)::Diagnose
     INTEGER,INTENT(IN)::DiagQN
     INTEGER,INTENT(IN)::DiagQS
-    INTEGER,INTENT(IN)::DLS
+    INTEGER,INTENT(IN)::startDLS
+    INTEGER,INTENT(IN)::endDLS
     INTEGER,INTENT(IN)::EmissionsMethod
     INTEGER,INTENT(IN)::Gridiv
     INTEGER,INTENT(IN)::gsModel
@@ -2866,7 +2888,7 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(3600/tstep),INTENT(INOUT)       ::qn1_store
 
 
-    INTEGER :: fn,i,xx=0
+    INTEGER :: fn,xx=0
     CHARACTER(len=100) :: FileOut
     CHARACTER(len=20)::str_grid
 
@@ -2884,7 +2906,8 @@ CONTAINS
        WRITE(fn,*)'Diagnose',Diagnose
        WRITE(fn,*)'DiagQN',DiagQN
        WRITE(fn,*)'DiagQS',DiagQS
-       WRITE(fn,*)'DLS',DLS
+       WRITE(fn,*)'startDLS',startDLS
+       WRITE(fn,*)'endDLS',endDLS
        WRITE(fn,*)'EmissionsMethod',EmissionsMethod
        WRITE(fn,*)'Gridiv',Gridiv
        WRITE(fn,*)'gsModel',gsModel

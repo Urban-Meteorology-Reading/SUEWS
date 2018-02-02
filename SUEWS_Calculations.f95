@@ -85,9 +85,9 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
           alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
           alpha_bioCO2,alpha_enh_bioCO2,alt,avkdn,avRh,avU1,BaseT,BaseTe,&
           BaseTHDD,beta_bioCO2,beta_enh_bioCO2,bldgH,CapMax_dec,CapMin_dec,&
-          chAnOHM,cpAnOHM,CRWmax,CRWmin,SnowfallCum,DayWat,DayWatPer,&
-          DecidCap,dectime,DecTreeH,Diagnose,DiagQN,DiagQS,DLS,DRAINRT,&
-          EF_umolCO2perJ,emis,EmissionsMethod,EnEF_v_Jkm,EveTreeH,FAIBldg,&
+          chAnOHM,cpAnOHM,CRWmax,CRWmin,DayWat,DayWatPer,&
+          DecidCap,dectime,DecTreeH,Diagnose,DiagQN,DiagQS,DRAINRT,&
+          EF_umolCO2perJ,emis,EmissionsMethod,EnEF_v_Jkm,endDLS,EveTreeH,FAIBldg,&
           FAIDecTree,FAIEveTree,Faut,FcEF_v_kgkm,fcld_obs,FlowChange,&
           FrFossilFuel_Heat,FrFossilFuel_NonHeat,G1,G2,G3,G4,G5,G6,GDD,&
           GDDFull,Gridiv,gsModel,HDD,HumActivity_tstep,&
@@ -105,16 +105,15 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
           qn1_store,RadMeltFact,RAINCOVER,RainMaxRes,resp_a,resp_b,&
           RoughLenHeatMethod,RoughLenMomMethod,RunoffToWater,S1,S2,&
           SatHydraulicConduct,SDDFull,sfr,SMDMethod,SnowAlb,SnowAlbMax,&
-          SnowAlbMin,snowD,SnowDens,SnowDensMax,SnowDensMin,snowFrac,&
+          SnowAlbMin,snowD,SnowDens,SnowDensMax,SnowDensMin,SnowfallCum,snowFrac,&
           SnowLimBuild,SnowLimPaved,snow_obs,SnowPack,SnowProf,snowUse,SoilDepth,&
-          soilmoist,soilstoreCap,StabilityMethod,state,StateLimit,&
+          soilmoist,soilstoreCap,StabilityMethod,startDLS,state,StateLimit,&
           StorageHeatMethod,surf,SurfaceArea,Tair24HR,tau_a,tau_f,tau_r,&
           T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,TempMeltFact,TH,&
           theta_bioCO2,timezone,TL,TrafficRate,TrafficUnits,&
           TraffProf_tstep,Ts5mindata_ir,tstep,veg_type,&
           WaterDist,WaterUseMethod,WetThresh,WU_Day,WUProfA_tstep,&
           WUProfM_tstep,xsmd,year,Z)
-
 
   END IF
 
@@ -125,9 +124,9 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
        alpha_bioCO2,alpha_enh_bioCO2,alt,avkdn,avRh,avU1,BaseT,BaseTe,&
        BaseTHDD,beta_bioCO2,beta_enh_bioCO2,bldgH,CapMax_dec,CapMin_dec,&
-       chAnOHM,cpAnOHM,CRWmax,CRWmin,SnowfallCum,DayWat,DayWatPer,&
-       DecidCap,dectime,DecTreeH,Diagnose,DiagQN,DiagQS,DLS,DRAINRT,&
-       EF_umolCO2perJ,emis,EmissionsMethod,EnEF_v_Jkm,EveTreeH,FAIBldg,&
+       chAnOHM,cpAnOHM,CRWmax,CRWmin,DayWat,DayWatPer,&
+       DecidCap,dectime,DecTreeH,Diagnose,DiagQN,DiagQS,DRAINRT,&
+       EF_umolCO2perJ,emis,EmissionsMethod,EnEF_v_Jkm,endDLS,EveTreeH,FAIBldg,&
        FAIDecTree,FAIEveTree,Faut,FcEF_v_kgkm,fcld_obs,FlowChange,&
        FrFossilFuel_Heat,FrFossilFuel_NonHeat,G1,G2,G3,G4,G5,G6,GDD,&
        GDDFull,Gridiv,gsModel,HDD,HumActivity_tstep,&
@@ -145,9 +144,9 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        qn1_store,RadMeltFact,RAINCOVER,RainMaxRes,resp_a,resp_b,&
        RoughLenHeatMethod,RoughLenMomMethod,RunoffToWater,S1,S2,&
        SatHydraulicConduct,SDDFull,sfr,SMDMethod,SnowAlb,SnowAlbMax,&
-       SnowAlbMin,snowD,SnowDens,SnowDensMax,SnowDensMin,snowFrac,&
+       SnowAlbMin,snowD,SnowDens,SnowDensMax,SnowDensMin,SnowfallCum,snowFrac,&
        SnowLimBuild,SnowLimPaved,snow_obs,SnowPack,SnowProf,snowUse,SoilDepth,&
-       soilmoist,soilstoreCap,StabilityMethod,state,StateLimit,&
+       soilmoist,soilstoreCap,StabilityMethod,startDLS,state,StateLimit,&
        StorageHeatMethod,surf,SurfaceArea,Tair24HR,tau_a,tau_f,tau_r,&
        T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,TempMeltFact,TH,&
        theta_bioCO2,timezone,TL,TrafficRate,TrafficUnits,&

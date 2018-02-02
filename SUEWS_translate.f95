@@ -319,8 +319,8 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   RunoffToWater = SurfaceChar(Gridiv,c_RunoffToWater)
 
   ! ---- Daylight saving (was from ModelledYears.txt)
-  DayLightSavingDay(1) = INT(SurfaceChar(Gridiv,c_StartDLS))
-  DayLightSavingDay(2) = INT(SurfaceChar(Gridiv,c_EndDLS))
+  startDLS = INT(SurfaceChar(Gridiv,c_StartDLS))
+  endDLS = INT(SurfaceChar(Gridiv,c_EndDLS))
 
   ! ---- OHM coeffs (was in SUEWS_OHMnew.f95, subroutine OHMinitialize)
   OHM_coef = 0 ! Initialise OHM_coef
@@ -1058,7 +1058,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      WRITE(12,*) '----- '//TRIM(ADJUSTL(SsG_YYYY))//' Site parameters'//' -----'
      WRITE(12,'(a12,9a10)') 'Grid','lat','lon','tz','alt','SurfA_ha','z','NumCapita','z0_input','zd_input','StartDLS','EndDLS'
      WRITE(12,'(a12,4f10.4,f10.2,4f10.4,2i10)') SsG_YYYY,lat,lng*(-1.0),timezone,alt,SurfaceArea_ha,z,NumCapita,z0m_in,zdm_in, &
-          DayLightSavingDay(1:2)
+          startDLS,endDLS! DayLightSavingDay(1:2)
 
      WRITE(12,*) ''
 

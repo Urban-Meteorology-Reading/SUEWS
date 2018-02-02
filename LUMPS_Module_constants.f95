@@ -1092,7 +1092,9 @@ MODULE data_in
   REAL(KIND(1d0)),DIMENSION(0:23,2):: PopProf   !Population profiles for (1)weekdays / (2)weekends
 
 
-  INTEGER,DIMENSION(2)::DayLightSavingDay   !DOY when daylight saving changes
+  ! INTEGER,DIMENSION(2)::DayLightSavingDay   !DOY when daylight saving changes
+  INTEGER::startDLS   !DOY when daylight saving starts
+  INTEGER::endDLS   !DOY when daylight saving ends
 
   INTEGER::nCBLstep  !number of time steps of Runge-kutta methods in one hour
 

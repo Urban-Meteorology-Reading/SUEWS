@@ -1335,3 +1335,19 @@ def pack_df_output_dep(dict_output):
         df_res_grid[grid]) for grid in df_res_grid.index.get_level_values(0)}
     df_grid_group = pd.DataFrame(dict_grid_time).T
     return df_grid_group
+
+
+##############################################################################
+# auxiliary functions
+
+# convert pandas structures to Python native structures
+def conv2PyData(df_x):
+    # convert to dict in a split way to expose data/values
+    dict_x = df(df_x).to_dict('split')
+    # convert data into native Python `list`
+    dict_x['data'] = [np.array(var).tolist()
+                      for var in dict_x['data']]
+    # convert back to DataFrame and then to dict again, which is Python-native
+    dict_x_nat = df(**dict_x).to_dict()
+
+    return dict_x_nat

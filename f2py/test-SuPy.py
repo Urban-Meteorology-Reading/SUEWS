@@ -34,7 +34,12 @@ dict_output, dict_state = sp.run_suews(
 # {grid: Dataframe by group ({'SUEWS','ESTM','snow'})}
 
 df_output = sp.pack_df_output(dict_output)
-
+df_state = sp.pack_df_grid(dict_state)
 # plot some variables
+# output
 xx = df_output.loc[1, 'SUEWS'].loc[:, ['QN', 'Kdown', 'Ldown']].plot.line()
 plt.show(xx)
+
+# state variable
+yy = df(df_state.loc[1, 'soilmoist'][:,[1,-3]]).plot()
+plt.show(yy)

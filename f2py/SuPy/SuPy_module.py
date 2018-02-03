@@ -3,14 +3,15 @@
 # Authors:
 # Ting Sun, ting.sun@reading.ac.uk
 # History:
-# 20 Jan 2018: first release
+# 20 Jan 2018: first alpha release
+# 01 Feb 2018: performance improvement
+# 03 Feb 2018: improvement in output processing
 ###########################################################################
 
 # load dependency modules
 import os
 import numpy as np
 import pandas as pd
-# import glob
 import f90nml
 from pandas import DataFrame as df
 from SUEWS_driver import suews_driver as sd
@@ -36,6 +37,7 @@ def get_args_suews():
     varInputInfo = np.array([[xx.rstrip() for xx in x.split(':')]
                              for x in varInputLines])
     dict_InputInfo = {xx[0]: xx[1] for xx in varInputInfo}
+    dict_InOutInfo = {xx[0]: xx[1] for xx in varInputInfo if 'in/out' in xx[1]}
 
     # get the information of output variables for SUEWS_driver
     posOutput = np.where(docLines == 'Returns')
@@ -54,6 +56,7 @@ def get_args_suews():
         # 'var_input' and 'var_output' are tuples,
         # that keep the order of arguments as in the Fortran subroutine
         'var_input': tuple(varInputInfo[:, 0]),
+        'var_inout': tuple(dict_InOutInfo.keys()),
         'var_output': tuple(varOutputInfo[:, 0])}
 
     return dict_inout_sd
@@ -64,7 +67,6 @@ def get_args_suews():
 # 1. surface properties will be retrieved and packed together for later use
 # 2. met forcing conditions will splitted into time steps and used to derive
 # other information
-
 
 # descriptive list/dicts for variables
 # minimal required input files for configuration:
@@ -88,7 +90,7 @@ dict_libVar2File = {fileX.replace('.txt', '').replace(
     'SUEWS', 'lib'): fileX for fileX in list_file_input
     if fileX.endswith('.txt')}
 
-# dictionary:
+# dictionaries:
 # links between code in SiteSelect to properties in according tables
 # this is described in SUEWS online manual:
 # http://urban-climate.net/umep/SUEWS#SUEWS_SiteSelect.txt
@@ -946,7 +948,8 @@ def init_SUEWS_dict(dir_input):  # return dict
             'albgrass': df_gridSurfaceChar.loc[
                 grid, 'albmax_grass'] * np.ones(ndays + 1,
                                                 order='F'),
-            'decidcap': df_gridSurfaceChar.loc[grid, 'surf'][DecidSurf][5 - 1] * np.ones(
+            'decidcap': df_gridSurfaceChar.loc[
+                grid, 'surf'][DecidSurf][5 - 1] * np.ones(
                 ndays + 1,
                 order='F'),
 
@@ -987,8 +990,7 @@ def init_SUEWS_dict(dir_input):  # return dict
             k: dict_grid[k] for k in list(
                 set(dict_grid.keys()).intersection(
                     set(get_args_suews()['var_input'])))}
-        # add two special
-        # dict_state_init.update({k:dict_grid[k] for k in ['startDLS','endDLS']})
+
         # kepp other entries as model configuration
         dict_mod_cfg = {
             k: dict_grid[k] for k in list(
@@ -1093,14 +1095,15 @@ def proc_met_forcing(df_met_forcing, step_count):
 # 1. calculation code for one time step
 # 2. compact wrapper for running a whole simulation
 
+
 # 1. calculation code for one time step
 # store these lists for later use
 list_var_input = get_args_suews()['var_input']
+list_var_inout = get_args_suews()['var_inout']
 list_var_output = get_args_suews()['var_output']
 
+
 # high-level wrapper: suews_cal_tstep
-
-
 def suews_cal_tstep(dict_state_start, met_forcing_tstep):
     # use single dict as input for suews_cal_main
     dict_input = met_forcing_tstep.copy()
@@ -1114,7 +1117,10 @@ def suews_cal_tstep(dict_state_start, met_forcing_tstep):
 
     # update state variables
     dict_state_end = {var: (copy.copy(dict_input[var])
-                            if type(dict_input[var]) in [list, np.ndarray]
+                            # only copy those variables changed in the fly
+                            # to keep better performance
+                            if var in list_var_inout
+                            # other varialbes are just linked by reference
                             else dict_input[var])
                       for var in dict_state_start.keys()}
 
@@ -1132,7 +1138,8 @@ def run_suews(dict_forcing, dict_init):
     dict_output = {}
     # dict_state = {}
     # dict_state_grid = {grid: dict_state
-    #                    for grid, dict_state in copy.deepcopy(dict_init).items()}
+    #                    for grid, dict_state
+    # in copy.deepcopy(dict_init).items()}
     # dict_state is used to save model states for later use
     dict_state = {0: copy.deepcopy(dict_init)}
     # temporal loop
@@ -1171,7 +1178,7 @@ def run_suews(dict_forcing, dict_init):
             # update model state
             dict_state[tstep + 1].update(
                 {grid: {k: v for k, v in state_end.items()}})
-            # print 'dict_state', dict_state[tstep][grid]['dayofweek'][xday],dict_state[tstep + 1][grid]['dayofweek'][xday]
+
             # print ''
             # if tstep==dict_forcing.keys()[-1]:
             #     print dict_state[tstep][grid]['dayofweek'][43:46]
@@ -1201,6 +1208,9 @@ def get_output_info_df():
 # get variable info as a DataFrame
 # save `var_df` for later use
 var_df = get_output_info_df()
+
+# dict as var_df but keys in lowercase
+var_df_lower = {group.lower(): group for group in var_df.index.levels[0]}
 
 
 # pack up output of one grid of all tsteps
@@ -1237,23 +1247,7 @@ def pack_dict_output_grid(df_grid):
     return dict_output_group
 
 
-# pack up output of `run_suews`
-# DEPRECATED: this is slow
-def pack_df_output_dep(dict_output):
-    # TODO: add output levels as in the Fortran version
-    # dict_output is the first value returned by `run_suews`
-    df_res_grid = pd.DataFrame(dict_output).T.stack().swaplevel()
-    dict_grid_time = {grid: pack_dict_output_grid(
-        df_res_grid[grid]) for grid in df_res_grid.index.get_level_values(0)}
-    df_grid_group = pd.DataFrame(dict_grid_time).T
-    return df_grid_group
-
-
-# dict as var_df but keys in lowercase
-var_df_lower = {group.lower(): group for group in var_df.index.levels[0]}
-
-
-# generate index for model groups
+# generate index for variables in different model groups
 def gen_group_cols(group_x):
     # get correct group name by cleaning and swapping case
     group = group_x.replace('dataoutline', '').replace('line', '')
@@ -1273,8 +1267,8 @@ def gen_group_cols(group_x):
     return index_group
 
 
-# pack up output of `run_suews`
-def pack_df_output(dict_output):
+# merge_grid: useful for both `dict_output` and `dict_state`
+def pack_df_grid(dict_output):
     # pack all grid and times into index/columns
     df_xx = df.from_dict(dict_output, orient='index')
     # pack
@@ -1290,9 +1284,30 @@ def pack_df_output(dict_output):
     # merge results of each grid
     xx3 = gb_xx2.agg(lambda x: tuple(x.values)).applymap(np.array)
 
+    return xx3
+
+
+# pack up output of `run_suews`
+def pack_df_output(dict_output):
+    # # pack all grid and times into index/columns
+    # df_xx = df.from_dict(dict_output, orient='index')
+    # # pack
+    # df_xx1 = df_xx.applymap(lambda s: pd.Series(s)).applymap(df.from_dict)
+    # df_xx2 = pd.concat({grid: pd.concat(
+    #     df_xx1[grid].to_dict()).unstack().dropna(axis=1)
+    #     for grid in df_xx1.columns})
+    # # drop redundant levels
+    # df_xx2.columns = df_xx2.columns.droplevel()
+    # # regroup by `grid`
+    # df_xx2.index.names = ['grid', 'time']
+    # gb_xx2 = df_xx2.groupby(level='grid')
+    # # merge results of each grid
+    # xx3 = gb_xx2.agg(lambda x: tuple(x.values)).applymap(np.array)
+
     # repack for later concatenation
     dict_xx4 = ({k: pd.concat(v)
-                 for k, v in xx3.applymap(df).to_dict().items()})
+                 for k, v
+                 in pack_df_grid(dict_output).applymap(df).to_dict().items()})
 
     # concatenation across model groups
     res_concat = []
@@ -1304,30 +1319,19 @@ def pack_df_output(dict_output):
 
     # concatenation across model groups
     df_output = pd.concat(res_concat, axis=1)
+    # add index information
+    df_output.index.names = ['grid', 'tstep']
 
     return df_output
 
-# # test part
-# dir_input = './input'
-# df_InitCond_grid = init_SUEWS_df(dir_input)
-# state_old = df_InitCond_grid.loc[1, 'state_init']
-# df_gridSurfaceChar = load_SUEWS_SurfaceChar(dir_input)
-#
-# # load meterological forcing data: met_forcing_array
-# # filecode and resolutionfilesin gives the name to locate met forcing file
-# # filecode
-# # resolutionfilesin
-# list_file_MetForcing = glob.glob(os.path.join(
-#     'Input', '{}*{}*txt'.format(filecode, resolutionfilesin / 60)))
-# df_forcing = load_SUEWS_MetForcing_df(list_file_MetForcing[0])
-# met_forcing = df_forcing
-# state_old = df_InitCond_grid.loc[1, 'state_init']
-# met_forcing_tstep = met_forcing.loc[1].to_dict()
-# met_forcing_tstep.update({'all': np.array(met_forcing.iloc[:, 1:],
-#                                           dtype=np.float,
-#                                           order='F')})
-# mod_config = df_InitCond_grid.loc[1, 'mod_config']
-#
-# out_state, out_res = suews_cal_tstep(state_old, met_forcing_tstep, mod_config)
-# print out_state.keys()
-# print out_res.keys()
+
+# DEPRECATED: this is slow
+# pack up output of `run_suews`
+def pack_df_output_dep(dict_output):
+    # TODO: add output levels as in the Fortran version
+    # dict_output is the first value returned by `run_suews`
+    df_res_grid = pd.DataFrame(dict_output).T.stack().swaplevel()
+    dict_grid_time = {grid: pack_dict_output_grid(
+        df_res_grid[grid]) for grid in df_res_grid.index.get_level_values(0)}
+    df_grid_group = pd.DataFrame(dict_grid_time).T
+    return df_grid_group

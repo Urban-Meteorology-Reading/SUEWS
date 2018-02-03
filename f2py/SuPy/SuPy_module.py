@@ -10,9 +10,9 @@
 import os
 import numpy as np
 import pandas as pd
-import glob
+# import glob
 import f90nml
-import datetime
+from pandas import DataFrame as df
 from SUEWS_driver import suews_driver as sd
 from scipy import interpolate
 import collections
@@ -438,8 +438,8 @@ dict_var2SiteSelect = {
             {'Code_Grass': {'SoilTypeCode': 'SoilStoreCap'}},
             {'Code_Bsoil': {'SoilTypeCode': 'SoilStoreCap'}},
             {'Code_Bsoil': {'SoilTypeCode': 'SoilStoreCap'}}],
-    'startDLS': 'StartDLS',
-    'endDLS': 'EndDLS',
+    'startdls': 'StartDLS',
+    'enddls': 'EndDLS',
     'statelimit':
     [{'Code_Paved': 'StateLimit'},
             {'Code_Bldgs': 'StateLimit'},
@@ -738,16 +738,18 @@ def load_SUEWS_SurfaceChar(dir_input):
 
 # create initial conditions
 def init_SUEWS_dict(dir_input):  # return dict
-    # initialise dict_InitCond_grid
-    dict_InitCond_grid = {}
+    # initialise dict_state_init
+    dict_state_init = {}
     # load RunControl variables
     lib_RunControl = load_SUEWS_RunControl(
         os.path.join(dir_input, 'runcontrol.nml'))
     dict_RunControl = lib_RunControl.loc[:, 'runcontrol'].to_dict()
     # some constant values
+    nan = -999.
     ndays = 366
     nsh = 3600 / dict_RunControl['tstep']  # tstep from dict_RunControl
     DecidSurf = 4 - 1
+
     # mod_config: static properties
     dict_ModConfig = {'aerodynamicresistancemethod': 2,
                       'ity': 2,
@@ -761,14 +763,7 @@ def init_SUEWS_dict(dir_input):  # return dict
     # load surface charasteristics
     df_gridSurfaceChar = load_SUEWS_SurfaceChar(dir_input)
     for grid in df_gridSurfaceChar.index:
-
-        # for var in df_gridSurfaceChar.columns:
-        #     cmd = '{varX}=df_gridSurfaceChar.loc[{gridX},{varX:{c}^{n}}]'.\
-        #         format(gridX=grid, varX=var, n=len(var) + 2, c='\'')
-        #     exec(cmd)
-
         # initialise dict_InitCond with default values
-        nan = -999.
         dict_InitCond = {
             'dayssincerain':  int(nan),
             'temp_c0':  nan,
@@ -928,9 +923,9 @@ def init_SUEWS_dict(dir_input):  # return dict
             # mean Tair of past 24 hours
             'tair24hr': 273.15 * np.ones(24 * nsh),
 
-            # day of week information:[day, month, season]
-            'dayofweek': np.ones((ndays + 1, 3), order='F',
-                                 dtype=int),
+            # # day of week information:[day, month, season]
+            # 'dayofweek': np.ones((ndays + 1, 3), order='F',
+            #                      dtype=int),
 
             # vegetation related parameters:
             'lai': np.vstack((np.array(
@@ -979,23 +974,32 @@ def init_SUEWS_dict(dir_input):  # return dict
         dict_StateInit = {k: np.array(v, order='F')
                           for k, v in dict_StateInit.items()}
 
-        # dict with static properties:
+        # dict with all properties of one grid:
         # 1. model settings: dict_ModConfig
         # 2. surface properties
-        dict_SurfaceChar = df_gridSurfaceChar.loc[grid, :]
-        # print 'shape laipower' ,(df_gridSurfaceChar.loc[grid,'laipower'].shape)
-        # print 'len laipower' ,len(dict_SurfaceChar.loc['laipower'])
-        # combine them as mod_config
-        dict_ModConfig_grid = dict_SurfaceChar.to_dict()
-        dict_ModConfig_grid.update(dict_ModConfig)
-        dict_ModConfig_grid.update(gridiv=grid)
-        dict_ModConfig_grid.keys()
-        # construct a DataFrame with entries as:
-        # {grid:[mod_config,state_init]}
-        dict_InitCond_grid.update(
-            {grid: {'mod_config': dict_ModConfig_grid,
-                    'state_init': dict_StateInit}})
-    return dict_InitCond_grid
+        # combine them as dict_grid
+        dict_grid = df_gridSurfaceChar.loc[grid, :].to_dict()
+        dict_grid.update(dict_ModConfig)
+        dict_grid.update(dict_StateInit)
+        dict_grid.update(gridiv=grid)
+        # filter out unnecessary entries for main calculation
+        dict_state_init_grid = {
+            k: dict_grid[k] for k in list(
+                set(dict_grid.keys()).intersection(
+                    set(get_args_suews()['var_input'])))}
+        # add two special
+        # dict_state_init.update({k:dict_grid[k] for k in ['startDLS','endDLS']})
+        # kepp other entries as model configuration
+        dict_mod_cfg = {
+            k: dict_grid[k] for k in list(
+                set(dict_grid.keys()) - set(get_args_suews()['var_input']))}
+
+        # construct a dict with entries as:
+        # {grid: dict_state_init}
+        dict_state_init.update({grid: dict_state_init_grid})
+    # end grid loop
+
+    return dict_mod_cfg, dict_state_init
 
 
 def init_SUEWS_df(dir_input):  # return pd.DataFrame
@@ -1018,10 +1022,10 @@ def func_parse_date(year, doy, hour, min):
 def load_SUEWS_MetForcing_df(fileX):
     df_forcing = pd.read_table(fileX, delim_whitespace=True,
                                comment='!',
-                               error_bad_lines=True,
-                               parse_dates={'datetime': [0, 1, 2, 3]},
-                               keep_date_col=True,
-                               date_parser=func_parse_date
+                               error_bad_lines=True
+                               # parse_dates={'datetime': [0, 1, 2, 3]},
+                               # keep_date_col=True,
+                               # date_parser=func_parse_date
                                ).dropna()
     df_grp = df_forcing.iloc[:, 1:].groupby('id')
     dict_id_all = {xid: df_grp.get_group(xid)
@@ -1053,39 +1057,22 @@ def load_SUEWS_MetForcing_df(fileX):
         'all': 'metforcingdata_grid'})
 
     # new columns for later use in main calculation
-    # df_merged['datetime'] = pd.to_datetime()
     df_merged[['iy', 'id', 'it', 'imin']] = df_merged[[
         'iy', 'id', 'it', 'imin']].astype(np.int64)
     df_merged['dectime'] = df_merged['id'] + \
         df_merged['it'] / 24. + df_merged['imin'] / 60.
-    df_merged['id_prev_t'] = df_merged['id']
-    df_merged['iy_prev_t'] = df_merged['iy']
-    df_merged['ts5mindata_ir'] = df_merged['temp_c']
-
+    df_merged['id_prev_t'] = df_merged['id'].shift(1).fillna(method='backfill')
+    df_merged['iy_prev_t'] = df_merged['iy'].shift(1).fillna(method='backfill')
     # convert unit
     df_merged['press_hpa'] = df_merged['press_hpa'] * 10.
+    # TODO: ts5mindata_ir needs to be read in from Ts files
+    df_merged['ts5mindata_ir'] = df_merged['temp_c']
 
     return df_merged
 
 
 def load_SUEWS_MetForcing_dict(fileX):
     rawdata_df = load_SUEWS_MetForcing_df(fileX)
-    # cols = rawdata_df.columns.tolist()
-    # rows = rawdata_df.index.tolist()
-    # vals = rawdata_df.values.tolist()
-    #
-    # # dict to hold final result
-    # rawdata_dict = {}
-    # irow = 0
-    # for row in rows:
-    #     row_dict = {}
-    #     icol = 0
-    #     for col in cols:
-    #         row_dict.update({col: vals[irow][icol]})
-    #         icol += 1
-    #     rawdata_dict.update({row: row_dict})
-    #     irow += 1
-
     return rawdata_df.T.to_dict()
 
 
@@ -1101,93 +1088,41 @@ def proc_met_forcing(df_met_forcing, step_count):
 ##############################################################################
 
 
-
 ##############################################################################
 # main calculation
 # 1. calculation code for one time step
 # 2. compact wrapper for running a whole simulation
 
 # 1. calculation code for one time step
+# store these lists for later use
+list_var_input = get_args_suews()['var_input']
+list_var_output = get_args_suews()['var_output']
+
 # high-level wrapper: suews_cal_tstep
-def suews_cal_tstep(state_old, met_forcing_tstep, mod_config):
+
+
+def suews_cal_tstep(dict_state_start, met_forcing_tstep):
     # use single dict as input for suews_cal_main
-    # dict_input = met_forcing_tstep.to_dict()
-    # dict_input = copy.deepcopy(met_forcing_tstep)
     dict_input = met_forcing_tstep.copy()
-    dict_input.update(state_old)
-    dict_input.update(mod_config)
-
-    # assign state variables:
-    # list_var_state = state_old.keys()
-
-    # TODO: ts5mindata_ir needs to be read in from Ts files
-    # dict_met['ts5mindata_ir'] = np.array(
-    #     dict_met['temp_c'], dtype=np.float, order='F')
-
-    date_time = dict_input['datetime']
-
-    # dayofweek:
-    dict_input['dayofweek'] = np.array(
-        dict_input['dayofweek']).astype(np.int32)
-    id = dict_input['id']
-    # dayofweek: 1: Sun,...,7: Sat
-    dict_input['dayofweek'][id, 0] = date_time.dayofweek + 1
-    dict_input['dayofweek'][id, 1] = date_time.month
-    # season: 1 for summer; 0 for winter.
-    dict_input['dayofweek'][id, 2] = (
-        1 if 3 < dict_input['dayofweek'][id, 1] < 10 else 0)
-
-    # print id, 'dayofweek', dict_input['dayofweek'][id]
-
-    # specify dls:
-    dict_input['dls'] = (1 if dict_input['startDLS'] <
-                         id < dict_input['endDLS'] else 0)
-
-    # remove unnecessary keys in dict_input
-    # redundant keys:
-    list_var2del = list(set(dict_input.keys()) -
-                        set(get_args_suews()['var_input']))
-    # list_var2del = ['ahprof', 'cbluse', 'disaggmethod', 'disaggmethodestm',
-    #                 'endDLS', 'filecode', 'fileinputpath', 'fileoutputpath',
-    #                 'humactivity', 'datetime',
-    #                 'Kdiff', 'Kdir', 'kdownzen', 'keeptstepfilesin',
-    #                 'keeptstepfilesout',
-    #                 'multipleestmfiles', 'multipleinitfiles',
-    #                 'multiplemetfiles',
-    #                 'popprof',
-    #                 'QE', 'Qf', 'Qs', 'raindisaggmethod', 'resolutionfilesin',
-    #                 'resolutionfilesinestm', 'resolutionfilesout',
-    #                 'solweiguse',
-    #                 'startDLS', 'suppresswarnings', 'traffprof', 'Wd',
-    #                 'writeoutoption', 'wuh', 'wuprofa', 'wuprofm']
-
-    # delete them:
-    for k in list_var2del:
-        dict_input.pop(k, None)
-    # dict_input_x = {k: dict_input[k].copy()
-    #                 for k in get_args_suews()['input'].keys()}
+    dict_input.update(dict_state_start)
+    # print 'to del:', set(dict_input.keys()) -
+    # set(get_args_suews()['var_input'])
+    dict_input = {k: dict_input[k] for k in list_var_input}
 
     # main calculation:
-    # (datetimeline, dataoutline,
-    #  dataoutlinesnow, dataoutlineestm, dailystateline) = sd.suews_cal_main(
-    #     **dict_input)
     res_suews_tstep = sd.suews_cal_main(**dict_input)
 
     # update state variables
-    dict_state = {var: dict_input[var] for var in state_old.keys()}
-    # print id, 'dayofweek end', dict_state['dayofweek'][id]
-    # print ''
+    dict_state_end = {var: (copy.copy(dict_input[var])
+                            if type(dict_input[var]) in [list, np.ndarray]
+                            else dict_input[var])
+                      for var in dict_state_start.keys()}
 
     # pack output
     dict_output = {k: v for k, v in zip(
-        get_args_suews()['var_output'], res_suews_tstep)}
-    # dict_output = {'datetime': datetimeline,
-    #                'dataoutlinesuews': dataoutline,
-    #                'dataoutlinesnow': dataoutlinesnow,
-    #                'dataoutlineestm': dataoutlineestm,
-    #                'dailystateline': dailystateline}
+        list_var_output, res_suews_tstep)}
 
-    return dict_state, dict_output
+    return dict_state_end, dict_output
 
 
 # 2. compact wrapper for running a whole simulation
@@ -1196,10 +1131,10 @@ def run_suews(dict_forcing, dict_init):
     # initialise dicts for holding results and model states
     dict_output = {}
     # dict_state = {}
-    dict_state_grid = {grid: sub_dict['state_init']
-                       for grid, sub_dict in copy.deepcopy(dict_init).items()}
+    # dict_state_grid = {grid: dict_state
+    #                    for grid, dict_state in copy.deepcopy(dict_init).items()}
     # dict_state is used to save model states for later use
-    dict_state = {0: copy.deepcopy(dict_state_grid)}
+    dict_state = {0: copy.deepcopy(dict_init)}
     # temporal loop
     for tstep in dict_forcing.keys():
         # print 'tstep at', tstep
@@ -1211,27 +1146,31 @@ def run_suews(dict_forcing, dict_init):
         met_forcing_tstep = dict_forcing[tstep]
         # met_forcing_tstep = df_forcing.iloc[tstep]
         # xday = met_forcing_tstep['id']
+        # print 'dict_state', dict_state[tstep]
 
         # spatial loop
-        for grid in dict_state_grid.keys():
-            state_old = dict_state_grid[grid]
-            # print 'start', dict_state_grid[grid]['dayofweek'][xday]
+        for grid in dict_state[tstep].keys():
+            dict_state_start = dict_state[tstep][grid]
+            # print 'start', sorted(dict_state_start.keys())
+            # print 'start', dict_state_start
             # print 'start', dict_state[tstep][grid]['dayofweek'][xday]
-            mod_config = dict_init[grid]['mod_config']
+            # mod_config = dict_init[grid]['mod_config']
             # xx=sp.suews_cal_tstep(
-            #     state_old, met_forcing_tstep, mod_config)
+            #     dict_state_start, met_forcing_tstep, mod_config)
+
             # calculation at one step:
-            state_new, output_tstep = suews_cal_tstep(
-                state_old, met_forcing_tstep, mod_config)
+            state_end, output_tstep = suews_cal_tstep(
+                dict_state_start, met_forcing_tstep)
             # update model state
-            dict_state_grid[grid].update(state_new)
+            # dict_state_grid[grid].update(state_end)
             # print 'end', dict_state_grid[grid]['state'][0]
 
             # update output & model state at tstep for the current grid
             dict_output[tstep].update({grid: output_tstep})
-            # dict_state[tstep + 1].update({grid: copy.deepcopy(state_new)})
+            # dict_state[tstep + 1].update({grid: copy.deepcopy(state_end)})
+            # update model state
             dict_state[tstep + 1].update(
-                {grid: {k: v.copy() for k, v in state_new.items()}})
+                {grid: {k: v for k, v in state_end.items()}})
             # print 'dict_state', dict_state[tstep][grid]['dayofweek'][xday],dict_state[tstep + 1][grid]['dayofweek'][xday]
             # print ''
             # if tstep==dict_forcing.keys()[-1]:
@@ -1259,10 +1198,13 @@ def get_output_info_df():
     return var_dfm
 
 
+# get variable info as a DataFrame
+# save `var_df` for later use
+var_df = get_output_info_df()
+
+
 # pack up output of one grid of all tsteps
 def pack_dict_output_grid(df_grid):
-    # get variable info as a DataFrame
-    var_df = get_output_info_df()
     # merge dicts of all tsteps
     dict_group = collections.defaultdict(list)
     for d in df_grid:
@@ -1287,16 +1229,17 @@ def pack_dict_output_grid(df_grid):
         df_group = pd.DataFrame(
             np.hstack((dict_group['datetimeline'], dict_group[group_x])),
             columns=header_group)
-        df_group[[
-            'Year', 'DOY', 'Hour', 'Min']] = df_group[[
-                'Year', 'DOY', 'Hour', 'Min']].astype(int)
+        # df_group[[
+        #     'Year', 'DOY', 'Hour', 'Min']] = df_group[[
+        #         'Year', 'DOY', 'Hour', 'Min']].astype(int)
         dict_output_group.update({group: df_group})
     # final result: {group:df_group}
     return dict_output_group
 
 
 # pack up output of `run_suews`
-def pack_df_output(dict_output):
+# DEPRECATED: this is slow
+def pack_df_output_dep(dict_output):
     # TODO: add output levels as in the Fortran version
     # dict_output is the first value returned by `run_suews`
     df_res_grid = pd.DataFrame(dict_output).T.stack().swaplevel()
@@ -1305,6 +1248,64 @@ def pack_df_output(dict_output):
     df_grid_group = pd.DataFrame(dict_grid_time).T
     return df_grid_group
 
+
+# dict as var_df but keys in lowercase
+var_df_lower = {group.lower(): group for group in var_df.index.levels[0]}
+
+
+# generate index for model groups
+def gen_group_cols(group_x):
+    # get correct group name by cleaning and swapping case
+    group = group_x.replace('dataoutline', '').replace('line', '')
+    # print group
+    group = var_df_lower[group]
+    header_group = np.apply_along_axis(
+        list, 0, var_df.loc[['datetime', group]].index.values)[:, 1]
+
+    # generate MultiIndex if not `datetimeline`
+    if not group_x == 'datetimeline':
+        index_group = pd.MultiIndex.from_product([[group], header_group],
+                                                 names=['group', 'var'],
+                                                 sortorder=None)
+    else:
+        index_group = header_group
+
+    return index_group
+
+
+# pack up output of `run_suews`
+def pack_df_output(dict_output):
+    # pack all grid and times into index/columns
+    df_xx = df.from_dict(dict_output, orient='index')
+    # pack
+    df_xx1 = df_xx.applymap(lambda s: pd.Series(s)).applymap(df.from_dict)
+    df_xx2 = pd.concat({grid: pd.concat(
+        df_xx1[grid].to_dict()).unstack().dropna(axis=1)
+        for grid in df_xx1.columns})
+    # drop redundant levels
+    df_xx2.columns = df_xx2.columns.droplevel()
+    # regroup by `grid`
+    df_xx2.index.names = ['grid', 'time']
+    gb_xx2 = df_xx2.groupby(level='grid')
+    # merge results of each grid
+    xx3 = gb_xx2.agg(lambda x: tuple(x.values)).applymap(np.array)
+
+    # repack for later concatenation
+    dict_xx4 = ({k: pd.concat(v)
+                 for k, v in xx3.applymap(df).to_dict().items()})
+
+    # concatenation across model groups
+    res_concat = []
+    for group_x in (x for x in dict_xx4.keys() if not x == 'datetimeline'):
+        # print group_x
+        xx5 = pd.concat((dict_xx4['datetimeline'], dict_xx4[group_x]), axis=1)
+        xx5.columns = gen_group_cols(group_x)
+        res_concat.append(xx5)
+
+    # concatenation across model groups
+    df_output = pd.concat(res_concat, axis=1)
+
+    return df_output
 
 # # test part
 # dir_input = './input'

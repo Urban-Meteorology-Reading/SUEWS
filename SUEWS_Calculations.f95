@@ -113,7 +113,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
           theta_bioCO2,timezone,TL,TrafficRate,TrafficUnits,&
           TraffProf_tstep,Ts5mindata_ir,tstep,veg_type,&
           WaterDist,WaterUseMethod,WetThresh,WU_Day,WUProfA_tstep,&
-          WUProfM_tstep,xsmd,year,Z)
+          WUProfM_tstep,xsmd,Z)
 
   END IF
 
@@ -152,7 +152,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        theta_bioCO2,timezone,TL,TrafficRate,TrafficUnits,&
        TraffProf_tstep,Ts5mindata_ir,tstep,veg_type,&
        WaterDist,WaterUseMethod,WetThresh,WU_Day,WUProfA_tstep,&
-       WUProfM_tstep,xsmd,year,Z,&
+       WUProfM_tstep,xsmd,Z,&
        datetimeLine,dataOutLineSUEWS,dataOutLineSnow,dataOutLineESTM,&!output
        DailyStateLine)!output
 

@@ -27,19 +27,21 @@ df_forcing = sp.load_SUEWS_MetForcing_df(list_file_MetForcing[0])
 # compact form:
 reload(sp)
 dict_output, dict_state = sp.run_suews(
-    df_forcing.iloc[:200].T.to_dict(), dict_state_init)
+    df_forcing.iloc[:10].T.to_dict(), dict_state_init)
 
-# post-processing:
+
+# post-processing of model ouptuts:
 # convert dict of raw output to easier DataFrame:
 # {grid: Dataframe by group ({'SUEWS','ESTM','snow'})}
-
 df_output = sp.pack_df_output(dict_output)
 df_state = sp.pack_df_grid(dict_state)
+
+
 # plot some variables
 # output
-xx = df_output.loc[1, 'SUEWS'].loc[:, ['QN', 'Kdown', 'Ldown']].plot.line()
+xx = df_output.loc[1, 'SUEWS'].loc[:, ['QS', 'QN']].plot.line()
 plt.show(xx)
 
 # state variable
-yy = df(df_state.loc[1, 'soilmoist'][:,[1,-3]]).plot()
+yy = df(df_state.loc[1, 'soilmoist'][:, [3, 2]]).plot()
 plt.show(yy)

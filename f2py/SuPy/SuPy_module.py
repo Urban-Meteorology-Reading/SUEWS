@@ -18,6 +18,7 @@ from SUEWS_driver import suews_driver as sd
 from scipy import interpolate
 import collections
 import copy
+import glob
 
 
 ######################################################################
@@ -178,11 +179,11 @@ dict_var2SiteSelect = {
             {'Code_Grass': 'AlbedoMax'},
             {'Code_Bsoil': 'AlbedoMax'},
             {'Code_Water': 'AlbedoMax'}],
-    'albmax_dectr': {'Code_EveTr': 'AlbedoMax'},
-    'albmax_evetr': {'Code_DecTr': 'AlbedoMax'},
+    'albmax_evetr': {'Code_EveTr': 'AlbedoMax'},
+    'albmax_dectr': {'Code_DecTr': 'AlbedoMax'},
     'albmax_grass': {'Code_Grass': 'AlbedoMax'},
-    'albmin_dectr': {'Code_EveTr': 'AlbedoMin'},
-    'albmin_evetr': {'Code_DecTr': 'AlbedoMin'},
+    'albmin_evetr': {'Code_EveTr': 'AlbedoMin'},
+    'albmin_dectr': {'Code_DecTr': 'AlbedoMin'},
     'albmin_grass': {'Code_Grass': 'AlbedoMin'},
     'alpha_bioco2':
     [{'Code_EveTr': {'BiogenCO2Code': 'alpha'}},
@@ -399,7 +400,7 @@ dict_var2SiteSelect = {
             {'Code_DecTr': {'SoilTypeCode': 'SatHydraulicCond'}},
             {'Code_Grass': {'SoilTypeCode': 'SatHydraulicCond'}},
             {'Code_Bsoil': {'SoilTypeCode': 'SatHydraulicCond'}},
-            {'Code_Bsoil': {'SoilTypeCode': 'SatHydraulicCond'}}],
+            0.],
     'sddfull': [{'Code_EveTr': 'SDDFull'},
                 {'Code_DecTr': 'SDDFull'},
                 {'Code_Grass': 'SDDFull'}],
@@ -419,7 +420,7 @@ dict_var2SiteSelect = {
             {'Code_DecTr': 'SnowLimPatch'},
             {'Code_Grass': 'SnowLimPatch'},
             {'Code_Bsoil': 'SnowLimPatch'},
-            {'Code_Bsoil': 'SnowLimPatch'}],
+            0.],
     'snowdensmax': {'SnowCode': 'SnowDensMax'},
     'snowdensmin': {'SnowCode': 'SnowDensMin'},
     'snowlimbuild': {'Code_Bldgs': 'SnowLimRemove'},
@@ -431,7 +432,7 @@ dict_var2SiteSelect = {
             {'Code_DecTr': {'SoilTypeCode': 'SoilDepth'}},
             {'Code_Grass': {'SoilTypeCode': 'SoilDepth'}},
             {'Code_Bsoil': {'SoilTypeCode': 'SoilDepth'}},
-            {'Code_Bsoil': {'SoilTypeCode': 'SoilDepth'}}],
+            0.],
     'soilstorecap':
     [{'Code_Paved': {'SoilTypeCode': 'SoilStoreCap'}},
             {'Code_Bldgs': {'SoilTypeCode': 'SoilStoreCap'}},
@@ -439,7 +440,7 @@ dict_var2SiteSelect = {
             {'Code_DecTr': {'SoilTypeCode': 'SoilStoreCap'}},
             {'Code_Grass': {'SoilTypeCode': 'SoilStoreCap'}},
             {'Code_Bsoil': {'SoilTypeCode': 'SoilStoreCap'}},
-            {'Code_Bsoil': {'SoilTypeCode': 'SoilStoreCap'}}],
+            0.],
     'startdls': 'StartDLS',
     'enddls': 'EndDLS',
     'statelimit':
@@ -502,7 +503,7 @@ dict_var2SiteSelect = {
     't_critic_heating':
         {'AnthropogenicCode': ['TCritic_Heating_WD', 'TCritic_Heating_WE']},
     'tempmeltfact': {'SnowCode': 'TempMeltFactor'},
-    'th': {'CondCode': 'TL'},
+    'th': {'CondCode': 'TH'},
     'theta_bioco2': [{'Code_EveTr': {'BiogenCO2Code': 'theta'}},
                      {'Code_DecTr': {'BiogenCO2Code': 'theta'}},
                      {'Code_Grass': {'BiogenCO2Code': 'theta'}}],
@@ -510,6 +511,7 @@ dict_var2SiteSelect = {
     'tl': {'CondCode': 'TL'},
     'trafficrate': ['TrafficRate_WD', 'TrafficRate_WE'],
     'trafficunits': {'AnthropogenicCode': 'TrafficUnits'},
+    'waterdepth': {'Code_Water': 'WaterDepth'},
     'waterdist':
     [[{'WithinGridPavedCode': 'ToPaved'},
       {'WithinGridBldgsCode': 'ToPaved'},
@@ -646,7 +648,9 @@ def lookup_code_sub(codeName, codeKey, codeValue):
 # a recursive function to retrieve value based on key sequences
 def lookup_KeySeq(indexKey, subKey, indexCode):
     # print indexKey, subKey, indexCode
-    if type(subKey) is str:
+    if type(subKey) is float:
+        res = subKey
+    elif type(subKey) is str:
         res = lookup_code_sub(indexKey, subKey, indexCode)
     elif type(subKey) is dict:
         indexKeyX, subKeyX = subKey.items()[0]
@@ -703,6 +707,11 @@ def load_SUEWS_SurfaceChar(dir_input):
         # convert to np.array
         df_gridSurfaceChar.loc[xgrid, 'alb'] = np.array(
             df_gridSurfaceChar.loc[xgrid, 'alb'])
+
+        # convert unit of `surfacearea` from ha to m^2
+        df_gridSurfaceChar.loc[xgrid, 'surfacearea'] = np.array(
+            df_gridSurfaceChar.loc[xgrid, 'surfacearea'] * 10000.)
+
         # print type(df_gridSurfaceChar.loc[xgrid, 'alb'])
 
         # dict holding updated values that can be converted to DataFrame later
@@ -711,26 +720,29 @@ def load_SUEWS_SurfaceChar(dir_input):
 
         # profiles:
         t_tstep = np.linspace(0, 24, num=3600 / tstep * 24, endpoint=False)
-        list_varTstep = ['wuprofm_tstep',
-                         'ahprof_tstep',
+        list_varTstep = ['ahprof_tstep',
                          'popprof_tstep',
                          'traffprof_tstep',
                          'humactivity_tstep',
+                         'wuprofm_tstep',
                          'wuprofa_tstep']
         for var in list_varTstep:
-            var0 = var.replace('_tstep', '')
-            var0 = eval(
-                'np.array(df_gridSurfaceChar.loc[xgrid, {var:{c}^{n}}]).T'.
-                format(var=var0, n=len(var0) + 2, c='\''))
+            var_name = var.replace('_tstep', '')
+            var0 = np.array(df_gridSurfaceChar.loc[xgrid, var_name]).T
             var0 = np.vstack((var0, var0))
             # interpolator:
             f = interpolate.interp1d(np.arange(0, 48), var0, axis=0)
-            cmd = 'dict_x.update({var}=f(t_tstep).tolist())'.format(
-                var=var, n=len(var) + 2, c='\'')
-            exec(cmd, locals())
-            # print cmd
+            dict_x.update({var: f(t_tstep).tolist()})
+            # different normalisation processing:
+            # For water use, SUM of the multipliers is equal to 1
+            if var in ['wuprofm_tstep', 'wuprofa_tstep']:
+                dict_x[var] = dict_x[var] / np.sum(dict_x[var], axis=0)
+            # For traffic, AVERAGE of the multipliers is equal to 1
+            elif var in ['ahprof_tstep', 'traffprof_tstep']:
+                dict_x[var] = (dict_x[var] / np.sum(dict_x[var], axis=0)
+                               * len(dict_x[var]))
 
-        # update dict to hold grids
+            # update dict to hold grids
         dict_x_grid.update({xgrid: dict_x})
 
     # convert to DataFrame
@@ -738,280 +750,6 @@ def load_SUEWS_SurfaceChar(dir_input):
     return df_x_grid
 
 
-# create initial conditions
-def init_SUEWS_dict(dir_input):  # return dict
-    # initialise dict_state_init
-    dict_state_init = {}
-    # load RunControl variables
-    lib_RunControl = load_SUEWS_RunControl(
-        os.path.join(dir_input, 'runcontrol.nml'))
-    dict_RunControl = lib_RunControl.loc[:, 'runcontrol'].to_dict()
-    # some constant values
-    nan = -999.
-    ndays = 366
-    nsh = 3600 / dict_RunControl['tstep']  # tstep from dict_RunControl
-    DecidSurf = 4 - 1
-
-    # mod_config: static properties
-    dict_ModConfig = {'aerodynamicresistancemethod': 2,
-                      'ity': 2,
-                      'laicalcyes': 1,
-                      'veg_type': 1,
-                      'diagqn': 0,
-                      'diagqs': 0}
-    dict_ModConfig.update(dict_RunControl)
-
-    # dict for temporally varying states
-    # load surface charasteristics
-    df_gridSurfaceChar = load_SUEWS_SurfaceChar(dir_input)
-    for grid in df_gridSurfaceChar.index:
-        # initialise dict_InitCond with default values
-        dict_InitCond = {
-            'dayssincerain':  int(nan),
-            'temp_c0':  nan,
-            'leavesoutinitially':  int(nan),
-            'gdd_1_0':  nan,
-            'gdd_2_0':  nan,
-            'laiinitialevetr':  nan,
-            'laiinitialdectr':  nan,
-            'laiinitialgrass':  nan,
-            'albevetr0':  nan,
-            'albdectr0':  nan,
-            'albgrass0':  nan,
-            'decidcap0':  nan,
-            'porosity0':  nan,
-            'pavedstate':  nan,
-            'bldgsstate':  nan,
-            'evetrstate':  nan,
-            'dectrstate':  nan,
-            'grassstate':  nan,
-            'bsoilstate':  nan,
-            'waterstate':  nan,
-            'soilstorepavedstate':  nan,
-            'soilstorebldgsstate':  nan,
-            'soilstoreevetrstate':  nan,
-            'soilstoredectrstate':  nan,
-            'soilstoregrassstate':  nan,
-            'soilstorebsoilstate':  nan,
-            'snowinitially':  int(nan),
-            'snowwaterpavedstate':  nan,
-            'snowwaterbldgsstate':  nan,
-            'snowwaterevetrstate':  nan,
-            'snowwaterdectrstate':  nan,
-            'snowwatergrassstate':  nan,
-            'snowwaterbsoilstate':  nan,
-            'snowwaterwaterstate':  nan,
-            'snowpackpaved':  nan,
-            'snowpackbldgs':  nan,
-            'snowpackevetr':  nan,
-            'snowpackdectr':  nan,
-            'snowpackgrass':  nan,
-            'snowpackbsoil':  nan,
-            'snowpackwater':  nan,
-            'snowfracpaved':  nan,
-            'snowfracbldgs':  nan,
-            'snowfracevetr':  nan,
-            'snowfracdectr':  nan,
-            'snowfracgrass':  nan,
-            'snowfracbsoil':  nan,
-            'snowfracwater':  nan,
-            'snowdenspaved':  nan,
-            'snowdensbldgs':  nan,
-            'snowdensevetr':  nan,
-            'snowdensdectr':  nan,
-            'snowdensgrass':  nan,
-            'snowdensbsoil':  nan,
-            'snowdenswater':  nan,
-            'snowalb0':  nan
-        }
-        # load Initial Condition variables from namelist file
-        lib_InitCond = load_SUEWS_nml(os.path.join(
-            dir_input, 'initialconditions{site}_{year}.nml'.format(
-                site=dict_ModConfig['filecode'],
-                year=int(df_gridSurfaceChar.loc[grid, 'year']))))
-        # update default InitialCond with values set in namelist
-        dict_InitCond.update(
-            lib_InitCond.loc[:, 'initialconditions'].to_dict())
-
-        # snowflag = 1 if snow-related modules are enabled or 0 otherwise
-        snowflag = (
-            0 if (dict_RunControl['snowuse'] == 0 or
-                  dict_InitCond['snowinitially'] == 0)
-            else 1)
-        # hdd-related parameters:
-        dif_basethdd_temp_c0 = (
-            df_gridSurfaceChar.loc[
-                grid, 'basethdd'] - dict_InitCond['temp_c0'])
-        gamma1 = (1 if dif_basethdd_temp_c0 >= 0 else 0)
-        gamma2 = (1 if dif_basethdd_temp_c0 <= 0 else 0)
-        hdd1 = gamma1 * dif_basethdd_temp_c0
-        hdd2 = gamma2 * (-1 * dif_basethdd_temp_c0)
-        # state_init: temporally-varying states from timestep to timestep
-        dict_StateInit = {
-            # water use patterns: TODO: currently not used
-            'wu_day': 0. * np.ones(((ndays + 1), 9),
-                                   order='F'),
-            'numcapita': df_gridSurfaceChar.loc[
-                grid,
-                ['popdensdaytime', 'popdensnighttime']].mean(),
-            'qn1_av_store': nan * np.ones(2 * nsh + 1),
-            'qn1_s_av_store': nan * np.ones(2 * nsh + 1),
-            'qn1_s_store': nan * np.ones(nsh),
-            'qn1_store': nan * np.ones(nsh),
-
-            # snow:
-            'snowalb': dict_InitCond['snowalb0'],
-            'snowfallcum': 0.,
-            'icefrac': 0.2 * np.ones(7),
-            # Initial liquid (melted) water for each surface
-            'meltwaterstore': snowflag * np.array(
-                [dict_InitCond[var] for var in ['snowwaterpavedstate',
-                                                'snowwaterbldgsstate',
-                                                'snowwaterevetrstate',
-                                                'snowwaterdectrstate',
-                                                'snowwatergrassstate',
-                                                'snowwaterbsoilstate',
-                                                'snowwaterwaterstate']],
-                order='F'),
-            'snowdens': snowflag * np.array(
-                [dict_InitCond[var] for var in ['snowdenspaved',
-                                                'snowdensbldgs',
-                                                'snowdensevetr',
-                                                'snowdensdectr',
-                                                'snowdensgrass',
-                                                'snowdensbsoil',
-                                                'snowdenswater']],
-                order='F'),
-            'snowfrac': snowflag * np.array(
-                [dict_InitCond[var] for var in ['snowfracpaved',
-                                                'snowfracbldgs',
-                                                'snowfracevetr',
-                                                'snowfracdectr',
-                                                'snowfracgrass',
-                                                'snowfracbsoil',
-                                                'snowfracwater']],
-                order='F'),
-            'snowpack': snowflag * np.array(
-                [dict_InitCond[var] for var in ['snowpackpaved',
-                                                'snowpackbldgs',
-                                                'snowpackevetr',
-                                                'snowpackdectr',
-                                                'snowpackgrass',
-                                                'snowpackbsoil',
-                                                'snowpackwater']],
-                order='F'),
-
-            # Initial soil stores for each surface (below ground)
-            'soilmoist': np.array(
-                [dict_InitCond[var] for var in ['soilstorepavedstate',
-                                                'soilstorebldgsstate',
-                                                'soilstoreevetrstate',
-                                                'soilstoredectrstate',
-                                                'soilstoregrassstate',
-                                                'soilstorebsoilstate']]
-                + [0.], order='F'),
-
-            # Initial wetness status of each surface (above ground)
-            'state': np.array(
-                [dict_InitCond[var] for var in ['pavedstate',
-                                                'bldgsstate',
-                                                'evetrstate',
-                                                'dectrstate',
-                                                'grassstate',
-                                                'bsoilstate',
-                                                'waterstate']],
-                order='F'),
-
-            # mean Tair of past 24 hours
-            'tair24hr': 273.15 * np.ones(24 * nsh),
-
-            # # day of week information:[day, month, season]
-            # 'dayofweek': np.ones((ndays + 1, 3), order='F',
-            #                      dtype=int),
-
-            # vegetation related parameters:
-            'lai': np.vstack((np.array(
-                [dict_InitCond[var] for var in ['laiinitialevetr',
-                                                'laiinitialdectr',
-                                                'laiinitialgrass']],
-                order='F'), np.zeros((ndays + 4, 3),
-                                     order='F'))),
-            'porosity': df_gridSurfaceChar.loc[
-                grid, 'pormax_dec'] * np.ones(ndays + 1,
-                                              order='F'),
-            'albdectr': df_gridSurfaceChar.loc[
-                grid, 'albmax_dectr'] * np.ones(ndays + 1,
-                                                order='F'),
-            'albevetr': df_gridSurfaceChar.loc[
-                grid, 'albmax_evetr'] * np.ones(ndays + 1,
-                                                order='F'),
-            'albgrass': df_gridSurfaceChar.loc[
-                grid, 'albmax_grass'] * np.ones(ndays + 1,
-                                                order='F'),
-            'decidcap': df_gridSurfaceChar.loc[
-                grid, 'surf'][DecidSurf][5 - 1] * np.ones(
-                ndays + 1,
-                order='F'),
-
-            # growing degree days:
-            'gdd': 1. * np.vstack((np.array(
-                [dict_InitCond[var] for var in ['gdd_1_0',
-                                                'gdd_2_0']] + [90, -90, 0],
-                order='F'),
-                np.array(ndays * [0, 0, 90, -90, 0],
-                         order='F').reshape((ndays, -1)))
-            ),
-
-            # heating degree days:
-            'hdd': 1. * np.vstack((np.array(
-                [3 *
-                 [0, 0, dict_InitCond['temp_c0'], 0, 0, 0] + \
-                 [hdd1, hdd2, dict_InitCond['temp_c0'], 0, 0, \
-                  dict_InitCond['dayssincerain']
-                  ]
-                 ],
-                order='F').reshape((-1, 6)),
-                np.zeros((ndays + 1, 6), order='F'))),
-        }
-
-        dict_StateInit = {k: np.array(v, order='F')
-                          for k, v in dict_StateInit.items()}
-
-        # dict with all properties of one grid:
-        # 1. model settings: dict_ModConfig
-        # 2. surface properties
-        # combine them as dict_grid
-        dict_grid = df_gridSurfaceChar.loc[grid, :].to_dict()
-        dict_grid.update(dict_ModConfig)
-        dict_grid.update(dict_StateInit)
-        dict_grid.update(gridiv=grid)
-        # filter out unnecessary entries for main calculation
-        dict_state_init_grid = {
-            k: dict_grid[k] for k in list(
-                set(dict_grid.keys()).intersection(
-                    set(get_args_suews()['var_input'])))}
-
-        # kepp other entries as model configuration
-        dict_mod_cfg = {
-            k: dict_grid[k] for k in list(
-                set(dict_grid.keys()) - set(get_args_suews()['var_input']))}
-
-        # construct a dict with entries as:
-        # {grid: dict_state_init}
-        dict_state_init.update({grid: dict_state_init_grid})
-    # end grid loop
-
-    return dict_mod_cfg, dict_state_init
-
-
-def init_SUEWS_df(dir_input):  # return pd.DataFrame
-    dict_InitCond = init_SUEWS_dict(dir_input)
-    df_InitCond = pd.DataFrame.from_dict(dict_InitCond).T
-
-    return df_InitCond
-
-
-# create met forcing conditions
 def func_parse_date(year, doy, hour, min):
     # dt = datetime.datetime.strptime(
     #     ' '.join([year, doy, hour, min]), '%Y %j %H %M')
@@ -1029,7 +767,16 @@ def load_SUEWS_MetForcing_df(fileX):
                                # keep_date_col=True,
                                # date_parser=func_parse_date
                                ).dropna()
-    df_grp = df_forcing.iloc[:, 1:].groupby('id')
+    # two datetime's
+    df_forcing_shift = df_forcing.copy()
+    df_forcing_shift.loc[:,
+                         ['%' + 'iy', 'id', 'it', 'imin']] = (
+        df_forcing_shift.loc[
+            :, ['%' + 'iy', 'id', 'it', 'imin']
+        ].shift(1).fillna(method='backfill'))
+
+    # pack all records of `id` into `all` as required by AnOHM and others
+    df_grp = df_forcing_shift.groupby('id')
     dict_id_all = {xid: df_grp.get_group(xid)
                    for xid in df_forcing['id'].unique()}
     id_all = df_forcing['id'].apply(lambda xid: dict_id_all[xid])
@@ -1058,6 +805,7 @@ def load_SUEWS_MetForcing_df(fileX):
         'xsmd': 'xsmd',
         'all': 'metforcingdata_grid'})
 
+    # print df_merged.columns
     # new columns for later use in main calculation
     df_merged[['iy', 'id', 'it', 'imin']] = df_merged[[
         'iy', 'id', 'it', 'imin']].astype(np.int64)
@@ -1075,7 +823,8 @@ def load_SUEWS_MetForcing_df(fileX):
 
 def load_SUEWS_MetForcing_dict(fileX):
     rawdata_df = load_SUEWS_MetForcing_df(fileX)
-    return rawdata_df.T.to_dict()
+    dict_met_forcing = rawdata_df.T.to_dict()
+    return dict_met_forcing
 
 
 def proc_met_forcing(df_met_forcing, step_count):
@@ -1085,6 +834,373 @@ def proc_met_forcing(df_met_forcing, step_count):
     all_id = df_grp.get_group(id_x)
     met_forcing_tstep.update({'all': all_id.values})
     return met_forcing_tstep
+
+
+# load initial conditions as dict's for SUEWS running:
+# 1. dict_mod_cfg: model settings
+# 2. dict_state_init: initial model states/conditions
+# 3. dict_met_forcing: met forcing conditions
+def init_SUEWS_dict(dir_input):  # return dict
+    # initialise dict_state_init
+    dict_state_init = {}
+
+    # load RunControl variables
+    lib_RunControl = load_SUEWS_RunControl(
+        os.path.join(dir_input, 'runcontrol.nml'))
+    dict_RunControl = lib_RunControl.loc[:, 'runcontrol'].to_dict()
+
+    # DecidSurf = 4 - 1
+
+    # mod_config: static properties
+    dict_ModConfig = {'aerodynamicresistancemethod': 2,
+                      'ity': 2,
+                      'laicalcyes': 1,
+                      'veg_type': 1,
+                      'diagqn': 0,
+                      'diagqs': 0}
+    dict_ModConfig.update(dict_RunControl)
+
+    # dict for temporally varying states
+    # load surface charasteristics
+    df_gridSurfaceChar = load_SUEWS_SurfaceChar(dir_input)
+    for grid in df_gridSurfaceChar.index:
+        # dict_StateInit: initial states of `grid`
+        dict_StateInit = init_SUEWS_dict_grid(
+            dir_input, grid, dict_ModConfig, df_gridSurfaceChar)
+        # return dict_StateInit
+        # dict with all properties of one grid:
+        # 1. model settings: dict_ModConfig
+        # 2. surface properties
+        # combine them as dict_grid
+        dict_grid = df_gridSurfaceChar.loc[grid, :].to_dict()
+        dict_grid.update(dict_ModConfig)
+        dict_grid.update(dict_StateInit)
+        dict_grid.update(gridiv=grid)
+        # filter out unnecessary entries for main calculation
+        dict_state_init_grid = {
+            k: dict_grid[k] for k in list(
+                set(dict_grid.keys()).intersection(
+                    set(get_args_suews()['var_input'])))}
+
+        # kepp other entries as model configuration
+        dict_mod_cfg = {
+            k: dict_grid[k] for k in list(
+                set(dict_grid.keys()) - set(get_args_suews()['var_input']))}
+
+        # construct a dict with entries as:
+        # {grid: dict_state_init}
+        dict_state_init.update({grid: dict_state_init_grid})
+    # end grid loop
+
+    return dict_mod_cfg, dict_state_init
+
+
+# create initial states for one grid
+def init_SUEWS_dict_grid(dir_input, grid,
+                         dict_ModConfig, df_gridSurfaceChar):
+    # some constant values
+    nan = -999.
+    ndays = 366
+    nsh = 3600 / dict_ModConfig['tstep']  # tstep from dict_RunControl
+
+    # load met forcing of `grid`:
+    # TODO: support multi-grid settings for met forcing
+    filecode = dict_ModConfig['filecode']
+    tstep = dict_ModConfig['tstep']
+    # TODO: need to introduce downscaling functions here
+    list_file_MetForcing = [
+        x_file
+        for x_file in glob.glob(
+            os.path.join(dir_input,
+                         '{}*{}*txt'.format(filecode, tstep / 60)))
+        if 'ESTM' not in x_file]
+    # load as DataFrame:
+    df_forcing = load_SUEWS_MetForcing_df(list_file_MetForcing[0])
+    # define some met forcing determined variables:
+    # previous day index
+    id_prev = df_forcing.loc[0, 'id'] - 1
+
+    # initialise dict_InitCond with default values
+    dict_InitCond = {
+        'dayssincerain':  0,
+        # `temp_c0` defaults to daily mean air temperature of the first day
+        'temp_c0':  df_forcing.loc[0, 'metforcingdata_grid']['Td'].mean(),
+        # 'temp_c0': nan,
+        'leavesoutinitially':  int(nan),
+        'gdd_1_0':  nan,
+        'gdd_2_0':  nan,
+        'laiinitialevetr':  nan,
+        'laiinitialdectr':  nan,
+        'laiinitialgrass':  nan,
+        'albevetr0':  nan,
+        'albdectr0':  nan,
+        'albgrass0':  nan,
+        'decidcap0':  nan,
+        'porosity0':  nan,
+        'pavedstate':  0,
+        'bldgsstate':  0,
+        'evetrstate':  0,
+        'dectrstate':  0,
+        'grassstate':  0,
+        'bsoilstate':  0,
+        'waterstate':  df_gridSurfaceChar.loc[grid, 'waterdepth'],
+        'soilstorepavedstate':  nan,
+        'soilstorebldgsstate':  nan,
+        'soilstoreevetrstate':  nan,
+        'soilstoredectrstate':  nan,
+        'soilstoregrassstate':  nan,
+        'soilstorebsoilstate':  nan,
+        'snowinitially':  int(nan),
+        'snowwaterpavedstate':  nan,
+        'snowwaterbldgsstate':  nan,
+        'snowwaterevetrstate':  nan,
+        'snowwaterdectrstate':  nan,
+        'snowwatergrassstate':  nan,
+        'snowwaterbsoilstate':  nan,
+        'snowwaterwaterstate':  nan,
+        'snowpackpaved':  nan,
+        'snowpackbldgs':  nan,
+        'snowpackevetr':  nan,
+        'snowpackdectr':  nan,
+        'snowpackgrass':  nan,
+        'snowpackbsoil':  nan,
+        'snowpackwater':  nan,
+        'snowfracpaved':  nan,
+        'snowfracbldgs':  nan,
+        'snowfracevetr':  nan,
+        'snowfracdectr':  nan,
+        'snowfracgrass':  nan,
+        'snowfracbsoil':  nan,
+        'snowfracwater':  nan,
+        'snowdenspaved':  nan,
+        'snowdensbldgs':  nan,
+        'snowdensevetr':  nan,
+        'snowdensdectr':  nan,
+        'snowdensgrass':  nan,
+        'snowdensbsoil':  nan,
+        'snowdenswater':  nan,
+        'snowalb0':  nan
+    }
+
+    # load Initial Condition variables from namelist file
+    # TODO: support multi-grid settings for initial conditions
+    lib_InitCond = load_SUEWS_nml(os.path.join(
+        dir_input, 'initialconditions{site}_{year}.nml'.format(
+            site=dict_ModConfig['filecode'],
+            year=int(df_gridSurfaceChar.loc[grid, 'year']))))
+    # update default InitialCond with values set in namelist
+    dict_InitCond.update(
+        lib_InitCond.loc[:, 'initialconditions'].to_dict())
+
+    # update vegetation-related variables according to LeavesOutInitially
+    fr_veg_sum = np.sum(
+        df_gridSurfaceChar.loc[grid, 'sfr'][2:5])
+    if dict_InitCond['leavesoutinitially'] == 1:
+        dict_InitCond['gdd_1_0'] = (np.dot(
+            df_gridSurfaceChar.loc[grid, 'gddfull'],
+            df_gridSurfaceChar.loc[grid, 'sfr'][2:5]) / fr_veg_sum
+            if fr_veg_sum > 0
+            else 0)
+        dict_InitCond['gdd_2_0'] = 0
+        dict_InitCond['laiinitialevetr'] = df_gridSurfaceChar.loc[
+            grid, 'laimax'][0]
+        dict_InitCond['laiinitialdectr'] = df_gridSurfaceChar.loc[
+            grid, 'laimax'][1]
+        dict_InitCond['laiinitialgrass'] = df_gridSurfaceChar.loc[
+            grid, 'laimax'][2]
+        dict_InitCond['albevetr0'] = df_gridSurfaceChar.loc[
+            grid, 'albmax_evetr']
+        dict_InitCond['albdectr0'] = df_gridSurfaceChar.loc[
+            grid, 'albmax_dectr']
+        dict_InitCond['albgrass0'] = df_gridSurfaceChar.loc[
+            grid, 'albmax_grass']
+        dict_InitCond['decidcap0'] = df_gridSurfaceChar.loc[
+            grid, 'capmax_dec']
+        dict_InitCond['porosity0'] = df_gridSurfaceChar.loc[
+            grid, 'pormin_dec']
+
+    elif dict_InitCond['leavesoutinitially'] == 0:
+        dict_InitCond['gdd_1_0'] = 0
+        dict_InitCond['gdd_2_0'] = (np.dot(
+            df_gridSurfaceChar.loc[grid, 'sddfull'],
+            df_gridSurfaceChar.loc[grid, 'sfr'][2: 5]) / fr_veg_sum
+            if fr_veg_sum > 0
+            else 0)
+        dict_InitCond['laiinitialevetr'] = df_gridSurfaceChar.loc[
+            grid, 'laimin'][0]
+        dict_InitCond['laiinitialdectr'] = df_gridSurfaceChar.loc[
+            grid, 'laimin'][1]
+        dict_InitCond['laiinitialgrass'] = df_gridSurfaceChar.loc[
+            grid, 'laimin'][2]
+        dict_InitCond['albevetr0'] = df_gridSurfaceChar.loc[
+            grid, 'albmin_evetr']
+        dict_InitCond['albdectr0'] = df_gridSurfaceChar.loc[
+            grid, 'albmin_dectr']
+        dict_InitCond['albgrass0'] = df_gridSurfaceChar.loc[
+            grid, 'albmin_grass']
+        dict_InitCond['decidcap0'] = df_gridSurfaceChar.loc[
+            grid, 'capmin_dec']
+        dict_InitCond['porosity0'] = df_gridSurfaceChar.loc[
+            grid, 'pormax_dec']
+    # END: update vegetation-related variables according to LeavesOutInitially
+
+    # snowflag = 1 if snow-related modules are enabled or 0 otherwise
+    snowflag = (
+        0 if (dict_ModConfig['snowuse'] == 0 or
+              dict_InitCond['snowinitially'] == 0)
+        else 1)
+
+    # state_init: temporally-varying states from timestep to timestep
+    dict_StateInit = {
+        # TODO: water use patterns, which is currently not used
+        'wu_day': 0. * np.ones(((ndays + 1), 9),
+                               order='F'),
+        'numcapita': df_gridSurfaceChar.loc[
+            grid,
+            ['popdensdaytime', 'popdensnighttime']].mean(),
+        'qn1_av_store': nan * np.ones(2 * nsh + 1),
+        'qn1_s_av_store': nan * np.ones(2 * nsh + 1),
+        'qn1_s_store': nan * np.ones(nsh),
+        'qn1_store': nan * np.ones(nsh),
+
+        # snow:
+        'snowalb': dict_InitCond['snowalb0'],
+        'snowfallcum': 0.,
+        'icefrac': 0.2 * np.ones(7),
+        # Initial liquid (melted) water for each surface
+        'meltwaterstore': snowflag * np.array(
+            [dict_InitCond[var] for var in ['snowwaterpavedstate',
+                                            'snowwaterbldgsstate',
+                                            'snowwaterevetrstate',
+                                            'snowwaterdectrstate',
+                                            'snowwatergrassstate',
+                                            'snowwaterbsoilstate',
+                                            'snowwaterwaterstate']],
+            order='F'),
+        'snowdens': snowflag * np.array(
+            [dict_InitCond[var] for var in ['snowdenspaved',
+                                            'snowdensbldgs',
+                                            'snowdensevetr',
+                                            'snowdensdectr',
+                                            'snowdensgrass',
+                                            'snowdensbsoil',
+                                            'snowdenswater']],
+            order='F'),
+        'snowfrac': snowflag * np.array(
+            [dict_InitCond[var] for var in ['snowfracpaved',
+                                            'snowfracbldgs',
+                                            'snowfracevetr',
+                                            'snowfracdectr',
+                                            'snowfracgrass',
+                                            'snowfracbsoil',
+                                            'snowfracwater']],
+            order='F'),
+        'snowpack': snowflag * np.array(
+            [dict_InitCond[var] for var in ['snowpackpaved',
+                                            'snowpackbldgs',
+                                            'snowpackevetr',
+                                            'snowpackdectr',
+                                            'snowpackgrass',
+                                            'snowpackbsoil',
+                                            'snowpackwater']],
+            order='F'),
+
+        # Initial soil stores for each surface (below ground)
+        'soilmoist': np.array(
+            [dict_InitCond[var] for var in ['soilstorepavedstate',
+                                            'soilstorebldgsstate',
+                                            'soilstoreevetrstate',
+                                            'soilstoredectrstate',
+                                            'soilstoregrassstate',
+                                            'soilstorebsoilstate']]
+            + [0.], order='F'),
+
+        # Initial wetness status of each surface (above ground)
+        'state': np.array(
+            [dict_InitCond[var] for var in ['pavedstate',
+                                            'bldgsstate',
+                                            'evetrstate',
+                                            'dectrstate',
+                                            'grassstate',
+                                            'bsoilstate',
+                                            'waterstate']],
+            order='F'),
+
+        # mean Tair of past 24 hours
+        'tair24hr': 273.15 * np.ones(24 * nsh),
+
+        # # day of week information:[day, month, season]
+        # 'dayofweek': np.ones((ndays + 1, 3), order='F',
+        #                      dtype=int),
+
+        # vegetation related parameters:
+
+        'porosity': dict_InitCond['porosity0'] * np.ones(ndays + 1,
+                                                         order='F'),
+        'albdectr': dict_InitCond['albdectr0'] * np.ones(ndays + 1,
+                                                         order='F'),
+        'albevetr': dict_InitCond['albevetr0'] * np.ones(ndays + 1,
+                                                         order='F'),
+        'albgrass': dict_InitCond['albgrass0'] * np.ones(ndays + 1,
+                                                         order='F'),
+        'decidcap': dict_InitCond['decidcap0'] * np.ones(ndays + 1,
+                                                         order='F'),
+
+        # leaf area index:
+
+        'lai': 1. * np.zeros((ndays + 5, 3)),
+        # growing degree days:
+        'gdd': np.zeros((ndays + 1, 5)),
+
+        # heating degree days:
+        'hdd': np.zeros((ndays + 5, 6))
+    }
+
+    # lai-related parameters:
+    dict_StateInit['lai'][4 + id_prev] = [
+        dict_InitCond[var] for var in ['laiinitialevetr',
+                                       'laiinitialdectr',
+                                       'laiinitialgrass']]
+
+    # hdd-related parameters:
+    # print 'temp_c0', dict_InitCond['temp_c0']
+    dif_basethdd_temp_c0 = (
+        df_gridSurfaceChar.loc[grid, 'basethdd']
+        - dict_InitCond['temp_c0'])
+    gamma1 = (1 if dif_basethdd_temp_c0 >= 0 else 0)
+    gamma2 = (1 if dif_basethdd_temp_c0 <= 0 else 0)
+    hdd1 = gamma1 * dif_basethdd_temp_c0
+    hdd2 = gamma2 * (-1 * dif_basethdd_temp_c0)
+    # update hdd:
+    dict_StateInit['hdd'][4 + id_prev] = [
+        hdd1, hdd2, dict_InitCond['temp_c0'],
+        0, 0, dict_InitCond['dayssincerain']]
+    dict_StateInit['hdd'][4 + id_prev - 3:
+                          4 + id_prev, 3 - 1] = dict_InitCond['temp_c0']
+    dict_StateInit['hdd'][4 + id_prev, 5] = dict_InitCond['dayssincerain']
+
+    # gdd-related parameters:
+    dict_StateInit['gdd'][:, 2] = 90
+    dict_StateInit['gdd'][:, 3] = -90
+    dict_StateInit['gdd'][id_prev, 0] = dict_InitCond['gdd_1_0']
+    dict_StateInit['gdd'][id_prev, 1] = dict_InitCond['gdd_2_0']
+
+    # pack final results with Fortran ordering
+    dict_StateInit = {k: np.array(v, order='F')
+                      for k, v in dict_StateInit.items()}
+
+    return dict_StateInit
+
+
+# convert dict_InitCond to DataFrame
+def init_SUEWS_df(dir_input):  # return pd.DataFrame
+    dict_InitCond = init_SUEWS_dict(dir_input)
+    df_InitCond = pd.DataFrame.from_dict(dict_InitCond).T
+
+    return df_InitCond
+
+
+#
 
 # input processing code end here
 ##############################################################################
@@ -1342,12 +1458,24 @@ def pack_df_output_dep(dict_output):
 
 # convert pandas structures to Python native structures
 def conv2PyData(df_x):
-    # convert to dict in a split way to expose data/values
-    dict_x = df(df_x).to_dict('split')
-    # convert data into native Python `list`
-    dict_x['data'] = [np.array(var).tolist()
-                      for var in dict_x['data']]
-    # convert back to DataFrame and then to dict again, which is Python-native
-    dict_x_nat = df(**dict_x).to_dict()
+    try:  # if the data structures in dict_df_x have consistent dimensionality
+        # convert to dict in a split way to expose data/values
+        dict_x = df(df_x).to_dict('split')
+        # convert data into native Python `list`
+        dict_x['data'] = [np.array(var).tolist()
+                          for var in dict_x['data']]
+        # convert back to DataFrame and then to dict again, which is
+        # Python-native
+        dict_x_nat = df(**dict_x).to_dict()
+    except:
+        # if the data structures in dict_df_x have inconsistent dimensionality
+        # convert to dict in a split way to expose data/values
+        dict_x = df(df_x.T).to_dict('split')
+        # convert data into native Python `list`
+        dict_x['data'] = [np.array(var).tolist()
+                          for var in dict_x['data']]
+        # convert back to DataFrame and then to dict again, which is
+        # Python-native
+        dict_x_nat = df(**dict_x).to_dict()
 
     return dict_x_nat

@@ -58,7 +58,7 @@ CONTAINS
        theta_bioCO2,timezone,TL,TrafficRate,TrafficUnits,&
        TraffProf_tstep,Ts5mindata_ir,tstep,veg_type,&
        WaterDist,WaterUseMethod,WetThresh,WU_Day,WUProfA_tstep,&
-       WUProfM_tstep,xsmd,year,Z,&
+       WUProfM_tstep,xsmd,Z,&
        datetimeLine,dataOutLineSUEWS,dataOutLineSnow,dataOutLineESTM,&!output
        DailyStateLine)!output
 
@@ -198,7 +198,6 @@ CONTAINS
     REAL(KIND(1D0)),INTENT(IN)::TL
     REAL(KIND(1D0)),INTENT(IN)::TrafficUnits
     REAL(KIND(1D0)),INTENT(IN)::xsmd
-    REAL(KIND(1D0)),INTENT(IN)::year
     REAL(KIND(1D0)),INTENT(IN)::Z
 
     INTEGER,DIMENSION(NVEGSURF),INTENT(IN)::LAIType
@@ -492,7 +491,7 @@ CONTAINS
     ! Calculate sun position
     IF(Diagnose==1) WRITE(*,*) 'Calling NARP_cal_SunPosition...'
     CALL NARP_cal_SunPosition(&
-         year,&!input:
+         real(iy,kind(1d0)),&!input:
          dectime-tstep/2,&! sun position at middle of timestep before
          timezone,lat,lng,alt,&
          azimuth,zenith_deg)!output:
@@ -2678,7 +2677,7 @@ CONTAINS
        theta_bioCO2,timezone,TL,TrafficRate,TrafficUnits,&
        TraffProf_tstep,Ts5mindata_ir,tstep,veg_type,&
        WaterDist,WaterUseMethod,WetThresh,WU_Day,WUProfA_tstep,&
-       WUProfM_tstep,xsmd,year,Z)
+       WUProfM_tstep,xsmd,Z)
 
     USE data_in,ONLY:FileOutputPath
 
@@ -2801,7 +2800,6 @@ CONTAINS
     REAL(KIND(1D0)),INTENT(IN)::TL
     REAL(KIND(1D0)),INTENT(IN)::TrafficUnits
     REAL(KIND(1D0)),INTENT(IN)::xsmd
-    REAL(KIND(1D0)),INTENT(IN)::year
     REAL(KIND(1D0)),INTENT(IN)::Z
 
     INTEGER,DIMENSION(NVEGSURF),INTENT(IN)::LAIType
@@ -2900,7 +2898,7 @@ CONTAINS
     ! write out data
     IF ( xx==0 ) THEN
        fn=50
-       OPEN(fn,file=TRIM(FileOut),position='append')!,err=112)
+       OPEN(fn,file=TRIM(FileOut),status='unknown')!,err=112)
 
        WRITE(fn,*)'AerodynamicResistanceMethod',AerodynamicResistanceMethod
        WRITE(fn,*)'Diagnose',Diagnose
@@ -3018,7 +3016,6 @@ CONTAINS
        WRITE(fn,*)'TL',TL
        WRITE(fn,*)'TrafficUnits',TrafficUnits
        WRITE(fn,*)'xsmd',xsmd
-       WRITE(fn,*)'year',year
        WRITE(fn,*)'Z',Z
        WRITE(fn,*)'LAIType',LAIType
        WRITE(fn,*)'AH_MIN',AH_MIN

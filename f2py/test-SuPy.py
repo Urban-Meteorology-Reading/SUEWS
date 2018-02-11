@@ -9,25 +9,30 @@ import matplotlib.pyplot as plt
 reload(sp)
 
 # initialise SUEWS settings
-dir_input = './Input'
-dict_mod_cfg, dict_state_init = sp.init_SUEWS_dict(dir_input)
+# dir_input = './Input'
+dir_start = '../SampleRun'
+dict_mod_cfg, dict_state_init = sp.init_SUEWS_dict(dir_start)
 
 # load met forcing
 filecode = dict_mod_cfg['filecode']
 tstep = dict_state_init[1]['tstep']
 list_file_MetForcing = glob.glob(os.path.join(
-    dir_input, '{}*{}*txt'.format(filecode, tstep / 60)))
+    dir_start, 'Input/{}*{}*txt'.format(filecode, tstep / 60)))
 # load as DataFrame:
-df_forcing = sp.load_SUEWS_MetForcing_df(list_file_MetForcing[0])
+df_forcing = sp.load_SUEWS_MetForcing_df(list_file_MetForcing[1])
 # load as dict (faster for simulation if performance is heavily concerned)
-# dict_forcing = sp.load_SUEWS_MetForcing_dict(list_file_MetForcing[0])
-
+# dict_forcing = sp.load_SUEWS_MetForcing_dict(list_file_MetForcing[1])
+# dict_forcing.keys()[-1]
 
 # main calulation:
 # compact form:
-reload(sp)
+# reload(sp)
+df_forcing_part = df_forcing.iloc[:300]
+dict_forcing_part = df_forcing_part.to_dict('index')
+dict_forcing_part['metforcingdata_grid'] = np.array(
+    df_forcing_part.values, dtype=np.float, order='F')
 dict_output, dict_state = sp.run_suews(
-    df_forcing.iloc[:10].T.to_dict(), dict_state_init)
+    dict_forcing_part, {1: dict_state_init[1]})
 
 
 # post-processing of model ouptuts:

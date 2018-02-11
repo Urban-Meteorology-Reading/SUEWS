@@ -319,7 +319,7 @@ CONTAINS
     ENDIF
 
 
-303 FORMAT((i4,1X), 3(i3,1X), 9(f9.2,1X), (f9.4,1X), 10(f9.2,1X))  !Allows 4 dp for rainfall
+303 FORMAT((i4,1X), 3(i3,1X), 9(f12.6,1X), (f9.4,1X), 10(f9.4,1X))  !Allows 4 dp for rainfall
 
     ! Deallocate arrays -----------------------------------------------------------------
     DEALLOCATE(MetForDisagg)

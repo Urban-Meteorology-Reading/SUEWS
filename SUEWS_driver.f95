@@ -284,11 +284,11 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(3600/tstep),INTENT(INOUT)       ::qn1_S_store
     REAL(KIND(1D0)),DIMENSION(3600/tstep),INTENT(INOUT)       ::qn1_store
 
-    REAL(KIND(1D0)),DIMENSION(5),INTENT(OUT)                     ::datetimeLine
-    REAL(KIND(1D0)),DIMENSION(ncolumnsDataOutSUEWS-5),INTENT(OUT)     ::dataOutLineSUEWS
-    REAL(KIND(1D0)),DIMENSION(ncolumnsDataOutSnow-5),INTENT(OUT) ::dataOutLineSnow
-    REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutESTM-5),INTENT(OUT) ::dataOutLineESTM
-    REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutDailyState-5),INTENT(OUT) :: DailyStateLine
+    REAL(KIND(1D0)),DIMENSION(5),INTENT(OUT)                           ::datetimeLine
+    REAL(KIND(1D0)),DIMENSION(ncolumnsDataOutSUEWS-5),INTENT(OUT)      ::dataOutLineSUEWS
+    REAL(KIND(1D0)),DIMENSION(ncolumnsDataOutSnow-5),INTENT(OUT)       ::dataOutLineSnow
+    REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutESTM-5),INTENT(OUT)       ::dataOutLineESTM
+    REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutDailyState-5),INTENT(OUT) ::DailyStateLine
 
     REAL(KIND(1D0))::a1
     REAL(KIND(1D0))::a2

@@ -27,26 +27,26 @@ df_forcing = sp.load_SUEWS_MetForcing_df(list_file_MetForcing[1])
 # main calulation:
 # compact form:
 # reload(sp)
-df_forcing_part = df_forcing.iloc[:300]
+df_forcing_part = df_forcing.iloc[:8000]
 dict_forcing_part = df_forcing_part.to_dict('index')
-dict_forcing_part['metforcingdata_grid'] = np.array(
-    df_forcing_part.values, dtype=np.float, order='F')
+# dict_forcing_part['metforcingdata_grid'] = np.array(
+#     df_forcing_part.values, dtype=np.float, order='F')
 dict_output, dict_state = sp.run_suews(
     dict_forcing_part, {1: dict_state_init[1]})
 
 
-# post-processing of model ouptuts:
-# convert dict of raw output to easier DataFrame:
-# {grid: Dataframe by group ({'SUEWS','ESTM','snow'})}
-df_output = sp.pack_df_output(dict_output)
-df_state = sp.pack_df_grid(dict_state)
-
-
-# plot some variables
-# output
-xx = df_output.loc[1, 'SUEWS'].loc[:, ['QS', 'QN']].plot.line()
-plt.show(xx)
-
-# state variable
-yy = df(df_state.loc[1, 'soilmoist'][:, [3, 2]]).plot()
-plt.show(yy)
+# # post-processing of model ouptuts:
+# # convert dict of raw output to easier DataFrame:
+# # {grid: Dataframe by group ({'SUEWS','ESTM','snow'})}
+# df_output = sp.pack_df_output(dict_output)
+# df_state = sp.pack_df_grid(dict_state)
+#
+#
+# # plot some variables
+# # output
+# xx = df_output.loc[1, 'SUEWS'].loc[:, ['QS', 'QN']].plot.line()
+# plt.show(xx)
+#
+# # state variable
+# yy = df(df_state.loc[1, 'soilmoist'][:, [3, 2]]).plot()
+# plt.show(yy)

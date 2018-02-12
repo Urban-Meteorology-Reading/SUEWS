@@ -673,8 +673,9 @@ def load_SUEWS_SurfaceChar(dir_input):
         os.path.join(dir_input, 'runcontrol.nml'))
     dict_RunControl = lib_RunControl.loc[:, 'runcontrol'].to_dict()
     tstep = dict_RunControl['tstep']
+    dir_path = os.path.join(dir_input, dict_RunControl['fileinputpath'])
     # load all libraries
-    load_SUEWS_Vars(dir_input)
+    load_SUEWS_Vars(dir_path)
     # construct a dictionary in the form: {grid:{var:value,...}}
     dict_gridSurfaceChar = {
         grid: {k: lookup_KeySeq(k, v, grid)
@@ -767,16 +768,21 @@ def load_SUEWS_MetForcing_df(fileX):
                                # keep_date_col=True,
                                # date_parser=func_parse_date
                                ).dropna()
+
+    # convert unit
+    df_forcing['press'] = df_forcing['press'] * 10.
+
     # two datetime's
-    df_forcing_shift = df_forcing.copy()
-    df_forcing_shift.loc[:,
-                         ['%' + 'iy', 'id', 'it', 'imin']] = (
-        df_forcing_shift.loc[
-            :, ['%' + 'iy', 'id', 'it', 'imin']
-        ].shift(1).fillna(method='backfill'))
+    # df_forcing_shift = df_forcing.copy()
+    # df_forcing_shift.loc[:,
+    #                      ['%' + 'iy', 'id', 'it', 'imin']] = (
+    #     df_forcing_shift.loc[
+    #         :, ['%' + 'iy', 'id', 'it', 'imin']
+    #     ].shift(1).fillna(method='backfill'))
 
     # pack all records of `id` into `all` as required by AnOHM and others
-    df_grp = df_forcing_shift.groupby('id')
+    # df_grp = df_forcing_shift.groupby('id')
+    df_grp = df_forcing.groupby('id')
     dict_id_all = {xid: df_grp.get_group(xid)
                    for xid in df_forcing['id'].unique()}
     id_all = df_forcing['id'].apply(lambda xid: dict_id_all[xid])
@@ -802,19 +808,19 @@ def load_SUEWS_MetForcing_df(fileX):
         'Q*': 'qn1_obs',
         'snow': 'snow_obs',
         'Td': 'temp_c',
-        'xsmd': 'xsmd',
-        'all': 'metforcingdata_grid'})
+        'all': 'metforcingdata_grid',
+        'xsmd': 'xsmd'})
 
     # print df_merged.columns
     # new columns for later use in main calculation
     df_merged[['iy', 'id', 'it', 'imin']] = df_merged[[
         'iy', 'id', 'it', 'imin']].astype(np.int64)
-    df_merged['dectime'] = df_merged['id'] + \
-        df_merged['it'] / 24. + df_merged['imin'] / 60.
+    df_merged['dectime'] = (df_merged['id'] +
+                            (df_merged['it']
+                             + df_merged['imin'] / 60.) / 24.)
     df_merged['id_prev_t'] = df_merged['id'].shift(1).fillna(method='backfill')
     df_merged['iy_prev_t'] = df_merged['iy'].shift(1).fillna(method='backfill')
-    # convert unit
-    df_merged['press_hpa'] = df_merged['press_hpa'] * 10.
+
     # TODO: ts5mindata_ir needs to be read in from Ts files
     df_merged['ts5mindata_ir'] = df_merged['temp_c']
 
@@ -823,33 +829,40 @@ def load_SUEWS_MetForcing_df(fileX):
 
 def load_SUEWS_MetForcing_dict(fileX):
     rawdata_df = load_SUEWS_MetForcing_df(fileX)
-    dict_met_forcing = rawdata_df.T.to_dict()
+    # dict_met_forcing = rawdata_df.T.to_dict()
+    dict_met_forcing = rawdata_df.to_dict('index')
+    # dict_met_forcing.update(
+    #     {'metforcingdata_grid': np.array(rawdata_df.values,
+    #                                      dtype=np.float, order='F')})
     return dict_met_forcing
 
 
-def proc_met_forcing(df_met_forcing, step_count):
-    met_forcing_tstep = df_met_forcing.iloc[step_count].to_dict()
-    id_x = met_forcing_tstep['id']
-    df_grp = df_met_forcing.groupby('id')
-    all_id = df_grp.get_group(id_x)
-    met_forcing_tstep.update({'all': all_id.values})
-    return met_forcing_tstep
+# def proc_met_forcing(df_met_forcing, step_count):
+#     met_forcing_tstep = df_met_forcing.iloc[step_count].to_dict()
+#     id_x = met_forcing_tstep['id']
+#     df_grp = df_met_forcing.groupby('id')
+#     all_id = df_grp.get_group(id_x)
+#     met_forcing_tstep.update({'all': np.array(all_id.values, order='F')})
+#     return met_forcing_tstep
 
 
 # load initial conditions as dict's for SUEWS running:
 # 1. dict_mod_cfg: model settings
 # 2. dict_state_init: initial model states/conditions
-# 3. dict_met_forcing: met forcing conditions
-def init_SUEWS_dict(dir_input):  # return dict
+# 3. dict_met_forcing: met forcing conditions (NB:NOT USED)
+def init_SUEWS_dict(dir_start):  # return dict
     # initialise dict_state_init
     dict_state_init = {}
+    # dict_met_forcing = {}
 
     # load RunControl variables
     lib_RunControl = load_SUEWS_RunControl(
-        os.path.join(dir_input, 'runcontrol.nml'))
+        os.path.join(dir_start, 'runcontrol.nml'))
     dict_RunControl = lib_RunControl.loc[:, 'runcontrol'].to_dict()
 
-    # DecidSurf = 4 - 1
+    # # path for SUEWS input tables:
+    dir_input = os.path.join(dir_start,
+                             dict_RunControl['fileinputpath'])
 
     # mod_config: static properties
     dict_ModConfig = {'aerodynamicresistancemethod': 2,
@@ -862,11 +875,14 @@ def init_SUEWS_dict(dir_input):  # return dict
 
     # dict for temporally varying states
     # load surface charasteristics
-    df_gridSurfaceChar = load_SUEWS_SurfaceChar(dir_input)
+    df_gridSurfaceChar = load_SUEWS_SurfaceChar(dir_start)
     for grid in df_gridSurfaceChar.index:
-        # dict_StateInit: initial states of `grid`
+        # load two dict's for `grid`:
+        # 1. dict_StateInit: initial states
+        # 2. dict_MetForcing: met forcing (NB:NOT USED)
         dict_StateInit = init_SUEWS_dict_grid(
             dir_input, grid, dict_ModConfig, df_gridSurfaceChar)
+
         # return dict_StateInit
         # dict with all properties of one grid:
         # 1. model settings: dict_ModConfig
@@ -890,6 +906,8 @@ def init_SUEWS_dict(dir_input):  # return dict
         # construct a dict with entries as:
         # {grid: dict_state_init}
         dict_state_init.update({grid: dict_state_init_grid})
+        # {grid: dict_MetForcing}
+        # dict_met_forcing.update({grid: dict_MetForcing})
     # end grid loop
 
     return dict_mod_cfg, dict_state_init
@@ -916,6 +934,8 @@ def init_SUEWS_dict_grid(dir_input, grid,
         if 'ESTM' not in x_file]
     # load as DataFrame:
     df_forcing = load_SUEWS_MetForcing_df(list_file_MetForcing[0])
+    # # convert df_forcing to dict for later use
+    # dict_MetForcing = df_forcing.T.to_dict()
     # define some met forcing determined variables:
     # previous day index
     id_prev = df_forcing.loc[0, 'id'] - 1
@@ -924,7 +944,8 @@ def init_SUEWS_dict_grid(dir_input, grid,
     dict_InitCond = {
         'dayssincerain':  0,
         # `temp_c0` defaults to daily mean air temperature of the first day
-        'temp_c0':  df_forcing.loc[0, 'metforcingdata_grid']['Td'].mean(),
+        # 'temp_c0':  df_forcing.loc[0, 'metforcingdata_grid']['Td'].mean(),
+        'temp_c0':  df_forcing.loc[:(24 * nsh) - 1, 'temp_c'].mean(),
         # 'temp_c0': nan,
         'leavesoutinitially':  int(nan),
         'gdd_1_0':  nan,
@@ -992,9 +1013,9 @@ def init_SUEWS_dict_grid(dir_input, grid,
     dict_InitCond.update(
         lib_InitCond.loc[:, 'initialconditions'].to_dict())
 
+    # fr_veg_sum: total fraction of vegetation covers
+    fr_veg_sum = np.sum(df_gridSurfaceChar.loc[grid, 'sfr'][2:5])
     # update vegetation-related variables according to LeavesOutInitially
-    fr_veg_sum = np.sum(
-        df_gridSurfaceChar.loc[grid, 'sfr'][2:5])
     if dict_InitCond['leavesoutinitially'] == 1:
         dict_InitCond['gdd_1_0'] = (np.dot(
             df_gridSurfaceChar.loc[grid, 'gddfull'],
@@ -1129,9 +1150,6 @@ def init_SUEWS_dict_grid(dir_input, grid,
         # mean Tair of past 24 hours
         'tair24hr': 273.15 * np.ones(24 * nsh),
 
-        # # day of week information:[day, month, season]
-        # 'dayofweek': np.ones((ndays + 1, 3), order='F',
-        #                      dtype=int),
 
         # vegetation related parameters:
 
@@ -1199,9 +1217,6 @@ def init_SUEWS_df(dir_input):  # return pd.DataFrame
 
     return df_InitCond
 
-
-#
-
 # input processing code end here
 ##############################################################################
 
@@ -1267,6 +1282,8 @@ def run_suews(dict_forcing, dict_init):
         dict_state.update({tstep + 1: {}})
         # load met_forcing if the same across all grids:
         met_forcing_tstep = dict_forcing[tstep]
+        # met_forcing_tstep[
+        #     'metforcingdata_grid'] = dict_forcing['metforcingdata_grid']
         # met_forcing_tstep = df_forcing.iloc[tstep]
         # xday = met_forcing_tstep['id']
         # print 'dict_state', dict_state[tstep]
@@ -1441,16 +1458,16 @@ def pack_df_output(dict_output):
     return df_output
 
 
-# DEPRECATED: this is slow
-# pack up output of `run_suews`
-def pack_df_output_dep(dict_output):
-    # TODO: add output levels as in the Fortran version
-    # dict_output is the first value returned by `run_suews`
-    df_res_grid = pd.DataFrame(dict_output).T.stack().swaplevel()
-    dict_grid_time = {grid: pack_dict_output_grid(
-        df_res_grid[grid]) for grid in df_res_grid.index.get_level_values(0)}
-    df_grid_group = pd.DataFrame(dict_grid_time).T
-    return df_grid_group
+# # DEPRECATED: this is slow
+# # pack up output of `run_suews`
+# def pack_df_output_dep(dict_output):
+#     # TODO: add output levels as in the Fortran version
+#     # dict_output is the first value returned by `run_suews`
+#     df_res_grid = pd.DataFrame(dict_output).T.stack().swaplevel()
+#     dict_grid_time = {grid: pack_dict_output_grid(
+#         df_res_grid[grid]) for grid in df_res_grid.index.get_level_values(0)}
+#     df_grid_group = pd.DataFrame(dict_grid_time).T
+#     return df_grid_group
 
 
 ##############################################################################

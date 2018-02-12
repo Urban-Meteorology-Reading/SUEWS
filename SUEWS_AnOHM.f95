@@ -856,12 +856,12 @@ CONTAINS
     IF ( EmissionsMethod == 0 ) THEN
        AH = subMet(:,8)    ! read in from MetForcingData_grid,
     ELSE
-       ! AH = 0 ! temporarily change to zero; TODO: change back to modelled value
+       ! AH = 0 ! temporarily change to zero;
        AH =  qf ! use modelled value
        !  AH = mAH_grids(xid-1,xgrid)
     END IF
 
-    ! IF ( xid==73 ) THEN
+    ! IF ( xid==44 ) THEN
     !    PRINT*, 'in  AnOHM_FcLoad'
     !    PRINT*, 'id:',xid
     !    PRINT*, 'Sd:', Sd

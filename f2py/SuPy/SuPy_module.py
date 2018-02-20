@@ -1234,6 +1234,10 @@ list_var_inout = get_args_suews()['var_inout']
 list_var_output = get_args_suews()['var_output']
 
 
+def foo(**kargs):
+    return [kargs]
+
+
 # high-level wrapper: suews_cal_tstep
 def suews_cal_tstep(dict_state_start, met_forcing_tstep):
     # use single dict as input for suews_cal_main
@@ -1244,6 +1248,7 @@ def suews_cal_tstep(dict_state_start, met_forcing_tstep):
     dict_input = {k: dict_input[k] for k in list_var_input}
 
     # main calculation:
+    res_test_unpack = foo(**dict_input)
     res_suews_tstep = sd.suews_cal_main(**dict_input)
 
     # update state variables
@@ -1263,8 +1268,63 @@ def suews_cal_tstep(dict_state_start, met_forcing_tstep):
 
 
 # 2. compact wrapper for running a whole simulation
-# main calculation
-def run_suews(dict_forcing, dict_init):
+# # main calculation
+# def run_suews_dict(dict_forcing, dict_init):
+#     # initialise dicts for holding results and model states
+#     dict_output = {}
+#     # dict_state = {}
+#     # dict_state_grid = {grid: dict_state
+#     #                    for grid, dict_state
+#     # in copy.deepcopy(dict_init).items()}
+#     # dict_state is used to save model states for later use
+#     dict_state = {0: copy.deepcopy(dict_init)}
+#     # temporal loop
+#     for tstep in dict_forcing.keys():
+#         # print 'tstep at', tstep
+#         # initialise output of tstep:
+#         dict_output.update({tstep: {}})
+#         # dict_state is used to save model states for later use
+#         dict_state.update({tstep + 1: {}})
+#         # load met_forcing if the same across all grids:
+#         met_forcing_tstep = dict_forcing[tstep]
+#         # met_forcing_tstep[
+#         #     'metforcingdata_grid'] = dict_forcing['metforcingdata_grid']
+#         # met_forcing_tstep = df_forcing.iloc[tstep]
+#         # xday = met_forcing_tstep['id']
+#         # print 'dict_state', dict_state[tstep]
+#
+#         # spatial loop
+#         for grid in dict_state[tstep].keys():
+#             dict_state_start = dict_state[tstep][grid]
+#             # print 'start', sorted(dict_state_start.keys())
+#             # print 'start', dict_state_start
+#             # print 'start', dict_state[tstep][grid]['dayofweek'][xday]
+#             # mod_config = dict_init[grid]['mod_config']
+#             # xx=sp.suews_cal_tstep(
+#             #     dict_state_start, met_forcing_tstep, mod_config)
+#
+#             # calculation at one step:
+#             state_end, output_tstep = suews_cal_tstep(
+#                 dict_state_start, met_forcing_tstep)
+#             # update model state
+#             # dict_state_grid[grid].update(state_end)
+#             # print 'end', dict_state_grid[grid]['state'][0]
+#
+#             # update output & model state at tstep for the current grid
+#             dict_output[tstep].update({grid: output_tstep})
+#             # dict_state[tstep + 1].update({grid: copy.deepcopy(state_end)})
+#             # update model state
+#             dict_state[tstep + 1].update(
+#                 {grid: {k: v for k, v in state_end.items()}})
+#
+#             # print ''
+#             # if tstep==dict_forcing.keys()[-1]:
+#             #     print dict_state[tstep][grid]['dayofweek'][43:46]
+#
+#     return dict_output, dict_state
+
+
+def run_suews(df_forcing, dict_init):
     # initialise dicts for holding results and model states
     dict_output = {}
     # dict_state = {}
@@ -1272,16 +1332,17 @@ def run_suews(dict_forcing, dict_init):
     #                    for grid, dict_state
     # in copy.deepcopy(dict_init).items()}
     # dict_state is used to save model states for later use
-    dict_state = {0: copy.deepcopy(dict_init)}
+    t_start = df_forcing.index[0]
+    dict_state = {t_start: copy.deepcopy(dict_init)}
     # temporal loop
-    for tstep in dict_forcing.keys():
+    for tstep in df_forcing.index:
         # print 'tstep at', tstep
         # initialise output of tstep:
         dict_output.update({tstep: {}})
         # dict_state is used to save model states for later use
         dict_state.update({tstep + 1: {}})
         # load met_forcing if the same across all grids:
-        met_forcing_tstep = dict_forcing[tstep]
+        met_forcing_tstep = df_forcing.loc[tstep].to_dict()
         # met_forcing_tstep[
         #     'metforcingdata_grid'] = dict_forcing['metforcingdata_grid']
         # met_forcing_tstep = df_forcing.iloc[tstep]
@@ -1292,7 +1353,9 @@ def run_suews(dict_forcing, dict_init):
         for grid in dict_state[tstep].keys():
             dict_state_start = dict_state[tstep][grid]
             # print 'start', sorted(dict_state_start.keys())
-            # print 'start', dict_state_start
+            # print 'dict_state_start cpanohm', dict_state_start['cpanohm'][0]
+            # print 'dict_state_start xwf', dict_state_start['xwf']
+            # print 'dict_state_start storageheatmethod', dict_state_start['storageheatmethod']
             # print 'start', dict_state[tstep][grid]['dayofweek'][xday]
             # mod_config = dict_init[grid]['mod_config']
             # xx=sp.suews_cal_tstep(
@@ -1317,7 +1380,6 @@ def run_suews(dict_forcing, dict_init):
             #     print dict_state[tstep][grid]['dayofweek'][43:46]
 
     return dict_output, dict_state
-
 # main calculation end here
 ##############################################################################
 
@@ -1420,42 +1482,94 @@ def pack_df_grid(dict_output):
     return xx3
 
 
+# generate MultiIndex for variable groups
+def gen_index(varline_x):
+    var_x = varline_x.replace('dataoutline', '').replace('line', '')
+    group = var_df_lower[var_x]
+    var = var_df.loc[group].index.tolist()
+    mindex = pd.MultiIndex.from_product([[group], var], names=['group', 'var'])
+    return mindex
+
+# generate one MultiIndex from a whole dict
+
+
+def gen_MultiIndex(dict_x):
+    x_keys = dict_x.keys()
+    mindex = pd.concat([gen_index(k).to_frame() for k in x_keys]).index
+    return mindex
+
+
+# generate one Series from a dict entry
+def gen_Series(dict_x, varline_x):
+    m_index = gen_index(varline_x)
+    res_Series = pd.Series(dict_x[varline_x], index=m_index)
+    return res_Series
+
+# merge a whole dict into one Series
+def comb_gen_Series(dict_x):
+    x_keys = dict_x.keys()
+    res_Series = pd.concat([gen_Series(dict_x, k) for k in x_keys])
+    return res_Series
+
+
 # pack up output of `run_suews`
 def pack_df_output(dict_output):
-    # # pack all grid and times into index/columns
-    # df_xx = df.from_dict(dict_output, orient='index')
-    # # pack
-    # df_xx1 = df_xx.applymap(lambda s: pd.Series(s)).applymap(df.from_dict)
-    # df_xx2 = pd.concat({grid: pd.concat(
-    #     df_xx1[grid].to_dict()).unstack().dropna(axis=1)
-    #     for grid in df_xx1.columns})
-    # # drop redundant levels
-    # df_xx2.columns = df_xx2.columns.droplevel()
-    # # regroup by `grid`
-    # df_xx2.index.names = ['grid', 'time']
-    # gb_xx2 = df_xx2.groupby(level='grid')
-    # # merge results of each grid
-    # xx3 = gb_xx2.agg(lambda x: tuple(x.values)).applymap(np.array)
-
-    # repack for later concatenation
-    dict_xx4 = ({k: pd.concat(v)
-                 for k, v
-                 in pack_df_grid(dict_output).applymap(df).to_dict().items()})
-
-    # concatenation across model groups
-    res_concat = []
-    for group_x in (x for x in dict_xx4.keys() if not x == 'datetimeline'):
-        # print group_x
-        xx5 = pd.concat((dict_xx4['datetimeline'], dict_xx4[group_x]), axis=1)
-        xx5.columns = gen_group_cols(group_x)
-        res_concat.append(xx5)
-
-    # concatenation across model groups
-    df_output = pd.concat(res_concat, axis=1)
-    # add index information
-    df_output.index.names = ['grid', 'tstep']
-
+    df_raw = pd.DataFrame.from_dict(dict_output).T.applymap(
+        lambda dict: np.concatenate(dict.values())).stack()
+    index = df_raw.index.swaplevel().set_names(['grid', 'tstep'])
+    columns = gen_MultiIndex(dict_output[1][1])
+    values = np.vstack(df_raw.values)
+    df_output = pd.DataFrame(values, index=index, columns=columns)
     return df_output
+
+
+def pack_df_state(dict_state):
+    df_raw = pd.DataFrame.from_dict(dict_state).unstack()
+    df_raw = df_raw.map(pd.Series)
+    values = np.vstack(df_raw.values)
+    index = df_raw.index.rename(['tstep', 'grid'])
+    columns = df_raw.iloc[0].index
+    df_state = pd.DataFrame(values, index=index, columns=columns)
+    return df_state
+
+
+# # DEPRECATED: this is slow
+# # pack up output of `run_suews`
+# def pack_df_output_dep1(dict_output):
+#     # # pack all grid and times into index/columns
+#     # df_xx = df.from_dict(dict_output, orient='index')
+#     # # pack
+#     # df_xx1 = df_xx.applymap(lambda s: pd.Series(s)).applymap(df.from_dict)
+#     # df_xx2 = pd.concat({grid: pd.concat(
+#     #     df_xx1[grid].to_dict()).unstack().dropna(axis=1)
+#     #     for grid in df_xx1.columns})
+#     # # drop redundant levels
+#     # df_xx2.columns = df_xx2.columns.droplevel()
+#     # # regroup by `grid`
+#     # df_xx2.index.names = ['grid', 'time']
+#     # gb_xx2 = df_xx2.groupby(level='grid')
+#     # # merge results of each grid
+#     # xx3 = gb_xx2.agg(lambda x: tuple(x.values)).applymap(np.array)
+#
+#     # repack for later concatenation
+#     dict_xx4 = ({k: pd.concat(v)
+#                  for k, v
+#                  in pack_df_grid(dict_output).applymap(df).to_dict().items()})
+#
+#     # concatenation across model groups
+#     res_concat = []
+#     for group_x in (x for x in dict_xx4.keys() if not x == 'datetimeline'):
+#         # print group_x
+#         xx5 = pd.concat((dict_xx4['datetimeline'], dict_xx4[group_x]), axis=1)
+#         xx5.columns = gen_group_cols(group_x)
+#         res_concat.append(xx5)
+#
+#     # concatenation across model groups
+#     df_output = pd.concat(res_concat, axis=1)
+#     # add index information
+#     df_output.index.names = ['grid', 'tstep']
+#
+#     return df_output
 
 
 # # DEPRECATED: this is slow

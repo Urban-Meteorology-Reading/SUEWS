@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# script for compiling pythonic SUEWS using f2py
+# script for compiling pythonic SUEWS (aka SuPy) using f2py
 # Ting Sun
 # ting.sun@reading.ac.uk
 # 10 Oct 2017

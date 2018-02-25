@@ -1,27 +1,15 @@
-dict_output.keys()
-
-dict_output[1]
-df_state.columns
-df_state.index
-
-
-
-
-df_state.keys()
-sp.conv2PyData(dict_mod_cfg)
+dir_start
+dict_state_init.keys()
+dict_state_init[1].keys()
+df_forcing_part_grp_list.get_group(44).shape
+import pandas
 
 
 
+df_forcing_part_grp_list.get_group(44).to_dict('index').keys()
 
+'{x}+{y}'.format(x='dsaf',y=2)
+df_forcing.loc[1,'metforcingdata_grid'].loc[:,'id']=23
+df_forcing.loc[1,'metforcingdata_grid'].loc[2,'id']
 
-
-
-dict_mod_cfg
-xx = sp.df(dict_mod_cfg).to_dict('split')
-xx['data'] = [np.array(var).tolist()
-              for var in xx['data']]
-df_xx = sp.df(**xx)
-
-df_xx.keys()
-for k,v in df_xx.items():
-    print k, v, type(v)
+1+2

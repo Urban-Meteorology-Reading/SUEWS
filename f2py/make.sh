@@ -9,7 +9,7 @@ export CFLAGS='-fno-strict-aliasing -fno-common -dynamic -g -O2 -DNDEBUG -g -fwr
 export FFLAGS='-g -pg -Wall -Wtabs -fbounds-check -cpp -Wno-unused-dummy-argument -Wno-unused-variable -fbacktrace -ffpe-trap=zero,overflow,underflow,invalid,denormal'
 
 # clean existing built modules
-rm SUEWS_driver.so*
+rm -rf SUEWS_driver.so*
 
 # compile SUEWS with Makefile
 cd ..
@@ -23,12 +23,16 @@ ln -sf ../*.o .
 # ln -sf ../*.mod .
 
 # remove duplicate SUEWS_driver to avoid symbol conflict
+rm LUMPS_Module_constants.o
 rm SUEWS_driver.o
 
 # direct compilation without f2py header file
 # --debug-capi provides more verbose information when calling C-API: useful for debugging
-# f2py -m SUEWS_driver -c --debug-capi ../SUEWS_driver.f95 *.o
-f2py -m SUEWS_driver -c ../SUEWS_driver.f95 *.o
+# f2py -m SUEWS_driver -c --debug-capi ../LUMPS_Module_constants.f95 ../SUEWS_driver.f95 *.o
+f2py -m SUEWS_driver -c ../LUMPS_Module_constants.f95 ../SUEWS_driver.f95  *.o
 
 # cleaning
 rm *.o
+
+# copy updated version to SuPy folder
+mv SUEWS_driver.so SuPy/.

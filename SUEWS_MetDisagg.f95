@@ -1,36 +1,36 @@
- MODULE MetDisagg
- !========================================================================================
- ! Disaggregation of meteorological forcing data
- !  Code to disaggregate met forcing data from resolution provided to the model time-step
- ! Created: HCW 10 Feb 2017
- !
- ! ---- Key for MetDisaggMethod settings ----
- !10  ->  linear disaggregation for timestamps representing the end of the averaging period
- !20  ->  linear disaggregation for instantaneous variables (e.g. air temperature, humidity, pressure, wind speed in WFDEI dataset)
- !100 -> evenly distribute rainfall among all subintervals in a rainy interval
- !101 -> evenly distribute rainfall among RainAmongN subintervals in a rainy interval
- !        - requires RainAmongN to be set in RunControl.nml
- ! If KdownZen = 1 -> include additional zenith check in kdown disaggregation
- !
- ! N.B. wdir downscaling is currently not implemented
- !
- !========================================================================================
+MODULE MetDisagg
+  !========================================================================================
+  ! Disaggregation of meteorological forcing data
+  !  Code to disaggregate met forcing data from resolution provided to the model time-step
+  ! Created: HCW 10 Feb 2017
+  !
+  ! ---- Key for MetDisaggMethod settings ----
+  !10  ->  linear disaggregation for timestamps representing the end of the averaging period
+  !20  ->  linear disaggregation for instantaneous variables (e.g. air temperature, humidity, pressure, wind speed in WFDEI dataset)
+  !100 -> evenly distribute rainfall among all subintervals in a rainy interval
+  !101 -> evenly distribute rainfall among RainAmongN subintervals in a rainy interval
+  !        - requires RainAmongN to be set in RunControl.nml
+  ! If KdownZen = 1 -> include additional zenith check in kdown disaggregation
+  !
+  ! N.B. wdir downscaling is currently not implemented
+  !
+  !========================================================================================
 
- USE AllocateArray
- USE ColNamesInputFiles
- USE Data_In
- USE Initial
- use NARP_MODULE,ONLY:NARP_cal_SunPosition
+  USE AllocateArray
+  USE ColNamesInputFiles
+  USE Data_In
+  USE Initial
+  USE NARP_MODULE,ONLY:NARP_cal_SunPosition
 
- IMPLICIT NONE
+  IMPLICIT NONE
 
- CONTAINS
+CONTAINS
 
   !======================================================================================
   SUBROUTINE DisaggregateMet(iBlock, igrid)
-  ! Subroutine to disaggregate met forcing data to model time-step
-  ! HCW 10 Feb 2017
-  !======================================================================================
+    ! Subroutine to disaggregate met forcing data to model time-step
+    ! HCW 10 Feb 2017
+    !======================================================================================
 
     USE Sues_Data
     USE DefaultNotUsed
@@ -72,7 +72,7 @@
     seq1nsd = (/(i, i=1,nsd, 1)/)
 
     ! Get methods to use for disaggregation from RunControl
-    IF(DiagnoseDisagg==1) write(*,*) 'DisaggMethod: ',DisaggMethod, 'RainDisaggMethod:',RainDisaggMethod
+    IF(DiagnoseDisagg==1) WRITE(*,*) 'DisaggMethod: ',DisaggMethod, 'RainDisaggMethod:',RainDisaggMethod
     IF(DisaggMethod == 1) THEN
        MetDisaggMethod(:) = 10   !linear disaggregation of averages
     ELSEIF(DisaggMethod == 2) THEN
@@ -82,14 +82,14 @@
        MetDisaggMethod(10:13) = 20   !linear disagg instantaneous values for U, RH, Tair, pres
     ELSE
        CALL errorHint(2,'Problem in SUEWS_MetDisagg: DisaggMethod value should be 1, 2, or 3', &
-                        NotUsed,NotUsed,DisaggMethod)
+            NotUsed,NotUsed,DisaggMethod)
     ENDIF
     ! Set rainfall
     MetDisaggMethod(14) = RainDisaggMethod
 
 
     ! Read data ---------------------------------------------------------------------
-    IF(DiagnoseDisagg==1) write(*,*) 'Reading file: ', TRIM(FileOrigMet)
+    IF(DiagnoseDisagg==1) WRITE(*,*) 'Reading file: ', TRIM(FileOrigMet)
     OPEN(lunit,file=TRIM(FileOrigMet),status='old')
     ! CALL skipHeader(lunit,SkipHeaderMet)  !Skip header -> read header instead
     READ(lunit,*) HeaderMet
@@ -101,7 +101,7 @@
        ENDDO
        ! Read in last line of previous block
        CALL MetRead(lunit,MetArrayOrig,InputmetFormat,ldown_option,NetRadiationMethod,&
-                     snowUse,SMDMethod,SoilDepthMeas,SoilRocks,SoilDensity,SmCap)
+            snowUse,SMDMethod,SoilDepthMeas,SoilRocks,SoilDensity,SmCap)
        MetForDisaggPrev(1:ncolumnsMetForcingData) = MetArrayOrig
     ENDIF
     ! print*, 'MetForDisagg',MetForDisagg(1:3,1:4)
@@ -109,14 +109,14 @@
     ! Read in current block
     DO i=1, ReadLinesOrigMetDataMax
        CALL MetRead(lunit,MetArrayOrig,InputmetFormat,ldown_option,NetRadiationMethod,&
-                   snowUse,SMDMethod,SoilDepthMeas,SoilRocks,SoilDensity,SmCap)
+            snowUse,SMDMethod,SoilDepthMeas,SoilRocks,SoilDensity,SmCap)
        MetForDisagg(i,1:ncolumnsMetForcingData) = MetArrayOrig
     ENDDO
     ! print*, 'MetForDisagg',MetForDisagg(1:3,1:4)
     ! Read in first line of next block (except for last block)
     IF(iBlock/=ReadBlocksOrigMetData) THEN
        CALL MetRead(lunit,MetArrayOrig,InputmetFormat,ldown_option,NetRadiationMethod,&
-                      snowUse,SMDMethod,SoilDepthMeas,SoilRocks,SoilDensity,SmCap)
+            snowUse,SMDMethod,SoilDepthMeas,SoilRocks,SoilDensity,SmCap)
        MetForDisaggNext(1:ncolumnsMetForcingData) = MetArrayOrig
     ENDIF
     CLOSE(lunit)
@@ -132,18 +132,18 @@
     ! Check actual resolution matches specified input resolution
     IF(tdiff /= ResolutionFilesIn/60) THEN
        CALL errorHint(2,'Problem in SUEWS_MetDisagg: timestamps in met forcing file inconsistent with ResolutionFilesIn', &
-                        REAL(ResolutionFilesIn,KIND(1d0)),NotUsed,tdiff*60)
+            REAL(ResolutionFilesIn,KIND(1d0)),NotUsed,tdiff*60)
     ENDIF
 
     ! Check file only contains a single year --------------------------------------------
     ! Very last data point is allowed to be (should be) timestamped with following year
     IF(ANY(MetForDisagg(1:(ReadLinesOrigMetDataMax-1),1) /= MetForDisagg(1,1))) THEN
        CALL errorHint(3,'Problem in SUEWS_MetDisagg: multiple years found in original met forcing file.', &
-                      MetForDisagg(1,1),NotUsed,NotUsedI)
+            MetForDisagg(1,1),NotUsed,NotUsedI)
     ENDIF
 
     ! Disaggregate time columns ---------------------------------------------------------
-    write(*,*) 'Disaggregating met forcing data (',TRIM(FileOrigMet),') to model time-step...'
+    IF (Diagnose==1) WRITE(*,*) 'Disaggregating met forcing data (',TRIM(FileOrigMet),') to model time-step...'
     ! Convert to dectime
     dectimeOrig = MetForDisagg(:,2) + MetForDisagg(:,3)/24.0 + MetForDisagg(:,4)/(60.0*24.0)
 
@@ -159,19 +159,19 @@
        temp_ih = (temp_ihm-MOD(temp_ihm,60))/60   !Hours
        temp_im = MOD(temp_ihm,60)   !Minutes
 
-       IF(dectimeOrig(i) == 1.0000 .and. i > 1) THEN   !If year changes and it is not the beginning of the dataset
-         write(*,*) 'Year change encountered: ', dectimeOrig(i), dectimeOrig(i-1)
-         ! Re-downscale dectime using dectimeOrig(i-1)
-         dectimeDscd(Nper*(i-1)+Seq1Nper) = dectimeOrig(i-1) + (tstep/60.0)/(60.0*24.0)*Seq1Nper
-         ! Convert to required formats
-         temp_iy   = INT(MetForDisagg(i,1))   !Copy year
-         temp_id   = FLOOR(dectimeDscd(Nper*(i-1)+Seq1Nper))   !DOY
-         temp_ihm  = NINT(((dectimeDscd(Nper*(i-1)+Seq1Nper) - temp_id/1.0)*60.0*24.0)*1000.0)/1000   !Mins of the day (1440 max)
-         temp_ih = (temp_ihm-MOD(temp_ihm,60))/60   !Hours
-         temp_im = MOD(temp_ihm,60)   !Minutes
-         ! Adjust year and DOY to account for year change
-         temp_iy(1:(Nper-1)) = temp_iy(1:(Nper-1)) - 1  !Subtract 1 from year for all except final timestamp
-         temp_id(Nper) = 1  !Set day for final timestamp to 1
+       IF(dectimeOrig(i) == 1.0000 .AND. i > 1) THEN   !If year changes and it is not the beginning of the dataset
+          IF (Diagnose==1) WRITE(*,*) 'Year change encountered: ', dectimeOrig(i), dectimeOrig(i-1)
+          ! Re-downscale dectime using dectimeOrig(i-1)
+          dectimeDscd(Nper*(i-1)+Seq1Nper) = dectimeOrig(i-1) + (tstep/60.0)/(60.0*24.0)*Seq1Nper
+          ! Convert to required formats
+          temp_iy   = INT(MetForDisagg(i,1))   !Copy year
+          temp_id   = FLOOR(dectimeDscd(Nper*(i-1)+Seq1Nper))   !DOY
+          temp_ihm  = NINT(((dectimeDscd(Nper*(i-1)+Seq1Nper) - temp_id/1.0)*60.0*24.0)*1000.0)/1000   !Mins of the day (1440 max)
+          temp_ih = (temp_ihm-MOD(temp_ihm,60))/60   !Hours
+          temp_im = MOD(temp_ihm,60)   !Minutes
+          ! Adjust year and DOY to account for year change
+          temp_iy(1:(Nper-1)) = temp_iy(1:(Nper-1)) - 1  !Subtract 1 from year for all except final timestamp
+          temp_id(Nper) = 1  !Set day for final timestamp to 1
        ENDIF
 
        !IF(i==1 .or. i== ReadlinesOrigMetDataMax) THEN
@@ -198,12 +198,12 @@
              IF(ALL(MetForDisagg(:,16)==-999)) THEN
                 Met_tt(:,16) = -999
              ELSE
-             Met_tt(:,16) = DisaggP_amongN(MetForDisagg(:,16),Nper,Nper,ReadLinesOrigMetData,ReadLinesOrigMetDataMax)
+                Met_tt(:,16) = DisaggP_amongN(MetForDisagg(:,16),Nper,Nper,ReadLinesOrigMetData,ReadLinesOrigMetDataMax)
              ENDIF
           ELSEIF(MetDisaggMethod(14) == 101) THEN
              IF(RainAmongN == -999) THEN
                 CALL ErrorHint(2,'Problem in SUEWS_MetDisagg: RainDisaggMethod requires RainAmongN', &
-                                   REAL(RainAmongN,KIND(1d0)),NotUsed,RainDisaggMethod)
+                     REAL(RainAmongN,KIND(1d0)),NotUsed,RainDisaggMethod)
              ELSEIF(RainAmongN > Nper) THEN
                 CALL ErrorHint(2,'Problem in SUEWS_MetDisagg: RainAmongN > Nper',REAL(Nper,KIND(1d0)),NotUsed,RainAmongN)
              ELSE
@@ -213,48 +213,48 @@
                 ELSE
                    Met_tt(:,16) = DisaggP_amongN(MetForDisagg(:,16),RainAmongN,Nper,ReadLinesOrigMetData,ReadLinesOrigMetDataMax)
                 ENDIF
-            ENDIF
+             ENDIF
           ELSEIF(MetDisaggMethod(14) == 102) THEN
              IF(ALL(MultRainAmongN == -999)) THEN
                 CALL ErrorHint(2,'Problem in SUEWS_MetDisagg: RainDisaggMethod requires MultRainAmongN', &
-                                   REAL(MultRainAmongN(1),KIND(1d0)),NotUsed,RainDisaggMethod)
+                     REAL(MultRainAmongN(1),KIND(1d0)),NotUsed,RainDisaggMethod)
              ELSEIF(ALL(MultRainAmongNUpperI == -999)) THEN
                 CALL ErrorHint(2,'Problem in SUEWS_MetDisagg: RainDisaggMethod requires MultRainAmongNUpperI', &
-                                   MultRainAmongNUpperI(1),NotUsed,RainDisaggMethod)
+                     MultRainAmongNUpperI(1),NotUsed,RainDisaggMethod)
              ELSEIF(ANY(MultRainAmongN > Nper)) THEN
-               CALL ErrorHint(2,'Problem in SUEWS_MetDisagg: MultRainAmongN > Nper',REAL(Nper,KIND(1d0)),NotUsed, &
-                                  MAXVAL(MultRainAmongN))
-            ELSE
-               Met_tt(:,14) = DisaggP_amongNMult(MetForDisagg(:,14),MultRainAmongNUpperI,MultRainAmongN, Nper,&
-                                                    ReadLinesOrigMetData,ReadLinesOrigMetDataMax)
-               IF(ALL(MetForDisagg(:,16)==-999)) THEN
-                  Met_tt(:,16) = -999
-               ELSE
-                  Met_tt(:,16) = DisaggP_amongNMult(MetForDisagg(:,16),MultRainAmongNUpperI,MultRainAmongN,Nper, &
-                                                       ReadLinesOrigMetData,ReadLinesOrigMetDataMax)
-               ENDIF
-            ENDIF
-         ELSE
-            write(*,*) 'Disaggregation code for rain not recognised'
-         ENDIF
+                CALL ErrorHint(2,'Problem in SUEWS_MetDisagg: MultRainAmongN > Nper',REAL(Nper,KIND(1d0)),NotUsed, &
+                     MAXVAL(MultRainAmongN))
+             ELSE
+                Met_tt(:,14) = DisaggP_amongNMult(MetForDisagg(:,14),MultRainAmongNUpperI,MultRainAmongN, Nper,&
+                     ReadLinesOrigMetData,ReadLinesOrigMetDataMax)
+                IF(ALL(MetForDisagg(:,16)==-999)) THEN
+                   Met_tt(:,16) = -999
+                ELSE
+                   Met_tt(:,16) = DisaggP_amongNMult(MetForDisagg(:,16),MultRainAmongNUpperI,MultRainAmongN,Nper, &
+                        ReadLinesOrigMetData,ReadLinesOrigMetDataMax)
+                ENDIF
+             ENDIF
+          ELSE
+             WRITE(*,*) 'Disaggregation code for rain not recognised'
+          ENDIF
        ELSEIF(ii == 24) THEN  !wind direction disaggregation not coded yet...
-         IF(ANY(MetForDisagg(:,ii)/=-999)) THEN
-            write(*,*) 'Disaggregation of wind direction not currently implemented!'
-         ENDIF
+          IF(ANY(MetForDisagg(:,ii)/=-999)) THEN
+             WRITE(*,*) 'Disaggregation of wind direction not currently implemented!'
+          ENDIF
        ELSE
-         IF(ALL(MetForDisagg(:,ii)==-999)) THEN
-            !IF(DiagnoseDisagg==1) write(*,*) 'No data for col.', ii
-            Met_tt(:,ii) = -999
-         ELSE
-            Met_tt(:,ii) = Disagg_Lin(MetForDisagg(:,ii),MetForDisaggPrev(ii),MetForDisaggNext(ii),MetDisaggMethod(ii), &
-                                         Nper,ReadLinesOrigMetData,ReadLinesOrigMetDataMax,iBlock)
-         ENDIF
+          IF(ALL(MetForDisagg(:,ii)==-999)) THEN
+             !IF(DiagnoseDisagg==1) write(*,*) 'No data for col.', ii
+             Met_tt(:,ii) = -999
+          ELSE
+             Met_tt(:,ii) = Disagg_Lin(MetForDisagg(:,ii),MetForDisaggPrev(ii),MetForDisaggNext(ii),MetDisaggMethod(ii), &
+                  Nper,ReadLinesOrigMetData,ReadLinesOrigMetDataMax,iBlock)
+          ENDIF
        ENDIF
     ENDDO
 
     ! Adjust kdown disaggregation using zenith angle
     IF(KdownZen == 1) THEN
-       IF(DiagnoseDisagg==1) write(*,*) 'Adjusting disaggregated kdown using zenith angle'
+       IF(DiagnoseDisagg==1) WRITE(*,*) 'Adjusting disaggregated kdown using zenith angle'
        Met_tt_kdownAdj(:) = Met_tt(:,15)
        ! Translate location data from SurfaceChar to find solar angles
        lat = SurfaceChar(igrid,c_lat)
@@ -275,7 +275,7 @@
        ! Redistribute kdown over each day
        DO i=1,(ReadLinesOrigMetDataMax*Nper/nsd) ! Loop over each day
           Met_tt_kdownAdj((i-1)*nsd+seq1nsd) = Met_tt_kdownAdj( (i-1)*nsd+seq1nsd) * &
-                    SUM(Met_tt((i-1)*nsd+seq1nsd,15 ))/SUM(Met_tt_kdownAdj((i-1)*nsd+seq1nsd))
+               SUM(Met_tt((i-1)*nsd+seq1nsd,15 ))/SUM(Met_tt_kdownAdj((i-1)*nsd+seq1nsd))
        ENDDO
        ! Copy adjusted kdown back to Met_tt array
        Met_tt(:,15) = Met_tt_kdownAdj(:)
@@ -293,17 +293,17 @@
     ! Write out disaggregated file ------------------------------------------------------
     IF(KeepTstepFilesIn == 1) THEN
        IF (iBlock==1) THEN
-         ! Prepare header
-         DO i=1,ncolumnsMetForcingData
-            IF(i==1) THEN
-               HeaderMetOut=ADJUSTL(HeaderMet(i))
-            ELSE
-               HeaderMetOut=TRIM(HeaderMetOut)//' '//ADJUSTL(HeaderMet(i))
-            ENDIF
-         ENDDO
-         ! Write out header
-         OPEN(78,file=TRIM(FileDscdMet),err=112)
-         WRITE(78,'(a)') HeaderMetOut
+          ! Prepare header
+          DO i=1,ncolumnsMetForcingData
+             IF(i==1) THEN
+                HeaderMetOut=ADJUSTL(HeaderMet(i))
+             ELSE
+                HeaderMetOut=TRIM(HeaderMetOut)//' '//ADJUSTL(HeaderMet(i))
+             ENDIF
+          ENDDO
+          ! Write out header
+          OPEN(78,file=TRIM(FileDscdMet),err=112)
+          WRITE(78,'(a)') HeaderMetOut
        ELSE
           OPEN(78,file=TRIM(FileDscdMet),position='append')!,err=112)
        ENDIF
@@ -319,7 +319,7 @@
     ENDIF
 
 
-    303 FORMAT((i4,1X), 3(i3,1X), 9(f9.2,1X), (f9.4,1X), 10(f9.2,1X))  !Allows 4 dp for rainfall
+303 FORMAT((i4,1X), 3(i3,1X), 9(f12.6,1X), (f9.4,1X), 10(f9.4,1X))  !Allows 4 dp for rainfall
 
     ! Deallocate arrays -----------------------------------------------------------------
     DEALLOCATE(MetForDisagg)
@@ -328,16 +328,16 @@
 
     RETURN
 
-    112 CALL ErrorHint(52,TRIM(FileDscdMet),notUsed,notUsed,notUsedI)
+112 CALL ErrorHint(52,TRIM(FileDscdMet),notUsed,notUsed,notUsedI)
 
   ENDSUBROUTINE DisaggregateMet
-!======================================================================================
+  !======================================================================================
 
   !======================================================================================
   SUBROUTINE DisaggregateESTM(iBlock)
-  ! Subroutine to disaggregate met forcing data to model time-step
-  ! HCW 10 Feb 2017
-  !======================================================================================
+    ! Subroutine to disaggregate met forcing data to model time-step
+    ! HCW 10 Feb 2017
+    !======================================================================================
 
     USE Sues_Data
     USE DefaultNotUsed
@@ -385,11 +385,11 @@
        ESTMDisaggMethod(:) = 20   !linear disaggregation of instantaneous values
     ELSE
        CALL errorHint(2,'Problem in SUEWS_ESTMDisagg: DisaggMethodESTM value should be 1 or 2', &
-                        NotUsed,NotUsed,DisaggMethodESTM)
+            NotUsed,NotUsed,DisaggMethodESTM)
     ENDIF
 
     ! Read data ---------------------------------------------------------------------
-    IF(DiagnoseDisaggESTM==1) write(*,*) 'Reading file: ', TRIM(FileOrigESTM)
+    IF(DiagnoseDisaggESTM==1) WRITE(*,*) 'Reading file: ', TRIM(FileOrigESTM)
     OPEN(lunit,file=TRIM(FileOrigESTM),status='old')
     ! CALL skipHeader(lunit,SkipHeaderMet)  !Skip header -> read header instead
     READ(lunit,*) HeaderESTM
@@ -426,11 +426,13 @@
     ! Check actual resolution matches specified input resolution
     IF(tdiff /= ResolutionFilesInESTM/60) THEN
        CALL errorHint(2,'Problem in SUEWS_ESTMDisagg: timestamps in ESTM forcing file inconsistent with ResolutionFilesInESTM', &
-                        REAL(ResolutionFilesInESTM,KIND(1d0)),NotUsed,tdiff*60)
+            REAL(ResolutionFilesInESTM,KIND(1d0)),NotUsed,tdiff*60)
     ENDIF
 
     ! Disaggregate time columns ---------------------------------------------------------
-    write(*,*) 'Disaggregating ESTM forcing data (',TRIM(FileOrigESTM),') to model time-step...'
+    IF ( Diagnose==1 ) THEN
+       WRITE(*,*) 'Disaggregating ESTM forcing data (',TRIM(FileOrigESTM),') to model time-step...'
+    END IF
     ! Convert to dectime
     dectimeOrig = ESTMForDisagg(:,2) + ESTMForDisagg(:,3)/24.0 + ESTMForDisagg(:,4)/(60.0*24.0)
 
@@ -446,19 +448,19 @@
        temp_ih = (temp_ihm-MOD(temp_ihm,60))/60   !Hours
        temp_im = MOD(temp_ihm,60)   !Minutes
 
-       IF(dectimeOrig(i) == 1.0000 .and. i > 1) THEN   !If year changes and it is not the beginning of the dataset
-         write(*,*) 'Year change encountered: ', dectimeOrig(i), dectimeOrig(i-1)
-         ! Re-downscale dectime using dectimeOrig(i-1)
-         dectimeDscd(NperESTM*(i-1)+Seq1NperESTM) = dectimeOrig(i-1) + (tstep/60.0)/(60.0*24.0)*Seq1NperESTM
-         ! Convert to required formats
-         temp_iy   = INT(ESTMForDisagg(i,1))   !Copy year
-         temp_id   = FLOOR(dectimeDscd(NperESTM*(i-1)+Seq1NperESTM))   !DOY
-         temp_ihm  = NINT(((dectimeDscd(NperESTM*(i-1)+Seq1NperESTM) - temp_id/1.0)*60.0*24.0)*1000.0)/1000   !Mins of the day (1440 max)
-         temp_ih = (temp_ihm-MOD(temp_ihm,60))/60   !Hours
-         temp_im = MOD(temp_ihm,60)   !Minutes
-         ! Adjust year and DOY to account for year change
-         temp_iy(1:(NperESTM-1)) = temp_iy(1:(NperESTM-1)) - 1  !Subtract 1 from year for all except final timestamp
-         temp_id(NperESTM) = 1  !Set day for final timestamp to 1
+       IF(dectimeOrig(i) == 1.0000 .AND. i > 1) THEN   !If year changes and it is not the beginning of the dataset
+          WRITE(*,*) 'Year change encountered: ', dectimeOrig(i), dectimeOrig(i-1)
+          ! Re-downscale dectime using dectimeOrig(i-1)
+          dectimeDscd(NperESTM*(i-1)+Seq1NperESTM) = dectimeOrig(i-1) + (tstep/60.0)/(60.0*24.0)*Seq1NperESTM
+          ! Convert to required formats
+          temp_iy   = INT(ESTMForDisagg(i,1))   !Copy year
+          temp_id   = FLOOR(dectimeDscd(NperESTM*(i-1)+Seq1NperESTM))   !DOY
+          temp_ihm  = NINT(((dectimeDscd(NperESTM*(i-1)+Seq1NperESTM) - temp_id/1.0)*60.0*24.0)*1000.0)/1000   !Mins of the day (1440 max)
+          temp_ih = (temp_ihm-MOD(temp_ihm,60))/60   !Hours
+          temp_im = MOD(temp_ihm,60)   !Minutes
+          ! Adjust year and DOY to account for year change
+          temp_iy(1:(NperESTM-1)) = temp_iy(1:(NperESTM-1)) - 1  !Subtract 1 from year for all except final timestamp
+          temp_id(NperESTM) = 1  !Set day for final timestamp to 1
        ENDIF
 
        !IF(i==1 .or. i== ReadlinesOrigESTMDataMax) THEN
@@ -486,8 +488,8 @@
           ESTM_tt(:,ii) = -999
        ELSE
           ESTM_tt(:,ii) = Disagg_Lin(ESTMForDisagg(:,ii),ESTMForDisaggPrev(ii),ESTMForDisaggNext(ii),ESTMDisaggMethod(ii), &
-                                        NperESTM,ReadLinesOrigESTMData,ReadLinesOrigESTMDataMax,iBlock)
-      ENDIF
+               NperESTM,ReadLinesOrigESTMData,ReadLinesOrigESTMDataMax,iBlock)
+       ENDIF
     ENDDO
 
     ! Copy disaggregated data to MetForcingDataArray
@@ -496,17 +498,17 @@
     ! Write out disaggregated file ------------------------------------------------------
     IF(KeepTstepFilesIn == 1) THEN
        IF (iBlock==1) THEN
-         ! Prepare header
-         DO i=1,ncolsESTMdata
-            IF(i==1) THEN
-               HeaderESTMOut=ADJUSTL(HeaderESTM(i))
-            ELSE
-               HeaderESTMOut=TRIM(HeaderESTMOut)//' '//ADJUSTL(HeaderESTM(i))
-            ENDIF
-         ENDDO
-         ! Write out header
-         OPEN(78,file=TRIM(FileDscdESTM),err=113)
-         WRITE(78,'(a)') HeaderESTMOut
+          ! Prepare header
+          DO i=1,ncolsESTMdata
+             IF(i==1) THEN
+                HeaderESTMOut=ADJUSTL(HeaderESTM(i))
+             ELSE
+                HeaderESTMOut=TRIM(HeaderESTMOut)//' '//ADJUSTL(HeaderESTM(i))
+             ENDIF
+          ENDDO
+          ! Write out header
+          OPEN(78,file=TRIM(FileDscdESTM),err=113)
+          WRITE(78,'(a)') HeaderESTMOut
        ELSE
           OPEN(78,file=TRIM(FileDscdESTM),position='append')!,err=113)
        ENDIF
@@ -522,7 +524,7 @@
     ENDIF
 
 
-    304 FORMAT((i4,1X), 3(i3,1X), 9(f9.4,1X))
+304 FORMAT((i4,1X), 3(i3,1X), 9(f9.4,1X))
 
     ! Deallocate arrays -----------------------------------------------------------------
     DEALLOCATE(ESTMForDisagg)
@@ -531,286 +533,287 @@
 
     RETURN
 
-    113 CALL ErrorHint(52,TRIM(FileDscdESTM),notUsed,notUsed,notUsedI)
+113 CALL ErrorHint(52,TRIM(FileDscdESTM),notUsed,notUsed,notUsedI)
 
   ENDSUBROUTINE DisaggregateESTM
-!======================================================================================
+  !======================================================================================
 
 
-! Define functions here:
-FUNCTION Disagg_Lin(Slow,SlowPrev,SlowNext,DisaggType,Nper_loc,ReadLinesOrig_loc,ReadLinesOrigMax_loc,iBlock) RESULT(Fast)
+  ! Define functions here:
+  FUNCTION Disagg_Lin(Slow,SlowPrev,SlowNext,DisaggType,Nper_loc,ReadLinesOrig_loc,ReadLinesOrigMax_loc,iBlock) RESULT(Fast)
 
-  USE DefaultNotUsed
-  USE sues_data
+    USE DefaultNotUsed
+    USE sues_data
 
-  IMPLICIT NONE
+    IMPLICIT NONE
 
-  INTEGER:: DisaggType   !Type of disaggregation: 10 for averaged variables; 20 for instantaneous variables
-  INTEGER:: Nper_loc     !Number of subintervals per interval (local Nper)
-  INTEGER:: ReadLinesOrig_loc,ReadLinesOrigMax_loc   !Number of lines to read in original file (local)
-  INTEGER:: iBlock
-  REAL(KIND(1d0)),DIMENSION(ReadLinesOrig_loc*Nper_loc):: Fast  !Array to receive disaggregated data
-  REAL(KIND(1d0)),DIMENSION(ReadLinesOrig_loc):: Slow   !Array to disaggregate
-  REAL(KIND(1d0)):: SlowPrev, SlowNext
-  INTEGER,DIMENSION(Nper_loc):: FastRows   !Group of rows that are filled with each iteration
-  INTEGER,DIMENSION(FLOOR(Nper_loc/2.0)):: FirstRows10   !Rows at the beginning that are not filled during iteration (for averages)
-  INTEGER,DIMENSION(Nper_loc-FLOOR(Nper_loc/2.0)):: LastRows10    !Rows at the end that are not filled during iteration
-  INTEGER,DIMENSION(Nper_loc):: FirstRows20   !Rows at the beginning that are not filled during iteration (for instantaneous)
-  INTEGER,DIMENSION(Nper_loc):: seq1Nper_loc   !1 to Nper_loc
-  INTEGER:: XNper_loc   !XNper_loc = 2 for even Nper_loc; XNper_loc=1 for odd Nper_loc
-  INTEGER:: i,ii   !counters
+    INTEGER:: DisaggType   !Type of disaggregation: 10 for averaged variables; 20 for instantaneous variables
+    INTEGER:: Nper_loc     !Number of subintervals per interval (local Nper)
+    INTEGER:: ReadLinesOrig_loc,ReadLinesOrigMax_loc   !Number of lines to read in original file (local)
+    INTEGER:: iBlock
+    REAL(KIND(1d0)),DIMENSION(ReadLinesOrig_loc*Nper_loc):: Fast  !Array to receive disaggregated data
+    REAL(KIND(1d0)),DIMENSION(ReadLinesOrig_loc):: Slow   !Array to disaggregate
+    REAL(KIND(1d0)):: SlowPrev, SlowNext
+    INTEGER,DIMENSION(Nper_loc):: FastRows   !Group of rows that are filled with each iteration
+    INTEGER,DIMENSION(FLOOR(Nper_loc/2.0)):: FirstRows10   !Rows at the beginning that are not filled during iteration (for averages)
+    INTEGER,DIMENSION(Nper_loc-FLOOR(Nper_loc/2.0)):: LastRows10    !Rows at the end that are not filled during iteration
+    INTEGER,DIMENSION(Nper_loc):: FirstRows20   !Rows at the beginning that are not filled during iteration (for instantaneous)
+    INTEGER,DIMENSION(Nper_loc):: seq1Nper_loc   !1 to Nper_loc
+    INTEGER:: XNper_loc   !XNper_loc = 2 for even Nper_loc; XNper_loc=1 for odd Nper_loc
+    INTEGER:: i,ii   !counters
 
-  ! Calculate XNper_loc (differentiates between disaggregations with odd and even Nper_loc)
-  IF(MOD(Nper_loc,2)==0) XNper_loc=2
-  IF(MOD(Nper_loc,2)==1) XNper_loc=1
+    ! Calculate XNper_loc (differentiates between disaggregations with odd and even Nper_loc)
+    IF(MOD(Nper_loc,2)==0) XNper_loc=2
+    IF(MOD(Nper_loc,2)==1) XNper_loc=1
 
-  seq1Nper_loc = (/(i, i=1,Nper_loc, 1)/)
+    seq1Nper_loc = (/(i, i=1,Nper_loc, 1)/)
 
-  ! Setup counters for iteration
-  IF(DisaggType==10) THEN
-     FastRows = FLOOR(Nper_loc/2.0) + seq1Nper_loc  ! Rows to create at model time-step
-     FirstRows10 = (/(i, i=1,(FastRows(1)-1), 1)/)   !For start of dataset
-     LastRows10 =  (/(i, i=Nper_loc*(ReadLinesOrigMax_loc-1-1)+FastRows(Nper_loc)+1,(ReadLinesOrigMax_loc*Nper_loc),1)/)  ! For end of dataset
-  ELSEIF(DisaggType==20) THEN
-     FastRows = Nper_loc + seq1Nper_loc   !Rows to create at model time-step
-     FirstRows20 = (/(i, i=1,(FastRows(1)-1), 1)/)   !For start of dataset
-  ENDIF
+    ! Setup counters for iteration
+    IF(DisaggType==10) THEN
+       FastRows = FLOOR(Nper_loc/2.0) + seq1Nper_loc  ! Rows to create at model time-step
+       FirstRows10 = (/(i, i=1,(FastRows(1)-1), 1)/)   !For start of dataset
+       LastRows10 =  (/(i, i=Nper_loc*(ReadLinesOrigMax_loc-1-1)+FastRows(Nper_loc)+1,(ReadLinesOrigMax_loc*Nper_loc),1)/)  ! For end of dataset
+    ELSEIF(DisaggType==20) THEN
+       FastRows = Nper_loc + seq1Nper_loc   !Rows to create at model time-step
+       FirstRows20 = (/(i, i=1,(FastRows(1)-1), 1)/)   !For start of dataset
+    ENDIF
 
-  ! Initialise fast array to -999
-  Fast = -999
-  ! Linearly disaggregate
-  IF(DisaggType==10) THEN   !Averaged variables
-     IF(DiagnoseDisagg==1) write(*,*) 'Linearly disaggregating averaged variable'
-     DO i=1,(ReadLinesOrigMax_loc-1)
-        Fast(Nper_loc*(i-1)+FastRows) = Slow(i) - &
-                                           (Slow(i+1)-Slow(i))/(XNper_loc*Nper_loc) + &
-                                              (Slow(i+1)-Slow(i))/Nper_loc*(/(ii, ii=1,Nper_loc, 1)/)
-     ENDDO
+    ! Initialise fast array to -999
+    Fast = -999
+    ! Linearly disaggregate
+    IF(DisaggType==10) THEN   !Averaged variables
+       IF(DiagnoseDisagg==1) WRITE(*,*) 'Linearly disaggregating averaged variable'
+       DO i=1,(ReadLinesOrigMax_loc-1)
+          Fast(Nper_loc*(i-1)+FastRows) = Slow(i) - &
+               (Slow(i+1)-Slow(i))/(XNper_loc*Nper_loc) + &
+               (Slow(i+1)-Slow(i))/Nper_loc*(/(ii, ii=1,Nper_loc, 1)/)
+       ENDDO
 
-     ! For first few rows, use previous met block
-     IF(iBlock==1) THEN
-        Fast(FirstRows10) = Fast(FastRows(1))   !Use repeat values at the start of the year
-     ELSE
-        Fast(FirstRows10) = SlowPrev - &
-                             (Slow(1)-SlowPrev)/(XNper_loc*Nper_loc) + &
-                               (Slow(1)-SlowPrev)/Nper_loc * &
-                                  (/(ii, ii=(Nper_loc-SIZE(FirstRows10)+1),Nper_loc, 1)/)
-     ENDIF
-     ! For last few rows, use next met block
-     IF(iBlock==ReadBlocksOrigMetData) THEN
-        Fast(LastRows10) = Fast(Nper_loc*(ReadLinesOrigMax_loc-1-1)+FastRows(Nper_loc))   !Use repeat values at the end of the year
-     ELSE
-        Fast(LastRows10) = Slow(ReadLinesOrigMax_loc) - &
-                            (SlowNext-Slow(ReadLinesOrigMax_loc))/(XNper_loc*Nper_loc) + &
-                              (SlowNext-Slow(ReadLinesOrigMax_loc))/Nper_loc * &
-                                (/(ii, ii=1,SIZE(LastRows10), 1)/)
-     ENDIF
-  ELSEIF(DisaggType==20) THEN   !Instantaneous variables
-     IF(DiagnoseDisagg==1) write(*,*) 'Linearly disaggregating instantaneous variable'
-     DO i=1,(ReadLinesOrigMax_loc-1)
-        Fast(Nper_loc*(i-1)+FastRows) = (Slow(i) + &
-                                          (Slow(i+1)-Slow(i))/Nper_loc*2*(seq1Nper_loc-1) + &
-                                              Slow(i))/2
-     ENDDO
-     ! For first few rows, use previous met block
-     IF(iBlock==1) THEN
-        Fast(FirstRows20) = Fast(FastRows(1))   !Use repeat values at the start of the year
-     ELSE
-        Fast(FirstRows20) = (SlowPrev + &
-                              (Slow(1)-SlowPrev)/Nper_loc*2 * &
-                                ((/(ii, ii=(Nper_loc-SIZE(FirstRows20)+1),Nper_loc, 1)/)-1) + &
-                                   SlowPrev)/2
-     ENDIF
-     !! Last few rows are already filled for the instantaneous value disaggregation
-     !IF(iBlock==ReadBlocksOrigMetData) THEN
-     !   Fast(LastRows20) = Fast(Nper_loc*(ReadLinesOrigMax_loc-1-1)+FastRows(Nper_loc))   !Use repeat values at the end of the year
-     !ELSE
-     !   Fast(LastRows20) = (Slow(ReadLinesOrigMax_loc) + &
-     !                     (SlowNext-Slow(ReadLinesOrigMax_loc))/Nper_loc*2 * &
-     !                        ((/(ii, ii=1,SIZE(LastRows20), 1)/)-1) + &
-     !                       Slow(ReadLinesOrigMax_loc))/2
-     !ENDIF
-  ENDIF
+       ! For first few rows, use previous met block
+       IF(iBlock==1) THEN
+          Fast(FirstRows10) = Fast(FastRows(1))   !Use repeat values at the start of the year
+       ELSE
+          Fast(FirstRows10) = SlowPrev - &
+               (Slow(1)-SlowPrev)/(XNper_loc*Nper_loc) + &
+               (Slow(1)-SlowPrev)/Nper_loc * &
+               (/(ii, ii=(Nper_loc-SIZE(FirstRows10)+1),Nper_loc, 1)/)
+       ENDIF
+       ! For last few rows, use next met block
+       IF(iBlock==ReadBlocksOrigMetData) THEN
+          Fast(LastRows10) = Fast(Nper_loc*(ReadLinesOrigMax_loc-1-1)+FastRows(Nper_loc))   !Use repeat values at the end of the year
+       ELSE
+          Fast(LastRows10) = Slow(ReadLinesOrigMax_loc) - &
+               (SlowNext-Slow(ReadLinesOrigMax_loc))/(XNper_loc*Nper_loc) + &
+               (SlowNext-Slow(ReadLinesOrigMax_loc))/Nper_loc * &
+               (/(ii, ii=1,SIZE(LastRows10), 1)/)
+       ENDIF
+    ELSEIF(DisaggType==20) THEN   !Instantaneous variables
+       IF(DiagnoseDisagg==1) WRITE(*,*) 'Linearly disaggregating instantaneous variable'
+       DO i=1,(ReadLinesOrigMax_loc-1)
+          Fast(Nper_loc*(i-1)+FastRows) = (Slow(i) + &
+               (Slow(i+1)-Slow(i))/Nper_loc*2*(seq1Nper_loc-1) + &
+               Slow(i))/2
+       ENDDO
+       ! For first few rows, use previous met block
+       IF(iBlock==1) THEN
+          Fast(FirstRows20) = Fast(FastRows(1))   !Use repeat values at the start of the year
+       ELSE
+          Fast(FirstRows20) = (SlowPrev + &
+               (Slow(1)-SlowPrev)/Nper_loc*2 * &
+               ((/(ii, ii=(Nper_loc-SIZE(FirstRows20)+1),Nper_loc, 1)/)-1) + &
+               SlowPrev)/2
+       ENDIF
+       !! Last few rows are already filled for the instantaneous value disaggregation
+       !IF(iBlock==ReadBlocksOrigMetData) THEN
+       !   Fast(LastRows20) = Fast(Nper_loc*(ReadLinesOrigMax_loc-1-1)+FastRows(Nper_loc))   !Use repeat values at the end of the year
+       !ELSE
+       !   Fast(LastRows20) = (Slow(ReadLinesOrigMax_loc) + &
+       !                     (SlowNext-Slow(ReadLinesOrigMax_loc))/Nper_loc*2 * &
+       !                        ((/(ii, ii=1,SIZE(LastRows20), 1)/)-1) + &
+       !                       Slow(ReadLinesOrigMax_loc))/2
+       !ENDIF
+    ENDIF
 
-  IF(ANY(Fast(1:ReadLinesOrigMax_loc*Nper_loc) == -999)) THEN
-     WRITE(*,*) 'Problem: -999s (',COUNT(Fast(1:ReadLinesOrigMax_loc*Nper_loc)==-999),') in disaggregated data.'
-     CALL errorHint(13,'Problem in SUEWS_MetDisagg: -999 values in disaggregated data.',NotUsed,NotUsed,NotUsedI)
-  ENDIF
+    IF(ANY(Fast(1:ReadLinesOrigMax_loc*Nper_loc) == -999)) THEN
+       WRITE(*,*) 'Problem: -999s (',COUNT(Fast(1:ReadLinesOrigMax_loc*Nper_loc)==-999),') in disaggregated data.'
+       CALL errorHint(13,'Problem in SUEWS_MetDisagg: -999 values in disaggregated data.',NotUsed,NotUsed,NotUsedI)
+    ENDIF
 
-ENDFUNCTION Disagg_Lin
-!======================================================================================
+  ENDFUNCTION Disagg_Lin
+  !======================================================================================
 
-!======================================================================================
-FUNCTION DisaggP_amongN(Slow,amongN, Nper_loc, ReadLinesOrig_loc, ReadLinesOrigMax_loc) RESULT(Fast)
-! Subroutine to disaggregate precipitation by evenly distributing among N subintervals
-!  (i.e. equal intensity in N subintervals)
-! See Ward et al. (in review), meanN, 0.5N or 0.25N approach
-! HCW 10 Feb 2017
-!======================================================================================
+  !======================================================================================
+  FUNCTION DisaggP_amongN(Slow,amongN, Nper_loc, ReadLinesOrig_loc, ReadLinesOrigMax_loc) RESULT(Fast)
+    ! Subroutine to disaggregate precipitation by evenly distributing among N subintervals
+    !  (i.e. equal intensity in N subintervals)
+    ! See Ward et al. (in review), meanN, 0.5N or 0.25N approach
+    ! HCW 10 Feb 2017
+    !======================================================================================
 
-  USE DefaultNotUsed
-  USE sues_data
+    USE DefaultNotUsed
+    USE sues_data
 
-  IMPLICIT NONE
+    IMPLICIT NONE
 
-  INTEGER:: amongN       !Number of subintervals over which rain will be distributed
-  INTEGER:: Nper_loc     !Number of subintervals per interval (local Nper)
-  INTEGER:: ReadLinesOrig_loc,ReadLinesOrigMax_loc   !Number of lines to read in original file (local)
-  REAL(KIND(1d0)),DIMENSION(ReadLinesOrig_loc*Nper_loc):: Fast  !Array to receive disaggregated data
-  REAL(KIND(1d0)),DIMENSION(ReadLinesOrig_loc):: Slow   !Array to disaggregate
-  INTEGER,DIMENSION(:),ALLOCATABLE:: Subintervals  !Array of subintervals that contain rain
-  INTEGER,DIMENSION(Nper_loc):: seq1Nper_loc   !1 to Nper_loc
-  INTEGER:: i
+    INTEGER:: amongN       !Number of subintervals over which rain will be distributed
+    INTEGER:: Nper_loc     !Number of subintervals per interval (local Nper)
+    INTEGER:: ReadLinesOrig_loc,ReadLinesOrigMax_loc   !Number of lines to read in original file (local)
+    REAL(KIND(1d0)),DIMENSION(ReadLinesOrig_loc*Nper_loc):: Fast  !Array to receive disaggregated data
+    REAL(KIND(1d0)),DIMENSION(ReadLinesOrig_loc):: Slow   !Array to disaggregate
+    INTEGER,DIMENSION(:),ALLOCATABLE:: Subintervals  !Array of subintervals that contain rain
+    INTEGER,DIMENSION(Nper_loc):: seq1Nper_loc   !1 to Nper_loc
+    INTEGER:: i
 
-  ! For each averaging period, get subintervals which will receive rain
-  ALLOCATE(Subintervals(amongN))
-  Subintervals(:) = -999
+    ! For each averaging period, get subintervals which will receive rain
+    ALLOCATE(Subintervals(amongN))
+    Subintervals(:) = -999
 
-  seq1Nper_loc = (/(i, i=1,Nper_loc, 1)/)
+    seq1Nper_loc = (/(i, i=1,Nper_loc, 1)/)
 
-  IF(DiagnoseDisagg==1) write(*,*) 'Distributing over ',amongN,' subintervals for variable'
-  ! If all subintervals are to contain rain, don't need to generate random numbers
-  IF(amongN == Nper_loc) THEN
-     Subintervals(:) = seq1Nper_loc
-  ENDIF
-  IF(amongN > Nper_loc) CALL errorHint(2,'Problem in SUEWS_MetDisagg: no. of rainy periods cannot exceed number of subintervals', &
-                                            REAL(Nper_loc,KIND(1d0)),NotUsed,amongN)
+    IF(DiagnoseDisagg==1) WRITE(*,*) 'Distributing over ',amongN,' subintervals for variable'
+    ! If all subintervals are to contain rain, don't need to generate random numbers
+    IF(amongN == Nper_loc) THEN
+       Subintervals(:) = seq1Nper_loc
+    ENDIF
+    IF(amongN > Nper_loc) &
+         CALL errorHint(2,'Problem in SUEWS_MetDisagg: no. of rainy periods cannot exceed number of subintervals', &
+         REAL(Nper_loc,KIND(1d0)),NotUsed,amongN)
 
 
-  ! Initialise fast array to -999
-  Fast = -999
-  DO i=1,ReadLinesOrigMax_loc
-     Fast(Nper_loc*(i-1)+seq1Nper_loc) = 0   !Fill all subintervals with zeros initially
-     IF(Slow(i) > 0) THEN   !If there is some rainfall during this interval...
-        IF(amongN < Nper_loc) THEN
-           Subintervals(:) = -999
-           Subintervals = RandomSamples(amongN,Nper_loc)
-        ENDIF
-        Fast(Nper_loc*(i-1)+SubIntervals) = Slow(i)/amongN
-     ENDIF
-  ENDDO
+    ! Initialise fast array to -999
+    Fast = -999
+    DO i=1,ReadLinesOrigMax_loc
+       Fast(Nper_loc*(i-1)+seq1Nper_loc) = 0   !Fill all subintervals with zeros initially
+       IF(Slow(i) > 0) THEN   !If there is some rainfall during this interval...
+          IF(amongN < Nper_loc) THEN
+             Subintervals(:) = -999
+             Subintervals = RandomSamples(amongN,Nper_loc)
+          ENDIF
+          Fast(Nper_loc*(i-1)+SubIntervals) = Slow(i)/amongN
+       ENDIF
+    ENDDO
 
-  IF(ANY(Fast(1:ReadLinesOrigMax_loc*Nper_loc) == -999)) THEN
-     write(*,*) 'Problem: -999s (',COUNT(Fast(1:ReadLinesOrigMax_loc*Nper_loc) == -999),') in disaggregated data'
-     CALL errorHint(13,'Problem in SUEWS_MetDisagg: -999 values in disaggregated data.',NotUsed,NotUsed,NotUsedI)
-  ENDIF
+    IF(ANY(Fast(1:ReadLinesOrigMax_loc*Nper_loc) == -999)) THEN
+       WRITE(*,*) 'Problem: -999s (',COUNT(Fast(1:ReadLinesOrigMax_loc*Nper_loc) == -999),') in disaggregated data'
+       CALL errorHint(13,'Problem in SUEWS_MetDisagg: -999 values in disaggregated data.',NotUsed,NotUsed,NotUsedI)
+    ENDIF
 
-ENDFUNCTION DisaggP_amongN
-!======================================================================================
+  ENDFUNCTION DisaggP_amongN
+  !======================================================================================
 
-!======================================================================================
-FUNCTION DisaggP_amongNMult(Slow,multupperI, multamongN, Nper_loc, ReadLinesOrig_loc, ReadLinesOrigMax_loc) RESULT(Fast)
-! Subroutine to disaggregate precipitation by evenly distributing among N subintervals
-!  (i.e. equal intensity in N subintervals) for different intensity bins
-! Based on analsysis by Wen Gu
-! HCW 21 Apr 2017
-!======================================================================================
+  !======================================================================================
+  FUNCTION DisaggP_amongNMult(Slow,multupperI, multamongN, Nper_loc, ReadLinesOrig_loc, ReadLinesOrigMax_loc) RESULT(Fast)
+    ! Subroutine to disaggregate precipitation by evenly distributing among N subintervals
+    !  (i.e. equal intensity in N subintervals) for different intensity bins
+    ! Based on analsysis by Wen Gu
+    ! HCW 21 Apr 2017
+    !======================================================================================
 
-  USE DefaultNotUsed
-  USE sues_data
+    USE DefaultNotUsed
+    USE sues_data
 
-  IMPLICIT NONE
+    IMPLICIT NONE
 
-  REAL(KIND(1d0)),DIMENSION(5):: multupperI     !Upper bound of intensity bin
-  INTEGER,DIMENSION(5):: multamongN       !Number of subintervals over which rain will be distributed (array)
-  INTEGER:: thisamongN       !Number of subintervals over which rain will be distributed
-  INTEGER:: Nper_loc     !Number of subintervals per interval (local Nper)
-  INTEGER:: ReadLinesOrig_loc,ReadLinesOrigMax_loc   !Number of lines to read in original file (local)
-  REAL(KIND(1d0)),DIMENSION(ReadLinesOrig_loc*Nper_loc):: Fast  !Array to receive disaggregated data
-  REAL(KIND(1d0)),DIMENSION(ReadLinesOrig_loc):: Slow   !Array to disaggregate
-  INTEGER,DIMENSION(:),ALLOCATABLE:: Subintervals  !Array of subintervals that contain rain
-  INTEGER,DIMENSION(Nper_loc):: seq1Nper_loc   !1 to Nper_loc
-  INTEGER:: i
+    REAL(KIND(1d0)),DIMENSION(5):: multupperI     !Upper bound of intensity bin
+    INTEGER,DIMENSION(5):: multamongN       !Number of subintervals over which rain will be distributed (array)
+    INTEGER:: thisamongN       !Number of subintervals over which rain will be distributed
+    INTEGER:: Nper_loc     !Number of subintervals per interval (local Nper)
+    INTEGER:: ReadLinesOrig_loc,ReadLinesOrigMax_loc   !Number of lines to read in original file (local)
+    REAL(KIND(1d0)),DIMENSION(ReadLinesOrig_loc*Nper_loc):: Fast  !Array to receive disaggregated data
+    REAL(KIND(1d0)),DIMENSION(ReadLinesOrig_loc):: Slow   !Array to disaggregate
+    INTEGER,DIMENSION(:),ALLOCATABLE:: Subintervals  !Array of subintervals that contain rain
+    INTEGER,DIMENSION(Nper_loc):: seq1Nper_loc   !1 to Nper_loc
+    INTEGER:: i
 
-  seq1Nper_loc = (/(i, i=1,Nper_loc, 1)/)
+    seq1Nper_loc = (/(i, i=1,Nper_loc, 1)/)
 
-  IF(DiagnoseDisagg==1) write(*,*) 'Distributing over variable subintervals depending on intensity for variable'
+    IF(DiagnoseDisagg==1) WRITE(*,*) 'Distributing over variable subintervals depending on intensity for variable'
 
-  ! Initialise fast array to -999
-  Fast = -999
-  DO i=1,ReadLinesOrigMax_loc
-     Fast(Nper_loc*(i-1)+seq1Nper_loc) = 0   !Fill all subintervals with zeros initially
-     IF(Slow(i) > 0) THEN   !If there is some rainfall during this interval...
-        !Use intensity in this interval to decide number of subintervals to fill with rain
-        IF(Slow(i) <= multupperI(1)) THEN
-            thisamongN = multamongN(1)
-        ELSEIF(Slow(i) > multupperI(1) .AND. Slow(i) <= multupperI(2)) THEN
-            thisamongN = multamongN(2)
-        ELSEIF(Slow(i) > multupperI(2) .AND. Slow(i) <= multupperI(3)) THEN
-            thisamongN = multamongN(3)
-        ELSEIF(Slow(i) > multupperI(3) .AND. Slow(i) <= multupperI(4)) THEN
-            thisamongN = multamongN(4)
-        ELSEIF(Slow(i) > multupperI(4) .AND. Slow(i) <= multupperI(5)) THEN
-            thisamongN = multamongN(5)
-        ELSEIF(Slow(i) > multupperI(5)) THEN
-            thisamongN = multamongN(5)
-            CALL errorHint(4,'Precip in met forcing file exceeds maxiumum MultRainAmongNUpperI',&
-                                 Slow(i),MultRainAmongNUpperI(5),NotUsed)
-        ENDIF
+    ! Initialise fast array to -999
+    Fast = -999
+    DO i=1,ReadLinesOrigMax_loc
+       Fast(Nper_loc*(i-1)+seq1Nper_loc) = 0   !Fill all subintervals with zeros initially
+       IF(Slow(i) > 0) THEN   !If there is some rainfall during this interval...
+          !Use intensity in this interval to decide number of subintervals to fill with rain
+          IF(Slow(i) <= multupperI(1)) THEN
+             thisamongN = multamongN(1)
+          ELSEIF(Slow(i) > multupperI(1) .AND. Slow(i) <= multupperI(2)) THEN
+             thisamongN = multamongN(2)
+          ELSEIF(Slow(i) > multupperI(2) .AND. Slow(i) <= multupperI(3)) THEN
+             thisamongN = multamongN(3)
+          ELSEIF(Slow(i) > multupperI(3) .AND. Slow(i) <= multupperI(4)) THEN
+             thisamongN = multamongN(4)
+          ELSEIF(Slow(i) > multupperI(4) .AND. Slow(i) <= multupperI(5)) THEN
+             thisamongN = multamongN(5)
+          ELSEIF(Slow(i) > multupperI(5)) THEN
+             thisamongN = multamongN(5)
+             CALL errorHint(4,'Precip in met forcing file exceeds maxiumum MultRainAmongNUpperI',&
+                  Slow(i),MultRainAmongNUpperI(5),NotUsed)
+          ENDIF
 
-        ! For each averaging period, get subintervals which will receive rain
-        ALLOCATE(Subintervals(thisamongN))
-        Subintervals(:) = -999
+          ! For each averaging period, get subintervals which will receive rain
+          ALLOCATE(Subintervals(thisamongN))
+          Subintervals(:) = -999
 
-        IF(thisamongN > Nper_loc) CALL errorHint(2,'Problem in SUEWS_MetDisagg: no. of rainy periods cannot exceed ',&
-                                                      'number of subintervals', REAL(Nper_loc,KIND(1d0)),NotUsed,thisamongN)
+          IF(thisamongN > Nper_loc) CALL errorHint(2,'Problem in SUEWS_MetDisagg: no. of rainy periods cannot exceed ',&
+               'number of subintervals', REAL(Nper_loc,KIND(1d0)),NotUsed,thisamongN)
 
-        IF(thisamongN == Nper_loc) THEN   ! If all subintervals are to contain rain, don't need to generate random numbers
-           Subintervals(:) = seq1Nper_loc
-        ELSEIF(thisamongN < Nper_loc) THEN
-           Subintervals = RandomSamples(thisamongN,Nper_loc)
-        ENDIF
-        Fast(Nper_loc*(i-1)+SubIntervals) = Slow(i)/thisamongN
-        !write(*,*) Slow(i), thisamongN
-        DEALLOCATE(Subintervals)
-     ENDIF
-  ENDDO
+          IF(thisamongN == Nper_loc) THEN   ! If all subintervals are to contain rain, don't need to generate random numbers
+             Subintervals(:) = seq1Nper_loc
+          ELSEIF(thisamongN < Nper_loc) THEN
+             Subintervals = RandomSamples(thisamongN,Nper_loc)
+          ENDIF
+          Fast(Nper_loc*(i-1)+SubIntervals) = Slow(i)/thisamongN
+          !write(*,*) Slow(i), thisamongN
+          DEALLOCATE(Subintervals)
+       ENDIF
+    ENDDO
 
-  IF(ANY(Fast(1:ReadLinesOrigMax_loc*Nper_loc) == -999)) THEN
-     write(*,*) 'Problem: -999s (',COUNT(Fast(1:ReadLinesOrigMax_loc*Nper_loc) == -999),') in disaggregated data'
-     CALL errorHint(13,'Problem in SUEWS_MetDisagg: -999 values in disaggregated data.',NotUsed,NotUsed,NotUsedI)
-  ENDIF
+    IF(ANY(Fast(1:ReadLinesOrigMax_loc*Nper_loc) == -999)) THEN
+       WRITE(*,*) 'Problem: -999s (',COUNT(Fast(1:ReadLinesOrigMax_loc*Nper_loc) == -999),') in disaggregated data'
+       CALL errorHint(13,'Problem in SUEWS_MetDisagg: -999 values in disaggregated data.',NotUsed,NotUsed,NotUsedI)
+    ENDIF
 
-ENDFUNCTION DisaggP_amongNMult
-!======================================================================================
+  ENDFUNCTION DisaggP_amongNMult
+  !======================================================================================
 
-!======================================================================================
-FUNCTION RandomSamples(N,OutOf) RESULT(Samples)
-! Generates N/OutOf random samples without repeats
-!   e.g. for N = 3 and OutOf = 12, a possibility for Samples = 7,3,11
-! HCW 10 Feb 2017
-!======================================================================================
+  !======================================================================================
+  FUNCTION RandomSamples(N,OutOf) RESULT(Samples)
+    ! Generates N/OutOf random samples without repeats
+    !   e.g. for N = 3 and OutOf = 12, a possibility for Samples = 7,3,11
+    ! HCW 10 Feb 2017
+    !======================================================================================
 
-IMPLICIT NONE
+    IMPLICIT NONE
 
-INTEGER:: i   !counter
-INTEGER:: N   !number of samples to return
-INTEGER:: OutOf   !number to sample from
-INTEGER:: X   !next sample to be added
-REAL(KIND(1D0)):: r   !random number
-INTEGER,DIMENSION(:),ALLOCATABLE:: Samples   !Array to receive random samples
+    INTEGER:: i   !counter
+    INTEGER:: N   !number of samples to return
+    INTEGER:: OutOf   !number to sample from
+    INTEGER:: X   !next sample to be added
+    REAL(KIND(1D0)):: r   !random number
+    INTEGER,DIMENSION(:),ALLOCATABLE:: Samples   !Array to receive random samples
 
-! Allocate and initialise Samples
-ALLOCATE(Samples(N))
-Samples(:) = -999
+    ! Allocate and initialise Samples
+    ALLOCATE(Samples(N))
+    Samples(:) = -999
 
-! Generate random sample (no repeats)
-i=0 !Set counter to zero initially
-DO WHILE (any(Samples == -999))
-CALL random_number(r)
-X = int(r*OutOf)+1
-!write(*,*) X
-!write(*,*) COUNT(Samples == X)
-IF(COUNT(Samples == X) == 0) THEN
-  ! Only keep if this subinterval has not already been selected
-  i=i+1
-  Samples(i)=X
-ENDIF
-!write(*,*) Samples
-ENDDO
+    ! Generate random sample (no repeats)
+    i=0 !Set counter to zero initially
+    DO WHILE (ANY(Samples == -999))
+       CALL RANDOM_NUMBER(r)
+       X = INT(r*OutOf)+1
+       !write(*,*) X
+       !write(*,*) COUNT(Samples == X)
+       IF(COUNT(Samples == X) == 0) THEN
+          ! Only keep if this subinterval has not already been selected
+          i=i+1
+          Samples(i)=X
+       ENDIF
+       !write(*,*) Samples
+    ENDDO
 
-ENDFUNCTION RandomSamples
-!======================================================================================
+  ENDFUNCTION RandomSamples
+  !======================================================================================
 
 
 

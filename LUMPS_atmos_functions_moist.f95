@@ -35,8 +35,7 @@ CONTAINS
          avcp,&!specific heat capacity in J kg-1 K-1
          air_dens!Air density in kg/m3
 
-    ! REAL(KIND(1d0))::sat_vap_press,spec_heat_beer,lat_vap,lat_vapSublim,SPEC_HUM_DEF   ! functions
-
+     !REAL(KIND(1d0))::sat_vap_press,spec_heat_beer,lat_vap,lat_vapSublim,SPEC_HUM_DEF   ! functions
 
 
     REAL (KIND(1d0)),PARAMETER:: &
@@ -79,12 +78,13 @@ CONTAINS
 
     !Latent heat of vaporization in [J kg-1]
     lv_J_kg=lat_vap(Temp_C,Ea_hPa,Press_hPa,avcp,dectime)
-
+    
     !Latent heat of sublimation in J/kg
     IF(Temp_C<0.000) THEN
        lvS_J_kg=lat_vapSublim(Temp_C,Ea_hPa,Press_hPa,avcp)
+    ELSE 
+       lvS_J_kg = 2834000
     ENDIF
-
     !if(debug)write(*,*)lv_J_kg,Temp_C,'lv2'
     IF(press_hPa<900) THEN
        CALL ErrorHint(46, 'Function LUMPS_cal_AtmMoist',press_hPa,-55.55, -55)
@@ -306,17 +306,17 @@ CONTAINS
     ! USE time
 
     IMPLICIT NONE
-
+   
     REAL(KIND(1d0))::lvS_J_kg,temp_C,tw,incr,Ea_hPa,Press_hPa,cp
-    !REAL(KIND(1d0))::ea_fix,es_tw,psyc,ea_est,Temp_K
-    !REAL(KIND(1d0))::sat_vap_pressIce,psyc_const ! functions
-    !LOGICAL:: switch1=.FALSE.,switch2=.FALSE.!,debug=.true.
-    !INTEGER:: ii,from=2
+   ! REAL(KIND(1d0))::ea_fix,es_tw,psyc,ea_est,Temp_K
+   ! REAL(KIND(1d0))::sat_vap_pressIce,psyc_const ! functions
+   ! LOGICAL:: switch1=.FALSE.,switch2=.FALSE.!,debug=.true.
+   ! INTEGER:: ii,from=2
 
     !Latent heat for sublimation
     !From Rogers&Yau (A short course in cloud physics), Wikipedia
 
-    !ea_fix=ea_hPa
+   ! ea_fix=ea_hPa
 
     lvS_J_kg=(2834.1-0.29*temp_C)*1e3 !First guess for Ls in J/kg
 
@@ -328,32 +328,31 @@ CONTAINS
 
     !DO ii=1,100
 
-    !   es_tw=sat_vap_pressIce(Tw,Press_hPa,from)  !Calculate saturation vapour pressure in hPa
+   !    es_tw=sat_vap_pressIce(Tw,Press_hPa,from)  !Calculate saturation vapour pressure in hPa
 
-    !  psyc=psyc_const(cp,Press_hPa,lv_J_kg)
+     ! psyc=psyc_const(cp,Press_hPa,lv_J_kg)
 
-    ! ea_est=es_tw-psyc*(temp_C-tw)
-    !lvS_J_kg=(2834.1-0.29*tw)*1e3
+  !   ea_est=es_tw-psyc*(temp_C-tw)
+  !  lvS_J_kg=(2834.1-0.29*tw)*1e3
 
+  !   IF(switch1.AND.switch2)THEN
+  !      incr=incr/10.
+  !     switch1=.FALSE.
+  !     switch2=.FALSE.
+  !    ENDIF
+    
+  !   IF(ABS(ea_est-ea_fix)<0.001)THEN
+  !     RETURN
+  !   ELSEIF(ea_est > ea_fix)THEN
+  !      tw=tw-incr
+  !      switch1=.TRUE.
+  !   ELSEIF(ea_est< ea_fix)THEN
+  !      tw=tw+incr
+  !      switch2=.TRUE.
+  !    ENDIF
+  !   ENDDO
 
-    ! IF(switch1.AND.switch2)THEN
-    !    incr=incr/10.
-    !   switch1=.FALSE.
-    !   switch2=.FALSE.
-    !  ENDIF
-    !
-    ! IF(ABS(ea_est-ea_fix)<0.001)THEN
-    !   RETURN
-    ! ELSEIF(ea_est > ea_fix)THEN
-    !    tw=tw-incr
-    !    switch1=.TRUE.
-    !  ELSEIF(ea_est< ea_fix)THEN
-    !    tw=tw+incr
-    !    switch2=.TRUE.
-    !  ENDIF
-    ! ENDDO
-
-    RETURN
+   ! RETURN
   END FUNCTION Lat_vapSublim
 
 

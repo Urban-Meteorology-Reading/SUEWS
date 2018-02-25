@@ -47,12 +47,12 @@ MODULE allocateArray
 
 
   ! ---- Set number of columns in output files ---------------------------------------------------
-  INTEGER, PARAMETER:: ncolumnsDataOut=84,&    !Main output file (_5.txt). DataOut created in SUEWS_Calculations.f95
+  INTEGER, PARAMETER:: ncolumnsDataOutSUEWS=84,&    !Main output file (_5.txt). dataOutSUEWS created in SUEWS_Calculations.f95
        ncolumnsDataOutSnow=102,&
-       ncolumnsdataOutSOL=28,&
+       ncolumnsdataOutSOL=31,&
        ncolumnsdataOutBL=22,&
-       ncolumnsdataOutESTM=32,&
-       ncolumnsDataOutDailyState=47
+       ncolumnsDataOutESTM=32,&
+       ncolumnsDataOutDailyState=46
 
   ! ---- Define input file headers ---------------------------------------------------------------
   CHARACTER(len=20),DIMENSION(ncolumnsSiteSelect)::        HeaderSiteSelect_File          !Header for SiteSelect.txt
@@ -86,11 +86,11 @@ MODULE allocateArray
   ! ---- Define output file headers --------------------------------------------------------------
   INTEGER,DIMENSION(:),ALLOCATABLE:: UseColumnsDataOut       !Column numbers used to select output variables
   ! If change lengths in SUEWS_Output.f95, also need to adjust here
-  CHARACTER(len=14*ncolumnsDataOut):: HeaderUse,FormatUse,HeaderUseNoSep,FormatUseNoSep    !Header and format in correct form
-  CHARACTER(len=52*ncolumnsDataOut):: LongNmUse
-  CHARACTER(len=14*ncolumnsDataOut):: UnitsUse
-  CHARACTER(len=3*ncolumnsDataOut):: AggregUse
-  CHARACTER(len=4*ncolumnsDataOut):: ColNosUse
+  CHARACTER(len=14*ncolumnsDataOutSUEWS):: HeaderUse,FormatUse,HeaderUseNoSep,FormatUseNoSep    !Header and format in correct form
+  CHARACTER(len=52*ncolumnsDataOutSUEWS):: LongNmUse
+  CHARACTER(len=14*ncolumnsDataOutSUEWS):: UnitsUse
+  CHARACTER(len=3*ncolumnsDataOutSUEWS):: AggregUse
+  CHARACTER(len=4*ncolumnsDataOutSUEWS):: ColNosUse
 
   ! ---- Define arrays to store input information from SiteInfo spreadsheet ----------------------
   REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::SiteSelect                !Stores info from SiteSelect.txt
@@ -112,17 +112,23 @@ MODULE allocateArray
   INTEGER,DIMENSION(:), ALLOCATABLE:: GridIDmatrix         !Array containing GridIDs in SiteSelect after sorting
   INTEGER,DIMENSION(:), ALLOCATABLE:: GridIDmatrix0        !Array containing GridIDs in SiteSelect in the original order
   REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: SurfaceChar          !Array for surface characteristics
-  REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: MetForcingData       !Array for meteorological forcing data
+  REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: MetForcingData      !Array for meteorological forcing data
+  REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE  :: MetForcingData_grid !Array for meteorological forcing data of one grid used by AnOHM
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: ESTMForcingData      !Array for ESTM forcing data
   REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: ModelDailyState      !DailyState array
   REAL(KIND(1d0)),DIMENSION(:),    ALLOCATABLE:: DailyStateFirstOpen
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: ModelOutputData      !Output data matrix
-  REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: dataOut              !Main data output matrix
+  REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: dataOutSUEWS              !Main data output matrix
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: dataOutBL            !CBL output matrix
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: dataOutSOL           !SOLWEIG POI output matrix
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: dataOutSnow          !Main data output matrix
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: dataOutESTM          !ESTM output matrix
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: dataOutDailyState    !DailyState output array
+
+  REAL(KIND(1D0)),DIMENSION(5)::datetimeLine
+  REAL(KIND(1D0)),DIMENSION(ncolumnsDataOutSUEWS-5)::dataOutLineSUEWS
+  REAL(KIND(1D0)),DIMENSION(ncolumnsDataOutSnow-5)::dataOutLineSnow
+  REAL(KIND(1D0)),DIMENSION(ncolumnsDataOutDailyState-5)::DailyStateLine
 
   REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE:: MetForDisagg           !Array for original met forcing data (for disaggregation)
   REAL(KIND(1d0)),DIMENSION(:),  ALLOCATABLE:: MetForDisaggPrev,MetForDisaggNext !Stores last and next row of met data
@@ -142,6 +148,7 @@ MODULE allocateArray
   REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:,:):: Ts5mindata   !surface temperature input data
   REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:)  :: ts5mindata_ir !=ts5mindata(ir,:), ts input for the current timestep
   REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:)  :: Tair24HR
+  REAL(KIND(1d0)),DIMENSION(27)  :: dataOutLineESTM !ESTM output for the current timestep and grid
 
   ! Column numbers for TstepProfiles
   INTEGER:: cTP_EnUseWD  = 1,&
@@ -165,7 +172,7 @@ MODULE allocateArray
   INTEGER, PARAMETER:: NVegSurf=3             !Number of surfaces that are vegetated
   INTEGER, PARAMETER:: nsurfIncSnow=nsurf+1   !Number of surfaces + snow
 
-  INTEGER:: PavSurf   = 1,&   !When all surfaces considered together (1-7)
+  INTEGER,PARAMETER:: PavSurf   = 1,&   !When all surfaces considered together (1-7)
        BldgSurf  = 2,&
        ConifSurf = 3,&
        DecidSurf = 4,&
@@ -1085,7 +1092,9 @@ MODULE data_in
   REAL(KIND(1d0)),DIMENSION(0:23,2):: PopProf   !Population profiles for (1)weekdays / (2)weekends
 
 
-  INTEGER,DIMENSION(2)::DayLightSavingDay   !DOY when daylight saving changes
+  ! INTEGER,DIMENSION(2)::DayLightSavingDay   !DOY when daylight saving changes
+  INTEGER::startDLS   !DOY when daylight saving starts
+  INTEGER::endDLS   !DOY when daylight saving ends
 
   INTEGER::nCBLstep  !number of time steps of Runge-kutta methods in one hour
 
@@ -1195,7 +1204,7 @@ MODULE snowMod
   IMPLICIT NONE
 
   REAL (KIND(1D0))::AdjMeltFact,&    !Factor between melt and freezing factors
-       CumSnowfall,&        !Cumulative snowfall
+       SnowfallCum,&        !Cumulative snowfall
        fwh,&              !Weighted freezing water
        lvS_J_kg,&         !Latent heat of sublimation in J/kg
        mwh,&              !Weighted hourly water melt
@@ -1572,8 +1581,8 @@ MODULE InitialCond
        SnowPackGrass,&
        SnowPackBSoil,&
        SnowPackWater,&
-       SnowAlb0,&
-       BoInit !initial Bo for AnOHM, TS 13 Jul 2016
+       SnowAlb0!,&
+       ! BoInit !initial Bo for AnOHM, TS 13 Jul 2016 ! removed, TS 30 Jan 2018
 
   INTEGER::ID_Prev
 
@@ -1612,7 +1621,7 @@ MODULE ColNamesModelDailyState
        cMDS_albDecTr        = 22,&
        cMDS_albGrass        = 23,&
        cMDS_DecidCap        = 24,&
-       cMDS_CumSnowfall     = 25,&
+       cMDS_SnowfallCum     = 25,&
        cMDS_LAIEveTr        = 26,&
        cMDS_LAIDecTr        = 27,&
        cMDS_LAIGrass        = 28,&

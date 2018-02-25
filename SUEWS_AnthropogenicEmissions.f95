@@ -221,7 +221,8 @@
      ENDIF
 
      ! Remainder of temperature-independent part must be traffic
-     QF_traff = (QF_SAHP_base-QF_metab)*(1.0-QF0_BEU(iu))
+     !QF_traff = (QF_SAHP_base-QF_metab)*(1.0-QF0_BEU(iu))
+     QF_traff = QF_SAHP_base*(1.0-QF0_BEU(iu)) - QF_metab
 
      ! Divide QF by energy emission factor and multiply by CO2 factor
      Fc_traff = QF_traff/EnEF_v_Jkm * FcEF_v_kgkm*1e3*1e6/44

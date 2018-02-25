@@ -941,7 +941,7 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(Gridiv,c_BiogenCO2Code(ivConif)) = Veg_Coeff(iv5,cp_BiogenCO2Code)
 
 
-      ! ---- Find code for Biogenic CO2 Method ----
+  ! ---- Find code for Biogenic CO2 Method ----
   CALL CodeMatchBiogen(gridiv,c_BiogenCO2Code(ivConif))
   ! Transfer Biogenic CO2 characteristics to SurfaceChar
   SurfaceChar(gridiv,c_alpha_bioCO2(ivConif))     = Biogen_Coeff(iv5,cB_alpha)
@@ -1046,7 +1046,7 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
 
   SurfaceChar(Gridiv,c_BiogenCO2Code(ivDecid)) = Veg_Coeff(iv5,cp_BiogenCO2Code)
 
-      ! ---- Find code for Biogenic CO2 Method ----
+  ! ---- Find code for Biogenic CO2 Method ----
   CALL CodeMatchBiogen(gridiv,c_BiogenCO2Code(ivDecid))
   ! Transfer Biogenic CO2 characteristics to SurfaceChar
   SurfaceChar(gridiv,c_alpha_bioCO2(ivDecid))     = Biogen_Coeff(iv5,cB_alpha)
@@ -1151,7 +1151,7 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
 
   SurfaceChar(Gridiv,c_BiogenCO2Code(ivGrass)) = Veg_Coeff(iv5,cp_BiogenCO2Code)
 
-      ! ---- Find code for Biogenic CO2 Method ----
+  ! ---- Find code for Biogenic CO2 Method ----
   CALL CodeMatchBiogen(gridiv,c_BiogenCO2Code(ivGrass))
   ! Transfer Biogenic CO2 characteristics to SurfaceChar
   SurfaceChar(gridiv,c_alpha_bioCO2(ivGrass))     = Biogen_Coeff(iv5,cB_alpha)
@@ -1687,9 +1687,9 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   CALL SUEWS_InterpHourlyProfiles(Gridiv,cTP_TraffProfWE,c_HrProfTraffWE)
   ! For traffic, normalise so the AVERAGE of the multipliers is equal to 1
   TstepProfiles(Gridiv,cTP_TraffProfWD,:) = TstepProfiles(Gridiv,cTP_TraffProfWD,:) &
-  / SUM(TstepProfiles(Gridiv,cTP_TraffProfWD,:))*24*nsh_real
+       / SUM(TstepProfiles(Gridiv,cTP_TraffProfWD,:))*24*nsh_real
   TstepProfiles(Gridiv,cTP_TraffProfWE,:) = TstepProfiles(Gridiv,cTP_TraffProfWE,:) &
-  / SUM(TstepProfiles(Gridiv,cTP_TraffProfWE,:))*24*nsh_real
+       / SUM(TstepProfiles(Gridiv,cTP_TraffProfWE,:))*24*nsh_real
 
   ! Population for CO2 calculations
   CALL SUEWS_InterpHourlyProfiles(Gridiv,cTP_PopProfWD,c_HrProfPopWD)
@@ -1812,8 +1812,8 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
        SnowDensGrass,&
        SnowDensBSoil,&
        SnowDensWater,&
-       SnowAlb0,&
-       BoInit
+       SnowAlb0!,&
+  ! BoInit ! removed as no longer needed by AnOHM
 
   ! Initialise namelist to NAN ----------------------------------------------
   DaysSinceRain=INT(NAN)
@@ -1872,7 +1872,7 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
   SnowDensBSoil=NAN
   SnowDensWater=NAN
   SnowAlb0=NAN
-  BoInit=NAN
+  ! BoInit=NAN
 
   WRITE(year_txt,'(I4)') year_int  !Get year as a text string
 
@@ -2036,10 +2036,11 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
           notUsed,notUsed,notUsedI)
   ENDIF
 
-  ! If AnOHM option selected, check initial Bowen ratio is provided ---------
-  IF(StorageHeatMethod==3 .AND. BoInit == NAN) THEN
-     CALL ErrorHint(36,'Specify BoInit for AnOHM calculations.', notUsed,notUsed,notUsedI)
-  ENDIF
+  ! removed as no longer needed, TS 30 Jan 2018
+  ! ! If AnOHM option selected, check initial Bowen ratio is provided ---------
+  ! IF(StorageHeatMethod==3 .AND. BoInit == NAN) THEN
+  !    CALL ErrorHint(36,'Specify BoInit for AnOHM calculations.', notUsed,notUsed,notUsedI)
+  ! ENDIF
 
   ! -------------------------------------------------------------------------
   ! -------------------------------------------------------------------------
@@ -2062,7 +2063,7 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
   ModelDailyState(Gridiv,cMDS_porosity)    = Porosity0
   ModelDailyState(Gridiv,cMDS_DecidCap)    = DecidCap0
 
-  ModelDailyState(Gridiv,cMDS_CumSnowfall) = 0 !!Check this
+  ModelDailyState(Gridiv,cMDS_SnowfallCum) = 0 !!Check this
 
   ModelDailyState(Gridiv,cMDS_DaysSinceRain) = REAL(DaysSinceRain,KIND(1d0))
   ModelDailyState(Gridiv,cMDS_TempC) = Temp_C0
@@ -2165,32 +2166,6 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
        porosity(id),FAIBldg,FAIEveTree,FAIDecTree,Z,&
        planF,&!output
        Zh,Z0m,Zdm,ZZD)
-  ! CALL SUEWS_cal_RoughnessParameters(&
-  !
-  !                                 ! input:
-  !
-  !      RoughLenMomMethod,&
-  !      nsurf,& ! number of surface types
-  !      PavSurf,&! surface type code
-  !      BldgSurf,&! surface type code
-  !      WaterSurf,&! surface type code
-  !      ConifSurf,&! surface type code
-  !      BSoilSurf,&! surface type code
-  !      DecidSurf,&! surface type code
-  !      GrassSurf,&! surface type code
-  !      sfr,&! surface fractions
-  !      areaZh,&
-  !      bldgH,&
-  !      EveTreeH,&
-  !      DecTreeH,&
-  !      porosity(id),&
-  !      FAIBldg,FAIEveTree,FAIDecTree,Z,&
-  !
-  !      ! output:
-  !      planF,&
-  !      Zh,Z0m,Zdm,ZZD&
-  !
-  !      )
 
 
   !=============================================================================
@@ -2248,7 +2223,7 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
 
   !id=id_prev
   !it= 23 !!LastTimeOfDay
-  IF (id_prev>=DayLightSavingDay(1).AND.id_prev<=DayLightSavingDay(2)) THEN  !Summertime
+  IF (id_prev>=startDLS.AND.id_prev<=endDLS) THEN  !Summertime
      DLS=1
   ELSE
      DLS=0
@@ -2478,7 +2453,7 @@ SUBROUTINE NextInitial(GridName,year_int)
      WRITE(57,*)'SnowDensWater=',SnowDens(WaterSurf)
      WRITE(57,*)'SnowAlb0=',SnowAlb
   ENDIF
-  WRITE(57,*)'BoInit=',BoInit
+  ! WRITE(57,*)'BoInit=',BoInit
   WRITE(57,*)'/'
   CLOSE(57)
 

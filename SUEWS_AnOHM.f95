@@ -26,7 +26,7 @@ CONTAINS
   !! QS = a1*(Q*)+a2*(dQ*/dt)+a3
   !! -# grid ensemble OHM coefficients: a1, a2 and a3
   SUBROUTINE AnOHM(&
-       qn1,qn1_store,qn1_av_store,qf,&
+       qn1,qn1_store,qn1_av_store,qf,xWF,&
        MetForcingData_grid,moist_surf,&
        alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&! input
        sfr,nsurf,nsh,EmissionsMethod,id,Gridiv,&
@@ -37,6 +37,7 @@ CONTAINS
 
     REAL(KIND(1d0)),INTENT(in):: qn1               !< net all-wave radiation [W m-2]
     REAL(KIND(1d0)),INTENT(in):: qf                !< anthropogenic heat flux [W m-2]
+    REAL(KIND(1d0)),INTENT(in):: xWF !< daily mean water flux density [m3 s-1 m-2]
     REAL(KIND(1d0)),INTENT(in):: sfr(nsurf)        !< surface fraction (0-1) [-]
     REAL(KIND(1d0)),INTENT(in):: moist_surf(nsurf) !< non-dimensional surface wetness status (0-1) [-]
 
@@ -88,7 +89,7 @@ CONTAINS
          MetForcingData_grid(:,15)>0) & ! Sd
          .GE. 6
 
-    ! PRINT*, idQ
+    ! PRINT*, 'idQ',idQ
     IF ( idQ ) THEN
        ! given enough data, calculate coefficients of day `id`
        xid=id
@@ -101,10 +102,18 @@ CONTAINS
     DO is=1,nsurf
        !  IF ( sfr(is) > .001 ) THEN
        !   call AnOHM to calculate the coefs.
-       CALL AnOHM_coef(is,xid,Gridiv,MetForcingData_grid,moist_surf,EmissionsMethod,qf,& !input
+       ! if ( is ==1 ) then
+       !   print*, 'id in AnOHM',id
+       !
+       ! end if
+       CALL AnOHM_coef(is,xid,Gridiv,MetForcingData_grid,moist_surf,EmissionsMethod,qf,xWF,& !input
             alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&! input
             xa1(is),xa2(is),xa3(is))                         ! output
-       ! print*, 'AnOHM_coef are: ',xa1,xa2,xa3
+       ! IF ( is ==1 ) THEN
+       !    PRINT*, 'surf i:', is
+       !    PRINT*, 'AnOHM_coef are: ',xa1,xa2,xa3
+       ! END IF
+
        !  ELSE
        !     xa1(is  )=0.1
        !     xa2(is)=0.1
@@ -144,7 +153,7 @@ CONTAINS
   !! -# OHM coefficients of a given surface type: a1, a2 and a3
   SUBROUTINE AnOHM_coef(&
        sfc_typ,xid,xgrid,&!input
-       MetForcingData_grid,moist,EmissionsMethod,qf,& !input
+       MetForcingData_grid,moist,EmissionsMethod,qf,xWF,& !input
        alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&! input
        xa1,xa2,xa3)                         ! output
 
@@ -156,12 +165,13 @@ CONTAINS
     INTEGER,INTENT(in):: xgrid             !< grid id [-]
     INTEGER,INTENT(in):: EmissionsMethod !< AnthropHeat option [-]
 
-    REAL(KIND(1d0)),INTENT(in):: qf                !< anthropogenic heat flux [W m-2]
+    REAL(KIND(1d0)),INTENT(in)                :: qf                  !< anthropogenic heat flux [W m-2]
+    REAL(KIND(1d0)),INTENT(in)                :: xWF                 !< daily mean water flux density [m3 s-1 m-2]
     REAL(KIND(1d0)),INTENT(in),DIMENSION(:)   :: alb                 !< albedo [-]
     REAL(KIND(1d0)),INTENT(in),DIMENSION(:)   :: emis                !< emissivity [-]
-    REAL(KIND(1d0)),INTENT(in),DIMENSION(:)   :: cpAnOHM                  !< heat capacity [J m-3 K-1]
-    REAL(KIND(1d0)),INTENT(in),DIMENSION(:)   :: kkAnOHM                  !< thermal conductivity [W m-1 K-1]
-    REAL(KIND(1d0)),INTENT(in),DIMENSION(:)   :: chAnOHM                  !< bulk transfer coef [J m-3 K-1]
+    REAL(KIND(1d0)),INTENT(in),DIMENSION(:)   :: cpAnOHM             !< heat capacity [J m-3 K-1]
+    REAL(KIND(1d0)),INTENT(in),DIMENSION(:)   :: kkAnOHM             !< thermal conductivity [W m-1 K-1]
+    REAL(KIND(1d0)),INTENT(in),DIMENSION(:)   :: chAnOHM             !< bulk transfer coef [J m-3 K-1]
     REAL(KIND(1d0)),INTENT(in),DIMENSION(:)   :: moist               !< surface wetness status [-]
     REAL(KIND(1d0)),INTENT(in),DIMENSION(:,:) :: MetForcingData_grid !< met forcing array of grid
 
@@ -217,7 +227,14 @@ CONTAINS
     ! PRINT*, 'xgrid,grid_save',xgrid,grid_save
     ! PRINT*, 'sfc_typ',sfc_typ
     ! PRINT*, 'coeff_grid_day',coeff_grid_day(sfc_typ,:)
+    ! if ( sfc_typ==1 ) then
+    !   print*,'xid',xid
+    !   print*,'id_save',id_save
+    !   ! print*,'xgrid',xgrid
+    !   ! print*,'grid_save',grid_save
+    ! end if
     IF ( xid==id_save .AND. xgrid ==grid_save) THEN
+    ! IF ( .FALSE. ) THEN ! force triger coefs. calculation
        ! if coefficients have been calculated, just reload them
        !  print*, 'here no repetition'
        xa1=coeff_grid_day(sfc_typ,1)
@@ -228,17 +245,18 @@ CONTAINS
        !  PRINT*, 'surface:',sfc_typ
        !  PRINT*, 'xid',xid,id_save
 
-
+       ! print*, 'xWF before  AnOHM_Fc',xWF
        ! load forcing characteristics:
        CALL AnOHM_Fc(&
-            xid,MetForcingData_grid,EmissionsMethod,qf,& ! input
+            xid,MetForcingData_grid,EmissionsMethod,xWF,qf,& ! input
             ASd,mSd,tSd,ATa,mTa,tTa,tau,mWS,mWF,mAH)    ! output
-
+       ! print*, 'mWF & xWF here 1',mWF,xWF
        ! load forcing variables:
        CALL AnOHM_FcLoad(&
-            xid,MetForcingData_grid,EmissionsMethod,qf,& ! input
+            xid,MetForcingData_grid,EmissionsMethod,xWF,qf,& ! input
             Sd,Ta,RH,pres,WS,WF,AH,tHr)                 ! output
-
+       ! print*, 'xWF here 2',xWF
+       ! print*, 'WF here 2.1',WF
        ! load sfc. properties:
        xalb   = alb(sfc_typ)
        xemis  = emis(sfc_typ)
@@ -256,11 +274,20 @@ CONTAINS
             xalb,xemis,xcp,xk,xch,xmoist,    & ! input: sfc properties
             tSd,                             & ! input: peaking time of Sd in hour
             xBo)                               ! output: Bowen ratio
-       !  PRINT*, 'xBo after:',xBo
+       ! PRINT*, 'xBo after:',xBo
 
        !  calculate AnOHM coefficients
        SELECT CASE (sfc_typ)
        CASE (1:6) ! land surfaces
+          if ( sfc_typ==1 ) then
+            call r8vec_print(8,[ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH],'ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH')
+            call r8vec_print(6,[xalb,xemis,xcp,xk,xch,xBo],'xalb,xemis,xcp,xk,xch,xBo')
+            ! print*,'xcp:',xcp
+            ! print*,'xk:',xk
+            ! print*,'xch:',xch
+            ! print*,'mWF:',mWF
+            ! print*,'xBo:',xBo
+          end if
           CALL  AnOHM_coef_land_cal(&
                ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH,& ! input: forcing
                xalb,xemis,xcp,xk,xch,xBo,      & ! input: sfc properties
@@ -717,7 +744,7 @@ CONTAINS
 
   !========================================================================================
   SUBROUTINE AnOHM_Fc(&
-       xid,MetForcingData_grid,EmissionsMethod,qf,& ! input
+       xid,MetForcingData_grid,EmissionsMethod,xWF,qf,& ! input
        ASd,mSd,tSd,ATa,mTa,tTa,tau,mWS,mWF,mAH)    ! output
 
     IMPLICIT NONE
@@ -726,7 +753,8 @@ CONTAINS
     INTEGER,INTENT(in):: xid
     INTEGER,INTENT(in):: EmissionsMethod
     REAL(KIND(1d0)),INTENT(in),DIMENSION(:,:) ::MetForcingData_grid
-    REAL(KIND(1d0)),INTENT(in):: qf                !< anthropogenic heat flux [W m-2]
+    REAL(KIND(1d0)),INTENT(in):: qf  !< anthropogenic heat flux [W m-2]
+    REAL(KIND(1d0)),INTENT(in):: xWF !< daily mean water flux density [m3 s-1 m-2]
 
     !   output
     REAL(KIND(1d0)),INTENT(out):: ASd !< daily amplitude of solar radiation [W m-2]
@@ -752,9 +780,12 @@ CONTAINS
 
 
     ! load forcing variables:
-    CALL AnOHM_FcLoad(xid,MetForcingData_grid,EmissionsMethod,qf,Sd,Ta,RH,pres,WS,WF,AH,tHr)
+    ! print*, 'xWF here 3',xWF
+    CALL AnOHM_FcLoad(xid,MetForcingData_grid,EmissionsMethod,xWF,qf,Sd,Ta,RH,pres,WS,WF,AH,tHr)
+    ! print*, 'WF here 3.1',WF
     ! calculate forcing scales for AnOHM:
     CALL AnOHM_FcCal(Sd,Ta,WS,WF,AH,tHr,ASd,mSd,tSd,ATa,mTa,tTa,tau,mWS,mWF,mAH)
+    ! print*, 'mWF here 3.2',mWF
 
     ! CALL r8vec_print(SIZE(sd, dim=1),sd,'Sd')
     ! PRINT*, ASd,mSd,tSd
@@ -768,7 +799,7 @@ CONTAINS
   !========================================================================================
   !> load forcing series for AnOHM_FcCal
   SUBROUTINE AnOHM_FcLoad(&
-       xid,MetForcingData_grid,EmissionsMethod,qf,& ! input
+       xid,MetForcingData_grid,EmissionsMethod,xWF,qf,& ! input
        Sd,Ta,RH,pres,WS,WF,AH,tHr) ! output
 
     IMPLICIT NONE
@@ -777,7 +808,9 @@ CONTAINS
     INTEGER,INTENT(in):: xid !< day of year
     INTEGER,INTENT(in):: EmissionsMethod !< AnthropHeat option
     REAL(KIND(1d0)),INTENT(in),DIMENSION(:,:) ::MetForcingData_grid !< met forcing array of grid
-    REAL(KIND(1d0)),INTENT(in):: qf                !< anthropogenic heat flux [W m-2]
+    REAL(KIND(1d0)),INTENT(in):: xWF !< daily mean water flux density [m3 s-1 m-2]
+    REAL(KIND(1d0)),INTENT(in):: qf  !< anthropogenic heat flux [W m-2]
+
 
     !   output
     REAL(KIND(1d0)),DIMENSION(:),INTENT(out), ALLOCATABLE:: Sd  !< incoming solar radiation [W m-2]
@@ -852,7 +885,9 @@ CONTAINS
     RH   = subMet(:,4)
     pres = subMet(:,5)
     WS   = subMet(:,6)
-    WF   = 0          ! set as 0 for the moment
+    ! WF   = 0          ! set as 0 for the moment
+    ! print*, 'xWF before passed to WF',xWF
+    WF   = xWF          ! read in for test. 20180213, TS
     IF ( EmissionsMethod == 0 ) THEN
        AH = subMet(:,8)    ! read in from MetForcingData_grid,
     ELSE
@@ -993,14 +1028,14 @@ CONTAINS
     !   calculate the mean values:
     selX=PACK(WS, mask=SdMask)
     mWS = SUM(selX)/lenDay  ! mean value of WS
+    ! PRINT*, 'mWS:', mWS
 
     selX=PACK(WF, mask=SdMask)
     mWF = SUM(selX)/lenDay  ! mean value of WF
+    ! print*, 'mWF:', mWF
 
     selX=PACK(AH, mask=SdMask)
     mAH = SUM(selX)/lenDay  ! mean value of AH
-    ! PRINT*, 'mWS:', mWS
-    !     print*, 'mWF:', mWF
     !     print*, 'mAH:', mAH
     IF (ALLOCATED(SdMask)) DEALLOCATE(SdMask, stat=err)
     IF ( err/= 0) PRINT *, "SdMask: Deallocation request denied"
@@ -1423,7 +1458,7 @@ CONTAINS
                   Ts(i))! output: surface temperature, K
 
              ! convert K to degC
-             Ts(i)=MIN(Ts(i)-C2K,-40.)
+             Ts(i)=max(Ts(i)-C2K,-40.)
 
              ! calculate saturation specific humidity
              qs(i)=qsat_fn(Ts(i),pres(i))

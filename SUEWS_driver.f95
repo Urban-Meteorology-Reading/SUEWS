@@ -58,7 +58,7 @@ CONTAINS
        theta_bioCO2,timezone,TL,TrafficRate,TrafficUnits,&
        TraffProf_tstep,Ts5mindata_ir,tstep,veg_type,&
        WaterDist,WaterUseMethod,WetThresh,WU_Day,WUProfA_tstep,&
-       WUProfM_tstep,xsmd,Z,&
+       WUProfM_tstep,xWF,xsmd,Z,&
        datetimeLine,dataOutLineSUEWS,dataOutLineSnow,dataOutLineESTM,&!output
        DailyStateLine)!output
 
@@ -197,6 +197,7 @@ CONTAINS
     REAL(KIND(1D0)),INTENT(IN)::timezone
     REAL(KIND(1D0)),INTENT(IN)::TL
     REAL(KIND(1D0)),INTENT(IN)::TrafficUnits
+    REAL(KIND(1d0)),INTENT(in)::xWF !< daily mean water flux density [m3 s-1 m-2]
     REAL(KIND(1D0)),INTENT(IN)::xsmd
     REAL(KIND(1D0)),INTENT(IN)::Z
 
@@ -457,6 +458,17 @@ CONTAINS
     REAL(KIND(1D0))::PervFraction
     REAL(KIND(1D0))::NonWaterFraction
 
+    INTEGER ::  iprint
+
+    iprint =0
+
+    IF ( iprint == 1 ) THEN
+       PRINT*, ''
+       PRINT*, '******************** here in Fortran ********************'
+
+    END IF
+
+
     ! calculate tstep related VARIABLES
     CALL SUEWS_cal_tstep(&
          tstep,& ! input
@@ -471,6 +483,7 @@ CONTAINS
     CALL SUEWS_cal_weekday(&
          iy,id,lat,& !input
          dayofWeek_id) !output
+
 
     ! calculate dayofweek information
     CALL SUEWS_cal_DLS(&
@@ -491,7 +504,7 @@ CONTAINS
     ! Calculate sun position
     IF(Diagnose==1) WRITE(*,*) 'Calling NARP_cal_SunPosition...'
     CALL NARP_cal_SunPosition(&
-         real(iy,kind(1d0)),&!input:
+         REAL(iy,KIND(1d0)),&!input:
          dectime-tstep/2,&! sun position at middle of timestep before
          timezone,lat,lng,alt,&
          azimuth,zenith_deg)!output:
@@ -567,13 +580,20 @@ CONTAINS
          id,tstep,Diagnose,sfr,&
          OHM_coef,OHM_threshSW,OHM_threshWD,&
          soilmoist,soilstoreCap,state,nsh,SnowUse,DiagQS,&
-         HDD,MetForcingData_grid,Ts5mindata_ir,qf,qn1,&
+         HDD,MetForcingData_grid,Ts5mindata_ir,qf,qn1,xWF,&
          avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown,&
          bldgh,alb,emis,cpAnOHM,kkAnOHM,chAnOHM,EmissionsMethod,&
          Tair24HR,qn1_store,qn1_S_store,&!inout
          qn1_av_store,qn1_S_av_store,surf,&
          qn1_S,snowFrac,dataOutLineESTM,qs,&!output
          deltaQi,a1,a2,a3)
+
+    IF ( iprint == 1 ) THEN
+       PRINT*, 'id,it,imin',id,it,imin
+       PRINT*, 'after AnOHM, a1,a2,a3:',a1,a2,a3
+
+    END IF
+
 
 
     !==================Energy related to snow melting/freezing processes=======
@@ -747,6 +767,12 @@ CONTAINS
          DailyStateLine)!out
 
     !==============translation end ================
+    IF ( iprint == 1 ) THEN
+       PRINT*, '******************** end in Fortran ********************'
+       PRINT*, ''
+
+    END IF
+
 
   END SUBROUTINE SUEWS_cal_Main
   ! ================================================================================
@@ -1094,7 +1120,7 @@ CONTAINS
        id,tstep,Diagnose,sfr,&
        OHM_coef,OHM_threshSW,OHM_threshWD,&
        soilmoist,soilstoreCap,state,nsh,SnowUse,DiagQS,&
-       HDD,MetForcingData_grid,Ts5mindata_ir,qf,qn1,&
+       HDD,MetForcingData_grid,Ts5mindata_ir,qf,qn1,xWF,&
        avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown,&
        bldgh,alb,emis,cpAnOHM,kkAnOHM,chAnOHM,EmissionsMethod,&
        Tair24HR,qn1_store,qn1_S_store,&!inout
@@ -1134,6 +1160,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(-4:ndays, 6),INTENT(in)::HDD
     REAL(KIND(1d0)),INTENT(in)::qf
     REAL(KIND(1d0)),INTENT(in)::qn1
+    REAL(KIND(1d0)),INTENT(in)::xWF !< daily mean water flux density [m3 s-1 m-2]
     REAL(KIND(1d0)),INTENT(in)::avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown
     REAL(KIND(1d0)),INTENT(in)::bldgh
 
@@ -1241,7 +1268,7 @@ CONTAINS
     ! use AnOHM to calculate QS, TS 14 Mar 2016
     IF (StorageHeatMethod==3) THEN
        IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'
-       CALL AnOHM(qn1_use,qn1_store,qn1_av_store,qf,&
+       CALL AnOHM(qn1_use,qn1_store,qn1_av_store,qf,xWF,&
             MetForcingData_grid,state/surf(6,:),&
             alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&
             sfr,nsurf,nsh,EmissionsMethod,id,Gridiv,&
@@ -2547,6 +2574,35 @@ CONTAINS
 
   END FUNCTION square
 
+
+  SUBROUTINE square_x(x,xx)
+    IMPLICIT NONE
+    REAL(KIND(1d0)),PARAMETER::pNAN=9999
+    REAL(KIND(1d0)),PARAMETER::NAN=-999
+    REAL(KIND(1d0)),INTENT(in)::x
+    REAL(KIND(1d0))::xx
+
+    xx=x**2+nan/pNAN
+    xx=x**2
+
+  END SUBROUTINE  square_x
+
+
+  SUBROUTINE add(x1,x2,xx)
+    IMPLICIT NONE
+    ! REAL(KIND(1d0)),PARAMETER::pNAN=9999
+    ! REAL(KIND(1d0)),PARAMETER::NAN=-999
+    INTEGER,INTENT(in)::x1,x2
+    INTEGER,INTENT(out)::xx
+    ! integer::x1,x2,xx
+
+    ! xx=x**2+nan/pNAN
+    xx=x1+x2
+
+  END SUBROUTINE  add
+
+
+
   FUNCTION square_real(x) RESULT(xx)
     IMPLICIT NONE
     REAL,PARAMETER::pNAN=9999
@@ -2595,6 +2651,94 @@ CONTAINS
     ! print*, varList
 
   END SUBROUTINE output_name_n
+
+  SUBROUTINE get_name(i,name)
+    ! used by f2py module `SuPy` to handle output names
+    IMPLICIT NONE
+    ! the dimension is potentially incorrect,
+    ! which should be consistent with that in output module
+    ! CHARACTER(len = 50),DIMENSION(300,5),INTENT(out) :: names
+    ! CHARACTER(len = *),DIMENSION(300),INTENT(out) :: names
+    INTEGER,INTENT(in) :: i
+    CHARACTER(len = 15),INTENT(out) :: name
+
+    INTEGER :: n
+    n=SIZE(varList, dim=1)
+    IF ( i<n .AND.i>0  ) THEN
+       name   = TRIM(varList(i)%header)
+
+    ELSE
+       name   = ''
+
+    END IF
+
+
+  END SUBROUTINE get_name
+
+
+
+
+
+
+  ! SUBROUTINE get_name_c(m, c_string ) bind ( C, name="get_name_c" )
+  !
+  !   USE iso_c_binding, ONLY: C_CHAR, C_INT,c_null_char
+  !   IMPLICIT NONE
+  !   INTEGER,PARAMETER :: len_str=15
+  !   INTEGER(kind=C_INT),INTENT (in) :: m
+  !
+  !   CHARACTER (kind=c_char, len=1), DIMENSION (len_str), INTENT (out) :: c_string
+  !   CHARACTER (len=len_str) :: regular_string
+  !   INTEGER :: i,n
+  !   n=SIZE(varList, dim=1)
+  !
+  !   IF ( m<n .AND.m>0  ) THEN
+  !      regular_string   = TRIM(varList(m)%header)
+  !
+  !   ELSE
+  !      regular_string   = ''
+  !
+  !   END IF
+  !
+  !   ! regular_string = " "
+  !   loop_string: DO i=1, LEN_TRIM(regular_string)+1
+  !      IF ( i == LEN_TRIM(regular_string)+1 ) THEN
+  !         c_string (i)=c_null_char
+  !
+  !         EXIT loop_string
+  !      ELSE
+  !         c_string (i)=regular_string (i:i)
+  !         ! regular_string (i:i) = c_string (i)
+  !      END IF
+  !   END DO loop_string
+  !
+  !   ! write (*, *) ">", trim (regular_string), "<", len_trim (regular_string)
+  !
+  ! END SUBROUTINE get_name_c
+
+  ! SUBROUTINE get_name_c(i,name)
+  !   ! used by f2py module `SuPy` to handle output names
+  !   use, intrinsic :: iso_c_binding, only: c_int, c_char
+  !   IMPLICIT NONE
+  !   ! the dimension is potentially incorrect,
+  !   ! which should be consistent with that in output module
+  !   ! CHARACTER(len = 50),DIMENSION(300,5),INTENT(out) :: names
+  !   ! CHARACTER(len = *),DIMENSION(300),INTENT(out) :: names
+  !   INTEGER,INTENT(in) :: i
+  !   CHARACTER(kind=c_char,len = 15),INTENT(out) :: name
+  !
+  !   INTEGER :: n
+  !   n=SIZE(varList, dim=1)
+  !   IF ( i<n .AND.i>0  ) THEN
+  !      name   = TRIM(varList(i)%header)
+  !
+  !   ELSE
+  !      name   = ''
+  !
+  !   END IF
+  !
+  !
+  ! END SUBROUTINE get_name_c
 
 
   SUBROUTINE output_size(n)

@@ -64,7 +64,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ! REAL(KIND(1d0)):: idectime
   !real(kind(1d0)):: SnowDepletionCurve  !for SUEWS_Snow - not needed here (HCW 24 May 2016)
   ! REAL(KIND(1d0)):: LAI_wt
-  ! REAL(KIND(1d0))::xBo
+  REAL(KIND(1d0))::xWF=0
 
 
 
@@ -152,7 +152,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
        theta_bioCO2,timezone,TL,TrafficRate,TrafficUnits,&
        TraffProf_tstep,Ts5mindata_ir,tstep,veg_type,&
        WaterDist,WaterUseMethod,WetThresh,WU_Day,WUProfA_tstep,&
-       WUProfM_tstep,xsmd,Z,&
+       WUProfM_tstep,xWF,xsmd,Z,&
        datetimeLine,dataOutLineSUEWS,dataOutLineSnow,dataOutLineESTM,&!output
        DailyStateLine)!output
 

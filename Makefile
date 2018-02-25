@@ -8,15 +8,15 @@ ifeq ($(OS),Windows_NT)
 			STATIC = -static # mingw
 			STATICLIB =
 else
-			UNAME_S := $(shell uname -s)
-			ifeq ($(UNAME_S),Linux) # Linux
-											STATIC = -static-libgfortran -static-libgcc # single -static won't work on macOS
-											STATICLIB =
-			endif
-			ifeq ($(UNAME_S),Darwin) # macOS
-											STATIC = -static-libgfortran -static-libgcc # single -static won't work on macOS
-											STATICLIB = libquadmath.a # force-ship this static lib
-			endif
+	UNAME_S := $(shell uname -s)
+	ifeq ($(UNAME_S),Linux) # Linux
+		STATIC = -static-libgfortran -static-libgcc # single -static won't work on macOS
+		STATICLIB =
+	endif
+	ifeq ($(UNAME_S),Darwin) # macOS
+		STATIC = -static-libgfortran -static-libgcc # single -static won't work on macOS
+		STATICLIB = libquadmath.a # force-ship this static lib
+	endif
 endif
 
 CFLAGS = $(STATIC) -g -pg -Wall -Wtabs -fbounds-check -cpp -Wno-unused-dummy-argument -Wno-unused-variable \
@@ -89,12 +89,13 @@ OTHERS =  SUEWS_translate.o \
 					SUEWS_Initial.o \
 					SUEWS_AnthropogenicEmissions.o \
 					SUEWS_BiogenCO2.o \
-					SUEWS_SnowUpdate.o
+					SUEWS_SnowUpdate.o \
+					SUEWS_Calculations.o
 
 
 
 # modules under rapid development
-TEST =      SUEWS_Calculations.o
+TEST =      SUEWS_C_wrapper.o
 
 
 # Build main program - main uses MODULES and OTHERS

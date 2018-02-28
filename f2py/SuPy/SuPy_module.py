@@ -631,9 +631,15 @@ def load_SUEWS_Vars(dir_input):
 
 # look up properties according to code
 def lookup_code_sub(codeName, codeKey, codeValue):
+    # print ''
+    # print 'lookup_code_sub'
+    # print 1,codeName
+    # print 2,codeKey
+    # print 3,codeValue
+    # print ''
     str_lib = dict_Code2File[codeName].replace(
         '.txt', '').replace('SUEWS', 'lib')
-    str_code = '{:d}'.format(int(codeValue))
+    str_code = '{:d}'.format(int(np.unique(codeValue)))
     if codeKey == ':':
         cmd = '{lib}.loc[{code},:].tolist()'.format(lib=str_lib, code=str_code)
     else:
@@ -869,6 +875,7 @@ def init_SUEWS_dict(dir_start):  # return dict
                       'ity': 2,
                       'laicalcyes': 1,
                       'veg_type': 1,
+                      'diagnose':0,
                       'diagqn': 0,
                       'diagqs': 0}
     dict_ModConfig.update(dict_RunControl)
@@ -1008,7 +1015,7 @@ def init_SUEWS_dict_grid(dir_input, grid,
     lib_InitCond = load_SUEWS_nml(os.path.join(
         dir_input, 'initialconditions{site}_{year}.nml'.format(
             site=dict_ModConfig['filecode'],
-            year=int(df_gridSurfaceChar.loc[grid, 'year']))))
+            year=int(np.min(df_gridSurfaceChar.loc[grid, 'year'])))))
     # update default InitialCond with values set in namelist
     dict_InitCond.update(
         lib_InitCond.loc[:, 'initialconditions'].to_dict())

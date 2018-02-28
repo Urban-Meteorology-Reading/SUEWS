@@ -5,13 +5,13 @@ SUBROUTINE SUEWS_cal_RoughnessParameters(&
      EveTreeH,&
      DecTreeH,&
      porosity_id,&
-     FAIBldg,FAIEveTree,FAIDecTree,Z,&
+     FAIBldg,FAIEveTree,FAIDecTree,Z,z0,zd,&
      planF,&! output:
      Zh,Z0m,Zdm,ZZD)
   ! Get surface covers and frontal area fractions (LJ 11/2010)
   ! Last modified:
   ! TS  18 Sep 2017 - added explicit interface
-  ! HCW 08 Feb 2017 - fixed bug in Zh between grids, added default z0m, zdm
+  ! HCW 08 Feb 2017 - fixed bug in Zh between grids, added default Z0m, Zdm
   ! HCW 03 Mar 2015
   ! sg feb 2012 - made separate subroutine
   !--------------------------------------------------------------------------------
@@ -36,7 +36,9 @@ SUBROUTINE SUEWS_cal_RoughnessParameters(&
   REAL(KIND(1d0)), INTENT(in) ::EveTreeH
   REAL(KIND(1d0)), INTENT(in) ::DecTreeH
   REAL(KIND(1d0)), INTENT(in) ::porosity_id
-  REAL(KIND(1d0)), INTENT(in) ::FAIBldg,FAIEveTree,FAIDecTree,Z
+  REAL(KIND(1d0)), INTENT(in) ::FAIBldg,FAIEveTree,FAIDecTree
+  REAL(KIND(1d0)), INTENT(in) ::Z,Z0,Zd
+
 
   REAL(KIND(1d0)), INTENT(out) ::planF
   REAL(KIND(1d0)), INTENT(out) ::Zh
@@ -58,6 +60,10 @@ SUBROUTINE SUEWS_cal_RoughnessParameters(&
   Z0m4Grass = 0.02
   Z0m4BSoil = 0.002
   Z0m4Water = 0.0005
+  ! test initialisation
+  Z0m=z0*1.
+  ZZD=0.
+  Zdm=zd*1.
 
   !------------------------------------------------------------------------------
   !If total area of buildings and trees is larger than zero, use tree heights and building heights to calculate zH
@@ -87,20 +93,27 @@ SUBROUTINE SUEWS_cal_RoughnessParameters(&
      IF(areaZh /= 0) CALL ErrorHint(15,'In SUEWS_RoughnessParameters.f95, zh = 0 m but areaZh > 0',zh,areaZh,notUsedI)
      !Estimate z0 and zd using default values and surfaces that do not contribute to areaZh
      IF(areaZh /= 1)THEN
-        z0m = (z0m4Paved*sfr(PavSurf) + z0m4Grass*sfr(GrassSurf) + z0m4BSoil*sfr(BSoilSurf) + z0m4Water*sfr(WaterSurf))/(1-areaZh)
-        zdm = 0
-        CALL ErrorHint(15,'Setting z0m and zdm using default values',z0m,zdm,notUsedI)
+        Z0m = (z0m4Paved*sfr(PavSurf) + z0m4Grass*sfr(GrassSurf) + z0m4BSoil*sfr(BSoilSurf) + z0m4Water*sfr(WaterSurf))/(1-areaZh)
+        Zdm = 0
+        CALL ErrorHint(15,'Setting Z0m and Zdm using default values',Z0m,Zdm,notUsedI)
      ELSEIF(areaZh==1)THEN  !If, for some reason, Zh = 0 and areaZh == 1, assume height of 10 m and use rule-of-thumb
-        z0m = 1
-        zdm = 7
-        CALL ErrorHint(15,'Assuming mean height = 10 m, Setting z0m and zdm to default value',z0m,zdm,notUsedI)
+        Z0m = 1
+        Zdm = 7
+        CALL ErrorHint(15,'Assuming mean height = 10 m, Setting Z0m and Zdm to default value',Z0m,Zdm,notUsedI)
      ENDIF
   ENDIF
 
-  ZZD=Z-zdm
+
+  ZZD=Z-Zdm
+
+  IF(RoughLenMomMethod==1) THEN  !use z0, zd values provided in input file
+     Z0m=z0
+     Zdm=zd
+     ZZD=Z-zd
+  ENDIF
 
   ! Error messages if aerodynamic parameters negative
-  IF(z0m<0) CALL ErrorHint(14,'In SUEWS_RoughnessParameters.f95, z0 < 0 m.',z0m,notUsed,notUsedI)
-  IF(zdm<0) CALL ErrorHint(14,'In SUEWS_RoughnessParameters.f95, zd < 0 m.',zdm,notUsed,notUsedI)
+  IF(Z0m<0) CALL ErrorHint(14,'In SUEWS_RoughnessParameters.f95, z0 < 0 m.',Z0m,notUsed,notUsedI)
+  IF(Zdm<0) CALL ErrorHint(14,'In SUEWS_RoughnessParameters.f95, zd < 0 m.',Zdm,notUsed,notUsedI)
   IF(zzd<0) CALL ErrorHint(14,'In SUEWS_RoughnessParameters.f95, (z-zd) < 0 m.',zzd,notUsed,notUsedI)
 END SUBROUTINE SUEWS_cal_RoughnessParameters

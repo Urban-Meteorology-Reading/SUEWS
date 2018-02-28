@@ -2163,7 +2163,7 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
   CALL SUEWS_cal_RoughnessParameters(&
        RoughLenMomMethod,sfr,&!input
        bldgH,EveTreeH,DecTreeH,&
-       porosity(id),FAIBldg,FAIEveTree,FAIDecTree,Z,&
+       porosity(id),FAIBldg,FAIEveTree,FAIDecTree,Z,z0m_in,zdm_in,&
        planF,&!output
        Zh,Z0m,Zdm,ZZD)
 

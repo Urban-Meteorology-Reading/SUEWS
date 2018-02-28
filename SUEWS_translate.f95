@@ -66,7 +66,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   !real (Kind(1d0)):: FCskip = -9   !NULL value used for output to FileChoices
   REAL (KIND(1d0)):: FCskip = -999  !NULL value used for output to FileChoices	(changed by HCW 24 May 2016)
 
-  REAL(KIND(1d0)):: z0m_in, zdm_in  !Values of z0m and zdm provided in SiteSelect input file (do not get updated unlike z0d and z0m)
+  ! REAL(KIND(1d0)):: z0m_in, zdm_in  !Values of z0m and zdm provided in SiteSelect input file (do not get updated unlike z0d and z0m)
 
   CHARACTER(len=20):: grid_txt
   CHARACTER(len=4):: year_txt

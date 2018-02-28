@@ -58,7 +58,7 @@ CONTAINS
        theta_bioCO2,timezone,TL,TrafficRate,TrafficUnits,&
        TraffProf_tstep,Ts5mindata_ir,tstep,veg_type,&
        WaterDist,WaterUseMethod,WetThresh,WU_Day,WUProfA_tstep,&
-       WUProfM_tstep,xWF,xsmd,Z,&
+       WUProfM_tstep,xWF,xsmd,Z,Z0,Zd,&
        datetimeLine,dataOutLineSUEWS,dataOutLineSnow,dataOutLineESTM,&!output
        DailyStateLine)!output
 
@@ -200,6 +200,8 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::xWF !< daily mean water flux density [m3 s-1 m-2]
     REAL(KIND(1D0)),INTENT(IN)::xsmd
     REAL(KIND(1D0)),INTENT(IN)::Z
+    REAL(KIND(1D0)),intent(in)::Z0
+    REAL(KIND(1D0)),intent(in)::Zd
 
     INTEGER,DIMENSION(NVEGSURF),INTENT(IN)::LAIType
 
@@ -377,10 +379,10 @@ CONTAINS
     REAL(KIND(1D0))::wu_EveTr
     REAL(KIND(1D0))::wu_Grass
     REAL(KIND(1D0))::wu_m3
-    REAL(KIND(1D0))::Z0m
-    REAL(KIND(1D0))::Zdm
     REAL(KIND(1D0))::ZENITH_deg
     REAL(KIND(1D0))::Zh
+    REAL(KIND(1D0))::Z0m
+    REAL(KIND(1D0))::Zdm
 
 
     REAL(KIND(1D0)),DIMENSION(2)::SnowRemoval
@@ -497,7 +499,7 @@ CONTAINS
     CALL SUEWS_cal_RoughnessParameters(&
          RoughLenMomMethod,sfr,&!input
          bldgH,EveTreeH,DecTreeH,&
-         porosity(id),FAIBldg,FAIEveTree,FAIDecTree,Z,&
+         porosity(id),FAIBldg,FAIEveTree,FAIDecTree,Z,Z0,Zd,&
          planF,&!output
          Zh,Z0m,Zdm,ZZD)
 

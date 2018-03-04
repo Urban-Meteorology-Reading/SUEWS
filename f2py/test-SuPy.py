@@ -12,15 +12,21 @@ reload(sp)
 # initialise SUEWS settings
 # dir_input = './Input'
 dir_start = '../SampleRun'
-dict_mod_cfg, dict_state_init = sp.init_SUEWS_dict(dir_start)
-
+ser_mod_cfg, df_state_init = sp.init_SUEWS_pd(dir_start)
 # load met forcing
-filecode = dict_mod_cfg['filecode']
-tstep = dict_state_init[1]['tstep']
-metfile_pattern='Input/{}*{}*txt'.format(filecode, tstep / 60)
-list_file_MetForcing = glob.glob(os.path.join(dir_start, metfile_pattern))
+filecode, kdownzen, tstep_in = ser_mod_cfg[
+    ['filecode', 'kdownzen', 'resolutionfilesin']]
+tstep_mod, lat, lon, alt, timezone = df_state_init.iloc[0][
+    ['tstep', 'lat', 'lng', 'alt', 'timezone']]
+metfile_pattern = 'Input/{}*{}*txt'.format(filecode, tstep_in / 60)
+list_file_MetForcing = [f
+                        for f in glob.glob(os.path.join(
+                            dir_start, metfile_pattern))
+                        if 'ESTM' not in f]
 # load as DataFrame:
-df_forcing = sp.load_SUEWS_MetForcing_df(list_file_MetForcing[1])
+df_forcing = sp.load_SUEWS_MetForcing_df_resample(
+    list_file_MetForcing[0],
+    tstep_in, tstep_mod, lat, lon, alt, timezone,kdownzen)
 # load as dict (faster for simulation if performance is heavily concerned)
 # dict_forcing = sp.load_SUEWS_MetForcing_dict(list_file_MetForcing[1])
 # dict_forcing.keys()[-1]
@@ -29,13 +35,9 @@ df_forcing = sp.load_SUEWS_MetForcing_df(list_file_MetForcing[1])
 # main calulation:
 # compact form:
 # reload(sp)
-df_forcing_part = df_forcing.iloc[:8000]
-dict_forcing_part = df_forcing_part.to_dict('index')
-# dict_forcing_part['metforcingdata_grid'] = np.array(
-#     df_forcing_part.values, dtype=np.float, order='F')
-dict_state_init[1]['xwf']=0
-dict_output, dict_state = sp.run_suews(
-    df_forcing_part, {1: dict_state_init[1]})
+df_forcing_part = df_forcing.iloc[:288 * 1]
+df_state_init.loc[:, 'xwf'] = 0
+df_output, df_state = sp.run_suews_df(df_forcing_part, df_state_init)
 
 
 # post-processing of model ouptuts:
@@ -71,10 +73,9 @@ res_sim.rename(columns={'QS': 'QS_sim'}, inplace=True)
 res_comp = res_obs.copy()
 res_comp = res_obs.merge(res_sim, on='Dectime')
 res_comp.head()
-res_comp.plot(x='Dectime', y=['QS_obs', 'QS_sim'], kind='line',figsize=(10.5,3))
+res_comp.plot(x='Dectime', y=['QS_obs', 'QS_sim'],
+              kind='line', figsize=(10.5, 3))
 plt.show()
-
-
 
 
 #

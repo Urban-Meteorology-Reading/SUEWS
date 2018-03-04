@@ -576,7 +576,9 @@ dict_var2SiteSelect = {
             {'Code_Bsoil': 'WetThreshold'},
             {'Code_Water': 'WetThreshold'}],
     'year': 'Year',
-    'z': 'z'}
+    'z': 'z',
+    'z0': 'z0',
+    'zd': 'zd'}
 
 # expand dict_Code2File for retrieving surface characteristics
 dict_varSiteSelect2File = {
@@ -790,8 +792,6 @@ def dectime(timestamp):
 
 def resample_kdn(data_raw_kdn, tstep_mod, timezone, lat, lon, alt):
     # adjust solar radiation
-    # select valid ranges (daylight periods)
-    # lat, lon = (dict_state_init[1][var] for var in ['lat', 'lng'])
     datetime_mid_local = data_raw_kdn.index - timedelta(
         seconds=tstep_mod / 2)
     sol_elev = np.array([sd.cal_sunposition(
@@ -827,7 +827,8 @@ def resample_precip(data_raw_precip, tstep_mod, tstep_in):
 # resample input foring to tstep required by model
 
 
-def resample_forcing(data_raw, tstep_in, tstep_mod, lat, lon, alt, timezone):
+def resample_forcing(
+        data_raw, tstep_in, tstep_mod, lat, lon, alt, timezone, kdownzen):
     # reset index as timestamps
     data_raw.index = data_raw.loc[:, ['iy', 'id', 'it', 'imin']].apply(
         func_parse_date_row, 1)
@@ -850,8 +851,9 @@ def resample_forcing(data_raw, tstep_in, tstep_mod, lat, lon, alt, timezone):
         index=ix).bfill().ffill().dropna()
 
     # adjust solar radiation by zenith correction and total amount distribution
-    data_tstep["avkdn"] = resample_kdn(
-        data_tstep["avkdn"], tstep_mod, timezone, lat, lon, alt)
+    if kdownzen == 1:
+        data_tstep["avkdn"] = resample_kdn(
+            data_tstep["avkdn"], tstep_mod, timezone, lat, lon, alt)
 
     # correct rainfall
     data_tstep['precip'] = resample_precip(
@@ -870,7 +872,7 @@ def resample_forcing(data_raw, tstep_in, tstep_mod, lat, lon, alt, timezone):
 
 
 def load_SUEWS_MetForcing_df_resample(
-        fileX, tstep_in, tstep_mod, lat, lon, alt, timezone):
+        fileX, tstep_in, tstep_mod, lat, lon, alt, timezone, kdownzen):
     # load raw data
     df_forcing = pd.read_table(fileX, delim_whitespace=True,
                                comment='!',
@@ -906,7 +908,7 @@ def load_SUEWS_MetForcing_df_resample(
 
     # resample from tstep_in to tstep
     df_forcing_tstep = resample_forcing(
-        df_forcing, tstep_in, tstep_mod, lat, lon, alt, timezone)
+        df_forcing, tstep_in, tstep_mod, lat, lon, alt, timezone, kdownzen)
 
     # pack all records of `id` into `all` as required by AnOHM and others
     # df_grp = df_forcing_shift.groupby('id')
@@ -934,7 +936,74 @@ def load_SUEWS_MetForcing_df_resample(
     return df_merged
 
 
-def load_SUEWS_MetForcing_df(fileX):
+# def load_SUEWS_MetForcing_df(dir_start):
+#     df_forcing = pd.read_table(fileX, delim_whitespace=True,
+#                                comment='!',
+#                                error_bad_lines=True
+#                                # parse_dates={'datetime': [0, 1, 2, 3]},
+#                                # keep_date_col=True,
+#                                # date_parser=func_parse_date
+#                                ).dropna()
+#
+#     # convert unit
+#     df_forcing['press'] = df_forcing['press'] * 10.
+#
+#     # two datetime's
+#     # df_forcing_shift = df_forcing.copy()
+#     # df_forcing_shift.loc[:,
+#     #                      ['%' + 'iy', 'id', 'it', 'imin']] = (
+#     #     df_forcing_shift.loc[
+#     #         :, ['%' + 'iy', 'id', 'it', 'imin']
+#     #     ].shift(1).fillna(method='backfill'))
+#
+#     # pack all records of `id` into `all` as required by AnOHM and others
+#     # df_grp = df_forcing_shift.groupby('id')
+#     df_grp = df_forcing.groupby('id')
+#     dict_id_all = {xid: df_grp.get_group(xid)
+#                    for xid in df_forcing['id'].unique()}
+#     id_all = df_forcing['id'].apply(lambda xid: dict_id_all[xid])
+#     df_merged = df_forcing.merge(id_all.to_frame(name='all'),
+#                                  left_index=True,
+#                                  right_index=True)
+#
+#     # rename column names to conform with calling function
+#     df_merged = df_merged.rename(columns={
+#         '%' + 'iy': 'iy',
+#         'id': 'id',
+#         'it': 'it',
+#         'imin': 'imin',
+#         'Kdn': 'avkdn',
+#         'RH': 'avrh',
+#         'Wind': 'avu1',
+#         'fcld': 'fcld_obs',
+#         'lai_hr': 'lai_obs',
+#         'ldown': 'ldown_obs',
+#         'rain': 'precip',
+#         'press': 'press_hpa',
+#         'QH': 'qh_obs',
+#         'Q*': 'qn1_obs',
+#         'snow': 'snow_obs',
+#         'Td': 'temp_c',
+#         'all': 'metforcingdata_grid',
+#         'xsmd': 'xsmd'})
+#
+#     # print df_merged.columns
+#     # new columns for later use in main calculation
+#     df_merged[['iy', 'id', 'it', 'imin']] = df_merged[[
+#         'iy', 'id', 'it', 'imin']].astype(np.int64)
+#     df_merged['dectime'] = (df_merged['id'] +
+#                             (df_merged['it']
+#                              + df_merged['imin'] / 60.) / 24.)
+#     df_merged['id_prev_t'] = df_merged['id'].shift(1).fillna(method='backfill')
+#     df_merged['iy_prev_t'] = df_merged['iy'].shift(1).fillna(method='backfill')
+#
+#     # TODO: ts5mindata_ir needs to be read in from Ts files
+#     df_merged['ts5mindata_ir'] = df_merged['temp_c']
+#
+#     return df_merged
+
+
+def load_SUEWS_MetForcing_df_raw(fileX):
     df_forcing = pd.read_table(fileX, delim_whitespace=True,
                                comment='!',
                                error_bad_lines=True
@@ -1002,7 +1071,7 @@ def load_SUEWS_MetForcing_df(fileX):
 
 
 def load_SUEWS_MetForcing_dict(fileX):
-    rawdata_df = load_SUEWS_MetForcing_df(fileX)
+    rawdata_df = load_SUEWS_MetForcing_df_raw(fileX)
     # dict_met_forcing = rawdata_df.T.to_dict()
     dict_met_forcing = rawdata_df.to_dict('index')
     # dict_met_forcing.update(
@@ -1108,7 +1177,7 @@ def init_SUEWS_dict_grid(dir_input, grid,
                          '{}*{}*txt'.format(filecode, tstep / 60)))
         if 'ESTM' not in x_file]
     # load as DataFrame:
-    df_forcing = load_SUEWS_MetForcing_df(list_file_MetForcing[0])
+    df_forcing = load_SUEWS_MetForcing_df_raw(list_file_MetForcing[0])
     # # convert df_forcing to dict for later use
     # dict_MetForcing = df_forcing.T.to_dict()
     # define some met forcing determined variables:
@@ -1119,9 +1188,7 @@ def init_SUEWS_dict_grid(dir_input, grid,
     dict_InitCond = {
         'dayssincerain':  0,
         # `temp_c0` defaults to daily mean air temperature of the first day
-        # 'temp_c0':  df_forcing.loc[0, 'metforcingdata_grid']['Td'].mean(),
         'temp_c0':  df_forcing.loc[:(24 * nsh) - 1, 'temp_c'].mean(),
-        # 'temp_c0': nan,
         'leavesoutinitially':  int(nan),
         'gdd_1_0':  nan,
         'gdd_2_0':  nan,
@@ -1385,12 +1452,17 @@ def init_SUEWS_dict_grid(dir_input, grid,
     return dict_StateInit
 
 
-# convert dict_InitCond to DataFrame
-def init_SUEWS_df(dir_input):  # return pd.DataFrame
-    dict_InitCond = init_SUEWS_dict(dir_input)
-    df_InitCond = pd.DataFrame.from_dict(dict_InitCond).T
+# convert dict_InitCond to pandas Series and DataFrame
+def init_SUEWS_pd(dir_input):  # return pd.DataFrame
+    # dict_mod_cfg, dict_state_init = sp.init_SUEWS_dict(dir_start)
+    dict_mod_cfg, dict_state_init = init_SUEWS_dict(dir_input)
+    # ser_mod_cfg: all static model configuration info
+    ser_mod_cfg = pd.Series(dict_mod_cfg)
+    # df_state_init: initial conditions for SUEWS simulations
+    df_state_init = df.from_dict(dict_state_init).T
+    df_state_init.index.set_names('grid', inplace=True)
 
-    return df_InitCond
+    return ser_mod_cfg, df_state_init
 
 # input processing code end here
 ##############################################################################

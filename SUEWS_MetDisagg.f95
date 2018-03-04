@@ -253,6 +253,7 @@ CONTAINS
     ENDDO
 
     ! Adjust kdown disaggregation using zenith angle
+    print*, 'KdownZen now:',KdownZen
     IF(KdownZen == 1) THEN
        IF(DiagnoseDisagg==1) WRITE(*,*) 'Adjusting disaggregated kdown using zenith angle'
        Met_tt_kdownAdj(:) = Met_tt(:,15)
@@ -265,7 +266,8 @@ CONTAINS
        dectimeFast(:) = Met_tt(:,2) + Met_tt(:,3)/24.0 + Met_tt(:,4)/(60.0*24.0)
        idectime=dectimeFast-halftimestep! sun position at middle of timestep before
        DO i=1,(ReadLinesOrigMetDataMax*Nper)
-          CALL NARP_cal_SunPosition(Met_tt(i,2),idectime(i),timezone,lat,lng,alt,azimuth,zenith_deg)
+          CALL NARP_cal_SunPosition(Met_tt(i,1),idectime(i),timezone,lat,lng,alt,azimuth,zenith_deg)
+          print*, 'sun info:',Met_tt(i,1),idectime(i),timezone,lat,lng,alt,azimuth,zenith_deg
           ! If sun below horizon, set disaggregated kdown to zero
           IF(zenith_deg > 90) THEN
              !write(*,*) Met_tt(i,1:4)

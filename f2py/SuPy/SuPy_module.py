@@ -16,9 +16,12 @@ import f90nml
 from pandas import DataFrame as df
 from SUEWS_driver import suews_driver as sd
 from scipy import interpolate
-import collections
+# import collections
 import copy
 import glob
+from datetime import timedelta
+# import math
+# import random
 
 
 ######################################################################
@@ -766,6 +769,171 @@ def func_parse_date(year, doy, hour, min):
     return dt
 
 
+def func_parse_date_row(row):
+    [year, doy, hour, tmin] = row.loc[['iy', 'id', 'it', 'imin']]
+    # dt = datetime.datetime.strptime(
+    #     ' '.join([year, doy, hour, min]), '%Y %j %H %M')
+    dt = pd.to_datetime(' '.join(
+        [str(k) for k in [year, doy, hour, tmin]]),
+        format='%Y %j %H %M')
+    return dt
+
+
+# calculate decimal time
+def dectime(timestamp):
+    t = timestamp
+    dectime = t.dayofyear + (t.hour + (t.minute + t.second / 60.) / 60.) / 24
+    return dectime
+
+# resample solar radiation by zenith correction and total amount distribution
+
+
+def resample_kdn(data_raw_kdn, tstep_mod, timezone, lat, lon, alt):
+    # adjust solar radiation
+    # select valid ranges (daylight periods)
+    # lat, lon = (dict_state_init[1][var] for var in ['lat', 'lng'])
+    datetime_mid_local = data_raw_kdn.index - timedelta(
+        seconds=tstep_mod / 2)
+    sol_elev = np.array([sd.cal_sunposition(
+        t.year, dectime(t), timezone, lat, lon, alt)[-1]
+        for t in datetime_mid_local])
+    sol_elev_reset = np.zeros_like(sol_elev)
+    sol_elev_reset[sol_elev <= 90] = 1.
+    data_tstep_kdn_adj = sol_elev_reset * data_raw_kdn.copy()
+
+    # rescale daily amounts
+    avg_raw = data_raw_kdn.resample('D').mean()
+    avg_tstep = data_tstep_kdn_adj.resample('D').mean()
+    ratio_SWdown = (avg_raw / avg_tstep).reindex(
+        index=avg_tstep.index).resample(
+        '{tstep}S'.format(tstep=tstep_mod)).mean().fillna(method='pad')
+    data_tstep_kdn_adj = ratio_SWdown * \
+        data_tstep_kdn_adj.fillna(method='pad')
+
+    return data_tstep_kdn_adj
+
+# correct precipitation by even redistribution over resampled periods
+
+
+def resample_precip(data_raw_precip, tstep_mod, tstep_in):
+    ratio_precip = 1. * tstep_mod / tstep_in
+    data_tstep_precip_adj = ratio_precip * data_raw_precip.copy().shift(
+        -tstep_in + tstep_mod, freq='S').resample(
+        '{tstep}S'.format(tstep=tstep_mod)).mean().interpolate(
+        method='polynomial', order=0)
+    data_tstep_precip_adj = data_tstep_precip_adj.fillna(value=0.)
+    return data_tstep_precip_adj
+
+# resample input foring to tstep required by model
+
+
+def resample_forcing(data_raw, tstep_in, tstep_mod, lat, lon, alt, timezone):
+    # reset index as timestamps
+    data_raw.index = data_raw.loc[:, ['iy', 'id', 'it', 'imin']].apply(
+        func_parse_date_row, 1)
+    # shift by half-tstep_in to generate a time series with instantaneous
+    # values
+    data_raw_shift = data_raw.copy().shift(-tstep_in / 2, freq='S')
+
+    # downscale input data to desired time step
+    data_raw_tstep = data_raw_shift.resample(
+        '{tstep}S'.format(tstep=tstep_mod)).interpolate(
+        method='polynomial', order=1).rolling(
+        window=2, center=False).mean()
+
+    # reindex data_tstep to valid range
+    ix = pd.date_range(
+        data_raw.index[0] - timedelta(seconds=tstep_in - tstep_mod),
+        data_raw.index[-1],
+        freq='{tstep}S'.format(tstep=tstep_mod))
+    data_tstep = data_raw_tstep.copy().reindex(
+        index=ix).bfill().ffill().dropna()
+
+    # adjust solar radiation by zenith correction and total amount distribution
+    data_tstep["avkdn"] = resample_kdn(
+        data_tstep["avkdn"], tstep_mod, timezone, lat, lon, alt)
+
+    # correct rainfall
+    data_tstep['precip'] = resample_precip(
+        data_raw['precip'], tstep_mod, tstep_in)
+
+    # correct temporal information
+    data_tstep['iy'] = data_tstep.index.year
+    data_tstep['id'] = data_tstep.index.dayofyear
+    data_tstep['it'] = data_tstep.index.hour
+    data_tstep['imin'] = data_tstep.index.minute
+
+    # reset index with numbers
+    data_tstep_out = data_tstep.copy().reset_index(drop=True)
+
+    return data_tstep_out
+
+
+def load_SUEWS_MetForcing_df_resample(
+        fileX, tstep_in, tstep_mod, lat, lon, alt, timezone):
+    # load raw data
+    df_forcing = pd.read_table(fileX, delim_whitespace=True,
+                               comment='!',
+                               error_bad_lines=True
+                               # parse_dates={'datetime': [0, 1, 2, 3]},
+                               # keep_date_col=True,
+                               # date_parser=func_parse_date
+                               ).dropna()
+
+    # convert unit
+    df_forcing['press'] = df_forcing['press'] * 10.
+
+    # rename column names to conform with calling function
+    df_forcing = df_forcing.rename(columns={
+        '%' + 'iy': 'iy',
+        'id': 'id',
+        'it': 'it',
+        'imin': 'imin',
+        'Kdn': 'avkdn',
+        'RH': 'avrh',
+        'Wind': 'avu1',
+        'fcld': 'fcld_obs',
+        'lai_hr': 'lai_obs',
+        'ldown': 'ldown_obs',
+        'rain': 'precip',
+        'press': 'press_hpa',
+        'QH': 'qh_obs',
+        'Q*': 'qn1_obs',
+        'snow': 'snow_obs',
+        'Td': 'temp_c',
+        # 'all': 'metforcingdata_grid',
+        'xsmd': 'xsmd'})
+
+    # resample from tstep_in to tstep
+    df_forcing_tstep = resample_forcing(
+        df_forcing, tstep_in, tstep_mod, lat, lon, alt, timezone)
+
+    # pack all records of `id` into `all` as required by AnOHM and others
+    # df_grp = df_forcing_shift.groupby('id')
+    df_grp = df_forcing_tstep.groupby('id')
+    dict_id_all = {xid: df_grp.get_group(xid)
+                   for xid in df_forcing_tstep['id'].unique()}
+    id_all = df_forcing_tstep['id'].apply(lambda xid: dict_id_all[xid])
+    df_merged = df_forcing_tstep.merge(id_all.to_frame(name='metforcingdata_grid'),
+                                       left_index=True,
+                                       right_index=True)
+
+    # print df_merged.columns
+    # new columns for later use in main calculation
+    df_merged[['iy', 'id', 'it', 'imin']] = df_merged[[
+        'iy', 'id', 'it', 'imin']].astype(np.int64)
+    df_merged['dectime'] = (df_merged['id'] +
+                            (df_merged['it']
+                             + df_merged['imin'] / 60.) / 24.)
+    df_merged['id_prev_t'] = df_merged['id'].shift(1).fillna(method='backfill')
+    df_merged['iy_prev_t'] = df_merged['iy'].shift(1).fillna(method='backfill')
+
+    # TODO: ts5mindata_ir needs to be read in from Ts files
+    df_merged['ts5mindata_ir'] = df_merged['temp_c']
+
+    return df_merged
+
+
 def load_SUEWS_MetForcing_df(fileX):
     df_forcing = pd.read_table(fileX, delim_whitespace=True,
                                comment='!',
@@ -875,7 +1043,7 @@ def init_SUEWS_dict(dir_start):  # return dict
                       'ity': 2,
                       'laicalcyes': 1,
                       'veg_type': 1,
-                      'diagnose':0,
+                      'diagnose': 0,
                       'diagqn': 0,
                       'diagqs': 0}
     dict_ModConfig.update(dict_RunControl)
@@ -1236,8 +1404,8 @@ def init_SUEWS_df(dir_input):  # return pd.DataFrame
 
 # 1. calculation code for one time step
 # store these lists for later use
-list_var_input  = get_args_suews()['var_input']
-list_var_inout  = get_args_suews()['var_inout']
+list_var_input = get_args_suews()['var_input']
+list_var_inout = get_args_suews()['var_inout']
 list_var_output = get_args_suews()['var_output']
 set_var_input = {list_var_output}
 set_var_inout = {list_var_inout}
@@ -1659,3 +1827,85 @@ def conv2PyData(df_x):
         dict_x_nat = df(**dict_x).to_dict()
 
     return dict_x_nat
+
+
+# functions for forcing resampling
+#
+# def EquationOfTime(day):
+#     b = (2 * math.pi / 364.0) * (day - 81)
+#     return (9.87 * math.sin(2 * b)) - (7.53 * math.cos(b)) - (1.5 * math.sin(b))
+#
+#
+# # r is earth radius vector [astronomical units]
+# def GetAberrationCorrection(radius_vector):
+#     return -20.4898 / (3600.0 * radius_vector)
+#
+#
+# def GetAltitudeFast(latitude_deg, longitude_deg, utc_datetime):
+#     # expect 19 degrees for
+#     # solar.GetAltitude(42.364908,-71.112828,datetime.datetime(2007, 2, 18,
+#     # 20, 13, 1, 130320))
+#
+#     day = GetDayOfYear(utc_datetime)
+#     declination_rad = math.radians(GetDeclination(day))
+#     latitude_rad = math.radians(latitude_deg)
+#     hour_angle = GetHourAngle(utc_datetime, longitude_deg)
+#
+#     first_term = math.cos(
+#         latitude_rad) * math.cos(declination_rad) * math.cos(math.radians(hour_angle))
+#     second_term = math.sin(latitude_rad) * math.sin(declination_rad)
+#     return math.degrees(math.asin(first_term + second_term))
+#
+#
+# def GetCoefficient(jme, constant_array):
+#     return sum(
+#         [constant_array[i - 1][0] * math.cos(constant_array[i - 1][1] + (constant_array[i - 1][2] * jme)) for i in
+#          range(len(constant_array))])
+#
+#
+# def GetDayOfYear(utc_datetime):
+#     year_start = datetime(
+#         utc_datetime.year, 1, 1, tzinfo=utc_datetime.tzinfo)
+#     delta = (utc_datetime - year_start)
+#     return delta.days
+#
+#
+# def GetDeclination(day):
+#     return 23.45 * math.sin((2 * math.pi / 365.0) * (day - 81))
+#
+#
+# def GetHourAngle(utc_datetime, longitude_deg):
+#     solar_time = GetSolarTime(longitude_deg, utc_datetime)
+#     return 15 * (12 - solar_time)
+#
+#
+# def GetSolarTime(longitude_deg, utc_datetime):
+#     day = GetDayOfYear(utc_datetime)
+#     return (((utc_datetime.hour * 60) + utc_datetime.minute + (4 * longitude_deg) + EquationOfTime(day)) / 60)
+#
+#
+# def random_x_N(x, N):
+#     list_N = np.zeros(N)
+#     pos = random.sample(np.arange(N), x)
+#     list_N[pos] = 1
+#     return list_N
+#
+#
+# # randomly distribute rainfall in rainAmongN sub-intervals
+# def process_rainAmongN(rain, rainAmongN):
+#     if rainAmongN <= 3:
+#         scale = 3. / rainAmongN
+#     else:
+#         scale = 1.
+#
+#     rain_proc = rain.copy()
+#     rain_sub = rain_proc[rain_proc > 0]
+#     rain_sub_ind = rain_sub.groupby(rain_sub).groups.values()
+#     rain_sub_indx = np.array(
+#         [x for x in rain_sub_ind if len(x) == 3]).flatten()
+#     rain_sub = rain_proc[rain_sub_indx]
+#     rain_sub = np.array([scale * random_x_N(rainAmongN, 3) * sub
+#                          for sub in rain_sub.values.reshape(-1, 3)])
+#     rain_proc[rain_sub_indx] = rain_sub.flatten()
+#
+#     return rain_proc

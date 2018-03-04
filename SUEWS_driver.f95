@@ -200,8 +200,8 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::xWF !< daily mean water flux density [m3 s-1 m-2]
     REAL(KIND(1D0)),INTENT(IN)::xsmd
     REAL(KIND(1D0)),INTENT(IN)::Z
-    REAL(KIND(1D0)),intent(in)::Z0
-    REAL(KIND(1D0)),intent(in)::Zd
+    REAL(KIND(1D0)),INTENT(in)::Z0
+    REAL(KIND(1D0)),INTENT(in)::Zd
 
     INTEGER,DIMENSION(NVEGSURF),INTENT(IN)::LAIType
 
@@ -2756,6 +2756,23 @@ CONTAINS
     n=SIZE(varList, dim=1)
 
   END SUBROUTINE output_size
+
+  SUBROUTINE cal_SunPosition(&
+       year,&!input:
+       idectime,&! sun position at middle of timestep before
+       UTC_offset,lat,lng,alt,&
+       sun_azimuth_deg,sun_zenith_deg)!output:
+    IMPLICIT NONE
+    REAL(KIND(1D0)),INTENT(in) :: year,idectime,UTC_offset,lat,lng,alt
+    REAL(KIND(1D0)),INTENT(out) ::sun_azimuth_deg,sun_zenith_deg
+
+    CALL NARP_cal_SunPosition(&
+         year,&!input:
+         idectime,&! sun position at middle of timestep before
+         UTC_offset,lat,lng,alt,&
+         sun_azimuth_deg,sun_zenith_deg)!output:
+
+  END SUBROUTINE cal_SunPosition
 
   ! SUBROUTINE output_names(names)
   !   ! used by f2py module `SuPy` to handle output names

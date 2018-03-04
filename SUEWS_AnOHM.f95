@@ -234,7 +234,7 @@ CONTAINS
     !   ! print*,'grid_save',grid_save
     ! end if
     IF ( xid==id_save .AND. xgrid ==grid_save) THEN
-    ! IF ( .FALSE. ) THEN ! force triger coefs. calculation
+       ! IF ( .FALSE. ) THEN ! force triger coefs. calculation
        ! if coefficients have been calculated, just reload them
        !  print*, 'here no repetition'
        xa1=coeff_grid_day(sfc_typ,1)
@@ -267,27 +267,39 @@ CONTAINS
 
        !  PRINT*, 'xBo before:',xBo
        ! calculate Bowen ratio:
-       CALL AnOHM_Bo_cal(&
-            sfc_typ,&
-            Sd,Ta,RH,pres,tHr,               & ! input: forcing
-            ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH, & ! input: forcing
-            xalb,xemis,xcp,xk,xch,xmoist,    & ! input: sfc properties
-            tSd,                             & ! input: peaking time of Sd in hour
-            xBo)                               ! output: Bowen ratio
+       ! CALL AnOHM_Bo_cal(&
+       !      sfc_typ,&
+       !      Sd,Ta,RH,pres,tHr,               & ! input: forcing
+       !      ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH, & ! input: forcing
+       !      xalb,xemis,xcp,xk,xch,xmoist,    & ! input: sfc properties
+       !      tSd,                             & ! input: peaking time of Sd in hour
+       !      xBo)                               ! output: Bowen ratio
+       ! calculate Bowen ratio and mean water flux:
+       CALL AnOHM_BoWF_cal(               &
+            sfc_typ,                      & ! surface type
+            Sd,Ta,RH,pres,tHr,            & ! input: forcing
+            ASd,mSd,ATa,mTa,tau,mWS,mAH,  & ! input: forcing
+            xalb,xemis,xcp,xk,xch,xmoist, & ! input: sfc properties
+            tSd,                          & ! input: peaking time of Sd in hour
+            xBo,mWF) ! output: Bowen ratio
        ! PRINT*, 'xBo after:',xBo
 
        !  calculate AnOHM coefficients
        SELECT CASE (sfc_typ)
        CASE (1:6) ! land surfaces
-          if ( sfc_typ==1 ) then
-            call r8vec_print(8,[ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH],'ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH')
-            call r8vec_print(6,[xalb,xemis,xcp,xk,xch,xBo],'xalb,xemis,xcp,xk,xch,xBo')
-            ! print*,'xcp:',xcp
-            ! print*,'xk:',xk
-            ! print*,'xch:',xch
-            ! print*,'mWF:',mWF
-            ! print*,'xBo:',xBo
-          end if
+          ! if ( sfc_typ==1 ) then
+          ! PRINT*, ''
+          ! PRINT*, 'sfc:',sfc_typ
+          ! PRINT*, 'id:',xid
+          ! CALL r8vec_print(8,[ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH],'ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH')
+          ! CALL r8vec_print(6,[xalb,xemis,xcp,xk,xch,xBo],'xalb,xemis,xcp,xk,xch,xBo')
+          ! PRINT*, 'end sfc:',sfc_typ
+          ! print*,'xcp:',xcp
+          ! print*,'xk:',xk
+          ! print*,'xch:',xch
+          ! print*,'mWF:',mWF
+          ! print*,'xBo:',xBo
+          ! end if
           CALL  AnOHM_coef_land_cal(&
                ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH,& ! input: forcing
                xalb,xemis,xcp,xk,xch,xBo,      & ! input: sfc properties
@@ -1228,7 +1240,7 @@ CONTAINS
     IF ( err/= 0) PRINT *, "fvec: Allocation request denied"
 
     ! pass initial Bowen ratio:
-    xBo=10
+    xBo=1
     x(1)= xBo
 
     ! NB: set these numbers properly if any changes made to this subroutine:
@@ -1271,14 +1283,14 @@ CONTAINS
     prms(nPrm+1:m)=PACK((/Sd,Ta,RH,pres,tHr/), &
          mask=PACK(SPREAD(maskDay, dim=2, ncopies=nVar),.TRUE.))
 
-    ! PRINT*, 'xBo before solve:',x(1)
-    ! PRINT*, 'fvec before solve:',fvec(1)
-    ! PRINT*, 'xSM:',xSM
+    PRINT*, 'xBo before solve:',x(1)
+    PRINT*, 'fvec before solve:',fvec(1)
+    PRINT*, 'xSM:',xSM
     ! solve nonlinear equation fcnBo(x)=0
     CALL hybrd1(fcnBo,n,x,fvec,tol,info,m,prms)
     xBo=x(1)
-    ! PRINT*, 'xBo after solve: ',x(1)
-    ! PRINT*, 'fvec after solve:',fvec(1)
+    PRINT*, 'xBo after solve: ',x(1)
+    PRINT*, 'fvec after solve:',fvec(1)
 
     IF (ALLOCATED(x)) DEALLOCATE(x, stat=err)
     IF ( err/= 0) PRINT *, "x: Deallocation request denied"
@@ -1444,7 +1456,7 @@ CONTAINS
 
        ! calculate sums of QH and QE series in the daytime
        IF ( xSM==0 ) THEN
-          xBo=1000 ! extremely arid
+          xBo=1000 ! extremely dry
        ELSE
           ! PRINT*, 'lenDay',lenDay
           DO i = 1, lenDay, 1
@@ -1458,7 +1470,7 @@ CONTAINS
                   Ts(i))! output: surface temperature, K
 
              ! convert K to degC
-             Ts(i)=max(Ts(i)-C2K,-40.)
+             Ts(i)=MAX(Ts(i)-C2K,-40.)
 
              ! calculate saturation specific humidity
              qs(i)=qsat_fn(Ts(i),pres(i))
@@ -1495,6 +1507,9 @@ CONTAINS
 
        ! f(Bo)-Bo==0
        fvec(1)=x(1)-xBo
+       ! PRINT*,''
+       ! PRINT*, 'xBo for optimisation:',x(1)
+       ! PRINT*, 'xBo by optimisation:',xBo
 
        ! deallocate arrays
        IF (ALLOCATED(dayArray)) DEALLOCATE(dayArray, stat=err)
@@ -1521,6 +1536,399 @@ CONTAINS
 
   END SUBROUTINE fcnBo
   !========================================================================================
+
+  !========================================================================================
+  !> estimate daytime Bowen ratio for calculation of AnOHM coefficients
+  SUBROUTINE AnOHM_BoWF_cal(       &
+       sfc_typ,                    & ! surface type
+       Sd,Ta,RH,pres,tHr,          & ! input: forcing
+       ASd,mSd,ATa,mTa,tau,mWS,mAH,& ! input: forcing
+       xalb,xemis,xcp,xk,xch,xSM,  & ! input: sfc properties
+       tSd,                        & ! input: peaking time of Sd in hour
+       xBo,mWF) ! output: Bowen ratio
+
+
+    IMPLICIT NONE
+
+    ! input:
+    INTEGER, INTENT(in) :: sfc_typ ! unknown Bowen ratio
+
+    ! input: daytime series
+    REAL(kind = 8), INTENT(in), DIMENSION(:) ::Sd  !< incoming solar radiation [W m-2]
+    REAL(kind = 8), INTENT(in), DIMENSION(:) ::Ta  !< air temperature [degC]
+    REAL(kind = 8), INTENT(in), DIMENSION(:) ::RH  !< relative humidity [%]
+    REAL(kind = 8), INTENT(in), DIMENSION(:) ::pres!< Atmospheric pressure [mbar]
+    REAL(kind = 8), INTENT(in), DIMENSION(:) ::tHr !< local time  [hr]
+
+    ! input: forcing scales
+    REAL(KIND(1d0)),INTENT(in):: ASd !< daily amplitude of solar radiation [W m-2]
+    REAL(KIND(1d0)),INTENT(in):: mSd !< daily mean solar radiation [W m-2]
+    REAL(KIND(1d0)),INTENT(in):: tSd !< local peaking time of solar radiation [hr]
+    REAL(KIND(1d0)),INTENT(in):: ATa !< daily amplitude of air temperature [degC]
+    REAL(KIND(1d0)),INTENT(in):: mTa !< daily mean air temperature [degC]
+    REAL(KIND(1d0)),INTENT(in):: tau !< phase lag between Sd and Ta (Ta-Sd) [rad]
+    REAL(KIND(1d0)),INTENT(in):: mWS !< daily mean wind speed [m s-1]
+    REAL(KIND(1d0)),INTENT(in):: mAH !< daily mean anthropogenic heat flux [W m-2]
+
+    ! input: surface properties
+    REAL(KIND(1d0)),INTENT(in) :: xalb  !< albedo [-]
+    REAL(KIND(1d0)),INTENT(in) :: xemis !< emissivity [-]
+    REAL(KIND(1d0)),INTENT(in) :: xcp   !< heat capacity [J m-3 K-1]
+    REAL(KIND(1d0)),INTENT(in) :: xk    !< thermal conductivity [W m-1 K-1]
+    REAL(KIND(1d0)),INTENT(in) :: xch   !< bulk transfer coef [J m-3 K-1]
+    REAL(KIND(1d0)),INTENT(in) :: xSM   !< surface moisture status [-]
+
+    ! output:
+    REAL(kind = 8),INTENT(out) :: xBo ! unknown Bowen ratio [-]
+    REAL(kind = 8),INTENT(out) :: mWF !< daily mean underground moisture flux [m3 s-1 m-2]
+
+    ! EXTERNAL fcnBo
+
+    REAL(kind=8), ALLOCATABLE :: x(:),fvec(:),prms(:)
+
+    INTEGER :: lenDay,n,m,info,err,nVar,nPrm
+    LOGICAL, DIMENSION(:), ALLOCATABLE :: maskDay
+    REAL(kind=8) :: tol=1E-20
+
+    ! LOGICAL, ALLOCATABLE,DIMENSION(:) :: metMask
+
+    ! daytime mask
+    ALLOCATE(maskDay(SIZE(sd)),stat=err)
+    maskDay=sd>5
+    ! length of daytime series
+    lenDay=SIZE(PACK(sd, mask=maskDay), dim=1)
+    ! ! daytime mask
+    ! IF (ALLOCATED(metMask)) DEALLOCATE(metMask, stat=err)
+    ! ALLOCATE(metMask(lenDay))
+    ! metMask=(Sd>0)
+
+
+    ! assign x vector:
+    n=2
+    ALLOCATE(x(n), stat=err)
+    IF ( err/= 0) PRINT *, "x: Allocation request denied"
+    ALLOCATE(fvec(n), stat=err)
+    IF ( err/= 0) PRINT *, "fvec: Allocation request denied"
+
+    ! pass initial Bowen ratio:
+    xBo=1
+    mWF=1.e-6
+    x(1)= xBo
+    x(2)= mWF
+
+    ! NB: set these numbers properly if any changes made to this subroutine:
+    ! number of parameters to pass:
+    nPrm=16
+    ! number of met variables to pass:
+    nVar=5
+    ! length of x vector that holds unknown and parameters
+    m=nPrm+nVar*lenDay
+
+    ALLOCATE(prms(m), stat=err)
+    IF ( err/= 0) PRINT *, "prms: Allocation request denied"
+
+    ! pass forcing scales:
+    prms(1)=ASd
+    prms(2)=mSd
+    prms(3)=ATa
+    prms(4)=mTa
+    prms(5)=tau
+    prms(6)=mWS
+    ! prms(7)=mWF
+    prms(8)=mAH
+
+    ! pass sfc. property scales:
+    prms(9)=xalb
+    prms(10)=xemis
+    prms(11)=xcp
+    prms(12)=xk
+    prms(13)=xch
+    prms(14)=xSM
+
+    ! pass tSd:
+    prms(15)=tSd
+
+    ! pass tSd:
+    prms(16)=sfc_typ*1.0
+
+
+    ! extract daytime series
+    prms(nPrm+1:m)=PACK((/Sd,Ta,RH,pres,tHr/), &
+         mask=PACK(SPREAD(maskDay, dim=2, ncopies=nVar),.TRUE.))
+
+    ! PRINT*, 'xBo before solve:',x(1)
+    ! PRINT*, 'fvec before solve:',fvec(1)
+    ! PRINT*, 'xSM:',xSM
+    ! solve nonlinear equation fcnBo(x)=0
+    CALL hybrd1(fcnBowf,n,x,fvec,tol,info,m,prms)
+    xBo=x(1)
+    mWF=x(2)
+    ! PRINT*, 'xBo after solve: ',x(1)
+    ! PRINT*, 'fvec after solve:',fvec(1)
+
+    IF (ALLOCATED(x)) DEALLOCATE(x, stat=err)
+    IF ( err/= 0) PRINT *, "x: Deallocation request denied"
+    IF (ALLOCATED(fvec)) DEALLOCATE(fvec, stat=err)
+    IF ( err/= 0) PRINT *, "fvec: Deallocation request denied"
+    IF (ALLOCATED(prms)) DEALLOCATE(prms, stat=err)
+    IF ( err/= 0) PRINT *, "prms: Deallocation request denied"
+
+  END SUBROUTINE AnOHM_BoWF_cal
+  !========================================================================================
+
+
+
+  !========================================================================================
+  !> this fucntion will construct an equaiton for Bo&WF calculation
+  SUBROUTINE fcnBoWF( n, x, fvec, iflag, m, prms )
+
+    IMPLICIT NONE
+    !    Input, external FCN, the name of the user-supplied subroutine which
+    !    calculates the functions.  The routine should have the form:
+    !      subroutine fcn ( n, x, fvec, iflag )
+    INTEGER ( kind = 4 ):: n
+    INTEGER ( kind = 4 ):: m
+    INTEGER ( kind = 4 ):: iflag
+    REAL ( kind = 8 ):: fvec(n)
+    REAL ( kind = 8 ):: x(n) ! x(1) as unknown Bo
+    REAL ( kind = 8 ):: prms(m) ! prms(i) used for passing parameters
+
+    ! the unknow: Bowen ratio
+    REAL(kind = 8):: xBo
+
+    ! forcing scales
+    REAL(kind = 8):: ASd
+    REAL(kind = 8):: mSd
+    REAL(kind = 8):: ATa
+    REAL(kind = 8):: mTa
+    REAL(kind = 8):: tau
+    REAL(kind = 8):: mWS
+    REAL(kind = 8):: mWF
+    REAL(kind = 8):: mAH
+
+    ! sfc. property scales
+    REAL(kind = 8):: xalb
+    REAL(kind = 8):: xemis
+    REAL(kind = 8):: xcp
+    REAL(kind = 8):: xk
+    REAL(kind = 8):: xch
+
+    ! peaking time of Sd in hour
+    REAL(kind = 8)::tSd
+
+    ! surface moisture status [-]
+    REAL(kind = 8)::xSM
+
+    ! mean daytime QE [W m-2]
+    REAL(kind = 8)::mQE
+
+    ! surface type
+    INTEGER :: sfc_typ
+
+
+    ! array of daytime series
+    REAL(kind=8), DIMENSION(:,:),ALLOCATABLE :: dayArray
+
+    ! daytime series
+    REAL(kind = 8), DIMENSION(:),ALLOCATABLE :: Sd  !< incoming solar radiation, W m-2
+    REAL(kind = 8), DIMENSION(:),ALLOCATABLE :: Ta  !< air temperature, degC
+    REAL(kind = 8), DIMENSION(:),ALLOCATABLE :: RH  !< relative humidity, %
+    REAL(kind = 8), DIMENSION(:),ALLOCATABLE :: pres!< Atmospheric pressure, mbar
+    REAL(kind = 8), DIMENSION(:),ALLOCATABLE :: tHr !< time, hour
+    REAL(kind = 8), DIMENSION(:),ALLOCATABLE :: Ts  ! surface temperature, degC
+    REAL(kind = 8), DIMENSION(:),ALLOCATABLE :: qa  ! specific humidity, kg kg-1
+    REAL(kind = 8), DIMENSION(:),ALLOCATABLE :: qs  ! Saturated specific humidity at surface,kg kg-1
+
+    ! conversion constant:
+    REAL(kind = 8),PARAMETER:: C2K=273.15 ! degC to K
+
+    ! thermodynamic values at standard temperature (293.15 K) and pressure (101325 pascals):
+    REAL(kind = 8),PARAMETER:: cp_air = 1006.38    ! specific heat capacity of air, J kg-1 K-1
+    REAL(kind = 8),PARAMETER:: Lv_air = 2264.705E3 ! latent heat of vaporization of water, J kg-1
+
+    INTEGER :: lenDay,i,err,nVar,nPrm
+
+
+    IF ( iflag == 0 ) THEN
+       ! only print out the x vector
+
+       WRITE ( *, '(a)' ) ''
+       CALL r8vec_print(n,x,'x in fcnBo')
+
+    ELSE  IF ( iflag == 1 ) THEN
+       ! calculate fvec at x:
+       ! pass unknown:
+       xBo = x(1)
+       mWF = MAX(MIN(x(2),1e-4),1e-7)
+
+       ! pass forcing scales:
+       ASd = prms(1)
+       mSd = prms(2)
+       ATa = prms(3)
+       mTa = prms(4)
+       tau = prms(5)
+       mWS = prms(6)
+       ! mWF = prms(7)
+       mAH = prms(8)
+
+       ! pass sfc. property scales:
+       xalb  = prms(9)
+       xemis = prms(10)
+       xcp   = prms(11)
+       xk    = prms(12)
+       xch   = prms(13)
+       xSM   = MIN(prms(14),1.0)
+
+       ! pass tSd:
+       tSd=prms(15)
+
+       ! pass tSd:
+       sfc_typ=INT(prms(16))
+
+       ! set number of parameters according to the above code
+       nPrm=16
+
+       ! number of met variables to pass:
+       nVar=5
+       ! length of daytime series
+       lenDay=(m-nPrm)/nVar
+       ! allocate daytime series
+       ALLOCATE(dayArray(nVar,lenDay), stat=err)
+       IF ( err/= 0) PRINT *, "dayArray: Allocation request denied"
+       dayArray=RESHAPE(prms(nPrm+1:SIZE(prms)), shape=(/nVar,lenDay/),order=(/2,1/))
+
+       ! pass daytime series
+       ! Sd:
+       ALLOCATE(Sd(lenDay), stat=err)
+       IF ( err/= 0) PRINT *, "Sd: Allocation request denied"
+       Sd(:)=dayArray(1,:)
+       ! Ta:
+       ALLOCATE(Ta(lenDay), stat=err)
+       IF ( err/= 0) PRINT *, "Ta: Allocation request denied"
+       Ta(:)=dayArray(2,:)
+       ! RH:
+       ALLOCATE(RH(lenDay), stat=err)
+       IF ( err/= 0) PRINT *, "RH: Allocation request denied"
+       RH(:)=dayArray(3,:)
+       ! pres:
+       ALLOCATE(pres(lenDay), stat=err)
+       IF ( err/= 0) PRINT *, "pres: Allocation request denied"
+       pres(:)=dayArray(4,:)
+       ! tHr:
+       ALLOCATE(tHr(lenDay), stat=err)
+       IF ( err/= 0) PRINT *, "tHr: Allocation request denied"
+       tHr(:)=dayArray(5,:)
+
+
+       !  PRINT*, 'n',n
+       !  PRINT*, 'lenDay',lenDay
+       !  PRINT*, 'nVar',nVar
+       !  PRINT*, 'shape of dayArray',SHAPE(dayArray)
+       !  PRINT*, 'shape of met variables',SHAPE(Ta),SHAPE(RH),SHAPE(pres),SHAPE(tHr)
+
+       ALLOCATE(Ts(lenDay), stat=err)
+       IF ( err/= 0) PRINT *, "Ts: Allocation request denied"
+       ALLOCATE(qs(lenDay), stat=err)
+       IF ( err/= 0) PRINT *, "qs: Allocation request denied"
+       ALLOCATE(qa(lenDay), stat=err)
+       IF ( err/= 0) PRINT *, "qa: Allocation request denied"
+
+
+       ! calculate sums of QH and QE series in the daytime
+       IF ( xSM==0 ) THEN
+          xBo=1000 ! extremely dry
+       ELSE
+          ! PRINT*, 'lenDay',lenDay
+          DO i = 1, lenDay, 1
+             ! calculate surface temperature
+             CALL AnOHM_xTs(&
+                  sfc_typ,&
+                  ASd,mSd,ATa,mTa,tau,mWS,mWF,mAH,&   ! input: forcing
+                  xalb,xemis,xcp,xk,xch,xBo,&   ! input: sfc properties
+                  tSd,& !input: peaking time of Sd in hour
+                  tHr(i),&! input: time in hour
+                  Ts(i))! output: surface temperature, K
+
+             ! convert K to degC
+             Ts(i)=MAX(Ts(i)-C2K,-40.)
+
+             ! calculate saturation specific humidity
+             qs(i)=qsat_fn(Ts(i),pres(i))
+
+             ! calculate specific humidity
+             qa(i)=qa_fn(Ta(i),RH(i),pres(i))
+
+             ! PRINT*,''
+             ! PRINT*, 'tHr',tHr(i)
+             ! PRINT*, 'Sd',Sd(i)
+             ! PRINT*, 'Ts',Ts(i)
+             ! PRINT*, 'pres',pres(i)
+             ! PRINT*, 'qs',qs(i)
+             ! PRINT*, 'Ta',Ta(i)
+             ! PRINT*, 'RH',RH(i)
+             ! PRINT*, 'pres',pres(i)
+             ! PRINT*, 'qa',qa(i)
+
+          END DO
+
+          ! below for testing:
+          ! rho_air=1.293, air density, kg m-3
+          ! ra=60, nominal aerodynamic resistence, s m-1
+          ! PRINT*,''
+          ! PRINT*, 'QH:',SUM(cp_air*(Ts-Ta)*1.293/60)/lenDay
+          ! PRINT*, 'xSM:',xSM
+          ! PRINT*, 'QE:',SUM(xSM*Lv_air*(qs-qa)*1.293/60)/lenDay
+          ! PRINT*,''
+
+          xBo = SUM(cp_air*(Ts-Ta))/& ! sum(QH)
+               SUM(xSM*Lv_air*(qs-qa))! sum(QE)
+
+          ! mean daytime QE
+          mQE = MAX(SUM(xSM*Lv_air*(qs-qa)*1.293/60)/lenDay,0.)
+          ! PRINT*, 'mQE:',mQE
+          ! empirical relationship based optimisation of URAO data
+          mWF = (-.02*mQE**2+3.27*mQE+328)*1e-7
+          mWF = MAX(MIN(mWF,1e-4),1e-7)
+          ! x(2) = mWF
+
+       END IF
+
+       ! f(Bo)-Bo==0
+       fvec(1) = x(1)-xBo
+       fvec(2) = x(2)-mWF
+       ! PRINT*,''
+       ! PRINT*, 'xBo b/a optimisation:',x(1),xBo
+       ! PRINT*, 'mWF b/a optimisation:',x(2),mWF
+       x(1)=xBo
+       x(2)=mWF
+
+
+       ! deallocate arrays
+       IF (ALLOCATED(dayArray)) DEALLOCATE(dayArray, stat=err)
+       IF ( err/= 0) PRINT *, "dayArray: Deallocation request denied"
+       IF (ALLOCATED(Sd)) DEALLOCATE(Sd, stat=err)
+       IF ( err/= 0) PRINT *, "Sd: Deallocation request denied"
+       IF (ALLOCATED(Ta)) DEALLOCATE(Ta, stat=err)
+       IF ( err/= 0) PRINT *, "Ta: Deallocation request denied"
+       IF (ALLOCATED(RH)) DEALLOCATE(RH, stat=err)
+       IF ( err/= 0) PRINT *, "RH: Deallocation request denied"
+       IF (ALLOCATED(pres)) DEALLOCATE(pres, stat=err)
+       IF ( err/= 0) PRINT *, "pres: Deallocation request denied"
+       IF (ALLOCATED(tHr)) DEALLOCATE(tHr, stat=err)
+       IF ( err/= 0) PRINT *, "tHr: Deallocation request denied"
+       IF (ALLOCATED(Ts)) DEALLOCATE(Ts, stat=err)
+       IF ( err/= 0) PRINT *, "Ts: Deallocation request denied"
+       IF (ALLOCATED(qa)) DEALLOCATE(qa, stat=err)
+       IF ( err/= 0) PRINT *, "qa: Deallocation request denied"
+       IF (ALLOCATED(qs)) DEALLOCATE(qs, stat=err)
+       IF ( err/= 0) PRINT *, "qs: Deallocation request denied"
+
+    END IF
+    RETURN
+
+  END SUBROUTINE fcnBoWF
+  !========================================================================================
+
 
   !========================================================================================
   !> calculate saturation vapor pressure (es)

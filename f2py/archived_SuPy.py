@@ -1852,3 +1852,56 @@ for ir in df_forcing.index:
 #             res.append(resX)
 #     # final result
 #     return res
+
+# def load_SUEWS_MetForcing_dict(fileX):
+#     rawdata_df = load_SUEWS_MetForcing_df_raw(fileX)
+#     # dict_met_forcing = rawdata_df.T.to_dict()
+#     dict_met_forcing = rawdata_df.to_dict('index')
+#     # dict_met_forcing.update(
+#     #     {'metforcingdata_grid': np.array(rawdata_df.values,
+#     #                                      dtype=np.float, order='F')})
+#     return dict_met_forcing
+
+# # resample input foring to tstep required by model
+# def resample_forcing(
+#         data_raw, tstep_in, tstep_mod, lat, lon, alt, timezone, kdownzen):
+#     # reset index as timestamps
+#     data_raw.index = data_raw.loc[:, ['iy', 'id', 'it', 'imin']].apply(
+#         func_parse_date_row, 1)
+#     # shift by half-tstep_in to generate a time series with instantaneous
+#     # values
+#     data_raw_shift = data_raw.copy().shift(-tstep_in / 2, freq='S')
+#
+#     # downscale input data to desired time step
+#     data_raw_tstep = data_raw_shift.resample(
+#         '{tstep}S'.format(tstep=tstep_mod)).interpolate(
+#         method='polynomial', order=1).rolling(
+#         window=2, center=False).mean()
+#
+#     # reindex data_tstep to valid range
+#     ix = pd.date_range(
+#         data_raw.index[0] - timedelta(seconds=tstep_in - tstep_mod),
+#         data_raw.index[-1],
+#         freq='{tstep}S'.format(tstep=tstep_mod))
+#     data_tstep = data_raw_tstep.copy().reindex(
+#         index=ix).bfill().ffill().dropna()
+#
+#     # adjust solar radiation by zenith correction and total amount distribution
+#     if kdownzen == 1:
+#         data_tstep["avkdn"] = resample_kdn(
+#             data_tstep["avkdn"], tstep_mod, timezone, lat, lon, alt)
+#
+#     # correct rainfall
+#     data_tstep['precip'] = resample_precip(
+#         data_raw['precip'], tstep_mod, tstep_in)
+#
+#     # correct temporal information
+#     data_tstep['iy'] = data_tstep.index.year
+#     data_tstep['id'] = data_tstep.index.dayofyear
+#     data_tstep['it'] = data_tstep.index.hour
+#     data_tstep['imin'] = data_tstep.index.minute
+#
+#     # reset index with numbers
+#     data_tstep_out = data_tstep.copy().reset_index(drop=True)
+#
+#     return data_tstep_out

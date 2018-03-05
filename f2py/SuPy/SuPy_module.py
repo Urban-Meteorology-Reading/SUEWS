@@ -320,9 +320,8 @@ def resample_kdn(data_raw_kdn, tstep_mod, timezone, lat, lon, alt):
 
     return data_tstep_kdn_adj
 
+
 # correct precipitation by even redistribution over resampled periods
-
-
 def resample_precip(data_raw_precip, tstep_mod, tstep_in):
     ratio_precip = 1. * tstep_mod / tstep_in
     data_tstep_precip_adj = ratio_precip * data_raw_precip.copy().shift(
@@ -332,11 +331,9 @@ def resample_precip(data_raw_precip, tstep_mod, tstep_in):
     data_tstep_precip_adj = data_tstep_precip_adj.fillna(value=0.)
     return data_tstep_precip_adj
 
-# resample input foring to tstep required by model
 
-
-def resample_forcing(
-        data_raw, tstep_in, tstep_mod, lat, lon, alt, timezone, kdownzen):
+# resample input forcing by linear interpolation
+def resample_linear(data_raw, tstep_in, tstep_mod):
     # reset index as timestamps
     data_raw.index = data_raw.loc[:, ['iy', 'id', 'it', 'imin']].apply(
         func_parse_date_row, 1)
@@ -358,43 +355,220 @@ def resample_forcing(
     data_tstep = data_raw_tstep.copy().reindex(
         index=ix).bfill().ffill().dropna()
 
-    # adjust solar radiation by zenith correction and total amount distribution
-    if kdownzen == 1:
-        data_tstep["avkdn"] = resample_kdn(
-            data_tstep["avkdn"], tstep_mod, timezone, lat, lon, alt)
-
-    # correct rainfall
-    data_tstep['precip'] = resample_precip(
-        data_raw['precip'], tstep_mod, tstep_in)
-
     # correct temporal information
     data_tstep['iy'] = data_tstep.index.year
     data_tstep['id'] = data_tstep.index.dayofyear
     data_tstep['it'] = data_tstep.index.hour
     data_tstep['imin'] = data_tstep.index.minute
 
-    # reset index with numbers
-    data_tstep_out = data_tstep.copy().reset_index(drop=True)
+    return data_tstep
 
-    return data_tstep_out
+
+# resample input met foring to tstep required by model
+def resample_forcing_met(
+        data_met_raw, tstep_in, tstep_mod, lat, lon, alt, timezone, kdownzen):
+    # overall resample by linear interpolation
+    data_met_tstep = resample_linear(data_met_raw, tstep_in, tstep_mod)
+
+    # adjust solar radiation by zenith correction and total amount distribution
+    if kdownzen == 1:
+        data_met_tstep["avkdn"] = resample_kdn(
+            data_met_tstep["avkdn"], tstep_mod, timezone, lat, lon, alt)
+
+    # correct rainfall
+    data_met_tstep['precip'] = resample_precip(
+        data_met_raw['precip'], tstep_mod, tstep_in)
+
+    # reset index with numbers
+    data_met_tstep_out = data_met_tstep.copy().reset_index(drop=True)
+
+    return data_met_tstep_out
+
+
+# load raw data: met forcing
+def load_SUEWS_Forcing_met_df_raw(
+        dir_input, filecode, grid, tstep_met_in, multiplemetfiles):
+    # file name pattern for met files
+    forcingfile_met_pattern = os.path.join(
+        dir_input,
+        '{site}{grid}*{tstep}*txt'.format(
+            site=filecode,
+            grid=(grid if multiplemetfiles == 1 else ''),
+            tstep=tstep_met_in / 60))
+
+    # list of met forcing files
+    list_file_MetForcing = [
+        f for f in glob.glob(forcingfile_met_pattern)
+        if 'ESTM' not in f]
+
+    # load raw data
+    df_forcing_met = pd.concat(
+        [pd.read_table(
+            fileX,
+            delim_whitespace=True,
+            comment='!',
+            error_bad_lines=True
+            # parse_dates={'datetime': [0, 1, 2, 3]},
+            # keep_date_col=True,
+            # date_parser=func_parse_date
+        ).dropna() for fileX in list_file_MetForcing],
+        ignore_index=True).rename(
+        columns={
+            '%' + 'iy': 'iy',
+            'id': 'id',
+            'it': 'it',
+            'imin': 'imin',
+            'Kdn': 'avkdn',
+            'RH': 'avrh',
+            'Wind': 'avu1',
+            'fcld': 'fcld_obs',
+            'lai_hr': 'lai_obs',
+            'ldown': 'ldown_obs',
+            'rain': 'precip',
+            'press': 'press_hpa',
+            'QH': 'qh_obs',
+            'Q*': 'qn1_obs',
+            'snow': 'snow_obs',
+            'Td': 'temp_c',
+            # 'all': 'metforcingdata_grid',
+            'xsmd': 'xsmd'})
+
+    # convert unit from kPa to hPa
+    df_forcing_met['press_hpa']*=10
+
+    return df_forcing_met
+
+
+# load raw data: met forcing
+def load_SUEWS_Forcing_ESTM_df_raw(
+        dir_input, filecode, grid, tstep_ESTM_in, multipleestmfiles):
+    # file name pattern for met files
+    forcingfile_ESTM_pattern = os.path.join(
+        dir_input,
+        '{site}{grid}*{tstep}*txt'.format(
+            site=filecode,
+            grid=(grid if multipleestmfiles == 1 else ''),
+            tstep=tstep_ESTM_in / 60))
+
+    # list of met forcing files
+    list_file_MetForcing = [
+        f for f in glob.glob(forcingfile_ESTM_pattern)
+        if 'ESTM' in f]
+
+    # load raw data
+    df_forcing_estm = pd.concat(
+        [pd.read_table(
+            fileX,
+            delim_whitespace=True,
+            comment='!',
+            error_bad_lines=True
+            # parse_dates={'datetime': [0, 1, 2, 3]},
+            # keep_date_col=True,
+            # date_parser=func_parse_date
+        ).dropna() for fileX in list_file_MetForcing],
+        ignore_index=True).rename(
+        columns={
+            '%' + 'iy': 'iy',
+            'id': 'id',
+            'it': 'it',
+            'imin': 'imin',
+            'Kdn': 'avkdn',
+            'RH': 'avrh',
+            'Wind': 'avu1',
+            'fcld': 'fcld_obs',
+            'lai_hr': 'lai_obs',
+            'ldown': 'ldown_obs',
+            'rain': 'precip',
+            'press': 'press_hpa',
+            'QH': 'qh_obs',
+            'Q*': 'qn1_obs',
+            'snow': 'snow_obs',
+            'Td': 'temp_c',
+            # 'all': 'metforcingdata_grid',
+            'xsmd': 'xsmd'})
+
+    return df_forcing_estm
+
+
+def load_SUEWS_Forcing_df_resample(dir_site, grid, ser_mod_cfg, df_state_init):
+    # load setting variables from ser_mod_cfg
+    (filecode, kdownzen,
+     tstep_met_in, tstep_ESTM_in,
+     multiplemetfiles, multipleestmfiles,
+     dir_input_cfg) = ser_mod_cfg[
+        ['filecode', 'kdownzen',
+         'resolutionfilesin', 'resolutionfilesinestm',
+         'multiplemetfiles', 'multipleestmfiles', 'fileinputpath']]
+    tstep_mod, lat, lon, alt, timezone = df_state_init.loc[
+        grid,
+        ['tstep', 'lat', 'lng', 'alt', 'timezone']]
+    dir_input = (os.path.join(dir_site, dir_input_cfg)
+                 if not os.path.isabs(dir_input_cfg)
+                 else dir_input_cfg)
+
+    # load raw data
+    # met forcing
+    df_forcing_met = load_SUEWS_Forcing_met_df_raw(
+        dir_input, filecode, grid, tstep_met_in, multiplemetfiles)
+    # ESTM forcing
+    df_forcing_estm = load_SUEWS_Forcing_ESTM_df_raw(
+        dir_input, filecode, grid, tstep_ESTM_in, multipleestmfiles)
+
+    # resample raw data from tstep_in to tstep_mod
+    df_forcing_met_tstep = resample_forcing_met(
+        df_forcing_met, tstep_met_in, tstep_mod, lat, lon, alt, timezone, kdownzen)
+    df_forcing_estm_tstep = resample_linear(
+        df_forcing_estm, tstep_met_in, tstep_mod)
+
+    # merge forcing datasets (met and ESTM)
+    df_forcing_tstep = df_forcing_met_tstep.merge(
+        df_forcing_estm_tstep,
+        left_on=['iy', 'id', 'it', 'imin'],
+        right_on=['iy', 'id', 'it', 'imin'])
+
+    # pack all records of `id` into `metforcingdata_grid` for AnOHM and others
+    df_grp = df_forcing_tstep.groupby('id')
+    dict_id_all = {xid: df_grp.get_group(xid)
+                   for xid in df_forcing_tstep['id'].unique()}
+    id_all = df_forcing_tstep['id'].apply(lambda xid: dict_id_all[xid])
+    df_merged = df_forcing_tstep.merge(id_all.to_frame(name='metforcingdata_grid'),
+                                       left_index=True,
+                                       right_index=True)
+
+    # print df_merged.columns
+    # new columns for later use in main calculation
+    df_merged[['iy', 'id', 'it', 'imin']] = df_merged[[
+        'iy', 'id', 'it', 'imin']].astype(np.int64)
+    df_merged['dectime'] = (df_merged['id'] +
+                            (df_merged['it']
+                             + df_merged['imin'] / 60.) / 24.)
+    df_merged['id_prev_t'] = df_merged['id'].shift(1).fillna(method='backfill')
+    df_merged['iy_prev_t'] = df_merged['iy'].shift(1).fillna(method='backfill')
+
+    df_merged['ts5mindata_ir'] = (
+        df_forcing_estm_tstep.iloc[:, 4:].values.tolist())
+    df_merged['ts5mindata_ir'] = df_merged[
+        'ts5mindata_ir'].map(lambda x: np.array(x, order='F'))
+
+    return df_merged
 
 
 def load_SUEWS_MetForcing_df_resample(
         fileX, tstep_in, tstep_mod, lat, lon, alt, timezone, kdownzen):
     # load raw data
-    df_forcing = pd.read_table(fileX, delim_whitespace=True,
-                               comment='!',
-                               error_bad_lines=True
-                               # parse_dates={'datetime': [0, 1, 2, 3]},
-                               # keep_date_col=True,
-                               # date_parser=func_parse_date
-                               ).dropna()
+    df_forcing_met = pd.read_table(fileX, delim_whitespace=True,
+                                   comment='!',
+                                   error_bad_lines=True
+                                   # parse_dates={'datetime': [0, 1, 2, 3]},
+                                   # keep_date_col=True,
+                                   # date_parser=func_parse_date
+                                   ).dropna()
 
     # convert unit
-    df_forcing['press'] = df_forcing['press'] * 10.
+    df_forcing_met['press'] = df_forcing_met['press'] * 10.
 
     # rename column names to conform with calling function
-    df_forcing = df_forcing.rename(columns={
+    df_forcing_met = df_forcing_met.rename(columns={
         '%' + 'iy': 'iy',
         'id': 'id',
         'it': 'it',
@@ -415,11 +589,20 @@ def load_SUEWS_MetForcing_df_resample(
         'xsmd': 'xsmd'})
 
     # resample from tstep_in to tstep
-    df_forcing_tstep = resample_forcing(
-        df_forcing, tstep_in, tstep_mod, lat, lon, alt, timezone, kdownzen)
+    # met forcing:
+    df_forcing_met_tstep = resample_forcing_met(
+        df_forcing_met, tstep_in, tstep_mod, lat, lon, alt, timezone, kdownzen)
+    # ESTM surface/inner air temp forcing:
+    # df_forcing_estm_tstep = resample_forcing_estm(
+    #     df_forcing_estm, tstep_in, tstep_mod)
+    # merge forcing (met and ESTM) datasets
+    # df_forcing_tstep = df_forcing_met_tstep.merge(
+    #     df_forcing_estm_tstep,
+    #     left_on=['iy', 'id', 'it', 'imin'],
+    #     right_on=['iy', 'id', 'it', 'imin'])
 
-    # pack all records of `id` into `all` as required by AnOHM and others
-    # df_grp = df_forcing_shift.groupby('id')
+    # pack all records of `id` into `metforcingdata_grid` for AnOHM and others
+    df_forcing_tstep = df_forcing_met_tstep
     df_grp = df_forcing_tstep.groupby('id')
     dict_id_all = {xid: df_grp.get_group(xid)
                    for xid in df_forcing_tstep['id'].unique()}
@@ -445,19 +628,19 @@ def load_SUEWS_MetForcing_df_resample(
 
 
 def load_SUEWS_MetForcing_df_raw(fileX):
-    df_forcing = pd.read_table(fileX, delim_whitespace=True,
-                               comment='!',
-                               error_bad_lines=True
-                               # parse_dates={'datetime': [0, 1, 2, 3]},
-                               # keep_date_col=True,
-                               # date_parser=func_parse_date
-                               ).dropna()
+    df_forcing_met = pd.read_table(fileX, delim_whitespace=True,
+                                   comment='!',
+                                   error_bad_lines=True
+                                   # parse_dates={'datetime': [0, 1, 2, 3]},
+                                   # keep_date_col=True,
+                                   # date_parser=func_parse_date
+                                   ).dropna()
 
     # convert unit
-    df_forcing['press'] = df_forcing['press'] * 10.
+    df_forcing_met['press'] = df_forcing_met['press'] * 10.
 
     # two datetime's
-    # df_forcing_shift = df_forcing.copy()
+    # df_forcing_shift = df_forcing_met.copy()
     # df_forcing_shift.loc[:,
     #                      ['%' + 'iy', 'id', 'it', 'imin']] = (
     #     df_forcing_shift.loc[
@@ -466,13 +649,13 @@ def load_SUEWS_MetForcing_df_raw(fileX):
 
     # pack all records of `id` into `all` as required by AnOHM and others
     # df_grp = df_forcing_shift.groupby('id')
-    df_grp = df_forcing.groupby('id')
+    df_grp = df_forcing_met.groupby('id')
     dict_id_all = {xid: df_grp.get_group(xid)
-                   for xid in df_forcing['id'].unique()}
-    id_all = df_forcing['id'].apply(lambda xid: dict_id_all[xid])
-    df_merged = df_forcing.merge(id_all.to_frame(name='all'),
-                                 left_index=True,
-                                 right_index=True)
+                   for xid in df_forcing_met['id'].unique()}
+    id_all = df_forcing_met['id'].apply(lambda xid: dict_id_all[xid])
+    df_merged = df_forcing_met.merge(id_all.to_frame(name='all'),
+                                     left_index=True,
+                                     right_index=True)
 
     # rename column names to conform with calling function
     df_merged = df_merged.rename(columns={
@@ -509,16 +692,6 @@ def load_SUEWS_MetForcing_df_raw(fileX):
     df_merged['ts5mindata_ir'] = df_merged['temp_c']
 
     return df_merged
-
-
-def load_SUEWS_MetForcing_dict(fileX):
-    rawdata_df = load_SUEWS_MetForcing_df_raw(fileX)
-    # dict_met_forcing = rawdata_df.T.to_dict()
-    dict_met_forcing = rawdata_df.to_dict('index')
-    # dict_met_forcing.update(
-    #     {'metforcingdata_grid': np.array(rawdata_df.values,
-    #                                      dtype=np.float, order='F')})
-    return dict_met_forcing
 
 
 # load initial conditions as dict's for SUEWS running:
@@ -600,31 +773,34 @@ def init_SUEWS_dict_grid(dir_input, grid,
     nsh = 3600 / tstep  # tstep from dict_RunControl
 
     # load met forcing of `grid`:
-    # TODO: support multi-grid settings for met forcing
     filecode = dict_ModConfig['filecode']
     # kdownzen = dict_ModConfig['kdownzen']
     tstep_in = dict_ModConfig['resolutionfilesin']
     # lat, lon, alt, timezone = df_gridSurfaceChar.loc[
     #     grid, ['lat', 'lng', 'alt', 'timezone']]
+    metfile_pattern = os.path.join(
+        dir_input,
+        '{site}{grid}*{tstep}*txt'.format(
+            site=filecode,
+            grid=(grid if dict_ModConfig['multiplemetfiles'] == 1 else ''),
+            tstep=tstep_in / 60))
     list_file_MetForcing = [
-        x_file
-        for x_file in glob.glob(
-            os.path.join(dir_input,
-                         '{}*{}*txt'.format(filecode, tstep_in / 60)))
+        x_file for x_file in glob.glob(metfile_pattern)
         if 'ESTM' not in x_file]
-    list_file_MetForcing=sorted(list_file_MetForcing)
+    list_file_MetForcing = sorted(list_file_MetForcing)
     # load as DataFrame:
-    df_forcing = load_SUEWS_MetForcing_df_raw(list_file_MetForcing[0])
+    # TODO: modify the loading when other forcing funcitons are finished
+    df_forcing_met = load_SUEWS_MetForcing_df_raw(list_file_MetForcing[0])
 
     # define some met forcing determined variables:
     # previous day index
-    id_prev = df_forcing.iloc[0]['id'] - 1
+    id_prev = df_forcing_met.iloc[0]['id'] - 1
 
     # initialise dict_InitCond with default values
     dict_InitCond = {
         'dayssincerain':  0,
         # `temp_c0` defaults to daily mean air temperature of the first day
-        'temp_c0':  df_forcing.loc[:(24 * nsh) - 1, 'temp_c'].mean(),
+        'temp_c0':  df_forcing_met.loc[:(24 * nsh) - 1, 'temp_c'].mean(),
         'leavesoutinitially':  int(nan),
         'gdd_1_0':  nan,
         'gdd_2_0':  nan,
@@ -682,12 +858,12 @@ def init_SUEWS_dict_grid(dir_input, grid,
     }
 
     # load Initial Condition variables from namelist file
-    # NB: currently only implemented for uniform initial conditions
-    # TODO: support multi-grid settings for initial conditions
     lib_InitCond = load_SUEWS_nml(os.path.join(
         dir_input, 'initialconditions{site}{grid}_{year}.nml'.format(
             site=dict_ModConfig['filecode'],
-            grid=(grid if dict_ModConfig['multipleinitfiles']==1 else ''),
+            # grid info will be include in the nml file pattern
+            # if multiple init files are used
+            grid=(grid if dict_ModConfig['multipleinitfiles'] == 1 else ''),
             year=int(np.min(df_gridSurfaceChar.loc[grid, 'year'])))))
     # update default InitialCond with values set in namelist
     dict_InitCond.update(

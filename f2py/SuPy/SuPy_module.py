@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 import f90nml
 from pandas import DataFrame as df
-from SUEWS_driver import suews_driver as sd
+import inspect
 from scipy import interpolate
 # import collections
 import copy
@@ -22,9 +22,13 @@ import glob
 from datetime import timedelta
 # import math
 # import random
+# import pkg_resources
+dir_path=os.path.dirname(os.path.abspath(inspect.getsourcefile(lambda:0)))
 
+# load f2py-based SUEWS calculation core
+from SUEWS_driver import suews_driver as sd
 
-######################################################################
+# ######################################################################
 # get_args_suews can get the interface informaiton
 # of the f2py-converted Fortran interface
 def get_args_suews():
@@ -98,56 +102,13 @@ dict_libVar2File = {fileX.replace('.txt', '').replace(
 # links between code in SiteSelect to properties in according tables
 # this is described in SUEWS online manual:
 # http://urban-climate.net/umep/SUEWS#SUEWS_SiteSelect.txt
-dict_Code2File = {
-    'Code_Paved': 'SUEWS_NonVeg.txt',
-    'Code_Bldgs': 'SUEWS_NonVeg.txt',
-    'Code_EveTr': 'SUEWS_Veg.txt',
-    'Code_DecTr': 'SUEWS_Veg.txt',
-    'Code_Grass': 'SUEWS_Veg.txt',
-    'Code_Bsoil': 'SUEWS_NonVeg.txt',
-    'Code_Water': 'SUEWS_Water.txt',
-    'CondCode': 'SUEWS_Conductance.txt',
-    'SnowCode': 'SUEWS_Snow.txt',
-    'SnowClearingProfWD': 'SUEWS_Profiles.txt',
-    'SnowClearingProfWE': 'SUEWS_Profiles.txt',
-    'AnthropogenicCode': 'SUEWS_AnthropogenicHeat.txt',
-    'IrrigationCode': 'SUEWS_Irrigation.txt',
-    'WithinGridPavedCode': 'SUEWS_WithinGridWaterDist.txt',
-    'WithinGridBldgsCode': 'SUEWS_WithinGridWaterDist.txt',
-    'WithinGridEveTrCode': 'SUEWS_WithinGridWaterDist.txt',
-    'WithinGridDecTrCode': 'SUEWS_WithinGridWaterDist.txt',
-    'WithinGridGrassCode': 'SUEWS_WithinGridWaterDist.txt',
-    'WithinGridUnmanBSoilCode': 'SUEWS_WithinGridWaterDist.txt',
-    'WithinGridWaterCode': 'SUEWS_WithinGridWaterDist.txt',
-    'Code_ESTMClass_Paved1': 'SUEWS_ESTMCoefficients.txt',
-    'Code_ESTMClass_Paved2': 'SUEWS_ESTMCoefficients.txt',
-    'Code_ESTMClass_Paved3': 'SUEWS_ESTMCoefficients.txt',
-    'Code_ESTMClass_Bldgs1': 'SUEWS_ESTMCoefficients.txt',
-    'Code_ESTMClass_Bldgs2': 'SUEWS_ESTMCoefficients.txt',
-    'Code_ESTMClass_Bldgs3': 'SUEWS_ESTMCoefficients.txt',
-    'Code_ESTMClass_Bldgs4': 'SUEWS_ESTMCoefficients.txt',
-    'Code_ESTMClass_Bldgs5': 'SUEWS_ESTMCoefficients.txt',
-    'OHMCode_SummerWet': 'SUEWS_OHMCoefficients.txt',
-    'OHMCode_SummerDry': 'SUEWS_OHMCoefficients.txt',
-    'OHMCode_WinterWet': 'SUEWS_OHMCoefficients.txt',
-    'OHMCode_WinterDry': 'SUEWS_OHMCoefficients.txt',
-    'ESTMCode': 'SUEWS_ESTMCoefficients.txt',
-    'EnergyUseProfWD': 'SUEWS_Profiles.txt',
-    'EnergyUseProfWE': 'SUEWS_Profiles.txt',
-    'ActivityProfWD': 'SUEWS_Profiles.txt',
-    'ActivityProfWE': 'SUEWS_Profiles.txt',
-    'TraffProfWD': 'SUEWS_Profiles.txt',
-    'TraffProfWE': 'SUEWS_Profiles.txt',
-    'PopProfWD': 'SUEWS_Profiles.txt',
-    'PopProfWE': 'SUEWS_Profiles.txt',
-    'WaterUseProfManuWD': 'SUEWS_Profiles.txt',
-    'WaterUseProfManuWE': 'SUEWS_Profiles.txt',
-    'WaterUseProfAutoWD': 'SUEWS_Profiles.txt',
-    'WaterUseProfAutoWE': 'SUEWS_Profiles.txt',
-    'BiogenCO2Code': 'SUEWS_BiogenCO2.txt',
-    'SoilTypeCode': 'SUEWS_Soil.txt'}
 
+path_code2file = os.path.join(dir_path, 'code2file.json')
+dict_Code2File=pd.read_json(path_code2file,typ='series').to_dict()
 # variable translation as done in Fortran-SUEWS
+path_var2siteselect=os.path.join(dir_path, 'var2siteselect.json')
+dict_var2SiteSelect0=pd.read_json(path_var2siteselect,typ='series').to_dict()
+# print dict_var2SiteSelect
 dict_var2SiteSelect = {
     'lat': 'lat',
     'lng': 'lng',
@@ -1805,7 +1766,6 @@ def pack_df_state(dict_state):
 # # pack up output of `run_suews`
 # # NOT SUITABLE ANYMORE
 # def pack_df_output(dict_output):
-#     # TODO: add output levels as in the Fortran version
 #     df_raw = pd.DataFrame.from_dict(dict_output).T.applymap(
 #         lambda dict: np.concatenate(dict.values())).stack()
 #     index = df_raw.index.swaplevel().set_names(['grid', 'tstep'])

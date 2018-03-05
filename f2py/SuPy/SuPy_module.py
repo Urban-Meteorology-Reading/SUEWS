@@ -602,21 +602,19 @@ def init_SUEWS_dict_grid(dir_input, grid,
     # load met forcing of `grid`:
     # TODO: support multi-grid settings for met forcing
     filecode = dict_ModConfig['filecode']
-    kdownzen = dict_ModConfig['kdownzen']
+    # kdownzen = dict_ModConfig['kdownzen']
     tstep_in = dict_ModConfig['resolutionfilesin']
-
-    lat, lon, alt, timezone = df_gridSurfaceChar.loc[
-        grid, ['lat', 'lng', 'alt', 'timezone']]
+    # lat, lon, alt, timezone = df_gridSurfaceChar.loc[
+    #     grid, ['lat', 'lng', 'alt', 'timezone']]
     list_file_MetForcing = [
         x_file
         for x_file in glob.glob(
             os.path.join(dir_input,
                          '{}*{}*txt'.format(filecode, tstep_in / 60)))
         if 'ESTM' not in x_file]
+    list_file_MetForcing=sorted(list_file_MetForcing)
     # load as DataFrame:
-    df_forcing = load_SUEWS_MetForcing_df_resample(
-        list_file_MetForcing[0],
-        tstep_in, tstep, lat, lon, alt, timezone, kdownzen)
+    df_forcing = load_SUEWS_MetForcing_df_raw(list_file_MetForcing[0])
 
     # define some met forcing determined variables:
     # previous day index
@@ -684,10 +682,12 @@ def init_SUEWS_dict_grid(dir_input, grid,
     }
 
     # load Initial Condition variables from namelist file
+    # NB: currently only implemented for uniform initial conditions
     # TODO: support multi-grid settings for initial conditions
     lib_InitCond = load_SUEWS_nml(os.path.join(
-        dir_input, 'initialconditions{site}_{year}.nml'.format(
+        dir_input, 'initialconditions{site}{grid}_{year}.nml'.format(
             site=dict_ModConfig['filecode'],
+            grid=(grid if dict_ModConfig['multipleinitfiles']==1 else ''),
             year=int(np.min(df_gridSurfaceChar.loc[grid, 'year'])))))
     # update default InitialCond with values set in namelist
     dict_InitCond.update(

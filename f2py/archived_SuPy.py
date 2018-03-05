@@ -907,7 +907,7 @@ gdd = 0 * np.ones((ndays + 1, 5), order='F')
 hdd = 0 * np.ones((ndays + 5, 6), order='F')
 icefrac = 0 * np.ones(7)
 lai = 0. * np.ones((ndays + 5, 3), order='F')
-meltwaterstore = 0 * np.ones(7, order='F')  # snow TODO
+meltwaterstore = 0 * np.ones(7, order='F')
 numcapita = (popdensdaytime + popdensnighttime) / 2.
 porosity = pormax_dec * np.ones(ndays + 1, order='F')
 qn1_av_store = -999. * np.ones(2 * nsh + 1)
@@ -958,7 +958,7 @@ for ir in df_forcing.index:
 
     # met forcing variables:
     metforcingdata_grid = np.array(df_forcing.iloc[:,1:],dtype=np.float)
-    ts5mindata_ir = df_forcing.loc[ir, 'Td']  # to correct TODO
+    ts5mindata_ir = df_forcing.loc[ir, 'Td']
     avkdn = df_forcing.loc[ir, 'Kdn']
     avrh = df_forcing.loc[ir, 'RH']
     avu1 = df_forcing.loc[ir, 'Wind']
@@ -1386,7 +1386,6 @@ for ir in df_forcing.index:
 #     df_merged['id_prev_t'] = df_merged['id'].shift(1).fillna(method='backfill')
 #     df_merged['iy_prev_t'] = df_merged['iy'].shift(1).fillna(method='backfill')
 #
-#     # TODO: ts5mindata_ir needs to be read in from Ts files
 #     df_merged['ts5mindata_ir'] = df_merged['temp_c']
 #
 #     return df_merged

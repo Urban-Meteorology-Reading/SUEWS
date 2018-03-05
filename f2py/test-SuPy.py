@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 # import copy
 # import collections
 reload(sp)
+idx = pd.IndexSlice
 
 # initialise SUEWS settings
 # dir_input = './Input'
@@ -18,15 +19,15 @@ filecode, kdownzen, tstep_in = ser_mod_cfg[
     ['filecode', 'kdownzen', 'resolutionfilesin']]
 tstep_mod, lat, lon, alt, timezone = df_state_init.iloc[0][
     ['tstep', 'lat', 'lng', 'alt', 'timezone']]
-metfile_pattern = 'Input/{}*{}*txt'.format(filecode, tstep_in / 60)
-list_file_MetForcing = [f
-                        for f in glob.glob(os.path.join(
-                            dir_start, metfile_pattern))
-                        if 'ESTM' not in f]
+metfile_pattern = os.path.join(
+    dir_start, 'Input/{}*{}*txt'.format(filecode, tstep_in / 60))
+list_file_MetForcing = [
+    f for f in glob.glob(metfile_pattern)
+    if 'ESTM' not in f]
 # load as DataFrame:
 df_forcing = sp.load_SUEWS_MetForcing_df_resample(
     list_file_MetForcing[0],
-    tstep_in, tstep_mod, lat, lon, alt, timezone,kdownzen)
+    tstep_in, tstep_mod, lat, lon, alt, timezone, kdownzen)
 # load as dict (faster for simulation if performance is heavily concerned)
 # dict_forcing = sp.load_SUEWS_MetForcing_dict(list_file_MetForcing[1])
 # dict_forcing.keys()[-1]
@@ -47,42 +48,41 @@ df_output, df_state = sp.run_suews_df(df_forcing_part, df_state_init)
 # df_state = sp.pack_df_grid(dict_state)
 
 
-# %% plot some variables
-idx = pd.IndexSlice
-# output
-xx = df_output.loc[idx[:, 1], [('datetime', 'Dectime'),
-                               ('SUEWS', 'QS'), ('SUEWS', 'QN')]]
-xx.columns = xx.columns.droplevel()
-xx.plot(x='Dectime')
-plt.show()
-
-# state variable
-idx = pd.IndexSlice
-
-df_state_time = pd.concat(
-    [df_state,
-     df_output.loc[:, ('datetime', 'Dectime')].rename('Dectime')],
-    axis=1).dropna()
-# entry with single value
-y1 = df_state_time.loc[idx[:, 1], :].plot(
-    y='aerodynamicresistancemethod', x='Dectime')
-plt.show()
-# entry with value arrays
-y2 = df_state_time.loc[:, ['Dectime', 'soilmoist']]
-y2 = y2.join(y2['soilmoist'].apply(pd.Series), rsuffix='ss_').drop(
-    columns=['soilmoist']).loc[:,['Dectime',1,3]].plot(x='Dectime')
-plt.show()
-
-y3 = df_state_time.loc[100:, ['Dectime', 'qn1_av_store']]
-y3['qn1_av_store'] = y3['qn1_av_store'].apply(np.mean)
-y3=y3.plot(x='Dectime')
-plt.show()
+# # %% plot some variables
+# # output
+# xx = df_output.loc[idx[:, 1], [('datetime', 'Dectime'),
+#                                ('SUEWS', 'QS'), ('SUEWS', 'QN')]]
+# xx.columns = xx.columns.droplevel()
+# xx.plot(x='Dectime')
+# plt.show()
+#
+# # state variable
+# idx = pd.IndexSlice
+#
+# df_state_time = pd.concat(
+#     [df_state,
+#      df_output.loc[:, ('datetime', 'Dectime')].rename('Dectime')],
+#     axis=1).dropna()
+# # entry with single value
+# y1 = df_state_time.loc[idx[:, 1], :].plot(
+#     y='aerodynamicresistancemethod', x='Dectime')
+# plt.show()
+# # entry with value arrays
+# y2 = df_state_time.loc[:, ['Dectime', 'soilmoist']]
+# y2 = y2.join(y2['soilmoist'].apply(pd.Series), rsuffix='ss_').drop(
+#     columns=['soilmoist']).loc[:,['Dectime',1,3]].plot(x='Dectime')
+# plt.show()
+#
+# y3 = df_state_time.loc[100:, ['Dectime', 'qn1_av_store']]
+# y3['qn1_av_store'] = y3['qn1_av_store'].apply(np.mean)
+# y3=y3.plot(x='Dectime')
+# plt.show()
 
 
 # %% comparison
 # load observations
 list_file_Obs = glob.glob(
-    os.path.join(dir_start,'Obs', '{}*txt'.format(filecode)))
+    os.path.join(dir_start, 'Obs', '{}*txt'.format(filecode)))
 res_obs = pd.read_table(list_file_Obs[0], delim_whitespace=True)
 res_obs.columns = ['Dectime', 'QS_obs']
 # res_obs.rename(columns=, inplace=True)

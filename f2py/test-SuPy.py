@@ -56,7 +56,7 @@ xx.columns = xx.columns.droplevel()
 xx.plot(x='Dectime')
 plt.show()
 
-# state variable TODO: df_state
+# state variable
 idx = pd.IndexSlice
 
 df_state_time = pd.concat(

@@ -591,29 +591,36 @@ def init_SUEWS_dict(dir_start):  # return dict
 # create initial states for one grid
 def init_SUEWS_dict_grid(dir_input, grid,
                          dict_ModConfig, df_gridSurfaceChar):
+    # load tstep from dict_RunControl
+    tstep = dict_ModConfig['tstep']
     # some constant values
+
     nan = -999.
     ndays = 366
-    nsh = 3600 / dict_ModConfig['tstep']  # tstep from dict_RunControl
+    nsh = 3600 / tstep  # tstep from dict_RunControl
 
     # load met forcing of `grid`:
     # TODO: support multi-grid settings for met forcing
     filecode = dict_ModConfig['filecode']
-    tstep = dict_ModConfig['tstep']
-    # TODO: need to introduce downscaling functions here
+    kdownzen = dict_ModConfig['kdownzen']
+    tstep_in = dict_ModConfig['resolutionfilesin']
+
+    lat, lon, alt, timezone = df_gridSurfaceChar.loc[
+        grid, ['lat', 'lng', 'alt', 'timezone']]
     list_file_MetForcing = [
         x_file
         for x_file in glob.glob(
             os.path.join(dir_input,
-                         '{}*{}*txt'.format(filecode, tstep / 60)))
+                         '{}*{}*txt'.format(filecode, tstep_in / 60)))
         if 'ESTM' not in x_file]
     # load as DataFrame:
-    df_forcing = load_SUEWS_MetForcing_df_raw(list_file_MetForcing[0])
-    # # convert df_forcing to dict for later use
-    # dict_MetForcing = df_forcing.T.to_dict()
+    df_forcing = load_SUEWS_MetForcing_df_resample(
+        list_file_MetForcing[0],
+        tstep_in, tstep, lat, lon, alt, timezone, kdownzen)
+
     # define some met forcing determined variables:
     # previous day index
-    id_prev = df_forcing.loc[0, 'id'] - 1
+    id_prev = df_forcing.iloc[0]['id'] - 1
 
     # initialise dict_InitCond with default values
     dict_InitCond = {

@@ -3,9 +3,9 @@ import os
 import glob
 import numpy as np
 import pandas as pd
-from pandas import DataFrame as df
+# from pandas import DataFrame as df
 import matplotlib.pyplot as plt
-import copy
+# import copy
 # import collections
 reload(sp)
 

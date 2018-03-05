@@ -29,8 +29,6 @@ from SUEWS_driver import suews_driver as sd
 # ######################################################################
 # get_args_suews can get the interface informaiton
 # of the f2py-converted Fortran interface
-
-
 def get_args_suews():
     # split doc lines for processing
     docLines = np.array(
@@ -563,16 +561,16 @@ def load_SUEWS_nml(xfile):
 
 def load_SUEWS_RunControl(xfile):
     lib_RunControl = load_SUEWS_nml(xfile)
-    for var in lib_RunControl.index:
-        val = lib_RunControl.loc[var, 'runcontrol']
-        if type(val) == str:
-            cmd = '{var}={val:{c}^{n}}'.format(
-                var=var, val=val, n=len(val) + 2, c='\'')
-        else:
-            cmd = '{var}={val}'.format(var=var, val=val)
-        # print cmd
-        # put configuration variables into global namespace
-        exec(cmd, globals())
+    # for var in lib_RunControl.index:
+    #     val = lib_RunControl.loc[var, 'runcontrol']
+    #     if type(val) == str:
+    #         cmd = '{var}={val:{c}^{n}}'.format(
+    #             var=var, val=val, n=len(val) + 2, c='\'')
+    #     else:
+    #         cmd = '{var}={val}'.format(var=var, val=val)
+    #     # print cmd
+    #     # put configuration variables into global namespace
+    #     exec(cmd, globals())
     # return DataFrame containing settings
     return lib_RunControl
 
@@ -586,27 +584,29 @@ def load_SUEWS_table(fileX):
 
 
 # load all tables into variables staring with 'lib_' and filename
-def load_SUEWS_Vars(dir_input):
-    for k, v in dict_libVar2File.iteritems():
-        v = os.path.join(dir_input, v)
+def load_SUEWS_Libs(dir_input):
+    dict_libs={}
+    for lib, lib_file in dict_libVar2File.iteritems():
+        lib_path = os.path.join(dir_input, lib_file)
         cmd = '{var}=load_SUEWS_table({val:{c}^{n}})'.format(
-            var=k, val=v, n=len(v) + 2, c='\'')
+            var=lib, val=lib_path, n=len(lib_path) + 2, c='\'')
         # print cmd
         # put configuration variables into global namespace
         exec(cmd, globals())
+        dict_libs.update({lib:load_SUEWS_table(lib_path)})
     # return DataFrame containing settings
-    return None
+    return dict_libs
 
 
 # look up properties according to code
-def lookup_code_sub(codeName, codeKey, codeValue):
+def lookup_code_sub(libName, codeKey, codeValue):
     # print ''
     # print 'lookup_code_sub'
     # print 1,codeName
     # print 2,codeKey
     # print 3,codeValue
     # print ''
-    str_lib = dict_Code2File[codeName].replace(
+    str_lib = dict_Code2File[libName].replace(
         '.txt', '').replace('SUEWS', 'lib')
     str_code = '{:d}'.format(int(np.unique(codeValue)))
     if codeKey == ':':
@@ -618,6 +618,27 @@ def lookup_code_sub(codeName, codeKey, codeValue):
     # print cmd
     res = eval(cmd)
     return res
+
+def lookup_code_lib(libName, codeKey, codeValue):
+    # print ''
+    # print 'lookup_code_sub'
+    # print 1,codeName
+    # print 2,codeKey
+    # print 3,codeValue
+    # print ''
+    str_lib = dict_Code2File[libName].replace(
+        '.txt', '').replace('SUEWS', 'lib')
+    str_code = '{:d}'.format(int(np.unique(codeValue)))
+    if codeKey == ':':
+        cmd = '{lib}.loc[{code},:].tolist()'.format(lib=str_lib, code=str_code)
+    else:
+        cmd = '{lib}.loc[{code},{key:{c}^{n}}]'.format(
+            lib=str_lib, code=str_code,
+            key=codeKey, n=len(codeKey) + 2, c='\'')
+    # print cmd
+    res = eval(cmd)
+    return res
+
 
 
 # a recursive function to retrieve value based on key sequences
@@ -650,12 +671,16 @@ def load_SUEWS_SurfaceChar(dir_input):
     tstep = dict_RunControl['tstep']
     dir_path = os.path.join(dir_input, dict_RunControl['fileinputpath'])
     # load all libraries
-    load_SUEWS_Vars(dir_path)
+    dict_libs=load_SUEWS_Libs(dir_path)
     # construct a dictionary in the form: {grid:{var:value,...}}
     dict_gridSurfaceChar = {
         grid: {k: lookup_KeySeq(k, v, grid)
                for k, v in dict_var2SiteSelect.iteritems()}
-        for grid in lib_SiteSelect.index}
+        for grid in dict_libs['lib_SiteSelect'].index}
+    # dict_gridSurfaceChar = {
+    #     grid: {k: lookup_KeySeq(k, v, grid)
+    #            for k, v in dict_var2SiteSelect.iteritems()}
+    #     for grid in lib_SiteSelect.index}
     # convert the above dict to DataFrame
     df_gridSurfaceChar = pd.DataFrame.from_dict(dict_gridSurfaceChar).T
     # empty dict to hold updated values

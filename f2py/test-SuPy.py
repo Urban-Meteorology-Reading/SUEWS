@@ -17,17 +17,21 @@ ser_mod_cfg, df_state_init = sp.init_SUEWS_pd(dir_start)
 # load met forcing
 filecode, kdownzen, tstep_in = ser_mod_cfg[
     ['filecode', 'kdownzen', 'resolutionfilesin']]
-tstep_mod, lat, lon, alt, timezone = df_state_init.iloc[0][
-    ['tstep', 'lat', 'lng', 'alt', 'timezone']]
-metfile_pattern = os.path.join(
-    dir_start, 'Input/{}*{}*txt'.format(filecode, tstep_in / 60))
-list_file_MetForcing = [
-    f for f in glob.glob(metfile_pattern)
-    if 'ESTM' not in f]
+# tstep_mod, lat, lon, alt, timezone = df_state_init.iloc[0][
+#     ['tstep', 'lat', 'lng', 'alt', 'timezone']]
+# metfile_pattern = os.path.join(
+#     dir_start, 'Input/{}*{}*txt'.format(filecode, tstep_in / 60))
+# list_file_MetForcing = [
+#     f for f in glob.glob(metfile_pattern)
+#     if 'ESTM' not in f]
 # load as DataFrame:
-df_forcing = sp.load_SUEWS_MetForcing_df_resample(
-    list_file_MetForcing[0],
-    tstep_in, tstep_mod, lat, lon, alt, timezone, kdownzen)
+grid=df_state_init.index[0]
+df_state_init['storageheatmethod']=1
+df_forcing = sp.load_SUEWS_Forcing_df_resample(
+    dir_start, grid, ser_mod_cfg, df_state_init)
+# df_forcing = sp.load_SUEWS_MetForcing_df_resample(
+#     list_file_MetForcing[0],
+#     tstep_in, tstep_mod, lat, lon, alt, timezone, kdownzen)
 # load as dict (faster for simulation if performance is heavily concerned)
 # dict_forcing = sp.load_SUEWS_MetForcing_dict(list_file_MetForcing[1])
 # dict_forcing.keys()[-1]

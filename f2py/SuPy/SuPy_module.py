@@ -434,7 +434,11 @@ def load_SUEWS_Forcing_met_df_raw(
             'xsmd': 'xsmd'})
 
     # convert unit from kPa to hPa
-    df_forcing_met['press_hpa']*=10
+    df_forcing_met['press_hpa'] *= 10
+
+    # set correct data types
+    df_forcing_met[['iy', 'id', 'it', 'imin']] = df_forcing_met[[
+        'iy', 'id', 'it', 'imin']].astype(np.int64)
 
     return df_forcing_met
 
@@ -487,6 +491,10 @@ def load_SUEWS_Forcing_ESTM_df_raw(
             # 'all': 'metforcingdata_grid',
             'xsmd': 'xsmd'})
 
+    # set correct data types
+    df_forcing_estm[['iy', 'id', 'it', 'imin']] = df_forcing_estm[[
+        'iy', 'id', 'it', 'imin']].astype(np.int64)
+
     return df_forcing_estm
 
 
@@ -510,47 +518,63 @@ def load_SUEWS_Forcing_df_resample(dir_site, grid, ser_mod_cfg, df_state_init):
     # met forcing
     df_forcing_met = load_SUEWS_Forcing_met_df_raw(
         dir_input, filecode, grid, tstep_met_in, multiplemetfiles)
-    # ESTM forcing
-    df_forcing_estm = load_SUEWS_Forcing_ESTM_df_raw(
-        dir_input, filecode, grid, tstep_ESTM_in, multipleestmfiles)
 
     # resample raw data from tstep_in to tstep_mod
     df_forcing_met_tstep = resample_forcing_met(
         df_forcing_met, tstep_met_in, tstep_mod, lat, lon, alt, timezone, kdownzen)
-    df_forcing_estm_tstep = resample_linear(
-        df_forcing_estm, tstep_met_in, tstep_mod)
 
     # merge forcing datasets (met and ESTM)
-    df_forcing_tstep = df_forcing_met_tstep.merge(
-        df_forcing_estm_tstep,
-        left_on=['iy', 'id', 'it', 'imin'],
-        right_on=['iy', 'id', 'it', 'imin'])
+    df_forcing_tstep = df_forcing_met_tstep.copy()
+    # df_forcing_tstep = df_forcing_met_tstep.merge(
+    #     df_forcing_estm_tstep,
+    #     left_on=['iy', 'id', 'it', 'imin'],
+    #     right_on=['iy', 'id', 'it', 'imin'])
 
     # pack all records of `id` into `metforcingdata_grid` for AnOHM and others
     df_grp = df_forcing_tstep.groupby('id')
     dict_id_all = {xid: df_grp.get_group(xid)
                    for xid in df_forcing_tstep['id'].unique()}
     id_all = df_forcing_tstep['id'].apply(lambda xid: dict_id_all[xid])
-    df_merged = df_forcing_tstep.merge(id_all.to_frame(name='metforcingdata_grid'),
-                                       left_index=True,
-                                       right_index=True)
+    df_forcing_tstep = df_forcing_tstep.merge(id_all.to_frame(name='metforcingdata_grid'),
+                                              left_index=True,
+                                              right_index=True)
 
-    # print df_merged.columns
+
+
+    # add Ts forcing for ESTM
+    if df_state_init.iloc[0]['storageheatmethod'] == 4:
+        # load ESTM forcing
+        df_forcing_estm = load_SUEWS_Forcing_ESTM_df_raw(
+            dir_input, filecode, grid, tstep_ESTM_in, multipleestmfiles)
+        # resample raw data from tstep_in to tstep_mod
+        df_forcing_estm_tstep = resample_linear(
+            df_forcing_estm, tstep_met_in, tstep_mod)
+        df_forcing_tstep = df_forcing_tstep.merge(
+            df_forcing_estm_tstep,
+            left_on=['iy', 'id', 'it', 'imin'],
+            right_on=['iy', 'id', 'it', 'imin'])
+        # insert `ts5mindata_ir` into df_forcing_tstep
+        ts_col=df_forcing_estm.columns[4:]
+        df_forcing_tstep['ts5mindata_ir'] = (
+            df_forcing_tstep.loc[:,ts_col].values.tolist())
+        df_forcing_tstep['ts5mindata_ir'] = df_forcing_tstep[
+            'ts5mindata_ir'].map(lambda x: np.array(x, order='F'))
+    else:
+        # insert some placeholder values
+        df_forcing_tstep['ts5mindata_ir'] = df_forcing_tstep['temp_c']
+
     # new columns for later use in main calculation
-    df_merged[['iy', 'id', 'it', 'imin']] = df_merged[[
+    df_forcing_tstep[['iy', 'id', 'it', 'imin']] = df_forcing_tstep[[
         'iy', 'id', 'it', 'imin']].astype(np.int64)
-    df_merged['dectime'] = (df_merged['id'] +
-                            (df_merged['it']
-                             + df_merged['imin'] / 60.) / 24.)
-    df_merged['id_prev_t'] = df_merged['id'].shift(1).fillna(method='backfill')
-    df_merged['iy_prev_t'] = df_merged['iy'].shift(1).fillna(method='backfill')
+    df_forcing_tstep['dectime'] = (df_forcing_tstep['id'] +
+                                   (df_forcing_tstep['it']
+                                    + df_forcing_tstep['imin'] / 60.) / 24.)
+    df_forcing_tstep['id_prev_t'] = df_forcing_tstep['id'].shift(
+        1).fillna(method='backfill')
+    df_forcing_tstep['iy_prev_t'] = df_forcing_tstep['iy'].shift(
+        1).fillna(method='backfill')
 
-    df_merged['ts5mindata_ir'] = (
-        df_forcing_estm_tstep.iloc[:, 4:].values.tolist())
-    df_merged['ts5mindata_ir'] = df_merged[
-        'ts5mindata_ir'].map(lambda x: np.array(x, order='F'))
-
-    return df_merged
+    return df_forcing_tstep
 
 
 def load_SUEWS_MetForcing_df_resample(
@@ -767,34 +791,21 @@ def init_SUEWS_dict_grid(dir_input, grid,
     # load tstep from dict_RunControl
     tstep = dict_ModConfig['tstep']
     # some constant values
-
     nan = -999.
     ndays = 366
     nsh = 3600 / tstep  # tstep from dict_RunControl
 
     # load met forcing of `grid`:
     filecode = dict_ModConfig['filecode']
-    # kdownzen = dict_ModConfig['kdownzen']
     tstep_in = dict_ModConfig['resolutionfilesin']
-    # lat, lon, alt, timezone = df_gridSurfaceChar.loc[
-    #     grid, ['lat', 'lng', 'alt', 'timezone']]
-    metfile_pattern = os.path.join(
-        dir_input,
-        '{site}{grid}*{tstep}*txt'.format(
-            site=filecode,
-            grid=(grid if dict_ModConfig['multiplemetfiles'] == 1 else ''),
-            tstep=tstep_in / 60))
-    list_file_MetForcing = [
-        x_file for x_file in glob.glob(metfile_pattern)
-        if 'ESTM' not in x_file]
-    list_file_MetForcing = sorted(list_file_MetForcing)
+    multiplemetfiles = dict_ModConfig['multiplemetfiles']
     # load as DataFrame:
-    # TODO: modify the loading when other forcing funcitons are finished
-    df_forcing_met = load_SUEWS_MetForcing_df_raw(list_file_MetForcing[0])
+    df_forcing_met = load_SUEWS_Forcing_met_df_raw(
+        dir_input, filecode, grid, tstep_in, multiplemetfiles)
 
     # define some met forcing determined variables:
     # previous day index
-    id_prev = df_forcing_met.iloc[0]['id'] - 1
+    id_prev = int(df_forcing_met['id'].iloc[0] - 1)
 
     # initialise dict_InitCond with default values
     dict_InitCond = {

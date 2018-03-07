@@ -1133,7 +1133,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      MetForcingData_grid=MetForcingData(:,:,Gridiv)
 
      ! Calculate dectime
-     dectime = REAL(id,KIND(1d0))+REAL(it,KIND(1d0))/24+REAL(imin,KIND(1d0))/(60*24)
+     dectime = REAL(id-1,KIND(1d0))+REAL(it,KIND(1d0))/24+REAL(imin,KIND(1d0))/(60*24)
      ! Create datetime stamp for error/warnings file
      WRITE(iy_text,'(i4)') iy
      WRITE(id_text,'(i3)') id

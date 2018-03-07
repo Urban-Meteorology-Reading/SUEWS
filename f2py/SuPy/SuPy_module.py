@@ -14,14 +14,20 @@ import numpy as np
 import pandas as pd
 import f90nml
 from pandas import DataFrame as df
-from SUEWS_driver import suews_driver as sd
+import inspect
 from scipy import interpolate
-import collections
 import copy
 import glob
+from datetime import timedelta
+# import math
+# import random
+# import pkg_resources
+
+# load f2py-based SUEWS calculation core
+from SUEWS_driver import suews_driver as sd
 
 
-######################################################################
+########################################################################
 # get_args_suews can get the interface informaiton
 # of the f2py-converted Fortran interface
 def get_args_suews():
@@ -69,6 +75,9 @@ def get_args_suews():
 # 2. met forcing conditions will splitted into time steps and used to derive
 # other information
 
+# define local path for loading resources in this package
+dir_path = os.path.dirname(os.path.abspath(inspect.getsourcefile(lambda: 0)))
+
 # descriptive list/dicts for variables
 # minimal required input files for configuration:
 list_file_input = ['SUEWS_AnthropogenicHeat.txt',
@@ -95,485 +104,11 @@ dict_libVar2File = {fileX.replace('.txt', '').replace(
 # links between code in SiteSelect to properties in according tables
 # this is described in SUEWS online manual:
 # http://urban-climate.net/umep/SUEWS#SUEWS_SiteSelect.txt
-dict_Code2File = {
-    'Code_Paved': 'SUEWS_NonVeg.txt',
-    'Code_Bldgs': 'SUEWS_NonVeg.txt',
-    'Code_EveTr': 'SUEWS_Veg.txt',
-    'Code_DecTr': 'SUEWS_Veg.txt',
-    'Code_Grass': 'SUEWS_Veg.txt',
-    'Code_Bsoil': 'SUEWS_NonVeg.txt',
-    'Code_Water': 'SUEWS_Water.txt',
-    'CondCode': 'SUEWS_Conductance.txt',
-    'SnowCode': 'SUEWS_Snow.txt',
-    'SnowClearingProfWD': 'SUEWS_Profiles.txt',
-    'SnowClearingProfWE': 'SUEWS_Profiles.txt',
-    'AnthropogenicCode': 'SUEWS_AnthropogenicHeat.txt',
-    'IrrigationCode': 'SUEWS_Irrigation.txt',
-    'WithinGridPavedCode': 'SUEWS_WithinGridWaterDist.txt',
-    'WithinGridBldgsCode': 'SUEWS_WithinGridWaterDist.txt',
-    'WithinGridEveTrCode': 'SUEWS_WithinGridWaterDist.txt',
-    'WithinGridDecTrCode': 'SUEWS_WithinGridWaterDist.txt',
-    'WithinGridGrassCode': 'SUEWS_WithinGridWaterDist.txt',
-    'WithinGridUnmanBSoilCode': 'SUEWS_WithinGridWaterDist.txt',
-    'WithinGridWaterCode': 'SUEWS_WithinGridWaterDist.txt',
-    'Code_ESTMClass_Paved1': 'SUEWS_ESTMCoefficients.txt',
-    'Code_ESTMClass_Paved2': 'SUEWS_ESTMCoefficients.txt',
-    'Code_ESTMClass_Paved3': 'SUEWS_ESTMCoefficients.txt',
-    'Code_ESTMClass_Bldgs1': 'SUEWS_ESTMCoefficients.txt',
-    'Code_ESTMClass_Bldgs2': 'SUEWS_ESTMCoefficients.txt',
-    'Code_ESTMClass_Bldgs3': 'SUEWS_ESTMCoefficients.txt',
-    'Code_ESTMClass_Bldgs4': 'SUEWS_ESTMCoefficients.txt',
-    'Code_ESTMClass_Bldgs5': 'SUEWS_ESTMCoefficients.txt',
-    'OHMCode_SummerWet': 'SUEWS_OHMCoefficients.txt',
-    'OHMCode_SummerDry': 'SUEWS_OHMCoefficients.txt',
-    'OHMCode_WinterWet': 'SUEWS_OHMCoefficients.txt',
-    'OHMCode_WinterDry': 'SUEWS_OHMCoefficients.txt',
-    'ESTMCode': 'SUEWS_ESTMCoefficients.txt',
-    'EnergyUseProfWD': 'SUEWS_Profiles.txt',
-    'EnergyUseProfWE': 'SUEWS_Profiles.txt',
-    'ActivityProfWD': 'SUEWS_Profiles.txt',
-    'ActivityProfWE': 'SUEWS_Profiles.txt',
-    'TraffProfWD': 'SUEWS_Profiles.txt',
-    'TraffProfWE': 'SUEWS_Profiles.txt',
-    'PopProfWD': 'SUEWS_Profiles.txt',
-    'PopProfWE': 'SUEWS_Profiles.txt',
-    'WaterUseProfManuWD': 'SUEWS_Profiles.txt',
-    'WaterUseProfManuWE': 'SUEWS_Profiles.txt',
-    'WaterUseProfAutoWD': 'SUEWS_Profiles.txt',
-    'WaterUseProfAutoWE': 'SUEWS_Profiles.txt',
-    'BiogenCO2Code': 'SUEWS_BiogenCO2.txt',
-    'SoilTypeCode': 'SUEWS_Soil.txt'}
-
+path_code2file = os.path.join(dir_path, 'code2file.json')
+dict_Code2File = pd.read_json(path_code2file, typ='series').to_dict()
 # variable translation as done in Fortran-SUEWS
-dict_var2SiteSelect = {
-    'lat': 'lat',
-    'lng': 'lng',
-    'timezone': 'Timezone',
-    'alt': 'Alt',
-    'z': 'z',
-    'snowprof':
-        [{'SnowClearingProfWD': ':'}, {'SnowClearingProfWE': ':'}],
-    'ahprof':
-        {'AnthropogenicCode': [
-            {'EnergyUseProfWD': ':'}, {'EnergyUseProfWE': ':'}]},
-    'popprof':
-        {'AnthropogenicCode': [{'PopProfWD': ':'}, {'PopProfWE': ':'}]},
-    'traffprof':
-        {'AnthropogenicCode': [{'TraffProfWD': ':'}, {'TraffProfWE': ':'}]},
-    'humactivity':
-        {'AnthropogenicCode': [
-            {'ActivityProfWD': ':'}, {'ActivityProfWE': ':'}]},
-    'wuprofa':
-        [{'WaterUseProfAutoWD': ':'}, {'WaterUseProfAutoWE': ':'}],
-    'wuprofm':
-        [{'WaterUseProfManuWD': ':'}, {'WaterUseProfManuWE': ':'}],
-    'ah_min': {'AnthropogenicCode': ['AHMin_WD', 'AHMin_WE']},
-    'ah_slope_cooling':
-    {'AnthropogenicCode': ['AHSlope_Cooling_WD', 'AHSlope_Cooling_WE']},
-    'ah_slope_heating':
-    {'AnthropogenicCode': ['AHSlope_Heating_WD', 'AHSlope_Heating_WE']},
-    'alb': [{'Code_Paved': 'AlbedoMax'},
-            {'Code_Bldgs': 'AlbedoMax'},
-            {'Code_EveTr': 'AlbedoMax'},
-            {'Code_DecTr': 'AlbedoMax'},
-            {'Code_Grass': 'AlbedoMax'},
-            {'Code_Bsoil': 'AlbedoMax'},
-            {'Code_Water': 'AlbedoMax'}],
-    'albmax_evetr': {'Code_EveTr': 'AlbedoMax'},
-    'albmax_dectr': {'Code_DecTr': 'AlbedoMax'},
-    'albmax_grass': {'Code_Grass': 'AlbedoMax'},
-    'albmin_evetr': {'Code_EveTr': 'AlbedoMin'},
-    'albmin_dectr': {'Code_DecTr': 'AlbedoMin'},
-    'albmin_grass': {'Code_Grass': 'AlbedoMin'},
-    'alpha_bioco2':
-    [{'Code_EveTr': {'BiogenCO2Code': 'alpha'}},
-            {'Code_DecTr': {'BiogenCO2Code': 'alpha'}},
-            {'Code_Grass': {'BiogenCO2Code': 'alpha'}}],
-    'alpha_enh_bioco2':
-    [{'Code_EveTr': {'BiogenCO2Code': 'alpha_enh'}},
-            {'Code_DecTr': {'BiogenCO2Code': 'alpha_enh'}},
-            {'Code_Grass': {'BiogenCO2Code': 'alpha_enh'}}],
-    'alt': 'Alt',
-    'flowchange': 'FlowChange',
-    'baset': [{'Code_EveTr': 'BaseT'},
-              {'Code_DecTr': 'BaseT'},
-              {'Code_Grass': 'BaseT'}],
-    'basete': [{'Code_EveTr': 'BaseTe'},
-               {'Code_DecTr': 'BaseTe'},
-               {'Code_Grass': 'BaseTe'}],
-    'basethdd': {'AnthropogenicCode': 'BaseTHDD'},
-    'beta_bioco2':
-    [{'Code_EveTr': {'BiogenCO2Code': 'beta'}},
-            {'Code_DecTr': {'BiogenCO2Code': 'beta'}},
-            {'Code_Grass': {'BiogenCO2Code': 'beta'}}],
-    'beta_enh_bioco2':
-    [{'Code_EveTr': {'BiogenCO2Code': 'beta_enh'}},
-            {'Code_DecTr': {'BiogenCO2Code': 'beta_enh'}},
-            {'Code_Grass': {'BiogenCO2Code': 'beta_enh'}}],
-    'bldgh': 'H_Bldgs',
-    'capmax_dec': {'Code_DecTr': 'StorageMax'},
-    'capmin_dec': {'Code_DecTr': 'StorageMin'},
-    'chanohm': [{'Code_Paved': 'AnOHM_Ch'},
-                {'Code_Bldgs': 'AnOHM_Ch'},
-                {'Code_EveTr': 'AnOHM_Ch'},
-                {'Code_DecTr': 'AnOHM_Ch'},
-                {'Code_Grass': 'AnOHM_Ch'},
-                {'Code_Bsoil': 'AnOHM_Ch'},
-                {'Code_Water': 'AnOHM_Ch'}],
-    'cpanohm': [{'Code_Paved': 'AnOHM_Cp'},
-                {'Code_Bldgs': 'AnOHM_Cp'},
-                {'Code_EveTr': 'AnOHM_Cp'},
-                {'Code_DecTr': 'AnOHM_Cp'},
-                {'Code_Grass': 'AnOHM_Cp'},
-                {'Code_Bsoil': 'AnOHM_Cp'},
-                {'Code_Water': 'AnOHM_Cp'}],
-    'crwmax': {'SnowCode': 'CRWMax'},
-    'crwmin': {'SnowCode': 'CRWMin'},
-    'daywat': {'IrrigationCode':
-               ['DayWat(1)',
-                'DayWat(2)',
-                'DayWat(3)',
-                'DayWat(4)',
-                'DayWat(5)',
-                'DayWat(6)',
-                'DayWat(7)']},
-    'daywatper': {'IrrigationCode':
-                  ['DayWatPer(1)',
-                   'DayWatPer(2)',
-                   'DayWatPer(3)',
-                   'DayWatPer(4)',
-                   'DayWatPer(5)',
-                   'DayWatPer(6)',
-                   'DayWatPer(7)']},
-    'dectreeh': 'H_DecTr',
-    'drainrt': 'LUMPS_DrRate',
-    'ef_umolco2perj': {'AnthropogenicCode': 'EF_umolCO2perJ'},
-    'emis': [{'Code_Paved': 'Emissivity'},
-             {'Code_Bldgs': 'Emissivity'},
-             {'Code_EveTr': 'Emissivity'},
-             {'Code_DecTr': 'Emissivity'},
-             {'Code_Grass': 'Emissivity'},
-             {'Code_Bsoil': 'Emissivity'},
-             {'Code_Water': 'Emissivity'}],
-    'enef_v_jkm': {'AnthropogenicCode': 'EnEF_v_Jkm'},
-    'evetreeh': 'H_EveTr',
-    'faibldg': 'FAI_Bldgs',
-    'faidectree': 'FAI_DecTr',
-    'faievetree': 'FAI_EveTr',
-    'faut': {'IrrigationCode': 'Faut'},
-    'fcef_v_kgkm': {'AnthropogenicCode': 'FcEF_v_kgkm'},
-    'frfossilfuel_heat': {'AnthropogenicCode': 'FrFossilFuel_Heat'},
-    'frfossilfuel_nonheat': {'AnthropogenicCode': 'FrFossilFuel_NonHeat'},
-    'g1': {'CondCode': 'G1'},
-    'g2': {'CondCode': 'G2'},
-    'g3': {'CondCode': 'G3'},
-    'g4': {'CondCode': 'G4'},
-    'g5': {'CondCode': 'G5'},
-    'g6': {'CondCode': 'G6'},
-    'gddfull':
-    [{'Code_EveTr': 'GDDFull'},
-            {'Code_DecTr': 'GDDFull'},
-            {'Code_Grass': 'GDDFull'}],
-    'gsmodel': {'CondCode': 'gsModel'},
-    'ie_a': {'IrrigationCode': ['Ie_a1', 'Ie_a2', 'Ie_a3']},
-    'ie_end': {'IrrigationCode': 'Ie_end'},
-    'ie_m': {'IrrigationCode': ['Ie_m1', 'Ie_m2', 'Ie_m3']},
-    'ie_start': {'IrrigationCode': 'Ie_start'},
-    'internalwateruse_h': {'IrrigationCode': 'InternalWaterUse'},
-    'irrfracconif': 'IrrFr_EveTr',
-    'irrfracdecid': 'IrrFr_DecTr',
-    'irrfracgrass': 'IrrFr_Grass',
-    'kkanohm': [{'Code_Paved': 'AnOHM_Kk'},
-                {'Code_Bldgs': 'AnOHM_Kk'},
-                {'Code_EveTr': 'AnOHM_Kk'},
-                {'Code_DecTr': 'AnOHM_Kk'},
-                {'Code_Grass': 'AnOHM_Kk'},
-                {'Code_Bsoil': 'AnOHM_Kk'},
-                {'Code_Water': 'AnOHM_Kk'}],
-    'kmax': {'CondCode': 'Kmax'},
-    'laimax': [{'Code_EveTr': 'LAIMax'},
-               {'Code_DecTr': 'LAIMax'},
-               {'Code_Grass': 'LAIMax'}],
-    'laimin': [{'Code_EveTr': 'LAIMin'},
-               {'Code_DecTr': 'LAIMin'},
-               {'Code_Grass': 'LAIMin'}],
-    #  'lai_obs': '',
-    'laipower': [{'Code_EveTr': ['LeafGrowthPower1', 'LeafGrowthPower2',
-                                 'LeafOffPower1', 'LeafOffPower2']},
-                 {'Code_DecTr': ['LeafGrowthPower1', 'LeafGrowthPower2',
-                                 'LeafOffPower1', 'LeafOffPower2']},
-                 {'Code_Grass': ['LeafGrowthPower1', 'LeafGrowthPower2',
-                                 'LeafOffPower1', 'LeafOffPower2']}],
-    'laitype': [{'Code_EveTr': 'LAIEq'},
-                {'Code_DecTr': 'LAIEq'},
-                {'Code_Grass': 'LAIEq'}],
-    'lat': 'lat',
-    'lng': 'lng',
-    'maxconductance': [{'Code_EveTr': 'MaxConductance'},
-                       {'Code_DecTr': 'MaxConductance'},
-                       {'Code_Grass': 'MaxConductance'}],
-    'maxqfmetab': {'AnthropogenicCode': 'MaxQFMetab'},
-    'minqfmetab': {'AnthropogenicCode': 'MinQFMetab'},
-    'min_res_bioco2': [{'Code_EveTr': {'BiogenCO2Code': 'min_respi'}},
-                       {'Code_DecTr': {'BiogenCO2Code': 'min_respi'}},
-                       {'Code_Grass': {'BiogenCO2Code': 'min_respi'}}],
-    'narp_emis_snow': {'SnowCode': 'Emissivity'},
-    'narp_trans_site': 'NARP_Trans',
-    'ohm_coef':
-    [{'Code_Paved': [{'OHMCode_SummerWet': ['a1', 'a2', 'a3']},
-                     {'OHMCode_SummerDry': ['a1', 'a2', 'a3']},
-                     {'OHMCode_WinterWet': ['a1', 'a2', 'a3']},
-                     {'OHMCode_WinterDry': ['a1', 'a2', 'a3']}]},
-            {'Code_Bldgs': [{'OHMCode_SummerWet': ['a1', 'a2', 'a3']},
-                            {'OHMCode_SummerDry': ['a1', 'a2', 'a3']},
-                            {'OHMCode_WinterWet': ['a1', 'a2', 'a3']},
-                            {'OHMCode_WinterDry': ['a1', 'a2', 'a3']}]},
-            {'Code_EveTr': [{'OHMCode_SummerWet': ['a1', 'a2', 'a3']},
-                            {'OHMCode_SummerDry': ['a1', 'a2', 'a3']},
-                            {'OHMCode_WinterWet': ['a1', 'a2', 'a3']},
-                            {'OHMCode_WinterDry': ['a1', 'a2', 'a3']}]},
-            {'Code_DecTr': [{'OHMCode_SummerWet': ['a1', 'a2', 'a3']},
-                            {'OHMCode_SummerDry': ['a1', 'a2', 'a3']},
-                            {'OHMCode_WinterWet': ['a1', 'a2', 'a3']},
-                            {'OHMCode_WinterDry': ['a1', 'a2', 'a3']}]},
-            {'Code_Grass': [{'OHMCode_SummerWet': ['a1', 'a2', 'a3']},
-                            {'OHMCode_SummerDry': ['a1', 'a2', 'a3']},
-                            {'OHMCode_WinterWet': ['a1', 'a2', 'a3']},
-                            {'OHMCode_WinterDry': ['a1', 'a2', 'a3']}]},
-            {'Code_Bsoil': [{'OHMCode_SummerWet': ['a1', 'a2', 'a3']},
-                            {'OHMCode_SummerDry': ['a1', 'a2', 'a3']},
-                            {'OHMCode_WinterWet': ['a1', 'a2', 'a3']},
-                            {'OHMCode_WinterDry': ['a1', 'a2', 'a3']}]},
-            {'Code_Water': [{'OHMCode_SummerWet': ['a1', 'a2', 'a3']},
-                            {'OHMCode_SummerDry': ['a1', 'a2', 'a3']},
-                            {'OHMCode_WinterWet': ['a1', 'a2', 'a3']},
-                            {'OHMCode_WinterDry': ['a1', 'a2', 'a3']}]},
-            {'SnowCode': [{'OHMCode_SummerWet': ['a1', 'a2', 'a3']},
-                          {'OHMCode_SummerDry': ['a1', 'a2', 'a3']},
-                          {'OHMCode_WinterWet': ['a1', 'a2', 'a3']},
-                          {'OHMCode_WinterDry': ['a1', 'a2', 'a3']}]}],
-    'ohm_threshsw':
-    [{'Code_Paved': 'OHMThresh_SW'},
-            {'Code_Bldgs': 'OHMThresh_SW'},
-            {'Code_EveTr': 'OHMThresh_SW'},
-            {'Code_DecTr': 'OHMThresh_SW'},
-            {'Code_Grass': 'OHMThresh_SW'},
-            {'Code_Bsoil': 'OHMThresh_SW'},
-            {'Code_Water': 'OHMThresh_SW'},
-            {'SnowCode': 'OHMThresh_SW'}],
-    'ohm_threshwd':
-    [{'Code_Paved': 'OHMThresh_WD'},
-            {'Code_Bldgs': 'OHMThresh_WD'},
-            {'Code_EveTr': 'OHMThresh_WD'},
-            {'Code_DecTr': 'OHMThresh_WD'},
-            {'Code_Grass': 'OHMThresh_WD'},
-            {'Code_Bsoil': 'OHMThresh_WD'},
-            {'Code_Water': 'OHMThresh_WD'},
-            {'SnowCode': 'OHMThresh_WD'}],
-    'pipecapacity': 'PipeCapacity',
-    'popdensdaytime': 'PopDensDay',
-    'popdensnighttime': 'PopDensNight',
-    'pormax_dec': {'Code_DecTr': 'PorosityMax'},
-    'pormin_dec': {'Code_DecTr': 'PorosityMin'},
-    'preciplimit': {'SnowCode': 'PrecipLimSnow'},
-    'preciplimitalb': {'SnowCode': 'PrecipLimAlb'},
-    'qf0_beu': ['QF0_BEU_WD', 'QF0_BEU_WE'],
-    'qf_a': {'AnthropogenicCode': ['QF_A_WD', 'QF_A_WE']},
-    'qf_b': {'AnthropogenicCode': ['QF_B_WD', 'QF_B_WE']},
-    'qf_c': {'AnthropogenicCode': ['QF_C_WD', 'QF_C_WE']},
-    'radmeltfact': {'SnowCode': 'RadMeltFactor'},
-    'raincover': 'LUMPS_Cover',
-    'rainmaxres': 'LUMPS_MaxRes',
-    'resp_a': [{'Code_EveTr': {'BiogenCO2Code': 'resp_a'}},
-               {'Code_DecTr': {'BiogenCO2Code': 'resp_a'}},
-               {'Code_Grass': {'BiogenCO2Code': 'resp_a'}}],
-    'resp_b': [{'Code_EveTr': {'BiogenCO2Code': 'resp_b'}},
-               {'Code_DecTr': {'BiogenCO2Code': 'resp_b'}},
-               {'Code_Grass': {'BiogenCO2Code': 'resp_b'}}],
-    'runofftowater': 'RunoffToWater',
-    's1': {'CondCode': 'S1'},
-    's2': {'CondCode': 'S2'},
-    'sathydraulicconduct':
-    [{'Code_Paved': {'SoilTypeCode': 'SatHydraulicCond'}},
-            {'Code_Bldgs': {'SoilTypeCode': 'SatHydraulicCond'}},
-            {'Code_EveTr': {'SoilTypeCode': 'SatHydraulicCond'}},
-            {'Code_DecTr': {'SoilTypeCode': 'SatHydraulicCond'}},
-            {'Code_Grass': {'SoilTypeCode': 'SatHydraulicCond'}},
-            {'Code_Bsoil': {'SoilTypeCode': 'SatHydraulicCond'}},
-            0.],
-    'sddfull': [{'Code_EveTr': 'SDDFull'},
-                {'Code_DecTr': 'SDDFull'},
-                {'Code_Grass': 'SDDFull'}],
-    'sfr': ['Fr_Paved',
-            'Fr_Bldgs',
-            'Fr_EveTr',
-            'Fr_DecTr',
-            'Fr_Grass',
-            'Fr_Bsoil',
-            'Fr_Water'],
-    'snowalbmax': {'SnowCode': 'AlbedoMax'},
-    'snowalbmin': {'SnowCode': 'AlbedoMin'},
-    'snowd':
-    [{'Code_Paved': 'SnowLimPatch'},
-            {'Code_Bldgs': 'SnowLimPatch'},
-            {'Code_EveTr': 'SnowLimPatch'},
-            {'Code_DecTr': 'SnowLimPatch'},
-            {'Code_Grass': 'SnowLimPatch'},
-            {'Code_Bsoil': 'SnowLimPatch'},
-            0.],
-    'snowdensmax': {'SnowCode': 'SnowDensMax'},
-    'snowdensmin': {'SnowCode': 'SnowDensMin'},
-    'snowlimbuild': {'Code_Bldgs': 'SnowLimRemove'},
-    'snowlimpaved': {'Code_Paved': 'SnowLimRemove'},
-    'soildepth':
-    [{'Code_Paved': {'SoilTypeCode': 'SoilDepth'}},
-            {'Code_Bldgs': {'SoilTypeCode': 'SoilDepth'}},
-            {'Code_EveTr': {'SoilTypeCode': 'SoilDepth'}},
-            {'Code_DecTr': {'SoilTypeCode': 'SoilDepth'}},
-            {'Code_Grass': {'SoilTypeCode': 'SoilDepth'}},
-            {'Code_Bsoil': {'SoilTypeCode': 'SoilDepth'}},
-            0.],
-    'soilstorecap':
-    [{'Code_Paved': {'SoilTypeCode': 'SoilStoreCap'}},
-            {'Code_Bldgs': {'SoilTypeCode': 'SoilStoreCap'}},
-            {'Code_EveTr': {'SoilTypeCode': 'SoilStoreCap'}},
-            {'Code_DecTr': {'SoilTypeCode': 'SoilStoreCap'}},
-            {'Code_Grass': {'SoilTypeCode': 'SoilStoreCap'}},
-            {'Code_Bsoil': {'SoilTypeCode': 'SoilStoreCap'}},
-            0.],
-    'startdls': 'StartDLS',
-    'enddls': 'EndDLS',
-    'statelimit':
-    [{'Code_Paved': 'StateLimit'},
-            {'Code_Bldgs': 'StateLimit'},
-            {'Code_EveTr': 'StateLimit'},
-            {'Code_DecTr': 'StateLimit'},
-            {'Code_Grass': 'StateLimit'},
-            {'Code_Bsoil': 'StateLimit'},
-            {'Code_Water': 'StateLimit'}],
-    'surf':
-    [[{'Code_Paved': 'StorageMin'},
-      {'Code_Bldgs': 'StorageMin'},
-      {'Code_EveTr': 'StorageMin'},
-      {'Code_DecTr': 'StorageMin'},
-      {'Code_Grass': 'StorageMin'},
-      {'Code_Bsoil': 'StorageMin'},
-      {'Code_Water': 'StorageMin'}],
-            [{'Code_Paved': 'DrainageEq'},
-             {'Code_Bldgs': 'DrainageEq'},
-             {'Code_EveTr': 'DrainageEq'},
-             {'Code_DecTr': 'DrainageEq'},
-             {'Code_Grass': 'DrainageEq'},
-             {'Code_Bsoil': 'DrainageEq'},
-             {'Code_Water': 'DrainageEq'}],
-            [{'Code_Paved': 'DrainageCoef1'},
-             {'Code_Bldgs': 'DrainageCoef1'},
-             {'Code_EveTr': 'DrainageCoef1'},
-             {'Code_DecTr': 'DrainageCoef1'},
-             {'Code_Grass': 'DrainageCoef1'},
-             {'Code_Bsoil': 'DrainageCoef1'},
-             {'Code_Water': 'DrainageCoef1'}],
-            [{'Code_Paved': 'DrainageCoef2'},
-             {'Code_Bldgs': 'DrainageCoef2'},
-             {'Code_EveTr': 'DrainageCoef2'},
-             {'Code_DecTr': 'DrainageCoef2'},
-             {'Code_Grass': 'DrainageCoef2'},
-             {'Code_Bsoil': 'DrainageCoef2'},
-             {'Code_Water': 'DrainageCoef2'}],
-            [{'Code_Paved': 'StorageMax'},
-             {'Code_Bldgs': 'StorageMax'},
-             {'Code_EveTr': 'StorageMax'},
-             {'Code_DecTr': 'StorageMax'},
-             {'Code_Grass': 'StorageMax'},
-             {'Code_Bsoil': 'StorageMax'},
-             {'Code_Water': 'StorageMax'}],
-            [{'Code_Paved': 'StorageMin'},
-             {'Code_Bldgs': 'StorageMin'},
-             {'Code_EveTr': 'StorageMin'},
-             {'Code_DecTr': 'StorageMin'},
-             {'Code_Grass': 'StorageMin'},
-             {'Code_Bsoil': 'StorageMin'},
-             {'Code_Water': 'StorageMin'}]],
-    'surfacearea': 'SurfaceArea',
-    'tau_a': {'SnowCode': 'tau_a'},
-    'tau_f': {'SnowCode': 'tau_f'},
-    'tau_r': {'SnowCode': 'tau_r'},
-    't_critic_cooling':
-    {'AnthropogenicCode': ['TCritic_Cooling_WD', 'TCritic_Cooling_WE']},
-    't_critic_heating':
-        {'AnthropogenicCode': ['TCritic_Heating_WD', 'TCritic_Heating_WE']},
-    'tempmeltfact': {'SnowCode': 'TempMeltFactor'},
-    'th': {'CondCode': 'TH'},
-    'theta_bioco2': [{'Code_EveTr': {'BiogenCO2Code': 'theta'}},
-                     {'Code_DecTr': {'BiogenCO2Code': 'theta'}},
-                     {'Code_Grass': {'BiogenCO2Code': 'theta'}}],
-    'timezone': 'Timezone',
-    'tl': {'CondCode': 'TL'},
-    'trafficrate': ['TrafficRate_WD', 'TrafficRate_WE'],
-    'trafficunits': {'AnthropogenicCode': 'TrafficUnits'},
-    'waterdepth': {'Code_Water': 'WaterDepth'},
-    'waterdist':
-    [[{'WithinGridPavedCode': 'ToPaved'},
-      {'WithinGridBldgsCode': 'ToPaved'},
-      {'WithinGridEveTrCode': 'ToPaved'},
-      {'WithinGridDecTrCode': 'ToPaved'},
-      {'WithinGridGrassCode': 'ToPaved'},
-      {'WithinGridUnmanBSoilCode': 'ToPaved'}],
-            [{'WithinGridPavedCode': 'ToBldgs'},
-             {'WithinGridBldgsCode': 'ToBldgs'},
-             {'WithinGridEveTrCode': 'ToBldgs'},
-             {'WithinGridDecTrCode': 'ToBldgs'},
-             {'WithinGridGrassCode': 'ToBldgs'},
-             {'WithinGridUnmanBSoilCode': 'ToBldgs'}],
-            [{'WithinGridPavedCode': 'ToEveTr'},
-             {'WithinGridBldgsCode': 'ToEveTr'},
-             {'WithinGridEveTrCode': 'ToEveTr'},
-             {'WithinGridDecTrCode': 'ToEveTr'},
-             {'WithinGridGrassCode': 'ToEveTr'},
-             {'WithinGridUnmanBSoilCode': 'ToEveTr'}],
-            [{'WithinGridPavedCode': 'ToDecTr'},
-             {'WithinGridBldgsCode': 'ToDecTr'},
-             {'WithinGridEveTrCode': 'ToDecTr'},
-             {'WithinGridDecTrCode': 'ToDecTr'},
-             {'WithinGridGrassCode': 'ToDecTr'},
-             {'WithinGridUnmanBSoilCode': 'ToDecTr'}],
-            [{'WithinGridPavedCode': 'ToGrass'},
-             {'WithinGridBldgsCode': 'ToGrass'},
-             {'WithinGridEveTrCode': 'ToGrass'},
-             {'WithinGridDecTrCode': 'ToGrass'},
-             {'WithinGridGrassCode': 'ToGrass'},
-             {'WithinGridUnmanBSoilCode': 'ToGrass'}],
-            [{'WithinGridPavedCode': 'ToBSoil'},
-             {'WithinGridBldgsCode': 'ToBSoil'},
-             {'WithinGridEveTrCode': 'ToBSoil'},
-             {'WithinGridDecTrCode': 'ToBSoil'},
-             {'WithinGridGrassCode': 'ToBSoil'},
-             {'WithinGridUnmanBSoilCode': 'ToBSoil'}],
-            [{'WithinGridPavedCode': 'ToWater'},
-             {'WithinGridBldgsCode': 'ToWater'},
-             {'WithinGridEveTrCode': 'ToWater'},
-             {'WithinGridDecTrCode': 'ToWater'},
-             {'WithinGridGrassCode': 'ToWater'},
-             {'WithinGridUnmanBSoilCode': 'ToWater'}],
-            # the last surface type is tricky: needs to determine which goes in
-            # if ToRunoff !=0, use ToRunoff, otherwise use ToSoilStore
-            [{'WithinGridPavedCode': ['ToRunoff', 'ToSoilStore']},
-             {'WithinGridBldgsCode': ['ToRunoff', 'ToSoilStore']},
-             {'WithinGridEveTrCode': ['ToRunoff', 'ToSoilStore']},
-             {'WithinGridDecTrCode': ['ToRunoff', 'ToSoilStore']},
-             {'WithinGridGrassCode': ['ToRunoff', 'ToSoilStore']},
-             {'WithinGridUnmanBSoilCode': ['ToRunoff', 'ToSoilStore']}]
-     ],
-    'wetthresh':
-    [{'Code_Paved': 'WetThreshold'},
-            {'Code_Bldgs': 'WetThreshold'},
-            {'Code_EveTr': 'WetThreshold'},
-            {'Code_DecTr': 'WetThreshold'},
-            {'Code_Grass': 'WetThreshold'},
-            {'Code_Bsoil': 'WetThreshold'},
-            {'Code_Water': 'WetThreshold'}],
-    'year': 'Year',
-    'z': 'z'}
+path_var2siteselect = os.path.join(dir_path, 'var2siteselect.json')
+dict_var2SiteSelect = pd.read_json(path_var2siteselect, typ='series').to_dict()
 
 # expand dict_Code2File for retrieving surface characteristics
 dict_varSiteSelect2File = {
@@ -589,21 +124,9 @@ def load_SUEWS_nml(xfile):
     df = pd.DataFrame(f90nml.read(xfile))
     return df
 
-# lib_RunControl = load_SUEWS_nml(os.path.join(dir_input, 'runcontrol.nml'))
-
 
 def load_SUEWS_RunControl(xfile):
     lib_RunControl = load_SUEWS_nml(xfile)
-    for var in lib_RunControl.index:
-        val = lib_RunControl.loc[var, 'runcontrol']
-        if type(val) == str:
-            cmd = '{var}={val:{c}^{n}}'.format(
-                var=var, val=val, n=len(val) + 2, c='\'')
-        else:
-            cmd = '{var}={val}'.format(var=var, val=val)
-        # print cmd
-        # put configuration variables into global namespace
-        exec(cmd, globals())
     # return DataFrame containing settings
     return lib_RunControl
 
@@ -617,50 +140,43 @@ def load_SUEWS_table(fileX):
 
 
 # load all tables into variables staring with 'lib_' and filename
-def load_SUEWS_Vars(dir_input):
-    for k, v in dict_libVar2File.iteritems():
-        v = os.path.join(dir_input, v)
-        cmd = '{var}=load_SUEWS_table({val:{c}^{n}})'.format(
-            var=k, val=v, n=len(v) + 2, c='\'')
-        # print cmd
-        # put configuration variables into global namespace
-        exec(cmd, globals())
+def load_SUEWS_Libs(dir_input):
+    dict_libs = {}
+    for lib, lib_file in dict_libVar2File.iteritems():
+        lib_path = os.path.join(dir_input, lib_file)
+        dict_libs.update({lib: load_SUEWS_table(lib_path)})
     # return DataFrame containing settings
-    return None
+    return dict_libs
 
 
 # look up properties according to code
-def lookup_code_sub(codeName, codeKey, codeValue):
-    str_lib = dict_Code2File[codeName].replace(
+def lookup_code_lib(libName, codeKey, codeValue, dict_libs):
+    str_lib = dict_Code2File[libName].replace(
         '.txt', '').replace('SUEWS', 'lib')
-    str_code = '{:d}'.format(int(codeValue))
+    lib = dict_libs[str_lib]
     if codeKey == ':':
-        cmd = '{lib}.loc[{code},:].tolist()'.format(lib=str_lib, code=str_code)
+        res = lib.loc[int(np.unique(codeValue)), :].tolist()
     else:
-        cmd = '{lib}.loc[{code},{key:{c}^{n}}]'.format(
-            lib=str_lib, code=str_code,
-            key=codeKey, n=len(codeKey) + 2, c='\'')
-    # print cmd
-    res = eval(cmd)
+        res = lib.loc[int(np.unique(codeValue)), codeKey]
     return res
 
 
 # a recursive function to retrieve value based on key sequences
-def lookup_KeySeq(indexKey, subKey, indexCode):
+def lookup_KeySeq_lib(indexKey, subKey, indexCode, dict_libs):
     # print indexKey, subKey, indexCode
     if type(subKey) is float:
         res = subKey
-    elif type(subKey) is str:
-        res = lookup_code_sub(indexKey, subKey, indexCode)
+    elif type(subKey) is unicode:
+        res = lookup_code_lib(indexKey, subKey, indexCode, dict_libs)
     elif type(subKey) is dict:
         indexKeyX, subKeyX = subKey.items()[0]
-        indexCodeX = lookup_code_sub(indexKey, indexKeyX, indexCode)
-        res = lookup_KeySeq(indexKeyX, subKeyX, indexCodeX)
+        indexCodeX = lookup_code_lib(indexKey, indexKeyX, indexCode, dict_libs)
+        res = lookup_KeySeq_lib(indexKeyX, subKeyX, indexCodeX, dict_libs)
     elif type(subKey) is list:
         res = []
         for subKeyX in subKey:
             indexCodeX = indexCode
-            resX = lookup_KeySeq(indexKey, subKeyX, indexCodeX)
+            resX = lookup_KeySeq_lib(indexKey, subKeyX, indexCodeX, dict_libs)
             res.append(resX)
     # final result
     return res
@@ -669,18 +185,21 @@ def lookup_KeySeq(indexKey, subKey, indexCode):
 # load surface characteristics
 def load_SUEWS_SurfaceChar(dir_input):
     # load RunControl variables
-    lib_RunControl = load_SUEWS_RunControl(
-        os.path.join(dir_input, 'runcontrol.nml'))
+    lib_RunControl = load_SUEWS_nml(os.path.join(dir_input, 'runcontrol.nml'))
     dict_RunControl = lib_RunControl.loc[:, 'runcontrol'].to_dict()
     tstep = dict_RunControl['tstep']
     dir_path = os.path.join(dir_input, dict_RunControl['fileinputpath'])
     # load all libraries
-    load_SUEWS_Vars(dir_path)
+    dict_libs = load_SUEWS_Libs(dir_path)
     # construct a dictionary in the form: {grid:{var:value,...}}
     dict_gridSurfaceChar = {
-        grid: {k: lookup_KeySeq(k, v, grid)
+        grid: {k: lookup_KeySeq_lib(k, v, grid, dict_libs)
                for k, v in dict_var2SiteSelect.iteritems()}
-        for grid in lib_SiteSelect.index}
+        for grid in dict_libs['lib_SiteSelect'].index}
+    # dict_gridSurfaceChar = {
+    #     grid: {k: lookup_KeySeq(k, v, grid)
+    #            for k, v in dict_var2SiteSelect.iteritems()}
+    #     for grid in dict_libs['lib_SiteSelect'].index}
     # convert the above dict to DataFrame
     df_gridSurfaceChar = pd.DataFrame.from_dict(dict_gridSurfaceChar).T
     # empty dict to hold updated values
@@ -760,90 +279,305 @@ def func_parse_date(year, doy, hour, min):
     return dt
 
 
-def load_SUEWS_MetForcing_df(fileX):
-    df_forcing = pd.read_table(fileX, delim_whitespace=True,
-                               comment='!',
-                               error_bad_lines=True
-                               # parse_dates={'datetime': [0, 1, 2, 3]},
-                               # keep_date_col=True,
-                               # date_parser=func_parse_date
-                               ).dropna()
+def func_parse_date_row(row):
+    [year, doy, hour, tmin] = row.loc[['iy', 'id', 'it', 'imin']]
+    # dt = datetime.datetime.strptime(
+    #     ' '.join([year, doy, hour, min]), '%Y %j %H %M')
+    dt = pd.to_datetime(' '.join(
+        [str(k) for k in [year, doy, hour, tmin]]),
+        format='%Y %j %H %M')
+    return dt
 
-    # convert unit
-    df_forcing['press'] = df_forcing['press'] * 10.
 
-    # two datetime's
-    # df_forcing_shift = df_forcing.copy()
-    # df_forcing_shift.loc[:,
-    #                      ['%' + 'iy', 'id', 'it', 'imin']] = (
-    #     df_forcing_shift.loc[
-    #         :, ['%' + 'iy', 'id', 'it', 'imin']
-    #     ].shift(1).fillna(method='backfill'))
+# calculate decimal time
+def dectime(timestamp):
+    t = timestamp
+    dectime = (t.dayofyear-1) + (t.hour + (t.minute + t.second / 60.) / 60.) / 24
+    return dectime
 
-    # pack all records of `id` into `all` as required by AnOHM and others
-    # df_grp = df_forcing_shift.groupby('id')
-    df_grp = df_forcing.groupby('id')
-    dict_id_all = {xid: df_grp.get_group(xid)
-                   for xid in df_forcing['id'].unique()}
-    id_all = df_forcing['id'].apply(lambda xid: dict_id_all[xid])
-    df_merged = df_forcing.merge(id_all.to_frame(name='all'),
-                                 left_index=True,
-                                 right_index=True)
+# resample solar radiation by zenith correction and total amount distribution
 
-    # rename column names to conform with calling function
-    df_merged = df_merged.rename(columns={
-        '%' + 'iy': 'iy',
-        'id': 'id',
-        'it': 'it',
-        'imin': 'imin',
-        'Kdn': 'avkdn',
-        'RH': 'avrh',
-        'Wind': 'avu1',
-        'fcld': 'fcld_obs',
-        'lai_hr': 'lai_obs',
-        'ldown': 'ldown_obs',
-        'rain': 'precip',
-        'press': 'press_hpa',
-        'QH': 'qh_obs',
-        'Q*': 'qn1_obs',
-        'snow': 'snow_obs',
-        'Td': 'temp_c',
-        'all': 'metforcingdata_grid',
-        'xsmd': 'xsmd'})
 
-    # print df_merged.columns
-    # new columns for later use in main calculation
-    df_merged[['iy', 'id', 'it', 'imin']] = df_merged[[
+def resample_kdn(data_raw_kdn, tstep_mod, timezone, lat, lon, alt):
+    # adjust solar radiation
+    datetime_mid_local = data_raw_kdn.index - timedelta(
+        seconds=tstep_mod / 2)
+    sol_elev = np.array([sd.cal_sunposition(
+        t.year, dectime(t), timezone, lat, lon, alt)[-1]
+        for t in datetime_mid_local])
+    sol_elev_reset = np.zeros_like(sol_elev)
+    sol_elev_reset[sol_elev <= 90] = 1.
+    data_tstep_kdn_adj = sol_elev_reset * data_raw_kdn.copy()
+
+    # rescale daily amounts
+    avg_raw = data_raw_kdn.resample('D').mean()
+    avg_tstep = data_tstep_kdn_adj.resample('D').mean()
+    ratio_SWdown = (avg_raw / avg_tstep).reindex(
+        index=avg_tstep.index).resample(
+        '{tstep}S'.format(tstep=tstep_mod)).mean().fillna(method='pad')
+    data_tstep_kdn_adj = ratio_SWdown * \
+        data_tstep_kdn_adj.fillna(method='pad')
+
+    return data_tstep_kdn_adj
+
+
+# correct precipitation by even redistribution over resampled periods
+def resample_precip(data_raw_precip, tstep_mod, tstep_in):
+    ratio_precip = 1. * tstep_mod / tstep_in
+    data_tstep_precip_adj = ratio_precip * data_raw_precip.copy().shift(
+        -tstep_in + tstep_mod, freq='S').resample(
+        '{tstep}S'.format(tstep=tstep_mod)).mean().interpolate(
+        method='polynomial', order=0)
+    data_tstep_precip_adj = data_tstep_precip_adj.fillna(value=0.)
+    return data_tstep_precip_adj
+
+
+# resample input forcing by linear interpolation
+def resample_linear(data_raw, tstep_in, tstep_mod):
+    # reset index as timestamps
+    data_raw.index = data_raw.loc[:, ['iy', 'id', 'it', 'imin']].apply(
+        func_parse_date_row, 1)
+    # shift by half-tstep_in to generate a time series with instantaneous
+    # values
+    data_raw_shift = data_raw.copy().shift(-tstep_in / 2, freq='S')
+
+    # downscale input data to desired time step
+    data_raw_tstep = data_raw_shift.resample(
+        '{tstep}S'.format(tstep=tstep_mod)).interpolate(
+        method='polynomial', order=1).rolling(
+        window=2, center=False).mean()
+
+    # reindex data_tstep to valid range
+    ix = pd.date_range(
+        data_raw.index[0] - timedelta(seconds=tstep_in - tstep_mod),
+        data_raw.index[-1],
+        freq='{tstep}S'.format(tstep=tstep_mod))
+    data_tstep = data_raw_tstep.copy().reindex(
+        index=ix).bfill().ffill().dropna()
+
+    # correct temporal information
+    data_tstep['iy'] = data_tstep.index.year
+    data_tstep['id'] = data_tstep.index.dayofyear
+    data_tstep['it'] = data_tstep.index.hour
+    data_tstep['imin'] = data_tstep.index.minute
+
+    return data_tstep
+
+
+# resample input met foring to tstep required by model
+def resample_forcing_met(
+        data_met_raw, tstep_in, tstep_mod, lat, lon, alt, timezone, kdownzen):
+    # overall resample by linear interpolation
+    data_met_tstep = resample_linear(data_met_raw, tstep_in, tstep_mod)
+
+    # adjust solar radiation by zenith correction and total amount distribution
+    if kdownzen == 1:
+        data_met_tstep["avkdn"] = resample_kdn(
+            data_met_tstep["avkdn"], tstep_mod, timezone, lat, lon, alt)
+
+    # correct rainfall
+    data_met_tstep['precip'] = resample_precip(
+        data_met_raw['precip'], tstep_mod, tstep_in)
+
+    # reset index with numbers
+    data_met_tstep_out = data_met_tstep.copy().reset_index(drop=True)
+
+    return data_met_tstep_out
+
+
+# load raw data: met forcing
+def load_SUEWS_Forcing_met_df_raw(
+        dir_input, filecode, grid, tstep_met_in, multiplemetfiles):
+    # file name pattern for met files
+    forcingfile_met_pattern = os.path.join(
+        dir_input,
+        '{site}{grid}*{tstep}*txt'.format(
+            site=filecode,
+            grid=(grid if multiplemetfiles == 1 else ''),
+            tstep=tstep_met_in / 60))
+
+    # list of met forcing files
+    list_file_MetForcing = [
+        f for f in glob.glob(forcingfile_met_pattern)
+        if 'ESTM' not in f]
+
+    # load raw data
+    df_forcing_met = pd.concat(
+        [pd.read_table(
+            fileX,
+            delim_whitespace=True,
+            comment='!',
+            error_bad_lines=True
+            # parse_dates={'datetime': [0, 1, 2, 3]},
+            # keep_date_col=True,
+            # date_parser=func_parse_date
+        ).dropna() for fileX in list_file_MetForcing],
+        ignore_index=True).rename(
+        columns={
+            '%' + 'iy': 'iy',
+            'id': 'id',
+            'it': 'it',
+            'imin': 'imin',
+            'Kdn': 'avkdn',
+            'RH': 'avrh',
+            'Wind': 'avu1',
+            'fcld': 'fcld_obs',
+            'lai_hr': 'lai_obs',
+            'ldown': 'ldown_obs',
+            'rain': 'precip',
+            'press': 'press_hpa',
+            'QH': 'qh_obs',
+            'Q*': 'qn1_obs',
+            'snow': 'snow_obs',
+            'Td': 'temp_c',
+            # 'all': 'metforcingdata_grid',
+            'xsmd': 'xsmd'})
+
+    # convert unit from kPa to hPa
+    df_forcing_met['press_hpa'] *= 10
+
+    # set correct data types
+    df_forcing_met[['iy', 'id', 'it', 'imin']] = df_forcing_met[[
         'iy', 'id', 'it', 'imin']].astype(np.int64)
-    df_merged['dectime'] = (df_merged['id'] +
-                            (df_merged['it']
-                             + df_merged['imin'] / 60.) / 24.)
-    df_merged['id_prev_t'] = df_merged['id'].shift(1).fillna(method='backfill')
-    df_merged['iy_prev_t'] = df_merged['iy'].shift(1).fillna(method='backfill')
 
-    # TODO: ts5mindata_ir needs to be read in from Ts files
-    df_merged['ts5mindata_ir'] = df_merged['temp_c']
-
-    return df_merged
+    return df_forcing_met
 
 
-def load_SUEWS_MetForcing_dict(fileX):
-    rawdata_df = load_SUEWS_MetForcing_df(fileX)
-    # dict_met_forcing = rawdata_df.T.to_dict()
-    dict_met_forcing = rawdata_df.to_dict('index')
-    # dict_met_forcing.update(
-    #     {'metforcingdata_grid': np.array(rawdata_df.values,
-    #                                      dtype=np.float, order='F')})
-    return dict_met_forcing
+# load raw data: met forcing
+def load_SUEWS_Forcing_ESTM_df_raw(
+        dir_input, filecode, grid, tstep_ESTM_in, multipleestmfiles):
+    # file name pattern for met files
+    forcingfile_ESTM_pattern = os.path.join(
+        dir_input,
+        '{site}{grid}*{tstep}*txt'.format(
+            site=filecode,
+            grid=(grid if multipleestmfiles == 1 else ''),
+            tstep=tstep_ESTM_in / 60))
+
+    # list of met forcing files
+    list_file_MetForcing = [
+        f for f in glob.glob(forcingfile_ESTM_pattern)
+        if 'ESTM' in f]
+
+    # load raw data
+    df_forcing_estm = pd.concat(
+        [pd.read_table(
+            fileX,
+            delim_whitespace=True,
+            comment='!',
+            error_bad_lines=True
+            # parse_dates={'datetime': [0, 1, 2, 3]},
+            # keep_date_col=True,
+            # date_parser=func_parse_date
+        ).dropna() for fileX in list_file_MetForcing],
+        ignore_index=True).rename(
+        columns={
+            '%' + 'iy': 'iy',
+            'id': 'id',
+            'it': 'it',
+            'imin': 'imin',
+            'Kdn': 'avkdn',
+            'RH': 'avrh',
+            'Wind': 'avu1',
+            'fcld': 'fcld_obs',
+            'lai_hr': 'lai_obs',
+            'ldown': 'ldown_obs',
+            'rain': 'precip',
+            'press': 'press_hpa',
+            'QH': 'qh_obs',
+            'Q*': 'qn1_obs',
+            'snow': 'snow_obs',
+            'Td': 'temp_c',
+            # 'all': 'metforcingdata_grid',
+            'xsmd': 'xsmd'})
+
+    # set correct data types
+    df_forcing_estm[['iy', 'id', 'it', 'imin']] = df_forcing_estm[[
+        'iy', 'id', 'it', 'imin']].astype(np.int64)
+
+    return df_forcing_estm
+
+# TODO: add support for loading multi-grid forcing datasets
+def load_SUEWS_Forcing_df(dir_site, ser_mod_cfg, df_state_init):
+    pass
 
 
-# def proc_met_forcing(df_met_forcing, step_count):
-#     met_forcing_tstep = df_met_forcing.iloc[step_count].to_dict()
-#     id_x = met_forcing_tstep['id']
-#     df_grp = df_met_forcing.groupby('id')
-#     all_id = df_grp.get_group(id_x)
-#     met_forcing_tstep.update({'all': np.array(all_id.values, order='F')})
-#     return met_forcing_tstep
+# load forcing datasets of `grid`
+def load_SUEWS_Forcing_df_grid(dir_site, grid, ser_mod_cfg, df_state_init):
+    # load setting variables from ser_mod_cfg
+    (filecode, kdownzen,
+     tstep_met_in, tstep_ESTM_in,
+     multiplemetfiles, multipleestmfiles,
+     dir_input_cfg) = ser_mod_cfg[
+        ['filecode', 'kdownzen',
+         'resolutionfilesin', 'resolutionfilesinestm',
+         'multiplemetfiles', 'multipleestmfiles', 'fileinputpath']]
+    tstep_mod, lat, lon, alt, timezone = df_state_init.loc[
+        grid,
+        ['tstep', 'lat', 'lng', 'alt', 'timezone']]
+    dir_input = (os.path.join(dir_site, dir_input_cfg)
+                 if not os.path.isabs(dir_input_cfg)
+                 else dir_input_cfg)
+
+    # load raw data
+    # met forcing
+    df_forcing_met = load_SUEWS_Forcing_met_df_raw(
+        dir_input, filecode, grid, tstep_met_in, multiplemetfiles)
+
+    # resample raw data from tstep_in to tstep_mod
+    df_forcing_met_tstep = resample_forcing_met(
+        df_forcing_met, tstep_met_in, tstep_mod, lat, lon, alt, timezone, kdownzen)
+
+    # merge forcing datasets (met and ESTM)
+    df_forcing_tstep = df_forcing_met_tstep.copy()
+    # df_forcing_tstep = df_forcing_met_tstep.merge(
+    #     df_forcing_estm_tstep,
+    #     left_on=['iy', 'id', 'it', 'imin'],
+    #     right_on=['iy', 'id', 'it', 'imin'])
+
+    # pack all records of `id` into `metforcingdata_grid` for AnOHM and others
+    df_grp = df_forcing_tstep.groupby('id')
+    dict_id_all = {xid: df_grp.get_group(xid)
+                   for xid in df_forcing_tstep['id'].unique()}
+    id_all = df_forcing_tstep['id'].apply(lambda xid: dict_id_all[xid])
+    df_forcing_tstep = df_forcing_tstep.merge(id_all.to_frame(name='metforcingdata_grid'),
+                                              left_index=True,
+                                              right_index=True)
+
+    # add Ts forcing for ESTM
+    if df_state_init.iloc[0]['storageheatmethod'] == 4:
+        # load ESTM forcing
+        df_forcing_estm = load_SUEWS_Forcing_ESTM_df_raw(
+            dir_input, filecode, grid, tstep_ESTM_in, multipleestmfiles)
+        # resample raw data from tstep_in to tstep_mod
+        df_forcing_estm_tstep = resample_linear(
+            df_forcing_estm, tstep_met_in, tstep_mod)
+        df_forcing_tstep = df_forcing_tstep.merge(
+            df_forcing_estm_tstep,
+            left_on=['iy', 'id', 'it', 'imin'],
+            right_on=['iy', 'id', 'it', 'imin'])
+        # insert `ts5mindata_ir` into df_forcing_tstep
+        ts_col=df_forcing_estm.columns[4:]
+        df_forcing_tstep['ts5mindata_ir'] = (
+            df_forcing_tstep.loc[:,ts_col].values.tolist())
+        df_forcing_tstep['ts5mindata_ir'] = df_forcing_tstep[
+            'ts5mindata_ir'].map(lambda x: np.array(x, order='F'))
+    else:
+        # insert some placeholder values
+        df_forcing_tstep['ts5mindata_ir'] = df_forcing_tstep['temp_c']
+
+    # new columns for later use in main calculation
+    df_forcing_tstep[['iy', 'id', 'it', 'imin']] = df_forcing_tstep[[
+        'iy', 'id', 'it', 'imin']].astype(np.int64)
+    df_forcing_tstep['dectime'] = ((df_forcing_tstep['id']-1) +
+                                   (df_forcing_tstep['it']
+                                    + df_forcing_tstep['imin'] / 60.) / 24.)
+    df_forcing_tstep['id_prev_t'] = df_forcing_tstep['id'].shift(
+        1).fillna(method='backfill')
+    df_forcing_tstep['iy_prev_t'] = df_forcing_tstep['iy'].shift(
+        1).fillna(method='backfill')
+
+    return df_forcing_tstep
 
 
 # load initial conditions as dict's for SUEWS running:
@@ -856,8 +590,7 @@ def init_SUEWS_dict(dir_start):  # return dict
     # dict_met_forcing = {}
 
     # load RunControl variables
-    lib_RunControl = load_SUEWS_RunControl(
-        os.path.join(dir_start, 'runcontrol.nml'))
+    lib_RunControl = load_SUEWS_nml(os.path.join(dir_start, 'runcontrol.nml'))
     dict_RunControl = lib_RunControl.loc[:, 'runcontrol'].to_dict()
 
     # # path for SUEWS input tables:
@@ -869,6 +602,7 @@ def init_SUEWS_dict(dir_start):  # return dict
                       'ity': 2,
                       'laicalcyes': 1,
                       'veg_type': 1,
+                      'diagnose': 0,
                       'diagqn': 0,
                       'diagqs': 0}
     dict_ModConfig.update(dict_RunControl)
@@ -916,37 +650,30 @@ def init_SUEWS_dict(dir_start):  # return dict
 # create initial states for one grid
 def init_SUEWS_dict_grid(dir_input, grid,
                          dict_ModConfig, df_gridSurfaceChar):
+    # load tstep from dict_RunControl
+    tstep = dict_ModConfig['tstep']
     # some constant values
     nan = -999.
     ndays = 366
-    nsh = 3600 / dict_ModConfig['tstep']  # tstep from dict_RunControl
+    nsh = 3600 / tstep  # tstep from dict_RunControl
 
     # load met forcing of `grid`:
-    # TODO: support multi-grid settings for met forcing
     filecode = dict_ModConfig['filecode']
-    tstep = dict_ModConfig['tstep']
-    # TODO: need to introduce downscaling functions here
-    list_file_MetForcing = [
-        x_file
-        for x_file in glob.glob(
-            os.path.join(dir_input,
-                         '{}*{}*txt'.format(filecode, tstep / 60)))
-        if 'ESTM' not in x_file]
+    tstep_in = dict_ModConfig['resolutionfilesin']
+    multiplemetfiles = dict_ModConfig['multiplemetfiles']
     # load as DataFrame:
-    df_forcing = load_SUEWS_MetForcing_df(list_file_MetForcing[0])
-    # # convert df_forcing to dict for later use
-    # dict_MetForcing = df_forcing.T.to_dict()
+    df_forcing_met = load_SUEWS_Forcing_met_df_raw(
+        dir_input, filecode, grid, tstep_in, multiplemetfiles)
+
     # define some met forcing determined variables:
     # previous day index
-    id_prev = df_forcing.loc[0, 'id'] - 1
+    id_prev = int(df_forcing_met['id'].iloc[0] - 1)
 
     # initialise dict_InitCond with default values
     dict_InitCond = {
         'dayssincerain':  0,
         # `temp_c0` defaults to daily mean air temperature of the first day
-        # 'temp_c0':  df_forcing.loc[0, 'metforcingdata_grid']['Td'].mean(),
-        'temp_c0':  df_forcing.loc[:(24 * nsh) - 1, 'temp_c'].mean(),
-        # 'temp_c0': nan,
+        'temp_c0':  df_forcing_met.loc[:(24 * nsh) - 1, 'temp_c'].mean(),
         'leavesoutinitially':  int(nan),
         'gdd_1_0':  nan,
         'gdd_2_0':  nan,
@@ -1004,11 +731,13 @@ def init_SUEWS_dict_grid(dir_input, grid,
     }
 
     # load Initial Condition variables from namelist file
-    # TODO: support multi-grid settings for initial conditions
     lib_InitCond = load_SUEWS_nml(os.path.join(
-        dir_input, 'initialconditions{site}_{year}.nml'.format(
+        dir_input, 'initialconditions{site}{grid}_{year}.nml'.format(
             site=dict_ModConfig['filecode'],
-            year=int(df_gridSurfaceChar.loc[grid, 'year']))))
+            # grid info will be include in the nml file pattern
+            # if multiple init files are used
+            grid=(grid if dict_ModConfig['multipleinitfiles'] == 1 else ''),
+            year=int(np.min(df_gridSurfaceChar.loc[grid, 'year'])))))
     # update default InitialCond with values set in namelist
     dict_InitCond.update(
         lib_InitCond.loc[:, 'initialconditions'].to_dict())
@@ -1210,12 +939,17 @@ def init_SUEWS_dict_grid(dir_input, grid,
     return dict_StateInit
 
 
-# convert dict_InitCond to DataFrame
-def init_SUEWS_df(dir_input):  # return pd.DataFrame
-    dict_InitCond = init_SUEWS_dict(dir_input)
-    df_InitCond = pd.DataFrame.from_dict(dict_InitCond).T
+# convert dict_InitCond to pandas Series and DataFrame
+def init_SUEWS_pd(dir_input):  # return pd.DataFrame
+    # dict_mod_cfg, dict_state_init = sp.init_SUEWS_dict(dir_start)
+    dict_mod_cfg, dict_state_init = init_SUEWS_dict(dir_input)
+    # ser_mod_cfg: all static model configuration info
+    ser_mod_cfg = pd.Series(dict_mod_cfg)
+    # df_state_init: initial conditions for SUEWS simulations
+    df_state_init = df.from_dict(dict_state_init).T
+    df_state_init.index.set_names('grid', inplace=True)
 
-    return df_InitCond
+    return ser_mod_cfg, df_state_init
 
 # input processing code end here
 ##############################################################################
@@ -1232,33 +966,28 @@ def init_SUEWS_df(dir_input):  # return pd.DataFrame
 list_var_input = get_args_suews()['var_input']
 list_var_inout = get_args_suews()['var_inout']
 list_var_output = get_args_suews()['var_output']
+set_var_input = {list_var_output}
+set_var_inout = {list_var_inout}
+set_var_ouput = {list_var_output}
 
-
-def foo(**kargs):
-    return [kargs]
+# test for performance
+dict_var_inout = {k: None for k in set_var_inout}
 
 
 # high-level wrapper: suews_cal_tstep
-def suews_cal_tstep(dict_state_start, met_forcing_tstep):
+def suews_cal_tstep(dict_state_start, dict_met_forcing_tstep):
     # use single dict as input for suews_cal_main
-    dict_input = met_forcing_tstep.copy()
-    dict_input.update(dict_state_start)
-    # print 'to del:', set(dict_input.keys()) -
-    # set(get_args_suews()['var_input'])
+    dict_input = dict_state_start.copy()
+    dict_input.update(dict_met_forcing_tstep)
     dict_input = {k: dict_input[k] for k in list_var_input}
 
     # main calculation:
-    res_test_unpack = foo(**dict_input)
     res_suews_tstep = sd.suews_cal_main(**dict_input)
 
     # update state variables
-    dict_state_end = {var: (copy.copy(dict_input[var])
-                            # only copy those variables changed in the fly
-                            # to keep better performance
-                            if var in list_var_inout
-                            # other varialbes are just linked by reference
-                            else dict_input[var])
-                      for var in dict_state_start.keys()}
+    dict_state_end = dict_state_start.copy()
+    dict_state_end.update({var: copy.copy(dict_input[var])
+                           for var in list_var_inout})
 
     # pack output
     dict_output = {k: v for k, v in zip(
@@ -1269,117 +998,51 @@ def suews_cal_tstep(dict_state_start, met_forcing_tstep):
 
 # 2. compact wrapper for running a whole simulation
 # # main calculation
-# def run_suews_dict(dict_forcing, dict_init):
-#     # initialise dicts for holding results and model states
-#     dict_output = {}
-#     # dict_state = {}
-#     # dict_state_grid = {grid: dict_state
-#     #                    for grid, dict_state
-#     # in copy.deepcopy(dict_init).items()}
-#     # dict_state is used to save model states for later use
-#     dict_state = {0: copy.deepcopy(dict_init)}
-#     # temporal loop
-#     for tstep in dict_forcing.keys():
-#         # print 'tstep at', tstep
-#         # initialise output of tstep:
-#         dict_output.update({tstep: {}})
-#         # dict_state is used to save model states for later use
-#         dict_state.update({tstep + 1: {}})
-#         # load met_forcing if the same across all grids:
-#         met_forcing_tstep = dict_forcing[tstep]
-#         # met_forcing_tstep[
-#         #     'metforcingdata_grid'] = dict_forcing['metforcingdata_grid']
-#         # met_forcing_tstep = df_forcing.iloc[tstep]
-#         # xday = met_forcing_tstep['id']
-#         # print 'dict_state', dict_state[tstep]
-#
-#         # spatial loop
-#         for grid in dict_state[tstep].keys():
-#             dict_state_start = dict_state[tstep][grid]
-#             # print 'start', sorted(dict_state_start.keys())
-#             # print 'start', dict_state_start
-#             # print 'start', dict_state[tstep][grid]['dayofweek'][xday]
-#             # mod_config = dict_init[grid]['mod_config']
-#             # xx=sp.suews_cal_tstep(
-#             #     dict_state_start, met_forcing_tstep, mod_config)
-#
-#             # calculation at one step:
-#             state_end, output_tstep = suews_cal_tstep(
-#                 dict_state_start, met_forcing_tstep)
-#             # update model state
-#             # dict_state_grid[grid].update(state_end)
-#             # print 'end', dict_state_grid[grid]['state'][0]
-#
-#             # update output & model state at tstep for the current grid
-#             dict_output[tstep].update({grid: output_tstep})
-#             # dict_state[tstep + 1].update({grid: copy.deepcopy(state_end)})
-#             # update model state
-#             dict_state[tstep + 1].update(
-#                 {grid: {k: v for k, v in state_end.items()}})
-#
-#             # print ''
-#             # if tstep==dict_forcing.keys()[-1]:
-#             #     print dict_state[tstep][grid]['dayofweek'][43:46]
-#
-#     return dict_output, dict_state
-
-
-def run_suews(df_forcing, dict_init):
+# input as DataFrame
+def run_suews_df(df_forcing, df_init):
     # initialise dicts for holding results and model states
+    dict_state = {}
     dict_output = {}
-    # dict_state = {}
-    # dict_state_grid = {grid: dict_state
-    #                    for grid, dict_state
-    # in copy.deepcopy(dict_init).items()}
-    # dict_state is used to save model states for later use
+    # start tstep retrived from forcing data
     t_start = df_forcing.index[0]
-    dict_state = {t_start: copy.deepcopy(dict_init)}
+    # convert df to dict with `itertuples` for better performance
+    dict_forcing = {row.Index: row._asdict()
+                    for row in df_forcing.itertuples()}
+    # dict_forcing = {tstep: met_forcing_tstep.to_dict()
+    #                 for tstep, met_forcing_tstep
+    #                 in df_forcing.iterrows()}
+    # grid list determined by initial states
+    grid_list = df_init.index
+    # dict_state is used to save model states for later use
+    dict_state = {(t_start, grid): series_state_init.to_dict()
+                  for grid, series_state_init
+                  in copy.deepcopy(df_init).iterrows()}
+
     # temporal loop
     for tstep in df_forcing.index:
         # print 'tstep at', tstep
         # initialise output of tstep:
-        dict_output.update({tstep: {}})
-        # dict_state is used to save model states for later use
-        dict_state.update({tstep + 1: {}})
         # load met_forcing if the same across all grids:
-        met_forcing_tstep = df_forcing.loc[tstep].to_dict()
-        # met_forcing_tstep[
-        #     'metforcingdata_grid'] = dict_forcing['metforcingdata_grid']
-        # met_forcing_tstep = df_forcing.iloc[tstep]
-        # xday = met_forcing_tstep['id']
-        # print 'dict_state', dict_state[tstep]
-
+        met_forcing_tstep = dict_forcing[tstep]
         # spatial loop
-        for grid in dict_state[tstep].keys():
-            dict_state_start = dict_state[tstep][grid]
-            # print 'start', sorted(dict_state_start.keys())
-            # print 'dict_state_start cpanohm', dict_state_start['cpanohm'][0]
-            # print 'dict_state_start xwf', dict_state_start['xwf']
-            # print 'dict_state_start storageheatmethod', dict_state_start['storageheatmethod']
-            # print 'start', dict_state[tstep][grid]['dayofweek'][xday]
-            # mod_config = dict_init[grid]['mod_config']
-            # xx=sp.suews_cal_tstep(
-            #     dict_state_start, met_forcing_tstep, mod_config)
-
+        for grid in grid_list:
+            dict_state_start = dict_state[(tstep, grid)]
             # calculation at one step:
-            state_end, output_tstep = suews_cal_tstep(
+            # series_state_end, series_output_tstep = suews_cal_tstep_df(
+            #     series_state_start, met_forcing_tstep)
+            dict_state_end, dict_output_tstep = suews_cal_tstep(
                 dict_state_start, met_forcing_tstep)
-            # update model state
-            # dict_state_grid[grid].update(state_end)
-            # print 'end', dict_state_grid[grid]['state'][0]
-
             # update output & model state at tstep for the current grid
-            dict_output[tstep].update({grid: output_tstep})
-            # dict_state[tstep + 1].update({grid: copy.deepcopy(state_end)})
-            # update model state
-            dict_state[tstep + 1].update(
-                {grid: {k: v for k, v in state_end.items()}})
+            dict_output.update({(tstep, grid): dict_output_tstep})
+            dict_state.update({(tstep + 1, grid): dict_state_end})
 
-            # print ''
-            # if tstep==dict_forcing.keys()[-1]:
-            #     print dict_state[tstep][grid]['dayofweek'][43:46]
+    # pack results as easier DataFrames
+    df_output = pack_df_output(dict_output)
+    df_state = pack_df_state(dict_state)
 
-    return dict_output, dict_state
+    return df_output, df_state
+
+
 # main calculation end here
 ##############################################################################
 
@@ -1407,42 +1070,9 @@ var_df = get_output_info_df()
 # dict as var_df but keys in lowercase
 var_df_lower = {group.lower(): group for group in var_df.index.levels[0]}
 
-
-# pack up output of one grid of all tsteps
-def pack_dict_output_grid(df_grid):
-    # merge dicts of all tsteps
-    dict_group = collections.defaultdict(list)
-    for d in df_grid:
-        for k, v in d.iteritems():  # d.items() in Python 3+
-            dict_group[k].append(v)
-    # pick groups except for `datetimeline`
-    group_out = (group for group in dict_group.keys()
-                 if not group == 'datetimeline')
-    # initialise dict for holding packed output
-    dict_output_group = {}
-    # group names in lower case
-    var_df_lower = {group.lower(): group for group in var_df.index.levels[0]}
-    # pack up output of all tsteps into output groups
-    for group_x in group_out:
-        # get correct group name by cleaning and swapping case
-        group = group_x.replace('dataoutline', '').replace('line', '')
-        # print group
-        group = var_df_lower[group]
-        header_group = np.apply_along_axis(
-            list, 0, var_df.loc[['datetime', group]].index.values)[:, 1]
-        # print 'header_group', header_group
-        df_group = pd.DataFrame(
-            np.hstack((dict_group['datetimeline'], dict_group[group_x])),
-            columns=header_group)
-        # df_group[[
-        #     'Year', 'DOY', 'Hour', 'Min']] = df_group[[
-        #         'Year', 'DOY', 'Hour', 'Min']].astype(int)
-        dict_output_group.update({group: df_group})
-    # final result: {group:df_group}
-    return dict_output_group
-
-
 # generate index for variables in different model groups
+
+
 def gen_group_cols(group_x):
     # get correct group name by cleaning and swapping case
     group = group_x.replace('dataoutline', '').replace('line', '')
@@ -1490,9 +1120,8 @@ def gen_index(varline_x):
     mindex = pd.MultiIndex.from_product([[group], var], names=['group', 'var'])
     return mindex
 
+
 # generate one MultiIndex from a whole dict
-
-
 def gen_MultiIndex(dict_x):
     x_keys = dict_x.keys()
     mindex = pd.concat([gen_index(k).to_frame() for k in x_keys]).index
@@ -1505,6 +1134,7 @@ def gen_Series(dict_x, varline_x):
     res_Series = pd.Series(dict_x[varline_x], index=m_index)
     return res_Series
 
+
 # merge a whole dict into one Series
 def comb_gen_Series(dict_x):
     x_keys = dict_x.keys()
@@ -1514,74 +1144,28 @@ def comb_gen_Series(dict_x):
 
 # pack up output of `run_suews`
 def pack_df_output(dict_output):
-    df_raw = pd.DataFrame.from_dict(dict_output).T.applymap(
-        lambda dict: np.concatenate(dict.values())).stack()
-    index = df_raw.index.swaplevel().set_names(['grid', 'tstep'])
-    columns = gen_MultiIndex(dict_output[1][1])
-    values = np.vstack(df_raw.values)
+    # TODO: add output levels as in the Fortran version
+    df_output = pd.DataFrame(dict_output).T
+    # df_output = pd.concat(dict_output).to_frame().unstack()
+    # set index level names
+    index = df_output.index.set_names(['tstep', 'grid'])
+    # clean columns
+    # df_output.columns = df_output.columns.droplevel()
+    columns = gen_MultiIndex(df_output.iloc[0])
+    values = np.apply_along_axis(np.hstack, 1, df_output.values)
     df_output = pd.DataFrame(values, index=index, columns=columns)
     return df_output
 
 
 def pack_df_state(dict_state):
-    df_raw = pd.DataFrame.from_dict(dict_state).unstack()
-    df_raw = df_raw.map(pd.Series)
-    values = np.vstack(df_raw.values)
-    index = df_raw.index.rename(['tstep', 'grid'])
-    columns = df_raw.iloc[0].index
-    df_state = pd.DataFrame(values, index=index, columns=columns)
+    df_state = pd.DataFrame(dict_state).T
+    # df_state = pd.concat(dict_state).to_frame().unstack()
+    # set index level names
+    df_state.index = df_state.index.set_names(['tstep', 'grid'])
+    # clean columns
+    # df_state.columns = df_state.columns.droplevel()
+
     return df_state
-
-
-# # DEPRECATED: this is slow
-# # pack up output of `run_suews`
-# def pack_df_output_dep1(dict_output):
-#     # # pack all grid and times into index/columns
-#     # df_xx = df.from_dict(dict_output, orient='index')
-#     # # pack
-#     # df_xx1 = df_xx.applymap(lambda s: pd.Series(s)).applymap(df.from_dict)
-#     # df_xx2 = pd.concat({grid: pd.concat(
-#     #     df_xx1[grid].to_dict()).unstack().dropna(axis=1)
-#     #     for grid in df_xx1.columns})
-#     # # drop redundant levels
-#     # df_xx2.columns = df_xx2.columns.droplevel()
-#     # # regroup by `grid`
-#     # df_xx2.index.names = ['grid', 'time']
-#     # gb_xx2 = df_xx2.groupby(level='grid')
-#     # # merge results of each grid
-#     # xx3 = gb_xx2.agg(lambda x: tuple(x.values)).applymap(np.array)
-#
-#     # repack for later concatenation
-#     dict_xx4 = ({k: pd.concat(v)
-#                  for k, v
-#                  in pack_df_grid(dict_output).applymap(df).to_dict().items()})
-#
-#     # concatenation across model groups
-#     res_concat = []
-#     for group_x in (x for x in dict_xx4.keys() if not x == 'datetimeline'):
-#         # print group_x
-#         xx5 = pd.concat((dict_xx4['datetimeline'], dict_xx4[group_x]), axis=1)
-#         xx5.columns = gen_group_cols(group_x)
-#         res_concat.append(xx5)
-#
-#     # concatenation across model groups
-#     df_output = pd.concat(res_concat, axis=1)
-#     # add index information
-#     df_output.index.names = ['grid', 'tstep']
-#
-#     return df_output
-
-
-# # DEPRECATED: this is slow
-# # pack up output of `run_suews`
-# def pack_df_output_dep(dict_output):
-#     # TODO: add output levels as in the Fortran version
-#     # dict_output is the first value returned by `run_suews`
-#     df_res_grid = pd.DataFrame(dict_output).T.stack().swaplevel()
-#     dict_grid_time = {grid: pack_dict_output_grid(
-#         df_res_grid[grid]) for grid in df_res_grid.index.get_level_values(0)}
-#     df_grid_group = pd.DataFrame(dict_grid_time).T
-#     return df_grid_group
 
 
 ##############################################################################
@@ -1610,3 +1194,4 @@ def conv2PyData(df_x):
         dict_x_nat = df(**dict_x).to_dict()
 
     return dict_x_nat
+##############################################################################

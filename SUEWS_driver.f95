@@ -527,7 +527,6 @@ CONTAINS
          Ie_a,Ie_m,DayWatPer,DayWat,SnowPack,&
          BaseT,BaseTe,GDDFull,SDDFull,LAIMin,LAIMax,LAIPower,&
          SnowAlb,DecidCap,albDecTr,albEveTr,albGrass,&!inout
-                                ! porosity,GDD,HDD,SnowDens,LAI,DayofWeek,WU_Day,&
          porosity,GDD,HDD,SnowDens,LAI,WU_Day,&
          deltaLAI)!output
 
@@ -565,7 +564,6 @@ CONTAINS
     ! ===================ANTHROPOGENIC HEAT FLUX================================
     CALL SUEWS_cal_AnthropogenicEmission(&
          AH_MIN,AHProf_tstep,AH_SLOPE_Cooling,AH_SLOPE_Heating,alpha_bioCO2,&
-                                ! alpha_enh_bioCO2,avkdn,beta_bioCO2,beta_enh_bioCO2,DayofWeek,&
          alpha_enh_bioCO2,avkdn,beta_bioCO2,beta_enh_bioCO2,DayofWeek_id,&
          Diagnose,DLS,EF_umolCO2perJ,EmissionsMethod,EnEF_v_Jkm,Fc,Fc_anthro,Fc_biogen,&
          Fc_build,FcEF_v_kgkm,Fc_metab,Fc_photo,Fc_respi,Fc_traff,FrFossilFuel_Heat,&
@@ -669,7 +667,6 @@ CONTAINS
     !======== Evaporation and surface state ========
     CALL SUEWS_cal_QE(&
          Diagnose,&!input
-                                ! id,tstep,imin,it,ity,snowCalcSwitch,DayofWeek,CRWmin,CRWmax,&
          id,tstep,imin,it,ity,snowCalcSwitch,DayofWeek_id,CRWmin,CRWmax,&
          nsh_real,dectime,lvS_J_kg,lv_j_kg,avdens,avRh,Press_hPa,Temp_C,&
          RAsnow,psyc_hPa,avcp,sIce_hPa,&
@@ -881,7 +878,6 @@ CONTAINS
        IF(Diagnose==1) WRITE(*,*) 'Calling AnthropogenicEmissions...'
        CALL AnthropogenicEmissions(&
             EmissionsMethod,&
-                                ! id,it,imin,DLS,nsh,DayofWeek,ndays,&
             id,it,imin,DLS,nsh,dayofWeek_id,ndays,&
             EF_umolCO2perJ,FcEF_v_kgkm,EnEF_v_Jkm,TrafficUnits,&
             FrFossilFuel_Heat,FrFossilFuel_NonHeat,&

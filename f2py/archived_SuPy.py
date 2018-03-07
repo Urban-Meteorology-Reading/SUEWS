@@ -1905,3 +1905,142 @@ for ir in df_forcing.index:
 #     data_tstep_out = data_tstep.copy().reset_index(drop=True)
 #
 #     return data_tstep_out
+
+
+# def load_SUEWS_MetForcing_df_resample(
+#         fileX, tstep_in, tstep_mod, lat, lon, alt, timezone, kdownzen):
+#     # load raw data
+#     df_forcing_met = pd.read_table(fileX, delim_whitespace=True,
+#                                    comment='!',
+#                                    error_bad_lines=True
+#                                    # parse_dates={'datetime': [0, 1, 2, 3]},
+#                                    # keep_date_col=True,
+#                                    # date_parser=func_parse_date
+#                                    ).dropna()
+#
+#     # convert unit
+#     df_forcing_met['press'] = df_forcing_met['press'] * 10.
+#
+#     # rename column names to conform with calling function
+#     df_forcing_met = df_forcing_met.rename(columns={
+#         '%' + 'iy': 'iy',
+#         'id': 'id',
+#         'it': 'it',
+#         'imin': 'imin',
+#         'Kdn': 'avkdn',
+#         'RH': 'avrh',
+#         'Wind': 'avu1',
+#         'fcld': 'fcld_obs',
+#         'lai_hr': 'lai_obs',
+#         'ldown': 'ldown_obs',
+#         'rain': 'precip',
+#         'press': 'press_hpa',
+#         'QH': 'qh_obs',
+#         'Q*': 'qn1_obs',
+#         'snow': 'snow_obs',
+#         'Td': 'temp_c',
+#         # 'all': 'metforcingdata_grid',
+#         'xsmd': 'xsmd'})
+#
+#     # resample from tstep_in to tstep
+#     # met forcing:
+#     df_forcing_met_tstep = resample_forcing_met(
+#         df_forcing_met, tstep_in, tstep_mod, lat, lon, alt, timezone, kdownzen)
+#     # ESTM surface/inner air temp forcing:
+#     # df_forcing_estm_tstep = resample_forcing_estm(
+#     #     df_forcing_estm, tstep_in, tstep_mod)
+#     # merge forcing (met and ESTM) datasets
+#     # df_forcing_tstep = df_forcing_met_tstep.merge(
+#     #     df_forcing_estm_tstep,
+#     #     left_on=['iy', 'id', 'it', 'imin'],
+#     #     right_on=['iy', 'id', 'it', 'imin'])
+#
+#     # pack all records of `id` into `metforcingdata_grid` for AnOHM and others
+#     df_forcing_tstep = df_forcing_met_tstep
+#     df_grp = df_forcing_tstep.groupby('id')
+#     dict_id_all = {xid: df_grp.get_group(xid)
+#                    for xid in df_forcing_tstep['id'].unique()}
+#     id_all = df_forcing_tstep['id'].apply(lambda xid: dict_id_all[xid])
+#     df_merged = df_forcing_tstep.merge(id_all.to_frame(name='metforcingdata_grid'),
+#                                        left_index=True,
+#                                        right_index=True)
+#
+#     # print df_merged.columns
+#     # new columns for later use in main calculation
+#     df_merged[['iy', 'id', 'it', 'imin']] = df_merged[[
+#         'iy', 'id', 'it', 'imin']].astype(np.int64)
+#     df_merged['dectime'] = (df_merged['id'] +
+#                             (df_merged['it']
+#                              + df_merged['imin'] / 60.) / 24.)
+#     df_merged['id_prev_t'] = df_merged['id'].shift(1).fillna(method='backfill')
+#     df_merged['iy_prev_t'] = df_merged['iy'].shift(1).fillna(method='backfill')
+#
+#     df_merged['ts5mindata_ir'] = df_merged['temp_c']
+#
+#     return df_merged
+#
+#
+# def load_SUEWS_MetForcing_df_raw(fileX):
+#     df_forcing_met = pd.read_table(fileX, delim_whitespace=True,
+#                                    comment='!',
+#                                    error_bad_lines=True
+#                                    # parse_dates={'datetime': [0, 1, 2, 3]},
+#                                    # keep_date_col=True,
+#                                    # date_parser=func_parse_date
+#                                    ).dropna()
+#
+#     # convert unit
+#     df_forcing_met['press'] = df_forcing_met['press'] * 10.
+#
+#     # two datetime's
+#     # df_forcing_shift = df_forcing_met.copy()
+#     # df_forcing_shift.loc[:,
+#     #                      ['%' + 'iy', 'id', 'it', 'imin']] = (
+#     #     df_forcing_shift.loc[
+#     #         :, ['%' + 'iy', 'id', 'it', 'imin']
+#     #     ].shift(1).fillna(method='backfill'))
+#
+#     # pack all records of `id` into `all` as required by AnOHM and others
+#     # df_grp = df_forcing_shift.groupby('id')
+#     df_grp = df_forcing_met.groupby('id')
+#     dict_id_all = {xid: df_grp.get_group(xid)
+#                    for xid in df_forcing_met['id'].unique()}
+#     id_all = df_forcing_met['id'].apply(lambda xid: dict_id_all[xid])
+#     df_merged = df_forcing_met.merge(id_all.to_frame(name='all'),
+#                                      left_index=True,
+#                                      right_index=True)
+#
+#     # rename column names to conform with calling function
+#     df_merged = df_merged.rename(columns={
+#         '%' + 'iy': 'iy',
+#         'id': 'id',
+#         'it': 'it',
+#         'imin': 'imin',
+#         'Kdn': 'avkdn',
+#         'RH': 'avrh',
+#         'Wind': 'avu1',
+#         'fcld': 'fcld_obs',
+#         'lai_hr': 'lai_obs',
+#         'ldown': 'ldown_obs',
+#         'rain': 'precip',
+#         'press': 'press_hpa',
+#         'QH': 'qh_obs',
+#         'Q*': 'qn1_obs',
+#         'snow': 'snow_obs',
+#         'Td': 'temp_c',
+#         'all': 'metforcingdata_grid',
+#         'xsmd': 'xsmd'})
+#
+#     # print df_merged.columns
+#     # new columns for later use in main calculation
+#     df_merged[['iy', 'id', 'it', 'imin']] = df_merged[[
+#         'iy', 'id', 'it', 'imin']].astype(np.int64)
+#     df_merged['dectime'] = (df_merged['id'] +
+#                             (df_merged['it']
+#                              + df_merged['imin'] / 60.) / 24.)
+#     df_merged['id_prev_t'] = df_merged['id'].shift(1).fillna(method='backfill')
+#     df_merged['iy_prev_t'] = df_merged['iy'].shift(1).fillna(method='backfill')
+#
+#     df_merged['ts5mindata_ir'] = df_merged['temp_c']
+#
+#     return df_merged

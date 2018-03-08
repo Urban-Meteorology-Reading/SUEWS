@@ -1,11 +1,11 @@
 # -*- makefile -*-
 
 # OS-specific configurations
-ifeq ($(OS),Windows_NT)
-			PYTHON = /c/Users/sunt05/Anaconda2/
-			F2PY_PY= /c/Users/sunt05/Anaconda2/Scripts/f2py.py
-			F2PY_EXE = $(PYTHON) $(F2PY_PY)
-			TARGET=$(MODULE).pyd
+ifeq ($(OS),Windows_NT
+	PYTHON = /c/Users/sunt05/Anaconda2/
+	F2PY_PY= /c/Users/sunt05/Anaconda2/Scripts/f2py.py
+	F2PY_EXE = $(PYTHON) $(F2PY_PY)
+	TARGET=$(MODULE).pyd
 else
 	UNAME_S := $(shell uname -s)
 	TARGET=$(MODULE).so

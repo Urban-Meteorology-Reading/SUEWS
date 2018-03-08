@@ -80,6 +80,12 @@ xx_forcing_df.head()
 
 
 
+#%%
+reload(supy)
+import supy
 
+import SuPy as sp
+
+dir(supy)
 
 #

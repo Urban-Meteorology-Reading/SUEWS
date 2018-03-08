@@ -19,8 +19,11 @@ else
 	endif
 endif
 
-CFLAGS = $(STATIC) -g -pg -Wall -Wtabs -fbounds-check -cpp -Wno-unused-dummy-argument -Wno-unused-variable \
-									-fbacktrace -ffpe-trap=zero,overflow,underflow,invalid,denormal
+# normal build flags
+CFLAGS = $(STATIC) -Wall -Wtabs -fbounds-check -cpp -Wno-unused-dummy-argument -Wno-unused-variable
+
+# only add debug flags for netcdf builds
+FLAGS_DEBUG = -g -pg -fbacktrace -ffpe-trap=zero,overflow,underflow,invalid,denormal
 
 
 # netCDF-related settings:
@@ -30,7 +33,7 @@ netcdf:	NETCDFLIB = `nc-config --libdir` # ordinary path for netCDF directories
 nc4fr: NETCDFINC = /home/xlinfr/apps/lib4cdo/include # path only valid with Fredrik's HPC
 nc4fr: NETCDFLIB = /home/xlinfr/apps/lib4cdo/lib # path only valid with Fredrik's HPC
 
-netcdf nc4fr:	CFLAGS += -Dnc=1 -I$(NETCDFINC) # options for netcdf build
+netcdf nc4fr:	CFLAGS += FLAGS_DEBUG -Dnc=1 -I$(NETCDFINC) # options for netcdf build
 
 
 # All the files which include modules used by other modules (these therefore
@@ -93,7 +96,6 @@ OTHERS =  SUEWS_translate.o \
 					SUEWS_Calculations.o
 
 
-
 # modules under rapid development
 TEST =      SUEWS_C_wrapper.o
 
@@ -107,16 +109,16 @@ main: SUEWS_Program.f95 $(MODULES) $(OTHERS) $(TEST)
 
 # Build main program with NETCDF support - main uses MODULES and OTHERS
 netcdf: SUEWS_Program.f95 $(MODULES) $(OTHERS) $(TEST)
-				$(CC) SUEWS_Program.f95  -c ; \
-				$(CC) SUEWS_Program.o $(MODULES) $(OTHERS) $(TEST) \
+				$(CC_DEBUG) SUEWS_Program.f95  -c ; \
+				$(CC_DEBUG) SUEWS_Program.o $(MODULES) $(OTHERS) $(TEST) \
 				$(STATICLIB) \
 				-L$(NETCDFLIB) -lnetcdf -lnetcdff \
 				-o $(TARGET)
 
 # Build main program with NETCDF support - main uses MODULES and OTHERS
 nc4fr: SUEWS_Program.f95 $(MODULES) $(OTHERS) $(TEST)
-			 $(CC) SUEWS_Program.f95  -c ; \
-			 $(CC) SUEWS_Program.o $(MODULES) $(OTHERS) $(TEST) \
+			 $(CC_DEBUG) SUEWS_Program.f95  -c ; \
+			 $(CC_DEBUG) SUEWS_Program.o $(MODULES) $(OTHERS) $(TEST) \
 			 $(STATICLIB) \
 			 -L$(NETCDFLIB) -Wl,--rpath -Wl,$(NETCDFLIB) -lnetcdff -lnetcdf \
 			 -o $(TARGET)

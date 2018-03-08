@@ -6,11 +6,11 @@
 # 20 Jan 2018: first alpha release
 # 01 Feb 2018: performance improvement
 # 03 Feb 2018: improvement in output processing
+# 08 Mar 2018: pypi packaging
 ###########################################################################
 
 # load dependency modules
-import os
-import sys
+import os,sys
 import numpy as np
 import pandas as pd
 import f90nml
@@ -27,9 +27,9 @@ from datetime import timedelta
 
 # define local path for loading resources in this package
 dir_path = os.path.dirname(os.path.abspath(inspect.getsourcefile(lambda: 0)))
-sys.path.append(dir_path)
+# sys.path.append(dir_path)
 # load f2py-based SUEWS calculation core
-from SUEWS_driver import suews_driver as sd
+from .SUEWS_driver import suews_driver as sd
 
 
 ########################################################################

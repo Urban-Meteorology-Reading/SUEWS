@@ -10,6 +10,7 @@
 
 # load dependency modules
 import os
+import sys
 import numpy as np
 import pandas as pd
 import f90nml
@@ -19,10 +20,14 @@ from scipy import interpolate
 import copy
 import glob
 from datetime import timedelta
+
 # import math
 # import random
 # import pkg_resources
 
+# define local path for loading resources in this package
+dir_path = os.path.dirname(os.path.abspath(inspect.getsourcefile(lambda: 0)))
+sys.path.append(dir_path)
 # load f2py-based SUEWS calculation core
 from SUEWS_driver import suews_driver as sd
 
@@ -75,8 +80,7 @@ def get_args_suews():
 # 2. met forcing conditions will splitted into time steps and used to derive
 # other information
 
-# define local path for loading resources in this package
-dir_path = os.path.dirname(os.path.abspath(inspect.getsourcefile(lambda: 0)))
+
 
 # descriptive list/dicts for variables
 # minimal required input files for configuration:
@@ -292,7 +296,8 @@ def func_parse_date_row(row):
 # calculate decimal time
 def dectime(timestamp):
     t = timestamp
-    dectime = (t.dayofyear-1) + (t.hour + (t.minute + t.second / 60.) / 60.) / 24
+    dectime = (t.dayofyear - 1) + (t.hour +
+                                   (t.minute + t.second / 60.) / 60.) / 24
     return dectime
 
 # resample solar radiation by zenith correction and total amount distribution
@@ -498,6 +503,8 @@ def load_SUEWS_Forcing_ESTM_df_raw(
     return df_forcing_estm
 
 # TODO: add support for loading multi-grid forcing datasets
+
+
 def load_SUEWS_Forcing_df(dir_site, ser_mod_cfg, df_state_init):
     pass
 
@@ -557,9 +564,9 @@ def load_SUEWS_Forcing_df_grid(dir_site, grid, ser_mod_cfg, df_state_init):
             left_on=['iy', 'id', 'it', 'imin'],
             right_on=['iy', 'id', 'it', 'imin'])
         # insert `ts5mindata_ir` into df_forcing_tstep
-        ts_col=df_forcing_estm.columns[4:]
+        ts_col = df_forcing_estm.columns[4:]
         df_forcing_tstep['ts5mindata_ir'] = (
-            df_forcing_tstep.loc[:,ts_col].values.tolist())
+            df_forcing_tstep.loc[:, ts_col].values.tolist())
         df_forcing_tstep['ts5mindata_ir'] = df_forcing_tstep[
             'ts5mindata_ir'].map(lambda x: np.array(x, order='F'))
     else:
@@ -569,7 +576,7 @@ def load_SUEWS_Forcing_df_grid(dir_site, grid, ser_mod_cfg, df_state_init):
     # new columns for later use in main calculation
     df_forcing_tstep[['iy', 'id', 'it', 'imin']] = df_forcing_tstep[[
         'iy', 'id', 'it', 'imin']].astype(np.int64)
-    df_forcing_tstep['dectime'] = ((df_forcing_tstep['id']-1) +
+    df_forcing_tstep['dectime'] = ((df_forcing_tstep['id'] - 1) +
                                    (df_forcing_tstep['it']
                                     + df_forcing_tstep['imin'] / 60.) / 24.)
     df_forcing_tstep['id_prev_t'] = df_forcing_tstep['id'].shift(

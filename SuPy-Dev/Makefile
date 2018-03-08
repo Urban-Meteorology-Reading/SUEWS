@@ -1,11 +1,11 @@
 # -*- makefile -*-
 
 # OS-specific configurations
-ifeq ($(OS),Windows_NT)
-			PYTHON = /c/Users/sunt05/Anaconda2/
-			F2PY_PY= /c/Users/sunt05/Anaconda2/Scripts/f2py.py
-			F2PY_EXE = $(PYTHON) $(F2PY_PY)
-			TARGET=$(MODULE).pyd
+ifeq ($(OS),Windows_NT
+	PYTHON = /c/Users/sunt05/Anaconda2/
+	F2PY_PY= /c/Users/sunt05/Anaconda2/Scripts/f2py.py
+	F2PY_EXE = $(PYTHON) $(F2PY_PY)
+	TARGET=$(MODULE).pyd
 else
 	UNAME_S := $(shell uname -s)
 	TARGET=$(MODULE).so
@@ -20,8 +20,10 @@ endif
 MODULE=SUEWS_driver
 .PHONY:main,clean
 
+
+
 F2PY = $(F2PY_EXE)
-# Fortran_ = $(shell ls ../*.f95)
+SUEWS_dir = ../SUEWS-AnOHM
 F2PY_FLAGS  = --quiet
 F2PY_F90FLAGS = --f90flags='-Wall -Wtabs -cpp'
 # F2PY_FLAGS += --debug-capi
@@ -38,14 +40,14 @@ FILES = LUMPS_Module_constants.f95  \
 
 main:
 	# $(MAKE) -C .. clean;
-	$(MAKE) -C .. main; # make SUEWS with the `main` recipe
-	-ln -sf ../*.o .; # link objects
-	-ln -sf ../*.mod .; # link objects
-	-ln -sf ../*.f95 .; # link objects
+	$(MAKE) -C $(SUEWS_dir) main; # make SUEWS with the `main` recipe
+	-ln -sf $(SUEWS_dir)/*.o .; # link objects
+	-ln -sf $(SUEWS_dir)/*.mod .; # link objects
+	-ln -sf $(SUEWS_dir)/*.f95 .; # link objects
 	-rm $(subst .f95,.o, $(FILES));
 	$(F2PY) $(F2PY_FLAGS) -m $(MODULE) -c $(F2PY_F90FLAGS) $(FILES) *.o;
 	-rm *.o *.mod *.f95
-	-cp $(TARGET) SuPy/.
+	-mv $(TARGET) SuPy/.
 
 
 # If wanted, clean all *.o files after build

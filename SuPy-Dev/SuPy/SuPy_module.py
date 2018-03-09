@@ -29,7 +29,7 @@ from datetime import timedelta
 dir_path = os.path.dirname(os.path.abspath(inspect.getsourcefile(lambda: 0)))
 # sys.path.append(dir_path)
 # load f2py-based SUEWS calculation core
-from .SUEWS_driver import suews_driver as sd
+from SUEWS_driver import suews_driver as sd
 
 
 ########################################################################

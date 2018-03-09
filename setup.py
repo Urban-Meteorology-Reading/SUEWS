@@ -45,4 +45,6 @@ setup(name='supy',
           'f90nml'
       ],
       include_package_data=True,
+      test_suite='nose.collector',
+      tests_require=['nose'],
       zip_safe=False)

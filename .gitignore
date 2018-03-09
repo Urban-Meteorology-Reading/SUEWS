@@ -1,16 +1,8 @@
-*.orig
-*_BACKUP_76329.f95
-*_BACKUP_*.f95
-*_BASE_*.f95
-*_LOCAL_*.f95
-*_REMOTE_*.f95
-warnings.txt
-profiling-checkpoint.ipynb
-SUEWS_V2017c
-problems-checkpoint.txt
-test-SuPy-checkpoint.py
-warnings-checkpoint.txt
-test-checkpoint.py
-launch.json
-WFDEI_Interpolator.py
-Saeve_2004_data_5.txt.save
+# Compiled python modules.
+*.pyc,.DS_Store
+
+# Setuptools distribution folder.
+/dist/
+
+# Python egg metadata, regenerated from source files by setuptools.
+/*.egg-info

@@ -22,11 +22,12 @@ MODULE=SUEWS_driver
 .PHONY:main,clean
 
 
-
+LDSHARED = -static
 F2PY = $(F2PY_EXE)
 SUEWS_dir = ./SUEWS-AnOHM
-F2PY_FLAGS  = --quiet
-F2PY_F90FLAGS = --f90flags='-Wall -Wtabs -cpp'
+# F2PY_FLAGS  = --quiet
+F2PY_FLAGS  = --verbose
+F2PY_F90FLAGS = --f90flags='-Wall -Wtabs -cpp' --opt='-O3' --build-dir build-f2py
 # F2PY_FLAGS += --debug-capi
 # F2PY_FLAGS += -DF2PY_REPORT_ON_ARRAY_COPY=1
 # F2PY_FLAGS += -DF2PY_REPORT_ATEXIT
@@ -40,15 +41,18 @@ FILES = LUMPS_Module_constants.f95  \
 # 	${F2PY} ${F2PY_FLAGS} -m ${MODULE} -c $< ${MODULE}.f90
 
 main:
-	$(MAKE) -C $(SUEWS_dir) clean;
-	$(MAKE) -C $(SUEWS_dir) main; # make SUEWS with the `main` recipe
+	# $(MAKE) -C $(SUEWS_dir) clean;
+	# $(MAKE) -C $(SUEWS_dir) main; # make SUEWS with the `main` recipe
 	-ln -sf $(SUEWS_dir)/*.o .; # link objects
+	-ln -sf $(SUEWS_dir)/*.a .; # link objects
 	-ln -sf $(SUEWS_dir)/*.mod .; # link objects
 	-ln -sf $(SUEWS_dir)/*.f95 .; # link objects
+	ar crs libSUEWS.a *.o *.a
 	-rm $(subst .f95,.o, $(FILES));
-	$(F2PY) $(F2PY_FLAGS) -m $(MODULE) -c $(F2PY_F90FLAGS) $(FILES) *.o;
-	-rm *.o *.mod *.f95
+	$(F2PY) $(F2PY_FLAGS) -m $(MODULE) -c $(F2PY_F90FLAGS) $(FILES) *.a;
 	-mv $(TARGET) SuPy/.
+	-mv libSUEWS.a SuPy/.
+	-rm -rf *.o *.mod *.f95 *.a *.dSYM
 
 
 # If wanted, clean all *.o files after build

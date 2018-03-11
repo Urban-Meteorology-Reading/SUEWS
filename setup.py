@@ -25,7 +25,7 @@ if sysname == 'Windows':
     lib_name = 'SUEWS_driver.pyd'
 elif sysname == 'Darwin':
     lib_name = 'SUEWS_driver.so'
-else:
+elif sysname == 'Linux':
     lib_name = 'SUEWS_driver.so'
 
 # load SUEWS Fortran source files
@@ -56,9 +56,11 @@ ext_modules = [
     Extension('supy.SUEWS_driver',
               target_f95,
               extra_f90_compile_args=['-cpp'],
-              f2py_options=['--quiet'],
+              f2py_options=[
+                  '--quiet',
+                  ('-DF2PY_REPORT_ATEXIT' if sysname == 'Linux' else '')],
               extra_objects=other_obj,
-              extra_link_args=['-static'])]
+              extra_link_args=[(''if sysname == 'Linux' else '-static')])]
 
 setup(name='supy',
       version='0.2rc1',

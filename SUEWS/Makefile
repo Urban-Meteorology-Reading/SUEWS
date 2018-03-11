@@ -10,7 +10,7 @@ ifeq ($(OS),Windows_NT)
 else
 	UNAME_S := $(shell uname -s)
 	ifeq ($(UNAME_S),Linux) # Linux
-		STATIC = -static-libgfortran -static-libgcc # single -static won't work on macOS
+		STATIC = -fPIC -static-libgfortran -static-libgcc # single -static won't work on macOS
 		STATICLIB =
 	endif
 	ifeq ($(UNAME_S),Darwin) # macOS
@@ -97,7 +97,7 @@ OTHERS =  SUEWS_translate.o \
 
 
 # modules under rapid development
-TEST =      SUEWS_C_wrapper.o
+# TEST =      SUEWS_C_wrapper.o
 
 # Build main program - main uses MODULES and OTHERS
 main: SUEWS_Program.f95 $(MODULES) $(OTHERS) $(TEST)

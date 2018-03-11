@@ -56,7 +56,7 @@ ext_modules = [
     Extension('supy.SUEWS_driver',
               target_f95,
               extra_f90_compile_args=['-cpp'],
-              f2py_options=['--quiet', '--opt=\'-O3\''],
+              f2py_options=['--quiet'],
               extra_objects=other_obj,
               extra_link_args=['-static'])]
 

@@ -48,7 +48,9 @@ clean:
 
 # clean all existing builds, rebuild f2py libs, build wheels and test
 test:
-	-$(PYTHON) setup.py test
+	$(MAKE) clean;
+	$(MAKE) main;
+	$(PYTHON) setup.py test
 
 # clean all existing builds, rebuild f2py libs, build wheels and submit
 pip:

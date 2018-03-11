@@ -3,6 +3,7 @@ from setuptools import Distribution
 from numpy.distutils.core import Extension, setup
 import platform
 import glob
+import os
 
 
 def readme():
@@ -27,25 +28,40 @@ elif sysname == 'Darwin':
 else:
     lib_name = 'SUEWS_driver.so'
 
-target_f95 = ['SUEWS-AnOHM/LUMPS_Module_constants.f95',
-              'SUEWS-AnOHM/SUEWS_driver.f95']
-other_f95 = set(glob.glob('SUEWS-AnOHM/*f95')) - \
-    set(target_f95) - set(['SUEWS-AnOHM/SUEWS_C_wrapper.f95'])
-other_f95 = list(other_f95)
+# load SUEWS Fortran source files
+dir_f95 = 'SUEWS'
+target_f95 = [
+    os.path.join(dir_f95, f)
+    for f in
+    ['LUMPS_Module_constants.f95',
+     'SUEWS_driver.f95']]
+all_f95 = glob.glob(os.path.join(dir_f95, '*.f95'))
+exclude_f95 = [
+    os.path.join(dir_f95, f)
+    for f in
+    ['SUEWS_C_wrapper.f95',
+     'SUEWS_Program.f95']
+]
+other_f95 = list(
+    set(all_f95)
+    - set(target_f95)
+    - set(exclude_f95)
+)
 other_obj = [f.replace('.f95', '.o') for f in other_f95]
 src_f95 = target_f95 + other_f95
-print src_f95,other_obj
+for f in src_f95 + other_obj:
+    print f
+
 ext_modules = [
-    Extension('SUEWS_driver',
+    Extension('supy.SUEWS_driver',
               target_f95,
-              # src_f95,
               extra_f90_compile_args=['-cpp'],
-              # library_dirs=['./SUEWS-AnOHM'],
+              f2py_options=['--quiet', '--opt=\'-O3\''],
               extra_objects=other_obj,
               extra_link_args=['-static'])]
 
 setup(name='supy',
-      version='0.1.3a7',
+      version='0.2rc1',
       description='the SUEWS model that speaks python',
       long_description=readme(),
       url='https://github.com/sunt05/SuPy',

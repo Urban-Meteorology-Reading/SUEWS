@@ -1,5 +1,5 @@
 # Compiled python modules.
-*.pyc,.DS_Store, warnings.txt
+*.pyc,.DS_Store, warnings.txt, /SUEWS/SUEWS_V*
 
 # Setuptools distribution folder.
 /dist/

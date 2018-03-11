@@ -99,14 +99,6 @@ OTHERS =  SUEWS_translate.o \
 # modules under rapid development
 TEST =      SUEWS_C_wrapper.o
 
-# static:
-# 	ld -o ./fort_sample -no_compact_unwind \
-# 	-arch x86_64 -macosx_version_min 10.12.0 \
-# 	-lSystem \
-# 	/usr/local/opt/gcc/lib/gcc/7/libquadmath.a \
-# 	/usr/local/opt/gcc/lib/gcc/7/libquadmath.a \
-# 	SUEWS_Program.o $(MODULES) $(OTHERS) $(TEST)
-
 # Build main program - main uses MODULES and OTHERS
 main: SUEWS_Program.f95 $(MODULES) $(OTHERS) $(TEST)
 			$(CC) SUEWS_Program.f95  -c ; \

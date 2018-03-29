@@ -5,7 +5,7 @@ TARGET = SUEWS_V2017c      # program name
 # so gfortran dependency can be relaxed
 # but netCDF is still linked in the dynamic way as suggested by UCAR
 ifeq ($(OS),Windows_NT)
-			STATIC = -static # mingw
+			STATIC = -static -mcmodel=medium# mingw
 			STATICLIB =
 else
 			UNAME_S := $(shell uname -s)

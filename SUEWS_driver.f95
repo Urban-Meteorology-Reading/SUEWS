@@ -1371,6 +1371,7 @@ CONTAINS
        drain_per_tstep=DOT_PRODUCT(drain(1:nsurf-1),sfr(1:nsurf-1))/NonWaterFraction !No water body included
     ELSE
        drain(1:nsurf-1)=0
+       drain_per_tstep=0
     ENDIF
 
     drain(WaterSurf) = 0  ! Set drainage from water body to zero

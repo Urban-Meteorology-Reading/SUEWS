@@ -15,7 +15,7 @@ else
 			endif
 			ifeq ($(UNAME_S),Darwin) # macOS
 											STATIC = -static-libgfortran -static-libgcc # single -static won't work on macOS
-											STATICLIB = libquadmath.a # force-ship this static lib
+											STATICLIB = #libquadmath.a # force-ship this static lib
 			endif
 endif
 

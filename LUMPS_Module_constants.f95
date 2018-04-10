@@ -23,7 +23,7 @@ MODULE allocateArray
 #ifdef nc
   INTEGER, PARAMETER:: MaxNumberOfGrids=90000   !Max no. grids   !TS changed to 90000 for large-scale simulation based on netCDF IO
 #else
-  INTEGER, PARAMETER:: MaxNumberOfGrids=2000   !Max no. grids   !HCW changed to 2000 from 10000 so prog can run on windows (2GB lim)
+  INTEGER, PARAMETER:: MaxNumberOfGrids=10000   !Max no. grids   !HCW changed to 2000 from 10000 so prog can run on windows (2GB lim)
 #endif
   INTEGER, PARAMETER:: MaxLinesMet=8640        !Max no. lines to read in one go (for all grids, ie MaxLinesMet/NumberOfGrids each)
 

@@ -924,7 +924,7 @@ CONTAINS
 
           !Add water from impervious grids
           ! Check sfr/=0 added HCW 08 Dec 2015
-          IF (is==PavSurf.AND.sfr(PavSurf)/=0) state(is)=state(is)+(addImpervious)/sfr(PavSurf)
+          IF (is==PavSurf.AND.sfr(PavSurf)>0) state(is)=state(is)+(addImpervious)/sfr(PavSurf)
 
           runoff(is)=runoff(is)+drain(is)*AddWaterRunoff(is) !Drainage (not flowing to other surfaces) goes to runoff
 
@@ -939,12 +939,17 @@ CONTAINS
           ev=ev+EvPart
 
           !Change in water stores
-          IF (Precip+addVeg*(sfr(is)/VegFraction)>(IPThreshold_mmhr/nsh_real)) THEN !if 5min precipitation is larger than 10 mm
-             runoff(is)=runoff(is)+(Precip+addVeg*(sfr(is)/VegFraction)+SnowToSurf(is)+AddWater(is)-(IPThreshold_mmhr/nsh_real))
-             chang(is)=(IPThreshold_mmhr/nsh_real)-(drain(is)+ev+freezState(is))
+          IF ( VegFraction>0 ) THEN
+             IF (Precip+addVeg*(sfr(is)/VegFraction)>(IPThreshold_mmhr/nsh_real)) THEN !if 5min precipitation is larger than 10 mm
+                runoff(is)=runoff(is)+(Precip+addVeg*(sfr(is)/VegFraction)+SnowToSurf(is)+AddWater(is)-(IPThreshold_mmhr/nsh_real))
+                chang(is)=(IPThreshold_mmhr/nsh_real)-(drain(is)+ev+freezState(is))
+             ELSE
+                chang(is)=Precip+addVeg*(sfr(is)/VegFraction)+SnowToSurf(is)+AddWater(is)-(drain(is)+ev+freezState(is))
+             ENDIF
           ELSE
-             chang(is)=Precip+addVeg*(sfr(is)/VegFraction)+SnowToSurf(is)+AddWater(is)-(drain(is)+ev+freezState(is))
-          ENDIF
+             chang(is)=Precip+SnowToSurf(is)+AddWater(is)-(drain(is)+ev+freezState(is))
+          END IF
+
 
           state(is)=state(is)+chang(is)
 

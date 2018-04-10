@@ -10,17 +10,18 @@ ifeq ($(OS),Windows_NT)
 else
 			UNAME_S := $(shell uname -s)
 			ifeq ($(UNAME_S),Linux) # Linux
-											STATIC = -static-libgfortran -static-libgcc # single -static won't work on macOS
-											STATICLIB =
+				STATIC = -static-libgfortran -static-libgcc # single -static won't work on macOS
+				STATICLIB =
 			endif
 			ifeq ($(UNAME_S),Darwin) # macOS
-											STATIC = -static-libgfortran -static-libgcc # single -static won't work on macOS
-											STATICLIB = #libquadmath.a # force-ship this static lib
+				STATIC = -static-libgfortran -static-libgcc# single -static won't work on macOS
+				STATICLIB = #libquadmath.a # force-ship this static lib
 			endif
 endif
 
-CFLAGS = $(STATIC) -g -pg -Wall -Wtabs -fbounds-check -cpp -Wno-unused-dummy-argument -Wno-unused-variable \
-									-fbacktrace -ffpe-trap=zero,overflow,underflow,invalid,denormal
+CFLAGS = $(STATIC) -g -pg -Wall -Wtabs -fbounds-check -cpp \
+					-Wno-unused-dummy-argument -Wno-unused-variable \
+					-fbacktrace -ffpe-trap=zero,overflow,underflow,invalid,denormal
 
 
 # netCDF-related settings:

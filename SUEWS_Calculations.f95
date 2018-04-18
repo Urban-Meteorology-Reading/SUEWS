@@ -58,64 +58,15 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
   INTEGER:: Gridiv
   INTEGER::ir
-  ! INTEGER::ih
   INTEGER::iMB
-  ! LOGICAL        :: debug=.FALSE.
-  ! REAL(KIND(1d0)):: idectime
-  !real(kind(1d0)):: SnowDepletionCurve  !for SUEWS_Snow - not needed here (HCW 24 May 2016)
-  ! REAL(KIND(1d0)):: LAI_wt
-  ! REAL(KIND(1d0))::xBo
-
-
-
   INTEGER:: irMax
 
-  !==================================================================
   !==================================================================
 
 
   !Translate all data to the variables used in the model calculations
   IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_Translate...'
   CALL SUEWS_Translate(Gridiv,ir,iMB)
-
-  ! IF (ir==1 .AND. iMB==1 ) THEN
-  !    CALL SUEWS_write_model_state(&
-  !         AerodynamicResistanceMethod,AH_MIN,AHProf_tstep,AH_SLOPE_Cooling,& ! input&inout in alphabetical order
-  !         AH_SLOPE_Heating,alb,albDecTr,albEveTr,albGrass,alBMax_DecTr,&
-  !         alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
-  !         alpha_bioCO2,alpha_enh_bioCO2,alt,avkdn,avRh,avU1,BaseT,BaseTe,&
-  !         BaseTHDD,beta_bioCO2,beta_enh_bioCO2,bldgH,CapMax_dec,CapMin_dec,&
-  !         chAnOHM,cpAnOHM,CRWmax,CRWmin,DayWat,DayWatPer,&
-  !         DecidCap,dectime,DecTreeH,Diagnose,DiagQN,DiagQS,DRAINRT,&
-  !         EF_umolCO2perJ,emis,EmissionsMethod,EnEF_v_Jkm,endDLS,EveTreeH,FAIBldg,&
-  !         FAIDecTree,FAIEveTree,Faut,FcEF_v_kgkm,fcld_obs,FlowChange,&
-  !         FrFossilFuel_Heat,FrFossilFuel_NonHeat,G1,G2,G3,G4,G5,G6,GDD,&
-  !         GDDFull,Gridiv,gsModel,HDD,HumActivity_tstep,&
-  !         IceFrac,id,id_prev_t,Ie_a,Ie_end,Ie_m,Ie_start,imin,&
-  !         InternalWaterUse_h,IrrFracConif,IrrFracDecid,IrrFracGrass,it,ity,&
-  !         iy,iy_prev_t,kkAnOHM,Kmax,LAI,LAICalcYes,LAIMax,LAIMin,LAI_obs,&
-  !         LAIPower,LAIType,lat,ldown_obs,lng,MaxConductance,MaxQFMetab,&
-  !         MeltWaterStore,MetForcingData_grid,MinQFMetab,min_res_bioCO2,&
-  !         NARP_EMIS_SNOW,NARP_TRANS_SITE,NetRadiationMethod,&
-  !         NumCapita,OHM_coef,OHMIncQF,OHM_threshSW,&
-  !         OHM_threshWD,PipeCapacity,PopDensDaytime,&
-  !         PopDensNighttime,PopProf_tstep,PorMax_dec,PorMin_dec,porosity,&
-  !         Precip,PrecipLimit,PrecipLimitAlb,Press_hPa,QF0_BEU,Qf_A,Qf_B,&
-  !         Qf_C,qh_obs,qn1_av_store,qn1_obs,qn1_S_av_store,qn1_S_store,&
-  !         qn1_store,RadMeltFact,RAINCOVER,RainMaxRes,resp_a,resp_b,&
-  !         RoughLenHeatMethod,RoughLenMomMethod,RunoffToWater,S1,S2,&
-  !         SatHydraulicConduct,SDDFull,sfr,SMDMethod,SnowAlb,SnowAlbMax,&
-  !         SnowAlbMin,snowD,SnowDens,SnowDensMax,SnowDensMin,SnowfallCum,snowFrac,&
-  !         SnowLimBuild,SnowLimPaved,snow_obs,SnowPack,SnowProf,snowUse,SoilDepth,&
-  !         soilmoist,soilstoreCap,StabilityMethod,startDLS,state,StateLimit,&
-  !         StorageHeatMethod,surf,SurfaceArea,Tair24HR,tau_a,tau_f,tau_r,&
-  !         T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,TempMeltFact,TH,&
-  !         theta_bioCO2,timezone,TL,TrafficRate,TrafficUnits,&
-  !         TraffProf_tstep,Ts5mindata_ir,tstep,veg_type,&
-  !         WaterDist,WaterUseMethod,WetThresh,WU_Day,WUProfA_tstep,&
-  !         WUProfM_tstep,xsmd,Z)
-  !
-  ! END IF
 
 
   CALL SUEWS_cal_Main(&
@@ -203,20 +154,10 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ! ENDIF
   ! ===================SOLWEIG END================================
 
-  !write(*,*) DecidCap(id), id, it, imin, 'Calc - before translate back'
-  !write(*,*) iy, id, it, imin, 'Calc - before translate back'
-  !if(Gridiv==1)  write(*,*) iy, id, it, imin, HDD(id-1,5), HDD(id,5), HDD(id-1,6), HDD(id,6)
-  !if(id==12) pause
-  !write(*,*) ' '
 
   IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_TranslateBack...'
   CALL SUEWS_TranslateBack(Gridiv,ir,irMax)
 
 
-!!!if((id <=3 .or. id > 364).and. it == 0 .and. imin == 0) pause
-!!!if((id <=3 .or. id > 364).and. it == 23 .and. imin == 55) pause
-!!!if((id >=100 .or. id < 103).and. it == 0 .and. imin == 0) pause
-
-  ! write(*,*) '------------'
 
 END SUBROUTINE SUEWS_Calculations

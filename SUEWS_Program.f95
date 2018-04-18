@@ -59,22 +59,13 @@ PROGRAM SUEWS_Program
   INTEGER:: nlinesLimit,&   !Max number of lines that can be read in one go for each grid
        NumberOfYears   !Number of years to be run
 
-  ! INTEGER:: UnitOrigMet = 100       !Unit number for original met forcing files (arbitrary)
-  ! INTEGER:: UnitOrigESTM = 101      !Unit number for original ESTM forcing files (arbitrary)
-
   INTEGER:: year_int, & ! Year as an integer (from SiteSelect rather than met forcing file)
        igrid,&     !Grid number (from 1 to NumberOfGrids)
        iblock,&    !Block number (from 1 to ReadBlocksMetData)
        ir,irMax,&  !Row number within each block (from 1 to irMax)
        rr !Row of SiteSelect corresponding to current year and grid
 
-  ! INTEGER:: ios
-
-  ! INTEGER:: iv
-
   REAL::  timeStart, timeFinish ! profiling use, AnOHM TS
-  ! REAL :: xErr      ! error in Bo iteration, AnOHM TS 20160331
-  ! LOGICAL, ALLOCATABLE :: flagRerunAnOHM(:)   ! iteration run to make Bo converge,AnOHM TS
 
   !==========================================================================
 
@@ -204,19 +195,6 @@ PROGRAM SUEWS_Program
                 //TRIM(ADJUSTL(ResIn_txt))//'.txt'
         ENDIF
 
-        ! Find number of lines in orig met file
-        !write(*,*) TRIM(FileOrigMet)
-        ! OPEN(UnitOrigMet,file=TRIM(FileOrigMet),status='old',err=313)
-        ! CALL skipHeader(UnitOrigMet,SkipHeaderMet)  !Skip header
-        ! nlinesOrigMetdata = 0   !Initialise nlinesMetdata (total number of lines in met forcing file)
-        ! DO
-        !    READ(UnitOrigMet,*,iostat=ios) iv
-        !    IF(ios<0 .OR. iv == -9) EXIT   !IF (iv == -9) EXIT
-        !    nlinesOrigMetdata = nlinesOrigMetdata + 1
-        ! ENDDO
-        ! CLOSE(UnitOrigMet)
-        !
-        ! WRITE(*,*) 'nlinesOrigMetdata', nlinesOrigMetdata
 
         nlinesOrigMetdata = 0   !Initialise nlinesMetdata (total number of lines in met forcing file)
         nlinesOrigMetdata=count_lines(TRIM(FileOrigMet))
@@ -260,18 +238,7 @@ PROGRAM SUEWS_Program
            FileMet=TRIM(FileInputPath)//TRIM(FileCodeXWG)//'_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
         ENDIF
 
-        ! ! Open this example met file
-        ! OPEN(10,file=TRIM(FileMet),status='old',err=314)
-        ! CALL skipHeader(10,SkipHeaderMet)  !Skip header
-        !
-        ! ! Find number of lines in met file
-        ! nlinesMetdata = 0   !Initialise nlinesMetdata (total number of lines in met forcing file)
-        ! DO
-        !    READ(10,*,iostat=ios) iv
-        !    IF(ios<0 .OR. iv == -9) EXIT   !IF (iv == -9) EXIT
-        !    nlinesMetdata = nlinesMetdata + 1
-        ! ENDDO
-        ! CLOSE(10)
+
         nlinesMetdata = 0   !Initialise nlinesMetdata (total number of lines in met forcing file)
         nlinesMetdata=count_lines(TRIM(FileMet))
         !-----------------------------------------------------------------------
@@ -442,7 +409,6 @@ PROGRAM SUEWS_Program
      ! ------------------------------------------------------------------------
 
 
-     !-----------------------------------------------------------------------
      !-----------------------------------------------------------------------
      SkippedLines=0  !Initialise lines to be skipped in met forcing file
      SkippedLinesOrig=0  !Initialise lines to be skipped in original met forcing file
@@ -637,8 +603,6 @@ PROGRAM SUEWS_Program
         ENDIF
 
 
-        ! PRINT*, 'MetForcingData first 3 lines'
-        ! PRINT*, MetForcingData(1:3,1:4,1)
 
         DO ir=1,irMax   !Loop through rows of current block of met data
            GridCounter=1    !Initialise counter for grids in each year
@@ -646,11 +610,6 @@ PROGRAM SUEWS_Program
            DO igrid=1,NumberOfGrids   !Loop through grids
               IF(Diagnose==1) WRITE(*,*) 'Row (ir):', ir,'/',irMax,'of block (iblock):', iblock,'/',ReadBlocksMetData,&
                    'Grid:',GridIDmatrix(igrid)
-
-              !  ! Translate daily state back so as to keep water balance at beginning of a day
-              !  IF ( StorageHeatMethod==3 .AND. ir==1) THEN
-              !     CALL SUEWS_Translate(igrid,0,iblock)
-              !  END IF
 
               ! Call model calculation code
               !  IF(ir==1) WRITE(*,*) 'Now running block ',iblock,'/',ReadBlocksMetData,' of year ',year_int,'...'
@@ -713,8 +672,6 @@ PROGRAM SUEWS_Program
         IF ( ncMode .EQ. 1 ) THEN
            ! write resulst in netCDF
            IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_Output_nc...'
-           !  CALL SUEWS_Output_nc0(year_int,iblock,irMax)
-           !  CALL SUEWS_Output_nc(irMax)
            CALL SUEWS_Output(irMax)
            ! write input information in netCDF as well for future development
            !  IF ( iblock==1 ) THEN
@@ -723,7 +680,6 @@ PROGRAM SUEWS_Program
         ENDIF
 #endif
 
-        ! print*, 'finish output:',iv
 
      ENDDO !end loop over blocks of met data
      !-----------------------------------------------------------------------

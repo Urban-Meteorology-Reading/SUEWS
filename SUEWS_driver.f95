@@ -64,23 +64,6 @@ CONTAINS
 
     IMPLICIT NONE
 
-    ! INTEGER,PARAMETER::BldgSurf=2
-    ! INTEGER,PARAMETER::ConifSurf=3
-    ! INTEGER,PARAMETER::DecidSurf=4
-    ! INTEGER,PARAMETER::GrassSurf=5
-    ! INTEGER,PARAMETER::ivConif=1
-    ! INTEGER,PARAMETER::ivGrass=3
-    ! INTEGER,PARAMETER::MaxNumberOfGrids=2000
-    ! INTEGER,PARAMETER::ndays=366
-    ! INTEGER,PARAMETER::nsurf=7
-    ! INTEGER,PARAMETER::NVegSurf=3
-    ! INTEGER,PARAMETER::ncolumnsDataOutSUEWS=84
-    ! INTEGER,PARAMETER::ncolumnsDataOutSnow=102
-    ! INTEGER,PARAMETER::ncolumnsDataOutESTM=32
-    ! INTEGER,PARAMETER::PavSurf=1
-    ! INTEGER,PARAMETER::WaterSurf=7
-
-
     INTEGER,INTENT(IN)::AerodynamicResistanceMethod
     INTEGER,INTENT(IN)::Diagnose
     INTEGER,INTENT(IN)::DiagQN
@@ -761,20 +744,6 @@ CONTAINS
        theta_bioCO2,TrafficRate,TrafficUnits,TraffProf_tstep)
 
     IMPLICIT NONE
-    ! INTEGER,PARAMETER::BldgSurf=2
-    ! INTEGER,PARAMETER::ConifSurf=3
-    ! INTEGER,PARAMETER::DecidSurf=4
-    ! INTEGER,PARAMETER::GrassSurf=5
-    ! INTEGER,PARAMETER::ivConif=1
-    ! INTEGER,PARAMETER::ivDecid=2
-    ! INTEGER,PARAMETER::ivGrass=3
-    ! INTEGER,PARAMETER::MaxNumberOfGrids=2000
-    ! INTEGER,PARAMETER::ndays=366
-    ! INTEGER,PARAMETER::nsurf=7
-    ! INTEGER,PARAMETER::NVegSurf=3
-    ! INTEGER,PARAMETER::PavSurf=1
-    ! INTEGER,PARAMETER::WaterSurf=7
-    ! INTEGER,PARAMETER::BSoilSurf = 6!New surface classes: Grass = 5th/7 surfaces
 
     INTEGER,INTENT(in)::Diagnose
     INTEGER,INTENT(in)::EmissionsMethod
@@ -812,7 +781,6 @@ CONTAINS
     REAL(KIND(1D0)),INTENT(in)::PopDensDaytime
     REAL(KIND(1D0)),INTENT(in)::PopDensNighttime
     REAL(KIND(1D0)),INTENT(in)::Temp_C
-    ! REAL(KIND(1D0)),INTENT(in)::notUsed
     REAL(KIND(1D0)),INTENT(out)::QF
     REAL(KIND(1D0)),INTENT(out)::QF_SAHP
     REAL(KIND(1D0)),INTENT(out)::Fc_anthro
@@ -825,7 +793,6 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(-4:ndays, nvegsurf),INTENT(in)::LAI
     REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(in)::LaiMin
     REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(in):: LaiMax
-    ! REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(in)::BiogenCO2Code
     REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(in)::alpha_bioCO2
     REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(in)::beta_bioCO2
     REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(in)::theta_bioCO2
@@ -956,13 +923,8 @@ CONTAINS
 
     INTEGER,INTENT(in)::NetRadiationMethod
     INTEGER,INTENT(in)::snowUse
-    ! INTEGER,INTENT(in)::ldown_option
     INTEGER,INTENT(in)::id
-    ! INTEGER,INTENT(in)::DecidSurf
-    ! INTEGER,INTENT(in)::ConifSurf
-    ! INTEGER,INTENT(in)::GrassSurf
     INTEGER,INTENT(in)::Diagnose
-    ! INTEGER,INTENT(in)::AlbedoChoice
     INTEGER,INTENT(in)::DiagQN
 
     REAL(KIND(1d0)),INTENT(in)::snow_obs
@@ -979,7 +941,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::NARP_EMIS_SNOW
     REAL(KIND(1d0)),INTENT(in)::NARP_TRANS_SITE
 
-    ! REAL(KIND(1d0)),DIMENSION(365),INTENT(in)::NARP_G
+
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in):: IceFrac
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in):: sfr
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in):: emis
@@ -1058,9 +1020,7 @@ CONTAINS
             AlbedoChoice,ldown_option,NetRadiationMethodX,DiagQN,&
             qn1,qn1_SF,qn1_S,kclear,kup,LDown,lup,fcld,tsurf,&! output:
             qn1_ind_snow,kup_ind_snow,Tsurf_ind_snow,Tsurf_ind)
-       !Temp_C,kclear,fcld,dectime,avkdn,avRH,qn1,kup,ldown,lup,tsurf,&
-       !AlbedoChoice,ldown_option,Press_hPa,Ea_hPa,qn1_obs,&
-       !zenith_deg,NetRadiationMethod,
+
     ELSE ! NetRadiationMethod==0
        snowFrac  = snow_obs
        qn1       = qn1_obs
@@ -1099,17 +1059,9 @@ CONTAINS
        deltaQi,a1,a2,a3)
 
     IMPLICIT NONE
-
-    ! INTEGER,PARAMETER :: nsurf    = 7      ! number of surface types
-    ! INTEGER,PARAMETER ::BldgSurf  = 2      !New surface classes: Grass = 5th/7 surfaces
-    ! INTEGER,PARAMETER ::WaterSurf = 7
-    ! INTEGER, PARAMETER:: ndays = 366
-
     INTEGER,INTENT(in)::StorageHeatMethod
     INTEGER,INTENT(in)::OHMIncQF
     INTEGER,INTENT(in)::Gridiv
-    ! INTEGER,INTENT(in)::NumberOfGrids,ReadLinesMetdata
-    ! INTEGER,INTENT(in)::iy,id,it,imin,ir
     INTEGER,INTENT(in)::id
     INTEGER,INTENT(in)::tstep
     INTEGER,INTENT(in)::Diagnose
@@ -1166,8 +1118,6 @@ CONTAINS
 
     REAL(KIND(1d0))::HDDday ! HDDday=HDD(id-1,4) HDD at the begining of today (id-1)
     REAL(KIND(1d0))::qn1_use ! qn used in OHM calculations
-    ! REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::MetForcingData_grid
-    ! INTEGER :: err
 
     ! initialise output variables
     deltaQi=0
@@ -1202,36 +1152,7 @@ CONTAINS
             SnowUse,SnowFrac,&
             DiagQS,&
             a1,a2,a3,qs,deltaQi)
-       ! IF(OHMIncQF == 1) THEN      !Calculate QS using QSTAR+QF
-       !    IF(Diagnose==1) WRITE(*,*) 'Calling OHM...'
-       !    CALL OHM(qf+qn1,qn1_store,qn1_av_store,&
-       !         qn1_S,qn1_S_store,qn1_S_av_store,&
-       !         nsh,&
-       !         sfr,nsurf,&
-       !         HDDday,&
-       !         OHM_coef,&
-       !         OHM_threshSW,OHM_threshWD,&
-       !         soilmoist,soilstoreCap,state,&
-       !         BldgSurf,WaterSurf,&
-       !         SnowUse,SnowFrac,&
-       !         DiagQS,&
-       !         a1,a2,a3,qs,deltaQi)
-       ! ELSEIF(OHMIncQF == 0) THEN  !Calculate QS using QSTAR
-       !    ! qn1=qn1
-       !    IF(Diagnose==1) WRITE(*,*) 'Calling OHM...'
-       !    CALL OHM(qn1,qn1_store,qn1_av_store,&
-       !         qn1_S,qn1_S_store,qn1_S_av_store,&
-       !         nsh,&
-       !         sfr,nsurf,&
-       !         HDDday,&
-       !         OHM_coef,&
-       !         OHM_threshSW,OHM_threshWD,&
-       !         soilmoist,soilstoreCap,state,&
-       !         BldgSurf,WaterSurf,&
-       !         SnowUse,SnowFrac,&
-       !         DiagQS,&
-       !         a1,a2,a3,qs,deltaQi)
-       ! ENDIF
+
     ENDIF
 
     ! use AnOHM to calculate QS, TS 14 Mar 2016
@@ -1242,31 +1163,7 @@ CONTAINS
             alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&
             sfr,nsurf,nsh,EmissionsMethod,id,Gridiv,&
             a1,a2,a3,qs,deltaQi)
-       !  ALLOCATE(MetForcingData_grid(&
-       !       SIZE(MetForcingData, dim=1),&
-       !       SIZE(MetForcingData, dim=2)), stat=err)
-       !  IF ( err/= 0) PRINT *, "MetForcingData_grid: Allocation request denied"
 
-       !  MetForcingData_grid=MetForcingData(:,:,Gridiv)
-       ! IF ( OHMIncQF == 1 ) THEN    !Calculate QS using QSTAR+QF
-       !    IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'
-       !    CALL AnOHM(qf+qn1,qn1_store,qn1_av_store,qf,&
-       !         MetForcingData_grid,state/surf(6,:),&
-       !         alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&
-       !         sfr,nsurf,nsh,EmissionsMethod,id,Gridiv,&
-       !         a1,a2,a3,qs)
-       ! ELSEIF(OHMIncQF == 0) THEN   !Calculate QS using QSTAR
-       !    ! qn1=qn1
-       !    IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'
-       !    CALL AnOHM(qn1,qn1_store,qn1_av_store,qf,&
-       !         MetForcingData_grid,state/surf(6,:),&
-       !         alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&
-       !         sfr,nsurf,nsh,EmissionsMethod,id,Gridiv,&
-       !         a1,a2,a3,qs)
-       ! END IF
-
-       !  IF (ALLOCATED(MetForcingData_grid)) DEALLOCATE(MetForcingData_grid, stat=err)
-       !  IF ( err/= 0) PRINT *, "MetForcingData_grid: Deallocation request denied"
     END IF
 
 
@@ -1465,7 +1362,6 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::lvS_J_kg
     REAL(KIND(1d0)),INTENT(in)::lv_j_kg
     REAL(KIND(1d0)),INTENT(in)::avdens
-    ! REAL(KIND(1d0)),INTENT(in)::waterdens
     REAL(KIND(1d0)),INTENT(in)::avRh
     REAL(KIND(1d0)),INTENT(in)::Press_hPa
     REAL(KIND(1d0)),INTENT(in)::Temp_C
@@ -1534,8 +1430,6 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(2)    ::SurplusEvap        !Surplus for evaporation in 5 min timestep
 
 
-
-
     ! output:
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::runoffSnow !Initialize for runoff caused by snowmelting
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::runoff
@@ -1588,11 +1482,7 @@ CONTAINS
     tlv=lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
 
     pin=MAX(0.,Precip)!Initiate rain data [mm]
-    ! IF(Precip>0) THEN   !Initiate rain data [mm]
-    !    pin=Precip
-    ! ELSE
-    !    pin=0
-    ! ENDIF
+
 
     ! Initialize the output variables
     qe                   = 0
@@ -1816,16 +1706,6 @@ CONTAINS
        psim,gsc,ResistSurf,RA,RAsnow,rb)
 
     IMPLICIT NONE
-    ! INTEGER,PARAMETER :: nsurf=7! number of surface types
-
-
-    ! INTEGER,PARAMETER::ConifSurf = 3  !New surface classes: Grass = 5th/7 surfaces
-    ! INTEGER,PARAMETER::DecidSurf = 4  !New surface classes: Grass = 5th/7 surfaces
-    ! INTEGER,PARAMETER::GrassSurf = 5
-
-    ! INTEGER,PARAMETER::WaterSurf = 7
-
-
 
     INTEGER,INTENT(in)::StabilityMethod
     INTEGER,INTENT(in)::Diagnose
@@ -1974,13 +1854,7 @@ CONTAINS
        datetimeLine,dataOutLineSUEWS)!output
     IMPLICIT NONE
 
-    ! INTEGER,PARAMETER::ndays    = 366
-    ! INTEGER,PARAMETER::nvegsurf = 3
-    ! INTEGER,PARAMETER::nsurf    = 7
     REAL(KIND(1d0)),PARAMETER :: NAN=-999
-
-
-    ! INTEGER,INTENT(in) ::ncolumnsDataOutSUEWS
     INTEGER,INTENT(in) :: iy
     INTEGER,INTENT(in) :: iy_prev_t
     INTEGER,INTENT(in) :: id
@@ -2072,14 +1946,6 @@ CONTAINS
     REAL(KIND(1d0))::ResistSurf_x
     REAL(KIND(1d0))::l_mod_x
     REAL(KIND(1d0))::bulkalbedo
-    ! REAL(KIND(1d0))::qh_x
-    ! REAL(KIND(1d0))::qh_r_x
-    ! REAL(KIND(1d0))::qeOut_x
-    ! REAL(KIND(1d0))::qs_x
-    ! REAL(KIND(1d0))::surf_chang_per_tstep_x
-    ! REAL(KIND(1d0))::tot_chang_per_tstep_x
-    ! REAL(KIND(1d0))::SoilState_x
-    ! REAL(KIND(1d0))::smd_x
     REAL(KIND(1d0))::smd_nsurf_x(nsurf)
     REAL(KIND(1d0))::state_x(nsurf)
 
@@ -2253,15 +2119,7 @@ CONTAINS
        dataOutSUEWS,dataOutSnow,dataOutESTM)!inout
     IMPLICIT NONE
 
-    ! INTEGER,PARAMETER::ndays    = 366
-    ! INTEGER,PARAMETER::nvegsurf = 3
-    ! INTEGER,PARAMETER::nsurf    = 7
-    ! REAL(KIND(1d0)),PARAMETER :: NAN=-999
-
     INTEGER,INTENT(in) ::ReadLinesMetdata
-    ! INTEGER,INTENT(in) ::ncolumnsDataOutSUEWS
-    ! INTEGER,INTENT(in) ::ncolumnsDataOutSnow
-    ! INTEGER,INTENT(in) ::ncolumnsDataOutESTM
     INTEGER,INTENT(in) ::NumberOfGrids
     INTEGER,INTENT(in) ::Gridiv
     INTEGER,INTENT(in) ::SnowUse
@@ -2413,11 +2271,6 @@ CONTAINS
     ! TS 05 Sep 2017: improved interface
     ! TS 20 May 2017: calculate surface-level diagonostics
 
-    ! USE mod_k
-    ! USE mod_z
-    ! USE sues_data
-    ! USE data_in
-    ! USE moist
 
     IMPLICIT NONE
 
@@ -2561,8 +2414,6 @@ CONTAINS
     IMPLICIT NONE
     ! the dimension is potentially incorrect,
     ! which should be consistent with that in output module
-    ! CHARACTER(len = 50),DIMENSION(300,5),INTENT(out) :: names
-    ! CHARACTER(len = *),DIMENSION(300),INTENT(out) :: names
     INTEGER,INTENT(in) :: i
     CHARACTER(len = 15),INTENT(out) :: name,group,aggreg
 
@@ -2599,10 +2450,8 @@ CONTAINS
     IMPLICIT NONE
     ! the dimension is potentially incorrect,
     ! which should be consistent with that in output module
-    ! CHARACTER(len = 50),DIMENSION(300,5),INTENT(out) :: names
-    ! CHARACTER(len = *),DIMENSION(300),INTENT(out) :: names
     INTEGER,INTENT(out) :: n
-    ! CHARACTER(len = 15),INTENT(out) :: name,group,aggreg
+
 
     n=SIZE(varList, dim=1)
 

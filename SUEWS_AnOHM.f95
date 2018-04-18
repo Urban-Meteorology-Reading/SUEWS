@@ -99,18 +99,11 @@ CONTAINS
     END IF
 
     DO is=1,nsurf
-       !  IF ( sfr(is) > .001 ) THEN
        !   call AnOHM to calculate the coefs.
        CALL AnOHM_coef(is,xid,Gridiv,MetForcingData_grid,moist_surf,EmissionsMethod,qf,& !input
             alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&! input
             xa1(is),xa2(is),xa3(is))                         ! output
        ! print*, 'AnOHM_coef are: ',xa1,xa2,xa3
-       !  ELSE
-       !     xa1(is  )=0.1
-       !     xa2(is)=0.1
-       !     xa3(is)=1
-       !  END IF
-
     ENDDO
 
     !   calculate the areally-weighted OHM coefficients
@@ -211,7 +204,6 @@ CONTAINS
     INTEGER,SAVE :: id_save,grid_save
     REAL(KIND(1d0)), SAVE:: coeff_grid_day(7,3)=-999.
 
-    ! INTEGER :: WaterSurf=7
 
     ! PRINT*, 'xid,id_save',xid,id_save
     ! PRINT*, 'xgrid,grid_save',xgrid,grid_save
@@ -224,9 +216,6 @@ CONTAINS
        xa2=coeff_grid_day(sfc_typ,2)
        xa3=coeff_grid_day(sfc_typ,3)
     ELSE
-       !  PRINT*, ''
-       !  PRINT*, 'surface:',sfc_typ
-       !  PRINT*, 'xid',xid,id_save
 
 
        ! load forcing characteristics:
@@ -442,7 +431,6 @@ CONTAINS
 
     !   calculate sfc properties related parameters:
     xchWS = xch*mWS
-    ! xchWS = 0.5*xchWS
 
     !     xch    = CRA/RA !update bulk trsf. coeff. with RA (aerodyn. res.)
     IF ( ABS(xBo)<0.001 ) THEN
@@ -515,22 +503,6 @@ CONTAINS
     !   a3:
     xa3  = -xa1*(fT/f)*(mSd*(1-xalb))-mAH
 
-    ! !   quality checking:
-    ! !   quality checking of forcing conditions
-    ! ! IF ( ASd < 0 .OR. ATa < 0 .OR. ATs < 0 .OR. tau<-4.0/12*Pi) flagGood = .FALSE.
-    ! !   quality checking of a1
-    ! IF ( .NOT. (xa1>0 .AND. xa1<0.7)) THEN
-    !   !  flagGood = .FALSE.
-    !    IF (xa1 >0.7) xa1=MAX(0.7,xa1)
-    ! ENDIF
-    ! !   quality checking of a2
-    ! IF ( .NOT. (xa2>-0.5 .AND. xa2<0.5)) THEN
-    !   !  flagGood = .FALSE.
-    !    !  IF ( xa2>0.5) xa2 = 0.5
-    !    !  IF (xa2<-0.5) xa2 = -0.5
-    ! ENDIF
-    ! !   quality checking of a3
-    ! ! IF ( .NOT. (xa3<0)) flagGood = .FALSE.
 
     !     print*, 'ceta,cphi', ceta,cphi
     !     print*, 'tau,eta,phi,xlag in deg:',tau/pi*180,eta/pi*180,phi/pi*180,xlag/pi*180
@@ -689,25 +661,6 @@ CONTAINS
     xa3  = mSd*(xalb-1)*(xeta+(fT-fL*xeta)/f*xa1)
 
 
-    !   quality checking:
-    !   quality checking of forcing conditions
-    ! IF ( ASd < 0 .OR. ATa < 0 .OR. ATs < 0 .OR. tau<-4.0/12*Pi) flagGood = .FALSE.
-    ! !   quality checking of a1
-    ! IF ( .NOT. (xa1>0 .AND. xa1<0.7)) THEN
-    !    flagGood = .FALSE.
-    !    IF (xa1 >0.7) xa1=MAX(0.7,xa1)
-    ! ENDIF
-    ! !   quality checking of a2
-    ! IF ( .NOT. (xa2>-0.5 .AND. xa2<0.5)) THEN
-    !    flagGood = .FALSE.
-    !    !  IF ( xa2>0.5) xa2 = 0.5
-    !    !  IF (xa2<-0.5) xa2 = -0.5
-    ! ENDIF
-    ! !   quality checking of a3
-    ! IF ( .NOT. (xa3<0)) flagGood = .FALSE.
-
-    !   skip the first day for quality checking
-    ! IF ( xid == 1 ) flagGood = .TRUE.
 
     ! print*,  'sfc_typ_water:', sfc_typ
     ! print*, 'a1,a2,a3:', xa1,xa2,xa3
@@ -799,12 +752,6 @@ CONTAINS
 
     LOGICAL, ALLOCATABLE :: metMask(:)
 
-    ! IF ( xid==73 ) THEN
-    !    PRINT*, 'MetForcingData_grid in AnOHM_FcLoad, shape:',SHAPE(MetForcingData_grid)
-    !    PRINT*, MetForcingData_grid(UBOUND(MetForcingData_grid, dim=1),:)
-    ! END IF
-
-
     ! construct mask
     IF (ALLOCATED(metMask)) DEALLOCATE(metMask, stat=err)
     ALLOCATE(metMask(SIZE(MetForcingData_grid, dim=1)))
@@ -861,18 +808,6 @@ CONTAINS
        !  AH = mAH_grids(xid-1,xgrid)
     END IF
 
-    ! IF ( xid==44 ) THEN
-    !    PRINT*, 'in  AnOHM_FcLoad'
-    !    PRINT*, 'id:',xid
-    !    PRINT*, 'Sd:', Sd
-    !    PRINT*, 'Ta:', Ta
-    !    PRINT*, 'RH:', RH
-    !    PRINT*, 'pres:', pres
-    !    PRINT*, 'WS:', WS
-    !    PRINT*, 'WF:', WF
-    !    PRINT*, 'AH:', AH
-    !    PRINT*, 'tHr:', tHr
-    ! END IF
 
   END SUBROUTINE AnOHM_FcLoad
   !========================================================================================
@@ -1053,10 +988,6 @@ CONTAINS
     ! initial guess for fitting
     x=(/mean,amp,tpeak/)
 
-    ! PRINT*, 'x',x
-    ! iflag=1
-    ! CALL fSin(m,n,x,tHr,obs,fvec,iflag)
-    ! CALL r8vec_print(3,x,'x')
 
     ! use minpack subroutine 'lmstr1' to fit the sinusoidal form
     CALL lmdif1( fSin, m, n, x, tHr, obs, fvec, tol, info )

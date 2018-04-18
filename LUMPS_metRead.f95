@@ -3,7 +3,7 @@
 !  Feb 2012, LJ:  Input fluxes qh and qe changed _obs as well as qn1_obs ending
 !  Oct 2014, LJ:  Variables changed only be used in this part of code and these are passed to calling
 !                 function in MetArray.
-!  Jan 2015, HCW: Precip_hr, wuh and lai_hr changed for generic timesteps
+!  Jan 2015, HCW: Precip_hr, wuh and LAI_hr changed for generic timesteps
 !  Jan 2016, LJ:  Removal of tabs
 !  Feb 2017, HCW: Added file unit as argument so MetRead can be used for original met forcing file too
 ! To Do:
@@ -45,7 +45,7 @@
                     imin,&      !Minute
                     kdiff,&     !Diffuse shortwave radiation
                     kdir,&      !Direct shortwave radiation
-                    lai_obs,&   !Overall LAI of the study area
+                    LAI_obs,&   !Overall LAI of the study area
                     ldown_obs,& !Downwelling longwave radiation
                     Precip,& !Rainfall [mm]
                     Pres_hPa,&  !Station air pressure in hPa
@@ -84,7 +84,7 @@
   elseif (InputMetFormat==10) then !SUEWS reading
       READ(lfn,*,iostat=iostat_var) iy,id,it,imin,qn1_obs,qh_obs,qe_obs,qs_obs,qf_obs,avu1,avrh,&
                                     Temp_C,Pres_kPa,Precip,avkdn,snow_obs,ldown_obs,fcld_obs,&
-                                    wu_m3,xsmd,lai_obs,kdiff,kdir,wdir
+                                    wu_m3,xsmd,LAI_obs,kdiff,kdir,wdir
 
 
   !write(*,*) 'In LUMPS_MetRead (1)'
@@ -94,7 +94,7 @@
   !write(*,*) 'iy',iy
 
 
-      !Calculate observed soil moisture deficits from either volumetric or gravimetric soilstates
+      !Calculate observed soil moisture deficits from either volumetric or gravimetric SoilStates
       if (SMDMethod==1.and.xsmd/=-999) then !Soil moisture - volumetric
          xsmd=(SmCap-xsmd)*SoilDepthMeas*SoilRocks
       elseif (SMDMethod==2.and.xsmd/=-999) then !Soil moisture -gravimetric
@@ -176,7 +176,7 @@
   !Create an array to be printed out.
   MetArray(1:24)=(/iy,id,it,imin,qn1_obs,qh_obs,qe_obs,qs_obs,qf_obs,avu1,&
                    avrh,Temp_C,Pres_hPa,Precip,avkdn,snow_obs,ldown_obs,&
-                   fcld_obs,wu_m3,xsmd,lai_obs,kdiff,kdir,wdir/)
+                   fcld_obs,wu_m3,xsmd,LAI_obs,kdiff,kdir,wdir/)
 
   !write(*,*) 'In LUMPS_MetRead (2)'
   !write(*,*) 'imin',imin

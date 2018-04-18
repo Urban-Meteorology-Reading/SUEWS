@@ -13,11 +13,11 @@
   ! sg  29 Jul 2014: close (500)
   ! LJ  08 Feb 2013
   !--------------------------------------------------------------------
-  
-  USE data_in  
+
+  USE data_in
   USE defaultNotUsed
   USE WhereWhen
-  
+
   IMPLICIT NONE
 
   REAL(KIND(1d0)):: VALUE,value2
@@ -29,7 +29,7 @@
   INTEGER:: WhichFile                            ! Used to switch between 500 for error file, 501 for warnings file
   LOGICAL:: v1=.FALSE.,v2=.FALSE.,v3=.FALSE.,v4=.FALSE.,v5=.FALSE.,v6=.FALSE.,v7=.FALSE.,v8=.FALSE.
   LOGICAL:: returnTrue=.FALSE.
-  
+
   ! Initialise returnTrue as false (HCW 29/10/2014)
   ! - need to do this in Fortran as values assigned in declarations are not applied
   ! on subsequent calling of the subroutine
@@ -43,9 +43,9 @@
   v6=.FALSE.
   v7=.FALSE.
   v8=.FALSE.
-  
-  
-  !CALL ProblemsText(ProblemFile)   !Call the subroutine that opens the problem.txt file !Moved below, HCW 17 Feb 2017
+
+
+  !CALL gen_ProblemsText(ProblemFile)   !Call the subroutine that opens the problem.txt file !Moved below, HCW 17 Feb 2017
 
   !The list of knows possible problems of the code:
   !  text1 is the error message written to the ProblemFile.
@@ -56,19 +56,19 @@
      v5=.TRUE.
   ELSEIF(errh==2) THEN
      text1='Cannot perform disaggregation.'
-     v6=.TRUE.   
+     v6=.TRUE.
   ELSEIF(errh==3) THEN
      text1='Met forcing file should contain only 1 year of data.'
-     v1=.TRUE.   
+     v1=.TRUE.
   ELSEIF(errh==4) THEN
      text1='Rainfall in original met forcing file exceeds intensity threshold.'
-     v2=.TRUE.   
-     returnTrue=.TRUE.   
-  !5    
+     v2=.TRUE.
+     returnTrue=.TRUE.
+  !5
   ELSEIF(errh==6) THEN
      text1='Value obtained exceeds permitted range, setting to +/-9999 in output file.'
      v1=.TRUE.
-     returnTrue=.TRUE.   
+     returnTrue=.TRUE.
   ELSEIF(errh==7) THEN
      text1='ra value obtained exceeds permitted range.'
      v1=.TRUE.
@@ -96,7 +96,7 @@
      text1= 'Check H_Bldgs, H_EveTr and H_DecTr in SUEWS_SiteSelect.txt'
      v2=.TRUE.
      returnTrue=.TRUE.
-  ! 16 
+  ! 16
   ELSEIF(errh==17) THEN
      text1= 'Problem with (z-zd) and/or z0.'
      v2=.TRUE.
@@ -290,20 +290,20 @@
      v2=.TRUE.
   ENDIF
   !---------------------------------------------------------------------
-  
+
   ! Write errors (that stop the program) to problems.txt; warnings to warnings.txt
   IF(returnTrue) THEN
      IF(SuppressWarnings==0) THEN
-        CALL WarningsText(ProblemFile)   !Call the subroutine that opens the problem.txt file !Moved from above, HCW 17 Feb 2017
+        CALL gen_WarningsText(ProblemFile)   !Call the subroutine that opens the problem.txt file !Moved from above, HCW 17 Feb 2017
         WRITE(501,*) TRIM(text1)
         WhichFile = 501
-     ENDIF   
+     ENDIF
   ELSE
-     CALL ProblemsText(ProblemFile)   !Call the subroutine that opens the problem.txt file !Moved from above, HCW 17 Feb 2017
+     CALL gen_ProblemsText(ProblemFile)   !Call the subroutine that opens the problem.txt file !Moved from above, HCW 17 Feb 2017
      WRITE(500,*) 'ERROR! Program stopped: ',TRIM(text1)
      WhichFile = 500
   ENDIF
-  
+
   ! Write out error message or warning message only if warnings are not suppressed
   IF(WhichFile == 500 .or. (WhichFile == 501 .and. SuppressWarnings==0)) THEN
      !This part of the code determines how the error/warning message is written out
@@ -327,24 +327,24 @@
         ! no error values
      ENDIF
   ENDIF
-  
+
   ErrhCount(errh) = ErrhCount(errh) + 1   ! Increase error count by 1
-  
+
   ! Write errors (that stop the program) to problems.txt; warnings to warnings.txt
   IF(returnTrue) THEN
      IF(SuppressWarnings==0) THEN
         WRITE(501,'(4(a))') ' Grid: ',TRIM(ADJUSTL(GridID_text)),'   DateTime: ',datetime  !Add grid and datetime to warnings.txt
         WRITE(501,'((a),(i14))') ' Count: ',ErrhCount(errh)
         CLOSE(501)
-     ENDIF   
+     ENDIF
   ELSE
      WRITE(500,'(4(a))') ' Grid: ',TRIM(ADJUSTL(GridID_text)),'   DateTime: ',datetime  !Add grid and datetime to problems.txt
      WRITE(500,'(i3)') errh  !Add error code to problems.txt
      WRITE(*,*) 'ERROR! SUEWS run stopped.'   !Print message to screen if program stopped
      CLOSE(500)
   ENDIF
-  
-  
+
+
   !When returnTrue=true, then the program can continue despite the warnings
   IF(returnTrue) THEN
      !write(*,*)'Problems.txt has been closed and overwritten if other errors occur'
@@ -359,7 +359,7 @@ END SUBROUTINE ErrorHint
 !=============================================================
 
 ! --------------------------------------------------------------------
- SUBROUTINE WarningsText(ProblemFile)
+ SUBROUTINE gen_WarningsText(ProblemFile)
 
     USE defaultNotUsed
     IMPLICIT NONE
@@ -380,10 +380,10 @@ END SUBROUTINE ErrorHint
     WRITE(501,*)'Warning: ',TRIM(ProblemFile)
 
     RETURN
- END SUBROUTINE WarningsText
+ END SUBROUTINE gen_WarningsText
 
  ! --------------------------------------------------------------------
- SUBROUTINE ProblemsText(ProblemFile)
+ SUBROUTINE gen_ProblemsText(ProblemFile)
 
     USE defaultNotUsed
     IMPLICIT NONE
@@ -404,7 +404,7 @@ END SUBROUTINE ErrorHint
     WRITE(500,*)'Problem: ',TRIM(ProblemFile)
 
     RETURN
- END SUBROUTINE ProblemsText
+ END SUBROUTINE gen_ProblemsText
  ! --------------------------------------------------------------------
 
  SUBROUTINE PauseStop(ProblemFile)

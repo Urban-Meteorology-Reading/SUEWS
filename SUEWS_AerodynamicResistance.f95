@@ -1,8 +1,21 @@
-SUBROUTINE AerodynamicResistance(RA,AerodynamicResistanceMethod,StabilityMethod,RoughLenHeatMethod,&
-     ZZD,z0m,k2,AVU1,L_mod,Ustar,VegFraction,psyh) ! psyh is added. shiho
+SUBROUTINE AerodynamicResistance(&
+
+                                ! input:
+     ZZD,&
+     z0m,&
+     AVU1,&
+     L_mod,&
+     UStar,&
+     VegFraction,&
+     AerodynamicResistanceMethod,&
+     StabilityMethod,&
+     RoughLenHeatMethod,&
+                                ! output:
+     RA)
 
   ! Returns Aerodynamic resistance (RA) to the main program SUEWS_Calculations
   ! All ra equations reported in Thom & Oliver (1977)
+  ! Modified by TS 08 Aug 2017 - interface modified
   ! Modified by LJ
   !   -Removal of tabs and cleaning the code
   ! Modified by HCW 03 Dec 2015 - changed lower limit on ra from 2 s m-1 to 10 s m-1 (to avoid unrealistically high evaporation rates)
@@ -18,18 +31,38 @@ SUBROUTINE AerodynamicResistance(RA,AerodynamicResistanceMethod,StabilityMethod,
   !         k2 = Power of Van Karman's constant (= 0.16 = 0.4^2)
   !         AVU1 = Mean wind speed
   !         L_mod = Obukhov length (m)
-  !         Ustar = Friction velocity (m s-1)
+  !         UStar = Friction velocity (m s-1)
   !         VegFraction = Fraction of vegetation
   !               (changed from veg_fr which also includes water surface by HCW 05 Nov 2015)
 
 
-  USE DefaultNotUsed
+  ! USE DefaultNotUsed
 
   IMPLICIT NONE
 
-  REAL (KIND(1d0))::psym,psyh,stab_fn_heat,stab_fn_mom,ZZD,z0m,k2,AVU1,L_mod,Ustar,RA,z0V,VegFraction, &
+
+  REAL(KIND(1d0)),INTENT(in)::ZZD!Active measurement height (meas. height-displac. height)
+  REAL(KIND(1d0)),INTENT(in)::z0m!Aerodynamic roughness length
+  REAL(KIND(1d0)),INTENT(in)::AVU1!Average wind speed
+  REAL(KIND(1d0)),INTENT(in)::L_mod!Monin-Obukhov length (either measured or modelled)
+  REAL(KIND(1d0)),INTENT(in)::UStar!Friction velocity
+  REAL(KIND(1d0)),INTENT(in)::VegFraction!Fraction of vegetation
+
+  INTEGER,INTENT(in)::AerodynamicResistanceMethod
+  INTEGER,INTENT(in)::StabilityMethod
+  INTEGER,INTENT(in)::RoughLenHeatMethod
+
+  REAL(KIND(1d0)),INTENT(out)::RA !Aerodynamic resistance [s m^-1]
+
+  INTEGER, PARAMETER :: notUsedI=-55
+
+  REAL(KIND(1d0)), PARAMETER :: &
+       notUsed=-55.5,&
+       k2=0.16,& !Power of Van Karman's constant (= 0.16 = 0.4^2)
        muu=1.46e-5 !molecular viscosity
-  INTEGER::AerodynamicResistanceMethod,StabilityMethod,RoughLenHeatMethod
+  REAL(KIND(1d0))::stab_fn_heat,stab_fn_mom,&
+       psym,&
+       psyh,z0V
 
 
   !1)Monteith (1965)-neutral stability
@@ -49,16 +82,16 @@ SUBROUTINE AerodynamicResistance(RA,AerodynamicResistanceMethod,StabilityMethod,
      IF (RoughLenHeatMethod==1) THEN !Brutasert (1982) Z0v=z0/10(see Grimmond & Oke, 1986)
         z0V=Z0m/10
      ELSEIF (RoughLenHeatMethod==2) THEN ! Kawai et al. (2007)
-       	!z0V=Z0m*exp(2-(1.2-0.9*veg_fr**0.29)*(Ustar*Z0m/muu)**0.25)
+       	!z0V=Z0m*exp(2-(1.2-0.9*veg_fr**0.29)*(UStar*Z0m/muu)**0.25)
         ! Changed by HCW 05 Nov 2015 (veg_fr includes water; VegFraction = veg + bare soil)
-        z0V=Z0m*EXP(2-(1.2-0.9*VegFraction**0.29)*(Ustar*Z0m/muu)**0.25)
+        z0V=Z0m*EXP(2-(1.2-0.9*VegFraction**0.29)*(UStar*Z0m/muu)**0.25)
      ELSEIF (RoughLenHeatMethod==3) THEN
         z0V=Z0m*EXP(-20.) ! Voogt and Grimmond, JAM, 2000
      ELSEIF (RoughLenHeatMethod==4) THEN
-        z0V=Z0m*EXP(2-1.29*(Ustar*Z0m/muu)**0.25) !See !Kanda and Moriwaki (2007),Loridan et al. (2010)
+        z0V=Z0m*EXP(2-1.29*(UStar*Z0m/muu)**0.25) !See !Kanda and Moriwaki (2007),Loridan et al. (2010)
      ENDIF
 
-     IF(Zzd/L_mod==0.OR.Ustar==0) THEN
+     IF(Zzd/L_mod==0.OR.UStar==0) THEN
         RA=(LOG(ZZD/z0m)*LOG(ZZD/z0V))/(k2*AVU1) !Use neutral equation
      ELSE
         RA=((LOG(ZZD/z0m)-PSYM)*(LOG(ZZD/z0V)-PSYH))/(K2*AVU1)

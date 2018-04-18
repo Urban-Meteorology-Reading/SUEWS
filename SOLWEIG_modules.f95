@@ -38,7 +38,7 @@ module solweig_module
                        scale,&
                        amaxvalue,&
                        trans,&
-                       transperlai,&
+                       transperLAI,&
                        xllcorner,&
                        yllcorner,&
                        NoData,&

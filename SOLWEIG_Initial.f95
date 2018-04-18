@@ -94,10 +94,10 @@ namelist/SOLWEIGinput/Posture,&    ! 1.Standing, 2.Sitting
     
     !!! Set up for vegetation scheme, or not !!!
     if (usevegdem==1) then 
-        ! Calculating transmissivity of short wave radiation  through vegetation based on decid lai
-        transperlai=(TransMax-TransMin)/(laimax(2)-laimin(2))
+        ! Calculating transmissivity of short wave radiation  through vegetation based on decid LAI
+        transperLAI=(TransMax-TransMin)/(LAImax(2)-LAImin(2))
         firstday = int(MetForcingData(1,2,1))
-        trans=TransMin+(laimax(2)-lai(firstday-1,2))*transperlai
+        trans=TransMin+(LAImax(2)-LAI(firstday-1,2))*transperLAI
                	
 	    ! Loading vegDSM (SDSM)
         Path=trim(FileInputPath)//trim(DSMPath)

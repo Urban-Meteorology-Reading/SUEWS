@@ -3,6 +3,8 @@
 !           - between arrays for different grids and the model variables
 !Made by HW&LJ Oct 2014
 !-----------------------------------------------------------------------------------
+! MH 21 Jun 2017 : Added anthropogenic CO2 charasteristic
+! MH 16 Jun 2017 : Added biogenic CO2 characteristic
 ! HCW 13 Dec 2016 : LAIPower and LAIType for all vegetation types now used (previously only DecTr were used)
 ! HCW 12 Dec 2016 : Switched sign of lng so that input should be -ve for W, +ve for E, as is conventional
 !Last modified HCW 26 Aug 2016
@@ -18,7 +20,7 @@
 !Last modified: TS 13 Apr 2016
 ! Added AnOHM required variables.
 !Last modified: LJ 06 Jul 2015
-! Changed to read snowAlb from ModelDailyState instead of SurfaceChar. Location also moved.
+! Changed to read SnowAlb from ModelDailyState instead of SurfaceChar. Location also moved.
 !Last modified: HCW 03 Jul 2015
 ! Use PopDensNighttime by default (not PopDensDaytime)
 !Last modified: HCW 26 Jun 2015
@@ -50,6 +52,8 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   USE ESTM_data
   USE PhysConstants
   USE WhereWhen
+  USE ESTM_module,ONLY:ESTM_translate
+
 
   IMPLICIT NONE
 
@@ -172,9 +176,9 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   IF(PopDensDaytime >= 0 .AND. PopDensNighttime >= 0) NumCapita = (PopDensDaytime+PopDensNighttime)/2  !If both, use average
 
   ! ---- Traffic rate
-  TrafficRate = SurfaceChar(Gridiv,c_TrafficRate) ! Mean traffic rate within modelled area
+  TrafficRate = SurfaceChar(Gridiv,(/c_TrafficRate_WD,c_TrafficRate_WE/)) ! Mean traffic rate within modelled area
   ! ---- Building energy use
-  BuildEnergyUse = SurfaceChar(Gridiv,c_BuildEnergyUse) ! Building energy use within modelled area
+  QF0_BEU          = SurfaceChar(Gridiv,(/c_QF0_BEU_WD,c_QF0_BEU_WE/))   ! Building energy use within modelled area
 
   ! ---- Albedo [-]
   alb(1:nsurf) = SurfaceChar(Gridiv,c_AlbMax)   !Use maximum albedos as default value (albmin for veg surfaces handled below)
@@ -254,6 +258,15 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   LAIMax (1:nvegsurf) = SurfaceChar(Gridiv,c_LAIMax)
   MaxConductance(1:nvegsurf) = SurfaceChar(Gridiv,c_GsMax)
 
+  alpha_bioCO2(1:nvegsurf)     = SurfaceChar(Gridiv,c_alpha_bioCO2)
+  beta_bioCO2(1:nvegsurf)      = SurfaceChar(Gridiv,c_beta_bioCO2)
+  theta_bioCO2(1:nvegsurf)     = SurfaceChar(Gridiv,c_theta_bioCO2)
+  alpha_enh_bioCO2(1:nvegsurf) = SurfaceChar(Gridiv,c_alpha_enh_bioCO2)
+  beta_enh_bioCO2(1:nvegsurf)  = SurfaceChar(Gridiv,c_beta_enh_bioCO2)
+  resp_a(1:nvegsurf)           = SurfaceChar(Gridiv,c_resp_a)
+  resp_b(1:nvegsurf)           = SurfaceChar(Gridiv,c_resp_b)
+  min_res_bioCO2(1:nvegsurf)   = SurfaceChar(Gridiv,c_min_res_bioCO2)
+
   ! ---- LAI characteristics (updated HCW 13 Dec 2016)
   LAItype(1:nvegsurf) = INT(SurfaceChar(Gridiv,c_LAIEq(1:nvegsurf)))
   LAIPower(1,1:nvegsurf) = SurfaceChar(Gridiv,c_LeafGP1(1:nvegsurf))
@@ -306,8 +319,8 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   RunoffToWater = SurfaceChar(Gridiv,c_RunoffToWater)
 
   ! ---- Daylight saving (was from ModelledYears.txt)
-  DayLightSavingDay(1) = INT(SurfaceChar(Gridiv,c_StartDLS))
-  DayLightSavingDay(2) = INT(SurfaceChar(Gridiv,c_EndDLS))
+  startDLS = INT(SurfaceChar(Gridiv,c_StartDLS))
+  endDLS = INT(SurfaceChar(Gridiv,c_EndDLS))
 
   ! ---- OHM coeffs (was in SUEWS_OHMnew.f95, subroutine OHMinitialize)
   OHM_coef = 0 ! Initialise OHM_coef
@@ -318,37 +331,37 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   !  then transfer coeffs for snow surface (8th surface in SurfaceChar; 9th surface in OHM_Coefs)
   ! Summer wet
   OHM_coef(1:nsurf,1,1) = SurfaceChar(Gridiv,c_a1_SWet(1:nsurf)) !1:nsurf a1 Summer wet
-  OHM_coef(nsurf+2,1,1) = SurfaceChar(Gridiv,c_a1_SWet(nsurf+1)) !Snow    a1 Summer wet
+  OHM_coef(nsurf+1,1,1) = SurfaceChar(Gridiv,c_a1_SWet(nsurf+1)) !Snow    a1 Summer wet
   OHM_coef(1:nsurf,1,2) = SurfaceChar(Gridiv,c_a2_SWet(1:nsurf)) !1:nsurf a2 Summer wet
-  OHM_coef(nsurf+2,1,2) = SurfaceChar(Gridiv,c_a2_SWet(nsurf+1)) !Snow    a2 Summer wet
+  OHM_coef(nsurf+1,1,2) = SurfaceChar(Gridiv,c_a2_SWet(nsurf+1)) !Snow    a2 Summer wet
   OHM_coef(1:nsurf,1,3) = SurfaceChar(Gridiv,c_a3_SWet(1:nsurf)) !1:nsurf a3 Summer wet
-  OHM_coef(nsurf+2,1,3) = SurfaceChar(Gridiv,c_a3_SWet(nsurf+1)) !Snow    a3 Summer wet
+  OHM_coef(nsurf+1,1,3) = SurfaceChar(Gridiv,c_a3_SWet(nsurf+1)) !Snow    a3 Summer wet
   ! Summer dry
   OHM_coef(1:nsurf,2,1) = SurfaceChar(Gridiv,c_a1_SDry(1:nsurf)) !1:nsurf a1 Summer dry
-  OHM_coef(nsurf+2,2,1) = SurfaceChar(Gridiv,c_a1_SDry(nsurf+1)) !Snow    a1 Summer dry
+  OHM_coef(nsurf+1,2,1) = SurfaceChar(Gridiv,c_a1_SDry(nsurf+1)) !Snow    a1 Summer dry
   OHM_coef(1:nsurf,2,2) = SurfaceChar(Gridiv,c_a2_SDry(1:nsurf)) !1:nsurf a2 Summer dry
-  OHM_coef(nsurf+2,2,2) = SurfaceChar(Gridiv,c_a2_SDry(nsurf+1)) !Snow    a2 Summer dry
+  OHM_coef(nsurf+1,2,2) = SurfaceChar(Gridiv,c_a2_SDry(nsurf+1)) !Snow    a2 Summer dry
   OHM_coef(1:nsurf,2,3) = SurfaceChar(Gridiv,c_a3_SDry(1:nsurf)) !1:nsurf a3 Summer dry
-  OHM_coef(nsurf+2,2,3) = SurfaceChar(Gridiv,c_a3_SDry(nsurf+1)) !Snow    a3 Summer dry
+  OHM_coef(nsurf+1,2,3) = SurfaceChar(Gridiv,c_a3_SDry(nsurf+1)) !Snow    a3 Summer dry
   ! Winter wet
   OHM_coef(1:nsurf,3,1) = SurfaceChar(Gridiv,c_a1_WWet(1:nsurf)) !1:nsurf a1 Winter wet
-  OHM_coef(nsurf+2,3,1) = SurfaceChar(Gridiv,c_a1_WWet(nsurf+1)) !Snow    a1 Winter wet
+  OHM_coef(nsurf+1,3,1) = SurfaceChar(Gridiv,c_a1_WWet(nsurf+1)) !Snow    a1 Winter wet
   OHM_coef(1:nsurf,3,2) = SurfaceChar(Gridiv,c_a2_WWet(1:nsurf)) !1:nsurf a2 Winter wet
-  OHM_coef(nsurf+2,3,2) = SurfaceChar(Gridiv,c_a2_WWet(nsurf+1)) !Snow    a2 Winter wet
+  OHM_coef(nsurf+1,3,2) = SurfaceChar(Gridiv,c_a2_WWet(nsurf+1)) !Snow    a2 Winter wet
   OHM_coef(1:nsurf,3,3) = SurfaceChar(Gridiv,c_a3_WWet(1:nsurf)) !1:nsurf a3 Winter wet
-  OHM_coef(nsurf+2,3,3) = SurfaceChar(Gridiv,c_a3_WWet(nsurf+1)) !Snow    a3 Winter wet
+  OHM_coef(nsurf+1,3,3) = SurfaceChar(Gridiv,c_a3_WWet(nsurf+1)) !Snow    a3 Winter wet
   ! Winter dry
   OHM_coef(1:nsurf,4,1) = SurfaceChar(Gridiv,c_a1_WDry(1:nsurf)) !1:nsurf a1 Winter dry
-  OHM_coef(nsurf+2,4,1) = SurfaceChar(Gridiv,c_a1_WDry(nsurf+1)) !Snow    a1 Winter dry
+  OHM_coef(nsurf+1,4,1) = SurfaceChar(Gridiv,c_a1_WDry(nsurf+1)) !Snow    a1 Winter dry
   OHM_coef(1:nsurf,4,2) = SurfaceChar(Gridiv,c_a2_WDry(1:nsurf)) !1:nsurf a2 Winter dry
-  OHM_coef(nsurf+2,4,2) = SurfaceChar(Gridiv,c_a2_WDry(nsurf+1)) !Snow    a2 Winter dry
+  OHM_coef(nsurf+1,4,2) = SurfaceChar(Gridiv,c_a2_WDry(nsurf+1)) !Snow    a2 Winter dry
   OHM_coef(1:nsurf,4,3) = SurfaceChar(Gridiv,c_a3_WDry(1:nsurf)) !1:nsurf a3 Winter dry
-  OHM_coef(nsurf+2,4,3) = SurfaceChar(Gridiv,c_a3_WDry(nsurf+1)) !Snow    a3 Winter dry
+  OHM_coef(nsurf+1,4,3) = SurfaceChar(Gridiv,c_a3_WDry(nsurf+1)) !Snow    a3 Winter dry
   ! OHM thresholds
   OHM_threshSW(1:nsurf) = SurfaceChar(Gridiv,c_OHMThresh_SW(1:nsurf)) !1:nsurf
-  OHM_threshSW(nsurf+2) = SurfaceChar(Gridiv,c_OHMThresh_SW(nsurf+1)) !Snow
+  OHM_threshSW(nsurf+1) = SurfaceChar(Gridiv,c_OHMThresh_SW(nsurf+1)) !Snow
   OHM_threshWD(1:nsurf) = SurfaceChar(Gridiv,c_OHMThresh_WD(1:nsurf)) !1:nsurf
-  OHM_threshWD(nsurf+2) = SurfaceChar(Gridiv,c_OHMThresh_WD(nsurf+1)) !Snow
+  OHM_threshWD(nsurf+1) = SurfaceChar(Gridiv,c_OHMThresh_WD(nsurf+1)) !Snow
 
   ! ---- ESTM characteristics -------------------------
   ! HCW 16 Jun 2016
@@ -622,26 +635,99 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   ENDIF ! ESTM related translation finished here.
 
   ! ---- AnOHM related ------------------------------
-  cpAnOHM(1:nsurf) = SurfaceChar(Gridiv,c_cpAnOHM) ! AnOHM TS
-  kkAnOHM(1:nsurf) = SurfaceChar(Gridiv,c_kkAnOHM) ! AnOHM TS
-  chAnOHM(1:nsurf) = SurfaceChar(Gridiv,c_chAnOHM) ! AnOHM TS
+  IF ( StorageHeatMethod==3 ) THEN
+     cpAnOHM(1:nsurf) = SurfaceChar(Gridiv,c_cpAnOHM) ! AnOHM TS
+     kkAnOHM(1:nsurf) = SurfaceChar(Gridiv,c_kkAnOHM) ! AnOHM TS
+     chAnOHM(1:nsurf) = SurfaceChar(Gridiv,c_chAnOHM) ! AnOHM TS
+
+     ! cp and k are estimated from ESTM coefficients:
+     ! cpAnOHM(1:nsurf)=rSurf_SUEWSsurfs(1,1:nsurf)
+     ! kkAnOHM(1:nsurf)=kSurf_SUEWSsurfs(1,1:nsurf)
+     ! IF ( ir ==1 .AND. iMb ==1) THEN
+     !    PRINT*, 'surf',PavSurf,':'
+     !    PRINT'(a10,x,5f10.2)', 'Depth',zSurf_SUEWSsurfs(:,i)
+     !    PRINT'(a10,x,5es10.2)', 'RhoCp',rSurf_SUEWSsurfs(:,i)
+     !    PRINT'(a10,x,5es10.2)', 'avg_RhoCp',cpAnOHM(i)
+     !    PRINT'(a10,x,5es10.2)', 'k',kSurf_SUEWSsurfs(:,i)
+     !    PRINT'(a10,x,5es10.2)', 'avg_k',kkAnOHM(i)
+     !    PRINT'(a10,x,5es10.2)', 'avg_Ch',chAnOHM(i)
+     !
+     ! END IF
+     ! DO i = 1, nsurf, 1
+     !    ! filter out invalid z values
+     !    WHERE (  zSurf_SUEWSsurfs(:,i) == -999. ) zSurf_SUEWSsurfs(:,i)=0
+     !
+     !    ! cp: weight-averaged by depth
+     !    cpAnOHM(i)=DOT_PRODUCT(rSurf_SUEWSsurfs(:,i),zSurf_SUEWSsurfs(:,i))/SUM(zSurf_SUEWSsurfs(:,i))
+     !   !  IF ( i==PavSurf .AND. ir ==1 .AND. iMb ==1) THEN
+     !   !     PRINT*, 'surf',i,':'
+     !   !     PRINT'(a10,x,5f10.2)', 'Depth',zSurf_SUEWSsurfs(:,i)
+     !   !     PRINT'(a10,x,5es10.2)', 'RhoCp',rSurf_SUEWSsurfs(:,i)
+     !   !     PRINT'(a10,x,5es10.2)', 'avg_RhoCp',cpAnOHM(i)
+     !    !
+     !   !  END IF
+     !
+     !    ! 1/k: weight-averaged by depth
+     !    kkAnOHM(i)=DOT_PRODUCT(1/kSurf_SUEWSsurfs(:,i),zSurf_SUEWSsurfs(:,i))/SUM(zSurf_SUEWSsurfs(:,i))
+     !    kkAnOHM(i)=1/kkAnOHM(i)
+     !   !  IF ( i==PavSurf .AND. ir ==1 .AND. iMb ==1) THEN
+     !   !     PRINT'(a10,x,5es10.2)', 'k',kSurf_SUEWSsurfs(:,i)
+     !   !     PRINT'(a10,x,5es10.2)', 'avg_k',kkAnOHM(i)
+     !   !     PRINT'(a10,x,5es10.2)', 'avg_Ch',chAnOHM(i)
+     !    !
+     !   !     PRINT'(a10,x,7f10.2)', 'fractions:',sfr
+     !    !
+     !   !  END IF
+     !
+     !
+     !    ! restore invalid z values
+     !    WHERE (  zSurf_SUEWSsurfs(:,i) == 0 ) zSurf_SUEWSsurfs(:,i)=nan
+     !   !  IF ( i==PavSurf .AND. ir ==1 .AND. iMb ==1) THEN
+     !   !     PRINT'(a10,x,5f10.2)', 'Depth',zSurf_SUEWSsurfs(:,i)
+     !   !     PRINT*, '*****************'
+     !   !  END IF
+     !
+     ! END DO
+  END IF
+
+
 
   ! ---- QF coeffs (was in SUEWS_SAHP.f95, subroutine SAHP_Coefs)
-  BaseTHDD = -999 ! Initialise  QF coeffs
-  QF_A=0
-  QF_B=0
-  QF_C=0
-  AH_min=0
-  AH_slope=0
-  T_Critic=0
+  BaseTHDD         = -999 ! Initialise QF coeffs
+  QF_A             = 0
+  QF_B             = 0
+  QF_C             = 0
+  AH_min           = 0
+  T_CRITIC_Heating = 0
+  T_CRITIC_Cooling = 0
+  AH_slope_Heating = 0
+  AH_slope_Cooling = 0
 
-  BaseTHDD = SurfaceChar(Gridiv,c_BaseTHDD)
-  QF_A = SurfaceChar(Gridiv,(/c_QF_A1,c_QF_A2/))
-  QF_B = SurfaceChar(Gridiv,(/c_QF_B1,c_QF_B2/))
-  QF_C = SurfaceChar(Gridiv,(/c_QF_C1,c_QF_C2/))
-  AH_min = SurfaceChar(Gridiv,c_AHMin)
-  AH_slope = SurfaceChar(Gridiv,c_AHSlope)
-  T_Critic = SurfaceChar(Gridiv,c_TCritic)
+  BaseTHDD             = SurfaceChar(Gridiv,c_BaseTHDD)
+  QF_A                 = SurfaceChar(Gridiv,(/c_QF_A1,c_QF_A2/))
+  QF_B                 = SurfaceChar(Gridiv,(/c_QF_B1,c_QF_B2/))
+  QF_C                 = SurfaceChar(Gridiv,(/c_QF_C1,c_QF_C2/))
+  AH_min               = SurfaceChar(Gridiv,(/c_AHMin_WD,c_AHMin_WE/))
+  AH_slope_Heating     = SurfaceChar(Gridiv,(/c_AHSlopeHeating_WD,c_AHSlopeHeating_WE/))
+  AH_slope_Cooling     = SurfaceChar(Gridiv,(/c_AHSlopeCooling_WD,c_AHSlopeCooling_WE/))
+  T_Critic_Heating     = SurfaceChar(Gridiv,(/c_TCriticHeating_WD,c_TCriticHeating_WE/))
+  T_Critic_Cooling     = SurfaceChar(Gridiv,(/c_TCriticCooling_WD,c_TCriticCooling_WE/))
+  EnProfWD             = SurfaceChar(Gridiv,c_EnProfWD)
+  EnProfWE             = SurfaceChar(Gridiv,c_EnProfWE)
+  CO2mWD               = SurfaceChar(Gridiv,c_CO2mWD)
+  CO2mWE               = SurfaceChar(Gridiv,c_CO2mWE)
+  TraffProfWD          = SurfaceChar(Gridiv,c_TraffProfWD)
+  TraffProfWE          = SurfaceChar(Gridiv,c_TraffProfWE)
+  PopProfWD            = SurfaceChar(Gridiv,c_PopProfWD)
+  PopProfWE            = SurfaceChar(Gridiv,c_PopProfWE)
+  MinQFMetab           = SurfaceChar(Gridiv,c_MinQFMetab)
+  MaxQFMetab           = SurfaceChar(Gridiv,c_MaxQFMetab)
+  FrFossilFuel_heat    = SurfaceChar(Gridiv,c_FrFossilFuel_heat)
+  FrFossilFuel_NonHeat = SurfaceChar(Gridiv,c_FrFossilFuel_NonHeat)
+  EF_umolCO2perJ       = SurfaceChar(Gridiv,c_EF_umolCO2perJ)
+  EnEF_v_Jkm           = SurfaceChar(Gridiv,c_EnEF_v_Jkm)
+  FcEF_v_kgkm          = SurfaceChar(Gridiv,c_FcEF_v_kgkm)
+  TrafficUnits         = SurfaceChar(Gridiv,c_TrafficUnits)
 
   ! ---- Irrigation
   Ie_start           = INT(SurfaceChar(Gridiv,c_IeStart))
@@ -664,17 +750,27 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   SnowProf(0:23,2) = SurfaceChar(Gridiv,c_HrProfSnowCWE)   ! Snow clearing, weekends
   HumActivityProf(0:23,1) = SurfaceChar(Gridiv,c_HrProfHumActivityWD)    ! Human activity, weekdays
   HumActivityProf(0:23,2) = SurfaceChar(Gridiv,c_HrProfHumActivityWE)    ! Human activity, weekends
+  TraffProf(0:23,1) = SurfaceChar(Gridiv,c_HrProfTraffWD)  ! Traffic, weekdays
+  TraffProf(0:23,2) = SurfaceChar(Gridiv,c_HRProfTraffWE)  ! Traffic, weekends
+  PopProf(0:23,1) = SurfaceChar(Gridiv,c_HRProfPopWD)      ! Population, weekdays
+  PopProf(0:23,2) = SurfaceChar(Gridiv,c_HRProfPopWE)      ! Population, weekends
+
 
 
   ! ---- Profiles at the resolution of model time step
-  AHProf_tstep(:,1)  = TstepProfiles(Gridiv,cTP_EnUseWD,:) ! Anthropogenic heat, weekdays
-  AHProf_tstep(:,2)  = TstepProfiles(Gridiv,cTP_EnUseWE,:) ! Anthropogenic heat, weekends
-  WUProfM_tstep(:,1) = TstepProfiles(Gridiv,cTP_WUManuWD,:) ! Water use, manual, weekdays
-  WUProfM_tstep(:,2) = TstepProfiles(Gridiv,cTP_WUManuWE,:) ! Water use, manual, weekends
-  WUProfA_tstep(:,1) = TstepProfiles(Gridiv,cTP_WUAutoWD,:) ! Water use, automatic, weekdays
-  WUProfA_tstep(:,2) = TstepProfiles(Gridiv,cTP_WUAutoWE,:) ! Water use, automatic, weekends
-  HumActivity_tstep(:,1)  = TstepProfiles(Gridiv,cTP_HumActivityWD,:) ! Human activity, weekdays
-  HumActivity_tstep(:,2)  = TstepProfiles(Gridiv,cTP_HumActivityWE,:) ! Human activity, weekends
+  AHProf_tstep(:,1)      = TstepProfiles(Gridiv,cTP_EnUseWD,:)       ! Anthropogenic heat, weekdays
+  AHProf_tstep(:,2)      = TstepProfiles(Gridiv,cTP_EnUseWE,:)       ! Anthropogenic heat, weekends
+  WUProfM_tstep(:,1)     = TstepProfiles(Gridiv,cTP_WUManuWD,:)      ! Water use, manual, weekdays
+  WUProfM_tstep(:,2)     = TstepProfiles(Gridiv,cTP_WUManuWE,:)      ! Water use, manual, weekends
+  WUProfA_tstep(:,1)     = TstepProfiles(Gridiv,cTP_WUAutoWD,:)      ! Water use, automatic, weekdays
+  WUProfA_tstep(:,2)     = TstepProfiles(Gridiv,cTP_WUAutoWE,:)      ! Water use, automatic, weekends
+  HumActivity_tstep(:,1) = TstepProfiles(Gridiv,cTP_HumActivityWD,:) ! Human activity, weekdays
+  HumActivity_tstep(:,2) = TstepProfiles(Gridiv,cTP_HumActivityWE,:) ! Human activity, weekends
+  TraffProf_tstep(:,1)   = TstepProfiles(Gridiv,cTP_TraffProfWD,:)   !Traffic, weekdays
+  TraffProf_tstep(:,2)   = TstepProfiles(Gridiv,cTP_TraffProfWE,:)   !Traffic, weekends
+  PopProf_tstep(:,1)     = TstepProfiles(Gridiv,cTP_PopProfWD,:)     !Population, weekdays
+  PopProf_tstep(:,2)     = TstepProfiles(Gridiv,cTP_PopProfWE,:)     !Population, weekends
+
 
   ! ---- Within-grid water distribution
   ! N.B. Rows and columns of WaterDist are the other way round to the input info
@@ -773,14 +869,14 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      albEveTr    = ModelDailyState(Gridiv,cMDS_albEveTr)
      albGrass    = ModelDailyState(Gridiv,cMDS_albGrass)
      DecidCap    = ModelDailyState(Gridiv,cMDS_DecidCap)
-     CumSnowfall = ModelDailyState(Gridiv,cMDS_CumSnowfall)
+     SnowfallCum = ModelDailyState(Gridiv,cMDS_SnowfallCum)
      SnowAlb     = ModelDailyState(Gridiv,cMDS_SnowAlb)
 
      ! ---- LAI
-     lai=0
-     lai(id_prev,ivConif)  = ModelDailyState(Gridiv,cMDS_LAIInitialEveTr)
-     lai(id_prev,ivDecid)  = ModelDailyState(Gridiv,cMDS_LAIInitialDecTr)
-     lai(id_prev,ivGrass) = ModelDailyState(Gridiv,cMDS_LAIInitialGrass)
+     LAI=0
+     LAI(id_prev,ivConif)  = ModelDailyState(Gridiv,cMDS_LAIInitialEveTr)
+     LAI(id_prev,ivDecid)  = ModelDailyState(Gridiv,cMDS_LAIInitialDecTr)
+     LAI(id_prev,ivGrass) = ModelDailyState(Gridiv,cMDS_LAIInitialGrass)
 
      ! ---- Growing degree days, GDD
      GDD = 0
@@ -830,9 +926,9 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      !     soilmoistDay(0,Gridiv,1:nsurf) = ModelOutputData(0,cMOD_SoilState(1:nsurf),Gridiv)
      ! ---- Snow fraction
      SnowFrac(1:nsurf)  = ModelOutputData(0,cMOD_SnowFrac(1:nsurf), Gridiv)
-     ! ---- Snow water equivalent in snowpack
+     ! ---- Snow water equivalent in SnowPack
      SnowPack(1:nsurf)  = ModelOutputData(0,cMOD_SnowPack(1:nsurf), Gridiv)
-     ! ---- Liquid (melted) water in snowpack
+     ! ---- Liquid (melted) water in SnowPack
      MeltWaterStore(1:nsurf)  = ModelOutputData(0,cMOD_SnowWaterState(1:nsurf), Gridiv)
 
   ENDIF  !ir = 0
@@ -891,20 +987,20 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      ! Not currently coded, but add these later: SoilDensity, InfiltrationRate, OBS_SMDept, OBS_SMCap, OBS_SoilNotRocks
      WRITE(12,120) (snowD(iv),iv=1,(nsurf-1)),FCskip,FCskip, ' SnowLimPatch'
      WRITE(12,120) SnowLimPaved,SnowLimBuild,FCskip,FCskip,FCskip,FCskip,FCskip,FCskip, ' SnowLimRemove'
-     WRITE(12,120) (OHM_coef(1:nsurf,1,1)),OHM_coef(nsurf+2,1,1), ' OHM_a1_Sum_Wet'
-     WRITE(12,120) (OHM_coef(1:nsurf,2,1)),OHM_coef(nsurf+2,2,1), ' OHM_a1_Sum_Dry'
-     WRITE(12,120) (OHM_coef(1:nsurf,3,1)),OHM_coef(nsurf+2,3,1), ' OHM_a1_Win_Wet'
-     WRITE(12,120) (OHM_coef(1:nsurf,4,1)),OHM_coef(nsurf+2,4,1), ' OHM_a1_Win_Dry'
-     WRITE(12,120) (OHM_coef(1:nsurf,1,2)),OHM_coef(nsurf+2,1,2), ' OHM_a2_Sum_Wet'
-     WRITE(12,120) (OHM_coef(1:nsurf,2,2)),OHM_coef(nsurf+2,2,2), ' OHM_a2_Sum_Dry'
-     WRITE(12,120) (OHM_coef(1:nsurf,3,2)),OHM_coef(nsurf+2,3,2), ' OHM_a2_Win_Wet'
-     WRITE(12,120) (OHM_coef(1:nsurf,4,2)),OHM_coef(nsurf+2,4,2), ' OHM_a2_Win_Dry'
-     WRITE(12,120) (OHM_coef(1:nsurf,1,3)),OHM_coef(nsurf+2,1,3), ' OHM_a3_Sum_Wet'
-     WRITE(12,120) (OHM_coef(1:nsurf,2,3)),OHM_coef(nsurf+2,2,3), ' OHM_a3_Sum_Dry'
-     WRITE(12,120) (OHM_coef(1:nsurf,3,3)),OHM_coef(nsurf+2,3,3), ' OHM_a3_Win_Wet'
-     WRITE(12,120) (OHM_coef(1:nsurf,4,3)),OHM_coef(nsurf+2,4,3), ' OHM_a3_Win_Dry'
-     WRITE(12,120) (OHM_threshSW(1:nsurf)),OHM_threshSW(nsurf+2), ' OHMthreshold_SW'
-     WRITE(12,120) (OHM_threshWD(1:nsurf)),OHM_threshWD(nsurf+2), ' OHMthreshold_WD'
+     WRITE(12,120) (OHM_coef(1:nsurf,1,1)),OHM_coef(nsurf+1,1,1), ' OHM_a1_Sum_Wet'
+     WRITE(12,120) (OHM_coef(1:nsurf,2,1)),OHM_coef(nsurf+1,2,1), ' OHM_a1_Sum_Dry'
+     WRITE(12,120) (OHM_coef(1:nsurf,3,1)),OHM_coef(nsurf+1,3,1), ' OHM_a1_Win_Wet'
+     WRITE(12,120) (OHM_coef(1:nsurf,4,1)),OHM_coef(nsurf+1,4,1), ' OHM_a1_Win_Dry'
+     WRITE(12,120) (OHM_coef(1:nsurf,1,2)),OHM_coef(nsurf+1,1,2), ' OHM_a2_Sum_Wet'
+     WRITE(12,120) (OHM_coef(1:nsurf,2,2)),OHM_coef(nsurf+1,2,2), ' OHM_a2_Sum_Dry'
+     WRITE(12,120) (OHM_coef(1:nsurf,3,2)),OHM_coef(nsurf+1,3,2), ' OHM_a2_Win_Wet'
+     WRITE(12,120) (OHM_coef(1:nsurf,4,2)),OHM_coef(nsurf+1,4,2), ' OHM_a2_Win_Dry'
+     WRITE(12,120) (OHM_coef(1:nsurf,1,3)),OHM_coef(nsurf+1,1,3), ' OHM_a3_Sum_Wet'
+     WRITE(12,120) (OHM_coef(1:nsurf,2,3)),OHM_coef(nsurf+1,2,3), ' OHM_a3_Sum_Dry'
+     WRITE(12,120) (OHM_coef(1:nsurf,3,3)),OHM_coef(nsurf+1,3,3), ' OHM_a3_Win_Wet'
+     WRITE(12,120) (OHM_coef(1:nsurf,4,3)),OHM_coef(nsurf+1,4,3), ' OHM_a3_Win_Dry'
+     WRITE(12,120) (OHM_threshSW(1:nsurf)),OHM_threshSW(nsurf+1), ' OHMthreshold_SW'
+     WRITE(12,120) (OHM_threshWD(1:nsurf)),OHM_threshWD(nsurf+1), ' OHMthreshold_WD'
 
      WRITE(12,*) '----- '//TRIM(ADJUSTL(SsG_YYYY))//' Snow parameters'//' -----'
      WRITE(12,'(a12,11a10)') 'Grid','RadMeltF','TempMeltF','tau_a','tau_f','PLimAlb','SDensMin','SDensMax', &
@@ -918,9 +1014,9 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
 
      WRITE(12,*) '----- '//TRIM(ADJUSTL(SsG_YYYY))//' Energy-use parameters'//' -----'
      WRITE(12,'(a12,11a10)') 'Grid','NumCapita','BaseTHDD','QF_A_WD','QF_A_WE','QF_B_WD','QF_B_WE','QF_C_WD','QF_C_WE', &
-          'AH_Min','AH_Slope','T_critic'
+          'AH_Min','AH_Slope','T_critic_Heating'
      WRITE(12,'(a12,11f10.3)') SsG_YYYY,NumCapita,BaseTHDD,QF_A(1:2),QF_B(1:2),QF_C(1:2), &
-          AH_Min,AH_Slope,T_critic
+          AH_Min,AH_Slope_Heating,T_critic_Heating
 
      WRITE(12,*) '----- '//TRIM(ADJUSTL(SsG_YYYY))//' Water-use parameters'//' -----'
      WRITE(12,'(a12,10a10)') 'Grid','IeStart','IeEnd','IntWatUse','Faut', &
@@ -962,12 +1058,11 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      WRITE(12,*) '----- '//TRIM(ADJUSTL(SsG_YYYY))//' Site parameters'//' -----'
      WRITE(12,'(a12,9a10)') 'Grid','lat','lon','tz','alt','SurfA_ha','z','NumCapita','z0_input','zd_input','StartDLS','EndDLS'
      WRITE(12,'(a12,4f10.4,f10.2,4f10.4,2i10)') SsG_YYYY,lat,lng*(-1.0),timezone,alt,SurfaceArea_ha,z,NumCapita,z0m_in,zdm_in, &
-          DayLightSavingDay(1:2)
+          startDLS,endDLS! DayLightSavingDay(1:2)
 
      WRITE(12,*) ''
 
-120  FORMAT (8f10.3, a16)  !format (10g10.2)
-121  FORMAT (a12,24f10.4, a20)
+
 
      CLOSE(12)
 
@@ -976,14 +1071,14 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      ! Check input values are reasonable ===========================================
 
      ! Coefficients for anthropogenic heat models ----------------------------------
-     IF(AnthropHeatMethod==1) THEN   !Loridan et al. (2011) calculation
-        IF(AH_min==0.AND.Ah_slope==0.AND.T_Critic==0) THEN
-           CALL ErrorHint(53,'Check QF calculation coefficients.',notUsed,notUsed,AnthropHeatMethod)
+     IF(EmissionsMethod==1) THEN   !Loridan et al. (2011) calculation
+        IF(AH_min(1)==0.AND.Ah_slope_Heating(1)==0.AND.T_Critic_Heating(1)==0) THEN
+           CALL ErrorHint(53,'Check QF calculation coefficients.',notUsed,notUsed,EmissionsMethod)
         ENDIF
 
-     ELSEIF(AnthropHeatMethod==2) THEN   !Jarvi et al. (2011) calculation
+     ELSEIF(EmissionsMethod==2) THEN   !Jarvi et al. (2011) calculation
         IF(SUM(QF_A)==0.AND.SUM(QF_B)==0.AND.SUM(QF_C)==0) THEN
-           CALL ErrorHint(54,'Check QF calculation coefficients.',notUsed,notUsed,AnthropHeatMethod)
+           CALL ErrorHint(54,'Check QF calculation coefficients.',notUsed,notUsed,EmissionsMethod)
         ENDIF
      ENDIF
 
@@ -1029,13 +1124,16 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      fcld_obs  = MetForcingData(ir,18,Gridiv)
      wu_m3     = MetForcingData(ir,19,Gridiv)
      xsmd      = MetForcingData(ir,20,Gridiv)
-     lai_obs   = MetForcingData(ir,21,Gridiv)
+     LAI_obs   = MetForcingData(ir,21,Gridiv)
      kdiff     = MetForcingData(ir,22,Gridiv)
      kdir      = MetForcingData(ir,23,Gridiv)
      wdir      = MetForcingData(ir,24,Gridiv)
 
+     ! get met array for one grid used in AnOHM
+     MetForcingData_grid=MetForcingData(:,:,Gridiv)
+
      ! Calculate dectime
-     dectime = REAL(id,KIND(1d0))+REAL(it,KIND(1d0))/24+REAL(imin,KIND(1d0))/(60*24)
+     dectime = REAL(id-1,KIND(1d0))+REAL(it,KIND(1d0))/24+REAL(imin,KIND(1d0))/(60*24)
      ! Create datetime stamp for error/warnings file
      WRITE(iy_text,'(i4)') iy
      WRITE(id_text,'(i3)') id
@@ -1052,7 +1150,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      albEveTr(id) = ModelDailyState(Gridiv,cMDS_albEveTr)
      albGrass(id) = ModelDailyState(Gridiv,cMDS_albGrass)
      DecidCap(id) = ModelDailyState(Gridiv,cMDS_DecidCap)
-     CumSnowfall  = ModelDailyState(Gridiv,cMDS_CumSnowfall)
+     SnowfallCum  = ModelDailyState(Gridiv,cMDS_SnowfallCum)
      ! ---- Snow density of each surface
      SnowDens(1:nsurf) = ModelDailyState(Gridiv,cMDS_SnowDens(1:nsurf))
 
@@ -1065,9 +1163,9 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      SoilMoist(1:nsurf)      = ModelOutputData(ir-1,cMOD_SoilState(1:nsurf),Gridiv)
      ! ---- Snow fraction
      SnowFrac(1:nsurf)       = ModelOutputData(ir-1,cMOD_SnowFrac(1:nsurf), Gridiv)
-     ! ---- Snow water equivalent in snowpack
+     ! ---- Snow water equivalent in SnowPack
      SnowPack(1:nsurf)       = ModelOutputData(ir-1,cMOD_SnowPack(1:nsurf), Gridiv)
-     ! ---- Liquid (melted) water in snowpack
+     ! ---- Liquid (melted) water in SnowPack
      MeltWaterStore(1:nsurf) = ModelOutputData(ir-1,cMOD_SnowWaterState(1:nsurf), Gridiv)
 
 
@@ -1075,6 +1173,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      IF(StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
         !write(*,*) 'Translating ESTM forcing data'
         Ts5mindata(ir,1:ncolsESTMdata) = ESTMForcingData(ir,1:ncolsESTMdata,Gridiv)
+        Ts5mindata_ir(1:ncolsESTMdata) = ESTMForcingData(ir,1:ncolsESTMdata,Gridiv)
         CALL ESTM_translate(Gridiv)
      ENDIF
 
@@ -1088,6 +1187,10 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   ! --------------------------------------------------------------------------------
 
   RETURN
+
+120 FORMAT (8f10.3, a16)  !format (10g10.2)
+121 FORMAT (a12,24f10.4, a20)
+
 END SUBROUTINE SUEWS_Translate
 !===================================================================================
 
@@ -1129,7 +1232,7 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv,ir,irMax)
   ModelDailyState(Gridiv,cMDS_albEveTr)    = albEveTr(id)
   ModelDailyState(Gridiv,cMDS_albGrass)    = albGrass(id)
   ModelDailyState(Gridiv,cMDS_DecidCap)    = DecidCap(id)
-  ModelDailyState(Gridiv,cMDS_CumSnowfall) = CumSnowfall
+  ModelDailyState(Gridiv,cMDS_SnowfallCum) = SnowfallCum
 
   ! Save required DailyState variables for the current grid (HCW 27 Nov 2014)
   HDD_grids(:,:,Gridiv)    = HDD(:,:)

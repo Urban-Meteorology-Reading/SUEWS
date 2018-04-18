@@ -1,5 +1,5 @@
-language: c
-sudo: required
+language:        c
+sudo:            required
 addons:
   apt:
     packages:
@@ -12,10 +12,16 @@ before_install:
 script:
   - make exe
 
+before_deploy:
+  # Set up git user name and tag this commit
+  - git config --local user.name "sunt05"
+  - git config --local user.email "sunting.05@gmail.com"
+  - git tag "$(date +'%Y%m%d%H%M%S')-$(git log --format=%h -1)
+
 deploy:
-  provider: releases
-  # api_key: "GITHUB OAUTH TOKEN"
-  file: "./SUEWS-SourceCode/SUEWS_V2018a"
-  skip_cleanup: true
+  provider:      releases
+  # api_key:     "GITHUB OAUTH TOKEN"
+  file:          "./SUEWS-SourceCode/SUEWS_V2018a"
+  skip_cleanup:  true
   on:
-    tags: true
+    tags:        true

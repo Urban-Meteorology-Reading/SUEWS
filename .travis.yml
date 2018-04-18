@@ -20,7 +20,7 @@ before_deploy:
 
 deploy:
   provider:      releases
-  # api_key:     "GITHUB OAUTH TOKEN"
+  api_key:       "d84ab79a5f43f2db2ae4"
   file:          "./SUEWS-SourceCode/SUEWS_V2018a"
   skip_cleanup:  true
   on:

@@ -16,7 +16,13 @@ before_install:
   # - sudo apt-get install gfortran
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then pip install numpy --user   ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pip2 install numpy --user   ; fi
-  # - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gcc       ; fi
+  - |
+    if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
+      brew update &> /dev/null
+      brew cask uninstall --force oclint
+      brew install gcc python pyenv-virtualenv
+    fi
+
 
 script:
   - make exe

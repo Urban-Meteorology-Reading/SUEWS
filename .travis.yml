@@ -23,6 +23,3 @@ deploy:
   api_key:       "9d94430ed4c62048a5f5c59ef6d9035ddc84369d"
   file:          "./SUEWS-SourceCode/SUEWS_V2018a"
   skip_cleanup:  true
-  on:
-    tags:        false
-    branch:      AnOHM

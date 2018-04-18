@@ -10,12 +10,10 @@ before_install:
   - pip install numpy --user
 
 script:
-  - make
+  - make exe
 
 deploy:
   provider: releases
   # api_key: "GITHUB OAUTH TOKEN"
   file: "./SUEWS-SourceCode/SUEWS_V2018a"
   skip_cleanup: true
-  on:
-    tags: false

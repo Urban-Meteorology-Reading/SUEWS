@@ -2,6 +2,7 @@ language: c
 sudo: required
 before_install:
   - sudo apt-get install gfortran
+  - pip install numpy
 
 script:
   - make

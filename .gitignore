@@ -4,3 +4,11 @@
 *_BASE_*.f95
 *_LOCAL_*.f95
 *_REMOTE_*.f95
+SUEWS_V2017c
+launch.json
+test-checkpoint.py
+warnings.txt
+problems-checkpoint.txt
+profiling-checkpoint.ipynb
+test-SuPy-checkpoint.py
+warnings-checkpoint.txt

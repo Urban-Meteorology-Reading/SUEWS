@@ -20,7 +20,7 @@ before_install:
     if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
       brew update &> /dev/null
       brew cask uninstall --force oclint
-      brew install gcc python pyenv-virtualenv
+      brew install gcc
     fi
 
 

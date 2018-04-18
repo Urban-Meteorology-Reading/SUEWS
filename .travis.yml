@@ -10,7 +10,8 @@ addons:
 
 before_install:
   # - sudo apt-get install gfortran
-  - pip install numpy --user
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then pip install numpy --user   ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pip2 install numpy --user   ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gcc       ; fi
 
 script:

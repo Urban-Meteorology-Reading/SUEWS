@@ -24,5 +24,5 @@ deploy:
   file:          "./SUEWS-SourceCode/SUEWS_V2018a"
   skip_cleanup:  true
   on:
-    tags:        true
+    tags:        false
     branch:      AnOHM

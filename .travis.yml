@@ -1,8 +1,13 @@
 language: c
 sudo: required
+addons:
+  apt:
+    packages:
+    - gfortran
+
 before_install:
-  - sudo apt-get install gfortran
-  - pip install numpy
+  # - sudo apt-get install gfortran
+  - pip install numpy --user
 
 script:
   - make

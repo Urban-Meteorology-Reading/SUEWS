@@ -29,7 +29,7 @@ elif sysname == 'Linux':
     lib_name = 'SUEWS_driver.so'
 
 # load SUEWS Fortran source files
-dir_f95 = 'SUEWS'
+dir_f95 = 'SUEWS-SourceCode'
 target_f95 = [
     os.path.join(dir_f95, f)
     for f in

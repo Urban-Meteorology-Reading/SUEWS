@@ -2,7 +2,11 @@ language:         c
 os:
   - linux
   - osx
+env:
+  - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
 sudo:             required
+compiler:
+  - gcc
 addons:
   apt:
     packages:
@@ -12,7 +16,7 @@ before_install:
   # - sudo apt-get install gfortran
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then pip install numpy --user   ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pip2 install numpy --user   ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gcc       ; fi
+  # - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gcc       ; fi
 
 script:
   - make exe

@@ -3,6 +3,8 @@ SUBROUTINE InputHeaderCheck(FileName)
   ! Checks columns in input files match the columns expected by model code
   ! Model code columns are defined here
   ! Latest update:
+  !   MH 21 Jun 2017 - Added parameters to SUEWS_AnthropogenicEmissions.txt
+  !   MH 16 Jun 2017 - Added SUEWS_BiogenCO2.txt
   !   TS 02 Mar 2016  - AnOHM related variables added
   !   LJ 27 Jan 2016  - Removal of tabs
   !   LJ 07 July 2015 - snow albedo removed
@@ -48,43 +50,44 @@ SUBROUTINE InputHeaderCheck(FileName)
 
 
   ! ========== SUEWS_Veg.txt ===============
-  HeaderVeg_Reqd(cp_Code)         = "Code"
-  HeaderVeg_Reqd(cp_AlbMin)       = "AlbedoMin"
-  HeaderVeg_Reqd(cp_AlbMax)       = "AlbedoMax"
-  HeaderVeg_Reqd(cp_Emis)         = "Emissivity"
-  HeaderVeg_Reqd(cp_StorMin)      = "StorageMin"
-  HeaderVeg_Reqd(cp_StorMax)      = "StorageMax"
-  HeaderVeg_Reqd(cp_WetThresh)    = "WetThreshold"
-  HeaderVeg_Reqd(cp_StateLimit)   = "StateLimit"
-  HeaderVeg_Reqd(cp_DrEq)         = "DrainageEq"
-  HeaderVeg_Reqd(cp_DrCoef1)      = "DrainageCoef1"
-  HeaderVeg_Reqd(cp_DrCoef2)      = "DrainageCoef2"
-  HeaderVeg_Reqd(cp_SoilTCode)    = "SoilTypeCode"
-  HeaderVeg_Reqd(cp_SnowLimPat)   = "SnowLimPatch"
-  HeaderVeg_Reqd(cp_BaseT)        = "BaseT"
-  HeaderVeg_Reqd(cp_BaseTe)       = "BaseTe"
-  HeaderVeg_Reqd(cp_GDDFull)      = "GDDFull"
-  HeaderVeg_Reqd(cp_SDDFull)      = "SDDFull"
-  HeaderVeg_Reqd(cp_LAIMin)       = "LAIMin"
-  HeaderVeg_Reqd(cp_LAIMax)       = "LAIMax"
-  HeaderVeg_Reqd(cp_PorosityMin)  = "PorosityMin"
-  HeaderVeg_Reqd(cp_PorosityMax)  = "PorosityMax"
-  HeaderVeg_Reqd(cp_GsMax)        = "MaxConductance"
-  HeaderVeg_Reqd(cp_LAIEq)        = "LAIEq"
-  HeaderVeg_Reqd(cp_LeafGP1)      = "LeafGrowthPower1"
-  HeaderVeg_Reqd(cp_LeafGP2)      = "LeafGrowthPower2"
-  HeaderVeg_Reqd(cp_LeafOP1)      = "LeafOffPower1"
-  HeaderVeg_Reqd(cp_LeafOP2)      = "LeafOffPower2"
-  HeaderVeg_Reqd(cp_OHMCode_SWet) = "OHMCode_SummerWet"
-  HeaderVeg_Reqd(cp_OHMCode_SDry) = "OHMCode_SummerDry"
-  HeaderVeg_Reqd(cp_OHMCode_WWet) = "OHMCode_WinterWet"
-  HeaderVeg_Reqd(cp_OHMCode_WDry) = "OHMCode_WinterDry"
-  HeaderVeg_Reqd(cp_OHMThresh_SW) = "OHMThresh_SW"
-  HeaderVeg_Reqd(cp_OHMThresh_WD) = "OHMThresh_WD"
-  HeaderVeg_Reqd(cp_ESTMCode)     = "ESTMCode"
-  HeaderVeg_Reqd(cp_cpAnOHM)      = "AnOHM_Cp" ! AnOHM TS
-  HeaderVeg_Reqd(cp_kkAnOHM)      = "AnOHM_Kk" ! AnOHM TS
-  HeaderVeg_Reqd(cp_chAnOHM)      = "AnOHM_Ch" ! AnOHM TS
+  HeaderVeg_Reqd(cp_Code)          = "Code"
+  HeaderVeg_Reqd(cp_AlbMin)        = "AlbedoMin"
+  HeaderVeg_Reqd(cp_AlbMax)        = "AlbedoMax"
+  HeaderVeg_Reqd(cp_Emis)          = "Emissivity"
+  HeaderVeg_Reqd(cp_StorMin)       = "StorageMin"
+  HeaderVeg_Reqd(cp_StorMax)       = "StorageMax"
+  HeaderVeg_Reqd(cp_WetThresh)     = "WetThreshold"
+  HeaderVeg_Reqd(cp_StateLimit)    = "StateLimit"
+  HeaderVeg_Reqd(cp_DrEq)          = "DrainageEq"
+  HeaderVeg_Reqd(cp_DrCoef1)       = "DrainageCoef1"
+  HeaderVeg_Reqd(cp_DrCoef2)       = "DrainageCoef2"
+  HeaderVeg_Reqd(cp_SoilTCode)     = "SoilTypeCode"
+  HeaderVeg_Reqd(cp_SnowLimPat)    = "SnowLimPatch"
+  HeaderVeg_Reqd(cp_BaseT)         = "BaseT"
+  HeaderVeg_Reqd(cp_BaseTe)        = "BaseTe"
+  HeaderVeg_Reqd(cp_GDDFull)       = "GDDFull"
+  HeaderVeg_Reqd(cp_SDDFull)       = "SDDFull"
+  HeaderVeg_Reqd(cp_LAIMin)        = "LAIMin"
+  HeaderVeg_Reqd(cp_LAIMax)        = "LAIMax"
+  HeaderVeg_Reqd(cp_PorosityMin)   = "PorosityMin"
+  HeaderVeg_Reqd(cp_PorosityMax)   = "PorosityMax"
+  HeaderVeg_Reqd(cp_GsMax)         = "MaxConductance"
+  HeaderVeg_Reqd(cp_LAIEq)         = "LAIEq"
+  HeaderVeg_Reqd(cp_LeafGP1)       = "LeafGrowthPower1"
+  HeaderVeg_Reqd(cp_LeafGP2)       = "LeafGrowthPower2"
+  HeaderVeg_Reqd(cp_LeafOP1)       = "LeafOffPower1"
+  HeaderVeg_Reqd(cp_LeafOP2)       = "LeafOffPower2"
+  HeaderVeg_Reqd(cp_OHMCode_SWet)  = "OHMCode_SummerWet"
+  HeaderVeg_Reqd(cp_OHMCode_SDry)  = "OHMCode_SummerDry"
+  HeaderVeg_Reqd(cp_OHMCode_WWet)  = "OHMCode_WinterWet"
+  HeaderVeg_Reqd(cp_OHMCode_WDry)  = "OHMCode_WinterDry"
+  HeaderVeg_Reqd(cp_OHMThresh_SW)  = "OHMThresh_SW"
+  HeaderVeg_Reqd(cp_OHMThresh_WD)  = "OHMThresh_WD"
+  HeaderVeg_Reqd(cp_ESTMCode)      = "ESTMCode"
+  HeaderVeg_Reqd(cp_cpAnOHM)       = "AnOHM_Cp" ! AnOHM TS
+  HeaderVeg_Reqd(cp_kkAnOHM)       = "AnOHM_Kk" ! AnOHM TS
+  HeaderVeg_Reqd(cp_chAnOHM)       = "AnOHM_Ch" ! AnOHM TS
+  HeaderVeg_Reqd(cp_BiogenCO2Code) = "BiogenCO2Code"
 
   ! ========== SUEWS_Water.txt ==================
   HeaderWater_Reqd(cw_Code)         = "Code"
@@ -225,17 +228,40 @@ SUBROUTINE InputHeaderCheck(FileName)
   HeaderESTMCoefficients_Reqd(cE_CH_ibld)    = "Internal_CHbld"
 
   ! ========== SUEWS_AnthropogenicHeat.txt ======
-  HeaderAnthropogenicHeat_Reqd(cA_Code)     = "Code"
-  HeaderAnthropogenicHeat_Reqd(cA_BaseTHDD) = "BaseTHDD"
-  HeaderAnthropogenicHeat_Reqd(cA_QF_A1)    = "QF_A_Weekday"
-  HeaderAnthropogenicHeat_Reqd(cA_QF_B1)    = "QF_B_Weekday"
-  HeaderAnthropogenicHeat_Reqd(cA_QF_C1)    = "QF_C_Weekday"
-  HeaderAnthropogenicHeat_Reqd(cA_QF_A2)    = "QF_A_Weekend"
-  HeaderAnthropogenicHeat_Reqd(cA_QF_B2)    = "QF_B_Weekend"
-  HeaderAnthropogenicHeat_Reqd(cA_QF_C2)    = "QF_C_Weekend"
-  HeaderAnthropogenicHeat_Reqd(cA_AHMin)    = "AHMin"
-  HeaderAnthropogenicHeat_Reqd(cA_AHSlope)  = "AHSlope"
-  HeaderAnthropogenicHeat_Reqd(cA_TCritic)  = "TCritic"
+  HeaderAnthropogenic_Reqd(cA_Code)     = "Code"
+  HeaderAnthropogenic_Reqd(cA_BaseTHDD) = "BaseTHDD"
+  HeaderAnthropogenic_Reqd(cA_QF_A1)    = "QF_A_WD"
+  HeaderAnthropogenic_Reqd(cA_QF_B1)    = "QF_B_WD"
+  HeaderAnthropogenic_Reqd(cA_QF_C1)    = "QF_C_WD"
+  HeaderAnthropogenic_Reqd(cA_QF_A2)    = "QF_A_WE"
+  HeaderAnthropogenic_Reqd(cA_QF_B2)    = "QF_B_WE"
+  HeaderAnthropogenic_Reqd(cA_QF_C2)    = "QF_C_WE"
+  HeaderAnthropogenic_Reqd(cA_AHMin_WD)    = "AHMin_WD"
+  HeaderAnthropogenic_Reqd(cA_AHMin_WE)    = "AHMin_WE"  
+  HeaderAnthropogenic_Reqd(cA_AHSlopeHeating_WD)  = "AHSlope_Heating_WD"
+  HeaderAnthropogenic_Reqd(cA_AHSlopeHeating_WE)  = "AHSlope_Heating_WE"
+  HeaderAnthropogenic_Reqd(cA_AHSlopeCooling_WD)  = "AHSlope_Cooling_WD"
+  HeaderAnthropogenic_Reqd(cA_AHSlopeCooling_WE)  = "AHSlope_Cooling_WE"
+  HeaderAnthropogenic_Reqd(cA_TCriticHeating_WD)  = "TCritic_Heating_WD"
+  HeaderAnthropogenic_Reqd(cA_TCriticHeating_WE)  = "TCritic_Heating_WE"
+  HeaderAnthropogenic_Reqd(cA_TCriticCooling_WD)  = "TCritic_Cooling_WD"
+  HeaderAnthropogenic_Reqd(cA_TCriticCooling_WE)  = "TCritic_Cooling_WE"
+  HeaderAnthropogenic_Reqd(cA_EnProfWD)     = "EnergyUseProfWD"
+  HeaderAnthropogenic_Reqd(cA_ENProfWE)     = "EnergyUseProfWE"
+  HeaderAnthropogenic_Reqd(cA_CO2mWD)       = "ActivityProfWD"
+  HeaderAnthropogenic_Reqd(cA_CO2mWE)       = "ActivityProfWE"
+  HeaderAnthropogenic_Reqd(cA_TraffProfWD)  = "TraffProfWD"
+  HeaderAnthropogenic_Reqd(cA_TraffProfWE)  = "TraffProfWE"
+  HeaderAnthropogenic_Reqd(cA_PopProfWD)    = "PopProfWD"
+  HeaderAnthropogenic_Reqd(cA_PopProfWE)    = "PopProfWE" 
+  HeaderAnthropogenic_Reqd(cA_MinQFMetab)   = "MinQFMetab"
+  HeaderAnthropogenic_Reqd(cA_MaxQFMetab)   = "MaxQFMetab"
+  HeaderAnthropogenic_Reqd(cA_FrFossilFuel_Heat)    = "FrFossilFuel_Heat"
+  HeaderAnthropogenic_Reqd(cA_FrFossilFuel_NonHeat) = "FrFossilFuel_NonHeat"
+  HeaderAnthropogenic_Reqd(cA_EF_umolCO2perJ) = "EF_umolCO2perJ"
+  HeaderAnthropogenic_Reqd(cA_EnEF_v_Jkm)     = "EnEF_v_Jkm"
+  HeaderAnthropogenic_Reqd(cA_FcEF_v_kgkm)    = "FcEF_v_kgkm"
+  HeaderAnthropogenic_Reqd(cA_TrafficUnits)   = "TrafficUnits"
 
   ! ========== SUEWS_Irrigation.txt =============
   HeaderIrrigation_Reqd(cIr_Code)         = "Code"
@@ -302,6 +328,18 @@ SUBROUTINE InputHeaderCheck(FileName)
   HeaderWGWaterDist_Reqd(cWG_ToWater)     = "ToWater"
   HeaderWGWaterDist_Reqd(cWG_ToRunoff)    = "ToRunoff"
   HeaderWGWaterDist_Reqd(cWG_ToSoilStore) = "ToSoilStore"
+  
+  
+  ! ========== SUEWS_BiogenCO2.txt ======
+  HeaderBiogen_Reqd(cB_Code)            = "Code"
+  HeaderBiogen_Reqd(cB_alpha)           = "alpha"
+  HeaderBiogen_Reqd(cB_beta)            = "beta"
+  HeaderBiogen_Reqd(cB_theta)           = "theta"
+  HeaderBiogen_Reqd(cB_alpha_enh)       = "alpha_enh"
+  HeaderBiogen_Reqd(cB_beta_enh)        = "beta_enh"
+  HeaderBiogen_Reqd(cB_resp_a)          = "resp_a"
+  HeaderBiogen_Reqd(cB_resp_b)          = "resp_b"
+  HeaderBiogen_Reqd(cB_min_r)           = "min_respi"
 
   ! =======================================================
 
@@ -364,8 +402,8 @@ SUBROUTINE InputHeaderCheck(FileName)
      ENDIF
 
   ELSEIF(FileName == 'SUEWS_AnthropogenicHeat.txt') THEN
-     IF(ANY(HeaderAnthropogenicHeat_File /= HeaderAnthropogenicHeat_Reqd)) THEN
-        WRITE(*,*) HeaderAnthropogenicHeat_File == HeaderAnthropogenicHeat_Reqd
+     IF(ANY(HeaderAnthropogenic_File /= HeaderAnthropogenic_Reqd)) THEN
+        WRITE(*,*) HeaderAnthropogenic_File == HeaderAnthropogenic_Reqd
         CALL ErrorHint(56,'Names or order of columns in SUEWS_AnthropogenicHeat.txt does not match model code.',&
              notUsed,notUsed,notUsedI)
      ENDIF
@@ -390,6 +428,13 @@ SUBROUTINE InputHeaderCheck(FileName)
      IF(ANY(HeaderWGWaterDist_File /= HeaderWGWaterDist_Reqd)) THEN
         WRITE(*,*) HeaderWGWaterDist_File == HeaderWGWaterDist_Reqd
         CALL ErrorHint(56,'Names or order of columns in SUEWS_WithinGridWaterDist.txt does not match model code.',&
+             notUsed,notUsed,notUsedI)
+     ENDIF
+     
+  ELSEIF(FileName == 'SUEWS_BiogenCO2.txt') THEN
+     IF(ANY(HeaderBiogen_File /= HeaderBiogen_Reqd)) THEN
+        WRITE(*,*) HeaderBiogen_File == HeaderBiogen_Reqd
+        CALL ErrorHint(56,'Names or order of columns in SUEWS_BiogenCO2.txt does not match model code.',&
              notUsed,notUsed,notUsedI)
      ENDIF
 

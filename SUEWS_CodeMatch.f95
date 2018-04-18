@@ -157,10 +157,10 @@ ENDSUBROUTINE CodeMatchOHM
  ENDSUBROUTINE CodeMatchESTM_Class
 ! ---------------------------------------------------------    
 
- SUBROUTINE CodeMatchProf(rr,CodeCol)
- ! Matches Hourly profiles via profile codes
+SUBROUTINE CodeMatchProf(Gridiv,SurfaceCharCodeCol)
+! Matches Soil characteristics via codes in *SurfaceChar*
  ! for energy use/water use/snow clearing
- ! HCW 05 Nov 2014
+! HCW 20 Nov 2014
  ! ---------------------------------------------------------
 
   use allocateArray
@@ -170,17 +170,17 @@ ENDSUBROUTINE CodeMatchOHM
   
   IMPLICIT NONE
   
-  integer:: rr
-  integer:: codeCol
+  integer:: Gridiv
+  integer:: SurfaceCharCodeCol
  
   iv5=0 ! Reset iv5 to zero
  
   do iv5=1,nlinesProfiles
-     if (Profiles_Coeff(iv5,cPr_Code)==SiteSelect(rr,codeCol)) then
+     if (Profiles_Coeff(iv5,cPr_Code)==SurfaceChar(Gridiv,SurfaceCharCodeCol)) then
      exit
      elseif(iv5 == nlinesProfiles) then 
-     write(*,*) 'Program stopped! Profile code ',SiteSelect(rr,codeCol),'not found in SUEWS_Profiles.txt.'
-     call ErrorHint(57,'Cannot find code in SUEWS_Profiles.txt',SiteSelect(rr,codeCol),notUsed,notUsedI)
+     write(*,*) 'Program stopped! Profile code ',SurfaceChar(Gridiv,SurfaceCharCodeCol),'not found in SUEWS_Profiles.txt.'
+     call ErrorHint(57,'Cannot find code in SUEWS_Profiles.txt',SurfaceChar(Gridiv,SurfaceCharCodeCol),notUsed,notUsedI)
      endif
   enddo   
   
@@ -402,9 +402,10 @@ ENDSUBROUTINE CodeMatchConductance
 ! --------------------------------------------------------- 
  
  
-SUBROUTINE CodeMatchAnthropogenicHeat(rr,CodeCol)
+SUBROUTINE CodeMatchAnthropogenic(rr,CodeCol)
 ! Matches AnthropogenicHeat characteristics via codes in SiteSelect
 ! HCW 20 Nov 2014
+! MH 21 Jun 2017
 ! ---------------------------------------------------------
 
   use allocateArray
@@ -419,17 +420,17 @@ SUBROUTINE CodeMatchAnthropogenicHeat(rr,CodeCol)
  
   iv5=0 ! Reset iv5 to zero
  
-  do iv5=1,nlinesAnthropogenicHeat
-     if (AnthropogenicHeat_Coeff(iv5,cA_Code)==SiteSelect(rr,codeCol)) then
+  do iv5=1,nlinesAnthropogenic
+     if (Anthropogenic_Coeff(iv5,cA_Code)==SiteSelect(rr,codeCol)) then
      exit
-     elseif(iv5 == nlinesAnthropogenicHeat) then 
-     write(*,*) 'Program stopped! AnthropogenicHeat code ',SiteSelect(rr,codeCol),'not found in SUEWS_AnthropogenicHeat.txt.'
+     elseif(iv5 == nlinesAnthropogenic) then 
+     write(*,*) 'Program stopped! Anthropogenic code ',SiteSelect(rr,codeCol),'not found in SUEWS_AnthropogenicHeat.txt.'
      call ErrorHint(57,'Cannot find code in SUEWS_AnthropogenicHeat.txt',SiteSelect(rr,codeCol),notUsed,notUsedI)
      endif
   enddo   
   
   return
-ENDSUBROUTINE CodeMatchAnthropogenicHeat
+ENDSUBROUTINE CodeMatchAnthropogenic
 ! --------------------------------------------------------- 
 
 
@@ -491,4 +492,39 @@ SUBROUTINE CodeMatchSoil(Gridiv,SurfaceCharCodeCol)
   
   return
 ENDSUBROUTINE CodeMatchSoil
+! --------------------------------------------------------- 
+	
+SUBROUTINE CodeMatchBiogen(Gridiv,SurfaceCharCodeCol)
+! Matches Biogen characteristics via codes in *SuraceChar*
+! MH 16 Jun 2017
+! ---------------------------------------------------------
+
+  use allocateArray
+  use Initial
+  use ColNamesInputFiles
+  use defaultNotUsed
+  
+  IMPLICIT NONE
+  
+  integer:: Gridiv
+  integer:: SurfaceCharCodeCol
+ 
+  iv5=0 ! Reset iv5 to zero
+ 
+  do iv5=1,nlinesBiogen
+     if (Biogen_Coeff(iv5,cB_Code)==SurfaceChar(Gridiv,SurfaceCharCodeCol)) then
+     exit
+     elseif(iv5 == nlinesBiogen) then 
+     write(*,*) 'Program stopped! Biogen code ',SurfaceChar(Gridiv,SurfaceCharCodeCol),'not found in SUEWS_BiogenCO2.txt.'
+     call ErrorHint(57,'Cannot find code in SUEWS_BiogenCO2.txt',SurfaceChar(Gridiv,SurfaceCharCodeCol),notUsed,notUsedI)
+     endif
+  enddo   
+  
+  return
+ENDSUBROUTINE CodeMatchBiogen
+
+
+
+
+
 ! --------------------------------------------------------- 

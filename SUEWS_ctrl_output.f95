@@ -1,12 +1,12 @@
 MODULE ctrl_output
-  !========================================================================================
+  !===========================================================================================
   ! generic output functions for SUEWS
   ! authors: Ting Sun (ting.sun@reading.ac.uk)
   !
   ! disclamier:
   !     This code employs the netCDF Fortran 90 API.
   !     Full documentation of the netCDF Fortran 90 API can be found at:
-  !     http://www.unidata.ucar.edu/software/netcdf/docs/netcdf-f90
+  !     https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/netcdf-f90/
   !     Part of the work is under the help of examples provided by the documentation.
   !
   ! purpose:
@@ -17,7 +17,9 @@ MODULE ctrl_output
   ! TS 20161209: initial version of netcdf function
   ! TS 20161213: standalise the txt2nc procedure
   ! TS 20170414: generic output procedures
-  !========================================================================================
+  ! TS 20171016: added support for DailyState
+  ! TS 20171017: combined txt and nc wrappers into one: reduced duplicate code at two places
+  !===========================================================================================
 
 
   USE allocateArray
@@ -47,10 +49,10 @@ MODULE ctrl_output
        f146 = '(f14.6,1X)'   !standard output format: 6 dp + 7 digits
 
   CHARACTER(len= 1),PARAMETER:: & ! Define aggregation methods here
-       aT = '0',&   !time columns
-       aA = '1',&   !average
-       aS = '2',&   !sum
-       aL = '3'     !last value
+       aT = 'T',&   !time columns
+       aA = 'A',&   !average
+       aS = 'S',&   !sum
+       aL = 'L'     !last value
 
   CHARACTER(len= 3):: itext
 
@@ -78,91 +80,90 @@ MODULE ctrl_output
        /
 
   ! defualt:
-  DATA(varList(i), i=6,84)/&
-       varAttr('Kdown'      , 'W_m-2'        , f94  , 'Incoming shortwave radiation'                     , aA , '' , 0)     , &
-       varAttr('Kup'        , 'W_m-2'        , f94  , 'Outgoing shortwave radiation'                     , aA , '' , 0)     , &
-       varAttr('Ldown'      , 'W_m-2'        , f94  , 'Incoming longwave radiation'                      , aA , '' , 0)     , &
-       varAttr('Lup'        , 'W_m-2'        , f94  , 'Outgoing longwave radiation'                      , aA , '' , 0)     , &
-       varAttr('Tsurf'      , 'degC'         , f94  , 'Bulk surface temperature'                         , aA , '' , 0)     , &
-       varAttr('QN'         , 'W_m-2'        , f94  , 'Net all-wave radiation'                           , aA , '' , 0)     , &
-       varAttr('QF'         , 'W_m-2'        , f94  , 'Anthropogenic heat flux'                          , aA , '' , 0)     , &
-       varAttr('QS'         , 'W_m-2'        , f94  , 'Net storage heat flux'                            , aA , '' , 0)     , &
-       varAttr('QH'         , 'W_m-2'        , f94  , 'Sensible heat flux'                               , aA , '' , 0)     , &
-       varAttr('QE'         , 'W_m-2'        , f94  , 'Latent heat flux'                                 , aA , '' , 0)     , &
-       varAttr('QHlumps'    , 'W_m-2'        , f94  , 'Sensible heat flux (using LUMPS)'                 , aA , '' , 1)     , &
-       varAttr('QElumps'    , 'W_m-2'        , f94  , 'Latent heat flux (using LUMPS)'                   , aA , '' , 1)     , &
-       varAttr('QHresis'    , 'W_m-2'        , f94  , 'Sensible heat flux (resistance method)'           , aA , '' , 1)     , &
-       varAttr('Rain'       , 'mm'           , f106 , 'Rain'                                             , aS , '' , 0)     , &
-       varAttr('Irr'        , 'mm'           , f106 , 'Irrigation'                                       , aS , '' , 0)     , &
-       varAttr('Evap'       , 'mm'           , f106 , 'Evaporation'                                      , aS , '' , 0)     , &
-       varAttr('RO'         , 'mm'           , f106 , 'Runoff'                                           , aS , '' , 0)     , &
-       varAttr('TotCh'      , 'mm'           , f106 , 'Surface and soil moisture change'                 , aS , '' , 0)     , &
-       varAttr('SurfCh'     , 'mm'           , f106 , 'Surface moisture change'                          , aS , '' , 0)     , &
-       varAttr('State'      , 'mm'           , f104 , 'SurfaceWetnessState'                              , aL , '' , 0)     , &
-       varAttr('NWtrState'  , 'mm'           , f106 , 'Surface wetness state (non-water surfaces)'       , aL , '' , 0)     , &
-       varAttr('Drainage'   , 'mm'           , f106 , 'Drainage'                                         , aS , '' , 0)     , &
-       varAttr('SMD'        , 'mm'           , f94  , 'SoilMoistureDeficit'                              , aL , '' , 0)     , &
-       varAttr('FlowCh'     , 'mm'           , f104 , 'Additional flow into water body'                  , aS , '' , 1)     , &
-       varAttr('AddWater'   , 'mm'           , f104 , 'Addtional water from other grids'                 , aS , '' , 1)     , &
-       varAttr('ROSoil'     , 'mm'           , f106 , 'Runoff to soil'                                   , aS , '' , 1)     , &
-       varAttr('ROPipe'     , 'mm'           , f106 , 'Runoff to pipes'                                  , aS , '' , 1)     , &
-       varAttr('ROImp'      , 'mm'           , f106 , 'Runoff over impervious surfaces'                  , aS , '' , 1)     , &
-       varAttr('ROVeg'      , 'mm'           , f106 , 'Runoff over vegetated surfaces'                   , aS , '' , 1)     , &
-       varAttr('ROWater'    , 'mm'           , f106 , 'Runoff for water surface'                         , aS , '' , 1)     , &
-       varAttr('WUInt'      , 'mm'           , f94  , 'InternalWaterUse'                                 , aS , '' , 1)     , &
-       varAttr('WUEveTr'    , 'mm'           , f94  , 'Water use for evergreen trees'                    , aS , '' , 1)     , &
-       varAttr('WUDecTr'    , 'mm'           , f94  , 'Water use for deciduous trees'                    , aS , '' , 1)     , &
-       varAttr('WUGrass'    , 'mm'           , f94  , 'Water use for grass'                              , aS , '' , 1)     , &
-       varAttr('SMDPaved'   , 'mm'           , f94  , 'Soil moisture deficit for paved surface'          , aL , '' , 1)     , &
-       varAttr('SMDBldgs'   , 'mm'           , f94  , 'Soil moisture deficit for building surface'       , aL , '' , 1)     , &
-       varAttr('SMDEveTr'   , 'mm'           , f94  , 'Soil moisture deficit for evergreen tree surface' , aL , '' , 1)     , &
-       varAttr('SMDDecTr'   , 'mm'           , f94  , 'Soil moisture deficit for deciduous tree surface' , aL , '' , 1)     , &
-       varAttr('SMDGrass'   , 'mm'           , f94  , 'Soil moisture deficit for grass surface'          , aL , '' , 1)     , &
-       varAttr('SMDBSoil'   , 'mm'           , f94  , 'Soil moisture deficit for bare soil surface'      , aL , '' , 1)     , &
-       varAttr('StPaved'    , 'mm'           , f94  , 'Surface wetness state for paved surface'          , aL , '' , 1)     , &
-       varAttr('StBldgs'    , 'mm'           , f94  , 'Surface wetness state for building surface'       , aL , '' , 1)     , &
-       varAttr('StEveTr'    , 'mm'           , f94  , 'Surface wetness state for evergreen tree surface' , aL , '' , 1)     , &
-       varAttr('StDecTr'    , 'mm'           , f94  , 'Surface wetness state for deciduous tree surface' , aL , '' , 1)     , &
-       varAttr('StGrass'    , 'mm'           , f94  , 'Surface wetness state for grass surface'          , aL , '' , 1)     , &
-       varAttr('StBSoil'    , 'mm'           , f94  , 'Surface wetness state for bare soil surface'      , aL , '' , 1)     , &
-       varAttr('StWater'    , 'mm'           , f104 , 'Surface wetness state for water surface'          , aL , '' , 1)     , &
-       varAttr('Zenith'     , 'deg'          , f94  , 'Solar zenith angle'                               , aL , '' , 0)     , &
-       varAttr('Azimuth'    , 'deg'          , f94  , 'Solar azimuth angle'                              , aL , '' , 0)     , &
-       varAttr('AlbBulk'    , '-'            , f94  , 'Bulk albedo'                                      , aA , '' , 0)     , &
-       varAttr('Fcld'       , '-'            , f94  , 'Cloud fraction'                                   , aA , '' , 0)     , &
-       varAttr('LAI'        , 'm2_m-2'       , f94  , 'Leaf area index'                                  , aA , '' , 0)     , &
-       varAttr('z0m'        , 'm'            , f94  , 'Roughness length for momentum'                    , aA , '' , 1)     , &
-       varAttr('zdm'        , 'm'            , f94  , 'Zero-plane displacement height'                   , aA , '' , 1)     , &
-       varAttr('ustar'      , 'm_s-1'        , f94  , 'Friction velocity'                                , aA , '' , 0)     , &
-       varAttr('Lob'        , 'm'            , f104 , 'Obukhov length'                                   , aA , '' , 0)     , &
-       varAttr('ra'         , 's_m-1'        , f94  , 'Aerodynamic resistance'                           , aA , '' , 1)     , &
-       varAttr('rs'         , 's_m-1'        , f94  , 'Surface resistance'                               , aA , '' , 1)     , &
-       varAttr('Fc'         , 'umol_m-2_s-1' , f94  , 'CO2 flux'                                         , aA , '' , 0)     , &
-       varAttr('FcPhoto'    , 'umol_m-2_s-1' , f94  , 'CO2 flux from photosynthesis'                     , aA , '' , 1)     , &
-       varAttr('FcRespi'    , 'umol_m-2_s-1' , f94  , 'CO2 flux from respiration'                        , aA , '' , 1)     , &
-       varAttr('FcMetab'    , 'umol_m-2_s-1' , f94  , 'CO2 flux from metabolism'                         , aA , '' , 1)     , &
-       varAttr('FcTraff'    , 'umol_m-2_s-1' , f94  , 'CO2 flux from traffic'                            , aA , '' , 1)     , &
-       varAttr('FcBuild'    , 'umol_m-2_s-1' , f94  , 'CO2 flux from buildings'                          , aA , '' , 1)     , &
-       varAttr('QNSnowFr'   , 'W_m-2'        , f94  , 'Net all-wave radiation for non-snow area'         , aA , '' , 2)     , &
-       varAttr('QNSnow'     , 'W_m-2'        , f94  , 'Net all-wave radiation for snow area'             , aA , '' , 2)     , &
-       varAttr('AlbSnow'    , '-'            , f94  , 'Snow albedo'                                      , aA , '' , 2)     , &
-       varAttr('QM'         , 'W_m-2'        , f106 , 'Snow-related heat exchange'                       , aA , '' , 2)     , &
-       varAttr('QMFreeze'   , 'W_m-2'        , f106 , 'Internal energy change'                           , aA , '' , 2)     , &
-       varAttr('QMRain'     , 'W_m-2'        , f106 , 'Heat released by rain on snow'                    , aA , '' , 2)     , &
-       varAttr('SWE'        , 'mm'           , f104 , 'Snow water equivalent'                            , aA , '' , 2)     , &
-       varAttr('MeltWater'  , 'mm'           , f104 , 'Meltwater'                                        , aA , '' , 2)     , &
-       varAttr('MeltWStore' , 'mm'           , f104 , 'Meltwater store'                                  , aA , '' , 2)     , &
-       varAttr('SnowCh'     , 'mm'           , f104 , 'Change in snow pack'                              , aA , '' , 2)     , &
-       varAttr('SnowRPaved' , 'mm'           , f94  , 'Snow removed from paved surface'                  , aS , '' , 2)     , &
-       varAttr('SnowRBldg'  , 'mm'           , f94  , 'Snow removed from building surface'               , aS , '' , 2)     , &
-       varAttr('T2'         , 'degC'         , f94  , 'Air temperature at 2 m'                           , aA , '' , 0)     , &
-       varAttr('Q2'         , 'g_kg-1'       , f94  , 'Specific humidity at 2 m'                         , aA , '' , 0)     , &
-       varAttr('U10'        , 'm_s-1'        , f94  , 'Wind speed at 10 m'                               , aA , '' , 0)   &
-
+  DATA(varList(i), i=5+1,ncolumnsDataOutSUEWS)/&
+       varAttr('Kdown'      , 'W m-2'        , f104 , 'Incoming shortwave radiation'                     , aA , 'SUEWS' , 0)     , &
+       varAttr('Kup'        , 'W m-2'        , f104 , 'Outgoing shortwave radiation'                     , aA , 'SUEWS' , 0)     , &
+       varAttr('Ldown'      , 'W m-2'        , f104 , 'Incoming longwave radiation'                      , aA , 'SUEWS' , 0)     , &
+       varAttr('Lup'        , 'W m-2'        , f104 , 'Outgoing longwave radiation'                      , aA , 'SUEWS' , 0)     , &
+       varAttr('Tsurf'      , 'degC'         , f104 , 'Bulk surface temperature'                         , aA , 'SUEWS' , 0)     , &
+       varAttr('QN'         , 'W m-2'        , f104 , 'Net all-wave radiation'                           , aA , 'SUEWS' , 0)     , &
+       varAttr('QF'         , 'W m-2'        , f104 , 'Anthropogenic heat flux'                          , aA , 'SUEWS' , 0)     , &
+       varAttr('QS'         , 'W m-2'        , f104 , 'Net storage heat flux'                            , aA , 'SUEWS' , 0)     , &
+       varAttr('QH'         , 'W m-2'        , f104 , 'Sensible heat flux'                               , aA , 'SUEWS' , 0)     , &
+       varAttr('QE'         , 'W m-2'        , f104 , 'Latent heat flux'                                 , aA , 'SUEWS' , 0)     , &
+       varAttr('QHlumps'    , 'W m-2'        , f104 , 'Sensible heat flux (using LUMPS)'                 , aA , 'SUEWS' , 1)     , &
+       varAttr('QElumps'    , 'W m-2'        , f104 , 'Latent heat flux (using LUMPS)'                   , aA , 'SUEWS' , 1)     , &
+       varAttr('QHresis'    , 'W m-2'        , f104 , 'Sensible heat flux (resistance method)'           , aA , 'SUEWS' , 1)     , &
+       varAttr('Rain'       , 'mm'           , f106 , 'Rain'                                             , aS , 'SUEWS' , 0)     , &
+       varAttr('Irr'        , 'mm'           , f106 , 'Irrigation'                                       , aS , 'SUEWS' , 0)     , &
+       varAttr('Evap'       , 'mm'           , f106 , 'Evaporation'                                      , aS , 'SUEWS' , 0)     , &
+       varAttr('RO'         , 'mm'           , f106 , 'Runoff'                                           , aS , 'SUEWS' , 0)     , &
+       varAttr('TotCh'      , 'mm'           , f106 , 'Surface and soil moisture change'                 , aS , 'SUEWS' , 0)     , &
+       varAttr('SurfCh'     , 'mm'           , f106 , 'Surface moisture change'                          , aS , 'SUEWS' , 0)     , &
+       varAttr('State'      , 'mm'           , f104 , 'Surface Wetness State'                            , aL , 'SUEWS' , 0)     , &
+       varAttr('NWtrState'  , 'mm'           , f106 , 'Surface wetness state (non-water surfaces)'       , aL , 'SUEWS' , 0)     , &
+       varAttr('Drainage'   , 'mm'           , f106 , 'Drainage'                                         , aS , 'SUEWS' , 0)     , &
+       varAttr('SMD'        , 'mm'           , f94  , 'Soil Moisture Deficit'                            , aL , 'SUEWS' , 0)     , &
+       varAttr('FlowCh'     , 'mm'           , f104 , 'Additional flow into water body'                  , aS , 'SUEWS' , 1)     , &
+       varAttr('AddWater'   , 'mm'           , f104 , 'Addtional water from other grids'                 , aS , 'SUEWS' , 1)     , &
+       varAttr('ROSoil'     , 'mm'           , f106 , 'Runoff to soil'                                   , aS , 'SUEWS' , 1)     , &
+       varAttr('ROPipe'     , 'mm'           , f106 , 'Runoff to pipes'                                  , aS , 'SUEWS' , 1)     , &
+       varAttr('ROImp'      , 'mm'           , f106 , 'Runoff over impervious surfaces'                  , aS , 'SUEWS' , 1)     , &
+       varAttr('ROVeg'      , 'mm'           , f106 , 'Runoff over vegetated surfaces'                   , aS , 'SUEWS' , 1)     , &
+       varAttr('ROWater'    , 'mm'           , f106 , 'Runoff for water surface'                         , aS , 'SUEWS' , 1)     , &
+       varAttr('WUInt'      , 'mm'           , f94  , 'InternalWaterUse'                                 , aS , 'SUEWS' , 1)     , &
+       varAttr('WUEveTr'    , 'mm'           , f94  , 'Water use for evergreen trees'                    , aS , 'SUEWS' , 1)     , &
+       varAttr('WUDecTr'    , 'mm'           , f94  , 'Water use for deciduous trees'                    , aS , 'SUEWS' , 1)     , &
+       varAttr('WUGrass'    , 'mm'           , f94  , 'Water use for grass'                              , aS , 'SUEWS' , 1)     , &
+       varAttr('SMDPaved'   , 'mm'           , f94  , 'Soil moisture deficit for paved surface'          , aL , 'SUEWS' , 1)     , &
+       varAttr('SMDBldgs'   , 'mm'           , f94  , 'Soil moisture deficit for building surface'       , aL , 'SUEWS' , 1)     , &
+       varAttr('SMDEveTr'   , 'mm'           , f94  , 'Soil moisture deficit for evergreen tree surface' , aL , 'SUEWS' , 1)     , &
+       varAttr('SMDDecTr'   , 'mm'           , f94  , 'Soil moisture deficit for deciduous tree surface' , aL , 'SUEWS' , 1)     , &
+       varAttr('SMDGrass'   , 'mm'           , f94  , 'Soil moisture deficit for grass surface'          , aL , 'SUEWS' , 1)     , &
+       varAttr('SMDBSoil'   , 'mm'           , f94  , 'Soil moisture deficit for bare soil surface'      , aL , 'SUEWS' , 1)     , &
+       varAttr('StPaved'    , 'mm'           , f94  , 'Surface wetness state for paved surface'          , aL , 'SUEWS' , 1)     , &
+       varAttr('StBldgs'    , 'mm'           , f94  , 'Surface wetness state for building surface'       , aL , 'SUEWS' , 1)     , &
+       varAttr('StEveTr'    , 'mm'           , f94  , 'Surface wetness state for evergreen tree surface' , aL , 'SUEWS' , 1)     , &
+       varAttr('StDecTr'    , 'mm'           , f94  , 'Surface wetness state for deciduous tree surface' , aL , 'SUEWS' , 1)     , &
+       varAttr('StGrass'    , 'mm'           , f94  , 'Surface wetness state for grass surface'          , aL , 'SUEWS' , 1)     , &
+       varAttr('StBSoil'    , 'mm'           , f94  , 'Surface wetness state for bare soil surface'      , aL , 'SUEWS' , 1)     , &
+       varAttr('StWater'    , 'mm'           , f104 , 'Surface wetness state for water surface'          , aL , 'SUEWS' , 1)     , &
+       varAttr('Zenith'     , 'degree'       , f94  , 'Solar zenith angle'                               , aL , 'SUEWS' , 0)     , &
+       varAttr('Azimuth'    , 'degree'       , f94  , 'Solar azimuth angle'                              , aL , 'SUEWS' , 0)     , &
+       varAttr('AlbBulk'    , '1'            , f94  , 'Bulk albedo'                                      , aA , 'SUEWS' , 0)     , &
+       varAttr('Fcld'       , '1'            , f94  , 'Cloud fraction'                                   , aA , 'SUEWS' , 0)     , &
+       varAttr('LAI'        , 'm2 m-2'       , f94  , 'Leaf area index'                                  , aA , 'SUEWS' , 0)     , &
+       varAttr('z0m'        , 'm'            , f94  , 'Roughness length for momentum'                    , aA , 'SUEWS' , 1)     , &
+       varAttr('zdm'        , 'm'            , f94  , 'Zero-plane displacement height'                   , aA , 'SUEWS' , 1)     , &
+       varAttr('UStar'      , 'm s-1'        , f94  , 'Friction velocity'                                , aA , 'SUEWS' , 0)     , &
+       varAttr('Lob'        , 'm'            , f104 , 'Obukhov length'                                   , aA , 'SUEWS' , 0)     , &
+       varAttr('ra'         , 's m-1'        , f94  , 'Aerodynamic resistance'                           , aA , 'SUEWS' , 1)     , &
+       varAttr('rs'         , 's m-1'        , f94  , 'Surface resistance'                               , aA , 'SUEWS' , 1)     , &
+       varAttr('Fc'         , 'umol m-2 s-1' , f94  , 'CO2 flux'                                         , aA , 'SUEWS' , 0)     , &
+       varAttr('FcPhoto'    , 'umol m-2 s-1' , f94  , 'CO2 flux from photosynthesis'                     , aA , 'SUEWS' , 1)     , &
+       varAttr('FcRespi'    , 'umol m-2 s-1' , f94  , 'CO2 flux from respiration'                        , aA , 'SUEWS' , 1)     , &
+       varAttr('FcMetab'    , 'umol m-2 s-1' , f94  , 'CO2 flux from metabolism'                         , aA , 'SUEWS' , 1)     , &
+       varAttr('FcTraff'    , 'umol m-2 s-1' , f94  , 'CO2 flux from traffic'                            , aA , 'SUEWS' , 1)     , &
+       varAttr('FcBuild'    , 'umol m-2 s-1' , f94  , 'CO2 flux from buildings'                          , aA , 'SUEWS' , 1)     , &
+       varAttr('QNSnowFr'   , 'W m-2'        , f94  , 'Net all-wave radiation for non-snow area'         , aA , 'SUEWS' , 2)     , &
+       varAttr('QNSnow'     , 'W m-2'        , f94  , 'Net all-wave radiation for snow area'             , aA , 'SUEWS' , 2)     , &
+       varAttr('AlbSnow'    , '-'            , f94  , 'Snow albedo'                                      , aA , 'SUEWS' , 2)     , &
+       varAttr('QM'         , 'W m-2'        , f106 , 'Snow-related heat exchange'                       , aA , 'SUEWS' , 2)     , &
+       varAttr('QMFreeze'   , 'W m-2'        , f106 , 'Internal energy change'                           , aA , 'SUEWS' , 2)     , &
+       varAttr('QMRain'     , 'W m-2'        , f106 , 'Heat released by rain on snow'                    , aA , 'SUEWS' , 2)     , &
+       varAttr('SWE'        , 'mm'           , f104 , 'Snow water equivalent'                            , aA , 'SUEWS' , 2)     , &
+       varAttr('MeltWater'  , 'mm'           , f104 , 'Meltwater'                                        , aA , 'SUEWS' , 2)     , &
+       varAttr('MeltWStore' , 'mm'           , f104 , 'Meltwater store'                                  , aA , 'SUEWS' , 2)     , &
+       varAttr('SnowCh'     , 'mm'           , f104 , 'Change in snow pack'                              , aA , 'SUEWS' , 2)     , &
+       varAttr('SnowRPaved' , 'mm'           , f94  , 'Snow removed from paved surface'                  , aS , 'SUEWS' , 2)     , &
+       varAttr('SnowRBldg'  , 'mm'           , f94  , 'Snow removed from building surface'               , aS , 'SUEWS' , 2)     , &
+       varAttr('T2'         , 'degC'         , f94  , 'Air temperature at 2 m'                           , aA , 'SUEWS' , 0)     , &
+       varAttr('Q2'         , 'g kg-1'       , f94  , 'Specific humidity at 2 m'                         , aA , 'SUEWS' , 0)     , &
+       varAttr('U10'        , 'm s-1'        , f94  , 'Wind speed at 10 m'                               , aA , 'SUEWS' , 0)   &
        /
 
   ! SOLWEIG:
-  DATA(varList(i), i=85,110)/&
+  DATA(varList(i), i=84+1,84+ncolumnsdataOutSOL-5)/&
        varAttr('azimuth'    , 'to_add' , f106 , 'azimuth'    , aA , 'SOLWEIG' , 0)  , &
        varAttr('altitude'   , 'to_add' , f106 , 'altitude'   , aA , 'SOLWEIG' , 0)  , &
        varAttr('GlobalRad'  , 'to_add' , f106 , 'GlobalRad'  , aA , 'SOLWEIG' , 0)  , &
@@ -192,7 +193,7 @@ MODULE ctrl_output
        /
 
   ! BL:
-  DATA(varList(i), i=111,127)/&
+  DATA(varList(i), i=110+1,110+ncolumnsdataOutBL-5)/&
        varAttr('z'         , 'to_add' , f104 , 'z'         , aA , 'BL' , 0)  , &
        varAttr('theta'     , 'to_add' , f104 , 'theta'     , aA , 'BL' , 0)  , &
        varAttr('q'         , 'to_add' , f104 , 'q'         , aA , 'BL' , 0)  , &
@@ -204,7 +205,7 @@ MODULE ctrl_output
        varAttr('QE_use'    , 'to_add' , f104 , 'QE_use'    , aA , 'BL' , 0)  , &
        varAttr('Press_hPa' , 'to_add' , f104 , 'Press_hPa' , aA , 'BL' , 0)  , &
        varAttr('avu1'      , 'to_add' , f104 , 'avu1'      , aA , 'BL' , 0)  , &
-       varAttr('ustar'     , 'to_add' , f104 , 'ustar'     , aA , 'BL' , 0)  , &
+       varAttr('UStar'     , 'to_add' , f104 , 'UStar'     , aA , 'BL' , 0)  , &
        varAttr('avdens'    , 'to_add' , f104 , 'avdens'    , aA , 'BL' , 0)  , &
        varAttr('lv_J_kg'   , 'to_add' , f146 , 'lv_J_kg'   , aA , 'BL' , 0)  , &
        varAttr('avcp'      , 'to_add' , f104 , 'avcp'      , aA , 'BL' , 0)  , &
@@ -213,7 +214,7 @@ MODULE ctrl_output
        /
 
   ! Snow:
-  DATA(varList(i), i=128,224)/&
+  DATA(varList(i), i=127+1,127+ncolumnsDataOutSnow-5)/&
        varAttr('SWE_Paved'      , 'to_add' , f106 , 'SWE_Paved'      , aA , 'snow' , 0)  , &
        varAttr('SWE_Bldgs'      , 'to_add' , f106 , 'SWE_Bldgs'      , aA , 'snow' , 0)  , &
        varAttr('SWE_EveTr'      , 'to_add' , f106 , 'SWE_EveTr'      , aA , 'snow' , 0)  , &
@@ -313,43 +314,99 @@ MODULE ctrl_output
        varAttr('Tsnow_Water'    , 'to_add' , f146 , 'Tsnow_Water'    , aA , 'snow' , 0)&
        /
 
-! ESTM:
-  DATA(varList(i), i=225,246)/&
-       varAttr('QSIBLD'   , 'W_m-2' , f106 , 'QSIBLD'   , aA , 'Storage Internal building'                , 0)   , &
-       varAttr('TWALL1'   , 'degK'  , f106 , 'TWALL1'   , aA , 'Temperature in wall layer 1'              , 0)   , &
-       varAttr('TWALL2'   , 'degK'  , f106 , 'TWALL2'   , aA , 'Temperature in wall layer 2'              , 0)   , &
-       varAttr('TWALL3'   , 'degK'  , f106 , 'TWALL3'   , aA , 'Temperature in wall layer 3'              , 0)   , &
-       varAttr('TWALL4'   , 'degK'  , f106 , 'TWALL4'   , aA , 'Temperature in wall layer 4'              , 0)   , &
-       varAttr('TWALL5'   , 'degK'  , f106 , 'TWALL5'   , aA , 'Temperature in wall layer 5'              , 0)   , &
-       varAttr('TROOF1'   , 'degK'  , f106 , 'TROOF1'   , aA , 'Temperature in roof layer 1'              , 0)   , &
-       varAttr('TROOF2'   , 'degK'  , f106 , 'TROOF2'   , aA , 'Temperature in roof layer 2'              , 0)   , &
-       varAttr('TROOF3'   , 'degK'  , f106 , 'TROOF3'   , aA , 'Temperature in roof layer 3'              , 0)   , &
-       varAttr('TROOF4'   , 'degK'  , f106 , 'TROOF4'   , aA , 'Temperature in roof layer 4'              , 0)   , &
-       varAttr('TROOF5'   , 'degK'  , f106 , 'TROOF5'   , aA , 'Temperature in roof layer 5'              , 0)   , &
-       varAttr('TGROUND1' , 'degK'  , f106 , 'TGROUND1' , aA , 'Temperature in ground layer 1'            , 0)   , &
-       varAttr('TGROUND2' , 'degK'  , f106 , 'TGROUND2' , aA , 'Temperature in ground layer 2'            , 0)   , &
-       varAttr('TGROUND3' , 'degK'  , f106 , 'TGROUND3' , aA , 'Temperature in ground layer 3'            , 0)   , &
-       varAttr('TGROUND4' , 'degK'  , f106 , 'TGROUND4' , aA , 'Temperature in ground layer 4'            , 0)   , &
-       varAttr('TGROUND5' , 'degK'  , f106 , 'TGROUND5' , aA , 'Temperature in ground layer 5'            , 0)   , &
-       varAttr('TiBLD1'   , 'degK'  , f106 , 'TiBLD1'   , aA , 'Temperature in internal building layer 1' , 0)   , &
-       varAttr('TiBLD2'   , 'degK'  , f106 , 'TiBLD2'   , aA , 'Temperature in internal building layer 2' , 0)   , &
-       varAttr('TiBLD3'   , 'degK'  , f106 , 'TiBLD3'   , aA , 'Temperature in internal building layer 3' , 0)   , &
-       varAttr('TiBLD4'   , 'degK'  , f106 , 'TiBLD4'   , aA , 'Temperature in internal building layer 4' , 0)   , &
-       varAttr('TiBLD5'   , 'degK'  , f106 , 'TiBLD5'   , aA , 'Temperature in internal building layer 5' , 0)   , &
-       varAttr('TaBLD'    , 'degK'  , f106 , 'TaBLD'    , aA , 'Indoor air temperature'                   , 0) &
+  ! ESTM:
+  DATA(varList(i), i=224+1,224+ncolumnsDataOutESTM-5)/&
+       varAttr('QS'       , 'W m-2' , f104 , 'Total Storage'                            , aA , 'ESTM' , 0) , &
+       varAttr('QSAir'    , 'W m-2' , f104 , 'Storage air'                              , aA , 'ESTM' , 0) , &
+       varAttr('QSWall'   , 'W m-2' , f104 , 'Storage Wall'                             , aA , 'ESTM' , 0) , &
+       varAttr('QSRoof'   , 'W m-2' , f104 , 'Storage Roof'                             , aA , 'ESTM' , 0) , &
+       varAttr('QSGround' , 'W m-2' , f104 , 'Storage Ground'                           , aA , 'ESTM' , 0) , &
+       varAttr('QSIBld'   , 'W m-2' , f104 , 'Storage Internal building'                , aA , 'ESTM' , 0) , &
+       varAttr('TWALL1'   , 'degK'  , f104 , 'Temperature in wall layer 1'              , aA , 'ESTM' , 0) , &
+       varAttr('TWALL2'   , 'degK'  , f104 , 'Temperature in wall layer 2'              , aA , 'ESTM' , 0) , &
+       varAttr('TWALL3'   , 'degK'  , f104 , 'Temperature in wall layer 3'              , aA , 'ESTM' , 0) , &
+       varAttr('TWALL4'   , 'degK'  , f104 , 'Temperature in wall layer 4'              , aA , 'ESTM' , 0) , &
+       varAttr('TWALL5'   , 'degK'  , f104 , 'Temperature in wall layer 5'              , aA , 'ESTM' , 0) , &
+       varAttr('TROOF1'   , 'degK'  , f104 , 'Temperature in roof layer 1'              , aA , 'ESTM' , 0) , &
+       varAttr('TROOF2'   , 'degK'  , f104 , 'Temperature in roof layer 2'              , aA , 'ESTM' , 0) , &
+       varAttr('TROOF3'   , 'degK'  , f104 , 'Temperature in roof layer 3'              , aA , 'ESTM' , 0) , &
+       varAttr('TROOF4'   , 'degK'  , f104 , 'Temperature in roof layer 4'              , aA , 'ESTM' , 0) , &
+       varAttr('TROOF5'   , 'degK'  , f104 , 'Temperature in roof layer 5'              , aA , 'ESTM' , 0) , &
+       varAttr('TGROUND1' , 'degK'  , f104 , 'Temperature in ground layer 1'            , aA , 'ESTM' , 0) , &
+       varAttr('TGROUND2' , 'degK'  , f104 , 'Temperature in ground layer 2'            , aA , 'ESTM' , 0) , &
+       varAttr('TGROUND3' , 'degK'  , f104 , 'Temperature in ground layer 3'            , aA , 'ESTM' , 0) , &
+       varAttr('TGROUND4' , 'degK'  , f104 , 'Temperature in ground layer 4'            , aA , 'ESTM' , 0) , &
+       varAttr('TGROUND5' , 'degK'  , f104 , 'Temperature in ground layer 5'            , aA , 'ESTM' , 0) , &
+       varAttr('TiBLD1'   , 'degK'  , f104 , 'Temperature in internal building layer 1' , aA , 'ESTM' , 0) , &
+       varAttr('TiBLD2'   , 'degK'  , f104 , 'Temperature in internal building layer 2' , aA , 'ESTM' , 0) , &
+       varAttr('TiBLD3'   , 'degK'  , f104 , 'Temperature in internal building layer 3' , aA , 'ESTM' , 0) , &
+       varAttr('TiBLD4'   , 'degK'  , f104 , 'Temperature in internal building layer 4' , aA , 'ESTM' , 0) , &
+       varAttr('TiBLD5'   , 'degK'  , f104 , 'Temperature in internal building layer 5' , aA , 'ESTM' , 0) , &
+       varAttr('TaBLD'    , 'degK'  , f104 , 'Indoor air temperature'                   , aA , 'ESTM' , 0) &
        /
 
-CONTAINS
+  ! DailyState:
+  DATA(varList(i), i=251+1,251+ncolumnsDataOutDailyState-5)/&
+       varAttr('HDD1_h'     , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('HDD2_c'     , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('HDD3_Tmean' , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('HDD4_T5d'   , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('P_day'      , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('DaysSR'     , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('GDD1_g'     , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('GDD2_s'     , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('GDD3_Tmin'  , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('GDD4_Tmax'  , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('GDD5_DLHrs' , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('LAI_EveTr'  , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('LAI_DecTr'  , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('LAI_Grass'  , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('DecidCap'   , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('Porosity'   , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('AlbEveTr'   , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('AlbDecTr'   , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('AlbGrass'   , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('WU_EveTr1'  , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('WU_EveTr2'  , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('WU_EveTr3'  , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('WU_DecTr1'  , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('WU_DecTr2'  , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('WU_DecTr3'  , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('WU_Grass1'  , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('WU_Grass2'  , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('WU_Grass3'  , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('deltaLAI'   , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('LAIlumps'   , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('AlbSnow'    , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('DSnowPvd'   , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('DSnowBldgs' , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('DSnowEveTr' , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('DSnowDecTr' , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('DSnowGrass' , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('DSnowBSoil' , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('DSnowWater' , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('a1'         , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('a2'         , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
+       varAttr('a3'         , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0)  &
+       /
 
-  ! main output wrapper function
-  SUBROUTINE SUEWS_Output_txt(iv,irMax,Gridiv)
+
+CONTAINS
+  ! main wrapper that handles both txt and nc files
+  SUBROUTINE SUEWS_Output(irMax,iv,Gridiv)
     IMPLICIT NONE
-    INTEGER,INTENT(in) :: iv,irMax,Gridiv
+    INTEGER,INTENT(in) :: irMax
+#ifdef nc
+    INTEGER,INTENT(in),OPTIONAL ::iv,Gridiv
+#else
+    INTEGER,INTENT(in) ::iv,Gridiv
+#endif
 
     INTEGER :: xx,err,outLevel,i
-    TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varlistX
-    CHARACTER(len=10) :: grpList0(5)
+    TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varListX
+    CHARACTER(len=10) :: grpList0(6)
     CHARACTER(len=10),DIMENSION(:),ALLOCATABLE :: grpList
+    LOGICAL :: grpCond(6)
 
     ! determine outLevel
     SELECT CASE (WriteOutOption)
@@ -363,148 +420,310 @@ CONTAINS
 
 
     ! determine groups to output
-    grpList0(1)=''
+    ! TODO: needs to be smarter, automate this filtering
+    grpList0(1)='SUEWS'
     grpList0(2)='SOLWEIG'
     grpList0(3)='BL'
     grpList0(4)='snow'
     grpList0(5)='ESTM'
-    xx=COUNT((/.TRUE.,&
+    grpList0(6)='DailyState'
+    grpCond=(/.TRUE.,&
          SOLWEIGpoi_out==1,&
          CBLuse>=1,&
          SnowUse>=1,&
-         StorageHeatMethod==4 .OR. StorageHeatMethod==14/))
+         StorageHeatMethod==4 .OR. StorageHeatMethod==14,&
+         .TRUE./)
+    xx=COUNT(grpCond)
 
     ! PRINT*, grpList0,xx
 
     ALLOCATE(grpList(xx), stat=err)
     IF ( err/= 0) PRINT *, "grpList: Allocation request denied"
 
-    grpList=PACK(grpList0, &
-         mask=((/.TRUE.,&
-         SOLWEIGpoi_out==1,&
-         CBLuse>=1,&
-         SnowUse>=1,&
-         StorageHeatMethod==4 .OR. StorageHeatMethod==14/)))
+    grpList=PACK(grpList0, mask=grpCond)
 
     ! PRINT*, grpList,SIZE(grpList, dim=1)
 
     ! loop over all groups
     DO i = 1, SIZE(grpList),1
        !PRINT*, 'i',i
-       xx=COUNT(varlist%group == TRIM(grpList(i)), dim=1)
-       !  PRINT*, 'number of variables:',xx
-       ALLOCATE(varlistX(5+xx), stat=err)
-       IF ( err/= 0) PRINT *, "varlistX: Allocation request denied"
+       xx=COUNT(varList%group == TRIM(grpList(i)), dim=1)
+       !  PRINT*, 'number of variables:',xx, 'in group: ',grpList(i)
+       !  print*, 'all group names: ',varList%group
+       ALLOCATE(varListX(5+xx), stat=err)
+       IF ( err/= 0) PRINT *, "varListX: Allocation request denied"
        ! datetime
-       varlistX(1:5)=varlist(1:5)
+       varListX(1:5)=varList(1:5)
        ! variable
-       varlistX(6:5+xx)=PACK(varlist, mask=(varlist%group == TRIM(grpList(i))))
+       varListX(6:5+xx)=PACK(varList, mask=(varList%group == TRIM(grpList(i))))
 
+       IF  (TRIM(varListX(SIZE(varListX))%group) /= 'DailyState') THEN
+          ! all output arrays but DailyState
+          ! all output frequency option:
+          ! as forcing:
+          IF ( ResolutionFilesOut == Tstep .OR. KeepTstepFilesOut == 1 ) THEN
+#ifdef nc
+             IF ( PRESENT(Gridiv) ) THEN
+#endif
+                CALL SUEWS_Output_txt_grp(iv,irMax,varListX,Gridiv,outLevel,Tstep)
+#ifdef nc
+             ELSE
+                CALL SUEWS_Output_nc_grp(irMax,varListX,outLevel,Tstep)
+             ENDIF
+#endif
 
-
-       ! all output frequency option:
-       ! as forcing:
-       IF ( ResolutionFilesOut == Tstep .OR. KeepTstepFilesOut == 1 ) THEN
-          CALL SUEWS_Output_txt_grp(iv,irMax,varlistX,Gridiv,outLevel,Tstep)
+          ENDIF
+          !  as specified ResolutionFilesOut:
+          IF ( ResolutionFilesOut /= Tstep ) THEN
+#ifdef nc
+             IF ( PRESENT(Gridiv) ) THEN
+#endif
+                CALL SUEWS_Output_txt_grp(iv,irMax,varListX,Gridiv,outLevel,ResolutionFilesOut)
+#ifdef nc
+             ELSE
+                CALL SUEWS_Output_nc_grp(irMax,varListX,outLevel,ResolutionFilesOut)
+             ENDIF
+#endif
+          ENDIF
+       ELSE
+          !  DailyState array, which does not need aggregation
+#ifdef nc
+          IF ( PRESENT(Gridiv) ) THEN
+#endif
+             CALL SUEWS_Output_txt_grp(iv,irMax,varListX,Gridiv,outLevel,Tstep)
+#ifdef nc
+          ELSE
+             CALL SUEWS_Output_nc_grp(irMax,varListX,outLevel,Tstep)
+          ENDIF
+#endif
        ENDIF
-       !  as specified ResolutionFilesOut:
-       IF ( ResolutionFilesOut /= Tstep ) THEN
-          CALL SUEWS_Output_txt_grp(iv,irMax,varlistX,Gridiv,outLevel,ResolutionFilesOut)
-       ENDIF
 
-       IF (ALLOCATED(varlistX)) DEALLOCATE(varlistX, stat=err)
-       IF ( err/= 0) PRINT *, "varlistX: Deallocation request denied"
+       IF (ALLOCATED(varListX)) DEALLOCATE(varListX, stat=err)
+       IF ( err/= 0) PRINT *, "varListX: Deallocation request denied"
        !  PRINT*, 'i',i,'end'
 
     END DO
-  END SUBROUTINE SUEWS_Output_txt
+  END SUBROUTINE SUEWS_Output
+
+  ! ! main output wrapper function
+  ! SUBROUTINE SUEWS_Output_txt(iv,irMax,Gridiv)
+  !   IMPLICIT NONE
+  !   INTEGER,INTENT(in) :: iv,irMax,Gridiv
+  !
+  !   INTEGER :: xx,err,outLevel,i
+  !   TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varListX
+  !   CHARACTER(len=10) :: grpList0(6)
+  !   CHARACTER(len=10),DIMENSION(:),ALLOCATABLE :: grpList
+  !   LOGICAL :: grpCond(6)
+  !
+  !   ! determine outLevel
+  !   SELECT CASE (WriteOutOption)
+  !   CASE (0) !all (not snow-related)
+  !      outLevel=1
+  !   CASE (1) !all plus snow-related
+  !      outLevel=2
+  !   CASE (2) !minimal output
+  !      outLevel=0
+  !   END SELECT
+  !
+  !
+  !   ! determine groups to output
+  !   ! todo: needs to be smarter, automate this filtering
+  !   grpList0(1)=''
+  !   grpList0(2)='SOLWEIG'
+  !   grpList0(3)='BL'
+  !   grpList0(4)='snow'
+  !   grpList0(5)='ESTM'
+  !   grpList0(6)='DailyState'
+  !   grpCond=(/.TRUE.,&
+  !        SOLWEIGpoi_out==1,&
+  !        CBLuse>=1,&
+  !        SnowUse>=1,&
+  !        StorageHeatMethod==4 .OR. StorageHeatMethod==14,&
+  !        .TRUE./)
+  !   xx=COUNT(grpCond)
+  !
+  !   ! PRINT*, grpList0,xx
+  !
+  !   ALLOCATE(grpList(xx), stat=err)
+  !   IF ( err/= 0) PRINT *, "grpList: Allocation request denied"
+  !
+  !   grpList=PACK(grpList0, mask=grpCond)
+  !
+  !   ! PRINT*, grpList,SIZE(grpList, dim=1)
+  !
+  !   ! loop over all groups
+  !   DO i = 1, SIZE(grpList),1
+  !      !PRINT*, 'i',i
+  !      xx=COUNT(varList%group == TRIM(grpList(i)), dim=1)
+  !      !  PRINT*, 'number of variables:',xx, 'in group: ',grpList(i)
+  !      !  print*, 'all group names: ',varList%group
+  !      ALLOCATE(varListX(5+xx), stat=err)
+  !      IF ( err/= 0) PRINT *, "varListX: Allocation request denied"
+  !      ! datetime
+  !      varListX(1:5)=varList(1:5)
+  !      ! variable
+  !      varListX(6:5+xx)=PACK(varList, mask=(varList%group == TRIM(grpList(i))))
+  !
+  !      IF  (TRIM(varListX(SIZE(varListX))%group) /= 'DailyState') THEN
+  !         ! all output arrays but DailyState
+  !         ! all output frequency option:
+  !         ! as forcing:
+  !         IF ( ResolutionFilesOut == Tstep .OR. KeepTstepFilesOut == 1 ) THEN
+  !            CALL SUEWS_Output_txt_grp(iv,irMax,varListX,Gridiv,outLevel,Tstep)
+  !         ENDIF
+  !         !  as specified ResolutionFilesOut:
+  !         IF ( ResolutionFilesOut /= Tstep ) THEN
+  !            CALL SUEWS_Output_txt_grp(iv,irMax,varListX,Gridiv,outLevel,ResolutionFilesOut)
+  !         ENDIF
+  !      ELSE
+  !         !  DailyState array, which does not need aggregation
+  !         CALL SUEWS_Output_txt_grp(iv,irMax,varListX,Gridiv,outLevel,Tstep)
+  !      ENDIF
+  !
+  !      IF (ALLOCATED(varListX)) DEALLOCATE(varListX, stat=err)
+  !      IF ( err/= 0) PRINT *, "varListX: Deallocation request denied"
+  !      !  PRINT*, 'i',i,'end'
+  !
+  !   END DO
+  ! END SUBROUTINE SUEWS_Output_txt
 
 
   ! output wrapper function for one group
-  SUBROUTINE SUEWS_Output_txt_grp(iv,irMax,varlist,Gridiv,outLevel,outFreq_s)
+  SUBROUTINE SUEWS_Output_txt_grp(iv,irMax,varList,Gridiv,outLevel,outFreq_s)
     IMPLICIT NONE
 
-    TYPE(varAttr),DIMENSION(:),INTENT(in)::varlist
+    TYPE(varAttr),DIMENSION(:),INTENT(in)::varList
     INTEGER,INTENT(in) :: iv,irMax,Gridiv,outLevel,outFreq_s
 
-    REAL(KIND(1d0))::dataOutX(irMax,SIZE(varlist))
+    INTEGER :: err,idMin,idMax
+
+    REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::dataOutX
     REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::dataOutX_agg
 
+    IF (.NOT. ALLOCATED(dataOutX)) THEN
+       ALLOCATE(dataOutX(irMax,SIZE(varList)), stat=err)
+       IF ( err/= 0) PRINT *, "dataOutX: Allocation request denied"
+    ENDIF
 
-    ! determine dataout array according to variable group
-    SELECT CASE (TRIM(varlist(SIZE(varlist))%group))
-    CASE ('') !default
-       dataOutX=dataout(1:irMax,1:SIZE(varlist),Gridiv)
+    ! determine dataOutX array according to variable group
+    SELECT CASE (TRIM(varList(SIZE(varList))%group))
+    CASE ('SUEWS') !default
+       dataOutX=dataOutSUEWS(1:irMax,1:SIZE(varList),Gridiv)
 
     CASE ('SOLWEIG') !SOLWEIG
        ! todo: inconsistent data structure
-       dataOutX=dataOutSOL(1:irMax,1:SIZE(varlist),Gridiv)
+       dataOutX=dataOutSOL(1:irMax,1:SIZE(varList),Gridiv)
 
     CASE ('BL') !BL
-       dataOutX=dataOutBL(1:irMax,1:SIZE(varlist),Gridiv)
+       dataOutX=dataOutBL(1:irMax,1:SIZE(varList),Gridiv)
 
     CASE ('snow')    !snow
-       dataOutX=dataOutSnow(1:irMax,1:SIZE(varlist),Gridiv)
+       dataOutX=dataOutSnow(1:irMax,1:SIZE(varList),Gridiv)
 
     CASE ('ESTM')    !ESTM
-       dataOutX=dataOutESTM(1:irMax,1:SIZE(varlist),Gridiv)
+       dataOutX=dataOutESTM(1:irMax,1:SIZE(varList),Gridiv)
 
+    CASE ('DailyState')    !DailyState
+       ! PRINT*, SHAPE(dataOutSUEWS)
+       ! print*, dataOutSUEWS(1:irMax,2,Gridiv)
+       ! get correct day index
+       idMin=MAX(1, &
+            INT(MINVAL(dataOutSUEWS(1:irMax,2,Gridiv))), &
+            INT(MINVAL(PACK(dataOutDailyState(:,2,Gridiv), &
+            mask=(dataOutDailyState(:,6,Gridiv)/=-999)))))
+       idMax=MIN(366,&
+            INT(MAXVAL(dataOutSUEWS(1:irMax,2,Gridiv))), &
+            INT(MAXVAL(PACK(dataOutDailyState(:,2,Gridiv), &
+            mask=(dataOutDailyState(:,6,Gridiv)/=-999)))))
+       ! PRINT*, 'idMin in dataOutDailyState',idMin
+       ! PRINT*, 'idMax in dataOutDailyState',idMax
+       IF (ALLOCATED(dataOutX)) THEN
+          DEALLOCATE(dataOutX)
+          IF ( err/= 0) PRINT *, "dataOutX: Deallocation request denied"
+       ENDIF
+
+       IF (.NOT. ALLOCATED(dataOutX)) THEN
+          ALLOCATE(dataOutX(idMax-idMin+1,SIZE(varList)), stat=err)
+          IF ( err/= 0) PRINT *, "dataOutX: Allocation request denied"
+       ENDIF
+
+       dataOutX=dataOutDailyState(idMin:idMax,1:SIZE(varList),Gridiv)
+       ! PRINT*, 'idMin line',dataOutDailyState(idMin,1:4,Gridiv)
+       ! PRINT*, 'idMax line',dataOutDailyState(idMax,1:4,Gridiv)
     END SELECT
 
-    ! PRINT*, 'n of varlistX: ',SIZE(varlist)
-    ! PRINT*, 'varlistX: ',varlist%header
-    ! PRINT*, 'varlistX group: ',varlist%group
+    ! PRINT*, 'n of varListX: ',SIZE(varList)
+    ! PRINT*, 'varListX: ',varList%header
+    ! PRINT*, 'varListX group: ',varList%group
+    ! print*, 'date info of grid',Gridiv,':',dataOutSUEWS(1,1:4,Gridiv)
+    ! print*, 'in dataOutX:',dataOutX(1,1:4)
+
 
 
     ! aggregation:
-    CALL SUEWS_Output_Agg(dataOutX_agg,dataOutX,varlist,irMax,outFreq_s)
+    ! aggregation is done for every group but 'DailyState'
+    IF  (TRIM(varList(SIZE(varList))%group) /= 'DailyState') THEN
+
+       CALL SUEWS_Output_Agg(dataOutX_agg,dataOutX,varList,irMax,outFreq_s)
+       ! print*, 'in dataOutX_agg:',dataOutX_agg(1,1:4)
+    ELSE
+       IF (.NOT. ALLOCATED(dataOutX_agg)) THEN
+          ALLOCATE(dataOutX_agg(SIZE(dataOutX, dim=1),SIZE(varList)), stat=err)
+          IF ( err/= 0) PRINT *, ": Allocation request denied"
+       ENDIF
+       dataOutX_agg=dataOutX
+    ENDIF
 
     ! output:
     ! initialise file when processing first metblock
-    IF ( iv == 1 ) CALL SUEWS_Output_Init(dataOutX_agg,varlist,Gridiv,outLevel)
+    ! print*, 'before init, size of varList:', size(varList, dim=1)
+    IF ( iv == 1 ) CALL SUEWS_Output_Init(dataOutX_agg,varList,Gridiv,outLevel)
 
     ! append the aggregated data to the specific txt file
-    CALL SUEWS_Write_txt(dataOutX_agg,varlist,Gridiv,outLevel)
+    CALL SUEWS_Write_txt(dataOutX_agg,varList,Gridiv,outLevel)
 
   END SUBROUTINE SUEWS_Output_txt_grp
 
   ! initialise an output file with file name and headers
-  SUBROUTINE SUEWS_Output_Init(dataOut,varlist,Gridiv,outLevel)
+  SUBROUTINE SUEWS_Output_Init(dataOutX,varList,Gridiv,outLevel)
     IMPLICIT NONE
-    REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOut
-    TYPE(varAttr),DIMENSION(:),INTENT(in)::varlist
+    REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOutX
+    TYPE(varAttr),DIMENSION(:),INTENT(in)::varList
     INTEGER,INTENT(in) :: Gridiv,outLevel
 
-    TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varlistSel
+    TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varListSel
     INTEGER :: xx,err,fn,i,nargs
     CHARACTER(len=100) :: FileOut
     CHARACTER(len=3) :: itext
     CHARACTER(len=6) :: args(5)
-    CHARACTER(len=16*SIZE(varlist)) :: FormatOut
-    CHARACTER(len=16) :: formatX,headerX
+    CHARACTER(len=16*SIZE(varList)) :: FormatOut
+    CHARACTER(len=16) :: formatX
     CHARACTER(len=16), DIMENSION(:), ALLOCATABLE:: headerOut
 
     ! select variables to output
     xx=COUNT((varList%level<= outLevel), dim=1)
     WRITE(itext,'(i3)') xx
-    ALLOCATE(varlistSel(xx), stat=err)
-    IF ( err/= 0) PRINT *, "varlistSel: Allocation request denied"
-    varlistSel=PACK(varList, mask=(varList%level<= outLevel))
+    ALLOCATE(varListSel(xx), stat=err)
+    IF ( err/= 0) PRINT *, "varListSel: Allocation request denied"
+    varListSel=PACK(varList, mask=(varList%level<= outLevel))
 
 
     ! generate file name
-    CALL filename_gen(dataOut,varList,Gridiv,FileOut)
+    CALL filename_gen(dataOutX,varList,Gridiv,FileOut)
+    ! print*, 'date info in dataOutX',dataOutX(1,1:4)
+    ! PRINT*, 'FileOut in SUEWS_Output_Init: ',FileOut
 
     ! store right-aligned headers
     ALLOCATE(headerOut(xx), stat=err)
     IF ( err/= 0) PRINT *, "headerOut: Allocation request denied"
 
     ! create format string:
-    DO i = 1, SIZE(varlistSel)
-       CALL parse(varlistSel(i)%fmt,'if.,',args,nargs)
+    DO i = 1, SIZE(varListSel)
+       CALL parse(varListSel(i)%fmt,'if.,',args,nargs)
        formatX=ADJUSTL('(a'//TRIM(args(2))//',1x)')
        ! adjust headers to right-aligned
-       WRITE(headerOut(i),formatX) ADJUSTR(TRIM(ADJUSTL(varlistSel(i)%header)))
+       WRITE(headerOut(i),formatX) ADJUSTR(TRIM(ADJUSTL(varListSel(i)%header)))
        IF ( i==1 ) THEN
           FormatOut=ADJUSTL(TRIM(formatX))
        ELSE
@@ -522,24 +741,24 @@ CONTAINS
     CLOSE(fn)
 
     ! write out format file
-    CALL formatFile_gen(dataOut,varlist,Gridiv,outLevel)
+    CALL formatFile_gen(dataOutX,varList,Gridiv,outLevel)
 
     ! clean up
-    IF (ALLOCATED(varlistSel)) DEALLOCATE(varlistSel, stat=err)
-    IF ( err/= 0) PRINT *, "varlistSel: Deallocation request denied"
+    IF (ALLOCATED(varListSel)) DEALLOCATE(varListSel, stat=err)
+    IF ( err/= 0) PRINT *, "varListSel: Deallocation request denied"
     IF (ALLOCATED(headerOut)) DEALLOCATE(headerOut, stat=err)
     IF ( err/= 0) PRINT *, "headerOut: Deallocation request denied"
 
   END SUBROUTINE SUEWS_Output_Init
 
   ! generate output format file
-  SUBROUTINE formatFile_gen(dataOut,varlist,Gridiv,outLevel)
+  SUBROUTINE formatFile_gen(dataOutX,varList,Gridiv,outLevel)
     IMPLICIT NONE
-    REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOut
-    TYPE(varAttr),DIMENSION(:),INTENT(in)::varlist
+    REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOutX
+    TYPE(varAttr),DIMENSION(:),INTENT(in)::varList
     INTEGER,INTENT(in) :: Gridiv,outLevel
 
-    TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varlistSel
+    TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varListSel
     INTEGER :: xx,err,fn
     CHARACTER(len=100) :: FileOut
     CHARACTER(len=50*300) :: str_cat
@@ -547,13 +766,13 @@ CONTAINS
     CHARACTER(len=3) :: itext
 
     ! get filename
-    CALL filename_gen(dataOut,varList,Gridiv,FileOut,1)
+    CALL filename_gen(dataOutX,varList,Gridiv,FileOut,1)
 
     !select variables to output
     xx=COUNT((varList%level<= outLevel), dim=1)
-    ALLOCATE(varlistSel(xx), stat=err)
-    IF ( err/= 0) PRINT *, "varlistSel: Allocation request denied"
-    varlistSel=PACK(varList, mask=(varList%level<= outLevel))
+    ALLOCATE(varListSel(xx), stat=err)
+    IF ( err/= 0) PRINT *, "varListSel: Allocation request denied"
+    varListSel=PACK(varList, mask=(varList%level<= outLevel))
 
     ! create file
     fn=9
@@ -562,7 +781,7 @@ CONTAINS
     ! write out format strings
     ! column number:
     str_cat=''
-    DO i = 1, SIZE(varlistSel)
+    DO i = 1, SIZE(varListSel)
        WRITE(itext,'(i3)') i
        IF ( i==1 ) THEN
           str_cat=TRIM(ADJUSTL(itext))
@@ -574,8 +793,8 @@ CONTAINS
 
     ! header:
     str_cat=''
-    DO i = 1, SIZE(varlistSel)
-       str_x=varlistSel(i)%header
+    DO i = 1, SIZE(varListSel)
+       str_x=varListSel(i)%header
        IF ( i==1 ) THEN
           str_cat=TRIM(ADJUSTL(str_x))
        ELSE
@@ -586,8 +805,8 @@ CONTAINS
 
     ! long name:
     str_cat=''
-    DO i = 1, SIZE(varlistSel)
-       str_x=varlistSel(i)%longNm
+    DO i = 1, SIZE(varListSel)
+       str_x=varListSel(i)%longNm
        IF ( i==1 ) THEN
           str_cat=TRIM(ADJUSTL(str_x))
        ELSE
@@ -598,8 +817,8 @@ CONTAINS
 
     ! unit:
     str_cat=''
-    DO i = 1, SIZE(varlistSel)
-       str_x=varlistSel(i)%unit
+    DO i = 1, SIZE(varListSel)
+       str_x=varListSel(i)%unit
        IF ( i==1 ) THEN
           str_cat=TRIM(ADJUSTL(str_x))
        ELSE
@@ -610,8 +829,8 @@ CONTAINS
 
     ! format:
     str_cat=''
-    DO i = 1, SIZE(varlistSel)
-       str_x=varlistSel(i)%fmt
+    DO i = 1, SIZE(varListSel)
+       str_x=varListSel(i)%fmt
        IF ( i==1 ) THEN
           str_cat=TRIM(ADJUSTL(str_x))
        ELSE
@@ -622,8 +841,8 @@ CONTAINS
 
     ! aggregation method:
     str_cat=''
-    DO i = 1, SIZE(varlistSel)
-       str_x=varlistSel(i)%aggreg
+    DO i = 1, SIZE(varListSel)
+       str_x=varListSel(i)%aggreg
        IF ( i==1 ) THEN
           str_cat=TRIM(ADJUSTL(str_x))
        ELSE
@@ -636,35 +855,35 @@ CONTAINS
     CLOSE(fn)
 
     ! clean up
-    IF (ALLOCATED(varlistSel)) DEALLOCATE(varlistSel, stat=err)
-    IF ( err/= 0) PRINT *, "varlistSel: Deallocation request denied"
+    IF (ALLOCATED(varListSel)) DEALLOCATE(varListSel, stat=err)
+    IF ( err/= 0) PRINT *, "varListSel: Deallocation request denied"
 
   END SUBROUTINE formatFile_gen
 
   ! aggregate data to specified resolution
-  SUBROUTINE SUEWS_Output_Agg(dataOut_agg,dataOut,varlist,irMax,outFreq_s)
+  SUBROUTINE SUEWS_Output_Agg(dataOut_agg,dataOutX,varList,irMax,outFreq_s)
     IMPLICIT NONE
-    REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOut
-    TYPE(varAttr),DIMENSION(:),INTENT(in)::varlist
+    REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOutX
+    TYPE(varAttr),DIMENSION(:),INTENT(in)::varList
     INTEGER,INTENT(in) :: irMax,outFreq_s
     REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE,INTENT(out)::dataOut_agg
 
     INTEGER ::  nlinesOut,i,j,x
-    REAL(KIND(1d0))::dataOut_aggX(1:SIZE(varlist))
+    REAL(KIND(1d0))::dataOut_aggX(1:SIZE(varList))
     REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::dataOut_agg0
     nlinesOut=INT(nsh/(60.*60/outFreq_s))
-    ! nGrid=SIZE(dataOut, dim=3)
+    ! nGrid=SIZE(dataOutX, dim=3)
 
-    ALLOCATE(dataOut_agg(INT(irMax/nlinesOut),SIZE(varlist)))
-    ALLOCATE(dataOut_agg0(nlinesOut,SIZE(varlist)))
+    ALLOCATE(dataOut_agg(INT(irMax/nlinesOut),SIZE(varList)))
+    ALLOCATE(dataOut_agg0(nlinesOut,SIZE(varList)))
 
 
     DO i=nlinesOut,irMax,nlinesOut
        x=i/nlinesOut
-       dataOut_agg0=dataOut(i-nlinesOut+1:i,:)
-       DO j = 1, SIZE(varlist), 1
+       dataOut_agg0=dataOutX(i-nlinesOut+1:i,:)
+       DO j = 1, SIZE(varList), 1
           ! aggregating different variables
-          SELECT CASE (varlist(j)%aggreg)
+          SELECT CASE (varList(j)%aggreg)
           CASE (aT) !time columns, aT
              dataOut_aggX(j)=dataOut_agg0(nlinesOut,j)
           CASE (aA) !average, aA
@@ -679,7 +898,7 @@ CONTAINS
              ! IF ( i==irMax ) THEN
              PRINT*, 'raw data of ',j,':'
              PRINT*, dataOut_agg0(:,j)
-             PRINT*, 'aggregated with method: ',varlist(j)%aggreg
+             PRINT*, 'aggregated with method: ',varList(j)%aggreg
              PRINT*, dataOut_aggX(j)
              PRINT*, ''
           END IF
@@ -691,57 +910,62 @@ CONTAINS
 
 
   ! append output data to the specific file at the specified outLevel
-  SUBROUTINE SUEWS_Write_txt(dataOut,varlist,Gridiv,outLevel)
+  SUBROUTINE SUEWS_Write_txt(dataOutX,varList,Gridiv,outLevel)
     IMPLICIT NONE
-    REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOut
-    TYPE(varAttr),DIMENSION(:),INTENT(in)::varlist
+    REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOutX
+    TYPE(varAttr),DIMENSION(:),INTENT(in)::varList
     INTEGER,INTENT(in) :: Gridiv,outLevel
 
     REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::dataOutSel
-    TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varlistSel
+    TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varListSel
     CHARACTER(len=100) :: FileOut
     INTEGER :: fn,i,xx,err
-    CHARACTER(len=12*SIZE(varlist)) :: FormatOut
+    CHARACTER(len=12*SIZE(varList)) :: FormatOut
+
+    IF(Diagnose==1) WRITE(*,*) 'Writting data of group: ',varList(SIZE(varList))%group
 
     !select variables to output
     xx=COUNT((varList%level<= outLevel), dim=1)
-    ALLOCATE(varlistSel(xx), stat=err)
-    IF ( err/= 0) PRINT *, "varlistSel: Allocation request denied"
-    varlistSel=PACK(varList, mask=(varList%level<= outLevel))
+    ALLOCATE(varListSel(xx), stat=err)
+    IF ( err/= 0) PRINT *, "varListSel: Allocation request denied"
+    varListSel=PACK(varList, mask=(varList%level<= outLevel))
 
     ! copy data accordingly
-    ALLOCATE(dataOutSel(SIZE(dataOut, dim=1),xx), stat=err)
+    ALLOCATE(dataOutSel(SIZE(dataOutX, dim=1),xx), stat=err)
     IF ( err/= 0) PRINT *, "dataOutSel: Allocation request denied"
     ! print*, SIZE(varList%level),PACK((/(i,i=1,SIZE(varList%level))/), varList%level <= outLevel)
-    ! print*, irMax,shape(dataOut)
-    dataOutSel=dataOut(:,PACK((/(i,i=1,SIZE(varList%level))/), varList%level <= outLevel))
+    ! print*, irMax,shape(dataOutX)
+    dataOutSel=dataOutX(:,PACK((/(i,i=1,SIZE(varList%level))/), varList%level <= outLevel))
 
 
     ! create format string:
-    DO i = 1, SIZE(varlistSel)
+    DO i = 1, SIZE(varListSel)
        IF ( i==1 ) THEN
-          FormatOut=ADJUSTL(varlistSel(i)%fmt)
+          FormatOut=ADJUSTL(varListSel(i)%fmt)
        ELSE
-          FormatOut=TRIM(FormatOut)//' '//ADJUSTL(varlistSel(i)%fmt)
+          FormatOut=TRIM(FormatOut)//' '//ADJUSTL(varListSel(i)%fmt)
        END IF
     END DO
     FormatOut='('//TRIM(ADJUSTL(FormatOut))//')'
 
     ! get filename
-    CALL filename_gen(dataOutSel,varlistSel,Gridiv,FileOut)
+    CALL filename_gen(dataOutSel,varListSel,Gridiv,FileOut)
+    ! PRINT*, 'FileOut in SUEWS_Write_txt: ',FileOut
 
     ! write out data
     fn=50
     OPEN(fn,file=TRIM(fileout),position='append')!,err=112)
     DO i=1,SIZE(dataOutSel,dim=1)
+       ! print*, 'Writting',i
+       ! print*, dataOutSel(i,:)
        WRITE(fn,FormatOut) &
             INT(dataOutSel(i,1:4)),&
-            dataOutSel(i,5:SIZE(varlistSel))
+            dataOutSel(i,5:SIZE(varListSel))
     ENDDO
     CLOSE (fn)
 
-    IF (ALLOCATED(varlistSel)) DEALLOCATE(varlistSel, stat=err)
-    IF ( err/= 0) PRINT *, "varlistSel: Deallocation request denied"
+    IF (ALLOCATED(varListSel)) DEALLOCATE(varListSel, stat=err)
+    IF ( err/= 0) PRINT *, "varListSel: Deallocation request denied"
 
     IF (ALLOCATED(dataOutSel)) DEALLOCATE(dataOutSel, stat=err)
     IF ( err/= 0) PRINT *, "dataOutSel: Deallocation request denied"
@@ -749,23 +973,29 @@ CONTAINS
   END SUBROUTINE SUEWS_Write_txt
 
 
-  SUBROUTINE filename_gen(dataOut,varList,Gridiv,FileOut,opt_fmt)
+  SUBROUTINE filename_gen(dataOutX,varList,Gridiv,FileOut,opt_fmt)
     IMPLICIT NONE
-    REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOut ! to determine year & output frequency
-    TYPE(varAttr),DIMENSION(:),INTENT(in)::varlist ! to determine output group
+    REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOutX ! to determine year & output frequency
+    TYPE(varAttr),DIMENSION(:),INTENT(in)::varList ! to determine output group
     INTEGER,INTENT(in) :: Gridiv ! to determine grid name as in SiteSelect
     INTEGER,INTENT(in),OPTIONAL :: opt_fmt ! to determine if a format file
     CHARACTER(len=100),INTENT(out) :: FileOut ! the output file name
 
-    CHARACTER(len=10):: str_out_min,str_grid,&
+    CHARACTER(len=20):: str_out_min,str_grid,&
          str_date,str_year,str_DOY,str_grp,str_sfx
     INTEGER :: year_int,DOY_int,val_fmt
 
+    ! initialise with a default value
+    val_fmt=-999
+
     IF( PRESENT(opt_fmt) ) val_fmt = opt_fmt
 
+    ! PRINT*, varList(:)%header
+    ! PRINT*, 'dataOutX(1)',dataOutX(1,:)
+
     ! date:
-    year_int=INT(dataOut(1,1))
-    DOY_int=INT(dataOut(1,2))
+    year_int=INT(dataOutX(1,1))
+    DOY_int=INT(dataOutX(1,2))
     WRITE(str_year,'(i4)') year_int
     WRITE(str_DOY,'(i3.3)') DOY_int
     str_date='_'//TRIM(ADJUSTL(str_year))
@@ -776,10 +1006,16 @@ CONTAINS
 
 
     ! output frequency in minute:
-    WRITE(str_out_min,'(i4)') &
-         INT(dataOut(2,3)-dataOut(1,3))*60& ! hour
-         +INT(dataOut(2,4)-dataOut(1,4))     !minute
-    str_out_min='_'//TRIM(ADJUSTL(str_out_min))
+    IF ( varList(6)%group == 'DailyState' ) THEN
+       str_out_min='' ! ignore this for DailyState
+    ELSE
+       WRITE(str_out_min,'(i4)') &
+            INT(dataOutX(2,3)-dataOutX(1,3))*60& ! hour
+            +INT(dataOutX(2,4)-dataOutX(1,4))     !minute
+       str_out_min='_'//TRIM(ADJUSTL(str_out_min))
+    ENDIF
+
+
 
     ! group: output type
     str_grp=varList(6)%group
@@ -817,6 +1053,39 @@ CONTAINS
 
   END SUBROUTINE filename_gen
 
+
+  !========================================================================================
+  FUNCTION count_lines(filename) RESULT(nlines)
+    ! count the number of valid lines in a file
+    ! invalid line starting with -9
+
+    !========================================================================================
+    IMPLICIT NONE
+    CHARACTER(len=*)    :: filename
+    INTEGER             :: nlines
+    INTEGER             :: io,iv
+
+    OPEN(10,file=filename, iostat=io, status='old')
+
+    ! if io error found, report iostat and exit
+    IF (io/=0) THEN
+       PRINT*, 'io', io, 'for', filename
+       STOP 'Cannot open file! '
+    ENDIF
+
+    nlines = 0
+    DO
+       READ(10,*,iostat=io) iv
+       IF (io < 0 .OR. iv ==-9) EXIT
+
+       nlines = nlines + 1
+    END DO
+    CLOSE(10)
+    nlines=nlines-1 ! skip header
+  END FUNCTION count_lines
+
+
+
   !========================================================================================
   ! netCDF conversion subroutines for SUEWS
   ! author: Ting Sun
@@ -824,7 +1093,7 @@ CONTAINS
   ! disclamier:
   !     This code employs the netCDF Fortran 90 API.
   !     Full documentation of the netCDF Fortran 90 API can be found at:
-  !     http://www.unidata.ucar.edu/software/netcdf/docs/netcdf-f90
+  !     https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/netcdf-f90/
   !     Part of the work is under the help of examples provided by the documentation.
   !
   ! purpose:
@@ -846,134 +1115,182 @@ CONTAINS
   !===========================================================================!
 
 #ifdef nc
-  SUBROUTINE SUEWS_Output_nc(irMax)
+  ! SUBROUTINE SUEWS_Output_nc(irMax)
+  !   IMPLICIT NONE
+  !   INTEGER,INTENT(in) :: irMax
+  !
+  !   INTEGER :: xx,err,outLevel
+  !   TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varListX
+  !   CHARACTER(len=10) :: grpList0(6)
+  !   CHARACTER(len=10),DIMENSION(:),ALLOCATABLE :: grpList
+  !   LOGICAL :: grpCond(6)
+  !
+  !   ! determine outLevel
+  !   SELECT CASE (WriteOutOption)
+  !   CASE (0) !all (not snow-related)
+  !      outLevel=1
+  !   CASE (1) !all plus snow-related
+  !      outLevel=2
+  !   CASE (2) !minimal output
+  !      outLevel=0
+  !   END SELECT
+  !
+  !
+  !   ! determine groups to output
+  !   ! todo: needs to be smarter, automate this filtering
+  !   grpList0(1)=''
+  !   grpList0(2)='SOLWEIG'
+  !   grpList0(3)='BL'
+  !   grpList0(4)='snow'
+  !   grpList0(5)='ESTM'
+  !   grpList0(6)='DailyState'
+  !   grpCond=(/.TRUE.,&
+  !        SOLWEIGpoi_out==1,&
+  !        CBLuse>=1,&
+  !        SnowUse>=1,&
+  !        StorageHeatMethod==4 .OR. StorageHeatMethod==14,&
+  !        .TRUE./)
+  !   xx=COUNT(grpCond)
+  !
+  !   ! PRINT*, grpList0,xx
+  !
+  !   ALLOCATE(grpList(xx), stat=err)
+  !   IF ( err/= 0) PRINT *, "grpList: Allocation request denied"
+  !
+  !   grpList=PACK(grpList0, mask=grpCond)
+  !
+  !   ! PRINT*, grpList
+  !
+  !   ! loop over all groups
+  !   DO i = 1, SIZE(grpList)
+  !      xx=COUNT(varList%group == TRIM(grpList(i)), dim=1)
+  !      !  PRINT*, 'number of variables:',xx
+  !      ALLOCATE(varListX(5+xx), stat=err)
+  !      IF ( err/= 0) PRINT *, "varListX: Allocation request denied"
+  !      ! datetime
+  !      varListX(1:5)=varList(1:5)
+  !      ! variable
+  !      varListX(6:5+xx)=PACK(varList, mask=(varList%group == TRIM(grpList(i))))
+  !
+  !      IF  (TRIM(varListX(SIZE(varListX))%group) /= 'DailyState') THEN
+  !         ! all output arrays but DailyState
+  !         ! all output frequency option:
+  !         ! as forcing:
+  !         IF ( ResolutionFilesOut == Tstep .OR. KeepTstepFilesOut == 1 ) THEN
+  !            CALL SUEWS_Output_nc_grp(irMax,varListX,outLevel,Tstep)
+  !         ENDIF
+  !         !  as specified ResolutionFilesOut:
+  !         IF ( ResolutionFilesOut /= Tstep ) THEN
+  !            CALL SUEWS_Output_nc_grp(irMax,varListX,outLevel,ResolutionFilesOut)
+  !         ENDIF
+  !      ELSE
+  !         !  DailyState array, which does not need aggregation
+  !         CALL SUEWS_Output_nc_grp(irMax,varListX,outLevel,Tstep)
+  !      ENDIF
+  !
+  !      IF (ALLOCATED(varListX)) DEALLOCATE(varListX, stat=err)
+  !      IF ( err/= 0) PRINT *, "varListX: Deallocation request denied"
+  !   END DO
+  !
+  ! END SUBROUTINE SUEWS_Output_nc
+
+
+  SUBROUTINE SUEWS_Output_nc_grp(irMax,varList,outLevel,outFreq_s)
     IMPLICIT NONE
-    INTEGER,INTENT(in) :: irMax
 
-    INTEGER :: xx,err,outLevel
-    TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varlistX
-    CHARACTER(len=10) :: grpList0(5)
-    CHARACTER(len=10),DIMENSION(:),ALLOCATABLE :: grpList
-
-    ! determine outLevel
-    SELECT CASE (WriteOutOption)
-    CASE (0) !all (not snow-related)
-       outLevel=1
-    CASE (1) !all plus snow-related
-       outLevel=2
-    CASE (2) !minimal output
-       outLevel=0
-    END SELECT
-
-
-    ! determine groups to output
-    ! todo: needs to be smarter, automate this filtering
-    grpList0(1)=''
-    grpList0(2)='SOLWEIG'
-    grpList0(3)='BL'
-    grpList0(4)='snow'
-    grpList0(5)='ESTM'
-    xx=COUNT((/.TRUE.,&
-         SOLWEIGpoi_out==1,&
-         CBLuse>=1,&
-         SnowUse>=1,&
-         StorageHeatMethod==4 .OR. StorageHeatMethod==14/))
-
-    ! PRINT*, grpList0,xx
-
-    ALLOCATE(grpList(xx), stat=err)
-    IF ( err/= 0) PRINT *, "grpList: Allocation request denied"
-
-    grpList=PACK(grpList0, &
-         mask=((/.TRUE.,&
-         SOLWEIGpoi_out==1,&
-         CBLuse>=1,&
-         SnowUse>=1,&
-         StorageHeatMethod==4 .OR. StorageHeatMethod==14/)))
-
-    ! PRINT*, grpList
-
-    ! loop over all groups
-    DO i = 1, SIZE(grpList)
-       xx=COUNT(varlist%group == TRIM(grpList(i)), dim=1)
-       !  PRINT*, 'number of variables:',xx
-       ALLOCATE(varlistX(5+xx), stat=err)
-       IF ( err/= 0) PRINT *, "varlistX: Allocation request denied"
-       ! datetime
-       varlistX(1:5)=varlist(1:5)
-       ! variable
-       varlistX(6:5+xx)=PACK(varlist, mask=(varlist%group == TRIM(grpList(i))))
-
-       ! all output frequency option:
-       ! as forcing:
-       IF ( ResolutionFilesOut == Tstep .OR. KeepTstepFilesOut == 1 ) THEN
-          CALL SUEWS_Output_nc_grp(irMax,varlistX,outLevel,Tstep)
-       ENDIF
-       !  as specified ResolutionFilesOut:
-       IF ( ResolutionFilesOut /= Tstep ) THEN
-          CALL SUEWS_Output_nc_grp(irMax,varlistX,outLevel,ResolutionFilesOut)
-       ENDIF
-       IF (ALLOCATED(varlistX)) DEALLOCATE(varlistX, stat=err)
-       IF ( err/= 0) PRINT *, "varlistX: Deallocation request denied"
-    END DO
-
-  END SUBROUTINE SUEWS_Output_nc
-
-
-  SUBROUTINE SUEWS_Output_nc_grp(irMax,varlist,outLevel,outFreq_s)
-    IMPLICIT NONE
-
-    TYPE(varAttr),DIMENSION(:),INTENT(in)::varlist
+    TYPE(varAttr),DIMENSION(:),INTENT(in)::varList
     INTEGER,INTENT(in) :: irMax,outLevel,outFreq_s
 
-    REAL(KIND(1d0))::dataOutX(irMax,SIZE(varlist),NumberOfGrids)
+    REAL(KIND(1d0)),ALLOCATABLE::dataOutX(:,:,:)
     REAL(KIND(1d0)),ALLOCATABLE::dataOutX_agg(:,:,:),dataOutX_agg0(:,:)
-    INTEGER :: iGrid,err
+    INTEGER :: iGrid,err,idMin,idMax
 
+    IF (.NOT. ALLOCATED(dataOutX)) THEN
+       ALLOCATE(dataOutX(irMax,SIZE(varList),NumberOfGrids), stat=err)
+       IF ( err/= 0) PRINT *, "dataOutX: Allocation request denied"
+    ENDIF
 
-    ! determine dataout array according to variable group
-    SELECT CASE (TRIM(varlist(SIZE(varlist))%group))
-    CASE ('') !default
-       dataOutX=dataout(1:irMax,1:SIZE(varlist),:)
+    ! determine dataOutX array according to variable group
+    SELECT CASE (TRIM(varList(SIZE(varList))%group))
+    CASE ('SUEWS') !default
+       dataOutX=dataOutSUEWS(1:irMax,1:SIZE(varList),:)
 
     CASE ('SOLWEIG') !SOLWEIG
        ! todo: inconsistent data structure
-       dataOutX=dataOutSOL(1:irMax,1:SIZE(varlist),:)
+       dataOutX=dataOutSOL(1:irMax,1:SIZE(varList),:)
 
     CASE ('BL') !BL
-       dataOutX=dataOutBL(1:irMax,1:SIZE(varlist),:)
+       dataOutX=dataOutBL(1:irMax,1:SIZE(varList),:)
 
     CASE ('snow')    !snow
-       dataOutX=dataOutSnow(1:irMax,1:SIZE(varlist),:)
+       dataOutX=dataOutSnow(1:irMax,1:SIZE(varList),:)
 
     CASE ('ESTM')    !ESTM
-       dataOutX=dataOutESTM(1:irMax,1:SIZE(varlist),:)
+       dataOutX=dataOutESTM(1:irMax,1:SIZE(varList),:)
+
+    CASE ('DailyState')    !DailyState
+       ! get correct day index
+       idMin=MAX(1, &
+            INT(MINVAL(dataOutSUEWS(1:irMax,2,1))), &
+            INT(MINVAL(PACK(dataOutDailyState(:,2,1), &
+            mask=(dataOutDailyState(:,6,1)/=-999)))))
+       idMax=MIN(366,&
+            INT(MAXVAL(dataOutSUEWS(1:irMax,2,1))), &
+            INT(MAXVAL(PACK(dataOutDailyState(:,2,1), &
+            mask=(dataOutDailyState(:,6,1)/=-999)))))
+       ! print*, 'idMin',idMin
+       ! print*, 'idMax',idMax
+       IF (ALLOCATED(dataOutX)) THEN
+          DEALLOCATE(dataOutX)
+          IF ( err/= 0) PRINT *, "dataOutX: Deallocation request denied"
+       ENDIF
+
+       IF (.NOT. ALLOCATED(dataOutX)) THEN
+          ALLOCATE(dataOutX(idMax-idMin+1,SIZE(varList),NumberOfGrids), stat=err)
+          IF ( err/= 0) PRINT *, "dataOutX: Allocation request denied"
+       ENDIF
+
+       dataOutX=dataOutDailyState(idMin:idMax,1:SIZE(varList),:)
+       ! print*, 'idMin line',dataOutX(idMin,1:4,1)
+       ! print*, 'idMax line',dataOutX(idMax,1:4,1)
 
     END SELECT
 
+
     ! aggregation:
-    DO iGrid = 1, NumberOfGrids
-       CALL SUEWS_Output_Agg(dataOutX_agg0,dataOutX(:,:,iGrid),varlist,irMax,outFreq_s)
+    IF  (TRIM(varList(SIZE(varList))%group) /= 'DailyState') THEN
+       DO iGrid = 1, NumberOfGrids
+          CALL SUEWS_Output_Agg(dataOutX_agg0,dataOutX(:,:,iGrid),varList,irMax,outFreq_s)
+          IF (.NOT. ALLOCATED(dataOutX_agg)) THEN
+             ALLOCATE(dataOutX_agg(SIZE(dataOutX_agg0, dim=1),SIZE(varList),NumberOfGrids), stat=err)
+             IF ( err/= 0) PRINT *, ": Allocation request denied"
+          ENDIF
+          dataOutX_agg(:,:,iGrid)=dataOutX_agg0
+       END DO
+    ELSE
        IF (.NOT. ALLOCATED(dataOutX_agg)) THEN
-          ALLOCATE(dataOutX_agg(SIZE(dataOutX_agg0, dim=1),SIZE(varlist),NumberOfGrids), stat=err)
+          ALLOCATE(dataOutX_agg(SIZE(dataOutX, dim=1),SIZE(varList),NumberOfGrids), stat=err)
           IF ( err/= 0) PRINT *, ": Allocation request denied"
        ENDIF
-       dataOutX_agg(:,:,iGrid)=dataOutX_agg0
-    END DO
-
+       dataOutX_agg=dataOutX
+    ENDIF
 
     ! write out data
-    CALL SUEWS_Write_nc(dataOutX_agg,varlist,outLevel)
+    CALL SUEWS_Write_nc(dataOutX_agg,varList,outLevel)
+    IF ( ALLOCATED(dataOutX_agg)) THEN
+       DEALLOCATE(dataOutX_agg)
+       IF ( err/= 0) PRINT *, "dataOutX_agg: Deallocation request denied"
+    ENDIF
   END SUBROUTINE SUEWS_Output_nc_grp
 
 
-  SUBROUTINE SUEWS_Write_nc(dataOut,varlist,outLevel)
+  SUBROUTINE SUEWS_Write_nc(dataOutX,varList,outLevel)
     ! generic subroutine to write out data in netCDF format
     USE netCDF
 
     IMPLICIT NONE
-    REAL(KIND(1d0)),DIMENSION(:,:,:),INTENT(in)::dataOut
-    TYPE(varAttr),DIMENSION(:),INTENT(in)::varlist
+    REAL(KIND(1d0)),DIMENSION(:,:,:),INTENT(in)::dataOutX
+    TYPE(varAttr),DIMENSION(:),INTENT(in)::varList
     INTEGER,INTENT(in) :: outLevel
 
     CHARACTER(len=100):: fileOut
@@ -987,38 +1304,43 @@ CONTAINS
     ! When we create netCDF files, variables and dimensions, we get back
     ! an ID for each one.
     INTEGER :: ncID, varID, dimids(NDIMS),varIDGrid
-    INTEGER :: x_dimid,y_dimid,time_dimid,iVar,varIDx,varIDy,varIDt
+    INTEGER :: x_dimid,y_dimid,time_dimid,iVar,varIDx,varIDy,varIDt,varIDCRS
     REAL(KIND(1d0)), ALLOCATABLE :: varOut(:,:,:),&
          varX(:,:),varY(:,:),&
-         xLat(:,:),xLon(:,:),&
-         varSeq0(:),varSeq(:),xTime(:)
+         lat(:,:),lon(:,:),&
+         varSeq0(:),varSeq(:),&
+         xTime(:),xGridID(:,:)
 
-    INTEGER :: idVar(iVarStart:SIZE(varlist))
+    INTEGER :: idVar(iVarStart:SIZE(varList))
     CHARACTER(len=50):: header_str,longNm_str,unit_str
     CHARACTER(len = 4)  :: yrStr2
     CHARACTER(len = 40) :: startStr2
+    REAL(KIND(1d0)) :: minLat,maxLat,dLat,minLon,maxLon,dLon
+    REAL(KIND(1d0)),DIMENSION(1:6) :: geoTrans
+    CHARACTER(len = 80) :: strGeoTrans
 
     ! determine number of times
-    nTime=SIZE(dataOut, dim=1)
+    nTime=SIZE(dataOutX, dim=1)
 
     !select variables to output
     nVar=COUNT((varList%level<= outLevel), dim=1)
-    ALLOCATE(varlistSel(nVar), stat=err)
-    IF ( err/= 0) PRINT *, "varlistSel: Allocation request denied"
-    varlistSel=PACK(varList, mask=(varList%level<= outLevel))
+    ALLOCATE(varListSel(nVar), stat=err)
+    IF ( err/= 0) PRINT *, "varListSel: Allocation request denied"
+    varListSel=PACK(varList, mask=(varList%level<= outLevel))
 
     ! copy data accordingly
     ALLOCATE(dataOutSel(nTime,nVar,NumberOfGrids), stat=err)
     IF ( err/= 0) PRINT *, "dataOutSel: Allocation request denied"
     ! print*, SIZE(varList%level),PACK((/(i,i=1,SIZE(varList%level))/), varList%level <= outLevel)
-    ! print*, nTime,shape(dataOut)
-    dataOutSel=dataOut(:,PACK((/(i,i=1,SIZE(varList))/), varList%level <= outLevel),:)
+    ! print*, nTime,shape(dataOutX)
+    dataOutSel=dataOutX(:,PACK((/(i,i=1,SIZE(varList))/), varList%level <= outLevel),:)
 
     ! determine filename
-    CALL filename_gen(dataOutSel(:,:,1),varlistSel,1,FileOut)
+    CALL filename_gen(dataOutSel(:,:,1),varListSel,1,FileOut)
+    ! PRINT*, 'writing file:',TRIM(fileOut)
 
     ! set year string
-    WRITE(yrStr2,'(i4)') INT(dataOut(1,1,1))
+    WRITE(yrStr2,'(i4)') INT(dataOutX(1,1,1))
     ! get start for later time unit creation
     startStr2=TRIM(yrStr2)//'-01-01 00:00:00'
 
@@ -1028,39 +1350,102 @@ CONTAINS
 
     ALLOCATE(varSeq0(nX*nY))
     ALLOCATE(varSeq(nX*nY))
-    ALLOCATE(xLon(nX,nY))
-    ALLOCATE(xLat(nX,nY))
+    ALLOCATE(xGridID(nX,nY))
+    ALLOCATE(lon(nX,nY))
+    ALLOCATE(lat(nX,nY))
     ALLOCATE(varY(nX,nY))
     ALLOCATE(varX(nX,nY))
+    ALLOCATE(xTime(nTime))
+
+    ! ! latitude:
+    ! varSeq0=SiteSelect(1:nX*nY,5)
+    ! CALL sortSeqReal(varSeq0,varSeq,nY,nX)
+    ! lat = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
+    ! ! PRINT*, 'before flipping:',lat(1:2,1)
+    ! lat =lat(:,nY:1:-1)
+    ! ! PRINT*, 'after flipping:',lat(1:2,1)
+    !
+    ! ! longitude:
+    ! varSeq0=SiteSelect(1:nX*nY,6)
+    ! CALL sortSeqReal(varSeq0,varSeq,nY,nX)
+    ! lon = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
+
+
+    ! GridID:
+    varSeq=SurfaceChar(1:nX*nY,1)
+    ! CALL sortSeqReal(varSeq0,varSeq,nY,nX)
+    xGridID = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
+    ! PRINT*, 'before flipping:',lat(1:2,1)
+    xGridID =xGridID(:,nY:1:-1)
 
     ! latitude:
-    varSeq0=SiteSelect(1:nX*nY,5)
-    CALL sortSeqReal(varSeq0,varSeq,nY,nX)
-    xLat = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
-    ! PRINT*, 'before flipping:',xLat(1:2,1)
-    xLat =xLat(:,nY:1:-1)
-    ! PRINT*, 'after flipping:',xLat(1:2,1)
+    varSeq=SurfaceChar(1:nX*nY,5)
+    ! CALL sortSeqReal(varSeq0,varSeq,nY,nX)
+    lat = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
+    ! PRINT*, 'before flipping:',lat(1:2,1)
+    lat =lat(:,nY:1:-1)
+    ! PRINT*, 'after flipping:',lat(1:2,1)
 
     ! longitude:
-    varSeq0=SiteSelect(1:nX*nY,6)
-    CALL sortSeqReal(varSeq0,varSeq,nY,nX)
-    xLon = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
+    varSeq=SurfaceChar(1:nX*nY,6)
+    ! CALL sortSeqReal(varSeq0,varSeq,nY,nX)
+    lon = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
+    lon =lon(:,nY:1:-1)
 
 
     ! pass values to coordinate variables
-    varY = xLat
-    varX = xLon
+    varY = lat
+    varX = lon
     ! PRINT*, 'size x dim 1:',SIZE(varX, dim=1)
     ! PRINT*, 'size x dim 2:',SIZE(varX, dim=2)
+
+    ! calculate GeoTransform array as needed by GDAL
+    ! ref: http://www.perrygeo.com/python-affine-transforms.html
+    ! the values below are different from the above ref,
+    ! as the layout of SUEWS output is different from the schematic shown there
+    ! SUEWS output is arranged northward down the page
+    ! if data are formatted as a normal matrix
+    minLat      = lat(1,1)               ! the lower-left pixel
+    maxLat      = lat(1,NY)              ! the upper-left pixel
+    IF ( nY>1 ) THEN
+       dLat = (maxLat-minLat)/(nY-1) ! height of a pixel
+    ELSE
+       dLat = 1
+    END IF
+
+    ! PRINT*, 'lat:',minLat,maxLat,dLat
+    minLon      = lon(1,1)              ! the lower-left pixel
+    maxLon      = lon(NX,1)             ! the lower-right pixel
+    IF ( nY>1 ) THEN
+       dLon = (maxLon-minLon)/(nX-1) ! width of a pixel
+    ELSE
+       dLon = 1
+    END IF
+
+    ! PRINT*, 'lon:',minLon,maxLon,dLon
+    geoTrans(1) = minLon-dLon/2          ! x-coordinate of the lower-left corner of the lower-left pixel
+    geoTrans(2) = dLon                   ! width of a pixel
+    geoTrans(3) = 0.                     ! row rotation (typically zero)
+    geoTrans(4) = minLat-dLat/2          ! y-coordinate of the of the lower-left corner of the lower-left pixel
+    geoTrans(5) = 0.                     ! column rotation (typically zero)
+    geoTrans(6) = dLat                   ! height of a pixel (typically negative, but here positive)
+    ! write GeoTransform to strGeoTrans
+    WRITE(strGeoTrans,'(6(f12.8,1x))') geoTrans
+    ! PRINT*, TRIM(strGeoTrans)
 
 
     ! Create the netCDF file. The nf90_clobber parameter tells netCDF to
     ! overwrite this file, if it already exists.
-    PRINT*, 'writing file:',TRIM(fileOut)
     CALL check( nf90_create(TRIM(fileOut), NF90_CLOBBER, ncID) )
 
+    ! put global attributes
+    CALL check( nf90_put_att(ncID,NF90_GLOBAL,'Conventions','CF1.6' ) )
+    CALL check( nf90_put_att(ncID,NF90_GLOBAL,'title','SUEWS output' ) )
+    CALL check( nf90_put_att(ncID,NF90_GLOBAL,'source','Micromet Group, University of Reading' ) )
+    CALL check( nf90_put_att(ncID,NF90_GLOBAL,'references','http://urban-climate.net/umep/SUEWS' ) )
+
     ! Define the dimensions. NetCDF will hand back an ID for each.
-    ! nY = ncolumnsDataOut-4
+    ! nY = ncolumnsDataOutSUEWS-4
     ! nx = NumberOfGrids
     CALL check( nf90_def_dim(ncID, "time", NF90_UNLIMITED, time_dimid) )
     CALL check( nf90_def_dim(ncID, "west_east", NX, x_dimid) )
@@ -1079,20 +1464,52 @@ CONTAINS
     ! define time variable:
     CALL check( nf90_def_var(ncID,'time', NF90_REAL, time_dimid, varIDt))
     CALL check( nf90_put_att(ncID,varIDt,'units','minutes since '//startStr2 ) )
+    CALL check( nf90_put_att(ncID,varIDt,'long_name','time') )
+    CALL check( nf90_put_att(ncID,varIDt,'standard_name','time') )
+    CALL check( nf90_put_att(ncID,varIDt,'calendar','gregorian') )
+    CALL check( nf90_put_att(ncID,varIDt,'axis','T') )
 
     ! define coordinate variables:
-    CALL check( nf90_def_var(ncID,'xLon', NF90_REAL, (/x_dimid, y_dimid/), varIDx))
+    CALL check( nf90_def_var(ncID,'lon', NF90_REAL, (/x_dimid, y_dimid/), varIDx))
     CALL check( nf90_put_att(ncID,varIDx,'units','degree_east') )
+    CALL check( nf90_put_att(ncID,varIDx,'long_name','longitude') )
+    CALL check( nf90_put_att(ncID,varIDx,'standard_name','longitude') )
+    CALL check( nf90_put_att(ncID,varIDx,'axis','X') )
 
-    CALL check( nf90_def_var(ncID,'xLat', NF90_REAL, (/x_dimid, y_dimid/), varIDy))
+    CALL check( nf90_def_var(ncID,'lat', NF90_REAL, (/x_dimid, y_dimid/), varIDy))
     CALL check( nf90_put_att(ncID,varIDy,'units','degree_north') )
+    CALL check( nf90_put_att(ncID,varIDy,'long_name','latitude') )
+    CALL check( nf90_put_att(ncID,varIDy,'standard_name','latitude') )
+    CALL check( nf90_put_att(ncID,varIDy,'axis','Y') )
+
+    ! define coordinate referencing system:
+    CALL check( nf90_def_var(ncID,'crsWGS84', NF90_INT, varIDCRS))
+    CALL check( nf90_put_att(ncID,varIDCRS,'grid_mapping_name','latitude_longitude') )
+    CALL check( nf90_put_att(ncID,varIDCRS,'long_name','CRS definition') )
+    CALL check( nf90_put_att(ncID,varIDCRS,'longitude_of_prime_meridian','0.0') )
+    CALL check( nf90_put_att(ncID,varIDCRS,'semi_major_axis','6378137.0') )
+    CALL check( nf90_put_att(ncID,varIDCRS,'inverse_flattening','298.257223563') )
+    CALL check( nf90_put_att(ncID,varIDCRS,'epsg_code','EPSG:4326') )
+    CALL check( nf90_put_att(ncID,varIDCRS,'GeoTransform',TRIM(strGeoTrans)) )
+    CALL check( nf90_put_att(ncID,varIDCRS,'spatial_ref',&
+         &'GEOGCS["WGS 84",&
+         &    DATUM["WGS_1984",&
+         &        SPHEROID["WGS 84",6378137,298.257223563,&
+         &            AUTHORITY["EPSG","7030"]],&
+         &        AUTHORITY["EPSG","6326"]],&
+         &    PRIMEM["Greenwich",0],&
+         &    UNIT["degree",0.0174532925199433],&
+         &    AUTHORITY["EPSG","4326"]]'&
+         ) )
 
     ! PRINT*, 'good define var'
 
     ! define grid_ID:
-    CALL check( nf90_def_var(ncID,'grid_ID', NF90_INT, (/x_dimid, y_dimid/), varID))
-    CALL check( nf90_put_att(ncID,varID,'coordinates','xLon xLat') )
-    varIDGrid=varID
+    CALL check( nf90_def_var(ncID,'grid_ID', NF90_INT, (/x_dimid, y_dimid/), varIDGrid))
+    CALL check( nf90_put_att(ncID,varIDGrid,'coordinates','lon lat') )
+    CALL check( nf90_put_att(ncID,varIDGrid,'long_name','Grid ID as in SiteSelect') )
+    CALL check( nf90_put_att(ncID,varIDGrid,'grid_mapping', 'crsWGS84' ))
+    ! varIDGrid=varID
 
     ! define other 3D variables:
     DO iVar = iVarStart, nVar
@@ -1107,12 +1524,14 @@ CONTAINS
        !  PRINT*, TRIM(ADJUSTL(header_str))
        CALL check( nf90_def_var(ncID,TRIM(ADJUSTL(header_str)), NF90_REAL, dimids, varID) )
        !  PRINT*, 'define good'
-       CALL check( nf90_put_att(ncID,varID,'coordinates','xLon xLat') )
+       CALL check( nf90_put_att(ncID,varID,'coordinates','lon lat') )
        !  PRINT*, 'put coordinates good'
        CALL check( nf90_put_att(ncID,varID,'units',TRIM(ADJUSTL(unit_str))) )
        !  PRINT*, 'put unit good'
-       CALL check( nf90_put_att(ncID,varID,'longname',TRIM(ADJUSTL(longNm_str))) )
-       !  PRINT*, 'put longname good'
+       CALL check( nf90_put_att(ncID,varID,'long_name',TRIM(ADJUSTL(longNm_str))) )
+       !  PRINT*, 'put long_name good'
+       CALL check( nf90_put_att(ncID,varID,'grid_mapping', 'crsWGS84' ))
+       !  PRINT*, 'put grid_mapping good'
        idVar(iVar)=varID
     END DO
     CALL check( nf90_enddef(ncID) )
@@ -1126,21 +1545,26 @@ CONTAINS
     ! put coordinate variables:
     CALL check( nf90_put_var(ncID, varIDx, varX) )
     CALL check( nf90_put_var(ncID, varIDy, varY) )
+
+    ! put CRS variable:
+    CALL check( nf90_put_var(ncID, varIDCRS, 9999) )
+
+
     CALL check( NF90_SYNC(ncID) )
     ! PRINT*, 'good put var'
 
 
     ! put grid_ID:
-    CALL check( nf90_put_var(ncID, varIDGrid, RESHAPE(GridIDmatrix,(/nX,nY/),order = (/1,2/))) )
+    CALL check( nf90_put_var(ncID, varIDGrid, xGridID ))
     ! PRINT*, 'good put varIDGrid',varIDGrid
 
     CALL check( NF90_SYNC(ncID) )
 
     ! then other 3D variables
     DO iVar = iVarStart, nVar
-       !  PRINT*, 'dim1:', SIZE(dataOut(1:nTime,iVar,:), dim=1)
-       !  PRINT*, 'dim2:',SIZE(dataOut(1:nTime,iVar,:), dim=2)
-       ! reshape dataOut to be aligned in checker board form
+       !  PRINT*, 'dim1:', SIZE(dataOutX(1:nTime,iVar,:), dim=1)
+       !  PRINT*, 'dim2:',SIZE(dataOutX(1:nTime,iVar,:), dim=2)
+       ! reshape dataOutX to be aligned in checker board form
        varOut = RESHAPE(dataOutSel(1:nTime,iVar,:),(/nX,nY,nTime/),order = (/3,1,2/) )
        varOut = varOut(:,nY:1:-1,:)
        !  get the variable id
@@ -1154,10 +1578,12 @@ CONTAINS
     IF (ALLOCATED(varOut)) DEALLOCATE(varOut)
     IF (ALLOCATED(varSeq0)) DEALLOCATE(varSeq0)
     IF (ALLOCATED(varSeq)) DEALLOCATE(varSeq)
-    IF (ALLOCATED(xLon)) DEALLOCATE(xLon)
-    IF (ALLOCATED(xLat)) DEALLOCATE(xLat)
+    IF (ALLOCATED(xGridID)) DEALLOCATE(xGridID)
+    IF (ALLOCATED(lon)) DEALLOCATE(lon)
+    IF (ALLOCATED(lat)) DEALLOCATE(lat)
     IF (ALLOCATED(varY)) DEALLOCATE(varY)
     IF (ALLOCATED(varX)) DEALLOCATE(varX)
+    IF (ALLOCATED(xTime)) DEALLOCATE(xTime)
 
     ! Close the file. This frees up any internal netCDF resources
     ! associated with the file, and flushes any buffers.
@@ -1232,7 +1658,7 @@ CONTAINS
   !===========================================================================!
   ! sort a sequence of LONG values into the specially aligned sequence per QGIS
   !===========================================================================!
-  SUBROUTINE sortGrid(seqGrid2Sort, seqGridSorted, nRow, nCol)
+  SUBROUTINE sortGrid(seqGrid2Sort0, seqGridSorted, nRow, nCol)
     USE qsort_c_module
     ! convert a vector of grids to a matrix
     ! the grid IDs in seqGrid2Sort follow the QGIS convention
@@ -1243,12 +1669,13 @@ CONTAINS
     IMPLICIT NONE
     INTEGER :: nRow, nCol,i=1,j=1,xInd,len
 
-    INTEGER,DIMENSION(nRow*nCol),INTENT(in) :: seqGrid2Sort
+    INTEGER,DIMENSION(nRow*nCol),INTENT(in) :: seqGrid2Sort0
     INTEGER,DIMENSION(nRow*nCol),INTENT(out) :: seqGridSorted
-    INTEGER,DIMENSION(nRow*nCol) :: locSorted
+    INTEGER,DIMENSION(nRow*nCol) :: seqGrid2Sort,locSorted
     INTEGER :: loc
     REAL:: ind(nRow*nCol,2)
-    REAL :: seqGridSortedReal(nRow*nCol),val
+    REAL,DIMENSION(nRow*nCol) :: seqGrid2SortReal,seqGridSortedReal
+    REAL :: val
 
     ! number of grids
     len=nRow*nCol
@@ -1262,6 +1689,12 @@ CONTAINS
     ! PRINT*, 'seqGridSorted:'
     ! PRINT*, seqGridSorted(1:5)
     ! PRINT*, '****'
+
+    !sort the input array to make sure the grid order is in QGIS convention
+    ! i.e., diagonally ascending
+    seqGrid2SortReal=seqGrid2Sort0*1.
+    CALL QsortC(seqGrid2SortReal)
+    seqGrid2Sort=INT(seqGrid2SortReal)
 
 
     ! fill in an nRow*nCol array with values to determine sequence

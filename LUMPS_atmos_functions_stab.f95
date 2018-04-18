@@ -1,6 +1,7 @@
 !.c!! For Lumps Version 2 - no stability calculations
 !==========================================================
 !     Last change:
+!     TS   08 Aug 2017: added explicit interface
 !     TS   13 Jun 2017: corrections to the integral of stability functions
 !     MH   12 Apr 2017: Stable limit to exit do-loop
 !     LJ   25 Nov 2014: Limits for L
@@ -10,43 +11,89 @@
 !     L - monin obukhov stability length
 !       Van Ulden & Holtslag (1985) JCAM: 24: 1196-1207
 
-SUBROUTINE STAB_lumps(H,StabilityMethod,ustar,L)
-  USE mod_k
-  USE mod_z
-  USE mod_grav
-  USE data_in
-  USE time
-  USE defaultnotUsed
-  USE WhereWhen
-  IMPLICIT NONE
+SUBROUTINE STAB_lumps(&
 
-  REAL(KIND(1d0))::h,ustar,tstar,l,g_t_K,kuz,zl,&!zl_f, &
-       psim,stab_fn_mom,z0l,psimz0,lold
-  INTEGER ::i,StabilityMethod
+                                ! input
+     StabilityMethod,&
+     dectime,& !Decimal time
+     zzd,&     !Active measurement height (meas. height-displac. height)
+     z0M,&     !Aerodynamic roughness length
+     zdm,&     !Displacement height
+     avU1,&    !Average wind speed
+     Temp_C,&  !Air temperature
+     h_init,    & !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
+                                ! output:
+     L_MOD,& !Obukhov length
+     Tstar,& !T*
+     UStar,& !Friction velocity
+     psim)!Stability function of momentum
+
+  ! USE mod_k
+  ! USE mod_z
+  ! USE mod_grav
+  ! USE data_in
+  ! USE time
+  ! USE defaultnotUsed
+  ! USE WhereWhen
+  IMPLICIT NONE
+  INTEGER,INTENT(in):: StabilityMethod
+
+
+  REAL(KIND(1d0)),INTENT(in)::dectime !Decimal time
+  REAL(KIND(1d0)),INTENT(in)::zzd     !Active measurement height (meas. height-displac. height)
+  REAL(KIND(1d0)),INTENT(in)::z0M     !Aerodynamic roughness length
+  REAL(KIND(1d0)),INTENT(in)::zdm     !Displacement height
+  REAL(KIND(1d0)),INTENT(in)::avU1    !Average wind speed
+  REAL(KIND(1d0)),INTENT(in)::Temp_C    !Air temperature
+  REAL(KIND(1d0)),INTENT(in)::h_init    !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
+
+
+  REAL(KIND(1d0)),INTENT(out)::L_MOD!Obukhov length
+  REAL(KIND(1d0)),INTENT(out)::Tstar!T*
+  REAL(KIND(1d0)),INTENT(out)::UStar!Friction velocity
+  REAL(KIND(1d0)),INTENT(out)::psim   !Stability function of momentum
+
+  REAL(KIND(1d0))::stab_fn_mom,&
+       G_T_k,&
+       KUZ,&
+       LOLD,&
+       zL,&
+       z0l,&
+       psimz0,&
+       h
+  REAL(KIND(1d0)),PARAMETER :: &
+       k=0.4,&             !Von Karman's contant
+       grav=9.80665,&  !g - gravity - physics today august 1987
+       notUsedI=-55
+
+  INTEGER :: i
+
   LOGICAL :: debug=.FALSE.
 
-  IF(debug) WRITE(*,*)StabilityMethod,z0M,avU1,h,USTAR,L
+  IF(debug) WRITE(*,*)StabilityMethod,z0M,avU1,h_init,UStar,L_MOD
   G_T_k=(Grav/(Temp_C+273.16))*k !gravity constant/(Temperature*Von Karman Constant)
   KUZ=k*AvU1                     !Von Karman constant*mean wind speed
   IF(zzd<0) CALL ErrorHint(32,'Windspeed Ht too low relative to zdm [Stability calc]- values [z-zdm, zdm]',Zzd,zdm,notUsedI)
 
-  USTAR=KUZ/LOG(Zzd/Z0M)      !Initial setting of u* and calc. of L (neutral situation)
-  IF ( ABS(H)<0.001 ) THEN    ! prevent zero Tstar
-     H=0.001
+  UStar=KUZ/LOG(Zzd/Z0M)      !Initial setting of u* and calc. of L_MOD (neutral situation)
+  IF ( ABS(h_init)<0.001 ) THEN    ! prevent zero Tstar
+     h=0.001
+  ELSE
+     h=h_init
   END IF
-  Tstar=(-H/ustar)
-  L=(USTAR**2)/(G_T_K*Tstar)
+  Tstar=(-H/UStar)
+  L_MOD=(UStar**2)/(G_T_K*Tstar)
 
 
   IF(LOG(zzd/z0M)<0.001000) CALL ErrorHint(17,'In stability subroutine, (z-zd) < z0.',zzd,z0m,notUsedI)
   DO i=1,330 !Iteration starts
-     LOLD=L
-     zL=zzd/L
-     z0L=z0M/L  !z0M roughness length
+     LOLD=L_MOD
+     zL=zzd/L_MOD
+     z0L=z0M/L_MOD  !z0M roughness length
 
      IF (zL>2)THEN
-        CALL ErrorHint(73,'LUMPS_atmos_functions_stab.f95: stability parameter, ustar',zL,USTAR,notUsedI)
-        RETURN !MO-theory not necessarily valid above zL>2. Still causes problematic ustar values and correct limit might be 0.3.
+        CALL ErrorHint(73,'LUMPS_atmos_functions_stab.f95: stability parameter, UStar',zL,UStar,notUsedI)
+        RETURN !MO-theory not necessarily valid above zL>2. Still causes problematic UStar values and correct limit might be 0.3.
         !Needs more investigations.
      END IF
 
@@ -54,31 +101,31 @@ SUBROUTINE STAB_lumps(H,StabilityMethod,ustar,L)
      psimz0=stab_fn_mom(StabilityMethod,zL,z0L)
 
 
-     USTAR=KUZ/(LOG(Zzd/Z0M)-PSIM+psimz0) !Friction velocity in non-neutral situation
+     UStar=KUZ/(LOG(Zzd/Z0M)-PSIM+psimz0) !Friction velocity in non-neutral situation
 
-     IF(ustar<0.001000)THEN       !If u* too small
-        USTAR=KUZ/(LOG(Zzd/Z0M))
+     IF(UStar<0.001000)THEN       !If u* too small
+        UStar=KUZ/(LOG(Zzd/Z0M))
         CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.001] zl,dectime',zl,dectime,notUsedI)
-        CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.001] z0l,ustar',z0l,ustar,notUsedI)
+        CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.001] z0l,UStar',z0l,UStar,notUsedI)
         CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.001] psim,psimz0',psim,psimz0,notUsedI)
         CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.001] AVU1,log(zzd/z0m)',AVU1,LOG(zzd/z0m),notUsedI)
 
         RETURN
      ENDIF
 
-     tstar=(-H/ustar)
-     L=(Ustar**2)/(G_T_K*Tstar)
+     tstar=(-H/UStar)
+     L_MOD=(UStar**2)/(G_T_K*Tstar)
 
-     IF(ABS(LOLD-L)<0.01)THEN
-        IF (ABS(L)>1e6) L = L/ABS(L)*1e6
+     IF(ABS(LOLD-L_MOD)<0.01)THEN
+        IF (ABS(L_MOD)>1e6) L_MOD = L_MOD/ABS(L_MOD)*1e6
         RETURN
      ENDIF
   ENDDO
 
   RETURN
-END SUBROUTINE stab_lumps
+END SUBROUTINE STAB_lumps
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!==================================================================
 
 FUNCTION stab_fn_mom(StabilityMethod,ZL,zl_f) RESULT(psym)
   !     StabilityMethod = 1-4 -
@@ -86,10 +133,15 @@ FUNCTION stab_fn_mom(StabilityMethod,ZL,zl_f) RESULT(psym)
   !Modified by LJ Mar 2010
   !Input:Used stability method, stability (z-d)/L, zeta (either (z-d)/L or z0/L)
 
-  USE mod_z
-  USE mod_k
+  ! USE mod_z
+  ! USE mod_k
 
   IMPLICIT NONE
+  REAL(KIND(1d0)),PARAMETER :: &
+                                !  k=0.4,&             !Von Karman's contant
+                                !  k2=0.16,&           !Power of Van Karman's contant
+       neut_limit=0.001000 !Limit for neutral stability
+  !  notUsedI=-55
 
   REAL (KIND(1d0)):: piover2,psym,zl,zl_f,x,x2
   INTEGER ::StabilityMethod
@@ -159,8 +211,13 @@ END FUNCTION stab_fn_mom
 !
 ! PSYH - stability function for heat
 FUNCTION stab_fn_heat(StabilityMethod,ZL,zl_f) RESULT (psyh)
-  USE mod_k
+  ! USE mod_k
   IMPLICIT NONE
+  REAL(KIND(1d0)),PARAMETER :: &
+                                !  k=0.4,&             !Von Karman's contant
+                                !  k2=0.16,&           !Power of Van Karman's contant
+       neut_limit=0.001000 !Limit for neutral stability
+  !  notUsedI=-55
 
   REAL (KIND(1d0)):: zl,zl_f,psyh,x
   INTEGER :: StabilityMethod
@@ -192,7 +249,7 @@ FUNCTION stab_fn_heat(StabilityMethod,ZL,zl_f) RESULT (psyh)
            PSYH=(-4.5)*Zl_f
         ENDIF
      ELSE !zL>1, very stable. otherwise psyh would be too large. TS 13 Jun 2017
-      ! adopt the form as Brutasert (1982) eqn 4.58. but following the coeffs. of the above eqns
+        ! adopt the form as Brutasert (1982) eqn 4.58. but following the coeffs. of the above eqns
         IF(StabilityMethod==4)THEN !Businger et al (1971) modifed  Hogstrom (1988)
            psyh=(-7.8)*(1+LOG(zl_f))
         ELSE !Dyer (1974)  PSYH=(-5)*ZL	modifed  Hogstrom (1988)

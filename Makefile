@@ -1,5 +1,5 @@
 CC = gfortran $(CFLAGS)          # compiler
-TARGET = SUEWS_V2017c      # program name
+TARGET = SUEWS_V2018a      # program name
 
 # static flag for different OS to correctly link static libs
 # so gfortran dependency can be relaxed

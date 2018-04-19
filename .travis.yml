@@ -4,8 +4,7 @@ os:
 env:
   matrix:
   - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
-  global:
-    secure: v5CIpmvOMjZ5ZEmDxLiqiu4o2cLTXaU1zgd97fp6Y25vrJn2M/BpCA7jynfS667wMO9Tc+PRYJvUGkEx74KMA+iMPm6lf9PfU/sp5lT6EY5JEvaT66oskfwvphuQyz2dIYlCzdOX2sBXrbd/mwuKIgSRhrXetgxdL5GOEHOhSL59AuH+Adb8z6f/NzN8A1MBNrR9dD1gLwZ+0CMvr2mI2yOnEnrdIet9blpYfP9gubOk/NE20TCU+8u3rBaQey/wCfJKXPNoZ6TKVnOUBlLWP2lXKq8dtYCSPt3mhWqtBM/0zbDPMMAKWWmsQLauXbs/OWnsbxksnAwoR9+k7AU0qBaRovhI/XBgcxtgAPyJYA84HDFl3bZmacLLUA2ykjj965RYnaTJ4KsutDFm+Q22s2hUIJQ6t5ZZn2DbKgy2MossDA8sc8WLpcrbni5xjuRO9TaGAcuNip1w4w+OnnLKOqmmvunbjIpmhwuOyhwErnJSGcAX6CdDk9U8+F9NYl17JxdhGHj4od/SnPh1qUrOomCN/Ep5+2LPIge1ZpdceIAEE4LKHqIazjU9o+zhoqoc0qEUjan7k2E9WHMQ4SYq3DrJ6Nrih5e/++a6APLz4/yCdep2RIhkhQG2RTYkxLKiU1oErus3TkmES5RULXyVtOUAnxpMF1q18gHJb9VP1TY=
+
 sudo: required
 compiler:
 - gcc
@@ -36,5 +35,6 @@ deploy:
   provider: releases
   file: "./ReleaseRepo/build/macOS/SUEWS_V2018a"
   skip_cleanup: true
+  secure: v5CIpmvOMjZ5ZEmDxLiqiu4o2cLTXaU1zgd97fp6Y25vrJn2M/BpCA7jynfS667wMO9Tc+PRYJvUGkEx74KMA+iMPm6lf9PfU/sp5lT6EY5JEvaT66oskfwvphuQyz2dIYlCzdOX2sBXrbd/mwuKIgSRhrXetgxdL5GOEHOhSL59AuH+Adb8z6f/NzN8A1MBNrR9dD1gLwZ+0CMvr2mI2yOnEnrdIet9blpYfP9gubOk/NE20TCU+8u3rBaQey/wCfJKXPNoZ6TKVnOUBlLWP2lXKq8dtYCSPt3mhWqtBM/0zbDPMMAKWWmsQLauXbs/OWnsbxksnAwoR9+k7AU0qBaRovhI/XBgcxtgAPyJYA84HDFl3bZmacLLUA2ykjj965RYnaTJ4KsutDFm+Q22s2hUIJQ6t5ZZn2DbKgy2MossDA8sc8WLpcrbni5xjuRO9TaGAcuNip1w4w+OnnLKOqmmvunbjIpmhwuOyhwErnJSGcAX6CdDk9U8+F9NYl17JxdhGHj4od/SnPh1qUrOomCN/Ep5+2LPIge1ZpdceIAEE4LKHqIazjU9o+zhoqoc0qEUjan7k2E9WHMQ4SYq3DrJ6Nrih5e/++a6APLz4/yCdep2RIhkhQG2RTYkxLKiU1oErus3TkmES5RULXyVtOUAnxpMF1q18gHJb9VP1TY=
   on:
     all_branches: true

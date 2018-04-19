@@ -17,8 +17,12 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then pip install numpy --user   ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pip2 install numpy --user   ; fi
   - |
+    # if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
+    #   brew update &> /dev/null
+    #   brew cask uninstall --force oclint
+    #   brew install gcc
+    # fi
     if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
-      brew update &> /dev/null
       brew cask uninstall --force oclint
       brew install gcc
     fi
@@ -36,7 +40,7 @@ before_deploy:
 deploy:
   provider:       releases
   api_key:        "9d94430ed4c62048a5f5c59ef6d9035ddc84369d"
-  file:           "./SUEWS-SourceCode/macOS/SUEWS_V2018a"
+  file:           "./ReleaseRepo/build/macOS/SUEWS_V2018a"
     # - "./SUEWS-SourceCode/Linux/SUEWS_V2018a"
   skip_cleanup:   true
   on:

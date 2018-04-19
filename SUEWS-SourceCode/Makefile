@@ -4,18 +4,23 @@ TARGET = SUEWS_V2018a      # program name
 # static flag for different OS to correctly link static libs
 # so gfortran dependency can be relaxed
 # but netCDF is still linked in the dynamic way as suggested by UCAR
+SUEWS_build_base = ../ReleaseRepo/build/
+
 ifeq ($(OS),Windows_NT)
 			STATIC = -static -mcmodel=medium# mingw
 			STATICLIB =
+			SUEWS_build_dir = $(addprefix $(SUEWS_build_base), Win10x64)
 else
 			UNAME_S := $(shell uname -s)
 			ifeq ($(UNAME_S),Linux) # Linux
 				STATIC = -static-libgfortran -static-libgcc # single -static won't work on macOS
 				STATICLIB =
+				SUEWS_build_dir = $(addprefix $(SUEWS_build_base), Linux)
 			endif
 			ifeq ($(UNAME_S),Darwin) # macOS
 				STATIC = -static-libgfortran -static-libgcc# single -static won't work on macOS
 				STATICLIB = #libquadmath.a # force-ship this static lib
+				SUEWS_build_dir = $(addprefix $(SUEWS_build_base), macOS)
 			endif
 endif
 
@@ -104,6 +109,7 @@ main: SUEWS_Program.f95 $(MODULES) $(OTHERS) $(TEST)
 			$(CC) SUEWS_Program.o $(MODULES) $(OTHERS) $(TEST) \
 			$(STATICLIB) \
 			-o $(TARGET)
+			cp $(TARGET) $(SUEWS_build_dir)/.
 
 # Build main program with NETCDF support - main uses MODULES and OTHERS
 netcdf: SUEWS_Program.f95 $(MODULES) $(OTHERS) $(TEST)

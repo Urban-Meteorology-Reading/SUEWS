@@ -1,3 +1,120 @@
+SUBROUTINE AerodynamicResistance(&
+
+                                ! input:
+     ZZD,&
+     z0m,&
+     AVU1,&
+     L_mod,&
+     UStar,&
+     VegFraction,&
+     AerodynamicResistanceMethod,&
+     StabilityMethod,&
+     RoughLenHeatMethod,&
+                                ! output:
+     RA)
+
+  ! Returns Aerodynamic resistance (RA) to the main program SUEWS_Calculations
+  ! All ra equations reported in Thom & Oliver (1977)
+  ! Modified by TS 08 Aug 2017 - interface modified
+  ! Modified by LJ
+  !   -Removal of tabs and cleaning the code
+  ! Modified by HCW 03 Dec 2015 - changed lower limit on ra from 2 s m-1 to 10 s m-1 (to avoid unrealistically high evaporation rates)
+  ! Modified by LJ in 12 April to not to be used with global variables
+  ! To Do:
+  !       - Check whether the thresholds 2-200 s m-1 are suitable over a range of z0!! HCW 04 Mar 2015
+  ! OUTPUT: RA - Aerodynamic resistance [s m^-1]
+  ! INPUT:  AerodynamicResistanceMethod = Method to calculate RA
+  !         StabilityMethod = defines the method to calculate atmospheric stability
+  !         RoughLenHeatMethod = Method to calculate heat roughness length
+  !         *Measurement height minus* Displacement height (m) (was incorrectly labelled, corrected HCW 25 May 2016
+  !         z0m = Aerodynamic roughness length (m)
+  !         k2 = Power of Van Karman's constant (= 0.16 = 0.4^2)
+  !         AVU1 = Mean wind speed
+  !         L_mod = Obukhov length (m)
+  !         UStar = Friction velocity (m s-1)
+  !         VegFraction = Fraction of vegetation
+  !               (changed from veg_fr which also includes water surface by HCW 05 Nov 2015)
+
+
+  USE AtmMoist_module,ONLY:stab_fn_heat,stab_fn_mom
+
+  IMPLICIT NONE
+
+  REAL(KIND(1d0)),INTENT(in)::ZZD!Active measurement height (meas. height-displac. height)
+  REAL(KIND(1d0)),INTENT(in)::z0m!Aerodynamic roughness length
+  REAL(KIND(1d0)),INTENT(in)::AVU1!Average wind speed
+  REAL(KIND(1d0)),INTENT(in)::L_mod!Monin-Obukhov length (either measured or modelled)
+  REAL(KIND(1d0)),INTENT(in)::UStar!Friction velocity
+  REAL(KIND(1d0)),INTENT(in)::VegFraction!Fraction of vegetation
+
+  INTEGER,INTENT(in)::AerodynamicResistanceMethod
+  INTEGER,INTENT(in)::StabilityMethod
+  INTEGER,INTENT(in)::RoughLenHeatMethod
+
+  REAL(KIND(1d0)),INTENT(out)::RA !Aerodynamic resistance [s m^-1]
+
+  INTEGER, PARAMETER :: notUsedI=-55
+
+  REAL(KIND(1d0)), PARAMETER :: &
+       notUsed=-55.5,&
+       k2=0.16,& !Power of Van Karman's constant (= 0.16 = 0.4^2)
+       muu=1.46e-5 !molecular viscosity
+  REAL(KIND(1d0))::&
+       psym,&
+       psyh,z0V
+
+
+  !1)Monteith (1965)-neutral stability
+  IF(AerodynamicResistanceMethod==1) THEN
+     RA=(LOG(ZZD/z0m)**2)/(k2*AVU1)
+
+     !2) Non-neutral stability
+     !    PSIM - stability function for momentum
+     !     PSYH - stability function for heat
+     !    assuming stability functions the same for heat and water
+  ELSEIF(AerodynamicResistanceMethod==2) THEN  !Dyer (1974)
+
+     psym=stab_fn_mom(StabilityMethod,ZZD/L_mod,zzd/L_mod)
+     psyh=stab_fn_heat(StabilityMethod,ZZD/L_mod,zzd/L_mod)
+
+     !Z0V roughness length for vapour
+     IF (RoughLenHeatMethod==1) THEN !Brutasert (1982) Z0v=z0/10(see Grimmond & Oke, 1986)
+        z0V=Z0m/10
+     ELSEIF (RoughLenHeatMethod==2) THEN ! Kawai et al. (2007)
+       	!z0V=Z0m*exp(2-(1.2-0.9*veg_fr**0.29)*(UStar*Z0m/muu)**0.25)
+        ! Changed by HCW 05 Nov 2015 (veg_fr includes water; VegFraction = veg + bare soil)
+        z0V=Z0m*EXP(2-(1.2-0.9*VegFraction**0.29)*(UStar*Z0m/muu)**0.25)
+     ELSEIF (RoughLenHeatMethod==3) THEN
+        z0V=Z0m*EXP(-20.) ! Voogt and Grimmond, JAM, 2000
+     ELSEIF (RoughLenHeatMethod==4) THEN
+        z0V=Z0m*EXP(2-1.29*(UStar*Z0m/muu)**0.25) !See !Kanda and Moriwaki (2007),Loridan et al. (2010)
+     ENDIF
+
+     IF(Zzd/L_mod==0.OR.UStar==0) THEN
+        RA=(LOG(ZZD/z0m)*LOG(ZZD/z0V))/(k2*AVU1) !Use neutral equation
+     ELSE
+        RA=((LOG(ZZD/z0m)-PSYM)*(LOG(ZZD/z0V)-PSYH))/(K2*AVU1)
+     ENDIF
+
+     !3) Thom and Oliver (1977)
+  ELSEIF(AerodynamicResistanceMethod==3) THEN
+     RA=(4.72*LOG(ZZD/z0m)**2)/(1 + 0.54*AVU1)
+  ENDIF
+
+  !If ra outside permitted range, adjust extreme values !!Check whether these thresholds are suitable over a range of z0
+  IF(RA>200) THEN   !was 175
+     CALL errorHint(7,'In AerodynamicResistance.f95, calculated ra > 200 s m-1; ra set to 200 s m-1',RA,notUsed,notUsedI)
+     RA=200
+  ELSEIF(RA<10) THEN   !found  By Shiho - fix Dec 2012  !Threshold changed from 2 to 10 s m-1 (HCW 03 Dec 2015)
+     CALL errorHint(7,'In AerodynamicResistance.f95, calculated ra < 10 s m-1; ra set to 10 s m-1',RA,notUsed,notUsedI)
+     RA=10
+     ! RA=(log(ZZD/z0m))**2/(k2*AVU1)
+     IF(avu1<0) WRITE(*,*) avu1,ra
+  ENDIF
+
+  RETURN
+END SUBROUTINE AerodynamicResistance
+
 SUBROUTINE SurfaceResistance(&
      id,it,&! input:
      SMDMethod,snowFrac,sfr,avkdn,Temp_C,dq,xsmd,vsmd,MaxConductance,&
@@ -252,3 +369,139 @@ SUBROUTINE SurfaceResistance(&
 
   RETURN
 END SUBROUTINE SurfaceResistance
+
+SUBROUTINE BoundaryLayerResistance(&
+     zzd,& ! input:    !Active measurement height (meas. height-displac. height)
+     z0M,&     !Aerodynamic roughness length
+     avU1,&    !Average wind speed
+     UStar,&! input/output:
+     rb)! output:
+
+  IMPLICIT NONE
+
+  REAL(KIND(1d0)),INTENT(in)::zzd     !Active measurement height (meas. height-displac. height)
+  REAL(KIND(1d0)),INTENT(in)::z0M     !Aerodynamic roughness length
+  REAL(KIND(1d0)),INTENT(in)::avU1    !Average wind speed
+
+  REAL(KIND(1d0)),INTENT(inout)::UStar!Friction velocity
+
+  REAL(KIND(1d0)),INTENT(out)::rb   !boundary layer resistance shuttleworth
+
+  REAL(KIND(1d0)),PARAMETER :: k=0.4
+
+  IF(UStar<0.01) THEN
+     UStar=avu1/LOG(zzd/z0m)*k
+  END IF
+
+  rb=(1.1/UStar)+(5.6*(UStar**0.333333))!rb - boundary layer resistance shuttleworth
+
+  RETURN
+END SUBROUTINE BoundaryLayerResistance
+
+
+SUBROUTINE SUEWS_cal_RoughnessParameters(&
+     RoughLenMomMethod,&! input:
+     sfr,&! surface fractions
+     bldgH,&
+     EveTreeH,&
+     DecTreeH,&
+     porosity_id,&
+     FAIBldg,FAIEveTree,FAIDecTree,Z,&
+     planF,&! output:
+     Zh,Z0m,Zdm,ZZD)
+  ! Get surface covers and frontal area fractions (LJ 11/2010)
+  ! Last modified:
+  ! TS  18 Sep 2017 - added explicit interface
+  ! HCW 08 Feb 2017 - fixed bug in Zh between grids, added default z0m, zdm
+  ! HCW 03 Mar 2015
+  ! sg feb 2012 - made separate subroutine
+  !--------------------------------------------------------------------------------
+
+  IMPLICIT NONE
+
+  INTEGER,PARAMETER:: nsurf     = 7 ! number of surface types
+  INTEGER,PARAMETER:: PavSurf   = 1 !When all surfaces considered together (1-7)
+  INTEGER,PARAMETER:: BldgSurf  = 2
+  INTEGER,PARAMETER:: ConifSurf = 3
+  INTEGER,PARAMETER:: DecidSurf = 4
+  INTEGER,PARAMETER:: GrassSurf = 5 !New surface classes: Grass = 5th/7 surfaces
+  INTEGER,PARAMETER:: BSoilSurf = 6 !New surface classes: Bare soil = 6th/7 surfaces
+  INTEGER,PARAMETER:: WaterSurf = 7
+
+  INTEGER, INTENT(in) ::RoughLenMomMethod
+
+  REAL(KIND(1d0)), DIMENSION(nsurf),INTENT(in) ::sfr! surface fractions
+
+
+  REAL(KIND(1d0)), INTENT(in) ::bldgH
+  REAL(KIND(1d0)), INTENT(in) ::EveTreeH
+  REAL(KIND(1d0)), INTENT(in) ::DecTreeH
+  REAL(KIND(1d0)), INTENT(in) ::porosity_id
+  REAL(KIND(1d0)), INTENT(in) ::FAIBldg,FAIEveTree,FAIDecTree,Z
+
+  REAL(KIND(1d0)), INTENT(out) ::planF
+  REAL(KIND(1d0)), INTENT(out) ::Zh
+  REAL(KIND(1d0)), INTENT(out) ::Z0m
+  REAL(KIND(1d0)), INTENT(out) ::Zdm
+  REAL(KIND(1d0)), INTENT(out) ::ZZD
+
+
+
+  REAL(KIND(1d0)) ::areaZh
+  INTEGER, PARAMETER :: notUsedI=-55
+  REAL(KIND(1d0)),PARAMETER:: notUsed=-55.5
+  REAL(KIND(1D0)):: z0m4Paved,z0m4Grass,z0m4BSoil,z0m4Water   !Default values for roughness lengths [m]
+
+  areaZh =(sfr(BldgSurf)+sfr(ConifSurf)+sfr(DecidSurf)) !Total area of buildings and trees
+
+  ! Set default values (using Moene & van Dam 2013, Atmos-Veg-Soil Interactions, Table 3.3)
+  Z0m4Paved = 0.003 !estimate
+  Z0m4Grass = 0.02
+  Z0m4BSoil = 0.002
+  Z0m4Water = 0.0005
+
+  !------------------------------------------------------------------------------
+  !If total area of buildings and trees is larger than zero, use tree heights and building heights to calculate zH
+  IF (areaZh/=0) THEN
+     Zh=bldgH*sfr(BldgSurf)/areaZh + EveTreeH*sfr(ConifSurf)/areaZh + DecTreeH*(1-porosity_id)*sfr(DecidSurf)/areaZh
+  ELSE
+     Zh=0   !Set Zh to zero if areaZh = 0
+  ENDIF
+
+  IF(Zh/=0)THEN
+     !Calculate Z0m and Zdm depending on the Z0 method
+     IF(RoughLenMomMethod==2) THEN  !Rule of thumb (G&O 1999)
+        Z0m=0.1*Zh
+        Zdm=0.7*Zh
+     ELSEIF(RoughLenMomMethod==3)THEN !MacDonald 1998
+        IF (areaZh/=0)THEN  !Plan area fraction
+           !planF=FAIBldg*sfr(BldgSurf)/areaZh+FAItree*sfr(ConifSurf)/areaZh+FAItree*(1-porosity_id)*sfr(DecidSurf)/areaZh
+           planF=FAIBldg*sfr(BldgSurf)/areaZh + FAIEveTree*sfr(ConifSurf)/areaZh + FAIDecTree*(1-porosity_id)*sfr(DecidSurf)/areaZh
+        ELSE
+           planF=0.00001
+           Zh=1
+        ENDIF
+        Zdm=(1+4.43**(-sfr(BldgSurf))*(sfr(BldgSurf)-1))*Zh
+        Z0m=((1-Zdm/Zh)*EXP(-(0.5*1.0*1.2/0.4**2*(1-Zdm/Zh)*planF)**(-0.5)))*Zh
+     ENDIF
+  ELSEIF(Zh==0)THEN   !If zh calculated to be zero, set default roughness length and displacement height
+     IF(areaZh /= 0) CALL ErrorHint(15,'In SUEWS_RoughnessParameters.f95, zh = 0 m but areaZh > 0',zh,areaZh,notUsedI)
+     !Estimate z0 and zd using default values and surfaces that do not contribute to areaZh
+     IF(areaZh /= 1)THEN
+        z0m = (z0m4Paved*sfr(PavSurf) + z0m4Grass*sfr(GrassSurf) + z0m4BSoil*sfr(BSoilSurf) + z0m4Water*sfr(WaterSurf))/(1-areaZh)
+        zdm = 0
+        CALL ErrorHint(15,'Setting z0m and zdm using default values',z0m,zdm,notUsedI)
+     ELSEIF(areaZh==1)THEN  !If, for some reason, Zh = 0 and areaZh == 1, assume height of 10 m and use rule-of-thumb
+        z0m = 1
+        zdm = 7
+        CALL ErrorHint(15,'Assuming mean height = 10 m, Setting z0m and zdm to default value',z0m,zdm,notUsedI)
+     ENDIF
+  ENDIF
+
+  ZZD=Z-zdm
+
+  ! Error messages if aerodynamic parameters negative
+  IF(z0m<0) CALL ErrorHint(14,'In SUEWS_RoughnessParameters.f95, z0 < 0 m.',z0m,notUsed,notUsedI)
+  IF(zdm<0) CALL ErrorHint(14,'In SUEWS_RoughnessParameters.f95, zd < 0 m.',zdm,notUsed,notUsedI)
+  IF(zzd<0) CALL ErrorHint(14,'In SUEWS_RoughnessParameters.f95, (z-zd) < 0 m.',zzd,notUsed,notUsedI)
+END SUBROUTINE SUEWS_cal_RoughnessParameters

@@ -4,13 +4,16 @@
 ! TS 02 Oct 2017: added `SUEWS_cal_Main` as the generic wrapper
 ! TS 03 Oct 2017: added `SUEWS_cal_AnthropogenicEmission`
 MODULE SUEWS_Driver
-  USE AtmMoist_module,ONLY:LUMPS_cal_AtmMoist,qsatf
+  USE AtmMoist_module,ONLY:LUMPS_cal_AtmMoist,qsatf,STAB_lumps,stab_fn_heat,stab_fn_mom
   USE NARP_MODULE,ONLY:NARP_cal_SunPosition
   USE AnOHM_module,ONLY:AnOHM
   USE ESTM_module,ONLY:ESTM
   USE Snow_module,ONLY:SnowCalc,Snow_cal_MeltHeat
   USE DailyState_module,ONLY:SUEWS_cal_DailyState,update_DailyState
-  USE WaterDist_module,ONLY:drainage,soilstore,SUEWS_cal_SoilMoist,SUEWS_update_SoilMoist,ReDistributeWater
+  USE WaterDist_module,ONLY:drainage,soilstore,&
+       SUEWS_cal_SoilMoist,SUEWS_update_SoilMoist,&
+       ReDistributeWater,SUEWS_cal_HorizontalSoilWater,&
+       SUEWS_cal_WaterUse
   USE ctrl_output,ONLY:varList
   USE allocateArray,ONLY:&
        ndays,nsurf,nvegsurf,&
@@ -474,7 +477,7 @@ CONTAINS
     ! Calculate sun position
     IF(Diagnose==1) WRITE(*,*) 'Calling NARP_cal_SunPosition...'
     CALL NARP_cal_SunPosition(&
-         real(iy,kind(1d0)),&!input:
+         REAL(iy,KIND(1d0)),&!input:
          dectime-tstep/2,&! sun position at middle of timestep before
          timezone,lat,lng,alt,&
          azimuth,zenith_deg)!output:
@@ -2282,8 +2285,7 @@ CONTAINS
     REAL(KIND(1d0))            :: &
          psymz2,psymz10,psymz0,psyhz2,psyhz0,& ! stability correction functions
          z0h,& ! Roughness length for heat
-         z2zd,z10zd,&
-         stab_fn_mom,stab_fn_heat !stability correction functions
+         z2zd,z10zd!stability correction functions
     REAL(KIND(1d0)),PARAMETER :: muu=1.46e-5 !molecular viscosity
     REAL(KIND(1d0)),PARAMETER :: nan=-999
 
@@ -2305,7 +2307,6 @@ CONTAINS
     ENDIF
 
     ! z0h=z0m/5
-
 
     ! zX-z0
     z2zd=2+z0h   ! set lower limit as z0h to prevent arithmetic error

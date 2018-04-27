@@ -70,36 +70,24 @@ CONTAINS
        porosity,GDD,HDD,SnowDens,LAI,WU_Day,&
        deltaLAI)!output
 
+    USE Snow_module,ONLY:SnowUpdate
 
     IMPLICIT NONE
-    ! INTEGER, PARAMETER:: ndays = 366   !Max no. days in a year used to specify size of daily arrays
-    ! INTEGER, PARAMETER:: nsurf=7                !Total number of surfaces
-    ! INTEGER, PARAMETER:: NVegSurf=3             !Number of surfaces that are vegetated
-    ! INTEGER, PARAMETER:: nsurfIncSnow=nsurf+1   !Number of surfaces + snow
-    ! INTEGER, PARAMETER:: MaxNumberOfGrids=2000   !Max no. grids   !HCW changed to 2000 from 10000 so prog can run on windows (2GB lim)
-    ! INTEGER, PARAMETER:: MaxLinesMet=8640        !Max no. lines to read in one go (for all grids, ie MaxLinesMet/NumberOfGrids each)
-
 
     INTEGER,INTENT(IN)::iy
     INTEGER,INTENT(IN)::id
     INTEGER,INTENT(IN)::it
     INTEGER,INTENT(IN)::imin
 
-    ! INTEGER,INTENT(IN)::Gridiv
     INTEGER,INTENT(IN)::tstep
     INTEGER,INTENT(IN)::WaterUseMethod
     INTEGER,INTENT(IN)::snowUse
     INTEGER,INTENT(IN)::Ie_start   !Starting time of water use (DOY)
     INTEGER,INTENT(IN)::Ie_end       !Ending time of water use (DOY)
-    ! INTEGER,INTENT(IN)::ReadLinesMetdata
-    ! INTEGER,INTENT(IN)::ncolumnsDataOutSUEWS
-    ! INTEGER,INTENT(IN)::NumberOfGrids
     INTEGER,INTENT(IN)::LAICalcYes
 
 
     INTEGER,DIMENSION(nvegsurf),INTENT(IN):: LAIType                  !LAI equation to use: original (0) or new (1)
-
-    ! INTEGER,DIMENSION(MaxNumberOfGrids),INTENT(IN):: GridIDmatrix         !Array containing GridIDs in SiteSelect after sorting
 
     REAL(KIND(1d0)),INTENT(IN)::nsh_real
     REAL(KIND(1d0)),INTENT(IN)::avkdn

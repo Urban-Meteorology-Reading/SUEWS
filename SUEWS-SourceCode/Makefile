@@ -51,13 +51,13 @@ MODULES = LUMPS_Module_constants.o  \
 					SUEWS_Files_run_Control.o \
 					stringmod.o \
 					minpack.o\
+					SUEWS_WaterDist.o \
+					SUEWS_Snow.o \
 					SUEWS_DailyState.o \
 					qsort_c_module.o\
 					SUEWS_ESTM.o \
 					SUEWS_AnOHM.o \
 					SUEWS_OHM.o \
-					SUEWS_WaterDist.o \
-					SUEWS_Snow.o \
 					SUEWS_ctrl_output.o \
 					SUEWS_driver.o
 
@@ -65,7 +65,6 @@ MODULES = LUMPS_Module_constants.o  \
 # Rest of the files including modules and functions which are independent
 OTHERS =  SUEWS_translate.o \
 					SUEWS_HorizontalSoilWater.o \
-					LUMPS_atmos_functions_stab.o \
 					SUEWS_RoughnessParameters.o \
 					LUMPS_QHQE.o \
 					SUEWS_AerodynamicResistance.o \
@@ -78,24 +77,9 @@ OTHERS =  SUEWS_translate.o \
 					SUEWS_CodeMatch.o \
 					SUEWS_InputHeaders.o \
 					SUEWS_InterpHourlyProfiles.o \
-					SOLWEIG_2014a_core.o  \
-					SOLWEIG_Initial.o  \
-					SOLWEIG_clearnessindex_2013b.o  \
-					SOLWEIG_cylindric_wedge.o  \
-					SOLWEIG_diffusefraction.o  \
-					SOLWEIG_EsriAsciiGrid.o  \
-					SOLWEIG_Kside_veg_v24.o  \
-					SOLWEIG_Lside_veg_v2.o  \
-					SOLWEIG_Lvikt_veg.o  \
-					SOLWEIG_misc.o  \
-					SOLWEIG_shadowingfunction_10.o  \
-					SOLWEIG_shadowingfunction_20.o  \
-					SOLWEIG_sunonsurface_veg.o  \
-					SOLWEIG_wallinsun_veg.o  \
 					SUEWS_Initial.o \
 					SUEWS_AnthropogenicEmissions.o \
-					SUEWS_BiogenCO2.o \
-					SUEWS_SnowUpdate.o
+					SUEWS_BiogenCO2.o
 
 
 
@@ -109,6 +93,7 @@ main: SUEWS_Program.f95 $(MODULES) $(OTHERS) $(TEST)
 			$(CC) SUEWS_Program.o $(MODULES) $(OTHERS) $(TEST) \
 			$(STATICLIB) \
 			-o $(TARGET)
+			mkdir -p $(SUEWS_build_dir)
 			cp $(TARGET) $(SUEWS_build_dir)/.
 
 # Build main program with NETCDF support - main uses MODULES and OTHERS

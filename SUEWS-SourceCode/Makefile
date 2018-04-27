@@ -41,20 +41,20 @@ netcdf nc4fr:	CFLAGS += -Dnc=1 -I$(NETCDFINC) # options for netcdf build
 
 # All the files which include modules used by other modules (these therefore
 # needs to be compiled first)
-MODULES = LUMPS_Module_constants.o  \
-					LUMPS_metRead.o  \
-					LUMPS_NARP.o \
-					SUEWS_MetDisagg.o \
-					LUMPS_atmos_functions_moist.o \
-					SOLWEIG_modules.o  \
+UTILS = stringmod.o \
+				qsort_c_module.o\
+				SUEWS_TimeRelatedSubroutines.o \
+				minpack.o
+
+MODULES = SUEWS_const.o  \
+					NARP_module.o \
+					SUEWS_ctrl_input.o  \
+					LUMPS_atmos.o \
+					SOLWEIG_module.o  \
 					BLUEWS_module.o \
-					SUEWS_Files_run_Control.o \
-					stringmod.o \
-					minpack.o\
 					SUEWS_WaterDist.o \
 					SUEWS_Snow.o \
 					SUEWS_DailyState.o \
-					qsort_c_module.o\
 					SUEWS_ESTM.o \
 					SUEWS_AnOHM.o \
 					SUEWS_OHM.o \
@@ -64,23 +64,13 @@ MODULES = LUMPS_Module_constants.o  \
 
 # Rest of the files including modules and functions which are independent
 OTHERS =  SUEWS_translate.o \
-					SUEWS_HorizontalSoilWater.o \
-					SUEWS_RoughnessParameters.o \
 					LUMPS_QHQE.o \
-					SUEWS_AerodynamicResistance.o \
-					SUEWS_BL_Resist.o \
-					SUEWS_SurfaceResistance.o \
-					SUEWS_TimeRelatedSubroutines.o \
+					SUEWS_Resist.o \
 					SUEWS_error.o \
-					SUEWS_waterUse.o \
 					SUEWS_evap.o \
-					SUEWS_CodeMatch.o \
-					SUEWS_InputHeaders.o \
-					SUEWS_InterpHourlyProfiles.o \
 					SUEWS_Initial.o \
 					SUEWS_AnthropogenicEmissions.o \
 					SUEWS_BiogenCO2.o
-
 
 
 # modules under rapid development
@@ -88,37 +78,42 @@ TEST =      SUEWS_Calculations.o
 
 
 # Build main program - main uses MODULES and OTHERS
-main: SUEWS_Program.f95 $(MODULES) $(OTHERS) $(TEST)
+main: SUEWS_Program.f95 $(UTILS) $(MODULES) $(OTHERS) $(TEST)
 			$(CC) SUEWS_Program.f95  -c ; \
-			$(CC) SUEWS_Program.o $(MODULES) $(OTHERS) $(TEST) \
+			$(CC) SUEWS_Program.o $(UTILS) $(MODULES) $(OTHERS) $(TEST) \
 			$(STATICLIB) \
 			-o $(TARGET)
 			mkdir -p $(SUEWS_build_dir)
 			cp $(TARGET) $(SUEWS_build_dir)/.
 
 # Build main program with NETCDF support - main uses MODULES and OTHERS
-netcdf: SUEWS_Program.f95 $(MODULES) $(OTHERS) $(TEST)
+netcdf: SUEWS_Program.f95 $(UTILS) $(MODULES) $(OTHERS) $(TEST)
 				$(CC) SUEWS_Program.f95  -c ; \
-				$(CC) SUEWS_Program.o $(MODULES) $(OTHERS) $(TEST) \
+				$(CC) SUEWS_Program.o $(UTILS) $(MODULES) $(OTHERS) $(TEST) \
 				$(STATICLIB) \
 				-L$(NETCDFLIB) -lnetcdf -lnetcdff \
 				-o $(TARGET)
 
 # Build main program with NETCDF support - main uses MODULES and OTHERS
-nc4fr: SUEWS_Program.f95 $(MODULES) $(OTHERS) $(TEST)
+nc4fr: SUEWS_Program.f95 $(UTILS) $(MODULES) $(OTHERS) $(TEST)
 			 $(CC) SUEWS_Program.f95  -c ; \
-			 $(CC) SUEWS_Program.o $(MODULES) $(OTHERS) $(TEST) \
+			 $(CC) SUEWS_Program.o $(UTILS) $(MODULES) $(OTHERS) $(TEST) \
 			 $(STATICLIB) \
 			 -L$(NETCDFLIB) -Wl,--rpath -Wl,$(NETCDFLIB) -lnetcdff -lnetcdf \
 			 -o $(TARGET)
 
-# If OTHERS have changed, compile them again
-$(OTHERS): $(MODULES) $(subst .o,.f95, $(OTHERS))
-					 $(CC) -c $(subst .o,.f95, $@)
+
+# If UTILS have changed, compile them again
+$(UTILS): $(subst .o,.f95, $(UTILS))
+						$(CC) -c $(subst .o,.f95, $@)
 
 # If MODULES have changed, compile them again
-$(MODULES): $(subst .o,.f95, $(MODULES))
+$(MODULES): $(UTILS) $(subst .o,.f95, $(MODULES))
 						$(CC) -c $(subst .o,.f95, $@)
+
+# If OTHERS have changed, compile them again
+$(OTHERS): $(UTILS) $(MODULES) $(subst .o,.f95, $(OTHERS))
+					 $(CC) -c $(subst .o,.f95, $@)
 
 
 # If TEST have changed, compile them again

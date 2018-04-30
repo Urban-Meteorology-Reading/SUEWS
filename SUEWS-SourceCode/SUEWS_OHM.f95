@@ -28,12 +28,15 @@ SUBROUTINE OHM(qn1,qn1_store,qn1_av_store,&
   ! Snow part changed from summer wet to winter wet coefficients.
   ! Changed -333 checks to -999 checks and added error handling
   ! Gradient now calculated for t-1 (was previously calculated for t-2).
-  ! Modified by TS 07 Aug 2017
+  ! TS & SG 30 Apr 2018:
+  !  a new calculation scheme of dqndt by using a phase-in approach that releases
+  !  the requirement for storeing multiple qn values for adapting SUEWS into WRF
+  ! TS 07 Aug 2017:
   !  1. interface changed to account for explict passing
   !  2. calculation refactorization.
-  ! Modified by HCW 25 Feb 2015
+  ! HCW 25 Feb 2015:
   !  Adapted q1,q2,q3 & r1,r2,r3 for multiple grids
-  ! Modified by HCW 14 Dec 2016
+  ! HCW 14 Dec 2016:
   !  Thresholds for Summer/Winter and Wet/Dry now provided in input files
   !  Calculation of dqndt now uses hourly running mean rather than instantaneous values
   ! To Do:
@@ -129,6 +132,7 @@ SUBROUTINE OHM(qn1,qn1_store,qn1_av_store,&
   qs=-999              !qs  = Net storage heat flux  [W m-2]
   IF(qn1>-999) THEN   !qn1 = Net all-wave radiation [W m-2]
      ! Store instantaneous qn1 values for previous hour (qn1_store) and average (qn1_av)
+     CALL OHM_dqndt_cal_X(dt,dt0,qn,dqndt)
      CALL OHM_dqndt_cal(nsh,qn1,qn1_store,qn1_av_store,dqndt)
 
      ! Calculate net storage heat flux
@@ -246,6 +250,27 @@ SUBROUTINE OHM_coef_cal(sfr,nsurf,&
   ENDDO  !end of loop over surface types ------------------------------------------------
 END SUBROUTINE OHM_coef_cal
 
+! Updated OHM calculations for WRF-SUEWS coupling (v2018b onwards) weighted mean (TS Apr 2018)
+SUBROUTINE OHM_dqndt_cal_X(dt,dt0,qn,dqndt)
+  IMPLICIT NONE
+  INTEGER, INTENT(in)            :: dt              ! time step [s]
+  INTEGER, INTENT(inout)         :: dt0             ! period for dqndt0 [s]
+  REAL(KIND(1d0)), INTENT(in)    :: qn              ! new qn1 value [W m-2]
+  REAL(KIND(1d0)), INTENT(inout) :: dqndt           ! dQ* per dt for 60 min [W m-2 h-1]
+  INTEGER, PARAMETER             :: dt0_thresh=3600 ! threshold for period for dqndt0 [s]
+
+  ! if previous period shorter than dt0_thresh, expand the storage/memory period
+  IF ( dt0< dt0_thresh)  dt0 = dt0+dt
+
+  ! do weighted average to calculate the difference by using the memory value and new forcing value
+  ! NB: keep the output dqndt in [W m-2 h-1]
+  dqndt=(dqndt*(dt0-dt)/3600+qn)/(dt0/3600)
+
+
+END SUBROUTINE OHM_dqndt_cal_X
+
+
+! New OHM calculations (v2017a-v2018a) using running mean (HCW Dec 2016)
 SUBROUTINE OHM_dqndt_cal(nsh,qn1,qn1_store,qn1_av_store,dqndt)
   IMPLICIT NONE
   INTEGER, INTENT(in)            :: nsh                   ! number of timesteps in one hour

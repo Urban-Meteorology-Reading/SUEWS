@@ -356,6 +356,8 @@ MODULE allocateArray
   REAL(KIND(1d0)):: a1,a2,a3   !OHM coefficients, a1 [-]; a2 [h]; a3 [W m-2]
   REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE:: qn1_store, qn1_S_store   !Q* values for each timestep over previous hr (_S for snow)
   REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE:: qn1_av_store, qn1_S_av_store  !Hourly Q* values for each timestep over previous 2 hr
+  REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE::qn1_store_grid,qn1_av_store_grid
+  REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE::qn1_S_store_grid,qn1_S_av_store_grid
   !-----------------------------------------------------------------------------------------------
 
   ! ---- Snow-related variables ------------------------------------------------------------------
@@ -1582,7 +1584,7 @@ MODULE InitialCond
        SnowPackBSoil,&
        SnowPackWater,&
        SnowAlb0!,&
-       ! BoInit !initial Bo for AnOHM, TS 13 Jul 2016 ! removed, TS 30 Jan 2018
+  ! BoInit !initial Bo for AnOHM, TS 13 Jul 2016 ! removed, TS 30 Jan 2018
 
   INTEGER::ID_Prev
 

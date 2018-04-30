@@ -819,10 +819,10 @@ def init_SUEWS_dict_grid(dir_input, grid,
         'numcapita': df_gridSurfaceChar.loc[
             grid,
             ['popdensdaytime', 'popdensnighttime']].mean(),
-        'qn1_av_store': nan * np.ones(2 * nsh + 1),
-        'qn1_s_av_store': nan * np.ones(2 * nsh + 1),
-        'qn1_s_store': nan * np.ones(nsh),
-        'qn1_store': nan * np.ones(nsh),
+        'qn1_av_store_grid': nan * np.ones(2 * nsh + 1),
+        'qn1_s_av_store_grid': nan * np.ones(2 * nsh + 1),
+        'qn1_s_store_grid': nan * np.ones(nsh),
+        'qn1_store_grid': nan * np.ones(nsh),
 
         # snow:
         'snowalb': dict_InitCond['snowalb0'],

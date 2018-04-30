@@ -9,8 +9,8 @@
 !   IMPLICIT NONE
 ! CONTAINS
 !========================================================================================
-SUBROUTINE OHM(qn1,qn1_store,qn1_av_store,&
-     qn1_S,qn1_S_store,qn1_S_av_store,&
+SUBROUTINE OHM(qn1,qn1_store_grid,qn1_av_store_grid,&
+     qn1_S,qn1_S_store_grid,qn1_S_av_store_grid,&
      nsh,&
      sfr,nsurf,&
      HDDday,&
@@ -28,12 +28,15 @@ SUBROUTINE OHM(qn1,qn1_store,qn1_av_store,&
   ! Snow part changed from summer wet to winter wet coefficients.
   ! Changed -333 checks to -999 checks and added error handling
   ! Gradient now calculated for t-1 (was previously calculated for t-2).
-  ! Modified by TS 07 Aug 2017
+  ! TS & SG 30 Apr 2018:
+  !  a new calculation scheme of dqndt by using a phase-in approach that releases
+  !  the requirement for storeing multiple qn values for adapting SUEWS into WRF
+  ! TS 07 Aug 2017:
   !  1. interface changed to account for explict passing
   !  2. calculation refactorization.
-  ! Modified by HCW 25 Feb 2015
+  ! HCW 25 Feb 2015:
   !  Adapted q1,q2,q3 & r1,r2,r3 for multiple grids
-  ! Modified by HCW 14 Dec 2016
+  ! HCW 14 Dec 2016:
   !  Thresholds for Summer/Winter and Wet/Dry now provided in input files
   !  Calculation of dqndt now uses hourly running mean rather than instantaneous values
   ! To Do:
@@ -57,15 +60,18 @@ SUBROUTINE OHM(qn1,qn1_store,qn1_av_store,&
 
   INTEGER,INTENT(in)::nsurf     ! number of surfaces
   INTEGER,INTENT(in)::nsh       ! number of timesteps in one hour
+  ! integer,intent(in) :: dt      ! current timestep [second]
+  ! integer,intent(INOUT) :: dt0  ! period length for qn1 memory
   INTEGER,INTENT(in)::BldgSurf  ! code for specific surfaces
   INTEGER,INTENT(in)::WaterSurf ! code for specific surfaces
   INTEGER,INTENT(in)::SnowUse   ! option for snow related calculations
   INTEGER,INTENT(in)::DiagQS    ! diagnostic option
 
-  REAL(KIND(1d0)),INTENT(inout)::qn1_store(nsh)
-  REAL(KIND(1d0)),INTENT(inout)::qn1_av_store(2*nsh+1)
-  REAL(KIND(1d0)),INTENT(inout)::qn1_S_store(nsh)
-  REAL(KIND(1d0)),INTENT(inout)::qn1_S_av_store(2*nsh+1)
+  ! REAL(KIND(1d0)),INTENT(inout)::dqndt !Rate of change of net radiation [W m-2 h-1] at t-1
+  REAL(KIND(1d0)),INTENT(inout)::qn1_store_grid(nsh)
+  REAL(KIND(1d0)),INTENT(inout)::qn1_av_store_grid(2*nsh+1)
+  REAL(KIND(1d0)),INTENT(inout)::qn1_S_store_grid(nsh)
+  REAL(KIND(1d0)),INTENT(inout)::qn1_S_av_store_grid(2*nsh+1)
 
 
   REAL(KIND(1d0)),INTENT(out):: qs ! storage heat flux
@@ -82,7 +88,10 @@ SUBROUTINE OHM(qn1,qn1_store,qn1_av_store,&
   ! REAL(KIND(1d0)):: qn1_av, qn1_S_av    !Average net radiation over previous hour [W m-2]
   REAL(KIND(1d0)):: deltaQi0 ! temporarily store
 
-  ! REAL(KIND(1d0)):: qn1_store0(nsh), qn1_av_store0(2*nsh+1) ! temporarily store
+
+
+
+  ! REAL(KIND(1d0)):: qn1_store_grid0(nsh), qn1_av_store_grid0(2*nsh+1) ! temporarily store
 
   !These are now provided in SiteInfo (OHMthresh for Summer/Winter and Wet/Dry)
   !!real(kind(1d0)):: OHM_TForSummer = 5  !Use summer coefficients if 5-day Tair >= 5 degC
@@ -128,15 +137,16 @@ SUBROUTINE OHM(qn1,qn1_store,qn1_av_store,&
   ! Calculate radiation part ------------------------------------------------------------
   qs=-999              !qs  = Net storage heat flux  [W m-2]
   IF(qn1>-999) THEN   !qn1 = Net all-wave radiation [W m-2]
-     ! Store instantaneous qn1 values for previous hour (qn1_store) and average (qn1_av)
-     CALL OHM_dqndt_cal(nsh,qn1,qn1_store,qn1_av_store,dqndt)
+     ! Store instantaneous qn1 values for previous hour (qn1_store_grid) and average (qn1_av)
+     ! CALL OHM_dqndt_cal_X(dt,dt0,qn1,dqndt)
+     CALL OHM_dqndt_cal(nsh,qn1,qn1_store_grid,qn1_av_store_grid,dqndt)
 
      ! Calculate net storage heat flux
      CALL OHM_QS_cal(qn1,dqndt,a1,a2,a3,qs)
      IF(DiagQS==1) WRITE(*,*) 'qs: ',qs,'qn1:',qn1,'dqndt: ',dqndt
 
   ELSE
-     CALL ErrorHint(21,'In SUEWS_OHM.f95: bad value for qn found during qs calculation.',qn1,-55.55,-55)
+     CALL ErrorHint(21,'In SUEWS_OHM.f95: bad value for qn1 found during qs calculation.',qn1,-55.55,-55)
   ENDIF
 
   !write(*,*) qs
@@ -158,8 +168,8 @@ SUBROUTINE OHM(qn1,qn1_store,qn1_av_store,&
         !r2_grids(Gridiv)=r3_grids(Gridiv)
         !r3_grids(Gridiv)=qn1_S
         ! New OHM calculations
-        ! Store instantaneous qn1 values for previous hour (qn1_store) and average (qn1_av)
-        CALL OHM_dqndt_cal(nsh,qn1_S,qn1_S_store,qn1_S_av_store,dqndt)
+        ! Store instantaneous qn1 values for previous hour (qn1_store_grid) and average (qn1_av)
+        CALL OHM_dqndt_cal(nsh,qn1_S,qn1_S_store_grid,qn1_S_av_store_grid,dqndt)
 
         ! Calculate net storage heat flux for snow surface (winter wet conditions)
         CALL OHM_QS_cal(qn1_S,dqndt,&
@@ -169,7 +179,7 @@ SUBROUTINE OHM(qn1,qn1_store,qn1_av_store,&
 
 
      ELSE
-        CALL ErrorHint(21,'In SUEWS_OHM.f95: bad value for qn(snow) found during qs calculation.',qn1_S,-55.55,-55)
+        CALL ErrorHint(21,'In SUEWS_OHM.f95: bad value for qn1(snow) found during qs calculation.',qn1_S,-55.55,-55)
      ENDIF
 
   ENDIF
@@ -246,12 +256,33 @@ SUBROUTINE OHM_coef_cal(sfr,nsurf,&
   ENDDO  !end of loop over surface types ------------------------------------------------
 END SUBROUTINE OHM_coef_cal
 
-SUBROUTINE OHM_dqndt_cal(nsh,qn1,qn1_store,qn1_av_store,dqndt)
+! Updated OHM calculations for WRF-SUEWS coupling (v2018b onwards) weighted mean (TS Apr 2018)
+SUBROUTINE OHM_dqndt_cal_X(dt,dt0,qn1,dqndt)
+  IMPLICIT NONE
+  INTEGER, INTENT(in)            :: dt              ! time step [s]
+  INTEGER, INTENT(inout)         :: dt0             ! period for dqndt0 [s]
+  REAL(KIND(1d0)), INTENT(in)    :: qn1              ! new qn1 value [W m-2]
+  REAL(KIND(1d0)), INTENT(inout) :: dqndt           ! dQ* per dt for 60 min [W m-2 h-1]
+  INTEGER, PARAMETER             :: dt0_thresh=3600 ! threshold for period for dqndt0 [s]
+
+  ! if previous period shorter than dt0_thresh, expand the storage/memory period
+  IF ( dt0< dt0_thresh)  dt0 = dt0+dt
+
+  ! do weighted average to calculate the difference by using the memory value and new forcing value
+  ! NB: keep the output dqndt in [W m-2 h-1]
+  dqndt=(dqndt*(dt0-dt)/3600+qn1)/(dt0/3600)
+
+
+END SUBROUTINE OHM_dqndt_cal_X
+
+
+! New OHM calculations (v2017a-v2018a) using running mean (HCW Dec 2016)
+SUBROUTINE OHM_dqndt_cal(nsh,qn1,qn1_store_grid,qn1_av_store_grid,dqndt)
   IMPLICIT NONE
   INTEGER, INTENT(in)            :: nsh                   ! number of timesteps in one hour
   REAL(KIND(1d0)), INTENT(in)    :: qn1
-  REAL(KIND(1d0)), INTENT(inout) :: qn1_store(nsh)        ! instantaneous qn1 values for previous hour
-  REAL(KIND(1d0)), INTENT(inout) :: qn1_av_store(2*nsh+1) ! average qn1 values for previous hour
+  REAL(KIND(1d0)), INTENT(inout) :: qn1_store_grid(nsh)        ! instantaneous qn1 values for previous hour
+  REAL(KIND(1d0)), INTENT(inout) :: qn1_av_store_grid(2*nsh+1) ! average qn1 values for previous hour
   REAL(KIND(1d0)), INTENT(out)   :: dqndt                 !dQ* per dt for 60 min
 
   REAL(KIND(1d0)) :: qn1_av
@@ -259,28 +290,28 @@ SUBROUTINE OHM_dqndt_cal(nsh,qn1,qn1_store,qn1_av_store,dqndt)
 
   dqndt=-999 ! initialise as -999
 
-  ! Store instantaneous qn1 values for previous hour (qn1_store) and average (qn1_av)
+  ! Store instantaneous qn1 values for previous hour (qn1_store_grid) and average (qn1_av)
   IF(nsh > 1) THEN
-     qn1_store=CSHIFT(qn1_store,1) ! shift to left with one place
-     qn1_store(nsh)=qn1
-     nsh_nna = COUNT(qn1_store/=-999, dim=1) !Find how many are not -999s  !bug fixed HCW 08 Feb 2017
-     qn1_av = SUM(qn1_store, mask=qn1_store/= -999)/nsh_nna
+     qn1_store_grid=CSHIFT(qn1_store_grid,1) ! shift to left with one place
+     qn1_store_grid(nsh)=qn1
+     nsh_nna = COUNT(qn1_store_grid/=-999, dim=1) !Find how many are not -999s  !bug fixed HCW 08 Feb 2017
+     qn1_av = SUM(qn1_store_grid, mask=qn1_store_grid/= -999)/nsh_nna
   ELSEIF(nsh==1) THEN
-     qn1_store(:) = qn1
+     qn1_store_grid(:) = qn1
      qn1_av = qn1
   ENDIF
   ! Store hourly average values (calculated every timestep) for previous 2 hours
   IF(nsh > 1) THEN
-     qn1_av_store=CSHIFT(qn1_av_store,1)
-     qn1_av_store(2*nsh+1) = qn1_av
+     qn1_av_store_grid=CSHIFT(qn1_av_store_grid,1)
+     qn1_av_store_grid(2*nsh+1) = qn1_av
   ELSEIF(nsh==1) THEN
-     qn1_av_store(:) = qn1_av
+     qn1_av_store_grid(:) = qn1_av
   ENDIF
   ! Calculate dQ* per dt for 60 min (using running mean Q* at t hours and (t-2) hours)
-  IF(ANY(qn1_av_store == -999)) THEN
+  IF(ANY(qn1_av_store_grid == -999)) THEN
      dqndt=0  ! Set dqndt term to zero for spinup
   ELSE
-     dqndt=0.5*(qn1_av_store((2*nsh+1))-qn1_av_store(1))
+     dqndt=0.5*(qn1_av_store_grid((2*nsh+1))-qn1_av_store_grid(1))
   ENDIF
 
 END SUBROUTINE OHM_dqndt_cal

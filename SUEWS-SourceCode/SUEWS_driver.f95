@@ -46,8 +46,8 @@ CONTAINS
        OHM_threshWD,PipeCapacity,PopDensDaytime,&
        PopDensNighttime,PopProf_tstep,PorMax_dec,PorMin_dec,porosity,&
        Precip,PrecipLimit,PrecipLimitAlb,Press_hPa,QF0_BEU,Qf_A,Qf_B,&
-       Qf_C,qh_obs,qn1_av_store,qn1_obs,qn1_S_av_store,qn1_S_store,&
-       qn1_store,RadMeltFact,RAINCOVER,RainMaxRes,resp_a,resp_b,&
+       Qf_C,qh_obs,qn1_av_store_grid,qn1_obs,qn1_S_av_store_grid,qn1_S_store_grid,&
+       qn1_store_grid,RadMeltFact,RAINCOVER,RainMaxRes,resp_a,resp_b,&
        RoughLenHeatMethod,RoughLenMomMethod,RunoffToWater,S1,S2,&
        SatHydraulicConduct,SDDFull,sfr,SMDMethod,SnowAlb,SnowAlbMax,&
        SnowAlbMin,snowD,SnowDens,SnowDensMax,SnowDensMin,SnowfallCum,snowFrac,&
@@ -244,8 +244,8 @@ CONTAINS
     REAL(KIND(1D0)),INTENT(INOUT)                             ::SnowAlb
     ! INTEGER,DIMENSION(0:NDAYS,3),INTENT(INOUT)                ::DayofWeek
     REAL(KIND(1d0)),DIMENSION(24*3600/tstep),INTENT(inout)    ::Tair24HR
-    REAL(KIND(1D0)),DIMENSION(2*3600/tstep+1),INTENT(INOUT)   ::qn1_av_store
-    REAL(KIND(1D0)),DIMENSION(2*3600/tstep+1),INTENT(INOUT)   ::qn1_S_av_store
+    REAL(KIND(1D0)),DIMENSION(2*3600/tstep+1),INTENT(INOUT)   ::qn1_av_store_grid
+    REAL(KIND(1D0)),DIMENSION(2*3600/tstep+1),INTENT(INOUT)   ::qn1_S_av_store_grid
     REAL(KIND(1D0)),DIMENSION(0:NDAYS),INTENT(INOUT)          ::albDecTr
     REAL(KIND(1D0)),DIMENSION(0:NDAYS),INTENT(INOUT)          ::albEveTr
     REAL(KIND(1D0)),DIMENSION(0:NDAYS),INTENT(INOUT)          ::albGrass
@@ -264,8 +264,8 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::SnowPack
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::soilmoist
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::state
-    REAL(KIND(1D0)),DIMENSION(3600/tstep),INTENT(INOUT)       ::qn1_S_store
-    REAL(KIND(1D0)),DIMENSION(3600/tstep),INTENT(INOUT)       ::qn1_store
+    REAL(KIND(1D0)),DIMENSION(3600/tstep),INTENT(INOUT)       ::qn1_S_store_grid
+    REAL(KIND(1D0)),DIMENSION(3600/tstep),INTENT(INOUT)       ::qn1_store_grid
 
     REAL(KIND(1D0)),DIMENSION(5),INTENT(OUT)                           ::datetimeLine
     REAL(KIND(1D0)),DIMENSION(ncolumnsDataOutSUEWS-5),INTENT(OUT)      ::dataOutLineSUEWS
@@ -551,8 +551,8 @@ CONTAINS
          HDD,MetForcingData_grid,Ts5mindata_ir,qf,qn1,&
          avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown,&
          bldgh,alb,emis,cpAnOHM,kkAnOHM,chAnOHM,EmissionsMethod,&
-         Tair24HR,qn1_store,qn1_S_store,&!inout
-         qn1_av_store,qn1_S_av_store,surf,&
+         Tair24HR,qn1_store_grid,qn1_S_store_grid,&!inout
+         qn1_av_store_grid,qn1_S_av_store_grid,surf,&
          qn1_S,snowFrac,dataOutLineESTM,qs,&!output
          deltaQi,a1,a2,a3)
 
@@ -1053,8 +1053,8 @@ CONTAINS
        HDD,MetForcingData_grid,Ts5mindata_ir,qf,qn1,&
        avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown,&
        bldgh,alb,emis,cpAnOHM,kkAnOHM,chAnOHM,EmissionsMethod,&
-       Tair24HR,qn1_store,qn1_S_store,&!inout
-       qn1_av_store,qn1_S_av_store,surf,&
+       Tair24HR,qn1_store_grid,qn1_S_store_grid,&!inout
+       qn1_av_store_grid,qn1_S_av_store_grid,surf,&
        qn1_S,snowFrac,dataOutLineESTM,qs,&!output
        deltaQi,a1,a2,a3)
 
@@ -1097,11 +1097,11 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(:),INTENT(in)::Ts5mindata_ir
 
     REAL(KIND(1d0)),DIMENSION(24*nsh),INTENT(inout):: Tair24HR
-    REAL(KIND(1d0)),DIMENSION(nsh),INTENT(inout) ::qn1_store
-    REAL(KIND(1d0)),DIMENSION(nsh),INTENT(inout) ::qn1_S_store !< stored qn1 [W m-2]
+    REAL(KIND(1d0)),DIMENSION(nsh),INTENT(inout) ::qn1_store_grid
+    REAL(KIND(1d0)),DIMENSION(nsh),INTENT(inout) ::qn1_S_store_grid !< stored qn1 [W m-2]
 
-    REAL(KIND(1d0)),DIMENSION(2*nsh+1),INTENT(inout)::qn1_av_store
-    REAL(KIND(1d0)),DIMENSION(2*nsh+1),INTENT(inout)::qn1_S_av_store !< average net radiation over previous hour [W m-2]
+    REAL(KIND(1d0)),DIMENSION(2*nsh+1),INTENT(inout)::qn1_av_store_grid
+    REAL(KIND(1d0)),DIMENSION(2*nsh+1),INTENT(inout)::qn1_S_av_store_grid !< average net radiation over previous hour [W m-2]
     REAL(KIND(1d0)),DIMENSION(6,nsurf),INTENT(inout)::surf
     ! REAL(KIND(1d0)),DIMENSION(ReadlinesMetdata,32,NumberOfGrids),INTENT(inout)::dataOutESTM
 
@@ -1140,8 +1140,8 @@ CONTAINS
     IF(StorageHeatMethod==1) THEN           !Use OHM to calculate QS
        HDDday=HDD(id-1,4)
        IF(Diagnose==1) WRITE(*,*) 'Calling OHM...'
-       CALL OHM(qn1_use,qn1_store,qn1_av_store,&
-            qn1_S,qn1_S_store,qn1_S_av_store,&
+       CALL OHM(qn1_use,qn1_store_grid,qn1_av_store_grid,&
+            qn1_S,qn1_S_store_grid,qn1_S_av_store_grid,&
             nsh,&
             sfr,nsurf,&
             HDDday,&
@@ -1158,7 +1158,7 @@ CONTAINS
     ! use AnOHM to calculate QS, TS 14 Mar 2016
     IF (StorageHeatMethod==3) THEN
        IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'
-       CALL AnOHM(qn1_use,qn1_store,qn1_av_store,qf,&
+       CALL AnOHM(qn1_use,qn1_store_grid,qn1_av_store_grid,qf,&
             MetForcingData_grid,state/surf(6,:),&
             alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&
             sfr,nsurf,nsh,EmissionsMethod,id,Gridiv,&
@@ -2511,8 +2511,8 @@ CONTAINS
        OHM_threshWD,PipeCapacity,PopDensDaytime,&
        PopDensNighttime,PopProf_tstep,PorMax_dec,PorMin_dec,porosity,&
        Precip,PrecipLimit,PrecipLimitAlb,Press_hPa,QF0_BEU,Qf_A,Qf_B,&
-       Qf_C,qh_obs,qn1_av_store,qn1_obs,qn1_S_av_store,qn1_S_store,&
-       qn1_store,RadMeltFact,RAINCOVER,RainMaxRes,resp_a,resp_b,&
+       Qf_C,qh_obs,qn1_av_store_grid,qn1_obs,qn1_S_av_store_grid,qn1_S_store_grid,&
+       qn1_store_grid,RadMeltFact,RAINCOVER,RainMaxRes,resp_a,resp_b,&
        RoughLenHeatMethod,RoughLenMomMethod,RunoffToWater,S1,S2,&
        SatHydraulicConduct,SDDFull,sfr,SMDMethod,SnowAlb,SnowAlbMax,&
        SnowAlbMin,snowD,SnowDens,SnowDensMax,SnowDensMin,SnowfallCum,snowFrac,&
@@ -2708,8 +2708,8 @@ CONTAINS
     REAL(KIND(1D0)),INTENT(INOUT)                             ::SnowfallCum
     REAL(KIND(1D0)),INTENT(INOUT)                             ::SnowAlb
     REAL(KIND(1d0)),DIMENSION(24*3600/tstep),INTENT(inout)    ::Tair24HR
-    REAL(KIND(1D0)),DIMENSION(2*3600/tstep+1),INTENT(INOUT)   ::qn1_av_store
-    REAL(KIND(1D0)),DIMENSION(2*3600/tstep+1),INTENT(INOUT)   ::qn1_S_av_store
+    REAL(KIND(1D0)),DIMENSION(2*3600/tstep+1),INTENT(INOUT)   ::qn1_av_store_grid
+    REAL(KIND(1D0)),DIMENSION(2*3600/tstep+1),INTENT(INOUT)   ::qn1_S_av_store_grid
     REAL(KIND(1D0)),DIMENSION(0:NDAYS),INTENT(INOUT)          ::albDecTr
     REAL(KIND(1D0)),DIMENSION(0:NDAYS),INTENT(INOUT)          ::albEveTr
     REAL(KIND(1D0)),DIMENSION(0:NDAYS),INTENT(INOUT)          ::albGrass
@@ -2728,8 +2728,8 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::SnowPack
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::soilmoist
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::state
-    REAL(KIND(1D0)),DIMENSION(3600/tstep),INTENT(INOUT)       ::qn1_S_store
-    REAL(KIND(1D0)),DIMENSION(3600/tstep),INTENT(INOUT)       ::qn1_store
+    REAL(KIND(1D0)),DIMENSION(3600/tstep),INTENT(INOUT)       ::qn1_S_store_grid
+    REAL(KIND(1D0)),DIMENSION(3600/tstep),INTENT(INOUT)       ::qn1_store_grid
 
 
     INTEGER :: fn,xx=0
@@ -2921,8 +2921,8 @@ CONTAINS
        WRITE(fn,*)'SnowfallCum',SnowfallCum
        WRITE(fn,*)'SnowAlb',SnowAlb
        WRITE(fn,*)'Tair24HR',Tair24HR
-       WRITE(fn,*)'qn1_av_store',qn1_av_store
-       WRITE(fn,*)'qn1_S_av_store',qn1_S_av_store
+       WRITE(fn,*)'qn1_av_store_grid',qn1_av_store_grid
+       WRITE(fn,*)'qn1_S_av_store_grid',qn1_S_av_store_grid
        WRITE(fn,*)'albDecTr',albDecTr
        WRITE(fn,*)'albEveTr',albEveTr
        WRITE(fn,*)'albGrass',albGrass
@@ -2941,8 +2941,8 @@ CONTAINS
        WRITE(fn,*)'SnowPack',SnowPack
        WRITE(fn,*)'soilmoist',soilmoist
        WRITE(fn,*)'state',state
-       WRITE(fn,*)'qn1_S_store',qn1_S_store
-       WRITE(fn,*)'qn1_store',qn1_store
+       WRITE(fn,*)'qn1_S_store_grid',qn1_S_store_grid
+       WRITE(fn,*)'qn1_store_grid',qn1_store_grid
 
        CLOSE (fn)
        PRINT*, 'initial condition has been written out for ', Gridiv

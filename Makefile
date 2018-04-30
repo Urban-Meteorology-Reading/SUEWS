@@ -30,18 +30,19 @@ SUEWS_dir = SUEWS-SourceCode
 PYTHON := $(if $(PYTHON_exe),$(PYTHON_exe),python)
 # All the files which include modules used by other modules (these therefore
 # needs to be compiled first)
-FILES = LUMPS_Module_constants.f95  \
+FILES = SUEWS_const.f95  \
 				SUEWS_driver.f95
 
 
 main:
+	$(info $$PYTHON is [${PYTHON}])
 	$(MAKE) -C $(SUEWS_dir) clean; # clean Fortran SUEWS build
 	$(MAKE) -C $(SUEWS_dir) main; # make SUEWS with the `main` recipe
 	$(PYTHON) setup.py bdist_wheel # all f2py compilation is done by `setup.py`
 	-rm -rf *.o *.mod *.f95 *.a *.dSYM
 
 
-main exe:
+main_exe:
 	$(MAKE) -C $(SUEWS_dir) clean; # clean Fortran SUEWS build
 	$(MAKE) -C $(SUEWS_dir) main; # make SUEWS with the `main` recipe
 	-rm -rf *.o *.mod *.f95 *.a *.dSYM

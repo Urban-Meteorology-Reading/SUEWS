@@ -275,9 +275,13 @@ PROGRAM SUEWS_Program
      IF (SnowUse == 1) THEN
         ALLOCATE(dataOutSnow(ReadLinesMetdata,ncolumnsDataOutSnow,NumberOfGrids))   !Snow output
         ALLOCATE(qn1_S_store(NSH,NumberOfGrids))
+        ALLOCATE(qn1_S_store_grid(NSH))
         ALLOCATE(qn1_S_av_store(2*NSH+1,NumberOfGrids))
+        ALLOCATE(qn1_S_av_store_grid(2*NSH+1))
         qn1_S_store(:,:) = NAN
         qn1_S_av_store(:,:) = NaN
+        qn1_S_store_grid(:) = NAN
+        qn1_S_av_store_grid(:) = NaN
      ENDIF
      IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
         ALLOCATE(dataOutESTM(ReadlinesMetdata,32,NumberOfGrids)) !ESTM output
@@ -291,12 +295,16 @@ PROGRAM SUEWS_Program
      ALLOCATE(PopProf_tstep(24*NSH,2))                  !Population profiles at model timestep
      ALLOCATE(qn1_store(NSH,NumberOfGrids))
      ALLOCATE(qn1_av_store(2*NSH+1,NumberOfGrids))
+     ALLOCATE(qn1_store_grid(NSH))
+     ALLOCATE(qn1_av_store_grid(2*NSH+1))
      ALLOCATE(qhforCBL(NumberOfGrids))
      ALLOCATE(qeforCBL(NumberOfGrids))
      !! Add snow clearing (?)
 
      qn1_store(:,:) = NAN ! Initialise to -999
      qn1_av_store(:,:) = NAN ! Initialise to -999
+     qn1_store_grid(:)=NAN
+     qn1_av_store_grid(:)=NAN
      qhforCBL(:) = NAN
      qeforCBL(:) = NAN
      ! Initialise other arrays here???
@@ -696,6 +704,8 @@ PROGRAM SUEWS_Program
         DEALLOCATE(dataOutSnow)
         DEALLOCATE(qn1_S_store)
         DEALLOCATE(qn1_S_av_store)
+        DEALLOCATE(qn1_S_store_grid)
+        DEALLOCATE(qn1_S_av_store_grid)
      ENDIF
      IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
         DEALLOCATE(dataOutESTM) !ESTM output
@@ -713,6 +723,8 @@ PROGRAM SUEWS_Program
      DEALLOCATE(PopProf_tstep)
      DEALLOCATE(qn1_store)
      DEALLOCATE(qn1_av_store)
+     DEALLOCATE(qn1_store_grid)
+     DEALLOCATE(qn1_av_store_grid)
      DEALLOCATE(qhforCBL)
      DEALLOCATE(qeforCBL)
 

@@ -42,7 +42,7 @@ main:
 	-rm -rf *.o *.mod *.f95 *.a *.dSYM
 
 
-main_exe:
+exe:
 	$(MAKE) -C $(SUEWS_dir) clean; # clean Fortran SUEWS build
 	$(MAKE) -C $(SUEWS_dir) main; # make SUEWS with the `main` recipe
 	-rm -rf *.o *.mod *.f95 *.a *.dSYM

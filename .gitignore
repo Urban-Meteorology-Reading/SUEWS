@@ -6,7 +6,7 @@
 *_REMOTE_*.f95
 warnings.txt
 profiling-checkpoint.ipynb
-SUEWS_V2017c
+SUEWS_V201*
 problems-checkpoint.txt
 test-SuPy-checkpoint.py
 warnings-checkpoint.txt
@@ -15,3 +15,7 @@ launch.json
 WFDEI_Interpolator.py
 Saeve_2004_data_5.txt.save
 f2py
+.eggs/*
+build/*
+supy.egg*
+dist/*

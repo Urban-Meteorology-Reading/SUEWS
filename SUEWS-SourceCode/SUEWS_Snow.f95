@@ -1150,7 +1150,7 @@ CONTAINS
   FUNCTION Evap_SUEWS_Snow(Qm,QP,lvS_J_kg,avdens,avRh,Press_hPa,Temp_C,RAsnow,psyc_hPa,&
        tstep,avcp,sIce_hPa,dectime) RESULT(ev_snow)
 
-    USE AtmMoist_module,ONLY:sat_vap_pressice
+    USE meteo,ONLY:sat_vap_pressice
     IMPLICIT NONE
 
     !INPUT

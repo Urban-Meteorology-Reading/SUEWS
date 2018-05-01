@@ -4,7 +4,8 @@
 ! TS 02 Oct 2017: added `SUEWS_cal_Main` as the generic wrapper
 ! TS 03 Oct 2017: added `SUEWS_cal_AnthropogenicEmission`
 MODULE SUEWS_Driver
-  USE AtmMoist_module,ONLY:LUMPS_cal_AtmMoist,qsatf,STAB_lumps,stab_fn_heat,stab_fn_mom
+  USE meteo,ONLY:qsatf
+  USE AtmMoist_module,ONLY:LUMPS_cal_AtmMoist,STAB_lumps,stab_fn_heat,stab_fn_mom
   USE NARP_MODULE,ONLY:NARP_cal_SunPosition
   USE AnOHM_module,ONLY:AnOHM
   USE ESTM_module,ONLY:ESTM

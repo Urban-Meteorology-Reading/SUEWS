@@ -17,7 +17,7 @@ SUBROUTINE LUMPS_cal_QHQE(&
   ! LJ June 2012    - Modified to work with snow (Qm added in the equations!)
   ! SG Feb 2012     - added some comments
   ! --------------------------------------------------------------
-  USE AtmMoist_module,ONLY:psyc_const,slope_svp,slopeice_svp
+  USE meteo,ONLY:psyc_const,slope_svp,slopeice_svp
 
   IMPLICIT NONE
   INTEGER,PARAMETER::ndays=366

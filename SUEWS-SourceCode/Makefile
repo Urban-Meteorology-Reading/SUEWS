@@ -44,10 +44,11 @@ netcdf nc4fr:	CFLAGS += -Dnc=1 -I$(NETCDFINC) # options for netcdf build
 UTILS = stringmod.o \
 				qsort_c_module.o\
 				SUEWS_TimeRelatedSubroutines.o \
+				SUEWS_const.o  \
+				meteo.o \
 				minpack.o
 
-MODULES = SUEWS_const.o  \
-					NARP_module.o \
+MODULES =	NARP_module.o \
 					SUEWS_ctrl_input.o  \
 					LUMPS_atmos.o \
 					SOLWEIG_module.o  \

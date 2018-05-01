@@ -29,7 +29,7 @@ SUEWS_dir = SUEWS-SourceCode
 
 PYTHON := $(if $(PYTHON_exe),$(PYTHON_exe),python)
 # All the files which include modules used by other modules (these therefore
-# needs to be compiled first)
+# need to be compiled first)
 FILES = SUEWS_const.f95  \
 				SUEWS_driver.f95
 

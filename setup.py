@@ -33,7 +33,7 @@ dir_f95 = 'SUEWS-SourceCode'
 target_f95 = [
     os.path.join(dir_f95, f)
     for f in
-    ['LUMPS_Module_constants.f95',
+    ['SUEWS_const.f95',
      'SUEWS_driver.f95']]
 all_f95 = glob.glob(os.path.join(dir_f95, '*.f95'))
 exclude_f95 = [
@@ -49,8 +49,8 @@ other_f95 = list(
 )
 other_obj = [f.replace('.f95', '.o') for f in other_f95]
 src_f95 = target_f95 + other_f95
-for f in src_f95 + other_obj:
-    print f
+for f in target_f95 + other_obj:
+    print(f)
 
 ext_modules = [
     Extension('supy.SUEWS_driver',

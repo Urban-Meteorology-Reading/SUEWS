@@ -62,10 +62,6 @@ CONTAINS
        ELSEIF(INT(DrainEq)==3) THEN   !Falk and Niemczynowicz (1978)
           drain_is=(DrainCoef1*(state_is**DrainCoef2))/nsh_real
 
-          ! Option 4 removed by HCW 16 Feb 2015, as it is not used and appears to be problematic
-          !elseif(int(DrainEq)==4) then    !Rutter eqn not corrected for c=0
-          !   drain(is)=DrainCoef1*exp(DrainCoef2*(state(is)-StorCap))
-          !   drain(is)=drain(is)*tstep_real/60 !i.e. multiply by no. mins per timestep  !Is this correct?? Why not divide by nsh_real?
        ENDIF
 
        ! Check value obtained is physically reasonable
@@ -232,8 +228,8 @@ CONTAINS
 
     !Extra evaporation [mm] from impervious surfaces which cannot happen due to lack of water
     REAL(KIND(1d0)):: EvPart
-    REAL(KIND(1d0)),PARAMETER:: NotUsed=-55.5,&
-         IPThreshold_mmhr=10
+    REAL(KIND(1d0)),PARAMETER:: NotUsed=-55.5
+    REAL(KIND(1d0)),PARAMETER:: IPThreshold_mmhr=10 ! NB:this should be an input and can be specified. SG 25 Apr 2018
 
     !Initialise extra evaporation to zero
     EvPart=0

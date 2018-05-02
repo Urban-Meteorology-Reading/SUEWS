@@ -1502,7 +1502,6 @@ CONTAINS
          &    AUTHORITY["EPSG","4326"]]'&
          ) )
 
-    ! PRINT*, 'good define var'
 
     ! define grid_ID:
     CALL check( nf90_def_var(ncID,'grid_ID', NF90_INT, (/x_dimid, y_dimid/), varIDGrid))

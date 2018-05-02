@@ -1,6 +1,7 @@
 !========================================================================================
 ! Created by HCW Aug 2016 to calculate biogenic component of CO2 flux.
-! -ve Fc for uptake; +ve Fc for emission
+! This subroutine is still under development and in the equations there might be bugs and
+! the code is not well commented.
 !
 ! Last modified:
 ! MH 20 Jun 2017  - Tidied and renamed from SUEWS_CO2.f95 to SUEWS_CO2Biogen.f95

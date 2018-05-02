@@ -139,9 +139,9 @@
 
   integer :: nroDays,year_int
 
-  IF(MOD(year_int,100).NE.0.AND.MOD(year_int,4).EQ.0) THEN
+  IF(MOD(year_int,100)/=0.AND.MOD(year_int,4)==0) THEN
     nroDays=366
-  ELSEIF(MOD(year_int,400).EQ.0) THEN
+  ELSEIF(MOD(year_int,400)==0) THEN
     nroDays=366
   ELSE
     nroDays=365
@@ -165,7 +165,7 @@
 !C
 !C       IF JANUARY OR FEBRUARY, ADJUST MONTH AND YEAR
 !C
-        IF (MN.GT.2)GO TO 10
+        IF (MN>2)GO TO 10
         MN = MN + 12
         YR = YR - 1
 10      N1 = (26 * (MN + 1)) / 10

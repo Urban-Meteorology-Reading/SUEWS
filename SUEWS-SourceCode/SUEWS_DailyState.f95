@@ -798,9 +798,9 @@ CONTAINS
        ENDIF   !N or S hemisphere
 
        ! Check LAI within limits; if not set to limiting value
-       IF(LAI(id,iv).GT.LAImax(iv))THEN
+       IF(LAI(id,iv)>LAImax(iv))THEN
           LAI(id,iv)=LAImax(iv)
-       ELSEIF(LAI(id,iv).LT.LAImin(iv))THEN
+       ELSEIF(LAI(id,iv)<LAImin(iv))THEN
           LAI(id,iv)=LAImin(iv)
        ENDIF
 

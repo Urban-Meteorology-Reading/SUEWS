@@ -389,7 +389,7 @@ CONTAINS
           iday_prev = ESTMArray(2)
        ELSEIF(i==2) THEN
           tstep_estm = ((ESTMArray(4)+60*ESTMArray(3)) - (imin_prev+60*ih_prev))*60   !tstep in seconds
-          IF(tstep_estm.NE.tstep_real.AND.ESTMArray(2)==iday_prev) THEN
+          IF(tstep_estm/=tstep_real.AND.ESTMArray(2)==iday_prev) THEN
              CALL ErrorHint(39,'TSTEP in RunControl does not match TSTEP of ESTM data (DOY).',REAL(tstep,KIND(1d0)),tstep_estm,&
                   INT(ESTMArray(2)))
           ENDIF

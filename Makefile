@@ -34,19 +34,20 @@ FILES = SUEWS_const.f95  \
 				SUEWS_driver.f95
 
 
+# make fortran exe
 main:
+	$(MAKE) -C $(SUEWS_dir) clean; # clean Fortran SUEWS build
+	$(MAKE) -C $(SUEWS_dir) main; # make SUEWS with the `main` recipe
+	-rm -rf *.o *.mod *.f95 *.a *.dSYM
+
+
+# make supy dist
+supy:
 	$(info $$PYTHON is [${PYTHON}])
 	$(MAKE) -C $(SUEWS_dir) clean; # clean Fortran SUEWS build
 	$(MAKE) -C $(SUEWS_dir) main; # make SUEWS with the `main` recipe
 	$(PYTHON) setup.py bdist_wheel # all f2py compilation is done by `setup.py`
 	-rm -rf *.o *.mod *.f95 *.a *.dSYM
-
-
-exe:
-	$(MAKE) -C $(SUEWS_dir) clean; # clean Fortran SUEWS build
-	$(MAKE) -C $(SUEWS_dir) main; # make SUEWS with the `main` recipe
-	-rm -rf *.o *.mod *.f95 *.a *.dSYM
-
 
 # If wanted, clean all *.o files after build
 clean:
@@ -54,13 +55,13 @@ clean:
 	 -$(PYTHON) setup.py clean --all
 
 # clean all existing builds, rebuild f2py libs, build wheels and test
-test:
+test-supy:
 	$(MAKE) clean;
-	$(MAKE) main;
+	$(MAKE) supy;
 	$(PYTHON) setup.py test
 
 # clean all existing builds, rebuild f2py libs, build wheels and submit
 pip:
 	$(MAKE) clean;
-	$(MAKE) main;
+	$(MAKE) supy;
 	$(PYTHON) setup.py bdist_wheel upload

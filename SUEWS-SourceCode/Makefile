@@ -1,5 +1,10 @@
+
 CC = gfortran $(CFLAGS)          # compiler
-TARGET = SUEWS_V2018a      # program name
+
+file       := SUEWS_const.f95
+variable   := $(shell grep 'progname' ${file})
+TARGET_str := $(lastword $(subst =, ,${variable})) # program name with quotes
+TARGET     = $(subst $\', ,${TARGET_str}) # program name
 
 # static flag for different OS to correctly link static libs
 # so gfortran dependency can be relaxed
@@ -77,6 +82,10 @@ OTHERS =  SUEWS_translate.o \
 # modules under rapid development
 TEST =      SUEWS_Calculations.o
 
+
+# some test code
+# $(info $$variable is [${variable}])
+# $(info $$TARGET is [${TARGET}])
 
 # Build main program - main uses MODULES and OTHERS
 main: SUEWS_Program.f95 $(UTILS) $(MODULES) $(OTHERS) $(TEST)

@@ -125,10 +125,11 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: dataOutESTM          !ESTM output matrix
   REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: dataOutDailyState    !DailyState output array
 
-  REAL(KIND(1D0)),DIMENSION(5)::datetimeLine
-  REAL(KIND(1D0)),DIMENSION(ncolumnsDataOutSUEWS-5)::dataOutLineSUEWS
-  REAL(KIND(1D0)),DIMENSION(ncolumnsDataOutSnow-5)::dataOutLineSnow
-  REAL(KIND(1D0)),DIMENSION(ncolumnsDataOutDailyState-5)::DailyStateLine
+  ! -------- output per each timestep ----------------------------------------------------------------
+  REAL(KIND(1D0)),DIMENSION(5)                          ::datetimeLine     ! output of datetime info per each timestep
+  REAL(KIND(1D0)),DIMENSION(ncolumnsDataOutSUEWS-5)     ::dataOutLineSUEWS ! output of SUEWS results per each timestep
+  REAL(KIND(1D0)),DIMENSION(ncolumnsDataOutSnow-5)      ::dataOutLineSnow  ! output of snow results per each timestep
+  REAL(KIND(1D0)),DIMENSION(ncolumnsDataOutDailyState-5)::DailyStateLine   ! output of DailyState results per each timestep
 
   REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE:: MetForDisagg           !Array for original met forcing data (for disaggregation)
   REAL(KIND(1d0)),DIMENSION(:),  ALLOCATABLE:: MetForDisaggPrev,MetForDisaggNext !Stores last and next row of met data
@@ -898,7 +899,7 @@ MODULE data_in
 
   IMPLICIT NONE
 
-  CHARACTER (len=90)::progname='SUEWS V2018a'
+  CHARACTER (len=90)::progname='SUEWS_V2018a'
 
   ! ---- Run information ------------------------------------------------------------------------
   CHARACTER (len=20)::  FileCode   !Set in RunControl

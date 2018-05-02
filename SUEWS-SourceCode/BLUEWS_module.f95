@@ -122,7 +122,7 @@ CONTAINS
     !   tpp_K=tp_K
     !   qpp_kgkg=qp_kgkg
 
-    IF(sondeflag.EQ.1) THEN
+    IF(sondeflag==1) THEN
        CALL gamma_sonde
     ENDIF
     !     	set up array for Runge-Kutta call
@@ -391,10 +391,10 @@ CONTAINS
     ENDIF
 
     !adjusting qp and pm in case of saturation
-    IF(qp_kgkg.GT.qsatf(tp_C,Press_hPa).OR.qp_kgkg.LT.0)THEN
+    IF(qp_kgkg>qsatf(tp_C,Press_hPa).OR.qp_kgkg<0)THEN
        qp_kgkg = qsatf(tp_C,Press_hPa)
     ENDIF
-    IF(qm_kgkg.GT.qsatf(tm_C,Press_hPa).OR.qm_kgkg.LT.0) THEN
+    IF(qm_kgkg>qsatf(tm_C,Press_hPa).OR.qm_kgkg<0) THEN
        qm_kgkg = qsatf(tm_C,Press_hPa)
     ENDIF
 
@@ -532,10 +532,10 @@ CONTAINS
     ENDIF
 
     !adjusting qp and pm in case of saturation
-    IF(qp_kgkg.GT.qsatf(tp_C,Press_hPa).OR.qp_kgkg.LT.0)THEN
+    IF(qp_kgkg>qsatf(tp_C,Press_hPa).OR.qp_kgkg<0)THEN
        qp_kgkg = qsatf(tp_C,Press_hPa)
     ENDIF
-    IF(qm_kgkg.GT.qsatf(tm_C,Press_hPa).OR.qm_kgkg.LT.0) THEN
+    IF(qm_kgkg>qsatf(tm_C,Press_hPa).OR.qm_kgkg<0) THEN
        qm_kgkg = qsatf(tm_C,Press_hPa)
     ENDIF
 
@@ -598,9 +598,9 @@ CONTAINS
        ENDDO
        X = XA+(NS-1)*STEP
        DO N = 1,4
-          IF (N.EQ.1)THEN
+          IF (N==1)THEN
              XX = X
-          ELSEIF (N.GT.1)THEN
+          ELSEIF (N>1)THEN
              XX = X + COEF(N)*STEP
           ENDIF
 
@@ -685,13 +685,13 @@ CONTAINS
     ws = (h1*ftva_Kms*grav/tm_K)**0.3333333333
 
     !       find dhds using one of 4 alternative schemes chosen by ient:
-    IF (EntrainmentType.EQ.2) THEN
+    IF (EntrainmentType==2) THEN
        !       EntrainmentType=1: encroachment (as in McN and S 1986 eq 16))
        dhds = ftva_Kms/(h1*gamtv_Km)
 
-    ELSE IF (EntrainmentType.EQ.1) THEN
+    ELSE IF (EntrainmentType==1) THEN
        !       EntrainmentType=2: Driedonks 1981 (as in McN and S 1986 eq 13)
-       IF (deltv_K.LE.0.01) THEN
+       IF (deltv_K<=0.01) THEN
           dhds = ftva_Kms/(h1*gamtv_Km)
           CALL errorHint(30,"subroutine diff [CBL: Deltv_K<0.01 EntrainmentType=1], deltv_K,delt_K,",deltv_K,delt_K,notUsedI)
           CALL errorHint(30,"subroutine diff [CBL: Deltv_K<0.01 EntrainmentType=1], tm_K,TPP_K,y1",tm_K,TPP_K, notUsedI)
@@ -703,16 +703,16 @@ CONTAINS
           dhds = (conc*ws**3 + cona*cbldata(8)**3)/(h1*delb)
        END IF
 
-    ELSE IF (EntrainmentType.EQ.4) THEN
+    ELSE IF (EntrainmentType==4) THEN
        !       EntrainmentType=3: Tennekes 1973 (as in R 1991 eqs 3,4)
        alpha3=0.2   ! alpha changed back to original Tennekes 1973 value
-       IF (deltv_K.LE.0.01) THEN
+       IF (deltv_K<=0.01) THEN
           dhds = ftva_Kms/(h1*gamtv_Km)
           CALL ErrorHint(31, 'subroutine difflfnout: [CBL: deltv_K<0.01 EntrainmentType=4],deltv_K',&
                deltv_K,notUsed,notUsedI)
        ELSE
           ! include the option whether or not to include subsidence
-          IF (isubs.EQ.1) THEN
+          IF (isubs==1) THEN
              dhds = alpha3*ftva_Kms/deltv_k + wsb
           ELSE
              dhds = alpha3*ftva_Kms/deltv_K
@@ -721,7 +721,7 @@ CONTAINS
 
        !       write (4,*) tpp, gamq, dhds, deltv
 
-    ELSE IF (EntrainmentType.EQ.3) THEN
+    ELSE IF (EntrainmentType==3) THEN
        !       EntrainmentType=4: Rayner and Watson 1991 eq 21
        conn = 1.33
        conk = 0.18
@@ -729,7 +729,7 @@ CONTAINS
        qs3 = ws**3 + (conn*cbldata(8))**3
        qs2 = qs3**(0.6666666667)
 
-       IF (deltv_K.LE.0.01) THEN
+       IF (deltv_K<=0.01) THEN
           dhds = ftva_Kms/(h1*gamtv_Km)
           CALL ErrorHint(31, 'subroutine difflfnout: [CBL: deltv_K<0.01 EntrainmentType=3],deltv_K',&
                deltv_K,notUsed,notUsedI)
@@ -744,7 +744,7 @@ CONTAINS
     END IF
     ! find dtds, dqds, dc/ds:
     !	wsb is the subsidence velocity. Try using: -0.01, -0.05, -0.1.
-    IF (isubs.EQ.1) THEN
+    IF (isubs==1) THEN
        dtds = fhbl_Kms/h1    + delt_K    *(dhds-wsb)/h1
        dqds = febl_kgkgms/h1 + delq_kgkg *(dhds-wsb)/h1
        dcds = fcbl/h1        + delc      *(dhds-wsb)/h1
@@ -796,7 +796,7 @@ CONTAINS
        ghum(i,2) = ghum(i,2)
     ENDDO
 900 zmax=i-1
-    IF(zmax.GT.izm)THEN
+    IF(zmax>izm)THEN
        CALL ErrorHint(23,FileN,REAL(zmax,KIND(1D0)),notUsed,izm)
     ENDIF
     CLOSE(fn)
@@ -817,16 +817,16 @@ CONTAINS
     ! gtheta(i,1),dxx,gtheta(i,2),ghum(i,1),dxx,ghum(i,2)
     !search for correct gamma theta, depends on h(i-1),
     !               ie current value for mixed layer depth
-    IF (sondeflag.EQ.1) THEN
+    IF (sondeflag==1) THEN
        DO j=2,zmax
-          IF (blh_m.GE.gtheta(j-1,1)) THEN
+          IF (blh_m>=gtheta(j-1,1)) THEN
              gamtt = gtheta(j-1,2)
           ENDIF
           gamt_Km = gamtt
        ENDDO
 
        DO j=2,zmax
-          IF (blh_m.GE.ghum(j-1,1)) THEN
+          IF (blh_m>=ghum(j-1,1)) THEN
              gamqq = ghum(j-1,2)
           ENDIF
           gamq_kgkgm = gamqq/1000.

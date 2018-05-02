@@ -1491,7 +1491,7 @@ CONTAINS
        !  val=ind(i,3)*1.
        val=seqGridSortedReal(i)
        DO j=1,len
-          IF ( val .EQ. ind(j,1)*1.) THEN
+          IF ( val == ind(j,1)*1.) THEN
              ! location in sorted sequence
              locSorted(i)=j
           END IF
@@ -1556,7 +1556,7 @@ CONTAINS
        !  val=ind(i,3)*1.
        val=seqRealSortedReal(i)
        DO j=1,len
-          IF ( val .EQ. ind(j,1)*1.) THEN
+          IF ( val == ind(j,1)*1.) THEN
              ! location in sorted sequence
              locSorted(i)=j
           END IF

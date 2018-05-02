@@ -142,24 +142,19 @@ PROGRAM SUEWS_Program
   ! Daily state needs to be outside year loop to transfer states between years
   ALLOCATE(ModelDailyState(NumberOfGrids,MaxNCols_cMDS))   !DailyState
   ALLOCATE(DailyStateFirstOpen(NumberOfGrids))             !Initialisation for header
-  !ALLOCATE(flagRerunAnOHM(NumberOfGrids))                  !flag for rerun AnOHM
-  !allocate(BoAnOHMStart(NumberOfGrids))                    !initial Bo
-  !allocate(BoAnOHMEnd(NumberOfGrids))                      !final Bo
+
 
   ! ---- Initialise arrays --------------------------------------------------
   ModelDailyState(:,:) = -999
   DailyStateFirstOpen(:) = 1
-  !flagRerunAnOHM(:) = .TRUE.
 
   ! -------------------------------------------------------------------------
-
   ! Initialise ESTM (reads ESTM nml, should only run once)
   IF(StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
      IF(Diagnose==1) WRITE(*,*) 'Calling ESTM_initials...'
      CALL ESTM_initials
   ENDIF
 
-  ! -------------------------------------------------------------------------
 
   !==========================================================================
   DO year_int=FirstYear,LastYear   !Loop through years
@@ -335,17 +330,6 @@ PROGRAM SUEWS_Program
                    //TRIM(ADJUSTL(ResInESTM_txt))//'.txt'
            ENDIF
 
-           !  ! Find number of lines in orig ESTM file
-           !  OPEN(UnitOrigESTM,file=TRIM(FileESTMTs),status='old',action='read',err=315)
-           !  CALL skipHeader(UnitOrigESTM,SkipHeaderMet)  !Skip header
-           !  ! Find number of lines in original ESTM data file
-           !  nlinesOrigESTMdata = 0
-           !  DO
-           !     READ(UnitOrigESTM,*,iostat=ios) iv
-           !     IF(ios<0 .OR. iv == -9) EXIT !IF (iv == -9) EXIT
-           !     nlinesOrigESTMdata = nlinesOrigESTMdata + 1
-           !  ENDDO
-           !  CLOSE(UnitOrigESTM)
            ! Find number of lines in orig ESTM file
            nlinesOrigESTMdata = 0   !Initialise nlinesMetdata (total number of lines in met forcing file)
            nlinesOrigESTMdata=count_lines(TRIM(FileESTMTs))
@@ -379,17 +363,6 @@ PROGRAM SUEWS_Program
               FileESTMTs=TRIM(FileInputPath)//TRIM(FileCodeXWG)//'_ESTM_Ts_data_'//TRIM(ADJUSTL(tstep_txt))//'.txt'
            ENDIF
 
-           !  Open this example ESTM file
-           !  OPEN(11,file=TRIM(FileESTMTs),status='old',err=315)
-           !  CALL skipHeader(11,SkipHeaderMet)  !Skip header
-           !  ! Find number of lines in ESTM file
-           !  nlinesESTMdata = 0   !Initialise nlinesESTMdata (total number of lines in ESTM forcing file)
-           !  DO
-           !     READ(11,*,iostat=ios) iv
-           !     IF(ios<0 .OR. iv == -9) EXIT   !IF (iv == -9) EXIT
-           !     nlinesESTMdata = nlinesESTMdata + 1
-           !  ENDDO
-           !  CLOSE(11)
 
            ! Find number of lines in ESTM file
            nlinesESTMdata = 0   !Initialise nlinesMetdata (total number of lines in met forcing file)
@@ -592,7 +565,6 @@ PROGRAM SUEWS_Program
         !write(*,*) skippedLines, skippedLinesOrig, skippedLinesOrig*Nper
 
         ! Initialise the modules on the first day
-        ! if ( iblock==1 ) then
         ! Initialise CBL and SOLWEIG parts if required
         IF (iblock==1) THEN
            IF((CBLuse==1).OR.(CBLuse==2)) CALL CBL_ReadInputData
@@ -661,23 +633,20 @@ PROGRAM SUEWS_Program
 
         ENDDO !end loop over rows of met data
 
-        ! ENDDO ! do-while loop for AnOHM end --------------------------
 
 
         ! Write output files in blocks --------------------------------
 #ifdef nc
-        IF ( ncMode .EQ. 0 ) THEN
+        IF ( ncMode == 0 ) THEN
 #endif
            DO igrid=1,NumberOfGrids
               IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_Output...'
-              ! CALL SUEWS_Output(igrid,year_int,iblock,irMax,GridIDmatrix(igrid))  !GridIDmatrix required for correct naming of output files
-              ! CALL SUEWS_Output_txt(iblock,irMax,igrid)
               CALL SUEWS_Output(irMax,iblock,igrid)
            ENDDO
 #ifdef nc
         ENDIF
 
-        IF ( ncMode .EQ. 1 ) THEN
+        IF ( ncMode == 1 ) THEN
            ! write resulst in netCDF
            IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_Output_nc...'
            CALL SUEWS_Output(irMax)

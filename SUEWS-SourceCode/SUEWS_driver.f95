@@ -1622,7 +1622,7 @@ CONTAINS
           state_per_tstep      = state_per_tstep+(state(is)*sfr(is))
           ! Calculate total state (excluding water body)
 
-          IF (NonWaterFraction/=0 .AND. is.NE.WaterSurf) THEN
+          IF (NonWaterFraction/=0 .AND. is/=WaterSurf) THEN
              NWstate_per_tstep=NWstate_per_tstep+(state(is)*sfr(is)/NonWaterFraction)
           ENDIF
 

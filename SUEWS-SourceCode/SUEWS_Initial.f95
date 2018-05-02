@@ -2525,7 +2525,7 @@ SUBROUTINE SUEWS_InitializeMetData(lunit)
         iy_only   = MetArray(1)
      ELSEIF(i==2) THEN
         tstep_met = ((MetArray(4)+60*MetArray(3)) - (imin_prev+60*ih_prev))*60   !tstep in seconds
-        IF(tstep_met.NE.tstep_real.AND.MetArray(2)==iday_prev) THEN
+        IF(tstep_met/=tstep_real.AND.MetArray(2)==iday_prev) THEN
            CALL ErrorHint(39,'TSTEP in RunControl does not match TSTEP of met data (DOY).',REAL(tstep,KIND(1d0)),tstep_met,&
                 INT(MetArray(2)))
         ENDIF

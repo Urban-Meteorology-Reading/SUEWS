@@ -36,22 +36,30 @@
 !  - Adjust model for SM per surface (measured characteristics)
 !===================================================================================
 SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
-
   USE allocateArray
   USE ColNamesInputFiles
   USE ColNamesModelDailyState
-  USE data_in        !defines: lat, lng, PopDaytime, PopNighttime, DayLightSavingDay, QF variables
-  USE defaultnotUsed
-  USE gis_data       !defines: areaZh, VegFraction, veg_fr, veg_type, BldgH, TreeH, FAIBldg, FAITree
-  USE initial
-  USE mod_z          !defines: z0m, zdm
-  USE resist         !defines: G1-G6, TH, TL, S1, S2, Kmax
-  USE snowMod        !defines: SnowAlb, etc
-  USE sues_data      !defines: SurfaceArea, IrrFracConif, IrrFracDecid, IrrFracGrass, Irrigation variables
-  USE time
+  USE data_in
+  USE defaultnotUsed, ONLY: notused, notusedi
+  USE gis_data, ONLY: &
+       areazh, vegfraction, veg_type, veg_fr, impervfraction, pervfraction, &
+       nonwaterfraction, bldgh, evetreeh, dectreeh, treeh, faibldg, faievetree, faidectree, faitree
+  USE mod_z, ONLY: z, z0m, zdm, zzd
+  USE resist, ONLY: g1, g2, g3, g4, g5, g6, th, tl, s1, s2, kmax, gsmodel
+  USE snowMod, ONLY: &
+       snowlimpaved, snowlimbuild, radmeltfact, tempmeltfact, &
+       snowalbmin, snowalbmax, tau_a, tau_f, preciplimitalb,&
+       snowdensmin, snowdensmax, tau_r, crwmin, crwmax,&
+       preciplimit, snowprof, snowalb, snowfallcum
+  USE sues_data, ONLY: &
+       surfacearea_ha, surfacearea, irrfracconif, irrfracdecid, irrfracgrass,&
+       soildensity, soildepthmeas, smcap, soilrocks, pipecapacity, flowchange,&
+       runofftowater, ie_start, ie_end, internalwateruse_h, faut,&
+       ie_a, ie_m, daywat, daywatper,&
+       wuprofm, wuprofa, wuareaevetr_m2, wuareadectr_m2, wuareagrass_m2
+  USE time, ONLY: iy, id, it, imin, dectime
   USE ESTM_data
-  USE PhysConstants
-  USE WhereWhen
+  USE WhereWhen, ONLY: gridid, gridid_text
   USE ESTM_module,ONLY:ESTM_translate
 
 
@@ -1147,7 +1155,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      WRITE(id_text,'(i3)') id
      WRITE(it_text,'(i2)') it
      WRITE(imin_text,'(i2)') imin
-     datetime = TRIM(ADJUSTL(iy_text))//' '//TRIM(ADJUSTL(id_text))//' '//TRIM(ADJUSTL(it_text))//' '//TRIM(ADJUSTL(imin_text))
+     !     datetime = TRIM(ADJUSTL(iy_text))//' '//TRIM(ADJUSTL(id_text))//' '//TRIM(ADJUSTL(it_text))//' '//TRIM(ADJUSTL(imin_text))
      WRITE(GridID_text,'(i10)') GridID
 
      ! =============================================================================

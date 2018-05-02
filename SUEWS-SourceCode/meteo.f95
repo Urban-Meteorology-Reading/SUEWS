@@ -30,7 +30,7 @@ CONTAINS
     !c     f corrects for the fact that we are not dealing with pure water
     REAL(KIND(1d0))    :: TK,P,TC,es,e,f
     TC=TK-273.15
-    IF(TC.EQ.0)THEN
+    IF(TC==0)THEN
        TC=0.001
     ENDIF
     !Valid for 50>T>-40
@@ -505,7 +505,7 @@ CONTAINS
          molar_wat_vap=0.0180153 !Molar fraction of water vapor in kg/mol
 
 
-    IF(t.GT.55)THEN
+    IF(t>55)THEN
        CALL ErrorHint(34,'Function qsatf',T,0.00D0,-55)
     ENDIF
 

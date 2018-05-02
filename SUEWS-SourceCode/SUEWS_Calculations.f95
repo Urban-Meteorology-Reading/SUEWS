@@ -33,99 +33,130 @@
 !      - Update Snow subroutines similarly in terms of water balance
 !==================================================================
 
-SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
-
-  ! added `ONLY` variables to prevent naming intervention, TS 02 May 2018
-  USE data_in
-  USE time,ONLY:iy,iy_prev_t,id,id_prev_t,it,imin,dectime
-
-  ! USE NARP_MODULE
-  ! USE defaultNotUsed
-  USE allocateArray
-  USE sues_data
-  USE snowMod
-  USE gis_data
-  USE initial,ONLY:NumberOfGrids,ReadLinesMetdata
-  ! USE moist
-  USE mod_z,ONLY:z
-  ! USE mod_k
-  ! USE solweig_module
-  USE WhereWhen
-  USE SUEWS_Driver
-  USE VegPhenogy
-  USE resist
-  USE DailyState_module,ONLY:SUEWS_update_DailyState
-
+SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
+  USE data_in, ONLY: diagnose, ah_min, ah_slope_cooling, ah_slope_heating, &
+       alt, avkdn, avrh, avu1, basethdd, diagqn, diagqs, drainrt, ef_umolco2perj, &
+       emissionsmethod, enef_v_jkm, enddls, fcef_v_kgkm, fcld_obs, &
+       frfossilfuel_heat, frfossilfuel_nonheat, ity, &
+       laicalcyes, lai_obs, lat, ldown_obs, lng, maxqfmetab, minqfmetab, &
+       netradiationmethod, numcapita, ohmincqf, popdensdaytime, popdensnighttime, &
+       precip, press_hpa, qf0_beu, qf_a, qf_b, qf_c, qh_obs, qn1_obs, &
+       raincover, rainmaxres, &
+       roughlenmommethod, smdmethod, snow_obs, snowuse, startdls, &
+       storageheatmethod, t_critic_cooling, t_critic_heating, temp_c, &
+       timezone, trafficrate, trafficunits, waterusemethod, xsmd
+  USE time, ONLY : iy, iy_prev_t, id, id_prev_t, it, imin, dectime
+  USE allocateArray, ONLY: &
+       ahprof_tstep, alb, albdectr, albevetr, albgrass, &
+       albmax_dectr, albmax_evetr, albmax_grass, &
+       albmin_dectr, albmin_evetr, albmin_grass, &
+       alpha_bioco2, alpha_enh_bioco2, baset, basete, &
+       beta_bioco2, beta_enh_bioco2, capmax_dec, capmin_dec, &
+       chanohm, cpanohm, decidcap, emis, gdd, gddfull, hdd, &
+       humactivity_tstep, icefrac, kkanohm, &
+       lai, laimax, laimin, laipower, laitype, maxconductance, &
+       meltwaterstore, metforcingdata_grid, min_res_bioco2, &
+       narp_emis_snow, narp_trans_site, &
+       ohm_coef, ohm_threshsw, ohm_threshwd, popprof_tstep, &
+       pormax_dec, pormin_dec, porosity, &
+       qn1_av_store_grid, qn1_s_av_store_grid, qn1_s_store_grid, qn1_store_grid, &
+       resp_a, resp_b, sathydraulicconduct, sddfull, &
+       sfr, snowd, snowdens, snowfrac, snowpack, &
+       soildepth, soilmoist, soilstorecap, state, statelimit, &
+       surf, tair24hr, theta_bioco2, traffprof_tstep, ts5mindata_ir, &
+       waterdist, wetthresh, wu_day, wuprofa_tstep, wuprofm_tstep, &
+       datetimeline, dataoutlinesuews, dataoutlinesnow, &
+       dataoutlineestm, dailystateline, dataoutdailystate, &
+       dataoutsuews, dataoutsnow, dataoutestm
+  USE sues_data, ONLY: &
+       aerodynamicresistancemethod, daywat, daywatper, faut, flowchange, &
+       ie_a, ie_end, ie_m, ie_start, internalwateruse_h, &
+       irrfracconif, irrfracdecid, irrfracgrass,&
+       pipecapacity, roughlenheatmethod, runofftowater, stabilitymethod,&
+       surfacearea, tstep, nsh_real
+  USE snowMod, ONLY: &
+       crwmax, crwmin, preciplimit, preciplimitalb, radmeltfact,&
+       snowalb, snowalbmax, snowalbmin, &
+       snowdensmax, snowdensmin, snowfallcum, snowlimbuild, &
+       snowlimpaved, snowprof,&
+       tau_a, tau_f, tau_r, tempmeltfact
+  USE gis_data, ONLY: &
+       bldgh, dectreeh, evetreeh, faibldg, faidectree, faievetree, veg_type
+  USE initial, ONLY : NumberOfGrids, ReadLinesMetdata
+  USE mod_z, ONLY : z
+  USE SUEWS_Driver, ONLY: suews_update_output
+  USE resist, ONLY: g1, g2, g3, g4, g5, g6, gsmodel, kmax, s1, s2, th, tl
+  USE DailyState_module, ONLY : SUEWS_update_DailyState
+  USE SUEWS_Driver,ONLY: SUEWS_cal_Main
 
   IMPLICIT NONE
 
-  INTEGER:: Gridiv
-  INTEGER::ir
-  INTEGER::iMB
-  INTEGER:: irMax
+  INTEGER :: Gridiv
+  INTEGER :: ir
+  INTEGER :: iMB
+  INTEGER :: irMax
 
   !==================================================================
 
 
   !Translate all data to the variables used in the model calculations
-  IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_Translate...'
-  CALL SUEWS_Translate(Gridiv,ir,iMB)
-
+  IF(Diagnose==1) WRITE(*, *) 'Calling SUEWS_Translate...'
+  CALL SUEWS_Translate(Gridiv, ir, iMB)
 
   CALL SUEWS_cal_Main(&
-       AerodynamicResistanceMethod,AH_MIN,AHProf_tstep,AH_SLOPE_Cooling,& ! input&inout in alphabetical order
-       AH_SLOPE_Heating,alb,albDecTr,albEveTr,albGrass,alBMax_DecTr,&
-       alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
-       alpha_bioCO2,alpha_enh_bioCO2,alt,avkdn,avRh,avU1,BaseT,BaseTe,&
-       BaseTHDD,beta_bioCO2,beta_enh_bioCO2,bldgH,CapMax_dec,CapMin_dec,&
-       chAnOHM,cpAnOHM,CRWmax,CRWmin,DayWat,DayWatPer,&
-       DecidCap,dectime,DecTreeH,Diagnose,DiagQN,DiagQS,DRAINRT,&
-       EF_umolCO2perJ,emis,EmissionsMethod,EnEF_v_Jkm,endDLS,EveTreeH,FAIBldg,&
-       FAIDecTree,FAIEveTree,Faut,FcEF_v_kgkm,fcld_obs,FlowChange,&
-       FrFossilFuel_Heat,FrFossilFuel_NonHeat,G1,G2,G3,G4,G5,G6,GDD,&
-       GDDFull,Gridiv,gsModel,HDD,HumActivity_tstep,&
-       IceFrac,id,id_prev_t,Ie_a,Ie_end,Ie_m,Ie_start,imin,&
-       InternalWaterUse_h,IrrFracConif,IrrFracDecid,IrrFracGrass,it,ity,&
-       iy,iy_prev_t,kkAnOHM,Kmax,LAI,LAICalcYes,LAIMax,LAIMin,LAI_obs,&
-       LAIPower,LAIType,lat,ldown_obs,lng,MaxConductance,MaxQFMetab,&
-       MeltWaterStore,MetForcingData_grid,MinQFMetab,min_res_bioCO2,&
-       NARP_EMIS_SNOW,NARP_TRANS_SITE,NetRadiationMethod,&
-       NumCapita,OHM_coef,OHMIncQF,OHM_threshSW,&
-       OHM_threshWD,PipeCapacity,PopDensDaytime,&
-       PopDensNighttime,PopProf_tstep,PorMax_dec,PorMin_dec,porosity,&
-       Precip,PrecipLimit,PrecipLimitAlb,Press_hPa,QF0_BEU,Qf_A,Qf_B,&
-       Qf_C,qh_obs,qn1_av_store_grid,qn1_obs,qn1_S_av_store_grid,qn1_S_store_grid,&
-       qn1_store_grid,RadMeltFact,RAINCOVER,RainMaxRes,resp_a,resp_b,&
-       RoughLenHeatMethod,RoughLenMomMethod,RunoffToWater,S1,S2,&
-       SatHydraulicConduct,SDDFull,sfr,SMDMethod,SnowAlb,SnowAlbMax,&
-       SnowAlbMin,snowD,SnowDens,SnowDensMax,SnowDensMin,SnowfallCum,snowFrac,&
-       SnowLimBuild,SnowLimPaved,snow_obs,SnowPack,SnowProf,snowUse,SoilDepth,&
-       soilmoist,soilstoreCap,StabilityMethod,startDLS,state,StateLimit,&
-       StorageHeatMethod,surf,SurfaceArea,Tair24HR,tau_a,tau_f,tau_r,&
-       T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,TempMeltFact,TH,&
-       theta_bioCO2,timezone,TL,TrafficRate,TrafficUnits,&
-       TraffProf_tstep,Ts5mindata_ir,tstep,veg_type,&
-       WaterDist,WaterUseMethod,WetThresh,WU_Day,WUProfA_tstep,&
-       WUProfM_tstep,xsmd,Z,&
-       datetimeLine,dataOutLineSUEWS,dataOutLineSnow,dataOutLineESTM,&!output
+       AerodynamicResistanceMethod, AH_MIN, AHProf_tstep, AH_SLOPE_Cooling, & ! input&inout in alphabetical order
+       AH_SLOPE_Heating, alb, albDecTr, albEveTr, albGrass, alBMax_DecTr, &
+       alBMax_EveTr, alBMax_Grass, AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
+       alpha_bioCO2, alpha_enh_bioCO2, alt, avkdn, avRh, avU1, BaseT, BaseTe, &
+       BaseTHDD, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
+       chAnOHM, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
+       DecidCap, dectime, DecTreeH, Diagnose, DiagQN, DiagQS, DRAINRT, &
+       EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
+       FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, fcld_obs, FlowChange, &
+       FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD, &
+       GDDFull, Gridiv, gsModel, HDD, HumActivity_tstep, &
+       IceFrac, id, id_prev_t, Ie_a, Ie_end, Ie_m, Ie_start, imin, &
+       InternalWaterUse_h, IrrFracConif, IrrFracDecid, IrrFracGrass, it, ity, &
+       iy, iy_prev_t, kkAnOHM, Kmax, LAI, LAICalcYes, LAIMax, LAIMin, LAI_obs, &
+       LAIPower, LAIType, lat, ldown_obs, lng, MaxConductance, MaxQFMetab, &
+       MeltWaterStore, MetForcingData_grid, MinQFMetab, min_res_bioCO2, &
+       NARP_EMIS_SNOW, NARP_TRANS_SITE, NetRadiationMethod, &
+       NumCapita, OHM_coef, OHMIncQF, OHM_threshSW, &
+       OHM_threshWD, PipeCapacity, PopDensDaytime, &
+       PopDensNighttime, PopProf_tstep, PorMax_dec, PorMin_dec, porosity, &
+       Precip, PrecipLimit, PrecipLimitAlb, Press_hPa, QF0_BEU, Qf_A, Qf_B, &
+       Qf_C, qh_obs, qn1_av_store_grid, qn1_obs, qn1_S_av_store_grid, qn1_S_store_grid, &
+       qn1_store_grid, RadMeltFact, RAINCOVER, RainMaxRes, resp_a, resp_b, &
+       RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
+       SatHydraulicConduct, SDDFull, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
+       SnowAlbMin, snowD, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
+       SnowLimBuild, SnowLimPaved, snow_obs, SnowPack, SnowProf, snowUse, SoilDepth, &
+       soilmoist, soilstoreCap, StabilityMethod, startDLS, state, StateLimit, &
+       StorageHeatMethod, surf, SurfaceArea, Tair24HR, tau_a, tau_f, tau_r, &
+       T_CRITIC_Cooling, T_CRITIC_Heating, Temp_C, TempMeltFact, TH, &
+       theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
+       TraffProf_tstep, Ts5mindata_ir, tstep, veg_type, &
+       WaterDist, WaterUseMethod, WetThresh, WU_Day, WUProfA_tstep, &
+       WUProfM_tstep, xsmd, Z, &
+       datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, &!output
        DailyStateLine)!output
 
 
   !============ update and write out SUEWS_cal_DailyState ===============
   ! only works at the last timestep of a day
   CALL SUEWS_update_DailyState(&
-       iy,id,it,imin,dectime,&!input
-       Gridiv,NumberOfGrids,nsh_real,&
-       DailyStateLine,&
+       iy, id, it, imin, dectime, &!input
+       Gridiv, NumberOfGrids, nsh_real, &
+       DailyStateLine, &
        dataOutDailyState)!inout
 
   !============ write out results ===============
   ! works at each timestep
   CALL SUEWS_update_output(&
-       SnowUse,storageheatmethod,&!input
-       ReadLinesMetdata,NumberOfGrids,&
-       ir,gridiv,datetimeLine,dataOutLineSUEWS,dataOutLineSnow,dataOutLineESTM,&!input
-       dataOutSUEWS,dataOutSnow,dataOutESTM)!inout
+       SnowUse, storageheatmethod, &!input
+       ReadLinesMetdata, NumberOfGrids, &
+       ir, gridiv, datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, &!input
+       dataOutSUEWS, dataOutSnow, dataOutESTM)!inout
 
 
   ! NB: CBL disabled for the moment for interface improvement
@@ -157,10 +188,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
   ! ENDIF
   ! ===================SOLWEIG END================================
 
-
-  IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_TranslateBack...'
-  CALL SUEWS_TranslateBack(Gridiv,ir,irMax)
-
-
+  IF(Diagnose==1) WRITE(*, *) 'Calling SUEWS_TranslateBack...'
+  CALL SUEWS_TranslateBack(Gridiv, ir, irMax)
 
 END SUBROUTINE SUEWS_Calculations

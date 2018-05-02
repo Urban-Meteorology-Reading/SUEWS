@@ -149,7 +149,7 @@
      ! Weekday/weekend differences due to profile only
      ! Now scales with population density
 
-     IF(Temp_C .lt. T_CRITIC_Heating(iu)) THEN
+     IF(Temp_C < T_CRITIC_Heating(iu)) THEN
         QF_SAHP = (AH_MIN(iu) + AH_SLOPE_Heating(iu)*(T_CRITIC_Heating(iu)-Temp_C)) * AHDorNorT
      ELSE
         QF_SAHP = AH_MIN(iu) * AHDorNorT

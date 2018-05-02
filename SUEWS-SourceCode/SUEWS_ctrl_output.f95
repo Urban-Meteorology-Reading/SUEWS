@@ -505,89 +505,6 @@ CONTAINS
     END DO
   END SUBROUTINE SUEWS_Output
 
-  ! ! main output wrapper function
-  ! SUBROUTINE SUEWS_Output_txt(iv,irMax,Gridiv)
-  !   IMPLICIT NONE
-  !   INTEGER,INTENT(in) :: iv,irMax,Gridiv
-  !
-  !   INTEGER :: xx,err,outLevel,i
-  !   TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varListX
-  !   CHARACTER(len=10) :: grpList0(6)
-  !   CHARACTER(len=10),DIMENSION(:),ALLOCATABLE :: grpList
-  !   LOGICAL :: grpCond(6)
-  !
-  !   ! determine outLevel
-  !   SELECT CASE (WriteOutOption)
-  !   CASE (0) !all (not snow-related)
-  !      outLevel=1
-  !   CASE (1) !all plus snow-related
-  !      outLevel=2
-  !   CASE (2) !minimal output
-  !      outLevel=0
-  !   END SELECT
-  !
-  !
-  !   ! determine groups to output
-  !   ! todo: needs to be smarter, automate this filtering
-  !   grpList0(1)=''
-  !   grpList0(2)='SOLWEIG'
-  !   grpList0(3)='BL'
-  !   grpList0(4)='snow'
-  !   grpList0(5)='ESTM'
-  !   grpList0(6)='DailyState'
-  !   grpCond=(/.TRUE.,&
-  !        SOLWEIGpoi_out==1,&
-  !        CBLuse>=1,&
-  !        SnowUse>=1,&
-  !        StorageHeatMethod==4 .OR. StorageHeatMethod==14,&
-  !        .TRUE./)
-  !   xx=COUNT(grpCond)
-  !
-  !   ! PRINT*, grpList0,xx
-  !
-  !   ALLOCATE(grpList(xx), stat=err)
-  !   IF ( err/= 0) PRINT *, "grpList: Allocation request denied"
-  !
-  !   grpList=PACK(grpList0, mask=grpCond)
-  !
-  !   ! PRINT*, grpList,SIZE(grpList, dim=1)
-  !
-  !   ! loop over all groups
-  !   DO i = 1, SIZE(grpList),1
-  !      !PRINT*, 'i',i
-  !      xx=COUNT(varList%group == TRIM(grpList(i)), dim=1)
-  !      !  PRINT*, 'number of variables:',xx, 'in group: ',grpList(i)
-  !      !  print*, 'all group names: ',varList%group
-  !      ALLOCATE(varListX(5+xx), stat=err)
-  !      IF ( err/= 0) PRINT *, "varListX: Allocation request denied"
-  !      ! datetime
-  !      varListX(1:5)=varList(1:5)
-  !      ! variable
-  !      varListX(6:5+xx)=PACK(varList, mask=(varList%group == TRIM(grpList(i))))
-  !
-  !      IF  (TRIM(varListX(SIZE(varListX))%group) /= 'DailyState') THEN
-  !         ! all output arrays but DailyState
-  !         ! all output frequency option:
-  !         ! as forcing:
-  !         IF ( ResolutionFilesOut == Tstep .OR. KeepTstepFilesOut == 1 ) THEN
-  !            CALL SUEWS_Output_txt_grp(iv,irMax,varListX,Gridiv,outLevel,Tstep)
-  !         ENDIF
-  !         !  as specified ResolutionFilesOut:
-  !         IF ( ResolutionFilesOut /= Tstep ) THEN
-  !            CALL SUEWS_Output_txt_grp(iv,irMax,varListX,Gridiv,outLevel,ResolutionFilesOut)
-  !         ENDIF
-  !      ELSE
-  !         !  DailyState array, which does not need aggregation
-  !         CALL SUEWS_Output_txt_grp(iv,irMax,varListX,Gridiv,outLevel,Tstep)
-  !      ENDIF
-  !
-  !      IF (ALLOCATED(varListX)) DEALLOCATE(varListX, stat=err)
-  !      IF ( err/= 0) PRINT *, "varListX: Deallocation request denied"
-  !      !  PRINT*, 'i',i,'end'
-  !
-  !   END DO
-  ! END SUBROUTINE SUEWS_Output_txt
-
 
   ! output wrapper function for one group
   SUBROUTINE SUEWS_Output_txt_grp(iv,irMax,varList,Gridiv,outLevel,outFreq_s)
@@ -649,24 +566,13 @@ CONTAINS
        ENDIF
 
        dataOutX=dataOutDailyState(idMin:idMax,1:SIZE(varList),Gridiv)
-       ! PRINT*, 'idMin line',dataOutDailyState(idMin,1:4,Gridiv)
-       ! PRINT*, 'idMax line',dataOutDailyState(idMax,1:4,Gridiv)
     END SELECT
-
-    ! PRINT*, 'n of varListX: ',SIZE(varList)
-    ! PRINT*, 'varListX: ',varList%header
-    ! PRINT*, 'varListX group: ',varList%group
-    ! print*, 'date info of grid',Gridiv,':',dataOutSUEWS(1,1:4,Gridiv)
-    ! print*, 'in dataOutX:',dataOutX(1,1:4)
-
-
 
     ! aggregation:
     ! aggregation is done for every group but 'DailyState'
     IF  (TRIM(varList(SIZE(varList))%group) /= 'DailyState') THEN
 
        CALL SUEWS_Output_Agg(dataOutX_agg,dataOutX,varList,irMax,outFreq_s)
-       ! print*, 'in dataOutX_agg:',dataOutX_agg(1,1:4)
     ELSE
        IF (.NOT. ALLOCATED(dataOutX_agg)) THEN
           ALLOCATE(dataOutX_agg(SIZE(dataOutX, dim=1),SIZE(varList)), stat=err)
@@ -677,7 +583,6 @@ CONTAINS
 
     ! output:
     ! initialise file when processing first metblock
-    ! print*, 'before init, size of varList:', size(varList, dim=1)
     IF ( iv == 1 ) CALL SUEWS_Output_Init(dataOutX_agg,varList,Gridiv,outLevel)
 
     ! append the aggregated data to the specific txt file
@@ -711,8 +616,7 @@ CONTAINS
 
     ! generate file name
     CALL filename_gen(dataOutX,varList,Gridiv,FileOut)
-    ! print*, 'date info in dataOutX',dataOutX(1,1:4)
-    ! PRINT*, 'FileOut in SUEWS_Output_Init: ',FileOut
+
 
     ! store right-aligned headers
     ALLOCATE(headerOut(xx), stat=err)
@@ -1086,26 +990,6 @@ CONTAINS
 
 
 
-  !========================================================================================
-  ! netCDF conversion subroutines for SUEWS
-  ! author: Ting Sun
-  !
-  ! disclamier:
-  !     This code employs the netCDF Fortran 90 API.
-  !     Full documentation of the netCDF Fortran 90 API can be found at:
-  !     https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/netcdf-f90/
-  !     Part of the work is under the help of examples provided by the documentation.
-  !
-  ! purpose:
-  ! these subroutines write out the results of SUEWS in netCDF format.
-  !
-  !
-  ! history:
-  ! 20161209: initial version
-  ! 20161213: standalise the txt2nc procedure
-  !========================================================================================
-
-
   !===========================================================================!
   ! write the output of final SUEWS results in netCDF
   !   with spatial layout of QGIS convention
@@ -1115,84 +999,6 @@ CONTAINS
   !===========================================================================!
 
 #ifdef nc
-  ! SUBROUTINE SUEWS_Output_nc(irMax)
-  !   IMPLICIT NONE
-  !   INTEGER,INTENT(in) :: irMax
-  !
-  !   INTEGER :: xx,err,outLevel
-  !   TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varListX
-  !   CHARACTER(len=10) :: grpList0(6)
-  !   CHARACTER(len=10),DIMENSION(:),ALLOCATABLE :: grpList
-  !   LOGICAL :: grpCond(6)
-  !
-  !   ! determine outLevel
-  !   SELECT CASE (WriteOutOption)
-  !   CASE (0) !all (not snow-related)
-  !      outLevel=1
-  !   CASE (1) !all plus snow-related
-  !      outLevel=2
-  !   CASE (2) !minimal output
-  !      outLevel=0
-  !   END SELECT
-  !
-  !
-  !   ! determine groups to output
-  !   ! todo: needs to be smarter, automate this filtering
-  !   grpList0(1)=''
-  !   grpList0(2)='SOLWEIG'
-  !   grpList0(3)='BL'
-  !   grpList0(4)='snow'
-  !   grpList0(5)='ESTM'
-  !   grpList0(6)='DailyState'
-  !   grpCond=(/.TRUE.,&
-  !        SOLWEIGpoi_out==1,&
-  !        CBLuse>=1,&
-  !        SnowUse>=1,&
-  !        StorageHeatMethod==4 .OR. StorageHeatMethod==14,&
-  !        .TRUE./)
-  !   xx=COUNT(grpCond)
-  !
-  !   ! PRINT*, grpList0,xx
-  !
-  !   ALLOCATE(grpList(xx), stat=err)
-  !   IF ( err/= 0) PRINT *, "grpList: Allocation request denied"
-  !
-  !   grpList=PACK(grpList0, mask=grpCond)
-  !
-  !   ! PRINT*, grpList
-  !
-  !   ! loop over all groups
-  !   DO i = 1, SIZE(grpList)
-  !      xx=COUNT(varList%group == TRIM(grpList(i)), dim=1)
-  !      !  PRINT*, 'number of variables:',xx
-  !      ALLOCATE(varListX(5+xx), stat=err)
-  !      IF ( err/= 0) PRINT *, "varListX: Allocation request denied"
-  !      ! datetime
-  !      varListX(1:5)=varList(1:5)
-  !      ! variable
-  !      varListX(6:5+xx)=PACK(varList, mask=(varList%group == TRIM(grpList(i))))
-  !
-  !      IF  (TRIM(varListX(SIZE(varListX))%group) /= 'DailyState') THEN
-  !         ! all output arrays but DailyState
-  !         ! all output frequency option:
-  !         ! as forcing:
-  !         IF ( ResolutionFilesOut == Tstep .OR. KeepTstepFilesOut == 1 ) THEN
-  !            CALL SUEWS_Output_nc_grp(irMax,varListX,outLevel,Tstep)
-  !         ENDIF
-  !         !  as specified ResolutionFilesOut:
-  !         IF ( ResolutionFilesOut /= Tstep ) THEN
-  !            CALL SUEWS_Output_nc_grp(irMax,varListX,outLevel,ResolutionFilesOut)
-  !         ENDIF
-  !      ELSE
-  !         !  DailyState array, which does not need aggregation
-  !         CALL SUEWS_Output_nc_grp(irMax,varListX,outLevel,Tstep)
-  !      ENDIF
-  !
-  !      IF (ALLOCATED(varListX)) DEALLOCATE(varListX, stat=err)
-  !      IF ( err/= 0) PRINT *, "varListX: Deallocation request denied"
-  !   END DO
-  !
-  ! END SUBROUTINE SUEWS_Output_nc
 
 
   SUBROUTINE SUEWS_Output_nc_grp(irMax,varList,outLevel,outFreq_s)
@@ -1331,8 +1137,6 @@ CONTAINS
     ! copy data accordingly
     ALLOCATE(dataOutSel(nTime,nVar,NumberOfGrids), stat=err)
     IF ( err/= 0) PRINT *, "dataOutSel: Allocation request denied"
-    ! print*, SIZE(varList%level),PACK((/(i,i=1,SIZE(varList%level))/), varList%level <= outLevel)
-    ! print*, nTime,shape(dataOutX)
     dataOutSel=dataOutX(:,PACK((/(i,i=1,SIZE(varList))/), varList%level <= outLevel),:)
 
     ! determine filename
@@ -1356,20 +1160,6 @@ CONTAINS
     ALLOCATE(varY(nX,nY))
     ALLOCATE(varX(nX,nY))
     ALLOCATE(xTime(nTime))
-
-    ! ! latitude:
-    ! varSeq0=SiteSelect(1:nX*nY,5)
-    ! CALL sortSeqReal(varSeq0,varSeq,nY,nX)
-    ! lat = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
-    ! ! PRINT*, 'before flipping:',lat(1:2,1)
-    ! lat =lat(:,nY:1:-1)
-    ! ! PRINT*, 'after flipping:',lat(1:2,1)
-    !
-    ! ! longitude:
-    ! varSeq0=SiteSelect(1:nX*nY,6)
-    ! CALL sortSeqReal(varSeq0,varSeq,nY,nX)
-    ! lon = RESHAPE(varSeq,(/nX,nY/),order = (/1,2/) )
-
 
     ! GridID:
     varSeq=SurfaceChar(1:nX*nY,1)
@@ -1396,8 +1186,7 @@ CONTAINS
     ! pass values to coordinate variables
     varY = lat
     varX = lon
-    ! PRINT*, 'size x dim 1:',SIZE(varX, dim=1)
-    ! PRINT*, 'size x dim 2:',SIZE(varX, dim=2)
+
 
     ! calculate GeoTransform array as needed by GDAL
     ! ref: http://www.perrygeo.com/python-affine-transforms.html
@@ -1431,8 +1220,6 @@ CONTAINS
     geoTrans(6) = dLat                   ! height of a pixel (typically negative, but here positive)
     ! write GeoTransform to strGeoTrans
     WRITE(strGeoTrans,'(6(f12.8,1x))') geoTrans
-    ! PRINT*, TRIM(strGeoTrans)
-
 
     ! Create the netCDF file. The nf90_clobber parameter tells netCDF to
     ! overwrite this file, if it already exists.
@@ -1516,21 +1303,21 @@ CONTAINS
        header_str = varListSel(iVar)%header
        unit_str   = varListSel(iVar)%unit
        longNm_str = varListSel(iVar)%longNm
-       !  PRINT*, unit_str
+
 
        ! Define the variable. The type of the variable in this case is
        ! NF90_REAL.
-       !  PRINT*, TRIM(ADJUSTL(header_str))
+
        CALL check( nf90_def_var(ncID,TRIM(ADJUSTL(header_str)), NF90_REAL, dimids, varID) )
-       !  PRINT*, 'define good'
+
        CALL check( nf90_put_att(ncID,varID,'coordinates','lon lat') )
-       !  PRINT*, 'put coordinates good'
+
        CALL check( nf90_put_att(ncID,varID,'units',TRIM(ADJUSTL(unit_str))) )
-       !  PRINT*, 'put unit good'
+
        CALL check( nf90_put_att(ncID,varID,'long_name',TRIM(ADJUSTL(longNm_str))) )
-       !  PRINT*, 'put long_name good'
+
        CALL check( nf90_put_att(ncID,varID,'grid_mapping', 'crsWGS84' ))
-       !  PRINT*, 'put grid_mapping good'
+
        idVar(iVar)=varID
     END DO
     CALL check( nf90_enddef(ncID) )
@@ -1561,16 +1348,14 @@ CONTAINS
 
     ! then other 3D variables
     DO iVar = iVarStart, nVar
-       !  PRINT*, 'dim1:', SIZE(dataOutX(1:nTime,iVar,:), dim=1)
-       !  PRINT*, 'dim2:',SIZE(dataOutX(1:nTime,iVar,:), dim=2)
        ! reshape dataOutX to be aligned in checker board form
        varOut = RESHAPE(dataOutSel(1:nTime,iVar,:),(/nX,nY,nTime/),order = (/3,1,2/) )
        varOut = varOut(:,nY:1:-1,:)
        !  get the variable id
        varID= idVar(iVar)
-       !  PRINT*, 'good put iVar',iVar
+
        CALL check( nf90_put_var(ncID, varID, varOut) )
-       !  PRINT*, 'good put var',varID
+
        CALL check(NF90_SYNC(ncID))
     END DO
 
@@ -1616,8 +1401,6 @@ CONTAINS
     DO i = 1, nRow
        DO j = 1, nCol
           loc=(i-1)*nCol+j
-          ! PRINT*, i,j,loc
-          ! PRINT*, seqGridSorted(loc)
           matGrid(i,j)=seqGridSorted(loc)
        END DO
     END DO
@@ -1647,8 +1430,6 @@ CONTAINS
     DO i = 1, nRow
        DO j = 1, nCol
           loc=(i-1)*nCol+j
-          ! PRINT*, i,j,loc
-          ! PRINT*, seqGridSorted(loc)
           matGrid(i,j)=seqSorted(loc)
        END DO
     END DO
@@ -1678,16 +1459,6 @@ CONTAINS
 
     ! number of grids
     len=nRow*nCol
-    ! PRINT*, 'after input:'
-    ! PRINT*, 'seqGrid2Sort:'
-    ! PRINT*, seqGrid2Sort(1:5)
-    ! PRINT*, '****'
-    !
-    !
-    ! PRINT*, 'after input:'
-    ! PRINT*, 'seqGridSorted:'
-    ! PRINT*, seqGridSorted(1:5)
-    ! PRINT*, '****'
 
     !sort the input array to make sure the grid order is in QGIS convention
     ! i.e., diagonally ascending
@@ -1705,12 +1476,7 @@ CONTAINS
           xInd=xInd+1
        END DO
     END DO
-    ! PRINT*, 'old after sorting:'
-    ! PRINT*, seqGridSorted(1:5)
-    ! PRINT*, 'ind:'
-    ! PRINT*, ind(:,1)
-    ! PRINT*, 'ind. seq:'
-    ! PRINT*, ind(:,2)
+
 
     ! then sorted ind(:,3) will have the same order as seqGrid2Sort
     ! sort ind(:,3)
@@ -1738,12 +1504,7 @@ CONTAINS
        seqGridSorted(loc)=seqGrid2Sort(i)
     END DO
     seqGridSorted=seqGridSorted(len:1:-1)
-    ! PRINT*, 'loc sorted:'
-    ! PRINT*, locSorted
 
-    ! PRINT*, 'sorted:'
-    ! PRINT*, seqGridSorted(1:5)
-    ! PRINT*, 'sort subroutine end!'
   END SUBROUTINE sortGrid
 
   !===========================================================================!
@@ -1769,16 +1530,6 @@ CONTAINS
 
     ! number of grids
     len=nRow*nCol
-    ! PRINT*, 'after input:'
-    ! PRINT*, 'seqReal2Sort:'
-    ! PRINT*, seqReal2Sort(1:5)
-    ! PRINT*, '****'
-    !
-    !
-    ! PRINT*, 'after input:'
-    ! PRINT*, 'seqRealSorted:'
-    ! PRINT*, seqRealSorted(1:5)
-    ! PRINT*, '****'
 
 
     ! fill in an nRow*nCol array with values to determine sequence
@@ -1790,12 +1541,7 @@ CONTAINS
           xInd=xInd+1
        END DO
     END DO
-    ! PRINT*, 'old after sorting:'
-    ! PRINT*, seqRealSorted(1:5)
-    ! PRINT*, 'ind:'
-    ! PRINT*, ind(:,1)
-    ! PRINT*, 'ind. seq:'
-    ! PRINT*, ind(:,2)
+
 
     ! then sorted ind(:,3) will have the same order as seqReal2Sort
     ! sort ind(:,3)
@@ -1823,12 +1569,7 @@ CONTAINS
        seqRealSorted(loc)=seqReal2Sort(i)
     END DO
     seqRealSorted=seqRealSorted(len:1:-1)
-    ! PRINT*, 'loc sorted:'
-    ! PRINT*, locSorted
 
-    ! PRINT*, 'sorted:'
-    ! PRINT*, seqRealSorted(1:5)
-    ! PRINT*, 'sort subroutine end!'
   END SUBROUTINE sortSeqReal
 
   !===========================================================================!

@@ -4,6 +4,7 @@
 !Last modification
 !
 !Last modification:
+! TS  02 May 2018 - added explict interfaces
 ! LJ  15 Jun 2017 - Add parts where NonWaterFraction=0 is used as a divider so that the code won't crash with 100% water
 ! TS  20 May 2017 - Add surface-level diagonostics: T2, Q2, U10
 ! HCW 09 Dec 2016 - Add zenith and azimuth to output file
@@ -34,19 +35,21 @@
 
 SUBROUTINE SUEWS_Calculations(Gridiv,ir,iMB,irMax)
 
+  ! added `ONLY` variables to prevent naming intervention, TS 02 May 2018
   USE data_in
-  USE time
-  USE NARP_MODULE
-  USE defaultNotUsed
+  USE time,ONLY:iy,iy_prev_t,id,id_prev_t,it,imin,dectime
+
+  ! USE NARP_MODULE
+  ! USE defaultNotUsed
   USE allocateArray
   USE sues_data
   USE snowMod
   USE gis_data
-  USE initial
-  USE moist
-  USE mod_z
-  USE mod_k
-  USE solweig_module
+  USE initial,ONLY:NumberOfGrids,ReadLinesMetdata
+  ! USE moist
+  USE mod_z,ONLY:z
+  ! USE mod_k
+  ! USE solweig_module
   USE WhereWhen
   USE SUEWS_Driver
   USE VegPhenogy

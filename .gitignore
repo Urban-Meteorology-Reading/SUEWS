@@ -12,3 +12,13 @@ test-SuPy-checkpoint.py
 warnings-checkpoint.txt
 test-checkpoint.py
 launch.json
+*.iml
+.eggs
+.idea
+build
+dist
+.cproject
+.project
+SUEWS_V2018a
+SUEWS-SourceCode/.settings
+supy.egg-info

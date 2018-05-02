@@ -37,7 +37,7 @@ MODULE ctrl_output
   IMPLICIT NONE
 
 
-  INTEGER :: i
+  INTEGER :: n
 
   CHARACTER(len=10),PARAMETER:: & !Define useful formats here
        fy   = '(i0004,1X)',& !4 digit integer for year
@@ -71,7 +71,7 @@ MODULE ctrl_output
   TYPE(varAttr) :: varList(300)
 
   ! datetime:
-  DATA(varList(i), i=1,5)/&
+  DATA(varList(n), n=1,5)/&
        varAttr('Year'    , 'YYYY' , fy , 'Year'         , aT , 'datetime' , 0),&
        varAttr('DOY'     , 'DOY'  , ft , 'Day of Year'  , aT , 'datetime' , 0),&
        varAttr('Hour'    , 'HH'   , ft , 'Hour'         , aT , 'datetime' , 0),&
@@ -80,7 +80,7 @@ MODULE ctrl_output
        /
 
   ! defualt:
-  DATA(varList(i), i=5+1,ncolumnsDataOutSUEWS)/&
+  DATA(varList(n), n=5+1,ncolumnsDataOutSUEWS)/&
        varAttr('Kdown'      , 'W m-2'        , f104 , 'Incoming shortwave radiation'                     , aA , 'SUEWS' , 0)     , &
        varAttr('Kup'        , 'W m-2'        , f104 , 'Outgoing shortwave radiation'                     , aA , 'SUEWS' , 0)     , &
        varAttr('Ldown'      , 'W m-2'        , f104 , 'Incoming longwave radiation'                      , aA , 'SUEWS' , 0)     , &
@@ -163,7 +163,7 @@ MODULE ctrl_output
        /
 
   ! SOLWEIG:
-  DATA(varList(i), i=84+1,84+ncolumnsdataOutSOL-5)/&
+  DATA(varList(n), n=84+1,84+ncolumnsdataOutSOL-5)/&
        varAttr('azimuth'    , 'to_add' , f106 , 'azimuth'    , aA , 'SOLWEIG' , 0)  , &
        varAttr('altitude'   , 'to_add' , f106 , 'altitude'   , aA , 'SOLWEIG' , 0)  , &
        varAttr('GlobalRad'  , 'to_add' , f106 , 'GlobalRad'  , aA , 'SOLWEIG' , 0)  , &
@@ -193,7 +193,7 @@ MODULE ctrl_output
        /
 
   ! BL:
-  DATA(varList(i), i=110+1,110+ncolumnsdataOutBL-5)/&
+  DATA(varList(n), n=110+1,110+ncolumnsdataOutBL-5)/&
        varAttr('z'         , 'to_add' , f104 , 'z'         , aA , 'BL' , 0)  , &
        varAttr('theta'     , 'to_add' , f104 , 'theta'     , aA , 'BL' , 0)  , &
        varAttr('q'         , 'to_add' , f104 , 'q'         , aA , 'BL' , 0)  , &
@@ -214,7 +214,7 @@ MODULE ctrl_output
        /
 
   ! Snow:
-  DATA(varList(i), i=127+1,127+ncolumnsDataOutSnow-5)/&
+  DATA(varList(n), n=127+1,127+ncolumnsDataOutSnow-5)/&
        varAttr('SWE_Paved'      , 'to_add' , f106 , 'SWE_Paved'      , aA , 'snow' , 0)  , &
        varAttr('SWE_Bldgs'      , 'to_add' , f106 , 'SWE_Bldgs'      , aA , 'snow' , 0)  , &
        varAttr('SWE_EveTr'      , 'to_add' , f106 , 'SWE_EveTr'      , aA , 'snow' , 0)  , &
@@ -315,7 +315,7 @@ MODULE ctrl_output
        /
 
   ! ESTM:
-  DATA(varList(i), i=224+1,224+ncolumnsDataOutESTM-5)/&
+  DATA(varList(n), n=224+1,224+ncolumnsDataOutESTM-5)/&
        varAttr('QS'       , 'W m-2' , f104 , 'Total Storage'                            , aA , 'ESTM' , 0) , &
        varAttr('QSAir'    , 'W m-2' , f104 , 'Storage air'                              , aA , 'ESTM' , 0) , &
        varAttr('QSWall'   , 'W m-2' , f104 , 'Storage Wall'                             , aA , 'ESTM' , 0) , &
@@ -346,7 +346,7 @@ MODULE ctrl_output
        /
 
   ! DailyState:
-  DATA(varList(i), i=251+1,251+ncolumnsDataOutDailyState-5)/&
+  DATA(varList(n), n=251+1,251+ncolumnsDataOutDailyState-5)/&
        varAttr('HDD1_h'     , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
        varAttr('HDD2_c'     , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
        varAttr('HDD3_Tmean' , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
@@ -759,7 +759,7 @@ CONTAINS
     INTEGER,INTENT(in) :: Gridiv,outLevel
 
     TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varListSel
-    INTEGER :: xx,err,fn
+    INTEGER :: xx,err,fn,i
     CHARACTER(len=100) :: FileOut
     CHARACTER(len=50*300) :: str_cat
     CHARACTER(len=50) :: str_x=''

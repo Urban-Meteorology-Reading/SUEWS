@@ -19,3 +19,9 @@ f2py
 build/*
 supy.egg*
 dist/*
+.cproject
+.project
+org.eclipse.photran.core.prefs
+workspace.xml
+10.SUEWS-FORTRAN.iml
+.idea

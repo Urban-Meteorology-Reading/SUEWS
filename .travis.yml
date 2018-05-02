@@ -1,0 +1,40 @@
+language: c
+os:
+- osx
+env:
+  matrix:
+  - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+sudo: required
+compiler:
+- gcc
+addons:
+  apt:
+    packages:
+    - gfortran
+before_install:
+- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then pip install numpy --user   ; fi
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pip2 install numpy --user   ; fi
+- |
+  # if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
+  #   brew update &> /dev/null
+  #   brew cask uninstall --force oclint
+  #   brew install gcc
+  # fi
+  if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
+    brew cask uninstall --force oclint
+    brew install gcc
+  fi
+script:
+- make exe
+before_deploy:
+- git config --local user.name "sunt05"
+- git config --local user.email "sunting.05@gmail.com"
+- git tag "$(date +'%Y%m%d%H%M%S')-$(git log --format=%h -1)"
+deploy:
+  provider: releases
+  file: "./ReleaseRepo/build/macOS/SUEWS_V2018a"
+  skip_cleanup: true
+  on:
+    all_branches: true
+  api_key:
+    secure: mW8Z+aWYnhA9AenXw1GVVuFV9nH/WBbT70F0HwAq2YDA+u3m0RYhXd9iqPrw9f+ZJv27QoVbTGIewSt5c21/WdaKaked/dlC0ZJIrNjvvyxl5b1vFKDOhDICyfk1Z17/FF6DAAwXS/Ny9UDRtaf8FNfwrY8Z/CCk1VLPuko5Cij+fnliKkqY67DC1qkUm7bJfC7jsJ2D9CKakUJK1plIs0mVA8teI8dj9uOnXJOtkBJPAhDOAomtr6c0kJfLvIU7QPbc+RrPTjqdfdCiOzNMbXlYBOlG9HoAlQVYw/Lh3qnJDjmioOPhi3ErSdzF4GZVE6UPil3w8QPWtDsCQeYRzFX9tEnxKvoFssLI70kGCu2ASbtKE0TA1ibrdLy507TrSf5bdcac3Tz/4nS/UYls1kZO2jVTLt2tjlEMtaOa0rUIXKr6xjndQLkC3aVkev9AXq9+46AhxQEoXS5caF6xEVQJjS6WVC3YsBQrV9Q8mvuQONYZ8ZCayiAk0hTvYZmW6XoE23wDI6zP9wQl2SKfgVeDLNaR7uHxlZy1GGZEVApR954bFzZiPwVzdb14c8TUuXN+RQp5l9D146kU3Ka7NDEZ1OjJFgAZSxldmN9dQck+YEiaaH/oHrNRrMv3SjSO2p9bnUYMP1bDAYFknlCQKmmmhXCme/lk8IYRtkoURuk=

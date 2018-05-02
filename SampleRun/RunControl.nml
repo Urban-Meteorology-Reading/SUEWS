@@ -1,10 +1,10 @@
 &RunControl
 CBLUse=0
-SnowUse=1
+SnowUse=0
 SOLWEIGUse=0
 NetRadiationMethod=3
 EmissionsMethod=2
-StorageHeatMethod=3
+StorageHeatMethod=1
 OHMIncQF=0
 StabilityMethod=2
 RoughLenHeatMethod=2

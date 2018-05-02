@@ -1,21 +1,3 @@
-! HCW - No longer needed as error handling done by SUEWS_error.f95 instead
-!module mod_error
-!implicit none
-!
-!contains
-!
-! subroutine error(fname,ios,nostop)
-! integer ::ios
-! character (len=*)::fname
-! integer,optional::nostop
-!
-! print*,"file error: iostat=",ios, trim(fname)
-! if (.not.present(nostop)) stop
-! return
-! end subroutine error
-!
-!end module
-
 !==============================================================================
 MODULE mod_interp
   !     Created on Thu Jan 22 00:06:32 2004
@@ -352,152 +334,13 @@ CONTAINS
 END MODULE heatflux
 
 !==================================================================================
-!===================================================================================
-MODULE METEO
 
-  USE MathConstants
-  IMPLICIT NONE
-
-  ! REAL (KIND(1d0)),PARAMETER ::  PI=3.141592654
-  REAL (KIND(1d0)),PARAMETER ::  RAD2DEG=57.29577951
-  REAL (KIND(1d0)),PARAMETER ::  DEG2RAD=0.017453292
-
-  REAL (KIND(1d0)),PARAMETER ::  MOLMASS_AIR=0.028965             ! kg for 1 mol dry air
-  REAL (KIND(1d0)),PARAMETER ::  MOLMASS_CO2=0.04401              ! kg for 1 mol CO2
-  REAL (KIND(1d0)),PARAMETER ::  MOLMASS_H2O=0.0180153            ! kg for 1 mol water vapor
-  REAL (KIND(1d0)),PARAMETER ::  MU_H2O=MOLMASS_AIR/MOLMASS_H2O   ! mol air/mol H2O
-  REAL (KIND(1d0)),PARAMETER ::  MU_CO2=MOLMASS_AIR/MOLMASS_CO2   ! mol air/mol CO2
-  REAL (KIND(1d0)),PARAMETER ::  R_DRY_MOL=8.31451                ! J/K/mol gas constant
-  REAL (KIND(1D0)),PARAMETER ::  R_DRY_MASS=R_DRY_MOL/MOLMASS_AIR ! J/K/kg GAS CONSTANT
-  !REAL (KIND(1d0)),PARAMETER ::  SIGMA_SB=5.67051e-8              ! Stefan-Boltzmann constant
-  REAL (KIND(1d0)),PARAMETER ::  EPSIL=0.62197
-  REAL (KIND(1d0)),PARAMETER ::  KB=1.3807E-25                    ! BOLTZMANN'S CONSTANT (m^3 MB K^-1)=R/A
-  REAL (KIND(1d0)),PARAMETER ::  AVOGADRO=6.02252E23              ! AVOGADRO'S NUMBER (molecules/mol)
-
-CONTAINS
-
-  !============================================================================
-  FUNCTION sat_vap_press(TK,P) RESULT(es)
-    !c sg sept 99 f90
-    !c     This uses eqns from Buck (1981) JAM 20, 1527-1532
-    !c     units T (K) e (mb) P (mb)
-    !c     f corrects for the fact that we are not dealing with pure water
-    REAL(KIND(1d0))    :: TK,P,TC,es,e,f
-    TC=TK-273.15
-    IF(TC.EQ.0)THEN
-       TC=0.001
-    ENDIF
-    !Valid for 50>T>-40
-    e=6.1121*EXP(((18.729-TC/227.3)*TC)/(TC+257.87))
-    f=1.00072+P*(3.2E-6+5.9E-10*TC**2)
-    es=e*f
-  END FUNCTION sat_vap_press
-
-  REAL(KIND(1d0)) FUNCTION SOS_DRYAIR(TK)
-    !SPEED OF SOUND IN DRY AIR, BEER (1991)
-    REAL(KIND(1d0)) ::TK
-    SOS_DRYAIR=SQRT(1.4*R_DRY_MOL*TK/(MOLMASS_AIR*1000.))
-  END FUNCTION SOS_DRYAIR
-  !============================================================================
-  REAL(KIND(1d0)) FUNCTION POTENTIAL_TEMP(TK,P)
-    !TK = ABSOLUTE TEMPERATURE
-    !P  = PRESS (hPa)
-    REAL(KIND(1d0))    ::TK,P
-    POTENTIAL_TEMP=TK*(1000./P)**0.286
-  END FUNCTION POTENTIAL_TEMP
-
-  REAL(KIND(1d0)) FUNCTION LATENTHEAT_V(TK)
-    !LATENT HEAT OF VAPORIZATION (J/kg) BOLTON(1980)
-    !TK = ABSOLUTE TEMPERATURE
-    REAL(KIND(1d0)) ::TK
-    LATENTHEAT_V=2.501E6-2370.*(TK-273.15)
-  END FUNCTION LATENTHEAT_V
-
-  REAL(KIND(1d0)) FUNCTION LATENTHEAT_M(TK)
-    !LATENT HEAT OF MELTING (J/kg) VALID BELOW 0C BOLTON(1980)
-    !TK = ABSOLUTE TEMPERATURE
-    REAL(KIND(1d0)) ::TK,TC
-    TC=TK-273.15
-    LATENTHEAT_M=3.3358E5+TC*(2030.-10.46*TC)
-  END FUNCTION LATENTHEAT_M
-
-  REAL(KIND(1d0)) FUNCTION SPEC_HEAT_DRYAIR(TK)
-    ! BEER (1991) APPLIED ENVIRONMETRICS METEOROLOGICAL TABLES
-    REAL(KIND(1d0)) ::TK,TC
-    TC=TK-273.15
-    SPEC_HEAT_DRYAIR=1005.+((TC+23.15)**2)/3364.
-  END FUNCTION SPEC_HEAT_DRYAIR
-
-  REAL(KIND(1d0)) FUNCTION SPEC_HEAT_VAPOR(TK,RH)
-    ! BEER (1991) APPLIED ENVIRONMETRICS METEOROLOGICAL TABLES
-    REAL(KIND(1d0)) ::TK,TC_100,RH
-    TC_100=(TK-273.15)/100.
-    SPEC_HEAT_VAPOR=1859.+0.13*RH+(19.3+0.569*RH)*TC_100+(10.+0.5*RH)*TC_100**2
-  END FUNCTION SPEC_HEAT_VAPOR
-
-  REAL(KIND(1d0)) FUNCTION HEATCAPACITY_AIR(TK,RH,P)
-    REAL(KIND(1d0)) ::TK,RH,P
-    REAL(KIND(1d0)) ::RHO_D,RHO_V
-    REAL(KIND(1d0)) ::CPD,CPV
-    RHO_D=DENSITY_DRYAIR(TK,P)
-    RHO_V=DENSITY_VAPOR(TK,RH,P)
-    CPD=SPEC_HEAT_DRYAIR(TK)
-    CPV=SPEC_HEAT_VAPOR(TK,RH)
-    HEATCAPACITY_AIR=RHO_D*CPD+RHO_V*CPV
-  END FUNCTION HEATCAPACITY_AIR
-
-  REAL(KIND(1d0)) FUNCTION DENSITY_MOIST(TVK,P)
-    ! density of moist air FROM VIRTUAL TEMPERATURE
-    !TVK = VIRTUAL TEMPERATURE (K)
-    != = PRESSURE (hPa)
-    REAL(KIND(1d0)) ::TVK,P
-    DENSITY_MOIST=P*100./(R_DRY_MASS*TVK)
-  END FUNCTION DENSITY_MOIST
-
-  REAL(KIND(1d0)) FUNCTION DENSITY_VAPOR(TK,RH,P)
-    !WATER VAPOR DENSITY
-    REAL(KIND(1d0))    ::TK,P,RH,EA
-    EA=SAT_VAP_PRESS(TK,P)*RH/100.
-    DENSITY_VAPOR=(EA*100.*EPSIL)/(R_DRY_MASS*TK)
-  END FUNCTION DENSITY_VAPOR
-
-  REAL(KIND(1d0)) FUNCTION DENSITY_DRYAIR(TK,P)
-    REAL(KIND(1d0)) ::TK,P
-    DENSITY_DRYAIR=P*100./(R_DRY_MASS*TK)
-  END FUNCTION DENSITY_DRYAIR
-
-  REAL(KIND(1d0)) FUNCTION DENSITY_GAS(TK,PP,MOLMASS)
-    !DENSITY FOR IDEAL GAS SPECIES GIVEN ITS PARTIAL PRESSURE (hPa) AND MOLAR MASS (kg)
-    REAL(KIND(1d0)) ::TK,PP,MOLMASS
-    DENSITY_GAS=PP*MOLMASS/(R_DRY_MOL*TK)
-  END FUNCTION DENSITY_GAS
-
-  REAL(KIND(1d0)) FUNCTION PARTIAL_PRESSURE(TK,N)
-    !PARTIAL PRESSURE OF IDEAL GAS (hPa)
-    REAL(KIND(1d0)) ::TK,N !N IS THE NUMBER DENSITY IN mol/m3
-    PARTIAL_PRESSURE=N*KB*TK
-  END FUNCTION PARTIAL_PRESSURE
-
-  REAL(KIND(1d0)) FUNCTION SCALE_HEIGHT(TK)
-    REAL(KIND(1d0)) ::TK
-    !SCALE HEIGHT FOR DRY ATMOSPHERE IN km BEER (1991)
-    SCALE_HEIGHT=R_DRY_MOL*TK/(MOLMASS_AIR*9.81)
-  END FUNCTION SCALE_HEIGHT
-
-  REAL(KIND(1d0)) FUNCTION VAISALA_BRUNT_F(TK)
-    !BEER (1991)
-    REAL(KIND(1d0)) ::TK
-    VAISALA_BRUNT_F=SQRT(0.4/1.4*9.81/SCALE_HEIGHT(TK))
-  END FUNCTION VAISALA_BRUNT_F
-
-END MODULE METEO
 
 MODULE ESTM_module
   !===============================================================================
   ! revision history:
   ! TS 09 Oct 2017: re-organised ESTM subroutines into a module
   !===============================================================================
-
   IMPLICIT NONE
 
 

@@ -1,5 +1,5 @@
 MODULE BLUEWS_module
-  USE AtmMoist_module,ONLY:qsatf
+  USE meteo,ONLY:qsatf
 
   IMPLICIT NONE
 CONTAINS
@@ -24,11 +24,11 @@ CONTAINS
     USE cbl_module
     USE gis_data
     USE WhereWhen
-    USE AtmMoist_module,ONLY:sat_vap_press
+    USE meteo,ONLY:sat_vap_press_x
 
     IMPLICIT NONE
 
-    ! REAL(KIND(1d0))::sat_vap_press
+    ! REAL(KIND(1d0))::sat_vap_press_x
     REAL(KIND(1d0))::qh_use,qe_use,tm_K_zm,qm_gkg_zm
     REAL(KIND(1d0))::Temp_C1,avrh1,es_hPa1
     REAL(KIND(1d0))::secs0,secs1,Lv
@@ -176,7 +176,7 @@ CONTAINS
        !Stability correction
        !tm_K_zm=tm_K+cbldata(10)*cbldata(2)/(k*cbldata(8)*cbldata(6)*cbldata(4))
        Temp_C=tm_K/((1000/cbldata(9))**(gas_ct_dry/cbldata(6)))-C2K
-       es_hPa=sat_vap_press(Temp_C,cbldata(9),1,dectime)
+       es_hPa=sat_vap_press_x(Temp_C,cbldata(9),1,dectime)
        lv=(2500.25-2.365*Temp_C)*1000
        !qm_gkg_zm=qm_gkg+cbldata(10)*cbldata(3)/(k*cbldata(8)*cbldata(4)*lv)
        avrh=100*((qm_gkg*cbldata(9)/(622+qm_gkg))/es_hPa) !check pressure
@@ -193,7 +193,7 @@ CONTAINS
     ELSEIF(qh_choice==3)THEN ! CBL
        !tm_K_zm=tm_K+cbldata(10)*cbldata(2)/(k*cbldata(8)*cbldata(6)*cbldata(4))
        Temp_C1=tm_K/((1000/cbldata(9))**(gas_ct_dry/cbldata(6)))-C2K
-       es_hPa1=sat_vap_press(Temp_C1,cbldata(9),1,dectime)
+       es_hPa1=sat_vap_press_x(Temp_C1,cbldata(9),1,dectime)
        lv=(2500.25-2.365*Temp_C1)*1000
        !qm_gkg_zm=qm_gkg+cbldata(10)*cbldata(3)/(k*cbldata(8)*cbldata(4)*lv)
        !  avrh1=100*((qm_gkg*cbldata(8)/(622+qm_gkg))/es_hPa1) !check pressure
@@ -295,7 +295,7 @@ CONTAINS
     USE cbl_module
     USE gis_data
     USE WhereWhen
-    USE AtmMoist_module,ONLY:sat_vap_press
+    USE meteo,ONLY:sat_vap_press_x
 
     IMPLICIT NONE
 
@@ -355,7 +355,7 @@ CONTAINS
        gamq_gkgm=IniCBLdata(nLineDay,4)
        tm_K_zm=(Temp_C+C2K)*((1000/Press_hPa)**(gas_ct_dry/avcp))
        tm_K=tm_K_zm-psyh*qh_use/(k*UStar*avcp*avdens)
-       es_hPa=sat_vap_press(Temp_C,Press_hPa,1,dectime)
+       es_hPa=sat_vap_press_x(Temp_C,Press_hPa,1,dectime)
        qm_gkg_zm=622*avrh/(100*Press_hPa/es_hPa-avrh)
        lv=(2500.25-2.365*temp_C)*1000
        qm_gkg=qm_gkg_zm-psyh*qe_use/(k*UStar*avdens*lv)
@@ -367,7 +367,7 @@ CONTAINS
        gamq_gkgm=0.0092
        tm_K_zm=(Temp_C+C2K)*((1000/Press_hPa)**(gas_ct_dry/avcp))
        tm_K=tm_K_zm-psyh*qh_use/(k*UStar*avcp*avdens)
-       es_hPa=sat_vap_press(Temp_C,Press_hPa,1,dectime)
+       es_hPa=sat_vap_press_x(Temp_C,Press_hPa,1,dectime)
        qm_gkg_zm=622*avrh/(100*Press_hPa/es_hPa-avrh)
        lv=(2500.25-2.365*temp_C)*1000
        qm_gkg=es_hPa-psyh*qe_use/(k*UStar*avdens*lv)
@@ -420,7 +420,7 @@ CONTAINS
     USE cbl_module
     USE gis_data
     USE WhereWhen
-    USE AtmMoist_module,ONLY:sat_vap_press
+    USE meteo,ONLY:sat_vap_press_x
 
     IMPLICIT NONE
     REAL(KIND(1d0))::qh_use,qe_use,tm_K_zm,qm_gkg_zm
@@ -466,7 +466,7 @@ CONTAINS
     ! (NAN,is=9,ncolumnsdataOutBL)/)
 
     Temp_C=tm_K/((1000/Press_hPa)**(gas_ct_dry/avcp))-C2K
-    es_hPa=sat_vap_press(Temp_C,Press_hPa,1,dectime)
+    es_hPa=sat_vap_press_x(Temp_C,Press_hPa,1,dectime)
     lv=(2500.25-2.365*Temp_C)*1000
     !qm_gkg_zm=qm_gkg+cbldata(10)*cbldata(3)/(k*cbldata(8)*cbldata(4)*lv)
     avrh=100*((qm_gkg*Press_hPa/(622+qm_gkg))/es_hPa) !check pressure
@@ -496,7 +496,7 @@ CONTAINS
        gamq_gkgm=IniCBLdata(nLineDay,4)
        tm_K_zm=(Temp_C+C2K)*((1000/Press_hPa)**(gas_ct_dry/avcp))
        tm_K=tm_K_zm-psyh*qh_use/(k*UStar*avcp*avdens)
-       es_hPa=sat_vap_press(Temp_C,Press_hPa,1,dectime)
+       es_hPa=sat_vap_press_x(Temp_C,Press_hPa,1,dectime)
        qm_gkg_zm=622*avrh/(100*Press_hPa/es_hPa-avrh)
        lv=(2500.25-2.365*temp_C)*1000
        qm_gkg=qm_gkg_zm-psyh*qe_use/(k*UStar*avdens*lv)
@@ -508,7 +508,7 @@ CONTAINS
        gamq_gkgm=0.0092
        tm_K_zm=(Temp_C+C2K)*((1000/Press_hPa)**(gas_ct_dry/avcp))
        tm_K=tm_K_zm-psyh*qh_use/(k*UStar*avcp*avdens)
-       es_hPa=sat_vap_press(Temp_C,Press_hPa,1,dectime)
+       es_hPa=sat_vap_press_x(Temp_C,Press_hPa,1,dectime)
        qm_gkg_zm=622*avrh/(100*Press_hPa/es_hPa-avrh)
        lv=(2500.25-2.365*temp_C)*1000
        qm_gkg=es_hPa-psyh*qe_use/(k*UStar*avdens*lv)

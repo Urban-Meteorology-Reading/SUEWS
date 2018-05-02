@@ -86,7 +86,7 @@ CONTAINS
     idQ=COUNT(MetForcingData_grid(:,2)==id .AND. & ! day of year
          MetForcingData_grid(:,4)==0 .AND. & ! minutes
          MetForcingData_grid(:,15)>0) & ! Sd
-         .GE. 6
+         >= 6
 
     ! PRINT*, idQ
     IF ( idQ ) THEN

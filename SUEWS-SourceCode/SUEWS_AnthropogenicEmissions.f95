@@ -1,5 +1,7 @@
 !===================================================================================
 !Simple Anthropogenic Heat and Carbon Dioxide Parameterization routines
+!This subroutine is still under development and in the equations concerning CO2 fluxes
+!there are bugs and missing comments. 
 !Last modified
 ! MH 29 Jun 2017 -  Finalised the code to calculate the anthropogenic emissions of heat and CO2
 ! HCW 21 Apr 2017 - renamed from SUEWS_SAHP.f95. Now includes CO2 fluxes as well as QF.
@@ -12,9 +14,9 @@
 !                   vthey are now normalised (sum to 1) in InitializeSurfaceCharacteristics
 !                   N.B. previous versions were not applying weekday/weekend profiles correctly
 !
-! AnthropEmissionsMethod = 0 - Use values in met forcing file, or default QF
-! AnthropEmissionsMethod = 1 - Method according to Loridan et al. (2011) : SAHP
-! AnthropEmissionsMethod = 2 - Method according to Jarvi et al. (2011)   : SAHP_2
+! EmissionsMethod = 0 - Use values in met forcing file, or default QF
+! EmissionsMethod = 1 - Method according to Loridan et al. (2011) : SAHP
+! EmissionsMethod = 2 - Method according to Jarvi et al. (2011)   : SAHP_2
 !
 !===================================================================================
 
@@ -227,45 +229,6 @@
      ! Divide QF by energy emission factor and multiply by CO2 factor
      Fc_traff = QF_traff/EnEF_v_Jkm * FcEF_v_kgkm*1e3*1e6/44
 
-     ! Sum components to give anthropogenic CO2 flux [umol m-2 s-1]
-     Fc_anthro = Fc_metab + Fc_traff + Fc_build
-
-
-  ELSEIF(EmissionsMethod>=4 .AND. EmissionsMethod<=6 .OR. EmissionsMethod>=14 .AND. EmissionsMethod<=16 .OR. &
-     EmissionsMethod>=24 .AND. EmissionsMethod<=26 .OR. EmissionsMethod>=34 .AND. EmissionsMethod<=36) THEN
-     ! Calculate QF and Fc using building energy use and transport statistics
-
-     ! Calculate energy released from traffic
-     IF(TrafficUnits==1) THEN            ! [veh km m-2 day-1]
-       ! Calculate using mean traffic rate [veh km m-2 day-1] * emission factor [J km-1]
-       QF_traff = TrafficRate(iu)/(60*60*24) * EnEF_v_Jkm * TraffDorNorT
-       ! Use mean traffic rate [veh km m-2 s-1] * emission factor [kg km-1] * 1e3 g kg-1 /44 g mol-1 * 1e6 umol mol-1
-       Fc_traff = TrafficRate(iu)/(60*60*24) * FcEF_v_kgkm*1e3*1e6 /44 * TraffDorNorT
-
-     ELSEIF(TrafficUnits==2) THEN        ! [veh km cap-1 day-1]
-       DP_x_RhoPop_traff = TraffDorNorT * NumCapita/10000   ! [cap m-2]
-       ! Use mean traffic rate [veh km cap-1 day-1] * emission factor [J km-1]
-       QF_traff = TrafficRate(iu)/(60*60*24) * EnEF_v_Jkm * DP_x_RhoPop_traff
-       ! Use mean traffic rate [veh km cap-1 day-1] * emission factor [kg km-1] * 1e3 g kg-1 /44 g mol-1 * 1e6 umol mol-1
-       Fc_traff = TrafficRate(iu)/(60*60*24) * FcEF_v_kgkm*1e3*1e6/44 * DP_x_RhoPop_traff
-
-     ELSE ! If TrafficUnits doesn't match possible units
-       CALL ErrorHint(75,'Check SUEWS_AnthropogenicEmissions.txt',TrafficUnits, notUsed, notUsedI)
-     ENDIF
-
-     ! Energy released from buildings only
-     QF_build = QF_SAHP_base + QF_SAHP_heat + QF_SAHP_ac
-
-     ! Consider the various components of QF_build to calculate Fc_build
-     Fc_build = QF_SAHP_heat*FrFossilFuel_Heat * EF_umolCO2perJ
-     ! ... and there is also a temperature-independent contribution from building energy use
-     Fc_build = Fc_build + QF_SAHP_base*QF0_BEU(iu)*FrFossilFuel_NonHeat * EF_umolCO2perJ
-
-     ! Add other QF components to QF_SAHP_base (because if AnthropEmissionsMethod = 4, QF calculated above is building part only)
-     QF_SAHP_base = QF_SAHP_base + QF_traff + QF_metab
-
-     ! Sum components to give anthropogenic heat flux [W m-2]
-     QF_SAHP = QF_metab + QF_traff + QF_build
      ! Sum components to give anthropogenic CO2 flux [umol m-2 s-1]
      Fc_anthro = Fc_metab + Fc_traff + Fc_build
 

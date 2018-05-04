@@ -971,7 +971,7 @@ CONTAINS
 
   SUBROUTINE SUEWS_update_DailyState(&
        iy,id,it,imin,dectime,&!input
-       Gridiv,NumberOfGrids,nsh_real,&
+       Gridiv,NumberOfGrids,&
        DailyStateLine,&
        dataOutDailyState)!inout
 
@@ -998,7 +998,7 @@ CONTAINS
     ! REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(IN) ::porosity
     ! REAL(KIND(1d0)),DIMENSION(0:ndays,9),INTENT(IN):: WU_Day !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
     !
-    REAL(KIND(1d0)),INTENT(IN) ::nsh_real
+    ! REAL(KIND(1d0)),INTENT(IN) ::nsh_real
     ! REAL(KIND(1d0)),INTENT(IN) ::deltaLAI
     ! REAL(KIND(1d0)),INTENT(IN) ::VegPhenLumps
     ! REAL(KIND(1d0)),INTENT(IN) ::SnowAlb

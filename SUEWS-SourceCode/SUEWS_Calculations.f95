@@ -146,7 +146,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
   ! only works at the last timestep of a day
   CALL SUEWS_update_DailyState(&
        iy, id, it, imin, dectime, &!input
-       Gridiv, NumberOfGrids, nsh_real, &
+       Gridiv, NumberOfGrids, &
        DailyStateLine, &
        dataOutDailyState)!inout
 

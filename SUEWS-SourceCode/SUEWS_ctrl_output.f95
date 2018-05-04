@@ -544,6 +544,8 @@ CONTAINS
     CASE ('DailyState')    !DailyState
        ! PRINT*, SHAPE(dataOutSUEWS)
        ! print*, dataOutSUEWS(1:irMax,2,Gridiv)
+       ! PRINT*,'days in DailyState' ,PACK(dataOutDailyState(:,2,Gridiv), &
+       !      mask=(dataOutDailyState(:,6,Gridiv)/=-999))
        ! get correct day index
        idMin=MAX(1, &
             INT(MINVAL(dataOutSUEWS(1:irMax,2,Gridiv))), &

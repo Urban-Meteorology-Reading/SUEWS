@@ -4,7 +4,7 @@ CC = gfortran $(CFLAGS)          # compiler
 file       := SUEWS_const.f95
 variable   := $(shell grep 'progname' ${file})
 TARGET_str := $(lastword $(subst =, ,${variable})) # program name with quotes
-TARGET     = $(subst $\', ,${TARGET_str}) # program name
+TARGET     := $(strip $(subst $\', ,${TARGET_str})) # program name
 
 # static flag for different OS to correctly link static libs
 # so gfortran dependency can be relaxed
@@ -42,6 +42,15 @@ nc4fr: NETCDFINC = /home/xlinfr/apps/lib4cdo/include # path only valid with Fred
 nc4fr: NETCDFLIB = /home/xlinfr/apps/lib4cdo/lib # path only valid with Fredrik's HPC
 
 netcdf nc4fr:	CFLAGS += -Dnc=1 -I$(NETCDFINC) # options for netcdf build
+
+# coverage testing related settings:
+cov: CFLAGS += -fprofile-arcs -ftest-coverage # add options for coverage testing
+cov: suffix := _cov
+cov: TARGET := $(strip $(TARGET))$(strip $(suffix))
+
+
+clean: suffix := *
+clean: TARGET := $(strip $(TARGET))$(strip $(suffix))
 
 
 # All the files which include modules used by other modules (these therefore
@@ -96,6 +105,15 @@ main: SUEWS_Program.f95 $(UTILS) $(MODULES) $(OTHERS) $(TEST)
 			mkdir -p $(SUEWS_build_dir)
 			cp $(TARGET) $(SUEWS_build_dir)/.
 
+# Build main program with coverage checking options enabled
+cov: SUEWS_Program.f95 $(UTILS) $(MODULES) $(OTHERS) $(TEST)
+			$(CC) SUEWS_Program.f95  -c ; \
+			$(CC) SUEWS_Program.o $(UTILS) $(MODULES) $(OTHERS) $(TEST) \
+			$(STATICLIB) \
+			-o $(TARGET)
+			mkdir -p $(SUEWS_build_dir)
+			cp $(TARGET) $(SUEWS_build_dir)/.
+
 # Build main program with NETCDF support - main uses MODULES and OTHERS
 netcdf: SUEWS_Program.f95 $(UTILS) $(MODULES) $(OTHERS) $(TEST)
 				$(CC) SUEWS_Program.f95  -c ; \
@@ -132,4 +150,5 @@ $(TEST): $(subst .o,.f95, $(TEST))
 
 # If wanted, clean all *.o files after build
 clean:
-			 -rm -rf *.o *.mod *.dSYM $(TARGET)
+	$(info $$TARGET is [${TARGET}])
+	-rm -rf *.o *.mod *.dSYM *.gcda *.gcno ${TARGET}

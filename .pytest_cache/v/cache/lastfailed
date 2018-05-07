@@ -1,0 +1,6 @@
+{
+  "TestRun/Benchmark_Test/BaseRun/2018a/Output/test_FileChoices.txt": true, 
+  "TestRun/Benchmark_Test/test_dev.py::test_multigrid": true, 
+  "TestRun/Benchmark_Test/test_dev.py::test_multiyear": true, 
+  "TestRun/Benchmark_Test/test_dev.py::test_samerun": true
+}

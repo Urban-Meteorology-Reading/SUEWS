@@ -10,6 +10,7 @@ TARGET     := $(strip $(subst $\', ,${TARGET_str})) # program name
 # so gfortran dependency can be relaxed
 # but netCDF is still linked in the dynamic way as suggested by UCAR
 SUEWS_build_base = ../ReleaseRepo/build/
+SUEWS_test_dir = ../BenchmarkTest/
 
 ifeq ($(OS),Windows_NT)
 			STATIC = -static -mcmodel=medium# mingw
@@ -103,16 +104,7 @@ main: SUEWS_Program.f95 $(UTILS) $(MODULES) $(OTHERS) $(TEST)
 			$(STATICLIB) \
 			-o $(TARGET)
 			mkdir -p $(SUEWS_build_dir)
-			cp $(TARGET) $(SUEWS_build_dir)/.
-
-# Build main program with coverage checking options enabled
-cov: SUEWS_Program.f95 $(UTILS) $(MODULES) $(OTHERS) $(TEST)
-			$(CC) SUEWS_Program.f95  -c ; \
-			$(CC) SUEWS_Program.o $(UTILS) $(MODULES) $(OTHERS) $(TEST) \
-			$(STATICLIB) \
-			-o $(TARGET)
-			mkdir -p $(SUEWS_build_dir)
-			cp $(TARGET) $(SUEWS_build_dir)/.
+			cp -f $(TARGET) $(SUEWS_build_dir)/.
 
 # Build main program with NETCDF support - main uses MODULES and OTHERS
 netcdf: SUEWS_Program.f95 $(UTILS) $(MODULES) $(OTHERS) $(TEST)
@@ -129,6 +121,22 @@ nc4fr: SUEWS_Program.f95 $(UTILS) $(MODULES) $(OTHERS) $(TEST)
 			 $(STATICLIB) \
 			 -L$(NETCDFLIB) -Wl,--rpath -Wl,$(NETCDFLIB) -lnetcdff -lnetcdf \
 			 -o $(TARGET)
+
+# Build main program with coverage checking options enabled
+cov: SUEWS_Program.f95 $(UTILS) $(MODULES) $(OTHERS) $(TEST)
+			$(CC) SUEWS_Program.f95  -c ; \
+			$(CC) SUEWS_Program.o $(UTILS) $(MODULES) $(OTHERS) $(TEST) \
+			$(STATICLIB) \
+			-o $(TARGET)
+			mkdir -p $(SUEWS_build_dir)
+			cp -f $(TARGET) $(SUEWS_build_dir)/.
+
+
+# Build main program and run test
+check:
+		$(MAKE) clean;
+		$(MAKE) main;
+		cd $(SUEWS_test_dir); python test_dev.py
 
 
 # If UTILS have changed, compile them again

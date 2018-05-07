@@ -132,7 +132,7 @@ cov: SUEWS_Program.f95 $(UTILS) $(MODULES) $(OTHERS) $(TEST)
 			cp -f $(TARGET) $(SUEWS_build_dir)/.
 
 
-# Build main program and run test
+# Build main program and run test cases
 check:
 		$(MAKE) clean;
 		$(MAKE) main;

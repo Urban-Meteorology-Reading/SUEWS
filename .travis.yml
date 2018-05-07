@@ -25,7 +25,7 @@ before_install:
     brew install gcc
   fi
 script:
-- make exe
+- make main
 before_deploy:
 - git config --local user.name "sunt05"
 - git config --local user.email "sunting.05@gmail.com"

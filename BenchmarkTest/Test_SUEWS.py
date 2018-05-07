@@ -140,6 +140,10 @@ def gen_SiteSelect_multi(df_siteselect, n_grid):
 def run_sim(name_sim, dict_runcontrol, dict_initcond, df_siteselect,
             dir_save=tempfile.mkdtemp()):
     # TODO: support for user-specified forcing condition
+    # create dir_save if not exisitng
+    dir_save=os.path.abspath(os.path.expanduser(dir_save))
+    if not os.path.exists(dir_save):
+        os.mkdir(dir_save)
     # create folder `name_sim`
     dir_sys = os.getcwd()
     try:
@@ -196,13 +200,17 @@ def run_sim(name_sim, dict_runcontrol, dict_initcond, df_siteselect,
     # suppress output info
     os.system('./SUEWS_V2018a &>/dev/null')
 
-    # load results
-    res_sim = load_SUEWS_results(n_grid, n_year)
+    # check if results generated:
+    fl_output=glob('Output/*SUEWS_60.txt')
+    if len(fl_output)>0:
+        # load results
+        res_sim = load_SUEWS_results(n_grid, n_year)
+        return res_sim
+    else:
+        # change back to original path
+        os.chdir(dir_sys)
+        return 'run failed!'
 
-    # change back to original path
-    os.chdir(dir_sys)
-
-    return res_sim
 # %%
 
 ##############################################################################

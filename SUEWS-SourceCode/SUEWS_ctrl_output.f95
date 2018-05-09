@@ -880,6 +880,8 @@ CONTAINS
 
 
   SUBROUTINE filename_gen(dataOutX,varList,Gridiv,FileOut,opt_fmt)
+    USE datetime_module
+
     IMPLICIT NONE
     REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOutX ! to determine year & output frequency
     TYPE(varAttr),DIMENSION(:),INTENT(in)::varList ! to determine output group
@@ -889,7 +891,9 @@ CONTAINS
 
     CHARACTER(len=20):: str_out_min,str_grid,&
          str_date,str_year,str_DOY,str_grp,str_sfx
-    INTEGER :: year_int,DOY_int,val_fmt
+    INTEGER :: year_int,DOY_int,val_fmt,delta_t_min
+    TYPE(datetime) :: dt1,dt2
+    TYPE(timedelta) :: dt_x
 
     ! initialise with a default value
     val_fmt=-999
@@ -910,14 +914,24 @@ CONTAINS
     IF (ncMode==1) str_date=TRIM(ADJUSTL(str_date))//TRIM(ADJUSTL(str_DOY))
 #endif
 
+    ! derive output frequency from output arrays
+    ! dt_x=
+    dt1=datetime(INT(dataOutX(1,1)), 1, 1)+&
+         timedelta(days=INT(dataOutX(1,2)-1),&
+         hours=INT(dataOutX(1,3)),&
+         minutes=INT(dataOutX(1,4)))
 
+    dt2=datetime(INT(dataOutX(2,1)), 1, 1)+&
+         timedelta(days=INT(dataOutX(2,2)-1),&
+         hours=INT(dataOutX(2,3)),&
+         minutes=INT(dataOutX(2,4)))
+    dt_x=dt2-dt1
+    delta_t_min=INT(dt_x%total_seconds()/60)
     ! output frequency in minute:
     IF ( varList(6)%group == 'DailyState' ) THEN
        str_out_min='' ! ignore this for DailyState
     ELSE
-       WRITE(str_out_min,'(i4)') &
-            INT(dataOutX(2,3)-dataOutX(1,3))*60& ! hour
-            +INT(dataOutX(2,4)-dataOutX(1,4))     !minute
+       WRITE(str_out_min,'(i4)') delta_t_min
        str_out_min='_'//TRIM(ADJUSTL(str_out_min))
     ENDIF
 

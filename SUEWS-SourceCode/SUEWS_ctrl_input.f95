@@ -1324,7 +1324,11 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(ReadLinesOrigMetData*Nper):: dectimeDscd, dectimeFast
     REAL(KIND(1d0)),DIMENSION(ReadLinesOrigMetData*Nper):: idectime ! sun position at middle of time-step before
 
-    INTEGER, DIMENSION(Nper):: temp_iy, temp_id, temp_ih, temp_im, temp_ihm
+    INTEGER, DIMENSION(Nper):: temp_iy, temp_id, temp_ih, temp_im, temp_ihm ! temorary varaibles for disaggragation
+    REAL(KIND(1d0)), DIMENSION(Nper):: temp_dectime ! temorary varaibles for disaggragation
+    INTEGER :: Days_of_Year
+    INTEGER, DIMENSION(Nper)::ndays_iy ! number of days in iy
+    REAL(KIND(1d0)):: min_tol ! a tolerance for the fraction of one second in one day
 
     ! Allocate and initialise arrays to receive original forcing data --------------------
     ALLOCATE(MetForDisagg(ReadLinesOrigMetData,nColumnsMetForcingData))
@@ -1416,42 +1420,57 @@ CONTAINS
     ! Disaggregate time columns ---------------------------------------------------------
     IF (Diagnose==1) WRITE(*,*) 'Disaggregating met forcing data (',TRIM(FileOrigMet),') to model time-step...'
     ! Convert to dectime
-    dectimeOrig = MetForDisagg(:,2) + MetForDisagg(:,3)/24.0 + MetForDisagg(:,4)/(60.0*24.0)
+    ! dectimeOrig = MetForDisagg(:,2) + MetForDisagg(:,3)/24.0 + MetForDisagg(:,4)/(60.0*24.0)
+    ! correct to dectime(year_start)=0 and dectime(year_end)=days of year (i.e., 365 or 366 if leap year) ! TS 09 May 2018
+    dectimeOrig = (MetForDisagg(:,2)-1) + MetForDisagg(:,3)/24.0 + MetForDisagg(:,4)/(60.0*24.0)
 
     DO i=1,ReadLinesOrigMetDataMax
+       ! ! Downscale dectime using dectimeOrig(i) [becomes timestamp of last subinterval]
+       ! dectimeDscd(Nper*(i-1)+Seq1Nper) = dectimeOrig(i) - (tstep/60.0)/(60.0*24.0)*(/(ii, ii=(Nper-1),0, -1)/)
+       ! ! Convert to required formats
+       ! temp_iy   = INT(MetForDisagg(i,1))   !Copy year
+       ! temp_id   = FLOOR(dectimeDscd(Nper*(i-1)+Seq1Nper))   !DOY
+       ! ! To avoid precision errors, round here
+       ! !  - this should not be a problem as a difference of 1 = 1 min, so a difference of 0.001 << 1 min
+       ! temp_ihm  = NINT(((dectimeDscd(Nper*(i-1)+Seq1Nper) - temp_id/1.0)*60.0*24.0)*1000.0)/1000   !Minutes of the day (1440 max)
+       ! temp_ih = (temp_ihm-MOD(temp_ihm,60))/60   !Hours
+       ! temp_im = MOD(temp_ihm,60)   !Minutes
+
+       ! IF(ABS(dectimeOrig(i) - 1.0000)<1/1440. .AND. i > 1) THEN   !If year changes and it is not the beginning of the dataset
+       !    IF (Diagnose==1) WRITE(*,*) 'Year change encountered: ', dectimeOrig(i), dectimeOrig(i-1)
+       !    ! Re-downscale dectime using dectimeOrig(i-1)
+       !    dectimeDscd(Nper*(i-1)+Seq1Nper) = dectimeOrig(i-1) + (tstep/60.0)/(60.0*24.0)*Seq1Nper
+       !    ! Convert to required formats
+       !    temp_iy   = INT(MetForDisagg(i,1))   !Copy year
+       !    temp_id   = FLOOR(dectimeDscd(Nper*(i-1)+Seq1Nper))   !DOY
+       !    temp_ihm  = NINT(((dectimeDscd(Nper*(i-1)+Seq1Nper) - temp_id/1.0)*60.0*24.0)*1000.0)/1000   !Mins of the day (1440 max)
+       !    temp_ih = (temp_ihm-MOD(temp_ihm,60))/60   !Hours
+       !    temp_im = MOD(temp_ihm,60)   !Minutes
+       !    ! Adjust year and DOY to account for year change
+       !    temp_iy(1:(Nper-1)) = temp_iy(1:(Nper-1)) - 1  !Subtract 1 from year for all except final timestamp
+       !    temp_id(Nper) = 1  !Set day for final timestamp to 1
+       ! ENDIF
+
        ! Downscale dectime using dectimeOrig(i) [becomes timestamp of last subinterval]
-       dectimeDscd(Nper*(i-1)+Seq1Nper) = dectimeOrig(i) - (tstep/60.0)/(60.0*24.0)*(/(ii, ii=(Nper-1),0, -1)/)
+       temp_dectime = dectimeOrig(i) - (tstep/60.0)/(60.0*24.0)*(/(ii, ii=(Nper-1),0, -1)/)
+       temp_dectime = NINT(temp_dectime*60*60*24)/(60*60*24*1.)
+
        ! Convert to required formats
-       temp_iy   = INT(MetForDisagg(i,1))   !Copy year
-       temp_id   = FLOOR(dectimeDscd(Nper*(i-1)+Seq1Nper))   !DOY
-       ! To avoid precision errors, round here
-       !  - this should not be a problem as a difference of 1 = 1 min, so a difference of 0.001 << 1 min
-       temp_ihm  = NINT(((dectimeDscd(Nper*(i-1)+Seq1Nper) - temp_id/1.0)*60.0*24.0)*1000.0)/1000   !Minutes of the day (1440 max)
+       ! min_tol denotes a tolerance for the fraction of one second in one day
+       min_tol=-1./86400
+
+       ! get year: year-1 if dectime <0, copy `year` from metforcing otherwise
+       temp_iy  = MERGE(INT(MetForDisagg(i,1))-1,INT(MetForDisagg(i,1)),temp_dectime < 0)
+
+       ! get day of year:
+       ndays_iy = Days_of_Year(temp_iy) ! get days of year for DOY correction when temp_dectime<0 during year-crossing
+       temp_dectime=MERGE(temp_dectime+ndays_iy,temp_dectime,temp_dectime<0) ! correct minus temp_dectime to positive values
+       temp_id  = FLOOR(temp_dectime)+1 !DOY
+
+       temp_ihm  = NINT((temp_dectime+1 - temp_id/1.0)*60.0*24.0)  !Minutes of the day (1440 max)
        temp_ih = (temp_ihm-MOD(temp_ihm,60))/60   !Hours
+       temp_ih = MERGE(temp_ih, 0, mask=(temp_ih<24))
        temp_im = MOD(temp_ihm,60)   !Minutes
-
-       IF(dectimeOrig(i) == 1.0000 .AND. i > 1) THEN   !If year changes and it is not the beginning of the dataset
-          IF (Diagnose==1) WRITE(*,*) 'Year change encountered: ', dectimeOrig(i), dectimeOrig(i-1)
-          ! Re-downscale dectime using dectimeOrig(i-1)
-          dectimeDscd(Nper*(i-1)+Seq1Nper) = dectimeOrig(i-1) + (tstep/60.0)/(60.0*24.0)*Seq1Nper
-          ! Convert to required formats
-          temp_iy   = INT(MetForDisagg(i,1))   !Copy year
-          temp_id   = FLOOR(dectimeDscd(Nper*(i-1)+Seq1Nper))   !DOY
-          temp_ihm  = NINT(((dectimeDscd(Nper*(i-1)+Seq1Nper) - temp_id/1.0)*60.0*24.0)*1000.0)/1000   !Mins of the day (1440 max)
-          temp_ih = (temp_ihm-MOD(temp_ihm,60))/60   !Hours
-          temp_im = MOD(temp_ihm,60)   !Minutes
-          ! Adjust year and DOY to account for year change
-          temp_iy(1:(Nper-1)) = temp_iy(1:(Nper-1)) - 1  !Subtract 1 from year for all except final timestamp
-          temp_id(Nper) = 1  !Set day for final timestamp to 1
-       ENDIF
-
-       !IF(i==1 .or. i== ReadlinesOrigMetDataMax) THEN
-       !   write(*,*) temp_iy
-       !   write(*,*) temp_id
-       !   !write(*,*) temp_ihm
-       !   write(*,*) temp_ih
-       !   write(*,*) temp_im
-       !ENDIF
 
        ! Copy to Met_tt array
        Met_tt(Nper*(i-1)+Seq1Nper,1) = temp_iy

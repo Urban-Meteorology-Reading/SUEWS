@@ -21,183 +21,201 @@
 !===============================================================================
 
 
- subroutine day2month(b,mb,md,seas,year,latitude)
-   IMPLICIT NONE
-   integer,intent(in) ::b  !b=doy   --IN
-   integer,intent(out) ::mb !month=mb  --OUT
-   integer,intent(out) ::md !date=md --OUT
-   integer,intent(out) ::seas
-   integer,intent(in) ::year
-   integer::t1,t2,t3
-   integer::k ! k- accounts for leap year
+SUBROUTINE day2month(b,mb,md,seas,year,latitude)
+  IMPLICIT NONE
+  INTEGER,INTENT(in) ::b  !b=doy   --IN
+  INTEGER,INTENT(out) ::mb !month=mb  --OUT
+  INTEGER,INTENT(out) ::md !date=md --OUT
+  INTEGER,INTENT(out) ::seas
+  INTEGER,INTENT(in) ::year
+  INTEGER::t1,t2,t3
+  INTEGER::k ! k- accounts for leap year
 
-   real (kind(1d0))::latitude
+  REAL (KIND(1d0))::latitude
 
-   !Corrected and calculation of date added LJ (Jun 2010)
+  !Corrected and calculation of date added LJ (Jun 2010)
 
-   t1=4
-   t2=100
-   t3=400
+  t1=4
+  t2=100
+  t3=400
 
-   if ((modulo(year,t1)==0).and.(modulo(year,t2)/=0).or.(modulo(year,t3)==0)) then
-      K=1
-   else
-      K=0
-   endif
+  IF ((MODULO(year,t1)==0).AND.(MODULO(year,t2)/=0).OR.(MODULO(year,t3)==0)) THEN
+     K=1
+  ELSE
+     K=0
+  ENDIF
 
-   IF(B<=31) THEN !January
+  IF(B<=31) THEN !January
      MB=1
      md=B
-   ELSEIF(B>31 .AND. B<=59+K) THEN
+  ELSEIF(B>31 .AND. B<=59+K) THEN
      MB=2
      md=B-31
-   ELSEIF(B>59+K .AND. B<=90+K) THEN
+  ELSEIF(B>59+K .AND. B<=90+K) THEN
      MB=3
      md=B-(59+K)
-   ELSEIF(B>90+K .AND. B<=120+K) THEN
+  ELSEIF(B>90+K .AND. B<=120+K) THEN
      MB=4
      md=B-(90+K)
-   ELSEIF(B>120+K .AND. B<=151+K) THEN
+  ELSEIF(B>120+K .AND. B<=151+K) THEN
      MB=5
      md=B-(120+K)
-   ELSEIF(B>151+K .AND. B<=181+K) THEN
+  ELSEIF(B>151+K .AND. B<=181+K) THEN
      MB=6
      md=B-(151+K)
-   ELSEIF(B>181+K .AND. B<=212+K) THEN
+  ELSEIF(B>181+K .AND. B<=212+K) THEN
      MB=7
      md=B-(181+K)
-   ELSEIF(B>212+K .AND. B<=243+K) THEN
+  ELSEIF(B>212+K .AND. B<=243+K) THEN
      MB=8
      md=B-(212+K)
-   ELSEIF(B>243+K .AND. B<=273+K) THEN
+  ELSEIF(B>243+K .AND. B<=273+K) THEN
      MB=9
      md=B-(243+K)
-   ELSEIF(B>273+K .AND. B<=304+K)THEN
+  ELSEIF(B>273+K .AND. B<=304+K)THEN
      MB=10
      md=B-(273+K)
-   ELSEIF(B>304+K .AND. B<=334+K) THEN
+  ELSEIF(B>304+K .AND. B<=334+K) THEN
      MB=11
      md=B-(304+K)
-   ELSEIF(B>334+K) THEN
+  ELSEIF(B>334+K) THEN
      MB=12
      md=B-(334+K)
-   ENDIF
+  ENDIF
 
-   !
-   if(latitude>0)then  ! Northern Hemisphere
-       IF (mb>3 .AND. mb<10) THEN !Summer is from Apr to Sep
-         seas=1
-       else
-         seas=2 !Winter rest of the months
-       endif
-   else  ! southern hemisphere
-       IF (mb<4 .or. mb>9) THEN !Summer is from Oct to Mar
-         seas=1
-       else
-         seas=2 !Winter rest of the months
-       endif
-   endif
-   return
- end  subroutine day2month
+  !
+  IF(latitude>0)THEN  ! Northern Hemisphere
+     IF (mb>3 .AND. mb<10) THEN !Summer is from Apr to Sep
+        seas=1
+     ELSE
+        seas=2 !Winter rest of the months
+     ENDIF
+  ELSE  ! southern hemisphere
+     IF (mb<4 .OR. mb>9) THEN !Summer is from Oct to Mar
+        seas=1
+     ELSE
+        seas=2 !Winter rest of the months
+     ENDIF
+  ENDIF
+  RETURN
+END  SUBROUTINE day2month
 !===============================================================================
- subroutine month2day(mon,ne,k,b)
+SUBROUTINE month2day(mon,ne,k,b)
   IMPLICIT NONE
-  integer:: mon,ne,k,b
+  INTEGER:: mon,ne,k,b
 
   IF(mon== 1)THEN
-    NE=32-B
+     NE=32-B
   ELSE IF(mon==2)THEN
-    NE=60+K-B
+     NE=60+K-B
   ELSE IF(mon==3)THEN
-    NE=91+K-B
+     NE=91+K-B
   ELSE IF(mon==4)THEN
-    NE=121+K-B
+     NE=121+K-B
   ELSE IF(mon==5) THEN
-    NE=152+K-B
+     NE=152+K-B
   ELSE IF(mon==6) THEN
-    NE=182+K-B
+     NE=182+K-B
   ELSE IF(mon==7)THEN
-    NE=213+K-B
+     NE=213+K-B
   ELSE IF(mon==8) THEN
-    NE=244+K-B
-!**********PAGE 151 STARTS HERE**************
+     NE=244+K-B
+     !**********PAGE 151 STARTS HERE**************
   ELSE IF(mon==9)THEN
-    NE=274+K-B
+     NE=274+K-B
   ELSE IF(mon==10) THEN
-    NE=305+K-B
+     NE=305+K-B
   ELSE IF(mon==11) THEN
-    NE=335+K-B
+     NE=335+K-B
   ELSE IF(mon==12)THEN
-    NE=366+K-B
+     NE=366+K-B
   END IF
- end subroutine month2day
+END SUBROUTINE month2day
 !===============================================================================
 !Defines the number or days in each year (defines the leap year)
- subroutine LeapYearCalc(year_int,nroDays)
+SUBROUTINE LeapYearCalc(year_int,nroDays)
 
   IMPLICIT NONE
 
-  integer :: nroDays,year_int
+  INTEGER :: nroDays,year_int
 
   IF(MOD(year_int,100)/=0.AND.MOD(year_int,4)==0) THEN
-    nroDays=366
+     nroDays=366
   ELSEIF(MOD(year_int,400)==0) THEN
-    nroDays=366
+     nroDays=366
   ELSE
-    nroDays=365
+     nroDays=365
   ENDIF
- end subroutine LeapYearCalc
+END SUBROUTINE LeapYearCalc
+
+!===============================================================================
+!Defines the number or days in each year (defines the leap year)
+ELEMENTAL FUNCTION Days_of_Year(year_int) RESULT(nDays)
+  IMPLICIT NONE
+  INTEGER,INTENT(in) :: year_int
+  INTEGER :: nDays
+
+  IF(MOD(year_int,100)/=0.AND.MOD(year_int,4)==0) THEN
+     nDays=366
+  ELSEIF(MOD(year_int,400)==0) THEN
+     nDays=366
+  ELSE
+     nDays=365
+  ENDIF
+
+END FUNCTION Days_of_Year
+
 
 !===============================================================================
 
- subroutine Day_Of_Week(DATE, MONTH, YEAR, DOW)
- ! Calculate weekday from year, month and day information.
- ! DOW: Sunday=1,...Saturday=7
- ! YEAR fixed to integer, LJ March 2015
+SUBROUTINE Day_Of_Week(DATE, MONTH, YEAR, DOW)
+  ! Calculate weekday from year, month and day information.
+  ! DOW: Sunday=1,...Saturday=7
+  ! YEAR fixed to integer, LJ March 2015
 
- IMPLICIT NONE
+  IMPLICIT NONE
 
- INTEGER DATE, MONTH, DAY, YR, MN, N1, N2, DOW, YEAR
+  INTEGER DATE, MONTH, DAY, YR, MN, N1, N2, DOW, YEAR
 
-   YR = YEAR
-   MN = MONTH
+  YR = YEAR
+  MN = MONTH
 
-!C
-!C       IF JANUARY OR FEBRUARY, ADJUST MONTH AND YEAR
-!C
-        IF (MN>2)GO TO 10
-        MN = MN + 12
-        YR = YR - 1
-10      N1 = (26 * (MN + 1)) / 10
-        N2 = (125 * YR) / 100
-        DAY = (DATE + N1 + N2 - (YR / 100) + (YR / 400) - 1)
-        DOW = MOD(DAY, 7) + 1
+  !C
+  !C       IF JANUARY OR FEBRUARY, ADJUST MONTH AND YEAR
+  !C
+  IF (MN>2)GO TO 10
+  MN = MN + 12
+  YR = YR - 1
+10 N1 = (26 * (MN + 1)) / 10
+  N2 = (125 * YR) / 100
+  DAY = (DATE + N1 + N2 - (YR / 100) + (YR / 400) - 1)
+  DOW = MOD(DAY, 7) + 1
 
-        RETURN
- END subroutine Day_Of_Week
+  RETURN
+END SUBROUTINE Day_Of_Week
 
 !===============================================================================
 
 !FL
-subroutine dectime_to_timevec(dectime,HOURS,MINS,SECS)
-    !This subroutine converts dectime to individual
-    !hours, minutes and seconds
-    INTEGER :: HOURS, MINS, doy
-    REAL(kind(1d0))    :: dectime,SECS,DH,DM,DS
-    !INTEGER :: year
+SUBROUTINE dectime_to_timevec(dectime,HOURS,MINS,SECS)
+  !This subroutine converts dectime to individual
+  !hours, minutes and seconds
+  INTEGER :: HOURS, MINS, doy
+  REAL(KIND(1d0))    :: dectime,SECS,DH,DM,DS
+  !INTEGER :: year
 
-        doy=FLOOR(dectime)
+  doy=FLOOR(dectime)
 
-        DH=dectime-doy !Decimal hours
-        HOURS=int(24*DH)
+  DH=dectime-doy !Decimal hours
+  HOURS=INT(24*DH)
 
-        DM=24*DH-HOURS !Decimal minutes
-        MINS=int(60*DM)
+  DM=24*DH-HOURS !Decimal minutes
+  MINS=INT(60*DM)
 
-        DS=60*DM-MINS
-        SECS=int(60*DS)
+  DS=60*DM-MINS
+  SECS=INT(60*DS)
 
-end subroutine dectime_to_timevec
+END SUBROUTINE dectime_to_timevec
 
 !==============================================================================
 
@@ -208,25 +226,25 @@ end subroutine dectime_to_timevec
 !=======================================================================
 
 SUBROUTINE DAYLEN(DOY, XLAT,DAYL, DEC, SNDN, SNUP)
-!-----------------------------------------------------------------------
-    IMPLICIT NONE
-    INTEGER :: DOY
-    REAL(kind(1d0)) :: DEC,DAYL,SOC,SNDN,SNUP,XLAT
-    REAL(kind(1d0)),PARAMETER :: PI=3.14159, RAD=PI/180.0
+  !-----------------------------------------------------------------------
+  IMPLICIT NONE
+  INTEGER :: DOY
+  REAL(KIND(1d0)) :: DEC,DAYL,SOC,SNDN,SNUP,XLAT
+  REAL(KIND(1d0)),PARAMETER :: PI=3.14159, RAD=PI/180.0
 
-!-----------------------------------------------------------------------
-!     Calculation of declination of sun (Eqn. 16). Amplitude= +/-23.45
-!     deg. Minimum = DOY 355 (DEC 21), maximum = DOY 172.5 (JUN 21/22).
-      DEC = -23.45 * COS(2.0*PI*(DOY+10.0)/365.0)
+  !-----------------------------------------------------------------------
+  !     Calculation of declination of sun (Eqn. 16). Amplitude= +/-23.45
+  !     deg. Minimum = DOY 355 (DEC 21), maximum = DOY 172.5 (JUN 21/22).
+  DEC = -23.45 * COS(2.0*PI*(DOY+10.0)/365.0)
 
-!     Sun angles.  SOC limited for latitudes above polar circles.
-      SOC = TAN(RAD*DEC) * TAN(RAD*XLAT)
-      SOC = MIN(MAX(SOC,-1.0),1.0)
+  !     Sun angles.  SOC limited for latitudes above polar circles.
+  SOC = TAN(RAD*DEC) * TAN(RAD*XLAT)
+  SOC = MIN(MAX(SOC,-1.0),1.0)
 
-!     Calculate daylength, sunrise and sunset (Eqn. 17)
-      DAYL = 12.0 + 24.0*ASIN(SOC)/PI
-      SNUP = 12.0 - DAYL/2.0
-      SNDN = 12.0 + DAYL/2.0
+  !     Calculate daylength, sunrise and sunset (Eqn. 17)
+  DAYL = 12.0 + 24.0*ASIN(SOC)/PI
+  SNUP = 12.0 - DAYL/2.0
+  SNDN = 12.0 + DAYL/2.0
 
 END SUBROUTINE DAYLEN
 

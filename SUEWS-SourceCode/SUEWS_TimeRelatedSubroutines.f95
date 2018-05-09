@@ -150,6 +150,7 @@ END SUBROUTINE LeapYearCalc
 
 !===============================================================================
 !Defines the number or days in each year (defines the leap year)
+! Ting Sun 09 May 2018
 ELEMENTAL FUNCTION Days_of_Year(year_int) RESULT(nDays)
   IMPLICIT NONE
   INTEGER,INTENT(in) :: year_int

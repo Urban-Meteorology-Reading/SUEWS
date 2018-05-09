@@ -60,6 +60,7 @@ UTILS = stringmod.o \
 				qsort_c_module.o\
 				SUEWS_TimeRelatedSubroutines.o \
 				SUEWS_const.o  \
+				datetime.o \
 				meteo.o \
 				minpack.o
 

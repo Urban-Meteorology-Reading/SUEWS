@@ -18,14 +18,14 @@ df_siteselect = load_SUEWS_table(
 # test case class for unit test
 class Test_SUEWS(unittest.TestCase):
     def test_ok_multiyear(self):
-        print('testing single-grid multi-year run ... ')
+        print('\ntesting single-grid multi-year run ... ')
         name_sim = 'test-multi-year' + str(np.random.randint(10000))
         res_test = test_multiyear(
             name_sim, dict_runcontrol, dict_initcond, df_siteselect)
         self.assertTrue(res_test)
 
     def test_ok_multigrid(self):
-        print('testing multi-grid multi-year run ... ')
+        print('\ntesting multi-grid multi-year run ... ')
         n_grid = 3
         name_sim = 'test-multi-grid' + str(np.random.randint(10000))
         res_test = test_multigrid(
@@ -34,7 +34,7 @@ class Test_SUEWS(unittest.TestCase):
         self.assertTrue(res_test)
 
     def test_ok_samerun(self):
-        print('testing if results could match the base run ... ')
+        print('\ntesting if results could match the base run ... ')
         res_test = test_samerun(dir_baserun)
         self.assertTrue(res_test)
 

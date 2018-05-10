@@ -73,7 +73,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
        ie_a, ie_end, ie_m, ie_start, internalwateruse_h, &
        irrfracconif, irrfracdecid, irrfracgrass,&
        pipecapacity, roughlenheatmethod, runofftowater, stabilitymethod,&
-       surfacearea, tstep, nsh_real
+       surfacearea, tstep
   USE snowMod, ONLY: &
        crwmax, crwmin, preciplimit, preciplimitalb, radmeltfact,&
        snowalb, snowalbmax, snowalbmin, &

@@ -393,13 +393,13 @@ MODULE ctrl_output
 
 CONTAINS
   ! main wrapper that handles both txt and nc files
-  SUBROUTINE SUEWS_Output(irMax,iv,Gridiv)
+  SUBROUTINE SUEWS_Output(irMax,iv,Gridiv,iyr)
     IMPLICIT NONE
     INTEGER,INTENT(in) :: irMax
 #ifdef nc
-    INTEGER,INTENT(in),OPTIONAL ::iv,Gridiv
+    INTEGER,INTENT(in),OPTIONAL ::iv,Gridiv,iyr
 #else
-    INTEGER,INTENT(in) ::iv,Gridiv
+    INTEGER,INTENT(in) ::iv,Gridiv,iyr
 #endif
 
     INTEGER :: xx,err,outLevel,i
@@ -465,7 +465,7 @@ CONTAINS
 #ifdef nc
              IF ( PRESENT(Gridiv) ) THEN
 #endif
-                CALL SUEWS_Output_txt_grp(iv,irMax,varListX,Gridiv,outLevel,Tstep)
+                CALL SUEWS_Output_txt_grp(iv,irMax,iyr,varListX,Gridiv,outLevel,Tstep)
 #ifdef nc
              ELSE
                 CALL SUEWS_Output_nc_grp(irMax,varListX,outLevel,Tstep)
@@ -478,7 +478,7 @@ CONTAINS
 #ifdef nc
              IF ( PRESENT(Gridiv) ) THEN
 #endif
-                CALL SUEWS_Output_txt_grp(iv,irMax,varListX,Gridiv,outLevel,ResolutionFilesOut)
+                CALL SUEWS_Output_txt_grp(iv,irMax,iyr,varListX,Gridiv,outLevel,ResolutionFilesOut)
 #ifdef nc
              ELSE
                 CALL SUEWS_Output_nc_grp(irMax,varListX,outLevel,ResolutionFilesOut)
@@ -490,7 +490,7 @@ CONTAINS
 #ifdef nc
           IF ( PRESENT(Gridiv) ) THEN
 #endif
-             CALL SUEWS_Output_txt_grp(iv,irMax,varListX,Gridiv,outLevel,Tstep)
+             CALL SUEWS_Output_txt_grp(iv,irMax,iyr,varListX,Gridiv,outLevel,Tstep)
 #ifdef nc
           ELSE
              CALL SUEWS_Output_nc_grp(irMax,varListX,outLevel,Tstep)
@@ -507,11 +507,11 @@ CONTAINS
 
 
   ! output wrapper function for one group
-  SUBROUTINE SUEWS_Output_txt_grp(iv,irMax,varList,Gridiv,outLevel,outFreq_s)
+  SUBROUTINE SUEWS_Output_txt_grp(iv,irMax,iyr,varList,Gridiv,outLevel,outFreq_s)
     IMPLICIT NONE
 
     TYPE(varAttr),DIMENSION(:),INTENT(in)::varList
-    INTEGER,INTENT(in) :: iv,irMax,Gridiv,outLevel,outFreq_s
+    INTEGER,INTENT(in) :: iv,irMax,iyr,Gridiv,outLevel,outFreq_s
 
     INTEGER :: err,idMin,idMax
 
@@ -585,19 +585,19 @@ CONTAINS
 
     ! output:
     ! initialise file when processing first metblock
-    IF ( iv == 1 ) CALL SUEWS_Output_Init(dataOutX_agg,varList,Gridiv,outLevel)
+    IF ( iv == 1 ) CALL SUEWS_Output_Init(dataOutX_agg,varList,iyr,Gridiv,outLevel)
 
     ! append the aggregated data to the specific txt file
-    CALL SUEWS_Write_txt(dataOutX_agg,varList,Gridiv,outLevel)
+    CALL SUEWS_Write_txt(dataOutX_agg,varList,iyr,Gridiv,outLevel)
 
   END SUBROUTINE SUEWS_Output_txt_grp
 
   ! initialise an output file with file name and headers
-  SUBROUTINE SUEWS_Output_Init(dataOutX,varList,Gridiv,outLevel)
+  SUBROUTINE SUEWS_Output_Init(dataOutX,varList,iyr,Gridiv,outLevel)
     IMPLICIT NONE
     REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOutX
     TYPE(varAttr),DIMENSION(:),INTENT(in)::varList
-    INTEGER,INTENT(in) :: Gridiv,outLevel
+    INTEGER,INTENT(in) :: iyr,Gridiv,outLevel
 
     TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varListSel
     INTEGER :: xx,err,fn,i,nargs
@@ -616,7 +616,7 @@ CONTAINS
     varListSel=PACK(varList, mask=(varList%level<= outLevel))
 
     ! generate file name
-    CALL filename_gen(dataOutX,varList,Gridiv,FileOut)
+    CALL filename_gen(dataOutX,varList,iyr,Gridiv,FileOut)
 
     ! store right-aligned headers
     ALLOCATE(headerOut(xx), stat=err)
@@ -639,14 +639,14 @@ CONTAINS
     ! create file
     fn=9
     OPEN(fn,file=TRIM(ADJUSTL(FileOut)),status='unknown')
-    PRINT*, 'FileOut in SUEWS_Output_Init: ',FileOut
+    ! PRINT*, 'FileOut in SUEWS_Output_Init: ',FileOut
 
     ! write out headers
     WRITE(fn, FormatOut) headerOut
     CLOSE(fn)
 
     ! write out format file
-    CALL formatFile_gen(dataOutX,varList,Gridiv,outLevel)
+    CALL formatFile_gen(dataOutX,varList,iyr,Gridiv,outLevel)
 
     ! clean up
     IF (ALLOCATED(varListSel)) DEALLOCATE(varListSel, stat=err)
@@ -657,11 +657,11 @@ CONTAINS
   END SUBROUTINE SUEWS_Output_Init
 
   ! generate output format file
-  SUBROUTINE formatFile_gen(dataOutX,varList,Gridiv,outLevel)
+  SUBROUTINE formatFile_gen(dataOutX,varList,iyr,Gridiv,outLevel)
     IMPLICIT NONE
     REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOutX
     TYPE(varAttr),DIMENSION(:),INTENT(in)::varList
-    INTEGER,INTENT(in) :: Gridiv,outLevel
+    INTEGER,INTENT(in) :: iyr,Gridiv,outLevel
 
     TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varListSel
     INTEGER :: xx,err,fn,i
@@ -671,7 +671,7 @@ CONTAINS
     CHARACTER(len=3) :: itext
 
     ! get filename
-    CALL filename_gen(dataOutX,varList,Gridiv,FileOut,1)
+    CALL filename_gen(dataOutX,varList,iyr,Gridiv,FileOut,1)
 
     !select variables to output
     xx=COUNT((varList%level<= outLevel), dim=1)
@@ -815,11 +815,11 @@ CONTAINS
 
 
   ! append output data to the specific file at the specified outLevel
-  SUBROUTINE SUEWS_Write_txt(dataOutX,varList,Gridiv,outLevel)
+  SUBROUTINE SUEWS_Write_txt(dataOutX,varList,iyr,Gridiv,outLevel)
     IMPLICIT NONE
     REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOutX
     TYPE(varAttr),DIMENSION(:),INTENT(in)::varList
-    INTEGER,INTENT(in) :: Gridiv,outLevel
+    INTEGER,INTENT(in) :: iyr,Gridiv,outLevel
 
     REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::dataOutSel
     TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varListSel
@@ -855,8 +855,8 @@ CONTAINS
     FormatOut='('//TRIM(ADJUSTL(FormatOut))//')'
 
     ! get filename
-    CALL filename_gen(dataOutSel,varListSel,Gridiv,FileOut)
-    PRINT*, 'FileOut in SUEWS_Write_txt: ',FileOut
+    CALL filename_gen(dataOutSel,varListSel,iyr,Gridiv,FileOut)
+    ! PRINT*, 'FileOut in SUEWS_Write_txt: ',FileOut
 
     ! test if FileOut has been initialised
     ! IF ( .NOT. initQ_file(FileOut) ) THEN
@@ -884,12 +884,13 @@ CONTAINS
   END SUBROUTINE SUEWS_Write_txt
 
 
-  SUBROUTINE filename_gen(dataOutX,varList,Gridiv,FileOut,opt_fmt)
+  SUBROUTINE filename_gen(dataOutX,varList,iyr,Gridiv,FileOut,opt_fmt)
     USE datetime_module
 
     IMPLICIT NONE
     REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOutX ! to determine year & output frequency
     TYPE(varAttr),DIMENSION(:),INTENT(in)::varList ! to determine output group
+    INTEGER,INTENT(in) :: iyr ! to determine year
     INTEGER,INTENT(in) :: Gridiv ! to determine grid name as in SiteSelect
     INTEGER,INTENT(in),OPTIONAL :: opt_fmt ! to determine if a format file
     CHARACTER(len=100),INTENT(out) :: FileOut ! the output file name
@@ -909,15 +910,22 @@ CONTAINS
     ! PRINT*, 'dataOutX(1)',dataOutX(1,:)
 
     ! date:
-    year_int=INT(dataOutX(1,1))
     DOY_int=INT(dataOutX(1,2))
-    WRITE(str_year,'(i4)') year_int
     WRITE(str_DOY,'(i3.3)') DOY_int
-    str_date='_'//TRIM(ADJUSTL(str_year))
+
 #ifdef nc
+    ! year for nc use that in dataOutX
+    year_int=INT(dataOutX(1,1))
+    WRITE(str_year,'(i4)') year_int
+    str_date='_'//TRIM(ADJUSTL(str_year))
     ! add DOY as a specifier
     IF (ncMode==1) str_date=TRIM(ADJUSTL(str_date))//TRIM(ADJUSTL(str_DOY))
 #endif
+
+    ! year for txt use specified value to avoid conflicts when crossing years
+    year_int=iyr
+    WRITE(str_year,'(i4)') year_int
+    str_date='_'//TRIM(ADJUSTL(str_year))
 
     ! derive output frequency from output arrays
     ! dt_x=

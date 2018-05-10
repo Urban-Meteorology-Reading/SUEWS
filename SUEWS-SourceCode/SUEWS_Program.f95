@@ -643,7 +643,7 @@ PROGRAM SUEWS_Program
 #endif
            DO igrid=1,NumberOfGrids
               IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_Output...'
-              CALL SUEWS_Output(irMax,iblock,igrid)
+              CALL SUEWS_Output(irMax,iblock,igrid,year_int)
            ENDDO
 #ifdef nc
         ENDIF

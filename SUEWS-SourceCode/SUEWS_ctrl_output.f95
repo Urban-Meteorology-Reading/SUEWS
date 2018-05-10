@@ -615,10 +615,8 @@ CONTAINS
     IF ( err/= 0) PRINT *, "varListSel: Allocation request denied"
     varListSel=PACK(varList, mask=(varList%level<= outLevel))
 
-
     ! generate file name
     CALL filename_gen(dataOutX,varList,Gridiv,FileOut)
-
 
     ! store right-aligned headers
     ALLOCATE(headerOut(xx), stat=err)
@@ -641,6 +639,7 @@ CONTAINS
     ! create file
     fn=9
     OPEN(fn,file=TRIM(ADJUSTL(FileOut)),status='unknown')
+    PRINT*, 'FileOut in SUEWS_Output_Init: ',FileOut
 
     ! write out headers
     WRITE(fn, FormatOut) headerOut
@@ -827,6 +826,7 @@ CONTAINS
     CHARACTER(len=100) :: FileOut
     INTEGER :: fn,i,xx,err
     CHARACTER(len=12*SIZE(varList)) :: FormatOut
+    ! LOGICAL :: initQ_file
 
     IF(Diagnose==1) WRITE(*,*) 'Writting data of group: ',varList(SIZE(varList))%group
 
@@ -856,7 +856,12 @@ CONTAINS
 
     ! get filename
     CALL filename_gen(dataOutSel,varListSel,Gridiv,FileOut)
-    ! PRINT*, 'FileOut in SUEWS_Write_txt: ',FileOut
+    PRINT*, 'FileOut in SUEWS_Write_txt: ',FileOut
+
+    ! test if FileOut has been initialised
+    ! IF ( .NOT. initQ_file(FileOut) ) THEN
+    !    CALL SUEWS_Output_Init(dataOutSel,varListSel,Gridiv,outLevel)
+    ! END IF
 
     ! write out data
     fn=50
@@ -935,8 +940,6 @@ CONTAINS
        str_out_min='_'//TRIM(ADJUSTL(str_out_min))
     ENDIF
 
-
-
     ! group: output type
     str_grp=varList(6)%group
     IF ( LEN(TRIM(str_grp)) > 0 ) str_grp='_'//TRIM(ADJUSTL(str_grp))
@@ -972,6 +975,28 @@ CONTAINS
 
 
   END SUBROUTINE filename_gen
+
+
+  ! test if a txt file has been initialised
+  LOGICAL FUNCTION initQ_file(FileName)
+    IMPLICIT NONE
+    CHARACTER(len=100),INTENT(in) :: FileName ! the output file name
+    LOGICAL :: existQ
+    CHARACTER(len=1000) :: longstring
+
+    INQUIRE( file=TRIM(FileName), exist=existQ )
+    IF ( existQ ) THEN
+       OPEN(10,file=TRIM(FileName))
+       READ(10,'(a)') longstring
+       ! print*, 'longstring: ',longstring
+       IF ( VERIFY(longstring,'Year')==0 ) initQ_file = .FALSE.
+       CLOSE(unit=10)
+    ELSE
+       initQ_file = .FALSE.
+    END IF
+
+  END FUNCTION initQ_file
+
 
 
   !========================================================================================

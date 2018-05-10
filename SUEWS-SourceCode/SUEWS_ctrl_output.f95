@@ -513,8 +513,9 @@ CONTAINS
     TYPE(varAttr),DIMENSION(:),INTENT(in)::varList
     INTEGER,INTENT(in) :: iv,irMax,iyr,Gridiv,outLevel,outFreq_s
 
-    INTEGER :: err,idMin,idMax
+    INTEGER :: err
 
+    INTEGER,DIMENSION(:),ALLOCATABLE  ::id_seq ! id sequence as in the dataOutX/dataOutX_agg
     REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::dataOutX
     REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::dataOutX_agg
 
@@ -542,32 +543,22 @@ CONTAINS
        dataOutX=dataOutESTM(1:irMax,1:SIZE(varList),Gridiv)
 
     CASE ('DailyState')    !DailyState
-       ! PRINT*, SHAPE(dataOutSUEWS)
-       ! print*, dataOutSUEWS(1:irMax,2,Gridiv)
-       ! PRINT*,'days in DailyState' ,PACK(dataOutDailyState(:,2,Gridiv), &
-       !      mask=(dataOutDailyState(:,6,Gridiv)/=-999))
        ! get correct day index
-       idMin=MAX(1, &
-            INT(MINVAL(dataOutSUEWS(1:irMax,2,Gridiv))), &
-            INT(MINVAL(PACK(dataOutDailyState(:,2,Gridiv), &
-            mask=(dataOutDailyState(:,6,Gridiv)/=-999)))))
-       idMax=MIN(366,&
-            INT(MAXVAL(dataOutSUEWS(1:irMax,2,Gridiv))), &
-            INT(MAXVAL(PACK(dataOutDailyState(:,2,Gridiv), &
-            mask=(dataOutDailyState(:,6,Gridiv)/=-999)))))
-       ! PRINT*, 'idMin in dataOutDailyState',idMin
-       ! PRINT*, 'idMax in dataOutDailyState',idMax
+       CALL unique(INT(PACK(dataOutSUEWS(1:irMax,2,Gridiv),&
+            mask=(dataOutSUEWS(1:irMax,3,Gridiv)==23 &
+            .AND.dataOutSUEWS(1:irMax,4,Gridiv)==(nsh-1)/nsh*60))),&
+            id_seq)
        IF (ALLOCATED(dataOutX)) THEN
           DEALLOCATE(dataOutX)
           IF ( err/= 0) PRINT *, "dataOutX: Deallocation request denied"
        ENDIF
 
        IF (.NOT. ALLOCATED(dataOutX)) THEN
-          ALLOCATE(dataOutX(idMax-idMin+1,SIZE(varList)), stat=err)
+          ALLOCATE(dataOutX(SIZE(id_seq),SIZE(varList)), stat=err)
           IF ( err/= 0) PRINT *, "dataOutX: Allocation request denied"
        ENDIF
 
-       dataOutX=dataOutDailyState(idMin:idMax,1:SIZE(varList),Gridiv)
+       dataOutX=dataOutDailyState(id_seq,1:SIZE(varList),Gridiv)
     END SELECT
 
     ! aggregation:
@@ -985,6 +976,45 @@ CONTAINS
   END SUBROUTINE filename_gen
 
 
+  SUBROUTINE unique(vec,vec_unique)
+    ! Return only the unique values from vec.
+
+    IMPLICIT NONE
+
+    INTEGER,DIMENSION(:),INTENT(in) :: vec
+    INTEGER,DIMENSION(:),ALLOCATABLE,INTENT(out) :: vec_unique
+
+    INTEGER :: i,num
+    LOGICAL,DIMENSION(SIZE(vec)) :: mask
+
+    mask = .FALSE.
+
+    DO i=1,SIZE(vec)
+
+       !count the number of occurrences of this element:
+       num = COUNT( vec(i)==vec )
+
+       IF (num==1) THEN
+          !there is only one, flag it:
+          mask(i) = .TRUE.
+       ELSE
+          !flag this value only if it hasn't already been flagged:
+          IF (.NOT. ANY(vec(i)==vec .AND. mask) ) mask(i) = .TRUE.
+       END IF
+
+    END DO
+
+    !return only flagged elements:
+    ALLOCATE( vec_unique(COUNT(mask)) )
+    vec_unique = PACK( vec, mask )
+
+    !if you also need it sorted, then do so.
+    ! For example, with slatec routine:
+    !call ISORT (vec_unique, [0], size(vec_unique), 1)
+
+  END SUBROUTINE unique
+
+
   ! test if a txt file has been initialised
   LOGICAL FUNCTION initQ_file(FileName)
     IMPLICIT NONE
@@ -1059,6 +1089,7 @@ CONTAINS
     REAL(KIND(1d0)),ALLOCATABLE::dataOutX(:,:,:)
     REAL(KIND(1d0)),ALLOCATABLE::dataOutX_agg(:,:,:),dataOutX_agg0(:,:)
     INTEGER :: iGrid,err,idMin,idMax
+    INTEGER,DIMENSION(:),ALLOCATABLE  ::id_seq
 
     IF (.NOT. ALLOCATED(dataOutX)) THEN
        ALLOCATE(dataOutX(irMax,SIZE(varList),NumberOfGrids), stat=err)
@@ -1085,27 +1116,21 @@ CONTAINS
 
     CASE ('DailyState')    !DailyState
        ! get correct day index
-       idMin=MAX(1, &
-            INT(MINVAL(dataOutSUEWS(1:irMax,2,1))), &
-            INT(MINVAL(PACK(dataOutDailyState(:,2,1), &
-            mask=(dataOutDailyState(:,6,1)/=-999)))))
-       idMax=MIN(366,&
-            INT(MAXVAL(dataOutSUEWS(1:irMax,2,1))), &
-            INT(MAXVAL(PACK(dataOutDailyState(:,2,1), &
-            mask=(dataOutDailyState(:,6,1)/=-999)))))
-       ! print*, 'idMin',idMin
-       ! print*, 'idMax',idMax
+       CALL unique(INT(PACK(dataOutSUEWS(1:irMax,2,1),&
+            mask=(dataOutSUEWS(1:irMax,3,Gridiv)==23 &
+            .AND.dataOutSUEWS(1:irMax,4,Gridiv)==(nsh-1)/nsh*60))),&
+            id_seq)
        IF (ALLOCATED(dataOutX)) THEN
           DEALLOCATE(dataOutX)
           IF ( err/= 0) PRINT *, "dataOutX: Deallocation request denied"
        ENDIF
 
        IF (.NOT. ALLOCATED(dataOutX)) THEN
-          ALLOCATE(dataOutX(idMax-idMin+1,SIZE(varList),NumberOfGrids), stat=err)
+          ALLOCATE(dataOutX(SIZE(id_seq),SIZE(varList),NumberOfGrids), stat=err)
           IF ( err/= 0) PRINT *, "dataOutX: Allocation request denied"
        ENDIF
 
-       dataOutX=dataOutDailyState(idMin:idMax,1:SIZE(varList),:)
+       dataOutX=dataOutDailyState(id_seq,1:SIZE(varList),:)
        ! print*, 'idMin line',dataOutX(idMin,1:4,1)
        ! print*, 'idMax line',dataOutX(idMax,1:4,1)
 

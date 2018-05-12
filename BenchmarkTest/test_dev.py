@@ -18,14 +18,16 @@ df_siteselect = load_SUEWS_table(
 # test case class for unit test
 class Test_SUEWS(unittest.TestCase):
     def test_ok_multiyear(self):
-        print('\ntesting single-grid multi-year run ... ')
+        print('')
+        print('testing single-grid multi-year run ... ')
         name_sim = 'test-multi-year' + str(np.random.randint(10000))
         res_test = test_multiyear(
             name_sim, dict_runcontrol, dict_initcond, df_siteselect)
         self.assertTrue(res_test)
 
     def test_ok_multigrid(self):
-        print('\ntesting multi-grid multi-year run ... ')
+        print('')
+        print('testing multi-grid multi-year run ... ')
         n_grid = 3
         name_sim = 'test-multi-grid' + str(np.random.randint(10000))
         res_test = test_multigrid(
@@ -34,8 +36,27 @@ class Test_SUEWS(unittest.TestCase):
         self.assertTrue(res_test)
 
     def test_ok_samerun(self):
-        print('\ntesting if results could match the base run ... ')
+        print('')
+        print('testing if results could match the standard run ... ')
         res_test = test_samerun(dir_baserun)
+        self.assertTrue(res_test)
+
+    def test_ok_physics(self):
+        print('')
+        print('testing if some physics schemes are working ... ')
+        # show options to test
+        res_list_fail = test_physics(
+            dict_runcontrol, dict_initcond, df_siteselect,
+            dict_phy_opt_sel)
+
+        # `0` means no failure: all options can pass test
+        res_test = len(res_list_fail) == 0
+        # print out all faulty options
+        if not res_test:
+            print('faulty options found:')
+            for fail in res_list_fail:
+                print fail
+
         self.assertTrue(res_test)
 
 

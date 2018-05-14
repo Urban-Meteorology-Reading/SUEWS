@@ -2,7 +2,7 @@
 
 # from Benchmark_SUEWS import *
 from shutil import copytree, rmtree, copyfile
-import os
+import os, sys
 import numpy as np
 import pandas as pd
 from glob import glob
@@ -21,7 +21,11 @@ dir_baserun = os.path.abspath(f90nml.read('config.nml')['file']['dir_baserun'])
 dict_phy_opt_sel = f90nml.read('config.nml')['physics_test']
 
 # %%auxiliary SUEWS functions
-
+# suppress error info if needed:
+class DevNull:
+    def write(self, msg):
+        pass
+sys.stderr = DevNull()
 
 def load_SUEWS_nml(xfile):
     # remove case issues

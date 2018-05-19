@@ -71,12 +71,15 @@ SUBROUTINE LUMPS_cal_QHQE(&
   tlv=lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
   ! initialize VegPhenLumps to output
   VegPhenLumps=0
+  
   ! initialize rain-related variables
   RainBucket=0.
 
+  ! surface fractions fro veg surfaces
   sfrVeg=sfr(ivConif+2:ivGrass+2)
 
-  LAIDay= LAI(id-1,veg_type)
+  ! LAI of veg surfaces for id-1
+  LAIDay= LAI(id-1,:)
 
   ! Calculate slope of the saturation vapour pressure vs air temp.
   s_hPa=slope_svp(Temp_C)

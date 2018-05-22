@@ -1,7 +1,7 @@
 !===================================================================================
 !Simple Anthropogenic Heat and Carbon Dioxide Parameterization routines
 !This subroutine is still under development and in the equations concerning CO2 fluxes
-!there are bugs and missing comments. 
+!there are bugs and missing comments.
 !Last modified
 ! MH 29 Jun 2017 -  Finalised the code to calculate the anthropogenic emissions of heat and CO2
 ! HCW 21 Apr 2017 - renamed from SUEWS_SAHP.f95. Now includes CO2 fluxes as well as QF.
@@ -21,7 +21,7 @@
 !===================================================================================
 
  SUBROUTINE AnthropogenicEmissions(EmissionsMethod,&
-       id,it,imin,DLS,nsh,DayofWeek,ndays,&
+       id,it,imin,DLS,nsh,DayofWeek_id,ndays,&
        EF_umolCO2perJ,FcEF_v_kgkm,EnEF_v_Jkm,TrafficUnits,&
        FrFossilFuel_Heat,FrFossilFuel_NonHeat,&
        MinQFMetab,MaxQFMetab,&
@@ -49,7 +49,7 @@
        ndays,&             !Max no. days in a year used to specify size of daily arrays
        notUsedI
 
-  INTEGER,DIMENSION(0:ndays,3),INTENT(in)::DayofWeek   !1 - day of week; 2 - month; 3 - season
+  INTEGER,DIMENSION(3),INTENT(in)::DayofWeek_id   !1 - day of week; 2 - month; 3 - season
 
   REAL(KIND(1d0)),DIMENSION(-4:ndays, 6),INTENT(in):: HDD !Heating Degree Days (see SUEWS_DailyState.f95)
 
@@ -112,7 +112,7 @@
 
   ! Set weekday/weekend counter
   iu=1   !Set to 1=weekday
-  IF(DayofWeek(id,1)==1 .OR. DayofWeek(id,1)==7) iu=2  !Set to 2=weekend
+  IF(DayofWeek_id(1)==1 .OR. DayofWeek_id(1)==7) iu=2  !Set to 2=weekend
 
   ! Calculate energy emissions and CO2 from human metabolism -------------
   ! Pop dens (cap ha-1 -> cap m-2) x activity level (W cap-1)

@@ -1,7 +1,7 @@
 
 CC = gfortran $(CFLAGS)          # compiler
 
-file       := SUEWS_const.f95
+file       := SUEWS_const.f95 # get program name form source code
 variable   := $(shell grep 'progname' ${file})
 TARGET_str := $(lastword $(subst =, ,${variable})) # program name with quotes
 TARGET     := $(strip $(subst $\', ,${TARGET_str})) # program name

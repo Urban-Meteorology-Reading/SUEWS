@@ -393,13 +393,13 @@ MODULE ctrl_output
 
 CONTAINS
   ! main wrapper that handles both txt and nc files
-  SUBROUTINE SUEWS_Output(irMax,iv,Gridiv)
+  SUBROUTINE SUEWS_Output(irMax,iv,Gridiv,iyr)
     IMPLICIT NONE
     INTEGER,INTENT(in) :: irMax
 #ifdef nc
-    INTEGER,INTENT(in),OPTIONAL ::iv,Gridiv
+    INTEGER,INTENT(in),OPTIONAL ::iv,Gridiv,iyr
 #else
-    INTEGER,INTENT(in) ::iv,Gridiv
+    INTEGER,INTENT(in) ::iv,Gridiv,iyr
 #endif
 
     INTEGER :: xx,err,outLevel,i
@@ -465,7 +465,7 @@ CONTAINS
 #ifdef nc
              IF ( PRESENT(Gridiv) ) THEN
 #endif
-                CALL SUEWS_Output_txt_grp(iv,irMax,varListX,Gridiv,outLevel,Tstep)
+                CALL SUEWS_Output_txt_grp(iv,irMax,iyr,varListX,Gridiv,outLevel,Tstep)
 #ifdef nc
              ELSE
                 CALL SUEWS_Output_nc_grp(irMax,varListX,outLevel,Tstep)
@@ -478,7 +478,7 @@ CONTAINS
 #ifdef nc
              IF ( PRESENT(Gridiv) ) THEN
 #endif
-                CALL SUEWS_Output_txt_grp(iv,irMax,varListX,Gridiv,outLevel,ResolutionFilesOut)
+                CALL SUEWS_Output_txt_grp(iv,irMax,iyr,varListX,Gridiv,outLevel,ResolutionFilesOut)
 #ifdef nc
              ELSE
                 CALL SUEWS_Output_nc_grp(irMax,varListX,outLevel,ResolutionFilesOut)
@@ -490,7 +490,7 @@ CONTAINS
 #ifdef nc
           IF ( PRESENT(Gridiv) ) THEN
 #endif
-             CALL SUEWS_Output_txt_grp(iv,irMax,varListX,Gridiv,outLevel,Tstep)
+             CALL SUEWS_Output_txt_grp(iv,irMax,iyr,varListX,Gridiv,outLevel,Tstep)
 #ifdef nc
           ELSE
              CALL SUEWS_Output_nc_grp(irMax,varListX,outLevel,Tstep)
@@ -507,14 +507,15 @@ CONTAINS
 
 
   ! output wrapper function for one group
-  SUBROUTINE SUEWS_Output_txt_grp(iv,irMax,varList,Gridiv,outLevel,outFreq_s)
+  SUBROUTINE SUEWS_Output_txt_grp(iv,irMax,iyr,varList,Gridiv,outLevel,outFreq_s)
     IMPLICIT NONE
 
     TYPE(varAttr),DIMENSION(:),INTENT(in)::varList
-    INTEGER,INTENT(in) :: iv,irMax,Gridiv,outLevel,outFreq_s
+    INTEGER,INTENT(in) :: iv,irMax,iyr,Gridiv,outLevel,outFreq_s
 
-    INTEGER :: err,idMin,idMax
+    INTEGER :: err
 
+    INTEGER,DIMENSION(:),ALLOCATABLE  ::id_seq ! id sequence as in the dataOutX/dataOutX_agg
     REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::dataOutX
     REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::dataOutX_agg
 
@@ -542,32 +543,22 @@ CONTAINS
        dataOutX=dataOutESTM(1:irMax,1:SIZE(varList),Gridiv)
 
     CASE ('DailyState')    !DailyState
-       ! PRINT*, SHAPE(dataOutSUEWS)
-       ! print*, dataOutSUEWS(1:irMax,2,Gridiv)
-       ! PRINT*,'days in DailyState' ,PACK(dataOutDailyState(:,2,Gridiv), &
-       !      mask=(dataOutDailyState(:,6,Gridiv)/=-999))
        ! get correct day index
-       idMin=MAX(1, &
-            INT(MINVAL(dataOutSUEWS(1:irMax,2,Gridiv))), &
-            INT(MINVAL(PACK(dataOutDailyState(:,2,Gridiv), &
-            mask=(dataOutDailyState(:,6,Gridiv)/=-999)))))
-       idMax=MIN(366,&
-            INT(MAXVAL(dataOutSUEWS(1:irMax,2,Gridiv))), &
-            INT(MAXVAL(PACK(dataOutDailyState(:,2,Gridiv), &
-            mask=(dataOutDailyState(:,6,Gridiv)/=-999)))))
-       ! PRINT*, 'idMin in dataOutDailyState',idMin
-       ! PRINT*, 'idMax in dataOutDailyState',idMax
+       CALL unique(INT(PACK(dataOutSUEWS(1:irMax,2,Gridiv),&
+            mask=(dataOutSUEWS(1:irMax,3,Gridiv)==23 &
+            .AND.dataOutSUEWS(1:irMax,4,Gridiv)==(nsh-1)/nsh*60))),&
+            id_seq)
        IF (ALLOCATED(dataOutX)) THEN
           DEALLOCATE(dataOutX)
           IF ( err/= 0) PRINT *, "dataOutX: Deallocation request denied"
        ENDIF
 
        IF (.NOT. ALLOCATED(dataOutX)) THEN
-          ALLOCATE(dataOutX(idMax-idMin+1,SIZE(varList)), stat=err)
+          ALLOCATE(dataOutX(SIZE(id_seq),SIZE(varList)), stat=err)
           IF ( err/= 0) PRINT *, "dataOutX: Allocation request denied"
        ENDIF
 
-       dataOutX=dataOutDailyState(idMin:idMax,1:SIZE(varList),Gridiv)
+       dataOutX=dataOutDailyState(id_seq,1:SIZE(varList),Gridiv)
     END SELECT
 
     ! aggregation:
@@ -585,19 +576,19 @@ CONTAINS
 
     ! output:
     ! initialise file when processing first metblock
-    IF ( iv == 1 ) CALL SUEWS_Output_Init(dataOutX_agg,varList,Gridiv,outLevel)
+    IF ( iv == 1 ) CALL SUEWS_Output_Init(dataOutX_agg,varList,iyr,Gridiv,outLevel)
 
     ! append the aggregated data to the specific txt file
-    CALL SUEWS_Write_txt(dataOutX_agg,varList,Gridiv,outLevel)
+    CALL SUEWS_Write_txt(dataOutX_agg,varList,iyr,Gridiv,outLevel)
 
   END SUBROUTINE SUEWS_Output_txt_grp
 
   ! initialise an output file with file name and headers
-  SUBROUTINE SUEWS_Output_Init(dataOutX,varList,Gridiv,outLevel)
+  SUBROUTINE SUEWS_Output_Init(dataOutX,varList,iyr,Gridiv,outLevel)
     IMPLICIT NONE
     REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOutX
     TYPE(varAttr),DIMENSION(:),INTENT(in)::varList
-    INTEGER,INTENT(in) :: Gridiv,outLevel
+    INTEGER,INTENT(in) :: iyr,Gridiv,outLevel
 
     TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varListSel
     INTEGER :: xx,err,fn,i,nargs
@@ -615,10 +606,8 @@ CONTAINS
     IF ( err/= 0) PRINT *, "varListSel: Allocation request denied"
     varListSel=PACK(varList, mask=(varList%level<= outLevel))
 
-
     ! generate file name
-    CALL filename_gen(dataOutX,varList,Gridiv,FileOut)
-
+    CALL filename_gen(dataOutX,varList,iyr,Gridiv,FileOut)
 
     ! store right-aligned headers
     ALLOCATE(headerOut(xx), stat=err)
@@ -641,13 +630,14 @@ CONTAINS
     ! create file
     fn=9
     OPEN(fn,file=TRIM(ADJUSTL(FileOut)),status='unknown')
+    ! PRINT*, 'FileOut in SUEWS_Output_Init: ',FileOut
 
     ! write out headers
     WRITE(fn, FormatOut) headerOut
     CLOSE(fn)
 
     ! write out format file
-    CALL formatFile_gen(dataOutX,varList,Gridiv,outLevel)
+    CALL formatFile_gen(dataOutX,varList,iyr,Gridiv,outLevel)
 
     ! clean up
     IF (ALLOCATED(varListSel)) DEALLOCATE(varListSel, stat=err)
@@ -658,11 +648,11 @@ CONTAINS
   END SUBROUTINE SUEWS_Output_Init
 
   ! generate output format file
-  SUBROUTINE formatFile_gen(dataOutX,varList,Gridiv,outLevel)
+  SUBROUTINE formatFile_gen(dataOutX,varList,iyr,Gridiv,outLevel)
     IMPLICIT NONE
     REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOutX
     TYPE(varAttr),DIMENSION(:),INTENT(in)::varList
-    INTEGER,INTENT(in) :: Gridiv,outLevel
+    INTEGER,INTENT(in) :: iyr,Gridiv,outLevel
 
     TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varListSel
     INTEGER :: xx,err,fn,i
@@ -672,7 +662,7 @@ CONTAINS
     CHARACTER(len=3) :: itext
 
     ! get filename
-    CALL filename_gen(dataOutX,varList,Gridiv,FileOut,1)
+    CALL filename_gen(dataOutX,varList,iyr,Gridiv,FileOut,1)
 
     !select variables to output
     xx=COUNT((varList%level<= outLevel), dim=1)
@@ -816,17 +806,18 @@ CONTAINS
 
 
   ! append output data to the specific file at the specified outLevel
-  SUBROUTINE SUEWS_Write_txt(dataOutX,varList,Gridiv,outLevel)
+  SUBROUTINE SUEWS_Write_txt(dataOutX,varList,iyr,Gridiv,outLevel)
     IMPLICIT NONE
     REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOutX
     TYPE(varAttr),DIMENSION(:),INTENT(in)::varList
-    INTEGER,INTENT(in) :: Gridiv,outLevel
+    INTEGER,INTENT(in) :: iyr,Gridiv,outLevel
 
     REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::dataOutSel
     TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varListSel
     CHARACTER(len=100) :: FileOut
     INTEGER :: fn,i,xx,err
     CHARACTER(len=12*SIZE(varList)) :: FormatOut
+    ! LOGICAL :: initQ_file
 
     IF(Diagnose==1) WRITE(*,*) 'Writting data of group: ',varList(SIZE(varList))%group
 
@@ -855,8 +846,13 @@ CONTAINS
     FormatOut='('//TRIM(ADJUSTL(FormatOut))//')'
 
     ! get filename
-    CALL filename_gen(dataOutSel,varListSel,Gridiv,FileOut)
+    CALL filename_gen(dataOutSel,varListSel,iyr,Gridiv,FileOut)
     ! PRINT*, 'FileOut in SUEWS_Write_txt: ',FileOut
+
+    ! test if FileOut has been initialised
+    ! IF ( .NOT. initQ_file(FileOut) ) THEN
+    !    CALL SUEWS_Output_Init(dataOutSel,varListSel,Gridiv,outLevel)
+    ! END IF
 
     ! write out data
     fn=50
@@ -879,17 +875,22 @@ CONTAINS
   END SUBROUTINE SUEWS_Write_txt
 
 
-  SUBROUTINE filename_gen(dataOutX,varList,Gridiv,FileOut,opt_fmt)
+  SUBROUTINE filename_gen(dataOutX,varList,iyr,Gridiv,FileOut,opt_fmt)
+    USE datetime_module
+
     IMPLICIT NONE
     REAL(KIND(1d0)),DIMENSION(:,:),INTENT(in)::dataOutX ! to determine year & output frequency
     TYPE(varAttr),DIMENSION(:),INTENT(in)::varList ! to determine output group
+    INTEGER,INTENT(in) :: iyr ! to determine year
     INTEGER,INTENT(in) :: Gridiv ! to determine grid name as in SiteSelect
     INTEGER,INTENT(in),OPTIONAL :: opt_fmt ! to determine if a format file
     CHARACTER(len=100),INTENT(out) :: FileOut ! the output file name
 
     CHARACTER(len=20):: str_out_min,str_grid,&
          str_date,str_year,str_DOY,str_grp,str_sfx
-    INTEGER :: year_int,DOY_int,val_fmt
+    INTEGER :: year_int,DOY_int,val_fmt,delta_t_min
+    TYPE(datetime) :: dt1,dt2
+    TYPE(timedelta) :: dt_x
 
     ! initialise with a default value
     val_fmt=-999
@@ -900,28 +901,43 @@ CONTAINS
     ! PRINT*, 'dataOutX(1)',dataOutX(1,:)
 
     ! date:
-    year_int=INT(dataOutX(1,1))
     DOY_int=INT(dataOutX(1,2))
-    WRITE(str_year,'(i4)') year_int
     WRITE(str_DOY,'(i3.3)') DOY_int
-    str_date='_'//TRIM(ADJUSTL(str_year))
+
 #ifdef nc
+    ! year for nc use that in dataOutX
+    year_int=INT(dataOutX(1,1))
+    WRITE(str_year,'(i4)') year_int
+    str_date='_'//TRIM(ADJUSTL(str_year))
     ! add DOY as a specifier
     IF (ncMode==1) str_date=TRIM(ADJUSTL(str_date))//TRIM(ADJUSTL(str_DOY))
 #endif
 
+    ! year for txt use specified value to avoid conflicts when crossing years
+    year_int=iyr
+    WRITE(str_year,'(i4)') year_int
+    str_date='_'//TRIM(ADJUSTL(str_year))
 
+    ! derive output frequency from output arrays
+    ! dt_x=
+    dt1=datetime(INT(dataOutX(1,1)), 1, 1)+&
+         timedelta(days=INT(dataOutX(1,2)-1),&
+         hours=INT(dataOutX(1,3)),&
+         minutes=INT(dataOutX(1,4)))
+
+    dt2=datetime(INT(dataOutX(2,1)), 1, 1)+&
+         timedelta(days=INT(dataOutX(2,2)-1),&
+         hours=INT(dataOutX(2,3)),&
+         minutes=INT(dataOutX(2,4)))
+    dt_x=dt2-dt1
+    delta_t_min=INT(dt_x%total_seconds()/60)
     ! output frequency in minute:
     IF ( varList(6)%group == 'DailyState' ) THEN
        str_out_min='' ! ignore this for DailyState
     ELSE
-       WRITE(str_out_min,'(i4)') &
-            INT(dataOutX(2,3)-dataOutX(1,3))*60& ! hour
-            +INT(dataOutX(2,4)-dataOutX(1,4))     !minute
+       WRITE(str_out_min,'(i4)') delta_t_min
        str_out_min='_'//TRIM(ADJUSTL(str_out_min))
     ENDIF
-
-
 
     ! group: output type
     str_grp=varList(6)%group
@@ -958,6 +974,67 @@ CONTAINS
 
 
   END SUBROUTINE filename_gen
+
+
+  SUBROUTINE unique(vec,vec_unique)
+    ! Return only the unique values from vec.
+
+    IMPLICIT NONE
+
+    INTEGER,DIMENSION(:),INTENT(in) :: vec
+    INTEGER,DIMENSION(:),ALLOCATABLE,INTENT(out) :: vec_unique
+
+    INTEGER :: i,num
+    LOGICAL,DIMENSION(SIZE(vec)) :: mask
+
+    mask = .FALSE.
+
+    DO i=1,SIZE(vec)
+
+       !count the number of occurrences of this element:
+       num = COUNT( vec(i)==vec )
+
+       IF (num==1) THEN
+          !there is only one, flag it:
+          mask(i) = .TRUE.
+       ELSE
+          !flag this value only if it hasn't already been flagged:
+          IF (.NOT. ANY(vec(i)==vec .AND. mask) ) mask(i) = .TRUE.
+       END IF
+
+    END DO
+
+    !return only flagged elements:
+    ALLOCATE( vec_unique(COUNT(mask)) )
+    vec_unique = PACK( vec, mask )
+
+    !if you also need it sorted, then do so.
+    ! For example, with slatec routine:
+    !call ISORT (vec_unique, [0], size(vec_unique), 1)
+
+  END SUBROUTINE unique
+
+
+  ! test if a txt file has been initialised
+  LOGICAL FUNCTION initQ_file(FileName)
+    IMPLICIT NONE
+    CHARACTER(len=100),INTENT(in) :: FileName ! the output file name
+    LOGICAL :: existQ
+    CHARACTER(len=1000) :: longstring
+
+    INQUIRE( file=TRIM(FileName), exist=existQ )
+    IF ( existQ ) THEN
+       OPEN(10,file=TRIM(FileName))
+       READ(10,'(a)') longstring
+       ! print*, 'longstring: ',longstring
+       IF ( VERIFY(longstring,'Year')==0 ) initQ_file = .FALSE.
+       CLOSE(unit=10)
+    ELSE
+       initQ_file = .FALSE.
+    END IF
+
+  END FUNCTION initQ_file
+
 
 
   !========================================================================================
@@ -1012,6 +1089,7 @@ CONTAINS
     REAL(KIND(1d0)),ALLOCATABLE::dataOutX(:,:,:)
     REAL(KIND(1d0)),ALLOCATABLE::dataOutX_agg(:,:,:),dataOutX_agg0(:,:)
     INTEGER :: iGrid,err,idMin,idMax
+    INTEGER,DIMENSION(:),ALLOCATABLE  ::id_seq
 
     IF (.NOT. ALLOCATED(dataOutX)) THEN
        ALLOCATE(dataOutX(irMax,SIZE(varList),NumberOfGrids), stat=err)
@@ -1038,27 +1116,21 @@ CONTAINS
 
     CASE ('DailyState')    !DailyState
        ! get correct day index
-       idMin=MAX(1, &
-            INT(MINVAL(dataOutSUEWS(1:irMax,2,1))), &
-            INT(MINVAL(PACK(dataOutDailyState(:,2,1), &
-            mask=(dataOutDailyState(:,6,1)/=-999)))))
-       idMax=MIN(366,&
-            INT(MAXVAL(dataOutSUEWS(1:irMax,2,1))), &
-            INT(MAXVAL(PACK(dataOutDailyState(:,2,1), &
-            mask=(dataOutDailyState(:,6,1)/=-999)))))
-       ! print*, 'idMin',idMin
-       ! print*, 'idMax',idMax
+       CALL unique(INT(PACK(dataOutSUEWS(1:irMax,2,1),&
+            mask=(dataOutSUEWS(1:irMax,3,Gridiv)==23 &
+            .AND.dataOutSUEWS(1:irMax,4,Gridiv)==(nsh-1)/nsh*60))),&
+            id_seq)
        IF (ALLOCATED(dataOutX)) THEN
           DEALLOCATE(dataOutX)
           IF ( err/= 0) PRINT *, "dataOutX: Deallocation request denied"
        ENDIF
 
        IF (.NOT. ALLOCATED(dataOutX)) THEN
-          ALLOCATE(dataOutX(idMax-idMin+1,SIZE(varList),NumberOfGrids), stat=err)
+          ALLOCATE(dataOutX(SIZE(id_seq),SIZE(varList),NumberOfGrids), stat=err)
           IF ( err/= 0) PRINT *, "dataOutX: Allocation request denied"
        ENDIF
 
-       dataOutX=dataOutDailyState(idMin:idMax,1:SIZE(varList),:)
+       dataOutX=dataOutDailyState(id_seq,1:SIZE(varList),:)
        ! print*, 'idMin line',dataOutX(idMin,1:4,1)
        ! print*, 'idMax line',dataOutX(idMax,1:4,1)
 

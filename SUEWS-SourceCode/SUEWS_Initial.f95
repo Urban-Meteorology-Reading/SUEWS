@@ -2153,7 +2153,6 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
   ModelOutputData(0,cMOD_SnowFrac(WaterSurf), Gridiv) = SnowFracWater
 
 
-  !! Where is this from??
   IceFrac=0.2   !Estimated fraction of ice. Should be improved in the future
 
   ! At this point translate arrays to variables (needed for SUEWS_cal_RoughnessParameters)

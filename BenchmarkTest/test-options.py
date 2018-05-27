@@ -149,8 +149,6 @@ df_test_pass = pd.concat(
     columns={'pass': 'result'}).applymap(
     lambda x: 'pass' if x > 0 else 'fail')
 df_test_pass.index.set_names(['method', 'option'], inplace=True)
-df_test_pass
-
 
 styles_save = [
     # {'selector': '.row_heading',

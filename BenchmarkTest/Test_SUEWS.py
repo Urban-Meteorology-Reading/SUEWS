@@ -2,7 +2,7 @@
 
 # from Benchmark_SUEWS import *
 from shutil import copytree, rmtree, copyfile
-import os
+import os, sys
 import numpy as np
 import pandas as pd
 from glob import glob
@@ -10,15 +10,23 @@ import f90nml
 import errno
 import filecmp
 import tempfile
-
+import itertools
 
 # load global path
 dir_input = os.path.abspath(f90nml.read('config.nml')['file']['dir_input'])
 dir_exe = os.path.abspath(f90nml.read('config.nml')['file']['dir_exe'])
 dir_baserun = os.path.abspath(f90nml.read('config.nml')['file']['dir_baserun'])
 
+# load physics options to test
+dict_phy_opt_sel = f90nml.read('config.nml')['physics_test']
 
 # %%auxiliary SUEWS functions
+# suppress error info if needed:
+class DevNull:
+    def write(self, msg):
+        pass
+sys.stderr = DevNull()
+
 def load_SUEWS_nml(xfile):
     # remove case issues
     xfile = path_insensitive(xfile)
@@ -140,6 +148,10 @@ def gen_SiteSelect_multi(df_siteselect, n_grid):
 def run_sim(name_sim, dict_runcontrol, dict_initcond, df_siteselect,
             dir_save=tempfile.mkdtemp()):
     # TODO: support for user-specified forcing condition
+    # create dir_save if not exisitng
+    dir_save = os.path.abspath(os.path.expanduser(dir_save))
+    if not os.path.exists(dir_save):
+        os.mkdir(dir_save)
     # create folder `name_sim`
     dir_sys = os.getcwd()
     try:
@@ -196,13 +208,17 @@ def run_sim(name_sim, dict_runcontrol, dict_initcond, df_siteselect,
     # suppress output info
     os.system('./SUEWS_V2018a &>/dev/null')
 
-    # load results
-    res_sim = load_SUEWS_results(n_grid, n_year)
+    # check if results generated:
+    fl_output = glob('Output/*SUEWS_60.txt')
+    if len(fl_output) > 0:
+        # load results
+        res_sim = load_SUEWS_results(n_grid, n_year)
+        return res_sim
+    else:
+        # change back to original path
+        os.chdir(dir_sys)
+        return 'run failed!'
 
-    # change back to original path
-    os.chdir(dir_sys)
-
-    return res_sim
 # %%
 
 ##############################################################################
@@ -349,9 +365,56 @@ def test_samerun(dir_baserun, dir_save=tempfile.mkdtemp()):
     return res_test
 
 
+# %% diagnose working&faulty physics options
+def test_physics(dict_runcontrol, dict_initcond, df_siteselect,
+                 dict_phy_opt_sel,
+                 dir_save=tempfile.mkdtemp()):
+    # get options to test
+    methods, options = zip(*dict_phy_opt_sel.items())
+    options = [x if type(x) == list else [x] for x in options]
+    list_to_test = [dict(zip(methods, v))
+                    for v in itertools.product(*options)]
+
+    # test selected physics schemes
+    dict_test = {}
+    for ind, cfg in enumerate(list_to_test):
+        runcontrol_test = dict_runcontrol.copy()
+        runcontrol_test.update(cfg)
+        name_sim = str(ind)
+        res_sim = run_sim(name_sim, runcontrol_test,
+                          dict_initcond, df_siteselect,
+                          dir_save)
+        dict_test.update({ind: res_sim})
+
+    dict_test_OK = {k: 'fail' if type(v) == str else 'pass'
+                    for k, v in dict_test.iteritems()}
+
+    df_test = pd.DataFrame(list_to_test).assign(result=dict_test_OK.values())
+    # test results
+    list_method_test = [c for c in df_test.columns if not c == 'result']
+    df_test_pass = pd.concat(
+        [df_test.loc[:, [c, 'result']].pivot_table(
+            index='result', columns=c, aggfunc=len)
+            for c in list_method_test],
+        keys=list_method_test,
+        axis=1).loc[
+        'pass', :].to_frame().rename(
+        columns={'pass': 'result'}).applymap(
+        lambda x: 'pass' if x > 0 else 'fail')
+    df_test_pass.index.set_names(['method', 'option'], inplace=True)
+
+    # get `fail` options:
+    list_fail = df_test_pass.loc[
+        df_test_pass['result'] == 'fail'].index.tolist()
+
+    return list_fail
+
+
 ##############################################################################
 # auxiliary functions
 # resolve path case issues
+
+
 def path_insensitive(path):
     """
     Get a case-insensitive path for use on a case sensitive system.

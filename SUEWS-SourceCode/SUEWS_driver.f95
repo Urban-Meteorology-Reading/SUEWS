@@ -2371,7 +2371,7 @@ CONTAINS
   !===============set variable of invalid value to NAN=====================
   ELEMENTAL FUNCTION set_nan(x) RESULT(xx)
     IMPLICIT NONE
-    REAL(KIND(1d0)),PARAMETER::pNAN=9999
+    REAL(KIND(1d0)),PARAMETER::pNAN=30000 ! 30000 to prevent water_state being filtered out as it can be large
     REAL(KIND(1d0)),PARAMETER::NAN=-999
     REAL(KIND(1d0)),INTENT(in)::x
     REAL(KIND(1d0))::xx

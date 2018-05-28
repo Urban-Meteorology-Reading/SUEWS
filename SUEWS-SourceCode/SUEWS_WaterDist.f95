@@ -187,12 +187,12 @@ CONTAINS
     INTEGER,INTENT(in)::is ! surface type
 
 
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::sfr(nsurf)! surface fractions
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::AddWater(nsurf)!Water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::stateOld(nsurf)!Wetness status of each surface type from previous timestep [mm]
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::AddWaterRunoff(nsurf)!Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::soilstoreCap(nsurf)!Capacity of soil store for each surface [mm]
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::StateLimit(nsurf)!Limit for state of each surface type [mm] (specified in input files)
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::sfr! surface fractions
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::AddWater!Water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::stateOld!Wetness status of each surface type from previous timestep [mm]
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::AddWaterRunoff!Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::soilstoreCap!Capacity of soil store for each surface [mm]
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::StateLimit!Limit for state of each surface type [mm] (specified in input files)
 
     REAL(KIND(1d0)),INTENT(in)::PipeCapacity!Capacity of pipes to transfer water
     REAL(KIND(1d0)),INTENT(in)::RunoffToWater!Fraction of surface runoff going to water body
@@ -276,7 +276,8 @@ CONTAINS
        ENDIF
 
        ! Calculate updated state using chang
-       state(is)=state(is)+chang(is)
+       ! state(is)=state(is)+chang(is)
+       state(is)=stateOld(is)+chang(is)
 
        ! Check state is within physical limits between zero (dry) and max. storage capacity
        IF(state(is)<0.0) THEN   ! Cannot have a negative surface state
@@ -339,7 +340,8 @@ CONTAINS
           ENDIF
 
           ! Calculate updated state using chang
-          state(is)=state(is)+chang(is)
+          ! state(is)=state(is)+chang(is)
+          state(is)=stateOld(is)+chang(is)
 
           ! Check state is within physical limits between zero (dry) and max. storage capacity
           IF(state(is)<0.0) THEN   ! Cannot have a negative surface state

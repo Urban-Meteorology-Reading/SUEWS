@@ -79,15 +79,15 @@ SUBROUTINE AerodynamicResistance(&
 
      !Z0V roughness length for vapour
      IF (RoughLenHeatMethod==1) THEN !Brutasert (1982) Z0v=z0/10(see Grimmond & Oke, 1986)
-        z0V=Z0m/10
+        z0V=z0m/10
      ELSEIF (RoughLenHeatMethod==2) THEN ! Kawai et al. (2007)
-       	!z0V=Z0m*exp(2-(1.2-0.9*veg_fr**0.29)*(UStar*Z0m/muu)**0.25)
+       	!z0V=z0m*exp(2-(1.2-0.9*veg_fr**0.29)*(UStar*z0m/muu)**0.25)
         ! Changed by HCW 05 Nov 2015 (veg_fr includes water; VegFraction = veg + bare soil)
-        z0V=Z0m*EXP(2-(1.2-0.9*VegFraction**0.29)*(UStar*Z0m/muu)**0.25)
+        z0V=z0m*EXP(2-(1.2-0.9*VegFraction**0.29)*(UStar*z0m/muu)**0.25)
      ELSEIF (RoughLenHeatMethod==3) THEN
-        z0V=Z0m*EXP(-20.) ! Voogt and Grimmond, JAM, 2000
+        z0V=z0m*EXP(-20.) ! Voogt and Grimmond, JAM, 2000
      ELSEIF (RoughLenHeatMethod==4) THEN
-        z0V=Z0m*EXP(2-1.29*(UStar*Z0m/muu)**0.25) !See !Kanda and Moriwaki (2007),Loridan et al. (2010)
+        z0V=z0m*EXP(2-1.29*(UStar*z0m/muu)**0.25) !See !Kanda and Moriwaki (2007),Loridan et al. (2010)
      ENDIF
 
      IF(Zzd/L_mod==0.OR.UStar==0) THEN
@@ -372,7 +372,7 @@ END SUBROUTINE SurfaceResistance
 
 SUBROUTINE BoundaryLayerResistance(&
      zzd,& ! input:    !Active measurement height (meas. height-displac. height)
-     z0M,&     !Aerodynamic roughness length
+     z0m,&     !Aerodynamic roughness length
      avU1,&    !Average wind speed
      UStar,&! input/output:
      rb)! output:
@@ -380,7 +380,7 @@ SUBROUTINE BoundaryLayerResistance(&
   IMPLICIT NONE
 
   REAL(KIND(1d0)),INTENT(in)::zzd     !Active measurement height (meas. height-displac. height)
-  REAL(KIND(1d0)),INTENT(in)::z0M     !Aerodynamic roughness length
+  REAL(KIND(1d0)),INTENT(in)::z0m     !Aerodynamic roughness length
   REAL(KIND(1d0)),INTENT(in)::avU1    !Average wind speed
 
   REAL(KIND(1d0)),INTENT(inout)::UStar!Friction velocity
@@ -402,13 +402,11 @@ END SUBROUTINE BoundaryLayerResistance
 SUBROUTINE SUEWS_cal_RoughnessParameters(&
      RoughLenMomMethod,&! input:
      sfr,&! surface fractions
-     bldgH,&
-     EveTreeH,&
-     DecTreeH,&
-     porosity_id,&
-     FAIBldg,FAIEveTree,FAIDecTree,Z,&
+     bldgH,EveTreeH,DecTreeH,&
+     porosity_id,FAIBldg,FAIEveTree,FAIDecTree,&
+     z0m_in,zdm_in,Z,&
      planF,&! output:
-     Zh,Z0m,Zdm,ZZD)
+     Zh,z0m,zdm,ZZD)
   ! Get surface covers and frontal area fractions (LJ 11/2010)
   ! Last modified:
   ! TS  18 Sep 2017 - added explicit interface
@@ -437,12 +435,17 @@ SUBROUTINE SUEWS_cal_RoughnessParameters(&
   REAL(KIND(1d0)), INTENT(in) ::EveTreeH
   REAL(KIND(1d0)), INTENT(in) ::DecTreeH
   REAL(KIND(1d0)), INTENT(in) ::porosity_id
-  REAL(KIND(1d0)), INTENT(in) ::FAIBldg,FAIEveTree,FAIDecTree,Z
+  REAL(KIND(1d0)), INTENT(in) ::FAIBldg
+  REAL(KIND(1d0)), INTENT(in) ::FAIEveTree
+  REAL(KIND(1d0)), INTENT(in) ::FAIDecTree
+  REAL(KIND(1d0)), INTENT(in) ::z0m_in ! z0m set in SiteSelect
+  REAL(KIND(1d0)), INTENT(in) ::zdm_in ! zdm set in SiteSelect
+  REAL(KIND(1d0)), INTENT(in) ::Z
 
   REAL(KIND(1d0)), INTENT(out) ::planF
   REAL(KIND(1d0)), INTENT(out) ::Zh
-  REAL(KIND(1d0)), INTENT(out) ::Z0m
-  REAL(KIND(1d0)), INTENT(out) ::Zdm
+  REAL(KIND(1d0)), INTENT(out) ::z0m
+  REAL(KIND(1d0)), INTENT(out) ::zdm
   REAL(KIND(1d0)), INTENT(out) ::ZZD
 
 
@@ -469,10 +472,10 @@ SUBROUTINE SUEWS_cal_RoughnessParameters(&
   ENDIF
 
   IF(Zh/=0)THEN
-     !Calculate Z0m and Zdm depending on the Z0 method
+     !Calculate z0m and zdm depending on the Z0 method
      IF(RoughLenMomMethod==2) THEN  !Rule of thumb (G&O 1999)
-        Z0m=0.1*Zh
-        Zdm=0.7*Zh
+        z0m=0.1*Zh
+        zdm=0.7*Zh
      ELSEIF(RoughLenMomMethod==3)THEN !MacDonald 1998
         IF (areaZh/=0)THEN  !Plan area fraction
            !planF=FAIBldg*sfr(BldgSurf)/areaZh+FAItree*sfr(ConifSurf)/areaZh+FAItree*(1-porosity_id)*sfr(DecidSurf)/areaZh
@@ -481,8 +484,8 @@ SUBROUTINE SUEWS_cal_RoughnessParameters(&
            planF=0.00001
            Zh=1
         ENDIF
-        Zdm=(1+4.43**(-sfr(BldgSurf))*(sfr(BldgSurf)-1))*Zh
-        Z0m=((1-Zdm/Zh)*EXP(-(0.5*1.0*1.2/0.4**2*(1-Zdm/Zh)*planF)**(-0.5)))*Zh
+        zdm=(1+4.43**(-sfr(BldgSurf))*(sfr(BldgSurf)-1))*Zh
+        z0m=((1-zdm/Zh)*EXP(-(0.5*1.0*1.2/0.4**2*(1-zdm/Zh)*planF)**(-0.5)))*Zh
      ENDIF
   ELSEIF(Zh==0)THEN   !If zh calculated to be zero, set default roughness length and displacement height
      IF(areaZh /= 0) CALL ErrorHint(15,'In SUEWS_RoughnessParameters.f95, zh = 0 m but areaZh > 0',zh,areaZh,notUsedI)
@@ -498,10 +501,15 @@ SUBROUTINE SUEWS_cal_RoughnessParameters(&
      ENDIF
   ENDIF
 
+  IF(RoughLenMomMethod==1) THEN  !use values set in SiteSelect
+     z0m = z0m_in
+     zdm = zdm_in
+  ENDIF
+
   ZZD=Z-zdm
 
   ! Error messages if aerodynamic parameters negative
-  IF(z0m<0) CALL ErrorHint(14,'In SUEWS_RoughnessParameters.f95, z0 < 0 m.',z0m,notUsed,notUsedI)
-  IF(zdm<0) CALL ErrorHint(14,'In SUEWS_RoughnessParameters.f95, zd < 0 m.',zdm,notUsed,notUsedI)
-  IF(zzd<0) CALL ErrorHint(14,'In SUEWS_RoughnessParameters.f95, (z-zd) < 0 m.',zzd,notUsed,notUsedI)
+  IF(z0m<0) CALL ErrorHint(14,'In SUEWS_cal_RoughnessParameters, z0 < 0 m.',z0m,notUsed,notUsedI)
+  IF(zdm<0) CALL ErrorHint(14,'In SUEWS_cal_RoughnessParameters, zd < 0 m.',zdm,notUsed,notUsedI)
+  IF(zzd<0) CALL ErrorHint(14,'In SUEWS_cal_RoughnessParameters, (z-zd) < 0 m.',zzd,notUsed,notUsedI)
 END SUBROUTINE SUEWS_cal_RoughnessParameters

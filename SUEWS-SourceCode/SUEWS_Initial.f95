@@ -2159,12 +2159,14 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
   CALL SUEWS_Translate(Gridiv,0,0)
 
   !Calculation of roughness parameters (N.B. uses porosity)
+  print*, 'calling in initial state: SUEWS_cal_RoughnessParameters'
   CALL SUEWS_cal_RoughnessParameters(&
        RoughLenMomMethod,sfr,&!input
        bldgH,EveTreeH,DecTreeH,&
-       porosity(id),FAIBldg,FAIEveTree,FAIDecTree,Z,&
+       porosity(id),FAIBldg,FAIEveTree,FAIDecTree,&
+       z0m_in,zdm_in,Z,&
        planF,&!output
-       Zh,Z0m,Zdm,ZZD)
+       Zh,z0m,zdm,ZZD)
 
 
   !=============================================================================

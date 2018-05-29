@@ -223,7 +223,7 @@ CONTAINS
 
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::chang !Change in state [mm]
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::runoff!Runoff from each surface type [mm]
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::drain !Drainage of each surface type [mm]
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in) ::drain !Drainage of each surface type [mm]
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::state !Wetness status of each surface type [mm]
 
     !Extra evaporation [mm] from impervious surfaces which cannot happen due to lack of water
@@ -394,10 +394,11 @@ CONTAINS
              ! Calculate change in surface state (inputs - outputs)
              ! No drainage for water surface
              ! FlowChange is the difference in input and output flows [mm hr-1]   !!Should this really be a constant??
-             chang(is)=p_mm+FlowChange/nsh_real-(ev)
+             chang(is)=p_mm+FlowChange/nsh_real-ev
 
              ! Calculate updated state using chang
-             state(is)=state(is)+chang(is)
+             ! state(is)=state(is)+chang(is)
+             state(is)=stateOld(is)+chang(is)
 
              ! Check state is within physical limits between zero (dry) and max. storage capacity
              IF(state(is)<0.0) THEN   ! Cannot have a negative surface state

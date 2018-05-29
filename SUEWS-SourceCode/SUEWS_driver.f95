@@ -1565,12 +1565,12 @@ CONTAINS
                rb,&!Boundary layer resistance
                tlv,&!Latent heat of vaporization per timestep [J kg-1 s-1], (tlv=lv_J_kg/tstep_real)
                rss,&! output:
-               ev,&
+               ev,& ! evapotranspiration [mm]
                qe) ! latent heat flux [W m-2]
 
 
           rss_nsurf(is) = rss !Store rss for each surface
-          ! CALL soilstore    !Surface water balance and soil store updates (can modify ev, updates state)
+
           !Surface water balance and soil store updates (can modify ev, updates state)
           CALL soilstore(&
                is,& ! input: ! surface type
@@ -1608,17 +1608,16 @@ CONTAINS
                state&!Wetness status of each surface type [mm]
                )
 
-          evap(is)     = ev !Store ev for each surface
+          evap(is) = ev !Store ev for each surface
 
           ! Sum evaporation from different surfaces to find total evaporation [mm]
           ev_per_tstep = ev_per_tstep+evap(is)*sfr(is)
-
           ! Sum change from different surfaces to find total change to surface state
           surf_chang_per_tstep = surf_chang_per_tstep+(state(is)-stateOld(is))*sfr(is)
           ! Sum runoff from different surfaces to find total runoff
-          runoff_per_tstep     = runoff_per_tstep+runoff(is)*sfr(is)
+          runoff_per_tstep = runoff_per_tstep+runoff(is)*sfr(is)
           ! Calculate total state (including water body)
-          state_per_tstep      = state_per_tstep+(state(is)*sfr(is))
+          state_per_tstep = state_per_tstep+state(is)*sfr(is)
           ! Calculate total state (excluding water body)
 
           IF (NonWaterFraction/=0 .AND. is/=WaterSurf) THEN

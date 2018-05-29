@@ -137,8 +137,8 @@ MODULE ctrl_output
        varAttr('zdm'        , 'm'            , f94  , 'Zero-plane displacement height'                   , aA , 'SUEWS' , 1)     , &
        varAttr('UStar'      , 'm s-1'        , f94  , 'Friction velocity'                                , aA , 'SUEWS' , 0)     , &
        varAttr('Lob'        , 'm'            , f104 , 'Obukhov length'                                   , aA , 'SUEWS' , 0)     , &
-       varAttr('ra'         , 's m-1'        , f94  , 'Aerodynamic resistance'                           , aA , 'SUEWS' , 1)     , &
-       varAttr('rs'         , 's m-1'        , f94  , 'Surface resistance'                               , aA , 'SUEWS' , 1)     , &
+       varAttr('ra'         , 's m-1'        , f104 , 'Aerodynamic resistance'                           , aA , 'SUEWS' , 1)     , &
+       varAttr('rs'         , 's m-1'        , f104 , 'Surface resistance'                               , aA , 'SUEWS' , 1)     , &
        varAttr('Fc'         , 'umol m-2 s-1' , f94  , 'CO2 flux'                                         , aA , 'SUEWS' , 0)     , &
        varAttr('FcPhoto'    , 'umol m-2 s-1' , f94  , 'CO2 flux from photosynthesis'                     , aA , 'SUEWS' , 1)     , &
        varAttr('FcRespi'    , 'umol m-2 s-1' , f94  , 'CO2 flux from respiration'                        , aA , 'SUEWS' , 1)     , &

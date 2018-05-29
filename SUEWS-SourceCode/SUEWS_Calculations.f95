@@ -83,7 +83,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
   USE gis_data, ONLY: &
        bldgh, dectreeh, evetreeh, faibldg, faidectree, faievetree, veg_type
   USE initial, ONLY : NumberOfGrids, ReadLinesMetdata
-  USE mod_z, ONLY : z
+  USE mod_z, ONLY : z, z0m_in, zdm_in
   USE SUEWS_Driver, ONLY: suews_update_output
   USE resist, ONLY: g1, g2, g3, g4, g5, g6, gsmodel, kmax, s1, s2, th, tl
   USE DailyState_module, ONLY : SUEWS_update_DailyState
@@ -102,6 +102,10 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
   !Translate all data to the variables used in the model calculations
   IF(Diagnose==1) WRITE(*, *) 'Calling SUEWS_Translate...'
   CALL SUEWS_Translate(Gridiv, ir, iMB)
+
+
+  IF(Diagnose==1) print*, 'Calling SUEWS_cal_Main...'
+  IF(Diagnose==1) print*, 'z0m_in =',z0m_in
 
   CALL SUEWS_cal_Main(&
        AerodynamicResistanceMethod, AH_MIN, AHProf_tstep, AH_SLOPE_Cooling, & ! input&inout in alphabetical order
@@ -137,7 +141,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
        theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
        TraffProf_tstep, Ts5mindata_ir, tstep, veg_type, &
        WaterDist, WaterUseMethod, WetThresh, WU_Day, WUProfA_tstep, &
-       WUProfM_tstep, xsmd, Z, &
+       WUProfM_tstep, xsmd, z, z0m_in, zdm_in, &
        datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, &!output
        DailyStateLine)!output
 

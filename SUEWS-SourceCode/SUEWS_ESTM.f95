@@ -743,7 +743,7 @@ CONTAINS
        !  PRINT*,'RVF_ground ','RVF_WALL ','RVF_ROOF ','RVF_VEG'
        !  PRINT*,RVF_ground,RVF_WALL,RVF_ROOF,RVF_VEG
        !  print*,'Alb_avg (VF)=',alb_avg
-       !  print*,'Z0m, Zd', Z0M, ZD
+       !  print*,'z0m, Zd', z0m, ZD
 
 
     ENDIF

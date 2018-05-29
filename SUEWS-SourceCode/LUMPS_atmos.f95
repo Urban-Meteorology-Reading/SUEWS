@@ -112,7 +112,7 @@ CONTAINS
        StabilityMethod,&
        dectime,& !Decimal time
        zzd,&     !Active measurement height (meas. height-displac. height)
-       z0M,&     !Aerodynamic roughness length
+       z0m,&     !Aerodynamic roughness length
        zdm,&     !Displacement height
        avU1,&    !Average wind speed
        Temp_C,&  !Air temperature
@@ -129,7 +129,7 @@ CONTAINS
 
     REAL(KIND(1d0)),INTENT(in)::dectime !Decimal time
     REAL(KIND(1d0)),INTENT(in)::zzd     !Active measurement height (meas. height-displac. height)
-    REAL(KIND(1d0)),INTENT(in)::z0M     !Aerodynamic roughness length
+    REAL(KIND(1d0)),INTENT(in)::z0m     !Aerodynamic roughness length
     REAL(KIND(1d0)),INTENT(in)::zdm     !Displacement height
     REAL(KIND(1d0)),INTENT(in)::avU1    !Average wind speed
     REAL(KIND(1d0)),INTENT(in)::Temp_C    !Air temperature
@@ -157,12 +157,12 @@ CONTAINS
 
     LOGICAL :: debug=.FALSE.
 
-    IF(debug) WRITE(*,*)StabilityMethod,z0M,avU1,h_init,UStar,L_MOD
+    IF(debug) WRITE(*,*)StabilityMethod,z0m,avU1,h_init,UStar,L_MOD
     G_T_k=(Grav/(Temp_C+273.16))*k !gravity constant/(Temperature*Von Karman Constant)
     KUZ=k*AvU1                     !Von Karman constant*mean wind speed
     IF(zzd<0) CALL ErrorHint(32,'Windspeed Ht too low relative to zdm [Stability calc]- values [z-zdm, zdm]',Zzd,zdm,notUsedI)
 
-    UStar=KUZ/LOG(Zzd/Z0M)      !Initial setting of u* and calc. of L_MOD (neutral situation)
+    UStar=KUZ/LOG(Zzd/z0m)      !Initial setting of u* and calc. of L_MOD (neutral situation)
     IF ( ABS(h_init)<0.001 ) THEN    ! prevent zero Tstar
        h=0.001
     ELSE
@@ -172,11 +172,11 @@ CONTAINS
     L_MOD=(UStar**2)/(G_T_K*Tstar)
 
 
-    IF(LOG(zzd/z0M)<0.001000) CALL ErrorHint(17,'In stability subroutine, (z-zd) < z0.',zzd,z0m,notUsedI)
+    IF(LOG(zzd/z0m)<0.001000) CALL ErrorHint(17,'In stability subroutine, (z-zd) < z0.',zzd,z0m,notUsedI)
     DO i=1,330 !Iteration starts
        LOLD=L_MOD
        zL=zzd/L_MOD
-       z0L=z0M/L_MOD  !z0M roughness length
+       z0L=z0m/L_MOD  !z0m roughness length
 
        IF (zL>2)THEN
           CALL ErrorHint(73,'LUMPS_atmos_functions_stab.f95: stability parameter, UStar',zL,UStar,notUsedI)
@@ -188,10 +188,10 @@ CONTAINS
        psimz0=stab_fn_mom(StabilityMethod,zL,z0L)
 
 
-       UStar=KUZ/(LOG(Zzd/Z0M)-PSIM+psimz0) !Friction velocity in non-neutral situation
+       UStar=KUZ/(LOG(Zzd/z0m)-PSIM+psimz0) !Friction velocity in non-neutral situation
 
        IF(UStar<0.001000)THEN       !If u* too small
-          UStar=KUZ/(LOG(Zzd/Z0M))
+          UStar=KUZ/(LOG(Zzd/z0m))
           CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.001] zl,dectime',zl,dectime,notUsedI)
           CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.001] z0l,UStar',z0l,UStar,notUsedI)
           CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.001] psim,psimz0',psim,psimz0,notUsedI)

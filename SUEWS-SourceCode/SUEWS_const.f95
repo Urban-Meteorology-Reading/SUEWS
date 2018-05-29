@@ -1311,6 +1311,8 @@ MODULE mod_z
   REAL (KIND(1d0)) :: zzd,&  !Active measurement height (meas. height-displac. height)
        z0m,&  !Aerodynamic roughness length
        zdm,&  !Displacement height
+       z0m_in,&  !Aerodynamic roughness length set in SiteSelect
+       zdm_in,&  !Displacement height set in SiteSelect
        z      !Windspeed height
   REAL(KIND(1E10))::z0V      !Roughness length for vapour
 END MODULE mod_z

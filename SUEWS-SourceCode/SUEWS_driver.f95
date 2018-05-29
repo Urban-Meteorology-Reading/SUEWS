@@ -62,7 +62,7 @@ CONTAINS
        theta_bioCO2,timezone,TL,TrafficRate,TrafficUnits,&
        TraffProf_tstep,Ts5mindata_ir,tstep,veg_type,&
        WaterDist,WaterUseMethod,WetThresh,WU_Day,WUProfA_tstep,&
-       WUProfM_tstep,xsmd,Z,&
+       WUProfM_tstep,xsmd,Z,z0m_in,zdm_in,&
        datetimeLine,dataOutLineSUEWS,dataOutLineSnow,dataOutLineESTM,&!output
        DailyStateLine)!output
 
@@ -186,6 +186,8 @@ CONTAINS
     REAL(KIND(1D0)),INTENT(IN)::TrafficUnits
     REAL(KIND(1D0)),INTENT(IN)::xsmd
     REAL(KIND(1D0)),INTENT(IN)::Z
+    REAL(KIND(1D0)),INTENT(IN)::z0m_in
+    REAL(KIND(1D0)),INTENT(IN)::zdm_in
 
     INTEGER,DIMENSION(NVEGSURF),INTENT(IN)::LAIType
 
@@ -362,8 +364,8 @@ CONTAINS
     REAL(KIND(1D0))::wu_EveTr
     REAL(KIND(1D0))::wu_Grass
     REAL(KIND(1D0))::wu_m3
-    REAL(KIND(1D0))::Z0m
-    REAL(KIND(1D0))::Zdm
+    REAL(KIND(1D0))::z0m
+    REAL(KIND(1D0))::zdm
     REAL(KIND(1D0))::ZENITH_deg
     REAL(KIND(1D0))::Zh
 
@@ -466,13 +468,14 @@ CONTAINS
 
     !==============main calculation start=======================
     IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_cal_RoughnessParameters...'
-    ! CALL SUEWS_cal_RoughnessParameters(Gridiv) ! Added by HCW 11 Nov 2014
+    IF(Diagnose==1) print*, 'z0m_in =',z0m_in
     CALL SUEWS_cal_RoughnessParameters(&
          RoughLenMomMethod,sfr,&!input
          bldgH,EveTreeH,DecTreeH,&
-         porosity(id),FAIBldg,FAIEveTree,FAIDecTree,Z,&
+         porosity(id),FAIBldg,FAIEveTree,FAIDecTree,&
+         z0m_in,zdm_in,Z,&
          planF,&!output
-         Zh,Z0m,Zdm,ZZD)
+         Zh,z0m,zdm,ZZD)
 
     ! Calculate sun position
     IF(Diagnose==1) WRITE(*,*) 'Calling NARP_cal_SunPosition...'
@@ -606,7 +609,7 @@ CONTAINS
          StabilityMethod,&!input:
          Diagnose,AerodynamicResistanceMethod,RoughLenHeatMethod,snowUse,&
          id,it,gsModel,SMDMethod,&
-         qh_obs,avdens,avcp,h_mod,qn1,dectime,zzd,z0M,zdm,&
+         qh_obs,avdens,avcp,h_mod,qn1,dectime,zzd,z0m,zdm,&
          avU1,Temp_C,UStar,VegFraction,avkdn,&
          Kmax,&
          g1,g2,g3,g4,&
@@ -1700,7 +1703,7 @@ CONTAINS
        StabilityMethod,&!input:
        Diagnose,AerodynamicResistanceMethod,RoughLenHeatMethod,snowUse,&
        id,it,gsModel,SMDMethod,&
-       qh_obs,avdens,avcp,h_mod,qn1,dectime,zzd,z0M,zdm,&
+       qh_obs,avdens,avcp,h_mod,qn1,dectime,zzd,z0m,zdm,&
        avU1,Temp_C,UStar,VegFraction,&
        avkdn,Kmax,G1,G2,G3,G4,G5,G6,S1,S2,TH,TL,dq,&
        xsmd,vsmd,MaxConductance,LAIMax,LAI_id,snowFrac,sfr,&
@@ -1726,7 +1729,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::qn1
     REAL(KIND(1d0)),INTENT(in)::dectime    !Decimal time
     REAL(KIND(1d0)),INTENT(in)::zzd        !Active measurement height (meas. height-displac. height)
-    REAL(KIND(1d0)),INTENT(in)::z0M        !Aerodynamic roughness length
+    REAL(KIND(1d0)),INTENT(in)::z0m        !Aerodynamic roughness length
     REAL(KIND(1d0)),INTENT(in)::zdm        !Displacement height
     REAL(KIND(1d0)),INTENT(in)::avU1       !Average wind speed
     REAL(KIND(1d0)),INTENT(in)::Temp_C     !Air temperature
@@ -1777,7 +1780,7 @@ CONTAINS
          StabilityMethod,&  ! input
          dectime,& !Decimal time
          zzd,&     !Active measurement height (meas. height-displac. height)
-         z0M,&     !Aerodynamic roughness length
+         z0m,&     !Aerodynamic roughness length
          zdm,&     !Displacement height
          avU1,&    !Average wind speed
          Temp_C,&  !Air temperature
@@ -1827,7 +1830,7 @@ CONTAINS
     IF(Diagnose==1) WRITE(*,*) 'Calling BoundaryLayerResistance...'
     CALL BoundaryLayerResistance(&
          zzd,&! input:     !Active measurement height (meas. height-displac. height)
-         z0M,&     !Aerodynamic roughness length
+         z0m,&     !Aerodynamic roughness length
          avU1,&    !Average wind speed
          UStar,&  ! input/output:
          rb)  ! output:

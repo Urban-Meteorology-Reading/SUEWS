@@ -85,9 +85,9 @@ SUBROUTINE Evap_SUEWS(&
   ! Dry surface ---------------------------------------------------------------
   IF(state_is<=0.001) THEN
      qe  = numPM/(s_hPa+psyc_hPa*(1+ResistSurf/ra))  !QE [W m-2] (numPM = numerator of P-M eqn)
-     ev  = qe/tlv              !Ev [mm]    (qe[W m-2]/tlv[J kg-1 s-1]*1/density_water[1000 kg m-3])
-     W   = NAN                  !W not needed for dry surfaces (set to -999)
-     rst = 1                  !Set flag indicating dry surface(1)
+     ev  = qe/tlv !Ev [mm] (qe[W m-2]/tlv[J kg-1 s-1]*1/density_water[1000 kg m-3])
+     W   = NAN    !W not needed for dry surfaces (set to -999)
+     rst = 1      !Set flag indicating dry surface(1)
 
      ! Wet surface ---------------------------------------------------------------
   ELSE

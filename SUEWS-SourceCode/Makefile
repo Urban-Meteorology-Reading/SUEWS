@@ -1,5 +1,5 @@
-
-FC = gfortran $(FFLAGS)          # compiler
+# compilers
+FC = gfortran $(FFLAGS)
 CC = gcc $(CFLAGS)
 
 file       := SUEWS_const.f95 # get program name form source code
@@ -14,10 +14,12 @@ SUEWS_build_base = ../ReleaseRepo/build/
 SUEWS_test_dir = ../BenchmarkTest/
 
 ifeq ($(OS),Windows_NT)
+			C_MODULE = strptime.o # this is needed by datetime_module: mingw lacks `strptime`
 			STATIC = -static -mcmodel=medium# mingw
 			STATICLIB =
 			SUEWS_build_dir = $(addprefix $(SUEWS_build_base), Win10x64)
 else
+			C_MODULE =
 			UNAME_S := $(shell uname -s)
 			ifeq ($(UNAME_S),Linux) # Linux
 				STATIC = -static-libgfortran -static-libgcc # single -static won't work on macOS
@@ -58,14 +60,14 @@ clean: TARGET := $(strip $(TARGET))$(strip $(suffix))
 
 # All the files which include modules used by other modules (these therefore
 # needs to be compiled first)
+
 UTILS = stringmod.o \
 				qsort_c_module.o\
 				SUEWS_TimeRelatedSubroutines.o \
 				SUEWS_const.o  \
 				meteo.o \
+				datetime.o \
 				minpack.o
-
-DATETIME = datetime.o
 
 MODULES =	NARP_module.o \
 					SUEWS_ctrl_input.o  \
@@ -91,9 +93,8 @@ OTHERS =  SUEWS_translate.o \
 					SUEWS_AnthropogenicEmissions.o \
 					SUEWS_BiogenCO2.o
 
-
 # modules under rapid development
-TEST =      SUEWS_Calculations.o
+TEST =  SUEWS_Calculations.o
 
 
 # some test code
@@ -101,34 +102,34 @@ TEST =      SUEWS_Calculations.o
 # $(info $$TARGET is [${TARGET}])
 
 # Build main program - main uses MODULES and OTHERS
-main: SUEWS_Program.f95 $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST)
+main: SUEWS_Program.f95 $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST)
 			$(FC) SUEWS_Program.f95  -c ; \
-			$(FC) SUEWS_Program.o $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST) \
+			$(FC) SUEWS_Program.o $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST) \
 			$(STATICLIB) \
 			-o $(TARGET)
 			mkdir -p $(SUEWS_build_dir)
 			cp -f $(TARGET) $(SUEWS_build_dir)/.
 
 # Build main program with NETCDF support - main uses MODULES and OTHERS
-netcdf: SUEWS_Program.f95 $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST)
+netcdf: SUEWS_Program.f95 $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST)
 				$(FC) SUEWS_Program.f95  -c ; \
-				$(FC) SUEWS_Program.o $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST) \
+				$(FC) SUEWS_Program.o $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST) \
 				$(STATICLIB) \
 				-L$(NETCDFLIB) -lnetcdf -lnetcdff \
 				-o $(TARGET)
 
 # Build main program with NETCDF support - main uses MODULES and OTHERS
-nc4fr: SUEWS_Program.f95 $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST)
+nc4fr: SUEWS_Program.f95 $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST)
 			 $(FC) SUEWS_Program.f95  -c ; \
-			 $(FC) SUEWS_Program.o $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST) \
+			 $(FC) SUEWS_Program.o $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST) \
 			 $(STATICLIB) \
 			 -L$(NETCDFLIB) -Wl,--rpath -Wl,$(NETCDFLIB) -lnetcdff -lnetcdf \
 			 -o $(TARGET)
 
 # Build main program with coverage checking options enabled
-cov: SUEWS_Program.f95 $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST)
+cov: SUEWS_Program.f95 $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST)
 			$(FC) SUEWS_Program.f95  -c ; \
-			$(FC) SUEWS_Program.o $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST) \
+			$(FC) SUEWS_Program.o $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST) \
 			$(STATICLIB) \
 			-o $(TARGET)
 			mkdir -p $(SUEWS_build_dir)
@@ -146,16 +147,8 @@ check:
 $(UTILS): $(subst .o,.f95, $(UTILS))
 						$(FC) -c $(subst .o,.f95, $@)
 
-# If DATETIME have changed, compile them again
-ifeq ($(OS),Windows_NT)
-			$(CC) -c strptime.c -o strptime.o
-			$(FC) -c datetime.f95 strptime.o -o datetime.o
-else
-			$(FC) -c datetime.f95 -o datetime.o
-endif
-
-#$(DATETIME): $(subst .o,.f95, $(DATETIME))
-#						$(FC) -c $(subst .o,.f95, $@)
+$(C_MODULE): $(subst .o,.c, $(C_MODULE))
+						$(CC) -c $(subst .o,.c, $@)
 
 # If MODULES have changed, compile them again
 $(MODULES): $(UTILS) $(subst .o,.f95, $(MODULES))
@@ -164,7 +157,6 @@ $(MODULES): $(UTILS) $(subst .o,.f95, $(MODULES))
 # If OTHERS have changed, compile them again
 $(OTHERS): $(UTILS) $(MODULES) $(subst .o,.f95, $(OTHERS))
 					 $(FC) -c $(subst .o,.f95, $@)
-
 
 # If TEST have changed, compile them again
 $(TEST): $(subst .o,.f95, $(TEST))

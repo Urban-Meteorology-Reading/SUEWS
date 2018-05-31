@@ -52,7 +52,7 @@ __weak_alias(strptime,_strptime)
 */
 typedef unsigned char u_char;
 typedef unsigned int uint;
-typedef unsigned __int64; uint64_t;
+// typedef unsigned __int64 uint64_t;
 
 #define	_ctloc(x)		(_CurrentTimeLocale->x)
 
@@ -94,9 +94,9 @@ static const u_char *conv_num(const unsigned char *, int *, uint, uint);
 static const u_char *find_string(const u_char *, int *, const char * const *,
 	const char * const *, int);
 
-#ifndef MO_MINGW32
-static int strncasecmp(const char *a, const char *b, size_t c);
-#endif
+// #ifndef MO_MINGW32
+// static int strncasecmp(const char *a, const char *b, size_t c);
+// #endif
 
 
 char *
@@ -603,10 +603,10 @@ find_string(const u_char *bp, int *tgt, const char * const *n1,
 	return NULL;
 }
 
-#ifndef MO_MINGW32
-static int
-strncasecmp(const char *a, const char *b, size_t c)
-{
-    return _strnicmp(a, b, c);
-}
-#endif
+// #ifndef MO_MINGW32
+// static int
+// strncasecmp(const char *a, const char *b, size_t c)
+// {
+//     return _strnicmp(a, b, c);
+// }
+// #endif

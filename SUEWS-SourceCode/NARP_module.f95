@@ -219,9 +219,9 @@ CONTAINS
          qn1_is,kup_is,lup_is,tsurf_is,&       !Sub-surface radiation components
          SF_all,ALB1
 
-    REAL(KIND(1D0)),PARAMETER   :: DEG2RAD=0.017453292,&
-                                !  RAD2DEG=57.29577951,&
-         SIGMA_SB=5.67E-8
+    REAL(KIND(1D0)),PARAMETER   :: DEG2RAD=0.017453292
+    ! REAL(KIND(1D0)),PARAMETER   ::RAD2DEG=57.29577951
+    REAL(KIND(1D0)),PARAMETER   :: SIGMA_SB=5.67E-8
 
     ! NB: NARP_G is not assigned with a value in SUEWS_translate.
     ! 3.0 is used here as annual average for mid-latitude areas. TS 24 Oct 2017
@@ -238,7 +238,7 @@ CONTAINS
     !call NARP_cal_SunPosition(NARP_YEAR,DTIME,NARP_TZ,NARP_LAT,NARP_LONG,Alt,AZIMUTH,ZENITH)
     ZENITH=ZENITH_deg*DEG2RAD
     DOY=INT(DTIME)
-    IF(DOY==366)doy=365
+    IF(DOY==366) doy=365
 
     !===================================================================================
     !Calculate radiation for each sub-surface
@@ -258,7 +258,7 @@ CONTAINS
 
     DO is=1,nsurf
        IF(DiagQN==1) WRITE(*,*) 'is ',is
-       
+
        EMIS_A=PRATA_EMIS(Temp_K,Press_hPa)
 
        !--------------------------------------------------

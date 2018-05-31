@@ -6,7 +6,7 @@
     !input_cfgfiles(2) ='/Users/sunt05/Documents/BenchmarkSystemSUEWS/data-test/Shanghai/xh1_2013_60_CBLoff_7DAYS.txt'
     !input_cfgfiles(3) ='/Users/sunt05/Documents/BenchmarkSystemSUEWS/data-test/Shanghai/xh_2013_60_LQF_test.txt'
 
-    dir_exe = '/Users/sunt05/Dropbox/8-Research/98.ReadingWork/10.SUEWS-FORTRAN/ReleaseRepo/build/macOS'
+    dir_exe = '../ReleaseRepo/build/macOS'
     dir_input = './BaseInput'
     dir_baserun = './BaseRun/2018a'
 /

@@ -1,5 +1,6 @@
 
-CC = gfortran $(CFLAGS)          # compiler
+FC = gfortran $(FFLAGS)          # compiler
+CC = gcc $(CFLAGS)
 
 file       := SUEWS_const.f95 # get program name form source code
 variable   := $(shell grep 'progname' ${file})
@@ -30,9 +31,10 @@ else
 			endif
 endif
 
-CFLAGS = $(STATIC) -g -pg -Wall -Wtabs -fbounds-check -cpp \
+FFLAGS = $(STATIC) -g -pg -Wall -Wtabs -fbounds-check -cpp \
 					-Wno-unused-dummy-argument -Wno-unused-variable \
 					-fbacktrace -ffpe-trap=zero,overflow,underflow,invalid,denormal
+CFLAGS =
 
 
 # netCDF-related settings:
@@ -42,10 +44,10 @@ netcdf:	NETCDFLIB = `nc-config --libdir` # ordinary path for netCDF directories
 nc4fr: NETCDFINC = /home/xlinfr/apps/lib4cdo/include # path only valid with Fredrik's HPC
 nc4fr: NETCDFLIB = /home/xlinfr/apps/lib4cdo/lib # path only valid with Fredrik's HPC
 
-netcdf nc4fr:	CFLAGS += -Dnc=1 -I$(NETCDFINC) # options for netcdf build
+netcdf nc4fr:	FFLAGS += -Dnc=1 -I$(NETCDFINC) # options for netcdf build
 
 # coverage testing related settings:
-cov: CFLAGS += -fprofile-arcs -ftest-coverage # add options for coverage testing
+cov: FFLAGS += -fprofile-arcs -ftest-coverage # add options for coverage testing
 cov: suffix := _cov
 cov: TARGET := $(strip $(TARGET))$(strip $(suffix))
 
@@ -60,9 +62,10 @@ UTILS = stringmod.o \
 				qsort_c_module.o\
 				SUEWS_TimeRelatedSubroutines.o \
 				SUEWS_const.o  \
-				datetime.o \
 				meteo.o \
 				minpack.o
+
+DATETIME = datetime.o
 
 MODULES =	NARP_module.o \
 					SUEWS_ctrl_input.o  \
@@ -77,7 +80,6 @@ MODULES =	NARP_module.o \
 					SUEWS_OHM.o \
 					SUEWS_ctrl_output.o \
 					SUEWS_driver.o
-
 
 # Rest of the files including modules and functions which are independent
 OTHERS =  SUEWS_translate.o \
@@ -99,34 +101,34 @@ TEST =      SUEWS_Calculations.o
 # $(info $$TARGET is [${TARGET}])
 
 # Build main program - main uses MODULES and OTHERS
-main: SUEWS_Program.f95 $(UTILS) $(MODULES) $(OTHERS) $(TEST)
-			$(CC) SUEWS_Program.f95  -c ; \
-			$(CC) SUEWS_Program.o $(UTILS) $(MODULES) $(OTHERS) $(TEST) \
+main: SUEWS_Program.f95 $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST)
+			$(FC) SUEWS_Program.f95  -c ; \
+			$(FC) SUEWS_Program.o $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST) \
 			$(STATICLIB) \
 			-o $(TARGET)
 			mkdir -p $(SUEWS_build_dir)
 			cp -f $(TARGET) $(SUEWS_build_dir)/.
 
 # Build main program with NETCDF support - main uses MODULES and OTHERS
-netcdf: SUEWS_Program.f95 $(UTILS) $(MODULES) $(OTHERS) $(TEST)
-				$(CC) SUEWS_Program.f95  -c ; \
-				$(CC) SUEWS_Program.o $(UTILS) $(MODULES) $(OTHERS) $(TEST) \
+netcdf: SUEWS_Program.f95 $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST)
+				$(FC) SUEWS_Program.f95  -c ; \
+				$(FC) SUEWS_Program.o $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST) \
 				$(STATICLIB) \
 				-L$(NETCDFLIB) -lnetcdf -lnetcdff \
 				-o $(TARGET)
 
 # Build main program with NETCDF support - main uses MODULES and OTHERS
-nc4fr: SUEWS_Program.f95 $(UTILS) $(MODULES) $(OTHERS) $(TEST)
-			 $(CC) SUEWS_Program.f95  -c ; \
-			 $(CC) SUEWS_Program.o $(UTILS) $(MODULES) $(OTHERS) $(TEST) \
+nc4fr: SUEWS_Program.f95 $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST)
+			 $(FC) SUEWS_Program.f95  -c ; \
+			 $(FC) SUEWS_Program.o $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST) \
 			 $(STATICLIB) \
 			 -L$(NETCDFLIB) -Wl,--rpath -Wl,$(NETCDFLIB) -lnetcdff -lnetcdf \
 			 -o $(TARGET)
 
 # Build main program with coverage checking options enabled
-cov: SUEWS_Program.f95 $(UTILS) $(MODULES) $(OTHERS) $(TEST)
-			$(CC) SUEWS_Program.f95  -c ; \
-			$(CC) SUEWS_Program.o $(UTILS) $(MODULES) $(OTHERS) $(TEST) \
+cov: SUEWS_Program.f95 $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST)
+			$(FC) SUEWS_Program.f95  -c ; \
+			$(FC) SUEWS_Program.o $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST) \
 			$(STATICLIB) \
 			-o $(TARGET)
 			mkdir -p $(SUEWS_build_dir)
@@ -142,20 +144,31 @@ check:
 
 # If UTILS have changed, compile them again
 $(UTILS): $(subst .o,.f95, $(UTILS))
-						$(CC) -c $(subst .o,.f95, $@)
+						$(FC) -c $(subst .o,.f95, $@)
+
+# If DATETIME have changed, compile them again
+ifeq ($(OS),Windows_NT)
+			$(CC) -c strptime.c -o strptime.o
+			$(FC) -c datetime.f95 strptime.o -o datetime.o
+else
+			$(FC) -c datetime.f95 -o datetime.o
+endif
+
+#$(DATETIME): $(subst .o,.f95, $(DATETIME))
+#						$(FC) -c $(subst .o,.f95, $@)
 
 # If MODULES have changed, compile them again
 $(MODULES): $(UTILS) $(subst .o,.f95, $(MODULES))
-						$(CC) -c $(subst .o,.f95, $@)
+						$(FC) -c $(subst .o,.f95, $@)
 
 # If OTHERS have changed, compile them again
 $(OTHERS): $(UTILS) $(MODULES) $(subst .o,.f95, $(OTHERS))
-					 $(CC) -c $(subst .o,.f95, $@)
+					 $(FC) -c $(subst .o,.f95, $@)
 
 
 # If TEST have changed, compile them again
 $(TEST): $(subst .o,.f95, $(TEST))
-				 $(CC) -c $(subst .o,.f95, $@)
+				 $(FC) -c $(subst .o,.f95, $@)
 
 # If wanted, clean all *.o files after build
 clean:

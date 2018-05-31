@@ -6,6 +6,7 @@
 !  Jan 2015, HCW: Precip_hr, wuh and LAI_hr changed for generic timesteps
 !  Jan 2016, LJ:  Removal of tabs
 !  Feb 2017, HCW: Added file unit as argument so MetRead can be used for original met forcing file too
+!  May 2018, TS: imporved the ability in downscaling datetime by introducing a datetime library
 ! To Do:
 !       - Check observed SM calculation
 !---------------------------------------------------------------------------------------------------

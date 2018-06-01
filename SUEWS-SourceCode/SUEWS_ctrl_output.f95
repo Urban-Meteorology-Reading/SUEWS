@@ -592,7 +592,7 @@ CONTAINS
 
     TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varListSel
     INTEGER :: xx,err,fn,i,nargs
-    CHARACTER(len=100) :: FileOut
+    CHARACTER(len=365) :: FileOut
     CHARACTER(len=3) :: itext
     CHARACTER(len=6) :: args(5)
     CHARACTER(len=16*SIZE(varList)) :: FormatOut
@@ -656,7 +656,7 @@ CONTAINS
 
     TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varListSel
     INTEGER :: xx,err,fn,i
-    CHARACTER(len=100) :: FileOut
+    CHARACTER(len=365) :: FileOut
     CHARACTER(len=50*300) :: str_cat
     CHARACTER(len=50) :: str_x=''
     CHARACTER(len=3) :: itext
@@ -814,7 +814,7 @@ CONTAINS
 
     REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::dataOutSel
     TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varListSel
-    CHARACTER(len=100) :: FileOut
+    CHARACTER(len=365) :: FileOut
     INTEGER :: fn,i,xx,err
     CHARACTER(len=12*SIZE(varList)) :: FormatOut
     ! LOGICAL :: initQ_file
@@ -884,7 +884,7 @@ CONTAINS
     INTEGER,INTENT(in) :: iyr ! to determine year
     INTEGER,INTENT(in) :: Gridiv ! to determine grid name as in SiteSelect
     INTEGER,INTENT(in),OPTIONAL :: opt_fmt ! to determine if a format file
-    CHARACTER(len=100),INTENT(out) :: FileOut ! the output file name
+    CHARACTER(len=365),INTENT(out) :: FileOut ! the output file name
 
     CHARACTER(len=20):: str_out_min,str_grid,&
          str_date,str_year,str_DOY,str_grp,str_sfx
@@ -1019,7 +1019,7 @@ CONTAINS
   ! test if a txt file has been initialised
   LOGICAL FUNCTION initQ_file(FileName)
     IMPLICIT NONE
-    CHARACTER(len=100),INTENT(in) :: FileName ! the output file name
+    CHARACTER(len=365),INTENT(in) :: FileName ! the output file name
     LOGICAL :: existQ
     CHARACTER(len=1000) :: longstring
 
@@ -1174,7 +1174,7 @@ CONTAINS
     TYPE(varAttr),DIMENSION(:),INTENT(in)::varList
     INTEGER,INTENT(in) :: outLevel
 
-    CHARACTER(len=100):: fileOut
+    CHARACTER(len=365):: fileOut
     REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE::dataOutSel
     TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varListSel
 

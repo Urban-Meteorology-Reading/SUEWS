@@ -918,23 +918,24 @@ CONTAINS
     WRITE(str_year,'(i4)') year_int
     str_date='_'//TRIM(ADJUSTL(str_year))
 
-    ! derive output frequency from output arrays
-    ! dt_x=
-    dt1=datetime(INT(dataOutX(1,1)), 1, 1)+&
-         timedelta(days=INT(dataOutX(1,2)-1),&
-         hours=INT(dataOutX(1,3)),&
-         minutes=INT(dataOutX(1,4)))
-
-    dt2=datetime(INT(dataOutX(2,1)), 1, 1)+&
-         timedelta(days=INT(dataOutX(2,2)-1),&
-         hours=INT(dataOutX(2,3)),&
-         minutes=INT(dataOutX(2,4)))
-    dt_x=dt2-dt1
-    delta_t_min=INT(dt_x%total_seconds()/60)
     ! output frequency in minute:
     IF ( varList(6)%group == 'DailyState' ) THEN
        str_out_min='' ! ignore this for DailyState
     ELSE
+      ! derive output frequency from output arrays
+      ! dt_x=
+      dt1=datetime(INT(dataOutX(1,1)), 1, 1)+&
+           timedelta(days=INT(dataOutX(1,2)-1),&
+           hours=INT(dataOutX(1,3)),&
+           minutes=INT(dataOutX(1,4)))
+
+      dt2=datetime(INT(dataOutX(2,1)), 1, 1)+&
+           timedelta(days=INT(dataOutX(2,2)-1),&
+           hours=INT(dataOutX(2,3)),&
+           minutes=INT(dataOutX(2,4)))
+
+      dt_x=dt2-dt1
+      delta_t_min=INT(dt_x%total_seconds()/60)
        WRITE(str_out_min,'(i4)') delta_t_min
        str_out_min='_'//TRIM(ADJUSTL(str_out_min))
     ENDIF

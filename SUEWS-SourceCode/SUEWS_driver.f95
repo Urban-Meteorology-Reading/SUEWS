@@ -2736,7 +2736,7 @@ CONTAINS
 
 
     INTEGER :: fn,xx=0
-    CHARACTER(len=100) :: FileOut
+    CHARACTER(len=1000) :: FileOut
     CHARACTER(len=20)::str_grid
 
     WRITE(str_grid,'(i4)') Gridiv

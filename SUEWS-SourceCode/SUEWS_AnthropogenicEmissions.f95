@@ -3,6 +3,7 @@
 !This subroutine is still under development and in the equations concerning CO2 fluxes
 !there are bugs and missing comments.
 !Last modified
+! TS 04 Jun 2018 -  added `DLS_lag` for setting lagging hours when DLS=1
 ! MH 29 Jun 2017 -  Finalised the code to calculate the anthropogenic emissions of heat and CO2
 ! HCW 21 Apr 2017 - renamed from SUEWS_SAHP.f95. Now includes CO2 fluxes as well as QF.
 !                   Tidied code. Combined three subroutines into 1 to avoid repetition.
@@ -41,12 +42,12 @@
 
   INTEGER,INTENT(in):: EmissionsMethod
   INTEGER,INTENT(in)::&
-       id,&                !Day of year
-       it,&                !Hour
-       imin,&              !Minutes
-       DLS,&               !day lightsavings =1 +1h =0
-       nsh,&               !Number of timesteps per hour
-       ndays,&             !Max no. days in a year used to specify size of daily arrays
+       id,     & !Day of year
+       it,     & !Hour
+       imin,   & !Minutes
+       DLS,    & !day lightsavings =1 +1h =0
+       nsh,    & !Number of timesteps per hour
+       ndays,  & !Max no. days in a year used to specify size of daily arrays
        notUsedI
 
   INTEGER,DIMENSION(3),INTENT(in)::DayofWeek_id   !1 - day of week; 2 - month; 3 - season
@@ -108,7 +109,7 @@
 !-----------------------------------------------------------------------
   ! Account for Daylight saving
   ih=it-DLS
-  IF(ih<0) ih=2
+  IF(ih<0) ih=23
 
   ! Set weekday/weekend counter
   iu=1   !Set to 1=weekday

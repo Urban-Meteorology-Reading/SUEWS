@@ -108,7 +108,7 @@
 !-----------------------------------------------------------------------
   ! Account for Daylight saving
   ih=it-DLS
-  IF(ih<0) ih=2
+  IF(ih<0) ih=23
 
   ! Set weekday/weekend counter
   iu=1   !Set to 1=weekday

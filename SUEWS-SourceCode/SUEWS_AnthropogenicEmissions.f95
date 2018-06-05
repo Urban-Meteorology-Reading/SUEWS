@@ -3,7 +3,6 @@
 !This subroutine is still under development and in the equations concerning CO2 fluxes
 !there are bugs and missing comments.
 !Last modified
-! TS 04 Jun 2018 -  added `DLS_lag` for setting lagging hours when DLS=1
 ! MH 29 Jun 2017 -  Finalised the code to calculate the anthropogenic emissions of heat and CO2
 ! HCW 21 Apr 2017 - renamed from SUEWS_SAHP.f95. Now includes CO2 fluxes as well as QF.
 !                   Tidied code. Combined three subroutines into 1 to avoid repetition.

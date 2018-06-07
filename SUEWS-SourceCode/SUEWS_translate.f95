@@ -48,7 +48,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   USE resist, ONLY: g1, g2, g3, g4, g5, g6, th, tl, s1, s2, kmax, gsmodel
   USE snowMod, ONLY: &
        snowlimpaved, snowlimbuild, radmeltfact, tempmeltfact, &
-       snowalbmin, snowalbmax, tau_a, tau_f, preciplimitalb,&
+       snowAlbMin, snowAlbMax, tau_a, tau_f, preciplimitalb,&
        snowdensmin, snowdensmax, tau_r, crwmin, crwmax,&
        preciplimit, snowprof, snowalb, snowfallcum
   USE sues_data, ONLY: &
@@ -189,7 +189,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   QF0_BEU          = SurfaceChar(Gridiv,(/c_QF0_BEU_WD,c_QF0_BEU_WE/))   ! Building energy use within modelled area
 
   ! ---- Albedo [-]
-  alb(1:nsurf) = SurfaceChar(Gridiv,c_AlbMax)   !Use maximum albedos as default value (albmin for veg surfaces handled below)
+  alb(1:nsurf) = SurfaceChar(Gridiv,c_AlbMax)   !Use maximum albedos as default value (AlbMin for veg surfaces handled below)
 
   ! ---- Set min & max albedo for vegetated surfaces (min albedo not currently used for NonVeg or Water surfaces)
   AlbMin_EveTr = SurfaceChar(Gridiv,c_AlbMin(ConifSurf))

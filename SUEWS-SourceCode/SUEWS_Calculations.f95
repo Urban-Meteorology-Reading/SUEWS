@@ -48,8 +48,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
   USE time, ONLY : iy, iy_prev_t, id, id_prev_t, it, imin, dectime
   USE allocateArray, ONLY: &
        ahprof_tstep, alb, albdectr, albevetr, albgrass, &
-       albmax_dectr, albmax_evetr, albmax_grass, &
-       albmin_dectr, albmin_evetr, albmin_grass, &
+       AlbMax_DecTr, AlbMax_EveTr, AlbMax_grass, &
+       AlbMin_dectr, AlbMin_evetr, AlbMin_grass, &
        alpha_bioco2, alpha_enh_bioco2, baset, basete, &
        beta_bioco2, beta_enh_bioco2, capmax_dec, capmin_dec, &
        chanohm, cpanohm, decidcap, emis, gdd, gddfull, hdd, &
@@ -76,7 +76,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
        surfacearea, tstep
   USE snowMod, ONLY: &
        crwmax, crwmin, preciplimit, preciplimitalb, radmeltfact,&
-       snowalb, snowalbmax, snowalbmin, &
+       snowalb, snowAlbMax, snowAlbMin, &
        snowdensmax, snowdensmin, snowfallcum, snowlimbuild, &
        snowlimpaved, snowprof,&
        tau_a, tau_f, tau_r, tempmeltfact
@@ -109,8 +109,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
 
   CALL SUEWS_cal_Main(&
        AerodynamicResistanceMethod, AH_MIN, AHProf_tstep, AH_SLOPE_Cooling, & ! input&inout in alphabetical order
-       AH_SLOPE_Heating, alb, albDecTr, albEveTr, albGrass, alBMax_DecTr, &
-       alBMax_EveTr, alBMax_Grass, AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
+       AH_SLOPE_Heating, alb, albDecTr, albEveTr, albGrass, AlbMax_DecTr, &
+       AlbMax_EveTr, AlbMax_Grass, AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
        alpha_bioCO2, alpha_enh_bioCO2, alt, avkdn, avRh, avU1, BaseT, BaseTe, &
        BaseTHDD, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
        chAnOHM, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &

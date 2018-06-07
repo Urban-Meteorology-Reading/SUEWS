@@ -30,8 +30,8 @@ CONTAINS
   ! ===================MAIN CALCULATION WRAPPER FOR ENERGY AND WATER FLUX===========
   SUBROUTINE SUEWS_cal_Main(&
        AerodynamicResistanceMethod,AH_MIN,AHProf_tstep,AH_SLOPE_Cooling,& ! input&inout in alphabetical order
-       AH_SLOPE_Heating,alb,albDecTr,albEveTr,albGrass,alBMax_DecTr,&
-       alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
+       AH_SLOPE_Heating,alb,albDecTr,albEveTr,albGrass,AlbMax_DecTr,&
+       AlbMax_EveTr,AlbMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
        alpha_bioCO2,alpha_enh_bioCO2,alt,avkdn,avRh,avU1,BaseT,BaseTe,&
        BaseTHDD,beta_bioCO2,beta_enh_bioCO2,bldgH,CapMax_dec,CapMin_dec,&
        chAnOHM,cpAnOHM,CRWmax,CRWmin,DayWat,DayWatPer,&
@@ -99,9 +99,9 @@ CONTAINS
     INTEGER,INTENT(IN)::veg_type
     INTEGER,INTENT(IN)::WaterUseMethod
 
-    REAL(KIND(1D0)),INTENT(IN)::alBMax_DecTr
-    REAL(KIND(1D0)),INTENT(IN)::alBMax_EveTr
-    REAL(KIND(1D0)),INTENT(IN)::alBMax_Grass
+    REAL(KIND(1D0)),INTENT(IN)::AlbMax_DecTr
+    REAL(KIND(1D0)),INTENT(IN)::AlbMax_EveTr
+    REAL(KIND(1D0)),INTENT(IN)::AlbMax_Grass
     REAL(KIND(1D0)),INTENT(IN)::AlbMin_DecTr
     REAL(KIND(1D0)),INTENT(IN)::AlbMin_EveTr
     REAL(KIND(1D0)),INTENT(IN)::AlbMin_Grass
@@ -495,7 +495,7 @@ CONTAINS
          nsh_real,avkdn,Temp_C,Precip,BaseTHDD,&
          lat,Faut,LAI_obs,tau_a,tau_f,tau_r,&
          SnowDensMax,SnowDensMin,SnowAlbMin,&
-         alBMax_DecTr,alBMax_EveTr,alBMax_Grass,&
+         AlbMax_DecTr,AlbMax_EveTr,AlbMax_Grass,&
          AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
          CapMax_dec,CapMin_dec,PorMax_dec,PorMin_dec,&
          Ie_a,Ie_m,DayWatPer,DayWat,SnowPack,&
@@ -2494,8 +2494,8 @@ CONTAINS
 
   SUBROUTINE SUEWS_write_model_state(&
        AerodynamicResistanceMethod,AH_MIN,AHProf_tstep,AH_SLOPE_Cooling,& ! input&inout in alphabetical order
-       AH_SLOPE_Heating,alb,albDecTr,albEveTr,albGrass,alBMax_DecTr,&
-       alBMax_EveTr,alBMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
+       AH_SLOPE_Heating,alb,albDecTr,albEveTr,albGrass,AlbMax_DecTr,&
+       AlbMax_EveTr,AlbMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
        alpha_bioCO2,alpha_enh_bioCO2,alt,avkdn,avRh,avU1,BaseT,BaseTe,&
        BaseTHDD,beta_bioCO2,beta_enh_bioCO2,bldgH,CapMax_dec,CapMin_dec,&
        chAnOHM,cpAnOHM,CRWmax,CRWmin,DayWat,DayWatPer,&
@@ -2563,9 +2563,9 @@ CONTAINS
     INTEGER,INTENT(IN)::veg_type
     INTEGER,INTENT(IN)::WaterUseMethod
 
-    REAL(KIND(1D0)),INTENT(IN)::alBMax_DecTr
-    REAL(KIND(1D0)),INTENT(IN)::alBMax_EveTr
-    REAL(KIND(1D0)),INTENT(IN)::alBMax_Grass
+    REAL(KIND(1D0)),INTENT(IN)::AlbMax_DecTr
+    REAL(KIND(1D0)),INTENT(IN)::AlbMax_EveTr
+    REAL(KIND(1D0)),INTENT(IN)::AlbMax_Grass
     REAL(KIND(1D0)),INTENT(IN)::AlbMin_DecTr
     REAL(KIND(1D0)),INTENT(IN)::AlbMin_EveTr
     REAL(KIND(1D0)),INTENT(IN)::AlbMin_Grass
@@ -2779,9 +2779,9 @@ CONTAINS
        WRITE(fn,*)'tstep',tstep
        WRITE(fn,*)'veg_type',veg_type
        WRITE(fn,*)'WaterUseMethod',WaterUseMethod
-       WRITE(fn,*)'alBMax_DecTr',alBMax_DecTr
-       WRITE(fn,*)'alBMax_EveTr',alBMax_EveTr
-       WRITE(fn,*)'alBMax_Grass',alBMax_Grass
+       WRITE(fn,*)'AlbMax_DecTr',AlbMax_DecTr
+       WRITE(fn,*)'AlbMax_EveTr',AlbMax_EveTr
+       WRITE(fn,*)'AlbMax_Grass',AlbMax_Grass
        WRITE(fn,*)'AlbMin_DecTr',AlbMin_DecTr
        WRITE(fn,*)'AlbMin_EveTr',AlbMin_EveTr
        WRITE(fn,*)'AlbMin_Grass',AlbMin_Grass

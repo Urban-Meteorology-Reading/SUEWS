@@ -54,47 +54,47 @@ cov: suffix := _cov
 cov: TARGET := $(strip $(TARGET))$(strip $(suffix))
 
 
-clean: suffix := *
+clean: suffix :=
 clean: TARGET := $(strip $(TARGET))$(strip $(suffix))
 
 
 # All the files which include modules used by other modules (these therefore
 # needs to be compiled first)
 
-UTILS = stringmod.o \
-				qsort_c_module.o\
-				SUEWS_TimeRelatedSubroutines.o \
-				SUEWS_const.o  \
-				meteo.o \
-				datetime.o \
-				minpack.o
+UTILS = SUEWS_ctrl_const.o  \
+				SUEWS_util_stringmod.o \
+				SUEWS_util_qsort.o\
+				SUEWS_util_time.o \
+				SUEWS_util_meteo.o \
+				SUEWS_util_datetime.o \
+				SUEWS_util_minpack.o
 
-MODULES =	NARP_module.o \
-					SUEWS_ctrl_input.o  \
-					LUMPS_atmos.o \
-					SOLWEIG_module.o  \
-					BLUEWS_module.o \
-					SUEWS_WaterDist.o \
-					SUEWS_Snow.o \
-					SUEWS_DailyState.o \
-					SUEWS_ESTM.o \
-					SUEWS_AnOHM.o \
-					SUEWS_OHM.o \
-					SUEWS_ctrl_output.o \
-					SUEWS_driver.o
+MODULES =	SUEWS_phys_NARP.o \
+					SUEWS_ctrl_Input.o  \
+					SUEWS_phys_AtmMoist.o \
+					SUEWS_phys_SOLWEIG.o  \
+					SUEWS_phys_BLUEWS.o \
+					SUEWS_phys_WaterDist.o \
+					SUEWS_phys_Snow.o \
+					SUEWS_phys_DailyState.o \
+					SUEWS_phys_ESTM.o \
+					SUEWS_phys_AnOHM.o \
+					SUEWS_phys_OHM.o \
+					SUEWS_ctrl_Output.o \
+					SUEWS_ctrl_Driver.o
 
 # Rest of the files including modules and functions which are independent
-OTHERS =  SUEWS_translate.o \
-					LUMPS_QHQE.o \
-					SUEWS_Resist.o \
-					SUEWS_error.o \
-					SUEWS_evap.o \
-					SUEWS_Initial.o \
-					SUEWS_AnthropogenicEmissions.o \
-					SUEWS_BiogenCO2.o
+OTHERS =  SUEWS_ctrl_Translate.o \
+					SUEWS_phys_LUMPS.o \
+					SUEWS_phys_Resist.o \
+					SUEWS_ctrl_Error.o \
+					SUEWS_phys_Evap.o \
+					SUEWS_ctrl_Init.o \
+					SUEWS_phys_AnEmsn.o \
+					SUEWS_phys_BiogenCO2.o
 
 # modules under rapid development
-TEST =  SUEWS_Calculations.o
+TEST =  SUEWS_ctrl_Calculations.o
 
 
 # some test code

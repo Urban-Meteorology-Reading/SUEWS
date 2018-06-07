@@ -25,3 +25,4 @@ org.eclipse.photran.core.prefs
 workspace.xml
 10.SUEWS-FORTRAN.iml
 .idea
+BenchmarkTest/*.pyc

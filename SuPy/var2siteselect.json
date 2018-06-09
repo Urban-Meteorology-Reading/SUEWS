@@ -937,6 +937,6 @@
   }],
   "year": "Year",
   "z": "z",
-  "z0": "z0",
-  "zd": "zd"
+  "z0m_in": "z0",
+  "zdm_in": "zd"
 }

@@ -406,9 +406,9 @@ def load_SUEWS_Forcing_met_df_raw(
             tstep=tstep_met_in / 60))
 
     # list of met forcing files
-    list_file_MetForcing = [
+    list_file_MetForcing = sorted([
         f for f in glob.glob(forcingfile_met_pattern)
-        if 'ESTM' not in f]
+        if 'ESTM' not in f])
 
     # load raw data
     df_forcing_met = pd.concat(

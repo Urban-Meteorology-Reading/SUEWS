@@ -33,8 +33,8 @@ dir_f95 = 'SUEWS-SourceCode'
 target_f95 = [
     os.path.join(dir_f95, f)
     for f in
-    ['SUEWS_const.f95',
-     'SUEWS_driver.f95']]
+    ['SUEWS_ctrl_Const.f95',
+     'SUEWS_ctrl_Driver.f95']]
 all_f95 = glob.glob(os.path.join(dir_f95, '*.f95'))
 exclude_f95 = [
     os.path.join(dir_f95, f)
@@ -63,7 +63,7 @@ ext_modules = [
               extra_link_args=[(''if sysname == 'Linux' else '-static')])]
 
 setup(name='supy',
-      version='0.3',
+      version='0.3b',
       description='the SUEWS model that speaks python',
       long_description=readme(),
       url='https://github.com/sunt05/SuPy',

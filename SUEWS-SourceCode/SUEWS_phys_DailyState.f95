@@ -49,7 +49,7 @@ CONTAINS
   ! sg feb 2012 - rewritten from LUMPS_LAI so done in real time
   !
   ! To Do
-  !   - Account for change of year in 5-day running mean?
+  !   - Account for change of year in 5-day running mean
   !   - Check LAI calcs (N/S hemisphere similarities; use of day length)
   !       - Take out doy limits (140,170, etc) and code as parameters
   !   - Could add different coefficients (Ie_m, Ie_a) for each vegetation type
@@ -456,7 +456,7 @@ CONTAINS
     ! Albedo changes with LAI for each vegetation type
     ! Storage capacity and porosity are updated based on DecTr LAI only (seasonal variation in Grass and EveTr assumed small)
     ! If only LUMPS is used, set deciduous capacities to 0
-    ! Assume porosity Change based on GO99- Heisler??
+    ! QUESTION: Assume porosity Change based on GO99- Heisler?
     deltaLAI=0
     deltaLAIEveTr=0
     deltaLAIGrass=0
@@ -556,7 +556,7 @@ CONTAINS
        yes =((GDD(id,3)+GDD(id,4))/2-BaseT(iv))    !Leaf on
        no  =((GDD(id,3)+GDD(id,4))/2-BaseTe(iv))   !Leaf off
 
-       indHelp = 0   !Help switch to allow GDD to go to zero in sprint-time !!What does this mean?? HCW
+       indHelp = 0   !Help switch to allow GDD to go to zero in sprint-time !! QUESTION: What does this mean? HCW
 
        IF(yes<0) THEN   !GDD cannot be negative
           indHelp=yes   !Amount of negative GDD

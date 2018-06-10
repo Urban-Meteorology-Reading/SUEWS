@@ -95,7 +95,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   ! =================================================================================
   ! ======= Translate inputs from SurfaceChar to variable names used in model =======
   ! =================================================================================
-  GridID = GridIDmatrix(Gridiv) !also in SUEWS_Program - could delete here?
+  ! GridID = GridIDmatrix(Gridiv) ! also in SUEWS_Program so deleted here. TS 10 Jun 2018
   ! ---- Latitude and longitude
   lat = SurfaceChar(Gridiv,c_lat)
   lng = SurfaceChar(Gridiv,c_lng)
@@ -241,12 +241,12 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   SoilDepth(1:(nsurf-1))           = SurfaceChar(Gridiv,c_SoilDepth(1:(nsurf-1))) ! Depth of sub-surface soil store [mm]
   SoilStoreCap(1:(nsurf-1))        = SurfaceChar(Gridiv,c_SoilStCap(1:(nsurf-1))) ! Soil store capacity [mm]
   SatHydraulicConduct(1:(nsurf-1)) = SurfaceChar(Gridiv,c_KSat(1:(nsurf-1)))      ! Hydraulic conductivity of saturated soil [mm s-1]
-  !SoilDensity          (1:(nsurf-1)) = SurfaceChar(Gridiv,c_SoilDens(1:(nsurf-1))) ! Soil density [units??]
+  !SoilDensity(1:(nsurf-1)) = SurfaceChar(Gridiv,c_SoilDens(1:(nsurf-1))) ! Soil density [kg m-3]
   ! Not yet implemented in model
   !InfiltrationRate  (1:(nsurf-1)) = SurfaceChar(Gridiv,c_SoilInfRate(1:(nsurf-1))) ! Infiltration rate [mm h-1]
 
   !! Observed soil characteristics
-  !SoilDensity  (1:(nsurf-1)) = SurfaceChar(Gridiv,c_SoilDens(1:(nsurf-1))) ! Soil density [units??]
+  !SoilDensity  (1:(nsurf-1)) = SurfaceChar(Gridiv,c_SoilDens(1:(nsurf-1))) ! Soil density [kg m-3]
   !SoilDepthMeas(1:(nsurf-1)) = SurfaceChar(Gridiv,c_ObsSMDepth(1:(nsurf-1)))
   !SmCap        (1:(nsurf-1)) = SurfaceChar(Gridiv,c_ObsSMMax(1:(nsurf-1)))
   !SoilRocks    (1:(nsurf-1)) = SurfaceChar(Gridiv,c_ObsSNRFrac(1:(nsurf-1)))

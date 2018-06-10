@@ -1246,7 +1246,7 @@ CONTAINS
     AdditionalWater = addPipes+addImpervious+addVeg+addWaterBody  ![mm]
 
     ! Initialise runoff in pipes
-    runoffPipes         = addPipes !Water flowing in pipes from other grids. No need for scaling??
+    runoffPipes         = addPipes !Water flowing in pipes from other grids. QUESTION: No need for scaling?
     !! CHECK p_i
     runoff_per_interval = addPipes !pipe plor added to total runoff.
 
@@ -1748,7 +1748,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::TL         !Minimum temperature limit
     REAL(KIND(1d0)),INTENT(in)::dq         !Specific humidity deficit
     REAL(KIND(1d0)),INTENT(in)::xsmd       !Measured soil moisture deficit
-    REAL(KIND(1d0)),INTENT(in)::vsmd       !Soil moisture deficit for vegetated surfaces only (what about BSoil?)
+    REAL(KIND(1d0)),INTENT(in)::vsmd       !Soil moisture deficit for vegetated surfaces only (QUESTION: what about BSoil?)
 
     REAL(KIND(1d0)),DIMENSION(3),INTENT(in) ::MaxConductance!Max conductance [mm s-1]
     REAL(KIND(1d0)),DIMENSION(3),INTENT(in) ::LAIMax        !Max LAI [m2 m-2]
@@ -1956,113 +1956,28 @@ CONTAINS
 
     !=====================================================================
     !====================== Prepare data for output ======================
+    ! values outside of reasonable range are set as NAN-like numbers. TS 10 Jun 2018
 
-    ! Check surface composition (HCW 21 Jul 2016)
-    ! if totally water surface, set output to -999 for columns that do not exist
-    !IF(sfr(WaterSurf)==1) THEN
-    !   NWstate_per_tstep = NAN    !no non-water surface
-    !   smd = NAN                  !no soil store beneath water surface
-    !   SoilState = NAN
-    !   runoffSoil_per_tstep = NAN
-    !   drain_per_tstep = NAN      !no drainage from water surf
-    !ENDIF
-    !These removed as now all these get a value of 0. LJ 15/06/2017
-
-    ! Remove non-existing surface type from surface and soil outputs   ! Added back in with NANs by HCW 24 Aug 2016
-    ! DO is=1,nsurf
-    !    IF (sfr(is)<0.00001) THEN
-    !       state_x(is)= NAN
-    !       smd_nsurf_x(is)= NAN
-    !       !runoffOut(is)= NAN
-    !       !runoffSoilOut(is)= NAN
-    !    ELSE
-    !       state_x(is)=state(is)
-    !       smd_nsurf_x(is)=smd_nsurf(is)
-    !       !runoffOut(is)=runoff(is)
-    !       !runoffSoilOut(is)=runoffSoil(is)
-    !    ENDIF
-    ! ENDDO
     ! Remove non-existing surface type from surface and soil outputs   ! Added back in with NANs by HCW 24 Aug 2016
     state_x=UNPACK(SPREAD(NAN, dim=1, ncopies=SIZE(sfr)), mask=(sfr<0.00001), field=state)
     smd_nsurf_x=UNPACK(SPREAD(NAN, dim=1, ncopies=SIZE(sfr)), mask=(sfr<0.00001), field=smd_nsurf)
 
-
-    ! Remove negative state   !ErrorHint added, then commented out by HCW 16 Feb 2015 as should never occur
-    !if(st_per_interval<0) then
-    !   call ErrorHint(63,'SUEWS_Calculations: st_per_interval < 0',st_per_interval,NotUsed,NotUsedI)
-    !   !st_per_interval=0
-    !endif
-
-    !Set limits on output data to avoid formatting issues ---------------------------------
-    ! Set limits as +/-9999, depending on sign of value
-    ! errorHints -> warnings commented out as writing these slow down the code considerably when there are many instances
-    ! IF(ResistSurf > 9999) THEN
-    !    !CALL errorHint(6,'rs set to 9999 s m-1 in output; calculated value > 9999 s m-1',ResistSurf,notUsed,notUsedI)
-    !    ResistSurf_x=MIN(9999.,ResistSurf)
-    ! ENDIF
     ResistSurf_x=MIN(9999.,ResistSurf)
 
-    ! IF(l_mod > 9999) THEN
-    !    !CALL errorHint(6,'Lob set to 9999 m in output; calculated value > 9999 m',L_mod,notUsed,notUsedI)
-    !    l_mod_x=MIN(9999.,l_mod)
-    ! ELSEIF(l_mod < -9999) THEN
-    !    !CALL errorHint(6,'Lob set to -9999 m in output; calculated value < -9999 m',L_mod,notUsed,notUsedI)
-    !    l_mod_x=MAX(-9999.,l_mod)
-    ! ENDIF
     l_mod_x=MAX(MIN(9999.,l_mod), -9999.)
-
-    ! Set NA values   !!Why only these variables??  !!ErrorHints here too - error hints can be very slow here
-    ! IF(ABS(qh)>pNAN) qh=NAN
-    ! IF(ABS(qh_r)>pNAN) qh_r=NAN
-    ! IF(ABS(qeOut)>pNAN) qeOut=NAN
-    ! IF(ABS(qs)>pNAN) qs=NAN
-    ! ! IF(ABS(ch_per_interval)>pNAN) ch_per_interval=NAN
-    ! IF(ABS(surf_chang_per_tstep)>pNAN) surf_chang_per_tstep=NAN
-    ! IF(ABS(tot_chang_per_tstep)>pNAN) tot_chang_per_tstep=NAN
-    ! IF(ABS(SoilState)>pNAN) SoilState=NAN
-    ! IF(ABS(smd)>pNAN) smd=NAN
-    ! casting invalid values to NANs
-    ! qh_x                   = set_nan(qh)
-    ! qh_r_x                 = set_nan(qh_r)
-    ! qeOut_x                = set_nan(qeOut)
-    ! qs_x                   = set_nan(qs)
-    ! surf_chang_per_tstep_x = set_nan(surf_chang_per_tstep)
-    ! tot_chang_per_tstep_x  = set_nan(tot_chang_per_tstep)
-    ! SoilState_x            = set_nan(SoilState)
-    ! smd_x                  = set_nan(smd)
-
-    ! this part is now handled in `SUEWS_cal_SoilMoist`
-    ! ! If measured smd is used, set components to -999 and smd output to measured one
-    ! IF (SMDMethod>0) THEN
-    !    !  smd_nsurf=NAN
-    !    smd_nsurf_x=NAN
-    !    smd_x=xsmd
-    ! ENDIF
 
     ! Calculate areally-weighted LAI
     IF(iy == (iy_prev_t+1) .AND. (id-1) == 0) THEN   !Check for start of next year and avoid using LAI(id-1) as this is at the start of the year
-       !  LAI_wt=0
-       !  DO is=1,nvegsurf
-       !     LAI_wt=LAI_wt+LAI(id_prev_t,is)*sfr(is+2)
-       !  ENDDO
        LAI_wt=DOT_PRODUCT(LAI(id_prev_t,:),sfr(1+2:nvegsurf+2))
     ELSE
-       !  LAI_wt=0
-       !  DO is=1,nvegsurf
-       !     LAI_wt=LAI_wt+LAI(id-1,is)*sfr(is+2)
-       !  ENDDO
        LAI_wt=DOT_PRODUCT(LAI(id-1,:),sfr(1+2:nvegsurf+2))
     ENDIF
 
     ! Calculate areally-weighted albedo
     bulkalbedo=DOT_PRODUCT(alb,sfr)
-    ! bulkalbedo = 0
-    ! DO is=1,nsurf
-    !    bulkalbedo = bulkalbedo + alb(is)*sfr(is)
-    ! ENDDO
 
-    ! NB: this part needs to be reconsidered for calculation logic:
-    ! where to put it? seems to be better placed somewhere near. TS, 20170927
+    ! NB: this part needs to be reconsidered for calculation logic. TS, 27 Sep 2018
+    ! TODO: this part should be reconnected to an improved CBL interface. TS 10 Jun 2018
     ! ! Save qh and qe for CBL in next iteration
     ! IF(Qh_choice==1) THEN   !use QH and QE from SUEWS
     !    qhforCBL(Gridiv) = qh

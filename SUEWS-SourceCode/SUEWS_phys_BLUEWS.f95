@@ -138,7 +138,7 @@ CONTAINS
     CALL rkutta(neqn,secs0,secs1,y,1)
     !++++++++++++++++++++++++++++++++++++++++++++++++++++++
     blh_m   =y(1)
-    tm_K    =y(2)  ! potential temperature, units: deg C  <-NT: shouldn't this be K?
+    tm_K    =y(2)  ! potential temperature, units: K
     qm_kgkg =y(3)  ! specific humidity, units: kg/kg
     cm      =y(4)  ! co2 concentration,units: mol/mol
     tp_K    =y(5)  ! potential temperature top of CBL: K
@@ -171,7 +171,7 @@ CONTAINS
     IF(it==0 .AND. imin==(nsh_real-1)/nsh_real*60) idoy=id-1  !Modified by HCW 04 Mar 2015 in case model timestep is not 5-min
 
 
-    ! NB: any difference between the two options? code looks the same in the two branches.
+    ! QUESTION: any difference between the two options? code looks the same in the two branches.
     IF((qh_choice==1).OR.(qh_choice==2))THEN !BLUEWS or BLUMPS
        !Stability correction
        !tm_K_zm=tm_K+cbldata(10)*cbldata(2)/(k*cbldata(8)*cbldata(6)*cbldata(4))
@@ -188,7 +188,7 @@ CONTAINS
        !write(*,*) 'qh1or2', DateTIme, iCBLcount
        dataOutBL(iCBLcount,1:ncolumnsdataOutBL,Gridiv)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime,blh_m,tm_K, &
             qm_kgkg*1000, tp_K,qp_kgkg*1000,&
-            Temp_C,avrh,cbldata(2),cbldata(3),cbldata(9),cbldata(7),cbldata(8),cbldata(4),cbldata(5),cbldata(6),&
+            Temp_C,avrh,cbldata([2,3,9,7,8,4,5,6]),&
             gamt_Km,gamq_kgkgm/)
     ELSEIF(qh_choice==3)THEN ! CBL
        !tm_K_zm=tm_K+cbldata(10)*cbldata(2)/(k*cbldata(8)*cbldata(6)*cbldata(4))
@@ -196,17 +196,16 @@ CONTAINS
        es_hPa1=sat_vap_press_x(Temp_C1,cbldata(9),1,dectime)
        lv=(2500.25-2.365*Temp_C1)*1000
        !qm_gkg_zm=qm_gkg+cbldata(10)*cbldata(3)/(k*cbldata(8)*cbldata(4)*lv)
-       !  avrh1=100*((qm_gkg*cbldata(8)/(622+qm_gkg))/es_hPa1) !check pressure
        avrh1=100*((qm_gkg*cbldata(9)/(622+qm_gkg))/es_hPa1) ! should be cbldata(9), i.e., Press_hPa
        IF(avrh1>100)THEN
-          CALL errorHint(34,'subroutine CBL dectime, relative humidity',idoy+cbldata(1)/24.0,avrh,100)
+          CALL errorHint(34,'subroutine CBL dectime, relative humidity',idoy+cbldata(1)/24.0,avrh1,100)
           avrh1=100
        ENDIF
        iCBLcount=iCBLcount+1
        !write(*,*) 'qh3', DateTIme, iCBLcount
        dataOutBL(iCBLcount,1:ncolumnsdataOutBL,Gridiv)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),dectime,blh_m,tm_K, &
             qm_kgkg*1000,tp_K,qp_kgkg*1000,&
-            Temp_C1,avrh1,cbldata(2),cbldata(3),cbldata(9),cbldata(7),cbldata(8),cbldata(4),cbldata(5),cbldata(6),&
+            Temp_C1,avrh1,cbldata([2,3,9,7,8,4,5,6]),&
             gamt_Km,gamq_kgkgm/)
     ENDIF
 

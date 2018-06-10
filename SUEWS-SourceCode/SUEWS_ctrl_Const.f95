@@ -342,7 +342,7 @@ MODULE allocateArray
   ! ---- NARP-specific parameters ----------------------------------------------------------------
   REAL(KIND(1d0))             :: NARP_LAT,NARP_LONG,NARP_YEAR,NARP_TZ,&
        NARP_ALB_SNOW,NARP_EMIS_SNOW,NARP_TRANS_SITE
-  REAL(KIND(1D0))             :: NARP_G(365)   !!Should this be NDays?? - HCW
+  REAL(KIND(1D0))             :: NARP_G(365)   !!QUESTION: Should this be NDays? - HCW
   INTEGER                     :: NARP_NPERHOUR
   REAL(KIND(1D0)),ALLOCATABLE :: NARP_KDOWN_HR(:)
   ! Constants required
@@ -405,13 +405,13 @@ MODULE allocateArray
   !-----------------------------------------------------------------------------------------------
 
   ! ---- AnOHM related variable, added by TS, 01 Mar 2016 ---------------------------------------------------------------
-  REAL(KIND(1d0)),DIMENSION(MaxNumberOfGrids) :: a1AnOHM,a2AnOHM,a3AnOHM   ! OHM coefficients, a1 [-]; a2 [h]; a3 [W m-2]
-  REAL(KIND(1d0)),DIMENSION(MaxNumberOfGrids) :: mAHAnOHM           ! daily mean AH [W m-2]
-  REAL(KIND(1d0)),DIMENSION(MaxNumberOfGrids) :: BoAnOHMStart  ! initial Bo for interation [-]
-  REAL(KIND(1d0)),DIMENSION(MaxNumberOfGrids) :: BoAnOHMEnd  ! final Bo for interation [-]
-  REAL(KIND(1d0)),DIMENSION(nsurf):: cpAnOHM      ! heat capacity [??]
-  REAL(KIND(1d0)),DIMENSION(nsurf):: kkAnOHM       ! heat conductivity [??]
-  REAL(KIND(1d0)),DIMENSION(nsurf):: chAnOHM      ! bulk transfer coef. [-]
+  REAL(KIND(1d0)),DIMENSION(MaxNumberOfGrids) :: a1AnOHM,a2AnOHM,a3AnOHM ! OHM coefficients, a1 [-]; a2 [h]; a3 [W m-2]
+  REAL(KIND(1d0)),DIMENSION(MaxNumberOfGrids) :: mAHAnOHM                ! daily mean AH [W m-2]
+  REAL(KIND(1d0)),DIMENSION(MaxNumberOfGrids) :: BoAnOHMStart            ! initial Bo for interation [-]
+  REAL(KIND(1d0)),DIMENSION(MaxNumberOfGrids) :: BoAnOHMEnd              ! final Bo for interation [-]
+  REAL(KIND(1d0)),DIMENSION(nsurf):: cpAnOHM ! heat capacity [J m-3 K-1]
+  REAL(KIND(1d0)),DIMENSION(nsurf):: kkAnOHM ! thermal conductivity [W m-1 K-1]
+  REAL(KIND(1d0)),DIMENSION(nsurf):: chAnOHM ! bulk transfer coef. [-]
   !-----------------------------------------------------------------------------------------------
 
   ! ESTM variables for SUEWS surfaces
@@ -1503,7 +1503,7 @@ MODULE sues_data
        gl,&         !G(LAI)
        sdp,&        !S1/G6+S2
        smd,&        !Soil moisture deficit of the soil surface layer
-       vsmd,&       !Soil moisture deficit for vegetated surfaces only (what about BSoil?)
+       vsmd,&       !Soil moisture deficit for vegetated surfaces only (QUESTION: what about BSoil?)
        gs,&         !G(Soil moisture deficit)
        gsc,&        !Surface Layer Conductance
        rss          !Surface resistance after wet/partially wet adjustment
@@ -1692,7 +1692,7 @@ MODULE ColNamesInputFiles
        c_PopDensNight = 33,&
        c_TrafficRate_WD  = 34,&    ! Mean traffic rate in modelled area [veh km m-2 s-1] Weekday
        c_TrafficRate_WE  = 35,&    ! Mean traffic rate in modelled area [veh km m-2 s-1] Weekend
-       c_QF0_BEU_WD  = 36,&    ! Building energy use for modelled area [W m-2] - could change units?
+       c_QF0_BEU_WD  = 36,&    ! Building energy use for modelled area [W m-2] - QUESTION: could change units?
        c_QF0_BEU_WE = 37,&
                                 ! Codes for different surfaces
        c_PavedCode = 38,&  ! Links characteristics in SUEWS_NonVeg.txt
@@ -2158,11 +2158,11 @@ MODULE ESTM_data !S.O. and FO
        em_veg,&       !emissivity of veg
        em_r,&         !emissivity of roof inside building
        em_w,&         !emissivity of internal wall
-       em_i,&         !emissivity of ???
+       em_i,&         !QUESTION: emissivity of ?
        em_f,&         !emissivity of floor
        fair,&         !fraction of air (or ratio of outdoor air volume to indoor air volume)
        fground,&      !fraction of ground
-       fibld,&        !fraction of internal elements (?)
+       fibld,&        !QUESTION: fraction of internal elements (?)
        finternal,&    !sum of froof, fibld and fwall
        froof,&        !fraction of roof
        fveg,&         !fraction of veg

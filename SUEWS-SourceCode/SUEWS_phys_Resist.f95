@@ -180,7 +180,7 @@ SUBROUTINE SurfaceResistance(&
   REAL(KIND(1d0)),INTENT(in)::TL!Minimum temperature limit
   REAL(KIND(1d0)),INTENT(in)::dq!Specific humidity deficit
   REAL(KIND(1d0)),INTENT(in)::xsmd!Measured soil moisture deficit
-  REAL(KIND(1d0)),INTENT(in)::vsmd!Soil moisture deficit for vegetated surfaces only (what about BSoil?)
+  REAL(KIND(1d0)),INTENT(in)::vsmd!QUESTION: Soil moisture deficit for vegetated surfaces only (what about BSoil?)
 
   REAL(KIND(1d0)),DIMENSION(3),INTENT(in)    ::MaxConductance!Max conductance [mm s-1]
   REAL(KIND(1d0)),DIMENSION(3),INTENT(in)    ::LAIMax        !Max LAI [m2 m-2]
@@ -216,7 +216,7 @@ SUBROUTINE SurfaceResistance(&
 
   IF(gsModel == 1) THEN
      IF(avkdn<=0) THEN   !At nighttime set gsc at arbitrary low value: gsc=0.1 mm/s (Shuttleworth, 1988b)
-        gsc=0.1   !Is this limit good here? ZZ
+        gsc=0.1   !QUESTION: Is this limit good here? ZZ
      ELSE
         ! kdown ----
         QNM=Kmax/(Kmax+G2)

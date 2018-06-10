@@ -244,7 +244,7 @@ SUBROUTINE OHM_coef_cal(sfr,nsurf,&
      ENDIF
 
      ! If snow, adjust surface fractions accordingly
-     IF(SnowUse==1.AND.is/=BldgSurf.AND.is/=WaterSurf) THEN   ! ?? Why is BldgSurf excluded here?
+     IF(SnowUse==1.AND.is/=BldgSurf.AND.is/=WaterSurf) THEN   ! QUESTION: Why is BldgSurf excluded here?
         surfrac=surfrac*(1-SnowFrac(is))
      ENDIF
 

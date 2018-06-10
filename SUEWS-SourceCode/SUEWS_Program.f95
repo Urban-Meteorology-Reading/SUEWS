@@ -296,7 +296,7 @@ PROGRAM SUEWS_Program
      ALLOCATE(qn1_av_store_grid(2*NSH+1))
      ALLOCATE(qhforCBL(NumberOfGrids))
      ALLOCATE(qeforCBL(NumberOfGrids))
-     !! Add snow clearing (?)
+     !! QUESTION: Add snow clearing (?)
 
      qn1_store(:,:) = NAN ! Initialise to -999
      qn1_av_store(:,:) = NAN ! Initialise to -999
@@ -304,7 +304,7 @@ PROGRAM SUEWS_Program
      qn1_av_store_grid(:)=NAN
      qhforCBL(:) = NAN
      qeforCBL(:) = NAN
-     ! Initialise other arrays here???
+     ! QUESTION: Initialise other arrays here?
 
 
      IF(StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
@@ -571,7 +571,10 @@ PROGRAM SUEWS_Program
         IF (iblock==1) THEN
            IF((CBLuse==1).OR.(CBLuse==2)) CALL CBL_ReadInputData
         ENDIF
-        IF(SOLWEIGuse==1) CALL SOLWEIG_initial   !not sure if solweig should be within iblock if statement too?
+
+        ! NB: SOLWEIG is disabled in v2018a
+        ! QUESTION: not sure if solweig should be within iblock if statement too?
+        ! IF(SOLWEIGuse==1) CALL SOLWEIG_initial
 
         !write(*,*) 'Initialisation done'
         ! First stage: initialisation done ----------------------------------
@@ -631,7 +634,7 @@ PROGRAM SUEWS_Program
               GridCounter = GridCounter+1   !Increase GridCounter by 1 for next grid
            ENDDO !end loop over grids
 
-           !!water movements between the grids needs to be taken into account here ??
+           !! TODO: water movements between the grids needs to be taken into account here
 
         ENDDO !end loop over rows of met data
 

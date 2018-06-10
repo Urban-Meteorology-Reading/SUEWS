@@ -205,7 +205,7 @@ CONTAINS
     ! Td = dewpoint (C)
     ! G parameter is empirical value from Smith 1966 (JAM)
     ! zenith in radians
-    ! if zenith > 80 use the value for 80?
+
 
     !        integer         ::doy           !!!!!FO!!!!!
     REAL(KIND(1d0))    ::P,Td,zenith,G,trans
@@ -483,7 +483,7 @@ CONTAINS
 
        !write(*,*) ' ESTMStart: ',ESTMStart, 'initialising ESTM for grid no. ', Gridiv
 
-       TFLOOR=20.0 ! This is used only when radforce =T  !HCW should this be put in the namelist instead?
+       TFLOOR=20.0 ! This is used only when radforce =T  !TODO:  should be put in the namelist
        TFLOOR=TFLOOR+C2K
 
        ! Initial values
@@ -536,9 +536,8 @@ CONTAINS
        !        1  2  3  4    5     6     7     8     9     10      11      12      13       !new
        !
        ! Calculate temperature of each layer in Kelvin
-       !  NB: what if (Nground/Nwall/Nroof-1)==0? TS 21 Oct 2017
+       !  QUESTION: what if (Nground/Nwall/Nroof-1)==0? TS 21 Oct 2017
        DO i=1,Nground
-          ! Tground(i)=(Ts5mindata(1,cTs_Tiair)-Ts5mindata(1,cTs_Troad))*(i-1)/(Nground-1)+Ts5mindata(1,cTs_Troad)+C2K
           Tground(i)=(LBC_soil-Ts5mindata(1,cTs_Troad))*(i-1)/(Nground-1)+Ts5mindata(1,cTs_Troad)+C2K
        ENDDO
        DO i=1,Nwall
@@ -552,7 +551,8 @@ CONTAINS
     ENDIF  !End of loop run only at start (for each grid)
 
     ! ---- Parameters related to land surface characteristics ----
-    ZREF=2.0*BldgH   !Would Zref=z be more appropriate?                              !!FO!! BldgH: mean bulding hight, zref: local scale reference height (local: ~ 10^2 x 10^2 -- 10^3 x 10^3 m^2)
+    ! QUESTION: Would Zref=z be more appropriate?
+    ZREF=2.0*BldgH      !!FO!! BldgH: mean bulding hight, zref: local scale reference height (local: ~ 10^2 x 10^2 -- 10^3 x 10^3 m^2)
 
     svf_ground=1.0
     svf_roof=1.0
@@ -628,7 +628,7 @@ CONTAINS
        RVF_ROOF=froof
        RVF_Wall=1-RVF_ROOF-RVF_ground-RVF_VEG
     ELSE
-       W=BldgH/HW   !What about if HW = 0 ! need to add IF(Fground ==0) option? ! fixed by setting a small number, TS 21 Oct 2017
+       W=BldgH/HW   !What about if HW = 0, need to add IF(Fground ==0) option ! fixed by setting a small number, TS 21 Oct 2017
        WB=W*SQRT(FROOF/Fground)
        SVF_ground=COS(ATAN(2*HW))                                              !!FO!! sky view factor for ground
        zvf_WALL=COS(ATAN(2/HW))                                                !!FO!! wall view factor for wall
@@ -732,7 +732,7 @@ CONTAINS
        TN_roof=Troof(nroof)
        TN_wall=Twall(nwall)
 
-       !initialize outgoing longwave   !HCW - Are these calculations compatible with those in LUMPS_NARP?
+       !initialize outgoing longwave   !QUESTION: HCW - Are these calculations compatible with those in LUMPS_NARP?
        LUP_ground=SBConst*EM_ground*T0_ground**4
        LUP_WALL=SBConst*EM_WALL*T0_WALL**4
        LUP_ROOF=SBConst*EM_ROOF*T0_ROOF**4

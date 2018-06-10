@@ -759,7 +759,7 @@ CONTAINS
           snowDens(is)=0
 
           IF (MeltWaterStore(is)<0) THEN !Not enough water in the meltwater store,
-             ev_snow(is)=ev_snow(is)+MeltWaterStore(is) !evaporation from snow is decreased.??
+             ev_snow(is)=ev_snow(is)+MeltWaterStore(is) !QUESTION: evaporation from snow is decreased?
              IF (ev_snow(is)<0) ev_snow(is)=0
              changSnow(is)=changSnow(is)+MeltWaterStore(is)
              MeltWaterStore(is)=0
@@ -894,7 +894,7 @@ CONTAINS
           snowDens(is)=0
 
           IF (MeltWaterStore(is)<0) THEN !Not enough water in the meltwater store,
-             ev_snow(is)=ev_snow(is)+MeltWaterStore(is) !evaporation from snow is decreased.??
+             ev_snow(is)=ev_snow(is)+MeltWaterStore(is) !QUESTION: evaporation from snow is decreased.?
              IF (ev_snow(is)<0) ev_snow(is)=0
              changSnow(is)=changSnow(is)+MeltWaterStore(is)
              MeltWaterStore(is)=0

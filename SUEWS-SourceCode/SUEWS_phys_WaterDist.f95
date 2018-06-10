@@ -155,23 +155,13 @@ CONTAINS
     !   - Consider how irrigated trees actually works...
     !------------------------------------------------------------------------------
 
-    ! USE allocateArray
-    ! USE data_in
-    ! USE defaultNotUsed
-    ! USE gis_data
-    ! USE sues_data
-    ! USE thresh
-    ! USE time
 
     IMPLICIT NONE
 
     !Stores flood water when surface state exceeds storage capacity [mm]
-    !real(kind(1d0)),dimension(nsurf):: SurfaceFlood
     INTEGER, PARAMETER:: nsurf=7                !Total number of surfaces
-    ! INTEGER, PARAMETER:: NVegSurf=3             !Number of surfaces that are vegetated
-    ! INTEGER, PARAMETER:: nsurfIncSnow=nsurf+1   !Number of surfaces + snow
 
-    INTEGER:: PavSurf   = 1,&   !When all surfaces considered together (1-7)
+    INTEGER, PARAMETER:: PavSurf   = 1,&   !When all surfaces considered together (1-7)
          BldgSurf  = 2,&
          ConifSurf = 3,&
          DecidSurf = 4,&
@@ -355,8 +345,7 @@ CONTAINS
                 ev=ev-ABS(state(is))   !Limit evaporation according to water availability
                 state(is)=0.0          !Now surface is dry
              ENDIF
-             !! What about if there is some water in soilstore, but not enough to provide all the water for evaporation??
-             !! Is this saying water can be evaporated from the soilstore as easily as from the surface??
+
              !elseif (state(is)>surf(6,is)) then   !!This should perhaps be StateLimit(is)
              !   !! If state exceeds the storage capacity, then the excess goes to surface flooding
              !   !SurfaceFlood(is)=SurfaceFlood(is)+(state(is)-surf(6,is))   !!Need to deal with this properly
@@ -374,10 +363,10 @@ CONTAINS
           soilmoist(is)=soilmoist(is)+drain(is)*AddWaterRunoff(is)
 
           ! If soilstore is full, the excess will go to runoff
-          IF(soilmoist(is)>soilstoreCap(is)) THEN              !! Should this also go to flooding of some sort?
+          IF(soilmoist(is)>soilstoreCap(is)) THEN  ! TODO: this should also go to flooding of some sort
              runoff(is)=runoff(is)+(soilmoist(is)-soilstoreCap(is))
              soilmoist(is)=soilstoreCap(is)
-          ELSEIF (soilmoist(is)<0) THEN   !!But where does this lack of water go? !!Can this really happen here??
+          ELSEIF (soilmoist(is)<0) THEN   !! QUESTION: But where does this lack of water go? !!Can this really happen here?
              CALL ErrorHint(62,'SUEWS_store: soilmoist(is) < 0 ',soilmoist(is),NotUsed,is)
              ! Code this properly - soilmoist(is) < 0 shouldn't happen given the above loops
              !soilmoist(is)=0   !Groundwater / deeper soil should kick in
@@ -393,7 +382,7 @@ CONTAINS
 
              ! Calculate change in surface state (inputs - outputs)
              ! No drainage for water surface
-             ! FlowChange is the difference in input and output flows [mm hr-1]   !!Should this really be a constant??
+             ! FlowChange is the difference in input and output flows [mm hr-1]
              chang(is)=p_mm+FlowChange/nsh_real-ev
 
              ! Calculate updated state using chang
@@ -439,7 +428,7 @@ CONTAINS
     !==================================================================
     !==== RUNOFF ======================================================
 
-    ! Need to consider areas here - SurfaceArea may vary between grids too
+    ! TODO: to consider areas here - SurfaceArea may vary between grids too
     ! - also implement where water for next surface is calculated (RunoffFromGrid subroutine)
     ! Calculations of the piperunoff exceedensances moved to separate subroutine so that from snow same
     ! calculations can be made. LJ in May 2015
@@ -670,7 +659,7 @@ CONTAINS
              CALL ErrorHint(62,'SUEWS_Calculations: total SoilState < 0 (just added surface is) ',SoilState,NotUsed,is)
           ELSEIF (SoilState>SoilMoistCap) THEN
              CALL ErrorHint(62,'SUEWS_Calculations: total SoilState > capacity (just added surface is) ',SoilState,NotUsed,is)
-             !SoilMoist_state=SoilMoistCap !What is this LJ 10/2010 - SM exceeds capacity, but where does extra go?HCW 11/2014
+             !SoilMoist_state=SoilMoistCap !What is this LJ 10/2010 - QUESTION: SM exceeds capacity, but where does extra go?HCW 11/2014
           ENDIF
        ENDDO  !end loop over surfaces
     ENDIF
@@ -892,12 +881,12 @@ CONTAINS
                 ! If there is sufficient water in both surfaces, allow movement of dI to occur
                 IF ((SoilMoist(jj)>=dI*sfr(is)/sfr(jj)).AND.((SoilMoist(is)+dI)>=0)) THEN
                    SoilMoist(is)=SoilMoist(is)+dI
-                   SoilMoist(jj)=SoilMoist(jj)-dI*sfr(is)/sfr(jj)  !Check (HCW 13/08/2014) - why adjust for jj and not is?
+                   SoilMoist(jj)=SoilMoist(jj)-dI*sfr(is)/sfr(jj)  !Check (HCW 13/08/2014) - QUESTION: why adjust for jj and not is?
 
                    ! If insufficient water in first surface to move dI, instead move as much as possible
                 ELSEIF ((SoilMoist(is)+dI)<0) THEN
                    SoilMoist(jj)=SoilMoist(jj)+SoilMoist(is)*sfr(is)/sfr(jj) !HCW 12/08/2014 switched order of these two lines
-                   SoilMoist(is)=0    !Check (HCW 13/08/2014) - can SM actually go to zero, or is this inconsistent with SMres?
+                   SoilMoist(is)=0    !Check (HCW 13/08/2014) - QUESTION: can SM actually go to zero, or is this inconsistent with SMres?
 
                    ! If insufficient water in second surface to move dI, instead move as much as possible
                 ELSE

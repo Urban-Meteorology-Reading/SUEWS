@@ -71,7 +71,7 @@ SUBROUTINE LUMPS_cal_QHQE(&
   tlv=lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
   ! initialize VegPhenLumps to output
   VegPhenLumps=0
-  
+
   ! initialize rain-related variables
   RainBucket=0.
 
@@ -134,7 +134,7 @@ SUBROUTINE LUMPS_cal_QHQE(&
      TempVeg=Veg_Fr*VegPhenLumps   !Now this is veg_fraction in general
   ENDIF
 
-  IF (TempVeg>0.9000) THEN   !If vegetation fraction is larger than 0.7 (0.9?)
+  IF (TempVeg>0.9000) THEN   !If vegetation fraction is larger than 0.9
      beta = (20-3)*TempVeg+3
      alpha_qhqe=TempVeg*0.8+0.2
   ELSE

@@ -164,14 +164,15 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
 
 
   ! NB: CBL disabled for the moment for interface improvement
-  ! can be decoupled from SUEWS? TS 28 Sep 2017
+  ! NB: CBL be decoupled from SUEWS TS 10 Jun 2018
   ! IF(CBLuse>=1)THEN ! If CBL is used, calculated Temp_C and RH are replaced with the obs.
   !    IF(Diagnose==1) WRITE(*,*) 'Calling CBL...'
   !    CALL CBL(ir,iMB,Gridiv)   !ir=1 indicates first row of each met data block
   ! ENDIF
 
 
-  ! NB: SOLWEIG can be treated as a separate part: can be decoupled from SUEWS? TS 28 Sep 2017
+  ! NB: SOLWEIG can be treated as a separate part:
+  ! NB: SOLWEIG is disabled for v2018a TS 10 Jun 2018
   ! ===================SOLWEIG OUTPUT ========================================
   ! IF (SOLWEIGuse==1) THEN
   !    IF (OutInterval==imin) THEN

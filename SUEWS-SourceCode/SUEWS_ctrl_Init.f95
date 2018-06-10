@@ -717,8 +717,7 @@ END SUBROUTINE NumberRows
 ! Interpolated hourly water use profiles to resolution of model timestep.
 ! Normalised energy use & water use profiles as required.
 ! Hourly snow clearing profile is a 0-1 switch, and thus is not interpolated nor normalised.
-! To Do
-!  - Rename profiles 1-24 rather than 0-23?
+!  - TODO: Rename profiles 1-24 rather than 0-23?
 !----------------------------------------------------------------------------------------------
 SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
 
@@ -2055,8 +2054,8 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
   ModelDailyState(Gridiv,cMDS_LAIInitialGrass) = LAIInitialGrass
   ModelDailyState(Gridiv,cMDS_GDD1_0) = GDD_1_0
   ModelDailyState(Gridiv,cMDS_GDD2_0) = GDD_2_0
-  ModelDailyState(Gridiv,cMDS_GDDMin) =  90   !Going to check for minimum GDD - ??
-  ModelDailyState(Gridiv,cMDS_GDDMax) = -90   !Going to check for maximum GDD - ??
+  ModelDailyState(Gridiv,cMDS_GDDMin) =  90   !QUESTION: Going to check for minimum GDD
+  ModelDailyState(Gridiv,cMDS_GDDMax) = -90   !QUESTION: Going to check for maximum GDD
   ModelDailyState(Gridiv,cMDS_albEveTr)    = AlbEveTr0
   ModelDailyState(Gridiv,cMDS_albDecTr)    = AlbDecTr0
   ModelDailyState(Gridiv,cMDS_albGrass)    = AlbGrass0

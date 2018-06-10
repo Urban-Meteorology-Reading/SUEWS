@@ -21,7 +21,6 @@ SUBROUTINE MetRead(lfn,MetArray,InputmetFormat,ldown_option,NetRadiationMethod,&
   REAL (KIND(1d0)),DIMENSION(24)::MetArray !Array leaving the subroutine within
   !each INTERVAL (defined in RunControl.nml)
   ! - Met data now provided at a resolution of tstep, HCW Jan 2015
-  ! so MetArray could be bypassed??
 
   REAL (KIND(1d0))::SmCap,&
        SoilDepthMeas,&        !Measured soil depth
@@ -111,11 +110,6 @@ SUBROUTINE MetRead(lfn,MetArray,InputmetFormat,ldown_option,NetRadiationMethod,&
   !===============Meteorological variables reading done==========================
   Pres_hPa=Pres_kPa*10. ! convert to hPa
 
-  !!If hour is 23, change this to following day
-  !if(it==24) then
-  !   id=id+1
-  !   it=it+1   !HCW commented out 16 Feb 2017. Surely this should be it = 0? Loop should never be used
-  !endif
 
   IF(iostat_var<0)THEN
      iostat_var=0
@@ -969,7 +963,7 @@ SUBROUTINE CodeMatchDist(rr,CodeCol,codeColSameSurf)
           WGWaterDist_Coeff(iv5,codeColSameSurf),notUsed,notUsedI)
   ENDIF
 
-  !! MODIFY THIS??
+  !! QUESTION: MODIFY THIS?
   ! Check water either moves to runoff or soilstore, but not to both
   ! Model returns an error if both ToRunoff and ToSoilStore are non-zero.
   !! - Probably should remove this...

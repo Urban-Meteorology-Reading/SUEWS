@@ -56,6 +56,7 @@ supy:
 
 # If wanted, clean all *.o files after build
 clean:
+	$(MAKE) -C $(SUEWS_dir) clean;
 	 -rm -rf *.o *.mod *.dSYM $(TARGET) SuPy/$(MODULE).*;
 	 -$(PYTHON) setup.py clean --all
 

@@ -132,11 +132,11 @@
   !Fc_metab = (PopDensNighttime*(2-PopDorNorT) + PopDensDaytime*(PopDorNorT-1))/10000 * &
   !           (MinFcMetab*(2-ActDorNorT) + MinFcMetab*(ActDorNorT-1)) !umol m-2 s-1
 
-  QF_metab = (PopDensNighttime*MinQFMetab*((2-ActDorNorT)+(2-PopDorNorT))/2 + &
-             PopDensDaytime*MaxQFMetab*((ActDorNorT-1)+(PopDorNorT-1))/2)/10000 !W m-2
+  !QF_metab = (PopDensNighttime*MinQFMetab*((2-ActDorNorT)+(2-PopDorNorT))/2 + &
+  !           PopDensDaytime*MaxQFMetab*((ActDorNorT-1)+(PopDorNorT-1))/2)/10000 !W m-2
 
-  Fc_metab = (PopDensNighttime*MinFcMetab*((2-ActDorNorT)+(2-PopDorNorT))/2 + &
-             PopDensDaytime*MaxFcMetab*((ActDorNorT-1)+(PopDorNorT-1))/2)/10000 !umol m-2 s-1
+  !Fc_metab = (PopDensNighttime*MinFcMetab*((2-ActDorNorT)+(2-PopDorNorT))/2 + &
+  !           PopDensDaytime*MaxFcMetab*((ActDorNorT-1)+(PopDorNorT-1))/2)/10000 !umol m-2 s-1
 
   !----------------------------------------------------------------------------------------------------
   !Diffferent methods to calculate the anthopogenic heat and CO2 emissions.
@@ -197,40 +197,6 @@
      ELSE
         QF_SAHP = AH_MIN(iu) * AHDorNorT
      ENDIF
-
-  ENDIF
-
-  IF(EmissionsMethod>=1 .AND. EmissionsMethod<=3 .OR. EmissionsMethod>=11 .AND. EmissionsMethod<=13 .OR. &
-     EmissionsMethod>=21 .AND. EmissionsMethod<=23 .OR. EmissionsMethod>=31 .AND. EmissionsMethod<=33) THEN
-
-     ! Calculate QF from buildings. First remove (if possibe) human metabolism from the total value given by SAHP.
-     IF((QF_SAHP_base-QF_metab)>0)THEN
-        QF_build = (QF_SAHP_base-QF_metab)*QF0_BEU(iu) + QF_SAHP_heat + QF_SAHP_ac !QF0_BEU = QF0_BuildingEnergyUse = Fraction of base value coming from buildings
-                                                                                   !relative to traffic as metabolism is separately calculated
-     ELSE
-        CALL ErrorHint(69,'QF metab exceeds base QF.',QF_metab,QF_SAHP_base,notUsedI)
-        QF_build =  QF_SAHP_heat + QF_SAHP_ac + (QF_SAHP_base-QF_metab) !If human metabolism greater than Base QF, remove this from the heating/cooling contribution also
-     ENDIF
-
-     ! Consider the various components of QF_build to calculate Fc_build
-     ! Assume all A/C electric, so QF_SAHP_ac is not associated with any local CO2 emissions
-     ! HDD part is building energy use, split between electricity (no local emissions CO2) and combustion (CO2) heating...
-     Fc_build = QF_SAHP_heat*FrFossilFuel_Heat * EF_umolCO2perJ
-
-     ! ... and there is also a temperature-independent contribution from building energy use.
-     IF((QF_SAHP_base-QF_metab)>0)THEN
-        Fc_build = Fc_build + (QF_SAHP_base-QF_metab)*QF0_BEU(iu)*FrFossilFuel_NonHeat * EF_umolCO2perJ
-     ENDIF
-
-     ! Remainder of temperature-independent part must be traffic
-     !QF_traff = (QF_SAHP_base-QF_metab)*(1.0-QF0_BEU(iu))
-     QF_traff = QF_SAHP_base*(1.0-QF0_BEU(iu)) - QF_metab
-
-     ! Divide QF by energy emission factor and multiply by CO2 factor
-     Fc_traff = QF_traff/EnEF_v_Jkm * FcEF_v_kgkm*1e3*1e6/44
-
-     ! Sum components to give anthropogenic CO2 flux [umol m-2 s-1]
-     Fc_anthro = Fc_metab + Fc_traff + Fc_build
 
   ENDIF
 

@@ -14,11 +14,11 @@ SUBROUTINE AerodynamicResistance(&
      RA)
 
   ! Returns Aerodynamic resistance (RA) to the main program SUEWS_Calculations
-  ! All ra equations reported in Thom & Oliver (1977)
+  ! All RA equations reported in Thom & Oliver (1977)
   ! Modified by TS 08 Aug 2017 - interface modified
   ! Modified by LJ
   !   -Removal of tabs and cleaning the code
-  ! Modified by HCW 03 Dec 2015 - changed lower limit on ra from 2 s m-1 to 10 s m-1 (to avoid unrealistically high evaporation rates)
+  ! Modified by HCW 03 Dec 2015 - changed lower limit on RA from 2 s m-1 to 10 s m-1 (to avoid unrealistically high evaporation rates)
   ! Modified by LJ in 12 April to not to be used with global variables
   ! To Do:
   !       - Check whether the thresholds 2-200 s m-1 are suitable over a range of z0!! HCW 04 Mar 2015
@@ -36,7 +36,7 @@ SUBROUTINE AerodynamicResistance(&
   !               (changed from veg_fr which also includes water surface by HCW 05 Nov 2015)
 
 
-  USE AtmMoist_module,ONLY:stab_fn_heat,stab_fn_mom
+  USE AtmMoistStab_module,ONLY:stab_fn_heat,stab_fn_mom
 
   IMPLICIT NONE
 
@@ -101,15 +101,15 @@ SUBROUTINE AerodynamicResistance(&
      RA=(4.72*LOG(ZZD/z0m)**2)/(1 + 0.54*AVU1)
   ENDIF
 
-  !If ra outside permitted range, adjust extreme values !!Check whether these thresholds are suitable over a range of z0
+  !If RA outside permitted range, adjust extreme values !!Check whether these thresholds are suitable over a range of z0
   IF(RA>200) THEN   !was 175
-     CALL errorHint(7,'In AerodynamicResistance.f95, calculated ra > 200 s m-1; ra set to 200 s m-1',RA,notUsed,notUsedI)
+     CALL errorHint(7,'In AerodynamicResistance.f95, calculated RA > 200 s m-1; RA set to 200 s m-1',RA,notUsed,notUsedI)
      RA=200
   ELSEIF(RA<10) THEN   !found  By Shiho - fix Dec 2012  !Threshold changed from 2 to 10 s m-1 (HCW 03 Dec 2015)
-     CALL errorHint(7,'In AerodynamicResistance.f95, calculated ra < 10 s m-1; ra set to 10 s m-1',RA,notUsed,notUsedI)
+     CALL errorHint(7,'In AerodynamicResistance.f95, calculated RA < 10 s m-1; RA set to 10 s m-1',RA,notUsed,notUsedI)
      RA=10
      ! RA=(log(ZZD/z0m))**2/(k2*AVU1)
-     IF(avu1<0) WRITE(*,*) avu1,ra
+     IF(avu1<0) WRITE(*,*) avu1,RA
   ENDIF
 
   RETURN

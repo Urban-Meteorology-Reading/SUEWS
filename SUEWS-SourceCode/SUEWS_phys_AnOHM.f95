@@ -1377,7 +1377,7 @@ CONTAINS
 
           ! below for testing:
           ! rho_air=1.293, air density, kg m-3
-          ! ra=60, nominal aerodynamic resistence, s m-1
+          ! RA=60, nominal aerodynamic resistence, s m-1
           ! PRINT*,''
           ! PRINT*, 'QH:',SUM(cp_air*(Ts-Ta)*1.293/60)/lenDay
           ! PRINT*, 'xSM:',xSM

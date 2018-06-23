@@ -84,7 +84,7 @@ CONTAINS
     IMPLICIT NONE
     INTEGER         :: DOY,hour,first,second,j,dfm,iMBi!,ith!onlyglobal,usevegdem,x,y,i
     REAL(KIND(1d0)) :: albedo_b,albedo_g,eground,ewall!absK,absL,,Fside,Fup
-    REAL(KIND(1d0)) :: t,Tstart,height,psi!,timezone,lat,lng,alt,amaxvalue
+    REAL(KIND(1d0)) :: t,TStart,height,psi!,timezone,lat,lng,alt,amaxvalue
     REAL(KIND(1d0)) :: altitude,zen!scale,azimuth,zenith
     REAL(KIND(1d0)) :: CI,CI_Tg,c,I0,Kt,Tg,Tgamp,Tw,Ktc,weight1
     REAL(KIND(1d0)) :: Ta,RH,P,radG,radD,radI,radI0!,idectime,tdectime!dectime,
@@ -156,7 +156,7 @@ CONTAINS
     t=0
 
     !Surface temperature difference at sunrise
-    Tstart=3.41
+    TStart=3.41
 
     !Initialization of maps
     Knight=0.0
@@ -233,9 +233,9 @@ CONTAINS
 
 !!!! Surface temperature parameterisation during daytime !!!!
        dfm=ABS(172-DOY) !Day from midsommer
-       Tgamp=0.000006*dfm**3-0.0017*dfm**2+0.0127*dfm+17.084+Tstart !sinus function for daily surface temperature wave
-       !Tg=Tgamp*sin(((hour-rise)/(15-rise))*pi/2)-Tstart ! check if this should be 15 (3 pm)
-       Tg=Tgamp*SIN(((dectime-DOY-SNUP/24)/(15./24-SNUP/24))*pi/2)-Tstart !new sunrise time 2014a
+       Tgamp=0.000006*dfm**3-0.0017*dfm**2+0.0127*dfm+17.084+TStart !sinus function for daily surface temperature wave
+       !Tg=Tgamp*sin(((hour-rise)/(15-rise))*pi/2)-TStart ! check if this should be 15 (3 pm)
+       Tg=Tgamp*SIN(((dectime-DOY-SNUP/24)/(15./24-SNUP/24))*pi/2)-TStart !new sunrise time 2014a
        IF (Tg<0) Tg=0! temporary for removing low Tg during morning 20140513, from SOLWEIG1D
        s=(dectime-DOY-SNUP/24)
        !New estimation of Tg reduction for non-clear situation based on Reindl et al. 1990

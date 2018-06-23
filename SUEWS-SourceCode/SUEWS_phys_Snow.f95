@@ -460,7 +460,7 @@ CONTAINS
        ity,CRWmin,CRWmax,nsh_real,lvS_J_kg,lv_j_kg,avdens,&
        avRh,Press_hPa,Temp_C,RAsnow,psyc_hPa,avcp,sIce_hPa,&
        PervFraction,vegfraction,addimpervious,&
-       numPM,s_hPa,ResistSurf,sp,ra,rb,tlv,snowdensmin,SnowProf,precip,&
+       numPM,s_hPa,ResistSurf,sp,RA,rb,tlv,snowdensmin,SnowProf,precip,&
        PipeCapacity,RunoffToWater,runoffAGimpervious,runoffAGveg,&
        addVeg,surplusWaterBody,SnowLimPaved,SnowLimBuild,FlowChange,drain,&
        WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
@@ -536,7 +536,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::s_hPa
     REAL(KIND(1d0)),INTENT(in)::ResistSurf
     REAL(KIND(1d0)),INTENT(in)::sp
-    REAL(KIND(1d0)),INTENT(in)::ra
+    REAL(KIND(1d0)),INTENT(in)::RA
     REAL(KIND(1d0)),INTENT(in)::rb
     REAL(KIND(1d0)),INTENT(in)::tlv
     REAL(KIND(1d0)),INTENT(in)::snowdensmin
@@ -668,14 +668,14 @@ CONTAINS
                                 ! input:
          ity,&!Evaporation calculated according to Rutter (1) or Shuttleworth (2)
          state(is),& ! wetness status
-         WetThresh(is),&!When State > WetThresh, rs=0 limit in SUEWS_evap [mm] (specified in input files)
+         WetThresh(is),&!When State > WetThresh, RS=0 limit in SUEWS_evap [mm] (specified in input files)
          surf(6,is),& ! = surf(is,6), current storage capacity [mm]
          numPM,&!numerator of P-M eqn
          s_hPa,&!Vapour pressure versus temperature slope in hPa
          psyc_hPa,&!Psychometric constant in hPa
          ResistSurf,&!Surface resistance
          sp,&!Term in calculation of E
-         ra,&!Aerodynamic resistance
+         RA,&!Aerodynamic resistance
          rb,&!Boundary layer resistance
          tlv,&!Latent heat of vaporization per timestep [J kg-1 s-1], (tlv=lv_J_kg/tstep_real)
 

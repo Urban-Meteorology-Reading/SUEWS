@@ -207,7 +207,7 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(nsurf):: stateOld       !Wetness status of each surface type from previous timestep [mm]
   REAL(KIND(1D0)),DIMENSION(nsurf):: rss_nsurf      !Surface resistance after wet/partially wet adjustment for each surface
 
-  REAL(KIND(1d0)),DIMENSION(nsurf):: WetThresh      !When State > WetThresh, rs=0 limit in SUEWS_evap [mm] (specified in input files)
+  REAL(KIND(1d0)),DIMENSION(nsurf):: WetThresh      !When State > WetThresh, RS=0 limit in SUEWS_evap [mm] (specified in input files)
   REAL(KIND(1d0)),DIMENSION(nsurf):: StateLimit     !Limit for state of each surface type [mm] (specified in input files)
 
   REAL(KIND(1d0)),DIMENSION(1)::     WaterDepth     !Depth of open water
@@ -1490,7 +1490,7 @@ MODULE sues_data
        psyh,&       !Stability function of heat
        RA,&         !Aerodynamic resistance
        RAsnow,&     !Aerodynamic resistance over snow
-       tstar,&      !T*
+       TStar,&      !T*
        UStar,&      !Friction velocity
        z0_gis       !Roughness length for momentum from gis input file
 

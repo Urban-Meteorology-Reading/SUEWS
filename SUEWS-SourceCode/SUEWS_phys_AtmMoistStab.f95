@@ -1,4 +1,4 @@
-MODULE AtmMoist_module
+MODULE AtmMoistStab_module
   IMPLICIT NONE
 
 CONTAINS
@@ -119,9 +119,9 @@ CONTAINS
        h_init,    & !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
                                 ! output:
        L_MOD,& !Obukhov length
-       Tstar,& !T*
+       TStar,& !T*
        UStar,& !Friction velocity
-       psim)!Stability function of momentum
+       zL)!Stability scale
 
     IMPLICIT NONE
     INTEGER,INTENT(in):: StabilityMethod
@@ -137,14 +137,15 @@ CONTAINS
 
 
     REAL(KIND(1d0)),INTENT(out)::L_MOD!Obukhov length
-    REAL(KIND(1d0)),INTENT(out)::Tstar!T*
+    REAL(KIND(1d0)),INTENT(out)::TStar!T*
     REAL(KIND(1d0)),INTENT(out)::UStar!Friction velocity
-    REAL(KIND(1d0)),INTENT(out)::psim   !Stability function of momentum
+    REAL(KIND(1d0)),INTENT(out)::zL ! Stability scale
+    ! REAL(KIND(1d0)),INTENT(out)::psim   !Stability function of momentum
 
-    REAL(KIND(1d0))::G_T_k,&
+    REAL(KIND(1d0))::G_T_K,&
          KUZ,&
          LOLD,&
-         zL,&
+         psim,&
          z0l,&
          psimz0,&
          h
@@ -158,18 +159,18 @@ CONTAINS
     LOGICAL :: debug=.FALSE.
 
     IF(debug) WRITE(*,*)StabilityMethod,z0m,avU1,h_init,UStar,L_MOD
-    G_T_k=(Grav/(Temp_C+273.16))*k !gravity constant/(Temperature*Von Karman Constant)
+    G_T_K=(Grav/(Temp_C+273.16))*k !gravity constant/(Temperature*Von Karman Constant)
     KUZ=k*AvU1                     !Von Karman constant*mean wind speed
     IF(zzd<0) CALL ErrorHint(32,'Windspeed Ht too low relative to zdm [Stability calc]- values [z-zdm, zdm]',Zzd,zdm,notUsedI)
 
     UStar=KUZ/LOG(Zzd/z0m)      !Initial setting of u* and calc. of L_MOD (neutral situation)
-    IF ( ABS(h_init)<0.001 ) THEN    ! prevent zero Tstar
+    IF ( ABS(h_init)<0.001 ) THEN    ! prevent zero TStar
        h=0.001
     ELSE
        h=h_init
     END IF
-    Tstar=(-H/UStar)
-    L_MOD=(UStar**2)/(G_T_K*Tstar)
+    TStar=(-H/UStar)
+    L_MOD=(UStar**2)/(G_T_K*TStar)
 
 
     IF(LOG(zzd/z0m)<0.001000) CALL ErrorHint(17,'In stability subroutine, (z-zd) < z0.',zzd,z0m,notUsedI)
@@ -178,17 +179,23 @@ CONTAINS
        zL=zzd/L_MOD
        z0L=z0m/L_MOD  !z0m roughness length
 
-       IF (zL>2)THEN
-          CALL ErrorHint(73,'LUMPS_atmos_functions_stab.f95: stability parameter, UStar',zL,UStar,notUsedI)
-          RETURN !MO-theory not necessarily valid above zL>2. Still causes problematic UStar values and correct limit might be 0.3.
-          !Needs more investigations.
-       END IF
+       ! IF (z  L>2)THEN
+       !    CALL ErrorHint(73,'LUMPS_atmos_functions_stab.f95: stability scale (z/L), UStar',zL,UStar,notUsedI)
+       !    RETURN !MO-theory not necessarily valid above zL>2. Still causes problematic UStar values and correct limit might be 0.3.
+       !    !Needs more investigations.
+       ! END IF
+
 
        psim=stab_fn_mom(StabilityMethod,zL,zL)
        psimz0=stab_fn_mom(StabilityMethod,zL,z0L)
 
 
-       UStar=KUZ/(LOG(Zzd/z0m)-PSIM+psimz0) !Friction velocity in non-neutral situation
+       UStar=KUZ/(LOG(Zzd/z0m)-psim+psimz0) !Friction velocity in non-neutral situation
+
+
+
+       TStar=(-H/UStar)
+       L_MOD=(UStar**2)/(G_T_K*TStar)
 
        IF(UStar<0.001000)THEN       !If u* too small
           UStar=KUZ/(LOG(Zzd/z0m))
@@ -197,19 +204,31 @@ CONTAINS
           CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.001] psim,psimz0',psim,psimz0,notUsedI)
           CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.001] AVU1,log(zzd/z0m)',AVU1,LOG(zzd/z0m),notUsedI)
 
-          RETURN
+          ! RETURN
        ENDIF
-
-       tstar=(-H/UStar)
-       L_MOD=(UStar**2)/(G_T_K*Tstar)
 
        IF(ABS(LOLD-L_MOD)<0.01)THEN
           IF (ABS(L_MOD)>1e6) L_MOD = L_MOD/ABS(L_MOD)*1e6
-          RETURN
+          ! RETURN
+          CONTINUE
        ENDIF
     ENDDO
 
-    RETURN
+    ! limit zL to be with [-10,2]
+    if ( zL<-5 .or. zL>2 ) then
+      zL=MIN(2.,MAX(-5.,zL))
+      ! limit other output varialbes as well as z/L
+      L_MOD=zzd/zL
+      z0L=z0m/L_MOD
+      psim=stab_fn_mom(StabilityMethod,zL,zL)
+      psimz0=stab_fn_mom(StabilityMethod,zL,z0L)
+      UStar=KUZ/(LOG(Zzd/z0m)-psim+psimz0)
+      TStar=(-H/UStar)
+    end if
+
+
+
+
   END SUBROUTINE STAB_lumps
 
   !==================================================================
@@ -368,4 +387,4 @@ CONTAINS
   END FUNCTION stab_fn_rou
 
 
-END MODULE AtmMoist_module
+END MODULE AtmMoistStab_module

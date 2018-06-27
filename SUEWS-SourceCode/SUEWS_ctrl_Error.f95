@@ -70,7 +70,7 @@
      v1=.TRUE.
      returnTrue=.TRUE.
   ELSEIF(errh==7) THEN
-     text1='ra value obtained exceeds permitted range.'
+     text1='RA value obtained exceeds permitted range.'
      v1=.TRUE.
      returnTrue=.TRUE.
   ELSEIF(errh==8) THEN
@@ -141,7 +141,7 @@
      v7=.TRUE.  ! 1 real, 2 integers
   ELSEIF(errh==30) THEN
      text1='Processing in subroutine indicated has a problem, time, variables'
-     returntrue=.TRUE.
+     ! returntrue=.TRUE.
      v2=.TRUE.  ! 2 real
   ELSEIF(errh==31) THEN
      text1='Processing in subroutine indicated has a problem, time, variables'
@@ -286,7 +286,11 @@
      v6=.TRUE.
   ELSEIF(errh==73) THEN
      text1='Iteration loop stopped for too stable conditions.'
-     returnTrue=.TRUE.
+     ! returnTrue=.TRUE.
+     v2=.TRUE.
+  ELSEIF(errh==74) THEN
+     text1='Iteration loop stopped for too unstable conditions.'
+     ! returnTrue=.TRUE.
      v2=.TRUE.
   ENDIF
   !---------------------------------------------------------------------

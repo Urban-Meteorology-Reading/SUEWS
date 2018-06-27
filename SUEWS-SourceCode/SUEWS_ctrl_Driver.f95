@@ -5,7 +5,7 @@
 ! TS 03 Oct 2017: added `SUEWS_cal_AnthropogenicEmission`
 MODULE SUEWS_Driver
   USE meteo,ONLY:qsatf
-  USE AtmMoist_module,ONLY:LUMPS_cal_AtmMoist,STAB_lumps,stab_fn_heat,stab_fn_mom
+  USE AtmMoistStab_module,ONLY:LUMPS_cal_AtmMoist,STAB_lumps,stab_fn_heat,stab_fn_mom
   USE NARP_MODULE,ONLY:NARP_cal_SunPosition
   USE AnOHM_module,ONLY:AnOHM
   USE ESTM_module,ONLY:ESTM
@@ -318,14 +318,15 @@ CONTAINS
     REAL(KIND(1D0))::NWstate_per_tstep
     REAL(KIND(1D0))::planF
     REAL(KIND(1D0))::p_mm
-    REAL(KIND(1D0))::psim
+    REAL(KIND(1D0))::zL
     REAL(KIND(1D0))::q2_gkg
     REAL(KIND(1D0))::qeOut
     REAL(KIND(1D0))::qe_per_tstep
     REAL(KIND(1D0))::qf
     REAL(KIND(1D0))::QF_SAHP
     REAL(KIND(1D0))::qh
-    REAL(KIND(1D0))::qh_r
+    REAL(KIND(1D0))::qh_residual
+    REAL(KIND(1D0))::qh_resist
     REAL(KIND(1D0))::Qm
     REAL(KIND(1D0))::QmFreez
     REAL(KIND(1D0))::QmRain
@@ -352,7 +353,7 @@ CONTAINS
     REAL(KIND(1D0))::t2_C
     REAL(KIND(1D0))::TempVeg
     REAL(KIND(1D0))::tot_chang_per_tstep
-    REAL(KIND(1D0))::Tstar
+    REAL(KIND(1D0))::TStar
     REAL(KIND(1D0))::tsurf
     REAL(KIND(1D0))::UStar
     REAL(KIND(1D0))::VPD_Pa
@@ -468,7 +469,7 @@ CONTAINS
 
     !==============main calculation start=======================
     IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_cal_RoughnessParameters...'
-    IF(Diagnose==1) print*, 'z0m_in =',z0m_in
+    IF(Diagnose==1) PRINT*, 'z0m_in =',z0m_in
     CALL SUEWS_cal_RoughnessParameters(&
          RoughLenMomMethod,sfr,&!input
          bldgH,EveTreeH,DecTreeH,&
@@ -610,14 +611,14 @@ CONTAINS
          Diagnose,AerodynamicResistanceMethod,RoughLenHeatMethod,snowUse,&
          id,it,gsModel,SMDMethod,&
          qh_obs,avdens,avcp,h_mod,qn1,dectime,zzd,z0m,zdm,&
-         avU1,Temp_C,UStar,VegFraction,avkdn,&
+         avU1,Temp_C,VegFraction,avkdn,&
          Kmax,&
          g1,g2,g3,g4,&
          g5,g6,s1,s2,&
          th,tl,&
          dq,xsmd,vsmd,MaxConductance,LAIMax,LAI(id-1,:),snowFrac,sfr,&
-         Tstar,L_mod,&!output
-         psim,gsc,ResistSurf,RA,RAsnow,rb)
+         UStar,TStar,L_mod,&!output
+         zL,gsc,ResistSurf,RA,RAsnow,rb)
 
 
     !============= calculate water balance =============
@@ -638,7 +639,7 @@ CONTAINS
          nsh_real,dectime,lvS_J_kg,lv_j_kg,avdens,avRh,Press_hPa,Temp_C,&
          RAsnow,psyc_hPa,avcp,sIce_hPa,&
          PervFraction,vegfraction,addimpervious,qn1_SF,qf,qs,vpd_hPa,s_hPa,&
-         ResistSurf,ra,rb,tstep_real,snowdensmin,precip,PipeCapacity,RunoffToWater,&
+         ResistSurf,RA,rb,tstep_real,snowdensmin,precip,PipeCapacity,RunoffToWater,&
          NonWaterFraction,wu_EveTr,wu_DecTr,wu_Grass,addVeg,addWaterBody,SnowLimPaved,SnowLimBuild,&
          SurfaceArea,FlowChange,drain,WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
          freezmelt,freezstate,freezstatevol,Qm_Melt,Qm_rain,Tsurf_ind,sfr,&
@@ -658,8 +659,8 @@ CONTAINS
     IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_cal_QH...'
     CALL SUEWS_cal_QH(&
          1,&
-         qn1,qf,QmRain,qeOut,qs,QmFreez,qm,avdens,avcp,tsurf,Temp_C,ra,&
-         qh,qh_r)!output
+         qn1,qf,QmRain,qeOut,qs,QmFreez,qm,avdens,avcp,tsurf,Temp_C,RA,&
+         qh,qh_residual,qh_resist)!output
     !============ Sensible heat flux end===============
 
     !=== Horizontal movement between soil stores ===
@@ -690,11 +691,16 @@ CONTAINS
     !============ surface-level diagonostics ===============
     IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_cal_Diagnostics...'
     CALL SUEWS_cal_Diagnostics(&
-         tsurf,qh,&!input
+         dectime,&!input
+         avU1,Temp_C,&
+                                ! NB: resistance-based QH is used to calculate diagnostics
+                                ! as tsurf is assumed to be equal to Tair during night
+                                ! implying a constant near-surface air temperature profile.
+         tsurf,qh_resist,&
          Press_hPa,qe,&
-         UStar,veg_fr,z0m,L_mod,avdens,avcp,lv_J_kg,tstep_real,&
+         veg_fr,z0m,avdens,avcp,lv_J_kg,tstep_real,&
          RoughLenHeatMethod,StabilityMethod,&
-         avU10_ms,t2_C,q2_gkg)!output
+         avU10_ms,t2_C,q2_gkg,L_MOD)!output
     !============ surface-level diagonostics end ===============
 
 
@@ -709,7 +715,7 @@ CONTAINS
          h_mod,id,id_prev_t,imin,int_wu,it,iy,iy_prev_t,&
          kup,LAI,ldown,l_mod,lup,mwh,MwStore,&
          nsh_real,NWstate_per_tstep,Precip,q2_gkg,&
-         qeOut,qf,qh,QH_r,Qm,QmFreez,&
+         qeOut,qf,qh,qh_resist,Qm,QmFreez,&
          QmRain,qn1,qn1_S,qn1_SF,qs,RA,&
          resistsurf,runoffAGimpervious,runoffAGveg,&
          runoff_per_tstep,runoffPipes,runoffSoil_per_tstep,&
@@ -1333,7 +1339,7 @@ CONTAINS
        nsh_real,dectime,lvS_J_kg,lv_j_kg,avdens,avRh,Press_hPa,Temp_C,&
        RAsnow,psyc_hPa,avcp,sIce_hPa,&
        PervFraction,vegfraction,addimpervious,qn1_SF,qf,qs,vpd_hPa,s_hPa,&
-       ResistSurf,ra,rb,tstep_real,snowdensmin,precip,PipeCapacity,RunoffToWater,&
+       ResistSurf,RA,rb,tstep_real,snowdensmin,precip,PipeCapacity,RunoffToWater,&
        NonWaterFraction,wu_EveTr,wu_DecTr,wu_Grass,addVeg,addWaterBody,SnowLimPaved,SnowLimBuild,&
        SurfaceArea,FlowChange,drain,WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
        freezmelt,freezstate,freezstatevol,Qm_Melt,Qm_rain,Tsurf_ind,sfr,&
@@ -1384,7 +1390,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::vpd_hPa
     REAL(KIND(1d0)),INTENT(in)::s_hPa
     REAL(KIND(1d0)),INTENT(in)::ResistSurf
-    REAL(KIND(1d0)),INTENT(in)::ra
+    REAL(KIND(1d0)),INTENT(in)::RA
     REAL(KIND(1d0)),INTENT(in)::rb
     REAL(KIND(1d0)),INTENT(in)::tstep_real
     REAL(KIND(1d0)),INTENT(in)::snowdensmin
@@ -1517,8 +1523,8 @@ CONTAINS
     sae   = s_hPa*(qn1_SF+qf-qs)    !s_haPa - slope of svp vs t curve. qn1 changed to qn1_SF, lj in May 2013
     vdrc  = vpd_hPa*avdens*avcp
     sp    = s_hPa/psyc_hPa
-    numPM = sae+vdrc/ra
-    !write(*,*) numPM, sae, vdrc/ra, s_hPA+psyc_hPa, NumPM/(s_hPA+psyc_hPa)
+    numPM = sae+vdrc/RA
+    !write(*,*) numPM, sae, vdrc/RA, s_hPA+psyc_hPa, NumPM/(s_hPA+psyc_hPa)
     !========= these need to be wrapped end================================
 
     IF(Diagnose==1) WRITE(*,*) 'Calling evap_SUEWS and SoilStore...'
@@ -1532,7 +1538,7 @@ CONTAINS
                   ity,CRWmin,CRWmax,nsh_real,lvS_J_kg,lv_j_kg,avdens,&
                   avRh,Press_hPa,Temp_C,RAsnow,psyc_hPa,avcp,sIce_hPa,&
                   PervFraction,vegfraction,addimpervious,&
-                  numPM,s_hPa,ResistSurf,sp,ra,rb,tlv,snowdensmin,SnowProf,precip,&
+                  numPM,s_hPa,ResistSurf,sp,RA,rb,tlv,snowdensmin,SnowProf,precip,&
                   PipeCapacity,RunoffToWater,runoffAGimpervious,runoffAGveg,&
                   addVeg,surplusWaterBody,SnowLimPaved,SnowLimBuild,FlowChange,drain,&
                   WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
@@ -1557,14 +1563,14 @@ CONTAINS
           CALL Evap_SUEWS(&
                ity,&! input: !Evaporation calculated according to Rutter (1) or Shuttleworth (2)
                state(is),& ! wetness status
-               WetThresh(is),&!When State > WetThresh, rs=0 limit in SUEWS_evap [mm] (specified in input files)
+               WetThresh(is),&!When State > WetThresh, RS=0 limit in SUEWS_evap [mm] (specified in input files)
                surf(6,is),& ! = surf(6,is), current storage capacity [mm]
                numPM,&!numerator of P-M eqn
                s_hPa,&!Vapour pressure versus temperature slope in hPa
                psyc_hPa,&!Psychometric constant in hPa
                ResistSurf,&!Surface resistance
                sp,&!Term in calculation of E
-               ra,&!Aerodynamic resistance
+               RA,&!Aerodynamic resistance
                rb,&!Boundary layer resistance
                tlv,&!Latent heat of vaporization per timestep [J kg-1 s-1], (tlv=lv_J_kg/tstep_real)
                rss,&! output:
@@ -1652,8 +1658,8 @@ CONTAINS
   !===============sensible heat flux======================================
   SUBROUTINE SUEWS_cal_QH(&
        QHMethod,&!input
-       qn1,qf,QmRain,qeOut,qs,QmFreez,qm,avdens,avcp,tsurf,Temp_C,ra,&
-       qh,qh_r)!output
+       qn1,qf,QmRain,qeOut,qs,QmFreez,qm,avdens,avcp,tsurf,Temp_C,RA,&
+       qh,qh_residual,qh_resist)!output
     IMPLICIT NONE
 
     INTEGER,INTENT(in) :: QHMethod ! option for QH calculation: 1, residual; 2, resistance-based
@@ -1669,31 +1675,36 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::avcp
     REAL(KIND(1d0)),INTENT(in)::tsurf
     REAL(KIND(1d0)),INTENT(in)::Temp_C
-    REAL(KIND(1d0)),INTENT(in)::ra
+    REAL(KIND(1d0)),INTENT(in)::RA
 
 
     REAL(KIND(1d0)),INTENT(out)::qh
-    REAL(KIND(1d0)),INTENT(out)::qh_r
+    REAL(KIND(1d0)),INTENT(out)::qh_resist
+    REAL(KIND(1d0)),INTENT(out)::qh_residual
 
     REAL(KIND(1d0)),PARAMETER::NAN=-999
 
-    ! ! Calculate QH using resistance method (for testing HCW 06 Jul 2016)
+    ! Calculate sensible heat flux as a residual (Modified by LJ in Nov 2012)
+    qh_residual=(qn1+qf+QmRain)-(qeOut+qs+Qm+QmFreez)     !qh=(qn1+qf+QmRain+QmFreez)-(qeOut+qs+Qm)
 
+    ! ! Calculate QH using resistance method (for testing HCW 06 Jul 2016)
+    ! Aerodynamic-Resistance-based method
+    IF(RA/=0) THEN
+       qh_resist = avdens*avcp*(tsurf-Temp_C)/RA
+    ELSE
+       qh_resist=NAN
+    ENDIF
+
+    ! choose output QH
     SELECT CASE (QHMethod)
     CASE (1)
-       ! Calculate sensible heat flux as a residual (Modified by LJ in Nov 2012)
-       qh=(qn1+qf+QmRain)-(qeOut+qs+Qm+QmFreez)     !qh=(qn1+qf+QmRain+QmFreez)-(qeOut+qs+Qm)
-
+       qh= qh_residual
     CASE (2)
-       ! Aerodynamic-Resistance-based method
-       IF(ra/=0) THEN
-          qh = avdens*avcp*(tsurf-Temp_C)/ra
-       ELSE
-          qh=NAN
-       ENDIF
-
+       qh= qh_resist
     END SELECT
-    QH_R=qh
+
+
+
 
   END SUBROUTINE SUEWS_cal_QH
   !========================================================================
@@ -1704,11 +1715,11 @@ CONTAINS
        Diagnose,AerodynamicResistanceMethod,RoughLenHeatMethod,snowUse,&
        id,it,gsModel,SMDMethod,&
        qh_obs,avdens,avcp,h_mod,qn1,dectime,zzd,z0m,zdm,&
-       avU1,Temp_C,UStar,VegFraction,&
+       avU1,Temp_C,VegFraction,&
        avkdn,Kmax,G1,G2,G3,G4,G5,G6,S1,S2,TH,TL,dq,&
        xsmd,vsmd,MaxConductance,LAIMax,LAI_id,snowFrac,sfr,&
-       Tstar,L_mod,&!output
-       psim,gsc,ResistSurf,RA,RAsnow,rb)
+       UStar,TStar,L_mod,&!output
+       zL,gsc,ResistSurf,RA,RAsnow,rb)
 
     IMPLICIT NONE
 
@@ -1757,16 +1768,17 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::snowFrac      !Surface fraction of snow cover
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::sfr           !Surface fractions [-]
 
-    REAL(KIND(1d0)),INTENT(out)::Tstar     !T*
-    REAL(KIND(1d0)),INTENT(out)::UStar     !Friction velocity
-    REAL(KIND(1d0)),INTENT(out)::psim      !Stability function of momentum
-    REAL(KIND(1d0)),INTENT(out)::gsc       !Surface Layer Conductance
-    REAL(KIND(1d0)),INTENT(out)::ResistSurf!Surface resistance
-    REAL(KIND(1d0)),INTENT(out)::RA        !Aerodynamic resistance [s m^-1]
-    REAL(KIND(1d0)),INTENT(out)::RAsnow    !Aerodynamic resistance for snow [s m^-1]
-    REAL(KIND(1d0)),INTENT(out)::rb        !boundary layer resistance shuttleworth
-    REAL(KIND(1d0)),INTENT(out)::L_mod  !Obukhov length
-    REAL(KIND(1d0))::H_init !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
+    REAL(KIND(1d0)),INTENT(out)::TStar     !T*
+    REAL(KIND(1d0)),INTENT(out)  ::UStar     !Friction velocity
+    ! REAL(KIND(1d0)),INTENT(out)::psim      !Stability function of momentum
+    REAL(KIND(1d0)),INTENT(out)  ::zL        !
+    REAL(KIND(1d0)),INTENT(out)  ::gsc       !Surface Layer Conductance
+    REAL(KIND(1d0)),INTENT(out)  ::ResistSurf!Surface resistance
+    REAL(KIND(1d0)),INTENT(out)  ::RA        !Aerodynamic resistance [s m^-1]
+    REAL(KIND(1d0)),INTENT(out)  ::RAsnow    !Aerodynamic resistance for snow [s m^-1]
+    REAL(KIND(1d0)),INTENT(out)  ::rb        !boundary layer resistance shuttleworth
+    REAL(KIND(1d0)),INTENT(out)  ::L_mod     !Obukhov length
+    REAL(KIND(1d0))              ::H_init    !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
 
 
     ! Get first estimate of sensible heat flux. Modified by HCW 26 Feb 2015
@@ -1786,9 +1798,9 @@ CONTAINS
          Temp_C,&  !Air temperature
          H_init,& !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
          L_mod,&! output: !Obukhov length
-         Tstar,& !T*
+         TStar,& !T*
          UStar,& !Friction velocity
-         psim)!Stability function of momentum
+         zL)!Stability scale
 
     IF(Diagnose==1) WRITE(*,*) 'Calling AerodynamicResistance...'
     CALL AerodynamicResistance(&
@@ -1848,7 +1860,7 @@ CONTAINS
        kup,LAI,ldown,l_mod,lup,mwh,&
        MwStore,&
        nsh_real,NWstate_per_tstep,Precip,q2_gkg,&
-       qeOut,qf,qh,QH_r,Qm,QmFreez,&
+       qeOut,qf,qh,qh_resist,Qm,QmFreez,&
        QmRain,qn1,qn1_S,qn1_SF,qs,RA,&
        resistsurf,runoffAGimpervious,runoffAGveg,&
        runoff_per_tstep,runoffPipes,runoffSoil_per_tstep,&
@@ -1902,7 +1914,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in) :: qeOut
     REAL(KIND(1d0)),INTENT(in) :: qf
     REAL(KIND(1d0)),INTENT(in) :: qh
-    REAL(KIND(1d0)),INTENT(in) :: QH_r
+    REAL(KIND(1d0)),INTENT(in) :: qh_resist
     REAL(KIND(1d0)),INTENT(in) :: Qm
     REAL(KIND(1d0)),INTENT(in) :: QmFreez
     REAL(KIND(1d0)),INTENT(in) :: QmRain
@@ -2004,7 +2016,7 @@ CONTAINS
     dataOutLineSUEWS=[&
          avkdn,kup,ldown,lup,tsurf,&
          qn1,qf,qs,qh,qeOut,&
-         h_mod,e_mod,qh_r,&
+         h_mod,e_mod,qh_resist,&
          precip,ext_wu,ev_per_tstep,runoff_per_tstep,tot_chang_per_tstep,&
          surf_chang_per_tstep,state_per_tstep,NWstate_per_tstep,drain_per_tstep,smd,&
          FlowChange/nsh_real,AdditionalWater,&
@@ -2014,7 +2026,7 @@ CONTAINS
          state_x(1:nsurf),&
          zenith_deg,azimuth,bulkalbedo,Fcld,&
          LAI_wt,z0m,zdm,&
-         UStar,l_mod,ra,ResistSurf,&
+         UStar,l_mod,RA,ResistSurf,&
          Fc,&
          Fc_photo,Fc_respi,Fc_metab,Fc_traff,Fc_build,&
          qn1_SF,qn1_S,SnowAlb,&
@@ -2078,25 +2090,54 @@ CONTAINS
 
 
   SUBROUTINE SUEWS_cal_Diagnostics(&
-       tsurf,qh,&!input
+       dectime,&!input
+       avU1,Temp_C,&
+       tsurf,qh,&
        Press_hPa,qe,&
-       UStar,veg_fr,z0m,L_mod,avdens,avcp,lv_J_kg,tstep_real,&
+       veg_fr,z0m,avdens,avcp,lv_J_kg,tstep_real,&
        RoughLenHeatMethod,StabilityMethod,&
-       avU10_ms,t2_C,q2_gkg)!output
+       avU10_ms,t2_C,q2_gkg,L_MOD)!output
     IMPLICIT NONE
-    ! REAL(KIND(1d0)),INTENT(in) ::usurf,uflux
+    REAL(KIND(1d0)),INTENT(in) ::dectime
+    REAL(KIND(1d0)),INTENT(in) ::avU1,Temp_C
     REAL(KIND(1d0)),INTENT(in) ::tsurf,qh
     REAL(KIND(1d0)),INTENT(in) ::Press_hPa,qe
-    REAL(KIND(1d0)),INTENT(in) :: UStar,veg_fr,z0m,L_mod,avdens,avcp,lv_J_kg,tstep_real
+    REAL(KIND(1d0)),INTENT(in) :: veg_fr,z0m,avdens,avcp,lv_J_kg,tstep_real
 
     ! INTEGER,INTENT(in)         :: opt ! 0 for momentum, 1 for temperature, 2 for humidity
     INTEGER,INTENT(in)         :: RoughLenHeatMethod,StabilityMethod
 
-    REAL(KIND(1d0)),INTENT(out):: avU10_ms,t2_C,q2_gkg
-    REAL(KIND(1d0))::tlv
+    REAL(KIND(1d0)),INTENT(out):: avU10_ms,t2_C,q2_gkg,L_MOD
+    REAL(KIND(1d0))::tlv,z2zd,zdm,H_init,TStar,zL,UStar
     REAL(KIND(1d0)),PARAMETER::k=0.4
 
     tlv=lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
+    z2zd=2 ! height at 2m assuming Displacement height is ZERO
+    zdm=0 ! assuming Displacement height is ZERO
+
+    ! get !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
+    CALL SUEWS_init_QH(&
+         qh,avdens,avcp,qh,0d0,dectime,& ! use qh as qh_obs to initialise H_init
+         H_init)
+
+    ! redo the calculation for stability correction
+    CALL STAB_lumps(&
+                                ! input
+         StabilityMethod,&
+         dectime,& !Decimal time
+         z2zd,&     !Active measurement height (meas. height-displac. height)
+         z0m,&     !Aerodynamic roughness length
+         zdm,&     !Displacement height
+         avU1,&    !Average wind speed
+         Temp_C,&  !Air temperature
+         h_init,    & !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
+                                ! output:
+         L_MOD,& !Obukhov length
+         TStar,& !T*
+         UStar,& !Friction velocity
+         zL)!Stability scale
+
+
     ! wind speed:
     CALL diagSfc(0d0,0d0,UStar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,avU10_ms,0,RoughLenHeatMethod,StabilityMethod)
     ! temperature:
@@ -2226,8 +2267,8 @@ CONTAINS
     ! z0h=z0m/5
 
     ! zX-z0
-    z2zd=2+z0h   ! set lower limit as z0h to prevent arithmetic error
-    z10zd=10+z0m ! set lower limit as z0m to prevent arithmetic error
+    z2zd=2!+z0h   ! set lower limit as z0h to prevent arithmetic error, zd=0
+    z10zd=10!+z0m ! set lower limit as z0m to prevent arithmetic error, zd=0
 
     ! stability correction functions
     ! momentum:
@@ -2236,7 +2277,6 @@ CONTAINS
     psymz0=stab_fn_mom(StabilityMethod,z0m/L_mod,z0m/L_mod)
 
     ! heat and vapor: assuming both are the same
-
     psyhz2=stab_fn_heat(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
     psyhz0=stab_fn_heat(StabilityMethod,z0h/L_mod,z0h/L_mod)
     !***************************************************************
@@ -2247,10 +2287,10 @@ CONTAINS
     ELSE
        SELECT CASE (opt)
        CASE (0) ! wind (momentum) at 10 m
-          xDiag=us/k*(LOG(z10zd/z0m)-psymz10+psymz0)
+          xDiag=us/k*(LOG(z10zd/z0m)-psymz10+psymz0) ! Brutsaert (2005), p51, eq.2.54
 
        CASE (1) ! temperature at 2 m
-          xDiag=xSurf-xFlux/(k*us*avdens*avcp)*(LOG(z2zd/z0h)-psyhz2+psyhz0)
+          xDiag=xSurf-xFlux/(k*us*avdens*avcp)*(LOG(z2zd/z0h)-psyhz2+psyhz0) ! Brutsaert (2005), p51, eq.2.55
           !  IF ( ABS((LOG(z2zd/z0h)-psyhz2+psyhz0))>10 ) THEN
           !     PRINT*, '#####################################'
           !     PRINT*, 'xSurf',xSurf
@@ -2274,7 +2314,7 @@ CONTAINS
 
 
        CASE (2) ! humidity at 2 m
-          xDiag=xSurf-xFlux/(k*us*avdens*tlv)*(LOG(z2zd/z0h)-psyhz2+psyhz0)
+          xDiag=xSurf-xFlux/(k*us*avdens*tlv)*(LOG(z2zd/z0h)-psyhz2+psyhz0) ! Brutsaert (2005), p51, eq.2.56
 
        END SELECT
 

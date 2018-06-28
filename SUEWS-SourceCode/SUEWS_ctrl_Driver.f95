@@ -51,8 +51,8 @@ CONTAINS
        OHM_threshWD,PipeCapacity,PopDensDaytime,&
        PopDensNighttime,PopProf_tstep,PorMax_dec,PorMin_dec,porosity,&
        Precip,PrecipLimit,PrecipLimitAlb,Press_hPa,QF0_BEU,Qf_A,Qf_B,&
-       Qf_C,qh_obs,qn1_av_store_grid,qn1_obs,qn1_S_av_store_grid,qn1_S_store_grid,&
-       qn1_store_grid,RadMeltFact,RAINCOVER,RainMaxRes,resp_a,resp_b,&
+       Qf_C,qh_obs,qn1_obs,&
+       RadMeltFact,RAINCOVER,RainMaxRes,resp_a,resp_b,&
        RoughLenHeatMethod,RoughLenMomMethod,RunoffToWater,S1,S2,&
        SatHydraulicConduct,SDDFull,sfr,SMDMethod,SnowAlb,SnowAlbMax,&
        SnowAlbMin,snowD,SnowDens,SnowDensMax,SnowDensMin,SnowfallCum,snowFrac,&
@@ -257,10 +257,10 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(INOUT)                             ::qn1_s_av
     REAL(KIND(1d0)),INTENT(INOUT)                             ::dqnsdt
     REAL(KIND(1d0)),DIMENSION(24*3600/tstep),INTENT(INOUT)    ::Tair24HR
-    REAL(KIND(1D0)),DIMENSION(2*3600/tstep+1),INTENT(INOUT)   ::qn1_av_store_grid
-    REAL(KIND(1D0)),DIMENSION(3600/tstep),INTENT(INOUT)       ::qn1_store_grid
-    REAL(KIND(1D0)),DIMENSION(2*3600/tstep+1),INTENT(INOUT)   ::qn1_S_av_store_grid
-    REAL(KIND(1D0)),DIMENSION(3600/tstep),INTENT(INOUT)       ::qn1_S_store_grid
+    ! REAL(KIND(1D0)),DIMENSION(2*3600/tstep+1),INTENT(INOUT)   ::qn1_av_store_grid
+    ! REAL(KIND(1D0)),DIMENSION(3600/tstep),INTENT(INOUT)       ::qn1_store_grid
+    ! REAL(KIND(1D0)),DIMENSION(2*3600/tstep+1),INTENT(INOUT)   ::qn1_S_av_store_grid
+    ! REAL(KIND(1D0)),DIMENSION(3600/tstep),INTENT(INOUT)       ::qn1_S_store_grid
     REAL(KIND(1D0)),DIMENSION(0:NDAYS),INTENT(INOUT)          ::albDecTr
     REAL(KIND(1D0)),DIMENSION(0:NDAYS),INTENT(INOUT)          ::albEveTr
     REAL(KIND(1D0)),DIMENSION(0:NDAYS),INTENT(INOUT)          ::albGrass
@@ -569,8 +569,7 @@ CONTAINS
          avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown,&
          bldgh,alb,emis,cpAnOHM,kkAnOHM,chAnOHM,EmissionsMethod,&
          Tair24HR,qn1_av,dqndt,qn1_s_av,dqnsdt,&!inout
-         qn1_store_grid,qn1_S_store_grid,&!inout
-         qn1_av_store_grid,qn1_S_av_store_grid,surf,&
+surf,&
          qn1_S,snowFrac,dataOutLineESTM,qs,&!output
          deltaQi,a1,a2,a3)
 
@@ -1077,8 +1076,7 @@ CONTAINS
        avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown,&
        bldgh,alb,emis,cpAnOHM,kkAnOHM,chAnOHM,EmissionsMethod,&
        Tair24HR,qn1_av,dqndt,qn1_s_av,dqnsdt,&!inout
-       qn1_store_grid,qn1_S_store_grid,&!inout
-       qn1_av_store_grid,qn1_S_av_store_grid,surf,&
+       surf,&
        qn1_S,snowFrac,dataOutLineESTM,qs,&!output
        deltaQi,a1,a2,a3)
 
@@ -1127,11 +1125,11 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(inout)                  ::dqndt!Rate of change of net radiation [W m-2 h-1] at t-1
     REAL(KIND(1d0)),INTENT(inout)                  ::qn1_s_av
     REAL(KIND(1d0)),INTENT(inout)                  ::dqnsdt !Rate of change of net radiation [W m-2 h-1] at t-1
-    REAL(KIND(1d0)),DIMENSION(nsh),INTENT(inout)   ::qn1_store_grid
-    REAL(KIND(1d0)),DIMENSION(nsh),INTENT(inout)   ::qn1_S_store_grid !< stored qn1 [W m-2]
+    ! REAL(KIND(1d0)),DIMENSION(nsh),INTENT(inout)   ::qn1_store_grid
+    ! REAL(KIND(1d0)),DIMENSION(nsh),INTENT(inout)   ::qn1_S_store_grid !< stored qn1 [W m-2]
 
-    REAL(KIND(1d0)),DIMENSION(2*nsh+1),INTENT(inout)::qn1_av_store_grid
-    REAL(KIND(1d0)),DIMENSION(2*nsh+1),INTENT(inout)::qn1_S_av_store_grid !< average net radiation over previous hour [W m-2]
+    ! REAL(KIND(1d0)),DIMENSION(2*nsh+1),INTENT(inout)::qn1_av_store_grid
+    ! REAL(KIND(1d0)),DIMENSION(2*nsh+1),INTENT(inout)::qn1_S_av_store_grid !< average net radiation over previous hour [W m-2]
     REAL(KIND(1d0)),DIMENSION(6,nsurf),INTENT(inout)::surf
 
 
@@ -1171,10 +1169,8 @@ CONTAINS
        HDDday=HDD(id-1,4)
        IF(Diagnose==1) WRITE(*,*) 'Calling OHM...'
        CALL OHM(qn1,qn1_av,dqndt,&
-            qn1_store_grid,qn1_av_store_grid,&
             qn1_S,qn1_s_av,dqnsdt,&
-            qn1_S_store_grid,qn1_S_av_store_grid,&
-            nsh,tstep,dt_since_start,&
+            tstep,dt_since_start,&
             sfr,nsurf,&
             HDDday,&
             OHM_coef,&
@@ -1190,11 +1186,18 @@ CONTAINS
     ! use AnOHM to calculate QS, TS 14 Mar 2016
     IF (StorageHeatMethod==3) THEN
        IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'
-       CALL AnOHM(qn1_use,qn1_store_grid,qn1_av_store_grid,qf,&
+       ! CALL AnOHM(qn1_use,qn1_store_grid,qn1_av_store_grid,qf,&
+       !      MetForcingData_grid,state/surf(6,:),&
+       !      alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&
+       !      sfr,nsurf,nsh,EmissionsMethod,id,Gridiv,&
+       !      a1,a2,a3,qs,deltaQi)
+       CALL AnOHM(&
+            tstep,dt_since_start,&
+            qn1_use,qn1_av,dqndt,qf,&
             MetForcingData_grid,state/surf(6,:),&
-            alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&
-            sfr,nsurf,nsh,EmissionsMethod,id,Gridiv,&
-            a1,a2,a3,qs,deltaQi)
+            alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&! input
+            sfr,nsurf,EmissionsMethod,id,Gridiv,&
+            a1,a2,a3,qs,deltaQi)! output
 
     END IF
 

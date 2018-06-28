@@ -10,10 +10,8 @@
 ! CONTAINS
 !========================================================================================
 SUBROUTINE OHM(qn1,qn1_av,dqndt,&
-     qn1_store_grid,qn1_av_store_grid,&
      qn1_S,qn1_s_av,dqnsdt,&
-     qn1_S_store_grid,qn1_S_av_store_grid,&
-     nsh,tstep,dt_since_start,&
+     tstep,dt_since_start,&
      sfr,nsurf,&
      HDDday,&
      OHM_coef,&
@@ -30,6 +28,8 @@ SUBROUTINE OHM(qn1,qn1_av,dqndt,&
   ! Snow part changed from summer wet to winter wet coefficients.
   ! Changed -333 checks to -999 checks and added error handling
   ! Gradient now calculated for t-1 (was previously calculated for t-2).
+  ! TS 28 Jun 2018:
+  !  improved and tested the phase-in method for calculating dqndt
   ! TS & SG 30 Apr 2018:
   !  a new calculation scheme of dqndt by using a phase-in approach that releases
   !  the requirement for storeing multiple qn values for adapting SUEWS into WRF
@@ -62,7 +62,7 @@ SUBROUTINE OHM(qn1,qn1_av,dqndt,&
   REAL(KIND(1d0)),INTENT(in)::state(nsurf) ! wetness status
 
   INTEGER,INTENT(in)::nsurf     ! number of surfaces
-  INTEGER,INTENT(in)::nsh       ! number of timesteps in one hour
+  ! INTEGER,INTENT(in)::nsh       ! number of timesteps in one hour
   ! integer,intent(in) :: dt      ! current timestep [second]
   ! integer,intent(INOUT) :: dt0  ! period length for qn1 memory
   INTEGER,INTENT(in)::BldgSurf  ! code for specific surfaces
@@ -74,10 +74,10 @@ SUBROUTINE OHM(qn1,qn1_av,dqndt,&
   REAL(KIND(1d0)),INTENT(inout)::dqndt  !Rate of change of net radiation [W m-2 h-1] at t-1
   REAL(KIND(1d0)),INTENT(inout)::qn1_s_av
   REAL(KIND(1d0)),INTENT(inout)::dqnsdt  !Rate of change of net radiation [W m-2 h-1] at t-1
-  REAL(KIND(1d0)),INTENT(inout)::qn1_store_grid(nsh)
-  REAL(KIND(1d0)),INTENT(inout)::qn1_av_store_grid(2*nsh+1)
-  REAL(KIND(1d0)),INTENT(inout)::qn1_S_store_grid(nsh)
-  REAL(KIND(1d0)),INTENT(inout)::qn1_S_av_store_grid(2*nsh+1)
+  ! REAL(KIND(1d0)),INTENT(inout)::qn1_store_grid(nsh)
+  ! REAL(KIND(1d0)),INTENT(inout)::qn1_av_store_grid(2*nsh+1)
+  ! REAL(KIND(1d0)),INTENT(inout)::qn1_S_store_grid(nsh)
+  ! REAL(KIND(1d0)),INTENT(inout)::qn1_S_av_store_grid(2*nsh+1)
 
 
   REAL(KIND(1d0)),INTENT(out):: qs ! storage heat flux

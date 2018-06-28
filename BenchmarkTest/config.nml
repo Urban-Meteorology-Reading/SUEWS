@@ -9,7 +9,7 @@
     name_exe = 'SUEWS_V2018b'
     dir_exe = '../ReleaseRepo/build/macOS'
     dir_input = './BaseInput'
-    dir_baserun = './BaseRun/2018a'
+    dir_baserun = './BaseRun/2018b'
 /
 
 &benchmark

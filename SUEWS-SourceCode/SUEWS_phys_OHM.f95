@@ -9,9 +9,11 @@
 !   IMPLICIT NONE
 ! CONTAINS
 !========================================================================================
-SUBROUTINE OHM(qn1,qn1_store_grid,qn1_av_store_grid,&
-     qn1_S,qn1_S_store_grid,qn1_S_av_store_grid,&
-     nsh,&
+SUBROUTINE OHM(qn1,qn1_av,dqndt,&
+     qn1_store_grid,qn1_av_store_grid,&
+     qn1_S,qn1_s_av,dqnsdt,&
+     qn1_S_store_grid,qn1_S_av_store_grid,&
+     nsh,tstep,dt_since_start,&
      sfr,nsurf,&
      HDDday,&
      OHM_coef,&
@@ -45,7 +47,8 @@ SUBROUTINE OHM(qn1,qn1_store_grid,qn1_av_store_grid,&
 
 
   IMPLICIT NONE
-
+  INTEGER, INTENT(in) :: tstep          ! time step [s]
+  INTEGER, INTENT(in) :: dt_since_start ! time since simulation starts [s]
 
   REAL(KIND(1d0)),INTENT(in)::qn1                             ! net all-wave radiation
   REAL(KIND(1d0)),INTENT(in)::qn1_S                           ! net all-wave radiation over snow
@@ -67,7 +70,10 @@ SUBROUTINE OHM(qn1,qn1_store_grid,qn1_av_store_grid,&
   INTEGER,INTENT(in)::SnowUse   ! option for snow related calculations
   INTEGER,INTENT(in)::DiagQS    ! diagnostic option
 
-  ! REAL(KIND(1d0)),INTENT(inout)::dqndt !Rate of change of net radiation [W m-2 h-1] at t-1
+  REAL(KIND(1d0)),INTENT(inout)::qn1_av
+  REAL(KIND(1d0)),INTENT(inout)::dqndt  !Rate of change of net radiation [W m-2 h-1] at t-1
+  REAL(KIND(1d0)),INTENT(inout)::qn1_s_av
+  REAL(KIND(1d0)),INTENT(inout)::dqnsdt  !Rate of change of net radiation [W m-2 h-1] at t-1
   REAL(KIND(1d0)),INTENT(inout)::qn1_store_grid(nsh)
   REAL(KIND(1d0)),INTENT(inout)::qn1_av_store_grid(2*nsh+1)
   REAL(KIND(1d0)),INTENT(inout)::qn1_S_store_grid(nsh)
@@ -82,7 +88,7 @@ SUBROUTINE OHM(qn1,qn1_store_grid,qn1_av_store_grid,&
 
   ! REAL(KIND(1d0)):: nsh_nna ! number of timesteps per hour with non -999 values (used for spinup)
 
-  REAL(KIND(1d0)):: dqndt    !Rate of change of net radiation [W m-2 h-1] at t-1
+  ! REAL(KIND(1d0)):: dqndt    !Rate of change of net radiation [W m-2 h-1] at t-1
   ! REAL(KIND(1d0)):: surfrac  !Surface fraction accounting for SnowFrac if appropriate
 
   ! REAL(KIND(1d0)):: qn1_av, qn1_S_av    !Average net radiation over previous hour [W m-2]
@@ -107,9 +113,6 @@ SUBROUTINE OHM(qn1,qn1_store_grid,qn1_av_store_grid,&
   ! WRITE(*,*) '----- OHM coeffs new-----'
   ! WRITE(*,*) a1,a2,a3
 
-
-  ! WRITE(*,*) '----- OHM coeffs -----'
-  ! WRITE(*,*) a1,a2,a3
 
   ! Old OHM calculations (up to v2016a)
   !! Calculate radiation part ------------------------------------------------------------
@@ -138,8 +141,12 @@ SUBROUTINE OHM(qn1,qn1_store_grid,qn1_av_store_grid,&
   qs=-999              !qs  = Net storage heat flux  [W m-2]
   IF(qn1>-999) THEN   !qn1 = Net all-wave radiation [W m-2]
      ! Store instantaneous qn1 values for previous hour (qn1_store_grid) and average (qn1_av)
-     ! CALL OHM_dqndt_cal_X(dt,dt0,qn1,dqndt)
-     CALL OHM_dqndt_cal(nsh,qn1,qn1_store_grid,qn1_av_store_grid,dqndt)
+     ! print*,''
+     ! CALL OHM_dqndt_cal(nsh,qn1,qn1_store_grid,qn1_av_store_grid,dqndt)
+     ! print*, 'old dqndt',dqndt
+     CALL OHM_dqndt_cal_X(tstep,dt_since_start,qn1_av,qn1,dqndt)
+     ! print*, 'new dqndt',dqndt
+
 
      ! Calculate net storage heat flux
      CALL OHM_QS_cal(qn1,dqndt,a1,a2,a3,qs)
@@ -169,7 +176,9 @@ SUBROUTINE OHM(qn1,qn1_store_grid,qn1_av_store_grid,&
         !r3_grids(Gridiv)=qn1_S
         ! New OHM calculations
         ! Store instantaneous qn1 values for previous hour (qn1_store_grid) and average (qn1_av)
-        CALL OHM_dqndt_cal(nsh,qn1_S,qn1_S_store_grid,qn1_S_av_store_grid,dqndt)
+        ! CALL OHM_dqndt_cal(nsh,qn1_S,qn1_S_store_grid,qn1_S_av_store_grid,dqndt)
+
+        CALL OHM_dqndt_cal_X(tstep,dt_since_start,qn1_s_av,qn1,dqnsdt)
 
         ! Calculate net storage heat flux for snow surface (winter wet conditions)
         CALL OHM_QS_cal(qn1_S,dqndt,&
@@ -257,20 +266,37 @@ SUBROUTINE OHM_coef_cal(sfr,nsurf,&
 END SUBROUTINE OHM_coef_cal
 
 ! Updated OHM calculations for WRF-SUEWS coupling (v2018b onwards) weighted mean (TS Apr 2018)
-SUBROUTINE OHM_dqndt_cal_X(dt,dt0,qn1,dqndt)
+SUBROUTINE OHM_dqndt_cal_X(dt,dt_since_start,qn1_av,qn1,dqndt)
   IMPLICIT NONE
   INTEGER, INTENT(in)            :: dt              ! time step [s]
-  INTEGER, INTENT(inout)         :: dt0             ! period for dqndt0 [s]
-  REAL(KIND(1d0)), INTENT(in)    :: qn1              ! new qn1 value [W m-2]
+  INTEGER, INTENT(in)            :: dt_since_start  ! time since simulation starts [s]
+  REAL(KIND(1d0)), INTENT(in)    :: qn1             ! new qn1 value [W m-2]
+  REAL(KIND(1d0)), INTENT(inout) :: qn1_av          ! weighted average of qn1 [W m-2]
   REAL(KIND(1d0)), INTENT(inout) :: dqndt           ! dQ* per dt for 60 min [W m-2 h-1]
-  INTEGER, PARAMETER             :: dt0_thresh=3600 ! threshold for period for dqndt0 [s]
+  REAL(KIND(1d0)), PARAMETER     :: dt0_thresh=3600 ! threshold for period of dqndt0 [s]
+  REAL(KIND(1d0)), PARAMETER     :: window_hr=2     ! window size for Difference calculation [hr]
+
+  INTEGER :: dt0 ! period of dqndt0 [s]
+
+  REAL(KIND(1d0))  :: qn1_av_0 !, qn1_av_start,qn1_av_end
 
   ! if previous period shorter than dt0_thresh, expand the storage/memory period
-  IF ( dt0< dt0_thresh)  dt0 = dt0+dt
+  IF ( dt_since_start< dt0_thresh)  THEN ! spinup period
+     dt0 = dt_since_start+dt
+
+  ELSE ! effective period
+     dt0 = dt0_thresh
+  ENDIF
+
+  ! get weighted average at a previous time specified by `window_hr`
+  qn1_av_0=qn1_av-dqndt*(window_hr-dt/3600)
+
+  ! averaged qn1 for previous period = dt0_thresh
+  qn1_av=(qn1_av*(dt0-dt)+qn1*dt)/(dt0)
 
   ! do weighted average to calculate the difference by using the memory value and new forcing value
   ! NB: keep the output dqndt in [W m-2 h-1]
-  dqndt=(dqndt*(dt0-dt)/3600+qn1)/(dt0/3600)
+  dqndt=(qn1_av-qn1_av_0)/window_hr
 
 
 END SUBROUTINE OHM_dqndt_cal_X

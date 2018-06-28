@@ -72,6 +72,9 @@ PROGRAM SUEWS_Program
   ! Start counting cpu time
   CALL CPU_TIME(timeStart)
 
+  ! initialise simulation time
+  dt_since_start=0
+
   WRITE(*,*) '========================================================'
   WRITE(*,*) 'Running ',progname
 
@@ -275,10 +278,14 @@ PROGRAM SUEWS_Program
         ALLOCATE(qn1_S_store_grid(NSH))
         ALLOCATE(qn1_S_av_store(2*NSH+1,NumberOfGrids))
         ALLOCATE(qn1_S_av_store_grid(2*NSH+1))
+        ALLOCATE(qn1_s_av(NumberOfGrids))
+        ALLOCATE(dqnsdt(NumberOfGrids))
         qn1_S_store(:,:) = NAN
         qn1_S_av_store(:,:) = NaN
         qn1_S_store_grid(:) = NAN
         qn1_S_av_store_grid(:) = NaN
+        qn1_s_av=0 ! Initialise to 0
+        dqnsdt=0 ! Initialise to 0
      ENDIF
      IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
         ALLOCATE(dataOutESTM(ReadlinesMetdata,32,NumberOfGrids)) !ESTM output
@@ -296,14 +303,20 @@ PROGRAM SUEWS_Program
      ALLOCATE(qn1_av_store_grid(2*NSH+1))
      ALLOCATE(qhforCBL(NumberOfGrids))
      ALLOCATE(qeforCBL(NumberOfGrids))
+     ALLOCATE(qn1_av(NumberOfGrids))
+     ALLOCATE(dqndt(NumberOfGrids))
      !! QUESTION: Add snow clearing (?)
 
      qn1_store(:,:) = NAN ! Initialise to -999
      qn1_av_store(:,:) = NAN ! Initialise to -999
      qn1_store_grid(:)=NAN
      qn1_av_store_grid(:)=NAN
+     qn1_av=0 ! Initialise to 0
+     dqndt=0 ! Initialise to 0
+
      qhforCBL(:) = NAN
      qeforCBL(:) = NAN
+
      ! QUESTION: Initialise other arrays here?
 
 
@@ -592,6 +605,9 @@ PROGRAM SUEWS_Program
         DO ir=1,irMax   !Loop through rows of current block of met data
            GridCounter=1    !Initialise counter for grids in each year
 
+           ! update simulation time since start
+           dt_since_start=dt_since_start+tstep
+
            DO igrid=1,NumberOfGrids   !Loop through grids
               IF(Diagnose==1) WRITE(*,*) 'Row (ir):', ir,'/',irMax,'of block (iblock):', iblock,'/',ReadBlocksMetData,&
                    'Grid:',GridIDmatrix(igrid)
@@ -680,6 +696,8 @@ PROGRAM SUEWS_Program
         DEALLOCATE(qn1_S_av_store)
         DEALLOCATE(qn1_S_store_grid)
         DEALLOCATE(qn1_S_av_store_grid)
+        DEALLOCATE(qn1_s_av)
+        DEALLOCATE(dqnsdt)
      ENDIF
      IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
         DEALLOCATE(dataOutESTM) !ESTM output
@@ -701,6 +719,9 @@ PROGRAM SUEWS_Program
      DEALLOCATE(qn1_av_store_grid)
      DEALLOCATE(qhforCBL)
      DEALLOCATE(qeforCBL)
+     DEALLOCATE(qn1_av)
+     DEALLOCATE(dqndt)
+
 
      ! ----------------------------------------------------------------------
 

@@ -2,7 +2,8 @@
 
 # from Benchmark_SUEWS import *
 from shutil import copytree, rmtree, copyfile
-import os, sys
+import os
+import sys
 import numpy as np
 import pandas as pd
 from glob import glob
@@ -17,15 +18,23 @@ dir_input = os.path.abspath(f90nml.read('config.nml')['file']['dir_input'])
 dir_exe = os.path.abspath(f90nml.read('config.nml')['file']['dir_exe'])
 dir_baserun = os.path.abspath(f90nml.read('config.nml')['file']['dir_baserun'])
 
+# load name of programme for testing
+name_exe = f90nml.read('config.nml')['file']['name_exe']
+
 # load physics options to test
 dict_phy_opt_sel = f90nml.read('config.nml')['physics_test']
 
 # %%auxiliary SUEWS functions
 # suppress error info if needed:
+
+
 class DevNull:
     def write(self, msg):
         pass
+
+
 sys.stderr = DevNull()
+
 
 def load_SUEWS_nml(xfile):
     # remove case issues
@@ -145,7 +154,7 @@ def gen_SiteSelect_multi(df_siteselect, n_grid):
 
 
 # run simulation
-def run_sim(name_sim, dict_runcontrol, dict_initcond, df_siteselect,
+def run_sim(name_sim, dir_exe, name_exe, dict_runcontrol, dict_initcond, df_siteselect,
             dir_save=tempfile.mkdtemp()):
     # TODO: support for user-specified forcing condition
     # create dir_save if not exisitng
@@ -199,14 +208,15 @@ def run_sim(name_sim, dict_runcontrol, dict_initcond, df_siteselect,
     f90nml.write(RunControl, 'RunControl.nml')
 
     # copy SUEWS executable
-    name_exe = 'SUEWS_V2018a'
-    copyfile(os.path.join(dir_exe, name_exe), name_exe)
+    # name_exe = 'SUEWS_V2018a'
+    path_exe = os.path.join(dir_exe, name_exe)
+    copyfile(path_exe, name_exe)
     os.chmod(name_exe, 755)
 
     # perform multi-grid run:
     # exit_code = os.system('./SUEWS_V2018a')
     # suppress output info
-    os.system('./SUEWS_V2018a &>/dev/null')
+    os.system('./' + name_exe + ' &>/dev/null')
 
     # check if results generated:
     fl_output = glob('Output/*SUEWS_60.txt')
@@ -243,11 +253,15 @@ def test_multiyear(
 
     # result in [year, grid] order
     res_sim_multiyear = run_sim(
-        name_sim, dict_runcontrol, dict_initcond, df_siteselect_multi,
+        name_sim, dir_exe, name_exe,
+        dict_runcontrol, dict_initcond, df_siteselect_multi,
         dir_save)
 
     # test if multiple years have been run
     res_test = len(res_sim_multiyear.shape) > 0
+
+    print('test_multiyear for',name_exe)
+    print 'running here:', dir_save
 
     return res_test
 
@@ -260,7 +274,7 @@ def test_multigrid(
     dir_sys = os.getcwd()
     try:
         os.chdir(dir_save)
-        os.mkdir(name_sim)
+        # os.mkdir(name_sim)
 
         # os.mkdir('Output')
     except OSError as e:
@@ -280,7 +294,9 @@ def test_multigrid(
     name_sim = 'multi_grid'
     # result in [year, grid] order
     res_sim_multigrid = run_sim(
-        name_sim, dict_runcontrol, dict_initcond, df_siteselect_multi,
+        name_sim, dir_exe, name_exe,
+        dict_runcontrol, dict_initcond,
+        df_siteselect_multi,
         dir_save)
 
     # perform multiple single-grid simulation and load results
@@ -290,7 +306,7 @@ def test_multigrid(
         # grid_name = df_siteselect.loc[ind_grid, 'Grid']
         name_sim = 'single_grid_' + str(int(grid_name))
         res_sim_grid = run_sim(
-            name_sim,
+            name_sim, dir_exe, name_exe,
             dict_runcontrol, dict_initcond,
             df_siteselect_multi.loc[df_siteselect_multi.Grid == grid_name],
             dir_save)
@@ -304,6 +320,10 @@ def test_multigrid(
 
     # change back to previous path
     os.chdir(dir_sys)
+
+    print('test_multigrid for',name_exe)
+    print 'running here:', dir_save
+
 
     return res_test
 
@@ -331,14 +351,14 @@ def test_samerun(dir_baserun, dir_save=tempfile.mkdtemp()):
         os.mkdir(dir_output)
 
     # copy SUEWS executable
-    name_exe = 'SUEWS_V2018a'
+    path_exe = os.path.join(dir_exe, name_exe)
     if not os.path.exists(name_exe):
-        copyfile(os.path.join(dir_exe, name_exe), name_exe)
+        copyfile(path_exe, name_exe)
         os.chmod(name_exe, 755)
 
     # perform simulation
     # exit_code = os.system('./SUEWS_V2018a')
-    os.system('./SUEWS_V2018a &>/dev/null')
+    os.system('./' + name_exe + ' &>/dev/null')
 
     # compare results
     dir_res_sample = os.path.join(dir_baserun, dir_output)
@@ -353,14 +373,22 @@ def test_samerun(dir_baserun, dir_save=tempfile.mkdtemp()):
     comp_files_test = filecmp.cmpfiles(
         dir_res_sample,
         dir_res_test,
-        common_files)
-    res_test = (comp_files_test[0] == common_files)
+        common_files,
+        shallow=False)
+    # print 'comp_files_test',comp_files_test
+    # print 'common_files',common_files
+    res_test = (set(comp_files_test[0]) == set(common_files))
+    # print res_test
     if not res_test:
-        # if not match, return mismatch list
-        return comp_files_test[1]
+        # if not match, print mismatch list
+        print 'these files are different:'
+        print comp_files_test[1]
+
 
     dir_sys = os.chdir(dir_sys)
     # rmtree(dir_test)
+    print('test_samerun for',name_exe)
+    print 'running here:', dir_save
 
     return res_test
 
@@ -381,9 +409,11 @@ def test_physics(dict_runcontrol, dict_initcond, df_siteselect,
         runcontrol_test = dict_runcontrol.copy()
         runcontrol_test.update(cfg)
         name_sim = str(ind)
-        res_sim = run_sim(name_sim, runcontrol_test,
-                          dict_initcond, df_siteselect,
-                          dir_save)
+        res_sim = run_sim(
+            name_sim, dir_exe, name_exe,
+            runcontrol_test,
+            dict_initcond, df_siteselect,
+            dir_save)
         dict_test.update({ind: res_sim})
 
     dict_test_OK = {k: 'fail' if type(v) == str else 'pass'

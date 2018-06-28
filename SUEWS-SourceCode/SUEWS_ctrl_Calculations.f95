@@ -45,7 +45,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
        roughlenmommethod, smdmethod, snow_obs, snowuse, startdls, &
        storageheatmethod, t_critic_cooling, t_critic_heating, temp_c, &
        timezone, trafficrate, trafficunits, waterusemethod, xsmd
-  USE time, ONLY : iy, iy_prev_t, id, id_prev_t, it, imin, dectime
+  USE time, ONLY : iy, iy_prev_t, id, id_prev_t, it, imin, dectime, dt_since_start
   USE allocateArray, ONLY: &
        ahprof_tstep, alb, albdectr, albevetr, albgrass, &
        AlbMax_DecTr, AlbMax_EveTr, AlbMax_grass, &
@@ -59,6 +59,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
        narp_emis_snow, narp_trans_site, &
        ohm_coef, ohm_threshsw, ohm_threshwd, popprof_tstep, &
        pormax_dec, pormin_dec, porosity, &
+       dqndt_grid,qn1_av_grid,&
+       dqnsdt_grid,qn1_s_av_grid,&
        qn1_av_store_grid, qn1_s_av_store_grid, qn1_s_store_grid, qn1_store_grid, &
        resp_a, resp_b, sathydraulicconduct, sddfull, &
        sfr, snowd, snowdens, snowfrac, snowpack, &
@@ -104,9 +106,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
   CALL SUEWS_Translate(Gridiv, ir, iMB)
 
 
-  IF(Diagnose==1) print*, 'Calling SUEWS_cal_Main...'
-  IF(Diagnose==1) print*, 'z0m_in =',z0m_in
-
+  IF(Diagnose==1) PRINT*, 'Calling SUEWS_cal_Main...'
   CALL SUEWS_cal_Main(&
        AerodynamicResistanceMethod, AH_MIN, AHProf_tstep, AH_SLOPE_Cooling, & ! input&inout in alphabetical order
        AH_SLOPE_Heating, alb, albDecTr, albEveTr, albGrass, AlbMax_DecTr, &
@@ -114,7 +114,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
        alpha_bioCO2, alpha_enh_bioCO2, alt, avkdn, avRh, avU1, BaseT, BaseTe, &
        BaseTHDD, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
        chAnOHM, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
-       DecidCap, dectime, DecTreeH, Diagnose, DiagQN, DiagQS, DRAINRT, &
+       DecidCap,dectime,DecTreeH,Diagnose,DiagQN,DiagQS,DRAINRT,&
+       dt_since_start,dqndt_grid,qn1_av_grid,dqnsdt_grid,qn1_s_av_grid,&
        EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
        FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, fcld_obs, FlowChange, &
        FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD, &

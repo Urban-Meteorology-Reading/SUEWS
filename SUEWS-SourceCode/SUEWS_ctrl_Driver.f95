@@ -36,6 +36,7 @@ CONTAINS
        BaseTHDD,beta_bioCO2,beta_enh_bioCO2,bldgH,CapMax_dec,CapMin_dec,&
        chAnOHM,cpAnOHM,CRWmax,CRWmin,DayWat,DayWatPer,&
        DecidCap,dectime,DecTreeH,Diagnose,DiagQN,DiagQS,DRAINRT,&
+       dt_since_start,dqndt,qn1_av,dqnsdt,qn1_s_av,&
        EF_umolCO2perJ,emis,EmissionsMethod,EnEF_v_Jkm,endDLS,EveTreeH,FAIBldg,&
        FAIDecTree,FAIEveTree,Faut,FcEF_v_kgkm,fcld_obs,FlowChange,&
        FrFossilFuel_Heat,FrFossilFuel_NonHeat,G1,G2,G3,G4,G5,G6,GDD,&
@@ -68,6 +69,7 @@ CONTAINS
 
     IMPLICIT NONE
 
+    ! input variables
     INTEGER,INTENT(IN)::AerodynamicResistanceMethod
     INTEGER,INTENT(IN)::Diagnose
     INTEGER,INTENT(IN)::DiagQN
@@ -96,6 +98,7 @@ CONTAINS
     INTEGER,INTENT(IN)::StabilityMethod
     INTEGER,INTENT(IN)::StorageHeatMethod
     INTEGER,INTENT(IN)::tstep
+    INTEGER,INTENT(in)::dt_since_start ! time since simulation starts [s]
     INTEGER,INTENT(IN)::veg_type
     INTEGER,INTENT(IN)::WaterUseMethod
 
@@ -246,11 +249,18 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(24*3600/tstep,2),INTENT(IN) ::WUProfA_tstep
     REAL(KIND(1D0)),DIMENSION(24*3600/tstep,2),INTENT(IN) ::WUProfM_tstep
 
+    ! inout variables
     REAL(KIND(1D0)),INTENT(INOUT)                             ::SnowfallCum
     REAL(KIND(1D0)),INTENT(INOUT)                             ::SnowAlb
+    REAL(KIND(1d0)),INTENT(INOUT)                             ::qn1_av
+    REAL(KIND(1d0)),INTENT(INOUT)                             ::dqndt
+    REAL(KIND(1d0)),INTENT(INOUT)                             ::qn1_s_av
+    REAL(KIND(1d0)),INTENT(INOUT)                             ::dqnsdt
     REAL(KIND(1d0)),DIMENSION(24*3600/tstep),INTENT(INOUT)    ::Tair24HR
     REAL(KIND(1D0)),DIMENSION(2*3600/tstep+1),INTENT(INOUT)   ::qn1_av_store_grid
+    REAL(KIND(1D0)),DIMENSION(3600/tstep),INTENT(INOUT)       ::qn1_store_grid
     REAL(KIND(1D0)),DIMENSION(2*3600/tstep+1),INTENT(INOUT)   ::qn1_S_av_store_grid
+    REAL(KIND(1D0)),DIMENSION(3600/tstep),INTENT(INOUT)       ::qn1_S_store_grid
     REAL(KIND(1D0)),DIMENSION(0:NDAYS),INTENT(INOUT)          ::albDecTr
     REAL(KIND(1D0)),DIMENSION(0:NDAYS),INTENT(INOUT)          ::albEveTr
     REAL(KIND(1D0)),DIMENSION(0:NDAYS),INTENT(INOUT)          ::albGrass
@@ -269,15 +279,15 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::SnowPack
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::soilmoist
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::state
-    REAL(KIND(1D0)),DIMENSION(3600/tstep),INTENT(INOUT)       ::qn1_S_store_grid
-    REAL(KIND(1D0)),DIMENSION(3600/tstep),INTENT(INOUT)       ::qn1_store_grid
 
+    ! output variables
     REAL(KIND(1D0)),DIMENSION(5),INTENT(OUT)                           ::datetimeLine
     REAL(KIND(1D0)),DIMENSION(ncolumnsDataOutSUEWS-5),INTENT(OUT)      ::dataOutLineSUEWS
     REAL(KIND(1D0)),DIMENSION(ncolumnsDataOutSnow-5),INTENT(OUT)       ::dataOutLineSnow
     REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutESTM-5),INTENT(OUT)       ::dataOutLineESTM
     REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutDailyState-5),INTENT(OUT) ::DailyStateLine
 
+    ! local variables
     REAL(KIND(1D0))::a1
     REAL(KIND(1D0))::a2
     REAL(KIND(1D0))::a3
@@ -552,13 +562,14 @@ CONTAINS
     ! =================STORAGE HEAT FLUX=======================================
     CALL SUEWS_cal_Qs(&
          StorageHeatMethod,OHMIncQF,Gridiv,&!input
-         id,tstep,Diagnose,sfr,&
+         id,tstep,dt_since_start,Diagnose,sfr,&
          OHM_coef,OHM_threshSW,OHM_threshWD,&
          soilmoist,soilstoreCap,state,nsh,SnowUse,DiagQS,&
          HDD,MetForcingData_grid,Ts5mindata_ir,qf,qn1,&
          avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown,&
          bldgh,alb,emis,cpAnOHM,kkAnOHM,chAnOHM,EmissionsMethod,&
-         Tair24HR,qn1_store_grid,qn1_S_store_grid,&!inout
+         Tair24HR,qn1_av,dqndt,qn1_s_av,dqnsdt,&!inout
+         qn1_store_grid,qn1_S_store_grid,&!inout
          qn1_av_store_grid,qn1_S_av_store_grid,surf,&
          qn1_S,snowFrac,dataOutLineESTM,qs,&!output
          deltaQi,a1,a2,a3)
@@ -1059,28 +1070,31 @@ CONTAINS
   !=============storage heat flux=========================================
   SUBROUTINE SUEWS_cal_Qs(&
        StorageHeatMethod,OHMIncQF,Gridiv,&!input
-       id,tstep,Diagnose,sfr,&
+       id,tstep,dt_since_start,Diagnose,sfr,&
        OHM_coef,OHM_threshSW,OHM_threshWD,&
        soilmoist,soilstoreCap,state,nsh,SnowUse,DiagQS,&
        HDD,MetForcingData_grid,Ts5mindata_ir,qf,qn1,&
        avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown,&
        bldgh,alb,emis,cpAnOHM,kkAnOHM,chAnOHM,EmissionsMethod,&
-       Tair24HR,qn1_store_grid,qn1_S_store_grid,&!inout
+       Tair24HR,qn1_av,dqndt,qn1_s_av,dqnsdt,&!inout
+       qn1_store_grid,qn1_S_store_grid,&!inout
        qn1_av_store_grid,qn1_S_av_store_grid,surf,&
        qn1_S,snowFrac,dataOutLineESTM,qs,&!output
        deltaQi,a1,a2,a3)
 
     IMPLICIT NONE
-    INTEGER,INTENT(in)::StorageHeatMethod
-    INTEGER,INTENT(in)::OHMIncQF
-    INTEGER,INTENT(in)::Gridiv
-    INTEGER,INTENT(in)::id
-    INTEGER,INTENT(in)::tstep
-    INTEGER,INTENT(in)::Diagnose
-    INTEGER,INTENT(in)::nsh                ! number of timesteps in one hour
-    INTEGER,INTENT(in)::SnowUse            ! option for snow related calculations
-    INTEGER,INTENT(in)::DiagQS             ! diagnostic option
-    INTEGER,INTENT(in):: EmissionsMethod !< AnthropHeat option [-]
+
+    INTEGER,INTENT(in)  ::StorageHeatMethod
+    INTEGER,INTENT(in)  ::OHMIncQF
+    INTEGER,INTENT(in)  ::Gridiv
+    INTEGER,INTENT(in)  ::id
+    INTEGER,INTENT(in)  ::tstep ! time step [s]
+    INTEGER, INTENT(in) ::dt_since_start  ! time since simulation starts [s]
+    INTEGER,INTENT(in)  ::Diagnose
+    INTEGER,INTENT(in)  ::nsh              ! number of timesteps in one hour
+    INTEGER,INTENT(in)  ::SnowUse          ! option for snow related calculations
+    INTEGER,INTENT(in)  ::DiagQS           ! diagnostic option
+    INTEGER,INTENT(in)  :: EmissionsMethod !< AnthropHeat option [-]
 
 
     REAL(KIND(1d0)),INTENT(in)::OHM_coef(nsurf+1,4,3)                 ! OHM coefficients
@@ -1108,14 +1122,18 @@ CONTAINS
 
     REAL(KIND(1d0)),DIMENSION(:),INTENT(in)::Ts5mindata_ir
 
-    REAL(KIND(1d0)),DIMENSION(24*nsh),INTENT(inout):: Tair24HR
-    REAL(KIND(1d0)),DIMENSION(nsh),INTENT(inout) ::qn1_store_grid
-    REAL(KIND(1d0)),DIMENSION(nsh),INTENT(inout) ::qn1_S_store_grid !< stored qn1 [W m-2]
+    REAL(KIND(1d0)),DIMENSION(24*nsh),INTENT(inout)::Tair24HR
+    REAL(KIND(1d0)),INTENT(inout)                  ::qn1_av
+    REAL(KIND(1d0)),INTENT(inout)                  ::dqndt!Rate of change of net radiation [W m-2 h-1] at t-1
+    REAL(KIND(1d0)),INTENT(inout)                  ::qn1_s_av
+    REAL(KIND(1d0)),INTENT(inout)                  ::dqnsdt !Rate of change of net radiation [W m-2 h-1] at t-1
+    REAL(KIND(1d0)),DIMENSION(nsh),INTENT(inout)   ::qn1_store_grid
+    REAL(KIND(1d0)),DIMENSION(nsh),INTENT(inout)   ::qn1_S_store_grid !< stored qn1 [W m-2]
 
     REAL(KIND(1d0)),DIMENSION(2*nsh+1),INTENT(inout)::qn1_av_store_grid
     REAL(KIND(1d0)),DIMENSION(2*nsh+1),INTENT(inout)::qn1_S_av_store_grid !< average net radiation over previous hour [W m-2]
     REAL(KIND(1d0)),DIMENSION(6,nsurf),INTENT(inout)::surf
-    ! REAL(KIND(1d0)),DIMENSION(ReadlinesMetdata,32,NumberOfGrids),INTENT(inout)::dataOutESTM
+
 
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::deltaQi ! storage heat flux of snow surfaces
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::snowFrac
@@ -1152,9 +1170,11 @@ CONTAINS
     IF(StorageHeatMethod==1) THEN           !Use OHM to calculate QS
        HDDday=HDD(id-1,4)
        IF(Diagnose==1) WRITE(*,*) 'Calling OHM...'
-       CALL OHM(qn1_use,qn1_store_grid,qn1_av_store_grid,&
-            qn1_S,qn1_S_store_grid,qn1_S_av_store_grid,&
-            nsh,&
+       CALL OHM(qn1,qn1_av,dqndt,&
+            qn1_store_grid,qn1_av_store_grid,&
+            qn1_S,qn1_s_av,dqnsdt,&
+            qn1_S_store_grid,qn1_S_av_store_grid,&
+            nsh,tstep,dt_since_start,&
             sfr,nsurf,&
             HDDday,&
             OHM_coef,&
@@ -1702,8 +1722,6 @@ CONTAINS
     CASE (2)
        qh= qh_resist
     END SELECT
-
-
 
 
   END SUBROUTINE SUEWS_cal_QH

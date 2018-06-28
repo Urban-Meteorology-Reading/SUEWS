@@ -1140,9 +1140,14 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      ! get qn1 memory for previous time steps
      qn1_store_grid(:)      = qn1_store(:,Gridiv)
      qn1_av_store_grid(:)   = qn1_av_store(:,Gridiv)
+     dqndt_grid  = dqndt(Gridiv)
+     qn1_av_grid = qn1_av(Gridiv)
+
      IF (SnowUse == 1) THEN
         qn1_S_store_grid(:)    = qn1_S_store(:,Gridiv)
         qn1_S_av_store_grid(:) = qn1_S_av_store(:,Gridiv)
+        dqnsdt_grid  = dqnsdt(Gridiv)
+        qn1_s_av_grid = qn1_s_av(Gridiv)
      ENDIF
 
      ! get met array for one grid used in AnOHM
@@ -1268,6 +1273,15 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv,ir,irMax)
      qn1_S_store(:,Gridiv)    = qn1_S_store_grid(:)
      qn1_S_av_store(:,Gridiv) = qn1_S_av_store_grid(:)
   ENDIF
+
+  ! update averaged qn1 memory
+  dqndt(Gridiv)=dqndt_grid
+  qn1_av(Gridiv)=qn1_av_grid
+  IF (SnowUse == 1) THEN
+     dqnsdt(Gridiv)=dqnsdt_grid
+     qn1_s_av(Gridiv)=qn1_s_av_grid
+  ENDIF
+
 
   ! ---- Snow density of each surface
   ModelDailyState(Gridiv,cMDS_SnowDens(1:nsurf)) = SnowDens(1:nsurf)

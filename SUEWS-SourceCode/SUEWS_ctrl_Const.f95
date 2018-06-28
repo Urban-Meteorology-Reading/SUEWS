@@ -358,6 +358,10 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE:: qn1_store, qn1_S_store   !Q* values for each timestep over previous hr (_S for snow)
   REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE:: qn1_av_store, qn1_S_av_store  !Hourly Q* values for each timestep over previous 2 hr
   REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE::qn1_store_grid,qn1_av_store_grid
+  REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE::qn1_av,qn1_s_av
+  REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE::dqndt,dqnsdt
+  REAL(KIND(1d0))::qn1_av_grid,dqndt_grid
+  REAL(KIND(1d0))::qn1_s_av_grid,dqnsdt_grid
   REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE::qn1_S_store_grid,qn1_S_av_store_grid
   !-----------------------------------------------------------------------------------------------
 
@@ -899,7 +903,7 @@ MODULE data_in
 
   IMPLICIT NONE
 
-  CHARACTER (len=90)::progname='SUEWS_V2018a'
+  CHARACTER (len=90)::progname='SUEWS_V2018b'
 
   ! ---- Run information ------------------------------------------------------------------------
   CHARACTER (len=20)::  FileCode   !Set in RunControl
@@ -1266,6 +1270,7 @@ MODULE time
   REAL(KIND(1d0)):: dectime        !Decimal time
   REAL (KIND(1d0)):: tstepcount    !Count number of timesteps in this day
   INTEGER:: nofDaysThisYear        !Based on whether leap year or not
+  INTEGER:: dt_since_start ! time since simulation starts [s]
 
   INTEGER:: iy_prev_t, id_prev_t   !Value of iy and id at previous timestep
 

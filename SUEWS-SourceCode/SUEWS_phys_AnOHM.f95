@@ -26,13 +26,17 @@ CONTAINS
   !! QS = a1*(Q*)+a2*(dQ*/dt)+a3
   !! -# grid ensemble OHM coefficients: a1, a2 and a3
   SUBROUTINE AnOHM(&
-       qn1,qn1_store,qn1_av_store,qf,&
+       tstep,dt_since_start,&
+       qn1,qn1_av,dqndt,qf,&
        MetForcingData_grid,moist_surf,&
        alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&! input
-       sfr,nsurf,nsh,EmissionsMethod,id,Gridiv,&
+       sfr,nsurf,EmissionsMethod,id,Gridiv,&
        a1,a2,a3,qs,deltaQi)! output
 
     IMPLICIT NONE
+    INTEGER, INTENT(in) :: tstep          ! time step [s]
+    INTEGER, INTENT(in) :: dt_since_start ! time since simulation starts [s]
+
     REAL(KIND(1d0)),INTENT(in),DIMENSION(:,:)::MetForcingData_grid !< met forcing array of grid
 
     REAL(KIND(1d0)),INTENT(in):: qn1               !< net all-wave radiation [W m-2]
@@ -50,10 +54,14 @@ CONTAINS
     INTEGER,INTENT(in):: Gridiv            !< grid id [-]
     INTEGER,INTENT(in):: EmissionsMethod !< AnthropHeat option [-]
     INTEGER,INTENT(in):: nsurf             !< number of surfaces [-]
-    INTEGER,INTENT(in):: nsh               !< number of timesteps in one hour [-]
+    ! INTEGER,INTENT(in):: nsh               !< number of timesteps in one hour [-]
 
-    REAL(KIND(1d0)),INTENT(inout)::qn1_store(nsh) !< stored qn1 [W m-2]
-    REAL(KIND(1d0)),INTENT(inout)::qn1_av_store(2*nsh+1) !< average net radiation over previous hour [W m-2]
+    REAL(KIND(1d0)),INTENT(inout)::qn1_av
+    REAL(KIND(1d0)),INTENT(inout)::dqndt  !Rate of change of net radiation [W m-2 h-1] at t-1
+
+
+    ! REAL(KIND(1d0)),INTENT(inout)::qn1_store(nsh) !< stored qn1 [W m-2]
+    ! REAL(KIND(1d0)),INTENT(inout)::qn1_av_store(2*nsh+1) !< average net radiation over previous hour [W m-2]
 
     REAL(KIND(1d0)),INTENT(out):: a1 !< AnOHM coefficients of grid [-]
     REAL(KIND(1d0)),INTENT(out):: a2 !< AnOHM coefficients of grid [h]
@@ -67,7 +75,7 @@ CONTAINS
     INTEGER,PARAMETER::notUsedI=-55!< @var qn1 net all-wave radiation
     LOGICAL :: idQ ! whether id contains enough data
 
-    REAL(KIND(1d0))                  :: dqndt       !< rate of change of net radiation [W m-2 h-1] at t-2
+    ! REAL(KIND(1d0))                  :: dqndt       !< rate of change of net radiation [W m-2 h-1] at t-2
     ! REAL(KIND(1d0))                  :: surfrac     !< surface fraction accounting for SnowFrac if appropriate
     REAL(KIND(1d0)),DIMENSION(nsurf) :: xa1,xa2,xa3 !< temporary AnOHM coefs.
     ! REAL(KIND(1d0))                  :: qn1_av      ! average net radiation over previous hour [W m-2]
@@ -117,7 +125,8 @@ CONTAINS
     IF(qn1>-999) THEN   !qn1 = Net all-wave radiation [W m-2]
 
        ! Store instantaneous qn1 values for previous hour (qn1_store) and average (qn1_av)
-       CALL OHM_dqndt_cal(nsh,qn1,qn1_store,qn1_av_store,dqndt)
+       ! CALL OHM_dqndt_cal(nsh,qn1,qn1_store,qn1_av_store,dqndt)
+       CALL OHM_dqndt_cal_X(tstep,dt_since_start,qn1_av,qn1,dqndt)
 
        ! Calculate net storage heat flux
        CALL OHM_QS_cal(qn1,dqndt,a1,a2,a3,qs)

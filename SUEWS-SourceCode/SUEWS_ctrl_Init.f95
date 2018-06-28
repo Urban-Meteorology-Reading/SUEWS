@@ -33,8 +33,14 @@ SUBROUTINE OverallRunControl
 
   IMPLICIT NONE
 
-  INTEGER:: iv,i,ii,SkipCounter            !iv and i, ii are integers used in do loops
+  INTEGER:: iv,i,ii,SkipCounter,iFile            !iv and i, ii are integers used in do loops
   CHARACTER(len=50):: FileN
+  INTEGER, PARAMETER :: nFile = 13
+  CHARACTER(len=50), DIMENSION(nFile) :: FileNames = [CHARACTER(len=50) :: 'SUEWS_NonVeg.txt', &
+       'SUEWS_Veg.txt', 'SUEWS_Water.txt', 'SUEWS_Snow.txt', &
+       'SUEWS_Soil.txt', 'SUEWS_Conductance.txt', 'SUEWS_OHMCoefficients.txt', &
+       'SUEWS_ESTMCoefficients.txt', 'SUEWS_AnthropogenicHeat.txt', 'SUEWS_Irrigation.txt', &
+       'SUEWS_Profiles.txt', 'SUEWS_WithinGridWaterDist.txt', 'SUEWS_BiogenCO2.txt']
 
   ! ---- Namelist for RunControl.nml ----
   NAMELIST/RunControl/FileCode,&
@@ -214,396 +220,70 @@ SUBROUTINE OverallRunControl
 
   !call InputHeaderCheck(FileN) !! Need to add column checks for SiteSelect.txt
 
-  !=======================SUEWS_NonVeg.txt============================
-  FileN='SUEWS_NonVeg.txt'
-  CALL NumberRows(FileN,SkipHeaderSiteInfo)     !Find number of rows in input file
-  nlinesNonVeg=nlines
-  ALLOCATE(NonVeg_Coeff(nlinesNonVeg,ncolumnsNonVeg))
-  !Read input file
-  OPEN(22,file=TRIM(FileInputPath)//TRIM(FileN),err=300,status='old')
-  DO SkipCounter=1,(SkipHeaderSiteInfo-1)
-     READ(22,*)   !Skip lines before header
-  ENDDO
-  READ(22,*) (HeaderNonVeg_File(iv),iv=1,ncolumnsNonVeg) !Get header
+  ! FileNames = (/'SUEWS_NonVeg.txt', 'SUEWS_Veg.txt', 'SUEWS_Water.txt', 'SUEWS_Snow.txt', &
+  !      'SUEWS_Soil.txt', 'SUEWS_Conductance.txt', 'SUEWS_OHMCoefficients.txt', &
+  !      'SUEWS_ESTMCoefficients.txt', 'SUEWS_AnthropogenicHeat.txt', 'SUEWS_Irrigation.txt', &
+  !      'SUEWS_Profiles.txt', 'SUEWS_WithinGridWaterDist.txt', 'SUEWS_BiogenCO2.txt'/)
 
-  DO i=1,nlinesNonVeg
-     READ(22,*) (NonVeg_Coeff(i,iv),iv=1,ncolumnsNonVeg)
-     !write(*,*) (NonVeg_Coeff(i,iv),iv=1,ncolumnsNonVeg)
-  ENDDO
-  CLOSE(22)
-
-  CALL InputHeaderCheck(FileN)
-
-  ! Check codes are unique
-  DO i=1,nlinesNonVeg
-     DO ii=1,nlinesNonVeg
-        IF(NonVeg_Coeff(i,ci_Code)==NonVeg_Coeff(ii,ci_Code) .AND. i/=ii) THEN
-           WRITE(*,*) 'Code',NonVeg_Coeff(i,ci_Code),'in Impervious.txt not unique!'
-           CALL ErrorHint(60,FileN,NonVeg_Coeff(i,ci_Code),notUsed,notUsedI)
-        ENDIF
-     ENDDO
-  ENDDO
-
-  !=======================SUEWS_Veg.txt==============================
-  FileN='SUEWS_Veg.txt'
-  CALL NumberRows(FileN,SkipHeaderSiteInfo)     !Find number of rows in input file
-  nlinesVeg=nlines
-  ALLOCATE(Veg_Coeff(nlinesVeg,ncolumnsVeg))
-  !Read input file
-  OPEN(23,file=TRIM(FileInputPath)//TRIM(FileN),err=300,status='old')
-  DO SkipCounter=1,(SkipHeaderSiteInfo-1)
-     READ(23,*)   !Skip lines before header
-  ENDDO
-  READ(23,*) (HeaderVeg_File(iv),iv=1,ncolumnsVeg) !Get header
-
-  DO i=1,nlinesVeg
-     READ(23,*) (Veg_Coeff(i,iv),iv=1,ncolumnsVeg)
-     !write(*,*) (Veg_Coeff(i,iv),iv=1,ncolumnsVeg)
-  ENDDO
-  CLOSE(23)
-
-  CALL InputHeaderCheck(FileN)
-
-  ! Check codes are unique
-  DO i=1,nlinesVeg
-     DO ii=1,nlinesVeg
-        IF(Veg_Coeff(i,cp_Code)==Veg_Coeff(ii,cp_Code) .AND. i/=ii) THEN
-           WRITE(*,*) 'Code',Veg_Coeff(i,cp_Code),'in Pervious.txt not unique!'
-           CALL ErrorHint(60,FileN,Veg_Coeff(i,cp_Code),notUsed,notUsedI)
-        ENDIF
-     ENDDO
-  ENDDO
-
-  !=======================SUEWS_Water.txt=================================
-  FileN='SUEWS_Water.txt'
-  CALL NumberRows(FileN,SkipHeaderSiteInfo)     !Find number of rows in input file
-  nlinesWater=nlines
-  ALLOCATE(Water_Coeff(nlinesWater,ncolumnsWater))
-  !Read input file
-  OPEN(24,file=TRIM(FileInputPath)//TRIM(FileN),err=300,status='old')
-  DO SkipCounter=1,(SkipHeaderSiteInfo-1)
-     READ(24,*)   !Skip lines before header
-  ENDDO
-  READ(24,*) (HeaderWater_File(iv),iv=1,ncolumnsWater) !Get header
-
-  DO i=1,nlinesWater
-     READ(24,*) (Water_Coeff(i,iv),iv=1,ncolumnsWater)
-     !write(*,*) (Water_Coeff(i,iv),iv=1,ncolumnsWater)
-  ENDDO
-  CLOSE(24)
-
-  CALL InputHeaderCheck(FileN)
-
-  ! Check codes are unique
-  DO i=1,nlinesWater
-     DO ii=1,nlinesWater
-        IF(Water_Coeff(i,cw_Code)==Water_Coeff(ii,cw_Code) .AND. i/=ii) THEN
-           WRITE(*,*) 'Code',Water_Coeff(i,cw_Code),'in Water.txt not unique!'
-           CALL ErrorHint(60,FileN,Water_Coeff(i,cw_Code),notUsed,notUsedI)
-        ENDIF
-     ENDDO
-  ENDDO
-
-
-  !=======================SUEWS_Snow.txt==================================
-  FileN='SUEWS_Snow.txt'
-  CALL NumberRows(FileN,SkipHeaderSiteInfo)     !Find number of rows in input file
-  nlinesSnow=nlines
-  ALLOCATE(Snow_Coeff(nlinesSnow,ncolumnsSnow))
-  !Read input file
-  OPEN(25,file=TRIM(FileInputPath)//TRIM(FileN),err=300,status='old')
-  DO SkipCounter=1,(SkipHeaderSiteInfo-1)
-     READ(25,*)   !Skip lines before header
-  ENDDO
-  READ(25,*) (HeaderSnow_File(iv),iv=1,ncolumnsSnow) !Get header
-
-  DO i=1,nlinesSnow
-     READ(25,*) (Snow_Coeff(i,iv),iv=1,ncolumnsSnow)
-     !write(*,*) (Snow_Coeff(i,iv),iv=1,ncolumnsSnow)
-  ENDDO
-  CLOSE(25)
-
-  CALL InputHeaderCheck(FileN)
-
-  ! Check codes are unique
-  DO i=1,nlinesSnow
-     DO ii=1,nlinesSnow
-        IF(Snow_Coeff(i,cs_Code)==Snow_Coeff(ii,cs_Code) .AND. i/=ii) THEN
-           WRITE(*,*) 'Code',Snow_Coeff(i,cs_Code),'in Snow.txt not unique!'
-           CALL ErrorHint(60,FileN,Snow_Coeff(i,cs_Code),notUsed,notUsedI)
-        ENDIF
-     ENDDO
-  ENDDO
-
-
-  !=======================SUEWS_Soil.txt==================================
-  FileN='SUEWS_Soil.txt'
-  CALL NumberRows(FileN,SkipHeaderSiteInfo)     !Find number of rows in input file
-  nlinesSoil=nlines
-  ALLOCATE(Soil_Coeff(nlinesSoil,ncolumnsSoil))
-  !Read input file
-  OPEN(26,file=TRIM(FileInputPath)//TRIM(FileN),err=300,status='old')
-  DO SkipCounter=1,(SkipHeaderSiteInfo-1)
-     READ(26,*)   !Skip lines before header
-  ENDDO
-  READ(26,*) (HeaderSoil_File(iv),iv=1,ncolumnsSoil) !Get header
-
-  DO i=1,nlinesSoil
-     READ(26,*) (Soil_Coeff(i,iv),iv=1,ncolumnsSoil)
-     !write(*,*) (Soil_Coeff(i,iv),iv=1,ncolumnsSoil)
-  ENDDO
-  CLOSE(26)
-
-  CALL InputHeaderCheck(FileN)
-
-  ! Check codes are unique
-  DO i=1,nlinesSoil
-     DO ii=1,nlinesSoil
-        IF(Soil_Coeff(i,cSo_Code)==Soil_Coeff(ii,cSo_Code) .AND. i/=ii) THEN
-           WRITE(*,*) 'Code',Soil_Coeff(i,cSo_Code),'in Soil.txt not unique!'
-           CALL ErrorHint(60,FileN,Soil_Coeff(i,cSo_Code),notUsed,notUsedI)
-        ENDIF
-     ENDDO
-  ENDDO
-
-  !===================SUEWS_Conductance.txt===============================
-  FileN='SUEWS_Conductance.txt'
-  CALL NumberRows(FileN,SkipHeaderSiteInfo)     !Find number of rows in input file
-  nlinesConductance=nlines
-  ALLOCATE(Conductance_Coeff(nlinesConductance,ncolumnsConductance))
-  !Read input file
-  OPEN(27,file=TRIM(FileInputPath)//TRIM(FileN),err=300,status='old')
-  DO SkipCounter=1,(SkipHeaderSiteInfo-1)
-     READ(27,*)   !Skip lines before header
-  ENDDO
-  READ(27,*) (HeaderCond_File(iv),iv=1,ncolumnsConductance) !Get header
-
-  DO i=1,nlinesConductance
-     READ(27,*) (Conductance_Coeff(i,iv),iv=1,ncolumnsConductance)
-     !write(*,*) (Conductance_Coeff(i,iv),iv=1,ncolumnsConductance)
-  ENDDO
-  CLOSE(27)
-
-  CALL InputHeaderCheck(FileN)
-
-  ! Check codes are unique
-  DO i=1,nlinesConductance
-     DO ii=1,nlinesConductance
-        IF(Conductance_Coeff(i,cc_Code)==Conductance_Coeff(ii,cc_Code) .AND. i/=ii) THEN
-           WRITE(*,*) 'Code',Conductance_Coeff(i,cc_Code),'in Conductance.txt not unique!'
-           CALL ErrorHint(60,FileN,Conductance_Coeff(i,cc_Code),notUsed,notUsedI)
-        ENDIF
-     ENDDO
-  ENDDO
-
-  !===================SUEWS_OHMCoefficients.txt===========================
-  FileN='SUEWS_OHMCoefficients.txt'
-  CALL NumberRows(FileN,SkipHeaderSiteInfo)     !Find number of rows in input file
-  nlinesOHMCoefficients=nlines
-  ALLOCATE(OHMCoefficients_Coeff(nlinesOHMCoefficients,ncolumnsOHMCoefficients))
-  !Read input file
-  OPEN(28,file=TRIM(FileInputPath)//TRIM(FileN),err=300,status='old')
-  DO SkipCounter=1,(SkipHeaderSiteInfo-1)
-     READ(28,*)   !Skip lines before header
-  ENDDO
-  READ(28,*) (HeaderOHMCoefficients_File(iv),iv=1,ncolumnsOHMCoefficients) !Get header
-
-  DO i=1,nlinesOHMCoefficients
-     READ(28,*) (OHMCoefficients_Coeff(i,iv),iv=1,ncolumnsOHMCoefficients)
-     !write(*,*) (OHMCoefficients_Coeff(i,iv),iv=1,ncolumnsOHMCoefficients)
-  ENDDO
-  CLOSE(28)
-
-  CALL InputHeaderCheck(FileN)
-
-  ! Check codes are unique
-  DO i=1,nlinesOHMCoefficients
-     DO ii=1,nlinesOHMCoefficients
-        IF(OHMCoefficients_Coeff(i,cO_Code)==OHMCoefficients_Coeff(ii,cO_Code) .AND. i/=ii) THEN
-           WRITE(*,*) 'Code',OHMCoefficients_Coeff(i,cO_Code),'in OHMCoefficients.txt not unique!'
-           CALL ErrorHint(60,FileN,OHMCoefficients_Coeff(i,cO_Code),notUsed,notUsedI)
-        ENDIF
-     ENDDO
-  ENDDO
-
-  !===================SUEWS_ESTMCoefficients.txt===========================
-  FileN='SUEWS_ESTMCoefficients.txt'
-  CALL NumberRows(FileN,SkipHeaderSiteInfo)     !Find number of rows in input file
-  nlinesESTMCoefficients=nlines
-  ALLOCATE(ESTMCoefficients_Coeff(nlinesESTMCoefficients,ncolumnsESTMCoefficients))
-  !Read input file
-  OPEN(28,file=TRIM(FileInputPath)//TRIM(FileN),err=300,status='old')
-  DO SkipCounter=1,(SkipHeaderSiteInfo-1)
-     READ(28,*)   !Skip lines before header
-  ENDDO
-  READ(28,*) (HeaderESTMCoefficients_File(iv),iv=1,ncolumnsESTMCoefficients) !Get header
-
-  DO i=1,nlinesESTMCoefficients
-     READ(28,*) (ESTMCoefficients_Coeff(i,iv),iv=1,ncolumnsESTMCoefficients)
-  ENDDO
-  CLOSE(28)
-
-  CALL InputHeaderCheck(FileN)
-
-  ! Check codes are unique
-  DO i=1,nlinesESTMCoefficients
-     DO ii=1,nlinesESTMCoefficients
-        IF(ESTMCoefficients_Coeff(i,cE_Code)==ESTMCoefficients_Coeff(ii,cE_Code) .AND. i/=ii) THEN
-           WRITE(*,*) 'Code',ESTMCoefficients_Coeff(i,cE_Code),'in ESTMCoefficients.txt not unique!'
-           CALL ErrorHint(60,FileN,ESTMCoefficients_Coeff(i,cE_Code),notUsed,notUsedI)
-        ENDIF
-     ENDDO
-  ENDDO
-
-  !================SUEWS_AnthropogenicHeat.txt============================
-  FileN='SUEWS_AnthropogenicHeat.txt'
-  CALL NumberRows(FileN,SkipHeaderSiteInfo)     !Find number of rows in input file
-  nlinesAnthropogenic=nlines
-  ALLOCATE(Anthropogenic_Coeff(nlinesAnthropogenic,ncolumnsAnthropogenic))
-  !Read input file
-  OPEN(29,file=TRIM(FileInputPath)//TRIM(FileN),err=300,status='old')
-  DO SkipCounter=1,(SkipHeaderSiteInfo-1)
-     READ(29,*)   !Skip lines before header
-  ENDDO
-  READ(29,*) (HeaderAnthropogenic_File(iv),iv=1,ncolumnsAnthropogenic) !Get header
-
-  DO i=1,nlinesAnthropogenic
-     READ(29,*) (Anthropogenic_Coeff(i,iv),iv=1,ncolumnsAnthropogenic)
-     !write(*,*) (Anthropogenic_Coeff(i,iv),iv=1,ncolumnsAnthropogenic)
-  ENDDO
-  CLOSE(29)
-
-  CALL InputHeaderCheck(FileN)
-
-  ! Check codes are unique
-  DO i=1,nlinesAnthropogenic
-     DO ii=1,nlinesAnthropogenic
-        IF(Anthropogenic_Coeff(i,cA_Code)==Anthropogenic_Coeff(ii,cA_Code) .AND. i/=ii) THEN
-           WRITE(*,*) 'Code',Anthropogenic_Coeff(i,cA_Code),'in AnthropogenicHeat.txt not unique!'
-           CALL ErrorHint(60,FileN,Anthropogenic_Coeff(i,cA_Code),notUsed,notUsedI)
-        ENDIF
-     ENDDO
-  ENDDO
-
-  !================SUEWS_Irrigation.txt===================================
-  FileN='SUEWS_Irrigation.txt'
-  CALL NumberRows(FileN,SkipHeaderSiteInfo)     !Find number of rows in input file
-  nlinesIrrigation=nlines
-  ALLOCATE(Irrigation_Coeff(nlinesIrrigation,ncolumnsIrrigation))
-  !Read input file
-  OPEN(30,file=TRIM(FileInputPath)//TRIM(FileN),err=300,status='old')
-  DO SkipCounter=1,(SkipHeaderSiteInfo-1)
-     READ(30,*)   !Skip lines before header
-  ENDDO
-  READ(30,*) (HeaderIrrigation_File(iv),iv=1,ncolumnsIrrigation) !Get header
-
-  DO i=1,nlinesIrrigation
-     READ(30,*) (Irrigation_Coeff(i,iv),iv=1,ncolumnsIrrigation)
-     !write(*,*) (Irrigation_Coeff(i,iv),iv=1,ncolumnsIrrigation)
-  ENDDO
-  CLOSE(30)
-
-  CALL InputHeaderCheck(FileN)
-
-  ! Check codes are unique
-  DO i=1,nlinesIrrigation
-     DO ii=1,nlinesIrrigation
-        IF(Irrigation_Coeff(i,cIr_Code)==Irrigation_Coeff(ii,cIr_Code) .AND. i/=ii) THEN
-           WRITE(*,*) 'Code',Irrigation_Coeff(i,cIr_Code),'in Irrigation.txt not unique!'
-           CALL ErrorHint(60,FileN,Irrigation_Coeff(i,cIr_Code),notUsed,notUsedI)
-        ENDIF
-     ENDDO
-  ENDDO
-
-  !================SUEWS_Profiles.txt=====================================
-  FileN='SUEWS_Profiles.txt'
-  CALL NumberRows(FileN,SkipHeaderSiteInfo)     !Find number of rows in input file
-  nlinesProfiles=nlines
-  ALLOCATE(Profiles_Coeff(nlinesProfiles,ncolumnsProfiles))
-  !Read input file
-  OPEN(31,file=TRIM(FileInputPath)//TRIM(FileN),err=300,status='old')
-  DO SkipCounter=1,(SkipHeaderSiteInfo-1)
-     READ(31,*)   !Skip lines before header
-  ENDDO
-  READ(31,*) (HeaderProfiles_File(iv),iv=1,ncolumnsProfiles) !Get header
-
-  DO i=1,nlinesProfiles
-     READ(31,*) (Profiles_Coeff(i,iv),iv=1,ncolumnsProfiles)
-     !write(*,*) (Profiles_Coeff(i,iv),iv=1,ncolumnsProfiles)
-  ENDDO
-  CLOSE(31)
-
-  CALL InputHeaderCheck(FileN)
-
-  ! Check codes are unique
-  DO i=1,nlinesProfiles
-     DO ii=1,nlinesProfiles
-        IF(Profiles_Coeff(i,cPr_Code)==Profiles_Coeff(ii,cPr_Code) .AND. i/=ii) THEN
-           WRITE(*,*) 'Code',Profiles_Coeff(i,cPr_Code),'in Profiles.txt not unique!'
-           CALL ErrorHint(60,FileN,Profiles_Coeff(i,cPr_Code),notUsed,notUsedI)
-        ENDIF
-     ENDDO
-  ENDDO
-
-  !================SUEWS_WithinGridWaterDist.txt===========================
-  FileN='SUEWS_WithinGridWaterDist.txt'
-  CALL NumberRows(FileN,SkipHeaderSiteInfo)     !Find number of rows in input file
-  nlinesWGWaterDist=nlines
-  ALLOCATE(WGWaterDist_Coeff(nlinesWGWaterDist,ncolumnsWGWaterDist))
-  !Read input file
-  OPEN(32,file=TRIM(FileInputPath)//TRIM(FileN),err=300,status='old')
-  DO SkipCounter=1,(SkipHeaderSiteInfo-1)
-     READ(32,*)    !Skip lines before header
-  ENDDO
-  READ(32,*) (HeaderWGWaterDist_File(iv),iv=1,ncolumnsWGWaterDist) !Get header
-
-  DO i=1,nlinesWGWaterDist
-     READ(32,*) (WGWaterDist_Coeff(i,iv),iv=1,ncolumnsWGWaterDist)
-     !write(*,*) (WGWaterDist_Coeff(i,iv),iv=1,ncolumnsWGWaterDist)
-  ENDDO
-  CLOSE(32)
-
-  CALL InputHeaderCheck(FileN)
-
-  ! Check codes are unique
-  DO i=1,nlinesWGWaterDist
-     DO ii=1,nlinesWGWaterDist
-        IF(WGWaterDist_Coeff(i,cWG_Code)==WGWaterDist_Coeff(ii,cWG_Code) .AND. i/=ii) THEN
-           WRITE(*,*) 'Code',WGWaterDist_Coeff(i,cWG_Code),'in WithinGridWaterDist.txt not unique!'
-           CALL ErrorHint(60,FileN,WGWaterDist_Coeff(i,cWG_Code),notUsed,notUsedI)
-        ENDIF
-     ENDDO
-  ENDDO
-
-  !================SUEWS_BiogenCO2.txt============================
-  FileN='SUEWS_BiogenCO2.txt'
-  CALL NumberRows(FileN,SkipHeaderSiteInfo)     !Find number of rows in input file
-  nlinesBiogen=nlines
-  ALLOCATE(Biogen_Coeff(nlinesBiogen,ncolumnsBiogen))
-  !Read input file
-  OPEN(33,file=TRIM(FileInputPath)//TRIM(FileN),err=300,status='old')
-  DO SkipCounter=1,(SkipHeaderSiteInfo-1)
-     READ(33,*)   !Skip lines before header
-  ENDDO
-  READ(33,*) (HeaderBiogen_File(iv),iv=1,ncolumnsBiogen) !Get header
-
-  DO i=1,nlinesBiogen
-     READ(33,*) (Biogen_Coeff(i,iv),iv=1,ncolumnsBiogen)
-     !write(*,*) (Biogen_Coeff(i,iv),iv=1,ncolumnsBiogen)
-  ENDDO
-  CLOSE(33)
-
-  CALL InputHeaderCheck(FileN)
-
-  ! Check codes are unique
-  DO i=1,nlinesBiogen
-     DO ii=1,nlinesBiogen
-        IF(Biogen_Coeff(i,cB_Code)==Biogen_Coeff(ii,cB_Code) .AND. i/=ii) THEN
-           WRITE(*,*) 'Code',Biogen_Coeff(i,cB_Code),'in BiogenCO2.txt not unique!'
-           CALL ErrorHint(60,FileN,Biogen_Coeff(i,cB_Code),notUsed,notUsedI)
-        ENDIF
-     ENDDO
-  ENDDO
+  DO iFile = 1, nFile
+     CALL NumberRows(FileNames(iFile), SkipHeaderSiteInfo)     !Find number of rows in input file
+     SELECT CASE ( iFile )
+     CASE ( 1 )
+        nlinesNonVeg=nlines
+        ALLOCATE(NonVeg_Coeff(nlinesNonVeg, ncolumnsNonVeg))
+        CALL ReadCoeff(FileNames(iFile), nlinesNonVeg, ncolumnsNonVeg, HeaderNonVeg_File, NonVeg_Coeff)
+     CASE ( 2 )
+        nlinesVeg=nlines
+        ALLOCATE(Veg_Coeff(nlinesVeg, ncolumnsVeg))
+        CALL ReadCoeff(FileNames(iFile), nlinesVeg, ncolumnsVeg, HeaderVeg_File, Veg_Coeff)
+     CASE ( 3 )
+        nlinesWater=nlines
+        ALLOCATE(Water_Coeff(nlinesWater, ncolumnsWater))
+        CALL ReadCoeff(FileNames(iFile), nlinesWater, ncolumnsWater, HeaderWater_File, Water_Coeff)
+     CASE ( 4 )
+        nlinesSnow=nlines
+        ALLOCATE(Snow_Coeff(nlinesSnow, ncolumnsSnow))
+        CALL ReadCoeff(FileNames(iFile), nlinesSnow, ncolumnsSnow, HeaderSnow_File, Snow_Coeff)
+     CASE ( 5 )
+        nlinesSoil=nlines
+        ALLOCATE(Soil_Coeff(nlinesSoil, ncolumnsSoil))
+        CALL ReadCoeff(FileNames(iFile), nlinesSoil, ncolumnsSoil, HeaderSoil_File, Soil_Coeff)
+     CASE ( 6 )
+        nlinesConductance=nlines
+        ALLOCATE(Conductance_Coeff(nlinesConductance, ncolumnsConductance))
+        CALL ReadCoeff(FileNames(iFile), nlinesConductance, ncolumnsConductance, HeaderCond_File, Conductance_Coeff)
+     CASE ( 7 )
+        nlinesOHMCoefficients=nlines
+        ALLOCATE(OHMCoefficients_Coeff(nlinesOHMCoefficients, ncolumnsOHMCoefficients))
+        CALL ReadCoeff(FileNames(iFile), nlinesOHMCoefficients, ncolumnsOHMCoefficients, HeaderOHMCoefficients_File, &
+                       OHMCoefficients_Coeff)
+     CASE ( 8 )
+        nlinesESTMCoefficients=nlines
+        ALLOCATE(ESTMCoefficients_Coeff(nlinesESTMCoefficients, ncolumnsESTMCoefficients))
+        CALL ReadCoeff(FileNames(iFile), nlinesESTMCoefficients, ncolumnsESTMCoefficients, HeaderESTMCoefficients_File, &
+                       ESTMCoefficients_Coeff)
+     CASE ( 9 )
+        nlinesAnthropogenic=nlines
+        ALLOCATE(Anthropogenic_Coeff(nlinesAnthropogenic, ncolumnsAnthropogenic))
+        CALL ReadCoeff(FileNames(iFile), nlinesAnthropogenic, ncolumnsAnthropogenic, HeaderAnthropogenic_File, Anthropogenic_Coeff)
+     CASE ( 10 )
+        nlinesIrrigation=nlines
+        ALLOCATE(Irrigation_Coeff(nlinesIrrigation, ncolumnsIrrigation))
+        CALL ReadCoeff(FileNames(iFile), nlinesIrrigation, ncolumnsIrrigation, HeaderIrrigation_File, Irrigation_Coeff)
+     CASE ( 11 )
+        nlinesProfiles=nlines
+        ALLOCATE(Profiles_Coeff(nlinesProfiles, ncolumnsProfiles))
+        CALL ReadCoeff(FileNames(iFile), nlinesProfiles, ncolumnsProfiles, HeaderProfiles_File, Profiles_Coeff)
+     CASE ( 12 )
+        nlinesWGWaterDist=nlines
+        ALLOCATE(WGWaterDist_Coeff(nlinesWGWaterDist, ncolumnsWGWaterDist))
+        CALL ReadCoeff(FileNames(iFile), nlinesWGWaterDist, ncolumnsWGWaterDist, HeaderWGWaterDist_File, WGWaterDist_Coeff)
+     CASE ( 13 )
+        nlinesBiogen=nlines
+        ALLOCATE(Biogen_Coeff(nlinesBiogen, ncolumnsBiogen))
+        CALL ReadCoeff(FileNames(iFile), nlinesBiogen, ncolumnsBiogen, HeaderBiogen_File, Biogen_Coeff)
+     END SELECT
+  END DO
 
   !=======================================================================
   !=======================================================================
@@ -659,7 +339,56 @@ SUBROUTINE OverallRunControl
 END SUBROUTINE OverallRunControl
 !=========================================================================
 
+SUBROUTINE ReadCoeff(FileName, nlines, ncolumns, HeaderFile, Coeff)
 
+  USE data_in
+  USE defaultNotUsed
+
+  IMPLICIT NONE
+  !----------------------------------------------------------------------
+  ! dummy arguments
+  !----------------------------------------------------------------------
+  CHARACTER(len=*), INTENT(in)  :: FileName
+  INTEGER, INTENT(in)           :: nlines, ncolumns
+  CHARACTER(len=*), INTENT(out) :: HeaderFile(ncolumns)
+  REAL(KIND(1d0)), INTENT(out)  :: Coeff(nlines, ncolumns)
+
+  !----------------------------------------------------------------------
+  ! local variables
+  !----------------------------------------------------------------------
+  INTEGER ::  SkipCounter, iv, iline, i, ii
+
+  !Read input file
+  OPEN(22, file=TRIM(FileInputPath)//TRIM(FileName), err=301, status='old')
+
+  DO SkipCounter = 1, SkipHeaderSiteInfo-1
+     READ(22, *)   !Skip lines before header
+  ENDDO
+  READ(22, *) (HeaderFile(iv), iv = 1, ncolumns) !Get header
+
+  DO i = 1, nlines
+     READ(22, *) (Coeff(i,iv), iv = 1, ncolumns)
+     !write(*,*) (NonVeg_Coeff(i,iv),iv=1,ncolumnsNonVeg)
+  ENDDO
+  CLOSE(22)
+
+  CALL InputHeaderCheck(FileName)
+
+  ! Check codes are unique
+  DO i = 1, nlines
+     DO ii = i+1, nlines
+        IF(Coeff(i, 1) == Coeff(ii, 1) .AND. i /= ii) THEN
+           WRITE(*, *) 'Code', Coeff(i, 1), 'in ', trim(FileName), ' not unique!'
+           CALL ErrorHint(60, FileName, Coeff(i, 1), notUsed, notUsedI)
+        ENDIF
+     ENDDO
+  ENDDO
+
+  RETURN
+
+301 CALL ErrorHint(48, TRIM(FileName), notUsed, notUsed, notUsedI)
+
+END SUBROUTINE ReadCoeff
 
 !=========================================================================
 !This subroutine finds the number of rows in each input file

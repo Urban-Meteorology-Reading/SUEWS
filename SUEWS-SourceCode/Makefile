@@ -79,7 +79,6 @@ MODULES =	SUEWS_phys_NARP.o \
 					SUEWS_phys_DailyState.o \
 					SUEWS_phys_ESTM.o \
 					SUEWS_phys_AnOHM.o \
-					SUEWS_phys_OHM.o \
 					SUEWS_ctrl_Output.o \
 					SUEWS_ctrl_Driver.o
 
@@ -94,7 +93,8 @@ OTHERS =  SUEWS_ctrl_Translate.o \
 					SUEWS_phys_BiogenCO2.o
 
 # modules under rapid development
-TEST =  SUEWS_ctrl_Calculations.o
+TEST =  SUEWS_phys_OHM.o \
+		SUEWS_ctrl_Calculations.o
 
 
 # some test code

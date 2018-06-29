@@ -153,12 +153,12 @@ CONTAINS
 
     ! --------------------------------------------------------------------------------
     ! ------------- Key to daily arrays ----------------------------------------------
-    ! HDD(,1) ---- Heating         [degC] ! GDD(,1) ---- Growing      [degC]
-    ! HDD(,2) ---- Cooling         [degC] ! GDD(,2) ---- Senescence   [degC]
-    ! HDD(,3) ---- Daily mean temp     [degC] ! GDD(,3) ---- Daily min temp   [degC]
-    ! HDD(,4) ---- 5-day running mean temp [degC] ! GDD(,4) ---- Daily max temp   [degC]
-    ! HDD(,5) ---- Daily precip total  [mm]   ! GDD(,5) ---- Daytime hours    [h]
-    ! HDD(,6) ---- Days since rain     [d]
+    ! HDD(,1) ---- Heating [degC]                 ! GDD(,1) ---- Growing [degC]
+    ! HDD(,2) ---- Cooling [degC]                 ! GDD(,2) ---- Senescence [degC]
+    ! HDD(,3) ---- Daily mean temp [degC]         ! GDD(,3) ---- Daily min temp [degC]
+    ! HDD(,4) ---- 5-day running mean temp [degC] ! GDD(,4) ---- Daily max temp [degC]
+    ! HDD(,5) ---- Daily precip total [mm]        ! GDD(,5) ---- Daytime hours [h]
+    ! HDD(,6) ---- Days since rain [d]
     !
     ! LAI(,1:3) -- LAI for each veg surface [m2 m-2]
     !

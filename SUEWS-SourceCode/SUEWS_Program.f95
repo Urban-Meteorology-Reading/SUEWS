@@ -278,14 +278,14 @@ PROGRAM SUEWS_Program
         ALLOCATE(qn1_S_store_grid(NSH))
         ALLOCATE(qn1_S_av_store(2*NSH+1,NumberOfGrids))
         ALLOCATE(qn1_S_av_store_grid(2*NSH+1))
-        ALLOCATE(qn1_s_av(NumberOfGrids))
-        ALLOCATE(dqnsdt(NumberOfGrids))
+        ALLOCATE(qn1_s_av_grids(NumberOfGrids))
+        ALLOCATE(dqnsdt_grids(NumberOfGrids))
         qn1_S_store(:,:) = NAN
         qn1_S_av_store(:,:) = NaN
         qn1_S_store_grid(:) = NAN
         qn1_S_av_store_grid(:) = NaN
-        qn1_s_av=0 ! Initialise to 0
-        dqnsdt=0 ! Initialise to 0
+        qn1_s_av_grids=0 ! Initialise to 0
+        dqnsdt_grids=0 ! Initialise to 0
      ENDIF
      IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
         ALLOCATE(dataOutESTM(ReadlinesMetdata,32,NumberOfGrids)) !ESTM output
@@ -303,16 +303,16 @@ PROGRAM SUEWS_Program
      ALLOCATE(qn1_av_store_grid(2*NSH+1))
      ALLOCATE(qhforCBL(NumberOfGrids))
      ALLOCATE(qeforCBL(NumberOfGrids))
-     ALLOCATE(qn1_av(NumberOfGrids))
-     ALLOCATE(dqndt(NumberOfGrids))
+     ALLOCATE(qn1_av_grids(NumberOfGrids))
+     ALLOCATE(dqndt_grids(NumberOfGrids))
      !! QUESTION: Add snow clearing (?)
 
      qn1_store(:,:) = NAN ! Initialise to -999
      qn1_av_store(:,:) = NAN ! Initialise to -999
      qn1_store_grid(:)=NAN
      qn1_av_store_grid(:)=NAN
-     qn1_av=0 ! Initialise to 0
-     dqndt=0 ! Initialise to 0
+     qn1_av_grids=0 ! Initialise to 0
+     dqndt_grids=0 ! Initialise to 0
 
      qhforCBL(:) = NAN
      qeforCBL(:) = NAN
@@ -696,8 +696,8 @@ PROGRAM SUEWS_Program
         DEALLOCATE(qn1_S_av_store)
         DEALLOCATE(qn1_S_store_grid)
         DEALLOCATE(qn1_S_av_store_grid)
-        DEALLOCATE(qn1_s_av)
-        DEALLOCATE(dqnsdt)
+        DEALLOCATE(qn1_s_av_grids)
+        DEALLOCATE(dqnsdt_grids)
      ENDIF
      IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
         DEALLOCATE(dataOutESTM) !ESTM output
@@ -719,8 +719,8 @@ PROGRAM SUEWS_Program
      DEALLOCATE(qn1_av_store_grid)
      DEALLOCATE(qhforCBL)
      DEALLOCATE(qeforCBL)
-     DEALLOCATE(qn1_av)
-     DEALLOCATE(dqndt)
+     DEALLOCATE(qn1_av_grids)
+     DEALLOCATE(dqndt_grids)
 
 
      ! ----------------------------------------------------------------------

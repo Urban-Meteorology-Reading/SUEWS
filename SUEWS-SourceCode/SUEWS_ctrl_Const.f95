@@ -21,207 +21,206 @@ MODULE allocateArray
 
   ! ---- Set parameters for reading in data ------------------------------------------------------
 #ifdef nc
-  INTEGER, PARAMETER:: MaxNumberOfGrids=90000   !Max no. grids   !TS changed to 90000 for large-scale simulation based on netCDF IO
+  INTEGER, PARAMETER :: MaxNumberOfGrids=90000   !Max no. grids   !TS changed to 90000 for large-scale simulation based on netCDF IO
 #else
-  INTEGER, PARAMETER:: MaxNumberOfGrids=10000   !Max no. grids   !HCW changed to 2000 from 10000 so prog can run on windows (2GB lim)
+  INTEGER, PARAMETER :: MaxNumberOfGrids=10000   !Max no. grids   !HCW changed to 2000 from 10000 so prog can run on windows (2GB lim)
 #endif
-  INTEGER, PARAMETER:: MaxLinesMet=8640        !Max no. lines to read in one go (for all grids, ie MaxLinesMet/NumberOfGrids each)
+  INTEGER, PARAMETER :: MaxLinesMet=8640        !Max no. lines to read in one go (for all grids, ie MaxLinesMet/NumberOfGrids each)
 
   ! ---- Set number of columns in input files ----------------------------------------------------
-  INTEGER, PARAMETER:: ncolumnsSiteSelect=101       !SUEWS_SiteSelect.txt
-  INTEGER, PARAMETER:: ncolumnsNonVeg=24            !SUEWS_NonVeg.txt
-  INTEGER, PARAMETER:: ncolumnsVeg=38               !SUEWS_Veg.txt
-  INTEGER, PARAMETER:: ncolumnsWater=22             !SUEWS_Water.txt
-  INTEGER, PARAMETER:: ncolumnsSnow=25              !SUEWS_Snow.txt
-  INTEGER, PARAMETER:: ncolumnsSoil=9               !SUEWS_Soil.txt
-  INTEGER, PARAMETER:: ncolumnsConductance=13       !SUEWS_Conductance.txt
-  INTEGER, PARAMETER:: ncolumnsOHMCoefficients=4    !SUEWS_OHMCoefficients.txt
-  INTEGER, PARAMETER:: ncolumnsESTMCoefficients=52  !SUEWS_ESTMCoefficients.txt ! S.O. 04 Feb 2016
-  INTEGER, PARAMETER:: ncolumnsAnthropogenic=34     !SUEWS_AnthropogenicHeat.txt
-  INTEGER, PARAMETER:: ncolumnsIrrigation=25        !SUEWS_Irrigation.txt
-  INTEGER, PARAMETER:: ncolumnsProfiles=25          !SUEWS_Profiles.txt
-  INTEGER, PARAMETER:: ncolumnsWGWaterDist=10       !SUEWS_WithinGridWaterDist.txt
-  INTEGER, PARAMETER:: ncolumnsBiogen=9             !SUEWS_BiogenCO2.txt
-  INTEGER, PARAMETER:: ncolumnsMetForcingData=24    !Meteorological forcing file (_data.txt)
-  INTEGER, PARAMETER:: ncolsESTMdata=13             !ESTM input file (_ESTM_Ts_data.txt))
-
+  INTEGER, PARAMETER :: ncolumnsSiteSelect=101       !SUEWS_SiteSelect.txt
+  INTEGER, PARAMETER :: ncolumnsNonVeg=24            !SUEWS_NonVeg.txt
+  INTEGER, PARAMETER :: ncolumnsVeg=38               !SUEWS_Veg.txt
+  INTEGER, PARAMETER :: ncolumnsWater=22             !SUEWS_Water.txt
+  INTEGER, PARAMETER :: ncolumnsSnow=25              !SUEWS_Snow.txt
+  INTEGER, PARAMETER :: ncolumnsSoil=9               !SUEWS_Soil.txt
+  INTEGER, PARAMETER :: ncolumnsConductance=13       !SUEWS_Conductance.txt
+  INTEGER, PARAMETER :: ncolumnsOHMCoefficients=4    !SUEWS_OHMCoefficients.txt
+  INTEGER, PARAMETER :: ncolumnsESTMCoefficients=52  !SUEWS_ESTMCoefficients.txt ! S.O. 04 Feb 2016
+  INTEGER, PARAMETER :: ncolumnsAnthropogenic=34     !SUEWS_AnthropogenicHeat.txt
+  INTEGER, PARAMETER :: ncolumnsIrrigation=25        !SUEWS_Irrigation.txt
+  INTEGER, PARAMETER :: ncolumnsProfiles=25          !SUEWS_Profiles.txt
+  INTEGER, PARAMETER :: ncolumnsWGWaterDist=10       !SUEWS_WithinGridWaterDist.txt
+  INTEGER, PARAMETER :: ncolumnsBiogen=9             !SUEWS_BiogenCO2.txt
+  INTEGER, PARAMETER :: ncolumnsMetForcingData=24    !Meteorological forcing file (_data.txt)
+  INTEGER, PARAMETER :: ncolsESTMdata=13             !ESTM input file (_ESTM_Ts_data.txt))
 
   ! ---- Set number of columns in output files ---------------------------------------------------
-  INTEGER, PARAMETER:: ncolumnsDataOutSUEWS=84,&    !Main output file (_5.txt). dataOutSUEWS created in SUEWS_Calculations.f95
-       ncolumnsDataOutSnow=102,&
-       ncolumnsdataOutSOL=31,&
-       ncolumnsdataOutBL=22,&
-       ncolumnsDataOutESTM=32,&
-       ncolumnsDataOutDailyState=46
+  INTEGER, PARAMETER :: ncolumnsDataOutSUEWS=84    !Main output file (_5.txt). dataOutSUEWS created in SUEWS_Calculations.f95
+  INTEGER, PARAMETER :: ncolumnsDataOutSnow=102
+  INTEGER, PARAMETER :: ncolumnsdataOutSOL=31
+  INTEGER, PARAMETER :: ncolumnsdataOutBL=22
+  INTEGER, PARAMETER :: ncolumnsDataOutESTM=32
+  INTEGER, PARAMETER :: ncolumnsDataOutDailyState=46
 
   ! ---- Define input file headers ---------------------------------------------------------------
-  CHARACTER(len=20),DIMENSION(ncolumnsSiteSelect)::        HeaderSiteSelect_File          !Header for SiteSelect.txt
-  CHARACTER(len=20),DIMENSION(ncolumnsNonVeg)::            HeaderNonVeg_File              !Header for the nonveg surface
-  CHARACTER(len=20),DIMENSION(ncolumnsNonVeg)::            HeaderNonVeg_Reqd              !Expected header for the nonveg surface
-  CHARACTER(len=20),DIMENSION(ncolumnsVeg)::               HeaderVeg_File                 !Header for the veg surface
-  CHARACTER(len=20),DIMENSION(ncolumnsVeg)::               HeaderVeg_Reqd                 !Expected header for the veg surface
-  CHARACTER(len=20),DIMENSION(ncolumnsWater)::             HeaderWater_File               !Header for water surface
-  CHARACTER(len=20),DIMENSION(ncolumnsWater)::             HeaderWater_Reqd               !Expected header for water surface
-  CHARACTER(len=20),DIMENSION(ncolumnsSnow)::              HeaderSnow_File                !Header for Snow surface
-  CHARACTER(len=20),DIMENSION(ncolumnsSnow)::              HeaderSnow_Reqd                !Expected header for Snow surface
-  CHARACTER(len=20),DIMENSION(ncolumnsSoil)::              HeaderSoil_File                !Header for soils
-  CHARACTER(len=20),DIMENSION(ncolumnsSoil)::              HeaderSoil_Reqd                !Expected header for soils
-  CHARACTER(len=20),DIMENSION(ncolumnsConductance)::       HeaderCond_File                !Header for conductances
-  CHARACTER(len=20),DIMENSION(ncolumnsConductance)::       HeaderCond_Reqd                !Expected header for conductances
-  CHARACTER(len=20),DIMENSION(ncolumnsOHMCoefficients)::   HeaderOHMCoefficients_File     !Header for soils
-  CHARACTER(len=20),DIMENSION(ncolumnsOHMCoefficients)::   HeaderOHMCoefficients_Reqd     !Expected header for soils
-  CHARACTER(len=20),DIMENSION(ncolumnsESTMCoefficients)::  HeaderESTMCoefficients_File    !Header for soils            ! S.O. 04 Feb 2016
-  CHARACTER(len=20),DIMENSION(ncolumnsESTMCoefficients)::  HeaderESTMCoefficients_Reqd    !Expected header for soils   ! S.O. 04 Feb 2016
-  CHARACTER(len=20),DIMENSION(ncolumnsAnthropogenic)::     HeaderAnthropogenic_File       !Header for QF
-  CHARACTER(len=20),DIMENSION(ncolumnsAnthropogenic)::     HeaderAnthropogenic_Reqd       !Expected header for QF
-  CHARACTER(len=20),DIMENSION(ncolumnsIrrigation)::        HeaderIrrigation_File          !Header for Irrigation
-  CHARACTER(len=20),DIMENSION(ncolumnsIrrigation)::        HeaderIrrigation_Reqd          !Expected header for Irrigation
-  CHARACTER(len=20),DIMENSION(ncolumnsProfiles)::          HeaderProfiles_File            !Header for Profiles
-  CHARACTER(len=20),DIMENSION(ncolumnsProfiles)::          HeaderProfiles_Reqd            !Expected header for Profiles
-  CHARACTER(len=20),DIMENSION(ncolumnsWGWaterDist)::       HeaderWGWaterDist_File         !Header for Profiles
-  CHARACTER(len=20),DIMENSION(ncolumnsWGWaterDist)::       HeaderWGWaterDist_Reqd         !Expected header for Profiles
-  CHARACTER(len=20),DIMENSION(ncolumnsBiogen)::            HeaderBiogen_File              !Header for Biogen
-  CHARACTER(len=20),DIMENSION(ncolumnsBiogen)::            HeaderBiogen_Reqd              !Expected header for Biogen
+  CHARACTER(len=20), DIMENSION(ncolumnsSiteSelect)       :: HeaderSiteSelect_File          !Header for SiteSelect.txt
+  CHARACTER(len=20), DIMENSION(ncolumnsNonVeg)           :: HeaderNonVeg_File              !Header for the nonveg surface
+  CHARACTER(len=20), DIMENSION(ncolumnsNonVeg)           :: HeaderNonVeg_Reqd              !Expected header for the nonveg surface
+  CHARACTER(len=20), DIMENSION(ncolumnsVeg)              :: HeaderVeg_File                 !Header for the veg surface
+  CHARACTER(len=20), DIMENSION(ncolumnsVeg)              :: HeaderVeg_Reqd                 !Expected header for the veg surface
+  CHARACTER(len=20), DIMENSION(ncolumnsWater)            :: HeaderWater_File               !Header for water surface
+  CHARACTER(len=20), DIMENSION(ncolumnsWater)            :: HeaderWater_Reqd               !Expected header for water surface
+  CHARACTER(len=20), DIMENSION(ncolumnsSnow)             :: HeaderSnow_File                !Header for Snow surface
+  CHARACTER(len=20), DIMENSION(ncolumnsSnow)             :: HeaderSnow_Reqd                !Expected header for Snow surface
+  CHARACTER(len=20), DIMENSION(ncolumnsSoil)             :: HeaderSoil_File                !Header for soils
+  CHARACTER(len=20), DIMENSION(ncolumnsSoil)             :: HeaderSoil_Reqd                !Expected header for soils
+  CHARACTER(len=20), DIMENSION(ncolumnsConductance)      :: HeaderCond_File                !Header for conductances
+  CHARACTER(len=20), DIMENSION(ncolumnsConductance)      :: HeaderCond_Reqd                !Expected header for conductances
+  CHARACTER(len=20), DIMENSION(ncolumnsOHMCoefficients)  :: HeaderOHMCoefficients_File     !Header for soils
+  CHARACTER(len=20), DIMENSION(ncolumnsOHMCoefficients)  :: HeaderOHMCoefficients_Reqd     !Expected header for soils
+  CHARACTER(len=20), DIMENSION(ncolumnsESTMCoefficients) :: HeaderESTMCoefficients_File    !Header for soils            ! S.O. 04 Feb 2016
+  CHARACTER(len=20), DIMENSION(ncolumnsESTMCoefficients) :: HeaderESTMCoefficients_Reqd    !Expected header for soils   ! S.O. 04 Feb 2016
+  CHARACTER(len=20), DIMENSION(ncolumnsAnthropogenic)    :: HeaderAnthropogenic_File       !Header for QF
+  CHARACTER(len=20), DIMENSION(ncolumnsAnthropogenic)    :: HeaderAnthropogenic_Reqd       !Expected header for QF
+  CHARACTER(len=20), DIMENSION(ncolumnsIrrigation)       :: HeaderIrrigation_File          !Header for Irrigation
+  CHARACTER(len=20), DIMENSION(ncolumnsIrrigation)       :: HeaderIrrigation_Reqd          !Expected header for Irrigation
+  CHARACTER(len=20), DIMENSION(ncolumnsProfiles)         :: HeaderProfiles_File            !Header for Profiles
+  CHARACTER(len=20), DIMENSION(ncolumnsProfiles)         :: HeaderProfiles_Reqd            !Expected header for Profiles
+  CHARACTER(len=20), DIMENSION(ncolumnsWGWaterDist)      :: HeaderWGWaterDist_File         !Header for Profiles
+  CHARACTER(len=20), DIMENSION(ncolumnsWGWaterDist)      :: HeaderWGWaterDist_Reqd         !Expected header for Profiles
+  CHARACTER(len=20), DIMENSION(ncolumnsBiogen)           :: HeaderBiogen_File              !Header for Biogen
+  CHARACTER(len=20), DIMENSION(ncolumnsBiogen)           :: HeaderBiogen_Reqd              !Expected header for Biogen
 
   ! ---- Define output file headers --------------------------------------------------------------
-  INTEGER,DIMENSION(:),ALLOCATABLE:: UseColumnsDataOut       !Column numbers used to select output variables
+  INTEGER, DIMENSION(:), ALLOCATABLE :: UseColumnsDataOut       !Column numbers used to select output variables
   ! If change lengths in SUEWS_Output.f95, also need to adjust here
-  CHARACTER(len=14*ncolumnsDataOutSUEWS):: HeaderUse,FormatUse,HeaderUseNoSep,FormatUseNoSep    !Header and format in correct form
-  CHARACTER(len=52*ncolumnsDataOutSUEWS):: LongNmUse
-  CHARACTER(len=14*ncolumnsDataOutSUEWS):: UnitsUse
-  CHARACTER(len=3*ncolumnsDataOutSUEWS):: AggregUse
-  CHARACTER(len=4*ncolumnsDataOutSUEWS):: ColNosUse
+  CHARACTER(len=14*ncolumnsDataOutSUEWS) :: HeaderUse,FormatUse,HeaderUseNoSep,FormatUseNoSep    !Header and format in correct form
+  CHARACTER(len=52*ncolumnsDataOutSUEWS) :: LongNmUse
+  CHARACTER(len=14*ncolumnsDataOutSUEWS) :: UnitsUse
+  CHARACTER(len=3*ncolumnsDataOutSUEWS)  :: AggregUse
+  CHARACTER(len=4*ncolumnsDataOutSUEWS)  :: ColNosUse
 
   ! ---- Define arrays to store input information from SiteInfo spreadsheet ----------------------
-  REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::SiteSelect                !Stores info from SiteSelect.txt
-  REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::NonVeg_Coeff              !Coefficients for the nonveg surfaces
-  REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::Veg_Coeff                 !Coefficients for the veg surfaces
-  REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::Water_Coeff               !Coefficients for the water surface
-  REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::Snow_Coeff                !Coefficients for snow
-  REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::Soil_Coeff                !Coefficients for soil
-  REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::Conductance_Coeff         !Coefficients for conductances
-  REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::OHMCoefficients_Coeff     !Coefficients for OHMCoefficients
-  REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::ESTMCoefficients_Coeff    !Coefficients for ESTMCoefficients   ! S.O. 04 Feb 2016
-  REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::Anthropogenic_Coeff       !Coefficients for AnthropogenicEmissions
-  REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::Irrigation_Coeff          !Coefficients for Irrigation
-  REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::Profiles_Coeff            !Coefficients for Profiles
-  REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::WGWaterDist_Coeff         !Coefficients for WithinGridWaterDist
-  REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE::Biogen_Coeff              !Coefficients for BiogenCO2
+  REAL(KIND(1d0)), DIMENSION(:,:), ALLOCATABLE :: SiteSelect                !Stores info from SiteSelect.txt
+  REAL(KIND(1d0)), DIMENSION(:,:), ALLOCATABLE :: NonVeg_Coeff              !Coefficients for the nonveg surfaces
+  REAL(KIND(1d0)), DIMENSION(:,:), ALLOCATABLE :: Veg_Coeff                 !Coefficients for the veg surfaces
+  REAL(KIND(1d0)), DIMENSION(:,:), ALLOCATABLE :: Water_Coeff               !Coefficients for the water surface
+  REAL(KIND(1d0)), DIMENSION(:,:), ALLOCATABLE :: Snow_Coeff                !Coefficients for snow
+  REAL(KIND(1d0)), DIMENSION(:,:), ALLOCATABLE :: Soil_Coeff                !Coefficients for soil
+  REAL(KIND(1d0)), DIMENSION(:,:), ALLOCATABLE :: Conductance_Coeff         !Coefficients for conductances
+  REAL(KIND(1d0)), DIMENSION(:,:), ALLOCATABLE :: OHMCoefficients_Coeff     !Coefficients for OHMCoefficients
+  REAL(KIND(1d0)), DIMENSION(:,:), ALLOCATABLE :: ESTMCoefficients_Coeff    !Coefficients for ESTMCoefficients   ! S.O. 04 Feb 2016
+  REAL(KIND(1d0)), DIMENSION(:,:), ALLOCATABLE :: Anthropogenic_Coeff       !Coefficients for AnthropogenicEmissions
+  REAL(KIND(1d0)), DIMENSION(:,:), ALLOCATABLE :: Irrigation_Coeff          !Coefficients for Irrigation
+  REAL(KIND(1d0)), DIMENSION(:,:), ALLOCATABLE :: Profiles_Coeff            !Coefficients for Profiles
+  REAL(KIND(1d0)), DIMENSION(:,:), ALLOCATABLE :: WGWaterDist_Coeff         !Coefficients for WithinGridWaterDist
+  REAL(KIND(1d0)), DIMENSION(:,:), ALLOCATABLE :: Biogen_Coeff              !Coefficients for BiogenCO2
 
   ! ---- Define arrays for model calculations ----------------------------------------------------
-  INTEGER,DIMENSION(:), ALLOCATABLE:: GridIDmatrix         !Array containing GridIDs in SiteSelect after sorting
-  INTEGER,DIMENSION(:), ALLOCATABLE:: GridIDmatrix0        !Array containing GridIDs in SiteSelect in the original order
-  REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: SurfaceChar          !Array for surface characteristics
-  REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: MetForcingData      !Array for meteorological forcing data
-  REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE  :: MetForcingData_grid !Array for meteorological forcing data of one grid used by AnOHM
-  REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: ESTMForcingData      !Array for ESTM forcing data
-  REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: ModelDailyState      !DailyState array
-  REAL(KIND(1d0)),DIMENSION(:),    ALLOCATABLE:: DailyStateFirstOpen
-  REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: ModelOutputData      !Output data matrix
-  REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: dataOutSUEWS              !Main data output matrix
-  REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: dataOutBL            !CBL output matrix
-  REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: dataOutSOL           !SOLWEIG POI output matrix
-  REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: dataOutSnow          !Main data output matrix
-  REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: dataOutESTM          !ESTM output matrix
-  REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: dataOutDailyState    !DailyState output array
+  INTEGER, DIMENSION(:), ALLOCATABLE :: GridIDmatrix         !Array containing GridIDs in SiteSelect after sorting
+  INTEGER, DIMENSION(:), ALLOCATABLE :: GridIDmatrix0        !Array containing GridIDs in SiteSelect in the original order
+  REAL(KIND(1d0)), DIMENSION(:,:),   ALLOCATABLE :: SurfaceChar          !Array for surface characteristics
+  REAL(KIND(1d0)), DIMENSION(:,:,:), ALLOCATABLE :: MetForcingData      !Array for meteorological forcing data
+  REAL(KIND(1d0)), DIMENSION(:,:),   ALLOCATABLE :: MetForcingData_grid !Array for meteorological forcing data of one grid used by AnOHM
+  REAL(KIND(1d0)), DIMENSION(:,:,:), ALLOCATABLE :: ESTMForcingData      !Array for ESTM forcing data
+  REAL(KIND(1d0)), DIMENSION(:,:),   ALLOCATABLE :: ModelDailyState      !DailyState array
+  REAL(KIND(1d0)), DIMENSION(:),     ALLOCATABLE :: DailyStateFirstOpen
+  REAL(KIND(1d0)), DIMENSION(:,:,:), ALLOCATABLE :: ModelOutputData      !Output data matrix
+  REAL(KIND(1d0)), DIMENSION(:,:,:), ALLOCATABLE :: dataOutSUEWS              !Main data output matrix
+  REAL(KIND(1d0)), DIMENSION(:,:,:), ALLOCATABLE :: dataOutBL            !CBL output matrix
+  REAL(KIND(1d0)), DIMENSION(:,:,:), ALLOCATABLE :: dataOutSOL           !SOLWEIG POI output matrix
+  REAL(KIND(1d0)), DIMENSION(:,:,:), ALLOCATABLE :: dataOutSnow          !Main data output matrix
+  REAL(KIND(1d0)), DIMENSION(:,:,:), ALLOCATABLE :: dataOutESTM          !ESTM output matrix
+  REAL(KIND(1d0)), DIMENSION(:,:,:), ALLOCATABLE :: dataOutDailyState    !DailyState output array
 
   ! -------- output per each timestep ----------------------------------------------------------------
-  REAL(KIND(1D0)),DIMENSION(5)                          ::datetimeLine     ! output of datetime info per each timestep
-  REAL(KIND(1D0)),DIMENSION(ncolumnsDataOutSUEWS-5)     ::dataOutLineSUEWS ! output of SUEWS results per each timestep
-  REAL(KIND(1D0)),DIMENSION(ncolumnsDataOutSnow-5)      ::dataOutLineSnow  ! output of snow results per each timestep
-  REAL(KIND(1D0)),DIMENSION(ncolumnsDataOutDailyState-5)::DailyStateLine   ! output of DailyState results per each timestep
+  REAL(KIND(1D0)), DIMENSION(5)                           :: datetimeLine     ! output of datetime info per each timestep
+  REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSUEWS-5)      :: dataOutLineSUEWS ! output of SUEWS results per each timestep
+  REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow-5)       :: dataOutLineSnow  ! output of snow results per each timestep
+  REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState-5) :: DailyStateLine   ! output of DailyState results per each timestep
 
-  REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE:: MetForDisagg           !Array for original met forcing data (for disaggregation)
-  REAL(KIND(1d0)),DIMENSION(:),  ALLOCATABLE:: MetForDisaggPrev,MetForDisaggNext !Stores last and next row of met data
+  REAL(KIND(1d0)), DIMENSION(:,:), ALLOCATABLE :: MetForDisagg           !Array for original met forcing data (for disaggregation)
+  REAL(KIND(1d0)), DIMENSION(:),   ALLOCATABLE :: MetForDisaggPrev,MetForDisaggNext !Stores last and next row of met data
 
-  REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE:: ESTMForDisagg           !Array for original ESTM forcing data (for disaggregation)
-  REAL(KIND(1d0)),DIMENSION(:),  ALLOCATABLE:: ESTMForDisaggPrev,ESTMForDisaggNext !Stores last and next row of ESTM data
+  REAL(KIND(1d0)), DIMENSION(:,:), ALLOCATABLE :: ESTMForDisagg           !Array for original ESTM forcing data (for disaggregation)
+  REAL(KIND(1d0)), DIMENSION(:),   ALLOCATABLE :: ESTMForDisaggPrev,ESTMForDisaggNext !Stores last and next row of ESTM data
 
   ! ---- Define array for hourly profiles interpolated to tstep ----------------------------------
-  REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: TstepProfiles
-  REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: AHProf_tstep
-  REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: WUProfM_tstep, WUProfA_tstep
-  REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: HumActivity_tstep
-  REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: TraffProf_tstep
-  REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: PopProf_tstep
+  REAL(KIND(1d0)) ,DIMENSION(:,:,:), ALLOCATABLE :: TstepProfiles
+  REAL(KIND(1d0)) ,DIMENSION(:,:),   ALLOCATABLE :: AHProf_tstep
+  REAL(KIND(1d0)) ,DIMENSION(:,:),   ALLOCATABLE :: WUProfM_tstep, WUProfA_tstep
+  REAL(KIND(1d0)) ,DIMENSION(:,:),   ALLOCATABLE :: HumActivity_tstep
+  REAL(KIND(1d0)) ,DIMENSION(:,:),   ALLOCATABLE :: TraffProf_tstep
+  REAL(KIND(1d0)) ,DIMENSION(:,:),   ALLOCATABLE :: PopProf_tstep
 
   ! ---- For ESTM
-  REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:,:):: Ts5mindata   !surface temperature input data
-  REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:)  :: ts5mindata_ir !=ts5mindata(ir,:), ts input for the current timestep
-  REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:)  :: Tair24HR
-  REAL(KIND(1d0)),DIMENSION(27)  :: dataOutLineESTM !ESTM output for the current timestep and grid
+  REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:,:) :: Ts5mindata   !surface temperature input data
+  REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:)   :: ts5mindata_ir !=ts5mindata(ir,:), ts input for the current timestep
+  REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:)   :: Tair24HR
+  REAL(KIND(1d0)), DIMENSION(27)  :: dataOutLineESTM !ESTM output for the current timestep and grid
 
   ! Column numbers for TstepProfiles
-  INTEGER:: cTP_EnUseWD  = 1,&
-       cTP_EnUseWE       = 2,&
-       cTP_WUManuWD      = 3,&
-       cTP_WUManuWE      = 4,&
-       cTP_WUAutoWD      = 5,&
-       cTP_WUAutoWE      = 6,&
-       cTP_SnowCWD       = 7,&
-       cTP_SnowCWE       = 8,&
-       cTP_HumActivityWD = 9,&
-       cTP_HumActivityWE = 10,&
-       cTP_TraffProfWD   = 11,&
-       cTP_TraffProfWE   = 12,&
-       cTP_PopProfWD     = 13,&
-       cTP_PopProfWE     = 14
+  INTEGER:: cTP_EnUseWD       = 1,  &
+            cTP_EnUseWE       = 2,  &
+            cTP_WUManuWD      = 3,  &
+            cTP_WUManuWE      = 4,  &
+            cTP_WUAutoWD      = 5,  &
+            cTP_WUAutoWE      = 6,  &
+            cTP_SnowCWD       = 7,  &
+            cTP_SnowCWE       = 8,  &
+            cTP_HumActivityWD = 9,  &
+            cTP_HumActivityWE = 10, &
+            cTP_TraffProfWD   = 11, &
+            cTP_TraffProfWE   = 12, &
+            cTP_PopProfWD     = 13, &
+            cTP_PopProfWE     = 14
   !-----------------------------------------------------------------------------------------------
 
   ! ---- Surface types ---------------------------------------------------------------------------
-  INTEGER, PARAMETER:: nsurf=7                !Total number of surfaces
-  INTEGER, PARAMETER:: NVegSurf=3             !Number of surfaces that are vegetated
-  INTEGER, PARAMETER:: nsurfIncSnow=nsurf+1   !Number of surfaces + snow
+  INTEGER, PARAMETER :: nsurf = 7                !Total number of surfaces
+  INTEGER, PARAMETER :: NVegSurf = 3             !Number of surfaces that are vegetated
+  INTEGER, PARAMETER :: nsurfIncSnow = nsurf+1   !Number of surfaces + snow
 
-  INTEGER,PARAMETER:: PavSurf   = 1,&   !When all surfaces considered together (1-7)
-       BldgSurf  = 2,&
-       ConifSurf = 3,&
-       DecidSurf = 4,&
-       GrassSurf = 5,&   !New surface classes: Grass = 5th/7 surfaces
-       BSoilSurf = 6,&   !New surface classes: Bare soil = 6th/7 surfaces
-       WaterSurf = 7,&
-       ExcessSurf= 8,&   !Runoff or subsurface soil in WGWaterDist
-       NSurfDoNotReceiveDrainage=0,&   !Number of surfaces that do not receive drainage water (green roof)
-       ivConif = 1,&     !When only vegetated surfaces considered (1-3)
-       ivDecid = 2,&
-       ivGrass = 3
+  INTEGER, PARAMETER :: PavSurf    = 1, &   !When all surfaces considered together (1-7)
+                        BldgSurf   = 2, &
+                        ConifSurf  = 3, &
+                        DecidSurf  = 4, &
+                        GrassSurf  = 5, &   !New surface classes: Grass = 5th/7 surfaces
+                        BSoilSurf  = 6, &   !New surface classes: Bare soil = 6th/7 surfaces
+                        WaterSurf  = 7, &
+                        ExcessSurf = 8, &   !Runoff or subsurface soil in WGWaterDist
+                        NSurfDoNotReceiveDrainage = 0, &   !Number of surfaces that do not receive drainage water (green roof)
+                        ivConif    = 1, &     !When only vegetated surfaces considered (1-3)
+                        ivDecid    = 2, &
+                        ivGrass    = 3
 
-  REAL(KIND(1d0)),DIMENSION(nsurf):: sfr   !Surface fractions [-]
+  REAL(KIND(1d0)), DIMENSION(nsurf) :: sfr   !Surface fractions [-]
 
   ! ---- Water balance for each surface  ---------------------------------------------------------
   !These variables are expressed as depths [mm] over each surface(is); the depth therefore varies with sfr(is)
-  REAL(KIND(1d0)),DIMENSION(nsurf):: AddWater       !Water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
-  REAL(KIND(1d0)),DIMENSION(nsurf):: AddWaterRunoff !Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
+  REAL(KIND(1d0)), DIMENSION(nsurf) :: AddWater       !Water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
+  REAL(KIND(1d0)), DIMENSION(nsurf) :: AddWaterRunoff !Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
   ! N.B. this is not an amount; drain(is)*AddWaterRunoff(is) is the amount [mm]
-  REAL(KIND(1d0)),DIMENSION(nsurf):: chang          !Change in state [mm]
-  REAL(KIND(1d0)),DIMENSION(nsurf):: drain          !Drainage of each surface type [mm]
-  REAL(KIND(1d0)),DIMENSION(nsurf):: evap           !Evaporation from each surface type [mm]
-  REAL(KIND(1d0)),DIMENSION(nsurf):: runoff         !Runoff from each surface type [mm]
-  REAL(KIND(1d0)),DIMENSION(nsurf):: runoffSoil     !Soil runoff from each soil sub-surface [mm]
-  REAL(KIND(1d0)),DIMENSION(nsurf):: smd_nsurf      !Soil moisture deficit of each sub-surface [mm]
-  REAL(KIND(1d0)),DIMENSION(nsurf):: smd_nsurfOut   !Soil moisture deficit of each sub-surface (written out) [mm]
-  REAL(KIND(1d0)),DIMENSION(nsurf):: soilmoist      !Soil moisture of each surface type [mm]
-  REAL(KIND(1d0)),DIMENSION(nsurf):: soilmoistOld   !Soil moisture of each surface type from previous timestep [mm]
-  REAL(KIND(1d0)),DIMENSION(nsurf):: state          !Wetness status of each surface type [mm]
-  REAL(KIND(1d0)),DIMENSION(nsurf):: stateOut       !Wetness status of each surface type (written out) [mm]
-  REAL(KIND(1d0)),DIMENSION(nsurf):: stateOld       !Wetness status of each surface type from previous timestep [mm]
-  REAL(KIND(1D0)),DIMENSION(nsurf):: rss_nsurf      !Surface resistance after wet/partially wet adjustment for each surface
+  REAL(KIND(1d0)), DIMENSION(nsurf) :: chang          !Change in state [mm]
+  REAL(KIND(1d0)), DIMENSION(nsurf) :: drain          !Drainage of each surface type [mm]
+  REAL(KIND(1d0)), DIMENSION(nsurf) :: evap           !Evaporation from each surface type [mm]
+  REAL(KIND(1d0)), DIMENSION(nsurf) :: runoff         !Runoff from each surface type [mm]
+  REAL(KIND(1d0)), DIMENSION(nsurf) :: runoffSoil     !Soil runoff from each soil sub-surface [mm]
+  REAL(KIND(1d0)), DIMENSION(nsurf) :: smd_nsurf      !Soil moisture deficit of each sub-surface [mm]
+  REAL(KIND(1d0)), DIMENSION(nsurf) :: smd_nsurfOut   !Soil moisture deficit of each sub-surface (written out) [mm]
+  REAL(KIND(1d0)), DIMENSION(nsurf) :: soilmoist      !Soil moisture of each surface type [mm]
+  REAL(KIND(1d0)), DIMENSION(nsurf) :: soilmoistOld   !Soil moisture of each surface type from previous timestep [mm]
+  REAL(KIND(1d0)), DIMENSION(nsurf) :: state          !Wetness status of each surface type [mm]
+  REAL(KIND(1d0)), DIMENSION(nsurf) :: stateOut       !Wetness status of each surface type (written out) [mm]
+  REAL(KIND(1d0)), DIMENSION(nsurf) :: stateOld       !Wetness status of each surface type from previous timestep [mm]
+  REAL(KIND(1D0)), DIMENSION(nsurf) :: rss_nsurf      !Surface resistance after wet/partially wet adjustment for each surface
 
-  REAL(KIND(1d0)),DIMENSION(nsurf):: WetThresh      !When State > WetThresh, RS=0 limit in SUEWS_evap [mm] (specified in input files)
-  REAL(KIND(1d0)),DIMENSION(nsurf):: StateLimit     !Limit for state of each surface type [mm] (specified in input files)
+  REAL(KIND(1d0)), DIMENSION(nsurf) :: WetThresh      !When State > WetThresh, RS=0 limit in SUEWS_evap [mm] (specified in input files)
+  REAL(KIND(1d0)), DIMENSION(nsurf) :: StateLimit     !Limit for state of each surface type [mm] (specified in input files)
 
-  REAL(KIND(1d0)),DIMENSION(1)::     WaterDepth     !Depth of open water
+  REAL(KIND(1d0)), DIMENSION(1) :: WaterDepth     !Depth of open water
 
   ! ---- Soil characteristics specified in input files -------------------------------------------
-  REAL(KIND(1d0)),DIMENSION(nsurf):: SatHydraulicConduct !Saturated hydraulic conductivity for each soil subsurface [mm s-1]
-  REAL(KIND(1d0)),DIMENSION(nsurf):: SoilDepth           !Depth of sub-surface soil store for each surface [mm]
-  REAL(KIND(1d0)),DIMENSION(nsurf):: SoilStoreCap        !Capacity of soil store for each surface [mm]
+  REAL(KIND(1d0)), DIMENSION(nsurf) :: SatHydraulicConduct !Saturated hydraulic conductivity for each soil subsurface [mm s-1]
+  REAL(KIND(1d0)), DIMENSION(nsurf) :: SoilDepth           !Depth of sub-surface soil store for each surface [mm]
+  REAL(KIND(1d0)), DIMENSION(nsurf) :: SoilStoreCap        !Capacity of soil store for each surface [mm]
 
   ! ---- Within-grid water distribution matrix ---------------------------------------------------
-  REAL(KIND(1d0)),DIMENSION(nsurf+1,nsurf-1)::WaterDist !Within-grid water distribution to other surfaces and runoff/soil store [-]
+  REAL(KIND(1d0)), DIMENSION(nsurf+1, nsurf-1) :: WaterDist !Within-grid water distribution to other surfaces and runoff/soil store [-]
 
   ! ---- Drainage characteristics ----------------------------------------------------------------
-  REAL(KIND(1d0)),DIMENSION(6,nsurf):: surf   !Storage capacities and drainage equation info for each surface
+  REAL(KIND(1d0)), DIMENSION(6, nsurf) :: surf   !Storage capacities and drainage equation info for each surface
   ! 1 - min storage capacity [mm]
   ! 2 - Drainage equation to use
   ! 3 - Drainage coeff 1 [units depend on choice of eqn]
@@ -231,87 +230,87 @@ MODULE allocateArray
   !-----------------------------------------------------------------------------------------------
 
   ! ---- Define arrays at daily timestep ---------------------------------------------------------
-  INTEGER, PARAMETER:: ndays = 366   !Max no. days in a year used to specify size of daily arrays
+  INTEGER, PARAMETER :: ndays = 366   !Max no. days in a year used to specify size of daily arrays
   !! Could delete NDays and allocate these elsewhere once no. days is known
-  REAL(KIND(1d0)),DIMENSION( 0:ndays, 5):: GDD          !Growing Degree Days (see SUEWS_DailyState.f95)
-  REAL(KIND(1d0)),DIMENSION(-4:ndays, 6):: HDD          !Heating Degree Days (see SUEWS_DailyState.f95)
-  REAL(KIND(1d0)),DIMENSION( 0:ndays, 9):: WU_Day       !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
-  REAL(KIND(1d0)),DIMENSION(-4:ndays, nvegsurf):: LAI   !LAI for each veg surface [m2 m-2]
+  REAL(KIND(1d0)), DIMENSION( 0:ndays, 5) :: GDD          !Growing Degree Days (see SUEWS_DailyState.f95)
+  REAL(KIND(1d0)), DIMENSION(-4:ndays, 6) :: HDD          !Heating Degree Days (see SUEWS_DailyState.f95)
+  REAL(KIND(1d0)), DIMENSION( 0:ndays, 9) :: WU_Day       !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
+  REAL(KIND(1d0)), DIMENSION(-4:ndays, nvegsurf) :: LAI   !LAI for each veg surface [m2 m-2]
 
   ! Seasonality of deciduous trees accounted for by the following variables which change with time
-  REAL(KIND(1d0)),DIMENSION( 0:ndays):: DecidCap   !Storage capacity of deciduous trees [mm]
-  REAL(KIND(1d0)),DIMENSION( 0:ndays):: porosity   !Porosity of deciduous trees [-]
+  REAL(KIND(1d0)), DIMENSION( 0:ndays) :: DecidCap   !Storage capacity of deciduous trees [mm]
+  REAL(KIND(1d0)), DIMENSION( 0:ndays) :: porosity   !Porosity of deciduous trees [-]
 
-  REAL(KIND(1d0)),DIMENSION( 0:ndays):: albDecTr     !Albedo of deciduous trees [-]
-  REAL(KIND(1d0)),DIMENSION( 0:ndays):: albEveTr     !Albedo of evergreen trees [-]
-  REAL(KIND(1d0)),DIMENSION( 0:ndays):: albGrass   !Albedo of grass[-]
+  REAL(KIND(1d0)), DIMENSION( 0:ndays) :: albDecTr     !Albedo of deciduous trees [-]
+  REAL(KIND(1d0)), DIMENSION( 0:ndays) :: albEveTr     !Albedo of evergreen trees [-]
+  REAL(KIND(1d0)), DIMENSION( 0:ndays) :: albGrass   !Albedo of grass[-]
 
-  REAL(KIND(1d0)):: AlbMin_DecTr,&   !Min albedo for deciduous trees [-]
-       AlbMax_DecTr,&   !Max albedo for deciduous trees [-]
-       CapMin_dec,&   !Min storage capacity for deciduous trees [mm] (from input information)
-       CapMax_dec,&   !Max storage capacity for deciduous trees [mm] (from input information)
-       PorMin_dec,&  !Min porosity for deciduous trees
-       PorMax_dec,&    !Max porosity for deciduous trees
-       AlbMin_EveTr,&   !Min albedo for evergreen trees [-]
-       AlbMax_EveTr,&   !Max albedo for evergreen trees [-]
-       AlbMin_Grass,&   !Min albedo for grass [-]
-       AlbMax_Grass     !Max albedo for grass [-]
+  REAL(KIND(1d0)) :: AlbMin_DecTr, &   !Min albedo for deciduous trees [-]
+                     AlbMax_DecTr, &   !Max albedo for deciduous trees [-]
+                     CapMin_dec,   &   !Min storage capacity for deciduous trees [mm] (from input information)
+                     CapMax_dec,   &   !Max storage capacity for deciduous trees [mm] (from input information)
+                     PorMin_dec,   &   !Min porosity for deciduous trees
+                     PorMax_dec,   &   !Max porosity for deciduous trees
+                     AlbMin_EveTr, &   !Min albedo for evergreen trees [-]
+                     AlbMax_EveTr, &   !Max albedo for evergreen trees [-]
+                     AlbMin_Grass, &   !Min albedo for grass [-]
+                     AlbMax_Grass      !Max albedo for grass [-]
 
   ! Replicate arrays needed for DailyState, adding dimension to identify the grid, HCW 27 Nov 2014
   !! Could delete MaxNumberOfGrids and allocate these elsewhere once NumberOfGrids is known
-  REAL(KIND(1d0)),DIMENSION( 0:ndays, 5,MaxNumberOfGrids):: GDD_grids
-  REAL(KIND(1d0)),DIMENSION(-4:ndays, 6,MaxNumberOfGrids):: HDD_grids
-  REAL(KIND(1d0)),DIMENSION( 0:ndays, 9,MaxNumberOfGrids):: WU_Day_grids
-  REAL(KIND(1d0)),DIMENSION(-4:ndays, nvegsurf,MaxNumberOfGrids):: LAI_grids
+  REAL(KIND(1d0)), DIMENSION( 0:ndays, 5,MaxNumberOfGrids) :: GDD_grids
+  REAL(KIND(1d0)), DIMENSION(-4:ndays, 6,MaxNumberOfGrids) :: HDD_grids
+  REAL(KIND(1d0)), DIMENSION( 0:ndays, 9,MaxNumberOfGrids) :: WU_Day_grids
+  REAL(KIND(1d0)), DIMENSION(-4:ndays, nvegsurf,MaxNumberOfGrids) :: LAI_grids
 
-  REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: albDecTr_grids
-  REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: DecidCap_grids
-  REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: porosity_grids
+  REAL(KIND(1d0)), DIMENSION( 0:ndays, MaxNumberOfGrids) :: albDecTr_grids
+  REAL(KIND(1d0)), DIMENSION( 0:ndays, MaxNumberOfGrids) :: DecidCap_grids
+  REAL(KIND(1d0)), DIMENSION( 0:ndays, MaxNumberOfGrids) :: porosity_grids
 
-  REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: albEveTr_grids
-  REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: albGrass_grids
+  REAL(KIND(1d0)), DIMENSION( 0:ndays, MaxNumberOfGrids) :: albEveTr_grids
+  REAL(KIND(1d0)), DIMENSION( 0:ndays, MaxNumberOfGrids) :: albGrass_grids
 
   ! AnOHM related: added by TS 01 Mar 2016
   ! store AnOHM coef. of all sfc. by TS 09 Apr 2016
-  REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: Bo_grids
-  REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: mAH_grids
-  REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: a1AnOHM_grids
-  REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: a2AnOHM_grids
-  REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: a3AnOHM_grids
-  REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids,nsurf,3):: a123AnOHM_gs
-  REAL(KIND(1d0)):: xBo ! daily Bowen ratio
+  REAL(KIND(1d0)), DIMENSION( 0:ndays, MaxNumberOfGrids) :: Bo_grids
+  REAL(KIND(1d0)), DIMENSION( 0:ndays, MaxNumberOfGrids) :: mAH_grids
+  REAL(KIND(1d0)), DIMENSION( 0:ndays, MaxNumberOfGrids) :: a1AnOHM_grids
+  REAL(KIND(1d0)), DIMENSION( 0:ndays, MaxNumberOfGrids) :: a2AnOHM_grids
+  REAL(KIND(1d0)), DIMENSION( 0:ndays, MaxNumberOfGrids) :: a3AnOHM_grids
+  REAL(KIND(1d0)), DIMENSION( 0:ndays, MaxNumberOfGrids,nsurf,3) :: a123AnOHM_gs
+  REAL(KIND(1d0)) :: xBo ! daily Bowen ratio
   !! store water states for AnOHM iteration, by TS 13 Apr 2016
   !REAL(KIND(1d0)),DIMENSION(0:ndays,MaxNumberOfGrids,nsurf):: soilmoistDay   !Soil moisture of each surface type at the end of a day [mm], 13 Apr 2016 TS
   !REAL(KIND(1d0)),DIMENSION(0:ndays,MaxNumberOfGrids,nsurf):: stateDay       !Wetness status of each existing surface type at the end of a day [mm], 13 Apr 2016 TS
 
 
   ! Day of week, month and season (used for water use and energy use calculations, and in OHM)
-  INTEGER,DIMENSION(0:ndays,3)::DayofWeek   !1 - day of week; 2 - month; 3 - season
+  INTEGER, DIMENSION(0:ndays, 3) :: DayofWeek   !1 - day of week; 2 - month; 3 - season
   !-----------------------------------------------------------------------------------------------
 
   ! --- Vegetation phenology ---------------------------------------------------------------------
   ! Parameters provided in input information for each vegetation surface (SUEWS_Veg.txt)
-  REAL(KIND(1d0)),DIMENSION(nvegsurf):: BaseT            !Base temperature for growing degree days [degC]
-  REAL(KIND(1d0)),DIMENSION(nvegsurf):: BaseTe           !Base temperature for senescence degree days [degC]
-  REAL(KIND(1d0)),DIMENSION(nvegsurf):: GDDFull          !Growing degree days needed for full capacity [degC]
-  REAL(KIND(1d0)),DIMENSION(nvegsurf):: SDDFull          !Senescence degree days needed to initiate leaf off [degC]
-  REAL(KIND(1d0)),DIMENSION(nvegsurf):: LaiMin           !Min LAI [m2 m-2]
-  REAL(KIND(1d0)),DIMENSION(nvegsurf):: LaiMax           !Max LAI  [m2 m-2]
-  REAL(KIND(1d0)),DIMENSION(nvegsurf):: MaxConductance   !Max conductance [mm s-1]
-  REAL(KIND(1d0)),DIMENSION(4,nvegsurf):: LaiPower       !Coeffs for LAI equation: 1,2 - leaf growth; 3,4 - leaf off
+  REAL(KIND(1d0)), DIMENSION(nvegsurf) :: BaseT            !Base temperature for growing degree days [degC]
+  REAL(KIND(1d0)), DIMENSION(nvegsurf) :: BaseTe           !Base temperature for senescence degree days [degC]
+  REAL(KIND(1d0)), DIMENSION(nvegsurf) :: GDDFull          !Growing degree days needed for full capacity [degC]
+  REAL(KIND(1d0)), DIMENSION(nvegsurf) :: SDDFull          !Senescence degree days needed to initiate leaf off [degC]
+  REAL(KIND(1d0)), DIMENSION(nvegsurf) :: LaiMin           !Min LAI [m2 m-2]
+  REAL(KIND(1d0)), DIMENSION(nvegsurf) :: LaiMax           !Max LAI  [m2 m-2]
+  REAL(KIND(1d0)), DIMENSION(nvegsurf) :: MaxConductance   !Max conductance [mm s-1]
+  REAL(KIND(1d0)), DIMENSION(4, nvegsurf) :: LaiPower       !Coeffs for LAI equation: 1,2 - leaf growth; 3,4 - leaf off
   !! N.B. currently DecTr only, although input provided for all veg types
-  INTEGER,DIMENSION(nvegsurf):: LAIType                  !LAI equation to use: original (0) or new (1)
+  INTEGER, DIMENSION(nvegsurf) :: LAIType                  !LAI equation to use: original (0) or new (1)
   !real(kind(1d0))::GDDmax,SDDMax                        ! Max GDD and SDD across all veg types [degC] (removed HCW 03 Mar 2015)
 
-  REAL(KIND(1d0)),DIMENSION(nvegsurf):: BiogenCO2Code,&    !Biogenic CO2 Code for SUEWS_BiogenCO2.txt
-       alpha_bioCO2,&
-       beta_bioCO2,&
-       theta_bioCO2,&
-       alpha_enh_bioCO2,&
-       beta_enh_bioCO2,&
-       resp_a,&
-       resp_b,&
-       min_res_bioCO2
+  REAL(KIND(1d0)), DIMENSION(nvegsurf) :: BiogenCO2Code,    &    !Biogenic CO2 Code for SUEWS_BiogenCO2.txt
+                                          alpha_bioCO2,     &
+                                          beta_bioCO2,      &
+                                          theta_bioCO2,     &
+                                          alpha_enh_bioCO2, &
+                                          beta_enh_bioCO2,  &
+                                          resp_a,           &
+                                          resp_b,           &
+                                          min_res_bioCO2
 
   !No longer used (removed HCW 27 Nov 2014)
   !real(kind(1d0)),dimension(0:23)::runT           ! running average T for the day
@@ -320,259 +319,258 @@ MODULE allocateArray
   !-----------------------------------------------------------------------------------------------
 
   ! ---- Variables related to NARP ---------------------------------------------------------------
-  REAL(KIND(1d0)),DIMENSION(nsurf):: alb    !Albedo of each surface type [-]
-  REAL(KIND(1d0)),DIMENSION(nsurf):: emis   !Emissivity of each surface type [-]
+  REAL(KIND(1d0)), DIMENSION(nsurf) :: alb    !Albedo of each surface type [-]
+  REAL(KIND(1d0)), DIMENSION(nsurf) :: emis   !Emissivity of each surface type [-]
 
-  REAL(KIND(1d0)):: bulkalbedo !Bulk albedo for whole surface (areally-weighted)
+  REAL(KIND(1d0)) :: bulkalbedo !Bulk albedo for whole surface (areally-weighted)
 
   ! Radiation balance components for different surfaces
-  REAL(KIND(1d0)),DIMENSION(nsurf):: Tsurf_ind,&        !Surface temperature for each surface [degC]
-       Tsurf_ind_snow,&   !Snow surface temperature for each surface [degC]
-       Tsurf_ind_nosnow
-  REAL(KIND(1d0)),DIMENSION(nsurf):: kup_ind,&          !Outgoing shortwave radiation for each surface [W m-2]
-       kup_ind_snow,&     !Outgoing shortwave radiation for each snow surface [W m-2]
-       kup_ind_nosnow
-  REAL(KIND(1d0)),DIMENSION(nsurf):: lup_ind,&          !Outgoing longwave radiation for each surface [W m-2]
-       lup_ind_snow,&     !Outgoing longwave radiation for each snow surface [W m-2]
-       lup_ind_nosnow
-  REAL(KIND(1d0)),DIMENSION(nsurf):: qn1_ind,&          !Net all-wave radiation for each surface [W m-2]
-       qn1_ind_snow,&     !Net all-wave radiation for each snow surface [W m-2]
-       qn1_ind_nosnow
+  REAL(KIND(1d0)), DIMENSION(nsurf) :: Tsurf_ind, &        !Surface temperature for each surface [degC]
+                                       Tsurf_ind_snow, &   !Snow surface temperature for each surface [degC]
+                                       Tsurf_ind_nosnow
+  REAL(KIND(1d0)), DIMENSION(nsurf) :: kup_ind, &          !Outgoing shortwave radiation for each surface [W m-2]
+                                       kup_ind_snow, &     !Outgoing shortwave radiation for each snow surface [W m-2]
+                                       kup_ind_nosnow
+  REAL(KIND(1d0)), DIMENSION(nsurf) :: lup_ind, &          !Outgoing longwave radiation for each surface [W m-2]
+                                       lup_ind_snow, &     !Outgoing longwave radiation for each snow surface [W m-2]
+                                       lup_ind_nosnow
+  REAL(KIND(1d0)), DIMENSION(nsurf) :: qn1_ind, &          !Net all-wave radiation for each surface [W m-2]
+                                       qn1_ind_snow, &     !Net all-wave radiation for each snow surface [W m-2]
+                                       qn1_ind_nosnow
 
   ! ---- NARP-specific parameters ----------------------------------------------------------------
-  REAL(KIND(1d0))             :: NARP_LAT,NARP_LONG,NARP_YEAR,NARP_TZ,&
-       NARP_ALB_SNOW,NARP_EMIS_SNOW,NARP_TRANS_SITE
-  REAL(KIND(1D0))             :: NARP_G(365)   !!QUESTION: Should this be NDays? - HCW
-  INTEGER                     :: NARP_NPERHOUR
-  REAL(KIND(1D0)),ALLOCATABLE :: NARP_KDOWN_HR(:)
+  REAL(KIND(1d0)) :: NARP_LAT, NARP_LONG, NARP_YEAR, NARP_TZ, &
+                     NARP_ALB_SNOW, NARP_EMIS_SNOW, NARP_TRANS_SITE
+  REAL(KIND(1D0)) :: NARP_G(365)   !!QUESTION: Should this be NDays? - HCW
+  INTEGER :: NARP_NPERHOUR
+  REAL(KIND(1D0)), DIMENSION(:), ALLOCATABLE :: NARP_KDOWN_HR
   ! Constants required
-  REAL(KIND(1D0)),PARAMETER   :: DEG2RAD=0.017453292,&
-       RAD2DEG=57.29577951,&
-       SIGMA_SB=5.67E-8
+  REAL(KIND(1D0)), PARAMETER :: DEG2RAD  = 0.017453292, &
+                                RAD2DEG  = 57.29577951, &
+                                SIGMA_SB = 5.67E-8
   !-----------------------------------------------------------------------------------------------
 
   ! ---- OHM coefficients ------------------------------------------------------------------------
-  REAL(KIND(1d0)),DIMENSION(nsurf+1,4,3):: OHM_coef   !Array for OHM coefficients
-  REAL(KIND(1d0)),DIMENSION(nsurf+1)::     OHM_threshSW, OHM_threshWD   !Arrays for OHM thresholds
-  REAL(KIND(1d0)):: a1,a2,a3   !OHM coefficients, a1 [-]; a2 [h]; a3 [W m-2]
-  REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE:: qn1_store, qn1_S_store   !Q* values for each timestep over previous hr (_S for snow)
-  REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE:: qn1_av_store, qn1_S_av_store  !Hourly Q* values for each timestep over previous 2 hr
-  REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE::qn1_store_grid,qn1_av_store_grid
-  REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE::qn1_S_store_grid,qn1_S_av_store_grid
+  REAL(KIND(1d0)), DIMENSION(nsurf+1, 4, 3) :: OHM_coef   !Array for OHM coefficients
+  REAL(KIND(1d0)), DIMENSION(nsurf+1)       :: OHM_threshSW, OHM_threshWD   !Arrays for OHM thresholds
+  REAL(KIND(1d0)) :: a1, a2, a3   !OHM coefficients, a1 [-]; a2 [h]; a3 [W m-2]
+  REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE :: qn1_store, qn1_S_store   !Q* values for each timestep over previous hr (_S for snow)
+  REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE :: qn1_av_store, qn1_S_av_store  !Hourly Q* values for each timestep over previous 2 hr
+  REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE :: qn1_store_grid, qn1_av_store_grid
+  REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE :: qn1_S_store_grid, qn1_S_av_store_grid
   !-----------------------------------------------------------------------------------------------
 
   ! ---- Snow-related variables ------------------------------------------------------------------
-  REAL(KIND(1d0)),DIMENSION(nsurf):: changSnow,&       !Change in snowpack in mm
-       maxSnowVol,&      !! Maximum snow volume
-       MeltWaterStore,&  !!Liquid water in the snow pack of ith surface
-       ev_snow,&          !!Evaporation from snowpack in mm
-       mw_ind,&           !Melt water from individual surface in mm
-       mw_indDay,&        !!Melt water per day from each surface type in m3
-       runoffSnow,&       !!Runoff from snowpack in mm and in m3
-       SnowDens,&        !Density of snow
-       SnowFrac,&         !!Surface fraction of snow cover
-       iceFrac,&
-       snowInit,&
-       snowDepth,&       !Depth of snow in cm
-       SnowToSurf,&      !Meltwater flowing from snow to surface
-       volSWE,&
-       StateFraction,&   !Fraction of state that can freeze
-       freezMelt,&       !Amount of freezing meltwater in mm for the ith surface area
-       Qm_freezState,&   !Heat by freezing of surface state
-       freezState,&      !Amount of freezing state in mm for the ith surface area
-       FreezStateVol,&
-       Qm_melt,&         !Heat consumption by snow melt
-       Qm_rain,&         !Heat by rain falling on snow
-       rainOnSnow,&      !Liquid precipitation falling on snow ()
-       snowD,&
-       deltaQi
+  REAL(KIND(1d0)), DIMENSION(nsurf) :: changSnow, &       !Change in snowpack in mm
+                                       maxSnowVol, &      !! Maximum snow volume
+                                       MeltWaterStore, &  !!Liquid water in the snow pack of ith surface
+                                       ev_snow, &         !!Evaporation from snowpack in mm
+                                       mw_ind, &          !Melt water from individual surface in mm
+                                       mw_indDay, &       !!Melt water per day from each surface type in m3
+                                       runoffSnow, &      !!Runoff from snowpack in mm and in m3
+                                       SnowDens, &        !Density of snow
+                                       SnowFrac, &        !!Surface fraction of snow cover
+                                       iceFrac, &
+                                       snowInit, &
+                                       snowDepth, &       !Depth of snow in cm
+                                       SnowToSurf, &      !Meltwater flowing from snow to surface
+                                       volSWE, &
+                                       StateFraction, &   !Fraction of state that can freeze
+                                       freezMelt, &       !Amount of freezing meltwater in mm for the ith surface area
+                                       Qm_freezState, &   !Heat by freezing of surface state
+                                       freezState, &      !Amount of freezing state in mm for the ith surface area
+                                       FreezStateVol, &
+                                       Qm_melt, &         !Heat consumption by snow melt
+                                       Qm_rain, &         !Heat by rain falling on snow
+                                       rainOnSnow, &      !Liquid precipitation falling on snow ()
+                                       snowD, &
+                                       deltaQi
 
-  REAL(KIND(1d0)),DIMENSION(nsurf):: snowPack,&        !Amount of snow on each surface in mm
-       snowPackOld
-  INTEGER,DIMENSION(nsurf):: heiG,&                    !snow layer height
-       snowCoverForms,&
-       snowCalcSwitch=0          !Defines if snow related balance is made
+  REAL(KIND(1d0)), DIMENSION(nsurf) :: snowPack, &        !Amount of snow on each surface in mm
+                                       snowPackOld
+  INTEGER, DIMENSION(nsurf) :: heiG, &                    !snow layer height
+                               snowCoverForms, &
+                               snowCalcSwitch = 0         !Defines if snow related balance is made
   !-----------------------------------------------------------------------------------------------
 
   ! ---- Grid connections ------------------------------------------------------------------------
   !! Grid connections needs coding, currently no water transfer between grids
   ! Added HCW 14 Nov 2014
-  INTEGER,PARAMETER:: nconns = 8   !Number of grids for between-grid connections
-  REAL(KIND(1d0)),DIMENSION(nconns):: GridToFrac   !Fraction of water moving to the grid specified in GridTo [-]
-  REAL(KIND(1d0)),DIMENSION(nconns):: GridTo       !Grid that water moves to
+  INTEGER, PARAMETER :: nconns = 8   !Number of grids for between-grid connections
+  REAL(KIND(1d0)), DIMENSION(nconns) :: GridToFrac   !Fraction of water moving to the grid specified in GridTo [-]
+  REAL(KIND(1d0)), DIMENSION(nconns) :: GridTo       !Grid that water moves to
   !!character(len=15),dimension(2,MaxNumberOfGrids)::GridConnections  !List of different grid corrections
   !!real (kind(1d0)),dimension(MaxNumberOfGrids)::   GridConnectionsFrac   !Fraction of water moving between the different grids
   !-----------------------------------------------------------------------------------------------
 
   ! ---- AnOHM related variable, added by TS, 01 Mar 2016 ---------------------------------------------------------------
-  REAL(KIND(1d0)),DIMENSION(MaxNumberOfGrids) :: a1AnOHM,a2AnOHM,a3AnOHM ! OHM coefficients, a1 [-]; a2 [h]; a3 [W m-2]
-  REAL(KIND(1d0)),DIMENSION(MaxNumberOfGrids) :: mAHAnOHM                ! daily mean AH [W m-2]
-  REAL(KIND(1d0)),DIMENSION(MaxNumberOfGrids) :: BoAnOHMStart            ! initial Bo for interation [-]
-  REAL(KIND(1d0)),DIMENSION(MaxNumberOfGrids) :: BoAnOHMEnd              ! final Bo for interation [-]
-  REAL(KIND(1d0)),DIMENSION(nsurf):: cpAnOHM ! heat capacity [J m-3 K-1]
-  REAL(KIND(1d0)),DIMENSION(nsurf):: kkAnOHM ! thermal conductivity [W m-1 K-1]
-  REAL(KIND(1d0)),DIMENSION(nsurf):: chAnOHM ! bulk transfer coef. [-]
+  REAL(KIND(1d0)), DIMENSION(MaxNumberOfGrids) :: a1AnOHM,a2AnOHM,a3AnOHM ! OHM coefficients, a1 [-]; a2 [h]; a3 [W m-2]
+  REAL(KIND(1d0)), DIMENSION(MaxNumberOfGrids) :: mAHAnOHM                ! daily mean AH [W m-2]
+  REAL(KIND(1d0)), DIMENSION(MaxNumberOfGrids) :: BoAnOHMStart            ! initial Bo for interation [-]
+  REAL(KIND(1d0)), DIMENSION(MaxNumberOfGrids) :: BoAnOHMEnd              ! final Bo for interation [-]
+  REAL(KIND(1d0)), DIMENSION(nsurf) :: cpAnOHM ! heat capacity [J m-3 K-1]
+  REAL(KIND(1d0)), DIMENSION(nsurf) :: kkAnOHM ! thermal conductivity [W m-1 K-1]
+  REAL(KIND(1d0)), DIMENSION(nsurf) :: chAnOHM ! bulk transfer coef. [-]
   !-----------------------------------------------------------------------------------------------
 
   ! ESTM variables for SUEWS surfaces
-  REAL(KIND(1d0)),DIMENSION(5,nsurfIncSnow):: zSurf_SUEWSsurfs, &
-       kSurf_SUEWSsurfs, &
-       rSurf_SUEWSsurfs
+  REAL(KIND(1d0)), DIMENSION(5, nsurfIncSnow) :: zSurf_SUEWSsurfs, &
+                                                 kSurf_SUEWSsurfs, &
+                                                 rSurf_SUEWSsurfs
   !-----------------------------------------------------------------------------------------------
   !---------------------------------- Column numbers ---------------------------------------------
 
   ! ---- Set column numbering for SurfaceChar ----------------------------------------------------
   ! Columns 1:80 are the same as in SiteSelect.txt and defined below
-  INTEGER:: cc    !Column counter
-  INTEGER,PARAMETER:: ccEndSI=ncolumnsSiteSelect
+  INTEGER :: cc    !Column counter
+  INTEGER, PARAMETER :: ccEndSI = ncolumnsSiteSelect
 
   ! Applicable to each surface
-  INTEGER,DIMENSION(nsurf):: c_AlbMin     = (/(cc, cc=ccEndSI+ 0*nsurf+1,ccEndSI+ 0*nsurf+nsurf, 1)/)  !Min. albedo
-  INTEGER,DIMENSION(nsurf):: c_AlbMax     = (/(cc, cc=ccEndSI+ 1*nsurf+1,ccEndSI+ 1*nsurf+nsurf, 1)/)  !Max. albedo
-  INTEGER,DIMENSION(nsurf):: c_Emis       = (/(cc, cc=ccEndSI+ 2*nsurf+1,ccEndSI+ 2*nsurf+nsurf, 1)/)  !Emissivity
-  INTEGER,DIMENSION(nsurf):: c_StorMin    = (/(cc, cc=ccEndSI+ 3*nsurf+1,ccEndSI+ 3*nsurf+nsurf, 1)/)  !Min. storage capacity (canopy)
-  INTEGER,DIMENSION(nsurf):: c_StorMax    = (/(cc, cc=ccEndSI+ 4*nsurf+1,ccEndSI+ 4*nsurf+nsurf, 1)/)  !Max. storage capacity (canopy)
-  INTEGER,DIMENSION(nsurf):: c_WetThresh  = (/(cc, cc=ccEndSI+ 5*nsurf+1,ccEndSI+ 5*nsurf+nsurf, 1)/)  !Threshold for wet evaporation [mm]
-  INTEGER,DIMENSION(nsurf):: c_StateLimit = (/(cc, cc=ccEndSI+ 6*nsurf+1,ccEndSI+ 6*nsurf+nsurf, 1)/)  !Limit for surface state [mm]
-  INTEGER,DIMENSION(nsurf):: c_DrEq       = (/(cc, cc=ccEndSI+ 7*nsurf+1,ccEndSI+ 7*nsurf+nsurf, 1)/)  !Drainage equation
-  INTEGER,DIMENSION(nsurf):: c_DrCoef1    = (/(cc, cc=ccEndSI+ 8*nsurf+1,ccEndSI+ 8*nsurf+nsurf, 1)/)  !Drainage coef. 1
-  INTEGER,DIMENSION(nsurf):: c_DrCoef2    = (/(cc, cc=ccEndSI+ 9*nsurf+1,ccEndSI+ 9*nsurf+nsurf, 1)/)  !Drainage coef. 2
-  INTEGER,DIMENSION(nsurf):: c_SoilTCode  = (/(cc, cc=ccEndSI+10*nsurf+1,ccEndSI+10*nsurf+nsurf, 1)/)  !Soil type code
+  INTEGER, DIMENSION(nsurf) :: c_AlbMin     = (/(cc, cc = ccEndSI+ 0*nsurf+1, ccEndSI+ 0*nsurf+nsurf, 1)/)  !Min. albedo
+  INTEGER, DIMENSION(nsurf) :: c_AlbMax     = (/(cc, cc = ccEndSI+ 1*nsurf+1, ccEndSI+ 1*nsurf+nsurf, 1)/)  !Max. albedo
+  INTEGER, DIMENSION(nsurf) :: c_Emis       = (/(cc, cc = ccEndSI+ 2*nsurf+1, ccEndSI+ 2*nsurf+nsurf, 1)/)  !Emissivity
+  INTEGER, DIMENSION(nsurf) :: c_StorMin    = (/(cc, cc = ccEndSI+ 3*nsurf+1, ccEndSI+ 3*nsurf+nsurf, 1)/)  !Min. storage capacity (canopy)
+  INTEGER, DIMENSION(nsurf) :: c_StorMax    = (/(cc, cc = ccEndSI+ 4*nsurf+1, ccEndSI+ 4*nsurf+nsurf, 1)/)  !Max. storage capacity (canopy)
+  INTEGER, DIMENSION(nsurf) :: c_WetThresh  = (/(cc, cc = ccEndSI+ 5*nsurf+1, ccEndSI+ 5*nsurf+nsurf, 1)/)  !Threshold for wet evaporation [mm]
+  INTEGER, DIMENSION(nsurf) :: c_StateLimit = (/(cc, cc = ccEndSI+ 6*nsurf+1, ccEndSI+ 6*nsurf+nsurf, 1)/)  !Limit for surface state [mm]
+  INTEGER, DIMENSION(nsurf) :: c_DrEq       = (/(cc, cc = ccEndSI+ 7*nsurf+1, ccEndSI+ 7*nsurf+nsurf, 1)/)  !Drainage equation
+  INTEGER, DIMENSION(nsurf) :: c_DrCoef1    = (/(cc, cc = ccEndSI+ 8*nsurf+1, ccEndSI+ 8*nsurf+nsurf, 1)/)  !Drainage coef. 1
+  INTEGER, DIMENSION(nsurf) :: c_DrCoef2    = (/(cc, cc = ccEndSI+ 9*nsurf+1, ccEndSI+ 9*nsurf+nsurf, 1)/)  !Drainage coef. 2
+  INTEGER, DIMENSION(nsurf) :: c_SoilTCode  = (/(cc, cc = ccEndSI+10*nsurf+1, ccEndSI+10*nsurf+nsurf, 1)/)  !Soil type code
 
   ! N.B. not included in SUEWS_Water.txt
-  INTEGER,DIMENSION(nsurf):: c_SnowLimPat =(/(cc, cc=ccEndSI+11*nsurf+1,ccEndSI+11*nsurf+nsurf, 1)/) !Snow limit for patchiness
+  INTEGER, DIMENSION(nsurf) :: c_SnowLimPat = (/(cc, cc = ccEndSI+11*nsurf+1, ccEndSI+11*nsurf+nsurf, 1)/) !Snow limit for patchiness
   ! N.B. currently only in SUEWS_NonVeg.txt
-  INTEGER,DIMENSION(nsurf):: c_SnowLimRem =(/(cc, cc=ccEndSI+12*nsurf+1,ccEndSI+12*nsurf+nsurf, 1)/) !Snow limit for removal
+  INTEGER, DIMENSION(nsurf) :: c_SnowLimRem = (/(cc, cc = ccEndSI+12*nsurf+1, ccEndSI+12*nsurf+nsurf, 1)/) !Snow limit for removal
   ! AnOHM TS
-  INTEGER,DIMENSION(nsurf):: c_CpAnOHM = (/(cc, cc=ccEndSI+13*nsurf+1,ccEndSI+13*nsurf+nsurf, 1)/) !heat capacity, AnOHM TS
-  INTEGER,DIMENSION(nsurf):: c_KkAnOHM = (/(cc, cc=ccEndSI+14*nsurf+1,ccEndSI+14*nsurf+nsurf, 1)/) !heat conductivity, AnOHM TS
-  INTEGER,DIMENSION(nsurf):: c_ChAnOHM = (/(cc, cc=ccEndSI+15*nsurf+1,ccEndSI+15*nsurf+nsurf, 1)/) !bulk transfer coef., AnOHM TS
+  INTEGER, DIMENSION(nsurf) :: c_CpAnOHM = (/(cc, cc = ccEndSI+13*nsurf+1, ccEndSI+13*nsurf+nsurf, 1)/) !heat capacity, AnOHM TS
+  INTEGER, DIMENSION(nsurf) :: c_KkAnOHM = (/(cc, cc = ccEndSI+14*nsurf+1, ccEndSI+14*nsurf+nsurf, 1)/) !heat conductivity, AnOHM TS
+  INTEGER, DIMENSION(nsurf) :: c_ChAnOHM = (/(cc, cc = ccEndSI+15*nsurf+1, ccEndSI+15*nsurf+nsurf, 1)/) !bulk transfer coef., AnOHM TS
 
 
 
   ! Find current column number
-  INTEGER,PARAMETER:: ccEndI = (ccEndSI+15*nsurf+nsurf) !add columns for AnOHM, AnOHM TS
+  INTEGER, PARAMETER:: ccEndI = (ccEndSI+15*nsurf+nsurf) !add columns for AnOHM, AnOHM TS
 
   ! Applicable to vegetated surfaces only
-  INTEGER,DIMENSION(NVegSurf):: c_BaseT   =(/(cc, cc=ccEndI+ 0*nvegsurf+1,ccEndI+ 0*nvegsurf+nvegsurf, 1)/) !Base temp. for leaf-on
-  INTEGER,DIMENSION(NVegSurf):: c_BaseTe  =(/(cc, cc=ccEndI+ 1*nvegsurf+1,ccEndI+ 1*nvegsurf+nvegsurf, 1)/) !Base temp. for leaf-off
-  INTEGER,DIMENSION(NVegSurf):: c_GDDFull =(/(cc, cc=ccEndI+ 2*nvegsurf+1,ccEndI+ 2*nvegsurf+nvegsurf, 1)/) !GDD for full LAI
-  INTEGER,DIMENSION(NVegSurf):: c_SDDFull =(/(cc, cc=ccEndI+ 3*nvegsurf+1,ccEndI+ 3*nvegsurf+nvegsurf, 1)/) !SDD for start of leaf-fall
-  INTEGER,DIMENSION(NVegSurf):: c_LAIMin  =(/(cc, cc=ccEndI+ 4*nvegsurf+1,ccEndI+ 4*nvegsurf+nvegsurf, 1)/) !Min. LAI
-  INTEGER,DIMENSION(NVegSurf):: c_LAIMax  =(/(cc, cc=ccEndI+ 5*nvegsurf+1,ccEndI+ 5*nvegsurf+nvegsurf, 1)/) !Max. LAI
-  INTEGER,DIMENSION(NVegSurf):: c_PorosityMin  =(/(cc, cc=ccEndI+ 6*nvegsurf+1,ccEndI+ 6*nvegsurf+nvegsurf, 1)/) !Min. Porosity
-  INTEGER,DIMENSION(NVegSurf):: c_PorosityMax  =(/(cc, cc=ccEndI+ 7*nvegsurf+1,ccEndI+ 7*nvegsurf+nvegsurf, 1)/) !Max. Porosity
-  INTEGER,DIMENSION(NVegSurf):: c_GsMax   =(/(cc, cc=ccEndI+ 8*nvegsurf+1,ccEndI+ 8*nvegsurf+nvegsurf, 1)/) !Max. conductance
-  INTEGER,DIMENSION(NVegSurf):: c_LAIEq   =(/(cc, cc=ccEndI+ 9*nvegsurf+1,ccEndI+ 9*nvegsurf+nvegsurf, 1)/) !LAI equation
-  INTEGER,DIMENSION(NVegSurf):: c_LeafGP1 =(/(cc, cc=ccEndI+10*nvegsurf+1,ccEndI+10*nvegsurf+nvegsurf, 1)/) !Leaf growth power 1
-  INTEGER,DIMENSION(NVegSurf):: c_LeafGP2 =(/(cc, cc=ccEndI+11*nvegsurf+1,ccEndI+11*nvegsurf+nvegsurf, 1)/) !Leaf growth power 2
-  INTEGER,DIMENSION(NVegSurf):: c_LeafOP1 =(/(cc, cc=ccEndI+12*nvegsurf+1,ccEndI+12*nvegsurf+nvegsurf, 1)/) !Leaf-off power 1
-  INTEGER,DIMENSION(NVegSurf):: c_LeafOP2 =(/(cc, cc=ccEndI+13*nvegsurf+1,ccEndI+13*nvegsurf+nvegsurf, 1)/) !Leaf-off power 2
-  INTEGER,DIMENSION(NVegSurf):: c_BiogenCO2Code = (/(cc, cc=ccEndI+14*nvegsurf+1,ccEndI+14*nvegsurf+nvegsurf, 1)/) !Biogenic CO2 Code
+  INTEGER, DIMENSION(NVegSurf) :: c_BaseT   = (/(cc, cc = ccEndI+ 0*nvegsurf+1, ccEndI+ 0*nvegsurf+nvegsurf, 1)/) !Base temp. for leaf-on
+  INTEGER, DIMENSION(NVegSurf) :: c_BaseTe  = (/(cc, cc = ccEndI+ 1*nvegsurf+1, ccEndI+ 1*nvegsurf+nvegsurf, 1)/) !Base temp. for leaf-off
+  INTEGER, DIMENSION(NVegSurf) :: c_GDDFull = (/(cc, cc = ccEndI+ 2*nvegsurf+1, ccEndI+ 2*nvegsurf+nvegsurf, 1)/) !GDD for full LAI
+  INTEGER, DIMENSION(NVegSurf) :: c_SDDFull = (/(cc, cc = ccEndI+ 3*nvegsurf+1, ccEndI+ 3*nvegsurf+nvegsurf, 1)/) !SDD for start of leaf-fall
+  INTEGER, DIMENSION(NVegSurf) :: c_LAIMin  = (/(cc, cc = ccEndI+ 4*nvegsurf+1, ccEndI+ 4*nvegsurf+nvegsurf, 1)/) !Min. LAI
+  INTEGER, DIMENSION(NVegSurf) :: c_LAIMax  = (/(cc, cc = ccEndI+ 5*nvegsurf+1, ccEndI+ 5*nvegsurf+nvegsurf, 1)/) !Max. LAI
+  INTEGER, DIMENSION(NVegSurf) :: c_PorosityMin = (/(cc, cc = ccEndI+ 6*nvegsurf+1, ccEndI+ 6*nvegsurf+nvegsurf, 1)/) !Min. Porosity
+  INTEGER, DIMENSION(NVegSurf) :: c_PorosityMax = (/(cc, cc = ccEndI+ 7*nvegsurf+1, ccEndI+ 7*nvegsurf+nvegsurf, 1)/) !Max. Porosity
+  INTEGER, DIMENSION(NVegSurf) :: c_GsMax   = (/(cc, cc = ccEndI+ 8*nvegsurf+1, ccEndI+ 8*nvegsurf+nvegsurf, 1)/) !Max. conductance
+  INTEGER, DIMENSION(NVegSurf) :: c_LAIEq   = (/(cc, cc = ccEndI+ 9*nvegsurf+1, ccEndI+ 9*nvegsurf+nvegsurf, 1)/) !LAI equation
+  INTEGER, DIMENSION(NVegSurf) :: c_LeafGP1 = (/(cc, cc = ccEndI+10*nvegsurf+1, ccEndI+10*nvegsurf+nvegsurf, 1)/) !Leaf growth power 1
+  INTEGER, DIMENSION(NVegSurf) :: c_LeafGP2 = (/(cc, cc = ccEndI+11*nvegsurf+1, ccEndI+11*nvegsurf+nvegsurf, 1)/) !Leaf growth power 2
+  INTEGER, DIMENSION(NVegSurf) :: c_LeafOP1 = (/(cc, cc = ccEndI+12*nvegsurf+1, ccEndI+12*nvegsurf+nvegsurf, 1)/) !Leaf-off power 1
+  INTEGER, DIMENSION(NVegSurf) :: c_LeafOP2 = (/(cc, cc = ccEndI+13*nvegsurf+1, ccEndI+13*nvegsurf+nvegsurf, 1)/) !Leaf-off power 2
+  INTEGER, DIMENSION(NVegSurf) :: c_BiogenCO2Code = (/(cc, cc = ccEndI+14*nvegsurf+1, ccEndI+14*nvegsurf+nvegsurf, 1)/) !Biogenic CO2 Code
   ! Find current column number
-  INTEGER,PARAMETER:: ccEndP = (ccEndI+14*nvegsurf+nvegsurf)
+  INTEGER, PARAMETER :: ccEndP = (ccEndI+14*nvegsurf+nvegsurf)
 
   ! Applicable to water surfaces only
   INTEGER:: c_WaterDepth = (ccEndP+1)
 
   ! Find current column number
-  INTEGER,PARAMETER:: ccEndW = (ccEndP+1)
+  INTEGER, PARAMETER:: ccEndW = (ccEndP+1)
 
   ! Applicable to snow only
-  INTEGER:: c_SnowRMFactor = (ccEndW+ 1)
-  INTEGER:: c_SnowTMFactor = (ccEndW+ 2)
-  INTEGER:: c_SnowAlbMin   = (ccEndW+ 3)
-  INTEGER:: c_SnowAlbMax   = (ccEndW+ 4)
+  INTEGER :: c_SnowRMFactor = (ccEndW+ 1)
+  INTEGER :: c_SnowTMFactor = (ccEndW+ 2)
+  INTEGER :: c_SnowAlbMin   = (ccEndW+ 3)
+  INTEGER :: c_SnowAlbMax   = (ccEndW+ 4)
   !integer:: c_SnowAlb      = (ccEndW+ 5)
-  INTEGER:: c_SnowEmis     = (ccEndW+ 6)
-  INTEGER:: c_Snowtau_a    = (ccEndW+ 7)
-  INTEGER:: c_Snowtau_f    = (ccEndW+ 8)
-  INTEGER:: c_SnowPLimAlb  = (ccEndW+ 9)
-  INTEGER:: c_SnowSDMin    = (ccEndW+10)
-  INTEGER:: c_SnowSDMax    = (ccEndW+11)
-  INTEGER:: c_Snowtau_r    = (ccEndW+12)
-  INTEGER:: c_SnowCRWMin   = (ccEndW+13)
-  INTEGER:: c_SnowCRWMax   = (ccEndW+14)
-  INTEGER:: c_SnowPLimSnow = (ccEndW+15)
+  INTEGER :: c_SnowEmis     = (ccEndW+ 6)
+  INTEGER :: c_Snowtau_a    = (ccEndW+ 7)
+  INTEGER :: c_Snowtau_f    = (ccEndW+ 8)
+  INTEGER :: c_SnowPLimAlb  = (ccEndW+ 9)
+  INTEGER :: c_SnowSDMin    = (ccEndW+10)
+  INTEGER :: c_SnowSDMax    = (ccEndW+11)
+  INTEGER :: c_Snowtau_r    = (ccEndW+12)
+  INTEGER :: c_SnowCRWMin   = (ccEndW+13)
+  INTEGER :: c_SnowCRWMax   = (ccEndW+14)
+  INTEGER :: c_SnowPLimSnow = (ccEndW+15)
 
   ! Find current column number
-  INTEGER,PARAMETER:: ccEndSn = (ccEndW+15)
+  INTEGER, PARAMETER :: ccEndSn = (ccEndW+15)
 
   ! Soil information
-  INTEGER,DIMENSION(nsurf):: c_SoilDepth    = (/(cc, cc=ccEndSn+ 0*nsurf+1,ccEndSn+ 0*nsurf+nsurf, 1)/)  ! Volumetric SM capacity
-  INTEGER,DIMENSION(nsurf):: c_SoilStCap = (/(cc, cc=ccEndSn+ 1*nsurf+1,ccEndSn+ 1*nsurf+nsurf, 1)/)  ! Volumetric SM capacity
-  INTEGER,DIMENSION(nsurf):: c_KSat         = (/(cc, cc=ccEndSn+ 2*nsurf+1,ccEndSn+ 2*nsurf+nsurf, 1)/)  ! Saturated hydraulic conductivity
-  INTEGER,DIMENSION(nsurf):: c_SoilDens     = (/(cc, cc=ccEndSn+ 3*nsurf+1,ccEndSn+ 3*nsurf+nsurf, 1)/)  ! Soil Density
-  INTEGER,DIMENSION(nsurf):: c_SoilInfRate  = (/(cc, cc=ccEndSn+ 4*nsurf+1,ccEndSn+ 4*nsurf+nsurf, 1)/)  ! Soil infiltration rate
-  INTEGER,DIMENSION(nsurf):: c_ObsSMDepth   = (/(cc, cc=ccEndSn+ 5*nsurf+1,ccEndSn+ 5*nsurf+nsurf, 1)/)  ! Depth of SM obs
-  INTEGER,DIMENSION(nsurf):: c_ObsSMMax     = (/(cc, cc=ccEndSn+ 6*nsurf+1,ccEndSn+ 6*nsurf+nsurf, 1)/)  ! Obs maximum SM [kg kg-1 OR m3 m-3]
-  INTEGER,DIMENSION(nsurf):: c_ObsSNRFrac   = (/(cc, cc=ccEndSn+ 7*nsurf+1,ccEndSn+ 7*nsurf+nsurf, 1)/)  ! Obs fraction of soil without rocks
+  INTEGER, DIMENSION(nsurf) :: c_SoilDepth   = (/(cc, cc = ccEndSn+ 0*nsurf+1, ccEndSn+ 0*nsurf+nsurf, 1)/)  ! Volumetric SM capacity
+  INTEGER, DIMENSION(nsurf) :: c_SoilStCap   = (/(cc, cc = ccEndSn+ 1*nsurf+1, ccEndSn+ 1*nsurf+nsurf, 1)/)  ! Volumetric SM capacity
+  INTEGER, DIMENSION(nsurf) :: c_KSat        = (/(cc, cc = ccEndSn+ 2*nsurf+1, ccEndSn+ 2*nsurf+nsurf, 1)/)  ! Saturated hydraulic conductivity
+  INTEGER, DIMENSION(nsurf) :: c_SoilDens    = (/(cc, cc = ccEndSn+ 3*nsurf+1, ccEndSn+ 3*nsurf+nsurf, 1)/)  ! Soil Density
+  INTEGER, DIMENSION(nsurf) :: c_SoilInfRate = (/(cc, cc = ccEndSn+ 4*nsurf+1, ccEndSn+ 4*nsurf+nsurf, 1)/)  ! Soil infiltration rate
+  INTEGER, DIMENSION(nsurf) :: c_ObsSMDepth  = (/(cc, cc = ccEndSn+ 5*nsurf+1, ccEndSn+ 5*nsurf+nsurf, 1)/)  ! Depth of SM obs
+  INTEGER, DIMENSION(nsurf) :: c_ObsSMMax    = (/(cc, cc = ccEndSn+ 6*nsurf+1, ccEndSn+ 6*nsurf+nsurf, 1)/)  ! Obs maximum SM [kg kg-1 OR m3 m-3]
+  INTEGER, DIMENSION(nsurf) :: c_ObsSNRFrac  = (/(cc, cc = ccEndSn+ 7*nsurf+1, ccEndSn+ 7*nsurf+nsurf, 1)/)  ! Obs fraction of soil without rocks
 
   ! Find current column number
-  INTEGER,PARAMETER:: ccEndSo = (ccEndSn+ 7*nsurf+nsurf)
+  INTEGER, PARAMETER:: ccEndSo = (ccEndSn+7*nsurf+nsurf)
 
   ! Surface conductance
-  INTEGER:: c_GsG1  = (ccEndSo+ 1)
-  INTEGER:: c_GsG2  = (ccEndSo+ 2)
-  INTEGER:: c_GsG3  = (ccEndSo+ 3)
-  INTEGER:: c_GsG4  = (ccEndSo+ 4)
-  INTEGER:: c_GsG5  = (ccEndSo+ 5)
-  INTEGER:: c_GsG6  = (ccEndSo+ 6)
-  INTEGER:: c_GsTH  = (ccEndSo+ 7)
-  INTEGER:: c_GsTL  = (ccEndSo+ 8)
-  INTEGER:: c_GsS1  = (ccEndSo+ 9)
-  INTEGER:: c_GsS2  = (ccEndSo+10)
-  INTEGER:: c_GsKmax  = (ccEndSo+11)
-  INTEGER:: c_gsModel  = (ccEndSo+12)
+  INTEGER :: c_GsG1  = (ccEndSo+ 1)
+  INTEGER :: c_GsG2  = (ccEndSo+ 2)
+  INTEGER :: c_GsG3  = (ccEndSo+ 3)
+  INTEGER :: c_GsG4  = (ccEndSo+ 4)
+  INTEGER :: c_GsG5  = (ccEndSo+ 5)
+  INTEGER :: c_GsG6  = (ccEndSo+ 6)
+  INTEGER :: c_GsTH  = (ccEndSo+ 7)
+  INTEGER :: c_GsTL  = (ccEndSo+ 8)
+  INTEGER :: c_GsS1  = (ccEndSo+ 9)
+  INTEGER :: c_GsS2  = (ccEndSo+10)
+  INTEGER :: c_GsKmax  = (ccEndSo+11)
+  INTEGER :: c_gsModel  = (ccEndSo+12)
 
   ! Find current column number
-  INTEGER,PARAMETER:: ccEndGs = (ccEndSo+12)
+  INTEGER, PARAMETER:: ccEndGs = (ccEndSo+12)
 
   ! OHM codes
-  INTEGER,DIMENSION(nsurfIncSnow):: c_OHMCode_SWet  =(/(cc, cc=ccEndGs+ 0*nsurfIncSnow+1,&
-       ccEndGs+ 0*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM code (summer wet)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_OHMCode_SDry  =(/(cc, cc=ccEndGs+ 1*nsurfIncSnow+1,&
-       ccEndGs+ 1*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM code (summer dry)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_OHMCode_WWet  =(/(cc, cc=ccEndGs+ 2*nsurfIncSnow+1,&
-       ccEndGs+ 2*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM code (winter wet)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_OHMCode_WDry  =(/(cc, cc=ccEndGs+ 3*nsurfIncSnow+1,&
-       ccEndGs+ 3*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM code (winter dry)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_a1_SWet       =(/(cc, cc=ccEndGs+ 4*nsurfIncSnow+1,&
-       ccEndGs+ 4*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a1 (summer wet)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_a2_SWet       =(/(cc, cc=ccEndGs+ 5*nsurfIncSnow+1,&
-       ccEndGs+ 5*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a2 (summer wet)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_a3_SWet       =(/(cc, cc=ccEndGs+ 6*nsurfIncSnow+1,&
-       ccEndGs+ 6*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a3 (summer wet)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_a1_SDry       =(/(cc, cc=ccEndGs+ 7*nsurfIncSnow+1,&
-       ccEndGs+ 7*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a1 (summer dry)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_a2_SDry       =(/(cc, cc=ccEndGs+ 8*nsurfIncSnow+1,&
-       ccEndGs+ 8*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a2 (summer dry)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_a3_SDry       =(/(cc, cc=ccEndGs+ 9*nsurfIncSnow+1,&
-       ccEndGs+ 9*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a3 (summer dry)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_a1_WWet       =(/(cc, cc=ccEndGs+10*nsurfIncSnow+1,&
-       ccEndGs+10*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a1 (winter wet)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_a2_WWet       =(/(cc, cc=ccEndGs+11*nsurfIncSnow+1,&
-       ccEndGs+11*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a2 (winter wet)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_a3_WWet       =(/(cc, cc=ccEndGs+12*nsurfIncSnow+1,&
-       ccEndGs+12*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a3 (winter wet)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_a1_WDry       =(/(cc, cc=ccEndGs+13*nsurfIncSnow+1,&
-       ccEndGs+13*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a1 (winter dry)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_a2_WDry       =(/(cc, cc=ccEndGs+14*nsurfIncSnow+1,&
-       ccEndGs+14*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a2 (winter dry)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_a3_WDry       =(/(cc, cc=ccEndGs+15*nsurfIncSnow+1,&
-       ccEndGs+15*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a3 (winter dry)
-
-  INTEGER,DIMENSION(nsurfIncSnow):: c_OHMThresh_SW  =(/(cc, cc=ccEndGs+ 16*nsurfIncSnow+1,&
-       ccEndGs+ 16*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM Threshold (summer/winter)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_OHMThresh_WD  =(/(cc, cc=ccEndGs+ 17*nsurfIncSnow+1,&
-       ccEndGs+ 17*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM Threshold (wet/dry)
+  INTEGER, DIMENSION(nsurfIncSnow) :: c_OHMCode_SWet = (/(cc, cc = ccEndGs+ 0*nsurfIncSnow+1, &
+                                                          ccEndGs+ 0*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM code (summer wet)
+  INTEGER, DIMENSION(nsurfIncSnow) :: c_OHMCode_SDry = (/(cc, cc = ccEndGs+ 1*nsurfIncSnow+1, &
+                                                          ccEndGs+ 1*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM code (summer dry)
+  INTEGER, DIMENSION(nsurfIncSnow) :: c_OHMCode_WWet = (/(cc, cc = ccEndGs+ 2*nsurfIncSnow+1, &
+                                                          ccEndGs+ 2*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM code (winter wet)
+  INTEGER, DIMENSION(nsurfIncSnow) :: c_OHMCode_WDry = (/(cc, cc = ccEndGs+ 3*nsurfIncSnow+1, &
+                                                          ccEndGs+ 3*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM code (winter dry)
+  INTEGER, DIMENSION(nsurfIncSnow) :: c_a1_SWet      = (/(cc, cc=ccEndGs+ 4*nsurfIncSnow+1, &
+                                                          ccEndGs+ 4*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a1 (summer wet)
+  INTEGER, DIMENSION(nsurfIncSnow) :: c_a2_SWet      = (/(cc, cc = ccEndGs+ 5*nsurfIncSnow+1, &
+                                                          ccEndGs+ 5*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a2 (summer wet)
+  INTEGER, DIMENSION(nsurfIncSnow) :: c_a3_SWet      = (/(cc, cc = ccEndGs+ 6*nsurfIncSnow+1, &
+                                                         ccEndGs+ 6*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a3 (summer wet)
+  INTEGER, DIMENSION(nsurfIncSnow) :: c_a1_SDry      = (/(cc, cc = ccEndGs+ 7*nsurfIncSnow+1, &
+                                                          ccEndGs+ 7*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a1 (summer dry)
+  INTEGER, DIMENSION(nsurfIncSnow) :: c_a2_SDry      = (/(cc, cc = ccEndGs+ 8*nsurfIncSnow+1, &
+                                                          ccEndGs+ 8*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a2 (summer dry)
+  INTEGER, DIMENSION(nsurfIncSnow) :: c_a3_SDry      = (/(cc, cc = ccEndGs+ 9*nsurfIncSnow+1, &
+                                                          ccEndGs+ 9*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a3 (summer dry)
+  INTEGER, DIMENSION(nsurfIncSnow) :: c_a1_WWet      = (/(cc, cc = ccEndGs+10*nsurfIncSnow+1, &
+                                                          ccEndGs+10*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a1 (winter wet)
+  INTEGER, DIMENSION(nsurfIncSnow) :: c_a2_WWet      = (/(cc, cc = ccEndGs+11*nsurfIncSnow+1, &
+                                                          ccEndGs+11*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a2 (winter wet)
+  INTEGER, DIMENSION(nsurfIncSnow) :: c_a3_WWet      = (/(cc, cc = ccEndGs+12*nsurfIncSnow+1, &
+                                                          ccEndGs+12*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a3 (winter wet)
+  INTEGER, DIMENSION(nsurfIncSnow) :: c_a1_WDry      = (/(cc, cc = ccEndGs+13*nsurfIncSnow+1, &
+                                                          ccEndGs+13*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a1 (winter dry)
+  INTEGER, DIMENSION(nsurfIncSnow) :: c_a2_WDry      = (/(cc, cc = ccEndGs+14*nsurfIncSnow+1, &
+                                                          ccEndGs+14*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a2 (winter dry)
+  INTEGER, DIMENSION(nsurfIncSnow) :: c_a3_WDry      = (/(cc, cc = ccEndGs+15*nsurfIncSnow+1, &
+                                                          ccEndGs+15*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM a3 (winter dry)
+  INTEGER, DIMENSION(nsurfIncSnow) :: c_OHMThresh_SW = (/(cc, cc = ccEndGs+ 16*nsurfIncSnow+1, &
+                                                          ccEndGs+ 16*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM Threshold (summer/winter)
+  INTEGER, DIMENSION(nsurfIncSnow) :: c_OHMThresh_WD = (/(cc, cc = ccEndGs+ 17*nsurfIncSnow+1, &
+                                                          ccEndGs+ 17*nsurfIncSnow+nsurfIncSnow, 1)/)  !OHM Threshold (wet/dry)
 
   ! ESTM code for each surface inclduing snow
-  INTEGER,DIMENSION(nsurfIncSnow):: c_ESTMCode      = (/(cc, cc=ccEndGs+18*nsurfIncSnow+1,&
-       ccEndGs+18*nsurfIncSnow+nsurfIncSnow, 1)/)  !ESTM code
+  INTEGER, DIMENSION(nsurfIncSnow) :: c_ESTMCode     = (/(cc, cc = ccEndGs+18*nsurfIncSnow+1, &
+                                                          ccEndGs+18*nsurfIncSnow+nsurfIncSnow, 1)/)  !ESTM code
 
   ! Find current column number
-  INTEGER,PARAMETER:: ccEndO = (ccEndGs+18*nsurfIncSnow+nsurfIncSnow)
+  INTEGER, PARAMETER :: ccEndO = (ccEndGs+18*nsurfIncSnow+nsurfIncSnow)
 
   ! Anthropogenic Emissions
   INTEGER :: c_BaseTHDD               = (ccEndO+ 1)
@@ -610,239 +608,239 @@ MODULE allocateArray
   INTEGER :: c_TrafficUnits           = (ccEndO+33)
 
   ! Find current column number
-  INTEGER,PARAMETER:: ccEndA = (ccEndO+33)
+  INTEGER, PARAMETER :: ccEndA = (ccEndO+33)
 
   ! Irrigation
-  INTEGER :: c_IeStart    = (ccEndA+ 1)
-  INTEGER :: c_IeEnd    = (ccEndA+ 2)
-  INTEGER :: c_IntWU    = (ccEndA+ 3)
+  INTEGER :: c_IeStart = (ccEndA+ 1)
+  INTEGER :: c_IeEnd   = (ccEndA+ 2)
+  INTEGER :: c_IntWU   = (ccEndA+ 3)
   INTEGER :: c_Faut    = (ccEndA+ 4)
-  INTEGER,DIMENSION(3):: c_Ie_a      = (/(cc, cc=ccEndA+4+ 0*3+1, ccEndA+4 + 0*3+3, 1)/)  ! Automatic irrigation coeffs
-  INTEGER,DIMENSION(3):: c_Ie_m      = (/(cc, cc=ccEndA+4+ 1*3+1, ccEndA+4 + 1*3+3, 1)/)  ! Manual irrigation coeffs
-  INTEGER,DIMENSION(7):: c_DayWat    = (/(cc, cc=ccEndA+10+ 0*7+1,ccEndA+10+ 0*7+7, 1)/)  ! Irrigation allowed on each day
-  INTEGER,DIMENSION(7):: c_DayWatPer = (/(cc, cc=ccEndA+10+ 1*7+1,ccEndA+10+ 1*7+7, 1)/)  ! Fraction properties using irrigation allowed on each day
+  INTEGER, DIMENSION(3) :: c_Ie_a      = (/(cc, cc = ccEndA+4+ 0*3+1, ccEndA+4 + 0*3+3, 1)/)  ! Automatic irrigation coeffs
+  INTEGER, DIMENSION(3) :: c_Ie_m      = (/(cc, cc = ccEndA+4+ 1*3+1, ccEndA+4 + 1*3+3, 1)/)  ! Manual irrigation coeffs
+  INTEGER, DIMENSION(7) :: c_DayWat    = (/(cc, cc = ccEndA+10+ 0*7+1,ccEndA+10+ 0*7+7, 1)/)  ! Irrigation allowed on each day
+  INTEGER, DIMENSION(7) :: c_DayWatPer = (/(cc, cc = ccEndA+10+ 1*7+1,ccEndA+10+ 1*7+7, 1)/)  ! Fraction properties using irrigation allowed on each day
 
   ! Find current column number
-  INTEGER,PARAMETER:: ccEndIr = (ccEndA+10+ 1*7+7)
+  INTEGER, PARAMETER :: ccEndIr = (ccEndA+10+ 1*7+7)
 
   ! Hourly profiles
-  INTEGER,DIMENSION(24):: c_HrProfEnUseWD  = (/(cc, cc=ccEndIr+ 0*24+1, ccEndIr+ 0*24+24, 1)/)  ! Energy use, weekdays
-  INTEGER,DIMENSION(24):: c_HrProfEnUseWE  = (/(cc, cc=ccEndIr+ 1*24+1, ccEndIr+ 1*24+24, 1)/)  ! Energy use, weekends
-  INTEGER,DIMENSION(24):: c_HrProfWUManuWD = (/(cc, cc=ccEndIr+ 2*24+1, ccEndIr+ 2*24+24, 1)/)  ! Water use, manual, weekdays
-  INTEGER,DIMENSION(24):: c_HrProfWUManuWE = (/(cc, cc=ccEndIr+ 3*24+1, ccEndIr+ 3*24+24, 1)/)  ! Water use, manual, weekends
-  INTEGER,DIMENSION(24):: c_HrProfWUAutoWD = (/(cc, cc=ccEndIr+ 4*24+1, ccEndIr+ 4*24+24, 1)/)  ! Water use, automatic, weekdays
-  INTEGER,DIMENSION(24):: c_HrProfWUAutoWE = (/(cc, cc=ccEndIr+ 5*24+1, ccEndIr+ 5*24+24, 1)/)  ! Water use, automatic, weekends
-  INTEGER,DIMENSION(24):: c_HrProfSnowCWD  = (/(cc, cc=ccEndIr+ 6*24+1, ccEndIr+ 6*24+24, 1)/)  ! Snow clearing, weekdays
-  INTEGER,DIMENSION(24):: c_HrProfSnowCWE  = (/(cc, cc=ccEndIr+ 7*24+1, ccEndIr+ 7*24+24, 1)/)  ! Snow clearing, weekends
-  INTEGER,DIMENSION(24):: c_HrProfHumActivityWD = (/(cc, cc=ccEndIr+ 8*24+1, ccEndIr+ 8*24+24, 1)/)  ! Human activity, weekdays
-  INTEGER,DIMENSION(24):: c_HrProfHumActivityWE = (/(cc, cc=ccEndIr+ 9*24+1, ccEndIr+ 9*24+24, 1)/)  ! Human activity, weekends
-  INTEGER,DIMENSION(24):: c_HrProfTraffWD  = (/(cc, cc=ccEndIr+ 10*24+1, ccEndIr+ 10*24+24, 1)/) ! Traffic, weekdays
-  INTEGER,DIMENSION(24):: c_HrProfTraffWE  = (/(cc, cc=ccEndIr+ 11*24+1, ccEndIr+ 11*24+24, 1)/) ! Traffic, weekends
-  INTEGER,DIMENSION(24):: c_HrProfPopWD    = (/(cc, cc=ccEndIr+ 12*24+1, ccEndIr+ 12*24+24, 1)/) ! Population, weekdays
-  INTEGER,DIMENSION(24):: c_HrProfPopWE    = (/(cc, cc=ccEndIr+ 13*24+1, ccEndIr+ 13*24+24, 1)/) ! Population, weekends
+  INTEGER, DIMENSION(24) :: c_HrProfEnUseWD  = (/(cc, cc = ccEndIr+ 0*24+1, ccEndIr+ 0*24+24, 1)/)  ! Energy use, weekdays
+  INTEGER, DIMENSION(24) :: c_HrProfEnUseWE  = (/(cc, cc = ccEndIr+ 1*24+1, ccEndIr+ 1*24+24, 1)/)  ! Energy use, weekends
+  INTEGER, DIMENSION(24) :: c_HrProfWUManuWD = (/(cc, cc = ccEndIr+ 2*24+1, ccEndIr+ 2*24+24, 1)/)  ! Water use, manual, weekdays
+  INTEGER, DIMENSION(24) :: c_HrProfWUManuWE = (/(cc, cc = ccEndIr+ 3*24+1, ccEndIr+ 3*24+24, 1)/)  ! Water use, manual, weekends
+  INTEGER, DIMENSION(24) :: c_HrProfWUAutoWD = (/(cc, cc = ccEndIr+ 4*24+1, ccEndIr+ 4*24+24, 1)/)  ! Water use, automatic, weekdays
+  INTEGER, DIMENSION(24) :: c_HrProfWUAutoWE = (/(cc, cc = ccEndIr+ 5*24+1, ccEndIr+ 5*24+24, 1)/)  ! Water use, automatic, weekends
+  INTEGER, DIMENSION(24) :: c_HrProfSnowCWD  = (/(cc, cc = ccEndIr+ 6*24+1, ccEndIr+ 6*24+24, 1)/)  ! Snow clearing, weekdays
+  INTEGER, DIMENSION(24) :: c_HrProfSnowCWE  = (/(cc, cc = ccEndIr+ 7*24+1, ccEndIr+ 7*24+24, 1)/)  ! Snow clearing, weekends
+  INTEGER, DIMENSION(24) :: c_HrProfHumActivityWD = (/(cc, cc = ccEndIr+ 8*24+1, ccEndIr+ 8*24+24, 1)/)  ! Human activity, weekdays
+  INTEGER, DIMENSION(24) :: c_HrProfHumActivityWE = (/(cc, cc = ccEndIr+ 9*24+1, ccEndIr+ 9*24+24, 1)/)  ! Human activity, weekends
+  INTEGER, DIMENSION(24) :: c_HrProfTraffWD  = (/(cc, cc = ccEndIr+ 10*24+1, ccEndIr+ 10*24+24, 1)/) ! Traffic, weekdays
+  INTEGER, DIMENSION(24) :: c_HrProfTraffWE  = (/(cc, cc = ccEndIr+ 11*24+1, ccEndIr+ 11*24+24, 1)/) ! Traffic, weekends
+  INTEGER, DIMENSION(24) :: c_HrProfPopWD    = (/(cc, cc = ccEndIr+ 12*24+1, ccEndIr+ 12*24+24, 1)/) ! Population, weekdays
+  INTEGER, DIMENSION(24) :: c_HrProfPopWE    = (/(cc, cc = ccEndIr+ 13*24+1, ccEndIr+ 13*24+24, 1)/) ! Population, weekends
 
 
   ! Find current column number
-  INTEGER,PARAMETER:: ccEndPr = (ccEndIr+ 13*24+24)
+  INTEGER, PARAMETER :: ccEndPr = (ccEndIr+ 13*24+24)
 
   ! Within-grid water distribution (for each surface)
-  INTEGER,DIMENSION(nsurf):: c_WGToPaved = (/(cc, cc=ccEndPr+ 0*nsurf+1,ccEndPr+ 0*nsurf+nsurf, 1)/) !Water dist to Paved
-  INTEGER,DIMENSION(nsurf):: c_WGToBldgs = (/(cc, cc=ccEndPr+ 1*nsurf+1,ccEndPr+ 1*nsurf+nsurf, 1)/) !Water dist to Bldgs
-  INTEGER,DIMENSION(nsurf):: c_WGToEveTr = (/(cc, cc=ccEndPr+ 2*nsurf+1,ccEndPr+ 2*nsurf+nsurf, 1)/) !Water dist to EveTr
-  INTEGER,DIMENSION(nsurf):: c_WGToDecTr = (/(cc, cc=ccEndPr+ 3*nsurf+1,ccEndPr+ 3*nsurf+nsurf, 1)/) !Water dist to DecTr
-  INTEGER,DIMENSION(nsurf):: c_WGToGrass = (/(cc, cc=ccEndPr+ 4*nsurf+1,ccEndPr+ 4*nsurf+nsurf, 1)/) !Water dist to Grass
-  INTEGER,DIMENSION(nsurf):: c_WGToBSoil = (/(cc, cc=ccEndPr+ 5*nsurf+1,ccEndPr+ 5*nsurf+nsurf, 1)/) !Water dist to BSoil
-  INTEGER,DIMENSION(nsurf):: c_WGToWater = (/(cc, cc=ccEndPr+ 6*nsurf+1,ccEndPr+ 6*nsurf+nsurf, 1)/) !Water dist to Water
-  INTEGER,DIMENSION(nsurf):: c_WGToRunoff    = (/(cc, cc=ccEndPr+ 7*nsurf+1,ccEndPr+ 7*nsurf+nsurf, 1)/) !Water dist to runoff
-  INTEGER,DIMENSION(nsurf):: c_WGToSoilStore = (/(cc, cc=ccEndPr+ 8*nsurf+1,ccEndPr+ 8*nsurf+nsurf, 1)/) !Water dist to sub-surface soil
+  INTEGER, DIMENSION(nsurf) :: c_WGToPaved = (/(cc, cc = ccEndPr+ 0*nsurf+1,ccEndPr+ 0*nsurf+nsurf, 1)/) !Water dist to Paved
+  INTEGER, DIMENSION(nsurf) :: c_WGToBldgs = (/(cc, cc = ccEndPr+ 1*nsurf+1,ccEndPr+ 1*nsurf+nsurf, 1)/) !Water dist to Bldgs
+  INTEGER, DIMENSION(nsurf) :: c_WGToEveTr = (/(cc, cc = ccEndPr+ 2*nsurf+1,ccEndPr+ 2*nsurf+nsurf, 1)/) !Water dist to EveTr
+  INTEGER, DIMENSION(nsurf) :: c_WGToDecTr = (/(cc, cc = ccEndPr+ 3*nsurf+1,ccEndPr+ 3*nsurf+nsurf, 1)/) !Water dist to DecTr
+  INTEGER, DIMENSION(nsurf) :: c_WGToGrass = (/(cc, cc = ccEndPr+ 4*nsurf+1,ccEndPr+ 4*nsurf+nsurf, 1)/) !Water dist to Grass
+  INTEGER, DIMENSION(nsurf) :: c_WGToBSoil = (/(cc, cc = ccEndPr+ 5*nsurf+1,ccEndPr+ 5*nsurf+nsurf, 1)/) !Water dist to BSoil
+  INTEGER, DIMENSION(nsurf) :: c_WGToWater = (/(cc, cc = ccEndPr+ 6*nsurf+1,ccEndPr+ 6*nsurf+nsurf, 1)/) !Water dist to Water
+  INTEGER, DIMENSION(nsurf) :: c_WGToRunoff    = (/(cc, cc = ccEndPr+ 7*nsurf+1,ccEndPr+ 7*nsurf+nsurf, 1)/) !Water dist to runoff
+  INTEGER, DIMENSION(nsurf) :: c_WGToSoilStore = (/(cc, cc = ccEndPr+ 8*nsurf+1,ccEndPr+ 8*nsurf+nsurf, 1)/) !Water dist to sub-surface soil
 
   ! Find current column number
-  INTEGER,PARAMETER:: cBEndWG = (ccEndPr+ 8*nsurf+nsurf)
+  INTEGER, PARAMETER :: cBEndWG = (ccEndPr+ 8*nsurf+nsurf)
 
   ! Biogenic CO2
-  INTEGER,DIMENSION(nvegsurf):: c_alpha_bioCO2     = (/(cc, cc=cBEndWG+ 0*nvegsurf+1,cBEndWG+ 0*nvegsurf+nvegsurf, 1)/)
-  INTEGER,DIMENSION(nvegsurf):: c_beta_bioCO2      = (/(cc, cc=cBEndWG+ 1*nvegsurf+1,cBEndWG+ 1*nvegsurf+nvegsurf, 1)/)
-  INTEGER,DIMENSION(nvegsurf):: c_theta_bioCO2     = (/(cc, cc=cBEndWG+ 2*nvegsurf+1,cBEndWG+ 2*nvegsurf+nvegsurf, 1)/)
-  INTEGER,DIMENSION(nvegsurf):: c_alpha_enh_bioCO2 = (/(cc, cc=cBEndWG+ 3*nvegsurf+1,cBEndWG+ 3*nvegsurf+nvegsurf, 1)/)
-  INTEGER,DIMENSION(nvegsurf):: c_beta_enh_bioCO2  = (/(cc, cc=cBEndWG+ 4*nvegsurf+1,cBEndWG+ 4*nvegsurf+nvegsurf, 1)/)
-  INTEGER,DIMENSION(nvegsurf):: c_resp_a           = (/(cc, cc=cBEndWG+ 5*nvegsurf+1,cBEndWG+ 5*nvegsurf+nvegsurf, 1)/)
-  INTEGER,DIMENSION(nvegsurf):: c_resp_b           = (/(cc, cc=cBEndWG+ 6*nvegsurf+1,cBEndWG+ 6*nvegsurf+nvegsurf, 1)/)
-  INTEGER,DIMENSION(nvegsurf):: c_min_res_bioCO2   = (/(cc, cc=cBEndWG+ 7*nvegsurf+1,cBEndWG+ 7*nvegsurf+nvegsurf, 1)/)
+  INTEGER, DIMENSION(nvegsurf) :: c_alpha_bioCO2     = (/(cc, cc = cBEndWG+ 0*nvegsurf+1,cBEndWG+ 0*nvegsurf+nvegsurf, 1)/)
+  INTEGER, DIMENSION(nvegsurf) :: c_beta_bioCO2      = (/(cc, cc = cBEndWG+ 1*nvegsurf+1,cBEndWG+ 1*nvegsurf+nvegsurf, 1)/)
+  INTEGER, DIMENSION(nvegsurf) :: c_theta_bioCO2     = (/(cc, cc = cBEndWG+ 2*nvegsurf+1,cBEndWG+ 2*nvegsurf+nvegsurf, 1)/)
+  INTEGER, DIMENSION(nvegsurf) :: c_alpha_enh_bioCO2 = (/(cc, cc = cBEndWG+ 3*nvegsurf+1,cBEndWG+ 3*nvegsurf+nvegsurf, 1)/)
+  INTEGER, DIMENSION(nvegsurf) :: c_beta_enh_bioCO2  = (/(cc, cc = cBEndWG+ 4*nvegsurf+1,cBEndWG+ 4*nvegsurf+nvegsurf, 1)/)
+  INTEGER, DIMENSION(nvegsurf) :: c_resp_a           = (/(cc, cc = cBEndWG+ 5*nvegsurf+1,cBEndWG+ 5*nvegsurf+nvegsurf, 1)/)
+  INTEGER, DIMENSION(nvegsurf) :: c_resp_b           = (/(cc, cc = cBEndWG+ 6*nvegsurf+1,cBEndWG+ 6*nvegsurf+nvegsurf, 1)/)
+  INTEGER, DIMENSION(nvegsurf) :: c_min_res_bioCO2   = (/(cc, cc = cBEndWG+ 7*nvegsurf+1,cBEndWG+ 7*nvegsurf+nvegsurf, 1)/)
 
   ! Find current column number
-  INTEGER,PARAMETER:: ccEndB = (cBEndWG+7*nvegsurf+nvegsurf)
+  INTEGER, PARAMETER :: ccEndB = (cBEndWG+7*nvegsurf+nvegsurf)
 
   !ESTM
   ! Roof/surface characteristics for all surfaces including snow
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_thick1  = (/(cc, cc=ccEndB+ 0*nsurfIncSnow+1,ccEndB+ 0*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_k1      = (/(cc, cc=ccEndB+ 1*nsurfIncSnow+1,ccEndB+ 1*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_rhoCp1  = (/(cc, cc=ccEndB+ 2*nsurfIncSnow+1,ccEndB+ 2*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_thick2  = (/(cc, cc=ccEndB+ 3*nsurfIncSnow+1,ccEndB+ 3*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_k2      = (/(cc, cc=ccEndB+ 4*nsurfIncSnow+1,ccEndB+ 4*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_rhoCp2  = (/(cc, cc=ccEndB+ 5*nsurfIncSnow+1,ccEndB+ 5*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_thick3  = (/(cc, cc=ccEndB+ 6*nsurfIncSnow+1,ccEndB+ 6*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_k3      = (/(cc, cc=ccEndB+ 7*nsurfIncSnow+1,ccEndB+ 7*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_rhoCp3  = (/(cc, cc=ccEndB+ 8*nsurfIncSnow+1,ccEndB+ 8*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_thick4  = (/(cc, cc=ccEndB+ 9*nsurfIncSnow+1,ccEndB+ 9*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_k4      = (/(cc, cc=ccEndB+10*nsurfIncSnow+1,ccEndB+10*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_rhoCp4  = (/(cc, cc=ccEndB+11*nsurfIncSnow+1,ccEndB+11*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_thick5  = (/(cc, cc=ccEndB+12*nsurfIncSnow+1,ccEndB+12*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_k5      = (/(cc, cc=ccEndB+13*nsurfIncSnow+1,ccEndB+13*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_rhoCp5  = (/(cc, cc=ccEndB+14*nsurfIncSnow+1,ccEndB+14*nsurfIncSnow+nsurfIncSnow, 1)/)
+  INTEGER, DIMENSION(nsurfIncSnow) :: c_Surf_thick1  = (/(cc, cc=ccEndB+ 0*nsurfIncSnow+1,ccEndB+ 0*nsurfIncSnow+nsurfIncSnow, 1)/)
+  INTEGER, DIMENSION(nsurfIncSnow) :: c_Surf_k1      = (/(cc, cc=ccEndB+ 1*nsurfIncSnow+1,ccEndB+ 1*nsurfIncSnow+nsurfIncSnow, 1)/)
+  INTEGER, DIMENSION(nsurfIncSnow) :: c_Surf_rhoCp1  = (/(cc, cc=ccEndB+ 2*nsurfIncSnow+1,ccEndB+ 2*nsurfIncSnow+nsurfIncSnow, 1)/)
+  INTEGER, DIMENSION(nsurfIncSnow) :: c_Surf_thick2  = (/(cc, cc=ccEndB+ 3*nsurfIncSnow+1,ccEndB+ 3*nsurfIncSnow+nsurfIncSnow, 1)/)
+  INTEGER, DIMENSION(nsurfIncSnow) :: c_Surf_k2      = (/(cc, cc=ccEndB+ 4*nsurfIncSnow+1,ccEndB+ 4*nsurfIncSnow+nsurfIncSnow, 1)/)
+  INTEGER, DIMENSION(nsurfIncSnow) :: c_Surf_rhoCp2  = (/(cc, cc=ccEndB+ 5*nsurfIncSnow+1,ccEndB+ 5*nsurfIncSnow+nsurfIncSnow, 1)/)
+  INTEGER, DIMENSION(nsurfIncSnow) :: c_Surf_thick3  = (/(cc, cc=ccEndB+ 6*nsurfIncSnow+1,ccEndB+ 6*nsurfIncSnow+nsurfIncSnow, 1)/)
+  INTEGER, DIMENSION(nsurfIncSnow) :: c_Surf_k3      = (/(cc, cc=ccEndB+ 7*nsurfIncSnow+1,ccEndB+ 7*nsurfIncSnow+nsurfIncSnow, 1)/)
+  INTEGER, DIMENSION(nsurfIncSnow) :: c_Surf_rhoCp3  = (/(cc, cc=ccEndB+ 8*nsurfIncSnow+1,ccEndB+ 8*nsurfIncSnow+nsurfIncSnow, 1)/)
+  INTEGER, DIMENSION(nsurfIncSnow) :: c_Surf_thick4  = (/(cc, cc=ccEndB+ 9*nsurfIncSnow+1,ccEndB+ 9*nsurfIncSnow+nsurfIncSnow, 1)/)
+  INTEGER, DIMENSION(nsurfIncSnow) :: c_Surf_k4      = (/(cc, cc=ccEndB+10*nsurfIncSnow+1,ccEndB+10*nsurfIncSnow+nsurfIncSnow, 1)/)
+  INTEGER, DIMENSION(nsurfIncSnow) :: c_Surf_rhoCp4  = (/(cc, cc=ccEndB+11*nsurfIncSnow+1,ccEndB+11*nsurfIncSnow+nsurfIncSnow, 1)/)
+  INTEGER, DIMENSION(nsurfIncSnow) :: c_Surf_thick5  = (/(cc, cc=ccEndB+12*nsurfIncSnow+1,ccEndB+12*nsurfIncSnow+nsurfIncSnow, 1)/)
+  INTEGER, DIMENSION(nsurfIncSnow) :: c_Surf_k5      = (/(cc, cc=ccEndB+13*nsurfIncSnow+1,ccEndB+13*nsurfIncSnow+nsurfIncSnow, 1)/)
+  INTEGER, DIMENSION(nsurfIncSnow) :: c_Surf_rhoCp5  = (/(cc, cc=ccEndB+14*nsurfIncSnow+1,ccEndB+14*nsurfIncSnow+nsurfIncSnow, 1)/)
   ! Find current column number
-  INTEGER,PARAMETER:: ccEndESTMB = (ccEndB+14*nsurfIncSnow+nsurfIncSnow)
+  INTEGER, PARAMETER :: ccEndESTMB = (ccEndB+14*nsurfIncSnow+nsurfIncSnow)
   ! Other ESTM characteristics are for built surfaces only
-  INTEGER:: c_Wall_thick1  = (ccEndESTMB+ 1)
-  INTEGER:: c_Wall_k1      = (ccEndESTMB+ 2)
-  INTEGER:: c_Wall_rhoCp1  = (ccEndESTMB+ 3)
-  INTEGER:: c_Wall_thick2  = (ccEndESTMB+ 4)
-  INTEGER:: c_Wall_k2      = (ccEndESTMB+ 5)
-  INTEGER:: c_Wall_rhoCp2  = (ccEndESTMB+ 6)
-  INTEGER:: c_Wall_thick3  = (ccEndESTMB+ 7)
-  INTEGER:: c_Wall_k3      = (ccEndESTMB+ 8)
-  INTEGER:: c_Wall_rhoCp3  = (ccEndESTMB+ 9)
-  INTEGER:: c_Wall_thick4  = (ccEndESTMB+10)
-  INTEGER:: c_Wall_k4      = (ccEndESTMB+11)
-  INTEGER:: c_Wall_rhoCp4  = (ccEndESTMB+12)
-  INTEGER:: c_Wall_thick5  = (ccEndESTMB+13)
-  INTEGER:: c_Wall_k5      = (ccEndESTMB+14)
-  INTEGER:: c_Wall_rhoCp5  = (ccEndESTMB+15)
-  INTEGER:: c_Internal_thick1  = (ccEndESTMB+16)
-  INTEGER:: c_Internal_k1      = (ccEndESTMB+17)
-  INTEGER:: c_Internal_rhoCp1  = (ccEndESTMB+18)
-  INTEGER:: c_Internal_thick2  = (ccEndESTMB+19)
-  INTEGER:: c_Internal_k2      = (ccEndESTMB+20)
-  INTEGER:: c_Internal_rhoCp2  = (ccEndESTMB+21)
-  INTEGER:: c_Internal_thick3  = (ccEndESTMB+22)
-  INTEGER:: c_Internal_k3      = (ccEndESTMB+23)
-  INTEGER:: c_Internal_rhoCp3  = (ccEndESTMB+24)
-  INTEGER:: c_Internal_thick4  = (ccEndESTMB+25)
-  INTEGER:: c_Internal_k4      = (ccEndESTMB+26)
-  INTEGER:: c_Internal_rhoCp4  = (ccEndESTMB+27)
-  INTEGER:: c_Internal_thick5  = (ccEndESTMB+28)
-  INTEGER:: c_Internal_k5      = (ccEndESTMB+29)
-  INTEGER:: c_Internal_rhoCp5  = (ccEndESTMB+30)
-  INTEGER:: c_nroom      =  (ccEndESTMB+31)
-  INTEGER:: c_alb_ibld   =  (ccEndESTMB+32)
-  INTEGER:: c_em_ibld    =  (ccEndESTMB+33)
-  INTEGER:: c_CH_iwall   =  (ccEndESTMB+34)
-  INTEGER:: c_CH_iroof   =  (ccEndESTMB+35)
-  INTEGER:: c_CH_ibld    =  (ccEndESTMB+36)
+  INTEGER :: c_Wall_thick1  = (ccEndESTMB+ 1)
+  INTEGER :: c_Wall_k1      = (ccEndESTMB+ 2)
+  INTEGER :: c_Wall_rhoCp1  = (ccEndESTMB+ 3)
+  INTEGER :: c_Wall_thick2  = (ccEndESTMB+ 4)
+  INTEGER :: c_Wall_k2      = (ccEndESTMB+ 5)
+  INTEGER :: c_Wall_rhoCp2  = (ccEndESTMB+ 6)
+  INTEGER :: c_Wall_thick3  = (ccEndESTMB+ 7)
+  INTEGER :: c_Wall_k3      = (ccEndESTMB+ 8)
+  INTEGER :: c_Wall_rhoCp3  = (ccEndESTMB+ 9)
+  INTEGER :: c_Wall_thick4  = (ccEndESTMB+10)
+  INTEGER :: c_Wall_k4      = (ccEndESTMB+11)
+  INTEGER :: c_Wall_rhoCp4  = (ccEndESTMB+12)
+  INTEGER :: c_Wall_thick5  = (ccEndESTMB+13)
+  INTEGER :: c_Wall_k5      = (ccEndESTMB+14)
+  INTEGER :: c_Wall_rhoCp5  = (ccEndESTMB+15)
+  INTEGER :: c_Internal_thick1  = (ccEndESTMB+16)
+  INTEGER :: c_Internal_k1      = (ccEndESTMB+17)
+  INTEGER :: c_Internal_rhoCp1  = (ccEndESTMB+18)
+  INTEGER :: c_Internal_thick2  = (ccEndESTMB+19)
+  INTEGER :: c_Internal_k2      = (ccEndESTMB+20)
+  INTEGER :: c_Internal_rhoCp2  = (ccEndESTMB+21)
+  INTEGER :: c_Internal_thick3  = (ccEndESTMB+22)
+  INTEGER :: c_Internal_k3      = (ccEndESTMB+23)
+  INTEGER :: c_Internal_rhoCp3  = (ccEndESTMB+24)
+  INTEGER :: c_Internal_thick4  = (ccEndESTMB+25)
+  INTEGER :: c_Internal_k4      = (ccEndESTMB+26)
+  INTEGER :: c_Internal_rhoCp4  = (ccEndESTMB+27)
+  INTEGER :: c_Internal_thick5  = (ccEndESTMB+28)
+  INTEGER :: c_Internal_k5      = (ccEndESTMB+29)
+  INTEGER :: c_Internal_rhoCp5  = (ccEndESTMB+30)
+  INTEGER :: c_nroom      =  (ccEndESTMB+31)
+  INTEGER :: c_alb_ibld   =  (ccEndESTMB+32)
+  INTEGER :: c_em_ibld    =  (ccEndESTMB+33)
+  INTEGER :: c_CH_iwall   =  (ccEndESTMB+34)
+  INTEGER :: c_CH_iroof   =  (ccEndESTMB+35)
+  INTEGER :: c_CH_ibld    =  (ccEndESTMB+36)
   ! Find current column number
-  INTEGER,PARAMETER:: ccEndESTMM = (ccEndESTMB+36)
+  INTEGER, PARAMETER :: ccEndESTMM = (ccEndESTMB+36)
   ! For Paved surfaces, there are 3 possible ESTM classes (with _Surf characteristics only)
-  INTEGER,DIMENSION(3):: c_Surf_thick1_Paved  = (/(cc, cc=ccEndESTMM+ 0*3+1,ccEndESTMM+ 0*3+3, 1)/)
-  INTEGER,DIMENSION(3):: c_Surf_k1_Paved      = (/(cc, cc=ccEndESTMM+ 1*3+1,ccEndESTMM+ 1*3+3, 1)/)
-  INTEGER,DIMENSION(3):: c_Surf_rhoCp1_Paved  = (/(cc, cc=ccEndESTMM+ 2*3+1,ccEndESTMM+ 2*3+3, 1)/)
-  INTEGER,DIMENSION(3):: c_Surf_thick2_Paved  = (/(cc, cc=ccEndESTMM+ 3*3+1,ccEndESTMM+ 3*3+3, 1)/)
-  INTEGER,DIMENSION(3):: c_Surf_k2_Paved      = (/(cc, cc=ccEndESTMM+ 4*3+1,ccEndESTMM+ 4*3+3, 1)/)
-  INTEGER,DIMENSION(3):: c_Surf_rhoCp2_Paved  = (/(cc, cc=ccEndESTMM+ 5*3+1,ccEndESTMM+ 5*3+3, 1)/)
-  INTEGER,DIMENSION(3):: c_Surf_thick3_Paved  = (/(cc, cc=ccEndESTMM+ 6*3+1,ccEndESTMM+ 6*3+3, 1)/)
-  INTEGER,DIMENSION(3):: c_Surf_k3_Paved      = (/(cc, cc=ccEndESTMM+ 7*3+1,ccEndESTMM+ 7*3+3, 1)/)
-  INTEGER,DIMENSION(3):: c_Surf_rhoCp3_Paved  = (/(cc, cc=ccEndESTMM+ 8*3+1,ccEndESTMM+ 8*3+3, 1)/)
-  INTEGER,DIMENSION(3):: c_Surf_thick4_Paved  = (/(cc, cc=ccEndESTMM+ 9*3+1,ccEndESTMM+ 9*3+3, 1)/)
-  INTEGER,DIMENSION(3):: c_Surf_k4_Paved      = (/(cc, cc=ccEndESTMM+10*3+1,ccEndESTMM+10*3+3, 1)/)
-  INTEGER,DIMENSION(3):: c_Surf_rhoCp4_Paved  = (/(cc, cc=ccEndESTMM+11*3+1,ccEndESTMM+11*3+3, 1)/)
-  INTEGER,DIMENSION(3):: c_Surf_thick5_Paved  = (/(cc, cc=ccEndESTMM+12*3+1,ccEndESTMM+12*3+3, 1)/)
-  INTEGER,DIMENSION(3):: c_Surf_k5_Paved      = (/(cc, cc=ccEndESTMM+13*3+1,ccEndESTMM+13*3+3, 1)/)
-  INTEGER,DIMENSION(3):: c_Surf_rhoCp5_Paved  = (/(cc, cc=ccEndESTMM+14*3+1,ccEndESTMM+14*3+3, 1)/)
+  INTEGER, DIMENSION(3) :: c_Surf_thick1_Paved  = (/(cc, cc=ccEndESTMM+ 0*3+1,ccEndESTMM+ 0*3+3, 1)/)
+  INTEGER, DIMENSION(3) :: c_Surf_k1_Paved      = (/(cc, cc=ccEndESTMM+ 1*3+1,ccEndESTMM+ 1*3+3, 1)/)
+  INTEGER, DIMENSION(3) :: c_Surf_rhoCp1_Paved  = (/(cc, cc=ccEndESTMM+ 2*3+1,ccEndESTMM+ 2*3+3, 1)/)
+  INTEGER, DIMENSION(3) :: c_Surf_thick2_Paved  = (/(cc, cc=ccEndESTMM+ 3*3+1,ccEndESTMM+ 3*3+3, 1)/)
+  INTEGER, DIMENSION(3) :: c_Surf_k2_Paved      = (/(cc, cc=ccEndESTMM+ 4*3+1,ccEndESTMM+ 4*3+3, 1)/)
+  INTEGER, DIMENSION(3) :: c_Surf_rhoCp2_Paved  = (/(cc, cc=ccEndESTMM+ 5*3+1,ccEndESTMM+ 5*3+3, 1)/)
+  INTEGER, DIMENSION(3) :: c_Surf_thick3_Paved  = (/(cc, cc=ccEndESTMM+ 6*3+1,ccEndESTMM+ 6*3+3, 1)/)
+  INTEGER, DIMENSION(3) :: c_Surf_k3_Paved      = (/(cc, cc=ccEndESTMM+ 7*3+1,ccEndESTMM+ 7*3+3, 1)/)
+  INTEGER, DIMENSION(3) :: c_Surf_rhoCp3_Paved  = (/(cc, cc=ccEndESTMM+ 8*3+1,ccEndESTMM+ 8*3+3, 1)/)
+  INTEGER, DIMENSION(3) :: c_Surf_thick4_Paved  = (/(cc, cc=ccEndESTMM+ 9*3+1,ccEndESTMM+ 9*3+3, 1)/)
+  INTEGER, DIMENSION(3) :: c_Surf_k4_Paved      = (/(cc, cc=ccEndESTMM+10*3+1,ccEndESTMM+10*3+3, 1)/)
+  INTEGER, DIMENSION(3) :: c_Surf_rhoCp4_Paved  = (/(cc, cc=ccEndESTMM+11*3+1,ccEndESTMM+11*3+3, 1)/)
+  INTEGER, DIMENSION(3) :: c_Surf_thick5_Paved  = (/(cc, cc=ccEndESTMM+12*3+1,ccEndESTMM+12*3+3, 1)/)
+  INTEGER, DIMENSION(3) :: c_Surf_k5_Paved      = (/(cc, cc=ccEndESTMM+13*3+1,ccEndESTMM+13*3+3, 1)/)
+  INTEGER, DIMENSION(3) :: c_Surf_rhoCp5_Paved  = (/(cc, cc=ccEndESTMM+14*3+1,ccEndESTMM+14*3+3, 1)/)
   ! Find current column number
-  INTEGER,PARAMETER:: ccEndESTMMP = (ccEndESTMM+14*3+3)
+  INTEGER, PARAMETER :: ccEndESTMMP = (ccEndESTMM+14*3+3)
   ! For Bldgs surfaces, there are 5 possible ESTM classes (all characteristics)
-  INTEGER,DIMENSION(5):: c_Surf_thick1_Bldgs  = (/(cc, cc=ccEndESTMMP+ 0*5+1,ccEndESTMMP+ 0*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Surf_k1_Bldgs      = (/(cc, cc=ccEndESTMMP+ 1*5+1,ccEndESTMMP+ 1*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Surf_rhoCp1_Bldgs  = (/(cc, cc=ccEndESTMMP+ 2*5+1,ccEndESTMMP+ 2*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Surf_thick2_Bldgs  = (/(cc, cc=ccEndESTMMP+ 3*5+1,ccEndESTMMP+ 3*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Surf_k2_Bldgs      = (/(cc, cc=ccEndESTMMP+ 4*5+1,ccEndESTMMP+ 4*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Surf_rhoCp2_Bldgs  = (/(cc, cc=ccEndESTMMP+ 5*5+1,ccEndESTMMP+ 5*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Surf_thick3_Bldgs  = (/(cc, cc=ccEndESTMMP+ 6*5+1,ccEndESTMMP+ 6*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Surf_k3_Bldgs      = (/(cc, cc=ccEndESTMMP+ 7*5+1,ccEndESTMMP+ 7*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Surf_rhoCp3_Bldgs  = (/(cc, cc=ccEndESTMMP+ 8*5+1,ccEndESTMMP+ 8*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Surf_thick4_Bldgs  = (/(cc, cc=ccEndESTMMP+ 9*5+1,ccEndESTMMP+ 9*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Surf_k4_Bldgs      = (/(cc, cc=ccEndESTMMP+10*5+1,ccEndESTMMP+10*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Surf_rhoCp4_Bldgs  = (/(cc, cc=ccEndESTMMP+11*5+1,ccEndESTMMP+11*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Surf_thick5_Bldgs  = (/(cc, cc=ccEndESTMMP+12*5+1,ccEndESTMMP+12*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Surf_k5_Bldgs      = (/(cc, cc=ccEndESTMMP+13*5+1,ccEndESTMMP+13*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Surf_rhoCp5_Bldgs  = (/(cc, cc=ccEndESTMMP+14*5+1,ccEndESTMMP+14*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Wall_thick1_Bldgs  = (/(cc, cc=ccEndESTMMP+15*5+1,ccEndESTMMP+15*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Wall_k1_Bldgs      = (/(cc, cc=ccEndESTMMP+16*5+1,ccEndESTMMP+16*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Wall_rhoCp1_Bldgs  = (/(cc, cc=ccEndESTMMP+17*5+1,ccEndESTMMP+17*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Wall_thick2_Bldgs  = (/(cc, cc=ccEndESTMMP+18*5+1,ccEndESTMMP+18*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Wall_k2_Bldgs      = (/(cc, cc=ccEndESTMMP+19*5+1,ccEndESTMMP+19*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Wall_rhoCp2_Bldgs  = (/(cc, cc=ccEndESTMMP+20*5+1,ccEndESTMMP+20*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Wall_thick3_Bldgs  = (/(cc, cc=ccEndESTMMP+21*5+1,ccEndESTMMP+21*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Wall_k3_Bldgs      = (/(cc, cc=ccEndESTMMP+22*5+1,ccEndESTMMP+22*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Wall_rhoCp3_Bldgs  = (/(cc, cc=ccEndESTMMP+23*5+1,ccEndESTMMP+23*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Wall_thick4_Bldgs  = (/(cc, cc=ccEndESTMMP+24*5+1,ccEndESTMMP+24*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Wall_k4_Bldgs      = (/(cc, cc=ccEndESTMMP+25*5+1,ccEndESTMMP+25*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Wall_rhoCp4_Bldgs  = (/(cc, cc=ccEndESTMMP+26*5+1,ccEndESTMMP+26*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Wall_thick5_Bldgs  = (/(cc, cc=ccEndESTMMP+27*5+1,ccEndESTMMP+27*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Wall_k5_Bldgs      = (/(cc, cc=ccEndESTMMP+28*5+1,ccEndESTMMP+28*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Wall_rhoCp5_Bldgs  = (/(cc, cc=ccEndESTMMP+29*5+1,ccEndESTMMP+29*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Internal_thick1_Bldgs  = (/(cc, cc=ccEndESTMMP+30*5+1,ccEndESTMMP+30*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Internal_k1_Bldgs      = (/(cc, cc=ccEndESTMMP+31*5+1,ccEndESTMMP+31*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Internal_rhoCp1_Bldgs  = (/(cc, cc=ccEndESTMMP+32*5+1,ccEndESTMMP+32*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Internal_thick2_Bldgs  = (/(cc, cc=ccEndESTMMP+33*5+1,ccEndESTMMP+33*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Internal_k2_Bldgs      = (/(cc, cc=ccEndESTMMP+34*5+1,ccEndESTMMP+34*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Internal_rhoCp2_Bldgs  = (/(cc, cc=ccEndESTMMP+35*5+1,ccEndESTMMP+35*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Internal_thick3_Bldgs  = (/(cc, cc=ccEndESTMMP+36*5+1,ccEndESTMMP+36*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Internal_k3_Bldgs      = (/(cc, cc=ccEndESTMMP+37*5+1,ccEndESTMMP+37*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Internal_rhoCp3_Bldgs  = (/(cc, cc=ccEndESTMMP+38*5+1,ccEndESTMMP+38*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Internal_thick4_Bldgs  = (/(cc, cc=ccEndESTMMP+39*5+1,ccEndESTMMP+39*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Internal_k4_Bldgs      = (/(cc, cc=ccEndESTMMP+40*5+1,ccEndESTMMP+40*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Internal_rhoCp4_Bldgs  = (/(cc, cc=ccEndESTMMP+41*5+1,ccEndESTMMP+41*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Internal_thick5_Bldgs  = (/(cc, cc=ccEndESTMMP+42*5+1,ccEndESTMMP+42*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Internal_k5_Bldgs      = (/(cc, cc=ccEndESTMMP+43*5+1,ccEndESTMMP+43*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_Internal_rhoCp5_Bldgs  = (/(cc, cc=ccEndESTMMP+44*5+1,ccEndESTMMP+44*5+5, 1)/)
-  INTEGER,DIMENSION(5):: c_nroom_Bldgs      =  (ccEndESTMMP+44*5+5+ 1)
-  INTEGER,DIMENSION(5):: c_alb_ibld_Bldgs   =  (ccEndESTMMP+44*5+5+ 2)
-  INTEGER,DIMENSION(5):: c_em_ibld_Bldgs    =  (ccEndESTMMP+44*5+5+ 3)
-  INTEGER,DIMENSION(5):: c_CH_iwall_Bldgs   =  (ccEndESTMMP+44*5+5+ 4)
-  INTEGER,DIMENSION(5):: c_CH_iroof_Bldgs   =  (ccEndESTMMP+44*5+5+ 5)
-  INTEGER,DIMENSION(5):: c_CH_ibld_Bldgs    =  (ccEndESTMMP+44*5+5+ 6)
+  INTEGER, DIMENSION(5) :: c_Surf_thick1_Bldgs  = (/(cc, cc=ccEndESTMMP+ 0*5+1,ccEndESTMMP+ 0*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Surf_k1_Bldgs      = (/(cc, cc=ccEndESTMMP+ 1*5+1,ccEndESTMMP+ 1*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Surf_rhoCp1_Bldgs  = (/(cc, cc=ccEndESTMMP+ 2*5+1,ccEndESTMMP+ 2*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Surf_thick2_Bldgs  = (/(cc, cc=ccEndESTMMP+ 3*5+1,ccEndESTMMP+ 3*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Surf_k2_Bldgs      = (/(cc, cc=ccEndESTMMP+ 4*5+1,ccEndESTMMP+ 4*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Surf_rhoCp2_Bldgs  = (/(cc, cc=ccEndESTMMP+ 5*5+1,ccEndESTMMP+ 5*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Surf_thick3_Bldgs  = (/(cc, cc=ccEndESTMMP+ 6*5+1,ccEndESTMMP+ 6*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Surf_k3_Bldgs      = (/(cc, cc=ccEndESTMMP+ 7*5+1,ccEndESTMMP+ 7*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Surf_rhoCp3_Bldgs  = (/(cc, cc=ccEndESTMMP+ 8*5+1,ccEndESTMMP+ 8*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Surf_thick4_Bldgs  = (/(cc, cc=ccEndESTMMP+ 9*5+1,ccEndESTMMP+ 9*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Surf_k4_Bldgs      = (/(cc, cc=ccEndESTMMP+10*5+1,ccEndESTMMP+10*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Surf_rhoCp4_Bldgs  = (/(cc, cc=ccEndESTMMP+11*5+1,ccEndESTMMP+11*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Surf_thick5_Bldgs  = (/(cc, cc=ccEndESTMMP+12*5+1,ccEndESTMMP+12*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Surf_k5_Bldgs      = (/(cc, cc=ccEndESTMMP+13*5+1,ccEndESTMMP+13*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Surf_rhoCp5_Bldgs  = (/(cc, cc=ccEndESTMMP+14*5+1,ccEndESTMMP+14*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Wall_thick1_Bldgs  = (/(cc, cc=ccEndESTMMP+15*5+1,ccEndESTMMP+15*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Wall_k1_Bldgs      = (/(cc, cc=ccEndESTMMP+16*5+1,ccEndESTMMP+16*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Wall_rhoCp1_Bldgs  = (/(cc, cc=ccEndESTMMP+17*5+1,ccEndESTMMP+17*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Wall_thick2_Bldgs  = (/(cc, cc=ccEndESTMMP+18*5+1,ccEndESTMMP+18*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Wall_k2_Bldgs      = (/(cc, cc=ccEndESTMMP+19*5+1,ccEndESTMMP+19*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Wall_rhoCp2_Bldgs  = (/(cc, cc=ccEndESTMMP+20*5+1,ccEndESTMMP+20*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Wall_thick3_Bldgs  = (/(cc, cc=ccEndESTMMP+21*5+1,ccEndESTMMP+21*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Wall_k3_Bldgs      = (/(cc, cc=ccEndESTMMP+22*5+1,ccEndESTMMP+22*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Wall_rhoCp3_Bldgs  = (/(cc, cc=ccEndESTMMP+23*5+1,ccEndESTMMP+23*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Wall_thick4_Bldgs  = (/(cc, cc=ccEndESTMMP+24*5+1,ccEndESTMMP+24*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Wall_k4_Bldgs      = (/(cc, cc=ccEndESTMMP+25*5+1,ccEndESTMMP+25*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Wall_rhoCp4_Bldgs  = (/(cc, cc=ccEndESTMMP+26*5+1,ccEndESTMMP+26*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Wall_thick5_Bldgs  = (/(cc, cc=ccEndESTMMP+27*5+1,ccEndESTMMP+27*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Wall_k5_Bldgs      = (/(cc, cc=ccEndESTMMP+28*5+1,ccEndESTMMP+28*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Wall_rhoCp5_Bldgs  = (/(cc, cc=ccEndESTMMP+29*5+1,ccEndESTMMP+29*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Internal_thick1_Bldgs  = (/(cc, cc=ccEndESTMMP+30*5+1,ccEndESTMMP+30*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Internal_k1_Bldgs      = (/(cc, cc=ccEndESTMMP+31*5+1,ccEndESTMMP+31*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Internal_rhoCp1_Bldgs  = (/(cc, cc=ccEndESTMMP+32*5+1,ccEndESTMMP+32*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Internal_thick2_Bldgs  = (/(cc, cc=ccEndESTMMP+33*5+1,ccEndESTMMP+33*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Internal_k2_Bldgs      = (/(cc, cc=ccEndESTMMP+34*5+1,ccEndESTMMP+34*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Internal_rhoCp2_Bldgs  = (/(cc, cc=ccEndESTMMP+35*5+1,ccEndESTMMP+35*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Internal_thick3_Bldgs  = (/(cc, cc=ccEndESTMMP+36*5+1,ccEndESTMMP+36*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Internal_k3_Bldgs      = (/(cc, cc=ccEndESTMMP+37*5+1,ccEndESTMMP+37*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Internal_rhoCp3_Bldgs  = (/(cc, cc=ccEndESTMMP+38*5+1,ccEndESTMMP+38*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Internal_thick4_Bldgs  = (/(cc, cc=ccEndESTMMP+39*5+1,ccEndESTMMP+39*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Internal_k4_Bldgs      = (/(cc, cc=ccEndESTMMP+40*5+1,ccEndESTMMP+40*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Internal_rhoCp4_Bldgs  = (/(cc, cc=ccEndESTMMP+41*5+1,ccEndESTMMP+41*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Internal_thick5_Bldgs  = (/(cc, cc=ccEndESTMMP+42*5+1,ccEndESTMMP+42*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Internal_k5_Bldgs      = (/(cc, cc=ccEndESTMMP+43*5+1,ccEndESTMMP+43*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_Internal_rhoCp5_Bldgs  = (/(cc, cc=ccEndESTMMP+44*5+1,ccEndESTMMP+44*5+5, 1)/)
+  INTEGER, DIMENSION(5) :: c_nroom_Bldgs      =  (ccEndESTMMP+44*5+5+ 1)
+  INTEGER, DIMENSION(5) :: c_alb_ibld_Bldgs   =  (ccEndESTMMP+44*5+5+ 2)
+  INTEGER, DIMENSION(5) :: c_em_ibld_Bldgs    =  (ccEndESTMMP+44*5+5+ 3)
+  INTEGER, DIMENSION(5) :: c_CH_iwall_Bldgs   =  (ccEndESTMMP+44*5+5+ 4)
+  INTEGER, DIMENSION(5) :: c_CH_iroof_Bldgs   =  (ccEndESTMMP+44*5+5+ 5)
+  INTEGER, DIMENSION(5) :: c_CH_ibld_Bldgs    =  (ccEndESTMMP+44*5+5+ 6)
 
   !Last column number for SurfaceChar array
-  INTEGER,PARAMETER:: MaxNCols_c = (ccEndESTMMP+44*5+5+ 6)
+  INTEGER, PARAMETER :: MaxNCols_c = (ccEndESTMMP+44*5+5+ 6)
   !-----------------------------------------------------------------------------------------------
 
   ! ---- Set column numbering for ModelOutputData ------------------------------------------------
   ! Applicable to each surface
-  INTEGER,PARAMETER:: ccMOD = 32
-  INTEGER,DIMENSION(nsurf):: cMOD_State          =(/(cc, cc=ccMOD+ 0*nsurf+1,ccMOD+ 0*nsurf+nsurf, 1)/)  !Above ground state
-  INTEGER,DIMENSION(nsurf):: cMOD_SoilState      =(/(cc, cc=ccMOD+ 1*nsurf+1,ccMOD+ 1*nsurf+nsurf, 1)/)  !Below ground state (soil store)
-  INTEGER,DIMENSION(nsurf):: cMOD_SnowWaterState =(/(cc, cc=ccMOD+ 2*nsurf+1,ccMOD+ 2*nsurf+nsurf, 1)/)  !Liquid (melted) water
-  INTEGER,DIMENSION(nsurf):: cMOD_SnowPack       =(/(cc, cc=ccMOD+ 3*nsurf+1,ccMOD+ 3*nsurf+nsurf, 1)/)  !SWE
-  INTEGER,DIMENSION(nsurf):: cMOD_SnowFrac       =(/(cc, cc=ccMOD+ 4*nsurf+1,ccMOD+ 4*nsurf+nsurf, 1)/)  !Snow fraction
-  INTEGER,DIMENSION(nsurf):: cMOD_SnowDens       =(/(cc, cc=ccMOD+ 5*nsurf+1,ccMOD+ 5*nsurf+nsurf, 1)/)  !Snow density
+  INTEGER, PARAMETER :: ccMOD = 32
+  INTEGER, DIMENSION(nsurf) :: cMOD_State          = (/(cc, cc=ccMOD+ 0*nsurf+1,ccMOD+ 0*nsurf+nsurf, 1)/)  !Above ground state
+  INTEGER, DIMENSION(nsurf) :: cMOD_SoilState      = (/(cc, cc=ccMOD+ 1*nsurf+1,ccMOD+ 1*nsurf+nsurf, 1)/)  !Below ground state (soil store)
+  INTEGER, DIMENSION(nsurf) :: cMOD_SnowWaterState = (/(cc, cc=ccMOD+ 2*nsurf+1,ccMOD+ 2*nsurf+nsurf, 1)/)  !Liquid (melted) water
+  INTEGER, DIMENSION(nsurf) :: cMOD_SnowPack       = (/(cc, cc=ccMOD+ 3*nsurf+1,ccMOD+ 3*nsurf+nsurf, 1)/)  !SWE
+  INTEGER, DIMENSION(nsurf) :: cMOD_SnowFrac       = (/(cc, cc=ccMOD+ 4*nsurf+1,ccMOD+ 4*nsurf+nsurf, 1)/)  !Snow fraction
+  INTEGER, DIMENSION(nsurf) :: cMOD_SnowDens       = (/(cc, cc=ccMOD+ 5*nsurf+1,ccMOD+ 5*nsurf+nsurf, 1)/)  !Snow density
 
   !Last column number for ModelOutputData array
-  INTEGER,PARAMETER:: MaxNCols_cMOD = ccMOD+ 5*nsurf+nsurf
+  INTEGER, PARAMETER :: MaxNCols_cMOD = ccMOD+ 5*nsurf+nsurf
   !-----------------------------------------------------------------------------------------------
 
   ! ---- Set column numbering for ModelDailyState ------------------------------------------------
   ! Applicable to each surface
-  INTEGER,PARAMETER:: ccMDS = 30
-  INTEGER,DIMENSION(nsurf):: cMDS_SnowDens       =(/(cc, cc=ccMDS+ 0*nsurf+1,ccMDS+ 0*nsurf+nsurf, 1)/)  !Snow density
+  INTEGER, PARAMETER :: ccMDS = 30
+  INTEGER, DIMENSION(nsurf) :: cMDS_SnowDens       = (/(cc, cc=ccMDS+ 0*nsurf+1,ccMDS+ 0*nsurf+nsurf, 1)/)  !Snow density
 
   !Last column number for ModelDailyState array
-  INTEGER,PARAMETER:: MaxNCols_cMDS = ccMDS+ 0*nsurf+nsurf
+  INTEGER, PARAMETER :: MaxNCols_cMDS = ccMDS+ 0*nsurf+nsurf
   !-----------------------------------------------------------------------------------------------
 
   ! ---- Set column numbering for ESTM_Ts_data input file ===-------------------------------------
   ! HCW 15 June 2016
-  INTEGER, PARAMETER:: cTs_iy = 1
-  INTEGER, PARAMETER:: cTs_id = 2
-  INTEGER, PARAMETER:: cTs_it = 3
-  INTEGER, PARAMETER:: cTs_imin = 4
-  INTEGER, PARAMETER:: cTs_Tiair = 5
-  INTEGER, PARAMETER:: cTs_Tsurf = 6
-  INTEGER, PARAMETER:: cTs_Troof = 7
-  INTEGER, PARAMETER:: cTs_Troad = 8
-  INTEGER, PARAMETER:: cTs_Twall = 9
-  INTEGER, PARAMETER:: cTs_Twall_n = 10
-  INTEGER, PARAMETER:: cTs_Twall_e = 11
-  INTEGER, PARAMETER:: cTs_Twall_s = 12
-  INTEGER, PARAMETER:: cTs_Twall_w = 13
+  INTEGER, PARAMETER :: cTs_iy = 1
+  INTEGER, PARAMETER :: cTs_id = 2
+  INTEGER, PARAMETER :: cTs_it = 3
+  INTEGER, PARAMETER :: cTs_imin = 4
+  INTEGER, PARAMETER :: cTs_Tiair = 5
+  INTEGER, PARAMETER :: cTs_Tsurf = 6
+  INTEGER, PARAMETER :: cTs_Troof = 7
+  INTEGER, PARAMETER :: cTs_Troad = 8
+  INTEGER, PARAMETER :: cTs_Twall = 9
+  INTEGER, PARAMETER :: cTs_Twall_n = 10
+  INTEGER, PARAMETER :: cTs_Twall_e = 11
+  INTEGER, PARAMETER :: cTs_Twall_s = 12
+  INTEGER, PARAMETER :: cTs_Twall_w = 13
 
 
 END MODULE allocateArray

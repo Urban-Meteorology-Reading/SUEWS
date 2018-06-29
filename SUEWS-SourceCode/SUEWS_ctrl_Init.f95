@@ -23,7 +23,7 @@ SUBROUTINE OverallRunControl
   USE data_in
   USE defaultNotUsed
   USE FileName
-  USE initial
+  USE Initial
   USE gis_data
   USE mod_z
   USE resist

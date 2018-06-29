@@ -230,7 +230,7 @@ CONTAINS
   !   !=======================================================
   !   ! NB:this FUNCTION is problematic:
   !   ! these variables are NEVER initialized/calculated: tr,tg,tw,ta
-  !   ! but used for calculaitng Sdir!
+  !   ! but used for calcuLAItng Sdir!
   !   FUNCTION kdown_niemala(S0,vap_press,Tk) RESULT(kdown)           !!!!!FO!!!!! ,albedo
   !     !from Niemala et al. 2001. Atmospheric Research 58:141-154
   !     ! using generalized formula only, no empirical data from site

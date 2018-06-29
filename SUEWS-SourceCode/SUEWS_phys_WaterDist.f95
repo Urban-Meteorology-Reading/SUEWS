@@ -976,7 +976,7 @@ SUBROUTINE SUEWS_cal_WaterUse(&
        WUProfM_tstep(24*NSH,2),& !Manual water use profiles at model timestep
        InternalWaterUse_h,& !Internal water use [mm h-1]
        HDD_id(6),& !HDD(id-1), Heating Degree Days (see SUEWS_DailyState.f95)
-       WU_Day_id(9) !WU_Day(id-1), Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
+       WU_Day_id(9) !WUDay(id-1), Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
 
   INTEGER,INTENT(in):: &
        DayofWeek_id(3),& !DayofWeek(id) 1 - day of week; 2 - month; 3 - season
@@ -1078,7 +1078,7 @@ SUBROUTINE SUEWS_cal_WaterUse(&
      ! ---- Manual irrigation ----
      WuFr=1 !Initialize WuFr to 1, but if raining, reduce manual fraction of water use
      ! If cumulative daily precipitation exceeds 2 mm
-     IF(HDD_id(5)>2) THEN    !.and.WU_Day(id-1,3)>0) then !Commented out HCW 23/01/2015
+     IF(HDD_id(5)>2) THEN    !.and.WUDay(id-1,3)>0) then !Commented out HCW 23/01/2015
         WuFr=0   ! 0 -> No manual irrigation if raining
      ENDIF
 

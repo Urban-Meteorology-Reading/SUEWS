@@ -1963,7 +1963,7 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
   ! Calculate daily water use if modelled (i.e. if WaterUseMethod = 0).
   ! Calculated from previous day information given in InitialConditions file
 
-  WU_day=0                !Initialize WU_day
+  WUDay=0                !Initialize WUDay
   IF (WaterUseMethod==0) THEN  !Model water use
      calc=0
 
@@ -1978,48 +1978,48 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
            ! Model daily water use based on HDD(id,6)(days since rain) and HDD(id,3)(average temp)
 
            ! ---- Automatic irrigation (evergreen trees) ----
-           WU_day(id,2) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*sfr(ConifSurf)*IrrFracConif*DayWatPer(wd)
-           IF (WU_Day(id,2)<0) WU_Day(id,2)=0   !If modelled WU is negative -> 0
+           WUDay(id,2) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*sfr(ConifSurf)*IrrFracConif*DayWatPer(wd)
+           IF (WUDay(id,2)<0) WUDay(id,2)=0   !If modelled WU is negative -> 0
 
            ! ---- Manual irrigation (evergreen trees) ----
-           WU_day(id,3) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*sfr(ConifSurf)*IrrFracConif*DayWatPer(wd)
-           IF (WU_Day(id,3)<0) WU_Day(id,3)=0   !If modelled WU is negative -> 0
+           WUDay(id,3) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*sfr(ConifSurf)*IrrFracConif*DayWatPer(wd)
+           IF (WUDay(id,3)<0) WUDay(id,3)=0   !If modelled WU is negative -> 0
 
            ! ---- Total evergreen trees water use (automatic + manual) ----
-           WU_Day(id,1)=(WU_day(id,2)+WU_day(id,3))
+           WUDay(id,1)=(WUDay(id,2)+WUDay(id,3))
 
            ! ---- Automatic irrigation (deciduous trees) ----
-           WU_day(id,5) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*sfr(DecidSurf)*IrrFracDecid*DayWatPer(wd)
-           IF (WU_Day(id,5)<0) WU_Day(id,5)=0   !If modelled WU is negative -> 0
+           WUDay(id,5) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*sfr(DecidSurf)*IrrFracDecid*DayWatPer(wd)
+           IF (WUDay(id,5)<0) WUDay(id,5)=0   !If modelled WU is negative -> 0
 
            ! ---- Manual irrigation (deciduous trees) ----
-           WU_day(id,6) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*sfr(DecidSurf)*&
+           WUDay(id,6) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*sfr(DecidSurf)*&
                 IrrFracDecid*DayWatPer(wd)
-           IF (WU_Day(id,6)<0) WU_Day(id,6)=0   !If modelled WU is negative -> 0
+           IF (WUDay(id,6)<0) WUDay(id,6)=0   !If modelled WU is negative -> 0
 
            ! ---- Total deciduous trees water use (automatic + manual) ----
-           WU_Day(id,4)=(WU_day(id,5)+WU_day(id,6))
+           WUDay(id,4)=(WUDay(id,5)+WUDay(id,6))
 
            ! ---- Automatic irrigation (grass) ----
-           WU_day(id,8) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*sfr(GrassSurf)*&
+           WUDay(id,8) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*sfr(GrassSurf)*&
                 IrrFracGrass*DayWatPer(wd)
-           IF (WU_Day(id,8)<0) WU_Day(id,8)=0   !If modelled WU is negative -> 0
+           IF (WUDay(id,8)<0) WUDay(id,8)=0   !If modelled WU is negative -> 0
            ! ---- Manual irrigation (grass) ----
-           WU_day(id,9) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*sfr(GrassSurf)*&
+           WUDay(id,9) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*sfr(GrassSurf)*&
                 IrrFracGrass*DayWatPer(wd)
-           IF (WU_Day(id,9)<0) WU_Day(id,9)=0   !If modelled WU is negative -> 0
+           IF (WUDay(id,9)<0) WUDay(id,9)=0   !If modelled WU is negative -> 0
            ! ---- Total grass water use (automatic + manual) ----
-           WU_Day(id,7)=(WU_day(id,8)+WU_day(id,9))
+           WUDay(id,7)=(WUDay(id,8)+WUDay(id,9))
         ELSE
-           WU_Day(id,1)=0
-           WU_Day(id,2)=0
-           WU_Day(id,3)=0
-           WU_Day(id,4)=0
-           WU_Day(id,5)=0
-           WU_Day(id,6)=0
-           WU_Day(id,7)=0
-           WU_Day(id,8)=0
-           WU_Day(id,9)=0
+           WUDay(id,1)=0
+           WUDay(id,2)=0
+           WUDay(id,3)=0
+           WUDay(id,4)=0
+           WUDay(id,5)=0
+           WUDay(id,6)=0
+           WUDay(id,7)=0
+           WUDay(id,8)=0
+           WUDay(id,9)=0
         ENDIF
      ENDIF
   ENDIF

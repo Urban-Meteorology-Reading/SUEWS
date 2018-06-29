@@ -1,8 +1,8 @@
 SUBROUTINE LUMPS_cal_QHQE(&
      veg_type,& !input
-     snowUse,id,qn1,qf,qs,Qm,Temp_C,Veg_Fr,avcp,Press_hPa,lv_J_kg,&
+     snowUse,qn1,qf,qs,Qm,Temp_C,Veg_Fr,avcp,Press_hPa,lv_J_kg,&
      tstep_real,DRAINRT,nsh_real,&
-     Precip,RainMaxRes,RAINCOVER,sfr,LAI,LAImax,LAImin,&
+     Precip,RainMaxRes,RAINCOVER,sfr,LAI_day_prev,LAImax,LAImin,&
      H_mod,& !output
      E_mod,psyc_hPa,s_hPa,sIce_hpa,TempVeg,VegPhenLumps)
   !Calculates QH and QE for LUMPS. See Loridan et al. (2011)
@@ -28,7 +28,6 @@ SUBROUTINE LUMPS_cal_QHQE(&
 
   INTEGER,INTENT(in) :: veg_type  !Defines how vegetation is calculated for LUMPS
   INTEGER,INTENT(in) :: snowUse ! option of snow module
-  INTEGER,INTENT(in) :: id ! day of year
 
   REAL(KIND(1d0)),INTENT(in) :: qn1! net all-wave radiation
   REAL(KIND(1d0)),INTENT(in) :: qf! anthropogenic heat flux
@@ -47,7 +46,7 @@ SUBROUTINE LUMPS_cal_QHQE(&
   REAL(KIND(1d0)),INTENT(in) :: RAINCOVER! LUMPS Limit when surface totally wet [mm]
 
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in) :: sfr! veg surface fractions [-]
-  REAL(KIND(1D0)),DIMENSION(-4:NDAYS,NVEGSURF),INTENT(in) :: LAI! LAI(id-1,iv), LAI at the beginning of today
+  REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(in) :: LAI_day_prev! LAI(id-1,iv), LAI at the beginning of today
   REAL(KIND(1d0)),DIMENSION(3),INTENT(in) :: LAImax!Max LAI [m2 m-2]
   REAL(KIND(1d0)),DIMENSION(3),INTENT(in) :: LAImin    !Min LAI [m2 m-2]
 
@@ -61,7 +60,6 @@ SUBROUTINE LUMPS_cal_QHQE(&
   ! REAL(KIND(1d0)),INTENT(inout) ::RainBucket !RAINFALL RESERVOIR [mm]
   ! INTEGER::iv
   REAL(KIND(1d0)),DIMENSION(3) :: sfrVeg! veg surface fractions [-]                             !,start
-  REAL(KIND(1d0)),DIMENSION(3) :: LAIDay! LAI(id-1,iv), LAI at the beginning of today
   REAL(KIND(1d0))::VegPhen,VegMax,VegMin,&   !Vegetation phenology for LUMPS
        psyc_s,&       !Psychometric constant
        alpha_sl,alpha_in,&    	  !Parameters used in LUMPS QH and QE calculations
@@ -78,8 +76,6 @@ SUBROUTINE LUMPS_cal_QHQE(&
   ! surface fractions fro veg surfaces
   sfrVeg=sfr(ivConif+2:ivGrass+2)
 
-  ! LAI of veg surfaces for id-1
-  LAIDay= LAI(id-1,:)
 
   ! Calculate slope of the saturation vapour pressure vs air temp.
   s_hPa=slope_svp(Temp_C)
@@ -117,7 +113,7 @@ SUBROUTINE LUMPS_cal_QHQE(&
   ! VegPhen=0
   ! VegMax=0
   ! VegMin=0
-  VegPhen=DOT_PRODUCT(sfrVeg,LAIDay)
+  VegPhen=DOT_PRODUCT(sfrVeg,LAI_day_prev)
   VegMax=DOT_PRODUCT(sfrVeg,LAImax)
   VegMin=DOT_PRODUCT(sfrVeg,LAImin)
 

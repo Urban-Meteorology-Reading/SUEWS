@@ -39,9 +39,9 @@ CONTAINS
   !  Updated and corrected SUEWS_cal_DailyState output file
   !  LJ 05 Feb 2015  - SUEWS_cal_DailyState saving fixed. Now header is printed and the file closed and opened as suggested.
   ! N.B. Bug in daily Precip - needs fixing!!! - HCW thinks this is fixed 20 Feb 2015
-  !  HCW 26 Jan 2015 - sfr and IrrFracs deleted from WU_Day calculations, so that WU_Day is not spread over
+  !  HCW 26 Jan 2015 - sfr and IrrFracs deleted from WUDay calculations, so that WUDay is not spread over
   !  the total area
-  !  HCW 23 Jan 2015 - WU_Day now has 9 columns (EveTr, DecTr, Grass; automatic, manual, total)
+  !  HCW 23 Jan 2015 - WUDay now has 9 columns (EveTr, DecTr, Grass; automatic, manual, total)
   !  HCW 27 Nov 2014 - Handles values for different grids (Gridiv & ir arguments)
   ! Added the calculation of surface temperature
   !  LJ 22 Feb 2013  - Snow albedo aging and calculation of snow density added,
@@ -67,8 +67,8 @@ CONTAINS
        Ie_a,Ie_m,DayWatPer,DayWat,SnowPack,&
        BaseT,BaseTe,GDDFull,SDDFull,LAIMin,LAIMax,LAIPower,&
        SnowAlb,DecidCap,albDecTr,albEveTr,albGrass,&!inout
-       porosity,GDD,HDD,SnowDens,LAI,WU_Day,&
-       deltaLAI)!output
+       porosity,GDD_day,HDD,SnowDens,LAI_day,WUDay,&
+       LAI_day_prev,deltaLAI)!output
 
     USE Snow_module,ONLY:SnowUpdate
 
@@ -133,21 +133,26 @@ CONTAINS
 
     REAL(KIND(1d0)),INTENT(INOUT)::SnowAlb
 
+    REAL(KIND(1d0)),DIMENSION(5),INTENT(INOUT)       :: GDD_day !Growing Degree Days (see SUEWS_DailyState.f95)
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(INOUT):: LAI_day !LAI for each veg surface [m2 m-2]
+
+
     REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(INOUT)::DecidCap
     REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(INOUT)::albDecTr
     REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(INOUT)::albEveTr
     REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(INOUT)::albGrass
     REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(INOUT)::porosity
-    REAL(KIND(1d0)),DIMENSION( 0:ndays, 5),INTENT(INOUT):: GDD !Growing Degree Days (see SUEWS_DailyState.f95)
+    ! REAL(KIND(1d0)),DIMENSION( 0:ndays, 5),INTENT(INOUT):: GDD !Growing Degree Days (see SUEWS_DailyState.f95)
     REAL(KIND(1d0)),DIMENSION(-4:ndays, 6),INTENT(INOUT):: HDD          !Heating Degree Days (see SUEWS_DailyState.f95)
 
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(INOUT)::SnowDens
-    REAL(KIND(1d0)),DIMENSION(-4:ndays, nvegsurf),INTENT(INOUT):: LAI !LAI for each veg surface [m2 m-2]
+    ! REAL(KIND(1d0)),DIMENSION(-4:ndays, nvegsurf),INTENT(INOUT):: LAI !LAI for each veg surface [m2 m-2]
     INTEGER,DIMENSION(3),INTENT(in)::DayofWeek_id
 
     !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
-    REAL(KIND(1d0)),DIMENSION(0:ndays,9),INTENT(INOUT):: WU_Day
+    REAL(KIND(1d0)),DIMENSION(0:ndays,9),INTENT(INOUT):: WUDay
     REAL(KIND(1d0)),INTENT(OUT)::deltaLAI
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(OUT):: LAI_day_prev !LAI for each veg surface [m2 m-2]
 
 
 
@@ -162,15 +167,15 @@ CONTAINS
     !
     ! LAI(,1:3) -- LAI for each veg surface [m2 m-2]
     !
-    ! WU_Day(,1) - Daily water use total for Irr EveTr (automatic+manual) [mm]
-    ! WU_Day(,2) - Automatic irrigation for Irr EveTr [mm]
-    ! WU_Day(,3) - Manual irrigation for Irr EveTr [mm]
-    ! WU_Day(,4) - Daily water use total for Irr DecTr (automatic+manual) [mm]
-    ! WU_Day(,5) - Automatic irrigation for Irr DecTr [mm]
-    ! WU_Day(,6) - Manual irrigation for Irr DecTr [mm]
-    ! WU_Day(,7) - Daily water use total for Irr Grass (automatic+manual) [mm]
-    ! WU_Day(,8) - Automatic irrigation for Irr Grass [mm]
-    ! WU_Day(,9) - Manual irrigation for Irr Grass [mm]
+    ! WUDay(,1) - Daily water use total for Irr EveTr (automatic+manual) [mm]
+    ! WUDay(,2) - Automatic irrigation for Irr EveTr [mm]
+    ! WUDay(,3) - Manual irrigation for Irr EveTr [mm]
+    ! WUDay(,4) - Daily water use total for Irr DecTr (automatic+manual) [mm]
+    ! WUDay(,5) - Automatic irrigation for Irr DecTr [mm]
+    ! WUDay(,6) - Manual irrigation for Irr DecTr [mm]
+    ! WUDay(,7) - Daily water use total for Irr Grass (automatic+manual) [mm]
+    ! WUDay(,8) - Automatic irrigation for Irr Grass [mm]
+    ! WUDay(,9) - Manual irrigation for Irr Grass [mm]
     ! --------------------------------------------------------------------------------
 
     CALL init_DailyState(&
@@ -180,7 +185,7 @@ CONTAINS
          Precip,&
          BaseTHDD,&
          nsh_real,&
-         GDD,&!inout
+         GDD_day,&!inout
          HDD)
 
 
@@ -213,8 +218,8 @@ CONTAINS
             BaseT,BaseTe,CapMax_dec,CapMin_dec,DayWat,DayWatPer,Faut,GDDFull,&
             Ie_a,Ie_m,LAIMax,LAIMin,LAIPower,lat,PorMax_dec,PorMin_dec,SDDFull,LAI_obs,&
             albDecTr,albEveTr,albGrass,porosity,DecidCap,&!inout
-            GDD,HDD,LAI,WU_Day,&!inout
-            deltaLAI)!output
+            GDD_day,HDD,LAI_day,WUDay,&!inout
+            LAI_day_prev,deltaLAI)!output
        ! ,xBo)!output
     ENDIF   !End of section done only at the end of each day (i.e. only once per day)
 
@@ -231,8 +236,8 @@ CONTAINS
        BaseT,BaseTe,CapMax_dec,CapMin_dec,DayWat,DayWatPer,Faut,GDDFull,&
        Ie_a,Ie_m,LAIMax,LAIMin,LAIPower,lat,PorMax_dec,PorMin_dec,SDDFull,LAI_obs,&
        albDecTr,albEveTr,albGrass,porosity,DecidCap,&!inout
-       GDD,HDD,LAI,WU_Day,&!inout
-       deltaLAI)!output
+       GDD_day,HDD,LAI_day,WUDay,&!inout
+       LAI_day_prev,deltaLAI)!output
     IMPLICIT NONE
 
     INTEGER,INTENT(IN)::id
@@ -276,12 +281,18 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(INOUT)::albGrass( 0:ndays)
     REAL(KIND(1d0)),INTENT(INOUT)::porosity( 0:ndays)
     REAL(KIND(1d0)),INTENT(INOUT)::DecidCap( 0:ndays)
-    REAL(KIND(1d0)),INTENT(INOUT)::GDD( 0:ndays, 5)
+    ! REAL(KIND(1d0)),INTENT(INOUT)::GDD( 0:ndays, 5)
     REAL(KIND(1d0)),INTENT(INOUT)::HDD(-4:ndays, 6)
-    REAL(KIND(1d0)),INTENT(INOUT)::LAI(-4:ndays, nvegsurf)
+    ! REAL(KIND(1d0)),INTENT(INOUT)::LAI(-4:ndays, nvegsurf)
 
-    REAL(KIND(1d0)),INTENT(INOUT):: WU_Day(0:ndays,9)
+    REAL(KIND(1d0)),DIMENSION(5),INTENT(INOUT)       :: GDD_day !Growing Degree Days (see SUEWS_DailyState.f95)
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(INOUT):: LAI_day !LAI for each veg surface [m2 m-2]
+
+
+
+    REAL(KIND(1d0)),INTENT(INOUT):: WUDay(0:ndays,9)
     REAL(KIND(1d0)),INTENT(OUT)::deltaLAI
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(OUT)::LAI_day_prev ! LAI of previous day
 
 
     CALL update_HDD(&
@@ -293,23 +304,32 @@ CONTAINS
     CALL update_WaterUse(&
          id,WaterUseMethod,DayofWeek_id,lat,Faut,HDD,&!input
          Ie_a,Ie_m,Ie_start,Ie_end,DayWatPer,DayWat,&
-         WU_Day) !inout
+         WUDay) !inout
 
     !------------------------------------------------------------------------------
     ! Calculation of LAI from growing degree days
     ! This was revised and checked on 16 Feb 2014 by LJ
     !------------------------------------------------------------------------------
-    CALL update_GDDLAI(&
+    ! CALL update_GDDLAI(&
+    !      id,LAICalcYes,& !input
+    !      lat,LAI_obs,&
+    !      BaseT,&
+    !      BaseTe,&
+    !      GDDFull,&
+    !      SDDFull,&
+    !      LAIMin,&
+    !      LAIMax,&
+    !      LAIPower,LAIType,&
+    !      GDD,LAI) !inout
+
+    CALL update_GDDLAI_X(&
          id,LAICalcYes,& !input
          lat,LAI_obs,&
-         BaseT,&
-         BaseTe,&
-         GDDFull,&
-         SDDFull,&
-         LAIMin,&
-         LAIMax,&
-         LAIPower,LAIType,&
-         GDD,LAI) !inout
+         BaseT,BaseTe,&
+         GDDFull,SDDFull,&
+         LAIMin,LAIMax,LAIPower,LAIType,&
+         GDD_day,LAI_day,&!inout
+         LAI_day_prev) !output
 
     CALL update_Veg(&
          id,&!input
@@ -325,12 +345,12 @@ CONTAINS
          CapMin_dec,&
          PorMax_dec,&
          PorMin_dec,&
+         LAI_day,LAI_day_prev,&
          DecidCap,&!inout
          albDecTr,&
          albEveTr,&
          albGrass,&
          porosity,&
-         LAI,&
          deltaLAI)!output
 
 
@@ -344,7 +364,7 @@ CONTAINS
        Precip,&
        BaseTHDD,&
        nsh_real,&
-       GDD,&!inout
+       GDD_day,&!inout
        HDD)
     IMPLICIT NONE
 
@@ -356,17 +376,18 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(IN)::nsh_real
 
     ! REAL(KIND(1d0))::tstepcount
-    REAL(KIND(1d0)),DIMENSION( 0:ndays, 5),INTENT(INOUT):: GDD !Growing Degree Days (see SUEWS_DailyState.f95)
+    REAL(KIND(1d0)),DIMENSION(5),INTENT(INOUT):: GDD_day !Growing Degree Days (see SUEWS_DailyState.f95)
     REAL(KIND(1d0)),DIMENSION(-4:ndays, 6),INTENT(INOUT):: HDD          !Heating Degree Days (see SUEWS_DailyState.f95)
+    ! REAL(KIND(1d0)),DIMENSION(5),INTENT(OUT):: GDD_day_prev !Growing Degree Days (see SUEWS_DailyState.f95)
 
     INTEGER::gamma1
     INTEGER::gamma2
 
     ! Daily min and max temp (these get updated through the day) ---------------------
-    GDD(id,3) = MIN(Temp_C,GDD(id,3))     !Daily min T in column 3
-    GDD(id,4) = MAX(Temp_C,GDD(id,4))     !Daily max T in column 4
+    GDD_day(3) = MIN(Temp_C,GDD_day(3))     !Daily min T in column 3
+    GDD_day(4) = MAX(Temp_C,GDD_day(4))     !Daily max T in column 4
     IF (avkdn>10) THEN
-       GDD(id,5) = GDD(id,5)+1/nsh_real   !Cumulate daytime hours !Divide by nsh (HCW 01 Dec 2014)
+       GDD_day(5) = GDD_day(5)+1/nsh_real   !Cumulate daytime hours !Divide by nsh (HCW 01 Dec 2014)
     ENDIF
 
     ! Calculations related to heating and cooling degree days (HDD) ------------------
@@ -407,12 +428,12 @@ CONTAINS
        CapMin_dec,&
        PorMax_dec,&
        PorMin_dec,&
+       LAI_day,LAI_day_prev,&
        DecidCap,&!inout
        albDecTr,&
        albEveTr,&
        albGrass,&
        porosity,&
-       LAI,&
        deltaLAI)!output
 
     IMPLICIT NONE
@@ -431,6 +452,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(IN)::CapMin_dec
     REAL(KIND(1d0)),INTENT(IN)::PorMax_dec
     REAL(KIND(1d0)),INTENT(IN)::PorMin_dec
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN)::LAI_day,LAI_day_prev
 
     REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(INOUT)::DecidCap
     REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(INOUT)::albDecTr
@@ -438,7 +460,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(INOUT)::albGrass
     REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(INOUT)::porosity
 
-    REAL(KIND(1d0)),DIMENSION(-4:ndays, nvegsurf),INTENT(INOUT)::LAI
+
     REAL(KIND(1d0)),INTENT(OUT)::deltaLAI
 
     INTEGER::iv
@@ -467,22 +489,22 @@ CONTAINS
     albChangeGrass=0
 
     iv=ivDecid
-    IF((LAI(ID,iv)-LAI(ID-1,iv))/=0) THEN
-       deltaLAI=(LAI(id,iv)-LAI(id-1,iv))/(LAImax(iv)-LAIMin(iv))
+    IF((LAI_day(iv)-LAI_day_prev(iv))/=0) THEN
+       deltaLAI=(LAI_day(iv)-LAI_day_prev(iv))/(LAImax(iv)-LAIMin(iv))
        albChangeDecTr=(AlbMax_DecTr-AlbMin_DecTr)* deltaLAI
        CapChange=(CapMin_dec-CapMax_dec)* deltaLAI
        porChange=(PorMin_dec-PorMax_dec)* deltaLAI
     ENDIF
 
     iv=ivConif
-    IF((LAI(ID,iv)-LAI(ID-1,iv))/=0) THEN
-       deltaLAIEveTr=(LAI(id,iv)-LAI(id-1,iv))/(LAImax(iv)-LAIMin(iv))
+    IF((LAI_day(iv)-LAI_day_prev(iv))/=0) THEN
+       deltaLAIEveTr=(LAI_day(iv)-LAI_day_prev(iv))/(LAImax(iv)-LAIMin(iv))
        albChangeEveTr=(AlbMax_EveTr-AlbMin_EveTr)* deltaLAIEveTr    !!N.B. Currently uses deltaLAI for deciduous trees only!!
     ENDIF
 
     iv=ivGrass
-    IF((LAI(ID,iv)-LAI(ID-1,iv))/=0) THEN
-       deltaLAIGrass=(LAI(id,iv)-LAI(id-1,iv))/(LAImax(iv)-LAIMin(iv))
+    IF((LAI_day(iv)-LAI_day_prev(iv))/=0) THEN
+       deltaLAIGrass=(LAI_day(iv)-LAI_day_prev(iv))/(LAImax(iv)-LAIMin(iv))
        albChangeGrass=(AlbMax_Grass-AlbMin_Grass)* deltaLAIGrass    !!N.B. Currently uses deltaLAI for deciduous trees only!!
     ENDIF
 
@@ -659,10 +681,173 @@ CONTAINS
   END SUBROUTINE update_GDDLAI
 
 
+
+  SUBROUTINE update_GDDLAI_X(&
+       id,LAICalcYes,& !input
+       lat,LAI_obs,&
+       BaseT,BaseTe,&
+       GDDFull,SDDFull,&
+       LAIMin,LAIMax,LAIPower,LAIType,&
+       GDD_day,LAI_day,&!inout
+       LAI_day_prev) !output
+    IMPLICIT NONE
+
+    !------------------------------------------------------------------------------
+    ! Calculation of LAI from growing degree days
+    ! This was revised and checked on 16 Feb 2014 by LJ
+    !------------------------------------------------------------------------------
+
+    INTEGER,INTENT(IN)::id
+    INTEGER,INTENT(IN)::LAICalcYes
+
+    REAL(KIND(1d0)),INTENT(IN)::lat
+    REAL(KIND(1d0)),INTENT(IN)::LAI_obs
+
+    ! --- Vegetation phenology ---------------------------------------------------------------------
+    ! Parameters provided in input information for each vegetation surface (SUEWS_Veg.txt)
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN)  :: BaseT          !Base temperature for growing degree days [degC]
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN)  :: BaseTe         !Base temperature for senescence degree days [degC]
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN)  :: GDDFull        !Growing degree days needed for full capacity [degC]
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN)  :: SDDFull        !Senescence degree days needed to initiate leaf off [degC]
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN)  :: LAIMin         !Min LAI [m2 m-2]
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN)  :: LAIMax         !Max LAI [m2 m-2]
+    REAL(KIND(1d0)),DIMENSION(4,nvegsurf),INTENT(IN):: LAIPower       !Coeffs for LAI equation: 1,2 - leaf growth; 3,4 - leaf off
+    !! N.B. currently DecTr only, although input provided for all veg types
+    INTEGER,DIMENSION(nvegsurf),INTENT(IN):: LAIType                  !LAI equation to use: original (0) or new (1)
+
+    REAL(KIND(1d0)),DIMENSION(5),INTENT(INOUT)       :: GDD_day !Growing Degree Days (see SUEWS_DailyState.f95)
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(INOUT):: LAI_day !LAI for each veg surface [m2 m-2]
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(OUT)::LAI_day_prev ! LAI of previous day
+
+    REAL(KIND(1d0)):: no   !Switches and checks for GDD
+    REAL(KIND(1d0))::yes   !Switches and checks for GDD
+    REAL(KIND(1d0))::indHelp   !Switches and checks for GDD
+    REAL(KIND(1d0)),DIMENSION(5)::GDD_day_prev ! GDD of previous day
+
+
+    INTEGER:: critDays
+    INTEGER::iv
+
+    ! translate values of previous day to local variables
+    GDD_day_prev=GDD_day
+    LAI_day_prev=LAI_day
+
+
+    critDays=50   !Critical limit for GDD when GDD or SDD is set to zero
+
+    ! Loop through vegetation types (iv)
+    DO iv=1,NVegSurf
+       ! Calculate GDD for each day from the minimum and maximum air temperature
+       yes =((GDD_day_prev(3)+GDD_day_prev(4))/2-BaseT(iv))    !Leaf on
+       no  =((GDD_day_prev(3)+GDD_day_prev(4))/2-BaseTe(iv))   !Leaf off
+
+       indHelp = 0   !Help switch to allow GDD to go to zero in sprint-time !! QUESTION: What does this mean? HCW
+
+       IF(yes<0) THEN   !GDD cannot be negative
+          indHelp=yes   !Amount of negative GDD
+          yes=0
+       ENDIF
+
+       IF(no>0) no=0    !SDD cannot be positive
+
+       ! Calculate cumulative growing and senescence degree days
+       GDD_day(1) = GDD_day_prev(1)+yes
+       GDD_day(2) = GDD_day_prev(2)+no
+
+       ! Possibility for cold spring
+       IF(GDD_day(2)<=SDDFull(iv).AND.indHelp<0) THEN
+          GDD_day(1)=0
+       ENDIF
+
+       IF(GDD_day(1)>=GDDFull(iv)) THEN   !Start senescence
+          GDD_day(1)=GDDFull(iv)          !Leaves should not grow so delete yes from earlier
+          IF(GDD_day(2)<-critDays) GDD_day(1)=0
+       ENDIF
+
+       IF (GDD_day(2)<=SDDFull(iv)) THEN   !After senescence now start growing leaves
+          GDD_day(2)=SDDFull(iv)           !Leaves off so add back earlier
+          IF(GDD_day(1)>critDays) GDD_day(2)=0
+       ENDIF
+
+       ! With these limits SDD, GDD is set to zero
+       IF(GDD_day(2)<-critDays.AND.GDD_day(2)>SDDFull(iv))  GDD_day(1)=0
+       IF(GDD_day(1)> critDays.AND.GDD_day(1)<GDDFull(iv))  GDD_day(2)=0
+
+       ! Now calculate LAI itself
+       IF(lat>=0) THEN   !Northern hemispere
+          IF (id==140.AND.GDD_day(2)/=0)  GDD_day(2)=0  !If SDD is not zero by mid May, this is forced
+          ! Set SDD to zero in summer time
+          IF (GDD_day(1)> critDays.AND.id<170) GDD_day(2)=0
+          ! Set GDD zero in winter time
+          IF (GDD_day(2)<-critDays.AND.id>170) GDD_day(1)=0
+
+          IF (LAItype(iv) < 0.5) THEN   !Original LAI type
+             IF(GDD_day(1)>0.AND.GDD_day(1)<GDDFull(iv)) THEN       !Leaves can still grow
+                LAI_day(iv)=(LAI_day_prev(iv)**LAIPower(1,iv)*GDD_day(1)*LAIPower(2,iv))+LAI_day_prev(iv)
+             ELSEIF(GDD_day(2)<0.AND.GDD_day(2)>SDDFull(iv)) THEN   !Start senescence
+                LAI_day(iv)=(LAI_day_prev(iv)**LAIPower(3,iv)*GDD_day(2)*LAIPower(4,iv))+LAI_day_prev(iv)
+             ELSE
+                LAI_day(iv)=LAI_day_prev(iv)
+             ENDIF
+          ELSEIF (LAItype(iv)>=0.5) THEN
+             IF(GDD_day(1)>0.AND.GDD_day(1)<GDDFull(iv)) THEN        !Leaves can still grow
+                LAI_day(iv)=(LAI_day_prev(iv)**LAIPower(1,iv)*GDD_day(1)*LAIPower(2,iv))+LAI_day_prev(iv)
+                !! Use day length to start senescence at high latitudes (N hemisphere)
+             ELSEIF (GDD_day(5)<=12.AND.GDD_day(2)>SDDFull(iv)) THEN !Start senescence
+                LAI_day(iv)=(LAI_day_prev(iv)*LAIPower(3,iv)*(1-GDD_day(2))*LAIPower(4,iv))+LAI_day_prev(iv)
+             ELSE
+                LAI_day(iv)=LAI_day_prev(iv)
+             ENDIF
+          ENDIF
+
+       ELSEIF (lat<0) THEN   !Southern hemisphere !! N.B. not identical to N hemisphere - return to later
+          IF (id==300.AND.GDD_day(2)/=0)  GDD_day(2)=0   !If SDD is not zero by late Oct, this is forced
+          ! Set SDD to zero in summer time
+          IF (GDD_day(1)> critDays.AND.id>250) GDD_day(2)=0
+          ! Set GDD zero in winter time
+          IF (GDD_day(2)<-critDays.AND.id<250) GDD_day(1)=0
+
+          IF (LAItype(iv) < 0.5) THEN   !Original LAI type
+             IF(GDD_day(1)>0.AND.GDD_day(1)<GDDFull(iv)) THEN
+                LAI_day(iv)=(LAI_day_prev(iv)**LAIPower(1,iv)*GDD_day(1)*LAIPower(2,iv))+LAI_day_prev(iv)
+             ELSEIF(GDD_day(2)<0.AND.GDD_day(2)>SDDFull(iv)) THEN
+                LAI_day(iv)=(LAI_day_prev(iv)**LAIPower(3,iv)*GDD_day(2)*LAIPower(4,iv))+LAI_day_prev(iv)
+             ELSE
+                LAI_day(iv)=LAI_day_prev(iv)
+             ENDIF
+          ELSE
+             IF(GDD_day(1)>0.AND.GDD_day(1)<GDDFull(iv)) THEN
+                LAI_day(iv)=(LAI_day_prev(iv)**LAIPower(1,iv)*GDD_day(1)*LAIPower(2,iv))+LAI_day_prev(iv)
+                !! Day length not used to start senescence in S hemisphere (not much land)
+             ELSEIF(GDD_day(2)<0.AND.GDD_day(2)>SDDFull(iv)) THEN
+                LAI_day(iv)=(LAI_day_prev(iv)*LAIPower(3,iv)*(1-GDD_day(2))*LAIPower(4,iv))+LAI_day_prev(iv)
+             ELSE
+                LAI_day(iv)=LAI_day_prev(iv)
+             ENDIF
+          ENDIF
+       ENDIF   !N or S hemisphere
+
+       ! Check LAI within limits; if not set to limiting value
+       IF(LAI_day(iv)>LAImax(iv))THEN
+          LAI_day(iv)=LAImax(iv)
+       ELSEIF(LAI_day(iv)<LAImin(iv))THEN
+          LAI_day(iv)=LAImin(iv)
+       ENDIF
+
+    ENDDO   !End of loop over veg surfaces
+
+    IF(LAICalcYes==0)THEN ! moved to SUEWS_cal_DailyState, TS 18 Sep 2017
+       ! LAI(id-1,:)=LAI_obs ! check -- this is going to be a problem as it is not for each vegetation class
+       LAI_day=LAI_obs
+    ENDIF
+    !------------------------------------------------------------------------------
+
+  END SUBROUTINE update_GDDLAI_X
+
   SUBROUTINE update_WaterUse(&
        id,WaterUseMethod,DayofWeek_id,lat,Faut,HDD,&!input
        Ie_a,Ie_m,Ie_start,Ie_end,DayWatPer,DayWat,&
-       WU_Day) !inout
+       WUDay) !inout
 
     IMPLICIT NONE
 
@@ -681,7 +866,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(7),INTENT(IN)::DayWatPer  !% of houses following daily water
     REAL(KIND(1d0)),DIMENSION(7),INTENT(IN)::DayWat       !Days of watering allowed
 
-    REAL(KIND(1d0)),DIMENSION(0:ndays,9),INTENT(INOUT):: WU_Day       !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
+    REAL(KIND(1d0)),DIMENSION(0:ndays,9),INTENT(INOUT):: WUDay       !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
 
     INTEGER::wd        !Water use calculation is done when calc = 1
     INTEGER::&
@@ -702,52 +887,52 @@ CONTAINS
 
           IF(calc==1) THEN
              ! Model daily water use based on HDD(id,6)(days since rain) and HDD(id,3)(average temp)
-             ! WU_Day is the amount of water [mm] per day, applied to each of the irrigated areas
+             ! WUDay is the amount of water [mm] per day, applied to each of the irrigated areas
              ! N.B. These are the same for each vegetation type at the moment
 
              ! ---- Automatic irrigation (evergreen trees) ----
-             WU_day(id,2) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*DayWatPer(wd)
-             IF (WU_Day(id,2)<0) WU_Day(id,2)=0   !If modelled WU is negative -> 0
+             WUDay(id,2) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*DayWatPer(wd)
+             IF (WUDay(id,2)<0) WUDay(id,2)=0   !If modelled WU is negative -> 0
 
              ! ---- Manual irrigation (evergreen trees) ----
-             WU_day(id,3) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*DayWatPer(wd)
-             IF (WU_Day(id,3)<0) WU_Day(id,3)=0   !If modelled WU is negative -> 0
+             WUDay(id,3) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*DayWatPer(wd)
+             IF (WUDay(id,3)<0) WUDay(id,3)=0   !If modelled WU is negative -> 0
 
              ! ---- Total evergreen trees water use (automatic + manual) ----
-             WU_Day(id,1)=(WU_day(id,2)+WU_day(id,3))
+             WUDay(id,1)=(WUDay(id,2)+WUDay(id,3))
 
              ! ---- Automatic irrigation (deciduous trees) ----
-             WU_day(id,5) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*DayWatPer(wd)
-             IF (WU_Day(id,5)<0) WU_Day(id,5)=0   !If modelled WU is negative -> 0
+             WUDay(id,5) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*DayWatPer(wd)
+             IF (WUDay(id,5)<0) WUDay(id,5)=0   !If modelled WU is negative -> 0
 
              ! ---- Manual irrigation (deciduous trees) ----
-             WU_day(id,6) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*DayWatPer(wd)
-             IF (WU_Day(id,6)<0) WU_Day(id,6)=0   !If modelled WU is negative -> 0
+             WUDay(id,6) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*DayWatPer(wd)
+             IF (WUDay(id,6)<0) WUDay(id,6)=0   !If modelled WU is negative -> 0
 
              ! ---- Total deciduous trees water use (automatic + manual) ----
-             WU_Day(id,4)=(WU_day(id,5)+WU_day(id,6))
+             WUDay(id,4)=(WUDay(id,5)+WUDay(id,6))
 
              ! ---- Automatic irrigation (grass) ----
-             WU_day(id,8) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*DayWatPer(wd)
-             IF (WU_Day(id,8)<0) WU_Day(id,8)=0   !If modelled WU is negative -> 0
+             WUDay(id,8) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*DayWatPer(wd)
+             IF (WUDay(id,8)<0) WUDay(id,8)=0   !If modelled WU is negative -> 0
 
              ! ---- Manual irrigation (grass) ----
-             WU_day(id,9) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*DayWatPer(wd)
-             IF (WU_Day(id,9)<0) WU_Day(id,9)=0   !If modelled WU is negative -> 0
+             WUDay(id,9) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*DayWatPer(wd)
+             IF (WUDay(id,9)<0) WUDay(id,9)=0   !If modelled WU is negative -> 0
 
              ! ---- Total grass water use (automatic + manual) ----
-             WU_Day(id,7)=(WU_day(id,8)+WU_day(id,9))
+             WUDay(id,7)=(WUDay(id,8)+WUDay(id,9))
 
           ELSE   !If no irrigation on this day
-             WU_Day(id,1)=0
-             WU_Day(id,2)=0
-             WU_Day(id,3)=0
-             WU_Day(id,4)=0
-             WU_Day(id,5)=0
-             WU_Day(id,6)=0
-             WU_Day(id,7)=0
-             WU_Day(id,8)=0
-             WU_Day(id,9)=0
+             WUDay(id,1)=0
+             WUDay(id,2)=0
+             WUDay(id,3)=0
+             WUDay(id,4)=0
+             WUDay(id,5)=0
+             WUDay(id,6)=0
+             WUDay(id,7)=0
+             WUDay(id,8)=0
+             WUDay(id,9)=0
           ENDIF
        ENDIF
     ENDIF
@@ -845,9 +1030,9 @@ CONTAINS
   ! transfer results to a one-line output for SUEWS_cal_DailyState
   SUBROUTINE update_DailyState(&
        iy,id,it,imin,nsh_real,&!input
-       GDD,HDD,LAI,&
+       GDD_day,HDD,LAI_day,&
        DecidCap,albDecTr,albEveTr,albGrass,porosity,&
-       WU_Day,&
+       WUDay,&
        deltaLAI,VegPhenLumps,&
        SnowAlb,SnowDens,&
        a1,a2,a3,&
@@ -861,16 +1046,16 @@ CONTAINS
     INTEGER,INTENT(IN) ::imin
     REAL(KIND(1d0)),INTENT(IN) ::nsh_real
 
-    REAL(KIND(1d0)),DIMENSION( 0:ndays, 5),INTENT(IN):: GDD          !Growing Degree Days (see SUEWS_DailyState.f95)
+    REAL(KIND(1d0)),DIMENSION(5),INTENT(IN):: GDD_day          !Growing Degree Days (see SUEWS_DailyState.f95)
     REAL(KIND(1d0)),DIMENSION(-4:ndays, 6),INTENT(IN):: HDD          !Heating Degree Days (see SUEWS_DailyState.f95)
-    REAL(KIND(1d0)),DIMENSION(-4:ndays, nvegsurf),INTENT(IN):: LAI   !LAI for each veg surface [m2 m-2]
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN):: LAI_day   !LAI for each veg surface [m2 m-2]
 
     REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(IN) ::DecidCap
     REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(IN) ::albDecTr
     REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(IN) ::albEveTr
     REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(IN) ::albGrass
     REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(IN) ::porosity
-    REAL(KIND(1d0)),DIMENSION(0:ndays,9),INTENT(IN):: WU_Day !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
+    REAL(KIND(1d0)),DIMENSION(0:ndays,9),INTENT(IN):: WUDay !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
 
     REAL(KIND(1d0)),INTENT(IN) ::deltaLAI
     REAL(KIND(1d0)),INTENT(IN) ::VegPhenLumps
@@ -888,10 +1073,10 @@ CONTAINS
        ! Write actual data only at the last timesstep of each day
        ! DailyStateLine(1:2)   = [iy,id]
        DailyStateLine(1:6)   = HDD(id,1:6)
-       DailyStateLine(6+1:6+5)  = GDD(id,1:5)
-       DailyStateLine(11+1:11+3) = LAI(id,1:nvegsurf)
+       DailyStateLine(6+1:6+5)  = GDD_day(1:5)
+       DailyStateLine(11+1:11+3) = LAI_day(1:nvegsurf)
        DailyStateLine(14+1:14+5) = [DecidCap(id),Porosity(id),AlbEveTr(id),AlbDecTr(id),AlbGrass(id)]
-       DailyStateLine(19+1:19+9) = WU_day(id-1,1:9)
+       DailyStateLine(19+1:19+9) = WUDay(id-1,1:9)
        DailyStateLine(28+1)    = deltaLAI
        DailyStateLine(29+1)    = VegPhenLumps
        DailyStateLine(30+1:30+8) = [SnowAlb,SnowDens(1:7)]

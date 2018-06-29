@@ -61,7 +61,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
        pormax_dec, pormin_dec, porosity, &
        dqndt_grid,qn1_av_grid,&
        dqnsdt_grid,qn1_s_av_grid,&
-       qn1_av_store_grid, qn1_s_av_store_grid, qn1_s_store_grid, qn1_store_grid, &
        resp_a, resp_b, sathydraulicconduct, sddfull, &
        sfr, snowd, snowdens, snowfrac, snowpack, &
        soildepth, soilmoist, soilstorecap, state, statelimit, &

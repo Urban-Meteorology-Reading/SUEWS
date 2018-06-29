@@ -33,11 +33,12 @@ SUBROUTINE OverallRunControl
 
   IMPLICIT NONE
 
-  INTEGER:: iv,i,ii,SkipCounter,iFile            !iv and i, ii are integers used in do loops
+  INTEGER:: iv,i,SkipCounter,iFile            !iv and i, ii are integers used in do loops
   CHARACTER(len=50):: FileN
   INTEGER, PARAMETER :: nFile = 13
-  CHARACTER(len=50), DIMENSION(nFile) :: FileNames = [CHARACTER(len=50) :: 'SUEWS_NonVeg.txt', &
-       'SUEWS_Veg.txt', 'SUEWS_Water.txt', 'SUEWS_Snow.txt', &
+  CHARACTER(len=50), DIMENSION(nFile) :: &
+       FileNames = [CHARACTER(len=50) :: &
+       'SUEWS_NonVeg.txt', 'SUEWS_Veg.txt', 'SUEWS_Water.txt', 'SUEWS_Snow.txt', &
        'SUEWS_Soil.txt', 'SUEWS_Conductance.txt', 'SUEWS_OHMCoefficients.txt', &
        'SUEWS_ESTMCoefficients.txt', 'SUEWS_AnthropogenicHeat.txt', 'SUEWS_Irrigation.txt', &
        'SUEWS_Profiles.txt', 'SUEWS_WithinGridWaterDist.txt', 'SUEWS_BiogenCO2.txt']
@@ -256,12 +257,12 @@ SUBROUTINE OverallRunControl
         nlinesOHMCoefficients=nlines
         ALLOCATE(OHMCoefficients_Coeff(nlinesOHMCoefficients, ncolumnsOHMCoefficients))
         CALL ReadCoeff(FileNames(iFile), nlinesOHMCoefficients, ncolumnsOHMCoefficients, HeaderOHMCoefficients_File, &
-                       OHMCoefficients_Coeff)
+             OHMCoefficients_Coeff)
      CASE ( 8 )
         nlinesESTMCoefficients=nlines
         ALLOCATE(ESTMCoefficients_Coeff(nlinesESTMCoefficients, ncolumnsESTMCoefficients))
         CALL ReadCoeff(FileNames(iFile), nlinesESTMCoefficients, ncolumnsESTMCoefficients, HeaderESTMCoefficients_File, &
-                       ESTMCoefficients_Coeff)
+             ESTMCoefficients_Coeff)
      CASE ( 9 )
         nlinesAnthropogenic=nlines
         ALLOCATE(Anthropogenic_Coeff(nlinesAnthropogenic, ncolumnsAnthropogenic))
@@ -356,7 +357,7 @@ SUBROUTINE ReadCoeff(FileName, nlines, ncolumns, HeaderFile, Coeff)
   !----------------------------------------------------------------------
   ! local variables
   !----------------------------------------------------------------------
-  INTEGER ::  SkipCounter, iv, iline, i, ii
+  INTEGER ::  SkipCounter, iv, i, ii
 
   !Read input file
   OPEN(22, file=TRIM(FileInputPath)//TRIM(FileName), err=301, status='old')
@@ -378,7 +379,7 @@ SUBROUTINE ReadCoeff(FileName, nlines, ncolumns, HeaderFile, Coeff)
   DO i = 1, nlines
      DO ii = i+1, nlines
         IF(Coeff(i, 1) == Coeff(ii, 1) .AND. i /= ii) THEN
-           WRITE(*, *) 'Code', Coeff(i, 1), 'in ', trim(FileName), ' not unique!'
+           WRITE(*, *) 'Code', Coeff(i, 1), 'in ', TRIM(FileName), ' not unique!'
            CALL ErrorHint(60, FileName, Coeff(i, 1), notUsed, notUsedI)
         ENDIF
      ENDDO

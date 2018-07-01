@@ -55,7 +55,7 @@ CONTAINS
   !   - Could add different coefficients (Ie_m, Ie_a) for each vegetation type
   !==============================================================================
   SUBROUTINE SUEWS_cal_DailyState(&
-       iy,id,it,imin,tstep,DayofWeek_id,&!input
+       iy,id,it,imin,tstep,dt_since_start,DayofWeek_id,&!input
        WaterUseMethod,snowUse,Ie_start,Ie_end,&
        LAICalcYes,LAIType,&
        nsh_real,avkdn,Temp_C,Precip,BaseTHDD,&
@@ -67,8 +67,11 @@ CONTAINS
        Ie_a,Ie_m,DayWatPer,DayWat,SnowPack,&
        BaseT,BaseTe,GDDFull,SDDFull,LAIMin,LAIMax,LAIPower,&
        SnowAlb,DecidCap,albDecTr,albEveTr,albGrass,&!inout
-       porosity,GDD_day,HDD,SnowDens,LAI_day,WUDay,&
-       LAI_day_prev,deltaLAI)!output
+       porosity,GDD_day,&
+       HDD_day,HDD_day_prev,&
+       SnowDens,LAI_day,LAI_day_prev,&
+       WUDay,&
+       deltaLAI)!output
 
     USE Snow_module,ONLY:SnowUpdate
 
@@ -78,8 +81,10 @@ CONTAINS
     INTEGER,INTENT(IN)::id
     INTEGER,INTENT(IN)::it
     INTEGER,INTENT(IN)::imin
-
     INTEGER,INTENT(IN)::tstep
+    INTEGER,INTENT(IN)::dt_since_start
+
+
     INTEGER,INTENT(IN)::WaterUseMethod
     INTEGER,INTENT(IN)::snowUse
     INTEGER,INTENT(IN)::Ie_start   !Starting time of water use (DOY)
@@ -143,7 +148,8 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(INOUT)::albGrass
     REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(INOUT)::porosity
     ! REAL(KIND(1d0)),DIMENSION( 0:ndays, 5),INTENT(INOUT):: GDD !Growing Degree Days (see SUEWS_DailyState.f95)
-    REAL(KIND(1d0)),DIMENSION(-4:ndays, 6),INTENT(INOUT):: HDD          !Heating Degree Days (see SUEWS_DailyState.f95)
+    REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT):: HDD_day          !Heating Degree Days (see SUEWS_DailyState.f95)
+    ! REAL(KIND(1d0)),DIMENSION(-4:366,6),INTENT(INOUT):: HDD
 
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(INOUT)::SnowDens
     ! REAL(KIND(1d0)),DIMENSION(-4:ndays, nvegsurf),INTENT(INOUT):: LAI !LAI for each veg surface [m2 m-2]
@@ -152,8 +158,8 @@ CONTAINS
     !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
     REAL(KIND(1d0)),DIMENSION(0:ndays,9),INTENT(INOUT):: WUDay
     REAL(KIND(1d0)),INTENT(OUT)::deltaLAI
-    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(OUT):: LAI_day_prev !LAI for each veg surface [m2 m-2]
-
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(INOUT):: LAI_day_prev !LAI for each veg surface [m2 m-2]
+    REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT)::HDD_day_prev ! HDD of previous day
 
 
     ! --------------------------------------------------------------------------------
@@ -177,17 +183,30 @@ CONTAINS
     ! WUDay(,8) - Automatic irrigation for Irr Grass [mm]
     ! WUDay(,9) - Manual irrigation for Irr Grass [mm]
     ! --------------------------------------------------------------------------------
+    ! PRINT*, ''
+    ! PRINT*, 'before_DailyState', iy,id,it,imin
+    ! PRINT*, 'HDD(id)', HDD(id,:)
+    ! PRINT*, 'HDD_day', HDD_day
 
-    CALL init_DailyState(&
-         id,& !input
-         avkdn,&
+
+    ! --------------------------------------------------------------------------------
+    ! On first timestep of each day, define whether the day each a workday or weekend
+    IF (it==0.AND.imin==0) THEN
+       CALL update_DailyState_Start(&
+            it,imin,&!input
+            HDD_day)!inout
+    ENDIF
+
+    ! --------------------------------------------------------------------------------
+    ! regular update at all timesteps of a day
+    CALL update_DailyState_Day(&
+         avkdn,&!input
          Temp_C,&
          Precip,&
          BaseTHDD,&
          nsh_real,&
          GDD_day,&!inout
-         HDD)
-
+         HDD_day)
 
     ! Update snow density, albedo surface fraction
     IF (snowUse==1) CALL SnowUpdate(&
@@ -195,55 +214,55 @@ CONTAINS
          SnowDensMax,SnowDensMin,SnowAlbMin,SnowPack,&
          SnowAlb,SnowDens)!inout
 
-    ! ================================================================================
-    ! This next part occurs only on the first or last timestep of each day ===========
-
     ! --------------------------------------------------------------------------------
-    ! On first timestep of each day, define whether the day each a workday or weekend
-    IF (it==0.AND.imin==0) THEN
-       ! CALL Cal_DailyStateStart(&
-       !      id,iy,lat,&!input
-       !      DayofWeek_id)!output
-
-       ! --------------------------------------------------------------------------------
-       ! On last timestep, perform the daily calculations -------------------------------
-       ! Daily values not correct until end of each day,
-       !  so main program should use values from the previous day
-    ELSEIF (it==23 .AND. imin==(nsh_real-1)/nsh_real*60) THEN
-       CALL Cal_DailyStateEnd(&
-            id,it,imin,tstep,&!input
+    ! On last timestep, perform the daily calculations -------------------------------
+    ! Daily values not correct until end of each day,
+    !  so main program should use values from the previous day
+    IF (it==23 .AND. imin==(nsh_real-1)/nsh_real*60) THEN
+       CALL update_DailyState_End(&
+            id,it,imin,tstep,dt_since_start,&!input
             LAIType,Ie_end,Ie_start,LAICalcYes,&
             WaterUseMethod,DayofWeek_id,&
             AlbMax_DecTr,AlbMax_EveTr,AlbMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
             BaseT,BaseTe,CapMax_dec,CapMin_dec,DayWat,DayWatPer,Faut,GDDFull,&
             Ie_a,Ie_m,LAIMax,LAIMin,LAIPower,lat,PorMax_dec,PorMin_dec,SDDFull,LAI_obs,&
             albDecTr,albEveTr,albGrass,porosity,DecidCap,&!inout
-            GDD_day,HDD,LAI_day,WUDay,&!inout
-            LAI_day_prev,deltaLAI)!output
+            GDD_day,&
+            HDD_day,HDD_day_prev,&
+            LAI_day,LAI_day_prev,WUDay,&
+            deltaLAI)!output
        ! ,xBo)!output
     ENDIF   !End of section done only at the end of each day (i.e. only once per day)
+
+
+    ! PRINT*, 'after_DailyState', iy,id,it,imin
+    ! PRINT*, 'HDD(id)', HDD(id,:)
+    ! PRINT*, 'HDD_day', HDD_day
 
     RETURN
 
   END SUBROUTINE SUEWS_cal_DailyState
 
 
-  SUBROUTINE Cal_DailyStateEnd(&
-       id,it,imin,tstep,&!input
+  SUBROUTINE update_DailyState_End(&
+       id,it,imin,tstep,dt_since_start,&!input
        LAIType,Ie_end,Ie_start,LAICalcYes,&
        WaterUseMethod,DayofWeek_id,&
        AlbMax_DecTr,AlbMax_EveTr,AlbMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
        BaseT,BaseTe,CapMax_dec,CapMin_dec,DayWat,DayWatPer,Faut,GDDFull,&
        Ie_a,Ie_m,LAIMax,LAIMin,LAIPower,lat,PorMax_dec,PorMin_dec,SDDFull,LAI_obs,&
        albDecTr,albEveTr,albGrass,porosity,DecidCap,&!inout
-       GDD_day,HDD,LAI_day,WUDay,&!inout
-       LAI_day_prev,deltaLAI)!output
+       GDD_day,&
+       HDD_day,HDD_day_prev,&
+       LAI_day,LAI_day_prev,WUDay,&!inout
+       deltaLAI)!output
     IMPLICIT NONE
 
     INTEGER,INTENT(IN)::id
     INTEGER,INTENT(IN)::it
     INTEGER,INTENT(IN)::imin
     INTEGER,INTENT(IN)::tstep
+    INTEGER,INTENT(IN)::dt_since_start
     INTEGER,INTENT(IN)::LAIType(nvegsurf)
     INTEGER,INTENT(IN)::Ie_end
     INTEGER,INTENT(IN)::Ie_start
@@ -282,27 +301,34 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(INOUT)::porosity( 0:ndays)
     REAL(KIND(1d0)),INTENT(INOUT)::DecidCap( 0:ndays)
     ! REAL(KIND(1d0)),INTENT(INOUT)::GDD( 0:ndays, 5)
-    REAL(KIND(1d0)),INTENT(INOUT)::HDD(-4:ndays, 6)
+    ! REAL(KIND(1d0)),INTENT(INOUT)::HDD(-4:ndays, 6)
     ! REAL(KIND(1d0)),INTENT(INOUT)::LAI(-4:ndays, nvegsurf)
 
-    REAL(KIND(1d0)),DIMENSION(5),INTENT(INOUT)       :: GDD_day !Growing Degree Days (see SUEWS_DailyState.f95)
-    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(INOUT):: LAI_day !LAI for each veg surface [m2 m-2]
+    REAL(KIND(1d0)),DIMENSION(5),INTENT(INOUT)       ::GDD_day !Growing Degree Days (see SUEWS_DailyState.f95)
+    REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT)       ::HDD_day
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(INOUT)::LAI_day !LAI for each veg surface [m2 m-2]
 
-
+    REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT)::HDD_day_prev ! HDD of previous day
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(INOUT)::LAI_day_prev ! LAI of previous day
 
     REAL(KIND(1d0)),INTENT(INOUT):: WUDay(0:ndays,9)
     REAL(KIND(1d0)),INTENT(OUT)::deltaLAI
-    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(OUT)::LAI_day_prev ! LAI of previous day
 
 
-    CALL update_HDD(&
-         id,it,imin,tstep,& !input
-         HDD) !inout
+    ! CALL update_HDD(&
+    !      id,it,imin,tstep,& !input
+    !      HDD) !inout
+
+    CALL update_HDD_X(&
+         dt_since_start,it,imin,tstep,& !input
+         HDD_day,&!inout
+         HDD_day_prev)!output
+
 
 
     ! Calculate modelled daily water use ------------------------------------------
     CALL update_WaterUse(&
-         id,WaterUseMethod,DayofWeek_id,lat,Faut,HDD,&!input
+         id,WaterUseMethod,DayofWeek_id,lat,Faut,HDD_day,&!input
          Ie_a,Ie_m,Ie_start,Ie_end,DayWatPer,DayWat,&
          WUDay) !inout
 
@@ -333,42 +359,32 @@ CONTAINS
 
     CALL update_Veg(&
          id,&!input
-         LAImax,&
-         LAIMin,&
-         AlbMax_DecTr,&
-         AlbMax_EveTr,&
-         AlbMax_Grass,&
-         AlbMin_DecTr,&
-         AlbMin_EveTr,&
-         AlbMin_Grass,&
-         CapMax_dec,&
-         CapMin_dec,&
-         PorMax_dec,&
-         PorMin_dec,&
+         LAImax,LAIMin,&
+         AlbMax_DecTr,AlbMax_EveTr,AlbMax_Grass,&
+         AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
+         CapMax_dec,CapMin_dec,&
+         PorMax_dec,PorMin_dec,&
          LAI_day,LAI_day_prev,&
          DecidCap,&!inout
-         albDecTr,&
-         albEveTr,&
-         albGrass,&
+         albDecTr,albEveTr,albGrass,&
          porosity,&
          deltaLAI)!output
 
 
-  END SUBROUTINE Cal_DailyStateEnd
+  END SUBROUTINE update_DailyState_End
 
 
-  SUBROUTINE init_DailyState(&
-       id,& !input
-       avkdn,&
+  SUBROUTINE update_DailyState_Day(&
+       avkdn,&!input
        Temp_C,&
        Precip,&
        BaseTHDD,&
        nsh_real,&
        GDD_day,&!inout
-       HDD)
+       HDD_day)
     IMPLICIT NONE
 
-    INTEGER,INTENT(IN)::id
+    ! INTEGER,INTENT(IN)::id
     REAL(KIND(1d0)),INTENT(IN)::avkdn
     REAL(KIND(1d0)),INTENT(IN)::Temp_C
     REAL(KIND(1d0)),INTENT(IN)::Precip
@@ -376,8 +392,9 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(IN)::nsh_real
 
     ! REAL(KIND(1d0))::tstepcount
+    ! REAL(KIND(1d0)),DIMENSION(-4:366,6),INTENT(INOUT):: HDD
     REAL(KIND(1d0)),DIMENSION(5),INTENT(INOUT):: GDD_day !Growing Degree Days (see SUEWS_DailyState.f95)
-    REAL(KIND(1d0)),DIMENSION(-4:ndays, 6),INTENT(INOUT):: HDD          !Heating Degree Days (see SUEWS_DailyState.f95)
+    REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT):: HDD_day          !Heating Degree Days (see SUEWS_DailyState.f95)
     ! REAL(KIND(1d0)),DIMENSION(5),INTENT(OUT):: GDD_day_prev !Growing Degree Days (see SUEWS_DailyState.f95)
 
     INTEGER::gamma1
@@ -392,47 +409,36 @@ CONTAINS
 
     ! Calculations related to heating and cooling degree days (HDD) ------------------
     ! See Sailor & Vasireddy (2006) EMS Eq 1,2 (theirs is hourly timestep)
-    IF ((BaseTHDD-Temp_C)>=0) THEN   !Heating
-       gamma1=1
-    ELSE
-       gamma1=0
-    ENDIF
+    gamma1=MERGE(1, 0, (BaseTHDD-Temp_C)>=0)
+    gamma2=MERGE(1, 0, (Temp_C-BaseTHDD)>=0)
 
-    IF ((Temp_C-BaseTHDD)>=0) THEN   !Cooling
-       gamma2=1
-    ELSE
-       gamma2=0
-    ENDIF
-
-    HDD(id,1)=HDD(id,1) + gamma1*(BaseTHDD-Temp_C)   !Heating
-    HDD(id,2)=HDD(id,2) + gamma2*(Temp_C-BaseTHDD)   !Cooling
-    HDD(id,3)=HDD(id,3) + Temp_C                     !Will become daily average temperature
-    !      4 ------------------------------------!   !5-day running mean
-    HDD(id,5)=HDD(id,5) + Precip                     !Daily precip total
+    ! HDD(id,1)=HDD(id,1) + gamma1*(BaseTHDD-Temp_C)   !Heating
+    ! HDD(id,2)=HDD(id,2) + gamma2*(Temp_C-BaseTHDD)   !Cooling
+    ! HDD(id,3)=HDD(id,3) + Temp_C                     !Will become daily average temperature
+    ! !      4 ------------------------------------!   !5-day running mean
+    ! HDD(id,5)=HDD(id,5) + Precip                     !Daily precip total
     !      6 ------------------------------------!   !Days since rain
 
-  END SUBROUTINE init_DailyState
+    HDD_day(1)=HDD_day(1) + gamma1*(BaseTHDD-Temp_C)   !Heating
+    HDD_day(2)=HDD_day(2) + gamma2*(Temp_C-BaseTHDD)   !Cooling
+    HDD_day(3)=HDD_day(3) + Temp_C                     !Will become daily average temperature
+    !      4 ------------------------------------!   !5-day running mean
+    HDD_day(5)=HDD_day(5) + Precip                     !Daily precip total
+    !      6 ------------------------------------!   !Days since rain
+
+  END SUBROUTINE update_DailyState_Day
 
 
   SUBROUTINE update_Veg(&
        id,&!input
-       LAImax,&
-       LAIMin,&
-       AlbMax_DecTr,&
-       AlbMax_EveTr,&
-       AlbMax_Grass,&
-       AlbMin_DecTr,&
-       AlbMin_EveTr,&
-       AlbMin_Grass,&
-       CapMax_dec,&
-       CapMin_dec,&
-       PorMax_dec,&
-       PorMin_dec,&
+       LAImax,LAIMin,&
+       AlbMax_DecTr,AlbMax_EveTr,AlbMax_Grass,&
+       AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
+       CapMax_dec,CapMin_dec,&
+       PorMax_dec,PorMin_dec,&
        LAI_day,LAI_day_prev,&
        DecidCap,&!inout
-       albDecTr,&
-       albEveTr,&
-       albGrass,&
+       albDecTr,albEveTr,albGrass,&
        porosity,&
        deltaLAI)!output
 
@@ -844,8 +850,9 @@ CONTAINS
 
   END SUBROUTINE update_GDDLAI_X
 
+
   SUBROUTINE update_WaterUse(&
-       id,WaterUseMethod,DayofWeek_id,lat,Faut,HDD,&!input
+       id,WaterUseMethod,DayofWeek_id,lat,Faut,HDD_day,&!input
        Ie_a,Ie_m,Ie_start,Ie_end,DayWatPer,DayWat,&
        WUDay) !inout
 
@@ -860,7 +867,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(IN)::lat
     REAL(KIND(1d0)),INTENT(IN)::Faut          !Fraction of irrigated area using automatic irrigation
 
-    REAL(KIND(1d0)),DIMENSION(-4:366,6),INTENT(IN)::HDD
+    REAL(KIND(1d0)),DIMENSION(6),INTENT(IN)::HDD_day
     REAL(KIND(1d0)),DIMENSION(3),INTENT(IN)::Ie_a
     REAL(KIND(1d0)),DIMENSION(3),INTENT(IN)::Ie_m   !Coefficients for automatic and manual irrigation models
     REAL(KIND(1d0)),DIMENSION(7),INTENT(IN)::DayWatPer  !% of houses following daily water
@@ -886,38 +893,38 @@ CONTAINS
           ENDIF
 
           IF(calc==1) THEN
-             ! Model daily water use based on HDD(id,6)(days since rain) and HDD(id,3)(average temp)
+             ! Model daily water use based on HDD_day(6)(days since rain) and HDD_day(3)(average temp)
              ! WUDay is the amount of water [mm] per day, applied to each of the irrigated areas
              ! N.B. These are the same for each vegetation type at the moment
 
              ! ---- Automatic irrigation (evergreen trees) ----
-             WUDay(id,2) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*DayWatPer(wd)
+             WUDay(id,2) = Faut*(Ie_a(1)+Ie_a(2)*HDD_day(3)+Ie_a(3)*HDD_day(6))*DayWatPer(wd)
              IF (WUDay(id,2)<0) WUDay(id,2)=0   !If modelled WU is negative -> 0
 
              ! ---- Manual irrigation (evergreen trees) ----
-             WUDay(id,3) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*DayWatPer(wd)
+             WUDay(id,3) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD_day(3)+Ie_m(3)*HDD_day(6))*DayWatPer(wd)
              IF (WUDay(id,3)<0) WUDay(id,3)=0   !If modelled WU is negative -> 0
 
              ! ---- Total evergreen trees water use (automatic + manual) ----
              WUDay(id,1)=(WUDay(id,2)+WUDay(id,3))
 
              ! ---- Automatic irrigation (deciduous trees) ----
-             WUDay(id,5) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*DayWatPer(wd)
+             WUDay(id,5) = Faut*(Ie_a(1)+Ie_a(2)*HDD_day(3)+Ie_a(3)*HDD_day(6))*DayWatPer(wd)
              IF (WUDay(id,5)<0) WUDay(id,5)=0   !If modelled WU is negative -> 0
 
              ! ---- Manual irrigation (deciduous trees) ----
-             WUDay(id,6) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*DayWatPer(wd)
+             WUDay(id,6) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD_day(3)+Ie_m(3)*HDD_day(6))*DayWatPer(wd)
              IF (WUDay(id,6)<0) WUDay(id,6)=0   !If modelled WU is negative -> 0
 
              ! ---- Total deciduous trees water use (automatic + manual) ----
              WUDay(id,4)=(WUDay(id,5)+WUDay(id,6))
 
              ! ---- Automatic irrigation (grass) ----
-             WUDay(id,8) = Faut*(Ie_a(1)+Ie_a(2)*HDD(id,3)+Ie_a(3)*HDD(id,6))*DayWatPer(wd)
+             WUDay(id,8) = Faut*(Ie_a(1)+Ie_a(2)*HDD_day(3)+Ie_a(3)*HDD_day(6))*DayWatPer(wd)
              IF (WUDay(id,8)<0) WUDay(id,8)=0   !If modelled WU is negative -> 0
 
              ! ---- Manual irrigation (grass) ----
-             WUDay(id,9) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD(id,3)+Ie_m(3)*HDD(id,6))*DayWatPer(wd)
+             WUDay(id,9) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD_day(3)+Ie_m(3)*HDD_day(6))*DayWatPer(wd)
              IF (WUDay(id,9)<0) WUDay(id,9)=0   !If modelled WU is negative -> 0
 
              ! ---- Total grass water use (automatic + manual) ----
@@ -974,29 +981,66 @@ CONTAINS
   END SUBROUTINE update_HDD
 
 
-  SUBROUTINE Cal_DailyStateStart(&
-       id,iy,lat,&!input
-       dayofWeek_id)!output
+  SUBROUTINE update_HDD_X(&
+       dt_since_start,it,imin,tstep,& !input
+       HDD_day,&
+       HDD_day_prev) !output
     IMPLICIT NONE
-    INTEGER,INTENT(IN) :: id
-    INTEGER,INTENT(IN) ::iy
-    REAL(KIND(1d0)),INTENT(IN) ::lat
+    INTEGER,INTENT(IN)::dt_since_start,it,imin,tstep
 
-    INTEGER,DIMENSION(3),INTENT(OUT) ::dayofWeek_id
+    REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT):: HDD_day
+    REAL(KIND(1d0)),DIMENSION(6),INTENT(OUT):: HDD_day_prev
 
-    INTEGER::wd
-    INTEGER::mb
-    INTEGER::date
-    INTEGER::seas
+    INTEGER:: days_prev
+    REAL(KIND(1d0))::tstepcount
 
-    CALL day2month(id,mb,date,seas,iy,lat) !Calculate real date from doy
-    CALL Day_of_Week(date,mb,iy,wd)        !Calculate weekday (1=Sun, ..., 7=Sat)
+    ! count of timesteps performed during day `id`
+    tstepcount=(it*60+imin)*60/tstep*1.
+    ! Heating degree days (HDD) -------------
+    HDD_day(1)=HDD_day(1)/tstepcount   !Heating
+    HDD_day(2)=HDD_day(2)/tstepcount   !Cooling
+    HDD_day(3)=HDD_day(3)/tstepcount   !Average temp
 
-    dayofWeek_id(1)=wd      !Day of week
-    dayofWeek_id(2)=mb      !Month
-    dayofweek_id(3)=seas    !Season
+    ! Calculate a quasi-5-day-running-mean temp
+    days_prev= MIN(4,& ! dt_since_start >= 4 days
+         FLOOR(dt_since_start/(24*60*60)*1.)) ! dt_since_start < 4 days
+    HDD_day(4) = (HDD_day(4)*days_prev+HDD_day(3))/(days_prev+1)
 
-  END SUBROUTINE Cal_DailyStateStart
+    ! Calculate number of days since rain
+    IF(HDD_day(5)>0) THEN        !Rain occurred
+       HDD_day(6)=0
+    ELSE
+       HDD_day(6)=HDD_day(6)+1  !Days since rain
+    ENDIF
+
+    ! save HDD_day as HDD_day_prev
+    HDD_day_prev = HDD_day
+
+  END SUBROUTINE update_HDD_X
+
+
+  SUBROUTINE update_DailyState_Start(&
+       it,imin,&!input
+       HDD_day)!output
+    IMPLICIT NONE
+    INTEGER,INTENT(IN) :: it
+    INTEGER,INTENT(IN) ::imin
+
+    REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT) ::HDD_day
+    REAL(KIND(1d0))::HDD_day_mav,HDD_day_daysSR
+
+    ! reset HDD_day to ZERO except for:
+    ! 5-day moving average
+    HDD_day_mav=HDD_day(4)
+    ! Days Since Rain
+    HDD_day_daysSR=HDD_day(6)
+    IF ( it == 0 .AND. imin ==0 ) THEN
+       HDD_day=0
+       HDD_day(4)=HDD_day_mav
+       HDD_day(6)=HDD_day_daysSR
+    END IF
+
+  END SUBROUTINE update_DailyState_Start
 
   SUBROUTINE SUEWS_update_DailyState(&
        iy,id,it,imin,dectime,&!input
@@ -1030,7 +1074,7 @@ CONTAINS
   ! transfer results to a one-line output for SUEWS_cal_DailyState
   SUBROUTINE update_DailyState(&
        iy,id,it,imin,nsh_real,&!input
-       GDD_day,HDD,LAI_day,&
+       GDD_day,HDD_day,LAI_day,&
        DecidCap,albDecTr,albEveTr,albGrass,porosity,&
        WUDay,&
        deltaLAI,VegPhenLumps,&
@@ -1047,7 +1091,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(IN) ::nsh_real
 
     REAL(KIND(1d0)),DIMENSION(5),INTENT(IN):: GDD_day          !Growing Degree Days (see SUEWS_DailyState.f95)
-    REAL(KIND(1d0)),DIMENSION(-4:ndays, 6),INTENT(IN):: HDD          !Heating Degree Days (see SUEWS_DailyState.f95)
+    REAL(KIND(1d0)),DIMENSION(6),INTENT(IN):: HDD_day          !Heating Degree Days (see SUEWS_DailyState.f95)
     REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN):: LAI_day   !LAI for each veg surface [m2 m-2]
 
     REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(IN) ::DecidCap
@@ -1072,9 +1116,9 @@ CONTAINS
     IF (it==23 .AND. imin==(nsh_real-1)/nsh_real*60) THEN
        ! Write actual data only at the last timesstep of each day
        ! DailyStateLine(1:2)   = [iy,id]
-       DailyStateLine(1:6)   = HDD(id,1:6)
-       DailyStateLine(6+1:6+5)  = GDD_day(1:5)
-       DailyStateLine(11+1:11+3) = LAI_day(1:nvegsurf)
+       DailyStateLine(1:6)   = HDD_day
+       DailyStateLine(6+1:6+5)  = GDD_day
+       DailyStateLine(11+1:11+3) = LAI_day
        DailyStateLine(14+1:14+5) = [DecidCap(id),Porosity(id),AlbEveTr(id),AlbDecTr(id),AlbGrass(id)]
        DailyStateLine(19+1:19+9) = WUDay(id-1,1:9)
        DailyStateLine(28+1)    = deltaLAI

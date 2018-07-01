@@ -52,7 +52,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
        AlbMin_dectr, AlbMin_evetr, AlbMin_grass, &
        alpha_bioco2, alpha_enh_bioco2, baset, basete, &
        beta_bioco2, beta_enh_bioco2, capmax_dec, capmin_dec, &
-       chanohm, cpanohm, decidcap, emis, GDD_day, GDDfull, HDD, &
+       chanohm, cpanohm, decidcap, emis, GDD_day, GDDfull,&
+       HDD_day,HDD_day_prev, &
        humactivity_tstep, icefrac, kkanohm, &
        LAI_day, LAImax, LAImin, LAIpower, LAItype, maxconductance, &
        meltwaterstore, metforcingdata_grid, min_res_bioco2, &
@@ -118,7 +119,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
        EF_umolCO2perJ,emis,EmissionsMethod,EnEF_v_Jkm,endDLS,EveTreeH,FAIBldg,&
        FAIDecTree,FAIEveTree,Faut,FcEF_v_kgkm,fcld_obs,FlowChange,&
        FrFossilFuel_Heat,FrFossilFuel_NonHeat,G1,G2,G3,G4,G5,G6,GDD_day,&
-       GDDFull,Gridiv,gsModel,HDD,HumActivity_tstep,&
+       GDDFull,Gridiv,gsModel,HDD_day,HDD_day_prev,HumActivity_tstep,&
        IceFrac,id,Ie_a,Ie_end,Ie_m,Ie_start,imin,&
        InternalWaterUse_h,IrrFracConif,IrrFracDecid,IrrFracGrass,it,ity,&
        iy,kkAnOHM,Kmax,LAI_day,LAICalcYes,LAIMax,LAIMin,LAI_obs,&

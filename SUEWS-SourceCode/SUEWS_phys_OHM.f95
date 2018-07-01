@@ -13,7 +13,7 @@ SUBROUTINE OHM(qn1,qn1_av,dqndt,&
      qn1_S,qn1_s_av,dqnsdt,&
      tstep,dt_since_start,&
      sfr,nsurf,&
-     HDDday,&
+     Tair_mav_5d,&
      OHM_coef,&
      OHM_threshSW,OHM_threshWD,&
      soilmoist,soilstoreCap,state,&
@@ -54,7 +54,7 @@ SUBROUTINE OHM(qn1,qn1_av,dqndt,&
   REAL(KIND(1d0)),INTENT(in)::qn1_S                           ! net all-wave radiation over snow
   REAL(KIND(1d0)),INTENT(in)::sfr(nsurf)                      ! surface fractions
   REAL(KIND(1d0)),INTENT(in)::SnowFrac(nsurf)                 ! snow fractions of each surface
-  REAL(KIND(1d0)),INTENT(in)::HDDday                          ! HDDday=HDD(id-1,4) HDD at the begining of today (id-1)
+  REAL(KIND(1d0)),INTENT(in)::Tair_mav_5d                          ! Tair_mav_5d=HDD(id-1,4) HDD at the begining of today (id-1)
   REAL(KIND(1d0)),INTENT(in)::OHM_coef(nsurf+1,4,3)                 ! OHM coefficients
   REAL(KIND(1d0)),INTENT(in)::OHM_threshSW(nsurf+1),OHM_threshWD(nsurf+1) ! OHM thresholds
   REAL(KIND(1d0)),INTENT(in)::soilmoist(nsurf)                ! soil moisture
@@ -105,7 +105,7 @@ SUBROUTINE OHM(qn1,qn1_av,dqndt,&
   !real(kind(1d0)):: OHM_SMForWet = 0.9  !Use wet coefficients if SM close to soil capacity
 
   CALL OHM_coef_cal(sfr,nsurf,&
-       HDDday,OHM_coef,OHM_threshSW,OHM_threshWD,&
+       Tair_mav_5d,OHM_coef,OHM_threshSW,OHM_threshWD,&
        soilmoist,soilstoreCap,state,&
        BldgSurf,WaterSurf,&
        SnowUse,SnowFrac,&
@@ -198,7 +198,7 @@ ENDSUBROUTINE OHM
 !========================================================================================
 
 SUBROUTINE OHM_coef_cal(sfr,nsurf,&
-     HDDday,OHM_coef,OHM_threshSW,OHM_threshWD,&
+     Tair_mav_5d,OHM_coef,OHM_threshSW,OHM_threshWD,&
      soilmoist,soilstoreCap,state,&
      BldgSurf,WaterSurf,&
      SnowUse,SnowFrac,&
@@ -211,7 +211,7 @@ SUBROUTINE OHM_coef_cal(sfr,nsurf,&
   REAL(KIND(1d0)), INTENT(in) :: &
        sfr(nsurf),& ! surface cover fractions
        SnowFrac(nsurf),& ! snow fractions of each surface
-       HDDday,& ! HDDday=HDD(id-1,4) HDD at the begining of today (id-1)
+       Tair_mav_5d,& ! Tair_mav_5d=HDD(id-1,4) HDD at the begining of today (id-1)
        OHM_coef(nsurf+1,4,3),&
        OHM_threshSW(nsurf+1),OHM_threshWD(nsurf+1),& ! OHM thresholds
        soilmoist(nsurf),& ! soil moisture
@@ -234,7 +234,7 @@ SUBROUTINE OHM_coef_cal(sfr,nsurf,&
      surfrac=sfr(is)
 
      ! Use 5-day running mean Tair to decide whether it is summer or winter ----------------
-     IF(HDDday >= OHM_threshSW(is)) THEN !Summer
+     IF(Tair_mav_5d >= OHM_threshSW(is)) THEN !Summer
         ii=0
      ELSE          !Winter
         ii=2

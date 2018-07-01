@@ -270,7 +270,7 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(-4:ndays, nvegsurf,MaxNumberOfGrids):: LAI_grids
 
   REAL(KIND(1d0)),DIMENSION(5,MaxNumberOfGrids):: GDD_day_grids
-  REAL(KIND(1d0)),DIMENSION(6,MaxNumberOfGrids):: HDD_day_grids
+  REAL(KIND(1d0)),DIMENSION(6,MaxNumberOfGrids):: HDD_day_grids,HDD_day_prev_grids
   REAL(KIND(1d0)),DIMENSION(9,MaxNumberOfGrids):: WU_Day_day_grids
   REAL(KIND(1d0)),DIMENSION(nvegsurf,MaxNumberOfGrids):: LAI_day_grids
 

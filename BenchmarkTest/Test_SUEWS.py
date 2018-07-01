@@ -351,10 +351,10 @@ def test_samerun(dir_baserun, dir_save=tempfile.mkdtemp()):
         os.mkdir(dir_output)
 
     # copy SUEWS executable
+    os.remove(name_exe)
     path_exe = os.path.join(dir_exe, name_exe)
-    if not os.path.exists(name_exe):
-        copyfile(path_exe, name_exe)
-        os.chmod(name_exe, 755)
+    copyfile(path_exe, name_exe)
+    os.chmod(name_exe, 755)
 
     # perform simulation
     # exit_code = os.system('./SUEWS_V2018a')

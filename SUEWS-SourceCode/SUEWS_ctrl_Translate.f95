@@ -909,15 +909,26 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
 
      ! ---- Heating degree days, HDD
      HDD = 0
-     HDD(id_prev,1) = ModelDailyState(Gridiv,cMDS_HDD1)         ! 1 = Heating
-     HDD(id_prev,2) = ModelDailyState(Gridiv,cMDS_HDD2)         ! 2 = Cooling
-     HDD(id_prev-3,3) = ModelDailyState(Gridiv,cMDS_TempCOld3)  ! 3 will become average
+     HDD(id_prev,1)   = ModelDailyState(Gridiv,cMDS_HDD1)      ! 1 = Heating
+     HDD(id_prev,2)   = ModelDailyState(Gridiv,cMDS_HDD2)      ! 2 = Cooling
+     HDD(id_prev-3,3) = ModelDailyState(Gridiv,cMDS_TempCOld3) ! 3 will become average
      HDD(id_prev-2,3) = ModelDailyState(Gridiv,cMDS_TempCOld2)
      HDD(id_prev-1,3) = ModelDailyState(Gridiv,cMDS_TempCOld1)
      HDD(id_prev,3)   = ModelDailyState(Gridiv,cMDS_TempC)
      ! 4 = 5 day running mean
      ! 5 = daily precip total
-     HDD(id_prev,6) = ModelDailyState(Gridiv,cMDS_DaysSinceRain)  ! 6 = days since rain
+     HDD(id_prev,6) = ModelDailyState(Gridiv,cMDS_DaysSinceRain) ! 6 = days since rain
+
+     HDD_day_prev   = HDD(id_prev,:)   ! TODO: remove the dependence on HDD array
+     ! ---- Heating degree days, HDD_day: HDD Values for one day
+     HDD_day=0
+
+     ! HDD_day(1)=ModelDailyState(Gridiv,cMDS_HDD1)
+     ! HDD_day(2)=ModelDailyState(Gridiv,cMDS_HDD2)
+     ! HDD_day(3)=ModelDailyState(Gridiv,cMDS_TempC)
+     ! ! 4 = 5 day running mean
+     ! ! 5 = daily precip total
+     ! HDD_day(6) = ModelDailyState(Gridiv,cMDS_DaysSinceRain)
 
 
      ! Save required DailyState variables for the current grid (HCW 27 Nov 2014)
@@ -926,9 +937,10 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      LAI_grids(:,:,Gridiv)    = LAI(:,:)
      ! WUDay_grids(:,:,Gridiv) = WUDay(:,:)
 
-     ! HDD_day_grids(:,Gridiv)    = HDD_day(:)
-     GDD_day_grids(:,Gridiv)  = GDD_day(:)
-     LAI_day_grids(:,Gridiv)  = LAI_day(:)
+     HDD_day_grids(:,Gridiv) = HDD_day(:)
+     HDD_day_prev_grids(:,Gridiv) = HDD_day_prev(:)
+     GDD_day_grids(:,Gridiv) = GDD_day(:)
+     LAI_day_grids(:,Gridiv) = LAI_day(:)
      ! WUDay_day_grids(:,Gridiv) = WUday_day(:)
 
 
@@ -1172,6 +1184,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      ! added by TS 29 Jun 2018 to remove annual loops in main calculation
      GDD_day=GDD_day_grids(:,Gridiv)
      HDD_day=HDD_day_grids(:,Gridiv)
+     HDD_day_prev=HDD_day_prev_grids(:,Gridiv)
      LAI_day=LAI_day_grids(:,Gridiv)
 
      ! get met array for one grid used in AnOHM
@@ -1309,6 +1322,7 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv,ir,irMax)
   ! added by TS 29 Jun 2018 to remove annual loops in main calculation
   GDD_day_grids(:,Gridiv)=GDD_day
   HDD_day_grids(:,Gridiv)=HDD_day
+  HDD_day_prev_grids(:,Gridiv)=HDD_day_prev
   LAI_day_grids(:,Gridiv)=LAI_day
 
 

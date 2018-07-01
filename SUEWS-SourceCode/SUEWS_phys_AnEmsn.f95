@@ -3,6 +3,7 @@
 !This subroutine is still under development and in the equations concerning CO2 fluxes
 !there are bugs and missing comments.
 !Last modified
+! TS 01 Jul 2018 - replaced annual HDD array with a simplied daily array HDD_day
 ! MH 29 Jun 2017 -  Finalised the code to calculate the anthropogenic emissions of heat and CO2
 ! HCW 21 Apr 2017 - renamed from SUEWS_SAHP.f95. Now includes CO2 fluxes as well as QF.
 !                   Tidied code. Combined three subroutines into 1 to avoid repetition.
@@ -20,38 +21,37 @@
 !
 !===================================================================================
 
- SUBROUTINE AnthropogenicEmissions(EmissionsMethod,&
-       id,it,imin,DLS,nsh,DayofWeek_id,ndays,&
-       EF_umolCO2perJ,FcEF_v_kgkm,EnEF_v_Jkm,TrafficUnits,&
-       FrFossilFuel_Heat,FrFossilFuel_NonHeat,&
-       MinQFMetab,MaxQFMetab,&
-       NumCapita,PopDensDaytime,PopDensNighttime,&
-       Temp_C,HDD,Qf_A,Qf_B,Qf_C,&
-       AH_MIN,AH_SLOPE_Heating,AH_SLOPE_Cooling,&
-       T_CRITIC_Heating,T_CRITIC_Cooling,&
-       TrafficRate,&
-       QF0_BEU,QF_SAHP,&
-       Fc_anthro,Fc_metab,Fc_traff,Fc_build,&
-       AHProf_tstep,HumActivity_tstep,TraffProf_tstep,PopProf_tstep,&
-       notUsed,notUsedI)
- ! Simple anthropogenic heat parameterisation and co2 calculation
- ! Calculates QF_SAHP and Fc_anthro
+SUBROUTINE AnthropogenicEmissions(&
+     EmissionsMethod,&
+     id,it,imin,DLS,nsh,DayofWeek_id,&
+     EF_umolCO2perJ,FcEF_v_kgkm,EnEF_v_Jkm,TrafficUnits,&
+     FrFossilFuel_Heat,FrFossilFuel_NonHeat,&
+     MinQFMetab,MaxQFMetab,&
+     NumCapita,PopDensDaytime,PopDensNighttime,&
+     Temp_C,HDD_day,Qf_A,Qf_B,Qf_C,&
+     AH_MIN,AH_SLOPE_Heating,AH_SLOPE_Cooling,&
+     T_CRITIC_Heating,T_CRITIC_Cooling,&
+     TrafficRate,&
+     QF0_BEU,QF_SAHP,&
+     Fc_anthro,Fc_metab,Fc_traff,Fc_build,&
+     AHProf_tstep,HumActivity_tstep,TraffProf_tstep,PopProf_tstep)
+  ! Simple anthropogenic heat parameterisation and co2 calculation
+  ! Calculates QF_SAHP and Fc_anthro
 
   IMPLICIT NONE
 
   INTEGER,INTENT(in):: EmissionsMethod
   INTEGER,INTENT(in)::&
-       id,     & !Day of year
+       id,     & !Hour
        it,     & !Hour
        imin,   & !Minutes
        DLS,    & !day lightsavings =1 +1h =0
-       nsh,    & !Number of timesteps per hour
-       ndays,  & !Max no. days in a year used to specify size of daily arrays
-       notUsedI
+       nsh !Number of timesteps per hour
+
 
   INTEGER,DIMENSION(3),INTENT(in)::DayofWeek_id   !1 - day of week; 2 - month; 3 - season
 
-  REAL(KIND(1d0)),DIMENSION(-4:ndays, 6),INTENT(in):: HDD !Heating Degree Days (see SUEWS_DailyState.f95)
+  REAL(KIND(1d0)),DIMENSION(6),INTENT(in):: HDD_day !Heating Degree Days (see SUEWS_DailyState.f95)
 
   REAL(KIND(1d0)),DIMENSION(2),INTENT(in)::&
        Qf_A,Qf_B,Qf_C,&    !Qf coefficients
@@ -63,7 +63,7 @@
        TrafficRate,&       !Traffic rate
        QF0_BEU
 
-   REAL(KIND(1d0)),DIMENSION(24*nsh,2),INTENT(in)::&
+  REAL(KIND(1d0)),DIMENSION(24*nsh,2),INTENT(in)::&
        AHProf_tstep,&
        HumActivity_tstep,&
        TraffProf_tstep,&
@@ -81,8 +81,8 @@
        NumCapita,&         !Number of people in the study area per hectare [ha-1]
        PopDensDaytime,&    !Daytime population density [ha-1] (i.e. workers)
        PopDensNighttime,&  !Nighttime population density [ha-1] (i.e. residents)
-       Temp_C,&            !Air temperature
-       notUsed
+       Temp_C           !Air temperature
+
 
   REAL(KIND(1D0)),INTENT(out):: &
        QF_SAHP,&
@@ -94,6 +94,7 @@
        ih
 
   REAL(KIND(1D0)):: &
+       Tair_avg_daily,& !daily mean air temperature
        DP_x_RhoPop, DP_x_RhoPop_traff,&
        MinFcMetab, MaxFcMetab,&
        QF_build,QF_metab,QF_traff,&
@@ -105,7 +106,11 @@
        TraffDorNorT,&     ! Traffic
        AHDorNorT          ! Anthropogenic heat
 
-!-----------------------------------------------------------------------
+    ! NB: temporarily use 5-day running mean to test the performance
+    Tair_avg_daily= HDD_day(4)
+    ! Tair_avg_daily= HDD_day(3) ! this is daily
+
+  !-----------------------------------------------------------------------
   ! Account for Daylight saving
   ih=it-DLS
   IF(ih<0) ih=23
@@ -144,7 +149,7 @@
   !41-43: CO2 emission is calculated with local information. QF methods are used for housing and human metabolism
 
   IF(EmissionsMethod==1 .OR. EmissionsMethod==4 .OR. EmissionsMethod==11 .OR. EmissionsMethod==14 .OR. &
-     EmissionsMethod==21 .OR. EmissionsMethod==24 .OR. EmissionsMethod==31 .OR. EmissionsMethod==34) THEN   ! (formerly SAHP_1 subroutine)
+       EmissionsMethod==21 .OR. EmissionsMethod==24 .OR. EmissionsMethod==31 .OR. EmissionsMethod==34) THEN   ! (formerly SAHP_1 subroutine)
      ! Loridan et al. (2011) JAMC Eq 13: linear relation with air temperature
      ! Weekday/weekend differences due to profile only
      ! Now scales with population density
@@ -163,19 +168,19 @@
 
 
   ELSEIF(EmissionsMethod==2 .OR. EmissionsMethod==5 .OR. EmissionsMethod==12 .OR. EmissionsMethod==15 .OR. &
-     EmissionsMethod==22 .OR. EmissionsMethod==25 .OR. EmissionsMethod==32 .OR. EmissionsMethod==35) THEN   ! (formerly SAHP_2 subroutine)
+       EmissionsMethod==22 .OR. EmissionsMethod==25 .OR. EmissionsMethod==32 .OR. EmissionsMethod==35) THEN   ! (formerly SAHP_2 subroutine)
      ! Jarvi et al. (2011) JH Eq 3 using HDD and CDD
      ! Weekday/weekend differences due to profile and coefficients QF_a,b,c
      ! Scales with population density
-     QF_SAHP      = (Qf_a(iu)+Qf_b(iu)*HDD(id-1,2)+Qf_c(iu)*HDD(id-1,1)) * DP_x_RhoPop  !This contains QF from all three sources: buildings, metabolism and traffic!
+     QF_SAHP      = (Qf_a(iu)+Qf_b(iu)*HDD_day(2)+Qf_c(iu)*HDD_day(1)) * DP_x_RhoPop  !This contains QF from all three sources: buildings, metabolism and traffic!
      QF_SAHP_base = (Qf_a(iu)) * DP_x_RhoPop                ! Temperature-independent contribution from buildings, traffic and human metabolism
-     QF_SAHP_heat = (Qf_c(iu)*HDD(id-1,1)) * DP_x_RhoPop    ! Heating contribution
-     QF_SAHP_ac   = (Qf_b(iu)*HDD(id-1,2)) * DP_x_RhoPop    ! Cooling (AC) contribution
+     QF_SAHP_heat = (Qf_c(iu)*HDD_day(1)) * DP_x_RhoPop    ! Heating contribution
+     QF_SAHP_ac   = (Qf_b(iu)*HDD_day(2)) * DP_x_RhoPop    ! Cooling (AC) contribution
 
 
   ELSEIF(EmissionsMethod==3 .OR. EmissionsMethod==6 .OR. EmissionsMethod==13 .OR. EmissionsMethod==16 .OR. &
-     EmissionsMethod==23 .OR. EmissionsMethod==26 .OR. EmissionsMethod==33 .OR. EmissionsMethod==36) THEN
-     ! Updated Loridan et al. (2011) method using daily (not instantaneous) air temperature (HDD(id-1,3))
+       EmissionsMethod==23 .OR. EmissionsMethod==26 .OR. EmissionsMethod==33 .OR. EmissionsMethod==36) THEN
+     ! Updated Loridan et al. (2011) method using daily (not instantaneous) air temperature (HDD_day(3))
      ! Linear relation with air temperature
      ! Weekday/weekend differences due to profile only
      ! Scales with population density
@@ -184,13 +189,13 @@
      ! QF_SAHP_base = AH_MIN(iu) * DP_x_RhoPop       ! Temperature-independent contribution
      QF_SAHP_base = AH_MIN(iu) * AHDorNorT           ! Temperature-independent contribution
 
-     IF(HDD(id-1,3) < T_CRITIC_Heating(iu)) THEN     ! Heating
-        QF_SAHP = (AH_MIN(iu) + AH_SLOPE_Heating(iu)*(T_CRITIC_Heating(iu)-HDD(id-1,3)))* AHDorNorT
+     IF(Tair_avg_daily < T_CRITIC_Heating(iu)) THEN     ! Heating
+        QF_SAHP = (AH_MIN(iu) + AH_SLOPE_Heating(iu)*(T_CRITIC_Heating(iu)-Tair_avg_daily))* AHDorNorT
         QF_SAHP_heat = QF_SAHP - QF_SAHP_base        ! Heating contribution
         QF_SAHP_ac = 0
 
-     ELSEIF(HDD(id-1,3) > T_CRITIC_Cooling(iu)) THEN ! Air-conditioning
-        QF_SAHP = (AH_MIN(iu) + AH_SLOPE_Cooling(iu)*(HDD(id-1,3)-T_CRITIC_Cooling(iu))) * AHDorNorT
+     ELSEIF(Tair_avg_daily > T_CRITIC_Cooling(iu)) THEN ! Air-conditioning
+        QF_SAHP = (AH_MIN(iu) + AH_SLOPE_Cooling(iu)*(Tair_avg_daily-T_CRITIC_Cooling(iu))) * AHDorNorT
         QF_SAHP_heat = 0
         QF_SAHP_ac = QF_SAHP - QF_SAHP_base          ! AC contribution
 
@@ -201,5 +206,5 @@
   ENDIF
 
   RETURN
- ENDSUBROUTINE AnthropogenicEmissions
+ENDSUBROUTINE AnthropogenicEmissions
 !========================================================================================

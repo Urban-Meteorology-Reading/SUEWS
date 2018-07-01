@@ -36,11 +36,11 @@ CONTAINS
        BaseTHDD,beta_bioCO2,beta_enh_bioCO2,bldgH,CapMax_dec,CapMin_dec,&
        chAnOHM,cpAnOHM,CRWmax,CRWmin,DayWat,DayWatPer,&
        DecidCap,dectime,DecTreeH,Diagnose,DiagQN,DiagQS,DRAINRT,&
-       dt_since_start,dqndt_grids,qn1_av_grids,dqnsdt_grids,qn1_s_av_grids,&
+       dt_since_start,dqndt,qn1_av,dqnsdt,qn1_s_av,&
        EF_umolCO2perJ,emis,EmissionsMethod,EnEF_v_Jkm,endDLS,EveTreeH,FAIBldg,&
        FAIDecTree,FAIEveTree,Faut,FcEF_v_kgkm,fcld_obs,FlowChange,&
        FrFossilFuel_Heat,FrFossilFuel_NonHeat,G1,G2,G3,G4,G5,G6,GDD_day,&
-       GDDFull,Gridiv,gsModel,HDD,HumActivity_tstep,&
+       GDDFull,Gridiv,gsModel,HDD_day,HDD_day_prev,HumActivity_tstep,&
        IceFrac,id,Ie_a,Ie_end,Ie_m,Ie_start,imin,&
        InternalWaterUse_h,IrrFracConif,IrrFracDecid,IrrFracGrass,it,ity,&
        iy,kkAnOHM,Kmax,LAI_day,LAICalcYes,LAIMax,LAIMin,LAI_obs,&
@@ -252,10 +252,10 @@ CONTAINS
     ! inout variables
     REAL(KIND(1D0)),INTENT(INOUT)                             ::SnowfallCum
     REAL(KIND(1D0)),INTENT(INOUT)                             ::SnowAlb
-    REAL(KIND(1d0)),INTENT(INOUT)                             ::qn1_av_grids
-    REAL(KIND(1d0)),INTENT(INOUT)                             ::dqndt_grids
-    REAL(KIND(1d0)),INTENT(INOUT)                             ::qn1_s_av_grids
-    REAL(KIND(1d0)),INTENT(INOUT)                             ::dqnsdt_grids
+    REAL(KIND(1d0)),INTENT(INOUT)                             ::qn1_av
+    REAL(KIND(1d0)),INTENT(INOUT)                             ::dqndt
+    REAL(KIND(1d0)),INTENT(INOUT)                             ::qn1_s_av
+    REAL(KIND(1d0)),INTENT(INOUT)                             ::dqnsdt
     REAL(KIND(1d0)),DIMENSION(24*3600/tstep),INTENT(INOUT)    ::Tair24HR
     ! REAL(KIND(1D0)),DIMENSION(2*3600/tstep+1),INTENT(INOUT)   ::qn1_av_store_grid
     ! REAL(KIND(1D0)),DIMENSION(3600/tstep),INTENT(INOUT)       ::qn1_store_grid
@@ -269,7 +269,7 @@ CONTAINS
     ! REAL(KIND(1D0)),DIMENSION(0:NDAYS,5),INTENT(INOUT)        ::GDD
     REAL(KIND(1D0)),DIMENSION(0:NDAYS,9),INTENT(INOUT)        ::WUDay
     REAL(KIND(1D0)),DIMENSION(6,NSURF),INTENT(INOUT)          ::surf
-    REAL(KIND(1D0)),DIMENSION(-4:NDAYS,6),INTENT(INOUT)       ::HDD
+    ! REAL(KIND(1D0)),DIMENSION(-4:NDAYS,6),INTENT(INOUT)       ::HDD
     ! REAL(KIND(1D0)),DIMENSION(-4:NDAYS,NVEGSURF),INTENT(INOUT)::LAI
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)   ::alb
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)   ::IceFrac
@@ -280,6 +280,8 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)   ::soilmoist
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)   ::state
     REAL(KIND(1d0)),DIMENSION(5),INTENT(INOUT)       :: GDD_day !Growing Degree Days (see SUEWS_DailyState.f95)
+    REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT)       :: HDD_day !Growing Degree Days (see SUEWS_DailyState.f95)
+    REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT)       :: HDD_day_prev !Growing Degree Days (see SUEWS_DailyState.f95)
     REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(INOUT):: LAI_day !LAI for each veg surface [m2 m-2]
 
 
@@ -507,7 +509,7 @@ CONTAINS
     !Call the SUEWS_cal_DailyState routine to get surface characteristics ready
     IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_cal_DailyState...'
     CALL SUEWS_cal_DailyState(&
-         iy,id,it,imin,tstep,DayofWeek_id,&!input
+         iy,id,it,imin,tstep,dt_since_start,DayofWeek_id,&!input
          WaterUseMethod,snowUse,Ie_start,Ie_end,&
          LAICalcYes,LAIType,&
          nsh_real,avkdn,Temp_C,Precip,BaseTHDD,&
@@ -519,8 +521,11 @@ CONTAINS
          Ie_a,Ie_m,DayWatPer,DayWat,SnowPack,&
          BaseT,BaseTe,GDDFull,SDDFull,LAIMin,LAIMax,LAIPower,&
          SnowAlb,DecidCap,albDecTr,albEveTr,albGrass,&!inout
-         porosity,GDD_day,HDD,SnowDens,LAI_day,WUDay,&
-         LAI_day_prev,deltaLAI)!output
+         porosity,GDD_day,&
+         HDD_day,HDD_day_prev,&
+         SnowDens,LAI_day,LAI_day_prev,&
+         WUDay,&
+         deltaLAI)!output
     ! CALL SUEWS_cal_DailyState(&
     !      iy,id,it,imin,tstep,DayofWeek_id,&!input
     !      WaterUseMethod,snowUse,Ie_start,Ie_end,&
@@ -574,7 +579,7 @@ CONTAINS
          alpha_enh_bioCO2,avkdn,beta_bioCO2,beta_enh_bioCO2,DayofWeek_id,&
          Diagnose,DLS,EF_umolCO2perJ,EmissionsMethod,EnEF_v_Jkm,Fc,Fc_anthro,Fc_biogen,&
          Fc_build,FcEF_v_kgkm,Fc_metab,Fc_photo,Fc_respi,Fc_traff,FrFossilFuel_Heat,&
-         FrFossilFuel_NonHeat,HDD,HumActivity_tstep,id,imin,it,LAI_day, LAIMax,LAIMin,&
+         FrFossilFuel_NonHeat,HDD_day_prev,HumActivity_tstep,id,imin,it,LAI_day, LAIMax,LAIMin,&
          MaxQFMetab,MinQFMetab,min_res_bioCO2,nsh,NumCapita,&
          PopDensDaytime,PopDensNighttime,PopProf_tstep,QF,QF0_BEU,Qf_A,Qf_B,Qf_C,QF_SAHP,&
          resp_a,resp_b,sfr,snowFrac,T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,&
@@ -587,10 +592,10 @@ CONTAINS
          id,tstep,dt_since_start,Diagnose,sfr,&
          OHM_coef,OHM_threshSW,OHM_threshWD,&
          soilmoist,soilstoreCap,state,nsh,SnowUse,DiagQS,&
-         HDD,MetForcingData_grid,Ts5mindata_ir,qf,qn1,&
+         HDD_day_prev,MetForcingData_grid,Ts5mindata_ir,qf,qn1,&
          avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown,&
          bldgh,alb,emis,cpAnOHM,kkAnOHM,chAnOHM,EmissionsMethod,&
-         Tair24HR,qn1_av_grids,dqndt_grids,qn1_s_av_grids,dqnsdt_grids,&!inout
+         Tair24HR,qn1_av,dqndt,qn1_s_av,dqnsdt,&!inout
          surf,&
          qn1_S,snowFrac,dataOutLineESTM,qs,&!output
          deltaQi,a1,a2,a3)
@@ -631,7 +636,7 @@ CONTAINS
          SurfaceArea,sfr,&
          IrrFracConif,IrrFracDecid,IrrFracGrass,&
          dayofWeek_id,WUProfA_tstep,WUProfM_tstep,&
-         InternalWaterUse_h,HDD(id-1,:),WUDay(id-1,:),&
+         InternalWaterUse_h,HDD_day_prev,WUDay(id-1,:),&
          WaterUseMethod,NSH,it,imin,DLS,&
          WUAreaEveTr_m2,WUAreaDecTr_m2,& ! output:
          WUAreaGrass_m2,WUAreaTotal_m2,&
@@ -764,7 +769,7 @@ CONTAINS
     ! daily state:
     CALL update_DailyState(&
          iy,id,it,imin,nsh_real,&!input
-         GDD_day,HDD,LAI_day,&
+         GDD_day,HDD_day,LAI_day,&
          DecidCap,albDecTr,albEveTr,albGrass,porosity,&
          WUDay,&
          deltaLAI,VegPhenLumps,&
@@ -783,7 +788,7 @@ CONTAINS
        alpha_enh_bioCO2,avkdn,beta_bioCO2,beta_enh_bioCO2,dayofWeek_id,&
        Diagnose,DLS,EF_umolCO2perJ,EmissionsMethod,EnEF_v_Jkm,Fc,Fc_anthro,Fc_biogen,&
        Fc_build,FcEF_v_kgkm,Fc_metab,Fc_photo,Fc_respi,Fc_traff,FrFossilFuel_Heat,&
-       FrFossilFuel_NonHeat,HDD,HumActivity_tstep,id,imin,it,LAI_day,LAIMax,LAIMin,&
+       FrFossilFuel_NonHeat,HDD_day,HumActivity_tstep,id,imin,it,LAI_day,LAIMax,LAIMin,&
        MaxQFMetab,MinQFMetab,min_res_bioCO2,nsh,NumCapita,&
        PopDensDaytime,PopDensNighttime,PopProf_tstep,QF,QF0_BEU,Qf_A,Qf_B,Qf_C,QF_SAHP,&
        resp_a,resp_b,sfr,snowFrac,T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,&
@@ -800,7 +805,8 @@ CONTAINS
     INTEGER,INTENT(in)::nsh
     ! INTEGER,INTENT(in)::notUsedI
     INTEGER,DIMENSION(3),INTENT(in)::dayofWeek_id
-    REAL(KIND(1d0)),DIMENSION(-4:ndays, 6),INTENT(in)::HDD
+    ! REAL(KIND(1d0)),DIMENSION(-4:ndays, 6),INTENT(in)::HDD
+    REAL(KIND(1d0)),DIMENSION(6),INTENT(in)::HDD_day
     REAL(KIND(1d0)),DIMENSION(2),INTENT(in)::Qf_A
     REAL(KIND(1d0)),DIMENSION(2),INTENT(in)::Qf_B
     REAL(KIND(1d0)),DIMENSION(2),INTENT(in)::Qf_C
@@ -859,25 +865,85 @@ CONTAINS
     !ih=it-DLS           !Moved to subroutine AnthropogenicEmissions MH 29 June 2017
     !IF(ih<0) ih=23
 
-    IF(EmissionsMethod>0 .AND. EmissionsMethod<=6)THEN
-       IF(Diagnose==1) WRITE(*,*) 'Calling AnthropogenicEmissions...'
-       CALL AnthropogenicEmissions(&
-            EmissionsMethod,&
-            id,it,imin,DLS,nsh,dayofWeek_id,ndays,&
-            EF_umolCO2perJ,FcEF_v_kgkm,EnEF_v_Jkm,TrafficUnits,&
-            FrFossilFuel_Heat,FrFossilFuel_NonHeat,&
-            MinQFMetab,MaxQFMetab,&
-            NumCapita,PopDensDaytime,PopDensNighttime,&
-            Temp_C,HDD,Qf_A,Qf_B,Qf_C,&
-            AH_MIN,AH_SLOPE_Heating,AH_SLOPE_Cooling,&
-            T_CRITIC_Heating,T_CRITIC_Cooling,&
-            TrafficRate,&
-            QF0_BEU,QF_SAHP,&
-            Fc_anthro,Fc_metab,Fc_traff,Fc_build,&
-            AHProf_tstep,HumActivity_tstep,TraffProf_tstep,PopProf_tstep,&
-            notUsed,notUsedI)
+    ! IF(EmissionsMethod>0 .AND. EmissionsMethod<=6)THEN
+    !    IF(Diagnose==1) WRITE(*,*) 'Calling AnthropogenicEmissions...'
+    !    CALL AnthropogenicEmissions(&
+    !         EmissionsMethod,&
+    !         id,it,imin,DLS,nsh,DayofWeek_id,&
+    !         EF_umolCO2perJ,FcEF_v_kgkm,EnEF_v_Jkm,TrafficUnits,&
+    !         FrFossilFuel_Heat,FrFossilFuel_NonHeat,&
+    !         MinQFMetab,MaxQFMetab,&
+    !         NumCapita,PopDensDaytime,PopDensNighttime,&
+    !         Temp_C,HDD_day,Qf_A,Qf_B,Qf_C,&
+    !         AH_MIN,AH_SLOPE_Heating,AH_SLOPE_Cooling,&
+    !         T_CRITIC_Heating,T_CRITIC_Cooling,&
+    !         TrafficRate,&
+    !         QF0_BEU,QF_SAHP,&
+    !         Fc_anthro,Fc_metab,Fc_traff,Fc_build,&
+    !         AHProf_tstep,HumActivity_tstep,TraffProf_tstep,PopProf_tstep)
+    !
+    !    Fc_anthro=0
+    !    Fc_metab=0
+    !    Fc_traff=0
+    !    Fc_build=0
+    !    Fc_biogen=0
+    !    Fc_respi=0
+    !    Fc_photo=0
+    ! ELSEIF(EmissionsMethod>=11)THEN
+    !    IF(Diagnose==1) WRITE(*,*) 'Calling AnthropogenicEmissions...'
+    !    CALL AnthropogenicEmissions(&
+    !         EmissionsMethod,&
+    !         id,it,imin,DLS,nsh,DayofWeek_id,&
+    !         EF_umolCO2perJ,FcEF_v_kgkm,EnEF_v_Jkm,TrafficUnits,&
+    !         FrFossilFuel_Heat,FrFossilFuel_NonHeat,&
+    !         MinQFMetab,MaxQFMetab,&
+    !         NumCapita,PopDensDaytime,PopDensNighttime,&
+    !         Temp_C,HDD_day,Qf_A,Qf_B,Qf_C,&
+    !         AH_MIN,AH_SLOPE_Heating,AH_SLOPE_Cooling,&
+    !         T_CRITIC_Heating,T_CRITIC_Cooling,&
+    !         TrafficRate,&
+    !         QF0_BEU,QF_SAHP,&
+    !         Fc_anthro,Fc_metab,Fc_traff,Fc_build,&
+    !         AHProf_tstep,HumActivity_tstep,TraffProf_tstep,PopProf_tstep)
+    !
+    !
+    ! ELSEIF(EmissionsMethod==0)THEN
+    !    IF(Diagnose==1) WRITE(*,*) 'Calling AnthropogenicEmissions...'
+    !    CALL AnthropogenicEmissions(&
+    !         EmissionsMethod,&
+    !         id,it,imin,DLS,nsh,DayofWeek_id,&
+    !         EF_umolCO2perJ,FcEF_v_kgkm,EnEF_v_Jkm,TrafficUnits,&
+    !         FrFossilFuel_Heat,FrFossilFuel_NonHeat,&
+    !         MinQFMetab,MaxQFMetab,&
+    !         NumCapita,PopDensDaytime,PopDensNighttime,&
+    !         Temp_C,HDD_day,Qf_A,Qf_B,Qf_C,&
+    !         AH_MIN,AH_SLOPE_Heating,AH_SLOPE_Cooling,&
+    !         T_CRITIC_Heating,T_CRITIC_Cooling,&
+    !         TrafficRate,&
+    !         QF0_BEU,QF_SAHP,&
+    !         Fc_anthro,Fc_metab,Fc_traff,Fc_build,&
+    !         AHProf_tstep,HumActivity_tstep,TraffProf_tstep,PopProf_tstep)
+    !
+    ! ELSE
+    !    CALL ErrorHint(73,'RunControl.nml:EmissionsMethod unusable',notUsed,notUsed,EmissionsMethod)
+    ! ENDIF
 
-       !  qn1_bup=qn1
+    CALL AnthropogenicEmissions(&
+         EmissionsMethod,&
+         id,it,imin,DLS,nsh,DayofWeek_id,&
+         EF_umolCO2perJ,FcEF_v_kgkm,EnEF_v_Jkm,TrafficUnits,&
+         FrFossilFuel_Heat,FrFossilFuel_NonHeat,&
+         MinQFMetab,MaxQFMetab,&
+         NumCapita,PopDensDaytime,PopDensNighttime,&
+         Temp_C,HDD_day,Qf_A,Qf_B,Qf_C,&
+         AH_MIN,AH_SLOPE_Heating,AH_SLOPE_Cooling,&
+         T_CRITIC_Heating,T_CRITIC_Cooling,&
+         TrafficRate,&
+         QF0_BEU,QF_SAHP,&
+         Fc_anthro,Fc_metab,Fc_traff,Fc_build,&
+         AHProf_tstep,HumActivity_tstep,TraffProf_tstep,PopProf_tstep)
+
+    IF(EmissionsMethod>0 .AND. EmissionsMethod<=6)THEN
        Fc_anthro=0
        Fc_metab=0
        Fc_traff=0
@@ -885,50 +951,11 @@ CONTAINS
        Fc_biogen=0
        Fc_respi=0
        Fc_photo=0
-    ELSEIF(EmissionsMethod>=11)THEN
-       IF(Diagnose==1) WRITE(*,*) 'Calling AnthropogenicEmissions...'
-       CALL AnthropogenicEmissions(&
-            EmissionsMethod,&
-            id,it,imin,DLS,nsh,dayofWeek_id,ndays,&
-            EF_umolCO2perJ,FcEF_v_kgkm,EnEF_v_Jkm,TrafficUnits,&
-            FrFossilFuel_Heat,FrFossilFuel_NonHeat,&
-            MinQFMetab,MaxQFMetab,&
-            NumCapita,PopDensDaytime,PopDensNighttime,&
-            Temp_C,HDD,Qf_A,Qf_B,Qf_C,&
-            AH_MIN,AH_SLOPE_Heating,AH_SLOPE_Cooling,&
-            T_CRITIC_Heating,T_CRITIC_Cooling,&
-            TrafficRate,&
-            QF0_BEU,QF_SAHP,&
-            Fc_anthro,Fc_metab,Fc_traff,Fc_build,&
-            AHProf_tstep,HumActivity_tstep,TraffProf_tstep,PopProf_tstep,&
-            notUsed,notUsedI)
 
-       !  qn1_bup=qn1
-    ELSEIF(EmissionsMethod==0)THEN
-       IF(Diagnose==1) WRITE(*,*) 'Calling AnthropogenicEmissions...'
-       CALL AnthropogenicEmissions(&
-            EmissionsMethod,&
-            id,it,imin,DLS,nsh,dayofWeek_id,ndays,&
-            EF_umolCO2perJ,FcEF_v_kgkm,EnEF_v_Jkm,TrafficUnits,&
-            FrFossilFuel_Heat,FrFossilFuel_NonHeat,&
-            MinQFMetab,MaxQFMetab,&
-            NumCapita,PopDensDaytime,PopDensNighttime,&
-            Temp_C,HDD,Qf_A,Qf_B,Qf_C,&
-            AH_MIN,AH_SLOPE_Heating,AH_SLOPE_Cooling,&
-            T_CRITIC_Heating,T_CRITIC_Cooling,&
-            TrafficRate,&
-            QF0_BEU,QF_SAHP,&
-            Fc_anthro,Fc_metab,Fc_traff,Fc_build,&
-            AHProf_tstep,HumActivity_tstep,TraffProf_tstep,PopProf_tstep,&
-            notUsed,notUsedI)
-
-       !  qn1_bup=qn1
-       !  qn1=qn1+qf
     ELSE
        CALL ErrorHint(73,'RunControl.nml:EmissionsMethod unusable',notUsed,notUsed,EmissionsMethod)
     ENDIF
-    ! -- qn1 is now QSTAR+QF (net all-wave radiation + anthropogenic heat flux)
-    ! -- qn1_bup is QSTAR only
+
     IF(EmissionsMethod>=1) qf = QF_SAHP
 
     IF(EmissionsMethod>=11) THEN
@@ -1097,10 +1124,10 @@ CONTAINS
        id,tstep,dt_since_start,Diagnose,sfr,&
        OHM_coef,OHM_threshSW,OHM_threshWD,&
        soilmoist,soilstoreCap,state,nsh,SnowUse,DiagQS,&
-       HDD,MetForcingData_grid,Ts5mindata_ir,qf,qn1,&
+       HDD_day_prev,MetForcingData_grid,Ts5mindata_ir,qf,qn1,&
        avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown,&
        bldgh,alb,emis,cpAnOHM,kkAnOHM,chAnOHM,EmissionsMethod,&
-       Tair24HR,qn1_av_grids,dqndt_grids,qn1_s_av_grids,dqnsdt_grids,&!inout
+       Tair24HR,qn1_av,dqndt,qn1_s_av,dqnsdt,&!inout
        surf,&
        qn1_S,snowFrac,dataOutLineESTM,qs,&!output
        deltaQi,a1,a2,a3)
@@ -1128,7 +1155,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::state(nsurf) ! wetness status
 
 
-    REAL(KIND(1d0)),DIMENSION(-4:ndays, 6),INTENT(in)::HDD
+    REAL(KIND(1d0)),DIMENSION(6),INTENT(in)::HDD_day_prev
     REAL(KIND(1d0)),INTENT(in)::qf
     REAL(KIND(1d0)),INTENT(in)::qn1
     REAL(KIND(1d0)),INTENT(in)::avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown
@@ -1146,10 +1173,10 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(:),INTENT(in)::Ts5mindata_ir
 
     REAL(KIND(1d0)),DIMENSION(24*nsh),INTENT(inout)::Tair24HR
-    REAL(KIND(1d0)),INTENT(inout)                  ::qn1_av_grids
-    REAL(KIND(1d0)),INTENT(inout)                  ::dqndt_grids!Rate of change of net radiation [W m-2 h-1] at t-1
-    REAL(KIND(1d0)),INTENT(inout)                  ::qn1_s_av_grids
-    REAL(KIND(1d0)),INTENT(inout)                  ::dqnsdt_grids !Rate of change of net radiation [W m-2 h-1] at t-1
+    REAL(KIND(1d0)),INTENT(inout)                  ::qn1_av
+    REAL(KIND(1d0)),INTENT(inout)                  ::dqndt!Rate of change of net radiation [W m-2 h-1] at t-1
+    REAL(KIND(1d0)),INTENT(inout)                  ::qn1_s_av
+    REAL(KIND(1d0)),INTENT(inout)                  ::dqnsdt !Rate of change of net radiation [W m-2 h-1] at t-1
     ! REAL(KIND(1d0)),DIMENSION(nsh),INTENT(inout)   ::qn1_store_grid
     ! REAL(KIND(1d0)),DIMENSION(nsh),INTENT(inout)   ::qn1_S_store_grid !< stored qn1 [W m-2]
 
@@ -1169,7 +1196,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(out):: a3 !< AnOHM coefficients of grid [W m-2]
 
 
-    REAL(KIND(1d0))::HDDday ! HDDday=HDD(id-1,4) HDD at the begining of today (id-1)
+    REAL(KIND(1d0))::Tair_mav_5d ! Tair_mav_5d=HDD(id-1,4) HDD at the begining of today (id-1)
     REAL(KIND(1d0))::qn1_use ! qn used in OHM calculations
 
     ! initialise output variables
@@ -1191,13 +1218,13 @@ CONTAINS
     ENDIF
 
     IF(StorageHeatMethod==1) THEN           !Use OHM to calculate QS
-       HDDday=HDD(id-1,4)
+       Tair_mav_5d=HDD_day_prev(4)
        IF(Diagnose==1) WRITE(*,*) 'Calling OHM...'
-       CALL OHM(qn1,qn1_av_grids,dqndt_grids,&
-            qn1_S,qn1_s_av_grids,dqnsdt_grids,&
+       CALL OHM(qn1,qn1_av,dqndt,&
+            qn1_S,qn1_s_av,dqnsdt,&
             tstep,dt_since_start,&
             sfr,nsurf,&
-            HDDday,&
+            Tair_mav_5d,&
             OHM_coef,&
             OHM_threshSW,OHM_threshWD,&
             soilmoist,soilstoreCap,state,&
@@ -1218,7 +1245,7 @@ CONTAINS
        !      a1,a2,a3,qs,deltaQi)
        CALL AnOHM(&
             tstep,dt_since_start,&
-            qn1_use,qn1_av_grids,dqndt_grids,qf,&
+            qn1_use,qn1_av,dqndt,qf,&
             MetForcingData_grid,state/surf(6,:),&
             alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&! input
             sfr,nsurf,EmissionsMethod,id,Gridiv,&

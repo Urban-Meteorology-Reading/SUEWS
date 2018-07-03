@@ -55,7 +55,7 @@ CONTAINS
   !   - Could add different coefficients (Ie_m, Ie_a) for each vegetation type
   !==============================================================================
   SUBROUTINE SUEWS_cal_DailyState(&
-       iy,id,it,imin,tstep,dt_since_start,DayofWeek_id,&!input
+       id,it,imin,tstep,dt_since_start,DayofWeek_id,&!input
        WaterUseMethod,snowUse,Ie_start,Ie_end,&
        LAICalcYes,LAIType,&
        nsh_real,avkdn,Temp_C,Precip,BaseTHDD,&
@@ -66,18 +66,23 @@ CONTAINS
        CapMax_dec,CapMin_dec,PorMax_dec,PorMin_dec,&
        Ie_a,Ie_m,DayWatPer,DayWat,SnowPack,&
        BaseT,BaseTe,GDDFull,SDDFull,LAIMin,LAIMax,LAIPower,&
-       SnowAlb,DecidCap,albDecTr,albEveTr,albGrass,&!inout
-       porosity,GDD_id,&
+       SnowAlb,&!inout
+       GDD_id,&
        HDD_id,HDD_id_prev,&
        SnowDens,LAI_id,LAI_id_prev,&
-       WUDay,&
+       WUDay_id,&
+       DecidCap_id,&
+       albDecTr_id,&
+       albEveTr_id,&
+       albGrass_id,&
+       porosity_id,&
        deltaLAI)!output
 
     USE Snow_module,ONLY:SnowUpdate
 
     IMPLICIT NONE
 
-    INTEGER,INTENT(IN)::iy
+    ! INTEGER,INTENT(IN)::iy
     INTEGER,INTENT(IN)::id
     INTEGER,INTENT(IN)::it
     INTEGER,INTENT(IN)::imin
@@ -142,11 +147,11 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(INOUT):: LAI_id !LAI for each veg surface [m2 m-2]
 
 
-    REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(INOUT)::DecidCap
-    REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(INOUT)::albDecTr
-    REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(INOUT)::albEveTr
-    REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(INOUT)::albGrass
-    REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(INOUT)::porosity
+    ! REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(INOUT)::DecidCap
+    ! REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(INOUT)::albDecTr
+    ! REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(INOUT)::albEveTr
+    ! REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(INOUT)::albGrass
+    ! REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(INOUT)::porosity
     ! REAL(KIND(1d0)),DIMENSION( 0:ndays, 5),INTENT(INOUT):: GDD !Growing Degree Days (see SUEWS_DailyState.f95)
     REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT):: HDD_id          !Heating Degree Days (see SUEWS_DailyState.f95)
     ! REAL(KIND(1d0)),DIMENSION(-4:366,6),INTENT(INOUT):: HDD
@@ -156,10 +161,17 @@ CONTAINS
     INTEGER,DIMENSION(3),INTENT(in)::DayofWeek_id
 
     !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
-    REAL(KIND(1d0)),DIMENSION(0:ndays,9),INTENT(INOUT):: WUDay
+    ! REAL(KIND(1d0)),DIMENSION(0:ndays,9),INTENT(INOUT):: WUDay
+    REAL(KIND(1d0)),DIMENSION(9),INTENT(OUT):: WUDay_id
     REAL(KIND(1d0)),INTENT(OUT)::deltaLAI
     REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(INOUT):: LAI_id_prev !LAI for each veg surface [m2 m-2]
     REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT)::HDD_id_prev ! HDD of previous day
+
+    REAL(KIND(1d0)),INTENT(INOUT):: DecidCap_id
+    REAL(KIND(1d0)),INTENT(INOUT):: albDecTr_id
+    REAL(KIND(1d0)),INTENT(INOUT):: albEveTr_id
+    REAL(KIND(1d0)),INTENT(INOUT):: albGrass_id
+    REAL(KIND(1d0)),INTENT(INOUT):: porosity_id
 
 
     ! --------------------------------------------------------------------------------
@@ -226,10 +238,15 @@ CONTAINS
             AlbMax_DecTr,AlbMax_EveTr,AlbMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
             BaseT,BaseTe,CapMax_dec,CapMin_dec,DayWat,DayWatPer,Faut,GDDFull,&
             Ie_a,Ie_m,LAIMax,LAIMin,LAIPower,lat,PorMax_dec,PorMin_dec,SDDFull,LAI_obs,&
-            albDecTr,albEveTr,albGrass,porosity,DecidCap,&!inout
-            GDD_id,&
+            GDD_id,& !inout
             HDD_id,HDD_id_prev,&
-            LAI_id,LAI_id_prev,WUDay,&
+            LAI_id,LAI_id_prev,&
+            WUDay_id,&
+            DecidCap_id,&
+            albDecTr_id,&
+            albEveTr_id,&
+            albGrass_id,&
+            porosity_id,&
             deltaLAI)!output
        ! ,xBo)!output
     ENDIF   !End of section done only at the end of each day (i.e. only once per day)
@@ -251,11 +268,15 @@ CONTAINS
        AlbMax_DecTr,AlbMax_EveTr,AlbMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
        BaseT,BaseTe,CapMax_dec,CapMin_dec,DayWat,DayWatPer,Faut,GDDFull,&
        Ie_a,Ie_m,LAIMax,LAIMin,LAIPower,lat,PorMax_dec,PorMin_dec,SDDFull,LAI_obs,&
-       albDecTr,albEveTr,albGrass,porosity,DecidCap,&!inout
-       GDD_id,&
+       GDD_id,& !inout
        HDD_id,HDD_id_prev,&
        LAI_id,LAI_id_prev,&
-       WUDay,WUDay_id&
+       WUDay_id,&
+       DecidCap_id,&
+       albDecTr_id,&
+       albEveTr_id,&
+       albGrass_id,&
+       porosity_id,&
        deltaLAI)!output
     IMPLICIT NONE
 
@@ -296,11 +317,11 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(IN)::SDDFull(nvegsurf)
     REAL(KIND(1d0)),INTENT(IN)::LAI_obs
 
-    REAL(KIND(1d0)),INTENT(INOUT)::albDecTr( 0:ndays)
-    REAL(KIND(1d0)),INTENT(INOUT)::albEveTr( 0:ndays)
-    REAL(KIND(1d0)),INTENT(INOUT)::albGrass( 0:ndays)
-    REAL(KIND(1d0)),INTENT(INOUT)::porosity( 0:ndays)
-    REAL(KIND(1d0)),INTENT(INOUT)::DecidCap( 0:ndays)
+    ! REAL(KIND(1d0)),INTENT(INOUT)::albDecTr( 0:ndays)
+    ! REAL(KIND(1d0)),INTENT(INOUT)::albEveTr( 0:ndays)
+    ! REAL(KIND(1d0)),INTENT(INOUT)::albGrass( 0:ndays)
+    ! REAL(KIND(1d0)),INTENT(INOUT)::porosity( 0:ndays)
+    ! REAL(KIND(1d0)),INTENT(INOUT)::DecidCap( 0:ndays)
     ! REAL(KIND(1d0)),INTENT(INOUT)::GDD( 0:ndays, 5)
     ! REAL(KIND(1d0)),INTENT(INOUT)::HDD(-4:ndays, 6)
     ! REAL(KIND(1d0)),INTENT(INOUT)::LAI(-4:ndays, nvegsurf)
@@ -312,9 +333,16 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT)::HDD_id_prev ! HDD of previous day
     REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(INOUT)::LAI_id_prev ! LAI of previous day
 
-    REAL(KIND(1d0)),INTENT(INOUT):: WUDay(0:ndays,9)
-    REAL(KIND(1d0)),DIMENSION(9),INTENT(INOUT):: WUDay
+    ! REAL(KIND(1d0)),DIMENSION(0:ndays,9),INTENT(INOUT):: WUDay
+    REAL(KIND(1d0)),DIMENSION(9),INTENT(OUT):: WUDay_id
     REAL(KIND(1d0)),INTENT(OUT)::deltaLAI
+
+
+    REAL(KIND(1d0)),INTENT(INOUT):: DecidCap_id
+    REAL(KIND(1d0)),INTENT(INOUT):: albDecTr_id
+    REAL(KIND(1d0)),INTENT(INOUT):: albEveTr_id
+    REAL(KIND(1d0)),INTENT(INOUT):: albGrass_id
+    REAL(KIND(1d0)),INTENT(INOUT):: porosity_id
 
 
     ! CALL update_HDD(&
@@ -329,10 +357,19 @@ CONTAINS
 
 
     ! Calculate modelled daily water use ------------------------------------------
-    CALL update_WaterUse(&
+    ! CALL update_WaterUse(&
+    !      id,WaterUseMethod,DayofWeek_id,lat,Faut,HDD_id,&!input
+    !      Ie_a,Ie_m,Ie_start,Ie_end,DayWatPer,DayWat,&
+    !      WUDay) !inout
+
+    CALL update_WaterUse_X(&
          id,WaterUseMethod,DayofWeek_id,lat,Faut,HDD_id,&!input
          Ie_a,Ie_m,Ie_start,Ie_end,DayWatPer,DayWat,&
-         WUDay) !inout
+         WUDay_id) !output
+
+    ! PRINT*, ''
+    ! PRINT*, 'WUDay(id)',WUDay(id,:)
+    ! PRINT*, 'WUDay_id',WUDay_id
 
     !------------------------------------------------------------------------------
     ! Calculation of LAI from growing degree days
@@ -359,18 +396,39 @@ CONTAINS
          GDD_id,LAI_id,&!inout
          LAI_id_prev) !output
 
-    CALL update_Veg(&
-         id,&!input
-         LAImax,LAIMin,&
+    ! CALL update_Veg(&
+    !      id,&!input
+    !      LAImax,LAIMin,&
+    !      AlbMax_DecTr,AlbMax_EveTr,AlbMax_Grass,&
+    !      AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
+    !      CapMax_dec,CapMin_dec,&
+    !      PorMax_dec,PorMin_dec,&
+    !      LAI_id,LAI_id_prev,&
+    !      DecidCap,&!inout
+    !      albDecTr,albEveTr,albGrass,&
+    !      porosity,&
+    !      deltaLAI)!output
+
+    CALL update_Veg_X(&
+         LAImax,LAIMin,&!input
          AlbMax_DecTr,AlbMax_EveTr,AlbMax_Grass,&
          AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
          CapMax_dec,CapMin_dec,&
          PorMax_dec,PorMin_dec,&
          LAI_id,LAI_id_prev,&
-         DecidCap,&!inout
-         albDecTr,albEveTr,albGrass,&
-         porosity,&
+         DecidCap_id,&!inout
+         albDecTr_id,&
+         albEveTr_id,&
+         albGrass_id,&
+         porosity_id,&
          deltaLAI)!output
+
+
+    ! PRINT*, 'DecidCap',DecidCap(id),DecidCap_id
+    ! PRINT*, 'albDecTr',albDecTr(id),albDecTr_id
+    ! PRINT*, 'albEveTr',albEveTr(id),albEveTr_id
+    ! PRINT*, 'albGrass',albGrass(id),albGrass_id
+    ! PRINT*, 'porosity',porosity(id),porosity_id
 
 
   END SUBROUTINE update_DailyState_End
@@ -528,6 +586,106 @@ CONTAINS
     albGrass(id) = albGrass(id-1) + albChangeGrass
 
   END SUBROUTINE update_Veg
+
+
+  SUBROUTINE update_Veg_X(&
+       LAImax,LAIMin,&!input
+       AlbMax_DecTr,AlbMax_EveTr,AlbMax_Grass,&
+       AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
+       CapMax_dec,CapMin_dec,&
+       PorMax_dec,PorMin_dec,&
+       LAI_id,LAI_id_prev,&
+       DecidCap_id,&!inout
+       albDecTr_id,&
+       albEveTr_id,&
+       albGrass_id,&
+       porosity_id,&
+       deltaLAI)!output
+
+    IMPLICIT NONE
+
+    ! INTEGER,INTENT(IN)::id
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN)::LAImax
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN)::LAIMin
+
+    REAL(KIND(1d0)),INTENT(IN)::AlbMax_DecTr
+    REAL(KIND(1d0)),INTENT(IN)::AlbMax_EveTr
+    REAL(KIND(1d0)),INTENT(IN)::AlbMax_Grass
+    REAL(KIND(1d0)),INTENT(IN)::AlbMin_DecTr
+    REAL(KIND(1d0)),INTENT(IN)::AlbMin_EveTr
+    REAL(KIND(1d0)),INTENT(IN)::AlbMin_Grass
+    REAL(KIND(1d0)),INTENT(IN)::CapMax_dec
+    REAL(KIND(1d0)),INTENT(IN)::CapMin_dec
+    REAL(KIND(1d0)),INTENT(IN)::PorMax_dec
+    REAL(KIND(1d0)),INTENT(IN)::PorMin_dec
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN)::LAI_id,LAI_id_prev
+
+    REAL(KIND(1d0)),INTENT(INOUT)::DecidCap_id
+    REAL(KIND(1d0)),INTENT(INOUT)::albDecTr_id
+    REAL(KIND(1d0)),INTENT(INOUT)::albEveTr_id
+    REAL(KIND(1d0)),INTENT(INOUT)::albGrass_id
+    REAL(KIND(1d0)),INTENT(INOUT)::porosity_id
+
+
+    REAL(KIND(1d0)),INTENT(OUT)::deltaLAI
+
+    INTEGER::iv
+
+    REAL(KIND(1d0))::albChangeDecTr
+    REAL(KIND(1d0))::albChangeEveTr
+    REAL(KIND(1d0))::albChangeGrass
+    REAL(KIND(1d0))::CapChange
+
+    REAL(KIND(1d0))::deltaLAIEveTr
+    REAL(KIND(1d0))::deltaLAIGrass
+    REAL(KIND(1d0))::porChange
+    !::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+    ! Calculate the development of vegetation cover
+    ! Albedo changes with LAI for each vegetation type
+    ! Storage capacity and porosity are updated based on DecTr LAI only (seasonal variation in Grass and EveTr assumed small)
+    ! If only LUMPS is used, set deciduous capacities to 0
+    ! QUESTION: Assume porosity Change based on GO99- Heisler?
+    deltaLAI=0
+    deltaLAIEveTr=0
+    deltaLAIGrass=0
+    CapChange=0
+    porChange=0
+    albChangeDecTr=0
+    albChangeEveTr=0
+    albChangeGrass=0
+
+    iv=ivDecid
+    IF((LAI_id(iv)-LAI_id_prev(iv))/=0) THEN
+       deltaLAI=(LAI_id(iv)-LAI_id_prev(iv))/(LAImax(iv)-LAIMin(iv))
+       albChangeDecTr=(AlbMax_DecTr-AlbMin_DecTr)* deltaLAI
+       CapChange=(CapMin_dec-CapMax_dec)* deltaLAI
+       porChange=(PorMin_dec-PorMax_dec)* deltaLAI
+    ENDIF
+
+    iv=ivConif
+    IF((LAI_id(iv)-LAI_id_prev(iv))/=0) THEN
+       deltaLAIEveTr=(LAI_id(iv)-LAI_id_prev(iv))/(LAImax(iv)-LAIMin(iv))
+       albChangeEveTr=(AlbMax_EveTr-AlbMin_EveTr)* deltaLAIEveTr    !!N.B. Currently uses deltaLAI for deciduous trees only!!
+    ENDIF
+
+    iv=ivGrass
+    IF((LAI_id(iv)-LAI_id_prev(iv))/=0) THEN
+       deltaLAIGrass=(LAI_id(iv)-LAI_id_prev(iv))/(LAImax(iv)-LAIMin(iv))
+       albChangeGrass=(AlbMax_Grass-AlbMin_Grass)* deltaLAIGrass    !!N.B. Currently uses deltaLAI for deciduous trees only!!
+    ENDIF
+
+    iv=ivDecid
+
+    !write(*,*) deltaLAI, deltaLAIEveTr, deltaLAIGrass
+
+    DecidCap_id = DecidCap_id - CapChange
+    albDecTr_id = albDecTr_id + albChangeDecTr
+    porosity_id = porosity_id + porChange !- changed to + by HCW 20 Aug 2015 (porosity greatest when LAI smallest)
+    !Also update albedo of EveTr and Grass surfaces
+    albEveTr_id = albEveTr_id + albChangeEveTr
+    albGrass_id = albGrass_id + albChangeGrass
+
+  END SUBROUTINE update_Veg_X
 
 
 
@@ -949,6 +1107,106 @@ CONTAINS
   END SUBROUTINE update_WaterUse
 
 
+
+  SUBROUTINE update_WaterUse_X(&
+       id,WaterUseMethod,DayofWeek_id,lat,Faut,HDD_id,&!input
+       Ie_a,Ie_m,Ie_start,Ie_end,DayWatPer,DayWat,&
+       WUDay_id) !output
+
+    IMPLICIT NONE
+
+    INTEGER,INTENT(IN) :: id
+    INTEGER,INTENT(IN) :: WaterUseMethod
+    INTEGER,INTENT(IN)::Ie_start   !Starting time of water use (DOY)
+    INTEGER,INTENT(IN)::Ie_end       !Ending time of water use (DOY)
+    INTEGER,DIMENSION(3),INTENT(IN)::DayofWeek_id
+
+    REAL(KIND(1d0)),INTENT(IN)::lat
+    REAL(KIND(1d0)),INTENT(IN)::Faut          !Fraction of irrigated area using automatic irrigation
+
+    REAL(KIND(1d0)),DIMENSION(6),INTENT(IN)::HDD_id
+    REAL(KIND(1d0)),DIMENSION(3),INTENT(IN)::Ie_a
+    REAL(KIND(1d0)),DIMENSION(3),INTENT(IN)::Ie_m   !Coefficients for automatic and manual irrigation models
+    REAL(KIND(1d0)),DIMENSION(7),INTENT(IN)::DayWatPer  !% of houses following daily water
+    REAL(KIND(1d0)),DIMENSION(7),INTENT(IN)::DayWat       !Days of watering allowed
+
+    REAL(KIND(1d0)),DIMENSION(9),INTENT(OUT):: WUDay_id       !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
+
+    INTEGER::wd        !Water use calculation is done when calc = 1
+    INTEGER::calc        !Water use calculation is done when calc = 1
+
+    ! initialise WUDay_id
+    WUDay_id=0
+
+
+    IF (WaterUseMethod==0) THEN   !If water use is to be modelled (rather than observed)
+
+       wd=DayofWeek_id(1)
+
+       IF (DayWat(wd)==1.0) THEN      !1 indicates watering permitted on this day
+          calc=0
+          IF (lat>=0) THEN            !Northern Hemisphere
+             IF (id>=Ie_start-1.AND.id<=Ie_end+1) calc=1   !Day between irrigation period
+          ELSE                        !Southern Hemisphere
+             calc=1
+             IF (id>=Ie_end.AND.id<=Ie_start) calc=0       !Day between irrigation period
+          ENDIF
+
+          IF(calc==1) THEN
+             ! Model daily water use based on HDD_id(6)(days since rain) and HDD_id(3)(average temp)
+             ! WUDay is the amount of water [mm] per day, applied to each of the irrigated areas
+             ! N.B. These are the same for each vegetation type at the moment
+
+             ! ---- Automatic irrigation (evergreen trees) ----
+             WUDay_id(2) = Faut*(Ie_a(1)+Ie_a(2)*HDD_id(3)+Ie_a(3)*HDD_id(6))*DayWatPer(wd)
+             IF (WUDay_id(2)<0) WUDay_id(2)=0   !If modelled WU is negative -> 0
+
+             ! ---- Manual irrigation (evergreen trees) ----
+             WUDay_id(3) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD_id(3)+Ie_m(3)*HDD_id(6))*DayWatPer(wd)
+             IF (WUDay_id(3)<0) WUDay_id(3)=0   !If modelled WU is negative -> 0
+
+             ! ---- Total evergreen trees water use (automatic + manual) ----
+             WUDay_id(1)=(WUDay_id(2)+WUDay_id(3))
+
+             ! ---- Automatic irrigation (deciduous trees) ----
+             WUDay_id(5) = Faut*(Ie_a(1)+Ie_a(2)*HDD_id(3)+Ie_a(3)*HDD_id(6))*DayWatPer(wd)
+             IF (WUDay_id(5)<0) WUDay_id(5)=0   !If modelled WU is negative -> 0
+
+             ! ---- Manual irrigation (deciduous trees) ----
+             WUDay_id(6) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD_id(3)+Ie_m(3)*HDD_id(6))*DayWatPer(wd)
+             IF (WUDay_id(6)<0) WUDay_id(6)=0   !If modelled WU is negative -> 0
+
+             ! ---- Total deciduous trees water use (automatic + manual) ----
+             WUDay_id(4)=(WUDay_id(5)+WUDay_id(6))
+
+             ! ---- Automatic irrigation (grass) ----
+             WUDay_id(8) = Faut*(Ie_a(1)+Ie_a(2)*HDD_id(3)+Ie_a(3)*HDD_id(6))*DayWatPer(wd)
+             IF (WUDay_id(8)<0) WUDay_id(8)=0   !If modelled WU is negative -> 0
+
+             ! ---- Manual irrigation (grass) ----
+             WUDay_id(9) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD_id(3)+Ie_m(3)*HDD_id(6))*DayWatPer(wd)
+             IF (WUDay_id(9)<0) WUDay_id(9)=0   !If modelled WU is negative -> 0
+
+             ! ---- Total grass water use (automatic + manual) ----
+             WUDay_id(7)=(WUDay_id(8)+WUDay_id(9))
+
+          ELSE   !If no irrigation on this day
+             WUDay_id(1)=0
+             WUDay_id(2)=0
+             WUDay_id(3)=0
+             WUDay_id(4)=0
+             WUDay_id(5)=0
+             WUDay_id(6)=0
+             WUDay_id(7)=0
+             WUDay_id(8)=0
+             WUDay_id(9)=0
+          ENDIF
+       ENDIF
+    ENDIF
+
+  END SUBROUTINE update_WaterUse_X
+
+
   SUBROUTINE update_HDD(&
        id,it,imin,tstep,& !input
        HDD) !inout
@@ -1075,10 +1333,14 @@ CONTAINS
 
   ! transfer results to a one-line output for SUEWS_cal_DailyState
   SUBROUTINE update_DailyState(&
-       iy,id,it,imin,nsh_real,&!input
+       it,imin,nsh_real,&!input
        GDD_id,HDD_id,LAI_id,&
-       DecidCap,albDecTr,albEveTr,albGrass,porosity,&
-       WUDay,&
+       DecidCap_id,&
+       albDecTr_id,&
+       albEveTr_id,&
+       albGrass_id,&
+       porosity_id,&
+       WUDay_id,&
        deltaLAI,VegPhenLumps,&
        SnowAlb,SnowDens,&
        a1,a2,a3,&
@@ -1086,8 +1348,8 @@ CONTAINS
 
     IMPLICIT NONE
 
-    INTEGER,INTENT(IN) ::iy
-    INTEGER,INTENT(IN) ::id
+    ! INTEGER,INTENT(IN) ::iy
+    ! INTEGER,INTENT(IN) ::id
     INTEGER,INTENT(IN) ::it
     INTEGER,INTENT(IN) ::imin
     REAL(KIND(1d0)),INTENT(IN) ::nsh_real
@@ -1096,12 +1358,12 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(6),INTENT(IN):: HDD_id          !Heating Degree Days (see SUEWS_DailyState.f95)
     REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN):: LAI_id   !LAI for each veg surface [m2 m-2]
 
-    REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(IN) ::DecidCap
-    REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(IN) ::albDecTr
-    REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(IN) ::albEveTr
-    REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(IN) ::albGrass
-    REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(IN) ::porosity
-    REAL(KIND(1d0)),DIMENSION(0:ndays,9),INTENT(IN):: WUDay !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
+    REAL(KIND(1d0)),INTENT(IN) ::DecidCap_id
+    REAL(KIND(1d0)),INTENT(IN) ::albDecTr_id
+    REAL(KIND(1d0)),INTENT(IN) ::albEveTr_id
+    REAL(KIND(1d0)),INTENT(IN) ::albGrass_id
+    REAL(KIND(1d0)),INTENT(IN) ::porosity_id
+    REAL(KIND(1d0)),DIMENSION(9),INTENT(IN):: WUDay_id !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
 
     REAL(KIND(1d0)),INTENT(IN) ::deltaLAI
     REAL(KIND(1d0)),INTENT(IN) ::VegPhenLumps
@@ -1121,8 +1383,8 @@ CONTAINS
        DailyStateLine(1:6)   = HDD_id
        DailyStateLine(6+1:6+5)  = GDD_id
        DailyStateLine(11+1:11+3) = LAI_id
-       DailyStateLine(14+1:14+5) = [DecidCap(id),Porosity(id),AlbEveTr(id),AlbDecTr(id),AlbGrass(id)]
-       DailyStateLine(19+1:19+9) = WUDay(id-1,1:9)
+       DailyStateLine(14+1:14+5) = [DecidCap_id,Porosity_id,AlbEveTr_id,AlbDecTr_id,AlbGrass_id]
+       DailyStateLine(19+1:19+9) = WUDay_id(1:9)
        DailyStateLine(28+1)    = deltaLAI
        DailyStateLine(29+1)    = VegPhenLumps
        DailyStateLine(30+1:30+8) = [SnowAlb,SnowDens(1:7)]

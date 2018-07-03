@@ -240,13 +240,12 @@ MODULE allocateArray
 
   REAL(KIND(1d0)),DIMENSION(5)        :: GDD_id,GDD_id_prev       !Growing Degree Days (see SUEWS_DailyState.f95)
   REAL(KIND(1d0)),DIMENSION(6)        :: HDD_id,HDD_id_prev       !Growing Degree Days (see SUEWS_DailyState.f95)
-  REAL(KIND(1d0)),DIMENSION(9)        :: WU_Day_day,WU_Day_day_prev !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
+  REAL(KIND(1d0)),DIMENSION(9)        :: WUDay_id,WUDay_id_prev !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
   REAL(KIND(1d0)),DIMENSION(nvegsurf) :: LAI_id,LAI_id_prev       !LAI for each veg surface [m2 m-2]
 
   ! Seasonality of deciduous trees accounted for by the following variables which change with time
   REAL(KIND(1d0)),DIMENSION( 0:ndays):: DecidCap   !Storage capacity of deciduous trees [mm]
   REAL(KIND(1d0)),DIMENSION( 0:ndays):: porosity   !Porosity of deciduous trees [-]
-
   REAL(KIND(1d0)),DIMENSION( 0:ndays):: albDecTr     !Albedo of deciduous trees [-]
   REAL(KIND(1d0)),DIMENSION( 0:ndays):: albEveTr     !Albedo of evergreen trees [-]
   REAL(KIND(1d0)),DIMENSION( 0:ndays):: albGrass   !Albedo of grass[-]
@@ -271,7 +270,7 @@ MODULE allocateArray
 
   REAL(KIND(1d0)),DIMENSION(5,MaxNumberOfGrids):: GDD_id_grids
   REAL(KIND(1d0)),DIMENSION(6,MaxNumberOfGrids):: HDD_id_grids,HDD_id_prev_grids
-  REAL(KIND(1d0)),DIMENSION(9,MaxNumberOfGrids):: WU_Day_day_grids
+  REAL(KIND(1d0)),DIMENSION(9,MaxNumberOfGrids):: WUDay_id_grids
   REAL(KIND(1d0)),DIMENSION(nvegsurf,MaxNumberOfGrids):: LAI_id_grids
 
   REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: albDecTr_grids
@@ -280,6 +279,18 @@ MODULE allocateArray
 
   REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: albEveTr_grids
   REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: albGrass_grids
+
+  REAL(KIND(1d0)),DIMENSION( MaxNumberOfGrids):: DecidCap_id_grids
+  REAL(KIND(1d0)),DIMENSION( MaxNumberOfGrids):: albDecTr_id_grids
+  REAL(KIND(1d0)),DIMENSION( MaxNumberOfGrids):: albEveTr_id_grids
+  REAL(KIND(1d0)),DIMENSION( MaxNumberOfGrids):: albGrass_id_grids
+  REAL(KIND(1d0)),DIMENSION( MaxNumberOfGrids):: porosity_id_grids
+
+  REAL(KIND(1d0)) :: DecidCap_id
+  REAL(KIND(1d0)) :: albDecTr_id
+  REAL(KIND(1d0)) :: albEveTr_id
+  REAL(KIND(1d0)) :: albGrass_id
+  REAL(KIND(1d0)) :: porosity_id
 
   ! AnOHM related: added by TS 01 Mar 2016
   ! store AnOHM coef. of all sfc. by TS 09 Apr 2016

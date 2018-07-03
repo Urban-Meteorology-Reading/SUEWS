@@ -94,6 +94,21 @@ SUBROUTINE AerodynamicResistance(&
         RA=(LOG(ZZD/z0m)*LOG(ZZD/z0V))/(k2*AVU1) !Use neutral equation
      ELSE
         RA=((LOG(ZZD/z0m)-PSYM)*(LOG(ZZD/z0V)-PSYH))/(K2*AVU1)
+        ! IF ( RA < 0 ) THEN
+        !    PRINT*, ''
+        !    PRINT*, '(LOG(ZZD/z0m)-PSYM)',(LOG(ZZD/z0m)-PSYM)
+        !    PRINT*, 'LOG(ZZD/z0m)','PSYM',LOG(ZZD/z0m),PSYM
+        !    PRINT*, '(LOG(ZZD/z0V)-PSYH)',(LOG(ZZD/z0V)-PSYH)
+        !    PRINT*, 'LOG(ZZD/z0V),PSYH',LOG(ZZD/z0V),PSYH
+        !    PRINT*, 'AVU1',AVU1
+        !    PRINT*, 'ZZD',ZZD
+        !    PRINT*, 'z0m',z0m
+        !    PRINT*, 'z0V',z0V
+        !    PRINT*, 'L_mod',L_mod
+        !    PRINT*, 'z/L_mod',ZZD/L_mod
+        !
+        ! END IF
+
      ENDIF
 
      !3) Thom and Oliver (1977)

@@ -3,7 +3,7 @@
 !This subroutine is still under development and in the equations concerning CO2 fluxes
 !there are bugs and missing comments.
 !Last modified
-! TS 01 Jul 2018 - replaced annual HDD array with a simplied daily array HDD_day
+! TS 01 Jul 2018 - replaced annual HDD array with a simplied daily array HDD_id
 ! MH 29 Jun 2017 -  Finalised the code to calculate the anthropogenic emissions of heat and CO2
 ! HCW 21 Apr 2017 - renamed from SUEWS_SAHP.f95. Now includes CO2 fluxes as well as QF.
 !                   Tidied code. Combined three subroutines into 1 to avoid repetition.
@@ -28,7 +28,7 @@ SUBROUTINE AnthropogenicEmissions(&
      FrFossilFuel_Heat,FrFossilFuel_NonHeat,&
      MinQFMetab,MaxQFMetab,&
      NumCapita,PopDensDaytime,PopDensNighttime,&
-     Temp_C,HDD_day,Qf_A,Qf_B,Qf_C,&
+     Temp_C,HDD_id,Qf_A,Qf_B,Qf_C,&
      AH_MIN,AH_SLOPE_Heating,AH_SLOPE_Cooling,&
      T_CRITIC_Heating,T_CRITIC_Cooling,&
      TrafficRate,&
@@ -51,7 +51,7 @@ SUBROUTINE AnthropogenicEmissions(&
 
   INTEGER,DIMENSION(3),INTENT(in)::DayofWeek_id   !1 - day of week; 2 - month; 3 - season
 
-  REAL(KIND(1d0)),DIMENSION(6),INTENT(in):: HDD_day !Heating Degree Days (see SUEWS_DailyState.f95)
+  REAL(KIND(1d0)),DIMENSION(6),INTENT(in):: HDD_id !Heating Degree Days (see SUEWS_DailyState.f95)
 
   REAL(KIND(1d0)),DIMENSION(2),INTENT(in)::&
        Qf_A,Qf_B,Qf_C,&    !Qf coefficients
@@ -107,8 +107,8 @@ SUBROUTINE AnthropogenicEmissions(&
        AHDorNorT          ! Anthropogenic heat
 
     ! NB: temporarily use 5-day running mean to test the performance
-    Tair_avg_daily= HDD_day(4)
-    ! Tair_avg_daily= HDD_day(3) ! this is daily
+    Tair_avg_daily= HDD_id(4)
+    ! Tair_avg_daily= HDD_id(3) ! this is daily
 
   !-----------------------------------------------------------------------
   ! Account for Daylight saving
@@ -172,15 +172,15 @@ SUBROUTINE AnthropogenicEmissions(&
      ! Jarvi et al. (2011) JH Eq 3 using HDD and CDD
      ! Weekday/weekend differences due to profile and coefficients QF_a,b,c
      ! Scales with population density
-     QF_SAHP      = (Qf_a(iu)+Qf_b(iu)*HDD_day(2)+Qf_c(iu)*HDD_day(1)) * DP_x_RhoPop  !This contains QF from all three sources: buildings, metabolism and traffic!
+     QF_SAHP      = (Qf_a(iu)+Qf_b(iu)*HDD_id(2)+Qf_c(iu)*HDD_id(1)) * DP_x_RhoPop  !This contains QF from all three sources: buildings, metabolism and traffic!
      QF_SAHP_base = (Qf_a(iu)) * DP_x_RhoPop                ! Temperature-independent contribution from buildings, traffic and human metabolism
-     QF_SAHP_heat = (Qf_c(iu)*HDD_day(1)) * DP_x_RhoPop    ! Heating contribution
-     QF_SAHP_ac   = (Qf_b(iu)*HDD_day(2)) * DP_x_RhoPop    ! Cooling (AC) contribution
+     QF_SAHP_heat = (Qf_c(iu)*HDD_id(1)) * DP_x_RhoPop    ! Heating contribution
+     QF_SAHP_ac   = (Qf_b(iu)*HDD_id(2)) * DP_x_RhoPop    ! Cooling (AC) contribution
 
 
   ELSEIF(EmissionsMethod==3 .OR. EmissionsMethod==6 .OR. EmissionsMethod==13 .OR. EmissionsMethod==16 .OR. &
        EmissionsMethod==23 .OR. EmissionsMethod==26 .OR. EmissionsMethod==33 .OR. EmissionsMethod==36) THEN
-     ! Updated Loridan et al. (2011) method using daily (not instantaneous) air temperature (HDD_day(3))
+     ! Updated Loridan et al. (2011) method using daily (not instantaneous) air temperature (HDD_id(3))
      ! Linear relation with air temperature
      ! Weekday/weekend differences due to profile only
      ! Scales with population density

@@ -144,7 +144,7 @@ CONTAINS
 
     REAL(KIND(1d0))::G_T_K,&
          KUZ,&
-         LOLD,&
+         L_MOD_save,&
          psim,&
          z0l,&
          psimz0,&
@@ -175,11 +175,11 @@ CONTAINS
 
     IF(LOG(zzd/z0m)<0.001000) CALL ErrorHint(17,'In stability subroutine, (z-zd) < z0.',zzd,z0m,notUsedI)
     DO i=1,330 !Iteration starts
-       LOLD=L_MOD
+       L_MOD_save=L_MOD
        zL=zzd/L_MOD
        z0L=z0m/L_MOD  !z0m roughness length
 
-       ! IF (z  L>2)THEN
+       ! IF (z/L>2)THEN
        !    CALL ErrorHint(73,'LUMPS_atmos_functions_stab.f95: stability scale (z/L), UStar',zL,UStar,notUsedI)
        !    RETURN !MO-theory not necessarily valid above zL>2. Still causes problematic UStar values and correct limit might be 0.3.
        !    !Needs more investigations.
@@ -187,7 +187,8 @@ CONTAINS
 
 
        psim=stab_fn_mom(StabilityMethod,zL,zL)
-       psimz0=stab_fn_mom(StabilityMethod,zL,z0L)
+       ! psimz0=stab_fn_mom(StabilityMethod,zL,z0L)
+       psimz0=stab_fn_mom(StabilityMethod,z0L,z0L)
 
 
        UStar=KUZ/(LOG(Zzd/z0m)-psim+psimz0) !Friction velocity in non-neutral situation
@@ -197,17 +198,17 @@ CONTAINS
        TStar=(-H/UStar)
        L_MOD=(UStar**2)/(G_T_K*TStar)
 
-       IF(UStar<0.001000)THEN       !If u* too small
-          UStar=KUZ/(LOG(Zzd/z0m))
-          CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.001] zl,dectime',zl,dectime,notUsedI)
-          CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.001] z0l,UStar',z0l,UStar,notUsedI)
-          CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.001] psim,psimz0',psim,psimz0,notUsedI)
-          CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.001] AVU1,log(zzd/z0m)',AVU1,LOG(zzd/z0m),notUsedI)
+       ! IF(UStar<0.001000)THEN       !If u* too small
+       !    UStar=KUZ/(LOG(Zzd/z0m))
+       !    CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.001] zL,dectime',zL,dectime,notUsedI)
+       !    CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.001] z0l,UStar',z0l,UStar,notUsedI)
+       !    CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.001] psim,psimz0',psim,psimz0,notUsedI)
+       !    CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.001] AVU1,log(zzd/z0m)',AVU1,LOG(zzd/z0m),notUsedI)
+       !
+       !    ! RETURN
+       ! ENDIF
 
-          ! RETURN
-       ENDIF
-
-       IF(ABS(LOLD-L_MOD)<0.01)THEN
+       IF(ABS(L_MOD_save-L_MOD)<0.01)THEN
           IF (ABS(L_MOD)>1e6) L_MOD = L_MOD/ABS(L_MOD)*1e6
           ! RETURN
           CONTINUE
@@ -221,7 +222,8 @@ CONTAINS
       L_MOD=zzd/zL
       z0L=z0m/L_MOD
       psim=stab_fn_mom(StabilityMethod,zL,zL)
-      psimz0=stab_fn_mom(StabilityMethod,zL,z0L)
+      ! psimz0=stab_fn_mom(StabilityMethod,zL,z0L)
+      psimz0=stab_fn_mom(StabilityMethod,z0L,z0L)
       UStar=KUZ/(LOG(Zzd/z0m)-psim+psimz0)
       TStar=(-H/UStar)
     end if
@@ -233,7 +235,7 @@ CONTAINS
 
   !==================================================================
 
-  FUNCTION stab_fn_mom(StabilityMethod,ZL,zl_f) RESULT(psym)
+  FUNCTION stab_fn_mom(StabilityMethod,zL,zL_f) RESULT(psym)
     !     StabilityMethod = 1-4 -
     !     PSYM - stability FUNCTION for momentum
     !Modified by LJ Mar 2010
@@ -249,45 +251,45 @@ CONTAINS
          neut_limit=0.001000 !Limit for neutral stability
     !  notUsedI=-55
 
-    REAL (KIND(1d0)):: piover2,psym,zl,zl_f,x,x2
+    REAL (KIND(1d0)):: piover2,psym,zL,zL_f,x,x2
     INTEGER ::StabilityMethod
 
     PIOVER2=ACOS(-1.)/2.
-    !PRINT*,StabilityMethod,zl,"stab_fn_mom:"
+    !PRINT*,StabilityMethod,zL,"stab_fn_mom:"
     IF(ABS(zL)<neut_limit) THEN
        psym=0
     ELSEIF(zL<-neut_limit) THEN    !Unstable
 
        IF(StabilityMethod==1)THEN     !    Jensen et al 1984 - Van Ulden & Holtslag (1985) p 1206&
-          psym=((1.-16.*zl_f)**0.25)-1
+          psym=((1.-16.*zL_f)**0.25)-1
        ELSEIF(StabilityMethod==2) THEN !Dyer (1974)(1-16z/L)**.25' k=0.41  mod. Hogstrom (1988)v15.2
-          X=(1.-(15.2*zl_f))**0.25
+          X=(1.-(15.2*zL_f))**0.25
           X2=LOG((1+(X**2.))/2.)
           PSYM=(2.*LOG((1+X)/2.))+X2-(2.*ATAN(X))+PIOVER2
        ELSEIF(StabilityMethod==3)THEN !     campbell & norman eqn 7.26
-          psym=0.6*(2)*LOG((1+(1-16*zl_f)**0.5)/2)
+          psym=0.6*(2)*LOG((1+(1-16*zL_f)**0.5)/2)
        ELSEIF(StabilityMethod==4) THEN !Businger et al (1971) modifed  Hogstrom (1988)
-          x=(1-19.3*zl_f)**(-0.25)
+          x=(1-19.3*zL_f)**(-0.25)
           X2=LOG((1+(X**2.))/2.)
           PSYM=(2.*LOG((1+X)/2.))+X2-(2.*ATAN(X))+PIOVER2
        ELSEIF(StabilityMethod==7) THEN ! Dyer & Bradley (1982) (1-28z/L)**.25' k=0.4
-          X=(1+(28.*zl_f))**0.25
+          X=(1+(28.*zL_f))**0.25
           X2=LOG((1+X**2.)/2.)
           PSYM=(2.*LOG((1+X)/2.))+X2-(2.*ATAN(X))+PIOVER2
        ELSEIF(StabilityMethod==5)THEN ! Zilitinkevich & Chalikov (1968) modified Hogstrom (1988)
-          IF(zl_f>=-0.16)THEN
-             x=1+1.38*zl_f
+          IF(zL_f>=-0.16)THEN
+             x=1+1.38*zL_f
           ELSE
-             x=0.42*(-1)*zl_f**0.333
+             x=0.42*(-1)*zL_f**0.333
           ENDIF
           X2=LOG((1+(X**2.))/2.)
           PSYM=(2.*LOG((1+X)/2.))+X2-(2.*ATAN(X))+PIOVER2
 
        ELSEIF(StabilityMethod==6)THEN !     Foken and Skeib (1983)
-          IF(zl_f>=0.06)THEN
+          IF(zL_f>=0.06)THEN
              x=1
           ELSE
-             x=((-1)*zl_f/0.06)**0.25
+             x=((-1)*zL_f/0.06)**0.25
           ENDIF
           X2=LOG((1+(X**2.))/2.)
           PSYM=(2.*LOG((1+X)/2.))+X2-(2.*ATAN(X))+PIOVER2
@@ -295,18 +297,18 @@ CONTAINS
 
     ELSEIF(zL>neut_limit) THEN            !Stable
 
-       IF(StabilityMethod==1)THEN         !Dyer (1974) k=0.35 x=1+5*zl Mod. Hogstrom (1988)
-          psym=(-4.8)*zl_f
+       IF(StabilityMethod==1)THEN         !Dyer (1974) k=0.35 x=1+5*zL Mod. Hogstrom (1988)
+          psym=(-4.8)*zL_f
        ELSEIF(StabilityMethod==2)THEN     !Van Ulden & Holtslag (1985) p 1206
-          IF ( zl_f >1000. ) THEN
-             zl_f=1000.
+          IF ( zL_f >1000. ) THEN
+             zL_f=1000.
           END IF
-          PSYM=(-17.*(1.-EXP(-0.29*zl_f)))
+          PSYM=(-17.*(1.-EXP(-0.29*zL_f)))
        ELSEIF(StabilityMethod==4)THEN ! Businger et al (1971) modifed  Hogstrom (1988)
-          ! psym=1+6*zl_f  ! this is NOT the integral form but the stability function, TS 13 Jun 2017
-          psym=(-6)*zl_f   ! this is the integral form, TS 13 Jun 2017
+          ! psym=1+6*zL_f  ! this is NOT the integral form but the stability function, TS 13 Jun 2017
+          psym=(-6)*zL_f   ! this is the integral form, TS 13 Jun 2017
        ELSEIF(StabilityMethod==3)THEN ! campbell & norman eqn 7.27 p 97
-          psym=(-6)*LOG(1+zl_f)
+          psym=(-6)*LOG(1+zL_f)
 
        ENDIF
     ENDIF
@@ -316,7 +318,7 @@ CONTAINS
   !_______________________________________________________________
   !
   ! PSYH - stability function for heat
-  FUNCTION stab_fn_heat(StabilityMethod,ZL,zl_f) RESULT (psyh)
+  FUNCTION stab_fn_heat(StabilityMethod,zL,zL_f) RESULT (psyh)
     ! USE mod_k
     IMPLICIT NONE
     REAL(KIND(1d0)),PARAMETER :: &
@@ -325,23 +327,23 @@ CONTAINS
          neut_limit=0.001000 !Limit for neutral stability
     !  notUsedI=-55
 
-    REAL (KIND(1d0)):: zl,zl_f,psyh,x
+    REAL (KIND(1d0)):: zL,zL_f,psyh,x
     INTEGER :: StabilityMethod
 
-    IF(ABS(zl)<neut_limit)THEN      !Neutral
+    IF(ABS(zL)<neut_limit)THEN      !Neutral
        psyh=0
     ELSEIF(zL<-neut_limit) THEN     ! Unstable
        IF(StabilityMethod==3)THEN
           !campbell & norman eqn 7.26
-          psyh=0.6*(2)*LOG((1+(1-16*zl_f)**0.5)/2)
+          psyh=0.6*(2)*LOG((1+(1-16*zL_f)**0.5)/2)
        ELSE
 
           IF(StabilityMethod==4)THEN ! Businger et al (1971) modifed  Hogstrom (1988)
-             x=0.95*(1.-11.6*zl_f)**(-0.5)
-          ELSEIF(StabilityMethod==7) THEN
-             x=(1-(28.*ZL))**0.25
-          ELSEIF(StabilityMethod==2)THEN ! Dyer 1974 X=(1.-(16.*ZL))**(0.5)modified Hosgstrom
-             x=0.95*(1.-15.2*zl_f)**0.5
+             x=0.95*(1.-11.6*zL_f)**(-0.5)
+          ELSEIF(StabilityMethod==7) THEN ! QUESTION: Ref?
+             x=(1-(28.*zL))**0.25
+          ELSEIF(StabilityMethod==2)THEN ! Dyer 1974 X=(1.-(16.*zL))**(0.5)modified Hosgstrom
+             x=0.95*(1.-15.2*zL_f)**(-0.5)
           ENDIF
           PSYH=2*LOG((1+x**2)/2)
        ENDIF
@@ -349,17 +351,17 @@ CONTAINS
     ELSE IF (zL>neut_limit) THEN    !Stable
        IF ( zL<=1 ) THEN ! weak/moderate stable
           IF(StabilityMethod==4)THEN !Businger et al (1971) modifed  Hogstrom (1988)
-             ! psyh=0.95+(7.8*zl_f) ! this is NOT the integral form but the stability function, TS 13 Jun 2017
-             psyh=(-7.8)*zl_f   ! this is the integral form, TS 13 Jun 2017
-          ELSE !Dyer (1974)  PSYH=(-5)*ZL	modifed  Hogstrom (1988)
-             PSYH=(-4.5)*Zl_f
+             ! psyh=0.95+(7.8*zL_f) ! this is NOT the integral form but the stability function, TS 13 Jun 2017
+             psyh=(-7.8)*zL_f   ! this is the integral form, TS 13 Jun 2017
+          ELSE !Dyer (1974)  PSYH=(-5)*zL	modifed  Hogstrom (1988)
+             PSYH=(-4.5)*zL_f
           ENDIF
        ELSE !zL>1, very stable. otherwise psyh would be too large. TS 13 Jun 2017
           ! adopt the form as Brutasert (1982) eqn 4.58. but following the coeffs. of the above eqns
           IF(StabilityMethod==4)THEN !Businger et al (1971) modifed  Hogstrom (1988)
-             psyh=(-7.8)*(1+LOG(zl_f))
-          ELSE !Dyer (1974)  PSYH=(-5)*ZL	modifed  Hogstrom (1988)
-             PSYH=(-4.5)*(1+LOG(zl_f))
+             psyh=(-7.8)*(1+LOG(zL_f))
+          ELSE !Dyer (1974)  PSYH=(-5)*zL	modifed  Hogstrom (1988)
+             PSYH=(-4.5)*(1+LOG(zL_f))
           ENDIF
        END IF
 

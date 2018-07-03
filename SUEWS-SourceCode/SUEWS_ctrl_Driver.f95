@@ -39,11 +39,11 @@ CONTAINS
        dt_since_start,dqndt,qn1_av,dqnsdt,qn1_s_av,&
        EF_umolCO2perJ,emis,EmissionsMethod,EnEF_v_Jkm,endDLS,EveTreeH,FAIBldg,&
        FAIDecTree,FAIEveTree,Faut,FcEF_v_kgkm,fcld_obs,FlowChange,&
-       FrFossilFuel_Heat,FrFossilFuel_NonHeat,G1,G2,G3,G4,G5,G6,GDD_day,&
-       GDDFull,Gridiv,gsModel,HDD_day,HDD_day_prev,HumActivity_tstep,&
+       FrFossilFuel_Heat,FrFossilFuel_NonHeat,G1,G2,G3,G4,G5,G6,GDD_id,&
+       GDDFull,Gridiv,gsModel,HDD_id,HDD_id_prev,HumActivity_tstep,&
        IceFrac,id,Ie_a,Ie_end,Ie_m,Ie_start,imin,&
        InternalWaterUse_h,IrrFracConif,IrrFracDecid,IrrFracGrass,it,ity,&
-       iy,kkAnOHM,Kmax,LAI_day,LAICalcYes,LAIMax,LAIMin,LAI_obs,&
+       iy,kkAnOHM,Kmax,LAI_id,LAICalcYes,LAIMax,LAIMin,LAI_obs,&
        LAIPower,LAIType,lat,ldown_obs,lng,MaxConductance,MaxQFMetab,&
        MeltWaterStore,MetForcingData_grid,MinQFMetab,min_res_bioCO2,&
        NARP_EMIS_SNOW,NARP_TRANS_SITE,NetRadiationMethod,&
@@ -242,6 +242,7 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(NSURF+1,NSURF-1),INTENT(IN) ::WaterDist
     REAL(KIND(1d0)),DIMENSION(:),INTENT(IN)               ::Ts5mindata_ir
     REAL(KIND(1D0)),DIMENSION(:,:),INTENT(IN)             ::MetForcingData_grid
+
     REAL(KIND(1D0)),DIMENSION(24*3600/tstep,2),INTENT(IN) ::AHProf_tstep
     REAL(KIND(1D0)),DIMENSION(24*3600/tstep,2),INTENT(IN) ::HumActivity_tstep
     REAL(KIND(1D0)),DIMENSION(24*3600/tstep,2),INTENT(IN) ::PopProf_tstep
@@ -268,6 +269,7 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(0:NDAYS),INTENT(INOUT)          ::porosity
     ! REAL(KIND(1D0)),DIMENSION(0:NDAYS,5),INTENT(INOUT)        ::GDD
     REAL(KIND(1D0)),DIMENSION(0:NDAYS,9),INTENT(INOUT)        ::WUDay
+
     REAL(KIND(1D0)),DIMENSION(6,NSURF),INTENT(INOUT)          ::surf
     ! REAL(KIND(1D0)),DIMENSION(-4:NDAYS,6),INTENT(INOUT)       ::HDD
     ! REAL(KIND(1D0)),DIMENSION(-4:NDAYS,NVEGSURF),INTENT(INOUT)::LAI
@@ -279,10 +281,10 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)   ::SnowPack
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)   ::soilmoist
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)   ::state
-    REAL(KIND(1d0)),DIMENSION(5),INTENT(INOUT)       :: GDD_day !Growing Degree Days (see SUEWS_DailyState.f95)
-    REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT)       :: HDD_day !Growing Degree Days (see SUEWS_DailyState.f95)
-    REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT)       :: HDD_day_prev !Growing Degree Days (see SUEWS_DailyState.f95)
-    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(INOUT):: LAI_day !LAI for each veg surface [m2 m-2]
+    REAL(KIND(1d0)),DIMENSION(5),INTENT(INOUT)       :: GDD_id !Growing Degree Days (see SUEWS_DailyState.f95)
+    REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT)       :: HDD_id !Growing Degree Days (see SUEWS_DailyState.f95)
+    REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT)       :: HDD_id_prev !Growing Degree Days (see SUEWS_DailyState.f95)
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(INOUT):: LAI_id !LAI for each veg surface [m2 m-2]
 
 
     ! output variables
@@ -387,7 +389,7 @@ CONTAINS
 
 
 
-    REAL(KIND(1d0)),DIMENSION(nvegsurf):: LAI_day_prev !LAI for each veg surface [m2 m-2]
+    REAL(KIND(1d0)),DIMENSION(nvegsurf):: LAI_id_prev !LAI for each veg surface [m2 m-2]
 
     REAL(KIND(1D0)),DIMENSION(2)::SnowRemoval
     REAL(KIND(1D0)),DIMENSION(NSURF)::chang
@@ -521,9 +523,9 @@ CONTAINS
          Ie_a,Ie_m,DayWatPer,DayWat,SnowPack,&
          BaseT,BaseTe,GDDFull,SDDFull,LAIMin,LAIMax,LAIPower,&
          SnowAlb,DecidCap,albDecTr,albEveTr,albGrass,&!inout
-         porosity,GDD_day,&
-         HDD_day,HDD_day_prev,&
-         SnowDens,LAI_day,LAI_day_prev,&
+         porosity,GDD_id,&
+         HDD_id,HDD_id_prev,&
+         SnowDens,LAI_id,LAI_id_prev,&
          WUDay,&
          deltaLAI)!output
     ! CALL SUEWS_cal_DailyState(&
@@ -579,7 +581,7 @@ CONTAINS
          alpha_enh_bioCO2,avkdn,beta_bioCO2,beta_enh_bioCO2,DayofWeek_id,&
          Diagnose,DLS,EF_umolCO2perJ,EmissionsMethod,EnEF_v_Jkm,Fc,Fc_anthro,Fc_biogen,&
          Fc_build,FcEF_v_kgkm,Fc_metab,Fc_photo,Fc_respi,Fc_traff,FrFossilFuel_Heat,&
-         FrFossilFuel_NonHeat,HDD_day_prev,HumActivity_tstep,id,imin,it,LAI_day, LAIMax,LAIMin,&
+         FrFossilFuel_NonHeat,HDD_id_prev,HumActivity_tstep,id,imin,it,LAI_id, LAIMax,LAIMin,&
          MaxQFMetab,MinQFMetab,min_res_bioCO2,nsh,NumCapita,&
          PopDensDaytime,PopDensNighttime,PopProf_tstep,QF,QF0_BEU,Qf_A,Qf_B,Qf_C,QF_SAHP,&
          resp_a,resp_b,sfr,snowFrac,T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,&
@@ -592,7 +594,7 @@ CONTAINS
          id,tstep,dt_since_start,Diagnose,sfr,&
          OHM_coef,OHM_threshSW,OHM_threshWD,&
          soilmoist,soilstoreCap,state,nsh,SnowUse,DiagQS,&
-         HDD_day_prev,MetForcingData_grid,Ts5mindata_ir,qf,qn1,&
+         HDD_id_prev,MetForcingData_grid,Ts5mindata_ir,qf,qn1,&
          avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown,&
          bldgh,alb,emis,cpAnOHM,kkAnOHM,chAnOHM,EmissionsMethod,&
          Tair24HR,qn1_av,dqndt,qn1_s_av,dqnsdt,&!inout
@@ -624,7 +626,7 @@ CONTAINS
          veg_type,& !input
          snowUse,qn1,qf,qs,Qm,Temp_C,Veg_Fr,avcp,Press_hPa,lv_J_kg,&
          tstep_real,DRAINRT,nsh_real,&
-         Precip,RainMaxRes,RAINCOVER,sfr,LAI_day,LAImax,LAImin,&
+         Precip,RainMaxRes,RAINCOVER,sfr,LAI_id,LAImax,LAImin,&
          H_mod,& !output
          E_mod,psyc_hPa,s_hPa,sIce_hpa,TempVeg,VegPhenLumps)
 
@@ -636,7 +638,7 @@ CONTAINS
          SurfaceArea,sfr,&
          IrrFracConif,IrrFracDecid,IrrFracGrass,&
          dayofWeek_id,WUProfA_tstep,WUProfM_tstep,&
-         InternalWaterUse_h,HDD_day_prev,WUDay(id-1,:),&
+         InternalWaterUse_h,HDD_id_prev,WUDay(id-1,:),&
          WaterUseMethod,NSH,it,imin,DLS,&
          WUAreaEveTr_m2,WUAreaDecTr_m2,& ! output:
          WUAreaGrass_m2,WUAreaTotal_m2,&
@@ -654,7 +656,7 @@ CONTAINS
          g1,g2,g3,g4,&
          g5,g6,s1,s2,&
          th,tl,&
-         dq,xsmd,vsmd,MaxConductance,LAIMax,LAI_day,snowFrac,sfr,&
+         dq,xsmd,vsmd,MaxConductance,LAIMax,LAI_id,snowFrac,sfr,&
          UStar,TStar,L_mod,&!output
          zL,gsc,ResistSurf,RA,RAsnow,rb)
 
@@ -751,7 +753,7 @@ CONTAINS
          drain_per_tstep,E_mod,ev_per_tstep,ext_wu,Fc,Fc_build,fcld,&
          Fc_metab,Fc_photo,Fc_respi,Fc_traff,FlowChange,&
          h_mod,id,imin,int_wu,it,iy,&
-         kup,LAI_day,ldown,l_mod,lup,mwh,&
+         kup,LAI_id,ldown,l_mod,lup,mwh,&
          MwStore,&
          nsh_real,NWstate_per_tstep,Precip,q2_gkg,&
          qeOut,qf,qh,qh_resist,Qm,QmFreez,&
@@ -769,7 +771,7 @@ CONTAINS
     ! daily state:
     CALL update_DailyState(&
          iy,id,it,imin,nsh_real,&!input
-         GDD_day,HDD_day,LAI_day,&
+         GDD_id,HDD_id,LAI_id,&
          DecidCap,albDecTr,albEveTr,albGrass,porosity,&
          WUDay,&
          deltaLAI,VegPhenLumps,&
@@ -788,7 +790,7 @@ CONTAINS
        alpha_enh_bioCO2,avkdn,beta_bioCO2,beta_enh_bioCO2,dayofWeek_id,&
        Diagnose,DLS,EF_umolCO2perJ,EmissionsMethod,EnEF_v_Jkm,Fc,Fc_anthro,Fc_biogen,&
        Fc_build,FcEF_v_kgkm,Fc_metab,Fc_photo,Fc_respi,Fc_traff,FrFossilFuel_Heat,&
-       FrFossilFuel_NonHeat,HDD_day,HumActivity_tstep,id,imin,it,LAI_day,LAIMax,LAIMin,&
+       FrFossilFuel_NonHeat,HDD_id,HumActivity_tstep,id,imin,it,LAI_id,LAIMax,LAIMin,&
        MaxQFMetab,MinQFMetab,min_res_bioCO2,nsh,NumCapita,&
        PopDensDaytime,PopDensNighttime,PopProf_tstep,QF,QF0_BEU,Qf_A,Qf_B,Qf_C,QF_SAHP,&
        resp_a,resp_b,sfr,snowFrac,T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,&
@@ -806,7 +808,7 @@ CONTAINS
     ! INTEGER,INTENT(in)::notUsedI
     INTEGER,DIMENSION(3),INTENT(in)::dayofWeek_id
     ! REAL(KIND(1d0)),DIMENSION(-4:ndays, 6),INTENT(in)::HDD
-    REAL(KIND(1d0)),DIMENSION(6),INTENT(in)::HDD_day
+    REAL(KIND(1d0)),DIMENSION(6),INTENT(in)::HDD_id
     REAL(KIND(1d0)),DIMENSION(2),INTENT(in)::Qf_A
     REAL(KIND(1d0)),DIMENSION(2),INTENT(in)::Qf_B
     REAL(KIND(1d0)),DIMENSION(2),INTENT(in)::Qf_C
@@ -842,7 +844,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::avkdn
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::sfr
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::snowFrac
-    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(in)::LAI_day
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(in)::LAI_id
     REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(in)::LAIMin
     REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(in):: LAIMax
     REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(in)::alpha_bioCO2
@@ -874,7 +876,7 @@ CONTAINS
     !         FrFossilFuel_Heat,FrFossilFuel_NonHeat,&
     !         MinQFMetab,MaxQFMetab,&
     !         NumCapita,PopDensDaytime,PopDensNighttime,&
-    !         Temp_C,HDD_day,Qf_A,Qf_B,Qf_C,&
+    !         Temp_C,HDD_id,Qf_A,Qf_B,Qf_C,&
     !         AH_MIN,AH_SLOPE_Heating,AH_SLOPE_Cooling,&
     !         T_CRITIC_Heating,T_CRITIC_Cooling,&
     !         TrafficRate,&
@@ -898,7 +900,7 @@ CONTAINS
     !         FrFossilFuel_Heat,FrFossilFuel_NonHeat,&
     !         MinQFMetab,MaxQFMetab,&
     !         NumCapita,PopDensDaytime,PopDensNighttime,&
-    !         Temp_C,HDD_day,Qf_A,Qf_B,Qf_C,&
+    !         Temp_C,HDD_id,Qf_A,Qf_B,Qf_C,&
     !         AH_MIN,AH_SLOPE_Heating,AH_SLOPE_Cooling,&
     !         T_CRITIC_Heating,T_CRITIC_Cooling,&
     !         TrafficRate,&
@@ -916,7 +918,7 @@ CONTAINS
     !         FrFossilFuel_Heat,FrFossilFuel_NonHeat,&
     !         MinQFMetab,MaxQFMetab,&
     !         NumCapita,PopDensDaytime,PopDensNighttime,&
-    !         Temp_C,HDD_day,Qf_A,Qf_B,Qf_C,&
+    !         Temp_C,HDD_id,Qf_A,Qf_B,Qf_C,&
     !         AH_MIN,AH_SLOPE_Heating,AH_SLOPE_Cooling,&
     !         T_CRITIC_Heating,T_CRITIC_Cooling,&
     !         TrafficRate,&
@@ -935,7 +937,7 @@ CONTAINS
          FrFossilFuel_Heat,FrFossilFuel_NonHeat,&
          MinQFMetab,MaxQFMetab,&
          NumCapita,PopDensDaytime,PopDensNighttime,&
-         Temp_C,HDD_day,Qf_A,Qf_B,Qf_C,&
+         Temp_C,HDD_id,Qf_A,Qf_B,Qf_C,&
          AH_MIN,AH_SLOPE_Heating,AH_SLOPE_Cooling,&
          T_CRITIC_Heating,T_CRITIC_Cooling,&
          TrafficRate,&
@@ -963,7 +965,7 @@ CONTAINS
        IF(Diagnose==1) WRITE(*,*) 'Calling CO2_biogen...'
        CALL CO2_biogen(EmissionsMethod,&
             ivConif,ivDecid,ivGrass,ConifSurf,DecidSurf,GrassSurf,BSoilSurf,&
-            snowFrac,nsurf,NVegSurf,avkdn,Temp_C,sfr,LAI_day,LAIMin,LAIMax,&
+            snowFrac,nsurf,NVegSurf,avkdn,Temp_C,sfr,LAI_id,LAIMin,LAIMax,&
             alpha_bioCO2,beta_bioCO2,theta_bioCO2,alpha_enh_bioCO2,beta_enh_bioCO2,&
             resp_a,resp_b,min_res_bioCO2,Fc_biogen,Fc_respi,Fc_photo,&
             notUsed,notUsedI)
@@ -1124,7 +1126,7 @@ CONTAINS
        id,tstep,dt_since_start,Diagnose,sfr,&
        OHM_coef,OHM_threshSW,OHM_threshWD,&
        soilmoist,soilstoreCap,state,nsh,SnowUse,DiagQS,&
-       HDD_day_prev,MetForcingData_grid,Ts5mindata_ir,qf,qn1,&
+       HDD_id_prev,MetForcingData_grid,Ts5mindata_ir,qf,qn1,&
        avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown,&
        bldgh,alb,emis,cpAnOHM,kkAnOHM,chAnOHM,EmissionsMethod,&
        Tair24HR,qn1_av,dqndt,qn1_s_av,dqnsdt,&!inout
@@ -1155,7 +1157,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::state(nsurf) ! wetness status
 
 
-    REAL(KIND(1d0)),DIMENSION(6),INTENT(in)::HDD_day_prev
+    REAL(KIND(1d0)),DIMENSION(6),INTENT(in)::HDD_id_prev
     REAL(KIND(1d0)),INTENT(in)::qf
     REAL(KIND(1d0)),INTENT(in)::qn1
     REAL(KIND(1d0)),INTENT(in)::avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown
@@ -1218,7 +1220,7 @@ CONTAINS
     ENDIF
 
     IF(StorageHeatMethod==1) THEN           !Use OHM to calculate QS
-       Tair_mav_5d=HDD_day_prev(4)
+       Tair_mav_5d=HDD_id_prev(4)
        IF(Diagnose==1) WRITE(*,*) 'Calling OHM...'
        CALL OHM(qn1,qn1_av,dqndt,&
             qn1_S,qn1_s_av,dqnsdt,&
@@ -1930,7 +1932,7 @@ CONTAINS
        drain_per_tstep,E_mod,ev_per_tstep,ext_wu,Fc,Fc_build,fcld,&
        Fc_metab,Fc_photo,Fc_respi,Fc_traff,FlowChange,&
        h_mod,id,imin,int_wu,it,iy,&
-       kup,LAI_day,ldown,l_mod,lup,mwh,&
+       kup,LAI_id,ldown,l_mod,lup,mwh,&
        MwStore,&
        nsh_real,NWstate_per_tstep,Precip,q2_gkg,&
        qeOut,qf,qh,qh_resist,Qm,QmFreez,&
@@ -1975,7 +1977,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in) :: int_wu
     REAL(KIND(1d0)),INTENT(in) :: kup
     REAL(KIND(1d0)),INTENT(in) :: l_mod
-    REAL(KIND(1d0)),INTENT(in) :: LAI_day(nvegsurf)
+    REAL(KIND(1d0)),INTENT(in) :: LAI_id(nvegsurf)
     REAL(KIND(1d0)),INTENT(in) :: ldown
     REAL(KIND(1d0)),INTENT(in) :: lup
     REAL(KIND(1d0)),INTENT(in) :: mwh
@@ -2058,7 +2060,7 @@ CONTAINS
     !    LAI_wt=DOT_PRODUCT(LAI(id-1,:),sfr(1+2:nvegsurf+2))
     ! ENDIF
 
-    LAI_wt=DOT_PRODUCT(LAI_day(:),sfr(1+2:nvegsurf+2))
+    LAI_wt=DOT_PRODUCT(LAI_id(:),sfr(1+2:nvegsurf+2))
 
     ! Calculate areally-weighted albedo
     bulkalbedo=DOT_PRODUCT(alb,sfr)
@@ -2463,18 +2465,6 @@ CONTAINS
     END IF
 
 
-    ! DO i = 1, SIZE(varList, dim=1), 1
-    !    names(i)=TRIM(varList(i)%header)
-    !    ! names(i,1)=trim(varList(i)%header)
-    !    ! names(i,2)=trim(varList(i)%unit)
-    !    ! ! names(i,3)=trim(varList(i)%fmt)
-    !    ! names(i,3)=trim(varList(i)%longNm)
-    !    ! names(i,4)=trim(varList(i)%aggreg)
-    !    ! names(i,5)=trim(varList(i)%group)
-    !    ! print*, names(i,:)
-    ! END DO
-    ! print*, varList
-
   END SUBROUTINE output_name_n
 
 
@@ -2490,37 +2480,6 @@ CONTAINS
 
   END SUBROUTINE output_size
 
-  ! SUBROUTINE output_names(names)
-  !   ! used by f2py module `SuPy` to handle output names
-  !   IMPLICIT NONE
-  !   ! the dimension is potentially incorrect,
-  !   ! which should be consistent with that in output module
-  !   ! CHARACTER(len = 50),DIMENSION(300,5),INTENT(out) :: names
-  !   ! CHARACTER(len = *),DIMENSION(300),INTENT(out) :: names
-  !   CHARACTER(len = 12),INTENT(out) :: names(300)
-  !
-  !   INTEGER :: i,n,err,stat
-  !   ! name=TRIM(varList(1)%header)
-  !   n=SIZE(varList, dim=1)
-  !   ! ALLOCATE(names(10,n), stat=err)
-  !   ! IF (stat /= 0) PRINT *, "names: Allocation request denied"
-  !
-  !
-  !   DO i = 1, n
-  !      names(i)=TRIM(varList(i)%header)
-  !      ! names(i,1)=trim(varList(i)%header)
-  !      ! names(i,2)=trim(varList(i)%unit)
-  !      ! ! names(i,3)=trim(varList(i)%fmt)
-  !      ! names(i,3)=trim(varList(i)%longNm)
-  !      ! names(i,4)=trim(varList(i)%aggreg)
-  !      ! names(i,5)=trim(varList(i)%group)
-  !      ! print*, names(i,:)
-  !   END DO
-  !   ! print*, varList
-  !   ! IF (ALLOCATED(names)) DEALLOCATE(names)
-  !   ! IF (stat /= 0) PRINT *, "names: Deallocation request denied"
-  !
-  ! END SUBROUTINE output_names
 
 
 END MODULE SUEWS_Driver

@@ -896,15 +896,15 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      GDD(id_prev,1) = ModelDailyState(Gridiv,cMDS_GDD1_0)
      GDD(id_prev,2) = ModelDailyState(Gridiv,cMDS_GDD2_0)
 
-     ! ---- Growing degree days, GDD_day: GDD Values for one day
-     GDD_day = 0
-     GDD_day(1)=0
-     GDD_day(2)=0
-     GDD_day(3) = ModelDailyState(Gridiv,cMDS_GDDMin)
-     GDD_day(4) = ModelDailyState(Gridiv,cMDS_GDDMax)
-     GDD_day(5)=0
-     GDD_day_prev(1) = ModelDailyState(Gridiv,cMDS_GDD1_0)
-     GDD_day_prev(2) = ModelDailyState(Gridiv,cMDS_GDD2_0)
+     ! ---- Growing degree days, GDD_id: GDD Values for one day
+     GDD_id = 0
+     GDD_id(1)=0
+     GDD_id(2)=0
+     GDD_id(3) = ModelDailyState(Gridiv,cMDS_GDDMin)
+     GDD_id(4) = ModelDailyState(Gridiv,cMDS_GDDMax)
+     GDD_id(5)=0
+     GDD_id_prev(1) = ModelDailyState(Gridiv,cMDS_GDD1_0)
+     GDD_id_prev(2) = ModelDailyState(Gridiv,cMDS_GDD2_0)
 
 
      ! ---- Heating degree days, HDD
@@ -919,16 +919,16 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      ! 5 = daily precip total
      HDD(id_prev,6) = ModelDailyState(Gridiv,cMDS_DaysSinceRain) ! 6 = days since rain
 
-     HDD_day_prev   = HDD(id_prev,:)   ! TODO: remove the dependence on HDD array
-     ! ---- Heating degree days, HDD_day: HDD Values for one day
-     HDD_day=0
+     HDD_id_prev   = HDD(id_prev,:)   ! TODO: remove the dependence on HDD array
+     ! ---- Heating degree days, HDD_id: HDD Values for one day
+     HDD_id=0
 
-     ! HDD_day(1)=ModelDailyState(Gridiv,cMDS_HDD1)
-     ! HDD_day(2)=ModelDailyState(Gridiv,cMDS_HDD2)
-     ! HDD_day(3)=ModelDailyState(Gridiv,cMDS_TempC)
+     ! HDD_id(1)=ModelDailyState(Gridiv,cMDS_HDD1)
+     ! HDD_id(2)=ModelDailyState(Gridiv,cMDS_HDD2)
+     ! HDD_id(3)=ModelDailyState(Gridiv,cMDS_TempC)
      ! ! 4 = 5 day running mean
      ! ! 5 = daily precip total
-     ! HDD_day(6) = ModelDailyState(Gridiv,cMDS_DaysSinceRain)
+     ! HDD_id(6) = ModelDailyState(Gridiv,cMDS_DaysSinceRain)
 
 
      ! Save required DailyState variables for the current grid (HCW 27 Nov 2014)
@@ -937,10 +937,10 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      LAI_grids(:,:,Gridiv)    = LAI(:,:)
      ! WUDay_grids(:,:,Gridiv) = WUDay(:,:)
 
-     HDD_day_grids(:,Gridiv) = HDD_day(:)
-     HDD_day_prev_grids(:,Gridiv) = HDD_day_prev(:)
-     GDD_day_grids(:,Gridiv) = GDD_day(:)
-     LAI_day_grids(:,Gridiv) = LAI_day(:)
+     HDD_id_grids(:,Gridiv) = HDD_id(:)
+     HDD_id_prev_grids(:,Gridiv) = HDD_id_prev(:)
+     GDD_id_grids(:,Gridiv) = GDD_id(:)
+     LAI_id_grids(:,Gridiv) = LAI_id(:)
      ! WUDay_day_grids(:,Gridiv) = WUday_day(:)
 
 
@@ -1182,10 +1182,10 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      ENDIF
 
      ! added by TS 29 Jun 2018 to remove annual loops in main calculation
-     GDD_day=GDD_day_grids(:,Gridiv)
-     HDD_day=HDD_day_grids(:,Gridiv)
-     HDD_day_prev=HDD_day_prev_grids(:,Gridiv)
-     LAI_day=LAI_day_grids(:,Gridiv)
+     GDD_id=GDD_id_grids(:,Gridiv)
+     HDD_id=HDD_id_grids(:,Gridiv)
+     HDD_id_prev=HDD_id_prev_grids(:,Gridiv)
+     LAI_id=LAI_id_grids(:,Gridiv)
 
      ! get met array for one grid used in AnOHM
      MetForcingData_grid=MetForcingData(:,:,Gridiv)
@@ -1320,10 +1320,10 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv,ir,irMax)
   ENDIF
 
   ! added by TS 29 Jun 2018 to remove annual loops in main calculation
-  GDD_day_grids(:,Gridiv)=GDD_day
-  HDD_day_grids(:,Gridiv)=HDD_day
-  HDD_day_prev_grids(:,Gridiv)=HDD_day_prev
-  LAI_day_grids(:,Gridiv)=LAI_day
+  GDD_id_grids(:,Gridiv)=GDD_id
+  HDD_id_grids(:,Gridiv)=HDD_id
+  HDD_id_prev_grids(:,Gridiv)=HDD_id_prev
+  LAI_id_grids(:,Gridiv)=LAI_id
 
 
   ! ---- Snow density of each surface

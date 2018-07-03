@@ -25,7 +25,7 @@
 !========================================================================================
 SUBROUTINE CO2_biogen(EmissionsMethod,&
      ivConif,ivDecid,ivGrass,ConifSurf,DecidSurf,GrassSurf,BSoilSurf,&
-     snowFrac,nsurf,NVegSurf,avkdn,Temp_C,sfr,LAI_day,LAIMin,LAIMax,&
+     snowFrac,nsurf,NVegSurf,avkdn,Temp_C,sfr,LAI_id,LAIMin,LAIMax,&
      alpha_bioCO2,beta_bioCO2,theta_bioCO2,alpha_enh_bioCO2,beta_enh_bioCO2,&
      resp_a,resp_b,min_res_bioCO2,Fc_biogen,Fc_respi,Fc_photo,&
      notUsed,notUsedI)
@@ -44,7 +44,7 @@ SUBROUTINE CO2_biogen(EmissionsMethod,&
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::&
        sfr,&   !Surface fractions [-]
        snowFrac
-  REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(in):: LAI_day
+  REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(in):: LAI_id
   REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(in)::&
        LAIMin, LAIMax,&      ! [m2 m-2]
                                 !  BiogenCO2Code,&       !Biogenic CO2 Code for SUEWS_BiogenCO2.txt
@@ -95,7 +95,7 @@ SUBROUTINE CO2_biogen(EmissionsMethod,&
   !especially in the case of evergreen trees (i.e. in early March LAI can be in its minimum value, but air temperature and radiation
   !such that uptake can take place)
   DO iv=ivConif,ivGrass   !For vegetated surfaces. Snow included although quite often LAI will be in its minimum when snow on ground
-     active_veg_fr(iv) = (sfr(iv+2)*(1-snowFrac(iv+2)))*(LAI_day(iv)-LAIMin(iv))/(LAIMax(iv)-LAIMin(iv))
+     active_veg_fr(iv) = (sfr(iv+2)*(1-snowFrac(iv+2)))*(LAI_id(iv)-LAIMin(iv))/(LAIMax(iv)-LAIMin(iv))
   ENDDO
   !DO iv=ivConif,ivGrass   !For vegetated surfaces. Snow is not included?
   !   active_veg_fr(iv) = sfr(iv+2)*(LAI(id-1,iv)-LAIMin(iv))/(LAIMax(iv)-LAIMin(iv))

@@ -2,7 +2,7 @@ SUBROUTINE LUMPS_cal_QHQE(&
      veg_type,& !input
      snowUse,qn1,qf,qs,Qm,Temp_C,Veg_Fr,avcp,Press_hPa,lv_J_kg,&
      tstep_real,DRAINRT,nsh_real,&
-     Precip,RainMaxRes,RAINCOVER,sfr,LAI_day_prev,LAImax,LAImin,&
+     Precip,RainMaxRes,RAINCOVER,sfr,LAI_id_prev,LAImax,LAImin,&
      H_mod,& !output
      E_mod,psyc_hPa,s_hPa,sIce_hpa,TempVeg,VegPhenLumps)
   !Calculates QH and QE for LUMPS. See Loridan et al. (2011)
@@ -46,7 +46,7 @@ SUBROUTINE LUMPS_cal_QHQE(&
   REAL(KIND(1d0)),INTENT(in) :: RAINCOVER! LUMPS Limit when surface totally wet [mm]
 
   REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in) :: sfr! veg surface fractions [-]
-  REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(in) :: LAI_day_prev! LAI(id-1,iv), LAI at the beginning of today
+  REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(in) :: LAI_id_prev! LAI(id-1,iv), LAI at the beginning of today
   REAL(KIND(1d0)),DIMENSION(3),INTENT(in) :: LAImax!Max LAI [m2 m-2]
   REAL(KIND(1d0)),DIMENSION(3),INTENT(in) :: LAImin    !Min LAI [m2 m-2]
 
@@ -113,7 +113,7 @@ SUBROUTINE LUMPS_cal_QHQE(&
   ! VegPhen=0
   ! VegMax=0
   ! VegMin=0
-  VegPhen=DOT_PRODUCT(sfrVeg,LAI_day_prev)
+  VegPhen=DOT_PRODUCT(sfrVeg,LAI_id_prev)
   VegMax=DOT_PRODUCT(sfrVeg,LAImax)
   VegMin=DOT_PRODUCT(sfrVeg,LAImin)
 

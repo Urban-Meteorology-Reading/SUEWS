@@ -30,12 +30,13 @@ CONTAINS
   ! ===================MAIN CALCULATION WRAPPER FOR ENERGY AND WATER FLUX===========
   SUBROUTINE SUEWS_cal_Main(&
        AerodynamicResistanceMethod,AH_MIN,AHProf_tstep,AH_SLOPE_Cooling,& ! input&inout in alphabetical order
-       AH_SLOPE_Heating,alb,albDecTr,albEveTr,albGrass,AlbMax_DecTr,&
-       AlbMax_EveTr,AlbMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
+       AH_SLOPE_Heating,&
+       alb,AlbMax_DecTr,AlbMax_EveTr,AlbMax_Grass,&
+       AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
        alpha_bioCO2,alpha_enh_bioCO2,alt,avkdn,avRh,avU1,BaseT,BaseTe,&
        BaseTHDD,beta_bioCO2,beta_enh_bioCO2,bldgH,CapMax_dec,CapMin_dec,&
        chAnOHM,cpAnOHM,CRWmax,CRWmin,DayWat,DayWatPer,&
-       DecidCap,dectime,DecTreeH,Diagnose,DiagQN,DiagQS,DRAINRT,&
+       dectime,DecTreeH,Diagnose,DiagQN,DiagQS,DRAINRT,&
        dt_since_start,dqndt,qn1_av,dqnsdt,qn1_s_av,&
        EF_umolCO2perJ,emis,EmissionsMethod,EnEF_v_Jkm,endDLS,EveTreeH,FAIBldg,&
        FAIDecTree,FAIEveTree,Faut,FcEF_v_kgkm,fcld_obs,FlowChange,&
@@ -49,7 +50,7 @@ CONTAINS
        NARP_EMIS_SNOW,NARP_TRANS_SITE,NetRadiationMethod,&
        NumCapita,OHM_coef,OHMIncQF,OHM_threshSW,&
        OHM_threshWD,PipeCapacity,PopDensDaytime,&
-       PopDensNighttime,PopProf_tstep,PorMax_dec,PorMin_dec,porosity,&
+       PopDensNighttime,PopProf_tstep,PorMax_dec,PorMin_dec,&
        Precip,PrecipLimit,PrecipLimitAlb,Press_hPa,QF0_BEU,Qf_A,Qf_B,&
        Qf_C,qh_obs,qn1_obs,&
        RadMeltFact,RAINCOVER,RainMaxRes,resp_a,resp_b,&
@@ -62,7 +63,14 @@ CONTAINS
        T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,TempMeltFact,TH,&
        theta_bioCO2,timezone,TL,TrafficRate,TrafficUnits,&
        TraffProf_tstep,Ts5mindata_ir,tstep,veg_type,&
-       WaterDist,WaterUseMethod,WetThresh,WUDay,WUProfA_tstep,&
+       WaterDist,WaterUseMethod,WetThresh,&
+       WUDay_id,&
+       DecidCap_id,&
+       albDecTr_id,&
+       albEveTr_id,&
+       albGrass_id,&
+       porosity_id,&
+       WUProfA_tstep,&
        WUProfM_tstep,xsmd,Z,z0m_in,zdm_in,&
        datetimeLine,dataOutLineSUEWS,dataOutLineSnow,dataOutLineESTM,&!output
        DailyStateLine)!output
@@ -262,13 +270,16 @@ CONTAINS
     ! REAL(KIND(1D0)),DIMENSION(3600/tstep),INTENT(INOUT)       ::qn1_store_grid
     ! REAL(KIND(1D0)),DIMENSION(2*3600/tstep+1),INTENT(INOUT)   ::qn1_S_av_store_grid
     ! REAL(KIND(1D0)),DIMENSION(3600/tstep),INTENT(INOUT)       ::qn1_S_store_grid
-    REAL(KIND(1D0)),DIMENSION(0:NDAYS),INTENT(INOUT)          ::albDecTr
-    REAL(KIND(1D0)),DIMENSION(0:NDAYS),INTENT(INOUT)          ::albEveTr
-    REAL(KIND(1D0)),DIMENSION(0:NDAYS),INTENT(INOUT)          ::albGrass
-    REAL(KIND(1D0)),DIMENSION(0:NDAYS),INTENT(INOUT)          ::DecidCap
-    REAL(KIND(1D0)),DIMENSION(0:NDAYS),INTENT(INOUT)          ::porosity
+
+    ! REAL(KIND(1D0)),DIMENSION(0:NDAYS),INTENT(INOUT)          ::albDecTr
+    ! REAL(KIND(1D0)),DIMENSION(0:NDAYS),INTENT(INOUT)          ::albEveTr
+    ! REAL(KIND(1D0)),DIMENSION(0:NDAYS),INTENT(INOUT)          ::albGrass
+    ! REAL(KIND(1D0)),DIMENSION(0:NDAYS),INTENT(INOUT)          ::DecidCap
+    ! REAL(KIND(1D0)),DIMENSION(0:NDAYS),INTENT(INOUT)          ::porosity
+
     ! REAL(KIND(1D0)),DIMENSION(0:NDAYS,5),INTENT(INOUT)        ::GDD
-    REAL(KIND(1D0)),DIMENSION(0:NDAYS,9),INTENT(INOUT)        ::WUDay
+
+    ! REAL(KIND(1D0)),DIMENSION(0:NDAYS,9),INTENT(INOUT)        ::WUDay
 
     REAL(KIND(1D0)),DIMENSION(6,NSURF),INTENT(INOUT)          ::surf
     ! REAL(KIND(1D0)),DIMENSION(-4:NDAYS,6),INTENT(INOUT)       ::HDD
@@ -285,6 +296,13 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT)       :: HDD_id !Growing Degree Days (see SUEWS_DailyState.f95)
     REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT)       :: HDD_id_prev !Growing Degree Days (see SUEWS_DailyState.f95)
     REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(INOUT):: LAI_id !LAI for each veg surface [m2 m-2]
+    REAL(KIND(1d0)),DIMENSION(9),INTENT(OUT):: WUDay_id
+
+    REAL(KIND(1d0)),INTENT(INOUT):: DecidCap_id
+    REAL(KIND(1d0)),INTENT(INOUT):: albDecTr_id
+    REAL(KIND(1d0)),INTENT(INOUT):: albEveTr_id
+    REAL(KIND(1d0)),INTENT(INOUT):: albGrass_id
+    REAL(KIND(1d0)),INTENT(INOUT):: porosity_id
 
 
     ! output variables
@@ -494,7 +512,7 @@ CONTAINS
     CALL SUEWS_cal_RoughnessParameters(&
          RoughLenMomMethod,sfr,&!input
          bldgH,EveTreeH,DecTreeH,&
-         porosity(id),FAIBldg,FAIEveTree,FAIDecTree,&
+         porosity_id,FAIBldg,FAIEveTree,FAIDecTree,&
          z0m_in,zdm_in,Z,&
          planF,&!output
          Zh,z0m,zdm,ZZD)
@@ -511,7 +529,7 @@ CONTAINS
     !Call the SUEWS_cal_DailyState routine to get surface characteristics ready
     IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_cal_DailyState...'
     CALL SUEWS_cal_DailyState(&
-         iy,id,it,imin,tstep,dt_since_start,DayofWeek_id,&!input
+         id,it,imin,tstep,dt_since_start,DayofWeek_id,&!input
          WaterUseMethod,snowUse,Ie_start,Ie_end,&
          LAICalcYes,LAIType,&
          nsh_real,avkdn,Temp_C,Precip,BaseTHDD,&
@@ -522,11 +540,16 @@ CONTAINS
          CapMax_dec,CapMin_dec,PorMax_dec,PorMin_dec,&
          Ie_a,Ie_m,DayWatPer,DayWat,SnowPack,&
          BaseT,BaseTe,GDDFull,SDDFull,LAIMin,LAIMax,LAIPower,&
-         SnowAlb,DecidCap,albDecTr,albEveTr,albGrass,&!inout
-         porosity,GDD_id,&
+         SnowAlb,&!inout
+         GDD_id,&
          HDD_id,HDD_id_prev,&
          SnowDens,LAI_id,LAI_id_prev,&
-         WUDay,&
+         WUDay_id,&
+         DecidCap_id,&
+         albDecTr_id,&
+         albEveTr_id,&
+         albGrass_id,&
+         porosity_id,&
          deltaLAI)!output
     ! CALL SUEWS_cal_DailyState(&
     !      iy,id,it,imin,tstep,DayofWeek_id,&!input
@@ -564,12 +587,12 @@ CONTAINS
 
     ! ===================NET ALLWAVE RADIATION================================
     CALL SUEWS_cal_Qn(&
-         NetRadiationMethod,snowUse,id,&!input
+         NetRadiationMethod,snowUse,&!input
          Diagnose,snow_obs,ldown_obs,fcld_obs,&
-         dectime,ZENITH_deg,avKdn,Temp_C,avRH,Ea_hPa,qn1_obs,&
+         dectime,ZENITH_deg,avKdn,Temp_C,avRH,ea_hPa,qn1_obs,&
          SnowAlb,DiagQN,&
          NARP_TRANS_SITE,NARP_EMIS_SNOW,IceFrac,sfr,emis,&
-         alb,albDecTr,DecidCap,albEveTr,albGrass,surf,&!inout
+         alb,albDecTr_id,DecidCap_id,albEveTr_id,albGrass_id,surf,&!inout
          snowFrac,ldown,fcld,&!output
          qn1,qn1_SF,qn1_S,kclear,kup,lup,tsurf,&
          qn1_ind_snow,kup_ind_snow,Tsurf_ind_snow,Tsurf_ind)
@@ -638,7 +661,7 @@ CONTAINS
          SurfaceArea,sfr,&
          IrrFracConif,IrrFracDecid,IrrFracGrass,&
          dayofWeek_id,WUProfA_tstep,WUProfM_tstep,&
-         InternalWaterUse_h,HDD_id_prev,WUDay(id-1,:),&
+         InternalWaterUse_h,HDD_id_prev,WUDay_id,&
          WaterUseMethod,NSH,it,imin,DLS,&
          WUAreaEveTr_m2,WUAreaDecTr_m2,& ! output:
          WUAreaGrass_m2,WUAreaTotal_m2,&
@@ -770,10 +793,14 @@ CONTAINS
 
     ! daily state:
     CALL update_DailyState(&
-         iy,id,it,imin,nsh_real,&!input
+         it,imin,nsh_real,&!input
          GDD_id,HDD_id,LAI_id,&
-         DecidCap,albDecTr,albEveTr,albGrass,porosity,&
-         WUDay,&
+         DecidCap_id,&
+         albDecTr_id,&
+         albEveTr_id,&
+         albGrass_id,&
+         porosity_id,&
+         WUDay_id,&
          deltaLAI,VegPhenLumps,&
          SnowAlb,SnowDens,&
          a1,a2,a3,&
@@ -980,12 +1007,12 @@ CONTAINS
 
   !=============net all-wave radiation=====================================
   SUBROUTINE SUEWS_cal_Qn(&
-       NetRadiationMethod,snowUse,id,&!input
+       NetRadiationMethod,snowUse,&!input
        Diagnose,snow_obs,ldown_obs,fcld_obs,&
        dectime,ZENITH_deg,avKdn,Temp_C,avRH,ea_hPa,qn1_obs,&
        SnowAlb,DiagQN,&
        NARP_TRANS_SITE,NARP_EMIS_SNOW,IceFrac,sfr,emis,&
-       alb,albDecTr,DecidCap,albEveTr,albGrass,surf,&!inout
+       alb,albDecTr_id,DecidCap_id,albEveTr_id,albGrass_id,surf,&!inout
        snowFrac,ldown,fcld,&!output
        qn1,qn1_SF,qn1_S,kclear,kup,lup,tsurf,&
        qn1_ind_snow,kup_ind_snow,Tsurf_ind_snow,Tsurf_ind)
@@ -999,7 +1026,6 @@ CONTAINS
 
     INTEGER,INTENT(in)::NetRadiationMethod
     INTEGER,INTENT(in)::snowUse
-    INTEGER,INTENT(in)::id
     INTEGER,INTENT(in)::Diagnose
     INTEGER,INTENT(in)::DiagQN
 
@@ -1023,10 +1049,10 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in):: emis
 
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)  ::alb
-    REAL(KIND(1d0)),DIMENSION(0:366),INTENT(inout)  ::albDecTr
-    REAL(KIND(1d0)),DIMENSION(0:366),INTENT(inout)  ::DecidCap
-    REAL(KIND(1d0)),DIMENSION(0:366),INTENT(inout)  ::albEveTr
-    REAL(KIND(1d0)),DIMENSION(0:366),INTENT(inout)  ::albGrass
+    REAL(KIND(1d0)),INTENT(in)  ::albDecTr_id
+    REAL(KIND(1d0)),INTENT(in)  ::DecidCap_id
+    REAL(KIND(1d0)),INTENT(in)  ::albEveTr_id
+    REAL(KIND(1d0)),INTENT(in)  ::albGrass_id
     REAL(KIND(1d0)),DIMENSION(6,nsurf),INTENT(inout)::surf
 
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::snowFrac
@@ -1079,11 +1105,11 @@ CONTAINS
        !write(*,*) DecidCap(id), id, it, imin, 'Calc - near start'
 
        ! Update variables that change daily and represent seasonal variability
-       alb(DecidSurf)    = albDecTr(id) !Change deciduous albedo
-       surf(6,DecidSurf) = DecidCap(id) !Change current storage capacity of deciduous trees
+       alb(DecidSurf)    = albDecTr_id !Change deciduous albedo
+       surf(6,DecidSurf) = DecidCap_id !Change current storage capacity of deciduous trees
        ! Change EveTr and Grass albedo too
-       alb(ConifSurf) = albEveTr(id)
-       alb(GrassSurf) = albGrass(id)
+       alb(ConifSurf) = albEveTr_id
+       alb(GrassSurf) = albGrass_id
 
        IF(Diagnose==1) WRITE(*,*) 'Calling NARP...'
 

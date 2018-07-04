@@ -880,10 +880,23 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      SnowfallCum = ModelDailyState(Gridiv,cMDS_SnowfallCum)
      SnowAlb     = ModelDailyState(Gridiv,cMDS_SnowAlb)
 
+     porosity_id    = ModelDailyState(Gridiv,cMDS_porosity)
+     albDecTr_id    = ModelDailyState(Gridiv,cMDS_albDecTr)
+     albEveTr_id    = ModelDailyState(Gridiv,cMDS_albEveTr)
+     albGrass_id    = ModelDailyState(Gridiv,cMDS_albGrass)
+     DecidCap_id    = ModelDailyState(Gridiv,cMDS_DecidCap)
+
+     DecidCap_id_grids(Gridiv) = DecidCap_id
+     albDecTr_id_grids(Gridiv) = albDecTr_id
+     albEveTr_id_grids(Gridiv) = albEveTr_id
+     albGrass_id_grids(Gridiv) = albGrass_id
+     porosity_id_grids(Gridiv) = porosity_id
+
+
      ! ---- LAI
      LAI=0
-     LAI(id_prev,ivConif)  = ModelDailyState(Gridiv,cMDS_LAIInitialEveTr)
-     LAI(id_prev,ivDecid)  = ModelDailyState(Gridiv,cMDS_LAIInitialDecTr)
+     LAI(id_prev,ivConif) = ModelDailyState(Gridiv,cMDS_LAIInitialEveTr)
+     LAI(id_prev,ivDecid) = ModelDailyState(Gridiv,cMDS_LAIInitialDecTr)
      LAI(id_prev,ivGrass) = ModelDailyState(Gridiv,cMDS_LAIInitialGrass)
 
      ! ---- Growing degree days, GDD
@@ -941,7 +954,11 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      HDD_id_prev_grids(:,Gridiv) = HDD_id_prev(:)
      GDD_id_grids(:,Gridiv) = GDD_id(:)
      LAI_id_grids(:,Gridiv) = LAI_id(:)
-     ! WUDay_day_grids(:,Gridiv) = WUday_day(:)
+
+
+     ! daily water use
+     WUDay_id=0
+     WUDay_id_grids(:,Gridiv) = WUDay_id(:)
 
 
 
@@ -1182,10 +1199,17 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      ENDIF
 
      ! added by TS 29 Jun 2018 to remove annual loops in main calculation
-     GDD_id=GDD_id_grids(:,Gridiv)
-     HDD_id=HDD_id_grids(:,Gridiv)
-     HDD_id_prev=HDD_id_prev_grids(:,Gridiv)
-     LAI_id=LAI_id_grids(:,Gridiv)
+     GDD_id      = GDD_id_grids(:,Gridiv)
+     HDD_id      = HDD_id_grids(:,Gridiv)
+     HDD_id_prev = HDD_id_prev_grids(:,Gridiv)
+     LAI_id      = LAI_id_grids(:,Gridiv)
+     WUDay_id    = WUDay_id_grids(:,Gridiv)
+
+     DecidCap_id = DecidCap_id_grids(Gridiv)
+     albDecTr_id = albDecTr_id_grids(Gridiv)
+     albEveTr_id = albEveTr_id_grids(Gridiv)
+     albGrass_id = albGrass_id_grids(Gridiv)
+     porosity_id = porosity_id_grids(Gridiv)
 
      ! get met array for one grid used in AnOHM
      MetForcingData_grid=MetForcingData(:,:,Gridiv)
@@ -1324,6 +1348,13 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv,ir,irMax)
   HDD_id_grids(:,Gridiv)=HDD_id
   HDD_id_prev_grids(:,Gridiv)=HDD_id_prev
   LAI_id_grids(:,Gridiv)=LAI_id
+  WUDay_id_grids(:,Gridiv)=WUDay_id
+
+  DecidCap_id_grids(Gridiv)=DecidCap_id
+  albDecTr_id_grids(Gridiv)=albDecTr_id
+  albEveTr_id_grids(Gridiv)=albEveTr_id
+  albGrass_id_grids(Gridiv)=albGrass_id
+  porosity_id_grids(Gridiv)=porosity_id
 
 
   ! ---- Snow density of each surface

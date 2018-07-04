@@ -737,6 +737,29 @@ SUBROUTINE SUEWS_InterpHourlyProfiles(Gridiv,TstepP_ID,SurfChar_HrProf)
 
 endsubroutine SUEWS_InterpHourlyProfiles
 !===================================================================================
+!===================================================================================
+REAL FUNCTION SUEWS_Current_SurfChar(Hour, Min, Sec, Prof_24h) RESULT(Prof_CurrTime)
+
+  IMPLICIT NONE
+
+  INTEGER :: i, j   !Used to count over hours and sub-hourly timesteps
+  INTEGER :: Hour, Min, Sec
+  INTEGER :: total_sec, SecPerHour
+  REAL,DIMENSION(24):: Prof_24h
+  REAL(KIND(1d0)):: deltaProf   !Change in hourly profiles per model timestep
+
+  total_sec = Min * 60 + Sec
+  SecPerHour = 3600
+
+  i = hour + 1
+  j = i + 1
+  IF (j > 24) j = 1
+
+  deltaProf = (Prof(j) - Prof(i))/SecPerHour
+  Prof_CurrTime = Prof(i) + deltaProf * total_sec
+
+END FUNCTION SUEWS_Current_SurfChar
+!===================================================================================
 
 ! Subroutines for matching codes in the input files
 !  could re-write as a generic function later...

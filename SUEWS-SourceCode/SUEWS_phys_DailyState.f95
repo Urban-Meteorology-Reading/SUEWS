@@ -55,7 +55,7 @@ CONTAINS
   !   - Could add different coefficients (Ie_m, Ie_a) for each vegetation type
   !==============================================================================
   SUBROUTINE SUEWS_cal_DailyState(&
-       id,it,imin,tstep,dt_since_start,DayofWeek_id,&!input
+       iy,id,it,imin,isec,tstep,tstep_prev,dt_since_start,DayofWeek_id,&!input
        WaterUseMethod,snowUse,Ie_start,Ie_end,&
        LAICalcYes,LAIType,&
        nsh_real,avkdn,Temp_C,Precip,BaseTHDD,&
@@ -79,14 +79,17 @@ CONTAINS
        deltaLAI)!output
 
     USE Snow_module,ONLY:SnowUpdate
+    use datetime_module, only: datetime,timedelta
 
     IMPLICIT NONE
 
-    ! INTEGER,INTENT(IN)::iy
+    INTEGER,INTENT(IN)::iy
     INTEGER,INTENT(IN)::id
     INTEGER,INTENT(IN)::it
     INTEGER,INTENT(IN)::imin
+    INTEGER,INTENT(IN)::isec
     INTEGER,INTENT(IN)::tstep
+    INTEGER,INTENT(IN)::tstep_prev
     INTEGER,INTENT(IN)::dt_since_start
 
 
@@ -173,6 +176,10 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(INOUT):: albGrass_id
     REAL(KIND(1d0)),INTENT(INOUT):: porosity_id
 
+    logical :: first_tstep_Q ! if this is the first tstep of a day
+    logical :: last_tstep_Q ! if this is the last tstep of a day
+    type(datetime) :: time_now,time_prev,time_next
+
 
     ! --------------------------------------------------------------------------------
     ! ------------- Key to daily arrays ----------------------------------------------
@@ -195,15 +202,21 @@ CONTAINS
     ! WUDay(,8) - Automatic irrigation for Irr Grass [mm]
     ! WUDay(,9) - Manual irrigation for Irr Grass [mm]
     ! --------------------------------------------------------------------------------
-    ! PRINT*, ''
-    ! PRINT*, 'before_DailyState', iy,id,it,imin
-    ! PRINT*, 'HDD(id)', HDD(id,:)
-    ! PRINT*, 'HDD_id', HDD_id
+
+    ! get timestamps
+    time_now=datetime(year=iy)+timedelta(days=id-1, hours=it, minutes=imin, seconds= isec)
+    time_prev=time_now-timedelta(seconds= tstep_prev)
+    time_next=time_now+timedelta(seconds= tstep)
+
+    ! test if time at now is the first/last tstep of today
+    first_tstep_Q= time_now%getDay()/=time_prev%getDay()
+    last_tstep_Q= time_now%getDay()/=time_next%getDay()
+
 
 
     ! --------------------------------------------------------------------------------
     ! On first timestep of each day, define whether the day each a workday or weekend
-    IF (it==0.AND.imin==0) THEN
+    IF (first_tstep_Q) THEN
        CALL update_DailyState_Start(&
             it,imin,&!input
             HDD_id)!inout
@@ -230,7 +243,7 @@ CONTAINS
     ! On last timestep, perform the daily calculations -------------------------------
     ! Daily values not correct until end of each day,
     !  so main program should use values from the previous day
-    IF (it==23 .AND. imin==(nsh_real-1)/nsh_real*60) THEN
+    IF (last_tstep_Q) THEN
        CALL update_DailyState_End(&
             id,it,imin,tstep,dt_since_start,&!input
             LAIType,Ie_end,Ie_start,LAICalcYes,&

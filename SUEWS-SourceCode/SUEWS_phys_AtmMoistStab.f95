@@ -245,11 +245,8 @@ CONTAINS
     ! USE mod_k
 
     IMPLICIT NONE
-    REAL(KIND(1d0)),PARAMETER :: &
-                                !  k=0.4,&             !Von Karman's contant
-                                !  k2=0.16,&           !Power of Van Karman's contant
-         neut_limit=0.001000 !Limit for neutral stability
-    !  notUsedI=-55
+    REAL(KIND(1d0)),PARAMETER :: neut_limit=0.001000 !Limit for neutral stability
+
 
     REAL (KIND(1d0)):: piover2,psym,zL,zL_f,x,x2
     INTEGER ::StabilityMethod
@@ -321,11 +318,7 @@ CONTAINS
   FUNCTION stab_fn_heat(StabilityMethod,zL,zL_f) RESULT (psyh)
     ! USE mod_k
     IMPLICIT NONE
-    REAL(KIND(1d0)),PARAMETER :: &
-                                !  k=0.4,&             !Von Karman's contant
-                                !  k2=0.16,&           !Power of Van Karman's contant
-         neut_limit=0.001000 !Limit for neutral stability
-    !  notUsedI=-55
+    REAL(KIND(1d0)),PARAMETER :: neut_limit=0.001000 !Limit for neutral stability
 
     REAL (KIND(1d0)):: zL,zL_f,psyh,x
     INTEGER :: StabilityMethod

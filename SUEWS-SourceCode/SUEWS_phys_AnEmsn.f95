@@ -34,7 +34,7 @@ SUBROUTINE AnthropogenicEmissions(&
      TrafficRate,&
      QF0_BEU,QF_SAHP,&
      Fc_anthro,Fc_metab,Fc_traff,Fc_build,&
-     AHProf_tstep,HumActivity_tstep,TraffProf_tstep,PopProf_tstep)
+     AHProf_24hr,HumActivity_24hr,TraffProf_24hr,PopProf_24hr)
   ! Simple anthropogenic heat parameterisation and co2 calculation
   ! Calculates QF_SAHP and Fc_anthro
 
@@ -63,11 +63,16 @@ SUBROUTINE AnthropogenicEmissions(&
        TrafficRate,&       !Traffic rate
        QF0_BEU
 
-  REAL(KIND(1d0)),DIMENSION(24*nsh,2),INTENT(in)::&
-       AHProf_tstep,&
-       HumActivity_tstep,&
-       TraffProf_tstep,&
-       PopProf_tstep
+  ! REAL(KIND(1d0)),DIMENSION(24*nsh,2),INTENT(in)::&
+  !      AHProf_tstep,&
+  !      HumActivity_tstep,&
+  !      TraffProf_tstep,&
+  !      PopProf_tstep
+  REAL(KIND(1d0)),DIMENSION(0:23,2),INTENT(in)::&
+       AHProf_24hr,&
+       HumActivity_24hr,&
+       TraffProf_24hr,&
+       PopProf_24hr
 
   REAL(KIND(1D0)),INTENT(in):: &
        EF_umolCO2perJ,&
@@ -94,6 +99,7 @@ SUBROUTINE AnthropogenicEmissions(&
        ih
 
   REAL(KIND(1D0)):: &
+       get_Prof_SpecTime_mean,& !external function to get profile value at sepcified timestamp
        Tair_avg_daily,& !daily mean air temperature
        DP_x_RhoPop, DP_x_RhoPop_traff,&
        MinFcMetab, MaxFcMetab,&
@@ -106,9 +112,9 @@ SUBROUTINE AnthropogenicEmissions(&
        TraffDorNorT,&     ! Traffic
        AHDorNorT          ! Anthropogenic heat
 
-    ! NB: temporarily use 5-day running mean to test the performance
-    Tair_avg_daily= HDD_id(4)
-    ! Tair_avg_daily= HDD_id(3) ! this is daily
+  ! NB: temporarily use 5-day running mean to test the performance
+  Tair_avg_daily= HDD_id(4)
+  ! Tair_avg_daily= HDD_id(3) ! this is daily
 
   !-----------------------------------------------------------------------
   ! Account for Daylight saving
@@ -121,10 +127,15 @@ SUBROUTINE AnthropogenicEmissions(&
 
   ! Calculate energy emissions and CO2 from human metabolism -------------
   ! Pop dens (cap ha-1 -> cap m-2) x activity level (W cap-1)
-  PopDorNorT   = PopProf_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)      ! 1=night, 2=day, 1-2=transition
-  ActDorNorT   = HumActivity_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)  ! 1=night, 2=day, 1-2=transition
-  TraffDorNorT = TraffProf_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)    ! normalise so the AVERAGE of the multipliers is equal to 1
-  AHDorNorT    = AHProf_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)       ! normalise so the AVERAGE of the multipliers is equal to 1
+  ! PopDorNorT   = PopProf_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)      ! 1=night, 2=day, 1-2=transition
+  ! ActDorNorT   = HumActivity_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)  ! 1=night, 2=day, 1-2=transition
+  ! TraffDorNorT = TraffProf_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)    ! normalise so the AVERAGE of the multipliers is equal to 1
+  ! AHDorNorT    = AHProf_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)       ! normalise so the AVERAGE of the multipliers is equal to 1
+
+  PopDorNorT   = get_Prof_SpecTime_mean(ih,imin,0,PopProf_24hr(:,iu))
+  ActDorNorT   = get_Prof_SpecTime_mean(ih,imin,0,HumActivity_24hr(:,iu))
+  TraffDorNorT = get_Prof_SpecTime_mean(ih,imin,0,TraffProf_24hr(:,iu))
+  AHDorNorT    = get_Prof_SpecTime_mean(ih,imin,0,AHProf_24hr(:,iu))
 
   ! Diurnal profile times population density [cap ha-1]
   DP_x_RhoPop = AHDorNorT * NumCapita

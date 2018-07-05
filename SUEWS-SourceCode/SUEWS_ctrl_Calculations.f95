@@ -45,7 +45,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
        roughlenmommethod, smdmethod, snow_obs, snowuse, startdls, &
        storageheatmethod, t_critic_cooling, t_critic_heating, temp_c, &
        timezone, trafficrate, trafficunits, waterusemethod, xsmd
-  USE time, ONLY : iy, id, it, imin, dectime, dt_since_start
+  USE time, ONLY : iy, id, it, imin, isec, dectime, dt_since_start
   USE allocateArray, ONLY: &
        ahprof_tstep, alb, &
        AlbMax_DecTr, AlbMax_EveTr, AlbMax_grass, &
@@ -82,12 +82,12 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
        ie_a, ie_end, ie_m, ie_start, internalwateruse_h, &
        irrfracconif, irrfracdecid, irrfracgrass,&
        pipecapacity, roughlenheatmethod, runofftowater, stabilitymethod,&
-       surfacearea, tstep
+       surfacearea, tstep,tstep_prev
   USE snowMod, ONLY: &
        crwmax, crwmin, preciplimit, preciplimitalb, radmeltfact,&
        snowalb, snowAlbMax, snowAlbMin, &
        snowdensmax, snowdensmin, snowfallcum, snowlimbuild, &
-       snowlimpaved, snowprof,&
+       snowlimpaved, SnowProf_24hr,&
        tau_a, tau_f, tau_r, tempmeltfact
   USE gis_data, ONLY: &
        bldgh, dectreeh, evetreeh, faibldg, faidectree, faievetree, veg_type
@@ -129,7 +129,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
        FrFossilFuel_Heat,FrFossilFuel_NonHeat,G1,G2,G3,G4,G5,G6,GDD_id,&
        GDDFull,Gridiv,gsModel,HDD_id,HDD_id_prev,HumActivity_tstep,&
        IceFrac,id,Ie_a,Ie_end,Ie_m,Ie_start,imin,&
-       InternalWaterUse_h,IrrFracConif,IrrFracDecid,IrrFracGrass,it,ity,&
+       InternalWaterUse_h,IrrFracConif,IrrFracDecid,IrrFracGrass,isec,it,ity,&
        iy,kkAnOHM,Kmax,LAI_id,LAICalcYes,LAIMax,LAIMin,LAI_obs,&
        LAIPower,LAIType,lat,ldown_obs,lng,MaxConductance,MaxQFMetab,&
        MeltWaterStore,MetForcingData_grid,MinQFMetab,min_res_bioCO2,&
@@ -143,12 +143,12 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
        RoughLenHeatMethod,RoughLenMomMethod,RunoffToWater,S1,S2,&
        SatHydraulicConduct,SDDFull,sfr,SMDMethod,SnowAlb,SnowAlbMax,&
        SnowAlbMin,snowD,SnowDens,SnowDensMax,SnowDensMin,SnowfallCum,snowFrac,&
-       SnowLimBuild,SnowLimPaved,snow_obs,SnowPack,SnowProf,snowUse,SoilDepth,&
+       SnowLimBuild,SnowLimPaved,snow_obs,SnowPack,SnowProf_24hr,snowUse,SoilDepth,&
        soilmoist,soilstoreCap,StabilityMethod,startDLS,state,StateLimit,&
        StorageHeatMethod,surf,SurfaceArea,Tair24HR,tau_a,tau_f,tau_r,&
        T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,TempMeltFact,TH,&
        theta_bioCO2,timezone,TL,TrafficRate,TrafficUnits,&
-       TraffProf_tstep,Ts5mindata_ir,tstep,veg_type,&
+       TraffProf_tstep,Ts5mindata_ir,tstep,tstep_prev,veg_type,&
        WaterDist,WaterUseMethod,WetThresh,&
        WUDay_id,&
        DecidCap_id,&

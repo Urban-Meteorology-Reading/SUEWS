@@ -120,6 +120,10 @@ SUBROUTINE OverallRunControl
   READ(55,nml=RunControl,err=201)
   CLOSE(55)
 
+  ! set tstep_prev as tstep ! TS 04 Jul 2018
+  ! tstep_prev is NOT used by SUEWS but by WRF-SUEWS through the main interface
+  tstep_prev=tstep
+
   IF(Diagnose==1) WRITE(*,*) 'Diagnosis switched on (model progress will be printed to screen)...'
 
   !Check for problems with FileCode

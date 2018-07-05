@@ -50,14 +50,14 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
        snowlimpaved, snowlimbuild, radmeltfact, tempmeltfact, &
        snowAlbMin, snowAlbMax, tau_a, tau_f, preciplimitalb,&
        snowdensmin, snowdensmax, tau_r, crwmin, crwmax,&
-       preciplimit, snowprof, snowalb, snowfallcum
+       preciplimit, SnowProf_24hr, snowalb, snowfallcum
   USE sues_data, ONLY: &
        surfacearea_ha, surfacearea, irrfracconif, irrfracdecid, irrfracgrass,&
        soildensity, soildepthmeas, smcap, soilrocks, pipecapacity, flowchange,&
        runofftowater, ie_start, ie_end, internalwateruse_h, faut,&
        ie_a, ie_m, daywat, daywatper,&
-       wuprofm, wuprofa, wuareaevetr_m2, wuareadectr_m2, wuareagrass_m2
-  USE time, ONLY: iy, id, it, imin, dectime
+       WUProfM_24hr, WUProfA_24hr, wuareaevetr_m2, wuareadectr_m2, wuareagrass_m2
+  USE time, ONLY: iy, id, it, imin,isec, dectime
   USE ESTM_data
   USE WhereWhen, ONLY: gridid, gridid_text
   USE ESTM_module,ONLY:ESTM_translate
@@ -73,6 +73,8 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   INTEGER::iv,j,i
   !real (Kind(1d0)):: FCskip = -9   !NULL value used for output to FileChoices
   REAL (KIND(1d0)):: FCskip = -999  !NULL value used for output to FileChoices	(changed by HCW 24 May 2016)
+
+  REAL (KIND(1d0))::get_Prof_SpecTime_mean
 
   ! REAL(KIND(1d0)):: z0m_in, zdm_in  !Values of z0m and zdm provided in SiteSelect input file (do not get updated unlike z0d and z0m)
 
@@ -748,20 +750,20 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   DayWatPer          = SurfaceChar(Gridiv,c_DayWatPer)
 
   ! ---- Hourly profiles
-  AHProf(0:23,1)   = SurfaceChar(Gridiv,c_HrProfEnUseWD)   ! Anthropogenic heat, weekdays
-  AHProf(0:23,2)   = SurfaceChar(Gridiv,c_HrProfEnUseWE)   ! Anthropogenic heat, weekends
-  WUProfM(0:23,1)  = SurfaceChar(Gridiv,c_HrProfWUManuWD)  ! Water use, manual, weekdays
-  WUProfM(0:23,2)  = SurfaceChar(Gridiv,c_HrProfWUManuWE)  ! Water use, manual, weekends
-  WUProfA(0:23,1)  = SurfaceChar(Gridiv,c_HrProfWUAutoWD)  ! Water use, automatic, weekdays
-  WUProfA(0:23,2)  = SurfaceChar(Gridiv,c_HrProfWUAutoWE)  ! Water use, automatic, weekends
-  SnowProf(0:23,1) = SurfaceChar(Gridiv,c_HrProfSnowCWD)   ! Snow clearing, weekdays
-  SnowProf(0:23,2) = SurfaceChar(Gridiv,c_HrProfSnowCWE)   ! Snow clearing, weekends
-  HumActivityProf(0:23,1) = SurfaceChar(Gridiv,c_HrProfHumActivityWD)    ! Human activity, weekdays
-  HumActivityProf(0:23,2) = SurfaceChar(Gridiv,c_HrProfHumActivityWE)    ! Human activity, weekends
-  TraffProf(0:23,1) = SurfaceChar(Gridiv,c_HrProfTraffWD)  ! Traffic, weekdays
-  TraffProf(0:23,2) = SurfaceChar(Gridiv,c_HRProfTraffWE)  ! Traffic, weekends
-  PopProf(0:23,1) = SurfaceChar(Gridiv,c_HRProfPopWD)      ! Population, weekdays
-  PopProf(0:23,2) = SurfaceChar(Gridiv,c_HRProfPopWE)      ! Population, weekends
+  AHProf_24hr(0:23,1)   = SurfaceChar(Gridiv,c_HrProfEnUseWD)   ! Anthropogenic heat, weekdays
+  AHProf_24hr(0:23,2)   = SurfaceChar(Gridiv,c_HrProfEnUseWE)   ! Anthropogenic heat, weekends
+  WUProfM_24hr(0:23,1)  = SurfaceChar(Gridiv,c_HrProfWUManuWD)  ! Water use, manual, weekdays
+  WUProfM_24hr(0:23,2)  = SurfaceChar(Gridiv,c_HrProfWUManuWE)  ! Water use, manual, weekends
+  WUProfA_24hr(0:23,1)  = SurfaceChar(Gridiv,c_HrProfWUAutoWD)  ! Water use, automatic, weekdays
+  WUProfA_24hr(0:23,2)  = SurfaceChar(Gridiv,c_HrProfWUAutoWE)  ! Water use, automatic, weekends
+  SnowProf_24hr(0:23,1) = SurfaceChar(Gridiv,c_HrProfSnowCWD)   ! Snow clearing, weekdays
+  SnowProf_24hr(0:23,2) = SurfaceChar(Gridiv,c_HrProfSnowCWE)   ! Snow clearing, weekends
+  HumActivityProf_24hr(0:23,1) = SurfaceChar(Gridiv,c_HrProfHumActivityWD)    ! Human activity, weekdays
+  HumActivityProf_24hr(0:23,2) = SurfaceChar(Gridiv,c_HrProfHumActivityWE)    ! Human activity, weekends
+  TraffProf_24hr(0:23,1) = SurfaceChar(Gridiv,c_HrProfTraffWD)  ! Traffic, weekdays
+  TraffProf_24hr(0:23,2) = SurfaceChar(Gridiv,c_HRProfTraffWE)  ! Traffic, weekends
+  PopProf_24hr(0:23,1) = SurfaceChar(Gridiv,c_HRProfPopWD)      ! Population, weekdays
+  PopProf_24hr(0:23,2) = SurfaceChar(Gridiv,c_HRProfPopWE)      ! Population, weekends
 
 
 
@@ -779,6 +781,12 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   PopProf_tstep(:,1)     = TstepProfiles(Gridiv,cTP_PopProfWD,:)     !Population, weekdays
   PopProf_tstep(:,2)     = TstepProfiles(Gridiv,cTP_PopProfWE,:)     !Population, weekends
 
+  print*, ''
+  iv=  get_Prof_SpecTime_mean(0,5*(iv-1),0,PopProf_24hr(:,1))
+  do iv = 1, 12,1
+    print*,5*(iv-1), AHProf_tstep(iv,1), get_Prof_SpecTime_mean(0,5*(iv-1),0,PopProf_24hr(:,1))
+
+  end do
 
   ! ---- Within-grid water distribution
   ! N.B. Rows and columns of WaterDist are the other way round to the input info
@@ -1087,14 +1095,14 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
 
      WRITE(12,*) '----- '//TRIM(ADJUSTL(SsG_YYYY))//' Hourly profiles'//' -----'
      WRITE(12,'(a12,24i10,a20)') 'Grid',(iv,iv=0,23),'HourOfDay'
-     WRITE(12,121) SsG_YYYY,AHProf(0:23,1), ' Anthrop heat WD'
-     WRITE(12,121) SsG_YYYY,AHProf(0:23,2), ' Anthrop heat WE'
-     WRITE(12,121) SsG_YYYY,WUProfM(0:23,1),' Manual water use WD'
-     WRITE(12,121) SsG_YYYY,WUProfM(0:23,2),' Manual water use WE'
-     WRITE(12,121) SsG_YYYY,WUProfA(0:23,1),' Auto. water use WD'
-     WRITE(12,121) SsG_YYYY,WUProfA(0:23,2),' Auto. water use WE'
-     WRITE(12,121) SsG_YYYY,SnowProf(0:23,1), ' Snow clearing WD'
-     WRITE(12,121) SsG_YYYY,SnowProf(0:23,2), ' Snow clearing WE'
+     WRITE(12,121) SsG_YYYY,AHProf_24hr(0:23,1), ' Anthrop heat WD'
+     WRITE(12,121) SsG_YYYY,AHProf_24hr(0:23,2), ' Anthrop heat WE'
+     WRITE(12,121) SsG_YYYY,WUProfM_24hr(0:23,1),' Manual water use WD'
+     WRITE(12,121) SsG_YYYY,WUProfM_24hr(0:23,2),' Manual water use WE'
+     WRITE(12,121) SsG_YYYY,WUProfA_24hr(0:23,1),' Auto. water use WD'
+     WRITE(12,121) SsG_YYYY,WUProfA_24hr(0:23,2),' Auto. water use WE'
+     WRITE(12,121) SsG_YYYY,SnowProf_24hr(0:23,1), ' Snow clearing WD'
+     WRITE(12,121) SsG_YYYY,SnowProf_24hr(0:23,2), ' Snow clearing WE'
 
      WRITE(12,*) '----- '//TRIM(ADJUSTL(SsG_YYYY))//' Within-grid water distribution'//' -----'
      WRITE(12,'(9a10)') 'ToPaved','ToBldgs','ToEveTr','ToDecTr','ToGrass','ToBSoil','ToWater','ToROorSS'
@@ -1164,6 +1172,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      id        = INT(MetForcingData(ir, 2,Gridiv))
      it        = INT(MetForcingData(ir, 3,Gridiv))
      imin      = INT(MetForcingData(ir, 4,Gridiv))
+     isec      = 0
      qn1_obs   = MetForcingData(ir, 5,Gridiv)      !Real values (kind(1d0))
      qh_obs    = MetForcingData(ir, 6,Gridiv)
      qe_obs    = MetForcingData(ir, 7,Gridiv)

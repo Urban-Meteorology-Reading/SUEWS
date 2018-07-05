@@ -737,28 +737,94 @@ SUBROUTINE SUEWS_InterpHourlyProfiles(Gridiv,TstepP_ID,SurfChar_HrProf)
 
 endsubroutine SUEWS_InterpHourlyProfiles
 !===================================================================================
+
 !===================================================================================
-REAL FUNCTION SUEWS_Current_SurfChar(Hour, Min, Sec, Prof_24h) RESULT(Prof_CurrTime)
+! get interpolated profile values at specified time
+! NO normalisation performed
+FUNCTION get_Prof_SpecTime_inst(Hour, Min, Sec, Prof_24h) RESULT(Prof_CurrTime)
 
   IMPLICIT NONE
 
   INTEGER :: i, j   !Used to count over hours and sub-hourly timesteps
-  INTEGER :: Hour, Min, Sec
+  INTEGER,INTENT(IN) :: Hour, Min, Sec
   INTEGER :: total_sec, SecPerHour
-  REAL,DIMENSION(24):: Prof_24h
+  REAL(KIND(1d0)),DIMENSION(0:23),INTENT(IN) :: Prof_24h
   REAL(KIND(1d0)):: deltaProf   !Change in hourly profiles per model timestep
+  REAL(KIND(1d0)) :: Prof_CurrTime
 
   total_sec = Min * 60 + Sec
   SecPerHour = 3600
 
-  i = hour + 1
+  i = hour
   j = i + 1
-  IF (j > 24) j = 1
+  IF (j == 24) j = 0
 
-  deltaProf = (Prof(j) - Prof(i))/SecPerHour
-  Prof_CurrTime = Prof(i) + deltaProf * total_sec
+  deltaProf = (Prof_24h(j) - Prof_24h(i))/SecPerHour
+  Prof_CurrTime = Prof_24h(hour) + deltaProf * total_sec
 
-END FUNCTION SUEWS_Current_SurfChar
+END FUNCTION get_Prof_SpecTime_inst
+
+!===================================================================================
+! get interpolated profile values at specified time
+! normalise so the AVERAGE of the multipliers is equal to 1
+FUNCTION get_Prof_SpecTime_mean(Hour, Min, Sec, Prof_24h) RESULT(Prof_CurrTime)
+
+  IMPLICIT NONE
+
+  INTEGER :: i, j   !Used to count over hours and sub-hourly timesteps
+  INTEGER,INTENT(IN) :: Hour, Min, Sec
+  INTEGER :: total_sec, SecPerHour
+  REAL(KIND(1d0)),DIMENSION(0:23),INTENT(IN) :: Prof_24h
+  REAL(KIND(1d0)),DIMENSION(0:23):: Prof_24h_mean
+  REAL(KIND(1d0)):: deltaProf   !Change in hourly profiles per model timestep
+  REAL(KIND(1d0)) :: Prof_CurrTime
+
+  total_sec = Min * 60 + Sec
+  SecPerHour = 3600
+
+  Prof_24h_mean=Prof_24h/(SUM(Prof_24h)/24)
+  print*, Prof_24h_mean
+
+  i = hour
+  j = i + 1
+  IF (j == 24) j = 0
+
+  deltaProf = (Prof_24h_mean(j) - Prof_24h_mean(i))/SecPerHour
+
+  ! print*, deltaProf,total_sec
+  Prof_CurrTime = Prof_24h_mean(i) + deltaProf * total_sec
+
+END FUNCTION get_Prof_SpecTime_mean
+
+!===================================================================================
+! get interpolated profile values at specified time
+! normalise so the SUM of the multipliers is equal to 1
+FUNCTION get_Prof_SpecTime_sum(Hour, Min, Sec, Prof_24h, dt) RESULT(Prof_CurrTime)
+
+  IMPLICIT NONE
+
+  INTEGER :: i, j   !Used to count over hours and sub-hourly timesteps
+  INTEGER,INTENT(IN) :: Hour, Min, Sec, dt
+  INTEGER :: total_sec, SecPerHour
+  REAL(KIND(1d0)),DIMENSION(0:23),INTENT(IN) :: Prof_24h
+  REAL(KIND(1d0)),DIMENSION(0:23):: Prof_24h_sum
+  REAL(KIND(1d0)):: deltaProf   !Change in hourly profiles per model timestep
+  REAL(KIND(1d0)) :: Prof_CurrTime
+
+  total_sec = Min * 60 + Sec
+  SecPerHour = 3600
+
+  Prof_24h_sum=Prof_24h/(SUM(Prof_24h))
+
+  i = hour
+  j = i + 1
+  IF (j == 24) j = 0
+
+  deltaProf = (Prof_24h_sum(j) - Prof_24h_sum(i))/SecPerHour
+  Prof_CurrTime = Prof_24h_sum(hour) + deltaProf * total_sec
+  Prof_CurrTime = Prof_CurrTime * dt/SecPerHour
+
+END FUNCTION get_Prof_SpecTime_sum
 !===================================================================================
 
 ! Subroutines for matching codes in the input files

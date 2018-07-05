@@ -1116,10 +1116,10 @@ MODULE data_in
        TrafficRate,& !Traffic rate
        QF0_BEU
 
-  REAL(KIND(1d0)),DIMENSION(0:23,2):: AHPROF     !Anthropogenic heat profiles for (1)weekdays / (2)weekends
-  REAL(KIND(1d0)),DIMENSION(0:23,2):: HumActivityProf   !Human actvity profiles for (1)weekdays / (2)weekends
-  REAL(KIND(1d0)),DIMENSION(0:23,2):: TraffProf   !Traffic profiles for (1)weekdays / (2)weekends
-  REAL(KIND(1d0)),DIMENSION(0:23,2):: PopProf   !Population profiles for (1)weekdays / (2)weekends
+  REAL(KIND(1d0)),DIMENSION(0:23,2):: AHProf_24hr     !Anthropogenic heat profiles for (1)weekdays / (2)weekends
+  REAL(KIND(1d0)),DIMENSION(0:23,2):: HumActivityProf_24hr   !Human actvity profiles for (1)weekdays / (2)weekends
+  REAL(KIND(1d0)),DIMENSION(0:23,2):: TraffProf_24hr   !Traffic profiles for (1)weekdays / (2)weekends
+  REAL(KIND(1d0)),DIMENSION(0:23,2):: PopProf_24hr   !Population profiles for (1)weekdays / (2)weekends
 
 
   ! INTEGER,DIMENSION(2)::DayLightSavingDay   !DOY when daylight saving changes
@@ -1266,7 +1266,7 @@ MODULE snowMod
        CRWmax  !Free water holding capacity of shallow SnowPack
 
   REAL(KIND(1D0)), DIMENSION(2)::  SnowRemoval=0 ! Removal of snow in mm
-  REAL(KIND(1d0)), DIMENSION(0:23,2):: snowProf  ! Timing of snow removal (0 or 1) Hourly, WD/WE
+  REAL(KIND(1d0)), DIMENSION(0:23,2):: SnowProf_24hr  ! Timing of snow removal (0 or 1) Hourly, WD/WE
 
   INTEGER::SnowFractionChoice=2   !Choice how fraction of snow is calculated
 
@@ -1288,6 +1288,7 @@ MODULE time
        id,&            !Day of year
        it,&            !Hour
        imin,&          !Minutes
+       isec,&          !Seconds
        DLS             !day lightsavings =1 + 1h) =0
 
   REAL(KIND(1d0)):: dectime        !Decimal time
@@ -1417,6 +1418,7 @@ MODULE sues_data
   IMPLICIT NONE
 
   INTEGER:: tstep,&    !Timestep [s] at which the model is run (set in RunControl)
+       tstep_prev,&    !Timestep [s] of previous timestamp !NB: not used by SUEWS, but by WRF-SUEWS for adaptive time step
        nsh,&      !Number of timesteps per hour
        nsd,&      !Number of timesteps per day
        nsdorig,&  !Number of timesteps per day for original met forcing file
@@ -1561,8 +1563,8 @@ MODULE sues_data
   ! 7 - number of days in week
   REAL(KIND(1d0)),DIMENSION(7)::DayWatPer,&  !% of houses following daily water
        DayWat       !Days of watering allowed
-  REAL(KIND(1d0)),DIMENSION(0:23,2):: WUProfM,&   !Hourly profiles for water use (manual irrigation)
-       WUProfA   !Hourly profiles for water use (automatic irrigation)
+  REAL(KIND(1d0)),DIMENSION(0:23,2):: WUProfM_24hr,&   !Hourly profiles for water use (manual irrigation)
+       WUProfA_24hr   !Hourly profiles for water use (automatic irrigation)
 
 
   REAL (KIND(1d0)),DIMENSION(3)::Ie_a,Ie_m   !Coefficients for automatic and manual irrigation models

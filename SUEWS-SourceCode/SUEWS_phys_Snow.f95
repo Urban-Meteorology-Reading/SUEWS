@@ -460,7 +460,7 @@ CONTAINS
        ity,CRWmin,CRWmax,nsh_real,lvS_J_kg,lv_j_kg,avdens,&
        avRh,Press_hPa,Temp_C,RAsnow,psyc_hPa,avcp,sIce_hPa,&
        PervFraction,vegfraction,addimpervious,&
-       numPM,s_hPa,ResistSurf,sp,RA,rb,tlv,snowdensmin,SnowProf,precip,&
+       numPM,s_hPa,ResistSurf,sp,RA,rb,tlv,snowdensmin,SnowProf_24hr,precip,&
        PipeCapacity,RunoffToWater,runoffAGimpervious,runoffAGveg,&
        addVeg,surplusWaterBody,SnowLimPaved,SnowLimBuild,FlowChange,drain,&
        WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
@@ -565,7 +565,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::AddWater
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::addwaterrunoff
     REAL(KIND(1d0)),DIMENSION(6,nsurf),INTENT(in)::surf
-    REAL(KIND(1d0)),DIMENSION(0:23,2),INTENT(in)::snowProf
+    REAL(KIND(1d0)),DIMENSION(0:23,2),INTENT(in)::SnowProf_24hr
 
     !Updated status: input and output
     REAL(KIND(1d0)),INTENT(inout)::runoffAGveg
@@ -742,7 +742,7 @@ CONTAINS
           ENDIF
 
           !At the end of the hour calculate possible snow removal
-          IF (SnowProf(it,iu)==1.AND.is<3.AND.(imin==(nsh_real-1)/nsh_real*60))  &
+          IF (SnowProf_24hr(it,iu)==1.AND.is<3.AND.(imin==(nsh_real-1)/nsh_real*60))  &
                CALL snowRem(&
                is,PavSurf,BldgSurf,nsurf,&
                snowfrac,sfr,&
@@ -875,7 +875,7 @@ CONTAINS
           ENDIF
 
           !At the end of the hour calculate possible snow removal
-          IF (SnowProf(it,iu)==1.AND.is<3.AND.(imin==(nsh_real-1)/nsh_real*60))  &
+          IF (SnowProf_24hr(it,iu)==1.AND.is<3.AND.(imin==(nsh_real-1)/nsh_real*60))  &
                CALL snowRem(&
                is,PavSurf,BldgSurf,nsurf,&
                snowfrac,sfr,&

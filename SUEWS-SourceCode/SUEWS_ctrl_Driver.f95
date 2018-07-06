@@ -17,7 +17,7 @@ MODULE SUEWS_Driver
        SUEWS_cal_WaterUse
   USE ctrl_output,ONLY:varList
   USE allocateArray,ONLY:&
-       ndays,nsurf,nvegsurf,&
+       nsurf,nvegsurf,&
        PavSurf,BldgSurf,ConifSurf,DecidSurf,GrassSurf,BSoilSurf,WaterSurf,&
        ivConif,ivDecid,ivGrass,&
        ncolumnsDataOutSUEWS,ncolumnsDataOutSnow,&
@@ -41,7 +41,7 @@ CONTAINS
        EF_umolCO2perJ,emis,EmissionsMethod,EnEF_v_Jkm,endDLS,EveTreeH,FAIBldg,&
        FAIDecTree,FAIEveTree,Faut,FcEF_v_kgkm,fcld_obs,FlowChange,&
        FrFossilFuel_Heat,FrFossilFuel_NonHeat,G1,G2,G3,G4,G5,G6,GDD_id,&
-       GDDFull,Gridiv,gsModel,HDD_id,HDD_id_prev,HumActivity_24hr,&
+       GDDFull,Gridiv,gsModel,HDD_id,HDD_id_use,HumActivity_24hr,&
        IceFrac,id,Ie_a,Ie_end,Ie_m,Ie_start,imin,&
        InternalWaterUse_h,IrrFracConif,IrrFracDecid,IrrFracGrass,isec,it,ity,&
        iy,kkAnOHM,Kmax,LAI_id,LAICalcYes,LAIMax,LAIMin,LAI_obs,&
@@ -299,11 +299,11 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)   ::SnowPack
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)   ::soilmoist
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)   ::state
-    REAL(KIND(1d0)),DIMENSION(5),INTENT(INOUT)       :: GDD_id !Growing Degree Days (see SUEWS_DailyState.f95)
-    REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT)       :: HDD_id !Growing Degree Days (see SUEWS_DailyState.f95)
-    REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT)       :: HDD_id_prev !Growing Degree Days (see SUEWS_DailyState.f95)
-    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(INOUT):: LAI_id !LAI for each veg surface [m2 m-2]
-    REAL(KIND(1d0)),DIMENSION(9),INTENT(OUT):: WUDay_id
+    REAL(KIND(1d0)),DIMENSION(5),INTENT(INOUT)       ::GDD_id !Growing Degree Days (see SUEWS_DailyState.f95)
+    REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT)       ::HDD_id !Heating Degree Days (see SUEWS_DailyState.f95)
+    REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT)       ::HDD_id_use !Heating Degree Days (see SUEWS_DailyState.f95)
+    REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(INOUT)::LAI_id !LAI for each veg surface [m2 m-2]
+    REAL(KIND(1d0)),DIMENSION(9),INTENT(OUT)::WUDay_id
 
     REAL(KIND(1d0)),INTENT(INOUT):: DecidCap_id
     REAL(KIND(1d0)),INTENT(INOUT):: albDecTr_id
@@ -549,7 +549,7 @@ CONTAINS
          BaseT,BaseTe,GDDFull,SDDFull,LAIMin,LAIMax,LAIPower,&
          SnowAlb,&!inout
          GDD_id,&
-         HDD_id,HDD_id_prev,&
+         HDD_id,HDD_id_use,&
          SnowDens,LAI_id,LAI_id_prev,&
          WUDay_id,&
          DecidCap_id,&
@@ -593,10 +593,10 @@ CONTAINS
     ! ===================ANTHROPOGENIC HEAT FLUX================================
     CALL SUEWS_cal_AnthropogenicEmission(&
          AH_MIN,AHProf_24hr,AH_SLOPE_Cooling,AH_SLOPE_Heating,alpha_bioCO2,&
-         alpha_enh_bioCO2,avkdn,beta_bioCO2,beta_enh_bioCO2,DayofWeek_id,&
+         alpha_enh_bioCO2,avkdn,beta_bioCO2,beta_enh_bioCO2,dayofWeek_id,&
          Diagnose,DLS,EF_umolCO2perJ,EmissionsMethod,EnEF_v_Jkm,Fc,Fc_anthro,Fc_biogen,&
          Fc_build,FcEF_v_kgkm,Fc_metab,Fc_photo,Fc_respi,Fc_traff,FrFossilFuel_Heat,&
-         FrFossilFuel_NonHeat,HDD_id_prev,HumActivity_24hr,id,imin,it,LAI_id, LAIMax,LAIMin,&
+         FrFossilFuel_NonHeat,HDD_id_use,HumActivity_24hr,id,imin,it,LAI_id,LAIMax,LAIMin,&
          MaxQFMetab,MinQFMetab,min_res_bioCO2,nsh,NumCapita,&
          PopDensDaytime,PopDensNighttime,PopProf_24hr,QF,QF0_BEU,Qf_A,Qf_B,Qf_C,QF_SAHP,&
          resp_a,resp_b,sfr,snowFrac,T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,&
@@ -609,7 +609,7 @@ CONTAINS
          id,tstep,dt_since_start,Diagnose,sfr,&
          OHM_coef,OHM_threshSW,OHM_threshWD,&
          soilmoist,soilstoreCap,state,nsh,SnowUse,DiagQS,&
-         HDD_id_prev,MetForcingData_grid,Ts5mindata_ir,qf,qn1,&
+         HDD_id_use,MetForcingData_grid,Ts5mindata_ir,qf,qn1,&
          avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown,&
          bldgh,alb,emis,cpAnOHM,kkAnOHM,chAnOHM,EmissionsMethod,&
          Tair24HR,qn1_av,dqndt,qn1_s_av,dqnsdt,&!inout
@@ -653,7 +653,7 @@ CONTAINS
          SurfaceArea,sfr,&
          IrrFracConif,IrrFracDecid,IrrFracGrass,&
          dayofWeek_id,WUProfA_24hr,WUProfM_24hr,&
-         InternalWaterUse_h,HDD_id_prev,WUDay_id,&
+         InternalWaterUse_h,HDD_id_use,WUDay_id,&
          WaterUseMethod,NSH,it,imin,DLS,&
          WUAreaEveTr_m2,WUAreaDecTr_m2,& ! output:
          WUAreaGrass_m2,WUAreaTotal_m2,&
@@ -809,7 +809,7 @@ CONTAINS
        alpha_enh_bioCO2,avkdn,beta_bioCO2,beta_enh_bioCO2,dayofWeek_id,&
        Diagnose,DLS,EF_umolCO2perJ,EmissionsMethod,EnEF_v_Jkm,Fc,Fc_anthro,Fc_biogen,&
        Fc_build,FcEF_v_kgkm,Fc_metab,Fc_photo,Fc_respi,Fc_traff,FrFossilFuel_Heat,&
-       FrFossilFuel_NonHeat,HDD_id,HumActivity_24hr,id,imin,it,LAI_id,LAIMax,LAIMin,&
+       FrFossilFuel_NonHeat,HDD_id_use,HumActivity_24hr,id,imin,it,LAI_id,LAIMax,LAIMin,&
        MaxQFMetab,MinQFMetab,min_res_bioCO2,nsh,NumCapita,&
        PopDensDaytime,PopDensNighttime,PopProf_24hr,QF,QF0_BEU,Qf_A,Qf_B,Qf_C,QF_SAHP,&
        resp_a,resp_b,sfr,snowFrac,T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,&
@@ -827,7 +827,7 @@ CONTAINS
     ! INTEGER,INTENT(in)::notUsedI
     INTEGER,DIMENSION(3),INTENT(in)::dayofWeek_id
     ! REAL(KIND(1d0)),DIMENSION(-4:ndays, 6),INTENT(in)::HDD
-    REAL(KIND(1d0)),DIMENSION(6),INTENT(in)::HDD_id
+    REAL(KIND(1d0)),DIMENSION(6),INTENT(in)::HDD_id_use
     REAL(KIND(1d0)),DIMENSION(2),INTENT(in)::Qf_A
     REAL(KIND(1d0)),DIMENSION(2),INTENT(in)::Qf_B
     REAL(KIND(1d0)),DIMENSION(2),INTENT(in)::Qf_C
@@ -957,7 +957,7 @@ CONTAINS
             FrFossilFuel_Heat,FrFossilFuel_NonHeat,&
             MinQFMetab,MaxQFMetab,&
             NumCapita,PopDensDaytime,PopDensNighttime,&
-            Temp_C,HDD_id,Qf_A,Qf_B,Qf_C,&
+            Temp_C,HDD_id_use,Qf_A,Qf_B,Qf_C,&
             AH_MIN,AH_SLOPE_Heating,AH_SLOPE_Cooling,&
             T_CRITIC_Heating,T_CRITIC_Cooling,&
             TrafficRate,&
@@ -1149,7 +1149,7 @@ CONTAINS
        id,tstep,dt_since_start,Diagnose,sfr,&
        OHM_coef,OHM_threshSW,OHM_threshWD,&
        soilmoist,soilstoreCap,state,nsh,SnowUse,DiagQS,&
-       HDD_id_prev,MetForcingData_grid,Ts5mindata_ir,qf,qn1,&
+       HDD_id_use,MetForcingData_grid,Ts5mindata_ir,qf,qn1,&
        avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown,&
        bldgh,alb,emis,cpAnOHM,kkAnOHM,chAnOHM,EmissionsMethod,&
        Tair24HR,qn1_av,dqndt,qn1_s_av,dqnsdt,&!inout
@@ -1180,7 +1180,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::state(nsurf) ! wetness status
 
 
-    REAL(KIND(1d0)),DIMENSION(6),INTENT(in)::HDD_id_prev
+    REAL(KIND(1d0)),DIMENSION(6),INTENT(in)::HDD_id_use
     REAL(KIND(1d0)),INTENT(in)::qf
     REAL(KIND(1d0)),INTENT(in)::qn1
     REAL(KIND(1d0)),INTENT(in)::avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown
@@ -1243,7 +1243,7 @@ CONTAINS
     ENDIF
 
     IF(StorageHeatMethod==1) THEN           !Use OHM to calculate QS
-       Tair_mav_5d=HDD_id_prev(4)
+       Tair_mav_5d=HDD_id_use(4)
        IF(Diagnose==1) WRITE(*,*) 'Calling OHM...'
        CALL OHM(qn1,qn1_av,dqndt,&
             qn1_S,qn1_s_av,dqnsdt,&

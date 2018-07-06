@@ -3,7 +3,7 @@
 !This subroutine is still under development and in the equations concerning CO2 fluxes
 !there are bugs and missing comments.
 !Last modified
-! TS 01 Jul 2018 - replaced annual HDD array with a simplied daily array HDD_id
+! TS 01 Jul 2018 - replaced annual HDD array with a simplied daily array HDD_id_use
 ! MH 29 Jun 2017 -  Finalised the code to calculate the anthropogenic emissions of heat and CO2
 ! HCW 21 Apr 2017 - renamed from SUEWS_SAHP.f95. Now includes CO2 fluxes as well as QF.
 !                   Tidied code. Combined three subroutines into 1 to avoid repetition.
@@ -28,7 +28,7 @@ SUBROUTINE AnthropogenicEmissions(&
      FrFossilFuel_Heat,FrFossilFuel_NonHeat,&
      MinQFMetab,MaxQFMetab,&
      NumCapita,PopDensDaytime,PopDensNighttime,&
-     Temp_C,HDD_id,Qf_A,Qf_B,Qf_C,&
+     Temp_C,HDD_id_use,Qf_A,Qf_B,Qf_C,&
      AH_MIN,AH_SLOPE_Heating,AH_SLOPE_Cooling,&
      T_CRITIC_Heating,T_CRITIC_Cooling,&
      TrafficRate,&
@@ -51,7 +51,7 @@ SUBROUTINE AnthropogenicEmissions(&
 
   INTEGER,DIMENSION(3),INTENT(in)::DayofWeek_id   !1 - day of week; 2 - month; 3 - season
 
-  REAL(KIND(1d0)),DIMENSION(6),INTENT(in):: HDD_id !Heating Degree Days (see SUEWS_DailyState.f95)
+  REAL(KIND(1d0)),DIMENSION(6),INTENT(in):: HDD_id_use !Heating Degree Days (see SUEWS_DailyState.f95)
 
   REAL(KIND(1d0)),DIMENSION(2),INTENT(in)::&
        Qf_A,Qf_B,Qf_C,&    !Qf coefficients
@@ -63,16 +63,12 @@ SUBROUTINE AnthropogenicEmissions(&
        TrafficRate,&       !Traffic rate
        QF0_BEU
 
-  ! REAL(KIND(1d0)),DIMENSION(24*nsh,2),INTENT(in)::&
-  !      AHProf_tstep,&
-  !      HumActivity_tstep,&
-  !      TraffProf_tstep,&
-  !      PopProf_tstep
-  REAL(KIND(1d0)),DIMENSION(0:23,2),INTENT(in)::&
-       AHProf_24hr,&
-       HumActivity_24hr,&
-       TraffProf_24hr,&
-       PopProf_24hr
+
+
+  REAL(KIND(1d0)),DIMENSION(0:23,2),INTENT(in):: AHProf_24hr
+  REAL(KIND(1d0)),DIMENSION(0:23,2),INTENT(in):: HumActivity_24hr
+  REAL(KIND(1d0)),DIMENSION(0:23,2),INTENT(in):: TraffProf_24hr
+  REAL(KIND(1d0)),DIMENSION(0:23,2),INTENT(in):: PopProf_24hr
 
   REAL(KIND(1D0)),INTENT(in):: &
        EF_umolCO2perJ,&
@@ -99,6 +95,7 @@ SUBROUTINE AnthropogenicEmissions(&
        ih
 
   REAL(KIND(1D0)):: &
+       get_Prof_SpecTime_inst,&
        get_Prof_SpecTime_mean,& !external function to get profile value at sepcified timestamp
        Tair_avg_daily,& !daily mean air temperature
        DP_x_RhoPop, DP_x_RhoPop_traff,&
@@ -113,8 +110,8 @@ SUBROUTINE AnthropogenicEmissions(&
        AHDorNorT          ! Anthropogenic heat
 
   ! NB: temporarily use 5-day running mean to test the performance
-  Tair_avg_daily= HDD_id(4)
-  ! Tair_avg_daily= HDD_id(3) ! this is daily
+  Tair_avg_daily= HDD_id_use(4)
+  ! Tair_avg_daily= HDD_id_use(3) ! this is daily
 
   !-----------------------------------------------------------------------
   ! Account for Daylight saving
@@ -131,12 +128,13 @@ SUBROUTINE AnthropogenicEmissions(&
   ! ActDorNorT   = HumActivity_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)  ! 1=night, 2=day, 1-2=transition
   ! TraffDorNorT = TraffProf_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)    ! normalise so the AVERAGE of the multipliers is equal to 1
   ! AHDorNorT    = AHProf_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)       ! normalise so the AVERAGE of the multipliers is equal to 1
-
-  PopDorNorT   = get_Prof_SpecTime_mean(ih,imin,0,PopProf_24hr(:,iu))
+  ! PRINT*, ''
+  ! PRINT*, 'AHDorNorT old:',AHDorNorT
+  PopDorNorT   = get_Prof_SpecTime_inst(ih,imin,0,PopProf_24hr(:,iu))
   ActDorNorT   = get_Prof_SpecTime_mean(ih,imin,0,HumActivity_24hr(:,iu))
   TraffDorNorT = get_Prof_SpecTime_mean(ih,imin,0,TraffProf_24hr(:,iu))
   AHDorNorT    = get_Prof_SpecTime_mean(ih,imin,0,AHProf_24hr(:,iu))
-
+  ! PRINT*, 'AHDorNorT new:',AHDorNorT
   ! Diurnal profile times population density [cap ha-1]
   DP_x_RhoPop = AHDorNorT * NumCapita
 
@@ -183,15 +181,15 @@ SUBROUTINE AnthropogenicEmissions(&
      ! Jarvi et al. (2011) JH Eq 3 using HDD and CDD
      ! Weekday/weekend differences due to profile and coefficients QF_a,b,c
      ! Scales with population density
-     QF_SAHP      = (Qf_a(iu)+Qf_b(iu)*HDD_id(2)+Qf_c(iu)*HDD_id(1)) * DP_x_RhoPop  !This contains QF from all three sources: buildings, metabolism and traffic!
+     QF_SAHP      = (Qf_a(iu)+Qf_b(iu)*HDD_id_use(2)+Qf_c(iu)*HDD_id_use(1)) * DP_x_RhoPop  !This contains QF from all three sources: buildings, metabolism and traffic!
      QF_SAHP_base = (Qf_a(iu)) * DP_x_RhoPop                ! Temperature-independent contribution from buildings, traffic and human metabolism
-     QF_SAHP_heat = (Qf_c(iu)*HDD_id(1)) * DP_x_RhoPop    ! Heating contribution
-     QF_SAHP_ac   = (Qf_b(iu)*HDD_id(2)) * DP_x_RhoPop    ! Cooling (AC) contribution
+     QF_SAHP_heat = (Qf_c(iu)*HDD_id_use(1)) * DP_x_RhoPop    ! Heating contribution
+     QF_SAHP_ac   = (Qf_b(iu)*HDD_id_use(2)) * DP_x_RhoPop    ! Cooling (AC) contribution
 
 
   ELSEIF(EmissionsMethod==3 .OR. EmissionsMethod==6 .OR. EmissionsMethod==13 .OR. EmissionsMethod==16 .OR. &
        EmissionsMethod==23 .OR. EmissionsMethod==26 .OR. EmissionsMethod==33 .OR. EmissionsMethod==36) THEN
-     ! Updated Loridan et al. (2011) method using daily (not instantaneous) air temperature (HDD_id(3))
+     ! Updated Loridan et al. (2011) method using daily (not instantaneous) air temperature (HDD_id_use(3))
      ! Linear relation with air temperature
      ! Weekday/weekend differences due to profile only
      ! Scales with population density
@@ -214,6 +212,12 @@ SUBROUTINE AnthropogenicEmissions(&
         QF_SAHP = AH_MIN(iu) * AHDorNorT
      ENDIF
 
+  ELSEIF(EmissionsMethod==0) THEN
+     QF_SAHP   = 0
+     Fc_anthro = 0
+     Fc_metab  = 0
+     Fc_traff  = 0
+     Fc_build  = 0
   ENDIF
 
   RETURN

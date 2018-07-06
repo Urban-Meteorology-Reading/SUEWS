@@ -72,7 +72,6 @@ UTILS = SUEWS_ctrl_const.o  \
 MODULES =	SUEWS_phys_NARP.o \
 					SUEWS_ctrl_Input.o  \
 					SUEWS_phys_AtmMoistStab.o \
-					SUEWS_phys_SOLWEIG.o  \
 					SUEWS_phys_BLUEWS.o \
 					SUEWS_phys_WaterDist.o \
 					SUEWS_phys_Snow.o \

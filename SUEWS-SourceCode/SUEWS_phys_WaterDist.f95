@@ -943,7 +943,7 @@ CONTAINS
        SurfaceArea,sfr,&
        IrrFracConif,IrrFracDecid,IrrFracGrass,&
        DayofWeek_id,WUProfA_24hr,WUProfM_24hr,&
-       InternalWaterUse_h,HDD_id,WU_Day_id,&
+       InternalWaterUse_h,HDD_id,WUDay_id,&
        WaterUseMethod,NSH,it,imin,DLS,&
        WUAreaEveTr_m2,WUAreaDecTr_m2,& ! output:
        WUAreaGrass_m2,WUAreaTotal_m2,&
@@ -978,7 +978,7 @@ CONTAINS
          WUProfM_24hr(0:23,2),& !Manual water use profiles at hourly scales
          InternalWaterUse_h,& !Internal water use [mm h-1]
          HDD_id(6),& !HDD(id-1), Heating Degree Days (see SUEWS_DailyState.f95)
-         WU_Day_id(9) !WUDay(id-1), Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
+         WUDay_id(9) !WUDay(id-1), Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
 
     INTEGER,INTENT(in):: &
          DayofWeek_id(3),& !DayofWeek(id) 1 - day of week; 2 - month; 3 - season
@@ -1078,12 +1078,12 @@ CONTAINS
        !write(*,*) (NSH*(ih+1-1)+imin*NSH/60+1)
 
        ! ---- Automatic irrigation ----
-       ! wu_EveTr = WUProfA_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WU_Day_id(2)   !Automatic evergreen trees
-       ! wu_DecTr = WUProfA_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WU_Day_id(5)   !Automatic deciduous trees
-       ! wu_Grass = WUProfA_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WU_Day_id(8)   !Automatic grass
-       wu_EveTr = get_Prof_SpecTime_sum(ih,imin,0,WUProfA_24hr(:,iu),tstep)*WU_Day_id(2)   !Automatic evergreen trees
-       wu_DecTr = get_Prof_SpecTime_sum(ih,imin,0,WUProfA_24hr(:,iu),tstep)*WU_Day_id(5)   !Automatic deciduous trees
-       wu_Grass = get_Prof_SpecTime_sum(ih,imin,0,WUProfA_24hr(:,iu),tstep)*WU_Day_id(8)   !Automatic grass
+       ! wu_EveTr = WUProfA_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WUDay_id(2)   !Automatic evergreen trees
+       ! wu_DecTr = WUProfA_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WUDay_id(5)   !Automatic deciduous trees
+       ! wu_Grass = WUProfA_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WUDay_id(8)   !Automatic grass
+       wu_EveTr = get_Prof_SpecTime_sum(ih,imin,0,WUProfA_24hr(:,iu),tstep)*WUDay_id(2)   !Automatic evergreen trees
+       wu_DecTr = get_Prof_SpecTime_sum(ih,imin,0,WUProfA_24hr(:,iu),tstep)*WUDay_id(5)   !Automatic deciduous trees
+       wu_Grass = get_Prof_SpecTime_sum(ih,imin,0,WUProfA_24hr(:,iu),tstep)*WUDay_id(8)   !Automatic grass
 
        ! ---- Manual irrigation ----
        WuFr=1 !Initialize WuFr to 1, but if raining, reduce manual fraction of water use
@@ -1093,12 +1093,12 @@ CONTAINS
        ENDIF
 
        ! Add manual to automatic to find total irrigation
-       ! wu_EveTr = wu_EveTr + (WuFr*WUProfM_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WU_Day_id(3)) !Manual evergreen trees
-       ! wu_DecTr = wu_DecTr + (WuFr*WUProfM_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WU_Day_id(6)) !Manual deciduous trees
-       ! wu_Grass = wu_Grass + (WuFr*WUProfM_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WU_Day_id(9)) !Manual grass
-       wu_EveTr = wu_EveTr + (get_Prof_SpecTime_sum(ih,imin,0,WUProfM_24hr(:,iu),tstep)*WuFr*WU_Day_id(3)) !Manual evergreen trees
-       wu_DecTr = wu_DecTr + (get_Prof_SpecTime_sum(ih,imin,0,WUProfM_24hr(:,iu),tstep)*WuFr*WU_Day_id(6)) !Manual deciduous trees
-       wu_Grass = wu_Grass + (get_Prof_SpecTime_sum(ih,imin,0,WUProfM_24hr(:,iu),tstep)*WuFr*WU_Day_id(9)) !Manual grass
+       ! wu_EveTr = wu_EveTr + (WuFr*WUProfM_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WUDay_id(3)) !Manual evergreen trees
+       ! wu_DecTr = wu_DecTr + (WuFr*WUProfM_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WUDay_id(6)) !Manual deciduous trees
+       ! wu_Grass = wu_Grass + (WuFr*WUProfM_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WUDay_id(9)) !Manual grass
+       wu_EveTr = wu_EveTr + (get_Prof_SpecTime_sum(ih,imin,0,WUProfM_24hr(:,iu),tstep)*WuFr*WUDay_id(3)) !Manual evergreen trees
+       wu_DecTr = wu_DecTr + (get_Prof_SpecTime_sum(ih,imin,0,WUProfM_24hr(:,iu),tstep)*WuFr*WUDay_id(6)) !Manual deciduous trees
+       wu_Grass = wu_Grass + (get_Prof_SpecTime_sum(ih,imin,0,WUProfM_24hr(:,iu),tstep)*WuFr*WUDay_id(9)) !Manual grass
        ! Added HCW 12 Feb 2015.
        !wu_EveTr=wu_EveTr*sfr(ConifSurf)*IrrFracConif	!Water use for EveTr [mm]
        !wu_DecTr=wu_DecTr*sfr(DecidSurf)*IrrFracDecid	!Water use for DecTr [mm]

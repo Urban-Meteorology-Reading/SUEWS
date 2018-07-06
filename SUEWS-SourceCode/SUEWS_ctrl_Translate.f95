@@ -56,7 +56,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
        soildensity, soildepthmeas, smcap, soilrocks, pipecapacity, flowchange,&
        runofftowater, ie_start, ie_end, internalwateruse_h, faut,&
        ie_a, ie_m, daywat, daywatper,&
-       WUProfM_24hr, WUProfA_24hr, wuareaevetr_m2, wuareadectr_m2, wuareagrass_m2
+       wuareaevetr_m2, wuareadectr_m2, wuareagrass_m2
   USE time, ONLY: iy, id, it, imin,isec, dectime
   USE ESTM_data
   USE WhereWhen, ONLY: gridid, gridid_text
@@ -74,7 +74,6 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   !real (Kind(1d0)):: FCskip = -9   !NULL value used for output to FileChoices
   REAL (KIND(1d0)):: FCskip = -999  !NULL value used for output to FileChoices	(changed by HCW 24 May 2016)
 
-  REAL (KIND(1d0))::get_Prof_SpecTime_mean
 
   ! REAL(KIND(1d0)):: z0m_in, zdm_in  !Values of z0m and zdm provided in SiteSelect input file (do not get updated unlike z0d and z0m)
 
@@ -750,43 +749,37 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   DayWatPer          = SurfaceChar(Gridiv,c_DayWatPer)
 
   ! ---- Hourly profiles
-  AHProf_24hr(0:23,1)   = SurfaceChar(Gridiv,c_HrProfEnUseWD)   ! Anthropogenic heat, weekdays
-  AHProf_24hr(0:23,2)   = SurfaceChar(Gridiv,c_HrProfEnUseWE)   ! Anthropogenic heat, weekends
-  WUProfM_24hr(0:23,1)  = SurfaceChar(Gridiv,c_HrProfWUManuWD)  ! Water use, manual, weekdays
-  WUProfM_24hr(0:23,2)  = SurfaceChar(Gridiv,c_HrProfWUManuWE)  ! Water use, manual, weekends
-  WUProfA_24hr(0:23,1)  = SurfaceChar(Gridiv,c_HrProfWUAutoWD)  ! Water use, automatic, weekdays
-  WUProfA_24hr(0:23,2)  = SurfaceChar(Gridiv,c_HrProfWUAutoWE)  ! Water use, automatic, weekends
-  SnowProf_24hr(0:23,1) = SurfaceChar(Gridiv,c_HrProfSnowCWD)   ! Snow clearing, weekdays
-  SnowProf_24hr(0:23,2) = SurfaceChar(Gridiv,c_HrProfSnowCWE)   ! Snow clearing, weekends
-  HumActivityProf_24hr(0:23,1) = SurfaceChar(Gridiv,c_HrProfHumActivityWD)    ! Human activity, weekdays
-  HumActivityProf_24hr(0:23,2) = SurfaceChar(Gridiv,c_HrProfHumActivityWE)    ! Human activity, weekends
-  TraffProf_24hr(0:23,1) = SurfaceChar(Gridiv,c_HrProfTraffWD)  ! Traffic, weekdays
-  TraffProf_24hr(0:23,2) = SurfaceChar(Gridiv,c_HRProfTraffWE)  ! Traffic, weekends
-  PopProf_24hr(0:23,1) = SurfaceChar(Gridiv,c_HRProfPopWD)      ! Population, weekdays
-  PopProf_24hr(0:23,2) = SurfaceChar(Gridiv,c_HRProfPopWE)      ! Population, weekends
+  AHProf_24hr(0:23,1)      = SurfaceChar(Gridiv,c_HrProfEnUseWD)       ! Anthropogenic heat, weekdays
+  AHProf_24hr(0:23,2)      = SurfaceChar(Gridiv,c_HrProfEnUseWE)       ! Anthropogenic heat, weekends
+  WUProfM_24hr(0:23,1)     = SurfaceChar(Gridiv,c_HrProfWUManuWD)      ! Water use, manual, weekdays
+  WUProfM_24hr(0:23,2)     = SurfaceChar(Gridiv,c_HrProfWUManuWE)      ! Water use, manual, weekends
+  WUProfA_24hr(0:23,1)     = SurfaceChar(Gridiv,c_HrProfWUAutoWD)      ! Water use, automatic, weekdays
+  WUProfA_24hr(0:23,2)     = SurfaceChar(Gridiv,c_HrProfWUAutoWE)      ! Water use, automatic, weekends
+  SnowProf_24hr(0:23,1)    = SurfaceChar(Gridiv,c_HrProfSnowCWD)       ! Snow clearing, weekdays
+  SnowProf_24hr(0:23,2)    = SurfaceChar(Gridiv,c_HrProfSnowCWE)       ! Snow clearing, weekends
+  HumActivity_24hr(0:23,1) = SurfaceChar(Gridiv,c_HrProfHumActivityWD) ! Human activity, weekdays
+  HumActivity_24hr(0:23,2) = SurfaceChar(Gridiv,c_HrProfHumActivityWE) ! Human activity, weekends
+  TraffProf_24hr(0:23,1)   = SurfaceChar(Gridiv,c_HrProfTraffWD)       ! Traffic, weekdays
+  TraffProf_24hr(0:23,2)   = SurfaceChar(Gridiv,c_HRProfTraffWE)       ! Traffic, weekends
+  PopProf_24hr(0:23,1)     = SurfaceChar(Gridiv,c_HRProfPopWD)         ! Population, weekdays
+  PopProf_24hr(0:23,2)     = SurfaceChar(Gridiv,c_HRProfPopWE)         ! Population, weekends
 
 
 
   ! ---- Profiles at the resolution of model time step
-  AHProf_tstep(:,1)      = TstepProfiles(Gridiv,cTP_EnUseWD,:)       ! Anthropogenic heat, weekdays
-  AHProf_tstep(:,2)      = TstepProfiles(Gridiv,cTP_EnUseWE,:)       ! Anthropogenic heat, weekends
-  WUProfM_tstep(:,1)     = TstepProfiles(Gridiv,cTP_WUManuWD,:)      ! Water use, manual, weekdays
-  WUProfM_tstep(:,2)     = TstepProfiles(Gridiv,cTP_WUManuWE,:)      ! Water use, manual, weekends
-  WUProfA_tstep(:,1)     = TstepProfiles(Gridiv,cTP_WUAutoWD,:)      ! Water use, automatic, weekdays
-  WUProfA_tstep(:,2)     = TstepProfiles(Gridiv,cTP_WUAutoWE,:)      ! Water use, automatic, weekends
-  HumActivity_tstep(:,1) = TstepProfiles(Gridiv,cTP_HumActivityWD,:) ! Human activity, weekdays
-  HumActivity_tstep(:,2) = TstepProfiles(Gridiv,cTP_HumActivityWE,:) ! Human activity, weekends
-  TraffProf_tstep(:,1)   = TstepProfiles(Gridiv,cTP_TraffProfWD,:)   !Traffic, weekdays
-  TraffProf_tstep(:,2)   = TstepProfiles(Gridiv,cTP_TraffProfWE,:)   !Traffic, weekends
-  PopProf_tstep(:,1)     = TstepProfiles(Gridiv,cTP_PopProfWD,:)     !Population, weekdays
-  PopProf_tstep(:,2)     = TstepProfiles(Gridiv,cTP_PopProfWE,:)     !Population, weekends
+  ! AHProf_tstep(:,1)      = TstepProfiles(Gridiv,cTP_EnUseWD,:)       ! Anthropogenic heat, weekdays
+  ! AHProf_tstep(:,2)      = TstepProfiles(Gridiv,cTP_EnUseWE,:)       ! Anthropogenic heat, weekends
+  ! WUProfM_tstep(:,1)     = TstepProfiles(Gridiv,cTP_WUManuWD,:)      ! Water use, manual, weekdays
+  ! WUProfM_tstep(:,2)     = TstepProfiles(Gridiv,cTP_WUManuWE,:)      ! Water use, manual, weekends
+  ! WUProfA_tstep(:,1)     = TstepProfiles(Gridiv,cTP_WUAutoWD,:)      ! Water use, automatic, weekdays
+  ! WUProfA_tstep(:,2)     = TstepProfiles(Gridiv,cTP_WUAutoWE,:)      ! Water use, automatic, weekends
+  ! HumActivity_tstep(:,1) = TstepProfiles(Gridiv,cTP_HumActivityWD,:) ! Human activity, weekdays
+  ! HumActivity_tstep(:,2) = TstepProfiles(Gridiv,cTP_HumActivityWE,:) ! Human activity, weekends
+  ! TraffProf_tstep(:,1)   = TstepProfiles(Gridiv,cTP_TraffProfWD,:)   !Traffic, weekdays
+  ! TraffProf_tstep(:,2)   = TstepProfiles(Gridiv,cTP_TraffProfWE,:)   !Traffic, weekends
+  ! PopProf_tstep(:,1)     = TstepProfiles(Gridiv,cTP_PopProfWD,:)     !Population, weekdays
+  ! PopProf_tstep(:,2)     = TstepProfiles(Gridiv,cTP_PopProfWE,:)     !Population, weekends
 
-  print*, ''
-  iv=  get_Prof_SpecTime_mean(0,5*(iv-1),0,PopProf_24hr(:,1))
-  do iv = 1, 12,1
-    print*,5*(iv-1), AHProf_tstep(iv,1), get_Prof_SpecTime_mean(0,5*(iv-1),0,PopProf_24hr(:,1))
-
-  end do
 
   ! ---- Within-grid water distribution
   ! N.B. Rows and columns of WaterDist are the other way round to the input info
@@ -811,15 +804,15 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   ENDDO
 
   ! Access required DailyState variables for the current grid (moved HCW 26 Jun 2015)
-  HDD(:,:)    = HDD_grids(:,:,Gridiv)
-  GDD(:,:)    = GDD_grids(:,:,Gridiv)
-  LAI(:,:)    = LAI_grids(:,:,Gridiv)
-  WUDay(:,:) = WUDay_grids(:,:,Gridiv)
-  AlbDecTr(:) = AlbDecTr_grids(:,Gridiv)
-  DecidCap(:) = DecidCap_grids(:,Gridiv)
-  Porosity(:) = Porosity_grids(:,Gridiv)
-  AlbEveTr(:) = AlbEveTr_grids(:,Gridiv)
-  AlbGrass(:) = AlbGrass_grids(:,Gridiv)
+  ! HDD(:,:)    = HDD_grids(:,:,Gridiv)
+  ! GDD(:,:)    = GDD_grids(:,:,Gridiv)
+  ! LAI(:,:)    = LAI_grids(:,:,Gridiv)
+  ! WUDay(:,:) = WUDay_grids(:,:,Gridiv)
+  ! AlbDecTr(:) = AlbDecTr_grids(:,Gridiv)
+  ! DecidCap(:) = DecidCap_grids(:,Gridiv)
+  ! Porosity(:) = Porosity_grids(:,Gridiv)
+  ! AlbEveTr(:) = AlbEveTr_grids(:,Gridiv)
+  ! AlbGrass(:) = AlbGrass_grids(:,Gridiv)
   SnowAlb     = ModelDailyState(Gridiv,cMDS_SnowAlb)
 
 
@@ -880,11 +873,11 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      ! Get id_prev from ModelDailyState
      id_prev = INT(ModelDailyState(Gridiv,cMDS_id_prev))
 
-     porosity    = ModelDailyState(Gridiv,cMDS_porosity)
-     albDecTr    = ModelDailyState(Gridiv,cMDS_albDecTr)
-     albEveTr    = ModelDailyState(Gridiv,cMDS_albEveTr)
-     albGrass    = ModelDailyState(Gridiv,cMDS_albGrass)
-     DecidCap    = ModelDailyState(Gridiv,cMDS_DecidCap)
+     ! porosity    = ModelDailyState(Gridiv,cMDS_porosity)
+     ! albDecTr    = ModelDailyState(Gridiv,cMDS_albDecTr)
+     ! albEveTr    = ModelDailyState(Gridiv,cMDS_albEveTr)
+     ! albGrass    = ModelDailyState(Gridiv,cMDS_albGrass)
+     ! DecidCap    = ModelDailyState(Gridiv,cMDS_DecidCap)
      SnowfallCum = ModelDailyState(Gridiv,cMDS_SnowfallCum)
      SnowAlb     = ModelDailyState(Gridiv,cMDS_SnowAlb)
 
@@ -902,20 +895,20 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
 
 
      ! ---- LAI
-     LAI=0
-     LAI(id_prev,ivConif) = ModelDailyState(Gridiv,cMDS_LAIInitialEveTr)
-     LAI(id_prev,ivDecid) = ModelDailyState(Gridiv,cMDS_LAIInitialDecTr)
-     LAI(id_prev,ivGrass) = ModelDailyState(Gridiv,cMDS_LAIInitialGrass)
+     ! LAI=0
+     ! LAI(id_prev,ivConif) = ModelDailyState(Gridiv,cMDS_LAIInitialEveTr)
+     ! LAI(id_prev,ivDecid) = ModelDailyState(Gridiv,cMDS_LAIInitialDecTr)
+     ! LAI(id_prev,ivGrass) = ModelDailyState(Gridiv,cMDS_LAIInitialGrass)
 
      ! ---- Growing degree days, GDD
-     GDD = 0
-     GDD(:,1)=0
-     GDD(:,2)=0
-     GDD(:,3) = ModelDailyState(Gridiv,cMDS_GDDMin)
-     GDD(:,4) = ModelDailyState(Gridiv,cMDS_GDDMax)
-     GDD(:,5)=0
-     GDD(id_prev,1) = ModelDailyState(Gridiv,cMDS_GDD1_0)
-     GDD(id_prev,2) = ModelDailyState(Gridiv,cMDS_GDD2_0)
+     ! GDD = 0
+     ! GDD(:,1)=0
+     ! GDD(:,2)=0
+     ! GDD(:,3) = ModelDailyState(Gridiv,cMDS_GDDMin)
+     ! GDD(:,4) = ModelDailyState(Gridiv,cMDS_GDDMax)
+     ! GDD(:,5)=0
+     ! GDD(id_prev,1) = ModelDailyState(Gridiv,cMDS_GDD1_0)
+     ! GDD(id_prev,2) = ModelDailyState(Gridiv,cMDS_GDD2_0)
 
      ! ---- Growing degree days, GDD_id: GDD Values for one day
      GDD_id = 0
@@ -929,18 +922,25 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
 
 
      ! ---- Heating degree days, HDD
-     HDD = 0
-     HDD(id_prev,1)   = ModelDailyState(Gridiv,cMDS_HDD1)      ! 1 = Heating
-     HDD(id_prev,2)   = ModelDailyState(Gridiv,cMDS_HDD2)      ! 2 = Cooling
-     HDD(id_prev-3,3) = ModelDailyState(Gridiv,cMDS_TempCOld3) ! 3 will become average
-     HDD(id_prev-2,3) = ModelDailyState(Gridiv,cMDS_TempCOld2)
-     HDD(id_prev-1,3) = ModelDailyState(Gridiv,cMDS_TempCOld1)
-     HDD(id_prev,3)   = ModelDailyState(Gridiv,cMDS_TempC)
+     ! HDD = 0
+     ! HDD(id_prev,1)   = ModelDailyState(Gridiv,cMDS_HDD1)      ! 1 = Heating
+     ! HDD(id_prev,2)   = ModelDailyState(Gridiv,cMDS_HDD2)      ! 2 = Cooling
+     ! HDD(id_prev-3,3) = ModelDailyState(Gridiv,cMDS_TempCOld3) ! 3 will become average
+     ! HDD(id_prev-2,3) = ModelDailyState(Gridiv,cMDS_TempCOld2)
+     ! HDD(id_prev-1,3) = ModelDailyState(Gridiv,cMDS_TempCOld1)
+     ! HDD(id_prev,3)   = ModelDailyState(Gridiv,cMDS_TempC)
      ! 4 = 5 day running mean
      ! 5 = daily precip total
-     HDD(id_prev,6) = ModelDailyState(Gridiv,cMDS_DaysSinceRain) ! 6 = days since rain
+     ! HDD(id_prev,6) = ModelDailyState(Gridiv,cMDS_DaysSinceRain) ! 6 = days since rain
 
-     HDD_id_prev   = HDD(id_prev,:)   ! TODO: remove the dependence on HDD array
+     ! HDD_id_use   = HDD(id_prev,:)   ! DONE: remove the dependence on HDD array
+     HDD_id_use = 0
+     HDD_id_use(1)=ModelDailyState(Gridiv,cMDS_HDD1)
+     HDD_id_use(2)=ModelDailyState(Gridiv,cMDS_HDD2)
+     HDD_id_use(3)=ModelDailyState(Gridiv,cMDS_TempC)
+     ! 4 = 5 day running mean
+     ! 5 = daily precip total
+     HDD_id_use(6)=ModelDailyState(Gridiv,cMDS_DaysSinceRain)
      ! ---- Heating degree days, HDD_id: HDD Values for one day
      HDD_id=0
 
@@ -953,13 +953,13 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
 
 
      ! Save required DailyState variables for the current grid (HCW 27 Nov 2014)
-     HDD_grids(:,:,Gridiv)    = HDD(:,:)
-     GDD_grids(:,:,Gridiv)    = GDD(:,:)
-     LAI_grids(:,:,Gridiv)    = LAI(:,:)
+     ! HDD_grids(:,:,Gridiv)    = HDD(:,:)
+     ! GDD_grids(:,:,Gridiv)    = GDD(:,:)
+     ! LAI_grids(:,:,Gridiv)    = LAI(:,:)
      ! WUDay_grids(:,:,Gridiv) = WUDay(:,:)
 
      HDD_id_grids(:,Gridiv) = HDD_id(:)
-     HDD_id_prev_grids(:,Gridiv) = HDD_id_prev(:)
+     HDD_id_use_grids(:,Gridiv) = HDD_id_use(:)
      GDD_id_grids(:,Gridiv) = GDD_id(:)
      LAI_id_grids(:,Gridiv) = LAI_id(:)
 
@@ -970,11 +970,11 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
 
 
 
-     AlbDecTr_grids(:,Gridiv) = AlbDecTr(:)
-     AlbEveTr_grids(:,Gridiv) = AlbEveTr(:)
-     AlbGrass_grids(:,Gridiv) = AlbGrass(:)
-     DecidCap_grids(:,Gridiv) = DecidCap(:)
-     Porosity_grids(:,Gridiv) = Porosity(:)
+     ! AlbDecTr_grids(:,Gridiv) = AlbDecTr(:)
+     ! AlbEveTr_grids(:,Gridiv) = AlbEveTr(:)
+     ! AlbGrass_grids(:,Gridiv) = AlbGrass(:)
+     ! DecidCap_grids(:,Gridiv) = DecidCap(:)
+     ! Porosity_grids(:,Gridiv) = Porosity(:)
 
      ! ---- Snow density of each surface
      SnowDens(1:nsurf) = ModelDailyState(Gridiv,cMDS_SnowDens(1:nsurf))
@@ -1195,14 +1195,14 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      wdir      = MetForcingData(ir,24,Gridiv)
 
      ! get qn1 memory for previous time steps
-     qn1_store_grid(:)      = qn1_store(:,Gridiv)
-     qn1_av_store_grid(:)   = qn1_av_store(:,Gridiv)
+     ! qn1_store_grid(:)      = qn1_store(:,Gridiv)
+     ! qn1_av_store_grid(:)   = qn1_av_store(:,Gridiv)
      dqndt  = dqndt_grids(Gridiv)
      qn1_av = qn1_av_grids(Gridiv)
 
      IF (SnowUse == 1) THEN
-        qn1_S_store_grid(:)    = qn1_S_store(:,Gridiv)
-        qn1_S_av_store_grid(:) = qn1_S_av_store(:,Gridiv)
+        ! qn1_S_store_grid(:)    = qn1_S_store(:,Gridiv)
+        ! qn1_S_av_store_grid(:) = qn1_S_av_store(:,Gridiv)
         dqnsdt  = dqnsdt_grids(Gridiv)
         qn1_s_av = qn1_s_av_grids(Gridiv)
      ENDIF
@@ -1210,7 +1210,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      ! added by TS 29 Jun 2018 to remove annual loops in main calculation
      GDD_id      = GDD_id_grids(:,Gridiv)
      HDD_id      = HDD_id_grids(:,Gridiv)
-     HDD_id_prev = HDD_id_prev_grids(:,Gridiv)
+     HDD_id_use = HDD_id_use_grids(:,Gridiv)
      LAI_id      = LAI_id_grids(:,Gridiv)
      WUDay_id    = WUDay_id_grids(:,Gridiv)
 
@@ -1236,12 +1236,12 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      ! =============================================================================
      ! === Translate values from ModelDailyState to variable names used in model ===
      ! =============================================================================
-     porosity(id) = ModelDailyState(Gridiv,cMDS_porosity)
-     albDecTr(id) = ModelDailyState(Gridiv,cMDS_albDecTr)
-     albEveTr(id) = ModelDailyState(Gridiv,cMDS_albEveTr)
-     albGrass(id) = ModelDailyState(Gridiv,cMDS_albGrass)
-     DecidCap(id) = ModelDailyState(Gridiv,cMDS_DecidCap)
-     SnowfallCum  = ModelDailyState(Gridiv,cMDS_SnowfallCum)
+     ! porosity(id) = ModelDailyState(Gridiv,cMDS_porosity)
+     ! albDecTr(id) = ModelDailyState(Gridiv,cMDS_albDecTr)
+     ! albEveTr(id) = ModelDailyState(Gridiv,cMDS_albEveTr)
+     ! albGrass(id) = ModelDailyState(Gridiv,cMDS_albGrass)
+     ! DecidCap(id) = ModelDailyState(Gridiv,cMDS_DecidCap)
+     ! SnowfallCum  = ModelDailyState(Gridiv,cMDS_SnowfallCum)
      ! ---- Snow density of each surface
      SnowDens(1:nsurf) = ModelDailyState(Gridiv,cMDS_SnowDens(1:nsurf))
 
@@ -1318,31 +1318,37 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv,ir,irMax)
   ! === Translate values from variable names used in model to ModelDailyState ===
   ! =============================================================================
 
-  ModelDailyState(Gridiv,cMDS_porosity)    = porosity(id)
-  ModelDailyState(Gridiv,cMDS_albDecTr)    = albDecTr(id)
-  ModelDailyState(Gridiv,cMDS_albEveTr)    = albEveTr(id)
-  ModelDailyState(Gridiv,cMDS_albGrass)    = albGrass(id)
-  ModelDailyState(Gridiv,cMDS_DecidCap)    = DecidCap(id)
+  ! ModelDailyState(Gridiv,cMDS_porosity)    = porosity(id)
+  ! ModelDailyState(Gridiv,cMDS_albDecTr)    = albDecTr(id)
+  ! ModelDailyState(Gridiv,cMDS_albEveTr)    = albEveTr(id)
+  ! ModelDailyState(Gridiv,cMDS_albGrass)    = albGrass(id)
+  ! ModelDailyState(Gridiv,cMDS_DecidCap)    = DecidCap(id)
   ModelDailyState(Gridiv,cMDS_SnowfallCum) = SnowfallCum
 
-  ! Save required DailyState variables for the current grid (HCW 27 Nov 2014)
-  HDD_grids(:,:,Gridiv)    = HDD(:,:)
-  GDD_grids(:,:,Gridiv)    = GDD(:,:)
-  LAI_grids(:,:,Gridiv)    = LAI(:,:)
-  WUDay_grids(:,:,Gridiv)  = WUDay(:,:)
-  AlbDecTr_grids(:,Gridiv) = AlbDecTr(:)
-  AlbEveTr_grids(:,Gridiv) = AlbEveTr(:)
-  AlbGrass_grids(:,Gridiv) = AlbGrass(:)
-  DecidCap_grids(:,Gridiv) = DecidCap(:)
-  Porosity_grids(:,Gridiv) = Porosity(:)
+  ModelDailyState(Gridiv,cMDS_porosity)    = porosity_id
+  ModelDailyState(Gridiv,cMDS_albDecTr)    = albDecTr_id
+  ModelDailyState(Gridiv,cMDS_albEveTr)    = albEveTr_id
+  ModelDailyState(Gridiv,cMDS_albGrass)    = albGrass_id
+  ModelDailyState(Gridiv,cMDS_DecidCap)    = DecidCap_id
 
-  ! update qn1 memory with values of current time step
-  qn1_store(:,Gridiv)      = qn1_store_grid(:)
-  qn1_av_store(:,Gridiv)   = qn1_av_store_grid(:)
-  IF (SnowUse == 1) THEN
-     qn1_S_store(:,Gridiv)    = qn1_S_store_grid(:)
-     qn1_S_av_store(:,Gridiv) = qn1_S_av_store_grid(:)
-  ENDIF
+  ! Save required DailyState variables for the current grid (HCW 27 Nov 2014)
+  ! HDD_grids(:,:,Gridiv)    = HDD(:,:)
+  ! GDD_grids(:,:,Gridiv)    = GDD(:,:)
+  ! LAI_grids(:,:,Gridiv)    = LAI(:,:)
+  ! WUDay_grids(:,:,Gridiv)  = WUDay(:,:)
+  ! AlbDecTr_grids(:,Gridiv) = AlbDecTr(:)
+  ! AlbEveTr_grids(:,Gridiv) = AlbEveTr(:)
+  ! AlbGrass_grids(:,Gridiv) = AlbGrass(:)
+  ! DecidCap_grids(:,Gridiv) = DecidCap(:)
+  ! Porosity_grids(:,Gridiv) = Porosity(:)
+
+  ! ! update qn1 memory with values of current time step
+  ! qn1_store(:,Gridiv)      = qn1_store_grid(:)
+  ! qn1_av_store(:,Gridiv)   = qn1_av_store_grid(:)
+  ! IF (SnowUse == 1) THEN
+  !    qn1_S_store(:,Gridiv)    = qn1_S_store_grid(:)
+  !    qn1_S_av_store(:,Gridiv) = qn1_S_av_store_grid(:)
+  ! ENDIF
 
   ! update averaged qn1 memory
   dqndt_grids(Gridiv)=dqndt
@@ -1355,7 +1361,7 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv,ir,irMax)
   ! added by TS 29 Jun 2018 to remove annual loops in main calculation
   GDD_id_grids(:,Gridiv)=GDD_id
   HDD_id_grids(:,Gridiv)=HDD_id
-  HDD_id_prev_grids(:,Gridiv)=HDD_id_prev
+  HDD_id_use_grids(:,Gridiv)=HDD_id_use
   LAI_id_grids(:,Gridiv)=LAI_id
   WUDay_id_grids(:,Gridiv)=WUDay_id
 

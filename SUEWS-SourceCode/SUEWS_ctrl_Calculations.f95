@@ -47,36 +47,38 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
        timezone, trafficrate, trafficunits, waterusemethod, xsmd
   USE time, ONLY : iy, id, it, imin, isec, dectime, dt_since_start
   USE allocateArray, ONLY: &
-       ahprof_tstep, alb, &
+       alb, &
        AlbMax_DecTr, AlbMax_EveTr, AlbMax_grass, &
        AlbMin_dectr, AlbMin_evetr, AlbMin_grass, &
        alpha_bioco2, alpha_enh_bioco2, baset, basete, &
        beta_bioco2, beta_enh_bioco2, capmax_dec, capmin_dec, &
        chanohm, cpanohm, emis, GDD_id, GDDfull,&
-       HDD_id,HDD_id_prev, &
+       HDD_id,HDD_id_use, &
        DecidCap_id,&
        albDecTr_id,&
        albEveTr_id,&
        albGrass_id,&
        porosity_id,&
-       humactivity_tstep, icefrac, kkanohm, &
+       icefrac, kkanohm, &
        LAI_id, LAImax, LAImin, LAIpower, LAItype, maxconductance, &
        meltwaterstore, metforcingdata_grid, min_res_bioco2, &
        narp_emis_snow, narp_trans_site, &
-       ohm_coef, ohm_threshsw, ohm_threshwd, popprof_tstep, &
+       ohm_coef, ohm_threshsw, ohm_threshwd, &
        pormax_dec, pormin_dec, &
        dqndt,qn1_av,&
        dqnsdt,qn1_s_av,&
        resp_a, resp_b, sathydraulicconduct, sddfull, &
        sfr, snowd, snowdens, snowfrac, snowpack, &
        soildepth, soilmoist, soilstorecap, state, statelimit, &
-       surf, tair24hr, theta_bioco2, traffprof_tstep, ts5mindata_ir, &
+       surf, tair24hr, theta_bioco2,ts5mindata_ir, &
        waterdist, wetthresh, &
        WUDay_id,&
-       wuprofa_tstep, wuprofm_tstep, &
+       AHProf_24Hr,HumActivity_24Hr,PopProf_24Hr,TraffProf_24Hr,WUProfA_24hr, WUProfM_24hr, &
+       ! popprof_tstep, traffprof_tstep, humactivity_tstep, ahprof_tstep, wuprofa_tstep, wuprofm_tstep, &
        datetimeline, dataoutlinesuews, dataoutlinesnow, &
        dataoutlineestm, dailystateline, dataoutdailystate, &
        dataoutsuews, dataoutsnow, dataoutestm
+
   USE sues_data, ONLY: &
        aerodynamicresistancemethod, daywat, daywatper, faut, flowchange, &
        ie_a, ie_end, ie_m, ie_start, internalwateruse_h, &
@@ -115,7 +117,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
 
   IF(Diagnose==1) PRINT*, 'Calling SUEWS_cal_Main...'
   CALL SUEWS_cal_Main(&
-       AerodynamicResistanceMethod,AH_MIN,AHProf_tstep,AH_SLOPE_Cooling,& ! input&inout in alphabetical order
+       AerodynamicResistanceMethod,AH_MIN,AHProf_24hr,AH_SLOPE_Cooling,& ! input&inout in alphabetical order
        AH_SLOPE_Heating,&
        alb,AlbMax_DecTr,AlbMax_EveTr,AlbMax_Grass,&
        AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
@@ -127,7 +129,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
        EF_umolCO2perJ,emis,EmissionsMethod,EnEF_v_Jkm,endDLS,EveTreeH,FAIBldg,&
        FAIDecTree,FAIEveTree,Faut,FcEF_v_kgkm,fcld_obs,FlowChange,&
        FrFossilFuel_Heat,FrFossilFuel_NonHeat,G1,G2,G3,G4,G5,G6,GDD_id,&
-       GDDFull,Gridiv,gsModel,HDD_id,HDD_id_prev,HumActivity_tstep,&
+       GDDFull,Gridiv,gsModel,HDD_id,HDD_id_use,HumActivity_24hr,&
        IceFrac,id,Ie_a,Ie_end,Ie_m,Ie_start,imin,&
        InternalWaterUse_h,IrrFracConif,IrrFracDecid,IrrFracGrass,isec,it,ity,&
        iy,kkAnOHM,Kmax,LAI_id,LAICalcYes,LAIMax,LAIMin,LAI_obs,&
@@ -136,7 +138,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
        NARP_EMIS_SNOW,NARP_TRANS_SITE,NetRadiationMethod,&
        NumCapita,OHM_coef,OHMIncQF,OHM_threshSW,&
        OHM_threshWD,PipeCapacity,PopDensDaytime,&
-       PopDensNighttime,PopProf_tstep,PorMax_dec,PorMin_dec,&
+       PopDensNighttime,PopProf_24hr,PorMax_dec,PorMin_dec,&
        Precip,PrecipLimit,PrecipLimitAlb,Press_hPa,QF0_BEU,Qf_A,Qf_B,&
        Qf_C,qh_obs,qn1_obs,&
        RadMeltFact,RAINCOVER,RainMaxRes,resp_a,resp_b,&
@@ -148,7 +150,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
        StorageHeatMethod,surf,SurfaceArea,Tair24HR,tau_a,tau_f,tau_r,&
        T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,TempMeltFact,TH,&
        theta_bioCO2,timezone,TL,TrafficRate,TrafficUnits,&
-       TraffProf_tstep,Ts5mindata_ir,tstep,tstep_prev,veg_type,&
+       TraffProf_24hr,Ts5mindata_ir,tstep,tstep_prev,veg_type,&
        WaterDist,WaterUseMethod,WetThresh,&
        WUDay_id,&
        DecidCap_id,&
@@ -156,8 +158,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
        albEveTr_id,&
        albGrass_id,&
        porosity_id,&
-       WUProfA_tstep,&
-       WUProfM_tstep,xsmd,Z,z0m_in,zdm_in,&
+       WUProfA_24hr,&
+       WUProfM_24hr,xsmd,Z,z0m_in,zdm_in,&
        datetimeLine,dataOutLineSUEWS,dataOutLineSnow,dataOutLineESTM,&!output
        DailyStateLine)!output
 

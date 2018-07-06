@@ -274,48 +274,48 @@ PROGRAM SUEWS_Program
      IF (CBLuse >= 1)     ALLOCATE(dataOutBL(ReadLinesMetdata,ncolumnsdataOutBL,NumberOfGrids))       !CBL output
      IF (SnowUse == 1) THEN
         ALLOCATE(dataOutSnow(ReadLinesMetdata,ncolumnsDataOutSnow,NumberOfGrids))   !Snow output
-        ALLOCATE(qn1_S_store(NSH,NumberOfGrids))
-        ALLOCATE(qn1_S_store_grid(NSH))
-        ALLOCATE(qn1_S_av_store(2*NSH+1,NumberOfGrids))
-        ALLOCATE(qn1_S_av_store_grid(2*NSH+1))
+        ! ALLOCATE(qn1_S_store(NSH,NumberOfGrids))
+        ! ALLOCATE(qn1_S_store_grid(NSH))
+        ! ALLOCATE(qn1_S_av_store(2*NSH+1,NumberOfGrids))
+        ! ALLOCATE(qn1_S_av_store_grid(2*NSH+1))
         ALLOCATE(qn1_s_av_grids(NumberOfGrids))
         ALLOCATE(dqnsdt_grids(NumberOfGrids))
-        qn1_S_store(:,:) = NAN
-        qn1_S_av_store(:,:) = NaN
-        qn1_S_store_grid(:) = NAN
-        qn1_S_av_store_grid(:) = NaN
+        ! qn1_S_store(:,:) = NAN
+        ! qn1_S_av_store(:,:) = NaN
+        ! qn1_S_store_grid(:) = NAN
+        ! qn1_S_av_store_grid(:) = NaN
         qn1_s_av_grids=0 ! Initialise to 0
         dqnsdt_grids=0 ! Initialise to 0
      ENDIF
      IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
         ALLOCATE(dataOutESTM(ReadlinesMetdata,32,NumberOfGrids)) !ESTM output
      ENDIF
-     ALLOCATE(TstepProfiles(NumberOfGrids,14,24*NSH))   !Hourly profiles interpolated to model timestep
-     ALLOCATE(AHProf_tstep(24*NSH,2))                   !Anthropogenic heat profiles at model timestep
-     ALLOCATE(WUProfM_tstep(24*NSH,2))                  !Manual water use profiles at model timestep
-     ALLOCATE(WUProfA_tstep(24*NSH,2))                  !Automatic water use profiles at model timestep
-     ALLOCATE(HumActivity_tstep(24*NSH,2))              !Human activity profiles at model timestep
-     ALLOCATE(TraffProf_tstep(24*NSH,2))                !Traffic profiles at model timestep
-     ALLOCATE(PopProf_tstep(24*NSH,2))                  !Population profiles at model timestep
-     ALLOCATE(qn1_store(NSH,NumberOfGrids))
-     ALLOCATE(qn1_av_store(2*NSH+1,NumberOfGrids))
-     ALLOCATE(qn1_store_grid(NSH))
-     ALLOCATE(qn1_av_store_grid(2*NSH+1))
-     ALLOCATE(qhforCBL(NumberOfGrids))
-     ALLOCATE(qeforCBL(NumberOfGrids))
+     ! ALLOCATE(TstepProfiles(NumberOfGrids,14,24*NSH))   !Hourly profiles interpolated to model timestep
+     ! ALLOCATE(AHProf_tstep(24*NSH,2))                   !Anthropogenic heat profiles at model timestep
+     ! ALLOCATE(WUProfM_tstep(24*NSH,2))                  !Manual water use profiles at model timestep
+     ! ALLOCATE(WUProfA_tstep(24*NSH,2))                  !Automatic water use profiles at model timestep
+     ! ALLOCATE(HumActivity_tstep(24*NSH,2))              !Human activity profiles at model timestep
+     ! ALLOCATE(TraffProf_tstep(24*NSH,2))                !Traffic profiles at model timestep
+     ! ALLOCATE(PopProf_tstep(24*NSH,2))                  !Population profiles at model timestep
+     ! ALLOCATE(qn1_store(NSH,NumberOfGrids))
+     ! ALLOCATE(qn1_av_store(2*NSH+1,NumberOfGrids))
+     ! ALLOCATE(qn1_store_grid(NSH))
+     ! ALLOCATE(qn1_av_store_grid(2*NSH+1))
+     ! ALLOCATE(qhforCBL(NumberOfGrids))
+     ! ALLOCATE(qeforCBL(NumberOfGrids))
      ALLOCATE(qn1_av_grids(NumberOfGrids))
      ALLOCATE(dqndt_grids(NumberOfGrids))
      !! QUESTION: Add snow clearing (?)
 
-     qn1_store(:,:) = NAN ! Initialise to -999
-     qn1_av_store(:,:) = NAN ! Initialise to -999
-     qn1_store_grid(:)=NAN
-     qn1_av_store_grid(:)=NAN
+     ! qn1_store(:,:) = NAN ! Initialise to -999
+     ! qn1_av_store(:,:) = NAN ! Initialise to -999
+     ! qn1_store_grid(:)=NAN
+     ! qn1_av_store_grid(:)=NAN
      qn1_av_grids=0 ! Initialise to 0
      dqndt_grids=0 ! Initialise to 0
 
-     qhforCBL(:) = NAN
-     qeforCBL(:) = NAN
+     ! qhforCBL(:) = NAN
+     ! qeforCBL(:) = NAN
 
      ! QUESTION: Initialise other arrays here?
 
@@ -692,10 +692,10 @@ PROGRAM SUEWS_Program
      DEALLOCATE(dataOutDailyState)
      IF (SnowUse == 1) THEN
         DEALLOCATE(dataOutSnow)
-        DEALLOCATE(qn1_S_store)
-        DEALLOCATE(qn1_S_av_store)
-        DEALLOCATE(qn1_S_store_grid)
-        DEALLOCATE(qn1_S_av_store_grid)
+        ! DEALLOCATE(qn1_S_store)
+        ! DEALLOCATE(qn1_S_av_store)
+        ! DEALLOCATE(qn1_S_store_grid)
+        ! DEALLOCATE(qn1_S_av_store_grid)
         DEALLOCATE(qn1_s_av_grids)
         DEALLOCATE(dqnsdt_grids)
      ENDIF
@@ -706,19 +706,19 @@ PROGRAM SUEWS_Program
         DEALLOCATE(Ts5mindata_ir)
         ! DEALLOCATE(Tair24HR)
      ENDIF
-     DEALLOCATE(TstepProfiles)
-     DEALLOCATE(AHProf_tstep)
-     DEALLOCATE(WUProfM_tstep)
-     DEALLOCATE(WUProfA_tstep)
-     DEALLOCATE(HumActivity_tstep)
-     DEALLOCATE(TraffProf_tstep)
-     DEALLOCATE(PopProf_tstep)
-     DEALLOCATE(qn1_store)
-     DEALLOCATE(qn1_av_store)
-     DEALLOCATE(qn1_store_grid)
-     DEALLOCATE(qn1_av_store_grid)
-     DEALLOCATE(qhforCBL)
-     DEALLOCATE(qeforCBL)
+     ! DEALLOCATE(TstepProfiles)
+     ! DEALLOCATE(AHProf_tstep)
+     ! DEALLOCATE(WUProfM_tstep)
+     ! DEALLOCATE(WUProfA_tstep)
+     ! DEALLOCATE(HumActivity_tstep)
+     ! DEALLOCATE(TraffProf_tstep)
+     ! DEALLOCATE(PopProf_tstep)
+     ! DEALLOCATE(qn1_store)
+     ! DEALLOCATE(qn1_av_store)
+     ! DEALLOCATE(qn1_store_grid)
+     ! DEALLOCATE(qn1_av_store_grid)
+     ! DEALLOCATE(qhforCBL)
+     ! DEALLOCATE(qeforCBL)
      DEALLOCATE(qn1_av_grids)
      DEALLOCATE(dqndt_grids)
 

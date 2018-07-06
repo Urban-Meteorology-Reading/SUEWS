@@ -138,12 +138,20 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(:),  ALLOCATABLE:: ESTMForDisaggPrev,ESTMForDisaggNext !Stores last and next row of ESTM data
 
   ! ---- Define array for hourly profiles interpolated to tstep ----------------------------------
-  REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: TstepProfiles
-  REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: AHProf_tstep
-  REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: WUProfM_tstep, WUProfA_tstep
-  REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: HumActivity_tstep
-  REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: TraffProf_tstep
-  REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: PopProf_tstep
+  ! REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE:: TstepProfiles
+  ! REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: AHProf_tstep
+  ! REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: WUProfM_tstep
+  ! REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: WUProfA_tstep
+  ! REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: HumActivity_tstep
+  ! REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: TraffProf_tstep
+  ! REAL(KIND(1d0)),DIMENSION(:,:),  ALLOCATABLE:: PopProf_tstep
+
+  REAL(KIND(1d0)),DIMENSION(0:23,2):: AHProf_24hr     !Anthropogenic heat profiles for (1)weekdays / (2)weekends
+  REAL(KIND(1d0)),DIMENSION(0:23,2):: HumActivity_24hr   !Human actvity profiles for (1)weekdays / (2)weekends
+  REAL(KIND(1d0)),DIMENSION(0:23,2):: TraffProf_24hr   !Traffic profiles for (1)weekdays / (2)weekends
+  REAL(KIND(1d0)),DIMENSION(0:23,2):: PopProf_24hr   !Population profiles for (1)weekdays / (2)weekends
+  REAL(KIND(1d0)),DIMENSION(0:23,2):: WUProfM_24Hr
+  REAL(KIND(1d0)),DIMENSION(0:23,2):: WUProfA_24Hr
 
   ! ---- For ESTM
   REAL(KIND(1d0)),ALLOCATABLE,DIMENSION(:,:):: Ts5mindata   !surface temperature input data
@@ -233,22 +241,22 @@ MODULE allocateArray
   ! ---- Define arrays at daily timestep ---------------------------------------------------------
   INTEGER, PARAMETER:: ndays = 366   !Max no. days in a year used to specify size of daily arrays
   !! Could delete NDays and allocate these elsewhere once no. days is known
-  REAL(KIND(1d0)),DIMENSION( 0:ndays, 5):: GDD          !Growing Degree Days (see SUEWS_DailyState.f95)
-  REAL(KIND(1d0)),DIMENSION(-4:ndays, 6):: HDD          !Heating Degree Days (see SUEWS_DailyState.f95)
-  REAL(KIND(1d0)),DIMENSION( 0:ndays, 9):: WUDay       !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
-  REAL(KIND(1d0)),DIMENSION(-4:ndays, nvegsurf):: LAI   !LAI for each veg surface [m2 m-2]
+  ! REAL(KIND(1d0)),DIMENSION( 0:ndays, 5):: GDD          !Growing Degree Days (see SUEWS_DailyState.f95)
+  ! REAL(KIND(1d0)),DIMENSION(-4:ndays, 6):: HDD          !Heating Degree Days (see SUEWS_DailyState.f95)
+  ! REAL(KIND(1d0)),DIMENSION( 0:ndays, 9):: WUDay       !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
+  ! REAL(KIND(1d0)),DIMENSION(-4:ndays, nvegsurf):: LAI   !LAI for each veg surface [m2 m-2]
 
   REAL(KIND(1d0)),DIMENSION(5)        :: GDD_id,GDD_id_prev       !Growing Degree Days (see SUEWS_DailyState.f95)
-  REAL(KIND(1d0)),DIMENSION(6)        :: HDD_id,HDD_id_prev       !Growing Degree Days (see SUEWS_DailyState.f95)
+  REAL(KIND(1d0)),DIMENSION(6)        :: HDD_id,HDD_id_use       !Growing Degree Days (see SUEWS_DailyState.f95)
   REAL(KIND(1d0)),DIMENSION(9)        :: WUDay_id,WUDay_id_prev !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
   REAL(KIND(1d0)),DIMENSION(nvegsurf) :: LAI_id,LAI_id_prev       !LAI for each veg surface [m2 m-2]
 
   ! Seasonality of deciduous trees accounted for by the following variables which change with time
-  REAL(KIND(1d0)),DIMENSION( 0:ndays):: DecidCap   !Storage capacity of deciduous trees [mm]
-  REAL(KIND(1d0)),DIMENSION( 0:ndays):: porosity   !Porosity of deciduous trees [-]
-  REAL(KIND(1d0)),DIMENSION( 0:ndays):: albDecTr     !Albedo of deciduous trees [-]
-  REAL(KIND(1d0)),DIMENSION( 0:ndays):: albEveTr     !Albedo of evergreen trees [-]
-  REAL(KIND(1d0)),DIMENSION( 0:ndays):: albGrass   !Albedo of grass[-]
+  ! REAL(KIND(1d0)),DIMENSION( 0:ndays):: DecidCap   !Storage capacity of deciduous trees [mm]
+  ! REAL(KIND(1d0)),DIMENSION( 0:ndays):: porosity   !Porosity of deciduous trees [-]
+  ! REAL(KIND(1d0)),DIMENSION( 0:ndays):: albDecTr     !Albedo of deciduous trees [-]
+  ! REAL(KIND(1d0)),DIMENSION( 0:ndays):: albEveTr     !Albedo of evergreen trees [-]
+  ! REAL(KIND(1d0)),DIMENSION( 0:ndays):: albGrass   !Albedo of grass[-]
 
   REAL(KIND(1d0)):: AlbMin_DecTr,&   !Min albedo for deciduous trees [-]
        AlbMax_DecTr,&   !Max albedo for deciduous trees [-]
@@ -263,22 +271,22 @@ MODULE allocateArray
 
   ! Replicate arrays needed for DailyState, adding dimension to identify the grid, HCW 27 Nov 2014
   !! Could delete MaxNumberOfGrids and allocate these elsewhere once NumberOfGrids is known
-  REAL(KIND(1d0)),DIMENSION( 0:ndays, 5,MaxNumberOfGrids):: GDD_grids
-  REAL(KIND(1d0)),DIMENSION(-4:ndays, 6,MaxNumberOfGrids):: HDD_grids
-  REAL(KIND(1d0)),DIMENSION( 0:ndays, 9,MaxNumberOfGrids):: WUDay_grids
-  REAL(KIND(1d0)),DIMENSION(-4:ndays, nvegsurf,MaxNumberOfGrids):: LAI_grids
+  ! REAL(KIND(1d0)),DIMENSION( 0:ndays, 5,MaxNumberOfGrids):: GDD_grids
+  ! REAL(KIND(1d0)),DIMENSION(-4:ndays, 6,MaxNumberOfGrids):: HDD_grids
+  ! REAL(KIND(1d0)),DIMENSION( 0:ndays, 9,MaxNumberOfGrids):: WUDay_grids
+  ! REAL(KIND(1d0)),DIMENSION(-4:ndays, nvegsurf,MaxNumberOfGrids):: LAI_grids
 
   REAL(KIND(1d0)),DIMENSION(5,MaxNumberOfGrids):: GDD_id_grids
-  REAL(KIND(1d0)),DIMENSION(6,MaxNumberOfGrids):: HDD_id_grids,HDD_id_prev_grids
+  REAL(KIND(1d0)),DIMENSION(6,MaxNumberOfGrids):: HDD_id_grids,HDD_id_use_grids
   REAL(KIND(1d0)),DIMENSION(9,MaxNumberOfGrids):: WUDay_id_grids
   REAL(KIND(1d0)),DIMENSION(nvegsurf,MaxNumberOfGrids):: LAI_id_grids
 
-  REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: albDecTr_grids
-  REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: DecidCap_grids
-  REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: porosity_grids
-
-  REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: albEveTr_grids
-  REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: albGrass_grids
+  ! REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: albDecTr_grids
+  ! REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: DecidCap_grids
+  ! REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: porosity_grids
+  !
+  ! REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: albEveTr_grids
+  ! REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: albGrass_grids
 
   REAL(KIND(1d0)),DIMENSION( MaxNumberOfGrids):: DecidCap_id_grids
   REAL(KIND(1d0)),DIMENSION( MaxNumberOfGrids):: albDecTr_id_grids
@@ -294,12 +302,12 @@ MODULE allocateArray
 
   ! AnOHM related: added by TS 01 Mar 2016
   ! store AnOHM coef. of all sfc. by TS 09 Apr 2016
-  REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: Bo_grids
-  REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: mAH_grids
-  REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: a1AnOHM_grids
-  REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: a2AnOHM_grids
-  REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: a3AnOHM_grids
-  REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids,nsurf,3):: a123AnOHM_gs
+  ! REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: Bo_grids
+  ! REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: mAH_grids
+  ! REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: a1AnOHM_grids
+  ! REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: a2AnOHM_grids
+  ! REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids):: a3AnOHM_grids
+  ! REAL(KIND(1d0)),DIMENSION( 0:ndays,MaxNumberOfGrids,nsurf,3):: a123AnOHM_gs
   REAL(KIND(1d0)):: xBo ! daily Bowen ratio
   !! store water states for AnOHM iteration, by TS 13 Apr 2016
   !REAL(KIND(1d0)),DIMENSION(0:ndays,MaxNumberOfGrids,nsurf):: soilmoistDay   !Soil moisture of each surface type at the end of a day [mm], 13 Apr 2016 TS
@@ -307,7 +315,7 @@ MODULE allocateArray
 
 
   ! Day of week, month and season (used for water use and energy use calculations, and in OHM)
-  INTEGER,DIMENSION(0:ndays,3)::DayofWeek   !1 - day of week; 2 - month; 3 - season
+  ! INTEGER,DIMENSION(0:ndays,3)::DayofWeek   !1 - day of week; 2 - month; 3 - season
   !-----------------------------------------------------------------------------------------------
 
   ! --- Vegetation phenology ---------------------------------------------------------------------
@@ -376,10 +384,10 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(nsurf+1,4,3):: OHM_coef   !Array for OHM coefficients
   REAL(KIND(1d0)),DIMENSION(nsurf+1)::     OHM_threshSW, OHM_threshWD   !Arrays for OHM thresholds
   REAL(KIND(1d0)):: a1,a2,a3   !OHM coefficients, a1 [-]; a2 [h]; a3 [W m-2]
-  REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE:: qn1_store, qn1_S_store   !Q* values for each timestep over previous hr (_S for snow)
-  REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE:: qn1_av_store, qn1_S_av_store  !Hourly Q* values for each timestep over previous 2 hr
-  REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE::qn1_store_grid,qn1_av_store_grid
-  REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE::qn1_S_store_grid,qn1_S_av_store_grid
+  ! REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE:: qn1_store, qn1_S_store   !Q* values for each timestep over previous hr (_S for snow)
+  ! REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE:: qn1_av_store, qn1_S_av_store  !Hourly Q* values for each timestep over previous 2 hr
+  ! REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE::qn1_store_grid,qn1_av_store_grid
+  ! REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE::qn1_S_store_grid,qn1_S_av_store_grid
 
   REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE::qn1_av_grids,qn1_s_av_grids
   REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE::dqndt_grids,dqnsdt_grids
@@ -1115,11 +1123,6 @@ MODULE data_in
        T_CRITIC_Cooling,& !Critical cooling temperature
        TrafficRate,& !Traffic rate
        QF0_BEU
-
-  REAL(KIND(1d0)),DIMENSION(0:23,2):: AHProf_24hr     !Anthropogenic heat profiles for (1)weekdays / (2)weekends
-  REAL(KIND(1d0)),DIMENSION(0:23,2):: HumActivityProf_24hr   !Human actvity profiles for (1)weekdays / (2)weekends
-  REAL(KIND(1d0)),DIMENSION(0:23,2):: TraffProf_24hr   !Traffic profiles for (1)weekdays / (2)weekends
-  REAL(KIND(1d0)),DIMENSION(0:23,2):: PopProf_24hr   !Population profiles for (1)weekdays / (2)weekends
 
 
   ! INTEGER,DIMENSION(2)::DayLightSavingDay   !DOY when daylight saving changes

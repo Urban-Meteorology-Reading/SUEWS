@@ -68,7 +68,7 @@ CONTAINS
        BaseT,BaseTe,GDDFull,SDDFull,LAIMin,LAIMax,LAIPower,&
        SnowAlb,&!inout
        GDD_id,&
-       HDD_id,HDD_id_prev,&
+       HDD_id,HDD_id_use,&
        SnowDens,LAI_id,LAI_id_prev,&
        WUDay_id,&
        DecidCap_id,&
@@ -168,7 +168,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(9),INTENT(OUT):: WUDay_id
     REAL(KIND(1d0)),INTENT(OUT)::deltaLAI
     REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(INOUT):: LAI_id_prev !LAI for each veg surface [m2 m-2]
-    REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT)::HDD_id_prev ! HDD of previous day
+    REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT)::HDD_id_use ! HDD of previous day
 
     REAL(KIND(1d0)),INTENT(INOUT):: DecidCap_id
     REAL(KIND(1d0)),INTENT(INOUT):: albDecTr_id
@@ -252,7 +252,7 @@ CONTAINS
             BaseT,BaseTe,CapMax_dec,CapMin_dec,DayWat,DayWatPer,Faut,GDDFull,&
             Ie_a,Ie_m,LAIMax,LAIMin,LAIPower,lat,PorMax_dec,PorMin_dec,SDDFull,LAI_obs,&
             GDD_id,& !inout
-            HDD_id,HDD_id_prev,&
+            HDD_id,HDD_id_use,&
             LAI_id,LAI_id_prev,&
             WUDay_id,&
             DecidCap_id,&
@@ -282,7 +282,7 @@ CONTAINS
        BaseT,BaseTe,CapMax_dec,CapMin_dec,DayWat,DayWatPer,Faut,GDDFull,&
        Ie_a,Ie_m,LAIMax,LAIMin,LAIPower,lat,PorMax_dec,PorMin_dec,SDDFull,LAI_obs,&
        GDD_id,& !inout
-       HDD_id,HDD_id_prev,&
+       HDD_id,HDD_id_use,&
        LAI_id,LAI_id_prev,&
        WUDay_id,&
        DecidCap_id,&
@@ -343,7 +343,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT)       ::HDD_id
     REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(INOUT)::LAI_id !LAI for each veg surface [m2 m-2]
 
-    REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT)::HDD_id_prev ! HDD of previous day
+    REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT)::HDD_id_use ! HDD of previous day
     REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(INOUT)::LAI_id_prev ! LAI of previous day
 
     ! REAL(KIND(1d0)),DIMENSION(0:ndays,9),INTENT(INOUT):: WUDay
@@ -365,7 +365,7 @@ CONTAINS
     CALL update_HDD_X(&
          dt_since_start,it,imin,tstep,& !input
          HDD_id,&!inout
-         HDD_id_prev)!output
+         HDD_id_use)!output
 
 
 
@@ -1024,100 +1024,100 @@ CONTAINS
   END SUBROUTINE update_GDDLAI_X
 
 
-  SUBROUTINE update_WaterUse(&
-       id,WaterUseMethod,DayofWeek_id,lat,Faut,HDD_id,&!input
-       Ie_a,Ie_m,Ie_start,Ie_end,DayWatPer,DayWat,&
-       WUDay) !inout
-
-    IMPLICIT NONE
-
-    INTEGER,INTENT(IN) :: id
-    INTEGER,INTENT(IN) :: WaterUseMethod
-    INTEGER,INTENT(IN)::Ie_start   !Starting time of water use (DOY)
-    INTEGER,INTENT(IN)::Ie_end       !Ending time of water use (DOY)
-    INTEGER,DIMENSION(3),INTENT(IN)::DayofWeek_id
-
-    REAL(KIND(1d0)),INTENT(IN)::lat
-    REAL(KIND(1d0)),INTENT(IN)::Faut          !Fraction of irrigated area using automatic irrigation
-
-    REAL(KIND(1d0)),DIMENSION(6),INTENT(IN)::HDD_id
-    REAL(KIND(1d0)),DIMENSION(3),INTENT(IN)::Ie_a
-    REAL(KIND(1d0)),DIMENSION(3),INTENT(IN)::Ie_m   !Coefficients for automatic and manual irrigation models
-    REAL(KIND(1d0)),DIMENSION(7),INTENT(IN)::DayWatPer  !% of houses following daily water
-    REAL(KIND(1d0)),DIMENSION(7),INTENT(IN)::DayWat       !Days of watering allowed
-
-    REAL(KIND(1d0)),DIMENSION(0:ndays,9),INTENT(INOUT):: WUDay       !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
-
-    INTEGER::wd        !Water use calculation is done when calc = 1
-    INTEGER::&
-         calc        !Water use calculation is done when calc = 1
-
-    IF (WaterUseMethod==0) THEN   !If water use is to be modelled (rather than observed)
-
-       wd=DayofWeek_id(1)
-
-       IF (DayWat(wd)==1.0) THEN      !1 indicates watering permitted on this day
-          calc=0
-          IF (lat>=0) THEN            !Northern Hemisphere
-             IF (id>=Ie_start-1.AND.id<=Ie_end+1) calc=1   !Day between irrigation period
-          ELSE                        !Southern Hemisphere
-             calc=1
-             IF (id>=Ie_end.AND.id<=Ie_start) calc=0       !Day between irrigation period
-          ENDIF
-
-          IF(calc==1) THEN
-             ! Model daily water use based on HDD_id(6)(days since rain) and HDD_id(3)(average temp)
-             ! WUDay is the amount of water [mm] per day, applied to each of the irrigated areas
-             ! N.B. These are the same for each vegetation type at the moment
-
-             ! ---- Automatic irrigation (evergreen trees) ----
-             WUDay(id,2) = Faut*(Ie_a(1)+Ie_a(2)*HDD_id(3)+Ie_a(3)*HDD_id(6))*DayWatPer(wd)
-             IF (WUDay(id,2)<0) WUDay(id,2)=0   !If modelled WU is negative -> 0
-
-             ! ---- Manual irrigation (evergreen trees) ----
-             WUDay(id,3) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD_id(3)+Ie_m(3)*HDD_id(6))*DayWatPer(wd)
-             IF (WUDay(id,3)<0) WUDay(id,3)=0   !If modelled WU is negative -> 0
-
-             ! ---- Total evergreen trees water use (automatic + manual) ----
-             WUDay(id,1)=(WUDay(id,2)+WUDay(id,3))
-
-             ! ---- Automatic irrigation (deciduous trees) ----
-             WUDay(id,5) = Faut*(Ie_a(1)+Ie_a(2)*HDD_id(3)+Ie_a(3)*HDD_id(6))*DayWatPer(wd)
-             IF (WUDay(id,5)<0) WUDay(id,5)=0   !If modelled WU is negative -> 0
-
-             ! ---- Manual irrigation (deciduous trees) ----
-             WUDay(id,6) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD_id(3)+Ie_m(3)*HDD_id(6))*DayWatPer(wd)
-             IF (WUDay(id,6)<0) WUDay(id,6)=0   !If modelled WU is negative -> 0
-
-             ! ---- Total deciduous trees water use (automatic + manual) ----
-             WUDay(id,4)=(WUDay(id,5)+WUDay(id,6))
-
-             ! ---- Automatic irrigation (grass) ----
-             WUDay(id,8) = Faut*(Ie_a(1)+Ie_a(2)*HDD_id(3)+Ie_a(3)*HDD_id(6))*DayWatPer(wd)
-             IF (WUDay(id,8)<0) WUDay(id,8)=0   !If modelled WU is negative -> 0
-
-             ! ---- Manual irrigation (grass) ----
-             WUDay(id,9) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD_id(3)+Ie_m(3)*HDD_id(6))*DayWatPer(wd)
-             IF (WUDay(id,9)<0) WUDay(id,9)=0   !If modelled WU is negative -> 0
-
-             ! ---- Total grass water use (automatic + manual) ----
-             WUDay(id,7)=(WUDay(id,8)+WUDay(id,9))
-
-          ELSE   !If no irrigation on this day
-             WUDay(id,1)=0
-             WUDay(id,2)=0
-             WUDay(id,3)=0
-             WUDay(id,4)=0
-             WUDay(id,5)=0
-             WUDay(id,6)=0
-             WUDay(id,7)=0
-             WUDay(id,8)=0
-             WUDay(id,9)=0
-          ENDIF
-       ENDIF
-    ENDIF
-
-  END SUBROUTINE update_WaterUse
+  ! SUBROUTINE update_WaterUse(&
+  !      id,WaterUseMethod,DayofWeek_id,lat,Faut,HDD_id,&!input
+  !      Ie_a,Ie_m,Ie_start,Ie_end,DayWatPer,DayWat,&
+  !      WUDay) !inout
+  !
+  !   IMPLICIT NONE
+  !
+  !   INTEGER,INTENT(IN) :: id
+  !   INTEGER,INTENT(IN) :: WaterUseMethod
+  !   INTEGER,INTENT(IN)::Ie_start   !Starting time of water use (DOY)
+  !   INTEGER,INTENT(IN)::Ie_end       !Ending time of water use (DOY)
+  !   INTEGER,DIMENSION(3),INTENT(IN)::DayofWeek_id
+  !
+  !   REAL(KIND(1d0)),INTENT(IN)::lat
+  !   REAL(KIND(1d0)),INTENT(IN)::Faut          !Fraction of irrigated area using automatic irrigation
+  !
+  !   REAL(KIND(1d0)),DIMENSION(6),INTENT(IN)::HDD_id
+  !   REAL(KIND(1d0)),DIMENSION(3),INTENT(IN)::Ie_a
+  !   REAL(KIND(1d0)),DIMENSION(3),INTENT(IN)::Ie_m   !Coefficients for automatic and manual irrigation models
+  !   REAL(KIND(1d0)),DIMENSION(7),INTENT(IN)::DayWatPer  !% of houses following daily water
+  !   REAL(KIND(1d0)),DIMENSION(7),INTENT(IN)::DayWat       !Days of watering allowed
+  !
+  !   REAL(KIND(1d0)),DIMENSION(0:ndays,9),INTENT(INOUT):: WUDay       !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
+  !
+  !   INTEGER::wd        !Water use calculation is done when calc = 1
+  !   INTEGER::&
+  !        calc        !Water use calculation is done when calc = 1
+  !
+  !   IF (WaterUseMethod==0) THEN   !If water use is to be modelled (rather than observed)
+  !
+  !      wd=DayofWeek_id(1)
+  !
+  !      IF (DayWat(wd)==1.0) THEN      !1 indicates watering permitted on this day
+  !         calc=0
+  !         IF (lat>=0) THEN            !Northern Hemisphere
+  !            IF (id>=Ie_start-1.AND.id<=Ie_end+1) calc=1   !Day between irrigation period
+  !         ELSE                        !Southern Hemisphere
+  !            calc=1
+  !            IF (id>=Ie_end.AND.id<=Ie_start) calc=0       !Day between irrigation period
+  !         ENDIF
+  !
+  !         IF(calc==1) THEN
+  !            ! Model daily water use based on HDD_id(6)(days since rain) and HDD_id(3)(average temp)
+  !            ! WUDay is the amount of water [mm] per day, applied to each of the irrigated areas
+  !            ! N.B. These are the same for each vegetation type at the moment
+  !
+  !            ! ---- Automatic irrigation (evergreen trees) ----
+  !            WUDay(id,2) = Faut*(Ie_a(1)+Ie_a(2)*HDD_id(3)+Ie_a(3)*HDD_id(6))*DayWatPer(wd)
+  !            IF (WUDay(id,2)<0) WUDay(id,2)=0   !If modelled WU is negative -> 0
+  !
+  !            ! ---- Manual irrigation (evergreen trees) ----
+  !            WUDay(id,3) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD_id(3)+Ie_m(3)*HDD_id(6))*DayWatPer(wd)
+  !            IF (WUDay(id,3)<0) WUDay(id,3)=0   !If modelled WU is negative -> 0
+  !
+  !            ! ---- Total evergreen trees water use (automatic + manual) ----
+  !            WUDay(id,1)=(WUDay(id,2)+WUDay(id,3))
+  !
+  !            ! ---- Automatic irrigation (deciduous trees) ----
+  !            WUDay(id,5) = Faut*(Ie_a(1)+Ie_a(2)*HDD_id(3)+Ie_a(3)*HDD_id(6))*DayWatPer(wd)
+  !            IF (WUDay(id,5)<0) WUDay(id,5)=0   !If modelled WU is negative -> 0
+  !
+  !            ! ---- Manual irrigation (deciduous trees) ----
+  !            WUDay(id,6) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD_id(3)+Ie_m(3)*HDD_id(6))*DayWatPer(wd)
+  !            IF (WUDay(id,6)<0) WUDay(id,6)=0   !If modelled WU is negative -> 0
+  !
+  !            ! ---- Total deciduous trees water use (automatic + manual) ----
+  !            WUDay(id,4)=(WUDay(id,5)+WUDay(id,6))
+  !
+  !            ! ---- Automatic irrigation (grass) ----
+  !            WUDay(id,8) = Faut*(Ie_a(1)+Ie_a(2)*HDD_id(3)+Ie_a(3)*HDD_id(6))*DayWatPer(wd)
+  !            IF (WUDay(id,8)<0) WUDay(id,8)=0   !If modelled WU is negative -> 0
+  !
+  !            ! ---- Manual irrigation (grass) ----
+  !            WUDay(id,9) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD_id(3)+Ie_m(3)*HDD_id(6))*DayWatPer(wd)
+  !            IF (WUDay(id,9)<0) WUDay(id,9)=0   !If modelled WU is negative -> 0
+  !
+  !            ! ---- Total grass water use (automatic + manual) ----
+  !            WUDay(id,7)=(WUDay(id,8)+WUDay(id,9))
+  !
+  !         ELSE   !If no irrigation on this day
+  !            WUDay(id,1)=0
+  !            WUDay(id,2)=0
+  !            WUDay(id,3)=0
+  !            WUDay(id,4)=0
+  !            WUDay(id,5)=0
+  !            WUDay(id,6)=0
+  !            WUDay(id,7)=0
+  !            WUDay(id,8)=0
+  !            WUDay(id,9)=0
+  !         ENDIF
+  !      ENDIF
+  !   ENDIF
+  !
+  ! END SUBROUTINE update_WaterUse
 
 
 
@@ -1257,12 +1257,12 @@ CONTAINS
   SUBROUTINE update_HDD_X(&
        dt_since_start,it,imin,tstep,& !input
        HDD_id,&
-       HDD_id_prev) !output
+       HDD_id_use) !output
     IMPLICIT NONE
     INTEGER,INTENT(IN)::dt_since_start,it,imin,tstep
 
     REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT):: HDD_id
-    REAL(KIND(1d0)),DIMENSION(6),INTENT(OUT):: HDD_id_prev
+    REAL(KIND(1d0)),DIMENSION(6),INTENT(OUT):: HDD_id_use
 
     INTEGER:: days_prev
     REAL(KIND(1d0))::tstepcount
@@ -1286,8 +1286,8 @@ CONTAINS
        HDD_id(6)=HDD_id(6)+1  !Days since rain
     ENDIF
 
-    ! save HDD_id as HDD_id_prev
-    HDD_id_prev = HDD_id
+    ! save HDD_id as HDD_id_use
+    HDD_id_use = HDD_id
 
   END SUBROUTINE update_HDD_X
 

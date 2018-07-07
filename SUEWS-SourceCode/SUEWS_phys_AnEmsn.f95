@@ -212,12 +212,12 @@ SUBROUTINE AnthropogenicEmissions(&
         QF_SAHP = AH_MIN(iu) * AHDorNorT
      ENDIF
 
-  ELSEIF(EmissionsMethod==0) THEN
-     QF_SAHP   = 0
-     Fc_anthro = 0
-     Fc_metab  = 0
-     Fc_traff  = 0
-     Fc_build  = 0
+  ! ELSEIF(EmissionsMethod==0) THEN
+  !    QF_SAHP   = 0
+  !    Fc_anthro = 0
+  !    Fc_metab  = 0
+  !    Fc_traff  = 0
+  !    Fc_build  = 0
   ENDIF
 
   RETURN

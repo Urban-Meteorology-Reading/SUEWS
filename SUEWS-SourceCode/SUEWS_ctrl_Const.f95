@@ -208,15 +208,15 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(nsurf):: runoffSoil     !Soil runoff from each soil sub-surface [mm]
   REAL(KIND(1d0)),DIMENSION(nsurf):: smd_nsurf      !Soil moisture deficit of each sub-surface [mm]
   REAL(KIND(1d0)),DIMENSION(nsurf):: smd_nsurfOut   !Soil moisture deficit of each sub-surface (written out) [mm]
-  REAL(KIND(1d0)),DIMENSION(nsurf):: soilmoist      !Soil moisture of each surface type [mm]
+  REAL(KIND(1d0)),DIMENSION(nsurf):: soilmoist_id      !Soil moisture of each surface type [mm]
   REAL(KIND(1d0)),DIMENSION(nsurf):: soilmoistOld   !Soil moisture of each surface type from previous timestep [mm]
-  REAL(KIND(1d0)),DIMENSION(nsurf):: state          !Wetness status of each surface type [mm]
+  REAL(KIND(1d0)),DIMENSION(nsurf):: state_id          !Wetness status of each surface type [mm]
   REAL(KIND(1d0)),DIMENSION(nsurf):: stateOut       !Wetness status of each surface type (written out) [mm]
   REAL(KIND(1d0)),DIMENSION(nsurf):: stateOld       !Wetness status of each surface type from previous timestep [mm]
   REAL(KIND(1D0)),DIMENSION(nsurf):: rss_nsurf      !Surface resistance after wet/partially wet adjustment for each surface
 
-  REAL(KIND(1d0)),DIMENSION(nsurf):: WetThresh      !When State > WetThresh, RS=0 limit in SUEWS_evap [mm] (specified in input files)
-  REAL(KIND(1d0)),DIMENSION(nsurf):: StateLimit     !Limit for state of each surface type [mm] (specified in input files)
+  REAL(KIND(1d0)),DIMENSION(nsurf):: WetThresh      !When state_id > WetThresh, RS=0 limit in SUEWS_evap [mm] (specified in input files)
+  REAL(KIND(1d0)),DIMENSION(nsurf):: StateLimit     !Limit for state_id of each surface type [mm] (specified in input files)
 
   REAL(KIND(1d0)),DIMENSION(1)::     WaterDepth     !Depth of open water
 
@@ -1068,7 +1068,7 @@ MODULE data_in
        q2_gkg,&    ! Specific humidity at 2 m
        qe,&        !Observed latent heat flux
        qe_obs,&
-       qf,&        !Observed anthropogenic heat flux
+       qf_obs,&        !Observed anthropogenic heat flux
        QF_SAHP,&    !Anthropogenic heat flux calculated by SAHP
        QF_SAHP_base,&    !Anthropogenic heat flux calculated by SAHP (temp independent part)
        QF_SAHP_heat,&    !Anthropogenic heat flux calculated by SAHP (heating part only)
@@ -1081,7 +1081,7 @@ MODULE data_in
        qn1_obs,&   !Observed new all-wave radiation
        qn1_S,&     !Total net all-wave radiation for the SnowPack
        qn1_SF,&    !Total net all-wave radiation for the snowfree surface
-       qs,&        !Observed storage heat flux
+       qs_obs,&        !Observed storage heat flux
        QSanOHM,&   !Simulated storage heat flux by AnOHM, TS 30 May 2016
        QSestm,&    !Simulated storage heat flux by ESTM, TS 30 May 2016
        snow,&      !snow cover

@@ -18,7 +18,7 @@ CONTAINS
     !       used in the equation
     !Modified by HCW 16 Feb 2015
     !  Removed option of Eq 4 (calculation needs to be checked before re-implementing).
-    !  Code writes an error if calculated drainage exceeds surface state (but code continues).
+    !  Code writes an error if calculated drainage exceeds surface state_id (but code continues).
     !  This may indicate inappropriate drainage equation, storage capacities or model tstep.
     !Modified by LJ in Aug 2011. Drainage cannot exceed the surface storage.
     !Modified LJ in 10/2010
@@ -50,7 +50,7 @@ CONTAINS
        IF(INT(DrainEq)==1) THEN   !Falk and Niemczynowicz (1978): Drainage equation for paved, buildings and irrigated grass
 
           IF (state_is<StorCap) THEN
-             drain_is=0   !No drainage if state is less than storage capacity
+             drain_is=0   !No drainage if state_id is less than storage capacity
           ELSE
              drain_is=(DrainCoef1*(state_is-StorCap)**DrainCoef2)/nsh_real
           ENDIF
@@ -65,13 +65,13 @@ CONTAINS
        ENDIF
 
        ! Check value obtained is physically reasonable
-       ! More water cannot drain than is in the surface state
-       ! although high initial rate of drainage tries to drain more water than is in state within tstep
+       ! More water cannot drain than is in the surface state_id
+       ! although high initial rate of drainage tries to drain more water than is in state_id within tstep
        ! May indicate shorter tstep needed, or a more suitable equation
        IF (drain_is>state_is) THEN
-          !write(*,*) 'Drainage:', is, drain(is), state(is), drain(is)-state(is), DrainEq, DrainCoef1, DrainCoef2, nsh_real
+          !write(*,*) 'Drainage:', is, drain(is), state_id(is), drain(is)-state_id(is), DrainEq, DrainCoef1, DrainCoef2, nsh_real
           CALL ErrorHint(61,'SUEWS_drain: drain_is > state_is for surface is ',drain_is,state_is,is)
-          drain_is=state_is   !All water in state is drained (but no more)
+          drain_is=state_is   !All water in state_id is drained (but no more)
        ELSEIF(drain_is<0.0001) THEN
           drain_is=0
        ENDIF
@@ -102,20 +102,20 @@ CONTAINS
        soilstoreCap,&!Capacity of soil store for each surface [mm]
        addWaterBody,&!Water from water surface of other grids [mm] for whole surface area
        FlowChange,&!Difference between the input and output flow in the water body
-       StateLimit,&!Limit for state of each surface type [mm] (specified in input files)
+       StateLimit,&!Limit for state_id of each surface type [mm] (specified in input files)
        runoffAGimpervious,&!  inout:!Above ground runoff from impervious surface [mm] for whole surface area
        surplusWaterBody,&!Extra runoff that goes to water body [mm] as specified by RunoffToWater
        runoffAGveg,&!Above ground runoff from vegetated surfaces [mm] for whole surface area
        runoffPipes,&!Runoff in pipes [mm] for whole surface area
        ev,&!Evaporation
-       soilmoist,&!Soil moisture of each surface type [mm]
+       soilmoist_id,&!Soil moisture of each surface type [mm]
        SurplusEvap,&!Surplus for evaporation in 5 min timestep
        runoffWaterBody,&!Above ground runoff from water surface [mm] for whole surface area
        runoff_per_interval,&! Total water transported to each grid for grid-to-grid connectivity
        p_mm,&!output: !Inputs to surface water balance
-       chang,&!Change in state [mm]
+       chang,&!Change in state_id [mm]
        runoff,&!Runoff from each surface type [mm]
-       state&!Wetness status of each surface type [mm]
+       state_id&!Wetness status of each surface type [mm]
        )
     !------------------------------------------------------------------------------
     !Calculation of storage change
@@ -131,17 +131,17 @@ CONTAINS
     ! Rewritten by HCW 12 Feb 2015
     !   - Old variable 'p' for water input to the surface renamed to 'p_mm'
     !   - All water now added to p_mm first, before threshold checks or other calculations
-    !   - Water from other grids now added to p_mm (instead of state for impervious surfaces)
+    !   - Water from other grids now added to p_mm (instead of state_id for impervious surfaces)
     !   - Removed division of runoff by nsh, as whole model now runs at the same timestep
     !   - Adjusted transfer of ev between surfaces to conserve mass (not depth)
     !   - Volumes used for water transport between grids to account for SurfaceArea changing between grids
-    !   - Added threshold check for state(WaterSurf) - was going negative
+    !   - Added threshold check for state_id(WaterSurf) - was going negative
     ! Last modified HCW 09 Feb 2015
     !   - Removed StorCap input because it is provided by module allocateArray
     !   - Tidied and commented code
     ! Modified by LJ in November 2012:
     !   - P>10 was not taken into account for impervious surfaces - Was fixed.
-    !   - Above impervious surfaces possibility of the state to exceed max capacity was limited
+    !   - Above impervious surfaces possibility of the state_id to exceed max capacity was limited
     !     although this should be possible - was fixed
     ! Modified by LJ 10/2010
     ! Rewritten mostly by LJ in 2010
@@ -158,7 +158,7 @@ CONTAINS
 
     IMPLICIT NONE
 
-    !Stores flood water when surface state exceeds storage capacity [mm]
+    !Stores flood water when surface state_id exceeds storage capacity [mm]
     INTEGER, PARAMETER:: nsurf=7                !Total number of surfaces
 
     INTEGER, PARAMETER:: PavSurf   = 1,&   !When all surfaces considered together (1-7)
@@ -182,7 +182,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::stateOld!Wetness status of each surface type from previous timestep [mm]
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::AddWaterRunoff!Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::soilstoreCap!Capacity of soil store for each surface [mm]
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::StateLimit!Limit for state of each surface type [mm] (specified in input files)
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::StateLimit!Limit for state_id of each surface type [mm] (specified in input files)
 
     REAL(KIND(1d0)),INTENT(in)::PipeCapacity!Capacity of pipes to transfer water
     REAL(KIND(1d0)),INTENT(in)::RunoffToWater!Fraction of surface runoff going to water body
@@ -206,15 +206,15 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(inout)::runoffWaterBody!Above ground runoff from water surface [mm] for whole surface area
     REAL(KIND(1d0)),INTENT(inout)::runoff_per_interval! Total water transported to each grid for grid-to-grid connectivity
 
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::soilmoist  !Soil moisture of each surface type [mm]
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::soilmoist_id  !Soil moisture of each surface type [mm]
     REAL(KIND(1d0)),DIMENSION(2),INTENT(inout)    ::SurplusEvap!Surplus for evaporation in 5 min timestep
 
     REAL(KIND(1d0)),INTENT(out)::p_mm!Inputs to surface water balance
 
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::chang !Change in state [mm]
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::chang !Change in state_id [mm]
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::runoff!Runoff from each surface type [mm]
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in) ::drain !Drainage of each surface type [mm]
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::state !Wetness status of each surface type [mm]
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::state_id !Wetness status of each surface type [mm]
 
     !Extra evaporation [mm] from impervious surfaces which cannot happen due to lack of water
     REAL(KIND(1d0)):: EvPart
@@ -255,36 +255,36 @@ CONTAINS
           ENDIF
        ENDIF
 
-       ! Calculate change in surface state (inputs - outputs)
+       ! Calculate change in surface state_id (inputs - outputs)
        chang(is)=p_mm-(drain(is)+ev)
 
        ! If p_mm is too large, excess goes to runoff (i.e. the rate of water supply is too fast)
-       ! and does not affect state
+       ! and does not affect state_id
        IF(p_mm>IPThreshold_mmhr/nsh_real) THEN
           runoff(is)=runoff(is)+(p_mm-IPThreshold_mmhr/nsh_real)
           chang(is)=IPThreshold_mmhr/nsh_real-(drain(is)+ev)
        ENDIF
 
-       ! Calculate updated state using chang
-       ! state(is)=state(is)+chang(is)
-       state(is)=stateOld(is)+chang(is)
+       ! Calculate updated state_id using chang
+       ! state_id(is)=state_id(is)+chang(is)
+       state_id(is)=stateOld(is)+chang(is)
 
-       ! Check state is within physical limits between zero (dry) and max. storage capacity
-       IF(state(is)<0.0) THEN   ! Cannot have a negative surface state
+       ! Check state_id is within physical limits between zero (dry) and max. storage capacity
+       IF(state_id(is)<0.0) THEN   ! Cannot have a negative surface state_id
           ! If there is not sufficient water on the surface, then don't allow this evaporation to happen
-          ! Allow evaporation only until surface is dry (state(is)=0); additional evaporation -> evaporation surplus
-          SurplusEvap(is)=ABS(state(is))   !Surplus evaporation is that which tries to evaporate non-existent water
+          ! Allow evaporation only until surface is dry (state_id(is)=0); additional evaporation -> evaporation surplus
+          SurplusEvap(is)=ABS(state_id(is))   !Surplus evaporation is that which tries to evaporate non-existent water
           ev = ev-SurplusEvap(is)          !Limit evaporation according to water availability
-          state(is)=0.0                    !Now surface is dry
-          ! elseif (state(is)>surf(6,is)) then   !!This should perhaps be StateLimit(is)
-          !    !! If state exceeds the storage capacity, then the excess goes to surface flooding
-          !    !SurfaceFlood(is)=SurfaceFlood(is)+(state(is)-surf(6,is))   !!Need to deal with this properly
-          !    runoff(is)=runoff(is)+(state(is)-surf(6,is))   !!needs to go to flooding
-          !    state(is)=surf(6,is)              !Now surface state is at max (storage) capacity
+          state_id(is)=0.0                    !Now surface is dry
+          ! elseif (state_id(is)>surf(6,is)) then   !!This should perhaps be StateLimit(is)
+          !    !! If state_id exceeds the storage capacity, then the excess goes to surface flooding
+          !    !SurfaceFlood(is)=SurfaceFlood(is)+(state_id(is)-surf(6,is))   !!Need to deal with this properly
+          !    runoff(is)=runoff(is)+(state_id(is)-surf(6,is))   !!needs to go to flooding
+          !    state_id(is)=surf(6,is)              !Now surface state_id is at max (storage) capacity
        ENDIF
 
-       ! Recalculate change in surface state from difference with previous timestep
-       chang(is) = state(is)-stateOld(is)
+       ! Recalculate change in surface state_id from difference with previous timestep
+       chang(is) = state_id(is)-stateOld(is)
 
        ! Runoff -------------------------------------------------------
        ! For impervious surfaces, some of drain(is) becomes runoff
@@ -292,7 +292,7 @@ CONTAINS
 
        !So, up to this point, runoff(is) can have contributions if
        ! p_mm > ipthreshold (water input too fast)
-       ! state > surf(6,is) (net water exceeds storage capacity)
+       ! state_id > surf(6,is) (net water exceeds storage capacity)
        ! WaterDist specifies some fraction of drain(is) -> runoff
 
        !==== Pervious surfaces (Conif, Decid, Grass, BSoil, Water) =======
@@ -319,57 +319,57 @@ CONTAINS
              ENDIF
           ENDIF
 
-          ! Calculate change in surface state (inputs - outputs)
+          ! Calculate change in surface state_id (inputs - outputs)
           chang(is)=p_mm-(drain(is)+ev)
 
           ! If p_mm is too large, excess goes to runoff (i.e. the rate of water supply is too fast)
-          !  and does not affect state
+          !  and does not affect state_id
           IF (p_mm>IPThreshold_mmhr/nsh_real) THEN
              runoff(is)=runoff(is)+(p_mm-IPThreshold_mmhr/nsh_real)
              chang(is)=IPThreshold_mmhr/nsh_real-(drain(is)+ev)
           ENDIF
 
-          ! Calculate updated state using chang
-          ! state(is)=state(is)+chang(is)
-          state(is)=stateOld(is)+chang(is)
+          ! Calculate updated state_id using chang
+          ! state_id(is)=state_id(is)+chang(is)
+          state_id(is)=stateOld(is)+chang(is)
 
-          ! Check state is within physical limits between zero (dry) and max. storage capacity
-          IF(state(is)<0.0) THEN   ! Cannot have a negative surface state
+          ! Check state_id is within physical limits between zero (dry) and max. storage capacity
+          IF(state_id(is)<0.0) THEN   ! Cannot have a negative surface state_id
              ! If there is not sufficient water on the surface, then remove water from soilstore
-             ! Allow evaporation until soilmoist is depleted and surface is dry
-             IF((soilmoist(is)+state(is))>=0) THEN
-                soilmoist(is)=soilmoist(is)+state(is)
-                state(is)=0.0
+             ! Allow evaporation until soilmoist_id is depleted and surface is dry
+             IF((soilmoist_id(is)+state_id(is))>=0) THEN
+                soilmoist_id(is)=soilmoist_id(is)+state_id(is)
+                state_id(is)=0.0
                 ! If there is not sufficient water on the surface or soilstore, then don't allow this evaporation to happen
              ELSE
-                ev=ev-ABS(state(is))   !Limit evaporation according to water availability
-                state(is)=0.0          !Now surface is dry
+                ev=ev-ABS(state_id(is))   !Limit evaporation according to water availability
+                state_id(is)=0.0          !Now surface is dry
              ENDIF
 
-             !elseif (state(is)>surf(6,is)) then   !!This should perhaps be StateLimit(is)
-             !   !! If state exceeds the storage capacity, then the excess goes to surface flooding
-             !   !SurfaceFlood(is)=SurfaceFlood(is)+(state(is)-surf(6,is))   !!Need to deal with this properly
-             !   runoff(is)=runoff(is)+(state(is)-surf(6,is))   !!needs to go to flooding
-             !   state(is)=surf(6,is)              !Now surface state is at max (storage) capacity
+             !elseif (state_id(is)>surf(6,is)) then   !!This should perhaps be StateLimit(is)
+             !   !! If state_id exceeds the storage capacity, then the excess goes to surface flooding
+             !   !SurfaceFlood(is)=SurfaceFlood(is)+(state_id(is)-surf(6,is))   !!Need to deal with this properly
+             !   runoff(is)=runoff(is)+(state_id(is)-surf(6,is))   !!needs to go to flooding
+             !   state_id(is)=surf(6,is)              !Now surface state_id is at max (storage) capacity
           ENDIF
 
-          ! Recalculate change in surface state from difference with previous timestep
-          chang(is) = state(is)-stateOld(is)
+          ! Recalculate change in surface state_id from difference with previous timestep
+          chang(is) = state_id(is)-stateOld(is)
 
           !Where should this go? Used to be before previous part!!
-          ! Soilmoist -------------------------------------------------
+          ! soilmoist_id -------------------------------------------------
           ! For pervious surfaces (not water), some of drain(is) goes to soil storage
           ! Drainage (that is not flowing to other surfaces) goes to soil storages
-          soilmoist(is)=soilmoist(is)+drain(is)*AddWaterRunoff(is)
+          soilmoist_id(is)=soilmoist_id(is)+drain(is)*AddWaterRunoff(is)
 
           ! If soilstore is full, the excess will go to runoff
-          IF(soilmoist(is)>soilstoreCap(is)) THEN  ! TODO: this should also go to flooding of some sort
-             runoff(is)=runoff(is)+(soilmoist(is)-soilstoreCap(is))
-             soilmoist(is)=soilstoreCap(is)
-          ELSEIF (soilmoist(is)<0) THEN   !! QUESTION: But where does this lack of water go? !!Can this really happen here?
-             CALL ErrorHint(62,'SUEWS_store: soilmoist(is) < 0 ',soilmoist(is),NotUsed,is)
-             ! Code this properly - soilmoist(is) < 0 shouldn't happen given the above loops
-             !soilmoist(is)=0   !Groundwater / deeper soil should kick in
+          IF(soilmoist_id(is)>soilstoreCap(is)) THEN  ! TODO: this should also go to flooding of some sort
+             runoff(is)=runoff(is)+(soilmoist_id(is)-soilstoreCap(is))
+             soilmoist_id(is)=soilstoreCap(is)
+          ELSEIF (soilmoist_id(is)<0) THEN   !! QUESTION: But where does this lack of water go? !!Can this really happen here?
+             CALL ErrorHint(62,'SUEWS_store: soilmoist_id(is) < 0 ',soilmoist_id(is),NotUsed,is)
+             ! Code this properly - soilmoist_id(is) < 0 shouldn't happen given the above loops
+             !soilmoist_id(is)=0   !Groundwater / deeper soil should kick in
           ENDIF
 
           !==== Water surface ========================================
@@ -380,45 +380,45 @@ CONTAINS
              ! ---- Add water from neighbouring grids (RG2G) ----
              p_mm=p_mm+addWaterBody/sfr(WaterSurf)
 
-             ! Calculate change in surface state (inputs - outputs)
+             ! Calculate change in surface state_id (inputs - outputs)
              ! No drainage for water surface
              ! FlowChange is the difference in input and output flows [mm hr-1]
              chang(is)=p_mm+FlowChange/nsh_real-ev
 
-             ! Calculate updated state using chang
-             ! state(is)=state(is)+chang(is)
-             state(is)=stateOld(is)+chang(is)
+             ! Calculate updated state_id using chang
+             ! state_id(is)=state_id(is)+chang(is)
+             state_id(is)=stateOld(is)+chang(is)
 
-             ! Check state is within physical limits between zero (dry) and max. storage capacity
-             IF(state(is)<0.0) THEN   ! Cannot have a negative surface state
+             ! Check state_id is within physical limits between zero (dry) and max. storage capacity
+             IF(state_id(is)<0.0) THEN   ! Cannot have a negative surface state_id
                 ! If there is not sufficient water on the surface, then don't allow this evaporation to happen
-                ev=ev-ABS(state(is))   !Limit evaporation according to water availability
-                state(is)=0.0          !Now surface is dry
-                !elseif (state(is)>surf(6,is)) then   !!This should perhaps be StateLimit(is)
-                !   !! If state exceeds the storage capacity, then the excess goes to surface flooding
-                !   !SurfaceFlood(is)=SurfaceFlood(is)+(state(is)-surf(6,is))   !!Need to deal with this properly
-                !   runoff(is)=runoff(is)+(state(is)-surf(6,is))   !!needs to go to flooding
-                !   state(is)=surf(6,is)              !Now surface state is at max (storage) capacity
+                ev=ev-ABS(state_id(is))   !Limit evaporation according to water availability
+                state_id(is)=0.0          !Now surface is dry
+                !elseif (state_id(is)>surf(6,is)) then   !!This should perhaps be StateLimit(is)
+                !   !! If state_id exceeds the storage capacity, then the excess goes to surface flooding
+                !   !SurfaceFlood(is)=SurfaceFlood(is)+(state_id(is)-surf(6,is))   !!Need to deal with this properly
+                !   runoff(is)=runoff(is)+(state_id(is)-surf(6,is))   !!needs to go to flooding
+                !   state_id(is)=surf(6,is)              !Now surface state_id is at max (storage) capacity
              ENDIF
 
-             ! Recalculate change in surface state from difference with previous timestep
-             chang(is) = state(is)-stateOld(is)
+             ! Recalculate change in surface state_id from difference with previous timestep
+             chang(is) = state_id(is)-stateOld(is)
 
-             ! If state exceeds limit, then excess goes to runoff (currently applies to water surf only)
-             IF (state(WaterSurf)>StateLimit(WaterSurf)) THEN
-                runoff(WaterSurf)=runoff(WaterSurf)+(state(WaterSurf)-StateLimit(WaterSurf))
-                state(WaterSurf)=StateLimit(WaterSurf)
+             ! If state_id exceeds limit, then excess goes to runoff (currently applies to water surf only)
+             IF (state_id(WaterSurf)>StateLimit(WaterSurf)) THEN
+                runoff(WaterSurf)=runoff(WaterSurf)+(state_id(WaterSurf)-StateLimit(WaterSurf))
+                state_id(WaterSurf)=StateLimit(WaterSurf)
                 runoffWaterBody=runoffWaterBody+runoff(WaterSurf)*sfr(WaterSurf)
              ELSE
-                state(WaterSurf)=state(WaterSurf)+surplusWaterBody
-                IF (state(WaterSurf)>StateLimit(WaterSurf)) THEN
-                   runoffWaterBody=runoffWaterBody+(state(WaterSurf)-StateLimit(WaterSurf))*sfr(WaterSurf)
-                   state(WaterSurf)=StateLimit(WaterSurf)
+                state_id(WaterSurf)=state_id(WaterSurf)+surplusWaterBody
+                IF (state_id(WaterSurf)>StateLimit(WaterSurf)) THEN
+                   runoffWaterBody=runoffWaterBody+(state_id(WaterSurf)-StateLimit(WaterSurf))*sfr(WaterSurf)
+                   state_id(WaterSurf)=StateLimit(WaterSurf)
                 ENDIF
              ENDIF
 
-             ! Recalculate change in surface state from difference with previous timestep
-             chang(is) = state(is)-stateOld(is)
+             ! Recalculate change in surface state_id from difference with previous timestep
+             chang(is) = state_id(is)-stateOld(is)
           ENDIF
 
        ENDIF   !end of WaterSurf
@@ -572,7 +572,7 @@ CONTAINS
 
   SUBROUTINE SUEWS_update_SoilMoist(&
        NonWaterFraction,&!input
-       soilstoreCap,sfr,soilmoist,&
+       soilstoreCap,sfr,soilmoist_id,&
        SoilMoistCap,SoilState,&!output
        vsmd,smd)
     IMPLICIT NONE
@@ -583,7 +583,7 @@ CONTAINS
 
     ! INTEGER,INTENT(in)::nsurf,ConifSurf,DecidSurf,GrassSurf
     REAL(KIND(1d0)),INTENT(in)::NonWaterFraction
-    REAL(KIND(1d0)),INTENT(in),DIMENSION(nsurf)::soilstoreCap,sfr,soilmoist
+    REAL(KIND(1d0)),INTENT(in),DIMENSION(nsurf)::soilstoreCap,sfr,soilmoist_id
 
     REAL(KIND(1d0)),INTENT(out)::SoilMoistCap,SoilState
     REAL(KIND(1d0)),INTENT(out)::vsmd,smd
@@ -597,7 +597,7 @@ CONTAINS
     IF (NonWaterFraction/=0) THEN !Soil states only calculated if soil exists. LJ June 2017
        DO is=1,nsurf-1   !No water body included
           SoilMoistCap=SoilMoistCap+(soilstoreCap(is)*sfr(is)/NonWaterFraction)
-          SoilState=SoilState+(soilmoist(is)*sfr(is)/NonWaterFraction)
+          SoilState=SoilState+(soilmoist_id(is)*sfr(is)/NonWaterFraction)
        ENDDO
     ENDIF
 
@@ -612,7 +612,7 @@ CONTAINS
        IF ( sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) ==0 ) THEN
           vsmd=0
        ELSE
-          vsmd=vsmd+(soilstoreCap(is) - soilmoist(is))*sfr(is)/(sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf))
+          vsmd=vsmd+(soilstoreCap(is) - soilmoist_id(is))*sfr(is)/(sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf))
        END IF
        !write(*,*) is, vsmd, smd
     ENDDO
@@ -624,7 +624,7 @@ CONTAINS
   SUBROUTINE SUEWS_cal_SoilMoist(&
        SMDMethod,xsmd,NonWaterFraction,SoilMoistCap,&!input
        SoilStoreCap,surf_chang_per_tstep,&
-       soilmoist,soilmoistOld,sfr,&
+       soilmoist_id,soilmoistOld,sfr,&
        smd,smd_nsurf,tot_chang_per_tstep,SoilState)!output
 
     IMPLICIT NONE
@@ -637,7 +637,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::SoilMoistCap
 
     REAL(KIND(1d0)),INTENT(in)::surf_chang_per_tstep
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::soilmoist
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::soilmoist_id
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::soilmoistOld
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::sfr
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::SoilStoreCap        !Capacity of soil store for each surface [mm]
@@ -654,7 +654,7 @@ CONTAINS
     SoilState=0       !Area-averaged soil moisture [mm] for whole surface
     IF (NonWaterFraction/=0) THEN !Fixed for water surfaces only
        DO is=1,nsurf-1   !No water body included
-          SoilState=SoilState+(soilmoist(is)*sfr(is)/NonWaterFraction)
+          SoilState=SoilState+(soilmoist_id(is)*sfr(is)/NonWaterFraction)
           IF (SoilState<0) THEN
              CALL ErrorHint(62,'SUEWS_Calculations: total SoilState < 0 (just added surface is) ',SoilState,NotUsed,is)
           ELSEIF (SoilState>SoilMoistCap) THEN
@@ -666,13 +666,13 @@ CONTAINS
 
     ! Calculate soil moisture deficit
     smd=SoilMoistCap-SoilState   !One value for whole surface
-    smd_nsurf=SoilstoreCap-soilmoist   !smd for each surface
+    smd_nsurf=SoilstoreCap-soilmoist_id   !smd for each surface
 
     ! Soil stores can change after horizontal water movements
-    ! Calculate total change in surface and soil state
-    tot_chang_per_tstep = surf_chang_per_tstep   !Change in surface state
+    ! Calculate total change in surface and soil state_id
+    tot_chang_per_tstep = surf_chang_per_tstep   !Change in surface state_id
     DO is=1,(nsurf-1)   !No soil for water surface (so change in soil moisture is zero)
-       tot_chang_per_tstep = tot_chang_per_tstep + ((SoilMoist(is)-soilmoistOld(is))*sfr(is))   !Add change in soil state
+       tot_chang_per_tstep = tot_chang_per_tstep + ((soilmoist_id(is)-soilmoistOld(is))*sfr(is))   !Add change in soil state_id
     ENDDO
 
     IF (SMDMethod>0) THEN
@@ -692,7 +692,7 @@ CONTAINS
        SurfaceArea,&!Surface area of the study area [m2]
        NonWaterFraction,&! sum of surface cover fractions for all except water surfaces
        tstep_real,& !tstep cast as a real for use in calculations
-       SoilMoist,&! inout: !Soil moisture of each surface type [mm]
+       soilmoist_id,&! inout: !Soil moisture of each surface type [mm]
        runoffSoil,&!Soil runoff from each soil sub-surface [mm]
        runoffSoil_per_tstep&!  output:!Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
        )
@@ -726,7 +726,7 @@ CONTAINS
     REAL(KIND(1d0)), INTENT(in) ::NonWaterFraction! sum of surface cover fractions for all except water surfaces
     REAL(KIND(1d0)), INTENT(in) ::tstep_real !tstep cast as a real for use in calculations
 
-    REAL(KIND(1d0)),DIMENSION(nsurf), INTENT(inout) ::SoilMoist!Soil moisture of each surface type [mm]
+    REAL(KIND(1d0)),DIMENSION(nsurf), INTENT(inout) ::soilmoist_id!Soil moisture of each surface type [mm]
     REAL(KIND(1d0)),DIMENSION(nsurf), INTENT(inout) ::runoffSoil!Soil runoff from each soil sub-surface [mm]
 
     REAL(KIND(1d0)), INTENT(out) :: runoffSoil_per_tstep!Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
@@ -779,7 +779,7 @@ CONTAINS
                 ! ---- For surface 1 -----------------------------------------------------
                 ! Calculate non-saturated VWC
                 SoilMoistCap_Vol1=SoilStoreCap(is)/SoilDepth(is) !Volumetric soil moisture capacity [m3 m-3] (i.e. saturated VWC)
-                SoilMoist_vol1=SoilMoist(is)/SoilDepth(is) !Volumetric soil moisture [m3 m-3]
+                SoilMoist_vol1=soilmoist_id(is)/SoilDepth(is) !Volumetric soil moisture [m3 m-3]
 
                 !B_r1=SoilMoistCap_Vol1-SoilMoist_vol1  !Residual soil moisture content [m3 m-3]
                 B_r1=0.1 !HCW 12/08/2014 Temporary fix
@@ -822,7 +822,7 @@ CONTAINS
                 ! ---- For surface 2 -----------------------------------------------------
                 ! Calculate non-saturated VWC
                 SoilMoistCap_Vol2=SoilStoreCap(jj)/SoilDepth(jj) !Volumetric soil moisture capacity [m3 m-3] (i.e. saturated VWC)
-                SoilMoist_vol2=SoilMoist(jj)/SoilDepth(jj) !Volumetric soil moisture [m3 m-3]
+                SoilMoist_vol2=soilmoist_id(jj)/SoilDepth(jj) !Volumetric soil moisture [m3 m-3]
 
                 !B_r2=SoilMoistCap_Vol2-SoilMoist_vol2  !Residual soil moisture content [m3 m-3]
                 B_r2=0.1 !HCW 12/08/2014 Temporary fix
@@ -879,35 +879,35 @@ CONTAINS
                 !Water moves only if (i) there is sufficient water to move and (ii) there is space to move it
 
                 ! If there is sufficient water in both surfaces, allow movement of dI to occur
-                IF ((SoilMoist(jj)>=dI*sfr(is)/sfr(jj)).AND.((SoilMoist(is)+dI)>=0)) THEN
-                   SoilMoist(is)=SoilMoist(is)+dI
-                   SoilMoist(jj)=SoilMoist(jj)-dI*sfr(is)/sfr(jj)  !Check (HCW 13/08/2014) - QUESTION: why adjust for jj and not is?
+                IF ((soilmoist_id(jj)>=dI*sfr(is)/sfr(jj)).AND.((soilmoist_id(is)+dI)>=0)) THEN
+                   soilmoist_id(is)=soilmoist_id(is)+dI
+                   soilmoist_id(jj)=soilmoist_id(jj)-dI*sfr(is)/sfr(jj)  !Check (HCW 13/08/2014) - QUESTION: why adjust for jj and not is?
 
                    ! If insufficient water in first surface to move dI, instead move as much as possible
-                ELSEIF ((SoilMoist(is)+dI)<0) THEN
-                   SoilMoist(jj)=SoilMoist(jj)+SoilMoist(is)*sfr(is)/sfr(jj) !HCW 12/08/2014 switched order of these two lines
-                   SoilMoist(is)=0    !Check (HCW 13/08/2014) - QUESTION: can SM actually go to zero, or is this inconsistent with SMres?
+                ELSEIF ((soilmoist_id(is)+dI)<0) THEN
+                   soilmoist_id(jj)=soilmoist_id(jj)+soilmoist_id(is)*sfr(is)/sfr(jj) !HCW 12/08/2014 switched order of these two lines
+                   soilmoist_id(is)=0    !Check (HCW 13/08/2014) - QUESTION: can SM actually go to zero, or is this inconsistent with SMres?
 
                    ! If insufficient water in second surface to move dI, instead move as much as possible
                 ELSE
-                   SoilMoist(is)=SoilMoist(is)+SoilMoist(jj)*sfr(jj)/sfr(is)
-                   SoilMoist(jj)=0
+                   soilmoist_id(is)=soilmoist_id(is)+soilmoist_id(jj)*sfr(jj)/sfr(is)
+                   soilmoist_id(jj)=0
                 ENDIF
 
                 !If soil moisture exceeds capacity, excess goes to soil runoff (first surface)
-                IF (SoilMoist(is)>SoilStoreCap(is)) THEN
-                   runoffSoil(is)=runoffSoil(is)+(SoilMoist(is)-SoilStoreCap(is))
-                   SoilMoist(is)=SoilStoreCap(is)
-                   !elseif (SoilMoist(is)<0) then  !HCW 13/08/2014 commented out as should never be true here anyway...
-                   !   SoilMoist(is)=0             ! ... and if so, need to do more here (i.e. account for other water too)
+                IF (soilmoist_id(is)>SoilStoreCap(is)) THEN
+                   runoffSoil(is)=runoffSoil(is)+(soilmoist_id(is)-SoilStoreCap(is))
+                   soilmoist_id(is)=SoilStoreCap(is)
+                   !elseif (soilmoist_id(is)<0) then  !HCW 13/08/2014 commented out as should never be true here anyway...
+                   !   soilmoist_id(is)=0             ! ... and if so, need to do more here (i.e. account for other water too)
                 ENDIF
 
                 !If soil moisture exceeds capacity, excess goes to soil runoff (second surface)
-                IF (SoilMoist(jj)>SoilStoreCap(jj)) THEN
-                   runoffSoil(jj)=runoffSoil(jj)+(SoilMoist(jj)-SoilStoreCap(jj))
-                   SoilMoist(jj)=SoilStoreCap(jj)
-                   !elseif (SoilMoist(jj)<0) then  !HCW 13/08/2014 commented out (as above)
-                   !	 SoilMoist(jj)=0
+                IF (soilmoist_id(jj)>SoilStoreCap(jj)) THEN
+                   runoffSoil(jj)=runoffSoil(jj)+(soilmoist_id(jj)-SoilStoreCap(jj))
+                   soilmoist_id(jj)=SoilStoreCap(jj)
+                   !elseif (soilmoist_id(jj)<0) then  !HCW 13/08/2014 commented out (as above)
+                   !	 soilmoist_id(jj)=0
                 ENDIF
 
              ENDIF  !end if second surface exists and is capable of storing water

@@ -1384,8 +1384,8 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv,rr)
   SurfaceChar(gridiv,c_HrProfPopWE) = Profiles_Coeff(iv5,cPr_Hours)
 
 
-! TS 05 Jul 2018: No longer needed as interpolation is done through specific subroutines at each required instant
-! the below is commented out by TS 05 Jul 2018
+  ! TS 05 Jul 2018: No longer needed as interpolation is done through specific subroutines at each required instant
+  ! the below is commented out by TS 05 Jul 2018
   ! ! ---- Interpolate Hourly Profiles to model timestep and normalise
   ! TstepProfiles(Gridiv,:,:) = -999   !Initialise TstepProfiles
   ! ! Energy use
@@ -1464,6 +1464,7 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
   USE sues_data
   USE time
   USE InitialCond
+  use DailyState_module,only:update_WaterUse_X
 
   IMPLICIT NONE
 
@@ -1476,7 +1477,7 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
        gamma1,gamma2          !switches related to cooling and heating degree days
   INTEGER::wd,seas,date,mb,&      !weekday information, season, date, month
        year_int,switch=0,&    !year as an integer, switch related to previous day
-       id_next,calc           !next day,counter in irrigation calculations
+       id_next           !next day,counter in irrigation calculations
 
   REAL (KIND(1d0))::PavedState,BldgsState,EveTrState,DecTrState,GrassState,BSoilState,WaterState,&
        SnowFracPaved,SnowFracBldgs,SnowFracEveTr,SnowFracDecTr,          &
@@ -1489,6 +1490,7 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
 
   INTEGER:: GridsInitialised=0   ! Number of grids initialised at start of model run
   INTEGER:: YearsInitialised=0   ! Number of years initialised at start of model run
+  INTEGER:: dayofWeek_id(3)
   REAL(KIND(1d0)):: NormalizeVegChar  !Function
 
   ! Define InitialConditions namelist ---------------------------------------
@@ -1969,67 +1971,75 @@ SUBROUTINE InitialState(GridName,year_int,Gridiv,NumberOfGrids)
   ! -----------------------------------------------------------------------
   ! Calculate daily water use if modelled (i.e. if WaterUseMethod = 0).
   ! Calculated from previous day information given in InitialConditions file
+  CALL SUEWS_cal_weekday(&
+       iy,id,lat,& !input
+       dayofWeek_id) !output
 
-  WUDay_id=0                !Initialize WUDay
-  IF (WaterUseMethod==0) THEN  !Model water use
-     calc=0
+  CALL update_WaterUse_X(&
+       id,WaterUseMethod,DayofWeek_id,lat,Faut,HDD_id,&!input
+       Ie_a,Ie_m,Ie_start,Ie_end,DayWatPer,DayWat,&
+       WUDay_id) !output
 
-     IF (DayWat(wd)==1.0) THEN !if DayWat(wd)=1.0 (irrigation occurs on this day)
-        IF (lat>=0) THEN            !Northern Hemisphere
-           IF (id>=Ie_start.AND.id<=Ie_end) calc=1 !if day between irrigation period
-        ELSE                        !Southern Hemisphere
-           calc=1
-           IF (id>=Ie_end.AND.id<=Ie_start) calc=0 !if day between irrigation period
-        ENDIF
-        IF(calc==1) THEN
-           ! Model daily water use based on HDD_id(6)(days since rain) and HDD_id(3)(average temp)
-
-           ! ---- Automatic irrigation (evergreen trees) ----
-           WUDay_id(2) = Faut*(Ie_a(1)+Ie_a(2)*HDD_id(3)+Ie_a(3)*HDD_id(6))*sfr(ConifSurf)*IrrFracConif*DayWatPer(wd)
-           IF (WUDay_id(2)<0) WUDay_id(2)=0   !If modelled WU is negative -> 0
-
-           ! ---- Manual irrigation (evergreen trees) ----
-           WUDay_id(3) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD_id(3)+Ie_m(3)*HDD_id(6))*sfr(ConifSurf)*IrrFracConif*DayWatPer(wd)
-           IF (WUDay_id(3)<0) WUDay_id(3)=0   !If modelled WU is negative -> 0
-
-           ! ---- Total evergreen trees water use (automatic + manual) ----
-           WUDay_id(1)=(WUDay_id(2)+WUDay_id(3))
-
-           ! ---- Automatic irrigation (deciduous trees) ----
-           WUDay_id(5) = Faut*(Ie_a(1)+Ie_a(2)*HDD_id(3)+Ie_a(3)*HDD_id(6))*sfr(DecidSurf)*IrrFracDecid*DayWatPer(wd)
-           IF (WUDay_id(5)<0) WUDay_id(5)=0   !If modelled WU is negative -> 0
-
-           ! ---- Manual irrigation (deciduous trees) ----
-           WUDay_id(6) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD_id(3)+Ie_m(3)*HDD_id(6))*sfr(DecidSurf)*&
-                IrrFracDecid*DayWatPer(wd)
-           IF (WUDay_id(6)<0) WUDay_id(6)=0   !If modelled WU is negative -> 0
-
-           ! ---- Total deciduous trees water use (automatic + manual) ----
-           WUDay_id(4)=(WUDay_id(5)+WUDay_id(6))
-
-           ! ---- Automatic irrigation (grass) ----
-           WUDay_id(8) = Faut*(Ie_a(1)+Ie_a(2)*HDD_id(3)+Ie_a(3)*HDD_id(6))*sfr(GrassSurf)*&
-                IrrFracGrass*DayWatPer(wd)
-           IF (WUDay_id(8)<0) WUDay_id(8)=0   !If modelled WU is negative -> 0
-           ! ---- Manual irrigation (grass) ----
-           WUDay_id(9) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD_id(3)+Ie_m(3)*HDD_id(6))*sfr(GrassSurf)*&
-                IrrFracGrass*DayWatPer(wd)
-           IF (WUDay_id(9)<0) WUDay_id(9)=0   !If modelled WU is negative -> 0
-           ! ---- Total grass water use (automatic + manual) ----
-           WUDay_id(7)=(WUDay_id(8)+WUDay_id(9))
-        ELSE
-           WUDay_id(1)=0
-           WUDay_id(2)=0
-           WUDay_id(3)=0
-           WUDay_id(4)=0
-           WUDay_id(5)=0
-           WUDay_id(6)=0
-           WUDay_id(7)=0
-           WUDay_id(8)=0
-           WUDay_id(9)=0
-        ENDIF
-     ENDIF
-  ENDIF
+  ! WUDay_id=0                !Initialize WUDay
+  ! IF (WaterUseMethod==0) THEN  !Model water use
+  !    calc=0
+  !
+  !    IF (DayWat(wd)==1.0) THEN !if DayWat(wd)=1.0 (irrigation occurs on this day)
+  !       IF (lat>=0) THEN            !Northern Hemisphere
+  !          IF (id>=Ie_start.AND.id<=Ie_end) calc=1 !if day between irrigation period
+  !       ELSE                        !Southern Hemisphere
+  !          calc=1
+  !          IF (id>=Ie_end.AND.id<=Ie_start) calc=0 !if day between irrigation period
+  !       ENDIF
+  !       IF(calc==1) THEN
+  !          ! Model daily water use based on HDD_id(6)(days since rain) and HDD_id(3)(average temp)
+  !
+  !          ! ---- Automatic irrigation (evergreen trees) ----
+  !          WUDay_id(2) = Faut*(Ie_a(1)+Ie_a(2)*HDD_id(3)+Ie_a(3)*HDD_id(6))*sfr(ConifSurf)*IrrFracConif*DayWatPer(wd)
+  !          IF (WUDay_id(2)<0) WUDay_id(2)=0   !If modelled WU is negative -> 0
+  !
+  !          ! ---- Manual irrigation (evergreen trees) ----
+  !          WUDay_id(3) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD_id(3)+Ie_m(3)*HDD_id(6))*sfr(ConifSurf)*IrrFracConif*DayWatPer(wd)
+  !          IF (WUDay_id(3)<0) WUDay_id(3)=0   !If modelled WU is negative -> 0
+  !
+  !          ! ---- Total evergreen trees water use (automatic + manual) ----
+  !          WUDay_id(1)=(WUDay_id(2)+WUDay_id(3))
+  !
+  !          ! ---- Automatic irrigation (deciduous trees) ----
+  !          WUDay_id(5) = Faut*(Ie_a(1)+Ie_a(2)*HDD_id(3)+Ie_a(3)*HDD_id(6))*sfr(DecidSurf)*IrrFracDecid*DayWatPer(wd)
+  !          IF (WUDay_id(5)<0) WUDay_id(5)=0   !If modelled WU is negative -> 0
+  !
+  !          ! ---- Manual irrigation (deciduous trees) ----
+  !          WUDay_id(6) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD_id(3)+Ie_m(3)*HDD_id(6))*sfr(DecidSurf)*&
+  !               IrrFracDecid*DayWatPer(wd)
+  !          IF (WUDay_id(6)<0) WUDay_id(6)=0   !If modelled WU is negative -> 0
+  !
+  !          ! ---- Total deciduous trees water use (automatic + manual) ----
+  !          WUDay_id(4)=(WUDay_id(5)+WUDay_id(6))
+  !
+  !          ! ---- Automatic irrigation (grass) ----
+  !          WUDay_id(8) = Faut*(Ie_a(1)+Ie_a(2)*HDD_id(3)+Ie_a(3)*HDD_id(6))*sfr(GrassSurf)*&
+  !               IrrFracGrass*DayWatPer(wd)
+  !          IF (WUDay_id(8)<0) WUDay_id(8)=0   !If modelled WU is negative -> 0
+  !          ! ---- Manual irrigation (grass) ----
+  !          WUDay_id(9) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD_id(3)+Ie_m(3)*HDD_id(6))*sfr(GrassSurf)*&
+  !               IrrFracGrass*DayWatPer(wd)
+  !          IF (WUDay_id(9)<0) WUDay_id(9)=0   !If modelled WU is negative -> 0
+  !          ! ---- Total grass water use (automatic + manual) ----
+  !          WUDay_id(7)=(WUDay_id(8)+WUDay_id(9))
+  !       ELSE
+  !          WUDay_id(1)=0
+  !          WUDay_id(2)=0
+  !          WUDay_id(3)=0
+  !          WUDay_id(4)=0
+  !          WUDay_id(5)=0
+  !          WUDay_id(6)=0
+  !          WUDay_id(7)=0
+  !          WUDay_id(8)=0
+  !          WUDay_id(9)=0
+  !       ENDIF
+  !    ENDIF
+  ! ENDIF
 
   ! -----------------------------------------------------------------------
 
@@ -2132,8 +2142,8 @@ SUBROUTINE NextInitial(GridName,year_int)
   !   id=id+1
   !endif
   WRITE(57,*)'&InitialConditions'
-  WRITE(57,*)'DaysSinceRain=',INT(HDD_id(6))
-  WRITE(57,*)'Temp_C0=',HDD_id(3)
+  WRITE(57,*)'DaysSinceRain=',INT(HDD_id(12))
+  WRITE(57,*)'Temp_C0=',HDD_id(9)
   !WRITE(57,*)'ID_Prev=',ID_Prev_Out  !No longer included in initial conditions (HCW 13 Jan 2017)
   WRITE(57,*)'GDD_1_0=',GDD_id(1)
   WRITE(57,*)'GDD_2_0=',GDD_id(2)

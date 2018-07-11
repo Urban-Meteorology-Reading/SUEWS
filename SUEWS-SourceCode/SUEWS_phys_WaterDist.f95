@@ -965,20 +965,21 @@ CONTAINS
     ! INTEGER,PARAMETER::ivDecid = 2
     ! INTEGER,PARAMETER::ivGrass = 3
 
-    REAL(KIND(1d0)),INTENT(in):: &
-         nsh_real,&
-         SurfaceArea,& !Surface area of the study area [m2]
-         sfr(nsurf),& !Surface fractions [-]
-         IrrFracConif,&!Fraction of evergreen trees which are irrigated
-         IrrFracDecid,&!Fraction of deciduous trees which are irrigated
-         IrrFracGrass,&!Fraction of grass which is irrigated
-                                ! WUProfA_tstep(24*NSH,2),& !Automatic water use profiles at model timestep
-                                ! WUProfM_tstep(24*NSH,2),& !Manual water use profiles at model timestep
-         WUProfA_24hr(0:23,2),& !Automatic water use profiles at hourly scales
-         WUProfM_24hr(0:23,2),& !Manual water use profiles at hourly scales
-         InternalWaterUse_h,& !Internal water use [mm h-1]
-         HDD_id(6),& !HDD(id-1), Heating Degree Days (see SUEWS_DailyState.f95)
-         WUDay_id(9) !WUDay(id-1), Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
+
+    REAL(KIND(1d0)),INTENT(in)::nsh_real
+    REAL(KIND(1d0)),INTENT(in)::SurfaceArea !Surface area of the study area [m2]
+    REAL(KIND(1d0)),INTENT(in)::sfr(nsurf)!Surface fractions [-]
+    REAL(KIND(1d0)),INTENT(in)::IrrFracConif!Fraction of evergreen trees which are irrigated
+    REAL(KIND(1d0)),INTENT(in)::IrrFracDecid!Fraction of deciduous trees which are irrigated
+    REAL(KIND(1d0)),INTENT(in)::IrrFracGrass!Fraction of grass which is irrigated
+    REAL(KIND(1d0)),INTENT(in)::InternalWaterUse_h !Internal water use [mm h-1]
+    ! WUProfA_tstep(24*NSH,2),& !Automatic water use profiles at model timestep
+    ! WUProfM_tstep(24*NSH,2),& !Manual water use profiles at model timestep
+    REAL(KIND(1d0)),DIMENSION(0:23,2),INTENT(in)::WUProfA_24hr !Automatic water use profiles at hourly scales
+    REAL(KIND(1d0)),DIMENSION(0:23,2),INTENT(in)::WUProfM_24hr !Manual water use profiles at hourly scales
+
+    REAL(KIND(1d0)),DIMENSION(12),INTENT(in)::HDD_id !HDD(id-1), Heating Degree Days (see SUEWS_DailyState.f95)
+    REAL(KIND(1d0)),DIMENSION(9),INTENT(in)::WUDay_id!WUDay(id-1), Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
 
     INTEGER,INTENT(in):: &
          DayofWeek_id(3),& !DayofWeek(id) 1 - day of week; 2 - month; 3 - season
@@ -1012,9 +1013,11 @@ CONTAINS
          wu!Water use for the model timestep [mm]
     INTEGER:: ih   !Hour corrected for Daylight savings
     INTEGER:: iu   !1=weekday OR 2=weekend
-    integer :: tstep ! timestep in second
+    INTEGER :: tstep ! timestep in second
     REAL(KIND(1d0)),PARAMETER::NAN=-999.
     REAL(KIND(1d0)):: OverUse
+    REAL(KIND(1d0)):: rain_cum_daily ! accumulated daily rainfall
+
     REAL(KIND(1d0)):: get_Prof_SpecTime_sum
 
     ! NB: set OverUse as 0 as done module_constants, TS 22 Oct 2017
@@ -1022,7 +1025,10 @@ CONTAINS
     OverUse=0
 
     ! timestep in second
-    tstep=int(3600/NSH)
+    tstep=INT(3600/NSH)
+
+    ! accumulated daily rainfall
+    rain_cum_daily=HDD_id(11)
 
     ! --------------------------------------------------------------------------------
     ! If water used is observed and provided in the met forcing file, units are m3
@@ -1088,7 +1094,7 @@ CONTAINS
        ! ---- Manual irrigation ----
        WuFr=1 !Initialize WuFr to 1, but if raining, reduce manual fraction of water use
        ! If cumulative daily precipitation exceeds 2 mm
-       IF(HDD_id(5)>2) THEN    !.and.WUDay(id-1,3)>0) then !Commented out HCW 23/01/2015
+       IF(rain_cum_daily>2) THEN    !.and.WUDay(id-1,3)>0) then !Commented out HCW 23/01/2015
           WuFr=0   ! 0 -> No manual irrigation if raining
        ENDIF
 

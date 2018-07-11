@@ -46,7 +46,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
        roughlenmommethod, smdmethod, snow_obs, snowuse, startdls, &
        storageheatmethod, t_critic_cooling, t_critic_heating, temp_c, &
        timezone, trafficrate, trafficunits, waterusemethod, xsmd
-  USE time, ONLY : iy, id, it, imin, isec, dectime, dt_since_start
+  USE time, ONLY : iy, id, it, imin, isec, dt_since_start
   USE allocateArray, ONLY: &
        alb, &
        AlbMax_DecTr, AlbMax_EveTr, AlbMax_grass, &
@@ -54,7 +54,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
        alpha_bioco2, alpha_enh_bioco2, baset, basete, &
        beta_bioco2, beta_enh_bioco2, capmax_dec, capmin_dec, &
        chanohm, cpanohm, emis, GDD_id, GDDfull,&
-       HDD_id,HDD_id_use, &
+       HDD_id, &
        DecidCap_id,&
        albDecTr_id,&
        albEveTr_id,&
@@ -75,7 +75,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
        waterdist, wetthresh, &
        WUDay_id,&
        AHProf_24Hr,HumActivity_24Hr,PopProf_24Hr,TraffProf_24Hr,WUProfA_24hr, WUProfM_24hr, &
-                                ! popprof_tstep, traffprof_tstep, humactivity_tstep, ahprof_tstep, wuprofa_tstep, wuprofm_tstep, &
        datetimeline, dataoutlinesuews, dataoutlinesnow, &
        dataoutlineestm, dailystateline, dataoutdailystate, &
        dataoutsuews, dataoutsnow, dataoutestm
@@ -125,12 +124,12 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
        alpha_bioCO2,alpha_enh_bioCO2,alt,avkdn,avRh,avU1,BaseT,BaseTe,&
        BaseTHDD,beta_bioCO2,beta_enh_bioCO2,bldgH,CapMax_dec,CapMin_dec,&
        chAnOHM,cpAnOHM,CRWmax,CRWmin,DayWat,DayWatPer,&
-       dectime,DecTreeH,Diagnose,DiagQN,DiagQS,DRAINRT,&
+       DecTreeH,Diagnose,DiagQN,DiagQS,DRAINRT,&
        dt_since_start,dqndt,qn1_av,dqnsdt,qn1_s_av,&
        EF_umolCO2perJ,emis,EmissionsMethod,EnEF_v_Jkm,endDLS,EveTreeH,FAIBldg,&
        FAIDecTree,FAIEveTree,Faut,FcEF_v_kgkm,fcld_obs,FlowChange,&
        FrFossilFuel_Heat,FrFossilFuel_NonHeat,G1,G2,G3,G4,G5,G6,GDD_id,&
-       GDDFull,Gridiv,gsModel,HDD_id,HDD_id_use,HumActivity_24hr,&
+       GDDFull,Gridiv,gsModel,HDD_id,HumActivity_24hr,&
        IceFrac,id,Ie_a,Ie_end,Ie_m,Ie_start,imin,&
        InternalWaterUse_h,IrrFracConif,IrrFracDecid,IrrFracGrass,isec,it,ity,&
        iy,kkAnOHM,Kmax,LAI_id,LAICalcYes,LAIMax,LAIMin,LAI_obs,&
@@ -154,21 +153,15 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
        theta_bioCO2,timezone,TL,TrafficRate,TrafficUnits,&
        TraffProf_24hr,Ts5mindata_ir,tstep,tstep_prev,veg_type,&
        WaterDist,WaterUseMethod,WetThresh,&
-       WUDay_id,&
-       DecidCap_id,&
-       albDecTr_id,&
-       albEveTr_id,&
-       albGrass_id,&
-       porosity_id,&
-       WUProfA_24hr,&
-       WUProfM_24hr,xsmd,Z,z0m_in,zdm_in,&
+       WUDay_id,DecidCap_id,albDecTr_id,albEveTr_id,albGrass_id,porosity_id,&
+       WUProfA_24hr,WUProfM_24hr,xsmd,Z,z0m_in,zdm_in,&
        datetimeLine,dataOutLineSUEWS,dataOutLineSnow,dataOutLineESTM,&!output
        DailyStateLine)!output
 
   !============ update and write out SUEWS_cal_DailyState ===============
   ! only works at the last timestep of a day
   CALL SUEWS_update_DailyState(&
-       iy, id, it, imin, dectime, &!input
+       id, datetimeLine, &!input
        Gridiv, NumberOfGrids, &
        DailyStateLine, &
        dataOutDailyState)!inout

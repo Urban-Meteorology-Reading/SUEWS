@@ -141,6 +141,11 @@ check:
 		$(MAKE) main;
 		cd $(SUEWS_test_dir); python test_dev.py
 
+# Build SuMin for WRF coupling
+sumin: $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST)
+		$(FC) SUEWS_ctrl_SuMin.f95  -c
+
+
 
 # If UTILS have changed, compile them again
 $(UTILS): $(subst .o,.f95, $(UTILS))

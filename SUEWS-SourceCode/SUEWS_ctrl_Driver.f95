@@ -36,12 +36,12 @@ CONTAINS
        alpha_bioCO2,alpha_enh_bioCO2,alt,avkdn,avRh,avU1,BaseT,BaseTe,&
        BaseTHDD,beta_bioCO2,beta_enh_bioCO2,bldgH,CapMax_dec,CapMin_dec,&
        chAnOHM,cpAnOHM,CRWmax,CRWmin,DayWat,DayWatPer,&
-       dectime,DecTreeH,Diagnose,DiagQN,DiagQS,DRAINRT,&
+       DecTreeH,Diagnose,DiagQN,DiagQS,DRAINRT,&
        dt_since_start,dqndt,qn1_av,dqnsdt,qn1_s_av,&
        EF_umolCO2perJ,emis,EmissionsMethod,EnEF_v_Jkm,endDLS,EveTreeH,FAIBldg,&
        FAIDecTree,FAIEveTree,Faut,FcEF_v_kgkm,fcld_obs,FlowChange,&
        FrFossilFuel_Heat,FrFossilFuel_NonHeat,G1,G2,G3,G4,G5,G6,GDD_id,&
-       GDDFull,Gridiv,gsModel,HDD_id,HDD_id_use,HumActivity_24hr,&
+       GDDFull,Gridiv,gsModel,HDD_id,HumActivity_24hr,&
        IceFrac,id,Ie_a,Ie_end,Ie_m,Ie_start,imin,&
        InternalWaterUse_h,IrrFracConif,IrrFracDecid,IrrFracGrass,isec,it,ity,&
        iy,kkAnOHM,Kmax,LAI_id,LAICalcYes,LAIMax,LAIMin,LAI_obs,&
@@ -65,14 +65,8 @@ CONTAINS
        theta_bioCO2,timezone,TL,TrafficRate,TrafficUnits,&
        TraffProf_24hr,Ts5mindata_ir,tstep,tstep_prev,veg_type,&
        WaterDist,WaterUseMethod,WetThresh,&
-       WUDay_id,&
-       DecidCap_id,&
-       albDecTr_id,&
-       albEveTr_id,&
-       albGrass_id,&
-       porosity_id,&
-       WUProfA_24hr,&
-       WUProfM_24hr,xsmd,Z,z0m_in,zdm_in,&
+       WUDay_id,DecidCap_id,albDecTr_id,albEveTr_id,albGrass_id,porosity_id,&
+       WUProfA_24hr,WUProfM_24hr,xsmd,Z,z0m_in,zdm_in,&
        datetimeLine,dataOutLineSUEWS,dataOutLineSnow,dataOutLineESTM,&!output
        DailyStateLine)!output
 
@@ -127,7 +121,6 @@ CONTAINS
     REAL(KIND(1D0)),INTENT(IN)::CapMin_dec
     REAL(KIND(1D0)),INTENT(IN)::CRWmax
     REAL(KIND(1D0)),INTENT(IN)::CRWmin
-    REAL(KIND(1D0)),INTENT(IN)::dectime
     REAL(KIND(1D0)),INTENT(IN)::DecTreeH
     REAL(KIND(1D0)),INTENT(IN)::DRAINRT
     REAL(KIND(1D0)),INTENT(IN)::EF_umolCO2perJ
@@ -303,8 +296,8 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)   ::soilmoist_id
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)   ::state_id
     REAL(KIND(1d0)),DIMENSION(5),INTENT(INOUT)       ::GDD_id !Growing Degree Days (see SUEWS_DailyState.f95)
-    REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT)       ::HDD_id !Heating Degree Days (see SUEWS_DailyState.f95)
-    REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT)       ::HDD_id_use !Heating Degree Days (see SUEWS_DailyState.f95)
+    REAL(KIND(1d0)),DIMENSION(12),INTENT(INOUT)       ::HDD_id !Heating Degree Days (see SUEWS_DailyState.f95)
+    ! REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT)       ::HDD_id_use !Heating Degree Days (see SUEWS_DailyState.f95)
     REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(INOUT)::LAI_id !LAI for each veg surface [m2 m-2]
     REAL(KIND(1d0)),DIMENSION(9),INTENT(OUT)::WUDay_id
 
@@ -488,12 +481,18 @@ CONTAINS
     INTEGER::nsh ! number of timesteps per hour
     REAL(KIND(1D0))::nsh_real ! nsh in type real
     REAL(KIND(1D0))::tstep_real ! tstep in type real
+    REAL(KIND(1D0))::dectime
 
     ! values that are derived from sfr (surface fractions)
     REAL(KIND(1D0))::VegFraction
     REAL(KIND(1D0))::ImpervFraction
     REAL(KIND(1D0))::PervFraction
     REAL(KIND(1D0))::NonWaterFraction
+
+    ! calculate dectime
+    CALL SUEWS_cal_dectime(&
+         id,it,imin,isec,& ! input
+         dectime) ! output
 
     ! calculate tstep related VARIABLES
     CALL SUEWS_cal_tstep(&
@@ -550,16 +549,9 @@ CONTAINS
          CapMax_dec,CapMin_dec,PorMax_dec,PorMin_dec,&
          Ie_a,Ie_m,DayWatPer,DayWat,SnowPack,&
          BaseT,BaseTe,GDDFull,SDDFull,LAIMin,LAIMax,LAIPower,&
-         SnowAlb,&!inout
-         GDD_id,&
-         HDD_id,HDD_id_use,&
-         SnowDens,LAI_id,LAI_id_prev,&
-         WUDay_id,&
-         DecidCap_id,&
-         albDecTr_id,&
-         albEveTr_id,&
-         albGrass_id,&
-         porosity_id,&
+         SnowAlb,SnowDens,&!inout
+         GDD_id,HDD_id,LAI_id,LAI_id_prev,WUDay_id,&
+         DecidCap_id,albDecTr_id,albEveTr_id,albGrass_id,porosity_id,&
          deltaLAI)!output
 
 
@@ -600,7 +592,7 @@ CONTAINS
          alpha_enh_bioCO2,avkdn,beta_bioCO2,beta_enh_bioCO2,dayofWeek_id,&
          Diagnose,DLS,EF_umolCO2perJ,EmissionsMethod,EnEF_v_Jkm,Fc,Fc_anthro,Fc_biogen,&
          Fc_build,FcEF_v_kgkm,Fc_metab,Fc_photo,Fc_respi,Fc_traff,FrFossilFuel_Heat,&
-         FrFossilFuel_NonHeat,HDD_id_use,HumActivity_24hr,id,imin,it,LAI_id,LAIMax,LAIMin,&
+         FrFossilFuel_NonHeat,HDD_id,HumActivity_24hr,id,imin,it,LAI_id,LAIMax,LAIMin,&
          MaxQFMetab,MinQFMetab,min_res_bioCO2,nsh,NumCapita,&
          PopDensDaytime,PopDensNighttime,PopProf_24hr,QF,QF0_BEU,Qf_A,Qf_B,Qf_C,QF_SAHP,&
          resp_a,resp_b,sfr,snowFrac,T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,&
@@ -613,7 +605,7 @@ CONTAINS
          id,tstep,dt_since_start,Diagnose,sfr,&
          OHM_coef,OHM_threshSW,OHM_threshWD,&
          soilmoist_id,soilstoreCap,state_id,nsh,SnowUse,DiagQS,&
-         HDD_id_use,MetForcingData_grid,Ts5mindata_ir,qf,qn1,&
+         HDD_id,MetForcingData_grid,Ts5mindata_ir,qf,qn1,&
          avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown,&
          bldgh,alb,emis,cpAnOHM,kkAnOHM,chAnOHM,EmissionsMethod,&
          Tair24HR,qn1_av,dqndt,qn1_s_av,dqnsdt,&!inout
@@ -657,7 +649,7 @@ CONTAINS
          SurfaceArea,sfr,&
          IrrFracConif,IrrFracDecid,IrrFracGrass,&
          dayofWeek_id,WUProfA_24hr,WUProfM_24hr,&
-         InternalWaterUse_h,HDD_id_use,WUDay_id,&
+         InternalWaterUse_h,HDD_id,WUDay_id,&
          WaterUseMethod,NSH,it,imin,DLS,&
          WUAreaEveTr_m2,WUAreaDecTr_m2,& ! output:
          WUAreaGrass_m2,WUAreaTotal_m2,&
@@ -694,7 +686,7 @@ CONTAINS
     !======== Evaporation and surface state_id ========
     CALL SUEWS_cal_QE(&
          Diagnose,&!input
-         id,tstep,imin,it,ity,snowCalcSwitch,DayofWeek_id,CRWmin,CRWmax,&
+         tstep,imin,it,ity,snowCalcSwitch,DayofWeek_id,CRWmin,CRWmax,&
          nsh_real,dectime,lvS_J_kg,lv_j_kg,avdens,avRh,Press_hPa,Temp_C,&
          RAsnow,psyc_hPa,avcp,sIce_hPa,&
          PervFraction,vegfraction,addimpervious,qn1_SF,qf,qs,vpd_hPa,s_hPa,&
@@ -814,7 +806,7 @@ CONTAINS
        alpha_enh_bioCO2,avkdn,beta_bioCO2,beta_enh_bioCO2,dayofWeek_id,&
        Diagnose,DLS,EF_umolCO2perJ,EmissionsMethod,EnEF_v_Jkm,Fc,Fc_anthro,Fc_biogen,&
        Fc_build,FcEF_v_kgkm,Fc_metab,Fc_photo,Fc_respi,Fc_traff,FrFossilFuel_Heat,&
-       FrFossilFuel_NonHeat,HDD_id_use,HumActivity_24hr,id,imin,it,LAI_id,LAIMax,LAIMin,&
+       FrFossilFuel_NonHeat,HDD_id,HumActivity_24hr,id,imin,it,LAI_id,LAIMax,LAIMin,&
        MaxQFMetab,MinQFMetab,min_res_bioCO2,nsh,NumCapita,&
        PopDensDaytime,PopDensNighttime,PopProf_24hr,QF,QF0_BEU,Qf_A,Qf_B,Qf_C,QF_SAHP,&
        resp_a,resp_b,sfr,snowFrac,T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,&
@@ -831,8 +823,7 @@ CONTAINS
     INTEGER,INTENT(in)::nsh
     ! INTEGER,INTENT(in)::notUsedI
     INTEGER,DIMENSION(3),INTENT(in)::dayofWeek_id
-    ! REAL(KIND(1d0)),DIMENSION(-4:ndays, 6),INTENT(in)::HDD
-    REAL(KIND(1d0)),DIMENSION(6),INTENT(in)::HDD_id_use
+    REAL(KIND(1d0)),DIMENSION(6,2),INTENT(in)::HDD_id
     REAL(KIND(1d0)),DIMENSION(2),INTENT(in)::Qf_A
     REAL(KIND(1d0)),DIMENSION(2),INTENT(in)::Qf_B
     REAL(KIND(1d0)),DIMENSION(2),INTENT(in)::Qf_C
@@ -964,7 +955,7 @@ CONTAINS
             FrFossilFuel_Heat,FrFossilFuel_NonHeat,&
             MinQFMetab,MaxQFMetab,&
             NumCapita,PopDensDaytime,PopDensNighttime,&
-            Temp_C,HDD_id_use,Qf_A,Qf_B,Qf_C,&
+            Temp_C,HDD_id,Qf_A,Qf_B,Qf_C,&
             AH_MIN,AH_SLOPE_Heating,AH_SLOPE_Cooling,&
             T_CRITIC_Heating,T_CRITIC_Cooling,&
             TrafficRate,&
@@ -1155,7 +1146,7 @@ CONTAINS
        id,tstep,dt_since_start,Diagnose,sfr,&
        OHM_coef,OHM_threshSW,OHM_threshWD,&
        soilmoist_id,soilstoreCap,state_id,nsh,SnowUse,DiagQS,&
-       HDD_id_use,MetForcingData_grid,Ts5mindata_ir,qf,qn1,&
+       HDD_id,MetForcingData_grid,Ts5mindata_ir,qf,qn1,&
        avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown,&
        bldgh,alb,emis,cpAnOHM,kkAnOHM,chAnOHM,EmissionsMethod,&
        Tair24HR,qn1_av,dqndt,qn1_s_av,dqnsdt,&!inout
@@ -1186,7 +1177,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::state_id(nsurf) ! wetness status
 
 
-    REAL(KIND(1d0)),DIMENSION(6),INTENT(in)::HDD_id_use
+    REAL(KIND(1d0)),DIMENSION(12),INTENT(in)::HDD_id
     REAL(KIND(1d0)),INTENT(in)::qf
     REAL(KIND(1d0)),INTENT(in)::qn1
     REAL(KIND(1d0)),INTENT(in)::qs_obs
@@ -1254,7 +1245,7 @@ CONTAINS
 
 
     ELSEIF(StorageHeatMethod==1) THEN           !Use OHM to calculate QS
-       Tair_mav_5d=HDD_id_use(4)
+       Tair_mav_5d=HDD_id(10)
        IF(Diagnose==1) WRITE(*,*) 'Calling OHM...'
        CALL OHM(qn1,qn1_av,dqndt,&
             qn1_S,qn1_s_av,dqnsdt,&
@@ -1268,8 +1259,6 @@ CONTAINS
             SnowUse,SnowFrac,&
             DiagQS,&
             a1,a2,a3,qs,deltaQi)
-
-
 
        ! use AnOHM to calculate QS, TS 14 Mar 2016
     ELSEIF (StorageHeatMethod==3) THEN
@@ -1286,8 +1275,6 @@ CONTAINS
             alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&! input
             sfr,nsurf,EmissionsMethod,id,Gridiv,&
             a1,a2,a3,qs,deltaQi)! output
-
-
 
 
        ! !Calculate QS using ESTM
@@ -1446,7 +1433,7 @@ CONTAINS
   ! TODO: optimise the structure of this function
   SUBROUTINE SUEWS_cal_QE(&
        Diagnose,&!input
-       id,tstep,imin,it,ity,snowCalcSwitch,dayofWeek_id,CRWmin,CRWmax,&
+       tstep,imin,it,ity,snowCalcSwitch,dayofWeek_id,CRWmin,CRWmax,&
        nsh_real,dectime,lvS_J_kg,lv_j_kg,avdens,avRh,Press_hPa,Temp_C,&
        RAsnow,psyc_hPa,avcp,sIce_hPa,&
        PervFraction,vegfraction,addimpervious,qn1_SF,qf,qs,vpd_hPa,s_hPa,&
@@ -1468,7 +1455,6 @@ CONTAINS
     IMPLICIT NONE
 
     INTEGER,INTENT(in) ::Diagnose
-    INTEGER,INTENT(in) ::id
     INTEGER,INTENT(in) ::tstep
     INTEGER,INTENT(in) ::imin
     INTEGER,INTENT(in) ::it
@@ -2258,23 +2244,7 @@ CONTAINS
 
   END SUBROUTINE SUEWS_cal_Diagnostics
 
-
-  ! Calculate tstep-derived variables
-  SUBROUTINE SUEWS_cal_tstep(&
-       tstep,& ! input
-       nsh, nsh_real, tstep_real) ! output
-    IMPLICIT NONE
-    INTEGER,INTENT(in)::tstep ! number of timesteps per hour
-    ! values that are derived from tstep
-    INTEGER,INTENT(out)::nsh ! number of timesteps per hour
-    REAL(KIND(1D0)),INTENT(out)::nsh_real ! nsh in type real
-    REAL(KIND(1D0)),INTENT(out)::tstep_real ! tstep in type real
-    nsh=3600/tstep
-    nsh_real=nsh*1.0
-    tstep_real=tstep*1.0
-
-  END SUBROUTINE SUEWS_cal_tstep
-
+  ! calculate several surface fraction related parameters
   SUBROUTINE SUEWS_cal_surf(&
        sfr,& !input
        vegfraction,ImpervFraction,PervFraction,NonWaterFraction) ! output
@@ -2295,46 +2265,6 @@ CONTAINS
   END SUBROUTINE SUEWS_cal_surf
 
 
-  SUBROUTINE SUEWS_cal_weekday(&
-       iy,id,lat,& !input
-       dayofWeek_id) !output
-    IMPLICIT NONE
-
-    INTEGER,INTENT(in) :: iy  ! year
-    INTEGER,INTENT(in) :: id  ! day of year
-    REAL(KIND(1d0)),INTENT(in):: lat
-
-    INTEGER,DIMENSION(3),INTENT(OUT) ::dayofWeek_id
-
-    INTEGER::wd
-    INTEGER::mb
-    INTEGER::date
-    INTEGER::seas
-
-
-
-    CALL day2month(id,mb,date,seas,iy,lat) !Calculate real date from doy
-    CALL Day_of_Week(date,mb,iy,wd)        !Calculate weekday (1=Sun, ..., 7=Sat)
-
-    dayofWeek_id(1)=wd      !Day of week
-    dayofWeek_id(2)=mb      !Month
-    dayofweek_id(3)=seas    !Season
-
-  END SUBROUTINE SUEWS_cal_weekday
-
-
-  SUBROUTINE SUEWS_cal_DLS(&
-       id,startDLS,endDLS,& !input
-       DLS) !output
-    IMPLICIT NONE
-
-    INTEGER, INTENT(in) :: id,startDLS,endDLS
-    INTEGER, INTENT(out) :: DLS
-
-    DLS=0
-    IF ( id>startDLS .AND. id<endDLS ) dls=1
-
-  END SUBROUTINE SUEWS_cal_DLS
 
   SUBROUTINE diagSfc(&
        xSurf,xFlux,us,VegFraction,z0m,L_mod,k,avdens,avcp,tlv,&
@@ -2356,7 +2286,6 @@ CONTAINS
          z2zd,z10zd!stability correction functions
     REAL(KIND(1d0)),PARAMETER :: muu=1.46e-5 !molecular viscosity
     REAL(KIND(1d0)),PARAMETER :: nan=-999
-
 
 
     !***************************************************************

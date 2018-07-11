@@ -247,7 +247,7 @@ MODULE allocateArray
   ! REAL(KIND(1d0)),DIMENSION(-4:ndays, nvegsurf):: LAI   !LAI for each veg surface [m2 m-2]
 
   REAL(KIND(1d0)),DIMENSION(5)        :: GDD_id,GDD_id_prev       !Growing Degree Days (see SUEWS_DailyState.f95)
-  REAL(KIND(1d0)),DIMENSION(6)        :: HDD_id,HDD_id_use       !Growing Degree Days (see SUEWS_DailyState.f95)
+  REAL(KIND(1d0)),DIMENSION(12)      :: HDD_id
   REAL(KIND(1d0)),DIMENSION(9)        :: WUDay_id,WUDay_id_prev !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
   REAL(KIND(1d0)),DIMENSION(nvegsurf) :: LAI_id,LAI_id_prev       !LAI for each veg surface [m2 m-2]
 
@@ -277,7 +277,7 @@ MODULE allocateArray
   ! REAL(KIND(1d0)),DIMENSION(-4:ndays, nvegsurf,MaxNumberOfGrids):: LAI_grids
 
   REAL(KIND(1d0)),DIMENSION(5,MaxNumberOfGrids):: GDD_id_grids
-  REAL(KIND(1d0)),DIMENSION(6,MaxNumberOfGrids):: HDD_id_grids,HDD_id_use_grids
+  REAL(KIND(1d0)),DIMENSION(12,MaxNumberOfGrids):: HDD_id_grids
   REAL(KIND(1d0)),DIMENSION(9,MaxNumberOfGrids):: WUDay_id_grids
   REAL(KIND(1d0)),DIMENSION(nvegsurf,MaxNumberOfGrids):: LAI_id_grids
 

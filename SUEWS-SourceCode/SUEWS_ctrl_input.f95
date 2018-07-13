@@ -705,7 +705,7 @@ ENDSUBROUTINE InputHeaderCheck
 
 !-------------------------------------------------------------------------
 !
-! TS 05 Jul 2018: No longer needed as interpolation is done through specific subroutines at each required instant 
+! TS 05 Jul 2018: No longer needed as interpolation is done through specific subroutines at each required instant
 !Interpolates hourly profiles provided in SUEWS_Profiles.txt
 ! to resolution of the model timestep
 ! HCW 06 Feb 2015
@@ -783,7 +783,7 @@ FUNCTION get_Prof_SpecTime_mean(Hour, Min, Sec, Prof_24h) RESULT(Prof_CurrTime)
   total_sec = Min * 60 + Sec
   SecPerHour = 3600
 
-  Prof_24h_mean=Prof_24h/(SUM(Prof_24h)/24)
+  Prof_24h_mean=MERGE(Prof_24h/(SUM(Prof_24h)), 0.d0, SUM(Prof_24h) /=0) ! prevent zero-division
   ! print*, Prof_24h_mean
 
   i = hour
@@ -815,7 +815,7 @@ FUNCTION get_Prof_SpecTime_sum(Hour, Min, Sec, Prof_24h, dt) RESULT(Prof_CurrTim
   total_sec = Min * 60 + Sec
   SecPerHour = 3600
 
-  Prof_24h_sum=Prof_24h/(SUM(Prof_24h))
+  Prof_24h_sum=MERGE(Prof_24h/(SUM(Prof_24h)), 0.d0, SUM(Prof_24h) /=0) ! prevent zero-division
 
   i = hour
   j = i + 1

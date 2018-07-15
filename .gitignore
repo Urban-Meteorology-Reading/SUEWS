@@ -26,5 +26,4 @@ workspace.xml
 10.SUEWS-FORTRAN.iml
 .idea
 BenchmarkTest/*.pyc
-*.o
-*.mod
+BaseRun

@@ -14,15 +14,16 @@ import tempfile
 import itertools
 
 # load global path
-dir_input = os.path.abspath(f90nml.read('config.nml')['file']['dir_input'])
-dir_exe = os.path.abspath(f90nml.read('config.nml')['file']['dir_exe'])
-dir_baserun = os.path.abspath(f90nml.read('config.nml')['file']['dir_baserun'])
+path_base=os.path.abspath(f90nml.read('BTS_config.nml')['file']
+dir_input = path_base['dir_input'])
+dir_exe = path_base['dir_exe'])
+dir_baserun = path_base['dir_baserun'])
 
 # load name of programme for testing
-name_exe = f90nml.read('config.nml')['file']['name_exe']
+name_exe = f90nml.read('BTS_config.nml')['file']['name_exe']
 
 # load physics options to test
-dict_phy_opt_sel = f90nml.read('config.nml')['physics_test']
+dict_phy_opt_sel = f90nml.read('BTS_config.nml')['physics_test']
 
 # %%auxiliary SUEWS functions
 # suppress error info if needed:
@@ -397,6 +398,10 @@ def test_samerun(dir_baserun, dir_save=tempfile.mkdtemp()):
 def test_physics(dict_runcontrol, dict_initcond, df_siteselect,
                  dict_phy_opt_sel,
                  dir_save=tempfile.mkdtemp()):
+
+    print('test_physics for',name_exe)
+    print 'running here:', dir_save
+
     # get options to test
     methods, options = zip(*dict_phy_opt_sel.items())
     options = [x if type(x) == list else [x] for x in options]
@@ -420,6 +425,8 @@ def test_physics(dict_runcontrol, dict_initcond, df_siteselect,
                     for k, v in dict_test.iteritems()}
 
     df_test = pd.DataFrame(list_to_test).assign(result=dict_test_OK.values())
+
+    df_test.to_csv('~/Downloads/df_test.csv')
     # test results
     list_method_test = [c for c in df_test.columns if not c == 'result']
     df_test_pass = pd.concat(
@@ -620,3 +627,10 @@ def _path_insensitive(path):
 #     res_test = np.array_equal(res_grid_single, res_grid_multi)
 #
 #     return res_test
+
+
+
+
+
+
+#

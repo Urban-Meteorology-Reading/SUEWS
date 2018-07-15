@@ -1,0 +1,39 @@
+&file
+    path_obs = '../BaseRun/London_KCL/Obs/London_KCL_obs_1h.txt'
+    path_ref = '../BaseRun/London_KCL/v2016a/Output/Kc1_2011_60.txt'
+    name_cfg(1) = 'v2016a'
+    path_cfg(1) = '../BaseRun/London_KCL/v2016a/Output/Kc1_2011_60.txt'
+    name_cfg(2) = 'v2018b'
+    path_cfg(2) = '../BaseRun/London_KCL/v2018b/Output/Kc1_2011_SUEWS_60.txt'
+    name_cfg(3) = 'v2018b-stab3'
+    path_cfg(3) = '../BaseRun/London_KCL/v2018b-stab3/Output/Kc1_2011_SUEWS_60.txt'
+    path_report_pdf = '../Report/comp-2016a_2018b_2018b-stab3'
+    path_report_html = '../Report/comp-2016a_2018b_2018b-stab3'
+
+
+    dir_exe = '../ReleaseRepo/build/Win10x64'
+    dir_input = './KCLTrial'
+    dir_baserun = './BaseRun/London_KCL/v2016a/Output'
+
+/
+
+&benchmark
+    list_var = 0
+    list_metric = 'MAE', 'MBE', 'RMSE'
+    method_score = 1
+/
+
+&test
+    ! not used at the moment
+    multi_grid = 1
+    multi_year = 1
+    sample_run = 1
+/
+
+&physics_test
+    snowuse            = 0, 1
+    stabilitymethod    = 2, 3, 4
+    netradiationmethod = 3
+    storageheatmethod  = 1, 3, 4
+    emissionsmethod    = 0, 1, 2
+/

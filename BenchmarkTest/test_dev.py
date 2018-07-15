@@ -61,6 +61,7 @@ class Test_SUEWS(unittest.TestCase):
 
         # `0` means no failure: all options can pass test
         res_test = len(res_list_fail) == 0
+        print res_list_fail
         # print out all faulty options
         if not res_test:
             print('faulty options found:')

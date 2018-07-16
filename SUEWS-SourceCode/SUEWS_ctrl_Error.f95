@@ -347,10 +347,10 @@
      WRITE(*,*) 'ERROR! SUEWS run stopped.'   !Print message to screen if program stopped
      CLOSE(500)
   ENDIF
-#ifdef wrf
-    print*,  'here in wrf'
-    print*, 1/(VALUE-VALUE)
-#endif
+! #ifdef wrf
+!     print*,  'here in wrf'
+!     print*, 1/(VALUE-VALUE)
+! #endif
   ! changed the if-clause bahaviour for WRF coupling, TS 16 Jul 2018
   !When returnTrue=false, then the program will stop
   IF(.not.returnTrue) THEN

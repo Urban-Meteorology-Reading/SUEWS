@@ -57,6 +57,9 @@ cov: suffix := _cov
 cov: TARGET := $(strip $(TARGET))$(strip $(suffix))
 
 
+# WRF coupling (SuMin) related options
+sumin: FFLAGS += -Dwrf=1
+
 clean: suffix :=
 clean: TARGET := $(strip $(TARGET))$(strip $(suffix))
 

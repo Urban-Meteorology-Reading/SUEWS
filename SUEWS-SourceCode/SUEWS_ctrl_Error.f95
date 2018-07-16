@@ -348,16 +348,18 @@
      CLOSE(500)
   ENDIF
 
-  ! temporarily disable the following code for WRF coupling
-  ! !When returnTrue=true, then the program can continue despite the warnings
-  ! IF(returnTrue) THEN
-  !    !write(*,*)'Problems.txt has been closed and overwritten if other errors occur'
-  !    RETURN  !Continue program
-  ! ENDIF
-  !
-  ! CALL PauseStop(ProblemFile)        !Stop the program
-  !
-  ! RETURN
+  ! changed the if-clause bahaviour for WRF coupling, TS 16 Jul 2018
+  !When returnTrue=false, then the program will stop
+  IF(.not.returnTrue) THEN
+     !write(*,*)'Problems.txt has been closed and overwritten if other errors occur'
+#ifdef wrf
+    CALL wrf_error_fatal ( 'fatal error in SUEWS and recorded in problem.txt' )
+#else
+    CALL PauseStop(ProblemFile)        !Stop the program
+#endif
+  ENDIF
+
+
 END SUBROUTINE ErrorHint
 
 !=============================================================

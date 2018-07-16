@@ -25,7 +25,7 @@ CONTAINS
        alb,emis,SnowAlb,OHM_coef,WaterDist,&
        AHProf_24hr,HumActivity_24hr,PopProf_24hr,TraffProf_24hr,WUProfA_24hr,WUProfM_24hr,&
        qn1_av,dqndt,qn1_s_av,dqnsdt,&
-       surf,DecidCap_id,albDecTr_id,albEveTr_id,albGrass_id,porosity_id,&
+       surf_var_id,DecidCap_id,albDecTr_id,albEveTr_id,albGrass_id,porosity_id,&
        GDD_id,HDD_id,LAI_id,WUDay_id,soilmoist_id,state_id,MeltWaterStore,&
        avkdn,avRh,avU1,Press_hPa,Temp_C,Precip,& ! forcing variables
        qh,qe,qsfc,tsk,CHKLOWQ)!output
@@ -98,14 +98,15 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(INOUT) ::albEveTr_id
     REAL(KIND(1d0)),INTENT(INOUT) ::albGrass_id
     REAL(KIND(1d0)),INTENT(INOUT) ::porosity_id
-    REAL(KIND(1d0)),DIMENSION(5),INTENT(INOUT)   ::GDD_id !Growing Degree Days (see SUEWS_DailyState.f95)
-    REAL(KIND(1d0)),DIMENSION(12),INTENT(INOUT)  ::HDD_id !Growing Degree Days (see SUEWS_DailyState.f95)
-    REAL(KIND(1d0)),DIMENSION(3),INTENT(INOUT)   ::LAI_id !LAI for each veg surface [m2 m-2]
+    REAL(KIND(1d0)),DIMENSION(5),INTENT(INOUT)   ::GDD_id       !Growing Degree Days (see SUEWS_DailyState.f95)
+    REAL(KIND(1d0)),DIMENSION(12),INTENT(INOUT)  ::HDD_id       !Growing Degree Days (see SUEWS_DailyState.f95)
+    REAL(KIND(1d0)),DIMENSION(3),INTENT(INOUT)   ::LAI_id       !LAI for each veg surface [m2 m-2]
     REAL(KIND(1d0)),DIMENSION(9),INTENT(INOUT)   ::WUDay_id
     REAL(KIND(1D0)),DIMENSION(7),INTENT(INOUT)   ::soilmoist_id
     REAL(KIND(1D0)),DIMENSION(7),INTENT(INOUT)   ::state_id
+    REAL(KIND(1d0)),DIMENSION(7),INTENT(INOUT)   ::surf_var_id !variable to store the current states
     REAL(KIND(1D0)),DIMENSION(7),INTENT(INOUT)   ::MeltWaterStore
-    REAL(KIND(1D0)),DIMENSION(6,7),INTENT(INOUT) ::surf
+
 
     ! forcing variables
     REAL(KIND(1D0)),INTENT(IN)::avkdn
@@ -213,12 +214,12 @@ CONTAINS
     ! 4 - Drainage coeff 2 [units depend on choice of eqn]
     ! 5 - max storage capacity [mm]
     REAL(KIND(1d0)),DIMENSION(5,7),PARAMETER:: surf_attr = RESHAPE(& ! variable to store the above five properties
-         [[ 0.48 , 0.25 , 1.3 , 0.3 , 1.9 , 0.8 , 0.5 ],           &
-         [ 3. , 3. , 2. , 2. , 2. , 3. , 0. ],                     &
-         [10. , 10. , 0.013, 0.013, 0.013, 10. , 0. ],             &
-         [ 3. , 3. , 1.71 , 1.71 , 1.71 , 3. , 0. ],               &
-         [ 0.48 , 0.25 , 1.3 , 0.8 , 1.9 , 0.8 , 0.5 ]],           &
-         [5,7])
+         [[ 0.48 , 0.25 , 1.3   , 0.3   , 1.9   , 0.8 , 0.5 ]  , &
+         [ 3.    , 3.   , 2.    , 2.    , 2.    , 3.  , 0. ]   , &
+         [10.    , 10.  , 0.013 , 0.013 , 0.013 , 10. , 0. ]   , &
+         [ 3.    , 3.   , 1.71  , 1.71  , 1.71  , 3.  , 0. ]   , &
+         [ 0.48  , 0.25 , 1.3   , 0.8   , 1.9   , 0.8 , 0.5 ]] , &
+         [5,7],order=[2,1])
 
 
     ! these will be assigned locally as data
@@ -342,6 +343,10 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutESTM-5)       ::dataOutLineESTM
     REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutDailyState-5) ::DailyStateLine
 
+    ! drainage related parameters
+    REAL(KIND(1D0)),DIMENSION(6,7)::surf
+    surf(1:5,:)=surf_attr
+    surf(6,:)=surf_var_id
 
     ! PRINT*,''
     ! PRINT*, 'soilmoist_id',soilmoist_id
@@ -399,6 +404,7 @@ CONTAINS
          DailyStateLine)!output
 
 
+    surf_var_id=surf(6,:) ! update surf_var_id
     qh=dataOutLineSUEWS(9)
     qe=dataOutLineSUEWS(10)
     qsfc=dataOutLineSUEWS(16)

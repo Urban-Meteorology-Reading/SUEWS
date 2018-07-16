@@ -1,4 +1,4 @@
- SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
+SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
   !errh        -- Create a numbered code for the situation so get a unique message to help solve the problem
   !ProblemFile -- Filename where the problem occurs/error message
   !value       -- Error value (real number with correct type)
@@ -14,19 +14,23 @@
   ! LJ  08 Feb 2013
   !--------------------------------------------------------------------
 
-  ! USE data_in
-  ! USE defaultNotUsed
-  ! USE WhereWhen
+  USE data_in
+  USE defaultNotUsed
+  USE WhereWhen
 
   IMPLICIT NONE
 
-  REAL(KIND(1d0)):: VALUE,value2,SuppressWarnings
+  REAL(KIND(1d0)):: VALUE,value2
 
   CHARACTER (len=*)::ProblemFile                 ! Name of the problem file
   CHARACTER (len=150)::text1='unknown problem'   ! Initialization of text
   INTEGER:: errh,ValueI,ValueI2                  ! v7,v8 initialised as false, HCW 28/10/2014
   INTEGER,DIMENSION(80):: ErrhCount = 0             ! Counts each time a error hint is called. Initialise to zero
   INTEGER:: WhichFile                            ! Used to switch between 500 for error file, 501 for warnings file
+
+  ! TS 16 Jul 2018:
+  ! these LOGICAL values should NOT be initialised as `SAVE` is implied
+  ! which will cause cross-assignment in parallel mode and thus subsequent unintentional STOP
   LOGICAL:: v1,v2,v3,v4,v5,v6,v7,v8
   LOGICAL:: returnTrue
 
@@ -44,7 +48,6 @@
   v7=.FALSE.
   v8=.FALSE.
 
-  SuppressWarnings=1
 
 
   !CALL gen_ProblemsText(ProblemFile)   !Call the subroutine that opens the problem.txt file !Moved below, HCW 17 Feb 2017
@@ -66,7 +69,7 @@
      text1='Rainfall in original met forcing file exceeds intensity threshold.'
      v2=.TRUE.
      returnTrue=.TRUE.
-  !5
+     !5
   ELSEIF(errh==6) THEN
      text1='Value obtained exceeds permitted range, setting to +/-9999 in output file.'
      v1=.TRUE.
@@ -87,7 +90,7 @@
   ELSEIF(errh==11) THEN
      text1='File not found.'
      v3=.TRUE.
-  ! 12
+     ! 12
   ELSEIF(errh==13) THEN
      text1='Check met forcing file.'
      v8=.TRUE.
@@ -98,7 +101,7 @@
      text1= 'Check H_Bldgs, H_EveTr and H_DecTr in SUEWS_SiteSelect.txt'
      v2=.TRUE.
      returnTrue=.TRUE.
-  ! 16
+     ! 16
   ELSEIF(errh==17) THEN
      text1= 'Problem with (z-zd) and/or z0.'
      v2=.TRUE.
@@ -311,7 +314,7 @@
   ENDIF
 
   ! Write out error message or warning message only if warnings are not suppressed
-  IF(WhichFile == 500 .or. (WhichFile == 501 .and. SuppressWarnings==0)) THEN
+  IF(WhichFile == 500 .OR. (WhichFile == 501 .AND. SuppressWarnings==0)) THEN
      !This part of the code determines how the error/warning message is written out
      IF(v1) THEN ! 1 real
         WRITE(WhichFile,'((a),(f9.4))')' Value: ', VALUE
@@ -335,7 +338,7 @@
   ENDIF
 
   ErrhCount(errh) = ErrhCount(errh) + 1   ! Increase error count by 1
-  print*, 'returnTrue',returnTrue
+  PRINT*, 'returnTrue',returnTrue
 
   ! Write errors (that stop the program) to problems.txt; warnings to warnings.txt
   IF(returnTrue) THEN
@@ -353,19 +356,12 @@
 
   ! changed the if-clause bahaviour for WRF coupling, TS 16 Jul 2018
   !When returnTrue=false, then the program will stop
-  print*, 'returnTrue before call stop',returnTrue
-  IF(returnTrue) THEN
-    print*, 'returnTrue in true',returnTrue
-    return
-  ELSE
+  IF(.NOT. returnTrue) THEN
      !write(*,*)'Problems.txt has been closed and overwritten if other errors occur'
 #ifdef wrf
-print*, 'returnTrue in false',returnTrue
-    print*,  'here in wrf'
-    print*, 1/(VALUE-VALUE)
-    ! CALL wrf_error_fatal ( 'fatal error in SUEWS and recorded in problem.txt' )
+     CALL wrf_error_fatal ( 'fatal error in SUEWS and recorded in problem.txt' )
 #else
-    ! CALL PauseStop(ProblemFile)        !Stop the program
+     CALL PauseStop(ProblemFile)        !Stop the program
 #endif
   ENDIF
 

@@ -393,15 +393,18 @@ PROGRAM SUEWS_Program
         ENDIF
 
         ! Allocate arrays to receive ESTM forcing data
-        ALLOCATE(ESTMForcingData(1:ReadLinesMetdata,ncolsESTMdata,NumberOfGrids))
-        ALLOCATE(Ts5mindata(1:ReadLinesMetdata,ncolsESTMdata))
-        ALLOCATE(Ts5mindata_ir(ncolsESTMdata))
-
-        IF (.NOT. ALLOCATED(Tair24HR)) ALLOCATE(Tair24HR(24*nsh))
+        ! IF (.NOT. ALLOCATED(ESTMForcingData)) ALLOCATE(ESTMForcingData(1:ReadLinesMetdata,ncolsESTMdata,NumberOfGrids))
+        ! IF (.NOT. ALLOCATED(Ts5mindata)) ALLOCATE(Ts5mindata(1:ReadLinesMetdata,ncolsESTMdata))
+        ! IF (.NOT. ALLOCATED(Ts5mindata_ir)) ALLOCATE(Ts5mindata_ir(ncolsESTMdata))
+        !
+        ! IF (.NOT. ALLOCATED(Tair24HR)) ALLOCATE(Tair24HR(24*nsh))
         ! if ( /= 0) print *, ": Deallocation request denied"
         ! ALLOCATE(Tair24HR(24*nsh))
 
      ENDIF
+     IF (.NOT. ALLOCATED(ESTMForcingData)) ALLOCATE(ESTMForcingData(1:ReadLinesMetdata,ncolsESTMdata,NumberOfGrids))
+     IF (.NOT. ALLOCATED(Ts5mindata)) ALLOCATE(Ts5mindata(1:ReadLinesMetdata,ncolsESTMdata))
+     IF (.NOT. ALLOCATED(Ts5mindata_ir)) ALLOCATE(Ts5mindata_ir(ncolsESTMdata))
      IF (.NOT. ALLOCATED(Tair24HR)) ALLOCATE(Tair24HR(24*nsh))
      ! ------------------------------------------------------------------------
 
@@ -691,22 +694,22 @@ PROGRAM SUEWS_Program
      DEALLOCATE(ModelOutputData)
      DEALLOCATE(dataOutSUEWS)
      DEALLOCATE(dataOutDailyState)
-     IF (SnowUse == 1) THEN
-        DEALLOCATE(dataOutSnow)
-        ! DEALLOCATE(qn1_S_store)
-        ! DEALLOCATE(qn1_S_av_store)
-        ! DEALLOCATE(qn1_S_store_grid)
-        ! DEALLOCATE(qn1_S_av_store_grid)
-        DEALLOCATE(qn1_s_av_grids)
-        DEALLOCATE(dqnsdt_grids)
-     ENDIF
-     IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
-        DEALLOCATE(dataOutESTM) !ESTM output
-        DEALLOCATE(ESTMForcingData)
-        DEALLOCATE(Ts5mindata)
-        DEALLOCATE(Ts5mindata_ir)
-        DEALLOCATE(Tair24HR)
-     ENDIF
+     ! IF (SnowUse == 1) THEN
+     DEALLOCATE(dataOutSnow)
+     ! DEALLOCATE(qn1_S_store)
+     ! DEALLOCATE(qn1_S_av_store)
+     ! DEALLOCATE(qn1_S_store_grid)
+     ! DEALLOCATE(qn1_S_av_store_grid)
+     DEALLOCATE(qn1_s_av_grids)
+     DEALLOCATE(dqnsdt_grids)
+     ! ENDIF
+     ! IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
+     DEALLOCATE(dataOutESTM) !ESTM output
+     DEALLOCATE(ESTMForcingData)
+     DEALLOCATE(Ts5mindata)
+     DEALLOCATE(Ts5mindata_ir)
+     DEALLOCATE(Tair24HR)
+     ! ENDIF
      ! DEALLOCATE(TstepProfiles)
      ! DEALLOCATE(AHProf_tstep)
      ! DEALLOCATE(WUProfM_tstep)

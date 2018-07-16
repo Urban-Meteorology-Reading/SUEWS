@@ -409,7 +409,7 @@ CONTAINS
     qe=dataOutLineSUEWS(10)
     qsfc=dataOutLineSUEWS(16)
     tsk=dataOutLineSUEWS(5)+273.15
-    CHKLOWQ=0.02
+    CHKLOWQ=1
 
     PRINT*,''
     PRINT*, 'avkdn,kup,ldown,lup,tsurf'

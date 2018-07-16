@@ -101,7 +101,7 @@ SUBROUTINE OverallRunControl
   MultRainAmongNUpperI = -999   ! no default setting for rain intensity upper bound
   KdownZen = 1              ! use zenith angle by default
 
-  SuppressWarnings=0        ! write warnings file
+  SuppressWarnings=1        ! write warnings file
   ResolutionFilesIn=0       ! Set to zero so that if not found, automatically set to Tstep below
 
   ! Set Diagnose switch to off (0). If Diagnose = 1 is set in RunControl, model progress will be printed

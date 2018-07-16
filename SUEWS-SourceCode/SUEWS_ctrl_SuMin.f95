@@ -223,12 +223,12 @@ CONTAINS
 
     ! these will be assigned locally as data
     ! use gsModel=2 as in Ward et al. (2016)
-    REAL (KIND(1d0)),PARAMETER::th   = 40   !Maximum temperature limit
+    REAL (KIND(1d0)),PARAMETER::th   = 55   !Maximum temperature limit
     REAL (KIND(1d0)),PARAMETER::tl   = -10  !Minimum temperature limit
     REAL (KIND(1d0)),PARAMETER::Kmax = 1200 !Annual maximum hourly solar radiation
     REAL (KIND(1d0)),PARAMETER::g1   = 3.5  !Fitted parameter
     REAL (KIND(1d0)),PARAMETER::g2   = 200  !Fitted parameter
-    REAL (KIND(1d0)),PARAMETER::g3   = 0.1  !Fitted parameter
+    REAL (KIND(1d0)),PARAMETER::g3   = 0.13 !Fitted parameter
     REAL (KIND(1d0)),PARAMETER::g4   = 0.7  !Fitted parameter
     REAL (KIND(1d0)),PARAMETER::g5   = 30   !Fitted parameter
     REAL (KIND(1d0)),PARAMETER::g6   = 0.05 !Fitted parameter
@@ -343,11 +343,11 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutDailyState-5) ::DailyStateLine
 
 
-    PRINT*,''
-    PRINT*, 'soilmoist_id',soilmoist_id
+    ! PRINT*,''
+    ! PRINT*, 'soilmoist_id',soilmoist_id
     ! soilmoist_id=MERGE(soilmoist_id,soilmoist_id*0,soilmoist_id>0)
     ! print*, 'soilmoist_id modified',soilmoist_id
-    PRINT*, 'state_id',state_id
+    ! PRINT*, 'state_id',state_id
 
 
     CALL SUEWS_cal_Main(&

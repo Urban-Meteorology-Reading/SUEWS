@@ -144,7 +144,7 @@ CONTAINS
     REAL(KIND(1D0)),PARAMETER:: qf_obs    = 0
     REAL(KIND(1D0)),PARAMETER:: qs_obs    = 0
 
-    REAL(KIND(1D0)),DIMENSION(7),PARAMETER ::SoilDepth = 0.2
+
 
 
     ! local variables not used for WRF coupling
@@ -153,7 +153,9 @@ CONTAINS
     INTEGER::Ie_start
 
     ! parameters used in SUEWS for now:
-    REAL(KIND(1d0)),DIMENSION(7),PARAMETER:: SoilStoreCap=[150., 150., 150., 150., 150., 150., 0.]        !Capacity of soil store for each surface [mm]
+    REAL(KIND(1d0)),DIMENSION(7),PARAMETER ::SoilStoreCap        = [150., 150., 150., 150., 150., 150., 0.] !Capacity of soil store for each surface [mm]
+    REAL(KIND(1D0)),DIMENSION(7),PARAMETER ::SoilDepth           = 350                                      !Depth of sub-surface soil store for each surface [mm]
+    REAL(KIND(1D0)),DIMENSION(7),PARAMETER ::SatHydraulicConduct = 5E-4                                     !Saturated hydraulic conductivity for each soil subsurface [mm s-1]
 
     REAL(KIND(1d0)),PARAMETER:: AlbMin_DecTr=0.12   !Min albedo for deciduous trees [-]
     REAL(KIND(1d0)),PARAMETER:: AlbMax_DecTr=0.18   !Max albedo for deciduous trees [-]
@@ -224,13 +226,13 @@ CONTAINS
     REAL (KIND(1d0)),PARAMETER::th   = 40   !Maximum temperature limit
     REAL (KIND(1d0)),PARAMETER::tl   = -10  !Minimum temperature limit
     REAL (KIND(1d0)),PARAMETER::Kmax = 1200 !Annual maximum hourly solar radiation
-    REAL (KIND(1d0)),PARAMETER::g1   = 3.5  !Fitted parameters related to
-    REAL (KIND(1d0)),PARAMETER::g2   = 200
-    REAL (KIND(1d0)),PARAMETER::g3   = 0.1
-    REAL (KIND(1d0)),PARAMETER::g4   = 0.7
-    REAL (KIND(1d0)),PARAMETER::g5   = 30
-    REAL (KIND(1d0)),PARAMETER::g6   = 0.05 !Fitted parameters related to
-    REAL (KIND(1d0)),PARAMETER::s1   = 5.56
+    REAL (KIND(1d0)),PARAMETER::g1   = 3.5  !Fitted parameter
+    REAL (KIND(1d0)),PARAMETER::g2   = 200  !Fitted parameter
+    REAL (KIND(1d0)),PARAMETER::g3   = 0.1  !Fitted parameter
+    REAL (KIND(1d0)),PARAMETER::g4   = 0.7  !Fitted parameter
+    REAL (KIND(1d0)),PARAMETER::g5   = 30   !Fitted parameter
+    REAL (KIND(1d0)),PARAMETER::g6   = 0.05 !Fitted parameter
+    REAL (KIND(1d0)),PARAMETER::s1   = 5.56 !Fitted parameter
     REAL (KIND(1d0)),PARAMETER::s2   = 0    !surface res. calculations
 
 
@@ -240,110 +242,99 @@ CONTAINS
 
     REAL (KIND(1d0)),PARAMETER::  BaseTHDD=18.9  !Base temperature for QF
 
+    REAL(KIND(1D0)),PARAMETER::xsmd=0. !Measured soil moisture deficit
+
+    REAL(KIND(1D0)),PARAMETER::Faut=0  !Fraction of irrigated area using automatic irrigation
+    REAL(KIND(1D0)),PARAMETER::InternalWaterUse_h=0 !Internal water use [mm h-1]
+    REAL(KIND(1D0)),PARAMETER::IrrFracConif=0 !Fraction of evergreen trees which are irrigated
+    REAL(KIND(1D0)),PARAMETER::IrrFracDecid=0 !Fraction of deciduous trees which are irrigated
+    REAL(KIND(1D0)),PARAMETER::IrrFracGrass=0 !Fraction of grass which is irrigated
+
+    REAL(KIND(1D0)),DIMENSION(7),PARAMETER ::DayWat    = 0                     !Days of watering allowed
+    REAL(KIND(1D0)),DIMENSION(7),PARAMETER ::DayWatPer = 0                     !% of houses following daily water
+    REAL(KIND(1D0)),DIMENSION(3),PARAMETER ::Ie_a      = [-84.535, 9.959, 3.674] !Coefficients for automatic irrigation models
+    REAL(KIND(1D0)),DIMENSION(3),PARAMETER ::Ie_m      = [-25.36 ,2.988, 1.102]  !Coefficients for manual irrigation models
+
 
     ! local variables
-    REAL(KIND(1D0))::CRWmax
-    REAL(KIND(1D0))::CRWmin
+    REAL(KIND(1D0)),PARAMETER::NARP_EMIS_SNOW =0.9 !NARP-specific parameters
+    REAL(KIND(1D0))::NARP_TRANS_SITE!NARP-specific parameters QUESTION: not used by SUEWS?
 
-    REAL(KIND(1D0))::EF_umolCO2perJ
-    REAL(KIND(1D0))::EnEF_v_Jkm
+    REAL(KIND(1D0)),PARAMETER::NumCapita        = 0 !Number of people in the study area per hectare [ha-1]
+    REAL(KIND(1D0)),PARAMETER::PopDensDaytime   = 0 ! Daytime population density [ha-1] (i.e. workers)
+    REAL(KIND(1D0)),PARAMETER::PopDensNighttime = 0 ! Nighttime population density [ha-1] (i.e. residents)
 
-    REAL(KIND(1D0))::Faut
-    REAL(KIND(1D0))::FcEF_v_kgkm
+    ! snow related local variables
+    REAL(KIND(1D0)),PARAMETER                   ::CRWmax         = 0.2   !Free water holding capacity of shallow SnowPack
+    REAL(KIND(1D0)),PARAMETER                   ::CRWmin         = 0.05  !Free water holding capacity of deep SnowPack
+    REAL(KIND(1D0)),PARAMETER                   ::PrecipLimit    = 2.2   !Temperature limit when precipitation occurs as snow
+    REAL(KIND(1D0)),PARAMETER                   ::PrecipLimitAlb = 2     !Precipitation limit for albedo change (in mm)
+    REAL(KIND(1D0)),PARAMETER                   ::RadMeltFact    = 0.001 !Radiation melt factor
+    REAL(KIND(1D0)),PARAMETER                   ::SnowAlbMax     = 0.8   !Minimum snow albedo
+    REAL(KIND(1D0)),PARAMETER                   ::SnowAlbMin     = 0.18 !Maximum snow albedo
+    REAL(KIND(1D0)),PARAMETER                   ::SnowDensMax    = 450   !Minimum density of snow
+    REAL(KIND(1D0)),PARAMETER                   ::SnowDensMin    = 100   !Maximum density of snow
+    REAL(KIND(1D0)),PARAMETER                   ::SnowLimBuild   = 100   !Snow removal limits for roofs in mm)
+    REAL(KIND(1D0)),PARAMETER                   ::SnowLimPaved   = 100   !Snow removal limits for paved surfaces in mm)
+    REAL(KIND(1D0)),PARAMETER                   ::tau_a          = 0.01  !Time constans related to albedo change
+    REAL(KIND(1D0)),PARAMETER                   ::tau_f          = 0.1   !Time constans related to albedo change
+    REAL(KIND(1D0)),PARAMETER                   ::tau_r          = 0.02  !Time constans related to albedo change
+    REAL(KIND(1D0)),PARAMETER                   ::TempMeltFact   = 0.12  !Temperature melt factor
+    REAL(KIND(1D0)),DIMENSION(7),PARAMETER      ::snowD          = 0
+    REAL(KIND(1D0)),DIMENSION(0:23,2),PARAMETER ::snowProf_24hr  = 0     ! Timing of snow removal (0 or 1) Hourly, WD/WE
 
 
-    REAL(KIND(1D0))::FrFossilFuel_Heat
-    REAL(KIND(1D0))::FrFossilFuel_NonHeat
-
-    REAL(KIND(1D0))::InternalWaterUse_h
-    REAL(KIND(1D0))::IrrFracConif
-    REAL(KIND(1D0))::IrrFracDecid
-    REAL(KIND(1D0))::IrrFracGrass
-
-
-    REAL(KIND(1D0))::MaxQFMetab
-    REAL(KIND(1D0))::MinQFMetab
-    REAL(KIND(1D0))::NARP_EMIS_SNOW
-    REAL(KIND(1D0))::NARP_TRANS_SITE
-    REAL(KIND(1D0))::NumCapita
-
-    REAL(KIND(1D0))::PopDensDaytime
-    REAL(KIND(1D0))::PopDensNighttime
-
-    REAL(KIND(1D0))::PrecipLimit
-    REAL(KIND(1D0))::PrecipLimitAlb
-    REAL(KIND(1D0))::RadMeltFact
-
-    REAL(KIND(1D0))::SnowAlbMax
-    REAL(KIND(1D0))::SnowAlbMin
-    REAL(KIND(1D0))::SnowDensMax
-    REAL(KIND(1D0))::SnowDensMin
-    REAL(KIND(1D0))::SnowLimBuild
-    REAL(KIND(1D0))::SnowLimPaved
-
-    REAL(KIND(1D0))::tau_a
-    REAL(KIND(1D0))::tau_f
-    REAL(KIND(1D0))::tau_r
-
-    REAL(KIND(1D0))::TempMeltFact
-
-    REAL(KIND(1D0))::TrafficUnits
-    REAL(KIND(1D0))::xsmd
-
+    ! Anthropogenic heat related variables
+    REAL(KIND(1D0)),DIMENSION(2),PARAMETER ::AH_MIN =10!Minimum anthropogenic heat flux (AnthropHeatMethod = 1)
+    REAL(KIND(1D0)),DIMENSION(2),PARAMETER ::AH_SLOPE_Cooling=[2.7,2.7]!Slope of the antrhropogenic heat flux calculation (AnthropHeatMethod = 1)
+    REAL(KIND(1D0)),DIMENSION(2),PARAMETER ::AH_SLOPE_Heating=[2.7,2.7]!Slope of the antrhropogenic heat flux calculation (AnthropHeatMethod = 1)
+    REAL(KIND(1D0)),DIMENSION(2),PARAMETER ::QF0_BEU=[0.7442,0.7955]
+    REAL(KIND(1D0)),DIMENSION(2),PARAMETER ::Qf_A=[0.1,0.1]!Qf coefficients
+    REAL(KIND(1D0)),DIMENSION(2),PARAMETER ::Qf_B=[0.00986,0.00986]!Qf coefficients
+    REAL(KIND(1D0)),DIMENSION(2),PARAMETER ::Qf_C=[0.0102,0.0102]!Qf coefficients
+    REAL(KIND(1D0)),DIMENSION(2),PARAMETER ::T_CRITIC_Cooling=[7,7] !Critical temperature
+    REAL(KIND(1D0)),DIMENSION(2),PARAMETER ::T_CRITIC_Heating=[7,7] !Critical temperature
+    REAL(KIND(1D0)),DIMENSION(2),PARAMETER ::TrafficRate=[0.0134,0.0095]
+    REAL(KIND(1D0)),PARAMETER::EF_umolCO2perJ=1.159
+    REAL(KIND(1D0)),PARAMETER::EnEF_v_Jkm=4e6
+    REAL(KIND(1D0)),PARAMETER::FcEF_v_kgkm=0.285
+    REAL(KIND(1D0)),PARAMETER::FrFossilFuel_Heat=0.05
+    REAL(KIND(1D0)),PARAMETER::FrFossilFuel_NonHeat=0
+    REAL(KIND(1D0)),PARAMETER::TrafficUnits=1
+    REAL(KIND(1D0)),PARAMETER::MaxQFMetab=175
+    REAL(KIND(1D0)),PARAMETER::MinQFMetab=75
 
 
 
-    REAL(KIND(1D0)),DIMENSION(2)               ::AH_MIN
-    REAL(KIND(1D0)),DIMENSION(2)               ::AH_SLOPE_Cooling
-    REAL(KIND(1D0)),DIMENSION(2)               ::AH_SLOPE_Heating
-    REAL(KIND(1D0)),DIMENSION(2)               ::QF0_BEU
-    REAL(KIND(1D0)),DIMENSION(2)               ::Qf_A
-    REAL(KIND(1D0)),DIMENSION(2)               ::Qf_B
-    REAL(KIND(1D0)),DIMENSION(2)               ::Qf_C
-    REAL(KIND(1D0)),DIMENSION(2)               ::T_CRITIC_Cooling
-    REAL(KIND(1D0)),DIMENSION(2)               ::T_CRITIC_Heating
-    REAL(KIND(1D0)),DIMENSION(2)               ::TrafficRate
-    REAL(KIND(1D0)),DIMENSION(3)               ::Ie_a
-    REAL(KIND(1D0)),DIMENSION(3)               ::Ie_m
-
-    REAL(KIND(1D0)),DIMENSION(7)               ::DayWat
-    REAL(KIND(1D0)),DIMENSION(7)               ::DayWatPer
 
     ! AnOHM related: not used
-    REAL(KIND(1D0)),DIMENSION(7)               ::chAnOHM
-    REAL(KIND(1D0)),DIMENSION(7)               ::cpAnOHM
-    REAL(KIND(1D0)),DIMENSION(7)               ::kkAnOHM
+    REAL(KIND(1D0)),DIMENSION(7),PARAMETER ::chAnOHM = 3   ! bulk transfer coef., added by TS AnOHM
+    REAL(KIND(1D0)),DIMENSION(7),PARAMETER ::cpAnOHM = 2e6 ! heat capacity, added by TS AnOHM
+    REAL(KIND(1D0)),DIMENSION(7),PARAMETER ::kkAnOHM = 1.2 ! heat conductivity, added by TS AnOHM
     REAL(KIND(1D0)),DIMENSION(:,:),ALLOCATABLE ::MetForcingData_grid
 
-    REAL(KIND(1D0)),DIMENSION(7)               ::SatHydraulicConduct
 
-    REAL(KIND(1D0)),DIMENSION(7)               ::snowD
+    !Biogenic CO2 related parameters
+    REAL(KIND(1D0)),DIMENSION(3),PARAMETER ::alpha_bioCO2     = 0.005
+    REAL(KIND(1D0)),DIMENSION(3),PARAMETER ::alpha_enh_bioCO2 = 0.016
+    REAL(KIND(1D0)),DIMENSION(3),PARAMETER ::beta_bioCO2      = 8.747
+    REAL(KIND(1D0)),DIMENSION(3),PARAMETER ::beta_enh_bioCO2  = 33.454
+    REAL(KIND(1D0)),DIMENSION(3),PARAMETER ::min_res_bioCO2   = 0.6
+    REAL(KIND(1D0)),DIMENSION(3),PARAMETER ::resp_a           = 2.43
+    REAL(KIND(1D0)),DIMENSION(3),PARAMETER ::resp_b           = 0
+    REAL(KIND(1D0)),DIMENSION(3),PARAMETER ::theta_bioCO2     = 0.96
 
 
-    REAL(KIND(1D0)),DIMENSION(3)               ::alpha_bioCO2
-    REAL(KIND(1D0)),DIMENSION(3)               ::alpha_enh_bioCO2
-
-    REAL(KIND(1D0)),DIMENSION(3)               ::beta_bioCO2
-    REAL(KIND(1D0)),DIMENSION(3)               ::beta_enh_bioCO2
-
-    REAL(KIND(1D0)),DIMENSION(3)               ::min_res_bioCO2
-    REAL(KIND(1D0)),DIMENSION(3)               ::resp_a
-    REAL(KIND(1D0)),DIMENSION(3)               ::resp_b
-
-    REAL(KIND(1D0)),DIMENSION(0:23,2)          ::snowProf_24hr
-    REAL(KIND(1D0)),DIMENSION(3)               ::theta_bioCO2
+    ! ESTM related variables
+    REAL(KIND(1d0)),DIMENSION(24*3600/tstep)   ::Tair24HR
     REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE   ::Ts5mindata_ir !TODO:allocatable array can't serve as argument?
 
 
-    REAL(KIND(1D0))                            ::SnowfallCum
-    REAL(KIND(1d0)),DIMENSION(24*3600/tstep)   ::Tair24HR
-
-
-    REAL(KIND(1D0)),DIMENSION(7)               ::IceFrac
-    REAL(KIND(1D0)),DIMENSION(7)               ::SnowDens
-    REAL(KIND(1D0)),DIMENSION(7)               ::snowFrac
-    REAL(KIND(1D0)),DIMENSION(7)               ::SnowPack
-
+    REAL(KIND(1D0))              ::SnowfallCum = 0   !Cumulative snowfall
+    REAL(KIND(1D0)),DIMENSION(7) ::IceFrac     = 0.2 !Estimated fraction of ice. Should be improved in the future
+    REAL(KIND(1D0)),DIMENSION(7) ::SnowDens    = 300 !Density of snow
+    REAL(KIND(1D0)),DIMENSION(7) ::snowFrac    = 0   !!Surface fraction of snow cover
+    REAL(KIND(1D0)),DIMENSION(7) ::SnowPack    = 0   !Amount of snow on each surface in mm
 
     REAL(KIND(1D0)),DIMENSION(5)                           ::datetimeLine
     REAL(KIND(1D0)),DIMENSION(ncolumnsDataOutSUEWS-5)      ::dataOutLineSUEWS

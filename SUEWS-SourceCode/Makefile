@@ -11,7 +11,7 @@ TARGET     := $(strip $(subst $\', ,${TARGET_str})) # program name
 # so gfortran dependency can be relaxed
 # but netCDF is still linked in the dynamic way as suggested by UCAR
 SUEWS_build_base = ../ReleaseRepo/build/
-SUEWS_test_dir = ../BenchmarkTest/
+SUEWS_test_dir = ../BenchmarkTest/code
 
 ifeq ($(OS),Windows_NT)
 			C_MODULE = strptime.o # this is needed by datetime_module: mingw lacks `strptime`
@@ -33,9 +33,12 @@ else
 			endif
 endif
 
-FFLAGS = $(STATIC) -g -pg -Wall -Wtabs -fbounds-check -cpp \
-					-Wno-unused-dummy-argument -Wno-unused-variable \
-					-fbacktrace -ffpe-trap=zero,overflow,underflow,invalid,denormal
+FCNOOPT = -O0
+FCDEBUG = -g $(FCNOOPT) -fbacktrace -ggdb -fcheck=bounds,do,mem,pointer -ffpe-trap=invalid,zero,overflow
+FCPROF = -pg
+
+FFLAGS = $(STATIC) $(FCDEBUG) -Wall -Wtabs -fbounds-check -cpp \
+					-Wno-unused-dummy-argument -Wno-unused-variable
 CFLAGS =
 
 
@@ -77,8 +80,8 @@ MODULES =	SUEWS_phys_NARP.o \
 					SUEWS_phys_Snow.o \
 					SUEWS_phys_DailyState.o \
 					SUEWS_phys_ESTM.o \
-					SUEWS_phys_AnOHM.o \
 					SUEWS_ctrl_Output.o \
+					SUEWS_phys_AnOHM.o \
 					SUEWS_ctrl_Driver.o
 
 # Rest of the files including modules and functions which are independent
@@ -139,7 +142,7 @@ cov: SUEWS_Program.f95 $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(T
 check:
 		$(MAKE) clean;
 		$(MAKE) main;
-		cd $(SUEWS_test_dir); python test_dev.py
+		cd $(SUEWS_test_dir); python 1.test_dev.py
 
 # Build SuMin for WRF coupling
 sumin: $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST)

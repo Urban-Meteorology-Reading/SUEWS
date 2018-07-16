@@ -27,8 +27,8 @@
   INTEGER:: errh,ValueI,ValueI2                  ! v7,v8 initialised as false, HCW 28/10/2014
   INTEGER,DIMENSION(80):: ErrhCount = 0             ! Counts each time a error hint is called. Initialise to zero
   INTEGER:: WhichFile                            ! Used to switch between 500 for error file, 501 for warnings file
-  LOGICAL:: v1=.FALSE.,v2=.FALSE.,v3=.FALSE.,v4=.FALSE.,v5=.FALSE.,v6=.FALSE.,v7=.FALSE.,v8=.FALSE.
-  LOGICAL:: returnTrue=.FALSE.
+  LOGICAL:: v1,v2,v3,v4,v5,v6,v7,v8
+  LOGICAL:: returnTrue
 
   ! Initialise returnTrue as false (HCW 29/10/2014)
   ! - need to do this in Fortran as values assigned in declarations are not applied

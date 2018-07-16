@@ -272,24 +272,24 @@ PROGRAM SUEWS_Program
      dataOutDailyState=NaN ! initialise DailyState
      IF (SOLWEIGuse == 1) ALLOCATE(dataOutSOL(ReadLinesMetdata,ncolumnsdataOutSOL,NumberOfGrids))     !SOLWEIG POI output
      IF (CBLuse >= 1)     ALLOCATE(dataOutBL(ReadLinesMetdata,ncolumnsdataOutBL,NumberOfGrids))       !CBL output
-     IF (SnowUse == 1) THEN
-        ALLOCATE(dataOutSnow(ReadLinesMetdata,ncolumnsDataOutSnow,NumberOfGrids))   !Snow output
-        ! ALLOCATE(qn1_S_store(NSH,NumberOfGrids))
-        ! ALLOCATE(qn1_S_store_grid(NSH))
-        ! ALLOCATE(qn1_S_av_store(2*NSH+1,NumberOfGrids))
-        ! ALLOCATE(qn1_S_av_store_grid(2*NSH+1))
-        ALLOCATE(qn1_s_av_grids(NumberOfGrids))
-        ALLOCATE(dqnsdt_grids(NumberOfGrids))
-        ! qn1_S_store(:,:) = NAN
-        ! qn1_S_av_store(:,:) = NaN
-        ! qn1_S_store_grid(:) = NAN
-        ! qn1_S_av_store_grid(:) = NaN
-        qn1_s_av_grids=0 ! Initialise to 0
-        dqnsdt_grids=0 ! Initialise to 0
-     ENDIF
-     IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
-        ALLOCATE(dataOutESTM(ReadlinesMetdata,32,NumberOfGrids)) !ESTM output
-     ENDIF
+     ! IF (SnowUse == 1) THEN
+     IF ( .NOT.  ALLOCATED(dataOutSnow)) ALLOCATE(dataOutSnow(ReadLinesMetdata,ncolumnsDataOutSnow,NumberOfGrids))   !Snow output
+     ! ALLOCATE(qn1_S_store(NSH,NumberOfGrids))
+     ! ALLOCATE(qn1_S_store_grid(NSH))
+     ! ALLOCATE(qn1_S_av_store(2*NSH+1,NumberOfGrids))
+     ! ALLOCATE(qn1_S_av_store_grid(2*NSH+1))
+     IF ( .NOT. ALLOCATED(qn1_s_av_grids)) ALLOCATE(qn1_s_av_grids(NumberOfGrids))
+     IF ( .NOT. ALLOCATED(dqnsdt_grids)) ALLOCATE(dqnsdt_grids(NumberOfGrids))
+     ! qn1_S_store(:,:) = NAN
+     ! qn1_S_av_store(:,:) = NaN
+     ! qn1_S_store_grid(:) = NAN
+     ! qn1_S_av_store_grid(:) = NaN
+     qn1_s_av_grids=0 ! Initialise to 0
+     dqnsdt_grids=0 ! Initialise to 0
+     ! ENDIF
+     ! IF (StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
+     IF ( .NOT. ALLOCATED(dataOutESTM)) ALLOCATE(dataOutESTM(ReadlinesMetdata,32,NumberOfGrids)) !ESTM output
+     ! ENDIF
      ! ALLOCATE(TstepProfiles(NumberOfGrids,14,24*NSH))   !Hourly profiles interpolated to model timestep
      ! ALLOCATE(AHProf_tstep(24*NSH,2))                   !Anthropogenic heat profiles at model timestep
      ! ALLOCATE(WUProfM_tstep(24*NSH,2))                  !Manual water use profiles at model timestep
@@ -402,6 +402,7 @@ PROGRAM SUEWS_Program
         ! ALLOCATE(Tair24HR(24*nsh))
 
      ENDIF
+     IF (.NOT. ALLOCATED(Tair24HR)) ALLOCATE(Tair24HR(24*nsh))
      ! ------------------------------------------------------------------------
 
 
@@ -704,7 +705,7 @@ PROGRAM SUEWS_Program
         DEALLOCATE(ESTMForcingData)
         DEALLOCATE(Ts5mindata)
         DEALLOCATE(Ts5mindata_ir)
-        ! DEALLOCATE(Tair24HR)
+        DEALLOCATE(Tair24HR)
      ENDIF
      ! DEALLOCATE(TstepProfiles)
      ! DEALLOCATE(AHProf_tstep)

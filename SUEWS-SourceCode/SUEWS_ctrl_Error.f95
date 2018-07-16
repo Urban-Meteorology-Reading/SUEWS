@@ -348,16 +348,16 @@
      CLOSE(500)
   ENDIF
 
-
-  !When returnTrue=true, then the program can continue despite the warnings
-  IF(returnTrue) THEN
-     !write(*,*)'Problems.txt has been closed and overwritten if other errors occur'
-     RETURN  !Continue program
-  ENDIF
-
-  CALL PauseStop(ProblemFile)        !Stop the program
-
-  RETURN
+  ! temporarily disable the following code for WRF coupling
+  ! !When returnTrue=true, then the program can continue despite the warnings
+  ! IF(returnTrue) THEN
+  !    !write(*,*)'Problems.txt has been closed and overwritten if other errors occur'
+  !    RETURN  !Continue program
+  ! ENDIF
+  !
+  ! CALL PauseStop(ProblemFile)        !Stop the program
+  !
+  ! RETURN
 END SUBROUTINE ErrorHint
 
 !=============================================================

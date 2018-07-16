@@ -351,11 +351,14 @@
 
   ! changed the if-clause bahaviour for WRF coupling, TS 16 Jul 2018
   !When returnTrue=false, then the program will stop
+  print*, 'returnTrue before call stop',returnTrue
   IF(returnTrue) THEN
+    print*, 'returnTrue in true',returnTrue
     return
   ELSE
      !write(*,*)'Problems.txt has been closed and overwritten if other errors occur'
 #ifdef wrf
+print*, 'returnTrue in false',returnTrue
     print*,  'here in wrf'
     print*, 1/(VALUE-VALUE)
     ! CALL wrf_error_fatal ( 'fatal error in SUEWS and recorded in problem.txt' )

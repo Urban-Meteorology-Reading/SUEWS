@@ -353,6 +353,8 @@
   IF(.not.returnTrue) THEN
      !write(*,*)'Problems.txt has been closed and overwritten if other errors occur'
 #ifdef wrf
+    print*,  'here in wrf'
+    print*, 1/(v2-v2)
     CALL wrf_error_fatal ( 'fatal error in SUEWS and recorded in problem.txt' )
 #else
     CALL PauseStop(ProblemFile)        !Stop the program

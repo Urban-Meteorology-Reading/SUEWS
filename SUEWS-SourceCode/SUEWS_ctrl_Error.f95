@@ -333,6 +333,7 @@
   ENDIF
 
   ErrhCount(errh) = ErrhCount(errh) + 1   ! Increase error count by 1
+  print*, 'returnTrue',returnTrue
 
   ! Write errors (that stop the program) to problems.txt; warnings to warnings.txt
   IF(returnTrue) THEN

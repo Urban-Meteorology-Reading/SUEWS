@@ -14,13 +14,13 @@
   ! LJ  08 Feb 2013
   !--------------------------------------------------------------------
 
-  USE data_in
-  USE defaultNotUsed
-  USE WhereWhen
+  ! USE data_in
+  ! USE defaultNotUsed
+  ! USE WhereWhen
 
   IMPLICIT NONE
 
-  REAL(KIND(1d0)):: VALUE,value2
+  REAL(KIND(1d0)):: VALUE,value2,SuppressWarnings
 
   CHARACTER (len=*)::ProblemFile                 ! Name of the problem file
   CHARACTER (len=150)::text1='unknown problem'   ! Initialization of text
@@ -43,6 +43,8 @@
   v6=.FALSE.
   v7=.FALSE.
   v8=.FALSE.
+
+  SuppressWarnings=1
 
 
   !CALL gen_ProblemsText(ProblemFile)   !Call the subroutine that opens the problem.txt file !Moved below, HCW 17 Feb 2017
@@ -338,12 +340,12 @@
   ! Write errors (that stop the program) to problems.txt; warnings to warnings.txt
   IF(returnTrue) THEN
      IF(SuppressWarnings==0) THEN
-        WRITE(501,'(4(a))') ' Grid: ',TRIM(ADJUSTL(GridID_text)),'   DateTime: ',datetime  !Add grid and datetime to warnings.txt
+        ! WRITE(501,'(4(a))') ' Grid: ',TRIM(ADJUSTL(GridID_text)),'   DateTime: ',datetime  !Add grid and datetime to warnings.txt
         WRITE(501,'((a),(i14))') ' Count: ',ErrhCount(errh)
         CLOSE(501)
      ENDIF
   ELSE
-     WRITE(500,'(4(a))') ' Grid: ',TRIM(ADJUSTL(GridID_text)),'   DateTime: ',datetime  !Add grid and datetime to problems.txt
+     ! WRITE(500,'(4(a))') ' Grid: ',TRIM(ADJUSTL(GridID_text)),'   DateTime: ',datetime  !Add grid and datetime to problems.txt
      WRITE(500,'(i3)') errh  !Add error code to problems.txt
      WRITE(*,*) 'ERROR! SUEWS run stopped.'   !Print message to screen if program stopped
      CLOSE(500)

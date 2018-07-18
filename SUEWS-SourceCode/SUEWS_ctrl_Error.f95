@@ -23,7 +23,8 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
   REAL(KIND(1d0)):: VALUE,value2
 
   CHARACTER (len=*)::ProblemFile                 ! Name of the problem file
-  CHARACTER (len=150)::text1='unknown problem'   ! Initialization of text
+  CHARACTER (len=150)::text1                      ! Initialization of text
+  CHARACTER (len=20)::filename                  !file name for writting out error info
   INTEGER:: errh,ValueI,ValueI2                  ! v7,v8 initialised as false, HCW 28/10/2014
   INTEGER,DIMENSION(80):: ErrhCount = 0             ! Counts each time a error hint is called. Initialise to zero
   INTEGER:: WhichFile                            ! Used to switch between 500 for error file, 501 for warnings file
@@ -33,6 +34,8 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
   ! which will cause cross-assignment in parallel mode and thus subsequent unintentional STOP
   LOGICAL:: v1,v2,v3,v4,v5,v6,v7,v8
   LOGICAL:: returnTrue
+
+  text1='unknown problem' ! Initialization of text
 
   ! Initialise returnTrue as false (HCW 29/10/2014)
   ! - need to do this in Fortran as values assigned in declarations are not applied
@@ -303,18 +306,26 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
   ! Write errors (that stop the program) to problems.txt; warnings to warnings.txt
   IF(returnTrue) THEN
      IF(SuppressWarnings==0) THEN
-        CALL gen_WarningsText(ProblemFile)   !Call the subroutine that opens the problem.txt file !Moved from above, HCW 17 Feb 2017
-        WRITE(501,*) TRIM(text1)
+        CALL gen_WarningsText(ProblemFile,text1)   !Call the subroutine that opens the problem.txt file !Moved from above, HCW 17 Feb 2017
+        ! WRITE(501,*) TRIM(text1)
         WhichFile = 501
      ENDIF
   ELSE
-     CALL gen_ProblemsText(ProblemFile)   !Call the subroutine that opens the problem.txt file !Moved from above, HCW 17 Feb 2017
-     WRITE(500,*) 'ERROR! Program stopped: ',TRIM(text1)
+     CALL gen_ProblemsText(ProblemFile,text1)   !Call the subroutine that opens the problem.txt file !Moved from above, HCW 17 Feb 2017
+     ! WRITE(500,*) 'ERROR! Program stopped: ',TRIM(text1)
      WhichFile = 500
   ENDIF
 
   ! Write out error message or warning message only if warnings are not suppressed
   IF(WhichFile == 500 .OR. (WhichFile == 501 .AND. SuppressWarnings==0)) THEN
+     IF ( WhichFile == 501 ) THEN
+        filename='warnings.txt'
+     ELSEIF( WhichFile == 500 ) THEN
+        filename='problems.txt'
+     ENDIF
+     OPEN(501,file=TRIM(filename))
+
+
      !This part of the code determines how the error/warning message is written out
      IF(v1) THEN ! 1 real
         WRITE(WhichFile,'((a),(f9.4))')' Value: ', VALUE
@@ -335,19 +346,23 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
      ELSEIF(v8) THEN
         ! no error values
      ENDIF
+
+     CLOSE(WhichFile)
   ENDIF
 
   ErrhCount(errh) = ErrhCount(errh) + 1   ! Increase error count by 1
-  PRINT*, 'returnTrue',returnTrue
+  ! PRINT*, 'returnTrue',returnTrue
 
   ! Write errors (that stop the program) to problems.txt; warnings to warnings.txt
   IF(returnTrue) THEN
      IF(SuppressWarnings==0) THEN
+        OPEN(501,file='warnings.txt')
         ! WRITE(501,'(4(a))') ' Grid: ',TRIM(ADJUSTL(GridID_text)),'   DateTime: ',datetime  !Add grid and datetime to warnings.txt
         WRITE(501,'((a),(i14))') ' Count: ',ErrhCount(errh)
         CLOSE(501)
      ENDIF
   ELSE
+     OPEN(500,file='problems.txt')
      ! WRITE(500,'(4(a))') ' Grid: ',TRIM(ADJUSTL(GridID_text)),'   DateTime: ',datetime  !Add grid and datetime to problems.txt
      WRITE(500,'(i3)') errh  !Add error code to problems.txt
      WRITE(*,*) 'ERROR! SUEWS run stopped.'   !Print message to screen if program stopped
@@ -371,12 +386,15 @@ END SUBROUTINE ErrorHint
 !=============================================================
 
 ! --------------------------------------------------------------------
- SUBROUTINE gen_WarningsText(ProblemFile)
+ SUBROUTINE gen_WarningsText(ProblemFile,text1)
 
     USE defaultNotUsed
     IMPLICIT NONE
 
     CHARACTER (len=*):: ProblemFile
+    CHARACTER (len=150)::text1   ! Initialization of text
+
+    text1='unknown problem' ! Initialization of text
 
     !Opening warnings.txt file: First option is selected if the file is opened for the first time
     !Second option for later points
@@ -391,16 +409,22 @@ END SUBROUTINE ErrorHint
     !Writing of the warnings file
     WRITE(501,*)'Warning: ',TRIM(ProblemFile)
 
-    RETURN
+    ! write warning info
+    WRITE(501,*) TRIM(text1)
+
+    CLOSE(501)
  END SUBROUTINE gen_WarningsText
 
  ! --------------------------------------------------------------------
- SUBROUTINE gen_ProblemsText(ProblemFile)
+ SUBROUTINE gen_ProblemsText(ProblemFile,text1)
 
     USE defaultNotUsed
     IMPLICIT NONE
 
     CHARACTER (len=*):: ProblemFile
+    CHARACTER (len=150)::text1   ! Initialization of text
+
+    text1='unknown problem' ! Initialization of text
 
     !Opening problems.txt file: First option is selected if the file is opened for the first time
     !Second option for later points
@@ -415,7 +439,10 @@ END SUBROUTINE ErrorHint
     !Writing of the problem file
     WRITE(500,*)'Problem: ',TRIM(ProblemFile)
 
-    RETURN
+    WRITE(500,*) 'ERROR! Program stopped: ',TRIM(text1)
+
+    CLOSE(500)
+
  END SUBROUTINE gen_ProblemsText
  ! --------------------------------------------------------------------
 

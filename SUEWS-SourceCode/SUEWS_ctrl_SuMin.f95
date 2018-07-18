@@ -411,12 +411,12 @@ CONTAINS
     tsk=dataOutLineSUEWS(5)+273.15
     CHKLOWQ=1
 
-    PRINT*,''
-    PRINT*, 'avkdn,kup,ldown,lup,tsurf'
-    PRINT*, dataOutLineSUEWS(1:5)
-    PRINT*, 'qn1,qf,qs,qh,qe'
-    PRINT*, dataOutLineSUEWS(6:10)
-    PRINT*,''
+    ! PRINT*,''
+    ! PRINT*, 'avkdn,kup,ldown,lup,tsurf'
+    ! PRINT*, dataOutLineSUEWS(1:5)
+    ! PRINT*, 'qn1,qf,qs,qh,qe'
+    ! PRINT*, dataOutLineSUEWS(6:10)
+    ! PRINT*,''
     ! IF ( ABS(qe)>1000 ) THEN
     !    zdm_in=0.
     !    PRINT*, 10./zdm_in

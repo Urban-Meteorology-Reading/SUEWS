@@ -2121,14 +2121,14 @@ CONTAINS
           ELSEIF(Slow(i) > multupperI(5)) THEN
              thisamongN = multamongN(5)
              CALL errorHint(4,'Precip in met forcing file exceeds maxiumum MultRainAmongNUpperI',&
-                  Slow(i),MultRainAmongNUpperI(5),NotUsed)
+                  Slow(i),MultRainAmongNUpperI(5),notUsedI)
           ENDIF
 
           ! For each averaging period, get subintervals which will receive rain
           ALLOCATE(Subintervals(thisamongN))
           Subintervals(:) = -999
 
-          IF(thisamongN > Nper_loc) CALL errorHint(2,'Problem in SUEWS_MetDisagg: no. of rainy periods cannot exceed ',&
+          IF(thisamongN > Nper_loc) CALL errorHint(2,'Problem in SUEWS_MetDisagg: no. of rainy periods cannot exceed '//&
                'number of subintervals', REAL(Nper_loc,KIND(1d0)),NotUsed,thisamongN)
 
           IF(thisamongN == Nper_loc) THEN   ! If all subintervals are to contain rain, don't need to generate random numbers

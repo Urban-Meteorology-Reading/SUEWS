@@ -2279,7 +2279,7 @@ END MODULE ESTM_data
 MODULE WhereWhen
   ! Stores grid and datetime info
 
-  INTEGER(KIND(1d0)):: GridID   !Grid number (as specified in SUEWS_SiteSelect.txt)
+  INTEGER:: GridID   !Grid number (as specified in SUEWS_SiteSelect.txt)
   CHARACTER(LEN=10):: GridID_text !Grid number as a text string
   CHARACTER(LEN=15):: datetime  ! YYYY DOY HH MM
 

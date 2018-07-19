@@ -440,7 +440,7 @@ CONTAINS
     REAL(KIND(1D0)),INTENT(out) ::sunazimuth,sunzenith
 
     REAL(KIND(1D0)):: sec
-    INTEGER :: month,day,hour,min,seas,dayofyear
+    INTEGER :: month,day,hour,min,seas,dayofyear,year_int
 
     REAL(KIND(1D0)) :: juliancentury,julianday,julianephemeris_century,julianephemeris_day,&
          julianephemeris_millenium
@@ -477,7 +477,8 @@ CONTAINS
     ! Convert to timevectors from dectime and year
     CALL dectime_to_timevec(idectime,hour,min,sec)
     dayofyear=FLOOR(idectime)
-    CALL day2month(dayofyear,month,day,seas,year,locationlatitude)
+    year_int=int(year)
+    CALL day2month(dayofyear,month,day,seas,year_int,locationlatitude)
 
     ! 1. Calculate the Julian Day, and Century. Julian Ephemeris day, century
     ! and millenium are calculated using a mean delta_t of 33.184 seconds.

@@ -206,7 +206,7 @@ SUBROUTINE SurfaceResistance(&
   INTEGER:: iv
   REAL(KIND(1d0)):: id_real
 
-  INTEGER,PARAMETER :: notUsed=-55
+  REAL(KIND(1d0)),PARAMETER :: notUsed=-55
   ! REAL(KIND(1d0)),PARAMETER :: notUsedi=-55.5
 
   id_real = REAL(id) !Day of year in real number

@@ -171,7 +171,7 @@ PROGRAM SUEWS_Program
      Nper=INT(Nper_real)
 
      IF(Nper /= Nper_real) THEN
-        CALL ErrorHint(2,'Problem in SUEWS_Program: check resolution of met forcing data (ResolutionFilesIn)', &
+        CALL ErrorHint(2,'Problem in SUEWS_Program: check resolution of met forcing data (ResolutionFilesIn)'//&
              'and model time-step (Tstep).', &
              REAL(Tstep,KIND(1d0)),NotUsed,ResolutionFilesIn)
      ELSEIF(Nper > 1) THEN
@@ -313,7 +313,7 @@ PROGRAM SUEWS_Program
         NperESTM_real = ResolutionFilesInESTM/REAL(Tstep,KIND(1d0))
         NperESTM=INT(NperESTM_real)
         IF(NperESTM /= NperESTM_real) THEN
-           CALL ErrorHint(2,'Problem in SUEWS_Program: check resolution of ESTM forcing data (ResolutionFilesInESTM)', &
+           CALL ErrorHint(2,'Problem in SUEWS_Program: check resolution of ESTM forcing data (ResolutionFilesInESTM)'//&
                 'and model time-step (Tstep).', &
                 REAL(Tstep,KIND(1d0)),NotUsed,ResolutionFilesInESTM)
         ELSEIF(NperESTM > 1) THEN

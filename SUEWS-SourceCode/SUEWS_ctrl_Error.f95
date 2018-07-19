@@ -329,21 +329,21 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
 
      !This part of the code determines how the error/warning message is written out
      IF(v1) THEN ! 1 real
-        WRITE(WhichFile,'((a),(f9.4))')' Value: ', VALUE
+        WRITE(WhichFile,'(a,f9.4)')' Value: ', VALUE
      ELSEIF(v2) THEN ! 2 real
-        WRITE(WhichFile,'((a),2(f9.4))')' Values: ', VALUE, value2
+        WRITE(WhichFile,'(a,2f9.4)')' Values: ', VALUE, value2
      ELSEIF(v3) THEN ! 1 integer
-        WRITE(WhichFile,'((a),(i10))')' Value: ', valueI
+        WRITE(WhichFile,'(a,i10)')' Value: ', valueI
      ELSEIF(v4) THEN ! 2 real, 1 integer
-        WRITE(WhichFile,'((a),2(f9.4),(i10))')' Values: ', VALUE, value2, valueI
+        WRITE(WhichFile,'(a,2f9.4,i10)')' Values: ', VALUE, value2, valueI
      ELSEIF(v5) THEN ! 1 real 1 integer
-        WRITE(WhichFile,'((f9.4),(i10))')' Values: ', VALUE, valueI
+        WRITE(WhichFile,'(f9.4,i10)')' Values: ', VALUE, valueI
      ELSEIF(v6) THEN ! 2 integer
         valueI2=INT(VALUE)
-        WRITE(WhichFile,'((a),2(i10))')' Values: ', valueI, valueI2
+        WRITE(WhichFile,'(a,2i10)')' Values: ', valueI, valueI2
      ELSEIF(v7) THEN ! 1 real, 2 integer
         valueI2=INT(value2)
-        WRITE(WhichFile,'((a),(f9.4),2(i10))')' Values: ', VALUE, valueI2, valueI
+        WRITE(WhichFile,'(a,f9.4,2i10)')' Values: ', VALUE, valueI2, valueI
      ELSEIF(v8) THEN
         ! no error values
      ENDIF
@@ -359,7 +359,7 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
      IF(SuppressWarnings==0) THEN
         OPEN(501,file='warnings.txt')
         ! WRITE(501,'(4(a))') ' Grid: ',TRIM(ADJUSTL(GridID_text)),'   DateTime: ',datetime  !Add grid and datetime to warnings.txt
-        WRITE(501,'((a),(i14))') ' Count: ',ErrhCount(errh)
+        WRITE(501,'(a,i14)') ' Count: ',ErrhCount(errh)
         CLOSE(501)
      ENDIF
   ELSE

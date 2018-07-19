@@ -36,6 +36,7 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
   LOGICAL:: returnTrue
 
   text1='unknown problem' ! Initialization of text
+  WhichFile = 0 ! Initialization of file code
 
   ! Initialise returnTrue as false (HCW 29/10/2014)
   ! - need to do this in Fortran as values assigned in declarations are not applied

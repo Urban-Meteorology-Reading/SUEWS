@@ -40,13 +40,13 @@ MODULE ctrl_output
   INTEGER :: n
 
   CHARACTER(len=10),PARAMETER:: & !Define useful formats here
-       fy   = '(i0004,1X)',& !4 digit integer for year
-       ft   = '(i0004,1X)',& !3 digit integer for id, it, imin
-       fd   = '(f08.4,1X)',& !3 digits + 4 dp for dectime
-       f94  = '(f09.4,1X)',& !standard output format: 4 dp + 4 digits
-       f104 = '(f10.4,1X)',& !standard output format: 4 dp + 5 digits
-       f106 = '(f10.6,1X)',& !standard output format: 6 dp + 3 digits
-       f146 = '(f14.6,1X)'   !standard output format: 6 dp + 7 digits
+       fy   = 'i0004,1X',& !4 digit integer for year
+       ft   = 'i0004,1X',& !3 digit integer for id, it, imin
+       fd   = 'f08.4,1X',& !3 digits + 4 dp for dectime
+       f94  = 'f09.4,1X',& !standard output format: 4 dp + 4 digits
+       f104 = 'f10.4,1X',& !standard output format: 4 dp + 5 digits
+       f106 = 'f10.6,1X',& !standard output format: 6 dp + 3 digits
+       f146 = 'f14.6,1X'   !standard output format: 6 dp + 7 digits
 
   CHARACTER(len= 1),PARAMETER:: & ! Define aggregation methods here
        aT = 'T',&   !time columns
@@ -60,7 +60,7 @@ MODULE ctrl_output
   TYPE varAttr
      CHARACTER(len = 15) :: header ! short name in headers
      CHARACTER(len = 12) :: unit   ! unit
-     CHARACTER(len = 14) :: fmt    ! output format
+     CHARACTER(len = 10) :: fmt    ! output format
      CHARACTER(len = 50) :: longNm ! long name for detailed description
      CHARACTER(len = 1)  :: aggreg ! aggregation method
      CHARACTER(len = 10) :: group  ! group: datetime, default, ESTM, Snow, etc.
@@ -818,6 +818,7 @@ CONTAINS
     INTEGER :: fn,i,xx,err
     CHARACTER(len=12*SIZE(varList)) :: FormatOut
     ! LOGICAL :: initQ_file
+    FormatOut=''
 
     IF(Diagnose==1) WRITE(*,*) 'Writting data of group: ',varList(SIZE(varList))%group
 
@@ -837,11 +838,21 @@ CONTAINS
 
     ! create format string:
     DO i = 1, SIZE(varListSel)
+       ! PRINT*,''
+       ! PRINT*,i
+       ! PRINT*, LEN_TRIM(FormatOut),TRIM(FormatOut)
+       ! PRINT*, LEN_TRIM(TRIM(FormatOut)//','),TRIM(FormatOut)//','
        IF ( i==1 ) THEN
-          FormatOut=ADJUSTL(varListSel(i)%fmt)
+          ! FormatOut=ADJUSTL(varListSel(i)%fmt)
+          FormatOut=varListSel(i)%fmt
        ELSE
-          FormatOut=TRIM(FormatOut)//' '//ADJUSTL(varListSel(i)%fmt)
+
+          ! FormatOut=TRIM(FormatOut)//','//ADJUSTL(varListSel(i)%fmt)
+          FormatOut=TRIM(FormatOut)//','//TRIM(varListSel(i)%fmt)
        END IF
+       ! PRINT*,''
+       ! PRINT*,i
+       ! PRINT*, 'FormatOut',FormatOut
     END DO
     FormatOut='('//TRIM(ADJUSTL(FormatOut))//')'
 
@@ -858,8 +869,9 @@ CONTAINS
     fn=50
     OPEN(fn,file=TRIM(fileout),position='append')!,err=112)
     DO i=1,SIZE(dataOutSel,dim=1)
-       ! print*, 'Writting',i
-       ! print*, dataOutSel(i,:)
+       ! PRINT*, 'Writting',i
+       ! PRINT*, 'FormatOut',FormatOut
+       ! PRINT*, dataOutSel(i,:)
        WRITE(fn,FormatOut) &
             INT(dataOutSel(i,1:4)),&
             dataOutSel(i,5:SIZE(varListSel))
@@ -922,20 +934,20 @@ CONTAINS
     IF ( varList(6)%group == 'DailyState' ) THEN
        str_out_min='' ! ignore this for DailyState
     ELSE
-      ! derive output frequency from output arrays
-      ! dt_x=
-      dt1=datetime(INT(dataOutX(1,1)), 1, 1)+&
-           timedelta(days=INT(dataOutX(1,2)-1),&
-           hours=INT(dataOutX(1,3)),&
-           minutes=INT(dataOutX(1,4)))
+       ! derive output frequency from output arrays
+       ! dt_x=
+       dt1=datetime(INT(dataOutX(1,1)), 1, 1)+&
+            timedelta(days=INT(dataOutX(1,2)-1),&
+            hours=INT(dataOutX(1,3)),&
+            minutes=INT(dataOutX(1,4)))
 
-      dt2=datetime(INT(dataOutX(2,1)), 1, 1)+&
-           timedelta(days=INT(dataOutX(2,2)-1),&
-           hours=INT(dataOutX(2,3)),&
-           minutes=INT(dataOutX(2,4)))
+       dt2=datetime(INT(dataOutX(2,1)), 1, 1)+&
+            timedelta(days=INT(dataOutX(2,2)-1),&
+            hours=INT(dataOutX(2,3)),&
+            minutes=INT(dataOutX(2,4)))
 
-      dt_x=dt2-dt1
-      delta_t_min=INT(dt_x%total_seconds()/60)
+       dt_x=dt2-dt1
+       delta_t_min=INT(dt_x%total_seconds()/60)
        WRITE(str_out_min,'(i4)') delta_t_min
        str_out_min='_'//TRIM(ADJUSTL(str_out_min))
     ENDIF

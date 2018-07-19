@@ -83,7 +83,7 @@ CONTAINS
     ENDIF
     !if(debug)write(*,*)lv_J_kg,Temp_C,'lv2'
     IF(press_hPa<900) THEN
-       CALL ErrorHint(46, 'Function LUMPS_cal_AtmMoist',press_hPa,-55.55, -55)
+       CALL ErrorHint(46, 'Function LUMPS_cal_AtmMoist',press_hPa,-55.55d0, -55)
     ENDIF
     RETURN
   END SUBROUTINE LUMPS_cal_AtmMoist
@@ -148,12 +148,14 @@ CONTAINS
          h
     REAL(KIND(1d0)),PARAMETER :: &
          k=0.4,&             !Von Karman's contant
-         grav=9.80665,&  !g - gravity - physics today august 1987
-         notUsedI=-55
+         grav=9.80665  !g - gravity - physics today august 1987
 
+    INTEGER,PARAMETER::notUsedI=-55
     INTEGER :: i
 
     LOGICAL :: debug=.FALSE.
+
+    G_T_K=Dectime
 
     IF(debug) WRITE(*,*)StabilityMethod,z0m,avU1,h_init,UStar,L_MOD
     G_T_K=(Grav/(Temp_C+273.16))*k !gravity constant/(Temperature*Von Karman Constant)
@@ -213,17 +215,17 @@ CONTAINS
     ENDDO
 
     ! limit zL to be with [-10,2]
-    if ( zL<-5 .or. zL>2 ) then
-      zL=MIN(2.,MAX(-5.,zL))
-      ! limit other output varialbes as well as z/L
-      L_MOD=zzd/zL
-      z0L=z0m/L_MOD
-      psim=stab_fn_mom(StabilityMethod,zL,zL)
-      ! psimz0=stab_fn_mom(StabilityMethod,zL,z0L)
-      psimz0=stab_fn_mom(StabilityMethod,z0L,z0L)
-      UStar=KUZ/(LOG(Zzd/z0m)-psim+psimz0)
-      TStar=(-H/UStar)
-    end if
+    IF ( zL<-5 .OR. zL>2 ) THEN
+       zL=MIN(2.,MAX(-5.,zL))
+       ! limit other output varialbes as well as z/L
+       L_MOD=zzd/zL
+       z0L=z0m/L_MOD
+       psim=stab_fn_mom(StabilityMethod,zL,zL)
+       ! psimz0=stab_fn_mom(StabilityMethod,zL,z0L)
+       psimz0=stab_fn_mom(StabilityMethod,z0L,z0L)
+       UStar=KUZ/(LOG(Zzd/z0m)-psim+psimz0)
+       TStar=(-H/UStar)
+    END IF
 
 
 

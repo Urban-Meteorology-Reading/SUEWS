@@ -146,7 +146,7 @@ SUBROUTINE OHM(qn1,qn1_store_grid,qn1_av_store_grid,&
      IF(DiagQS==1) WRITE(*,*) 'qs: ',qs,'qn1:',qn1,'dqndt: ',dqndt
 
   ELSE
-     CALL ErrorHint(21,'In SUEWS_OHM.f95: bad value for qn1 found during qs calculation.',qn1,-55.55,-55)
+     CALL ErrorHint(21,'In SUEWS_OHM.f95: bad value for qn1 found during qs calculation.',qn1,-55.55d0,-55)
   ENDIF
 
   !write(*,*) qs
@@ -179,7 +179,7 @@ SUBROUTINE OHM(qn1,qn1_store_grid,qn1_av_store_grid,&
 
 
      ELSE
-        CALL ErrorHint(21,'In SUEWS_OHM.f95: bad value for qn1(snow) found during qs calculation.',qn1_S,-55.55,-55)
+        CALL ErrorHint(21,'In SUEWS_OHM.f95: bad value for qn1(snow) found during qs calculation.',qn1_S,-55.55d0,-55)
      ENDIF
 
   ENDIF

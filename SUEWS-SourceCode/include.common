@@ -1,0 +1,144 @@
+# determine the targe name from source code
+file       := suews_ctrl_const.f95 # get program name form source code
+variable   := $(shell grep 'progname' ${file})
+TARGET_str := $(lastword $(subst =, ,${variable})) # program name with quotes
+TARGET     := $(strip $(subst $\', ,${TARGET_str})) # program name
+
+
+# static flag for different OS to correctly link static libs
+# so gfortran dependency can be relaxed
+# but netCDF is still linked in the dynamic way as suggested by UCAR
+SUEWS_build_base = ../ReleaseRepo/build/
+SUEWS_test_dir = ../BenchmarkTest/code
+
+
+# target specific options
+# netCDF-related settings:
+netcdf: NETCDFINC = `nc-config --includedir` # ordinary path for netCDF directories
+netcdf:	NETCDFLIB = `nc-config --libdir` # ordinary path for netCDF directories
+
+netcdf:	FFLAGS += -Dnc=1 -I$(NETCDFINC) # options for netcdf build
+# WRF coupling (SuMin) related options
+sumin: FFLAGS += -Dwrf=1
+
+# clean options
+clean: suffix :=
+clean: TARGET := $(strip $(TARGET))$(strip $(suffix))
+
+
+# All the files which include modules used by other modules (these therefore
+# needs to be compiled first)
+# utilities
+UTILS = suews_ctrl_const.o \
+				suews_util_stringmod.o \
+				suews_util_qsort.o\
+				suews_util_time.o \
+				suews_util_meteo.o \
+				suews_util_datetime.o \
+				suews_util_minpack.o
+
+# SUEWS modules
+MODULES =	suews_phys_narp.o \
+					suews_ctrl_input.o  \
+					suews_phys_atmmoiststab.o \
+					suews_phys_bluews.o \
+					suews_phys_waterdist.o \
+					suews_phys_snow.o \
+					suews_phys_dailystate.o \
+					suews_phys_estm.o \
+					suews_ctrl_output.o \
+					suews_phys_anohm.o \
+					suews_ctrl_driver.o
+
+# Rest of the files including modules and functions which are independent
+OTHERS =  suews_ctrl_translate.o \
+					suews_phys_lumps.o \
+					suews_phys_resist.o \
+					suews_ctrl_error.o \
+					suews_phys_evap.o \
+					suews_ctrl_init.o \
+					suews_phys_anemsn.o \
+					suews_phys_biogenco2.o
+
+# modules under rapid development
+TEST =  suews_phys_ohm.o \
+				suews_ctrl_calculations.o
+
+# modules for WRF coupling
+WRF =  suews_ctrl_sumin.o
+
+
+
+# Build main program - main uses MODULES and OTHERS
+main: suews_program$(suffix_code) $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST)
+			$(FC) suews_program$(suffix_code)  -c ; \
+			$(FC) suews_program.o $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST) \
+			$(STATICLIB) \
+			-o $(TARGET)
+			mkdir -p $(SUEWS_build_dir)
+			cp -f $(TARGET) $(SUEWS_build_dir)/.
+
+# Build main program with NETCDF support - main uses MODULES and OTHERS
+netcdf: suews_program$(suffix_code) $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST)
+				$(FC) suews_program$(suffix_code)  -c ; \
+				$(FC) suews_program.o $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST) \
+				$(STATICLIB) \
+				-L$(NETCDFLIB) -lnetcdf -lnetcdff \
+				-o $(TARGET)
+
+# Build main program with NETCDF support - main uses MODULES and OTHERS
+nc4fr: suews_program$(suffix_code) $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST)
+			 $(FC) suews_program$(suffix_code)  -c ; \
+			 $(FC) suews_program.o $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST) \
+			 $(STATICLIB) \
+			 -L$(NETCDFLIB) -Wl,--rpath -Wl,$(NETCDFLIB) -lnetcdff -lnetcdf \
+			 -o $(TARGET)
+
+# Build main program with coverage checking options enabled
+cov: suews_program$(suffix_code) $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST)
+			$(FC) suews_program$(suffix_code)  -c ; \
+			$(FC) suews_program.o $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST) \
+			$(STATICLIB) \
+			-o $(TARGET)
+			mkdir -p $(SUEWS_build_dir)
+			cp -f $(TARGET) $(SUEWS_build_dir)/.
+
+# Build main program and run test cases
+check:
+		$(MAKE) clean;
+		$(MAKE) main;
+		cd $(SUEWS_test_dir); python 1.test_dev.py
+
+# Build SuMin for WRF coupling
+sumin: $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST) $(WRF)
+
+
+
+# rules for f95-->f90
+%.o: %$(suffix_code)
+	$(FC) -c $*$(suffix_code)
+
+$(C_MODULE): $(subst .o,.c, $(C_MODULE))
+						$(CC) -c $(subst .o,.c, $@)
+
+# If UTILS have changed, compile them again
+$(UTILS): $(subst .o,$(suffix_code), $(UTILS))
+
+# If MODULES have changed, compile them again
+$(MODULES): $(UTILS) $(subst .o,$(suffix_code), $(MODULES))
+
+# If OTHERS have changed, compile them again
+$(OTHERS): $(UTILS) $(MODULES) $(subst .o,$(suffix_code), $(OTHERS))
+
+# If TEST have changed, compile them again
+$(TEST): $(subst .o,$(suffix_code), $(TEST))
+
+# WRF coupling required files
+$(WRF): $(subst .o,$(suffix_code), $(WRF))
+
+
+# If wanted, clean all *.o files after build
+clean:
+	$(info $$suffix_code is [${suffix_code}])
+	$(info $$TARGET is [${TARGET}])
+	-rm -rf *.o *.mod *.dSYM *.gcda *.gcno ${TARGET}

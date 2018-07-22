@@ -276,11 +276,11 @@ CONTAINS
           SurplusEvap(is)=ABS(state_id(is))   !Surplus evaporation is that which tries to evaporate non-existent water
           ev = ev-SurplusEvap(is)          !Limit evaporation according to water availability
           state_id(is)=0.0                    !Now surface is dry
-          ! elseif (state_id(is)>surf(6,is)) then   !!This should perhaps be StateLimit(is)
+          ! elseif (state_id(is)>StoreDrainPrm(6,is)) then   !!This should perhaps be StateLimit(is)
           !    !! If state_id exceeds the storage capacity, then the excess goes to surface flooding
-          !    !SurfaceFlood(is)=SurfaceFlood(is)+(state_id(is)-surf(6,is))   !!Need to deal with this properly
-          !    runoff(is)=runoff(is)+(state_id(is)-surf(6,is))   !!needs to go to flooding
-          !    state_id(is)=surf(6,is)              !Now surface state_id is at max (storage) capacity
+          !    !SurfaceFlood(is)=SurfaceFlood(is)+(state_id(is)-StoreDrainPrm(6,is))   !!Need to deal with this properly
+          !    runoff(is)=runoff(is)+(state_id(is)-StoreDrainPrm(6,is))   !!needs to go to flooding
+          !    state_id(is)=StoreDrainPrm(6,is)              !Now surface state_id is at max (storage) capacity
        ENDIF
 
        ! Recalculate change in surface state_id from difference with previous timestep
@@ -292,7 +292,7 @@ CONTAINS
 
        !So, up to this point, runoff(is) can have contributions if
        ! p_mm > ipthreshold (water input too fast)
-       ! state_id > surf(6,is) (net water exceeds storage capacity)
+       ! state_id > StoreDrainPrm(6,is) (net water exceeds storage capacity)
        ! WaterDist specifies some fraction of drain(is) -> runoff
 
        !==== Pervious surfaces (Conif, Decid, Grass, BSoil, Water) =======
@@ -346,11 +346,11 @@ CONTAINS
                 state_id(is)=0.0          !Now surface is dry
              ENDIF
 
-             !elseif (state_id(is)>surf(6,is)) then   !!This should perhaps be StateLimit(is)
+             !elseif (state_id(is)>StoreDrainPrm(6,is)) then   !!This should perhaps be StateLimit(is)
              !   !! If state_id exceeds the storage capacity, then the excess goes to surface flooding
-             !   !SurfaceFlood(is)=SurfaceFlood(is)+(state_id(is)-surf(6,is))   !!Need to deal with this properly
-             !   runoff(is)=runoff(is)+(state_id(is)-surf(6,is))   !!needs to go to flooding
-             !   state_id(is)=surf(6,is)              !Now surface state_id is at max (storage) capacity
+             !   !SurfaceFlood(is)=SurfaceFlood(is)+(state_id(is)-StoreDrainPrm(6,is))   !!Need to deal with this properly
+             !   runoff(is)=runoff(is)+(state_id(is)-StoreDrainPrm(6,is))   !!needs to go to flooding
+             !   state_id(is)=StoreDrainPrm(6,is)              !Now surface state_id is at max (storage) capacity
           ENDIF
 
           ! Recalculate change in surface state_id from difference with previous timestep
@@ -394,17 +394,17 @@ CONTAINS
                 ! If there is not sufficient water on the surface, then don't allow this evaporation to happen
                 ev=ev-ABS(state_id(is))   !Limit evaporation according to water availability
                 state_id(is)=0.0          !Now surface is dry
-                !elseif (state_id(is)>surf(6,is)) then   !!This should perhaps be StateLimit(is)
+                !elseif (state_id(is)>StoreDrainPrm(6,is)) then   !!This should perhaps be StateLimit(is)
                 !   !! If state_id exceeds the storage capacity, then the excess goes to surface flooding
-                !   !SurfaceFlood(is)=SurfaceFlood(is)+(state_id(is)-surf(6,is))   !!Need to deal with this properly
-                !   runoff(is)=runoff(is)+(state_id(is)-surf(6,is))   !!needs to go to flooding
-                !   state_id(is)=surf(6,is)              !Now surface state_id is at max (storage) capacity
+                !   !SurfaceFlood(is)=SurfaceFlood(is)+(state_id(is)-StoreDrainPrm(6,is))   !!Need to deal with this properly
+                !   runoff(is)=runoff(is)+(state_id(is)-StoreDrainPrm(6,is))   !!needs to go to flooding
+                !   state_id(is)=StoreDrainPrm(6,is)              !Now surface state_id is at max (storage) capacity
              ENDIF
 
              ! Recalculate change in surface state_id from difference with previous timestep
              chang(is) = state_id(is)-stateOld(is)
 
-             ! If state_id exceeds limit, then excess goes to runoff (currently applies to water surf only)
+             ! If state_id exceeds limit, then excess goes to runoff (currently applies to water StoreDrainPrm only)
              IF (state_id(WaterSurf)>StateLimit(WaterSurf)) THEN
                 runoff(WaterSurf)=runoff(WaterSurf)+(state_id(WaterSurf)-StateLimit(WaterSurf))
                 state_id(WaterSurf)=StateLimit(WaterSurf)

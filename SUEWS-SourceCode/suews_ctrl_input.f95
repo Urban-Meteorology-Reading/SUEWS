@@ -118,7 +118,7 @@ SUBROUTINE MetRead(lfn,MetArray,InputmetFormat,ldown_option,NetRadiationMethod,&
   ENDIF
 
   IF(AvKdn<0) THEN
-     CALL ErrorHint(27,'Met Data: avKdn - needed for Surf. resistance, If present, check file not tab delimited',&
+     CALL ErrorHint(27,'Met Data: avKdn - needed for StoreDrainPrm. resistance, If present, check file not tab delimited',&
           avkdn,dectime,notUsedI)
      !sg removed this is causing the problems with resistances
      !  AvKdn=0 !Solar radiation cannot be lower than 1

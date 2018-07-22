@@ -132,7 +132,7 @@ CONTAINS
     INTEGER,PARAMETER ::DiagQN          = 0
     INTEGER,PARAMETER ::DiagQS          = 0
     INTEGER,PARAMETER ::Diagnose        = 0
-    INTEGER,PARAMETER ::ity             = 2
+    INTEGER,PARAMETER ::EvapMethod             = 2
     INTEGER,PARAMETER ::LAICalcYes      = 1
     INTEGER,PARAMETER ::WaterUseMethod  = 0
 
@@ -191,7 +191,7 @@ CONTAINS
          [0.0005,0.0005,0.0005],                                  &
          [0.03,0.03,0.03],                                        &
          [0.0005,0.0005,0.0005]],                                 &
-         [4,3])
+         [4,3],order=[2,1])
 
     INTEGER,DIMENSION(3),PARAMETER:: LAIType=0     !LAI equation to use: original (0) or new (1)
 
@@ -344,9 +344,9 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutDailyState-5) ::DailyStateLine
 
     ! drainage related parameters
-    REAL(KIND(1D0)),DIMENSION(6,7)::surf
-    surf(1:5,:)=surf_attr
-    surf(6,:)=surf_var_id
+    REAL(KIND(1D0)),DIMENSION(6,7)::StoreDrainPrm
+    StoreDrainPrm(1:5,:)=surf_attr
+    StoreDrainPrm(6,:)=surf_var_id
 
     ! PRINT*,''
     ! PRINT*, 'soilmoist_id',soilmoist_id
@@ -370,7 +370,7 @@ CONTAINS
          FrFossilFuel_Heat,FrFossilFuel_NonHeat,G1,G2,G3,G4,G5,G6,GDD_id,&
          GDDFull,Gridiv,gsModel,HDD_id,HumActivity_24hr,&
          IceFrac,id,Ie_a,Ie_end,Ie_m,Ie_start,imin,&
-         InternalWaterUse_h,IrrFracConif,IrrFracDecid,IrrFracGrass,isec,it,ity,&
+         InternalWaterUse_h,IrrFracConif,IrrFracDecid,IrrFracGrass,isec,it,EvapMethod,&
          iy,kkAnOHM,Kmax,LAI_id,LAICalcYes,LAIMax,LAIMin,LAI_obs,&
          LAIPower,LAIType,lat,ldown_obs,lng,MaxConductance,MaxQFMetab,&
          MeltWaterStore,MetForcingData_grid,MinQFMetab,min_res_bioCO2,&
@@ -387,7 +387,7 @@ CONTAINS
          SnowAlbMin,snowD,SnowDens,SnowDensMax,SnowDensMin,SnowfallCum,snowFrac,&
          SnowLimBuild,SnowLimPaved,snow_obs,SnowPack,SnowProf_24hr,snowUse,SoilDepth,&
          soilmoist_id,soilstoreCap,StabilityMethod,startDLS,state_id,StateLimit,&
-         StorageHeatMethod,surf,SurfaceArea,Tair24HR,tau_a,tau_f,tau_r,&
+         StorageHeatMethod,StoreDrainPrm,SurfaceArea,Tair24HR,tau_a,tau_f,tau_r,&
          T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,TempMeltFact,TH,&
          theta_bioCO2,timezone,TL,TrafficRate,TrafficUnits,&
          TraffProf_24hr,Ts5mindata_ir,tstep,tstep_prev,veg_type,&
@@ -404,7 +404,7 @@ CONTAINS
          DailyStateLine)!output
 
 
-    surf_var_id=surf(6,:) ! update surf_var_id
+    surf_var_id=StoreDrainPrm(6,:) ! update surf_var_id
     qh=dataOutLineSUEWS(9)
     qe=dataOutLineSUEWS(10)
     qsfc=dataOutLineSUEWS(16)

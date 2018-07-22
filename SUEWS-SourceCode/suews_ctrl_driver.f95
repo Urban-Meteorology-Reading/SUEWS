@@ -43,7 +43,7 @@ CONTAINS
        FrFossilFuel_Heat,FrFossilFuel_NonHeat,G1,G2,G3,G4,G5,G6,GDD_id,&
        GDDFull,Gridiv,gsModel,HDD_id,HumActivity_24hr,&
        IceFrac,id,Ie_a,Ie_end,Ie_m,Ie_start,imin,&
-       InternalWaterUse_h,IrrFracConif,IrrFracDecid,IrrFracGrass,isec,it,ity,&
+       InternalWaterUse_h,IrrFracConif,IrrFracDecid,IrrFracGrass,isec,it,EvapMethod,&
        iy,kkAnOHM,Kmax,LAI_id,LAICalcYes,LAIMax,LAIMin,LAI_obs,&
        LAIPower,LAIType,lat,ldown_obs,lng,MaxConductance,MaxQFMetab,&
        MeltWaterStore,MetForcingData_grid,MinQFMetab,min_res_bioCO2,&
@@ -60,7 +60,7 @@ CONTAINS
        SnowAlbMin,snowD,SnowDens,SnowDensMax,SnowDensMin,SnowfallCum,snowFrac,&
        SnowLimBuild,SnowLimPaved,snow_obs,SnowPack,SnowProf_24hr,snowUse,SoilDepth,&
        soilmoist_id,soilstoreCap,StabilityMethod,startDLS,state_id,StateLimit,&
-       StorageHeatMethod,surf,SurfaceArea,Tair24HR,tau_a,tau_f,tau_r,&
+       StorageHeatMethod,StoreDrainPrm,SurfaceArea,Tair24HR,tau_a,tau_f,tau_r,&
        T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,TempMeltFact,TH,&
        theta_bioCO2,timezone,TL,TrafficRate,TrafficUnits,&
        TraffProf_24hr,Ts5mindata_ir,tstep,tstep_prev,veg_type,&
@@ -88,7 +88,7 @@ CONTAINS
     INTEGER,INTENT(IN)::isec
     INTEGER,INTENT(IN)::imin
     INTEGER,INTENT(IN)::it
-    INTEGER,INTENT(IN)::ity
+    INTEGER,INTENT(IN)::EvapMethod
     INTEGER,INTENT(IN)::iy
     INTEGER,INTENT(IN)::LAICalcYes
     INTEGER,INTENT(IN)::NetRadiationMethod
@@ -284,7 +284,7 @@ CONTAINS
 
     ! REAL(KIND(1D0)),DIMENSION(0:NDAYS,9),INTENT(INOUT)        ::WUDay
 
-    REAL(KIND(1D0)),DIMENSION(6,NSURF),INTENT(INOUT)          ::surf
+    REAL(KIND(1D0)),DIMENSION(6,NSURF),INTENT(INOUT)          ::StoreDrainPrm
     ! REAL(KIND(1D0)),DIMENSION(-4:NDAYS,6),INTENT(INOUT)       ::HDD
     ! REAL(KIND(1D0)),DIMENSION(-4:NDAYS,NVEGSURF),INTENT(INOUT)::LAI
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)   ::alb
@@ -370,7 +370,7 @@ CONTAINS
     REAL(KIND(1D0))::QmRain
     REAL(KIND(1D0))::qn1
     REAL(KIND(1D0))::qn1_S
-    REAL(KIND(1D0))::qn1_SF
+    REAL(KIND(1D0))::qn1_snowfree
     REAL(KIND(1D0))::qs
     REAL(KIND(1D0))::RA
     REAL(KIND(1D0))::ResistSurf
@@ -579,9 +579,9 @@ CONTAINS
          dectime,ZENITH_deg,avKdn,Temp_C,avRH,ea_hPa,qn1_obs,&
          SnowAlb,DiagQN,&
          NARP_TRANS_SITE,NARP_EMIS_SNOW,IceFrac,sfr,emis,&
-         alb,albDecTr_id,DecidCap_id,albEveTr_id,albGrass_id,surf,&!inout
+         alb,albDecTr_id,DecidCap_id,albEveTr_id,albGrass_id,StoreDrainPrm,&!inout
          snowFrac,ldown,fcld,&!output
-         qn1,qn1_SF,qn1_S,kclear,kup,lup,tsurf,&
+         qn1,qn1_snowfree,qn1_S,kclear,kup,lup,tsurf,&
          qn1_ind_snow,kup_ind_snow,Tsurf_ind_snow,Tsurf_ind)
 
 
@@ -609,7 +609,7 @@ CONTAINS
          avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown,&
          bldgh,alb,emis,cpAnOHM,kkAnOHM,chAnOHM,EmissionsMethod,&
          Tair24HR,qn1_av,dqndt,qn1_s_av,dqnsdt,&!inout
-         surf,&
+         StoreDrainPrm,&
          qn1_S,snowFrac,dataOutLineESTM,qs,&!output
          deltaQi,a1,a2,a3)
 
@@ -676,7 +676,7 @@ CONTAINS
     CALL SUEWS_cal_Water(&
          Diagnose,&!input
          snowUse,NonWaterFraction,addPipes,addImpervious,addVeg,addWaterBody,&
-         state_id,soilmoist_id,sfr,surf,WaterDist,nsh_real,&
+         state_id,soilmoist_id,sfr,StoreDrainPrm,WaterDist,nsh_real,&
          drain_per_tstep,&  !output
          drain,AddWaterRunoff,&
          AdditionalWater,runoffPipes,runoff_per_interval,&
@@ -686,15 +686,15 @@ CONTAINS
     !======== Evaporation and surface state_id ========
     CALL SUEWS_cal_QE(&
          Diagnose,&!input
-         tstep,imin,it,ity,snowCalcSwitch,DayofWeek_id,CRWmin,CRWmax,&
+         tstep,imin,it,EvapMethod,snowCalcSwitch,DayofWeek_id,CRWmin,CRWmax,&
          nsh_real,dectime,lvS_J_kg,lv_j_kg,avdens,avRh,Press_hPa,Temp_C,&
          RAsnow,psyc_hPa,avcp,sIce_hPa,&
-         PervFraction,vegfraction,addimpervious,qn1_SF,qf,qs,vpd_hPa,s_hPa,&
+         PervFraction,vegfraction,addimpervious,qn1_snowfree,qf,qs,vpd_hPa,s_hPa,&
          ResistSurf,RA,rb,tstep_real,snowdensmin,precip,PipeCapacity,RunoffToWater,&
          NonWaterFraction,wu_EveTr,wu_DecTr,wu_Grass,addVeg,addWaterBody,SnowLimPaved,SnowLimBuild,&
          SurfaceArea,FlowChange,drain,WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
          freezmelt,freezstate,freezstatevol,Qm_Melt,Qm_rain,Tsurf_ind,sfr,&
-         StateLimit,AddWater,addwaterrunoff,surf,snowD,&
+         StateLimit,AddWater,addwaterrunoff,StoreDrainPrm,snowD,&
          runoff_per_interval,state_id,soilmoist_id,SnowPack,snowFrac,MeltWaterStore,&! inout:
          iceFrac,SnowDens,&
          SnowProf_24hr,& ! output:
@@ -768,7 +768,7 @@ CONTAINS
          MwStore,&
          nsh_real,NWstate_per_tstep,Precip,q2_gkg,&
          qeOut,qf,qh,qh_resist,Qm,QmFreez,&
-         QmRain,qn1,qn1_S,qn1_SF,qs,RA,&
+         QmRain,qn1,qn1_S,qn1_snowfree,qs,RA,&
          resistsurf,runoffAGimpervious,runoffAGveg,&
          runoff_per_tstep,runoffPipes,runoffSoil_per_tstep,&
          runoffWaterBody,sfr,smd,smd_nsurf,SnowAlb,SnowRemoval,&
@@ -1006,9 +1006,9 @@ CONTAINS
        dectime,ZENITH_deg,avKdn,Temp_C,avRH,ea_hPa,qn1_obs,&
        SnowAlb,DiagQN,&
        NARP_TRANS_SITE,NARP_EMIS_SNOW,IceFrac,sfr,emis,&
-       alb,albDecTr_id,DecidCap_id,albEveTr_id,albGrass_id,surf,&!inout
+       alb,albDecTr_id,DecidCap_id,albEveTr_id,albGrass_id,StoreDrainPrm,&!inout
        snowFrac,ldown,fcld,&!output
-       qn1,qn1_SF,qn1_S,kclear,kup,lup,tsurf,&
+       qn1,qn1_snowfree,qn1_S,kclear,kup,lup,tsurf,&
        qn1_ind_snow,kup_ind_snow,Tsurf_ind_snow,Tsurf_ind)
     USE NARP_MODULE, ONLY: RadMethod,NARP
 
@@ -1047,14 +1047,14 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)  ::DecidCap_id
     REAL(KIND(1d0)),INTENT(in)  ::albEveTr_id
     REAL(KIND(1d0)),INTENT(in)  ::albGrass_id
-    REAL(KIND(1d0)),DIMENSION(6,nsurf),INTENT(inout)::surf
+    REAL(KIND(1d0)),DIMENSION(6,nsurf),INTENT(inout)::StoreDrainPrm
 
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::snowFrac
 
     REAL(KIND(1d0)),INTENT(out)::ldown
     REAL(KIND(1d0)),INTENT(out)::fcld
     REAL(KIND(1d0)),INTENT(out)::qn1
-    REAL(KIND(1d0)),INTENT(out)::qn1_SF
+    REAL(KIND(1d0)),INTENT(out)::qn1_snowfree
     REAL(KIND(1d0)),INTENT(out)::qn1_S
     REAL(KIND(1d0)),INTENT(out)::kclear
     REAL(KIND(1d0)),INTENT(out)::kup
@@ -1100,7 +1100,7 @@ CONTAINS
 
        ! Update variables that change daily and represent seasonal variability
        alb(DecidSurf)    = albDecTr_id !Change deciduous albedo
-       surf(6,DecidSurf) = DecidCap_id !Change current storage capacity of deciduous trees
+       StoreDrainPrm(6,DecidSurf) = DecidCap_id !Change current storage capacity of deciduous trees
        ! Change EveTr and Grass albedo too
        alb(ConifSurf) = albEveTr_id
        alb(GrassSurf) = albGrass_id
@@ -1114,13 +1114,13 @@ CONTAINS
             dectime,ZENITH_deg,avKdn,Temp_C,avRH,ea_hPa,qn1_obs,&
             SnowAlb,&
             AlbedoChoice,ldown_option,NetRadiationMethodX,DiagQN,&
-            qn1,qn1_SF,qn1_S,kclear,kup,LDown,lup,fcld,tsurf,&! output:
+            qn1,qn1_snowfree,qn1_S,kclear,kup,LDown,lup,fcld,tsurf,&! output:
             qn1_ind_snow,kup_ind_snow,Tsurf_ind_snow,Tsurf_ind)
 
     ELSE ! NetRadiationMethod==0
        snowFrac  = snow_obs
        qn1       = qn1_obs
-       qn1_sf    = qn1_obs
+       qn1_snowfree    = qn1_obs
        qn1_s     = qn1_obs
        ldown     = NAN
        lup       = NAN
@@ -1150,7 +1150,7 @@ CONTAINS
        avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown,&
        bldgh,alb,emis,cpAnOHM,kkAnOHM,chAnOHM,EmissionsMethod,&
        Tair24HR,qn1_av,dqndt,qn1_s_av,dqnsdt,&!inout
-       surf,&
+       StoreDrainPrm,&
        qn1_S,snowFrac,dataOutLineESTM,qs,&!output
        deltaQi,a1,a2,a3)
 
@@ -1205,7 +1205,7 @@ CONTAINS
 
     ! REAL(KIND(1d0)),DIMENSION(2*nsh+1),INTENT(inout)::qn1_av_store_grid
     ! REAL(KIND(1d0)),DIMENSION(2*nsh+1),INTENT(inout)::qn1_S_av_store_grid !< average net radiation over previous hour [W m-2]
-    REAL(KIND(1d0)),DIMENSION(6,nsurf),INTENT(inout)::surf
+    REAL(KIND(1d0)),DIMENSION(6,nsurf),INTENT(inout)::StoreDrainPrm
 
 
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::deltaQi ! storage heat flux of snow surfaces
@@ -1264,14 +1264,14 @@ CONTAINS
     ELSEIF (StorageHeatMethod==3) THEN
        IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'
        ! CALL AnOHM(qn1_use,qn1_store_grid,qn1_av_store_grid,qf,&
-       !      MetForcingData_grid,state_id/surf(6,:),&
+       !      MetForcingData_grid,state_id/StoreDrainPrm(6,:),&
        !      alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&
        !      sfr,nsurf,nsh,EmissionsMethod,id,Gridiv,&
        !      a1,a2,a3,qs,deltaQi)
        CALL AnOHM(&
             tstep,dt_since_start,&
             qn1_use,qn1_av,dqndt,qf,&
-            MetForcingData_grid,state_id/surf(6,:),&
+            MetForcingData_grid,state_id/StoreDrainPrm(6,:),&
             alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&! input
             sfr,nsurf,EmissionsMethod,id,Gridiv,&
             a1,a2,a3,qs,deltaQi)! output
@@ -1299,7 +1299,7 @@ CONTAINS
   SUBROUTINE SUEWS_cal_Water(&
        Diagnose,&!input
        snowUse,NonWaterFraction,addPipes,addImpervious,addVeg,addWaterBody,&
-       state_id,soilmoist_id,sfr,surf,WaterDist,nsh_real,&
+       state_id,soilmoist_id,sfr,StoreDrainPrm,WaterDist,nsh_real,&
        drain_per_tstep,&  !output
        drain,AddWaterRunoff,&
        AdditionalWater,runoffPipes,runoff_per_interval,&
@@ -1321,7 +1321,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)          ::state_id
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)          ::soilmoist_id
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)          ::sfr
-    REAL(KIND(1d0)),DIMENSION(6,nsurf),INTENT(in)        ::surf
+    REAL(KIND(1d0)),DIMENSION(6,nsurf),INTENT(in)        ::StoreDrainPrm
     REAL(KIND(1d0)),DIMENSION(nsurf+1,nsurf-1),INTENT(in)::WaterDist
 
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out):: drain         !Drainage of surface type "is" [mm]
@@ -1365,14 +1365,14 @@ CONTAINS
           CALL drainage(&
                is,&! input:
                state_id(is),&
-               surf(6,is),&
-               surf(2,is),&
-               surf(3,is),&
-               surf(4,is),&
+               StoreDrainPrm(6,is),&
+               StoreDrainPrm(2,is),&
+               StoreDrainPrm(3,is),&
+               StoreDrainPrm(4,is),&
                nsh_real,&
                drain(is))! output
 
-          ! !HCW added and changed to surf(6,is) here 20 Feb 2015
+          ! !HCW added and changed to StoreDrainPrm(6,is) here 20 Feb 2015
           ! drain_per_tstep=drain_per_tstep+(drain(is)*sfr(is)/NonWaterFraction)   !No water body included
        ENDDO
        drain_per_tstep=DOT_PRODUCT(drain(1:nsurf-1),sfr(1:nsurf-1))/NonWaterFraction !No water body included
@@ -1433,15 +1433,15 @@ CONTAINS
   ! TODO: optimise the structure of this function
   SUBROUTINE SUEWS_cal_QE(&
        Diagnose,&!input
-       tstep,imin,it,ity,snowCalcSwitch,dayofWeek_id,CRWmin,CRWmax,&
+       tstep,imin,it,EvapMethod,snowCalcSwitch,dayofWeek_id,CRWmin,CRWmax,&
        nsh_real,dectime,lvS_J_kg,lv_j_kg,avdens,avRh,Press_hPa,Temp_C,&
        RAsnow,psyc_hPa,avcp,sIce_hPa,&
-       PervFraction,vegfraction,addimpervious,qn1_SF,qf,qs,vpd_hPa,s_hPa,&
+       PervFraction,vegfraction,addimpervious,qn1_snowfree,qf,qs,vpd_hPa,s_hPa,&
        ResistSurf,RA,rb,tstep_real,snowdensmin,precip,PipeCapacity,RunoffToWater,&
        NonWaterFraction,wu_EveTr,wu_DecTr,wu_Grass,addVeg,addWaterBody,SnowLimPaved,SnowLimBuild,&
        SurfaceArea,FlowChange,drain,WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
        freezmelt,freezstate,freezstatevol,Qm_Melt,Qm_rain,Tsurf_ind,sfr,&
-       StateLimit,AddWater,addwaterrunoff,surf,snowD,&
+       StateLimit,AddWater,addwaterrunoff,StoreDrainPrm,snowD,&
        runoff_per_interval,state_id,soilmoist_id,SnowPack,snowFrac,MeltWaterStore,&! inout:
        iceFrac,SnowDens,&
        SnowProf_24hr,& ! output:
@@ -1458,7 +1458,7 @@ CONTAINS
     INTEGER,INTENT(in) ::tstep
     INTEGER,INTENT(in) ::imin
     INTEGER,INTENT(in) ::it
-    INTEGER,INTENT(in) ::ity !Evaporation calculated according to Rutter (1) or Shuttleworth (2)
+    INTEGER,INTENT(in) ::EvapMethod !Evaporation calculated according to Rutter (1) or Shuttleworth (2)
     ! INTEGER,INTENT(in) ::snowfractionchoice
 
     INTEGER,DIMENSION(nsurf),INTENT(in)::snowCalcSwitch
@@ -1481,7 +1481,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::PervFraction
     REAL(KIND(1d0)),INTENT(in)::vegfraction
     REAL(KIND(1d0)),INTENT(in)::addimpervious
-    REAL(KIND(1d0)),INTENT(in)::qn1_SF
+    REAL(KIND(1d0)),INTENT(in)::qn1_snowfree
     REAL(KIND(1d0)),INTENT(in)::qf
     REAL(KIND(1d0)),INTENT(in)::qs
     REAL(KIND(1d0)),INTENT(in)::vpd_hPa
@@ -1522,7 +1522,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::StateLimit !Limit for state_id of each surface type [mm] (specified in input files)
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::AddWater
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::addwaterrunoff
-    REAL(KIND(1d0)),DIMENSION(6,nsurf),INTENT(in)::surf
+    REAL(KIND(1d0)),DIMENSION(6,nsurf),INTENT(in)::StoreDrainPrm
     REAL(KIND(1d0)), DIMENSION(0:23,2),INTENT(in):: SnowProf_24hr
 
     !Updated status: input and output
@@ -1587,6 +1587,9 @@ CONTAINS
     REAL(KIND(1d0))::runoffAGimpervious_m3
     REAL(KIND(1d0))::runoffAGveg_m3
 
+    REAL(KIND(1d0)),DIMENSION(7)::capStore ! current storage capacity [mm]
+
+    capStore=0 !initialise capStore
 
     tlv=lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
 
@@ -1617,7 +1620,7 @@ CONTAINS
     SnowRemoval          = 0
 
     !========= these need to be wrapped================================
-    sae   = s_hPa*(qn1_SF+qf-qs)    !s_haPa - slope of svp vs t curve. qn1 changed to qn1_SF, lj in May 2013
+    sae   = s_hPa*(qn1_snowfree+qf-qs)    !s_haPa - slope of svp vs t curve. qn1 changed to qn1_snowfree, lj in May 2013
     vdrc  = vpd_hPa*avdens*avcp
     sp    = s_hPa/psyc_hPa
     numPM = sae+vdrc/RA
@@ -1631,7 +1634,7 @@ CONTAINS
              IF(Diagnose==1) WRITE(*,*) 'Calling SnowCalc...'
              CALL SnowCalc(&
                   tstep,imin,it,dectime,is,&!input
-                  ity,CRWmin,CRWmax,nsh_real,lvS_J_kg,lv_j_kg,avdens,&
+                  EvapMethod,CRWmin,CRWmax,nsh_real,lvS_J_kg,lv_j_kg,avdens,&
                   avRh,Press_hPa,Temp_C,RAsnow,psyc_hPa,avcp,sIce_hPa,&
                   PervFraction,vegfraction,addimpervious,&
                   numPM,s_hPa,ResistSurf,sp,RA,rb,tlv,snowdensmin,SnowProf_24hr,precip,&
@@ -1639,7 +1642,7 @@ CONTAINS
                   addVeg,surplusWaterBody,SnowLimPaved,SnowLimBuild,FlowChange,drain,&
                   WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
                   freezmelt,freezstate,freezstatevol,&
-                  Qm_Melt,Qm_rain,Tsurf_ind,sfr,dayofWeek_id,surf,snowD,&
+                  Qm_Melt,Qm_rain,Tsurf_ind,sfr,dayofWeek_id,StoreDrainPrm,snowD,&
                   AddWater,addwaterrunoff,&
                   SnowPack,SurplusEvap,&!inout
                   snowFrac,MeltWaterStore,iceFrac,SnowDens,&
@@ -1655,12 +1658,13 @@ CONTAINS
           ENDIF
        ELSE
 
+          capStore(is)=StoreDrainPrm(6,is)
           !Calculates ev [mm]
           CALL Evap_SUEWS(&
-               ity,&! input: !Evaporation calculated according to Rutter (1) or Shuttleworth (2)
+               EvapMethod,&! input: !Evaporation calculated according to Rutter (1) or Shuttleworth (2)
                state_id(is),& ! wetness status
                WetThresh(is),&!When state_id > WetThresh, RS=0 limit in SUEWS_evap [mm] (specified in input files)
-               surf(6,is),& ! = surf(6,is), current storage capacity [mm]
+               capStore(is),& ! = StoreDrainPrm(6,is), current storage capacity [mm]
                numPM,&!numerator of P-M eqn
                s_hPa,&!Vapour pressure versus temperature slope in hPa
                psyc_hPa,&!Psychometric constant in hPa
@@ -1955,7 +1959,7 @@ CONTAINS
        MwStore,&
        nsh_real,NWstate_per_tstep,Precip,q2_gkg,&
        qeOut,qf,qh,qh_resist,Qm,QmFreez,&
-       QmRain,qn1,qn1_S,qn1_SF,qs,RA,&
+       QmRain,qn1,qn1_S,qn1_snowfree,qs,RA,&
        resistsurf,runoffAGimpervious,runoffAGveg,&
        runoff_per_tstep,runoffPipes,runoffSoil_per_tstep,&
        runoffWaterBody,sfr,smd,smd_nsurf,SnowAlb,SnowRemoval,&
@@ -2014,7 +2018,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in) :: QmRain
     REAL(KIND(1d0)),INTENT(in) :: qn1
     REAL(KIND(1d0)),INTENT(in) :: qn1_S
-    REAL(KIND(1d0)),INTENT(in) :: qn1_SF
+    REAL(KIND(1d0)),INTENT(in) :: qn1_snowfree
     REAL(KIND(1d0)),INTENT(in) :: qs
     REAL(KIND(1d0)),INTENT(in) :: RA
     REAL(KIND(1d0)),INTENT(in) :: resistsurf
@@ -2125,7 +2129,7 @@ CONTAINS
          UStar,l_mod,RA,ResistSurf,&
          Fc,&
          Fc_photo,Fc_respi,Fc_metab,Fc_traff,Fc_build,&
-         qn1_SF,qn1_S,SnowAlb,&
+         qn1_snowfree,qn1_S,SnowAlb,&
          Qm,QmFreez,QmRain,swe,mwh,MwStore,chSnow_per_interval,&
          SnowRemoval(1:2),&
          t2_C,q2_gkg,avU10_ms& ! surface-level diagonostics

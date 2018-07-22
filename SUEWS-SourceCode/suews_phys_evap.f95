@@ -1,24 +1,7 @@
 SUBROUTINE Evap_SUEWS(&
-
-                                ! input:
-     ity,&!Evaporation calculated according to Rutter (1) or Shuttleworth (2)
-     state_is,& ! wetness status
-     WetThresh_is,&!When State > WetThresh, RS=0 limit in SUEWS_evap [mm] (specified in input files)
-     capStore,& ! = surf(6,is), current storage capacity [mm]
-     numPM,&!numerator of P-M eqn
-     s_hPa,&!Vapour pressure versus temperature slope in hPa
-     psyc_hPa,&!Psychometric constant in hPa
-     ResistSurf,&!Surface resistance
-     sp,&!Term in calculation of E
-     RA,&!Aerodynamic resistance
-     rb,&!Boundary layer resistance
-     tlv,&!Latent heat of vaporization per timestep [J kg-1 s-1], (tlv=lv_J_kg/tstep_real)
-
-                                ! output:
-     rss,&
-     ev,&
-     qe& ! latent heat flux [W m-2]
-     )
+     EvapMethod,state_is,WetThresh_is,capStore_is,&!input
+     numPM,s_hPa,psyc_hPa,ResistSurf,sp,RA,rb,tlv,&
+     rss,ev,qe) !output
   !------------------------------------------------------------------------------
   !-Calculates evaporation for each surface from modified Penman-Monteith eqn
   !-State determines whether each surface type is dry or wet (wet/transition)
@@ -38,19 +21,12 @@ SUBROUTINE Evap_SUEWS(&
   !  LJ 10/2010
   !------------------------------------------------------------------------------
 
-  ! USE allocateArray
-  ! USE data_in
-  ! USE defaultNotUsed
-  !
-  ! USE moist
-  ! USE sues_data
-
   IMPLICIT NONE
-  INTEGER,INTENT(in) :: ity!Evaporation calculated according to Rutter (1) or Shuttleworth (2)
+  INTEGER,INTENT(in) :: EvapMethod!Evaporation calculated according to Rutter (1) or Shuttleworth (2)
 
   REAL(KIND(1d0)),INTENT(in)::state_is ! wetness status
   REAL(KIND(1d0)),INTENT(in)::WetThresh_is!When State > WetThresh, RS=0 limit in SUEWS_evap [mm] (specified in input files)
-  REAL(KIND(1d0)),INTENT(in)::capStore ! = surf(6,is), current storage capacity [mm]
+  REAL(KIND(1d0)),INTENT(in)::capStore_is ! = StoreDrainPrm(6,is), current storage capacity [mm]
   REAL(KIND(1d0)),INTENT(in)::numPM!numerator of P-M eqn
   REAL(KIND(1d0)),INTENT(in)::s_hPa!Vapour pressure versus temperature slope in hPa
   REAL(KIND(1d0)),INTENT(in)::psyc_hPa!Psychometric constant in hPa
@@ -64,23 +40,23 @@ SUBROUTINE Evap_SUEWS(&
   REAL(KIND(1d0)),INTENT(out)::ev
   REAL(KIND(1d0)),INTENT(out)::qe ! latent heat flux [W m-2]
 
-  REAL(KIND(1d0)):: &
-       rbsg,&  !Boundary-layer resistance x (slope/psychrometric const + 1) [s m-1]
 
-       rsrbsg,&  !RS + rbsg [s m-1]
-       rst,&
-       W,&  !Depends on the amount of water on the canopy [-]
-       x,&
-       r
-  REAL(KIND(1d0)),PARAMETER:: &
-       NAN=-999
+  REAL(KIND(1d0))::rbsg  !Boundary-layer resistance x (slope/psychrometric const + 1) [s m-1]
+  REAL(KIND(1d0))::rsrbsg  !RS + rbsg [s m-1]
+  REAL(KIND(1d0))::rst
+  REAL(KIND(1d0))::W  !Depends on the amount of water on the canopy [-]
+  REAL(KIND(1d0))::x
+  REAL(KIND(1d0))::r
+
+  REAL(KIND(1d0)),PARAMETER::  NAN=-999
+
   ! Use Penman-Monteith eqn modified for urban areas (Eq6, Jarvi et al. 2011)
   ! Calculation independent of surface characteristics
   ! Uses value of RS for whole area (calculated based on LAI of veg surfaces in SUEWS_SurfaceResistance.f95)
 
   ! PRINT*, 'is',is,'SMOIS',state(is)
   ! PRINT*, 'SMOIS',state_is,state_is<=0.001
-  ! PRINT*, 'ity',ity
+  ! PRINT*, 'EvapMethod',EvapMethod
 
   ! Dry surface ---------------------------------------------------------------
   IF(state_is<=0.001) THEN
@@ -93,14 +69,14 @@ SUBROUTINE Evap_SUEWS(&
   ELSE
      rst=0   !Set flag=0 indicating wet surface(0)
 
-     ! Evaporation calculated according to Rutter(ity=1) or Shuttleworth(ity=2).
+     ! Evaporation calculated according to Rutter(EvapMethod=1) or Shuttleworth(EvapMethod=2).
      !Set in SUEWS_initial (so not an input to the model)
-     IF(ity==2) THEN   !-- Shuttleworth (1978) --
+     IF(EvapMethod==2) THEN   !-- Shuttleworth (1978) --
         rbsg   = rb*(sp+1)           !Boundary-layer resistance x (slope/psychro + 1)
         rsrbsg = ResistSurf+rbsg   !RS + rsbg
 
         ! If surface is completely wet, set RS to zero -------------------
-        !if(state(is)>=surf(6,is).or.ResistSurf<25) then   !If at storage capacity or RS is small
+        !if(state(is)>=StoreDrainPrm(6,is).or.ResistSurf<25) then   !If at storage capacity or RS is small
         IF(state_is>=WetThresh_is.OR.ResistSurf<25) THEN   !If at storage capacity or RS is small
            W=1                                            !So that RS=0 (Eq7, Jarvi et al. 2011)
            ! If surface is in transition, use rss ---------------------------
@@ -120,14 +96,14 @@ SUBROUTINE Evap_SUEWS(&
         ! PRINT*, 'numPM',numPM
         ! PRINT*, 'qe',qe
 
-     ELSEIF(ity==1) THEN   !-- Rutter --
+     ELSEIF(EvapMethod==1) THEN   !-- Rutter --
         qe = numPM/(s_hPa+psyc_hPa)
         ev = qe/tlv
 
-        IF(state_is >= capStore) THEN
+        IF(state_is >= capStore_is) THEN
            x = 1.0
         ELSE
-           x = state_is/capStore
+           x = state_is/capStore_is
         ENDIF
         ev = ev*x     !QE [W m-2]
         qe = ev*tlv   !Ev [mm]

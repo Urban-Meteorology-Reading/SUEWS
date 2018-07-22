@@ -24,7 +24,7 @@ CONTAINS
   !  HCW 06 Mar 2015 - Unused variable 'i' removed.
   !  LJ Jan 2015     - Change the calculation from hourly timestep to timestep defined by nsh
   !  LJ May 2013     - Calculation of the energy balance for the SnowPack was modified
-  !                        to use qn1_ind_snow(surf)
+  !                        to use qn1_ind_snow(StoreDrainPrm)
   !=======================================================================================
   SUBROUTINE Snow_cal_MeltHeat(&
        snowUse,&!input
@@ -456,7 +456,7 @@ CONTAINS
   !===============================================================================================
   SUBROUTINE SnowCalc(&
        tstep,imin,it,dectime,is,&!input
-       ity,CRWmin,CRWmax,nsh_real,lvS_J_kg,lv_j_kg,avdens,&
+       EvapMethod,CRWmin,CRWmax,nsh_real,lvS_J_kg,lv_j_kg,avdens,&
        avRh,Press_hPa,Temp_C,RAsnow,psyc_hPa,avcp,sIce_hPa,&
        PervFraction,vegfraction,addimpervious,&
        numPM,s_hPa,ResistSurf,sp,RA,rb,tlv,snowdensmin,SnowProf_24hr,precip,&
@@ -464,7 +464,7 @@ CONTAINS
        addVeg,surplusWaterBody,SnowLimPaved,SnowLimBuild,FlowChange,drain,&
        WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
        freezmelt,freezstate,freezstatevol,&
-       Qm_Melt,Qm_rain,Tsurf_ind,sfr,dayofWeek_id,surf,snowD,&
+       Qm_Melt,Qm_rain,Tsurf_ind,sfr,dayofWeek_id,StoreDrainPrm,snowD,&
        AddWater,addwaterrunoff,&
        SnowPack,SurplusEvap,&!inout
        snowFrac,MeltWaterStore,iceFrac,SnowDens,&
@@ -510,7 +510,7 @@ CONTAINS
     ! INTEGER,INTENT(in)::BldgSurf
     ! INTEGER,INTENT(in)::PavSurf
     ! INTEGER,INTENT(in)::WaterSurf
-    INTEGER,INTENT(in)::ity!Evaporation calculated according to Rutter (1) or Shuttleworth (2)
+    INTEGER,INTENT(in)::EvapMethod!Evaporation calculated according to Rutter (1) or Shuttleworth (2)
     INTEGER,DIMENSION(3),INTENT(in)  ::DayofWeek_id
 
     REAL(KIND(1d0)),INTENT(in)::dectime
@@ -563,7 +563,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::snowD
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::AddWater
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::addwaterrunoff
-    REAL(KIND(1d0)),DIMENSION(6,nsurf),INTENT(in)::surf
+    REAL(KIND(1d0)),DIMENSION(6,nsurf),INTENT(in)::StoreDrainPrm
     REAL(KIND(1d0)),DIMENSION(0:23,2),INTENT(in)::SnowProf_24hr
 
     !Updated status: input and output
@@ -623,6 +623,9 @@ CONTAINS
 
     INTEGER:: iu                        !1=weekday OR 2=weekend
     REAL(KIND(1d0)),PARAMETER :: IPThreshold_mmhr = 10   !Threshold for intense precipitation [mm hr-1]
+
+    REAL(KIND(1d0)),DIMENSION(7)::capStore ! current storage capacity [mm]
+
     !========================================================================
     !Initialize variables for the calculation of water storages and evaporation
     ev_per_tstep         = 0
@@ -661,14 +664,14 @@ CONTAINS
     !======================================================================
     ! Calculate evaporation from SnowPack and snow free surfaces (in mm)
     ! IF (snowFrac(is)<1) CALL Evap_SUEWS !ev and qe for snow free surface out
-
+    capStore(is)=StoreDrainPrm(6,is)
     IF (snowFrac(is)<1) CALL Evap_SUEWS(&
 
                                 ! input:
-         ity,&!Evaporation calculated according to Rutter (1) or Shuttleworth (2)
+         EvapMethod,&!Evaporation calculated according to Rutter (1) or Shuttleworth (2)
          state_id(is),& ! wetness status
          WetThresh(is),&!When state_id > WetThresh, RS=0 limit in SUEWS_evap [mm] (specified in input files)
-         surf(6,is),& ! = surf(is,6), current storage capacity [mm]
+         capStore(is),& ! = StoreDrainPrm(is,6), current storage capacity [mm]
          numPM,&!numerator of P-M eqn
          s_hPa,&!Vapour pressure versus temperature slope in hPa
          psyc_hPa,&!Psychometric constant in hPa
@@ -1109,16 +1112,16 @@ CONTAINS
     ENDIF !SnowPack negative or positive
 
     !Check water state_id separately
-    IF (state_id(WaterSurf)>Surf(5,WaterSurf)) THEN
-       runoff(WaterSurf)=runoff(WaterSurf)+(state_id(WaterSurf)-Surf(5,WaterSurf))
-       state_id(WaterSurf)=Surf(5,WaterSurf)
+    IF (state_id(WaterSurf)>StoreDrainPrm(5,WaterSurf)) THEN
+       runoff(WaterSurf)=runoff(WaterSurf)+(state_id(WaterSurf)-StoreDrainPrm(5,WaterSurf))
+       state_id(WaterSurf)=StoreDrainPrm(5,WaterSurf)
        runoffWaterBody=runoffWaterBody+runoff(WaterSurf)*sfr(WaterSurf)
     ELSE
        state_id(WaterSurf)=state_id(WaterSurf)+surplusWaterBody
 
-       IF (state_id(WaterSurf)>Surf(5,WaterSurf)) THEN
-          runoffWaterBody=runoffWaterBody+(state_id(WaterSurf)-Surf(5,WaterSurf))*sfr(WaterSurf)
-          state_id(WaterSurf)=Surf(5,WaterSurf)
+       IF (state_id(WaterSurf)>StoreDrainPrm(5,WaterSurf)) THEN
+          runoffWaterBody=runoffWaterBody+(state_id(WaterSurf)-StoreDrainPrm(5,WaterSurf))*sfr(WaterSurf)
+          state_id(WaterSurf)=StoreDrainPrm(5,WaterSurf)
        ENDIF
     ENDIF
 

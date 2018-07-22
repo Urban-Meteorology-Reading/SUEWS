@@ -205,13 +205,13 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   emis_snow     = SurfaceChar(Gridiv,c_SnowEmis)
 
   ! ---- Storage capacities [mm]
-  surf(1,1:nsurf) = SurfaceChar(Gridiv,c_StorMin)   ! Minimum
-  surf(5,1:nsurf) = SurfaceChar(Gridiv,c_StorMax)   ! Maximum
-  surf(6,1:nsurf) = surf(1,1:nsurf)  !Set storage capacities for all surface to minimum (DecTr changes with time in Calculations).
+  StoreDrainPrm(1,1:nsurf) = SurfaceChar(Gridiv,c_StorMin)   ! Minimum
+  StoreDrainPrm(5,1:nsurf) = SurfaceChar(Gridiv,c_StorMax)   ! Maximum
+  StoreDrainPrm(6,1:nsurf) = StoreDrainPrm(1,1:nsurf)  !Set storage capacities for all surface to minimum (DecTr changes with time in Calculations).
 
   ! ---- Set min & max storage capacities for DecTr
-  CapMin_dec = surf(1,DecidSurf)
-  CapMax_dec = surf(5,DecidSurf)
+  CapMin_dec = StoreDrainPrm(1,DecidSurf)
+  CapMax_dec = StoreDrainPrm(5,DecidSurf)
   ! ---- Set min & max porosity for DecTr
   PorMin_dec = SurfaceChar(Gridiv,c_PorosityMin(ivDecid))   ! Minimum
   PorMax_dec = SurfaceChar(Gridiv,c_PorosityMax(ivDecid))   ! Minimum
@@ -226,9 +226,9 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
   WaterDepth = SurfaceChar(Gridiv,c_WaterDepth)
 
   ! ---- Drainage
-  surf(2,1:nsurf) = SurfaceChar(Gridiv,c_DrEq)      ! Drainage equation
-  surf(3,1:nsurf) = SurfaceChar(Gridiv,c_DrCoef1)   ! Drainage coef 1
-  surf(4,1:nsurf) = SurfaceChar(Gridiv,c_DrCoef2)   ! Drainage coef 2
+  StoreDrainPrm(2,1:nsurf) = SurfaceChar(Gridiv,c_DrEq)      ! Drainage equation
+  StoreDrainPrm(3,1:nsurf) = SurfaceChar(Gridiv,c_DrCoef1)   ! Drainage coef 1
+  StoreDrainPrm(4,1:nsurf) = SurfaceChar(Gridiv,c_DrCoef2)   ! Drainage coef 2
 
   ! ---- Limit of SWE (each surface except Water)
   snowD(1:(nsurf-1)) = SurfaceChar(Gridiv,c_SnowLimPat(1:(nsurf-1)))
@@ -653,7 +653,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      ! cpAnOHM(1:nsurf)=rSurf_SUEWSsurfs(1,1:nsurf)
      ! kkAnOHM(1:nsurf)=kSurf_SUEWSsurfs(1,1:nsurf)
      ! IF ( ir ==1 .AND. iMb ==1) THEN
-     !    PRINT*, 'surf',PavSurf,':'
+     !    PRINT*, 'StoreDrainPrm',PavSurf,':'
      !    PRINT'(a10,x,5f10.2)', 'Depth',zSurf_SUEWSsurfs(:,i)
      !    PRINT'(a10,x,5es10.2)', 'RhoCp',rSurf_SUEWSsurfs(:,i)
      !    PRINT'(a10,x,5es10.2)', 'avg_RhoCp',cpAnOHM(i)
@@ -669,7 +669,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      !    ! cp: weight-averaged by depth
      !    cpAnOHM(i)=DOT_PRODUCT(rSurf_SUEWSsurfs(:,i),zSurf_SUEWSsurfs(:,i))/SUM(zSurf_SUEWSsurfs(:,i))
      !   !  IF ( i==PavSurf .AND. ir ==1 .AND. iMb ==1) THEN
-     !   !     PRINT*, 'surf',i,':'
+     !   !     PRINT*, 'StoreDrainPrm',i,':'
      !   !     PRINT'(a10,x,5f10.2)', 'Depth',zSurf_SUEWSsurfs(:,i)
      !   !     PRINT'(a10,x,5es10.2)', 'RhoCp',rSurf_SUEWSsurfs(:,i)
      !   !     PRINT'(a10,x,5es10.2)', 'avg_RhoCp',cpAnOHM(i)
@@ -1018,13 +1018,13 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      WRITE(12,120) (emis(iv),iv=1,nsurf),emis_snow, ' Emissivity'
      WRITE(12,120) FCskip, FCskip,(baseT(iv),iv=1,nvegsurf), FCskip, FCskip, FCskip, ' BaseT'
      WRITE(12,120) FCskip, FCskip,(baseTe(iv),iv=1,nvegsurf),FCskip, FCskip, FCskip, ' BaseTe'
-     WRITE(12,120) (Surf(1,iv),iv=1,nsurf), FCskip ,' StorageMin'
-     WRITE(12,120) (Surf(5,iv),iv=1,nsurf), FCskip ,' StorageMax'
+     WRITE(12,120) (StoreDrainPrm(1,iv),iv=1,nsurf), FCskip ,' StorageMin'
+     WRITE(12,120) (StoreDrainPrm(5,iv),iv=1,nsurf), FCskip ,' StorageMax'
      WRITE(12,120) (WetThresh(iv),iv=1,nsurf), FCskip, ' WetThreshold'
      WRITE(12,120) (StateLimit(iv),iv=1,nsurf), FCskip,' StateLimit'
-     WRITE(12,120) (Surf(2,iv),iv=1,nsurf), FCskip, ' DrainageEq'    !real
-     WRITE(12,120) (Surf(3,iv),iv=1,nsurf), FCskip, ' DrainageCoef1'
-     WRITE(12,120) (Surf(4,iv),iv=1,nsurf), FCskip, ' DrainageCoef2'
+     WRITE(12,120) (StoreDrainPrm(2,iv),iv=1,nsurf), FCskip, ' DrainageEq'    !real
+     WRITE(12,120) (StoreDrainPrm(3,iv),iv=1,nsurf), FCskip, ' DrainageCoef1'
+     WRITE(12,120) (StoreDrainPrm(4,iv),iv=1,nsurf), FCskip, ' DrainageCoef2'
      WRITE(12,120) FCskip,FCskip,(GDDFull(iv),iv=1,nvegsurf),FCskip,FCskip,FCskip, ' GDDFull'
      WRITE(12,120) FCskip,FCskip,(SDDFull(iv),iv=1,nvegsurf),FCskip,FCskip,FCskip, ' SDDFull'
      WRITE(12,120) FCskip,FCskip,(LAImin(iv),iv=1,nvegsurf),FCskip,FCskip,FCskip, ' LAIMin'

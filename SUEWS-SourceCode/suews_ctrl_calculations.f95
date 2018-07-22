@@ -37,7 +37,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
   USE data_in, ONLY: diagnose, ah_min, ah_slope_cooling, ah_slope_heating, &
        alt, avkdn, avrh, avu1, basetHDD, diagqn, diagqs, drainrt, ef_umolco2perj, &
        emissionsmethod, enef_v_jkm, enddls, fcef_v_kgkm, fcld_obs, &
-       frfossilfuel_heat, frfossilfuel_nonheat, ity, &
+       frfossilfuel_heat, frfossilfuel_nonheat, EvapMethod, &
        LAIcalcyes, LAI_obs, lat, ldown_obs, lng, maxqfmetab, minqfmetab, &
        netradiationmethod, numcapita, ohmincqf, popdensdaytime, popdensnighttime, &
        precip, press_hpa, qf0_beu, qf_a, qf_b, qf_c, &
@@ -71,7 +71,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
        resp_a, resp_b, sathydraulicconduct, sddfull, &
        sfr, snowd, snowdens, snowfrac, snowpack, &
        soildepth, soilmoist_id, soilstorecap, state_id, statelimit, &
-       surf, tair24hr, theta_bioco2,ts5mindata_ir, &
+       StoreDrainPrm, tair24hr, theta_bioco2,ts5mindata_ir, &
        waterdist, wetthresh, &
        WUDay_id,&
        AHProf_24Hr,HumActivity_24Hr,PopProf_24Hr,TraffProf_24Hr,WUProfA_24hr, WUProfM_24hr, &
@@ -131,7 +131,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
        FrFossilFuel_Heat,FrFossilFuel_NonHeat,G1,G2,G3,G4,G5,G6,GDD_id,&
        GDDFull,Gridiv,gsModel,HDD_id,HumActivity_24hr,&
        IceFrac,id,Ie_a,Ie_end,Ie_m,Ie_start,imin,&
-       InternalWaterUse_h,IrrFracConif,IrrFracDecid,IrrFracGrass,isec,it,ity,&
+       InternalWaterUse_h,IrrFracConif,IrrFracDecid,IrrFracGrass,isec,it,EvapMethod,&
        iy,kkAnOHM,Kmax,LAI_id,LAICalcYes,LAIMax,LAIMin,LAI_obs,&
        LAIPower,LAIType,lat,ldown_obs,lng,MaxConductance,MaxQFMetab,&
        MeltWaterStore,MetForcingData_grid,MinQFMetab,min_res_bioCO2,&
@@ -148,7 +148,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
        SnowAlbMin,snowD,SnowDens,SnowDensMax,SnowDensMin,SnowfallCum,snowFrac,&
        SnowLimBuild,SnowLimPaved,snow_obs,SnowPack,SnowProf_24hr,snowUse,SoilDepth,&
        soilmoist_id,soilstoreCap,StabilityMethod,startDLS,state_id,StateLimit,&
-       StorageHeatMethod,surf,SurfaceArea,Tair24HR,tau_a,tau_f,tau_r,&
+       StorageHeatMethod,StoreDrainPrm,SurfaceArea,Tair24HR,tau_a,tau_f,tau_r,&
        T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,TempMeltFact,TH,&
        theta_bioCO2,timezone,TL,TrafficRate,TrafficUnits,&
        TraffProf_24hr,Ts5mindata_ir,tstep,tstep_prev,veg_type,&

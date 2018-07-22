@@ -297,7 +297,7 @@ SUBROUTINE OverallRunControl
   !SUEWS run information
   InputMetFormat=10    !Input met data file in LUMPS format(1) or SUEWS format(10)
   LAICalcYes=1         !Use observed(0) or modelled(1) LAI
-  ity=2                !Evaporation calculated according to Rutter(1) or Shuttleworth(2)
+  EvapMethod=2                !Evaporation calculated according to Rutter(1) or Shuttleworth(2)
   WriteDailyState = 1  !Daily state file written
   tstepcount=0
 

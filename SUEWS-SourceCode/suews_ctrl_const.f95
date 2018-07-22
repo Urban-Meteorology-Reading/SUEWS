@@ -229,7 +229,7 @@ MODULE allocateArray
   REAL(KIND(1d0)),DIMENSION(nsurf+1,nsurf-1)::WaterDist !Within-grid water distribution to other surfaces and runoff/soil store [-]
 
   ! ---- Drainage characteristics ----------------------------------------------------------------
-  REAL(KIND(1d0)),DIMENSION(6,nsurf):: surf   !Storage capacities and drainage equation info for each surface
+  REAL(KIND(1d0)),DIMENSION(6,nsurf):: StoreDrainPrm   !Storage capacities and drainage equation info for each surface
   ! 1 - min storage capacity [mm]
   ! 2 - Drainage equation to use
   ! 3 - Drainage coeff 1 [units depend on choice of eqn]
@@ -246,10 +246,10 @@ MODULE allocateArray
   ! REAL(KIND(1d0)),DIMENSION( 0:ndays, 9):: WUDay       !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
   ! REAL(KIND(1d0)),DIMENSION(-4:ndays, nvegsurf):: LAI   !LAI for each veg surface [m2 m-2]
 
-  REAL(KIND(1d0)),DIMENSION(5)        :: GDD_id,GDD_id_prev       !Growing Degree Days (see SUEWS_DailyState.f95)
-  REAL(KIND(1d0)),DIMENSION(12)      :: HDD_id
+  REAL(KIND(1d0)),DIMENSION(5)        :: GDD_id,GDD_id_prev     !Growing Degree Days (see SUEWS_DailyState.f95)
+  REAL(KIND(1d0)),DIMENSION(12)       :: HDD_id
   REAL(KIND(1d0)),DIMENSION(9)        :: WUDay_id,WUDay_id_prev !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
-  REAL(KIND(1d0)),DIMENSION(nvegsurf) :: LAI_id,LAI_id_prev       !LAI for each veg surface [m2 m-2]
+  REAL(KIND(1d0)),DIMENSION(nvegsurf) :: LAI_id,LAI_id_prev     !LAI for each veg surface [m2 m-2]
 
   ! Seasonality of deciduous trees accounted for by the following variables which change with time
   ! REAL(KIND(1d0)),DIMENSION( 0:ndays):: DecidCap   !Storage capacity of deciduous trees [mm]
@@ -1001,7 +1001,7 @@ MODULE data_in
                                 !Currently set to 0 in SUEWS_Initial
        InputMetFormat,&       !Defines format for met input data: LUMPS format(1) or SUEWS format(10)
                                 !Currently set to 10 in SUEWS_Initial
-       ity,&                  !Evaporation calculated according to Rutter (1) or Shuttleworth (2)
+       EvapMethod,&                  !Evaporation calculated according to Rutter (1) or Shuttleworth (2)
                                 !Currently set to 2 in OverallRunControl
        LAIcalcYes,&           !Use observed (0) or modelled (1) LAI
                                 !Currently set to 1 in OverallRunControl
@@ -1080,7 +1080,7 @@ MODULE data_in
        qn1_bup,&
        qn1_obs,&   !Observed new all-wave radiation
        qn1_S,&     !Total net all-wave radiation for the SnowPack
-       qn1_SF,&    !Total net all-wave radiation for the snowfree surface
+       qn1_snowfree,&    !Total net all-wave radiation for the snowfree surface
        qs_obs,&        !Observed storage heat flux
        QSanOHM,&   !Simulated storage heat flux by AnOHM, TS 30 May 2016
        QSestm,&    !Simulated storage heat flux by ESTM, TS 30 May 2016

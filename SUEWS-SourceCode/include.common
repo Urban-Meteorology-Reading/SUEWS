@@ -28,6 +28,7 @@ clean: TARGET := $(strip $(TARGET))$(strip $(suffix))
 
 # All the files which include modules used by other modules (these therefore
 # needs to be compiled first)
+# NB: DO KEEP ALL FILE NAMES in lowercase for compatability across platforms
 # utilities
 UTILS = suews_ctrl_const.o \
 				suews_util_stringmod.o \

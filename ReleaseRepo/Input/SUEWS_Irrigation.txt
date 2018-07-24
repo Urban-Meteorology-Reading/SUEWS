@@ -4,6 +4,5 @@ Code	Ie_start	Ie_end	InternalWaterUse	Faut	Ie_a1	Ie_a2	Ie_a3	Ie_m1	Ie_m2	Ie_m3	D
 1	152	243	0	0.2	-84.535	9.959	3.674	-25.36	2.988	1.102	1	1	1	1	1	1	1	1	1	1	1	1	1	1			
 550	1	366	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	!	Swindon	"(not used, no irrigation)"
 660	1	366	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	!	London	(assume no irrigation at the moment)
-999	1	366	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	!	London	(assume no irrigation at the moment)
 -9																											
 -9																											

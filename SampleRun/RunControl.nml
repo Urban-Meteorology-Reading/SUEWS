@@ -3,8 +3,8 @@ CBLUse=0
 SnowUse=0
 SOLWEIGUse=0
 NetRadiationMethod=3
-EmissionsMethod=0
-StorageHeatMethod=3
+EmissionsMethod=1
+StorageHeatMethod=1
 OHMIncQF=0
 StabilityMethod=3
 RoughLenHeatMethod=2
@@ -29,7 +29,7 @@ RainDisaggMethod=100    !NEW  (100 = default value, so don't actually need here)
 DisaggMethodESTM=1      !NEW  (1 = default value, so don't actually need here)
 SuppressWarnings=1      !NEW
 KdownZen=0
-diagnose=1
+diagnose=0
 ncmode=0
 nrow=1
 ncol=1

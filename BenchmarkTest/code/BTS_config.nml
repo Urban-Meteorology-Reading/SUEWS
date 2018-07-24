@@ -36,5 +36,5 @@
     stabilitymethod    = 2, 3
     netradiationmethod = 3
     storageheatmethod  = 1, 3
-    emissionsmethod    = 0, 1, 2
+    emissionsmethod    = 1, 2
 /

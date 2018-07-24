@@ -29,7 +29,6 @@ MODULE ctrl_output
   USE ESTM_data
   USE gis_data
   USE initial
-  USE solweig_module
   USE sues_data
   USE time
   USE strings

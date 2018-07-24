@@ -3,18 +3,18 @@
     path_ref = '../BaseRun/London_KCL/v2016a/Output/Kc1_2011_60.txt'
     name_cfg(1) = 'v2016a'
     path_cfg(1) = '../BaseRun/London_KCL/v2016a/Output/Kc1_2011_60.txt'
-    name_cfg(2) = 'v2018b'
-    path_cfg(2) = '../BaseRun/London_KCL/v2018b/Output/Kc1_2011_SUEWS_60.txt'
-    name_cfg(3) = 'v2018b-stab3'
-    path_cfg(3) = '../BaseRun/London_KCL/v2018b-stab3/Output/Kc1_2011_SUEWS_60.txt'
+    name_cfg(2) = 'v2018a'
+    path_cfg(2) = '../BaseRun/London_KCL/v2018a/Output/Kc1_2011_SUEWS_60.txt'
+    name_cfg(3) = 'v2018a-stab3'
+    path_cfg(3) = '../BaseRun/London_KCL/v2018a-stab3/Output/Kc1_2011_SUEWS_60.txt'
 
-    path_report_pdf = '../report/comp-2016a_2018b_2018b-stab3'
-    path_report_html = '../report/comp-2016a_2018b_2018b-stab3'
+    path_report_pdf = '../report/comp-2016a_2018a_2018a-stab3'
+    path_report_html = '../report/comp-2016a_2018a_2018a-stab3'
 
-    name_exe    = 'SUEWS_V2018b'
+    name_exe    = 'SUEWS_V2018a'
     dir_exe     = '../../ReleaseRepo/build/macOS'
     dir_input   = '../BaseInput'
-    dir_baserun = '../BaseRun/2018b'
+    dir_baserun = '../BaseRun/2018a'
 
 /
 

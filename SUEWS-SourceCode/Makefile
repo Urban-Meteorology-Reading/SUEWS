@@ -139,7 +139,7 @@ cov: SUEWS_Program.f95 $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(T
 check:
 		$(MAKE) clean;
 		$(MAKE) main;
-		cd $(SUEWS_test_dir); python test_dev.py
+		cd $(SUEWS_test_dir)/code; python 1.test_dev.py
 
 
 # If UTILS have changed, compile them again

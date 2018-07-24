@@ -344,7 +344,8 @@ def test_samerun(name_sim, name_exe,
         os.mkdir(dir_output)
 
     # copy SUEWS executable
-    os.remove(name_exe)
+    if os.path.exists(name_exe):
+        os.remove(name_exe)
     path_exe = os.path.join(dir_exe, name_exe)
     copyfile(path_exe, name_exe)
     os.chmod(name_exe, 755)

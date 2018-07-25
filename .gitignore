@@ -27,3 +27,4 @@ workspace.xml
 .idea
 BenchmarkTest/*.pyc
 BaseRun
+SUEWS-SourceCode/*.f90

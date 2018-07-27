@@ -324,7 +324,7 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
      ELSEIF( WhichFile == 500 ) THEN
         filename='problems.txt'
      ENDIF
-     OPEN(501,file=TRIM(filename))
+     OPEN(WhichFile,file=TRIM(filename))
 
 
      !This part of the code determines how the error/warning message is written out

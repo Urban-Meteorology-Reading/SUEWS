@@ -324,26 +324,26 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
      ELSEIF( WhichFile == 500 ) THEN
         filename='problems.txt'
      ENDIF
-     OPEN(WhichFile,file=TRIM(filename))
+     OPEN(WhichFile,file=TRIM(filename),position="append")
 
 
      !This part of the code determines how the error/warning message is written out
      IF(v1) THEN ! 1 real
-        WRITE(WhichFile,'((a),(f9.4))')' Value: ', VALUE
+        WRITE(WhichFile,'(a,f10.3)')' Value: ', VALUE
      ELSEIF(v2) THEN ! 2 real
-        WRITE(WhichFile,'((a),2(f9.4))')' Values: ', VALUE, value2
+        WRITE(WhichFile,'(a,2f10.3)')' Values: ', VALUE, value2
      ELSEIF(v3) THEN ! 1 integer
-        WRITE(WhichFile,'((a),(i10))')' Value: ', valueI
+        WRITE(WhichFile,'(a,i10)')' Value: ', valueI
      ELSEIF(v4) THEN ! 2 real, 1 integer
-        WRITE(WhichFile,'((a),2(f9.4),(i10))')' Values: ', VALUE, value2, valueI
+        WRITE(WhichFile,'(a,2f10.3,i10)')' Values: ', VALUE, value2, valueI
      ELSEIF(v5) THEN ! 1 real 1 integer
-        WRITE(WhichFile,'((f9.4),(i10))')' Values: ', VALUE, valueI
+        WRITE(WhichFile,'(a,f10.3,i10)')' Values: ', VALUE, valueI
      ELSEIF(v6) THEN ! 2 integer
         valueI2=INT(VALUE)
-        WRITE(WhichFile,'((a),2(i10))')' Values: ', valueI, valueI2
+        WRITE(WhichFile,'(a,2i10)')' Values: ', valueI, valueI2
      ELSEIF(v7) THEN ! 1 real, 2 integer
         valueI2=INT(value2)
-        WRITE(WhichFile,'((a),(f9.4),2(i10))')' Values: ', VALUE, valueI2, valueI
+        WRITE(WhichFile,'(a,f10.3,2i10)')' Values: ', VALUE, valueI2, valueI
      ELSEIF(v8) THEN
         ! no error values
      ENDIF
@@ -357,13 +357,13 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
   ! Write errors (that stop the program) to problems.txt; warnings to warnings.txt
   IF(returnTrue) THEN
      IF(SuppressWarnings==0) THEN
-        OPEN(501,file='warnings.txt')
+        OPEN(501,file='warnings.txt',position="append")
         ! WRITE(501,'(4(a))') ' Grid: ',TRIM(ADJUSTL(GridID_text)),'   DateTime: ',datetime  !Add grid and datetime to warnings.txt
         WRITE(501,'((a),(i14))') ' Count: ',ErrhCount(errh)
         CLOSE(501)
      ENDIF
   ELSE
-     OPEN(500,file='problems.txt')
+     OPEN(500,file='problems.txt',position="append")
      ! WRITE(500,'(4(a))') ' Grid: ',TRIM(ADJUSTL(GridID_text)),'   DateTime: ',datetime  !Add grid and datetime to problems.txt
      WRITE(500,'(i3)') errh  !Add error code to problems.txt
      WRITE(*,*) 'ERROR! SUEWS run stopped.'   !Print message to screen if program stopped
@@ -395,7 +395,7 @@ END SUBROUTINE ErrorHint
     CHARACTER (len=*):: ProblemFile
     CHARACTER (len=150)::text1   ! Initialization of text
 
-    text1='unknown problem' ! Initialization of text
+    ! text1='unknown problem' ! Initialization of text
 
     !Opening warnings.txt file: First option is selected if the file is opened for the first time
     !Second option for later points
@@ -425,7 +425,15 @@ END SUBROUTINE ErrorHint
     CHARACTER (len=*):: ProblemFile
     CHARACTER (len=150)::text1   ! Initialization of text
 
-    text1='unknown problem' ! Initialization of text
+    logical itsopen
+
+
+    ! text1='unknown problem' ! Initialization of text
+    print*, 'test here1'
+      print*, errorChoice
+      inquire(unit=500, opened=itsopen)
+      print*, itsopen
+
 
     !Opening problems.txt file: First option is selected if the file is opened for the first time
     !Second option for later points
@@ -438,6 +446,14 @@ END SUBROUTINE ErrorHint
     ENDIF
 
     !Writing of the problem file
+    print*, 'test here'
+    inquire(unit=500, opened=itsopen)
+    print*, itsopen
+    print*, errorChoice
+    print*, TRIM(ProblemFile)
+    print*, TRIM(text1)
+    print*, 'test end here '
+
     WRITE(500,*)'Problem: ',TRIM(ProblemFile)
 
     WRITE(500,*) 'ERROR! Program stopped: ',TRIM(text1)

@@ -815,6 +815,7 @@ CONTAINS
     TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varListSel
     CHARACTER(len=365) :: FileOut
     INTEGER :: fn,i,xx,err
+    INTEGER :: sizeVarListSel,sizedataOutX
     CHARACTER(len=12*SIZE(varList)) :: FormatOut
     ! LOGICAL :: initQ_file
     FormatOut=''
@@ -822,13 +823,14 @@ CONTAINS
     IF(Diagnose==1) WRITE(*,*) 'Writting data of group: ',varList(SIZE(varList))%group
 
     !select variables to output
-    xx=COUNT((varList%level<= outLevel), dim=1)
-    ALLOCATE(varListSel(xx), stat=err)
+    sizeVarListSel=COUNT((varList%level<= outLevel), dim=1)
+    ALLOCATE(varListSel(sizeVarListSel), stat=err)
     IF ( err/= 0) PRINT *, "varListSel: Allocation request denied"
     varListSel=PACK(varList, mask=(varList%level<= outLevel))
 
     ! copy data accordingly
-    ALLOCATE(dataOutSel(SIZE(dataOutX, dim=1),xx), stat=err)
+    sizedataOutX=SIZE(dataOutX, dim=1)
+    ALLOCATE(dataOutSel(sizedataOutX,sizeVarListSel), stat=err)
     IF ( err/= 0) PRINT *, "dataOutSel: Allocation request denied"
     ! print*, SIZE(varList%level),PACK((/(i,i=1,SIZE(varList%level))/), varList%level <= outLevel)
     ! print*, irMax,shape(dataOutX)
@@ -836,7 +838,7 @@ CONTAINS
 
 
     ! create format string:
-    DO i = 1, SIZE(varListSel)
+    DO i = 1, sizeVarListSel
        ! PRINT*,''
        ! PRINT*,i
        ! PRINT*, LEN_TRIM(FormatOut),TRIM(FormatOut)
@@ -867,13 +869,13 @@ CONTAINS
     ! write out data
     fn=50
     OPEN(fn,file=TRIM(fileout),position='append')!,err=112)
-    DO i=1,SIZE(dataOutSel,dim=1)
+    DO i=1,sizedataOutX
        ! PRINT*, 'Writting',i
        ! PRINT*, 'FormatOut',FormatOut
-       ! PRINT*, dataOutSel(i,:)
+       ! PRINT*, dataOutSel(i,1:sizeVarListSel)
        WRITE(fn,FormatOut) &
-            INT(dataOutSel(i,1:4)),&
-            dataOutSel(i,5:SIZE(varListSel))
+            (INT(dataOutSel(i,xx)),xx=1,4),&
+            (dataOutSel(i,xx),xx=5,sizeVarListSel)
     ENDDO
     CLOSE (fn)
 

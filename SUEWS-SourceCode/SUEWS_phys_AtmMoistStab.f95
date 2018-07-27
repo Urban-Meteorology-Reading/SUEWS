@@ -217,7 +217,6 @@ CONTAINS
           CONTINUE
        ENDIF
     ENDDO
-    CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.0001] zl,dectime',zl,dectime,notUsedI)
 
     ! limit zL to be within [-5,2]
     IF ( zL<-5 .OR. zL>2 ) THEN

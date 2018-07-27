@@ -425,14 +425,14 @@ END SUBROUTINE ErrorHint
     CHARACTER (len=*):: ProblemFile
     CHARACTER (len=150)::text1   ! Initialization of text
 
-    logical itsopen
+    ! logical itsopen
 
 
     ! text1='unknown problem' ! Initialization of text
-    print*, 'test here1'
-      print*, errorChoice
-      inquire(unit=500, opened=itsopen)
-      print*, itsopen
+    ! print*, 'test here1'
+    !   print*, errorChoice
+    !   inquire(unit=500, opened=itsopen)
+    !   print*, itsopen
 
 
     !Opening problems.txt file: First option is selected if the file is opened for the first time
@@ -446,13 +446,13 @@ END SUBROUTINE ErrorHint
     ENDIF
 
     !Writing of the problem file
-    print*, 'test here'
-    inquire(unit=500, opened=itsopen)
-    print*, itsopen
-    print*, errorChoice
-    print*, TRIM(ProblemFile)
-    print*, TRIM(text1)
-    print*, 'test end here '
+    ! print*, 'test here'
+    ! inquire(unit=500, opened=itsopen)
+    ! print*, itsopen
+    ! print*, errorChoice
+    ! print*, TRIM(ProblemFile)
+    ! print*, TRIM(text1)
+    ! print*, 'test end here '
 
     WRITE(500,*)'Problem: ',TRIM(ProblemFile)
 

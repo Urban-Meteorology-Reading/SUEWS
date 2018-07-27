@@ -83,7 +83,7 @@ CONTAINS
     ENDIF
     !if(debug)write(*,*)lv_J_kg,Temp_C,'lv2'
     IF(press_hPa<900) THEN
-       CALL ErrorHint(46, 'Function LUMPS_cal_AtmMoist',press_hPa,-55.55, -55)
+       CALL ErrorHint(46, 'Function LUMPS_cal_AtmMoist',press_hPa,-55.55d0, -55)
     ENDIF
     RETURN
   END SUBROUTINE LUMPS_cal_AtmMoist
@@ -116,7 +116,7 @@ CONTAINS
        zdm,&     !Displacement height
        avU1,&    !Average wind speed
        Temp_C,&  !Air temperature
-       h_init,    & !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
+       H_init,    & !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
                                 ! output:
        L_MOD,& !Obukhov length
        TStar,& !T*
@@ -133,7 +133,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::zdm     !Displacement height
     REAL(KIND(1d0)),INTENT(in)::avU1    !Average wind speed
     REAL(KIND(1d0)),INTENT(in)::Temp_C    !Air temperature
-    REAL(KIND(1d0)),INTENT(in)::h_init    !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
+    REAL(KIND(1d0)),INTENT(in)::H_init    !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
 
 
     REAL(KIND(1d0)),INTENT(out)::L_MOD!Obukhov length
@@ -151,29 +151,32 @@ CONTAINS
          h
     REAL(KIND(1d0)),PARAMETER :: &
          k=0.4,&             !Von Karman's contant
-         grav=9.80665,&  !g - gravity - physics today august 1987
-         notUsedI=-55
+         grav=9.80665  !g - gravity - physics today august 1987
+    INTEGER,PARAMETER ::   notUsedI=-55
 
     INTEGER :: i
 
     LOGICAL :: debug=.FALSE.
 
-    IF(debug) WRITE(*,*)StabilityMethod,z0m,avU1,h_init,UStar,L_MOD
+    IF(debug) WRITE(*,*)StabilityMethod,z0m,avU1,H_init,UStar,L_MOD
     G_T_K=(Grav/(Temp_C+273.16))*k !gravity constant/(Temperature*Von Karman Constant)
     KUZ=k*AvU1                     !Von Karman constant*mean wind speed
     IF(zzd<0) CALL ErrorHint(32,'Windspeed Ht too low relative to zdm [Stability calc]- values [z-zdm, zdm]',Zzd,zdm,notUsedI)
 
     UStar=KUZ/LOG(Zzd/z0m)      !Initial setting of u* and calc. of L_MOD (neutral situation)
-    IF ( ABS(h_init)<0.001 ) THEN    ! prevent zero TStar
+    IF ( ABS(H_init)<0.001 ) THEN    ! prevent zero TStar
        h=0.001
     ELSE
-       h=h_init
+       h=H_init
     END IF
     TStar=(-H/UStar)
     L_MOD=(UStar**2)/(G_T_K*TStar)
 
 
-    IF(LOG(zzd/z0m)<0.001000) CALL ErrorHint(17,'In stability subroutine, (z-zd) < z0.',zzd,z0m,notUsedI)
+    IF(LOG(zzd/z0m)<0.001000) then
+      print*, 1/(z0m-z0m)
+      CALL ErrorHint(17,'In stability subroutine, (z-zd) < z0.',zzd,z0m,notUsedI)
+    endif
     DO i=1,330 !Iteration starts
        LOLD=L_MOD
        zL=zzd/L_MOD
@@ -197,15 +200,16 @@ CONTAINS
        TStar=(-H/UStar)
        L_MOD=(UStar**2)/(G_T_K*TStar)
 
-       IF(UStar<0.001000)THEN       !If u* too small
-          UStar=KUZ/(LOG(Zzd/z0m))
-          CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.001] zl,dectime',zl,dectime,notUsedI)
-          CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.001] z0l,UStar',z0l,UStar,notUsedI)
-          CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.001] psim,psimz0',psim,psimz0,notUsedI)
-          CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.001] AVU1,log(zzd/z0m)',AVU1,LOG(zzd/z0m),notUsedI)
-
-          ! RETURN
-       ENDIF
+       ! IF(UStar<0.001000)THEN       !If u* too small
+       !    UStar=KUZ/(LOG(Zzd/z0m))
+       !    PRINT*, 'UStar info',UStar,KUZ,(LOG(Zzd/z0m)),Zzd,z0m
+       !    CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.001] zl,dectime',zl,dectime,notUsedI)
+       !    CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.001] z0l,UStar',z0l,UStar,notUsedI)
+       !    CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.001] psim,psimz0',psim,psimz0,notUsedI)
+       !    CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.001] AVU1,log(zzd/z0m)',AVU1,LOG(zzd/z0m),notUsedI)
+       !
+       !    ! RETURN
+       ! ENDIF
 
        IF(ABS(LOLD-L_MOD)<0.01)THEN
           IF (ABS(L_MOD)>1e6) L_MOD = L_MOD/ABS(L_MOD)*1e6
@@ -214,17 +218,34 @@ CONTAINS
        ENDIF
     ENDDO
 
-    ! limit zL to be with [-10,2]
-    if ( zL<-5 .or. zL>2 ) then
-      zL=MIN(2.,MAX(-5.,zL))
-      ! limit other output varialbes as well as z/L
-      L_MOD=zzd/zL
-      z0L=z0m/L_MOD
-      psim=stab_fn_mom(StabilityMethod,zL,zL)
-      psimz0=stab_fn_mom(StabilityMethod,zL,z0L)
-      UStar=KUZ/(LOG(Zzd/z0m)-psim+psimz0)
-      TStar=(-H/UStar)
-    end if
+    IF(UStar<0.0001)THEN       !If u* too small after iteration
+       ! UStar=KUZ/(LOG(Zzd/z0m))
+       PRINT*, 'UStar info',UStar,KUZ,(LOG(Zzd/z0m)),Zzd,z0m
+       CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.0001] zl,dectime',zl,dectime,notUsedI)
+       CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.0001] z0l,UStar',z0l,UStar,notUsedI)
+       CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.0001] psim,psimz0',psim,psimz0,notUsedI)
+       CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.0001] AVU1,log(zzd/z0m)',AVU1,LOG(zzd/z0m),notUsedI)
+
+       ! RETURN
+    ENDIF
+
+    ! limit zL to be with [-5,2]
+    IF ( zL<-5 .OR. zL>2 ) THEN
+       zL=MIN(2.,MAX(-5.,zL))
+       ! limit other output varialbes as well as z/L
+       L_MOD=zzd/zL
+       z0L=z0m/L_MOD
+       psim=stab_fn_mom(StabilityMethod,zL,zL)
+       psimz0=stab_fn_mom(StabilityMethod,zL,z0L)
+       UStar=KUZ/(LOG(Zzd/z0m)-psim+psimz0)
+       TStar=(-H/UStar)
+    END IF
+
+    ! if ( L_MOD<-990 ) then
+    !   print*, 'L_MOD too low',L_MOD
+    !   print*, 1/(L_MOD-L_MOD)
+    !
+    ! end if
 
 
 

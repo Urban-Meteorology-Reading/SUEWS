@@ -217,19 +217,9 @@ CONTAINS
           CONTINUE
        ENDIF
     ENDDO
+    CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.0001] zl,dectime',zl,dectime,notUsedI)
 
-    IF(UStar<0.0001)THEN       !If u* too small after iteration
-       ! UStar=KUZ/(LOG(Zzd/z0m))
-       PRINT*, 'UStar info',UStar,KUZ,(LOG(Zzd/z0m)),Zzd,z0m
-       CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.0001] zl,dectime',zl,dectime,notUsedI)
-       CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.0001] z0l,UStar',z0l,UStar,notUsedI)
-       CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.0001] psim,psimz0',psim,psimz0,notUsedI)
-       CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.0001] AVU1,log(zzd/z0m)',AVU1,LOG(zzd/z0m),notUsedI)
-
-       ! RETURN
-    ENDIF
-
-    ! limit zL to be with [-5,2]
+    ! limit zL to be within [-5,2]
     IF ( zL<-5 .OR. zL>2 ) THEN
        zL=MIN(2.,MAX(-5.,zL))
        ! limit other output varialbes as well as z/L
@@ -240,6 +230,17 @@ CONTAINS
        UStar=KUZ/(LOG(Zzd/z0m)-psim+psimz0)
        TStar=(-H/UStar)
     END IF
+
+    IF(UStar<0.0001)THEN       !If u* still too small after iteration, then force quit simulation and write out error info
+       ! UStar=KUZ/(LOG(Zzd/z0m))
+       PRINT*, 'UStar',UStar,KUZ,(LOG(Zzd/z0m)),Zzd,z0m
+       CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.0001] zl,dectime',zl,dectime,notUsedI)
+       CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.0001] z0l,UStar',z0l,UStar,notUsedI)
+       CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.0001] psim,psimz0',psim,psimz0,notUsedI)
+       CALL ErrorHint(30,'SUBROUTINE STAB_lumps:[ u*< 0.0001] AVU1,log(zzd/z0m)',AVU1,LOG(zzd/z0m),notUsedI)
+
+       ! RETURN
+    ENDIF
 
     ! if ( L_MOD<-990 ) then
     !   print*, 'L_MOD too low',L_MOD

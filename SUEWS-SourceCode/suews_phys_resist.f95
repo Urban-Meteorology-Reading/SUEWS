@@ -528,3 +528,35 @@ SUBROUTINE SUEWS_cal_RoughnessParameters(&
   IF(zdm<0) CALL ErrorHint(14,'In SUEWS_cal_RoughnessParameters, zd < 0 m.',zdm,notUsed,notUsedI)
   IF(zzd<0) CALL ErrorHint(14,'In SUEWS_cal_RoughnessParameters, (z-zd) < 0 m.',zzd,notUsed,notUsedI)
 END SUBROUTINE SUEWS_cal_RoughnessParameters
+
+
+
+FUNCTION cal_z0V(RoughLenHeatMethod,z0m,VegFraction,UStar) RESULT(z0V)
+  ! TS 31 Jul 2018: make this a separate funciton for reuse
+  !Z0V roughness length for vapour
+  IMPLICIT NONE
+  INTEGER,INTENT(in)::RoughLenHeatMethod
+  REAL(KIND(1d0)),INTENT(in)::z0m!Aerodynamic roughness length
+  REAL(KIND(1d0)),INTENT(in)::VegFraction!Fraction of vegetation
+  REAL(KIND(1d0)),INTENT(in)::UStar!Friction velocity
+
+  REAL(KIND(1d0))::z0V!Friction velocity
+
+
+  REAL(KIND(1d0)),PARAMETER:: muu=1.46e-5 !molecular viscosity
+
+
+  !Z0V roughness length for vapour
+  IF (RoughLenHeatMethod==1) THEN !Brutasert (1982) Z0v=z0/10(see Grimmond & Oke, 1986)
+     z0V=z0m/10
+  ELSEIF (RoughLenHeatMethod==2) THEN ! Kawai et al. (2007)
+     !z0V=z0m*exp(2-(1.2-0.9*veg_fr**0.29)*(UStar*z0m/muu)**0.25)
+     ! Changed by HCW 05 Nov 2015 (veg_fr includes water; VegFraction = veg + bare soil)
+     z0V=z0m*EXP(2-(1.2-0.9*VegFraction**0.29)*(UStar*z0m/muu)**0.25)
+  ELSEIF (RoughLenHeatMethod==3) THEN
+     z0V=z0m*EXP(-20.) ! Voogt and Grimmond, JAM, 2000
+  ELSEIF (RoughLenHeatMethod==4) THEN
+     z0V=z0m*EXP(2-1.29*(UStar*z0m/muu)**0.25) !See !Kanda and Moriwaki (2007),Loridan et al. (2010)
+  ENDIF
+
+END FUNCTION cal_z0v

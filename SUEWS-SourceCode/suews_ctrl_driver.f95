@@ -4,7 +4,7 @@
 ! TS 02 Oct 2017: added `SUEWS_cal_Main` as the generic wrapper
 ! TS 03 Oct 2017: added `SUEWS_cal_AnthropogenicEmission`
 MODULE SUEWS_Driver
-  USE meteo,ONLY:qsatf
+  USE meteo,ONLY:qsatf,RH2qa
   USE AtmMoistStab_module,ONLY:LUMPS_cal_AtmMoist,STAB_lumps,stab_fn_heat,stab_fn_mom
   USE NARP_MODULE,ONLY:NARP_cal_SunPosition
   USE AnOHM_module,ONLY:AnOHM
@@ -287,12 +287,12 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(6,NSURF),INTENT(INOUT)          ::StoreDrainPrm
     ! REAL(KIND(1D0)),DIMENSION(-4:NDAYS,6),INTENT(INOUT)       ::HDD
     ! REAL(KIND(1D0)),DIMENSION(-4:NDAYS,NVEGSURF),INTENT(INOUT)::LAI
-    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)   ::alb
-    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)   ::IceFrac
-    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)   ::MeltWaterStore
-    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)   ::SnowDens
-    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)   ::snowFrac
-    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)   ::SnowPack
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::alb
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::IceFrac
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::MeltWaterStore
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::SnowDens
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::snowFrac
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::SnowPack
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)   ::soilmoist_id
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)   ::state_id
     REAL(KIND(1d0)),DIMENSION(5),INTENT(INOUT)       ::GDD_id !Growing Degree Days (see SUEWS_DailyState.f95)
@@ -389,6 +389,7 @@ CONTAINS
     REAL(KIND(1D0))::surf_chang_per_tstep
     REAL(KIND(1D0))::swe
     REAL(KIND(1D0))::t2_C
+    REAL(KIND(1D0))::tskin_C
     REAL(KIND(1D0))::TempVeg
     REAL(KIND(1D0))::tot_chang_per_tstep
     REAL(KIND(1D0))::TStar
@@ -432,7 +433,6 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(NSURF)::smd_nsurf
     REAL(KIND(1D0)),DIMENSION(NSURF)::SnowToSurf
     REAL(KIND(1D0)),DIMENSION(NSURF)::snowDepth
-
 
     REAL(KIND(1d0)),DIMENSION(nsurf)::Tsurf_ind_snow
 
@@ -735,23 +735,31 @@ CONTAINS
     CALL SUEWS_cal_SoilMoist(&
          SMDMethod,xsmd,NonWaterFraction,SoilMoistCap,&!input
          SoilStoreCap,surf_chang_per_tstep,&
-         soilmoist_id,soilmoistOld,sfr,&
+         soilmoist,soilmoistOld,sfr,&
          smd,smd_nsurf,tot_chang_per_tstep,SoilState)!output
 
 
     !============ surface-level diagonostics ===============
     IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_cal_Diagnostics...'
-    CALL SUEWS_cal_Diagnostics(&
+    CALL SUEWS_cal_Diagnostics_X(&
          dectime,&!input
-         avU1,Temp_C,&
-                                ! NB: resistance-based QH is used to calculate diagnostics
-                                ! as tsurf is assumed to be equal to Tair during night
-                                ! implying a constant near-surface air temperature profile.
-         tsurf,qh_resist,&
-         Press_hPa,qe,&
-         veg_fr,z0m,avdens,avcp,lv_J_kg,tstep_real,&
+         avU1,Temp_C,avRH,Press_hPa,&
+         qh,qe,&
+         VegFraction,z,z0m,zdm,RA,avdens,avcp,lv_J_kg,tstep_real,&
          RoughLenHeatMethod,StabilityMethod,&
-         avU10_ms,t2_C,q2_gkg,L_MOD)!output
+         avU10_ms,t2_C,q2_gkg,tskin_C)!output
+    ! NB: resistance-based QH is used to calculate diagnostics
+    ! as tsurf is assumed to be equal to Tair during night
+    ! implying a constant near-surface air temperature profile.
+    ! CALL SUEWS_cal_Diagnostics(&
+    !      dectime,&!input
+    !      avU1,Temp_C,&
+    !      tsurf,qh,&
+    !      Press_hPa,qe,&
+    !      sfr,state,WetThresh,&
+    !      veg_fr,z0m,avdens,avcp,lv_J_kg,tstep_real,&
+    !      RoughLenHeatMethod,StabilityMethod,&
+    !      avU10_ms,t2_C,q2_gkg)!output
     !============ surface-level diagonostics end ===============
 
 
@@ -763,32 +771,27 @@ CONTAINS
          chSnow_per_interval,dectime,&
          drain_per_tstep,E_mod,ev_per_tstep,ext_wu,Fc,Fc_build,fcld,&
          Fc_metab,Fc_photo,Fc_respi,Fc_traff,FlowChange,&
-         h_mod,id,imin,int_wu,it,iy,&
-         kup,LAI_id,ldown,l_mod,lup,mwh,&
-         MwStore,&
+         h_mod,id,id_prev_t,imin,int_wu,it,iy,iy_prev_t,&
+         kup,LAI,ldown,l_mod,lup,mwh,MwStore,&
          nsh_real,NWstate_per_tstep,Precip,q2_gkg,&
          qeOut,qf,qh,qh_resist,Qm,QmFreez,&
-         QmRain,qn1,qn1_S,qn1_snowfree,qs,RA,&
+         QmRain,qn1,qn1_S,qn1_SF,qs,RA,&
          resistsurf,runoffAGimpervious,runoffAGveg,&
          runoff_per_tstep,runoffPipes,runoffSoil_per_tstep,&
          runoffWaterBody,sfr,smd,smd_nsurf,SnowAlb,SnowRemoval,&
-         state_id,state_per_tstep,surf_chang_per_tstep,swe,t2_C,&
+         state,state_per_tstep,surf_chang_per_tstep,swe,t2_C,tskin_C,&
          tot_chang_per_tstep,tsurf,UStar,wu_DecTr,&
          wu_EveTr,wu_Grass,z0m,zdm,zenith_deg,&
          datetimeLine,dataOutLineSUEWS)!output
 
-    ! model state_id:
+    ! model state:
 
-    ! daily state_id:
+    ! daily state:
     CALL update_DailyState(&
-         it,imin,nsh_real,&!input
-         GDD_id,HDD_id,LAI_id,&
-         DecidCap_id,&
-         albDecTr_id,&
-         albEveTr_id,&
-         albGrass_id,&
-         porosity_id,&
-         WUDay_id,&
+         iy,id,it,imin,nsh_real,&!input
+         GDD,HDD,LAI,&
+         DecidCap,albDecTr,albEveTr,albGrass,porosity,&
+         WU_Day,&
          deltaLAI,VegPhenLumps,&
          SnowAlb,SnowDens,&
          a1,a2,a3,&
@@ -1156,17 +1159,17 @@ CONTAINS
 
     IMPLICIT NONE
 
-    INTEGER,INTENT(in)  ::StorageHeatMethod
-    INTEGER,INTENT(in)  ::OHMIncQF
-    INTEGER,INTENT(in)  ::Gridiv
-    INTEGER,INTENT(in)  ::id
+    INTEGER,INTENT(in)::StorageHeatMethod
+    INTEGER,INTENT(in)::OHMIncQF
+    INTEGER,INTENT(in)::Gridiv
+    INTEGER,INTENT(in)::id
     INTEGER,INTENT(in)  ::tstep ! time step [s]
     INTEGER,INTENT(in) ::dt_since_start  ! time since simulation starts [s]
-    INTEGER,INTENT(in)  ::Diagnose
-    INTEGER,INTENT(in)  ::nsh              ! number of timesteps in one hour
-    INTEGER,INTENT(in)  ::SnowUse          ! option for snow related calculations
-    INTEGER,INTENT(in)  ::DiagQS           ! diagnostic option
-    INTEGER,INTENT(in)  :: EmissionsMethod !< AnthropHeat option [-]
+    INTEGER,INTENT(in)::Diagnose
+    INTEGER,INTENT(in)::nsh                ! number of timesteps in one hour
+    INTEGER,INTENT(in)::SnowUse            ! option for snow related calculations
+    INTEGER,INTENT(in)::DiagQS             ! diagnostic option
+    INTEGER,INTENT(in):: EmissionsMethod !< AnthropHeat option [-]
 
 
     REAL(KIND(1d0)),INTENT(in)::OHM_coef(nsurf+1,4,3)                 ! OHM coefficients
@@ -1195,7 +1198,7 @@ CONTAINS
 
     REAL(KIND(1d0)),DIMENSION(:),INTENT(in)::Ts5mindata_ir
 
-    REAL(KIND(1d0)),DIMENSION(24*nsh),INTENT(inout)::Tair24HR
+    REAL(KIND(1d0)),DIMENSION(24*nsh),INTENT(inout):: Tair24HR
     REAL(KIND(1d0)),INTENT(inout)                  ::qn1_av
     REAL(KIND(1d0)),INTENT(inout)                  ::dqndt!Rate of change of net radiation [W m-2 h-1] at t-1
     REAL(KIND(1d0)),INTENT(inout)                  ::qn1_s_av
@@ -1260,7 +1263,7 @@ CONTAINS
             DiagQS,&
             a1,a2,a3,qs,deltaQi)
 
-       ! use AnOHM to calculate QS, TS 14 Mar 2016
+    ! use AnOHM to calculate QS, TS 14 Mar 2016
     ELSEIF (StorageHeatMethod==3) THEN
        IF(Diagnose==1) WRITE(*,*) 'Calling AnOHM...'
        ! CALL AnOHM(qn1_use,qn1_store_grid,qn1_av_store_grid,qf,&
@@ -1277,7 +1280,7 @@ CONTAINS
             a1,a2,a3,qs,deltaQi)! output
 
 
-       ! !Calculate QS using ESTM
+    ! !Calculate QS using ESTM
     ELSEIF(StorageHeatMethod==4 .OR. StorageHeatMethod==14) THEN
        !    !CALL ESTM(QSestm,iMB)
        IF(Diagnose==1) WRITE(*,*) 'Calling ESTM...'
@@ -1398,17 +1401,17 @@ CONTAINS
 
   !===============initialize sensible heat flux============================
   SUBROUTINE SUEWS_init_QH(&
-       qh_obs,avdens,avcp,h_mod,qn1,dectime,&!input
-       H_init)!output
+       qh_obs,avdens,avcp,qh_mod,qn1,dectime,&!input
+       H_kms)!output
 
     IMPLICIT NONE
     REAL(KIND(1d0)),INTENT(in)::qh_obs
     REAL(KIND(1d0)),INTENT(in)::avdens
     REAL(KIND(1d0)),INTENT(in)::avcp
-    REAL(KIND(1d0)),INTENT(in)::h_mod
+    REAL(KIND(1d0)),INTENT(in)::qh_mod
     REAL(KIND(1d0)),INTENT(in)::qn1
     REAL(KIND(1d0)),INTENT(in)::dectime
-    REAL(KIND(1d0)),INTENT(out)::H_init
+    REAL(KIND(1d0)),INTENT(out)::H_kms
 
 
     REAL(KIND(1d0)),PARAMETER::NAN=-999
@@ -1416,13 +1419,13 @@ CONTAINS
 
     ! Calculate kinematic heat flux (w'T') from sensible heat flux [W m-2] from observed data (if available) or LUMPS
     IF(qh_obs/=NAN) THEN   !if(qh_obs/=NAN) qh=qh_obs   !Commented out by HCW 04 Mar 2015
-       H_init=qh_obs/(avdens*avcp)  !Use observed value
+       H_kms=qh_obs/(avdens*avcp)  !Use observed value
     ELSE
-       IF(h_mod/=NAN) THEN
-          H_init = h_mod/(avdens*avcp)   !Use LUMPS value
+       IF(qh_mod/=NAN) THEN
+          H_kms = qh_mod/(avdens*avcp)   !Use LUMPS value
        ELSE
-          H_init=(qn1*0.2)/(avdens*avcp)   !If LUMPS has had a problem, we still need a value
-          CALL ErrorHint(38,'LUMPS unable to calculate realistic value for H_mod.',h_mod, dectime, notUsedI)
+          H_kms=(qn1*0.2)/(avdens*avcp)   !If LUMPS has had a problem, we still need a value
+          CALL ErrorHint(38,'LUMPS unable to calculate realistic value for H_mod.',qh_mod, dectime, notUsedI)
        ENDIF
     ENDIF
 
@@ -2096,7 +2099,7 @@ CONTAINS
     !    qeforCBL(Gridiv) = qeOut
     ! ELSEIF(Qh_choice==2)THEN   !use QH and QE from LUMPS
     !    qhforCBL(Gridiv) = h_mod
-    !    qeforCBL(Gridiv) = e_mod
+    !    qeforCBL(Gridiv) = E_mod
     ! ELSEIF(qh_choice==3)THEN  !use QH and QE from OBS
     !    qhforCBL(Gridiv) = qh_obs
     !    qeforCBL(Gridiv) = qe_obs
@@ -2116,7 +2119,7 @@ CONTAINS
     dataOutLineSUEWS=[&
          avkdn,kup,ldown,lup,tsurf,&
          qn1,qf,qs,qh,qeOut,&
-         h_mod,e_mod,qh_resist,&
+         h_mod,E_mod,qh_resist,&
          precip,ext_wu,ev_per_tstep,runoff_per_tstep,tot_chang_per_tstep,&
          surf_chang_per_tstep,state_per_tstep,NWstate_per_tstep,drain_per_tstep,smd,&
          FlowChange/nsh_real,AdditionalWater,&
@@ -2194,61 +2197,181 @@ CONTAINS
        avU1,Temp_C,&
        tsurf,qh,&
        Press_hPa,qe,&
-       veg_fr,z0m,avdens,avcp,lv_J_kg,tstep_real,&
+       sfr,state,WetThresh,&
+       VegFraction,z0m,avdens,avcp,lv_J_kg,tstep_real,&
        RoughLenHeatMethod,StabilityMethod,&
-       avU10_ms,t2_C,q2_gkg,L_MOD)!output
+       avU10_ms,t2_C,q2_gkg)!output
     IMPLICIT NONE
     REAL(KIND(1d0)),INTENT(in) ::dectime
     REAL(KIND(1d0)),INTENT(in) ::avU1,Temp_C
     REAL(KIND(1d0)),INTENT(in) ::tsurf,qh
     REAL(KIND(1d0)),INTENT(in) ::Press_hPa,qe
-    REAL(KIND(1d0)),INTENT(in) :: veg_fr,z0m,avdens,avcp,lv_J_kg,tstep_real
+    REAL(KIND(1d0)),INTENT(in) :: VegFraction,z0m,avdens,avcp,lv_J_kg,tstep_real
 
     ! INTEGER,INTENT(in)         :: opt ! 0 for momentum, 1 for temperature, 2 for humidity
     INTEGER,INTENT(in)         :: RoughLenHeatMethod,StabilityMethod
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::sfr,state,WetThresh
 
-    REAL(KIND(1d0)),INTENT(out):: avU10_ms,t2_C,q2_gkg,L_MOD
-    REAL(KIND(1d0))::tlv,z2zd,zdm,H_init,TStar,zL,UStar
+    REAL(KIND(1d0)),INTENT(out):: avU10_ms,t2_C,q2_gkg
+    REAL(KIND(1d0))::x_wet
     REAL(KIND(1d0)),PARAMETER::k=0.4
 
-    tlv=lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
-    z2zd=2 ! height at 2m assuming Displacement height is ZERO
-    zdm=0 ! assuming Displacement height is ZERO
-
-    ! get !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
-    CALL SUEWS_init_QH(&
-         qh,avdens,avcp,qh,0d0,dectime,& ! use qh as qh_obs to initialise H_init
-         H_init)
-
-    ! redo the calculation for stability correction
-    CALL STAB_lumps(&
-                                ! input
-         StabilityMethod,&
-         dectime,& !Decimal time
-         z2zd,&     !Active measurement height (meas. height-displac. height)
-         z0m,&     !Aerodynamic roughness length
-         zdm,&     !Displacement height
-         avU1,&    !Average wind speed
-         Temp_C,&  !Air temperature
-         h_init,    & !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
-                                ! output:
-         L_MOD,& !Obukhov length
-         TStar,& !T*
-         UStar,& !Friction velocity
-         zL)!Stability scale
+    ! tlv=lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
+    ! z2zd=2+z0m ! height at 2m assuming Displacement height is ZERO
+    ! zdm=0 ! assuming Displacement height is ZERO
+    !
+    ! ! get !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
+    ! CALL SUEWS_init_QH(&
+    !      qh,avdens,avcp,qh,0d0,dectime,& ! use qh as qh_obs to initialise H_init
+    !      H_init)
+    !
+    ! ! redo the calculation for stability correction
+    ! CALL STAB_lumps(&
+    !                             ! input
+    !      StabilityMethod,&
+    !      dectime,& !Decimal time
+    !      z2zd,&     !Active measurement height (meas. height-displac. height)
+    !      z0m,&     !Aerodynamic roughness length
+    !      zdm,&     !Displacement height
+    !      avU1,&    !Average wind speed
+    !      Temp_C,&  !Air temperature
+    !      H_init,    & !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
+    !                             ! output:
+    !      L_MOD,& !Obukhov length
+    !      TStar,& !T*
+    !      UStar,& !Friction velocity
+    !      zL)!Stability scale
 
 
     ! wind speed:
-    CALL diagSfc(0d0,0d0,UStar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,avU10_ms,0,RoughLenHeatMethod,StabilityMethod)
+    CALL diagSfc(&
+         0d0,0d0,10d0,avU10_ms,0,&
+         VegFraction,&
+         z0m,k,avdens,avcp,lv_J_kg,&
+         avU1,Temp_C,qh,&
+         RoughLenHeatMethod,StabilityMethod,tstep_real,dectime)
+    ! CALL diagSfc(0d0,0d0,UStar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,avU10_ms,0,RoughLenHeatMethod,StabilityMethod)
     ! temperature:
-    CALL diagSfc(tsurf,qh,UStar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,t2_C,1,RoughLenHeatMethod,StabilityMethod)
+    CALL diagSfc(&
+         tsurf,qh,2d0,t2_C,1,&
+         VegFraction,&
+         z0m,k,avdens,avcp,lv_J_kg,&
+         avU1,Temp_C,qh,&
+         RoughLenHeatMethod,StabilityMethod,tstep_real,dectime)
+    ! CALL diagSfc(tsurf,qh,UStar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,t2_C,1,RoughLenHeatMethod,StabilityMethod)
+
+    ! estimate the surface wetness condition
+    x_wet=DOT_PRODUCT(state,sfr)/DOT_PRODUCT(WetThresh,sfr)
+    x_wet=MAX(0.05,x_wet)
+
+    ! NB: assumption for q2 estimation:
+    ! potential ET: qe_pot=(q_sat-q_air)/ra_evp
+    ! qe = x_wet*qe_pot = x_wet*(q_sat-q_air)/ra_evp
+    ! ==>
+    ! q_air = q_sat-qe/x_wet*ra_evp
+
+
     ! humidity:
-    CALL diagSfc(qsatf(tsurf,Press_hPa)*1000,& ! Saturation specific humidity at surface in g/kg
-         qe,UStar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,q2_gkg,2,RoughLenHeatMethod,StabilityMethod)
+    CALL diagSfc(&
+         qsatf(tsurf,Press_hPa)*1000,qe/x_wet,2d0,q2_gkg,2,&
+         VegFraction,&
+         z0m,k,avdens,avcp,lv_J_kg,&
+         avU1,Temp_C,qh,&
+         RoughLenHeatMethod,StabilityMethod,tstep_real,dectime)
+    ! CALL diagSfc(qsatf(tsurf,Press_hPa)*1000,& ! Saturation specific humidity at surface in g/kg
+    !      qe/x_wet,UStar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,q2_gkg,2,RoughLenHeatMethod,StabilityMethod)
 
   END SUBROUTINE SUEWS_cal_Diagnostics
 
-  ! calculate several surface fraction related parameters
+  SUBROUTINE SUEWS_cal_Diagnostics_X(&
+       dectime,&!input
+       avU1,Temp_C,avRH,Press_hPa,&
+       qh,qe,&
+       VegFraction,zMeas,z0m,zdm,RA,avdens,avcp,lv_J_kg,tstep_real,&
+       RoughLenHeatMethod,StabilityMethod,&
+       avU10_ms,t2_C,q2_gkg,tskin_C)!output
+    IMPLICIT NONE
+    REAL(KIND(1d0)),INTENT(in) ::dectime
+    REAL(KIND(1d0)),INTENT(in) ::avU1,Temp_C,avRH
+    REAL(KIND(1d0)),INTENT(in) ::qh
+    REAL(KIND(1d0)),INTENT(in) ::Press_hPa,qe
+    REAL(KIND(1d0)),INTENT(in) :: VegFraction,z0m,RA,avdens,avcp,lv_J_kg,tstep_real
+    REAL(KIND(1d0)),INTENT(in) :: zMeas! height for measurement
+    REAL(KIND(1d0)),INTENT(in) :: zdm ! displacement height
+
+    ! INTEGER,INTENT(in)         :: opt ! 0 for momentum, 1 for temperature, 2 for humidity
+    INTEGER,INTENT(in)         :: RoughLenHeatMethod,StabilityMethod
+    ! REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::sfr,state,WetThresh
+
+    REAL(KIND(1d0)),INTENT(out):: avU10_ms,t2_C,q2_gkg,tskin_C
+    ! REAL(KIND(1d0))::x_wet
+    REAL(KIND(1d0))::qa_gkg
+    REAL(KIND(1d0)),PARAMETER::k=0.4
+
+
+    ! wind speed:
+    CALL diagSfc_X(&
+         0,&
+         zMeas,avU1,0d0,10d0,avU10_ms,&
+         VegFraction,&
+         z0m,zdm,avdens,avcp,lv_J_kg,&
+         avU1,Temp_C,qh,&
+         RoughLenHeatMethod,StabilityMethod,tstep_real,dectime)
+    ! CALL diagSfc(0d0,0d0,UStar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,avU10_ms,0,RoughLenHeatMethod,StabilityMethod)
+    ! temperature at 2 m agl:
+    CALL diagSfc_X(&
+         1,&
+         zMeas,Temp_C,qh,2d0,t2_C,&
+         VegFraction,&
+         z0m,zdm,avdens,avcp,lv_J_kg,&
+         avU1,Temp_C,qh,&
+         RoughLenHeatMethod,StabilityMethod,tstep_real,dectime)
+    ! skin temperature:
+    tskin_C=qh/(avdens*avcp)*RA+temp_C
+
+
+    ! CALL diagSfc(tsurf,qh,UStar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,t2_C,1,RoughLenHeatMethod,StabilityMethod)
+
+    ! estimate the surface wetness condition
+    ! x_wet=DOT_PRODUCT(state,sfr)/DOT_PRODUCT(WetThresh,sfr)
+    ! x_wet=MAX(0.05,x_wet)
+
+    ! NB: assumption for q2 estimation:
+    ! potential ET: qe_pot=(q_sat-q_air)/ra_evp
+    ! qe = x_wet*qe_pot = x_wet*(q_sat-q_air)/ra_evp
+    ! ==>
+    ! q_air = q_sat-qe/x_wet*ra_evp
+
+    qa_gkg=RH2qa(avRH/100,Press_hPa,Temp_c)
+    ! humidity:
+    CALL diagSfc_X(&
+         2,&
+         zMeas,qa_gkg,qe,2d0,q2_gkg,&
+         VegFraction,&
+         z0m,zdm,avdens,avcp,lv_J_kg,&
+         avU1,Temp_C,qh,&
+         RoughLenHeatMethod,StabilityMethod,tstep_real,dectime)
+    ! CALL diagSfc(qsatf(tsurf,Press_hPa)*1000,& ! Saturation specific humidity at surface in g/kg
+    !      qe/x_wet,UStar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,q2_gkg,2,RoughLenHeatMethod,StabilityMethod)
+
+  END SUBROUTINE SUEWS_cal_Diagnostics_X
+
+  ! Calculate tstep-derived variables
+  SUBROUTINE SUEWS_cal_tstep(&
+       tstep,& ! input
+       nsh, nsh_real, tstep_real) ! output
+    IMPLICIT NONE
+    INTEGER,INTENT(in)::tstep ! number of timesteps per hour
+    ! values that are derived from tstep
+    INTEGER,INTENT(out)::nsh ! number of timesteps per hour
+    REAL(KIND(1D0)),INTENT(out)::nsh_real ! nsh in type real
+    REAL(KIND(1D0)),INTENT(out)::tstep_real ! tstep in type real
+    nsh=3600/tstep
+    nsh_real=nsh*1.0
+    tstep_real=tstep*1.0
+
+  END SUBROUTINE SUEWS_cal_tstep
+
   SUBROUTINE SUEWS_cal_surf(&
        sfr,& !input
        vegfraction,ImpervFraction,PervFraction,NonWaterFraction) ! output
@@ -2269,58 +2392,134 @@ CONTAINS
   END SUBROUTINE SUEWS_cal_surf
 
 
+  SUBROUTINE SUEWS_cal_weekday(&
+       iy,id,lat,& !input
+       dayofWeek_id) !output
+    IMPLICIT NONE
+
+    INTEGER,INTENT(in) :: iy  ! year
+    INTEGER,INTENT(in) :: id  ! day of year
+    REAL(KIND(1d0)),INTENT(in):: lat
+
+    INTEGER,DIMENSION(3),INTENT(OUT) ::dayofWeek_id
+
+    INTEGER::wd
+    INTEGER::mb
+    INTEGER::date
+    INTEGER::seas
+
+
+
+    CALL day2month(id,mb,date,seas,iy,lat) !Calculate real date from doy
+    CALL Day_of_Week(date,mb,iy,wd)        !Calculate weekday (1=Sun, ..., 7=Sat)
+
+    dayofWeek_id(1)=wd      !Day of week
+    dayofWeek_id(2)=mb      !Month
+    dayofweek_id(3)=seas    !Season
+
+  END SUBROUTINE SUEWS_cal_weekday
+
+
+  SUBROUTINE SUEWS_cal_DLS(&
+       id,startDLS,endDLS,& !input
+       DLS) !output
+    IMPLICIT NONE
+
+    INTEGER, INTENT(in) :: id,startDLS,endDLS
+    INTEGER, INTENT(out) :: DLS
+
+    DLS=0
+    IF ( id>startDLS .AND. id<endDLS ) dls=1
+
+  END SUBROUTINE SUEWS_cal_DLS
 
   SUBROUTINE diagSfc(&
-       xSurf,xFlux,us,VegFraction,z0m,L_mod,k,avdens,avcp,tlv,&
-       xDiag,opt,RoughLenHeatMethod,StabilityMethod)
+       xSurf,xFlux,hgtX,xDiag,opt,&
+       VegFraction,&
+       z0m,k,avdens,avcp,lv_J_kg,&
+       avU1,Temp_C,qh,&
+       RoughLenHeatMethod,StabilityMethod,tstep_real,dectime)
+    ! TS 26 Jul 2018: improved the calculation logic
     ! TS 05 Sep 2017: improved interface
     ! TS 20 May 2017: calculate surface-level diagonostics
 
 
     IMPLICIT NONE
+    REAL(KIND(1d0)),INTENT(in) :: dectime
+    REAL(KIND(1d0)),INTENT(in) :: qh
+    REAL(KIND(1d0)),INTENT(in) :: z0m,avdens,avcp,lv_J_kg,tstep_real
+    REAL(KIND(1d0)),INTENT(in) :: avU1,Temp_C
+    REAL(KIND(1d0)),INTENT(in) :: hgtX,xSurf,xFlux,VegFraction,k
 
-    REAL(KIND(1d0)),INTENT(in) :: xSurf,xFlux,us,VegFraction,z0m,L_mod,k,avdens,avcp,tlv
-    REAL(KIND(1d0)),INTENT(out):: xDiag
     INTEGER,INTENT(in)         :: opt ! 0 for momentum, 1 for temperature, 2 for humidity
     INTEGER,INTENT(in)         :: RoughLenHeatMethod,StabilityMethod
 
-    REAL(KIND(1d0))            :: &
-         psymz2,psymz10,psymz0,psyhz2,psyhz0,& ! stability correction functions
-         z0h,& ! Roughness length for heat
-         z2zd,z10zd!stability correction functions
+    REAL(KIND(1d0)),INTENT(out):: xDiag
+
+    REAL(KIND(1d0)) :: L_mod
+    REAL(KIND(1d0)) :: psymz0,psyhzX,psyhz0,psymzXm ! stability correction functions
+    REAL(KIND(1d0)) :: z0h, cal_z0V ! Roughness length for heat
+    REAL(KIND(1d0)) :: zXzd! height for diagnositcs
+    REAL(KIND(1d0)) :: tlv,H_init,TStar,zL,UStar
     REAL(KIND(1d0)),PARAMETER :: muu=1.46e-5 !molecular viscosity
     REAL(KIND(1d0)),PARAMETER :: nan=-999
+    REAL(KIND(1d0)),PARAMETER :: zdm=0 ! assuming Displacement height is ZERO
+
+    tlv=lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
+    zXzd=hgtX+z0m ! height at hgtX assuming Displacement height is ZERO; set lower limit as z0 to prevent arithmetic error, zd=0
+
+
+    ! get !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
+    CALL SUEWS_init_QH(&
+         qh,avdens,avcp,qh,0d0,dectime,& ! use qh as qh_obs to initialise H_init
+         H_init)
+
+    ! redo the calculation for stability correction
+    CALL STAB_lumps(&
+                                ! input
+         StabilityMethod,&
+         dectime,& !Decimal time
+         zXzd,&     !Active measurement height (meas. height-displac. height)
+         z0m,&     !Aerodynamic roughness length
+         zdm,&     !Displacement height
+         avU1,&    !Average wind speed
+         Temp_C,&  !Air temperature
+         H_init,    & !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
+                                ! output:
+         L_MOD,& !Obukhov length
+         TStar,& !T*
+         UStar,& !Friction velocity
+         zL)!Stability scale
+
 
 
     !***************************************************************
     ! log-law based stability corrections:
     ! Roughness length for heat
-    IF (RoughLenHeatMethod==1) THEN !Brutasert (1982) z0h=z0/10(see Grimmond & Oke, 1986)
-       z0h=z0m/10
-    ELSEIF (RoughLenHeatMethod==2) THEN ! Kawai et al. (2007)
-       !z0h=z0m*exp(2-(1.2-0.9*veg_fr**0.29)*(us*z0m/muu)**0.25)
-       ! Changed by HCW 05 Nov 2015 (veg_fr includes water; VegFraction = veg + bare soil)
-       z0h=z0m*EXP(2-(1.2-0.9*VegFraction**0.29)*(us*z0m/muu)**0.25)
-    ELSEIF (RoughLenHeatMethod==3) THEN
-       z0h=z0m*EXP(-20.) ! Voogt and Grimmond, JAM, 2000
-    ELSEIF (RoughLenHeatMethod==4) THEN
-       z0h=z0m*EXP(2-1.29*(us*z0m/muu)**0.25) !See !Kanda and Moriwaki (2007),Loridan et al. (2010)
-    ENDIF
+    z0h=cal_z0V(RoughLenHeatMethod,z0m,VegFraction,UStar)
+    ! IF (RoughLenHeatMethod==1) THEN !Brutasert (1982) z0h=z0/10(see Grimmond & Oke, 1986)
+    !    z0h=z0m/10
+    ! ELSEIF (RoughLenHeatMethod==2) THEN ! Kawai et al. (2007)
+    !    !z0h=z0m*exp(2-(1.2-0.9*veg_fr**0.29)*(us*z0m/muu)**0.25)
+    !    ! Changed by HCW 05 Nov 2015 (veg_fr includes water; VegFraction = veg + bare soil)
+    !    z0h=z0m*EXP(2-(1.2-0.9*VegFraction**0.29)*(UStar*z0m/muu)**0.25)
+    ! ELSEIF (RoughLenHeatMethod==3) THEN
+    !    z0h=z0m*EXP(-20.) ! Voogt and Grimmond, JAM, 2000
+    ! ELSEIF (RoughLenHeatMethod==4) THEN
+    !    z0h=z0m*EXP(2-1.29*(UStar*z0m/muu)**0.25) !See !Kanda and Moriwaki (2007),Loridan et al. (2010)
+    ! ENDIF
 
     ! z0h=z0m/5
 
-    ! zX-z0
-    z2zd=2!+z0h   ! set lower limit as z0h to prevent arithmetic error, zd=0
-    z10zd=10!+z0m ! set lower limit as z0m to prevent arithmetic error, zd=0
 
     ! stability correction functions
     ! momentum:
-    psymz10=stab_fn_mom(StabilityMethod,z10zd/L_mod,z10zd/L_mod)
-    psymz2=stab_fn_mom(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
+    psymzXm=stab_fn_mom(StabilityMethod,zXzd/L_mod,zXzd/L_mod)
+    ! psymz2=stab_fn_mom(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
     psymz0=stab_fn_mom(StabilityMethod,z0m/L_mod,z0m/L_mod)
 
     ! heat and vapor: assuming both are the same
-    psyhz2=stab_fn_heat(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
+    ! psyhz2=stab_fn_heat(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
     psyhz0=stab_fn_heat(StabilityMethod,z0h/L_mod,z0h/L_mod)
     !***************************************************************
     IF ( xSurf==nan ) THEN
@@ -2330,10 +2529,21 @@ CONTAINS
     ELSE
        SELECT CASE (opt)
        CASE (0) ! wind (momentum) at 10 m
-          xDiag=us/k*(LOG(z10zd/z0m)-psymz10+psymz0) ! Brutsaert (2005), p51, eq.2.54
+          zXzd=hgtX+z0m! set lower limit as z0h to prevent arithmetic error, zd=0
+
+          ! stability correction functions
+          ! momentum:
+          psymzXm=stab_fn_mom(StabilityMethod,zXzd/L_mod,zXzd/L_mod)
+          psymz0=stab_fn_mom(StabilityMethod,z0m/L_mod,z0m/L_mod)
+          xDiag=UStar/k*(LOG(zXzd/z0m)-psymzXm+psymz0) ! Brutsaert (2005), p51, eq.2.54
 
        CASE (1) ! temperature at 2 m
-          xDiag=xSurf-xFlux/(k*us*avdens*avcp)*(LOG(z2zd/z0h)-psyhz2+psyhz0) ! Brutsaert (2005), p51, eq.2.55
+          zXzd=hgtX+z0h! set lower limit as z0h to prevent arithmetic error, zd=0
+
+          ! heat and vapor: assuming both are the same
+          psyhzX=stab_fn_heat(StabilityMethod,zXzd/L_mod,zXzd/L_mod)
+          psyhz0=stab_fn_heat(StabilityMethod,z0h/L_mod,z0h/L_mod)
+          xDiag=xSurf-xFlux/(k*UStar*avdens*avcp)*(LOG(zXzd/z0h)-psyhzX+psyhz0) ! Brutsaert (2005), p51, eq.2.55
           !  IF ( ABS((LOG(z2zd/z0h)-psyhz2+psyhz0))>10 ) THEN
           !     PRINT*, '#####################################'
           !     PRINT*, 'xSurf',xSurf
@@ -2357,7 +2567,14 @@ CONTAINS
 
 
        CASE (2) ! humidity at 2 m
-          xDiag=xSurf-xFlux/(k*us*avdens*tlv)*(LOG(z2zd/z0h)-psyhz2+psyhz0) ! Brutsaert (2005), p51, eq.2.56
+          zXzd=hgtX+z0h! set lower limit as z0h to prevent arithmetic error, zd=0
+
+          ! heat and vapor: assuming both are the same
+          psyhzX=stab_fn_heat(StabilityMethod,zXzd/L_mod,zXzd/L_mod)
+          psyhz0=stab_fn_heat(StabilityMethod,z0h/L_mod,z0h/L_mod)
+
+          xDiag=xSurf-xFlux/(k*UStar*avdens*tlv)*(LOG(zXzd/z0h)-psyhzX+psyhz0) ! Brutsaert (2005), p51, eq.2.56
+          xDiag=MAX(xDiag,0.1d0)
 
        END SELECT
 
@@ -2367,11 +2584,174 @@ CONTAINS
   END SUBROUTINE diagSfc
 
 
+  SUBROUTINE diagSfc_X(&
+       opt,&
+       zMeas,xMeas,xFlux,zDiag,xDiag,&
+       VegFraction,&
+       z0m,zd,avdens,avcp,lv_J_kg,&
+       avU1,Temp_C,qh,&
+       RoughLenHeatMethod,StabilityMethod,tstep_real,dectime)
+    ! TS 31 Jul 2018: removed dependence on surface variables (Tsurf, qsat)
+    ! TS 26 Jul 2018: improved the calculation logic
+    ! TS 05 Sep 2017: improved interface
+    ! TS 20 May 2017: calculate surface-level diagonostics
+
+
+    IMPLICIT NONE
+    REAL(KIND(1d0)),INTENT(in) :: dectime
+    REAL(KIND(1d0)),INTENT(in) :: qh ! sensible heat flux
+    REAL(KIND(1d0)),INTENT(in) :: z0m,avdens,avcp,lv_J_kg,tstep_real
+    REAL(KIND(1d0)),INTENT(in) :: avU1,Temp_C ! atmospheric level variables
+    REAL(KIND(1d0)),INTENT(in) :: zDiag ! height for diagonostics
+    REAL(KIND(1d0)),INTENT(in) :: zMeas! height for measurement
+    REAL(KIND(1d0)),INTENT(in) :: zd ! displacement height
+    REAL(KIND(1d0)),INTENT(in) :: xMeas ! measurement at height
+    REAL(KIND(1d0)),INTENT(in) :: xFlux!
+    REAL(KIND(1d0)),INTENT(in) :: VegFraction ! vegetation fraction
+
+    INTEGER,INTENT(in)         :: opt ! 0 for momentum, 1 for temperature, 2 for humidity
+    INTEGER,INTENT(in)         :: RoughLenHeatMethod,StabilityMethod
+
+    REAL(KIND(1d0)),INTENT(out):: xDiag
+
+    REAL(KIND(1d0)) :: L_mod
+    REAL(KIND(1d0)) :: psymz0,psyhzDiag,psyhzMeas,psyhz0,psymzDiag ! stability correction functions
+    REAL(KIND(1d0)) :: z0h, cal_z0V ! Roughness length for heat
+    REAL(KIND(1d0)) :: zDiagzd! height for diagnositcs
+    REAL(KIND(1d0)) :: zMeaszd
+    REAL(KIND(1d0)) :: tlv,H_kms,TStar,zL,UStar
+    REAL(KIND(1d0)),PARAMETER :: muu=1.46e-5 !molecular viscosity
+    REAL(KIND(1d0)),PARAMETER :: nan=-999
+    REAL(KIND(1d0)),PARAMETER :: zdm=0 ! assuming Displacement height is ZERO
+    REAL(KIND(1d0)),PARAMETER::k=0.4
+
+    tlv=lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
+    zDiagzd=zDiag+z0m ! height at hgtX assuming Displacement height is ZERO; set lower limit as z0 to prevent arithmetic error, zd=0
+
+
+    ! get !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
+    CALL SUEWS_init_QH(&
+         qh,avdens,avcp,qh,0d0,dectime,& ! use qh as qh_obs to initialise H_init
+         H_kms)!output
+
+    ! redo the calculation for stability correction
+    CALL STAB_lumps(&
+                                ! input
+         StabilityMethod,&
+         dectime,& !Decimal time
+         zDiagzd,&     !Active measurement height (meas. height-displac. height)
+         z0m,&     !Aerodynamic roughness length
+         zdm,&     !Displacement height
+         avU1,&    !Average wind speed
+         Temp_C,&  !Air temperature
+         H_kms,    & !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
+                                ! output:
+         L_MOD,& !Obukhov length
+         TStar,& !T*
+         UStar,& !Friction velocity
+         zL)!Stability scale
+
+
+
+    !***************************************************************
+    ! log-law based stability corrections:
+    ! Roughness length for heat
+    z0h=cal_z0V(RoughLenHeatMethod,z0m,VegFraction,UStar)
+    ! IF (RoughLenHeatMethod==1) THEN !Brutasert (1982) z0h=z0/10(see Grimmond & Oke, 1986)
+    !    z0h=z0m/10
+    ! ELSEIF (RoughLenHeatMethod==2) THEN ! Kawai et al. (2007)
+    !    !z0h=z0m*exp(2-(1.2-0.9*veg_fr**0.29)*(us*z0m/muu)**0.25)
+    !    ! Changed by HCW 05 Nov 2015 (veg_fr includes water; VegFraction = veg + bare soil)
+    !    z0h=z0m*EXP(2-(1.2-0.9*VegFraction**0.29)*(UStar*z0m/muu)**0.25)
+    ! ELSEIF (RoughLenHeatMethod==3) THEN
+    !    z0h=z0m*EXP(-20.) ! Voogt and Grimmond, JAM, 2000
+    ! ELSEIF (RoughLenHeatMethod==4) THEN
+    !    z0h=z0m*EXP(2-1.29*(UStar*z0m/muu)**0.25) !See !Kanda and Moriwaki (2007),Loridan et al. (2010)
+    ! ENDIF
+
+    ! z0h=z0m/5
+
+
+    ! stability correction functions
+    ! momentum:
+    psymzDiag=stab_fn_mom(StabilityMethod,zDiagzd/L_mod,zDiagzd/L_mod)
+    ! psymz2=stab_fn_mom(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
+    psymz0=stab_fn_mom(StabilityMethod,z0m/L_mod,z0m/L_mod)
+
+    ! heat and vapor: assuming both are the same
+    ! psyhz2=stab_fn_heat(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
+    psyhz0=stab_fn_heat(StabilityMethod,z0h/L_mod,z0h/L_mod)
+    !***************************************************************
+    ! IF ( xSurf==nan ) THEN
+    !    ! xSurf can be nan e.g. when TSurf is not calculated
+    !    ! if so xDiag is set as nan as well
+    !    xDiag=nan
+    ! ELSE
+    SELECT CASE (opt)
+    CASE (0) ! wind (momentum) at hgtX=10 m
+       zDiagzd=zDiag+z0m! set lower limit as z0h to prevent arithmetic error, zd=0
+
+       ! stability correction functions
+       ! momentum:
+       psymzDiag=stab_fn_mom(StabilityMethod,zDiagzd/L_mod,zDiagzd/L_mod)
+       psymz0=stab_fn_mom(StabilityMethod,z0m/L_mod,z0m/L_mod)
+       xDiag=UStar/k*(LOG(zDiagzd/z0m)-psymzDiag+psymz0) ! Brutsaert (2005), p51, eq.2.54
+
+    CASE (1) ! temperature at hgtX=2 m
+       zMeaszd=zMeas-zd
+       zDiagzd=zDiag+z0h! set lower limit as z0h to prevent arithmetic error, zd=0
+
+       ! heat and vapor: assuming both are the same
+       psyhzMeas=stab_fn_heat(StabilityMethod,zMeaszd/L_mod,zMeaszd/L_mod)
+       psyhzDiag=stab_fn_heat(StabilityMethod,zDiagzd/L_mod,zDiagzd/L_mod)
+       ! psyhz0=stab_fn_heat(StabilityMethod,z0h/L_mod,z0h/L_mod)
+       xDiag=xMeas+xFlux/(k*UStar*avdens*avcp)*(LOG(zMeaszd/zDiagzd)-(psyhzMeas-psyhzDiag)) ! Brutsaert (2005), p51, eq.2.55
+       !  IF ( ABS((LOG(z2zd/z0h)-psyhz2+psyhz0))>10 ) THEN
+       !     PRINT*, '#####################################'
+       !     PRINT*, 'xSurf',xSurf
+       !     PRINT*, 'xFlux',xFlux
+       !     PRINT*, 'k*us*avdens*avcp',k*us*avdens*avcp
+       !     PRINT*, 'k',k
+       !     PRINT*, 'us',us
+       !     PRINT*, 'avdens',avdens
+       !     PRINT*, 'avcp',avcp
+       !     PRINT*, 'xFlux/X',xFlux/(k*us*avdens*avcp)
+       !     PRINT*, 'stab',(LOG(z2zd/z0h)-psyhz2+psyhz0)
+       !     PRINT*, 'LOG(z2zd/z0h)',LOG(z2zd/z0h)
+       !     PRINT*, 'z2zd',z2zd,'L_mod',L_mod,'z0h',z0h
+       !     PRINT*, 'z2zd/L_mod',z2zd/L_mod
+       !     PRINT*, 'psyhz2',psyhz2
+       !     PRINT*, 'psyhz0',psyhz0
+       !     PRINT*, 'psyhz2-psyhz0',psyhz2-psyhz0
+       !     PRINT*, 'xDiag',xDiag
+       !     PRINT*, '*************************************'
+       !  END IF
+
+
+    CASE (2) ! humidity at hgtX=2 m
+       zMeaszd=zMeas-zd
+       zDiagzd=zDiag+z0h! set lower limit as z0h to prevent arithmetic error, zd=0
+
+       ! heat and vapor: assuming both are the same
+       psyhzMeas=stab_fn_heat(StabilityMethod,zMeaszd/L_mod,zMeaszd/L_mod)
+       psyhzDiag=stab_fn_heat(StabilityMethod,zDiagzd/L_mod,zDiagzd/L_mod)
+       ! psyhz0=stab_fn_heat(StabilityMethod,z0h/L_mod,z0h/L_mod)
+
+       xDiag=xMeas+xFlux/(k*UStar*avdens*tlv)*(LOG(zMeaszd/zDiagzd)-(psyhzMeas-psyhzDiag)) ! Brutsaert (2005), p51, eq.2.56
+       ! xDiag=MAX(xDiag,0.1d0)
+
+    END SELECT
+
+
+    ! END IF
+
+  END SUBROUTINE diagSfc_X
+
 
   !===============set variable of invalid value to NAN=====================
   ELEMENTAL FUNCTION set_nan(x) RESULT(xx)
     IMPLICIT NONE
-    REAL(KIND(1d0)),PARAMETER::pNAN=30000 ! 30000 to prevent water_state being filtered out as it can be large
+    REAL(KIND(1d0)),PARAMETER::pNAN=99999 ! 30000 to prevent water_state being filtered out as it can be large
     REAL(KIND(1d0)),PARAMETER::NAN=-999
     REAL(KIND(1d0)),INTENT(in)::x
     REAL(KIND(1d0))::xx
@@ -2431,6 +2811,18 @@ CONTAINS
     END IF
 
 
+    ! DO i = 1, SIZE(varList, dim=1), 1
+    !    names(i)=TRIM(varList(i)%header)
+    !    ! names(i,1)=trim(varList(i)%header)
+    !    ! names(i,2)=trim(varList(i)%unit)
+    !    ! ! names(i,3)=trim(varList(i)%fmt)
+    !    ! names(i,3)=trim(varList(i)%longNm)
+    !    ! names(i,4)=trim(varList(i)%aggreg)
+    !    ! names(i,5)=trim(varList(i)%group)
+    !    ! print*, names(i,:)
+    ! END DO
+    ! print*, varList
+
   END SUBROUTINE output_name_n
 
 
@@ -2446,6 +2838,503 @@ CONTAINS
 
   END SUBROUTINE output_size
 
+  ! SUBROUTINE output_names(names)
+  !   ! used by f2py module `SuPy` to handle output names
+  !   IMPLICIT NONE
+  !   ! the dimension is potentially incorrect,
+  !   ! which should be consistent with that in output module
+  !   ! CHARACTER(len = 50),DIMENSION(300,5),INTENT(out) :: names
+  !   ! CHARACTER(len = *),DIMENSION(300),INTENT(out) :: names
+  !   CHARACTER(len = 12),INTENT(out) :: names(300)
+  !
+  !   INTEGER :: i,n,err,stat
+  !   ! name=TRIM(varList(1)%header)
+  !   n=SIZE(varList, dim=1)
+  !   ! ALLOCATE(names(10,n), stat=err)
+  !   ! IF (stat /= 0) PRINT *, "names: Allocation request denied"
+  !
+  !
+  !   DO i = 1, n
+  !      names(i)=TRIM(varList(i)%header)
+  !      ! names(i,1)=trim(varList(i)%header)
+  !      ! names(i,2)=trim(varList(i)%unit)
+  !      ! ! names(i,3)=trim(varList(i)%fmt)
+  !      ! names(i,3)=trim(varList(i)%longNm)
+  !      ! names(i,4)=trim(varList(i)%aggreg)
+  !      ! names(i,5)=trim(varList(i)%group)
+  !      ! print*, names(i,:)
+  !   END DO
+  !   ! print*, varList
+  !   ! IF (ALLOCATED(names)) DEALLOCATE(names)
+  !   ! IF (stat /= 0) PRINT *, "names: Deallocation request denied"
+  !
+  ! END SUBROUTINE output_names
+
+  SUBROUTINE SUEWS_write_model_state(&
+       AerodynamicResistanceMethod,AH_MIN,AHProf_tstep,AH_SLOPE_Cooling,& ! input&inout in alphabetical order
+       AH_SLOPE_Heating,alb,albDecTr,albEveTr,albGrass,AlbMax_DecTr,&
+       AlbMax_EveTr,AlbMax_Grass,AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
+       alpha_bioCO2,alpha_enh_bioCO2,alt,avkdn,avRh,avU1,BaseT,BaseTe,&
+       BaseTHDD,beta_bioCO2,beta_enh_bioCO2,bldgH,CapMax_dec,CapMin_dec,&
+       chAnOHM,cpAnOHM,CRWmax,CRWmin,DayWat,DayWatPer,&
+       DecidCap,dectime,DecTreeH,Diagnose,DiagQN,DiagQS,DRAINRT,&
+       EF_umolCO2perJ,emis,EmissionsMethod,EnEF_v_Jkm,endDLS,EveTreeH,FAIBldg,&
+       FAIDecTree,FAIEveTree,Faut,FcEF_v_kgkm,fcld_obs,FlowChange,&
+       FrFossilFuel_Heat,FrFossilFuel_NonHeat,G1,G2,G3,G4,G5,G6,GDD,&
+       GDDFull,Gridiv,gsModel,HDD,HumActivity_tstep,&
+       IceFrac,id,id_prev_t,Ie_a,Ie_end,Ie_m,Ie_start,imin,&
+       InternalWaterUse_h,IrrFracConif,IrrFracDecid,IrrFracGrass,it,ity,&
+       iy,iy_prev_t,kkAnOHM,Kmax,LAI,LAICalcYes,LAIMax,LAIMin,LAI_obs,&
+       LAIPower,LAIType,lat,ldown_obs,lng,MaxConductance,MaxQFMetab,&
+       MeltWaterStore,MetForcingData_grid,MinQFMetab,min_res_bioCO2,&
+       NARP_EMIS_SNOW,NARP_TRANS_SITE,NetRadiationMethod,&
+       NumCapita,OHM_coef,OHMIncQF,OHM_threshSW,&
+       OHM_threshWD,PipeCapacity,PopDensDaytime,&
+       PopDensNighttime,PopProf_tstep,PorMax_dec,PorMin_dec,porosity,&
+       Precip,PrecipLimit,PrecipLimitAlb,Press_hPa,QF0_BEU,Qf_A,Qf_B,&
+       Qf_C,qh_obs,qn1_av_store_grid,qn1_obs,qn1_S_av_store_grid,qn1_S_store_grid,&
+       qn1_store_grid,RadMeltFact,RAINCOVER,RainMaxRes,resp_a,resp_b,&
+       RoughLenHeatMethod,RoughLenMomMethod,RunoffToWater,S1,S2,&
+       SatHydraulicConduct,SDDFull,sfr,SMDMethod,SnowAlb,SnowAlbMax,&
+       SnowAlbMin,snowD,SnowDens,SnowDensMax,SnowDensMin,SnowfallCum,snowFrac,&
+       SnowLimBuild,SnowLimPaved,snow_obs,SnowPack,SnowProf,snowUse,SoilDepth,&
+       soilmoist,soilstoreCap,StabilityMethod,startDLS,state,StateLimit,&
+       StorageHeatMethod,surf,SurfaceArea,Tair24HR,tau_a,tau_f,tau_r,&
+       T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,TempMeltFact,TH,&
+       theta_bioCO2,timezone,TL,TrafficRate,TrafficUnits,&
+       TraffProf_tstep,Ts5mindata_ir,tstep,veg_type,&
+       WaterDist,WaterUseMethod,WetThresh,WU_Day,WUProfA_tstep,&
+       WUProfM_tstep,xsmd,Z)
+
+    USE data_in,ONLY:FileOutputPath
+
+    IMPLICIT NONE
+
+    INTEGER,INTENT(IN)::AerodynamicResistanceMethod
+    INTEGER,INTENT(IN)::Diagnose
+    INTEGER,INTENT(IN)::DiagQN
+    INTEGER,INTENT(IN)::DiagQS
+    INTEGER,INTENT(IN)::startDLS
+    INTEGER,INTENT(IN)::endDLS
+    INTEGER,INTENT(IN)::EmissionsMethod
+    INTEGER,INTENT(IN)::Gridiv
+    INTEGER,INTENT(IN)::gsModel
+    INTEGER,INTENT(IN)::id
+    INTEGER,INTENT(IN)::id_prev_t
+    INTEGER,INTENT(IN)::Ie_end
+    INTEGER,INTENT(IN)::Ie_start
+    INTEGER,INTENT(IN)::imin
+    INTEGER,INTENT(IN)::it
+    INTEGER,INTENT(IN)::ity
+    INTEGER,INTENT(IN)::iy
+    INTEGER,INTENT(IN)::iy_prev_t
+    INTEGER,INTENT(IN)::LAICalcYes
+    INTEGER,INTENT(IN)::NetRadiationMethod
+    INTEGER,INTENT(IN)::OHMIncQF
+    INTEGER,INTENT(IN)::RoughLenHeatMethod
+    INTEGER,INTENT(IN)::RoughLenMomMethod
+    INTEGER,INTENT(IN)::SMDMethod
+    INTEGER,INTENT(IN)::snowUse
+    INTEGER,INTENT(IN)::StabilityMethod
+    INTEGER,INTENT(IN)::StorageHeatMethod
+    INTEGER,INTENT(IN)::tstep
+    INTEGER,INTENT(IN)::veg_type
+    INTEGER,INTENT(IN)::WaterUseMethod
+
+    REAL(KIND(1D0)),INTENT(IN)::AlbMax_DecTr
+    REAL(KIND(1D0)),INTENT(IN)::AlbMax_EveTr
+    REAL(KIND(1D0)),INTENT(IN)::AlbMax_Grass
+    REAL(KIND(1D0)),INTENT(IN)::AlbMin_DecTr
+    REAL(KIND(1D0)),INTENT(IN)::AlbMin_EveTr
+    REAL(KIND(1D0)),INTENT(IN)::AlbMin_Grass
+    REAL(KIND(1D0)),INTENT(IN)::alt
+    REAL(KIND(1D0)),INTENT(IN)::avkdn
+    REAL(KIND(1D0)),INTENT(IN)::avRh
+    REAL(KIND(1D0)),INTENT(IN)::avU1
+    REAL(KIND(1D0)),INTENT(IN)::BaseTHDD
+    REAL(KIND(1D0)),INTENT(IN)::bldgH
+    REAL(KIND(1D0)),INTENT(IN)::CapMax_dec
+    REAL(KIND(1D0)),INTENT(IN)::CapMin_dec
+    REAL(KIND(1D0)),INTENT(IN)::CRWmax
+    REAL(KIND(1D0)),INTENT(IN)::CRWmin
+    REAL(KIND(1D0)),INTENT(IN)::dectime
+    REAL(KIND(1D0)),INTENT(IN)::DecTreeH
+    REAL(KIND(1D0)),INTENT(IN)::DRAINRT
+    REAL(KIND(1D0)),INTENT(IN)::EF_umolCO2perJ
+    REAL(KIND(1D0)),INTENT(IN)::EnEF_v_Jkm
+    REAL(KIND(1D0)),INTENT(IN)::EveTreeH
+    REAL(KIND(1D0)),INTENT(IN)::FAIBldg
+    REAL(KIND(1D0)),INTENT(IN)::FAIDecTree
+    REAL(KIND(1D0)),INTENT(IN)::FAIEveTree
+    REAL(KIND(1D0)),INTENT(IN)::Faut
+    REAL(KIND(1D0)),INTENT(IN)::FcEF_v_kgkm
+    REAL(KIND(1D0)),INTENT(IN)::fcld_obs
+    REAL(KIND(1D0)),INTENT(IN)::FlowChange
+    REAL(KIND(1D0)),INTENT(IN)::FrFossilFuel_Heat
+    REAL(KIND(1D0)),INTENT(IN)::FrFossilFuel_NonHeat
+    REAL(KIND(1D0)),INTENT(IN)::G1
+    REAL(KIND(1D0)),INTENT(IN)::G2
+    REAL(KIND(1D0)),INTENT(IN)::G3
+    REAL(KIND(1D0)),INTENT(IN)::G4
+    REAL(KIND(1D0)),INTENT(IN)::G5
+    REAL(KIND(1D0)),INTENT(IN)::G6
+    REAL(KIND(1D0)),INTENT(IN)::InternalWaterUse_h
+    REAL(KIND(1D0)),INTENT(IN)::IrrFracConif
+    REAL(KIND(1D0)),INTENT(IN)::IrrFracDecid
+    REAL(KIND(1D0)),INTENT(IN)::IrrFracGrass
+    REAL(KIND(1D0)),INTENT(IN)::Kmax
+    REAL(KIND(1D0)),INTENT(IN)::LAI_obs
+    REAL(KIND(1D0)),INTENT(IN)::lat
+    REAL(KIND(1D0)),INTENT(IN)::ldown_obs
+    REAL(KIND(1D0)),INTENT(IN)::lng
+    REAL(KIND(1D0)),INTENT(IN)::MaxQFMetab
+    REAL(KIND(1D0)),INTENT(IN)::MinQFMetab
+    REAL(KIND(1D0)),INTENT(IN)::NARP_EMIS_SNOW
+    REAL(KIND(1D0)),INTENT(IN)::NARP_TRANS_SITE
+    REAL(KIND(1D0)),INTENT(IN)::NumCapita
+    REAL(KIND(1D0)),INTENT(IN)::PipeCapacity
+    REAL(KIND(1D0)),INTENT(IN)::PopDensDaytime
+    REAL(KIND(1D0)),INTENT(IN)::PopDensNighttime
+    REAL(KIND(1D0)),INTENT(IN)::PorMax_dec
+    REAL(KIND(1D0)),INTENT(IN)::PorMin_dec
+    REAL(KIND(1D0)),INTENT(IN)::Precip
+    REAL(KIND(1D0)),INTENT(IN)::PrecipLimit
+    REAL(KIND(1D0)),INTENT(IN)::PrecipLimitAlb
+    REAL(KIND(1D0)),INTENT(IN)::Press_hPa
+    REAL(KIND(1D0)),INTENT(IN)::qh_obs
+    REAL(KIND(1D0)),INTENT(IN)::qn1_obs
+    REAL(KIND(1D0)),INTENT(IN)::RadMeltFact
+    REAL(KIND(1D0)),INTENT(IN)::RAINCOVER
+    REAL(KIND(1D0)),INTENT(IN)::RainMaxRes
+    REAL(KIND(1D0)),INTENT(IN)::RunoffToWater
+    REAL(KIND(1D0)),INTENT(IN)::S1
+    REAL(KIND(1D0)),INTENT(IN)::S2
+    REAL(KIND(1D0)),INTENT(IN)::SnowAlbMax
+    REAL(KIND(1D0)),INTENT(IN)::SnowAlbMin
+    REAL(KIND(1D0)),INTENT(IN)::SnowDensMax
+    REAL(KIND(1D0)),INTENT(IN)::SnowDensMin
+    REAL(KIND(1D0)),INTENT(IN)::SnowLimBuild
+    REAL(KIND(1D0)),INTENT(IN)::SnowLimPaved
+    REAL(KIND(1D0)),INTENT(IN)::snow_obs
+    REAL(KIND(1D0)),INTENT(IN)::SurfaceArea
+    REAL(KIND(1D0)),INTENT(IN)::tau_a
+    REAL(KIND(1D0)),INTENT(IN)::tau_f
+    REAL(KIND(1D0)),INTENT(IN)::tau_r
+    REAL(KIND(1D0)),INTENT(IN)::Temp_C
+    REAL(KIND(1D0)),INTENT(IN)::TempMeltFact
+    REAL(KIND(1D0)),INTENT(IN)::TH
+    REAL(KIND(1D0)),INTENT(IN)::timezone
+    REAL(KIND(1D0)),INTENT(IN)::TL
+    REAL(KIND(1D0)),INTENT(IN)::TrafficUnits
+    REAL(KIND(1D0)),INTENT(IN)::xsmd
+    REAL(KIND(1D0)),INTENT(IN)::Z
+
+    INTEGER,DIMENSION(NVEGSURF),INTENT(IN)::LAIType
+
+    REAL(KIND(1D0)),DIMENSION(2),INTENT(IN)                   ::AH_MIN
+    REAL(KIND(1D0)),DIMENSION(2),INTENT(IN)                   ::AH_SLOPE_Cooling
+    REAL(KIND(1D0)),DIMENSION(2),INTENT(IN)                   ::AH_SLOPE_Heating
+    REAL(KIND(1D0)),DIMENSION(2),INTENT(IN)                   ::QF0_BEU
+    REAL(KIND(1D0)),DIMENSION(2),INTENT(IN)                   ::Qf_A
+    REAL(KIND(1D0)),DIMENSION(2),INTENT(IN)                   ::Qf_B
+    REAL(KIND(1D0)),DIMENSION(2),INTENT(IN)                   ::Qf_C
+    REAL(KIND(1D0)),DIMENSION(2),INTENT(IN)                   ::T_CRITIC_Cooling
+    REAL(KIND(1D0)),DIMENSION(2),INTENT(IN)                   ::T_CRITIC_Heating
+    REAL(KIND(1D0)),DIMENSION(2),INTENT(IN)                   ::TrafficRate
+    REAL(KIND(1D0)),DIMENSION(3),INTENT(IN)                   ::Ie_a
+    REAL(KIND(1D0)),DIMENSION(3),INTENT(IN)                   ::Ie_m
+    REAL(KIND(1D0)),DIMENSION(3),INTENT(IN)                   ::MaxConductance
+    REAL(KIND(1D0)),DIMENSION(24*3600/tstep,2),INTENT(IN)     ::AHProf_tstep
+    REAL(KIND(1D0)),DIMENSION(24*3600/tstep,2),INTENT(IN)     ::HumActivity_tstep
+    REAL(KIND(1D0)),DIMENSION(24*3600/tstep,2),INTENT(IN)     ::PopProf_tstep
+    REAL(KIND(1D0)),DIMENSION(24*3600/tstep,2),INTENT(IN)     ::TraffProf_tstep
+    REAL(KIND(1D0)),DIMENSION(24*3600/tstep,2),INTENT(IN)     ::WUProfA_tstep
+    REAL(KIND(1D0)),DIMENSION(24*3600/tstep,2),INTENT(IN)     ::WUProfM_tstep
+    REAL(KIND(1D0)),DIMENSION(7),INTENT(IN)                   ::DayWat
+    REAL(KIND(1D0)),DIMENSION(7),INTENT(IN)                   ::DayWatPer
+    REAL(KIND(1D0)),DIMENSION(nsurf+1),INTENT(IN)             ::OHM_threshSW
+    REAL(KIND(1D0)),DIMENSION(nsurf+1),INTENT(IN)             ::OHM_threshWD
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)               ::chAnOHM
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)               ::cpAnOHM
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)               ::emis
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)               ::kkAnOHM
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)               ::SatHydraulicConduct
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)               ::sfr
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)               ::snowD
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)               ::SoilDepth
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)               ::soilstoreCap
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)               ::StateLimit
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)               ::WetThresh
+    REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(IN)            ::alpha_bioCO2
+    REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(IN)            ::alpha_enh_bioCO2
+    REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(IN)            ::BaseT
+    REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(IN)            ::BaseTe
+    REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(IN)            ::beta_bioCO2
+    REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(IN)            ::beta_enh_bioCO2
+    REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(IN)            ::GDDFull
+    REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(IN)            ::LAIMax
+    REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(IN)            ::LAIMin
+    REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(IN)            ::min_res_bioCO2
+    REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(IN)            ::resp_a
+    REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(IN)            ::resp_b
+    REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(IN)            ::SDDFull
+    REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(IN)            ::theta_bioCO2
+    REAL(KIND(1d0)),DIMENSION(:),INTENT(in)                   ::Ts5mindata_ir
+    REAL(KIND(1D0)),DIMENSION(0:23,2),INTENT(in)              ::snowProf
+    REAL(KIND(1D0)),DIMENSION(NSURF+1,NSURF-1),INTENT(IN)     ::WaterDist
+    REAL(KIND(1D0)),DIMENSION(nsurf+1,4,3),INTENT(IN)         ::OHM_coef
+    REAL(KIND(1D0)),DIMENSION(4,NVEGSURF),INTENT(IN)          ::LAIPower
+    REAL(KIND(1D0)),DIMENSION(:,:),INTENT(IN)                 ::MetForcingData_grid
+
+    REAL(KIND(1D0)),INTENT(INOUT)                             ::SnowfallCum
+    REAL(KIND(1D0)),INTENT(INOUT)                             ::SnowAlb
+    REAL(KIND(1d0)),DIMENSION(24*3600/tstep),INTENT(inout)    ::Tair24HR
+    REAL(KIND(1D0)),DIMENSION(2*3600/tstep+1),INTENT(INOUT)   ::qn1_av_store_grid
+    REAL(KIND(1D0)),DIMENSION(2*3600/tstep+1),INTENT(INOUT)   ::qn1_S_av_store_grid
+    REAL(KIND(1D0)),DIMENSION(0:NDAYS),INTENT(INOUT)          ::albDecTr
+    REAL(KIND(1D0)),DIMENSION(0:NDAYS),INTENT(INOUT)          ::albEveTr
+    REAL(KIND(1D0)),DIMENSION(0:NDAYS),INTENT(INOUT)          ::albGrass
+    REAL(KIND(1D0)),DIMENSION(0:NDAYS),INTENT(INOUT)          ::DecidCap
+    REAL(KIND(1D0)),DIMENSION(0:NDAYS),INTENT(INOUT)          ::porosity
+    REAL(KIND(1D0)),DIMENSION(0:NDAYS,5),INTENT(INOUT)        ::GDD
+    REAL(KIND(1D0)),DIMENSION(0:NDAYS,9),INTENT(INOUT)        ::WU_Day
+    REAL(KIND(1D0)),DIMENSION(6,NSURF),INTENT(INOUT)          ::surf
+    REAL(KIND(1D0)),DIMENSION(-4:NDAYS,6),INTENT(INOUT)       ::HDD
+    REAL(KIND(1D0)),DIMENSION(-4:NDAYS,NVEGSURF),INTENT(INOUT)::LAI
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::alb
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::IceFrac
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::MeltWaterStore
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::SnowDens
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::snowFrac
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::SnowPack
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::soilmoist
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::state
+    REAL(KIND(1D0)),DIMENSION(3600/tstep),INTENT(INOUT)       ::qn1_S_store_grid
+    REAL(KIND(1D0)),DIMENSION(3600/tstep),INTENT(INOUT)       ::qn1_store_grid
+
+
+    INTEGER :: fn,xx=0
+    CHARACTER(len=1000) :: FileOut
+    CHARACTER(len=20)::str_grid
+
+    WRITE(str_grid,'(i4)') Gridiv
+    FileOut=TRIM(FileOutputPath)//&
+         'init_cond_'//&
+         TRIM(ADJUSTL(str_grid))//&
+         '.txt'
+    ! write out data
+    IF ( xx==0 ) THEN
+       fn=50
+       OPEN(fn,file=TRIM(FileOut),status='unknown')!,err=112)
+
+       WRITE(fn,*)'AerodynamicResistanceMethod',AerodynamicResistanceMethod
+       WRITE(fn,*)'Diagnose',Diagnose
+       WRITE(fn,*)'DiagQN',DiagQN
+       WRITE(fn,*)'DiagQS',DiagQS
+       WRITE(fn,*)'startDLS',startDLS
+       WRITE(fn,*)'endDLS',endDLS
+       WRITE(fn,*)'EmissionsMethod',EmissionsMethod
+       WRITE(fn,*)'Gridiv',Gridiv
+       WRITE(fn,*)'gsModel',gsModel
+       WRITE(fn,*)'id',id
+       WRITE(fn,*)'id_prev_t',id_prev_t
+       WRITE(fn,*)'Ie_end',Ie_end
+       WRITE(fn,*)'Ie_start',Ie_start
+       WRITE(fn,*)'imin',imin
+       WRITE(fn,*)'it',it
+       WRITE(fn,*)'ity',ity
+       WRITE(fn,*)'iy',iy
+       WRITE(fn,*)'iy_prev_t',iy_prev_t
+       WRITE(fn,*)'LAICalcYes',LAICalcYes
+       WRITE(fn,*)'NetRadiationMethod',NetRadiationMethod
+       WRITE(fn,*)'OHMIncQF',OHMIncQF
+       WRITE(fn,*)'RoughLenHeatMethod',RoughLenHeatMethod
+       WRITE(fn,*)'RoughLenMomMethod',RoughLenMomMethod
+       WRITE(fn,*)'SMDMethod',SMDMethod
+       WRITE(fn,*)'snowUse',snowUse
+       WRITE(fn,*)'StabilityMethod',StabilityMethod
+       WRITE(fn,*)'StorageHeatMethod',StorageHeatMethod
+       WRITE(fn,*)'tstep',tstep
+       WRITE(fn,*)'veg_type',veg_type
+       WRITE(fn,*)'WaterUseMethod',WaterUseMethod
+       WRITE(fn,*)'AlbMax_DecTr',AlbMax_DecTr
+       WRITE(fn,*)'AlbMax_EveTr',AlbMax_EveTr
+       WRITE(fn,*)'AlbMax_Grass',AlbMax_Grass
+       WRITE(fn,*)'AlbMin_DecTr',AlbMin_DecTr
+       WRITE(fn,*)'AlbMin_EveTr',AlbMin_EveTr
+       WRITE(fn,*)'AlbMin_Grass',AlbMin_Grass
+       WRITE(fn,*)'alt',alt
+       WRITE(fn,*)'avkdn',avkdn
+       WRITE(fn,*)'avRh',avRh
+       WRITE(fn,*)'avU1',avU1
+       WRITE(fn,*)'BaseTHDD',BaseTHDD
+       WRITE(fn,*)'bldgH',bldgH
+       WRITE(fn,*)'CapMax_dec',CapMax_dec
+       WRITE(fn,*)'CapMin_dec',CapMin_dec
+       WRITE(fn,*)'CRWmax',CRWmax
+       WRITE(fn,*)'CRWmin',CRWmin
+       WRITE(fn,*)'dectime',dectime
+       WRITE(fn,*)'DecTreeH',DecTreeH
+       WRITE(fn,*)'DRAINRT',DRAINRT
+       WRITE(fn,*)'EF_umolCO2perJ',EF_umolCO2perJ
+       WRITE(fn,*)'EnEF_v_Jkm',EnEF_v_Jkm
+       WRITE(fn,*)'EveTreeH',EveTreeH
+       WRITE(fn,*)'FAIBldg',FAIBldg
+       WRITE(fn,*)'FAIDecTree',FAIDecTree
+       WRITE(fn,*)'FAIEveTree',FAIEveTree
+       WRITE(fn,*)'Faut',Faut
+       WRITE(fn,*)'FcEF_v_kgkm',FcEF_v_kgkm
+       WRITE(fn,*)'fcld_obs',fcld_obs
+       WRITE(fn,*)'FlowChange',FlowChange
+       WRITE(fn,*)'FrFossilFuel_Heat',FrFossilFuel_Heat
+       WRITE(fn,*)'FrFossilFuel_NonHeat',FrFossilFuel_NonHeat
+       WRITE(fn,*)'G1',G1
+       WRITE(fn,*)'G2',G2
+       WRITE(fn,*)'G3',G3
+       WRITE(fn,*)'G4',G4
+       WRITE(fn,*)'G5',G5
+       WRITE(fn,*)'G6',G6
+       WRITE(fn,*)'InternalWaterUse_h',InternalWaterUse_h
+       WRITE(fn,*)'IrrFracConif',IrrFracConif
+       WRITE(fn,*)'IrrFracDecid',IrrFracDecid
+       WRITE(fn,*)'IrrFracGrass',IrrFracGrass
+       WRITE(fn,*)'Kmax',Kmax
+       WRITE(fn,*)'LAI_obs',LAI_obs
+       WRITE(fn,*)'lat',lat
+       WRITE(fn,*)'ldown_obs',ldown_obs
+       WRITE(fn,*)'lng',lng
+       WRITE(fn,*)'MaxQFMetab',MaxQFMetab
+       WRITE(fn,*)'MinQFMetab',MinQFMetab
+       WRITE(fn,*)'NARP_EMIS_SNOW',NARP_EMIS_SNOW
+       WRITE(fn,*)'NARP_TRANS_SITE',NARP_TRANS_SITE
+       WRITE(fn,*)'NumCapita',NumCapita
+       WRITE(fn,*)'PipeCapacity',PipeCapacity
+       WRITE(fn,*)'PopDensDaytime',PopDensDaytime
+       WRITE(fn,*)'PopDensNighttime',PopDensNighttime
+       WRITE(fn,*)'PorMax_dec',PorMax_dec
+       WRITE(fn,*)'PorMin_dec',PorMin_dec
+       WRITE(fn,*)'Precip',Precip
+       WRITE(fn,*)'PrecipLimit',PrecipLimit
+       WRITE(fn,*)'PrecipLimitAlb',PrecipLimitAlb
+       WRITE(fn,*)'Press_hPa',Press_hPa
+       WRITE(fn,*)'qh_obs',qh_obs
+       WRITE(fn,*)'qn1_obs',qn1_obs
+       WRITE(fn,*)'RadMeltFact',RadMeltFact
+       WRITE(fn,*)'RAINCOVER',RAINCOVER
+       WRITE(fn,*)'RainMaxRes',RainMaxRes
+       WRITE(fn,*)'RunoffToWater',RunoffToWater
+       WRITE(fn,*)'S1',S1
+       WRITE(fn,*)'S2',S2
+       WRITE(fn,*)'SnowAlbMax',SnowAlbMax
+       WRITE(fn,*)'SnowAlbMin',SnowAlbMin
+       WRITE(fn,*)'SnowDensMax',SnowDensMax
+       WRITE(fn,*)'SnowDensMin',SnowDensMin
+       WRITE(fn,*)'SnowLimBuild',SnowLimBuild
+       WRITE(fn,*)'SnowLimPaved',SnowLimPaved
+       WRITE(fn,*)'snow_obs',snow_obs
+       WRITE(fn,*)'SurfaceArea',SurfaceArea
+       WRITE(fn,*)'tau_a',tau_a
+       WRITE(fn,*)'tau_f',tau_f
+       WRITE(fn,*)'tau_r',tau_r
+       WRITE(fn,*)'Temp_C',Temp_C
+       WRITE(fn,*)'TempMeltFact',TempMeltFact
+       WRITE(fn,*)'TH',TH
+       WRITE(fn,*)'timezone',timezone
+       WRITE(fn,*)'TL',TL
+       WRITE(fn,*)'TrafficUnits',TrafficUnits
+       WRITE(fn,*)'xsmd',xsmd
+       WRITE(fn,*)'Z',Z
+       WRITE(fn,*)'LAIType',LAIType
+       WRITE(fn,*)'AH_MIN',AH_MIN
+       WRITE(fn,*)'AH_SLOPE_Cooling',AH_SLOPE_Cooling
+       WRITE(fn,*)'AH_SLOPE_Heating',AH_SLOPE_Heating
+       WRITE(fn,*)'QF0_BEU',QF0_BEU
+       WRITE(fn,*)'Qf_A',Qf_A
+       WRITE(fn,*)'Qf_B',Qf_B
+       WRITE(fn,*)'Qf_C',Qf_C
+       WRITE(fn,*)'T_CRITIC_Cooling',T_CRITIC_Cooling
+       WRITE(fn,*)'T_CRITIC_Heating',T_CRITIC_Heating
+       WRITE(fn,*)'TrafficRate',TrafficRate
+       WRITE(fn,*)'Ie_a',Ie_a
+       WRITE(fn,*)'Ie_m',Ie_m
+       WRITE(fn,*)'MaxConductance',MaxConductance
+       WRITE(fn,*)'AHProf_tstep',AHProf_tstep
+       WRITE(fn,*)'HumActivity_tstep',HumActivity_tstep
+       WRITE(fn,*)'PopProf_tstep',PopProf_tstep
+       WRITE(fn,*)'TraffProf_tstep',TraffProf_tstep
+       WRITE(fn,*)'WUProfA_tstep',WUProfA_tstep
+       WRITE(fn,*)'WUProfM_tstep',WUProfM_tstep
+       WRITE(fn,*)'DayWat',DayWat
+       WRITE(fn,*)'DayWatPer',DayWatPer
+       WRITE(fn,*)'OHM_threshSW',OHM_threshSW
+       WRITE(fn,*)'OHM_threshWD',OHM_threshWD
+       WRITE(fn,*)'chAnOHM',chAnOHM
+       WRITE(fn,*)'cpAnOHM',cpAnOHM
+       WRITE(fn,*)'emis',emis
+       WRITE(fn,*)'kkAnOHM',kkAnOHM
+       WRITE(fn,*)'SatHydraulicConduct',SatHydraulicConduct
+       WRITE(fn,*)'sfr',sfr
+       WRITE(fn,*)'snowD',snowD
+       WRITE(fn,*)'SoilDepth',SoilDepth
+       WRITE(fn,*)'soilstoreCap',soilstoreCap
+       WRITE(fn,*)'StateLimit',StateLimit
+       WRITE(fn,*)'WetThresh',WetThresh
+       WRITE(fn,*)'alpha_bioCO2',alpha_bioCO2
+       WRITE(fn,*)'alpha_enh_bioCO2',alpha_enh_bioCO2
+       WRITE(fn,*)'BaseT',BaseT
+       WRITE(fn,*)'BaseTe',BaseTe
+       WRITE(fn,*)'beta_bioCO2',beta_bioCO2
+       WRITE(fn,*)'beta_enh_bioCO2',beta_enh_bioCO2
+       WRITE(fn,*)'GDDFull',GDDFull
+       WRITE(fn,*)'LAIMax',LAIMax
+       WRITE(fn,*)'LAIMin',LAIMin
+       WRITE(fn,*)'min_res_bioCO2',min_res_bioCO2
+       WRITE(fn,*)'resp_a',resp_a
+       WRITE(fn,*)'resp_b',resp_b
+       WRITE(fn,*)'SDDFull',SDDFull
+       WRITE(fn,*)'theta_bioCO2',theta_bioCO2
+       WRITE(fn,*)'Ts5mindata_ir',Ts5mindata_ir
+       WRITE(fn,*)'snowProf',snowProf
+       WRITE(fn,*)'WaterDist',WaterDist
+       WRITE(fn,*)'OHM_coef',OHM_coef
+       WRITE(fn,*)'LAIPower',LAIPower
+       WRITE(fn,*)'MetForcingData_grid',MetForcingData_grid
+       WRITE(fn,*)'SnowfallCum',SnowfallCum
+       WRITE(fn,*)'SnowAlb',SnowAlb
+       WRITE(fn,*)'Tair24HR',Tair24HR
+       WRITE(fn,*)'qn1_av_store_grid',qn1_av_store_grid
+       WRITE(fn,*)'qn1_S_av_store_grid',qn1_S_av_store_grid
+       WRITE(fn,*)'albDecTr',albDecTr
+       WRITE(fn,*)'albEveTr',albEveTr
+       WRITE(fn,*)'albGrass',albGrass
+       WRITE(fn,*)'DecidCap',DecidCap
+       WRITE(fn,*)'porosity',porosity
+       WRITE(fn,*)'GDD',GDD
+       WRITE(fn,*)'WU_Day',WU_Day
+       WRITE(fn,*)'surf',surf
+       WRITE(fn,*)'HDD',HDD
+       WRITE(fn,*)'LAI',LAI
+       WRITE(fn,*)'alb',alb
+       WRITE(fn,*)'IceFrac',IceFrac
+       WRITE(fn,*)'MeltWaterStore',MeltWaterStore
+       WRITE(fn,*)'SnowDens',SnowDens
+       WRITE(fn,*)'snowFrac',snowFrac
+       WRITE(fn,*)'SnowPack',SnowPack
+       WRITE(fn,*)'soilmoist',soilmoist
+       WRITE(fn,*)'state',state
+       WRITE(fn,*)'qn1_S_store_grid',qn1_S_store_grid
+       WRITE(fn,*)'qn1_store_grid',qn1_store_grid
+
+       CLOSE (fn)
+       PRINT*, 'initial condition has been written out for ', Gridiv
+       xx=1 ! change flag for completion
+    ELSE
+       PRINT*, 'initial condition output has been done before for ', Gridiv
+       PRINT*, 'see:', FileOut
+
+    END IF
+
+  END SUBROUTINE SUEWS_write_model_state
 
 
 END MODULE SUEWS_Driver

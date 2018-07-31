@@ -352,15 +352,15 @@ CONTAINS
     IMPLICIT NONE
 
     REAL(KIND(1d0))::lvS_J_kg,temp_C,tw,incr,Ea_hPa,Press_hPa,cp
-   ! REAL(KIND(1d0))::ea_fix,es_tw,psyc,ea_est,Temp_K
-   ! REAL(KIND(1d0))::sat_vap_pressIce,psyc_const ! functions
-   ! LOGICAL:: switch1=.FALSE.,switch2=.FALSE.!,debug=.true.
-   ! INTEGER:: ii,from=2
+    ! REAL(KIND(1d0))::ea_fix,es_tw,psyc,ea_est,Temp_K
+    ! REAL(KIND(1d0))::sat_vap_pressIce,psyc_const ! functions
+    ! LOGICAL:: switch1=.FALSE.,switch2=.FALSE.!,debug=.true.
+    ! INTEGER:: ii,from=2
 
     !Latent heat for sublimation
     !From Rogers&Yau (A short course in cloud physics), Wikipedia
 
-   ! ea_fix=ea_hPa
+    ! ea_fix=ea_hPa
 
     lvS_J_kg=(2834.1-0.29*temp_C)*1e3 !First guess for Ls in J/kg
 
@@ -372,31 +372,31 @@ CONTAINS
 
     !DO ii=1,100
 
-   !    es_tw=sat_vap_pressIce(Tw,Press_hPa,from)  !Calculate saturation vapour pressure in hPa
+    !    es_tw=sat_vap_pressIce(Tw,Press_hPa,from)  !Calculate saturation vapour pressure in hPa
 
-     ! psyc=psyc_const(cp,Press_hPa,lv_J_kg)
+    ! psyc=psyc_const(cp,Press_hPa,lv_J_kg)
 
-  !   ea_est=es_tw-psyc*(temp_C-tw)
-  !  lvS_J_kg=(2834.1-0.29*tw)*1e3
+    !   ea_est=es_tw-psyc*(temp_C-tw)
+    !  lvS_J_kg=(2834.1-0.29*tw)*1e3
 
-  !   IF(switch1.AND.switch2)THEN
-  !      incr=incr/10.
-  !     switch1=.FALSE.
-  !     switch2=.FALSE.
-  !    ENDIF
+    !   IF(switch1.AND.switch2)THEN
+    !      incr=incr/10.
+    !     switch1=.FALSE.
+    !     switch2=.FALSE.
+    !    ENDIF
 
-  !   IF(ABS(ea_est-ea_fix)<0.001)THEN
-  !     RETURN
-  !   ELSEIF(ea_est > ea_fix)THEN
-  !      tw=tw-incr
-  !      switch1=.TRUE.
-  !   ELSEIF(ea_est< ea_fix)THEN
-  !      tw=tw+incr
-  !      switch2=.TRUE.
-  !    ENDIF
-  !   ENDDO
+    !   IF(ABS(ea_est-ea_fix)<0.001)THEN
+    !     RETURN
+    !   ELSEIF(ea_est > ea_fix)THEN
+    !      tw=tw-incr
+    !      switch1=.TRUE.
+    !   ELSEIF(ea_est< ea_fix)THEN
+    !      tw=tw+incr
+    !      switch2=.TRUE.
+    !    ENDIF
+    !   ENDDO
 
-   ! RETURN
+    ! RETURN
   END FUNCTION Lat_vapSublim
 
   !=====================================================================
@@ -513,5 +513,46 @@ CONTAINS
     qsat = (molar_wat_vap/molar)*ES/PMB!(rmh2o/rmair)*ES/PMB
   END FUNCTION qsatf
 
+
+
+  FUNCTION RH2qa(RH,pres_hPa,Ta_degC) RESULT(qa)
+    ! convert relative humidity to specific humidity
+    ! TS 31 Jul 2018: initial version
+    ! Brutasert (2005) section 2.1.2, eqn 2.2, 2.4 and 2.5.
+    REAL(KIND(1D0)), INTENT(in) :: RH ! relative humidity in decimal
+    REAL(KIND(1D0)), INTENT(in) :: pres_hPa ! atmospheric pressure in hPa
+    REAL(KIND(1D0)), INTENT(in) :: Ta_degC ! air temperature in degC
+
+    REAL(KIND(1d0)) ::es ! saturation vapour pressure in hPa
+    REAL(KIND(1d0)) ::ea ! vapour pressure in hPa
+    REAL(KIND(1d0)) ::qa ! specific humidity in (g kg-1)
+
+    es=sat_vap_press(Ta_degC+273.15,pres_hPa)
+    ea=es*RH ! Brutasert (2005) section 2.1.2, eqn 2.3
+    qa=0.622*ea/(pres_hPa-0.378*ea)*1000 ! eqn 2.2, 2.4 and 2.5.
+
+  END FUNCTION RH2qa
+
+  FUNCTION qa2RH(qa,pres_hPa,Ta_degC) RESULT(RH)
+    ! convert specific humidity to relative humidity
+    ! TS 31 Jul 2018: initial version
+    ! Brutasert (2005) section 2.1.2, eqn 2.2, 2.4 and 2.5.
+    REAL(KIND(1d0)), INTENT(in) :: qa       ! specific humidity in (g kg-1)
+    REAL(KIND(1D0)), INTENT(in) :: pres_hPa ! atmospheric pressure in hPa
+    REAL(KIND(1D0)), INTENT(in) :: Ta_degC  ! air temperature in degC
+    REAL(KIND(1D0))             :: RH       ! relative humidity in decimal
+
+    REAL(KIND(1d0))    ::es ! saturation vapour pressure in hPa
+    REAL(KIND(1d0))    ::ea ! vapour pressure in hPa
+    REAL(KIND(1d0))    ::qa_kgkg !specific humidity in (kg kg-1)
+
+    qa_kgkg=qa/1000
+    es=sat_vap_press(Ta_degC+273.15,pres_hPa)
+    ea=500*pres_hPa*qa_kgkg/(311+189*qa_kgkg)
+    ! qa=0.622*ea/(pres_hPa-0.378*ea)*1000 ! eqn 2.2, 2.4 and 2.5.
+    RH=ea/es ! Brutasert (2005) section 2.1.2, eqn 2.3
+
+
+  END FUNCTION qa2RH
 
 END MODULE METEO

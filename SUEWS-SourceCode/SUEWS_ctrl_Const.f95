@@ -46,7 +46,7 @@ MODULE allocateArray
   INTEGER, PARAMETER :: ncolsESTMdata=13             !ESTM input file (_ESTM_Ts_data.txt))
 
   ! ---- Set number of columns in output files ---------------------------------------------------
-  INTEGER, PARAMETER :: ncolumnsDataOutSUEWS=84    !Main output file (_5.txt). dataOutSUEWS created in SUEWS_Calculations.f95
+  INTEGER, PARAMETER :: ncolumnsDataOutSUEWS=85    !Main output file (_5.txt). dataOutSUEWS created in SUEWS_Calculations.f95
   INTEGER, PARAMETER :: ncolumnsDataOutSnow=102
   INTEGER, PARAMETER :: ncolumnsdataOutSOL=31
   INTEGER, PARAMETER :: ncolumnsdataOutBL=22
@@ -1010,7 +1010,7 @@ MODULE data_in
        Fc_build,&  !CO2 flux (building energy use component) [umol m-2 s-1]
        fcld,&      !Cloud fraction modelled
        fcld_obs,&  !Cloud fraction observed
-       h_mod,&     !Modelled sensible heat flux with LUMPS [W m-2]
+       H_mod,&     !Modelled sensible heat flux with LUMPS [W m-2]
        kclear,&    !Theoretical downward shortwave radiation
        kdiff,&     !Diffuse shortwave radiation
        kdir,&      !Direct shortwave radiation

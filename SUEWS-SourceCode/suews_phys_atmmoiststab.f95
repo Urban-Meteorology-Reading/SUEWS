@@ -173,10 +173,10 @@ CONTAINS
     L_MOD=(UStar**2)/(G_T_K*TStar)
 
 
-    IF(LOG(zzd/z0m)<0.001000) then
-      print*, 1/(z0m-z0m)
-      CALL ErrorHint(17,'In stability subroutine, (z-zd) < z0.',zzd,z0m,notUsedI)
-    endif
+    IF(LOG(zzd/z0m)<0.001000) THEN
+       PRINT*, 1/(z0m-z0m)
+       CALL ErrorHint(17,'In stability subroutine, (z-zd) < z0.',zzd,z0m,notUsedI)
+    ENDIF
     DO i=1,330 !Iteration starts
        LOLD=L_MOD
        zL=zzd/L_MOD
@@ -226,7 +226,9 @@ CONTAINS
        z0L=z0m/L_MOD
        psim=stab_fn_mom(StabilityMethod,zL,zL)
        psimz0=stab_fn_mom(StabilityMethod,zL,z0L)
-       UStar=KUZ/(LOG(Zzd/z0m)-psim+psimz0)
+       ! TS 01 Aug 2018: set a low limit at 0.15 m/s (Schumann 1987, BLM)
+       ! to prevent potential issues in other stability-related calcualtions
+       UStar=MAX(0.15, KUZ/(LOG(Zzd/z0m)-psim+psimz0))
        TStar=(-H/UStar)
     END IF
 
@@ -246,8 +248,6 @@ CONTAINS
     !   print*, 1/(L_MOD-L_MOD)
     !
     ! end if
-
-
 
 
   END SUBROUTINE STAB_lumps

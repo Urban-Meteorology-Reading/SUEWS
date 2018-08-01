@@ -2,7 +2,7 @@
 FC = gfortran $(FFLAGS)
 CC = gcc $(CFLAGS)
 
-file       := SUEWS_ctrl_const.f95 # get program name form source code
+file       := suews_ctrl_const.f95 # get program name form source code
 variable   := $(shell grep 'progname' ${file})
 TARGET_str := $(lastword $(subst =, ,${variable})) # program name with quotes
 TARGET     := $(strip $(subst $\', ,${TARGET_str})) # program name
@@ -61,39 +61,39 @@ clean: TARGET := $(strip $(TARGET))$(strip $(suffix))
 # All the files which include modules used by other modules (these therefore
 # needs to be compiled first)
 
-UTILS = SUEWS_ctrl_const.o  \
-				SUEWS_util_stringmod.o \
-				SUEWS_util_qsort.o\
-				SUEWS_util_time.o \
-				SUEWS_util_meteo.o \
-				SUEWS_util_datetime.o \
-				SUEWS_util_minpack.o
+UTILS = suews_ctrl_const.o  \
+				suews_util_stringmod.o \
+				suews_util_qsort.o\
+				suews_util_time.o \
+				suews_util_meteo.o \
+				suews_util_datetime.o \
+				suews_util_minpack.o
 
-MODULES =	SUEWS_phys_NARP.o \
-					SUEWS_ctrl_Input.o  \
-					SUEWS_phys_AtmMoistStab.o \
-					SUEWS_phys_BLUEWS.o \
-					SUEWS_phys_WaterDist.o \
-					SUEWS_phys_Snow.o \
-					SUEWS_phys_DailyState.o \
-					SUEWS_phys_ESTM.o \
-					SUEWS_phys_AnOHM.o \
-					SUEWS_phys_OHM.o \
-					SUEWS_ctrl_Output.o \
-					SUEWS_ctrl_Driver.o
+MODULES =	suews_phys_narp.o \
+					suews_ctrl_input.o  \
+					suews_phys_atmmoiststab.o \
+					suews_phys_bluews.o \
+					suews_phys_waterdist.o \
+					suews_phys_snow.o \
+					suews_phys_dailystate.o \
+					suews_phys_estm.o \
+					suews_phys_anohm.o \
+					suews_phys_ohm.o \
+					suews_ctrl_output.o \
+					suews_ctrl_driver.o
 
 # Rest of the files including modules and functions which are independent
-OTHERS =  SUEWS_ctrl_Translate.o \
-					SUEWS_phys_LUMPS.o \
-					SUEWS_phys_Resist.o \
-					SUEWS_ctrl_Error.o \
-					SUEWS_phys_Evap.o \
-					SUEWS_ctrl_Init.o \
-					SUEWS_phys_AnEmsn.o \
-					SUEWS_phys_BiogenCO2.o
+OTHERS =  suews_ctrl_translate.o \
+					suews_phys_lumps.o \
+					suews_phys_resist.o \
+					suews_ctrl_error.o \
+					suews_phys_evap.o \
+					suews_ctrl_init.o \
+					suews_phys_anemsn.o \
+					suews_phys_biogenco2.o
 
 # modules under rapid development
-TEST =  SUEWS_ctrl_Calculations.o
+TEST =  suews_ctrl_calculations.o
 
 
 # some test code
@@ -101,34 +101,34 @@ TEST =  SUEWS_ctrl_Calculations.o
 # $(info $$TARGET is [${TARGET}])
 
 # Build main program - main uses MODULES and OTHERS
-main: SUEWS_Program.f95 $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST)
-			$(FC) SUEWS_Program.f95  -c ; \
-			$(FC) SUEWS_Program.o $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST) \
+main: suews_program.f95 $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST)
+			$(FC) suews_program.f95  -c ; \
+			$(FC) suews_program.o $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST) \
 			$(STATICLIB) \
 			-o $(TARGET)
 			mkdir -p $(SUEWS_build_dir)
 			cp -f $(TARGET) $(SUEWS_build_dir)/.
 
 # Build main program with NETCDF support - main uses MODULES and OTHERS
-netcdf: SUEWS_Program.f95 $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST)
-				$(FC) SUEWS_Program.f95  -c ; \
-				$(FC) SUEWS_Program.o $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST) \
+netcdf: suews_program.f95 $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST)
+				$(FC) suews_program.f95  -c ; \
+				$(FC) suews_program.o $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST) \
 				$(STATICLIB) \
 				-L$(NETCDFLIB) -lnetcdf -lnetcdff \
 				-o $(TARGET)
 
 # Build main program with NETCDF support - main uses MODULES and OTHERS
-nc4fr: SUEWS_Program.f95 $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST)
-			 $(FC) SUEWS_Program.f95  -c ; \
-			 $(FC) SUEWS_Program.o $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST) \
+nc4fr: suews_program.f95 $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST)
+			 $(FC) suews_program.f95  -c ; \
+			 $(FC) suews_program.o $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST) \
 			 $(STATICLIB) \
 			 -L$(NETCDFLIB) -Wl,--rpath -Wl,$(NETCDFLIB) -lnetcdff -lnetcdf \
 			 -o $(TARGET)
 
 # Build main program with coverage checking options enabled
-cov: SUEWS_Program.f95 $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST)
-			$(FC) SUEWS_Program.f95  -c ; \
-			$(FC) SUEWS_Program.o $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST) \
+cov: suews_program.f95 $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST)
+			$(FC) suews_program.f95  -c ; \
+			$(FC) suews_program.o $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST) \
 			$(STATICLIB) \
 			-o $(TARGET)
 			mkdir -p $(SUEWS_build_dir)

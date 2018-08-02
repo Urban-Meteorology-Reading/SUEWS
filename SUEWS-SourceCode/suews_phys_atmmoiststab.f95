@@ -174,7 +174,7 @@ CONTAINS
 
 
     IF(LOG(zzd/z0m)<0.001000) THEN
-       PRINT*, 1/(z0m-z0m)
+       ! PRINT*, 1/(z0m-z0m)
        CALL ErrorHint(17,'In stability subroutine, (z-zd) < z0.',zzd,z0m,notUsedI)
     ENDIF
     DO i=1,330 !Iteration starts
@@ -231,6 +231,11 @@ CONTAINS
        UStar=MAX(0.15, KUZ/(LOG(Zzd/z0m)-psim+psimz0))
        TStar=(-H/UStar)
     END IF
+
+    ! TS: limit UStar and TStar to reasonable values
+    ! 02 Aug 2018: set a low limit at 0.15 m/s (Schumann 1987, BLM)
+    UStar=MAX(0.15, UStar)
+    TStar=(-H/UStar)
 
     IF(UStar<0.0001)THEN       !If u* still too small after iteration, then force quit simulation and write out error info
        ! UStar=KUZ/(LOG(Zzd/z0m))

@@ -27,3 +27,4 @@ workspace.xml
 .idea
 BenchmarkTest/*.pyc
 BaseRun
+*.f90

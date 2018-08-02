@@ -369,8 +369,8 @@ def test_samerun(name_sim, name_exe,
         dir_res_test,
         common_files,
         shallow=False)
-    # print 'comp_files_test',comp_files_test
-    # print 'common_files',common_files
+    print 'comp_files_test',comp_files_test
+    print 'common_files',common_files
     res_test = (set(comp_files_test[0]) == set(common_files))
     # print res_test
     if not res_test:

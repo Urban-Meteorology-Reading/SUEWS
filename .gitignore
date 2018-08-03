@@ -28,3 +28,4 @@ workspace.xml
 BenchmarkTest/*.pyc
 BaseRun
 *.f90
+SampleRun/suews_v*

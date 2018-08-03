@@ -4,7 +4,7 @@
 ! TS 02 Oct 2017: added `SUEWS_cal_Main` as the generic wrapper
 ! TS 03 Oct 2017: added `SUEWS_cal_AnthropogenicEmission`
 MODULE SUEWS_Driver
-  USE meteo,ONLY:qsatf,RH2qa
+  USE meteo,ONLY:qsatf,RH2qa,qa2RH
   USE AtmMoistStab_module,ONLY:LUMPS_cal_AtmMoist,STAB_lumps,stab_fn_heat,stab_fn_mom
   USE NARP_MODULE,ONLY:NARP_cal_SunPosition
   USE AnOHM_module,ONLY:AnOHM
@@ -740,28 +740,28 @@ CONTAINS
          smd,smd_nsurf,tot_chang_per_tstep,SoilState)!output
 
 
-!============ surface-level diagonostics ===============
-IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_cal_Diagnostics...'
-CALL SUEWS_cal_Diagnostics_X(&
-     dectime,&!input
-     avU1,Temp_C,avRH,Press_hPa,&
-     qh,qe,&
-     VegFraction,z,z0m,zdm,RA,avdens,avcp,lv_J_kg,tstep_real,&
-     RoughLenHeatMethod,StabilityMethod,&
-     avU10_ms,t2_C,q2_gkg,tskin_C)!output
-! NB: resistance-based QH is used to calculate diagnostics
-! as tsurf is assumed to be equal to Tair during night
-! implying a constant near-surface air temperature profile.
-! CALL SUEWS_cal_Diagnostics(&
-!      dectime,&!input
-!      avU1,Temp_C,&
-!      tsurf,qh,&
-!      Press_hPa,qe,&
-!      sfr,state,WetThresh,&
-!      veg_fr,z0m,avdens,avcp,lv_J_kg,tstep_real,&
-!      RoughLenHeatMethod,StabilityMethod,&
-!      avU10_ms,t2_C,q2_gkg)!output
-!============ surface-level diagonostics end ===============
+    !============ surface-level diagonostics ===============
+    IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_cal_Diagnostics...'
+    CALL SUEWS_cal_Diagnostics(&
+         dectime,&!input
+         avU1,Temp_C,avRH,Press_hPa,&
+         qh,qe,&
+         VegFraction,z,z0m,zdm,RA,avdens,avcp,lv_J_kg,tstep_real,&
+         RoughLenHeatMethod,StabilityMethod,&
+         avU10_ms,t2_C,q2_gkg,tskin_C)!output
+    ! NB: resistance-based QH is used to calculate diagnostics
+    ! as tsurf is assumed to be equal to Tair during night
+    ! implying a constant near-surface air temperature profile.
+    ! CALL SUEWS_cal_Diagnostics(&
+    !      dectime,&!input
+    !      avU1,Temp_C,&
+    !      tsurf,qh,&
+    !      Press_hPa,qe,&
+    !      sfr,state,WetThresh,&
+    !      veg_fr,z0m,avdens,avcp,lv_J_kg,tstep_real,&
+    !      RoughLenHeatMethod,StabilityMethod,&
+    !      avU10_ms,t2_C,q2_gkg)!output
+    !============ surface-level diagonostics end ===============
 
 
     !==============main calculation end=======================
@@ -2196,77 +2196,20 @@ CALL SUEWS_cal_Diagnostics_X(&
     !====================update output arrays end==============================
 
   END SUBROUTINE SUEWS_update_output
+
   !========================================================================
-
-  !
-  ! SUBROUTINE SUEWS_cal_Diagnostics(&
-  !      dectime,&!input
-  !      avU1,Temp_C,&
-  !      tsurf,qh,&
-  !      Press_hPa,qe,&
-  !      veg_fr,z0m,avdens,avcp,lv_J_kg,tstep_real,&
-  !      RoughLenHeatMethod,StabilityMethod,&
-  !      avU10_ms,t2_C,q2_gkg,L_MOD)!output
-  !   IMPLICIT NONE
-  !   REAL(KIND(1d0)),INTENT(in) ::dectime
-  !   REAL(KIND(1d0)),INTENT(in) ::avU1,Temp_C
-  !   REAL(KIND(1d0)),INTENT(in) ::tsurf,qh
-  !   REAL(KIND(1d0)),INTENT(in) ::Press_hPa,qe
-  !   REAL(KIND(1d0)),INTENT(in) :: veg_fr,z0m,avdens,avcp,lv_J_kg,tstep_real
-  !
-  !   ! INTEGER,INTENT(in)         :: opt ! 0 for momentum, 1 for temperature, 2 for humidity
-  !   INTEGER,INTENT(in)         :: RoughLenHeatMethod,StabilityMethod
-  !
-  !   REAL(KIND(1d0)),INTENT(out):: avU10_ms,t2_C,q2_gkg,L_MOD
-  !   REAL(KIND(1d0))::tlv,z2zd,zdm,H_init,TStar,zL,UStar
-  !   REAL(KIND(1d0)),PARAMETER::k=0.4
-  !
-  !   tlv=lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
-  !   z2zd=2 ! height at 2m assuming Displacement height is ZERO
-  !   zdm=0 ! assuming Displacement height is ZERO
-  !
-  !   ! get !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
-  !   CALL SUEWS_init_QH(&
-  !        qh,avdens,avcp,qh,0d0,dectime,& ! use qh as qh_obs to initialise H_init
-  !        H_init)
-  !
-  !   ! redo the calculation for stability correction
-  !   CALL STAB_lumps(&
-  !                               ! input
-  !        StabilityMethod,&
-  !        dectime,& !Decimal time
-  !        z2zd,&     !Active measurement height (meas. height-displac. height)
-  !        z0m,&     !Aerodynamic roughness length
-  !        zdm,&     !Displacement height
-  !        avU1,&    !Average wind speed
-  !        Temp_C,&  !Air temperature
-  !        h_init,    & !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
-  !                               ! output:
-  !        L_MOD,& !Obukhov length
-  !        TStar,& !T*
-  !        UStar,& !Friction velocity
-  !        zL)!Stability scale
-  !
-  !
-  !   ! wind speed:
-  !   CALL diagSfc(0d0,0d0,UStar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,avU10_ms,0,RoughLenHeatMethod,StabilityMethod)
-  !   ! temperature:
-  !   CALL diagSfc(tsurf,qh,UStar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,t2_C,1,RoughLenHeatMethod,StabilityMethod)
-  !   ! humidity:
-  !   CALL diagSfc(qsatf(tsurf,Press_hPa)*1000,& ! Saturation specific humidity at surface in g/kg
-  !        qe,UStar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,q2_gkg,2,RoughLenHeatMethod,StabilityMethod)
-  !
-  ! END SUBROUTINE SUEWS_cal_Diagnostics
-
-
-
-  SUBROUTINE SUEWS_cal_Diagnostics_X(&
+  SUBROUTINE SUEWS_cal_Diagnostics(&
        dectime,&!input
        avU1,Temp_C,avRH,Press_hPa,&
        qh,qe,&
        VegFraction,zMeas,z0m,zdm,RA,avdens,avcp,lv_J_kg,tstep_real,&
        RoughLenHeatMethod,StabilityMethod,&
        avU10_ms,t2_C,q2_gkg,tskin_C)!output
+    ! TS 03 Aug 2018: added limit on q2 by restricting RH2_max to 100%
+    ! TS 31 Jul 2018: removed dependence on surface variables (Tsurf, qsat)
+    ! TS 26 Jul 2018: improved the calculation logic
+    ! TS 05 Sep 2017: improved interface
+    ! TS 20 May 2017: calculate surface-level diagonostics
     IMPLICIT NONE
     REAL(KIND(1d0)),INTENT(in) ::dectime
     REAL(KIND(1d0)),INTENT(in) ::avU1,Temp_C,avRH
@@ -2278,60 +2221,54 @@ CALL SUEWS_cal_Diagnostics_X(&
 
     ! INTEGER,INTENT(in)         :: opt ! 0 for momentum, 1 for temperature, 2 for humidity
     INTEGER,INTENT(in)         :: RoughLenHeatMethod,StabilityMethod
-    ! REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::sfr,state,WetThresh
 
     REAL(KIND(1d0)),INTENT(out):: avU10_ms,t2_C,q2_gkg,tskin_C
-    ! REAL(KIND(1d0))::x_wet
-    REAL(KIND(1d0))::qa_gkg
+    REAL(KIND(1d0))::qa_gkg,RH2
     REAL(KIND(1d0)),PARAMETER::k=0.4
 
 
     ! wind speed:
-    CALL diagSfc_X(&
+    CALL diagSfc(&
          0,&
          zMeas,avU1,0d0,10d0,avU10_ms,&
          VegFraction,&
          z0m,zdm,avdens,avcp,lv_J_kg,&
          avU1,Temp_C,qh,&
          RoughLenHeatMethod,StabilityMethod,tstep_real,dectime)
-    ! CALL diagSfc(0d0,0d0,UStar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,avU10_ms,0,RoughLenHeatMethod,StabilityMethod)
+
     ! temperature at 2 m agl:
-    CALL diagSfc_X(&
+    CALL diagSfc(&
          1,&
          zMeas,Temp_C,qh,2d0,t2_C,&
          VegFraction,&
          z0m,zdm,avdens,avcp,lv_J_kg,&
          avU1,Temp_C,qh,&
          RoughLenHeatMethod,StabilityMethod,tstep_real,dectime)
+
     ! skin temperature:
     tskin_C=qh/(avdens*avcp)*RA+temp_C
 
 
-    ! CALL diagSfc(tsurf,qh,UStar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,t2_C,1,RoughLenHeatMethod,StabilityMethod)
-
-    ! estimate the surface wetness condition
-    ! x_wet=DOT_PRODUCT(state,sfr)/DOT_PRODUCT(WetThresh,sfr)
-    ! x_wet=MAX(0.05,x_wet)
-
-    ! NB: assumption for q2 estimation:
-    ! potential ET: qe_pot=(q_sat-q_air)/ra_evp
-    ! qe = x_wet*qe_pot = x_wet*(q_sat-q_air)/ra_evp
-    ! ==>
-    ! q_air = q_sat-qe/x_wet*ra_evp
-
-    qa_gkg=RH2qa(avRH/100,Press_hPa,Temp_c)
     ! humidity:
-    CALL diagSfc_X(&
+    qa_gkg=RH2qa(avRH/100,Press_hPa,Temp_c)
+    CALL diagSfc(&
          2,&
          zMeas,qa_gkg,qe,2d0,q2_gkg,&
          VegFraction,&
          z0m,zdm,avdens,avcp,lv_J_kg,&
          avU1,Temp_C,qh,&
          RoughLenHeatMethod,StabilityMethod,tstep_real,dectime)
-    ! CALL diagSfc(qsatf(tsurf,Press_hPa)*1000,& ! Saturation specific humidity at surface in g/kg
-    !      qe/x_wet,UStar,veg_fr,z0m,L_mod,k,avdens,avcp,tlv,q2_gkg,2,RoughLenHeatMethod,StabilityMethod)
+    ! re-examine if the diagnostic RH2 > 100% ?
+    RH2=qa2RH(q2_gkg,Press_hPa,Temp_c)
+    IF ( RH2>1 ) THEN
+       ! if so, limit RH2 to 100%
+       RH2=1d0
+       ! and adjust the diagnostic q2_gkg
+       q2_gkg=RH2qa(RH2,Press_hPa,Temp_c)
+    END IF
 
-  END SUBROUTINE SUEWS_cal_Diagnostics_X
+
+  END SUBROUTINE SUEWS_cal_Diagnostics
 
 
   ! calculate several surface fraction related parameters
@@ -2354,266 +2291,148 @@ CALL SUEWS_cal_Diagnostics_X(&
 
   END SUBROUTINE SUEWS_cal_surf
 
-  !
-  !
-  ! SUBROUTINE diagSfc(&
-  !      xSurf,xFlux,us,VegFraction,z0m,L_mod,k,avdens,avcp,tlv,&
-  !      xDiag,opt,RoughLenHeatMethod,StabilityMethod)
-  !   ! TS 05 Sep 2017: improved interface
-  !   ! TS 20 May 2017: calculate surface-level diagonostics
-  !
-  !
-  !   IMPLICIT NONE
-  !
-  !   REAL(KIND(1d0)),INTENT(in) :: xSurf,xFlux,us,VegFraction,z0m,L_mod,k,avdens,avcp,tlv
-  !   REAL(KIND(1d0)),INTENT(out):: xDiag
-  !   INTEGER,INTENT(in)         :: opt ! 0 for momentum, 1 for temperature, 2 for humidity
-  !   INTEGER,INTENT(in)         :: RoughLenHeatMethod,StabilityMethod
-  !
-  !   REAL(KIND(1d0))            :: &
-  !        psymz2,psymz10,psymz0,psyhz2,psyhz0,& ! stability correction functions
-  !        z0h,& ! Roughness length for heat
-  !        z2zd,z10zd!stability correction functions
-  !   REAL(KIND(1d0)),PARAMETER :: muu=1.46e-5 !molecular viscosity
-  !   REAL(KIND(1d0)),PARAMETER :: nan=-999
-  !
-  !
-  !   !***************************************************************
-  !   ! log-law based stability corrections:
-  !   ! Roughness length for heat
-  !   IF (RoughLenHeatMethod==1) THEN !Brutasert (1982) z0h=z0/10(see Grimmond & Oke, 1986)
-  !      z0h=z0m/10
-  !   ELSEIF (RoughLenHeatMethod==2) THEN ! Kawai et al. (2007)
-  !      !z0h=z0m*exp(2-(1.2-0.9*veg_fr**0.29)*(us*z0m/muu)**0.25)
-  !      ! Changed by HCW 05 Nov 2015 (veg_fr includes water; VegFraction = veg + bare soil)
-  !      z0h=z0m*EXP(2-(1.2-0.9*VegFraction**0.29)*(us*z0m/muu)**0.25)
-  !   ELSEIF (RoughLenHeatMethod==3) THEN
-  !      z0h=z0m*EXP(-20.) ! Voogt and Grimmond, JAM, 2000
-  !   ELSEIF (RoughLenHeatMethod==4) THEN
-  !      z0h=z0m*EXP(2-1.29*(us*z0m/muu)**0.25) !See !Kanda and Moriwaki (2007),Loridan et al. (2010)
-  !   ENDIF
-  !
-  !   ! z0h=z0m/5
-  !
-  !   ! zX-z0
-  !   z2zd=2!+z0h   ! set lower limit as z0h to prevent arithmetic error, zd=0
-  !   z10zd=10!+z0m ! set lower limit as z0m to prevent arithmetic error, zd=0
-  !
-  !   ! stability correction functions
-  !   ! momentum:
-  !   psymz10=stab_fn_mom(StabilityMethod,z10zd/L_mod,z10zd/L_mod)
-  !   psymz2=stab_fn_mom(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
-  !   psymz0=stab_fn_mom(StabilityMethod,z0m/L_mod,z0m/L_mod)
-  !
-  !   ! heat and vapor: assuming both are the same
-  !   psyhz2=stab_fn_heat(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
-  !   psyhz0=stab_fn_heat(StabilityMethod,z0h/L_mod,z0h/L_mod)
-  !   !***************************************************************
-  !   IF ( xSurf==nan ) THEN
-  !      ! xSurf can be nan e.g. when TSurf is not calculated
-  !      ! if so xDiag is set as nan as well
-  !      xDiag=nan
-  !   ELSE
-  !      SELECT CASE (opt)
-  !      CASE (0) ! wind (momentum) at 10 m
-  !         xDiag=us/k*(LOG(z10zd/z0m)-psymz10+psymz0) ! Brutsaert (2005), p51, eq.2.54
-  !
-  !      CASE (1) ! temperature at 2 m
-  !         xDiag=xSurf-xFlux/(k*us*avdens*avcp)*(LOG(z2zd/z0h)-psyhz2+psyhz0) ! Brutsaert (2005), p51, eq.2.55
-  !         !  IF ( ABS((LOG(z2zd/z0h)-psyhz2+psyhz0))>10 ) THEN
-  !         !     PRINT*, '#####################################'
-  !         !     PRINT*, 'xSurf',xSurf
-  !         !     PRINT*, 'xFlux',xFlux
-  !         !     PRINT*, 'k*us*avdens*avcp',k*us*avdens*avcp
-  !         !     PRINT*, 'k',k
-  !         !     PRINT*, 'us',us
-  !         !     PRINT*, 'avdens',avdens
-  !         !     PRINT*, 'avcp',avcp
-  !         !     PRINT*, 'xFlux/X',xFlux/(k*us*avdens*avcp)
-  !         !     PRINT*, 'stab',(LOG(z2zd/z0h)-psyhz2+psyhz0)
-  !         !     PRINT*, 'LOG(z2zd/z0h)',LOG(z2zd/z0h)
-  !         !     PRINT*, 'z2zd',z2zd,'L_mod',L_mod,'z0h',z0h
-  !         !     PRINT*, 'z2zd/L_mod',z2zd/L_mod
-  !         !     PRINT*, 'psyhz2',psyhz2
-  !         !     PRINT*, 'psyhz0',psyhz0
-  !         !     PRINT*, 'psyhz2-psyhz0',psyhz2-psyhz0
-  !         !     PRINT*, 'xDiag',xDiag
-  !         !     PRINT*, '*************************************'
-  !         !  END IF
-  !
-  !
-  !      CASE (2) ! humidity at 2 m
-  !         xDiag=xSurf-xFlux/(k*us*avdens*tlv)*(LOG(z2zd/z0h)-psyhz2+psyhz0) ! Brutsaert (2005), p51, eq.2.56
-  !
-  !      END SELECT
-  !
-  !
-  !   END IF
-  !
-  ! END SUBROUTINE diagSfc
-
-SUBROUTINE diagSfc_X(&
-     opt,&
-     zMeas,xMeas,xFlux,zDiag,xDiag,&
-     VegFraction,&
-     z0m,zd,avdens,avcp,lv_J_kg,&
-     avU1,Temp_C,qh,&
-     RoughLenHeatMethod,StabilityMethod,tstep_real,dectime)
-  ! TS 31 Jul 2018: removed dependence on surface variables (Tsurf, qsat)
-  ! TS 26 Jul 2018: improved the calculation logic
-  ! TS 05 Sep 2017: improved interface
-  ! TS 20 May 2017: calculate surface-level diagonostics
+  SUBROUTINE diagSfc(&
+       opt,&
+       zMeas,xMeas,xFlux,zDiag,xDiag,&
+       VegFraction,&
+       z0m,zd,avdens,avcp,lv_J_kg,&
+       avU1,Temp_C,qh,&
+       RoughLenHeatMethod,StabilityMethod,tstep_real,dectime)
+    ! TS 31 Jul 2018: removed dependence on surface variables (Tsurf, qsat)
+    ! TS 26 Jul 2018: improved the calculation logic
+    ! TS 05 Sep 2017: improved interface
+    ! TS 20 May 2017: calculate surface-level diagonostics
 
 
-  IMPLICIT NONE
-  REAL(KIND(1d0)),INTENT(in) :: dectime
-  REAL(KIND(1d0)),INTENT(in) :: qh ! sensible heat flux
-  REAL(KIND(1d0)),INTENT(in) :: z0m,avdens,avcp,lv_J_kg,tstep_real
-  REAL(KIND(1d0)),INTENT(in) :: avU1,Temp_C ! atmospheric level variables
-  REAL(KIND(1d0)),INTENT(in) :: zDiag ! height for diagonostics
-  REAL(KIND(1d0)),INTENT(in) :: zMeas! height for measurement
-  REAL(KIND(1d0)),INTENT(in) :: zd ! displacement height
-  REAL(KIND(1d0)),INTENT(in) :: xMeas ! measurement at height
-  REAL(KIND(1d0)),INTENT(in) :: xFlux!
-  REAL(KIND(1d0)),INTENT(in) :: VegFraction ! vegetation fraction
+    IMPLICIT NONE
+    REAL(KIND(1d0)),INTENT(in) :: dectime
+    REAL(KIND(1d0)),INTENT(in) :: qh ! sensible heat flux
+    REAL(KIND(1d0)),INTENT(in) :: z0m,avdens,avcp,lv_J_kg,tstep_real
+    REAL(KIND(1d0)),INTENT(in) :: avU1,Temp_C ! atmospheric level variables
+    REAL(KIND(1d0)),INTENT(in) :: zDiag ! height for diagonostics
+    REAL(KIND(1d0)),INTENT(in) :: zMeas! height for measurement
+    REAL(KIND(1d0)),INTENT(in) :: zd ! displacement height
+    REAL(KIND(1d0)),INTENT(in) :: xMeas ! measurement at height
+    REAL(KIND(1d0)),INTENT(in) :: xFlux!
+    REAL(KIND(1d0)),INTENT(in) :: VegFraction ! vegetation fraction
 
-  INTEGER,INTENT(in)         :: opt ! 0 for momentum, 1 for temperature, 2 for humidity
-  INTEGER,INTENT(in)         :: RoughLenHeatMethod,StabilityMethod
+    INTEGER,INTENT(in)         :: opt ! 0 for momentum, 1 for temperature, 2 for humidity
+    INTEGER,INTENT(in)         :: RoughLenHeatMethod,StabilityMethod
 
-  REAL(KIND(1d0)),INTENT(out):: xDiag
+    REAL(KIND(1d0)),INTENT(out):: xDiag
 
-  REAL(KIND(1d0)) :: L_mod
-  REAL(KIND(1d0)) :: psymz0,psyhzDiag,psyhzMeas,psyhz0,psymzDiag ! stability correction functions
-  REAL(KIND(1d0)) :: z0h, cal_z0V ! Roughness length for heat
-  REAL(KIND(1d0)) :: zDiagzd! height for diagnositcs
-  REAL(KIND(1d0)) :: zMeaszd
-  REAL(KIND(1d0)) :: tlv,H_kms,TStar,zL,UStar
-  REAL(KIND(1d0)),PARAMETER :: muu=1.46e-5 !molecular viscosity
-  REAL(KIND(1d0)),PARAMETER :: nan=-999
-  REAL(KIND(1d0)),PARAMETER :: zdm=0 ! assuming Displacement height is ZERO
-  REAL(KIND(1d0)),PARAMETER::k=0.4
+    REAL(KIND(1d0)) :: L_mod
+    REAL(KIND(1d0)) :: psymz0,psyhzDiag,psyhzMeas,psyhz0,psymzDiag ! stability correction functions
+    REAL(KIND(1d0)) :: z0h, cal_z0V ! Roughness length for heat
+    REAL(KIND(1d0)) :: zDiagzd! height for diagnositcs
+    REAL(KIND(1d0)) :: zMeaszd
+    REAL(KIND(1d0)) :: tlv,H_kms,TStar,zL,UStar
+    REAL(KIND(1d0)),PARAMETER :: muu=1.46e-5 !molecular viscosity
+    REAL(KIND(1d0)),PARAMETER :: nan=-999
+    REAL(KIND(1d0)),PARAMETER :: zdm=0 ! assuming Displacement height is ZERO
+    REAL(KIND(1d0)),PARAMETER::k=0.4
 
-  tlv=lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
-  zDiagzd=zDiag+z0m ! height at hgtX assuming Displacement height is ZERO; set lower limit as z0 to prevent arithmetic error, zd=0
+    tlv=lv_J_kg/tstep_real !Latent heat of vapourisation per timestep
+    zDiagzd=zDiag+z0m ! height at hgtX assuming Displacement height is ZERO; set lower limit as z0 to prevent arithmetic error, zd=0
 
 
-  ! get !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
-  CALL SUEWS_init_QH(&
-       qh,avdens,avcp,qh,0d0,dectime,& ! use qh as qh_obs to initialise H_init
-       H_kms)!output
+    ! get !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
+    CALL SUEWS_init_QH(&
+         qh,avdens,avcp,qh,0d0,dectime,& ! use qh as qh_obs to initialise H_init
+         H_kms)!output
 
-  ! redo the calculation for stability correction
-  CALL STAB_lumps(&
-                              ! input
-       StabilityMethod,&
-       dectime,& !Decimal time
-       zDiagzd,&     !Active measurement height (meas. height-displac. height)
-       z0m,&     !Aerodynamic roughness length
-       zdm,&     !Displacement height
-       avU1,&    !Average wind speed
-       Temp_C,&  !Air temperature
-       H_kms,    & !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
-                              ! output:
-       L_MOD,& !Obukhov length
-       TStar,& !T*
-       UStar,& !Friction velocity
-       zL)!Stability scale
+    ! redo the calculation for stability correction
+    CALL STAB_lumps(&
+                                ! input
+         StabilityMethod,&
+         dectime,& !Decimal time
+         zDiagzd,&     !Active measurement height (meas. height-displac. height)
+         z0m,&     !Aerodynamic roughness length
+         zdm,&     !Displacement height
+         avU1,&    !Average wind speed
+         Temp_C,&  !Air temperature
+         H_kms,    & !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
+                                ! output:
+         L_MOD,& !Obukhov length
+         TStar,& !T*
+         UStar,& !Friction velocity
+         zL)!Stability scale
 
 
 
-  !***************************************************************
-  ! log-law based stability corrections:
-  ! Roughness length for heat
-  z0h=cal_z0V(RoughLenHeatMethod,z0m,VegFraction,UStar)
-  ! IF (RoughLenHeatMethod==1) THEN !Brutasert (1982) z0h=z0/10(see Grimmond & Oke, 1986)
-  !    z0h=z0m/10
-  ! ELSEIF (RoughLenHeatMethod==2) THEN ! Kawai et al. (2007)
-  !    !z0h=z0m*exp(2-(1.2-0.9*veg_fr**0.29)*(us*z0m/muu)**0.25)
-  !    ! Changed by HCW 05 Nov 2015 (veg_fr includes water; VegFraction = veg + bare soil)
-  !    z0h=z0m*EXP(2-(1.2-0.9*VegFraction**0.29)*(UStar*z0m/muu)**0.25)
-  ! ELSEIF (RoughLenHeatMethod==3) THEN
-  !    z0h=z0m*EXP(-20.) ! Voogt and Grimmond, JAM, 2000
-  ! ELSEIF (RoughLenHeatMethod==4) THEN
-  !    z0h=z0m*EXP(2-1.29*(UStar*z0m/muu)**0.25) !See !Kanda and Moriwaki (2007),Loridan et al. (2010)
-  ! ENDIF
+    !***************************************************************
+    ! log-law based stability corrections:
+    ! Roughness length for heat
+    z0h=cal_z0V(RoughLenHeatMethod,z0m,VegFraction,UStar)
 
-  ! z0h=z0m/5
+    ! stability correction functions
+    ! momentum:
+    psymzDiag=stab_fn_mom(StabilityMethod,zDiagzd/L_mod,zDiagzd/L_mod)
+    ! psymz2=stab_fn_mom(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
+    psymz0=stab_fn_mom(StabilityMethod,z0m/L_mod,z0m/L_mod)
 
+    ! heat and vapor: assuming both are the same
+    ! psyhz2=stab_fn_heat(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
+    psyhz0=stab_fn_heat(StabilityMethod,z0h/L_mod,z0h/L_mod)
 
-  ! stability correction functions
-  ! momentum:
-  psymzDiag=stab_fn_mom(StabilityMethod,zDiagzd/L_mod,zDiagzd/L_mod)
-  ! psymz2=stab_fn_mom(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
-  psymz0=stab_fn_mom(StabilityMethod,z0m/L_mod,z0m/L_mod)
+    !***************************************************************
+    SELECT CASE (opt)
+    CASE (0) ! wind (momentum) at hgtX=10 m
+       zDiagzd=zDiag+z0m! set lower limit as z0h to prevent arithmetic error, zd=0
 
-  ! heat and vapor: assuming both are the same
-  ! psyhz2=stab_fn_heat(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
-  psyhz0=stab_fn_heat(StabilityMethod,z0h/L_mod,z0h/L_mod)
-  !***************************************************************
-  ! IF ( xSurf==nan ) THEN
-  !    ! xSurf can be nan e.g. when TSurf is not calculated
-  !    ! if so xDiag is set as nan as well
-  !    xDiag=nan
-  ! ELSE
-  SELECT CASE (opt)
-  CASE (0) ! wind (momentum) at hgtX=10 m
-     zDiagzd=zDiag+z0m! set lower limit as z0h to prevent arithmetic error, zd=0
+       ! stability correction functions
+       ! momentum:
+       psymzDiag=stab_fn_mom(StabilityMethod,zDiagzd/L_mod,zDiagzd/L_mod)
+       psymz0=stab_fn_mom(StabilityMethod,z0m/L_mod,z0m/L_mod)
+       xDiag=UStar/k*(LOG(zDiagzd/z0m)-psymzDiag+psymz0) ! Brutsaert (2005), p51, eq.2.54
 
-     ! stability correction functions
-     ! momentum:
-     psymzDiag=stab_fn_mom(StabilityMethod,zDiagzd/L_mod,zDiagzd/L_mod)
-     psymz0=stab_fn_mom(StabilityMethod,z0m/L_mod,z0m/L_mod)
-     xDiag=UStar/k*(LOG(zDiagzd/z0m)-psymzDiag+psymz0) ! Brutsaert (2005), p51, eq.2.54
+    CASE (1) ! temperature at hgtX=2 m
+       zMeaszd=zMeas-zd
+       zDiagzd=zDiag+z0h! set lower limit as z0h to prevent arithmetic error, zd=0
 
-  CASE (1) ! temperature at hgtX=2 m
-     zMeaszd=zMeas-zd
-     zDiagzd=zDiag+z0h! set lower limit as z0h to prevent arithmetic error, zd=0
-
-     ! heat and vapor: assuming both are the same
-     psyhzMeas=stab_fn_heat(StabilityMethod,zMeaszd/L_mod,zMeaszd/L_mod)
-     psyhzDiag=stab_fn_heat(StabilityMethod,zDiagzd/L_mod,zDiagzd/L_mod)
-     ! psyhz0=stab_fn_heat(StabilityMethod,z0h/L_mod,z0h/L_mod)
-     xDiag=xMeas+xFlux/(k*UStar*avdens*avcp)*(LOG(zMeaszd/zDiagzd)-(psyhzMeas-psyhzDiag)) ! Brutsaert (2005), p51, eq.2.55
-     !  IF ( ABS((LOG(z2zd/z0h)-psyhz2+psyhz0))>10 ) THEN
-     !     PRINT*, '#####################################'
-     !     PRINT*, 'xSurf',xSurf
-     !     PRINT*, 'xFlux',xFlux
-     !     PRINT*, 'k*us*avdens*avcp',k*us*avdens*avcp
-     !     PRINT*, 'k',k
-     !     PRINT*, 'us',us
-     !     PRINT*, 'avdens',avdens
-     !     PRINT*, 'avcp',avcp
-     !     PRINT*, 'xFlux/X',xFlux/(k*us*avdens*avcp)
-     !     PRINT*, 'stab',(LOG(z2zd/z0h)-psyhz2+psyhz0)
-     !     PRINT*, 'LOG(z2zd/z0h)',LOG(z2zd/z0h)
-     !     PRINT*, 'z2zd',z2zd,'L_mod',L_mod,'z0h',z0h
-     !     PRINT*, 'z2zd/L_mod',z2zd/L_mod
-     !     PRINT*, 'psyhz2',psyhz2
-     !     PRINT*, 'psyhz0',psyhz0
-     !     PRINT*, 'psyhz2-psyhz0',psyhz2-psyhz0
-     !     PRINT*, 'xDiag',xDiag
-     !     PRINT*, '*************************************'
-     !  END IF
+       ! heat and vapor: assuming both are the same
+       psyhzMeas=stab_fn_heat(StabilityMethod,zMeaszd/L_mod,zMeaszd/L_mod)
+       psyhzDiag=stab_fn_heat(StabilityMethod,zDiagzd/L_mod,zDiagzd/L_mod)
+       ! psyhz0=stab_fn_heat(StabilityMethod,z0h/L_mod,z0h/L_mod)
+       xDiag=xMeas+xFlux/(k*UStar*avdens*avcp)*(LOG(zMeaszd/zDiagzd)-(psyhzMeas-psyhzDiag)) ! Brutsaert (2005), p51, eq.2.55
+       !  IF ( ABS((LOG(z2zd/z0h)-psyhz2+psyhz0))>10 ) THEN
+       !     PRINT*, '#####################################'
+       !     PRINT*, 'xSurf',xSurf
+       !     PRINT*, 'xFlux',xFlux
+       !     PRINT*, 'k*us*avdens*avcp',k*us*avdens*avcp
+       !     PRINT*, 'k',k
+       !     PRINT*, 'us',us
+       !     PRINT*, 'avdens',avdens
+       !     PRINT*, 'avcp',avcp
+       !     PRINT*, 'xFlux/X',xFlux/(k*us*avdens*avcp)
+       !     PRINT*, 'stab',(LOG(z2zd/z0h)-psyhz2+psyhz0)
+       !     PRINT*, 'LOG(z2zd/z0h)',LOG(z2zd/z0h)
+       !     PRINT*, 'z2zd',z2zd,'L_mod',L_mod,'z0h',z0h
+       !     PRINT*, 'z2zd/L_mod',z2zd/L_mod
+       !     PRINT*, 'psyhz2',psyhz2
+       !     PRINT*, 'psyhz0',psyhz0
+       !     PRINT*, 'psyhz2-psyhz0',psyhz2-psyhz0
+       !     PRINT*, 'xDiag',xDiag
+       !     PRINT*, '*************************************'
+       !  END IF
 
 
-  CASE (2) ! humidity at hgtX=2 m
-     zMeaszd=zMeas-zd
-     zDiagzd=zDiag+z0h! set lower limit as z0h to prevent arithmetic error, zd=0
+    CASE (2) ! humidity at hgtX=2 m
+       zMeaszd=zMeas-zd
+       zDiagzd=zDiag+z0h! set lower limit as z0h to prevent arithmetic error, zd=0
 
-     ! heat and vapor: assuming both are the same
-     psyhzMeas=stab_fn_heat(StabilityMethod,zMeaszd/L_mod,zMeaszd/L_mod)
-     psyhzDiag=stab_fn_heat(StabilityMethod,zDiagzd/L_mod,zDiagzd/L_mod)
-     ! psyhz0=stab_fn_heat(StabilityMethod,z0h/L_mod,z0h/L_mod)
+       ! heat and vapor: assuming both are the same
+       psyhzMeas=stab_fn_heat(StabilityMethod,zMeaszd/L_mod,zMeaszd/L_mod)
+       psyhzDiag=stab_fn_heat(StabilityMethod,zDiagzd/L_mod,zDiagzd/L_mod)
+       ! psyhz0=stab_fn_heat(StabilityMethod,z0h/L_mod,z0h/L_mod)
 
-     xDiag=xMeas+xFlux/(k*UStar*avdens*tlv)*(LOG(zMeaszd/zDiagzd)-(psyhzMeas-psyhzDiag)) ! Brutsaert (2005), p51, eq.2.56
-     ! xDiag=MAX(xDiag,0.1d0)
-
-  END SELECT
+       xDiag=xMeas+xFlux/(k*UStar*avdens*tlv)*(LOG(zMeaszd/zDiagzd)-(psyhzMeas-psyhzDiag)) ! Brutsaert (2005), p51, eq.2.56
 
 
-  ! END IF
+    END SELECT
 
-END SUBROUTINE diagSfc_X
+
+  END SUBROUTINE diagSfc
 
   !===============set variable of invalid value to NAN=====================
   ELEMENTAL FUNCTION set_nan(x) RESULT(xx)

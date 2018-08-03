@@ -54,7 +54,7 @@ CONTAINS
        qn1_store_grid,RadMeltFact,RAINCOVER,RainMaxRes,resp_a,resp_b,&
        RoughLenHeatMethod,RoughLenMomMethod,RunoffToWater,S1,S2,&
        SatHydraulicConduct,SDDFull,sfr,SMDMethod,SnowAlb,SnowAlbMax,&
-       SnowAlbMin,snowD,SnowDens,SnowDensMax,SnowDensMin,SnowfallCum,snowFrac,&
+       SnowAlbMin,snowD,SnowDens,SnowDensMax,SnowDensMin,SnowfallCum,SnowFrac,&
        SnowLimBuild,SnowLimPaved,snow_obs,SnowPack,SnowProf,snowUse,SoilDepth,&
        soilmoist,soilstoreCap,StabilityMethod,startDLS,state,StateLimit,&
        StorageHeatMethod,surf,SurfaceArea,Tair24HR,tau_a,tau_f,tau_r,&
@@ -265,7 +265,7 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::IceFrac
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::MeltWaterStore
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::SnowDens
-    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::snowFrac
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::SnowFrac
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::SnowPack
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::soilmoist
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::state
@@ -377,7 +377,7 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(NSURF)::changSnow
     REAL(KIND(1D0)),DIMENSION(NSURF)::evap
     REAL(KIND(1D0)),DIMENSION(NSURF)::ev_snow
-    REAL(KIND(1D0)),DIMENSION(NSURF)::FreezMelt
+    REAL(KIND(1D0)),DIMENSION(NSURF)::freezMelt
     REAL(KIND(1d0)),DIMENSION(nsurf)::kup_ind_snow
     REAL(KIND(1D0)),DIMENSION(NSURF)::mw_ind
     REAL(KIND(1D0)),DIMENSION(NSURF)::Qm_freezState
@@ -391,7 +391,7 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(NSURF)::runoffSoil
     REAL(KIND(1D0)),DIMENSION(NSURF)::smd_nsurf
     REAL(KIND(1D0)),DIMENSION(NSURF)::SnowToSurf
-    REAL(KIND(1D0)),DIMENSION(NSURF)::snowDepth
+    REAL(KIND(1D0)),DIMENSION(NSURF)::SnowDepth
 
     REAL(KIND(1d0)),DIMENSION(nsurf)::Tsurf_ind_snow
 
@@ -537,8 +537,8 @@ CONTAINS
          dectime,ZENITH_deg,avKdn,Temp_C,avRH,Ea_hPa,qn1_obs,&
          SnowAlb,DiagQN,&
          NARP_TRANS_SITE,NARP_EMIS_SNOW,IceFrac,sfr,emis,&
-         alb,albDecTr,DecidCap,albEveTr,albGrass,surf,&!inout
-         snowFrac,ldown,fcld,&!output
+         alb,albDecTr,DecidCap,albEveTr,albGrass,surf,SnowFrac,&!inout
+         ldown,fcld,&!output
          qn1,qn1_SF,qn1_S,kclear,kup,lup,tsurf,&
          qn1_ind_snow,kup_ind_snow,Tsurf_ind_snow,Tsurf_ind)
 
@@ -552,14 +552,14 @@ CONTAINS
          FrFossilFuel_NonHeat,HDD,HumActivity_tstep,id,imin,it,LAI, LaiMax,LaiMin,&
          MaxQFMetab,MinQFMetab,min_res_bioCO2,nsh,NumCapita,&
          PopDensDaytime,PopDensNighttime,PopProf_tstep,QF,QF0_BEU,Qf_A,Qf_B,Qf_C,QF_SAHP,&
-         resp_a,resp_b,sfr,snowFrac,T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,&
+         resp_a,resp_b,sfr,SnowFrac,T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,&
          theta_bioCO2,TrafficRate,TrafficUnits,TraffProf_tstep)
 
 
     ! =================STORAGE HEAT FLUX=======================================
     CALL SUEWS_cal_Qs(&
          StorageHeatMethod,OHMIncQF,Gridiv,&!input
-         id,tstep,Diagnose,sfr,&
+         id,tstep,Diagnose,sfr,SnowFrac,&
          OHM_coef,OHM_threshSW,OHM_threshWD,&
          soilmoist,soilstoreCap,state,nsh,SnowUse,DiagQS,&
          HDD,MetForcingData_grid,Ts5mindata_ir,qf,qn1,&
@@ -567,7 +567,7 @@ CONTAINS
          bldgh,alb,emis,cpAnOHM,kkAnOHM,chAnOHM,EmissionsMethod,&
          Tair24HR,qn1_store_grid,qn1_S_store_grid,&!inout
          qn1_av_store_grid,qn1_S_av_store_grid,surf,&
-         qn1_S,snowFrac,dataOutLineESTM,qs,&!output
+         qn1_S,dataOutLineESTM,qs,&!output
          deltaQi,a1,a2,a3)
 
 
@@ -579,9 +579,9 @@ CONTAINS
          SnowDensMin,Temp_C,Precip,PrecipLimit,PrecipLimitAlb,&
          nsh_real,sfr,Tsurf_ind,Tsurf_ind_snow,state,qn1_ind_snow,&
          kup_ind_snow,Meltwaterstore,deltaQi,&
-         SnowPack,snowFrac,SnowAlb,SnowDens,SnowfallCum,&!inout
+         SnowPack,SnowFrac,SnowAlb,SnowDens,SnowfallCum,&!inout
          mwh,fwh,Qm,QmFreez,QmRain,&! output
-         veg_fr,snowCalcSwitch,Qm_melt,Qm_freezState,Qm_rain,FreezMelt,&
+         veg_fr,snowCalcSwitch,Qm_melt,Qm_freezState,Qm_rain,freezMelt,&
          FreezState,FreezStateVol,rainOnSnow,SnowDepth,mw_ind,&
          dataOutLineSnow)!output
 
@@ -626,7 +626,7 @@ CONTAINS
          g1,g2,g3,g4,&
          g5,g6,s1,s2,&
          th,tl,&
-         dq,xsmd,vsmd,MaxConductance,LAIMax,LAI_day,snowFrac,sfr,&
+         dq,xsmd,vsmd,MaxConductance,LAIMax,LAI_day,SnowFrac,sfr,&
          UStar,TStar,L_mod,&!output
          zL,gsc,ResistSurf,RA,RAsnow,rb)
 
@@ -651,14 +651,14 @@ CONTAINS
          PervFraction,vegfraction,addimpervious,qn1_SF,qf,qs,vpd_hPa,s_hPa,&
          ResistSurf,RA,rb,tstep_real,snowdensmin,precip,PipeCapacity,RunoffToWater,&
          NonWaterFraction,wu_EveTr,wu_DecTr,wu_Grass,addVeg,addWaterBody,SnowLimPaved,SnowLimBuild,&
-         SurfaceArea,FlowChange,drain,WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
-         freezmelt,freezstate,freezstatevol,Qm_Melt,Qm_rain,Tsurf_ind,sfr,&
+         SurfaceArea,FlowChange,drain,WetThresh,stateOld,mw_ind,soilstorecap,rainOnSnow,&
+         freezMelt,freezstate,freezstatevol,Qm_melt,Qm_rain,Tsurf_ind,sfr,&
          StateLimit,AddWater,addwaterrunoff,surf,snowD,&
-         runoff_per_interval,state,soilmoist,SnowPack,snowFrac,MeltWaterStore,&! inout:
-         iceFrac,SnowDens,&
+         runoff_per_interval,state,soilmoist,SnowPack,SnowFrac,MeltWaterStore,&! inout:
+         iceFrac,SnowDens,dataOutLineSnow,&
          snowProf,& ! output:
          runoffSnow,runoff,runoffSoil,chang,changSnow,&
-         snowDepth,SnowToSurf,ev_snow,SnowRemoval,&
+         SnowDepth,SnowToSurf,ev_snow,SnowRemoval,&
          evap,rss_nsurf,p_mm,rss,qe,state_per_tstep,NWstate_per_tstep,qeOut,&
          swe,ev,chSnow_per_interval,ev_per_tstep,qe_per_tstep,runoff_per_tstep,&
          surf_chang_per_tstep,runoffPipes,mwstore,runoffwaterbody,&
@@ -770,7 +770,7 @@ CONTAINS
        FrFossilFuel_NonHeat,HDD,HumActivity_tstep,id,imin,it,LAI, LaiMax,LaiMin,&
        MaxQFMetab,MinQFMetab,min_res_bioCO2,nsh,NumCapita,&
        PopDensDaytime,PopDensNighttime,PopProf_tstep,QF,QF0_BEU,Qf_A,Qf_B,Qf_C,QF_SAHP,&
-       resp_a,resp_b,sfr,snowFrac,T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,&
+       resp_a,resp_b,sfr,SnowFrac,T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,&
        theta_bioCO2,TrafficRate,TrafficUnits,TraffProf_tstep)
 
     IMPLICIT NONE
@@ -819,7 +819,7 @@ CONTAINS
     REAL(KIND(1D0)),INTENT(out)::Fc_build
     REAL(KIND(1d0)),INTENT(in)::avkdn
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::sfr
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::snowFrac
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::SnowFrac
     REAL(KIND(1d0)),DIMENSION(-4:ndays, nvegsurf),INTENT(in)::LAI
     REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(in)::LaiMin
     REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(in):: LaiMax
@@ -919,7 +919,7 @@ CONTAINS
        ! Calculate CO2 fluxes from biogenic components
        IF(Diagnose==1) WRITE(*,*) 'Calling CO2_biogen...'
        CALL CO2_biogen(EmissionsMethod,id,ndays,ivConif,ivDecid,ivGrass,ConifSurf,DecidSurf,GrassSurf,BSoilSurf,&
-            snowFrac,nsurf,NVegSurf,avkdn,Temp_C,sfr,LAI,LaiMin,LaiMax,&
+            SnowFrac,nsurf,NVegSurf,avkdn,Temp_C,sfr,LAI,LaiMin,LaiMax,&
             alpha_bioCO2,beta_bioCO2,theta_bioCO2,alpha_enh_bioCO2,beta_enh_bioCO2,&
             resp_a,resp_b,min_res_bioCO2,Fc_biogen,Fc_respi,Fc_photo,&
             notUsed,notUsedI)
@@ -939,8 +939,8 @@ CONTAINS
        dectime,ZENITH_deg,avKdn,Temp_C,avRH,ea_hPa,qn1_obs,&
        SnowAlb,DiagQN,&
        NARP_TRANS_SITE,NARP_EMIS_SNOW,IceFrac,sfr,emis,&
-       alb,albDecTr,DecidCap,albEveTr,albGrass,surf,&!inout
-       snowFrac,ldown,fcld,&!output
+       alb,albDecTr,DecidCap,albEveTr,albGrass,surf,SnowFrac,&!inout
+       ldown,fcld,&!output
        qn1,qn1_SF,qn1_S,kclear,kup,lup,tsurf,&
        qn1_ind_snow,kup_ind_snow,Tsurf_ind_snow,Tsurf_ind)
     USE NARP_MODULE, ONLY: RadMethod,NARP
@@ -983,7 +983,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(0:366),INTENT(inout)  ::albGrass
     REAL(KIND(1d0)),DIMENSION(6,nsurf),INTENT(inout)::surf
 
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::snowFrac
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowFrac
 
     REAL(KIND(1d0)),INTENT(out)::ldown
     REAL(KIND(1d0)),INTENT(out)::fcld
@@ -1017,8 +1017,8 @@ CONTAINS
 
     IF(NetRadiationMethodX>0)THEN
 
-       ! IF (snowUse==0) snowFrac=snow_obs
-       IF (snowUse==0) snowFrac=0
+       ! IF (snowUse==0) SnowFrac=snow_obs
+       IF (snowUse==0) SnowFrac=0
 
        IF(ldown_option==1) THEN !Observed ldown provided as forcing
           ldown=ldown_obs
@@ -1043,7 +1043,7 @@ CONTAINS
 
 
        CALL NARP(&
-            nsurf,sfr,snowFrac,alb,emis,IceFrac,&! input:
+            nsurf,sfr,SnowFrac,alb,emis,IceFrac,&! input:
             NARP_TRANS_SITE,NARP_EMIS_SNOW,&
             dectime,ZENITH_deg,avKdn,Temp_C,avRH,ea_hPa,qn1_obs,&
             SnowAlb,&
@@ -1052,7 +1052,7 @@ CONTAINS
             qn1_ind_snow,kup_ind_snow,Tsurf_ind_snow,Tsurf_ind)
 
     ELSE ! NetRadiationMethod==0
-       snowFrac  = snow_obs
+       SnowFrac  = snow_obs
        qn1       = qn1_obs
        qn1_sf    = qn1_obs
        qn1_s     = qn1_obs
@@ -1077,7 +1077,7 @@ CONTAINS
   !=============storage heat flux=========================================
   SUBROUTINE SUEWS_cal_Qs(&
        StorageHeatMethod,OHMIncQF,Gridiv,&!input
-       id,tstep,Diagnose,sfr,&
+       id,tstep,Diagnose,sfr,SnowFrac,&
        OHM_coef,OHM_threshSW,OHM_threshWD,&
        soilmoist,soilstoreCap,state,nsh,SnowUse,DiagQS,&
        HDD,MetForcingData_grid,Ts5mindata_ir,qf,qn1,&
@@ -1085,7 +1085,7 @@ CONTAINS
        bldgh,alb,emis,cpAnOHM,kkAnOHM,chAnOHM,EmissionsMethod,&
        Tair24HR,qn1_store_grid,qn1_S_store_grid,&!inout
        qn1_av_store_grid,qn1_S_av_store_grid,surf,&
-       qn1_S,snowFrac,dataOutLineESTM,qs,&!output
+       qn1_S,dataOutLineESTM,qs,&!output
        deltaQi,a1,a2,a3)
 
     IMPLICIT NONE
@@ -1115,6 +1115,8 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown
     REAL(KIND(1d0)),INTENT(in)::bldgh
 
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::SnowFrac
+
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::sfr
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::alb  !< albedo [-]
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::emis !< emissivity [-]
@@ -1136,7 +1138,7 @@ CONTAINS
     ! REAL(KIND(1d0)),DIMENSION(ReadlinesMetdata,32,NumberOfGrids),INTENT(inout)::dataOutESTM
 
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::deltaQi ! storage heat flux of snow surfaces
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::snowFrac
+
 
     REAL(KIND(1d0)),DIMENSION(27),INTENT(out):: dataOutLineESTM
     REAL(KIND(1d0)),INTENT(out)::qn1_S
@@ -1151,7 +1153,7 @@ CONTAINS
 
     ! initialise output variables
     deltaQi=0
-    snowFrac=0
+    ! SnowFrac=0
     qn1_S=0
     dataOutLineESTM=-999
     qs=-999
@@ -1359,14 +1361,14 @@ CONTAINS
        PervFraction,vegfraction,addimpervious,qn1_SF,qf,qs,vpd_hPa,s_hPa,&
        ResistSurf,RA,rb,tstep_real,snowdensmin,precip,PipeCapacity,RunoffToWater,&
        NonWaterFraction,wu_EveTr,wu_DecTr,wu_Grass,addVeg,addWaterBody,SnowLimPaved,SnowLimBuild,&
-       SurfaceArea,FlowChange,drain,WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
-       freezmelt,freezstate,freezstatevol,Qm_Melt,Qm_rain,Tsurf_ind,sfr,&
+       SurfaceArea,FlowChange,drain,WetThresh,stateOld,mw_ind,soilstorecap,rainOnSnow,&
+       freezMelt,freezstate,freezstatevol,Qm_melt,Qm_rain,Tsurf_ind,sfr,&
        StateLimit,AddWater,addwaterrunoff,surf,snowD,&
-       runoff_per_interval,state,soilmoist,SnowPack,snowFrac,MeltWaterStore,&! inout:
-       iceFrac,SnowDens,&
+       runoff_per_interval,state,soilmoist,SnowPack,SnowFrac,MeltWaterStore,&! inout:
+       iceFrac,SnowDens,dataOutLineSnow,&
        snowProf,& ! output:
        runoffSnow,runoff,runoffSoil,chang,changSnow,&
-       snowDepth,SnowToSurf,ev_snow,SnowRemoval,&
+       SnowDepth,SnowToSurf,ev_snow,SnowRemoval,&
        evap,rss_nsurf,p_mm,rss,qe,state_per_tstep,NWstate_per_tstep,qeOut,&
        swe,ev,chSnow_per_interval,ev_per_tstep,qe_per_tstep,runoff_per_tstep,&
        surf_chang_per_tstep,runoffPipes,mwstore,runoffwaterbody,&
@@ -1431,11 +1433,11 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::stateOld
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::mw_ind
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::soilstorecap
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::rainonsnow
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::freezmelt
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::rainOnSnow
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::freezMelt
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::freezstate
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::freezstatevol
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::Qm_Melt
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::Qm_melt
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::Qm_rain
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::Tsurf_ind
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::sfr
@@ -1452,11 +1454,14 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::state
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::soilmoist
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowPack
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::snowFrac
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowFrac
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::MeltWaterStore
 
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::iceFrac
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowDens
+    REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutSnow-5),INTENT(inout)::dataOutLineSnow
+
+
     REAL(KIND(1d0)),DIMENSION(2)    ::SurplusEvap        !Surplus for evaporation in 5 min timestep
 
 
@@ -1466,7 +1471,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::runoffSoil
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::chang
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::changSnow
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::snowDepth
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::SnowDepth
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::SnowToSurf
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::ev_snow
     REAL(KIND(1d0)),DIMENSION(2),INTENT(out)::SnowRemoval
@@ -1559,19 +1564,19 @@ CONTAINS
                   numPM,s_hPa,ResistSurf,sp,RA,rb,tlv,snowdensmin,SnowProf,precip,&
                   PipeCapacity,RunoffToWater,runoffAGimpervious,runoffAGveg,&
                   addVeg,surplusWaterBody,SnowLimPaved,SnowLimBuild,FlowChange,drain,&
-                  WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
-                  freezmelt,freezstate,freezstatevol,&
-                  Qm_Melt,Qm_rain,Tsurf_ind,sfr,dayofWeek_id,surf,snowD,&
+                  WetThresh,stateOld,mw_ind,soilstorecap,rainOnSnow,&
+                  freezMelt,freezstate,freezstatevol,&
+                  Qm_melt,Qm_rain,Tsurf_ind,sfr,dayofWeek_id,surf,snowD,&
                   AddWater,addwaterrunoff,&
                   SnowPack,SurplusEvap,&!inout
-                  snowFrac,MeltWaterStore,iceFrac,SnowDens,&
+                  SnowFrac,MeltWaterStore,iceFrac,SnowDens,&
                   runoffSnow,& ! output
                   runoff,runoffSoil,chang,changSnow,SnowToSurf,state,ev_snow,soilmoist,&
                   SnowDepth,SnowRemoval,swe,ev,chSnow_per_interval,&
                   ev_per_tstep,qe_per_tstep,runoff_per_tstep,surf_chang_per_tstep,&
                   runoffPipes,mwstore,runoffwaterbody)
           ELSE
-             snowFrac(is) = 0
+             SnowFrac(is) = 0
              SnowDens(is) = 0
              SnowPack(is) = 0
           ENDIF
@@ -1657,6 +1662,17 @@ CONTAINS
        ENDIF
     ENDDO  !end loop over surfaces
 
+    ! pack snow output into one line
+    dataOutLineSnow(1:nsurf)         = SnowPack(1:nsurf)
+    dataOutLineSnow(7+1:7+nsurf)     = mw_ind(1:nsurf)
+    dataOutLineSnow(14+1:14+nsurf)   = Qm_melt(1:nsurf)
+    dataOutLineSnow(21+1:21+nsurf)   = Qm_rain(1:nsurf)
+    dataOutLineSnow(35+1:35+nsurf-1) = SnowFrac(1:(nsurf-1))
+    dataOutLineSnow(41+1:41+nsurf)   = rainOnSnow(1:nsurf)
+    dataOutLineSnow(62+1:62+nsurf)   = freezMelt(1:nsurf)
+    dataOutLineSnow(69+1:69+nsurf)   = MeltWaterStore(1:nsurf)
+    dataOutLineSnow(76+1:76+nsurf)   = SnowDens(1:nsurf)
+    dataOutLineSnow(83+1:83+nsurf)   = SnowDepth(1:nsurf)
 
     ! Convert evaporation to latent heat flux [W m-2]
     qe_per_tstep = ev_per_tstep*tlv
@@ -1735,7 +1751,7 @@ CONTAINS
        qh_obs,avdens,avcp,h_mod,qn1,dectime,zzd,z0m,zdm,&
        avU1,Temp_C,VegFraction,&
        avkdn,Kmax,G1,G2,G3,G4,G5,G6,S1,S2,TH,TL,dq,&
-       xsmd,vsmd,MaxConductance,LAIMax,LAI_id,snowFrac,sfr,&
+       xsmd,vsmd,MaxConductance,LAIMax,LAI_id,SnowFrac,sfr,&
        UStar,TStar,L_mod,&!output
        zL,gsc,ResistSurf,RA,RAsnow,rb)
 
@@ -1783,7 +1799,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(3),INTENT(in) ::LAIMax        !Max LAI [m2 m-2]
     REAL(KIND(1d0)),DIMENSION(3),INTENT(in) ::LAI_id        !=LAI_id(id-1,:), LAI for each veg surface [m2 m-2]
 
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::snowFrac      !Surface fraction of snow cover
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::SnowFrac      !Surface fraction of snow cover
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::sfr           !Surface fractions [-]
 
     REAL(KIND(1d0)),INTENT(out)::TStar     !T*
@@ -1852,7 +1868,7 @@ CONTAINS
     ! CALL SurfaceResistance(id,it)   !qsc and surface resistance out
     CALL SurfaceResistance(&
          id,it,&! input:
-         SMDMethod,snowFrac,sfr,avkdn,Temp_C,dq,xsmd,vsmd,MaxConductance,&
+         SMDMethod,SnowFrac,sfr,avkdn,Temp_C,dq,xsmd,vsmd,MaxConductance,&
          LAIMax,LAI_id,gsModel,Kmax,&
          G1,G2,G3,G4,G5,G6,TH,TL,S1,S2,&
          gsc,ResistSurf)! output:
@@ -2812,7 +2828,7 @@ CONTAINS
        qn1_store_grid,RadMeltFact,RAINCOVER,RainMaxRes,resp_a,resp_b,&
        RoughLenHeatMethod,RoughLenMomMethod,RunoffToWater,S1,S2,&
        SatHydraulicConduct,SDDFull,sfr,SMDMethod,SnowAlb,SnowAlbMax,&
-       SnowAlbMin,snowD,SnowDens,SnowDensMax,SnowDensMin,SnowfallCum,snowFrac,&
+       SnowAlbMin,snowD,SnowDens,SnowDensMax,SnowDensMin,SnowfallCum,SnowFrac,&
        SnowLimBuild,SnowLimPaved,snow_obs,SnowPack,SnowProf,snowUse,SoilDepth,&
        soilmoist,soilstoreCap,StabilityMethod,startDLS,state,StateLimit,&
        StorageHeatMethod,surf,SurfaceArea,Tair24HR,tau_a,tau_f,tau_r,&
@@ -3021,7 +3037,7 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::IceFrac
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::MeltWaterStore
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::SnowDens
-    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::snowFrac
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::SnowFrac
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::SnowPack
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::soilmoist
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(INOUT)            ::state
@@ -3234,7 +3250,7 @@ CONTAINS
        WRITE(fn,*)'IceFrac',IceFrac
        WRITE(fn,*)'MeltWaterStore',MeltWaterStore
        WRITE(fn,*)'SnowDens',SnowDens
-       WRITE(fn,*)'snowFrac',snowFrac
+       WRITE(fn,*)'SnowFrac',SnowFrac
        WRITE(fn,*)'SnowPack',SnowPack
        WRITE(fn,*)'soilmoist',soilmoist
        WRITE(fn,*)'state',state

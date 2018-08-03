@@ -150,7 +150,7 @@ SUBROUTINE MetRead(lfn,MetArray,InputmetFormat,ldown_option,NetRadiationMethod,&
      CALL ErrorHint(27,'Met Data: avRH - beyond what is expected', avRH,dectime, notUsedI)
   ENDIF
 
-  IF(Pres_kPa<90)THEN  !If pressure too low
+  IF(Pres_kPa<80)THEN  !If pressure too low
      CALL ErrorHint(27,'Met Data: Pres_kPa - too low - this could be fixed in model',Pres_kPa ,dectime, notUsedI)
   ENDIF
 

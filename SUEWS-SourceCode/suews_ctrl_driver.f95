@@ -15,7 +15,7 @@ MODULE SUEWS_Driver
        SUEWS_cal_SoilMoist,SUEWS_update_SoilMoist,&
        ReDistributeWater,SUEWS_cal_HorizontalSoilWater,&
        SUEWS_cal_WaterUse
-  USE ctrl_output,ONLY:varList
+  ! USE ctrl_output,ONLY:varList
   USE allocateArray,ONLY:&
        nsurf,nvegsurf,&
        PavSurf,BldgSurf,ConifSurf,DecidSurf,GrassSurf,BSoilSurf,WaterSurf,&
@@ -749,18 +749,6 @@ CONTAINS
          VegFraction,z,z0m,zdm,RA,avdens,avcp,lv_J_kg,tstep_real,&
          RoughLenHeatMethod,StabilityMethod,&
          avU10_ms,t2_C,q2_gkg,tskin_C)!output
-    ! NB: resistance-based QH is used to calculate diagnostics
-    ! as tsurf is assumed to be equal to Tair during night
-    ! implying a constant near-surface air temperature profile.
-    ! CALL SUEWS_cal_Diagnostics(&
-    !      dectime,&!input
-    !      avU1,Temp_C,&
-    !      tsurf,qh,&
-    !      Press_hPa,qe,&
-    !      sfr,state,WetThresh,&
-    !      veg_fr,z0m,avdens,avcp,lv_J_kg,tstep_real,&
-    !      RoughLenHeatMethod,StabilityMethod,&
-    !      avU10_ms,t2_C,q2_gkg)!output
     !============ surface-level diagonostics end ===============
 
 
@@ -2475,43 +2463,6 @@ CONTAINS
     xx=x**2
 
   END FUNCTION square_real
-
-  SUBROUTINE output_name_n(i,name,group,aggreg)
-    ! used by f2py module `SuPy` to handle output names
-    IMPLICIT NONE
-    ! the dimension is potentially incorrect,
-    ! which should be consistent with that in output module
-    INTEGER,INTENT(in) :: i
-    CHARACTER(len = 15),INTENT(out) :: name,group,aggreg
-
-    INTEGER :: n
-    n=SIZE(varList, dim=1)
-    IF ( i<n .AND.i>0  ) THEN
-       name   = TRIM(varList(i)%header)
-       group  = TRIM(varList(i)%group)
-       aggreg = TRIM(varList(i)%aggreg)
-    ELSE
-       name   = ''
-       group  = ''
-       aggreg = ''
-    END IF
-
-
-  END SUBROUTINE output_name_n
-
-
-  SUBROUTINE output_size(n)
-    ! used by f2py module `SuPy` to get size of the output list
-    IMPLICIT NONE
-    ! the dimension is potentially incorrect,
-    ! which should be consistent with that in output module
-    INTEGER,INTENT(out) :: n
-
-
-    n=SIZE(varList, dim=1)
-
-  END SUBROUTINE output_size
-
 
 
 END MODULE SUEWS_Driver

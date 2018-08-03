@@ -29,7 +29,6 @@ MODULE ctrl_output
   USE ESTM_data
   USE gis_data
   USE initial
-  ! USE solweig_module
   USE sues_data
   USE time
   USE strings
@@ -157,13 +156,14 @@ MODULE ctrl_output
        varAttr('SnowCh'     , 'mm'           , f104 , 'Change in snow pack'                              , aA , 'SUEWS' , 2)     , &
        varAttr('SnowRPaved' , 'mm'           , f94  , 'Snow removed from paved surface'                  , aS , 'SUEWS' , 2)     , &
        varAttr('SnowRBldg'  , 'mm'           , f94  , 'Snow removed from building surface'               , aS , 'SUEWS' , 2)     , &
+       varAttr('Ts'         , 'degC'         , f94  , 'Skin temperature'                                 , aA , 'SUEWS' , 0)     , &
        varAttr('T2'         , 'degC'         , f94  , 'Air temperature at 2 m'                           , aA , 'SUEWS' , 0)     , &
        varAttr('Q2'         , 'g kg-1'       , f94  , 'Specific humidity at 2 m'                         , aA , 'SUEWS' , 0)     , &
        varAttr('U10'        , 'm s-1'        , f94  , 'Wind speed at 10 m'                               , aA , 'SUEWS' , 0)   &
        /
 
   ! SOLWEIG:
-  DATA(varList(n), n=84+1,84+ncolumnsdataOutSOL-5)/&
+  DATA(varList(n), n=85+1,85+ncolumnsdataOutSOL-5)/&
        varAttr('azimuth'    , 'to_add' , f106 , 'azimuth'    , aA , 'SOLWEIG' , 0)  , &
        varAttr('altitude'   , 'to_add' , f106 , 'altitude'   , aA , 'SOLWEIG' , 0)  , &
        varAttr('GlobalRad'  , 'to_add' , f106 , 'GlobalRad'  , aA , 'SOLWEIG' , 0)  , &
@@ -193,7 +193,7 @@ MODULE ctrl_output
        /
 
   ! BL:
-  DATA(varList(n), n=110+1,110+ncolumnsdataOutBL-5)/&
+  DATA(varList(n), n=111+1,111+ncolumnsdataOutBL-5)/&
        varAttr('z'         , 'to_add' , f104 , 'z'         , aA , 'BL' , 0)  , &
        varAttr('theta'     , 'to_add' , f104 , 'theta'     , aA , 'BL' , 0)  , &
        varAttr('q'         , 'to_add' , f104 , 'q'         , aA , 'BL' , 0)  , &
@@ -214,7 +214,7 @@ MODULE ctrl_output
        /
 
   ! Snow:
-  DATA(varList(n), n=127+1,127+ncolumnsDataOutSnow-5)/&
+  DATA(varList(n), n=128+1,128+ncolumnsDataOutSnow-5)/&
        varAttr('SWE_Paved'      , 'to_add' , f106 , 'SWE_Paved'      , aA , 'snow' , 0)  , &
        varAttr('SWE_Bldgs'      , 'to_add' , f106 , 'SWE_Bldgs'      , aA , 'snow' , 0)  , &
        varAttr('SWE_EveTr'      , 'to_add' , f106 , 'SWE_EveTr'      , aA , 'snow' , 0)  , &
@@ -315,7 +315,7 @@ MODULE ctrl_output
        /
 
   ! ESTM:
-  DATA(varList(n), n=224+1,224+ncolumnsDataOutESTM-5)/&
+  DATA(varList(n), n=225+1,225+ncolumnsDataOutESTM-5)/&
        varAttr('QS'       , 'W m-2' , f104 , 'Total Storage'                            , aA , 'ESTM' , 0) , &
        varAttr('QSAir'    , 'W m-2' , f104 , 'Storage air'                              , aA , 'ESTM' , 0) , &
        varAttr('QSWall'   , 'W m-2' , f104 , 'Storage Wall'                             , aA , 'ESTM' , 0) , &
@@ -346,7 +346,7 @@ MODULE ctrl_output
        /
 
   ! DailyState:
-  DATA(varList(n), n=251+1,251+ncolumnsDataOutDailyState-5)/&
+  DATA(varList(n), n=252+1,252+ncolumnsDataOutDailyState-5)/&
        varAttr('HDD1_h'     , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
        varAttr('HDD2_c'     , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
        varAttr('HDD3_Tmean' , 'to be added' , f104 , 'to be added' , aL , 'DailyState' , 0), &
@@ -816,6 +816,7 @@ CONTAINS
     TYPE(varAttr),DIMENSION(:),ALLOCATABLE::varListSel
     CHARACTER(len=365) :: FileOut
     INTEGER :: fn,i,xx,err
+    INTEGER :: sizeVarListSel,sizedataOutX
     CHARACTER(len=12*SIZE(varList)) :: FormatOut
     ! LOGICAL :: initQ_file
     FormatOut=''
@@ -823,13 +824,14 @@ CONTAINS
     IF(Diagnose==1) WRITE(*,*) 'Writting data of group: ',varList(SIZE(varList))%group
 
     !select variables to output
-    xx=COUNT((varList%level<= outLevel), dim=1)
-    ALLOCATE(varListSel(xx), stat=err)
+    sizeVarListSel=COUNT((varList%level<= outLevel), dim=1)
+    ALLOCATE(varListSel(sizeVarListSel), stat=err)
     IF ( err/= 0) PRINT *, "varListSel: Allocation request denied"
     varListSel=PACK(varList, mask=(varList%level<= outLevel))
 
     ! copy data accordingly
-    ALLOCATE(dataOutSel(SIZE(dataOutX, dim=1),xx), stat=err)
+    sizedataOutX=SIZE(dataOutX, dim=1)
+    ALLOCATE(dataOutSel(sizedataOutX,sizeVarListSel), stat=err)
     IF ( err/= 0) PRINT *, "dataOutSel: Allocation request denied"
     ! print*, SIZE(varList%level),PACK((/(i,i=1,SIZE(varList%level))/), varList%level <= outLevel)
     ! print*, irMax,shape(dataOutX)
@@ -837,7 +839,7 @@ CONTAINS
 
 
     ! create format string:
-    DO i = 1, SIZE(varListSel)
+    DO i = 1, sizeVarListSel
        ! PRINT*,''
        ! PRINT*,i
        ! PRINT*, LEN_TRIM(FormatOut),TRIM(FormatOut)
@@ -868,13 +870,13 @@ CONTAINS
     ! write out data
     fn=50
     OPEN(fn,file=TRIM(fileout),position='append')!,err=112)
-    DO i=1,SIZE(dataOutSel,dim=1)
+    DO i=1,sizedataOutX
        ! PRINT*, 'Writting',i
        ! PRINT*, 'FormatOut',FormatOut
-       ! PRINT*, dataOutSel(i,:)
+       ! PRINT*, dataOutSel(i,1:sizeVarListSel)
        WRITE(fn,FormatOut) &
-            INT(dataOutSel(i,1:4)),&
-            dataOutSel(i,5:SIZE(varListSel))
+            (INT(dataOutSel(i,xx)),xx=1,4),&
+            (dataOutSel(i,xx),xx=5,sizeVarListSel)
     ENDDO
     CLOSE (fn)
 

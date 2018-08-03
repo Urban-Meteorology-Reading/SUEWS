@@ -142,4 +142,4 @@ $(WRF): $(subst .o,$(suffix_code), $(WRF))
 clean:
 	$(info $$suffix_code is [${suffix_code}])
 	$(info $$TARGET is [${TARGET}])
-	-rm -rf *.o *.mod *.dSYM *.gcda *.gcno ${TARGET}
+	-rm -rf *.o *.mod *.dSYM *.gcda *.gcno *.f90 ${TARGET}

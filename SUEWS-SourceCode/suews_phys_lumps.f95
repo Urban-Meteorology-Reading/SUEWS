@@ -100,8 +100,8 @@ SUBROUTINE LUMPS_cal_QHQE(&
   !ASSUMES THE SURFACE IS VEGETATION COVERED WITH RAIN > RAINCOVER mm/DAY
   !OTHERWISE INCREASES VEGETATION LINEAR WITH AMOUNT OF RAIN.
 
-  ! !IF (E_MOD>0.) RainBucket=RainBucket-E_MOD*1.44E-3 !1.44E-3 MM/(W/M^2)/HR (i.e. 3600/(lv_J_kg))
-  ! IF (E_MOD>0.) RainBucket=RainBucket-E_MOD/tlv   !Adjusted for per model timestep instead of per hour HCW 04 Mar 2015
+  ! !IF (E_mod>0.) RainBucket=RainBucket-E_mod*1.44E-3 !1.44E-3 MM/(W/M^2)/HR (i.e. 3600/(lv_J_kg))
+  ! IF (E_mod>0.) RainBucket=RainBucket-E_mod/tlv   !Adjusted for per model timestep instead of per hour HCW 04 Mar 2015
   ! IF (Temp_C>0.) RainBucket=RainBucket - DRAINRT/nsh_real  !DRAINRT is specified in mm h-1
   ! IF (RainBucket<0.) RainBucket=0.
   ! IF (Precip>0) RainBucket=MIN(RainMaxRes,RainBucket+Precip)
@@ -150,8 +150,8 @@ SUBROUTINE LUMPS_cal_QHQE(&
   E_mod= (alpha_qhqe/(1+psyc_s)*(qn1+qf-qs-Qm))+beta              !Eq 4, Grimmond & Oke (2002)
 
   ! adjust RAINRES after E_mod calculation is done: ! moved here from above. TS, 13 Jan 2018
-  !IF (E_MOD>0.) RainBucket=RainBucket-E_MOD*1.44E-3 !1.44E-3 MM/(W/M^2)/HR (i.e. 3600/(lv_J_kg))
-  IF (E_MOD>0.) RainBucket=RainBucket-E_MOD/tlv   !Adjusted for per model timestep instead of per hour HCW 04 Mar 2015
+  !IF (E_mod>0.) RainBucket=RainBucket-E_mod*1.44E-3 !1.44E-3 MM/(W/M^2)/HR (i.e. 3600/(lv_J_kg))
+  IF (E_mod>0.) RainBucket=RainBucket-E_mod/tlv   !Adjusted for per model timestep instead of per hour HCW 04 Mar 2015
   IF (Temp_C>0.) RainBucket=RainBucket - DRAINRT/nsh_real  !DRAINRT is specified in mm h-1
   IF (RainBucket<0.) RainBucket=0.
   IF (Precip>0) RainBucket=MIN(RainMaxRes,RainBucket+Precip)

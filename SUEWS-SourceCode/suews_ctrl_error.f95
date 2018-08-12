@@ -28,6 +28,9 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
   INTEGER:: errh,ValueI,ValueI2                  ! v7,v8 initialised as false, HCW 28/10/2014
   INTEGER,DIMENSION(80):: ErrhCount = 0             ! Counts each time a error hint is called. Initialise to zero
   INTEGER:: WhichFile                            ! Used to switch between 500 for error file, 501 for warnings file
+#ifdef wrf
+  CHARACTER(len=1024) :: message ! Used to pass through function wrf_message() by Zhenkun Li, 10/08/2018
+#endif
 
   ! TS 16 Jul 2018:
   ! these LOGICAL values should NOT be initialised as `SAVE` is implied
@@ -307,16 +310,60 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
   ! Write errors (that stop the program) to problems.txt; warnings to warnings.txt
   IF(returnTrue) THEN
      IF(SuppressWarnings==0) THEN
+#ifdef wrf
+        WRITE(message,*)'Warning: ',TRIM(ProblemFile)
+        CALL wrf_message(message)
+        WRITE(message,*) TRIM(text1)
+        CALL wrf_message(message)
+#else
         CALL gen_WarningsText(ProblemFile,text1)   !Call the subroutine that opens the problem.txt file !Moved from above, HCW 17 Feb 2017
         ! WRITE(501,*) TRIM(text1)
         WhichFile = 501
+#endif
      ENDIF
   ELSE
+#ifdef wrf
+     WRITE(message,*)'Problem: ',TRIM(ProblemFile)
+     CALL wrf_message(message)
+     WRITE(message,*)'ERROR! Program stopped: ',TRIM(text1)
+     CALL wrf_message(message)
+#else
      CALL gen_ProblemsText(ProblemFile,text1)   !Call the subroutine that opens the problem.txt file !Moved from above, HCW 17 Feb 2017
      ! WRITE(500,*) 'ERROR! Program stopped: ',TRIM(text1)
      WhichFile = 500
+#endif
   ENDIF
 
+#ifdef wrf
+  !This part of the code determines how the error/warning message is written out
+  IF(v1) THEN ! 1 real
+     WRITE(message,'(a,f9.4)')' Value: ', VALUE
+     CALL wrf_message(message)
+  ELSEIF(v2) THEN ! 2 real
+     WRITE(message,'(a,2f9.4)')' Values: ', VALUE, value2
+     CALL wrf_message(message)
+  ELSEIF(v3) THEN ! 1 integer
+     WRITE(message,'(a,i10)')' Value: ', valueI
+     CALL wrf_message(message)
+  ELSEIF(v4) THEN ! 2 real, 1 integer
+     WRITE(message,'(a,2f9.4,i10)')' Values: ', VALUE, value2, valueI
+     CALL wrf_message(message)
+  ELSEIF(v5) THEN ! 1 real 1 integer
+     WRITE(message,'(a,f9.4,i10)')' Values: ', VALUE, valueI
+     CALL wrf_message(message)
+  ELSEIF(v6) THEN ! 2 integer
+     valueI2=INT(VALUE)
+     WRITE(message,'(a,2i10)')' Values: ', valueI, valueI2
+     CALL wrf_message(message)
+  ELSEIF(v7) THEN ! 1 real, 2 integer
+     valueI2=INT(value2)
+     WRITE(message,'(a,f9.4,2i10)')' Values: ', VALUE, valueI2, valueI
+     CALL wrf_message(message)
+  ELSEIF(v8) THEN
+     ! no error values
+  ENDIF
+
+#else
   ! Write out error message or warning message only if warnings are not suppressed
   IF(WhichFile == 500 .OR. (WhichFile == 501 .AND. SuppressWarnings==0)) THEN
      IF ( WhichFile == 501 ) THEN
@@ -350,6 +397,7 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
 
      CLOSE(WhichFile)
   ENDIF
+#endif
 
   ErrhCount(errh) = ErrhCount(errh) + 1   ! Increase error count by 1
   ! PRINT*, 'returnTrue',returnTrue
@@ -357,17 +405,29 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
   ! Write errors (that stop the program) to problems.txt; warnings to warnings.txt
   IF(returnTrue) THEN
      IF(SuppressWarnings==0) THEN
+#ifdef wrf
+        WRITE(message,'(a,i14)') ' Count: ',ErrhCount(errh)
+        CALL wrf_message(message)
+#else
         OPEN(501,file='warnings.txt')
         ! WRITE(501,'(4(a))') ' Grid: ',TRIM(ADJUSTL(GridID_text)),'   DateTime: ',datetime  !Add grid and datetime to warnings.txt
         WRITE(501,'(a,i14)') ' Count: ',ErrhCount(errh)
         CLOSE(501)
+#endif
      ENDIF
   ELSE
+#ifdef wrf
+     WRITE(message,'(i3)') errh
+     CALL wrf_message(message)
+     WRITE(message,*) 'ERROR! SUEWS run stopped.'
+     CALL wrf_message(message)
+#else
      OPEN(500,file='problems.txt')
      ! WRITE(500,'(4(a))') ' Grid: ',TRIM(ADJUSTL(GridID_text)),'   DateTime: ',datetime  !Add grid and datetime to problems.txt
      WRITE(500,'(i3)') errh  !Add error code to problems.txt
      WRITE(*,*) 'ERROR! SUEWS run stopped.'   !Print message to screen if program stopped
      CLOSE(500)
+#endif
   ENDIF
 
   ! changed the if-clause bahaviour for WRF coupling, TS 16 Jul 2018

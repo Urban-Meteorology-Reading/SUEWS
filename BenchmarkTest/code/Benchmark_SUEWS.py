@@ -7,6 +7,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 import f90nml
 import xarray as xr
 import seaborn as sns
+from matplotlib import colors
 
 
 # read SUEWS output results as an xarray.DataArray
@@ -332,20 +333,81 @@ def report_benchmark_PDF(fn_nml):
 
 
 # output report in HTML
-# TODO: add score plot
-# TODO: correct the score and stat colouring
+# normalise color values
+def colour_norm(res):
+    s = np.abs(res)
+    m = s.min()
+    M = s.max()
+    range = M - m
+    if range != 0:
+        norm = colors.Normalize(m, M)
+        normed = norm(s.values)
+    else:
+        normed = np.ones_like(res) * 0.5
+    return normed
+
+
+# set text colours
+def text_color(res):
+    normed = colour_norm(res)
+    c_text = [('black' if 0.4 < x < 0.6 else 'white') for x in normed]
+    return ['color: %s' % color for color in c_text]
+
+
+# set background colour
+def background_gradient(res, cmap='PuBu'):
+    normed = colour_norm(res)
+    # print normed
+    c_rgba = [plt.cm.get_cmap(cmap)(x)
+              if x != 0.5 else tuple(list(plt.cm.get_cmap(cmap)(x)[:3]) + [0])
+              for x in normed]
+    # print c_rgba
+    c = [colors.rgb2hex(x) for x in c_rgba]
+    # print c
+    return ['background-color: %s' % color for color in c]
+
+
+# generate matrix-like stat HTML
+def mat_stat_HTML(df_metric, styles):
+    # generate metric Styler
+    style_metric = df_metric.T.style
+    style_metric.apply(background_gradient, axis=1, cmap='PiYG_r')
+    style_metric.apply(text_color, axis=1)
+
+    style_metric = style_metric.set_table_styles(styles)
+    style_metric = style_metric.set_caption('SUEWS benchmark statistics')
+
+    res_html = style_metric.render()
+
+    return res_html
+
+
+# generate overall barplot of performance score HTML
+def bar_score_HTML(df_metric, styles):
+
+    df_score = benchmark_score(
+        df_metric).to_frame().rename(columns={0: 'score'})
+
+    # generate metric Styler
+    style_score = df_score.style
+    style_score.bar(align='left', color=['#d65f5f', '#5fba7d'])
+    style_score = style_score.set_table_styles(styles)
+    style_score = style_score.set_caption('SUEWS benchmark score')
+    res_html = style_score.render()
+    
+    return res_html
+
+
 def report_benchmark_HTML(fn_nml):
     prm = f90nml.read(fn_nml)
     prm_file = prm['file']
     basename_output = prm_file['path_report_html']
 
-    # colour scheme
-    cm = sns.light_palette("green", as_cmap=True)
-
     styles = [
         # table properties
         dict(selector=" ",
              props=[("margin", "0"),
+                    ('max-width', '200px'),
                     ("font-family", '"Helvetica", "Arial", sans-serif'),
                     ("border-collapse", "collapse"),
                     ("border", "none"),
@@ -384,14 +446,21 @@ def report_benchmark_HTML(fn_nml):
     # calculate benchmark results
     df_metric = benchmark_SUEWS(fn_nml)
 
-    # geenerate metric Styler
-    style_metric = df_metric.T.style
-    style_metric = style_metric.background_gradient(cmap=cm)
-    style_metric = style_metric.set_table_styles(styles)
-    style_metric = style_metric.set_caption('SUEWS benchmark results')
+    # colour map
+    # cm = sns.light_palette("green", as_cmap=True)
 
-    path_html = os.path.expanduser(basename_output) + '.html'
-    res_html = style_metric.render()
+    # generate score Styler
+    score_html = bar_score_HTML(df_metric, styles)
+    # save html text
+    path_html = basename_output + '_score.html'
     with open(path_html, 'w') as fn:
-        fn.write(res_html)
+        fn.write(score_html)
+        fn.close()
+
+    # generate metric Styler
+    stat_html = mat_stat_HTML(df_metric, styles)
+    # save html text
+    path_html = basename_output + '_stat.html'
+    with open(path_html, 'w') as fn:
+        fn.write(stat_html)
         fn.close()

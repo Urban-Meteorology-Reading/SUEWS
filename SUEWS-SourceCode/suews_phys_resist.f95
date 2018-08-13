@@ -61,8 +61,7 @@ SUBROUTINE AerodynamicResistance(&
        muu=1.46e-5 !molecular viscosity
   REAL(KIND(1d0))::&
        psym,&
-       psyh,z0V
-
+       psyh,z0V,cal_z0V
 
   !1)Monteith (1965)-neutral stability
   IF(AerodynamicResistanceMethod==1) THEN
@@ -78,17 +77,18 @@ SUBROUTINE AerodynamicResistance(&
      psyh=stab_fn_heat(StabilityMethod,ZZD/L_mod,zzd/L_mod)
 
      !Z0V roughness length for vapour
-     IF (RoughLenHeatMethod==1) THEN !Brutasert (1982) Z0v=z0/10(see Grimmond & Oke, 1986)
-        z0V=z0m/10
-     ELSEIF (RoughLenHeatMethod==2) THEN ! Kawai et al. (2007)
-       	!z0V=z0m*exp(2-(1.2-0.9*veg_fr**0.29)*(UStar*z0m/muu)**0.25)
-        ! Changed by HCW 05 Nov 2015 (veg_fr includes water; VegFraction = veg + bare soil)
-        z0V=z0m*EXP(2-(1.2-0.9*VegFraction**0.29)*(UStar*z0m/muu)**0.25)
-     ELSEIF (RoughLenHeatMethod==3) THEN
-        z0V=z0m*EXP(-20.) ! Voogt and Grimmond, JAM, 2000
-     ELSEIF (RoughLenHeatMethod==4) THEN
-        z0V=z0m*EXP(2-1.29*(UStar*z0m/muu)**0.25) !See !Kanda and Moriwaki (2007),Loridan et al. (2010)
-     ENDIF
+     z0V=cal_z0V(RoughLenHeatMethod,z0m,VegFraction,UStar)
+     ! IF (RoughLenHeatMethod==1) THEN !Brutasert (1982) Z0v=z0/10(see Grimmond & Oke, 1986)
+     !    z0V=z0m/10
+     ! ELSEIF (RoughLenHeatMethod==2) THEN ! Kawai et al. (2007)
+     !   	!z0V=z0m*exp(2-(1.2-0.9*veg_fr**0.29)*(UStar*z0m/muu)**0.25)
+     !    ! Changed by HCW 05 Nov 2015 (veg_fr includes water; VegFraction = veg + bare soil)
+     !    z0V=z0m*EXP(2-(1.2-0.9*VegFraction**0.29)*(UStar*z0m/muu)**0.25)
+     ! ELSEIF (RoughLenHeatMethod==3) THEN
+     !    z0V=z0m*EXP(-20.) ! Voogt and Grimmond, JAM, 2000
+     ! ELSEIF (RoughLenHeatMethod==4) THEN
+     !    z0V=z0m*EXP(2-1.29*(UStar*z0m/muu)**0.25) !See !Kanda and Moriwaki (2007),Loridan et al. (2010)
+     ! ENDIF
 
      IF(Zzd/L_mod==0.OR.UStar==0) THEN
         RA=(LOG(ZZD/z0m)*LOG(ZZD/z0V))/(k2*AVU1) !Use neutral equation

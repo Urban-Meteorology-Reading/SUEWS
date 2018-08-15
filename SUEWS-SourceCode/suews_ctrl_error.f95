@@ -371,7 +371,7 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
      ELSEIF( WhichFile == 500 ) THEN
         filename='problems.txt'
      ENDIF
-     OPEN(501,file=TRIM(filename))
+     OPEN(WhichFile,file=TRIM(filename),position="append")
 
 
      !This part of the code determines how the error/warning message is written out
@@ -409,7 +409,7 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
         WRITE(message,'(a,i14)') ' Count: ',ErrhCount(errh)
         CALL wrf_message(message)
 #else
-        OPEN(501,file='warnings.txt')
+        OPEN(501,file='warnings.txt',position="append")
         ! WRITE(501,'(4(a))') ' Grid: ',TRIM(ADJUSTL(GridID_text)),'   DateTime: ',datetime  !Add grid and datetime to warnings.txt
         WRITE(501,'(a,i14)') ' Count: ',ErrhCount(errh)
         CLOSE(501)
@@ -422,7 +422,7 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
      WRITE(message,*) 'ERROR! SUEWS run stopped.'
      CALL wrf_message(message)
 #else
-     OPEN(500,file='problems.txt')
+     OPEN(500,file='problems.txt',position="append")
      ! WRITE(500,'(4(a))') ' Grid: ',TRIM(ADJUSTL(GridID_text)),'   DateTime: ',datetime  !Add grid and datetime to problems.txt
      WRITE(500,'(i3)') errh  !Add error code to problems.txt
      WRITE(*,*) 'ERROR! SUEWS run stopped.'   !Print message to screen if program stopped
@@ -455,7 +455,7 @@ END SUBROUTINE ErrorHint
     CHARACTER (len=*):: ProblemFile
     CHARACTER (len=150)::text1   ! Initialization of text
 
-    text1='unknown problem' ! Initialization of text
+    ! text1='unknown problem' ! Initialization of text
 
     !Opening warnings.txt file: First option is selected if the file is opened for the first time
     !Second option for later points
@@ -485,7 +485,7 @@ END SUBROUTINE ErrorHint
     CHARACTER (len=*):: ProblemFile
     CHARACTER (len=150)::text1   ! Initialization of text
 
-    text1='unknown problem' ! Initialization of text
+    ! text1='unknown problem' ! Initialization of text
 
     !Opening problems.txt file: First option is selected if the file is opened for the first time
     !Second option for later points

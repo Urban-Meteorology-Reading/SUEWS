@@ -27,10 +27,11 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
   CHARACTER (len=20)::filename                  !file name for writting out error info
   INTEGER:: errh,ValueI,ValueI2                  ! v7,v8 initialised as false, HCW 28/10/2014
   INTEGER,DIMENSION(80):: ErrhCount = 0             ! Counts each time a error hint is called. Initialise to zero
-  INTEGER:: WhichFile                            ! Used to switch between 500 for error file, 501 for warnings file
+  ! INTEGER:: WhichFile                            ! Used to switch between 500 for error file, 501 for warnings file
 #ifdef wrf
-  CHARACTER(len=1024) :: message ! Used to pass through function wrf_message() by Zhenkun Li, 10/08/2018
+  CHARACTER(len=1024) :: Errmessage ! Used to pass through function wrf_debug() by Zhenkun Li, 10/08/2018
 #endif
+  CHARACTER(len=1024) :: message
 
   ! TS 16 Jul 2018:
   ! these LOGICAL values should NOT be initialised as `SAVE` is implied
@@ -39,7 +40,7 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
   LOGICAL:: returnTrue
 
   text1='unknown problem' ! Initialization of text
-  WhichFile = 0 ! Initialization of file code
+  ! WhichFile = 0 ! Initialization of file code
 
   ! Initialise returnTrue as false (HCW 29/10/2014)
   ! - need to do this in Fortran as values assigned in declarations are not applied
@@ -305,216 +306,107 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
      ! returnTrue=.TRUE.
      v2=.TRUE.
   ENDIF
+
+  ErrhCount(errh) = ErrhCount(errh) + 1   ! Increase error count by 1
+  ! PRINT*, 'returnTrue',returnTrue
+
   !---------------------------------------------------------------------
+  !This part of the code determines how the error/warning message is written out
+  IF(v1) THEN ! 1 real
+     WRITE(Errmessage,'(a,f9.4)')' Value: ', VALUE
+  ELSEIF(v2) THEN ! 2 real
+     WRITE(Errmessage,'(a,2f9.4)')' Values: ', VALUE, value2
+  ELSEIF(v3) THEN ! 1 integer
+     WRITE(Errmessage,'(a,i10)')' Value: ', valueI
+  ELSEIF(v4) THEN ! 2 real, 1 integer
+     WRITE(Errmessage,'(a,2f9.4,i10)')' Values: ', VALUE, value2, valueI
+  ELSEIF(v5) THEN ! 1 real 1 integer
+     WRITE(Errmessage,'(a,f9.4,i10)')' Values: ', VALUE, valueI
+  ELSEIF(v6) THEN ! 2 integer
+     valueI2=INT(VALUE)
+     WRITE(Errmessage,'(a,2i10)')' Values: ', valueI, valueI2
+  ELSEIF(v7) THEN ! 1 real, 2 integer
+     valueI2=INT(value2)
+     WRITE(Errmessage,'(a,f9.4,2i10)')' Values: ', VALUE, valueI2, valueI
+  ELSEIF(v8) THEN
+     ! no error values
+  ENDIF
 
   ! Write errors (that stop the program) to problems.txt; warnings to warnings.txt
   IF(returnTrue) THEN
      IF(SuppressWarnings==0) THEN
 #ifdef wrf
         WRITE(message,*)'Warning: ',TRIM(ProblemFile)
-        CALL wrf_message(message)
+        CALL wrf_debug(100, message)
         WRITE(message,*) TRIM(text1)
-        CALL wrf_message(message)
-#else
-        CALL gen_WarningsText(ProblemFile,text1)   !Call the subroutine that opens the problem.txt file !Moved from above, HCW 17 Feb 2017
-        ! WRITE(501,*) TRIM(text1)
-        WhichFile = 501
-#endif
-     ENDIF
-  ELSE
-#ifdef wrf
-     WRITE(message,*)'Problem: ',TRIM(ProblemFile)
-     CALL wrf_message(message)
-     WRITE(message,*)'ERROR! Program stopped: ',TRIM(text1)
-     CALL wrf_message(message)
-#else
-     CALL gen_ProblemsText(ProblemFile,text1)   !Call the subroutine that opens the problem.txt file !Moved from above, HCW 17 Feb 2017
-     ! WRITE(500,*) 'ERROR! Program stopped: ',TRIM(text1)
-     WhichFile = 500
-#endif
-  ENDIF
-
-#ifdef wrf
-  !This part of the code determines how the error/warning message is written out
-  IF(v1) THEN ! 1 real
-     WRITE(message,'(a,f9.4)')' Value: ', VALUE
-     CALL wrf_message(message)
-  ELSEIF(v2) THEN ! 2 real
-     WRITE(message,'(a,2f9.4)')' Values: ', VALUE, value2
-     CALL wrf_message(message)
-  ELSEIF(v3) THEN ! 1 integer
-     WRITE(message,'(a,i10)')' Value: ', valueI
-     CALL wrf_message(message)
-  ELSEIF(v4) THEN ! 2 real, 1 integer
-     WRITE(message,'(a,2f9.4,i10)')' Values: ', VALUE, value2, valueI
-     CALL wrf_message(message)
-  ELSEIF(v5) THEN ! 1 real 1 integer
-     WRITE(message,'(a,f9.4,i10)')' Values: ', VALUE, valueI
-     CALL wrf_message(message)
-  ELSEIF(v6) THEN ! 2 integer
-     valueI2=INT(VALUE)
-     WRITE(message,'(a,2i10)')' Values: ', valueI, valueI2
-     CALL wrf_message(message)
-  ELSEIF(v7) THEN ! 1 real, 2 integer
-     valueI2=INT(value2)
-     WRITE(message,'(a,f9.4,2i10)')' Values: ', VALUE, valueI2, valueI
-     CALL wrf_message(message)
-  ELSEIF(v8) THEN
-     ! no error values
-  ENDIF
-
-#else
-  ! Write out error message or warning message only if warnings are not suppressed
-  IF(WhichFile == 500 .OR. (WhichFile == 501 .AND. SuppressWarnings==0)) THEN
-     IF ( WhichFile == 501 ) THEN
-        filename='warnings.txt'
-     ELSEIF( WhichFile == 500 ) THEN
-        filename='problems.txt'
-     ENDIF
-     OPEN(WhichFile,file=TRIM(filename),position="append")
-
-
-     !This part of the code determines how the error/warning message is written out
-     IF(v1) THEN ! 1 real
-        WRITE(WhichFile,'(a,f9.4)')' Value: ', VALUE
-     ELSEIF(v2) THEN ! 2 real
-        WRITE(WhichFile,'(a,2f9.4)')' Values: ', VALUE, value2
-     ELSEIF(v3) THEN ! 1 integer
-        WRITE(WhichFile,'(a,i10)')' Value: ', valueI
-     ELSEIF(v4) THEN ! 2 real, 1 integer
-        WRITE(WhichFile,'(a,2f9.4,i10)')' Values: ', VALUE, value2, valueI
-     ELSEIF(v5) THEN ! 1 real 1 integer
-        WRITE(WhichFile,'(a,f9.4,i10)')' Values: ', VALUE, valueI
-     ELSEIF(v6) THEN ! 2 integer
-        valueI2=INT(VALUE)
-        WRITE(WhichFile,'(a,2i10)')' Values: ', valueI, valueI2
-     ELSEIF(v7) THEN ! 1 real, 2 integer
-        valueI2=INT(value2)
-        WRITE(WhichFile,'(a,f9.4,2i10)')' Values: ', VALUE, valueI2, valueI
-     ELSEIF(v8) THEN
-        ! no error values
-     ENDIF
-
-     CLOSE(WhichFile)
-  ENDIF
-#endif
-
-  ErrhCount(errh) = ErrhCount(errh) + 1   ! Increase error count by 1
-  ! PRINT*, 'returnTrue',returnTrue
-
-  ! Write errors (that stop the program) to problems.txt; warnings to warnings.txt
-  IF(returnTrue) THEN
-     IF(SuppressWarnings==0) THEN
-#ifdef wrf
+        CALL wrf_debug(100, message)
+        CALL wrf_debug(100, Errmessage)
         WRITE(message,'(a,i14)') ' Count: ',ErrhCount(errh)
-        CALL wrf_message(message)
+        CALL wrf_debug(100, message)
 #else
-        OPEN(501,file='warnings.txt',position="append")
-        ! WRITE(501,'(4(a))') ' Grid: ',TRIM(ADJUSTL(GridID_text)),'   DateTime: ',datetime  !Add grid and datetime to warnings.txt
+        IF (warningChoice==0) THEN
+            OPEN(501,file='warnings.txt')
+            WRITE(*,*) '>>> See warnings.txt for possible issues in the run <<<'
+            warningChoice=1
+        ELSE
+            OPEN(501,file='warnings.txt',position="append")
+        ENDIF
+
+        !Writing of the warnings file
+        WRITE(501,*)'Warning: ',TRIM(ProblemFile)
+
+        ! write warning info
+        WRITE(501,*) TRIM(text1)
+
+        ! write warning codes
+        WRITE(501,*) TRIM(Errmessage)
+
         WRITE(501,'(a,i14)') ' Count: ',ErrhCount(errh)
         CLOSE(501)
 #endif
      ENDIF
-  ELSE
-#ifdef wrf
-     WRITE(message,'(i3)') errh
-     CALL wrf_message(message)
-     WRITE(message,*) 'ERROR! SUEWS run stopped.'
-     CALL wrf_message(message)
-#else
-     OPEN(500,file='problems.txt',position="append")
-     ! WRITE(500,'(4(a))') ' Grid: ',TRIM(ADJUSTL(GridID_text)),'   DateTime: ',datetime  !Add grid and datetime to problems.txt
-     WRITE(500,'(i3)') errh  !Add error code to problems.txt
-     WRITE(*,*) 'ERROR! SUEWS run stopped.'   !Print message to screen if program stopped
-     CLOSE(500)
-#endif
-  ENDIF
 
-  ! changed the if-clause bahaviour for WRF coupling, TS 16 Jul 2018
-  !When returnTrue=false, then the program will stop
-  IF(.NOT. returnTrue) THEN
-     !write(*,*)'Problems.txt has been closed and overwritten if other errors occur'
-#ifdef wrf
-     CALL wrf_error_fatal ( 'fatal error in SUEWS and recorded in problem.txt' )
-#else
-     CALL PauseStop(ProblemFile)        !Stop the program
-#endif
-  ENDIF
+   ELSE
 
+ #ifdef wrf
+      WRITE(message,*)'Problem: ',TRIM(ProblemFile)
+      CALL wrf_debug(100, message)
+      WRITE(message,*)'ERROR! Program stopped: ',TRIM(text1)
+      CALL wrf_debug(100, message)
+      CALL wrf_debug(100, Errmessage)
+      WRITE(message,'(i3)') errh
+      CALL wrf_debug(100, message)
+      WRITE(message,*) 'ERROR! SUEWS run stopped.'
+      CALL wrf_debug(100, message)
+      CALL wrf_error_fatal ( 'fatal error in SUEWS' )
+ #else
+      IF (errorChoice==0) THEN
+          OPEN(500,file='problems.txt')
+          WRITE(*,*) '>>> See problems.txt for serious issues in the run <<<'
+          errorChoice=1
+      ELSE
+          OPEN(500,file='problems.txt',position="append")
+      ENDIF
+
+      !Writing of the problem file
+      WRITE(500,*)'Problem: ',TRIM(ProblemFile)
+
+      WRITE(500,*) 'ERROR! Program stopped: ',TRIM(text1)
+
+      ! write error codes
+      WRITE(500,*) TRIM(Errmessage)
+
+      WRITE(500,'(i3)') errh  !Add error code to problems.txt
+      WRITE(*,*) 'ERROR! SUEWS run stopped.'   !Print message to screen if program stopped
+      CLOSE(500)
+
+      WRITE(*,*)'problem: ',TRIM(ProblemFile)
+      WRITE(*,*)'See problems.txt for more info.'
+      STOP
+
+ #endif
+   ENDIF
 
 END SUBROUTINE ErrorHint
 
 !=============================================================
-
-! --------------------------------------------------------------------
- SUBROUTINE gen_WarningsText(ProblemFile,text1)
-
-    USE defaultNotUsed
-    IMPLICIT NONE
-
-    CHARACTER (len=*):: ProblemFile
-    CHARACTER (len=150)::text1   ! Initialization of text
-
-    ! text1='unknown problem' ! Initialization of text
-
-    !Opening warnings.txt file: First option is selected if the file is opened for the first time
-    !Second option for later points
-    IF (warningChoice==0) THEN
-        OPEN(501,file='warnings.txt')
-        WRITE(*,*) '>>> See warnings.txt for possible issues in the run <<<'
-        warningChoice=1
-    ELSE
-        OPEN(501,file='warnings.txt',position="append")
-    ENDIF
-
-    !Writing of the warnings file
-    WRITE(501,*)'Warning: ',TRIM(ProblemFile)
-
-    ! write warning info
-    WRITE(501,*) TRIM(text1)
-
-    CLOSE(501)
- END SUBROUTINE gen_WarningsText
-
- ! --------------------------------------------------------------------
- SUBROUTINE gen_ProblemsText(ProblemFile,text1)
-
-    USE defaultNotUsed
-    IMPLICIT NONE
-
-    CHARACTER (len=*):: ProblemFile
-    CHARACTER (len=150)::text1   ! Initialization of text
-
-    ! text1='unknown problem' ! Initialization of text
-
-    !Opening problems.txt file: First option is selected if the file is opened for the first time
-    !Second option for later points
-    IF (errorChoice==0) THEN
-        OPEN(500,file='problems.txt')
-        WRITE(*,*) '>>> See problems.txt for serious issues in the run <<<'
-        errorChoice=1
-    ELSE
-        OPEN(500,file='problems.txt',position="append")
-    ENDIF
-
-    !Writing of the problem file
-    WRITE(500,*)'Problem: ',TRIM(ProblemFile)
-
-    WRITE(500,*) 'ERROR! Program stopped: ',TRIM(text1)
-
-    CLOSE(500)
-
- END SUBROUTINE gen_ProblemsText
- ! --------------------------------------------------------------------
-
- SUBROUTINE PauseStop(ProblemFile)
-
-   IMPLICIT NONE
-   CHARACTER (len=*):: ProblemFile
-
-   WRITE(*,*)'problem: ',TRIM(ProblemFile)
-   WRITE(*,*)'See problems.txt for more info.'
-
-   !pause
-   STOP
- END SUBROUTINE PauseStop

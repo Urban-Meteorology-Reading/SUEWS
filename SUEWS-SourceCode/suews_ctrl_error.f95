@@ -16,7 +16,7 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
 
   USE data_in
   USE defaultNotUsed
-  USE WhereWhen
+  ! USE WhereWhen
 
   IMPLICIT NONE
 
@@ -29,9 +29,9 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
   INTEGER,DIMENSION(80):: ErrhCount = 0             ! Counts each time a error hint is called. Initialise to zero
   ! INTEGER:: WhichFile                            ! Used to switch between 500 for error file, 501 for warnings file
 #ifdef wrf
-  CHARACTER(len=1024) :: Errmessage ! Used to pass through function wrf_debug() by Zhenkun Li, 10/08/2018
+  CHARACTER(len=1024) :: message ! Used to pass through function wrf_debug() by Zhenkun Li, 10/08/2018
 #endif
-  CHARACTER(len=1024) :: message
+  CHARACTER(len=1024) :: Errmessage
 
   ! TS 16 Jul 2018:
   ! these LOGICAL values should NOT be initialised as `SAVE` is implied

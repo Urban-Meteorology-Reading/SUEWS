@@ -7,10 +7,11 @@
 # clean current workspace if any leftover
 rm *.zip
 # get the version from Executable
-fl=($(ls -d ../SUEWS_V*))
+fl=($(ls -d build/*/SUEWS_V2018a))
 # echo "${exe[@]}"
 # echo ${#fl[@]}
 exe=$(basename "${fl[0]}")
+manual=Manual/${exe}_Manual.pdf
 echo "$exe will be packed up"
 program_ver=(${exe//_V/ })
 # program="${program_ver[0]}"
@@ -18,7 +19,7 @@ version="${program_ver[1]}"
 # make bundle name
 dir_win="Win10x64"
 dir_mac="macOS"
-dir_linux="Ubuntu14.04LTS"
+dir_linux="Linux"
 zip_win="${exe}_${dir_win}.zip"
 # echo $zip_win
 zip_mac="${exe}_${dir_mac}.zip"
@@ -26,16 +27,16 @@ zip_mac="${exe}_${dir_mac}.zip"
 zip_linux="${exe}_${dir_linux}.zip"
 
 # Win10x64 bundle
-zip -rq ${zip_win} Input Output Manual -x .DS_*
-zip -urjq ${zip_win} Executable/${dir_win}/${exe}.exe RunControl.nml
+zip -rq ${zip_win} Input Output ${manual} -x .DS_*
+zip -urjq ${zip_win} build/${dir_win}/${exe}.exe RunControl.nml
 echo "${zip_win} done."
 # macOS bundle
-zip -rq ${zip_mac} Input Output Manual -x .DS_*
-zip -urjq ${zip_mac} Executable/${dir_mac}/${exe} RunControl.nml
+zip -rq ${zip_mac} Input Output ${manual} -x .DS_*
+zip -urjq ${zip_mac} build/${dir_mac}/${exe} RunControl.nml
 echo "${zip_mac} done."
 # linux bundle
-zip -rq ${zip_linux} Input Output Manual -x .DS_*
-zip -urjq ${zip_linux} Executable/${dir_linux}/${exe} RunControl.nml
+zip -rq ${zip_linux} Input Output ${manual} -x .DS_*
+zip -urjq ${zip_linux} build/${dir_linux}/${exe} RunControl.nml
 echo "${zip_linux} done."
 
 

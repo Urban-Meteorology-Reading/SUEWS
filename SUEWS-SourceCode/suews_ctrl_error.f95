@@ -345,11 +345,11 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
         CALL wrf_debug(100, message)
 #else
         IF (warningChoice==0) THEN
-            OPEN(501,file='warnings.txt')
-            WRITE(*,*) '>>> See warnings.txt for possible issues in the run <<<'
-            warningChoice=1
+           OPEN(501,file='warnings.txt')
+           WRITE(*,*) '>>> See warnings.txt for possible issues in the run <<<'
+           warningChoice=1
         ELSE
-            OPEN(501,file='warnings.txt',position="append")
+           OPEN(501,file='warnings.txt',position="append")
         ENDIF
 
         !Writing of the warnings file
@@ -366,46 +366,46 @@ SUBROUTINE ErrorHint(errh,ProblemFile,VALUE,value2,valueI)
 #endif
      ENDIF
 
-   ELSE
+  ELSE
 
- #ifdef wrf
-      WRITE(message,*)'Problem: ',TRIM(ProblemFile)
-      CALL wrf_debug(100, message)
-      WRITE(message,*)'ERROR! Program stopped: ',TRIM(text1)
-      CALL wrf_debug(100, message)
-      CALL wrf_debug(100, Errmessage)
-      WRITE(message,'(i3)') errh
-      CALL wrf_debug(100, message)
-      WRITE(message,*) 'ERROR! SUEWS run stopped.'
-      CALL wrf_debug(100, message)
-      CALL wrf_error_fatal ( 'fatal error in SUEWS' )
- #else
-      IF (errorChoice==0) THEN
-          OPEN(500,file='problems.txt')
-          WRITE(*,*) '>>> See problems.txt for serious issues in the run <<<'
-          errorChoice=1
-      ELSE
-          OPEN(500,file='problems.txt',position="append")
-      ENDIF
+#ifdef wrf
+     WRITE(message,*)'Problem: ',TRIM(ProblemFile)
+     CALL wrf_debug(100, message)
+     WRITE(message,*)'ERROR! Program stopped: ',TRIM(text1)
+     CALL wrf_debug(100, message)
+     CALL wrf_debug(100, Errmessage)
+     WRITE(message,'(i3)') errh
+     CALL wrf_debug(100, message)
+     WRITE(message,*) 'ERROR! SUEWS run stopped.'
+     CALL wrf_debug(100, message)
+     CALL wrf_error_fatal ( 'fatal error in SUEWS' )
+#else
+     IF (errorChoice==0) THEN
+        OPEN(500,file='problems.txt')
+        WRITE(*,*) '>>> See problems.txt for serious issues in the run <<<'
+        errorChoice=1
+     ELSE
+        OPEN(500,file='problems.txt',position="append")
+     ENDIF
 
-      !Writing of the problem file
-      WRITE(500,*)'Problem: ',TRIM(ProblemFile)
+     !Writing of the problem file
+     WRITE(500,*)'Problem: ',TRIM(ProblemFile)
 
-      WRITE(500,*) 'ERROR! Program stopped: ',TRIM(text1)
+     WRITE(500,*) 'ERROR! Program stopped: ',TRIM(text1)
 
-      ! write error codes
-      WRITE(500,*) TRIM(Errmessage)
+     ! write error codes
+     WRITE(500,*) TRIM(Errmessage)
 
-      WRITE(500,'(i3)') errh  !Add error code to problems.txt
-      WRITE(*,*) 'ERROR! SUEWS run stopped.'   !Print message to screen if program stopped
-      CLOSE(500)
+     WRITE(500,'(i3)') errh  !Add error code to problems.txt
+     WRITE(*,*) 'ERROR! SUEWS run stopped.'   !Print message to screen if program stopped
+     CLOSE(500)
 
-      WRITE(*,*)'problem: ',TRIM(ProblemFile)
-      WRITE(*,*)'See problems.txt for more info.'
-      STOP
+     WRITE(*,*)'problem: ',TRIM(ProblemFile)
+     WRITE(*,*)'See problems.txt for more info.'
+     STOP
 
- #endif
-   ENDIF
+#endif
+  ENDIF
 
 END SUBROUTINE ErrorHint
 

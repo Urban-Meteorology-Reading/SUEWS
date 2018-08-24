@@ -546,8 +546,10 @@ CONTAINS
        ! get correct day index
        CALL unique(INT(PACK(dataOutSUEWS(1:irMax,2,Gridiv),&
             mask=(dataOutSUEWS(1:irMax,3,Gridiv)==23 &
-            .AND.dataOutSUEWS(1:irMax,4,Gridiv)==(nsh-1)/nsh*60))),&
+            .AND.dataOutSUEWS(1:irMax,4,Gridiv)==(nsh-1.)/nsh*60))),&
             id_seq)
+
+
        IF (ALLOCATED(dataOutX)) THEN
           DEALLOCATE(dataOutX)
           IF ( err/= 0) PRINT *, "dataOutX: Deallocation request denied"
@@ -559,6 +561,9 @@ CONTAINS
        ENDIF
 
        dataOutX=dataOutDailyState(id_seq,1:SIZE(varList),Gridiv)
+       ! print*, id_seq
+       ! print*, dataOutDailyState(id_seq,1:SIZE(varList),Gridiv)
+       ! print*, 1/(nsh-nsh)
     END SELECT
 
     ! aggregation:
@@ -1091,7 +1096,7 @@ CONTAINS
     CHARACTER(len = 15),INTENT(out) :: name,group,aggreg
 
     INTEGER :: nVar
-    n=SIZE(varList, dim=1)
+    nVar=SIZE(varList, dim=1)
     IF ( i<nVar .AND.i>0  ) THEN
        name   = TRIM(varList(i)%header)
        group  = TRIM(varList(i)%group)

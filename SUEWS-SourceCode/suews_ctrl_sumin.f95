@@ -28,7 +28,7 @@ CONTAINS
        surf_var_id,DecidCap_id,albDecTr_id,albEveTr_id,albGrass_id,porosity_id,&
        GDD_id,HDD_id,LAI_id,WUDay_id,soilmoist_id,state_id,MeltWaterStore,&
        avkdn,avRh,avU1,Press_hPa,Temp_C,Precip,& ! forcing variables
-       qh,qe,qsfc,tsk,CHKLOWQ)!output
+       qf,qs,qh,qe,qsfc,tsk,CHKLOWQ)!output
 
     ! model configurations
     INTEGER,INTENT(in) ::snowUse
@@ -117,6 +117,8 @@ CONTAINS
     REAL(KIND(1D0)),INTENT(IN)::Precip
 
     ! output for WRF
+    REAL(KIND(1D0)),INTENT(out)::qf
+    REAL(KIND(1D0)),INTENT(out)::qs
     REAL(KIND(1D0)),INTENT(out)::qh
     REAL(KIND(1D0)),INTENT(out)::qe
     REAL(KIND(1D0)),INTENT(out)::qsfc
@@ -405,10 +407,12 @@ CONTAINS
 
 
     surf_var_id=StoreDrainPrm(6,:) ! update surf_var_id
+    qf=dataOutLineSUEWS(7)
+    qs=dataOutLineSUEWS(8)
     qh=dataOutLineSUEWS(9)
     qe=dataOutLineSUEWS(10)
     qsfc=dataOutLineSUEWS(16)
-    tsk=dataOutLineSUEWS(5)+273.15
+    tsk=dataOutLineSUEWS(77)+273.15
     CHKLOWQ=1
 
     ! PRINT*,''

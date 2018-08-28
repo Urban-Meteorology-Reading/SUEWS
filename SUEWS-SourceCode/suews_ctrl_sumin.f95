@@ -28,7 +28,7 @@ CONTAINS
        surf_var_id,DecidCap_id,albDecTr_id,albEveTr_id,albGrass_id,porosity_id,&
        GDD_id,HDD_id,LAI_id,WUDay_id,soilmoist_id,state_id,MeltWaterStore,&
        avkdn,avRh,avU1,Press_hPa,Temp_C,Precip,& ! forcing variables
-       qf,qs,qh,qe,qsfc,tsk,CHKLOWQ)!output
+       qn,qf,qs,qh,qe,qsfc,tsk,CHKLOWQ)!output
 
     ! model configurations
     INTEGER,INTENT(in) ::snowUse
@@ -117,7 +117,7 @@ CONTAINS
     REAL(KIND(1D0)),INTENT(IN)::Precip
 
     ! output for WRF
-    REAL(KIND(1D0)),INTENT(out)::qn1
+    REAL(KIND(1D0)),INTENT(out)::qn
     REAL(KIND(1D0)),INTENT(out)::qf
     REAL(KIND(1D0)),INTENT(out)::qs
     REAL(KIND(1D0)),INTENT(out)::qh
@@ -415,7 +415,7 @@ CONTAINS
 
 
     surf_var_id=StoreDrainPrm(6,:) ! update surf_var_id
-    qn1=dataOutLineSUEWS(6)
+    qn=dataOutLineSUEWS(6)
     qf=dataOutLineSUEWS(7)
     qs=dataOutLineSUEWS(8)
     qh=dataOutLineSUEWS(9)
@@ -439,7 +439,7 @@ CONTAINS
     CALL wrf_debug(100, message)
 
 
-    WRITE( message,* ) ' in SuMin, qn1,qf,qs,qh,qe:',dataOutLineSUEWS(6:10)
+    WRITE( message,* ) ' in SuMin, qn,qf,qs,qh,qe:',dataOutLineSUEWS(6:10)
     CALL wrf_debug(100, message)
 #endif
 

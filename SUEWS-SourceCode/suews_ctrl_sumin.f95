@@ -154,6 +154,7 @@ CONTAINS
     INTEGER::Gridiv
     INTEGER::Ie_end
     INTEGER::Ie_start
+    CHARACTER*1024 :: message
 
     ! parameters used in SUEWS for now:
     REAL(KIND(1d0)),DIMENSION(7),PARAMETER ::SoilStoreCap        = [150., 150., 150., 150., 150., 150., 0.] !Capacity of soil store for each surface [mm]
@@ -355,6 +356,8 @@ CONTAINS
     ! soilmoist_id=MERGE(soilmoist_id,soilmoist_id*0,soilmoist_id>0)
     ! print*, 'soilmoist_id modified',soilmoist_id
     ! PRINT*, 'state_id',state_id
+    WRITE( message,* ) 'in SuMin, before calculation, OHM_coef:',OHM_coef
+    CALL wrf_debug(100, message)
 
 
     CALL SUEWS_cal_Main(&
@@ -425,6 +428,12 @@ CONTAINS
     !    zdm_in=0.
     !    PRINT*, 10./zdm_in
     ! END IF
+    WRITE( message,* ) ' in SuMin, after calculation, OHM_coef:',OHM_coef
+    CALL wrf_debug(100, message)
+
+
+    WRITE( message,* ) ' in SuMin, qn1,qf,qs,qh,qe:',dataOutLineSUEWS(6:10)
+    CALL wrf_debug(100, message)
 
   END SUBROUTINE SuMin
 

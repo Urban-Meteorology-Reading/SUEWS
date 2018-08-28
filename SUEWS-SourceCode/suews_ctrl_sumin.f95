@@ -117,6 +117,7 @@ CONTAINS
     REAL(KIND(1D0)),INTENT(IN)::Precip
 
     ! output for WRF
+    REAL(KIND(1D0)),INTENT(out)::qn1
     REAL(KIND(1D0)),INTENT(out)::qf
     REAL(KIND(1D0)),INTENT(out)::qs
     REAL(KIND(1D0)),INTENT(out)::qh
@@ -414,6 +415,7 @@ CONTAINS
 
 
     surf_var_id=StoreDrainPrm(6,:) ! update surf_var_id
+    qn1=dataOutLineSUEWS(6)
     qf=dataOutLineSUEWS(7)
     qs=dataOutLineSUEWS(8)
     qh=dataOutLineSUEWS(9)

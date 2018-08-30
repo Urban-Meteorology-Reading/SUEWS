@@ -27,9 +27,9 @@ endif
 
 FCNOOPT = #-O0
 FCDEBUG =  #-g -check all -fpe0 -warn -traceback -debug extended #-g $(FCNOOPT) -fbacktrace -ggdb -fcheck=bounds,do,mem,pointer -ffpe-trap=invalid,zero,overflow
-#FCPROF = -pg
+FCPROF = #-pg
 
-FFLAGS = $(STATIC) $(FCDEBUG) -cpp
+FFLAGS = -O3 $(STATIC) $(FCDEBUG) -cpp
 CFLAGS =
 
 

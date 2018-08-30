@@ -8,7 +8,7 @@
   "ah_slope_heating": {
     "AnthropogenicCode": ["AHSlope_Heating_WD", "AHSlope_Heating_WE"]
   },
-  "ahprof": {
+  "ahprof_24hr": {
     "AnthropogenicCode": [{
       "EnergyUseProfWD": ":"
     }, {
@@ -236,7 +236,7 @@
   "gsmodel": {
     "CondCode": "gsModel"
   },
-  "humactivity": {
+  "humactivity_24hr": {
     "AnthropogenicCode": [{
       "ActivityProfWD": ":"
     }, {
@@ -457,7 +457,7 @@
   "pipecapacity": "PipeCapacity",
   "popdensdaytime": "PopDensDay",
   "popdensnighttime": "PopDensNight",
-  "popprof": {
+  "popprof_24hr": {
     "AnthropogenicCode": [{
       "PopProfWD": ":"
     }, {
@@ -588,7 +588,7 @@
   "snowlimpaved": {
     "Code_Paved": "SnowLimRemove"
   },
-  "snowprof": [{
+  "snowprof_24hr": [{
     "SnowClearingProfWD": ":"
   }, {
     "SnowClearingProfWE": ":"
@@ -659,7 +659,7 @@
   }, {
     "Code_Water": "StateLimit"
   }],
-  "surf": [
+  "storedrainprm": [
     [{
       "Code_Paved": "StorageMin"
     }, {
@@ -794,7 +794,7 @@
   "trafficunits": {
     "AnthropogenicCode": "TrafficUnits"
   },
-  "traffprof": {
+  "traffprof_24hr": {
     "AnthropogenicCode": [{
       "TraffProfWD": ":"
     }, {
@@ -925,12 +925,12 @@
   }, {
     "Code_Water": "WetThreshold"
   }],
-  "wuprofa": [{
+  "wuprofa_24hr": [{
     "WaterUseProfAutoWD": ":"
   }, {
     "WaterUseProfAutoWE": ":"
   }],
-  "wuprofm": [{
+  "wuprofm_24hr": [{
     "WaterUseProfManuWD": ":"
   }, {
     "WaterUseProfManuWE": ":"

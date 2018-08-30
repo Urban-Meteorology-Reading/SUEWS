@@ -33,14 +33,15 @@ dir_f95 = 'SUEWS-SourceCode'
 target_f95 = [
     os.path.join(dir_f95, f)
     for f in
-    ['SUEWS_ctrl_Const.f95',
-     'SUEWS_ctrl_Driver.f95']]
+    ['suews_ctrl_const.f95',
+     'suews_ctrl_driver.f95']]
 all_f95 = glob.glob(os.path.join(dir_f95, '*.f95'))
 exclude_f95 = [
     os.path.join(dir_f95, f)
     for f in
-    ['SUEWS_C_wrapper.f95',
-     'SUEWS_Program.f95']
+    ['suews_c_wrapper.f95',
+     'suews_ctrl_sumin.f95',
+     'suews_program.f95']
 ]
 other_f95 = list(
     set(all_f95)

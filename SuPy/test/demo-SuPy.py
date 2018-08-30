@@ -23,6 +23,7 @@ import glob
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from pathlib import Path
 
 # predefine index slicer for matplotlib plotting
 idx = pd.IndexSlice
@@ -31,7 +32,7 @@ idx = pd.IndexSlice
 # %% initialise SUEWS settings
 # dir_start: the path to the SUEWS simulaiton direcotry where RunControl
 # is placed
-dir_start = 'SampleRun'
+dir_start = Path('../../SampleRun')
 
 # init_SUEWS_pd initialise the SUEWS by pre-processing the input folder
 # and save all configuration info into two pandas data structures:
@@ -39,6 +40,9 @@ dir_start = 'SampleRun'
 # b: df_state_init: a DataFrame that stores grid-specific info that can be used as
 #                   initial conditions for SUEWS simulations
 ser_mod_cfg, df_state_init = sp.init_SUEWS_pd(dir_start)
+
+# dir_input = dir_start / ser_mod_cfg['fileinputpath']
+
 
 # load met forcing as DataFrame:
 # grid name to for met forcing
@@ -50,12 +54,15 @@ df_forcing = sp.load_SUEWS_Forcing_df_grid(
 
 # main calulation:
 # here we only perform simulation for a certain number of timesteps
-df_forcing_part = df_forcing.iloc[:288 * 3]
+df_forcing_part = df_forcing.iloc[:288 * 2]
 # `xwf` a test variable, leave it as it is for now: DON'T REMOVE
 df_state_init.loc[:, 'xwf'] = 0
 # run_suews_df performs SUEWS simulaiton and two DataFrames will be generated:
 # df_output: an array of all output variables
 # df_state: an array of all state variables, each of them can be used as an initial condition
+# np.array(df_state_init.loc[1,'ahprof_24hr']).shape
+# for k,v in df_state_init.loc[1].iteritems():
+#     print(k,v)
 df_output, df_state = sp.run_suews_df(df_forcing_part, df_state_init)
 
 
@@ -80,16 +87,16 @@ y1 = df_state_time.loc[idx[:, 1], :].plot(
     y='aerodynamicresistancemethod', x='Dectime')
 plt.show()
 # entry with value arrays
-y2 = df_state_time.loc[:, ['Dectime', 'soilmoist']]
-y2 = y2.join(y2['soilmoist'].apply(pd.Series), rsuffix='ss_').drop(
-    columns=['soilmoist']).loc[:, ['Dectime', 1, 3]].plot(x='Dectime')
+y2 = df_state_time.loc[:, ['Dectime', 'soilmoist_id']]
+y2 = y2.join(y2['soilmoist_id'].apply(pd.Series), rsuffix='ss_').drop(
+    columns=['soilmoist_id']).loc[:, ['Dectime', 1, 3]].plot(x='Dectime')
 plt.show()
 for var in df_state_time.columns:
-    print var
-y3 = df_state_time.loc[100:, ['Dectime', 'qn1_av_store_grid']]
-y3['qn1_av_store_grid'] = y3['qn1_av_store_grid'].apply(np.mean)
+    print(var)
+y3 = df_state_time.loc[100:, ['Dectime', 'qn1_av']]
+y3['qn1_av'] = y3['qn1_av'].apply(np.mean)
 y3 = y3.plot(x='Dectime')
-plt.show()
+# plt.show()
 
 
 # %% comparison

@@ -1087,42 +1087,6 @@ CONTAINS
     nlines=nlines-1 ! skip header
   END FUNCTION count_lines
 
-  SUBROUTINE output_name_n(i,name,group,aggreg)
-    ! used by f2py module `SuPy` to handle output names
-    IMPLICIT NONE
-    ! the dimension is potentially incorrect,
-    ! which should be consistent with that in output module
-    INTEGER,INTENT(in) :: i
-    CHARACTER(len = 15),INTENT(out) :: name,group,aggreg
-
-    INTEGER :: nVar
-    nVar=SIZE(varList, dim=1)
-    IF ( i<nVar .AND.i>0  ) THEN
-       name   = TRIM(varList(i)%header)
-       group  = TRIM(varList(i)%group)
-       aggreg = TRIM(varList(i)%aggreg)
-    ELSE
-       name   = ''
-       group  = ''
-       aggreg = ''
-    END IF
-
-
-  END SUBROUTINE output_name_n
-
-
-  SUBROUTINE output_size(nVar)
-    ! used by f2py module `SuPy` to get size of the output list
-    IMPLICIT NONE
-    ! the dimension is potentially incorrect,
-    ! which should be consistent with that in output module
-    INTEGER,INTENT(out) :: nVar
-
-    nVar=SIZE(varList, dim=1)
-
-  END SUBROUTINE output_size
-
-
   !===========================================================================!
   ! write the output of final SUEWS results in netCDF
   !   with spatial layout of QGIS convention

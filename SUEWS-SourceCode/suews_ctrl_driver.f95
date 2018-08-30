@@ -15,7 +15,7 @@ MODULE SUEWS_Driver
        SUEWS_cal_SoilMoist,SUEWS_update_SoilMoist,&
        ReDistributeWater,SUEWS_cal_HorizontalSoilWater,&
        SUEWS_cal_WaterUse
-  ! USE ctrl_output,ONLY:varList
+  USE ctrl_output,ONLY:varList
   USE allocateArray,ONLY:&
        nsurf,nvegsurf,&
        PavSurf,BldgSurf,ConifSurf,DecidSurf,GrassSurf,BSoilSurf,WaterSurf,&
@@ -299,7 +299,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(12),INTENT(INOUT)       ::HDD_id !Heating Degree Days (see SUEWS_DailyState.f95)
     ! REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT)       ::HDD_id_use !Heating Degree Days (see SUEWS_DailyState.f95)
     REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(INOUT)::LAI_id !LAI for each veg surface [m2 m-2]
-    REAL(KIND(1d0)),DIMENSION(9),INTENT(OUT)::WUDay_id
+    REAL(KIND(1d0)),DIMENSION(9),INTENT(INOUT)::WUDay_id
 
     REAL(KIND(1d0)),INTENT(INOUT):: DecidCap_id
     REAL(KIND(1d0)),INTENT(INOUT):: albDecTr_id
@@ -2464,5 +2464,39 @@ CONTAINS
 
   END FUNCTION square_real
 
+  SUBROUTINE output_name_n(i,name,group,aggreg)
+    ! used by f2py module `SuPy` to handle output names
+    IMPLICIT NONE
+    ! the dimension is potentially incorrect,
+    ! which should be consistent with that in output module
+    INTEGER,INTENT(in) :: i
+    CHARACTER(len = 15),INTENT(out) :: name,group,aggreg
+
+    INTEGER :: nVar
+    nVar=SIZE(varList, dim=1)
+    IF ( i<nVar .AND.i>0  ) THEN
+       name   = TRIM(varList(i)%header)
+       group  = TRIM(varList(i)%group)
+       aggreg = TRIM(varList(i)%aggreg)
+    ELSE
+       name   = ''
+       group  = ''
+       aggreg = ''
+    END IF
+
+
+  END SUBROUTINE output_name_n
+
+
+  SUBROUTINE output_size(nVar)
+    ! used by f2py module `SuPy` to get size of the output list
+    IMPLICIT NONE
+    ! the dimension is potentially incorrect,
+    ! which should be consistent with that in output module
+    INTEGER,INTENT(out) :: nVar
+
+    nVar=SIZE(varList, dim=1)
+
+  END SUBROUTINE output_size
 
 END MODULE SUEWS_Driver

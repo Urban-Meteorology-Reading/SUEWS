@@ -1164,7 +1164,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      id        = INT(MetForcingData(ir, 2,Gridiv))
      it        = INT(MetForcingData(ir, 3,Gridiv))
      imin      = INT(MetForcingData(ir, 4,Gridiv))
-     isec      = 0
+     isec      = 0 ! NOT used by SUEWS but by WRF-SUEWS via the cal_main interface
      qn1_obs   = MetForcingData(ir, 5,Gridiv)      !Real values (kind(1d0))
      qh_obs    = MetForcingData(ir, 6,Gridiv)
      qe_obs    = MetForcingData(ir, 7,Gridiv)

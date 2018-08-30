@@ -10,7 +10,8 @@
 ###########################################################################
 
 # load dependency modules
-import os,sys
+import os
+import sys
 import numpy as np
 import pandas as pd
 import f90nml
@@ -126,7 +127,7 @@ dict_Code2File.update(dict_varSiteSelect2File)
 # this function can handle all SUEWS nml files
 def load_SUEWS_nml(xfile):
     # remove case issues
-    xfile=path_insensitive(xfile)
+    xfile = path_insensitive(xfile)
     df = pd.DataFrame(f90nml.read(xfile))
     return df
 
@@ -140,7 +141,7 @@ def load_SUEWS_RunControl(xfile):
 # load all tables (xgrid.e., txt files)
 def load_SUEWS_table(fileX):
     # remove case issues
-    fileX=path_insensitive(fileX)
+    fileX = path_insensitive(fileX)
     rawdata = pd.read_table(fileX, delim_whitespace=True,
                             comment='!', error_bad_lines=True,
                             skiprows=1, index_col=0).dropna()
@@ -150,7 +151,7 @@ def load_SUEWS_table(fileX):
 # load all tables into variables staring with 'lib_' and filename
 def load_SUEWS_Libs(dir_input):
     dict_libs = {}
-    for lib, lib_file in dict_libVar2File.iteritems():
+    for lib, lib_file in dict_libVar2File.items():
         lib_path = os.path.join(dir_input, lib_file)
         dict_libs.update({lib: load_SUEWS_table(lib_path)})
     # return DataFrame containing settings
@@ -162,10 +163,16 @@ def lookup_code_lib(libName, codeKey, codeValue, dict_libs):
     str_lib = dict_Code2File[libName].replace(
         '.txt', '').replace('SUEWS', 'lib')
     lib = dict_libs[str_lib]
+    # print(str_lib,codeKey,codeValue)
     if codeKey == ':':
         res = lib.loc[int(np.unique(codeValue)), :].tolist()
     else:
         res = lib.loc[int(np.unique(codeValue)), codeKey]
+        if isinstance(res, pd.Series):
+            # drop duolicates, otherwise duplicate values
+            # will be introduced with more complexity
+            res = res.drop_duplicates()
+            res = res.values[0] if res.size == 1 else res.tolist()
     return res
 
 
@@ -174,10 +181,10 @@ def lookup_KeySeq_lib(indexKey, subKey, indexCode, dict_libs):
     # print indexKey, subKey, indexCode
     if type(subKey) is float:
         res = subKey
-    elif type(subKey) is unicode:
+    elif type(subKey) is str:
         res = lookup_code_lib(indexKey, subKey, indexCode, dict_libs)
     elif type(subKey) is dict:
-        indexKeyX, subKeyX = subKey.items()[0]
+        indexKeyX, subKeyX = list(subKey.items())[0]
         indexCodeX = lookup_code_lib(indexKey, indexKeyX, indexCode, dict_libs)
         res = lookup_KeySeq_lib(indexKeyX, subKeyX, indexCodeX, dict_libs)
     elif type(subKey) is list:
@@ -202,12 +209,8 @@ def load_SUEWS_SurfaceChar(dir_input):
     # construct a dictionary in the form: {grid:{var:value,...}}
     dict_gridSurfaceChar = {
         grid: {k: lookup_KeySeq_lib(k, v, grid, dict_libs)
-               for k, v in dict_var2SiteSelect.iteritems()}
+               for k, v in dict_var2SiteSelect.items()}
         for grid in dict_libs['lib_SiteSelect'].index}
-    # dict_gridSurfaceChar = {
-    #     grid: {k: lookup_KeySeq(k, v, grid)
-    #            for k, v in dict_var2SiteSelect.iteritems()}
-    #     for grid in dict_libs['lib_SiteSelect'].index}
     # convert the above dict to DataFrame
     df_gridSurfaceChar = pd.DataFrame.from_dict(dict_gridSurfaceChar).T
     # empty dict to hold updated values
@@ -215,8 +218,8 @@ def load_SUEWS_SurfaceChar(dir_input):
     # modify some variables to be compliant with SUEWS requirement
     for xgrid in df_gridSurfaceChar.index:
         # transpoe snowprof:
-        df_gridSurfaceChar.loc[xgrid, 'snowprof'] = np.array(
-            df_gridSurfaceChar.loc[xgrid, 'snowprof'], order='F').T
+        df_gridSurfaceChar.loc[xgrid, 'snowprof_24hr'] = np.array(
+            df_gridSurfaceChar.loc[xgrid, 'snowprof_24hr'], order='F').T
 
         # transpoe laipower:
         df_gridSurfaceChar.loc[xgrid, 'laipower'] = np.array(
@@ -229,8 +232,8 @@ def load_SUEWS_SurfaceChar(dir_input):
             x[np.nonzero(x)])
 
         # surf order as F:
-        df_gridSurfaceChar.loc[xgrid, 'surf'] = np.array(
-            df_gridSurfaceChar.loc[xgrid, 'surf'], order='F')
+        df_gridSurfaceChar.loc[xgrid, 'storedrainprm'] = np.array(
+            df_gridSurfaceChar.loc[xgrid, 'storedrainprm'], order='F')
 
         # convert to np.array
         df_gridSurfaceChar.loc[xgrid, 'alb'] = np.array(
@@ -247,30 +250,30 @@ def load_SUEWS_SurfaceChar(dir_input):
         # print 'len(dict_x)',len(dict_x['laipower'])
 
         # profiles:
-        t_tstep = np.linspace(0, 24, num=3600 / tstep * 24, endpoint=False)
-        list_varTstep = ['ahprof_tstep',
-                         'popprof_tstep',
-                         'traffprof_tstep',
-                         'humactivity_tstep',
-                         'wuprofm_tstep',
-                         'wuprofa_tstep']
+        # t_tstep = np.linspace(0, 24, num=3600 / tstep * 24, endpoint=False)
+        list_varTstep = ['ahprof_24hr',
+                         'popprof_24hr',
+                         'traffprof_24hr',
+                         'humactivity_24hr',
+                         'wuprofm_24hr',
+                         'wuprofa_24hr']
         for var in list_varTstep:
-            var_name = var.replace('_tstep', '')
-            var0 = np.array(df_gridSurfaceChar.loc[xgrid, var_name]).T
-            var0 = np.vstack((var0, var0))
-            # interpolator:
-            f = interpolate.interp1d(np.arange(0, 48), var0, axis=0)
-            dict_x.update({var: f(t_tstep).tolist()})
-            # different normalisation processing:
-            # For water use, SUM of the multipliers is equal to 1
-            if var in ['wuprofm_tstep', 'wuprofa_tstep']:
-                dict_x[var] = dict_x[var] / np.sum(dict_x[var], axis=0)
-            # For traffic, AVERAGE of the multipliers is equal to 1
-            elif var in ['ahprof_tstep', 'traffprof_tstep']:
-                dict_x[var] = (dict_x[var] / np.sum(dict_x[var], axis=0)
-                               * len(dict_x[var]))
+            #     var_name = var.replace('_24hr', '')
+            var_T = np.array(df_gridSurfaceChar.loc[xgrid, var]).T
+        #     var0 = np.vstack((var0, var0))
+        #     # interpolator:
+        #     f = interpolate.interp1d(np.arange(0, 48), var0, axis=0)
+            dict_x.update({var: var_T})
+        #     # different normalisation processing:
+        #     # For water use, SUM of the multipliers is equal to 1
+        #     if var in ['wuprofm_24hr', 'wuprofa_24hr']:
+        #         dict_x[var] = dict_x[var] / np.sum(dict_x[var], axis=0)
+        #     # For traffic, AVERAGE of the multipliers is equal to 1
+        # elif var in ['ahprof_24hr', 'traffprof_24hr']:
+        #         dict_x[var] = (dict_x[var] / np.sum(dict_x[var], axis=0)
+        #                        * len(dict_x[var]))
 
-            # update dict to hold grids
+        # update dict to hold grids
         dict_x_grid.update({xgrid: dict_x})
 
     # convert to DataFrame
@@ -403,7 +406,7 @@ def load_SUEWS_Forcing_met_df_raw(
         '{site}{grid}*{tstep}*txt'.format(
             site=filecode,
             grid=(grid if multiplemetfiles == 1 else ''),
-            tstep=tstep_met_in / 60))
+            tstep=int(tstep_met_in / 60)))
 
     # list of met forcing files
     list_file_MetForcing = sorted([
@@ -422,6 +425,7 @@ def load_SUEWS_Forcing_met_df_raw(
             # date_parser=func_parse_date
         ).dropna() for fileX in list_file_MetForcing],
         ignore_index=True).rename(
+        # rename these columns to match variables via the driver interface
         columns={
             '%' + 'iy': 'iy',
             'id': 'id',
@@ -435,6 +439,8 @@ def load_SUEWS_Forcing_met_df_raw(
             'ldown': 'ldown_obs',
             'rain': 'precip',
             'press': 'press_hpa',
+            'Qs': 'qs_obs',
+            'Qf': 'qf_obs',
             'QH': 'qh_obs',
             'Q*': 'qn1_obs',
             'snow': 'snow_obs',
@@ -445,9 +451,12 @@ def load_SUEWS_Forcing_met_df_raw(
     # convert unit from kPa to hPa
     df_forcing_met['press_hpa'] *= 10
 
+    # add `isec` for WRF-SUEWS interface
+    df_forcing_met['isec'] = 0
+
     # set correct data types
-    df_forcing_met[['iy', 'id', 'it', 'imin']] = df_forcing_met[[
-        'iy', 'id', 'it', 'imin']].astype(np.int64)
+    df_forcing_met[['iy', 'id', 'it', 'imin', 'isec']] = df_forcing_met[[
+        'iy', 'id', 'it', 'imin', 'isec']].astype(np.int64)
 
     return df_forcing_met
 
@@ -610,7 +619,7 @@ def init_SUEWS_dict(dir_start):  # return dict
 
     # mod_config: static properties
     dict_ModConfig = {'aerodynamicresistancemethod': 2,
-                      'ity': 2,
+                      'evapmethod': 2,
                       'laicalcyes': 1,
                       'veg_type': 1,
                       'diagnose': 0,
@@ -666,7 +675,7 @@ def init_SUEWS_dict_grid(dir_input, grid,
     # some constant values
     nan = -999.
     ndays = 366
-    nsh = 3600 / tstep  # tstep from dict_RunControl
+    nsh = int(3600 / tstep)  # tstep from dict_RunControl
 
     # load met forcing of `grid`:
     filecode = dict_ModConfig['filecode']
@@ -814,15 +823,16 @@ def init_SUEWS_dict_grid(dir_input, grid,
     # state_init: temporally-varying states from timestep to timestep
     dict_StateInit = {
         # TODO: water use patterns, which is currently not used
-        'wu_day': 0. * np.ones(((ndays + 1), 9),
-                               order='F'),
+        'wuday_id': 0. * np.ones(9, order='F'),
         'numcapita': df_gridSurfaceChar.loc[
             grid,
             ['popdensdaytime', 'popdensnighttime']].mean(),
-        'qn1_av_store_grid': nan * np.ones(2 * nsh + 1),
-        'qn1_s_av_store_grid': nan * np.ones(2 * nsh + 1),
-        'qn1_s_store_grid': nan * np.ones(nsh),
-        'qn1_store_grid': nan * np.ones(nsh),
+        'qn1_av': nan * np.ones(1),
+        'qn1_s_av': nan * np.ones(1),
+        'dqndt': nan * np.ones(1),
+        'dqnsdt': nan * np.ones(1),
+        # 'qn1_s_store_grid': nan * np.ones(nsh),
+        # 'qn1_store_grid': nan * np.ones(nsh),
 
         # snow:
         'snowalb': dict_InitCond['snowalb0'],
@@ -867,7 +877,7 @@ def init_SUEWS_dict_grid(dir_input, grid,
             order='F'),
 
         # Initial soil stores for each surface (below ground)
-        'soilmoist': np.array(
+        'soilmoist_id': np.array(
             [dict_InitCond[var] for var in ['soilstorepavedstate',
                                             'soilstorebldgsstate',
                                             'soilstoreevetrstate',
@@ -877,7 +887,7 @@ def init_SUEWS_dict_grid(dir_input, grid,
             + [0.], order='F'),
 
         # Initial wetness status of each surface (above ground)
-        'state': np.array(
+        'state_id': np.array(
             [dict_InitCond[var] for var in ['pavedstate',
                                             'bldgsstate',
                                             'evetrstate',
@@ -887,61 +897,56 @@ def init_SUEWS_dict_grid(dir_input, grid,
                                             'waterstate']],
             order='F'),
 
-        # mean Tair of past 24 hours
+        # mean Tair of past 24 hours, NOT used by supy as it is for ESTM
         'tair24hr': 273.15 * np.ones(24 * nsh),
 
 
         # vegetation related parameters:
-
-        'porosity': dict_InitCond['porosity0'] * np.ones(ndays + 1,
-                                                         order='F'),
-        'albdectr': dict_InitCond['albdectr0'] * np.ones(ndays + 1,
-                                                         order='F'),
-        'albevetr': dict_InitCond['albevetr0'] * np.ones(ndays + 1,
-                                                         order='F'),
-        'albgrass': dict_InitCond['albgrass0'] * np.ones(ndays + 1,
-                                                         order='F'),
-        'decidcap': dict_InitCond['decidcap0'] * np.ones(ndays + 1,
-                                                         order='F'),
-
+        'porosity_id': dict_InitCond['porosity0'] * np.ones(1, order='F'),
+        'albdectr_id': dict_InitCond['albdectr0'] * np.ones(1, order='F'),
+        'albevetr_id': dict_InitCond['albevetr0'] * np.ones(1, order='F'),
+        'albgrass_id': dict_InitCond['albgrass0'] * np.ones(1, order='F'),
+        'decidcap_id': dict_InitCond['decidcap0'] * np.ones(1, order='F'),
         # leaf area index:
-
-        'lai': 1. * np.zeros((ndays + 5, 3)),
+        'lai_id': 1. * np.zeros(3),
         # growing degree days:
-        'gdd': np.zeros((ndays + 1, 5)),
-
+        'gdd_id': np.zeros(5),
         # heating degree days:
-        'hdd': np.zeros((ndays + 5, 6))
+        'hdd_id': np.zeros(12)
     }
 
     # lai-related parameters:
-    dict_StateInit['lai'][4 + id_prev] = [
-        dict_InitCond[var] for var in ['laiinitialevetr',
-                                       'laiinitialdectr',
-                                       'laiinitialgrass']]
+    # dict_StateInit['lai'][4 + id_prev] = [
+    #     dict_InitCond[var] for var in ['laiinitialevetr',
+    #                                    'laiinitialdectr',
+    #                                    'laiinitialgrass']]
 
     # hdd-related parameters:
     # print 'temp_c0', dict_InitCond['temp_c0']
-    dif_basethdd_temp_c0 = (
-        df_gridSurfaceChar.loc[grid, 'basethdd']
-        - dict_InitCond['temp_c0'])
-    gamma1 = (1 if dif_basethdd_temp_c0 >= 0 else 0)
-    gamma2 = (1 if dif_basethdd_temp_c0 <= 0 else 0)
-    hdd1 = gamma1 * dif_basethdd_temp_c0
-    hdd2 = gamma2 * (-1 * dif_basethdd_temp_c0)
+    # dif_basethdd_temp_c0 = (
+    #     df_gridSurfaceChar.loc[grid, 'basethdd']
+    #     - dict_InitCond['temp_c0'])
+    # gamma1 = (1 if dif_basethdd_temp_c0 >= 0 else 0)
+    # gamma2 = (1 if dif_basethdd_temp_c0 <= 0 else 0)
+    # hdd1 = gamma1 * dif_basethdd_temp_c0
+    # hdd2 = gamma2 * (-1 * dif_basethdd_temp_c0)
     # update hdd:
-    dict_StateInit['hdd'][4 + id_prev] = [
-        hdd1, hdd2, dict_InitCond['temp_c0'],
-        0, 0, dict_InitCond['dayssincerain']]
-    dict_StateInit['hdd'][4 + id_prev - 3:
-                          4 + id_prev, 3 - 1] = dict_InitCond['temp_c0']
-    dict_StateInit['hdd'][4 + id_prev, 5] = dict_InitCond['dayssincerain']
+    # dict_StateInit['hdd_id'][:6] = [
+    #     hdd1, hdd2, dict_InitCond['temp_c0'],
+    #     0, 0, dict_InitCond['dayssincerain']]
+    # dict_StateInit['hdd_id'][4 + id_prev - 3:
+    #                       4 + id_prev, 3 - 1] = dict_InitCond['temp_c0']
+    # dict_StateInit['hdd_id'][4 + id_prev, 5] = dict_InitCond['dayssincerain']
 
     # gdd-related parameters:
-    dict_StateInit['gdd'][:, 2] = 90
-    dict_StateInit['gdd'][:, 3] = -90
-    dict_StateInit['gdd'][id_prev, 0] = dict_InitCond['gdd_1_0']
-    dict_StateInit['gdd'][id_prev, 1] = dict_InitCond['gdd_2_0']
+    dict_StateInit['gdd_id'][2] = 90
+    dict_StateInit['gdd_id'][3] = -90
+    # dict_StateInit['gdd_id'][id_prev, 0] = dict_InitCond['gdd_1_0']
+    # dict_StateInit['gdd_id'][id_prev, 1] = dict_InitCond['gdd_2_0']
+
+    # update timestep info:
+    dict_StateInit.update(tstep_prev=tstep)
+    dict_StateInit.update(dt_since_start=0)
 
     # pack final results with Fortran ordering
     dict_StateInit = {k: np.array(v, order='F')
@@ -974,12 +979,12 @@ def init_SUEWS_pd(dir_input):  # return pd.DataFrame
 
 # 1. calculation code for one time step
 # store these lists for later use
-list_var_input = get_args_suews()['var_input']
-list_var_inout = get_args_suews()['var_inout']
-list_var_output = get_args_suews()['var_output']
-set_var_input = {list_var_output}
-set_var_inout = {list_var_inout}
-set_var_ouput = {list_var_output}
+list_var_input = list(get_args_suews()['var_input'])
+list_var_inout = list(get_args_suews()['var_inout'])
+list_var_output = list(get_args_suews()['var_output'])
+set_var_input = set(list_var_input)
+set_var_inout = set(list_var_inout)
+set_var_ouput = set(list_var_output)
 
 # test for performance
 dict_var_inout = {k: None for k in set_var_inout}
@@ -999,6 +1004,10 @@ def suews_cal_tstep(dict_state_start, dict_met_forcing_tstep):
     dict_state_end = dict_state_start.copy()
     dict_state_end.update({var: copy.copy(dict_input[var])
                            for var in list_var_inout})
+
+    # update timestep info
+    dict_state_end['tstep_prev'] = dict_state_end['tstep']
+    dict_state_end['dt_since_start'] += dict_state_end['tstep']
 
     # pack output
     dict_output = {k: v for k, v in zip(
@@ -1050,6 +1059,8 @@ def run_suews_df(df_forcing, df_init):
     # pack results as easier DataFrames
     df_output = pack_df_output(dict_output)
     df_state = pack_df_state(dict_state)
+    # df_output = dict_output
+    # df_state = dict_state
 
     return df_output, df_state
 
@@ -1065,12 +1076,11 @@ def get_output_info_df():
     size_var_list = sd.output_size()
     var_list_x = [np.array(sd.output_name_n(i))
                   for i in np.arange(size_var_list) + 1]
-    var_list = np.apply_along_axis(np.vectorize(np.str.strip), 0, var_list_x)
-
-    var_list = np.array(
-        filter(lambda var_info: filter(None, var_info), var_list))
-    var_df = pd.DataFrame(var_list, columns=['var', 'group', 'aggm'])
-    var_dfm = var_df.set_index(['group', 'var'])
+    df_var_list = pd.DataFrame(var_list_x, columns=['var', 'group', 'aggm'])
+    df_var_list = pd.DataFrame(var_list_x, columns=['var', 'group', 'aggm'])
+    df_var_list = df_var_list.applymap(lambda x: x.decode().strip())
+    df_var_list_x = df_var_list.replace(r'^\s*$', np.nan, regex=True).dropna()
+    var_dfm = df_var_list_x.set_index(['group', 'var'])
     return var_dfm
 
 
@@ -1079,7 +1089,8 @@ def get_output_info_df():
 var_df = get_output_info_df()
 
 # dict as var_df but keys in lowercase
-var_df_lower = {group.lower(): group for group in var_df.index.levels[0]}
+var_df_lower = {group.lower(): group
+                for group in var_df.index.levels[0].str.strip()}
 
 # generate index for variables in different model groups
 

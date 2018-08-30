@@ -158,7 +158,7 @@
   "soilstorecap": "SUEWS_SiteSelect.txt",
   "startdls": "SUEWS_SiteSelect.txt",
   "statelimit": "SUEWS_SiteSelect.txt",
-  "surf": "SUEWS_SiteSelect.txt",
+  "storedrainprm": "SUEWS_SiteSelect.txt",
   "surfacearea": "SUEWS_SiteSelect.txt",
   "t_critic_cooling": "SUEWS_SiteSelect.txt",
   "t_critic_heating": "SUEWS_SiteSelect.txt",

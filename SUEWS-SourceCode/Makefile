@@ -1,1 +1,1 @@
-Makefile.ifort
+Makefile.gfortran

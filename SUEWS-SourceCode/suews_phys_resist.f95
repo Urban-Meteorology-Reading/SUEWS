@@ -525,11 +525,11 @@ FUNCTION cal_z0V(RoughLenHeatMethod,z0m,VegFraction,UStar) RESULT(z0V)
   REAL(KIND(1d0)),INTENT(in)::VegFraction!Fraction of vegetation
   REAL(KIND(1d0)),INTENT(in)::UStar!Friction velocity
 
-  REAL(KIND(1d0))::z0V!Friction velocity
-
+  REAL(KIND(1d0))::z0V!roughness length for vapor/heat
 
   REAL(KIND(1d0)),PARAMETER:: muu=1.46e-5 !molecular viscosity
 
+  z0V=0.01 ! initialise as 0.01
 
   !Z0V roughness length for vapour
   IF (RoughLenHeatMethod==1) THEN !Brutasert (1982) Z0v=z0/10(see Grimmond & Oke, 1986)

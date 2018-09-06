@@ -55,11 +55,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
        beta_bioco2, beta_enh_bioco2, capmax_dec, capmin_dec, &
        chanohm, cpanohm, emis, GDD_id, GDDfull,&
        HDD_id, &
-       DecidCap_id,&
-       albDecTr_id,&
-       albEveTr_id,&
-       albGrass_id,&
-       porosity_id,&
+       DecidCap_id,porosity_id,&
+       albDecTr_id,albEveTr_id,albGrass_id,&
        icefrac, kkanohm, &
        LAI_id, LAImax, LAImin, LAIpower, LAItype, maxconductance, &
        meltwaterstore, metforcingdata_grid, min_res_bioco2, &

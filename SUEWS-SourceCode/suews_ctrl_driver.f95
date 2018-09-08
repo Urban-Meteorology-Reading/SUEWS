@@ -2502,7 +2502,7 @@ CONTAINS
 
 
   SUBROUTINE SUEWS_cal_multitsteps(&
-       MetForcingBlock,&
+       MetForcingBlock,len_sim,&
        AerodynamicResistanceMethod,AH_MIN,AHProf_24hr,AH_SLOPE_Cooling,& ! input&inout in alphabetical order
        AH_SLOPE_Heating,&
        alb,AlbMax_DecTr,AlbMax_EveTr,AlbMax_Grass,&
@@ -2520,7 +2520,7 @@ CONTAINS
        InternalWaterUse_h,IrrFracConif,IrrFracDecid,IrrFracGrass,EvapMethod,&
        kkAnOHM,Kmax,LAI_id,LAICalcYes,LAIMax,LAIMin,&
        LAIPower,LAIType,lat,lng,MaxConductance,MaxQFMetab,&
-       MeltWaterStore,MetForcingData_grid,MinQFMetab,min_res_bioCO2,&
+       MeltWaterStore,MinQFMetab,min_res_bioCO2,&
        NARP_EMIS_SNOW,NARP_TRANS_SITE,NetRadiationMethod,&
        NumCapita,OHM_coef,OHMIncQF,OHM_threshSW,&
        OHM_threshWD,PipeCapacity,PopDensDaytime,&
@@ -2548,6 +2548,7 @@ CONTAINS
     ! input:
     ! met forcing block
     REAL(KIND(1D0)),DIMENSION(:,:),INTENT(IN) ::MetForcingBlock
+    INTEGER,INTENT(IN) :: len_sim
     ! input variables
     INTEGER,INTENT(IN)::AerodynamicResistanceMethod
     INTEGER,INTENT(IN)::Diagnose
@@ -2721,7 +2722,7 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(nsurf+1,4,3),INTENT(IN)     ::OHM_coef
     REAL(KIND(1D0)),DIMENSION(NSURF+1,NSURF-1),INTENT(IN) ::WaterDist
     REAL(KIND(1d0)),DIMENSION(:),INTENT(IN)               ::Ts5mindata_ir
-    REAL(KIND(1D0)),DIMENSION(:,:),INTENT(IN)             ::MetForcingData_grid
+
 
 
     ! diurnal profile values for 24hr
@@ -2780,10 +2781,10 @@ CONTAINS
     ! ########################################################################################
     ! output variables
     ! REAL(KIND(1D0)),DIMENSION(:,:,:),ALLOCATABLE,INTENT(OUT) ::datetimeBlock
-    REAL(KIND(1D0)),DIMENSION(:,:),ALLOCATABLE,INTENT(OUT) ::dataOutBlockSUEWS
-    REAL(KIND(1D0)),DIMENSION(:,:),ALLOCATABLE,INTENT(OUT) ::dataOutBlockSnow
-    REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE,INTENT(OUT) ::dataOutBlockESTM
-    REAL(KIND(1d0)),DIMENSION(:,:),ALLOCATABLE,INTENT(OUT) ::DailyStateBlock
+    REAL(KIND(1D0)),DIMENSION(len_sim,ncolumnsDataOutSUEWS),INTENT(OUT) ::dataOutBlockSUEWS
+    REAL(KIND(1D0)),DIMENSION(len_sim,ncolumnsDataOutSnow),INTENT(OUT) ::dataOutBlockSnow
+    REAL(KIND(1d0)),DIMENSION(len_sim,ncolumnsDataOutESTM),INTENT(OUT) ::dataOutBlockESTM
+    REAL(KIND(1d0)),DIMENSION(len_sim,ncolumnsDataOutDailyState),INTENT(OUT) ::DailyStateBlock
     ! ########################################################################################
 
     ! model output blocks of the same size as met forcing block
@@ -2791,7 +2792,7 @@ CONTAINS
 
     ! local varialbes
     ! length of met forcing block
-    INTEGER :: len_sim,ir
+    INTEGER :: ir
     ! met forcing variables
     INTEGER :: iy
     INTEGER :: id
@@ -2825,25 +2826,12 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutESTM-5)::dataOutLineESTM
     REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutDailyState-5)::DailyStateLine
 
-    REAL(KIND(1D0)),DIMENSION(:,:,:),ALLOCATABLE ::dataOutBlockSUEWS_X
-    REAL(KIND(1D0)),DIMENSION(:,:,:),ALLOCATABLE ::dataOutBlockSnow_X
-    REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE ::dataOutBlockESTM_X
-    REAL(KIND(1d0)),DIMENSION(:,:,:),ALLOCATABLE ::DailyStateBlock_X
+    REAL(KIND(1D0)),DIMENSION(len_sim,ncolumnsDataOutSUEWS,1) ::dataOutBlockSUEWS_X
+    REAL(KIND(1D0)),DIMENSION(len_sim,ncolumnsDataOutSnow,1) ::dataOutBlockSnow_X
+    REAL(KIND(1d0)),DIMENSION(len_sim,ncolumnsDataOutESTM,1) ::dataOutBlockESTM_X
+    REAL(KIND(1d0)),DIMENSION(len_sim,ncolumnsDataOutDailyState,1) ::DailyStateBlock_X
 
-
-    len_sim=SIZE(MetForcingBlock, dim=1)
-
-    ALLOCATE(dataOutBlockSUEWS_X(len_sim,ncolumnsDataOutSUEWS,1))
-    ALLOCATE(dataOutBlockSnow_X(len_sim,ncolumnsDataOutSnow,1))
-    ALLOCATE(dataOutBlockESTM_X(len_sim,ncolumnsDataOutESTM,1))
-    ALLOCATE(DailyStateBlock_X(len_sim,ncolumnsDataOutDailyState,1))
-
-    ALLOCATE(dataOutBlockSUEWS(len_sim,ncolumnsDataOutSUEWS))
-    ALLOCATE(dataOutBlockSnow(len_sim,ncolumnsDataOutSnow))
-    ALLOCATE(dataOutBlockESTM(len_sim,ncolumnsDataOutESTM))
-    ALLOCATE(DailyStateBlock(len_sim,ncolumnsDataOutDailyState))
-
-
+    ! REAL(KIND(1D0)),DIMENSION(:,:)          ::MetForcingData_grid
 
     DO ir = 1, len_sim, 1
        ! =============================================================================
@@ -2875,6 +2863,7 @@ CONTAINS
        kdir      = MetForcingBlock(ir,23)
        wdir      = MetForcingBlock(ir,24)
 
+
        CALL SUEWS_cal_Main(&
             AerodynamicResistanceMethod,AH_MIN,AHProf_24hr,AH_SLOPE_Cooling,& ! input&inout in alphabetical order
             AH_SLOPE_Heating,&
@@ -2893,7 +2882,7 @@ CONTAINS
             InternalWaterUse_h,IrrFracConif,IrrFracDecid,IrrFracGrass,isec,it,EvapMethod,&
             iy,kkAnOHM,Kmax,LAI_id,LAICalcYes,LAIMax,LAIMin,LAI_obs,&
             LAIPower,LAIType,lat,ldown_obs,lng,MaxConductance,MaxQFMetab,&
-            MeltWaterStore,MetForcingData_grid,MinQFMetab,min_res_bioCO2,&
+            MeltWaterStore,MetForcingBlock,MinQFMetab,min_res_bioCO2,&
             NARP_EMIS_SNOW,NARP_TRANS_SITE,NetRadiationMethod,&
             NumCapita,OHM_coef,OHMIncQF,OHM_threshSW,&
             OHM_threshWD,PipeCapacity,PopDensDaytime,&
@@ -2940,16 +2929,6 @@ CONTAINS
     dataOutBlockESTM=dataOutBlockESTM_X(:,:,1)
     DailyStateBlock=DailyStateBlock_X(:,:,1)
 
-    ! IF (ALLOCATED(datetimeBlock)) DEALLOCATE(datetimeBlock)
-    IF (ALLOCATED(dataOutBlockSUEWS)) DEALLOCATE(dataOutBlockSUEWS)
-    IF (ALLOCATED(dataOutBlockSnow)) DEALLOCATE(dataOutBlockSnow)
-    IF (ALLOCATED(dataOutBlockESTM)) DEALLOCATE(dataOutBlockESTM)
-    IF (ALLOCATED(DailyStateBlock)) DEALLOCATE(DailyStateBlock)
-
-    IF (ALLOCATED(dataOutBlockSUEWS_X)) DEALLOCATE(dataOutBlockSUEWS_X)
-    IF (ALLOCATED(dataOutBlockSnow_X)) DEALLOCATE(dataOutBlockSnow_X)
-    IF (ALLOCATED(dataOutBlockESTM_X)) DEALLOCATE(dataOutBlockESTM_X)
-    IF (ALLOCATED(DailyStateBlock_X)) DEALLOCATE(DailyStateBlock_X)
 
 
   END SUBROUTINE SUEWS_cal_multitsteps

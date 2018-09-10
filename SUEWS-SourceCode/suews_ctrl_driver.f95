@@ -2829,7 +2829,7 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(len_sim,ncolumnsDataOutSUEWS,1) ::dataOutBlockSUEWS_X
     REAL(KIND(1D0)),DIMENSION(len_sim,ncolumnsDataOutSnow,1) ::dataOutBlockSnow_X
     REAL(KIND(1d0)),DIMENSION(len_sim,ncolumnsDataOutESTM,1) ::dataOutBlockESTM_X
-    REAL(KIND(1d0)),DIMENSION(len_sim,ncolumnsDataOutDailyState,1) ::DailyStateBlock_X
+    ! REAL(KIND(1d0)),DIMENSION(len_sim,ncolumnsDataOutDailyState,1) ::DailyStateBlock_X
 
     ! REAL(KIND(1D0)),DIMENSION(:,:)          ::MetForcingData_grid
 
@@ -2908,11 +2908,12 @@ CONTAINS
 
        !============ update and write out SUEWS_cal_DailyState ===============
        ! only works at the last timestep of a day
-       CALL SUEWS_update_DailyState(&
-            id, datetimeLine, &!input
-            Gridiv, 1, &
-            DailyStateLine, &
-            DailyStateBlock_X)!inout
+       ! CALL SUEWS_update_DailyState(&
+       !      id, datetimeLine, &!input
+       !      Gridiv, 1, &
+       !      DailyStateLine, &
+       !      DailyStateBlock_X)!inout
+       DailyStateBlock(ir,:)=[datetimeLine,DailyStateLine]
 
        !============ write out results ===============
        ! works at each timestep
@@ -2927,12 +2928,10 @@ CONTAINS
     dataOutBlockSUEWS=dataOutBlockSUEWS_X(:,:,1)
     dataOutBlockSnow=dataOutBlockSnow_X(:,:,1)
     dataOutBlockESTM=dataOutBlockESTM_X(:,:,1)
-    DailyStateBlock=DailyStateBlock_X(:,:,1)
-
+    ! DailyStateBlock=DailyStateBlock_X(:,:,1)
 
 
   END SUBROUTINE SUEWS_cal_multitsteps
-
 
 
 END MODULE SUEWS_Driver

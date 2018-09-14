@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import numpy as np
 import pandas as pd
 import os
@@ -91,7 +92,7 @@ def load_res_all(fn_nml):
 
     # get benchmark runs
     # the configuration names need to be refined
-    rawdata_cfg = {cfg: readSO(fn) for cfg, fn in zip(name_cfg, fn_cfg)}
+    rawdata_cfg = {cfg: readSO(fn) for cfg, fn in list(zip(name_cfg, fn_cfg))}
 
     # pack the results into an xarray Dataset
     res_raw = rawdata_cfg.copy()
@@ -124,7 +125,7 @@ def load_res(fn_nml):
     # load all variables
     res = load_res_all(fn_nml)
     # select part of the variables
-    if (isinstance(list_var, basestring) or isinstance(list_var, list)):
+    if (isinstance(list_var, str) or isinstance(list_var, list)):
         res = res.loc[:, list_var]
 
     # drop invalid values
@@ -259,7 +260,7 @@ def benchmark_SUEWS(fn_nml):
         [list_func[f](res_cfg[cfg], res_cfg['obs'])
          for cfg in list_cfg],
         index=list_cfg).dropna(axis=1).apply(np.round, decimals=2)
-        for f in list_func.keys()}
+        for f in list(list_func.keys())}
     ds_metric = xr.Dataset(res_metric)
     df_metric = ds_metric.to_dataframe()
 
@@ -326,7 +327,7 @@ def report_benchmark_PDF(fn_nml):
 
     with PdfPages(basename_output + '.pdf') as pdf:
         pdf.savefig(figs['score'], bbox_inches='tight', papertype='a4')
-        for k, x in figs.iteritems():
+        for k, x in figs.items():
             if k != 'score':
                 pdf.savefig(x, bbox_inches='tight',
                             papertype='a4', orientation='portrait')
@@ -394,7 +395,7 @@ def bar_score_HTML(df_metric, styles):
     style_score = style_score.set_table_styles(styles)
     style_score = style_score.set_caption('SUEWS benchmark score')
     res_html = style_score.render()
-    
+
     return res_html
 
 

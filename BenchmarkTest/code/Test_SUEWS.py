@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
 # from Benchmark_SUEWS import *
+from __future__ import print_function
 from shutil import copytree, rmtree, copyfile
 import os
-import sys
+# import sys
 import numpy as np
 import pandas as pd
 from glob import glob
@@ -92,7 +93,7 @@ def save_SiteSelect(df_siteselect, fn_ss='Input/SUEWS_SiteSelect.txt'):
 # save InitCond to file
 def save_InitCond(dict_initcond, year, grid=''):
     InitCond = {'initialconditions': dict_initcond.copy()}
-    for k, v in InitCond['initialconditions'].iteritems():
+    for k, v in InitCond['initialconditions'].items():
         if int(v) == v:
             InitCond['initialconditions'][k] = int(v)
 
@@ -181,7 +182,7 @@ def run_sim(name_sim, dir_input, dir_exe, name_exe,
 
     # Initial condition
     # multi-grid initcond or not?
-    if np.array_equal(grid_sim, dict_initcond.keys()):
+    if np.array_equal(grid_sim, list(dict_initcond.keys())):
         # use specific InitCond
         RunControl['runcontrol']['multipleinitfiles'] = 1
         # set default values
@@ -251,8 +252,8 @@ def test_multiyear(
     # test if multiple years have been run
     res_test = len(res_sim_multiyear.shape) > 0
 
-    print('test_multiyear for', name_exe)
-    print 'running here:', dir_save
+    print(('test_multiyear for', name_exe))
+    print(('running here:', dir_save))
 
     return res_test
 
@@ -313,8 +314,8 @@ def test_multigrid(
     # change back to previous path
     os.chdir(dir_sys)
 
-    print('test_multigrid for', name_exe)
-    print 'running here:', dir_save
+    print(('test_multigrid for', name_exe))
+    print(('running here:', dir_save))
 
     return res_test
 
@@ -370,19 +371,28 @@ def test_samerun(name_sim, name_exe,
         dir_res_test,
         common_files,
         shallow=False)
-    # print 'comp_files_test',comp_files_test
-    # print 'common_files',common_files
-    res_test = (set(comp_files_test[0]) == set(common_files))
-    # print res_test
+    print(('comp_files_test', comp_files_test))
+    print(('common_files', common_files))
+
+    # test if mismatch list non-empty
+    res_test = len(comp_files_test[1]) == 0
+
     if not res_test:
         # if not match, print mismatch list
-        print 'these files are different:'
-        print comp_files_test[1]
+        print('these files are different:')
+        print((comp_files_test[1]))
+
+    # res_test = (set(comp_files_test[0]) == set(common_files))
+    # print res_test
+    # if not res_test:
+    #     # if not match, print mismatch list
+    #     print 'these files are different:'
+    #     print comp_files_test[1]
 
     dir_sys = os.chdir(dir_sys)
     # rmtree(dir_test)
-    print('test_samerun for', name_exe)
-    print 'running here:', dir_save
+    print(('test_samerun for', name_exe))
+    print(('running here:', dir_save))
 
     return res_test
 
@@ -393,13 +403,13 @@ def test_physics(name_exe, dir_input, dir_exe,
                  dict_phy_opt_sel,
                  dir_save=tempfile.mkdtemp()):
 
-    print('test_physics for', name_exe)
-    print 'running here:', dir_save
+    print(('test_physics for', name_exe))
+    print('running here:', dir_save)
 
     # get options to test
-    methods, options = zip(*dict_phy_opt_sel.items())
+    methods, options = list(zip(*list(dict_phy_opt_sel.items())))
     options = [x if type(x) == list else [x] for x in options]
-    list_to_test = [dict(zip(methods, v))
+    list_to_test = [dict(list(zip(methods, v)))
                     for v in itertools.product(*options)]
 
     # test selected physics schemes
@@ -416,9 +426,10 @@ def test_physics(name_exe, dir_input, dir_exe,
         dict_test.update({ind: res_sim})
 
     dict_test_OK = {k: 'fail' if type(v) == str else 'pass'
-                    for k, v in dict_test.iteritems()}
+                    for k, v in iter(dict_test.items())}
 
-    df_test = pd.DataFrame(list_to_test).assign(result=dict_test_OK.values())
+    df_test = pd.DataFrame(list_to_test).assign(
+        result=list(dict_test_OK.values()))
 
     df_test.to_csv('~/Downloads/df_test.csv')
     # test results

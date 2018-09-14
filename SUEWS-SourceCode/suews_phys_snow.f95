@@ -459,7 +459,7 @@ CONTAINS
        EvapMethod,CRWmin,CRWmax,nsh_real,lvS_J_kg,lv_j_kg,avdens,&
        avRh,Press_hPa,Temp_C,RAsnow,psyc_hPa,avcp,sIce_hPa,&
        PervFraction,vegfraction,addimpervious,&
-       numPM,s_hPa,ResistSurf,sp,RA,rb,tlv,snowdensmin,SnowProf_24hr,precip,&
+       vpd_hPa,qn_e,s_hPa,ResistSurf,RA,rb,tlv,snowdensmin,SnowProf_24hr,precip,&
        PipeCapacity,RunoffToWater,runoffAGimpervious,runoffAGveg,&
        addVeg,surplusWaterBody,SnowLimPaved,SnowLimBuild,FlowChange,drain,&
        WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
@@ -468,7 +468,7 @@ CONTAINS
        AddWater,addwaterrunoff,&
        SnowPack,SurplusEvap,&!inout
        snowFrac,MeltWaterStore,iceFrac,SnowDens,&
-       runoffSnow,& ! output
+       rss_nsurf,runoffSnow,& ! output
        runoff,runoffSoil,chang,changSnow,SnowToSurf,state_id,ev_snow,soilmoist_id,&
        SnowDepth,SnowRemoval,swe,ev,chSnow_per_interval,&
        ev_per_tstep,qe_per_tstep,runoff_per_tstep,surf_chang_per_tstep,&
@@ -520,7 +520,8 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::lvS_J_kg
     REAL(KIND(1d0)),INTENT(in)::lv_j_kg
     REAL(KIND(1d0)),INTENT(in)::avdens
-    ! REAL(KIND(1d0)),INTENT(in)::waterdens
+    REAL(KIND(1d0)),INTENT(in)::vpd_hPa ! vapour pressure deficit [hPa]
+    REAL(KIND(1d0)),INTENT(in)::qn_e !net available energy for evaporation
     REAL(KIND(1d0)),INTENT(in)::avRh
     REAL(KIND(1d0)),INTENT(in)::Press_hPa
     REAL(KIND(1d0)),INTENT(in)::Temp_C
@@ -531,10 +532,10 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::PervFraction
     REAL(KIND(1d0)),INTENT(in)::vegfraction
     REAL(KIND(1d0)),INTENT(in)::addimpervious
-    REAL(KIND(1d0)),INTENT(in)::numPM
+    ! REAL(KIND(1d0)),INTENT(in)::numPM
     REAL(KIND(1d0)),INTENT(in)::s_hPa
     REAL(KIND(1d0)),INTENT(in)::ResistSurf
-    REAL(KIND(1d0)),INTENT(in)::sp
+    ! REAL(KIND(1d0)),INTENT(in)::sp
     REAL(KIND(1d0)),INTENT(in)::RA
     REAL(KIND(1d0)),INTENT(in)::rb
     REAL(KIND(1d0)),INTENT(in)::tlv
@@ -576,7 +577,9 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::MeltWaterStore
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::iceFrac
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowDens
+    REAL(KIND(1d0)),DIMENSION(2),INTENT(inout):: SurplusEvap
 
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::rss_nsurf
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::runoffSnow !Initialize for runoff caused by snowmelting
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::runoff
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::runoffSoil
@@ -603,11 +606,11 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(out)::runoffwaterbody
 
 
-    REAL(KIND(1d0)),DIMENSION(2),INTENT(inout):: SurplusEvap
+
+
 
 
     REAL(KIND(1d0))::qe
-    REAL(KIND(1d0))::rss
 
     ! REAL(KIND(1d0))::Evap_SUEWS_Snow
     REAL(KIND(1d0))::MeltExcess      !Excess melt water that needs to leave SnowPack
@@ -666,25 +669,9 @@ CONTAINS
     ! IF (snowFrac(is)<1) CALL Evap_SUEWS !ev and qe for snow free surface out
     capStore(is)=StoreDrainPrm(6,is)
     IF (snowFrac(is)<1) CALL Evap_SUEWS(&
-
-                                ! input:
-         EvapMethod,&!Evaporation calculated according to Rutter (1) or Shuttleworth (2)
-         state_id(is),& ! wetness status
-         WetThresh(is),&!When state_id > WetThresh, RS=0 limit in SUEWS_evap [mm] (specified in input files)
-         capStore(is),& ! = StoreDrainPrm(is,6), current storage capacity [mm]
-         numPM,&!numerator of P-M eqn
-         s_hPa,&!Vapour pressure versus temperature slope in hPa
-         psyc_hPa,&!Psychometric constant in hPa
-         ResistSurf,&!Surface resistance
-         sp,&!Term in calculation of E
-         RA,&!Aerodynamic resistance
-         rb,&!Boundary layer resistance
-         tlv,&!Latent heat of vaporization per timestep [J kg-1 s-1], (tlv=lv_J_kg/tstep_real)
-
-                                ! output:
-         rss,&
-         ev,&
-         qe) ! latent heat flux [W m-2]
+         EvapMethod,state_id(is),WetThresh(is),capStore(is),&!input
+         vpd_hPa,avdens,avcp,qn_e,s_hPa,psyc_hPa,ResistSurf,RA,rb,tlv,&
+         rss_nsurf(is),ev,qe) !output
 
     IF (snowFrac(is)>0) THEN
        ev_snow(is) = Evap_SUEWS_Snow(Qm_Melt(is),Qm_rain(is),lvS_J_kg,avdens,avRh,Press_hPa,Temp_C,RAsnow,&

@@ -1,8 +1,18 @@
 MODULE WaterDist_module
 
   IMPLICIT NONE
+  INTEGER,PARAMETER :: nsurf=7
+  INTEGER,PARAMETER :: PavSurf=1
+  INTEGER,PARAMETER :: BldgSurf=2
+  INTEGER,PARAMETER :: ConifSurf=3
+  INTEGER,PARAMETER :: DecidSurf = 4
+  INTEGER,PARAMETER :: GrassSurf = 5
+  INTEGER,PARAMETER :: BSoilSurf=6
+  INTEGER,PARAMETER :: WaterSurf=7
+  INTEGER,PARAMETER :: ExcessSurf= 8
 CONTAINS
 
+  !------------------------------------------------------------------------------
   SUBROUTINE drainage(&
        is,& !input
        state_is,&
@@ -24,10 +34,6 @@ CONTAINS
     !Modified LJ in 10/2010
     !------------------------------------------------------------------------------
 
-    ! use allocateArray
-    ! use gis_data
-    ! use sues_data
-    ! use time
 
     IMPLICIT NONE
     INTEGER,INTENT(in)::&
@@ -82,41 +88,13 @@ CONTAINS
   END SUBROUTINE drainage
   !------------------------------------------------------------------------------
 
+  !------------------------------------------------------------------------------
   SUBROUTINE soilstore(&
-       is,& ! input: ! surface type
-       sfr,&! surface fractions
-       PipeCapacity,&!Capacity of pipes to transfer water
-       RunoffToWater,&!Fraction of surface runoff going to water body
-       pin,&!Rain per time interval
-       wu_EveTr,&!Water use for evergreen trees/shrubs [mm]
-       wu_DecTr,&!Water use for deciduous trees/shrubs [mm]
-       wu_Grass,&!Water use for grass [mm]
-       drain,&!Drainage of each surface type [mm]
-       AddWater,&!Water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
-       addImpervious,&!Water from impervious surfaces of other grids [mm] for whole surface area
-       nsh_real,&!nsh cast as a real for use in calculations
-       stateOld,&!Wetness status of each surface type from previous timestep [mm]
-       AddWaterRunoff,&!Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
-       PervFraction,&! sum of surface cover fractions for impervious surfaces
-       addVeg,&!Water from vegetated surfaces of other grids [mm] for whole surface area
-       soilstoreCap,&!Capacity of soil store for each surface [mm]
-       addWaterBody,&!Water from water surface of other grids [mm] for whole surface area
-       FlowChange,&!Difference between the input and output flow in the water body
-       StateLimit,&!Limit for state_id of each surface type [mm] (specified in input files)
-       runoffAGimpervious,&!  inout:!Above ground runoff from impervious surface [mm] for whole surface area
-       surplusWaterBody,&!Extra runoff that goes to water body [mm] as specified by RunoffToWater
-       runoffAGveg,&!Above ground runoff from vegetated surfaces [mm] for whole surface area
-       runoffPipes,&!Runoff in pipes [mm] for whole surface area
-       ev,&!Evaporation
-       soilmoist_id,&!Soil moisture of each surface type [mm]
-       SurplusEvap,&!Surplus for evaporation in 5 min timestep
-       runoffWaterBody,&!Above ground runoff from water surface [mm] for whole surface area
-       runoff_per_interval,&! Total water transported to each grid for grid-to-grid connectivity
-       p_mm,&!output: !Inputs to surface water balance
-       chang,&!Change in state_id [mm]
-       runoff,&!Runoff from each surface type [mm]
-       state_id&!Wetness status of each surface type [mm]
-       )
+       is,sfr,PipeCapacity,RunoffToWater,pin,& ! input:
+       wu_EveTr,wu_DecTr,wu_Grass,drain,AddWater,addImpervious,nsh_real,stateOld,AddWaterRunoff,&
+       PervFraction,addVeg,soilstoreCap,addWaterBody,FlowChange,StateLimit,runoffAGimpervious,surplusWaterBody,&
+       runoffAGveg,runoffPipes,ev,soilmoist_id,SurplusEvap,runoffWaterBody,&
+       p_mm,chang,runoff,state_id)!output:
     !------------------------------------------------------------------------------
     !Calculation of storage change
     ! LJ 27 Jan 2016
@@ -159,23 +137,7 @@ CONTAINS
     IMPLICIT NONE
 
     !Stores flood water when surface state_id exceeds storage capacity [mm]
-    INTEGER, PARAMETER:: nsurf=7                !Total number of surfaces
-
-    INTEGER, PARAMETER:: PavSurf   = 1,&   !When all surfaces considered together (1-7)
-         BldgSurf  = 2,&
-         ConifSurf = 3,&
-         DecidSurf = 4,&
-         GrassSurf = 5,&   !New surface classes: Grass = 5th/7 surfaces
-         BSoilSurf = 6,&   !New surface classes: Bare soil = 6th/7 surfaces
-         WaterSurf = 7
-    !  ExcessSurf= 8,&   !Runoff or subsurface soil in WGWaterDist
-    !  NSurfDoNotReceiveDrainage=0,&   !Number of surfaces that do not receive drainage water (green roof)
-    !  ivConif = 1,&     !When only vegetated surfaces considered (1-3)
-    !  ivDecid = 2,&
-    !  ivGrass = 3
-
     INTEGER,INTENT(in)::is ! surface type
-
 
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::sfr! surface fractions
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::AddWater!Water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
@@ -204,7 +166,6 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(inout)::runoffPipes!Runoff in pipes [mm] for whole surface area
     REAL(KIND(1d0)),INTENT(inout)::ev!Evaporation
     REAL(KIND(1d0)),INTENT(inout)::runoffWaterBody!Above ground runoff from water surface [mm] for whole surface area
-    REAL(KIND(1d0)),INTENT(inout)::runoff_per_interval! Total water transported to each grid for grid-to-grid connectivity
 
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::soilmoist_id  !Soil moisture of each surface type [mm]
     REAL(KIND(1d0)),DIMENSION(2),INTENT(inout)    ::SurplusEvap!Surplus for evaporation in 5 min timestep
@@ -229,24 +190,28 @@ CONTAINS
     !==================================================================
     ! Combine water inputs to the current surface
     ! Add external water use for each surface type
-    IF(is==ConifSurf) THEN
+    SELECT CASE (is)
+    CASE (ConifSurf)
        p_mm=pin+wu_EveTr
-    ELSEIF(is==DecidSurf) THEN
+    CASE (DecidSurf)
        p_mm=pin+wu_DecTr
-    ELSEIF(is==GrassSurf) THEN
+    CASE (GrassSurf)
        p_mm=pin+wu_Grass
-    ELSE
+    CASE default
        p_mm=pin
-    ENDIF
+    END SELECT
 
     ! Add water from other surfaces within the same grid (RS2S) ----
     ! AddWater is the water supplied to the current surface from other surfaces
     !  i.e. drain*WaterDist (see SUEWS_ReDistributeWater)
     p_mm=p_mm+AddWater(is)
+    !==================================================================
 
-    !==== Impervious surfaces (Paved, Buildings) ======================
-    IF(is==PavSurf.OR.is==BldgSurf) THEN
 
+    !========surface-specific calculation=========================
+    SELECT CASE (is)
+    CASE (PavSurf,BldgSurf)
+       !==== Impervious surfaces (Paved, Buildings) ======================
        ! Add water from neighbouring grids (RG2G)
        ! Add to PavSurf only, as water cannot flow onto buildings
        IF (is==PavSurf) THEN
@@ -266,7 +231,6 @@ CONTAINS
        ENDIF
 
        ! Calculate updated state_id using chang
-       ! state_id(is)=state_id(is)+chang(is)
        state_id(is)=stateOld(is)+chang(is)
 
        ! Check state_id is within physical limits between zero (dry) and max. storage capacity
@@ -295,57 +259,96 @@ CONTAINS
        ! state_id > StoreDrainPrm(6,is) (net water exceeds storage capacity)
        ! WaterDist specifies some fraction of drain(is) -> runoff
 
-       !==== Pervious surfaces (Conif, Decid, Grass, BSoil, Water) =======
-    ELSEIF(is>=3) THEN
-
+    CASE (ConifSurf:BSoilSurf)
+       !==== For Conif, Decid, Grass, BSoil surfaces ==================
        ! Transfer evaporation surplus from impervious surfaces to pervious surfaces
-       IF(PervFraction/=0) THEN   !If pervious surfaces exist
-          EvPart=(SurplusEvap(PavSurf)*sfr(PavSurf)+SurplusEvap(BldgSurf)*sfr(BldgSurf))/PervFraction
-       ELSE         !If no pervious surface, SurplusEvap cannot be transferred and this evap cannot
-          EvPart=0  !happen (will increase QHinstead)
-       ENDIF
+       EvPart=MERGE(&
+            DOT_PRODUCT(SurplusEvap(PavSurf:BldgSurf),sfr(PavSurf:BldgSurf)/PervFraction),&
+            0d0,&
+            PervFraction/=0)
 
        ! Add surplus evaporation to ev for pervious surfaces
        ev=ev+EvPart
 
-       !==== For Conif, Decid, Grass, BSoil surfaces ==================
-       IF (is/=WaterSurf) THEN
+       ! ---- Add water from neighbouring grids (RG2G) ----
+       ! Add to Grass and BSoil only, as water cannot flow onto trees
+       IF (is==GrassSurf.OR.is==BSoilSurf) THEN
+          IF ((sfr(GrassSurf)+sfr(BSoilSurf))/=0) THEN
+             p_mm=p_mm+addVeg/(sfr(GrassSurf)+sfr(BSoilSurf))
+          ENDIF
+       ENDIF
+
+       ! Calculate change in surface state_id (inputs - outputs)
+       chang(is)=p_mm-(drain(is)+ev)
+
+       ! If p_mm is too large, excess goes to runoff (i.e. the rate of water supply is too fast)
+       !  and does not affect state_id
+       IF (p_mm>IPThreshold_mmhr/nsh_real) THEN
+          runoff(is)=runoff(is)+(p_mm-IPThreshold_mmhr/nsh_real)
+          chang(is)=IPThreshold_mmhr/nsh_real-(drain(is)+ev)
+       ENDIF
+
+       ! Calculate updated state_id using chang
+       state_id(is)=stateOld(is)+chang(is)
+
+       ! Check state_id is within physical limits between zero (dry) and max. storage capacity
+       IF(state_id(is)<0.0) THEN   ! Cannot have a negative surface state_id
+          ! If there is not sufficient water on the surface, then remove water from soilstore
+          ! Allow evaporation until soilmoist_id is depleted and surface is dry
+          IF((soilmoist_id(is)+state_id(is))>=0) THEN
+             soilmoist_id(is)=soilmoist_id(is)+state_id(is)
+             state_id(is)=0.0
+             ! If there is not sufficient water on the surface or soilstore, then don't allow this evaporation to happen
+          ELSE
+             ev=ev-ABS(state_id(is))   !Limit evaporation according to water availability
+             state_id(is)=0.0          !Now surface is dry
+          ENDIF
+
+          !elseif (state_id(is)>StoreDrainPrm(6,is)) then   !!This should perhaps be StateLimit(is)
+          !   !! If state_id exceeds the storage capacity, then the excess goes to surface flooding
+          !   !SurfaceFlood(is)=SurfaceFlood(is)+(state_id(is)-StoreDrainPrm(6,is))   !!Need to deal with this properly
+          !   runoff(is)=runoff(is)+(state_id(is)-StoreDrainPrm(6,is))   !!needs to go to flooding
+          !   state_id(is)=StoreDrainPrm(6,is)              !Now surface state_id is at max (storage) capacity
+       ENDIF
+
+       ! Recalculate change in surface state_id from difference with previous timestep
+       chang(is) = state_id(is)-stateOld(is)
+
+       !Where should this go? Used to be before previous part!!
+       ! soilmoist_id -------------------------------------------------
+       ! For pervious surfaces (not water), some of drain(is) goes to soil storage
+       ! Drainage (that is not flowing to other surfaces) goes to soil storages
+       soilmoist_id(is)=soilmoist_id(is)+drain(is)*AddWaterRunoff(is)
+
+       ! If soilstore is full, the excess will go to runoff
+       IF(soilmoist_id(is)>soilstoreCap(is)) THEN  ! TODO: this should also go to flooding of some sort
+          runoff(is)=runoff(is)+(soilmoist_id(is)-soilstoreCap(is))
+          soilmoist_id(is)=soilstoreCap(is)
+       ELSEIF (soilmoist_id(is)<0) THEN   !! QUESTION: But where does this lack of water go? !!Can this really happen here?
+          CALL ErrorHint(62,'SUEWS_store: soilmoist_id(is) < 0 ',soilmoist_id(is),NotUsed,is)
+          ! Code this properly - soilmoist_id(is) < 0 shouldn't happen given the above loops
+          !soilmoist_id(is)=0   !Groundwater / deeper soil should kick in
+       ENDIF
+
+    CASE (WaterSurf)
+       IF(sfr(WaterSurf)/=0)THEN
 
           ! ---- Add water from neighbouring grids (RG2G) ----
-          ! Add to Grass and BSoil only, as water cannot flow onto trees
-          IF (is==GrassSurf.OR.is==BSoilSurf) THEN
-             IF ((sfr(GrassSurf)+sfr(BSoilSurf))/=0) THEN
-                p_mm=p_mm+addVeg/(sfr(GrassSurf)+sfr(BSoilSurf))
-             ENDIF
-          ENDIF
+          p_mm=p_mm+addWaterBody/sfr(WaterSurf)
 
           ! Calculate change in surface state_id (inputs - outputs)
-          chang(is)=p_mm-(drain(is)+ev)
-
-          ! If p_mm is too large, excess goes to runoff (i.e. the rate of water supply is too fast)
-          !  and does not affect state_id
-          IF (p_mm>IPThreshold_mmhr/nsh_real) THEN
-             runoff(is)=runoff(is)+(p_mm-IPThreshold_mmhr/nsh_real)
-             chang(is)=IPThreshold_mmhr/nsh_real-(drain(is)+ev)
-          ENDIF
+          ! No drainage for water surface
+          ! FlowChange is the difference in input and output flows [mm hr-1]
+          chang(is)=p_mm+FlowChange/nsh_real-ev
 
           ! Calculate updated state_id using chang
-          ! state_id(is)=state_id(is)+chang(is)
           state_id(is)=stateOld(is)+chang(is)
 
           ! Check state_id is within physical limits between zero (dry) and max. storage capacity
           IF(state_id(is)<0.0) THEN   ! Cannot have a negative surface state_id
-             ! If there is not sufficient water on the surface, then remove water from soilstore
-             ! Allow evaporation until soilmoist_id is depleted and surface is dry
-             IF((soilmoist_id(is)+state_id(is))>=0) THEN
-                soilmoist_id(is)=soilmoist_id(is)+state_id(is)
-                state_id(is)=0.0
-                ! If there is not sufficient water on the surface or soilstore, then don't allow this evaporation to happen
-             ELSE
-                ev=ev-ABS(state_id(is))   !Limit evaporation according to water availability
-                state_id(is)=0.0          !Now surface is dry
-             ENDIF
-
+             ! If there is not sufficient water on the surface, then don't allow this evaporation to happen
+             ev=ev-ABS(state_id(is))   !Limit evaporation according to water availability
+             state_id(is)=0.0          !Now surface is dry
              !elseif (state_id(is)>StoreDrainPrm(6,is)) then   !!This should perhaps be StateLimit(is)
              !   !! If state_id exceeds the storage capacity, then the excess goes to surface flooding
              !   !SurfaceFlood(is)=SurfaceFlood(is)+(state_id(is)-StoreDrainPrm(6,is))   !!Need to deal with this properly
@@ -356,118 +359,56 @@ CONTAINS
           ! Recalculate change in surface state_id from difference with previous timestep
           chang(is) = state_id(is)-stateOld(is)
 
-          !Where should this go? Used to be before previous part!!
-          ! soilmoist_id -------------------------------------------------
-          ! For pervious surfaces (not water), some of drain(is) goes to soil storage
-          ! Drainage (that is not flowing to other surfaces) goes to soil storages
-          soilmoist_id(is)=soilmoist_id(is)+drain(is)*AddWaterRunoff(is)
-
-          ! If soilstore is full, the excess will go to runoff
-          IF(soilmoist_id(is)>soilstoreCap(is)) THEN  ! TODO: this should also go to flooding of some sort
-             runoff(is)=runoff(is)+(soilmoist_id(is)-soilstoreCap(is))
-             soilmoist_id(is)=soilstoreCap(is)
-          ELSEIF (soilmoist_id(is)<0) THEN   !! QUESTION: But where does this lack of water go? !!Can this really happen here?
-             CALL ErrorHint(62,'SUEWS_store: soilmoist_id(is) < 0 ',soilmoist_id(is),NotUsed,is)
-             ! Code this properly - soilmoist_id(is) < 0 shouldn't happen given the above loops
-             !soilmoist_id(is)=0   !Groundwater / deeper soil should kick in
-          ENDIF
-
-          !==== Water surface ========================================
-       ELSEIF (is==WaterSurf) THEN
-
-          IF(sfr(WaterSurf)/=0)THEN
-
-             ! ---- Add water from neighbouring grids (RG2G) ----
-             p_mm=p_mm+addWaterBody/sfr(WaterSurf)
-
-             ! Calculate change in surface state_id (inputs - outputs)
-             ! No drainage for water surface
-             ! FlowChange is the difference in input and output flows [mm hr-1]
-             chang(is)=p_mm+FlowChange/nsh_real-ev
-
-             ! Calculate updated state_id using chang
-             ! state_id(is)=state_id(is)+chang(is)
-             state_id(is)=stateOld(is)+chang(is)
-
-             ! Check state_id is within physical limits between zero (dry) and max. storage capacity
-             IF(state_id(is)<0.0) THEN   ! Cannot have a negative surface state_id
-                ! If there is not sufficient water on the surface, then don't allow this evaporation to happen
-                ev=ev-ABS(state_id(is))   !Limit evaporation according to water availability
-                state_id(is)=0.0          !Now surface is dry
-                !elseif (state_id(is)>StoreDrainPrm(6,is)) then   !!This should perhaps be StateLimit(is)
-                !   !! If state_id exceeds the storage capacity, then the excess goes to surface flooding
-                !   !SurfaceFlood(is)=SurfaceFlood(is)+(state_id(is)-StoreDrainPrm(6,is))   !!Need to deal with this properly
-                !   runoff(is)=runoff(is)+(state_id(is)-StoreDrainPrm(6,is))   !!needs to go to flooding
-                !   state_id(is)=StoreDrainPrm(6,is)              !Now surface state_id is at max (storage) capacity
-             ENDIF
-
-             ! Recalculate change in surface state_id from difference with previous timestep
-             chang(is) = state_id(is)-stateOld(is)
-
-             ! If state_id exceeds limit, then excess goes to runoff (currently applies to water StoreDrainPrm only)
+          ! If state_id exceeds limit, then excess goes to runoff (currently applies to water StoreDrainPrm only)
+          IF (state_id(WaterSurf)>StateLimit(WaterSurf)) THEN
+             runoff(WaterSurf)=runoff(WaterSurf)+(state_id(WaterSurf)-StateLimit(WaterSurf))
+             state_id(WaterSurf)=StateLimit(WaterSurf)
+             runoffWaterBody=runoffWaterBody+runoff(WaterSurf)*sfr(WaterSurf)
+          ELSE
+             state_id(WaterSurf)=state_id(WaterSurf)+surplusWaterBody
              IF (state_id(WaterSurf)>StateLimit(WaterSurf)) THEN
-                runoff(WaterSurf)=runoff(WaterSurf)+(state_id(WaterSurf)-StateLimit(WaterSurf))
+                runoffWaterBody=runoffWaterBody+(state_id(WaterSurf)-StateLimit(WaterSurf))*sfr(WaterSurf)
                 state_id(WaterSurf)=StateLimit(WaterSurf)
-                runoffWaterBody=runoffWaterBody+runoff(WaterSurf)*sfr(WaterSurf)
-             ELSE
-                state_id(WaterSurf)=state_id(WaterSurf)+surplusWaterBody
-                IF (state_id(WaterSurf)>StateLimit(WaterSurf)) THEN
-                   runoffWaterBody=runoffWaterBody+(state_id(WaterSurf)-StateLimit(WaterSurf))*sfr(WaterSurf)
-                   state_id(WaterSurf)=StateLimit(WaterSurf)
-                ENDIF
              ENDIF
-
-             ! Recalculate change in surface state_id from difference with previous timestep
-             chang(is) = state_id(is)-stateOld(is)
           ENDIF
 
-       ENDIF   !end of WaterSurf
-
-    ENDIF   !end of different surfaces
-
+          ! Recalculate change in surface state_id from difference with previous timestep
+          chang(is) = state_id(is)-stateOld(is)
+       ENDIF
+    END SELECT
     !==================================================================
-    !==== RUNOFF ======================================================
 
+    !==== RUNOFF ======================================================
     ! TODO: to consider areas here - SurfaceArea may vary between grids too
     ! - also implement where water for next surface is calculated (RunoffFromGrid subroutine)
     ! Calculations of the piperunoff exceedensances moved to separate subroutine so that from snow same
     ! calculations can be made. LJ in May 2015
 
     IF(is<WaterSurf) THEN   !Not for water body
-
-       ! Add runoff to pipes
-       runoffPipes=runoffPipes+(runoff(is)*sfr(is))
        !  CALL updateFlood
        CALL updateFlood(&
-                                ! input:
-            nsurf,is,PavSurf,BldgSurf,WaterSurf,ConifSurf,BSoilSurf,&
+            is,runoff,&! input:
             sfr,PipeCapacity,RunoffToWater,&
-                                ! inout:
-            runoffAGimpervious,surplusWaterBody,runoffAGveg,runoffPipes&
-            )
+            runoffAGimpervious,surplusWaterBody,runoffAGveg,runoffPipes)! inout:
     ENDIF
-
-    runoff_per_interval=runoff_per_interval+(runoff(is)*sfr(is)) !The total runoff from the area !!Check (HCW)
 
   END SUBROUTINE soilstore
   !------------------------------------------------------------------------------
+
   !------------------------------------------------------------------------------
   SUBROUTINE updateFlood(&
-
-                                ! input:
-       nsurf,is,PavSurf,BldgSurf,WaterSurf,ConifSurf,BSoilSurf,&
+       is,runoff,&! input:
        sfr,PipeCapacity,RunoffToWater,&
-                                ! inout:
-       runoffAGimpervious,surplusWaterBody,runoffAGveg,runoffPipes&
-       )
-
-    ! USE allocateArray
-    ! USE sues_data
+       runoffAGimpervious,surplusWaterBody,runoffAGveg,runoffPipes)! inout:
 
     IMPLICIT NONE
-    INTEGER, INTENT(in) :: nsurf,is,PavSurf,BldgSurf,WaterSurf,ConifSurf,BSoilSurf
-    REAL(KIND(1d0)), INTENT(in) :: sfr(nsurf),PipeCapacity,RunoffToWater
+
+    INTEGER, INTENT(in) :: is
+    REAL(KIND(1d0)), INTENT(in) :: sfr(nsurf),runoff(nsurf),PipeCapacity,RunoffToWater
     REAL(KIND(1d0)), INTENT(inout) :: runoffAGimpervious,surplusWaterBody,runoffAGveg,runoffPipes
+
+    ! Add runoff to pipes
+    runoffPipes=runoffPipes+(runoff(is)*sfr(is))
 
     ! If pipe capacity is full, surface runoff occurs
     ! N.B. this will happen each loop (replicates pipes filling up)
@@ -501,33 +442,19 @@ CONTAINS
     ENDIF   !If runoff exceed pipe capacity
 
   END SUBROUTINE updateFlood
+  !------------------------------------------------------------------------------
 
+  !------------------------------------------------------------------------------
   SUBROUTINE ReDistributeWater(&
-                                ! input:
-       nsurf,& ! surface type number
-       WaterSurf,&
-       snowUse,&
-       WaterDist,  &
-       sfr,   &!
-       Drain,&
-                                ! output:
-       AddWaterRunoff,&
-       AddWater&
-       )
+       snowUse,WaterDist,sfr,Drain,&! input:
+       AddWaterRunoff,AddWater)! output:
     !Drainage moves into different parts defined by WaterDistSS_YYYY.txt. LJ 2010
     !AddWater(is) is that amount of water that is gained for each surface
     !Latest update takes snow into account. 22/03/2013 LJ
     !-------------------------------------------------------------------
 
-    ! use allocateArray
-    ! use data_in
-    ! use gis_data
-    ! use sues_data
 
     IMPLICIT NONE
-
-    INTEGER,INTENT(in)::nsurf ! number of surface types
-    INTEGER,INTENT(in)::WaterSurf!=7, water surface code
     INTEGER,INTENT(in)::snowUse!Snow part used (1) or not used (0)
 
     REAL (KIND(1d0)),INTENT(in)::WaterDist(nsurf+1,nsurf-1) !Within-grid water distribution to other surfaces and runoff/soil store [-]
@@ -537,8 +464,8 @@ CONTAINS
     REAL (KIND(1d0)),INTENT(out)::AddWaterRunoff(nsurf)!Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
     REAL (KIND(1d0)),INTENT(out)::AddWater(nsurf)        !Water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
 
-    INTEGER::ii,jj,&
-         NSurfDoNotReceiveDrainage=0!Number of surfaces that do not receive drainage water (green roof)
+    INTEGER::ii,jj
+    INTEGER::NSurfDoNotReceiveDrainage=0!Number of surfaces that do not receive drainage water (green roof)
 
     !Fractions that go to runoff from each surface
     DO ii=1,nsurf-1   !not water in the calculation
@@ -567,19 +494,17 @@ CONTAINS
           ENDIF
        ENDDO
     ENDDO
+
   END SUBROUTINE ReDistributeWater
+  !------------------------------------------------------------------------------
 
-
+  !------------------------------------------------------------------------------
   SUBROUTINE SUEWS_update_SoilMoist(&
        NonWaterFraction,&!input
        soilstoreCap,sfr,soilmoist_id,&
        SoilMoistCap,SoilState,&!output
        vsmd,smd)
     IMPLICIT NONE
-    INTEGER,PARAMETER ::nsurf     = 7 ! number of surface types
-    INTEGER,PARAMETER ::ConifSurf = 3 !New surface classes: Grass = 5th/7 surfaces
-    INTEGER,PARAMETER ::DecidSurf = 4 !New surface classes: Grass = 5th/7 surfaces
-    INTEGER,PARAMETER ::GrassSurf = 5
 
     ! INTEGER,INTENT(in)::nsurf,ConifSurf,DecidSurf,GrassSurf
     REAL(KIND(1d0)),INTENT(in)::NonWaterFraction
@@ -618,7 +543,7 @@ CONTAINS
     ENDDO
 
   END SUBROUTINE SUEWS_update_SoilMoist
-
+  !------------------------------------------------------------------------------
 
   !========== Calculate soil moisture ============
   SUBROUTINE SUEWS_cal_SoilMoist(&
@@ -628,8 +553,6 @@ CONTAINS
        smd,smd_nsurf,tot_chang_per_tstep,SoilState)!output
 
     IMPLICIT NONE
-    INTEGER,PARAMETER::nsurf=7
-
 
     INTEGER,INTENT(in) ::SMDMethod
     REAL(KIND(1d0)),INTENT(in)::xsmd
@@ -681,8 +604,8 @@ CONTAINS
        smd=xsmd
     ENDIF
 
-
   END SUBROUTINE SUEWS_cal_SoilMoist
+  !===================================================================================
 
   SUBROUTINE SUEWS_cal_HorizontalSoilWater(&
        sfr,&! input: ! surface fractions
@@ -716,7 +639,7 @@ CONTAINS
     ! use allocateArray
 
     IMPLICIT NONE
-    INTEGER , PARAMETER :: nsurf=7! number of surface types
+
 
     REAL(KIND(1d0)), INTENT(in) ::sfr(nsurf)! surface fractions
     REAL(KIND(1d0)), INTENT(in) ::SoilStoreCap(nsurf)!Capacity of soil store for each surface [mm]
@@ -923,20 +846,8 @@ CONTAINS
     ENDDO !is loop over first surface
 
   END SUBROUTINE SUEWS_cal_HorizontalSoilWater
+  !===================================================================================
 
-  ! Conversion of water use (irrigation)
-  ! Last modified:
-  !  TS 08 Aug 2017  - addded explicit interface
-  !  LJ  6 Apr 2017  - WUchoice changed to WaterUseMethod
-  !  TK 14 Mar 2017  - Corrected the variable name WUAreaEveTr_m2 -> WUAreaGrass_m2 (row 35)
-  !                    Corrected conversion from m to mm /1000 -> *1000 (row 47 and 60)
-  !  LJ 27 Jan 2016  - Removing Tab:s and cleaning the code
-  !  HCW 12 Feb 2015 - Water use [mm] now inidcates the amount of water supplied for each surface
-  !  HCW 26 Jan 2015 - Water use [mm] is the same for each surface at the moment and indicates the
-  !                    amount of water supplied for each irrigated area
-  !
-  ! To Do:
-  !	- Add functionality for water on paved surfaces (street cleaning, fountains)
   !===================================================================================
   SUBROUTINE SUEWS_cal_WaterUse(&
        nsh_real,& ! input:
@@ -948,22 +859,22 @@ CONTAINS
        WUAreaEveTr_m2,WUAreaDecTr_m2,& ! output:
        WUAreaGrass_m2,WUAreaTotal_m2,&
        wu_EveTr,wu_DecTr,wu_Grass,wu_m3,int_wu,ext_wu)
+    ! Conversion of water use (irrigation)
+    ! Last modified:
+    !  TS 08 Aug 2017  - addded explicit interface
+    !  LJ  6 Apr 2017  - WUchoice changed to WaterUseMethod
+    !  TK 14 Mar 2017  - Corrected the variable name WUAreaEveTr_m2 -> WUAreaGrass_m2 (row 35)
+    !                    Corrected conversion from m to mm /1000 -> *1000 (row 47 and 60)
+    !  LJ 27 Jan 2016  - Removing Tab:s and cleaning the code
+    !  HCW 12 Feb 2015 - Water use [mm] now inidcates the amount of water supplied for each surface
+    !  HCW 26 Jan 2015 - Water use [mm] is the same for each surface at the moment and indicates the
+    !                    amount of water supplied for each irrigated area
+    !
+    ! To Do:
+    !	- Add functionality for water on paved surfaces (street cleaning, fountains)
 
 
     IMPLICIT NONE
-    INTEGER,PARAMETER:: nsurf   = 7
-    ! INTEGER,PARAMETER:: PavSurf   = 1  !When all surfaces considered together (1-7)
-    ! INTEGER,PARAMETER::BldgSurf  = 2
-    INTEGER,PARAMETER::ConifSurf = 3
-    INTEGER,PARAMETER::DecidSurf = 4
-    INTEGER,PARAMETER::GrassSurf = 5 !New surface classes: Grass = 5th/7 surfaces
-    ! INTEGER,PARAMETER::BSoilSurf = 6 !New surface classes: Bare soil = 6th/7 surfaces
-    ! INTEGER,PARAMETER::WaterSurf = 7
-    ! INTEGER,PARAMETER::ExcessSurf= 8   !Runoff or subsurface soil in WGWaterDist
-    ! INTEGER,PARAMETER::NSurfDoNotReceiveDrainage=0  !Number of surfaces that do not receive drainage water (green roof)
-    ! INTEGER,PARAMETER::ivConif = 1!When only vegetated surfaces considered (1-3)
-    ! INTEGER,PARAMETER::ivDecid = 2
-    ! INTEGER,PARAMETER::ivGrass = 3
 
 
     REAL(KIND(1d0)),INTENT(in)::nsh_real

@@ -1,6 +1,6 @@
 SUBROUTINE Evap_SUEWS(&
      EvapMethod,state_is,WetThresh_is,capStore_is,&!input
-     numPM,s_hPa,psyc_hPa,ResistSurf,sp,RA,rb,tlv,&
+     vpd_hPa,avdens,avcp,qn_e,s_hPa,psyc_hPa,ResistSurf,RA,rb,tlv,&
      rss,ev,qe) !output
   !------------------------------------------------------------------------------
   !-Calculates evaporation for each surface from modified Penman-Monteith eqn
@@ -27,20 +27,24 @@ SUBROUTINE Evap_SUEWS(&
   REAL(KIND(1d0)),INTENT(in)::state_is ! wetness status
   REAL(KIND(1d0)),INTENT(in)::WetThresh_is!When State > WetThresh, RS=0 limit in SUEWS_evap [mm] (specified in input files)
   REAL(KIND(1d0)),INTENT(in)::capStore_is ! = StoreDrainPrm(6,is), current storage capacity [mm]
-  REAL(KIND(1d0)),INTENT(in)::numPM!numerator of P-M eqn
+
+  REAL(KIND(1d0)),INTENT(in)::vpd_hPa ! vapour pressure deficit [hPa]
+  REAL(KIND(1d0)),INTENT(in)::avdens ! air density
+  REAL(KIND(1d0)),INTENT(in)::avcp ! air heat capacity
+  REAL(KIND(1d0)),INTENT(in)::qn_e !net available energy for evaporation
   REAL(KIND(1d0)),INTENT(in)::s_hPa!Vapour pressure versus temperature slope in hPa
   REAL(KIND(1d0)),INTENT(in)::psyc_hPa!Psychometric constant in hPa
   REAL(KIND(1d0)),INTENT(in)::ResistSurf!Surface resistance
-  REAL(KIND(1d0)),INTENT(in)::sp!Term in calculation of E
+  ! REAL(KIND(1d0)),INTENT(in)::sp!Term in calculation of E
   REAL(KIND(1d0)),INTENT(in)::RA!Aerodynamic resistance
   REAL(KIND(1d0)),INTENT(in)::rb!Boundary layer resistance
   REAL(KIND(1d0)),INTENT(in)::tlv!Latent heat of vaporization per timestep [J kg-1 s-1], (tlv=lv_J_kg/tstep_real)
 
-  REAL(KIND(1d0)),INTENT(out)::rss
-  REAL(KIND(1d0)),INTENT(out)::ev
+  REAL(KIND(1d0)),INTENT(out)::rss !Redefined surface resistance for wet
+  REAL(KIND(1d0)),INTENT(out)::ev ! evapotranspiration [mm]
   REAL(KIND(1d0)),INTENT(out)::qe ! latent heat flux [W m-2]
 
-
+  REAL(KIND(1d0))::numPM!numerator of P-M eqn
   REAL(KIND(1d0))::rbsg  !Boundary-layer resistance x (slope/psychrometric const + 1) [s m-1]
   REAL(KIND(1d0))::rsrbsg  !RS + rbsg [s m-1]
   REAL(KIND(1d0))::rst
@@ -58,6 +62,9 @@ SUBROUTINE Evap_SUEWS(&
   ! PRINT*, 'SMOIS',state_is,state_is<=0.001
   ! PRINT*, 'EvapMethod',EvapMethod
 
+  !numerator of P-M eqn, refer to Eq6, Jarvi et al. 2011
+  numPM = s_hPa*qn_e+vpd_hPa*avdens*avcp/RA !s_haPa - slope of svp vs t curve.
+
   ! Dry surface ---------------------------------------------------------------
   IF(state_is<=0.001) THEN
      qe  = numPM/(s_hPa+psyc_hPa*(1+ResistSurf/RA))  !QE [W m-2] (numPM = numerator of P-M eqn)
@@ -72,7 +79,7 @@ SUBROUTINE Evap_SUEWS(&
      ! Evaporation calculated according to Rutter(EvapMethod=1) or Shuttleworth(EvapMethod=2).
      !Set in SUEWS_initial (so not an input to the model)
      IF(EvapMethod==2) THEN   !-- Shuttleworth (1978) --
-        rbsg   = rb*(sp+1)           !Boundary-layer resistance x (slope/psychro + 1)
+        rbsg   = rb*(s_hPa/psyc_hPa+1)           !Boundary-layer resistance x (slope/psychro + 1)
         rsrbsg = ResistSurf+rbsg   !RS + rsbg
 
         ! If surface is completely wet, set RS to zero -------------------
@@ -100,13 +107,9 @@ SUBROUTINE Evap_SUEWS(&
         qe = numPM/(s_hPa+psyc_hPa)
         ev = qe/tlv
 
-        IF(state_is >= capStore_is) THEN
-           x = 1.0
-        ELSE
-           x = state_is/capStore_is
-        ENDIF
-        ev = ev*x     !QE [W m-2]
-        qe = ev*tlv   !Ev [mm]
+        x  = MERGE(1d0, state_is/capStore_is, state_is > capStore_is)
+        ev = ev*x !QE [W m-2]
+        qe = ev*tlv !Ev [mm]
      ENDIF   !Rutter/Shuttleworth calculation
   ENDIF   !Wet/dry surface
 

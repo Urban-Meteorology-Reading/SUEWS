@@ -373,7 +373,7 @@ CONTAINS
     REAL(KIND(1D0))::qs
     REAL(KIND(1D0))::RA
     REAL(KIND(1D0))::ResistSurf
-    REAL(KIND(1D0))::rss
+    ! REAL(KIND(1D0))::rss
     REAL(KIND(1d0))::runoffAGveg
     REAL(KIND(1d0))::runoffAGimpervious
     REAL(KIND(1D0))::runoff_per_tstep
@@ -702,7 +702,7 @@ CONTAINS
          SnowProf_24hr,& ! output:
          runoffSnow,runoff,runoffSoil,chang,changSnow,&
          snowDepth,SnowToSurf,ev_snow,SnowRemoval,&
-         evap,rss_nsurf,p_mm,rss,qe,state_per_tstep,NWstate_per_tstep,qeOut,&
+         evap,rss_nsurf,p_mm,qe,state_per_tstep,NWstate_per_tstep,qeOut,&
          swe,ev,chSnow_per_interval,ev_per_tstep,qe_per_tstep,runoff_per_tstep,&
          surf_chang_per_tstep,runoffPipes,mwstore,runoffwaterbody,&
          runoffAGveg,runoffAGimpervious,runoffWaterBody_m3,runoffPipes_m3)
@@ -1445,7 +1445,7 @@ CONTAINS
        SnowProf_24hr,& ! output:
        runoffSnow,runoff,runoffSoil,chang,changSnow,&
        snowDepth,SnowToSurf,ev_snow,SnowRemoval,&
-       evap,rss_nsurf,p_mm,rss,qe,state_per_tstep,NWstate_per_tstep,qeOut,&
+       evap,rss_nsurf,p_mm,qe,state_per_tstep,NWstate_per_tstep,qeOut,&
        swe,ev,chSnow_per_interval,ev_per_tstep,qe_per_tstep,runoff_per_tstep,&
        surf_chang_per_tstep,runoffPipes,mwstore,runoffwaterbody,&
        runoffAGveg,runoffAGimpervious,runoffWaterBody_m3,runoffPipes_m3)
@@ -1551,7 +1551,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::rss_nsurf
 
     REAL(KIND(1d0)),INTENT(out)::p_mm!Inputs to surface water balance
-    REAL(KIND(1d0)),INTENT(out)::rss
+    ! REAL(KIND(1d0)),INTENT(out)::rss
     REAL(KIND(1d0)),INTENT(out)::qe ! latent heat flux [W m-2]
     REAL(KIND(1d0)),INTENT(out)::state_per_tstep
     REAL(KIND(1d0)),INTENT(out)::NWstate_per_tstep
@@ -1577,10 +1577,11 @@ CONTAINS
 
     REAL(KIND(1d0))::surplusWaterBody
     REAL(KIND(1d0))::pin!Rain per time interval
-    REAL(KIND(1d0))::sae
-    REAL(KIND(1d0))::vdrc
-    REAL(KIND(1d0))::sp
-    REAL(KIND(1d0))::numPM
+    ! REAL(KIND(1d0))::sae
+    ! REAL(KIND(1d0))::vdrc
+    ! REAL(KIND(1d0))::sp
+    ! REAL(KIND(1d0))::numPM
+    REAL(KIND(1d0))::qn_e
     REAL(KIND(1d0))::tlv
     REAL(KIND(1d0))::runoffAGimpervious_m3
     REAL(KIND(1d0))::runoffAGveg_m3
@@ -1617,25 +1618,28 @@ CONTAINS
     SurplusEvap          = 0
     SnowRemoval          = 0
 
-    !========= these need to be wrapped================================
-    sae   = s_hPa*(qn1_snowfree+qf-qs)    !s_haPa - slope of svp vs t curve. qn1 changed to qn1_snowfree, lj in May 2013
-    vdrc  = vpd_hPa*avdens*avcp
-    sp    = s_hPa/psyc_hPa
-    numPM = sae+vdrc/RA
-    !write(*,*) numPM, sae, vdrc/RA, s_hPA+psyc_hPa, NumPM/(s_hPA+psyc_hPa)
-    !========= these need to be wrapped end================================
+    ! net available energy for evaporation
+    qn_e=qn1_snowfree+qf-qs ! qn1 changed to qn1_snowfree, lj in May 2013
+    ! !========= these need to be wrapped================================
+    !
+    ! sae   = s_hPa*(qn1_snowfree+qf-qs)    !s_haPa - slope of svp vs t curve. qn1 changed to qn1_snowfree, lj in May 2013
+    ! vdrc  = vpd_hPa*avdens*avcp
+    ! sp    = s_hPa/psyc_hPa
+    ! numPM = sae+vdrc/RA
+    ! !write(*,*) numPM, sae, vdrc/RA, s_hPA+psyc_hPa, NumPM/(s_hPA+psyc_hPa)
+    ! !========= these need to be wrapped end================================
 
     IF(Diagnose==1) WRITE(*,*) 'Calling evap_SUEWS and SoilStore...'
     DO is=1,nsurf   !For each surface in turn
        IF (snowCalcSwitch(is)==1) THEN
           IF (sfr(is)/=0) THEN
              IF(Diagnose==1) WRITE(*,*) 'Calling SnowCalc...'
-             CALL SnowCalc(&
+             call SnowCalc(&
                   tstep,imin,it,dectime,is,&!input
                   EvapMethod,CRWmin,CRWmax,nsh_real,lvS_J_kg,lv_j_kg,avdens,&
                   avRh,Press_hPa,Temp_C,RAsnow,psyc_hPa,avcp,sIce_hPa,&
                   PervFraction,vegfraction,addimpervious,&
-                  numPM,s_hPa,ResistSurf,sp,RA,rb,tlv,snowdensmin,SnowProf_24hr,precip,&
+                  vpd_hPa,qn_e,s_hPa,ResistSurf,RA,rb,tlv,snowdensmin,SnowProf_24hr,precip,&
                   PipeCapacity,RunoffToWater,runoffAGimpervious,runoffAGveg,&
                   addVeg,surplusWaterBody,SnowLimPaved,SnowLimBuild,FlowChange,drain,&
                   WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
@@ -1644,7 +1648,7 @@ CONTAINS
                   AddWater,addwaterrunoff,&
                   SnowPack,SurplusEvap,&!inout
                   snowFrac,MeltWaterStore,iceFrac,SnowDens,&
-                  runoffSnow,& ! output
+                  rss_nsurf,runoffSnow,& ! output
                   runoff,runoffSoil,chang,changSnow,SnowToSurf,state_id,ev_snow,soilmoist_id,&
                   SnowDepth,SnowRemoval,swe,ev,chSnow_per_interval,&
                   ev_per_tstep,qe_per_tstep,runoff_per_tstep,surf_chang_per_tstep,&
@@ -1658,25 +1662,10 @@ CONTAINS
 
           capStore(is)=StoreDrainPrm(6,is)
           !Calculates ev [mm]
-          CALL Evap_SUEWS(&
-               EvapMethod,&! input: !Evaporation calculated according to Rutter (1) or Shuttleworth (2)
-               state_id(is),& ! wetness status
-               WetThresh(is),&!When state_id > WetThresh, RS=0 limit in SUEWS_evap [mm] (specified in input files)
-               capStore(is),& ! = StoreDrainPrm(6,is), current storage capacity [mm]
-               numPM,&!numerator of P-M eqn
-               s_hPa,&!Vapour pressure versus temperature slope in hPa
-               psyc_hPa,&!Psychometric constant in hPa
-               ResistSurf,&!Surface resistance
-               sp,&!Term in calculation of E
-               RA,&!Aerodynamic resistance
-               rb,&!Boundary layer resistance
-               tlv,&!Latent heat of vaporization per timestep [J kg-1 s-1], (tlv=lv_J_kg/tstep_real)
-               rss,&! output:
-               ev,& ! evapotranspiration [mm]
-               qe) ! latent heat flux [W m-2]
-
-
-          rss_nsurf(is) = rss !Store rss for each surface
+          call Evap_SUEWS(&
+               EvapMethod,state_id(is),WetThresh(is),capStore(is),&!input
+               vpd_hPa,avdens,avcp,qn_e,s_hPa,psyc_hPa,ResistSurf,RA,rb,tlv,&
+               rss_nsurf(is),ev,qe) !output
 
           !Surface water balance and soil store updates (can modify ev, updates state_id)
           CALL soilstore(&

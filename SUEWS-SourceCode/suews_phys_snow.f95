@@ -1006,11 +1006,10 @@ CONTAINS
     runoffPipes=runoffPipes+runoffSnow(is)*sfr(is)*MAX(snowFrac(is),snowfracOld)+runoff(is)*sfr(is)*(1-snowFrac(is))&
          +runoffTest*sfr(is)
     CALL updateFlood(&
-                                ! input:
-         nsurf,is,PavSurf,BldgSurf,WaterSurf,ConifSurf,BSoilSurf,&
+         is,runoff,&! input:
          sfr,PipeCapacity,RunoffToWater,&
-                                ! inout:
-         runoffAGimpervious,surplusWaterBody,runoffAGveg,runoffPipes)
+         runoffAGimpervious,surplusWaterBody,runoffAGveg,runoffPipes)! inout:
+
 
     runoff_per_tstep=runoff_per_tstep+runoffSnow(is)*sfr(is)*MAX(snowFrac(is),snowfracOld)+runoff(is)*sfr(is)*(1-snowFrac(is))&
          +runoffTest*sfr(is)

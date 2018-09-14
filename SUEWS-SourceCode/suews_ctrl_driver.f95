@@ -688,19 +688,18 @@ CONTAINS
     !======== Evaporation and surface state_id ========
     CALL SUEWS_cal_QE(&
          Diagnose,&!input
-         tstep,imin,it,EvapMethod,snowCalcSwitch,DayofWeek_id,CRWmin,CRWmax,&
-         nsh_real,dectime,lvS_J_kg,lv_j_kg,avdens,avRh,Press_hPa,Temp_C,&
+         tstep,imin,it,EvapMethod,snowCalcSwitch,dayofWeek_id,CRWmin,CRWmax,&
+         dectime,lvS_J_kg,lv_j_kg,avdens,avRh,Press_hPa,Temp_C,&
          RAsnow,psyc_hPa,avcp,sIce_hPa,&
          PervFraction,vegfraction,addimpervious,qn1_snowfree,qf,qs,vpd_hPa,s_hPa,&
-         ResistSurf,RA,rb,tstep_real,snowdensmin,precip,PipeCapacity,RunoffToWater,&
+         ResistSurf,RA,rb,snowdensmin,precip,PipeCapacity,RunoffToWater,&
          NonWaterFraction,wu_EveTr,wu_DecTr,wu_Grass,addVeg,addWaterBody,SnowLimPaved,SnowLimBuild,&
          SurfaceArea,FlowChange,drain,WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
          freezmelt,freezstate,freezstatevol,Qm_Melt,Qm_rain,Tsurf_ind,sfr,&
-         StateLimit,AddWater,addwaterrunoff,StoreDrainPrm,snowD,&
-         runoff_per_interval,state_id,soilmoist_id,SnowPack,snowFrac,MeltWaterStore,&! inout:
-         iceFrac,SnowDens,&
-         SnowProf_24hr,& ! output:
-         runoffSnow,runoff,runoffSoil,chang,changSnow,&
+         StateLimit,AddWater,addwaterrunoff,StoreDrainPrm,snowD, SnowProf_24hr,&
+         runoff_per_interval,state_id,& !inout:
+         soilmoist_id,SnowPack,snowFrac,MeltWaterStore,iceFrac,SnowDens,&
+         runoffSnow,runoff,runoffSoil,chang,changSnow,&! output:
          snowDepth,SnowToSurf,ev_snow,SnowRemoval,&
          evap,rss_nsurf,p_mm,qe,state_per_tstep,NWstate_per_tstep,qeOut,&
          swe,ev,chSnow_per_interval,ev_per_tstep,qe_per_tstep,runoff_per_tstep,&
@@ -1386,10 +1385,8 @@ CONTAINS
     ! CALL ReDistributeWater
     !Calculates AddWater(is)
     CALL ReDistributeWater(&
-         nsurf,& ! input:
-         WaterSurf, snowUse, WaterDist,  sfr,   Drain,&
-         AddWaterRunoff,&  ! output:
-         AddWater)
+         snowUse,WaterDist,sfr,Drain,&! input:
+         AddWaterRunoff,AddWater)! output
 
   END SUBROUTINE SUEWS_cal_Water
   !=======================================================================
@@ -1432,18 +1429,17 @@ CONTAINS
   SUBROUTINE SUEWS_cal_QE(&
        Diagnose,&!input
        tstep,imin,it,EvapMethod,snowCalcSwitch,dayofWeek_id,CRWmin,CRWmax,&
-       nsh_real,dectime,lvS_J_kg,lv_j_kg,avdens,avRh,Press_hPa,Temp_C,&
+       dectime,lvS_J_kg,lv_j_kg,avdens,avRh,Press_hPa,Temp_C,&
        RAsnow,psyc_hPa,avcp,sIce_hPa,&
        PervFraction,vegfraction,addimpervious,qn1_snowfree,qf,qs,vpd_hPa,s_hPa,&
-       ResistSurf,RA,rb,tstep_real,snowdensmin,precip,PipeCapacity,RunoffToWater,&
+       ResistSurf,RA,rb,snowdensmin,precip,PipeCapacity,RunoffToWater,&
        NonWaterFraction,wu_EveTr,wu_DecTr,wu_Grass,addVeg,addWaterBody,SnowLimPaved,SnowLimBuild,&
        SurfaceArea,FlowChange,drain,WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
        freezmelt,freezstate,freezstatevol,Qm_Melt,Qm_rain,Tsurf_ind,sfr,&
-       StateLimit,AddWater,addwaterrunoff,StoreDrainPrm,snowD,&
+       StateLimit,AddWater,addwaterrunoff,StoreDrainPrm,snowD, SnowProf_24hr,&
        runoff_per_interval,state_id,soilmoist_id,SnowPack,snowFrac,MeltWaterStore,&! inout:
        iceFrac,SnowDens,&
-       SnowProf_24hr,& ! output:
-       runoffSnow,runoff,runoffSoil,chang,changSnow,&
+       runoffSnow,runoff,runoffSoil,chang,changSnow,&! output:
        snowDepth,SnowToSurf,ev_snow,SnowRemoval,&
        evap,rss_nsurf,p_mm,qe,state_per_tstep,NWstate_per_tstep,qeOut,&
        swe,ev,chSnow_per_interval,ev_per_tstep,qe_per_tstep,runoff_per_tstep,&
@@ -1457,14 +1453,12 @@ CONTAINS
     INTEGER,INTENT(in) ::imin
     INTEGER,INTENT(in) ::it
     INTEGER,INTENT(in) ::EvapMethod !Evaporation calculated according to Rutter (1) or Shuttleworth (2)
-    ! INTEGER,INTENT(in) ::snowfractionchoice
 
     INTEGER,DIMENSION(nsurf),INTENT(in)::snowCalcSwitch
     INTEGER,DIMENSION(3),INTENT(in)::dayofWeek_id
 
     REAL(KIND(1d0)),INTENT(in)::CRWmin
     REAL(KIND(1d0)),INTENT(in)::CRWmax
-    REAL(KIND(1d0)),INTENT(in)::nsh_real
     REAL(KIND(1d0)),INTENT(in)::dectime
     REAL(KIND(1d0)),INTENT(in)::lvS_J_kg
     REAL(KIND(1d0)),INTENT(in)::lv_j_kg
@@ -1487,7 +1481,6 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::ResistSurf
     REAL(KIND(1d0)),INTENT(in)::RA
     REAL(KIND(1d0)),INTENT(in)::rb
-    REAL(KIND(1d0)),INTENT(in)::tstep_real
     REAL(KIND(1d0)),INTENT(in)::snowdensmin
     REAL(KIND(1d0)),INTENT(in)::precip
     REAL(KIND(1d0)),INTENT(in)::PipeCapacity
@@ -1521,7 +1514,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::AddWater
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::addwaterrunoff
     REAL(KIND(1d0)),DIMENSION(6,nsurf),INTENT(in)::StoreDrainPrm
-    REAL(KIND(1d0)), DIMENSION(0:23,2),INTENT(in):: SnowProf_24hr
+    REAL(KIND(1d0)),DIMENSION(0:23,2),INTENT(in):: SnowProf_24hr
 
     !Updated status: input and output
     REAL(KIND(1d0)),INTENT(inout)::runoff_per_interval! Total water transported to each grid for grid-to-grid connectivity
@@ -1531,11 +1524,8 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowPack
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::snowFrac
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::MeltWaterStore
-
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::iceFrac
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(inout)::SnowDens
-    REAL(KIND(1d0)),DIMENSION(2)    ::SurplusEvap        !Surplus for evaporation in 5 min timestep
-
 
     ! output:
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::runoffSnow !Initialize for runoff caused by snowmelting
@@ -1575,6 +1565,7 @@ CONTAINS
     ! local:
     INTEGER:: is
 
+    REAL(KIND(1d0)),DIMENSION(2)    ::SurplusEvap        !Surplus for evaporation in 5 min timestep
     REAL(KIND(1d0))::surplusWaterBody
     REAL(KIND(1d0))::pin!Rain per time interval
     ! REAL(KIND(1d0))::sae
@@ -1585,8 +1576,14 @@ CONTAINS
     REAL(KIND(1d0))::tlv
     REAL(KIND(1d0))::runoffAGimpervious_m3
     REAL(KIND(1d0))::runoffAGveg_m3
+    REAL(KIND(1d0))::nsh_real
+    REAL(KIND(1d0))::tstep_real
 
     REAL(KIND(1d0)),DIMENSION(7)::capStore ! current storage capacity [mm]
+
+
+    tstep_real=tstep*1.d0
+    nsh_real=3600/tstep_real
 
     capStore=0 !initialise capStore
 
@@ -1620,18 +1617,10 @@ CONTAINS
 
     ! net available energy for evaporation
     qn_e=qn1_snowfree+qf-qs ! qn1 changed to qn1_snowfree, lj in May 2013
-    ! !========= these need to be wrapped================================
-    !
-    ! sae   = s_hPa*(qn1_snowfree+qf-qs)    !s_haPa - slope of svp vs t curve. qn1 changed to qn1_snowfree, lj in May 2013
-    ! vdrc  = vpd_hPa*avdens*avcp
-    ! sp    = s_hPa/psyc_hPa
-    ! numPM = sae+vdrc/RA
-    ! !write(*,*) numPM, sae, vdrc/RA, s_hPA+psyc_hPa, NumPM/(s_hPA+psyc_hPa)
-    ! !========= these need to be wrapped end================================
 
     IF(Diagnose==1) WRITE(*,*) 'Calling evap_SUEWS and SoilStore...'
     DO is=1,nsurf   !For each surface in turn
-       IF (snowCalcSwitch(is)==1) THEN
+       IF (snowCalcSwitch(is)==1) THEN ! snow calculation
           IF (sfr(is)/=0) THEN
              IF(Diagnose==1) WRITE(*,*) 'Calling SnowCalc...'
              call SnowCalc(&
@@ -1658,7 +1647,7 @@ CONTAINS
              SnowDens(is) = 0
              SnowPack(is) = 0
           ENDIF
-       ELSE
+       ELSE ! snow-free calculation
 
           capStore(is)=StoreDrainPrm(6,is)
           !Calculates ev [mm]
@@ -1669,52 +1658,29 @@ CONTAINS
 
           !Surface water balance and soil store updates (can modify ev, updates state_id)
           CALL soilstore(&
-               is,& ! input: ! surface type
-               sfr,&! surface fractions
-               PipeCapacity,&!Capacity of pipes to transfer water
-               RunoffToWater,&!Fraction of surface runoff going to water body
-               pin,&!Rain per time interval
-               wu_EveTr,&!Water use for evergreen trees/shrubs [mm]
-               wu_DecTr,&!Water use for deciduous trees/shrubs [mm]
-               wu_Grass,&!Water use for grass [mm]
-               drain,&!Drainage of each surface type [mm]
-               AddWater,&!Water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
-               addImpervious,&!Water from impervious surfaces of other grids [mm] for whole surface area
-               nsh_real,&!nsh cast as a real for use in calculations
-               stateOld,&!Wetness status of each surface type from previous timestep [mm]
-               AddWaterRunoff,&!Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
-               PervFraction,&! sum of surface cover fractions for impervious surfaces
-               addVeg,&!Water from vegetated surfaces of other grids [mm] for whole surface area
-               soilstoreCap,&!Capacity of soil store for each surface [mm]
-               addWaterBody,&!Water from water surface of other grids [mm] for whole surface area
-               FlowChange,&!Difference between the input and output flow in the water body
-               StateLimit,&!Limit for state_id of each surface type [mm] (specified in input files)
-               runoffAGimpervious,&!  inout:!Above ground runoff from impervious surface [mm] for whole surface area
-               surplusWaterBody,&!Extra runoff that goes to water body [mm] as specified by RunoffToWater
-               runoffAGveg,&!Above ground runoff from vegetated surfaces [mm] for whole surface area
-               runoffPipes,&!Runoff in pipes [mm] for whole surface area
-               ev,&!Evaporation
-               soilmoist_id,&!Soil moisture of each surface type [mm]
-               SurplusEvap,&!Surplus for evaporation in 5 min timestep
-               runoffWaterBody,&!Above ground runoff from water surface [mm] for whole surface area
-               runoff_per_interval,&! Total water transported to each grid for grid-to-grid connectivity
-               p_mm,&!output: !Inputs to surface water balance
-               chang,&!Change in state_id [mm]
-               runoff,&!Runoff from each surface type [mm]
-               state_id&!Wetness status of each surface type [mm]
-               )
+               is,sfr,PipeCapacity,RunoffToWater,pin,& ! input:
+               wu_EveTr,wu_DecTr,wu_Grass,drain,AddWater,addImpervious,nsh_real,stateOld,AddWaterRunoff,&
+               PervFraction,addVeg,soilstoreCap,addWaterBody,FlowChange,StateLimit,runoffAGimpervious,surplusWaterBody,&
+               runoffAGveg,runoffPipes,ev,soilmoist_id,SurplusEvap,runoffWaterBody,&
+               p_mm,chang,runoff,state_id)!output:
 
-          evap(is) = ev !Store ev for each surface
+          !Store ev for each surface
+          evap(is) = ev
 
           ! Sum evaporation from different surfaces to find total evaporation [mm]
           ev_per_tstep = ev_per_tstep+evap(is)*sfr(is)
+
           ! Sum change from different surfaces to find total change to surface state_id
           surf_chang_per_tstep = surf_chang_per_tstep+(state_id(is)-stateOld(is))*sfr(is)
+
           ! Sum runoff from different surfaces to find total runoff
           runoff_per_tstep = runoff_per_tstep+runoff(is)*sfr(is)
+
           ! Calculate total state_id (including water body)
           state_per_tstep = state_per_tstep+state_id(is)*sfr(is)
-          ! Calculate total state_id (excluding water body)
+
+          ! sum The total runoff from the area !!Check (HCW)
+          runoff_per_interval=runoff_per_interval+(runoff(is)*sfr(is))
 
           IF (NonWaterFraction/=0 .AND. is/=WaterSurf) THEN
              NWstate_per_tstep=NWstate_per_tstep+(state_id(is)*sfr(is)/NonWaterFraction)

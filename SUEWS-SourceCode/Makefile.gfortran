@@ -20,8 +20,8 @@ else
 				SUEWS_build_dir = $(addprefix $(SUEWS_build_base), Linux)
 			endif
 			ifeq ($(UNAME_S),Darwin) # macOS
-				STATIC = -static-libgfortran -static-libgcc# single -static won't work on macOS
-				STATICLIB = #libquadmath.a # force-ship this static lib
+				STATIC = -static-libgfortran -static-libgcc # single -static won't work on macOS
+				STATICLIB = libquadmath.a # force-ship this static lib
 				SUEWS_build_dir = $(addprefix $(SUEWS_build_base), macOS)
 			endif
 endif

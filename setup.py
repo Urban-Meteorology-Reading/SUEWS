@@ -4,11 +4,30 @@ from numpy.distutils.core import Extension, setup
 import platform
 import glob
 import os
+from pathlib import Path
 
 
 def readme():
     with open('README.rst') as f:
         return f.read()
+
+
+def get_suews_version(dir_source='SUEWS-SourceCode'):
+    path_source = Path(dir_source)
+    path_makefile = (path_source / 'include.common')
+    # get file to retrieve version
+    with open(path_makefile) as fm:
+        for line in fm:
+            if 'file ' in line:
+                file = line.split(':=')[-1].split('#')[0].strip()
+
+    # get version
+    path_constfile = (path_source / file)
+    with open(path_constfile) as fm:
+        for line in fm:
+            if 'progname' in line:
+                ver = line.split('SUEWS_V')[-1].replace("'", '').strip()
+                return ver
 
 
 class BinaryDistribution(Distribution):
@@ -49,43 +68,40 @@ other_f95 = list(
     - set(exclude_f95)
 )
 other_obj = [f.replace('.f95', '.o') for f in other_f95]
+# other_obj.append(os.path.join(dir_f95, 'libquadmath.a'))
 src_f95 = target_f95 + other_f95
 for f in target_f95 + other_obj:
     print(f)
 
 ext_modules = [
-    Extension('supy.SUEWS_driver',
+    Extension('suews_driver.suews_driver',
               target_f95,
               extra_f90_compile_args=['-cpp'],
               f2py_options=[
                   '--quiet',
                   ('-DF2PY_REPORT_ATEXIT' if sysname == 'Linux' else '')],
               extra_objects=other_obj,
-              extra_link_args=[(''if sysname == 'Linux' else '-static')])]
+              extra_link_args=[('' if sysname == 'Linux' else '-static')])]
 
-setup(name='supy',
-      version='0.3.1',
-      description='the SUEWS model that speaks python',
+setup(name='suews_driver',
+      version=get_suews_version(),
+      description='the SUEWS driver driven by f2py',
       long_description=readme(),
       url='https://github.com/sunt05/SuPy',
       author='Ting Sun',
       author_email='ting.sun@reading.ac.uk',
-      license='GPL-V3.0',
-      packages=['supy'],
+      # license='GPL-V3.0',
+      packages=['suews_driver'],
       package_data={
-          'supy': [
+          'suews_driver': [
               # lib_name,
-           '*.json'
+           # '*.json'
           ]
       },
-      distclass=BinaryDistribution,
+      # distclass=BinaryDistribution,
       ext_modules=ext_modules,
-      install_requires=[
-          'numpy',
-          'pandas',
-          'scipy',
-          'f90nml'
-      ],
+      python_requires='>=2.7',
+      install_requires=[],
       include_package_data=True,
       test_suite='nose.collector',
       tests_require=['nose'],

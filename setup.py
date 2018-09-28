@@ -78,8 +78,8 @@ ext_modules = [
               target_f95,
               extra_f90_compile_args=['-cpp'],
               f2py_options=[
-                  '--quiet',
-                  ('-DF2PY_REPORT_ATEXIT' if sysname == 'Linux' else '')],
+                  '--quiet', ],
+              # ('-DF2PY_REPORT_ATEXIT' if sysname == 'Linux' else '')],
               extra_objects=other_obj,
               extra_link_args=[('' if sysname == 'Linux' else '-static')])]
 

@@ -1,31 +1,40 @@
+# specific patterns
 *.orig
 *_BACKUP_76329.f95
 *_BACKUP_*.f95
 *_BASE_*.f95
 *_LOCAL_*.f95
 *_REMOTE_*.f95
-warnings.txt
-profiling-checkpoint.ipynb
-SUEWS_V201*
-problems-checkpoint.txt
-test-SuPy-checkpoint.py
-warnings-checkpoint.txt
-test-checkpoint.py
-launch.json
-WFDEI_Interpolator.py
-Saeve_2004_data_5.txt.save
-f2py
-.eggs/*
-build/*
+*.f90
 *.egg*
-dist/*
+
+
+# project settings
 .cproject
 .project
 org.eclipse.photran.core.prefs
 workspace.xml
-10.SUEWS-FORTRAN.iml
 .idea
-BenchmarkTest/*.pyc
-BaseRun
-*.f90
+launch.json
+
+
+#intermediate suews files
+warnings.txt
+SUEWS_V201*
+problems-checkpoint.txt
+warnings-checkpoint.txt
+Saeve_2004_data_5.txt.save
 SampleRun/suews_v*
+
+
+# python related
+profiling-checkpoint.ipynb
+*.pyc
+test-SuPy-checkpoint.py
+test-checkpoint.py
+
+
+# supy-driver related
+supy-driver/build
+supy-driver/dist
+supy-driver/wheelhouse

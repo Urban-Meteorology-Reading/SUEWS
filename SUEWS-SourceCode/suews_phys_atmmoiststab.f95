@@ -290,7 +290,7 @@ CONTAINS
           X=(1.-(15.2*zl_f))**0.25
           X2=LOG((1+(X**2.))/2.)
           PSYM=(2.*LOG((1+X)/2.))+X2-(2.*ATAN(X))+PIOVER2
-       ELSEIF(StabilityMethod==3)THEN !     campbell & norman eqn 7.26
+       ELSEIF(StabilityMethod==3)THEN ! Kondo (1975) adopted by Campbell & Norman eqn 7.26 p 97
           psym=0.6*(2)*LOG((1+(1-16*zl_f)**0.5)/2)
        ELSEIF(StabilityMethod==4) THEN !Businger et al (1971) modifed  Hogstrom (1988)
           x=(1-19.3*zl_f)**(-0.25)
@@ -331,7 +331,7 @@ CONTAINS
        ELSEIF(StabilityMethod==4)THEN ! Businger et al (1971) modifed  Hogstrom (1988)
           ! psym=1+6*zl_f  ! this is NOT the integral form but the stability function, TS 13 Jun 2017
           psym=(-6)*zl_f   ! this is the integral form, TS 13 Jun 2017
-       ELSEIF(StabilityMethod==3)THEN ! campbell & norman eqn 7.27 p 97
+       ELSEIF(StabilityMethod==3)THEN ! Kondo (1975) adopted by Campbell & Norman eqn 7.26 p 97
           psym=(-6)*LOG(1+zl_f)
 
        ENDIF

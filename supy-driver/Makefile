@@ -57,7 +57,6 @@ main:
 
 # make fortran exe
 suews:
-	$(MAKE) -C $(SUEWS_dir) -f Makefile.gfortran clean; # clean Fortran SUEWS build
 	$(MAKE) -C $(SUEWS_dir) -f Makefile.gfortran main; # make SUEWS with the `main` recipe
 	-rm -rf *.o *.mod *.f95 *.a *.dSYM
 
@@ -69,16 +68,17 @@ show:
 # If wanted, clean all *.o files after build
 clean:
 	$(MAKE) show
-	rm -rf ${MODULE}/*.so ${MODULE}/*.pyc ${MODULE}/__pycache__ ${MODULE}/*.dSYM
+	$(MAKE) -C $(SUEWS_dir) -f Makefile.gfortran clean
+	rm -rf ${MODULE}/*.so ${MODULE}/*.pyd ${MODULE}/*.pyc ${MODULE}/__pycache__ ${MODULE}/*.dSYM
 	 -$(PYTHON) setup.py clean --all
 
 # clean all existing builds, rebuild f2py libs, build wheels and test
 test:
-	$(MAKE) show;
+	$(MAKE) show
 	$(PYTHON) setup.py test
 
 # upload wheels to pypi using twine
 upload:
-	$(MAKE) show;
+	$(MAKE) show
 	twine upload --skip-existing dist/*whl
 	# $(shell twinup wheelhouse/*whl)

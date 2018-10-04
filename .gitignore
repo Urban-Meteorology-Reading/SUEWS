@@ -7,7 +7,7 @@
 *_REMOTE_*.f95
 *.f90
 *.egg*
-
+.vagrant/*
 
 # project settings
 .cproject

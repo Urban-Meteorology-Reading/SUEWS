@@ -1623,7 +1623,7 @@ CONTAINS
        IF (snowCalcSwitch(is)==1) THEN ! snow calculation
           IF (sfr(is)/=0) THEN
              IF(Diagnose==1) WRITE(*,*) 'Calling SnowCalc...'
-             call SnowCalc(&
+             CALL SnowCalc(&
                   tstep,imin,it,dectime,is,&!input
                   EvapMethod,CRWmin,CRWmax,nsh_real,lvS_J_kg,lv_j_kg,avdens,&
                   avRh,Press_hPa,Temp_C,RAsnow,psyc_hPa,avcp,sIce_hPa,&
@@ -1651,7 +1651,7 @@ CONTAINS
 
           capStore(is)=StoreDrainPrm(6,is)
           !Calculates ev [mm]
-          call Evap_SUEWS(&
+          CALL Evap_SUEWS(&
                EvapMethod,state_id(is),WetThresh(is),capStore(is),&!input
                vpd_hPa,avdens,avcp,qn_e,s_hPa,psyc_hPa,ResistSurf,RA,rb,tlv,&
                rss_nsurf(is),ev,qe) !output
@@ -2430,7 +2430,7 @@ CONTAINS
 
     INTEGER :: nVar
     nVar=SIZE(varList, dim=1)
-    IF ( i<nVar .AND.i>0  ) THEN
+    IF ( i<nVar .AND. i>0 ) THEN
        name   = TRIM(varList(i)%header)
        group  = TRIM(varList(i)%group)
        aggreg = TRIM(varList(i)%aggreg)

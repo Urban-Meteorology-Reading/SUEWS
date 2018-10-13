@@ -5,6 +5,8 @@
 OSFLAG 				:=
 ifeq ($(OS),Windows_NT)
 	OSFLAG += -D WIN32
+	# pyver := 3.6
+	# PYTHON:= py -${pyver}
 	PYTHON:=python
 	ifeq ($(PROCESSOR_ARCHITECTURE),AMD64)
 		OSFLAG += -D AMD64
@@ -17,7 +19,8 @@ else
 	ifeq ($(UNAME_S),Linux)
 		OSFLAG += -D LINUX
 		pyver := 37
-		PYTHON:=/opt/python/cp${pyver}-cp${pyver}m/bin/python
+		# PYTHON:=/opt/python/cp${pyver}-cp${pyver}m/bin/python
+		PYTHON:=python
 	endif
 	ifeq ($(UNAME_S),Darwin)
 		OSFLAG += -D OSX

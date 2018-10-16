@@ -900,6 +900,12 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      ! LAI(id_prev,ivDecid) = ModelDailyState(Gridiv,cMDS_LAIInitialDecTr)
      ! LAI(id_prev,ivGrass) = ModelDailyState(Gridiv,cMDS_LAIInitialGrass)
 
+     ! ---- LAI
+     LAI_id=0
+     LAI_id(ivConif) = ModelDailyState(Gridiv,cMDS_LAIInitialEveTr)
+     LAI_id(ivDecid) = ModelDailyState(Gridiv,cMDS_LAIInitialDecTr)
+     LAI_id(ivGrass) = ModelDailyState(Gridiv,cMDS_LAIInitialGrass)
+
      ! ---- Growing degree days, GDD
      ! GDD = 0
      ! GDD(:,1)=0

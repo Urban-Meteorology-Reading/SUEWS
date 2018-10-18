@@ -2514,14 +2514,9 @@ CONTAINS
     INTEGER,INTENT(IN)::EmissionsMethod
     INTEGER,INTENT(IN)::Gridiv
     INTEGER,INTENT(IN)::gsModel
-    ! INTEGER,INTENT(IN)::id
     INTEGER,INTENT(IN)::Ie_end
     INTEGER,INTENT(IN)::Ie_start
-    ! INTEGER,INTENT(IN)::isec
-    ! INTEGER,INTENT(IN)::imin
-    ! INTEGER,INTENT(IN)::it
     INTEGER,INTENT(IN)::EvapMethod
-    ! INTEGER,INTENT(IN)::iy
     INTEGER,INTENT(IN)::LAICalcYes
     INTEGER,INTENT(IN)::NetRadiationMethod
     INTEGER,INTENT(IN)::OHMIncQF
@@ -2536,6 +2531,8 @@ CONTAINS
     INTEGER,INTENT(in)::dt_since_start ! time since simulation starts [s]
     INTEGER,INTENT(IN)::veg_type
     INTEGER,INTENT(IN)::WaterUseMethod
+
+    INTEGER,DIMENSION(NVEGSURF),INTENT(IN)::LAIType
 
     REAL(KIND(1D0)),INTENT(IN)::AlbMax_DecTr
     REAL(KIND(1D0)),INTENT(IN)::AlbMax_EveTr
@@ -2628,7 +2625,6 @@ CONTAINS
     REAL(KIND(1D0)),INTENT(IN)::z0m_in
     REAL(KIND(1D0)),INTENT(IN)::zdm_in
 
-    INTEGER,DIMENSION(NVEGSURF),INTENT(IN)::LAIType
 
     REAL(KIND(1D0)),DIMENSION(2),INTENT(IN)               ::AH_MIN
     REAL(KIND(1D0)),DIMENSION(2),INTENT(IN)               ::AH_SLOPE_Cooling
@@ -2754,6 +2750,7 @@ CONTAINS
     INTEGER :: it
     INTEGER :: imin
     INTEGER :: isec
+    INTEGER,PARAMETER :: gridiv_x=1 ! a dummy gridiv as this routine is only one grid
     REAL(KIND(1D0))::qn1_obs
     REAL(KIND(1D0))::qh_obs
     REAL(KIND(1D0))::qe_obs
@@ -2832,7 +2829,7 @@ CONTAINS
             EF_umolCO2perJ,emis,EmissionsMethod,EnEF_v_Jkm,endDLS,EveTreeH,FAIBldg,&
             FAIDecTree,FAIEveTree,Faut,FcEF_v_kgkm,fcld_obs,FlowChange,&
             FrFossilFuel_Heat,FrFossilFuel_NonHeat,G1,G2,G3,G4,G5,G6,GDD_id,&
-            GDDFull,Gridiv,gsModel,HDD_id,HumActivity_24hr,&
+            GDDFull,gridiv_x,gsModel,HDD_id,HumActivity_24hr,&
             IceFrac,id,Ie_a,Ie_end,Ie_m,Ie_start,imin,&
             InternalWaterUse_h,IrrFracConif,IrrFracDecid,IrrFracGrass,isec,it,EvapMethod,&
             iy,kkAnOHM,Kmax,LAI_id,LAICalcYes,LAIMax,LAIMin,LAI_obs,&
@@ -2875,7 +2872,7 @@ CONTAINS
        CALL SUEWS_update_output(&
             SnowUse, storageheatmethod, &!input
             len_sim, 1, &
-            ir, gridiv, datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, &!input
+            ir, gridiv_x, datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, &!input
             dataOutBlockSUEWS_X, dataOutBlockSnow_X, dataOutBlockESTM_X)!inout
 
     END DO

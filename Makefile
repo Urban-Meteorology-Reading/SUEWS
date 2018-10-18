@@ -48,27 +48,11 @@ check:
 # make supy dist
 driver:
 	$(info $$PYTHON is [${PYTHON}])
-	$(MAKE) -C $(SUEWS_dir) clean; # clean Fortran SUEWS build
-	$(MAKE) -C $(SUEWS_dir) main; # make SUEWS with the `main` recipe
-	$(PYTHON) setup.py bdist_wheel # all f2py compilation is done by `setup.py`
-	-rm -rf *.o *.mod *.f95 *.a *.dSYM
+	$(MAKE) -C $(SuPy_dir) suews; # clean Fortran SUEWS build
+	$(MAKE) -C $(SuPy_dir) main; # make SUEWS with the `main` recipe
+	
 
 # If wanted, clean all *.o files after build
 clean:
-	$(MAKE) -C $(SUEWS_dir) clean;
-	 -cd ..;
-	 -cd $(SuPy_dir);
-	 -$(PYTHON) setup.py clean --all
-
-# clean all existing builds, rebuild f2py libs, build wheels and test
-test-supy:
-	$(MAKE) clean;
-	$(MAKE) supy;
-	-cd $(SuPy_dir);
-	$(PYTHON) setup.py test
-
-# clean all existing builds, rebuild f2py libs, build wheels and submit
-pip:
-	$(MAKE) clean;
-	$(MAKE) supy;
-	$(PYTHON) setup.py bdist_wheel upload
+	$(MAKE) -C $(SUEWS_dir) clean
+	$(MAKE) -C $(SuPy_dir) clean

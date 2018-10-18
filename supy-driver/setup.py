@@ -94,7 +94,7 @@ ext_modules = [
               target_f95,
               extra_f90_compile_args=['-cpp'],
               f2py_options=[
-                  '--quiet',
+                  # '--quiet',
                   # '--debug-capi',
                   # ('-DF2PY_REPORT_ATEXIT' if sysname == 'Linux' else ''),
               ],
@@ -102,7 +102,7 @@ ext_modules = [
               extra_link_args=[('' if sysname == 'Linux' else '-static')])]
 
 setup(name='suews_driver',
-      version=get_suews_version(ver_minor=6),
+      version=get_suews_version(ver_minor=7),
       description='the SUEWS driver driven by f2py',
       long_description=readme(),
       url='https://github.com/sunt05/SuPy',

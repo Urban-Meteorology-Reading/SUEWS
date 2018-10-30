@@ -45,7 +45,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
        raincover, rainmaxres, &
        roughlenmommethod, smdmethod, snow_obs, snowuse, startdls, &
        storageheatmethod, t_critic_cooling, t_critic_heating, temp_c, &
-       timezone, trafficrate, trafficunits, waterusemethod, xsmd
+       timezone, trafficrate, trafficunits, waterusemethod, wu_m3, xsmd
   USE time, ONLY : iy, id, it, imin, isec, dt_since_start
   USE allocateArray, ONLY: &
        alb, &
@@ -149,7 +149,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
        T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,TempMeltFact,TH,&
        theta_bioCO2,timezone,TL,TrafficRate,TrafficUnits,&
        TraffProf_24hr,Ts5mindata_ir,tstep,tstep_prev,veg_type,&
-       WaterDist,WaterUseMethod,WetThresh,&
+       WaterDist,WaterUseMethod,WetThresh,wu_m3,&
        WUDay_id,DecidCap_id,albDecTr_id,albEveTr_id,albGrass_id,porosity_id,&
        WUProfA_24hr,WUProfM_24hr,xsmd,Z,z0m_in,zdm_in,&
        datetimeLine,dataOutLineSUEWS,dataOutLineSnow,dataOutLineESTM,&!output

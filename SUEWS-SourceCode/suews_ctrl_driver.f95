@@ -65,7 +65,7 @@ CONTAINS
        T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,TempMeltFact,TH,&
        theta_bioCO2,timezone,TL,TrafficRate,TrafficUnits,&
        TraffProf_24hr,Ts5mindata_ir,tstep,tstep_prev,veg_type,&
-       WaterDist,WaterUseMethod,WetThresh,&
+       WaterDist,WaterUseMethod,WetThresh,wu_m3,&
        WUDay_id,DecidCap_id,albDecTr_id,albEveTr_id,albGrass_id,porosity_id,&
        WUProfA_24hr,WUProfM_24hr,xsmd,Z,z0m_in,zdm_in,&
        datetimeLine,dataOutLineSUEWS,dataOutLineSnow,dataOutLineESTM,&!output
@@ -194,6 +194,7 @@ CONTAINS
     REAL(KIND(1D0)),INTENT(IN)::timezone
     REAL(KIND(1D0)),INTENT(IN)::TL
     REAL(KIND(1D0)),INTENT(IN)::TrafficUnits
+    REAL(KIND(1D0)),INTENT(IN)::wu_m3
     REAL(KIND(1D0)),INTENT(IN)::xsmd
     REAL(KIND(1D0)),INTENT(IN)::Z
     REAL(KIND(1D0)),INTENT(IN)::z0m_in
@@ -402,7 +403,6 @@ CONTAINS
     REAL(KIND(1D0))::wu_DecTr
     REAL(KIND(1D0))::wu_EveTr
     REAL(KIND(1D0))::wu_Grass
-    REAL(KIND(1D0))::wu_m3
     REAL(KIND(1D0))::z0m
     REAL(KIND(1D0))::zdm
     REAL(KIND(1D0))::ZENITH_deg
@@ -648,14 +648,14 @@ CONTAINS
     !Gives the external and internal water uses per timestep
     CALL SUEWS_cal_WaterUse(&
          nsh_real,& ! input:
-         SurfaceArea,sfr,&
+         wu_m3, SurfaceArea,sfr,&
          IrrFracConif,IrrFracDecid,IrrFracGrass,&
-         dayofWeek_id,WUProfA_24hr,WUProfM_24hr,&
+         DayofWeek_id,WUProfA_24hr,WUProfM_24hr,&
          InternalWaterUse_h,HDD_id,WUDay_id,&
          WaterUseMethod,NSH,it,imin,DLS,&
          WUAreaEveTr_m2,WUAreaDecTr_m2,& ! output:
          WUAreaGrass_m2,WUAreaTotal_m2,&
-         wu_EveTr,wu_DecTr,wu_Grass,wu_m3,int_wu,ext_wu)
+         wu_EveTr,wu_DecTr,wu_Grass,int_wu,ext_wu)
 
 
     !===============Resistance Calculations=======================
@@ -2852,7 +2852,7 @@ CONTAINS
             T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,TempMeltFact,TH,&
             theta_bioCO2,timezone,TL,TrafficRate,TrafficUnits,&
             TraffProf_24hr,Ts5mindata_ir,tstep,tstep_prev,veg_type,&
-            WaterDist,WaterUseMethod,WetThresh,&
+            WaterDist,WaterUseMethod,WetThresh,wu_m3,&
             WUDay_id,DecidCap_id,albDecTr_id,albEveTr_id,albGrass_id,porosity_id,&
             WUProfA_24hr,WUProfM_24hr,xsmd,Z,z0m_in,zdm_in,&
             datetimeLine,dataOutLineSUEWS,dataOutLineSnow,dataOutLineESTM,&!output
@@ -2884,6 +2884,23 @@ CONTAINS
 
 
   END SUBROUTINE SUEWS_cal_multitsteps
+
+
+  ! a wrapper of NARP_cal_SunPosition used by supy
+  SUBROUTINE SUEWS_cal_sunposition(&
+       year,idectime,UTC,locationlatitude,locationlongitude,locationaltitude,& !input
+       sunazimuth,sunzenith) !output
+    IMPLICIT NONE
+
+    REAL(KIND(1D0)),INTENT(in) :: year,idectime,UTC,&
+         locationlatitude,locationlongitude,locationaltitude
+    REAL(KIND(1D0)),INTENT(out) ::sunazimuth,sunzenith
+
+    CALL NARP_cal_SunPosition(&
+         year,idectime,UTC,locationlatitude,locationlongitude,locationaltitude,&
+         sunazimuth,sunzenith)
+
+  END SUBROUTINE SUEWS_cal_sunposition
 
 
 END MODULE SUEWS_Driver

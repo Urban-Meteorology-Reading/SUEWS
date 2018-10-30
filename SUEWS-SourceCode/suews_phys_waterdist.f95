@@ -851,16 +851,17 @@ CONTAINS
   !===================================================================================
   SUBROUTINE SUEWS_cal_WaterUse(&
        nsh_real,& ! input:
-       SurfaceArea,sfr,&
+       wu_m3, SurfaceArea,sfr,&
        IrrFracConif,IrrFracDecid,IrrFracGrass,&
        DayofWeek_id,WUProfA_24hr,WUProfM_24hr,&
        InternalWaterUse_h,HDD_id,WUDay_id,&
        WaterUseMethod,NSH,it,imin,DLS,&
        WUAreaEveTr_m2,WUAreaDecTr_m2,& ! output:
        WUAreaGrass_m2,WUAreaTotal_m2,&
-       wu_EveTr,wu_DecTr,wu_Grass,wu_m3,int_wu,ext_wu)
+       wu_EveTr,wu_DecTr,wu_Grass,int_wu,ext_wu)
     ! Conversion of water use (irrigation)
     ! Last modified:
+    !  TS 30 Oct 2018  - fixed a bug in external water use
     !  TS 08 Aug 2017  - addded explicit interface
     !  LJ  6 Apr 2017  - WUchoice changed to WaterUseMethod
     !  TK 14 Mar 2017  - Corrected the variable name WUAreaEveTr_m2 -> WUAreaGrass_m2 (row 35)
@@ -878,6 +879,7 @@ CONTAINS
 
 
     REAL(KIND(1d0)),INTENT(in)::nsh_real
+    REAL(KIND(1d0)),INTENT(in)::wu_m3 ! external water input (e.g., irrigation) in m^3
     REAL(KIND(1d0)),INTENT(in)::SurfaceArea !Surface area of the study area [m2]
     REAL(KIND(1d0)),INTENT(in)::sfr(nsurf)!Surface fractions [-]
     REAL(KIND(1d0)),INTENT(in)::IrrFracConif!Fraction of evergreen trees which are irrigated
@@ -895,9 +897,6 @@ CONTAINS
     INTEGER,INTENT(in):: &
          DayofWeek_id(3),& !DayofWeek(id) 1 - day of week; 2 - month; 3 - season
          WaterUseMethod,& !Use modelled (0) or observed (1) water use
-                                !  ConifSurf,& !surface code
-                                !  DecidSurf,& !surface code
-                                !  GrassSurf,& !surface code
          NSH,&!Number of timesteps per hour
          it,& !Hour
          imin,& !Minutes
@@ -913,7 +912,6 @@ CONTAINS
          wu_EveTr,&
          wu_DecTr,&
          wu_Grass,&
-         wu_m3,&
          int_wu,&
          ext_wu
 
@@ -956,8 +954,8 @@ CONTAINS
        wu_DecTr=0
        wu_Grass=0
        IF(wu_m3==NAN.OR.wu_m3==0) THEN !If no water use
-          wu_m3=0
-          wu=wu_m3
+          ! wu_m3=0
+          wu=0
        ELSE                            !If water use
           IF (WUAreaTotal_m2>0) THEN
              wu = (wu_m3/WUAreaTotal_m2*1000)  !Water use in mm for the whole irrigated area
@@ -1002,6 +1000,14 @@ CONTAINS
        wu_DecTr = get_Prof_SpecTime_sum(ih,imin,0,WUProfA_24hr(:,iu),tstep)*WUDay_id(5)   !Automatic deciduous trees
        wu_Grass = get_Prof_SpecTime_sum(ih,imin,0,WUProfA_24hr(:,iu),tstep)*WUDay_id(8)   !Automatic grass
 
+       PRINT*, ''
+       PRINT*, 'WUDay_id(2) ',WUDay_id(2)
+       PRINT*, 'profile ',get_Prof_SpecTime_sum(ih,imin,0,WUProfA_24hr(:,iu),tstep)
+       PRINT*, 'manual:'
+       PRINT*, 'wu_EveTr',wu_EveTr
+       PRINT*, 'wu_DecTr',wu_DecTr
+       PRINT*, 'wu_Grass',wu_Grass
+
        ! ---- Manual irrigation ----
        WuFr=1 !Initialize WuFr to 1, but if raining, reduce manual fraction of water use
        ! If cumulative daily precipitation exceeds 2 mm
@@ -1016,6 +1022,11 @@ CONTAINS
        wu_EveTr = wu_EveTr + (get_Prof_SpecTime_sum(ih,imin,0,WUProfM_24hr(:,iu),tstep)*WuFr*WUDay_id(3)) !Manual evergreen trees
        wu_DecTr = wu_DecTr + (get_Prof_SpecTime_sum(ih,imin,0,WUProfM_24hr(:,iu),tstep)*WuFr*WUDay_id(6)) !Manual deciduous trees
        wu_Grass = wu_Grass + (get_Prof_SpecTime_sum(ih,imin,0,WUProfM_24hr(:,iu),tstep)*WuFr*WUDay_id(9)) !Manual grass
+
+       PRINT*, 'auto:'
+       PRINT*, 'wu_EveTr',wu_EveTr
+       PRINT*, 'wu_DecTr',wu_DecTr
+       PRINT*, 'wu_Grass',wu_Grass
        ! Added HCW 12 Feb 2015.
        !wu_EveTr=wu_EveTr*sfr(ConifSurf)*IrrFracConif	!Water use for EveTr [mm]
        !wu_DecTr=wu_DecTr*sfr(DecidSurf)*IrrFracDecid	!Water use for DecTr [mm]
@@ -1023,6 +1034,11 @@ CONTAINS
        wu_EveTr=wu_EveTr*IrrFracConif  !Water use for EveTr [mm]
        wu_DecTr=wu_DecTr*IrrFracDecid  !Water use for DecTr [mm]
        wu_Grass=wu_Grass*IrrFracGrass  !Water use for Grass [mm]
+
+       PRINT*, 'auto:'
+       PRINT*, 'IrrFracConif',IrrFracConif
+       PRINT*, 'IrrFracDecid',IrrFracDecid
+       PRINT*, 'IrrFracGrass',IrrFracGrass
 
        ! Total water use for the whole study area [mm]
        wu = wu_EveTr*sfr(ConifSurf) + wu_DecTr*sfr(DecidSurf) + wu_Grass*sfr(GrassSurf)

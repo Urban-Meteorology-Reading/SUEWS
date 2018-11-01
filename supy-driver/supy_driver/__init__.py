@@ -9,4 +9,4 @@
 # 08 Mar 2018: pypi packaging
 ###########################################################################
 
-from suews_driver.suews_driver import suews_driver
+from supy_driver.suews_driver import suews_driver

@@ -11,7 +11,7 @@ import shutil
 
 # wrap OS-specific `SUEWS_driver` libs
 sysname = platform.system()
-lib_basename = 'suews_driver'
+lib_basename = 'supy_driver'
 if sysname == 'Windows':
     lib_name = lib_basename + '.pyd'
 elif sysname == 'Darwin':
@@ -90,7 +90,7 @@ class BinaryDistribution(Distribution):
 
 
 ext_modules = [
-    Extension('suews_driver.suews_driver',
+    Extension('supy_driver.suews_driver',
               target_f95,
               extra_f90_compile_args=['-cpp'],
               f2py_options=[
@@ -101,17 +101,17 @@ ext_modules = [
               extra_objects=other_obj,
               extra_link_args=[('' if sysname == 'Linux' else '-static')])]
 
-setup(name='suews_driver',
-      version=get_suews_version(ver_minor=9),
+setup(name='supy_driver',
+      version=get_suews_version(ver_minor=10),
       description='the SUEWS driver driven by f2py',
       long_description=readme(),
       url='https://github.com/sunt05/SuPy',
       author='Ting Sun',
       author_email='ting.sun@reading.ac.uk',
       # license='GPL-V3.0',
-      packages=['suews_driver'],
+      packages=['supy_driver'],
       package_data={
-          'suews_driver': [
+          'supy_driver': [
               # lib_name,
            # '*.json'
           ]

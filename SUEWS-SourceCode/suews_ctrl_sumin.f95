@@ -396,7 +396,7 @@ CONTAINS
          SatHydraulicConduct,SDDFull,sfr,SMDMethod,SnowAlb,SnowAlbMax,&
          SnowAlbMin,snowD,SnowDens,SnowDensMax,SnowDensMin,SnowfallCum,snowFrac,&
          SnowLimBuild,SnowLimPaved,snow_obs,SnowPack,SnowProf_24hr,snowUse,SoilDepth,&
-         soilmoist_id,soilstoreCap,StabilityMethod,startDLS,state_id,StateLimit,&
+         soilmoist_id,SoilStoreCap,StabilityMethod,startDLS,state_id,StateLimit,&
          StorageHeatMethod,StoreDrainPrm,SurfaceArea,Tair24HR,tau_a,tau_f,tau_r,&
          T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,TempMeltFact,TH,&
          theta_bioCO2,timezone,TL,TrafficRate,TrafficUnits,&

@@ -462,7 +462,7 @@ CONTAINS
        vpd_hPa,qn_e,s_hPa,ResistSurf,RA,rb,tlv,snowdensmin,SnowProf_24hr,precip,&
        PipeCapacity,RunoffToWater,runoffAGimpervious,runoffAGveg,&
        addVeg,surplusWaterBody,SnowLimPaved,SnowLimBuild,FlowChange,drain,&
-       WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
+       WetThresh,stateOld,mw_ind,SoilStoreCap,rainonsnow,&
        freezmelt,freezstate,freezstatevol,&
        Qm_Melt,Qm_rain,Tsurf_ind,sfr,dayofWeek_id,StoreDrainPrm,snowD,&
        AddWater,addwaterrunoff,&
@@ -552,7 +552,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::WetThresh
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::stateOld
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::mw_ind
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::soilstorecap
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::SoilStoreCap
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::rainonsnow
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::freezmelt
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::freezstate
@@ -965,9 +965,9 @@ CONTAINS
           ENDIF !state_id is negative
 
           !If soilstorage is full at this point, excess will go to surface runoff
-          IF (soilmoist_id(is)>soilstoreCap(is)) THEN
-             runoffTest=runoffTest+(soilmoist_id(is)-soilstoreCap(is))
-             soilmoist_id(is)=soilstoreCap(is)
+          IF (soilmoist_id(is)>SoilStoreCap(is)) THEN
+             runoffTest=runoffTest+(soilmoist_id(is)-SoilStoreCap(is))
+             soilmoist_id(is)=SoilStoreCap(is)
           ELSEIF (soilmoist_id(is)<0) THEN
              soilmoist_id(is)=0
           ENDIF

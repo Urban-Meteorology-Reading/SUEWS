@@ -2366,29 +2366,29 @@ SUBROUTINE CheckInitial
   ENDIF
 
   !Soilstore check
-  IF (SoilstoreBldgsState>soilstoreCap(BldgSurf)) THEN
+  IF (SoilstoreBldgsState>SoilStoreCap(BldgSurf)) THEN
      CALL ErrorHint(37,'InitialCond: Check initial condition of building soil store.',&
-          SoilstoreBldgsState, soilstoreCap(BldgSurf), notUsedI)
+          SoilstoreBldgsState, SoilStoreCap(BldgSurf), notUsedI)
   ENDIF
-  IF (SoilstorePavedState>soilstoreCap(PavSurf)) THEN
+  IF (SoilstorePavedState>SoilStoreCap(PavSurf)) THEN
      CALL ErrorHint(37,'InitialCond: Check initial condition of paved soil store.',&
-          SoilstorePavedState, soilstoreCap(PavSurf), notUsedI)
+          SoilstorePavedState, SoilStoreCap(PavSurf), notUsedI)
   ENDIF
-  IF (SoilstoreEveTrState>soilstoreCap(ConifSurf)) THEN
+  IF (SoilstoreEveTrState>SoilStoreCap(ConifSurf)) THEN
      CALL ErrorHint(37,'InitialCond: Check initial condition of conif soil store.',&
-          SoilstoreEveTrState, soilstoreCap(ConifSurf), notUsedI)
+          SoilstoreEveTrState, SoilStoreCap(ConifSurf), notUsedI)
   ENDIF
-  IF (SoilstoreDecTrState>soilstoreCap(DecidSurf)) THEN
+  IF (SoilstoreDecTrState>SoilStoreCap(DecidSurf)) THEN
      CALL ErrorHint(37,'InitialCond: Check initial condition of deciduous soil store.',&
-          SoilstoreDecTrState, soilstoreCap(DecidSurf), notUsedI)
+          SoilstoreDecTrState, SoilStoreCap(DecidSurf), notUsedI)
   ENDIF
-  IF (SoilstoreBSoilState>soilstoreCap(BSoilSurf)) THEN
+  IF (SoilstoreBSoilState>SoilStoreCap(BSoilSurf)) THEN
      CALL ErrorHint(37,'InitialCond: Check initial condition of bare soil soil store.',&
-          SoilstoreBSoilState, soilstoreCap(BSoilSurf), notUsedI)
+          SoilstoreBSoilState, SoilStoreCap(BSoilSurf), notUsedI)
   ENDIF
-  IF (SoilstoreGrassState>soilstoreCap(GrassSurf)) THEN
+  IF (SoilstoreGrassState>SoilStoreCap(GrassSurf)) THEN
      CALL ErrorHint(37,'InitialCond: Check initial condition of grass soil store.',&
-          SoilstoreGrassState, soilstoreCap(GrassSurf), notUsedI)
+          SoilstoreGrassState, SoilStoreCap(GrassSurf), notUsedI)
   ENDIF
 
   !Snow stuff

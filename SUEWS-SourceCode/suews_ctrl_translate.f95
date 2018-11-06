@@ -1044,7 +1044,7 @@ SUBROUTINE SUEWS_Translate(Gridiv,ir,iMB)
      WRITE(12,'(2f10.3,3f10.5,3f10.3,a16)') FCskip,FCskip,LAIPower(4,1:nvegsurf),FCskip,FCskip,FCskip, ' LAI_LeafOP2'
      WRITE(12,120) FCskip,FCskip,(MaxConductance(iv),iv=1,nvegsurf),FCskip,FCskip,FCskip, ' MaxCond'
      WRITE(12,120) (SoilDepth(iv),iv=1,(nsurf-1)),FCskip,FCskip, ' SoilDepth'
-     WRITE(12,120) (soilstoreCap(iv),iv=1,(nsurf-1)), FCskip, FCskip, ' SoilStoreCap'
+     WRITE(12,120) (SoilStoreCap(iv),iv=1,(nsurf-1)), FCskip, FCskip, ' SoilStoreCap'
      WRITE(12,'(6f10.5,2f10.3,a16)') (SatHydraulicConduct(iv),iv=1,(nsurf-1)),FCskip,FCskip, ' SatHydraulicConduct'
      ! Not currently coded, but add these later: SoilDensity, InfiltrationRate, OBS_SMDept, OBS_SMCap, OBS_SoilNotRocks
      WRITE(12,120) (snowD(iv),iv=1,(nsurf-1)),FCskip,FCskip, ' SnowLimPatch'

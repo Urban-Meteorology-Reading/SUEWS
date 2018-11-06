@@ -92,7 +92,7 @@ CONTAINS
   SUBROUTINE soilstore(&
        is,sfr,PipeCapacity,RunoffToWater,pin,& ! input:
        wu_EveTr,wu_DecTr,wu_Grass,drain,AddWater,addImpervious,nsh_real,stateOld,AddWaterRunoff,&
-       PervFraction,addVeg,soilstoreCap,addWaterBody,FlowChange,StateLimit,runoffAGimpervious,surplusWaterBody,&
+       PervFraction,addVeg,SoilStoreCap,addWaterBody,FlowChange,StateLimit,runoffAGimpervious,surplusWaterBody,&
        runoffAGveg,runoffPipes,ev,soilmoist_id,SurplusEvap,runoffWaterBody,&
        p_mm,chang,runoff,state_id)!output:
     !------------------------------------------------------------------------------
@@ -143,7 +143,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::AddWater!Water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::stateOld!Wetness status of each surface type from previous timestep [mm]
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::AddWaterRunoff!Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::soilstoreCap!Capacity of soil store for each surface [mm]
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::SoilStoreCap!Capacity of soil store for each surface [mm]
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::StateLimit!Limit for state_id of each surface type [mm] (specified in input files)
 
     REAL(KIND(1d0)),INTENT(in)::PipeCapacity!Capacity of pipes to transfer water
@@ -321,9 +321,9 @@ CONTAINS
        soilmoist_id(is)=soilmoist_id(is)+drain(is)*AddWaterRunoff(is)
 
        ! If soilstore is full, the excess will go to runoff
-       IF(soilmoist_id(is)>soilstoreCap(is)) THEN  ! TODO: this should also go to flooding of some sort
-          runoff(is)=runoff(is)+(soilmoist_id(is)-soilstoreCap(is))
-          soilmoist_id(is)=soilstoreCap(is)
+       IF(soilmoist_id(is)>SoilStoreCap(is)) THEN  ! TODO: this should also go to flooding of some sort
+          runoff(is)=runoff(is)+(soilmoist_id(is)-SoilStoreCap(is))
+          soilmoist_id(is)=SoilStoreCap(is)
        ELSEIF (soilmoist_id(is)<0) THEN   !! QUESTION: But where does this lack of water go? !!Can this really happen here?
           CALL ErrorHint(62,'SUEWS_store: soilmoist_id(is) < 0 ',soilmoist_id(is),NotUsed,is)
           ! Code this properly - soilmoist_id(is) < 0 shouldn't happen given the above loops
@@ -501,14 +501,14 @@ CONTAINS
   !------------------------------------------------------------------------------
   SUBROUTINE SUEWS_update_SoilMoist(&
        NonWaterFraction,&!input
-       soilstoreCap,sfr,soilmoist_id,&
+       SoilStoreCap,sfr,soilmoist_id,&
        SoilMoistCap,SoilState,&!output
        vsmd,smd)
     IMPLICIT NONE
 
     ! INTEGER,INTENT(in)::nsurf,ConifSurf,DecidSurf,GrassSurf
     REAL(KIND(1d0)),INTENT(in)::NonWaterFraction
-    REAL(KIND(1d0)),INTENT(in),DIMENSION(nsurf)::soilstoreCap,sfr,soilmoist_id
+    REAL(KIND(1d0)),INTENT(in),DIMENSION(nsurf)::SoilStoreCap,sfr,soilmoist_id
 
     REAL(KIND(1d0)),INTENT(out)::SoilMoistCap,SoilState
     REAL(KIND(1d0)),INTENT(out)::vsmd,smd
@@ -521,7 +521,7 @@ CONTAINS
 
     IF (NonWaterFraction/=0) THEN !Soil states only calculated if soil exists. LJ June 2017
        DO is=1,nsurf-1   !No water body included
-          SoilMoistCap=SoilMoistCap+(soilstoreCap(is)*sfr(is)/NonWaterFraction)
+          SoilMoistCap=SoilMoistCap+(SoilStoreCap(is)*sfr(is)/NonWaterFraction)
           SoilState=SoilState+(soilmoist_id(is)*sfr(is)/NonWaterFraction)
        ENDDO
     ENDIF
@@ -537,7 +537,7 @@ CONTAINS
        IF ( sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) ==0 ) THEN
           vsmd=0
        ELSE
-          vsmd=vsmd+(soilstoreCap(is) - soilmoist_id(is))*sfr(is)/(sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf))
+          vsmd=vsmd+(SoilStoreCap(is) - soilmoist_id(is))*sfr(is)/(sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf))
        END IF
        !write(*,*) is, vsmd, smd
     ENDDO
@@ -546,7 +546,7 @@ CONTAINS
   !------------------------------------------------------------------------------
 
   !========== Calculate soil moisture ============
-  SUBROUTINE SUEWS_cal_SoilMoist(&
+  SUBROUTINE SUEWS_cal_SoilState(&
        SMDMethod,xsmd,NonWaterFraction,SoilMoistCap,&!input
        SoilStoreCap,surf_chang_per_tstep,&
        soilmoist_id,soilmoistOld,sfr,&
@@ -565,10 +565,10 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::sfr
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::SoilStoreCap        !Capacity of soil store for each surface [mm]
 
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::smd_nsurf
-    REAL(KIND(1d0)),INTENT(out)::SoilState
-    REAL(KIND(1d0)),INTENT(out)::smd
-    REAL(KIND(1d0)),INTENT(out)::tot_chang_per_tstep
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(out)::smd_nsurf !smd for each surface
+    REAL(KIND(1d0)),INTENT(out)::SoilState !Area-averaged soil moisture [mm] for whole surface
+    REAL(KIND(1d0)),INTENT(out)::smd !One value for whole surface
+    REAL(KIND(1d0)),INTENT(out)::tot_chang_per_tstep !Change in surface state_id
 
     REAL(KIND(1d0)),PARAMETER::NotUsed=-999
     REAL(KIND(1d0)),PARAMETER::NAN=-999
@@ -576,20 +576,27 @@ CONTAINS
 
     SoilState=0       !Area-averaged soil moisture [mm] for whole surface
     IF (NonWaterFraction/=0) THEN !Fixed for water surfaces only
-       DO is=1,nsurf-1   !No water body included
-          SoilState=SoilState+(soilmoist_id(is)*sfr(is)/NonWaterFraction)
-          IF (SoilState<0) THEN
-             CALL ErrorHint(62,'SUEWS_Calculations: total SoilState < 0 (just added surface is) ',SoilState,NotUsed,is)
-          ELSEIF (SoilState>SoilMoistCap) THEN
-             CALL ErrorHint(62,'SUEWS_Calculations: total SoilState > capacity (just added surface is) ',SoilState,NotUsed,is)
-             !SoilMoist_state=SoilMoistCap !What is this LJ 10/2010 - QUESTION: SM exceeds capacity, but where does extra go?HCW 11/2014
-          ENDIF
-       ENDDO  !end loop over surfaces
+       ! DO is=1,nsurf-1   !No water body included
+       !    SoilState=SoilState+(soilmoist_id(is)*sfr(is)/NonWaterFraction)
+       !    IF (SoilState<0) THEN
+       !       CALL ErrorHint(62,'SUEWS_Calculations: total SoilState < 0 (just added surface is) ',SoilState,NotUsed,is)
+       !    ELSEIF (SoilState>SoilMoistCap) THEN
+       !       CALL ErrorHint(62,'SUEWS_Calculations: total SoilState > capacity (just added surface is) ',SoilState,NotUsed,is)
+       !       !SoilMoist_state=SoilMoistCap !What is this LJ 10/2010 - QUESTION: SM exceeds capacity, but where does extra go?HCW 11/2014
+       !    ENDIF
+       ! ENDDO  !end loop over surfaces
+       SoilState=DOT_PRODUCT(soilmoist_id(1:6),sfr(1:nsurf-1))/NonWaterFraction
+       IF (SoilState<0) THEN
+          CALL ErrorHint(62,'SUEWS_Calculations: total SoilState < 0 (just added surface is) ',SoilState,NotUsed,is)
+       ELSEIF (SoilState>SoilMoistCap) THEN
+          CALL ErrorHint(62,'SUEWS_Calculations: total SoilState > capacity (just added surface is) ',SoilState,NotUsed,is)
+          !SoilMoist_state=SoilMoistCap !What is this LJ 10/2010 - QUESTION: SM exceeds capacity, but where does extra go?HCW 11/2014
+       ENDIF
     ENDIF
 
     ! Calculate soil moisture deficit
     smd=SoilMoistCap-SoilState   !One value for whole surface
-    smd_nsurf=SoilstoreCap-soilmoist_id   !smd for each surface
+    smd_nsurf=SoilStoreCap-soilmoist_id   !smd for each surface
 
     ! Soil stores can change after horizontal water movements
     ! Calculate total change in surface and soil state_id
@@ -604,7 +611,7 @@ CONTAINS
        smd=xsmd
     ENDIF
 
-  END SUBROUTINE SUEWS_cal_SoilMoist
+  END SUBROUTINE SUEWS_cal_SoilState
   !===================================================================================
 
   SUBROUTINE SUEWS_cal_HorizontalSoilWater(&
@@ -1000,13 +1007,13 @@ CONTAINS
        wu_DecTr = get_Prof_SpecTime_sum(ih,imin,0,WUProfA_24hr(:,iu),tstep)*WUDay_id(5)   !Automatic deciduous trees
        wu_Grass = get_Prof_SpecTime_sum(ih,imin,0,WUProfA_24hr(:,iu),tstep)*WUDay_id(8)   !Automatic grass
 
-       PRINT*, ''
-       PRINT*, 'WUDay_id(2) ',WUDay_id(2)
-       PRINT*, 'profile ',get_Prof_SpecTime_sum(ih,imin,0,WUProfA_24hr(:,iu),tstep)
-       PRINT*, 'manual:'
-       PRINT*, 'wu_EveTr',wu_EveTr
-       PRINT*, 'wu_DecTr',wu_DecTr
-       PRINT*, 'wu_Grass',wu_Grass
+       ! PRINT*, ''
+       ! PRINT*, 'WUDay_id(2) ',WUDay_id(2)
+       ! PRINT*, 'profile ',get_Prof_SpecTime_sum(ih,imin,0,WUProfA_24hr(:,iu),tstep)
+       ! PRINT*, 'manual:'
+       ! PRINT*, 'wu_EveTr',wu_EveTr
+       ! PRINT*, 'wu_DecTr',wu_DecTr
+       ! PRINT*, 'wu_Grass',wu_Grass
 
        ! ---- Manual irrigation ----
        WuFr=1 !Initialize WuFr to 1, but if raining, reduce manual fraction of water use
@@ -1023,10 +1030,10 @@ CONTAINS
        wu_DecTr = wu_DecTr + (get_Prof_SpecTime_sum(ih,imin,0,WUProfM_24hr(:,iu),tstep)*WuFr*WUDay_id(6)) !Manual deciduous trees
        wu_Grass = wu_Grass + (get_Prof_SpecTime_sum(ih,imin,0,WUProfM_24hr(:,iu),tstep)*WuFr*WUDay_id(9)) !Manual grass
 
-       PRINT*, 'auto:'
-       PRINT*, 'wu_EveTr',wu_EveTr
-       PRINT*, 'wu_DecTr',wu_DecTr
-       PRINT*, 'wu_Grass',wu_Grass
+       ! PRINT*, 'auto:'
+       ! PRINT*, 'wu_EveTr',wu_EveTr
+       ! PRINT*, 'wu_DecTr',wu_DecTr
+       ! PRINT*, 'wu_Grass',wu_Grass
        ! Added HCW 12 Feb 2015.
        !wu_EveTr=wu_EveTr*sfr(ConifSurf)*IrrFracConif	!Water use for EveTr [mm]
        !wu_DecTr=wu_DecTr*sfr(DecidSurf)*IrrFracDecid	!Water use for DecTr [mm]
@@ -1035,10 +1042,10 @@ CONTAINS
        wu_DecTr=wu_DecTr*IrrFracDecid  !Water use for DecTr [mm]
        wu_Grass=wu_Grass*IrrFracGrass  !Water use for Grass [mm]
 
-       PRINT*, 'auto:'
-       PRINT*, 'IrrFracConif',IrrFracConif
-       PRINT*, 'IrrFracDecid',IrrFracDecid
-       PRINT*, 'IrrFracGrass',IrrFracGrass
+       ! PRINT*, 'auto:'
+       ! PRINT*, 'IrrFracConif',IrrFracConif
+       ! PRINT*, 'IrrFracDecid',IrrFracDecid
+       ! PRINT*, 'IrrFracGrass',IrrFracGrass
 
        ! Total water use for the whole study area [mm]
        wu = wu_EveTr*sfr(ConifSurf) + wu_DecTr*sfr(DecidSurf) + wu_Grass*sfr(GrassSurf)

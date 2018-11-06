@@ -109,7 +109,7 @@ cov: suews_program$(suffix_code) $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(O
 			cp -f $(TARGET) $(SUEWS_build_dir)/.
 
 # Build main program and run test cases
-check:
+test:
 		$(MAKE) clean;
 		$(MAKE) main;
 		cd $(SUEWS_test_dir); python 1.test_dev.py

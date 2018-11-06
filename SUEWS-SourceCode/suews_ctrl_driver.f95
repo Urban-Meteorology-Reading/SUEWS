@@ -12,7 +12,7 @@ MODULE SUEWS_Driver
   USE Snow_module,ONLY:SnowCalc,Snow_cal_MeltHeat
   USE DailyState_module,ONLY:SUEWS_cal_DailyState,update_DailyState
   USE WaterDist_module,ONLY:drainage,soilstore,&
-       SUEWS_cal_SoilMoist,SUEWS_update_SoilMoist,&
+       SUEWS_cal_SoilState,SUEWS_update_SoilMoist,&
        ReDistributeWater,SUEWS_cal_HorizontalSoilWater,&
        SUEWS_cal_WaterUse
   USE ctrl_output,ONLY:varList
@@ -60,7 +60,7 @@ CONTAINS
        SatHydraulicConduct,SDDFull,sfr,SMDMethod,SnowAlb,SnowAlbMax,&
        SnowAlbMin,snowD,SnowDens,SnowDensMax,SnowDensMin,SnowfallCum,snowFrac,&
        SnowLimBuild,SnowLimPaved,snow_obs,SnowPack,SnowProf_24hr,snowUse,SoilDepth,&
-       soilmoist_id,soilstoreCap,StabilityMethod,startDLS,state_id,StateLimit,&
+       soilmoist_id,SoilStoreCap,StabilityMethod,startDLS,state_id,StateLimit,&
        StorageHeatMethod,StoreDrainPrm,SurfaceArea,Tair24HR,tau_a,tau_f,tau_r,&
        T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,TempMeltFact,TH,&
        theta_bioCO2,timezone,TL,TrafficRate,TrafficUnits,&
@@ -227,7 +227,7 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)           ::sfr
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)           ::snowD
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)           ::SoilDepth
-    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)           ::soilstoreCap
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)           ::SoilStoreCap
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)           ::StateLimit
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)           ::WetThresh
     REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(IN)        ::alpha_bioCO2
@@ -569,7 +569,7 @@ CONTAINS
     IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_update_SoilMoist...'
     CALL SUEWS_update_SoilMoist(&
          NonWaterFraction,&!input
-         soilstoreCap,sfr,soilmoist_id,&
+         SoilStoreCap,sfr,soilmoist_id,&
          SoilMoistCap,SoilState,&!output
          vsmd,smd)
 
@@ -606,7 +606,7 @@ CONTAINS
          StorageHeatMethod,qs_obs,OHMIncQF,Gridiv,&!input
          id,tstep,dt_since_start,Diagnose,sfr,&
          OHM_coef,OHM_threshSW,OHM_threshWD,&
-         soilmoist_id,soilstoreCap,state_id,nsh,SnowUse,DiagQS,&
+         soilmoist_id,SoilStoreCap,state_id,nsh,SnowUse,DiagQS,&
          HDD_id,MetForcingData_grid,Ts5mindata_ir,qf,qn1,&
          avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown,&
          bldgh,alb,emis,cpAnOHM,kkAnOHM,chAnOHM,EmissionsMethod,&
@@ -694,7 +694,7 @@ CONTAINS
          PervFraction,vegfraction,addimpervious,qn1_snowfree,qf,qs,vpd_hPa,s_hPa,&
          ResistSurf,RA,rb,snowdensmin,precip,PipeCapacity,RunoffToWater,&
          NonWaterFraction,wu_EveTr,wu_DecTr,wu_Grass,addVeg,addWaterBody,SnowLimPaved,SnowLimBuild,&
-         SurfaceArea,FlowChange,drain,WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
+         SurfaceArea,FlowChange,drain,WetThresh,stateOld,mw_ind,SoilStoreCap,rainonsnow,&
          freezmelt,freezstate,freezstatevol,Qm_Melt,Qm_rain,Tsurf_ind,sfr,&
          StateLimit,AddWater,addwaterrunoff,StoreDrainPrm,snowD, SnowProf_24hr,&
          runoff_per_interval,state_id,& !inout:
@@ -732,8 +732,8 @@ CONTAINS
          )
 
     !========== Calculate soil moisture ============
-    IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_cal_SoilMoist...'
-    CALL SUEWS_cal_SoilMoist(&
+    IF(Diagnose==1) WRITE(*,*) 'Calling SUEWS_cal_SoilState...'
+    CALL SUEWS_cal_SoilState(&
          SMDMethod,xsmd,NonWaterFraction,SoilMoistCap,&!input
          SoilStoreCap,surf_chang_per_tstep,&
          soilmoist_id,soilmoistOld,sfr,&
@@ -1142,7 +1142,7 @@ CONTAINS
        StorageHeatMethod,qs_obs,OHMIncQF,Gridiv,&!input
        id,tstep,dt_since_start,Diagnose,sfr,&
        OHM_coef,OHM_threshSW,OHM_threshWD,&
-       soilmoist_id,soilstoreCap,state_id,nsh,SnowUse,DiagQS,&
+       soilmoist_id,SoilStoreCap,state_id,nsh,SnowUse,DiagQS,&
        HDD_id,MetForcingData_grid,Ts5mindata_ir,qf,qn1,&
        avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown,&
        bldgh,alb,emis,cpAnOHM,kkAnOHM,chAnOHM,EmissionsMethod,&
@@ -1170,7 +1170,7 @@ CONTAINS
     REAL(KIND(1d0)),INTENT(in)::OHM_threshSW(nsurf+1) ! OHM thresholds
     REAL(KIND(1d0)),INTENT(in)::OHM_threshWD(nsurf+1) ! OHM thresholds
     REAL(KIND(1d0)),INTENT(in)::soilmoist_id(nsurf)                ! soil moisture
-    REAL(KIND(1d0)),INTENT(in)::soilstoreCap(nsurf)             ! capacity of soil store
+    REAL(KIND(1d0)),INTENT(in)::SoilStoreCap(nsurf)             ! capacity of soil store
     REAL(KIND(1d0)),INTENT(in)::state_id(nsurf) ! wetness status
 
 
@@ -1251,7 +1251,7 @@ CONTAINS
             Tair_mav_5d,&
             OHM_coef,&
             OHM_threshSW,OHM_threshWD,&
-            soilmoist_id,soilstoreCap,state_id,&
+            soilmoist_id,SoilStoreCap,state_id,&
             BldgSurf,WaterSurf,&
             SnowUse,SnowFrac,&
             DiagQS,&
@@ -1434,7 +1434,7 @@ CONTAINS
        PervFraction,vegfraction,addimpervious,qn1_snowfree,qf,qs,vpd_hPa,s_hPa,&
        ResistSurf,RA,rb,snowdensmin,precip,PipeCapacity,RunoffToWater,&
        NonWaterFraction,wu_EveTr,wu_DecTr,wu_Grass,addVeg,addWaterBody,SnowLimPaved,SnowLimBuild,&
-       SurfaceArea,FlowChange,drain,WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
+       SurfaceArea,FlowChange,drain,WetThresh,stateOld,mw_ind,SoilStoreCap,rainonsnow,&
        freezmelt,freezstate,freezstatevol,Qm_Melt,Qm_rain,Tsurf_ind,sfr,&
        StateLimit,AddWater,addwaterrunoff,StoreDrainPrm,snowD, SnowProf_24hr,&
        runoff_per_interval,state_id,soilmoist_id,SnowPack,snowFrac,MeltWaterStore,&! inout:
@@ -1500,7 +1500,7 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::WetThresh
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::stateOld
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::mw_ind
-    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::soilstorecap
+    REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::SoilStoreCap
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::rainonsnow
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::freezmelt
     REAL(KIND(1d0)),DIMENSION(nsurf),INTENT(in)::freezstate
@@ -1631,7 +1631,7 @@ CONTAINS
                   vpd_hPa,qn_e,s_hPa,ResistSurf,RA,rb,tlv,snowdensmin,SnowProf_24hr,precip,&
                   PipeCapacity,RunoffToWater,runoffAGimpervious,runoffAGveg,&
                   addVeg,surplusWaterBody,SnowLimPaved,SnowLimBuild,FlowChange,drain,&
-                  WetThresh,stateOld,mw_ind,soilstorecap,rainonsnow,&
+                  WetThresh,stateOld,mw_ind,SoilStoreCap,rainonsnow,&
                   freezmelt,freezstate,freezstatevol,&
                   Qm_Melt,Qm_rain,Tsurf_ind,sfr,dayofWeek_id,StoreDrainPrm,snowD,&
                   AddWater,addwaterrunoff,&
@@ -1660,7 +1660,7 @@ CONTAINS
           CALL soilstore(&
                is,sfr,PipeCapacity,RunoffToWater,pin,& ! input:
                wu_EveTr,wu_DecTr,wu_Grass,drain,AddWater,addImpervious,nsh_real,stateOld,AddWaterRunoff,&
-               PervFraction,addVeg,soilstoreCap,addWaterBody,FlowChange,StateLimit,runoffAGimpervious,surplusWaterBody,&
+               PervFraction,addVeg,SoilStoreCap,addWaterBody,FlowChange,StateLimit,runoffAGimpervious,surplusWaterBody,&
                runoffAGveg,runoffPipes,ev,soilmoist_id,SurplusEvap,runoffWaterBody,&
                p_mm,chang,runoff,state_id)!output:
 
@@ -2487,7 +2487,7 @@ CONTAINS
        SatHydraulicConduct,SDDFull,sfr,SMDMethod,SnowAlb,SnowAlbMax,&
        SnowAlbMin,snowD,SnowDens,SnowDensMax,SnowDensMin,SnowfallCum,snowFrac,&
        SnowLimBuild,SnowLimPaved,SnowPack,SnowProf_24hr,snowUse,SoilDepth,&
-       soilmoist_id,soilstoreCap,StabilityMethod,startDLS,state_id,StateLimit,&
+       soilmoist_id,SoilStoreCap,StabilityMethod,startDLS,state_id,StateLimit,&
        StorageHeatMethod,StoreDrainPrm,SurfaceArea,Tair24HR,tau_a,tau_f,tau_r,&
        T_CRITIC_Cooling,T_CRITIC_Heating,TempMeltFact,TH,&
        theta_bioCO2,timezone,TL,TrafficRate,TrafficUnits,&
@@ -2651,7 +2651,7 @@ CONTAINS
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)           ::sfr
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)           ::snowD
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)           ::SoilDepth
-    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)           ::soilstoreCap
+    REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)           ::SoilStoreCap
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)           ::StateLimit
     REAL(KIND(1D0)),DIMENSION(NSURF),INTENT(IN)           ::WetThresh
     REAL(KIND(1D0)),DIMENSION(NVEGSURF),INTENT(IN)        ::alpha_bioCO2
@@ -2847,7 +2847,7 @@ CONTAINS
             SatHydraulicConduct,SDDFull,sfr,SMDMethod,SnowAlb,SnowAlbMax,&
             SnowAlbMin,snowD,SnowDens,SnowDensMax,SnowDensMin,SnowfallCum,snowFrac,&
             SnowLimBuild,SnowLimPaved,snow_obs,SnowPack,SnowProf_24hr,snowUse,SoilDepth,&
-            soilmoist_id,soilstoreCap,StabilityMethod,startDLS,state_id,StateLimit,&
+            soilmoist_id,SoilStoreCap,StabilityMethod,startDLS,state_id,StateLimit,&
             StorageHeatMethod,StoreDrainPrm,SurfaceArea,Tair24HR,tau_a,tau_f,tau_r,&
             T_CRITIC_Cooling,T_CRITIC_Heating,Temp_C,TempMeltFact,TH,&
             theta_bioCO2,timezone,TL,TrafficRate,TrafficUnits,&

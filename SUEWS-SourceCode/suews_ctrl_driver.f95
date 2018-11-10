@@ -2502,7 +2502,7 @@ CONTAINS
     IMPLICIT NONE
     ! input:
     ! met forcing block
-    REAL(KIND(1D0)),DIMENSION(:,:),INTENT(IN) ::MetForcingBlock
+    REAL(KIND(1D0)),DIMENSION(len_sim,24),INTENT(IN) ::MetForcingBlock
     INTEGER,INTENT(IN) :: len_sim
     ! input variables
     INTEGER,INTENT(IN)::AerodynamicResistanceMethod

@@ -221,7 +221,7 @@ CONTAINS
     ! limit zL to be within [-5,2]
     IF ( zL<-5 .OR. zL>2 ) THEN
        zL=MIN(2.,MAX(-5.,zL))
-       ! limit other output varialbes as well as z/L
+       ! limit other output variables as well as z/L
        L_MOD=zzd/zL
        z0L=z0m/L_MOD
        psim=stab_fn_mom(StabilityMethod,zL,zL)

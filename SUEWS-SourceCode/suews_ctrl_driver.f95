@@ -2738,10 +2738,13 @@ CONTAINS
     REAL(KIND(1d0)),DIMENSION(len_sim,ncolumnsDataOutDailyState),INTENT(OUT) ::DailyStateBlock
     ! ########################################################################################
 
+    ! internal temporal iteration related variables
+    INTEGER::dt_since_start_x ! time since simulation starts [s]
+
     ! model output blocks of the same size as met forcing block
 
 
-    ! local varialbes
+    ! local variables
     ! length of met forcing block
     INTEGER :: ir
     ! met forcing variables
@@ -2785,6 +2788,9 @@ CONTAINS
 
     ! REAL(KIND(1D0)),DIMENSION(:,:)          ::MetForcingData_grid
 
+    ! get initial dt_since_start_x from dt_since_start, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018
+    dt_since_start_x = dt_since_start
+
     DO ir = 1, len_sim, 1
        ! =============================================================================
        ! === Translate met data from MetForcingBlock to variable names used in model ==
@@ -2825,7 +2831,7 @@ CONTAINS
             BaseTHDD,beta_bioCO2,beta_enh_bioCO2,bldgH,CapMax_dec,CapMin_dec,&
             chAnOHM,cpAnOHM,CRWmax,CRWmin,DayWat,DayWatPer,&
             DecTreeH,Diagnose,DiagQN,DiagQS,DRAINRT,&
-            dt_since_start,dqndt,qn1_av,dqnsdt,qn1_s_av,&
+            dt_since_start_x,dqndt,qn1_av,dqnsdt,qn1_s_av,&
             EF_umolCO2perJ,emis,EmissionsMethod,EnEF_v_Jkm,endDLS,EveTreeH,FAIBldg,&
             FAIDecTree,FAIEveTree,Faut,FcEF_v_kgkm,fcld_obs,FlowChange,&
             FrFossilFuel_Heat,FrFossilFuel_NonHeat,G1,G2,G3,G4,G5,G6,GDD_id,&
@@ -2857,6 +2863,9 @@ CONTAINS
             WUProfA_24hr,WUProfM_24hr,xsmd,Z,z0m_in,zdm_in,&
             datetimeLine,dataOutLineSUEWS,dataOutLineSnow,dataOutLineESTM,&!output
             DailyStateLine)!output
+
+        ! update dt_since_start_x for next iteration, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018
+        dt_since_start_x = dt_since_start_x + tstep
 
        !============ update and write out SUEWS_cal_DailyState ===============
        ! only works at the last timestep of a day

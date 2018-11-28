@@ -609,9 +609,6 @@ PROGRAM SUEWS_Program
         DO ir=1,irMax   !Loop through rows of current block of met data
            GridCounter=1    !Initialise counter for grids in each year
 
-           ! update simulation time since start
-           dt_since_start=dt_since_start+tstep
-
            DO igrid=1,NumberOfGrids   !Loop through grids
               IF(Diagnose==1) WRITE(*,*) 'Row (ir):', ir,'/',irMax,'of block (iblock):', iblock,'/',ReadBlocksMetData,&
                    'Grid:',GridIDmatrix(igrid)
@@ -653,6 +650,9 @@ PROGRAM SUEWS_Program
 
               GridCounter = GridCounter+1   !Increase GridCounter by 1 for next grid
            ENDDO !end loop over grids
+
+           ! update simulation time since start
+           dt_since_start=dt_since_start+tstep
 
            !! TODO: water movements between the grids needs to be taken into account here
 

@@ -90,16 +90,16 @@ SUBROUTINE OverallRunControl
   ! -------------------------------------
 
   !Initialise namelist with default values
-  KeepTstepFilesIn = 0
-  KeepTstepFilesOut = 0
-  WriteOutOption = 0
-  DisaggMethod = 1          ! linear disaggregation of averages
-  DisaggMethodESTM = 1      ! linear disaggregation of averages
-  RainDisaggMethod = 100    ! even distribution among all subintervals
-  RainAmongN = -999         ! no default setting for number of rainy subintervals
-  MultRainAmongN = -999     ! no default setting for number of rainy subintervals
-  MultRainAmongNUpperI = -999   ! no default setting for rain intensity upper bound
-  KdownZen = 1              ! use zenith angle by default
+  KeepTstepFilesIn     = 0
+  KeepTstepFilesOut    = 0
+  WriteOutOption       = 0
+  DisaggMethod         = 1    ! linear disaggregation of averages
+  DisaggMethodESTM     = 1    ! linear disaggregation of averages
+  RainDisaggMethod     = 100  ! even distribution among all subintervals
+  RainAmongN           = -999 ! no default setting for number of rainy subintervals
+  MultRainAmongN       = -999 ! no default setting for number of rainy subintervals
+  MultRainAmongNUpperI = -999 ! no default setting for rain intensity upper bound
+  KdownZen             = 1    ! use zenith angle by default
 
   SuppressWarnings=0        ! write warnings file
   ResolutionFilesIn=0       ! Set to zero so that if not found, automatically set to Tstep below

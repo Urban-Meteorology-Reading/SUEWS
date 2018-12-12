@@ -380,7 +380,7 @@ def test_samerun(name_sim, name_exe,
     if not res_test:
         # if not match, print mismatch list
         print('these files are different:')
-        print((comp_files_test[1]))
+        print(sorted(comp_files_test[1]))
 
     # res_test = (set(comp_files_test[0]) == set(common_files))
     # print res_test

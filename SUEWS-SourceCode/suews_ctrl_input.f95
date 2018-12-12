@@ -783,7 +783,7 @@ FUNCTION get_Prof_SpecTime_mean(Hour, Min, Sec, Prof_24h) RESULT(Prof_CurrTime)
   total_sec = Min * 60 + Sec
   SecPerHour = 3600
 
-  Prof_24h_mean=MERGE(Prof_24h/(SUM(Prof_24h)), 0.d0, SUM(Prof_24h) /=0) ! prevent zero-division
+  Prof_24h_mean=MERGE(Prof_24h/(SUM(Prof_24h)/size(Prof_24h, dim=1)), 0.d0, SUM(Prof_24h) /=0) ! prevent zero-division
   ! print*, Prof_24h_mean
 
   i = hour

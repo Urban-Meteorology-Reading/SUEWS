@@ -26,7 +26,7 @@ phases:
       tag: test # Required when action == edit || action == discard || tagSource == manual
       title: 'Tag Title'
       assetUploadMode: 'delete'
-      isDraft: true
+      isDraft: false
       isPrerelease: true
   # - script: 'brew install gcc'
   #   displayName: 'install gcc+gfortran'

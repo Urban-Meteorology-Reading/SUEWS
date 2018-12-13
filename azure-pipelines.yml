@@ -81,14 +81,14 @@ phases:
     continueOnError: true
   
   - task: ArchiveFiles@2
-      inputs:
-        rootFolderOrFile: ./ReleaseRepo/build/Win64/*
-        includeRootFolder: false
-        archiveType: 'zip' # Options: zip, 7z, tar, wim
-        #tarCompression: 'gz' # Optional. Options: gz, bz2, xz, none
-        archiveFile: ./SUEWS-win64.zip 
-        replaceExistingArchive: true
-      displayName: 'Create Release'
+    inputs:
+      rootFolderOrFile: ./ReleaseRepo/build/Win64/*
+      includeRootFolder: false
+      archiveType: 'zip' # Options: zip, 7z, tar, wim
+      #tarCompression: 'gz' # Optional. Options: gz, bz2, xz, none
+      archiveFile: ./SUEWS-win64.zip 
+      replaceExistingArchive: true
+    displayName: 'Create Release'
 
   - task: PublishBuildArtifacts@1
     inputs:
@@ -109,17 +109,18 @@ phases:
     displayName: 'docker make suews manylinux'
     continueOnError: true
   - task: ArchiveFiles@2
-        inputs:
-          rootFolderOrFile: ./ReleaseRepo/build/Linux/*
-          includeRootFolder: false
-          archiveType: 'zip' # Options: zip, 7z, tar, wim
-          #tarCompression: 'gz' # Optional. Options: gz, bz2, xz, none
-          archiveFile: ./SUEWS-Linux.zip 
-          replaceExistingArchive: true
-        displayName: 'Create Release'
+    inputs:
+      rootFolderOrFile: ./ReleaseRepo/build/Linux/*
+      includeRootFolder: false
+      archiveType: 'zip' # Options: zip, 7z, tar, wim
+      #tarCompression: 'gz' # Optional. Options: gz, bz2, xz, none
+      archiveFile: ./SUEWS-Linux.zip 
+      replaceExistingArchive: true
+    displayName: 'Create Release'
 
   - task: PublishBuildArtifacts@1
     inputs:
       pathtoPublish: ./SUEWS-Linux.zip 
       artifactName: 'SUEWS-Linux.zip'
     displayName: 'Publish Release'
+

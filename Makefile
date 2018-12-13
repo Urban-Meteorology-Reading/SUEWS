@@ -27,6 +27,8 @@ MODULE=SUEWS_driver
 
 SUEWS_dir = SUEWS-SourceCode
 
+makefile = Makefile.gfortran
+
 SuPy_dir = supy-driver
 
 PYTHON := $(if $(PYTHON_exe),$(PYTHON_exe),python)
@@ -35,14 +37,14 @@ PYTHON := $(if $(PYTHON_exe),$(PYTHON_exe),python)
 
 # make fortran exe
 main:
-	$(MAKE) -C $(SUEWS_dir) clean; # clean Fortran SUEWS build
-	$(MAKE) -C $(SUEWS_dir) main; # make SUEWS with the `main` recipe
+	$(MAKE) -C $(SUEWS_dir) -f $(makefile) clean; # clean Fortran SUEWS build
+	$(MAKE) -C $(SUEWS_dir) -f $(makefile) main; # make SUEWS with the `main` recipe
 	-rm -rf *.o *.mod *.f95 *.a *.dSYM
 
 # make fortran exe and run test cases
 check:
-	$(MAKE) -C $(SUEWS_dir) clean; # clean Fortran SUEWS build
-	$(MAKE) -C $(SUEWS_dir) check; # make SUEWS with the `main` recipe
+	$(MAKE) -C $(SUEWS_dir) -f $(makefile) clean; # clean Fortran SUEWS build
+	$(MAKE) -C $(SUEWS_dir) -f $(makefile) check; # make SUEWS with the `main` recipe
 	-rm -rf *.o *.mod *.f95 *.a *.dSYM
 
 # make supy dist
@@ -50,7 +52,7 @@ driver:
 	$(info $$PYTHON is [${PYTHON}])
 	$(MAKE) -C $(SuPy_dir) suews; # clean Fortran SUEWS build
 	$(MAKE) -C $(SuPy_dir) main; # make SUEWS with the `main` recipe
-	
+
 
 # If wanted, clean all *.o files after build
 clean:

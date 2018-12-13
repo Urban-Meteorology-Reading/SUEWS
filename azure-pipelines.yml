@@ -66,61 +66,61 @@ phases:
   #   displayName: 'make suews'
   #   continueOnError: true
 
-# - phase: Phase_2
-#   displayName: Agent Windows
+- phase: Phase_2
+  displayName: Agent Windows
 
-#   condition: succeeded()
-#   queue:
-#     name: Hosted VS2017
-# #Your build pipeline references an undefined variable named ‘Parameters.versionSpec’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
-#   steps:
-#   - script: |  
-#        make
+  condition: succeeded()
+  queue:
+    name: Hosted VS2017
+#Your build pipeline references an undefined variable named ‘Parameters.versionSpec’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
+  steps:
+  - script: |  
+       make
        
-#     displayName: 'make suews'
-#     continueOnError: true
+    displayName: 'make suews'
+    continueOnError: true
   
-#   - task: ArchiveFiles@2
-#     inputs:
-#       rootFolderOrFile: ./ReleaseRepo/build/Win64/*
-#       includeRootFolder: false
-#       archiveType: 'zip' # Options: zip, 7z, tar, wim
-#       #tarCompression: 'gz' # Optional. Options: gz, bz2, xz, none
-#       archiveFile: ./SUEWS-win64.zip 
-#       replaceExistingArchive: true
-#     displayName: 'Create Release'
+  - task: ArchiveFiles@2
+    inputs:
+      rootFolderOrFile: ./ReleaseRepo/build/Win64
+      includeRootFolder: false
+      archiveType: 'zip' # Options: zip, 7z, tar, wim
+      #tarCompression: 'gz' # Optional. Options: gz, bz2, xz, none
+      archiveFile: ./SUEWS-win64.zip 
+      replaceExistingArchive: true
+    displayName: 'Create Release'
 
-#   - task: PublishBuildArtifacts@1
-#     inputs:
-#       pathtoPublish: ./SUEWS-win64.zip 
-#       artifactName: 'SUEWS-win64.zip'
-#     displayName: 'Publish Release'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: ./SUEWS-win64.zip 
+      artifactName: 'SUEWS-win64.zip'
+    displayName: 'Publish Release'
 
 
-# - phase: Phase_3
-#   displayName: Agent Linux
+- phase: Phase_3
+  displayName: Agent Linux
 
-#   condition: succeeded()
-#   queue:
-#     name: Hosted Ubuntu 1604
-#   steps:
-#   - script: |  
-#        docker run -v $(pwd):/io dockcross/manylinux-x64 bash -c "cd /io/;make"
-#     displayName: 'docker make suews manylinux'
-#     continueOnError: true
-#   - task: ArchiveFiles@2
-#     inputs:
-#       rootFolderOrFile: ./ReleaseRepo/build/Linux/*
-#       includeRootFolder: false
-#       archiveType: 'zip' # Options: zip, 7z, tar, wim
-#       #tarCompression: 'gz' # Optional. Options: gz, bz2, xz, none
-#       archiveFile: ./SUEWS-Linux.zip 
-#       replaceExistingArchive: true
-#     displayName: 'Create Release'
+  condition: succeeded()
+  queue:
+    name: Hosted Ubuntu 1604
+  steps:
+  - script: |  
+       docker run -v $(pwd):/io dockcross/manylinux-x64 bash -c "cd /io/;make"
+    displayName: 'docker make suews manylinux'
+    continueOnError: true
+  - task: ArchiveFiles@2
+    inputs:
+      rootFolderOrFile: ./ReleaseRepo/build/Linux
+      includeRootFolder: false
+      archiveType: 'zip' # Options: zip, 7z, tar, wim
+      #tarCompression: 'gz' # Optional. Options: gz, bz2, xz, none
+      archiveFile: ./SUEWS-Linux.zip 
+      replaceExistingArchive: true
+    displayName: 'Create Release'
 
-#   - task: PublishBuildArtifacts@1
-#     inputs:
-#       pathtoPublish: ./SUEWS-Linux.zip 
-#       artifactName: 'SUEWS-Linux.zip'
-#     displayName: 'Publish Release'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: ./SUEWS-Linux.zip 
+      artifactName: 'SUEWS-Linux.zip'
+    displayName: 'Publish Release'
 

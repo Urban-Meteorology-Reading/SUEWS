@@ -22,7 +22,7 @@ phases:
       assets: $(build.artifactstagingdirectory)/*.zip
       action: 'create'
       target: '$(build.sourceVersion)'
-      tagSource: 'auto'
+      tagSource: 'manual' # 'auto'
       tag: test # Required when action == edit || action == discard || tagSource == manual
       title: 'Tag Title'
       assetUploadMode: 'delete'

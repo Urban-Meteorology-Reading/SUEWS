@@ -123,6 +123,3 @@ phases:
       pathtoPublish: ./SUEWS-Linux.zip 
       artifactName: 'SUEWS-Linux.zip'
     displayName: 'Publish Release'
-
-
-

@@ -8,13 +8,31 @@ phases:
   queue:
     name: Hosted macOS
   steps:
-  - script: rm -rf dist && mkdir dist && echo `date` > dist/my-release.txt && zip -jr ./dist/my-release.zip ./dist/my-release.txt
+  - script: 'brew install gcc'
+    displayName: 'install gcc+gfortran'
+    continueOnError: true
+
+  - script: |  
+       make
+    displayName: 'make suews'
+    continueOnError: true
+  
+  - script: zip -jr ./SUEWS-macOS.zip ./ReleaseRepo/build/macOS/*
     displayName: 'Create Release'
+
   - task: PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: dist/my-release.zip
-      artifactName: 'my-release.zip'
+      pathtoPublish: ./SUEWS-macOS.zip
+      artifactName: 'SUEWS-macOS.zip'
     displayName: 'Publish Release'
+
+  # - script: rm -rf dist && mkdir dist && echo `date` > dist/my-release.txt && zip -jr ./dist/my-release.zip ./dist/my-release.txt
+  #   displayName: 'Create Release'
+  # - task: PublishBuildArtifacts@1
+  #   inputs:
+  #     pathtoPublish: dist/my-release.zip
+  #     artifactName: 'my-release.zip'
+  #   displayName: 'Publish Release'
   - task: GithubRelease@0
     inputs:
       gitHubConnection: new GitHub connection

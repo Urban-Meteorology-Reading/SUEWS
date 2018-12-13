@@ -1,34 +1,6 @@
 resources:
 - repo: self
 phases:
-- phase: Phase_2
-  displayName: Agent Windows
-
-  condition: succeeded()
-  queue:
-    name: Hosted VS2017
-#Your build pipeline references an undefined variable named ‘Parameters.versionSpec’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
-  steps:
-  - script: |  
-       make
-       
-    displayName: 'make suews'
-    continueOnError: true
-
-
-- phase: Phase_3
-  displayName: Agent Linux
-
-  condition: succeeded()
-  queue:
-    name: Hosted Ubuntu 1604
-  steps:
-  - script: |  
-       docker run -v $(pwd):/io dockcross/manylinux-x64 bash -c "cd /io/;make"
-    displayName: 'docker make suews manylinux'
-    continueOnError: true
-
-
 - phase: Phase_1
   displayName: Agent macOS 
 
@@ -36,11 +8,60 @@ phases:
   queue:
     name: Hosted macOS
   steps:
-  - script: 'brew install gcc'
-    displayName: 'install gcc+gfortran'
-    continueOnError: true
+  - script: rm -rf dist && mkdir dist && echo `date` > dist/my-release.txt && zip -jr ./dist/my-release.zip ./dist/my-release.txt
+    displayName: 'Create Release'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: dist/my-release.zip
+      artifactName: 'my-release.zip'
+    displayName: 'Publish Release'
+  - task: GithubRelease@0
+    inputs:
+      gitHubConnection: new GitHub connection
+      repositoryName: Urban-Meteorology-Reading/SUEWS
+      assets: $(build.artifactstagingdirectory)/*.zip
+      action: 'create'
+      target: '$(build.sourceVersion)'
+      tagSource: 'auto'
+      #tag: # Required when action == edit || action == discard || tagSource == manual
+      title: 'Tag Title'
+      assetUploadMode: 'delete'
+      isDraft: true
+  # - script: 'brew install gcc'
+  #   displayName: 'install gcc+gfortran'
+  #   continueOnError: true
 
-  - script: |  
-       make
-    displayName: 'make suews'
-    continueOnError: true
+  # - script: |  
+  #      make
+  #   displayName: 'make suews'
+  #   continueOnError: true
+
+# - phase: Phase_2
+#   displayName: Agent Windows
+
+#   condition: succeeded()
+#   queue:
+#     name: Hosted VS2017
+# #Your build pipeline references an undefined variable named ‘Parameters.versionSpec’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
+#   steps:
+#   - script: |  
+#        make
+       
+#     displayName: 'make suews'
+#     continueOnError: true
+
+
+# - phase: Phase_3
+#   displayName: Agent Linux
+
+#   condition: succeeded()
+#   queue:
+#     name: Hosted Ubuntu 1604
+#   steps:
+#   - script: |  
+#        docker run -v $(pwd):/io dockcross/manylinux-x64 bash -c "cd /io/;make"
+#     displayName: 'docker make suews manylinux'
+#     continueOnError: true
+
+
+

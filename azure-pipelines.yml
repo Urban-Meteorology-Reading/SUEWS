@@ -72,7 +72,7 @@ phases:
   - bash:               |
        make release
     displayName:        'make suews'
-    failOnStderr:       true
+    failOnStderr:       false
 
   - task:               GithubRelease@0
     inputs:

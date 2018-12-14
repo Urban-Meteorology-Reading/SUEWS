@@ -124,3 +124,26 @@ phases:
       artifactName: 'SUEWS-Linux.zip'
     displayName: 'Publish Release'
 
+
+- phase:                    Phase_4
+  displayName:              Agent macOS
+
+  condition:                succeeded()
+  queue:
+    name:                   Hosted macOS
+
+  steps:
+  - task:                   GithubRelease@0
+    inputs:
+      gitHubConnection:     new GitHub connection
+      repositoryName:       Urban-Meteorology-Reading/SUEWS
+      assets:               $(Build.ArtifactStagingDirectory)/*.zip
+      action:               'Edit'
+      target:               '$(build.sourceVersion)'
+      tagSource:            'manual' # 'auto'
+      tag:                  test # Required when action == edit || action == discard || tagSource == manual
+      title:                'test release'
+      assetUploadMode:      'replace'
+      isDraft:              true
+      isPrerelease:         false
+      addChangeLog:         true

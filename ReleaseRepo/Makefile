@@ -35,4 +35,3 @@ pack:
 
 clean:
 	rm -rf *.zip
-	rm -rf build/*

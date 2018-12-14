@@ -1,8 +1,13 @@
+trigger:
+- master
+- PublicRelease
+- test-dev
+
 resources:
 - repo: self
 phases:
 - phase: Phase_1
-  displayName: Agent macOS 
+  displayName: Agent macOS
 
   condition: succeeded()
   queue:
@@ -12,13 +17,11 @@ phases:
     displayName: 'install gcc+gfortran'
     continueOnError: true
 
-  - script: |  
+  - script: |
        make
     displayName: 'make suews'
     continueOnError: true
-  
-  # - script: zip -jr ./SUEWS-macOS.zip ./ReleaseRepo/build/macOS/*
-  #   displayName: 'Create Release'
+
   # Archive Files
   # Archive files using compression formats such as .7z, .rar, .tar.gz, and .zip.
   - task: ArchiveFiles@2
@@ -27,7 +30,7 @@ phases:
       includeRootFolder: false
       archiveType: 'zip' # Options: zip, 7z, tar, wim
       #tarCompression: 'gz' # Optional. Options: gz, bz2, xz, none
-      archiveFile: ./SUEWS-macOS.zip 
+      archiveFile: ./SUEWS-macOS.zip
       replaceExistingArchive: true
     displayName: 'Create Release'
 
@@ -37,34 +40,21 @@ phases:
       artifactName: 'SUEWS-macOS.zip'
     displayName: 'Publish Release'
 
-  # - script: rm -rf dist && mkdir dist && echo `date` > dist/my-release.txt && zip -jr ./dist/my-release.zip ./dist/my-release.txt
-  #   displayName: 'Create Release'
-  # - task: PublishBuildArtifacts@1
-  #   inputs:
-  #     pathtoPublish: dist/my-release.zip
-  #     artifactName: 'my-release.zip'
-  #   displayName: 'Publish Release'
   - task: GithubRelease@0
     inputs:
       gitHubConnection: new GitHub connection
       repositoryName: Urban-Meteorology-Reading/SUEWS
-      assets: $(build.artifactstagingdirectory)/*.zip
+      assets: $(Build.ArtifactStagingDirectory)
       action: 'Edit'
       target: '$(build.sourceVersion)'
       tagSource: 'manual' # 'auto'
       tag: test # Required when action == edit || action == discard || tagSource == manual
-      title: 'Tag Title'
+      title: 'test release'
       assetUploadMode: 'delete'
-      isDraft: false
-      isPrerelease: true
-  # - script: 'brew install gcc'
-  #   displayName: 'install gcc+gfortran'
-  #   continueOnError: true
+      isDraft: true
+      isPrerelease: false
+      addChangeLog: true
 
-  # - script: |  
-  #      make
-  #   displayName: 'make suews'
-  #   continueOnError: true
 
 - phase: Phase_2
   displayName: Agent Windows
@@ -72,27 +62,27 @@ phases:
   condition: succeeded()
   queue:
     name: Hosted VS2017
-#Your build pipeline references an undefined variable named ‘Parameters.versionSpec’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
+
   steps:
-  - script: |  
+  - script: |
        make
-       
+
     displayName: 'make suews'
     continueOnError: true
-  
+
   - task: ArchiveFiles@2
     inputs:
       rootFolderOrFile: ./ReleaseRepo/build/
       includeRootFolder: false
       archiveType: 'zip' # Options: zip, 7z, tar, wim
       #tarCompression: 'gz' # Optional. Options: gz, bz2, xz, none
-      archiveFile: ./SUEWS-win64.zip 
+      archiveFile: ./SUEWS-win64.zip
       replaceExistingArchive: true
     displayName: 'Create Release'
 
   - task: PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: ./SUEWS-win64.zip 
+      pathtoPublish: ./SUEWS-win64.zip
       artifactName: 'SUEWS-win64.zip'
     displayName: 'Publish Release'
 
@@ -104,7 +94,7 @@ phases:
   queue:
     name: Hosted Ubuntu 1604
   steps:
-  - script: |  
+  - script: |
        docker run -v $(pwd):/io dockcross/manylinux-x64 bash -c "cd /io/;make"
     displayName: 'docker make suews manylinux'
     continueOnError: true
@@ -114,13 +104,12 @@ phases:
       includeRootFolder: false
       archiveType: 'zip' # Options: zip, 7z, tar, wim
       #tarCompression: 'gz' # Optional. Options: gz, bz2, xz, none
-      archiveFile: ./SUEWS-Linux.zip 
+      archiveFile: ./SUEWS-Linux.zip
       replaceExistingArchive: true
     displayName: 'Create Release'
 
   - task: PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: ./SUEWS-Linux.zip 
+      pathtoPublish: ./SUEWS-Linux.zip
       artifactName: 'SUEWS-Linux.zip'
     displayName: 'Publish Release'
-

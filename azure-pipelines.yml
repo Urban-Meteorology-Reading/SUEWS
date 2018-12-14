@@ -5,8 +5,8 @@ trigger:
 
 # Set variables once
 variables:
-  release_tag: 'latest-dev'
-  release_title: 'Latest Release Test'
+  release_tag:                'latest-dev'
+  release_title:              'Latest Release Test'
 
 resources:
 - repo:                       self
@@ -20,11 +20,14 @@ phases:
   steps:
   # Use Python Version
   # Retrieves the specified version of Python from the tool cache. Optionally add it to PATH.
-  - task: UsePythonVersion@0
+  - task:                     UsePythonVersion@0
     inputs:
-      versionSpec: '3.7'
-      addToPath: true
+      versionSpec:            '3.7'
+      addToPath:              true
       architecture: 'x64' # Options: x86, x64
+  - script:                   'pip install pandas numpy f90nml xarray matplotlib'
+    displayName:              'install python packages'
+    continueOnError:          true
 
   - script:                   'brew install gcc'
     displayName:              'install gcc+gfortran'
@@ -77,17 +80,17 @@ phases:
     name:                     Hosted VS2017
 
   steps:
-  - task: UsePythonVersion@0
+  - task:                     UsePythonVersion@0
     inputs:
-      versionSpec: '3.7'
-      addToPath: true
+      versionSpec:            '3.7'
+      addToPath:              true
       architecture: 'x64' # Options: x86, x64
 
-  - script:                   |
+  - bash:                   |
        make test
 
     displayName:              'make suews'
-    continueOnError:          true
+    failOnStderr:          true
 
   - task:                     ArchiveFiles@2
     inputs:
@@ -129,10 +132,10 @@ phases:
   queue:
     name:                     Hosted Ubuntu 1604
   steps:
-  - task: UsePythonVersion@0
+  - task:                     UsePythonVersion@0
     inputs:
-      versionSpec: '3.7'
-      addToPath: true
+      versionSpec:            '3.7'
+      addToPath:              true
       architecture: 'x64' # Options: x86, x64
 
   - script:                   |

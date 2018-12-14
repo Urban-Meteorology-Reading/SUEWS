@@ -4,151 +4,161 @@ trigger:
 - test-dev
 
 resources:
-- repo: self
+- repo:                       self
 phases:
-- phase: Phase_1
-  displayName: Agent macOS
+- phase:                      Phase_1
+  displayName:                Agent macOS
 
-  condition: succeeded()
+  condition:                  succeeded()
   queue:
-    name: Hosted macOS
+    name:                     Hosted macOS
   steps:
-  - script: 'brew install gcc'
-    displayName: 'install gcc+gfortran'
-    continueOnError: true
+  - script:                   'brew install gcc'
+    displayName:              'install gcc+gfortran'
+    continueOnError:          true
 
-  - script: |
+  - script:                   |
        make
-    displayName: 'make suews'
-    continueOnError: true
+    displayName:              'make suews'
+    continueOnError:          true
 
   # Archive Files
   # Archive files using compression formats such as .7z, .rar, .tar.gz, and .zip.
-  - task: ArchiveFiles@2
+  - task:                     ArchiveFiles@2
     inputs:
-      rootFolderOrFile: ./ReleaseRepo/build/
-      includeRootFolder: false
+      rootFolderOrFile:       ./ReleaseRepo/build/
+      includeRootFolder:      false
       archiveType: 'zip' # Options: zip, 7z, tar, wim
       #tarCompression: 'gz' # Optional. Options: gz, bz2, xz, none
-      archiveFile: $(Build.ArtifactStagingDirectory)/SUEWS-macOS.zip
+      archiveFile:            $(Build.ArtifactStagingDirectory)/SUEWS-macOS.zip
       replaceExistingArchive: true
-    displayName: 'Create Release'
+    displayName:              'Create Release'
 
-  - task: PublishBuildArtifacts@1
+  - task:                     PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: $(Build.ArtifactStagingDirectory)/SUEWS-macOS.zip
-      artifactName: 'SUEWS-macOS.zip'
-    displayName: 'Publish Release'
+      pathtoPublish:          $(Build.ArtifactStagingDirectory)/SUEWS-macOS.zip
+      artifactName:           'SUEWS-macOS.zip'
+    displayName:              'Publish Release'
 
 #   # Publish Pipeline Artifact
-# - task: PublishPipelineArtifact@0
+# - task:                     PublishPipelineArtifact@0
 #   inputs:
-#     artifactName: 'drop'
+#     artifactName:           'drop'
 #     targetPath:
-#   displayName: 'Publish Release'
+#   displayName:              'Publish Release'
+  #
+  # - task:                   GithubRelease@0
+  #   inputs:
+  #     gitHubConnection:     new GitHub connection
+  #     repositoryName:       Urban-Meteorology-Reading/SUEWS
+  #     assets:               $(Build.ArtifactStagingDirectory)/*.zip
+  #     action:               'Edit'
+  #     target:               '$(build.sourceVersion)'
+  #     tagSource:            'manual' # 'auto'
+  #     tag:                  test # Required when action == edit || action == discard || tagSource == manual
+  #     title:                'test release'
+  #     assetUploadMode:      'replace'
+  #     isDraft:              true
+  #     isPrerelease:         false
+  #     addChangeLog:         true
 
-  - task: GithubRelease@0
-    inputs:
-      gitHubConnection: new GitHub connection
-      repositoryName: Urban-Meteorology-Reading/SUEWS
-      assets: $(Build.ArtifactStagingDirectory)/*.zip
-      action: 'Edit'
-      target: '$(build.sourceVersion)'
-      tagSource: 'manual' # 'auto'
-      tag: test # Required when action == edit || action == discard || tagSource == manual
-      title: 'test release'
-      assetUploadMode: 'delete'
-      isDraft: true
-      isPrerelease: false
-      addChangeLog: true
 
+- phase:                      Phase_2
+  displayName:                Agent Windows
 
-- phase: Phase_2
-  displayName: Agent Windows
-
-  condition: succeeded()
+  condition:                  succeeded()
   queue:
-    name: Hosted VS2017
+    name:                     Hosted VS2017
 
   steps:
-  - script: |
+  - script:                   |
        make
 
-    displayName: 'make suews'
-    continueOnError: true
+    displayName:              'make suews'
+    continueOnError:          true
 
-  - task: ArchiveFiles@2
+  - task:                     ArchiveFiles@2
     inputs:
-      rootFolderOrFile: ./ReleaseRepo/build/
-      includeRootFolder: false
+      rootFolderOrFile:       ./ReleaseRepo/build/
+      includeRootFolder:      false
       archiveType: 'zip' # Options: zip, 7z, tar, wim
       #tarCompression: 'gz' # Optional. Options: gz, bz2, xz, none
-      archiveFile: ./SUEWS-win64.zip
+      archiveFile:            $(Build.ArtifactStagingDirectory)/SUEWS-win64.zip
       replaceExistingArchive: true
-    displayName: 'Create Release'
+    displayName:              'Create Release'
 
-  - task: PublishBuildArtifacts@1
+  - task:                     PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: ./SUEWS-win64.zip
-      artifactName: 'SUEWS-win64.zip'
-    displayName: 'Publish Release'
+      pathtoPublish:          $(Build.ArtifactStagingDirectory)/SUEWS-win64.zip
+      artifactName:           'SUEWS-win64.zip'
+    displayName:              'Publish Release'
 
-  - task: GithubRelease@0
-    inputs:
-      gitHubConnection: new GitHub connection
-      repositoryName: Urban-Meteorology-Reading/SUEWS
-      assets: $(Build.ArtifactStagingDirectory)/*.zip
-      action: 'Edit'
-      target: '$(build.sourceVersion)'
-      tagSource: 'manual' # 'auto'
-      tag: test # Required when action == edit || action == discard || tagSource == manual
-      title: 'test release'
-      assetUploadMode: 'delete'
-      isDraft: true
-      isPrerelease: false
-      addChangeLog: true
+  # - task:                   GithubRelease@0
+  #   inputs:
+  #     gitHubConnection:     new GitHub connection
+  #     repositoryName:       Urban-Meteorology-Reading/SUEWS
+  #     assets:               $(Build.ArtifactStagingDirectory)/*.zip
+  #     action:               'Edit'
+  #     target:               '$(build.sourceVersion)'
+  #     tagSource:            'manual' # 'auto'
+  #     tag:                  test # Required when action == edit || action == discard || tagSource == manual
+  #     title:                'test release'
+  #     assetUploadMode:      'replace'
+  #     isDraft:              true
+  #     isPrerelease:         false
+  #     addChangeLog:         true
 
 
 
-- phase: Phase_3
-  displayName: Agent Linux
+- phase:                      Phase_3
+  displayName:                Agent Linux
 
-  condition: succeeded()
+  condition:                  succeeded()
   queue:
-    name: Hosted Ubuntu 1604
+    name:                     Hosted Ubuntu 1604
   steps:
-  - script: |
+  - script:                   |
        docker run -v $(pwd):/io dockcross/manylinux-x64 bash -c "cd /io/;make"
-    displayName: 'docker make suews manylinux'
-    continueOnError: true
+    displayName:              'docker make suews manylinux'
+    continueOnError:          true
 
-  - task: ArchiveFiles@2
+  - task:                     ArchiveFiles@2
     inputs:
-      rootFolderOrFile: ./ReleaseRepo/build
-      includeRootFolder: false
+      rootFolderOrFile:       ./ReleaseRepo/build
+      includeRootFolder:      false
       archiveType: 'zip' # Options: zip, 7z, tar, wim
       #tarCompression: 'gz' # Optional. Options: gz, bz2, xz, none
-      archiveFile: ./SUEWS-Linux.zip
+      archiveFile:            $(Build.ArtifactStagingDirectory)/SUEWS-Linux.zip
       replaceExistingArchive: true
-    displayName: 'Create Release'
+    displayName:              'Create Release'
 
-  - task: PublishBuildArtifacts@1
+  - task:                     PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: ./SUEWS-Linux.zip
-      artifactName: 'SUEWS-Linux.zip'
-    displayName: 'Publish Release'
+      pathtoPublish:          $(Build.ArtifactStagingDirectory)/SUEWS-Linux.zip
+      artifactName:           'SUEWS-Linux.zip'
+    displayName:              'Publish Release'
 
-  - task: GithubRelease@0
-    inputs:
-      gitHubConnection: new GitHub connection
-      repositoryName: Urban-Meteorology-Reading/SUEWS
-      assets: $(Build.ArtifactStagingDirectory)/*.zip
-      action: 'Edit'
-      target: '$(build.sourceVersion)'
-      tagSource: 'manual' # 'auto'
-      tag: test # Required when action == edit || action == discard || tagSource == manual
-      title: 'test release'
-      assetUploadMode: 'delete'
-      isDraft: true
-      isPrerelease: false
-      addChangeLog: true
+
+
+  - phase:                    GitHub Release
+    displayName:              Agent macOS
+
+    condition:                succeeded()
+    queue:
+      name:                   Hosted macOS
+
+    steps:
+    - task:                   GithubRelease@0
+      inputs:
+        gitHubConnection:     new GitHub connection
+        repositoryName:       Urban-Meteorology-Reading/SUEWS
+        assets:               $(Build.ArtifactStagingDirectory)/*.zip
+        action:               'Edit'
+        target:               '$(build.sourceVersion)'
+        tagSource:            'manual' # 'auto'
+        tag:                  test # Required when action == edit || action == discard || tagSource == manual
+        title:                'test release'
+        assetUploadMode:      'replace'
+        isDraft:              true
+        isPrerelease:         false
+        addChangeLog:         true

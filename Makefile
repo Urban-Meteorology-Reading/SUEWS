@@ -45,12 +45,12 @@ main:
 
 # make fortran exe and run test cases
 test:
-	$(MAKE) pip
 	$(MAKE) -C $(SUEWS_dir) -f $(makefile) clean; # clean Fortran SUEWS build
 	$(MAKE) -C $(SUEWS_dir) -f $(makefile) test; # make SUEWS with the `main` recipe
 
 # make fortran exe, run test cases and pack release archive
 release:
+	$(MAKE) pip
 	$(MAKE) main
 	$(MAKE) -C $(release_dir) pack; # clean Fortran SUEWS build
 
@@ -62,7 +62,7 @@ driver:
 
 pip:
 	pip install pipreqs
-	pipreqs BenchmarkTest/code --savepath requirements.txt
+	pipreqs $(release_dir) --savepath requirements.txt
 	pip install -r requirements.txt
 	rm -rf requirements.txt
 

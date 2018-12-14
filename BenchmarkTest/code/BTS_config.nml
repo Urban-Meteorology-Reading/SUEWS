@@ -12,7 +12,7 @@
     path_report_html = '../report/comp-2016a_2018a_2018b'
 
     name_exe    = 'SUEWS_V2018b'
-    dir_exe     = '../../ReleaseRepo/build/macOS'
+    dir_exe     = '../../SUEWS-SourceCode'
     dir_input   = '../BaseInput'
     dir_baserun = '../BaseRun/2018b'
 

@@ -103,6 +103,8 @@ phases:
       architecture:     'x64'
 
   - script:             |
+       sudo apt-get update
+       sudo apt-get install build-essential
        make release
        # docker run -v $(pwd):/io dockcross/manylinux-x64 bash -c "cd /io/;make release"
     displayName:        'docker make suews manylinux'

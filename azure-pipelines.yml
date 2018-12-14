@@ -34,6 +34,7 @@ phases:
     continueOnError:    true
 
   - script:             |
+       make test
        make release
     displayName:        'make suews'
     continueOnError:    true

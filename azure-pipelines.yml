@@ -23,7 +23,7 @@ phases:
   # Archive files using compression formats such as .7z, .rar, .tar.gz, and .zip.
   - task: ArchiveFiles@2
     inputs:
-      rootFolderOrFile: $(Build.SourcesDirectory)/ReleaseRepo/build/macOS/
+      rootFolderOrFile: ./ReleaseRepo/build
       includeRootFolder: false
       archiveType: 'zip' # Options: zip, 7z, tar, wim
       #tarCompression: 'gz' # Optional. Options: gz, bz2, xz, none
@@ -82,7 +82,7 @@ phases:
   
   - task: ArchiveFiles@2
     inputs:
-      rootFolderOrFile: ./ReleaseRepo/build/Win64
+      rootFolderOrFile: ./ReleaseRepo/build/
       includeRootFolder: false
       archiveType: 'zip' # Options: zip, 7z, tar, wim
       #tarCompression: 'gz' # Optional. Options: gz, bz2, xz, none
@@ -110,7 +110,7 @@ phases:
     continueOnError: true
   - task: ArchiveFiles@2
     inputs:
-      rootFolderOrFile: ./ReleaseRepo/build/Linux
+      rootFolderOrFile: ./ReleaseRepo/build
       includeRootFolder: false
       archiveType: 'zip' # Options: zip, 7z, tar, wim
       #tarCompression: 'gz' # Optional. Options: gz, bz2, xz, none

@@ -100,10 +100,11 @@ phases:
     inputs:
       versionSpec:      '3.7'
       addToPath:        true
-      architecture:     'x64' 
+      architecture:     'x64'
 
   - script:             |
-       docker run -v $(pwd):/io dockcross/manylinux-x64 bash -c "cd /io/;make release"
+       make release
+       # docker run -v $(pwd):/io dockcross/manylinux-x64 bash -c "cd /io/;make release"
     displayName:        'docker make suews manylinux'
     continueOnError:    true
 

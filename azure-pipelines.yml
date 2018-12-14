@@ -48,8 +48,8 @@ phases:
       action:                 'Edit'
       target:                 '$(build.sourceVersion)'
       tagSource:              'manual' # 'auto'
-      tag:                    test # Required when action == edit || action == discard || tagSource == manual
-      title:                  'test release'
+      tag:                    'latest' # Required when action == edit || action == discard || tagSource == manual
+      title:                  'latest release'
       assetUploadMode:        'replace'
       isDraft:                true
       isPrerelease:           false
@@ -94,8 +94,8 @@ phases:
       action:                 'Edit'
       target:                 '$(build.sourceVersion)'
       tagSource:              'manual' # 'auto'
-      tag:                    test # Required when action == edit || action == discard || tagSource == manual
-      title:                  'test release'
+      tag:                    'latest' # Required when action == edit || action == discard || tagSource == manual
+      title:                  'latest release'
       assetUploadMode:        'replace'
       isDraft:                true
       isPrerelease:           false
@@ -139,8 +139,8 @@ phases:
       action:                 'Edit'
       target:                 '$(build.sourceVersion)'
       tagSource:              'manual' # 'auto'
-      tag:                    test # Required when action == edit || action == discard || tagSource == manual
-      title:                  'test release'
+      tag:                    'latest' # Required when action == edit || action == discard || tagSource == manual
+      title:                  'latest release'
       assetUploadMode:        'replace'
       isDraft:                true
       isPrerelease:           false

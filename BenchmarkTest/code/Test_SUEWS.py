@@ -2,18 +2,20 @@
 
 # from Benchmark_SUEWS import *
 from __future__ import print_function
-from shutil import copytree, rmtree, copyfile
+
+import errno
+import filecmp
+import itertools
 import os
+import tempfile
+from glob import glob
+from shutil import copyfile, copytree, rmtree
+
 # import sys
 import numpy as np
 import pandas as pd
-from glob import glob
-import f90nml
-import errno
-import filecmp
-import tempfile
-import itertools
 
+import f90nml
 
 # %%auxiliary SUEWS functions
 # suppress error info if needed:
@@ -55,11 +57,11 @@ def load_SUEWS_results(n_grid, n_year):
     path_out = os.path.join('Output/*SUEWS_60.txt')
     # re-order results into [year, grid] layout
     fl_res = np.array(
-        sorted(glob(path_out))).reshape(
-        n_grid, n_year).swapaxes(0, 1)
-    res_sim0 = [np.array(
-        [pd.read_csv(f_grid, sep='\s+', header=0).values
-         for f_grid in fl_year]) for fl_year in fl_res]
+        sorted(glob(path_out))).reshape(n_grid, n_year).swapaxes(0, 1)
+    res_sim0 = [
+        np.array(
+            [pd.read_csv(f_grid, sep='\s+', header=0).values
+             for f_grid in fl_year]) for fl_year in fl_res]
     # re-order the results into [grid,time]
     res_sim = np.concatenate(res_sim0, axis=1)
 
@@ -83,10 +85,10 @@ def save_SiteSelect(df_siteselect, fn_ss='Input/SUEWS_SiteSelect.txt'):
         [' '.join(line) for line in cfg_siteselect_header.astype(str)])
 
     # create SiteSelect.txt
-    np.savetxt(fn_ss, cfg_siteselect_x,
-               fmt=' '.join(['%i'] * 4 + ['%1.4f'] *
-                            (cfg_siteselect_dim[1] - 4)),
-               header=header_SS, footer='-9\n-9', comments='')
+    np.savetxt(
+        fn_ss, cfg_siteselect_x,
+        fmt=' '.join(['%i'] * 4 + ['%1.4f'] * (cfg_siteselect_dim[1] - 4)),
+        header=header_SS, footer='-9\n-9', comments='')
     # print('SiteSelect saved!')
 
 
@@ -543,7 +545,7 @@ def test_code(fn_nml):
     name_exe = cfg_file['name_exe']
 
     # load physics options to test
-    dict_phy_opt_sel = nml['physics_test']
+    # dict_phy_opt_sel = nml['physics_test']
 
     # load basic configurations
     # runcontrol settings

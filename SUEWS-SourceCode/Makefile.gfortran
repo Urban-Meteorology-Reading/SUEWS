@@ -10,7 +10,7 @@ ifeq ($(OS),Windows_NT)
 			C_MODULE = strptime.o # this is needed by datetime_module: mingw lacks `strptime`
 			STATIC = -static -mcmodel=medium# mingw
 			STATICLIB =
-			SUEWS_build_dir = $(addprefix $(SUEWS_build_base), Win-x86_64)
+			SUEWS_build_dir = $(addprefix $(SUEWS_build_base), win64)
 else
 			C_MODULE =
 			UNAME_S := $(shell uname -s)

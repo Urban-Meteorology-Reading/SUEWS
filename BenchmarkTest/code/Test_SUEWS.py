@@ -431,7 +431,7 @@ def test_physics(name_exe, dir_input, dir_exe,
     df_test = pd.DataFrame(list_to_test).assign(
         result=list(dict_test_OK.values()))
 
-    df_test.to_csv('~/Downloads/df_test.csv')
+    df_test.to_csv('~/df_test.csv')
     # test results
     list_method_test = [c for c in df_test.columns if not c == 'result']
     df_test_pass = pd.concat(

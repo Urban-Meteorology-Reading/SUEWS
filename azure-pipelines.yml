@@ -106,8 +106,7 @@ phases:
        sudo apt-get update
        sudo apt-get install build-essential gfortran
        make release
-       # docker run -v $(pwd):/io dockcross/manylinux-x64 bash -c "cd /io/;make release"
-    displayName:        'docker make suews manylinux'
+    displayName:        'make suews'
     continueOnError:    true
 
   - task:               GithubRelease@0

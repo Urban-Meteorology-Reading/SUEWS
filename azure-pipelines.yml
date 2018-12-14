@@ -36,7 +36,7 @@ phases:
 
   - task: PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: ./SUEWS-macOS.zip
+      pathtoPublish: $(Build.ArtifactStagingDirectory)/SUEWS-macOS.zip
       artifactName: 'SUEWS-macOS.zip'
     displayName: 'Publish Release'
 
@@ -44,7 +44,7 @@ phases:
     inputs:
       gitHubConnection: new GitHub connection
       repositoryName: Urban-Meteorology-Reading/SUEWS
-      # assets: $(Build.ArtifactStagingDirectory)
+      assets: $(Build.ArtifactStagingDirectory)/*.zip
       action: 'Edit'
       target: '$(build.sourceVersion)'
       tagSource: 'manual' # 'auto'

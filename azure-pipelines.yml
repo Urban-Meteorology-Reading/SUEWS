@@ -25,42 +25,39 @@ phases:
       versionSpec:            '3.7'
       addToPath:              true
       architecture: 'x64' # Options: x86, x64
-  - script:                   'pip install pandas numpy f90nml xarray matplotlib'
-    displayName:              'install python packages'
-    continueOnError:          true
 
   - script:                   'brew install gcc'
     displayName:              'install gcc+gfortran'
     continueOnError:          true
 
   - script:                   |
-       make test
+       make release
     displayName:              'make suews'
     continueOnError:          true
 
-  # Archive Files
-  # Archive files using compression formats such as .7z, .rar, .tar.gz, and .zip.
-  - task:                     ArchiveFiles@2
-    inputs:
-      rootFolderOrFile:       ./ReleaseRepo/build/
-      includeRootFolder:      false
-      archiveType: 'zip' # Options: zip, 7z, tar, wim
-      #tarCompression: 'gz' # Optional. Options: gz, bz2, xz, none
-      archiveFile:            $(Build.ArtifactStagingDirectory)/SUEWS-macOS.zip
-      replaceExistingArchive: true
-    displayName:              'Create Release'
-
-  - task:                     PublishBuildArtifacts@1
-    inputs:
-      pathtoPublish:          $(Build.ArtifactStagingDirectory)/SUEWS-macOS.zip
-      artifactName:           'SUEWS-macOS.zip'
-    displayName:              'Publish Release'
+  # # Archive Files
+  # # Archive files using compression formats such as .7z, .rar, .tar.gz, and .zip.
+  # - task:                     ArchiveFiles@2
+  #   inputs:
+  #     rootFolderOrFile:       ./ReleaseRepo/build/
+  #     includeRootFolder:      false
+  #     archiveType: 'zip' # Options: zip, 7z, tar, wim
+  #     #tarCompression: 'gz' # Optional. Options: gz, bz2, xz, none
+  #     archiveFile:            $(Build.ArtifactStagingDirectory)/SUEWS-macOS.zip
+  #     replaceExistingArchive: true
+  #   displayName:              'Create Release'
+  #
+  # - task:                     PublishBuildArtifacts@1
+  #   inputs:
+  #     pathtoPublish:          $(Build.ArtifactStagingDirectory)/SUEWS-macOS.zip
+  #     artifactName:           'SUEWS-macOS.zip'
+  #   displayName:              'Publish Release'
 
   - task:                     GithubRelease@0
     inputs:
       gitHubConnection:       new GitHub connection
       repositoryName:         Urban-Meteorology-Reading/SUEWS
-      assets:                 $(Build.ArtifactStagingDirectory)/*.zip
+      assets:                 ./ReleaseRepo/*.zip
       action:                 'Edit'
       target:                 '$(build.sourceVersion)'
       tagSource:              'manual' # 'auto'
@@ -72,104 +69,110 @@ phases:
       addChangeLog:           false
 
 
-- phase:                      Phase_2
-  displayName:                Agent Windows
-
-  condition:                  succeeded()
-  queue:
-    name:                     Hosted VS2017
-
-  steps:
-  - task:                     UsePythonVersion@0
-    inputs:
-      versionSpec:            '3.7'
-      addToPath:              true
-      architecture: 'x64' # Options: x86, x64
-
-  - bash:                   |
-       make test
-
-    displayName:              'make suews'
-    failOnStderr:          true
-
-  - task:                     ArchiveFiles@2
-    inputs:
-      rootFolderOrFile:       ./ReleaseRepo/build/
-      includeRootFolder:      false
-      archiveType: 'zip' # Options: zip, 7z, tar, wim
-      #tarCompression: 'gz' # Optional. Options: gz, bz2, xz, none
-      archiveFile:            $(Build.ArtifactStagingDirectory)/SUEWS-win64.zip
-      replaceExistingArchive: true
-    displayName:              'Create Release'
-
-  - task:                     PublishBuildArtifacts@1
-    inputs:
-      pathtoPublish:          $(Build.ArtifactStagingDirectory)/SUEWS-win64.zip
-      artifactName:           'SUEWS-win64.zip'
-    displayName:              'Publish Release'
-
-  - task:                     GithubRelease@0
-    inputs:
-      gitHubConnection:       new GitHub connection
-      repositoryName:         Urban-Meteorology-Reading/SUEWS
-      assets:                 $(Build.ArtifactStagingDirectory)/*.zip
-      action:                 'Edit'
-      target:                 '$(build.sourceVersion)'
-      tagSource:              'manual' # 'auto'
-      tag:                    $(release_tag) # Required when action == edit || action == discard || tagSource == manual
-      title:                  $(release_title)
-      assetUploadMode:        'replace'
-      isDraft:                true
-      isPrerelease:           false
-      addChangeLog:           false
-
-
-
-- phase:                      Phase_3
-  displayName:                Agent Linux
-
-  condition:                  succeeded()
-  queue:
-    name:                     Hosted Ubuntu 1604
-  steps:
-  - task:                     UsePythonVersion@0
-    inputs:
-      versionSpec:            '3.7'
-      addToPath:              true
-      architecture: 'x64' # Options: x86, x64
-
-  - script:                   |
-       docker run -v $(pwd):/io dockcross/manylinux-x64 bash -c "cd /io/;make test"
-    displayName:              'docker make suews manylinux'
-    continueOnError:          true
-
-  - task:                     ArchiveFiles@2
-    inputs:
-      rootFolderOrFile:       ./ReleaseRepo/build
-      includeRootFolder:      false
-      archiveType: 'zip' # Options: zip, 7z, tar, wim
-      #tarCompression: 'gz' # Optional. Options: gz, bz2, xz, none
-      archiveFile:            $(Build.ArtifactStagingDirectory)/SUEWS-Linux.zip
-      replaceExistingArchive: true
-    displayName:              'Create Release'
-
-  - task:                     PublishBuildArtifacts@1
-    inputs:
-      pathtoPublish:          $(Build.ArtifactStagingDirectory)/SUEWS-Linux.zip
-      artifactName:           'SUEWS-Linux.zip'
-    displayName:              'Publish Release'
-
-  - task:                     GithubRelease@0
-    inputs:
-      gitHubConnection:       new GitHub connection
-      repositoryName:         Urban-Meteorology-Reading/SUEWS
-      assets:                 $(Build.ArtifactStagingDirectory)/*.zip
-      action:                 'Edit'
-      target:                 '$(build.sourceVersion)'
-      tagSource:              'manual' # 'auto'
-      tag:                    $(release_tag) # Required when action == edit || action == discard || tagSource == manual
-      title:                  $(release_title)
-      assetUploadMode:        'replace'
-      isDraft:                true
-      isPrerelease:           false
-      addChangeLog:           false
+# - phase:                      Phase_2
+#   displayName:                Agent Windows
+#
+#   condition:                  succeeded()
+#   queue:
+#     name:                     Hosted VS2017
+#
+#   steps:
+#   - task:                     UsePythonVersion@0
+#     inputs:
+#       versionSpec:            '3.7'
+#       addToPath:              true
+#       architecture: 'x64' # Options: x86, x64
+#   - script:                   'pip install requirements.txt'
+#     displayName:              'install python packages'
+#     continueOnError:          true
+#
+#   - bash:                   |
+#        make test
+#
+#     displayName:              'make suews'
+#     failOnStderr:          true
+#
+#   - task:                     ArchiveFiles@2
+#     inputs:
+#       rootFolderOrFile:       ./ReleaseRepo/build/
+#       includeRootFolder:      false
+#       archiveType: 'zip' # Options: zip, 7z, tar, wim
+#       #tarCompression: 'gz' # Optional. Options: gz, bz2, xz, none
+#       archiveFile:            $(Build.ArtifactStagingDirectory)/SUEWS-win64.zip
+#       replaceExistingArchive: true
+#     displayName:              'Create Release'
+#
+#   - task:                     PublishBuildArtifacts@1
+#     inputs:
+#       pathtoPublish:          $(Build.ArtifactStagingDirectory)/SUEWS-win64.zip
+#       artifactName:           'SUEWS-win64.zip'
+#     displayName:              'Publish Release'
+#
+#   - task:                     GithubRelease@0
+#     inputs:
+#       gitHubConnection:       new GitHub connection
+#       repositoryName:         Urban-Meteorology-Reading/SUEWS
+#       assets:                 $(Build.ArtifactStagingDirectory)/*.zip
+#       action:                 'Edit'
+#       target:                 '$(build.sourceVersion)'
+#       tagSource:              'manual' # 'auto'
+#       tag:                    $(release_tag) # Required when action == edit || action == discard || tagSource == manual
+#       title:                  $(release_title)
+#       assetUploadMode:        'replace'
+#       isDraft:                true
+#       isPrerelease:           false
+#       addChangeLog:           false
+#
+#
+#
+# - phase:                      Phase_3
+#   displayName:                Agent Linux
+#
+#   condition:                  succeeded()
+#   queue:
+#     name:                     Hosted Ubuntu 1604
+#   steps:
+#   - task:                     UsePythonVersion@0
+#     inputs:
+#       versionSpec:            '3.7'
+#       addToPath:              true
+#       architecture: 'x64' # Options: x86, x64
+#   - script:                   'pip install requirements.txt'
+#     displayName:              'install python packages'
+#     continueOnError:          true
+#
+#   - script:                   |
+#        docker run -v $(pwd):/io dockcross/manylinux-x64 bash -c "cd /io/;make test"
+#     displayName:              'docker make suews manylinux'
+#     continueOnError:          true
+#
+#   - task:                     ArchiveFiles@2
+#     inputs:
+#       rootFolderOrFile:       ./ReleaseRepo/build
+#       includeRootFolder:      false
+#       archiveType: 'zip' # Options: zip, 7z, tar, wim
+#       #tarCompression: 'gz' # Optional. Options: gz, bz2, xz, none
+#       archiveFile:            $(Build.ArtifactStagingDirectory)/SUEWS-Linux.zip
+#       replaceExistingArchive: true
+#     displayName:              'Create Release'
+#
+#   - task:                     PublishBuildArtifacts@1
+#     inputs:
+#       pathtoPublish:          $(Build.ArtifactStagingDirectory)/SUEWS-Linux.zip
+#       artifactName:           'SUEWS-Linux.zip'
+#     displayName:              'Publish Release'
+#
+#   - task:                     GithubRelease@0
+#     inputs:
+#       gitHubConnection:       new GitHub connection
+#       repositoryName:         Urban-Meteorology-Reading/SUEWS
+#       assets:                 $(Build.ArtifactStagingDirectory)/*.zip
+#       action:                 'Edit'
+#       target:                 '$(build.sourceVersion)'
+#       tagSource:              'manual' # 'auto'
+#       tag:                    $(release_tag) # Required when action == edit || action == discard || tagSource == manual
+#       title:                  $(release_title)
+#       assetUploadMode:        'replace'
+#       isDraft:                true
+#       isPrerelease:           false
+#       addChangeLog:           false

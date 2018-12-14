@@ -59,6 +59,9 @@ warnings-checkpoint.txt
 Saeve_2004_data_5.txt.save
 SampleRun/suews_v*
 
+# build files
+build/
+
 
 # python related
 profiling-checkpoint.ipynb

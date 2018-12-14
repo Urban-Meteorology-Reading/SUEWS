@@ -1,7 +1,7 @@
 # determine the targe name from source code
 file       := suews_ctrl_const.f95 # get program name form source code
 grep := $(if $(filter $(OS),Windows_NT),findstr,grep)
-mkdir := $(if $(filter $(OS),Windows_NT),mkdir,mkdir -p)
+# mkdir := $(if $(filter $(OS),Windows_NT),mkdir,mkdir -p)
 rm := $(if $(filter $(OS),Windows_NT),rm -force,rm -rf)
 # text_file=$(shell $(cat) ${file})
 variable   := $(shell $(grep) progname ${file})
@@ -80,7 +80,7 @@ main: suews_program$(suffix_code) $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(
 			$(FC) suews_program$(suffix_code)  -c
 			$(FC) suews_program.o $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST) $(STATICLIB) \
 			-o $(TARGET)
-			$(mkdir) $(SUEWS_build_dir)
+			mkdir -p $(SUEWS_build_dir)
 			cp -f $(TARGET) $(SUEWS_build_dir)/.
 
 # Build main program with NETCDF support - main uses MODULES and OTHERS
@@ -105,7 +105,7 @@ cov: suews_program$(suffix_code) $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(O
 			$(FC) suews_program.o $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST) \
 			$(STATICLIB) \
 			-o $(TARGET)
-			$(mkdir) $(SUEWS_build_dir)
+			mkdir -p $(SUEWS_build_dir)
 			cp -f $(TARGET) $(SUEWS_build_dir)/.
 
 # Build main program and run test cases

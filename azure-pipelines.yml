@@ -140,7 +140,7 @@ phases:
 
 
 
-  - phase:                    GitHub Release
+  - phase:                    Phase_4
     displayName:              Agent macOS
 
     condition:                succeeded()

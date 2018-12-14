@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 
-
-from __future__ import print_function
-
 import sys
 from pathlib import Path
 from shutil import copyfile, copytree, make_archive, move, rmtree
@@ -58,7 +55,9 @@ if not path_output.exists():
     path_output.mkdir()
 
 # copy SUEWS exe
-copyfile(path_exe, path_archive / path_exe.name)
+path_exe_target = copyfile(path_exe, path_archive / path_exe.name)
+path_exe_target.chmod(0o775)
+
 
 # archive folder as zip
 make_archive(path_archive, 'zip', path_archive)

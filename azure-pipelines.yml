@@ -58,7 +58,7 @@ phases:
       assetUploadMode:        'replace'
       isDraft:                true
       isPrerelease:           false
-      addChangeLog:           true
+      addChangeLog:           false
 
 
 - phase:                      Phase_2
@@ -104,7 +104,7 @@ phases:
       assetUploadMode:        'replace'
       isDraft:                true
       isPrerelease:           false
-      addChangeLog:           true
+      addChangeLog:           false
 
 
 
@@ -149,4 +149,4 @@ phases:
       assetUploadMode:        'replace'
       isDraft:                true
       isPrerelease:           false
-      addChangeLog:           true
+      addChangeLog:           false

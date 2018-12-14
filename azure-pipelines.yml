@@ -49,7 +49,7 @@ phases:
       gitHubConnection: new GitHub connection
       repositoryName: Urban-Meteorology-Reading/SUEWS
       assets: $(build.artifactstagingdirectory)/*.zip
-      action: 'create'
+      action: 'Edit'
       target: '$(build.sourceVersion)'
       tagSource: 'manual' # 'auto'
       tag: test # Required when action == edit || action == discard || tagSource == manual

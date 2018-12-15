@@ -15,6 +15,7 @@
 *.so
 *.dylib
 *.dll
+__pycache__/
 
 # Fortran module files
 *.mod

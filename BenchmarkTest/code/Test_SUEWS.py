@@ -414,9 +414,12 @@ def test_physics(name_exe, dir_input, dir_exe,
     list_to_test = [dict(list(zip(methods, v)))
                     for v in itertools.product(*options)]
 
+    print('number of tests:', len(list_to_test))
     # test selected physics schemes
     dict_test = {}
     for ind, cfg in enumerate(list_to_test):
+        print(f'testing {ind+1}/{len(list_to_test)}:')
+        print(f'{cfg}')
         runcontrol_test = dict_runcontrol.copy()
         runcontrol_test.update(cfg)
         name_sim = str(ind)

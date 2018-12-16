@@ -409,19 +409,33 @@ def test_physics(name_exe, dir_input, dir_exe,
     print('running here:', dir_save)
 
     # get options to test
-    methods, options = list(zip(*list(dict_phy_opt_sel.items())))
-    options = [x if type(x) == list else [x] for x in options]
-    list_to_test = [dict(list(zip(methods, v)))
-                    for v in itertools.product(*options)]
+    # !. matrix-like combinations of all test options
+    # really time consuming!
+    # methods, options = list(zip(*list(dict_phy_opt_sel.items())))
+    # options = [x if type(x) == list else [x] for x in options]
+    # list_to_test = [dict(list(zip(methods, v)))
+    #                 for v in itertools.product(*options)]
+
+    # 2. simple test by incorporating each eatry into the basis scheme options
+    # faster but less coverage
+    list_to_test = []
+    for method in dict_phy_opt_sel:
+        options = dict_phy_opt_sel[method]
+        if type(options) == list:
+            for x in options:
+                list_to_test.append({method: x})
+        else:
+            list_to_test.append({method: options})
 
     print('number of tests:', len(list_to_test))
     # test selected physics schemes
     dict_test = {}
     for ind, cfg in enumerate(list_to_test):
         print(f'testing {ind+1}/{len(list_to_test)}:')
-        print(f'{cfg}')
         runcontrol_test = dict_runcontrol.copy()
         runcontrol_test.update(cfg)
+        runcontrol_test_sel = {x: runcontrol_test[x] for x in dict_phy_opt_sel}
+        print(f'{runcontrol_test_sel}')
         name_sim = str(ind)
         res_sim = run_sim(
             name_sim, dir_input, dir_exe, name_exe,

@@ -15,6 +15,7 @@
 *.so
 *.dylib
 *.dll
+__pycache__/
 
 # Fortran module files
 *.mod
@@ -76,3 +77,4 @@ supy-driver/dist
 supy-driver/wheelhouse
 Obs
 London_KCL
+ReleaseRepo/*.zip

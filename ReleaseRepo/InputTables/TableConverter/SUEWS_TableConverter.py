@@ -44,7 +44,7 @@ rules = np.genfromtxt('rules.csv', dtype=np.ndarray, delimiter=',', names=True)
 def rename_var(toFile, toVar, toCol, toVal):
     # if namelist:
     if toFile.endswith('.nml'):
-        print toFile, toVar, toVal
+        print(toFile, toVar, toVal)
         rename_var_nml(toFile, toVar, toVal)
     else:
         dataX = np.genfromtxt(toFile, dtype=np.ndarray, skip_header=1,
@@ -73,7 +73,7 @@ def rename_var_nml(toFile, toVar, toVal):
     if (toVar.lower() in nml[title].keys()):
         nml[title][toVal] = nml[title].pop(toVar)
     else:
-        print toVar + ' does not exist!'
+        print(toVar + ' does not exist!')
     nml.write(toFile, force=True)
 
 
@@ -113,7 +113,7 @@ def delete_var_nml(toFile, toVar, toVal):
     if (toVarX in nml[title].keys()):
         nml[title].pop(toVarX)
     else:
-        print toVar + ' does not exist!'
+        print(toVar + ' does not exist!')
     nml.write(toFile, force=True)
 
 
@@ -179,7 +179,7 @@ def add_var_nml(toFile, toVar, toVal):
     if not(toVarX in nml[title].keys()):
         nml[title][toVarX] = toVal
     else:
-        print toVar + ' exists!'
+        print(toVar + ' exists!')
     nml.write(toFile, force=True)
 
 
@@ -318,12 +318,12 @@ def SUEWS_Converter_file(fileX, actionList):
 
 
 def SUEWS_Converter_action(action, toFile, var, col, val):
-    print action, toFile, var, col, val
+    print(action, toFile, var, col, val)
     actionFunc = {'Rename': rename_var, 'Delete': delete_var,
                   'Add': add_var}
     actionFunc[action](toFile, var, col, val)
 
-    print action + ' ' + var + ' for ' + toFile + ': done!'
+    print(action + ' ' + var + ' for ' + toFile + ': done!')
     return
 
 

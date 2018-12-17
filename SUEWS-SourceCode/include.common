@@ -2,7 +2,7 @@
 file       := suews_ctrl_const.f95 # get program name form source code
 grep := $(if $(filter $(OS),Windows_NT),findstr,grep)
 # mkdir := $(if $(filter $(OS),Windows_NT),mkdir,mkdir -p)
-rm := $(if $(filter $(OS),Windows_NT),rm -force,rm -rf)
+# rm := $(if $(filter $(OS),Windows_NT),rm -force,rm -rf)
 # text_file=$(shell $(cat) ${file})
 variable   := $(shell $(grep) progname ${file})
 # variable   := $(shell grep 'progname' ${file})
@@ -146,4 +146,4 @@ $(WRF): $(subst .o,$(suffix_code), $(WRF))
 clean:
 	$(info $$suffix_code is [${suffix_code}])
 	$(info $$TARGET is [${TARGET}])
-	-${rm} *.o *.mod *.dSYM *.gcda *.gcno *.f90 ${TARGET}
+	rm -rf *.o *.mod *.dSYM *.gcda *.gcno *.f90 ${TARGET}

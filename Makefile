@@ -27,6 +27,8 @@ MODULE=SUEWS_driver
 
 SUEWS_dir = SUEWS-SourceCode
 
+release_dir = ReleaseRepo
+
 makefile = Makefile.gfortran
 
 SuPy_dir = supy-driver
@@ -45,7 +47,12 @@ main:
 test:
 	$(MAKE) -C $(SUEWS_dir) -f $(makefile) clean; # clean Fortran SUEWS build
 	$(MAKE) -C $(SUEWS_dir) -f $(makefile) test; # make SUEWS with the `main` recipe
-	-rm -rf *.o *.mod *.f95 *.a *.dSYM
+
+# make fortran exe, run test cases and pack release archive
+release:
+	$(MAKE) pip
+	$(MAKE) main
+	$(MAKE) -C $(release_dir) pack; # clean Fortran SUEWS build
 
 # make supy dist
 driver:
@@ -53,6 +60,11 @@ driver:
 	$(MAKE) -C $(SuPy_dir) suews; # clean Fortran SUEWS build
 	$(MAKE) -C $(SuPy_dir) main; # make SUEWS with the `main` recipe
 
+pip:
+	pip install pipreqs
+	pipreqs $(release_dir) --savepath requirements.txt
+	pip install -r requirements.txt
+	rm -rf requirements.txt
 
 # If wanted, clean all *.o files after build
 clean:

@@ -1115,19 +1115,19 @@ CONTAINS
             qn1_ind_snow,kup_ind_snow,Tsurf_ind_snow,Tsurf_ind)
 
     ELSE ! NetRadiationMethod==0
-       snowFrac  = snow_obs
-       qn1       = qn1_obs
-       qn1_snowfree    = qn1_obs
-       qn1_s     = qn1_obs
-       ldown     = NAN
-       lup       = NAN
-       kup       = NAN
-       tsurf     = NAN
-       lup_ind   = NAN
-       kup_ind   = NAN
-       tsurf_ind = NAN
-       qn1_ind   = NAN
-       Fcld      = NAN
+       snowFrac     = snow_obs
+       qn1          = qn1_obs
+       qn1_snowfree = qn1_obs
+       qn1_s        = qn1_obs
+       ldown        = NAN
+       lup          = NAN
+       kup          = NAN
+       tsurf        = NAN
+       lup_ind      = NAN
+       kup_ind      = NAN
+       tsurf_ind    = NAN
+       qn1_ind      = NAN
+       Fcld         = NAN
     ENDIF
 
     IF(ldown_option==1) THEN
@@ -2864,8 +2864,8 @@ CONTAINS
             datetimeLine,dataOutLineSUEWS,dataOutLineSnow,dataOutLineESTM,&!output
             DailyStateLine)!output
 
-        ! update dt_since_start_x for next iteration, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018
-        dt_since_start_x = dt_since_start_x + tstep
+       ! update dt_since_start_x for next iteration, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018
+       dt_since_start_x = dt_since_start_x + tstep
 
        !============ update and write out SUEWS_cal_DailyState ===============
        ! only works at the last timestep of a day

@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import f90nml
 import xarray as xr
-import seaborn as sns
+# import seaborn as sns
 from matplotlib import colors
 
 

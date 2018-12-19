@@ -5,7 +5,7 @@ from __future__ import print_function
 
 import errno
 import filecmp
-import itertools
+# import itertools
 import os
 import tempfile
 from glob import glob
@@ -56,14 +56,18 @@ def load_SUEWS_table(fileX):
 def load_SUEWS_results(n_grid, n_year):
     path_out = os.path.join('Output/*SUEWS_60.txt')
     # re-order results into [year, grid] layout
-    fl_res = np.array(
-        sorted(glob(path_out))).reshape(n_grid, n_year).swapaxes(0, 1)
-    res_sim0 = [
+    fl_res = np.array(sorted(glob(path_out)))
+    fl_res = fl_res.reshape(n_grid, n_year).swapaxes(0, 1)
+    res_sim = [
         np.array(
-            [pd.read_csv(f_grid, sep='\s+', header=0).values
-             for f_grid in fl_year]) for fl_year in fl_res]
+            [
+                pd.read_csv(f_grid, sep=r'\s+', header=0).values
+                for f_grid in fl_year
+            ]
+        )
+        for fl_year in fl_res]
     # re-order the results into [grid,time]
-    res_sim = np.concatenate(res_sim0, axis=1)
+    res_sim = np.concatenate(res_sim, axis=1)
 
     return res_sim
 
@@ -674,7 +678,8 @@ def _path_insensitive(path):
 #     n_year = cfg_siteselect_dim[0]
 #
 #     cfg_siteselect_header = np.vstack(
-#         (np.arange(1, cfg_siteselect_dim[1] + 1), cfg_siteselect_base.columns))
+#         (np.arange(1, cfg_siteselect_dim[1] + 1),
+# cfg_siteselect_base.columns))
 #
 #     # generate header for SiteSelect.txt
 #     header_SS = '\n'.join(

@@ -53,7 +53,7 @@ src_f95 = target_f95 + other_f95
 
 
 def readme():
-    with open('../README.rst') as f:
+    with open('README.md') as f:
         return f.read()
 # dir_source='SUEWS-SourceCode'
 # path_source = Path(dir_source)

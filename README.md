@@ -4,10 +4,9 @@ This is a private repo for SUEWS development.
 
 ## Documentation
 
-* Documentation site: https://suews-docs.readthedocs.io/
+* Documentation site: <https://suews-docs.readthedocs.io/>
 
-* Documentation repo: https://github.com/Urban-Meteorology-Reading/SUEWS-Docs
-
+* Documentation repo: <https://github.com/Urban-Meteorology-Reading/SUEWS-Docs>
 
 ## Developer Note
 

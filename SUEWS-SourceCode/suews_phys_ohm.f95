@@ -16,7 +16,7 @@ SUBROUTINE OHM(qn1, qn1_av, dqndt, &
                Tair_mav_5d, &
                OHM_coef, &
                OHM_threshSW, OHM_threshWD, &
-               soilmoist_id, SoilStoreCap, state_id, &
+               soilstore_id, SoilStoreCap, state_id, &
                BldgSurf, WaterSurf, &
                SnowUse, SnowFrac, &
                DiagQS, &
@@ -56,7 +56,7 @@ SUBROUTINE OHM(qn1, qn1_av, dqndt, &
    REAL(KIND(1d0)), INTENT(in)::Tair_mav_5d                          ! Tair_mav_5d=HDD(id-1,4) HDD at the begining of today (id-1)
    REAL(KIND(1d0)), INTENT(in)::OHM_coef(nsurf + 1, 4, 3)                 ! OHM coefficients
    REAL(KIND(1d0)), INTENT(in)::OHM_threshSW(nsurf + 1), OHM_threshWD(nsurf + 1) ! OHM thresholds
-   REAL(KIND(1d0)), INTENT(in)::soilmoist_id(nsurf)                ! soil moisture
+   REAL(KIND(1d0)), INTENT(in)::soilstore_id(nsurf)                ! soil moisture
    REAL(KIND(1d0)), INTENT(in)::SoilStoreCap(nsurf)             ! capacity of soil store
    REAL(KIND(1d0)), INTENT(in)::state_id(nsurf) ! wetness status
 
@@ -101,7 +101,7 @@ SUBROUTINE OHM(qn1, qn1_av, dqndt, &
 
    CALL OHM_coef_cal(sfr, nsurf, &
                      Tair_mav_5d, OHM_coef, OHM_threshSW, OHM_threshWD, &
-                     soilmoist_id, SoilStoreCap, state_id, &
+                     soilstore_id, SoilStoreCap, state_id, &
                      BldgSurf, WaterSurf, &
                      SnowUse, SnowFrac, &
                      a1, a2, a3)
@@ -190,7 +190,7 @@ ENDSUBROUTINE OHM
 
 SUBROUTINE OHM_coef_cal(sfr, nsurf, &
                         Tair_mav_5d, OHM_coef, OHM_threshSW, OHM_threshWD, &
-                        soilmoist_id, SoilStoreCap, state_id, &
+                        soilstore_id, SoilStoreCap, state_id, &
                         BldgSurf, WaterSurf, &
                         SnowUse, SnowFrac, &
                         a1, a2, a3)
@@ -205,7 +205,7 @@ SUBROUTINE OHM_coef_cal(sfr, nsurf, &
       Tair_mav_5d, & ! Tair_mav_5d=HDD(id-1,4) HDD at the begining of today (id-1)
       OHM_coef(nsurf + 1, 4, 3), &
       OHM_threshSW(nsurf + 1), OHM_threshWD(nsurf + 1), & ! OHM thresholds
-      soilmoist_id(nsurf), & ! soil moisture
+      soilstore_id(nsurf), & ! soil moisture
       SoilStoreCap(nsurf), &! capacity of soil store
       state_id(nsurf) ! wetness status
    REAL(KIND(1d0)), INTENT(out):: a1, a2, a3
@@ -237,7 +237,7 @@ SUBROUTINE OHM_coef_cal(sfr, nsurf, &
          i = ii + 2
          ! If the surface is dry but SM is close to capacity, use coefficients for wet surfaces
          IF (is > BldgSurf .AND. is /= WaterSurf) THEN    !Wet soil (i.e. EveTr, DecTr, Grass, BSoil surfaces)
-            IF (soilmoist_id(is)/SoilStoreCap(is) > OHM_threshWD(is)) THEN
+            IF (soilstore_id(is)/SoilStoreCap(is) > OHM_threshWD(is)) THEN
                i = ii + 1
             ENDIF
          ENDIF

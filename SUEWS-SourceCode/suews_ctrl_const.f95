@@ -207,7 +207,7 @@ MODULE allocateArray
    REAL(KIND(1d0)), DIMENSION(nsurf):: runoffSoil     !Soil runoff from each soil sub-surface [mm]
    REAL(KIND(1d0)), DIMENSION(nsurf):: smd_nsurf      !Soil moisture deficit of each sub-surface [mm]
    REAL(KIND(1d0)), DIMENSION(nsurf):: smd_nsurfOut   !Soil moisture deficit of each sub-surface (written out) [mm]
-   REAL(KIND(1d0)), DIMENSION(nsurf):: soilmoist_id      !Soil moisture of each surface type [mm]
+   REAL(KIND(1d0)), DIMENSION(nsurf):: soilstore_id      !Soil moisture of each surface type [mm]
    REAL(KIND(1d0)), DIMENSION(nsurf):: soilmoistOld   !Soil moisture of each surface type from previous timestep [mm]
    REAL(KIND(1d0)), DIMENSION(nsurf):: state_id          !Wetness status of each surface type [mm]
    REAL(KIND(1d0)), DIMENSION(nsurf):: stateOut       !Wetness status of each surface type (written out) [mm]
@@ -397,7 +397,7 @@ MODULE allocateArray
    ! ---- Snow-related variables ------------------------------------------------------------------
    REAL(KIND(1d0)), DIMENSION(nsurf):: changSnow, &       !Change in snowpack in mm
                                        maxSnowVol, &      !! Maximum snow volume
-                                       MeltWaterStore, &  !!Liquid water in the snow pack of ith surface
+                                       SnowWater, &  !!Liquid water in the snow pack of ith surface
                                        ev_snow, &          !!Evaporation from snowpack in mm
                                        mw_ind, &           !Melt water from individual surface in mm
                                        mw_indDay, &        !!Melt water per day from each surface type in m3

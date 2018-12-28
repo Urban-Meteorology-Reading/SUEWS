@@ -2136,12 +2136,12 @@ SUBROUTINE NextInitial(GridName, year_int)
    WRITE (57, *) 'AlbGrass0=', AlbGrass_id
    WRITE (57, *) 'DecidCap0=', decidCap_id
    WRITE (57, *) 'Porosity0=', porosity_id
-   WRITE (57, *) 'SoilStorePavedState=', soilmoist_id(PavSurf)
-   WRITE (57, *) 'SoilStoreBldgsState=', soilmoist_id(BldgSurf)
-   WRITE (57, *) 'SoilStoreEveTrState=', soilmoist_id(ConifSurf)
-   WRITE (57, *) 'SoilStoreDecTrState=', soilmoist_id(DecidSurf)
-   WRITE (57, *) 'SoilStoreGrassState=', soilmoist_id(GrassSurf)
-   WRITE (57, *) 'SoilStoreBSoilState=', soilmoist_id(BSoilSurf)
+   WRITE (57, *) 'SoilStorePavedState=', soilstore_id(PavSurf)
+   WRITE (57, *) 'SoilStoreBldgsState=', soilstore_id(BldgSurf)
+   WRITE (57, *) 'SoilStoreEveTrState=', soilstore_id(ConifSurf)
+   WRITE (57, *) 'SoilStoreDecTrState=', soilstore_id(DecidSurf)
+   WRITE (57, *) 'SoilStoreGrassState=', soilstore_id(GrassSurf)
+   WRITE (57, *) 'SoilStoreBSoilState=', soilstore_id(BSoilSurf)
    WRITE (57, *) 'PavedState=', state_id(PavSurf)
    WRITE (57, *) 'BldgsState=', state_id(BldgSurf)
    WRITE (57, *) 'EveTrState=', state_id(ConifSurf)
@@ -2151,13 +2151,13 @@ SUBROUTINE NextInitial(GridName, year_int)
    WRITE (57, *) 'WaterState=', state_id(WaterSurf)
    ! Only write snow variables if snow part is running
    IF (snowUse == 1) THEN
-      WRITE (57, *) 'SnowWaterPavedState=', MeltWaterStore(PavSurf)
-      WRITE (57, *) 'SnowWaterBldgsState=', MeltWaterStore(BldgSurf)
-      WRITE (57, *) 'SnowWaterEveTrState=', MeltWaterStore(ConifSurf)
-      WRITE (57, *) 'SnowWaterDecTrState=', MeltWaterStore(DecidSurf)
-      WRITE (57, *) 'SnowWaterGrassState=', MeltWaterStore(GrassSurf)
-      WRITE (57, *) 'SnowWaterBSoilState=', MeltWaterStore(BSoilSurf)
-      WRITE (57, *) 'SnowWaterWaterState=', MeltWaterStore(WaterSurf)
+      WRITE (57, *) 'SnowWaterPavedState=', SnowWater(PavSurf)
+      WRITE (57, *) 'SnowWaterBldgsState=', SnowWater(BldgSurf)
+      WRITE (57, *) 'SnowWaterEveTrState=', SnowWater(ConifSurf)
+      WRITE (57, *) 'SnowWaterDecTrState=', SnowWater(DecidSurf)
+      WRITE (57, *) 'SnowWaterGrassState=', SnowWater(GrassSurf)
+      WRITE (57, *) 'SnowWaterBSoilState=', SnowWater(BSoilSurf)
+      WRITE (57, *) 'SnowWaterWaterState=', SnowWater(WaterSurf)
       WRITE (57, *) 'SnowPackPaved=', SnowPack(PavSurf)
       WRITE (57, *) 'SnowPackBldgs=', SnowPack(BldgSurf)
       WRITE (57, *) 'SnowPackEveTr=', SnowPack(ConifSurf)
@@ -2282,7 +2282,7 @@ END SUBROUTINE SUEWS_InitializeMetData
 !====================================================================================
 SUBROUTINE CheckInitial
    !Check the parameters in InitialConditions file.
-   !Modified by HCW 04 Mar 2014, changed soilmoist_id(is) checks to use names given in InitialConditions
+   !Modified by HCW 04 Mar 2014, changed soilstore_id(is) checks to use names given in InitialConditions
    !Added by LJ in 8/2/2013
 
    USE allocateArray

@@ -135,28 +135,60 @@ CONTAINS
 
       REAL(KIND(1d0)), INTENT(INOUT)::SnowAlb
 
-      REAL(KIND(1d0)), DIMENSION(5), INTENT(INOUT)       :: GDD_id !Growing Degree Days (see SUEWS_DailyState.f95)
-      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(INOUT):: LAI_id !LAI for each veg surface [m2 m-2]
-
-      ! REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(INOUT)::DecidCap
-      ! REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(INOUT)::albDecTr
-      ! REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(INOUT)::albEveTr
-      ! REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(INOUT)::albGrass
-      ! REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(INOUT)::porosity
-      ! REAL(KIND(1d0)),DIMENSION( 0:ndays, 5),INTENT(INOUT):: GDD !Growing Degree Days (see SUEWS_DailyState.f95)
-      REAL(KIND(1d0)), DIMENSION(12), INTENT(INOUT):: HDD_id          !Heating Degree Days (see SUEWS_DailyState.f95)
-      ! REAL(KIND(1d0)),DIMENSION(-4:366,6),INTENT(INOUT):: HDD
-
+      REAL(KIND(1d0)), DIMENSION(5),  INTENT(INOUT) :: GDD_id   ! Growing Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1d0)), DIMENSION(3),  INTENT(INOUT) :: LAI_id   ! LAI for each veg surface [m2 m-2]
+      REAL(KIND(1d0)), DIMENSION(12), INTENT(INOUT) :: HDD_id   ! Heating Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1d0)), DIMENSION(9),  INTENT(OUT)   :: WUDay_id ! Water use related array
+      ! --------------------------------------------------------------------------------
+      ! ------------- Key to daily arrays ----------------------------------------------
+      ! TS, 27 Dec 2018: updated the annotation for 2018b and WRF-SUEWS coupling
+      !
+      ! HDD_id:
+      ! first half used for update through the day
+      ! HDD_id(1) ---- Heating [degC]: used for accumulation during calculation
+      ! HDD_id(2) ---- Cooling [degC]: used for accumulation during calculation
+      ! HDD_id(3) ---- Daily mean temp [degC]: used for accumulation during calculation
+      ! HDD_id(4) ---- 5-day running mean temp [degC]: used for actual calculation
+      ! HDD_id(5) ---- Daily precip total [mm]
+      ! HDD_id(6) ---- Days since rain [d]
+      ! second hald used for storage of the first half for the prevous day
+      ! HDD_id(6+1) ---- Heating [degC]: used for accumulation during calculation
+      ! HDD_id(6+2) ---- Cooling [degC]: used for accumulation during calculation
+      ! HDD_id(6+3) ---- Daily mean temp [degC]: used for accumulation during calculation
+      ! HDD_id(6+4) ---- 5-day running mean temp [degC]: used for actual calculation
+      ! HDD_id(6+5) ---- Daily precip total [mm]
+      ! HDD_id(6+6) ---- Days since rain [d]
+      ! 
+      ! GDD_id:
+      ! GDD_id(1) ---- Growing [degC]
+      ! GDD_id(2) ---- Senescence [degC]
+      ! GDD_id(3) ---- Daily min temp [degC]
+      ! GDD_id(4) ---- Daily max temp [degC]
+      ! GDD_id(5) ---- Daytime hours [h]
+      !
+      ! LAI_id:
+      ! LAI_id(1:3) -- LAI for each veg surface [m2 m-2]
+      !
+      ! WUDay_id:
+      ! WUDay_id(1) - Daily water use total for Irr EveTr (automatic+manual) [mm]
+      ! WUDay_id(2) - Automatic irrigation for Irr EveTr [mm]
+      ! WUDay_id(3) - Manual irrigation for Irr EveTr [mm]
+      ! WUDay_id(4) - Daily water use total for Irr DecTr (automatic+manual) [mm]
+      ! WUDay_id(5) - Automatic irrigation for Irr DecTr [mm]
+      ! WUDay_id(6) - Manual irrigation for Irr DecTr [mm]
+      ! WUDay_id(7) - Daily water use total for Irr Grass (automatic+manual) [mm]
+      ! WUDay_id(8) - Automatic irrigation for Irr Grass [mm]
+      ! WUDay_id(9) - Manual irrigation for Irr Grass [mm]
+      ! --------------------------------------------------------------------------------
+      
+    
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(INOUT)::SnowDens
-      ! REAL(KIND(1d0)),DIMENSION(-4:ndays, nvegsurf),INTENT(INOUT):: LAI !LAI for each veg surface [m2 m-2]
       INTEGER, DIMENSION(3), INTENT(in)::DayofWeek_id
 
-      !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
-      ! REAL(KIND(1d0)),DIMENSION(0:ndays,9),INTENT(INOUT):: WUDay
-      REAL(KIND(1d0)), DIMENSION(9), INTENT(OUT):: WUDay_id
+      !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)     
       REAL(KIND(1d0)), INTENT(OUT)::deltaLAI
       REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(INOUT):: LAI_id_prev !LAI for each veg surface [m2 m-2]
-      ! REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT)::HDD_id_use ! HDD of previous day
+
 
       REAL(KIND(1d0)), INTENT(INOUT):: DecidCap_id
       REAL(KIND(1d0)), INTENT(INOUT):: albDecTr_id
@@ -1251,7 +1283,7 @@ CONTAINS
          HDD_id(6) = HDD_id(6) + 1  !Days since rain
       ENDIF
 
-      ! save updated HDD_id(:,1) values to the other dimension
+      ! save updated HDD_id(1:6) values to the last-half part (i.e., HDD_id(7:12))
       HDD_id(6 + 1:6 + 6) = HDD_id(1:6)
 
    END SUBROUTINE update_HDD_X

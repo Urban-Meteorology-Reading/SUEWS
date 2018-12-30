@@ -80,6 +80,13 @@ test:
 	$(MAKE) show
 	$(PYTHON) setup.py test
 
+# clean all existing builds, rebuild f2py libs, build wheels and install in dev mode
+dev:
+	$(MAKE) show
+	$(MAKE) clean
+	$(MAKE) suews
+	pip install -e .
+
 # upload wheels to pypi using twine
 upload:
 	$(MAKE) show

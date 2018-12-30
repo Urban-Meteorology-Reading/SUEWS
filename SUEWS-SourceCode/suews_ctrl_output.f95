@@ -65,10 +65,10 @@ MODULE ctrl_output
    END TYPE varAttr
 
    ! initialise valist
-   TYPE(varAttr) :: varList(300)
+   TYPE(varAttr) :: varListAll(300)
 
    ! datetime:
-   DATA(varList(n), n=1, 5)/ &
+   DATA(varListAll(n), n=1, 5)/ &
       varAttr('Year', 'YYYY', fy, 'Year', aT, 'datetime', 0), &
       varAttr('DOY', 'DOY', ft, 'Day of Year', aT, 'datetime', 0), &
       varAttr('Hour', 'HH', ft, 'Hour', aT, 'datetime', 0), &
@@ -77,7 +77,7 @@ MODULE ctrl_output
       /
 
    ! defualt:
-   DATA(varList(n), n=5 + 1, ncolumnsDataOutSUEWS)/ &
+   DATA(varListAll(n), n=5 + 1, ncolumnsDataOutSUEWS)/ &
       varAttr('Kdown', 'W m-2', f104, 'Incoming shortwave radiation', aA, 'SUEWS', 0), &
       varAttr('Kup', 'W m-2', f104, 'Outgoing shortwave radiation', aA, 'SUEWS', 0), &
       varAttr('Ldown', 'W m-2', f104, 'Incoming longwave radiation', aA, 'SUEWS', 0), &
@@ -161,7 +161,7 @@ MODULE ctrl_output
       /
 
    ! SOLWEIG:
-   DATA(varList(n), n=85 + 1, 85 + ncolumnsdataOutSOL - 5)/ &
+   DATA(varListAll(n), n=85 + 1, 85 + ncolumnsdataOutSOL - 5)/ &
       varAttr('azimuth', 'to_add', f106, 'azimuth', aA, 'SOLWEIG', 0), &
       varAttr('altitude', 'to_add', f106, 'altitude', aA, 'SOLWEIG', 0), &
       varAttr('GlobalRad', 'to_add', f106, 'GlobalRad', aA, 'SOLWEIG', 0), &
@@ -191,7 +191,7 @@ MODULE ctrl_output
       /
 
    ! BL:
-   DATA(varList(n), n=111 + 1, 111 + ncolumnsdataOutBL - 5)/ &
+   DATA(varListAll(n), n=111 + 1, 111 + ncolumnsdataOutBL - 5)/ &
       varAttr('z', 'to_add', f104, 'z', aA, 'BL', 0), &
       varAttr('theta', 'to_add', f104, 'theta', aA, 'BL', 0), &
       varAttr('q', 'to_add', f104, 'q', aA, 'BL', 0), &
@@ -212,7 +212,7 @@ MODULE ctrl_output
       /
 
    ! Snow:
-   DATA(varList(n), n=128 + 1, 128 + ncolumnsDataOutSnow - 5)/ &
+   DATA(varListAll(n), n=128 + 1, 128 + ncolumnsDataOutSnow - 5)/ &
       varAttr('SWE_Paved', 'to_add', f106, 'SWE_Paved', aA, 'snow', 0), &
       varAttr('SWE_Bldgs', 'to_add', f106, 'SWE_Bldgs', aA, 'snow', 0), &
       varAttr('SWE_EveTr', 'to_add', f106, 'SWE_EveTr', aA, 'snow', 0), &
@@ -313,7 +313,7 @@ MODULE ctrl_output
       /
 
    ! ESTM:
-   DATA(varList(n), n=225 + 1, 225 + ncolumnsDataOutESTM - 5)/ &
+   DATA(varListAll(n), n=225 + 1, 225 + ncolumnsDataOutESTM - 5)/ &
       varAttr('QS', 'W m-2', f104, 'Total Storage', aA, 'ESTM', 0), &
       varAttr('QSAir', 'W m-2', f104, 'Storage air', aA, 'ESTM', 0), &
       varAttr('QSWall', 'W m-2', f104, 'Storage Wall', aA, 'ESTM', 0), &
@@ -344,7 +344,7 @@ MODULE ctrl_output
       /
 
    ! DailyState:
-   DATA(varList(n), n=252 + 1, 252 + ncolumnsDataOutDailyState - 5)/ &
+   DATA(varListAll(n), n=252 + 1, 252 + ncolumnsDataOutDailyState - 5)/ &
       varAttr('HDD1_h', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
       varAttr('HDD2_c', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
       varAttr('HDD3_Tmean', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
@@ -376,13 +376,13 @@ MODULE ctrl_output
       varAttr('deltaLAI', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
       varAttr('LAIlumps', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
       varAttr('AlbSnow', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
-      varAttr('DensSnow_Paved', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
-      varAttr('DensSnow_Bldgs', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
-      varAttr('DensSnow_EveTr', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
-      varAttr('DensSnow_DecTr', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
-      varAttr('DensSnow_Grass', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
-      varAttr('DensSnow_BSoil', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
-      varAttr('DensSnow_Water', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
+      varAttr('DensSnow_Paved', 'to be added', f146, 'to be added', aL, 'DailyState', 0), &
+      varAttr('DensSnow_Bldgs', 'to be added', f146, 'to be added', aL, 'DailyState', 0), &
+      varAttr('DensSnow_EveTr', 'to be added', f146, 'to be added', aL, 'DailyState', 0), &
+      varAttr('DensSnow_DecTr', 'to be added', f146, 'to be added', aL, 'DailyState', 0), &
+      varAttr('DensSnow_Grass', 'to be added', f146, 'to be added', aL, 'DailyState', 0), &
+      varAttr('DensSnow_BSoil', 'to be added', f146, 'to be added', aL, 'DailyState', 0), &
+      varAttr('DensSnow_Water', 'to be added', f146, 'to be added', aL, 'DailyState', 0), &
       varAttr('a1', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
       varAttr('a2', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
       varAttr('a3', 'to be added', f104, 'to be added', aL, 'DailyState', 0) &
@@ -443,15 +443,15 @@ CONTAINS
       ! loop over all groups
       DO i = 1, SIZE(grpList), 1
          !PRINT*, 'i',i
-         xx = COUNT(varList%group == TRIM(grpList(i)), dim=1)
+         xx = COUNT(varListAll%group == TRIM(grpList(i)), dim=1)
          !  PRINT*, 'number of variables:',xx, 'in group: ',grpList(i)
          !  print*, 'all group names: ',varList%group
          ALLOCATE (varListX(5 + xx), stat=err)
          IF (err /= 0) PRINT *, "varListX: Allocation request denied"
          ! datetime
-         varListX(1:5) = varList(1:5)
+         varListX(1:5) = varListAll(1:5)
          ! variable
-         varListX(6:5 + xx) = PACK(varList, mask=(varList%group == TRIM(grpList(i))))
+         varListX(6:5 + xx) = PACK(varListAll, mask=(varListAll%group == TRIM(grpList(i))))
 
          IF (TRIM(varListX(SIZE(varListX))%group) /= 'DailyState') THEN
             ! all output arrays but DailyState
@@ -502,10 +502,10 @@ CONTAINS
    END SUBROUTINE SUEWS_Output
 
    ! output wrapper function for one group
-   SUBROUTINE SUEWS_Output_txt_grp(iv, irMax, iyr, varList, Gridiv, outLevel, outFreq_s)
+   SUBROUTINE SUEWS_Output_txt_grp(iv, irMax, iyr, varListX, Gridiv, outLevel, outFreq_s)
       IMPLICIT NONE
 
-      TYPE(varAttr), DIMENSION(:), INTENT(in)::varList
+      TYPE(varAttr), DIMENSION(:), INTENT(in)::varListX
       INTEGER, INTENT(in) :: iv, irMax, iyr, Gridiv, outLevel, outFreq_s
 
       INTEGER :: err
@@ -515,27 +515,27 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE::dataOutX_agg
 
       IF (.NOT. ALLOCATED(dataOutX)) THEN
-         ALLOCATE (dataOutX(irMax, SIZE(varList)), stat=err)
+         ALLOCATE (dataOutX(irMax, SIZE(varListX)), stat=err)
          IF (err /= 0) PRINT *, "dataOutX: Allocation request denied"
       ENDIF
 
       ! determine dataOutX array according to variable group
-      SELECT CASE (TRIM(varList(SIZE(varList))%group))
+      SELECT CASE (TRIM(varListX(SIZE(varListX))%group))
       CASE ('SUEWS') !default
-         dataOutX = dataOutSUEWS(1:irMax, 1:SIZE(varList), Gridiv)
+         dataOutX = dataOutSUEWS(1:irMax, 1:SIZE(varListX), Gridiv)
 
       CASE ('SOLWEIG') !SOLWEIG
          ! todo: inconsistent data structure
-         dataOutX = dataOutSOL(1:irMax, 1:SIZE(varList), Gridiv)
+         dataOutX = dataOutSOL(1:irMax, 1:SIZE(varListX), Gridiv)
 
       CASE ('BL') !BL
-         dataOutX = dataOutBL(1:irMax, 1:SIZE(varList), Gridiv)
+         dataOutX = dataOutBL(1:irMax, 1:SIZE(varListX), Gridiv)
 
       CASE ('snow')    !snow
-         dataOutX = dataOutSnow(1:irMax, 1:SIZE(varList), Gridiv)
+         dataOutX = dataOutSnow(1:irMax, 1:SIZE(varListX), Gridiv)
 
       CASE ('ESTM')    !ESTM
-         dataOutX = dataOutESTM(1:irMax, 1:SIZE(varList), Gridiv)
+         dataOutX = dataOutESTM(1:irMax, 1:SIZE(varListX), Gridiv)
 
       CASE ('DailyState')    !DailyState
          ! get correct day index
@@ -550,24 +550,24 @@ CONTAINS
          ENDIF
 
          IF (.NOT. ALLOCATED(dataOutX)) THEN
-            ALLOCATE (dataOutX(SIZE(id_seq), SIZE(varList)), stat=err)
+            ALLOCATE (dataOutX(SIZE(id_seq), SIZE(varListX)), stat=err)
             IF (err /= 0) PRINT *, "dataOutX: Allocation request denied"
          ENDIF
 
-         dataOutX = dataOutDailyState(id_seq, 1:SIZE(varList), Gridiv)
+         dataOutX = dataOutDailyState(id_seq, 1:SIZE(varListX), Gridiv)
          ! print*, id_seq
-         ! print*, dataOutDailyState(id_seq,1:SIZE(varList),Gridiv)
+         ! print*, dataOutDailyState(id_seq,1:SIZE(varListX),Gridiv)
          ! print*, 1/(nsh-nsh)
       END SELECT
 
       ! aggregation:
       ! aggregation is done for every group but 'DailyState'
-      IF (TRIM(varList(SIZE(varList))%group) /= 'DailyState') THEN
+      IF (TRIM(varListX(SIZE(varListX))%group) /= 'DailyState') THEN
 
-         CALL SUEWS_Output_Agg(dataOutX_agg, dataOutX, varList, irMax, outFreq_s)
+         CALL SUEWS_Output_Agg(dataOutX_agg, dataOutX, varListX, irMax, outFreq_s)
       ELSE
          IF (.NOT. ALLOCATED(dataOutX_agg)) THEN
-            ALLOCATE (dataOutX_agg(SIZE(dataOutX, dim=1), SIZE(varList)), stat=err)
+            ALLOCATE (dataOutX_agg(SIZE(dataOutX, dim=1), SIZE(varListX)), stat=err)
             IF (err /= 0) PRINT *, ": Allocation request denied"
          ENDIF
          dataOutX_agg = dataOutX
@@ -575,10 +575,10 @@ CONTAINS
 
       ! output:
       ! initialise file when processing first metblock
-      IF (iv == 1) CALL SUEWS_Output_Init(dataOutX_agg, varList, iyr, Gridiv, outLevel)
+      IF (iv == 1) CALL SUEWS_Output_Init(dataOutX_agg, varListX, iyr, Gridiv, outLevel)
 
       ! append the aggregated data to the specific txt file
-      CALL SUEWS_Write_txt(dataOutX_agg, varList, iyr, Gridiv, outLevel)
+      CALL SUEWS_Write_txt(dataOutX_agg, varListX, iyr, Gridiv, outLevel)
 
    END SUBROUTINE SUEWS_Output_txt_grp
 
@@ -591,8 +591,8 @@ CONTAINS
 
       TYPE(varAttr), DIMENSION(:), ALLOCATABLE::varListSel
       INTEGER :: xx, err, fn, i, nargs
-      CHARACTER(len=365) :: FileOut
-      CHARACTER(len=3) :: itext
+      CHARACTER(len=365) :: FileOutX
+      CHARACTER(len=3) :: itextX
       CHARACTER(len=6) :: args(5)
       CHARACTER(len=16*SIZE(varList)) :: FormatOut
       CHARACTER(len=16) :: formatX
@@ -600,13 +600,13 @@ CONTAINS
 
       ! select variables to output
       xx = COUNT((varList%level <= outLevel), dim=1)
-      WRITE (itext, '(i3)') xx
+      WRITE (itextX, '(i3)') xx
       ALLOCATE (varListSel(xx), stat=err)
       IF (err /= 0) PRINT *, "varListSel: Allocation request denied"
       varListSel = PACK(varList, mask=(varList%level <= outLevel))
 
       ! generate file name
-      CALL filename_gen(dataOutX, varList, iyr, Gridiv, FileOut)
+      CALL filename_gen(dataOutX, varList, iyr, Gridiv, FileOutX)
 
       ! store right-aligned headers
       ALLOCATE (headerOut(xx), stat=err)
@@ -628,8 +628,8 @@ CONTAINS
 
       ! create file
       fn = 9
-      OPEN (fn, file=TRIM(ADJUSTL(FileOut)), status='unknown')
-      ! PRINT*, 'FileOut in SUEWS_Output_Init: ',FileOut
+      OPEN (fn, file=TRIM(ADJUSTL(FileOutX)), status='unknown')
+      ! PRINT*, 'FileOutX in SUEWS_Output_Init: ',FileOutX
 
       ! write out headers
       WRITE (fn, FormatOut) headerOut
@@ -655,13 +655,13 @@ CONTAINS
 
       TYPE(varAttr), DIMENSION(:), ALLOCATABLE::varListSel
       INTEGER :: xx, err, fn, i
-      CHARACTER(len=365) :: FileOut
+      CHARACTER(len=365) :: FileOutX
       CHARACTER(len=50*300) :: str_cat
       CHARACTER(len=50) :: str_x = ''
-      CHARACTER(len=3) :: itext
+      CHARACTER(len=3) :: itextX
 
       ! get filename
-      CALL filename_gen(dataOutX, varList, iyr, Gridiv, FileOut, 1)
+      CALL filename_gen(dataOutX, varList, iyr, Gridiv, FileOutX, 1)
 
       !select variables to output
       xx = COUNT((varList%level <= outLevel), dim=1)
@@ -671,17 +671,17 @@ CONTAINS
 
       ! create file
       fn = 9
-      OPEN (fn, file=TRIM(ADJUSTL(FileOut)), status='unknown')
+      OPEN (fn, file=TRIM(ADJUSTL(FileOutX)), status='unknown')
 
       ! write out format strings
       ! column number:
       str_cat = ''
       DO i = 1, SIZE(varListSel)
-         WRITE (itext, '(i3)') i
+         WRITE (itextX, '(i3)') i
          IF (i == 1) THEN
-            str_cat = TRIM(ADJUSTL(itext))
+            str_cat = TRIM(ADJUSTL(itextX))
          ELSE
-            str_cat = TRIM(str_cat)//';'//ADJUSTL(itext)
+            str_cat = TRIM(str_cat)//';'//ADJUSTL(itextX)
          ENDIF
       END DO
       WRITE (fn, '(a)') TRIM(str_cat)
@@ -811,7 +811,7 @@ CONTAINS
 
       REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE::dataOutSel
       TYPE(varAttr), DIMENSION(:), ALLOCATABLE::varListSel
-      CHARACTER(len=365) :: FileOut
+      CHARACTER(len=365) :: FileOutX
       INTEGER :: fn, i, xx, err
       INTEGER :: sizeVarListSel, sizedataOutX
       CHARACTER(len=12*SIZE(varList)) :: FormatOut
@@ -855,17 +855,17 @@ CONTAINS
       FormatOut = '('//TRIM(ADJUSTL(FormatOut))//')'
 
       ! get filename
-      CALL filename_gen(dataOutSel, varListSel, iyr, Gridiv, FileOut)
-      ! PRINT*, 'FileOut in SUEWS_Write_txt: ',FileOut
+      CALL filename_gen(dataOutSel, varListSel, iyr, Gridiv, FileOutX)
+      ! PRINT*, 'FileOutX in SUEWS_Write_txt: ',FileOutX
 
-      ! test if FileOut has been initialised
-      ! IF ( .NOT. initQ_file(FileOut) ) THEN
+      ! test if FileOutX has been initialised
+      ! IF ( .NOT. initQ_file(FileOutX) ) THEN
       !    CALL SUEWS_Output_Init(dataOutSel,varListSel,Gridiv,outLevel)
       ! END IF
 
       ! write out data
       fn = 50
-      OPEN (fn, file=TRIM(fileout), position='append')!,err=112)
+      OPEN (fn, file=TRIM(FileOutX), position='append')!,err=112)
       DO i = 1, sizedataOutX
          ! PRINT*, 'Writting',i
          ! PRINT*, 'FormatOut',FormatOut
@@ -884,7 +884,7 @@ CONTAINS
 
    END SUBROUTINE SUEWS_Write_txt
 
-   SUBROUTINE filename_gen(dataOutX, varList, iyr, Gridiv, FileOut, opt_fmt)
+   SUBROUTINE filename_gen(dataOutX, varList, iyr, Gridiv, FileOutX, opt_fmt)
       USE datetime_module
 
       IMPLICIT NONE
@@ -893,7 +893,7 @@ CONTAINS
       INTEGER, INTENT(in) :: iyr ! to determine year
       INTEGER, INTENT(in) :: Gridiv ! to determine grid name as in SiteSelect
       INTEGER, INTENT(in), OPTIONAL :: opt_fmt ! to determine if a format file
-      CHARACTER(len=365), INTENT(out) :: FileOut ! the output file name
+      CHARACTER(len=365), INTENT(out) :: FileOutX ! the output file name
 
       CHARACTER(len=20):: str_out_min, str_grid, &
                           str_date, str_year, str_DOY, str_grp, str_sfx
@@ -965,8 +965,8 @@ CONTAINS
       IF (ncMode == 1) str_sfx = '.nc'
 #endif
 
-      ! filename: fileout
-      FileOut = TRIM(FileOutputPath)// &
+      ! filename: FileOutX
+      FileOutX = TRIM(FileOutputPath)// &
                 TRIM(FileCode)// &
                 TRIM(ADJUSTL(str_grid))// &
                 TRIM(ADJUSTL(str_date))// &
@@ -976,7 +976,7 @@ CONTAINS
 
       ! filename: format
       IF (val_fmt == 1) THEN
-         FileOut = TRIM(FileOutputPath)// &
+         FileOutX = TRIM(FileOutputPath)// &
                    TRIM(FileCode)// &
                    TRIM(ADJUSTL(str_grp))// &
                    '_OutputFormat.txt'
@@ -1164,286 +1164,286 @@ CONTAINS
       ENDIF
    END SUBROUTINE SUEWS_Output_nc_grp
 
-   SUBROUTINE SUEWS_Write_nc(dataOutX, varList, outLevel)
-      ! generic subroutine to write out data in netCDF format
-      USE netCDF
+   ! SUBROUTINE SUEWS_Write_nc(dataOutX, varList, outLevel)
+   !    ! generic subroutine to write out data in netCDF format
+   !    USE netCDF
 
-      IMPLICIT NONE
-      REAL(KIND(1d0)), DIMENSION(:, :, :), INTENT(in)::dataOutX
-      TYPE(varAttr), DIMENSION(:), INTENT(in)::varList
-      INTEGER, INTENT(in) :: outLevel
+   !    IMPLICIT NONE
+   !    REAL(KIND(1d0)), DIMENSION(:, :, :), INTENT(in)::dataOutX
+   !    TYPE(varAttr), DIMENSION(:), INTENT(in)::varList
+   !    INTEGER, INTENT(in) :: outLevel
 
-      CHARACTER(len=365):: fileOut
-      REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE::dataOutSel
-      TYPE(varAttr), DIMENSION(:), ALLOCATABLE::varListSel
+   !    CHARACTER(len=365):: fileOut
+   !    REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE::dataOutSel
+   !    TYPE(varAttr), DIMENSION(:), ALLOCATABLE::varListSel
 
-      ! We are writing 3D data, {time, y, x}
-      INTEGER, PARAMETER :: NDIMS = 3, iVarStart = 6
-      INTEGER :: NX, NY, nTime, nVar, err
+   !    ! We are writing 3D data, {time, y, x}
+   !    INTEGER, PARAMETER :: NDIMS = 3, iVarStart = 6
+   !    INTEGER :: NX, NY, nTime, nVar, err
 
-      ! When we create netCDF files, variables and dimensions, we get back
-      ! an ID for each one.
-      INTEGER :: ncID, varID, dimids(NDIMS), varIDGrid
-      INTEGER :: x_dimid, y_dimid, time_dimid, iVar, varIDx, varIDy, varIDt, varIDCRS
-      REAL(KIND(1d0)), ALLOCATABLE :: varOut(:, :, :), &
-                                      varX(:, :), varY(:, :), &
-                                      lat(:, :), lon(:, :), &
-                                      varSeq0(:), varSeq(:), &
-                                      xTime(:), xGridID(:, :)
+   !    ! When we create netCDF files, variables and dimensions, we get back
+   !    ! an ID for each one.
+   !    INTEGER :: ncID, varID, dimids(NDIMS), varIDGrid
+   !    INTEGER :: x_dimid, y_dimid, time_dimid, iVar, varIDx, varIDy, varIDt, varIDCRS
+   !    REAL(KIND(1d0)), ALLOCATABLE :: varOut(:, :, :), &
+   !                                    varX(:, :), varY(:, :), &
+   !                                    lat(:, :), lon(:, :), &
+   !                                    varSeq0(:), varSeq(:), &
+   !                                    xTime(:), xGridID(:, :)
 
-      INTEGER :: idVar(iVarStart:SIZE(varList))
-      CHARACTER(len=50):: header_str, longNm_str, unit_str
-      CHARACTER(len=4)  :: yrStr2
-      CHARACTER(len=40) :: startStr2
-      REAL(KIND(1d0)) :: minLat, maxLat, dLat, minLon, maxLon, dLon
-      REAL(KIND(1d0)), DIMENSION(1:6) :: geoTrans
-      CHARACTER(len=80) :: strGeoTrans
+   !    INTEGER :: idVar(iVarStart:SIZE(varList))
+   !    CHARACTER(len=50):: header_str, longNm_str, unit_str
+   !    CHARACTER(len=4)  :: yrStr2
+   !    CHARACTER(len=40) :: startStr2
+   !    REAL(KIND(1d0)) :: minLat, maxLat, dLat, minLon, maxLon, dLon
+   !    REAL(KIND(1d0)), DIMENSION(1:6) :: geoTrans
+   !    CHARACTER(len=80) :: strGeoTrans
 
-      ! determine number of times
-      nTime = SIZE(dataOutX, dim=1)
+   !    ! determine number of times
+   !    nTime = SIZE(dataOutX, dim=1)
 
-      !select variables to output
-      nVar = COUNT((varList%level <= outLevel), dim=1)
-      ALLOCATE (varListSel(nVar), stat=err)
-      IF (err /= 0) PRINT *, "varListSel: Allocation request denied"
-      varListSel = PACK(varList, mask=(varList%level <= outLevel))
+   !    !select variables to output
+   !    nVar = COUNT((varList%level <= outLevel), dim=1)
+   !    ALLOCATE (varListSel(nVar), stat=err)
+   !    IF (err /= 0) PRINT *, "varListSel: Allocation request denied"
+   !    varListSel = PACK(varList, mask=(varList%level <= outLevel))
 
-      ! copy data accordingly
-      ALLOCATE (dataOutSel(nTime, nVar, NumberOfGrids), stat=err)
-      IF (err /= 0) PRINT *, "dataOutSel: Allocation request denied"
-      dataOutSel = dataOutX(:, PACK((/(i, i=1, SIZE(varList))/), varList%level <= outLevel), :)
+   !    ! copy data accordingly
+   !    ALLOCATE (dataOutSel(nTime, nVar, NumberOfGrids), stat=err)
+   !    IF (err /= 0) PRINT *, "dataOutSel: Allocation request denied"
+   !    dataOutSel = dataOutX(:, PACK((/(i, i=1, SIZE(varList))/), varList%level <= outLevel), :)
 
-      ! determine filename
-      CALL filename_gen(dataOutSel(:, :, 1), varListSel, 1, FileOut)
-      ! PRINT*, 'writing file:',TRIM(fileOut)
+   !    ! determine filename
+   !    CALL filename_gen(dataOutSel(:, :, 1), varListSel, 1, FileOut)
+   !    ! PRINT*, 'writing file:',TRIM(fileOut)
 
-      ! set year string
-      WRITE (yrStr2, '(i4)') INT(dataOutX(1, 1, 1))
-      ! get start for later time unit creation
-      startStr2 = TRIM(yrStr2)//'-01-01 00:00:00'
+   !    ! set year string
+   !    WRITE (yrStr2, '(i4)') INT(dataOutX(1, 1, 1))
+   !    ! get start for later time unit creation
+   !    startStr2 = TRIM(yrStr2)//'-01-01 00:00:00'
 
-      ! define the dimension of spatial array/frame in the output
-      nX = nCol
-      nY = nRow
+   !    ! define the dimension of spatial array/frame in the output
+   !    nX = nCol
+   !    nY = nRow
 
-      ALLOCATE (varSeq0(nX*nY))
-      ALLOCATE (varSeq(nX*nY))
-      ALLOCATE (xGridID(nX, nY))
-      ALLOCATE (lon(nX, nY))
-      ALLOCATE (lat(nX, nY))
-      ALLOCATE (varY(nX, nY))
-      ALLOCATE (varX(nX, nY))
-      ALLOCATE (xTime(nTime))
+   !    ALLOCATE (varSeq0(nX*nY))
+   !    ALLOCATE (varSeq(nX*nY))
+   !    ALLOCATE (xGridID(nX, nY))
+   !    ALLOCATE (lon(nX, nY))
+   !    ALLOCATE (lat(nX, nY))
+   !    ALLOCATE (varY(nX, nY))
+   !    ALLOCATE (varX(nX, nY))
+   !    ALLOCATE (xTime(nTime))
 
-      ! GridID:
-      varSeq = SurfaceChar(1:nX*nY, 1)
-      ! CALL sortSeqReal(varSeq0,varSeq,nY,nX)
-      xGridID = RESHAPE(varSeq, (/nX, nY/), order=(/1, 2/))
-      ! PRINT*, 'before flipping:',lat(1:2,1)
-      xGridID = xGridID(:, nY:1:-1)
+   !    ! GridID:
+   !    varSeq = SurfaceChar(1:nX*nY, 1)
+   !    ! CALL sortSeqReal(varSeq0,varSeq,nY,nX)
+   !    xGridID = RESHAPE(varSeq, (/nX, nY/), order=(/1, 2/))
+   !    ! PRINT*, 'before flipping:',lat(1:2,1)
+   !    xGridID = xGridID(:, nY:1:-1)
 
-      ! latitude:
-      varSeq = SurfaceChar(1:nX*nY, 5)
-      ! CALL sortSeqReal(varSeq0,varSeq,nY,nX)
-      lat = RESHAPE(varSeq, (/nX, nY/), order=(/1, 2/))
-      ! PRINT*, 'before flipping:',lat(1:2,1)
-      lat = lat(:, nY:1:-1)
-      ! PRINT*, 'after flipping:',lat(1:2,1)
+   !    ! latitude:
+   !    varSeq = SurfaceChar(1:nX*nY, 5)
+   !    ! CALL sortSeqReal(varSeq0,varSeq,nY,nX)
+   !    lat = RESHAPE(varSeq, (/nX, nY/), order=(/1, 2/))
+   !    ! PRINT*, 'before flipping:',lat(1:2,1)
+   !    lat = lat(:, nY:1:-1)
+   !    ! PRINT*, 'after flipping:',lat(1:2,1)
 
-      ! longitude:
-      varSeq = SurfaceChar(1:nX*nY, 6)
-      ! CALL sortSeqReal(varSeq0,varSeq,nY,nX)
-      lon = RESHAPE(varSeq, (/nX, nY/), order=(/1, 2/))
-      lon = lon(:, nY:1:-1)
+   !    ! longitude:
+   !    varSeq = SurfaceChar(1:nX*nY, 6)
+   !    ! CALL sortSeqReal(varSeq0,varSeq,nY,nX)
+   !    lon = RESHAPE(varSeq, (/nX, nY/), order=(/1, 2/))
+   !    lon = lon(:, nY:1:-1)
 
-      ! pass values to coordinate variables
-      varY = lat
-      varX = lon
+   !    ! pass values to coordinate variables
+   !    varY = lat
+   !    varX = lon
 
-      ! calculate GeoTransform array as needed by GDAL
-      ! ref: http://www.perrygeo.com/python-affine-transforms.html
-      ! the values below are different from the above ref,
-      ! as the layout of SUEWS output is different from the schematic shown there
-      ! SUEWS output is arranged northward down the page
-      ! if data are formatted as a normal matrix
-      minLat = lat(1, 1)               ! the lower-left pixel
-      maxLat = lat(1, NY)              ! the upper-left pixel
-      IF (nY > 1) THEN
-         dLat = (maxLat - minLat)/(nY - 1) ! height of a pixel
-      ELSE
-         dLat = 1
-      END IF
+   !    ! calculate GeoTransform array as needed by GDAL
+   !    ! ref: http://www.perrygeo.com/python-affine-transforms.html
+   !    ! the values below are different from the above ref,
+   !    ! as the layout of SUEWS output is different from the schematic shown there
+   !    ! SUEWS output is arranged northward down the page
+   !    ! if data are formatted as a normal matrix
+   !    minLat = lat(1, 1)               ! the lower-left pixel
+   !    maxLat = lat(1, NY)              ! the upper-left pixel
+   !    IF (nY > 1) THEN
+   !       dLat = (maxLat - minLat)/(nY - 1) ! height of a pixel
+   !    ELSE
+   !       dLat = 1
+   !    END IF
 
-      ! PRINT*, 'lat:',minLat,maxLat,dLat
-      minLon = lon(1, 1)              ! the lower-left pixel
-      maxLon = lon(NX, 1)             ! the lower-right pixel
-      IF (nY > 1) THEN
-         dLon = (maxLon - minLon)/(nX - 1) ! width of a pixel
-      ELSE
-         dLon = 1
-      END IF
+   !    ! PRINT*, 'lat:',minLat,maxLat,dLat
+   !    minLon = lon(1, 1)              ! the lower-left pixel
+   !    maxLon = lon(NX, 1)             ! the lower-right pixel
+   !    IF (nY > 1) THEN
+   !       dLon = (maxLon - minLon)/(nX - 1) ! width of a pixel
+   !    ELSE
+   !       dLon = 1
+   !    END IF
 
-      ! PRINT*, 'lon:',minLon,maxLon,dLon
-      geoTrans(1) = minLon - dLon/2          ! x-coordinate of the lower-left corner of the lower-left pixel
-      geoTrans(2) = dLon                   ! width of a pixel
-      geoTrans(3) = 0.                     ! row rotation (typically zero)
-      geoTrans(4) = minLat - dLat/2          ! y-coordinate of the of the lower-left corner of the lower-left pixel
-      geoTrans(5) = 0.                     ! column rotation (typically zero)
-      geoTrans(6) = dLat                   ! height of a pixel (typically negative, but here positive)
-      ! write GeoTransform to strGeoTrans
-      WRITE (strGeoTrans, '(6(f12.8,1x))') geoTrans
+   !    ! PRINT*, 'lon:',minLon,maxLon,dLon
+   !    geoTrans(1) = minLon - dLon/2          ! x-coordinate of the lower-left corner of the lower-left pixel
+   !    geoTrans(2) = dLon                   ! width of a pixel
+   !    geoTrans(3) = 0.                     ! row rotation (typically zero)
+   !    geoTrans(4) = minLat - dLat/2          ! y-coordinate of the of the lower-left corner of the lower-left pixel
+   !    geoTrans(5) = 0.                     ! column rotation (typically zero)
+   !    geoTrans(6) = dLat                   ! height of a pixel (typically negative, but here positive)
+   !    ! write GeoTransform to strGeoTrans
+   !    WRITE (strGeoTrans, '(6(f12.8,1x))') geoTrans
 
-      ! Create the netCDF file. The nf90_clobber parameter tells netCDF to
-      ! overwrite this file, if it already exists.
-      CALL check(nf90_create(TRIM(fileOut), NF90_CLOBBER, ncID))
+   !    ! Create the netCDF file. The nf90_clobber parameter tells netCDF to
+   !    ! overwrite this file, if it already exists.
+   !    CALL check(nf90_create(TRIM(fileOut), NF90_CLOBBER, ncID))
 
-      ! put global attributes
-      CALL check(nf90_put_att(ncID, NF90_GLOBAL, 'Conventions', 'CF1.6'))
-      CALL check(nf90_put_att(ncID, NF90_GLOBAL, 'title', 'SUEWS output'))
-      CALL check(nf90_put_att(ncID, NF90_GLOBAL, 'source', 'Micromet Group, University of Reading'))
-      CALL check(nf90_put_att(ncID, NF90_GLOBAL, 'references', 'http://urban-climate.net/umep/SUEWS'))
+   !    ! put global attributes
+   !    CALL check(nf90_put_att(ncID, NF90_GLOBAL, 'Conventions', 'CF1.6'))
+   !    CALL check(nf90_put_att(ncID, NF90_GLOBAL, 'title', 'SUEWS output'))
+   !    CALL check(nf90_put_att(ncID, NF90_GLOBAL, 'source', 'Micromet Group, University of Reading'))
+   !    CALL check(nf90_put_att(ncID, NF90_GLOBAL, 'references', 'http://urban-climate.net/umep/SUEWS'))
 
-      ! Define the dimensions. NetCDF will hand back an ID for each.
-      ! nY = ncolumnsDataOutSUEWS-4
-      ! nx = NumberOfGrids
-      CALL check(nf90_def_dim(ncID, "time", NF90_UNLIMITED, time_dimid))
-      CALL check(nf90_def_dim(ncID, "west_east", NX, x_dimid))
-      CALL check(nf90_def_dim(ncID, "south_north", NY, y_dimid))
-      ! PRINT*, 'good define dim'
+   !    ! Define the dimensions. NetCDF will hand back an ID for each.
+   !    ! nY = ncolumnsDataOutSUEWS-4
+   !    ! nx = NumberOfGrids
+   !    CALL check(nf90_def_dim(ncID, "time", NF90_UNLIMITED, time_dimid))
+   !    CALL check(nf90_def_dim(ncID, "west_east", NX, x_dimid))
+   !    CALL check(nf90_def_dim(ncID, "south_north", NY, y_dimid))
+   !    ! PRINT*, 'good define dim'
 
-      ! The dimids array is used to pass the IDs of the dimensions of
-      ! the variables. Note that in fortran arrays are stored in
-      ! column-major format.
-      dimids = (/x_dimid, y_dimid, time_dimid/)
+   !    ! The dimids array is used to pass the IDs of the dimensions of
+   !    ! the variables. Note that in fortran arrays are stored in
+   !    ! column-major format.
+   !    dimids = (/x_dimid, y_dimid, time_dimid/)
 
-      ! write out each variable
-      ALLOCATE (varOut(nX, nY, nTime))
+   !    ! write out each variable
+   !    ALLOCATE (varOut(nX, nY, nTime))
 
-      ! define all variables
-      ! define time variable:
-      CALL check(nf90_def_var(ncID, 'time', NF90_REAL, time_dimid, varIDt))
-      CALL check(nf90_put_att(ncID, varIDt, 'units', 'minutes since '//startStr2))
-      CALL check(nf90_put_att(ncID, varIDt, 'long_name', 'time'))
-      CALL check(nf90_put_att(ncID, varIDt, 'standard_name', 'time'))
-      CALL check(nf90_put_att(ncID, varIDt, 'calendar', 'gregorian'))
-      CALL check(nf90_put_att(ncID, varIDt, 'axis', 'T'))
+   !    ! define all variables
+   !    ! define time variable:
+   !    CALL check(nf90_def_var(ncID, 'time', NF90_REAL, time_dimid, varIDt))
+   !    CALL check(nf90_put_att(ncID, varIDt, 'units', 'minutes since '//startStr2))
+   !    CALL check(nf90_put_att(ncID, varIDt, 'long_name', 'time'))
+   !    CALL check(nf90_put_att(ncID, varIDt, 'standard_name', 'time'))
+   !    CALL check(nf90_put_att(ncID, varIDt, 'calendar', 'gregorian'))
+   !    CALL check(nf90_put_att(ncID, varIDt, 'axis', 'T'))
 
-      ! define coordinate variables:
-      CALL check(nf90_def_var(ncID, 'lon', NF90_REAL, (/x_dimid, y_dimid/), varIDx))
-      CALL check(nf90_put_att(ncID, varIDx, 'units', 'degree_east'))
-      CALL check(nf90_put_att(ncID, varIDx, 'long_name', 'longitude'))
-      CALL check(nf90_put_att(ncID, varIDx, 'standard_name', 'longitude'))
-      CALL check(nf90_put_att(ncID, varIDx, 'axis', 'X'))
+   !    ! define coordinate variables:
+   !    CALL check(nf90_def_var(ncID, 'lon', NF90_REAL, (/x_dimid, y_dimid/), varIDx))
+   !    CALL check(nf90_put_att(ncID, varIDx, 'units', 'degree_east'))
+   !    CALL check(nf90_put_att(ncID, varIDx, 'long_name', 'longitude'))
+   !    CALL check(nf90_put_att(ncID, varIDx, 'standard_name', 'longitude'))
+   !    CALL check(nf90_put_att(ncID, varIDx, 'axis', 'X'))
 
-      CALL check(nf90_def_var(ncID, 'lat', NF90_REAL, (/x_dimid, y_dimid/), varIDy))
-      CALL check(nf90_put_att(ncID, varIDy, 'units', 'degree_north'))
-      CALL check(nf90_put_att(ncID, varIDy, 'long_name', 'latitude'))
-      CALL check(nf90_put_att(ncID, varIDy, 'standard_name', 'latitude'))
-      CALL check(nf90_put_att(ncID, varIDy, 'axis', 'Y'))
+   !    CALL check(nf90_def_var(ncID, 'lat', NF90_REAL, (/x_dimid, y_dimid/), varIDy))
+   !    CALL check(nf90_put_att(ncID, varIDy, 'units', 'degree_north'))
+   !    CALL check(nf90_put_att(ncID, varIDy, 'long_name', 'latitude'))
+   !    CALL check(nf90_put_att(ncID, varIDy, 'standard_name', 'latitude'))
+   !    CALL check(nf90_put_att(ncID, varIDy, 'axis', 'Y'))
 
-      ! define coordinate referencing system:
-      CALL check(nf90_def_var(ncID, 'crsWGS84', NF90_INT, varIDCRS))
-      CALL check(nf90_put_att(ncID, varIDCRS, 'grid_mapping_name', 'latitude_longitude'))
-      CALL check(nf90_put_att(ncID, varIDCRS, 'long_name', 'CRS definition'))
-      CALL check(nf90_put_att(ncID, varIDCRS, 'longitude_of_prime_meridian', '0.0'))
-      CALL check(nf90_put_att(ncID, varIDCRS, 'semi_major_axis', '6378137.0'))
-      CALL check(nf90_put_att(ncID, varIDCRS, 'inverse_flattening', '298.257223563'))
-      CALL check(nf90_put_att(ncID, varIDCRS, 'epsg_code', 'EPSG:4326'))
-      CALL check(nf90_put_att(ncID, varIDCRS, 'GeoTransform', TRIM(strGeoTrans)))
-      CALL check(nf90_put_att(ncID, varIDCRS, 'spatial_ref',&
-           &'GEOGCS["WGS 84",&
-           &    DATUM["WGS_1984",&
-           &        SPHEROID["WGS 84",6378137,298.257223563,&
-           &            AUTHORITY["EPSG","7030"]],&
-           &        AUTHORITY["EPSG","6326"]],&
-           &    PRIMEM["Greenwich",0],&
-           &    UNIT["degree",0.0174532925199433],&
-           &    AUTHORITY["EPSG","4326"]]' &
-           ))
+   !    ! define coordinate referencing system:
+   !    CALL check(nf90_def_var(ncID, 'crsWGS84', NF90_INT, varIDCRS))
+   !    CALL check(nf90_put_att(ncID, varIDCRS, 'grid_mapping_name', 'latitude_longitude'))
+   !    CALL check(nf90_put_att(ncID, varIDCRS, 'long_name', 'CRS definition'))
+   !    CALL check(nf90_put_att(ncID, varIDCRS, 'longitude_of_prime_meridian', '0.0'))
+   !    CALL check(nf90_put_att(ncID, varIDCRS, 'semi_major_axis', '6378137.0'))
+   !    CALL check(nf90_put_att(ncID, varIDCRS, 'inverse_flattening', '298.257223563'))
+   !    CALL check(nf90_put_att(ncID, varIDCRS, 'epsg_code', 'EPSG:4326'))
+   !    CALL check(nf90_put_att(ncID, varIDCRS, 'GeoTransform', TRIM(strGeoTrans)))
+   !    CALL check(nf90_put_att(ncID, varIDCRS, 'spatial_ref',&
+   !         &'GEOGCS["WGS 84",&
+   !         &    DATUM["WGS_1984",&
+   !         &        SPHEROID["WGS 84",6378137,298.257223563,&
+   !         &            AUTHORITY["EPSG","7030"]],&
+   !         &        AUTHORITY["EPSG","6326"]],&
+   !         &    PRIMEM["Greenwich",0],&
+   !         &    UNIT["degree",0.0174532925199433],&
+   !         &    AUTHORITY["EPSG","4326"]]' &
+   !         ))
 
-      ! define grid_ID:
-      CALL check(nf90_def_var(ncID, 'grid_ID', NF90_INT, (/x_dimid, y_dimid/), varIDGrid))
-      CALL check(nf90_put_att(ncID, varIDGrid, 'coordinates', 'lon lat'))
-      CALL check(nf90_put_att(ncID, varIDGrid, 'long_name', 'Grid ID as in SiteSelect'))
-      CALL check(nf90_put_att(ncID, varIDGrid, 'grid_mapping', 'crsWGS84'))
-      ! varIDGrid=varID
+   !    ! define grid_ID:
+   !    CALL check(nf90_def_var(ncID, 'grid_ID', NF90_INT, (/x_dimid, y_dimid/), varIDGrid))
+   !    CALL check(nf90_put_att(ncID, varIDGrid, 'coordinates', 'lon lat'))
+   !    CALL check(nf90_put_att(ncID, varIDGrid, 'long_name', 'Grid ID as in SiteSelect'))
+   !    CALL check(nf90_put_att(ncID, varIDGrid, 'grid_mapping', 'crsWGS84'))
+   !    ! varIDGrid=varID
 
-      ! define other 3D variables:
-      DO iVar = iVarStart, nVar
-         ! define variable name
-         header_str = varListSel(iVar)%header
-         unit_str = varListSel(iVar)%unit
-         longNm_str = varListSel(iVar)%longNm
+   !    ! define other 3D variables:
+   !    DO iVar = iVarStart, nVar
+   !       ! define variable name
+   !       header_str = varListSel(iVar)%header
+   !       unit_str = varListSel(iVar)%unit
+   !       longNm_str = varListSel(iVar)%longNm
 
-         ! Define the variable. The type of the variable in this case is
-         ! NF90_REAL.
+   !       ! Define the variable. The type of the variable in this case is
+   !       ! NF90_REAL.
 
-         CALL check(nf90_def_var(ncID, TRIM(ADJUSTL(header_str)), NF90_REAL, dimids, varID))
+   !       CALL check(nf90_def_var(ncID, TRIM(ADJUSTL(header_str)), NF90_REAL, dimids, varID))
 
-         CALL check(nf90_put_att(ncID, varID, 'coordinates', 'lon lat'))
+   !       CALL check(nf90_put_att(ncID, varID, 'coordinates', 'lon lat'))
 
-         CALL check(nf90_put_att(ncID, varID, 'units', TRIM(ADJUSTL(unit_str))))
+   !       CALL check(nf90_put_att(ncID, varID, 'units', TRIM(ADJUSTL(unit_str))))
 
-         CALL check(nf90_put_att(ncID, varID, 'long_name', TRIM(ADJUSTL(longNm_str))))
+   !       CALL check(nf90_put_att(ncID, varID, 'long_name', TRIM(ADJUSTL(longNm_str))))
 
-         CALL check(nf90_put_att(ncID, varID, 'grid_mapping', 'crsWGS84'))
+   !       CALL check(nf90_put_att(ncID, varID, 'grid_mapping', 'crsWGS84'))
 
-         idVar(iVar) = varID
-      END DO
-      CALL check(nf90_enddef(ncID))
-      ! End define mode. This tells netCDF we are done defining metadata.
+   !       idVar(iVar) = varID
+   !    END DO
+   !    CALL check(nf90_enddef(ncID))
+   !    ! End define mode. This tells netCDF we are done defining metadata.
 
-      ! put all variable values into netCDF datasets
-      ! put time variable in minute:
-      xTime = (dataOutSel(1:nTime, 2, 1) - 1)*24*60 + dataOutSel(1:nTime, 3, 1)*60 + dataOutSel(1:nTime, 4, 1)
-      CALL check(nf90_put_var(ncID, varIDt, xTime))
+   !    ! put all variable values into netCDF datasets
+   !    ! put time variable in minute:
+   !    xTime = (dataOutSel(1:nTime, 2, 1) - 1)*24*60 + dataOutSel(1:nTime, 3, 1)*60 + dataOutSel(1:nTime, 4, 1)
+   !    CALL check(nf90_put_var(ncID, varIDt, xTime))
 
-      ! put coordinate variables:
-      CALL check(nf90_put_var(ncID, varIDx, varX))
-      CALL check(nf90_put_var(ncID, varIDy, varY))
+   !    ! put coordinate variables:
+   !    CALL check(nf90_put_var(ncID, varIDx, varX))
+   !    CALL check(nf90_put_var(ncID, varIDy, varY))
 
-      ! put CRS variable:
-      CALL check(nf90_put_var(ncID, varIDCRS, 9999))
+   !    ! put CRS variable:
+   !    CALL check(nf90_put_var(ncID, varIDCRS, 9999))
 
-      CALL check(NF90_SYNC(ncID))
-      ! PRINT*, 'good put var'
+   !    CALL check(NF90_SYNC(ncID))
+   !    ! PRINT*, 'good put var'
 
-      ! put grid_ID:
-      CALL check(nf90_put_var(ncID, varIDGrid, xGridID))
-      ! PRINT*, 'good put varIDGrid',varIDGrid
+   !    ! put grid_ID:
+   !    CALL check(nf90_put_var(ncID, varIDGrid, xGridID))
+   !    ! PRINT*, 'good put varIDGrid',varIDGrid
 
-      CALL check(NF90_SYNC(ncID))
+   !    CALL check(NF90_SYNC(ncID))
 
-      ! then other 3D variables
-      DO iVar = iVarStart, nVar
-         ! reshape dataOutX to be aligned in checker board form
-         varOut = RESHAPE(dataOutSel(1:nTime, iVar, :), (/nX, nY, nTime/), order=(/3, 1, 2/))
-         varOut = varOut(:, nY:1:-1, :)
-         !  get the variable id
-         varID = idVar(iVar)
+   !    ! then other 3D variables
+   !    DO iVar = iVarStart, nVar
+   !       ! reshape dataOutX to be aligned in checker board form
+   !       varOut = RESHAPE(dataOutSel(1:nTime, iVar, :), (/nX, nY, nTime/), order=(/3, 1, 2/))
+   !       varOut = varOut(:, nY:1:-1, :)
+   !       !  get the variable id
+   !       varID = idVar(iVar)
 
-         CALL check(nf90_put_var(ncID, varID, varOut))
+   !       CALL check(nf90_put_var(ncID, varID, varOut))
 
-         CALL check(NF90_SYNC(ncID))
-      END DO
+   !       CALL check(NF90_SYNC(ncID))
+   !    END DO
 
-      IF (ALLOCATED(varOut)) DEALLOCATE (varOut)
-      IF (ALLOCATED(varSeq0)) DEALLOCATE (varSeq0)
-      IF (ALLOCATED(varSeq)) DEALLOCATE (varSeq)
-      IF (ALLOCATED(xGridID)) DEALLOCATE (xGridID)
-      IF (ALLOCATED(lon)) DEALLOCATE (lon)
-      IF (ALLOCATED(lat)) DEALLOCATE (lat)
-      IF (ALLOCATED(varY)) DEALLOCATE (varY)
-      IF (ALLOCATED(varX)) DEALLOCATE (varX)
-      IF (ALLOCATED(xTime)) DEALLOCATE (xTime)
+   !    IF (ALLOCATED(varOut)) DEALLOCATE (varOut)
+   !    IF (ALLOCATED(varSeq0)) DEALLOCATE (varSeq0)
+   !    IF (ALLOCATED(varSeq)) DEALLOCATE (varSeq)
+   !    IF (ALLOCATED(xGridID)) DEALLOCATE (xGridID)
+   !    IF (ALLOCATED(lon)) DEALLOCATE (lon)
+   !    IF (ALLOCATED(lat)) DEALLOCATE (lat)
+   !    IF (ALLOCATED(varY)) DEALLOCATE (varY)
+   !    IF (ALLOCATED(varX)) DEALLOCATE (varX)
+   !    IF (ALLOCATED(xTime)) DEALLOCATE (xTime)
 
-      ! Close the file. This frees up any internal netCDF resources
-      ! associated with the file, and flushes any buffers.
-      CALL check(nf90_close(ncID))
+   !    ! Close the file. This frees up any internal netCDF resources
+   !    ! associated with the file, and flushes any buffers.
+   !    CALL check(nf90_close(ncID))
 
-      ! PRINT*, "*** SUCCESS writing netCDF file:"
-      ! PRINT*, FileOut
-   END SUBROUTINE SUEWS_Write_nc
+   !    ! PRINT*, "*** SUCCESS writing netCDF file:"
+   !    ! PRINT*, FileOut
+   ! END SUBROUTINE SUEWS_Write_nc
 
    !===========================================================================!
    ! convert a vector of grids to a matrix

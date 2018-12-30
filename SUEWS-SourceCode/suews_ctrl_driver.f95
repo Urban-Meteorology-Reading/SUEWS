@@ -15,7 +15,7 @@ MODULE SUEWS_Driver
       SUEWS_cal_SoilState, SUEWS_update_SoilMoist, &
       ReDistributeWater, SUEWS_cal_HorizontalSoilWater, &
       SUEWS_cal_WaterUse
-   USE ctrl_output, ONLY: varList
+   USE ctrl_output, ONLY: varListAll
    USE DailyState_module, ONLY: SUEWS_update_DailyState
    USE allocateArray, ONLY: &
       nsurf, nvegsurf, &
@@ -2303,11 +2303,11 @@ CONTAINS
       CHARACTER(len=15), INTENT(out) :: name, group, aggreg
 
       INTEGER :: nVar
-      nVar = SIZE(varList, dim=1)
+      nVar = SIZE(varListAll, dim=1)
       IF (i < nVar .AND. i > 0) THEN
-         name = TRIM(varList(i)%header)
-         group = TRIM(varList(i)%group)
-         aggreg = TRIM(varList(i)%aggreg)
+         name = TRIM(varListAll(i)%header)
+         group = TRIM(varListAll(i)%group)
+         aggreg = TRIM(varListAll(i)%aggreg)
       ELSE
          name = ''
          group = ''
@@ -2323,7 +2323,7 @@ CONTAINS
       ! which should be consistent with that in output module
       INTEGER, INTENT(out) :: nVar
 
-      nVar = SIZE(varList, dim=1)
+      nVar = SIZE(varListAll, dim=1)
 
    END SUBROUTINE output_size
 

@@ -153,7 +153,7 @@ MODULE ctrl_output
       varAttr('MeltWStore', 'mm', f104, 'Meltwater store', aA, 'SUEWS', 2), &
       varAttr('SnowCh', 'mm', f104, 'Change in snow pack', aA, 'SUEWS', 2), &
       varAttr('SnowRPaved', 'mm', f94, 'Snow removed from paved surface', aS, 'SUEWS', 2), &
-      varAttr('SnowRBldg', 'mm', f94, 'Snow removed from building surface', aS, 'SUEWS', 2), &
+      varAttr('SnowRBldgs', 'mm', f94, 'Snow removed from building surface', aS, 'SUEWS', 2), &
       varAttr('Ts', 'degC', f94, 'Skin temperature', aA, 'SUEWS', 0), &
       varAttr('T2', 'degC', f94, 'Air temperature at 2 m', aA, 'SUEWS', 0), &
       varAttr('Q2', 'g kg-1', f94, 'Specific humidity at 2 m', aA, 'SUEWS', 0), &
@@ -263,16 +263,16 @@ MODULE ctrl_output
       varAttr('RainSn_Water', 'to_add', f146, 'RainSn_Water', aA, 'snow', 0), &
       varAttr('Qn_PavedSnow', 'to_add', f146, 'Qn_PavedSnow', aA, 'snow', 0), &
       varAttr('Qn_BldgsSnow', 'to_add', f146, 'Qn_BldgsSnow', aA, 'snow', 0), &
-      varAttr('Qn_EveTrSnpw', 'to_add', f146, 'Qn_EveTrSnpw', aA, 'snow', 0), &
+      varAttr('Qn_EveTrSnow', 'to_add', f146, 'Qn_EveTrSnow', aA, 'snow', 0), &
       varAttr('Qn_DecTrSnow', 'to_add', f146, 'Qn_DecTrSnow', aA, 'snow', 0), &
-      varAttr('Qn_GrassSnpw', 'to_add', f146, 'Qn_GrassSnpw', aA, 'snow', 0), &
+      varAttr('Qn_GrassSnow', 'to_add', f146, 'Qn_GrassSnow', aA, 'snow', 0), &
       varAttr('Qn_BSoilSnow', 'to_add', f146, 'Qn_BSoilSnow', aA, 'snow', 0), &
       varAttr('Qn_WaterSnow', 'to_add', f146, 'Qn_WaterSnow', aA, 'snow', 0), &
       varAttr('kup_PavedSnow', 'to_add', f146, 'kup_PavedSnow', aA, 'snow', 0), &
       varAttr('kup_BldgsSnow', 'to_add', f146, 'kup_BldgsSnow', aA, 'snow', 0), &
-      varAttr('kup_EveTrSnpw', 'to_add', f146, 'kup_EveTrSnpw', aA, 'snow', 0), &
+      varAttr('kup_EveTrSnow', 'to_add', f146, 'kup_EveTrSnow', aA, 'snow', 0), &
       varAttr('kup_DecTrSnow', 'to_add', f146, 'kup_DecTrSnow', aA, 'snow', 0), &
-      varAttr('kup_GrassSnpw', 'to_add', f146, 'kup_GrassSnpw', aA, 'snow', 0), &
+      varAttr('kup_GrassSnow', 'to_add', f146, 'kup_GrassSnow', aA, 'snow', 0), &
       varAttr('kup_BSoilSnow', 'to_add', f146, 'kup_BSoilSnow', aA, 'snow', 0), &
       varAttr('kup_WaterSnow', 'to_add', f146, 'kup_WaterSnow', aA, 'snow', 0), &
       varAttr('frMelt_Paved', 'to_add', f146, 'frMelt_Paved', aA, 'snow', 0), &
@@ -289,13 +289,13 @@ MODULE ctrl_output
       varAttr('MwStore_Grass', 'to_add', f146, 'MwStore_Grass', aA, 'snow', 0), &
       varAttr('MwStore_BSoil', 'to_add', f146, 'MwStore_BSoil', aA, 'snow', 0), &
       varAttr('MwStore_Water', 'to_add', f146, 'MwStore_Water', aA, 'snow', 0), &
-      varAttr('SnowDens_Paved', 'to_add', f146, 'SnowDens_Paved', aA, 'snow', 0), &
-      varAttr('SnowDens_Bldgs', 'to_add', f146, 'SnowDens_Bldgs', aA, 'snow', 0), &
-      varAttr('SnowDens_EveTr', 'to_add', f146, 'SnowDens_EveTr', aA, 'snow', 0), &
-      varAttr('SnowDens_DecTr', 'to_add', f146, 'SnowDens_DecTr', aA, 'snow', 0), &
-      varAttr('SnowDens_Grass', 'to_add', f146, 'SnowDens_Grass', aA, 'snow', 0), &
-      varAttr('SnowDens_BSoil', 'to_add', f146, 'SnowDens_BSoil', aA, 'snow', 0), &
-      varAttr('SnowDens_Water', 'to_add', f146, 'SnowDens_Water', aA, 'snow', 0), &
+      varAttr('DensSnow_Paved', 'to_add', f146, 'DensSnow_Paved', aA, 'snow', 0), &
+      varAttr('DensSnow_Bldgs', 'to_add', f146, 'DensSnow_Bldgs', aA, 'snow', 0), &
+      varAttr('DensSnow_EveTr', 'to_add', f146, 'DensSnow_EveTr', aA, 'snow', 0), &
+      varAttr('DensSnow_DecTr', 'to_add', f146, 'DensSnow_DecTr', aA, 'snow', 0), &
+      varAttr('DensSnow_Grass', 'to_add', f146, 'DensSnow_Grass', aA, 'snow', 0), &
+      varAttr('DensSnow_BSoil', 'to_add', f146, 'DensSnow_BSoil', aA, 'snow', 0), &
+      varAttr('DensSnow_Water', 'to_add', f146, 'DensSnow_Water', aA, 'snow', 0), &
       varAttr('Sd_Paved', 'to_add', f106, 'Sd_Paved', aA, 'snow', 0), &
       varAttr('Sd_Bldgs', 'to_add', f106, 'Sd_Bldgs', aA, 'snow', 0), &
       varAttr('Sd_EveTr', 'to_add', f106, 'Sd_EveTr', aA, 'snow', 0), &
@@ -376,13 +376,13 @@ MODULE ctrl_output
       varAttr('deltaLAI', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
       varAttr('LAIlumps', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
       varAttr('AlbSnow', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
-      varAttr('DSnowPvd', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
-      varAttr('DSnowBldgs', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
-      varAttr('DSnowEveTr', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
-      varAttr('DSnowDecTr', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
-      varAttr('DSnowGrass', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
-      varAttr('DSnowBSoil', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
-      varAttr('DSnowWater', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
+      varAttr('DensSnow_Paved', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
+      varAttr('DensSnow_Bldgs', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
+      varAttr('DensSnow_EveTr', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
+      varAttr('DensSnow_DecTr', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
+      varAttr('DensSnow_Grass', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
+      varAttr('DensSnow_BSoil', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
+      varAttr('DensSnow_Water', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
       varAttr('a1', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
       varAttr('a2', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
       varAttr('a3', 'to be added', f104, 'to be added', aL, 'DailyState', 0) &

@@ -63,19 +63,26 @@ def readme():
 def get_suews_version(dir_source=dir_f95, ver_minor=2):
     path_source = Path(dir_source)
     path_makefile = (path_source / 'include.common')
-    # get file to retrieve version
+    # identify `file` to retrieve version
     with open(str(path_makefile)) as fm:
         for line in fm:
             if 'file ' in line:
                 file = line.split(':=')[-1].split('#')[0].strip()
 
-    # get version
+    # get version from `file`
     path_constfile = (path_source / file)
     with open(str(path_constfile)) as fm:
         for line in fm:
             if 'progname' in line:
                 ver = line.split('SUEWS_V')[-1].replace("'", '').strip()
-                return ver + '{}'.format(ver_minor)
+                ver += str(ver_minor)
+
+    # cast `ver` to the driver package
+    path_pkg_init = Path('.')/lib_basename/'version.py'
+    with open(str(path_pkg_init),'w') as fm:
+        fm.write("__version__='{ver}'".format(ver=ver))
+
+    return ver
 
 
 class BinaryDistribution(Distribution):
@@ -102,7 +109,7 @@ ext_modules = [
               extra_link_args=[('' if sysname == 'Linux' else '-static')])]
 
 setup(name='supy_driver',
-      version=get_suews_version(ver_minor=19),
+      version=get_suews_version(ver_minor=20),
       description='the SUEWS driver driven by f2py',
       long_description=readme(),
       url='https://github.com/sunt05/SuPy',

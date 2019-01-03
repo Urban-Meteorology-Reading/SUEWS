@@ -79,3 +79,6 @@ supy-driver/wheelhouse
 Obs
 London_KCL
 ReleaseRepo/*.zip
+
+# editor related
+.vscode/

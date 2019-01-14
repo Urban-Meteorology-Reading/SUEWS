@@ -208,7 +208,7 @@ MODULE allocateArray
    REAL(KIND(1d0)), DIMENSION(nsurf):: smd_nsurf      !Soil moisture deficit of each sub-surface [mm]
    REAL(KIND(1d0)), DIMENSION(nsurf):: smd_nsurfOut   !Soil moisture deficit of each sub-surface (written out) [mm]
    REAL(KIND(1d0)), DIMENSION(nsurf):: soilstore_id      !Soil moisture of each surface type [mm]
-   REAL(KIND(1d0)), DIMENSION(nsurf):: soilmoistOld   !Soil moisture of each surface type from previous timestep [mm]
+   REAL(KIND(1d0)), DIMENSION(nsurf):: soilstoreOld   !Soil moisture of each surface type from previous timestep [mm]
    REAL(KIND(1d0)), DIMENSION(nsurf):: state_id          !Wetness status of each surface type [mm]
    REAL(KIND(1d0)), DIMENSION(nsurf):: stateOut       !Wetness status of each surface type (written out) [mm]
    REAL(KIND(1d0)), DIMENSION(nsurf):: stateOld       !Wetness status of each surface type from previous timestep [mm]

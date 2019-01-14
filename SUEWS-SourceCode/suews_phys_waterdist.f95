@@ -542,7 +542,7 @@ CONTAINS
    SUBROUTINE SUEWS_cal_SoilState( &
       SMDMethod, xsmd, NonWaterFraction, SoilMoistCap, &!input
       SoilStoreCap, surf_chang_per_tstep, &
-      soilstore_id, soilmoistOld, sfr, &
+      soilstore_id, soilstoreOld, sfr, &
       smd, smd_nsurf, tot_chang_per_tstep, SoilState)!output
 
       IMPLICIT NONE
@@ -553,8 +553,8 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(in)::SoilMoistCap
 
       REAL(KIND(1d0)), INTENT(in)::surf_chang_per_tstep
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::soilstore_id
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::soilmoistOld
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::soilstore_id !Soil moisture of each surface type [mm]
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::soilstoreOld !Soil moisture of each surface type from previous timestep [mm]
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::sfr
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::SoilStoreCap        !Capacity of soil store for each surface [mm]
 
@@ -578,7 +578,7 @@ CONTAINS
          !       !SoilMoist_state=SoilMoistCap !What is this LJ 10/2010 - QUESTION: SM exceeds capacity, but where does extra go?HCW 11/2014
          !    ENDIF
          ! ENDDO  !end loop over surfaces
-         SoilState = DOT_PRODUCT(soilstore_id(1:6), sfr(1:nsurf - 1))/NonWaterFraction
+         SoilState = DOT_PRODUCT(soilstore_id(1:nsurf - 1), sfr(1:nsurf - 1))/NonWaterFraction
          IF (SoilState < 0) THEN
             CALL ErrorHint(62, 'SUEWS_Calculations: total SoilState < 0 (just added surface is) ', SoilState, NotUsed, is)
          ELSEIF (SoilState > SoilMoistCap) THEN
@@ -595,7 +595,7 @@ CONTAINS
       ! Calculate total change in surface and soil state_id
       tot_chang_per_tstep = surf_chang_per_tstep   !Change in surface state_id
       DO is = 1, (nsurf - 1)   !No soil for water surface (so change in soil moisture is zero)
-         tot_chang_per_tstep = tot_chang_per_tstep + ((soilstore_id(is) - soilmoistOld(is))*sfr(is))   !Add change in soil state_id
+         tot_chang_per_tstep = tot_chang_per_tstep + ((soilstore_id(is) - soilstoreOld(is))*sfr(is))   !Add change in soil state_id
       ENDDO
 
       IF (SMDMethod > 0) THEN

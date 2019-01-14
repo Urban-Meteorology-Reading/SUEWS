@@ -455,7 +455,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(NSURF)::drain
       REAL(KIND(1D0)), DIMENSION(NSURF)::FreezState
       REAL(KIND(1D0)), DIMENSION(NSURF)::FreezStateVol
-      REAL(KIND(1D0)), DIMENSION(NSURF)::soilmoistOld
+      REAL(KIND(1D0)), DIMENSION(NSURF)::soilstoreOld
       REAL(KIND(1D0)), DIMENSION(NSURF)::stateOld
       REAL(KIND(1D0)), DIMENSION(NSURF)::tsurf_ind
 
@@ -661,7 +661,7 @@ CONTAINS
          drain_per_tstep, &  !output
          drain, AddWaterRunoff, &
          AdditionalWater, runoffPipes, runoff_per_interval, &
-         AddWater, stateOld, soilmoistOld)
+         AddWater, stateOld, soilstoreOld)
       !============= calculate water balance end =============
 
       !======== Evaporation and surface state_id ========
@@ -715,7 +715,7 @@ CONTAINS
       CALL SUEWS_cal_SoilState( &
          SMDMethod, xsmd, NonWaterFraction, SoilMoistCap, &!input
          SoilStoreCap, surf_chang_per_tstep, &
-         soilstore_id, soilmoistOld, sfr, &
+         soilstore_id, soilstoreOld, sfr, &
          smd, smd_nsurf, tot_chang_per_tstep, SoilState)!output
 
       !============ surface-level diagonostics ===============
@@ -1202,7 +1202,7 @@ CONTAINS
       drain_per_tstep, &  !output
       drain, AddWaterRunoff, &
       AdditionalWater, runoffPipes, runoff_per_interval, &
-      AddWater, stateOld, soilmoistOld)
+      AddWater, stateOld, soilstoreOld)
 
       IMPLICIT NONE
       ! INTEGER,PARAMETER :: nsurf=7! number of surface types
@@ -1227,7 +1227,7 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out):: AddWaterRunoff!Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out):: AddWater      !water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out):: stateOld
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out):: soilmoistOld
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out):: soilstoreOld
 
       REAL(KIND(1d0)), INTENT(out)::drain_per_tstep
       REAL(KIND(1d0)), INTENT(out)::AdditionalWater
@@ -1237,7 +1237,7 @@ CONTAINS
 
       ! Retain previous surface state_id and soil moisture state_id
       stateOld = state_id     !state_id of each surface [mm] for the previous timestep
-      soilmoistOld = soilstore_id !Soil moisture of each surface [mm] for the previous timestep
+      soilstoreOld = soilstore_id !Soil moisture of each surface [mm] for the previous timestep
 
       !============= Grid-to-grid runoff =============
       ! Calculate additional water coming from other grids

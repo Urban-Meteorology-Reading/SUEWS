@@ -29,7 +29,7 @@ phases:
       addToPath:        true
       architecture:     'x64'
 
-  - script:             'brew install gcc'
+  - script:             'brew update; brew install gcc'
     displayName:        'install gcc+gfortran'
     continueOnError:    true
 

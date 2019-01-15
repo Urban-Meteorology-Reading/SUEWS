@@ -76,7 +76,6 @@ SUBROUTINE AnthropogenicEmissions( &
       FrFossilFuel_NonHeat, &!Fraction of Fossil Fuel non heat
       MinQFMetab, &        !Minimum QF Metabolism
       MaxQFMetab, &        !Maximum QF Metabolism
-      
       PopDensDaytime, &    !Daytime population density [ha-1] (i.e. workers)
       PopDensNighttime, &  !Nighttime population density [ha-1] (i.e. residents)
       Temp_C           !Air temperature
@@ -107,7 +106,6 @@ SUBROUTINE AnthropogenicEmissions( &
       ActDorNorT, &       ! Human activity
       TraffDorNorT, &     ! Traffic
       AHDorNorT          ! Anthropogenic heat
-      
 
    ! transfer HDD values to local explict variables
    HDD_daily = HDD_id(7)
@@ -117,8 +115,8 @@ SUBROUTINE AnthropogenicEmissions( &
 
    ! Tair_avg_daily= HDD_id_use(3) ! this is daily
 
-   ! use average of both daytime and nighttime population values 
-   ! TS 27 Dec 2018: moved from `translate` here to simplify the interface 
+   ! use average of both daytime and nighttime population values
+   ! TS 27 Dec 2018: moved from `translate` here to simplify the interface
    NumCapita = (PopDensDaytime + PopDensNighttime)/2
 
    !-----------------------------------------------------------------------

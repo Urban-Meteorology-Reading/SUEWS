@@ -238,7 +238,7 @@ CONTAINS
       REAL(KIND(1D0)), PARAMETER::xsmd = 0. !Measured soil moisture deficit
 
       REAL(KIND(1D0)), PARAMETER::wu_m3 = 0  !External water use
-      REAL(KIND(1D0)), PARAMETER::Faut  = 0  !Fraction of irrigated area using automatic irrigation
+      REAL(KIND(1D0)), PARAMETER::Faut = 0  !Fraction of irrigated area using automatic irrigation
       REAL(KIND(1D0)), PARAMETER::InternalWaterUse_h = 0 !Internal water use [mm h-1]
       REAL(KIND(1D0)), PARAMETER::IrrFracConif = 0 !Fraction of evergreen trees which are irrigated
       REAL(KIND(1D0)), PARAMETER::IrrFracDecid = 0 !Fraction of deciduous trees which are irrigated
@@ -344,46 +344,46 @@ CONTAINS
 #endif
 
       CALL SUEWS_cal_Main( &
-      AerodynamicResistanceMethod, AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, & ! input&inout in alphabetical order
-      AH_SLOPE_Heating, &
-      alb, AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
-      AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
-      alpha_bioCO2, alpha_enh_bioCO2, alt, avkdn, avRh, avU1, BaseT, BaseTe, &
-      BaseTHDD, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
-      chAnOHM, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
-      DecTreeH, Diagnose, DiagQN, DiagQS, DRAINRT, &
-      dt_since_start, dqndt, qn1_av, dqnsdt, qn1_s_av, &
-      EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
-      FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, fcld_obs, FlowChange, &
-      FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD_id, &
-      GDDFull, Gridiv, gsModel, HDD_id, HumActivity_24hr, &
-      IceFrac, id, Ie_a, Ie_end, Ie_m, Ie_start, imin, &
-      InternalWaterUse_h, IrrFracConif, IrrFracDecid, IrrFracGrass, isec, it, EvapMethod, &
-      iy, kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax, LAIMin, LAI_obs, &
-      LAIPower, LAIType, lat, ldown_obs, lng, MaxConductance, MaxQFMetab, &
-      SnowWater, MetForcingData_grid, MinQFMetab, min_res_bioCO2, &
-      NARP_EMIS_SNOW, NARP_TRANS_SITE, NetRadiationMethod, &
-      NumCapita, OHM_coef, OHMIncQF, OHM_threshSW, &
-      OHM_threshWD, PipeCapacity, PopDensDaytime, &
-      PopDensNighttime, PopProf_24hr, PorMax_dec, PorMin_dec, &
-      Precip, PrecipLimit, PrecipLimitAlb, Press_hPa, &
-      QF0_BEU, Qf_A, Qf_B, Qf_C, &
-      qn1_obs, qh_obs, qs_obs, qf_obs, &
-      RadMeltFact, RAINCOVER, RainMaxRes, resp_a, resp_b, &
-      RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
-      SatHydraulicConduct, SDDFull, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
-      SnowAlbMin, snowD, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
-      SnowLimBuild, SnowLimPaved, snow_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
-      soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
-      StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair24HR, tau_a, tau_f, tau_r, &
-      T_CRITIC_Cooling, T_CRITIC_Heating, Temp_C, TempMeltFact, TH, &
-      theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
-      TraffProf_24hr, Ts5mindata_ir, tstep, tstep_prev, veg_type, &
-      WaterDist, WaterUseMethod, WetThresh, wu_m3, &
-      WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
-      WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
-      datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, &!output
-      DailyStateLine)!output
+         AerodynamicResistanceMethod, AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, & ! input&inout in alphabetical order
+         AH_SLOPE_Heating, &
+         alb, AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
+         AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
+         alpha_bioCO2, alpha_enh_bioCO2, alt, avkdn, avRh, avU1, BaseT, BaseTe, &
+         BaseTHDD, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
+         chAnOHM, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
+         DecTreeH, Diagnose, DiagQN, DiagQS, DRAINRT, &
+         dt_since_start, dqndt, qn1_av, dqnsdt, qn1_s_av, &
+         EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
+         FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, fcld_obs, FlowChange, &
+         FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD_id, &
+         GDDFull, Gridiv, gsModel, HDD_id, HumActivity_24hr, &
+         IceFrac, id, Ie_a, Ie_end, Ie_m, Ie_start, imin, &
+         InternalWaterUse_h, IrrFracConif, IrrFracDecid, IrrFracGrass, isec, it, EvapMethod, &
+         iy, kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax, LAIMin, LAI_obs, &
+         LAIPower, LAIType, lat, ldown_obs, lng, MaxConductance, MaxQFMetab, &
+         SnowWater, MetForcingData_grid, MinQFMetab, min_res_bioCO2, &
+         NARP_EMIS_SNOW, NARP_TRANS_SITE, NetRadiationMethod, &
+         NumCapita, OHM_coef, OHMIncQF, OHM_threshSW, &
+         OHM_threshWD, PipeCapacity, PopDensDaytime, &
+         PopDensNighttime, PopProf_24hr, PorMax_dec, PorMin_dec, &
+         Precip, PrecipLimit, PrecipLimitAlb, Press_hPa, &
+         QF0_BEU, Qf_A, Qf_B, Qf_C, &
+         qn1_obs, qh_obs, qs_obs, qf_obs, &
+         RadMeltFact, RAINCOVER, RainMaxRes, resp_a, resp_b, &
+         RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
+         SatHydraulicConduct, SDDFull, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
+         SnowAlbMin, snowD, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
+         SnowLimBuild, SnowLimPaved, snow_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
+         soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
+         StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair24HR, tau_a, tau_f, tau_r, &
+         T_CRITIC_Cooling, T_CRITIC_Heating, Temp_C, TempMeltFact, TH, &
+         theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
+         TraffProf_24hr, Ts5mindata_ir, tstep, tstep_prev, veg_type, &
+         WaterDist, WaterUseMethod, WetThresh, wu_m3, &
+         WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
+         WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
+         datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, &!output
+         DailyStateLine)!output
 
       surf_var_id = StoreDrainPrm(6, :) ! update surf_var_id
       qn = dataOutLineSUEWS(6)

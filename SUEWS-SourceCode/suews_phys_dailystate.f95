@@ -135,10 +135,10 @@ CONTAINS
 
       REAL(KIND(1d0)), INTENT(INOUT)::SnowAlb
 
-      REAL(KIND(1d0)), DIMENSION(5),  INTENT(INOUT) :: GDD_id   ! Growing Degree Days (see SUEWS_DailyState.f95)
-      REAL(KIND(1d0)), DIMENSION(3),  INTENT(INOUT) :: LAI_id   ! LAI for each veg surface [m2 m-2]
+      REAL(KIND(1d0)), DIMENSION(5), INTENT(INOUT) :: GDD_id   ! Growing Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1d0)), DIMENSION(3), INTENT(INOUT) :: LAI_id   ! LAI for each veg surface [m2 m-2]
       REAL(KIND(1d0)), DIMENSION(12), INTENT(INOUT) :: HDD_id   ! Heating Degree Days (see SUEWS_DailyState.f95)
-      REAL(KIND(1d0)), DIMENSION(9),  INTENT(OUT)   :: WUDay_id ! Water use related array
+      REAL(KIND(1d0)), DIMENSION(9), INTENT(OUT)   :: WUDay_id ! Water use related array
       ! --------------------------------------------------------------------------------
       ! ------------- Key to daily arrays ----------------------------------------------
       ! TS, 27 Dec 2018: updated the annotation for 2018b and WRF-SUEWS coupling
@@ -158,7 +158,7 @@ CONTAINS
       ! HDD_id(6+4) ---- 5-day running mean temp [degC]: used for actual calculation
       ! HDD_id(6+5) ---- Daily precip total [mm]
       ! HDD_id(6+6) ---- Days since rain [d]
-      ! 
+      !
       ! GDD_id:
       ! GDD_id(1) ---- Growing [degC]
       ! GDD_id(2) ---- Senescence [degC]
@@ -180,15 +180,13 @@ CONTAINS
       ! WUDay_id(8) - Automatic irrigation for Irr Grass [mm]
       ! WUDay_id(9) - Manual irrigation for Irr Grass [mm]
       ! --------------------------------------------------------------------------------
-      
-    
+
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(INOUT)::SnowDens
       INTEGER, DIMENSION(3), INTENT(in)::DayofWeek_id
 
-      !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)     
+      !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
       REAL(KIND(1d0)), INTENT(OUT)::deltaLAI
       REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(INOUT):: LAI_id_prev !LAI for each veg surface [m2 m-2]
-
 
       REAL(KIND(1d0)), INTENT(INOUT):: DecidCap_id
       REAL(KIND(1d0)), INTENT(INOUT):: albDecTr_id

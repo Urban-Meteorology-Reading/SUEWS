@@ -967,19 +967,19 @@ CONTAINS
 
       ! filename: FileOutX
       FileOutX = TRIM(FileOutputPath)// &
-                TRIM(FileCode)// &
-                TRIM(ADJUSTL(str_grid))// &
-                TRIM(ADJUSTL(str_date))// &
-                TRIM(ADJUSTL(str_grp))// &
-                TRIM(ADJUSTL(str_out_min))// &
-                TRIM(ADJUSTL(str_sfx))
+                 TRIM(FileCode)// &
+                 TRIM(ADJUSTL(str_grid))// &
+                 TRIM(ADJUSTL(str_date))// &
+                 TRIM(ADJUSTL(str_grp))// &
+                 TRIM(ADJUSTL(str_out_min))// &
+                 TRIM(ADJUSTL(str_sfx))
 
       ! filename: format
       IF (val_fmt == 1) THEN
          FileOutX = TRIM(FileOutputPath)// &
-                   TRIM(FileCode)// &
-                   TRIM(ADJUSTL(str_grp))// &
-                   '_OutputFormat.txt'
+                    TRIM(FileCode)// &
+                    TRIM(ADJUSTL(str_grp))// &
+                    '_OutputFormat.txt'
       END IF
 
    END SUBROUTINE filename_gen

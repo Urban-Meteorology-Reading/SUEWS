@@ -170,10 +170,10 @@ SUBROUTINE OHM(qn1, qn1_av, dqndt, &
          ! Store instantaneous qn1 values for previous hour (qn1_store_grid) and average (qn1_av)
          ! CALL OHM_dqndt_cal(nsh,qn1_S,qn1_S_store_grid,qn1_S_av_store_grid,dqndt)
 
-         CALL OHM_dqndt_cal_X(tstep, dt_since_start, qn1_s_av, qn1, dqnsdt)
+         CALL OHM_dqndt_cal_X(tstep, dt_since_start, qn1_s_av, qn1_S, dqnsdt)
 
          ! Calculate net storage heat flux for snow surface (winter wet conditions)
-         CALL OHM_QS_cal(qn1_S, dqndt, &
+         CALL OHM_QS_cal(qn1_S, dqnsdt, &
                          OHM_coef(nsurf + 1, 3, 1), OHM_coef(nsurf + 1, 3, 2), OHM_coef(nsurf + 1, 3, 3), &
                          deltaQi0)
          deltaQi = deltaQi0

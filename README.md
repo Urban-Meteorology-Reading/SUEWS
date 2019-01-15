@@ -24,6 +24,11 @@ These branches are designed with specific purposes and set with triggers for aut
 * The SUEWS docs are mainly written in [RST](http://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html) but [Markdown](https://guides.github.com/features/mastering-markdown/) is also acceptable.
 * Your changes to docs will be reviewed and merged into public release if appropriate.
 
+### Test
+
+Whenever changes are made, please run `make test` in the repo root to check if your changes are working or not.
+If any error, please resolve it or justify that the test is giving false alarm.
+
 ### Questions
 
 * Please [raise issues](https://github.com/Urban-Meteorology-Reading/SUEWS/issues/new) for questions in the development so our progress can be well managed.

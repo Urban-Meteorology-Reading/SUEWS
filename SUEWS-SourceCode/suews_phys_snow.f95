@@ -961,11 +961,11 @@ CONTAINS
       IF (snowFracFresh2 > 0) THEN
          surf_chang_per_tstep = surf_chang_per_tstep + (state_id(is) - stateOld(is))*sfr(is)*(1 - snowFrac(is)) &
                                 - Precip*sfr(is)*(1 - snowFracFresh2)
-        chSnow_per_interval = chSnow_per_interval + ((SnowPack(is) + SnowWater(is)) - snowTotInit)*sfr(is)*(1 - snowFrac(is)) &
+         chSnow_per_interval = chSnow_per_interval + ((SnowPack(is) + SnowWater(is)) - snowTotInit)*sfr(is)*(1 - snowFrac(is)) &
                                - Precip*sfr(is)*snowFracFresh2
       ELSE
          surf_chang_per_tstep = surf_chang_per_tstep + (state_id(is) - stateOld(is))*sfr(is)*(1 - snowFrac(is))
-       chSnow_per_interval=chSnow_per_interval+((SnowPack(is)+SnowWater(is))-snowTotInit)*sfr(is)*MAX(snowFrac(is),snowfracOld)
+   chSnow_per_interval = chSnow_per_interval + ((SnowPack(is) + SnowWater(is)) - snowTotInit)*sfr(is)*MAX(snowFrac(is), snowfracOld)
       ENDIF
 
       !Add evaporation to total
@@ -1066,7 +1066,7 @@ CONTAINS
          !Add water to the meltwater store
          !If freezing meltwater inside this hour, remove it from the SnowWater
          SnowWater(WaterSurf) = SnowWater(WaterSurf) - freezMelt(WaterSurf) &
-                                     + mw_ind(WaterSurf)
+                                + mw_ind(WaterSurf)
 
          state_id(WaterSurf) = state_id(WaterSurf) + SnowWater(WaterSurf) + SnowPack(WaterSurf) !Add meltwater to state_id
          SnowPack(WaterSurf) = 0

@@ -133,7 +133,7 @@ MODULE ctrl_output
       varAttr('z0m', 'm', f94, 'Roughness length for momentum', aA, 'SUEWS', 1), &
       varAttr('zdm', 'm', f94, 'Zero-plane displacement height', aA, 'SUEWS', 1), &
       varAttr('UStar', 'm s-1', f94, 'Friction velocity', aA, 'SUEWS', 0), &
-      varAttr('Lob', 'm', f104, 'Obukhov length', aA, 'SUEWS', 0), &
+      varAttr('Lob', 'm', f146, 'Obukhov length', aA, 'SUEWS', 0), &
       varAttr('RA', 's m-1', f104, 'Aerodynamic resistance', aA, 'SUEWS', 1), &
       varAttr('RS', 's m-1', f104, 'Surface resistance', aA, 'SUEWS', 1), &
       varAttr('Fc', 'umol m-2 s-1', f94, 'CO2 flux', aA, 'SUEWS', 0), &
@@ -146,12 +146,12 @@ MODULE ctrl_output
       varAttr('QNSnow', 'W m-2', f94, 'Net all-wave radiation for snow area', aA, 'SUEWS', 2), &
       varAttr('AlbSnow', '-', f94, 'Snow albedo', aA, 'SUEWS', 2), &
       varAttr('QM', 'W m-2', f106, 'Snow-related heat exchange', aA, 'SUEWS', 2), &
-      varAttr('QMFreeze', 'W m-2', f106, 'Internal energy change', aA, 'SUEWS', 2), &
+      varAttr('QMFreeze', 'W m-2', f146, 'Internal energy change', aA, 'SUEWS', 2), &
       varAttr('QMRain', 'W m-2', f106, 'Heat released by rain on snow', aA, 'SUEWS', 2), &
       varAttr('SWE', 'mm', f104, 'Snow water equivalent', aA, 'SUEWS', 2), &
       varAttr('MeltWater', 'mm', f104, 'Meltwater', aA, 'SUEWS', 2), &
       varAttr('MeltWStore', 'mm', f104, 'Meltwater store', aA, 'SUEWS', 2), &
-      varAttr('SnowCh', 'mm', f104, 'Change in snow pack', aA, 'SUEWS', 2), &
+      varAttr('SnowCh', 'mm', f104, 'Change in snow pack', aS, 'SUEWS', 2), &
       varAttr('SnowRPaved', 'mm', f94, 'Snow removed from paved surface', aS, 'SUEWS', 2), &
       varAttr('SnowRBldgs', 'mm', f94, 'Snow removed from building surface', aS, 'SUEWS', 2), &
       varAttr('Ts', 'degC', f94, 'Skin temperature', aA, 'SUEWS', 0), &
@@ -213,103 +213,103 @@ MODULE ctrl_output
 
    ! Snow:
    DATA(varListAll(n), n=128 + 1, 128 + ncolumnsDataOutSnow - 5)/ &
-      varAttr('SWE_Paved', 'to_add', f106, 'SWE_Paved', aA, 'snow', 0), &
-      varAttr('SWE_Bldgs', 'to_add', f106, 'SWE_Bldgs', aA, 'snow', 0), &
-      varAttr('SWE_EveTr', 'to_add', f106, 'SWE_EveTr', aA, 'snow', 0), &
-      varAttr('SWE_DecTr', 'to_add', f106, 'SWE_DecTr', aA, 'snow', 0), &
-      varAttr('SWE_Grass', 'to_add', f106, 'SWE_Grass', aA, 'snow', 0), &
-      varAttr('SWE_BSoil', 'to_add', f106, 'SWE_BSoil', aA, 'snow', 0), &
-      varAttr('SWE_Water', 'to_add', f106, 'SWE_Water', aA, 'snow', 0), &
-      varAttr('Mw_Paved', 'to_add', f106, 'Mw_Paved', aA, 'snow', 0), &
-      varAttr('Mw_Bldgs', 'to_add', f106, 'Mw_Bldgs', aA, 'snow', 0), &
-      varAttr('Mw_EveTr', 'to_add', f106, 'Mw_EveTr', aA, 'snow', 0), &
-      varAttr('Mw_DecTr', 'to_add', f106, 'Mw_DecTr', aA, 'snow', 0), &
-      varAttr('Mw_Grass', 'to_add', f106, 'Mw_Grass', aA, 'snow', 0), &
-      varAttr('Mw_BSoil', 'to_add', f106, 'Mw_BSoil', aA, 'snow', 0), &
-      varAttr('Mw_Water', 'to_add', f106, 'Mw_Water', aA, 'snow', 0), &
-      varAttr('Qm_Paved', 'to_add', f106, 'Qm_Paved', aA, 'snow', 0), &
-      varAttr('Qm_Bldgs', 'to_add', f106, 'Qm_Bldgs', aA, 'snow', 0), &
-      varAttr('Qm_EveTr', 'to_add', f106, 'Qm_EveTr', aA, 'snow', 0), &
-      varAttr('Qm_DecTr', 'to_add', f106, 'Qm_DecTr', aA, 'snow', 0), &
-      varAttr('Qm_Grass', 'to_add', f106, 'Qm_Grass', aA, 'snow', 0), &
-      varAttr('Qm_BSoil', 'to_add', f106, 'Qm_BSoil', aA, 'snow', 0), &
-      varAttr('Qm_Water', 'to_add', f106, 'Qm_Water', aA, 'snow', 0), &
-      varAttr('Qa_Paved', 'to_add', f106, 'Qa_Paved', aA, 'snow', 0), &
-      varAttr('Qa_Bldgs', 'to_add', f106, 'Qa_Bldgs', aA, 'snow', 0), &
-      varAttr('Qa_EveTr', 'to_add', f106, 'Qa_EveTr', aA, 'snow', 0), &
-      varAttr('Qa_DecTr', 'to_add', f106, 'Qa_DecTr', aA, 'snow', 0), &
-      varAttr('Qa_Grass', 'to_add', f106, 'Qa_Grass', aA, 'snow', 0), &
-      varAttr('Qa_BSoil', 'to_add', f106, 'Qa_BSoil', aA, 'snow', 0), &
-      varAttr('Qa_Water', 'to_add', f106, 'Qa_Water', aA, 'snow', 0), &
-      varAttr('QmFr_Paved', 'to_add', f106, 'QmFr_Paved', aA, 'snow', 0), &
-      varAttr('QmFr_Bldgs', 'to_add', f106, 'QmFr_Bldgs', aA, 'snow', 0), &
-      varAttr('QmFr_EveTr', 'to_add', f106, 'QmFr_EveTr', aA, 'snow', 0), &
-      varAttr('QmFr_DecTr', 'to_add', f106, 'QmFr_DecTr', aA, 'snow', 0), &
-      varAttr('QmFr_Grass', 'to_add', f106, 'QmFr_Grass', aA, 'snow', 0), &
-      varAttr('QmFr_BSoil', 'to_add', f106, 'QmFr_BSoil', aA, 'snow', 0), &
-      varAttr('QmFr_Water', 'to_add', f106, 'QmFr_Water', aA, 'snow', 0), &
-      varAttr('fr_Paved', 'to_add', f106, 'fr_Paved', aA, 'snow', 0), &
-      varAttr('fr_Bldgs', 'to_add', f106, 'fr_Bldgs', aA, 'snow', 0), &
-      varAttr('fr_EveTr', 'to_add', f106, 'fr_EveTr', aA, 'snow', 0), &
-      varAttr('fr_DecTr', 'to_add', f106, 'fr_DecTr', aA, 'snow', 0), &
-      varAttr('fr_Grass', 'to_add', f106, 'fr_Grass', aA, 'snow', 0), &
-      varAttr('fr_BSoil', 'to_add', f106, 'fr_BSoil', aA, 'snow', 0), &
-      varAttr('RainSn_Paved', 'to_add', f146, 'RainSn_Paved', aA, 'snow', 0), &
-      varAttr('RainSn_Bldgs', 'to_add', f146, 'RainSn_Bldgs', aA, 'snow', 0), &
-      varAttr('RainSn_EveTr', 'to_add', f146, 'RainSn_EveTr', aA, 'snow', 0), &
-      varAttr('RainSn_DecTr', 'to_add', f146, 'RainSn_DecTr', aA, 'snow', 0), &
-      varAttr('RainSn_Grass', 'to_add', f146, 'RainSn_Grass', aA, 'snow', 0), &
-      varAttr('RainSn_BSoil', 'to_add', f146, 'RainSn_BSoil', aA, 'snow', 0), &
-      varAttr('RainSn_Water', 'to_add', f146, 'RainSn_Water', aA, 'snow', 0), &
-      varAttr('Qn_PavedSnow', 'to_add', f146, 'Qn_PavedSnow', aA, 'snow', 0), &
-      varAttr('Qn_BldgsSnow', 'to_add', f146, 'Qn_BldgsSnow', aA, 'snow', 0), &
-      varAttr('Qn_EveTrSnow', 'to_add', f146, 'Qn_EveTrSnow', aA, 'snow', 0), &
-      varAttr('Qn_DecTrSnow', 'to_add', f146, 'Qn_DecTrSnow', aA, 'snow', 0), &
-      varAttr('Qn_GrassSnow', 'to_add', f146, 'Qn_GrassSnow', aA, 'snow', 0), &
-      varAttr('Qn_BSoilSnow', 'to_add', f146, 'Qn_BSoilSnow', aA, 'snow', 0), &
-      varAttr('Qn_WaterSnow', 'to_add', f146, 'Qn_WaterSnow', aA, 'snow', 0), &
-      varAttr('kup_PavedSnow', 'to_add', f146, 'kup_PavedSnow', aA, 'snow', 0), &
-      varAttr('kup_BldgsSnow', 'to_add', f146, 'kup_BldgsSnow', aA, 'snow', 0), &
-      varAttr('kup_EveTrSnow', 'to_add', f146, 'kup_EveTrSnow', aA, 'snow', 0), &
-      varAttr('kup_DecTrSnow', 'to_add', f146, 'kup_DecTrSnow', aA, 'snow', 0), &
-      varAttr('kup_GrassSnow', 'to_add', f146, 'kup_GrassSnow', aA, 'snow', 0), &
-      varAttr('kup_BSoilSnow', 'to_add', f146, 'kup_BSoilSnow', aA, 'snow', 0), &
-      varAttr('kup_WaterSnow', 'to_add', f146, 'kup_WaterSnow', aA, 'snow', 0), &
-      varAttr('frMelt_Paved', 'to_add', f146, 'frMelt_Paved', aA, 'snow', 0), &
-      varAttr('frMelt_Bldgs', 'to_add', f146, 'frMelt_Bldgs', aA, 'snow', 0), &
-      varAttr('frMelt_EveTr', 'to_add', f146, 'frMelt_EveTr', aA, 'snow', 0), &
-      varAttr('frMelt_DecTr', 'to_add', f146, 'frMelt_DecTr', aA, 'snow', 0), &
-      varAttr('frMelt_Grass', 'to_add', f146, 'frMelt_Grass', aA, 'snow', 0), &
-      varAttr('frMelt_BSoil', 'to_add', f146, 'frMelt_BSoil', aA, 'snow', 0), &
-      varAttr('frMelt_Water', 'to_add', f146, 'frMelt_Water', aA, 'snow', 0), &
-      varAttr('MwStore_Paved', 'to_add', f146, 'MwStore_Paved', aA, 'snow', 0), &
-      varAttr('MwStore_Bldgs', 'to_add', f146, 'MwStore_Bldgs', aA, 'snow', 0), &
-      varAttr('MwStore_EveTr', 'to_add', f146, 'MwStore_EveTr', aA, 'snow', 0), &
-      varAttr('MwStore_DecTr', 'to_add', f146, 'MwStore_DecTr', aA, 'snow', 0), &
-      varAttr('MwStore_Grass', 'to_add', f146, 'MwStore_Grass', aA, 'snow', 0), &
-      varAttr('MwStore_BSoil', 'to_add', f146, 'MwStore_BSoil', aA, 'snow', 0), &
-      varAttr('MwStore_Water', 'to_add', f146, 'MwStore_Water', aA, 'snow', 0), &
-      varAttr('DensSnow_Paved', 'to_add', f146, 'DensSnow_Paved', aA, 'snow', 0), &
-      varAttr('DensSnow_Bldgs', 'to_add', f146, 'DensSnow_Bldgs', aA, 'snow', 0), &
-      varAttr('DensSnow_EveTr', 'to_add', f146, 'DensSnow_EveTr', aA, 'snow', 0), &
-      varAttr('DensSnow_DecTr', 'to_add', f146, 'DensSnow_DecTr', aA, 'snow', 0), &
-      varAttr('DensSnow_Grass', 'to_add', f146, 'DensSnow_Grass', aA, 'snow', 0), &
-      varAttr('DensSnow_BSoil', 'to_add', f146, 'DensSnow_BSoil', aA, 'snow', 0), &
-      varAttr('DensSnow_Water', 'to_add', f146, 'DensSnow_Water', aA, 'snow', 0), &
-      varAttr('Sd_Paved', 'to_add', f106, 'Sd_Paved', aA, 'snow', 0), &
-      varAttr('Sd_Bldgs', 'to_add', f106, 'Sd_Bldgs', aA, 'snow', 0), &
-      varAttr('Sd_EveTr', 'to_add', f106, 'Sd_EveTr', aA, 'snow', 0), &
-      varAttr('Sd_DecTr', 'to_add', f106, 'Sd_DecTr', aA, 'snow', 0), &
-      varAttr('Sd_Grass', 'to_add', f106, 'Sd_Grass', aA, 'snow', 0), &
-      varAttr('Sd_BSoil', 'to_add', f106, 'Sd_BSoil', aA, 'snow', 0), &
-      varAttr('Sd_Water', 'to_add', f106, 'Sd_Water', aA, 'snow', 0), &
-      varAttr('Tsnow_Paved', 'to_add', f146, 'Tsnow_Paved', aA, 'snow', 0), &
-      varAttr('Tsnow_Bldgs', 'to_add', f146, 'Tsnow_Bldgs', aA, 'snow', 0), &
-      varAttr('Tsnow_EveTr', 'to_add', f146, 'Tsnow_EveTr', aA, 'snow', 0), &
-      varAttr('Tsnow_DecTr', 'to_add', f146, 'Tsnow_DecTr', aA, 'snow', 0), &
-      varAttr('Tsnow_Grass', 'to_add', f146, 'Tsnow_Grass', aA, 'snow', 0), &
-      varAttr('Tsnow_BSoil', 'to_add', f146, 'Tsnow_BSoil', aA, 'snow', 0), &
-      varAttr('Tsnow_Water', 'to_add', f146, 'Tsnow_Water', aA, 'snow', 0) &
+      varAttr('SWE_Paved', 'mm', f106, 'Snow water equivalent for paved surface', aA, 'snow', 0), &
+      varAttr('SWE_Bldgs', 'mm', f106, 'Snow water equivalent for building surface', aA, 'snow', 0), &
+      varAttr('SWE_EveTr', 'mm', f106, 'Snow water equivalent for evergreen tree surface', aA, 'snow', 0), &
+      varAttr('SWE_DecTr', 'mm', f106, 'Snow water equivalent for deciduous tree surface', aA, 'snow', 0), &
+      varAttr('SWE_Grass', 'mm', f106, 'Snow water equivalent for grass surface', aA, 'snow', 0), &
+      varAttr('SWE_BSoil', 'mm', f106, 'Snow water equivalent for bare soil surface', aA, 'snow', 0), &
+      varAttr('SWE_Water', 'mm', f106, 'Snow water equivalent for water surface', aA, 'snow', 0), &
+      varAttr('Mw_Paved', 'mm', f106, 'Meltwater for paved surface', aS, 'snow', 0), &
+      varAttr('Mw_Bldgs', 'mm', f106, 'Meltwater for building surface', aS, 'snow', 0), &
+      varAttr('Mw_EveTr', 'mm', f106, 'Meltwater for evergreen tree surface', aS, 'snow', 0), &
+      varAttr('Mw_DecTr', 'mm', f106, 'Meltwater for deciduous tree surface', aS, 'snow', 0), &
+      varAttr('Mw_Grass', 'mm', f106, 'Meltwater for grass surface', aS, 'snow', 0), &
+      varAttr('Mw_BSoil', 'mm', f106, 'Meltwater for bare soil surface', aS, 'snow', 0), &
+      varAttr('Mw_Water', 'mm', f106, 'Meltwater for water surface', aS, 'snow', 0), &
+      varAttr('Qm_Paved', 'W m-2', f106, 'Snow-related heat exchange for paved surface', aA, 'snow', 0), &
+      varAttr('Qm_Bldgs', 'W m-2', f106, 'Snow-related heat exchange for building surface', aA, 'snow', 0), &
+      varAttr('Qm_EveTr', 'W m-2', f106, 'Snow-related heat exchange for evergreen tree surface', aA, 'snow', 0), &
+      varAttr('Qm_DecTr', 'W m-2', f106, 'Snow-related heat exchange for deciduous tree surface', aA, 'snow', 0), &
+      varAttr('Qm_Grass', 'W m-2', f106, 'Snow-related heat exchange for grass surface', aA, 'snow', 0), &
+      varAttr('Qm_BSoil', 'W m-2', f106, 'Snow-related heat exchange for bare soil surface', aA, 'snow', 0), &
+      varAttr('Qm_Water', 'W m-2', f106, 'Snow-related heat exchange for water surface', aA, 'snow', 0), &
+      varAttr('Qa_Paved', 'W m-2', f106, 'Advective heat for paved surface', aA, 'snow', 0), &
+      varAttr('Qa_Bldgs', 'W m-2', f106, 'Advective heat for building surface', aA, 'snow', 0), &
+      varAttr('Qa_EveTr', 'W m-2', f106, 'Advective heat for evergreen tree surface', aA, 'snow', 0), &
+      varAttr('Qa_DecTr', 'W m-2', f106, 'Advective heat for deciduous tree surface', aA, 'snow', 0), &
+      varAttr('Qa_Grass', 'W m-2', f106, 'Advective heat for grass surface', aA, 'snow', 0), &
+      varAttr('Qa_BSoil', 'W m-2', f106, 'Advective heat for bare soil surface', aA, 'snow', 0), &
+      varAttr('Qa_Water', 'W m-2', f106, 'Advective heat for water surface', aA, 'snow', 0), &
+      varAttr('QmFr_Paved', 'W m-2', f146, 'Heat related to freezing for paved surface', aA, 'snow', 0), &
+      varAttr('QmFr_Bldgs', 'W m-2', f146, 'Heat related to freezing for building surface', aA, 'snow', 0), &
+      varAttr('QmFr_EveTr', 'W m-2', f146, 'Heat related to freezing for evergreen tree surface', aA, 'snow', 0), &
+      varAttr('QmFr_DecTr', 'W m-2', f146, 'Heat related to freezing for deciduous tree surface', aA, 'snow', 0), &
+      varAttr('QmFr_Grass', 'W m-2', f146, 'Heat related to freezing for grass surface', aA, 'snow', 0), &
+      varAttr('QmFr_BSoil', 'W m-2', f146, 'Heat related to freezing for bare soil surface', aA, 'snow', 0), &
+      varAttr('QmFr_Water', 'W m-2', f146, 'Heat related to freezing for water surface', aA, 'snow', 0), &
+      varAttr('fr_Paved', '1', f106, 'Fraction of snow for paved surface', aA, 'snow', 0), &
+      varAttr('fr_Bldgs', '1', f106, 'Fraction of snow for building surface', aA, 'snow', 0), &
+      varAttr('fr_EveTr', '1', f106, 'Fraction of snow for evergreen tree surface', aA, 'snow', 0), &
+      varAttr('fr_DecTr', '1', f106, 'Fraction of snow for deciduous tree surface', aA, 'snow', 0), &
+      varAttr('fr_Grass', '1', f106, 'Fraction of snow for grass surface', aA, 'snow', 0), &
+      varAttr('fr_BSoil', '1', f106, 'Fraction of snow for bare soil surface', aA, 'snow', 0), &
+      varAttr('RainSn_Paved', 'mm', f146, 'Rain on snow for paved surface', aS, 'snow', 0), &
+      varAttr('RainSn_Bldgs', 'mm', f146, 'Rain on snow for building surface', aS, 'snow', 0), &
+      varAttr('RainSn_EveTr', 'mm', f146, 'Rain on snow for evergreen tree surface', aS, 'snow', 0), &
+      varAttr('RainSn_DecTr', 'mm', f146, 'Rain on snow for deciduous tree surface', aS, 'snow', 0), &
+      varAttr('RainSn_Grass', 'mm', f146, 'Rain on snow for grass surface', aS, 'snow', 0), &
+      varAttr('RainSn_BSoil', 'mm', f146, 'Rain on snow for bare soil surface', aS, 'snow', 0), &
+      varAttr('RainSn_Water', 'mm', f146, 'Rain on snow for water surface', aS, 'snow', 0), &
+      varAttr('Qn_PavedSnow', 'W m-2', f146, 'Net all-wave radiation for snow paved surface', aA, 'snow', 0), &
+      varAttr('Qn_BldgsSnow', 'W m-2', f146, 'Net all-wave radiation for snow building surface', aA, 'snow', 0), &
+      varAttr('Qn_EveTrSnow', 'W m-2', f146, 'Net all-wave radiation for snow evergreen tree surface', aA, 'snow', 0), &
+      varAttr('Qn_DecTrSnow', 'W m-2', f146, 'Net all-wave radiation for snow deciduous tree surface', aA, 'snow', 0), &
+      varAttr('Qn_GrassSnow', 'W m-2', f146, 'Net all-wave radiation for snow grass surface', aA, 'snow', 0), &
+      varAttr('Qn_BSoilSnow', 'W m-2', f146, 'Net all-wave radiation for snow bare soil surface', aA, 'snow', 0), &
+      varAttr('Qn_WaterSnow', 'W m-2', f146, 'Net all-wave radiation for snow water surface', aA, 'snow', 0), &
+      varAttr('kup_PavedSnow', 'W m-2', f146, 'Reflected shortwave radiation for snow paved surface', aA, 'snow', 0), &
+      varAttr('kup_BldgsSnow', 'W m-2', f146, 'Reflected shortwave radiation for snow building surface', aA, 'snow', 0), &
+      varAttr('kup_EveTrSnow', 'W m-2', f146, 'Reflected shortwave radiation for snow evergreen tree surface', aA, 'snow', 0), &
+      varAttr('kup_DecTrSnow', 'W m-2', f146, 'Reflected shortwave radiation for snow deciduous tree surface', aA, 'snow', 0), &
+      varAttr('kup_GrassSnow', 'W m-2', f146, 'Reflected shortwave radiation for snow grass surface', aA, 'snow', 0), &
+      varAttr('kup_BSoilSnow', 'W m-2', f146, 'Reflected shortwave radiation for snow bare soil surface', aA, 'snow', 0), &
+      varAttr('kup_WaterSnow', 'W m-2', f146, 'Reflected shortwave radiation for snow water surface', aA, 'snow', 0), &
+      varAttr('frMelt_Paved', 'mm', f146, 'Amount of freezing melt water for paved surface', aA, 'snow', 0), &
+      varAttr('frMelt_Bldgs', 'mm', f146, 'Amount of freezing melt water for building surface', aA, 'snow', 0), &
+      varAttr('frMelt_EveTr', 'mm', f146, 'Amount of freezing melt water for evergreen tree surface', aA, 'snow', 0), &
+      varAttr('frMelt_DecTr', 'mm', f146, 'Amount of freezing melt water for deciduous tree surface', aA, 'snow', 0), &
+      varAttr('frMelt_Grass', 'mm', f146, 'Amount of freezing melt water for grass surface', aA, 'snow', 0), &
+      varAttr('frMelt_BSoil', 'mm', f146, 'Amount of freezing melt water for bare soil surface', aA, 'snow', 0), &
+      varAttr('frMelt_Water', 'mm', f146, 'Amount of freezing melt water for water surface', aA, 'snow', 0), &
+      varAttr('MwStore_Paved', 'mm', f146, 'Meltwater store for paved surface', aA, 'snow', 0), &
+      varAttr('MwStore_Bldgs', 'mm', f146, 'Meltwater store for building surface', aA, 'snow', 0), &
+      varAttr('MwStore_EveTr', 'mm', f146, 'Meltwater store for evergreen tree surface', aA, 'snow', 0), &
+      varAttr('MwStore_DecTr', 'mm', f146, 'Meltwater store for deciduous tree surface', aA, 'snow', 0), &
+      varAttr('MwStore_Grass', 'mm', f146, 'Meltwater store for grass surface', aA, 'snow', 0), &
+      varAttr('MwStore_BSoil', 'mm', f146, 'Meltwater store for bare soil surface', aA, 'snow', 0), &
+      varAttr('MwStore_Water', 'mm', f146, 'Meltwater store for water surface', aA, 'snow', 0), &
+      varAttr('DensSnow_Paved', 'kg m-3', f146, 'Snow density for paved surface', aA, 'snow', 0), &
+      varAttr('DensSnow_Bldgs', 'kg m-3', f146, 'Snow density for building surface', aA, 'snow', 0), &
+      varAttr('DensSnow_EveTr', 'kg m-3', f146, 'Snow density for evergreen tree surface', aA, 'snow', 0), &
+      varAttr('DensSnow_DecTr', 'kg m-3', f146, 'Snow density for deciduous tree surface', aA, 'snow', 0), &
+      varAttr('DensSnow_Grass', 'kg m-3', f146, 'Snow density for grass surface', aA, 'snow', 0), &
+      varAttr('DensSnow_BSoil', 'kg m-3', f146, 'Snow density for bare soil surface', aA, 'snow', 0), &
+      varAttr('DensSnow_Water', 'kg m-3', f146, 'Snow density for water surface', aA, 'snow', 0), &
+      varAttr('Sd_Paved', 'mm', f106, 'Snow depth for paved surface', aA, 'snow', 0), &
+      varAttr('Sd_Bldgs', 'mm', f106, 'Snow depth for building surface', aA, 'snow', 0), &
+      varAttr('Sd_EveTr', 'mm', f106, 'Snow depth for evergreen tree surface', aA, 'snow', 0), &
+      varAttr('Sd_DecTr', 'mm', f106, 'Snow depth for deciduous tree surface', aA, 'snow', 0), &
+      varAttr('Sd_Grass', 'mm', f106, 'Snow depth for grass surface', aA, 'snow', 0), &
+      varAttr('Sd_BSoil', 'mm', f106, 'Snow depth for bare soil surface', aA, 'snow', 0), &
+      varAttr('Sd_Water', 'mm', f106, 'Snow depth for water surface', aA, 'snow', 0), &
+      varAttr('Tsnow_Paved', 'degC', f146, 'Snow surface temperature for paved surface', aA, 'snow', 0), &
+      varAttr('Tsnow_Bldgs', 'degC', f146, 'Snow surface temperature for building surface', aA, 'snow', 0), &
+      varAttr('Tsnow_EveTr', 'degC', f146, 'Snow surface temperature for evergreen tree surface', aA, 'snow', 0), &
+      varAttr('Tsnow_DecTr', 'degC', f146, 'Snow surface temperature for deciduous tree surface', aA, 'snow', 0), &
+      varAttr('Tsnow_Grass', 'degC', f146, 'Snow surface temperature for grass surface', aA, 'snow', 0), &
+      varAttr('Tsnow_BSoil', 'degC', f146, 'Snow surface temperature for bare soil surface', aA, 'snow', 0), &
+      varAttr('Tsnow_Water', 'degC', f146, 'Snow surface temperature for water surface', aA, 'snow', 0) &
       /
 
    ! ESTM:

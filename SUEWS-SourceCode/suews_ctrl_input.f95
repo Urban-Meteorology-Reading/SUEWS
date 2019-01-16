@@ -478,7 +478,7 @@ SUBROUTINE InputHeaderCheck(FileName)
    HeaderESTMCoefficients_Reqd(cE_CH_iroof) = "Internal_CHroof"
    HeaderESTMCoefficients_Reqd(cE_CH_ibld) = "Internal_CHbld"
 
-   ! ========== SUEWS_AnthropogenicHeat.txt ======
+   ! ========== SUEWS_AnthropogenicEmission.txt ======
    HeaderAnthropogenic_Reqd(cA_Code) = "Code"
    HeaderAnthropogenic_Reqd(cA_BaseTHDD) = "BaseTHDD"
    HeaderAnthropogenic_Reqd(cA_QF_A1) = "QF_A_WD"
@@ -653,10 +653,10 @@ SUBROUTINE InputHeaderCheck(FileName)
                         notUsed, notUsed, notUsedI)
       ENDIF
 
-   ELSEIF (FileName == 'SUEWS_AnthropogenicHeat.txt') THEN
+   ELSEIF (FileName == 'SUEWS_AnthropogenicEmission.txt') THEN
       IF (ANY(HeaderAnthropogenic_File /= HeaderAnthropogenic_Reqd)) THEN
          WRITE (*, *) HeaderAnthropogenic_File == HeaderAnthropogenic_Reqd
-         CALL ErrorHint(56, 'Names or order of columns in SUEWS_AnthropogenicHeat.txt does not match model code.', &
+         CALL ErrorHint(56, 'Names or order of columns in SUEWS_AnthropogenicEmission.txt does not match model code.', &
                         notUsed, notUsed, notUsedI)
       ENDIF
 
@@ -1244,8 +1244,10 @@ SUBROUTINE CodeMatchAnthropogenic(rr, CodeCol)
       IF (Anthropogenic_Coeff(iv5, cA_Code) == SiteSelect(rr, codeCol)) THEN
          EXIT
       ELSEIF (iv5 == nlinesAnthropogenic) THEN
-         WRITE (*, *) 'Program stopped! Anthropogenic code ', SiteSelect(rr, codeCol), 'not found in SUEWS_AnthropogenicHeat.txt.'
-         CALL ErrorHint(57, 'Cannot find code in SUEWS_AnthropogenicHeat.txt', SiteSelect(rr, codeCol), notUsed, notUsedI)
+         WRITE (*, *) 'Program stopped! Anthropogenic code ', SiteSelect(rr, codeCol), &
+                      'not found in SUEWS_AnthropogenicEmission.txt.'
+         CALL ErrorHint(57, 'Cannot find code in SUEWS_AnthropogenicEmission.txt', &
+              SiteSelect(rr, codeCol), notUsed, notUsedI)
       ENDIF
    ENDDO
 

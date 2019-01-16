@@ -37,7 +37,7 @@ MODULE allocateArray
    INTEGER, PARAMETER:: ncolumnsConductance = 13       !SUEWS_Conductance.txt
    INTEGER, PARAMETER:: ncolumnsOHMCoefficients = 4    !SUEWS_OHMCoefficients.txt
    INTEGER, PARAMETER:: ncolumnsESTMCoefficients = 52  !SUEWS_ESTMCoefficients.txt ! S.O. 04 Feb 2016
-   INTEGER, PARAMETER:: ncolumnsAnthropogenic = 37     !SUEWS_AnthropogenicHeat.txt
+   INTEGER, PARAMETER:: ncolumnsAnthropogenic = 37     !SUEWS_AnthropogenicEmission.txt
    INTEGER, PARAMETER:: ncolumnsIrrigation = 25        !SUEWS_Irrigation.txt
    INTEGER, PARAMETER:: ncolumnsProfiles = 25          !SUEWS_Profiles.txt
    INTEGER, PARAMETER:: ncolumnsWGWaterDist = 10       !SUEWS_WithinGridWaterDist.txt
@@ -1730,7 +1730,7 @@ MODULE ColNamesInputFiles
              ! Codes for human impacts on energy, water and snow
              c_SnowProfWD = 51, &  ! Snow-clearing profile in SUEWS_Profile.txt (weekdays)
              c_SnowProfWE = 52, &  ! Snow-clearing profile in SUEWS_Profile.txt (weekends)
-             c_QFCode = 53, &  ! Links anthropogenic heat info in SUEWS_AnthropogenicHeat.txt
+             c_QFCode = 53, &  ! Links anthropogenic heat info in SUEWS_AnthropogenicEmission.txt
              c_IrrCode = 54, &  ! Links irrigation info in SUEWS_Irrigation.txt
              c_WProfManuWD = 55, &  ! Links to water-use profile in SUEWS_Profile.txt (manual irrigation, weekdays)
              c_WProfManuWE = 56, &  ! Links to water-use profile in SUEWS_Profile.txt (manual irrigation, weekends)
@@ -1976,7 +1976,7 @@ MODULE ColNamesInputFiles
              cE_CH_iroof = 51, &
              cE_CH_ibld = 52
 
-   !========== Columns for SUEWS_AnthropogenicHeat.txt ===================
+   !========== Columns for SUEWS_AnthropogenicEmission.txt ===================
    INTEGER ::   cA_Code = 1, &
               cA_BaseTHDD = 2, &
               cA_QF_A1 = 3, &   !Weekday

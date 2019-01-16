@@ -37,7 +37,7 @@ MODULE allocateArray
    INTEGER, PARAMETER:: ncolumnsConductance = 13       !SUEWS_Conductance.txt
    INTEGER, PARAMETER:: ncolumnsOHMCoefficients = 4    !SUEWS_OHMCoefficients.txt
    INTEGER, PARAMETER:: ncolumnsESTMCoefficients = 52  !SUEWS_ESTMCoefficients.txt ! S.O. 04 Feb 2016
-   INTEGER, PARAMETER:: ncolumnsAnthropogenic = 34     !SUEWS_AnthropogenicHeat.txt
+   INTEGER, PARAMETER:: ncolumnsAnthropogenic = 37     !SUEWS_AnthropogenicHeat.txt
    INTEGER, PARAMETER:: ncolumnsIrrigation = 25        !SUEWS_Irrigation.txt
    INTEGER, PARAMETER:: ncolumnsProfiles = 25          !SUEWS_Profiles.txt
    INTEGER, PARAMETER:: ncolumnsWGWaterDist = 10       !SUEWS_WithinGridWaterDist.txt
@@ -2005,12 +2005,15 @@ MODULE ColNamesInputFiles
               cA_PopProfWE = 26, &  !Weekend
               cA_MinQFMetab = 27, &
               cA_MaxQFMetab = 28, &
-              cA_FrFossilFuel_Heat = 29, &
-              cA_FrFossilFuel_NonHeat = 30, &
-              cA_EF_umolCO2perJ = 31, &
-              cA_EnEF_v_Jkm = 32, &
-              cA_FcEF_v_kgkm = 33, &
-              cA_TrafficUnits = 34
+              cA_MinFCMetab = 29,&
+              cA_MaxFCMetab = 30,&
+              cA_FrPDDwe = 31,&
+              cA_FrFossilFuel_Heat = 32, &
+              cA_FrFossilFuel_NonHeat = 33, &
+              cA_EF_umolCO2perJ = 34, &
+              cA_EnEF_v_Jkm = 35, &
+              cA_FcEF_v_kgkm = 36, &
+              cA_TrafficUnits = 37
 
    !========== Columns for SUEWS_Irrigation.txt ==========================
 

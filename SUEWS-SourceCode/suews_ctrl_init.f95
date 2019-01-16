@@ -40,7 +40,7 @@ SUBROUTINE OverallRunControl
       FileNames = [CHARACTER(len=50) :: &
                    'SUEWS_NonVeg.txt', 'SUEWS_Veg.txt', 'SUEWS_Water.txt', 'SUEWS_Snow.txt', &
                    'SUEWS_Soil.txt', 'SUEWS_Conductance.txt', 'SUEWS_OHMCoefficients.txt', &
-                   'SUEWS_ESTMCoefficients.txt', 'SUEWS_AnthropogenicHeat.txt', 'SUEWS_Irrigation.txt', &
+                   'SUEWS_ESTMCoefficients.txt', 'SUEWS_AnthropogenicEmission.txt', 'SUEWS_Irrigation.txt', &
                    'SUEWS_Profiles.txt', 'SUEWS_WithinGridWaterDist.txt', 'SUEWS_BiogenCO2.txt']
 
    ! ---- Namelist for RunControl.nml ----
@@ -224,7 +224,7 @@ SUBROUTINE OverallRunControl
 
    ! FileNames = (/'SUEWS_NonVeg.txt', 'SUEWS_Veg.txt', 'SUEWS_Water.txt', 'SUEWS_Snow.txt', &
    !      'SUEWS_Soil.txt', 'SUEWS_Conductance.txt', 'SUEWS_OHMCoefficients.txt', &
-   !      'SUEWS_ESTMCoefficients.txt', 'SUEWS_AnthropogenicHeat.txt', 'SUEWS_Irrigation.txt', &
+   !      'SUEWS_ESTMCoefficients.txt', 'SUEWS_AnthropogenicEmission.txt', 'SUEWS_Irrigation.txt', &
    !      'SUEWS_Profiles.txt', 'SUEWS_WithinGridWaterDist.txt', 'SUEWS_BiogenCO2.txt'/)
 
    DO iFile = 1, nFile

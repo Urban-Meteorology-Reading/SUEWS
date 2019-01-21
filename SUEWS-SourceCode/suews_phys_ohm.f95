@@ -280,7 +280,7 @@ SUBROUTINE OHM_dqndt_cal_X(dt, dt_since_start, qn1_av, qn1, dqndt)
    ENDIF
 
    ! get weighted average at a previous time specified by `window_hr`
-   qn1_av_0 = qn1_av - dqndt*(window_hr - dt/3600)
+   qn1_av_0 = qn1_av - dqndt*(window_hr - dt/3600.)
 
    ! averaged qn1 for previous period = dt0_thresh
    qn1_av = (qn1_av*(dt0 - dt) + qn1*dt)/(dt0)

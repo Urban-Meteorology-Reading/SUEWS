@@ -238,5 +238,5 @@ phases:
       externalFeeds: 'PyPI'
 
   - script: 'twine upload -r PyPI --config-file $(PYPIRC_PATH) --skip-existing  dist/*whl'
-    displayName:        'upload supy_driver'
+    displayName:        'upload supy_driver test'
     continueOnError:    true

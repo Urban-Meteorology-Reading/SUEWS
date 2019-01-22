@@ -84,6 +84,15 @@ phases:
     displayName:        'make supy_driver'
     continueOnError:    true
 
+  - task: TwineAuthenticate@0
+    inputs:
+      # artifactFeeds: 'feed_name1, feed_name2'
+      externalFeeds: 'PyPI'
+
+  - script: 'twine upload -r PyPI --config-file $(PYPIRC_PATH) --skip-existing  dist/*whl'
+    displayName:        'upload supy_driver'
+    continueOnError:    true
+
 
 - phase:                Phase_2
   displayName:          Agent Windows
@@ -149,6 +158,14 @@ phases:
     displayName:        'make supy_driver'
     continueOnError:    true
 
+  - task: TwineAuthenticate@0
+    inputs:
+      # artifactFeeds: 'feed_name1, feed_name2'
+      externalFeeds: 'PyPI'
+
+  - script: 'twine upload -r PyPI --config-file $(PYPIRC_PATH) --skip-existing  dist/*whl'
+    displayName:        'upload supy_driver'
+    continueOnError:    true
 
 - phase:                Phase_3
   displayName:          Agent Linux
@@ -213,4 +230,13 @@ phases:
 
   - script:             'make driver'
     displayName:        'make supy_driver'
+    continueOnError:    true
+
+  - task: TwineAuthenticate@0
+    inputs:
+      # artifactFeeds: 'feed_name1, feed_name2'
+      externalFeeds: 'PyPI'
+
+  - script: 'twine upload -r PyPI --config-file $(PYPIRC_PATH) --skip-existing  dist/*whl'
+    displayName:        'upload supy_driver'
     continueOnError:    true

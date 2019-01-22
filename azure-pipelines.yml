@@ -237,6 +237,6 @@ phases:
       # artifactFeeds: 'feed_name1, feed_name2'
       externalFeeds: 'PyPI'
 
-  - script: 'twine upload -r PyPI --config-file $(PYPIRC_PATH) --skip-existing  dist/*whl'
+  - script: 'twine upload --config-file $(PYPIRC_PATH) --skip-existing  dist/*whl'
     displayName:        'upload supy_driver test'
     continueOnError:    true

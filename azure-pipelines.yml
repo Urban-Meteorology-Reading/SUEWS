@@ -331,25 +331,25 @@ phases:
     displayName:        'make supy_driver'
     continueOnError:    true
 
-  - task:               UsePythonVersion@0
-    inputs:
-      versionSpec:      '3.6'
-      addToPath:        true
-      architecture:     'x64'
+  # - task:               UsePythonVersion@0
+  #   inputs:
+  #     versionSpec:      '3.6'
+  #     addToPath:        true
+  #     architecture:     'x64'
 
-  - script:             'make driver'
-    displayName:        'make supy_driver'
-    continueOnError:    true
+  # - script:             'make driver'
+  #   displayName:        'make supy_driver'
+  #   continueOnError:    true
 
-  - task:               UsePythonVersion@0
-    inputs:
-      versionSpec:      '3.5'
-      addToPath:        true
-      architecture:     'x64'
+  # - task:               UsePythonVersion@0
+  #   inputs:
+  #     versionSpec:      '3.5'
+  #     addToPath:        true
+  #     architecture:     'x64'
 
-  - script:             'make driver'
-    displayName:        'make supy_driver'
-    continueOnError:    true
+  # - script:             'make driver'
+  #   displayName:        'make supy_driver'
+  #   continueOnError:    true
 
   - task: TwineAuthenticate@0
     inputs:
@@ -357,6 +357,8 @@ phases:
       externalFeeds: 'PyPI'
 
   - script:  |
+      auditwheel show `ls supy-driver/dist/*whl`
+      auditwheel repair `ls supy-driver/dist/*whl`
       rm supy-driver/dist/*whl
       mv supy-driver/wheelhouse/* supy-driver/dist/.
       twine upload -r SuPy --config-file $(PYPIRC_PATH) --skip-existing supy-driver/dist/*whl

@@ -148,6 +148,7 @@ if sysname == 'Linux':
     # fn_wheel = sorted(list_wheels, key=os.path.getmtime)[-1]
     # print(list_wheels, fn_wheel)
     subprocess.call(["auditwheel", "repair", fn_wheel])
+    subprocess.call(["ls", "-lrt"])
 
 
 # change compiler settings

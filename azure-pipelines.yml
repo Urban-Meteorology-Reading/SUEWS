@@ -357,10 +357,11 @@ phases:
       externalFeeds: 'PyPI'
 
   - script:  |
-      auditwheel show `ls supy-driver/dist/*whl`
-      auditwheel repair `ls supy-driver/dist/*whl`
-      rm supy-driver/dist/*whl
-      mv supy-driver/wheelhouse/* supy-driver/dist/.
-      twine upload -r SuPy --config-file $(PYPIRC_PATH) --skip-existing supy-driver/dist/*whl
+      docker run -v $(pwd):/io dockcross/manylinux-x64 bash -c "cd /io/supy-driver;make clean;make suews"
+      docker run -v $(pwd):/io dockcross/manylinux-x64 bash -c "cd /io/supy-driver;/opt/python/cp35-cp35m/bin/python -m pip install -r requirements.txt; /opt/python/cp35-cp35m/bin/python setup.py bdist_wheel; ls -lrt dist/*; ls -lrt wheelhouse/*"
+      docker run -v $(pwd):/io dockcross/manylinux-x64 bash -c "cd /io/supy-driver;/opt/python/cp36-cp36m/bin/python -m pip install -r requirements.txt; /opt/python/cp36-cp36m/bin/python setup.py bdist_wheel; ls -lrt dist/*; ls -lrt wheelhouse/*"
+      docker run -v $(pwd):/io dockcross/manylinux-x64 bash -c "cd /io/supy-driver;/opt/python/cp37-cp37m/bin/python -m pip install -r requirements.txt; /opt/python/cp37-cp37m/bin/python setup.py bdist_wheel; ls -lrt dist/*; ls -lrt wheelhouse/*"
+      cd supy-driver
+      twine upload -r SuPy --config-file $(PYPIRC_PATH) --skip-existing wheelhouse/*whl
     displayName:        'upload supy_driver test'
     continueOnError:    true

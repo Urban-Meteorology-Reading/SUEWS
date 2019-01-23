@@ -57,8 +57,7 @@ release:
 # make supy dist
 driver:
 	$(info $$PYTHON is [${PYTHON}])
-	$(MAKE) -C $(SuPy_dir) test; # test supy_driver
-	$(MAKE) -C $(SuPy_dir) main; # make supy_driver with the `main` recipe
+	$(MAKE) -C $(SuPy_dir) test; # make and test supy_driver
 
 pip:
 	pip install pipreqs

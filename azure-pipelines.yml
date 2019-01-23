@@ -8,125 +8,125 @@ variables:
   release_tag:          'latest-dev'
   release_title:        'Latest Release Test'
 
-strategy:
-  matrix:
-    linux:
-      imageName: 'ubuntu-16.04'
-    mac:
-      imageName: 'macos-10.13'
-    windows:
-      imageName: 'vs2017-win2016'
-
 resources:
 - repo:                 self
 
-pool:
-  vmImage: $(imageName)
+# pool:
+#   vmImage: $(imageName)
 
-jobs:
+# strategy:
+#   matrix:
+#     linux:
+#       imageName: 'ubuntu-16.04'
+#     mac:
+#       imageName: 'macos-10.13'
+#     windows:
+#       imageName: 'vs2017-win2016'
 
-- job: Build SUEWS
+# jobs:
 
-  steps:
-  # Use Python Version
-  # Retrieves the specified version of Python from the tool cache. Optionally add it to PATH.
-  - task:               UsePythonVersion@0
-    inputs:
-      versionSpec:      '3.7'
-      addToPath:        true
-      architecture:     'x64'
+# - job: Build SUEWS
 
-  # install compiler: gfortran
-  # Linux
-  - bash: |
-      sudo apt-get update
-      sudo apt-get install build-essential gfortran
-    condition: eq( variables['Agent.OS'], 'Linux' )
-    displayName: install gfortran
-  # macOS
-  - bash: |
-      brew update; brew install gcc
-    condition: eq( variables['Agent.OS'], 'Darwin' )
-    displayName: install gfortran
-  # Windows; no need in this case
-  # - powershell: |
-  #     Set-Variable -Name IPADDR -Value ((Get-NetIPAddress | ?{ $_.AddressFamily -eq "IPv4" -and !($_.IPAddress -match "169") -and !($_.IPaddress -match "127") } | Select-Object -First 1).IPAddress)
-  #     Write-Host "##vso[task.setvariable variable=IP_ADDR]$IPADDR"
-  #   condition: eq( variables['Agent.OS'], 'Windows_NT' )
-  #   displayName: Get IP on Windows
+#   steps:
+#   # Use Python Version
+#   # Retrieves the specified version of Python from the tool cache. Optionally add it to PATH.
+#   - task:               UsePythonVersion@0
+#     inputs:
+#       versionSpec:      '3.7'
+#       addToPath:        true
+#       architecture:     'x64'
 
-  # test suews only on macOS
-  - bash: |
-      make test
-    condition: eq( variables['Agent.OS'], 'Darwin' )
-    displayName: test SUEWS
+#   # install compiler: gfortran
+#   # Linux
+#   - bash: |
+#       sudo apt-get update
+#       sudo apt-get install build-essential gfortran
+#     condition: eq( variables['Agent.OS'], 'Linux' )
+#     displayName: install gfortran
+#   # macOS
+#   - bash: |
+#       brew update; brew install gcc
+#     condition: eq( variables['Agent.OS'], 'Darwin' )
+#     displayName: install gfortran
+#   # Windows; no need in this case
+#   # - powershell: |
+#   #     Set-Variable -Name IPADDR -Value ((Get-NetIPAddress | ?{ $_.AddressFamily -eq "IPv4" -and !($_.IPAddress -match "169") -and !($_.IPaddress -match "127") } | Select-Object -First 1).IPAddress)
+#   #     Write-Host "##vso[task.setvariable variable=IP_ADDR]$IPADDR"
+#   #   condition: eq( variables['Agent.OS'], 'Windows_NT' )
+#   #   displayName: Get IP on Windows
 
-
-  # make SUEWS release
-  - script:             |
-      make release
-      displayName:        'make suews'
-      continueOnError:    true
-
-  # push SUEWS to GH release page
-  - task:               GithubRelease@0
-    inputs:
-      gitHubConnection: new GitHub connection
-      repositoryName:   Urban-Meteorology-Reading/SUEWS
-      assets:           ./ReleaseRepo/*.zip
-      action:           'Edit'
-      target:           '$(build.sourceVersion)'
-      tagSource:        'manual' # 'auto'
-      tag:              $(release_tag) # Required when action == edit || action == discard || tagSource == manual
-      title:            $(release_title)
-      assetUploadMode:  'replace'
-      isDraft:          true
-      isPrerelease:     false
-      addChangeLog:     false
-
-- job: build driver
-  strategy:
-      maxParallel: 4
-      matrix:
-        Python35:
-          PYTHON_VERSION: '3.5'
-        Python36:
-          PYTHON_VERSION: '3.6'
-        Python37:
-          PYTHON_VERSION: '3.7'
-
-  steps:
-
-  - task:               UsePythonVersion@0
-    inputs:
-      versionSpec:      $(PYTHON_VERSION)
-      addToPath:        true
-      architecture:     'x64'
-
-  - script:             'make driver'
-    displayName:        'make supy_driver'
-    continueOnError:    true
-
-  - task: TwineAuthenticate@0
-    inputs:
-      # artifactFeeds: 'feed_name1, feed_name2'
-      externalFeeds: 'PyPI'
-
-  - script:     |
-      rm supy-driver/dist/*whl
-      mv supy-driver/wheelhouse/* supy-driver/dist/.
-    displayName:        'move modified wheels to dist'
-    continueOnError:    true
-    condition: eq( variables['Agent.OS'], 'Linux' )
-
-  - script:     |
-      twine upload -r SuPy --config-file $(PYPIRC_PATH) --skip-existing supy-driver/dist/*whl
-    displayName:        'upload supy_driver'
-    continueOnError:    true
+#   # test suews only on macOS
+#   - bash: |
+#       make test
+#     condition: eq( variables['Agent.OS'], 'Darwin' )
+#     displayName: test SUEWS
 
 
+#   # make SUEWS release
+#   - script:             |
+#       make release
+#       displayName:        'make suews'
+#       continueOnError:    true
 
-# phases:
+#   # push SUEWS to GH release page
+#   - task:               GithubRelease@0
+#     inputs:
+#       gitHubConnection: new GitHub connection
+#       repositoryName:   Urban-Meteorology-Reading/SUEWS
+#       assets:           ./ReleaseRepo/*.zip
+#       action:           'Edit'
+#       target:           '$(build.sourceVersion)'
+#       tagSource:        'manual' # 'auto'
+#       tag:              $(release_tag) # Required when action == edit || action == discard || tagSource == manual
+#       title:            $(release_title)
+#       assetUploadMode:  'replace'
+#       isDraft:          true
+#       isPrerelease:     false
+#       addChangeLog:     false
+
+# - job: build driver
+#   strategy:
+#       maxParallel: 4
+#       matrix:
+#         Python35:
+#           PYTHON_VERSION: '3.5'
+#         Python36:
+#           PYTHON_VERSION: '3.6'
+#         Python37:
+#           PYTHON_VERSION: '3.7'
+
+#   steps:
+
+#   - task:               UsePythonVersion@0
+#     inputs:
+#       versionSpec:      $(PYTHON_VERSION)
+#       addToPath:        true
+#       architecture:     'x64'
+
+#   - script:             'make driver'
+#     displayName:        'make supy_driver'
+#     continueOnError:    true
+
+#   - task: TwineAuthenticate@0
+#     inputs:
+#       # artifactFeeds: 'feed_name1, feed_name2'
+#       externalFeeds: 'PyPI'
+
+#   - script:     |
+#       rm supy-driver/dist/*whl
+#       mv supy-driver/wheelhouse/* supy-driver/dist/.
+#     displayName:        'move modified wheels to dist'
+#     continueOnError:    true
+#     condition: eq( variables['Agent.OS'], 'Linux' )
+
+#   - script:     |
+#       twine upload -r SuPy --config-file $(PYPIRC_PATH) --skip-existing supy-driver/dist/*whl
+#     displayName:        'upload supy_driver'
+#     continueOnError:    true
+
+
+
+phases:
 # - phase:                Phase_1
 #   displayName:          Agent macOS
 
@@ -282,81 +282,83 @@ jobs:
 #     displayName:        'upload supy_driver'
 #     continueOnError:    true
 
-# - phase:                Phase_3
-#   displayName:          Agent Linux
+- phase:                Phase_3
+  displayName:          Agent Linux
 
-#   condition:            succeeded()
-#   queue:
-#     name:               Hosted Ubuntu 1604
-#   steps:
-#   - task:               UsePythonVersion@0
-#     inputs:
-#       versionSpec:      '3.7'
-#       addToPath:        true
-#       architecture:     'x64'
+  condition:            succeeded()
+  queue:
+    name:               Hosted Ubuntu 1604
+  steps:
+  - task:               UsePythonVersion@0
+    inputs:
+      versionSpec:      '3.7'
+      addToPath:        true
+      architecture:     'x64'
 
-#   - script:             |
-#        sudo apt-get update
-#        sudo apt-get install build-essential gfortran
-#     displayName:        'install gfortran'
-#     continueOnError:    true
+  - script:             |
+       sudo apt-get update
+       sudo apt-get install build-essential gfortran
+    displayName:        'install gfortran'
+    continueOnError:    true
 
-#   - script:             |
-#        make release
-#     displayName:        'make suews'
-#     continueOnError:    true
+  - script:             |
+       make release
+    displayName:        'make suews'
+    continueOnError:    true
 
-#   - task:               GithubRelease@0
-#     inputs:
-#       gitHubConnection: new GitHub connection
-#       repositoryName:   Urban-Meteorology-Reading/SUEWS
-#       assets:           ./ReleaseRepo/*.zip
-#       action:           'Edit'
-#       target:           '$(build.sourceVersion)'
-#       tagSource:        'manual' # 'auto'
-#       tag:              $(release_tag) # Required when action == edit || action == discard || tagSource == manual
-#       title:            $(release_title)
-#       assetUploadMode:  'replace'
-#       isDraft:          true
-#       isPrerelease:     false
-#       addChangeLog:     false
+  - task:               GithubRelease@0
+    inputs:
+      gitHubConnection: new GitHub connection
+      repositoryName:   Urban-Meteorology-Reading/SUEWS
+      assets:           ./ReleaseRepo/*.zip
+      action:           'Edit'
+      target:           '$(build.sourceVersion)'
+      tagSource:        'manual' # 'auto'
+      tag:              $(release_tag) # Required when action == edit || action == discard || tagSource == manual
+      title:            $(release_title)
+      assetUploadMode:  'replace'
+      isDraft:          true
+      isPrerelease:     false
+      addChangeLog:     false
 
-#   - task:               UsePythonVersion@0
-#     inputs:
-#       versionSpec:      '3.7'
-#       addToPath:        true
-#       architecture:     'x64'
+  - task:               UsePythonVersion@0
+    inputs:
+      versionSpec:      '3.7'
+      addToPath:        true
+      architecture:     'x64'
 
-#   - script:             'make driver'
-#     displayName:        'make supy_driver'
-#     continueOnError:    true
+  - script:             'make driver'
+    displayName:        'make supy_driver'
+    continueOnError:    true
 
-#   - task:               UsePythonVersion@0
-#     inputs:
-#       versionSpec:      '3.6'
-#       addToPath:        true
-#       architecture:     'x64'
+  - task:               UsePythonVersion@0
+    inputs:
+      versionSpec:      '3.6'
+      addToPath:        true
+      architecture:     'x64'
 
-#   - script:             'make driver'
-#     displayName:        'make supy_driver'
-#     continueOnError:    true
+  - script:             'make driver'
+    displayName:        'make supy_driver'
+    continueOnError:    true
 
-#   - task:               UsePythonVersion@0
-#     inputs:
-#       versionSpec:      '3.5'
-#       addToPath:        true
-#       architecture:     'x64'
+  - task:               UsePythonVersion@0
+    inputs:
+      versionSpec:      '3.5'
+      addToPath:        true
+      architecture:     'x64'
 
-#   - script:             'make driver'
-#     displayName:        'make supy_driver'
-#     continueOnError:    true
+  - script:             'make driver'
+    displayName:        'make supy_driver'
+    continueOnError:    true
 
-#   - task: TwineAuthenticate@0
-#     inputs:
-#       # artifactFeeds: 'feed_name1, feed_name2'
-#       externalFeeds: 'PyPI'
+  - task: TwineAuthenticate@0
+    inputs:
+      # artifactFeeds: 'feed_name1, feed_name2'
+      externalFeeds: 'PyPI'
 
-#   - script:  |
-#       twine upload -r SuPy --config-file $(PYPIRC_PATH) --skip-existing supy-driver/dist/*whl
-#     displayName:        'upload supy_driver test'
-#     continueOnError:    true
+  - script:  |
+      rm supy-driver/dist/*whl
+      mv supy-driver/wheelhouse/* supy-driver/dist/.
+      twine upload -r SuPy --config-file $(PYPIRC_PATH) --skip-existing supy-driver/dist/*whl
+    displayName:        'upload supy_driver test'
+    continueOnError:    true

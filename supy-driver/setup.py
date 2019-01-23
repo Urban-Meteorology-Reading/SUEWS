@@ -109,7 +109,7 @@ ext_modules = [
               extra_link_args=[('' if sysname == 'Linux' else '-static')])]
 
 setup(name='supy_driver',
-      version=get_suews_version(ver_minor=23),
+      version=get_suews_version(ver_minor=24),
       description='the SUEWS driver driven by f2py',
       long_description=readme(),
       url='https://github.com/sunt05/SuPy',
@@ -136,8 +136,10 @@ setup(name='supy_driver',
 
 
 # use auditwheel to repair file name
+path_file=Path(__file__).resolve().parent
+print(path_file)
 if sysname == 'Linux':
-    fn_wheel = sorted(glob.glob('dist/*whl'), key=os.path.getmtime)[-1]
+    fn_wheel = sorted(path_file.glob('dist/*whl'), key=os.path.getmtime)[-1]
     subprocess.call(["auditwheel", "repair", fn_wheel])
 
 

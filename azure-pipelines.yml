@@ -90,8 +90,7 @@ phases:
       externalFeeds: 'PyPI'
 
   - script:     |
-      cat $(PYPIRC_PATH)
-      twine upload --config-file $(PYPIRC_PATH) --skip-existing dist/*whl
+      cat $(PYPIRC_PATH); twine upload --config-file $(PYPIRC_PATH) --skip-existing dist/*whl
     displayName:        'upload supy_driver'
     continueOnError:    true
 

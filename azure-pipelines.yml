@@ -89,7 +89,7 @@ phases:
       # artifactFeeds: 'feed_name1, feed_name2'
       externalFeeds: 'PyPI'
 
-  - script: 'twine -r pypi --config-file $(PYPIRC_PATH) --skip-existing dist/*whl '
+  - script: 'twine uoload --config-file $(PYPIRC_PATH) --skip-existing dist/*whl '
     displayName:        'upload supy_driver'
     continueOnError:    true
 

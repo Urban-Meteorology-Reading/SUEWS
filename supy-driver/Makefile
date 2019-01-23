@@ -78,6 +78,8 @@ clean:
 # clean all existing builds, rebuild f2py libs, build wheels and test
 test:
 	$(MAKE) show
+	$(PYTHON) -m pip install -r requirements.txt
+	$(PYTHON) -m pip install auditwheel
 	$(PYTHON) setup.py test
 
 # clean all existing builds, rebuild f2py libs, build wheels and install in dev mode

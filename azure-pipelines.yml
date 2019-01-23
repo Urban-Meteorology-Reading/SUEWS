@@ -34,8 +34,8 @@ phases:
     continueOnError:    true
 
   - script:             |
-       make test
-       make release
+      make test
+      make release
     displayName:        'make suews'
     continueOnError:    true
 
@@ -89,7 +89,7 @@ phases:
       # artifactFeeds: 'feed_name1, feed_name2'
       externalFeeds: 'PyPI'
 
-  - script: |
+  - script:     |
       cat $(PYPIRC_PATH)
       twine upload --config-file $(PYPIRC_PATH) --skip-existing dist/*whl
     displayName:        'upload supy_driver'

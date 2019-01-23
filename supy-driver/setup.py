@@ -143,7 +143,8 @@ setup(name='supy_driver',
 if sysname == 'Linux':
     path_dir_driver = Path(__file__).resolve().parent
     list_wheels = list(path_dir_driver.glob('dist/*whl'))
-    fn_wheel = fn_wheel = sorted(list_wheels, key=os.path.getmtime)[-1]
+    fn_wheel = sorted(list_wheels, key=os.path.getmtime)[-1]
+    print(list_wheels, fn_wheel)
     subprocess.call(["auditwheel", "repair", fn_wheel])
 
 

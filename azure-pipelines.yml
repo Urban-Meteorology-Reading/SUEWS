@@ -82,7 +82,7 @@ phases:
 
   # - script:             'make driver'
   #   displayName:        'make supy_driver'
-    continueOnError:    true
+    # continueOnError:    true
 
   - task: TwineAuthenticate@0
     inputs:

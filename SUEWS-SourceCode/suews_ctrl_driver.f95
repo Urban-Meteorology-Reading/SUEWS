@@ -1094,6 +1094,7 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::cpAnOHM   !< heat capacity [J m-3 K-1]
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::kkAnOHM   !< thermal conductivity [W m-1 K-1]
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::chAnOHM   !< bulk transfer coef [J m-3 K-1]
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::snowFrac
 
       REAL(KIND(1d0)), DIMENSION(:, :), INTENT(in)::MetForcingData_grid !< met forcing array of grid
 
@@ -1112,7 +1113,6 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(6, nsurf), INTENT(inout)::StoreDrainPrm
 
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::deltaQi ! storage heat flux of snow surfaces
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::snowFrac
 
       REAL(KIND(1d0)), DIMENSION(27), INTENT(out):: dataOutLineESTM
       REAL(KIND(1d0)), INTENT(out)::qn1_S
@@ -1125,9 +1125,9 @@ CONTAINS
       REAL(KIND(1d0))::qn1_use ! qn used in OHM calculations
 
       ! initialise output variables
-      deltaQi = 0
-      snowFrac = 0
-      qn1_S = 0
+      !deltaQi = 0
+      !snowFrac = 0
+      !qn1_S = 0
       dataOutLineESTM = -999
       qs = -999
       a1 = -999
@@ -1476,6 +1476,11 @@ CONTAINS
       REAL(KIND(1d0))::runoffAGveg_m3
       REAL(KIND(1d0))::nsh_real
       REAL(KIND(1d0))::tstep_real
+      REAL(KIND(1d0))::ev_tot
+      REAL(KIND(1d0))::qe_tot
+      REAL(KIND(1d0))::surf_chang_tot
+      REAL(KIND(1d0))::runoff_tot
+      REAL(KIND(1d0))::chSnow_tot
 
       REAL(KIND(1d0)), DIMENSION(7)::capStore ! current storage capacity [mm]
 
@@ -1491,9 +1496,12 @@ CONTAINS
       ! Initialize the output variables
       qe = 0
       ev = 0
+      qe_tot = 0
+      ev_tot = 0
       swe = 0
       ev_snow = 0
       ev_per_tstep = 0
+      qe_per_tstep = 0
       surf_chang_per_tstep = 0
       runoff_per_tstep = 0
       state_per_tstep = 0
@@ -1535,9 +1543,16 @@ CONTAINS
                   snowFrac, SnowWater, iceFrac, SnowDens, &
                   rss_nsurf, runoffSnow, & ! output
                   runoff, runoffSoil, chang, changSnow, SnowToSurf, state_id, ev_snow, soilstore_id, &
-                  SnowDepth, SnowRemoval, swe, ev, chSnow_per_interval, &
-                  ev_per_tstep, qe_per_tstep, runoff_per_tstep, surf_chang_per_tstep, &
+                  SnowDepth, SnowRemoval, swe, ev, chSnow_tot, &
+                  ev_tot, qe_tot, runoff_tot, surf_chang_tot, &
                   runoffPipes, mwstore, runoffwaterbody)
+
+                  !Actual updates here as xx_tstep variables not taken as input to snowcalc
+                  ev_per_tstep=ev_per_tstep+ev_tot
+                  qe_per_tstep=qe_per_tstep+qe_tot
+                  runoff_per_tstep=runoff_per_tstep+runoff_tot
+                  surf_chang_per_tstep=surf_chang_per_tstep+surf_chang_tot
+                  chSnow_per_interval=chSnow_per_interval+chSnow_tot
             ELSE
                snowFrac(is) = 0
                SnowDens(is) = 0
@@ -1566,6 +1581,9 @@ CONTAINS
             ! Sum evaporation from different surfaces to find total evaporation [mm]
             ev_per_tstep = ev_per_tstep + evap(is)*sfr(is)
 
+            ! Sum latent heat flux from different surfaces to find total latent heat flux
+            qe_per_tstep = qe_per_tstep+qe*sfr(is)
+
             ! Sum change from different surfaces to find total change to surface state_id
             surf_chang_per_tstep = surf_chang_per_tstep + (state_id(is) - stateOld(is))*sfr(is)
 
@@ -1588,8 +1606,7 @@ CONTAINS
          ENDIF
       ENDDO  !end loop over surfaces
 
-      ! Convert evaporation to latent heat flux [W m-2]
-      qe_per_tstep = ev_per_tstep*tlv
+
       qeOut = qe_per_tstep
 
       ! Calculate volume of water that will move between grids

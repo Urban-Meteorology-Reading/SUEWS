@@ -462,8 +462,8 @@ CONTAINS
       snowFrac, SnowWater, iceFrac, SnowDens, &
       rss_nsurf, runoffSnow, & ! output
       runoff, runoffSoil, chang, changSnow, SnowToSurf, state_id, ev_snow, soilstore_id, &
-      SnowDepth, SnowRemoval, swe, ev, chSnow_per_interval, &
-      ev_per_tstep, qe_per_tstep, runoff_per_tstep, surf_chang_per_tstep, &
+      SnowDepth, SnowRemoval, swe, ev, chSnow_tot, &
+      ev_tot, qe_tot, runoff_tot, surf_chang_tot, &
       runoffPipes, mwstore, runoffwaterbody)
 
       !Calculation of snow and water balance on 5 min timestep. Treats snowfree and snow covered
@@ -585,11 +585,11 @@ CONTAINS
 
       REAL(KIND(1d0)), INTENT(out)::swe
       REAL(KIND(1d0)), INTENT(out)::ev
-      REAL(KIND(1d0)), INTENT(out)::chSnow_per_interval
-      REAL(KIND(1d0)), INTENT(out)::ev_per_tstep
-      REAL(KIND(1d0)), INTENT(out)::qe_per_tstep
-      REAL(KIND(1d0)), INTENT(out)::runoff_per_tstep
-      REAL(KIND(1d0)), INTENT(out)::surf_chang_per_tstep
+      REAL(KIND(1d0)), INTENT(out)::ev_tot
+      REAL(KIND(1d0)), INTENT(out)::chSnow_tot
+      REAL(KIND(1d0)), INTENT(out)::qe_tot
+      REAL(KIND(1d0)), INTENT(out)::runoff_tot
+      REAL(KIND(1d0)), INTENT(out)::surf_chang_tot
       REAL(KIND(1d0)), INTENT(out)::runoffPipes
       REAL(KIND(1d0)), INTENT(out)::mwstore
       REAL(KIND(1d0)), INTENT(out)::runoffwaterbody
@@ -606,6 +606,7 @@ CONTAINS
       REAL(KIND(1d0))::snowFracOld
       REAL(KIND(1d0))::WaterHoldCapFrac
       REAL(KIND(1d0))::FWC                !Water holding capacity of snow in mm
+      REAL(KIND(1d0))::tlv_sub
       ! REAL(KIND(1d0)):: SnowDepletionCurve
 
       INTEGER:: iu                        !1=weekday OR 2=weekend
@@ -615,10 +616,10 @@ CONTAINS
 
       !========================================================================
       !Initialize variables for the calculation of water storages and evaporation
-      ev_per_tstep = 0
-      qe_per_tstep = 0
-      runoff_per_tstep = 0
-      surf_chang_per_tstep = 0
+      ev_tot = 0
+      qe_tot = 0
+      runoff_tot = 0
+      surf_chang_tot = 0
 
       ! Use weekday or weekend snow clearing profile
       iu = 1     !Set to 1=weekday
@@ -658,8 +659,8 @@ CONTAINS
          rss_nsurf(is), ev, qe) !output
 
       IF (snowFrac(is) > 0) THEN
-         ev_snow(is) = Evap_SUEWS_Snow(Qm_Melt(is), Qm_rain(is), lvS_J_kg, avdens, avRh, Press_hPa, Temp_C, RAsnow, &
-                                       psyc_hPa, tstep, avcp, sIce_hPa, dectime)
+         call Evap_SUEWS_Snow(Qm_Melt(is), Qm_rain(is), lvS_J_kg, avdens, avRh, Press_hPa, Temp_C, RAsnow, &
+                              psyc_hPa, tstep, avcp, sIce_hPa, dectime,ev_snow(is),tlv_sub)
       ENDIF
 
       !If not enough water for evaporation in impervious surfaces,
@@ -909,10 +910,12 @@ CONTAINS
             !Change in water stores
             IF (VegFraction > 0) THEN
                IF (Precip + addVeg*(sfr(is)/VegFraction) > (IPThreshold_mmhr/nsh_real)) THEN !if 5min precipitation is larger than 10 mm
-     runoff(is) = runoff(is) + (Precip + addVeg*(sfr(is)/VegFraction) + SnowToSurf(is) + AddWater(is) - (IPThreshold_mmhr/nsh_real))
+                  runoff(is) = runoff(is) + (Precip + addVeg*(sfr(is)/VegFraction) + &
+                               SnowToSurf(is) + AddWater(is) - (IPThreshold_mmhr/nsh_real))
                   chang(is) = (IPThreshold_mmhr/nsh_real) - (drain(is) + ev + freezState(is))
                ELSE
-               chang(is) = Precip + addVeg*(sfr(is)/VegFraction) + SnowToSurf(is) + AddWater(is) - (drain(is) + ev + freezState(is))
+                  chang(is) = Precip + addVeg*(sfr(is)/VegFraction) + SnowToSurf(is) + &
+                              AddWater(is) - (drain(is) + ev + freezState(is))
                ENDIF
             ELSE
                chang(is) = Precip + SnowToSurf(is) + AddWater(is) - (drain(is) + ev + freezState(is))
@@ -959,23 +962,20 @@ CONTAINS
       !Calculate change in SnowPack and state_id for the respective surface areas
       !Here the case where not all surface state_id freezes is handled
       IF (snowFracFresh2 > 0) THEN
-         surf_chang_per_tstep = surf_chang_per_tstep + (state_id(is) - stateOld(is))*sfr(is)*(1 - snowFrac(is)) &
-                                - Precip*sfr(is)*(1 - snowFracFresh2)
-         chSnow_per_interval = chSnow_per_interval + ((SnowPack(is) + SnowWater(is)) - snowTotInit)*sfr(is)*(1 - snowFrac(is)) &
-                               - Precip*sfr(is)*snowFracFresh2
+         surf_chang_tot = (state_id(is) - stateOld(is))*sfr(is)*(1 - snowFrac(is)) - Precip*sfr(is)*(1 - snowFracFresh2)
+         chSnow_tot = ((SnowPack(is) + SnowWater(is)) - snowTotInit)*sfr(is)*(1 - snowFrac(is)) - Precip*sfr(is)*snowFracFresh2
       ELSE
-         surf_chang_per_tstep = surf_chang_per_tstep + (state_id(is) - stateOld(is))*sfr(is)*(1 - snowFrac(is))
-   chSnow_per_interval = chSnow_per_interval + ((SnowPack(is) + SnowWater(is)) - snowTotInit)*sfr(is)*MAX(snowFrac(is), snowfracOld)
+         surf_chang_tot = (state_id(is) - stateOld(is))*sfr(is)*(1 - snowFrac(is))
+         chSnow_tot = ((SnowPack(is) + SnowWater(is)) - snowTotInit)*sfr(is)*MAX(snowFrac(is), snowfracOld)
       ENDIF
 
       !Add evaporation to total
       IF (is == BldgSurf .OR. is == PavSurf) THEN
-         ev_per_tstep = ev_per_tstep + ev*sfr(is)*(1 - snowFrac(is)) + ev_snow(is)*sfr(is)*MAX(snowFrac(is), snowfracOld)
-         qe_per_tstep = qe_per_tstep + ev_snow(is)*lvS_J_kg*sfr(is)*snowFrac(is) &
-                        + ev*lv_J_kg*sfr(is)*(1 - snowFrac(is))
+         ev_tot = ev*sfr(is)*(1 - snowFrac(is)) + ev_snow(is)*sfr(is)*MAX(snowFrac(is), snowfracOld)
+         qe_tot = ev_snow(is)*tlv_sub*sfr(is)*snowFrac(is) + ev*tlv*sfr(is)*(1 - snowFrac(is))
       ELSE
-         ev_per_tstep = ev_per_tstep + ev*sfr(is)*(1 - snowFrac(is)) + ev_snow(is)*sfr(is)*MAX(snowFrac(is), snowfracOld)
-   qe_per_tstep = qe_per_tstep + ev_snow(is)*lvS_J_kg*sfr(is)*MAX(snowFrac(is), snowfracOld) + ev*lv_J_kg*sfr(is)*(1 - snowFrac(is))
+         ev_tot = ev*sfr(is)*(1 - snowFrac(is)) + ev_snow(is)*sfr(is)*MAX(snowFrac(is), snowfracOld)
+         qe_tot = ev_snow(is)*tlv_sub*sfr(is)*MAX(snowFrac(is), snowfracOld) + ev*tlv*sfr(is)*(1 - snowFrac(is))
       ENDIF
 
       !========RUNOFF=======================
@@ -988,8 +988,8 @@ CONTAINS
          sfr, PipeCapacity, RunoffToWater, &
          runoffAGimpervious, surplusWaterBody, runoffAGveg, runoffPipes)! inout:
 
-    runoff_per_tstep=runoff_per_tstep+runoffSnow(is)*sfr(is)*MAX(snowFrac(is),snowfracOld)+runoff(is)*sfr(is)*(1-snowFrac(is))&
-                         + runoffTest*sfr(is)
+    runoff_tot = runoffSnow(is)*sfr(is)*MAX(snowFrac(is),snowfracOld)+runoff(is)*sfr(is)*(1-snowFrac(is))&
+                 + runoffTest*sfr(is)
 
       !===Update snow depth, weighted SWE, and Mwstore
       IF (SnowDens(is) /= 0) THEN
@@ -1089,14 +1089,14 @@ CONTAINS
       ENDIF
 
       !Change state_id of snow and surface
-      chSnow_per_interval = chSnow_per_interval + ((SnowPack(WaterSurf) + SnowWater(WaterSurf)) - snowTotInit)*sfr(WaterSurf)
+      chSnow_tot = ((SnowPack(WaterSurf) + SnowWater(WaterSurf)) - snowTotInit)*sfr(WaterSurf)
       !ch_per_interval=ch_per_interval+(state_id(WaterSurf)-stateOld(WaterSurf))*sfr(WaterSurf)
-      surf_chang_per_tstep = surf_chang_per_tstep + (state_id(WaterSurf) - stateOld(WaterSurf))*sfr(WaterSurf)
+      surf_chang_tot = (state_id(WaterSurf) - stateOld(WaterSurf))*sfr(WaterSurf)
 
       !Evaporation
-      ev_per_tstep = ev_per_tstep + ev*sfr(WaterSurf) + ev_snow(WaterSurf)*sfr(WaterSurf)
-      qe_per_tstep = qe_per_tstep + ev_snow(WaterSurf)*lvS_J_kg*sfr(WaterSurf) + ev*lv_J_kg*sfr(WaterSurf)
-      runoff_per_tstep = runoff_per_tstep + (runoff(is)*sfr(is)) !The total runoff from the area
+      ev_tot = ev*sfr(WaterSurf) + ev_snow(WaterSurf)*sfr(WaterSurf)
+      qe_tot = ev_snow(WaterSurf)*tlv_sub*sfr(WaterSurf) + ev*tlv*sfr(WaterSurf)
+      runoff_tot = runoff(is) !The total runoff from the area
 
       IF (SnowPack(WaterSurf) > 0) THEN     !Fraction only 1 or 0
          snowFrac(WaterSurf) = 1
@@ -1109,52 +1109,59 @@ CONTAINS
    !==========================================================================
    !==========================================================================
    !Calculates evaporation from snow surface (ev_snow).
+   !Last update: LJ/Jan 2019 Function changed to subroutine. tlv_sub added to output
+   SUBROUTINE Evap_SUEWS_Snow(Qm,QP,lvS_J_kg,avdens,avRh,Press_hPa,Temp_C,RAsnow,psyc_hPa,&
+              tstep,avcp,sIce_hPa,dectime,ev_snow,tlv_sub)
 
-   FUNCTION Evap_SUEWS_Snow(Qm, QP, lvS_J_kg, avdens, avRh, Press_hPa, Temp_C, RAsnow, psyc_hPa, &
-                            tstep, avcp, sIce_hPa, dectime) RESULT(ev_snow)
+   USE meteo,ONLY:sat_vap_pressice
 
-      USE meteo, ONLY: sat_vap_pressice
-      IMPLICIT NONE
+   IMPLICIT NONE
 
-      !INPUT
-      REAL(KIND(1d0))::Qm, QP, &        !melt heat, advect. heat
-                        lvS_J_kg, avdens, avRh, &   !latent heat of sublimation, air density,relative humidity,
-                        Press_hPa, Temp_C, &       !air pressure, air temperature
-                        RAsnow, psyc_hPa, &        !aerodyn res snow, psychometric constant, type of evaporation calculation
-                        avcp, sIce_hPa, &            !spec. heat, satured curve on snow
-                        dectime
+   !INPUT
+   REAL (KIND(1d0)),INTENT(in)::Qm        !melt heat,
+   REAL (KIND(1d0)),INTENT(in)::QP        !advect. heat
+   REAL (KIND(1d0)),INTENT(in)::lvS_J_kg  !latent heat of sublimation
+   REAL (KIND(1d0)),INTENT(in)::avdens    !air density
+   REAL (KIND(1d0)),INTENT(in)::avRh      !relative humidity
+   REAL (KIND(1d0)),INTENT(in)::Press_hPa !air pressure
+   REAL (KIND(1d0)),INTENT(in)::Temp_C    !air temperature
+   REAL (KIND(1d0)),INTENT(in)::RAsnow    !aerodyn res snow
+   REAL (KIND(1d0)),INTENT(in)::psyc_hPa  !psychometric constant
+   REAL (KIND(1d0)),INTENT(in)::avcp      !spec. heat,
+   REAL (KIND(1d0)),INTENT(in)::sIce_hPa  !satured curve on snow
+   REAL (KIND(1d0)),INTENT(in)::dectime
+   INTEGER,INTENT(in):: tstep
 
-      !OTHER VARIABLES
-      REAL(KIND(1d0))::e_snow, &     !PM equation obe line
-                        sae_snow, &   !s * (Available energy)
-                        qe_snow, &    !Latent heat flux
-                        ev_snow, &    !Evaporation
-                        vdrcIce, &    !Vapour pressure deficit
-                        esIce_hPa, &  !Saturation vapor pressure over ice
-                        EaIce_hPa, &  !Vapour pressure
-                        tlv_sub, &    !Latent heat for sublimation
-                        tstep_real   !timestep as real
+   REAL (KIND(1d0)),INTENT(out)::ev_snow    !Evaporation
+   REAL (KIND(1d0)),INTENT(out)::tlv_sub    !Latent heat for sublimation
 
-      ! REAL (KIND(1d0)):: sat_vap_pressIce !Function
+   !OTHER VARIABLES
+   REAL (KIND(1d0))::e_snow,&     !PM equation obe line
+   sae_snow,&   !s * (Available energy)
+   qe_snow,&    !Latent heat flux
+   vdrcIce,&    !Vapour pressure deficit
+   esIce_hPa,&  !Saturation vapor pressure over ice
+   EaIce_hPa,&  !Vapour pressure
+   tstep_real   !timestep as real
 
-      INTEGER:: tstep, from = 1
-      !-----------------------------------------------------
+   INTEGER::from=1
+   !-----------------------------------------------------
 
-      tstep_real = REAL(tstep, KIND(1d0))
+   tstep_real = REAL(tstep,KIND(1d0))
 
-      sae_snow = sIce_hPa*(Qp - Qm)   !Calculate the driving parameter in calculation of evaporation. Järvi et al. (2015)
+   sae_snow=sIce_hPa*(Qp-Qm)   !Calculate the driving parameter in calculation of evaporation. Järvi et al. (2015)
 
-      esIce_hPa = sat_vap_pressIce(Temp_C, Press_hPa, from, dectime) !Saturation vapor pressure over ice
-      EaIce_hPa = avRh/100*esIce_hPa                       !Vapour pressure of water
-      vdrcIce = (esIce_hPa - eaIce_hpa)*avdens*avcp          !Vapour pressure deficit
-      tlv_sub = lvS_J_kg/tstep_real                        !Latent heat for sublimation
-      e_snow = sae_snow + vdrcIce/RAsnow                     !PM equation
-      qe_snow = e_snow/(sIce_hPa + psyc_hPa)                 !Latent heat (W/m^2)
-      ev_snow = qe_snow/tlv_sub                            !Evaporation (in mm)
+   esIce_hPa= sat_vap_pressIce(Temp_C,Press_hPa,from,dectime) !Saturation vapor pressure over ice
+   EaIce_hPa=avRh/100*esIce_hPa                       !Vapour pressure of water
+   vdrcIce=(esIce_hPa-eaIce_hpa)*avdens*avcp          !Vapour pressure deficit
+   tlv_sub=lvS_J_kg/tstep_real                        !Latent heat for sublimation
+   e_snow=sae_snow+vdrcIce/RAsnow                     !PM equation
+   qe_snow=e_snow/(sIce_hPa+psyc_hPa)                 !Latent heat (W/m^2)
+   ev_snow=qe_snow/tlv_sub                            !Evaporation (in mm)
 
-      RETURN
+   RETURN
 
-   END FUNCTION Evap_SUEWS_Snow
+   END SUBROUTINE Evap_SUEWS_Snow
 
    !==========================================================================
    !==========================================================================

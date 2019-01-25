@@ -9,7 +9,7 @@ MODULE SUEWS_Driver
    USE NARP_MODULE, ONLY: NARP_cal_SunPosition
    USE AnOHM_module, ONLY: AnOHM
    USE ESTM_module, ONLY: ESTM
-   USE Snow_module, ONLY: SnowCalc, Snow_cal_MeltHeat
+   USE Snow_module, ONLY: SnowCalc, MeltHeat, veg_fr_snow
    USE DailyState_module, ONLY: SUEWS_cal_DailyState, update_DailyState
    USE WaterDist_module, ONLY: drainage, soilstore, &
       SUEWS_cal_SoilState, SUEWS_update_SoilMoist, &
@@ -602,7 +602,7 @@ CONTAINS
 
       !==================Energy related to snow melting/freezing processes=======
       IF (Diagnose == 1) WRITE (*, *) 'Calling MeltHeat'
-      CALL Snow_cal_MeltHeat( &
+      CALL SUEWS_cal_SnowMeltHeat( &
          snowUse, &!input
          lvS_J_kg, lv_J_kg, tstep_real, RadMeltFact, TempMeltFact, SnowAlbMax, &
          SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
@@ -625,6 +625,7 @@ CONTAINS
          H_mod, & !output
          E_mod, psyc_hPa, s_hPa, sIce_hpa, TempVeg, VegPhenLumps)
 
+      !==========================Water Uses================================
       IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_WaterUse...'
       !Gives the external and internal water uses per timestep
       CALL SUEWS_cal_WaterUse( &
@@ -653,7 +654,7 @@ CONTAINS
          UStar, TStar, L_mod, &!output
          zL, gsc, ResistSurf, RA, RAsnow, rb)
 
-      !============= calculate water balance =============
+      !============= Water balance =============
       CALL SUEWS_cal_Water( &
          Diagnose, &!input
          snowUse, NonWaterFraction, addPipes, addImpervious, addVeg, addWaterBody, &
@@ -662,7 +663,6 @@ CONTAINS
          drain, AddWaterRunoff, &
          AdditionalWater, runoffPipes, runoff_per_interval, &
          AddWater, stateOld, soilstoreOld)
-      !============= calculate water balance end =============
 
       !======== Evaporation and surface state_id ========
       CALL SUEWS_cal_QE( &
@@ -1194,6 +1194,145 @@ CONTAINS
    END SUBROUTINE SUEWS_cal_Qs
    !=======================================================================
 
+   !==================Snow melt heat===========================
+   SUBROUTINE SUEWS_cal_SnowMeltHeat( &
+      snowUse, &!input
+      lvS_J_kg, lv_J_kg, tstep_real, RadMeltFact, TempMeltFact, SnowAlbMax, &
+      SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
+      nsh_real, sfr, Tsurf_ind, Tsurf_ind_snow, state_id, qn1_ind_snow, &
+      kup_ind_snow, SnowWater, deltaQi, &
+      SnowPack, snowFrac, SnowAlb, SnowDens, SnowfallCum, &!inout
+      mwh, fwh, Qm, QmFreez, QmRain, &! output
+      veg_fr, snowCalcSwitch, Qm_melt, Qm_freezState, Qm_rain, FreezMelt, &
+      FreezState, FreezStateVol, rainOnSnow, SnowDepth, mw_ind, &
+      dataOutLineSnow)!output
+
+      IMPLICIT NONE
+      ! INTEGER, PARAMETER::nsurf = 7
+      ! INTEGER, PARAMETER::PavSurf = 1
+      ! INTEGER, PARAMETER::BldgSurf = 2
+      ! INTEGER, PARAMETER::WaterSurf = 7
+      ! INTEGER, PARAMETER::ncolumnsDataOutSnow = 102 - 5
+      REAL(KIND(1d0)), PARAMETER::waterDens = 999.8395 !Density of water in 0 cel deg
+
+      !These are input to the module
+      INTEGER, INTENT(in)::snowUse
+      ! INTEGER,INTENT(in)::bldgsurf
+      ! INTEGER,INTENT(in)::nsurf
+      ! INTEGER,INTENT(in)::PavSurf
+      ! INTEGER,INTENT(in)::WaterSurf
+
+      REAL(KIND(1d0)), INTENT(in)::lvS_J_kg
+      REAL(KIND(1d0)), INTENT(in)::lv_J_kg
+      REAL(KIND(1d0)), INTENT(in)::tstep_real
+      REAL(KIND(1d0)), INTENT(in)::RadMeltFact
+      REAL(KIND(1d0)), INTENT(in)::TempMeltFact
+      REAL(KIND(1d0)), INTENT(in)::SnowAlbMax
+      REAL(KIND(1d0)), INTENT(in)::SnowDensMin
+      REAL(KIND(1d0)), INTENT(in)::Temp_C
+      REAL(KIND(1d0)), INTENT(in)::Precip
+      REAL(KIND(1d0)), INTENT(in)::PrecipLimit
+      REAL(KIND(1d0)), INTENT(in)::PrecipLimitAlb
+      REAL(KIND(1d0)), INTENT(in)::nsh_real
+      ! REAL(KIND(1d0)),INTENT(in)::waterdens
+
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::sfr
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::Tsurf_ind
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::Tsurf_ind_snow
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::state_id
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::qn1_ind_snow
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::kup_ind_snow
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::SnowWater
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::deltaQi
+
+      !Input and output as this is updated in this subroutine
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(inout)::SnowPack
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(inout)::snowFrac
+      REAL(KIND(1d0)), INTENT(inout)::SnowAlb
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(inout)::SnowDens
+      REAL(KIND(1d0)), INTENT(inout)::SnowfallCum
+
+      !Output:
+      REAL(KIND(1d0)), INTENT(out)::mwh
+      REAL(KIND(1d0)), INTENT(out)::fwh
+      REAL(KIND(1d0)), INTENT(out)::Qm
+      REAL(KIND(1d0)), INTENT(out)::QmFreez
+      REAL(KIND(1d0)), INTENT(out)::QmRain
+
+      REAL(KIND(1d0)), INTENT(out)::veg_fr
+
+      INTEGER, DIMENSION(nsurf), INTENT(out)::snowCalcSwitch
+
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::Qm_melt
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::Qm_freezState
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::Qm_rain
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::FreezMelt
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::FreezState
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::FreezStateVol
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::rainOnSnow
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::SnowDepth
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::mw_ind
+
+      REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutSnow - 5), INTENT(out) :: dataOutLineSnow
+
+      IF (snowUse == 1) THEN
+
+         CALL MeltHeat( &
+            bldgsurf, &!input
+            nsurf, PavSurf, WaterSurf, lvS_J_kg, lv_J_kg, tstep_real, RadMeltFact, &
+            TempMeltFact, SnowAlbMax, SnowDensMin, Temp_C, Precip, &
+            PrecipLimit, PrecipLimitAlb, nsh_real, waterdens, sfr, &
+            Tsurf_ind, state_id, qn1_ind_snow, SnowWater, deltaQi, &
+            SnowPack, &!inoout
+            snowFrac, SnowAlb, SnowDens, SnowfallCum, &
+            mwh, &!output
+            fwh, Qm, QmFreez, QmRain, snowCalcSwitch, &
+            Qm_melt, Qm_freezState, Qm_rain, FreezMelt, FreezState, FreezStateVol, &
+            rainOnSnow, SnowDepth, mw_ind)
+
+         CALL veg_fr_snow( &
+            sfr, snowFrac, nsurf, &!input
+            veg_fr)!output
+
+      ELSE ! no snow calculation
+         mwh = 0
+         fwh = 0
+         Qm = 0
+         QmFreez = 0
+         QmRain = 0
+         SnowfallCum = 0
+         snowCalcSwitch = 0
+         Qm_melt = 0
+         Qm_freezState = 0
+         Qm_rain = 0
+         FreezMelt = 0
+         FreezState = 0
+         FreezStateVol = 0
+         rainOnSnow = 0
+         SnowDepth = 0
+         mw_ind = 0
+
+         ! update veg_fr when snowFrac=0
+         snowFrac = 0
+         CALL veg_fr_snow( &
+            sfr, snowFrac, nsurf, &!input
+            veg_fr)!output
+
+      END IF
+
+      ! pack output into one line
+      dataOutLineSnow = [ &
+                        SnowPack(1:nsurf), mw_ind(1:nsurf), Qm_melt(1:nsurf), & !26
+                        Qm_rain(1:nsurf), Qm_freezState(1:nsurf), snowFrac(1:(nsurf - 1)), & !46
+                        rainOnSnow(1:nsurf), & !53
+                        qn1_ind_snow(1:nsurf), kup_ind_snow(1:nsurf), freezMelt(1:nsurf), & !74
+                        SnowWater(1:nsurf), SnowDens(1:nsurf), & !88
+                        snowDepth(1:nsurf), Tsurf_ind_snow(1:nsurf)]
+      ! dataOutLineSnow=set_nan(dataOutLineSnow)
+
+   END SUBROUTINE SUEWS_cal_SnowMeltHeat
+!==================Snow melt heat===========================
+
    !==========================water balance================================
    SUBROUTINE SUEWS_cal_Water( &
       Diagnose, &!input
@@ -1547,12 +1686,12 @@ CONTAINS
                   ev_tot, qe_tot, runoff_tot, surf_chang_tot, &
                   runoffPipes, mwstore, runoffwaterbody)
 
-                  !Actual updates here as xx_tstep variables not taken as input to snowcalc
-                  ev_per_tstep=ev_per_tstep+ev_tot
-                  qe_per_tstep=qe_per_tstep+qe_tot
-                  runoff_per_tstep=runoff_per_tstep+runoff_tot
-                  surf_chang_per_tstep=surf_chang_per_tstep+surf_chang_tot
-                  chSnow_per_interval=chSnow_per_interval+chSnow_tot
+               !Actual updates here as xx_tstep variables not taken as input to snowcalc
+               ev_per_tstep = ev_per_tstep + ev_tot
+               qe_per_tstep = qe_per_tstep + qe_tot
+               runoff_per_tstep = runoff_per_tstep + runoff_tot
+               surf_chang_per_tstep = surf_chang_per_tstep + surf_chang_tot
+               chSnow_per_interval = chSnow_per_interval + chSnow_tot
             ELSE
                snowFrac(is) = 0
                SnowDens(is) = 0
@@ -1582,7 +1721,7 @@ CONTAINS
             ev_per_tstep = ev_per_tstep + evap(is)*sfr(is)
 
             ! Sum latent heat flux from different surfaces to find total latent heat flux
-            qe_per_tstep = qe_per_tstep+qe*sfr(is)
+            qe_per_tstep = qe_per_tstep + qe*sfr(is)
 
             ! Sum change from different surfaces to find total change to surface state_id
             surf_chang_per_tstep = surf_chang_per_tstep + (state_id(is) - stateOld(is))*sfr(is)
@@ -1605,7 +1744,6 @@ CONTAINS
 
          ENDIF
       ENDDO  !end loop over surfaces
-
 
       qeOut = qe_per_tstep
 

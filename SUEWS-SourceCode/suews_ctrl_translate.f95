@@ -47,7 +47,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    USE mod_z, ONLY: z, z0m, z0m_in, zdm, zdm_in, zzd
    USE resist, ONLY: g1, g2, g3, g4, g5, g6, th, tl, s1, s2, kmax, gsmodel
    USE snowMod, ONLY: &
-      snowlimpaved, snowlimbuild, radmeltfact, tempmeltfact, &
+      snowlimpaved, SnowLimBldg, radmeltfact, tempmeltfact, &
       snowAlbMin, snowAlbMax, tau_a, tau_f, preciplimitalb, &
       snowdensmin, snowdensmax, tau_r, crwmin, crwmax, &
       preciplimit, SnowProf_24hr, snowalb, snowfallcum
@@ -229,11 +229,11 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    StoreDrainPrm(4, 1:nsurf) = SurfaceChar(Gridiv, c_DrCoef2)   ! Drainage coef 2
 
    ! ---- Limit of SWE (each surface except Water)
-   snowD(1:(nsurf - 1)) = SurfaceChar(Gridiv, c_SnowLimPat(1:(nsurf - 1)))
+   SnowPackLimit(1:(nsurf - 1)) = SurfaceChar(Gridiv, c_SnowLimPat(1:(nsurf - 1)))
 
    ! ---- Snow limit for removal (only impervious surfaces)
    SnowLimPaved = SurfaceChar(Gridiv, c_SnowLimRem(PavSurf))
-   SnowLimBuild = SurfaceChar(Gridiv, c_SnowLimRem(BldgSurf))
+   SnowLimBldg = SurfaceChar(Gridiv, c_SnowLimRem(BldgSurf))
    !SnowLimBSoil = SurfaceChar(Gridiv,c_SnowLimRem(BSoilSurf))   !Snow clearing not applicable to bare soil surface
 
    ! ---- Soil characteristics (each surface except Water)
@@ -1028,8 +1028,8 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       WRITE (12, 120) (SoilStoreCap(iv), iv=1, (nsurf - 1)), FCskip, FCskip, ' SoilStoreCap'
       WRITE (12, '(6f10.5,2f10.3,a16)') (SatHydraulicConduct(iv), iv=1, (nsurf - 1)), FCskip, FCskip, ' SatHydraulicConduct'
       ! Not currently coded, but add these later: SoilDensity, InfiltrationRate, OBS_SMDept, OBS_SMCap, OBS_SoilNotRocks
-      WRITE (12, 120) (snowD(iv), iv=1, (nsurf - 1)), FCskip, FCskip, ' SnowLimPatch'
-      WRITE (12, 120) SnowLimPaved, SnowLimBuild, FCskip, FCskip, FCskip, FCskip, FCskip, FCskip, ' SnowLimRemove'
+      WRITE (12, 120) (SnowPackLimit(iv), iv=1, (nsurf - 1)), FCskip, FCskip, ' SnowLimPatch'
+      WRITE (12, 120) SnowLimPaved, SnowLimBldg, FCskip, FCskip, FCskip, FCskip, FCskip, FCskip, ' SnowLimRemove'
       WRITE (12, 120) (OHM_coef(1:nsurf, 1, 1)), OHM_coef(nsurf + 1, 1, 1), ' OHM_a1_Sum_Wet'
       WRITE (12, 120) (OHM_coef(1:nsurf, 2, 1)), OHM_coef(nsurf + 1, 2, 1), ' OHM_a1_Sum_Dry'
       WRITE (12, 120) (OHM_coef(1:nsurf, 3, 1)), OHM_coef(nsurf + 1, 3, 1), ' OHM_a1_Win_Wet'

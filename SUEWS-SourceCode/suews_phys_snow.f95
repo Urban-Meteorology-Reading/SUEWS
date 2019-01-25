@@ -288,10 +288,10 @@ CONTAINS
       PervFraction, vegfraction, addimpervious, &
       vpd_hPa, qn_e, s_hPa, ResistSurf, RA, rb, tlv, snowdensmin, SnowProf_24hr, precip, &
       PipeCapacity, RunoffToWater, runoffAGimpervious, runoffAGveg, &
-      addVeg, surplusWaterBody, SnowLimPaved, SnowLimBuild, FlowChange, drain, &
+      addVeg, surplusWaterBody, SnowLimPaved, SnowLimBldg, FlowChange, drain, &
       WetThresh, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
       freezmelt, freezstate, freezstatevol, &
-      Qm_Melt, Qm_rain, Tsurf_ind, sfr, dayofWeek_id, StoreDrainPrm, snowD, &
+      Qm_Melt, Qm_rain, Tsurf_ind, sfr, dayofWeek_id, StoreDrainPrm, SnowPackLimit, &
       AddWater, addwaterrunoff, &
       SnowPack, SurplusEvap, &!inout
       snowFrac, SnowWater, iceFrac, SnowDens, &
@@ -371,7 +371,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(in)::RunoffToWater
       REAL(KIND(1d0)), INTENT(in)::addVeg
       REAL(KIND(1d0)), INTENT(in)::SnowLimPaved
-      REAL(KIND(1d0)), INTENT(in)::SnowLimBuild
+      REAL(KIND(1d0)), INTENT(in)::SnowLimBldg
       REAL(KIND(1d0)), INTENT(in)::FlowChange
 
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::drain
@@ -387,7 +387,7 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::Qm_rain
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::Tsurf_ind
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::sfr
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::snowD
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::SnowPackLimit
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::AddWater
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::addwaterrunoff
       REAL(KIND(1d0)), DIMENSION(6, nsurf), INTENT(in)::StoreDrainPrm
@@ -555,7 +555,7 @@ CONTAINS
                is, PavSurf, BldgSurf, nsurf, &
                snowfrac, sfr, &
                SnowPack, SnowRemoval, &
-               SnowLimPaved, SnowLimBuild)
+               SnowLimPaved, SnowLimBldg)
             !----------If SnowPack is negative, it melts at this timestep
          ELSEIF (SnowPack(is) < 0) THEN
 
@@ -607,7 +607,7 @@ CONTAINS
             ELSEIF (Precip == 0 .AND. FreezState(is) > 0 .AND. FreezState(is) == state_id(is)) THEN
                snowFracFresh1 = 1
 
-               !snowFracFresh1=SnowDepletionCurve(is,SnowPack(is),snowD(is))
+               !snowFracFresh1=SnowDepletionCurve(is,SnowPack(is),SnowPackLimit(is))
                !if (snowFracFresh1<0.001) snowFracFresh1=0.001
             ELSEIF (FreezState(is) > 0 .AND. FreezState(is) < state_id(is)) THEN !This if not all water freezes
                snowFracFresh1 = 0.95 !Now this fraction set to something close to one. Should be improved in the future at some point
@@ -644,7 +644,7 @@ CONTAINS
                SnowPack(is) = SnowPack(is) + changSnow(is)  !Update SnowPack
                snowFracFresh2 = 0.95 !Now this fraction set to something close to one. Should be improved in the future at some point
 
-               !snowFracFresh2=SnowDepletionCurve(is,SnowPack(is),snowD(is))
+               !snowFracFresh2=SnowDepletionCurve(is,SnowPack(is),SnowPackLimit(is))
                !if (snowFracFresh2<0.001) snowFracFresh2=0.001
                iceFrac(is) = 1
                SnowDens(is) = SnowDensMin
@@ -685,7 +685,7 @@ CONTAINS
                is, PavSurf, BldgSurf, nsurf, &
                snowfrac, sfr, &
                SnowPack, SnowRemoval, &
-               SnowLimPaved, SnowLimBuild)
+               SnowLimPaved, SnowLimBldg)
 
             !----------If SnowPack is negative, it melts at this timestep
          ELSEIF (SnowPack(is) < 0) THEN
@@ -862,7 +862,7 @@ CONTAINS
       !if (SnowFractionChoice==2.and.imin==(nsh_real-1)/nsh_real*60) then
       IF (SnowFractionChoice == 2) THEN
          IF (SnowPack(is) > 0 .AND. mw_ind(is) > 0) THEN
-            snowFrac(is) = SnowDepletionCurve(is, SnowPack(is), snowD(is))
+            snowFrac(is) = SnowDepletionCurve(is, SnowPack(is), SnowPackLimit(is))
             IF (snowFrac(is) < 0.001) snowFrac(is) = 0.001  !The snow fraction minimum is 1% of the surface
          ELSEIF (SnowPack(is) == 0) THEN
             snowFrac(is) = 0
@@ -1005,14 +1005,14 @@ CONTAINS
       is, PavSurf, BldgSurf, nsurf, &
       snowfrac, sfr, &
       SnowPack, SnowRemoval, &
-      SnowLimPaved, SnowLimBuild)
+      SnowLimPaved, SnowLimBldg)
 
       IMPLICIT NONE
       INTEGER, INTENT(in)                          :: is, PavSurf, BldgSurf, nsurf
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in) :: snowfrac, sfr
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out):: SnowPack, SnowRemoval
-      REAL(KIND(1d0)), INTENT(in)                  :: SnowLimPaved, SnowLimBuild
-      !write(*,*) is, SnowPack(is),SnowLimPaved,SnowLimBuild
+      REAL(KIND(1d0)), INTENT(in)                  :: SnowLimPaved, SnowLimBldg
+      !write(*,*) is, SnowPack(is),SnowLimPaved,SnowLimBldg
 
       IF (is == PavSurf) THEN
          IF (SnowPack(PavSurf) > SnowLimPaved) THEN
@@ -1022,13 +1022,13 @@ CONTAINS
          ENDIF
       ENDIF
       IF (is == BldgSurf) THEN
-         IF (SnowPack(BldgSurf) > SnowLimBuild) THEN
-            SnowRemoval(2) = (SnowPack(BldgSurf) - SnowLimBuild)*sfr(BldgSurf)*snowfrac(BldgSurf)
-            SnowPack(BldgSurf) = SnowLimBuild
+         IF (SnowPack(BldgSurf) > SnowLimBldg) THEN
+            SnowRemoval(2) = (SnowPack(BldgSurf) - SnowLimBldg)*sfr(BldgSurf)*snowfrac(BldgSurf)
+            SnowPack(BldgSurf) = SnowLimBldg
             !SnowPack(BldgSurf)=SnowPack(BldgSurf)/snowFrac(BldgSurf)
          ENDIF
       ENDIF
-      !write(*,*) is, SnowPack(is),SnowLimPaved,SnowLimBuild
+      !write(*,*) is, SnowPack(is),SnowLimPaved,SnowLimBldg
       !pause
    END SUBROUTINE snowRem
 
@@ -1039,7 +1039,7 @@ CONTAINS
       !depletion curves in Valeo and Ho (2004).
       !INPUT: is   Surface type number
       !       swe  Snow water content
-      !       sweD Limit for
+      !       sweD Limit for swe
 
       USE allocateArray
 

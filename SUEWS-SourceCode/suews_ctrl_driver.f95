@@ -1048,8 +1048,6 @@ CONTAINS
          Fcld = NAN
       ENDIF
 
-      print *, 'qn1_S total', qn1_S
-
    END SUBROUTINE SUEWS_cal_Qn
    !========================================================================
 

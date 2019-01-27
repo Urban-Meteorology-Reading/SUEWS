@@ -484,10 +484,9 @@ CONTAINS
       REAL(KIND(1D0))::PervFraction
       REAL(KIND(1D0))::NonWaterFraction
 
-
       ! ########################################################################################
-      ! round sfr_x to prevent numerical errors under certain circumstances
-      sfr_x = int(sfr*1e6)/1.e6
+      ! get sfr_x by normalising `sfr` to improve numerical robustness under certain circumstances
+      sfr_x = sfr/sum(sfr)
 
       ! calculate dectime
       CALL SUEWS_cal_dectime( &

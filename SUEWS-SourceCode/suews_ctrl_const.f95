@@ -417,7 +417,7 @@ MODULE allocateArray
                                        Qm_melt, &         !Heat consumption by snow melt
                                        Qm_rain, &         !Heat by rain falling on snow
                                        rainOnSnow, &      !Liquid precipitation falling on snow ()
-                                       snowD, &
+                                       SnowPackLimit, &
                                        deltaQi
 
    REAL(KIND(1d0)), DIMENSION(nsurf):: snowPack, &        !Amount of snow on each surface in mm
@@ -927,7 +927,7 @@ MODULE data_in
 
    IMPLICIT NONE
 
-   CHARACTER(len=90)::progname = 'SUEWS_V2018b'
+   CHARACTER(len=90)::progname = 'SUEWS_V2018c'
 
    ! ---- Run information ------------------------------------------------------------------------
    CHARACTER(len=20)::  FileCode   !Set in RunControl
@@ -1245,7 +1245,7 @@ MODULE snowMod
                      SnowAlbMax, &       !Maximum snow albedo
                      SnowDensMin, &      !Minimum density of snow
                      SnowDensMax, &      !Maximum density of snow
-                     SnowLimBuild, &     !Snow removal limits for roofs in mm)
+                     SnowLimBldg, &     !Snow removal limits for roofs in mm)
                      SnowLimPaved, &     !Snow removal limits for paved surfaces in mm)
                      swe, &        !Weighted snow water equivalent (in mm)
                      tau_a, &            !Time constans related to albedo change

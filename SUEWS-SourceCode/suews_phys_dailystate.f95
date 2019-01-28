@@ -151,7 +151,7 @@ CONTAINS
       ! HDD_id(4) ---- 5-day running mean temp [degC]: used for actual calculation
       ! HDD_id(5) ---- Daily precip total [mm]
       ! HDD_id(6) ---- Days since rain [d]
-      ! second hald used for storage of the first half for the prevous day
+      ! second half used for storage of the first half for the prevous day
       ! HDD_id(6+1) ---- Heating [degC]: used for accumulation during calculation
       ! HDD_id(6+2) ---- Cooling [degC]: used for accumulation during calculation
       ! HDD_id(6+3) ---- Daily mean temp [degC]: used for accumulation during calculation
@@ -244,6 +244,12 @@ CONTAINS
          CALL update_DailyState_Start( &
             it, imin, &!input
             HDD_id)!inout
+
+         ! reset certain GDD_id values: TS 24 Jan 2019
+         ! GDD_id(3):Daily min temp [degC]
+         GDD_id(3) = Temp_C
+         ! GDD_id(4):Daily max temp [degC]
+         GDD_id(4) = Temp_C
       ENDIF
 
       ! --------------------------------------------------------------------------------

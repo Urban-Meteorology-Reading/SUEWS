@@ -46,9 +46,11 @@ def load_SUEWS_RunControl(xfile):
 def load_SUEWS_table(fileX):
     # remove case issues
     fileX = path_insensitive(fileX)
-    rawdata = pd.read_table(fileX, delim_whitespace=True,
-                            comment='!', error_bad_lines=True,
-                            skiprows=1).dropna()
+    rawdata = pd.read_csv(
+        fileX,
+        delim_whitespace=True,
+        comment='!', error_bad_lines=True,
+        skiprows=1).dropna()
     return rawdata
 
 

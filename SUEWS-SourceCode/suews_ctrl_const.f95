@@ -927,7 +927,7 @@ MODULE data_in
 
    IMPLICIT NONE
 
-   CHARACTER(len=90)::progname = 'SUEWS_V2018b'
+   CHARACTER(len=90)::progname = 'SUEWS_V2019a'
 
    ! ---- Run information ------------------------------------------------------------------------
    CHARACTER(len=20)::  FileCode   !Set in RunControl

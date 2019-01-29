@@ -246,10 +246,9 @@ CONTAINS
             HDD_id)!inout
 
          ! reset certain GDD_id values: TS 24 Jan 2019
-         ! GDD_id(3):Daily min temp [degC]
-         GDD_id(3) = Temp_C
-         ! GDD_id(4):Daily max temp [degC]
-         GDD_id(4) = Temp_C
+         GDD_id(3) = Temp_C ! Daily min temp [degC]
+         GDD_id(4) = Temp_C ! Daily max temp [degC]
+         GDD_id(5) = 0      ! Cumulate daytime hours
       ENDIF
 
       ! --------------------------------------------------------------------------------

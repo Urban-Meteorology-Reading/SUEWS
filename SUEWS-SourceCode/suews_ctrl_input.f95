@@ -507,9 +507,9 @@ SUBROUTINE InputHeaderCheck(FileName)
    HeaderAnthropogenic_Reqd(cA_PopProfWE) = "PopProfWE"
    HeaderAnthropogenic_Reqd(cA_MinQFMetab) = "MinQFMetab"
    HeaderAnthropogenic_Reqd(cA_MaxQFMetab) = "MaxQFMetab"
-   HeaderAnthropogenic_Reqd(cA_MinFCMetab)   = "MinFCMetab" !Added by MH in Jan 2019
-   HeaderAnthropogenic_Reqd(cA_MaxFCMetab)   = "MaxFCMetab" !Added by MH in Jan 2019
-   HeaderAnthropogenic_Reqd(cA_FrPDDwe)      = "FrPDDwe"    !Added by MH in Jan 2019
+   HeaderAnthropogenic_Reqd(cA_MinFCMetab) = "MinFCMetab" !Added by MH in Jan 2019
+   HeaderAnthropogenic_Reqd(cA_MaxFCMetab) = "MaxFCMetab" !Added by MH in Jan 2019
+   HeaderAnthropogenic_Reqd(cA_FrPDDwe) = "FrPDDwe"    !Added by MH in Jan 2019
    HeaderAnthropogenic_Reqd(cA_FrFossilFuel_Heat) = "FrFossilFuel_Heat"
    HeaderAnthropogenic_Reqd(cA_FrFossilFuel_NonHeat) = "FrFossilFuel_NonHeat"
    HeaderAnthropogenic_Reqd(cA_EF_umolCO2perJ) = "EF_umolCO2perJ"
@@ -1245,9 +1245,9 @@ SUBROUTINE CodeMatchAnthropogenic(rr, CodeCol)
          EXIT
       ELSEIF (iv5 == nlinesAnthropogenic) THEN
          WRITE (*, *) 'Program stopped! Anthropogenic code ', SiteSelect(rr, codeCol), &
-                      'not found in SUEWS_AnthropogenicEmission.txt.'
+            'not found in SUEWS_AnthropogenicEmission.txt.'
          CALL ErrorHint(57, 'Cannot find code in SUEWS_AnthropogenicEmission.txt', &
-              SiteSelect(rr, codeCol), notUsed, notUsedI)
+                        SiteSelect(rr, codeCol), notUsed, notUsedI)
       ENDIF
    ENDDO
 

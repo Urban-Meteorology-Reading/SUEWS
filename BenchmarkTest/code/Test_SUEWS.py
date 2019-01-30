@@ -435,11 +435,11 @@ def test_physics(name_exe, dir_input, dir_exe,
     # test selected physics schemes
     dict_test = {}
     for ind, cfg in enumerate(list_to_test):
-        #print(f'testing {ind+1}/{len(list_to_test)}:')
+        print(f'testing {ind+1}/{len(list_to_test)}:')
         runcontrol_test = dict_runcontrol.copy()
         runcontrol_test.update(cfg)
         runcontrol_test_sel = {x: runcontrol_test[x] for x in dict_phy_opt_sel}
-        #print(f'{runcontrol_test_sel}')
+        print(f'{runcontrol_test_sel}')
         name_sim = str(ind)
         res_sim = run_sim(
             name_sim, dir_input, dir_exe, name_exe,

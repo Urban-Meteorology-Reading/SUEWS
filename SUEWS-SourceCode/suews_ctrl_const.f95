@@ -2005,9 +2005,9 @@ MODULE ColNamesInputFiles
               cA_PopProfWE = 26, &  !Weekend
               cA_MinQFMetab = 27, &
               cA_MaxQFMetab = 28, &
-              cA_MinFCMetab = 29,&
-              cA_MaxFCMetab = 30,&
-              cA_FrPDDwe = 31,&
+              cA_MinFCMetab = 29, &
+              cA_MaxFCMetab = 30, &
+              cA_FrPDDwe = 31, &
               cA_FrFossilFuel_Heat = 32, &
               cA_FrFossilFuel_NonHeat = 33, &
               cA_EF_umolCO2perJ = 34, &

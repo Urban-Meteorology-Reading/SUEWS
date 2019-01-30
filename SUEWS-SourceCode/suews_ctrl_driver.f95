@@ -1547,12 +1547,12 @@ CONTAINS
                   ev_tot, qe_tot, runoff_tot, surf_chang_tot, &
                   runoffPipes, mwstore, runoffwaterbody)
 
-                  !Actual updates here as xx_tstep variables not taken as input to snowcalc
-                  ev_per_tstep=ev_per_tstep+ev_tot
-                  qe_per_tstep=qe_per_tstep+qe_tot
-                  runoff_per_tstep=runoff_per_tstep+runoff_tot
-                  surf_chang_per_tstep=surf_chang_per_tstep+surf_chang_tot
-                  chSnow_per_interval=chSnow_per_interval+chSnow_tot
+               !Actual updates here as xx_tstep variables not taken as input to snowcalc
+               ev_per_tstep = ev_per_tstep + ev_tot
+               qe_per_tstep = qe_per_tstep + qe_tot
+               runoff_per_tstep = runoff_per_tstep + runoff_tot
+               surf_chang_per_tstep = surf_chang_per_tstep + surf_chang_tot
+               chSnow_per_interval = chSnow_per_interval + chSnow_tot
             ELSE
                snowFrac(is) = 0
                SnowDens(is) = 0
@@ -1582,7 +1582,7 @@ CONTAINS
             ev_per_tstep = ev_per_tstep + evap(is)*sfr(is)
 
             ! Sum latent heat flux from different surfaces to find total latent heat flux
-            qe_per_tstep = qe_per_tstep+qe*sfr(is)
+            qe_per_tstep = qe_per_tstep + qe*sfr(is)
 
             ! Sum change from different surfaces to find total change to surface state_id
             surf_chang_per_tstep = surf_chang_per_tstep + (state_id(is) - stateOld(is))*sfr(is)
@@ -1605,7 +1605,6 @@ CONTAINS
 
          ENDIF
       ENDDO  !end loop over surfaces
-
 
       qeOut = qe_per_tstep
 

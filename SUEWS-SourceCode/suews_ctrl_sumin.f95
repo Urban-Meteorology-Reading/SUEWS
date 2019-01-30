@@ -267,13 +267,13 @@ CONTAINS
       REAL(KIND(1D0)), PARAMETER                   ::SnowAlbMin = 0.18 !Maximum snow albedo
       REAL(KIND(1D0)), PARAMETER                   ::SnowDensMax = 450   !Minimum density of snow
       REAL(KIND(1D0)), PARAMETER                   ::SnowDensMin = 100   !Maximum density of snow
-      REAL(KIND(1D0)), PARAMETER                   ::SnowLimBuild = 100   !Snow removal limits for roofs in mm)
+      REAL(KIND(1D0)), PARAMETER                   ::SnowLimBldg = 100   !Snow removal limits for roofs in mm)
       REAL(KIND(1D0)), PARAMETER                   ::SnowLimPaved = 100   !Snow removal limits for paved surfaces in mm)
       REAL(KIND(1D0)), PARAMETER                   ::tau_a = 0.01  !Time constans related to albedo change
       REAL(KIND(1D0)), PARAMETER                   ::tau_f = 0.1   !Time constans related to albedo change
       REAL(KIND(1D0)), PARAMETER                   ::tau_r = 0.02  !Time constans related to albedo change
       REAL(KIND(1D0)), PARAMETER                   ::TempMeltFact = 0.12  !Temperature melt factor
-      REAL(KIND(1D0)), DIMENSION(7), PARAMETER      ::snowD = 0
+      REAL(KIND(1D0)), DIMENSION(7), PARAMETER      ::SnowPackLimit = 0
       REAL(KIND(1D0)), DIMENSION(0:23, 2), PARAMETER ::snowProf_24hr = 0     ! Timing of snow removal (0 or 1) Hourly, WD/WE
 
       ! Anthropogenic heat related variables
@@ -372,8 +372,8 @@ CONTAINS
          RadMeltFact, RAINCOVER, RainMaxRes, resp_a, resp_b, &
          RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
          SatHydraulicConduct, SDDFull, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
-         SnowAlbMin, snowD, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
-         SnowLimBuild, SnowLimPaved, snow_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
+         SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
+         SnowLimBldg, SnowLimPaved, snow_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
          soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
          StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair24HR, tau_a, tau_f, tau_r, &
          T_CRITIC_Cooling, T_CRITIC_Heating, Temp_C, TempMeltFact, TH, &

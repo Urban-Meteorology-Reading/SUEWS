@@ -66,7 +66,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       dqndt, qn1_av, &
       dqnsdt, qn1_s_av, &
       resp_a, resp_b, sathydraulicconduct, sddfull, &
-      sfr, snowd, snowdens, snowfrac, snowpack, &
+      sfr, SnowPackLimit, snowdens, snowfrac, snowpack, &
       soildepth, soilstore_id, SoilStoreCap, state_id, statelimit, &
       StoreDrainPrm, tair24hr, theta_bioco2, ts5mindata_ir, &
       waterdist, wetthresh, &
@@ -85,7 +85,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
    USE snowMod, ONLY: &
       crwmax, crwmin, preciplimit, preciplimitalb, radmeltfact, &
       snowalb, snowAlbMax, snowAlbMin, &
-      snowdensmax, snowdensmin, snowfallcum, snowlimbuild, &
+      snowdensmax, snowdensmin, snowfallcum, SnowLimBldg, &
       snowlimpaved, SnowProf_24hr, &
       tau_a, tau_f, tau_r, tempmeltfact
    USE gis_data, ONLY: &
@@ -140,8 +140,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       RadMeltFact, RAINCOVER, RainMaxRes, resp_a, resp_b, &
       RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
       SatHydraulicConduct, SDDFull, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
-      SnowAlbMin, snowD, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
-      SnowLimBuild, SnowLimPaved, snow_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
+      SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
+      SnowLimBldg, SnowLimPaved, snow_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
       soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
       StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair24HR, tau_a, tau_f, tau_r, &
       T_CRITIC_Cooling, T_CRITIC_Heating, Temp_C, TempMeltFact, TH, &

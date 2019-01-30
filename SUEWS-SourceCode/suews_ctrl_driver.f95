@@ -57,8 +57,8 @@ CONTAINS
       RadMeltFact, RAINCOVER, RainMaxRes, resp_a, resp_b, &
       RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
       SatHydraulicConduct, SDDFull, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
-      SnowAlbMin, snowD, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
-      SnowLimBuild, SnowLimPaved, snow_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
+      SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
+      SnowLimBldg, SnowLimPaved, snow_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
       soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
       StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair24HR, tau_a, tau_f, tau_r, &
       T_CRITIC_Cooling, T_CRITIC_Heating, Temp_C, TempMeltFact, TH, &
@@ -179,7 +179,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::SnowAlbMin
       REAL(KIND(1D0)), INTENT(IN)::SnowDensMax
       REAL(KIND(1D0)), INTENT(IN)::SnowDensMin
-      REAL(KIND(1D0)), INTENT(IN)::SnowLimBuild
+      REAL(KIND(1D0)), INTENT(IN)::SnowLimBldg
       REAL(KIND(1D0)), INTENT(IN)::SnowLimPaved
       REAL(KIND(1D0)), INTENT(IN)::snow_obs
       REAL(KIND(1D0)), INTENT(IN)::SurfaceArea
@@ -223,7 +223,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::kkAnOHM
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::SatHydraulicConduct
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::sfr
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::snowD
+      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::SnowPackLimit
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::SoilDepth
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::SoilStoreCap
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::StateLimit
@@ -672,10 +672,10 @@ CONTAINS
          RAsnow, psyc_hPa, avcp, sIce_hPa, &
          PervFraction, vegfraction, addimpervious, qn1_snowfree, qf, qs, vpd_hPa, s_hPa, &
          ResistSurf, RA, rb, snowdensmin, precip, PipeCapacity, RunoffToWater, &
-         NonWaterFraction, wu_EveTr, wu_DecTr, wu_Grass, addVeg, addWaterBody, SnowLimPaved, SnowLimBuild, &
+         NonWaterFraction, wu_EveTr, wu_DecTr, wu_Grass, addVeg, addWaterBody, SnowLimPaved, SnowLimBldg, &
          SurfaceArea, FlowChange, drain, WetThresh, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
          freezmelt, freezstate, freezstatevol, Qm_Melt, Qm_rain, Tsurf_ind, sfr, &
-         StateLimit, AddWater, addwaterrunoff, StoreDrainPrm, snowD, SnowProf_24hr, &
+         StateLimit, AddWater, addwaterrunoff, StoreDrainPrm, SnowPackLimit, SnowProf_24hr, &
          runoff_per_interval, state_id, & !inout:
          soilstore_id, SnowPack, snowFrac, SnowWater, iceFrac, SnowDens, &
          runoffSnow, runoff, runoffSoil, chang, changSnow, &! output:
@@ -1332,10 +1332,10 @@ CONTAINS
       RAsnow, psyc_hPa, avcp, sIce_hPa, &
       PervFraction, vegfraction, addimpervious, qn1_snowfree, qf, qs, vpd_hPa, s_hPa, &
       ResistSurf, RA, rb, snowdensmin, precip, PipeCapacity, RunoffToWater, &
-      NonWaterFraction, wu_EveTr, wu_DecTr, wu_Grass, addVeg, addWaterBody, SnowLimPaved, SnowLimBuild, &
+      NonWaterFraction, wu_EveTr, wu_DecTr, wu_Grass, addVeg, addWaterBody, SnowLimPaved, SnowLimBldg, &
       SurfaceArea, FlowChange, drain, WetThresh, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
       freezmelt, freezstate, freezstatevol, Qm_Melt, Qm_rain, Tsurf_ind, sfr, &
-      StateLimit, AddWater, addwaterrunoff, StoreDrainPrm, snowD, SnowProf_24hr, &
+      StateLimit, AddWater, addwaterrunoff, StoreDrainPrm, SnowPackLimit, SnowProf_24hr, &
       runoff_per_interval, state_id, soilstore_id, SnowPack, snowFrac, SnowWater, &! inout:
       iceFrac, SnowDens, &
       runoffSnow, runoff, runoffSoil, chang, changSnow, &! output:
@@ -1391,7 +1391,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(in)::addVeg!Water from vegetated surfaces of other grids [mm] for whole surface area
       REAL(KIND(1d0)), INTENT(in)::addWaterBody!Water from water surface of other grids [mm] for whole surface area
       REAL(KIND(1d0)), INTENT(in)::SnowLimPaved
-      REAL(KIND(1d0)), INTENT(in)::SnowLimBuild
+      REAL(KIND(1d0)), INTENT(in)::SnowLimBldg
       REAL(KIND(1d0)), INTENT(in)::SurfaceArea
       REAL(KIND(1d0)), INTENT(in)::FlowChange
 
@@ -1408,7 +1408,7 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::Qm_rain
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::Tsurf_ind
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::sfr
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::snowD
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::SnowPackLimit
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::StateLimit !Limit for state_id of each surface type [mm] (specified in input files)
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::AddWater
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::addwaterrunoff
@@ -1534,10 +1534,10 @@ CONTAINS
                   PervFraction, vegfraction, addimpervious, &
                   vpd_hPa, qn_e, s_hPa, ResistSurf, RA, rb, tlv, snowdensmin, SnowProf_24hr, precip, &
                   PipeCapacity, RunoffToWater, runoffAGimpervious, runoffAGveg, &
-                  addVeg, surplusWaterBody, SnowLimPaved, SnowLimBuild, FlowChange, drain, &
+                  addVeg, surplusWaterBody, SnowLimPaved, SnowLimBldg, FlowChange, drain, &
                   WetThresh, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
                   freezmelt, freezstate, freezstatevol, &
-                  Qm_Melt, Qm_rain, Tsurf_ind, sfr, dayofWeek_id, StoreDrainPrm, snowD, &
+                  Qm_Melt, Qm_rain, Tsurf_ind, sfr, dayofWeek_id, StoreDrainPrm, SnowPackLimit, &
                   AddWater, addwaterrunoff, &
                   SnowPack, SurplusEvap, &!inout
                   snowFrac, SnowWater, iceFrac, SnowDens, &
@@ -2373,8 +2373,8 @@ CONTAINS
       RadMeltFact, RAINCOVER, RainMaxRes, resp_a, resp_b, &
       RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
       SatHydraulicConduct, SDDFull, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
-      SnowAlbMin, snowD, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
-      SnowLimBuild, SnowLimPaved, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
+      SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
+      SnowLimBldg, SnowLimPaved, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
       soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
       StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair24HR, tau_a, tau_f, tau_r, &
       T_CRITIC_Cooling, T_CRITIC_Heating, TempMeltFact, TH, &
@@ -2494,7 +2494,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::SnowAlbMin
       REAL(KIND(1D0)), INTENT(IN)::SnowDensMax
       REAL(KIND(1D0)), INTENT(IN)::SnowDensMin
-      REAL(KIND(1D0)), INTENT(IN)::SnowLimBuild
+      REAL(KIND(1D0)), INTENT(IN)::SnowLimBldg
       REAL(KIND(1D0)), INTENT(IN)::SnowLimPaved
       ! REAL(KIND(1D0)),INTENT(IN)::snow_obs
       REAL(KIND(1D0)), INTENT(IN)::SurfaceArea
@@ -2535,7 +2535,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::kkAnOHM
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::SatHydraulicConduct
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::sfr
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::snowD
+      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::SnowPackLimit
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::SoilDepth
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::SoilStoreCap
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::StateLimit
@@ -2731,8 +2731,8 @@ CONTAINS
             RadMeltFact, RAINCOVER, RainMaxRes, resp_a, resp_b, &
             RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
             SatHydraulicConduct, SDDFull, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
-            SnowAlbMin, snowD, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
-            SnowLimBuild, SnowLimPaved, snow_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
+            SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
+            SnowLimBldg, SnowLimPaved, snow_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
             soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
             StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair24HR, tau_a, tau_f, tau_r, &
             T_CRITIC_Cooling, T_CRITIC_Heating, Temp_C, TempMeltFact, TH, &

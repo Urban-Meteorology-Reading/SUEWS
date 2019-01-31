@@ -244,6 +244,11 @@ CONTAINS
          CALL update_DailyState_Start( &
             it, imin, &!input
             HDD_id)!inout
+
+         ! reset certain GDD columns
+         GDD_id(3) = Temp_C   !Daily min T in column 3
+         GDD_id(4) = Temp_C   !Daily max T in column 4
+         GDD_id(5) = 0        !Cumulate daytime hours
       ENDIF
 
       ! --------------------------------------------------------------------------------
@@ -459,7 +464,7 @@ CONTAINS
       nsh_real, &
       GDD_id, &!inout
       HDD_id)
-      use time, only: id, id_prev_t
+      ! use time, only: id, id_prev_t
       IMPLICIT NONE
 
       ! INTEGER,INTENT(IN)::id
@@ -478,19 +483,19 @@ CONTAINS
       INTEGER::gamma1
       INTEGER::gamma2
 
-      IF (id == id_prev_t) THEN ! MH 09 Jan 2019
-         ! Daily min and max temp (these get updated through the day) ---------------------
-         GDD_id(3) = MIN(Temp_C, GDD_id(3))     !Daily min T in column 3
-         GDD_id(4) = MAX(Temp_C, GDD_id(4))     !Daily max T in column 4
-         IF (avkdn > 10) THEN
-            GDD_id(5) = GDD_id(5) + 1/nsh_real   !Cumulate daytime hours !Divide by nsh (HCW 01 Dec 2014)
-         ENDIF
-      ELSE
-         ! Day changes
-         GDD_id(3) = Temp_C   !Daily min T in column 3
-         GDD_id(4) = Temp_C   !Daily max T in column 4
-         GDD_id(5) = 0        !Cumulate daytime hours
+      ! IF (id == id_prev_t) THEN ! MH 09 Jan 2019
+      ! Daily min and max temp (these get updated through the day) ---------------------
+      GDD_id(3) = MIN(Temp_C, GDD_id(3))     !Daily min T in column 3
+      GDD_id(4) = MAX(Temp_C, GDD_id(4))     !Daily max T in column 4
+      IF (avkdn > 10) THEN
+         GDD_id(5) = GDD_id(5) + 1/nsh_real   !Cumulate daytime hours !Divide by nsh (HCW 01 Dec 2014)
       ENDIF
+      ! ELSE
+      ! Day changes
+      ! GDD_id(3) = Temp_C   !Daily min T in column 3
+      ! GDD_id(4) = Temp_C   !Daily max T in column 4
+      ! GDD_id(5) = 0        !Cumulate daytime hours
+      ! ENDIF
       ! Calculations related to heating and cooling degree days (HDD) ------------------
       ! See Sailor & Vasireddy (2006) EMS Eq 1,2 (theirs is hourly timestep)
       gamma1 = MERGE(1, 0, (BaseTHDD - Temp_C) >= 0)

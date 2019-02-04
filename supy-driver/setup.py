@@ -109,7 +109,7 @@ ext_modules = [
               extra_link_args=[('' if sysname == 'Linux' else '-static')])]
 
 setup(name='supy_driver',
-      version=get_suews_version(ver_minor=2),
+      version=get_suews_version(ver_minor=3),
       description='the SUEWS driver driven by f2py',
       long_description=readme(),
       url='https://github.com/sunt05/SuPy',

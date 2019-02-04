@@ -569,22 +569,22 @@ CONTAINS
 
       SoilState = 0       !Area-averaged soil moisture [mm] for whole surface
       IF (NonWaterFraction /= 0) THEN !Fixed for water surfaces only
-         ! DO is=1,nsurf-1   !No water body included
-         !    SoilState=SoilState+(soilstore_id(is)*sfr(is)/NonWaterFraction)
-         !    IF (SoilState<0) THEN
-         !       CALL ErrorHint(62,'SUEWS_Calculations: total SoilState < 0 (just added surface is) ',SoilState,NotUsed,is)
-         !    ELSEIF (SoilState>SoilMoistCap) THEN
-         !       CALL ErrorHint(62,'SUEWS_Calculations: total SoilState > capacity (just added surface is) ',SoilState,NotUsed,is)
-         !       !SoilMoist_state=SoilMoistCap !What is this LJ 10/2010 - QUESTION: SM exceeds capacity, but where does extra go?HCW 11/2014
-         !    ENDIF
-         ! ENDDO  !end loop over surfaces
-         SoilState = DOT_PRODUCT(soilstore_id(1:nsurf - 1), sfr(1:nsurf - 1))/NonWaterFraction
-         IF (SoilState < 0) THEN
-            CALL ErrorHint(62, 'SUEWS_Calculations: total SoilState < 0 (just added surface is) ', SoilState, NotUsed, is)
-         ELSEIF (SoilState > SoilMoistCap) THEN
-            CALL ErrorHint(62, 'SUEWS_Calculations: total SoilState > capacity (just added surface is) ', SoilState, NotUsed, is)
-            !SoilMoist_state=SoilMoistCap !What is this LJ 10/2010 - QUESTION: SM exceeds capacity, but where does extra go?HCW 11/2014
-         ENDIF
+         DO is=1,nsurf-1   !No water body included
+            SoilState=SoilState+(soilstore_id(is)*sfr(is)/NonWaterFraction)
+            IF (SoilState<0) THEN
+               CALL ErrorHint(62,'SUEWS_Calculations: total SoilState < 0 (just added surface is) ',SoilState,NotUsed,is)
+            ELSEIF (SoilState>SoilMoistCap) THEN
+               CALL ErrorHint(62,'SUEWS_Calculations: total SoilState > capacity (just added surface is) ',SoilState,NotUsed,is)
+               !SoilMoist_state=SoilMoistCap !What is this LJ 10/2010 - QUESTION: SM exceeds capacity, but where does extra go?HCW 11/2014
+            ENDIF
+         ENDDO  !end loop over surfaces
+         ! SoilState = DOT_PRODUCT(soilstore_id(1:nsurf - 1), sfr(1:nsurf - 1))/NonWaterFraction
+         ! IF (SoilState < 0) THEN
+         !    CALL ErrorHint(62, 'SUEWS_Calculations: total SoilState < 0 (just added surface is) ', SoilState, NotUsed, is)
+         ! ELSEIF (SoilState > SoilMoistCap) THEN
+         !    CALL ErrorHint(62, 'SUEWS_Calculations: total SoilState > capacity (just added surface is) ', SoilState, NotUsed, is)
+         !    !SoilMoist_state=SoilMoistCap !What is this LJ 10/2010 - QUESTION: SM exceeds capacity, but where does extra go?HCW 11/2014
+         ! ENDIF
       ENDIF
 
       ! Calculate soil moisture deficit

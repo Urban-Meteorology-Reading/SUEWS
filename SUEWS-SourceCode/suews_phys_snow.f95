@@ -452,16 +452,17 @@ CONTAINS
       avRh, Press_hPa, Temp_C, RAsnow, psyc_hPa, avcp, sIce_hPa, &
       PervFraction, vegfraction, addimpervious, &
       vpd_hPa, qn_e, s_hPa, ResistSurf, RA, rb, tlv, snowdensmin, SnowProf_24hr, precip, &
-      PipeCapacity, RunoffToWater, runoffAGimpervious, runoffAGveg, &
-      addVeg, surplusWaterBody, SnowLimPaved, SnowLimBldg, FlowChange, drain, &
+      PipeCapacity, RunoffToWater, &
+      addVeg, SnowLimPaved, SnowLimBldg, FlowChange, drain, &
       WetThresh, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
       freezmelt, freezstate, freezstatevol, &
       Qm_Melt, Qm_rain, Tsurf_ind, sfr, dayofWeek_id, StoreDrainPrm, SnowPackLimit, &
       AddWater, addwaterrunoff, &
-      SnowPack, SurplusEvap, &!inout
+      soilstore_id, SnowPack, SurplusEvap, &!inout
       snowFrac, SnowWater, iceFrac, SnowDens, &
+      runoffAGimpervious, runoffAGveg, surplusWaterBody, &
       rss_nsurf, runoffSnow, & ! output
-      runoff, runoffSoil, chang, changSnow, SnowToSurf, state_id, ev_snow, soilstore_id, &
+      runoff, runoffSoil, chang, changSnow, SnowToSurf, state_id, ev_snow, &
       SnowDepth, SnowRemoval, swe, ev, chSnow_tot, &
       ev_tot, qe_tot, runoff_tot, surf_chang_tot, &
       runoffPipes, mwstore, runoffwaterbody)
@@ -563,6 +564,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(inout)::runoffAGimpervious
       REAL(KIND(1d0)), INTENT(inout)::surplusWaterBody
 
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(inout)::soilstore_id
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(inout)::SnowPack
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(inout)::snowFrac
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(inout)::SnowWater
@@ -580,7 +582,6 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::state_id
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::SnowDepth
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::ev_snow
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::soilstore_id
       REAL(KIND(1d0)), DIMENSION(2), INTENT(out)::SnowRemoval
 
       REAL(KIND(1d0)), INTENT(out)::swe
@@ -620,25 +621,24 @@ CONTAINS
       qe_tot = 0
       runoff_tot = 0
       surf_chang_tot = 0
-      swe=0
-      ev=0
-      chSnow_tot=0
-      runoffPipes=0
-      mwstore=0
-      runoffwaterbody=0
+      swe = 0
+      ev = 0
+      chSnow_tot = 0
+      runoffPipes = 0
+      mwstore = 0
+      runoffwaterbody = 0
 
-      rss_nsurf=0
-      runoffSnow=0
-      runoff=0
-      runoffSoil=0
-      chang=0
-      changSnow=0
-      SnowToSurf=0
-      state_id=0
-      SnowDepth=0
-      ev_snow=0
-      soilstore_id=0
-      SnowRemoval=0
+      rss_nsurf = 0
+      runoffSnow = 0
+      runoff = 0
+      runoffSoil = 0
+      chang = 0
+      changSnow = 0
+      SnowToSurf = 0
+      state_id = 0
+      SnowDepth = 0
+      ev_snow = 0
+      SnowRemoval = 0
 
       ! Use weekday or weekend snow clearing profile
       iu = 1     !Set to 1=weekday
@@ -1358,11 +1358,11 @@ CONTAINS
          ENDIF
          IF (SnowAlb < SnowAlbMin) SnowAlb = SnowAlbMin !Albedo cannot be smaller than the min albedo
          IF (SnowAlb > SnowAlbMax) SnowAlb = SnowAlbMax !Albedo cannot be larger than the max albedo
-         if(SnowAlb<0) print*, 'SnowAlbMin/max in SnowUpdate',SnowAlbMin,SnowAlbMax,SnowAlb
+         if (SnowAlb < 0) print *, 'SnowAlbMin/max in SnowUpdate', SnowAlbMin, SnowAlbMax, SnowAlb
       ELSE
          SnowAlb = 0
       ENDIF
-      if(SnowAlb<0) print*, 'SnowAlb in SnowUpdate',SnowAlb
+      if (SnowAlb < 0) print *, 'SnowAlb in SnowUpdate', SnowAlb
 
       !Update snow density: There is a mistake in Järvi et al. (2014): tau_h should be tau_1
       DO is = 1, nsurf

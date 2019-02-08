@@ -238,7 +238,6 @@ CONTAINS
          SnowDensMax, SnowDensMin, SnowAlbMax, SnowAlbMin, SnowPack, &
          SnowAlb, SnowDens)!inout
 
-
       ! --------------------------------------------------------------------------------
       ! On last timestep, perform the daily calculations -------------------------------
       ! Daily values not correct until end of each day,

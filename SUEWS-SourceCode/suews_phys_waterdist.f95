@@ -599,7 +599,7 @@ CONTAINS
          tot_chang_per_tstep = tot_chang_per_tstep + ((soilstore_id(is) - soilstoreOld(is))*sfr(is))   !Add change in soil state_id
       ENDDO
 
-      IF (SMDMethod > 0) THEN
+      IF (SMDMethod > 0) THEN ! use observed value
          !  smd_nsurf=NAN
          smd_nsurf = NAN
          smd = xsmd

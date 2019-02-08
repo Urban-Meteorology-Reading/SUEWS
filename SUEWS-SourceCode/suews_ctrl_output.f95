@@ -91,23 +91,23 @@ MODULE ctrl_output
       varAttr('QHlumps', 'W m-2', f104, 'Sensible heat flux (using LUMPS)', aA, 'SUEWS', 1), &
       varAttr('QElumps', 'W m-2', f104, 'Latent heat flux (using LUMPS)', aA, 'SUEWS', 1), &
       varAttr('QHresis', 'W m-2', f104, 'Sensible heat flux (resistance method)', aA, 'SUEWS', 1), &
-      varAttr('Rain', 'mm', f106, 'Rain', aS, 'SUEWS', 0), &
-      varAttr('Irr', 'mm', f106, 'Irrigation', aS, 'SUEWS', 0), &
-      varAttr('Evap', 'mm', f106, 'Evaporation', aS, 'SUEWS', 0), &
-      varAttr('RO', 'mm', f106, 'Runoff', aS, 'SUEWS', 0), &
-      varAttr('TotCh', 'mm', f106, 'Surface and soil moisture change', aS, 'SUEWS', 0), &
-      varAttr('SurfCh', 'mm', f106, 'Surface moisture change', aS, 'SUEWS', 0), &
+      varAttr('Rain', 'mm', f104, 'Rain', aS, 'SUEWS', 0), &
+      varAttr('Irr', 'mm', f104, 'Irrigation', aS, 'SUEWS', 0), &
+      varAttr('Evap', 'mm', f104, 'Evaporation', aS, 'SUEWS', 0), &
+      varAttr('RO', 'mm', f104, 'Runoff', aS, 'SUEWS', 0), &
+      varAttr('TotCh', 'mm', f146, 'Surface and soil moisture change', aS, 'SUEWS', 0), &
+      varAttr('SurfCh', 'mm', f146, 'Surface moisture change', aS, 'SUEWS', 0), &
       varAttr('State', 'mm', f104, 'Surface Wetness State', aL, 'SUEWS', 0), &
-      varAttr('NWtrState', 'mm', f106, 'Surface wetness state (non-water surfaces)', aL, 'SUEWS', 0), &
-      varAttr('Drainage', 'mm', f106, 'Drainage', aS, 'SUEWS', 0), &
+      varAttr('NWtrState', 'mm', f104, 'Surface wetness state (non-water surfaces)', aL, 'SUEWS', 0), &
+      varAttr('Drainage', 'mm', f104, 'Drainage', aS, 'SUEWS', 0), &
       varAttr('SMD', 'mm', f94, 'Soil Moisture Deficit', aL, 'SUEWS', 0), &
       varAttr('FlowCh', 'mm', f104, 'Additional flow into water body', aS, 'SUEWS', 1), &
       varAttr('AddWater', 'mm', f104, 'Addtional water from other grids', aS, 'SUEWS', 1), &
-      varAttr('ROSoil', 'mm', f106, 'Runoff to soil', aS, 'SUEWS', 1), &
-      varAttr('ROPipe', 'mm', f106, 'Runoff to pipes', aS, 'SUEWS', 1), &
-      varAttr('ROImp', 'mm', f106, 'Runoff over impervious surfaces', aS, 'SUEWS', 1), &
-      varAttr('ROVeg', 'mm', f106, 'Runoff over vegetated surfaces', aS, 'SUEWS', 1), &
-      varAttr('ROWater', 'mm', f106, 'Runoff for water surface', aS, 'SUEWS', 1), &
+      varAttr('ROSoil', 'mm', f104, 'Runoff to soil', aS, 'SUEWS', 1), &
+      varAttr('ROPipe', 'mm', f104, 'Runoff to pipes', aS, 'SUEWS', 1), &
+      varAttr('ROImp', 'mm', f104, 'Runoff over impervious surfaces', aS, 'SUEWS', 1), &
+      varAttr('ROVeg', 'mm', f104, 'Runoff over vegetated surfaces', aS, 'SUEWS', 1), &
+      varAttr('ROWater', 'mm', f104, 'Runoff for water surface', aS, 'SUEWS', 1), &
       varAttr('WUInt', 'mm', f94, 'InternalWaterUse', aS, 'SUEWS', 1), &
       varAttr('WUEveTr', 'mm', f94, 'Water use for evergreen trees', aS, 'SUEWS', 1), &
       varAttr('WUDecTr', 'mm', f94, 'Water use for deciduous trees', aS, 'SUEWS', 1), &

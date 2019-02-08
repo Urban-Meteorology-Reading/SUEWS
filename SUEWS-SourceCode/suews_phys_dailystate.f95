@@ -60,7 +60,7 @@ CONTAINS
       LAICalcYes, LAIType, &
       nsh_real, avkdn, Temp_C, Precip, BaseTHDD, &
       lat, Faut, LAI_obs, tau_a, tau_f, tau_r, &
-      SnowDensMax, SnowDensMin, SnowAlbMin, &
+      SnowDensMax, SnowDensMin, SnowAlbMax, SnowAlbMin, &
       AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
       AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
       CapMax_dec, CapMin_dec, PorMax_dec, PorMin_dec, &
@@ -106,6 +106,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::tau_r
       REAL(KIND(1D0)), INTENT(IN)::SnowDensMax
       REAL(KIND(1D0)), INTENT(IN)::SnowDensMin
+      REAL(KIND(1D0)), INTENT(in)::SnowAlbMax
       REAL(KIND(1D0)), INTENT(IN)::SnowAlbMin
       REAL(KIND(1d0)), INTENT(IN)::AlbMax_DecTr
       REAL(KIND(1d0)), INTENT(IN)::AlbMax_EveTr
@@ -198,7 +199,6 @@ CONTAINS
       LOGICAL :: last_tstep_Q ! if this is the last tstep of a day
       TYPE(datetime) :: time_now, time_prev, time_next
 
-
       ! get timestamps
       time_now = datetime(year=iy) + timedelta(days=id - 1, hours=it, minutes=imin, seconds=isec)
       time_prev = time_now - timedelta(seconds=tstep_prev)
@@ -235,8 +235,9 @@ CONTAINS
       ! Update snow density, albedo surface fraction
       IF (snowUse == 1) CALL SnowUpdate( &
          nsurf, tstep, Temp_C, tau_a, tau_f, tau_r, &!input
-         SnowDensMax, SnowDensMin, SnowAlbMin, SnowPack, &
+         SnowDensMax, SnowDensMin, SnowAlbMax, SnowAlbMin, SnowPack, &
          SnowAlb, SnowDens)!inout
+
 
       ! --------------------------------------------------------------------------------
       ! On last timestep, perform the daily calculations -------------------------------
@@ -452,7 +453,6 @@ CONTAINS
 
       INTEGER::gamma1
       INTEGER::gamma2
-
 
       ! Daily min and max temp (these get updated through the day) ---------------------
       GDD_id(3) = MIN(Temp_C, GDD_id(3))     !Daily min T in column 3

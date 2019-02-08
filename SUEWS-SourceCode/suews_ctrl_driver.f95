@@ -535,7 +535,7 @@ CONTAINS
          LAICalcYes, LAIType, &
          nsh_real, avkdn, Temp_C, Precip, BaseTHDD, &
          lat, Faut, LAI_obs, tau_a, tau_f, tau_r, &
-         SnowDensMax, SnowDensMin, SnowAlbMin, &
+         SnowDensMax, SnowDensMin, SnowAlbMax, SnowAlbMin, &
          AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
          AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
          CapMax_dec, CapMin_dec, PorMax_dec, PorMin_dec, &
@@ -1994,7 +1994,7 @@ CONTAINS
                          tskin_C, t2_C, q2_gkg, avU10_ms & ! surface-level diagonostics
                          ]
       ! set invalid values to NAN
-      ! dataOutLineSUEWS=set_nan(dataOutLineSUEWS)
+      ! dataOutLineSUEWS = set_nan(dataOutLineSUEWS)
 
       !====================update output line end==============================
 

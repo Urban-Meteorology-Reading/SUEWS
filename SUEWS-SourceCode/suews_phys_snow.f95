@@ -620,6 +620,25 @@ CONTAINS
       qe_tot = 0
       runoff_tot = 0
       surf_chang_tot = 0
+      swe=0
+      ev=0
+      chSnow_tot=0
+      runoffPipes=0
+      mwstore=0
+      runoffwaterbody=0
+
+      rss_nsurf=0
+      runoffSnow=0
+      runoff=0
+      runoffSoil=0
+      chang=0
+      changSnow=0
+      SnowToSurf=0
+      state_id=0
+      SnowDepth=0
+      ev_snow=0
+      soilstore_id=0
+      SnowRemoval=0
 
       ! Use weekday or weekend snow clearing profile
       iu = 1     !Set to 1=weekday
@@ -1288,6 +1307,7 @@ CONTAINS
       tau_r, &
       SnowDensMax, &
       SnowDensMin, &
+      SnowAlbMax, &
       SnowAlbMin, &
       SnowPack, &
       SnowAlb, &!inout
@@ -1304,6 +1324,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in)::tau_r
       REAL(KIND(1D0)), INTENT(in)::SnowDensMax
       REAL(KIND(1D0)), INTENT(in)::SnowDensMin
+      REAL(KIND(1D0)), INTENT(in)::SnowAlbMax
       REAL(KIND(1D0)), INTENT(in)::SnowAlbMin
 
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::SnowPack
@@ -1336,9 +1357,12 @@ CONTAINS
             SnowAlb = (SnowAlb - SnowAlbMin)*alb_change + SnowAlbMin
          ENDIF
          IF (SnowAlb < SnowAlbMin) SnowAlb = SnowAlbMin !Albedo cannot be smaller than the min albedo
+         IF (SnowAlb > SnowAlbMax) SnowAlb = SnowAlbMax !Albedo cannot be larger than the max albedo
+         if(SnowAlb<0) print*, 'SnowAlbMin/max in SnowUpdate',SnowAlbMin,SnowAlbMax,SnowAlb
       ELSE
          SnowAlb = 0
       ENDIF
+      if(SnowAlb<0) print*, 'SnowAlb in SnowUpdate',SnowAlb
 
       !Update snow density: There is a mistake in Järvi et al. (2014): tau_h should be tau_1
       DO is = 1, nsurf

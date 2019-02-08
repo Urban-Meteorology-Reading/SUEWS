@@ -1533,16 +1533,17 @@ CONTAINS
                   avRh, Press_hPa, Temp_C, RAsnow, psyc_hPa, avcp, sIce_hPa, &
                   PervFraction, vegfraction, addimpervious, &
                   vpd_hPa, qn_e, s_hPa, ResistSurf, RA, rb, tlv, snowdensmin, SnowProf_24hr, precip, &
-                  PipeCapacity, RunoffToWater, runoffAGimpervious, runoffAGveg, &
-                  addVeg, surplusWaterBody, SnowLimPaved, SnowLimBldg, FlowChange, drain, &
+                  PipeCapacity, RunoffToWater, &
+                  addVeg, SnowLimPaved, SnowLimBldg, FlowChange, drain, &
                   WetThresh, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
                   freezmelt, freezstate, freezstatevol, &
                   Qm_Melt, Qm_rain, Tsurf_ind, sfr, dayofWeek_id, StoreDrainPrm, SnowPackLimit, &
                   AddWater, addwaterrunoff, &
-                  SnowPack, SurplusEvap, &!inout
+                  soilstore_id, SnowPack, SurplusEvap, &!inout
                   snowFrac, SnowWater, iceFrac, SnowDens, &
+                  runoffAGimpervious, runoffAGveg, surplusWaterBody, &
                   rss_nsurf, runoffSnow, & ! output
-                  runoff, runoffSoil, chang, changSnow, SnowToSurf, state_id, ev_snow, soilstore_id, &
+                  runoff, runoffSoil, chang, changSnow, SnowToSurf, state_id, ev_snow, &
                   SnowDepth, SnowRemoval, swe, ev, chSnow_tot, &
                   ev_tot, qe_tot, runoff_tot, surf_chang_tot, &
                   runoffPipes, mwstore, runoffwaterbody)

@@ -2,6 +2,8 @@
 TS 19 Feb 2019 :
 adopted this script below to resolve the Fortran `stop` issue:
 Credit to: https://github.com/joezuntz/pycamb/blob/master/nonstopf2py.py
+This is an adapted version with added modification for windows,
+where several GNU C libs are missing that require windows alternatives.
 
 original header:
 

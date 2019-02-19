@@ -116,10 +116,23 @@ if sysname == 'Windows':
         r'__builtin_longjmp(_env)'
     )
     f2py.rules.module_rules['modulebody'] = f2py.rules.module_rules['modulebody'].replace(
-        r'#include <string.h>',
+        r'#include <setjmp.h>',
         r"""
-#define _GNU_SOURCE
-#include <string.h>
-"""
+#include <setjmp.h>
+#include <config.h>
+#include <stdlib.h>
+char *
+strndup (char const *s, size_t n)
+{
+  size_t len = strnlen (s, n);
+  char *new = malloc (len + 1);
 
+  if (new == NULL)
+    return NULL;
+
+  new[len] = '\0';
+  return memcpy (new, s, len);
+}
+"""
     )
+

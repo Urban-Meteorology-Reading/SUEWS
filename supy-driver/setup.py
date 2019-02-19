@@ -106,6 +106,7 @@ class BinaryDistribution(Distribution):
 ext_modules = [
     Extension('supy_driver.suews_driver',
               target_f95,
+              extra_compile_args=['-std=gnu11'],
               extra_f90_compile_args=['-cpp'],
               f2py_options=[
                   # '--quiet',
@@ -161,4 +162,3 @@ if sysname == 'Linux':
 # change compiler settings
 if sysname == 'Windows':
     os.remove('setup.cfg')
-Path

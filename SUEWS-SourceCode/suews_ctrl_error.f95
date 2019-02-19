@@ -403,7 +403,7 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
       WRITE (*, *) 'problem: ', TRIM(ProblemFile)
       WRITE (*, *) 'See problems.txt for more info.'
       WRITE (StopMessage, *) 'fatal error in SUEWS:'//NEW_LINE('A')//TRIM(text1)
-      STOP StopMessage
+      STOP 'Fatal error in SUEWS!'
 
 #endif
    ENDIF

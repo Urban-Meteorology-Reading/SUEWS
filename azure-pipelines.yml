@@ -184,6 +184,8 @@ phases:
   - script:             |
        sudo apt-get update
        sudo apt-get install build-essential gfortran
+       gfortran --version
+       gfortran-5 --version
     displayName:        'install gfortran'
     continueOnError:    true
 
@@ -214,7 +216,7 @@ phases:
 
   - script:  |
       pip install twine
-      docker run -v $(pwd):/io dockcross/manylinux-x64 bash -c "cd /io/supy-driver;make clean;make suews"
+      docker run -v $(pwd):/io dockcross/manylinux-x64 bash -c "cd /io/supy-driver;gfortran --version; make clean;make suews"
       docker run -v $(pwd):/io dockcross/manylinux-x64 bash -c "cd /io/supy-driver;/opt/python/cp35-cp35m/bin/python -m pip install -r requirements.txt; /opt/python/cp35-cp35m/bin/python setup.py bdist_wheel; ls -lrt dist/*; ls -lrt wheelhouse/*"
       docker run -v $(pwd):/io dockcross/manylinux-x64 bash -c "cd /io/supy-driver;/opt/python/cp36-cp36m/bin/python -m pip install -r requirements.txt; /opt/python/cp36-cp36m/bin/python setup.py bdist_wheel; ls -lrt dist/*; ls -lrt wheelhouse/*"
       docker run -v $(pwd):/io dockcross/manylinux-x64 bash -c "cd /io/supy-driver;/opt/python/cp37-cp37m/bin/python -m pip install -r requirements.txt; /opt/python/cp37-cp37m/bin/python setup.py bdist_wheel; ls -lrt dist/*; ls -lrt wheelhouse/*"

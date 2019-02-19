@@ -105,11 +105,19 @@ sysname = platform.system()
 
 # change `setjmp` and `longjmp` to windows compliant versions
 if sysname == 'Windows':
-    f2py.rules.routine_rules['body']=f2py.rules.routine_rules['body'].replace(
+    f2py.rules.routine_rules['body'] = f2py.rules.routine_rules['body'].replace(
         r'setjmp(_env)',
         r'__builtin_setjmp(_env)'
     )
     f2py.rules.module_rules['modulebody'] = f2py.rules.module_rules['modulebody'].replace(
         r'longjmp(_env)',
         r'__builtin_longjmp(_env)'
+    )
+    f2py.rules.module_rules['modulebody'] = f2py.rules.module_rules['modulebody'].replace(
+        r'#include <string.h>',
+        r"""
+#define _GNU_SOURCE
+#include <string.h>
+"""
+
     )

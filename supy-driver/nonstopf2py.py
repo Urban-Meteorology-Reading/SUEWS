@@ -32,8 +32,11 @@ original header:
 
 """
 
+import platform
+
 from numpy import f2py
 print('Customised f2py loaded!')
+
 
 # trap the fortran STOP methods.
 # luckily they are not builtin/inlined.
@@ -96,3 +99,17 @@ f2py.rules.routine_rules['body'] = f2py.rules.routine_rules['body'].replace(
          #callfortranroutine#
        }
    """)
+
+# distinguish platform to handle lib missing issues on windows
+sysname = platform.system()
+
+# change `setjmp` and `longjmp` to windows compliant versions
+if sysname == 'Windows':
+    f2py.rules.routine_rules['body']=f2py.rules.routine_rules['body'].replace(
+        r'setjmp(_env)',
+        r'__builtin_setjmp(_env)'
+    )
+    f2py.rules.module_rules['modulebody'] = f2py.rules.module_rules['modulebody'].replace(
+        r'longjmp(_env)',
+        r'__builtin_longjmp(_env)'
+    )

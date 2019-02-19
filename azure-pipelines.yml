@@ -13,160 +13,160 @@ resources:
 
 
 phases:
-- phase:                Phase_1
-  displayName:          Agent macOS
+# - phase:                Phase_1
+#   displayName:          Agent macOS
 
-  condition:            succeeded()
-  queue:
-    name:               Hosted macOS
-  steps:
-  # Use Python Version
-  # Retrieves the specified version of Python from the tool cache. Optionally add it to PATH.
-  - task:               UsePythonVersion@0
-    inputs:
-      versionSpec:      '3.7'
-      addToPath:        true
-      architecture:     'x64'
+#   condition:            succeeded()
+#   queue:
+#     name:               Hosted macOS
+#   steps:
+#   # Use Python Version
+#   # Retrieves the specified version of Python from the tool cache. Optionally add it to PATH.
+#   - task:               UsePythonVersion@0
+#     inputs:
+#       versionSpec:      '3.7'
+#       addToPath:        true
+#       architecture:     'x64'
 
-  - script:             'brew update; brew install gcc'
-    displayName:        'install gcc+gfortran'
-    continueOnError:    true
+#   - script:             'brew update; brew install gcc'
+#     displayName:        'install gcc+gfortran'
+#     continueOnError:    true
 
-  - script:             |
-      make release
-      make test
-    displayName:        'make suews'
-    continueOnError:    true
+#   - script:             |
+#       make release
+#       make test
+#     displayName:        'make suews'
+#     continueOnError:    true
 
-  - task:               GithubRelease@0
-    inputs:
-      gitHubConnection: new GitHub connection
-      repositoryName:   Urban-Meteorology-Reading/SUEWS
-      assets:           ./ReleaseRepo/*.zip
-      action:           'Edit'
-      target:           '$(build.sourceVersion)'
-      tagSource:        'manual' # 'auto'
-      tag:              $(release_tag) # Required when action == edit || action == discard || tagSource == manual
-      title:            $(release_title)
-      assetUploadMode:  'replace'
-      isDraft:          true
-      isPrerelease:     false
-      addChangeLog:     false
+#   - task:               GithubRelease@0
+#     inputs:
+#       gitHubConnection: new GitHub connection
+#       repositoryName:   Urban-Meteorology-Reading/SUEWS
+#       assets:           ./ReleaseRepo/*.zip
+#       action:           'Edit'
+#       target:           '$(build.sourceVersion)'
+#       tagSource:        'manual' # 'auto'
+#       tag:              $(release_tag) # Required when action == edit || action == discard || tagSource == manual
+#       title:            $(release_title)
+#       assetUploadMode:  'replace'
+#       isDraft:          true
+#       isPrerelease:     false
+#       addChangeLog:     false
 
-  - task:               UsePythonVersion@0
-    inputs:
-      versionSpec:      '3.7'
-      addToPath:        true
-      architecture:     'x64'
+#   - task:               UsePythonVersion@0
+#     inputs:
+#       versionSpec:      '3.7'
+#       addToPath:        true
+#       architecture:     'x64'
 
-  - script:             'make driver'
-    displayName:        'make supy_driver'
-    continueOnError:    true
+#   - script:             'make driver'
+#     displayName:        'make supy_driver'
+#     continueOnError:    true
 
-  - task:               UsePythonVersion@0
-    inputs:
-      versionSpec:      '3.6'
-      addToPath:        true
-      architecture:     'x64'
+#   - task:               UsePythonVersion@0
+#     inputs:
+#       versionSpec:      '3.6'
+#       addToPath:        true
+#       architecture:     'x64'
 
-  - script:             'make driver'
-    displayName:        'make supy_driver'
-    continueOnError:    true
+#   - script:             'make driver'
+#     displayName:        'make supy_driver'
+#     continueOnError:    true
 
-  - task:               UsePythonVersion@0
-    inputs:
-      versionSpec:      '3.5'
-      addToPath:        true
-      architecture:     'x64'
+#   - task:               UsePythonVersion@0
+#     inputs:
+#       versionSpec:      '3.5'
+#       addToPath:        true
+#       architecture:     'x64'
 
-  - script:             'make driver'
-    displayName:        'make supy_driver'
-    continueOnError:    true
+#   - script:             'make driver'
+#     displayName:        'make supy_driver'
+#     continueOnError:    true
 
-  - task: TwineAuthenticate@0
-    inputs:
-      # artifactFeeds: 'feed_name1, feed_name2'
-      externalFeeds: 'PyPI'
+#   - task: TwineAuthenticate@0
+#     inputs:
+#       # artifactFeeds: 'feed_name1, feed_name2'
+#       externalFeeds: 'PyPI'
 
-  - script:     |
-      twine upload -r SuPy --config-file $(PYPIRC_PATH) --skip-existing supy-driver/dist/*whl
-    displayName:        'upload supy_driver'
-    continueOnError:    true
+#   - script:     |
+#       twine upload -r SuPy --config-file $(PYPIRC_PATH) --skip-existing supy-driver/dist/*whl
+#     displayName:        'upload supy_driver'
+#     continueOnError:    true
 
 
-- phase:                Phase_2
-  displayName:          Agent Windows
+# - phase:                Phase_2
+#   displayName:          Agent Windows
 
-  condition:            succeeded()
-  queue:
-    name:               Hosted VS2017
+#   condition:            succeeded()
+#   queue:
+#     name:               Hosted VS2017
 
-  steps:
-  - task:               UsePythonVersion@0
-    inputs:
-      versionSpec:      '3.7'
-      addToPath:        true
-      architecture:     'x64'
+#   steps:
+#   - task:               UsePythonVersion@0
+#     inputs:
+#       versionSpec:      '3.7'
+#       addToPath:        true
+#       architecture:     'x64'
 
-  - bash:               |
-       make release
-    displayName:        'make suews'
-    failOnStderr:       false
+#   - bash:               |
+#        make release
+#     displayName:        'make suews'
+#     failOnStderr:       false
 
-  - task:               GithubRelease@0
-    inputs:
-      gitHubConnection: new GitHub connection
-      repositoryName:   Urban-Meteorology-Reading/SUEWS
-      assets:           ./ReleaseRepo/*.zip
-      action:           'Edit'
-      target:           '$(build.sourceVersion)'
-      tagSource:        'manual' # 'auto'
-      tag:              $(release_tag) # Required when action == edit || action == discard || tagSource == manual
-      title:            $(release_title)
-      assetUploadMode:  'replace'
-      isDraft:          true
-      isPrerelease:     false
-      addChangeLog:     false
+#   - task:               GithubRelease@0
+#     inputs:
+#       gitHubConnection: new GitHub connection
+#       repositoryName:   Urban-Meteorology-Reading/SUEWS
+#       assets:           ./ReleaseRepo/*.zip
+#       action:           'Edit'
+#       target:           '$(build.sourceVersion)'
+#       tagSource:        'manual' # 'auto'
+#       tag:              $(release_tag) # Required when action == edit || action == discard || tagSource == manual
+#       title:            $(release_title)
+#       assetUploadMode:  'replace'
+#       isDraft:          true
+#       isPrerelease:     false
+#       addChangeLog:     false
 
-  - task:               UsePythonVersion@0
-    inputs:
-      versionSpec:      '3.7'
-      addToPath:        true
-      architecture:     'x64'
+#   - task:               UsePythonVersion@0
+#     inputs:
+#       versionSpec:      '3.7'
+#       addToPath:        true
+#       architecture:     'x64'
 
-  - script:             'make driver'
-    displayName:        'make supy_driver'
-    continueOnError:    true
+#   - script:             'make driver'
+#     displayName:        'make supy_driver'
+#     continueOnError:    true
 
-  - task:               UsePythonVersion@0
-    inputs:
-      versionSpec:      '3.6'
-      addToPath:        true
-      architecture:     'x64'
+#   - task:               UsePythonVersion@0
+#     inputs:
+#       versionSpec:      '3.6'
+#       addToPath:        true
+#       architecture:     'x64'
 
-  - script:             'make driver'
-    displayName:        'make supy_driver'
-    continueOnError:    true
+#   - script:             'make driver'
+#     displayName:        'make supy_driver'
+#     continueOnError:    true
 
-  - task:               UsePythonVersion@0
-    inputs:
-      versionSpec:      '3.5'
-      addToPath:        true
-      architecture:     'x64'
+#   - task:               UsePythonVersion@0
+#     inputs:
+#       versionSpec:      '3.5'
+#       addToPath:        true
+#       architecture:     'x64'
 
-  - script:             'make driver'
-    displayName:        'make supy_driver'
-    continueOnError:    true
+#   - script:             'make driver'
+#     displayName:        'make supy_driver'
+#     continueOnError:    true
 
-  - task: TwineAuthenticate@0
-    inputs:
-      # artifactFeeds: 'feed_name1, feed_name2'
-      externalFeeds: 'PyPI'
+#   - task: TwineAuthenticate@0
+#     inputs:
+#       # artifactFeeds: 'feed_name1, feed_name2'
+#       externalFeeds: 'PyPI'
 
-  - script:  |
-      twine upload -r SuPy --config-file $(PYPIRC_PATH) --skip-existing supy-driver/dist/*whl
-    displayName:        'upload supy_driver'
-    continueOnError:    true
+#   - script:  |
+#       twine upload -r SuPy --config-file $(PYPIRC_PATH) --skip-existing supy-driver/dist/*whl
+#     displayName:        'upload supy_driver'
+#     continueOnError:    true
 
 - phase:                Phase_3
   displayName:          Agent Linux

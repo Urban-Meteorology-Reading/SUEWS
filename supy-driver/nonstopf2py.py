@@ -106,6 +106,7 @@ f2py.rules.routine_rules['body'] = f2py.rules.routine_rules['body'].replace(
 sysname = platform.system()
 
 # change `setjmp` and `longjmp` to windows compliant versions
+# http://www.agardner.me/golang/windows/cgo/64-bit/setjmp/longjmp/2016/02/29/go-windows-setjmp-x86.html
 if sysname == 'Windows':
     f2py.rules.routine_rules['body'] = f2py.rules.routine_rules['body'].replace(
         r'setjmp(_env)',
@@ -115,6 +116,9 @@ if sysname == 'Windows':
         r'longjmp(_env)',
         r'__builtin_longjmp(_env)'
     )
+
+    # add an implementation of `strndup`
+    # https://github.com/noahp/cflow-mingw/blob/4e3f48c6636f4e54e2f30671eaeb3c8bc96fd4a4/cflow-1.4/gnu/strndup.c
     f2py.rules.module_rules['modulebody'] = f2py.rules.module_rules['modulebody'].replace(
         r'#include <setjmp.h>',
         r"""

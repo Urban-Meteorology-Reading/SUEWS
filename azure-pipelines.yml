@@ -169,56 +169,56 @@ phases:
     continueOnError:    true
 
 # - phase:                Phase_3
-  displayName:          Agent Linux
+#   displayName:          Agent Linux
 
-  condition:            succeeded()
-  queue:
-    name:               Hosted Ubuntu 1604
-  steps:
-  - task:               UsePythonVersion@0
-    inputs:
-      versionSpec:      '3.7'
-      addToPath:        true
-      architecture:     'x64'
+#   condition:            succeeded()
+#   queue:
+#     name:               Hosted Ubuntu 1604
+#   steps:
+#   - task:               UsePythonVersion@0
+#     inputs:
+#       versionSpec:      '3.7'
+#       addToPath:        true
+#       architecture:     'x64'
 
-  - script:             |
-       sudo apt-get update
-       sudo apt-get install build-essential gfortran
-    displayName:        'install gfortran'
-    continueOnError:    true
+#   - script:             |
+#        sudo apt-get update
+#        sudo apt-get install build-essential gfortran
+#     displayName:        'install gfortran'
+#     continueOnError:    true
 
-  - script:             |
-       make release
-    displayName:        'make suews'
-    continueOnError:    true
+#   - script:             |
+#        make release
+#     displayName:        'make suews'
+#     continueOnError:    true
 
-  - task:               GithubRelease@0
-    inputs:
-      gitHubConnection: new GitHub connection
-      repositoryName:   Urban-Meteorology-Reading/SUEWS
-      assets:           ./ReleaseRepo/*.zip
-      action:           'Edit'
-      target:           '$(build.sourceVersion)'
-      tagSource:        'manual' # 'auto'
-      tag:              $(release_tag) # Required when action == edit || action == discard || tagSource == manual
-      title:            $(release_title)
-      assetUploadMode:  'replace'
-      isDraft:          true
-      isPrerelease:     false
-      addChangeLog:     false
+#   - task:               GithubRelease@0
+#     inputs:
+#       gitHubConnection: new GitHub connection
+#       repositoryName:   Urban-Meteorology-Reading/SUEWS
+#       assets:           ./ReleaseRepo/*.zip
+#       action:           'Edit'
+#       target:           '$(build.sourceVersion)'
+#       tagSource:        'manual' # 'auto'
+#       tag:              $(release_tag) # Required when action == edit || action == discard || tagSource == manual
+#       title:            $(release_title)
+#       assetUploadMode:  'replace'
+#       isDraft:          true
+#       isPrerelease:     false
+#       addChangeLog:     false
 
-  - task: TwineAuthenticate@0
-    inputs:
-      # artifactFeeds: 'feed_name1, feed_name2'
-      externalFeeds: 'PyPI'
+#   - task: TwineAuthenticate@0
+#     inputs:
+#       # artifactFeeds: 'feed_name1, feed_name2'
+#       externalFeeds: 'PyPI'
 
-  - script:  |
-      pip install twine
-      docker run -v $(pwd):/io dockcross/manylinux-x64 bash -c "cd /io/supy-driver;make clean;make suews"
-      docker run -v $(pwd):/io dockcross/manylinux-x64 bash -c "cd /io/supy-driver;/opt/python/cp35-cp35m/bin/python -m pip install -r requirements.txt; /opt/python/cp35-cp35m/bin/python setup.py bdist_wheel; ls -lrt dist/*; ls -lrt wheelhouse/*"
-      docker run -v $(pwd):/io dockcross/manylinux-x64 bash -c "cd /io/supy-driver;/opt/python/cp36-cp36m/bin/python -m pip install -r requirements.txt; /opt/python/cp36-cp36m/bin/python setup.py bdist_wheel; ls -lrt dist/*; ls -lrt wheelhouse/*"
-      docker run -v $(pwd):/io dockcross/manylinux-x64 bash -c "cd /io/supy-driver;/opt/python/cp37-cp37m/bin/python -m pip install -r requirements.txt; /opt/python/cp37-cp37m/bin/python setup.py bdist_wheel; ls -lrt dist/*; ls -lrt wheelhouse/*"
-      cd supy-driver
-      twine upload -r SuPy --config-file $(PYPIRC_PATH) --skip-existing wheelhouse/*whl
-    displayName:        'manylinux supy_driver build and upload'
-    continueOnError:    true
+#   - script:  |
+#       pip install twine
+#       docker run -v $(pwd):/io dockcross/manylinux-x64 bash -c "cd /io/supy-driver;make clean;make suews"
+#       docker run -v $(pwd):/io dockcross/manylinux-x64 bash -c "cd /io/supy-driver;/opt/python/cp35-cp35m/bin/python -m pip install -r requirements.txt; /opt/python/cp35-cp35m/bin/python setup.py bdist_wheel; ls -lrt dist/*; ls -lrt wheelhouse/*"
+#       docker run -v $(pwd):/io dockcross/manylinux-x64 bash -c "cd /io/supy-driver;/opt/python/cp36-cp36m/bin/python -m pip install -r requirements.txt; /opt/python/cp36-cp36m/bin/python setup.py bdist_wheel; ls -lrt dist/*; ls -lrt wheelhouse/*"
+#       docker run -v $(pwd):/io dockcross/manylinux-x64 bash -c "cd /io/supy-driver;/opt/python/cp37-cp37m/bin/python -m pip install -r requirements.txt; /opt/python/cp37-cp37m/bin/python setup.py bdist_wheel; ls -lrt dist/*; ls -lrt wheelhouse/*"
+#       cd supy-driver
+#       twine upload -r SuPy --config-file $(PYPIRC_PATH) --skip-existing wheelhouse/*whl
+#     displayName:        'manylinux supy_driver build and upload'
+#     continueOnError:    true

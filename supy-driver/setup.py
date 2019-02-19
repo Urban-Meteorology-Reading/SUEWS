@@ -106,7 +106,7 @@ class BinaryDistribution(Distribution):
 ext_modules = [
     Extension('supy_driver.suews_driver',
               target_f95,
-              extra_compile_args=['-std=gnu11'],
+              extra_compile_args=['-D_POSIX_C_SOURCE=200809L'],
               extra_f90_compile_args=['-cpp'],
               f2py_options=[
                   # '--quiet',

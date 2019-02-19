@@ -119,7 +119,6 @@ if sysname == 'Windows':
         r'#include <setjmp.h>',
         r"""
 #include <setjmp.h>
-#include <config.h>
 #include <stdlib.h>
 char *
 strndup (char const *s, size_t n)

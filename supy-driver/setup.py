@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import subprocess
 import shutil
+from nonstopf2py import f2py
 
 
 # wrap OS-specific `SUEWS_driver` libs
@@ -28,15 +29,21 @@ dir_f95 = '../SUEWS-SourceCode'
 target_f95 = [
     os.path.join(dir_f95, f)
     for f in
-    ['suews_ctrl_const.f95',
-     'suews_ctrl_driver.f95']]
+    [
+        'suews_ctrl_const.f95',
+        'suews_ctrl_error.f95',
+        'suews_ctrl_driver.f95',
+    ]
+]
 all_f95 = glob.glob(os.path.join(dir_f95, '*.f95'))
 exclude_f95 = [
     os.path.join(dir_f95, f)
     for f in
-    ['suews_c_wrapper.f95',
-     'suews_ctrl_sumin.f95',
-     'suews_program.f95']
+    [
+        'suews_c_wrapper.f95',
+        'suews_ctrl_sumin.f95',
+        'suews_program.f95',
+    ]
 ]
 other_f95 = list(
     set(all_f95)
@@ -109,7 +116,7 @@ ext_modules = [
               extra_link_args=[('' if sysname == 'Linux' else '-static')])]
 
 setup(name='supy_driver',
-      version=get_suews_version(ver_minor=5),
+      version=get_suews_version(ver_minor=6),
       description='the SUEWS driver driven by f2py',
       long_description=readme(),
       url='https://github.com/sunt05/SuPy',

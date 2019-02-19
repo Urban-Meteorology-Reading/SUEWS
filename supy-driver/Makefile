@@ -73,6 +73,7 @@ clean:
 	$(MAKE) show
 	$(MAKE) -C $(SUEWS_dir) -f Makefile.gfortran clean
 	rm -rf ${MODULE}/*.so ${MODULE}/*.pyd ${MODULE}/*.pyc ${MODULE}/__pycache__ ${MODULE}/*.dSYM
+	rm -rf build
 	 -$(PYTHON) setup.py clean --all
 
 # clean all existing builds, rebuild f2py libs, build wheels and test

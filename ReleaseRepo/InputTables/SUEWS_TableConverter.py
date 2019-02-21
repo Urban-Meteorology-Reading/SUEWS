@@ -7,6 +7,7 @@
 # TS, 13 Oct 2017: initial version
 # YT, 01 Jun 2018: added the chained conversion
 ########################################################
+# %%
 from __future__ import division
 import numpy as np
 import os.path
@@ -18,27 +19,46 @@ import shutil
 from collections import defaultdict
 import pandas as pd
 from heapq import heappop, heappush
+from pathlib import Path
+import sys
+import pandas as pd
 
 
 # ignore warnings raised by numpy when reading-in -9 lines
 import warnings
 warnings.filterwarnings('ignore')
 ########################################################
-
-
+# %%
 # load the rule file
-rules = np.genfromtxt('rules.csv', dtype=np.ndarray, delimiter=',', names=True)
+# rules = np.genfromtxt('rules.csv', dtype=np.ndarray, delimiter=',', names=True)
+rules = pd.read_csv('rules.csv')
+# str_rules = rules.stack().str.decode('utf-8').unstack()
+# for col in str_rules:
+#     rules[col] = str_rules[col]
 
-
+# %%
+# rules
+# %%
+# sys.exit()
 ########################################################
 # define action functions:
 # the current supported actions:
 # rename, delete, add, move
 
 # rename:
-# # rename file
-# def rename_file(fromFile,toFile):
-#     pass
+# rename file
+
+
+def rename_file(toFile, toVar, toCol, toVal):
+    # toVar, toCol are ignored
+    if not Path(toFile).exists():
+        print(toFile, 'not exiting')
+        sys.exit()
+    else:
+        dir = Path(toFile).resolve().parent
+        path_toFile_renamed = dir/toVal
+        os.rename(toFile, path_toFile_renamed)
+
 
 # rename variable
 def rename_var(toFile, toVar, toCol, toVal):
@@ -132,44 +152,72 @@ def add_var(toFile, toVar, toCol, toVal):
         add_var_nml(toFile, toVar, toVal)
     else:
         # load original data from toFile
-        dataX = np.genfromtxt(toFile, dtype=np.ndarray, skip_header=1,
-                              comments='!', names=True, invalid_raise=False)
-        # print dataX.dtype.names
-        header = np.array(dataX.dtype.names).astype('S140')
-        # print header.dtype, header
-        # print toVar,int(toCol) - 1
-        header = np.insert(header, int(toCol) - 1, toVar)
-        # print header
-        headerLine = ' '.join(
-            str(i + 1)
-            for i in np.arange(len(header))) + '\n' + ' '.join(header)
-        # print dataX.shape
-        # if toVar exists:
-        if toVar in dataX.dtype.names:
-            return toVar + ' exists! Stop.'
-        else:
-            # convert to a more handy array
-            # print np.array(dataX.tolist()).astype(str).shape
-            dataX = np.array(dataX.tolist()).astype(str)
-            dataX = dataX.reshape((-1, len(header) - 1))
-            # construct new column
-            colNew = np.empty(dataX.shape[0], dtype=np.object)
-            # colNew[0] = toCol
-            # colNew[1] = toVar
-            colNew = toVal
+        dataX = pd.read_csv(
+            toFile,
+            header=1,
+            delim_whitespace=True,
+            comment='!',
+        )
+        # construct new column
+        colNew = np.empty(dataX.shape[0], dtype=np.object)
+        colNew = toVal
+        # insert new column
+        dataX.insert(int(toCol) - 1, toVar, colNew)
+        # save new file
+        ind = np.arange(dataX.shape[1])+1
+        col_name = dataX.columns
+        col_new=pd.MultiIndex.from_arrays(
+            [ind, col_name]
+        )
+        dataX.columns = col_new
+        dataX.iloc[-2:]=np.nan
+        dataX.iloc[-2:,0] = -9
+        dataX.iloc[:, 0] = dataX.iloc[:, 0].astype(int)
+        dataX.to_csv(
+            toFile,
+            sep=' ',
+            float_format='%10.4f',
+            quotechar=' ',
+            index=False,
+        )
+        # # dataX = np.genfromtxt(toFile, dtype=np.ndarray, skip_header=1,
+        # #                       comments='!', names=True, invalid_raise=False)
+        # # print dataX.dtype.names
+        # header = np.array(dataX.dtype.names).astype('S140')
+        # # print header.dtype, header
+        # # print toVar,int(toCol) - 1
+        # header = np.insert(header, int(toCol) - 1, toVar)
+        # # print header
+        # headerLine = ' '.join(
+        #     str(i + 1)
+        #     for i in np.arange(len(header))) + '\n' + ' '.join(header)
+        # # print dataX.shape
+        # # if toVar exists:
+        # if toVar in dataX.dtype.names:
+        #     return toVar + ' exists! Stop.'
+        # else:
+        #     # convert to a more handy array
+        #     # print np.array(dataX.tolist()).astype(str).shape
+        #     dataX = np.array(dataX.tolist()).astype(str)
+        #     dataX = dataX.reshape((-1, len(header) - 1))
+        #     # construct new column
+        #     colNew = np.empty(dataX.shape[0], dtype=np.object)
+        #     # colNew[0] = toCol
+        #     # colNew[1] = toVar
+        #     colNew = toVal
 
-            # insert one column
-            # print colNew
-            # print int(toCol) - 1
-            dataX = np.insert(dataX, int(toCol) - 1, colNew, axis=1)
-            # # recover header positions
-            # dataX[0] = np.arange(len(dataX[0])) + 1
+        #     # insert one column
+        #     # print colNew
+        #     # print int(toCol) - 1
+        #     dataX = np.insert(dataX, int(toCol) - 1, colNew, axis=1)
+        #     # # recover header positions
+        #     # dataX[0] = np.arange(len(dataX[0])) + 1
 
-            # NB: caveat: comment info will be dropped, needs to be recovered
-            np.savetxt(toFile, dataX, header=headerLine,
-                       footer='-9\n-9', fmt='%s', comments='')
-            # print toVar + ' has been added!'
-            return
+        #     # NB: caveat: comment info will be dropped, needs to be recovered
+        #     np.savetxt(toFile, dataX, header=headerLine,
+        #                footer='-9\n-9', fmt='%s', comments='')
+        #     # print toVar + ' has been added!'
+        #     return
 
 
 def add_var_nml(toFile, toVar, toVal):
@@ -279,16 +327,23 @@ def SUEWS_Converter_single(fromDir, toDir, fromVer, toVer):
     # list all files involved in the given conversion
     posRules = np.unique(
         np.where(
-            np.array(rules[['From', 'To']].tolist()) == [fromVer, toVer])[0])
+            np.array(rules.loc[:, ['From', 'To']].values.tolist()) == [fromVer, toVer])[0])
     filesToConvert = np.unique(rules['File'][posRules])
+    # print('posRules', posRules,
+    #       rules.loc[:, ['From', 'To']],
+    #       np.array(rules.loc[:, ['From', 'To']].values),
+    #       [fromVer, toVer])
+    print('filesToConvert', filesToConvert)
 
     for fileX in filesToConvert:
-        actionList = rules[posRules].compress(
-            rules['File'][posRules] == fileX, axis=0)
-        actionList = np.array(actionList.tolist())[:, 2:].astype('S140')
+        print('working on file:', fileX)
+        actionList = rules.values[posRules].compress(
+            rules['File'].values[posRules] == fileX, axis=0)
+        actionList = actionList[:, 2:]
+        # actionList = np.array(actionList.tolist())[:, 2:].astype('S140')
         # prepend toDir to fileX
         actionList[:, 1] = os.path.join(toDir, fileX)
-        # print actionList
+        # print('actionList:', actionList)
         SUEWS_Converter_file(os.path.join(toDir, fileX), actionList)
 
 
@@ -299,28 +354,46 @@ def SUEWS_Converter_file(fileX, actionList):
     # 2. delete
     # 3. move
     # 4. add
-    order = {'Rename': 1, 'Delete': 2, 'Move': 3, 'Add': 4}
+    # 5. rename file
+    order = {
+        'Keep': 0,
+        'Rename': 1,
+        'Delete': 2,
+        'Move': 3,
+        'Add': 4,
+        'Rename_File': 5,
+    }
+
     todoList = np.array(
         [np.concatenate(([order[x[0]]], x)).tolist() for x in actionList])
-    # print todoList
+    # print('todoList:\n', todoList, '\n')
     # sort by Column number, then by Action order in actionList; also expand
     # dtype size
     todoList = todoList[np.lexsort(
-        (todoList[:, 4].astype(int), todoList[:, 0]))][:, 1:].astype('S140')
+        (todoList[:, 4].astype(int), todoList[:, 0]))][:, 1:]
 
     # print todoList,fileX
     # correct file names with proper path
     todoList[:, 1] = fileX
     # print todoList,fileX
     for action in todoList:
-        # print action
+        # print(action)
         SUEWS_Converter_action(*action)
+
+
+def keep_file(toFile, var, col, val):
+    pass
 
 
 def SUEWS_Converter_action(action, toFile, var, col, val):
     print(action, toFile, var, col, val)
-    actionFunc = {'Rename': rename_var, 'Delete': delete_var,
-                  'Add': add_var}
+    actionFunc = {
+        'Rename': rename_var,
+        'Delete': delete_var,
+        'Add': add_var,
+        'Rename_File': rename_file,
+        'Keep': keep_file,
+    }
     actionFunc[action](toFile, var, col, val)
 
     print(action + ' ' + var + ' for ' + toFile + ': done!')
@@ -365,47 +438,55 @@ def version_list(fromVer, toVer):
     return chain_ver
 
 
-# a chained conversion across multiole versions
+# a chained conversion across multiple versions
 def SUEWS_Converter_chain(fromDir, toDir, fromVer, toVer):
     chain_ver = version_list(fromVer, toVer)
+    len_chain = chain_ver[0]
+    print('working on chained conversion,', f'{len_chain} actions to take')
+    print('chained list:', chain_ver[1:], '\n')
     temDir_1 = temDir_2 = fromDir
     i = chain_ver[0]
-# Create temporary folders
-    if os.path.exists('tem1') is False:
-        os.mkdir('tem1')
-    if os.path.exists('tem2') is False:
-        os.mkdir('tem2')
+    # Create temporary folders
+    if os.path.exists('temp1') is False:
+        os.mkdir('temp1')
+    if os.path.exists('temp2') is False:
+        os.mkdir('temp2')
 
-# Indirect version conversion process
+    # Indirect version conversion process
     while i > 1:
+        print('working on:', chain_ver[i + 1], '-->', chain_ver[i])
         if i % 2:
-            temDir_2 = 'tem2'
+            temDir_2 = 'temp2'
             SUEWS_Converter_single(
                 temDir_1, temDir_2, chain_ver[i + 1], chain_ver[i])
-            temDir_1 = 'tem1'
+            temDir_1 = 'temp1'
             # Remove input temporary folders
-            shutil.rmtree('tem1', ignore_errors=True)
+            shutil.rmtree('temp1', ignore_errors=True)
 
         else:
-            temDir_1 = 'tem1'
+            temDir_1 = 'temp1'
             SUEWS_Converter_single(
                 temDir_2, temDir_1, chain_ver[i + 1], chain_ver[i])
-            temDir_2 = 'tem2'
+            temDir_2 = 'temp2'
             # Remove input temporary folders
-            shutil.rmtree('tem2', ignore_errors=True)
+            shutil.rmtree('temp2', ignore_errors=True)
             # this loop always break in this part
         i -= 1
 
+    print('working on:', chain_ver[i + 1], '-->', chain_ver[i])
     SUEWS_Converter_single(temDir_1, toDir, chain_ver[2], chain_ver[1])
     # Remove temporary folders
-    shutil.rmtree('tem1', ignore_errors=True)
-    shutil.rmtree('tem2', ignore_errors=True)
+    shutil.rmtree('temp1', ignore_errors=True)
+    shutil.rmtree('temp2', ignore_errors=True)
 
 
 if __name__ == '__main__':
     # example:
-    fromDir = '2016a'
-    toDir = '2018a'
-    fromVer = '2016a'
-    toVer = '2018a'
+    fromDir = '2018a'
+    toDir = '2019a'
+    fromVer = '2018a'
+    toVer = '2019a'
     SUEWS_Converter_chain(fromDir, toDir, fromVer, toVer)
+
+
+# %%

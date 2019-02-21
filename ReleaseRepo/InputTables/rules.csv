@@ -1,4 +1,10 @@
 From,To,Action,File,Variable,Column,Value
+2018c,2019a,Rename_File,SUEWS_AnthropogenicHeat.txt,-999,-999,SUEWS_AnthropogenicEmission.txt
+2018c,2019a,Add,SUEWS_AnthropogenicHeat.txt,FrPDDwe,31,1
+2018c,2019a,Add,SUEWS_AnthropogenicHeat.txt,MaxFCMetab,30,280
+2018c,2019a,Add,SUEWS_AnthropogenicHeat.txt,MinFCMetab,29,120
+2018b,2018c,Keep,-999,-999,-999,-999
+2018a,2018b,Keep,-999,-999,-999,-999
 2017a,2018a,Delete,RunControl.nml,anthropco2method,-999,-999
 2017a,2018a,Rename,RunControl.nml,AnthropHeatMethod,-999,EmissionsMethod
 2017a,2018a,Add,SUEWS_AnthropogenicHeat.txt,AHMin_WD,9,15

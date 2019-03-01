@@ -41,7 +41,7 @@ endif
 PYTHON_ver:= $(shell $(PYTHON) --version)
 
 
-MODULE=suews_driver
+MODULE=supy_driver
 
 SUEWS_dir = ../SUEWS-SourceCode
 
@@ -73,12 +73,21 @@ clean:
 	$(MAKE) show
 	$(MAKE) -C $(SUEWS_dir) -f Makefile.gfortran clean
 	rm -rf ${MODULE}/*.so ${MODULE}/*.pyd ${MODULE}/*.pyc ${MODULE}/__pycache__ ${MODULE}/*.dSYM
+	rm -rf build
 	 -$(PYTHON) setup.py clean --all
 
 # clean all existing builds, rebuild f2py libs, build wheels and test
 test:
 	$(MAKE) show
+	$(MAKE) main
 	$(PYTHON) setup.py test
+
+# clean all existing builds, rebuild f2py libs, build wheels and install in dev mode
+dev:
+	$(MAKE) show
+	$(MAKE) clean
+	$(MAKE) suews
+	pip install -e .
 
 # upload wheels to pypi using twine
 upload:

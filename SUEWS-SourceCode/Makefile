@@ -1,1 +1,51 @@
-Makefile.gfortran
+# compilers
+FC = gfortran $(FFLAGS)
+CC = gcc $(CFLAGS)
+
+# source code suffix: gfortran can work with f95 files
+suffix_code = .f95
+
+# system specific settings
+ifeq ($(OS),Windows_NT)
+			C_MODULE = strptime.o # this is needed by datetime_module: mingw lacks `strptime`
+			STATIC = -static -mcmodel=medium# mingw
+			STATICLIB =
+			SUEWS_build_dir = $(addprefix $(SUEWS_build_base), win64)
+else
+			C_MODULE =
+			UNAME_S := $(shell uname -s)
+			ifeq ($(UNAME_S),Linux) # Linux
+				STATIC = -fPIC -static # single -static won't work on macOS
+				STATICLIB =
+				SUEWS_build_dir = $(addprefix $(SUEWS_build_base), Linux)
+			endif
+			ifeq ($(UNAME_S),Darwin) # macOS
+				STATIC = -static-libgfortran -static-libgcc # single -static won't work on macOS
+				STATICLIB = $(shell gfortran -print-file-name=libquadmath.dylib | xargs -t rm -rf; gfortran -print-file-name=libquadmath.a) # force-ship this static lib
+				SUEWS_build_dir = $(addprefix $(SUEWS_build_base), macOS)
+			endif
+endif
+
+FCNOOPT = #-O0
+FCDEBUG = #-g $(FCNOOPT) -fbacktrace -ggdb -fcheck=bounds,do,mem,pointer -ffpe-trap=invalid,zero,overflow
+FCPROF = #-pg
+
+FFLAGS = -O3 $(STATIC) $(FCDEBUG) -Wall -Wtabs -fbounds-check -cpp \
+					-Wno-unused-dummy-argument -Wno-unused-variable
+CFLAGS =
+
+
+# netCDF-related settings:
+nc4fr: NETCDFINC = /home/xlinfr/apps/lib4cdo/include # path only valid with Fredrik's HPC
+nc4fr: NETCDFLIB = /home/xlinfr/apps/lib4cdo/lib # path only valid with Fredrik's HPC
+
+nc4fr: FFLAGS += -Dnc=1 -I$(NETCDFINC) # options for netcdf build
+
+# coverage testing related settings:
+cov: FFLAGS += -fprofile-arcs -ftest-coverage # add options for coverage testing
+cov: suffix := _cov
+cov: TARGET := $(strip $(TARGET))$(strip $(suffix))
+
+
+# include common settings
+include include.common

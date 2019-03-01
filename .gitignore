@@ -49,6 +49,7 @@ __pycache__/
 org.eclipse.photran.core.prefs
 workspace.xml
 .idea
+lastfailed
 launch.json
 
 
@@ -78,3 +79,6 @@ supy-driver/wheelhouse
 Obs
 London_KCL
 ReleaseRepo/*.zip
+
+# editor related
+.vscode/

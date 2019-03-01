@@ -24,6 +24,7 @@ name_ver = name_exe.split('_V')[-1]
 
 # create path for archive
 path_archive = path_base / ('_'.join(['SUEWS', name_ver, name_sys]))
+print(f'creating {path_archive}.zip')
 
 # copy input tables
 path_input_tables = path_base / 'InputTables' / name_ver
@@ -31,6 +32,10 @@ if path_input_tables.exists():
     if path_archive.exists():
         rmtree(path_archive)
     copytree(path_input_tables, path_archive)
+else:
+    print(f'{path_input_tables} not existing! Packing stopped!')
+    sys.exit()
+
 
 # load path info for input and output
 dict_runcontrol = f90nml.read(path_archive / 'RunControl.nml')['runcontrol']

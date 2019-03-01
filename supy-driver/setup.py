@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import subprocess
 import shutil
+from nonstopf2py import f2py
 
 
 # wrap OS-specific `SUEWS_driver` libs
@@ -28,15 +29,21 @@ dir_f95 = '../SUEWS-SourceCode'
 target_f95 = [
     os.path.join(dir_f95, f)
     for f in
-    ['suews_ctrl_const.f95',
-     'suews_ctrl_driver.f95']]
+    [
+        'suews_ctrl_const.f95',
+        'suews_ctrl_error.f95',
+        'suews_ctrl_driver.f95',
+    ]
+]
 all_f95 = glob.glob(os.path.join(dir_f95, '*.f95'))
 exclude_f95 = [
     os.path.join(dir_f95, f)
     for f in
-    ['suews_c_wrapper.f95',
-     'suews_ctrl_sumin.f95',
-     'suews_program.f95']
+    [
+        'suews_c_wrapper.f95',
+        'suews_ctrl_sumin.f95',
+        'suews_program.f95',
+    ]
 ]
 other_f95 = list(
     set(all_f95)
@@ -53,7 +60,7 @@ src_f95 = target_f95 + other_f95
 
 
 def readme():
-    with open('../README.rst') as f:
+    with open('README.md') as f:
         return f.read()
 # dir_source='SUEWS-SourceCode'
 # path_source = Path(dir_source)
@@ -63,19 +70,26 @@ def readme():
 def get_suews_version(dir_source=dir_f95, ver_minor=2):
     path_source = Path(dir_source)
     path_makefile = (path_source / 'include.common')
-    # get file to retrieve version
+    # identify `file` to retrieve version
     with open(str(path_makefile)) as fm:
         for line in fm:
             if 'file ' in line:
                 file = line.split(':=')[-1].split('#')[0].strip()
 
-    # get version
+    # get version from `file`
     path_constfile = (path_source / file)
     with open(str(path_constfile)) as fm:
         for line in fm:
             if 'progname' in line:
                 ver = line.split('SUEWS_V')[-1].replace("'", '').strip()
-                return ver + '{}'.format(ver_minor)
+                ver += str(ver_minor)
+
+    # cast `ver` to the driver package
+    path_pkg_init = Path('.')/lib_basename/'version.py'
+    with open(str(path_pkg_init), 'w') as fm:
+        fm.write("__version__='{ver}'".format(ver=ver))
+
+    return ver
 
 
 class BinaryDistribution(Distribution):
@@ -92,6 +106,7 @@ class BinaryDistribution(Distribution):
 ext_modules = [
     Extension('supy_driver.suews_driver',
               target_f95,
+              extra_compile_args=['-D_POSIX_C_SOURCE=200809L'],
               extra_f90_compile_args=['-cpp'],
               f2py_options=[
                   # '--quiet',
@@ -102,7 +117,7 @@ ext_modules = [
               extra_link_args=[('' if sysname == 'Linux' else '-static')])]
 
 setup(name='supy_driver',
-      version=get_suews_version(ver_minor=15),
+      version=get_suews_version(ver_minor=7),
       description='the SUEWS driver driven by f2py',
       long_description=readme(),
       url='https://github.com/sunt05/SuPy',
@@ -118,7 +133,7 @@ setup(name='supy_driver',
       },
       distclass=BinaryDistribution,
       ext_modules=ext_modules,
-      python_requires='>=3.6',
+      python_requires='>=3.5',
       install_requires=[
           'numpy>=1.15.2'
       ],
@@ -128,10 +143,20 @@ setup(name='supy_driver',
       zip_safe=False)
 
 
-# use auditwheel to repair file name
+# check latest build
+path_dir_driver = Path(__file__).resolve().parent
+list_wheels = [str(x) for x in path_dir_driver.glob('dist/*whl')]
+fn_wheel = sorted(list_wheels, key=os.path.getmtime)[-1]
+print(list_wheels, fn_wheel)
+
+# use auditwheel to repair file name for Linux
 if sysname == 'Linux':
-    fn_wheel = sorted(glob.glob('dist/*whl'), key=os.path.getmtime)[-1]
+    # path_dir_driver = Path(__file__).resolve().parent
+    # list_wheels = [str(x) for x in path_dir_driver.glob('dist/*whl')]
+    # fn_wheel = sorted(list_wheels, key=os.path.getmtime)[-1]
+    # print(list_wheels, fn_wheel)
     subprocess.call(["auditwheel", "repair", fn_wheel])
+    subprocess.call(["ls", "-lrt"])
 
 
 # change compiler settings

@@ -77,7 +77,9 @@ MODULE ctrl_output
       /
 
    ! defualt:
-   DATA(varListAll(n), n=5 + 1, ncolumnsDataOutSUEWS)/ &
+   DATA(varListAll(n), &
+        n=5 + 1, &
+        ncolumnsDataOutSUEWS)/ &
       varAttr('Kdown', 'W m-2', f104, 'Incoming shortwave radiation', aA, 'SUEWS', 0), &
       varAttr('Kup', 'W m-2', f104, 'Outgoing shortwave radiation', aA, 'SUEWS', 0), &
       varAttr('Ldown', 'W m-2', f104, 'Incoming longwave radiation', aA, 'SUEWS', 0), &
@@ -157,11 +159,14 @@ MODULE ctrl_output
       varAttr('Ts', 'degC', f94, 'Skin temperature', aA, 'SUEWS', 0), &
       varAttr('T2', 'degC', f94, 'Air temperature at 2 m', aA, 'SUEWS', 0), &
       varAttr('Q2', 'g kg-1', f94, 'Specific humidity at 2 m', aA, 'SUEWS', 0), &
-      varAttr('U10', 'm s-1', f94, 'Wind speed at 10 m', aA, 'SUEWS', 0) &
+      varAttr('U10', 'm s-1', f94, 'Wind speed at 10 m', aA, 'SUEWS', 0), &
+      varAttr('RH2', '%', f94, 'Relative humidity at 2 m', aA, 'SUEWS', 0) &
       /
 
    ! SOLWEIG:
-   DATA(varListAll(n), n=85 + 1, 85 + ncolumnsdataOutSOL - 5)/ &
+   DATA(varListAll(n), &
+        n=ncolumnsDataOutSUEWS + 1, &
+        ncolumnsDataOutSUEWS + ncolumnsdataOutSOL - 5)/ &
       varAttr('azimuth', 'to_add', f106, 'azimuth', aA, 'SOLWEIG', 0), &
       varAttr('altitude', 'to_add', f106, 'altitude', aA, 'SOLWEIG', 0), &
       varAttr('GlobalRad', 'to_add', f106, 'GlobalRad', aA, 'SOLWEIG', 0), &
@@ -191,7 +196,9 @@ MODULE ctrl_output
       /
 
    ! BL:
-   DATA(varListAll(n), n=111 + 1, 111 + ncolumnsdataOutBL - 5)/ &
+   DATA(varListAll(n), &
+        n=ncolumnsDataOutSUEWS + ncolumnsdataOutSOL - 5 + 1, &
+        ncolumnsDataOutSUEWS + ncolumnsdataOutSOL - 5 + ncolumnsdataOutBL - 5)/ &
       varAttr('z', 'to_add', f104, 'z', aA, 'BL', 0), &
       varAttr('theta', 'to_add', f104, 'theta', aA, 'BL', 0), &
       varAttr('q', 'to_add', f104, 'q', aA, 'BL', 0), &
@@ -212,7 +219,9 @@ MODULE ctrl_output
       /
 
    ! Snow:
-   DATA(varListAll(n), n=128 + 1, 128 + ncolumnsDataOutSnow - 5)/ &
+   DATA(varListAll(n), &
+        n=ncolumnsDataOutSUEWS + ncolumnsdataOutSOL - 5 + ncolumnsdataOutBL - 5 + 1, &
+        ncolumnsDataOutSUEWS + ncolumnsdataOutSOL - 5 + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5)/ &
       varAttr('SWE_Paved', 'mm', f106, 'Snow water equivalent for paved surface', aA, 'snow', 0), &
       varAttr('SWE_Bldgs', 'mm', f106, 'Snow water equivalent for building surface', aA, 'snow', 0), &
       varAttr('SWE_EveTr', 'mm', f106, 'Snow water equivalent for evergreen tree surface', aA, 'snow', 0), &
@@ -313,7 +322,9 @@ MODULE ctrl_output
       /
 
    ! ESTM:
-   DATA(varListAll(n), n=225 + 1, 225 + ncolumnsDataOutESTM - 5)/ &
+   DATA(varListAll(n), &
+        n=ncolumnsDataOutSUEWS + ncolumnsdataOutSOL - 5 + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5 + 1, &
+       ncolumnsDataOutSUEWS + ncolumnsdataOutSOL - 5 + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5 + ncolumnsDataOutESTM - 5)/ &
       varAttr('QS', 'W m-2', f104, 'Total Storage', aA, 'ESTM', 0), &
       varAttr('QSAir', 'W m-2', f104, 'Storage air', aA, 'ESTM', 0), &
       varAttr('QSWall', 'W m-2', f104, 'Storage Wall', aA, 'ESTM', 0), &
@@ -344,7 +355,12 @@ MODULE ctrl_output
       /
 
    ! DailyState:
-   DATA(varListAll(n), n=252 + 1, 252 + ncolumnsDataOutDailyState - 5)/ &
+   DATA(varListAll(n), &
+        n=ncolumnsDataOutSUEWS + ncolumnsdataOutSOL - 5 &
+        + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5 + ncolumnsDataOutESTM - 5 + 1, &
+        ncolumnsDataOutSUEWS + ncolumnsdataOutSOL - 5 &
+        + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5 + ncolumnsDataOutESTM - 5 &
+        + ncolumnsDataOutDailyState - 5)/ &
       varAttr('HDD1_h', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
       varAttr('HDD2_c', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
       varAttr('HDD3_Tmean', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &

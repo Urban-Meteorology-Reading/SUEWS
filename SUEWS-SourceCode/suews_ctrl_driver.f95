@@ -369,6 +369,7 @@ CONTAINS
       REAL(KIND(1D0))::qs
       REAL(KIND(1D0))::RA
       REAL(KIND(1D0))::ResistSurf
+      REAL(KIND(1D0))::RH2
       ! REAL(KIND(1D0))::rss
       REAL(KIND(1d0))::runoffAGveg
       REAL(KIND(1d0))::runoffAGimpervious
@@ -726,7 +727,7 @@ CONTAINS
          qh, qe, &
          VegFraction, z, z0m, zdm, RA, avdens, avcp, lv_J_kg, tstep_real, &
          RoughLenHeatMethod, StabilityMethod, &
-         avU10_ms, t2_C, q2_gkg, tskin_C)!output
+         avU10_ms, t2_C, q2_gkg, tskin_C, RH2)!output
       !============ surface-level diagonostics end ===============
 
       !==============main calculation end=======================
@@ -743,7 +744,7 @@ CONTAINS
          nsh_real, NWstate_per_tstep, Precip, q2_gkg, &
          qeOut, qf, qh, qh_resist, Qm, QmFreez, &
          QmRain, qn1, qn1_S, qn1_snowfree, qs, RA, &
-         resistsurf, runoffAGimpervious, runoffAGveg, &
+         resistsurf, RH2, runoffAGimpervious, runoffAGveg, &
          runoff_per_tstep, runoffPipes, runoffSoil_per_tstep, &
          runoffWaterBody, sfr, smd, smd_nsurf, SnowAlb, SnowRemoval, &
          state_id, state_per_tstep, surf_chang_per_tstep, swe, t2_C, tskin_C, &
@@ -1822,7 +1823,7 @@ CONTAINS
       nsh_real, NWstate_per_tstep, Precip, q2_gkg, &
       qeOut, qf, qh, qh_resist, Qm, QmFreez, &
       QmRain, qn1, qn1_S, qn1_snowfree, qs, RA, &
-      resistsurf, runoffAGimpervious, runoffAGveg, &
+      resistsurf, RH2, runoffAGimpervious, runoffAGveg, &
       runoff_per_tstep, runoffPipes, runoffSoil_per_tstep, &
       runoffWaterBody, sfr, smd, smd_nsurf, SnowAlb, SnowRemoval, &
       state_id, state_per_tstep, surf_chang_per_tstep, swe, t2_C, tskin_C, &
@@ -1884,6 +1885,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(in) :: qs
       REAL(KIND(1d0)), INTENT(in) :: RA
       REAL(KIND(1d0)), INTENT(in) :: resistsurf
+      REAL(KIND(1d0)), INTENT(in) :: RH2
       REAL(KIND(1d0)), INTENT(in) :: runoff_per_tstep
       REAL(KIND(1d0)), INTENT(in) :: runoffAGimpervious
       REAL(KIND(1d0)), INTENT(in) :: runoffAGveg
@@ -1918,6 +1920,7 @@ CONTAINS
 
       ! INTEGER:: is
       REAL(KIND(1d0)):: LAI_wt
+      REAL(KIND(1d0)):: RH2_pct ! RH2 in percentage
 
       ! the variables below with '_x' endings stand for 'exported' values
       REAL(KIND(1d0))::ResistSurf_x
@@ -1949,6 +1952,9 @@ CONTAINS
 
       ! Calculate areally-weighted albedo
       bulkalbedo = DOT_PRODUCT(alb, sfr)
+
+      ! convert RH2 to a percentage form
+      RH2_pct = RH2*100.0
 
       ! NB: this part needs to be reconsidered for calculation logic. TS, 27 Sep 2018
       ! TODO: this part should be reconnected to an improved CBL interface. TS 10 Jun 2018
@@ -1992,7 +1998,7 @@ CONTAINS
                          qn1_snowfree, qn1_S, SnowAlb, &
                          Qm, QmFreez, QmRain, swe, mwh, MwStore, chSnow_per_interval, &
                          SnowRemoval(1:2), &
-                         tskin_C, t2_C, q2_gkg, avU10_ms & ! surface-level diagonostics
+                         tskin_C, t2_C, q2_gkg, avU10_ms, RH2_pct & ! surface-level diagonostics
                          ]
       ! set invalid values to NAN
       ! dataOutLineSUEWS = set_nan(dataOutLineSUEWS)
@@ -2051,7 +2057,7 @@ CONTAINS
       qh, qe, &
       VegFraction, zMeas, z0m, zdm, RA, avdens, avcp, lv_J_kg, tstep_real, &
       RoughLenHeatMethod, StabilityMethod, &
-      avU10_ms, t2_C, q2_gkg, tskin_C)!output
+      avU10_ms, t2_C, q2_gkg, tskin_C, RH2)!output
       ! TS 03 Aug 2018: added limit on q2 by restricting RH2_max to 100%
       ! TS 31 Jul 2018: removed dependence on surface variables (Tsurf, qsat)
       ! TS 26 Jul 2018: improved the calculation logic
@@ -2069,8 +2075,8 @@ CONTAINS
       ! INTEGER,INTENT(in)         :: opt ! 0 for momentum, 1 for temperature, 2 for humidity
       INTEGER, INTENT(in)         :: RoughLenHeatMethod, StabilityMethod
 
-      REAL(KIND(1d0)), INTENT(out):: avU10_ms, t2_C, q2_gkg, tskin_C
-      REAL(KIND(1d0))::qa_gkg, RH2
+      REAL(KIND(1d0)), INTENT(out):: avU10_ms, t2_C, q2_gkg, tskin_C, RH2
+      REAL(KIND(1d0))::qa_gkg
       REAL(KIND(1d0)), PARAMETER::k = 0.4
 
       ! wind speed:

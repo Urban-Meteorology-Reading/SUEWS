@@ -615,6 +615,8 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       kroof = kSurf_SUEWSsurfs(:, BldgSurf)
       rroof = rSurf_SUEWSsurfs(:, BldgSurf)
 
+      ! the following initialisation is problematic: TS 01 Mar 2019
+      ! what would happen if zground(5)>0? Nground is initialised NOWHERE!
       DO i = 1, 5
          IF (zground(i) <= 0) THEN
             Nground = i - 1

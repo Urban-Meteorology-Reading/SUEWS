@@ -254,7 +254,7 @@ CONTAINS
       REAL(KIND(1D0)), PARAMETER::NARP_EMIS_SNOW = 0.9 !NARP-specific parameters
       REAL(KIND(1D0))::NARP_TRANS_SITE!NARP-specific parameters QUESTION: not used by SUEWS?
 
-      REAL(KIND(1D0)), PARAMETER::NumCapita = 0 !Number of people in the study area per hectare [ha-1]
+      !REAL(KIND(1D0)), PARAMETER::NumCapita = 0 !Number of people in the study area per hectare [ha-1]
       REAL(KIND(1D0)), PARAMETER::PopDensDaytime = 0 ! Daytime population density [ha-1] (i.e. workers)
       REAL(KIND(1D0)), PARAMETER::PopDensNighttime = 0 ! Nighttime population density [ha-1] (i.e. residents)
 

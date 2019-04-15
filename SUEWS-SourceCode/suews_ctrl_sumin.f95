@@ -24,7 +24,9 @@ CONTAINS
       alb, emis, SnowAlb, OHM_coef, WaterDist, & ! surface properties
       AHProf_24hr, HumActivity_24hr, PopProf_24hr, TraffProf_24hr, WUProfA_24hr, WUProfM_24hr, & ! hourly profile values
       qn1_av, dqndt, qn1_s_av, dqnsdt, & ! OHM related Qn quantities
-      surf_var_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id,NumCapita_id ,porosity_id, & ! daily states
+      surf_var_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id,&
+      NumCapita_id , PopDensDaytime_id,PopDensNighttime_id,&
+      porosity_id, & ! daily states
       GDD_id, HDD_id, LAI_id, WUDay_id, soilstore_id, state_id, SnowWater, &
       avkdn, avRh, avU1, Press_hPa, Temp_C, Precip, & ! forcing variables
       qn, qf, qs, qh, qe, qsfc, tsk, CHKLOWQ)!output
@@ -94,6 +96,8 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(INOUT) ::albEveTr_id
       REAL(KIND(1d0)), INTENT(INOUT) ::albGrass_id
       REAL(KIND(1d0)), INTENT(INOUT) ::NumCapita_id
+      REAL(KIND(1d0)), INTENT(INOUT) ::PopDensDaytime_id
+      REAL(KIND(1d0)), INTENT(INOUT) ::PopDensNighttime_id
       REAL(KIND(1d0)), INTENT(INOUT) ::porosity_id
       REAL(KIND(1d0)), DIMENSION(5), INTENT(INOUT)   ::GDD_id       !Growing Degree Days (see SUEWS_DailyState.f95)
       REAL(KIND(1d0)), DIMENSION(12), INTENT(INOUT)  ::HDD_id       !Growing Degree Days (see SUEWS_DailyState.f95)
@@ -255,8 +259,8 @@ CONTAINS
       REAL(KIND(1D0))::NARP_TRANS_SITE!NARP-specific parameters QUESTION: not used by SUEWS?
 
       !REAL(KIND(1D0)), PARAMETER::NumCapita = 0 !Number of people in the study area per hectare [ha-1]
-      REAL(KIND(1D0)), PARAMETER::PopDensDaytime = 0 ! Daytime population density [ha-1] (i.e. workers)
-      REAL(KIND(1D0)), PARAMETER::PopDensNighttime = 0 ! Nighttime population density [ha-1] (i.e. residents)
+      !REAL(KIND(1D0)), PARAMETER::PopDensDaytime = 0 ! Daytime population density [ha-1] (i.e. workers)
+      !REAL(KIND(1D0)), PARAMETER::PopDensNighttime = 0 ! Nighttime population density [ha-1] (i.e. residents)
 
       ! snow related local variables
       REAL(KIND(1D0)), PARAMETER                   ::CRWmax = 0.2   !Free water holding capacity of shallow SnowPack
@@ -365,8 +369,8 @@ CONTAINS
          SnowWater, MetForcingData_grid, MinQFMetab, min_res_bioCO2, &
          NARP_EMIS_SNOW, NARP_TRANS_SITE, NetRadiationMethod, &
          NumCapita_id, OHM_coef, OHMIncQF, OHM_threshSW, &
-         OHM_threshWD, PipeCapacity, PopDensDaytime, &
-         PopDensNighttime, PopProf_24hr, PorMax_dec, PorMin_dec, &
+         OHM_threshWD, PipeCapacity, PopDensDaytime_id, &
+         PopDensNighttime_id, PopProf_24hr, PorMax_dec, PorMin_dec, &
          Precip, PrecipLimit, PrecipLimitAlb, Press_hPa, &
          QF0_BEU, Qf_A, Qf_B, Qf_C, &
          qn1_obs, qh_obs, qs_obs, qf_obs, &

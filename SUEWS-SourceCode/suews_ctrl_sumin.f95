@@ -25,8 +25,31 @@ CONTAINS
       AHProf_24hr, HumActivity_24hr, PopProf_24hr, TraffProf_24hr, WUProfA_24hr, WUProfM_24hr, & ! hourly profile values
       qn1_av, dqndt, qn1_s_av, dqnsdt, & ! OHM related Qn quantities
       surf_var_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id,&
-      NumCapita_id , PopDensDaytime_id,PopDensNighttime_id,&
-      porosity_id, & ! daily states
+      NumCapita_id , & ! daily states
+      SoilStoreCap_id,&
+      SoilDepth_id,&
+      SatHydraulicConduct_id,&
+      AlbMin_DecTr_id,&
+      AlbMax_DecTr_id,&
+      AlbMin_EveTr_id,&
+      AlbMax_EveTr_id,&
+      AlbMin_Grass_id,&
+      AlbMax_Grass_id,&
+      CapMin_dec_id,&
+      CapMax_dec_id,&
+      PorMin_dec_id,&
+      PorMax_dec_id,&
+      DRAINRT_id,&
+      RAINCOVER_id,&
+      RAINMAXRES_id,&
+      FlowChange_id,&
+      PipeCapacity_id,&
+      RunoffToWate_id,&
+      StateLimit_id,&
+      WetThresh_id,&
+      BaseTHDD_id,&
+      PopDensDaytime_id,PopDensNighttime_id,&
+      porosity_id,&
       GDD_id, HDD_id, LAI_id, WUDay_id, soilstore_id, state_id, SnowWater, &
       avkdn, avRh, avU1, Press_hPa, Temp_C, Precip, & ! forcing variables
       qn, qf, qs, qh, qe, qsfc, tsk, CHKLOWQ)!output
@@ -98,6 +121,28 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(INOUT) ::NumCapita_id
       REAL(KIND(1d0)), INTENT(INOUT) ::PopDensDaytime_id
       REAL(KIND(1d0)), INTENT(INOUT) ::PopDensNighttime_id
+      REAL(KIND(1d0)), INTENT(INOUT) ::SoilStoreCap_id
+      REAL(KIND(1d0)), INTENT(INOUT) ::SoilDepth_id
+      REAL(KIND(1d0)), INTENT(INOUT) ::SatHydraulicConduct_id
+      REAL(KIND(1d0)), INTENT(INOUT) ::AlbMin_DecTr_id
+      REAL(KIND(1d0)), INTENT(INOUT) ::AlbMax_DecTr_id
+      REAL(KIND(1d0)), INTENT(INOUT) ::AlbMin_EveTr_id
+      REAL(KIND(1d0)), INTENT(INOUT) ::AlbMax_EveTr_id
+      REAL(KIND(1d0)), INTENT(INOUT) ::AlbMin_Grass_id
+      REAL(KIND(1d0)), INTENT(INOUT) ::AlbMax_Grass_id
+      REAL(KIND(1d0)), INTENT(INOUT) ::CapMin_dec_id
+      REAL(KIND(1d0)), INTENT(INOUT) ::CapMax_dec_id
+      REAL(KIND(1d0)), INTENT(INOUT) ::PorMin_dec_id
+      REAL(KIND(1d0)), INTENT(INOUT) ::PorMax_dec_id
+      REAL(KIND(1d0)), INTENT(INOUT) ::DRAINRT_id
+      REAL(KIND(1d0)), INTENT(INOUT) ::RAINCOVER_id
+      REAL(KIND(1d0)), INTENT(INOUT) ::RAINMAXRES_id
+      REAL(KIND(1d0)), INTENT(INOUT) ::FlowChange_id
+      REAL(KIND(1d0)), INTENT(INOUT) ::PipeCapacity_id
+      REAL(KIND(1d0)), INTENT(INOUT) ::RunoffToWate_id
+      REAL(KIND(1d0)), INTENT(INOUT) ::StateLimit_id
+      REAL(KIND(1d0)), INTENT(INOUT) ::WetThresh_id
+      REAL(KIND(1d0)), INTENT(INOUT) ::BaseTHDD_id
       REAL(KIND(1d0)), INTENT(INOUT) ::porosity_id
       REAL(KIND(1d0)), DIMENSION(5), INTENT(INOUT)   ::GDD_id       !Growing Degree Days (see SUEWS_DailyState.f95)
       REAL(KIND(1d0)), DIMENSION(12), INTENT(INOUT)  ::HDD_id       !Growing Degree Days (see SUEWS_DailyState.f95)
@@ -156,21 +201,21 @@ CONTAINS
 #endif
 
       ! parameters used in SUEWS for now:
-      REAL(KIND(1d0)), DIMENSION(7), PARAMETER ::SoilStoreCap = [150., 150., 150., 150., 150., 150., 0.] !Capacity of soil store for each surface [mm]
-      REAL(KIND(1D0)), DIMENSION(7), PARAMETER ::SoilDepth = 350                                      !Depth of sub-surface soil store for each surface [mm]
-      REAL(KIND(1D0)), DIMENSION(7), PARAMETER ::SatHydraulicConduct = 5E-4                                     !Saturated hydraulic conductivity for each soil subsurface [mm s-1]
+      !REAL(KIND(1d0)), DIMENSION(7), PARAMETER ::SoilStoreCap = [150., 150., 150., 150., 150., 150., 0.] !Capacity of soil store for each surface [mm]
+      !REAL(KIND(1D0)), DIMENSION(7), PARAMETER ::SoilDepth = 350                                      !Depth of sub-surface soil store for each surface [mm]
+      !REAL(KIND(1D0)), DIMENSION(7), PARAMETER ::SatHydraulicConduct = 5E-4                                     !Saturated hydraulic conductivity for each soil subsurface [mm s-1]
 
-      REAL(KIND(1d0)), PARAMETER:: AlbMin_DecTr = 0.12   !Min albedo for deciduous trees [-]
-      REAL(KIND(1d0)), PARAMETER:: AlbMax_DecTr = 0.18   !Max albedo for deciduous trees [-]
-      REAL(KIND(1d0)), PARAMETER:: AlbMin_EveTr = 0.11   !Min albedo for evergreen trees [-]
-      REAL(KIND(1d0)), PARAMETER:: AlbMax_EveTr = 0.12   !Max albedo for evergreen trees [-]
-      REAL(KIND(1d0)), PARAMETER:: AlbMin_Grass = 0.18   !Min albedo for grass [-]
-      REAL(KIND(1d0)), PARAMETER:: AlbMax_Grass = 0.21    !Max albedo for grass [-]
+      !REAL(KIND(1d0)), PARAMETER:: AlbMin_DecTr = 0.12   !Min albedo for deciduous trees [-]
+      !REAL(KIND(1d0)), PARAMETER:: AlbMax_DecTr = 0.18   !Max albedo for deciduous trees [-]
+      !REAL(KIND(1d0)), PARAMETER:: AlbMin_EveTr = 0.11   !Min albedo for evergreen trees [-]
+      !REAL(KIND(1d0)), PARAMETER:: AlbMax_EveTr = 0.12   !Max albedo for evergreen trees [-]
+      !REAL(KIND(1d0)), PARAMETER:: AlbMin_Grass = 0.18   !Min albedo for grass [-]
+      !REAL(KIND(1d0)), PARAMETER:: AlbMax_Grass = 0.21    !Max albedo for grass [-]
 
-      REAL(KIND(1d0)), PARAMETER:: CapMin_dec = 0.3   !Min storage capacity for deciduous trees [mm] (from input information)
-      REAL(KIND(1d0)), PARAMETER:: CapMax_dec = 0.8   !Max storage capacity for deciduous trees [mm] (from input information)
-      REAL(KIND(1d0)), PARAMETER:: PorMin_dec = 0.2   !Min porosity for deciduous trees
-      REAL(KIND(1d0)), PARAMETER:: PorMax_dec = 0.6   !Max porosity for deciduous trees
+      !REAL(KIND(1d0)), PARAMETER:: CapMin_dec = 0.3   !Min storage capacity for deciduous trees [mm] (from input information)
+      !REAL(KIND(1d0)), PARAMETER:: CapMax_dec = 0.8   !Max storage capacity for deciduous trees [mm] (from input information)
+      !REAL(KIND(1d0)), PARAMETER:: PorMin_dec = 0.2   !Min porosity for deciduous trees
+      !REAL(KIND(1d0)), PARAMETER:: PorMax_dec = 0.6   !Max porosity for deciduous trees
 
       REAL(KIND(1d0)), PARAMETER:: FAIbldg = 0. !Frontal area fraction of buildings
       REAL(KIND(1d0)), PARAMETER:: FAIEveTree = 0. !Frontal area fraction of evergreen trees
@@ -197,15 +242,15 @@ CONTAINS
 
       INTEGER, DIMENSION(3), PARAMETER:: LAIType = 0     !LAI equation to use: original (0) or new (1)
 
-      REAL(KIND(1D0)), PARAMETER ::DRAINRT = 0.25 !Drainage rate of the water bucket [mm hr-1]
-      REAL(KIND(1D0)), PARAMETER ::RAINCOVER = 1
-      REAL(KIND(1D0)), PARAMETER ::RAINMAXRES = 10   !Maximum water bucket reservoir [mm]
-      REAL(KIND(1d0)), PARAMETER ::FlowChange = 0    !Difference between the input and output flow in the water body
-      REAL(KIND(1d0)), PARAMETER ::PipeCapacity = 100  !Capacity of pipes to transfer water
-      REAL(KIND(1d0)), PARAMETER ::RunoffToWater = 0.1  !Fraction of surface runoff going to water body
+      !REAL(KIND(1D0)), PARAMETER ::DRAINRT = 0.25 !Drainage rate of the water bucket [mm hr-1]
+      !REAL(KIND(1D0)), PARAMETER ::RAINCOVER = 1
+      !REAL(KIND(1D0)), PARAMETER ::RAINMAXRES = 10   !Maximum water bucket reservoir [mm]
+      !REAL(KIND(1d0)), PARAMETER ::FlowChange = 0    !Difference between the input and output flow in the water body
+      !REAL(KIND(1d0)), PARAMETER ::PipeCapacity = 100  !Capacity of pipes to transfer water
+      !REAL(KIND(1d0)), PARAMETER ::RunoffToWater = 0.1  !Fraction of surface runoff going to water body
 
-      REAL(KIND(1d0)), DIMENSION(7), PARAMETER:: StateLimit = [0.48, 0.25, 1.3, 0.8, 1.9, 1.0, 30000.] !Limit for state of each surface type [mm] (specified in input files)
-      REAL(KIND(1d0)), DIMENSION(7), PARAMETER:: WetThresh = [0.48, 0.25, 1.3, 0.8, 1.9, 1., 0.5]     !When State > WetThresh, rs=0 limit in SUEWS_evap [mm] (specified in input files)
+      !REAL(KIND(1d0)), DIMENSION(7), PARAMETER:: StateLimit = [0.48, 0.25, 1.3, 0.8, 1.9, 1.0, 30000.] !Limit for state of each surface type [mm] (specified in input files)
+      !REAL(KIND(1d0)), DIMENSION(7), PARAMETER:: WetThresh = [0.48, 0.25, 1.3, 0.8, 1.9, 1., 0.5]     !When State > WetThresh, rs=0 limit in SUEWS_evap [mm] (specified in input files)
 
       ! ---- Drainage characteristics ----------------------------------------------------------------
       ! 1 - min storage capacity [mm]
@@ -238,7 +283,7 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(7 + 1), PARAMETER:: OHM_threshSW = [10, 10, 10, 10, 10, 10, 10, 10]         !Arrays for OHM thresholds
       REAL(KIND(1d0)), DIMENSION(7 + 1), PARAMETER:: OHM_threshWD = [0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9] !Arrays for OHM thresholds
 
-      REAL(KIND(1d0)), PARAMETER::  BaseTHDD = 18.9  !Base temperature for QF
+      !REAL(KIND(1d0)), PARAMETER::  BaseTHDD = 18.9  !Base temperature for QF
 
       REAL(KIND(1D0)), PARAMETER::xsmd = 0. !Measured soil moisture deficit
 
@@ -327,7 +372,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(7) ::snowFrac = 0   !!Surface fraction of snow cover
       REAL(KIND(1D0)), DIMENSION(7) ::SnowPack = 0   !Amount of snow on each surface in mm
 
-      REAL(KIND(1D0)), DIMENSION(5)                           ::datetimeLine
+      REAL(KIND(1D0)), DIMENSION(5)                             ::datetimeLine
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSUEWS - 5)      ::dataOutLineSUEWS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow - 5)       ::dataOutLineSnow
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutESTM - 5)       ::dataOutLineESTM
@@ -351,15 +396,15 @@ CONTAINS
       CALL SUEWS_cal_Main( &
          AerodynamicResistanceMethod, AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, & ! input&inout in alphabetical order
          AH_SLOPE_Heating, &
-         alb, AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
-         AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
+         alb, AlbMax_DecTr_id, AlbMax_EveTr_id, AlbMax_Grass_id, &
+         AlbMin_DecTr_id, AlbMin_EveTr_id, AlbMin_Grass_id, &
          alpha_bioCO2, alpha_enh_bioCO2, alt, avkdn, avRh, avU1, BaseT, BaseTe, &
-         BaseTHDD, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
+         BaseTHDD_id, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec_id, CapMin_dec_id, &
          chAnOHM, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
-         DecTreeH, Diagnose, DiagQN, DiagQS, DRAINRT, &
+         DecTreeH, Diagnose, DiagQN, DiagQS, DRAINRT_id, &
          dt_since_start, dqndt, qn1_av, dqnsdt, qn1_s_av, &
          EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
-         FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, fcld_obs, FlowChange, &
+         FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, fcld_obs, FlowChange_id, &
          FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD_id, &
          GDDFull, Gridiv, gsModel, HDD_id, HumActivity_24hr, &
          IceFrac, id, Ie_a, Ie_end, Ie_m, Ie_start, imin, &
@@ -369,22 +414,22 @@ CONTAINS
          SnowWater, MetForcingData_grid, MinQFMetab, min_res_bioCO2, &
          NARP_EMIS_SNOW, NARP_TRANS_SITE, NetRadiationMethod, &
          NumCapita_id, OHM_coef, OHMIncQF, OHM_threshSW, &
-         OHM_threshWD, PipeCapacity, PopDensDaytime_id, &
-         PopDensNighttime_id, PopProf_24hr, PorMax_dec, PorMin_dec, &
+         OHM_threshWD, PipeCapacity_id, PopDensDaytime_id, &
+         PopDensNighttime_id, PopProf_24hr, PorMax_dec_id, PorMin_dec_id, &
          Precip, PrecipLimit, PrecipLimitAlb, Press_hPa, &
          QF0_BEU, Qf_A, Qf_B, Qf_C, &
          qn1_obs, qh_obs, qs_obs, qf_obs, &
-         RadMeltFact, RAINCOVER, RainMaxRes, resp_a, resp_b, &
-         RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
-         SatHydraulicConduct, SDDFull, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
+         RadMeltFact, RAINCOVER_id, RainMaxRes_id, resp_a, resp_b, &
+         RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater_id, S1, S2, &
+         SatHydraulicConduct_id, SDDFull, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
          SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
-         SnowLimBldg, SnowLimPaved, snow_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
-         soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
+         SnowLimBldg, SnowLimPaved, snow_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth_id, &
+         soilstore_id, SoilStoreCap_id, StabilityMethod, startDLS, state_id, StateLimit_id, &
          StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair24HR, tau_a, tau_f, tau_r, &
          T_CRITIC_Cooling, T_CRITIC_Heating, Temp_C, TempMeltFact, TH, &
          theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
          TraffProf_24hr, Ts5mindata_ir, tstep, tstep_prev, veg_type, &
-         WaterDist, WaterUseMethod, WetThresh, wu_m3, &
+         WaterDist, WaterUseMethod, WetThresh_id, wu_m3, &
          WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
          WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
          datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, &!output

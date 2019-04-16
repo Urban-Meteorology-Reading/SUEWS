@@ -121,7 +121,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(INOUT) ::NumCapita_id
       REAL(KIND(1d0)), INTENT(INOUT) ::PopDensDaytime_id
       REAL(KIND(1d0)), INTENT(INOUT) ::PopDensNighttime_id
-      REAL(KIND(1d0)), INTENT(INOUT) ::SoilStoreCap_id
+      REAL(KIND(1d0)), DIMENSION(7),INTENT(INOUT) ::SoilStoreCap_id
       REAL(KIND(1d0)), INTENT(INOUT) ::SoilDepth_id
       REAL(KIND(1d0)), INTENT(INOUT) ::SatHydraulicConduct_id
       REAL(KIND(1d0)), INTENT(INOUT) ::AlbMin_DecTr_id
@@ -140,8 +140,8 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(INOUT) ::FlowChange_id
       REAL(KIND(1d0)), INTENT(INOUT) ::PipeCapacity_id
       REAL(KIND(1d0)), INTENT(INOUT) ::RunoffToWate_id
-      REAL(KIND(1d0)), INTENT(INOUT) ::StateLimit_id
-      REAL(KIND(1d0)), INTENT(INOUT) ::WetThresh_id
+      REAL(KIND(1d0)), DIMENSION(7),INTENT(INOUT) ::StateLimit_id
+      REAL(KIND(1d0)), DIMENSION(7),INTENT(INOUT) ::WetThresh_id
       REAL(KIND(1d0)), INTENT(INOUT) ::BaseTHDD_id
       REAL(KIND(1d0)), INTENT(INOUT) ::porosity_id
       REAL(KIND(1d0)), DIMENSION(5), INTENT(INOUT)   ::GDD_id       !Growing Degree Days (see SUEWS_DailyState.f95)

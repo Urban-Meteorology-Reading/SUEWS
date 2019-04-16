@@ -25,7 +25,37 @@ CONTAINS
       AHProf_24hr, HumActivity_24hr, PopProf_24hr, TraffProf_24hr, WUProfA_24hr, WUProfM_24hr, & ! hourly profile values
       qn1_av, dqndt, qn1_s_av, dqnsdt, & ! OHM related Qn quantities
       surf_var_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id,&
-      NumCapita_id , & ! daily states
+      NumCapita_id , &
+      
+      BaseT               , &
+      BaseTe              , &
+      GDDFull             , &
+      SDDFull             , &
+      LaiMin              , &
+      LaiMax              , &
+      MaxConductance      , &
+      FAIbldg             , &
+      FAIEveTree          , &
+      FAIDecTree          , &
+      bldgH               , &
+      EveTreeH            , &
+      DecTreeH            , &
+      AH_MIN              , &
+      AH_SLOPE_Cooling    , &
+      AH_SLOPE_Heating    , &
+      QF0_BEU             , &
+      Qf_A                , &
+      Qf_B                , &
+      Qf_C                , &
+      T_CRITIC_Cooling    , &
+      T_CRITIC_Heating    , &
+      TrafficRate         , &
+      surf_attr_MinStorCap, &
+      surf_attr_DrainEquat, &
+      surf_attr_DrainCoef1, &
+      surf_attr_DrainCoef2, &
+      surf_attr_MaxStorCap, &
+ 
       SoilStoreCap_id,&
       SoilDepth_id,&
       SatHydraulicConduct_id,&
@@ -119,6 +149,39 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(INOUT) ::albEveTr_id
       REAL(KIND(1d0)), INTENT(INOUT) ::albGrass_id
       REAL(KIND(1d0)), INTENT(INOUT) ::NumCapita_id
+
+
+      REAL(KIND(1d0)), DIMENSION(3),INTENT(INOUT) :: BaseT_id               
+      REAL(KIND(1d0)), DIMENSION(3),INTENT(INOUT) :: BaseTe_id              
+      REAL(KIND(1d0)), DIMENSION(3),INTENT(INOUT) :: GDDFull_id             
+      REAL(KIND(1d0)), DIMENSION(3),INTENT(INOUT) :: SDDFull_id             
+      REAL(KIND(1d0)), DIMENSION(3),INTENT(INOUT) :: LaiMin_id              
+      REAL(KIND(1d0)), DIMENSION(3),INTENT(INOUT) :: LaiMax_id              
+      REAL(KIND(1d0)), DIMENSION(3),INTENT(INOUT) :: MaxConductance_id      
+      REAL(KIND(1d0)), INTENT(INOUT)              :: FAIbldg_id             
+      REAL(KIND(1d0)), INTENT(INOUT)              :: FAIEveTree_id          
+      REAL(KIND(1d0)), INTENT(INOUT)              :: FAIDecTree_id          
+      REAL(KIND(1d0)), INTENT(INOUT)              :: bldgH_id               
+      REAL(KIND(1d0)), INTENT(INOUT)              :: EveTreeH_id            
+      REAL(KIND(1d0)), INTENT(INOUT)              :: DecTreeH_id            
+      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: AH_MIN_id              
+      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: AH_SLOPE_Cooling_id    
+      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: AH_SLOPE_Heating_id    
+      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: QF0_BEU_id             
+      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: Qf_A_id                
+      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: Qf_B_id                
+      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: Qf_C_id                
+      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: T_CRITIC_Cooling_id    
+      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: T_CRITIC_Heating_id    
+      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: TrafficRate_id         
+      REAL(KIND(1d0)), DIMENSION(7),INTENT(INOUT) :: surf_attr_MinStorCap_id
+      REAL(KIND(1d0)), DIMENSION(7),INTENT(INOUT) :: surf_attr_DrainEquat_id
+      REAL(KIND(1d0)), DIMENSION(7),INTENT(INOUT) :: surf_attr_DrainCoef1_id
+      REAL(KIND(1d0)), DIMENSION(7),INTENT(INOUT) :: surf_attr_DrainCoef2_id
+      REAL(KIND(1d0)), DIMENSION(7),INTENT(INOUT) :: surf_attr_MaxStorCap_id
+
+
+
       REAL(KIND(1d0)), INTENT(INOUT) ::PopDensDaytime_id
       REAL(KIND(1d0)), INTENT(INOUT) ::PopDensNighttime_id
       REAL(KIND(1d0)), DIMENSION(7),INTENT(INOUT) ::SoilStoreCap_id
@@ -217,21 +280,21 @@ CONTAINS
       !REAL(KIND(1d0)), PARAMETER:: PorMin_dec = 0.2   !Min porosity for deciduous trees
       !REAL(KIND(1d0)), PARAMETER:: PorMax_dec = 0.6   !Max porosity for deciduous trees
 
-      REAL(KIND(1d0)), PARAMETER:: FAIbldg = 0. !Frontal area fraction of buildings
-      REAL(KIND(1d0)), PARAMETER:: FAIEveTree = 0. !Frontal area fraction of evergreen trees
-      REAL(KIND(1d0)), PARAMETER:: FAIDecTree = 0. !Frontal area fraction of deciduous trees
+      !REAL(KIND(1d0)), PARAMETER:: FAIbldg = 0. !Frontal area fraction of buildings
+      !REAL(KIND(1d0)), PARAMETER:: FAIEveTree = 0. !Frontal area fraction of evergreen trees
+      !REAL(KIND(1d0)), PARAMETER:: FAIDecTree = 0. !Frontal area fraction of deciduous trees
 
-      REAL(KIND(1d0)), PARAMETER :: bldgH = 10 !Mean building height
-      REAL(KIND(1d0)), PARAMETER :: EveTreeH = 10 !Height of evergreen trees
-      REAL(KIND(1d0)), PARAMETER :: DecTreeH = 10 !Height of deciduous trees
+      !REAL(KIND(1d0)), PARAMETER :: bldgH = 10 !Mean building height
+      !REAL(KIND(1d0)), PARAMETER :: EveTreeH = 10 !Height of evergreen trees
+      !REAL(KIND(1d0)), PARAMETER :: DecTreeH = 10 !Height of deciduous trees
       !grid base
-      REAL(KIND(1d0)), DIMENSION(3), PARAMETER:: BaseT = [5, 5, 5]          !Base temperature for growing degree days [degC]
-      REAL(KIND(1d0)), DIMENSION(3), PARAMETER:: BaseTe = [11, 11, 11]       !Base temperature for senescence degree days [degC]
-      REAL(KIND(1d0)), DIMENSION(3), PARAMETER:: GDDFull = [300, 300, 300]    !Growing degree days needed for full capacity [degC]
-      REAL(KIND(1d0)), DIMENSION(3), PARAMETER:: SDDFull = [-450, -450, -450] !Senescence degree days needed to initiate leaf off [degC]
-      REAL(KIND(1d0)), DIMENSION(3), PARAMETER:: LaiMin = [4., 1., 1.6]      !Min LAI [m2 m-2]
-      REAL(KIND(1d0)), DIMENSION(3), PARAMETER:: LaiMax = [5.1, 5.5, 5.9]    !Max LAI [m2 m-2]
-      REAL(KIND(1d0)), DIMENSION(3), PARAMETER:: MaxConductance = [7.4, 11.7, 30.1]  !Max conductance [mm s-1]
+      !REAL(KIND(1d0)), DIMENSION(3), PARAMETER:: BaseT = [5, 5, 5]          !Base temperature for growing degree days [degC]
+      !REAL(KIND(1d0)), DIMENSION(3), PARAMETER:: BaseTe = [11, 11, 11]       !Base temperature for senescence degree days [degC]
+      !REAL(KIND(1d0)), DIMENSION(3), PARAMETER:: GDDFull = [300, 300, 300]    !Growing degree days needed for full capacity [degC]
+      !REAL(KIND(1d0)), DIMENSION(3), PARAMETER:: SDDFull = [-450, -450, -450] !Senescence degree days needed to initiate leaf off [degC]
+      !REAL(KIND(1d0)), DIMENSION(3), PARAMETER:: LaiMin = [4., 1., 1.6]      !Min LAI [m2 m-2]
+      !REAL(KIND(1d0)), DIMENSION(3), PARAMETER:: LaiMax = [5.1, 5.5, 5.9]    !Max LAI [m2 m-2]
+      !REAL(KIND(1d0)), DIMENSION(3), PARAMETER:: MaxConductance = [7.4, 11.7, 30.1]  !Max conductance [mm s-1]
       !namelist
       REAL(KIND(1d0)), DIMENSION(4, 3), PARAMETER:: LaiPower = RESHAPE( & !Coeffs for LAI equation: 1,2 - leaf growth; 3,4 - leaf off
                                                     [[0.03, 0.03, 0.03], &
@@ -258,13 +321,20 @@ CONTAINS
       ! 3 - Drainage coeff 1 [units depend on choice of eqn]
       ! 4 - Drainage coeff 2 [units depend on choice of eqn]
       ! 5 - max storage capacity [mm]
-      REAL(KIND(1d0)), DIMENSION(5, 7), PARAMETER:: surf_attr = RESHAPE( & ! variable to store the above five properties
-                                                    [[0.48, 0.25, 1.3, 0.3, 1.9, 0.8, 0.5], &
-                                                     [3., 3., 2., 2., 2., 3., 0.], &
-                                                     [10., 10., 0.013, 0.013, 0.013, 10., 0.], &
-                                                     [3., 3., 1.71, 1.71, 1.71, 3., 0.], &
-                                                     [0.48, 0.25, 1.3, 0.8, 1.9, 0.8, 0.5]], &
-                                                    [5, 7], order=[2, 1])
+      !REAL(KIND(1d0)), DIMENSION(5, 7), PARAMETER:: surf_attr = RESHAPE( & ! variable to store the above five properties
+      !                                              [[0.48, 0.25, 1.3, 0.3, 1.9, 0.8, 0.5], &
+      !                                               [3., 3., 2., 2., 2., 3., 0.], &
+      !                                               [10., 10., 0.013, 0.013, 0.013, 10., 0.], &
+      !                                               [3., 3., 1.71, 1.71, 1.71, 3., 0.], &
+      !                                               [0.48, 0.25, 1.3, 0.8, 1.9, 0.8, 0.5]], &
+      !                                              [5, 7], order=[2, 1])
+      
+      !REAL(KIND(1d0)), DIMENSION(1, 7), PARAMETER:: surf_attr_MinStorCap = [ 0.48, 0.25, 1.3, 0.3, 1.9, 0.8, 0.5]
+      !REAL(KIND(1d0)), DIMENSION(1, 7), PARAMETER:: surf_attr_DrainEquat = [3., 3., 2., 2., 2., 3., 0.]
+      !REAL(KIND(1d0)), DIMENSION(1, 7), PARAMETER:: surf_attr_DrainCoef1 = [10., 10., 0.013, 0.013, 0.013, 10., 0.]
+      !REAL(KIND(1d0)), DIMENSION(1, 7), PARAMETER:: surf_attr_DrainCoef2 = [3., 3., 1.71, 1.71, 1.71, 3., 0.]
+      !REAL(KIND(1d0)), DIMENSION(1, 7), PARAMETER:: surf_attr_MaxStorCap = [0.48, 0.25, 1.3, 0.8, 1.9, 0.8, 0.5]
+
       !namelist
       ! these will be assigned locally as data
       ! use gsModel=2 as in Ward et al. (2016)
@@ -328,16 +398,16 @@ CONTAINS
 
       !grid level
       ! Anthropogenic heat related variables
-      REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::AH_MIN = 10!Minimum anthropogenic heat flux (AnthropHeatMethod = 1)
-      REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::AH_SLOPE_Cooling = [2.7, 2.7]!Slope of the antrhropogenic heat flux calculation (AnthropHeatMethod = 1)
-      REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::AH_SLOPE_Heating = [2.7, 2.7]!Slope of the antrhropogenic heat flux calculation (AnthropHeatMethod = 1)
-      REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::QF0_BEU = [0.7442, 0.7955]
-      REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::Qf_A = [0.1, 0.1]!Qf coefficients
-      REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::Qf_B = [0.00986, 0.00986]!Qf coefficients
-      REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::Qf_C = [0.0102, 0.0102]!Qf coefficients
-      REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::T_CRITIC_Cooling = [7, 7] !Critical temperature
-      REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::T_CRITIC_Heating = [7, 7] !Critical temperature
-      REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::TrafficRate = [0.0134, 0.0095]
+      !REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::AH_MIN = 10!Minimum anthropogenic heat flux (AnthropHeatMethod = 1)
+      !REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::AH_SLOPE_Cooling = [2.7, 2.7]!Slope of the antrhropogenic heat flux calculation (AnthropHeatMethod = 1)
+      !REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::AH_SLOPE_Heating = [2.7, 2.7]!Slope of the antrhropogenic heat flux calculation (AnthropHeatMethod = 1)
+      !REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::QF0_BEU = [0.7442, 0.7955]     
+      !REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::Qf_A = [0.1, 0.1]!Qf coefficients
+      !REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::Qf_B = [0.00986, 0.00986]!Qf coefficients
+      !REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::Qf_C = [0.0102, 0.0102]!Qf coefficients
+      !REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::T_CRITIC_Cooling = [7, 7] !Critical temperature
+      !REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::T_CRITIC_Heating = [7, 7] !Critical temperature
+      !REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::TrafficRate = [0.0134, 0.0095]
       !keep them here
       REAL(KIND(1D0)), PARAMETER::EF_umolCO2perJ = 1.159
       REAL(KIND(1D0)), PARAMETER::EnEF_v_Jkm = 4e6
@@ -382,7 +452,12 @@ CONTAINS
 
       ! drainage related parameters
       REAL(KIND(1D0)), DIMENSION(6, 7)::StoreDrainPrm
-      StoreDrainPrm(1:5, :) = surf_attr
+      StoreDrainPrm(1, :) = surf_attr_MinStorCap_id
+      StoreDrainPrm(2, :) = surf_attr_DrainEquat_id
+      StoreDrainPrm(3, :) = surf_attr_DrainCoef1_id
+      StoreDrainPrm(4, :) = surf_attr_DrainCoef2_id
+      StoreDrainPrm(5, :) = surf_attr_MaxStorCap_id
+
       StoreDrainPrm(6, :) = surf_var_id
 
       ! PRINT*,''
@@ -396,40 +471,40 @@ CONTAINS
 #endif
 
       CALL SUEWS_cal_Main( &
-         AerodynamicResistanceMethod, AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, & ! input&inout in alphabetical order
-         AH_SLOPE_Heating, &
+         AerodynamicResistanceMethod, AH_MIN_id, AHProf_24hr, AH_SLOPE_Cooling_id, & ! input&inout in alphabetical order
+         AH_SLOPE_Heating_id, &
          alb, AlbMax_DecTr_id, AlbMax_EveTr_id, AlbMax_Grass_id, &
          AlbMin_DecTr_id, AlbMin_EveTr_id, AlbMin_Grass_id, &
-         alpha_bioCO2, alpha_enh_bioCO2, alt, avkdn, avRh, avU1, BaseT, BaseTe, &
-         BaseTHDD_id, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec_id, CapMin_dec_id, &
+         alpha_bioCO2, alpha_enh_bioCO2, alt, avkdn, avRh, avU1, BaseT_id, BaseTe_id, &
+         BaseTHDD_id, beta_bioCO2, beta_enh_bioCO2, bldgH_id, CapMax_dec_id, CapMin_dec_id, &
          chAnOHM, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
-         DecTreeH, Diagnose, DiagQN, DiagQS, DRAINRT_id, &
+         DecTreeH_id, Diagnose, DiagQN, DiagQS, DRAINRT_id, &
          dt_since_start, dqndt, qn1_av, dqnsdt, qn1_s_av, &
-         EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
-         FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, fcld_obs, FlowChange_id, &
+         EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH_id, FAIBldg_id, &
+         FAIDecTree_id, FAIEveTree_id, Faut, FcEF_v_kgkm, fcld_obs, FlowChange_id, &
          FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD_id, &
-         GDDFull, Gridiv, gsModel, HDD_id, HumActivity_24hr, &
+         GDDFull_id, Gridiv, gsModel, HDD_id, HumActivity_24hr, &
          IceFrac, id, Ie_a, Ie_end, Ie_m, Ie_start, imin, &
          InternalWaterUse_h, IrrFracConif, IrrFracDecid, IrrFracGrass, isec, it, EvapMethod, &
-         iy, kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax, LAIMin, LAI_obs, &
-         LAIPower, LAIType, lat, ldown_obs, lng, MaxConductance, MaxQFMetab, &
+         iy, kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax_id, LAIMin_id, LAI_obs, &
+         LAIPower, LAIType, lat, ldown_obs, lng, MaxConductance_id, MaxQFMetab, &
          SnowWater, MetForcingData_grid, MinQFMetab, min_res_bioCO2, &
          NARP_EMIS_SNOW, NARP_TRANS_SITE, NetRadiationMethod, &
          NumCapita_id, OHM_coef, OHMIncQF, OHM_threshSW, &
          OHM_threshWD, PipeCapacity_id, PopDensDaytime_id, &
          PopDensNighttime_id, PopProf_24hr, PorMax_dec_id, PorMin_dec_id, &
          Precip, PrecipLimit, PrecipLimitAlb, Press_hPa, &
-         QF0_BEU, Qf_A, Qf_B, Qf_C, &
+         QF0_BEU_id, Qf_A_id, Qf_B_id, Qf_C_id, &
          qn1_obs, qh_obs, qs_obs, qf_obs, &
          RadMeltFact, RAINCOVER_id, RainMaxRes_id, resp_a, resp_b, &
          RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater_id, S1, S2, &
-         SatHydraulicConduct_id, SDDFull, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
+         SatHydraulicConduct_id, SDDFull_id, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
          SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
          SnowLimBldg, SnowLimPaved, snow_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth_id, &
          soilstore_id, SoilStoreCap_id, StabilityMethod, startDLS, state_id, StateLimit_id, &
          StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair24HR, tau_a, tau_f, tau_r, &
-         T_CRITIC_Cooling, T_CRITIC_Heating, Temp_C, TempMeltFact, TH, &
-         theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
+         T_CRITIC_Cooling_id, T_CRITIC_Heating_id, Temp_C, TempMeltFact, TH, &
+         theta_bioCO2, timezone, TL, TrafficRate_id, TrafficUnits, &
          TraffProf_24hr, Ts5mindata_ir, tstep, tstep_prev, veg_type, &
          WaterDist, WaterUseMethod, WetThresh_id, wu_m3, &
          WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &

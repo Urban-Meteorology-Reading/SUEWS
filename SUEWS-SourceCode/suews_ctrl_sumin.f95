@@ -27,34 +27,34 @@ CONTAINS
       surf_var_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id,&
       NumCapita_id , &
       
-      BaseT               , &
-      BaseTe              , &
-      GDDFull             , &
-      SDDFull             , &
-      LaiMin              , &
-      LaiMax              , &
-      MaxConductance      , &
-      FAIbldg             , &
-      FAIEveTree          , &
-      FAIDecTree          , &
-      bldgH               , &
-      EveTreeH            , &
-      DecTreeH            , &
-      AH_MIN              , &
-      AH_SLOPE_Cooling    , &
-      AH_SLOPE_Heating    , &
-      QF0_BEU             , &
-      Qf_A                , &
-      Qf_B                , &
-      Qf_C                , &
-      T_CRITIC_Cooling    , &
-      T_CRITIC_Heating    , &
-      TrafficRate         , &
-      surf_attr_MinStorCap, &
-      surf_attr_DrainEquat, &
-      surf_attr_DrainCoef1, &
-      surf_attr_DrainCoef2, &
-      surf_attr_MaxStorCap, &
+      BaseT_id               , &
+      BaseTe_id              , &
+      GDDFull_id             , &
+      SDDFull_id             , &
+      LaiMin_id              , &
+      LaiMax_id              , &
+      MaxConductance_id      , &
+      FAIbldg_id             , &
+      FAIEveTree_id          , &
+      FAIDecTree_id          , &
+      bldgH_id               , &
+      EveTreeH_id            , &
+      DecTreeH_id            , &
+      AH_MIN_id              , &
+      AH_SLOPE_Cooling_id    , &
+      AH_SLOPE_Heating_id    , &
+      QF0_BEU_id             , &
+      Qf_A_id                , &
+      Qf_B_id                , &
+      Qf_C_id                , &
+      T_CRITIC_Cooling_id    , &
+      T_CRITIC_Heating_id    , &
+      TrafficRate_id         , &
+      surf_attr_MinStorCap_id, &
+      surf_attr_DrainEquat_id, &
+      surf_attr_DrainCoef1_id, &
+      surf_attr_DrainCoef2_id, &
+      surf_attr_MaxStorCap_id, &
  
       SoilStoreCap_id,&
       SoilDepth_id,&

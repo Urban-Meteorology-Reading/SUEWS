@@ -122,8 +122,8 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(INOUT) ::PopDensDaytime_id
       REAL(KIND(1d0)), INTENT(INOUT) ::PopDensNighttime_id
       REAL(KIND(1d0)), DIMENSION(7),INTENT(INOUT) ::SoilStoreCap_id
-      REAL(KIND(1d0)), INTENT(INOUT) ::SoilDepth_id
-      REAL(KIND(1d0)), INTENT(INOUT) ::SatHydraulicConduct_id
+      REAL(KIND(1d0)), DIMENSION(7),INTENT(INOUT) ::SoilDepth_id
+      REAL(KIND(1d0)), DIMENSION(7),INTENT(INOUT) ::SatHydraulicConduct_id
       REAL(KIND(1d0)), INTENT(INOUT) ::AlbMin_DecTr_id
       REAL(KIND(1d0)), INTENT(INOUT) ::AlbMax_DecTr_id
       REAL(KIND(1d0)), INTENT(INOUT) ::AlbMin_EveTr_id
@@ -224,7 +224,7 @@ CONTAINS
       REAL(KIND(1d0)), PARAMETER :: bldgH = 10 !Mean building height
       REAL(KIND(1d0)), PARAMETER :: EveTreeH = 10 !Height of evergreen trees
       REAL(KIND(1d0)), PARAMETER :: DecTreeH = 10 !Height of deciduous trees
-
+      !grid base
       REAL(KIND(1d0)), DIMENSION(3), PARAMETER:: BaseT = [5, 5, 5]          !Base temperature for growing degree days [degC]
       REAL(KIND(1d0)), DIMENSION(3), PARAMETER:: BaseTe = [11, 11, 11]       !Base temperature for senescence degree days [degC]
       REAL(KIND(1d0)), DIMENSION(3), PARAMETER:: GDDFull = [300, 300, 300]    !Growing degree days needed for full capacity [degC]
@@ -232,14 +232,14 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(3), PARAMETER:: LaiMin = [4., 1., 1.6]      !Min LAI [m2 m-2]
       REAL(KIND(1d0)), DIMENSION(3), PARAMETER:: LaiMax = [5.1, 5.5, 5.9]    !Max LAI [m2 m-2]
       REAL(KIND(1d0)), DIMENSION(3), PARAMETER:: MaxConductance = [7.4, 11.7, 30.1]  !Max conductance [mm s-1]
-
+      !namelist
       REAL(KIND(1d0)), DIMENSION(4, 3), PARAMETER:: LaiPower = RESHAPE( & !Coeffs for LAI equation: 1,2 - leaf growth; 3,4 - leaf off
                                                     [[0.03, 0.03, 0.03], &
                                                      [0.0005, 0.0005, 0.0005], &
                                                      [0.03, 0.03, 0.03], &
                                                      [0.0005, 0.0005, 0.0005]], &
                                                     [4, 3], order=[2, 1])
-
+      !namelist
       INTEGER, DIMENSION(3), PARAMETER:: LAIType = 0     !LAI equation to use: original (0) or new (1)
 
       !REAL(KIND(1D0)), PARAMETER ::DRAINRT = 0.25 !Drainage rate of the water bucket [mm hr-1]
@@ -265,7 +265,7 @@ CONTAINS
                                                      [3., 3., 1.71, 1.71, 1.71, 3., 0.], &
                                                      [0.48, 0.25, 1.3, 0.8, 1.9, 0.8, 0.5]], &
                                                     [5, 7], order=[2, 1])
-
+      !namelist
       ! these will be assigned locally as data
       ! use gsModel=2 as in Ward et al. (2016)
       REAL(KIND(1d0)), PARAMETER::th = 55   !Maximum temperature limit
@@ -279,21 +279,21 @@ CONTAINS
       REAL(KIND(1d0)), PARAMETER::g6 = 0.05 !Fitted parameter
       REAL(KIND(1d0)), PARAMETER::s1 = 5.56 !Fitted parameter
       REAL(KIND(1d0)), PARAMETER::s2 = 0    !surface res. calculations
-
+      !namelist
       REAL(KIND(1d0)), DIMENSION(7 + 1), PARAMETER:: OHM_threshSW = [10, 10, 10, 10, 10, 10, 10, 10]         !Arrays for OHM thresholds
       REAL(KIND(1d0)), DIMENSION(7 + 1), PARAMETER:: OHM_threshWD = [0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9] !Arrays for OHM thresholds
 
       !REAL(KIND(1d0)), PARAMETER::  BaseTHDD = 18.9  !Base temperature for QF
-
+      !not used
       REAL(KIND(1D0)), PARAMETER::xsmd = 0. !Measured soil moisture deficit
-
+      !Todo
       REAL(KIND(1D0)), PARAMETER::wu_m3 = 0  !External water use
       REAL(KIND(1D0)), PARAMETER::Faut = 0  !Fraction of irrigated area using automatic irrigation
       REAL(KIND(1D0)), PARAMETER::InternalWaterUse_h = 0 !Internal water use [mm h-1]
       REAL(KIND(1D0)), PARAMETER::IrrFracConif = 0 !Fraction of evergreen trees which are irrigated
       REAL(KIND(1D0)), PARAMETER::IrrFracDecid = 0 !Fraction of deciduous trees which are irrigated
       REAL(KIND(1D0)), PARAMETER::IrrFracGrass = 0 !Fraction of grass which is irrigated
-
+      !Todo
       REAL(KIND(1D0)), DIMENSION(7), PARAMETER ::DayWat = 0                     !Days of watering allowed
       REAL(KIND(1D0)), DIMENSION(7), PARAMETER ::DayWatPer = 0                     !% of houses following daily water
       REAL(KIND(1D0)), DIMENSION(3), PARAMETER ::Ie_a = [-84.535, 9.959, 3.674] !Coefficients for automatic irrigation models
@@ -326,6 +326,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(7), PARAMETER      ::SnowPackLimit = 0
       REAL(KIND(1D0)), DIMENSION(0:23, 2), PARAMETER ::snowProf_24hr = 0     ! Timing of snow removal (0 or 1) Hourly, WD/WE
 
+      !grid level
       ! Anthropogenic heat related variables
       REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::AH_MIN = 10!Minimum anthropogenic heat flux (AnthropHeatMethod = 1)
       REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::AH_SLOPE_Cooling = [2.7, 2.7]!Slope of the antrhropogenic heat flux calculation (AnthropHeatMethod = 1)
@@ -337,6 +338,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::T_CRITIC_Cooling = [7, 7] !Critical temperature
       REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::T_CRITIC_Heating = [7, 7] !Critical temperature
       REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::TrafficRate = [0.0134, 0.0095]
+      !keep them here
       REAL(KIND(1D0)), PARAMETER::EF_umolCO2perJ = 1.159
       REAL(KIND(1D0)), PARAMETER::EnEF_v_Jkm = 4e6
       REAL(KIND(1D0)), PARAMETER::FcEF_v_kgkm = 0.285
@@ -362,7 +364,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(3), PARAMETER ::resp_b = 0
       REAL(KIND(1D0)), DIMENSION(3), PARAMETER ::theta_bioCO2 = 0.96
 
-      ! ESTM related variables
+      ! ESTM related variables, not used
       REAL(KIND(1d0)), DIMENSION(24*3600/tstep)   ::Tair24HR
       REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE   ::Ts5mindata_ir !TODO:allocatable array can't serve as argument?
 

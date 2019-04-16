@@ -44,7 +44,7 @@ CONTAINS
       RAINMAXRES_id,&
       FlowChange_id,&
       PipeCapacity_id,&
-      RunoffToWate_id,&
+      RunoffToWater_id,&
       StateLimit_id,&
       WetThresh_id,&
       BaseTHDD_id,&
@@ -139,7 +139,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(INOUT) ::RAINMAXRES_id
       REAL(KIND(1d0)), INTENT(INOUT) ::FlowChange_id
       REAL(KIND(1d0)), INTENT(INOUT) ::PipeCapacity_id
-      REAL(KIND(1d0)), INTENT(INOUT) ::RunoffToWate_id
+      REAL(KIND(1d0)), INTENT(INOUT) ::RunoffToWater_id
       REAL(KIND(1d0)), DIMENSION(7),INTENT(INOUT) ::StateLimit_id
       REAL(KIND(1d0)), DIMENSION(7),INTENT(INOUT) ::WetThresh_id
       REAL(KIND(1d0)), INTENT(INOUT) ::BaseTHDD_id

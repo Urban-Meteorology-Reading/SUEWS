@@ -17,7 +17,9 @@ CONTAINS
    ! a mini version of SUEWS
    SUBROUTINE SuMin( &
       snowUse, EmissionsMethod, NetRadiationMethod, RoughLenHeatMethod, &! model options
-      RoughLenMomMethod, StorageHeatMethod, AerodynamicResistanceMethod,LAIType, OHMIncQF, &! model options
+      RoughLenMomMethod, StorageHeatMethod, AerodynamicResistanceMethod,LAIType,&
+      OHM_threshSW,OHM_threshWD,th,tl,Kmax,g1,g2,g3,g4,g5,g6,s1,s2,LaiPower, &
+      OHMIncQF, &! model options
       iy, id, it, imin, isec, dt_since_start, tstep, tstep_prev, startDLS, endDLS, &! time-related input
       alt, lat, lng, Z, timezone, SurfaceArea, sfr, &! site-specific geographical settings
       z0m_in, zdm_in, &! roughness related settings
@@ -93,6 +95,22 @@ CONTAINS
       INTEGER, INTENT(IN) ::StorageHeatMethod
       INTEGER, INTENT(IN) ::AerodynamicResistanceMethod
       INTEGER, DIMENSION(3), INTENT(IN) ::LAIType
+      REAL(KIND(1D0)), DIMENSION(7 + 1), INTENT(IN)  :: OHM_threshSW 
+      REAL(KIND(1D0)), DIMENSION(7 + 1), INTENT(IN)  :: OHM_threshWD             
+      REAL(KIND(1D0)), INTENT(IN)  :: th
+      REAL(KIND(1D0)), INTENT(IN)  :: tl
+      REAL(KIND(1D0)), INTENT(IN)  :: Kmax
+      REAL(KIND(1D0)), INTENT(IN)  :: g1
+      REAL(KIND(1D0)), INTENT(IN)  :: g2
+      REAL(KIND(1D0)), INTENT(IN)  :: g3
+      REAL(KIND(1D0)), INTENT(IN)  :: g4
+      REAL(KIND(1D0)), INTENT(IN)  :: g5
+      REAL(KIND(1D0)), INTENT(IN)  :: g6
+      REAL(KIND(1D0)), INTENT(IN)  :: s1
+      REAL(KIND(1D0)), INTENT(IN)  :: s2
+      REAL(KIND(1D0)), DIMENSION(4,3), INTENT(IN)  :: LaiPower
+
+
       INTEGER, INTENT(IN) ::OHMIncQF  !OHM calculation uses Q* only (0) or Q*+QF (1)
 
       ! time-related input
@@ -297,12 +315,12 @@ CONTAINS
       !REAL(KIND(1d0)), DIMENSION(3), PARAMETER:: LaiMax = [5.1, 5.5, 5.9]    !Max LAI [m2 m-2]
       !REAL(KIND(1d0)), DIMENSION(3), PARAMETER:: MaxConductance = [7.4, 11.7, 30.1]  !Max conductance [mm s-1]
       !namelist
-      REAL(KIND(1d0)), DIMENSION(4, 3), PARAMETER:: LaiPower = RESHAPE( & !Coeffs for LAI equation: 1,2 - leaf growth; 3,4 - leaf off
-                                                    [[0.03, 0.03, 0.03], &
-                                                     [0.0005, 0.0005, 0.0005], &
-                                                     [0.03, 0.03, 0.03], &
-                                                     [0.0005, 0.0005, 0.0005]], &
-                                                    [4, 3], order=[2, 1])
+      ! REAL(KIND(1d0)), DIMENSION(4, 3), PARAMETER:: LaiPower = RESHAPE( & !Coeffs for LAI equation: 1,2 - leaf growth; 3,4 - leaf off
+      !                                               [[0.03, 0.03, 0.03], &
+      !                                                [0.0005, 0.0005, 0.0005], &
+      !                                                [0.03, 0.03, 0.03], &
+      !                                                [0.0005, 0.0005, 0.0005]], &
+      !                                               [4, 3], order=[2, 1])
       !namelist
       !INTEGER, DIMENSION(3), PARAMETER:: LAIType = 0     !LAI equation to use: original (0) or new (1)
 
@@ -339,20 +357,20 @@ CONTAINS
       !namelist
       ! these will be assigned locally as data
       ! use gsModel=2 as in Ward et al. (2016)
-      REAL(KIND(1d0)), PARAMETER::th = 55   !Maximum temperature limit
-      REAL(KIND(1d0)), PARAMETER::tl = -10  !Minimum temperature limit
-      REAL(KIND(1d0)), PARAMETER::Kmax = 1200 !Annual maximum hourly solar radiation
-      REAL(KIND(1d0)), PARAMETER::g1 = 3.5  !Fitted parameter
-      REAL(KIND(1d0)), PARAMETER::g2 = 200  !Fitted parameter
-      REAL(KIND(1d0)), PARAMETER::g3 = 0.13 !Fitted parameter
-      REAL(KIND(1d0)), PARAMETER::g4 = 0.7  !Fitted parameter
-      REAL(KIND(1d0)), PARAMETER::g5 = 30   !Fitted parameter
-      REAL(KIND(1d0)), PARAMETER::g6 = 0.05 !Fitted parameter
-      REAL(KIND(1d0)), PARAMETER::s1 = 5.56 !Fitted parameter
-      REAL(KIND(1d0)), PARAMETER::s2 = 0    !surface res. calculations
+      !REAL(KIND(1d0)), PARAMETER::th = 55   !Maximum temperature limit
+      !REAL(KIND(1d0)), PARAMETER::tl = -10  !Minimum temperature limit
+      !REAL(KIND(1d0)), PARAMETER::Kmax = 1200 !Annual maximum hourly solar radiation
+      !REAL(KIND(1d0)), PARAMETER::g1 = 3.5  !Fitted parameter
+      !REAL(KIND(1d0)), PARAMETER::g2 = 200  !Fitted parameter
+      !REAL(KIND(1d0)), PARAMETER::g3 = 0.13 !Fitted parameter
+      !REAL(KIND(1d0)), PARAMETER::g4 = 0.7  !Fitted parameter
+      !REAL(KIND(1d0)), PARAMETER::g5 = 30   !Fitted parameter
+      !REAL(KIND(1d0)), PARAMETER::g6 = 0.05 !Fitted parameter
+      !REAL(KIND(1d0)), PARAMETER::s1 = 5.56 !Fitted parameter
+      !REAL(KIND(1d0)), PARAMETER::s2 = 0    !surface res. calculations
       !namelist
-      REAL(KIND(1d0)), DIMENSION(7 + 1), PARAMETER:: OHM_threshSW = [10, 10, 10, 10, 10, 10, 10, 10]         !Arrays for OHM thresholds
-      REAL(KIND(1d0)), DIMENSION(7 + 1), PARAMETER:: OHM_threshWD = [0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9] !Arrays for OHM thresholds
+      !REAL(KIND(1d0)), DIMENSION(7 + 1), PARAMETER:: OHM_threshSW = [10, 10, 10, 10, 10, 10, 10, 10]         !Arrays for OHM thresholds
+      !REAL(KIND(1d0)), DIMENSION(7 + 1), PARAMETER:: OHM_threshWD = [0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9] !Arrays for OHM thresholds
 
       !REAL(KIND(1d0)), PARAMETER::  BaseTHDD = 18.9  !Base temperature for QF
       !not used

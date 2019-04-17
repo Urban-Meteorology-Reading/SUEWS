@@ -17,7 +17,7 @@ CONTAINS
    ! a mini version of SUEWS
    SUBROUTINE SuMin( &
       snowUse, EmissionsMethod, NetRadiationMethod, RoughLenHeatMethod, &! model options
-      RoughLenMomMethod, StorageHeatMethod, AerodynamicResistanceMethod, OHMIncQF, &! model options
+      RoughLenMomMethod, StorageHeatMethod, AerodynamicResistanceMethod,LAIType, OHMIncQF, &! model options
       iy, id, it, imin, isec, dt_since_start, tstep, tstep_prev, startDLS, endDLS, &! time-related input
       alt, lat, lng, Z, timezone, SurfaceArea, sfr, &! site-specific geographical settings
       z0m_in, zdm_in, &! roughness related settings
@@ -92,6 +92,7 @@ CONTAINS
       INTEGER, INTENT(IN) ::RoughLenMomMethod
       INTEGER, INTENT(IN) ::StorageHeatMethod
       INTEGER, INTENT(IN) ::AerodynamicResistanceMethod
+      INTEGER, DIMENSION(3), INTENT(IN) ::LAIType
       INTEGER, INTENT(IN) ::OHMIncQF  !OHM calculation uses Q* only (0) or Q*+QF (1)
 
       ! time-related input
@@ -303,7 +304,7 @@ CONTAINS
                                                      [0.0005, 0.0005, 0.0005]], &
                                                     [4, 3], order=[2, 1])
       !namelist
-      INTEGER, DIMENSION(3), PARAMETER:: LAIType = 0     !LAI equation to use: original (0) or new (1)
+      !INTEGER, DIMENSION(3), PARAMETER:: LAIType = 0     !LAI equation to use: original (0) or new (1)
 
       !REAL(KIND(1D0)), PARAMETER ::DRAINRT = 0.25 !Drainage rate of the water bucket [mm hr-1]
       !REAL(KIND(1D0)), PARAMETER ::RAINCOVER = 1

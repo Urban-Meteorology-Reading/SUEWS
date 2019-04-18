@@ -95,20 +95,20 @@ CONTAINS
       INTEGER, INTENT(IN) ::StorageHeatMethod
       INTEGER, INTENT(IN) ::AerodynamicResistanceMethod
       INTEGER, DIMENSION(3), INTENT(IN) ::LAIType
-      REAL, DIMENSION(7 + 1), INTENT(IN)  :: OHM_threshSW 
-      REAL, DIMENSION(7 + 1), INTENT(IN)  :: OHM_threshWD             
-      REAL, INTENT(IN)  :: th
-      REAL, INTENT(IN)  :: tl
-      REAL, INTENT(IN)  :: Kmax
-      REAL, INTENT(IN)  :: g1
-      REAL, INTENT(IN)  :: g2
-      REAL, INTENT(IN)  :: g3
-      REAL, INTENT(IN)  :: g4
-      REAL, INTENT(IN)  :: g5
-      REAL, INTENT(IN)  :: g6
-      REAL, INTENT(IN)  :: s1
-      REAL, INTENT(IN)  :: s2
-      REAL, DIMENSION(4,3), INTENT(IN)  :: LaiPower
+      REAL(KIND(1D0)), DIMENSION(7 + 1), INTENT(IN)  :: OHM_threshSW 
+      REAL(KIND(1D0)), DIMENSION(7 + 1), INTENT(IN)  :: OHM_threshWD             
+      REAL(KIND(1D0)), INTENT(IN)  :: th
+      REAL(KIND(1D0)), INTENT(IN)  :: tl
+      REAL(KIND(1D0)), INTENT(IN)  :: Kmax
+      REAL(KIND(1D0)), INTENT(IN)  :: g1
+      REAL(KIND(1D0)), INTENT(IN)  :: g2
+      REAL(KIND(1D0)), INTENT(IN)  :: g3
+      REAL(KIND(1D0)), INTENT(IN)  :: g4
+      REAL(KIND(1D0)), INTENT(IN)  :: g5
+      REAL(KIND(1D0)), INTENT(IN)  :: g6
+      REAL(KIND(1D0)), INTENT(IN)  :: s1
+      REAL(KIND(1D0)), INTENT(IN)  :: s2
+      REAL(KIND(1D0)), DIMENSION(4,3), INTENT(IN)  :: LaiPower
 
 
       INTEGER, INTENT(IN) ::OHMIncQF  !OHM calculation uses Q* only (0) or Q*+QF (1)

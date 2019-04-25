@@ -84,7 +84,12 @@ CONTAINS
       porosity_id,&
       GDD_id, HDD_id, LAI_id, WUDay_id, soilstore_id, state_id, SnowWater, &
       avkdn, avRh, avU1, Press_hPa, Temp_C, Precip, & ! forcing variables
-      qn, qf, qs, qh, qe, qsfc, tsk, CHKLOWQ)!output
+      qn, qf, qs, qh, qe, qsfc, tsk, CHKLOWQ,&
+      kdown_o,&
+      kup_o,&
+      ldown_o,&
+      lup_o,&
+      tsurf_o)!output
 
       ! model configurations
       INTEGER, INTENT(in) ::snowUse
@@ -244,6 +249,13 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::Precip
 
       ! output for WRF
+      REAL(KIND(1D0)), INTENT(out)::kdown_o
+      REAL(KIND(1D0)), INTENT(out)::kup_o
+      REAL(KIND(1D0)), INTENT(out)::ldown_o
+      REAL(KIND(1D0)), INTENT(out)::lup_o
+      REAL(KIND(1D0)), INTENT(out)::tsurf_o
+
+
       REAL(KIND(1D0)), INTENT(out)::qn
       REAL(KIND(1D0)), INTENT(out)::qf
       REAL(KIND(1D0)), INTENT(out)::qs
@@ -532,6 +544,13 @@ CONTAINS
          DailyStateLine)!output
 
       surf_var_id = StoreDrainPrm(6, :) ! update surf_var_id
+
+      kdown_o = dataOutLineSUEWS(1)
+      kup_o = dataOutLineSUEWS(2)
+      ldown_o = dataOutLineSUEWS(3)
+      lup_o = dataOutLineSUEWS(4)
+      tsurf_o = dataOutLineSUEWS(5)
+
       qn = dataOutLineSUEWS(6)
       qf = dataOutLineSUEWS(7)
       qs = dataOutLineSUEWS(8)

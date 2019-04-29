@@ -89,7 +89,7 @@ CONTAINS
       kup_o,&
       ldown_o,&
       lup_o,&
-      tsurf_o)!output
+      tsurf_o,glw1d)!output
 
       ! model configurations
       INTEGER, INTENT(in) ::snowUse
@@ -242,6 +242,7 @@ CONTAINS
 
       ! forcing variables
       REAL(KIND(1D0)), INTENT(IN)::avkdn
+      REAL(KIND(1D0)), INTENT(IN)::glw1d
       REAL(KIND(1D0)), INTENT(IN)::avRh
       REAL(KIND(1D0)), INTENT(IN)::avU1
       REAL(KIND(1D0)), INTENT(IN)::Press_hPa
@@ -278,7 +279,7 @@ CONTAINS
       INTEGER, PARAMETER ::WaterUseMethod = 0
 
       REAL(KIND(1D0)), PARAMETER:: LAI_obs = 0
-      REAL(KIND(1D0)), PARAMETER:: ldown_obs = 0
+      REAL(KIND(1D0))  :: ldown_obs
       REAL(KIND(1D0)), PARAMETER:: fcld_obs = 0
       REAL(KIND(1D0)), PARAMETER:: snow_obs = 0
       REAL(KIND(1D0)), PARAMETER:: qn1_obs = 0
@@ -490,7 +491,7 @@ CONTAINS
       StoreDrainPrm(5, :) = surf_attr_MaxStorCap_id
 
       StoreDrainPrm(6, :) = surf_var_id
-
+      ldown_obs=glw1d
       ! PRINT*,''
       ! PRINT*, 'soilstore_id',soilstore_id
       ! soilstore_id=MERGE(soilstore_id,soilstore_id*0,soilstore_id>0)

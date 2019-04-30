@@ -50,7 +50,7 @@ SUBROUTINE MetRead(lfn, MetArray, InputmetFormat, ldown_option, NetRadiationMeth
                      Precip, & !Rainfall [mm]
                      Pres_hPa, &  !Station air pressure in hPa
                      Pres_kPa, &  !Station air pressure in kPa
-                     snow_obs, &  !Observed surface fraction of snow (between 0 and 1)
+                     snowFrac_obs, &  !Observed surface fraction of snow (between 0 and 1)
                      qe_obs, &    !Observed latent heat flux
                      qf_obs, &    !Observed antrhropogeni heat flux
                      qh_obs, &    !Observed sensible heat flux
@@ -69,7 +69,7 @@ SUBROUTINE MetRead(lfn, MetArray, InputmetFormat, ldown_option, NetRadiationMeth
    IF (InputMetFormat == 0) THEN   !Default format using LUMPS only
 
       READ (lfn, *, iostat=iostat_var) iy, id, it, imin, qn1_obs, avu1, avrh, &
-         Temp_C, wdir, Pres_kPa, Precip, avkdn, snow_obs, ldown_obs, fcld_obs
+         Temp_C, wdir, Pres_kPa, Precip, avkdn, snowFrac_obs, ldown_obs, fcld_obs
 
       !Set other variables needed while running SUEWS to zero
       qf_obs = NaN
@@ -83,7 +83,7 @@ SUBROUTINE MetRead(lfn, MetArray, InputmetFormat, ldown_option, NetRadiationMeth
 
    ELSEIF (InputMetFormat == 10) THEN !SUEWS reading
       READ (lfn, *, iostat=iostat_var) iy, id, it, imin, qn1_obs, qh_obs, qe_obs, qs_obs, qf_obs, avu1, avrh, &
-         Temp_C, Pres_kPa, Precip, avkdn, snow_obs, ldown_obs, fcld_obs, &
+         Temp_C, Pres_kPa, Precip, avkdn, snowFrac_obs, ldown_obs, fcld_obs, &
          wu_m3, xsmd, LAI_obs, kdiff, kdir, wdir
 
       !write(*,*) 'In LUMPS_MetRead (1)'
@@ -154,10 +154,10 @@ SUBROUTINE MetRead(lfn, MetArray, InputmetFormat, ldown_option, NetRadiationMeth
       CALL ErrorHint(27, 'Met Data: Precip - less than 0', Precip, dectime, notUsedI)
    ENDIF
 
-   IF (snow_obs == NAN) snow_obs = 0
+   IF (snowFrac_obs == NAN) snowFrac_obs = 0
 
-   IF (snowUse == 0 .AND. (snow_obs < 0 .OR. snow_obs > 1)) THEN
-      CALL ErrorHint(27, 'Met Data: snow not between [0  1]', snow_obs, dectime, notUsedI)
+   IF (snowUse == 0 .AND. (snowFrac_obs < 0 .OR. snowFrac_obs > 1)) THEN
+      CALL ErrorHint(27, 'Met Data: snow not between [0  1]', snowFrac_obs, dectime, notUsedI)
    ENDIF
 
    IF (xsmd < 0 .AND. SMDMethod == 1) THEN  !If soil moisture deficit is zero
@@ -166,7 +166,7 @@ SUBROUTINE MetRead(lfn, MetArray, InputmetFormat, ldown_option, NetRadiationMeth
 
    !Create an array to be printed out.
    MetArray(1:24) = (/iy, id, it, imin, qn1_obs, qh_obs, qe_obs, qs_obs, qf_obs, avu1, &
-                      avrh, Temp_C, Pres_hPa, Precip, avkdn, snow_obs, ldown_obs, &
+                      avrh, Temp_C, Pres_hPa, Precip, avkdn, snowFrac_obs, ldown_obs, &
                       fcld_obs, wu_m3, xsmd, LAI_obs, kdiff, kdir, wdir/)
 
    !write(*,*) 'In LUMPS_MetRead (2)'

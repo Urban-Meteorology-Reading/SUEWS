@@ -28,7 +28,7 @@ CONTAINS
       qn1_av, dqndt, qn1_s_av, dqnsdt, & ! OHM related Qn quantities
       surf_var_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id,&
       NumCapita_id , &
-      
+
       BaseT_id               , &
       BaseTe_id              , &
       GDDFull_id             , &
@@ -57,7 +57,7 @@ CONTAINS
       surf_attr_DrainCoef1_id, &
       surf_attr_DrainCoef2_id, &
       surf_attr_MaxStorCap_id, &
- 
+
       SoilStoreCap_id,&
       SoilDepth_id,&
       SatHydraulicConduct_id,&
@@ -100,8 +100,8 @@ CONTAINS
       INTEGER, INTENT(IN) ::StorageHeatMethod
       INTEGER, INTENT(IN) ::AerodynamicResistanceMethod
       INTEGER, DIMENSION(3), INTENT(IN) ::LAIType
-      REAL(KIND(1D0)), DIMENSION(7 + 1), INTENT(IN)  :: OHM_threshSW 
-      REAL(KIND(1D0)), DIMENSION(7 + 1), INTENT(IN)  :: OHM_threshWD             
+      REAL(KIND(1D0)), DIMENSION(7 + 1), INTENT(IN)  :: OHM_threshSW
+      REAL(KIND(1D0)), DIMENSION(7 + 1), INTENT(IN)  :: OHM_threshWD
       REAL(KIND(1D0)), INTENT(IN)  :: th
       REAL(KIND(1D0)), INTENT(IN)  :: tl
       REAL(KIND(1D0)), INTENT(IN)  :: Kmax
@@ -175,29 +175,29 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(INOUT) ::NumCapita_id
 
 
-      REAL(KIND(1d0)), DIMENSION(3),INTENT(INOUT) :: BaseT_id               
-      REAL(KIND(1d0)), DIMENSION(3),INTENT(INOUT) :: BaseTe_id              
-      REAL(KIND(1d0)), DIMENSION(3),INTENT(INOUT) :: GDDFull_id             
-      REAL(KIND(1d0)), DIMENSION(3),INTENT(INOUT) :: SDDFull_id             
-      REAL(KIND(1d0)), DIMENSION(3),INTENT(INOUT) :: LaiMin_id              
-      REAL(KIND(1d0)), DIMENSION(3),INTENT(INOUT) :: LaiMax_id              
-      REAL(KIND(1d0)), DIMENSION(3),INTENT(INOUT) :: MaxConductance_id      
-      REAL(KIND(1d0)), INTENT(INOUT)              :: FAIbldg_id             
-      REAL(KIND(1d0)), INTENT(INOUT)              :: FAIEveTree_id          
-      REAL(KIND(1d0)), INTENT(INOUT)              :: FAIDecTree_id          
-      REAL(KIND(1d0)), INTENT(INOUT)              :: bldgH_id               
-      REAL(KIND(1d0)), INTENT(INOUT)              :: EveTreeH_id            
-      REAL(KIND(1d0)), INTENT(INOUT)              :: DecTreeH_id            
-      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: AH_MIN_id              
-      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: AH_SLOPE_Cooling_id    
-      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: AH_SLOPE_Heating_id    
-      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: QF0_BEU_id             
-      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: Qf_A_id                
-      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: Qf_B_id                
-      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: Qf_C_id                
-      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: T_CRITIC_Cooling_id    
-      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: T_CRITIC_Heating_id    
-      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: TrafficRate_id         
+      REAL(KIND(1d0)), DIMENSION(3),INTENT(INOUT) :: BaseT_id
+      REAL(KIND(1d0)), DIMENSION(3),INTENT(INOUT) :: BaseTe_id
+      REAL(KIND(1d0)), DIMENSION(3),INTENT(INOUT) :: GDDFull_id
+      REAL(KIND(1d0)), DIMENSION(3),INTENT(INOUT) :: SDDFull_id
+      REAL(KIND(1d0)), DIMENSION(3),INTENT(INOUT) :: LaiMin_id
+      REAL(KIND(1d0)), DIMENSION(3),INTENT(INOUT) :: LaiMax_id
+      REAL(KIND(1d0)), DIMENSION(3),INTENT(INOUT) :: MaxConductance_id
+      REAL(KIND(1d0)), INTENT(INOUT)              :: FAIbldg_id
+      REAL(KIND(1d0)), INTENT(INOUT)              :: FAIEveTree_id
+      REAL(KIND(1d0)), INTENT(INOUT)              :: FAIDecTree_id
+      REAL(KIND(1d0)), INTENT(INOUT)              :: bldgH_id
+      REAL(KIND(1d0)), INTENT(INOUT)              :: EveTreeH_id
+      REAL(KIND(1d0)), INTENT(INOUT)              :: DecTreeH_id
+      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: AH_MIN_id
+      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: AH_SLOPE_Cooling_id
+      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: AH_SLOPE_Heating_id
+      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: QF0_BEU_id
+      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: Qf_A_id
+      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: Qf_B_id
+      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: Qf_C_id
+      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: T_CRITIC_Cooling_id
+      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: T_CRITIC_Heating_id
+      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: TrafficRate_id
       REAL(KIND(1d0)), DIMENSION(7),INTENT(INOUT) :: surf_attr_MinStorCap_id
       REAL(KIND(1d0)), DIMENSION(7),INTENT(INOUT) :: surf_attr_DrainEquat_id
       REAL(KIND(1d0)), DIMENSION(7),INTENT(INOUT) :: surf_attr_DrainCoef1_id
@@ -281,7 +281,7 @@ CONTAINS
       REAL(KIND(1D0)), PARAMETER:: LAI_obs = 0
       REAL(KIND(1D0))  :: ldown_obs
       REAL(KIND(1D0)), PARAMETER:: fcld_obs = 0
-      REAL(KIND(1D0)), PARAMETER:: snow_obs = 0
+      REAL(KIND(1D0)), PARAMETER:: snowFrac_obs = 0
       REAL(KIND(1D0)), PARAMETER:: qn1_obs = 0
       REAL(KIND(1D0)), PARAMETER:: qh_obs = 0
       REAL(KIND(1D0)), PARAMETER:: qf_obs = 0
@@ -360,7 +360,7 @@ CONTAINS
       !                                               [3., 3., 1.71, 1.71, 1.71, 3., 0.], &
       !                                               [0.48, 0.25, 1.3, 0.8, 1.9, 0.8, 0.5]], &
       !                                              [5, 7], order=[2, 1])
-      
+
       !REAL(KIND(1d0)), DIMENSION(1, 7), PARAMETER:: surf_attr_MinStorCap = [ 0.48, 0.25, 1.3, 0.3, 1.9, 0.8, 0.5]
       !REAL(KIND(1d0)), DIMENSION(1, 7), PARAMETER:: surf_attr_DrainEquat = [3., 3., 2., 2., 2., 3., 0.]
       !REAL(KIND(1d0)), DIMENSION(1, 7), PARAMETER:: surf_attr_DrainCoef1 = [10., 10., 0.013, 0.013, 0.013, 10., 0.]
@@ -433,7 +433,7 @@ CONTAINS
       !REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::AH_MIN = 10!Minimum anthropogenic heat flux (AnthropHeatMethod = 1)
       !REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::AH_SLOPE_Cooling = [2.7, 2.7]!Slope of the antrhropogenic heat flux calculation (AnthropHeatMethod = 1)
       !REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::AH_SLOPE_Heating = [2.7, 2.7]!Slope of the antrhropogenic heat flux calculation (AnthropHeatMethod = 1)
-      !REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::QF0_BEU = [0.7442, 0.7955]     
+      !REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::QF0_BEU = [0.7442, 0.7955]
       !REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::Qf_A = [0.1, 0.1]!Qf coefficients
       !REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::Qf_B = [0.00986, 0.00986]!Qf coefficients
       !REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::Qf_C = [0.0102, 0.0102]!Qf coefficients
@@ -532,7 +532,7 @@ CONTAINS
          RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater_id, S1, S2, &
          SatHydraulicConduct_id, SDDFull_id, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
          SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
-         SnowLimBldg, SnowLimPaved, snow_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth_id, &
+         SnowLimBldg, SnowLimPaved, snowFrac_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth_id, &
          soilstore_id, SoilStoreCap_id, StabilityMethod, startDLS, state_id, StateLimit_id, &
          StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair24HR, tau_a, tau_f, tau_r, &
          T_CRITIC_Cooling_id, T_CRITIC_Heating_id, Temp_C, TempMeltFact, TH, &

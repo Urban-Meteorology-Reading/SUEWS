@@ -1077,7 +1077,7 @@ MODULE data_in
                      QSanOHM, &   !Simulated storage heat flux by AnOHM, TS 30 May 2016
                      QSestm, &    !Simulated storage heat flux by ESTM, TS 30 May 2016
                      snow, &      !snow cover
-                     snow_obs, &  !Observed snow cover
+                     snowFrac_obs, &  !Observed snow cover
                      CO2mWD, &
                      CO2mWE, &
                      EF_umolCO2perJ, &

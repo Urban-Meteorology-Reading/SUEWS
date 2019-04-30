@@ -43,7 +43,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       precip, press_hpa, qf0_beu, qf_a, qf_b, qf_c, &
       qh_obs, qn1_obs, qs_obs, qf_obs, &
       raincover, rainmaxres, &
-      roughlenmommethod, smdmethod, snow_obs, snowuse, startdls, &
+      roughlenmommethod, smdmethod, snowFrac_obs, snowuse, startdls, &
       storageheatmethod, t_critic_cooling, t_critic_heating, temp_c, &
       timezone, trafficrate, trafficunits, waterusemethod, wu_m3, xsmd
    USE time, ONLY: iy, id, it, imin, isec, dt_since_start
@@ -141,7 +141,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
       SatHydraulicConduct, SDDFull, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
       SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
-      SnowLimBldg, SnowLimPaved, snow_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
+      SnowLimBldg, SnowLimPaved, snowFrac_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
       soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
       StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair24HR, tau_a, tau_f, tau_r, &
       T_CRITIC_Cooling, T_CRITIC_Heating, Temp_C, TempMeltFact, TH, &

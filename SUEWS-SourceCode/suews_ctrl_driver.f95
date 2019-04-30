@@ -569,8 +569,8 @@ CONTAINS
          dectime, ZENITH_deg, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
          SnowAlb, DiagQN, &
          NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac, sfr, emis, &
-         alb, albDecTr_id, DecidCap_id, albEveTr_id, albGrass_id, StoreDrainPrm, &!inout
-         snowFrac, ldown, fcld, &!output
+         alb, albDecTr_id, DecidCap_id, albEveTr_id, albGrass_id, StoreDrainPrm, snowFrac, &!inout
+         ldown, fcld, &!output
          qn1, qn1_snowfree, qn1_S, kclear, kup, lup, tsurf, &
          qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind)
 
@@ -917,8 +917,8 @@ CONTAINS
       dectime, ZENITH_deg, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
       SnowAlb, DiagQN, &
       NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac, sfr, emis, &
-      alb, albDecTr_id, DecidCap_id, albEveTr_id, albGrass_id, StoreDrainPrm, &!inout
-      snowFrac, ldown, fcld, &!output
+      alb, albDecTr_id, DecidCap_id, albEveTr_id, albGrass_id, StoreDrainPrm, snowFrac, &!inout
+      ldown, fcld, &!output
       qn1, qn1_snowfree, qn1_S, kclear, kup, lup, tsurf, &
       qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind)
       USE NARP_MODULE, ONLY: RadMethod, NARP
@@ -959,7 +959,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(in)  ::albGrass_id
       REAL(KIND(1d0)), DIMENSION(6, nsurf), INTENT(inout)::StoreDrainPrm
 
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::snowFrac
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(inout)::snowFrac
 
       REAL(KIND(1d0)), INTENT(out)::ldown
       REAL(KIND(1d0)), INTENT(out)::fcld

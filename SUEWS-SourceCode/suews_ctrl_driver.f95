@@ -58,7 +58,7 @@ CONTAINS
       RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
       SatHydraulicConduct, SDDFull, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
       SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
-      SnowLimBldg, SnowLimPaved, snow_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
+      SnowLimBldg, SnowLimPaved, snowFrac_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
       soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
       StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair24HR, tau_a, tau_f, tau_r, &
       T_CRITIC_Cooling, T_CRITIC_Heating, Temp_C, TempMeltFact, TH, &
@@ -181,7 +181,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::SnowDensMin
       REAL(KIND(1D0)), INTENT(IN)::SnowLimBldg
       REAL(KIND(1D0)), INTENT(IN)::SnowLimPaved
-      REAL(KIND(1D0)), INTENT(IN)::snow_obs
+      REAL(KIND(1D0)), INTENT(IN)::snowFrac_obs
       REAL(KIND(1D0)), INTENT(IN)::SurfaceArea
       REAL(KIND(1D0)), INTENT(IN)::tau_a
       REAL(KIND(1D0)), INTENT(IN)::tau_f
@@ -565,7 +565,7 @@ CONTAINS
       ! ===================NET ALLWAVE RADIATION================================
       CALL SUEWS_cal_Qn( &
          NetRadiationMethod, snowUse, &!input
-         Diagnose, snow_obs, ldown_obs, fcld_obs, &
+         Diagnose, snowFrac_obs, ldown_obs, fcld_obs, &
          dectime, ZENITH_deg, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
          SnowAlb, DiagQN, &
          NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac, sfr, emis, &
@@ -913,7 +913,7 @@ CONTAINS
    !=============net all-wave radiation=====================================
    SUBROUTINE SUEWS_cal_Qn( &
       NetRadiationMethod, snowUse, &!input
-      Diagnose, snow_obs, ldown_obs, fcld_obs, &
+      Diagnose, snowFrac_obs, ldown_obs, fcld_obs, &
       dectime, ZENITH_deg, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
       SnowAlb, DiagQN, &
       NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac, sfr, emis, &
@@ -934,7 +934,7 @@ CONTAINS
       INTEGER, INTENT(in)::Diagnose
       INTEGER, INTENT(in)::DiagQN
 
-      REAL(KIND(1d0)), INTENT(in)::snow_obs
+      REAL(KIND(1d0)), INTENT(in)::snowFrac_obs
       REAL(KIND(1d0)), INTENT(in)::ldown_obs
       REAL(KIND(1d0)), INTENT(in)::fcld_obs
       REAL(KIND(1d0)), INTENT(in)::dectime
@@ -991,7 +991,7 @@ CONTAINS
 
       IF (NetRadiationMethodX > 0) THEN
 
-         ! IF (snowUse==0) snowFrac=snow_obs
+         ! IF (snowUse==0) snowFrac=snowFrac_obs
          IF (snowUse == 0) snowFrac = 0
 
          IF (ldown_option == 1) THEN !Observed ldown provided as forcing
@@ -1025,7 +1025,7 @@ CONTAINS
             qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind)
 
       ELSE ! NetRadiationMethod==0
-         snowFrac = snow_obs
+         snowFrac = snowFrac_obs
          qn1 = qn1_obs
          qn1_snowfree = qn1_obs
          qn1_s = qn1_obs
@@ -2502,7 +2502,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::SnowDensMin
       REAL(KIND(1D0)), INTENT(IN)::SnowLimBldg
       REAL(KIND(1D0)), INTENT(IN)::SnowLimPaved
-      ! REAL(KIND(1D0)),INTENT(IN)::snow_obs
+      ! REAL(KIND(1D0)),INTENT(IN)::snowFrac_obs
       REAL(KIND(1D0)), INTENT(IN)::SurfaceArea
       REAL(KIND(1D0)), INTENT(IN)::tau_a
       REAL(KIND(1D0)), INTENT(IN)::tau_f
@@ -2652,7 +2652,7 @@ CONTAINS
       REAL(KIND(1D0))::Press_hPa
       REAL(KIND(1D0))::Precip
       REAL(KIND(1D0))::avkdn
-      REAL(KIND(1D0))::snow_obs
+      REAL(KIND(1D0))::snowFrac_obs
       REAL(KIND(1D0))::ldown_obs
       REAL(KIND(1D0))::fcld_obs
       REAL(KIND(1D0))::wu_m3
@@ -2698,7 +2698,7 @@ CONTAINS
          Press_hPa = MetForcingBlock(ir, 13)
          Precip = MetForcingBlock(ir, 14)
          avkdn = MetForcingBlock(ir, 15)
-         snow_obs = MetForcingBlock(ir, 16)
+         snowFrac_obs = MetForcingBlock(ir, 16)
          ldown_obs = MetForcingBlock(ir, 17)
          fcld_obs = MetForcingBlock(ir, 18)
          wu_m3 = MetForcingBlock(ir, 19)
@@ -2738,7 +2738,7 @@ CONTAINS
             RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
             SatHydraulicConduct, SDDFull, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
             SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
-            SnowLimBldg, SnowLimPaved, snow_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
+            SnowLimBldg, SnowLimPaved, snowFrac_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
             soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
             StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair24HR, tau_a, tau_f, tau_r, &
             T_CRITIC_Cooling, T_CRITIC_Heating, Temp_C, TempMeltFact, TH, &

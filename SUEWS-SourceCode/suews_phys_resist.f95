@@ -456,11 +456,13 @@ SUBROUTINE SUEWS_cal_RoughnessParameters( &
    Z0m4Water = 0.0005
 
    !------------------------------------------------------------------------------
-   !If total area of buildings and trees is larger than zero, use tree heights and building heights to calculate zH
+   !If total area of buildings and trees is larger than zero, use tree heights and building heights to calculate zH and FAI
    IF (areaZh /= 0) THEN
       Zh = bldgH*sfr(BldgSurf)/areaZh + EveTreeH*sfr(ConifSurf)/areaZh + DecTreeH*(1 - porosity_id)*sfr(DecidSurf)/areaZh
+      planF = FAIBldg*sfr(BldgSurf)/areaZh + FAIEveTree*sfr(ConifSurf)/areaZh + FAIDecTree*(1 - porosity_id)*sfr(DecidSurf)/areaZh  ! NT: added calculation of FAI here
    ELSE
       Zh = 0   !Set Zh to zero if areaZh = 0
+      planF = 0.00001
    ENDIF
 
    IF (Zh /= 0) THEN
@@ -471,9 +473,9 @@ SUBROUTINE SUEWS_cal_RoughnessParameters( &
       ELSEIF (RoughLenMomMethod == 3) THEN !MacDonald 1998
          IF (areaZh /= 0) THEN  !Plan area fraction
             !planF=FAIBldg*sfr(BldgSurf)/areaZh+FAItree*sfr(ConifSurf)/areaZh+FAItree*(1-porosity_id)*sfr(DecidSurf)/areaZh
-        planF = FAIBldg*sfr(BldgSurf)/areaZh + FAIEveTree*sfr(ConifSurf)/areaZh + FAIDecTree*(1 - porosity_id)*sfr(DecidSurf)/areaZh
+      !   planF = FAIBldg*sfr(BldgSurf)/areaZh + FAIEveTree*sfr(ConifSurf)/areaZh + FAIDecTree*(1 - porosity_id)*sfr(DecidSurf)/areaZh
          ELSE
-            planF = 0.00001
+            ! planF = 0.00001
             Zh = 1
          ENDIF
          zdm = (1 + 4.43**(-sfr(BldgSurf))*(sfr(BldgSurf) - 1))*Zh

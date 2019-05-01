@@ -22,7 +22,8 @@ MODULE SUEWS_Driver
       PavSurf, BldgSurf, ConifSurf, DecidSurf, GrassSurf, BSoilSurf, WaterSurf, &
       ivConif, ivDecid, ivGrass, &
       ncolumnsDataOutSUEWS, ncolumnsDataOutSnow, &
-      ncolumnsDataOutESTM, ncolumnsDataOutDailyState
+      ncolumnsDataOutESTM, ncolumnsDataOutDailyState, &
+      ncolumnsDataOutRSL
 
    IMPLICIT NONE
 
@@ -67,7 +68,7 @@ CONTAINS
       WaterDist, WaterUseMethod, WetThresh, wu_m3, &
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
-      datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, &!output
+      datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, &!output
       DailyStateLine)!output
 
       IMPLICIT NONE
@@ -306,6 +307,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSUEWS - 5), INTENT(OUT)      ::dataOutLineSUEWS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow - 5), INTENT(OUT)       ::dataOutLineSnow
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutESTM - 5), INTENT(OUT)       ::dataOutLineESTM
+      REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutRSL - 5), INTENT(OUT):: dataoutLineRSL ! Wind speed array
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutDailyState - 5), INTENT(OUT) ::DailyStateLine
       ! ########################################################################################
 
@@ -485,7 +487,6 @@ CONTAINS
       ! Related to RSL wind profiles
       INTEGER, PARAMETER :: nz = 30   ! number of levels 10 levels in canopy plus 20 (3 x Zh) above the canopy
       REAL(KIND(1d0)), DIMENSION(nz):: zarray ! Height array
-      REAL(KIND(1d0)), DIMENSION(nz):: Uarray ! Wind speed array
 
       ! ########################################################################################
 
@@ -734,12 +735,12 @@ CONTAINS
          RoughLenHeatMethod, StabilityMethod, &
          avU10_ms, t2_C, q2_gkg, tskin_C, RH2)!output
 
-     IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Diagnostics...'
-     CALL WindProfile( &
-        UStar, &!input
-        L_mod, sfr, Zh, planF, &
-        StabilityMethod, &
-        zarray, Uarray)!output
+      IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Diagnostics...'
+      CALL WindProfile( &
+         UStar, &!input
+         L_mod, sfr, Zh, planF, &
+         StabilityMethod, &
+         zarray, dataoutLineRSL)!output
 
       !============ surface-level diagonostics end ===============
 
@@ -2025,8 +2026,9 @@ CONTAINS
    SUBROUTINE SUEWS_update_output( &
       SnowUse, storageheatmethod, &!input
       ReadLinesMetdata, NumberOfGrids, &
-      ir, gridiv, datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, &!input
-      dataOutSUEWS, dataOutSnow, dataOutESTM)!inout
+      ir, gridiv, &
+      datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineURSL, &!input
+      dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL)!inout
       IMPLICIT NONE
 
       INTEGER, INTENT(in) ::ReadLinesMetdata
@@ -2040,14 +2042,17 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutSUEWS - 5), INTENT(in) :: dataOutLineSUEWS
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutESTM - 5), INTENT(in) :: dataOutLineESTM
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutSnow - 5), INTENT(in) :: dataOutLineSnow
+      REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutRSL - 5), INTENT(in) :: dataoutLineURSL
 
       REAL(KIND(1d0)), INTENT(inout) :: dataOutSUEWS(ReadLinesMetdata, ncolumnsDataOutSUEWS, NumberOfGrids)
       REAL(KIND(1d0)), INTENT(inout) :: dataOutSnow(ReadLinesMetdata, ncolumnsDataOutSnow, NumberOfGrids)
       REAL(KIND(1d0)), INTENT(inout) :: dataOutESTM(ReadLinesMetdata, ncolumnsDataOutESTM, NumberOfGrids)
+      REAL(KIND(1d0)), INTENT(inout) :: dataOutRSL(ReadLinesMetdata, ncolumnsDataOutRSL, NumberOfGrids)
 
       !====================== update output arrays ==============================
       !Define the overall output matrix to be printed out step by step
       dataOutSUEWS(ir, 1:ncolumnsDataOutSUEWS, Gridiv) = [datetimeLine, set_nan(dataOutLineSUEWS)]
+      dataOutRSL(ir, 1:ncolumnsDataOutRSL, Gridiv) = [datetimeLine, set_nan(dataoutLineURSL)]
       ! ! set invalid values to NAN
       ! dataOutSUEWS(ir,6:ncolumnsDataOutSUEWS,Gridiv)=set_nan(dataOutSUEWS(ir,6:ncolumnsDataOutSUEWS,Gridiv))
 
@@ -2133,74 +2138,73 @@ CONTAINS
 
    END SUBROUTINE SUEWS_cal_Diagnostics
 
-    !========================================================================
-    SUBROUTINE SUEWS_cal_RSLDiagnostics( &
-            dectime, &!input
-            avU1, Temp_C, avRH, Press_hPa, &
-            qh, qe, &
-            VegFraction, zMeas, z0m, zdm, RA, avdens, avcp, lv_J_kg, tstep_real, &
-            RoughLenHeatMethod, StabilityMethod, &
-            avU10_ms, t2_C, q2_gkg, tskin_C, RH2)!output
-        ! NT 30 Apr 2019: copied SUEWS_cal_Diagnostics and rewritten to output RSL profiles
+   !========================================================================
+   SUBROUTINE SUEWS_cal_RSLDiagnostics( &
+      dectime, &!input
+      avU1, Temp_C, avRH, Press_hPa, &
+      qh, qe, &
+      VegFraction, zMeas, z0m, zdm, RA, avdens, avcp, lv_J_kg, tstep_real, &
+      RoughLenHeatMethod, StabilityMethod, &
+      avU10_ms, t2_C, q2_gkg, tskin_C, RH2)!output
+      ! NT 30 Apr 2019: copied SUEWS_cal_Diagnostics and rewritten to output RSL profiles
 
-        IMPLICIT NONE
-        REAL(KIND(1d0)), INTENT(in) ::dectime
-        REAL(KIND(1d0)), INTENT(in) ::avU1, Temp_C, avRH
-        REAL(KIND(1d0)), INTENT(in) ::qh
-        REAL(KIND(1d0)), INTENT(in) ::Press_hPa, qe
-        REAL(KIND(1d0)), INTENT(in) :: VegFraction, z0m, RA, avdens, avcp, lv_J_kg, tstep_real
-        REAL(KIND(1d0)), INTENT(in) :: zMeas! height for measurement
-        REAL(KIND(1d0)), INTENT(in) :: zdm ! displacement height
+      IMPLICIT NONE
+      REAL(KIND(1d0)), INTENT(in) ::dectime
+      REAL(KIND(1d0)), INTENT(in) ::avU1, Temp_C, avRH
+      REAL(KIND(1d0)), INTENT(in) ::qh
+      REAL(KIND(1d0)), INTENT(in) ::Press_hPa, qe
+      REAL(KIND(1d0)), INTENT(in) :: VegFraction, z0m, RA, avdens, avcp, lv_J_kg, tstep_real
+      REAL(KIND(1d0)), INTENT(in) :: zMeas! height for measurement
+      REAL(KIND(1d0)), INTENT(in) :: zdm ! displacement height
 
-        ! INTEGER,INTENT(in)         :: opt ! 0 for momentum, 1 for temperature, 2 for humidity
-        INTEGER, INTENT(in)         :: RoughLenHeatMethod, StabilityMethod
+      ! INTEGER,INTENT(in)         :: opt ! 0 for momentum, 1 for temperature, 2 for humidity
+      INTEGER, INTENT(in)         :: RoughLenHeatMethod, StabilityMethod
 
-        REAL(KIND(1d0)), INTENT(out):: avU10_ms, t2_C, q2_gkg, tskin_C, RH2
-        REAL(KIND(1d0))::qa_gkg
-        REAL(KIND(1d0)), PARAMETER::k = 0.4
+      REAL(KIND(1d0)), INTENT(out):: avU10_ms, t2_C, q2_gkg, tskin_C, RH2
+      REAL(KIND(1d0))::qa_gkg
+      REAL(KIND(1d0)), PARAMETER::k = 0.4
 
-        ! wind speed:
-        CALL diagSfc( &
-        0, &
-        zMeas, avU1, 0d0, 10d0, avU10_ms, &
-        VegFraction, &
-        z0m, zdm, avdens, avcp, lv_J_kg, &
-        avU1, Temp_C, qh, &
-        RoughLenHeatMethod, StabilityMethod, tstep_real, dectime)
+      ! wind speed:
+      CALL diagSfc( &
+         0, &
+         zMeas, avU1, 0d0, 10d0, avU10_ms, &
+         VegFraction, &
+         z0m, zdm, avdens, avcp, lv_J_kg, &
+         avU1, Temp_C, qh, &
+         RoughLenHeatMethod, StabilityMethod, tstep_real, dectime)
 
-        ! temperature at 2 m agl:
-        CALL diagSfc( &
-        1, &
-        zMeas, Temp_C, qh, 2d0, t2_C, &
-        VegFraction, &
-        z0m, zdm, avdens, avcp, lv_J_kg, &
-        avU1, Temp_C, qh, &
-        RoughLenHeatMethod, StabilityMethod, tstep_real, dectime)
+      ! temperature at 2 m agl:
+      CALL diagSfc( &
+         1, &
+         zMeas, Temp_C, qh, 2d0, t2_C, &
+         VegFraction, &
+         z0m, zdm, avdens, avcp, lv_J_kg, &
+         avU1, Temp_C, qh, &
+         RoughLenHeatMethod, StabilityMethod, tstep_real, dectime)
 
-        ! skin temperature:
-        tskin_C = qh/(avdens*avcp)*RA + temp_C
+      ! skin temperature:
+      tskin_C = qh/(avdens*avcp)*RA + temp_C
 
-        ! humidity:
-        qa_gkg = RH2qa(avRH/100, Press_hPa, Temp_c)
-        CALL diagSfc( &
-            2, &
-            zMeas, qa_gkg, qe, 2d0, q2_gkg, &
-            VegFraction, &
-            z0m, zdm, avdens, avcp, lv_J_kg, &
-            avU1, Temp_C, qh, &
-            RoughLenHeatMethod, StabilityMethod, tstep_real, dectime)
-            ! re-examine if the diagnostic RH2 > 100% ?
+      ! humidity:
+      qa_gkg = RH2qa(avRH/100, Press_hPa, Temp_c)
+      CALL diagSfc( &
+         2, &
+         zMeas, qa_gkg, qe, 2d0, q2_gkg, &
+         VegFraction, &
+         z0m, zdm, avdens, avcp, lv_J_kg, &
+         avU1, Temp_C, qh, &
+         RoughLenHeatMethod, StabilityMethod, tstep_real, dectime)
+      ! re-examine if the diagnostic RH2 > 100% ?
 
-        RH2 = qa2RH(q2_gkg, Press_hPa, Temp_c)
-        IF (RH2 > 1) THEN
-            ! if so, limit RH2 to 100%
-            RH2 = 1d0
-            ! and adjust the diagnostic q2_gkg
-            q2_gkg = RH2qa(RH2, Press_hPa, Temp_c)
-        END IF
+      RH2 = qa2RH(q2_gkg, Press_hPa, Temp_c)
+      IF (RH2 > 1) THEN
+         ! if so, limit RH2 to 100%
+         RH2 = 1d0
+         ! and adjust the diagnostic q2_gkg
+         q2_gkg = RH2qa(RH2, Press_hPa, Temp_c)
+      END IF
 
-    END SUBROUTINE SUEWS_cal_RSLDiagnostics
-
+   END SUBROUTINE SUEWS_cal_RSLDiagnostics
 
    ! calculate several surface fraction related parameters
    SUBROUTINE SUEWS_cal_surf( &
@@ -2471,7 +2475,7 @@ CONTAINS
       WaterDist, WaterUseMethod, WetThresh, &
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, Z, z0m_in, zdm_in, &
-      dataOutBlockSUEWS, dataOutBlockSnow, dataOutBlockESTM, &!output
+      dataOutBlockSUEWS, dataOutBlockSnow, dataOutBlockESTM, dataOutBlockRSL, &!output
       DailyStateBlock)
 
       IMPLICIT NONE
@@ -2705,6 +2709,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSUEWS), INTENT(OUT) ::dataOutBlockSUEWS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSnow), INTENT(OUT) ::dataOutBlockSnow
       REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutESTM), INTENT(OUT) ::dataOutBlockESTM
+      REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutRSL), INTENT(OUT) ::dataOutBlockRSL
       REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutDailyState), INTENT(OUT) ::DailyStateBlock
       ! ########################################################################################
 
@@ -2748,11 +2753,13 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSUEWS - 5)::dataOutLineSUEWS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow - 5)::dataOutLineSnow
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutESTM - 5)::dataOutLineESTM
+      REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutRSL - 5)::dataOutLineRSL
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutDailyState - 5)::DailyStateLine
 
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSUEWS, 1) ::dataOutBlockSUEWS_X
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSnow, 1) ::dataOutBlockSnow_X
       REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutESTM, 1) ::dataOutBlockESTM_X
+      REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutRSL, 1) ::dataOutBlockRSL_X
       ! REAL(KIND(1d0)),DIMENSION(len_sim,ncolumnsDataOutDailyState,1) ::DailyStateBlock_X
 
       ! REAL(KIND(1D0)),DIMENSION(:,:)          ::MetForcingData_grid
@@ -2829,7 +2836,7 @@ CONTAINS
             WaterDist, WaterUseMethod, WetThresh, wu_m3, &
             WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
             WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
-            datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, &!output
+            datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataOutLineRSL, &!output
             DailyStateLine)!output
 
          ! update dt_since_start_x for next iteration, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018
@@ -2849,14 +2856,15 @@ CONTAINS
          CALL SUEWS_update_output( &
             SnowUse, storageheatmethod, &!input
             len_sim, 1, &
-            ir, gridiv_x, datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, &!input
-            dataOutBlockSUEWS_X, dataOutBlockSnow_X, dataOutBlockESTM_X)!inout
+            ir, gridiv_x, datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, &!input
+            dataOutBlockSUEWS_X, dataOutBlockSnow_X, dataOutBlockESTM_X, dataOutBlockRSL_X)!inout
 
       END DO
 
       dataOutBlockSUEWS = dataOutBlockSUEWS_X(:, :, 1)
       dataOutBlockSnow = dataOutBlockSnow_X(:, :, 1)
       dataOutBlockESTM = dataOutBlockESTM_X(:, :, 1)
+      dataOutBlockRSL = dataOutBlockRSL_X(:, :, 1)
       ! DailyStateBlock=DailyStateBlock_X(:,:,1)
 
    END SUBROUTINE SUEWS_cal_multitsteps

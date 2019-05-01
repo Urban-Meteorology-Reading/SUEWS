@@ -232,7 +232,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(INOUT) ::BaseTHDD_id
       REAL(KIND(1d0)), INTENT(INOUT) ::porosity_id
       REAL(KIND(1d0)), DIMENSION(5), INTENT(INOUT)   ::GDD_id       !Growing Degree Days (see SUEWS_DailyState.f95)
-      REAL(KIND(1d0)), DIMENSION(12), INTENT(INOUT)  ::HDD_id       !Growing Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1d0)), DIMENSION(12), INTENT(INOUT)  ::HDD_id       !Heating/Cooling Degree Days (see SUEWS_DailyState.f95)
       REAL(KIND(1d0)), DIMENSION(3), INTENT(INOUT)   ::LAI_id       !LAI for each veg surface [m2 m-2]
       REAL(KIND(1d0)), DIMENSION(9), INTENT(INOUT)   ::WUDay_id
       REAL(KIND(1D0)), DIMENSION(7), INTENT(INOUT)   ::soilstore_id

@@ -218,43 +218,6 @@ MODULE ctrl_output
       varAttr('gamq', 'to_add', f104, 'gamq', aA, 'BL', 0) &
       /
 
-    ! RSL profiles
-    DATA(varListAll(n), &
-        n=ncolumnsDataOutSUEWS + ncolumnsdataOutSOL - 5 + ncolumnsdataOutBL - 5, &
-        ncolumnsDataOutSUEWS)/ &
-       varAttr('U_1', 'm s-1', f104, 'U at 0.1Zh', aA, 'RSL', 0), &
-       varAttr('U_2', 'm s-1', f104, 'U at 0.2Zh', aA, 'RSL', 0), &
-       varAttr('U_3', 'm s-1', f104, 'U at 0.3Zh', aA, 'RSL', 0), &
-       varAttr('U_4', 'm s-1', f104, 'U at 0.4Zh', aA, 'RSL', 0), &
-       varAttr('U_5', 'm s-1', f104, 'U at 0.5Zh', aA, 'RSL', 0), &
-       varAttr('U_6', 'm s-1', f104, 'U at 0.6Zh', aA, 'RSL', 0), &
-       varAttr('U_7', 'm s-1', f104, 'U at 0.7Zh', aA, 'RSL', 0), &
-       varAttr('U_8', 'm s-1', f104, 'U at 0.8Zh', aA, 'RSL', 0), &
-       varAttr('U_9', 'm s-1', f104, 'U at 0.9Zh', aA, 'RSL', 0), &
-       varAttr('U_10', 'm s-1', f104, 'U at Zh', aA, 'RSL', 0), &
-       varAttr('U_11', 'm s-1', f104, 'U at 1.1Zh', aA, 'RSL', 0), &
-       varAttr('U_12', 'm s-1', f104, 'U at 1.2Zh', aA, 'RSL', 0), &
-       varAttr('U_13', 'm s-1', f104, 'U at 1.3Zh', aA, 'RSL', 0), &
-       varAttr('U_14', 'm s-1', f146, 'U at 1.4Zh', aA, 'RSL', 0), &
-       varAttr('U_15', 'm s-1', f104, 'U at 1.5Zh', aA, 'RSL', 0), &
-       varAttr('U_16', 'm s-1', f104, 'U at 1.6Zh', aA, 'RSL', 0), &
-       varAttr('U_17', 'm s-1', f104, 'U at 1.7Zh', aA, 'RSL', 0), &
-       varAttr('U_18', 'm s-1', f104, 'U at 1.8Zh', aA, 'RSL', 0), &
-       varAttr('U_19', 'm s-1', f104, 'U at 1.9Zh', aA, 'RSL', 0), &
-       varAttr('U_20', 'm s-1', f104, 'U at 2.0Zh', aA, 'RSL', 0), &
-       varAttr('U_21', 'm s-1', f146, 'U at 2.1Zh', aA, 'RSL', 0), &
-       varAttr('U_22', 'm s-1', f104, 'U at 2.2Zh', aA, 'RSL', 0), &
-       varAttr('U_23', 'm s-1', f104, 'U at 2.3Zh', aA, 'RSL', 0), &
-       varAttr('U_24', 'm s-1', f104, 'U at 2.4Zh', aA, 'RSL', 0), &
-       varAttr('U_25', 'm s-1', f104, 'U at 2.5Zh', aA, 'RSL', 0), &
-       varAttr('U_26', 'm s-1', f104, 'U at 2.6Zh', aA, 'RSL', 0), &
-       varAttr('U_27', 'm s-1', f104, 'U at 2.7Zh', aA, 'RSL', 0), &
-       varAttr('U_28', 'm s-1', f104, 'U at 2.8Zh', aA, 'RSL', 0), &
-       varAttr('U_29', 'm s-1', f104, 'U at 2.9Zh', aA, 'RSL', 0), &
-       varAttr('U_30', 'm s-1', f104, 'U at 3.0Zh', aA, 'RSL', 0) &
-       /
-
-
    ! Snow:
    DATA(varListAll(n), &
         n=ncolumnsDataOutSUEWS + ncolumnsdataOutSOL - 5 + ncolumnsdataOutBL - 5 + 1, &
@@ -441,6 +404,48 @@ MODULE ctrl_output
       varAttr('a3', 'to be added', f104, 'to be added', aL, 'DailyState', 0) &
       /
 
+   ! RSL profiles
+   DATA(varListAll(n), &
+        n=ncolumnsDataOutSUEWS + ncolumnsdataOutSOL - 5 &
+        + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5 + ncolumnsDataOutESTM - 5 &
+        + ncolumnsDataOutDailyState - 5 &
+        + 1, &
+        ncolumnsDataOutSUEWS + ncolumnsdataOutSOL - 5 &
+        + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5 + ncolumnsDataOutESTM - 5 &
+        + ncolumnsDataOutDailyState - 5 &
+        + ncolumnsDataOutRSL-5)/ &
+      varAttr('U_1', 'm s-1', f104, 'U at 0.1Zh', aA, 'RSL', 0), &
+      varAttr('U_2', 'm s-1', f104, 'U at 0.2Zh', aA, 'RSL', 0), &
+      varAttr('U_3', 'm s-1', f104, 'U at 0.3Zh', aA, 'RSL', 0), &
+      varAttr('U_4', 'm s-1', f104, 'U at 0.4Zh', aA, 'RSL', 0), &
+      varAttr('U_5', 'm s-1', f104, 'U at 0.5Zh', aA, 'RSL', 0), &
+      varAttr('U_6', 'm s-1', f104, 'U at 0.6Zh', aA, 'RSL', 0), &
+      varAttr('U_7', 'm s-1', f104, 'U at 0.7Zh', aA, 'RSL', 0), &
+      varAttr('U_8', 'm s-1', f104, 'U at 0.8Zh', aA, 'RSL', 0), &
+      varAttr('U_9', 'm s-1', f104, 'U at 0.9Zh', aA, 'RSL', 0), &
+      varAttr('U_10', 'm s-1', f104, 'U at Zh', aA, 'RSL', 0), &
+      varAttr('U_11', 'm s-1', f104, 'U at 1.1Zh', aA, 'RSL', 0), &
+      varAttr('U_12', 'm s-1', f104, 'U at 1.2Zh', aA, 'RSL', 0), &
+      varAttr('U_13', 'm s-1', f104, 'U at 1.3Zh', aA, 'RSL', 0), &
+      varAttr('U_14', 'm s-1', f146, 'U at 1.4Zh', aA, 'RSL', 0), &
+      varAttr('U_15', 'm s-1', f104, 'U at 1.5Zh', aA, 'RSL', 0), &
+      varAttr('U_16', 'm s-1', f104, 'U at 1.6Zh', aA, 'RSL', 0), &
+      varAttr('U_17', 'm s-1', f104, 'U at 1.7Zh', aA, 'RSL', 0), &
+      varAttr('U_18', 'm s-1', f104, 'U at 1.8Zh', aA, 'RSL', 0), &
+      varAttr('U_19', 'm s-1', f104, 'U at 1.9Zh', aA, 'RSL', 0), &
+      varAttr('U_20', 'm s-1', f104, 'U at 2.0Zh', aA, 'RSL', 0), &
+      varAttr('U_21', 'm s-1', f146, 'U at 2.1Zh', aA, 'RSL', 0), &
+      varAttr('U_22', 'm s-1', f104, 'U at 2.2Zh', aA, 'RSL', 0), &
+      varAttr('U_23', 'm s-1', f104, 'U at 2.3Zh', aA, 'RSL', 0), &
+      varAttr('U_24', 'm s-1', f104, 'U at 2.4Zh', aA, 'RSL', 0), &
+      varAttr('U_25', 'm s-1', f104, 'U at 2.5Zh', aA, 'RSL', 0), &
+      varAttr('U_26', 'm s-1', f104, 'U at 2.6Zh', aA, 'RSL', 0), &
+      varAttr('U_27', 'm s-1', f104, 'U at 2.7Zh', aA, 'RSL', 0), &
+      varAttr('U_28', 'm s-1', f104, 'U at 2.8Zh', aA, 'RSL', 0), &
+      varAttr('U_29', 'm s-1', f104, 'U at 2.9Zh', aA, 'RSL', 0), &
+      varAttr('U_30', 'm s-1', f104, 'U at 3.0Zh', aA, 'RSL', 0) &
+      /
+
 CONTAINS
    ! main wrapper that handles both txt and nc files
    SUBROUTINE SUEWS_Output(irMax, iv, Gridiv, iyr)
@@ -454,9 +459,9 @@ CONTAINS
 
       INTEGER :: xx, err, outLevel, i
       TYPE(varAttr), DIMENSION(:), ALLOCATABLE::varListX
-      CHARACTER(len=10) :: grpList0(6)
+      CHARACTER(len=10) :: grpList0(7)
       CHARACTER(len=10), DIMENSION(:), ALLOCATABLE :: grpList
-      LOGICAL :: grpCond(6)
+      LOGICAL :: grpCond(7)
 
       ! determine outLevel
       SELECT CASE (WriteOutOption)
@@ -476,12 +481,14 @@ CONTAINS
       grpList0(4) = 'snow'
       grpList0(5) = 'ESTM'
       grpList0(6) = 'DailyState'
+      grpList0(7) = 'RSL'
       grpCond = (/.TRUE., &
                   SOLWEIGpoi_out == 1, &
                   CBLuse >= 1, &
                   SnowUse >= 1, &
                   StorageHeatMethod == 4 .OR. StorageHeatMethod == 14, &
-                  .TRUE./)
+                  .TRUE., &
+                  .TRUE. /)
       xx = COUNT(grpCond)
 
       ! PRINT*, grpList0,xx
@@ -589,6 +596,9 @@ CONTAINS
 
       CASE ('ESTM')    !ESTM
          dataOutX = dataOutESTM(1:irMax, 1:SIZE(varListX), Gridiv)
+
+      CASE ('RSL')    !ESTM
+         dataOutX = dataOutRSL(1:irMax, 1:SIZE(varListX), Gridiv)
 
       CASE ('DailyState')    !DailyState
          ! get correct day index

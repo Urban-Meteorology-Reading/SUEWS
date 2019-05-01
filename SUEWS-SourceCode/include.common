@@ -64,6 +64,7 @@ OTHERS =  suews_ctrl_translate.o \
 					suews_phys_evap.o \
 					suews_ctrl_init.o \
 					suews_phys_anemsn.o \
+                    suews_phys_RSLwind.o \
 					suews_phys_biogenco2.o
 
 # modules under rapid development

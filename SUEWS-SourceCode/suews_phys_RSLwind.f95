@@ -1,5 +1,5 @@
 SUBROUTINE WindProfile( &
-    UStar, L_MOD, Zh, planF, FAIBldg, StabilityMethod, &  ! input
+    UStar, L_MOD, sfr, Zh, planF, StabilityMethod, &  ! input
     zarray, Uarray) ! output
     !-----------------------------------------------------
     ! calculates windprofiles using MOST with a RSL-correction
@@ -12,20 +12,26 @@ SUBROUTINE WindProfile( &
     USE AtmMoistStab_module, ONLY: STAB_lumps, stab_fn_mom
 
     IMPLICIT NONE
+    INTEGER, PARAMETER:: nsurf = 7 ! number of surface types
+    INTEGER, PARAMETER:: BldgSurf = 2
+    INTEGER, PARAMETER:: ConifSurf = 3
+    INTEGER, PARAMETER:: DecidSurf = 4
 
+    REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in) ::sfr! surface fractions
     REAL(KIND(1d0)), INTENT(in):: UStar ! Friction velocity [m s-1]
     REAL(KIND(1d0)), INTENT(in):: L_MOD  ! Obukhov length [m]
     REAL(KIND(1d0)), INTENT(in):: Zh    ! Mean building height [m]
     REAL(KIND(1d0)), INTENT(in):: planF ! Frontal area index [-]
-    REAL(KIND(1d0)), INTENT(in):: FAIBldg ! Plan area index [-]
     INTEGER, INTENT(in)::StabilityMethod
 
 
-    REAL(KIND(1d0)), PARAMETER:: kappa=0.40, &! von karman constant
+    REAL(KIND(1d0)), PARAMETER:: cd_tree = 1.2, & ! drag coefficient tree canopy !!!!needs adjusting!!!
+        a_tree = 0.05, & ! the foliage area per unit volume !!!!needs adjusting!!!
+        kappa=0.40, &! von karman constant
         beta_N = 0.40, &  ! H&F beta coefficient in neutral conditions from Theeuwes et al., 2019 BLM
         pi = 4.*ATAN(1.0), &
         a1=4., a2=-0.1 , a3=1.5, a4 = 1. ! constraints to determine beta
-    INTEGER, PARAMETER :: nz = 30   ! number of levels 10 levels in canopy plus 20 (2 x Zh) above the canopy
+    INTEGER, PARAMETER :: nz = 30   ! number of levels 10 levels in canopy plus 20 (3 x Zh) above the canopy
 
     REAL(KIND(1d0)), INTENT(out), DIMENSION(nz):: zarray ! Height array
     REAL(KIND(1d0)), INTENT(out), DIMENSION(nz):: Uarray ! Wind speed array
@@ -33,7 +39,7 @@ SUBROUTINE WindProfile( &
     REAL(KIND(1d0)), DIMENSION(nz)::psihat_z,psihat_z0
 
     REAL(KIND(1d0)):: zd, & ! displacement height
-        Lc, & ! canopy drag length scale
+        Lc_build, Lc_tree, Lc, & ! canopy drag length scale
         dz, & ! height steps
         phim, psimz,psimZh,psimz0, phi_hatmZh,phimzp, phimz, &  ! stability function for momentum
         betaHF, betaNL, beta, &  ! beta coefficient from Harman 2012
@@ -44,7 +50,12 @@ SUBROUTINE WindProfile( &
     INTEGER :: I, z,it
 
     ! Start setting up the parameters
-    Lc = (1. - FAIBldg) / planF*Zh  ! Coceal and Belcher 2004 assuming Cd = 2
+    ! calculate Lc for tree grid fraction using eq 1 H&F'07 and rest of grid using C&B'04
+    Lc_build = (1. - sfr(BldgSurf)) / planF*Zh  ! Coceal and Belcher 2004 assuming Cd = 2
+    Lc_tree = 1. / (cd_tree * a_tree)
+    Lc = (1. - (sfr(BldgSurf) + sfr(ConifSurf) + sfr(ConifSurf))) / planF*Zh
+
+
     dz = Zh/10
     zarray = (/ (I, I = 1, nz) /)*dz
 
@@ -65,7 +76,7 @@ SUBROUTINE WindProfile( &
     ELSE
         beta = betaNL+ ((betaHF-betaNL)/(1. + a1* abs(Lc/L_MOD-a2)**a3))
     ENDIF
-    zd = Zh-(beta**2.)*Lc
+    zd = Zh - (beta**2.)*Lc
     elm = 2. * beta**3 * Lc
 
     ! start calculations for above roof height
@@ -119,10 +130,10 @@ SUBROUTINE WindProfile( &
         DO z = 9,nz-1
             phimz=(1. + 5. * (zarray(z)-zd) /L_MOD)
             phimzp=(1. + 5. * (zarray(z+1)-zd) /L_MOD)
-            psihat_z(z) = psihat_z(z+1) + dz/2.* phimzp*( cm * EXP(-1. * c2 * beta * (zarray(z+1)-zd) / elm)) &    !Taylor's approximation for integral
-                            / (zarray(z+1)-zd)
-            psihat_z(z) = psihat_z(z) + dz/2.* phimz * ( cm * EXP(-1. * c2 * beta * (zarray(z)-zd) / elm)) &
-                            / (zarray(z)-zd)
+            psihat_z(z) = psihat_z(z+1) + dz/2.* phimzp*( cm * &    !Taylor's approximation for integral
+                          EXP(-1. * c2 * beta * (zarray(z+1)-zd) / elm)) / (zarray(z+1)-zd)
+            psihat_z(z) = psihat_z(z) + dz/2.* phimz * ( cm * &
+                          EXP(-1. * c2 * beta * (zarray(z)-zd) / elm)) / (zarray(z)-zd)
         ENDDO
 
         ! calculate z0 iteratively

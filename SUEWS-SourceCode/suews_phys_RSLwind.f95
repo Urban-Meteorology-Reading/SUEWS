@@ -38,7 +38,7 @@ SUBROUTINE WindProfile( &
    REAL(KIND(1d0)), DIMENSION(nz)::psihat_z, psihat_z0
 
    REAL(KIND(1d0)):: zd, & ! displacement height
-                     Lc_build, Lc_tree, Lc, & ! canopy drag length scale
+                     Lc_build, Lc_tree, Lc, FAI, & ! canopy drag length scale
                      dz, & ! height steps
                      phim, psimz, psimZh, psimz0, phi_hatmZh, phimzp, phimz, &  ! stability function for momentum
                      betaHF, betaNL, beta, &  ! beta coefficient from Harman 2012
@@ -48,12 +48,17 @@ SUBROUTINE WindProfile( &
                      cm, c2 ! H&F'07 'constants'
    INTEGER :: I, z, it
 
+   ! redefine frontal area index at the moment 0
+   FAI = planF
    ! Start setting up the parameters
    ! calculate Lc for tree grid fraction using eq 1 H&F'07 and rest of grid using C&B'04
-   Lc_build = (1.-sfr(BldgSurf))/planF*Zh  ! Coceal and Belcher 2004 assuming Cd = 2
+   Lc_build = (1.-sfr(BldgSurf))/FAI*Zh  ! Coceal and Belcher 2004 assuming Cd = 2
    Lc_tree = 1./(cd_tree*a_tree)
-   Lc = (1.-(sfr(BldgSurf) + sfr(ConifSurf) + sfr(ConifSurf)))/planF*Zh
-
+   Lc = (1.-(sfr(BldgSurf) + sfr(ConifSurf) + sfr(ConifSurf)))/FAI*Zh
+   print *, 'Lc', Lc
+   print *, 'Z_H',Zh
+   print *, 'FAI',FAI
+   print *, 'PAI',(sfr(BldgSurf) + sfr(ConifSurf) + sfr(ConifSurf))
    dz = Zh/10
    zarray = (/(I, I=1, nz)/)*dz
 
@@ -155,7 +160,7 @@ SUBROUTINE WindProfile( &
       psimz = stab_fn_mom(StabilityMethod, (zarray(z) - zd)/L_MOD, (zarray(z) - zd)/L_MOD)
       dataoutLineURSL(z) = UStar/kappa*(LOG((zarray(z) - zd)/z0) - psimz + psimz0 - psihat_z(z) + psihat_z(10))
    ENDDO
-
+   PRINT *, 'Uarray', dataoutLineURSL
    ! calculate in canopy wind speed
    DO z = 1, 10
       dataoutLineURSL(z) = dataoutLineURSL(10)*EXP(beta*(zarray(z) - Zh)/elm)

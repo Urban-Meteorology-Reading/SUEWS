@@ -2138,74 +2138,7 @@ CONTAINS
 
    END SUBROUTINE SUEWS_cal_Diagnostics
 
-   !========================================================================
-   SUBROUTINE SUEWS_cal_RSLDiagnostics( &
-      dectime, &!input
-      avU1, Temp_C, avRH, Press_hPa, &
-      qh, qe, &
-      VegFraction, zMeas, z0m, zdm, RA, avdens, avcp, lv_J_kg, tstep_real, &
-      RoughLenHeatMethod, StabilityMethod, &
-      avU10_ms, t2_C, q2_gkg, tskin_C, RH2)!output
-      ! NT 30 Apr 2019: copied SUEWS_cal_Diagnostics and rewritten to output RSL profiles
-
-      IMPLICIT NONE
-      REAL(KIND(1d0)), INTENT(in) ::dectime
-      REAL(KIND(1d0)), INTENT(in) ::avU1, Temp_C, avRH
-      REAL(KIND(1d0)), INTENT(in) ::qh
-      REAL(KIND(1d0)), INTENT(in) ::Press_hPa, qe
-      REAL(KIND(1d0)), INTENT(in) :: VegFraction, z0m, RA, avdens, avcp, lv_J_kg, tstep_real
-      REAL(KIND(1d0)), INTENT(in) :: zMeas! height for measurement
-      REAL(KIND(1d0)), INTENT(in) :: zdm ! displacement height
-
-      ! INTEGER,INTENT(in)         :: opt ! 0 for momentum, 1 for temperature, 2 for humidity
-      INTEGER, INTENT(in)         :: RoughLenHeatMethod, StabilityMethod
-
-      REAL(KIND(1d0)), INTENT(out):: avU10_ms, t2_C, q2_gkg, tskin_C, RH2
-      REAL(KIND(1d0))::qa_gkg
-      REAL(KIND(1d0)), PARAMETER::k = 0.4
-
-      ! wind speed:
-      CALL diagSfc( &
-         0, &
-         zMeas, avU1, 0d0, 10d0, avU10_ms, &
-         VegFraction, &
-         z0m, zdm, avdens, avcp, lv_J_kg, &
-         avU1, Temp_C, qh, &
-         RoughLenHeatMethod, StabilityMethod, tstep_real, dectime)
-
-      ! temperature at 2 m agl:
-      CALL diagSfc( &
-         1, &
-         zMeas, Temp_C, qh, 2d0, t2_C, &
-         VegFraction, &
-         z0m, zdm, avdens, avcp, lv_J_kg, &
-         avU1, Temp_C, qh, &
-         RoughLenHeatMethod, StabilityMethod, tstep_real, dectime)
-
-      ! skin temperature:
-      tskin_C = qh/(avdens*avcp)*RA + temp_C
-
-      ! humidity:
-      qa_gkg = RH2qa(avRH/100, Press_hPa, Temp_c)
-      CALL diagSfc( &
-         2, &
-         zMeas, qa_gkg, qe, 2d0, q2_gkg, &
-         VegFraction, &
-         z0m, zdm, avdens, avcp, lv_J_kg, &
-         avU1, Temp_C, qh, &
-         RoughLenHeatMethod, StabilityMethod, tstep_real, dectime)
-      ! re-examine if the diagnostic RH2 > 100% ?
-
-      RH2 = qa2RH(q2_gkg, Press_hPa, Temp_c)
-      IF (RH2 > 1) THEN
-         ! if so, limit RH2 to 100%
-         RH2 = 1d0
-         ! and adjust the diagnostic q2_gkg
-         q2_gkg = RH2qa(RH2, Press_hPa, Temp_c)
-      END IF
-
-   END SUBROUTINE SUEWS_cal_RSLDiagnostics
-
+   
    ! calculate several surface fraction related parameters
    SUBROUTINE SUEWS_cal_surf( &
       sfr, & !input

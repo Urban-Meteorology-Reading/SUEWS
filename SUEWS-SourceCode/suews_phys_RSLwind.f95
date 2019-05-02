@@ -53,10 +53,7 @@ SUBROUTINE WindProfile( &
    Lc_build = (1.-sfr(BldgSurf))/planF*Zh  ! Coceal and Belcher 2004 assuming Cd = 2
    Lc_tree = 1./(cd_tree*a_tree)
    Lc = (1.-(sfr(BldgSurf) + sfr(ConifSurf) + sfr(ConifSurf)))/planF*Zh
-   ! print *, 'Lc', Lc
-   ! print *, 'Z_H',Zh
-   ! print *, 'FAI',planF
-   ! print *, 'PAI',(sfr(BldgSurf) + sfr(ConifSurf) + sfr(ConifSurf))
+
    dz = Zh/10.
    zarray = (/(I, I=1, nz)/)*dz
 
@@ -95,8 +92,8 @@ SUBROUTINE WindProfile( &
 
    phi_hatmZh = kappa/(2.*beta*xx1)
    dphi = xx1_2 - xx1
-   ! c2 = (kappa*(3.-(2.*beta**2.*Lc/xx1*dphi)))/(2.*beta*xx1 - kappa)
-   c2 = 0.5  ! more stable 
+   c2 = (kappa*(3.-(2.*beta**2.*Lc/xx1*dphi)))/(2.*beta*xx1 - kappa)  ! if very unstable this might cause some high values of psihat_z
+   ! c2 = 0.5  ! more stable but less correct ;-)
    cm = (1.-phi_hatmZh)*EXP(c2/2.)
 
    psihat_z = 0.*zarray
@@ -104,7 +101,6 @@ SUBROUTINE WindProfile( &
       phimz = stab_phi_mom(StabilityMethod, (zarray(z) - zd)/L_MOD, (zarray(z) - zd)/L_MOD)
       phimzp = stab_phi_mom(StabilityMethod, (zarray(z + 1) - zd)/L_MOD, (zarray(z + 1) - zd)/L_MOD)
       
-      ! print *, 'phimz_bla here',phimz
       psihat_z(z) = psihat_z(z + 1) + dz/2.*phimzp*(cm*EXP(-1.*c2*beta*(zarray(z + 1) - zd)/elm)) &  !Taylor's approximation for integral
                      /(zarray(z + 1) - zd)
       psihat_z(z) = psihat_z(z) + dz/2.*phimz*(cm*EXP(-1.*c2*beta*(zarray(z) - zd)/elm)) &
@@ -121,23 +117,17 @@ SUBROUTINE WindProfile( &
       err = ABS(z01 - z0)
       IF (err < 0.001) EXIT
    ENDDO
+   
    psimz0 = stab_fn_mom(StabilityMethod, z0/L_MOD, z0/L_MOD)
 
    ! calculate above canopy wind speed
-   DO z = 10, nz
+   DO z = 9, nz
       psimz = stab_fn_mom(StabilityMethod, (zarray(z) - zd)/L_MOD, (zarray(z) - zd)/L_MOD)
-      dataoutLineURSL(z) = UStar/kappa*(LOG((zarray(z) - zd)/z0) - psimz + psimz0 - psihat_z(z) + psihat_z(10))
+      dataoutLineURSL(z) = UStar/kappa*(LOG((zarray(z) - zd)/z0) - psimz + psimz0 - psihat_z(z-1) + psihat_z(9))
    ENDDO
-   ! PRINT *, 'Uarray', dataoutLineURSL
    ! calculate in canopy wind speed
-   DO z = 1, 10
-      dataoutLineURSL(z) = dataoutLineURSL(10)*EXP(beta*(zarray(z) - Zh)/elm)
+   DO z = 1, 9
+      dataoutLineURSL(z) = dataoutLineURSL(9)*EXP(beta*(zarray(z) - Zh)/elm)
    ENDDO
 
-!    DO z = 1, nz
-!       print *, dataoutLineURSL(z)
-!    ENDDO
-!    DO z = 1, nz
-!       print *, zarray(z)
-!    ENDDO
 END SUBROUTINE WindProfile

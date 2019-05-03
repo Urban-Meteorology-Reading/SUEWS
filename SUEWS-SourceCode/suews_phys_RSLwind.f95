@@ -35,7 +35,7 @@ SUBROUTINE WindProfile( &
    REAL(KIND(1d0)), INTENT(out), DIMENSION(nz):: zarray ! Height array
    REAL(KIND(1d0)), INTENT(out), DIMENSION(nz):: dataoutLineURSL ! Wind speed array
 
-   REAL(KIND(1d0)), DIMENSION(nz)::psihat_z
+   REAL(KIND(1d0)), DIMENSION(nz)::dif, psihat_z
 
    REAL(KIND(1d0)):: zd, & ! displacement height
                      Lc_build, Lc_tree, Lc, & ! canopy drag length scale
@@ -46,16 +46,28 @@ SUBROUTINE WindProfile( &
                      xx1, xx1_2, err, z01, dphi, &  ! dummy variables for stability functions
                      z0, &  ! roughness length from H&F
                      cm, c2 ! H&F'07 'constants'
-   INTEGER :: I, z, it
+   INTEGER :: I, z, it,idx_can
 
    ! Start setting up the parameters
    ! calculate Lc for tree grid fraction using eq 1 H&F'07 and rest of grid using C&B'04
    Lc_build = (1.-sfr(BldgSurf))/planF*Zh  ! Coceal and Belcher 2004 assuming Cd = 2
    Lc_tree = 1./(cd_tree*a_tree)
    Lc = (1.-(sfr(BldgSurf) + sfr(ConifSurf) + sfr(ConifSurf)))/planF*Zh
+   print *,Zh,Lc
 
-   dz = Zh/10.
-   zarray = (/(I, I=1, nz)/)*dz
+   !!!!!!!!!!!! rewrite loops to match conditional zarray!!!!!!!!!!
+   IF (Zh < 2.) THEN 
+      dz = 1.      ! if canopy height is small use steps of 1 m
+      zarray = (/(I, I=1, nz)/)*dz
+   ELSE 
+      dz = Zh/10.
+      zarray = (/(I, I=1, nz)/)*dz
+   ENDIF
+   
+   DO z = 1, nz
+      dif(z) = ABS(zarray(z) -Zh)
+   ENDDO
+   idx_can = MINLOC(dif, DIM=1)
 
    !Method of determining beta from Harman 2012, BLM
    IF (Lc/L_MOD < 0.) THEN
@@ -81,7 +93,7 @@ SUBROUTINE WindProfile( &
    zd = Zh - (beta**2.)*Lc
    elm = 2.*beta**3*Lc
    print *,'Beta = ', beta, 'Ustar = ', UStar, 'Zd = ', zd
-
+   print *, idx_can-1
    ! start calculations for above roof height
    ! start with stability at canopy top for z0 and phihat
    psimZh = stab_fn_mom(StabilityMethod, (Zh - zd)/L_MOD, (Zh - zd)/L_MOD)
@@ -97,7 +109,7 @@ SUBROUTINE WindProfile( &
    cm = (1.-phi_hatmZh)*EXP(c2/2.)
 
    psihat_z = 0.*zarray
-   DO z = 9, nz - 1
+   DO z = idx_can, nz - 1
       phimz = stab_phi_mom(StabilityMethod, (zarray(z) - zd)/L_MOD, (zarray(z) - zd)/L_MOD)
       phimzp = stab_phi_mom(StabilityMethod, (zarray(z + 1) - zd)/L_MOD, (zarray(z + 1) - zd)/L_MOD)
       
@@ -110,10 +122,10 @@ SUBROUTINE WindProfile( &
    ! calculate z0 iteratively
    z0 = 0.5  !first guess
    err = 10.
-   DO it = 1, 10
+   DO it = 1,10
       psimz0 = stab_fn_mom(StabilityMethod, z0/L_MOD, z0/L_MOD)
       z01 = z0
-      z0 = (Zh - zd)*EXP(-1.*kappa/beta)*EXP(-1.*psimZh + psimz0)*EXP(psihat_z(10))
+      z0 = (Zh - zd)*EXP(-1.*kappa/beta)*EXP(-1.*psimZh + psimz0)*EXP(psihat_z(idx_can))
       err = ABS(z01 - z0)
       IF (err < 0.001) EXIT
    ENDDO
@@ -121,13 +133,13 @@ SUBROUTINE WindProfile( &
    psimz0 = stab_fn_mom(StabilityMethod, z0/L_MOD, z0/L_MOD)
 
    ! calculate above canopy wind speed
-   DO z = 9, nz
+   DO z = idx_can, nz
       psimz = stab_fn_mom(StabilityMethod, (zarray(z) - zd)/L_MOD, (zarray(z) - zd)/L_MOD)
-      dataoutLineURSL(z) = UStar/kappa*(LOG((zarray(z) - zd)/z0) - psimz + psimz0 - psihat_z(z-1) + psihat_z(9))
+      dataoutLineURSL(z) = UStar/kappa*(LOG((zarray(z) - zd)/z0) - psimz + psimz0 - psihat_z(z) + psihat_z(idx_can))
    ENDDO
    ! calculate in canopy wind speed
-   DO z = 1, 9
-      dataoutLineURSL(z) = dataoutLineURSL(9)*EXP(beta*(zarray(z) - Zh)/elm)
+   DO z = 1, idx_can
+      dataoutLineURSL(z) = dataoutLineURSL(idx_can)*EXP(beta*(zarray(z) - Zh)/elm)
    ENDDO
 
 END SUBROUTINE WindProfile

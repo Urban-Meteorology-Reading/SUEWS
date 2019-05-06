@@ -56,7 +56,7 @@ SUBROUTINE WindProfile( &
    print *,Zh,Lc
 
    !!!!!!!!!!!! rewrite loops to match conditional zarray!!!!!!!!!!
-   IF (Zh < 2.) THEN 
+   IF (Zh < 6.) THEN 
       dz = 1.      ! if canopy height is small use steps of 1 m
       zarray = (/(I, I=1, nz)/)*dz
    ELSE 

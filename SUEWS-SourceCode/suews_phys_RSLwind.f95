@@ -55,7 +55,6 @@ SUBROUTINE WindProfile( &
    Lc = (1.-(sfr(BldgSurf) + sfr(ConifSurf) + sfr(ConifSurf)))/planF*Zh
    print *,Zh,Lc
 
-   !!!!!!!!!!!! rewrite loops to match conditional zarray!!!!!!!!!!
    IF (Zh < 6.) THEN 
       dz = 1.      ! if canopy height is small use steps of 1 m
       zarray = (/(I, I=1, nz)/)*dz
@@ -78,6 +77,7 @@ SUBROUTINE WindProfile( &
 
    ! betaN for trees found to be 0.3 and for urban 0.4 linearly interpolate between the two using surface fractions
    betaN2 = 0.30 + (1. - sfr(ConifSurf) - sfr(ConifSurf)) * 0.1 
+
    betaHF = betaN2/phim
    betaNL = (kappa/2.)/phim
 
@@ -92,8 +92,6 @@ SUBROUTINE WindProfile( &
    ENDIF
    zd = Zh - (beta**2.)*Lc
    elm = 2.*beta**3*Lc
-   print *,'Beta = ', beta, 'Ustar = ', UStar, 'Zd = ', zd
-   print *, idx_can-1
    ! start calculations for above roof height
    ! start with stability at canopy top for z0 and phihat
    psimZh = stab_fn_mom(StabilityMethod, (Zh - zd)/L_MOD, (Zh - zd)/L_MOD)

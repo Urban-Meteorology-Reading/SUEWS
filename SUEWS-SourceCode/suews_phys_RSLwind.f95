@@ -53,10 +53,9 @@ SUBROUTINE WindProfile( &
    Lc_build = (1.-sfr(BldgSurf))/planF*Zh  ! Coceal and Belcher 2004 assuming Cd = 2
    Lc_tree = 1./(cd_tree*a_tree)
    Lc = (1.-(sfr(BldgSurf) + sfr(ConifSurf) + sfr(ConifSurf)))/planF*Zh
-   print *,Zh,Lc
 
-   IF (Zh < 6.) THEN 
-      dz = 1.      ! if canopy height is small use steps of 1 m
+   IF ((3.*Zh) < 10.) THEN 
+      dz = 1./3.      ! if canopy height is small use steps of 0.33333 m to get to 10 m
       zarray = (/(I, I=1, nz)/)*dz
    ELSE 
       dz = Zh/10.
@@ -68,12 +67,7 @@ SUBROUTINE WindProfile( &
    ENDDO
    idx_can = MINLOC(dif, DIM=1)
 
-   !Method of determining beta from Harman 2012, BLM
-   IF (Lc/L_MOD < 0.) THEN
-      phim = (1.-16*Lc/L_MOD)**(-0.25)
-   ELSE
-      phim = 1.+5.*Lc/L_MOD
-   ENDIF
+   phim = stab_phi_mom(StabilityMethod, Lc/L_MOD, Lc/L_MOD)
 
    ! betaN for trees found to be 0.3 and for urban 0.4 linearly interpolate between the two using surface fractions
    betaN2 = 0.30 + (1. - sfr(ConifSurf) - sfr(ConifSurf)) * 0.1 
@@ -102,19 +96,24 @@ SUBROUTINE WindProfile( &
 
    phi_hatmZh = kappa/(2.*beta*xx1)
    dphi = xx1_2 - xx1
-   c2 = (kappa*(3.-(2.*beta**2.*Lc/xx1*dphi)))/(2.*beta*xx1 - kappa)  ! if very unstable this might cause some high values of psihat_z
-   ! c2 = 0.5  ! more stable but less correct ;-)
+   IF (phi_hatmZh>1.) THEN
+      c2 = 0.5 ! more stable but less correct
+   ELSE
+      c2 = (kappa*(3.-(2.*beta**2.*Lc/xx1*dphi)))/(2.*beta*xx1 - kappa)  ! if very unstable this might cause some high values of psihat_z
+   ENDIF
+
+   print *,'C2 = ', c2, 'L = ', L_MOD, xx1, phim
    cm = (1.-phi_hatmZh)*EXP(c2/2.)
 
    psihat_z = 0.*zarray
    DO z = idx_can, nz - 1
-      phimz = stab_phi_mom(StabilityMethod, (zarray(z) - zd)/L_MOD, (zarray(z) - zd)/L_MOD)
-      phimzp = stab_phi_mom(StabilityMethod, (zarray(z + 1) - zd)/L_MOD, (zarray(z + 1) - zd)/L_MOD)
+      phimz = stab_phi_mom(StabilityMethod, (zarray(z) - Zh + zd)/L_MOD, (zarray(z) - Zh + zd)/L_MOD)
+      phimzp = stab_phi_mom(StabilityMethod, (zarray(z + 1) - Zh + zd)/L_MOD, (zarray(z + 1) - Zh + zd)/L_MOD)
       
-      psihat_z(z) = psihat_z(z + 1) + dz/2.*phimzp*(cm*EXP(-1.*c2*beta*(zarray(z + 1) - zd)/elm)) &  !Taylor's approximation for integral
-                     /(zarray(z + 1) - zd)
-      psihat_z(z) = psihat_z(z) + dz/2.*phimz*(cm*EXP(-1.*c2*beta*(zarray(z) - zd)/elm)) &
-                     /(zarray(z) - zd)
+      psihat_z(z) = psihat_z(z + 1) + dz/2.*phimzp*(cm*EXP(-1.*c2*beta*(zarray(z + 1) - Zh + zd)/elm)) &  !Taylor's approximation for integral
+                     /(zarray(z + 1) - Zh + zd)
+      psihat_z(z) = psihat_z(z) + dz/2.*phimz*(cm*EXP(-1.*c2*beta*(zarray(z) - Zh + zd)/elm)) &
+                     /(zarray(z) - Zh + zd)
    ENDDO
 
    ! calculate z0 iteratively

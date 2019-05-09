@@ -102,7 +102,6 @@ SUBROUTINE WindProfile( &
       c2 = (kappa*(3.-(2.*beta**2.*Lc/xx1*dphi)))/(2.*beta*xx1 - kappa)  ! if very unstable this might cause some high values of psihat_z
    ENDIF
 
-   print *,'C2 = ', c2, 'L = ', L_MOD, xx1, phim
    cm = (1.-phi_hatmZh)*EXP(c2/2.)
 
    psihat_z = 0.*zarray

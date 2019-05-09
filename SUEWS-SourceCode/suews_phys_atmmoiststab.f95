@@ -167,6 +167,7 @@ CONTAINS
          ! PRINT*, 1/(z0m-z0m)
          CALL ErrorHint(17, 'In stability subroutine, (z-zd) < z0.', zzd, z0m, notUsedI)
       ENDIF
+      print *,'QH = ', H
       DO i = 1, 330 !Iteration starts
          LOLD = L_MOD
          zL = zzd/L_MOD
@@ -199,7 +200,7 @@ CONTAINS
 
          IF (ABS(LOLD - L_MOD) < 0.01) THEN
             IF (ABS(L_MOD) > 1e6) L_MOD = L_MOD/ABS(L_MOD)*1e6
-            ! RETURN
+              EXIT
             CONTINUE
          ENDIF
       ENDDO
@@ -222,7 +223,6 @@ CONTAINS
       ! 02 Aug 2018: set a low limit at 0.15 m/s (Schumann 1987, BLM)
       UStar = MAX(0.15, UStar)
       TStar = (-H/UStar)
-
       IF (UStar < 0.0001) THEN       !If u* still too small after iteration, then force quit simulation and write out error info
          ! UStar=KUZ/(LOG(Zzd/z0m))
          PRINT *, 'UStar', UStar, KUZ, (LOG(Zzd/z0m)), Zzd, z0m
@@ -371,9 +371,9 @@ CONTAINS
       ELSEIF (zL > neut_limit) THEN            !Stable
 
          IF (StabilityMethod == 1) THEN         !Dyer (1974) k=0.35 x=1+5*zl Mod. Hogstrom (1988)
-            phim = 1.+(-4.8)*zl_f
+            phim = 1.+(4.8)*zl_f
          ELSEIF (StabilityMethod == 2) THEN     !Van Ulden & Holtslag (1985) p 1206 ! NT: have no function for phim 
-            phim = 1.+(-4.8)*zl_f
+            phim = 1.+(4.8)*zl_f
          ELSEIF (StabilityMethod == 4) THEN ! Businger et al (1971) modifed  Hogstrom (1988)
             phim=1+6*zl_f 
          ELSEIF (StabilityMethod == 3) THEN ! Kondo (1975) adopted by Campbell & Norman eqn 7.26 p 97  !!NT: checked 

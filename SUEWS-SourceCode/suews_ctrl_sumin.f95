@@ -415,8 +415,8 @@ CONTAINS
       REAL(KIND(1D0)), PARAMETER                   ::PrecipLimit = 2.2   !Temperature limit when precipitation occurs as snow
       REAL(KIND(1D0)), PARAMETER                   ::PrecipLimitAlb = 2     !Precipitation limit for albedo change (in mm)
       REAL(KIND(1D0)), PARAMETER                   ::RadMeltFact = 0.001 !Radiation melt factor
-      REAL(KIND(1D0)), PARAMETER                   ::SnowAlbMax = 0.8   !Minimum snow albedo
-      REAL(KIND(1D0)), PARAMETER                   ::SnowAlbMin = 0.18 !Maximum snow albedo
+      REAL(KIND(1D0)), PARAMETER                   ::SnowAlbMax = 0.8   !Maximum snow albedo
+      REAL(KIND(1D0)), PARAMETER                   ::SnowAlbMin = 0.18 !Minimum snow albedo
       REAL(KIND(1D0)), PARAMETER                   ::SnowDensMax = 450   !Minimum density of snow
       REAL(KIND(1D0)), PARAMETER                   ::SnowDensMin = 100   !Maximum density of snow
       REAL(KIND(1D0)), PARAMETER                   ::SnowLimBldg = 100   !Snow removal limits for roofs in mm)

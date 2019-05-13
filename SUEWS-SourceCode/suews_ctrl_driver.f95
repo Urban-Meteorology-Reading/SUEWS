@@ -2138,7 +2138,6 @@ CONTAINS
 
    END SUBROUTINE SUEWS_cal_Diagnostics
 
-   
    ! calculate several surface fraction related parameters
    SUBROUTINE SUEWS_cal_surf( &
       sfr, & !input

@@ -46,7 +46,7 @@ SUBROUTINE WindProfile( &
                      xx1, xx1_2, err, z01, dphi, &  ! dummy variables for stability functions
                      z0, &  ! roughness length from H&F
                      cm, c2 ! H&F'07 'constants'
-   INTEGER :: I, z, it,idx_can
+   INTEGER :: I, z, it, idx_can
 
    ! Start setting up the parameters
    ! calculate Lc for tree grid fraction using eq 1 H&F'07 and rest of grid using C&B'04
@@ -54,23 +54,23 @@ SUBROUTINE WindProfile( &
    Lc_tree = 1./(cd_tree*a_tree)
    Lc = (1.-(sfr(BldgSurf) + sfr(ConifSurf) + sfr(ConifSurf)))/planF*Zh
 
-   IF ((3.*Zh) < 10.) THEN 
+   IF ((3.*Zh) < 10.) THEN
       dz = 1./3.      ! if canopy height is small use steps of 0.33333 m to get to 10 m
       zarray = (/(I, I=1, nz)/)*dz
-   ELSE 
+   ELSE
       dz = Zh/10.
       zarray = (/(I, I=1, nz)/)*dz
    ENDIF
-   
+
    DO z = 1, nz
-      dif(z) = ABS(zarray(z) -Zh)
+      dif(z) = ABS(zarray(z) - Zh)
    ENDDO
    idx_can = MINLOC(dif, DIM=1)
 
    phim = stab_phi_mom(StabilityMethod, Lc/L_MOD, Lc/L_MOD)
 
    ! betaN for trees found to be 0.3 and for urban 0.4 linearly interpolate between the two using surface fractions
-   betaN2 = 0.30 + (1. - sfr(ConifSurf) - sfr(ConifSurf)) * 0.1 
+   betaN2 = 0.30 + (1.-sfr(ConifSurf) - sfr(ConifSurf))*0.1
 
    betaHF = betaN2/phim
    betaNL = (kappa/2.)/phim
@@ -91,12 +91,12 @@ SUBROUTINE WindProfile( &
    psimZh = stab_fn_mom(StabilityMethod, (Zh - zd)/L_MOD, (Zh - zd)/L_MOD)
 
    ! calculate phihatM according to H&F '07
-   xx1 = stab_phi_mom(StabilityMethod,(Zh - zd)/L_MOD,(Zh - zd)/L_MOD)
-   xx1_2 = stab_phi_mom(StabilityMethod,(Zh - zd + 1.)/L_MOD,(Zh - zd + 1.)/L_MOD)
+   xx1 = stab_phi_mom(StabilityMethod, (Zh - zd)/L_MOD, (Zh - zd)/L_MOD)
+   xx1_2 = stab_phi_mom(StabilityMethod, (Zh - zd + 1.)/L_MOD, (Zh - zd + 1.)/L_MOD)
 
    phi_hatmZh = kappa/(2.*beta*xx1)
    dphi = xx1_2 - xx1
-   IF (phi_hatmZh>1.) THEN
+   IF (phi_hatmZh > 1.) THEN
       c2 = 0.5 ! more stable but less correct
    ELSE
       c2 = (kappa*(3.-(2.*beta**2.*Lc/xx1*dphi)))/(2.*beta*xx1 - kappa)  ! if very unstable this might cause some high values of psihat_z
@@ -108,24 +108,24 @@ SUBROUTINE WindProfile( &
    DO z = idx_can, nz - 1
       phimz = stab_phi_mom(StabilityMethod, (zarray(z) - Zh + zd)/L_MOD, (zarray(z) - Zh + zd)/L_MOD)
       phimzp = stab_phi_mom(StabilityMethod, (zarray(z + 1) - Zh + zd)/L_MOD, (zarray(z + 1) - Zh + zd)/L_MOD)
-      
+
       psihat_z(z) = psihat_z(z + 1) + dz/2.*phimzp*(cm*EXP(-1.*c2*beta*(zarray(z + 1) - Zh + zd)/elm)) &  !Taylor's approximation for integral
-                     /(zarray(z + 1) - Zh + zd)
+                    /(zarray(z + 1) - Zh + zd)
       psihat_z(z) = psihat_z(z) + dz/2.*phimz*(cm*EXP(-1.*c2*beta*(zarray(z) - Zh + zd)/elm)) &
-                     /(zarray(z) - Zh + zd)
+                    /(zarray(z) - Zh + zd)
    ENDDO
 
    ! calculate z0 iteratively
    z0 = 0.5  !first guess
    err = 10.
-   DO it = 1,10
+   DO it = 1, 10
       psimz0 = stab_fn_mom(StabilityMethod, z0/L_MOD, z0/L_MOD)
       z01 = z0
       z0 = (Zh - zd)*EXP(-1.*kappa/beta)*EXP(-1.*psimZh + psimz0)*EXP(psihat_z(idx_can))
       err = ABS(z01 - z0)
       IF (err < 0.001) EXIT
    ENDDO
-   
+
    psimz0 = stab_fn_mom(StabilityMethod, z0/L_MOD, z0/L_MOD)
 
    ! calculate above canopy wind speed

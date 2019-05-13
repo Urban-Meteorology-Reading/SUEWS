@@ -167,7 +167,7 @@ CONTAINS
          ! PRINT*, 1/(z0m-z0m)
          CALL ErrorHint(17, 'In stability subroutine, (z-zd) < z0.', zzd, z0m, notUsedI)
       ENDIF
-      print *,'QH = ', H
+      ! print *, 'QH = ', H
       DO i = 1, 330 !Iteration starts
          LOLD = L_MOD
          zL = zzd/L_MOD
@@ -200,7 +200,7 @@ CONTAINS
 
          IF (ABS(LOLD - L_MOD) < 0.01) THEN
             IF (ABS(L_MOD) > 1e6) L_MOD = L_MOD/ABS(L_MOD)*1e6
-              EXIT
+            EXIT
             CONTINUE
          ENDIF
       ENDDO
@@ -351,9 +351,9 @@ CONTAINS
          ELSEIF (StabilityMethod == 3) THEN ! Kondo (1975) adopted by Campbell & Norman eqn 7.26 p 97
             phim = ((1.-16.*zl_f)**(-0.25))
          ELSEIF (StabilityMethod == 4) THEN !Businger et al (1971) modifed  Hogstrom (1988)
-            phim = (1. - 19.*zl_f)**(-0.25)
+            phim = (1.-19.*zl_f)**(-0.25)
          ELSEIF (StabilityMethod == 7) THEN ! Dyer & Bradley (1982) (1-28z/L)**.25' k=0.4
-            phim = (1. - (28.*zl_f))**(-0.25)
+            phim = (1.-(28.*zl_f))**(-0.25)
          ELSEIF (StabilityMethod == 5) THEN ! Zilitinkevich & Chalikov (1968) modified Hogstrom (1988)
             IF (zl_f >= -0.16) THEN
                phim = 1 + 1.38*zl_f
@@ -372,16 +372,16 @@ CONTAINS
 
          IF (StabilityMethod == 1) THEN         !Dyer (1974) k=0.35 x=1+5*zl Mod. Hogstrom (1988)
             phim = 1.+(4.8)*zl_f
-         ELSEIF (StabilityMethod == 2) THEN     !Van Ulden & Holtslag (1985) p 1206 ! NT: have no function for phim 
+         ELSEIF (StabilityMethod == 2) THEN     !Van Ulden & Holtslag (1985) p 1206 ! NT: have no function for phim
             phim = 1.+(4.8)*zl_f
          ELSEIF (StabilityMethod == 4) THEN ! Businger et al (1971) modifed  Hogstrom (1988)
-            phim=1+6*zl_f 
-         ELSEIF (StabilityMethod == 3) THEN ! Kondo (1975) adopted by Campbell & Norman eqn 7.26 p 97  !!NT: checked 
-            phim = 1. + 6.* zl_f/(1. + zl_f)  !!NT: checked reference and updated 
+            phim = 1 + 6*zl_f
+         ELSEIF (StabilityMethod == 3) THEN ! Kondo (1975) adopted by Campbell & Norman eqn 7.26 p 97  !!NT: checked
+            phim = 1.+6.*zl_f/(1.+zl_f)  !!NT: checked reference and updated
          ENDIF
       ENDIF
       RETURN
-   END FUNCTION stab_phi_mom  
+   END FUNCTION stab_phi_mom
    !_______________________________________________________________
    !
    ! PSYH - stability function for heat

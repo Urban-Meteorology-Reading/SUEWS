@@ -80,6 +80,12 @@ CONTAINS
       StateLimit_id,&
       WetThresh_id,&
       BaseTHDD_id,&
+      Faut_id,&        
+      IrrFracConif_id,&
+      IrrFracDecid_id,&
+      IrrFracGrass_id,&
+      DayWat_id,&   
+      DayWatPer_id,&
       PopDensDaytime_id,PopDensNighttime_id,&
       porosity_id,&
       GDD_id, HDD_id, LAI_id, WUDay_id, soilstore_id, state_id, SnowWater, &
@@ -230,6 +236,12 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(7),INTENT(INOUT) ::StateLimit_id
       REAL(KIND(1d0)), DIMENSION(7),INTENT(INOUT) ::WetThresh_id
       REAL(KIND(1d0)), INTENT(INOUT) ::BaseTHDD_id
+      REAL(KIND(1d0)), INTENT(INOUT) ::Faut_id
+      REAL(KIND(1d0)), INTENT(INOUT) ::IrrFracConif_id
+      REAL(KIND(1d0)), INTENT(INOUT) ::IrrFracDecid_id
+      REAL(KIND(1d0)), INTENT(INOUT) ::IrrFracGrass_id
+      REAL(KIND(1d0)), DIMENSION(7), INTENT(INOUT) :: DayWat_id   
+      REAL(KIND(1d0)), DIMENSION(7), INTENT(INOUT) :: DayWatPer_id
       REAL(KIND(1d0)), INTENT(INOUT) ::porosity_id
       REAL(KIND(1d0)), DIMENSION(5), INTENT(INOUT)   ::GDD_id       !Growing Degree Days (see SUEWS_DailyState.f95)
       REAL(KIND(1d0)), DIMENSION(12), INTENT(INOUT)  ::HDD_id       !Heating/Cooling Degree Days (see SUEWS_DailyState.f95)
@@ -390,14 +402,14 @@ CONTAINS
       REAL(KIND(1D0)), PARAMETER::xsmd = 0. !Measured soil moisture deficit
       !Todo
       REAL(KIND(1D0)), PARAMETER::wu_m3 = 0  !External water use
-      REAL(KIND(1D0)), PARAMETER::Faut = 0  !Fraction of irrigated area using automatic irrigation
+      !REAL(KIND(1D0)), PARAMETER::Faut = 0  !Fraction of irrigated area using automatic irrigation
       REAL(KIND(1D0)), PARAMETER::InternalWaterUse_h = 0 !Internal water use [mm h-1]
-      REAL(KIND(1D0)), PARAMETER::IrrFracConif = 0 !Fraction of evergreen trees which are irrigated
-      REAL(KIND(1D0)), PARAMETER::IrrFracDecid = 0 !Fraction of deciduous trees which are irrigated
-      REAL(KIND(1D0)), PARAMETER::IrrFracGrass = 0 !Fraction of grass which is irrigated
+      !REAL(KIND(1D0)), PARAMETER::IrrFracConif = 0 !Fraction of evergreen trees which are irrigated
+      !REAL(KIND(1D0)), PARAMETER::IrrFracDecid = 0 !Fraction of deciduous trees which are irrigated
+      !REAL(KIND(1D0)), PARAMETER::IrrFracGrass = 0 !Fraction of grass which is irrigated
       !Todo
-      REAL(KIND(1D0)), DIMENSION(7), PARAMETER ::DayWat = 0                     !Days of watering allowed
-      REAL(KIND(1D0)), DIMENSION(7), PARAMETER ::DayWatPer = 0                     !% of houses following daily water
+      !REAL(KIND(1D0)), DIMENSION(7), PARAMETER ::DayWat = 0                     !Days of watering allowed
+      !REAL(KIND(1D0)), DIMENSION(7), PARAMETER ::DayWatPer = 0                     !% of houses following daily water
       REAL(KIND(1D0)), DIMENSION(3), PARAMETER ::Ie_a = [-84.535, 9.959, 3.674] !Coefficients for automatic irrigation models
       REAL(KIND(1D0)), DIMENSION(3), PARAMETER ::Ie_m = [-25.36, 2.988, 1.102]  !Coefficients for manual irrigation models
 

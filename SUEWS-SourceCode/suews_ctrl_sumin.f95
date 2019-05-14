@@ -17,14 +17,29 @@ CONTAINS
    ! a mini version of SUEWS
    SUBROUTINE SuMin( &
       snowUse, EmissionsMethod, NetRadiationMethod, RoughLenHeatMethod, &! model options
-      RoughLenMomMethod, StorageHeatMethod, AerodynamicResistanceMethod,LAIType,&
+      RoughLenMomMethod, StorageHeatMethod, AerodynamicResistanceMethod,LAIType,SnowPackLimit,&
       OHM_threshSW,OHM_threshWD,th,tl,Kmax,g1,g2,g3,g4,g5,g6,s1,s2,LaiPower, &
+      CRWmax        ,&
+      CRWmin        ,&
+      PrecipLimit   ,&
+      PrecipLimitAlb,&
+      RadMeltFact   ,&
+      SnowAlbMax    ,&
+      SnowAlbMin    ,&
+      SnowDensMax   ,&
+      SnowDensMin   ,&
+      SnowLimBldg   ,&
+      SnowLimPaved  ,&
+      tau_a         ,&
+      tau_f         ,&
+      tau_r         ,&
+      TempMeltFact  ,&
       OHMIncQF, &! model options
       iy, id, it, imin, isec, dt_since_start, tstep, tstep_prev, startDLS, endDLS, &! time-related input
       alt, lat, lng, Z, timezone, SurfaceArea, sfr, &! site-specific geographical settings
       z0m_in, zdm_in, &! roughness related settings
       alb, emis, SnowAlb, OHM_coef, WaterDist, & ! surface properties
-      AHProf_24hr, HumActivity_24hr, PopProf_24hr, TraffProf_24hr, WUProfA_24hr, WUProfM_24hr, & ! hourly profile values
+      AHProf_24hr, HumActivity_24hr, PopProf_24hr, TraffProf_24hr, WUProfA_24hr, WUProfM_24hr, snowProf_24hr, & ! hourly profile values
       qn1_av, dqndt, qn1_s_av, dqnsdt, & ! OHM related Qn quantities
       surf_var_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id,&
       NumCapita_id , &
@@ -106,6 +121,7 @@ CONTAINS
       INTEGER, INTENT(IN) ::StorageHeatMethod
       INTEGER, INTENT(IN) ::AerodynamicResistanceMethod
       INTEGER, DIMENSION(3), INTENT(IN) ::LAIType
+      REAL(KIND(1D0)), DIMENSION(7 + 1), INTENT(IN)  :: SnowPackLimit
       REAL(KIND(1D0)), DIMENSION(7 + 1), INTENT(IN)  :: OHM_threshSW
       REAL(KIND(1D0)), DIMENSION(7 + 1), INTENT(IN)  :: OHM_threshWD
       REAL(KIND(1D0)), INTENT(IN)  :: th
@@ -120,7 +136,21 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)  :: s1
       REAL(KIND(1D0)), INTENT(IN)  :: s2
       REAL(KIND(1D0)), DIMENSION(4,3), INTENT(IN)  :: LaiPower
-
+      REAL(KIND(1D0)), INTENT(IN)  :: CRWmax        
+      REAL(KIND(1D0)), INTENT(IN)  :: CRWmin        
+      REAL(KIND(1D0)), INTENT(IN)  :: PrecipLimit   
+      REAL(KIND(1D0)), INTENT(IN)  :: PrecipLimitAlb
+      REAL(KIND(1D0)), INTENT(IN)  :: RadMeltFact   
+      REAL(KIND(1D0)), INTENT(IN)  :: SnowAlbMax    
+      REAL(KIND(1D0)), INTENT(IN)  :: SnowAlbMin    
+      REAL(KIND(1D0)), INTENT(IN)  :: SnowDensMax   
+      REAL(KIND(1D0)), INTENT(IN)  :: SnowDensMin   
+      REAL(KIND(1D0)), INTENT(IN)  :: SnowLimBldg   
+      REAL(KIND(1D0)), INTENT(IN)  :: SnowLimPaved  
+      REAL(KIND(1D0)), INTENT(IN)  :: tau_a         
+      REAL(KIND(1D0)), INTENT(IN)  :: tau_f         
+      REAL(KIND(1D0)), INTENT(IN)  :: tau_r         
+      REAL(KIND(1D0)), INTENT(IN)  :: TempMeltFact  
 
       INTEGER, INTENT(IN) ::OHMIncQF  !OHM calculation uses Q* only (0) or Q*+QF (1)
 
@@ -167,7 +197,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(in) :: TraffProf_24hr
       REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(in) :: WUProfA_24hr
       REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(in) :: WUProfM_24hr
-
+      REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(in) :: snowProf_24hr
       ! daily states, also initial conditions
 
       REAL(KIND(1d0)), INTENT(INOUT) ::qn1_av
@@ -422,23 +452,23 @@ CONTAINS
       !REAL(KIND(1D0)), PARAMETER::PopDensNighttime = 0 ! Nighttime population density [ha-1] (i.e. residents)
 
       ! snow related local variables
-      REAL(KIND(1D0)), PARAMETER                   ::CRWmax = 0.2   !Free water holding capacity of shallow SnowPack
-      REAL(KIND(1D0)), PARAMETER                   ::CRWmin = 0.05  !Free water holding capacity of deep SnowPack
-      REAL(KIND(1D0)), PARAMETER                   ::PrecipLimit = 2.2   !Temperature limit when precipitation occurs as snow
-      REAL(KIND(1D0)), PARAMETER                   ::PrecipLimitAlb = 2     !Precipitation limit for albedo change (in mm)
-      REAL(KIND(1D0)), PARAMETER                   ::RadMeltFact = 0.001 !Radiation melt factor
-      REAL(KIND(1D0)), PARAMETER                   ::SnowAlbMax = 0.8   !Maximum snow albedo
-      REAL(KIND(1D0)), PARAMETER                   ::SnowAlbMin = 0.18 !Minimum snow albedo
-      REAL(KIND(1D0)), PARAMETER                   ::SnowDensMax = 450   !Minimum density of snow
-      REAL(KIND(1D0)), PARAMETER                   ::SnowDensMin = 100   !Maximum density of snow
-      REAL(KIND(1D0)), PARAMETER                   ::SnowLimBldg = 100   !Snow removal limits for roofs in mm)
-      REAL(KIND(1D0)), PARAMETER                   ::SnowLimPaved = 100   !Snow removal limits for paved surfaces in mm)
-      REAL(KIND(1D0)), PARAMETER                   ::tau_a = 0.01  !Time constans related to albedo change
-      REAL(KIND(1D0)), PARAMETER                   ::tau_f = 0.1   !Time constans related to albedo change
-      REAL(KIND(1D0)), PARAMETER                   ::tau_r = 0.02  !Time constans related to albedo change
-      REAL(KIND(1D0)), PARAMETER                   ::TempMeltFact = 0.12  !Temperature melt factor
-      REAL(KIND(1D0)), DIMENSION(7), PARAMETER      ::SnowPackLimit = 0
-      REAL(KIND(1D0)), DIMENSION(0:23, 2), PARAMETER ::snowProf_24hr = 0     ! Timing of snow removal (0 or 1) Hourly, WD/WE
+      ! REAL(KIND(1D0)), PARAMETER                   ::CRWmax = 0.2   !Free water holding capacity of shallow SnowPack
+      ! REAL(KIND(1D0)), PARAMETER                   ::CRWmin = 0.05  !Free water holding capacity of deep SnowPack
+      ! REAL(KIND(1D0)), PARAMETER                   ::PrecipLimit = 2.2   !Temperature limit when precipitation occurs as snow
+      ! REAL(KIND(1D0)), PARAMETER                   ::PrecipLimitAlb = 2     !Precipitation limit for albedo change (in mm)
+      ! REAL(KIND(1D0)), PARAMETER                   ::RadMeltFact = 0.001 !Radiation melt factor
+      ! REAL(KIND(1D0)), PARAMETER                   ::SnowAlbMax = 0.8   !Maximum snow albedo
+      ! REAL(KIND(1D0)), PARAMETER                   ::SnowAlbMin = 0.18 !Minimum snow albedo
+      ! REAL(KIND(1D0)), PARAMETER                   ::SnowDensMax = 450   !Minimum density of snow
+      ! REAL(KIND(1D0)), PARAMETER                   ::SnowDensMin = 100   !Maximum density of snow
+      ! REAL(KIND(1D0)), PARAMETER                   ::SnowLimBldg = 100   !Snow removal limits for roofs in mm)
+      ! REAL(KIND(1D0)), PARAMETER                   ::SnowLimPaved = 100   !Snow removal limits for paved surfaces in mm)
+      ! REAL(KIND(1D0)), PARAMETER                   ::tau_a = 0.01  !Time constans related to albedo change
+      ! REAL(KIND(1D0)), PARAMETER                   ::tau_f = 0.1   !Time constans related to albedo change
+      ! REAL(KIND(1D0)), PARAMETER                   ::tau_r = 0.02  !Time constans related to albedo change
+      ! REAL(KIND(1D0)), PARAMETER                   ::TempMeltFact = 0.12  !Temperature melt factor
+      ! REAL(KIND(1D0)), DIMENSION(7), PARAMETER      ::SnowPackLimit = 0
+      ! REAL(KIND(1D0)), DIMENSION(0:23, 2), PARAMETER::snowProf_24hr = 0     ! Timing of snow removal (0 or 1) Hourly, WD/WE
 
       !grid level
       ! Anthropogenic heat related variables
@@ -482,7 +512,7 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(24*3600/tstep)   ::Tair24HR
       REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE   ::Ts5mindata_ir !TODO:allocatable array can't serve as argument?
 
-      REAL(KIND(1D0))              ::SnowfallCum = 0   !Cumulative snowfall
+      REAL(KIND(1D0))               ::SnowfallCum = 0   !Cumulative snowfall
       REAL(KIND(1D0)), DIMENSION(7) ::IceFrac = 0.2 !Estimated fraction of ice. Should be improved in the future
       REAL(KIND(1D0)), DIMENSION(7) ::SnowDens = 300 !Density of snow
       REAL(KIND(1D0)), DIMENSION(7) ::snowFrac = 0   !!Surface fraction of snow cover
@@ -521,15 +551,15 @@ CONTAINS
          AlbMin_DecTr_id, AlbMin_EveTr_id, AlbMin_Grass_id, &
          alpha_bioCO2, alpha_enh_bioCO2, alt, avkdn, avRh, avU1, BaseT_id, BaseTe_id, &
          BaseTHDD_id, beta_bioCO2, beta_enh_bioCO2, bldgH_id, CapMax_dec_id, CapMin_dec_id, &
-         chAnOHM, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
+         chAnOHM, cpAnOHM, CRWmax, CRWmin, DayWat_id, DayWatPer_id, &
          DecTreeH_id, Diagnose, DiagQN, DiagQS, DRAINRT_id, &
          dt_since_start, dqndt, qn1_av, dqnsdt, qn1_s_av, &
          EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH_id, FAIBldg_id, &
-         FAIDecTree_id, FAIEveTree_id, Faut, FcEF_v_kgkm, fcld_obs, FlowChange_id, &
+         FAIDecTree_id, FAIEveTree_id, Faut_id, FcEF_v_kgkm, fcld_obs, FlowChange_id, &
          FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD_id, &
          GDDFull_id, Gridiv, gsModel, HDD_id, HumActivity_24hr, &
          IceFrac, id, Ie_a, Ie_end, Ie_m, Ie_start, imin, &
-         InternalWaterUse_h, IrrFracConif, IrrFracDecid, IrrFracGrass, isec, it, EvapMethod, &
+         InternalWaterUse_h, IrrFracConif_id, IrrFracDecid_id, IrrFracGrass_id, isec, it, EvapMethod, &
          iy, kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax_id, LAIMin_id, LAI_obs, &
          LAIPower, LAIType, lat, ldown_obs, lng, MaxConductance_id, MaxQFMetab, &
          SnowWater, MetForcingData_grid, MinQFMetab, min_res_bioCO2, &

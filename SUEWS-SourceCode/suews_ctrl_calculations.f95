@@ -35,11 +35,12 @@
 
 SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
    USE data_in, ONLY: diagnose, ah_min, ah_slope_cooling, ah_slope_heating, &
-      alt, avkdn, avrh, avu1, basetHDD, diagqn, diagqs, drainrt, ef_umolco2perj, &
-      emissionsmethod, enef_v_jkm, enddls, fcef_v_kgkm, fcld_obs, &
+      alt, avkdn, avrh, avu1, basetHDD, diagqn, diagqs, drainrt, co2pointsource, &
+      ef_umolco2perj, emissionsmethod, enef_v_jkm, enddls, fcef_v_kgkm, fcld_obs, &
       frfossilfuel_heat, frfossilfuel_nonheat, EvapMethod, &
-      LAIcalcyes, LAI_obs, lat, ldown_obs, lng, maxqfmetab, minqfmetab, &
-      netradiationmethod, numcapita, ohmincqf, popdensdaytime, popdensnighttime, &
+      LAIcalcyes, LAI_obs, lat, ldown_obs, lng, maxfcmetab, maxqfmetab, &
+      minfcmetab, minqfmetab, netradiationmethod, numcapita, ohmincqf, &
+      popdensdaytime, popdensnighttime, &
       precip, press_hpa, qf0_beu, qf_a, qf_b, qf_c, &
       qh_obs, qn1_obs, qs_obs, qf_obs, &
       raincover, rainmaxres, &
@@ -118,7 +119,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
       alpha_bioCO2, alpha_enh_bioCO2, alt, avkdn, avRh, avU1, BaseT, BaseTe, &
       BaseTHDD, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
-      chAnOHM, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
+      chAnOHM, CO2PointSource, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
       DecTreeH, Diagnose, DiagQN, DiagQS, DRAINRT, &
       dt_since_start, dqndt, qn1_av, dqnsdt, qn1_s_av, &
       EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
@@ -128,8 +129,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       IceFrac, id, Ie_a, Ie_end, Ie_m, Ie_start, imin, &
       InternalWaterUse_h, IrrFracConif, IrrFracDecid, IrrFracGrass, isec, it, EvapMethod, &
       iy, kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax, LAIMin, LAI_obs, &
-      LAIPower, LAIType, lat, ldown_obs, lng, MaxConductance, MaxQFMetab, &
-      SnowWater, MetForcingData_grid, MinQFMetab, min_res_bioCO2, &
+      LAIPower, LAIType, lat, ldown_obs, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
+      SnowWater, MetForcingData_grid, MinFCMetab, MinQFMetab, min_res_bioCO2, &
       NARP_EMIS_SNOW, NARP_TRANS_SITE, NetRadiationMethod, &
       NumCapita, OHM_coef, OHMIncQF, OHM_threshSW, &
       OHM_threshWD, PipeCapacity, PopDensDaytime, &

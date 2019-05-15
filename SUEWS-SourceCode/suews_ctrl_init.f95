@@ -40,7 +40,7 @@ SUBROUTINE OverallRunControl
       FileNames = [CHARACTER(len=50) :: &
                    'SUEWS_NonVeg.txt', 'SUEWS_Veg.txt', 'SUEWS_Water.txt', 'SUEWS_Snow.txt', &
                    'SUEWS_Soil.txt', 'SUEWS_Conductance.txt', 'SUEWS_OHMCoefficients.txt', &
-                   'SUEWS_ESTMCoefficients.txt', 'SUEWS_AnthropogenicHeat.txt', 'SUEWS_Irrigation.txt', &
+                   'SUEWS_ESTMCoefficients.txt', 'SUEWS_AnthropogenicEmission.txt', 'SUEWS_Irrigation.txt', &
                    'SUEWS_Profiles.txt', 'SUEWS_WithinGridWaterDist.txt', 'SUEWS_BiogenCO2.txt']
 
    ! ---- Namelist for RunControl.nml ----
@@ -224,7 +224,7 @@ SUBROUTINE OverallRunControl
 
    ! FileNames = (/'SUEWS_NonVeg.txt', 'SUEWS_Veg.txt', 'SUEWS_Water.txt', 'SUEWS_Snow.txt', &
    !      'SUEWS_Soil.txt', 'SUEWS_Conductance.txt', 'SUEWS_OHMCoefficients.txt', &
-   !      'SUEWS_ESTMCoefficients.txt', 'SUEWS_AnthropogenicHeat.txt', 'SUEWS_Irrigation.txt', &
+   !      'SUEWS_ESTMCoefficients.txt', 'SUEWS_AnthropogenicEmission.txt', 'SUEWS_Irrigation.txt', &
    !      'SUEWS_Profiles.txt', 'SUEWS_WithinGridWaterDist.txt', 'SUEWS_BiogenCO2.txt'/)
 
    DO iFile = 1, nFile
@@ -1311,11 +1311,16 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv, rr)
    SurfaceChar(gridiv, c_PopProfWE) = Anthropogenic_Coeff(iv5, cA_PopProfWE)
    SurfaceChar(gridiv, c_MinQFMetab) = Anthropogenic_Coeff(iv5, cA_MinQFMetab)
    SurfaceChar(gridiv, c_MaxQFMetab) = Anthropogenic_Coeff(iv5, cA_MaxQFMetab)
+   SurfaceChar(gridiv, c_MinFCMetab) = Anthropogenic_Coeff(iv5, cA_MinFCMetab)
+   SurfaceChar(gridiv, c_MaxFCMetab) = Anthropogenic_Coeff(iv5, cA_MaxFCMetab)
+   SurfaceChar(gridiv, c_FrPDDwe) = Anthropogenic_Coeff(iv5, cA_FrPDDwe)
    SurfaceChar(gridiv, c_FrFossilFuel_Heat) = Anthropogenic_Coeff(iv5, cA_FrFossilFuel_Heat)
    SurfaceChar(gridiv, c_FrFossilFuel_NonHeat) = Anthropogenic_Coeff(iv5, cA_FrFossilFuel_NonHeat)
    SurfaceChar(gridiv, c_EF_umolCO2perJ) = Anthropogenic_Coeff(iv5, cA_EF_umolCO2perJ)
    SurfaceChar(gridiv, c_EnEF_v_Jkm) = Anthropogenic_Coeff(iv5, cA_EnEF_v_Jkm)
-   SurfaceChar(gridiv, c_FcEF_v_kgkm) = Anthropogenic_Coeff(iv5, cA_FcEF_v_kgkm)
+   SurfaceChar(gridiv, c_FcEF_v_kgkmWD) = Anthropogenic_Coeff(iv5, cA_FcEF_v_kgkmWD)
+   SurfaceChar(gridiv, c_FcEF_v_kgkmWE) = Anthropogenic_Coeff(iv5, cA_FcEF_v_kgkmWE)
+   SurfaceChar(gridiv, c_CO2PointSource) = Anthropogenic_Coeff(iv5, cA_CO2PointSource)
    SurfaceChar(gridiv, c_TrafficUnits) = Anthropogenic_Coeff(iv5, cA_TrafficUnits)
 
    ! ---- Find code for Irrigation ----

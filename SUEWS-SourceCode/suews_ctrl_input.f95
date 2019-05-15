@@ -478,7 +478,7 @@ SUBROUTINE InputHeaderCheck(FileName)
    HeaderESTMCoefficients_Reqd(cE_CH_iroof) = "Internal_CHroof"
    HeaderESTMCoefficients_Reqd(cE_CH_ibld) = "Internal_CHbld"
 
-   ! ========== SUEWS_AnthropogenicHeat.txt ======
+   ! ========== SUEWS_AnthropogenicEmission.txt ======
    HeaderAnthropogenic_Reqd(cA_Code) = "Code"
    HeaderAnthropogenic_Reqd(cA_BaseTHDD) = "BaseTHDD"
    HeaderAnthropogenic_Reqd(cA_QF_A1) = "QF_A_WD"
@@ -498,7 +498,7 @@ SUBROUTINE InputHeaderCheck(FileName)
    HeaderAnthropogenic_Reqd(cA_TCriticCooling_WD) = "TCritic_Cooling_WD"
    HeaderAnthropogenic_Reqd(cA_TCriticCooling_WE) = "TCritic_Cooling_WE"
    HeaderAnthropogenic_Reqd(cA_EnProfWD) = "EnergyUseProfWD"
-   HeaderAnthropogenic_Reqd(cA_ENProfWE) = "EnergyUseProfWE"
+   HeaderAnthropogenic_Reqd(cA_EnProfWE) = "EnergyUseProfWE"
    HeaderAnthropogenic_Reqd(cA_CO2mWD) = "ActivityProfWD"
    HeaderAnthropogenic_Reqd(cA_CO2mWE) = "ActivityProfWE"
    HeaderAnthropogenic_Reqd(cA_TraffProfWD) = "TraffProfWD"
@@ -507,11 +507,16 @@ SUBROUTINE InputHeaderCheck(FileName)
    HeaderAnthropogenic_Reqd(cA_PopProfWE) = "PopProfWE"
    HeaderAnthropogenic_Reqd(cA_MinQFMetab) = "MinQFMetab"
    HeaderAnthropogenic_Reqd(cA_MaxQFMetab) = "MaxQFMetab"
+   HeaderAnthropogenic_Reqd(cA_MinFCMetab) = "MinFCMetab" 
+   HeaderAnthropogenic_Reqd(cA_MaxFCMetab) = "MaxFCMetab" 
+   HeaderAnthropogenic_Reqd(cA_FrPDDwe) = "FrPDDwe"    
    HeaderAnthropogenic_Reqd(cA_FrFossilFuel_Heat) = "FrFossilFuel_Heat"
    HeaderAnthropogenic_Reqd(cA_FrFossilFuel_NonHeat) = "FrFossilFuel_NonHeat"
    HeaderAnthropogenic_Reqd(cA_EF_umolCO2perJ) = "EF_umolCO2perJ"
    HeaderAnthropogenic_Reqd(cA_EnEF_v_Jkm) = "EnEF_v_Jkm"
-   HeaderAnthropogenic_Reqd(cA_FcEF_v_kgkm) = "FcEF_v_kgkm"
+   HeaderAnthropogenic_Reqd(cA_FcEF_v_kgkmWD) = "FcEF_v_kgkmWD"
+   HeaderAnthropogenic_Reqd(cA_FcEF_v_kgkmWE) = "FcEF_v_kgkmWE"
+   HeaderAnthropogenic_Reqd(cA_CO2PointSource) = "CO2PointSource"
    HeaderAnthropogenic_Reqd(cA_TrafficUnits) = "TrafficUnits"
 
    ! ========== SUEWS_Irrigation.txt =============
@@ -650,10 +655,10 @@ SUBROUTINE InputHeaderCheck(FileName)
                         notUsed, notUsed, notUsedI)
       ENDIF
 
-   ELSEIF (FileName == 'SUEWS_AnthropogenicHeat.txt') THEN
+   ELSEIF (FileName == 'SUEWS_AnthropogenicEmission.txt') THEN
       IF (ANY(HeaderAnthropogenic_File /= HeaderAnthropogenic_Reqd)) THEN
          WRITE (*, *) HeaderAnthropogenic_File == HeaderAnthropogenic_Reqd
-         CALL ErrorHint(56, 'Names or order of columns in SUEWS_AnthropogenicHeat.txt does not match model code.', &
+         CALL ErrorHint(56, 'Names or order of columns in SUEWS_AnthropogenicEmission.txt does not match model code.', &
                         notUsed, notUsed, notUsedI)
       ENDIF
 
@@ -1241,8 +1246,10 @@ SUBROUTINE CodeMatchAnthropogenic(rr, CodeCol)
       IF (Anthropogenic_Coeff(iv5, cA_Code) == SiteSelect(rr, codeCol)) THEN
          EXIT
       ELSEIF (iv5 == nlinesAnthropogenic) THEN
-         WRITE (*, *) 'Program stopped! Anthropogenic code ', SiteSelect(rr, codeCol), 'not found in SUEWS_AnthropogenicHeat.txt.'
-         CALL ErrorHint(57, 'Cannot find code in SUEWS_AnthropogenicHeat.txt', SiteSelect(rr, codeCol), notUsed, notUsedI)
+         WRITE (*, *) 'Program stopped! Anthropogenic code ', SiteSelect(rr, codeCol), &
+                      'not found in SUEWS_AnthropogenicEmission.txt.'
+         CALL ErrorHint(57, 'Cannot find code in SUEWS_AnthropogenicEmission.txt', &
+              SiteSelect(rr, codeCol), notUsed, notUsedI)
       ENDIF
    ENDDO
 

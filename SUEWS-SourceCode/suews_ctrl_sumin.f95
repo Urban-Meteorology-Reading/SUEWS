@@ -110,7 +110,7 @@ CONTAINS
       kup_o,&
       ldown_o,&
       lup_o,&
-      tsurf_o,glw1d)!output
+      tsurf_o,smd_o,glw1d)!output
 
       ! model configurations
       INTEGER, INTENT(in) ::snowUse
@@ -297,6 +297,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out)::ldown_o
       REAL(KIND(1D0)), INTENT(out)::lup_o
       REAL(KIND(1D0)), INTENT(out)::tsurf_o
+      REAL(KIND(1D0)), INTENT(out)::smd_o
 
 
       REAL(KIND(1D0)), INTENT(out)::qn
@@ -593,6 +594,7 @@ CONTAINS
       ldown_o = dataOutLineSUEWS(3)
       lup_o = dataOutLineSUEWS(4)
       tsurf_o = dataOutLineSUEWS(5)
+      smd_o = dataOutLineSUEWS(23)
 
       qn = dataOutLineSUEWS(6)
       qf = dataOutLineSUEWS(7)

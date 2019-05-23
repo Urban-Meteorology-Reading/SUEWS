@@ -110,7 +110,7 @@ CONTAINS
       kup_o,&
       ldown_o,&
       lup_o,&
-      tsurf_o,smd_o,glw1d)!output
+      tsurf_o,smd_o,glw1d,cldfra1d)!output
 
       ! model configurations
       INTEGER, INTENT(in) ::snowUse
@@ -290,7 +290,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::Press_hPa
       REAL(KIND(1D0)), INTENT(IN)::Temp_C
       REAL(KIND(1D0)), INTENT(IN)::Precip
-
+      REAL(KIND(1D0)), INTENT(IN)::cldfra1d
       ! output for WRF
       REAL(KIND(1D0)), INTENT(out)::kdown_o
       REAL(KIND(1D0)), INTENT(out)::kup_o
@@ -323,7 +323,7 @@ CONTAINS
 
       REAL(KIND(1D0)), PARAMETER:: LAI_obs = 0
       REAL(KIND(1D0))  :: ldown_obs
-      REAL(KIND(1D0)), PARAMETER:: fcld_obs = 0
+      !EAL(KIND(1D0)), PARAMETER:: fcld_obs = 0
       REAL(KIND(1D0)), PARAMETER:: snowFrac_obs = 0
       REAL(KIND(1D0)), PARAMETER:: qn1_obs = 0
       REAL(KIND(1D0)), PARAMETER:: qh_obs = 0
@@ -535,6 +535,7 @@ CONTAINS
 
       StoreDrainPrm(6, :) = surf_var_id
       ldown_obs=glw1d
+      fcld_obs=cldfra1d
       ! PRINT*,''
       ! PRINT*, 'soilstore_id',soilstore_id
       ! soilstore_id=MERGE(soilstore_id,soilstore_id*0,soilstore_id>0)

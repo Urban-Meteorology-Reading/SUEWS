@@ -323,7 +323,7 @@ CONTAINS
 
       REAL(KIND(1D0)), PARAMETER:: LAI_obs = 0
       REAL(KIND(1D0))  :: ldown_obs
-      !EAL(KIND(1D0)), PARAMETER:: fcld_obs = 0
+      REAL(KIND(1D0))  ::fcld_obs
       REAL(KIND(1D0)), PARAMETER:: snowFrac_obs = 0
       REAL(KIND(1D0)), PARAMETER:: qn1_obs = 0
       REAL(KIND(1D0)), PARAMETER:: qh_obs = 0

@@ -39,9 +39,9 @@ PYTHON := $(if $(PYTHON_exe),$(PYTHON_exe),python)
 
 # make fortran exe
 main:
-	$(MAKE) -C $(SUEWS_dir) -f $(makefile) clean; # clean Fortran SUEWS build
+	# $(MAKE) -C $(SUEWS_dir) -f $(makefile) clean; # clean Fortran SUEWS build
 	$(MAKE) -C $(SUEWS_dir) -f $(makefile) main; # make SUEWS with the `main` recipe
-	-rm -rf *.o *.mod *.f95 *.a *.dSYM
+	# -rm -rf *.o *.mod *.f95 *.a *.dSYM
 
 # make fortran exe and run test cases
 test:
@@ -57,8 +57,7 @@ release:
 # make supy dist
 driver:
 	$(info $$PYTHON is [${PYTHON}])
-	$(MAKE) -C $(SuPy_dir) suews; # clean Fortran SUEWS build
-	$(MAKE) -C $(SuPy_dir) main; # make SUEWS with the `main` recipe
+	$(MAKE) -C $(SuPy_dir) test; # make and test supy_driver
 
 pip:
 	pip install pipreqs

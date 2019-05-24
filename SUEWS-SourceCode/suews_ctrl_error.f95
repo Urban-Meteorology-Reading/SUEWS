@@ -32,6 +32,7 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
    CHARACTER(len=1024) :: message ! Used to pass through function wrf_debug() by Zhenkun Li, 10/08/2018
 #endif
    CHARACTER(len=1024) :: Errmessage
+   CHARACTER(len=1024) :: StopMessage ! used to pass error message to `stop` statement; useful to supy_driver, TS 19 Feb 2019
 
    ! TS 16 Jul 2018:
    ! these LOGICAL values should NOT be initialised as `SAVE` is implied
@@ -401,7 +402,8 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
 
       WRITE (*, *) 'problem: ', TRIM(ProblemFile)
       WRITE (*, *) 'See problems.txt for more info.'
-      STOP
+      WRITE (StopMessage, *) 'fatal error in SUEWS:'//NEW_LINE('A')//TRIM(text1)
+      STOP 'Fatal error in SUEWS!'
 
 #endif
    ENDIF

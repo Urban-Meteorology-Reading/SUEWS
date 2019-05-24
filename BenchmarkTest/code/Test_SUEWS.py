@@ -46,9 +46,11 @@ def load_SUEWS_RunControl(xfile):
 def load_SUEWS_table(fileX):
     # remove case issues
     fileX = path_insensitive(fileX)
-    rawdata = pd.read_table(fileX, delim_whitespace=True,
-                            comment='!', error_bad_lines=True,
-                            skiprows=1).dropna()
+    rawdata = pd.read_csv(
+        fileX,
+        delim_whitespace=True,
+        comment='!', error_bad_lines=True,
+        skiprows=1).dropna()
     return rawdata
 
 
@@ -462,10 +464,13 @@ def test_physics(name_exe, dir_input, dir_exe,
             index='result', columns=c, aggfunc=len)
             for c in list_method_test],
         keys=list_method_test,
-        axis=1).loc[
-        'pass', :].to_frame().rename(
-        columns={'pass': 'result'}).applymap(
-        lambda x: 'pass' if x > 0 else 'fail')
+        sort=True,
+        axis=1)
+    df_test_pass = df_test_pass\
+        .loc['pass', :]\
+        .to_frame()\
+        .rename(columns={'pass': 'result'})\
+        .applymap(lambda x: 'pass' if x > 0 else 'fail')
     df_test_pass.index.set_names(['method', 'option'], inplace=True)
 
     # get `fail` options:

@@ -512,10 +512,10 @@ CONTAINS
          ! ---- Initialization of variables and parameters for first row of run for each grid ----
          ! N layers are calculated in SUEWS_translate
          IF (.NOT. ALLOCATED(Tibld)) THEN
-            ! print*, "Nibld",Nibld
-            ! print*, "Nwall",Nwall
-            ! print*, "Nroof",Nroof
-            ! print*, "Nground",Nground
+            print *, "Nibld", Nibld
+            print *, "Nwall", Nwall
+            print *, "Nroof", Nroof
+            print *, "Nground", Nground
             ALLOCATE (Tibld(Nibld), Twall(Nwall), Troof(Nroof), Tground(Nground), Tw_4(Nwall, 4))
             ALLOCATE (Tibld_grids(Nibld, NumberOfGrids), &
                       Twall_grids(Nwall, NumberOfGrids), &

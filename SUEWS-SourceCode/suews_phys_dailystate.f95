@@ -60,7 +60,7 @@ CONTAINS
       LAICalcYes, LAIType, &
       nsh_real, avkdn, Temp_C, Precip, BaseTHDD, &
       lat, Faut, LAI_obs, tau_a, tau_f, tau_r, &
-      SnowDensMax, SnowDensMin, SnowAlbMin, &
+      SnowDensMax, SnowDensMin, SnowAlbMax, SnowAlbMin, &
       AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
       AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
       CapMax_dec, CapMin_dec, PorMax_dec, PorMin_dec, &
@@ -106,6 +106,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::tau_r
       REAL(KIND(1D0)), INTENT(IN)::SnowDensMax
       REAL(KIND(1D0)), INTENT(IN)::SnowDensMin
+      REAL(KIND(1D0)), INTENT(in)::SnowAlbMax
       REAL(KIND(1D0)), INTENT(IN)::SnowAlbMin
       REAL(KIND(1d0)), INTENT(IN)::AlbMax_DecTr
       REAL(KIND(1d0)), INTENT(IN)::AlbMax_EveTr
@@ -151,7 +152,7 @@ CONTAINS
       ! HDD_id(4) ---- 5-day running mean temp [degC]: used for actual calculation
       ! HDD_id(5) ---- Daily precip total [mm]
       ! HDD_id(6) ---- Days since rain [d]
-      ! second hald used for storage of the first half for the prevous day
+      ! second half used for storage of the first half for the prevous day
       ! HDD_id(6+1) ---- Heating [degC]: used for accumulation during calculation
       ! HDD_id(6+2) ---- Cooling [degC]: used for accumulation during calculation
       ! HDD_id(6+3) ---- Daily mean temp [degC]: used for accumulation during calculation
@@ -198,37 +199,6 @@ CONTAINS
       LOGICAL :: last_tstep_Q ! if this is the last tstep of a day
       TYPE(datetime) :: time_now, time_prev, time_next
 
-      ! --------------------------------------------------------------------------------
-      ! ------------- Key to daily arrays ----------------------------------------------
-      ! HDD(1,) ---- Heating [degC]: used for accumulation during calculation
-      ! HDD(2,) ---- Cooling [degC]: used for accumulation during calculation
-      ! HDD(3,) ---- Daily mean temp [degC]: used for accumulation during calculation
-      ! HDD(4,) ---- 5-day running mean temp [degC]: used for actual calculation
-      ! HDD(5,) ---- Daily precip total [mm]
-      ! HDD(6,) ---- Days since rain [d]
-      ! HDD(,1) ---- used for agrregation during calculation
-      ! HDD(,2) ---- value for previous day and used for actual calculation
-
-      !
-      ! GDD(,1) ---- Growing [degC]
-      ! GDD(,2) ---- Senescence [degC]
-      ! GDD(,3) ---- Daily min temp [degC]
-      ! GDD(,4) ---- Daily max temp [degC]
-      ! GDD(,5) ---- Daytime hours [h]
-      !
-      ! LAI(,1:3) -- LAI for each veg surface [m2 m-2]
-      !
-      ! WUDay(,1) - Daily water use total for Irr EveTr (automatic+manual) [mm]
-      ! WUDay(,2) - Automatic irrigation for Irr EveTr [mm]
-      ! WUDay(,3) - Manual irrigation for Irr EveTr [mm]
-      ! WUDay(,4) - Daily water use total for Irr DecTr (automatic+manual) [mm]
-      ! WUDay(,5) - Automatic irrigation for Irr DecTr [mm]
-      ! WUDay(,6) - Manual irrigation for Irr DecTr [mm]
-      ! WUDay(,7) - Daily water use total for Irr Grass (automatic+manual) [mm]
-      ! WUDay(,8) - Automatic irrigation for Irr Grass [mm]
-      ! WUDay(,9) - Manual irrigation for Irr Grass [mm]
-      ! --------------------------------------------------------------------------------
-
       ! get timestamps
       time_now = datetime(year=iy) + timedelta(days=id - 1, hours=it, minutes=imin, seconds=isec)
       time_prev = time_now - timedelta(seconds=tstep_prev)
@@ -244,6 +214,11 @@ CONTAINS
          CALL update_DailyState_Start( &
             it, imin, &!input
             HDD_id)!inout
+
+         ! reset certain GDD columns
+         GDD_id(3) = Temp_C   !Daily min T in column 3
+         GDD_id(4) = Temp_C   !Daily max T in column 4
+         GDD_id(5) = 0        !Cumulate daytime hours
       ENDIF
 
       ! --------------------------------------------------------------------------------
@@ -260,7 +235,7 @@ CONTAINS
       ! Update snow density, albedo surface fraction
       IF (snowUse == 1) CALL SnowUpdate( &
          nsurf, tstep, Temp_C, tau_a, tau_f, tau_r, &!input
-         SnowDensMax, SnowDensMin, SnowAlbMin, SnowPack, &
+         SnowDensMax, SnowDensMin, SnowAlbMax, SnowAlbMin, SnowPack, &
          SnowAlb, SnowDens)!inout
 
       ! --------------------------------------------------------------------------------
@@ -459,7 +434,7 @@ CONTAINS
       nsh_real, &
       GDD_id, &!inout
       HDD_id)
-      use time, only: id, id_prev_t
+      ! use time, only: id, id_prev_t
       IMPLICIT NONE
 
       ! INTEGER,INTENT(IN)::id
@@ -478,19 +453,13 @@ CONTAINS
       INTEGER::gamma1
       INTEGER::gamma2
 
-      IF (id == id_prev_t) THEN ! MH 09 Jan 2019
-         ! Daily min and max temp (these get updated through the day) ---------------------
-         GDD_id(3) = MIN(Temp_C, GDD_id(3))     !Daily min T in column 3
-         GDD_id(4) = MAX(Temp_C, GDD_id(4))     !Daily max T in column 4
-         IF (avkdn > 10) THEN
-            GDD_id(5) = GDD_id(5) + 1/nsh_real   !Cumulate daytime hours !Divide by nsh (HCW 01 Dec 2014)
-         ENDIF
-      ELSE
-         ! Day changes
-         GDD_id(3) = Temp_C   !Daily min T in column 3
-         GDD_id(4) = Temp_C   !Daily max T in column 4
-         GDD_id(5) = 0        !Cumulate daytime hours
+      ! Daily min and max temp (these get updated through the day) ---------------------
+      GDD_id(3) = MIN(Temp_C, GDD_id(3))     !Daily min T in column 3
+      GDD_id(4) = MAX(Temp_C, GDD_id(4))     !Daily max T in column 4
+      IF (avkdn > 10) THEN
+         GDD_id(5) = GDD_id(5) + 1/nsh_real   !Cumulate daytime hours !Divide by nsh (HCW 01 Dec 2014)
       ENDIF
+
       ! Calculations related to heating and cooling degree days (HDD) ------------------
       ! See Sailor & Vasireddy (2006) EMS Eq 1,2 (theirs is hourly timestep)
       gamma1 = MERGE(1, 0, (BaseTHDD - Temp_C) >= 0)
@@ -511,6 +480,62 @@ CONTAINS
       !      6 ------------------------------------!   !Days since rain
 
    END SUBROUTINE update_DailyState_Day
+
+   ! subroutine update_GDD(avkdn,Temp_C,nsh_real,GDD_id)
+   !    implicit none
+   !    REAL(KIND(1d0)), INTENT(IN)::avkdn
+   !    REAL(KIND(1d0)), INTENT(IN)::Temp_C
+   !    REAL(KIND(1d0)), INTENT(IN)::nsh_real
+
+   ! REAL(KIND(1d0)), DIMENSION(5), INTENT(INOUT):: GDD_id !Growing Degree Days (see SUEWS_DailyState.f95)
+
+   ! ! translate values of previous day to local variables
+   !    GDD_id_prev = GDD_id
+
+   ! ! Calculate GDD for each day from the minimum and maximum air temperature
+   !       yes = ((GDD_id_prev(3) + GDD_id_prev(4))/2 - BaseT(iv))    !Leaf on
+   !       no = ((GDD_id_prev(3) + GDD_id_prev(4))/2 - BaseTe(iv))   !Leaf off
+
+   !       indHelp = 0   !Help switch to allow GDD to go to zero in sprint-time !! QUESTION: What does this mean? HCW
+
+   !       IF (yes < 0) THEN   !GDD cannot be negative
+   !          indHelp = yes   !Amount of negative GDD
+   !          yes = 0
+   !       ENDIF
+
+   !       IF (no > 0) no = 0    !SDD cannot be positive
+
+   !       ! Calculate cumulative growing and senescence degree days
+   !       GDD_id(1) = GDD_id_prev(1) + yes
+   !       GDD_id(2) = GDD_id_prev(2) + no
+
+   !       ! Possibility for cold spring
+   !       IF (GDD_id(2) <= SDDFull(iv) .AND. indHelp < 0) THEN
+   !          GDD_id(1) = 0
+   !       ENDIF
+
+   !       IF (GDD_id(1) >= GDDFull(iv)) THEN   !Start senescence
+   !          GDD_id(1) = GDDFull(iv)          !Leaves should not grow so delete yes from earlier
+   !          IF (GDD_id(2) < -critDays) GDD_id(1) = 0
+   !       ENDIF
+
+   !       IF (GDD_id(2) <= SDDFull(iv)) THEN   !After senescence now start growing leaves
+   !          GDD_id(2) = SDDFull(iv)           !Leaves off so add back earlier
+   !          IF (GDD_id(1) > critDays) GDD_id(2) = 0
+   !       ENDIF
+
+   !       ! With these limits SDD, GDD is set to zero
+   !       IF (GDD_id(2) < -critDays .AND. GDD_id(2) > SDDFull(iv)) GDD_id(1) = 0
+   !       IF (GDD_id(1) > critDays .AND. GDD_id(1) < GDDFull(iv)) GDD_id(2) = 0
+
+   ! ! Daily min and max temp (these get updated through the day) ---------------------
+   !    GDD_id(3) = MIN(Temp_C, GDD_id(3))     !Daily min T in column 3
+   !    GDD_id(4) = MAX(Temp_C, GDD_id(4))     !Daily max T in column 4
+   !    IF (avkdn > 10) THEN
+   !       GDD_id(5) = GDD_id(5) + 1/nsh_real   !Cumulate daytime hours !Divide by nsh (HCW 01 Dec 2014)
+   !    ENDIF
+
+   ! end subroutine update_GDD
 
    ! SUBROUTINE update_Veg(&
    !      id,&!input
@@ -956,7 +981,8 @@ CONTAINS
 
          ! Now calculate LAI itself
          IF (lat >= 0) THEN   !Northern hemispere
-            IF (id == 140 .AND. GDD_id(2) /= 0) GDD_id(2) = 0  !If SDD is not zero by mid May, this is forced
+            !If SDD is not zero by mid May, this is forced
+            IF (id == 140 .AND. GDD_id(2) /= 0) GDD_id(2) = 0
             ! Set SDD to zero in summer time
             IF (GDD_id(1) > critDays .AND. id < 170) GDD_id(2) = 0
             ! Set GDD zero in winter time
@@ -982,7 +1008,8 @@ CONTAINS
             ENDIF
 
          ELSEIF (lat < 0) THEN   !Southern hemisphere !! N.B. not identical to N hemisphere - return to later
-            IF (id == 300 .AND. GDD_id(2) /= 0) GDD_id(2) = 0   !If SDD is not zero by late Oct, this is forced
+            !If SDD is not zero by late Oct, this is forced
+            IF (id == 300 .AND. GDD_id(2) /= 0) GDD_id(2) = 0
             ! Set SDD to zero in summer time
             IF (GDD_id(1) > critDays .AND. id > 250) GDD_id(2) = 0
             ! Set GDD zero in winter time

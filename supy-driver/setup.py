@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import subprocess
 import shutil
+from nonstopf2py import f2py
 
 
 # wrap OS-specific `SUEWS_driver` libs
@@ -28,15 +29,21 @@ dir_f95 = '../SUEWS-SourceCode'
 target_f95 = [
     os.path.join(dir_f95, f)
     for f in
-    ['suews_ctrl_const.f95',
-     'suews_ctrl_driver.f95']]
+    [
+        'suews_ctrl_const.f95',
+        'suews_ctrl_error.f95',
+        'suews_ctrl_driver.f95',
+    ]
+]
 all_f95 = glob.glob(os.path.join(dir_f95, '*.f95'))
 exclude_f95 = [
     os.path.join(dir_f95, f)
     for f in
-    ['suews_c_wrapper.f95',
-     'suews_ctrl_sumin.f95',
-     'suews_program.f95']
+    [
+        'suews_c_wrapper.f95',
+        'suews_ctrl_sumin.f95',
+        'suews_program.f95',
+    ]
 ]
 other_f95 = list(
     set(all_f95)
@@ -79,7 +86,7 @@ def get_suews_version(dir_source=dir_f95, ver_minor=2):
 
     # cast `ver` to the driver package
     path_pkg_init = Path('.')/lib_basename/'version.py'
-    with open(str(path_pkg_init),'w') as fm:
+    with open(str(path_pkg_init), 'w') as fm:
         fm.write("__version__='{ver}'".format(ver=ver))
 
     return ver
@@ -99,6 +106,7 @@ class BinaryDistribution(Distribution):
 ext_modules = [
     Extension('supy_driver.suews_driver',
               target_f95,
+              extra_compile_args=['-D_POSIX_C_SOURCE=200809L'],
               extra_f90_compile_args=['-cpp'],
               f2py_options=[
                   # '--quiet',
@@ -109,7 +117,8 @@ ext_modules = [
               extra_link_args=[('' if sysname == 'Linux' else '-static')])]
 
 setup(name='supy_driver',
-      version=get_suews_version(ver_minor=20),
+      # update version info here!
+      version=get_suews_version(ver_minor=8),
       description='the SUEWS driver driven by f2py',
       long_description=readme(),
       url='https://github.com/sunt05/SuPy',
@@ -135,10 +144,20 @@ setup(name='supy_driver',
       zip_safe=False)
 
 
-# use auditwheel to repair file name
+# check latest build
+path_dir_driver = Path(__file__).resolve().parent
+list_wheels = [str(x) for x in path_dir_driver.glob('dist/*whl')]
+fn_wheel = sorted(list_wheels, key=os.path.getmtime)[-1]
+print(list_wheels, fn_wheel)
+
+# use auditwheel to repair file name for Linux
 if sysname == 'Linux':
-    fn_wheel = sorted(glob.glob('dist/*whl'), key=os.path.getmtime)[-1]
+    # path_dir_driver = Path(__file__).resolve().parent
+    # list_wheels = [str(x) for x in path_dir_driver.glob('dist/*whl')]
+    # fn_wheel = sorted(list_wheels, key=os.path.getmtime)[-1]
+    # print(list_wheels, fn_wheel)
     subprocess.call(["auditwheel", "repair", fn_wheel])
+    subprocess.call(["ls", "-lrt"])
 
 
 # change compiler settings

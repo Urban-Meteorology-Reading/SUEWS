@@ -635,7 +635,7 @@ MODULE allocateArray
    INTEGER :: c_MaxQFMetab = (ccEndO + 27)
    INTEGER :: c_MinFCMetab = (ccEndO + 28)
    INTEGER :: c_MaxFCMetab = (ccEndO + 29)
-   INTEGER :: c_FrPDDwe = (ccEndO + 30)      
+   INTEGER :: c_FrPDDwe = (ccEndO + 30)
    INTEGER :: c_FrFossilFuel_Heat = (ccEndO + 31)
    INTEGER :: c_FrFossilFuel_NonHeat = (ccEndO + 32)
    INTEGER :: c_EF_umolCO2perJ = (ccEndO + 33)
@@ -932,7 +932,7 @@ MODULE data_in
 
    IMPLICIT NONE
 
-   CHARACTER(len=90)::progname = 'SUEWS_V2018c'
+   CHARACTER(len=90)::progname = 'SUEWS_V2019a'
 
    ! ---- Run information ------------------------------------------------------------------------
    CHARACTER(len=20)::  FileCode   !Set in RunControl

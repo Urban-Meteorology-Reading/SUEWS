@@ -27,6 +27,8 @@ MODULE=SUEWS_driver
 
 SUEWS_dir = SUEWS-SourceCode
 
+test_dir= Test/code
+
 release_dir = ReleaseRepo
 
 makefile = Makefile.gfortran
@@ -46,7 +48,8 @@ main:
 # make fortran exe and run test cases
 test:
 	$(MAKE) -C $(SUEWS_dir) -f $(makefile) clean; # clean Fortran SUEWS build
-	$(MAKE) -C $(SUEWS_dir) -f $(makefile) test; # make SUEWS with the `main` recipe
+	$(MAKE) -C $(SUEWS_dir) -f $(makefile) main; # make SUEWS with the `main` recipe
+	cd $(test_dir); python 1.test_dev.py
 
 # make fortran exe, run test cases and pack release archive
 release:

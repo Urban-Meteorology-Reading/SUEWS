@@ -64,7 +64,7 @@ driver:
 
 pip:
 	pip install pipreqs
-	pipreqs $(release_dir) --savepath requirements.txt
+	pipreqs $(test_dir) --savepath requirements.txt
 	pip install -r requirements.txt
 	rm -rf requirements.txt
 

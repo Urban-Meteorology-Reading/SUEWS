@@ -108,11 +108,6 @@ cov: suews_program$(suffix_code) $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(O
 			mkdir -p $(SUEWS_build_dir)
 			cp -f $(TARGET) $(SUEWS_build_dir)/.
 
-# Build main program and run test cases
-test:
-		$(MAKE) clean;
-		$(MAKE) main;
-		cd $(SUEWS_test_dir); python 1.test_dev.py
 
 # Build SuMin for WRF coupling
 sumin: $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST) $(WRF)

@@ -1,0 +1,27 @@
+ &InitialConditions
+ DaysSinceRain=           0
+ Temp_C0=  -8.8501742160278701E-002
+ GDD_1_0=   0.0000000000000000     
+ GDD_2_0=  -59.927083333333336     
+ LAIinitialEveTr=   4.0000000000000000     
+ LAIinitialDecTr=   1.0000000000000000     
+ LAIinitialGrass=   1.6000000000000001     
+ AlbEveTr0=  0.11000000000000000     
+ AlbDecTr0=  0.12000000000000000     
+ AlbGrass0=  0.17999999999999999     
+ DecidCap0=  0.29999999999999999     
+ Porosity0=  0.59999999999999998     
+ SoilStorePavedState=   150.00000000000000     
+ SoilStoreBldgsState=   150.00000000000000     
+ SoilStoreEveTrState=   149.21410285931532     
+ SoilStoreDecTrState=   149.21410285931532     
+ SoilStoreGrassState=   149.21410285931532     
+ SoilStoreBSoilState=   149.21410285931532     
+ PavedState=   0.0000000000000000     
+ BldgsState=   0.0000000000000000     
+ EveTrState=   0.0000000000000000     
+ DecTrState=   0.0000000000000000     
+ GrassState=   0.0000000000000000     
+ BSoilState=   0.0000000000000000     
+ WaterState=   20000.000000000000     
+ /

@@ -127,7 +127,7 @@ MODULE ctrl_output
       varAttr('StGrass', 'mm', f94, 'Surface wetness state for grass surface', aL, 'SUEWS', 1), &
       varAttr('StBSoil', 'mm', f94, 'Surface wetness state for bare soil surface', aL, 'SUEWS', 1), &
       varAttr('StWater', 'mm', f104, 'Surface wetness state for water surface', aL, 'SUEWS', 1), &
-      varAttr('Zenith', 'degree', f94, 'Solar zenith angle', aL, 'SUEWS', 0), &
+      varAttr('Zenith', 'degree', f104, 'Solar zenith angle', aL, 'SUEWS', 0), &
       varAttr('Azimuth', 'degree', f94, 'Solar azimuth angle', aL, 'SUEWS', 0), &
       varAttr('AlbBulk', '1', f94, 'Bulk albedo', aA, 'SUEWS', 0), &
       varAttr('Fcld', '1', f94, 'Cloud fraction', aA, 'SUEWS', 0), &
@@ -144,6 +144,7 @@ MODULE ctrl_output
       varAttr('FcMetab', 'umol m-2 s-1', f94, 'CO2 flux from metabolism', aA, 'SUEWS', 1), &
       varAttr('FcTraff', 'umol m-2 s-1', f94, 'CO2 flux from traffic', aA, 'SUEWS', 1), &
       varAttr('FcBuild', 'umol m-2 s-1', f94, 'CO2 flux from buildings', aA, 'SUEWS', 1), &
+      varAttr('FcPoint', 'umol m-2 s-1', f94, 'CO2 flux from point source', aA, 'SUEWS', 1), &
       varAttr('QNSnowFr', 'W m-2', f94, 'Net all-wave radiation for non-snow area', aA, 'SUEWS', 2), &
       varAttr('QNSnow', 'W m-2', f94, 'Net all-wave radiation for snow area', aA, 'SUEWS', 2), &
       varAttr('AlbSnow', '-', f94, 'Snow albedo', aA, 'SUEWS', 2), &

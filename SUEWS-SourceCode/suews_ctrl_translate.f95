@@ -174,14 +174,17 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    z0m_in = z0m
    zdm_in = zdm
 
-   ! ---- Population
-   PopDensDaytime = SurfaceChar(Gridiv, c_PopDensDay)   ! Daytime population density [ha-1]
-   PopDensNighttime = SurfaceChar(Gridiv, c_PopDensNight) ! Night-time population density [ha-1]
-   ! Pop density [ha-1]
-   IF (PopDensDaytime >= 0 .AND. PopDensNighttime < 0) PopDensNighttime = PopDensDaytime  !If only daytime data provided, use them
-   IF (PopDensDaytime < 0 .AND. PopDensNighttime >= 0) PopDensDaytime = PopDensNighttime  !If only night-time data provided, use them
-   ! IF (PopDensDaytime >= 0 .AND. PopDensNighttime >= 0) NumCapita = (PopDensDaytime + PopDensNighttime)/2  !If both, use average ! moved to `AnthropogenicEmissions`, TS 27 Dec 2018
-
+  ! ---- Population density [ha-1]
+  ! Weekend fraction added to daytime population density
+  PopDensDaytime = SurfaceChar(Gridiv,(/c_PopDensDay,c_PopDensDay/))   ! Daytime population density [ha-1]
+  PopDensNighttime = SurfaceChar(Gridiv,c_PopDensNight) ! Night-time population density [ha-1]
+  IF(PopDensDaytime(1) >= 0 .AND. PopDensNighttime <  0) PopDensNighttime = PopDensDaytime(1)  !If only daytime data provided, use them
+  IF(PopDensDaytime(1) <  0 .AND. PopDensNighttime >= 0) PopDensDaytime(1) = PopDensNighttime  !If only night-time data provided, use them
+  PopDensDaytime(2) = PopDensNighttime + (PopDensDaytime(1) - PopDensNighttime) * SurfaceChar(Gridiv,c_FrPDDwe) !Use weekend fraction to daytime population
+ ! IF (PopDensDaytime >= 0 .AND. PopDensNighttime >= 0) NumCapita = (PopDensDaytime + PopDensNighttime)/2  !If both, use average ! moved to `AnthropogenicEmissions`, TS 27 Dec 2018
+  IF(PopDensDaytime(1) >= 0 .AND. PopDensNighttime >= 0) NumCapita(1) = (PopDensDaytime(1)+PopDensNighttime)/2  !If both, use average
+  IF(PopDensDaytime(2) >= 0 .AND. PopDensNighttime >= 0) NumCapita(2) = (PopDensDaytime(2)+PopDensNighttime)/2  !If both, use average
+  
    ! ---- Traffic rate
    TrafficRate = SurfaceChar(Gridiv, (/c_TrafficRate_WD, c_TrafficRate_WE/)) ! Mean traffic rate within modelled area
    ! ---- Building energy use
@@ -729,11 +732,14 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    PopProfWE = SurfaceChar(Gridiv, c_PopProfWE)
    MinQFMetab = SurfaceChar(Gridiv, c_MinQFMetab)
    MaxQFMetab = SurfaceChar(Gridiv, c_MaxQFMetab)
+   MinFCMetab = SurfaceChar(Gridiv, c_MinFCMetab)
+   MaxFCMetab = SurfaceChar(Gridiv, c_MaxFCMetab)
    FrFossilFuel_heat = SurfaceChar(Gridiv, c_FrFossilFuel_heat)
    FrFossilFuel_NonHeat = SurfaceChar(Gridiv, c_FrFossilFuel_NonHeat)
    EF_umolCO2perJ = SurfaceChar(Gridiv, c_EF_umolCO2perJ)
    EnEF_v_Jkm = SurfaceChar(Gridiv, c_EnEF_v_Jkm)
-   FcEF_v_kgkm = SurfaceChar(Gridiv, c_FcEF_v_kgkm)
+   FcEF_v_kgkm = SurfaceChar(Gridiv, (/c_FcEF_v_kgkmWD, c_FcEF_v_kgkmWE/))
+   CO2PointSource = SurfaceChar(Gridiv, c_CO2PointSource)
    TrafficUnits = SurfaceChar(Gridiv, c_TrafficUnits)
 
    ! ---- Irrigation
@@ -1060,7 +1066,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       WRITE (12, *) '----- '//TRIM(ADJUSTL(SsG_YYYY))//' Energy-use parameters'//' -----'
       WRITE (12, '(a12,11a10)') 'Grid', 'NumCapita', 'BaseTHDD', 'QF_A_WD', 'QF_A_WE', 'QF_B_WD', 'QF_B_WE', 'QF_C_WD', 'QF_C_WE', &
          'AH_Min', 'AH_Slope', 'T_critic_Heating'
-      WRITE (12, '(a12,11f10.3)') SsG_YYYY, NumCapita, BaseTHDD, QF_A(1:2), QF_B(1:2), QF_C(1:2), &
+      WRITE (12, '(a12,11f10.3)') SsG_YYYY, NumCapita(1), BaseTHDD, QF_A(1:2), QF_B(1:2), QF_C(1:2), &
          AH_Min, AH_Slope_Heating, T_critic_Heating
 
       WRITE (12, *) '----- '//TRIM(ADJUSTL(SsG_YYYY))//' Water-use parameters'//' -----'
@@ -1102,7 +1108,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
 
       WRITE (12, *) '----- '//TRIM(ADJUSTL(SsG_YYYY))//' Site parameters'//' -----'
      WRITE(12,'(a12,9a10)') 'Grid','lat','lon','tz','alt','SurfA_ha','z','NumCapita','z0_input','zd_input','StartDLS','EndDLS'
-     WRITE(12,'(a12,4f10.4,f10.2,4f10.4,2i10)') SsG_YYYY,lat,lng*(-1.0),timezone,alt,SurfaceArea_ha,z,NumCapita,z0m_in,zdm_in, &
+     WRITE(12,'(a12,4f10.4,f10.2,4f10.4,2i10)') SsG_YYYY,lat,lng*(-1.0),timezone,alt,SurfaceArea_ha,z,NumCapita(1),z0m_in,zdm_in, &
          startDLS, endDLS! DayLightSavingDay(1:2)
 
       WRITE (12, *) ''

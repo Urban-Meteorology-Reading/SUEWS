@@ -13,7 +13,7 @@ TARGET     := $(strip $(subst $\', ,${TARGET_str})) # program name
 # static flag for different OS to correctly link static libs
 # so gfortran dependency can be relaxed
 # but netCDF is still linked in the dynamic way as suggested by UCAR
-SUEWS_build_base = ../ReleaseRepo/build/
+SUEWS_build_base = ../Release/build/
 SUEWS_test_dir = ../BenchmarkTest/code
 
 

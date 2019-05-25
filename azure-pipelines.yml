@@ -42,7 +42,7 @@ phases:
     inputs:
       gitHubConnection: new GitHub connection
       repositoryName:   Urban-Meteorology-Reading/SUEWS
-      assets:           ./ReleaseRepo/*.zip
+      assets:           ./Release/*.zip
       action:           'Edit'
       target:           '$(build.sourceVersion)'
       tagSource:        'manual' # 'auto'
@@ -117,7 +117,7 @@ phases:
     inputs:
       gitHubConnection: new GitHub connection
       repositoryName:   Urban-Meteorology-Reading/SUEWS
-      assets:           ./ReleaseRepo/*.zip
+      assets:           ./Release/*.zip
       action:           'Edit'
       target:           '$(build.sourceVersion)'
       tagSource:        'manual' # 'auto'
@@ -198,7 +198,7 @@ phases:
     inputs:
       gitHubConnection: new GitHub connection
       repositoryName:   Urban-Meteorology-Reading/SUEWS
-      assets:           ./ReleaseRepo/*.zip
+      assets:           ./Release/*.zip
       action:           'Edit'
       target:           '$(build.sourceVersion)'
       tagSource:        'manual' # 'auto'

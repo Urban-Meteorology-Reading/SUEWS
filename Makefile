@@ -29,7 +29,7 @@ SUEWS_dir = SUEWS-SourceCode
 
 test_dir= Test/code
 
-release_dir = ReleaseRepo
+release_dir = Release
 
 makefile = Makefile.gfortran
 

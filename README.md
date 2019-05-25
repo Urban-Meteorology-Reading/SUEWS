@@ -19,7 +19,8 @@ These branches are regularly curated by admin members with specific purposes and
   * the main branch that keeps milestone and stable features.
   * `push` is restricted to admin members.
 * `PublicRelease`:
-  * used for public releases: compiled binaries are archived and published to the public
+  * used for public releases: compiled binaries are archived and published to the public.
+  * version information (e.g., 2018c) will be added as a tag once published and a formal release will be available via the `Releases` tab.
   * `push` is restricted to admin members.
 * `test-dev`:
   * used for the fast development and test

@@ -58,7 +58,6 @@ release: pip
 
 # make supy dist
 driver:
-	$(info $$PYTHON is [${PYTHON}])
 	$(MAKE) -C $(SuPy_dir) test; # make and test supy_driver
 
 pip:

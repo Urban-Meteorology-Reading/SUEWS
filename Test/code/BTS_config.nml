@@ -13,7 +13,7 @@
 
     name_exe    = 'SUEWS_V2019a'
     dir_exe     = '../../SUEWS-SourceCode'
-    dir_input   = '../BaseInput'
+    dir_input   = '../../Release/InputTables/2019a'
     dir_baserun = '../BaseRun/2019a'
 
 /

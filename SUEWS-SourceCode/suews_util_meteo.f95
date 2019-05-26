@@ -411,7 +411,9 @@ CONTAINS
 
       ! cp for moist air (shuttleworth p 4.13)
       IF (cp*press_hPa < 900 .OR. lv_J_kg < 10000) THEN
-    CALL errorHint(19, 'in psychrometric constant calculation:  cp [J kg-1 K-1], p [hPa], Lv [J kg-1]', cp, Press_hPa, INT(lv_J_kg))
+         CALL errorHint(19, &
+                        'in psychrometric constant calculation:  cp [J kg-1 K-1], p [hPa], Lv [J kg-1]', &
+                        cp, Press_hPa, INT(lv_J_kg))
       ENDIF
 
       psyc_hPa = (cp*press_hPa)/(epsil*lv_J_kg)

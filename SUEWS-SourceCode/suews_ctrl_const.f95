@@ -1119,7 +1119,7 @@ MODULE data_in
                                    AH_SLOPE_Heating, &  !Slope of the antrhropogenic heat flux calculation (AnthropHeatMethod = 1)
                                    AH_SLOPE_Cooling, &
                                    FcEF_v_kgkm, &
-                                   NumCapita,&
+                                   NumCapita, &
                                    PopDensDaytime, &
                                    T_CRITIC_Heating, & !Critical temperature
                                    T_CRITIC_Cooling, & !Critical cooling temperature
@@ -2015,9 +2015,9 @@ MODULE ColNamesInputFiles
               cA_PopProfWE = 26, &  !Weekend
               cA_MinQFMetab = 27, &
               cA_MaxQFMetab = 28, &
-              cA_MinFCMetab = 29,&
-              cA_MaxFCMetab = 30,&
-              cA_FrPDDwe = 31,&
+              cA_MinFCMetab = 29, &
+              cA_MaxFCMetab = 30, &
+              cA_FrPDDwe = 31, &
               cA_FrFossilFuel_Heat = 32, &
               cA_FrFossilFuel_NonHeat = 33, &
               cA_EF_umolCO2perJ = 34, &

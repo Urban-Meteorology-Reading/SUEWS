@@ -152,7 +152,9 @@ CONTAINS
       IF (debug) WRITE (*, *) StabilityMethod, z0m, avU1, H_init, UStar, L_MOD
       G_T_K = (Grav/(Temp_C + 273.16))*k !gravity constant/(Temperature*Von Karman Constant)
       KUZ = k*AvU1                     !Von Karman constant*mean wind speed
-   IF (zzd < 0) CALL ErrorHint(32, 'Windspeed Ht too low relative to zdm [Stability calc]- values [z-zdm, zdm]', Zzd, zdm, notUsedI)
+      IF (zzd < 0) CALL ErrorHint(32, &
+                                  'Windspeed Ht too low relative to zdm [Stability calc]- values [z-zdm, zdm]', &
+                                  Zzd, zdm, notUsedI)
 
       UStar = KUZ/LOG(Zzd/z0m)      !Initial setting of u* and calc. of L_MOD (neutral situation)
       IF (ABS(H_init) < 0.001) THEN    ! prevent zero TStar

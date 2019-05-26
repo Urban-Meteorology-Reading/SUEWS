@@ -242,7 +242,8 @@ SUBROUTINE SurfaceResistance( &
 
          ELSEIF (Temp_C >= th) THEN
             gtemp = ((th - 0.1) - tl)*(th - (th - 0.1))**tc/tc2
-            CALL errorHint(29, 'subroutine SurfaceResistance.f95: T changed to fit limits TH=39.9,Temp_c,id,it', &
+            CALL errorHint(29, &
+                           'subroutine SurfaceResistance.f95: T changed to fit limits TH=39.9,Temp_c,id,it', &
                            REAL(Temp_c, KIND(1d0)), id_real, it)
          ELSE
             gtemp = (Temp_C - tl)*(th - Temp_C)**tc/tc2
@@ -262,7 +263,9 @@ SUBROUTINE SurfaceResistance( &
          gs = gs*(1 - SUM(snowFrac(1:6))/6)
 
          IF (gs < 0) THEN
-       CALL errorHint(65, 'subroutine SurfaceResistance.f95 (gsModel=1): g(smd) < 0 calculated, setting to 0.0001', gs, id_real, it)
+            CALL errorHint(65, &
+                           'subroutine SurfaceResistance.f95 (gsModel=1): g(smd) < 0 calculated, setting to 0.0001', &
+                           gs, id_real, it)
             gs = 0.0001
          ENDIF
 
@@ -335,7 +338,9 @@ SUBROUTINE SurfaceResistance( &
          gs = gs*(1 - SUM(snowFrac(1:6))/6)
 
          IF (gs < 0) THEN
-           CALL errorHint(65, 'subroutine SurfaceResistance.f95 (gsModel=2): gs < 0 calculated, setting to 0.0001', gs, id_real, it)
+            CALL errorHint(65, &
+                           'subroutine SurfaceResistance.f95 (gsModel=2): gs < 0 calculated, setting to 0.0001', &
+                           gs, id_real, it)
             gs = 0.0001
          ENDIF
 
@@ -471,7 +476,9 @@ SUBROUTINE SUEWS_cal_RoughnessParameters( &
       ELSEIF (RoughLenMomMethod == 3) THEN !MacDonald 1998
          IF (areaZh /= 0) THEN  !Plan area fraction
             !planF=FAIBldg*sfr(BldgSurf)/areaZh+FAItree*sfr(ConifSurf)/areaZh+FAItree*(1-porosity_id)*sfr(DecidSurf)/areaZh
-        planF = FAIBldg*sfr(BldgSurf)/areaZh + FAIEveTree*sfr(ConifSurf)/areaZh + FAIDecTree*(1 - porosity_id)*sfr(DecidSurf)/areaZh
+            planF = FAIBldg*sfr(BldgSurf)/areaZh &
+                    + FAIEveTree*sfr(ConifSurf)/areaZh &
+                    + FAIDecTree*(1 - porosity_id)*sfr(DecidSurf)/areaZh
          ELSE
             planF = 0.00001
             Zh = 1
@@ -483,7 +490,9 @@ SUBROUTINE SUEWS_cal_RoughnessParameters( &
       IF (areaZh /= 0) CALL ErrorHint(15, 'In SUEWS_RoughnessParameters.f95, zh = 0 m but areaZh > 0', zh, areaZh, notUsedI)
       !Estimate z0 and zd using default values and surfaces that do not contribute to areaZh
       IF (areaZh /= 1) THEN
-        z0m = (z0m4Paved*sfr(PavSurf) + z0m4Grass*sfr(GrassSurf) + z0m4BSoil*sfr(BSoilSurf) + z0m4Water*sfr(WaterSurf))/(1 - areaZh)
+         !   z0m = (z0m4Paved*sfr(PavSurf) + z0m4Grass*sfr(GrassSurf) + z0m4BSoil*sfr(BSoilSurf) + z0m4Water*sfr(WaterSurf))/(1 - areaZh)
+         z0m = DOT_PRODUCT([z0m4Paved, z0m4Grass, z0m4BSoil, z0m4Water], sfr([PavSurf, GrassSurf, BSoilSurf, WaterSurf])) &
+               /(1 - areaZh)
          zdm = 0
          CALL ErrorHint(15, 'Setting z0m and zdm using default values', z0m, zdm, notUsedI)
       ELSEIF (areaZh == 1) THEN  !If, for some reason, Zh = 0 and areaZh == 1, assume height of 10 m and use rule-of-thumb

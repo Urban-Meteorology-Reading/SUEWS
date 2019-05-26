@@ -64,8 +64,9 @@ CONTAINS
 
       IF (startflag == 0) THEN !write down initial values in previous time step
          !write(*,*) 'startflag', DateTime, iCBLcount
- dataOutBL(iCBLcount, 1:ncolumnsdataOutBL, Gridiv) = (/REAL(iy, 8), REAL(id, 8), REAL(it, 8), REAL(imin, 8), dectime, blh_m, tm_K, &
-                                                           qm_kgkg*1000, tp_K, qp_kgkg*1000, (NAN, is=11, 20), gamt_Km, gamq_kgkgm/)
+         dataOutBL(iCBLcount, 1:ncolumnsdataOutBL, Gridiv) &
+            = (/REAL(iy, 8), REAL(id, 8), REAL(it, 8), REAL(imin, 8), dectime, blh_m, tm_K, &
+                qm_kgkg*1000, tp_K, qp_kgkg*1000, (NAN, is=11, 20), gamt_Km, gamq_kgkgm/)
          startflag = 1
       ENDIF
 
@@ -184,10 +185,11 @@ CONTAINS
          ENDIF
          iCBLcount = iCBLcount + 1
          !write(*,*) 'qh1or2', DateTIme, iCBLcount
- dataOutBL(iCBLcount, 1:ncolumnsdataOutBL, Gridiv) = (/REAL(iy, 8), REAL(id, 8), REAL(it, 8), REAL(imin, 8), dectime, blh_m, tm_K, &
-                                                               qm_kgkg*1000, tp_K, qp_kgkg*1000, &
-                                                               Temp_C, avrh, cbldata([2, 3, 9, 7, 8, 4, 5, 6]), &
-                                                               gamt_Km, gamq_kgkgm/)
+         dataOutBL(iCBLcount, 1:ncolumnsdataOutBL, Gridiv) &
+            = (/REAL(iy, 8), REAL(id, 8), REAL(it, 8), REAL(imin, 8), dectime, blh_m, tm_K, &
+                qm_kgkg*1000, tp_K, qp_kgkg*1000, &
+                Temp_C, avrh, cbldata([2, 3, 9, 7, 8, 4, 5, 6]), &
+                gamt_Km, gamq_kgkgm/)
       ELSEIF (qh_choice == 3) THEN ! CBL
          !tm_K_zm=tm_K+cbldata(10)*cbldata(2)/(k*cbldata(8)*cbldata(6)*cbldata(4))
          Temp_C1 = tm_K/((1000/cbldata(9))**(gas_ct_dry/cbldata(6))) - C2K
@@ -201,10 +203,11 @@ CONTAINS
          ENDIF
          iCBLcount = iCBLcount + 1
          !write(*,*) 'qh3', DateTIme, iCBLcount
- dataOutBL(iCBLcount, 1:ncolumnsdataOutBL, Gridiv) = (/REAL(iy, 8), REAL(id, 8), REAL(it, 8), REAL(imin, 8), dectime, blh_m, tm_K, &
-                                                               qm_kgkg*1000, tp_K, qp_kgkg*1000, &
-                                                               Temp_C1, avrh1, cbldata([2, 3, 9, 7, 8, 4, 5, 6]), &
-                                                               gamt_Km, gamq_kgkgm/)
+         dataOutBL(iCBLcount, 1:ncolumnsdataOutBL, Gridiv) &
+            = (/REAL(iy, 8), REAL(id, 8), REAL(it, 8), REAL(imin, 8), dectime, blh_m, tm_K, &
+                qm_kgkg*1000, tp_K, qp_kgkg*1000, &
+                Temp_C1, avrh1, cbldata([2, 3, 9, 7, 8, 4, 5, 6]), &
+                gamt_Km, gamq_kgkgm/)
       ENDIF
 
       RETURN

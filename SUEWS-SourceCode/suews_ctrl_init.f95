@@ -307,7 +307,8 @@ SUBROUTINE OverallRunControl
    IF (nsh_real == INT(nsh_real)) THEN
       nsh = INT(nsh_real)
    ELSE
-     CALL ErrorHint(39, 'TSTEP must divide into t_INTERVAL exactly.', REAL(tstep, KIND(1d0)), REAL(t_INTERVAL, KIND(1d0)), notUsedI)
+      CALL ErrorHint(39, &
+                     'TSTEP must divide into t_INTERVAL exactly.', REAL(tstep, KIND(1d0)), REAL(t_INTERVAL, KIND(1d0)), notUsedI)
    ENDIF
 
    ! Check nsh is reasonable

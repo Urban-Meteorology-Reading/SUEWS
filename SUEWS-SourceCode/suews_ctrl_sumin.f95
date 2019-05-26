@@ -17,23 +17,23 @@ CONTAINS
    ! a mini version of SUEWS
    SUBROUTINE SuMin( &
       snowUse, EmissionsMethod, NetRadiationMethod, RoughLenHeatMethod, &! model options
-      RoughLenMomMethod, StorageHeatMethod, AerodynamicResistanceMethod,LAIType,SnowPackLimit,&
-      OHM_threshSW,OHM_threshWD,th,tl,Kmax,g1,g2,g3,g4,g5,g6,s1,s2,LaiPower, &
-      CRWmax        ,&
-      CRWmin        ,&
-      PrecipLimit   ,&
-      PrecipLimitAlb,&
-      RadMeltFact   ,&
-      SnowAlbMax    ,&
-      SnowAlbMin    ,&
-      SnowDensMax   ,&
-      SnowDensMin   ,&
-      SnowLimBldg   ,&
-      SnowLimPaved  ,&
-      tau_a         ,&
-      tau_f         ,&
-      tau_r         ,&
-      TempMeltFact  ,&
+      RoughLenMomMethod, StorageHeatMethod, AerodynamicResistanceMethod, LAIType, SnowPackLimit, &
+      OHM_threshSW, OHM_threshWD, th, tl, Kmax, g1, g2, g3, g4, g5, g6, s1, s2, LaiPower, &
+      CRWmax, &
+      CRWmin, &
+      PrecipLimit, &
+      PrecipLimitAlb, &
+      RadMeltFact, &
+      SnowAlbMax, &
+      SnowAlbMin, &
+      SnowDensMax, &
+      SnowDensMin, &
+      SnowLimBldg, &
+      SnowLimPaved, &
+      tau_a, &
+      tau_f, &
+      tau_r, &
+      TempMeltFact, &
       OHMIncQF, &! model options
       iy, id, it, imin, isec, dt_since_start, tstep, tstep_prev, startDLS, endDLS, &! time-related input
       alt, lat, lng, Z, timezone, SurfaceArea, sfr, &! site-specific geographical settings
@@ -41,76 +41,74 @@ CONTAINS
       alb, emis, SnowAlb, OHM_coef, WaterDist, & ! surface properties
       AHProf_24hr, HumActivity_24hr, PopProf_24hr, TraffProf_24hr, WUProfA_24hr, WUProfM_24hr, snowProf_24hr, & ! hourly profile values
       qn1_av, dqndt, qn1_s_av, dqnsdt, & ! OHM related Qn quantities
-      surf_var_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id,&
-      NumCapita_id , &
-
-      BaseT_id               , &
-      BaseTe_id              , &
-      GDDFull_id             , &
-      SDDFull_id             , &
-      LaiMin_id              , &
-      LaiMax_id              , &
-      MaxConductance_id      , &
-      FAIbldg_id             , &
-      FAIEveTree_id          , &
-      FAIDecTree_id          , &
-      bldgH_id               , &
-      EveTreeH_id            , &
-      DecTreeH_id            , &
-      AH_MIN_id              , &
-      AH_SLOPE_Cooling_id    , &
-      AH_SLOPE_Heating_id    , &
-      QF0_BEU_id             , &
-      Qf_A_id                , &
-      Qf_B_id                , &
-      Qf_C_id                , &
-      T_CRITIC_Cooling_id    , &
-      T_CRITIC_Heating_id    , &
-      TrafficRate_id         , &
+      surf_var_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, &
+      NumCapita_id, &
+      BaseT_id, &
+      BaseTe_id, &
+      GDDFull_id, &
+      SDDFull_id, &
+      LaiMin_id, &
+      LaiMax_id, &
+      MaxConductance_id, &
+      FAIbldg_id, &
+      FAIEveTree_id, &
+      FAIDecTree_id, &
+      bldgH_id, &
+      EveTreeH_id, &
+      DecTreeH_id, &
+      AH_MIN_id, &
+      AH_SLOPE_Cooling_id, &
+      AH_SLOPE_Heating_id, &
+      QF0_BEU_id, &
+      Qf_A_id, &
+      Qf_B_id, &
+      Qf_C_id, &
+      T_CRITIC_Cooling_id, &
+      T_CRITIC_Heating_id, &
+      TrafficRate_id, &
       surf_attr_MinStorCap_id, &
       surf_attr_DrainEquat_id, &
       surf_attr_DrainCoef1_id, &
       surf_attr_DrainCoef2_id, &
       surf_attr_MaxStorCap_id, &
-
-      SoilStoreCap_id,&
-      SoilDepth_id,&
-      SatHydraulicConduct_id,&
-      AlbMin_DecTr_id,&
-      AlbMax_DecTr_id,&
-      AlbMin_EveTr_id,&
-      AlbMax_EveTr_id,&
-      AlbMin_Grass_id,&
-      AlbMax_Grass_id,&
-      CapMin_dec_id,&
-      CapMax_dec_id,&
-      PorMin_dec_id,&
-      PorMax_dec_id,&
-      DRAINRT_id,&
-      RAINCOVER_id,&
-      RAINMAXRES_id,&
-      FlowChange_id,&
-      PipeCapacity_id,&
-      RunoffToWater_id,&
-      StateLimit_id,&
-      WetThresh_id,&
-      BaseTHDD_id,&
-      Faut_id,&        
-      IrrFracConif_id,&
-      IrrFracDecid_id,&
-      IrrFracGrass_id,&
-      DayWat_id,&   
-      DayWatPer_id,&
-      PopDensDaytime_id,PopDensNighttime_id,&
-      porosity_id,&
+      SoilStoreCap_id, &
+      SoilDepth_id, &
+      SatHydraulicConduct_id, &
+      AlbMin_DecTr_id, &
+      AlbMax_DecTr_id, &
+      AlbMin_EveTr_id, &
+      AlbMax_EveTr_id, &
+      AlbMin_Grass_id, &
+      AlbMax_Grass_id, &
+      CapMin_dec_id, &
+      CapMax_dec_id, &
+      PorMin_dec_id, &
+      PorMax_dec_id, &
+      DRAINRT_id, &
+      RAINCOVER_id, &
+      RAINMAXRES_id, &
+      FlowChange_id, &
+      PipeCapacity_id, &
+      RunoffToWater_id, &
+      StateLimit_id, &
+      WetThresh_id, &
+      BaseTHDD_id, &
+      Faut_id, &
+      IrrFracConif_id, &
+      IrrFracDecid_id, &
+      IrrFracGrass_id, &
+      DayWat_id, &
+      DayWatPer_id, &
+      PopDensDaytime_id, PopDensNighttime_id, &
+      porosity_id, &
       GDD_id, HDD_id, LAI_id, WUDay_id, soilstore_id, state_id, SnowWater, &
       avkdn, avRh, avU1, Press_hPa, Temp_C, Precip, & ! forcing variables
-      qn, qf, qs, qh, qe, qsfc, tsk, CHKLOWQ,&
-      kdown_o,&
-      kup_o,&
-      ldown_o,&
-      lup_o,&
-      tsurf_o,smd_o,glw1d,cldfra1d)!output
+      qn, qf, qs, qh, qe, qsfc, tsk, CHKLOWQ, &
+      kdown_o, &
+      kup_o, &
+      ldown_o, &
+      lup_o, &
+      tsurf_o, smd_o, glw1d, cldfra1d)!output
 
       ! model configurations
       INTEGER, INTENT(in) ::snowUse
@@ -135,22 +133,22 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)  :: g6
       REAL(KIND(1D0)), INTENT(IN)  :: s1
       REAL(KIND(1D0)), INTENT(IN)  :: s2
-      REAL(KIND(1D0)), DIMENSION(4,3), INTENT(IN)  :: LaiPower
-      REAL(KIND(1D0)), INTENT(IN)  :: CRWmax        
-      REAL(KIND(1D0)), INTENT(IN)  :: CRWmin        
-      REAL(KIND(1D0)), INTENT(IN)  :: PrecipLimit   
+      REAL(KIND(1D0)), DIMENSION(4, 3), INTENT(IN)  :: LaiPower
+      REAL(KIND(1D0)), INTENT(IN)  :: CRWmax
+      REAL(KIND(1D0)), INTENT(IN)  :: CRWmin
+      REAL(KIND(1D0)), INTENT(IN)  :: PrecipLimit
       REAL(KIND(1D0)), INTENT(IN)  :: PrecipLimitAlb
-      REAL(KIND(1D0)), INTENT(IN)  :: RadMeltFact   
-      REAL(KIND(1D0)), INTENT(IN)  :: SnowAlbMax    
-      REAL(KIND(1D0)), INTENT(IN)  :: SnowAlbMin    
-      REAL(KIND(1D0)), INTENT(IN)  :: SnowDensMax   
-      REAL(KIND(1D0)), INTENT(IN)  :: SnowDensMin   
-      REAL(KIND(1D0)), INTENT(IN)  :: SnowLimBldg   
-      REAL(KIND(1D0)), INTENT(IN)  :: SnowLimPaved  
-      REAL(KIND(1D0)), INTENT(IN)  :: tau_a         
-      REAL(KIND(1D0)), INTENT(IN)  :: tau_f         
-      REAL(KIND(1D0)), INTENT(IN)  :: tau_r         
-      REAL(KIND(1D0)), INTENT(IN)  :: TempMeltFact  
+      REAL(KIND(1D0)), INTENT(IN)  :: RadMeltFact
+      REAL(KIND(1D0)), INTENT(IN)  :: SnowAlbMax
+      REAL(KIND(1D0)), INTENT(IN)  :: SnowAlbMin
+      REAL(KIND(1D0)), INTENT(IN)  :: SnowDensMax
+      REAL(KIND(1D0)), INTENT(IN)  :: SnowDensMin
+      REAL(KIND(1D0)), INTENT(IN)  :: SnowLimBldg
+      REAL(KIND(1D0)), INTENT(IN)  :: SnowLimPaved
+      REAL(KIND(1D0)), INTENT(IN)  :: tau_a
+      REAL(KIND(1D0)), INTENT(IN)  :: tau_f
+      REAL(KIND(1D0)), INTENT(IN)  :: tau_r
+      REAL(KIND(1D0)), INTENT(IN)  :: TempMeltFact
 
       INTEGER, INTENT(IN) ::OHMIncQF  !OHM calculation uses Q* only (0) or Q*+QF (1)
 
@@ -210,43 +208,40 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(INOUT) ::albGrass_id
       REAL(KIND(1d0)), INTENT(INOUT) ::NumCapita_id
 
-
-      REAL(KIND(1d0)), DIMENSION(3),INTENT(INOUT) :: BaseT_id
-      REAL(KIND(1d0)), DIMENSION(3),INTENT(INOUT) :: BaseTe_id
-      REAL(KIND(1d0)), DIMENSION(3),INTENT(INOUT) :: GDDFull_id
-      REAL(KIND(1d0)), DIMENSION(3),INTENT(INOUT) :: SDDFull_id
-      REAL(KIND(1d0)), DIMENSION(3),INTENT(INOUT) :: LaiMin_id
-      REAL(KIND(1d0)), DIMENSION(3),INTENT(INOUT) :: LaiMax_id
-      REAL(KIND(1d0)), DIMENSION(3),INTENT(INOUT) :: MaxConductance_id
+      REAL(KIND(1d0)), DIMENSION(3), INTENT(INOUT) :: BaseT_id
+      REAL(KIND(1d0)), DIMENSION(3), INTENT(INOUT) :: BaseTe_id
+      REAL(KIND(1d0)), DIMENSION(3), INTENT(INOUT) :: GDDFull_id
+      REAL(KIND(1d0)), DIMENSION(3), INTENT(INOUT) :: SDDFull_id
+      REAL(KIND(1d0)), DIMENSION(3), INTENT(INOUT) :: LaiMin_id
+      REAL(KIND(1d0)), DIMENSION(3), INTENT(INOUT) :: LaiMax_id
+      REAL(KIND(1d0)), DIMENSION(3), INTENT(INOUT) :: MaxConductance_id
       REAL(KIND(1d0)), INTENT(INOUT)              :: FAIbldg_id
       REAL(KIND(1d0)), INTENT(INOUT)              :: FAIEveTree_id
       REAL(KIND(1d0)), INTENT(INOUT)              :: FAIDecTree_id
       REAL(KIND(1d0)), INTENT(INOUT)              :: bldgH_id
       REAL(KIND(1d0)), INTENT(INOUT)              :: EveTreeH_id
       REAL(KIND(1d0)), INTENT(INOUT)              :: DecTreeH_id
-      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: AH_MIN_id
-      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: AH_SLOPE_Cooling_id
-      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: AH_SLOPE_Heating_id
-      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: QF0_BEU_id
-      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: Qf_A_id
-      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: Qf_B_id
-      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: Qf_C_id
-      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: T_CRITIC_Cooling_id
-      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: T_CRITIC_Heating_id
-      REAL(KIND(1d0)), DIMENSION(2),INTENT(INOUT) :: TrafficRate_id
-      REAL(KIND(1d0)), DIMENSION(7),INTENT(INOUT) :: surf_attr_MinStorCap_id
-      REAL(KIND(1d0)), DIMENSION(7),INTENT(INOUT) :: surf_attr_DrainEquat_id
-      REAL(KIND(1d0)), DIMENSION(7),INTENT(INOUT) :: surf_attr_DrainCoef1_id
-      REAL(KIND(1d0)), DIMENSION(7),INTENT(INOUT) :: surf_attr_DrainCoef2_id
-      REAL(KIND(1d0)), DIMENSION(7),INTENT(INOUT) :: surf_attr_MaxStorCap_id
-
-
+      REAL(KIND(1d0)), DIMENSION(2), INTENT(INOUT) :: AH_MIN_id
+      REAL(KIND(1d0)), DIMENSION(2), INTENT(INOUT) :: AH_SLOPE_Cooling_id
+      REAL(KIND(1d0)), DIMENSION(2), INTENT(INOUT) :: AH_SLOPE_Heating_id
+      REAL(KIND(1d0)), DIMENSION(2), INTENT(INOUT) :: QF0_BEU_id
+      REAL(KIND(1d0)), DIMENSION(2), INTENT(INOUT) :: Qf_A_id
+      REAL(KIND(1d0)), DIMENSION(2), INTENT(INOUT) :: Qf_B_id
+      REAL(KIND(1d0)), DIMENSION(2), INTENT(INOUT) :: Qf_C_id
+      REAL(KIND(1d0)), DIMENSION(2), INTENT(INOUT) :: T_CRITIC_Cooling_id
+      REAL(KIND(1d0)), DIMENSION(2), INTENT(INOUT) :: T_CRITIC_Heating_id
+      REAL(KIND(1d0)), DIMENSION(2), INTENT(INOUT) :: TrafficRate_id
+      REAL(KIND(1d0)), DIMENSION(7), INTENT(INOUT) :: surf_attr_MinStorCap_id
+      REAL(KIND(1d0)), DIMENSION(7), INTENT(INOUT) :: surf_attr_DrainEquat_id
+      REAL(KIND(1d0)), DIMENSION(7), INTENT(INOUT) :: surf_attr_DrainCoef1_id
+      REAL(KIND(1d0)), DIMENSION(7), INTENT(INOUT) :: surf_attr_DrainCoef2_id
+      REAL(KIND(1d0)), DIMENSION(7), INTENT(INOUT) :: surf_attr_MaxStorCap_id
 
       REAL(KIND(1d0)), INTENT(INOUT) ::PopDensDaytime_id
       REAL(KIND(1d0)), INTENT(INOUT) ::PopDensNighttime_id
-      REAL(KIND(1d0)), DIMENSION(7),INTENT(INOUT) ::SoilStoreCap_id
-      REAL(KIND(1d0)), DIMENSION(7),INTENT(INOUT) ::SoilDepth_id
-      REAL(KIND(1d0)), DIMENSION(7),INTENT(INOUT) ::SatHydraulicConduct_id
+      REAL(KIND(1d0)), DIMENSION(7), INTENT(INOUT) ::SoilStoreCap_id
+      REAL(KIND(1d0)), DIMENSION(7), INTENT(INOUT) ::SoilDepth_id
+      REAL(KIND(1d0)), DIMENSION(7), INTENT(INOUT) ::SatHydraulicConduct_id
       REAL(KIND(1d0)), INTENT(INOUT) ::AlbMin_DecTr_id
       REAL(KIND(1d0)), INTENT(INOUT) ::AlbMax_DecTr_id
       REAL(KIND(1d0)), INTENT(INOUT) ::AlbMin_EveTr_id
@@ -263,14 +258,14 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(INOUT) ::FlowChange_id
       REAL(KIND(1d0)), INTENT(INOUT) ::PipeCapacity_id
       REAL(KIND(1d0)), INTENT(INOUT) ::RunoffToWater_id
-      REAL(KIND(1d0)), DIMENSION(7),INTENT(INOUT) ::StateLimit_id
-      REAL(KIND(1d0)), DIMENSION(7),INTENT(INOUT) ::WetThresh_id
+      REAL(KIND(1d0)), DIMENSION(7), INTENT(INOUT) ::StateLimit_id
+      REAL(KIND(1d0)), DIMENSION(7), INTENT(INOUT) ::WetThresh_id
       REAL(KIND(1d0)), INTENT(INOUT) ::BaseTHDD_id
       REAL(KIND(1d0)), INTENT(INOUT) ::Faut_id
       REAL(KIND(1d0)), INTENT(INOUT) ::IrrFracConif_id
       REAL(KIND(1d0)), INTENT(INOUT) ::IrrFracDecid_id
       REAL(KIND(1d0)), INTENT(INOUT) ::IrrFracGrass_id
-      REAL(KIND(1d0)), DIMENSION(7), INTENT(INOUT) :: DayWat_id   
+      REAL(KIND(1d0)), DIMENSION(7), INTENT(INOUT) :: DayWat_id
       REAL(KIND(1d0)), DIMENSION(7), INTENT(INOUT) :: DayWatPer_id
       REAL(KIND(1d0)), INTENT(INOUT) ::porosity_id
       REAL(KIND(1d0)), DIMENSION(5), INTENT(INOUT)   ::GDD_id       !Growing Degree Days (see SUEWS_DailyState.f95)
@@ -298,7 +293,6 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out)::lup_o
       REAL(KIND(1D0)), INTENT(out)::tsurf_o
       REAL(KIND(1D0)), INTENT(out)::smd_o
-
 
       REAL(KIND(1D0)), INTENT(out)::qn
       REAL(KIND(1D0)), INTENT(out)::qf
@@ -534,8 +528,8 @@ CONTAINS
       StoreDrainPrm(5, :) = surf_attr_MaxStorCap_id
 
       StoreDrainPrm(6, :) = surf_var_id
-      ldown_obs=glw1d
-      fcld_obs=cldfra1d
+      ldown_obs = glw1d
+      fcld_obs = cldfra1d
       ! PRINT*,''
       ! PRINT*, 'soilstore_id',soilstore_id
       ! soilstore_id=MERGE(soilstore_id,soilstore_id*0,soilstore_id>0)

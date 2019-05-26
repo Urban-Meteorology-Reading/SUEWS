@@ -109,7 +109,9 @@ PROGRAM SUEWS_Program
    !FirstGrid = minval(int(SiteSelect(:,c_Grid)))
    !LastGrid  = maxval(int(SiteSelect(:,c_Grid)))
    IF (NumberOfGrids > MaxNumberOfGrids) THEN
-   CALL ErrorHint(64, 'No. of grids exceeds max. possible no. of grids.', REAL(MaxNumberOfGrids, KIND(1d0)), NotUsed, NumberOfGrids)
+      CALL ErrorHint(64, &
+                     'No. of grids exceeds max. possible no. of grids.', &
+                     REAL(MaxNumberOfGrids, KIND(1d0)), NotUsed, NumberOfGrids)
    ENDIF
 
    ALLOCATE (GridIDmatrix(NumberOfGrids)) !Get the nGrid numbers correctly
@@ -343,7 +345,8 @@ PROGRAM SUEWS_Program
 
             ! Check ESTM data and met data will have the same length (so that ESTM file can be read in same blocks as met data)
             IF (nlinesOrigESTMdata*NperESTM /= nlinesMetData) THEN
-             CALL ErrorHint(66, 'Downscaled ESTM and met input files will have different lengths', REAL(nlinesMetdata, KIND(1d0)), &
+               CALL ErrorHint(66, &
+                              'Downscaled ESTM and met input files will have different lengths', REAL(nlinesMetdata, KIND(1d0)), &
                               NotUsed, nlinesESTMdata*NperESTM)
             ENDIF
 
@@ -606,7 +609,8 @@ PROGRAM SUEWS_Program
                WRITE (grid_txt, '(I10)') GridIDmatrix(igrid)   !Get grid ID as a text string
                FileCodeX = TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(year_txt)
                IF (ir == 1 .AND. igrid == 1) THEN
-        WRITE (*, *) TRIM(ADJUSTL(FileCodeX)), ': Now running block ', iblock, '/', ReadBlocksMetData, ' of ', TRIM(year_txt), '...'
+                  WRITE (*, *) TRIM(ADJUSTL(FileCodeX)), &
+                     ': Now running block ', iblock, '/', ReadBlocksMetData, ' of ', TRIM(year_txt), '...'
                ENDIF
                IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_Calculations...'
                ! print*, 'before cal:',sum(Tair24HR)

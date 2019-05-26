@@ -208,8 +208,8 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::Qf_A
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::Qf_B
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::Qf_C
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::NumCapita      
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::PopDensDaytime      
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::NumCapita
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::PopDensDaytime
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::T_CRITIC_Cooling
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::T_CRITIC_Heating
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::TrafficRate
@@ -735,12 +735,12 @@ CONTAINS
 
       ! ============ BIOGENIC CO2 FLUX =======================
       CALL SUEWS_cal_BiogenCO2( &
-      alpha_bioCO2, alpha_enh_bioCO2, avkdn, avRh, beta_bioCO2, beta_enh_bioCO2, BSoilSurf, &! input:
-      ConifSurf, DecidSurf, dectime, Diagnose, EmissionsMethod,  Fc_anthro, G1, G2, G3, G4, &
-      G5, G6, gfunc, GrassSurf, gsmodel, id, it, ivConif, ivDecid, ivGrass, Kmax, LAI_id, LAIMin, &
-      LAIMax, MaxConductance, min_res_bioCO2, nsurf, NVegSurf, Press_hPa, resp_a, &
-      resp_b, S1, S2, sfr, SMDMethod, snowFrac, t2_C, Temp_C, theta_bioCO2, TH, TL, vsmd, xsmd, &
-      Fc, Fc_biogen, Fc_photo, Fc_respi)! output:
+         alpha_bioCO2, alpha_enh_bioCO2, avkdn, avRh, beta_bioCO2, beta_enh_bioCO2, BSoilSurf, &! input:
+         ConifSurf, DecidSurf, dectime, Diagnose, EmissionsMethod, Fc_anthro, G1, G2, G3, G4, &
+         G5, G6, gfunc, GrassSurf, gsmodel, id, it, ivConif, ivDecid, ivGrass, Kmax, LAI_id, LAIMin, &
+         LAIMax, MaxConductance, min_res_bioCO2, nsurf, NVegSurf, Press_hPa, resp_a, &
+         resp_b, S1, S2, sfr, SMDMethod, snowFrac, t2_C, Temp_C, theta_bioCO2, TH, TL, vsmd, xsmd, &
+         Fc, Fc_biogen, Fc_photo, Fc_respi)! output:
 
       !==============main calculation end=======================
 
@@ -788,14 +788,14 @@ CONTAINS
 
    ! ===================ANTHROPOGENIC HEAT + CO2 FLUX================================
    SUBROUTINE SUEWS_cal_AnthropogenicEmission( &
-         AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, AH_SLOPE_Heating, CO2PointSource, &! input:
-         dayofWeek_id, Diagnose, DLS, EF_umolCO2perJ, EmissionsMethod, EnEF_v_Jkm, &
-         FcEF_v_kgkm, FrFossilFuel_Heat, FrFossilFuel_NonHeat, HDD_id, HumActivity_24hr, &
-         id, imin, it, MaxFCMetab, MaxQFMetab, MinFCMetab, MinQFMetab, nsh, NumCapita, &
-         PopDensDaytime, PopDensNighttime, PopProf_24hr, QF, QF0_BEU, Qf_A, Qf_B, Qf_C, &
-         QF_obs, QF_SAHP, sfr, snowFrac, SurfaceArea, T_CRITIC_Cooling, T_CRITIC_Heating, &
-         Temp_C, TrafficRate, TrafficUnits, TraffProf_24hr, &
-         Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff)! output:
+      AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, AH_SLOPE_Heating, CO2PointSource, &! input:
+      dayofWeek_id, Diagnose, DLS, EF_umolCO2perJ, EmissionsMethod, EnEF_v_Jkm, &
+      FcEF_v_kgkm, FrFossilFuel_Heat, FrFossilFuel_NonHeat, HDD_id, HumActivity_24hr, &
+      id, imin, it, MaxFCMetab, MaxQFMetab, MinFCMetab, MinQFMetab, nsh, NumCapita, &
+      PopDensDaytime, PopDensNighttime, PopProf_24hr, QF, QF0_BEU, Qf_A, Qf_B, Qf_C, &
+      QF_obs, QF_SAHP, sfr, snowFrac, SurfaceArea, T_CRITIC_Cooling, T_CRITIC_Heating, &
+      Temp_C, TrafficRate, TrafficUnits, TraffProf_24hr, &
+      Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff)! output:
 
       IMPLICIT NONE
 
@@ -810,7 +810,6 @@ CONTAINS
 
       REAL(KIND(1d0)), DIMENSION(6, 2), INTENT(in)::HDD_id
 
-      
       REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::AH_MIN
       REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::AH_SLOPE_Heating
       REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::AH_SLOPE_Cooling
@@ -843,11 +842,10 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in)::QF_obs
       REAL(KIND(1D0)), INTENT(in)::Temp_C
       REAL(KIND(1D0)), INTENT(in)::TrafficUnits
-      
+
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::sfr
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::snowFrac
       REAL(KIND(1D0)), INTENT(IN)::SurfaceArea
-
 
       REAL(KIND(1D0)), INTENT(out)::Fc_anthro
       REAL(KIND(1D0)), INTENT(out)::Fc_build
@@ -898,7 +896,7 @@ CONTAINS
    !==============BIOGENIC CO2 flux==================================================
    SUBROUTINE SUEWS_cal_BiogenCO2( &
       alpha_bioCO2, alpha_enh_bioCO2, avkdn, avRh, beta_bioCO2, beta_enh_bioCO2, BSoilSurf, &! input:
-      ConifSurf, DecidSurf, dectime, Diagnose, EmissionsMethod,  Fc_anthro, G1, G2, G3, G4, &
+      ConifSurf, DecidSurf, dectime, Diagnose, EmissionsMethod, Fc_anthro, G1, G2, G3, G4, &
       G5, G6, gfunc, GrassSurf, gsmodel, id, it, ivConif, ivDecid, ivGrass, Kmax, LAI_id, LAIMin, &
       LAIMax, MaxConductance, min_res_bioCO2, nsurf, NVegSurf, Press_hPa, resp_a, &
       resp_b, S1, S2, sfr, SMDMethod, snowFrac, t2_C, Temp_C, theta_bioCO2, TH, TL, vsmd, xsmd, &
@@ -965,7 +963,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(out)::Fc_photo
       REAL(KIND(1d0)), INTENT(out)::Fc_respi
       REAL(KIND(1d0)), INTENT(out)::Fc
-      
+
       REAL(KIND(1d0))::gfunc2
       REAL(KIND(1d0))::dq
       REAL(KIND(1d0))::t2
@@ -981,32 +979,31 @@ CONTAINS
       REAL(KIND(1d0))::dummy10
       REAL(KIND(1d0))::dummy11
 
-      
       IF (EmissionsMethod >= 11) THEN
-      
-        IF(gsmodel == 3 .OR. gsmodel == 4) THEN ! With modelled 2 meter temperature
-        ! Call LUMPS_cal_AtmMoist for dq and SurfaceResistance for gfunc with 2 meter temperature 
-        ! If modelled 2 meter temperature is too different from measured air temperature then
-        ! use temp_c 
-        IF(ABS(Temp_C - t2_C)>5)THEN
-           t2 = Temp_C
-        ELSE
-           t2 = t2_C
-        ENDIF
-         
-        CALL LUMPS_cal_AtmMoist( &
-           t2, Press_hPa, avRh, dectime, &! input:
-           dummy1, dummy2, &! output:
-           dummy3, dummy4, dummy5, dummy6, dq, dummy7, dummy8, dummy9)
-                
-        CALL SurfaceResistance( &
-           id, it, &! input:
-           SMDMethod, snowFrac, sfr, avkdn, t2, dq, xsmd, vsmd, MaxConductance, &
-           LAIMax, LAI_id, gsModel, Kmax, &
-           G1, G2, G3, G4, G5, G6, TH, TL, S1, S2, &
-           gfunc2, dummy10, dummy11)! output:         
-      ENDIF
-      
+
+         IF (gsmodel == 3 .OR. gsmodel == 4) THEN ! With modelled 2 meter temperature
+            ! Call LUMPS_cal_AtmMoist for dq and SurfaceResistance for gfunc with 2 meter temperature
+            ! If modelled 2 meter temperature is too different from measured air temperature then
+            ! use temp_c
+            IF (ABS(Temp_C - t2_C) > 5) THEN
+               t2 = Temp_C
+            ELSE
+               t2 = t2_C
+            ENDIF
+
+            CALL LUMPS_cal_AtmMoist( &
+               t2, Press_hPa, avRh, dectime, &! input:
+               dummy1, dummy2, &! output:
+               dummy3, dummy4, dummy5, dummy6, dq, dummy7, dummy8, dummy9)
+
+            CALL SurfaceResistance( &
+               id, it, &! input:
+               SMDMethod, snowFrac, sfr, avkdn, t2, dq, xsmd, vsmd, MaxConductance, &
+               LAIMax, LAI_id, gsModel, Kmax, &
+               G1, G2, G3, G4, G5, G6, TH, TL, S1, S2, &
+               gfunc2, dummy10, dummy11)! output:
+         ENDIF
+
          ! Calculate CO2 fluxes from biogenic components
          IF (Diagnose == 1) WRITE (*, *) 'Calling CO2_biogen...'
          CALL CO2_biogen( &
@@ -1023,7 +1020,7 @@ CONTAINS
          Fc_respi = 0
       ENDIF
 
-   Fc = Fc_anthro + Fc_biogen
+      Fc = Fc_anthro + Fc_biogen
 
    END SUBROUTINE SUEWS_cal_BiogenCO2
    !========================================================================
@@ -1917,7 +1914,7 @@ CONTAINS
          SMDMethod, snowFrac, sfr, avkdn, Temp_C, dq, xsmd, vsmd, MaxConductance, &
          LAIMax, LAI_id, gsModel, Kmax, &
          G1, G2, G3, G4, G5, G6, TH, TL, S1, S2, &
-         gfunc,gsc, ResistSurf)! output:
+         gfunc, gsc, ResistSurf)! output:
 
       IF (Diagnose == 1) WRITE (*, *) 'Calling BoundaryLayerResistance...'
       CALL BoundaryLayerResistance( &
@@ -2646,8 +2643,8 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::Qf_A
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::Qf_B
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::Qf_C
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::Numcapita   
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::PopDensDaytime    
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::Numcapita
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::PopDensDaytime
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::T_CRITIC_Cooling
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::T_CRITIC_Heating
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::TrafficRate

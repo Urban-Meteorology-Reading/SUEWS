@@ -353,7 +353,7 @@ MODULE ctrl_output
       varAttr('TiBLD4', 'degK', f104, 'Temperature in internal building layer 4', aA, 'ESTM', 0), &
       varAttr('TiBLD5', 'degK', f104, 'Temperature in internal building layer 5', aA, 'ESTM', 0), &
       varAttr('TaBLD', 'degK', f104, 'Indoor air temperature', aA, 'ESTM', 0) &
-      /
+      &/
 
    ! DailyState:
    DATA(varListAll(n), &

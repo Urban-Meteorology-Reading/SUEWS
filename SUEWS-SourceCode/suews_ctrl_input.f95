@@ -507,9 +507,9 @@ SUBROUTINE InputHeaderCheck(FileName)
    HeaderAnthropogenic_Reqd(cA_PopProfWE) = "PopProfWE"
    HeaderAnthropogenic_Reqd(cA_MinQFMetab) = "MinQFMetab"
    HeaderAnthropogenic_Reqd(cA_MaxQFMetab) = "MaxQFMetab"
-   HeaderAnthropogenic_Reqd(cA_MinFCMetab) = "MinFCMetab" 
-   HeaderAnthropogenic_Reqd(cA_MaxFCMetab) = "MaxFCMetab" 
-   HeaderAnthropogenic_Reqd(cA_FrPDDwe) = "FrPDDwe"    
+   HeaderAnthropogenic_Reqd(cA_MinFCMetab) = "MinFCMetab"
+   HeaderAnthropogenic_Reqd(cA_MaxFCMetab) = "MaxFCMetab"
+   HeaderAnthropogenic_Reqd(cA_FrPDDwe) = "FrPDDwe"
    HeaderAnthropogenic_Reqd(cA_FrFossilFuel_Heat) = "FrFossilFuel_Heat"
    HeaderAnthropogenic_Reqd(cA_FrFossilFuel_NonHeat) = "FrFossilFuel_NonHeat"
    HeaderAnthropogenic_Reqd(cA_EF_umolCO2perJ) = "EF_umolCO2perJ"
@@ -1063,8 +1063,8 @@ SUBROUTINE CodeMatchDist(rr, CodeCol, codeColSameSurf)
    !! Also do for water surface once implemented
    IF (codeCol /= c_WGWaterCode) THEN   ! Except for Water surface
       ! Check total water distribution from each surface adds up to 1
-      IF (SUM(WGWaterDist_Coeff(iv5, cWG_ToPaved:cWG_ToSoilStore)) > 1.0000001 .OR. SUM(WGWaterDist_Coeff(iv5, &
-                                                                                     cWG_ToPaved:cWG_ToSoilStore)) < 0.9999999) THEN
+      IF (SUM(WGWaterDist_Coeff(iv5, cWG_ToPaved:cWG_ToSoilStore)) > 1.0000001 &
+          .OR. SUM(WGWaterDist_Coeff(iv5, cWG_ToPaved:cWG_ToSoilStore)) < 0.9999999) THEN
          CALL ErrorHint(8, 'Total water distribution from each surface should add up to 1.', &
                         SUM(WGWaterDist_Coeff(iv5, cWG_ToPaved:cWG_ToSoilStore)), notUsed, notUsedI)
       ENDIF
@@ -1247,9 +1247,9 @@ SUBROUTINE CodeMatchAnthropogenic(rr, CodeCol)
          EXIT
       ELSEIF (iv5 == nlinesAnthropogenic) THEN
          WRITE (*, *) 'Program stopped! Anthropogenic code ', SiteSelect(rr, codeCol), &
-                      'not found in SUEWS_AnthropogenicEmission.txt.'
+            'not found in SUEWS_AnthropogenicEmission.txt.'
          CALL ErrorHint(57, 'Cannot find code in SUEWS_AnthropogenicEmission.txt', &
-              SiteSelect(rr, codeCol), notUsed, notUsedI)
+                        SiteSelect(rr, codeCol), notUsed, notUsedI)
       ENDIF
    ENDDO
 
@@ -1516,11 +1516,13 @@ CONTAINS
                ELSEIF (RainAmongN > Nper) THEN
                   CALL ErrorHint(2, 'Problem in SUEWS_MetDisagg: RainAmongN > Nper', REAL(Nper, KIND(1d0)), NotUsed, RainAmongN)
                ELSE
-                Met_tt(:, 14) = DisaggP_amongN(MetForDisagg(:, 14), RainAmongN, Nper, ReadLinesOrigMetData, ReadLinesOrigMetDataMax)
+                  Met_tt(:, 14) = DisaggP_amongN(MetForDisagg(:, 14), &
+                                                 RainAmongN, Nper, ReadLinesOrigMetData, ReadLinesOrigMetDataMax)
                   IF (ALL(MetForDisagg(:, 16) == -999)) THEN
                      Met_tt(:, 16) = -999
                   ELSE
-                Met_tt(:, 16) = DisaggP_amongN(MetForDisagg(:, 16), RainAmongN, Nper, ReadLinesOrigMetData, ReadLinesOrigMetDataMax)
+                     Met_tt(:, 16) = DisaggP_amongN(MetForDisagg(:, 16), &
+                                                    RainAmongN, Nper, ReadLinesOrigMetData, ReadLinesOrigMetDataMax)
                   ENDIF
                ENDIF
             ELSEIF (MetDisaggMethod(14) == 102) THEN
@@ -1583,8 +1585,10 @@ CONTAINS
          ENDDO
          ! Redistribute kdown over each day
          DO i = 1, (ReadLinesOrigMetDataMax*Nper/nsd) ! Loop over each day
-            Met_tt_kdownAdj((i - 1)*nsd + seq1nsd) = Met_tt_kdownAdj((i - 1)*nsd + seq1nsd)* &
-                                                  SUM(Met_tt((i - 1)*nsd + seq1nsd, 15))/SUM(Met_tt_kdownAdj((i - 1)*nsd + seq1nsd))
+            Met_tt_kdownAdj((i - 1)*nsd + seq1nsd) = &
+               Met_tt_kdownAdj((i - 1)*nsd + seq1nsd) &
+               *SUM(Met_tt((i - 1)*nsd + seq1nsd, 15)) &
+               /SUM(Met_tt_kdownAdj((i - 1)*nsd + seq1nsd))
          ENDDO
          ! Copy adjusted kdown back to Met_tt array
          Met_tt(:, 15) = Met_tt_kdownAdj(:)
@@ -1932,7 +1936,9 @@ CONTAINS
       IF (DisaggType == 10) THEN
          FastRows = FLOOR(Nper_loc/2.0) + seq1Nper_loc  ! Rows to create at model time-step
          FirstRows10 = (/(i, i=1, (FastRows(1) - 1), 1)/)   !For start of dataset
-LastRows10 = (/(i, i=Nper_loc*(ReadLinesOrigMax_loc - 1 - 1) + FastRows(Nper_loc) + 1, (ReadLinesOrigMax_loc*Nper_loc), 1)/)  ! For end of dataset
+         LastRows10 = &
+            (/(i, i=Nper_loc*(ReadLinesOrigMax_loc - 1 - 1) + FastRows(Nper_loc) + 1, &
+               (ReadLinesOrigMax_loc*Nper_loc), 1)/)  ! For end of dataset
       ELSEIF (DisaggType == 20) THEN
          FastRows = Nper_loc + seq1Nper_loc   !Rows to create at model time-step
          FirstRows20 = (/(i, i=1, (FastRows(1) - 1), 1)/)   !For start of dataset

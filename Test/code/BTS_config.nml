@@ -1,27 +1,8 @@
 &file
-    path_obs = '../BaseRun/London_KCL/Obs/London_KCL_obs_1h.txt'
-    path_ref = '../BaseRun/London_KCL/2016a/Output/Kc1_2011_60.txt'
-    name_cfg(1) = 'v2016a'
-    path_cfg(1) = '../BaseRun/London_KCL/2016a/Output/Kc1_2011_60.txt'
-    name_cfg(2) = 'v2018a'
-    path_cfg(2) = '../BaseRun/London_KCL/2018a/Output/Kc1_2011_SUEWS_60.txt'
-    name_cfg(3) = 'v2018b'
-    path_cfg(3) = '../BaseRun/London_KCL/2018b/Output/Kc1_2011_SUEWS_60.txt'
-
-    path_report_pdf = '../report/comp-2016a_2018a_2018b'
-    path_report_html = '../report/comp-2016a_2018a_2018b'
-
     name_exe    = 'SUEWS_V2019a'
     dir_exe     = '../../SUEWS-SourceCode'
     dir_input   = '../../Release/InputTables/2019a'
     dir_baserun = '../BaseRun/2019a'
-
-/
-
-&benchmark
-    list_var = 0
-    list_metric = 'MAE', 'MBE', 'RMSE'
-    method_score = 1
 /
 
 &test

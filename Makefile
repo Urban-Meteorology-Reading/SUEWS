@@ -52,8 +52,7 @@ test:
 	cd $(test_dir); python 1.test_dev.py
 
 # make fortran exe, run test cases and pack release archive
-release:
-	$(MAKE) pip
+release: pip
 	$(MAKE) main
 	$(MAKE) -C $(release_dir) pack; # clean Fortran SUEWS build
 
@@ -72,3 +71,4 @@ pip:
 clean:
 	$(MAKE) -C $(SUEWS_dir) clean
 	$(MAKE) -C $(SuPy_dir) clean
+	$(MAKE) -C $(release_dir) clean

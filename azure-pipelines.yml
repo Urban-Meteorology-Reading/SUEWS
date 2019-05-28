@@ -172,7 +172,7 @@ jobs:
   displayName:          Agent Linux
 
   condition:            succeeded()
-  queue:
+  pool:
     name:               Hosted Ubuntu 1604
   steps:
   - task:               UsePythonVersion@0

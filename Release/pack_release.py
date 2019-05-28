@@ -27,7 +27,9 @@ path_archive = path_base / ('_'.join(['SUEWS', name_ver, name_sys]))
 print(f'creating {path_archive}.zip')
 
 # copy input tables
-path_input_tables = path_base / 'InputTables' / name_ver
+path_test=Path('../Test/BaseRun')
+# path_input_tables = path_base / 'InputTables' / name_ver
+path_input_tables = path_test / name_ver
 if path_input_tables.exists():
     if path_archive.exists():
         rmtree(path_archive)
@@ -37,27 +39,37 @@ else:
     sys.exit()
 
 
-# load path info for input and output
-dict_runcontrol = f90nml.read(path_archive / 'RunControl.nml')['runcontrol']
+# # load path info for input and output
+# dict_runcontrol = f90nml.read(path_archive / 'RunControl.nml')['runcontrol']
 
-# make input dir
-path_input = dict_runcontrol['fileinputpath']
-path_input = path_archive / path_input
-if not path_input.exists():
-    path_input.mkdir()
+# # make input dir
+# path_input = dict_runcontrol['fileinputpath']
+# path_input = path_archive / path_input
+# if not path_input.exists():
+#     path_input.mkdir()
 
-# move input files
-list_input_files = [
-    file for file in path_archive.glob('*.*')
-    if 'RunControl' not in str(file)]
-for file in list_input_files:
-    move(str(file), str(path_input))
+# # move input files
+# list_input_files = [
+#     file for file in path_archive.glob('*.*')
+#     if 'RunControl' not in str(file)]
+# for file in list_input_files:
+#     move(str(file), str(path_input))
 
-# make output dir
-path_output = dict_runcontrol['fileoutputpath']
-path_output = path_archive / path_output
-if not path_output.exists():
-    path_output.mkdir()
+# # make output dir
+# path_output = dict_runcontrol['fileoutputpath']
+# path_output = path_archive / path_output
+# if not path_output.exists():
+#     path_output.mkdir()
+
+# remove test run files
+# SUEWS binary or symlink
+Path(path_archive / path_exe.name).unlink()
+# runtime warning or error files
+for x in path_archive.glob('*.txt'):
+    x.unlink()
+# hidden files
+for x in path_archive.glob('.*'):
+    x.unlink()
 
 # copy SUEWS exe
 path_exe_target = copyfile(path_exe, path_archive / path_exe.name)

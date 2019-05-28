@@ -74,10 +74,9 @@ The test workflow is as follows (details refer to the Makefile `test` recipe and
 1. Prepare a base run:
    - under `Test/BaseRun`, create a folder named with version/feature info (e.g., `2019a`);
    - perform a simulation to produce example output files, which will later be used as standard run to verify the correct code functionalities.
-2. Put all the above input files without any nesting structure (e.g., NOT `Input/SUEWS*txt` BUT `SUEWS*txt`) as a folder under `Release/InputTables` (e.g., `Release/InputTables/2019a`) with explicit version/feature info as folder name (e.g., `2019a`).
 
-   *Note: these files will be archived in public releases for users; so carefully construct test data to include in the input files.*
-3. Configure test namelist file `Test/code/BTS_config.nml`:
+   *Note: all the above input files will be automatically copied under `Release/InputTables` with explicit version/feature (e.g., `Release/InputTables/2019a`) and later archived in public releases for users; so carefully construct test data to include in the input files.*
+2. Configure test namelist file `Test/code/BTS_config.nml`:
 
    - `name_exe`: the SUEWS binary name that will be used for testing.
    - `dir_exe`: the directory to copy `name_exe`.

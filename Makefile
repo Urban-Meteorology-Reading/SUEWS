@@ -53,7 +53,7 @@ test:
 
 # make fortran exe, run test cases and pack release archive
 release: pip
-	$(MAKE) main
+	$(MAKE) test
 	$(MAKE) -C $(release_dir) pack; # clean Fortran SUEWS build
 
 # make supy dist

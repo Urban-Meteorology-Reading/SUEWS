@@ -1,19 +1,47 @@
+from shutil import rmtree
 import Test_SUEWS as ts
 import f90nml
 import os
 import numpy as np
 import unittest
+from pathlib import Path
+from tempfile import gettempdir, TemporaryDirectory
+from shutil import copyfile
 
 fn_nml = 'BTS_config.nml'
 # load basic configurations
 # load path
 nml = f90nml.read(fn_nml)
 cfg_file = nml['file']
-dir_input, dir_exe, dir_baserun = (
+dir_exe, path_baserun = (
     os.path.abspath(cfg_file[x])
-    for x in ['dir_input', 'dir_exe', 'dir_baserun'])
+    for x in ['dir_exe', 'dir_baserun'])
+path_baserun = Path(path_baserun)
 # dir_exe = os.path.abspath(path_base[])
 # dir_baserun = path_base[]
+
+
+# copy all input files to the release folder
+path_release_input = Path('../../Release/InputTables').resolve()
+# version specific input folder under release folder
+path_input_ver = (path_release_input / path_baserun.name).resolve()
+print('dir_input', path_input_ver)
+# clean existing files
+if path_input_ver.exists():
+    print('cleaning existing files...')
+    rmtree(path_input_ver)
+    path_input_ver.mkdir()
+
+
+# copy runcontrol
+path_runctrl_base = path_baserun/'RunControl.nml'
+path_runctrl_input=path_input_ver/'RunControl.nml'
+copyfile(path_runctrl_base, path_runctrl_input)
+dict_runcontrol = ts.load_SUEWS_nml(path_runctrl_base)['runcontrol']
+# copy other input tables and initial conditions
+path_base_input = (path_baserun / dict_runcontrol['fileinputpath'])
+for x in path_base_input.glob('*'):
+    copyfile(x, path_input_ver / x.name)
 
 # load name of programme for testing
 name_exe = cfg_file['name_exe']
@@ -23,14 +51,14 @@ dict_phy_opt_sel = nml['physics_test']
 
 # runcontrol settings
 dict_runcontrol = ts.load_SUEWS_nml(
-    os.path.join(dir_input, 'RunControl.nml')).to_dict()['runcontrol']
+    os.path.join(path_input_ver, 'RunControl.nml')).to_dict()['runcontrol']
 # initial condition
 dict_initcond = (ts.load_SUEWS_nml(
-    os.path.join(dir_input, 'InitialConditionstest_2004.nml')).to_dict()[
+    os.path.join(path_input_ver, 'InitialConditionstest_2004.nml')).to_dict()[
     'initialconditions'])
 # siteselect info
 df_siteselect = ts.load_SUEWS_table(
-    os.path.join(dir_input, 'SUEWS_SiteSelect.txt'))
+    os.path.join(path_input_ver, 'SUEWS_SiteSelect.txt'))
 
 
 # test case class for unit test
@@ -41,7 +69,7 @@ class Test_SUEWS(unittest.TestCase):
         name_sim = 'test-multi-year' + str(np.random.randint(10000))
         res_test = ts.test_multiyear(
             name_sim, name_exe, dict_runcontrol, dict_initcond, df_siteselect,
-            dir_exe, dir_input)
+            dir_exe, path_input_ver)
         self.assertTrue(res_test)
         print('  ')
         print('***************************************')
@@ -55,7 +83,7 @@ class Test_SUEWS(unittest.TestCase):
         res_test = ts.test_multigrid(
             name_sim, name_exe,
             dict_runcontrol, dict_initcond, df_siteselect,
-            n_grid, dir_exe, dir_input)
+            n_grid, dir_exe, path_input_ver)
         self.assertTrue(res_test)
         print('  ')
         print('***************************************')
@@ -68,7 +96,7 @@ class Test_SUEWS(unittest.TestCase):
         res_test = ts.test_samerun(name_sim, name_exe,
                                    dict_runcontrol, dict_initcond,
                                    df_siteselect,
-                                   dir_exe, dir_baserun)
+                                   dir_exe, path_baserun)
         self.assertTrue(res_test)
         print('  ')
         print('****************************************************')
@@ -79,7 +107,7 @@ class Test_SUEWS(unittest.TestCase):
         print('testing if some physics schemes are working ... ')
         # show options to test
         res_list_fail = ts.test_physics(
-            name_exe, dir_input, dir_exe,
+            name_exe, path_input_ver, dir_exe,
             dict_runcontrol, dict_initcond, df_siteselect,
             dict_phy_opt_sel)
 

@@ -413,7 +413,7 @@ MODULE ctrl_output
         ncolumnsDataOutSUEWS + ncolumnsdataOutSOL - 5 &
         + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5 + ncolumnsDataOutESTM - 5 &
         + ncolumnsDataOutDailyState - 5 &
-        + ncolumnsDataOutRSL-5)/ &
+        + ncolumnsDataOutRSL - 5)/ &
       varAttr('U_1', 'm s-1', f104, 'U at 0.1Zh', aA, 'RSL', 0), &
       varAttr('U_2', 'm s-1', f104, 'U at 0.2Zh', aA, 'RSL', 0), &
       varAttr('U_3', 'm s-1', f104, 'U at 0.3Zh', aA, 'RSL', 0), &
@@ -488,7 +488,7 @@ CONTAINS
                   SnowUse >= 1, &
                   StorageHeatMethod == 4 .OR. StorageHeatMethod == 14, &
                   .TRUE., &
-                  .TRUE. /)
+                  .TRUE./)
       xx = COUNT(grpCond)
 
       ! PRINT*, grpList0,xx

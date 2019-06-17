@@ -11,18 +11,28 @@
  AlbGrass0=  0.17999999999999999     
  DecidCap0=  0.29999999999999999     
  Porosity0=  0.59999999999999998     
+<<<<<<< HEAD
  SoilStorePavedState=   149.92673193424454     
  SoilStoreBldgsState=   149.92676584399931     
  SoilStoreEveTrState=   149.91137412426846     
  SoilStoreDecTrState=   149.91785942020115     
  SoilStoreGrassState=   149.91784713545357     
  SoilStoreBSoilState=   149.91783492017660     
+=======
+ SoilStorePavedState=   149.89815262857684     
+ SoilStoreBldgsState=   149.89820035071855     
+ SoilStoreEveTrState=   149.86835718022840     
+ SoilStoreDecTrState=   149.87995626201720     
+ SoilStoreGrassState=   149.87993607501198     
+ SoilStoreBSoilState=   149.87991616934397     
+>>>>>>> refs/remotes/origin/test-dev-RSL
  PavedState=   0.0000000000000000     
  BldgsState=   0.0000000000000000     
  EveTrState=   0.0000000000000000     
  DecTrState=   0.0000000000000000     
  GrassState=   0.0000000000000000     
  BSoilState=   0.0000000000000000     
+<<<<<<< HEAD
  WaterState=   8.7418486535054199E-003
  SnowWaterPavedState=   5.6745573105772458E-004
  SnowWaterBldgsState=   5.6745573105772458E-004
@@ -43,6 +53,28 @@
  SnowFracEveTr=   9.2237128162374615E-003
  SnowFracDecTr=   9.2237128162374615E-003
  SnowFracGrass=   9.2237128162374615E-003
+=======
+ WaterState=   8.7456433915104291E-003
+ SnowWaterPavedState=   5.6770232445104991E-004
+ SnowWaterBldgsState=   5.6770232445104991E-004
+ SnowWaterEveTrState=   5.6770232445104991E-004
+ SnowWaterDecTrState=   5.6770232445104991E-004
+ SnowWaterGrassState=   5.6770232445104991E-004
+ SnowWaterBSoilState=   5.6770232445104991E-004
+ SnowWaterWaterState=   5.6771775189694046E-004
+ SnowPackPaved=   8.7458961232264581E-003
+ SnowPackBldgs=   8.7458961232264581E-003
+ SnowPackEveTr=   8.7458961232264581E-003
+ SnowPackDecTr=   8.7458961232264581E-003
+ SnowPackGrass=   8.7458961232264581E-003
+ SnowPackBSoil=   8.7458961232264581E-003
+ SnowPackWater=   8.7455611331889900E-003
+ SnowFracPaved=   1.0000000474974513E-003
+ SnowFracBldgs=   1.0000000474974513E-003
+ SnowFracEveTr=   9.2257121075274284E-003
+ SnowFracDecTr=   9.2257121075274284E-003
+ SnowFracGrass=   9.2257121075274284E-003
+>>>>>>> refs/remotes/origin/test-dev-RSL
  SnowFracBSoil=   1.0000000000000000     
  SnowFracWater=   1.0000000000000000     
  SnowDensPaved=   100.25511510040724     

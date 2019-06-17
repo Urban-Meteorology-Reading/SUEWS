@@ -11,12 +11,21 @@
  AlbGrass0=  0.17999999999999999     
  DecidCap0=  0.29999999999999999     
  Porosity0=  0.59999999999999998     
+<<<<<<< HEAD
  SoilStorePavedState=   149.90532209149055     
  SoilStoreBldgsState=   149.90533821641679     
  SoilStoreEveTrState=   149.89473864016176     
  SoilStoreDecTrState=   149.89858207968385     
  SoilStoreGrassState=   149.89857462105672     
  SoilStoreBSoilState=   149.90027629617771     
+=======
+ SoilStorePavedState=   149.86526023899214     
+ SoilStoreBldgsState=   149.86528078494121     
+ SoilStoreEveTrState=   149.84495739999085     
+ SoilStoreDecTrState=   149.85147391963693     
+ SoilStoreGrassState=   149.85146226075287     
+ SoilStoreBSoilState=   149.85635031768754     
+>>>>>>> refs/remotes/origin/test-dev-RSL
  PavedState=   0.0000000000000000     
  BldgsState=   0.0000000000000000     
  EveTrState=   0.0000000000000000     
@@ -30,7 +39,11 @@
  SnowWaterDecTrState=   0.0000000000000000     
  SnowWaterGrassState=   0.0000000000000000     
  SnowWaterBSoilState=   0.0000000000000000     
+<<<<<<< HEAD
  SnowWaterWaterState=   9.9324475458887696E-004
+=======
+ SnowWaterWaterState=   5.5186545600659340E-004
+>>>>>>> refs/remotes/origin/test-dev-RSL
  SnowPackPaved=   0.0000000000000000     
  SnowPackBldgs=   0.0000000000000000     
  SnowPackEveTr=   0.0000000000000000     

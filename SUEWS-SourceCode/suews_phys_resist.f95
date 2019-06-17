@@ -473,7 +473,7 @@ SUBROUTINE SUEWS_cal_RoughnessParameters( &
       ELSEIF (RoughLenMomMethod == 3) THEN !MacDonald 1998
          IF (areaZh /= 0) THEN  !Plan area fraction
             !planF=FAIBldg*sfr(BldgSurf)/areaZh+FAItree*sfr(ConifSurf)/areaZh+FAItree*(1-porosity_id)*sfr(DecidSurf)/areaZh
-      !   planF = FAIBldg*sfr(BldgSurf)/areaZh + FAIEveTree*sfr(ConifSurf)/areaZh + FAIDecTree*(1 - porosity_id)*sfr(DecidSurf)/areaZh
+            !   planF = FAIBldg*sfr(BldgSurf)/areaZh + FAIEveTree*sfr(ConifSurf)/areaZh + FAIDecTree*(1 - porosity_id)*sfr(DecidSurf)/areaZh
          ELSE
             ! planF = 0.00001
             Zh = 1

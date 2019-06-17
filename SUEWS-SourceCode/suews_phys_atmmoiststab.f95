@@ -167,14 +167,9 @@ CONTAINS
          ! PRINT*, 1/(z0m-z0m)
          CALL ErrorHint(17, 'In stability subroutine, (z-zd) < z0.', zzd, z0m, notUsedI)
       ENDIF
-<<<<<<< HEAD
       i = 1
       LOLD = -999.
       DO WHILE ((ABS(LOLD - L_MOD) > 0.01).AND.(i<330)) !NT: add error threshold !Iteration starts
-=======
-      ! print *, 'QH = ', H
-      DO i = 1, 330 !Iteration starts
->>>>>>> refs/remotes/origin/test-dev-RSL
          LOLD = L_MOD
          zL = zzd/L_MOD
          z0L = z0m/L_MOD  !z0m roughness length
@@ -204,15 +199,7 @@ CONTAINS
          !    ! RETURN
          ! ENDIF
 
-<<<<<<< HEAD
          i = i + 1
-=======
-         IF (ABS(LOLD - L_MOD) < 0.01) THEN
-            IF (ABS(L_MOD) > 1e6) L_MOD = L_MOD/ABS(L_MOD)*1e6
-            EXIT
-            CONTINUE
-         ENDIF
->>>>>>> refs/remotes/origin/test-dev-RSL
       ENDDO
       IF (ABS(L_MOD) > 1e6) L_MOD = L_MOD/ABS(L_MOD)*1e6
 

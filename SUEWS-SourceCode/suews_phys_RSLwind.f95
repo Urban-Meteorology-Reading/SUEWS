@@ -53,12 +53,7 @@ SUBROUTINE WindProfile( &
    Lc_build = (1.-sfr(BldgSurf))/planF*Zh  ! Coceal and Belcher 2004 assuming Cd = 2
    Lc_tree = 1./(cd_tree*a_tree)
    Lc = (1.-(sfr(BldgSurf) + sfr(ConifSurf) + sfr(ConifSurf)))/planF*Zh
-<<<<<<< HEAD
-   IF ((3.*Zh) < 10.) THEN 
-=======
-
    IF ((3.*Zh) < 10.) THEN
->>>>>>> refs/remotes/origin/test-dev-RSL
       dz = 1./3.      ! if canopy height is small use steps of 0.33333 m to get to 10 m
       zarray = (/(I, I=1, nz)/)*dz
    ELSE
@@ -122,12 +117,8 @@ SUBROUTINE WindProfile( &
    ! calculate z0 iteratively
    z0 = 0.5  !first guess
    err = 10.
-<<<<<<< HEAD
    it = 1
    DO WHILE ((err > 0.001) .AND. (it > 10))
-=======
-   DO it = 1, 10
->>>>>>> refs/remotes/origin/test-dev-RSL
       psimz0 = stab_fn_mom(StabilityMethod, z0/L_MOD, z0/L_MOD)
       z01 = z0
       z0 = (Zh - zd)*EXP(-1.*kappa/beta)*EXP(-1.*psimZh + psimz0)*EXP(psihat_z(idx_can))

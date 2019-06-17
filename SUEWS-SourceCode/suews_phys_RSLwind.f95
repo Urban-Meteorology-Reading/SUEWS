@@ -118,7 +118,7 @@ SUBROUTINE WindProfile( &
    z0 = 0.5  !first guess
    err = 10.
    it = 1
-   DO WHILE ((err > 0.001) .AND. (it > 10))
+   DO WHILE ((err > 0.001) .AND. (it < 10))
       psimz0 = stab_fn_mom(StabilityMethod, z0/L_MOD, z0/L_MOD)
       z01 = z0
       z0 = (Zh - zd)*EXP(-1.*kappa/beta)*EXP(-1.*psimZh + psimz0)*EXP(psihat_z(idx_can))

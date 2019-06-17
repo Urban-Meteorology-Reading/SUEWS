@@ -169,7 +169,7 @@ CONTAINS
       ENDIF
       i = 1
       LOLD = -999.
-      DO WHILE ((ABS(LOLD - L_MOD) > 0.01).AND.(i<330)) !NT: add error threshold !Iteration starts
+      DO WHILE ((ABS(LOLD - L_MOD) > 0.01).AND.(i < 330)) !NT: add error threshold !Iteration starts
          LOLD = L_MOD
          zL = zzd/L_MOD
          z0L = z0m/L_MOD  !z0m roughness length

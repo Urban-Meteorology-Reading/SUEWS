@@ -1,0 +1,129 @@
+from shutil import rmtree
+import Test_SUEWS as ts
+import f90nml
+import os
+import numpy as np
+import unittest
+from pathlib import Path
+from tempfile import gettempdir, TemporaryDirectory
+from shutil import copyfile
+
+fn_nml = 'BTS_config.nml'
+# load basic configurations
+# load path
+nml = f90nml.read(fn_nml)
+cfg_file = nml['file']
+dir_exe, path_baserun = (
+    os.path.abspath(cfg_file[x])
+    for x in ['dir_exe', 'dir_baserun'])
+path_baserun = Path(path_baserun)
+# dir_exe = os.path.abspath(path_base[])
+# dir_baserun = path_base[]
+
+
+# copy all input files to the release folder
+path_release_input = Path('../../Release/InputTables').resolve()
+# version specific input folder under release folder
+path_input_ver = (path_release_input / path_baserun.name).resolve()
+print('dir_input', path_input_ver)
+# clean existing files
+if path_input_ver.exists():
+    print('cleaning existing files...')
+    rmtree(path_input_ver)
+    path_input_ver.mkdir()
+
+
+# copy runcontrol
+path_runctrl_base = path_baserun/'RunControl.nml'
+path_runctrl_input=path_input_ver/'RunControl.nml'
+copyfile(path_runctrl_base, path_runctrl_input)
+dict_runcontrol = ts.load_SUEWS_nml(path_runctrl_base)['runcontrol']
+# copy other input tables and initial conditions
+path_base_input = (path_baserun / dict_runcontrol['fileinputpath'])
+for x in path_base_input.glob('*'):
+    copyfile(x, path_input_ver / x.name)
+
+# load name of programme for testing
+name_exe = cfg_file['name_exe']
+
+# load physics options to test
+dict_phy_opt_sel = nml['physics_test']
+
+# runcontrol settings
+dict_runcontrol = ts.load_SUEWS_nml(
+    os.path.join(path_input_ver, 'RunControl.nml')).to_dict()['runcontrol']
+# initial condition
+dict_initcond = (ts.load_SUEWS_nml(
+    os.path.join(path_input_ver, 'InitialConditionstest_2004.nml')).to_dict()[
+    'initialconditions'])
+# siteselect info
+df_siteselect = ts.load_SUEWS_table(
+    os.path.join(path_input_ver, 'SUEWS_SiteSelect.txt'))
+
+
+# test case class for unit test
+class Test_SUEWS(unittest.TestCase):
+    def test_ok_multiyear(self):
+        print('***************************************')
+        print('testing single-grid multi-year run ... ')
+        name_sim = 'test-multi-year' + str(np.random.randint(10000))
+        res_test = ts.test_multiyear(
+            name_sim, name_exe, dict_runcontrol, dict_initcond, df_siteselect,
+            dir_exe, path_input_ver)
+        self.assertTrue(res_test)
+        print('  ')
+        print('***************************************')
+
+    def test_ok_multigrid(self):
+        print('')
+        print('***************************************')
+        print('testing multi-grid multi-year run ... ')
+        n_grid = 3
+        name_sim = 'test-multi-grid' + str(np.random.randint(10000))
+        res_test = ts.test_multigrid(
+            name_sim, name_exe,
+            dict_runcontrol, dict_initcond, df_siteselect,
+            n_grid, dir_exe, path_input_ver)
+        self.assertTrue(res_test)
+        print('  ')
+        print('***************************************')
+
+    def test_ok_samerun(self):
+        print('')
+        print('****************************************************')
+        print('testing if results could match the standard run ... ')
+        name_sim = 'test-same-run' + str(np.random.randint(10000))
+        res_test = ts.test_samerun(name_sim, name_exe,
+                                   dict_runcontrol, dict_initcond,
+                                   df_siteselect,
+                                   dir_exe, path_baserun)
+        self.assertTrue(res_test)
+        print('  ')
+        print('****************************************************')
+
+    def test_ok_physics(self):
+        print('')
+        print('************************************************')
+        print('testing if some physics schemes are working ... ')
+        # show options to test
+        res_list_fail = ts.test_physics(
+            name_exe, path_input_ver, dir_exe,
+            dict_runcontrol, dict_initcond, df_siteselect,
+            dict_phy_opt_sel)
+
+        # `0` means no failure: all options can pass test
+        res_test = len(res_list_fail) == 0
+        print(res_list_fail)
+        # print out all faulty options
+        if not res_test:
+            print('faulty options found:')
+            for fail in res_list_fail:
+                print(fail)
+
+        self.assertTrue(res_test)
+        print('  ')
+        print('************************************************')
+
+
+if __name__ == '__main__':
+    unittest.main()

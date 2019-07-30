@@ -37,7 +37,7 @@ MODULE allocateArray
    INTEGER, PARAMETER:: ncolumnsConductance = 13       !SUEWS_Conductance.txt
    INTEGER, PARAMETER:: ncolumnsOHMCoefficients = 4    !SUEWS_OHMCoefficients.txt
    INTEGER, PARAMETER:: ncolumnsESTMCoefficients = 52  !SUEWS_ESTMCoefficients.txt ! S.O. 04 Feb 2016
-   INTEGER, PARAMETER:: ncolumnsAnthropogenic = 34     !SUEWS_AnthropogenicHeat.txt
+   INTEGER, PARAMETER:: ncolumnsAnthropogenic = 39     !SUEWS_AnthropogenicEmission.txt
    INTEGER, PARAMETER:: ncolumnsIrrigation = 25        !SUEWS_Irrigation.txt
    INTEGER, PARAMETER:: ncolumnsProfiles = 25          !SUEWS_Profiles.txt
    INTEGER, PARAMETER:: ncolumnsWGWaterDist = 10       !SUEWS_WithinGridWaterDist.txt
@@ -46,7 +46,7 @@ MODULE allocateArray
    INTEGER, PARAMETER:: ncolsESTMdata = 13             !ESTM input file (_ESTM_Ts_data.txt))
 
    ! ---- Set number of columns in output files ---------------------------------------------------
-   INTEGER, PARAMETER:: ncolumnsDataOutSUEWS = 85, &    !Main output file (_5.txt). dataOutSUEWS created in SUEWS_Calculations.f95
+   INTEGER, PARAMETER:: ncolumnsDataOutSUEWS = 87, &    !Main output file (_5.txt). dataOutSUEWS created in SUEWS_Calculations.f95
                         ncolumnsDataOutSnow = 102, &
                         ncolumnsdataOutSOL = 31, &
                         ncolumnsdataOutBL = 22, &
@@ -633,15 +633,20 @@ MODULE allocateArray
    INTEGER :: c_PopProfWE = (ccEndO + 25)
    INTEGER :: c_MinQFMetab = (ccEndO + 26)
    INTEGER :: c_MaxQFMetab = (ccEndO + 27)
-   INTEGER :: c_FrFossilFuel_Heat = (ccEndO + 28)
-   INTEGER :: c_FrFossilFuel_NonHeat = (ccEndO + 29)
-   INTEGER :: c_EF_umolCO2perJ = (ccEndO + 30)
-   INTEGER :: c_EnEF_v_Jkm = (ccEndO + 31)
-   INTEGER :: c_FcEF_v_kgkm = (ccEndO + 32)
-   INTEGER :: c_TrafficUnits = (ccEndO + 33)
+   INTEGER :: c_MinFCMetab = (ccEndO + 28)
+   INTEGER :: c_MaxFCMetab = (ccEndO + 29)
+   INTEGER :: c_FrPDDwe = (ccEndO + 30)
+   INTEGER :: c_FrFossilFuel_Heat = (ccEndO + 31)
+   INTEGER :: c_FrFossilFuel_NonHeat = (ccEndO + 32)
+   INTEGER :: c_EF_umolCO2perJ = (ccEndO + 33)
+   INTEGER :: c_EnEF_v_Jkm = (ccEndO + 34)
+   INTEGER :: c_FcEF_v_kgkmWD = (ccEndO + 35)
+   INTEGER :: c_FcEF_v_kgkmWE = (ccEndO + 36)
+   INTEGER :: c_CO2PointSource = (ccEndO + 37)
+   INTEGER :: c_TrafficUnits = (ccEndO + 38)
 
    ! Find current column number
-   INTEGER, PARAMETER:: ccEndA = (ccEndO + 33)
+   INTEGER, PARAMETER:: ccEndA = (ccEndO + 38)
 
    ! Irrigation
    INTEGER :: c_IeStart = (ccEndA + 1)
@@ -927,7 +932,7 @@ MODULE data_in
 
    IMPLICIT NONE
 
-   CHARACTER(len=90)::progname = 'SUEWS_V2018c'
+   CHARACTER(len=90)::progname = 'SUEWS_V2019a'
 
    ! ---- Run information ------------------------------------------------------------------------
    CHARACTER(len=20)::  FileCode   !Set in RunControl
@@ -1017,28 +1022,39 @@ MODULE data_in
    ! ---- Variables in alphabetical order --------------------------------------------------------
    !! Add units
    REAL(KIND(1d0))::  alpha_qhqe, & !Alpha parameter used in LUMPS QH and QE calculations [-]
-                     alt, &                        !Altitude in m
+                     alt, &       !Altitude in m
                      avdens, &    !Average air density
                      avkdn, &     !Average downwelling shortwave radiation
                      avrh, &      !Average relative humidity
                      avts, &      !Average surface temperature
                      avu1, &      !Average wind speed
-                     avU10_ms, &   !Average wind speed at 10 m
+                     avU10_ms, &  !Average wind speed at 10 m
                      azimuth, &   !Sun azimuth in degrees
                      BaseTHDD, &  !Base temperature for QF
                      BuildEnergyUse, &  ! Building energy use
+                     CO2mWD, &    !Diurnal activity profile (weekday)
+                     CO2mWE, &    !Diurnal activity profile (weekend)
+                     CO2PointSource, & !CO2 point source [kg C day-1]
                      E_mod, &     !Modelled latent heat flux with LUMPS  [W m-2]
+                     EF_umolCO2perJ, &!CO2 emission factor for fuels used for building heating [umol CO2 J-1]
                      emis_snow, & !Emissivity of snow
+                     EnEF_v_Jkm, &!Heat release per vehicle per meter of travel [J km-1 veh-1]
+                     EnProfWD, &  !Diurnal energy use profile (weekday)
+                     EnProfWE, &  !Diurnal energy use profile (weekend)
                      Fc, &        !CO2 flux [umol m-2 s-1]
                      Fc_anthro, & !CO2 flux (anthropogenic part) [umol m-2 s-1]
                      Fc_biogen, & !CO2 flux (biogenic part) [umol m-2 s-1]
-                     Fc_photo, &  !CO2 flux (photosynthesis component) [umol m-2 s-1]
-                     Fc_respi, &  !CO2 flux (non-human respiration component) [umol m-2 s-1]
-                     Fc_metab, &  !CO2 flux (human metabolism component) [umol m-2 s-1]
-                     Fc_traff, &  !CO2 flux (traffic component) [umol m-2 s-1]
                      Fc_build, &  !CO2 flux (building energy use component) [umol m-2 s-1]
+                     Fc_metab, &  !CO2 flux (human metabolism component) [umol m-2 s-1]
+                     Fc_photo, &  !CO2 flux (photosynthesis component) [umol m-2 s-1]
+                     Fc_point, &  !CO2 flux (Point source component) [umol m-2 s-1]
+                     Fc_respi, &  !CO2 flux (non-human respiration component) [umol m-2 s-1]
+                     Fc_traff, &  !CO2 flux (traffic component) [umol m-2 s-1]
                      fcld, &      !Cloud fraction modelled
                      fcld_obs, &  !Cloud fraction observed
+                     FrFossilFuel_Heat, & !Fraction of fossil fuels used for building heating relative to district heating
+                     FrFossilFuel_NonHeat, & !Fraction of fossil fuels used for energy consumption relative to district heating
+                     FrPDDwe, &   !Fraction of weekend population to weekday population
                      h_mod, &     !Modelled sensible heat flux with LUMPS [W m-2]
                      kclear, &    !Theoretical downward shortwave radiation
                      kdiff, &     !Diffuse shortwave radiation
@@ -1046,13 +1062,17 @@ MODULE data_in
                      kup, &       !Upward shortwave radiation
                      LAI_obs, &   !LAI for study area provided in met forcing file
                      lat, &       !Latitude
-                     ldown, &    !Downward longwave radiation
+                     ldown, &     !Downward longwave radiation
                      ldown_obs, & !Downwelling longwave radiation
                      lng, &       !Longitude
                      lup, &       !Upward longwave radiation
-                     NumCapita, & !Number of people in the study area per hectare [ha-1]
-                     PopDensDaytime, &   ! Daytime population density [ha-1] (i.e. workers)
+                     MaxFCMetab, &!Maximum (day) CO2 from human metabolism
+                     MaxQFMetab, &!Maximum (day) anthropogenic heat from human metabolism
+                     MinFCMetab, &!Minimum (night) CO2 from human metabolism
+                     MinQFMetab, &!Minimum (night) anthropogenic heat from human metabolism
                      PopDensNighttime, & ! Nighttime population density [ha-1] (i.e. residents)
+                     PopProfWD, & !Diurnal profile for population density (weekday)
+                     PopProfWE, & !Diurnal profile for population density (weekend)
                      Precip, &    !Precipitation per timestep [mm]
                      Precip_hr, &    !Precipitation [mm hr-1]
                      Press_hPa, &  !Station air pressure in hPa
@@ -1060,12 +1080,15 @@ MODULE data_in
                      q2_gkg, &    ! Specific humidity at 2 m
                      qe, &        !Observed latent heat flux
                      qe_obs, &
-                     qf_obs, &        !Observed anthropogenic heat flux
+                     QF_build, &  !Anthropogenic heat flux from building [W m-2]
+                     QF_metab, &  !Anthropogenic heat flux from human metabolism [W m-2]
+                     QF_traff, &  !Anthropogenic heat flux from traffic [W m-2]
+                     qf_obs, &     !Observed anthropogenic heat flux
                      QF_SAHP, &    !Anthropogenic heat flux calculated by SAHP
-                     QF_SAHP_base, &    !Anthropogenic heat flux calculated by SAHP (temp independent part)
-                     QF_SAHP_heat, &    !Anthropogenic heat flux calculated by SAHP (heating part only)
+                     QF_SAHP_base, &!Anthropogenic heat flux calculated by SAHP (temp independent part)
+                     QF_SAHP_heat, &!Anthropogenic heat flux calculated by SAHP (heating part only)
                      QF_SAHP_ac, & !AC contribution
-                     qh, &        !Observed sensible heat flux
+                     qh, &         !Observed sensible heat flux
                      qh_obs, &
                      QH_r, &      !Sensible heat flux calculated using resistance method
                      qn1, &       !Net all-wave radiation for the study area
@@ -1077,28 +1100,12 @@ MODULE data_in
                      QSanOHM, &   !Simulated storage heat flux by AnOHM, TS 30 May 2016
                      QSestm, &    !Simulated storage heat flux by ESTM, TS 30 May 2016
                      snow, &      !snow cover
-                     snow_obs, &  !Observed snow cover
-                     CO2mWD, &
-                     CO2mWE, &
-                     EF_umolCO2perJ, &
-                     EnEF_v_Jkm, &
-                     EnProfWD, &
-                     EnProfWE, &
-                     TrafficUnits, &
-                     TraffProfWD, &
-                     TraffProfWE, &
-                     PopProfWD, &
-                     PopProfWE, &
-                     FcEF_v_kgkm, &
-                     FrFossilFuel_Heat, &
-                     FrFossilFuel_NonHeat, &
-                     MinQFMetab, &
-                     MaxQFMetab, &
-                     QF_build, &
-                     QF_metab, &
-                     QF_traff, &
+                     snowFrac_obs, &!Observed snow cover
                      Temp_C, &    !Air temperature
-                     t2_C, &     ! air temperature at 2 m, TS 20 May 2017
+                     t2_C, &      !Air temperature at 2 m, TS 20 May 2017
+                     TrafficUnits, & !Option for traffic units (1=[veh km m-2 day-1] 2=[veh km cap-1 day-1])
+                     TraffProfWD, &!Diurnal traffic profile (weekday)
+                     TraffProfWE, &!Diurnal traffic profile (weekend)
                      trans_site, &  !Atmospheric transmissivity
                      tsurf, &   !Surface temperature
                      wdir, &      ! Wind direction
@@ -1111,6 +1118,9 @@ MODULE data_in
                                    AH_MIN, &    !Minimum anthropogenic heat flux (AnthropHeatMethod = 1)
                                    AH_SLOPE_Heating, &  !Slope of the antrhropogenic heat flux calculation (AnthropHeatMethod = 1)
                                    AH_SLOPE_Cooling, &
+                                   FcEF_v_kgkm, &
+                                   NumCapita, &
+                                   PopDensDaytime, &
                                    T_CRITIC_Heating, & !Critical temperature
                                    T_CRITIC_Cooling, & !Critical cooling temperature
                                    TrafficRate, & !Traffic rate
@@ -1730,7 +1740,7 @@ MODULE ColNamesInputFiles
              ! Codes for human impacts on energy, water and snow
              c_SnowProfWD = 51, &  ! Snow-clearing profile in SUEWS_Profile.txt (weekdays)
              c_SnowProfWE = 52, &  ! Snow-clearing profile in SUEWS_Profile.txt (weekends)
-             c_QFCode = 53, &  ! Links anthropogenic heat info in SUEWS_AnthropogenicHeat.txt
+             c_QFCode = 53, &  ! Links anthropogenic heat info in SUEWS_AnthropogenicEmission.txt
              c_IrrCode = 54, &  ! Links irrigation info in SUEWS_Irrigation.txt
              c_WProfManuWD = 55, &  ! Links to water-use profile in SUEWS_Profile.txt (manual irrigation, weekdays)
              c_WProfManuWE = 56, &  ! Links to water-use profile in SUEWS_Profile.txt (manual irrigation, weekends)
@@ -1976,7 +1986,7 @@ MODULE ColNamesInputFiles
              cE_CH_iroof = 51, &
              cE_CH_ibld = 52
 
-   !========== Columns for SUEWS_AnthropogenicHeat.txt ===================
+   !========== Columns for SUEWS_AnthropogenicEmission.txt ===================
    INTEGER ::   cA_Code = 1, &
               cA_BaseTHDD = 2, &
               cA_QF_A1 = 3, &   !Weekday
@@ -2005,12 +2015,17 @@ MODULE ColNamesInputFiles
               cA_PopProfWE = 26, &  !Weekend
               cA_MinQFMetab = 27, &
               cA_MaxQFMetab = 28, &
-              cA_FrFossilFuel_Heat = 29, &
-              cA_FrFossilFuel_NonHeat = 30, &
-              cA_EF_umolCO2perJ = 31, &
-              cA_EnEF_v_Jkm = 32, &
-              cA_FcEF_v_kgkm = 33, &
-              cA_TrafficUnits = 34
+              cA_MinFCMetab = 29, &
+              cA_MaxFCMetab = 30, &
+              cA_FrPDDwe = 31, &
+              cA_FrFossilFuel_Heat = 32, &
+              cA_FrFossilFuel_NonHeat = 33, &
+              cA_EF_umolCO2perJ = 34, &
+              cA_EnEF_v_Jkm = 35, &
+              cA_FcEF_v_kgkmWD = 36, &
+              cA_FcEF_v_kgkmWE = 37, &
+              cA_CO2PointSource = 38, &
+              cA_TrafficUnits = 39
 
    !========== Columns for SUEWS_Irrigation.txt ==========================
 

@@ -1,0 +1,653 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>9.2. Urban Energy Balance - SUEWS Advanced &mdash; SUEWS v2018c documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+    <link rel="next" title="9.3. Urban Energy Balance - SUEWS Spatial" href="SuewsSpatial.html" />
+    <link rel="prev" title="9.1. Urban Energy Balance - SUEWS Introduction" href="IntroductionToSuews.html" /> 
+
+  
+  <script src="../../../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../../../index.html" class="icon icon-home"> SUEWS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v2018c
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../introduction.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../parameterisations-and-sub-models.html">2. Parameterisations and sub-models within SUEWS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../prepare-to-run-the-model.html">3. Preparing to run the model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../input_files/input_files.html">4. Input files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../output_files/output_files.html">5. Output files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../troubleshooting.html">6. Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../recent-publications.html">7. Recent publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../suews_related_softwares.html">8. SUEWS-related Software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials.html">9. Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../development/development.html">10. Development, Suggestions and Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../benchmark/benchmark_report.html">Benchmark Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../version-history/version-history.html">11. Version History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../acknowledgement.html">12. Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../notation.html">13. Notation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../references.html">14. References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">SUEWS</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../../../tutorials.html">9. Tutorials</a> &raquo;</li>
+        
+      <li>9.2. Urban Energy Balance - SUEWS Advanced</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../../../_sources/sub-tutorials/tutorials/docs/source/Tutorials/SuewsAdvanced.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Please report issues with the manual on the <a class="reference external" href="https://github.com/Urban-Meteorology-Reading/SUEWS-Docs/issues/new?template=issue-report.md">GitHub page</a>.</p>
+</div>
+<div class="section" id="urban-energy-balance-suews-advanced">
+<span id="suewsadvanced"></span><h1>9.2. Urban Energy Balance - SUEWS Advanced<a class="headerlink" href="#urban-energy-balance-suews-advanced" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>9.2.1. Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>The tutorial <a class="reference internal" href="IntroductionToSuews.html#introductiontosuews"><span class="std std-ref">Urban Energy Balance - SUEWS Introduction</span></a> should be completed first. This tutorial is designed to work with QGIS 2.18.</p>
+<div class="section" id="objectives">
+<h3>9.2.1.1. Objectives<a class="headerlink" href="#objectives" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li>To explore the link between QGIS and SUEWS to include new
+site-specific information</li>
+<li>To examine how it affects the energy fluxes</li>
+</ol>
+</div>
+<div class="section" id="overview-of-steps">
+<h3>9.2.1.2. Overview of steps<a class="headerlink" href="#overview-of-steps" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li>Initially become familiar with SUEWS advanced which is a
+plugin that makes it possible for you to set all parameters that can
+be manipulated in SUEWS as well as execute the model on mutiple grids (<a class="reference internal" href="SuewsSpatial.html#suewsspatial"><span class="std std-ref">Urban Energy Balance - SUEWS Spatial</span></a>).</li>
+<li>Derive new surface information</li>
+<li>Run the model</li>
+</ol>
+</div>
+</div>
+<div class="section" id="how-to-run-from-the-umep-plugin">
+<h2>9.2.2. How to Run from the UMEP-plugin<a class="headerlink" href="#how-to-run-from-the-umep-plugin" title="Permalink to this headline">¶</a></h2>
+<p><strong>How to run SUEWS Advanced:</strong></p>
+<ol class="arabic simple">
+<li>Open the plugin which is located at <em>UMEP -&gt; Processor -&gt; Urban Energy
+Balance -&gt; Urban Energy Balance, SUEWS/BLUEWS (Advanced)</em>. This has
+most of the general settings (e.g. activate the snow module etc.)
+which are related to
+<a class="reference external" href="http://suews-docs.readthedocs.io/en/latest/input_files/RunControl/RunControl.html">RunControl.nml</a>.</li>
+<li>Use the Input folder:<ul>
+<li><em>C:/Users/your_user_name/.qgis2/python/plugins/UMEP/suewsmodel/Input</em></li>
+</ul>
+</li>
+<li>Create or enter an <strong>Output directory</strong> of your choice.</li>
+<li>From the <strong>Input folder</strong> - confirm the data are in there.</li>
+<li>Tick in <strong>Obtain temporal…</strong> and set <strong>Temporal resolution of output (minutes)</strong> to 60.</li>
+<li>Click Run</li>
+<li>Make sure that output files are created.</li>
+<li>You can now close the <strong>SUEWS/BLUEWS (Advanced)</strong>-plugin again.</li>
+</ol>
+<div class="figure" id="id1">
+<img alt="Interface for SUEWS Advanced version." src="../../../../../_images/SUEWSAdvanced_SuewsAdvanced.png" />
+<p class="caption"><span class="caption-number">Fig. 9.7 </span><span class="caption-text">Interface for SUEWS Advanced version.</span></p>
+</div>
+<div class="section" id="sensitivity-test">
+<h3>9.2.2.1. Sensitivity Test<a class="headerlink" href="#sensitivity-test" title="Permalink to this headline">¶</a></h3>
+<p>The default dataset included in <strong>Suews Simple</strong> has parameters
+calculated from a <a class="reference external" href="http://umep-docs.readthedocs.io/en/latest/pre-processor/Urban%20Morphology%20Source%20Area%20(Point).html">source area
+model</a>
+to obtain the appropriate values for the input parameters. Roughness
+parameters such as roughness length (z<sub>0</sub>) and zero plane
+displacement length (z<sub>d</sub>) are calculated using <a class="reference external" href="http://umep-docs.readthedocs.io/en/latest/pre-processor/Urban%20Morphology%20Morphometric%20Calculator%20(Point).html">morphometric
+models</a>.
+Now you will explore the differences in fluxes using the default
+settings or using input parameters from the geodata included in the test
+datasets available for this tutorial. Download the zip-file (see below)
+and extract the files to a suitable location where you both have reading
+and writing capabilities.</p>
+<p>Data for the tutorial can be downloaded
+<a class="reference external" href="https://github.com/Urban-Meteorology-Reading/Urban-Meteorology-Reading.github.io/tree/master/other%20files/DataSmallAreaLondon.zip">here</a></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>Geodata</strong></td>
+<td><strong>Name</strong></td>
+</tr>
+<tr class="row-even"><td>Ground and building DSM</td>
+<td>DSM_LondonCity_1m.tif (m asl)</td>
+</tr>
+<tr class="row-odd"><td>Vegetation DSM</td>
+<td>CDSM_LondonCity_1m.tif (m agl)</td>
+</tr>
+<tr class="row-even"><td>DEM (digital elevation model)</td>
+<td>DEM_LondonCity_1m.tif (masl)</td>
+</tr>
+<tr class="row-odd"><td>Land cover</td>
+<td>LC_londoncity_UMEP_32631</td>
+</tr>
+</tbody>
+</table>
+<p>They are all projected in UTM 31N (EPSG:32631). The three surface models
+originate from a LiDAR dataset. The land cover data is a mixture of
+Ordnance Survey and the LiDAR data.</p>
+<ol class="arabic simple">
+<li>Open the geodatasets. Go to <em>Layer &gt; Add layer &gt; Add Raster Layer</em>.
+Locate the files you downloaded before (see above).</li>
+<li>A QGIS style file (.qml) is available for the land cover grid. It can
+found in <em>C:Usersyour_user_name.qgis2pythonpluginsUMEP\
+LandCoverReclassifier\</em>. Load it in the <em>Layer &gt; Properties &gt; Style
+&gt; Style</em> (lower left) <strong>Load file</strong>.</li>
+<li>Click Apply before you close so that the names of the classes also
+load. You can also get the properties of a layer by right-click on a
+layer in the Layers-window.</li>
+<li>If you have another land cover dataset you can use the
+<a class="reference external" href="http://umep-docs.readthedocs.io/en/latest/pre-processor/Urban%20Land%20Cover%20Land%20Cover%20Reclassifier.html">LandCoverReclassifier</a>
+in the UMEP pre-processor to populate with the correct values
+suitable for the UMEP plugin environment.</li>
+<li>Now take a moment and investigate the different geodatasets. What is
+the sparial (pixel) resolution? How is ground represented in the
+CDSM?</li>
+</ol>
+</div>
+</div>
+<div class="section" id="generating-data-from-the-geodatasets">
+<h2>9.2.3. Generating data from the geodatasets<a class="headerlink" href="#generating-data-from-the-geodatasets" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><p class="first">Make certain that you have the geodatafiles open. The file at the top
+(left hand side (LHS)) of the list is the one that is shown in the
+centre (figure below). You can swap their order using the LHS box.</p>
+</li>
+<li><p class="first">Open SUEWS Simple.</p>
+</li>
+<li><p class="first">Begin by adding the test dataset again.</p>
+</li>
+<li><p class="first">Update the building morphology parameters (top left panel in Suews
+Simple).</p>
+</li>
+<li><p class="first">To generate new values, click on Open tool.</p>
+</li>
+<li><p class="first">This is another plugin within UMEP that can be used to generate
+morphometric parameters</p>
+<div class="figure" id="id2">
+<a class="reference internal image-reference" href="../../../../../_images/SUEWSAdvanced_QGIS_SuewsSimple.png"><img alt="None" src="../../../../../_images/SUEWSAdvanced_QGIS_SuewsSimple.png" style="width: 605px;" /></a>
+<p class="caption"><span class="caption-number">Fig. 9.8 </span><span class="caption-text">QGIS where Suews Simple and Image Morphometric Parameters (Point) is opened.</span></p>
+</div>
+</li>
+<li><p class="first">First, clear the map canvas from your two other plugin windows, e.g.
+as figure above.</p>
+</li>
+<li><p class="first">If you use the default test data in SUEWS Simple - you can overwrite
+is as you go.</p>
+</li>
+<li><p class="first">Locate the eddy covariance tower position on the Strand building,
+King’s College London. To find the position, consult Figure 1 (KSS)
+in <a class="reference external" href="http://www.sciencedirect.com/science/article/pii/S2212095513000503">Kotthaus and Grimmond
+(2014)</a>.</p>
+</li>
+<li><p class="first">Use Select point on canvas and put a point at that location (left).</p>
+</li>
+<li><p class="first">Generate a study area. Use 500 m search distance, 5 degree interval
+and click Generate study area.</p>
+</li>
+<li><p class="first">A circular area will be considered. Enter the DSM and DEM files (i.e.
+the files you currently have in the viewer)</p>
+</li>
+<li><p class="first">Click Run.</p>
+<div class="figure" id="id3">
+<img alt="None" src="../../../../../_images/SUEWSAdvanced_SUEWS_MorphometricParametersBuild.png" />
+<p class="caption"><span class="caption-number">Fig. 9.9 </span><span class="caption-text">Figure 3. Settings for Image Morphometric Parameters for buildings.</span></p>
+</div>
+</li>
+<li><p class="first">In the folder you specified two additional files will be present (i)
+isotropic - averages of the morphometric parameters (ii) anisotropic
+- values for each wind sector you specified (5 degrees).</p>
+</li>
+<li><p class="first">Close this plugin</p>
+</li>
+<li><p class="first">Click on Fetch file from… in the building morphology panel</p>
+</li>
+<li><p class="first">Choose the isotropic file (just generated).</p>
+</li>
+<li><p class="first">Do the same for vegetation (upper left panel, right). See figure below.</p>
+</li>
+<li><p class="first">Instead of locating the point again you can use the existing point.</p>
+</li>
+<li><p class="first">You still need to generate a separate study area for the vegetation
+calculation.</p>
+</li>
+<li><p class="first">Examine the CDSM (vegetation file) in your map canvas. As you can
+see, this data has no ground heights (ground = 0). Therefore, this
+time Tick in the box Raster DSM (only buildings) exist.</p>
+</li>
+<li><p class="first">Enter the CDSM as your Raster DSM (only buildings).</p>
+<div class="figure" id="id4">
+<img alt="None" src="../../../../../_images/SUEWSAdvanced_SUEWS_MorphometricParametersVeg.png" />
+<p class="caption"><span class="caption-number">Fig. 9.10 </span><span class="caption-text">Settings for Image Morphometric Parameters for vegetation</span></p>
+</div>
+</li>
+<li><p class="first">A warning appears that your vegetation fractions between the
+morphology dataset and land cover dataset are large. You can ignore
+this for now since the land cover dataset also will change.</p>
+</li>
+<li><p class="first">Repeat the same procedure for land cover as you did for buildings and vegetation but instead using the Land Cover
+Fraction (Point) plugin.</p>
+</li>
+<li><p class="first">Enter the meteorological file, Year etc. This should be the same as
+for the first run you made.</p>
+</li>
+<li><p class="first">Now you are ready to run the model. Click Run.</p>
+</li>
+</ol>
+<p>If you get an error window (figure below). This error is generate by SUEWS as the sum
+of the land cover fractions is not 1. If you calculate carefully, one
+part of a thousand is missing (this is probably a rounding error during
+data extraction). To fix this issue: add 0.001 to e.g. bare soil. Now
+run again.</p>
+<div class="figure" id="id5">
+<img alt="None" src="../../../../../_images/SUEWSAdvanced_Modelrununsuccessful.png" />
+<p class="caption"><span class="caption-number">Fig. 9.11 </span><span class="caption-text">Possible error window from running SUEWS with new settings.</span></p>
+</div>
+<div class="figure" id="id6">
+<a class="reference internal image-reference" href="../../../../../_images/SUEWSAdvanced_SuewsSimpleGeodata.png"><img alt="None" src="../../../../../_images/SUEWSAdvanced_SuewsSimpleGeodata.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-number">Fig. 9.12 </span><span class="caption-text">The settings for running with geodata derived parameters (old version of GUI).</span></p>
+</div>
+<p>You are now familiar with the Suews Simple plugin. Your next task is to
+choose another location within the geodataset domain, generate data and
+run the model. If you choose an area where the fraction of buildings and
+paved surfaces are low, consider lowering the population density to get
+more realistic model outputs. Compare the results for the different
+area.</p>
+</div>
+<div class="section" id="references">
+<h2>9.2.4. References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Grimmond CSB and Oke 1999: Aerodynamic properties of urban areas
+derived, from analysis of surface form. <a class="reference external" href="http://journals.ametsoc.org/doi/abs/10.1175/1520-0450(1999)038%3C1262%3AAPOUAD%3E2.0.CO%3B2">Journal of Applied
+Climatology 38:9,
+1262-1292</a></li>
+<li>Grimmond et al. 2015: Climate Science for Service Partnership: China,
+Shanghai Meteorological Servce, Shanghai, China, August 2015.</li>
+<li>Järvi L, Grimmond CSB &amp; Christen A 2011: The Surface Urban Energy and
+Water Balance Scheme (SUEWS): Evaluation in Los Angeles and Vancouver
+<a class="reference external" href="http://www.sciencedirect.com/science/article/pii/S0022169411006937">J. Hydrol. 411,
+219-237</a></li>
+<li>Järvi L, Grimmond CSB, Taka M, Nordbo A, Setälä H &amp;Strachan IB 2014:
+Development of the Surface Urban Energy and Water balance Scheme
+(SUEWS) for cold climate cities, , <a class="reference external" href="http://www.geosci-model-dev.net/7/1691/2014/">Geosci. Model Dev. 7,
+1691-1711</a></li>
+<li>Kormann R, Meixner FX 2001: An analytical footprint model for
+non-neutral stratification. <a class="reference external" href="http://www.sciencedirect.com/science/article/pii/S2212095513000497#b0145">Bound.-Layer Meteorol., 99,
+207-224</a></li>
+<li>Kotthaus S and Grimmond CSB 2014: Energy exchange in a dense urban
+environment - Part II: Impact of spatial heterogeneity of the
+surface. <a class="reference external" href="http://www.sciencedirect.com/science/article/pii/S2212095513000497">Urban Climate 10,
+281â€“307</a></li>
+<li>Onomura S, Grimmond CSB, Lindberg F, Holmer B, Thorsson S 2015:
+Meteorological forcing data for urban outdoor thermal comfort models
+from a coupled convective boundary layer and surface energy balance
+scheme. Urban Climate. 11:1-23 <a class="reference external" href="http://www.sciencedirect.com/science/article/pii/S2212095514000856">(link to
+paper)</a></li>
+<li>Ward HC, L Järvi, S Onomura, F Lindberg, A Gabey, CSB Grimmond 2016
+SUEWS Manual V2016a, <a class="reference external" href="http://urban-climate.net/umep/SUEWS">http://urban-climate.net/umep/SUEWS</a> Department
+of Meteorology, University of Reading, Reading, UK</li>
+<li>Ward HC, Kotthaus S, Järvi L and Grimmond CSB 2016b: Surface Urban
+Energy and Water Balance Scheme (SUEWS): Development and evaluation
+at two UK sites. <a class="reference external" href="http://www.sciencedirect.com/science/article/pii/S2212095516300256">Urban Climate
+http://dx.doi.org/10.1016/j.uclim.2016.05.001</a></li>
+<li>Ward HC, S Kotthaus, CSB Grimmond, A Bjorkegren, M Wilkinson, WTJ
+Morrison, JG Evans, JIL Morison, M Iamarino 2015b: Effects of urban
+density on carbon dioxide exchanges: observations of dense urban,
+suburban and woodland areas of southern England. <a class="reference external" href="http://dx.doi.org/10.1016/j.envpol.2014.12.031">Env Pollution 198,
+186-200</a></li>
+</ul>
+<p>Authors of this document: Lindberg and Grimmond (2016)</p>
+</div>
+<div class="section" id="definitions-and-notation">
+<h2>9.2.5. Definitions and Notation<a class="headerlink" href="#definitions-and-notation" title="Permalink to this headline">¶</a></h2>
+<p>To help you find further information about the acronyms they are
+classified by <strong>T</strong>: Type of term: <strong>C</strong>: computer term, <strong>S</strong>: science
+term, <strong>G</strong>: GIS term.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="26%" />
+<col width="25%" />
+<col width="25%" />
+<col width="25%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">&#160;</th>
+<th class="head">Definition</th>
+<th class="head">T</th>
+<th class="head">Reference/Comme
+nt</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>DEM</td>
+<td>Digital
+elevation model</td>
+<td>G</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>DSM</td>
+<td>Digital surface
+model</td>
+<td>G</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>FAI (λ<sub>F</sub>)</td>
+<td>Frontal area
+index</td>
+<td>S</td>
+<td>Grimmond and
+Oke (1999),
+their figure 2</td>
+</tr>
+<tr class="row-odd"><td>GUI</td>
+<td>Graphical User
+Interface</td>
+<td>C</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>LAI</td>
+<td>Leaf Area Index</td>
+<td>S</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>PAI (λ<sub>P</sub>)</td>
+<td>Plan area index</td>
+<td>S</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>png</td>
+<td>Portable
+Network
+Graphics</td>
+<td>C</td>
+<td>format for
+saving
+plots/figures</td>
+</tr>
+<tr class="row-odd"><td>QGIS</td>
+<td>&#160;</td>
+<td>G</td>
+<td>www.qgis.org</td>
+</tr>
+<tr class="row-even"><td>SUEWS</td>
+<td>Surface Urban
+Energy and
+Water Balance
+Scheme</td>
+<td>S</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>Tif</td>
+<td>Tagged Image
+File Format</td>
+<td>C</td>
+<td>format for
+saving
+plots/figures</td>
+</tr>
+<tr class="row-even"><td>UI</td>
+<td>user interface</td>
+<td>C</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>UMEP</td>
+<td>Urban
+Multi-scale
+Environmental
+predictor</td>
+<td>C</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>z<sub>0</sub></td>
+<td>Roughness
+length for
+momentum</td>
+<td>S</td>
+<td>Grimmond and
+Oke (1999)</td>
+</tr>
+<tr class="row-odd"><td>z<sub>d</sub></td>
+<td>Zero plane
+displacement
+length for
+momentum</td>
+<td>S</td>
+<td>Grimmond and
+Oke (1999)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="further-explanation">
+<h2>9.2.6. Further explanation<a class="headerlink" href="#further-explanation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="morphometric-methods-to-determine-roughness-parameters">
+<h3>9.2.6.1. Morphometric Methods to determine Roughness parameters:<a class="headerlink" href="#morphometric-methods-to-determine-roughness-parameters" title="Permalink to this headline">¶</a></h3>
+<p>For more and overview and details see <a class="reference external" href="http://journals.ametsoc.org/doi/abs/10.1175/1520-0450(1999)038%3C1262%3AAPOUAD%3E2.0.CO%3B2">Grimmond and Oke
+(1999)</a>.
+This uses the height and spacing of roughness elements (e.g. buildings,
+trees) to model the roughness parameters. UMEP has tools for doing this:
+<em>Pre-processor -&gt; Urban Morphology</em></p>
+</div>
+<div class="section" id="source-area-model">
+<h3>9.2.6.2. Source Area Model<a class="headerlink" href="#source-area-model" title="Permalink to this headline">¶</a></h3>
+<p>For more details see Kotthaus and Grimmond (2014b). The Kormann and
+Meixner (2001) model is used to determine the probable area that a
+turbulent flux measurement was impacted by. This is a function of wind
+direction, stability, turbulence characteristics (friction velocity,
+variance of the lateral wind velocity) and roughness parameters.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="SuewsSpatial.html" class="btn btn-neutral float-right" title="9.3. Urban Energy Balance - SUEWS Spatial" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="IntroductionToSuews.html" class="btn btn-neutral" title="9.1. Urban Energy Balance - SUEWS Introduction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018 – 2019, micromet@University of Reading, led by Prof Sue Grimmond
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../../" src="../../../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../../../_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

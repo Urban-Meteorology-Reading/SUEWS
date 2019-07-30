@@ -1,0 +1,2 @@
+"Referencing Table","Requirement","Comment"
+"`SUEWS_ESTMCoefficients.txt`","`MU`","Thickness of the first layer [m] for building surfaces only; set to -999 for all other surfaces"

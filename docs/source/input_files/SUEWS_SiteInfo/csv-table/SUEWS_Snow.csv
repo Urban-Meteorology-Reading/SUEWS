@@ -1,0 +1,26 @@
+No.,Column Name,Use,Description
+1,`Code`,`L`,Code linking to a corresponding look-up table.
+2,`RadMeltFactor`,`MU`,Hourly radiation melt factor of snow [mm |w^-1| |h^-1|]
+3,`TempMeltFactor`,`MU`,Hourly temperature melt factor of snow [mm |K^-1| |h^-1|]
+4,`AlbedoMin`,`MU`,Effective surface albedo (middle of the day value) for wintertime (not including snow).
+5,`AlbedoMax`,`MU`,Effective surface albedo (middle of the day value) for summertime.
+6,`Emissivity`,`MU`,Effective surface emissivity.
+7,`tau_a`,`MD`,Time constant for snow albedo aging in cold snow [-]
+8,`tau_f`,`MD`,Time constant for snow albedo aging in melting snow [-]
+9,`PrecipLimAlb`,`MD`,Limit for hourly precipitation when the ground is fully covered with snow [mm]
+10,`SnowDensMin`,`MD`,Fresh snow density [kg |m^-3|]
+11,`SnowDensMax`,`MD`,Maximum snow density [kg |m^-3|]
+12,`tau_r`,`MD`,Time constant for snow density ageing [-]
+13,`CRWMin`,`MD`,Minimum water holding capacity of snow [mm]
+14,`CRWMax`,`MD`,Maximum water holding capacity of snow [mm]
+15,`PrecipLimSnow`,`MD`,Temperature limit when precipitation falls as snow [°C]
+16,`OHMCode_SummerWet`,`L`,"Code for OHM coefficients to use for this surface during wet conditions in summer, linking to `SUEWS_OHMCoefficients.txt`."
+17,`OHMCode_SummerDry`,`L`,"Code for OHM coefficients to use for this surface during dry conditions in summer, linking to `SUEWS_OHMCoefficients.txt`."
+18,`OHMCode_WinterWet`,`L`,"Code for OHM coefficients to use for this surface during wet conditions in winter, linking to `SUEWS_OHMCoefficients.txt`."
+19,`OHMCode_WinterDry`,`L`,"Code for OHM coefficients to use for this surface during dry conditions in winter, linking to `SUEWS_OHMCoefficients.txt`."
+20,`OHMThresh_SW`,`MD`,Temperature threshold determining whether summer/winter OHM coefficients are applied [°C]
+21,`OHMThresh_WD`,`MD`,Soil moisture threshold determining whether wet/dry OHM coefficients are applied [-]
+22,`ESTMCode`,`L`,Code for ESTM coefficients linking to `SUEWS_ESTMCoefficients.txt`
+23,`AnOHM_Cp`,`MU`,Volumetric heat capacity for this surface to use in AnOHM [J |m^-3|]
+24,`AnOHM_Kk`,`MU`,Thermal conductivity for this surface to use in AnOHM [W m |K^-1|]
+25,`AnOHM_Ch`,`MU`,Bulk transfer coefficient for this surface to use in AnOHM [-]

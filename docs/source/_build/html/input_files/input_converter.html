@@ -1,0 +1,1871 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>4.8. SUEWS input converter &mdash; SUEWS v2018c documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="5. Output files" href="../output_files/output_files.html" />
+    <link rel="prev" title="4.7.1. SOLWEIGinput" href="SOLWEIG_input/SOLWEIGinput.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> SUEWS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v2018c
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parameterisations-and-sub-models.html">2. Parameterisations and sub-models within SUEWS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../prepare-to-run-the-model.html">3. Preparing to run the model</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="input_files.html">4. Input files</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="RunControl/RunControl.html">4.1. RunControl.nml</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SUEWS_SiteInfo/SUEWS_SiteInfo.html">4.2. SUEWS Site Information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Initial_Conditions/Initial_Conditions.html">4.3. Initial Conditions file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="met_input.html">4.4. Meteorological Input File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CBL_input/CBL_input.html">4.5. CBL input files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ESTM_related_files/ESTM_related_files.html">4.6. ESTM-related files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SOLWEIG_input/SOLWEIG_input.html">4.7. SOLWEIG input files</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">4.8. SUEWS input converter</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#how-to-use">4.8.1. How to use</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#downloads">4.8.2. Downloads</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#description-of-rules">4.8.3. Description of rules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../output_files/output_files.html">5. Output files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../troubleshooting.html">6. Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recent-publications.html">7. Recent publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../suews_related_softwares.html">8. SUEWS-related Software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sub-tutorials/tutorials.html">9. Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development/development.html">10. Development, Suggestions and Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../benchmark/benchmark_report.html">Benchmark Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../version-history/version-history.html">11. Version History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledgement.html">12. Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../notation.html">13. Notation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">14. References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">SUEWS</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="input_files.html">4. Input files</a> &raquo;</li>
+        
+      <li>4.8. SUEWS input converter</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/input_files/input_converter.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Please report issues with the manual on the <a class="reference external" href="https://github.com/Urban-Meteorology-Reading/SUEWS-Docs/issues/new?template=issue-report.md">GitHub page</a>.</p>
+</div>
+<div class="section" id="suews-input-converter">
+<span id="input-converter"></span><h1>4.8. SUEWS input converter<a class="headerlink" href="#suews-input-converter" title="Permalink to this headline">¶</a></h1>
+<p>SUEWS input converter is a Python 3 script to convert input files between different versions based on pre-defined rules.</p>
+<div class="section" id="how-to-use">
+<h2>4.8.1. How to use<a class="headerlink" href="#how-to-use" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="#download-converter"><span class="std std-ref">Download the converter script and rule.csv</span></a> below, and specify these arguments in the script:</p>
+<ol class="arabic simple">
+<li><code class="code docutils literal notranslate"><span class="pre">fromVer</span></code>: which version to convert from.</li>
+<li><code class="code docutils literal notranslate"><span class="pre">toVer</span></code>: which version to convert to.</li>
+<li><code class="code docutils literal notranslate"><span class="pre">fromDir</span></code>: where the input files are located.</li>
+<li><code class="code docutils literal notranslate"><span class="pre">toDir</span></code>: where the converted files are produced.</li>
+</ol>
+</div>
+<div class="section" id="downloads">
+<span id="download-converter"></span><h2>4.8.2. Downloads<a class="headerlink" href="#downloads" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p class="first">SUEWS input converter in python</p>
+<p><a class="reference download internal" download="" href="../_downloads/abbc7600514c869d30c5753ae767c08c/SUEWS_TableConverter.py"><code class="xref download docutils literal notranslate"><span class="pre">SUEWS_TableConverter.py</span></code></a></p>
+</li>
+<li><p class="first">Rules for conversions between different SUEWS versions</p>
+<p><a class="reference download internal" download="" href="../_downloads/15054576e3082a8f4512aafdaa3abf06/rules.csv"><code class="xref download docutils literal notranslate"><span class="pre">rules.csv</span></code></a></p>
+</li>
+</ul>
+</div>
+<div class="section" id="description-of-rules">
+<h2>4.8.3. Description of rules<a class="headerlink" href="#description-of-rules" title="Permalink to this headline">¶</a></h2>
+<p>The converter currently picks up the following types of actions:</p>
+<ol class="arabic simple">
+<li>Add: New entries or files to be added with default values.</li>
+<li>Rename: Entries to be renamed from one version to another.</li>
+<li>Delete: Entries to be deleted from one version to another.</li>
+</ol>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">For entries introduced in a version via a new file, the new file will be created to hold the new entries without extra delaration for new files.</p>
+</div>
+<p>The current available rules are listed below:</p>
+<table border="1" class="colwidths-auto longtable docutils">
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">From</th>
+<th class="head">To</th>
+<th class="head">Action</th>
+<th class="head">File</th>
+<th class="head">Variable</th>
+<th class="head">Column</th>
+<th class="head">Value</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>2017a</td>
+<td>2018a</td>
+<td>Delete</td>
+<td>RunControl.nml</td>
+<td>anthropco2method</td>
+<td>-999</td>
+<td>-999</td>
+</tr>
+<tr class="row-odd"><td>2017a</td>
+<td>2018a</td>
+<td>Rename</td>
+<td>RunControl.nml</td>
+<td>AnthropHeatMethod</td>
+<td>-999</td>
+<td>EmissionsMethod</td>
+</tr>
+<tr class="row-even"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>AHMin_WD</td>
+<td>9</td>
+<td>15</td>
+</tr>
+<tr class="row-odd"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>AHMin_WE</td>
+<td>10</td>
+<td>15</td>
+</tr>
+<tr class="row-even"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>AHSlope_Heating_WD</td>
+<td>11</td>
+<td>2.7</td>
+</tr>
+<tr class="row-odd"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>AHSlope_Heating_WE</td>
+<td>12</td>
+<td>2.7</td>
+</tr>
+<tr class="row-even"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>AHSlope_Cooling_WD</td>
+<td>13</td>
+<td>2.7</td>
+</tr>
+<tr class="row-odd"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>AHSlope_Cooling_WE</td>
+<td>14</td>
+<td>2.7</td>
+</tr>
+<tr class="row-even"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>TCritic_Heating_WD</td>
+<td>15</td>
+<td>7</td>
+</tr>
+<tr class="row-odd"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>TCritic_Heating_WE</td>
+<td>16</td>
+<td>7</td>
+</tr>
+<tr class="row-even"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>TCritic_Cooling_WD</td>
+<td>17</td>
+<td>7</td>
+</tr>
+<tr class="row-odd"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>TCritic_Cooling_WE</td>
+<td>18</td>
+<td>7</td>
+</tr>
+<tr class="row-even"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>EnergyUseProfWD</td>
+<td>19</td>
+<td>44</td>
+</tr>
+<tr class="row-odd"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>EnergyUseProfWE</td>
+<td>20</td>
+<td>45</td>
+</tr>
+<tr class="row-even"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>ActivityProfWD</td>
+<td>21</td>
+<td>55663</td>
+</tr>
+<tr class="row-odd"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>ActivityProfWE</td>
+<td>22</td>
+<td>55664</td>
+</tr>
+<tr class="row-even"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>TraffProfWD</td>
+<td>23</td>
+<td>701</td>
+</tr>
+<tr class="row-odd"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>TraffProfWE</td>
+<td>24</td>
+<td>702</td>
+</tr>
+<tr class="row-even"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>PopProfWD</td>
+<td>25</td>
+<td>801</td>
+</tr>
+<tr class="row-odd"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>PopProfWE</td>
+<td>26</td>
+<td>802</td>
+</tr>
+<tr class="row-even"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>MinQFMetab</td>
+<td>27</td>
+<td>75</td>
+</tr>
+<tr class="row-odd"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>MaxQFMetab</td>
+<td>28</td>
+<td>175</td>
+</tr>
+<tr class="row-even"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>FrFossilFuel_Heat</td>
+<td>29</td>
+<td>0.05</td>
+</tr>
+<tr class="row-odd"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>FrFossilFuel_NonHeat</td>
+<td>30</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>EF_umolCO2perJ</td>
+<td>31</td>
+<td>1.159</td>
+</tr>
+<tr class="row-odd"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>EnEF_v_Jkm</td>
+<td>32</td>
+<td>3.97E+06</td>
+</tr>
+<tr class="row-even"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>FcEF_v_kgkm</td>
+<td>33</td>
+<td>0.285</td>
+</tr>
+<tr class="row-odd"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>TrafficUnits</td>
+<td>34</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>EnergyUseProfWD</td>
+<td>19</td>
+<td>-999</td>
+</tr>
+<tr class="row-odd"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>EnergyUseProfWE</td>
+<td>20</td>
+<td>-999</td>
+</tr>
+<tr class="row-even"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>ActivityProfWD</td>
+<td>21</td>
+<td>-999</td>
+</tr>
+<tr class="row-odd"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>ActivityProfWE</td>
+<td>22</td>
+<td>-999</td>
+</tr>
+<tr class="row-even"><td>2017a</td>
+<td>2018a</td>
+<td>Delete</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>AHMin</td>
+<td>-999</td>
+<td>-999</td>
+</tr>
+<tr class="row-odd"><td>2017a</td>
+<td>2018a</td>
+<td>Delete</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>AHSlope</td>
+<td>-999</td>
+<td>-999</td>
+</tr>
+<tr class="row-even"><td>2017a</td>
+<td>2018a</td>
+<td>Delete</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>TCritic</td>
+<td>-999</td>
+<td>-999</td>
+</tr>
+<tr class="row-odd"><td>2017a</td>
+<td>2018a</td>
+<td>Rename</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>QF_A_Weekday</td>
+<td>-999</td>
+<td>QF_A_WD</td>
+</tr>
+<tr class="row-even"><td>2017a</td>
+<td>2018a</td>
+<td>Rename</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>QF_B_Weekday</td>
+<td>-999</td>
+<td>QF_B_WD</td>
+</tr>
+<tr class="row-odd"><td>2017a</td>
+<td>2018a</td>
+<td>Rename</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>QF_C_Weekday</td>
+<td>-999</td>
+<td>QF_C_WD</td>
+</tr>
+<tr class="row-even"><td>2017a</td>
+<td>2018a</td>
+<td>Rename</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>QF_A_Weekend</td>
+<td>-999</td>
+<td>QF_A_WE</td>
+</tr>
+<tr class="row-odd"><td>2017a</td>
+<td>2018a</td>
+<td>Rename</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>QF_B_Weekend</td>
+<td>-999</td>
+<td>QF_B_WE</td>
+</tr>
+<tr class="row-even"><td>2017a</td>
+<td>2018a</td>
+<td>Rename</td>
+<td>SUEWS_AnthropogenicHeat.txt</td>
+<td>QF_C_Weekend</td>
+<td>-999</td>
+<td>QF_C_WE</td>
+</tr>
+<tr class="row-odd"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_BiogenCO2.txt</td>
+<td>Code</td>
+<td>1</td>
+<td>31</td>
+</tr>
+<tr class="row-even"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_BiogenCO2.txt</td>
+<td>alpha</td>
+<td>2</td>
+<td>0.004</td>
+</tr>
+<tr class="row-odd"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_BiogenCO2.txt</td>
+<td>beta</td>
+<td>3</td>
+<td>8.747</td>
+</tr>
+<tr class="row-even"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_BiogenCO2.txt</td>
+<td>theta</td>
+<td>4</td>
+<td>0.96</td>
+</tr>
+<tr class="row-odd"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_BiogenCO2.txt</td>
+<td>alpha_enh</td>
+<td>5</td>
+<td>0.016</td>
+</tr>
+<tr class="row-even"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_BiogenCO2.txt</td>
+<td>beta_enh</td>
+<td>6</td>
+<td>33.353</td>
+</tr>
+<tr class="row-odd"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_BiogenCO2.txt</td>
+<td>resp_a</td>
+<td>7</td>
+<td>2.43</td>
+</tr>
+<tr class="row-even"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_BiogenCO2.txt</td>
+<td>resp_b</td>
+<td>8</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_BiogenCO2.txt</td>
+<td>min_respi</td>
+<td>9</td>
+<td>0.6</td>
+</tr>
+<tr class="row-even"><td>2017a</td>
+<td>2018a</td>
+<td>Delete</td>
+<td>SUEWS_SiteSelect.txt</td>
+<td>TrafficRate</td>
+<td>-999</td>
+<td>-999</td>
+</tr>
+<tr class="row-odd"><td>2017a</td>
+<td>2018a</td>
+<td>Delete</td>
+<td>SUEWS_SiteSelect.txt</td>
+<td>BuildEnergyUse</td>
+<td>-999</td>
+<td>-999</td>
+</tr>
+<tr class="row-even"><td>2017a</td>
+<td>2018a</td>
+<td>Delete</td>
+<td>SUEWS_SiteSelect.txt</td>
+<td>EnergyUseProfWD</td>
+<td>-999</td>
+<td>-999</td>
+</tr>
+<tr class="row-odd"><td>2017a</td>
+<td>2018a</td>
+<td>Delete</td>
+<td>SUEWS_SiteSelect.txt</td>
+<td>EnergyUseProfWE</td>
+<td>-999</td>
+<td>-999</td>
+</tr>
+<tr class="row-even"><td>2017a</td>
+<td>2018a</td>
+<td>Delete</td>
+<td>SUEWS_SiteSelect.txt</td>
+<td>ActivityProfWD</td>
+<td>-999</td>
+<td>-999</td>
+</tr>
+<tr class="row-odd"><td>2017a</td>
+<td>2018a</td>
+<td>Delete</td>
+<td>SUEWS_SiteSelect.txt</td>
+<td>ActivityProfWE</td>
+<td>-999</td>
+<td>-999</td>
+</tr>
+<tr class="row-even"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_SiteSelect.txt</td>
+<td>TrafficRate_WD</td>
+<td>34</td>
+<td>0.01</td>
+</tr>
+<tr class="row-odd"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_SiteSelect.txt</td>
+<td>TrafficRate_WE</td>
+<td>35</td>
+<td>0.01</td>
+</tr>
+<tr class="row-even"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_SiteSelect.txt</td>
+<td>QF0_BEU_WD</td>
+<td>36</td>
+<td>0.88</td>
+</tr>
+<tr class="row-odd"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_SiteSelect.txt</td>
+<td>QF0_BEU_WE</td>
+<td>37</td>
+<td>0.88</td>
+</tr>
+<tr class="row-even"><td>2017a</td>
+<td>2018a</td>
+<td>Add</td>
+<td>SUEWS_Veg.txt</td>
+<td>BiogenCO2Code</td>
+<td>38</td>
+<td>31</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_Conductance.txt</td>
+<td>gsModel</td>
+<td>13</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_NonVeg.txt</td>
+<td>OHMThresh_SW</td>
+<td>19</td>
+<td>10</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_NonVeg.txt</td>
+<td>OHMThresh_WD</td>
+<td>20</td>
+<td>0.9</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_NonVeg.txt</td>
+<td>ESTMCode</td>
+<td>21</td>
+<td>806</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_NonVeg.txt</td>
+<td>AnOHM_Cp</td>
+<td>22</td>
+<td>20000000</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_NonVeg.txt</td>
+<td>AnOHM_Kk</td>
+<td>23</td>
+<td>1.2</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_NonVeg.txt</td>
+<td>AnOHM_Ch</td>
+<td>24</td>
+<td>4</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_Snow.txt</td>
+<td>OHMThresh_SW</td>
+<td>20</td>
+<td>10</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_Snow.txt</td>
+<td>OHMThresh_WD</td>
+<td>21</td>
+<td>0.9</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_Snow.txt</td>
+<td>ESTMCode</td>
+<td>22</td>
+<td>61</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_Snow.txt</td>
+<td>AnOHM_Cp</td>
+<td>23</td>
+<td>100000</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_Snow.txt</td>
+<td>AnOHM_Kk</td>
+<td>24</td>
+<td>1.2</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_Snow.txt</td>
+<td>AnOHM_Ch</td>
+<td>25</td>
+<td>4</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_Water.txt</td>
+<td>WaterDepth</td>
+<td>9</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_Water.txt</td>
+<td>OHMThresh_SW</td>
+<td>17</td>
+<td>10</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_Water.txt</td>
+<td>OHMThresh_WD</td>
+<td>18</td>
+<td>0.9</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_Water.txt</td>
+<td>ESTMCode</td>
+<td>19</td>
+<td>60</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_Water.txt</td>
+<td>AnOHM_Cp</td>
+<td>20</td>
+<td>100000</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_Water.txt</td>
+<td>AnOHM_Kk</td>
+<td>21</td>
+<td>1.2</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_Water.txt</td>
+<td>AnOHM_Ch</td>
+<td>22</td>
+<td>4</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_Veg.txt</td>
+<td>PorosityMin</td>
+<td>20</td>
+<td>-999</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_Veg.txt</td>
+<td>PorosityMax</td>
+<td>21</td>
+<td>-999</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_Veg.txt</td>
+<td>OHMThresh_SW</td>
+<td>32</td>
+<td>10</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_Veg.txt</td>
+<td>OHMThresh_WD</td>
+<td>33</td>
+<td>0.9</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_Veg.txt</td>
+<td>ESTMCode</td>
+<td>34</td>
+<td>200</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_Veg.txt</td>
+<td>AnOHM_Cp</td>
+<td>35</td>
+<td>100000</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_Veg.txt</td>
+<td>AnOHM_Kk</td>
+<td>36</td>
+<td>1.2</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_Veg.txt</td>
+<td>AnOHM_Ch</td>
+<td>37</td>
+<td>4</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Code</td>
+<td>1</td>
+<td>800</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Surf_thick1</td>
+<td>2</td>
+<td>0.1</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Surf_k1</td>
+<td>3</td>
+<td>0.74</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Surf_rhoCp1</td>
+<td>4</td>
+<td>1500000</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Surf_thick2</td>
+<td>5</td>
+<td>0.1</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Surf_k2</td>
+<td>6</td>
+<td>0.93</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Surf_rhoCp2</td>
+<td>7</td>
+<td>1500000</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Surf_thick3</td>
+<td>8</td>
+<td>0.05</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Surf_k3</td>
+<td>9</td>
+<td>0.06</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Surf_rhoCp3</td>
+<td>10</td>
+<td>70000</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Surf_thick4</td>
+<td>11</td>
+<td>-999</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Surf_k4</td>
+<td>12</td>
+<td>-999</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Surf_rhoCp4</td>
+<td>13</td>
+<td>-999</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Surf_thick5</td>
+<td>14</td>
+<td>-999</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Surf_k5</td>
+<td>15</td>
+<td>-999</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Surf_rhoCp5</td>
+<td>16</td>
+<td>-999</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Wall_thick1</td>
+<td>17</td>
+<td>0.1</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Wall_k1</td>
+<td>18</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Wall_rhoCp1</td>
+<td>19</td>
+<td>1600000</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Wall_thick2</td>
+<td>20</td>
+<td>0.1</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Wall_k2</td>
+<td>21</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Wall_rhoCp2</td>
+<td>22</td>
+<td>1600000</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Wall_thick3</td>
+<td>23</td>
+<td>0.1</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Wall_k3</td>
+<td>24</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Wall_rhoCp3</td>
+<td>25</td>
+<td>1600000</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Wall_thick4</td>
+<td>26</td>
+<td>-999</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Wall_k4</td>
+<td>27</td>
+<td>-999</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Wall_rhoCp4</td>
+<td>28</td>
+<td>-999</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Wall_thick5</td>
+<td>29</td>
+<td>-999</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Wall_k5</td>
+<td>30</td>
+<td>-999</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Wall_rhoCp5</td>
+<td>31</td>
+<td>-999</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Internal_thick1</td>
+<td>32</td>
+<td>0.05</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Internal_k1</td>
+<td>33</td>
+<td>0.5</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Internal_rhoCp1</td>
+<td>34</td>
+<td>1500000</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Internal_thick2</td>
+<td>35</td>
+<td>0.05</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Internal_k2</td>
+<td>36</td>
+<td>0.5</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Internal_rhoCp2</td>
+<td>37</td>
+<td>1500000</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Internal_thick3</td>
+<td>38</td>
+<td>0.05</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Internal_k3</td>
+<td>39</td>
+<td>0.5</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Internal_rhoCp3</td>
+<td>40</td>
+<td>1500000</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Internal_thick4</td>
+<td>41</td>
+<td>-999</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Internal_k4</td>
+<td>42</td>
+<td>-999</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Internal_rhoCp4</td>
+<td>43</td>
+<td>-999</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Internal_thick5</td>
+<td>44</td>
+<td>-999</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Internal_k5</td>
+<td>45</td>
+<td>-999</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Internal_rhoCp5</td>
+<td>46</td>
+<td>-999</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>nroom</td>
+<td>47</td>
+<td>10</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Internal_albedo</td>
+<td>48</td>
+<td>0.5</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Internal_emissivity</td>
+<td>49</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Internal_CHwall</td>
+<td>50</td>
+<td>0.001</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Internal_CHroof</td>
+<td>51</td>
+<td>0.001</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_ESTMCoefficients.txt</td>
+<td>Internal_CHbld</td>
+<td>52</td>
+<td>0.001</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_SiteSelect.txt</td>
+<td>Timezone</td>
+<td>7</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_SiteSelect.txt</td>
+<td>z</td>
+<td>10</td>
+<td>999</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_SiteSelect.txt</td>
+<td>TrafficRate</td>
+<td>34</td>
+<td>99999</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_SiteSelect.txt</td>
+<td>BuildEnergyUse</td>
+<td>35</td>
+<td>99999</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_SiteSelect.txt</td>
+<td>ActivityProfWD</td>
+<td>54</td>
+<td>5663</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_SiteSelect.txt</td>
+<td>ActivityProfWE</td>
+<td>55</td>
+<td>5664</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_SiteSelect.txt</td>
+<td>AreaWall</td>
+<td>87</td>
+<td>7000</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_SiteSelect.txt</td>
+<td>Fr_ESTMClass_Paved1</td>
+<td>88</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_SiteSelect.txt</td>
+<td>Fr_ESTMClass_Paved2</td>
+<td>89</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_SiteSelect.txt</td>
+<td>Fr_ESTMClass_Paved3</td>
+<td>90</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_SiteSelect.txt</td>
+<td>Code_ESTMClass_Paved1</td>
+<td>91</td>
+<td>806</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_SiteSelect.txt</td>
+<td>Code_ESTMClass_Paved2</td>
+<td>92</td>
+<td>807</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_SiteSelect.txt</td>
+<td>Code_ESTM_Paved3</td>
+<td>93</td>
+<td>808</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_SiteSelect.txt</td>
+<td>Fr_ESTMClass_Bldgs1</td>
+<td>94</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_SiteSelect.txt</td>
+<td>Fr_ESTMClass_Bldgs2</td>
+<td>95</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_SiteSelect.txt</td>
+<td>Fr_ESTMClass_Bldgs3</td>
+<td>96</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_SiteSelect.txt</td>
+<td>Fr_ESTMClass_Bldgs4</td>
+<td>97</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_SiteSelect.txt</td>
+<td>Fr_ESTMClass_Blgds5</td>
+<td>98</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_SiteSelect.txt</td>
+<td>Code_ESTMClass_Bldgs1</td>
+<td>99</td>
+<td>801</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_SiteSelect.txt</td>
+<td>Code_ESTMClass_Bldgs2</td>
+<td>100</td>
+<td>802</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_SiteSelect.txt</td>
+<td>Code_ESTMClass_Bldgs3</td>
+<td>101</td>
+<td>803</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_SiteSelect.txt</td>
+<td>Code_ESTMClass_Bldgs4</td>
+<td>102</td>
+<td>804</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>SUEWS_SiteSelect.txt</td>
+<td>Code_ESTMClass_Bldgs5</td>
+<td>103</td>
+<td>805</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Rename</td>
+<td>RunControl.nml</td>
+<td>AnthropHeatChoice</td>
+<td>-999</td>
+<td>AnthropHeatMethod</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Rename</td>
+<td>RunControl.nml</td>
+<td>CBLuse</td>
+<td>-999</td>
+<td>CBLUse</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Rename</td>
+<td>RunControl.nml</td>
+<td>NetRadiationChoice</td>
+<td>-999</td>
+<td>NetRadiationMethod</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Rename</td>
+<td>RunControl.nml</td>
+<td>RoughLen_heat</td>
+<td>-999</td>
+<td>RoughLenHeatMethod</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Rename</td>
+<td>RunControl.nml</td>
+<td>smd_choice</td>
+<td>-999</td>
+<td>SMDMethod</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Rename</td>
+<td>RunControl.nml</td>
+<td>WU_choice</td>
+<td>-999</td>
+<td>WaterUseMethod</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Rename</td>
+<td>RunControl.nml</td>
+<td>z0_method</td>
+<td>-999</td>
+<td>RoughLenMomMethod</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Delete</td>
+<td>RunControl.nml</td>
+<td>gsChoice</td>
+<td>-999</td>
+<td>-999</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Delete</td>
+<td>RunControl.nml</td>
+<td>SkipHeaderSiteInfo</td>
+<td>-999</td>
+<td>-999</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Delete</td>
+<td>RunControl.nml</td>
+<td>SkipHeaderMet</td>
+<td>-999</td>
+<td>-999</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Delete</td>
+<td>RunControl.nml</td>
+<td>SnowFractionChoice</td>
+<td>-999</td>
+<td>-999</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Delete</td>
+<td>RunControl.nml</td>
+<td>TIMEZONE</td>
+<td>-999</td>
+<td>-999</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Delete</td>
+<td>RunControl.nml</td>
+<td>z</td>
+<td>-999</td>
+<td>-999</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Rename</td>
+<td>RunControl.nml</td>
+<td>SOLWEIGuse</td>
+<td>-999</td>
+<td>SOLWEIGUse</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Rename</td>
+<td>RunControl.nml</td>
+<td>QSChoice</td>
+<td>-999</td>
+<td>StorageHeatMethod</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>RunControl.nml</td>
+<td>AnthropCO2Method</td>
+<td>-999</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>RunControl.nml</td>
+<td>MultipleMetFiles</td>
+<td>-999</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>RunControl.nml</td>
+<td>MultipleInitFiles</td>
+<td>-999</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>RunControl.nml</td>
+<td>MultipleESTMFiles</td>
+<td>-999</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>RunControl.nml</td>
+<td>ResolutionFilesIn</td>
+<td>-999</td>
+<td>3600</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>RunControl.nml</td>
+<td>ResolutionFilesInESTM</td>
+<td>-999</td>
+<td>3600</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>RunControl.nml</td>
+<td>ResolutionFilesOut</td>
+<td>-999</td>
+<td>3600</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>RunControl.nml</td>
+<td>DissagMethod</td>
+<td>-999</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>RunControl.nml</td>
+<td>RainDissagMethod</td>
+<td>-999</td>
+<td>100</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>RunControl.nml</td>
+<td>SuppressWarnings</td>
+<td>-999</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>RunControl.nml</td>
+<td>ncMode</td>
+<td>-999</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>RunControl.nml</td>
+<td>nRow</td>
+<td>-999</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>RunControl.nml</td>
+<td>nCol</td>
+<td>-999</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>2016a</td>
+<td>2017a</td>
+<td>Add</td>
+<td>RunControl.nml</td>
+<td>Diagnose</td>
+<td>-999</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>2016a</td>
+<td>2017a</td>
+<td>Rename</td>
+<td>RunControl.nml</td>
+<td>WriteSurfsFile</td>
+<td>-999</td>
+<td>WriteOutOption</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../output_files/output_files.html" class="btn btn-neutral float-right" title="5. Output files" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="SOLWEIG_input/SOLWEIGinput.html" class="btn btn-neutral" title="4.7.1. SOLWEIGinput" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018 – 2019, micromet@University of Reading, led by Prof Sue Grimmond
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,5 @@
+"Referencing Table","Requirement","Comment"
+"`SUEWS_NonVeg.txt`","`L`","For paved and building surfaces, it is possible to specify multiple codes per grid (3 for paved, 5 for buildings) using `SUEWS_SiteSelect.txt` . In this case, set ESTMCode here to zero."
+"`SUEWS_Veg.txt`","`L`","Code for ESTM coefficients to use for this surface. Links to SUEWS_ESTMCoefficients.txt . Value of integer is arbitrary but must match code specified in column 1 of SUEWS_ESTMCoefficients.txt. "
+"`SUEWS_Water.txt`","`L`","Code for ESTM coefficients to use for this surface. Links to SUEWS_ESTMCoefficients.txt . Value of integer is arbitrary but must match code specified in column 1 of SUEWS_ESTMCoefficients.txt. "
+"`SUEWS_Snow.txt`","`L`","For paved and building surfaces, it is possible to specify multiple codes per grid (3 for paved, 5 for buildings) using `SUEWS_SiteSelect.txt` . In this case, set ESTM code here to zero."

@@ -35,7 +35,7 @@ CONTAINS
       AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
       alpha_bioCO2, alpha_enh_bioCO2, alt, avkdn, avRh, avU1, BaseT, BaseTe, &
       BaseTHDD, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
-      chAnOHM, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
+      chAnOHM, CO2PointSource, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
       DecTreeH, Diagnose, DiagQN, DiagQS, DRAINRT, &
       dt_since_start, dqndt, qn1_av, dqnsdt, qn1_s_av, &
       EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
@@ -45,8 +45,8 @@ CONTAINS
       IceFrac, id, Ie_a, Ie_end, Ie_m, Ie_start, imin, &
       InternalWaterUse_h, IrrFracConif, IrrFracDecid, IrrFracGrass, isec, it, EvapMethod, &
       iy, kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax, LAIMin, LAI_obs, &
-      LAIPower, LAIType, lat, ldown_obs, lng, MaxConductance, MaxQFMetab, &
-      SnowWater, MetForcingData_grid, MinQFMetab, min_res_bioCO2, &
+      LAIPower, LAIType, lat, ldown_obs, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
+      SnowWater, MetForcingData_grid, MinFCMetab, MinQFMetab, min_res_bioCO2, &
       NARP_EMIS_SNOW, NARP_TRANS_SITE, NetRadiationMethod, &
       NumCapita, OHM_coef, OHMIncQF, OHM_threshSW, &
       OHM_threshWD, PipeCapacity, PopDensDaytime, &
@@ -58,7 +58,7 @@ CONTAINS
       RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
       SatHydraulicConduct, SDDFull, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
       SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
-      SnowLimBldg, SnowLimPaved, snow_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
+      SnowLimBldg, SnowLimPaved, snowFrac_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
       soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
       StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair24HR, tau_a, tau_f, tau_r, &
       T_CRITIC_Cooling, T_CRITIC_Heating, Temp_C, TempMeltFact, TH, &
@@ -120,6 +120,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::bldgH
       REAL(KIND(1D0)), INTENT(IN)::CapMax_dec
       REAL(KIND(1D0)), INTENT(IN)::CapMin_dec
+      REAL(KIND(1D0)), INTENT(IN)::CO2PointSource
       REAL(KIND(1D0)), INTENT(IN)::CRWmax
       REAL(KIND(1D0)), INTENT(IN)::CRWmin
       REAL(KIND(1D0)), INTENT(IN)::DecTreeH
@@ -131,7 +132,6 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::FAIDecTree
       REAL(KIND(1D0)), INTENT(IN)::FAIEveTree
       REAL(KIND(1D0)), INTENT(IN)::Faut
-      REAL(KIND(1D0)), INTENT(IN)::FcEF_v_kgkm
       REAL(KIND(1D0)), INTENT(IN)::fcld_obs
       REAL(KIND(1D0)), INTENT(IN)::FlowChange
       REAL(KIND(1D0)), INTENT(IN)::FrFossilFuel_Heat
@@ -151,13 +151,13 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::lat
       REAL(KIND(1D0)), INTENT(IN)::ldown_obs
       REAL(KIND(1D0)), INTENT(IN)::lng
+      REAL(KIND(1D0)), INTENT(IN)::MaxFCMetab
       REAL(KIND(1D0)), INTENT(IN)::MaxQFMetab
+      REAL(KIND(1D0)), INTENT(IN)::MinFCMetab
       REAL(KIND(1D0)), INTENT(IN)::MinQFMetab
       REAL(KIND(1D0)), INTENT(IN)::NARP_EMIS_SNOW
       REAL(KIND(1D0)), INTENT(IN)::NARP_TRANS_SITE
-      REAL(KIND(1D0)), INTENT(IN)::NumCapita
       REAL(KIND(1D0)), INTENT(IN)::PipeCapacity
-      REAL(KIND(1D0)), INTENT(IN)::PopDensDaytime
       REAL(KIND(1D0)), INTENT(IN)::PopDensNighttime
       REAL(KIND(1D0)), INTENT(IN)::PorMax_dec
       REAL(KIND(1D0)), INTENT(IN)::PorMin_dec
@@ -181,7 +181,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::SnowDensMin
       REAL(KIND(1D0)), INTENT(IN)::SnowLimBldg
       REAL(KIND(1D0)), INTENT(IN)::SnowLimPaved
-      REAL(KIND(1D0)), INTENT(IN)::snow_obs
+      REAL(KIND(1D0)), INTENT(IN)::snowFrac_obs
       REAL(KIND(1D0)), INTENT(IN)::SurfaceArea
       REAL(KIND(1D0)), INTENT(IN)::tau_a
       REAL(KIND(1D0)), INTENT(IN)::tau_f
@@ -203,10 +203,13 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::AH_MIN
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::AH_SLOPE_Cooling
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::AH_SLOPE_Heating
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::FcEF_v_kgkm
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::QF0_BEU
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::Qf_A
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::Qf_B
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::Qf_C
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::NumCapita
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::PopDensDaytime
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::T_CRITIC_Cooling
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::T_CRITIC_Heating
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::TrafficRate
@@ -335,9 +338,11 @@ CONTAINS
       REAL(KIND(1D0))::fcld
       REAL(KIND(1D0))::Fc_metab
       REAL(KIND(1D0))::Fc_photo
+      REAL(KIND(1D0))::Fc_point
       REAL(KIND(1D0))::Fc_respi
       REAL(KIND(1D0))::Fc_traff
       REAL(KIND(1D0))::fwh
+      REAL(KIND(1D0))::gfunc
       REAL(KIND(1D0))::gsc
       REAL(KIND(1D0))::H_mod
       REAL(KIND(1D0))::int_wu
@@ -369,6 +374,7 @@ CONTAINS
       REAL(KIND(1D0))::qs
       REAL(KIND(1D0))::RA
       REAL(KIND(1D0))::ResistSurf
+      REAL(KIND(1D0))::RH2
       ! REAL(KIND(1D0))::rss
       REAL(KIND(1d0))::runoffAGveg
       REAL(KIND(1d0))::runoffAGimpervious
@@ -564,27 +570,25 @@ CONTAINS
       ! ===================NET ALLWAVE RADIATION================================
       CALL SUEWS_cal_Qn( &
          NetRadiationMethod, snowUse, &!input
-         Diagnose, snow_obs, ldown_obs, fcld_obs, &
+         Diagnose, snowFrac_obs, ldown_obs, fcld_obs, &
          dectime, ZENITH_deg, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
          SnowAlb, DiagQN, &
          NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac, sfr, emis, &
-         alb, albDecTr_id, DecidCap_id, albEveTr_id, albGrass_id, StoreDrainPrm, &!inout
-         snowFrac, ldown, fcld, &!output
+         alb, albDecTr_id, DecidCap_id, albEveTr_id, albGrass_id, StoreDrainPrm, snowFrac, &!inout
+         ldown, fcld, &!output
          qn1, qn1_snowfree, qn1_S, kclear, kup, lup, tsurf, &
          qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind)
 
-      ! ===================ANTHROPOGENIC HEAT FLUX================================
+      ! ===================ANTHROPOGENIC HEAT AND CO2 FLUX======================
       CALL SUEWS_cal_AnthropogenicEmission( &
-         QF_obs, &
-         AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, AH_SLOPE_Heating, alpha_bioCO2, &
-         alpha_enh_bioCO2, avkdn, beta_bioCO2, beta_enh_bioCO2, dayofWeek_id, &
-         Diagnose, DLS, EF_umolCO2perJ, EmissionsMethod, EnEF_v_Jkm, Fc, Fc_anthro, Fc_biogen, &
-         Fc_build, FcEF_v_kgkm, Fc_metab, Fc_photo, Fc_respi, Fc_traff, FrFossilFuel_Heat, &
-         FrFossilFuel_NonHeat, HDD_id, HumActivity_24hr, id, imin, it, LAI_id, LAIMax, LAIMin, &
-         MaxQFMetab, MinQFMetab, min_res_bioCO2, nsh, NumCapita, &
-         PopDensDaytime, PopDensNighttime, PopProf_24hr, QF, QF0_BEU, Qf_A, Qf_B, Qf_C, QF_SAHP, &
-         resp_a, resp_b, sfr, snowFrac, T_CRITIC_Cooling, T_CRITIC_Heating, Temp_C, &
-         theta_bioCO2, TrafficRate, TrafficUnits, TraffProf_24hr)
+         AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, AH_SLOPE_Heating, CO2PointSource, &! input:
+         dayofWeek_id, Diagnose, DLS, EF_umolCO2perJ, EmissionsMethod, EnEF_v_Jkm, &
+         FcEF_v_kgkm, FrFossilFuel_Heat, FrFossilFuel_NonHeat, HDD_id, HumActivity_24hr, &
+         id, imin, it, MaxFCMetab, MaxQFMetab, MinFCMetab, MinQFMetab, nsh, NumCapita, &
+         PopDensDaytime, PopDensNighttime, PopProf_24hr, QF, QF0_BEU, Qf_A, Qf_B, Qf_C, &
+         QF_obs, QF_SAHP, sfr, snowFrac, SurfaceArea, T_CRITIC_Cooling, T_CRITIC_Heating, &
+         Temp_C, TrafficRate, TrafficUnits, TraffProf_24hr, &
+         Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff)! output:
 
       ! =================STORAGE HEAT FLUX=======================================
       CALL SUEWS_cal_Qs( &
@@ -726,8 +730,17 @@ CONTAINS
          qh, qe, &
          VegFraction, z, z0m, zdm, RA, avdens, avcp, lv_J_kg, tstep_real, &
          RoughLenHeatMethod, StabilityMethod, &
-         avU10_ms, t2_C, q2_gkg, tskin_C)!output
+         avU10_ms, t2_C, q2_gkg, tskin_C, RH2)!output
       !============ surface-level diagonostics end ===============
+
+      ! ============ BIOGENIC CO2 FLUX =======================
+      CALL SUEWS_cal_BiogenCO2( &
+         alpha_bioCO2, alpha_enh_bioCO2, avkdn, avRh, beta_bioCO2, beta_enh_bioCO2, BSoilSurf, &! input:
+         ConifSurf, DecidSurf, dectime, Diagnose, EmissionsMethod, Fc_anthro, G1, G2, G3, G4, &
+         G5, G6, gfunc, GrassSurf, gsmodel, id, it, ivConif, ivDecid, ivGrass, Kmax, LAI_id, LAIMin, &
+         LAIMax, MaxConductance, min_res_bioCO2, nsurf, NVegSurf, Press_hPa, resp_a, &
+         resp_b, S1, S2, sfr, SMDMethod, snowFrac, t2_C, Temp_C, theta_bioCO2, TH, TL, vsmd, xsmd, &
+         Fc, Fc_biogen, Fc_photo, Fc_respi)! output:
 
       !==============main calculation end=======================
 
@@ -736,14 +749,14 @@ CONTAINS
          AdditionalWater, alb, avkdn, avU10_ms, azimuth, &!input
          chSnow_per_interval, dectime, &
          drain_per_tstep, E_mod, ev_per_tstep, ext_wu, Fc, Fc_build, fcld, &
-         Fc_metab, Fc_photo, Fc_respi, Fc_traff, FlowChange, &
+         Fc_metab, Fc_photo, Fc_respi, Fc_point, Fc_traff, FlowChange, &
          h_mod, id, imin, int_wu, it, iy, &
          kup, LAI_id, ldown, l_mod, lup, mwh, &
          MwStore, &
          nsh_real, NWstate_per_tstep, Precip, q2_gkg, &
          qeOut, qf, qh, qh_resist, Qm, QmFreez, &
          QmRain, qn1, qn1_S, qn1_snowfree, qs, RA, &
-         resistsurf, runoffAGimpervious, runoffAGveg, &
+         resistsurf, RH2, runoffAGimpervious, runoffAGveg, &
          runoff_per_tstep, runoffPipes, runoffSoil_per_tstep, &
          runoffWaterBody, sfr, smd, smd_nsurf, SnowAlb, SnowRemoval, &
          state_id, state_per_tstep, surf_chang_per_tstep, swe, t2_C, tskin_C, &
@@ -775,104 +788,93 @@ CONTAINS
 
    ! ===================ANTHROPOGENIC HEAT + CO2 FLUX================================
    SUBROUTINE SUEWS_cal_AnthropogenicEmission( &
-      QF_obs, &
-      AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, AH_SLOPE_Heating, alpha_bioCO2, &
-      alpha_enh_bioCO2, avkdn, beta_bioCO2, beta_enh_bioCO2, dayofWeek_id, &
-      Diagnose, DLS, EF_umolCO2perJ, EmissionsMethod, EnEF_v_Jkm, Fc, Fc_anthro, Fc_biogen, &
-      Fc_build, FcEF_v_kgkm, Fc_metab, Fc_photo, Fc_respi, Fc_traff, FrFossilFuel_Heat, &
-      FrFossilFuel_NonHeat, HDD_id, HumActivity_24hr, id, imin, it, LAI_id, LAIMax, LAIMin, &
-      MaxQFMetab, MinQFMetab, min_res_bioCO2, nsh, NumCapita, &
-      PopDensDaytime, PopDensNighttime, PopProf_24hr, QF, QF0_BEU, Qf_A, Qf_B, Qf_C, QF_SAHP, &
-      resp_a, resp_b, sfr, snowFrac, T_CRITIC_Cooling, T_CRITIC_Heating, Temp_C, &
-      theta_bioCO2, TrafficRate, TrafficUnits, TraffProf_24hr)
+      AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, AH_SLOPE_Heating, CO2PointSource, &! input:
+      dayofWeek_id, Diagnose, DLS, EF_umolCO2perJ, EmissionsMethod, EnEF_v_Jkm, &
+      FcEF_v_kgkm, FrFossilFuel_Heat, FrFossilFuel_NonHeat, HDD_id, HumActivity_24hr, &
+      id, imin, it, MaxFCMetab, MaxQFMetab, MinFCMetab, MinQFMetab, nsh, NumCapita, &
+      PopDensDaytime, PopDensNighttime, PopProf_24hr, QF, QF0_BEU, Qf_A, Qf_B, Qf_C, &
+      QF_obs, QF_SAHP, sfr, snowFrac, SurfaceArea, T_CRITIC_Cooling, T_CRITIC_Heating, &
+      Temp_C, TrafficRate, TrafficUnits, TraffProf_24hr, &
+      Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff)! output:
 
       IMPLICIT NONE
 
       INTEGER, INTENT(in)::Diagnose
+      INTEGER, INTENT(in)::DLS
       INTEGER, INTENT(in)::EmissionsMethod
       INTEGER, INTENT(in)::id
       INTEGER, INTENT(in)::it
       INTEGER, INTENT(in)::imin
-      INTEGER, INTENT(in)::DLS
       INTEGER, INTENT(in)::nsh
-      ! INTEGER,INTENT(in)::notUsedI
       INTEGER, DIMENSION(3), INTENT(in)::dayofWeek_id
+
       REAL(KIND(1d0)), DIMENSION(6, 2), INTENT(in)::HDD_id
-      REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::Qf_A
-      REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::Qf_B
-      REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::Qf_C
+
       REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::AH_MIN
       REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::AH_SLOPE_Heating
       REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::AH_SLOPE_Cooling
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(in)::FcEF_v_kgkm
+      REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::NumCapita
+      REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::PopDensDaytime
+      REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::QF0_BEU
+      REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::Qf_A
+      REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::Qf_B
+      REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::Qf_C
       REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::T_CRITIC_Heating
       REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::T_CRITIC_Cooling
       REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::TrafficRate
-      REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::QF0_BEU
+
       REAL(KIND(1d0)), DIMENSION(0:23, 2), INTENT(in)::AHProf_24hr
       REAL(KIND(1d0)), DIMENSION(0:23, 2), INTENT(in)::HumActivity_24hr
       REAL(KIND(1d0)), DIMENSION(0:23, 2), INTENT(in)::TraffProf_24hr
       REAL(KIND(1d0)), DIMENSION(0:23, 2), INTENT(in)::PopProf_24hr
+
+      REAL(KIND(1D0)), INTENT(in)::CO2PointSource
       REAL(KIND(1D0)), INTENT(in)::EF_umolCO2perJ
-      REAL(KIND(1D0)), INTENT(in)::FcEF_v_kgkm
       REAL(KIND(1D0)), INTENT(in)::EnEF_v_Jkm
-      REAL(KIND(1D0)), INTENT(in)::TrafficUnits
       REAL(KIND(1D0)), INTENT(in)::FrFossilFuel_Heat
       REAL(KIND(1D0)), INTENT(in)::FrFossilFuel_NonHeat
-      REAL(KIND(1D0)), INTENT(in)::MinQFMetab
+      REAL(KIND(1D0)), INTENT(in)::MaxFCMetab
       REAL(KIND(1D0)), INTENT(in)::MaxQFMetab
-      REAL(KIND(1D0)), INTENT(in)::NumCapita
-      REAL(KIND(1D0)), INTENT(in)::PopDensDaytime
+      REAL(KIND(1D0)), INTENT(in)::MinFCMetab
+      REAL(KIND(1D0)), INTENT(in)::MinQFMetab
       REAL(KIND(1D0)), INTENT(in)::PopDensNighttime
-      REAL(KIND(1D0)), INTENT(in)::Temp_C
       REAL(KIND(1D0)), INTENT(in)::QF_obs
-      REAL(KIND(1D0)), INTENT(out)::QF
-      REAL(KIND(1D0)), INTENT(out)::QF_SAHP
-      REAL(KIND(1D0)), INTENT(out)::Fc_anthro
-      REAL(KIND(1D0)), INTENT(out)::Fc_metab
-      REAL(KIND(1D0)), INTENT(out)::Fc_traff
-      REAL(KIND(1D0)), INTENT(out)::Fc_build
-      REAL(KIND(1d0)), INTENT(in)::avkdn
+      REAL(KIND(1D0)), INTENT(in)::Temp_C
+      REAL(KIND(1D0)), INTENT(in)::TrafficUnits
+
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::sfr
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::snowFrac
-      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(in)::LAI_id
-      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(in)::LAIMin
-      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(in):: LAIMax
-      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(in)::alpha_bioCO2
-      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(in)::beta_bioCO2
-      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(in)::theta_bioCO2
-      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(in)::alpha_enh_bioCO2
-      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(in)::beta_enh_bioCO2
-      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(in)::resp_a
-      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(in)::resp_b
-      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(in)::min_res_bioCO2
-      REAL(KIND(1D0)), INTENT(out)::Fc_biogen
-      REAL(KIND(1D0)), INTENT(out)::Fc_respi
-      REAL(KIND(1D0)), INTENT(out)::Fc_photo
-      REAL(KIND(1D0)), INTENT(out)::Fc
+      REAL(KIND(1D0)), INTENT(IN)::SurfaceArea
+
+      REAL(KIND(1D0)), INTENT(out)::Fc_anthro
+      REAL(KIND(1D0)), INTENT(out)::Fc_build
+      REAL(KIND(1D0)), INTENT(out)::Fc_metab
+      REAL(KIND(1D0)), INTENT(out)::Fc_point
+      REAL(KIND(1D0)), INTENT(out)::Fc_traff
+      REAL(KIND(1D0)), INTENT(out)::QF
+      REAL(KIND(1D0)), INTENT(out)::QF_SAHP
 
       INTEGER, PARAMETER :: notUsedI = -999
       REAL(KIND(1D0)), PARAMETER::notUsed = -999
-
-      !ih=it-DLS           !Moved to subroutine AnthropogenicEmissions MH 29 June 2017
-      !IF(ih<0) ih=23
 
       IF (EmissionsMethod == 0) THEN ! use observed qf
          qf = QF_obs
       ELSEIF ((EmissionsMethod > 0 .AND. EmissionsMethod <= 6) .OR. EmissionsMethod >= 11) THEN
          CALL AnthropogenicEmissions( &
-            EmissionsMethod, &
+            CO2PointSource, EmissionsMethod, &
             id, it, imin, DLS, nsh, DayofWeek_id, &
             EF_umolCO2perJ, FcEF_v_kgkm, EnEF_v_Jkm, TrafficUnits, &
             FrFossilFuel_Heat, FrFossilFuel_NonHeat, &
-            MinQFMetab, MaxQFMetab, &
-            PopDensDaytime, PopDensNighttime, &
+            MinFCMetab, MaxFCMetab, MinQFMetab, MaxQFMetab, &
+            NumCapita, PopDensDaytime, PopDensNighttime, &
             Temp_C, HDD_id, Qf_A, Qf_B, Qf_C, &
             AH_MIN, AH_SLOPE_Heating, AH_SLOPE_Cooling, &
             T_CRITIC_Heating, T_CRITIC_Cooling, &
             TrafficRate, &
             QF0_BEU, QF_SAHP, &
-            Fc_anthro, Fc_metab, Fc_traff, Fc_build, &
-            AHProf_24hr, HumActivity_24hr, TraffProf_24hr, PopProf_24hr)
+            Fc_anthro, Fc_metab, Fc_traff, Fc_build, Fc_point, &
+            AHProf_24hr, HumActivity_24hr, TraffProf_24hr, PopProf_24hr, SurfaceArea)
 
       ELSE
          CALL ErrorHint(73, 'RunControl.nml:EmissionsMethod unusable', notUsed, notUsed, EmissionsMethod)
@@ -880,44 +882,158 @@ CONTAINS
 
       IF (EmissionsMethod >= 1) qf = QF_SAHP
 
-      IF (EmissionsMethod >= 11) THEN
-         ! Calculate CO2 fluxes from biogenic components
-         IF (Diagnose == 1) WRITE (*, *) 'Calling CO2_biogen...'
-         CALL CO2_biogen(EmissionsMethod, &
-                         ivConif, ivDecid, ivGrass, ConifSurf, DecidSurf, GrassSurf, BSoilSurf, &
-                         snowFrac, nsurf, NVegSurf, avkdn, Temp_C, sfr, LAI_id, LAIMin, LAIMax, &
-                         alpha_bioCO2, beta_bioCO2, theta_bioCO2, alpha_enh_bioCO2, beta_enh_bioCO2, &
-                         resp_a, resp_b, min_res_bioCO2, Fc_biogen, Fc_respi, Fc_photo, &
-                         notUsed, notUsedI)
-      ENDIF
-
       IF (EmissionsMethod >= 0 .AND. EmissionsMethod <= 6) THEN
          Fc_anthro = 0
          Fc_metab = 0
          Fc_traff = 0
          Fc_build = 0
-         Fc_biogen = 0
-         Fc_respi = 0
-         Fc_photo = 0
-
+         Fc_point = 0
       ENDIF
-      ! Sum anthropogenic and biogenic CO2 flux components to find overall CO2 flux
-      Fc = Fc_anthro + Fc_biogen
-
-      ! =================STORAGE HEAT FLUX=======================================
 
    END SUBROUTINE SUEWS_cal_AnthropogenicEmission
    ! ================================================================================
 
+   !==============BIOGENIC CO2 flux==================================================
+   SUBROUTINE SUEWS_cal_BiogenCO2( &
+      alpha_bioCO2, alpha_enh_bioCO2, avkdn, avRh, beta_bioCO2, beta_enh_bioCO2, BSoilSurf, &! input:
+      ConifSurf, DecidSurf, dectime, Diagnose, EmissionsMethod, Fc_anthro, G1, G2, G3, G4, &
+      G5, G6, gfunc, GrassSurf, gsmodel, id, it, ivConif, ivDecid, ivGrass, Kmax, LAI_id, LAIMin, &
+      LAIMax, MaxConductance, min_res_bioCO2, nsurf, NVegSurf, Press_hPa, resp_a, &
+      resp_b, S1, S2, sfr, SMDMethod, snowFrac, t2_C, Temp_C, theta_bioCO2, TH, TL, vsmd, xsmd, &
+      Fc, Fc_biogen, Fc_photo, Fc_respi)! output:
+
+      IMPLICIT NONE
+
+      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(in)::alpha_bioCO2
+      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(in)::alpha_enh_bioCO2
+      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(in)::beta_bioCO2
+      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(in)::beta_enh_bioCO2
+      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(in)::LAI_id
+      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(in)::LAIMin
+      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(in)::LAIMax
+      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(in)::min_res_bioCO2
+      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(in)::resp_a
+      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(in)::resp_b
+      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(in)::theta_bioCO2
+
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::sfr
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::snowFrac
+
+      REAL(KIND(1d0)), DIMENSION(3), INTENT(in)::MaxConductance
+
+      INTEGER, INTENT(in)::BSoilSurf
+      INTEGER, INTENT(in)::ConifSurf
+      INTEGER, INTENT(in)::DecidSurf
+      INTEGER, INTENT(in)::Diagnose
+      INTEGER, INTENT(in)::EmissionsMethod
+      INTEGER, INTENT(in)::GrassSurf
+      INTEGER, INTENT(in)::gsmodel
+      INTEGER, INTENT(in)::id
+      INTEGER, INTENT(in)::it
+      INTEGER, INTENT(in)::ivConif
+      INTEGER, INTENT(in)::ivDecid
+      INTEGER, INTENT(in)::ivGrass
+      INTEGER, INTENT(in)::nsurf
+      INTEGER, INTENT(in)::NVegSurf
+      INTEGER, INTENT(in)::SMDMethod
+
+      REAL(KIND(1d0)), INTENT(in)::avkdn
+      REAL(KIND(1d0)), INTENT(in)::avRh
+      REAL(KIND(1d0)), INTENT(in)::dectime
+      REAL(KIND(1d0)), INTENT(in)::Fc_anthro
+      REAL(KIND(1d0)), INTENT(in)::G1
+      REAL(KIND(1d0)), INTENT(in)::G2
+      REAL(KIND(1d0)), INTENT(in)::G3
+      REAL(KIND(1d0)), INTENT(in)::G4
+      REAL(KIND(1d0)), INTENT(in)::G5
+      REAL(KIND(1d0)), INTENT(in)::G6
+      REAL(KIND(1d0)), INTENT(in)::gfunc
+      REAL(KIND(1d0)), INTENT(in)::Kmax
+      REAL(KIND(1d0)), INTENT(in)::Press_hPa
+      REAL(KIND(1d0)), INTENT(in)::S1
+      REAL(KIND(1d0)), INTENT(in)::S2
+      REAL(KIND(1d0)), INTENT(in)::t2_C
+      REAL(KIND(1d0)), INTENT(in)::Temp_C
+      REAL(KIND(1d0)), INTENT(in)::TH
+      REAL(KIND(1d0)), INTENT(in)::TL
+      REAL(KIND(1d0)), INTENT(in)::vsmd
+      REAL(KIND(1d0)), INTENT(in)::xsmd
+
+      REAL(KIND(1d0)), INTENT(out)::Fc_biogen
+      REAL(KIND(1d0)), INTENT(out)::Fc_photo
+      REAL(KIND(1d0)), INTENT(out)::Fc_respi
+      REAL(KIND(1d0)), INTENT(out)::Fc
+
+      REAL(KIND(1d0))::gfunc2
+      REAL(KIND(1d0))::dq
+      REAL(KIND(1d0))::t2
+      REAL(KIND(1d0))::dummy1
+      REAL(KIND(1d0))::dummy2
+      REAL(KIND(1d0))::dummy3
+      REAL(KIND(1d0))::dummy4
+      REAL(KIND(1d0))::dummy5
+      REAL(KIND(1d0))::dummy6
+      REAL(KIND(1d0))::dummy7
+      REAL(KIND(1d0))::dummy8
+      REAL(KIND(1d0))::dummy9
+      REAL(KIND(1d0))::dummy10
+      REAL(KIND(1d0))::dummy11
+
+      IF (EmissionsMethod >= 11) THEN
+
+         IF (gsmodel == 3 .OR. gsmodel == 4) THEN ! With modelled 2 meter temperature
+            ! Call LUMPS_cal_AtmMoist for dq and SurfaceResistance for gfunc with 2 meter temperature
+            ! If modelled 2 meter temperature is too different from measured air temperature then
+            ! use temp_c
+            IF (ABS(Temp_C - t2_C) > 5) THEN
+               t2 = Temp_C
+            ELSE
+               t2 = t2_C
+            ENDIF
+
+            CALL LUMPS_cal_AtmMoist( &
+               t2, Press_hPa, avRh, dectime, &! input:
+               dummy1, dummy2, &! output:
+               dummy3, dummy4, dummy5, dummy6, dq, dummy7, dummy8, dummy9)
+
+            CALL SurfaceResistance( &
+               id, it, &! input:
+               SMDMethod, snowFrac, sfr, avkdn, t2, dq, xsmd, vsmd, MaxConductance, &
+               LAIMax, LAI_id, gsModel, Kmax, &
+               G1, G2, G3, G4, G5, G6, TH, TL, S1, S2, &
+               gfunc2, dummy10, dummy11)! output:
+         ENDIF
+
+         ! Calculate CO2 fluxes from biogenic components
+         IF (Diagnose == 1) WRITE (*, *) 'Calling CO2_biogen...'
+         CALL CO2_biogen( &
+            alpha_bioCO2, alpha_enh_bioCO2, avkdn, beta_bioCO2, beta_enh_bioCO2, BSoilSurf, &! input:
+            ConifSurf, DecidSurf, dectime, EmissionsMethod, gfunc, gfunc2, GrassSurf, gsmodel, &
+            id, it, ivConif, ivDecid, ivGrass, LAI_id, LAIMin, LAIMax, min_res_bioCO2, nsurf, &
+            NVegSurf, resp_a, resp_b, sfr, snowFrac, t2, Temp_C, theta_bioCO2, &
+            Fc_biogen, Fc_photo, Fc_respi)! output:
+      ENDIF
+
+      IF (EmissionsMethod >= 0 .AND. EmissionsMethod <= 6) THEN
+         Fc_biogen = 0
+         Fc_photo = 0
+         Fc_respi = 0
+      ENDIF
+
+      Fc = Fc_anthro + Fc_biogen
+
+   END SUBROUTINE SUEWS_cal_BiogenCO2
+   !========================================================================
+
    !=============net all-wave radiation=====================================
    SUBROUTINE SUEWS_cal_Qn( &
       NetRadiationMethod, snowUse, &!input
-      Diagnose, snow_obs, ldown_obs, fcld_obs, &
+      Diagnose, snowFrac_obs, ldown_obs, fcld_obs, &
       dectime, ZENITH_deg, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
       SnowAlb, DiagQN, &
       NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac, sfr, emis, &
-      alb, albDecTr_id, DecidCap_id, albEveTr_id, albGrass_id, StoreDrainPrm, &!inout
-      snowFrac, ldown, fcld, &!output
+      alb, albDecTr_id, DecidCap_id, albEveTr_id, albGrass_id, StoreDrainPrm, snowFrac, &!inout
+      ldown, fcld, &!output
       qn1, qn1_snowfree, qn1_S, kclear, kup, lup, tsurf, &
       qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind)
       USE NARP_MODULE, ONLY: RadMethod, NARP
@@ -933,7 +1049,7 @@ CONTAINS
       INTEGER, INTENT(in)::Diagnose
       INTEGER, INTENT(in)::DiagQN
 
-      REAL(KIND(1d0)), INTENT(in)::snow_obs
+      REAL(KIND(1d0)), INTENT(in)::snowFrac_obs
       REAL(KIND(1d0)), INTENT(in)::ldown_obs
       REAL(KIND(1d0)), INTENT(in)::fcld_obs
       REAL(KIND(1d0)), INTENT(in)::dectime
@@ -958,7 +1074,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(in)  ::albGrass_id
       REAL(KIND(1d0)), DIMENSION(6, nsurf), INTENT(inout)::StoreDrainPrm
 
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::snowFrac
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(inout)::snowFrac
 
       REAL(KIND(1d0)), INTENT(out)::ldown
       REAL(KIND(1d0)), INTENT(out)::fcld
@@ -990,7 +1106,7 @@ CONTAINS
 
       IF (NetRadiationMethodX > 0) THEN
 
-         ! IF (snowUse==0) snowFrac=snow_obs
+         ! IF (snowUse==0) snowFrac=snowFrac_obs
          IF (snowUse == 0) snowFrac = 0
 
          IF (ldown_option == 1) THEN !Observed ldown provided as forcing
@@ -1024,7 +1140,7 @@ CONTAINS
             qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind)
 
       ELSE ! NetRadiationMethod==0
-         snowFrac = snow_obs
+         snowFrac = snowFrac_obs
          qn1 = qn1_obs
          qn1_snowfree = qn1_obs
          qn1_s = qn1_obs
@@ -1739,6 +1855,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(out)  ::RAsnow    !Aerodynamic resistance for snow [s m^-1]
       REAL(KIND(1d0)), INTENT(out)  ::rb        !boundary layer resistance shuttleworth
       REAL(KIND(1d0)), INTENT(out)  ::L_mod     !Obukhov length
+      REAL(KIND(1d0))              ::gfunc     !gdq*gtemp*gs*gq for photosynthesis calculations
       REAL(KIND(1d0))              ::H_init    !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
 
       ! Get first estimate of sensible heat flux. Modified by HCW 26 Feb 2015
@@ -1797,7 +1914,7 @@ CONTAINS
          SMDMethod, snowFrac, sfr, avkdn, Temp_C, dq, xsmd, vsmd, MaxConductance, &
          LAIMax, LAI_id, gsModel, Kmax, &
          G1, G2, G3, G4, G5, G6, TH, TL, S1, S2, &
-         gsc, ResistSurf)! output:
+         gfunc, gsc, ResistSurf)! output:
 
       IF (Diagnose == 1) WRITE (*, *) 'Calling BoundaryLayerResistance...'
       CALL BoundaryLayerResistance( &
@@ -1815,14 +1932,14 @@ CONTAINS
       AdditionalWater, alb, avkdn, avU10_ms, azimuth, &!input
       chSnow_per_interval, dectime, &
       drain_per_tstep, E_mod, ev_per_tstep, ext_wu, Fc, Fc_build, fcld, &
-      Fc_metab, Fc_photo, Fc_respi, Fc_traff, FlowChange, &
+      Fc_metab, Fc_photo, Fc_respi, Fc_point, Fc_traff, FlowChange, &
       h_mod, id, imin, int_wu, it, iy, &
       kup, LAI_id, ldown, l_mod, lup, mwh, &
       MwStore, &
       nsh_real, NWstate_per_tstep, Precip, q2_gkg, &
       qeOut, qf, qh, qh_resist, Qm, QmFreez, &
       QmRain, qn1, qn1_S, qn1_snowfree, qs, RA, &
-      resistsurf, runoffAGimpervious, runoffAGveg, &
+      resistsurf, RH2, runoffAGimpervious, runoffAGveg, &
       runoff_per_tstep, runoffPipes, runoffSoil_per_tstep, &
       runoffWaterBody, sfr, smd, smd_nsurf, SnowAlb, SnowRemoval, &
       state_id, state_per_tstep, surf_chang_per_tstep, swe, t2_C, tskin_C, &
@@ -1855,6 +1972,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(in) :: Fc_metab
       REAL(KIND(1d0)), INTENT(in) :: Fc_photo
       REAL(KIND(1d0)), INTENT(in) :: Fc_respi
+      REAL(KIND(1d0)), INTENT(in) :: Fc_point
       REAL(KIND(1d0)), INTENT(in) :: Fc_traff
       REAL(KIND(1d0)), INTENT(in) :: fcld
       REAL(KIND(1d0)), INTENT(in) :: FlowChange
@@ -1884,6 +2002,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(in) :: qs
       REAL(KIND(1d0)), INTENT(in) :: RA
       REAL(KIND(1d0)), INTENT(in) :: resistsurf
+      REAL(KIND(1d0)), INTENT(in) :: RH2
       REAL(KIND(1d0)), INTENT(in) :: runoff_per_tstep
       REAL(KIND(1d0)), INTENT(in) :: runoffAGimpervious
       REAL(KIND(1d0)), INTENT(in) :: runoffAGveg
@@ -1918,6 +2037,7 @@ CONTAINS
 
       ! INTEGER:: is
       REAL(KIND(1d0)):: LAI_wt
+      REAL(KIND(1d0)):: RH2_pct ! RH2 in percentage
 
       ! the variables below with '_x' endings stand for 'exported' values
       REAL(KIND(1d0))::ResistSurf_x
@@ -1949,6 +2069,9 @@ CONTAINS
 
       ! Calculate areally-weighted albedo
       bulkalbedo = DOT_PRODUCT(alb, sfr)
+
+      ! convert RH2 to a percentage form
+      RH2_pct = RH2*100.0
 
       ! NB: this part needs to be reconsidered for calculation logic. TS, 27 Sep 2018
       ! TODO: this part should be reconnected to an improved CBL interface. TS 10 Jun 2018
@@ -1988,11 +2111,11 @@ CONTAINS
                          LAI_wt, z0m, zdm, &
                          UStar, l_mod, RA, ResistSurf, &
                          Fc, &
-                         Fc_photo, Fc_respi, Fc_metab, Fc_traff, Fc_build, &
+                         Fc_photo, Fc_respi, Fc_metab, Fc_traff, Fc_build, Fc_point, &
                          qn1_snowfree, qn1_S, SnowAlb, &
                          Qm, QmFreez, QmRain, swe, mwh, MwStore, chSnow_per_interval, &
                          SnowRemoval(1:2), &
-                         tskin_C, t2_C, q2_gkg, avU10_ms & ! surface-level diagonostics
+                         tskin_C, t2_C, q2_gkg, avU10_ms, RH2_pct & ! surface-level diagonostics
                          ]
       ! set invalid values to NAN
       ! dataOutLineSUEWS = set_nan(dataOutLineSUEWS)
@@ -2051,7 +2174,7 @@ CONTAINS
       qh, qe, &
       VegFraction, zMeas, z0m, zdm, RA, avdens, avcp, lv_J_kg, tstep_real, &
       RoughLenHeatMethod, StabilityMethod, &
-      avU10_ms, t2_C, q2_gkg, tskin_C)!output
+      avU10_ms, t2_C, q2_gkg, tskin_C, RH2)!output
       ! TS 03 Aug 2018: added limit on q2 by restricting RH2_max to 100%
       ! TS 31 Jul 2018: removed dependence on surface variables (Tsurf, qsat)
       ! TS 26 Jul 2018: improved the calculation logic
@@ -2069,8 +2192,8 @@ CONTAINS
       ! INTEGER,INTENT(in)         :: opt ! 0 for momentum, 1 for temperature, 2 for humidity
       INTEGER, INTENT(in)         :: RoughLenHeatMethod, StabilityMethod
 
-      REAL(KIND(1d0)), INTENT(out):: avU10_ms, t2_C, q2_gkg, tskin_C
-      REAL(KIND(1d0))::qa_gkg, RH2
+      REAL(KIND(1d0)), INTENT(out):: avU10_ms, t2_C, q2_gkg, tskin_C, RH2
+      REAL(KIND(1d0))::qa_gkg
       REAL(KIND(1d0)), PARAMETER::k = 0.4
 
       ! wind speed:
@@ -2352,7 +2475,7 @@ CONTAINS
       AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
       alpha_bioCO2, alpha_enh_bioCO2, alt, BaseT, BaseTe, &
       BaseTHDD, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
-      chAnOHM, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
+      chAnOHM, CO2PointSource, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
       DecTreeH, Diagnose, DiagQN, DiagQS, DRAINRT, &
       dt_since_start, dqndt, qn1_av, dqnsdt, qn1_s_av, &
       EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
@@ -2362,8 +2485,8 @@ CONTAINS
       IceFrac, Ie_a, Ie_end, Ie_m, Ie_start, &
       InternalWaterUse_h, IrrFracConif, IrrFracDecid, IrrFracGrass, EvapMethod, &
       kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax, LAIMin, &
-      LAIPower, LAIType, lat, lng, MaxConductance, MaxQFMetab, &
-      SnowWater, MinQFMetab, min_res_bioCO2, &
+      LAIPower, LAIType, lat, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
+      SnowWater, MinFCMetab, MinQFMetab, min_res_bioCO2, &
       NARP_EMIS_SNOW, NARP_TRANS_SITE, NetRadiationMethod, &
       NumCapita, OHM_coef, OHMIncQF, OHM_threshSW, &
       OHM_threshWD, PipeCapacity, PopDensDaytime, &
@@ -2435,6 +2558,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::bldgH
       REAL(KIND(1D0)), INTENT(IN)::CapMax_dec
       REAL(KIND(1D0)), INTENT(IN)::CapMin_dec
+      REAL(KIND(1D0)), INTENT(IN)::CO2PointSource
       REAL(KIND(1D0)), INTENT(IN)::CRWmax
       REAL(KIND(1D0)), INTENT(IN)::CRWmin
       REAL(KIND(1D0)), INTENT(IN)::DecTreeH
@@ -2446,7 +2570,6 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::FAIDecTree
       REAL(KIND(1D0)), INTENT(IN)::FAIEveTree
       REAL(KIND(1D0)), INTENT(IN)::Faut
-      REAL(KIND(1D0)), INTENT(IN)::FcEF_v_kgkm
       ! REAL(KIND(1D0)),INTENT(IN)::fcld_obs
       REAL(KIND(1D0)), INTENT(IN)::FlowChange
       REAL(KIND(1D0)), INTENT(IN)::FrFossilFuel_Heat
@@ -2466,13 +2589,13 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::lat
       ! REAL(KIND(1D0)),INTENT(IN)::ldown_obs
       REAL(KIND(1D0)), INTENT(IN)::lng
+      REAL(KIND(1D0)), INTENT(IN)::MaxFCMetab
       REAL(KIND(1D0)), INTENT(IN)::MaxQFMetab
+      REAL(KIND(1D0)), INTENT(IN)::MinFCMetab
       REAL(KIND(1D0)), INTENT(IN)::MinQFMetab
       REAL(KIND(1D0)), INTENT(IN)::NARP_EMIS_SNOW
       REAL(KIND(1D0)), INTENT(IN)::NARP_TRANS_SITE
-      REAL(KIND(1D0)), INTENT(IN)::NumCapita
       REAL(KIND(1D0)), INTENT(IN)::PipeCapacity
-      REAL(KIND(1D0)), INTENT(IN)::PopDensDaytime
       REAL(KIND(1D0)), INTENT(IN)::PopDensNighttime
       REAL(KIND(1D0)), INTENT(IN)::PorMax_dec
       REAL(KIND(1D0)), INTENT(IN)::PorMin_dec
@@ -2496,7 +2619,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::SnowDensMin
       REAL(KIND(1D0)), INTENT(IN)::SnowLimBldg
       REAL(KIND(1D0)), INTENT(IN)::SnowLimPaved
-      ! REAL(KIND(1D0)),INTENT(IN)::snow_obs
+      ! REAL(KIND(1D0)),INTENT(IN)::snowFrac_obs
       REAL(KIND(1D0)), INTENT(IN)::SurfaceArea
       REAL(KIND(1D0)), INTENT(IN)::tau_a
       REAL(KIND(1D0)), INTENT(IN)::tau_f
@@ -2515,10 +2638,13 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::AH_MIN
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::AH_SLOPE_Cooling
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::AH_SLOPE_Heating
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::FcEF_v_kgkm
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::QF0_BEU
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::Qf_A
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::Qf_B
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::Qf_C
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::Numcapita
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::PopDensDaytime
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::T_CRITIC_Cooling
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::T_CRITIC_Heating
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::TrafficRate
@@ -2646,7 +2772,7 @@ CONTAINS
       REAL(KIND(1D0))::Press_hPa
       REAL(KIND(1D0))::Precip
       REAL(KIND(1D0))::avkdn
-      REAL(KIND(1D0))::snow_obs
+      REAL(KIND(1D0))::snowFrac_obs
       REAL(KIND(1D0))::ldown_obs
       REAL(KIND(1D0))::fcld_obs
       REAL(KIND(1D0))::wu_m3
@@ -2692,7 +2818,7 @@ CONTAINS
          Press_hPa = MetForcingBlock(ir, 13)
          Precip = MetForcingBlock(ir, 14)
          avkdn = MetForcingBlock(ir, 15)
-         snow_obs = MetForcingBlock(ir, 16)
+         snowFrac_obs = MetForcingBlock(ir, 16)
          ldown_obs = MetForcingBlock(ir, 17)
          fcld_obs = MetForcingBlock(ir, 18)
          wu_m3 = MetForcingBlock(ir, 19)
@@ -2709,7 +2835,7 @@ CONTAINS
             AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
             alpha_bioCO2, alpha_enh_bioCO2, alt, avkdn, avRh, avU1, BaseT, BaseTe, &
             BaseTHDD, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
-            chAnOHM, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
+            chAnOHM, CO2PointSource, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
             DecTreeH, Diagnose, DiagQN, DiagQS, DRAINRT, &
             dt_since_start_x, dqndt, qn1_av, dqnsdt, qn1_s_av, &
             EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
@@ -2719,8 +2845,8 @@ CONTAINS
             IceFrac, id, Ie_a, Ie_end, Ie_m, Ie_start, imin, &
             InternalWaterUse_h, IrrFracConif, IrrFracDecid, IrrFracGrass, isec, it, EvapMethod, &
             iy, kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax, LAIMin, LAI_obs, &
-            LAIPower, LAIType, lat, ldown_obs, lng, MaxConductance, MaxQFMetab, &
-            SnowWater, MetForcingBlock, MinQFMetab, min_res_bioCO2, &
+            LAIPower, LAIType, lat, ldown_obs, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
+            SnowWater, MetForcingBlock, MinFCMetab, MinQFMetab, min_res_bioCO2, &
             NARP_EMIS_SNOW, NARP_TRANS_SITE, NetRadiationMethod, &
             NumCapita, OHM_coef, OHMIncQF, OHM_threshSW, &
             OHM_threshWD, PipeCapacity, PopDensDaytime, &
@@ -2732,7 +2858,7 @@ CONTAINS
             RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
             SatHydraulicConduct, SDDFull, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
             SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
-            SnowLimBldg, SnowLimPaved, snow_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
+            SnowLimBldg, SnowLimPaved, snowFrac_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
             soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
             StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair24HR, tau_a, tau_f, tau_r, &
             T_CRITIC_Cooling, T_CRITIC_Heating, Temp_C, TempMeltFact, TH, &

@@ -12,12 +12,12 @@ resources:
 - repo:                 self
 
 
-phases:
-- phase:                Phase_1
+jobs:
+- job:                macOS
   displayName:          Agent macOS
 
   condition:            succeeded()
-  queue:
+  pool:
     name:               Hosted macOS
   steps:
   # Use Python Version
@@ -42,7 +42,7 @@ phases:
     inputs:
       gitHubConnection: new GitHub connection
       repositoryName:   Urban-Meteorology-Reading/SUEWS
-      assets:           ./ReleaseRepo/*.zip
+      assets:           ./Release/*.zip
       action:           'Edit'
       target:           '$(build.sourceVersion)'
       tagSource:        'manual' # 'auto'
@@ -94,11 +94,11 @@ phases:
     continueOnError:    true
 
 
-- phase:                Phase_2
+- job:                Windows
   displayName:          Agent Windows
 
   condition:            succeeded()
-  queue:
+  pool:
     name:               Hosted VS2017
 
   steps:
@@ -117,7 +117,7 @@ phases:
     inputs:
       gitHubConnection: new GitHub connection
       repositoryName:   Urban-Meteorology-Reading/SUEWS
-      assets:           ./ReleaseRepo/*.zip
+      assets:           ./Release/*.zip
       action:           'Edit'
       target:           '$(build.sourceVersion)'
       tagSource:        'manual' # 'auto'
@@ -168,11 +168,12 @@ phases:
     displayName:        'upload supy_driver'
     continueOnError:    true
 
-- phase:                Phase_3
+
+- job:                Linux
   displayName:          Agent Linux
 
   condition:            succeeded()
-  queue:
+  pool:
     name:               Hosted Ubuntu 1604
   steps:
   - task:               UsePythonVersion@0
@@ -198,7 +199,7 @@ phases:
     inputs:
       gitHubConnection: new GitHub connection
       repositoryName:   Urban-Meteorology-Reading/SUEWS
-      assets:           ./ReleaseRepo/*.zip
+      assets:           ./Release/*.zip
       action:           'Edit'
       target:           '$(build.sourceVersion)'
       tagSource:        'manual' # 'auto'
@@ -216,10 +217,10 @@ phases:
 
   - script:  |
       pip install twine
-      docker run -v $(pwd):/io dockcross/manylinux-x64 bash -c "cd /io/supy-driver;gfortran --version; make clean;make suews"
-      docker run -v $(pwd):/io dockcross/manylinux-x64 bash -c "cd /io/supy-driver;/opt/python/cp35-cp35m/bin/python -m pip install -r requirements.txt; /opt/python/cp35-cp35m/bin/python setup.py bdist_wheel; ls -lrt dist/*; ls -lrt wheelhouse/*"
-      docker run -v $(pwd):/io dockcross/manylinux-x64 bash -c "cd /io/supy-driver;/opt/python/cp36-cp36m/bin/python -m pip install -r requirements.txt; /opt/python/cp36-cp36m/bin/python setup.py bdist_wheel; ls -lrt dist/*; ls -lrt wheelhouse/*"
-      docker run -v $(pwd):/io dockcross/manylinux-x64 bash -c "cd /io/supy-driver;/opt/python/cp37-cp37m/bin/python -m pip install -r requirements.txt; /opt/python/cp37-cp37m/bin/python setup.py bdist_wheel; ls -lrt dist/*; ls -lrt wheelhouse/*"
+      docker run -v $(pwd):/io dockcross/manylinux1-x64 bash -c "cd /io/supy-driver;gfortran --version; make clean;make suews"
+      docker run -v $(pwd):/io dockcross/manylinux1-x64 bash -c "cd /io/supy-driver;/opt/python/cp35-cp35m/bin/python -m pip install -r requirements.txt; /opt/python/cp35-cp35m/bin/python setup.py bdist_wheel; ls -lrt dist/*; ls -lrt wheelhouse/*"
+      docker run -v $(pwd):/io dockcross/manylinux1-x64 bash -c "cd /io/supy-driver;/opt/python/cp36-cp36m/bin/python -m pip install -r requirements.txt; /opt/python/cp36-cp36m/bin/python setup.py bdist_wheel; ls -lrt dist/*; ls -lrt wheelhouse/*"
+      docker run -v $(pwd):/io dockcross/manylinux1-x64 bash -c "cd /io/supy-driver;/opt/python/cp37-cp37m/bin/python -m pip install -r requirements.txt; /opt/python/cp37-cp37m/bin/python setup.py bdist_wheel; ls -lrt *; ls -lrt dist/*; ls -lrt wheelhouse/*"
       cd supy-driver
       twine upload -r SuPy --config-file $(PYPIRC_PATH) --skip-existing wheelhouse/*whl
     displayName:        'manylinux supy_driver build and upload'

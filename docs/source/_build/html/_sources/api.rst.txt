@@ -1,0 +1,47 @@
+.. _api:
+
+Fortran source code API reference
+=================================
+
+see `Parameterisations and sub-models within SUEWS`
+
+test a ref: see `suews_cal_qn()`
+
+module
+---------------------
+
+.. f:automodule:: suews_driver
+
+
+
+variable
+---------------------
+.. f:autovariable::  ncolumnsDataOutDailyState
+
+
+subroutine
+---------------------
+.. f:autosubroutine::  suews_cal_qe
+
+
+function
+---------------------
+.. f:autofunction::  square
+
+
+source code file: mdoule with funcitons
+---------------------------------------
+
+.. f:autosrcfile:: suews_ctrl_driver.f95
+
+
+source code file: module with variables
+---------------------------------------
+
+.. f:autosrcfile:: suews_ctrl_const.f95
+
+
+module
+---------------------
+
+.. f:automodule:: initialcond

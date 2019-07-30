@@ -1,0 +1,23 @@
+No.,Column Name,Use,Description
+1,`Code`,`L`,Code linking to a corresponding look-up table.
+2,`AlbedoMin`,`MU`,Effective surface albedo (middle of the day value) for wintertime (not including snow).
+3,`AlbedoMax`,`MU`,Effective surface albedo (middle of the day value) for summertime.
+4,`Emissivity`,`MU`,Effective surface emissivity.
+5,`StorageMin`,`MD`,Minimum water storage capacity for upper surfaces (i.e. canopy).
+6,`StorageMax`,`MD`,Maximum water storage capacity for upper surfaces (i.e. canopy)
+7,`WetThreshold`,`MD`,Depth of water which determines whether evaporation occurs from a partially wet or completely wet surface [mm].
+8,`StateLimit`,`MU`,Upper limit to the surface state. [mm]
+9,`WaterDepth`,`MU`,Water depth [mm].
+10,`DrainageEq`,`MD`,Calculation choice for Drainage equation
+11,`DrainageCoef1`,`MD`,Coefficient D0 [mm |h^-1|] used in :option:`DrainageEq`
+12,`DrainageCoef2`,`MD`,Coefficient b [-] used in :option:`DrainageEq`
+13,`OHMCode_SummerWet`,`L`,"Code for OHM coefficients to use for this surface during wet conditions in summer, linking to `SUEWS_OHMCoefficients.txt`."
+14,`OHMCode_SummerDry`,`L`,"Code for OHM coefficients to use for this surface during dry conditions in summer, linking to `SUEWS_OHMCoefficients.txt`."
+15,`OHMCode_WinterWet`,`L`,"Code for OHM coefficients to use for this surface during wet conditions in winter, linking to `SUEWS_OHMCoefficients.txt`."
+16,`OHMCode_WinterDry`,`L`,"Code for OHM coefficients to use for this surface during dry conditions in winter, linking to `SUEWS_OHMCoefficients.txt`."
+17,`OHMThresh_SW`,`MD`,Temperature threshold determining whether summer/winter OHM coefficients are applied [°C]
+18,`OHMThresh_WD`,`MD`,Soil moisture threshold determining whether wet/dry OHM coefficients are applied [-]
+19,`ESTMCode`,`L`,Code for ESTM coefficients linking to `SUEWS_ESTMCoefficients.txt`
+20,`AnOHM_Cp`,`MU`,Volumetric heat capacity for this surface to use in AnOHM [J |m^-3|]
+21,`AnOHM_Kk`,`MU`,Thermal conductivity for this surface to use in AnOHM [W m |K^-1|]
+22,`AnOHM_Ch`,`MU`,Bulk transfer coefficient for this surface to use in AnOHM [-]

@@ -50,7 +50,7 @@ SUBROUTINE MetRead(lfn, MetArray, InputmetFormat, ldown_option, NetRadiationMeth
                      Precip, & !Rainfall [mm]
                      Pres_hPa, &  !Station air pressure in hPa
                      Pres_kPa, &  !Station air pressure in kPa
-                     snow_obs, &  !Observed surface fraction of snow (between 0 and 1)
+                     snowFrac_obs, &  !Observed surface fraction of snow (between 0 and 1)
                      qe_obs, &    !Observed latent heat flux
                      qf_obs, &    !Observed antrhropogeni heat flux
                      qh_obs, &    !Observed sensible heat flux
@@ -69,7 +69,7 @@ SUBROUTINE MetRead(lfn, MetArray, InputmetFormat, ldown_option, NetRadiationMeth
    IF (InputMetFormat == 0) THEN   !Default format using LUMPS only
 
       READ (lfn, *, iostat=iostat_var) iy, id, it, imin, qn1_obs, avu1, avrh, &
-         Temp_C, wdir, Pres_kPa, Precip, avkdn, snow_obs, ldown_obs, fcld_obs
+         Temp_C, wdir, Pres_kPa, Precip, avkdn, snowFrac_obs, ldown_obs, fcld_obs
 
       !Set other variables needed while running SUEWS to zero
       qf_obs = NaN
@@ -83,7 +83,7 @@ SUBROUTINE MetRead(lfn, MetArray, InputmetFormat, ldown_option, NetRadiationMeth
 
    ELSEIF (InputMetFormat == 10) THEN !SUEWS reading
       READ (lfn, *, iostat=iostat_var) iy, id, it, imin, qn1_obs, qh_obs, qe_obs, qs_obs, qf_obs, avu1, avrh, &
-         Temp_C, Pres_kPa, Precip, avkdn, snow_obs, ldown_obs, fcld_obs, &
+         Temp_C, Pres_kPa, Precip, avkdn, snowFrac_obs, ldown_obs, fcld_obs, &
          wu_m3, xsmd, LAI_obs, kdiff, kdir, wdir
 
       !write(*,*) 'In LUMPS_MetRead (1)'
@@ -154,10 +154,10 @@ SUBROUTINE MetRead(lfn, MetArray, InputmetFormat, ldown_option, NetRadiationMeth
       CALL ErrorHint(27, 'Met Data: Precip - less than 0', Precip, dectime, notUsedI)
    ENDIF
 
-   IF (snow_obs == NAN) snow_obs = 0
+   IF (snowFrac_obs == NAN) snowFrac_obs = 0
 
-   IF (snowUse == 0 .AND. (snow_obs < 0 .OR. snow_obs > 1)) THEN
-      CALL ErrorHint(27, 'Met Data: snow not between [0  1]', snow_obs, dectime, notUsedI)
+   IF (snowUse == 0 .AND. (snowFrac_obs < 0 .OR. snowFrac_obs > 1)) THEN
+      CALL ErrorHint(27, 'Met Data: snow not between [0  1]', snowFrac_obs, dectime, notUsedI)
    ENDIF
 
    IF (xsmd < 0 .AND. SMDMethod == 1) THEN  !If soil moisture deficit is zero
@@ -166,7 +166,7 @@ SUBROUTINE MetRead(lfn, MetArray, InputmetFormat, ldown_option, NetRadiationMeth
 
    !Create an array to be printed out.
    MetArray(1:24) = (/iy, id, it, imin, qn1_obs, qh_obs, qe_obs, qs_obs, qf_obs, avu1, &
-                      avrh, Temp_C, Pres_hPa, Precip, avkdn, snow_obs, ldown_obs, &
+                      avrh, Temp_C, Pres_hPa, Precip, avkdn, snowFrac_obs, ldown_obs, &
                       fcld_obs, wu_m3, xsmd, LAI_obs, kdiff, kdir, wdir/)
 
    !write(*,*) 'In LUMPS_MetRead (2)'
@@ -478,7 +478,7 @@ SUBROUTINE InputHeaderCheck(FileName)
    HeaderESTMCoefficients_Reqd(cE_CH_iroof) = "Internal_CHroof"
    HeaderESTMCoefficients_Reqd(cE_CH_ibld) = "Internal_CHbld"
 
-   ! ========== SUEWS_AnthropogenicHeat.txt ======
+   ! ========== SUEWS_AnthropogenicEmission.txt ======
    HeaderAnthropogenic_Reqd(cA_Code) = "Code"
    HeaderAnthropogenic_Reqd(cA_BaseTHDD) = "BaseTHDD"
    HeaderAnthropogenic_Reqd(cA_QF_A1) = "QF_A_WD"
@@ -498,7 +498,7 @@ SUBROUTINE InputHeaderCheck(FileName)
    HeaderAnthropogenic_Reqd(cA_TCriticCooling_WD) = "TCritic_Cooling_WD"
    HeaderAnthropogenic_Reqd(cA_TCriticCooling_WE) = "TCritic_Cooling_WE"
    HeaderAnthropogenic_Reqd(cA_EnProfWD) = "EnergyUseProfWD"
-   HeaderAnthropogenic_Reqd(cA_ENProfWE) = "EnergyUseProfWE"
+   HeaderAnthropogenic_Reqd(cA_EnProfWE) = "EnergyUseProfWE"
    HeaderAnthropogenic_Reqd(cA_CO2mWD) = "ActivityProfWD"
    HeaderAnthropogenic_Reqd(cA_CO2mWE) = "ActivityProfWE"
    HeaderAnthropogenic_Reqd(cA_TraffProfWD) = "TraffProfWD"
@@ -507,11 +507,16 @@ SUBROUTINE InputHeaderCheck(FileName)
    HeaderAnthropogenic_Reqd(cA_PopProfWE) = "PopProfWE"
    HeaderAnthropogenic_Reqd(cA_MinQFMetab) = "MinQFMetab"
    HeaderAnthropogenic_Reqd(cA_MaxQFMetab) = "MaxQFMetab"
+   HeaderAnthropogenic_Reqd(cA_MinFCMetab) = "MinFCMetab"
+   HeaderAnthropogenic_Reqd(cA_MaxFCMetab) = "MaxFCMetab"
+   HeaderAnthropogenic_Reqd(cA_FrPDDwe) = "FrPDDwe"
    HeaderAnthropogenic_Reqd(cA_FrFossilFuel_Heat) = "FrFossilFuel_Heat"
    HeaderAnthropogenic_Reqd(cA_FrFossilFuel_NonHeat) = "FrFossilFuel_NonHeat"
    HeaderAnthropogenic_Reqd(cA_EF_umolCO2perJ) = "EF_umolCO2perJ"
    HeaderAnthropogenic_Reqd(cA_EnEF_v_Jkm) = "EnEF_v_Jkm"
-   HeaderAnthropogenic_Reqd(cA_FcEF_v_kgkm) = "FcEF_v_kgkm"
+   HeaderAnthropogenic_Reqd(cA_FcEF_v_kgkmWD) = "FcEF_v_kgkmWD"
+   HeaderAnthropogenic_Reqd(cA_FcEF_v_kgkmWE) = "FcEF_v_kgkmWE"
+   HeaderAnthropogenic_Reqd(cA_CO2PointSource) = "CO2PointSource"
    HeaderAnthropogenic_Reqd(cA_TrafficUnits) = "TrafficUnits"
 
    ! ========== SUEWS_Irrigation.txt =============
@@ -650,10 +655,10 @@ SUBROUTINE InputHeaderCheck(FileName)
                         notUsed, notUsed, notUsedI)
       ENDIF
 
-   ELSEIF (FileName == 'SUEWS_AnthropogenicHeat.txt') THEN
+   ELSEIF (FileName == 'SUEWS_AnthropogenicEmission.txt') THEN
       IF (ANY(HeaderAnthropogenic_File /= HeaderAnthropogenic_Reqd)) THEN
          WRITE (*, *) HeaderAnthropogenic_File == HeaderAnthropogenic_Reqd
-         CALL ErrorHint(56, 'Names or order of columns in SUEWS_AnthropogenicHeat.txt does not match model code.', &
+         CALL ErrorHint(56, 'Names or order of columns in SUEWS_AnthropogenicEmission.txt does not match model code.', &
                         notUsed, notUsed, notUsedI)
       ENDIF
 
@@ -1058,8 +1063,8 @@ SUBROUTINE CodeMatchDist(rr, CodeCol, codeColSameSurf)
    !! Also do for water surface once implemented
    IF (codeCol /= c_WGWaterCode) THEN   ! Except for Water surface
       ! Check total water distribution from each surface adds up to 1
-      IF (SUM(WGWaterDist_Coeff(iv5, cWG_ToPaved:cWG_ToSoilStore)) > 1.0000001 .OR. SUM(WGWaterDist_Coeff(iv5, &
-                                                                                     cWG_ToPaved:cWG_ToSoilStore)) < 0.9999999) THEN
+      IF (SUM(WGWaterDist_Coeff(iv5, cWG_ToPaved:cWG_ToSoilStore)) > 1.0000001 &
+          .OR. SUM(WGWaterDist_Coeff(iv5, cWG_ToPaved:cWG_ToSoilStore)) < 0.9999999) THEN
          CALL ErrorHint(8, 'Total water distribution from each surface should add up to 1.', &
                         SUM(WGWaterDist_Coeff(iv5, cWG_ToPaved:cWG_ToSoilStore)), notUsed, notUsedI)
       ENDIF
@@ -1241,8 +1246,10 @@ SUBROUTINE CodeMatchAnthropogenic(rr, CodeCol)
       IF (Anthropogenic_Coeff(iv5, cA_Code) == SiteSelect(rr, codeCol)) THEN
          EXIT
       ELSEIF (iv5 == nlinesAnthropogenic) THEN
-         WRITE (*, *) 'Program stopped! Anthropogenic code ', SiteSelect(rr, codeCol), 'not found in SUEWS_AnthropogenicHeat.txt.'
-         CALL ErrorHint(57, 'Cannot find code in SUEWS_AnthropogenicHeat.txt', SiteSelect(rr, codeCol), notUsed, notUsedI)
+         WRITE (*, *) 'Program stopped! Anthropogenic code ', SiteSelect(rr, codeCol), &
+            'not found in SUEWS_AnthropogenicEmission.txt.'
+         CALL ErrorHint(57, 'Cannot find code in SUEWS_AnthropogenicEmission.txt', &
+                        SiteSelect(rr, codeCol), notUsed, notUsedI)
       ENDIF
    ENDDO
 
@@ -1509,11 +1516,13 @@ CONTAINS
                ELSEIF (RainAmongN > Nper) THEN
                   CALL ErrorHint(2, 'Problem in SUEWS_MetDisagg: RainAmongN > Nper', REAL(Nper, KIND(1d0)), NotUsed, RainAmongN)
                ELSE
-                Met_tt(:, 14) = DisaggP_amongN(MetForDisagg(:, 14), RainAmongN, Nper, ReadLinesOrigMetData, ReadLinesOrigMetDataMax)
+                  Met_tt(:, 14) = DisaggP_amongN(MetForDisagg(:, 14), &
+                                                 RainAmongN, Nper, ReadLinesOrigMetData, ReadLinesOrigMetDataMax)
                   IF (ALL(MetForDisagg(:, 16) == -999)) THEN
                      Met_tt(:, 16) = -999
                   ELSE
-                Met_tt(:, 16) = DisaggP_amongN(MetForDisagg(:, 16), RainAmongN, Nper, ReadLinesOrigMetData, ReadLinesOrigMetDataMax)
+                     Met_tt(:, 16) = DisaggP_amongN(MetForDisagg(:, 16), &
+                                                    RainAmongN, Nper, ReadLinesOrigMetData, ReadLinesOrigMetDataMax)
                   ENDIF
                ENDIF
             ELSEIF (MetDisaggMethod(14) == 102) THEN
@@ -1576,8 +1585,10 @@ CONTAINS
          ENDDO
          ! Redistribute kdown over each day
          DO i = 1, (ReadLinesOrigMetDataMax*Nper/nsd) ! Loop over each day
-            Met_tt_kdownAdj((i - 1)*nsd + seq1nsd) = Met_tt_kdownAdj((i - 1)*nsd + seq1nsd)* &
-                                                  SUM(Met_tt((i - 1)*nsd + seq1nsd, 15))/SUM(Met_tt_kdownAdj((i - 1)*nsd + seq1nsd))
+            Met_tt_kdownAdj((i - 1)*nsd + seq1nsd) = &
+               Met_tt_kdownAdj((i - 1)*nsd + seq1nsd) &
+               *SUM(Met_tt((i - 1)*nsd + seq1nsd, 15)) &
+               /SUM(Met_tt_kdownAdj((i - 1)*nsd + seq1nsd))
          ENDDO
          ! Copy adjusted kdown back to Met_tt array
          Met_tt(:, 15) = Met_tt_kdownAdj(:)
@@ -1925,7 +1936,9 @@ CONTAINS
       IF (DisaggType == 10) THEN
          FastRows = FLOOR(Nper_loc/2.0) + seq1Nper_loc  ! Rows to create at model time-step
          FirstRows10 = (/(i, i=1, (FastRows(1) - 1), 1)/)   !For start of dataset
-LastRows10 = (/(i, i=Nper_loc*(ReadLinesOrigMax_loc - 1 - 1) + FastRows(Nper_loc) + 1, (ReadLinesOrigMax_loc*Nper_loc), 1)/)  ! For end of dataset
+         LastRows10 = &
+            (/(i, i=Nper_loc*(ReadLinesOrigMax_loc - 1 - 1) + FastRows(Nper_loc) + 1, &
+               (ReadLinesOrigMax_loc*Nper_loc), 1)/)  ! For end of dataset
       ELSEIF (DisaggType == 20) THEN
          FastRows = Nper_loc + seq1Nper_loc   !Rows to create at model time-step
          FirstRows20 = (/(i, i=1, (FastRows(1) - 1), 1)/)   !For start of dataset

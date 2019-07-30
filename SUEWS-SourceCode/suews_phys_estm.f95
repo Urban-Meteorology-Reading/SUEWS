@@ -387,8 +387,8 @@ CONTAINS
          ELSEIF (i == 2) THEN
             tstep_estm = ((ESTMArray(4) + 60*ESTMArray(3)) - (imin_prev + 60*ih_prev))*60   !tstep in seconds
             IF (tstep_estm /= tstep_real .AND. ESTMArray(2) == iday_prev) THEN
-            CALL ErrorHint(39, 'TSTEP in RunControl does not match TSTEP of ESTM data (DOY).', REAL(tstep, KIND(1d0)), tstep_estm, &
-                              INT(ESTMArray(2)))
+               CALL ErrorHint(39, 'TSTEP in RunControl does not match TSTEP of ESTM data (DOY).', &
+                              REAL(tstep, KIND(1d0)), tstep_estm, INT(ESTMArray(2)))
             ENDIF
          ENDIF
       ENDDO
@@ -512,10 +512,10 @@ CONTAINS
          ! ---- Initialization of variables and parameters for first row of run for each grid ----
          ! N layers are calculated in SUEWS_translate
          IF (.NOT. ALLOCATED(Tibld)) THEN
-            ! print*, "Nibld",Nibld
-            ! print*, "Nwall",Nwall
-            ! print*, "Nroof",Nroof
-            ! print*, "Nground",Nground
+            print *, "Nibld", Nibld
+            print *, "Nwall", Nwall
+            print *, "Nroof", Nroof
+            print *, "Nground", Nground
             ALLOCATE (Tibld(Nibld), Twall(Nwall), Troof(Nroof), Tground(Nground), Tw_4(Nwall, 4))
             ALLOCATE (Tibld_grids(Nibld, NumberOfGrids), &
                       Twall_grids(Nwall, NumberOfGrids), &
@@ -1168,8 +1168,10 @@ CONTAINS
       QFBld = froof*(Tievolve - Tairmix)*shc_airbld*bldgHX/Tstep !heat added or lost, requires cooling or heating if HVAC on
 
       !!FO!! CH_xxxx has unit [m/s]  !!**HCW what is going on with tstep here??
-      Tievolve = Tairmix + Tstep/bldgHX/finternal* &                                                                         !!FO!! finternal(=froof+fibld+fwall) => normalisation of fractions
-(CH_ibld*fibld*(T0_ibld - Tievolve) + CH_iroof*froof*(TN_roof - Tievolve) + CH_iwall*fwall*(TN_wall - Tievolve))      !!FO!! [K] = [K] + [s/m]*([m/s]*([K]))
+      Tievolve = Tairmix + Tstep/bldgHX/finternal &                                                                         !!FO!! finternal(=froof+fibld+fwall) => normalisation of fractions
+                 *(CH_ibld*fibld*(T0_ibld - Tievolve) &
+                   + CH_iroof*froof*(TN_roof - Tievolve) &
+                   + CH_iwall*fwall*(TN_wall - Tievolve))      !!FO!! [K] = [K] + [s/m]*([m/s]*([K]))
 
       IF (.NOT. diagnoseTi) Tievolve = Tinternal + C2K
       IF (HVAC) THEN !Run up/down to set point +/- 1 degree with adjustment of 90% per hour
@@ -1316,7 +1318,8 @@ CONTAINS
       !     bc(2)=0.; bctype(2)=.t.
 
       IF (fground /= 0.) THEN   ! check fground==0 scenario to avoid division-by-zero error, TS 21 Jul 2016
-  CALL heatcond1d(Tground, Qsground, zground(1:Nground), REAL(Tstep, KIND(1d0)), kground(1:Nground), rground(1:Nground), bc, bctype)
+         CALL heatcond1d(Tground, Qsground, zground(1:Nground), &
+                         REAL(Tstep, KIND(1d0)), kground(1:Nground), rground(1:Nground), bc, bctype)
       ELSE
          Qsground = NAN
       END IF

@@ -60,8 +60,10 @@ src_f95 = target_f95 + other_f95
 
 
 def readme():
-    with open('README.md') as f:
-        return f.read()
+    f = """
+    `supy_driver` is `F2PY`-based python binary package for `supy` with `SUEWS` as the computation core.
+    """
+    return f
 # dir_source='SUEWS-SourceCode'
 # path_source = Path(dir_source)
 # str(path_source)
@@ -117,7 +119,8 @@ ext_modules = [
               extra_link_args=[('' if sysname == 'Linux' else '-static')])]
 
 setup(name='supy_driver',
-      version=get_suews_version(ver_minor=7),
+      # update version info here!
+      version=get_suews_version(ver_minor=1),
       description='the SUEWS driver driven by f2py',
       long_description=readme(),
       url='https://github.com/sunt05/SuPy',

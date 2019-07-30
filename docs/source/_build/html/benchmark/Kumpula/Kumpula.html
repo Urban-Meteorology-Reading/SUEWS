@@ -1,0 +1,2717 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>1. Kumpula &mdash; SUEWS v2018c documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="2. London_KCL" href="../London_KCL/London_KCL.html" />
+    <link rel="prev" title="Benchmark Report" href="../benchmark_report.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> SUEWS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v2018c
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../parameterisations-and-sub-models.html">2. Parameterisations and sub-models within SUEWS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../prepare-to-run-the-model.html">3. Preparing to run the model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../input_files/input_files.html">4. Input files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../output_files/output_files.html">5. Output files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../troubleshooting.html">6. Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../recent-publications.html">7. Recent publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../suews_related_softwares.html">8. SUEWS-related Software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sub-tutorials/tutorials.html">9. Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../development/development.html">10. Development, Suggestions and Support</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../benchmark_report.html">Benchmark Report</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">1. Kumpula</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#evaluation-against-observations">1.1. Evaluation against observations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cross-comparison-in-model-variables-between-releases">1.2. Cross-comparison in model variables between releases</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#statistics-tables">1.2.1. Statistics tables</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pair-plots">1.2.2. Pair plots</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#time-series-plots">1.2.3. Time Series Plots</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../London_KCL/London_KCL.html">2. London_KCL</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../version-history/version-history.html">11. Version History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../acknowledgement.html">12. Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../notation.html">13. Notation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references.html">14. References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SUEWS</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../benchmark_report.html">Benchmark Report</a> &raquo;</li>
+        
+      <li>1. Kumpula</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/benchmark/Kumpula/Kumpula.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="kumpula">
+<h1>1. Kumpula<a class="headerlink" href="#kumpula" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="evaluation-against-observations">
+<h2>1.1. Evaluation against observations<a class="headerlink" href="#evaluation-against-observations" title="Permalink to this headline">¶</a></h2>
+<p><img alt="../../_images/output_4_0.png" src="../../_images/output_4_0.png" /></p>
+<p><img alt="../../_images/output_4_1.png" src="../../_images/output_4_1.png" /></p>
+<p><img alt="../../_images/output_4_2.png" src="../../_images/output_4_2.png" /></p>
+<p><img alt="../../_images/output_4_3.png" src="../../_images/output_4_3.png" /></p>
+</div>
+<div class="section" id="cross-comparison-in-model-variables-between-releases">
+<h2>1.2. Cross-comparison in model variables between releases<a class="headerlink" href="#cross-comparison-in-model-variables-between-releases" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="statistics-tables">
+<h3>1.2.1. Statistics tables<a class="headerlink" href="#statistics-tables" title="Permalink to this headline">¶</a></h3>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">.</span><span class="n">dataframe</span> <span class="n">tbody</span> <span class="n">tr</span> <span class="n">th</span> <span class="p">{</span>
+    <span class="n">vertical</span><span class="o">-</span><span class="n">align</span><span class="p">:</span> <span class="n">top</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="o">.</span><span class="n">dataframe</span> <span class="n">thead</span> <span class="n">tr</span> <span class="n">th</span> <span class="p">{</span>
+    <span class="n">text</span><span class="o">-</span><span class="n">align</span><span class="p">:</span> <span class="n">left</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="o">.</span><span class="n">dataframe</span> <span class="n">thead</span> <span class="n">tr</span><span class="p">:</span><span class="n">last</span><span class="o">-</span><span class="n">of</span><span class="o">-</span><span class="nb">type</span> <span class="n">th</span> <span class="p">{</span>
+    <span class="n">text</span><span class="o">-</span><span class="n">align</span><span class="p">:</span> <span class="n">right</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr>
+      <th></th>
+      <th colspan="3" halign="left">mean</th>
+      <th colspan="3" halign="left">std</th>
+      <th colspan="3" halign="left">min</th>
+      <th colspan="3" halign="left">max</th>
+    </tr>
+    <tr>
+      <th>cfg</th>
+      <th>v2018b</th>
+      <th>v2018c</th>
+      <th>v2019a</th>
+      <th>v2018b</th>
+      <th>v2018c</th>
+      <th>v2019a</th>
+      <th>v2018b</th>
+      <th>v2018c</th>
+      <th>v2019a</th>
+      <th>v2018b</th>
+      <th>v2018c</th>
+      <th>v2019a</th>
+    </tr>
+    <tr>
+      <th>var</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>AddWater</th>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>AlbBulk</th>
+      <td>1.431000e-01</td>
+      <td>1.431000e-01</td>
+      <td>1.431000e-01</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.143100</td>
+      <td>0.143100</td>
+      <td>0.143100</td>
+      <td>0.143100</td>
+      <td>0.143100</td>
+      <td>0.143100</td>
+    </tr>
+    <tr>
+      <th>AlbSnow</th>
+      <td>2.575403e-01</td>
+      <td>2.487115e-01</td>
+      <td>2.487115e-01</td>
+      <td>3.368002e-01</td>
+      <td>0.340480</td>
+      <td>0.340480</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.849800</td>
+      <td>0.849800</td>
+      <td>0.849800</td>
+    </tr>
+    <tr>
+      <th>Azimuth</th>
+      <td>1.831825e+02</td>
+      <td>1.831825e+02</td>
+      <td>1.831825e+02</td>
+      <td>1.021963e+02</td>
+      <td>102.196284</td>
+      <td>102.196284</td>
+      <td>7.928900</td>
+      <td>7.928900</td>
+      <td>7.928900</td>
+      <td>358.735600</td>
+      <td>358.735600</td>
+      <td>358.735600</td>
+    </tr>
+    <tr>
+      <th>Drainage</th>
+      <td>6.986851e-02</td>
+      <td>8.058982e-02</td>
+      <td>8.058982e-02</td>
+      <td>2.268948e-01</td>
+      <td>0.237624</td>
+      <td>0.237624</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>4.515597</td>
+      <td>4.509280</td>
+      <td>4.509280</td>
+    </tr>
+    <tr>
+      <th>Evap</th>
+      <td>4.328085e-02</td>
+      <td>5.818905e-02</td>
+      <td>5.818905e-02</td>
+      <td>7.125301e-02</td>
+      <td>0.081588</td>
+      <td>0.081588</td>
+      <td>0.000000</td>
+      <td>-0.014105</td>
+      <td>-0.014105</td>
+      <td>0.617137</td>
+      <td>0.529655</td>
+      <td>0.529655</td>
+    </tr>
+    <tr>
+      <th>Fc</th>
+      <td>2.004229e+00</td>
+      <td>2.538388e-01</td>
+      <td>2.538388e-01</td>
+      <td>9.997429e-01</td>
+      <td>3.033406</td>
+      <td>3.033406</td>
+      <td>0.349700</td>
+      <td>-11.510900</td>
+      <td>-11.510900</td>
+      <td>5.955000</td>
+      <td>4.934900</td>
+      <td>4.934900</td>
+    </tr>
+    <tr>
+      <th>FcBuild</th>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>FcMetab</th>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>FcPhoto</th>
+      <td>0.000000e+00</td>
+      <td>-1.750390e+00</td>
+      <td>-1.750390e+00</td>
+      <td>0.000000e+00</td>
+      <td>3.591843</td>
+      <td>3.591843</td>
+      <td>0.000000</td>
+      <td>-14.473300</td>
+      <td>-14.473300</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>FcRespi</th>
+      <td>2.004229e+00</td>
+      <td>2.004229e+00</td>
+      <td>2.004229e+00</td>
+      <td>9.997429e-01</td>
+      <td>0.999743</td>
+      <td>0.999743</td>
+      <td>0.349700</td>
+      <td>0.349700</td>
+      <td>0.349700</td>
+      <td>5.955000</td>
+      <td>5.955000</td>
+      <td>5.955000</td>
+    </tr>
+    <tr>
+      <th>FcTraff</th>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>Fcld</th>
+      <td>4.558964e-01</td>
+      <td>4.558964e-01</td>
+      <td>4.558964e-01</td>
+      <td>1.496160e-01</td>
+      <td>0.149616</td>
+      <td>0.149616</td>
+      <td>0.072100</td>
+      <td>0.072100</td>
+      <td>0.072100</td>
+      <td>0.863000</td>
+      <td>0.863000</td>
+      <td>0.863000</td>
+    </tr>
+    <tr>
+      <th>FlowCh</th>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>Irr</th>
+      <td>1.632256e-02</td>
+      <td>1.632256e-02</td>
+      <td>1.632256e-02</td>
+      <td>5.963931e-02</td>
+      <td>0.059639</td>
+      <td>0.059639</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.443847</td>
+      <td>0.443847</td>
+      <td>0.443847</td>
+    </tr>
+    <tr>
+      <th>Kdown</th>
+      <td>1.147366e+02</td>
+      <td>1.147366e+02</td>
+      <td>1.147366e+02</td>
+      <td>1.961240e+02</td>
+      <td>196.123966</td>
+      <td>196.123966</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>998.950000</td>
+      <td>998.950000</td>
+      <td>998.950000</td>
+    </tr>
+    <tr>
+      <th>Kup</th>
+      <td>1.628223e+01</td>
+      <td>1.997174e+01</td>
+      <td>1.997174e+01</td>
+      <td>2.783363e+01</td>
+      <td>34.533947</td>
+      <td>34.533947</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>142.902800</td>
+      <td>272.310300</td>
+      <td>272.310300</td>
+    </tr>
+    <tr>
+      <th>LAI</th>
+      <td>8.082000e-01</td>
+      <td>1.800003e+00</td>
+      <td>1.800003e+00</td>
+      <td>2.220574e-16</td>
+      <td>1.155969</td>
+      <td>1.155969</td>
+      <td>0.808200</td>
+      <td>0.808200</td>
+      <td>0.808200</td>
+      <td>0.808200</td>
+      <td>3.325900</td>
+      <td>3.325900</td>
+    </tr>
+    <tr>
+      <th>Ldown</th>
+      <td>3.003044e+02</td>
+      <td>3.003044e+02</td>
+      <td>3.003044e+02</td>
+      <td>4.916198e+01</td>
+      <td>49.161977</td>
+      <td>49.161977</td>
+      <td>167.363700</td>
+      <td>167.363700</td>
+      <td>167.363700</td>
+      <td>417.838400</td>
+      <td>417.838400</td>
+      <td>417.838400</td>
+    </tr>
+    <tr>
+      <th>Lob</th>
+      <td>-6.778584e+02</td>
+      <td>-4.721345e+02</td>
+      <td>-4.721345e+02</td>
+      <td>1.542417e+03</td>
+      <td>1658.889794</td>
+      <td>1658.889794</td>
+      <td>-9923.277900</td>
+      <td>-23628.815274</td>
+      <td>-23628.815274</td>
+      <td>15350.567900</td>
+      <td>17791.037805</td>
+      <td>17791.037805</td>
+    </tr>
+    <tr>
+      <th>Lup</th>
+      <td>3.514400e+02</td>
+      <td>3.515307e+02</td>
+      <td>3.515307e+02</td>
+      <td>5.140852e+01</td>
+      <td>51.377405</td>
+      <td>51.377405</td>
+      <td>219.480800</td>
+      <td>221.412900</td>
+      <td>221.412900</td>
+      <td>497.322100</td>
+      <td>497.322100</td>
+      <td>497.322100</td>
+    </tr>
+    <tr>
+      <th>MeltWStore</th>
+      <td>0.000000e+00</td>
+      <td>2.063773e-01</td>
+      <td>2.063773e-01</td>
+      <td>0.000000e+00</td>
+      <td>0.676915</td>
+      <td>0.676915</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>5.055500</td>
+      <td>5.055500</td>
+    </tr>
+    <tr>
+      <th>MeltWater</th>
+      <td>0.000000e+00</td>
+      <td>8.112139e-04</td>
+      <td>8.112139e-04</td>
+      <td>0.000000e+00</td>
+      <td>0.003041</td>
+      <td>0.003041</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.041300</td>
+      <td>0.041300</td>
+    </tr>
+    <tr>
+      <th>NWtrState</th>
+      <td>5.350012e-01</td>
+      <td>5.725529e-01</td>
+      <td>5.725529e-01</td>
+      <td>1.329676e+00</td>
+      <td>1.370145</td>
+      <td>1.370145</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>12.411893</td>
+      <td>12.353266</td>
+      <td>12.353266</td>
+    </tr>
+    <tr>
+      <th>Q2</th>
+      <td>4.984944e+00</td>
+      <td>4.982917e+00</td>
+      <td>4.982917e+00</td>
+      <td>2.669483e+00</td>
+      <td>2.667541</td>
+      <td>2.667541</td>
+      <td>0.455500</td>
+      <td>0.453600</td>
+      <td>0.453600</td>
+      <td>14.563900</td>
+      <td>14.072700</td>
+      <td>14.072700</td>
+    </tr>
+    <tr>
+      <th>QE</th>
+      <td>2.974187e+01</td>
+      <td>4.044410e+01</td>
+      <td>4.044410e+01</td>
+      <td>4.889331e+01</td>
+      <td>56.142926</td>
+      <td>56.142926</td>
+      <td>0.000000</td>
+      <td>-11.525300</td>
+      <td>-11.525300</td>
+      <td>420.178900</td>
+      <td>363.341500</td>
+      <td>363.341500</td>
+    </tr>
+    <tr>
+      <th>QElumps</th>
+      <td>1.191155e+01</td>
+      <td>1.665475e+01</td>
+      <td>1.665475e+01</td>
+      <td>1.322833e+01</td>
+      <td>25.576695</td>
+      <td>25.576695</td>
+      <td>0.740800</td>
+      <td>-3.349900</td>
+      <td>-3.349900</td>
+      <td>79.084700</td>
+      <td>159.694600</td>
+      <td>159.694600</td>
+    </tr>
+    <tr>
+      <th>QF</th>
+      <td>8.110733e+00</td>
+      <td>8.110733e+00</td>
+      <td>8.110733e+00</td>
+      <td>5.869393e+00</td>
+      <td>5.869393</td>
+      <td>5.869393</td>
+      <td>0.477200</td>
+      <td>0.477200</td>
+      <td>0.477200</td>
+      <td>33.284900</td>
+      <td>33.284900</td>
+      <td>33.284900</td>
+    </tr>
+    <tr>
+      <th>QH</th>
+      <td>2.693978e+01</td>
+      <td>1.520137e+01</td>
+      <td>1.520137e+01</td>
+      <td>5.195689e+01</td>
+      <td>39.633535</td>
+      <td>39.633535</td>
+      <td>-149.070700</td>
+      <td>-136.482500</td>
+      <td>-136.482500</td>
+      <td>323.418600</td>
+      <td>298.676900</td>
+      <td>298.676900</td>
+    </tr>
+    <tr>
+      <th>QHlumps</th>
+      <td>4.322681e+01</td>
+      <td>2.532833e+01</td>
+      <td>2.532833e+01</td>
+      <td>6.015105e+01</td>
+      <td>59.067153</td>
+      <td>59.067153</td>
+      <td>-14.182200</td>
+      <td>-58.146700</td>
+      <td>-58.146700</td>
+      <td>337.357800</td>
+      <td>286.140400</td>
+      <td>286.140400</td>
+    </tr>
+    <tr>
+      <th>QHresis</th>
+      <td>9.051253e+01</td>
+      <td>7.755067e+01</td>
+      <td>7.755067e+01</td>
+      <td>1.737264e+02</td>
+      <td>153.371210</td>
+      <td>153.371210</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>1436.536900</td>
+      <td>1136.800200</td>
+      <td>1136.800200</td>
+    </tr>
+    <tr>
+      <th>QM</th>
+      <td>0.000000e+00</td>
+      <td>5.809040e-01</td>
+      <td>5.809040e-01</td>
+      <td>0.000000e+00</td>
+      <td>4.328206</td>
+      <td>4.328206</td>
+      <td>0.000000</td>
+      <td>-55.040691</td>
+      <td>-55.040691</td>
+      <td>0.000000</td>
+      <td>47.934536</td>
+      <td>47.934536</td>
+    </tr>
+    <tr>
+      <th>QMFreeze</th>
+      <td>-1.543294e+00</td>
+      <td>-1.366190e+01</td>
+      <td>-1.366190e+01</td>
+      <td>6.444682e+00</td>
+      <td>24.240090</td>
+      <td>24.240090</td>
+      <td>-72.456511</td>
+      <td>-68.065552</td>
+      <td>-68.065552</td>
+      <td>-0.000000</td>
+      <td>81.825687</td>
+      <td>81.825687</td>
+    </tr>
+    <tr>
+      <th>QMRain</th>
+      <td>0.000000e+00</td>
+      <td>5.036029e-04</td>
+      <td>5.036029e-04</td>
+      <td>0.000000e+00</td>
+      <td>0.010437</td>
+      <td>0.010437</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.525722</td>
+      <td>0.525722</td>
+    </tr>
+    <tr>
+      <th>QN</th>
+      <td>4.731869e+01</td>
+      <td>4.353853e+01</td>
+      <td>4.353853e+01</td>
+      <td>1.500616e+02</td>
+      <td>149.049119</td>
+      <td>149.049119</td>
+      <td>-82.262700</td>
+      <td>-82.106200</td>
+      <td>-82.106200</td>
+      <td>725.444500</td>
+      <td>725.444500</td>
+      <td>725.444500</td>
+    </tr>
+    <tr>
+      <th>QNSnow</th>
+      <td>0.000000e+00</td>
+      <td>-5.833717e+00</td>
+      <td>-5.833717e+00</td>
+      <td>0.000000e+00</td>
+      <td>51.017359</td>
+      <td>51.017359</td>
+      <td>0.000000</td>
+      <td>-79.876600</td>
+      <td>-79.876600</td>
+      <td>0.000000</td>
+      <td>578.244400</td>
+      <td>578.244400</td>
+    </tr>
+    <tr>
+      <th>QNSnowFr</th>
+      <td>4.828143e+01</td>
+      <td>5.331608e+01</td>
+      <td>5.331608e+01</td>
+      <td>1.490394e+02</td>
+      <td>144.993094</td>
+      <td>144.993094</td>
+      <td>-82.155000</td>
+      <td>-82.106200</td>
+      <td>-82.106200</td>
+      <td>725.444500</td>
+      <td>725.444500</td>
+      <td>725.444500</td>
+    </tr>
+    <tr>
+      <th>QS</th>
+      <td>2.910678e-01</td>
+      <td>9.085279e+00</td>
+      <td>9.085279e+00</td>
+      <td>7.790076e+01</td>
+      <td>71.608002</td>
+      <td>71.608002</td>
+      <td>-64.572400</td>
+      <td>-64.429400</td>
+      <td>-64.429400</td>
+      <td>347.106600</td>
+      <td>347.106600</td>
+      <td>347.106600</td>
+    </tr>
+    <tr>
+      <th>RA</th>
+      <td>3.457260e+01</td>
+      <td>5.884801e+01</td>
+      <td>5.884801e+01</td>
+      <td>1.840073e+01</td>
+      <td>59.602681</td>
+      <td>59.602681</td>
+      <td>10.000000</td>
+      <td>10.000000</td>
+      <td>10.000000</td>
+      <td>200.000000</td>
+      <td>200.000000</td>
+      <td>200.000000</td>
+    </tr>
+    <tr>
+      <th>RO</th>
+      <td>4.181927e-02</td>
+      <td>9.228888e-02</td>
+      <td>9.228888e-02</td>
+      <td>1.889014e-01</td>
+      <td>1.251416</td>
+      <td>1.251416</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>4.507827</td>
+      <td>111.107353</td>
+      <td>111.107353</td>
+    </tr>
+    <tr>
+      <th>ROImp</th>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>ROPipe</th>
+      <td>7.378438e-02</td>
+      <td>5.704331e-02</td>
+      <td>5.704331e-02</td>
+      <td>2.423590e-01</td>
+      <td>0.200786</td>
+      <td>0.200786</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>4.507827</td>
+      <td>4.483188</td>
+      <td>4.483188</td>
+    </tr>
+    <tr>
+      <th>ROSoil</th>
+      <td>1.602312e-07</td>
+      <td>2.384971e-07</td>
+      <td>2.384971e-07</td>
+      <td>1.006622e-06</td>
+      <td>0.000002</td>
+      <td>0.000002</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000009</td>
+      <td>0.000049</td>
+      <td>0.000049</td>
+    </tr>
+    <tr>
+      <th>ROVeg</th>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>ROWater</th>
+      <td>6.859803e-05</td>
+      <td>6.407179e-05</td>
+      <td>6.407179e-05</td>
+      <td>1.811887e-03</td>
+      <td>0.001856</td>
+      <td>0.001856</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.162248</td>
+      <td>0.166661</td>
+      <td>0.166661</td>
+    </tr>
+    <tr>
+      <th>RS</th>
+      <td>5.639403e+03</td>
+      <td>5.841079e+03</td>
+      <td>5.841079e+03</td>
+      <td>4.865515e+03</td>
+      <td>4686.129102</td>
+      <td>4686.129102</td>
+      <td>-999.000000</td>
+      <td>-999.000000</td>
+      <td>-999.000000</td>
+      <td>27227.979900</td>
+      <td>22563.471000</td>
+      <td>22563.471000</td>
+    </tr>
+    <tr>
+      <th>Rain</th>
+      <td>1.127861e-01</td>
+      <td>1.127861e-01</td>
+      <td>1.127861e-01</td>
+      <td>4.446787e-01</td>
+      <td>0.444679</td>
+      <td>0.444679</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>8.900000</td>
+      <td>8.900000</td>
+      <td>8.900000</td>
+    </tr>
+    <tr>
+      <th>SMD</th>
+      <td>2.574577e+00</td>
+      <td>6.259103e+00</td>
+      <td>6.259103e+00</td>
+      <td>3.999144e+00</td>
+      <td>7.589428</td>
+      <td>7.589428</td>
+      <td>0.002400</td>
+      <td>0.001100</td>
+      <td>0.001100</td>
+      <td>19.560200</td>
+      <td>24.039700</td>
+      <td>24.039700</td>
+    </tr>
+    <tr>
+      <th>SMDBSoil</th>
+      <td>-9.990000e+02</td>
+      <td>-9.990000e+02</td>
+      <td>-9.990000e+02</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>-999.000000</td>
+      <td>-999.000000</td>
+      <td>-999.000000</td>
+      <td>-999.000000</td>
+      <td>-999.000000</td>
+      <td>-999.000000</td>
+    </tr>
+    <tr>
+      <th>SMDBldgs</th>
+      <td>6.367017e-01</td>
+      <td>1.356418e+00</td>
+      <td>1.356418e+00</td>
+      <td>7.202703e-01</td>
+      <td>1.420875</td>
+      <td>1.420875</td>
+      <td>0.003200</td>
+      <td>0.001500</td>
+      <td>0.001500</td>
+      <td>2.451900</td>
+      <td>3.928800</td>
+      <td>3.928800</td>
+    </tr>
+    <tr>
+      <th>SMDDecTr</th>
+      <td>4.072945e+00</td>
+      <td>1.123177e+01</td>
+      <td>1.123177e+01</td>
+      <td>6.895305e+00</td>
+      <td>14.463676</td>
+      <td>14.463676</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>33.267700</td>
+      <td>41.151500</td>
+      <td>41.151500</td>
+    </tr>
+    <tr>
+      <th>SMDEveTr</th>
+      <td>2.145687e+00</td>
+      <td>4.463181e+00</td>
+      <td>4.463181e+00</td>
+      <td>3.215178e+00</td>
+      <td>5.622188</td>
+      <td>5.622188</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>15.462700</td>
+      <td>18.049000</td>
+      <td>18.049000</td>
+    </tr>
+    <tr>
+      <th>SMDGrass</th>
+      <td>3.306337e+00</td>
+      <td>7.450960e+00</td>
+      <td>7.450960e+00</td>
+      <td>5.997548e+00</td>
+      <td>10.585021</td>
+      <td>10.585021</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>30.304400</td>
+      <td>38.374500</td>
+      <td>38.374500</td>
+    </tr>
+    <tr>
+      <th>SMDPaved</th>
+      <td>1.284993e+00</td>
+      <td>2.706790e+00</td>
+      <td>2.706790e+00</td>
+      <td>1.325349e+00</td>
+      <td>2.515075</td>
+      <td>2.515075</td>
+      <td>0.006400</td>
+      <td>0.003100</td>
+      <td>0.003100</td>
+      <td>4.055600</td>
+      <td>6.909000</td>
+      <td>6.909000</td>
+    </tr>
+    <tr>
+      <th>SWE</th>
+      <td>0.000000e+00</td>
+      <td>1.804748e+01</td>
+      <td>1.804748e+01</td>
+      <td>0.000000e+00</td>
+      <td>30.295491</td>
+      <td>30.295491</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>117.829100</td>
+      <td>117.829100</td>
+    </tr>
+    <tr>
+      <th>SnowCh</th>
+      <td>1.815029e-06</td>
+      <td>1.730986e-02</td>
+      <td>1.730986e-02</td>
+      <td>3.041605e-05</td>
+      <td>0.148212</td>
+      <td>0.148212</td>
+      <td>-0.000300</td>
+      <td>-0.784100</td>
+      <td>-0.784100</td>
+      <td>0.000500</td>
+      <td>3.570200</td>
+      <td>3.570200</td>
+    </tr>
+    <tr>
+      <th>SnowRBldg</th>
+      <td>0.000000e+00</td>
+      <td>1.696462e-03</td>
+      <td>1.696462e-03</td>
+      <td>0.000000e+00</td>
+      <td>0.020238</td>
+      <td>0.020238</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.875400</td>
+      <td>0.875400</td>
+    </tr>
+    <tr>
+      <th>SnowRPave</th>
+      <td>0.000000e+00</td>
+      <td>1.103191e-03</td>
+      <td>1.103191e-03</td>
+      <td>0.000000e+00</td>
+      <td>0.020678</td>
+      <td>0.020678</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.744400</td>
+      <td>0.744400</td>
+    </tr>
+    <tr>
+      <th>StBSoil</th>
+      <td>-9.990000e+02</td>
+      <td>-9.990000e+02</td>
+      <td>-9.990000e+02</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>-999.000000</td>
+      <td>-999.000000</td>
+      <td>-999.000000</td>
+      <td>-999.000000</td>
+      <td>-999.000000</td>
+      <td>-999.000000</td>
+    </tr>
+    <tr>
+      <th>StBldgs</th>
+      <td>5.323536e-02</td>
+      <td>4.672546e-02</td>
+      <td>4.672546e-02</td>
+      <td>1.273892e-01</td>
+      <td>0.121310</td>
+      <td>0.121310</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>1.100900</td>
+      <td>1.100800</td>
+      <td>1.100800</td>
+    </tr>
+    <tr>
+      <th>StDecTr</th>
+      <td>1.245616e+00</td>
+      <td>1.585147e+00</td>
+      <td>1.585147e+00</td>
+      <td>2.474657e+00</td>
+      <td>2.988131</td>
+      <td>2.988131</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>20.548600</td>
+      <td>20.478000</td>
+      <td>20.478000</td>
+    </tr>
+    <tr>
+      <th>StEveTr</th>
+      <td>1.280975e+00</td>
+      <td>1.612319e+00</td>
+      <td>1.612319e+00</td>
+      <td>2.476260e+00</td>
+      <td>2.987580</td>
+      <td>2.987580</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>20.685500</td>
+      <td>20.593000</td>
+      <td>20.593000</td>
+    </tr>
+    <tr>
+      <th>StGrass</th>
+      <td>1.324155e+00</td>
+      <td>1.644738e+00</td>
+      <td>1.644738e+00</td>
+      <td>2.477919e+00</td>
+      <td>2.987276</td>
+      <td>2.987276</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>20.805500</td>
+      <td>20.680500</td>
+      <td>20.680500</td>
+    </tr>
+    <tr>
+      <th>StPaved</th>
+      <td>5.719672e-02</td>
+      <td>5.310901e-02</td>
+      <td>5.310901e-02</td>
+      <td>1.289281e-01</td>
+      <td>0.123255</td>
+      <td>0.123255</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>1.100900</td>
+      <td>1.100800</td>
+      <td>1.100800</td>
+    </tr>
+    <tr>
+      <th>StWater</th>
+      <td>1.000221e+01</td>
+      <td>1.018978e+01</td>
+      <td>1.018978e+01</td>
+      <td>2.398708e+01</td>
+      <td>24.470890</td>
+      <td>24.470890</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>118.449400</td>
+      <td>121.325700</td>
+      <td>121.325700</td>
+    </tr>
+    <tr>
+      <th>State</th>
+      <td>5.489102e-01</td>
+      <td>5.866957e-01</td>
+      <td>5.866957e-01</td>
+      <td>1.342288e+00</td>
+      <td>1.382213</td>
+      <td>1.382213</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>12.428600</td>
+      <td>12.370000</td>
+      <td>12.370000</td>
+    </tr>
+    <tr>
+      <th>SurfCh</th>
+      <td>1.113213e-04</td>
+      <td>1.185334e-03</td>
+      <td>1.185334e-03</td>
+      <td>2.381805e-01</td>
+      <td>0.246666</td>
+      <td>0.246666</td>
+      <td>-1.535170</td>
+      <td>-1.527276</td>
+      <td>-1.527276</td>
+      <td>5.024989</td>
+      <td>5.029762</td>
+      <td>5.029762</td>
+    </tr>
+    <tr>
+      <th>T2</th>
+      <td>6.016154e+00</td>
+      <td>5.987032e+00</td>
+      <td>5.987032e+00</td>
+      <td>9.081132e+00</td>
+      <td>9.065599</td>
+      <td>9.065599</td>
+      <td>-22.923100</td>
+      <td>-22.884900</td>
+      <td>-22.884900</td>
+      <td>26.686000</td>
+      <td>26.414100</td>
+      <td>26.414100</td>
+    </tr>
+    <tr>
+      <th>TotCh</th>
+      <td>1.092876e-04</td>
+      <td>1.172089e-03</td>
+      <td>1.172089e-03</td>
+      <td>2.504676e-01</td>
+      <td>0.262560</td>
+      <td>0.262560</td>
+      <td>-1.533755</td>
+      <td>-1.187475</td>
+      <td>-1.187475</td>
+      <td>5.203853</td>
+      <td>5.202893</td>
+      <td>5.202893</td>
+    </tr>
+    <tr>
+      <th>Ts</th>
+      <td>6.420232e+00</td>
+      <td>6.546385e+00</td>
+      <td>6.546385e+00</td>
+      <td>9.033286e+00</td>
+      <td>8.569411</td>
+      <td>8.569411</td>
+      <td>-22.614400</td>
+      <td>-20.879800</td>
+      <td>-20.879800</td>
+      <td>27.418400</td>
+      <td>26.988500</td>
+      <td>26.988500</td>
+    </tr>
+    <tr>
+      <th>Tsurf</th>
+      <td>7.368986e+00</td>
+      <td>7.295908e+00</td>
+      <td>7.295908e+00</td>
+      <td>1.037124e+01</td>
+      <td>10.487857</td>
+      <td>10.487857</td>
+      <td>-22.908900</td>
+      <td>-23.026200</td>
+      <td>-23.026200</td>
+      <td>33.561400</td>
+      <td>33.561400</td>
+      <td>33.561400</td>
+    </tr>
+    <tr>
+      <th>U10</th>
+      <td>4.196333e+00</td>
+      <td>4.196077e+00</td>
+      <td>4.196077e+00</td>
+      <td>1.709959e+00</td>
+      <td>1.707585</td>
+      <td>1.707585</td>
+      <td>0.629800</td>
+      <td>0.665400</td>
+      <td>0.665400</td>
+      <td>11.773500</td>
+      <td>11.775000</td>
+      <td>11.775000</td>
+    </tr>
+    <tr>
+      <th>UStar</th>
+      <td>4.207330e-01</td>
+      <td>4.106372e-01</td>
+      <td>4.106372e-01</td>
+      <td>1.603486e-01</td>
+      <td>0.186297</td>
+      <td>0.186297</td>
+      <td>0.150000</td>
+      <td>0.150000</td>
+      <td>0.150000</td>
+      <td>1.109700</td>
+      <td>1.130500</td>
+      <td>1.130500</td>
+    </tr>
+    <tr>
+      <th>WUDecTr</th>
+      <td>2.800703e-02</td>
+      <td>2.800703e-02</td>
+      <td>2.800703e-02</td>
+      <td>1.023322e-01</td>
+      <td>0.102332</td>
+      <td>0.102332</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.761600</td>
+      <td>0.761600</td>
+      <td>0.761600</td>
+    </tr>
+    <tr>
+      <th>WUEveTr</th>
+      <td>2.800703e-02</td>
+      <td>2.800703e-02</td>
+      <td>2.800703e-02</td>
+      <td>1.023322e-01</td>
+      <td>0.102332</td>
+      <td>0.102332</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.761600</td>
+      <td>0.761600</td>
+      <td>0.761600</td>
+    </tr>
+    <tr>
+      <th>WUGrass</th>
+      <td>2.800703e-02</td>
+      <td>2.800703e-02</td>
+      <td>2.800703e-02</td>
+      <td>1.023322e-01</td>
+      <td>0.102332</td>
+      <td>0.102332</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.761600</td>
+      <td>0.761600</td>
+      <td>0.761600</td>
+    </tr>
+    <tr>
+      <th>WUInt</th>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>Zenith</th>
+      <td>8.946056e+01</td>
+      <td>8.946056e+01</td>
+      <td>8.946056e+01</td>
+      <td>2.589577e+01</td>
+      <td>25.895765</td>
+      <td>25.895765</td>
+      <td>36.952600</td>
+      <td>36.952600</td>
+      <td>36.952600</td>
+      <td>143.110300</td>
+      <td>143.110300</td>
+      <td>143.110300</td>
+    </tr>
+    <tr>
+      <th>z0m</th>
+      <td>3.988000e-01</td>
+      <td>4.891549e-01</td>
+      <td>4.891549e-01</td>
+      <td>1.110287e-16</td>
+      <td>0.105008</td>
+      <td>0.105008</td>
+      <td>0.398800</td>
+      <td>0.398800</td>
+      <td>0.398800</td>
+      <td>0.398800</td>
+      <td>0.627600</td>
+      <td>0.627600</td>
+    </tr>
+    <tr>
+      <th>zdm</th>
+      <td>2.791300e+00</td>
+      <td>3.423913e+00</td>
+      <td>3.423913e+00</td>
+      <td>0.000000e+00</td>
+      <td>0.735052</td>
+      <td>0.735052</td>
+      <td>2.791300</td>
+      <td>2.791300</td>
+      <td>2.791300</td>
+      <td>2.791300</td>
+      <td>4.392900</td>
+      <td>4.392900</td>
+    </tr>
+  </tbody>
+</table>
+</div><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">.</span><span class="n">dataframe</span> <span class="n">tbody</span> <span class="n">tr</span> <span class="n">th</span> <span class="p">{</span>
+    <span class="n">vertical</span><span class="o">-</span><span class="n">align</span><span class="p">:</span> <span class="n">top</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="o">.</span><span class="n">dataframe</span> <span class="n">thead</span> <span class="n">tr</span> <span class="n">th</span> <span class="p">{</span>
+    <span class="n">text</span><span class="o">-</span><span class="n">align</span><span class="p">:</span> <span class="n">left</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="o">.</span><span class="n">dataframe</span> <span class="n">thead</span> <span class="n">tr</span><span class="p">:</span><span class="n">last</span><span class="o">-</span><span class="n">of</span><span class="o">-</span><span class="nb">type</span> <span class="n">th</span> <span class="p">{</span>
+    <span class="n">text</span><span class="o">-</span><span class="n">align</span><span class="p">:</span> <span class="n">right</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr>
+      <th></th>
+      <th colspan="3" halign="left">25%</th>
+      <th colspan="3" halign="left">50%</th>
+      <th colspan="3" halign="left">75%</th>
+    </tr>
+    <tr>
+      <th>cfg</th>
+      <th>v2018b</th>
+      <th>v2018c</th>
+      <th>v2019a</th>
+      <th>v2018b</th>
+      <th>v2018c</th>
+      <th>v2019a</th>
+      <th>v2018b</th>
+      <th>v2018c</th>
+      <th>v2019a</th>
+    </tr>
+    <tr>
+      <th>var</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>AddWater</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>AlbBulk</th>
+      <td>0.143100</td>
+      <td>0.143100</td>
+      <td>0.143100</td>
+      <td>0.143100</td>
+      <td>0.143100</td>
+      <td>0.143100</td>
+      <td>0.143100</td>
+      <td>0.143100</td>
+      <td>0.143100</td>
+    </tr>
+    <tr>
+      <th>AlbSnow</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.649775</td>
+      <td>0.649775</td>
+      <td>0.649775</td>
+    </tr>
+    <tr>
+      <th>Azimuth</th>
+      <td>94.092950</td>
+      <td>94.092950</td>
+      <td>94.092950</td>
+      <td>186.718600</td>
+      <td>186.718600</td>
+      <td>186.718600</td>
+      <td>272.260600</td>
+      <td>272.260600</td>
+      <td>272.260600</td>
+    </tr>
+    <tr>
+      <th>Drainage</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.022837</td>
+      <td>0.037445</td>
+      <td>0.037445</td>
+    </tr>
+    <tr>
+      <th>Evap</th>
+      <td>0.000097</td>
+      <td>0.005439</td>
+      <td>0.005439</td>
+      <td>0.005165</td>
+      <td>0.022510</td>
+      <td>0.022510</td>
+      <td>0.056130</td>
+      <td>0.073561</td>
+      <td>0.073561</td>
+    </tr>
+    <tr>
+      <th>Fc</th>
+      <td>1.194500</td>
+      <td>0.609900</td>
+      <td>0.609900</td>
+      <td>1.818650</td>
+      <td>1.227300</td>
+      <td>1.227300</td>
+      <td>2.727500</td>
+      <td>1.770450</td>
+      <td>1.770450</td>
+    </tr>
+    <tr>
+      <th>FcBuild</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>FcMetab</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>FcPhoto</th>
+      <td>0.000000</td>
+      <td>-1.061225</td>
+      <td>-1.061225</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>FcRespi</th>
+      <td>1.194500</td>
+      <td>1.194500</td>
+      <td>1.194500</td>
+      <td>1.818650</td>
+      <td>1.818650</td>
+      <td>1.818650</td>
+      <td>2.727500</td>
+      <td>2.727500</td>
+      <td>2.727500</td>
+    </tr>
+    <tr>
+      <th>FcTraff</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>Fcld</th>
+      <td>0.346325</td>
+      <td>0.346325</td>
+      <td>0.346325</td>
+      <td>0.449550</td>
+      <td>0.449550</td>
+      <td>0.449550</td>
+      <td>0.571175</td>
+      <td>0.571175</td>
+      <td>0.571175</td>
+    </tr>
+    <tr>
+      <th>FlowCh</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>Irr</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>Kdown</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>6.913750</td>
+      <td>6.913750</td>
+      <td>6.913750</td>
+      <td>143.514025</td>
+      <td>143.514025</td>
+      <td>143.514025</td>
+    </tr>
+    <tr>
+      <th>Kup</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.977700</td>
+      <td>1.209450</td>
+      <td>1.209450</td>
+      <td>20.434625</td>
+      <td>26.192800</td>
+      <td>26.192800</td>
+    </tr>
+    <tr>
+      <th>LAI</th>
+      <td>0.808200</td>
+      <td>0.808200</td>
+      <td>0.808200</td>
+      <td>0.808200</td>
+      <td>0.832200</td>
+      <td>0.832200</td>
+      <td>0.808200</td>
+      <td>3.318400</td>
+      <td>3.318400</td>
+    </tr>
+    <tr>
+      <th>Ldown</th>
+      <td>262.881100</td>
+      <td>262.881100</td>
+      <td>262.881100</td>
+      <td>300.268100</td>
+      <td>300.268100</td>
+      <td>300.268100</td>
+      <td>342.283200</td>
+      <td>342.283200</td>
+      <td>342.283200</td>
+    </tr>
+    <tr>
+      <th>Lob</th>
+      <td>-795.078125</td>
+      <td>-546.915933</td>
+      <td>-546.915933</td>
+      <td>-242.036000</td>
+      <td>-119.927344</td>
+      <td>-119.927344</td>
+      <td>-78.384750</td>
+      <td>14.104366</td>
+      <td>14.104366</td>
+    </tr>
+    <tr>
+      <th>Lup</th>
+      <td>314.093475</td>
+      <td>313.136250</td>
+      <td>313.136250</td>
+      <td>348.951550</td>
+      <td>348.782100</td>
+      <td>348.782100</td>
+      <td>389.028250</td>
+      <td>389.626775</td>
+      <td>389.626775</td>
+    </tr>
+    <tr>
+      <th>MeltWStore</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>MeltWater</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>NWtrState</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.317754</td>
+      <td>0.366199</td>
+      <td>0.366199</td>
+    </tr>
+    <tr>
+      <th>Q2</th>
+      <td>2.801575</td>
+      <td>2.799850</td>
+      <td>2.799850</td>
+      <td>4.479950</td>
+      <td>4.480250</td>
+      <td>4.480250</td>
+      <td>6.991275</td>
+      <td>6.979725</td>
+      <td>6.979725</td>
+    </tr>
+    <tr>
+      <th>QE</th>
+      <td>0.067900</td>
+      <td>4.178775</td>
+      <td>4.178775</td>
+      <td>3.551650</td>
+      <td>16.418700</td>
+      <td>16.418700</td>
+      <td>38.584200</td>
+      <td>50.960375</td>
+      <td>50.960375</td>
+    </tr>
+    <tr>
+      <th>QElumps</th>
+      <td>4.413150</td>
+      <td>2.298625</td>
+      <td>2.298625</td>
+      <td>5.907100</td>
+      <td>6.309750</td>
+      <td>6.309750</td>
+      <td>13.014075</td>
+      <td>16.930350</td>
+      <td>16.930350</td>
+    </tr>
+    <tr>
+      <th>QF</th>
+      <td>3.257125</td>
+      <td>3.257125</td>
+      <td>3.257125</td>
+      <td>6.881800</td>
+      <td>6.881800</td>
+      <td>6.881800</td>
+      <td>11.875700</td>
+      <td>11.875700</td>
+      <td>11.875700</td>
+    </tr>
+    <tr>
+      <th>QH</th>
+      <td>0.024875</td>
+      <td>-4.798800</td>
+      <td>-4.798800</td>
+      <td>12.048100</td>
+      <td>9.937050</td>
+      <td>9.937050</td>
+      <td>36.595700</td>
+      <td>25.211750</td>
+      <td>25.211750</td>
+    </tr>
+    <tr>
+      <th>QHlumps</th>
+      <td>6.802350</td>
+      <td>-10.662925</td>
+      <td>-10.662925</td>
+      <td>15.812600</td>
+      <td>8.346350</td>
+      <td>8.346350</td>
+      <td>53.474000</td>
+      <td>41.071350</td>
+      <td>41.071350</td>
+    </tr>
+    <tr>
+      <th>QHresis</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>2.062500</td>
+      <td>0.128950</td>
+      <td>0.128950</td>
+      <td>87.930225</td>
+      <td>71.949950</td>
+      <td>71.949950</td>
+    </tr>
+    <tr>
+      <th>QM</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>QMFreeze</th>
+      <td>-0.000001</td>
+      <td>-28.314564</td>
+      <td>-28.314564</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>QMRain</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>QN</th>
+      <td>-41.768550</td>
+      <td>-42.921425</td>
+      <td>-42.921425</td>
+      <td>-24.270400</td>
+      <td>-26.508350</td>
+      <td>-26.508350</td>
+      <td>70.319200</td>
+      <td>60.693700</td>
+      <td>60.693700</td>
+    </tr>
+    <tr>
+      <th>QNSnow</th>
+      <td>0.000000</td>
+      <td>-35.142575</td>
+      <td>-35.142575</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>QNSnowFr</th>
+      <td>-39.827700</td>
+      <td>-30.695575</td>
+      <td>-30.695575</td>
+      <td>-22.049950</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>69.653550</td>
+      <td>60.118600</td>
+      <td>60.118600</td>
+    </tr>
+    <tr>
+      <th>QS</th>
+      <td>-46.479725</td>
+      <td>-36.948975</td>
+      <td>-36.948975</td>
+      <td>-37.212050</td>
+      <td>-4.919150</td>
+      <td>-4.919150</td>
+      <td>14.307350</td>
+      <td>6.763975</td>
+      <td>6.763975</td>
+    </tr>
+    <tr>
+      <th>RA</th>
+      <td>24.882400</td>
+      <td>26.385800</td>
+      <td>26.385800</td>
+      <td>32.118300</td>
+      <td>34.501200</td>
+      <td>34.501200</td>
+      <td>40.314875</td>
+      <td>47.204475</td>
+      <td>47.204475</td>
+    </tr>
+    <tr>
+      <th>RO</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000833</td>
+      <td>0.013079</td>
+      <td>0.013079</td>
+    </tr>
+    <tr>
+      <th>ROImp</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>ROPipe</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.012777</td>
+      <td>0.013867</td>
+      <td>0.013867</td>
+    </tr>
+    <tr>
+      <th>ROSoil</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>ROVeg</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>ROWater</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>RS</th>
+      <td>328.041275</td>
+      <td>262.717100</td>
+      <td>262.717100</td>
+      <td>6650.018350</td>
+      <td>9999.999900</td>
+      <td>9999.999900</td>
+      <td>9999.999900</td>
+      <td>9999.999900</td>
+      <td>9999.999900</td>
+    </tr>
+    <tr>
+      <th>Rain</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>SMD</th>
+      <td>0.042625</td>
+      <td>0.078500</td>
+      <td>0.078500</td>
+      <td>0.716500</td>
+      <td>1.642800</td>
+      <td>1.642800</td>
+      <td>2.921200</td>
+      <td>12.855175</td>
+      <td>12.855175</td>
+    </tr>
+    <tr>
+      <th>SMDBSoil</th>
+      <td>-999.000000</td>
+      <td>-999.000000</td>
+      <td>-999.000000</td>
+      <td>-999.000000</td>
+      <td>-999.000000</td>
+      <td>-999.000000</td>
+      <td>-999.000000</td>
+      <td>-999.000000</td>
+      <td>-999.000000</td>
+    </tr>
+    <tr>
+      <th>SMDBldgs</th>
+      <td>0.029425</td>
+      <td>0.044575</td>
+      <td>0.044575</td>
+      <td>0.284100</td>
+      <td>0.647450</td>
+      <td>0.647450</td>
+      <td>1.090250</td>
+      <td>2.798525</td>
+      <td>2.798525</td>
+    </tr>
+    <tr>
+      <th>SMDDecTr</th>
+      <td>0.000900</td>
+      <td>0.008700</td>
+      <td>0.008700</td>
+      <td>0.635450</td>
+      <td>0.490850</td>
+      <td>0.490850</td>
+      <td>4.796300</td>
+      <td>24.905675</td>
+      <td>24.905675</td>
+    </tr>
+    <tr>
+      <th>SMDEveTr</th>
+      <td>0.013800</td>
+      <td>0.039100</td>
+      <td>0.039100</td>
+      <td>0.366850</td>
+      <td>1.082700</td>
+      <td>1.082700</td>
+      <td>3.268175</td>
+      <td>9.698975</td>
+      <td>9.698975</td>
+    </tr>
+    <tr>
+      <th>SMDGrass</th>
+      <td>0.000100</td>
+      <td>0.000600</td>
+      <td>0.000600</td>
+      <td>0.426900</td>
+      <td>0.316000</td>
+      <td>0.316000</td>
+      <td>3.216900</td>
+      <td>14.400000</td>
+      <td>14.400000</td>
+    </tr>
+    <tr>
+      <th>SMDPaved</th>
+      <td>0.087125</td>
+      <td>0.094375</td>
+      <td>0.094375</td>
+      <td>0.703700</td>
+      <td>2.058700</td>
+      <td>2.058700</td>
+      <td>2.247675</td>
+      <td>5.258875</td>
+      <td>5.258875</td>
+    </tr>
+    <tr>
+      <th>SWE</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>26.472300</td>
+      <td>26.472300</td>
+    </tr>
+    <tr>
+      <th>SnowCh</th>
+      <td>0.000000</td>
+      <td>-0.003500</td>
+      <td>-0.003500</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>SnowRBldg</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>SnowRPave</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>StBSoil</th>
+      <td>-999.000000</td>
+      <td>-999.000000</td>
+      <td>-999.000000</td>
+      <td>-999.000000</td>
+      <td>-999.000000</td>
+      <td>-999.000000</td>
+      <td>-999.000000</td>
+      <td>-999.000000</td>
+      <td>-999.000000</td>
+    </tr>
+    <tr>
+      <th>StBldgs</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.021775</td>
+      <td>0.008200</td>
+      <td>0.008200</td>
+    </tr>
+    <tr>
+      <th>StDecTr</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.024800</td>
+      <td>0.008300</td>
+      <td>0.008300</td>
+      <td>1.210600</td>
+      <td>1.837000</td>
+      <td>1.837000</td>
+    </tr>
+    <tr>
+      <th>StEveTr</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.053450</td>
+      <td>0.033600</td>
+      <td>0.033600</td>
+      <td>1.288250</td>
+      <td>1.874450</td>
+      <td>1.874450</td>
+    </tr>
+    <tr>
+      <th>StGrass</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.114750</td>
+      <td>0.078800</td>
+      <td>0.078800</td>
+      <td>1.408900</td>
+      <td>1.932425</td>
+      <td>1.932425</td>
+    </tr>
+    <tr>
+      <th>StPaved</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.036000</td>
+      <td>0.033050</td>
+      <td>0.033050</td>
+    </tr>
+    <tr>
+      <th>StWater</th>
+      <td>0.092125</td>
+      <td>0.107150</td>
+      <td>0.107150</td>
+      <td>0.498100</td>
+      <td>0.497100</td>
+      <td>0.497100</td>
+      <td>4.548300</td>
+      <td>4.743875</td>
+      <td>4.743875</td>
+    </tr>
+    <tr>
+      <th>State</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.339675</td>
+      <td>0.382250</td>
+      <td>0.382250</td>
+    </tr>
+    <tr>
+      <th>SurfCh</th>
+      <td>-0.017381</td>
+      <td>-0.032190</td>
+      <td>-0.032190</td>
+      <td>-0.000000</td>
+      <td>-0.000000</td>
+      <td>-0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>T2</th>
+      <td>-0.334500</td>
+      <td>-0.337750</td>
+      <td>-0.337750</td>
+      <td>6.619750</td>
+      <td>6.581600</td>
+      <td>6.581600</td>
+      <td>13.476100</td>
+      <td>13.451625</td>
+      <td>13.451625</td>
+    </tr>
+    <tr>
+      <th>TotCh</th>
+      <td>-0.049035</td>
+      <td>-0.061113</td>
+      <td>-0.061113</td>
+      <td>-0.000970</td>
+      <td>-0.002949</td>
+      <td>-0.002949</td>
+      <td>0.000000</td>
+      <td>-0.000000</td>
+      <td>-0.000000</td>
+    </tr>
+    <tr>
+      <th>Ts</th>
+      <td>0.114175</td>
+      <td>0.607725</td>
+      <td>0.607725</td>
+      <td>6.956250</td>
+      <td>6.662500</td>
+      <td>6.662500</td>
+      <td>13.792350</td>
+      <td>13.576450</td>
+      <td>13.576450</td>
+    </tr>
+    <tr>
+      <th>Tsurf</th>
+      <td>0.038350</td>
+      <td>-0.335350</td>
+      <td>-0.335350</td>
+      <td>7.375600</td>
+      <td>7.341250</td>
+      <td>7.341250</td>
+      <td>15.085975</td>
+      <td>15.161150</td>
+      <td>15.161150</td>
+    </tr>
+    <tr>
+      <th>U10</th>
+      <td>2.943800</td>
+      <td>2.939925</td>
+      <td>2.939925</td>
+      <td>3.966000</td>
+      <td>3.966050</td>
+      <td>3.966050</td>
+      <td>5.298550</td>
+      <td>5.298625</td>
+      <td>5.298625</td>
+    </tr>
+    <tr>
+      <th>UStar</th>
+      <td>0.298425</td>
+      <td>0.262025</td>
+      <td>0.262025</td>
+      <td>0.404500</td>
+      <td>0.403750</td>
+      <td>0.403750</td>
+      <td>0.525800</td>
+      <td>0.540275</td>
+      <td>0.540275</td>
+    </tr>
+    <tr>
+      <th>WUDecTr</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>WUEveTr</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>WUGrass</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>WUInt</th>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>Zenith</th>
+      <td>70.923050</td>
+      <td>70.923050</td>
+      <td>70.923050</td>
+      <td>89.066300</td>
+      <td>89.066300</td>
+      <td>89.066300</td>
+      <td>107.858950</td>
+      <td>107.858950</td>
+      <td>107.858950</td>
+    </tr>
+    <tr>
+      <th>z0m</th>
+      <td>0.398800</td>
+      <td>0.398800</td>
+      <td>0.398800</td>
+      <td>0.398800</td>
+      <td>0.401400</td>
+      <td>0.401400</td>
+      <td>0.398800</td>
+      <td>0.626900</td>
+      <td>0.626900</td>
+    </tr>
+    <tr>
+      <th>zdm</th>
+      <td>2.791300</td>
+      <td>2.791300</td>
+      <td>2.791300</td>
+      <td>2.791300</td>
+      <td>2.809900</td>
+      <td>2.809900</td>
+      <td>2.791300</td>
+      <td>4.388500</td>
+      <td>4.388500</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+<div class="section" id="pair-plots">
+<h3>1.2.2. Pair plots<a class="headerlink" href="#pair-plots" title="Permalink to this headline">¶</a></h3>
+<p><img alt="../../_images/output_13_0.png" src="../../_images/output_13_0.png" /></p>
+<p><img alt="../../_images/output_13_1.png" src="../../_images/output_13_1.png" /></p>
+<p><img alt="../../_images/output_13_2.png" src="../../_images/output_13_2.png" /></p>
+<p><img alt="../../_images/output_13_3.png" src="../../_images/output_13_3.png" /></p>
+<p><img alt="../../_images/output_13_4.png" src="../../_images/output_13_4.png" /></p>
+<p><img alt="../../_images/output_13_5.png" src="../../_images/output_13_5.png" /></p>
+<p><img alt="../../_images/output_13_6.png" src="../../_images/output_13_6.png" /></p>
+<p><img alt="../../_images/output_13_7.png" src="../../_images/output_13_7.png" /></p>
+<p><img alt="../../_images/output_13_8.png" src="../../_images/output_13_8.png" /></p>
+<p><img alt="../../_images/output_13_9.png" src="../../_images/output_13_9.png" /></p>
+<p><img alt="../../_images/output_13_10.png" src="../../_images/output_13_10.png" /></p>
+<p><img alt="../../_images/output_13_11.png" src="../../_images/output_13_11.png" /></p>
+<p><img alt="../../_images/output_13_12.png" src="../../_images/output_13_12.png" /></p>
+<p><img alt="../../_images/output_13_13.png" src="../../_images/output_13_13.png" /></p>
+<p><img alt="../../_images/output_13_14.png" src="../../_images/output_13_14.png" /></p>
+<p><img alt="../../_images/output_13_15.png" src="../../_images/output_13_15.png" /></p>
+<p><img alt="../../_images/output_13_16.png" src="../../_images/output_13_16.png" /></p>
+<p><img alt="../../_images/output_13_17.png" src="../../_images/output_13_17.png" /></p>
+<p><img alt="../../_images/output_13_18.png" src="../../_images/output_13_18.png" /></p>
+<p><img alt="../../_images/output_13_19.png" src="../../_images/output_13_19.png" /></p>
+<p><img alt="../../_images/output_13_20.png" src="../../_images/output_13_20.png" /></p>
+<p><img alt="../../_images/output_13_21.png" src="../../_images/output_13_21.png" /></p>
+<p><img alt="../../_images/output_13_22.png" src="../../_images/output_13_22.png" /></p>
+<p><img alt="../../_images/output_13_23.png" src="../../_images/output_13_23.png" /></p>
+<p><img alt="../../_images/output_13_24.png" src="../../_images/output_13_24.png" /></p>
+<p><img alt="../../_images/output_13_25.png" src="../../_images/output_13_25.png" /></p>
+<p><img alt="../../_images/output_13_26.png" src="../../_images/output_13_26.png" /></p>
+<p><img alt="../../_images/output_13_27.png" src="../../_images/output_13_27.png" /></p>
+<p><img alt="../../_images/output_13_28.png" src="../../_images/output_13_28.png" /></p>
+<p><img alt="../../_images/output_13_29.png" src="../../_images/output_13_29.png" /></p>
+<p><img alt="../../_images/output_13_30.png" src="../../_images/output_13_30.png" /></p>
+<p><img alt="../../_images/output_13_31.png" src="../../_images/output_13_31.png" /></p>
+<p><img alt="../../_images/output_13_32.png" src="../../_images/output_13_32.png" /></p>
+<p><img alt="../../_images/output_13_33.png" src="../../_images/output_13_33.png" /></p>
+<p><img alt="../../_images/output_13_34.png" src="../../_images/output_13_34.png" /></p>
+<p><img alt="../../_images/output_13_35.png" src="../../_images/output_13_35.png" /></p>
+<p><img alt="../../_images/output_13_36.png" src="../../_images/output_13_36.png" /></p>
+<p><img alt="../../_images/output_13_37.png" src="../../_images/output_13_37.png" /></p>
+<p><img alt="../../_images/output_13_38.png" src="../../_images/output_13_38.png" /></p>
+<p><img alt="../../_images/output_13_39.png" src="../../_images/output_13_39.png" /></p>
+<p><img alt="../../_images/output_13_40.png" src="../../_images/output_13_40.png" /></p>
+<p><img alt="../../_images/output_13_41.png" src="../../_images/output_13_41.png" /></p>
+<p><img alt="../../_images/output_13_42.png" src="../../_images/output_13_42.png" /></p>
+<p><img alt="../../_images/output_13_43.png" src="../../_images/output_13_43.png" /></p>
+<p><img alt="../../_images/output_13_44.png" src="../../_images/output_13_44.png" /></p>
+<p><img alt="../../_images/output_13_45.png" src="../../_images/output_13_45.png" /></p>
+<p><img alt="../../_images/output_13_46.png" src="../../_images/output_13_46.png" /></p>
+<p><img alt="../../_images/output_13_47.png" src="../../_images/output_13_47.png" /></p>
+<p><img alt="../../_images/output_13_48.png" src="../../_images/output_13_48.png" /></p>
+<p><img alt="../../_images/output_13_49.png" src="../../_images/output_13_49.png" /></p>
+<p><img alt="../../_images/output_13_50.png" src="../../_images/output_13_50.png" /></p>
+<p><img alt="../../_images/output_13_51.png" src="../../_images/output_13_51.png" /></p>
+<p><img alt="../../_images/output_13_52.png" src="../../_images/output_13_52.png" /></p>
+<p><img alt="../../_images/output_13_53.png" src="../../_images/output_13_53.png" /></p>
+<p><img alt="../../_images/output_13_54.png" src="../../_images/output_13_54.png" /></p>
+<p><img alt="../../_images/output_13_55.png" src="../../_images/output_13_55.png" /></p>
+<p><img alt="../../_images/output_13_56.png" src="../../_images/output_13_56.png" /></p>
+<p><img alt="../../_images/output_13_57.png" src="../../_images/output_13_57.png" /></p>
+<p><img alt="../../_images/output_13_58.png" src="../../_images/output_13_58.png" /></p>
+<p><img alt="../../_images/output_13_59.png" src="../../_images/output_13_59.png" /></p>
+<p><img alt="../../_images/output_13_60.png" src="../../_images/output_13_60.png" /></p>
+<p><img alt="../../_images/output_13_61.png" src="../../_images/output_13_61.png" /></p>
+<p><img alt="../../_images/output_13_62.png" src="../../_images/output_13_62.png" /></p>
+<p><img alt="../../_images/output_13_63.png" src="../../_images/output_13_63.png" /></p>
+<p><img alt="../../_images/output_13_64.png" src="../../_images/output_13_64.png" /></p>
+<p><img alt="../../_images/output_13_65.png" src="../../_images/output_13_65.png" /></p>
+<p><img alt="../../_images/output_13_66.png" src="../../_images/output_13_66.png" /></p>
+<p><img alt="../../_images/output_13_67.png" src="../../_images/output_13_67.png" /></p>
+<p><img alt="../../_images/output_13_68.png" src="../../_images/output_13_68.png" /></p>
+<p><img alt="../../_images/output_13_69.png" src="../../_images/output_13_69.png" /></p>
+<p><img alt="../../_images/output_13_70.png" src="../../_images/output_13_70.png" /></p>
+<p><img alt="../../_images/output_13_71.png" src="../../_images/output_13_71.png" /></p>
+<p><img alt="../../_images/output_13_72.png" src="../../_images/output_13_72.png" /></p>
+<p><img alt="../../_images/output_13_73.png" src="../../_images/output_13_73.png" /></p>
+<p><img alt="../../_images/output_13_74.png" src="../../_images/output_13_74.png" /></p>
+<p><img alt="../../_images/output_13_75.png" src="../../_images/output_13_75.png" /></p>
+<p><img alt="../../_images/output_13_76.png" src="../../_images/output_13_76.png" /></p>
+<p><img alt="../../_images/output_13_77.png" src="../../_images/output_13_77.png" /></p>
+<p><img alt="../../_images/output_13_78.png" src="../../_images/output_13_78.png" /></p>
+<p><img alt="../../_images/output_13_79.png" src="../../_images/output_13_79.png" /></p>
+</div>
+<div class="section" id="time-series-plots">
+<h3>1.2.3. Time Series Plots<a class="headerlink" href="#time-series-plots" title="Permalink to this headline">¶</a></h3>
+<p><img alt="../../_images/output_21_0.png" src="../../_images/output_21_0.png" /></p>
+<p><img alt="../../_images/output_21_1.png" src="../../_images/output_21_1.png" /></p>
+<p><img alt="../../_images/output_21_2.png" src="../../_images/output_21_2.png" /></p>
+<p><img alt="../../_images/output_21_3.png" src="../../_images/output_21_3.png" /></p>
+<p><img alt="../../_images/output_21_4.png" src="../../_images/output_21_4.png" /></p>
+<p><img alt="../../_images/output_21_5.png" src="../../_images/output_21_5.png" /></p>
+<p><img alt="../../_images/output_21_6.png" src="../../_images/output_21_6.png" /></p>
+<p><img alt="../../_images/output_21_7.png" src="../../_images/output_21_7.png" /></p>
+<p><img alt="../../_images/output_21_8.png" src="../../_images/output_21_8.png" /></p>
+<p><img alt="../../_images/output_21_9.png" src="../../_images/output_21_9.png" /></p>
+<p><img alt="../../_images/output_21_10.png" src="../../_images/output_21_10.png" /></p>
+<p><img alt="../../_images/output_21_11.png" src="../../_images/output_21_11.png" /></p>
+<p><img alt="../../_images/output_21_12.png" src="../../_images/output_21_12.png" /></p>
+<p><img alt="../../_images/output_21_13.png" src="../../_images/output_21_13.png" /></p>
+<p><img alt="../../_images/output_21_14.png" src="../../_images/output_21_14.png" /></p>
+<p><img alt="../../_images/output_21_15.png" src="../../_images/output_21_15.png" /></p>
+<p><img alt="../../_images/output_21_16.png" src="../../_images/output_21_16.png" /></p>
+<p><img alt="../../_images/output_21_17.png" src="../../_images/output_21_17.png" /></p>
+<p><img alt="../../_images/output_21_18.png" src="../../_images/output_21_18.png" /></p>
+<p><img alt="../../_images/output_21_19.png" src="../../_images/output_21_19.png" /></p>
+<p><img alt="../../_images/output_21_20.png" src="../../_images/output_21_20.png" /></p>
+<p><img alt="../../_images/output_21_21.png" src="../../_images/output_21_21.png" /></p>
+<p><img alt="../../_images/output_21_22.png" src="../../_images/output_21_22.png" /></p>
+<p><img alt="../../_images/output_21_23.png" src="../../_images/output_21_23.png" /></p>
+<p><img alt="../../_images/output_21_24.png" src="../../_images/output_21_24.png" /></p>
+<p><img alt="../../_images/output_21_25.png" src="../../_images/output_21_25.png" /></p>
+<p><img alt="../../_images/output_21_26.png" src="../../_images/output_21_26.png" /></p>
+<p><img alt="../../_images/output_21_27.png" src="../../_images/output_21_27.png" /></p>
+<p><img alt="../../_images/output_21_28.png" src="../../_images/output_21_28.png" /></p>
+<p><img alt="../../_images/output_21_29.png" src="../../_images/output_21_29.png" /></p>
+<p><img alt="../../_images/output_21_30.png" src="../../_images/output_21_30.png" /></p>
+<p><img alt="../../_images/output_21_31.png" src="../../_images/output_21_31.png" /></p>
+<p><img alt="../../_images/output_21_32.png" src="../../_images/output_21_32.png" /></p>
+<p><img alt="../../_images/output_21_33.png" src="../../_images/output_21_33.png" /></p>
+<p><img alt="../../_images/output_21_34.png" src="../../_images/output_21_34.png" /></p>
+<p><img alt="../../_images/output_21_35.png" src="../../_images/output_21_35.png" /></p>
+<p><img alt="../../_images/output_21_36.png" src="../../_images/output_21_36.png" /></p>
+<p><img alt="../../_images/output_21_37.png" src="../../_images/output_21_37.png" /></p>
+<p><img alt="../../_images/output_21_38.png" src="../../_images/output_21_38.png" /></p>
+<p><img alt="../../_images/output_21_39.png" src="../../_images/output_21_39.png" /></p>
+<p><img alt="../../_images/output_21_40.png" src="../../_images/output_21_40.png" /></p>
+<p><img alt="../../_images/output_21_41.png" src="../../_images/output_21_41.png" /></p>
+<p><img alt="../../_images/output_21_42.png" src="../../_images/output_21_42.png" /></p>
+<p><img alt="../../_images/output_21_43.png" src="../../_images/output_21_43.png" /></p>
+<p><img alt="../../_images/output_21_44.png" src="../../_images/output_21_44.png" /></p>
+<p><img alt="../../_images/output_21_45.png" src="../../_images/output_21_45.png" /></p>
+<p><img alt="../../_images/output_21_46.png" src="../../_images/output_21_46.png" /></p>
+<p><img alt="../../_images/output_21_47.png" src="../../_images/output_21_47.png" /></p>
+<p><img alt="../../_images/output_21_48.png" src="../../_images/output_21_48.png" /></p>
+<p><img alt="../../_images/output_21_49.png" src="../../_images/output_21_49.png" /></p>
+<p><img alt="../../_images/output_21_50.png" src="../../_images/output_21_50.png" /></p>
+<p><img alt="../../_images/output_21_51.png" src="../../_images/output_21_51.png" /></p>
+<p><img alt="../../_images/output_21_52.png" src="../../_images/output_21_52.png" /></p>
+<p><img alt="../../_images/output_21_53.png" src="../../_images/output_21_53.png" /></p>
+<p><img alt="../../_images/output_21_54.png" src="../../_images/output_21_54.png" /></p>
+<p><img alt="../../_images/output_21_55.png" src="../../_images/output_21_55.png" /></p>
+<p><img alt="../../_images/output_21_56.png" src="../../_images/output_21_56.png" /></p>
+<p><img alt="../../_images/output_21_57.png" src="../../_images/output_21_57.png" /></p>
+<p><img alt="../../_images/output_21_58.png" src="../../_images/output_21_58.png" /></p>
+<p><img alt="../../_images/output_21_59.png" src="../../_images/output_21_59.png" /></p>
+<p><img alt="../../_images/output_21_60.png" src="../../_images/output_21_60.png" /></p>
+<p><img alt="../../_images/output_21_61.png" src="../../_images/output_21_61.png" /></p>
+<p><img alt="../../_images/output_21_62.png" src="../../_images/output_21_62.png" /></p>
+<p><img alt="../../_images/output_21_63.png" src="../../_images/output_21_63.png" /></p>
+<p><img alt="../../_images/output_21_64.png" src="../../_images/output_21_64.png" /></p>
+<p><img alt="../../_images/output_21_65.png" src="../../_images/output_21_65.png" /></p>
+<p><img alt="../../_images/output_21_66.png" src="../../_images/output_21_66.png" /></p>
+<p><img alt="../../_images/output_21_67.png" src="../../_images/output_21_67.png" /></p>
+<p><img alt="../../_images/output_21_68.png" src="../../_images/output_21_68.png" /></p>
+<p><img alt="../../_images/output_21_69.png" src="../../_images/output_21_69.png" /></p>
+<p><img alt="../../_images/output_21_70.png" src="../../_images/output_21_70.png" /></p>
+<p><img alt="../../_images/output_21_71.png" src="../../_images/output_21_71.png" /></p>
+<p><img alt="../../_images/output_21_72.png" src="../../_images/output_21_72.png" /></p>
+<p><img alt="../../_images/output_21_73.png" src="../../_images/output_21_73.png" /></p>
+<p><img alt="../../_images/output_21_74.png" src="../../_images/output_21_74.png" /></p>
+<p><img alt="../../_images/output_21_75.png" src="../../_images/output_21_75.png" /></p>
+<p><img alt="../../_images/output_21_76.png" src="../../_images/output_21_76.png" /></p>
+<p><img alt="../../_images/output_21_77.png" src="../../_images/output_21_77.png" /></p>
+<p><img alt="../../_images/output_21_78.png" src="../../_images/output_21_78.png" /></p>
+<p><img alt="../../_images/output_21_79.png" src="../../_images/output_21_79.png" /></p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../London_KCL/London_KCL.html" class="btn btn-neutral float-right" title="2. London_KCL" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../benchmark_report.html" class="btn btn-neutral" title="Benchmark Report" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018 – 2019, micromet@University of Reading, led by Prof Sue Grimmond
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

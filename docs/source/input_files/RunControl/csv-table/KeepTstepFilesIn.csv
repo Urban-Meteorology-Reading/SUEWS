@@ -1,0 +1,4 @@
+"Value","Comments"
+0,"Meteorological forcing files at model time step are not written out. This is the default option
+Recommended to reduce processing time and save disk space as (e.g. 5-min) files can be large."
+1,"Meteorological forcing files at model time step are written out."

@@ -119,7 +119,8 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    sfr(WaterSurf) = SurfaceChar(Gridiv, c_FrWater)  ! Water
 
    ! Check the surface fractions add up to 1 (or close to 1)
-  IF(SUM(sfr)>1.001.OR.SUM(sfr)<0.999) CALL ErrorHint(10,'Surface fractions (Fr_) should add up to 1.',SUM(sfr),notUsed,notUsedI)
+   IF (SUM(sfr) > 1.001 .OR. SUM(sfr) < 0.999) &
+      CALL ErrorHint(10, 'Surface fractions (Fr_) should add up to 1.', SUM(sfr), notUsed, notUsedI)
 
    ! ---- Irrigated fractions
    IrrFracConif = SurfaceChar(Gridiv, c_IrrEveTrFrac)  ! Everg
@@ -174,13 +175,16 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    z0m_in = z0m
    zdm_in = zdm
 
-   ! ---- Population
-   PopDensDaytime = SurfaceChar(Gridiv, c_PopDensDay)   ! Daytime population density [ha-1]
+   ! ---- Population density [ha-1]
+   ! Weekend fraction added to daytime population density
+   PopDensDaytime = SurfaceChar(Gridiv, (/c_PopDensDay, c_PopDensDay/))   ! Daytime population density [ha-1]
    PopDensNighttime = SurfaceChar(Gridiv, c_PopDensNight) ! Night-time population density [ha-1]
-   ! Pop density [ha-1]
-   IF (PopDensDaytime >= 0 .AND. PopDensNighttime < 0) PopDensNighttime = PopDensDaytime  !If only daytime data provided, use them
-   IF (PopDensDaytime < 0 .AND. PopDensNighttime >= 0) PopDensDaytime = PopDensNighttime  !If only night-time data provided, use them
+   IF (PopDensDaytime(1) >= 0 .AND. PopDensNighttime < 0) PopDensNighttime = PopDensDaytime(1)  !If only daytime data provided, use them
+   IF (PopDensDaytime(1) < 0 .AND. PopDensNighttime >= 0) PopDensDaytime(1) = PopDensNighttime  !If only night-time data provided, use them
+   PopDensDaytime(2) = PopDensNighttime + (PopDensDaytime(1) - PopDensNighttime)*SurfaceChar(Gridiv, c_FrPDDwe) !Use weekend fraction to daytime population
    ! IF (PopDensDaytime >= 0 .AND. PopDensNighttime >= 0) NumCapita = (PopDensDaytime + PopDensNighttime)/2  !If both, use average ! moved to `AnthropogenicEmissions`, TS 27 Dec 2018
+   IF (PopDensDaytime(1) >= 0 .AND. PopDensNighttime >= 0) NumCapita(1) = (PopDensDaytime(1) + PopDensNighttime)/2  !If both, use average
+   IF (PopDensDaytime(2) >= 0 .AND. PopDensNighttime >= 0) NumCapita(2) = (PopDensDaytime(2) + PopDensNighttime)/2  !If both, use average
 
    ! ---- Traffic rate
    TrafficRate = SurfaceChar(Gridiv, (/c_TrafficRate_WD, c_TrafficRate_WE/)) ! Mean traffic rate within modelled area
@@ -429,12 +433,15 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
                                         + rSurf_Paved(:, 2)*ESTMsfr_Paved(2) &
                                         + rSurf_Paved(:, 3)*ESTMsfr_Paved(3)
       ELSEIF (SurfaceChar(Gridiv, c_ESTMCode(PavSurf)) /= 0) THEN   !Otherwise use single values
-      zSurf_SUEWSsurfs(:, PavSurf) = SurfaceChar(Gridiv, (/c_Surf_thick1(PavSurf), c_Surf_thick2(PavSurf), c_Surf_thick3(PavSurf), &
-                                                              c_Surf_thick4(PavSurf), c_Surf_thick5(PavSurf)/))
-         kSurf_SUEWSsurfs(:, PavSurf) = SurfaceChar(Gridiv, (/c_Surf_k1(PavSurf), c_Surf_k2(PavSurf), c_Surf_k3(PavSurf), &
-                                                              c_Surf_k4(PavSurf), c_Surf_k5(PavSurf)/))
-      rSurf_SUEWSsurfs(:, PavSurf) = SurfaceChar(Gridiv, (/c_Surf_rhoCp1(PavSurf), c_Surf_rhoCp2(PavSurf), c_Surf_rhoCp3(PavSurf), &
-                                                              c_Surf_rhoCp4(PavSurf), c_Surf_rhoCp5(PavSurf)/))
+         zSurf_SUEWSsurfs(:, PavSurf) = SurfaceChar(Gridiv, &
+                                                    (/c_Surf_thick1(PavSurf), c_Surf_thick2(PavSurf), c_Surf_thick3(PavSurf), &
+                                                      c_Surf_thick4(PavSurf), c_Surf_thick5(PavSurf)/))
+         kSurf_SUEWSsurfs(:, PavSurf) = SurfaceChar(Gridiv, &
+                                                    (/c_Surf_k1(PavSurf), c_Surf_k2(PavSurf), c_Surf_k3(PavSurf), &
+                                                      c_Surf_k4(PavSurf), c_Surf_k5(PavSurf)/))
+         rSurf_SUEWSsurfs(:, PavSurf) = SurfaceChar(Gridiv, &
+                                                    (/c_Surf_rhoCp1(PavSurf), c_Surf_rhoCp2(PavSurf), c_Surf_rhoCp3(PavSurf), &
+                                                      c_Surf_rhoCp4(PavSurf), c_Surf_rhoCp5(PavSurf)/))
       ENDIF
 
       ! ===== BLDGS =====
@@ -561,9 +568,11 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
          zwall = SurfaceChar(Gridiv, (/c_Wall_thick1, c_Wall_thick2, c_Wall_thick3, c_Wall_thick4, c_Wall_thick5/))
          kwall = SurfaceChar(Gridiv, (/c_Wall_k1, c_Wall_k2, c_Wall_k3, c_Wall_k4, c_Wall_k5/))
          rwall = SurfaceChar(Gridiv, (/c_Wall_rhoCp1, c_Wall_rhoCp2, c_Wall_rhoCp3, c_Wall_rhoCp4, c_Wall_rhoCp5/))
-      zibld = SurfaceChar(Gridiv, (/c_Internal_thick1, c_Internal_thick2, c_Internal_thick3, c_Internal_thick4, c_Internal_thick5/))
+         zibld = SurfaceChar(Gridiv, &
+                             (/c_Internal_thick1, c_Internal_thick2, c_Internal_thick3, c_Internal_thick4, c_Internal_thick5/))
          kibld = SurfaceChar(Gridiv, (/c_Internal_k1, c_Internal_k2, c_Internal_k3, c_Internal_k4, c_Internal_k5/))
-      ribld = SurfaceChar(Gridiv, (/c_Internal_rhoCp1, c_Internal_rhoCp2, c_Internal_rhoCp3, c_Internal_rhoCp4, c_Internal_rhoCp5/))
+         ribld = SurfaceChar(Gridiv, &
+                             (/c_Internal_rhoCp1, c_Internal_rhoCp2, c_Internal_rhoCp3, c_Internal_rhoCp4, c_Internal_rhoCp5/))
 
          nroom = SurfaceChar(Gridiv, c_nroom)
          alb_ibld = SurfaceChar(Gridiv, c_alb_ibld)
@@ -615,6 +624,8 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       kroof = kSurf_SUEWSsurfs(:, BldgSurf)
       rroof = rSurf_SUEWSsurfs(:, BldgSurf)
 
+      ! the following initialisation is problematic: TS 01 Mar 2019
+      ! what would happen if zground(5)>0? Nground is initialised NOWHERE!
       DO i = 1, 5
          IF (zground(i) <= 0) THEN
             Nground = i - 1
@@ -727,11 +738,14 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    PopProfWE = SurfaceChar(Gridiv, c_PopProfWE)
    MinQFMetab = SurfaceChar(Gridiv, c_MinQFMetab)
    MaxQFMetab = SurfaceChar(Gridiv, c_MaxQFMetab)
+   MinFCMetab = SurfaceChar(Gridiv, c_MinFCMetab)
+   MaxFCMetab = SurfaceChar(Gridiv, c_MaxFCMetab)
    FrFossilFuel_heat = SurfaceChar(Gridiv, c_FrFossilFuel_heat)
    FrFossilFuel_NonHeat = SurfaceChar(Gridiv, c_FrFossilFuel_NonHeat)
    EF_umolCO2perJ = SurfaceChar(Gridiv, c_EF_umolCO2perJ)
    EnEF_v_Jkm = SurfaceChar(Gridiv, c_EnEF_v_Jkm)
-   FcEF_v_kgkm = SurfaceChar(Gridiv, c_FcEF_v_kgkm)
+   FcEF_v_kgkm = SurfaceChar(Gridiv, (/c_FcEF_v_kgkmWD, c_FcEF_v_kgkmWE/))
+   CO2PointSource = SurfaceChar(Gridiv, c_CO2PointSource)
    TrafficUnits = SurfaceChar(Gridiv, c_TrafficUnits)
 
    ! ---- Irrigation
@@ -1058,7 +1072,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       WRITE (12, *) '----- '//TRIM(ADJUSTL(SsG_YYYY))//' Energy-use parameters'//' -----'
       WRITE (12, '(a12,11a10)') 'Grid', 'NumCapita', 'BaseTHDD', 'QF_A_WD', 'QF_A_WE', 'QF_B_WD', 'QF_B_WE', 'QF_C_WD', 'QF_C_WE', &
          'AH_Min', 'AH_Slope', 'T_critic_Heating'
-      WRITE (12, '(a12,11f10.3)') SsG_YYYY, NumCapita, BaseTHDD, QF_A(1:2), QF_B(1:2), QF_C(1:2), &
+      WRITE (12, '(a12,11f10.3)') SsG_YYYY, NumCapita(1), BaseTHDD, QF_A(1:2), QF_B(1:2), QF_C(1:2), &
          AH_Min, AH_Slope_Heating, T_critic_Heating
 
       WRITE (12, *) '----- '//TRIM(ADJUSTL(SsG_YYYY))//' Water-use parameters'//' -----'
@@ -1099,8 +1113,10 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
          Trans_Site
 
       WRITE (12, *) '----- '//TRIM(ADJUSTL(SsG_YYYY))//' Site parameters'//' -----'
-     WRITE(12,'(a12,9a10)') 'Grid','lat','lon','tz','alt','SurfA_ha','z','NumCapita','z0_input','zd_input','StartDLS','EndDLS'
-     WRITE(12,'(a12,4f10.4,f10.2,4f10.4,2i10)') SsG_YYYY,lat,lng*(-1.0),timezone,alt,SurfaceArea_ha,z,NumCapita,z0m_in,zdm_in, &
+      WRITE (12, '(a12,9a10)') &
+         'Grid', 'lat', 'lon', 'tz', 'alt', 'SurfA_ha', 'z', 'NumCapita', 'z0_input', 'zd_input', 'StartDLS', 'EndDLS'
+      WRITE (12, '(a12,4f10.4,f10.2,4f10.4,2i10)') &
+         SsG_YYYY, lat, lng*(-1.0), timezone, alt, SurfaceArea_ha, z, NumCapita(1), z0m_in, zdm_in, &
          startDLS, endDLS! DayLightSavingDay(1:2)
 
       WRITE (12, *) ''
@@ -1130,8 +1146,12 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
          zzd = z - zdm
       ELSEIF (RoughLenMomMethod == 3) THEN   !z0, zd calculated using FAI provided in input file
          ! Check FAIs reasonable
-        IF (FAIBLdg < 0) CALL ErrorHint(1, 'FAI_Bldgs value provided is very small (RoughLenMomMethod=3)', FAIBldg, notUsed, GridID)
-  IF (FAITree < 0) CALL ErrorHint(1, 'FAI_EveTr/DecTr value provided is very small (RoughLenMomMethod=3)', FAITree, notUsed, GridID)
+         IF (FAIBLdg < 0) CALL ErrorHint(1, &
+                                         'FAI_Bldgs value provided is very small (RoughLenMomMethod=3)', &
+                                         FAIBldg, notUsed, GridID)
+         IF (FAITree < 0) CALL ErrorHint(1, &
+                                         'FAI_EveTr/DecTr value provided is very small (RoughLenMomMethod=3)', &
+                                         FAITree, notUsed, GridID)
       ENDIF
 
    ENDIF   !End for first row of first block only ===================================
@@ -1159,7 +1179,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       Press_hPa = MetForcingData(ir, 13, Gridiv)
       Precip = MetForcingData(ir, 14, Gridiv)
       avkdn = MetForcingData(ir, 15, Gridiv)
-      snow_obs = MetForcingData(ir, 16, Gridiv)
+      snowFrac_obs = MetForcingData(ir, 16, Gridiv)
       ldown_obs = MetForcingData(ir, 17, Gridiv)
       fcld_obs = MetForcingData(ir, 18, Gridiv)
       wu_m3 = MetForcingData(ir, 19, Gridiv)

@@ -13,7 +13,7 @@ TARGET     := $(strip $(subst $\', ,${TARGET_str})) # program name
 # static flag for different OS to correctly link static libs
 # so gfortran dependency can be relaxed
 # but netCDF is still linked in the dynamic way as suggested by UCAR
-SUEWS_build_base = ../ReleaseRepo/build/
+SUEWS_build_base = ../Release/build/
 SUEWS_test_dir = ../BenchmarkTest/code
 
 
@@ -108,11 +108,6 @@ cov: suews_program$(suffix_code) $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(O
 			mkdir -p $(SUEWS_build_dir)
 			cp -f $(TARGET) $(SUEWS_build_dir)/.
 
-# Build main program and run test cases
-test:
-		$(MAKE) clean;
-		$(MAKE) main;
-		cd $(SUEWS_test_dir); python 1.test_dev.py
 
 # Build SuMin for WRF coupling
 sumin: $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST) $(WRF)

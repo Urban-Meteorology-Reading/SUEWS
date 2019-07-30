@@ -1,0 +1,3 @@
+"Referencing Table","Requirement","Comment"
+"`SUEWS_NonVeg.txt`","`L`","Code for soil characteristics below this surface Provides the link to column 1 of `SUEWS_Soil.txt`, which contains the attributes describing sub-surface soil for this surface type. Value of integer is arbitrary but must match code specified in column 1 of SUEWS_Soil.txt. "
+"`SUEWS_Veg.txt`","`L`","Code for soil characteristics below this surface Provides the link to column 1 of `SUEWS_Soil.txt`, which contains the attributes describing sub-surface soil for this surface type. Value of integer is arbitrary but must match code specified in column 1 of SUEWS_Soil.txt. "

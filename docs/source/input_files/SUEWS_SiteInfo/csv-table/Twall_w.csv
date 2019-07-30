@@ -1,0 +1,2 @@
+"Referencing Table","Requirement","Comment"
+"`SSss_YYYY_ESTM_Ts_data_tt.txt`","`MU`","West-facing wall surface temperature [˚C] (used when `TsurfChoice` = 2)"

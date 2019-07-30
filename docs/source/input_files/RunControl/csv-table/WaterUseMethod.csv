@@ -1,0 +1,3 @@
+"Value","Comments"
+0,"External water use modelled using parameters specified in `SUEWS_Irrigation.txt`."
+1,"Observations of external water use provided in the meteorological forcing file are used."

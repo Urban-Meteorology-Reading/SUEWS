@@ -1,0 +1,2 @@
+"Referencing Table","Requirement","Comment"
+"`SUEWS_SiteSelect.txt`","`L`","Code for Bldgs surface characteristics Provides the link to column 1 of `SUEWS_NonVeg.txt`, which contains the attributes describing buildings in this grid for this year. Value of integer is arbitrary but must match code specified in column 1 of `SUEWS_NonVeg.txt`. "

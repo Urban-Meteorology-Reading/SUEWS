@@ -1,0 +1,5 @@
+"Referencing Table","Requirement","Comment"
+"`SUEWS_NonVeg.txt`","`MU`","Volumetric heat capacity for this surface to use in AnOHM [J |m^-3|]"
+"`SUEWS_Veg.txt`","`MU`","Volumetric heat capacity for this surface to use in AnOHM [J |m^-3|]"
+"`SUEWS_Water.txt`","`MU`","Volumetric heat capacity for this surface to use in AnOHM [J |m^-3|]"
+"`SUEWS_Snow.txt`","`MU`","Volumetric heat capacity for this surface to use in AnOHM [J |m^-3|]"

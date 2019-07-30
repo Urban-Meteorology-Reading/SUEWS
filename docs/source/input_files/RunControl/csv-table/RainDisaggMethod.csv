@@ -1,0 +1,4 @@
+"Value","Comments"
+100,"Rainfall is evenly distributed among all subintervals in a rainy interval. This is the default option."
+101,"Rainfall is evenly distributed among among RainAmongN subintervals in a rainy interval – also requires RainAmongN to be set."
+102,"Rainfall is evenly distributed among among RainAmongN subintervals in a rainy interval for different intensity bins – also requires MultRainAmongN and MultRainAmongNUpperI to be set."

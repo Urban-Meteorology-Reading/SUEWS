@@ -22,31 +22,31 @@
 !===================================================================================
 
 SUBROUTINE AnthropogenicEmissions( &
-   EmissionsMethod, &
+   CO2PointSource, EmissionsMethod, &
    id, it, imin, DLS, nsh, DayofWeek_id, &
    EF_umolCO2perJ, FcEF_v_kgkm, EnEF_v_Jkm, TrafficUnits, &
    FrFossilFuel_Heat, FrFossilFuel_NonHeat, &
-   MinQFMetab, MaxQFMetab, &
-   PopDensDaytime, PopDensNighttime, &
+   MinFCMetab, MaxFCMetab, MinQFMetab, MaxQFMetab, &
+   NumCapita, PopDensDaytime, PopDensNighttime, &
    Temp_C, HDD_id, Qf_A, Qf_B, Qf_C, &
    AH_MIN, AH_SLOPE_Heating, AH_SLOPE_Cooling, &
    T_CRITIC_Heating, T_CRITIC_Cooling, &
    TrafficRate, &
    QF0_BEU, QF_SAHP, &
-   Fc_anthro, Fc_metab, Fc_traff, Fc_build, &
-   AHProf_24hr, HumActivity_24hr, TraffProf_24hr, PopProf_24hr)
+   Fc_anthro, Fc_metab, Fc_traff, Fc_build, Fc_point, &
+   AHProf_24hr, HumActivity_24hr, TraffProf_24hr, PopProf_24hr, SurfaceArea)
    ! Simple anthropogenic heat parameterisation and co2 calculation
    ! Calculates QF_SAHP and Fc_anthro
 
    IMPLICIT NONE
 
-   INTEGER, INTENT(in):: EmissionsMethod
    INTEGER, INTENT(in):: &
-      id, & !Hour
-      it, & !Hour
+      EmissionsMethod, &
+      id, &   !Hour
+      it, &   !Hour
       imin, & !Minutes
-      DLS, & !day lightsavings =1 +1h =0
-      nsh !Number of timesteps per hour
+      DLS, &  !day lightsavings =1+1h=0
+      nsh     !Number of timesteps per hour
 
    INTEGER, DIMENSION(3), INTENT(in)::DayofWeek_id   !1 - day of week; 2 - month; 3 - season
 
@@ -54,9 +54,12 @@ SUBROUTINE AnthropogenicEmissions( &
 
    REAL(KIND(1d0)), DIMENSION(2), INTENT(in):: &
       Qf_A, Qf_B, Qf_C, &    !Qf coefficients
-      AH_MIN, &            !Minimum anthropogenic heat flux (AnthropHeatMethod = 1)
-      AH_SLOPE_Heating, &  !Slope of the antrhropogenic heat flux calculation (AnthropHeatMethod = 1)
+      AH_MIN, &            !Minimum anthropogenic heat flux
+      AH_SLOPE_Heating, &  !Slope of the anthropogenic heat flux calculation
       AH_SLOPE_Cooling, &
+      FcEF_v_kgkm, &       !CO2 Emission factor
+      NumCapita, &
+      PopDensDaytime, &    !Daytime population density [ha-1] (i.e. workers)
       T_CRITIC_Heating, &  !Critical temperature
       T_CRITIC_Cooling, &  !Critical cooling temperature
       TrafficRate, &       !Traffic rate
@@ -68,22 +71,24 @@ SUBROUTINE AnthropogenicEmissions( &
    REAL(KIND(1d0)), DIMENSION(0:23, 2), INTENT(in):: PopProf_24hr
 
    REAL(KIND(1D0)), INTENT(in):: &
+      CO2PointSource, &      !Point source [kgC day-1]
       EF_umolCO2perJ, &
-      FcEF_v_kgkm, &       !CO2 Emission factor
-      EnEF_v_Jkm, &        !Energy Emission factor
-      TrafficUnits, &      !Traffic Units choice
-      FrFossilFuel_Heat, & !Fraction of Fossil Fuel heat
+      EnEF_v_Jkm, &          !Energy Emission factor
+      TrafficUnits, &        !Traffic Units choice
+      FrFossilFuel_Heat, &   !Fraction of Fossil Fuel heat
       FrFossilFuel_NonHeat, &!Fraction of Fossil Fuel non heat
-      MinQFMetab, &        !Minimum QF Metabolism
-      MaxQFMetab, &        !Maximum QF Metabolism
-      PopDensDaytime, &    !Daytime population density [ha-1] (i.e. workers)
-      PopDensNighttime, &  !Nighttime population density [ha-1] (i.e. residents)
-      Temp_C           !Air temperature
+      MinFCMetab, &          !Minimum FC Metabolism
+      MaxFCMetab, &          !Maximum FC Metabolism
+      MinQFMetab, &          !Minimum QF Metabolism
+      MaxQFMetab, &          !Maximum QF Metabolism
+      PopDensNighttime, &    !Nighttime population density [ha-1] (i.e. residents)
+      SurfaceArea, &         !Surface area [m-2]
+      Temp_C                 !Air temperature
 
    REAL(KIND(1D0)), INTENT(out):: &
       QF_SAHP, &
       Fc_anthro, &
-      Fc_metab, Fc_traff, Fc_build
+      Fc_metab, Fc_traff, Fc_build, Fc_point
 
    INTEGER:: &
       iu, &               !1=weekday OR 2=weekend
@@ -91,23 +96,21 @@ SUBROUTINE AnthropogenicEmissions( &
 
    REAL(KIND(1D0)):: &
       get_Prof_SpecTime_inst, &
-      get_Prof_SpecTime_mean, & !external function to get profile value at sepcified timestamp
+      get_Prof_SpecTime_mean, & !external function to get profile value at specified timestamp
       HDD_daily, & !daily HDD
       CDD_daily, & !daily HDD
       Tair_avg_daily, & !daily mean air temperature
       DP_x_RhoPop, DP_x_RhoPop_traff, &
-      MinFcMetab, MaxFcMetab, &
       QF_build, QF_metab, QF_traff, &
       QF_SAHP_base, &     !Anthropogenic heat flux calculated by SAHP (temp independent part)
       QF_SAHP_heat, &     !Anthropogenic heat flux calculated by SAHP (heating part only)
       QF_SAHP_ac, &       !AC contribution
-      NumCapita, &         !Number of people in the study area per hectare [ha-1]
       PopDorNorT, &       ! Population
       ActDorNorT, &       ! Human activity
       TraffDorNorT, &     ! Traffic
       AHDorNorT          ! Anthropogenic heat
 
-   ! transfer HDD values to local explict variables
+   ! Transfer HDD values to local explict variables
    HDD_daily = HDD_id(7)
    CDD_daily = HDD_id(8)
    ! NB: temporarily use 5-day running mean to test the performance
@@ -117,7 +120,7 @@ SUBROUTINE AnthropogenicEmissions( &
 
    ! use average of both daytime and nighttime population values
    ! TS 27 Dec 2018: moved from `translate` here to simplify the interface
-   NumCapita = (PopDensDaytime + PopDensNighttime)/2
+   !NumCapita = (PopDensDaytime + PopDensNighttime)/2
 
    !-----------------------------------------------------------------------
    ! Account for Daylight saving
@@ -137,34 +140,27 @@ SUBROUTINE AnthropogenicEmissions( &
    ! PRINT*, ''
    ! PRINT*, 'AHDorNorT old:',AHDorNorT
    PopDorNorT = get_Prof_SpecTime_inst(ih, imin, 0, PopProf_24hr(:, iu))
-   ActDorNorT = get_Prof_SpecTime_mean(ih, imin, 0, HumActivity_24hr(:, iu))
+   ActDorNorT = get_Prof_SpecTime_inst(ih, imin, 0, HumActivity_24hr(:, iu))
    TraffDorNorT = get_Prof_SpecTime_mean(ih, imin, 0, TraffProf_24hr(:, iu))
    AHDorNorT = get_Prof_SpecTime_mean(ih, imin, 0, AHProf_24hr(:, iu))
-   ! PRINT*, 'AHDorNorT new:',AHDorNorT
+
    ! Diurnal profile times population density [cap ha-1]
-   DP_x_RhoPop = AHDorNorT*NumCapita
+   DP_x_RhoPop = AHDorNorT*NumCapita(iu)
 
-   MinFcMetab = 8/5.*MinQFMetab
-   MaxFcMetab = 8/5.*MaxQFMetab ! Sailor & Lu (2004)
+   QF_metab = (PopDensNighttime*MinQFMetab*((2 - ActDorNorT) + (2 - PopDorNorT))/2 + &
+               PopDensDaytime(iu)*MaxQFMetab*((ActDorNorT - 1) + (PopDorNorT - 1))/2)/10000 !W m-2
 
-   !QF_metab = (PopDensNighttime*(2-PopDorNorT) + PopDensDaytime*(PopDorNorT-1))/10000 * &
-   !              (MinQFMetab*(2-ActDorNorT) + MaxQFMetab*(ActDorNorT-1)) !W m-2
-   !Fc_metab = (PopDensNighttime*(2-PopDorNorT) + PopDensDaytime*(PopDorNorT-1))/10000 * &
-   !           (MinFcMetab*(2-ActDorNorT) + MinFcMetab*(ActDorNorT-1)) !umol m-2 s-1
-
-   !QF_metab = (PopDensNighttime*MinQFMetab*((2-ActDorNorT)+(2-PopDorNorT))/2 + &
-   !           PopDensDaytime*MaxQFMetab*((ActDorNorT-1)+(PopDorNorT-1))/2)/10000 !W m-2
-
-   !Fc_metab = (PopDensNighttime*MinFcMetab*((2-ActDorNorT)+(2-PopDorNorT))/2 + &
-   !           PopDensDaytime*MaxFcMetab*((ActDorNorT-1)+(PopDorNorT-1))/2)/10000 !umol m-2 s-1
+   Fc_metab = (PopDensNighttime*MinFCMetab*((2 - ActDorNorT) + (2 - PopDorNorT))/2 + &
+               PopDensDaytime(iu)*MaxFCMetab*((ActDorNorT - 1) + (PopDorNorT - 1))/2)/10000 !umol m-2 s-1
 
    !----------------------------------------------------------------------------------------------------
-   !Diffferent methods to calculate the anthopogenic heat and CO2 emissions.
+   !Different methods to calculate the anthopogenic heat and CO2 emissions.
    !1-3: CO2 emission is calculated from QF which can be calculated with three methods
    !41-43: CO2 emission is calculated with local information. QF methods are used for housing and human metabolism
 
    IF (EmissionsMethod == 1 .OR. EmissionsMethod == 4 .OR. EmissionsMethod == 11 .OR. EmissionsMethod == 14 .OR. &
-       EmissionsMethod == 21 .OR. EmissionsMethod == 24 .OR. EmissionsMethod == 31 .OR. EmissionsMethod == 34) THEN   ! (formerly SAHP_1 subroutine)
+       EmissionsMethod == 21 .OR. EmissionsMethod == 24 .OR. EmissionsMethod == 31 .OR. EmissionsMethod == 34 .OR. &
+       EmissionsMethod == 41 .OR. EmissionsMethod == 44) THEN   ! (formerly SAHP_1 subroutine)
       ! Loridan et al. (2011) JAMC Eq 13: linear relation with air temperature
       ! Weekday/weekend differences due to profile only
       ! Now scales with population density
@@ -176,13 +172,14 @@ SUBROUTINE AnthropogenicEmissions( &
       ENDIF
 
       ! Need to be checked later, not recommended to use
-      ! QF_SAHP_base = AH_MIN(iu) * DP_x_RhoPop     ! Temperature-independent contribution
+      ! QF_SAHP_base = AH_MIN(iu) * DP_x_RhoPop   ! Temperature-independent contribution
       QF_SAHP_base = AH_MIN(iu)*AHDorNorT         ! Temperature-independent contribution
-      QF_SAHP_heat = QF_SAHP - QF_SAHP_base         ! Heating contribution
+      QF_SAHP_heat = QF_SAHP - QF_SAHP_base       ! Heating contribution
       QF_SAHP_ac = 0                              ! No AC contribution with this method
 
    ELSEIF (EmissionsMethod == 2 .OR. EmissionsMethod == 5 .OR. EmissionsMethod == 12 .OR. EmissionsMethod == 15 .OR. &
-           EmissionsMethod == 22 .OR. EmissionsMethod == 25 .OR. EmissionsMethod == 32 .OR. EmissionsMethod == 35) THEN   ! (formerly SAHP_2 subroutine)
+           EmissionsMethod == 22 .OR. EmissionsMethod == 25 .OR. EmissionsMethod == 32 .OR. EmissionsMethod == 35 .OR. &
+           EmissionsMethod == 42 .OR. EmissionsMethod == 45) THEN   ! (formerly SAHP_2 subroutine)
       ! Jarvi et al. (2011) JH Eq 3 using HDD and CDD
       ! Weekday/weekend differences due to profile and coefficients QF_a,b,c
       ! Scales with population density
@@ -192,7 +189,8 @@ SUBROUTINE AnthropogenicEmissions( &
       QF_SAHP_ac = (Qf_b(iu)*CDD_daily)*DP_x_RhoPop    ! Cooling (AC) contribution
 
    ELSEIF (EmissionsMethod == 3 .OR. EmissionsMethod == 6 .OR. EmissionsMethod == 13 .OR. EmissionsMethod == 16 .OR. &
-           EmissionsMethod == 23 .OR. EmissionsMethod == 26 .OR. EmissionsMethod == 33 .OR. EmissionsMethod == 36) THEN
+           EmissionsMethod == 23 .OR. EmissionsMethod == 26 .OR. EmissionsMethod == 33 .OR. EmissionsMethod == 36 .OR. &
+           EmissionsMethod == 43 .OR. EmissionsMethod == 46) THEN
       ! Updated Loridan et al. (2011) method using daily (not instantaneous) air temperature (HDD_id_use(3))
       ! Linear relation with air temperature
       ! Weekday/weekend differences due to profile only
@@ -216,12 +214,97 @@ SUBROUTINE AnthropogenicEmissions( &
          QF_SAHP = AH_MIN(iu)*AHDorNorT
       ENDIF
 
-      ! ELSEIF(EmissionsMethod==0) THEN
-      !    QF_SAHP   = 0
-      !    Fc_anthro = 0
-      !    Fc_metab  = 0
-      !    Fc_traff  = 0
-      !    Fc_build  = 0
+   ENDIF
+
+   IF (EmissionsMethod >= 1 .AND. EmissionsMethod <= 3 .OR. EmissionsMethod >= 11 .AND. EmissionsMethod <= 13 .OR. &
+       EmissionsMethod >= 21 .AND. EmissionsMethod <= 23 .OR. EmissionsMethod >= 31 .AND. EmissionsMethod <= 33 .OR. &
+       EmissionsMethod >= 41 .AND. EmissionsMethod <= 43) THEN
+
+      ! Calculate QF from buildings. First remove (if possibe) human metabolism from the total value given by SAHP.
+      IF ((QF_SAHP_base - QF_metab) > 0) THEN
+         QF_build = QF_SAHP_base*QF0_BEU(iu) + QF_SAHP_heat + QF_SAHP_ac !QF0_BEU = QF0_BuildingEnergyUse = Fraction of base value coming from buildings
+         !relative to traffic as metabolism is separately calculated
+      ELSE
+         !  CALL ErrorHint(69,'QF metab exceeds base QF.',QF_metab,QF_SAHP_base,notUsedI)
+         CALL ErrorHint(69, 'QF metab exceeds base QF.', QF_metab, QF_SAHP_base)
+
+         QF_build = QF_SAHP_heat + QF_SAHP_ac + (QF_SAHP_base - QF_metab) !If human metabolism greater than Base QF, remove this from the heating/cooling contribution also
+      ENDIF
+
+      ! Consider the various components of QF_build to calculate Fc_build
+      ! Assume all A/C electric, so QF_SAHP_ac is not associated with any local CO2 emissions
+      ! HDD part is building energy use, split between electricity (no local emissions CO2) and combustion (CO2) heating...
+      Fc_build = QF_SAHP_heat*FrFossilFuel_Heat*EF_umolCO2perJ
+
+      ! ... and there is also a temperature-independent contribution from building energy use.
+      IF ((QF_SAHP_base - QF_metab) > 0) THEN
+         Fc_build = Fc_build + QF_SAHP_base*QF0_BEU(iu)*FrFossilFuel_NonHeat*EF_umolCO2perJ
+      ENDIF
+
+      ! Remainder of temperature-independent part must be traffic
+      !QF_traff = (QF_SAHP_base-QF_metab)*(1.0-QF0_BEU(iu))
+      QF_traff = QF_SAHP_base*(1.0 - QF0_BEU(iu)) - QF_metab
+
+      ! Divide QF by energy emission factor and multiply by CO2 factor
+      Fc_traff = QF_traff/EnEF_v_Jkm*FcEF_v_kgkm(iu)*1e3*1e6/44
+
+      !CO2 point source [kg C day-1] * 1e3 g kg-1 * 1e6 umol mol-1 /(12 g mol-1 * m-2)
+      IF (CO2PointSource > 0) THEN
+         Fc_point = CO2PointSource*1e3*1e6/(12*60*60*24*SurfaceArea)
+      ELSE
+         Fc_point = 0
+      ENDIF
+
+      ! Sum components to give anthropogenic CO2 flux [umol m-2 s-1]
+      Fc_anthro = Fc_metab + Fc_traff + Fc_build + Fc_point
+
+   ELSEIF (EmissionsMethod >= 4 .AND. EmissionsMethod <= 6 .OR. EmissionsMethod >= 14 .AND. EmissionsMethod <= 16 .OR. &
+           EmissionsMethod >= 24 .AND. EmissionsMethod <= 26 .OR. EmissionsMethod >= 34 .AND. EmissionsMethod <= 36 .OR. &
+           EmissionsMethod >= 44 .AND. EmissionsMethod <= 46) THEN
+      ! Calculate QF and Fc using building energy use and transport statistics
+
+      ! Calculate energy released from traffic
+      IF (TrafficUnits == 1) THEN            ! [veh km m-2 day-1]
+         ! Calculate using mean traffic rate [veh km m-2 day-1] * emission factor [J km-1]
+         QF_traff = TrafficRate(iu)/(60*60*24)*EnEF_v_Jkm*TraffDorNorT
+         ! Use mean traffic rate [veh km m-2 s-1] * emission factor [kg km-1] * 1e3 g kg-1 /44 g mol-1 * 1e6 umol mol-1
+         Fc_traff = TrafficRate(iu)/(60*60*24)*FcEF_v_kgkm(iu)*1e3*1e6/44*TraffDorNorT
+
+      ELSEIF (TrafficUnits == 2) THEN        ! [veh km cap-1 day-1]
+         DP_x_RhoPop_traff = TraffDorNorT*NumCapita(iu)/10000   ! [cap m-2]
+         ! Use mean traffic rate [veh km cap-1 day-1] * emission factor [J km-1]
+         QF_traff = TrafficRate(iu)/(60*60*24)*EnEF_v_Jkm*DP_x_RhoPop_traff
+         ! Use mean traffic rate [veh km cap-1 day-1] * emission factor [kg km-1] * 1e3 g kg-1 /44 g mol-1 * 1e6 umol mol-1
+         Fc_traff = TrafficRate(iu)/(60*60*24)*FcEF_v_kgkm(iu)*1e3*1e6/44*DP_x_RhoPop_traff
+
+      ELSE ! If TrafficUnits doesn't match possible units
+         CALL ErrorHint(75, 'Check TrafficUnits', TrafficUnits)
+
+      ENDIF
+
+      ! Energy released from buildings only
+      QF_build = QF_SAHP_base + QF_SAHP_heat + QF_SAHP_ac
+
+      ! Consider the various components of QF_build to calculate Fc_build
+      Fc_build = QF_SAHP_heat*FrFossilFuel_Heat*EF_umolCO2perJ
+      ! ... and there is also a temperature-independent contribution from building energy use
+      Fc_build = Fc_build + QF_SAHP_base*QF0_BEU(iu)*FrFossilFuel_NonHeat*EF_umolCO2perJ
+
+      !CO2 point source [kg C day-1] * 1e3 g kg-1 * 1e6 umol mol-1 /(12 g mol-1 * m-2)
+      IF (CO2PointSource > 0) THEN
+         Fc_point = CO2PointSource*1e3*1e6/(12*60*60*24*SurfaceArea)
+      ELSE
+         Fc_point = 0
+      ENDIF
+
+      ! Add other QF components to QF_SAHP_base (because if AnthropEmissionsMethod = 4, QF calculated above is building part only)
+      QF_SAHP_base = QF_SAHP_base + QF_traff + QF_metab
+
+      ! Sum components to give anthropogenic heat flux [W m-2]
+      QF_SAHP = QF_metab + QF_traff + QF_build
+      ! Sum components to give anthropogenic CO2 flux [umol m-2 s-1]
+      Fc_anthro = Fc_metab + Fc_traff + Fc_build + Fc_point
+
    ENDIF
 
    RETURN

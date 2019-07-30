@@ -621,24 +621,18 @@ CONTAINS
       qe_tot = 0
       runoff_tot = 0
       surf_chang_tot = 0
-      swe = 0
-      ev = 0
-      chSnow_tot = 0
-      runoffPipes = 0
-      mwstore = 0
-      runoffwaterbody = 0
 
+      !swe = 0
+      chSnow_tot = 0
+      !runoffPipes = 0
+      !mwstore = 0
+      !runoffwaterbody = 0
       rss_nsurf = 0
-      runoffSnow = 0
-      runoff = 0
-      runoffSoil = 0
-      chang = 0
-      changSnow = 0
-      SnowToSurf = 0
-      state_id = 0
+      !state_id = 0
       SnowDepth = 0
       ev_snow = 0
-      SnowRemoval = 0
+      !SnowRemoval = 0
+      tlv_sub = 0
 
       ! Use weekday or weekend snow clearing profile
       iu = 1     !Set to 1=weekday

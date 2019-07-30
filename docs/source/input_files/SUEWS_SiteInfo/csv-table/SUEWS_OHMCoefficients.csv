@@ -1,0 +1,5 @@
+No.,Column Name,Use,Description
+1,`Code`,`L`,Code linking to a corresponding look-up table.
+2,`a1`,`MU`,Coefficient for Q* term [-]
+3,`a2`,`MU`,Coefficient for ``dQ*/dt`` term [h]
+4,`a3`,`MU`,Constant term [W |m^-2|]

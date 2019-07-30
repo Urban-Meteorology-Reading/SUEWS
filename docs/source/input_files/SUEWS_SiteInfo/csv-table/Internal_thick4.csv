@@ -1,0 +1,2 @@
+"Referencing Table","Requirement","Comment"
+"`SUEWS_ESTMCoefficients.txt`","`O`","Thickness of the fourth layer [m] (if no fourth layer, set to -999.)"

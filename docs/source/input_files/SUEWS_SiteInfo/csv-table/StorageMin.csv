@@ -1,0 +1,24 @@
+"Referencing Table","Requirement","Comment"
+"`SUEWS_NonVeg.txt`","`MD`","Minimum water storage capacity for upper surfaces (i.e. canopy). Min/max values are to account for seasonal variation (e.g. leaf-on/leaf-off differences for vegetated surfaces). Not currently used for non-vegetated surfaces - set the same as `StorageMax`.
+
+Example values:
+
+- 0.48 `Paved`
+
+- 0.25 `Bldgs`
+
+- 0.8 `BSoil`"
+"`SUEWS_Veg.txt`","`MD`","Minimum water storage capacity for upper surfaces (i.e. canopy). Min/max values are to account for seasonal variation (e.g. leaf-off/leaf-on differences for vegetated surfaces).
+
+Example values:
+
+- 1.3 `EveTr` Breuer et al. (2003) [Br03]_
+
+- 0.3 `DecTr` Breuer et al. (2003) [Br03]_
+
+- 1.9 `Grass` Breuer et al. (2003) [Br03]_ "
+"`SUEWS_Water.txt`","`MD`","Minimum water storage capacity for upper surfaces (i.e. canopy). Min/max values are to account for seasonal variation - not used for water surfaces.
+
+Example values:
+
+-0.5 `Water`"

@@ -1,0 +1,3 @@
+No.,Column Name,Use,Description
+1,`Code`,`L`,Code linking to a corresponding look-up table.
+2,2-25,`MU`,"Multiplier for each hour of the day [-] for energy and water use. For SnowClearing, set those hours to 1 when snow removal from paved and roof surface is allowed (0 otherwise) if the snow removal limits set in the `SUEWS_NonVeg.txt` (SnowLimR emove column) are exceeded."

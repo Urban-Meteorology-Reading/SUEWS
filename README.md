@@ -1,12 +1,12 @@
 # SUEWS
 
-This is a private repo for SUEWS development.
+This is a public repo for SUEWS source and documentation.
 
 ## Documentation
 
 * Documentation site: <https://suews-docs.readthedocs.io/>
 
-* Documentation repo: <https://github.com/Urban-Meteorology-Reading/SUEWS-Docs>
+* Documentation source: `docs` folder in this repo
 
 ## Developer Note
 

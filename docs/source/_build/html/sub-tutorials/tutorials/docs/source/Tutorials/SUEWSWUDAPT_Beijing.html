@@ -1,0 +1,620 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Urban Energy Balance - SUEWS, WUDAPT and WATCH &mdash; SUEWS v2018c documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+
+  
+  <script src="../../../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../../../index.html" class="icon icon-home"> SUEWS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v2018c
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../introduction.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../parameterisations-and-sub-models.html">2. Parameterisations and sub-models within SUEWS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../prepare-to-run-the-model.html">3. Preparing to run the model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../input_files/input_files.html">4. Input files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../output_files/output_files.html">5. Output files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../troubleshooting.html">6. Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../recent-publications.html">7. Recent publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../suews_related_softwares.html">8. SUEWS-related Software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials.html">9. Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../development/development.html">10. Development, Suggestions and Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../benchmark/benchmark_report.html">Benchmark Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../version-history/version-history.html">11. Version History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../acknowledgement.html">12. Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../notation.html">13. Notation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../references.html">14. References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">SUEWS</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../../index.html">Docs</a> &raquo;</li>
+        
+      <li>Urban Energy Balance - SUEWS, WUDAPT and WATCH</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../../../_sources/sub-tutorials/tutorials/docs/source/Tutorials/SUEWSWUDAPT_Beijing.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Please report issues with the manual on the <a class="reference external" href="https://github.com/Urban-Meteorology-Reading/SUEWS-Docs/issues/new?template=issue-report.md">GitHub page</a>.</p>
+</div>
+<div class="section" id="urban-energy-balance-suews-wudapt-and-watch">
+<span id="suewswudapt-beijing"></span><h1>Urban Energy Balance - SUEWS, WUDAPT and WATCH<a class="headerlink" href="#urban-energy-balance-suews-wudapt-and-watch" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>In this tutorial you will use UMEP to answer a research question. The
+research question can be answered using SUEWS within the UMEP plugin. We
+will go through each of the steps necessary to prepare, run and analyse
+the model output.</p>
+<p>Research question:
+<strong>What is the difference in sensible heat flux between a summer with a
+large number of heat wave days and a low number of heat wave days in
+Beijing, China?</strong></p>
+</div>
+<div class="section" id="getting-started">
+<h2>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
+<p>Before getting started with this tutorial, make sure you have followed
+these steps:</p>
+<ol class="arabic simple">
+<li>Install <a class="reference external" href="http://umep-docs.readthedocs.io/en/latest/Getting_Started.html">QGIS</a>,</li>
+<li>Install <a class="reference external" href="http://umep-docs.readthedocs.io/en/latest/Getting_Started.html">UMEP</a></li>
+<li>Make sure the following python packages are installed: numpy,
+matplotlib and pandas. Start the WATCH-plugin (<em>UMEP &gt; Pee-Processor &gt; Meteorological Data &gt; Download data (WATCH)</em>). If a message pops up that libaraies are missing, follow this <a class="reference external" href="http://umep-docs.readthedocs.io/en/latest/Getting_Started.html#adding-missing-python-libraries-and-other-osgeo-functionalities">link</a>,.</li>
+<li>Download and load the LCZ map from Beijing, available from the <a class="reference external" href="http://www.wudapt.org/">WUDAPT portal</a>.</li>
+</ol>
+</div>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<div class="figure" id="id1">
+<a class="reference internal image-reference" href="../../../../../_images/750px-Flowchart_beijing2.png"><img alt="Flowchart of the workflow" src="../../../../../_images/750px-Flowchart_beijing2.png" style="width: 500px;" /></a>
+<p class="caption"><span class="caption-text">Flowchart of the workflow</span></p>
+</div>
+<ol class="arabic simple">
+<li><strong>Extreme finder:</strong> Find years with heat waves and years without
+waves</li>
+<li><strong>Download data (WATCH):</strong> Download data for the selected years.</li>
+<li><strong>Vector grid:</strong> Make a vector grid at the resolution for which you
+would like to run LQF and SUEWS.</li>
+<li><strong>LCZ converter:</strong> Convert Beijings LCZ map into morphometric
+parameters and Land cover fractions.</li>
+<li><strong>Spatial downloader:</strong> Downloads maps of population count and
+density.</li>
+<li><strong>LQF:</strong> Compute anthropogenic heat fluxes.</li>
+<li><strong>SUEWS:</strong> Calculates the energy balance.</li>
+<li><strong>Benchmark:</strong> Compares results of different runs.</li>
+<li><strong>SUEWS analyser:</strong> Displays the output for one single run.</li>
+</ol>
+</div>
+<div class="section" id="step-1-extreme-finder">
+<h2>Step 1: Extreme finder<a class="headerlink" href="#step-1-extreme-finder" title="Permalink to this headline">¶</a></h2>
+<div class="figure" id="id2">
+<a class="reference internal image-reference" href="../../../../../_images/600px-Extremefinder.png"><img alt="Screenshot of extreme finder" src="../../../../../_images/600px-Extremefinder.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text">Screenshot of the <em>Extreme Finder</em> tool</span></p>
+</div>
+<ol class="arabic simple">
+<li>Open extreme finder at <em>UMEP &gt; Processer &gt; Outdoor Themal Comfort &gt;
+ExtremeFinder</em>.</li>
+<li>Manually enter coordinates of the location you are interested in, or
+click <em>fetch coordinates from map canvas</em>.</li>
+<li>Select a period over which you would like to identify heat waves at
+<em>Start Date</em> and <em>End Date</em>.</li>
+<li>Select a place and name for the output file.</li>
+<li>Click <em>generate</em>.</li>
+</ol>
+<p>Plots of maximum temperature, number of heat wave days, and box plots of
+the maximum temperature of heat wave days over the selected year should
+appear.</p>
+<p>We choose 2009 as a year with a heat wave, due to the long heat wave
+event at the end of June/start July. On the other hand, 2006 was
+selected as a non-heat wave year.</p>
+</div>
+<div class="section" id="step-2-download-watch-data">
+<h2>Step 2: Download WATCH data<a class="headerlink" href="#step-2-download-watch-data" title="Permalink to this headline">¶</a></h2>
+<div class="figure" id="id3">
+<img alt="Screenshot of Download Data (WATCH)" src="../../../../../_images/600px-Watch.png" />
+<p class="caption"><span class="caption-text">Screenshot of Download Data (WATCH)</span></p>
+</div>
+<ol class="arabic simple">
+<li>Open the WATCH data downloader at <em>UMEP &gt; Pre-Processer &gt;
+Meteorological Data &gt; Download Data (WATCH).</em></li>
+<li>Click on <em>Fetch coordinates from map canvas</em> and click in the centre
+of the LCZ map, this will make the chosen coordinates show up on in
+the Latitude and Longitude boxes.</li>
+<li>Specify the hours offset from UTC, for Beijing this is 8.</li>
+<li>Specify the terrain height of the chosen coordinates. In the centre
+of Beijing this is about 50 meters.</li>
+<li>Under <em>Compressed source data</em> specify a folder where the data should
+be downloaded.</li>
+<li>Leave <em>Path to the AH results (optional)</em> blank for now.</li>
+<li>Specify the dates for which meteorological data should be downloaded</li>
+<li>At <em>Extract data to</em> specify the meteorological data text file.</li>
+<li>Click <em>Generate</em></li>
+</ol>
+<p>This will take some minutes if you are downloading a year. Finally, you
+should have a text file with the meteorological data and netcdf files of
+each of the individual variables (Incoming shortwave and longwave
+radiation, pressure, rain, temperature and humidity).</p>
+</div>
+<div class="section" id="step-3-vector-grid">
+<h2>Step 3: Vector grid<a class="headerlink" href="#step-3-vector-grid" title="Permalink to this headline">¶</a></h2>
+<div class="figure" id="id4">
+<img alt="vector.png" src="../../../../../_images/450px-Vector.png" />
+<p class="caption"><span class="caption-text">vector.png</span></p>
+</div>
+<ol class="arabic simple">
+<li>Open vector grid at <em>Vector &gt; Research Tools &gt; Vector grid</em>.</li>
+<li>Select the extend of your LCZ map by clicking the … next to <em>Grid
+extent (xmin, xmax, ymin, ymax)</em> and select <em>Use layer/canvas
+extent</em>.</li>
+<li>Select the LCZ layer.</li>
+<li>Specify the desired grid spacing, depending on the projection this
+will either be in meters or in degrees!</li>
+<li>Make sure the output is in polygons, not lines.</li>
+<li>Save the grid to a new layer.</li>
+</ol>
+</div>
+<div class="section" id="step-4-lcz-converter">
+<h2>Step 4: LCZ converter<a class="headerlink" href="#step-4-lcz-converter" title="Permalink to this headline">¶</a></h2>
+<div class="figure" id="id5">
+<img alt="Screenshot of LCZ converter" src="../../../../../_images/600px-LCZdialog1.png" />
+<p class="caption"><span class="caption-text">Screenshot of LCZ converter</span></p>
+</div>
+<ol class="arabic simple">
+<li>Open the LCZ converter at <em>UMEP &gt; Pre-Processer &gt; Spatial data &gt; LCZ
+converter</em>.</li>
+<li>Select the LCZ raster layer at ‘’ LCZ raster’‘.</li>
+<li>Select the vector grid you have just created in step 3 at <em>Vector
+grid</em> and select the ID field of the polygon grid at <em>ID field</em>.</li>
+<li>By clicking <em>Adjust default parameters</em> you can edit the table. This
+table specifies the pervious, trees, grass, etc. fractions for each
+of the LCZ classes. For more information about each of the classes
+see <a class="reference external" href="http://umep-docs.readthedocs.io/en/latest/pre-processor/Spatial%20Data%20LCZ%20Converter.html">LCZConverter</a>.
+If you choose to edit the table, make sure all fractions add up to
+1.0.</li>
+<li>If you are unsure about the exact fractions for each of the LCZ click
+the tab <em>Pervious distribution</em>. Select <em>Same for all LCZ’s</em></li>
+<li>Now you can select your best estimate about the distribution of the
+pervious surface fractions for urban and the tree distribution for
+rural. In addition, also specify the expected height of the trees.</li>
+<li>Once you are satisfied click <em>Update Table</em>.</li>
+<li>Select add results to polygon.</li>
+<li>Add a file prefix if desired.</li>
+<li>Finally select an output folder where you would like to receive the
+text files and click <em>Run</em>.</li>
+</ol>
+<p>This should generate 3 text files, one with the land cover fractions,
+one with morphometric parameters for buildings and one for trees for
+each grid cell of the polygon grid.</p>
+</div>
+<div class="section" id="step-5-spatial-downloader">
+<h2>Step 5: Spatial downloader<a class="headerlink" href="#step-5-spatial-downloader" title="Permalink to this headline">¶</a></h2>
+<div class="figure" id="id6">
+<img alt="Spatialdownloader" src="../../../../../_images/600px-Spatialdownloader.png" />
+<p class="caption"><span class="caption-text">Spatialdownloader</span></p>
+</div>
+<p>In order to run LQF you will need
+population counts for each of the grid cells you are modelling.</p>
+<ol class="arabic simple">
+<li>Open de spatial downloader at <em>UMEP &gt; Pre-Processer &gt; Spatial data &gt;
+Spatial Data Downloader</em>.</li>
+<li>Select <em>population density</em> and select the <em>GPWv4: UN-Adjusted
+Population Density</em> closest to the year you intend to model.</li>
+<li>Make sure your canvas is zoomed out to the entire LCZ map and click
+<em>Use canvas extent</em></li>
+<li>Now click <em>Get data</em>.</li>
+</ol>
+<p>You should get a raster of population density. These raster values will
+need to be added to your vector grid by following <a class="reference external" href="http://umep-docs.readthedocs.io/en/latest/OtherManuals/LQF_Manual.html#appendix-a-converting-a-population-raster-to-a-vector-shapefile-using-qgis">these
+instructions</a>.
+Finally the population densities need to be converted into population
+counts:</p>
+<ol class="arabic simple">
+<li>Right-mouse click on your vector grid and click <em>Open Attribute
+Table</em>.</li>
+<li>Click the abacus shaped symbol this is the Field calculator.</li>
+<li>Under <em>Output field name</em> write “Pop, the <em>Output field type</em> should
+be “Decimal number (real)”, and the <em>Output Precision</em> can be set to
+2.</li>
+<li>In the expression dialog box write popdens*$area/1000000, here
+popdens is the name of your population density field, $area
+is the size of the area for each grid cell and the 1 000 000 is to
+convert the data from m<sup>2</sup> to ha.</li>
+<li>Click <em>OK</em> and you should have a new field called “Pop”.</li>
+</ol>
+</div>
+<div class="section" id="step-6-lqf">
+<h2>Step 6: LQF<a class="headerlink" href="#step-6-lqf" title="Permalink to this headline">¶</a></h2>
+<div class="figure" id="id7">
+<img alt="Screenshot of LQf" src="../../../../../_images/LQf.png" />
+<p class="caption"><span class="caption-text">Screenshot of LQf</span></p>
+</div>
+<p>Before running LQf, you will need to prepare some of
+the data required to run it.</p>
+<ol class="arabic">
+<li><p class="first">Convert the hourly temperatures you downloaded in step 2 into daily
+averaged temperatures in Excel, or a programming language of your
+choice.</p>
+</li>
+<li><p class="first">Save the daily mean temperatures as a csv file with the first column
+the day of the year and the second column the temperature. The header
+and the data should look like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Data</span><span class="p">,</span><span class="n">T_Celsius</span>
+<span class="n">StartDate</span><span class="p">,</span><span class="mi">2006</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="mi">1</span>
+<span class="n">EndDate</span><span class="p">,</span><span class="mi">2006</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span>
+<span class="n">Timezone</span><span class="p">,</span><span class="n">Asia</span><span class="o">/</span><span class="n">Shanghai</span>
+<span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mf">0.255517391</span>
+<span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mf">0.303882609</span>
+<span class="mi">3</span><span class="p">,</span><span class="o">-</span><span class="mf">2.570373913</span>
+<span class="mi">4</span><span class="p">,</span><span class="o">-</span><span class="mf">7.982847826</span>
+<span class="mi">5</span><span class="p">,</span><span class="o">-</span><span class="mf">7.119765217</span>
+<span class="mi">6</span><span class="p">,</span><span class="o">-</span><span class="mf">0.255517391</span>
+</pre></div>
+</div>
+</li>
+</ol>
+<p>Prepare the
+<a class="reference external" href="http:/www.urban-climate.net/umep/LQF_Manual#Data_sources_file">database.nml</a>
+and the
+<a class="reference external" href="http:/www.urban-climate.net/umep/LQF_Manual#Parameters_file">modelparm.nml</a>
+as written in the manual. Make sure you change timezone,
+use_uk_holidays, use_custom_holidays and custom_holidays in
+modelparm.nml.</p>
+<ol class="arabic simple">
+<li>Open LQf at: <em>UMEP &gt; Processer &gt; Urban Energy Balance &gt; Anthropogenic
+Heat LQf (LUCY)</em>.</li>
+<li>Select the locations of the created modelparm.nml and database.nml
+and the folder you would to save the output to.</li>
+<li>The extra disaggregation of the input data is optional, but the user
+could specify the land cover fractions generated in step 4 and the
+vector grid.</li>
+<li>Click <em>Prepare input data using Data sources</em>. This may take a
+minute.</li>
+<li>Once this first process has finished specify the <em>Date range</em> <em>Start
+date</em> and <em>End date</em>.</li>
+<li>Click <em>Run model</em> and the model will take a while to run. If you are
+simulating an entire year this process may take a few hours.</li>
+</ol>
+<p>Finally you should have csv files of anthropogenic heat fluxes for each
+hour in the date range and for each grid cell of the vector grid.</p>
+</div>
+<div class="section" id="step-2b-download-watch-data">
+<h2>Step 2b: Download WATCH data<a class="headerlink" href="#step-2b-download-watch-data" title="Permalink to this headline">¶</a></h2>
+<div class="figure" id="id8">
+<img alt="Screenshot of LQf" src="../../../../../_images/600px-Watch.png" />
+<p class="caption"><span class="caption-text">Screenshot of Download Data (WATCH）</span></p>
+</div>
+<p>Inconsistant</p>
+<ol class="arabic simple">
+<li>Open the WATCH data downloader at <em>UMEP &gt; Pre-Processer &gt;
+Meteorological Data &gt; Download Data (WATCH).</em></li>
+<li>Click on <em>Fetch coordinates from map canvas</em> and click in the centre
+of the LCZ map, this will make the chosen coordinates show up on in
+the Latitude and Longitude boxes.</li>
+<li>Specify the hours offset from UTC, for Beijing this is 8.</li>
+<li>Specify the terrain height of the chosen coordinates. In the centre
+of Beijing this is about 50 meters.</li>
+<li>Under <em>Compressed source data</em> specify a folder where the data should
+be downloaded.</li>
+<li><strong>Under *Path to the AH results (optional)* specify the folder the
+results from step 6 are saved to.</strong></li>
+<li>Specify the dates for which meteorological data should be downloaded</li>
+<li>At <em>Extract data to</em> specify the meteorological data text file.</li>
+<li>Click <em>Generate</em></li>
+</ol>
+<p>This will take some minutes if you are downloading a year. Finally, you
+should have a text file with the meteorological data and netcdf files of
+each of the individual variables (Incoming shortwave and longwave
+radiation, pressure, rain, temperature and humidity).</p>
+</div>
+<div class="section" id="step-7-suews">
+<h2>Step 7: SUEWS<a class="headerlink" href="#step-7-suews" title="Permalink to this headline">¶</a></h2>
+<div class="figure" id="id9">
+<img alt="Screenshot of SUEWS advance" src="../../../../../_images/600px-Suews_sc.png" />
+<p class="caption"><span class="caption-text">Screenshot of SUEWS advance</span></p>
+</div>
+<p>Before running SUEWS, you will need to
+prepare some of the data required to run it.</p>
+<ol class="arabic simple">
+<li>Open SUEWS prepare at: <em>UMEP &gt; Pre-Processer &gt; SUEWS prepare</em>.</li>
+<li>Under <em>vector polygon grid</em> specify your created vector grid and the
+<em>ID field</em>.</li>
+<li>Select the location of the <em>Meteorological file</em> from step 2, the
+<em>Building morphology</em>, <em>Tree morphology</em> and <em>Land cover fractions</em>
+from step 4 and the population <strong>density</strong> from step 5.</li>
+<li>Enter the start and end of day light savings time and the UTC offset.</li>
+<li>Specify the <em>Leaf cycle</em> = winter when initialising in January.
+Unless the user has better information initialise the <em>Soil moisture
+state</em> at 100 %.</li>
+<li>Select an output folder where the initial data to run SUEWS should be
+saved and press <em>Generate</em>.</li>
+</ol>
+<p>When using LQf output as input for SUEWS there will be different
+meteorological file for each grid cell of the vector grid. these files
+all need to be renamed to the following format be7_2006_data_60.txt,
+where 7 is the number of the grid cell. Rename all meteorological files
+to this format.</p>
+<ol class="arabic simple">
+<li>Open SUEWS at <em>UMEP &gt; Processer &gt; Urban Energy Balance &gt; Urban Energy
+Balance (SUEWS/BLUEWS, advanced).</em></li>
+<li>For the <em>Anthropogenic heat flux</em>, select option “[0] Observed data”.
+Feel free to change any other options.</li>
+<li>Specify the <em>Temporal resolution of forcing data (minutes)</em> to be 60
+minutes.</li>
+<li>Specify the <em>Temporal resolution of output (minutes)</em> to be 60
+minutes.</li>
+<li>Select the <em>Input folder</em> specified in SUEWS prepare and select an
+output folder for the SUEWS output to be saved in. Finally, click
+<em>Run</em>.</li>
+</ol>
+<p>This process will take several hours dependent how many grid cells are
+used in the simulation. If the simulation is successful the output
+folder will contain txt files with SUEWS output for each of the grid
+cells in the vector grid.</p>
+</div>
+<div class="section" id="step-8-benchmarking">
+<h2>Step 8: Benchmarking<a class="headerlink" href="#step-8-benchmarking" title="Permalink to this headline">¶</a></h2>
+<div class="figure" id="id10">
+<img alt="Screenshot of LCZ converter" src="../../../../../_images/600px-Benchmark.png" />
+<p class="caption"><span class="caption-text">Screenshot of LCZ converter</span></p>
+</div>
+<p>This system allows for comparison of runs
+with observed data.</p>
+<ol class="arabic simple">
+<li>Open the Benchmarking system at: <em>UMEP &gt; Post-Processer &gt;
+Benchmarking system.</em></li>
+<li>Import data from the observation in the <em>Import of base dataset</em>.
+Specify the the number of rows in the header and the column
+separator. Note the names of the variables in the observational
+dataset should be the same as that of the SUEWS output</li>
+<li>Select the <em>First comparison dataset (reference)</em> by pressing <em>Import
+data</em>’ and importing the default SUEWS run at the location of the
+observations loaded in the previous step.</li>
+<li>It is possible to load another dataset by checking <em>Add another
+comparison dataset</em> and selecting another SUEWS run or a different
+grid cell.</li>
+<li>Once you have selected the appropriate datasets create a PDF at
+<em>Specify output PDF</em> and pressing <em>Run</em>.</li>
+</ol>
+<p>This should generate a PDF of statistics for each variable with the
+overall performance score, the mean absolute error, mean bias error and
+the root mean squared error.</p>
+</div>
+<div class="section" id="step-9-suews-analyser">
+<h2>Step 9: SUEWS analyser<a class="headerlink" href="#step-9-suews-analyser" title="Permalink to this headline">¶</a></h2>
+<div class="figure" id="id11">
+<a class="reference internal image-reference" href="../../../../../_images/1200px-Suewsana.png"><img alt="Screenshot of SUEWS analyser" src="../../../../../_images/1200px-Suewsana.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text">Screenshot of <em>SUEWS Analyser</em> tool</span></p>
+</div>
+<p>This system allows for plotting of SUEWS
+output.</p>
+<ol class="arabic simple">
+<li>Open the SUEWS analyser at: <em>UMEP &gt; Post-Processer &gt; Urban Energy
+Balance &gt; SUEWS analyser.</em></li>
+<li>At <em>SUEWS RunControl namelist</em> select SUEWS RunControl.nml created
+with SUEWS prepare in step 7</li>
+<li>Plot some of the basic data, such as the radiation and energy balance
+and the soil moisture and precipitation by selecting a grid cell on
+the upper left hand side. In addition select the <em>Year to
+investigate</em>. Check the box <em>Plot basic data</em> and press <em>Plot</em>. This
+should create a plot comparable to that in the screenshot above.</li>
+</ol>
+<p>Plotting for example the mean daytime sensible heat flux during June
+could be done as follows:</p>
+<ol class="arabic simple">
+<li>On the right-hand side of the dialog select “Sensible heat flux” at
+<em>Variable to analyse</em>.</li>
+<li>Select the <em>Year to investigate</em> and the days of the year. June is
+DOY 152 - 181.</li>
+<li>Select <em>Average</em> and <em>Only daytime</em>.</li>
+<li>Finally select the vector grid created in step 3 and ID field at
+<em>Vector polygon grid used in the SUEWS model</em>, check <em>Add result to
+polygon grid</em> and click <em>Generate</em>.</li>
+<li>This should generate an additional field in the attribute table of
+your vector grid. If it does not show up in the attribute table,
+reopen the vector grid.</li>
+<li>In order to visualise the mean June daytime sensible heat flux, right
+click the vector grid in the layer panel and select <em>Properties</em>.</li>
+<li>Go to <em>Style</em> and select <em>Graduated</em> in the top box. And select the
+QH column. Under <em>Color ramp</em> select the colour bar you prefer and
+click <em>Ok</em></li>
+</ol>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018 – 2019, micromet@University of Reading, led by Prof Sue Grimmond
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../../" src="../../../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../../../_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

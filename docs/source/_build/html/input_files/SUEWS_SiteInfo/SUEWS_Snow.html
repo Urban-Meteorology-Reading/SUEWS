@@ -1,0 +1,442 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>4.2.9. SUEWS_Snow.txt &mdash; SUEWS v2018c documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="4.2.10. SUEWS_Soil.txt" href="SUEWS_Soil.html" />
+    <link rel="prev" title="4.2.8. SUEWS_SiteSelect.txt" href="SUEWS_SiteSelect.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> SUEWS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v2018c
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../parameterisations-and-sub-models.html">2. Parameterisations and sub-models within SUEWS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../prepare-to-run-the-model.html">3. Preparing to run the model</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../input_files.html">4. Input files</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../RunControl/RunControl.html">4.1. RunControl.nml</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="SUEWS_SiteInfo.html">4.2. SUEWS Site Information</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="SUEWS_AnthropogenicHeat.html">4.2.1. SUEWS_AnthropogenicHeat.txt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SUEWS_BiogenCO2.html">4.2.2. SUEWS_BiogenCO2.txt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SUEWS_Conductance.html">4.2.3. SUEWS_Conductance.txt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SUEWS_Irrigation.html">4.2.4. SUEWS_Irrigation.txt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SUEWS_NonVeg.html">4.2.5. SUEWS_NonVeg.txt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SUEWS_OHMCoefficients.html">4.2.6. SUEWS_OHMCoefficients.txt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SUEWS_Profiles.html">4.2.7. SUEWS_Profiles.txt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SUEWS_SiteSelect.html">4.2.8. SUEWS_SiteSelect.txt</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">4.2.9. SUEWS_Snow.txt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SUEWS_Soil.html">4.2.10. SUEWS_Soil.txt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SUEWS_Veg.html">4.2.11. SUEWS_Veg.txt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SUEWS_Water.html">4.2.12. SUEWS_Water.txt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SUEWS_WithinGridWaterDist.html">4.2.13. SUEWS_WithinGridWaterDist.txt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Input_Options.html">4.2.14. Input Options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Typical_Values.html">4.2.15. Typical Values</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Initial_Conditions/Initial_Conditions.html">4.3. Initial Conditions file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../met_input.html">4.4. Meteorological Input File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../CBL_input/CBL_input.html">4.5. CBL input files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ESTM_related_files/ESTM_related_files.html">4.6. ESTM-related files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../SOLWEIG_input/SOLWEIG_input.html">4.7. SOLWEIG input files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../input_converter.html">4.8. SUEWS input converter</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../output_files/output_files.html">5. Output files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../troubleshooting.html">6. Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../recent-publications.html">7. Recent publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../suews_related_softwares.html">8. SUEWS-related Software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sub-tutorials/tutorials.html">9. Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../development/development.html">10. Development, Suggestions and Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../benchmark/benchmark_report.html">Benchmark Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../version-history/version-history.html">11. Version History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../acknowledgement.html">12. Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../notation.html">13. Notation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references.html">14. References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SUEWS</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../input_files.html">4. Input files</a> &raquo;</li>
+        
+          <li><a href="SUEWS_SiteInfo.html">4.2. SUEWS Site Information</a> &raquo;</li>
+        
+      <li>4.2.9. SUEWS_Snow.txt</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/input_files/SUEWS_SiteInfo/SUEWS_Snow.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Please report issues with the manual on the <a class="reference external" href="https://github.com/Urban-Meteorology-Reading/SUEWS-Docs/issues/new?template=issue-report.md">GitHub page</a>.</p>
+</div>
+<div class="section" id="suews-snow-txt">
+<span id="id1"></span><h1>4.2.9. SUEWS_Snow.txt<a class="headerlink" href="#suews-snow-txt" title="Permalink to this headline">¶</a></h1>
+<p>SUEWS_Snow.txt specifies the characteristics for snow surfaces when
+<a class="reference internal" href="../RunControl/scheme_options.html#cmdoption-arg-snowuse"><code class="xref any std std-option docutils literal notranslate"><span class="pre">SnowUse=1</span></code></a> in <a class="reference internal" href="../RunControl/RunControl.html#runcontrol-nml"><span class="std std-ref">RunControl.nml</span></a>. If the snow part of
+the model is not run, fill this table with ‘-999’ except for the first
+(Code) column and set <a class="reference internal" href="../RunControl/scheme_options.html#cmdoption-arg-snowuse"><code class="xref any std std-option docutils literal notranslate"><span class="pre">SnowUse=0</span></code></a> in <a class="reference internal" href="../RunControl/RunControl.html#runcontrol-nml"><span class="std std-ref">RunControl.nml</span></a>.
+For a detailed description of the variables, see Järvi et al.
+(2014) <a class="reference internal" href="../../references.html#leena2014" id="id2">[Leena2014]</a>.</p>
+<table border="1" class="colwidths-given longtable docutils">
+<colgroup>
+<col width="5%" />
+<col width="25%" />
+<col width="5%" />
+<col width="65%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">No.</th>
+<th class="head">Column Name</th>
+<th class="head">Use</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>1</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-code"><code class="xref any std std-option docutils literal notranslate"><span class="pre">Code</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-24"><code class="xref any std std-term docutils literal notranslate"><span class="pre">L</span></code></a></td>
+<td>Code linking to a corresponding look-up table.</td>
+</tr>
+<tr class="row-odd"><td>2</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-radmeltfactor"><code class="xref any std std-option docutils literal notranslate"><span class="pre">RadMeltFactor</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-mu"><code class="xref any std std-term docutils literal notranslate"><span class="pre">MU</span></code></a></td>
+<td>Hourly radiation melt factor of snow [mm W<sup>-1</sup> h<sup>-1</sup>]</td>
+</tr>
+<tr class="row-even"><td>3</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-tempmeltfactor"><code class="xref any std std-option docutils literal notranslate"><span class="pre">TempMeltFactor</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-mu"><code class="xref any std std-term docutils literal notranslate"><span class="pre">MU</span></code></a></td>
+<td>Hourly temperature melt factor of snow [mm K<sup>-1</sup> h<sup>-1</sup>]</td>
+</tr>
+<tr class="row-odd"><td>4</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-albedomin"><code class="xref any std std-option docutils literal notranslate"><span class="pre">AlbedoMin</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-mu"><code class="xref any std std-term docutils literal notranslate"><span class="pre">MU</span></code></a></td>
+<td>Effective surface albedo (middle of the day value) for wintertime (not including snow).</td>
+</tr>
+<tr class="row-even"><td>5</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-albedomax"><code class="xref any std std-option docutils literal notranslate"><span class="pre">AlbedoMax</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-mu"><code class="xref any std std-term docutils literal notranslate"><span class="pre">MU</span></code></a></td>
+<td>Effective surface albedo (middle of the day value) for summertime.</td>
+</tr>
+<tr class="row-odd"><td>6</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-emissivity"><code class="xref any std std-option docutils literal notranslate"><span class="pre">Emissivity</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-mu"><code class="xref any std std-term docutils literal notranslate"><span class="pre">MU</span></code></a></td>
+<td>Effective surface emissivity.</td>
+</tr>
+<tr class="row-even"><td>7</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-tau-a"><code class="xref any std std-option docutils literal notranslate"><span class="pre">tau_a</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-md"><code class="xref any std std-term docutils literal notranslate"><span class="pre">MD</span></code></a></td>
+<td>Time constant for snow albedo aging in cold snow [-]</td>
+</tr>
+<tr class="row-odd"><td>8</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-tau-f"><code class="xref any std std-option docutils literal notranslate"><span class="pre">tau_f</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-md"><code class="xref any std std-term docutils literal notranslate"><span class="pre">MD</span></code></a></td>
+<td>Time constant for snow albedo aging in melting snow [-]</td>
+</tr>
+<tr class="row-even"><td>9</td>
+<td><code class="xref any docutils literal notranslate"><span class="pre">PrecipLimAlb</span></code></td>
+<td><a class="reference internal" href="../../notation.html#term-md"><code class="xref any std std-term docutils literal notranslate"><span class="pre">MD</span></code></a></td>
+<td>Limit for hourly precipitation when the ground is fully covered with snow. Then snow albedo is reset to AlbedoMax [mm]</td>
+</tr>
+<tr class="row-odd"><td>10</td>
+<td><code class="xref any docutils literal notranslate"><span class="pre">SnowDensMin</span></code></td>
+<td><a class="reference internal" href="../../notation.html#term-md"><code class="xref any std std-term docutils literal notranslate"><span class="pre">MD</span></code></a></td>
+<td>Fresh snow density [kg m<sup>-3</sup>]</td>
+</tr>
+<tr class="row-even"><td>11</td>
+<td><code class="xref any docutils literal notranslate"><span class="pre">SnowDensMax</span></code></td>
+<td><a class="reference internal" href="../../notation.html#term-md"><code class="xref any std std-term docutils literal notranslate"><span class="pre">MD</span></code></a></td>
+<td>Maximum snow density [kg m<sup>-3</sup>]</td>
+</tr>
+<tr class="row-odd"><td>12</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-tau-r"><code class="xref any std std-option docutils literal notranslate"><span class="pre">tau_r</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-md"><code class="xref any std std-term docutils literal notranslate"><span class="pre">MD</span></code></a></td>
+<td>Time constant for snow density ageing [-]</td>
+</tr>
+<tr class="row-even"><td>13</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-crwmin"><code class="xref any std std-option docutils literal notranslate"><span class="pre">CRWMin</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-md"><code class="xref any std std-term docutils literal notranslate"><span class="pre">MD</span></code></a></td>
+<td>Minimum water holding capacity of snow [mm]</td>
+</tr>
+<tr class="row-odd"><td>14</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-crwmax"><code class="xref any std std-option docutils literal notranslate"><span class="pre">CRWMax</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-md"><code class="xref any std std-term docutils literal notranslate"><span class="pre">MD</span></code></a></td>
+<td>Maximum water holding capacity of snow [mm]</td>
+</tr>
+<tr class="row-even"><td>15</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-preciplimsnow"><code class="xref any std std-option docutils literal notranslate"><span class="pre">PrecipLimSnow</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-md"><code class="xref any std std-term docutils literal notranslate"><span class="pre">MD</span></code></a></td>
+<td>Limit for hourly snowfall when the ground is fully covered with snow [mm]</td>
+</tr>
+<tr class="row-odd"><td>16</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-ohmcode-summerwet"><code class="xref any std std-option docutils literal notranslate"><span class="pre">OHMCode_SummerWet</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-24"><code class="xref any std std-term docutils literal notranslate"><span class="pre">L</span></code></a></td>
+<td>Code for OHM coefficients to use for this surface during wet conditions in summer, linking to <a class="reference internal" href="SUEWS_OHMCoefficients.html#suews-ohmcoefficients-txt"><span class="std std-ref">SUEWS_OHMCoefficients.txt</span></a>.</td>
+</tr>
+<tr class="row-even"><td>17</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-ohmcode-summerdry"><code class="xref any std std-option docutils literal notranslate"><span class="pre">OHMCode_SummerDry</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-24"><code class="xref any std std-term docutils literal notranslate"><span class="pre">L</span></code></a></td>
+<td>Code for OHM coefficients to use for this surface during dry conditions in summer, linking to <a class="reference internal" href="SUEWS_OHMCoefficients.html#suews-ohmcoefficients-txt"><span class="std std-ref">SUEWS_OHMCoefficients.txt</span></a>.</td>
+</tr>
+<tr class="row-odd"><td>18</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-ohmcode-winterwet"><code class="xref any std std-option docutils literal notranslate"><span class="pre">OHMCode_WinterWet</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-24"><code class="xref any std std-term docutils literal notranslate"><span class="pre">L</span></code></a></td>
+<td>Code for OHM coefficients to use for this surface during wet conditions in winter, linking to <a class="reference internal" href="SUEWS_OHMCoefficients.html#suews-ohmcoefficients-txt"><span class="std std-ref">SUEWS_OHMCoefficients.txt</span></a>.</td>
+</tr>
+<tr class="row-even"><td>19</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-ohmcode-winterdry"><code class="xref any std std-option docutils literal notranslate"><span class="pre">OHMCode_WinterDry</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-24"><code class="xref any std std-term docutils literal notranslate"><span class="pre">L</span></code></a></td>
+<td>Code for OHM coefficients to use for this surface during dry conditions in winter, linking to <a class="reference internal" href="SUEWS_OHMCoefficients.html#suews-ohmcoefficients-txt"><span class="std std-ref">SUEWS_OHMCoefficients.txt</span></a>.</td>
+</tr>
+<tr class="row-odd"><td>20</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-ohmthresh-sw"><code class="xref any std std-option docutils literal notranslate"><span class="pre">OHMThresh_SW</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-md"><code class="xref any std std-term docutils literal notranslate"><span class="pre">MD</span></code></a></td>
+<td>Temperature threshold determining whether summer/winter OHM coefficients are applied [°C]</td>
+</tr>
+<tr class="row-even"><td>21</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-ohmthresh-wd"><code class="xref any std std-option docutils literal notranslate"><span class="pre">OHMThresh_WD</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-md"><code class="xref any std std-term docutils literal notranslate"><span class="pre">MD</span></code></a></td>
+<td>Soil moisture threshold determining whether wet/dry OHM coefficients are applied [-]</td>
+</tr>
+<tr class="row-odd"><td>22</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-estmcode"><code class="xref any std std-option docutils literal notranslate"><span class="pre">ESTMCode</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-24"><code class="xref any std std-term docutils literal notranslate"><span class="pre">L</span></code></a></td>
+<td>Code for ESTM coefficients linking to <a class="reference internal" href="../ESTM_related_files/ESTM_related_files.html#suews-estmcoefficients-txt"><span class="std std-ref">SUEWS_ESTMCoefficients.txt</span></a></td>
+</tr>
+<tr class="row-even"><td>23</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-anohm-cp"><code class="xref any std std-option docutils literal notranslate"><span class="pre">AnOHM_Cp</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-mu"><code class="xref any std std-term docutils literal notranslate"><span class="pre">MU</span></code></a></td>
+<td>Volumetric heat capacity for this surface to use in AnOHM [J m<sup>-3</sup>]</td>
+</tr>
+<tr class="row-odd"><td>24</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-anohm-kk"><code class="xref any std std-option docutils literal notranslate"><span class="pre">AnOHM_Kk</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-mu"><code class="xref any std std-term docutils literal notranslate"><span class="pre">MU</span></code></a></td>
+<td>Thermal conductivity for this surface to use in AnOHM [W m K<sup>-1</sup>]</td>
+</tr>
+<tr class="row-even"><td>25</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-anohm-ch"><code class="xref any std std-option docutils literal notranslate"><span class="pre">AnOHM_Ch</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-mu"><code class="xref any std std-term docutils literal notranslate"><span class="pre">MU</span></code></a></td>
+<td>Bulk transfer coefficient for this surface to use in AnOHM [-]</td>
+</tr>
+</tbody>
+</table>
+<p>An example <a class="reference internal" href="#suews-snow-txt"><span class="std std-ref">SUEWS_Snow.txt</span></a> can be found below:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1     	 2             	 3              	 4         	 5         	 6          	 7     	 8     	 9            	 10          	 11          	 12    	 13     	 14     	 15            	 16                	 17                	 18                	 19                	 20           	 21           	 22       	 23       	 24       	 25
+Code  	 RadMeltFactor 	 TempMeltFactor 	 AlbedoMin 	 AlbedoMax 	 Emissivity 	 tau_a 	 tau_f 	 PrecipLimAlb 	 SnowDensMin 	 SnowDensMax 	 tau_r 	 CRWMin 	 CRWMax 	 PrecipLimSnow 	 OHMCode_SummerWet 	 OHMCode_SummerDry 	 OHMCode_WinterWet 	 OHMCode_WinterDry 	 OHMThresh_SW 	 OHMThresh_WD 	 ESTMCode 	 AnOHM_Cp 	 AnOHM_Kk 	 AnOHM_Ch
+99999 	 -999          	 -999           	 -999      	 -999      	 -999       	 -999  	 -999  	 -999         	 -999        	 -999        	 -999  	 -999   	 -999   	 -999          	 61                	 61                	 61                	 61                	 10           	 0.9          	 99999    	 100000   	 1.2      	 4        	 !
+1     	 0.0016        	 0.12           	 0.18      	 0.85      	 0.99       	 0.018 	 0.11  	 2            	 100         	 400         	 0.043 	 0.05   	 0.2    	 2.2           	 61                	 61                	 61                	 61                	 10           	 0.9          	 61       	 100000   	 1.2      	 4        	 ! 	 Helsinki   (HCW   added   0.99   for      emissivity) 	 Jarvi   et   al.   (2014)
+550   	 0.001         	 0.14           	 0.18      	 0.8       	 0.99       	 0.01  	 0.1   	 2            	 100         	 450         	 0.02  	 0.03   	 0.1    	 2.2           	 61                	 61                	 61                	 61                	 10           	 0.9          	 61       	 100000   	 1.2      	 4        	 ! 	 Swindon  	 Ward   et      al.    (2013)
+660   	 0.001         	 0.14           	 0.18      	 0.8       	 0.99       	 0.01  	 0.1   	 2            	 100         	 450         	 0.02  	 0.03   	 0.1    	 2.2           	 61                	 61                	 61                	 61                	 10           	 0.9          	 61       	 100000   	 1.2      	 4        	 ! 	 London
+-9
+-9
+</pre></div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="SUEWS_Soil.html" class="btn btn-neutral float-right" title="4.2.10. SUEWS_Soil.txt" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="SUEWS_SiteSelect.html" class="btn btn-neutral" title="4.2.8. SUEWS_SiteSelect.txt" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018 – 2019, micromet@University of Reading, led by Prof Sue Grimmond
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

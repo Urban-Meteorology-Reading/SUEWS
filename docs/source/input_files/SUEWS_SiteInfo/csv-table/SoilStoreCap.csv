@@ -1,0 +1,2 @@
+"Referencing Table","Requirement","Comment"
+"`SUEWS_Soil.txt`","`MD`","SoilStoreCap must not be greater than SoilDepth."

@@ -1,0 +1,733 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>3. Preparing to run the model &mdash; SUEWS v2018c documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="4. Input files" href="input_files/input_files.html" />
+    <link rel="prev" title="2. Parameterisations and sub-models within SUEWS" href="parameterisations-and-sub-models.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> SUEWS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v2018c
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameterisations-and-sub-models.html">2. Parameterisations and sub-models within SUEWS</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">3. Preparing to run the model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#preparatory-reading">3.1. Preparatory reading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#decide-what-type-of-model-run-you-are-interested-in">3.2. Decide what type of model run you are interested in</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#download-the-program-and-example-data-files">3.3. Download the program and example data files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#run-the-model-for-example-data">3.4. Run the model for example data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#preparation-of-data">3.5. Preparation of data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#preparation-of-site-characteristics-and-model-parameters">3.5.1. Preparation of site characteristics and model parameters</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#land-cover">3.5.1.1. Land cover</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#anthropogenic-heat-flux-qf">3.5.1.2. Anthropogenic heat flux (Q<sub>F</sub>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#other-information">3.5.1.3. Other information</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#data-entry">3.5.1.4. Data Entry</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#preparation-of-the-runcontrol-file">3.5.2. Preparation of the RunControl file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#preparation-of-the-meteorological-forcing-data">3.5.3. Preparation of the Meteorological forcing data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#preparation-of-the-initialconditions-file">3.5.4. Preparation of the InitialConditions file</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#run-the-model-for-your-site">3.6. Run the model for your site</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#analyse-the-output">3.7. Analyse the output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#summary-of-files">3.8. Summary of files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#get-in-contact">3.9. Get in contact</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="input_files/input_files.html">4. Input files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="output_files/output_files.html">5. Output files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">6. Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recent-publications.html">7. Recent publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="suews_related_softwares.html">8. SUEWS-related Software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sub-tutorials/tutorials.html">9. Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development/development.html">10. Development, Suggestions and Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmark/benchmark_report.html">Benchmark Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="version-history/version-history.html">11. Version History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgement.html">12. Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notation.html">13. Notation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">14. References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">SUEWS</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>3. Preparing to run the model</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/prepare-to-run-the-model.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Please report issues with the manual on the <a class="reference external" href="https://github.com/Urban-Meteorology-Reading/SUEWS-Docs/issues/new?template=issue-report.md">GitHub page</a>.</p>
+</div>
+<div class="section" id="preparing-to-run-the-model">
+<span id="id1"></span><h1>3. Preparing to run the model<a class="headerlink" href="#preparing-to-run-the-model" title="Permalink to this headline">¶</a></h1>
+<p>The following is to help with the model setup. Note that there are also
+starting <a class="reference external" href="http://umep-docs.readthedocs.io/en/latest/Tutorials/Tutorials.html">tutorials</a>  for the
+version of SUEWS in <a class="reference external" href="http://umep-docs.readthedocs.io/en/latest/index.html">UMEP</a>.
+The version there is the same (i.e. the executable) as the
+standalone version so you can swap to that later once you have some
+familiarity.</p>
+<div class="section" id="preparatory-reading">
+<h2>3.1. Preparatory reading<a class="headerlink" href="#preparatory-reading" title="Permalink to this headline">¶</a></h2>
+<p>Read the manual and relevant papers (and references therein):</p>
+<ul class="simple">
+<li>Järvi L, Grimmond CSB &amp; Christen A (2011) The Surface Urban Energy
+and Water Balance Scheme (SUEWS): Evaluation in Los Angeles and
+Vancouver. J. Hydrol. 411, 219-237.
+<a class="reference external" href="http://www.sciencedirect.com/science/article/pii/S0022169411006937">doi:10.1016/j.jhydrol.2011.10.00</a></li>
+<li>Järvi L, Grimmond CSB, Taka M, Nordbo A, Setälä H &amp; Strachan IB
+(2014) Development of the Surface Urban Energy and Water balance
+Scheme (SUEWS) for cold climate cities. Geosci. Model Dev. 7,
+1691-1711.
+<a class="reference external" href="http://www.geosci-model-dev.net/7/1691/2014/">doi:10.5194/gmd-7-1691-2014</a></li>
+<li>Ward HC, Kotthaus S, Järvi L and Grimmond CSB (2016) Surface Urban
+Energy and Water Balance Scheme (SUEWS): development and evaluation
+at two UK sites. Urban Climate 18, 1-32.
+<a class="reference external" href="http://www.sciencedirect.com/science/article/pii/S2212095516300256/">doi:10.1016/j.uclim.2016.05.001</a></li>
+</ul>
+<p><a class="reference internal" href="recent-publications.html#recent-publications"><span class="std std-ref">See other publications with example applications</span></a></p>
+</div>
+<div class="section" id="decide-what-type-of-model-run-you-are-interested-in">
+<h2>3.2. Decide what type of model run you are interested in<a class="headerlink" href="#decide-what-type-of-model-run-you-are-interested-in" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">&#160;</th>
+<th class="head">Available in this release</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>LUMPS</td>
+<td>Yes – not standalone</td>
+</tr>
+<tr class="row-odd"><td>SUEWS at a point or for an individual area</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td>SUEWS for multiple grids or areas</td>
+<td>Yes</td>
+</tr>
+<tr class="row-odd"><td>SUEWS with Boundary Layer (BL)</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>SUEWS with snow</td>
+<td>Yes</td>
+</tr>
+<tr class="row-odd"><td>SUEWS with SOLWEIG</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td>SUEWS with SOLWEIG and BL</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="download-the-program-and-example-data-files">
+<h2>3.3. Download the program and example data files<a class="headerlink" href="#download-the-program-and-example-data-files" title="Permalink to this headline">¶</a></h2>
+<p>Visit the <a class="reference external" href="https://urban-meteorology-reading.github.io/SUEWS">website</a> to receive a link to download the program and example
+data files. Select the appropriate compiled version of the model to download. For windows there is an installation version which will put the programs and all the files into the appropriate place. There is also a version linked to QGIS:
+<a class="reference external" href="http://umep-docs.readthedocs.io/en/latest/index.html">UMEP</a>.</p>
+<p>Note, as the definition of long double precision varies between
+computers (e.g. Mac vs Windows) slightly different results may occur in
+the output files.</p>
+<p>Test/example files are given for the London KCL site, 2011 data (denoted <code class="code docutils literal notranslate"><span class="pre">Kc11</span></code>)</p>
+<p>In the following, <code class="code docutils literal notranslate"><span class="pre">SS</span></code> is the site code (e.g. <code class="code docutils literal notranslate"><span class="pre">Kc</span></code>), <code class="code docutils literal notranslate"><span class="pre">ss</span></code> the grid ID, <code class="code docutils literal notranslate"><span class="pre">YYYY</span></code> the year and <code class="code docutils literal notranslate"><span class="pre">tt</span></code> the time interval.</p>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Filename</th>
+<th class="head">Description</th>
+<th class="head">Input/output</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>SSss_data.txt</td>
+<td>Meteorological input</td>
+<td>Input file (60-min)</td>
+</tr>
+<tr class="row-odd"><td>SSss_YYYY_data_5.txt</td>
+<td>Meteorological input</td>
+<td>Input file (5-min)</td>
+</tr>
+<tr class="row-even"><td>InitialConditionsSSss</td>
+<td>Initial conditions</td>
+<td>Input - _YYYY.nml(+) file</td>
+</tr>
+<tr class="row-odd"><td>SUEWS_SiteInfo_SSss.x</td>
+<td>Spreadsheet</td>
+<td>Input lsm containing all other input information</td>
+</tr>
+<tr class="row-even"><td>RunControl.nml</td>
+<td>Sets model run</td>
+<td>Input (located in options main directory)</td>
+</tr>
+<tr class="row-odd"><td>SS_Filechoices.txt</td>
+<td>Summary of model run</td>
+<td>Output  options</td>
+</tr>
+<tr class="row-even"><td>SSss_YYYY_5.txt</td>
+<td>(Optional) 5-min</td>
+<td>Output resolution output file</td>
+</tr>
+<tr class="row-odd"><td>SSss_YYYY_60.txt</td>
+<td>60-min resolution</td>
+<td>Output output file</td>
+</tr>
+<tr class="row-even"><td>SSss_DailyState.txt</td>
+<td>Daily state variables</td>
+<td>Output (all years in one file)</td>
+</tr>
+</tbody>
+</table>
+<p>(+) There is a second file InitialConditionsSSss_YYYY_EndOfRun.nml or
+InitialConditionsSSss_YYYY+1.nml in the input directory. At the end of
+the run, and at the end of each year of the run, these files are written
+out so that this information could be used to initialize further model
+runs.</p>
+</div>
+<div class="section" id="run-the-model-for-example-data">
+<h2>3.4. Run the model for example data<a class="headerlink" href="#run-the-model-for-example-data" title="Permalink to this headline">¶</a></h2>
+<p>Before running the model with your own data, check that you get the same results as the test run
+example files provided. Copy the example output files elsewhere so you can compare the
+results. When you run the program it will write over the supplied files.</p>
+<p>To run the model you can use <strong>Command Prompt</strong> (in the directory where
+the programme is located type the model name) or just double click the
+executable file.</p>
+<p>Please see <a class="reference internal" href="troubleshooting.html#troubleshooting"><span class="std std-ref">Troubleshooting</span></a> if you have problems running the model.</p>
+</div>
+<div class="section" id="preparation-of-data">
+<h2>3.5. Preparation of data<a class="headerlink" href="#preparation-of-data" title="Permalink to this headline">¶</a></h2>
+<p>The information required to run SUEWS for your site consists of:</p>
+<ol class="arabic simple">
+<li>Continuous <em>meteorological forcing data</em> for the entire period to be modelled without gaps. If you need help preparing the data you can use some of the <a class="reference external" href="http://umep-docs.readthedocs.io/en/latest/index.html">UMEP</a> tools.</li>
+<li>Knowledge of the <em>surface and soil conditions immediately prior to the first model timestep</em>. If these initial conditions are unknown, model spinup can help; i.e. run the model and use the output at the end of the run to infer the conditions at the start of the main run).</li>
+<li>The <em>location of the site</em> (latitude, longitude, altitude).</li>
+<li>Information about the <em>characteristics of the surface</em>, including
+land cover, heights of buildings and trees, radiative characteristics
+(e.g. albedo, emissivity), drainage characteristics, soil
+characteristics, snow characteristics, phenological characteristics
+(e.g. seasonal cycle of LAI).</li>
+<li>Information about <em>human behaviour</em>, including energy use and water
+use (e.g. for irrigation or street cleaning) and snow clearing (if
+applicable). The anthropogenic energy use and water use may be
+provided as a time series in the meteorological forcing file if these
+data are available or modelled based on parameters provided to the
+model, including population density, hourly and weekly profiles of
+energy and water use, information about the proportion of properties
+using irrigation and the type of irrigation (automatic or manual).</li>
+</ol>
+<p>It is particularly important to ensure the following input information
+is appropriate and representative of the site:</p>
+<ul class="simple">
+<li>Fractions of different land cover types and (less so) heights of
+buildings <a class="reference internal" href="references.html#w16" id="id2">[W16]</a></li>
+<li>Accurate meteorological forcing data, particularly precipitation and
+incoming shortwave radiation <a class="reference internal" href="references.html#ko17" id="id3">[Ko17]</a></li>
+<li>Initial soil moisture conditions <a class="reference internal" href="references.html#best2014" id="id4">[Best2014]</a></li>
+<li>Anthropogenic heat flux parameters, particularly if there are
+considerable energy emissions from transport, buildings, metabolism,
+etc <a class="reference internal" href="references.html#w16" id="id5">[W16]</a></li>
+<li>External water use (if irrigation or street cleaning occurs)</li>
+<li>Snow clearing (if running the snow option)</li>
+<li>Surface conductance parameterisation <a class="reference internal" href="references.html#j11" id="id6">[J11]</a> <a class="reference internal" href="references.html#w16" id="id7">[W16]</a></li>
+</ul>
+<p>SUEWS can be run either for an individual area or for multiple areas.
+There is no requirement for the areas to be of any particular shape but
+here we refer to them as model ‘grids’.</p>
+<div class="section" id="preparation-of-site-characteristics-and-model-parameters">
+<h3>3.5.1. Preparation of site characteristics and model parameters<a class="headerlink" href="#preparation-of-site-characteristics-and-model-parameters" title="Permalink to this headline">¶</a></h3>
+<p>The area to be modelled is described by a set of characteristics that
+are specified in the <a class="reference internal" href="input_files/SUEWS_SiteInfo/SUEWS_SiteSelect.html#suews-siteselect-txt"><span class="std std-ref">SUEWS_SiteSelect.txt</span></a>
+file. Each row corresponds to one model grid for one year (i.e. running
+a single grid over three years would require three rows; running two
+grids over two years would require four rows). Characteristics are often
+selected by a code for a particular set of conditions. For example, a
+specific soil type (links to <a class="reference internal" href="input_files/SUEWS_SiteInfo/SUEWS_Soil.html#suews-soil-txt"><span class="std std-ref">SUEWS_Soil.txt</span></a>) or
+characteristics of deciduous trees in a particular region (links to
+<a class="reference internal" href="input_files/SUEWS_SiteInfo/SUEWS_Veg.html#suews-veg-txt"><span class="std std-ref">SUEWS_Veg.txt</span></a>). The intent is to build a library of
+characteristics for different types of urban areas. The codes are
+specified by the user, must be integer values and must be unique within
+the first column of each input file, otherwise the model will return an
+error. (Note in <a class="reference internal" href="input_files/SUEWS_SiteInfo/SUEWS_SiteSelect.html#suews-siteselect-txt"><span class="std std-ref">SUEWS_SiteSelect.txt</span></a> the first column is labelled ‘Grid’ and can contain repeat values for different years.) See <a class="reference internal" href="input_files/input_files.html#input-files"><span class="std std-ref">Input files</span></a> for details. Note <a class="reference external" href="http://umep-docs.readthedocs.io/en/latest/index.html">UMEP</a> maybe helpful for components of this.</p>
+<div class="section" id="land-cover">
+<h4>3.5.1.1. Land cover<a class="headerlink" href="#land-cover" title="Permalink to this headline">¶</a></h4>
+<p>For each grid, the land cover must be classified using the following
+surface types:</p>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="25%" />
+<col width="25%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head stub">Classification</th>
+<th class="head">Surface type</th>
+<th class="head">File where characteristics are specified</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><th class="stub">Non-vegetated</th>
+<td>Paved surfaces</td>
+<td><a class="reference internal" href="input_files/SUEWS_SiteInfo/SUEWS_NonVeg.html#suews-nonveg-txt"><span class="std std-ref">SUEWS_NonVeg.txt</span></a></td>
+</tr>
+<tr class="row-odd"><th class="stub">&#160;</th>
+<td>Building</td>
+<td><a class="reference internal" href="input_files/SUEWS_SiteInfo/SUEWS_NonVeg.html#suews-nonveg-txt"><span class="std std-ref">SUEWS_NonVeg.txt</span></a></td>
+</tr>
+<tr class="row-even"><th class="stub">&#160;</th>
+<td>Bare soil</td>
+<td><a class="reference internal" href="input_files/SUEWS_SiteInfo/SUEWS_NonVeg.html#suews-nonveg-txt"><span class="std std-ref">SUEWS_NonVeg.txt</span></a></td>
+</tr>
+<tr class="row-odd"><th class="stub">Vegetation</th>
+<td>Evergreen trees</td>
+<td><a class="reference internal" href="input_files/SUEWS_SiteInfo/SUEWS_Veg.html#suews-veg-txt"><span class="std std-ref">SUEWS_Veg.txt</span></a></td>
+</tr>
+<tr class="row-even"><th class="stub">&#160;</th>
+<td>Deciduous trees</td>
+<td><a class="reference internal" href="input_files/SUEWS_SiteInfo/SUEWS_Veg.html#suews-veg-txt"><span class="std std-ref">SUEWS_Veg.txt</span></a></td>
+</tr>
+<tr class="row-odd"><th class="stub">&#160;</th>
+<td>Grass</td>
+<td><a class="reference internal" href="input_files/SUEWS_SiteInfo/SUEWS_Veg.html#suews-veg-txt"><span class="std std-ref">SUEWS_Veg.txt</span></a></td>
+</tr>
+<tr class="row-even"><th class="stub">Water</th>
+<td>Water</td>
+<td><a class="reference internal" href="input_files/SUEWS_SiteInfo/SUEWS_Water.html#suews-water-txt"><span class="std std-ref">SUEWS_Water.txt</span></a></td>
+</tr>
+<tr class="row-odd"><th class="stub">Snow</th>
+<td>Snow</td>
+<td><a class="reference internal" href="input_files/SUEWS_SiteInfo/SUEWS_Snow.html#suews-snow-txt"><span class="std std-ref">SUEWS_Snow.txt</span></a></td>
+</tr>
+</tbody>
+</table>
+<p>The surface cover fractions (i.e. proportion of the grid taken up by
+each surface) must be specified in
+<a class="reference internal" href="input_files/SUEWS_SiteInfo/SUEWS_SiteSelect.html#suews-siteselect-txt"><span class="std std-ref">SUEWS_SiteSelect.txt</span></a>. The surface cover
+fractions are <strong>critical</strong>, so make certain that the different surface
+cover fractions are appropriate for your site.</p>
+<p>For some locations, land cover information may be already available
+(e.g. from various remote sensing resources). If not, websites like Bing
+Maps and Google Maps allow you to see aerial images of your site and can
+be used to estimate the relative proportion of each land cover type. If
+detailed spatial datasets are available,
+<a class="reference external" href="http://umep-docs.readthedocs.io/en/latest/index.html">UMEP</a> allows for a direct link
+to a GIS environment using QGIS.</p>
+</div>
+<div class="section" id="anthropogenic-heat-flux-qf">
+<span id="anthropogenic-heat-flux-qf-1"></span><h4>3.5.1.2. Anthropogenic heat flux (Q<sub>F</sub>)<a class="headerlink" href="#anthropogenic-heat-flux-qf" title="Permalink to this headline">¶</a></h4>
+<p>You can either model Q<sub>F</sub> within SUEWS or provide it as an input.</p>
+<ul class="simple">
+<li>To model it population density is needed as an input for LUMPS and
+SUEWS to calculate Q<sub>F</sub>.</li>
+<li>If you have no information about the population of the site we
+recommend that you use the <a class="reference external" href="https://urban-meteorology-reading.github.io/LUCY">LUCY</a> model <a class="reference internal" href="references.html#lucy" id="id8">[lucy]</a>  <a class="reference internal" href="references.html#lucy2" id="id9">[lucy2]</a> to estimate the
+anthropogenic heat flux which can then be provided as input SUEWS
+along with the meteorological forcing data.</li>
+</ul>
+<p>Alternatively, you can use the updated version of LUCY called
+<a class="reference external" href="http://umep-docs.readthedocs.io/en/latest/OtherManuals/LQF_Manual.html">LQF</a>, which is included in
+<a class="reference external" href="http://umep-docs.readthedocs.io/en/latest/index.html">UMEP</a>.</p>
+</div>
+<div class="section" id="other-information">
+<h4>3.5.1.3. Other information<a class="headerlink" href="#other-information" title="Permalink to this headline">¶</a></h4>
+<p>The surface cover fractions and population density can have a major
+impact on the model output. However, it is important to consider the
+suitability of all parameters for your site. Using inappropriate
+parameters may result in the model returning an error or, worse,
+generating output that is simply not representative of your site. Please
+read the section on <a class="reference internal" href="input_files/input_files.html#input-files"><span class="std std-ref">Input files</span></a>. Recommended or
+reasonable ranges of values are suggested for some parameters, along
+with important considerations for how to select appropriate values for
+your site.</p>
+</div>
+<div class="section" id="data-entry">
+<span id="id10"></span><h4>3.5.1.4. Data Entry<a class="headerlink" href="#data-entry" title="Permalink to this headline">¶</a></h4>
+<p>To create the series of input text files describing the characteristics
+of your site, there are three options:</p>
+<ol class="arabic simple">
+<li>Data can be entered directly into the input text files. The example
+(.txt) files provide a template to create your own files which can be
+edited with <a class="reference internal" href="troubleshooting.html#a-text-editor"><span class="std std-ref">A text editor</span></a> directly.</li>
+<li>Data can be entered into the spreadsheet <strong>SUEWS_SiteInfo.xlsm</strong> and
+the input text files generated by running the macro.</li>
+<li>Use <a class="reference external" href="http://umep-docs.readthedocs.io/en/latest/index.html">UMEP</a>.</li>
+</ol>
+<p><strong>To run the xlsm macro:</strong> Enter the data for your site into the xlsm
+spreadsheet <strong>SUEWS_SiteInfo.xlsm</strong> and then use the macro to create the
+text files which will appear the same directory.</p>
+<p>If there is a problem</p>
+<ul class="simple">
+<li>Make sure none of the text files to be generated are open.</li>
+<li>It is recommended to close the spreadsheet before running the actual
+model code.</li>
+</ul>
+<p>Note that in all txt files:</p>
+<ul class="simple">
+<li>The first two rows are headers. The first row is the column number;
+the second row is the column name.</li>
+<li>The names and order of the columns should not be altered from the
+templates, as these are checked by the model and errors will be
+returned if particular columns cannot be found.</li>
+<li>Since v2017a it is no longer necessary for the meteorological forcing
+data to have two rows with -9 in column 1 as their last two rows.</li>
+<li>“!” indicates a comment, so any text following “!” on the same line
+will not be read by the model.</li>
+<li>If data are unavailable or not required, enter the value -999 in the
+correct place in the input file.</li>
+<li>Ensure the units are correct for all input information. See <a class="reference internal" href="input_files/input_files.html#input-files"><span class="std std-ref">Input files</span></a> for a description of parameters.</li>
+</ul>
+<p>In addition to these text files, the following files are also needed to
+run the model.</p>
+</div>
+</div>
+<div class="section" id="preparation-of-the-runcontrol-file">
+<h3>3.5.2. Preparation of the RunControl file<a class="headerlink" href="#preparation-of-the-runcontrol-file" title="Permalink to this headline">¶</a></h3>
+<p>In the RunControl.nml file the site name (<code class="code docutils literal notranslate"><span class="pre">SS</span></code>) and directories for the
+model input and output are given. This means <strong>before running</strong> the
+model (even the with the example datasets) you must either</p>
+<ol class="arabic simple">
+<li>open the RunControl.nml file and edit the input and output file paths
+and the site name (with a <a class="reference internal" href="troubleshooting.html#a-text-editor"><span class="std std-ref">A text editor</span></a>) so that
+they are correct for your setup, or</li>
+<li>create the directories specified in the RunControl.nml file</li>
+</ol>
+<p>From the given site identification the model identifies the input files
+and generates the output files. For example if you specify:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>FileOutputPath = “C:\FolderName\SUEWSOutput\”
+</pre></div>
+</div>
+<p>and&nbsp;use&nbsp;site&nbsp;code&nbsp;SS&nbsp;the&nbsp;model&nbsp;creates&nbsp;an&nbsp;output&nbsp;file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">C</span><span class="p">:</span>\<span class="n">FolderName</span>\<span class="n">SUEWSOutput</span>\<span class="n">SSss_YYYY_TT</span><span class="o">.</span><span class="n">txt</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">remember&nbsp;to&nbsp;add&nbsp;the&nbsp;last&nbsp;backslash&nbsp;in&nbsp;windows&nbsp;and&nbsp;slash&nbsp;in&nbsp;Linux/Mac</p>
+</div>
+<p>If the file paths are not correct the program will return an error when
+run and write the error to the <a class="reference internal" href="output_files/output_files.html#problems-txt"><span class="std std-ref">Error messages: problems.txt</span></a> file.</p>
+</div>
+<div class="section" id="preparation-of-the-meteorological-forcing-data">
+<h3>3.5.3. Preparation of the Meteorological forcing data<a class="headerlink" href="#preparation-of-the-meteorological-forcing-data" title="Permalink to this headline">¶</a></h3>
+<p>The model time-step is specified in <a class="reference internal" href="input_files/RunControl/RunControl.html#runcontrol-nml"><span class="std std-ref">RunControl.nml</span></a>
+(5 min is highly recommended). If meteorological forcing data are not
+available at this resolution, SUEWS has the option to downscale (e.g.
+hourly) data to the time-step required. See details about the
+<a class="reference internal" href="input_files/met_input.html#ssss-yyyy-data-tt-txt"><span class="std std-ref">SSss_YYYY_data_tt.txt</span></a> to learn more
+about choices of data input. Each grid can have its own meteorological
+forcing file, or a single file can be used for all grids. The forcing
+data should be representative of the local-scale, i.e. collected (or
+derived) above the height of the roughness elements (buildings and
+trees).</p>
+</div>
+<div class="section" id="preparation-of-the-initialconditions-file">
+<h3>3.5.4. Preparation of the InitialConditions file<a class="headerlink" href="#preparation-of-the-initialconditions-file" title="Permalink to this headline">¶</a></h3>
+<p>Information about the surface state and meteorological conditions just
+before the start of the run are provided in the Initial Conditions file.
+At the very start of the run, each grid can have its own Initial
+Conditions file, or a single file can be used for all grids. For details
+see <a class="reference internal" href="input_files/Initial_Conditions/Initial_Conditions.html#initial-conditions"><span class="std std-ref">Initial Conditions file</span></a>.</p>
+</div>
+</div>
+<div class="section" id="run-the-model-for-your-site">
+<h2>3.6. Run the model for your site<a class="headerlink" href="#run-the-model-for-your-site" title="Permalink to this headline">¶</a></h2>
+<p>To run the model you can use <strong>Command Prompt</strong> (in the directory where
+the programme is located type the model name) or just double click the
+executable file.</p>
+<p>Please see <a class="reference internal" href="troubleshooting.html#troubleshooting"><span class="std std-ref">Troubleshooting</span></a> if you have problems
+running the model.</p>
+</div>
+<div class="section" id="analyse-the-output">
+<h2>3.7. Analyse the output<a class="headerlink" href="#analyse-the-output" title="Permalink to this headline">¶</a></h2>
+<p>It is a good idea to perform initial checks that the model output looks
+reasonable.</p>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="20%" />
+<col width="80%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Characteristic</th>
+<th class="head">Things to check</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Leaf area index</td>
+<td><dl class="first last docutils">
+<dt>Does the phenology look appropriate?</dt>
+<dd><ul class="first last simple">
+<li>what does the seasonal cycle of <a class="reference external" href="http://glossary.ametsoc.org/wiki/Leaf_area_index">leaf area index (LAI)</a> look like?</li>
+<li>Are the leaves on the trees at approximately the right time of the year?</li>
+</ul>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="row-odd"><td>Kdown</td>
+<td><dl class="first last docutils">
+<dt>Is the timing of diurnal cycles correct for the incoming solar radiation?</dt>
+<dd><ul class="first last simple">
+<li>Although Kdown is a required input, it is also included in the output file. It is a good idea to check that the timing of Kdown in the output file is appropriate, as problems can indicate errors with the timestamp, incorrect time settings or problems with the disaggregation. In particular, make sure the sign of the longitude is specified correctly in <a class="reference internal" href="input_files/SUEWS_SiteInfo/SUEWS_SiteSelect.html#suews-siteselect-txt"><span class="std std-ref">SUEWS_SiteSelect.txt</span></a>.</li>
+<li>Checking solar angles (zenith and azimuth) can also be a useful check that the timing is correct.</li>
+</ul>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="row-even"><td>Albedo</td>
+<td><dl class="first last docutils">
+<dt>Is the bulk albedo correct?</dt>
+<dd><ul class="first last simple">
+<li>This is critical because a small error has an impact on all the fluxes (energy and hydrology).</li>
+<li>If you have measurements of outgoing shortwave radiation compare these with the modelled values.</li>
+<li>How do the values compare to literature values for your area?</li>
+</ul>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="summary-of-files">
+<h2>3.8. Summary of files<a class="headerlink" href="#summary-of-files" title="Permalink to this headline">¶</a></h2>
+<p>The table below lists the files required to run SUEWS and the output
+files produced. SS is the two-letter code (specified in RunControl)
+representing the site name, ss is the grid identification (integer
+values between 0 and 2,147,483,647 (largest 4-byte integer)) and YYYY is
+the year. TT is the resolution of the input/output file and tt is the
+model time-step.</p>
+<p>The last column indicates whether the files are needed/produced once per
+run (1/run), or once per day (1/day), for each year (1/year) or for each
+grid (1/grid):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">B</span><span class="p">]</span> <span class="n">indicates</span> <span class="n">files</span> <span class="n">used</span> <span class="k">with</span> <span class="n">the</span> <span class="n">CBL</span> <span class="n">part</span> <span class="n">of</span> <span class="n">SUEWS</span> <span class="p">(</span><span class="n">BLUEWS</span><span class="p">)</span> <span class="ow">and</span> <span class="n">therefore</span> <span class="n">are</span> <span class="n">only</span> <span class="n">needed</span><span class="o">/</span><span class="n">produced</span> <span class="k">if</span> <span class="n">this</span> <span class="n">option</span> <span class="ow">is</span> <span class="n">selected</span>
+<span class="p">[</span><span class="n">E</span><span class="p">]</span> <span class="n">indicates</span> <span class="n">files</span> <span class="n">associated</span> <span class="k">with</span> <span class="n">ESTM</span> <span class="n">storage</span> <span class="n">heat</span> <span class="n">flux</span> <span class="n">models</span> <span class="ow">and</span> <span class="n">therefore</span> <span class="n">are</span> <span class="n">only</span> <span class="n">needed</span><span class="o">/</span><span class="n">produced</span> <span class="k">if</span> <span class="n">this</span> <span class="n">option</span> <span class="ow">is</span> <span class="n">selected</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="get-in-contact">
+<h2>3.9. Get in contact<a class="headerlink" href="#get-in-contact" title="Permalink to this headline">¶</a></h2>
+<p>For issues met in using SUEWS, we recommend the following ways to get in contact with the developers and the SUEWS community:</p>
+<ol class="arabic simple">
+<li>Report issues on <a class="reference external" href="https://github.com/Urban-Meteorology-Reading/Urban-Meteorology-Reading.github.io/issues">our GitHub page</a>.</li>
+<li>Ask for help by joining <a class="reference external" href="https://www.lists.reading.ac.uk/mailman/listinfo/met-suews">the Email-list for SUEWS</a>.</li>
+</ol>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="input_files/input_files.html" class="btn btn-neutral float-right" title="4. Input files" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="parameterisations-and-sub-models.html" class="btn btn-neutral" title="2. Parameterisations and sub-models within SUEWS" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018 – 2019, micromet@University of Reading, led by Prof Sue Grimmond
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

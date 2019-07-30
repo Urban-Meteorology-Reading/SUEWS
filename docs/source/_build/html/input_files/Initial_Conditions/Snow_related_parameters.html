@@ -1,0 +1,783 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>4.3.5. Snow related parameters &mdash; SUEWS v2018c documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="4.4. Meteorological Input File" href="../met_input.html" />
+    <link rel="prev" title="4.3.4. Above ground state" href="Above_ground_state.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> SUEWS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v2018c
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../parameterisations-and-sub-models.html">2. Parameterisations and sub-models within SUEWS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../prepare-to-run-the-model.html">3. Preparing to run the model</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../input_files.html">4. Input files</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../RunControl/RunControl.html">4.1. RunControl.nml</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../SUEWS_SiteInfo/SUEWS_SiteInfo.html">4.2. SUEWS Site Information</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="Initial_Conditions.html">4.3. Initial Conditions file</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="Soil_moisture_states.html">4.3.1. Soil moisture states</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Vegetation_parameters.html">4.3.2. Vegetation parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Recent_meteorology.html">4.3.3. Recent meteorology</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Above_ground_state.html">4.3.4. Above ground state</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">4.3.5. Snow related parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../met_input.html">4.4. Meteorological Input File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../CBL_input/CBL_input.html">4.5. CBL input files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ESTM_related_files/ESTM_related_files.html">4.6. ESTM-related files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../SOLWEIG_input/SOLWEIG_input.html">4.7. SOLWEIG input files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../input_converter.html">4.8. SUEWS input converter</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../output_files/output_files.html">5. Output files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../troubleshooting.html">6. Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../recent-publications.html">7. Recent publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../suews_related_softwares.html">8. SUEWS-related Software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sub-tutorials/tutorials.html">9. Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../development/development.html">10. Development, Suggestions and Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../benchmark/benchmark_report.html">Benchmark Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../version-history/version-history.html">11. Version History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../acknowledgement.html">12. Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../notation.html">13. Notation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references.html">14. References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SUEWS</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../input_files.html">4. Input files</a> &raquo;</li>
+        
+          <li><a href="Initial_Conditions.html">4.3. Initial Conditions file</a> &raquo;</li>
+        
+      <li>4.3.5. Snow related parameters</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/input_files/Initial_Conditions/Snow_related_parameters.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Please report issues with the manual on the <a class="reference external" href="https://github.com/Urban-Meteorology-Reading/SUEWS-Docs/issues/new?template=issue-report.md">GitHub page</a>.</p>
+</div>
+<div class="section" id="snow-related-parameters">
+<span id="id1"></span><h1>4.3.5. Snow related parameters<a class="headerlink" href="#snow-related-parameters" title="Permalink to this headline">¶</a></h1>
+<dl class="option">
+<dt id="cmdoption-arg-snowinitially">
+<code class="descname">SnowInitially</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-snowinitially" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Optional</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Flag for initial snow status [0 or 1]</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">If the model run starts when there is no snow on the ground, set <a class="reference internal" href="#cmdoption-arg-snowinitially"><code class="xref any std std-option docutils literal notranslate"><span class="pre">SnowInitially</span></code></a> = 0 and the snow-related parameters will be set accordingly. If the model run starts when there is snow on the ground, the following snow-related parameters must be set appropriately. The value of <a class="reference internal" href="#cmdoption-arg-snowinitially"><code class="xref any std std-option docutils literal notranslate"><span class="pre">SnowInitially</span></code></a> overrides any values provided for the individual snow-related parameters. To prevent <a class="reference internal" href="#cmdoption-arg-snowinitially"><code class="xref any std std-option docutils literal notranslate"><span class="pre">SnowInitially</span></code></a> from setting the initial conditions, either omit it from the namelist or set to -999. If values are provided individually, they should be consistent the information provided in <a class="reference internal" href="../SUEWS_SiteInfo/SUEWS_Snow.html#suews-snow-txt"><span class="std std-ref">SUEWS_Snow.txt</span></a> .</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-snowwaterpavedstate">
+<code class="descname">SnowWaterPavedState</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-snowwaterpavedstate" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Optional</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Initial amount of liquid water in the snow on paved surfaces <a class="reference internal" href="../../notation.html#term-paved"><code class="xref any std std-term docutils literal notranslate"><span class="pre">Paved</span></code></a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">The recommended values can be found from <a class="reference internal" href="../SUEWS_SiteInfo/SUEWS_Snow.html#suews-snow-txt"><span class="std std-ref">SUEWS_Snow.txt</span></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-snowwaterbldgsstate">
+<code class="descname">SnowWaterBldgsState</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-snowwaterbldgsstate" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Optional</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Initial amount of liquid water in the snow on buildings <a class="reference internal" href="../../notation.html#term-bldgs"><code class="xref any std std-term docutils literal notranslate"><span class="pre">Bldgs</span></code></a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">The recommended values can be found from <a class="reference internal" href="../SUEWS_SiteInfo/SUEWS_Snow.html#suews-snow-txt"><span class="std std-ref">SUEWS_Snow.txt</span></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-snowwaterevetrstate">
+<code class="descname">SnowWaterEveTrState</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-snowwaterevetrstate" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Optional</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Initial amount of liquid water in the snow on evergreen trees <a class="reference internal" href="../../notation.html#term-evetr"><code class="xref any std std-term docutils literal notranslate"><span class="pre">EveTr</span></code></a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">The recommended values can be found from <a class="reference internal" href="../SUEWS_SiteInfo/SUEWS_Snow.html#suews-snow-txt"><span class="std std-ref">SUEWS_Snow.txt</span></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-snowwaterdectrstate">
+<code class="descname">SnowWaterDecTrState</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-snowwaterdectrstate" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Optional</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Initial amount of liquid water in the snow on deciduous trees <a class="reference internal" href="../../notation.html#term-dectr"><code class="xref any std std-term docutils literal notranslate"><span class="pre">DecTr</span></code></a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">The recommended values can be found from <a class="reference internal" href="../SUEWS_SiteInfo/SUEWS_Snow.html#suews-snow-txt"><span class="std std-ref">SUEWS_Snow.txt</span></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-snowwatergrassstate">
+<code class="descname">SnowWaterGrassState</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-snowwatergrassstate" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Optional</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Initial amount of liquid water in the snow on grass surfaces <a class="reference internal" href="../../notation.html#term-grass"><code class="xref any std std-term docutils literal notranslate"><span class="pre">Grass</span></code></a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">The recommended values can be found from <a class="reference internal" href="../SUEWS_SiteInfo/SUEWS_Snow.html#suews-snow-txt"><span class="std std-ref">SUEWS_Snow.txt</span></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-snowwaterbsoilstate">
+<code class="descname">SnowWaterBSoilState</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-snowwaterbsoilstate" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Optional</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Initial amount of liquid water in the snow on bare soil surfaces <a class="reference internal" href="../../notation.html#term-bsoil"><code class="xref any std std-term docutils literal notranslate"><span class="pre">BSoil</span></code></a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">The recommended values can be found from <a class="reference internal" href="../SUEWS_SiteInfo/SUEWS_Snow.html#suews-snow-txt"><span class="std std-ref">SUEWS_Snow.txt</span></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-snowwaterwaterstate">
+<code class="descname">SnowWaterWaterState</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-snowwaterwaterstate" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Optional</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Initial amount of liquid water in the snow in water <a class="reference internal" href="../../notation.html#term-water"><code class="xref any std std-term docutils literal notranslate"><span class="pre">Water</span></code></a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">The recommended values can be found from <a class="reference internal" href="../SUEWS_SiteInfo/SUEWS_Snow.html#suews-snow-txt"><span class="std std-ref">SUEWS_Snow.txt</span></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-snowpackpaved">
+<code class="descname">SnowPackPaved</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-snowpackpaved" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Optional</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Initial snow water equivalent if the snow on paved surfaces <a class="reference internal" href="../../notation.html#term-paved"><code class="xref any std std-term docutils literal notranslate"><span class="pre">Paved</span></code></a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">The recommended values can be found from <a class="reference internal" href="../SUEWS_SiteInfo/SUEWS_Snow.html#suews-snow-txt"><span class="std std-ref">SUEWS_Snow.txt</span></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-snowpackbldgs">
+<code class="descname">SnowPackBldgs</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-snowpackbldgs" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Optional</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Initial snow water equivalent if the snow on buildings <a class="reference internal" href="../../notation.html#term-bldgs"><code class="xref any std std-term docutils literal notranslate"><span class="pre">Bldgs</span></code></a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">The recommended values can be found from <a class="reference internal" href="../SUEWS_SiteInfo/SUEWS_Snow.html#suews-snow-txt"><span class="std std-ref">SUEWS_Snow.txt</span></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-snowpackevetr">
+<code class="descname">SnowPackEveTr</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-snowpackevetr" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Optional</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Initial snow water equivalent if the snow on evergreen trees <a class="reference internal" href="../../notation.html#term-evetr"><code class="xref any std std-term docutils literal notranslate"><span class="pre">EveTr</span></code></a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">The recommended values can be found from <a class="reference internal" href="../SUEWS_SiteInfo/SUEWS_Snow.html#suews-snow-txt"><span class="std std-ref">SUEWS_Snow.txt</span></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-snowpackdectr">
+<code class="descname">SnowPackDecTr</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-snowpackdectr" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Optional</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Initial snow water equivalent if the snow on deciduous trees <a class="reference internal" href="../../notation.html#term-dectr"><code class="xref any std std-term docutils literal notranslate"><span class="pre">DecTr</span></code></a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">The recommended values can be found from <a class="reference internal" href="../SUEWS_SiteInfo/SUEWS_Snow.html#suews-snow-txt"><span class="std std-ref">SUEWS_Snow.txt</span></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-snowpackgrass">
+<code class="descname">SnowPackGrass</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-snowpackgrass" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Optional</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Initial snow water equivalent if the snow on grass surfaces <a class="reference internal" href="../../notation.html#term-grass"><code class="xref any std std-term docutils literal notranslate"><span class="pre">Grass</span></code></a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">The recommended values can be found from <a class="reference internal" href="../SUEWS_SiteInfo/SUEWS_Snow.html#suews-snow-txt"><span class="std std-ref">SUEWS_Snow.txt</span></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-snowpackbsoil">
+<code class="descname">SnowPackBSoil</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-snowpackbsoil" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Optional</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Initial snow water equivalent if the snow on bare soil surfaces <a class="reference internal" href="../../notation.html#term-bsoil"><code class="xref any std std-term docutils literal notranslate"><span class="pre">BSoil</span></code></a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">The recommended values can be found from <a class="reference internal" href="../SUEWS_SiteInfo/SUEWS_Snow.html#suews-snow-txt"><span class="std std-ref">SUEWS_Snow.txt</span></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-snowpackwater">
+<code class="descname">SnowPackWater</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-snowpackwater" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Optional</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Initial snow water equivalent if the snow on water <a class="reference internal" href="../../notation.html#term-water"><code class="xref any std std-term docutils literal notranslate"><span class="pre">Water</span></code></a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">The recommended values can be found from <a class="reference internal" href="../SUEWS_SiteInfo/SUEWS_Snow.html#suews-snow-txt"><span class="std std-ref">SUEWS_Snow.txt</span></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-snowfracpaved">
+<code class="descname">SnowFracPaved</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-snowfracpaved" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Optional</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Initial plan area fraction of snow on paved surfaces <a class="reference internal" href="../../notation.html#term-paved"><code class="xref any std std-term docutils literal notranslate"><span class="pre">Paved</span></code></a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">The recommended values can be found from <a class="reference internal" href="../SUEWS_SiteInfo/SUEWS_Snow.html#suews-snow-txt"><span class="std std-ref">SUEWS_Snow.txt</span></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-snowfracbldgs">
+<code class="descname">SnowFracBldgs</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-snowfracbldgs" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Optional</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Initial plan area fraction of snow on buildings <a class="reference internal" href="../../notation.html#term-bldgs"><code class="xref any std std-term docutils literal notranslate"><span class="pre">Bldgs</span></code></a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">The recommended values can be found from <a class="reference internal" href="../SUEWS_SiteInfo/SUEWS_Snow.html#suews-snow-txt"><span class="std std-ref">SUEWS_Snow.txt</span></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-snowfracevetr">
+<code class="descname">SnowFracEveTr</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-snowfracevetr" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Optional</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Initial plan area fraction of snow on evergreen trees <a class="reference internal" href="../../notation.html#term-evetr"><code class="xref any std std-term docutils literal notranslate"><span class="pre">EveTr</span></code></a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">The recommended values can be found from <a class="reference internal" href="../SUEWS_SiteInfo/SUEWS_Snow.html#suews-snow-txt"><span class="std std-ref">SUEWS_Snow.txt</span></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-snowfracdectr">
+<code class="descname">SnowFracDecTr</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-snowfracdectr" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Optional</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Initial plan area fraction of snow on deciduous trees <a class="reference internal" href="../../notation.html#term-dectr"><code class="xref any std std-term docutils literal notranslate"><span class="pre">DecTr</span></code></a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">The recommended values can be found from <a class="reference internal" href="../SUEWS_SiteInfo/SUEWS_Snow.html#suews-snow-txt"><span class="std std-ref">SUEWS_Snow.txt</span></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-snowfracgrass">
+<code class="descname">SnowFracGrass</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-snowfracgrass" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Optional</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Initial plan area fraction of snow on grass surfaces <a class="reference internal" href="../../notation.html#term-grass"><code class="xref any std std-term docutils literal notranslate"><span class="pre">Grass</span></code></a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">The recommended values can be found from <a class="reference internal" href="../SUEWS_SiteInfo/SUEWS_Snow.html#suews-snow-txt"><span class="std std-ref">SUEWS_Snow.txt</span></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-snowfracbsoil">
+<code class="descname">SnowFracBSoil</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-snowfracbsoil" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Optional</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Initial plan area fraction of snow on bare soil surfaces <a class="reference internal" href="../../notation.html#term-bsoil"><code class="xref any std std-term docutils literal notranslate"><span class="pre">BSoil</span></code></a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">The recommended values can be found from <a class="reference internal" href="../SUEWS_SiteInfo/SUEWS_Snow.html#suews-snow-txt"><span class="std std-ref">SUEWS_Snow.txt</span></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-snowfracwater">
+<code class="descname">SnowFracWater</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-snowfracwater" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Optional</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Initial plan area fraction of snow on water <a class="reference internal" href="../../notation.html#term-water"><code class="xref any std std-term docutils literal notranslate"><span class="pre">Water</span></code></a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">The recommended values can be found from <a class="reference internal" href="../SUEWS_SiteInfo/SUEWS_Snow.html#suews-snow-txt"><span class="std std-ref">SUEWS_Snow.txt</span></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-snowdenspaved">
+<code class="descname">SnowDensPaved</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-snowdenspaved" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Optional</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Initial snow density on paved surfaces <a class="reference internal" href="../../notation.html#term-paved"><code class="xref any std std-term docutils literal notranslate"><span class="pre">Paved</span></code></a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">The recommended values can be found from <a class="reference internal" href="../SUEWS_SiteInfo/SUEWS_Snow.html#suews-snow-txt"><span class="std std-ref">SUEWS_Snow.txt</span></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-snowdensbldgs">
+<code class="descname">SnowDensBldgs</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-snowdensbldgs" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Optional</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Initial snow density on buildings <a class="reference internal" href="../../notation.html#term-bldgs"><code class="xref any std std-term docutils literal notranslate"><span class="pre">Bldgs</span></code></a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">The recommended values can be found from <a class="reference internal" href="../SUEWS_SiteInfo/SUEWS_Snow.html#suews-snow-txt"><span class="std std-ref">SUEWS_Snow.txt</span></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-snowdensevetr">
+<code class="descname">SnowDensEveTr</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-snowdensevetr" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Optional</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Initial snow density on evergreen trees <a class="reference internal" href="../../notation.html#term-evetr"><code class="xref any std std-term docutils literal notranslate"><span class="pre">EveTr</span></code></a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">The recommended values can be found from <a class="reference internal" href="../SUEWS_SiteInfo/SUEWS_Snow.html#suews-snow-txt"><span class="std std-ref">SUEWS_Snow.txt</span></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-snowdensdectr">
+<code class="descname">SnowDensDecTr</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-snowdensdectr" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Optional</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Initial snow density on deciduous trees <a class="reference internal" href="../../notation.html#term-dectr"><code class="xref any std std-term docutils literal notranslate"><span class="pre">DecTr</span></code></a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">The recommended values can be found from <a class="reference internal" href="../SUEWS_SiteInfo/SUEWS_Snow.html#suews-snow-txt"><span class="std std-ref">SUEWS_Snow.txt</span></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-snowdensgrass">
+<code class="descname">SnowDensGrass</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-snowdensgrass" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Optional</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Initial snow density on grass surfaces <a class="reference internal" href="../../notation.html#term-grass"><code class="xref any std std-term docutils literal notranslate"><span class="pre">Grass</span></code></a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">The recommended values can be found from <a class="reference internal" href="../SUEWS_SiteInfo/SUEWS_Snow.html#suews-snow-txt"><span class="std std-ref">SUEWS_Snow.txt</span></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-snowdensbsoil">
+<code class="descname">SnowDensBSoil</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-snowdensbsoil" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Optional</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Initial snow density on bare soil surfaces <a class="reference internal" href="../../notation.html#term-bsoil"><code class="xref any std std-term docutils literal notranslate"><span class="pre">BSoil</span></code></a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">The recommended values can be found from <a class="reference internal" href="../SUEWS_SiteInfo/SUEWS_Snow.html#suews-snow-txt"><span class="std std-ref">SUEWS_Snow.txt</span></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-snowdenswater">
+<code class="descname">SnowDensWater</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-snowdenswater" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Optional</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Initial snow density on <a class="reference internal" href="../../notation.html#term-water"><code class="xref any std std-term docutils literal notranslate"><span class="pre">Water</span></code></a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">The recommended values can be found from <a class="reference internal" href="../SUEWS_SiteInfo/SUEWS_Snow.html#suews-snow-txt"><span class="std std-ref">SUEWS_Snow.txt</span></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-snowalb0">
+<code class="descname">SnowAlb0</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-snowalb0" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Optional</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Initial snow albedo</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">The recommended values can be found from <a class="reference internal" href="../SUEWS_SiteInfo/SUEWS_Snow.html#suews-snow-txt"><span class="std std-ref">SUEWS_Snow.txt</span></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../met_input.html" class="btn btn-neutral float-right" title="4.4. Meteorological Input File" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Above_ground_state.html" class="btn btn-neutral" title="4.3.4. Above ground state" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018 – 2019, micromet@University of Reading, led by Prof Sue Grimmond
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

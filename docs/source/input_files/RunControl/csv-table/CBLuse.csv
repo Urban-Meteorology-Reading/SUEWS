@@ -1,0 +1,3 @@
+"Value","Comments"
+0," CBL model not used. SUEWS and LUMPS use temperature and humidity provided in the meteorological forcing file. "
+1," CBL model is used to calculate temperature and humidity used in SUEWS and LUMPS. "

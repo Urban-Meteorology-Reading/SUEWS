@@ -1,0 +1,3 @@
+"Value","Comments"
+0,"Output files are kept as plain text files (i.e., .txt)."
+1,"Output files will be written in netCDF format (i.e., .nc)."

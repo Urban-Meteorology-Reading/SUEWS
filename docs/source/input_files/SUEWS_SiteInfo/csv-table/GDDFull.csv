@@ -1,0 +1,5 @@
+"Referencing Table","Requirement","Comment"
+"`SUEWS_Veg.txt`","`MU`","This should be checked carefully for your study area using modelled LAI from the DailyState output file compared to known behaviour in the study area.
+See section 2.2 Järvi et al. (2011) [J11]_ ; Appendix A Järvi et al. (2014) [Leena2014]_ for more details.
+Example values: 300 for `EveTr` Järvi et al. (2011) [J11]_
+"

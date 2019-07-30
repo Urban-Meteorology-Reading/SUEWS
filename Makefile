@@ -1,5 +1,5 @@
 # -*- makefile -*-
-.PHONY: main clean test pip supy
+.PHONY: main clean test pip supy docs
 
 # OS-specific configurations
 ifeq ($(OS),Windows_NT)
@@ -26,6 +26,8 @@ endif
 MODULE=SUEWS_driver
 
 SUEWS_dir = SUEWS-SourceCode
+
+docs_dir = docs
 
 test_dir= Test/code
 
@@ -65,8 +67,13 @@ pip:
 	pip install -r requirements.txt
 	rm -rf requirements.txt
 
+# documentation
+docs:
+	$(MAKE) -B -C $(docs_dir) html
+
 # If wanted, clean all *.o files after build
 clean:
 	$(MAKE) -C $(SUEWS_dir) clean
 	$(MAKE) -C $(SuPy_dir) clean
 	$(MAKE) -C $(release_dir) clean
+	$(MAKE) -C $(docs_dir) clean

@@ -1,0 +1,940 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>4.7.1. SOLWEIGinput &mdash; SUEWS v2018c documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="4.8. SUEWS input converter" href="../input_converter.html" />
+    <link rel="prev" title="4.7. SOLWEIG input files" href="SOLWEIG_input.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> SUEWS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v2018c
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../parameterisations-and-sub-models.html">2. Parameterisations and sub-models within SUEWS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../prepare-to-run-the-model.html">3. Preparing to run the model</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../input_files.html">4. Input files</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../RunControl/RunControl.html">4.1. RunControl.nml</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../SUEWS_SiteInfo/SUEWS_SiteInfo.html">4.2. SUEWS Site Information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Initial_Conditions/Initial_Conditions.html">4.3. Initial Conditions file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../met_input.html">4.4. Meteorological Input File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../CBL_input/CBL_input.html">4.5. CBL input files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ESTM_related_files/ESTM_related_files.html">4.6. ESTM-related files</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="SOLWEIG_input.html">4.7. SOLWEIG input files</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">4.7.1. SOLWEIGinput</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../input_converter.html">4.8. SUEWS input converter</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../output_files/output_files.html">5. Output files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../troubleshooting.html">6. Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../recent-publications.html">7. Recent publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../suews_related_softwares.html">8. SUEWS-related Software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sub-tutorials/tutorials.html">9. Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../development/development.html">10. Development, Suggestions and Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../benchmark/benchmark_report.html">Benchmark Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../version-history/version-history.html">11. Version History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../acknowledgement.html">12. Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../notation.html">13. Notation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references.html">14. References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SUEWS</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../input_files.html">4. Input files</a> &raquo;</li>
+        
+          <li><a href="SOLWEIG_input.html">4.7. SOLWEIG input files</a> &raquo;</li>
+        
+      <li>4.7.1. SOLWEIGinput</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/input_files/SOLWEIG_input/SOLWEIGinput.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Please report issues with the manual on the <a class="reference external" href="https://github.com/Urban-Meteorology-Reading/SUEWS-Docs/issues/new?template=issue-report.md">GitHub page</a>.</p>
+</div>
+<div class="section" id="solweiginput">
+<span id="id1"></span><h1>4.7.1. SOLWEIGinput<a class="headerlink" href="#solweiginput" title="Permalink to this headline">¶</a></h1>
+<dl class="option">
+<dt id="cmdoption-arg-posture">
+<code class="descname">Posture</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-posture" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body"><p class="first">Required</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body"><p class="first">Determines the posture of a human for which the radiant fluxes should be considered</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body"><table border="1" class="colwidths-auto first last docutils">
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Value</th>
+<th class="head">Comments</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>1</td>
+<td>Standing (default)</td>
+</tr>
+<tr class="row-odd"><td>2</td>
+<td>Sitting</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-usevegdem">
+<code class="descname">usevegdem</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-usevegdem" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body"><p class="first">Required</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body"><p class="first">Vegetation scheme</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body"><table border="1" class="colwidths-auto first last docutils">
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Value</th>
+<th class="head">Comments</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>1</td>
+<td>Vegetation scheme is active (Lindberg and Grimmond 2011 [19] )</td>
+</tr>
+<tr class="row-odd"><td>2</td>
+<td>No vegetation scheme used</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-onlyglobal">
+<code class="descname">onlyglobal</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-onlyglobal" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body"><p class="first">Required</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body"><p class="first">Global radiation</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body"><table border="1" class="colwidths-auto first last docutils">
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Value</th>
+<th class="head">Comments</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>0</td>
+<td>Diffuse and direct shortwave radiation taken from met forcing file.</td>
+</tr>
+<tr class="row-odd"><td>1</td>
+<td>Diffuse and direct shortwave radiation calculated from Reindl et al. (1990) <a class="reference internal" href="../../references.html#re90" id="id2">[Re90]</a></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-solweigpoi-out">
+<code class="descname">SOLWEIGpoi_out</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-solweigpoi-out" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body"><p class="first">Required</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body"><p class="first">Write output variables at point of interest (see below)</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body"><table border="1" class="colwidths-auto first last docutils">
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Value</th>
+<th class="head">Comments</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>0</td>
+<td>No POI output</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-tmrt-out">
+<code class="descname">Tmrt_out</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-tmrt-out" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body"><p class="first">Required</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body"><ul class="first simple">
+<li></li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body"><table border="1" class="colwidths-auto first last docutils">
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Value</th>
+<th class="head">Comments</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>0</td>
+<td>No grid output</td>
+</tr>
+<tr class="row-odd"><td>1</td>
+<td>Write grid to file (saves as ERSI Ascii grid)</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-lup2d-out">
+<code class="descname">Lup2d_out</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-lup2d-out" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body"><p class="first">Required</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body"><ul class="first simple">
+<li></li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body"><table border="1" class="colwidths-auto first last docutils">
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Value</th>
+<th class="head">Comments</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>0</td>
+<td>No grid output</td>
+</tr>
+<tr class="row-odd"><td>1</td>
+<td>Write grid to file (saves as ERSI Ascii grid)</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-ldown2d-out">
+<code class="descname">Ldown2d_out</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-ldown2d-out" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body"><p class="first">Required</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body"><ul class="first simple">
+<li></li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body"><table border="1" class="colwidths-auto first last docutils">
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Value</th>
+<th class="head">Comments</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>0</td>
+<td>No grid output</td>
+</tr>
+<tr class="row-odd"><td>1</td>
+<td>Write grid to file (saves as ERSI Ascii grid)</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-kup2d-out">
+<code class="descname">Kup2d_out</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-kup2d-out" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body"><p class="first">Required</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body"><ul class="first simple">
+<li></li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body"><table border="1" class="colwidths-auto first last docutils">
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Value</th>
+<th class="head">Comments</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>0</td>
+<td>No grid output</td>
+</tr>
+<tr class="row-odd"><td>1</td>
+<td>Write grid to file (saves as ERSI Ascii grid)</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-kdown2d-out">
+<code class="descname">Kdown2d_out</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-kdown2d-out" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body"><p class="first">Required</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body"><ul class="first simple">
+<li></li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body"><table border="1" class="colwidths-auto first last docutils">
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Value</th>
+<th class="head">Comments</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>0</td>
+<td>No grid output</td>
+</tr>
+<tr class="row-odd"><td>1</td>
+<td>Write grid to file (saves as ERSI Ascii grid)</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-gvf-out">
+<code class="descname">GVF_out</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-gvf-out" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body"><p class="first">Required</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body"><ul class="first simple">
+<li></li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body"><table border="1" class="colwidths-auto first last docutils">
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Value</th>
+<th class="head">Comments</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>0</td>
+<td>No grid output</td>
+</tr>
+<tr class="row-odd"><td>1</td>
+<td>Write grid to file (saves as ERSI Ascii grid)</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-solweig-ldown">
+<code class="descname">SOLWEIG_ldown</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-solweig-ldown" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body"><p class="first">Required</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body"><ul class="first simple">
+<li></li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body"><table border="1" class="colwidths-auto first last docutils">
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Value</th>
+<th class="head">Comments</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>0</td>
+<td>Not active (use SUEWS to estimate Ldown above canyon)</td>
+</tr>
+<tr class="row-odd"><td>1</td>
+<td>Use SOLWEIG to estimate Ldown above canyon</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-runforgrid">
+<code class="descname">RunForGrid</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-runforgrid" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body"><p class="first">Required</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body"><p class="first">Grid for which SOLWEIG should be run.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body"><table border="1" class="colwidths-auto first last docutils">
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Value</th>
+<th class="head">Comments</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>-999</td>
+<td>All grids (use with care)</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-absk">
+<code class="descname">absK</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-absk" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Required</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Recommended value: 0.70</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">to fill</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-absl">
+<code class="descname">absL</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-absl" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Required</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Recommended value: 0.97</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">to fill</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-buildingname">
+<code class="descname">BuildingName</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-buildingname" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Required</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Boolean matrix for locations of building pixels</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">to fill</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-cdsmname">
+<code class="descname">CDSMname</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-cdsmname" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Required</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Vegetation canopy DSM</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">to fill</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-col">
+<code class="descname">col</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-col" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Required</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Y coordinate for point of interest. Here all variables from the model will written to SOLWEIGpoiOUT.txt</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">to fill</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-dsmname">
+<code class="descname">DSMname</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-dsmname" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Required</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Ground and Building DSM</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">to fill</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-dsmpath">
+<code class="descname">DSMPath</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-dsmpath" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Required</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Path to Digital Surface Models (DSM).</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">to fill</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-heightgravity">
+<code class="descname">heightgravity</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-heightgravity" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Required</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Recommended value for a standing man: 1.1 m</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">to fill</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-outinterval">
+<code class="descname">OutInterval</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-outinterval" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Required</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Output interval. Set to 60 in current version.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">to fill</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-row">
+<code class="descname">row</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-row" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Required</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">X coordinate for point of interest. Here all variables from the model will written to SOLWEIGpoiOUT.txt</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">to fill</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-svfpath">
+<code class="descname">SVFPath</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-svfpath" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Required</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Path to SVFs matrices (See Lindberg and Grimmond (2011) [19] for details)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">to fill</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-svfsuffix">
+<code class="descname">SVFSuffix</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-svfsuffix" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Required</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Suffix used (if any)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">to fill</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-tdsmname">
+<code class="descname">TDSMname</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-tdsmname" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Required</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Vegetation trunk zone DSM</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">to fill</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-transmax">
+<code class="descname">TransMax</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-transmax" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Required</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Recommended value: 0.50 (Konarska et al. 2014 <a class="reference internal" href="../../references.html#ko14" id="id3">[Ko14]</a>)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">to fill</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-arg-transmin">
+<code class="descname">TransMin</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-arg-transmin" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Requirement:</th><td class="field-body">Required</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Description:</th><td class="field-body">Recommended value: 0.02 (Konarska et al. 2014 <a class="reference internal" href="../../references.html#ko14" id="id4">[Ko14]</a> )</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Configuration:</th><td class="field-body">to fill</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../input_converter.html" class="btn btn-neutral float-right" title="4.8. SUEWS input converter" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="SOLWEIG_input.html" class="btn btn-neutral" title="4.7. SOLWEIG input files" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018 – 2019, micromet@University of Reading, led by Prof Sue Grimmond
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

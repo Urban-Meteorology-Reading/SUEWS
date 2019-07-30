@@ -1,0 +1,4 @@
+"Value","Comments"
+1,"Linear downscaling of averages for all variables, additional zenith check is used for Kdown. This is the default option."
+2,"Linear downscaling of instantaneous values for all variables, additional zenith check is used for Kdown."
+3,"WFDEI setting: average Kdown (with additional zenith check); instantaneous for Tair, RH, pres and U. (N.B. WFDEI actually provides Q not RH)"

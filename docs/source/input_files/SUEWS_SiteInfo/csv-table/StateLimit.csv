@@ -1,0 +1,4 @@
+"Referencing Table","Requirement","Comment"
+"`SUEWS_NonVeg.txt`","`MD`","Currently only used for the water surface"
+"`SUEWS_Veg.txt`","`MD`","Currently only used for the water surface"
+"`SUEWS_Water.txt`","`MU`","Surface state cannot exceed this value. Set to a large value (e.g. 20000 mm = 20 m) if the water body is substantial (lake, river, etc) or a small value (e.g. 10 mm) if water bodies are very shallow (e.g. fountains). WaterDepth (column 9) must not exceed this value."

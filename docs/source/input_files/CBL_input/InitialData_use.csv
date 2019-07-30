@@ -1,0 +1,4 @@
+"Value","Comments"
+0,"All initial values are calculated. |NotAvail|"
+1,"Take zi0, gamt_Km and gamq_gkgm from input data file. Theta+_K, q+_gkg, Theta_K and q_gkg are calculated using Temp_C, avrh and Pres_kPa in meteorological input file."
+2,"Take all initial values from input data file (see CBL_Initial_data.txt)."

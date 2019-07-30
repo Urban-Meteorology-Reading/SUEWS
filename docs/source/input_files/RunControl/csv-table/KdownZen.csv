@@ -1,0 +1,3 @@
+"Value","Comments"
+0,"No zenith angle check is applied."
+1,"Disaggregated Kdown is set to zero when zenith angle exceeds 90 degrees (i.e. sun below horizon) and redistributed over the day. This is the default option."

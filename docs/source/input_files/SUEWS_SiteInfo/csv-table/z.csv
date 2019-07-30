@@ -1,0 +1,2 @@
+"Referencing Table","Requirement","Comment"
+"`SUEWS_SiteSelect.txt`","`MU`","z must be greater than the displacement height. Forcing data should be representative of the local-scale, i.e. above the height of the roughness elements."

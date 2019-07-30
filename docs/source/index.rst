@@ -3,8 +3,8 @@
 SUEWS: Surface Urban Energy and Water Balance Scheme
 ----------------------------------------------------
 
-.. image:: http://readthedocs.org/projects/suews-docs/badge/?version=latest
-    :target: https://suews-docs.readthedocs.io/en/latest/?badge=latest
+.. image:: http://readthedocs.org/projects/suews/badge/?version=latest
+    :target: https://suews.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
 
@@ -88,7 +88,7 @@ SUEWS: Surface Urban Energy and Water Balance Scheme
     :target: https://doi.org/10.5281/zenodo.2574410
 
 .. |doi_docs| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.2574997.svg
-    :target: https://doi.org/10.5281/zenodo.2574997 
+    :target: https://doi.org/10.5281/zenodo.2574997
 
 .. toctree::
    :maxdepth: 2

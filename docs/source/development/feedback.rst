@@ -5,7 +5,7 @@ Suggestions and Support
 
 Please provide your feedbacks via these channels:
 
-  - `GitHub issues page of this repository <https://github.com/Urban-Meteorology-Reading/SUEWS-Docs/issues>`_
+  - `GitHub issues page of this repository <https://github.com/Urban-Meteorology-Reading/SUEWS/issues>`_
 
 
   - Mailing lists:

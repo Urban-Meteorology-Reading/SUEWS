@@ -6,7 +6,7 @@ Troubleshooting
 How to report an issue of this manual?
 --------------------------------------
 
-    Please submit your issue via `our GitHub page. <https://github.com/Urban-Meteorology-Reading/SUEWS-Docs/issues>`_
+    Please submit your issue via `our GitHub page. <https://github.com/Urban-Meteorology-Reading/SUEWS/issues>`_
 
 
 How to join your email-list?

@@ -51,7 +51,8 @@ MODULE allocateArray
                         ncolumnsdataOutSOL = 31, &
                         ncolumnsdataOutBL = 22, &
                         ncolumnsDataOutESTM = 32, &
-                        ncolumnsDataOutDailyState = 46
+                        ncolumnsDataOutDailyState = 46, &
+                        ncolumnsDataOutRSL = 35
 
    ! ---- Define input file headers ---------------------------------------------------------------
    CHARACTER(len=20), DIMENSION(ncolumnsSiteSelect)::        HeaderSiteSelect_File          !Header for SiteSelect.txt
@@ -118,6 +119,7 @@ MODULE allocateArray
    REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE:: DailyStateFirstOpen
    REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE:: ModelOutputData      !Output data matrix
    REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutSUEWS              !Main data output matrix
+   REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutRSL              !Main data output matrix
    REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutBL            !CBL output matrix
    REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutSOL           !SOLWEIG POI output matrix
    REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE:: dataOutSnow          !Main data output matrix
@@ -128,6 +130,7 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(5)                          ::datetimeLine     ! output of datetime info per each timestep
    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSUEWS - 5)     ::dataOutLineSUEWS ! output of SUEWS results per each timestep
    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow - 5)      ::dataOutLineSnow  ! output of snow results per each timestep
+   REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL - 5)      ::dataOutLineRSL  ! output of snow results per each timestep
    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState - 5)::DailyStateLine   ! output of DailyState results per each timestep
 
    REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE:: MetForDisagg           !Array for original met forcing data (for disaggregation)

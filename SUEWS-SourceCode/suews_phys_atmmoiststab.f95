@@ -169,7 +169,9 @@ CONTAINS
          ! PRINT*, 1/(z0m-z0m)
          CALL ErrorHint(17, 'In stability subroutine, (z-zd) < z0.', zzd, z0m, notUsedI)
       ENDIF
-      DO i = 1, 330 !Iteration starts
+      i = 1
+      LOLD = -999.
+      DO WHILE ((ABS(LOLD - L_MOD) > 0.01).AND.(i < 330)) !NT: add error threshold !Iteration starts
          LOLD = L_MOD
          zL = zzd/L_MOD
          z0L = z0m/L_MOD  !z0m roughness length
@@ -199,12 +201,9 @@ CONTAINS
          !    ! RETURN
          ! ENDIF
 
-         IF (ABS(LOLD - L_MOD) < 0.01) THEN
-            IF (ABS(L_MOD) > 1e6) L_MOD = L_MOD/ABS(L_MOD)*1e6
-            ! RETURN
-            CONTINUE
-         ENDIF
+         i = i + 1
       ENDDO
+      IF (ABS(L_MOD) > 1e6) L_MOD = L_MOD/ABS(L_MOD)*1e6
 
       ! limit zL to be within [-5,2]
       IF (zL < -5 .OR. zL > 2) THEN
@@ -224,7 +223,6 @@ CONTAINS
       ! 02 Aug 2018: set a low limit at 0.15 m/s (Schumann 1987, BLM)
       UStar = MAX(0.15, UStar)
       TStar = (-H/UStar)
-
       IF (UStar < 0.0001) THEN       !If u* still too small after iteration, then force quit simulation and write out error info
          ! UStar=KUZ/(LOG(Zzd/z0m))
          PRINT *, 'UStar', UStar, KUZ, (LOG(Zzd/z0m)), Zzd, z0m
@@ -284,7 +282,7 @@ CONTAINS
             X2 = LOG((1 + (X**2.))/2.)
             PSYM = (2.*LOG((1 + X)/2.)) + X2 - (2.*ATAN(X)) + PIOVER2
          ELSEIF (StabilityMethod == 7) THEN ! Dyer & Bradley (1982) (1-28z/L)**.25' k=0.4
-            X = (1 + (28.*zl_f))**0.25
+            X = (1 - (28.*zl_f))**0.25  ! NT: changed + to - (bug -> checked reference)
             X2 = LOG((1 + X**2.)/2.)
             PSYM = (2.*LOG((1 + X)/2.)) + X2 - (2.*ATAN(X)) + PIOVER2
          ELSEIF (StabilityMethod == 5) THEN ! Zilitinkevich & Chalikov (1968) modified Hogstrom (1988)
@@ -326,6 +324,64 @@ CONTAINS
       RETURN
    END FUNCTION stab_fn_mom
 
+   FUNCTION stab_phi_mom(StabilityMethod, ZL, zl_f) RESULT(phim)
+      !     StabilityMethod = 1-4 -
+      !     phi - stability FUNCTION for momentum
+      !Modified by NT May 2019 !!!!! check if all are correct!
+      !Input:Used stability method, stability (z-d)/L, zeta (either (z-d)/L or z0/L)
+
+      IMPLICIT NONE
+      REAL(KIND(1d0)), PARAMETER :: &
+         !  k=0.4,&             !Von Karman's contant
+         !  k2=0.16,&           !Power of Van Karman's contant
+         neut_limit = 0.001000 !Limit for neutral stability
+      !  notUsedI=-55
+
+      REAL(KIND(1d0)):: phim, zl, zl_f
+      INTEGER ::StabilityMethod
+
+      IF (ABS(zL) < neut_limit) THEN
+         phim = 0
+      ELSEIF (zL < -neut_limit) THEN    !Unstable
+
+         IF (StabilityMethod == 1) THEN     !    Jensen et al 1984 - Van Ulden & Holtslag (1985) p 1206&
+            phim = ((1.-16.*zl_f)**(-0.25))
+         ELSEIF (StabilityMethod == 2) THEN !Dyer (1974)(1-16z/L)**.25' k=0.41  mod. Hogstrom (1988)v15.2
+            phim = (1.-(15.2*zl_f))**(-0.25)
+         ELSEIF (StabilityMethod == 3) THEN ! Kondo (1975) adopted by Campbell & Norman eqn 7.26 p 97
+            phim = ((1.-16.*zl_f)**(-0.25))
+         ELSEIF (StabilityMethod == 4) THEN !Businger et al (1971) modifed  Hogstrom (1988)
+            phim = (1.-19.*zl_f)**(-0.25)
+         ELSEIF (StabilityMethod == 7) THEN ! Dyer & Bradley (1982) (1-28z/L)**.25' k=0.4
+            phim = (1.-(28.*zl_f))**(-0.25)
+         ELSEIF (StabilityMethod == 5) THEN ! Zilitinkevich & Chalikov (1968) modified Hogstrom (1988)
+            IF (zl_f >= -0.16) THEN
+               phim = 1 + 1.38*zl_f
+            ELSE
+               phim = 0.42*(-1)*zl_f*(-0.333)
+            ENDIF
+         ELSEIF (StabilityMethod == 6) THEN !     Foken and Skeib (1983)
+            IF (zl_f >= 0.06) THEN
+               phim = 1
+            ELSE
+               phim = ((-1)*zl_f/0.06)**(-0.25)
+            ENDIF
+         ENDIF
+
+      ELSEIF (zL > neut_limit) THEN            !Stable
+
+         IF (StabilityMethod == 1) THEN         !Dyer (1974) k=0.35 x=1+5*zl Mod. Hogstrom (1988)
+            phim = 1.+(4.8)*zl_f
+         ELSEIF (StabilityMethod == 2) THEN     !Van Ulden & Holtslag (1985) p 1206 ! NT: have no function for phim
+            phim = 1.+(4.8)*zl_f
+         ELSEIF (StabilityMethod == 4) THEN ! Businger et al (1971) modifed  Hogstrom (1988)
+            phim = 1 + 6*zl_f
+         ELSEIF (StabilityMethod == 3) THEN ! Kondo (1975) adopted by Campbell & Norman eqn 7.26 p 97  !!NT: checked
+            phim = 1.+6.*zl_f/(1.+zl_f)  !!NT: checked reference and updated
+         ENDIF
+      ENDIF
+      RETURN
+   END FUNCTION stab_phi_mom
    !_______________________________________________________________
    !
    ! PSYH - stability function for heat

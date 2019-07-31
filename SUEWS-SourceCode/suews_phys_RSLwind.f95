@@ -1,6 +1,6 @@
 SUBROUTINE RSLProfile( &
    UStar, L_MOD, sfr, Zh, planF, StabilityMethod, Temp_C, avRH, Press_hPa, zMeas, TStar, qe, &  ! input
-   zarray, dataoutLineURSL) ! output
+   zarrays, dataoutLineRSL) ! output
    !-----------------------------------------------------
    ! calculates windprofiles using MOST with a RSL-correction
    ! based on Harman & Finnigan 2007
@@ -41,10 +41,10 @@ SUBROUTINE RSLProfile( &
                
    INTEGER, PARAMETER :: nz = 30   ! number of levels 10 levels in canopy plus 20 (3 x Zh) above the canopy
 
-   REAL(KIND(1d0)), INTENT(out), DIMENSION(nz):: zarray ! Height array
-   REAL(KIND(1d0)), INTENT(out), DIMENSION(nz):: dataoutLineURSL  ! Wind speed array
-
-   REAL(KIND(1d0)), DIMENSION(nz):: dif, dif2, psihat_z, psihath_z,   &                                               
+   REAL(KIND(1d0)), INTENT(out), DIMENSION(nz*3):: zarrays ! Height array
+   REAL(KIND(1d0)), INTENT(out), DIMENSION(nz*3):: dataoutLineRSL  ! Variables array (/U,T,q/)
+   REAL(KIND(1d0)), DIMENSION(nz):: dif, dif2, psihat_z, psihath_z, zarray, &
+                                    dataoutLineURSL, & ! wind speed array [m s-1]                                              
                                     dataoutLineTRSL, & ! Temperature array [C]
                                     dataoutLineqRSL    ! Specific humidity array [g kg-1]
 
@@ -55,7 +55,7 @@ SUBROUTINE RSLProfile( &
                      phim, psimz, psimZh, psimz0, phi_hatmZh,phi_hathZh, phimzp, phimz, phihzp, phihz,psihz, psihza, &  ! stability function for momentum
                      betaHF, betaNL, beta, betaN2, &  ! beta coefficient from Harman 2012
                      elm, & ! mixing length
-                     xx1, xx1_2, xxh1, xxh1_2, temp, err, z01, dphi, dphih, &  ! dummy variables for stability functions
+                     xx1, xx1_2, xxh1, xxh1_2, err, z01, dphi, dphih, &  ! dummy variables for stability functions
                      z0, &  ! roughness length from H&F
                      f, cm, c2, ch ,c2h, & ! H&F'07 and H&F'08 'constants'
                      th, qh, & ! H&F'08 canopy corrections
@@ -212,6 +212,10 @@ SUBROUTINE RSLProfile( &
    dataoutLineURSL = dataoutLineURSL* UStar
    dataoutLineTRSL = dataoutLineTRSL* TStar + Temp_C
    dataoutLineqRSL = (dataoutLineqRSL* qStar + qa_gkg/1000.)*1000.
+
+   dataoutLineRSL = (/dataoutLineURSL, dataoutLineTRSL, dataoutLineqRSL/)
+   zarrays = (/zarray, zarray, zarray/)
+
 
 ! print *, 'Wind speed', dataoutLineURSL
    ! DO z = 1, nz

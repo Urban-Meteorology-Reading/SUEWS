@@ -485,8 +485,8 @@ CONTAINS
       REAL(KIND(1D0))::NonWaterFraction
 
       ! Related to RSL wind profiles
-      INTEGER, PARAMETER :: nz = 30   ! number of levels 10 levels in canopy plus 20 (3 x Zh) above the canopy
-      REAL(KIND(1d0)), DIMENSION(nz):: zarray ! Height array
+      INTEGER, PARAMETER :: nz = 90   ! number of levels 10 levels in canopy plus 20 (3 x Zh) above the canopy
+      REAL(KIND(1d0)), DIMENSION(nz):: zarrays ! Height array
 
       ! ########################################################################################
 
@@ -740,7 +740,7 @@ CONTAINS
          UStar, &!input
          L_mod, sfr, Zh, planF, &
          StabilityMethod, Temp_C, avRh , Press_hPa, z, TStar, qe, &
-         zarray, dataoutLineRSL)!output
+         zarrays, dataoutLineRSL)!output
 
       !============ surface-level diagonostics end ===============
 

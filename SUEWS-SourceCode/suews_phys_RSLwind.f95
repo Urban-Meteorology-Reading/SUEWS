@@ -110,8 +110,8 @@ SUBROUTINE RSLProfile( &
       beta = betaNL + ((betaHF - betaNL)/(1.+a1*abs(Lc/L_MOD - a2)**a3))
    ENDIF
 
-   IF (beta > 0.4) THEN
-      beta = 0.4
+   IF (beta > 0.5) THEN
+      beta = 0.5
    ENDIF
    zd = Zh - (beta**2.)*Lc
    elm = 2.*beta**3*Lc
@@ -157,7 +157,6 @@ SUBROUTINE RSLProfile( &
       phihz = stab_phi_heat(StabilityMethod, (zarray(z) - zd)/L_MOD, (zarray(z) -  zd)/L_MOD)
       phihzp = stab_phi_heat(StabilityMethod, (zarray(z + 1) - zd)/L_MOD, (zarray(z + 1) - zd)/L_MOD)
    
-      print*, phimz, zarray(z)-zd
       psihat_z(z) = psihat_z(z + 1) + dz/2.*phimzp*(cm*EXP(-1.*c2*beta*(zarray(z + 1) - zd)/elm)) &  !Taylor's approximation for integral
                     /(zarray(z + 1) - zd)
       psihat_z(z) = psihat_z(z) + dz/2.*phimz*(cm*EXP(-1.*c2*beta*(zarray(z) - zd)/elm)) &
@@ -194,7 +193,7 @@ SUBROUTINE RSLProfile( &
    DO z = idx_can, nz
       psimz = stab_fn_mom(StabilityMethod, (zarray(z) - zd)/L_MOD, (zarray(z) - zd)/L_MOD)
       psihz = stab_fn_heat(StabilityMethod, (zarray(z) - zd)/L_MOD, (zarray(z) - zd)/L_MOD)
-      dataoutLineURSL(z) = (LOG((zarray(z) - zd)/z0) - psimz + psimz0 - psihat_z(z) + psihat_z(idx_can-1))/kappa
+      dataoutLineURSL(z) = (LOG((zarray(z) - zd)/z0) - psimz + psimz0 - psihat_z(z) + psihat_z(idx_can))/kappa
       dataoutLineTRSL(z) = (LOG((zarray(z) - zd)/(zMeas - zd)) - psihz + psihza + psihath_z(z) - psihath_z(idx_za-1))/kappa
       dataoutLineqRSL(z) = (LOG((zarray(z) - zd)/(zMeas - zd)) - psihz + psihza + psihath_z(z) - psihath_z(idx_za-1))/kappa
    ENDDO

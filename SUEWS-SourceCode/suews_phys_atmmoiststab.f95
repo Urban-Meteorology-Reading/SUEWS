@@ -404,24 +404,24 @@ CONTAINS
          ELSE
 
             IF (StabilityMethod == 4) THEN ! Businger et al (1971) modifed  Hogstrom (1988)
-               x = 0.95*(1.-11.6*zl_f)**(-0.5)
+               x = 0.95*(1.-11.6*zl_f)**(0.5)
             ELSEIF (StabilityMethod == 7) THEN
                x = (1 - (28.*ZL))**0.25
             ELSEIF (StabilityMethod == 2) THEN ! Dyer 1974 X=(1.-(16.*ZL))**(0.5)modified Hosgstrom
                x = 0.95*(1.-15.2*zl_f)**0.5
             ENDIF
-            PSYH = 2*LOG((1 + x**2)/2)
+            ! PSYH = 2*LOG((1 + x**2)/2)  ! NT: do not think this is correct
+            PSYH = 2*LOG((1 + x)/2)
          ENDIF
 
       ELSE IF (zL > neut_limit) THEN    !Stable
          IF (zL <= 1) THEN ! weak/moderate stable
             IF (StabilityMethod == 4) THEN !Businger et al (1971) modifed  Hogstrom (1988)
-               ! psyh=0.95+(7.8*zl_f) ! this is NOT the integral form but the stability function, TS 13 Jun 2017
-               psyh = (-7.8)*zl_f   ! this is the integral form, TS 13 Jun 2017
+               psyh = (-7.8)*zl_f  
             ELSE !Dyer (1974)  PSYH=(-5)*ZL        modifed  Hogstrom (1988)
                PSYH = (-4.5)*Zl_f
             ENDIF
-         ELSE !zL>1, very stable. otherwise psyh would be too large. TS 13 Jun 2017
+         ELSE 
             ! adopt the form as Brutasert (1982) eqn 4.58. but following the coeffs. of the above eqns
             IF (StabilityMethod == 4) THEN !Businger et al (1971) modifed  Hogstrom (1988)
                psyh = (-7.8)*(1 + LOG(zl_f))
@@ -434,6 +434,51 @@ CONTAINS
 
       RETURN
    END FUNCTION stab_fn_heat
+   !_______________________________________________________________
+   !
+   ! Phi - stability function for heat !!!!NT CHECK!!!!
+   FUNCTION stab_phi_heat(StabilityMethod, ZL, zl_f) RESULT(phih)
+      ! USE mod_k
+      IMPLICIT NONE
+      REAL(KIND(1d0)), PARAMETER :: &
+         !  k=0.4,&             !Von Karman's contant
+         !  k2=0.16,&           !Power of Van Karman's contant
+         neut_limit = 0.001000 !Limit for neutral stability
+      !  notUsedI=-55
+
+      REAL(KIND(1d0)):: zl, zl_f, phih
+      INTEGER :: StabilityMethod
+
+      IF (ABS(zl) < neut_limit) THEN      !Neutral
+         phih = 0
+      ELSEIF (zL < -neut_limit) THEN     ! Unstable
+         IF (StabilityMethod == 3) THEN
+            !campbell & norman eqn 7.26
+            phih = (1. - 16.*zl_f)**(-0.5)
+         ELSE
+
+            IF (StabilityMethod == 4) THEN ! Businger et al (1971) modifed  Hogstrom (1988)
+               phih = 0.95*(1.-11.6*zl_f)**(-0.5)
+            ELSEIF (StabilityMethod == 7) THEN
+               phih = (1 - (28.*ZL))**(-0.25)
+            ELSEIF (StabilityMethod == 2) THEN ! Dyer 1974 X=(1.-(16.*ZL))**(0.5)modified Hosgstrom
+               phih = 0.95*(1.-15.2*zl_f)**(-0.5)
+            ENDIF
+         ENDIF
+
+      ELSE IF (zL > neut_limit) THEN    !Stable
+         IF (StabilityMethod == 4) THEN !Businger et al (1971) modifed  Hogstrom (1988)
+            ! psyh=0.95+(7.8*zl_f) ! this is NOT the integral form but the stability function, TS 13 Jun 2017
+            phih = 1. + 7.8*zl_f   ! this is the integral form, TS 13 Jun 2017
+         ELSE !Dyer (1974)  PSYH=(-5)*ZL        modifed  Hogstrom (1988)
+            phih = 1. + 4.5*Zl_f
+         ENDIF
+
+      ENDIF
+
+      RETURN
+   END FUNCTION stab_phi_heat
+   
    !--------------------------------------------------------------------------------
    ! psys - roughness sublayer correction psi_*
    !

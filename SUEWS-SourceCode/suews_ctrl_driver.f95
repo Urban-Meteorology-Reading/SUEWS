@@ -736,10 +736,10 @@ CONTAINS
          avU10_ms, t2_C, q2_gkg, tskin_C, RH2)!output
 
       IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Diagnostics...'
-      CALL WindProfile( &
+      CALL RSLProfile( &
          UStar, &!input
          L_mod, sfr, Zh, planF, &
-         StabilityMethod, &
+         StabilityMethod, Temp_C, avRh , Press_hPa, z, TStar, qe, &
          zarray, dataoutLineRSL)!output
 
       !============ surface-level diagonostics end ===============
@@ -2768,7 +2768,7 @@ CONTAINS
             WaterDist, WaterUseMethod, WetThresh, wu_m3, &
             WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
             WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
-            datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataOutLineRSL, &!output
+            datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataOutLineRSL, & !output
             DailyStateLine)!output
 
          ! update dt_since_start_x for next iteration, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018

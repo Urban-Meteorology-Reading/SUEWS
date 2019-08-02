@@ -63,6 +63,7 @@ SampleRun/suews_v*
 
 # build files
 build/
+docs/source/_build/
 
 
 # python related

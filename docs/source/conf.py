@@ -15,6 +15,7 @@
 # import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
+import subprocess
 import os
 import platform
 import sys
@@ -136,7 +137,7 @@ extensions = [
     'nbsphinx',
     'sphinx.ext.mathjax',
     'breathe',
-    'exhale'
+    # 'exhale'
 
 ]
 
@@ -145,22 +146,30 @@ breathe_projects = {
 }
 breathe_default_project = "SUEWS"
 
-exhale_args = {
-    # These arguments are required
-    "containmentFolder":     "./api",
-    "rootFileName":          "library_root.rst",
-    "rootFileTitle":         "API",
-    "doxygenStripFromPath":  "..",
-    # Suggested optional arguments
-    "createTreeView":        True,
-    # TIP: if using the sphinx-bootstrap-theme, you need
-    # "treeViewIsBootstrap": True,
-    "exhaleExecutesDoxygen": True,
-    "exhaleUseDoxyfile" :    True,
-    #"exhaleDoxygenStdin":    '''INPUT = ../../../SUEWS-SourceCode\n
-    #                            GENERATE_HTML  = YES
-    #                            '''
-}
+# run doxygen
+read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
+
+if read_the_docs_build:
+
+    subprocess.call('doxygen', shell=True)
+
+
+# exhale_args = {
+#     # These arguments are required
+#     "containmentFolder":     "./api",
+#     "rootFileName":          "library_root.rst",
+#     "rootFileTitle":         "API",
+#     "doxygenStripFromPath":  "..",
+#     # Suggested optional arguments
+#     "createTreeView":        True,
+#     # TIP: if using the sphinx-bootstrap-theme, you need
+#     # "treeViewIsBootstrap": True,
+#     "exhaleExecutesDoxygen": True,
+#     "exhaleUseDoxyfile" :    True,
+#     #"exhaleDoxygenStdin":    '''INPUT = ../../../SUEWS-SourceCode\n
+#     #                            GENERATE_HTML  = YES
+#     #                            '''
+# }
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:

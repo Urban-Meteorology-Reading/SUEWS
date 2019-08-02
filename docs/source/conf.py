@@ -136,7 +136,7 @@ extensions = [
     'nbsphinx',
     'sphinx.ext.mathjax',
     'breathe',
-    'exhale'
+    # 'exhale'
 
 ]
 

@@ -1,0 +1,8 @@
+"Referencing Table","Requirement","Comment"
+"`SUEWS_BiogenCO2.txt`","`MU` `O`","
+Example values:
+
+`EmissionsMethod` = 11, 12, 13, 14, 15, 16: 43.35 Ruimy et al. (1995) [R95]_, 35 Schmid et al. (2000) [S2000]_, 16.3 Flanagan et al. (2002) [FWC2002]_
+`EmissionsMethod` =  21, 22, 23, 24, 25, 26: 17.793 Bellucco et al. (2017) [B2017]_
+`EmissionsMethod` = 31, 32, 33, 34, 35, 36: 8.474 Bellucco et al. (2017) [B2017]_
+"

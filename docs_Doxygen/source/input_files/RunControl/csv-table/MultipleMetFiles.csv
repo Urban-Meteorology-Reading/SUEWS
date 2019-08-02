@@ -1,0 +1,5 @@
+"Value","Comments"
+0,"Single meteorological forcing file used for all grids.
+No grid number should appear in the file name."
+1,"Separate meteorological forcing files used for each grid.
+The grid number should appear in the file name."

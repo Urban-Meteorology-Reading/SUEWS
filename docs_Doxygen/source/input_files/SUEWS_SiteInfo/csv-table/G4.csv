@@ -1,0 +1,2 @@
+"Referencing Table","Requirement","Comment"
+"`SUEWS_Conductance.txt`","`MD`","Related to VPD dependence [units depend on gsChoice in `RunControl.nml` ]"

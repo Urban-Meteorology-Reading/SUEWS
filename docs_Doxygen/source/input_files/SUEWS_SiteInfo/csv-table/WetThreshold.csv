@@ -1,0 +1,27 @@
+"Referencing Table","Requirement","Comment"
+"`SUEWS_NonVeg.txt`","`MD`","Depth of water which determines whether evaporation occurs from a partially wet or completely wet surface.
+
+Example values:
+
+- 0.6 Paved
+
+- 0.6 Bldgs
+
+- 1. BSoil
+
+"
+"`SUEWS_Veg.txt`","`MD`","Depth of water which determines whether evaporation occurs from a partially wet or completely wet surface.
+
+Example values:
+
+- 1.8 EveTr
+
+- 1. DecTr
+
+- 2. Grass
+"
+"`SUEWS_Water.txt`","`MD`","Depth of water which determines whether evaporation occurs from a partially wet or completely wet surface.
+
+Example values:
+
+- 0.5 Water"

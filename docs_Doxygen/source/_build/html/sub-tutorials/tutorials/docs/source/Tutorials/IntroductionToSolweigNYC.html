@@ -1,0 +1,726 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Thermal Comfort - Introduction to SOLWEIG (NYC) &mdash; SUEWS v2018c documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+
+  
+  <script src="../../../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../../../index.html" class="icon icon-home"> SUEWS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v2018c
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../introduction.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../parameterisations-and-sub-models.html">2. Parameterisations and sub-models within SUEWS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../prepare-to-run-the-model.html">3. Preparing to run the model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../input_files/input_files.html">4. Input files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../output_files/output_files.html">5. Output files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../troubleshooting.html">6. Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../recent-publications.html">7. Recent publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../suews_related_softwares.html">8. SUEWS-related Software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials.html">9. Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../development/development.html">10. Development, Suggestions and Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../benchmark/benchmark_report.html">Benchmark Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../version-history/version-history.html">11. Version History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../acknowledgement.html">12. Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../notation.html">13. Notation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../references.html">14. References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">SUEWS</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../../index.html">Docs</a> &raquo;</li>
+        
+      <li>Thermal Comfort - Introduction to SOLWEIG (NYC)</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../../../_sources/sub-tutorials/tutorials/docs/source/Tutorials/IntroductionToSolweigNYC.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Please report issues with the manual on the <a class="reference external" href="https://github.com/Urban-Meteorology-Reading/SUEWS-Docs/issues/new?template=issue-report.md">GitHub page</a>.</p>
+</div>
+<div class="section" id="thermal-comfort-introduction-to-solweig-nyc">
+<span id="introductiontosolweignyc"></span><h1>Thermal Comfort - Introduction to SOLWEIG (NYC)<a class="headerlink" href="#thermal-comfort-introduction-to-solweig-nyc" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>In this tutorial you will use a model <strong>SOlar and LongWave Environmental
+Irradiance Geometry model (SOLWEIG)</strong> to estimate the mean radiant
+temperature (T<sub>mrt</sub>).</p>
+<p>SOLWEIG is a model that simulates spatial variations of 3D radiation
+fluxes and the T<sub>mrt</sub> in complex urban settings. It is also able
+to model spatial variations of shadow patterns. T<sub>mrt</sub> is one of
+the key meteorological variables governing human energy balance and the
+thermal comfort of people. It is derived from summing all the radiative
+(shortwave and longwave) fluxes (both direct and reflected) to which the
+human body is exposed. In SOLWEIG, T<sub>mrt</sub> is derived by modelling
+shortwave and longwave radiation fluxes in six directions (upward,
+downward and from the four cardinal points) and angular factors.</p>
+<p>The model requires <strong>meteorological</strong> forcing data (global shortwave
+radiation (K<sub>down</sub>), air temperature (T<sub>a</sub>), relative humidity (RH)),
+urban geometry (DSMs), and geographic information (latitude, longitude
+and elevation). To determine T<sub>mrt</sub>, continuous maps of sky view
+factors are required. Both vegetation and ground cover information can
+be added to increase the accuracy of the model output. Below
+a schematic flowchart of SOLWEIG in shown. The <a class="reference external" href="http://umep-docs.readthedocs.io">full
+manual</a> provides more
+detail.</p>
+<div class="figure" id="id1">
+<img alt="Overview of SOLWEIG" src="../../../../../_images/SOLWEIG_flowchart.png" />
+<p class="caption"><span class="caption-text">Overview of SOLWEIG</span></p>
+</div>
+</div>
+<div class="section" id="objectives">
+<h2>Objectives<a class="headerlink" href="#objectives" title="Permalink to this headline">¶</a></h2>
+<p>To introduce SOLWEIG and how to run the model within <a class="reference external" href="http://umep-docs.readthedocs.io">UMEP (Urban
+Multi-scale Environmental Predictor)</a>.</p>
+<p>Help with Abbreviations can be found <a class="reference external" href="http://umep-docs.readthedocs.io/en/latest/Abbreviations.html">here</a>.</p>
+<div class="section" id="steps">
+<h3>Steps<a class="headerlink" href="#steps" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li>Generation of the different kinds of input data that are needed to
+run the model</li>
+<li>How to run the model</li>
+<li>How to examine the model output</li>
+<li>Add additional information (vegetation and ground cover) to improve
+the model outcome and to examine the effect of climate sensitive
+design</li>
+</ol>
+</div>
+</div>
+<div class="section" id="initial-practical-steps">
+<h2>Initial Practical steps<a class="headerlink" href="#initial-practical-steps" title="Permalink to this headline">¶</a></h2>
+<p>UMEP is a python plugin used in conjunction with
+<a class="reference external" href="http://www.qgis.org">QGIS</a>. To install the software and the UMEP
+plugin see the <a class="reference external" href="http://umep-docs.readthedocs.io/en/latest/Getting_Started.html">getting
+started</a>
+section in the UMEP manual.</p>
+<p>As UMEP is under constant development, some documentation may be missing
+and/or there may be instability. Please report any issues or suggestions
+to our <a class="reference external" href="https://bitbucket.org/fredrik_ucg/umep/">repository</a>.</p>
+<div class="section" id="data-for-this-exercise">
+<h3>Data for this exercise<a class="headerlink" href="#data-for-this-exercise" title="Permalink to this headline">¶</a></h3>
+<p>The UMEP tutorial datasets around CCNY campus can be downloaded from our here repository
+<a class="reference external" href="https://github.com/Urban-Meteorology-Reading/Urban-Meteorology-Reading.github.io/raw/master/other%20files/CCNY_ESPG26918.zip">here</a></p>
+<ul class="simple">
+<li>Download, extract and add the raster layers (DSM, CDSM, DEM and land
+cover) into a new QGIS session (see below).<ul>
+<li>Create a new project</li>
+<li>Examine the geodata by adding the layers (<em>ccny_dsm_1m</em>,
+<em>ccny_cdsm_1m</em>, <em>ccny_dem_1m</em> and <em>ccny_lc_1m</em>) to your project (<strong>*Layer
+&gt; Add Layer &gt; Add Raster Layer</strong>).</li>
+</ul>
+</li>
+<li>Coordinate system of the grids is NAD83 / UTM zone 18N (EPSG:26918). If you
+look at the lower right hand side you can see the CRS used in the
+current QGIS project</li>
+<li>Examine the different datasets before you move on.</li>
+<li>To add a legend to the <strong>land cover</strong> raster you can load
+<strong>landcoverstyle.qml</strong> found in the test dataset. Right click on the
+land cover (<em>Properties -&gt; Style (lower left) -&gt; Load Style</em>).</li>
+</ul>
+<p>The origin of the datasets are shown below</p>
+<table border="1" class="colwidths-given docutils" id="id2">
+<caption><span class="caption-text">Table 1. Spatial data used for this tuorial</span><a class="headerlink" href="#id2" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="10%" />
+<col width="10%" />
+<col width="40%" />
+<col width="40%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>Geodata</strong></td>
+<td><strong>Year</strong></td>
+<td><strong>Source</strong></td>
+<td><strong>Description</strong></td>
+</tr>
+<tr class="row-even"><td>Digital surface model (DSM)</td>
+<td>2013 (Lidar), 2016 (building polygons)</td>
+<td>United States Geological Survey (USGS). New York CMGP Sandy 0.7m NPS Lidar and NYC Open Data Portal. <a class="reference external" href="https://data.cityofnewyork.us">link</a></td>
+<td>A raster grid including both buildings and ground given in meter above sea level.</td>
+</tr>
+<tr class="row-odd"><td>Digital elevation model (DEM)</td>
+<td>2013</td>
+<td>United States Geological Survey (USGS). New York CMGP Sandy 0.7m NPS Lidar. <a class="reference external" href="https://data.cityofnewyork.us">link</a></td>
+<td>A raster grid including only ground heights given in meter above sea level.</td>
+</tr>
+<tr class="row-even"><td>Digital canopy model (CDSM)</td>
+<td>2013 (August)</td>
+<td>United States Geological Survey (USGS). New York CMGP Sandy 0.7m NPS Lidar. <a class="reference external" href="https://coast.noaa.gov/htdata/lidar1_z/geoid12b/data/4920/">link</a></td>
+<td>A vegetation raster grid where vegetation heights is given in meter above ground level. Vegetation lower than 2.5 meter Pixels with no vegetation should be zero.</td>
+</tr>
+<tr class="row-odd"><td>Land cover (UMEP formatted)</td>
+<td>2010</td>
+<td>New York City Landcover 2010 (3ft version). University of Vermont Spatial Analysis Laboratory and New York City Urban Field Station. <a class="reference external" href="https://opendata.cityofnewyork.us/">link</a></td>
+<td>A raster grid including: 1. Paved surfaces, 2. Building surfaces, 3. Evergreen trees and shrubs, 4. Deciduous trees and shrubs, 5. Grass surfaces, 6. Bare soil, 7. Open water</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="solweig-model-inputs">
+<h2>SOLWEIG Model Inputs<a class="headerlink" href="#solweig-model-inputs" title="Permalink to this headline">¶</a></h2>
+<p>Details of the model inputs and outputs are provided in the <a class="reference external" href="http://umep-docs.readthedocs.io/en/latest/OtherManuals/SOLWEIG.html">SOLWEIG
+manual</a>. As this tutorial is
+concerned with a <strong>simple application</strong> only the most critical
+parameters are used. Many other parameters can be modified to more
+appropriate values if applicable. The table below provides an overview
+of the parameters that can be modified in the Simple application of
+SOLWEIG.</p>
+<p>Data requreiments:
+R: required, O: Optional, N : not needed,
+S: Spatial, M: Meteorological,</p>
+<table border="1" class="colwidths-given docutils" id="id3">
+<caption><span class="caption-text">Input data and parameters</span><a class="headerlink" href="#id3" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="30%" />
+<col width="30%" />
+<col width="5%" />
+<col width="5%" />
+<col width="30%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>Data</strong></td>
+<td><strong>Definition</strong></td>
+<td><strong>Use</strong></td>
+<td><strong>Type</strong></td>
+<td><strong>Description</strong></td>
+</tr>
+<tr class="row-even"><td>Ground and building digital surface model (DSM)</td>
+<td>High resolution surface model of ground and building heights</td>
+<td>R</td>
+<td>S</td>
+<td>Given in metres above sea level (m asl)</td>
+</tr>
+<tr class="row-odd"><td>Digital elevation model (DEM)</td>
+<td>High resolution surface model of the ground</td>
+<td>R*</td>
+<td>S</td>
+<td>R* if land cover is absent to identify buildings. Given in m asl. Must be same resolution as the DSM.</td>
+</tr>
+<tr class="row-even"><td>Digital canopy surface model (CDSM)</td>
+<td>High resolution surface model of 3D vegetation</td>
+<td>O</td>
+<td>S</td>
+<td>Given in metres above ground level (m agl). Must be same resolution as the DSM.</td>
+</tr>
+<tr class="row-odd"><td>Digital trunk zone surface model (TDSM)</td>
+<td>High resolution surface model of trunk zone heights (underneath tree canopy)</td>
+<td>O</td>
+<td>S</td>
+<td>Given in m agl. Must be same resolution as the DSM.</td>
+</tr>
+<tr class="row-even"><td>Land (ground) cover information (LC)</td>
+<td>High resolution surface model of ground cover</td>
+<td>O</td>
+<td>S</td>
+<td>Must be same resolution as the DSM. Five different ground covers are currently available (building, paved, grass, bare soil and water)</td>
+</tr>
+<tr class="row-odd"><td>UMEP formatted meteorological data</td>
+<td>Meteorological data from one nearby observation station, preferably at 1-2 m above ground.</td>
+<td>R</td>
+<td>M</td>
+<td>Any time resolution can be given.</td>
+</tr>
+<tr class="row-even"><td>Latitude (°)</td>
+<td>Solar related calculations</td>
+<td>R</td>
+<td>O</td>
+<td>Obtained from the ground and building DSM coordinate system</td>
+</tr>
+<tr class="row-odd"><td>Longitude (°)</td>
+<td>Solar related calculations</td>
+<td>R</td>
+<td>O</td>
+<td>Obtained from the ground and building DSM coordinate system</td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="https://en.wikipedia.org/wiki/Coordinated_Universal_Time">UTC (h)</a></td>
+<td>Time zone</td>
+<td>R</td>
+<td>O</td>
+<td>Influences solar related calculations. Set in the interface of the model.</td>
+</tr>
+<tr class="row-odd"><td>Human exposure parameters</td>
+<td>Absorption of radiation and posture</td>
+<td>R</td>
+<td>O</td>
+<td>Set in the interface of the model.</td>
+</tr>
+<tr class="row-even"><td>Environmental parameters</td>
+<td>e.g. albedos and emissivites of surrounding urban fabrics</td>
+<td>R</td>
+<td>O</td>
+<td>Set in the interface of the model.</td>
+</tr>
+</tbody>
+</table>
+<p>Meterological input data should be in UMEP format. You can use the
+<a class="reference external" href="http://umep-docs.readthedocs.io/en/latest/pre-processor/Meteorological%20Data%20MetPreprocessor.html">Meterological Preprocessor</a>
+to prepare your input data. There is also a possibility to use a single point in time in the plugin.</p>
+<p>Requred meteorological data is:</p>
+<ol class="arabic simple">
+<li>Air temperature (°C)</li>
+<li>Relative humidity (%)</li>
+<li>Incoming shortwave radiation (W m<sup>2</sup>)</li>
+</ol>
+<p>The model performance will increase if also diffure and direct beam solar radiation is
+available but the mdoel can also calculate these variables.</p>
+</div>
+<div class="section" id="how-to-run-solweig-from-the-umep-plugin">
+<h2>How to Run SOLWEIG from the UMEP-plugin<a class="headerlink" href="#how-to-run-solweig-from-the-umep-plugin" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><p class="first">Open SOLWEIG from <em>UMEP -&gt; Processor -&gt; Outdoor Thermal Comfort -&gt;
+Mean radiant temperature (SOLWEIG)</em>.</p>
+<ul class="simple">
+<li>Some additional information about the plugin is found in the lower
+left window. You will make use of a test dataset from observations
+for Gothenburg, Sweden.</li>
+</ul>
+<blockquote>
+<div><div class="figure" id="id4">
+<a class="reference internal image-reference" href="../../../../../_images/SOLWEIG_Interface.png"><img alt="None" src="../../../../../_images/SOLWEIG_Interface.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text">Dialog for the SOLWEIG model (click on image for larger image)</span></p>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first">To be able to run the model some additional spatial datasets needs to
+be created.</p>
+<ul class="simple">
+<li>Close the SOLWEIG plugin and open <em>UMEP -&gt; Pre-Processor -&gt; Urban
+geometry -&gt; Sky View Factor</em>.</li>
+<li>To run SOLWEIG various sky view factor (SVF) maps for both
+vegetation and buildings must be created (see <a class="reference external" href="http://link.springer.com/article/10.1007/s00704-010-0382-8">Lindberg and
+Grimmond
+(2011)</a>
+for details).</li>
+<li>You can create all SVFs needed (vegetation and buildings) at the
+same time. Use the settings as shown below. Use an appropriate
+output folder for your computer.</li>
+</ul>
+<blockquote>
+<div><div class="figure" id="id5">
+<a class="reference internal image-reference" href="../../../../../_images/SOLWEIG_Svf_solweig.png"><img alt="None" src="../../../../../_images/SOLWEIG_Svf_solweig.png" style="width: 487px;" /></a>
+<p class="caption"><span class="caption-text">Settings for the SkyViewFactorCalculator.</span></p>
+</div>
+</div></blockquote>
+<ul class="simple">
+<li>When the calculation is done, map will appear in the map canvas.
+This is the ‘total’ SVF i.e., including both buildings and
+vegetation. Examine the dataset.</li>
+<li>Where are the highest and lowest values found?</li>
+<li>Look in your output folder and find a zip-file containing all the
+necessary SVF maps needed to run the SOLWEIG-model.</li>
+</ul>
+</li>
+<li><p class="first">Another preprocessing plugin needed is to create the building wall
+heights and aspect. Open <em>UMEP -&gt; Pre-Processor -&gt; Urban geometry -&gt;
+Wall height and aspect</em> and use the settings as shown below. QGIS scales loaded rasters by a <em>cumulative count out</em> approach (98%). As the height and aspect layers are filled with zeros where no wall are present it might appear as there is no walls identified. Rescale your results to see the wall identified (<em>Layer Properties &gt; Style</em>).</p>
+<blockquote>
+<div><div class="figure" id="id6">
+<a class="reference internal image-reference" href="../../../../../_images/SOLWEIG_wallgeight_solweig.png"><img alt="None" src="../../../../../_images/SOLWEIG_wallgeight_solweig.png" style="width: 505px;" /></a>
+<p class="caption"><span class="caption-text">Settings for the Wall height and aspect plugin.</span></p>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first">Re-open the SOLWEIG plugin and use the settings as shown below. <strong>NOTE</strong> Remember to change UTC time to <em>-5</em> (figure not updated).
+You will use the GUI to set one point in time (i.e. a summer hour in
+Gothenburg, Sweden) hence, no input meteorological file is needed for
+now. No information on vegetation and ground cover is added for this
+first try. Click <strong>Run</strong>.</p>
+<blockquote>
+<div><div class="figure" id="id7">
+<a class="reference internal image-reference" href="../../../../../_images/SOLWEIG_Tmrt1_solweig.png"><img alt="None" src="../../../../../_images/SOLWEIG_Tmrt1_solweig.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text">The settings for your first SOLWEIG run (click on image for larger image).</span></p>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first">Examine the output (Average T<sub>mrt</sub> (°C). What is the main
+driver to the spatial variations in T<sub>mrt</sub>?</p>
+</li>
+<li><p class="first">Add 3D vegetation information by ticking in <em>Use vegetation scheme
+(Lindberg, Grimmond 2011)</em> and add the vegetation canopy dataset as the <em>Vegetation
+Canopy DSM</em>. As no TDSM exists we estimate the it by using 25% of the
+canopy height. Leave the tranmissivity as 3%. Tick in <em>Save generated
+Trunk Zone DSM</em> (a tif file, <strong>TDSM.tif</strong>, will be generated in the
+specified output folder and used in a later section: <strong>Climate
+sensitive planning</strong>). Also tick in <em>Save generated building grid</em> as
+this will be needed later in this tutorial. Leave the other setting
+as before (Step 4) except for changing your output directory
+Otherwise, results from your first run will be overwritten. Run the
+model again and compare the result with your first run.</p>
+</li>
+<li><p class="first">Add your last spatial dataset, the <strong>land cover</strong> grid by ticking in
+<em>Use land cover scheme (Lindberg et al. 2016)</em>. Run and compare the
+result again with the previous runs.</p>
+</li>
+</ol>
+</div>
+<div class="section" id="using-meteorolgical-data-and-pois">
+<h2>Using meteorolgical data and POIs<a class="headerlink" href="#using-meteorolgical-data-and-pois" title="Permalink to this headline">¶</a></h2>
+<p>SOLWEIG is also able to run a continuous dataset of meteorological data.
+You will make use of a single summer day as well as a winter day for
+Gothenburg, Sweden. The GUI is also able to derive full model output
+(all calculated variables) from certain points of interest (POIs).</p>
+<ol class="arabic">
+<li><p class="first">First you need to create a point vector layer to store the POIs. Go
+to <em>Layer -&gt; Create Layer -&gt; New Shape file</em>. Choose <em>Point</em> as
+<em>Type</em> and add a new text field called <strong>name</strong>. Name the new layer
+<strong>POI_Kr.shp</strong>. Specify the coordinate system to be same as the other dataset.</p>
+</li>
+<li><p class="first">Now you should add two points within the study area. To add points to
+the layer it has to be editable and Add Feature should be activated.</p>
+<blockquote>
+<div><div class="figure" id="id8">
+<a class="reference internal image-reference" href="../../../../../_images/SOLWEIG_Addpoint.png"><img alt="None" src="../../../../../_images/SOLWEIG_Addpoint.png" style="width: 411px;" /></a>
+<p class="caption"><span class="caption-text">Setting to add points</span></p>
+</div>
+</div></blockquote>
+<p>Two points should be added and the attributes should be id=<strong>1</strong> and
+name=<strong>point1</strong> for the right point and id=<strong>2</strong> and
+name=<strong>point2</strong> for the left point. Put them out at any location within the domain</p>
+<p>When you are finished, save layer edits. Close the editing by pressing Toggle editing (the pencil).</p>
+</li>
+<li><p class="first">Now open the SOLWEIG plugin. Use both the vegetation and land cover
+schemes as before. This time, tick in <em>Include POI(s)</em>, select your
+point layer and use the ID attribute as <em>ID field</em>.</p>
+</li>
+<li><p class="first">Tick in <em>Use continuous meteorological dataset</em> and choose
+<strong>NYC_2010_Data_60_doy190.txt</strong> as <em>Input meteorological file</em>. This is a warm and clear day in 2010 (9 July).
+Also, tick in to save T<sub>mrt</sub> as <em>Output maps</em>. Run the model again.</p>
+</li>
+</ol>
+</div>
+<div class="section" id="examine-your-output-with-solweig-analyzer">
+<h2>Examine your output with SOLWEIG Analyzer<a class="headerlink" href="#examine-your-output-with-solweig-analyzer" title="Permalink to this headline">¶</a></h2>
+<p>To perform a first set of analysis of your result you can make use of
+the SOLWEIG Analyzer plug-in.</p>
+<ol class="arabic">
+<li><p class="first">Open the Analyzer located in <em>UMEP -&gt; Post-Processor -&gt; Outdoor
+Thermal Comfort -&gt; SOLWEIG Analyzer</em>. Here you can analyze both data
+from your POIs as well as perform statistical analysis based on saved
+output maps. Start by locating your output folder in the top section
+(<em>Load Model Result</em>).</p>
+<blockquote>
+<div><div class="figure" id="id9">
+<a class="reference internal image-reference" href="../../../../../_images/SOLWEIG_SOLWEIGAnalyzer.png"><img alt="None" src="../../../../../_images/SOLWEIG_SOLWEIGAnalyzer.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text">Dialog for the SOLWEIG Analyzer plug-in</span></p>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first">Firstly you will compare differences in T<sub>mrt</sub> for the two
+locations (point1 and point2). This can done using the left frame
+(<em>Point of Interest data</em>). Specify <em>point1</em> as <em>POI</em> and <em>Mean
+Radiant Temperature</em> in the two top scroll down lists. Then tick in
+<em>Include another POI/variable</em> and chose <em>point2</em> and <em>Mean Radiant
+Temperature</em> below. Click <em>Plot</em>. What explains the differences?</p>
+</li>
+<li><p class="first">Now lets us move on to analyse the output maps generated from our
+last model run. In the right frame, specify <em>Mean Radiant
+Temperature</em> as <em>Variable to visualize</em>. Start by clicking <em>Show
+Animation</em>. Now the output maps of T<sub>mrt</sub> generated before are
+displayed in a sequence.</p>
+</li>
+<li><p class="first">Next step is to generate some statistical maps from the last model
+run. Specify <em>Mean Radiant Temperature</em> as <em>Variable to visualize</em>
+and tick in to <em>Exclude building pixels</em>. Choose the building grid
+that you saved earlier in this tutorial. If it is not in the
+drop-down list you need to add this layer (<strong>buildings</strong>) to your
+project. Tick in <em>T</em><sub>mrt</sub>: <em>Percent of time above threshold
+(degC)</em> and specify 55.0 as threshold. Specify an output folder and
+tick also in <em>Add analysis to map canvas</em> before you generate the
+result. The resulting map show the time that a pixel has been above
+55 degC based on the whole analysis time i.e. 24 hours. This type of
+maps can be used to identify areas prone to e.g. heat stress</p>
+</li>
+</ol>
+</div>
+<div class="section" id="climate-sensitive-planning">
+<h2>Climate sensitive planning<a class="headerlink" href="#climate-sensitive-planning" title="Permalink to this headline">¶</a></h2>
+<p>Vegetation is one effective measure to reduce areas prone to heat
+related health issues. In this section you make use of the Tree
+Generator plugin to see the effect of adding more vegetation into our
+study area. The municipality in Gothenburg have identified a “hot spot”
+south of the german church and they want to see the effect of planting
+three new trees in that area.</p>
+<div class="section" id="the-tree-generator">
+<h3>The Tree Generator<a class="headerlink" href="#the-tree-generator" title="Permalink to this headline">¶</a></h3>
+<p>The Tree Generator plugin make use of a point vector file including the
+necessary attributes to generate/add/remove vegetation suitable for
+either mean radiant temperature modelling with SOLWEIG or urban energy
+balance modelling with SUEWS.</p>
+<ol class="arabic">
+<li><p class="first">Create a point vector shape file named (<strong>Trees.shp</strong>) as described
+in the previous section adding five attributes (<em>id, ttype, trunk,
+totheight, diameter</em>). The attributes should all be decimal (float)
+numbers (see table below). Locate the new tree on the laws south west of Shepards Hall
+The values for all three vegetation units should
+be <strong>ttype=2, trunk=4, totheight=15, diameter=10</strong>.</p>
+</li>
+<li><p class="first">Add your created trunk zone dsm (TDSM.tif) that was created
+previously (located in your output directory).</p>
+</li>
+<li><p class="first">Open the TreeGenerator (UMEP -&gt; PreProcessor -&gt; TreeGenerator) and
+use the settings as shown in figure below.</p>
+<blockquote>
+<div><div class="figure" id="id10">
+<a class="reference internal image-reference" href="../../../../../_images/SOLWEIG_Treegeneratorsolweig.png"><img alt="None" src="../../../../../_images/SOLWEIG_Treegeneratorsolweig.png" style="width: 574px;" /></a>
+<p class="caption"><span class="caption-text">The settings for the Tree Generator</span></p>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first">As the vegetation DSMs have been changed, the SVFs has to be
+recalculated. This time use the two generated vegetation DSMs.</p>
+</li>
+<li><p class="first">Now re-run SOLWEIG using the same settings as before but now use the
+new vegetation surface models as well as the new SVFs generated in
+the previous step.</p>
+</li>
+<li><p class="first">Generate a new, updated threshold map based on the new results and
+compare the differences.</p>
+</li>
+</ol>
+<p>The table below show the input variables needed for each tree point.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute name</th>
+<th class="head">Name</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>ttype</td>
+<td>Tree type</td>
+<td><p class="first">Two shapes are
+available:</p>
+<ul class="last simple">
+<li>conifer = 1 and</li>
+<li>deciduous = 2.</li>
+<li>To remove
+vegetation set
+ttype = 0.</li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td>trunk</td>
+<td>Trunk zone height (m
+agl)</td>
+<td>Height of the trunk
+zone.</td>
+</tr>
+<tr class="row-even"><td>totheight</td>
+<td>Total tree height (m
+agl)</td>
+<td>Maximum height of the
+vegetation unit</td>
+</tr>
+<tr class="row-odd"><td>diameter</td>
+<td>Canopy diameter (m)</td>
+<td>Circular diameter of
+the vegetation unit</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018 – 2019, micromet@University of Reading, led by Prof Sue Grimmond
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../../" src="../../../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../../../_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

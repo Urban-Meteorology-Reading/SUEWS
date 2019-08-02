@@ -1,0 +1,2 @@
+"Referencing Table","Requirement","Comment"
+"`SUEWS_SiteSelect.txt`","`MD`","Atmospheric transmissivity for NARP [-] Value must in the range 0-1. Default recommended value of 1. "

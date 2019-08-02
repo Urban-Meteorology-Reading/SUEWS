@@ -1,0 +1,5 @@
+"Value","Comments"
+1,"ΔQS modelled using the objective hysteresis model (OHM) [G91OHM]_ using parameters specified for each surface type."
+2,"Uses observed values of ΔQS supplied in meteorological forcing file."
+3,"ΔQS modelled using AnOHM. |NotRecmd|"
+4,"ΔQS modelled using the Element Surface Temperature Method (ESTM) (Offerle et al. 2005 [OGF2005]_ ). |NotRecmd|"

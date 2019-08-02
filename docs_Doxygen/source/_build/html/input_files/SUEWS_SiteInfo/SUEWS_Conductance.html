@@ -1,0 +1,382 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>4.2.3. SUEWS_Conductance.txt &mdash; SUEWS v2018c documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="4.2.4. SUEWS_Irrigation.txt" href="SUEWS_Irrigation.html" />
+    <link rel="prev" title="4.2.2. SUEWS_BiogenCO2.txt" href="SUEWS_BiogenCO2.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> SUEWS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v2018c
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../parameterisations-and-sub-models.html">2. Parameterisations and sub-models within SUEWS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../prepare-to-run-the-model.html">3. Preparing to run the model</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../input_files.html">4. Input files</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../RunControl/RunControl.html">4.1. RunControl.nml</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="SUEWS_SiteInfo.html">4.2. SUEWS Site Information</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="SUEWS_AnthropogenicHeat.html">4.2.1. SUEWS_AnthropogenicHeat.txt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SUEWS_BiogenCO2.html">4.2.2. SUEWS_BiogenCO2.txt</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">4.2.3. SUEWS_Conductance.txt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SUEWS_Irrigation.html">4.2.4. SUEWS_Irrigation.txt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SUEWS_NonVeg.html">4.2.5. SUEWS_NonVeg.txt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SUEWS_OHMCoefficients.html">4.2.6. SUEWS_OHMCoefficients.txt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SUEWS_Profiles.html">4.2.7. SUEWS_Profiles.txt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SUEWS_SiteSelect.html">4.2.8. SUEWS_SiteSelect.txt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SUEWS_Snow.html">4.2.9. SUEWS_Snow.txt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SUEWS_Soil.html">4.2.10. SUEWS_Soil.txt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SUEWS_Veg.html">4.2.11. SUEWS_Veg.txt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SUEWS_Water.html">4.2.12. SUEWS_Water.txt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SUEWS_WithinGridWaterDist.html">4.2.13. SUEWS_WithinGridWaterDist.txt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Input_Options.html">4.2.14. Input Options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Typical_Values.html">4.2.15. Typical Values</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Initial_Conditions/Initial_Conditions.html">4.3. Initial Conditions file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../met_input.html">4.4. Meteorological Input File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../CBL_input/CBL_input.html">4.5. CBL input files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ESTM_related_files/ESTM_related_files.html">4.6. ESTM-related files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../SOLWEIG_input/SOLWEIG_input.html">4.7. SOLWEIG input files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../input_converter.html">4.8. SUEWS input converter</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../output_files/output_files.html">5. Output files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../troubleshooting.html">6. Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../recent-publications.html">7. Recent publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../suews_related_softwares.html">8. SUEWS-related Software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sub-tutorials/tutorials.html">9. Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../development/development.html">10. Development, Suggestions and Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../benchmark/benchmark_report.html">Benchmark Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../version-history/version-history.html">11. Version History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../acknowledgement.html">12. Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../notation.html">13. Notation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references.html">14. References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SUEWS</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../input_files.html">4. Input files</a> &raquo;</li>
+        
+          <li><a href="SUEWS_SiteInfo.html">4.2. SUEWS Site Information</a> &raquo;</li>
+        
+      <li>4.2.3. SUEWS_Conductance.txt</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/input_files/SUEWS_SiteInfo/SUEWS_Conductance.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Please report issues with the manual on the <a class="reference external" href="https://github.com/Urban-Meteorology-Reading/SUEWS-Docs/issues/new?template=issue-report.md">GitHub page</a>.</p>
+</div>
+<div class="section" id="suews-conductance-txt">
+<span id="id1"></span><h1>4.2.3. SUEWS_Conductance.txt<a class="headerlink" href="#suews-conductance-txt" title="Permalink to this headline">¶</a></h1>
+<p>SUEWS_Conductance.txt contains the parameters needed for the Jarvis
+(1976) <a class="reference internal" href="../../references.html#ja76" id="id2">[Ja76]</a> surface conductance model used in the modelling of evaporation in
+SUEWS. These values should <strong>not</strong> be changed independently of each
+other. The suggested values below have been derived using datasets for
+Los Angeles and Vancouver (see Järvi et al. (2011) <a class="reference internal" href="../../references.html#j11" id="id3">[J11]</a>) and should be
+used with <a class="reference internal" href="Input_Options.html#cmdoption-arg-gsmodel"><code class="xref any std std-option docutils literal notranslate"><span class="pre">gsModel</span></code></a> = 1. An alternative formulation ( <a class="reference internal" href="Input_Options.html#cmdoption-arg-gsmodel"><code class="xref any std std-option docutils literal notranslate"><span class="pre">gsModel</span></code></a> =2) uses
+slightly different functional forms and different coefficients (with
+different units).</p>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="5%" />
+<col width="25%" />
+<col width="5%" />
+<col width="65%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">No.</th>
+<th class="head">Column Name</th>
+<th class="head">Use</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>1</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-code"><code class="xref any std std-option docutils literal notranslate"><span class="pre">Code</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-24"><code class="xref any std std-term docutils literal notranslate"><span class="pre">L</span></code></a></td>
+<td>Code linking to a corresponding look-up table.</td>
+</tr>
+<tr class="row-odd"><td>2</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-g1"><code class="xref any std std-option docutils literal notranslate"><span class="pre">G1</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-md"><code class="xref any std std-term docutils literal notranslate"><span class="pre">MD</span></code></a></td>
+<td>Related to maximum surface conductance [mm s<sup>-1</sup>]</td>
+</tr>
+<tr class="row-even"><td>3</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-g2"><code class="xref any std std-option docutils literal notranslate"><span class="pre">G2</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-md"><code class="xref any std std-term docutils literal notranslate"><span class="pre">MD</span></code></a></td>
+<td>Related to Kdown dependence [W m<sup>-2</sup>]</td>
+</tr>
+<tr class="row-odd"><td>4</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-g3"><code class="xref any std std-option docutils literal notranslate"><span class="pre">G3</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-md"><code class="xref any std std-term docutils literal notranslate"><span class="pre">MD</span></code></a></td>
+<td>Related to VPD dependence [units depend on <a class="reference internal" href="Input_Options.html#cmdoption-arg-gsmodel"><code class="xref any std std-option docutils literal notranslate"><span class="pre">gsModel</span></code></a>]</td>
+</tr>
+<tr class="row-even"><td>5</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-g4"><code class="xref any std std-option docutils literal notranslate"><span class="pre">G4</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-md"><code class="xref any std std-term docutils literal notranslate"><span class="pre">MD</span></code></a></td>
+<td>Related to VPD dependence [units depend on <a class="reference internal" href="Input_Options.html#cmdoption-arg-gsmodel"><code class="xref any std std-option docutils literal notranslate"><span class="pre">gsModel</span></code></a>]</td>
+</tr>
+<tr class="row-odd"><td>6</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-g5"><code class="xref any std std-option docutils literal notranslate"><span class="pre">G5</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-md"><code class="xref any std std-term docutils literal notranslate"><span class="pre">MD</span></code></a></td>
+<td>Related to temperature dependence [°C]</td>
+</tr>
+<tr class="row-even"><td>7</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-g6"><code class="xref any std std-option docutils literal notranslate"><span class="pre">G6</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-md"><code class="xref any std std-term docutils literal notranslate"><span class="pre">MD</span></code></a></td>
+<td>Related to soil moisture dependence [mm<sup>-1</sup>]</td>
+</tr>
+<tr class="row-odd"><td>8</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-th"><code class="xref any std std-option docutils literal notranslate"><span class="pre">TH</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-md"><code class="xref any std std-term docutils literal notranslate"><span class="pre">MD</span></code></a></td>
+<td>Upper air temperature limit [°C]</td>
+</tr>
+<tr class="row-even"><td>9</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-tl"><code class="xref any std std-option docutils literal notranslate"><span class="pre">TL</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-md"><code class="xref any std std-term docutils literal notranslate"><span class="pre">MD</span></code></a></td>
+<td>Lower air temperature limit [°C]</td>
+</tr>
+<tr class="row-odd"><td>10</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-s1"><code class="xref any std std-option docutils literal notranslate"><span class="pre">S1</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-md"><code class="xref any std std-term docutils literal notranslate"><span class="pre">MD</span></code></a></td>
+<td>A parameter related to soil moisture dependence [-]</td>
+</tr>
+<tr class="row-even"><td>11</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-s2"><code class="xref any std std-option docutils literal notranslate"><span class="pre">S2</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-md"><code class="xref any std std-term docutils literal notranslate"><span class="pre">MD</span></code></a></td>
+<td>A parameter related to soil moisture dependence [mm]</td>
+</tr>
+<tr class="row-odd"><td>12</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-kmax"><code class="xref any std std-option docutils literal notranslate"><span class="pre">Kmax</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-md"><code class="xref any std std-term docutils literal notranslate"><span class="pre">MD</span></code></a></td>
+<td>Maximum incoming shortwave radiation [W m<sup>-2</sup>]</td>
+</tr>
+<tr class="row-even"><td>13</td>
+<td><a class="reference internal" href="Input_Options.html#cmdoption-arg-gsmodel"><code class="xref any std std-option docutils literal notranslate"><span class="pre">gsModel</span></code></a></td>
+<td><a class="reference internal" href="../../notation.html#term-md"><code class="xref any std std-term docutils literal notranslate"><span class="pre">MD</span></code></a></td>
+<td>Formulation choice for conductance calculation.</td>
+</tr>
+</tbody>
+</table>
+<p>An example <a class="reference internal" href="#suews-conductance-txt"><span class="std std-ref">SUEWS_Conductance.txt</span></a> can be found below:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1    2       3        4      5      6       7      8  9   10   11 12   13
+Code G1      G2       G3     G4     G5      G6     TH TL  S1   S2 Kmax gsModel
+100  16.4764 566.0923 0.2163 3.3649 11.0764 0.0176 40 0   0.45 15 1200 1       ! Default Jarvi et al. (2011) gsModel=1
+200  3.5     200      0.13   0.7    30      0.05   55 -10 5.56 0  1200 2       ! Updated Ward  et al. (2016) gsModel=2
+-9
+-9
+</pre></div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="SUEWS_Irrigation.html" class="btn btn-neutral float-right" title="4.2.4. SUEWS_Irrigation.txt" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="SUEWS_BiogenCO2.html" class="btn btn-neutral" title="4.2.2. SUEWS_BiogenCO2.txt" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018 – 2019, micromet@University of Reading, led by Prof Sue Grimmond
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

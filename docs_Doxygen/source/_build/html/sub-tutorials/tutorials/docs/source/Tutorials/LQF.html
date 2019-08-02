@@ -1,0 +1,687 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Anthropogenic heat - LQF &mdash; SUEWS v2018c documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../_static/theme_overrides.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+
+  
+  <script src="../../../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../../../index.html" class="icon icon-home"> SUEWS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v2018c
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../introduction.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../parameterisations-and-sub-models.html">2. Parameterisations and sub-models within SUEWS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../prepare-to-run-the-model.html">3. Preparing to run the model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../input_files/input_files.html">4. Input files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../output_files/output_files.html">5. Output files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../troubleshooting.html">6. Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../recent-publications.html">7. Recent publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../suews_related_softwares.html">8. SUEWS-related Software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials.html">9. Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../development/development.html">10. Development, Suggestions and Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../benchmark/benchmark_report.html">Benchmark Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../version-history/version-history.html">11. Version History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../acknowledgement.html">12. Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../notation.html">13. Notation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../references.html">14. References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">SUEWS</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../../index.html">Docs</a> &raquo;</li>
+        
+      <li>Anthropogenic heat - LQF</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../../../_sources/sub-tutorials/tutorials/docs/source/Tutorials/LQF.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Please report issues with the manual on the <a class="reference external" href="https://github.com/Urban-Meteorology-Reading/SUEWS-Docs/issues/new?template=issue-report.md">GitHub page</a>.</p>
+</div>
+<div class="section" id="anthropogenic-heat-lqf">
+<span id="lqf"></span><h1>Anthropogenic heat - LQF<a class="headerlink" href="#anthropogenic-heat-lqf" title="Permalink to this headline">¶</a></h1>
+<p>This tutorial demonstrates how the LQF software is used to simulate
+anthropogenic heat fluxes (Q<sub>F</sub>) for London, UK, in the year 2015, using a
+mixture of administrative and meteorological data.</p>
+<div class="section" id="initial-practical-steps">
+<h2>Initial Practical steps<a class="headerlink" href="#initial-practical-steps" title="Permalink to this headline">¶</a></h2>
+<p>UMEP is a python plugin used in conjunction with
+<a class="reference external" href="http://www.qgis.org">QGIS</a>. To install the software and the UMEP
+plugin see the <a class="reference external" href="http://umep-docs.readthedocs.io/en/latest/Getting_Started.html">getting
+started</a>
+section in the UMEP manual.</p>
+<p>For this tutorial you will need certain python libraries: <strong>Pandas</strong> and
+<strong>NetCDF4</strong>. Instructions how to install python libraries are located
+<a class="reference external" href="http://umep-docs.readthedocs.io/en/latest/Getting_Started.html#adding-missing-python-libraries-and-other-osgeo-functionalities">here</a>.</p>
+<p>As UMEP is under constant development, some documentation may be missing
+and/or there may be instability. Please report any issues or suggestions
+to our <a class="reference external" href="https://bitbucket.org/fredrik_ucg/umep/">repository</a>.</p>
+<div class="section" id="data-for-this-exercise">
+<h3>Data for this exercise<a class="headerlink" href="#data-for-this-exercise" title="Permalink to this headline">¶</a></h3>
+<p>In order to proceed, you will need the zip file named <strong>LQF_Inputs_1.zip</strong>
+and a copy of the LQF database. These are available at the following
+locations:</p>
+<ol class="arabic simple">
+<li><a class="reference external" href="https://urban-meteorology-reading.github.io/other%20files/LQF_Database.zip">LQF database</a> - v1.2 was used to
+produce this tutorial</li>
+<li><a class="reference external" href="https://urban-meteorology-reading.github.io/other%20files/LQF_Inputs_1.zip">LQF input
+files</a>
+from the UMEP tutorials data repository.</li>
+</ol>
+<p>You may also wish to consult the <a class="reference external" href="https://umep-docs.readthedocs.io/en/latest/OtherManuals/LQF_Manual.html">LQF user guide</a></p>
+<p>The <strong>LQF_Inputs_1.zip</strong> file contains several datasets to cover all of
+the tutorials on this page:</p>
+<ul class="simple">
+<li><strong>LondonBuildingProfiles.csv</strong>: Seasonal diurnal profiles of building
+energy consumption (1 hour resolution; 7 days; 6 times of year)</li>
+<li><strong>weeklyTraffic.csv</strong>: Diurnal profile of road transport volume (1 hour
+resolution; 7 days)</li>
+<li><strong>DataSources.nml</strong>: LQF data sources</li>
+<li><strong>Parameters.nml</strong>: LQF Calculation parameters</li>
+<li><strong>griddedResidentialPopulation.*</strong>: Spatial data containing residential
+population counts</li>
+<li><strong>dailyTemperature_2015.csv</strong>: Daily mean air temperature in London</li>
+</ul>
+</div>
+</div>
+<div class="section" id="lqf-tutorial-1-simple-qf-modelling">
+<h2>LQF Tutorial 1: Simple Q<sub>F</sub> modelling<a class="headerlink" href="#lqf-tutorial-1-simple-qf-modelling" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="preparing-data">
+<h3>Preparing data<a class="headerlink" href="#preparing-data" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="manage-input-data-files">
+<h4>Manage input data files<a class="headerlink" href="#manage-input-data-files" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Extract the contents of <strong>LQF_Inputs_1.zip</strong> into a folder on your
+local machine and note the path to each file (e.g.
+<em>C:\LQFData\LondonBuildingProfiles.csv</em>)</li>
+<li>Save the LQF database to the same folder as the other data.</li>
+</ul>
+</div>
+<div class="section" id="gather-information-about-output-areas-shapefile">
+<h4>Gather information about output areas shapefile<a class="headerlink" href="#gather-information-about-output-areas-shapefile" title="Permalink to this headline">¶</a></h4>
+<p>The input data comes with one shapefile
+(<strong>griddedResidentialPopulation.shp</strong>) (a collection of files with the same
+name, one of which ends in <strong>.shp</strong>). For convenience, the same shapefile is
+used to define both the model output areas and the residential
+population density:</p>
+<ul class="simple">
+<li><strong>Model output areas</strong>: The spatial units where each value of Q<sub>F</sub> is
+calculated.</li>
+<li><strong>Residential population</strong>: The number of people within each spatial
+unit.</li>
+</ul>
+<p>LQF needs several pieces of information about the input shapefiles:</p>
+<ol class="arabic simple">
+<li><strong>File path:</strong> (e.g. <em>c:\LQFData\PopulationData.shp</em>) - the location
+of the <strong>.shp</strong> file on your computer</li>
+<li><strong>EPSG code:</strong> A number that defines the coordinate reference system
+(CRS) of the shapefile</li>
+<li><strong>Feature ID field:</strong> An attribute within the output areas file that
+contains a unique identifier for each output area.</li>
+<li><strong>Start date</strong> (population data only): The earliest modelled date for
+which this dataset should be used</li>
+</ol>
+<p>Points (2) and (3) need information from the shapefile itself, as they
+change depending on the file used. <a class="reference external" href="https://umep-docs.readthedocs.io/en/latest/OtherManuals/LQF_Manual.html#appendix-b-gathering-information-about-shapefiles-for-qf-modelling">Click
+here</a>
+for a guide to finding the EPSG code and feature ID field using QGIS.</p>
+<div class="section" id="verify-the-population-attribute-name">
+<h5>Verify the population attribute name<a class="headerlink" href="#verify-the-population-attribute-name" title="Permalink to this headline">¶</a></h5>
+<p>The shapefile used for population data in LQF must always contain an
+attribute “Pop” that holds the total number of people in that spatial
+unit. Check this is the case (a similar process to finding the Feature
+ID field name). The population data was gridded using an algorithm, so
+the number of people in each area may not be a whole number.</p>
+</div>
+</div>
+</div>
+<div class="section" id="set-up-the-datasources-nml-file">
+<h3>Set up the DataSources.nml file<a class="headerlink" href="#set-up-the-datasources-nml-file" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="add-shapefile-information">
+<h4>Add shapefile information<a class="headerlink" href="#add-shapefile-information" title="Permalink to this headline">¶</a></h4>
+<p>The data sources file needs to be updated so that it can find the
+various data files, and understands what to do with them. A full
+description of the Data sources file contents is available
+<a class="reference external" href="https://umep-docs.readthedocs.io/en/latest/OtherManuals/LQF_Manual.html#data-sources-file">here</a>, but this section shows how to
+build up the entries.</p>
+<ol class="arabic simple">
+<li>Open <strong>DataSources.nml</strong> using a text editor (we recommend Notepad++) and
+update the entries according to the information gathered above.</li>
+<li>There are several sections in the data sources file. Each is bounded
+by <strong>&amp;section_name</strong> and ends with <strong>“/”</strong> and deals with a
+different part of the input data</li>
+<li>The “<strong>shapefile</strong>” entry is the path to the file</li>
+<li>The <strong>epsgCode</strong> and <strong>featureIds</strong> entries are as described earlier</li>
+<li>The <strong>start date</strong> for the residential population data is January 1
+2011, which needs to be entered as YYYY-mm-dd (2011-01-01).</li>
+<li>The population shapefile is used for both the output areas and the
+residential population, so the same filename, EPSG code and featureID
+are used to describe both of them</li>
+</ol>
+<p>The first two sections of the DataSources.nml file should now look like
+this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">outputAreas</span>
+   <span class="n">shapefile</span> <span class="o">=</span> <span class="s1">&#39;C:/Some/Path/To/Files/griddedResidentialPopulation.shp&#39;</span>
+   <span class="n">epsgCode</span> <span class="o">=</span> <span class="mi">32631</span>
+   <span class="n">featureIds</span> <span class="o">=</span> <span class="s1">&#39;ID&#39;</span>
+<span class="o">/</span>
+<span class="o">&amp;</span><span class="n">residentialPop</span>
+   <span class="n">shapefiles</span> <span class="o">=</span> <span class="s1">&#39;C:/Some/Path/To/Files/griddedResidentialPopulation.shp&#39;</span>
+   <span class="n">startDates</span> <span class="o">=</span> <span class="s1">&#39;2011-01-01&#39;</span>
+   <span class="n">epsgCodes</span> <span class="o">=</span> <span class="mi">32631</span>
+   <span class="n">featureIds</span> <span class="o">=</span> <span class="s1">&#39;ID&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="add-the-lqf-database-and-mean-daily-temperature-files">
+<h4>Add the LQF database and mean daily temperature files<a class="headerlink" href="#add-the-lqf-database-and-mean-daily-temperature-files" title="Permalink to this headline">¶</a></h4>
+<p>LQF needs to know the location of its database of national parameters.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">database</span>
+   <span class="n">path</span> <span class="o">=</span> <span class="s1">&#39;C:/Some/Path/To/Files/LQFDatabase_V1-2.sqlite&#39;</span>
+<span class="o">/</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>The daily temperature file (<strong>dailyTemperature_2015.csv</strong> in the zip
+file) must be formatted appropriately for LQF. <a class="reference external" href="https://umep-docs.readthedocs.io/en/latest/OtherManuals/LQF_Manual.html#temporal-information">See the
+manual</a> for a detailed description
+of the file format</li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&amp;temporal
+    ! Air temperature each day for a year
+    dailyTemperature = &#39;C:\Some\Path\To\Files \dailyTemperature_2015.csv&#39;
+/
+</pre></div>
+</div>
+<p>The data sources file should now look similar to the example shown in
+<a class="reference external" href="https://umep-docs.readthedocs.io/en/latest/OtherManuals/LQF_Manual.html#data-sources-file">the LQF manual</a>. In this tutorial, the
+default diurnal profiles of traffic and building energy use stored in
+the database will be used, but <a class="reference internal" href="#customdiurnalprofiles"><span class="std std-ref">they can be overridden</span></a> by adding options
+to the data sources file.</p>
+</div>
+</div>
+<div class="section" id="run-lqf">
+<h3>Run LQF<a class="headerlink" href="#run-lqf" title="Permalink to this headline">¶</a></h3>
+<p>Under <em>UMEP &gt; Processor &gt; Urban Energy Balance</em>, choose <em>Anthropogenic heat - LQf (LUCY)</em></p>
+<div class="figure align-center" id="id1">
+<img alt="../../../../../_images/LQF_Tutorial_RunUMEP.png" src="../../../../../_images/LQF_Tutorial_RunUMEP.png" />
+<p class="caption"><span class="caption-text">The location of LQF</span></p>
+</div>
+<p>This loads the model interface dialog box:</p>
+<div class="figure align-center" id="id2">
+<img alt="../../../../../_images/LQF_Tutorial_RunLQF.png" src="../../../../../_images/LQF_Tutorial_RunLQF.png" />
+<p class="caption"><span class="caption-text">The dialog for LQF</span></p>
+</div>
+<div class="section" id="choose-configuration-files-and-output-folder">
+<h4>Choose configuration files and output folder<a class="headerlink" href="#choose-configuration-files-and-output-folder" title="Permalink to this headline">¶</a></h4>
+<p>Working from the top of the dialog box to the bottom…</p>
+<ol class="arabic simple">
+<li>Click the … buttons in the <em>Configuration and raw input data</em> panel
+to browse to the <strong>parameters.nml</strong> and <strong>DataSources.nml</strong> files. A pop-up
+error message will warn of any problems inside the files.</li>
+<li><strong>Output path:</strong> A folder in which the model outputs will be stored.
+It is <em>strongly recommended</em> that a new folder is used each time.</li>
+<li><em>Extra spatial disaggregation</em> step is not used here</li>
+<li>Click <em>Prepare input data using Data Sources</em> button. This may be a
+time-consuming step: It matches each output area with a population
+and national parameters from the database, which contains different
+values for each country. If the output areas and population areas are
+not identical, it also splits the population across output areas
+based on their overlapping fractions.</li>
+<li>Once this step is complete, the <em>available at:</em> box will become
+populated. This folder contains the disaggregated data needed to run
+the model.</li>
+</ol>
+<p><strong>Tip:</strong> Save time in future: If the exact same input data files are
+used in a later study, then the “prepare” step can be skipped: click the
+“…” button and navigate to a folder that contains the relevant
+disaggregated data. It will then be copied to the new output folder and
+used as normal.</p>
+</div>
+<div class="section" id="run-the-model-for-1-week">
+<h4>Run the model for 1 week<a class="headerlink" href="#run-the-model-for-1-week" title="Permalink to this headline">¶</a></h4>
+<p>Choose a start date of 11 May 2015, using the start and end date boxes,
+then select <em>Run</em>.</p>
+<div class="figure align-center" id="id3">
+<img alt="../../../../../_images/LQF_Tutorial_DateRange.png" src="../../../../../_images/LQF_Tutorial_DateRange.png" />
+<p class="caption"><span class="caption-text">Setting the start and end date</span></p>
+</div>
+</div>
+</div>
+<div class="section" id="visualise-results">
+<h3>Visualise results<a class="headerlink" href="#visualise-results" title="Permalink to this headline">¶</a></h3>
+<p>Once the model run this is finished, press <em>visualise outputs</em> to view
+some of the model results to open the visualisation tool.</p>
+<div class="figure align-center" id="id4">
+<a class="reference internal image-reference" href="../../../../../_images/LQF_Tutorial_Visualise.png"><img alt="LQF_Tutorial_Visualise.png" src="../../../../../_images/LQF_Tutorial_Visualise.png" style="width: 80%;" /></a>
+<p class="caption"><span class="caption-text">The visualisation tool in LQF</span></p>
+</div>
+<div class="section" id="create-a-map-of-total-qf-at-noon">
+<h4>Create a map of total Q<sub>F</sub> at noon<a class="headerlink" href="#create-a-map-of-total-qf-at-noon" title="Permalink to this headline">¶</a></h4>
+<p>Use the visualisation tool to create a map of all the Q<sub>F</sub> components at
+noon (11:00-12:00 UTC) on May 11 by selecting that time and pressing
+“Add to canvas”. This may take a moment to process. Close the
+visualisation tool and return to the main canvas to inspect the four new
+layers that have appeared.</p>
+<div class="figure align-center" id="id5">
+<img alt="../../../../../_images/525px-LQF_Tutorial_QfMap_1.png" src="../../../../../_images/525px-LQF_Tutorial_QfMap_1.png" />
+<p class="caption"><span class="caption-text">Example of a map generated with the visualisation tool in LQF</span></p>
+</div>
+<p>Each layer corresponds to a different Q<sub>F</sub> component, Qm (metabolism) and
+is plotted on the top layer. De-selecting a layer in the Layers panel
+removes it from view.</p>
+<p>Leaving just Q<sub>F</sub> (total Q<sub>F</sub>) visible, there isn’t much structure in the
+colours. Add some contrast to it by choosing a different colour scale.</p>
+<p>Right-click the Q<sub>F</sub> layer, go to Properties &gt; Style, change the colour
+ramp to “Reds” and choose Mode: Natural Breaks (Jenks). This shows much
+more structure, although the grid borders are distracting. These can be
+removed by double-clicking the colour levels and choosing a border
+colour the same as the fill colour.</p>
+<div class="figure align-center" id="id6">
+<img alt="../../../../../_images/525px-LQF_Tutorial_QfMap_2.png" src="../../../../../_images/525px-LQF_Tutorial_QfMap_2.png" />
+<p class="caption"><span class="caption-text">Same as above but with altered styling</span></p>
+</div>
+</div>
+<div class="section" id="plot-a-time-series-of-qf-in-the-centre-of-the-city">
+<h4>Plot a time series of Q<sub>F</sub> in the centre of the city<a class="headerlink" href="#plot-a-time-series-of-qf-in-the-centre-of-the-city" title="Permalink to this headline">¶</a></h4>
+<p>A time series can be shown for any of the output areas. To identify one
+of interest, zoom into the city centre, choose the selection tool</p>
+<div class="figure align-center" id="id7">
+<img alt="../../../../../_images/LQF_Tutorial_SelectFeatureIcon.png" src="../../../../../_images/LQF_Tutorial_SelectFeatureIcon.png" />
+<p class="caption"><span class="caption-text">Selection tool in QGIS</span></p>
+</div>
+<p>and click an output area of interest.</p>
+<p>This turns yellow. Right-click it and select the option that comes up.</p>
+<div class="figure align-center" id="id8">
+<img alt="../../../../../_images/LQF_Tutorial_SelectFeature.png" src="../../../../../_images/LQF_Tutorial_SelectFeature.png" />
+<p class="caption"><span class="caption-text">Information about the output area</span></p>
+</div>
+<p>then appears on the left, with the ID shown. Make a note of this.</p>
+<div class="figure align-center" id="id9">
+<img alt="../../../../../_images/LQF_Tutorial_FeatureInfo.png" src="../../../../../_images/LQF_Tutorial_FeatureInfo.png" />
+<p class="caption"><span class="caption-text">Information dispalyed from the selected area</span></p>
+</div>
+<p>Return to the visualisation tool, choose output area 5448 and click
+<em>show plot</em>. Time series of each Q<sub>F</sub> component then appear for the week.
+Note the lower traffic activity on Saturday and Sunday, and the higher
+building emissions on Thursday 15th when the weather is colder.</p>
+<div class="figure align-center" id="id10">
+<img alt="../../../../../_images/525px-LQF_Tutorial_Temporal_standardcase.png" src="../../../../../_images/525px-LQF_Tutorial_Temporal_standardcase.png" />
+<p class="caption"><span class="caption-text">Temporal plot from the visualisation tool</span></p>
+</div>
+</div>
+<div class="section" id="recycling-of-input-data">
+<h4>Recycling of input data<a class="headerlink" href="#recycling-of-input-data" title="Permalink to this headline">¶</a></h4>
+<p>Ideally the model is run only for dates covered by the daily temperature
+data, but the data is recycled if the model runs beyond the end of the
+available temperature data. In this tutorial, only 2015 temperatures are
+provided. If the model ran into 2016, a suitable date from the 2015
+temperature data would be selected based on the time of year. Except at
+the very start or end of the year, the date from 2015 used will be
+within a few days of the same date in 2016.</p>
+</div>
+</div>
+</div>
+<div class="section" id="tutorials-ii-refining-lqf-results">
+<h2>Tutorials II: Refining LQF results<a class="headerlink" href="#tutorials-ii-refining-lqf-results" title="Permalink to this headline">¶</a></h2>
+<p>Once a basic Q<sub>F</sub> estimate has been made (as in the previous section),
+there are several options to refining this using additional data that
+may be available.</p>
+<p>The following mini-tutorials show how each of these refinements are
+applied, and the output of the model is compared to that of the standard
+case.</p>
+<div class="section" id="tutorial-2a-custom-diurnal-profiles">
+<h3>Tutorial 2a: Custom diurnal profiles<a class="headerlink" href="#tutorial-2a-custom-diurnal-profiles" title="Permalink to this headline">¶</a></h3>
+<p id="customdiurnalprofiles">In this scenario, new diurnal profiles for building energy consumption
+and road vehicle traffic are available for London. These profiles are
+assumed to better represent the city than the default profiles in the
+LQF database. In this example, we will re-run LQF using the new
+profiles.</p>
+<p>Each country in the LQF database is associated with two diurnal profiles
+for transport (a weekend and a weekday version), and the same for
+building emissions. LQF takes in a week-long profile, starting on
+Monday, for transport and buildings (shown below), and different
+profiles can be used for different times of year (<a class="reference external" href="https://umep-docs.readthedocs.io/en/latest/OtherManuals/LQF_Manual.html#temporal-information">click here for full
+information about diurnal profile
+files</a>).</p>
+<div class="figure align-center" id="id11">
+<img alt="../../../../../_images/525px-LQF_Tutorial_WeeklyTraffic.png" src="../../../../../_images/525px-LQF_Tutorial_WeeklyTraffic.png" />
+<p class="caption"><span class="caption-text">Custom traffic profile</span></p>
+</div>
+<div class="figure align-center" id="id12">
+<img alt="../../../../../_images/525px-LQF_Tutorial_BuildingProfiles.png" src="../../../../../_images/525px-LQF_Tutorial_BuildingProfiles.png" />
+<p class="caption"><span class="caption-text">Custom building profiles</span></p>
+</div>
+<p><strong>Step 1:</strong>
+Create a duplicate of the DataSources.nml file used earlier</p>
+<p><strong>Step 2:</strong> create a new folder for the model outputs.</p>
+<p><strong>Step 3:</strong> Note the paths to the <strong>weeklyTraffic.csv</strong> and
+<strong>LondonBuildingProfiles.csv</strong> files. These contain new profile data</p>
+<p><strong>Step 4:</strong> Add these to the <strong>&amp;temporal</strong> section of the new DataSources
+file using the optional diurnTraffic and diurnEnergy entries. The
+section should now resemble this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">temporal</span>
+    <span class="n">dailyTemperature</span> <span class="o">=</span> <span class="s1">&#39;C:/Some/Path/To/Files/dailyTemperature_2015.csv&#39;</span>
+    <span class="n">diurnTraffic</span> <span class="o">=</span> <span class="s1">&#39;C:/Some/Path/To/Files/weeklyTraffic.csv&#39;</span>
+    <span class="n">diurnEnergy</span> <span class="o">=</span> <span class="s1">&#39;C:/Some/Path/To/Files/LondonBuildingProfiles.csv&#39;</span>
+<span class="o">/</span>
+</pre></div>
+</div>
+<p><strong>Step 5:</strong> Re-run LQF for 7 days week, starting 11 May 2015, specifying
+the new DataSources file at run time. Visualising the time series for
+output area 5448 again:</p>
+<div class="figure align-center" id="id13">
+<a class="reference internal image-reference" href="../../../../../_images/525px-LQF_Tutorial_Temporal_customDiurnals.png"><img alt="LQF_Tutorial_Temporal_customDiurnals.png" src="../../../../../_images/525px-LQF_Tutorial_Temporal_customDiurnals.png" style="width: 350px;" /></a>
+<p class="caption"><span class="caption-text">Output from LQF for seven days in London using cutom profiles</span></p>
+</div>
+<p>Note how the building and transport emission patterns now change on
+different days of the week. This is especially noticeable in transport
+emissions on the final 3 days of the week.</p>
+</div>
+<div class="section" id="tutorial-2b-updating-national-parameters-in-the-lqf-database">
+<h3>Tutorial 2b: Updating national parameters in the LQF database<a class="headerlink" href="#tutorial-2b-updating-national-parameters-in-the-lqf-database" title="Permalink to this headline">¶</a></h3>
+<p>LQF takes the latest national attributes (population, vehicle count and
+energy consumption) up to and including the year(s) modelled. The copy
+of the LQF database used in this tutorial contains national UK
+population values in 2010 and 2016. This means the 2010 population is
+used when 2015 is simulated. This can be updated or added to if data
+becomes available. The database can be edited using software such as
+SQLite Browser.</p>
+<p>Fictional scenario: The UK population in 2015 was approximate twice that
+in 2010, but energy consumption remained the same.</p>
+<p><strong>Step 1:</strong> Make a copy of the LQF database as a backup</p>
+<p><strong>Step 2:</strong> Open the LQF database in SQLite browser or other suitable
+software</p>
+<p><strong>Step 3:</strong> Browse the “attributes” table, which contains national
+attributes for all countries</p>
+<p><strong>Step 4:</strong> Locate the population in the UK 2010 row (the value is
+62036000.0)</p>
+<p><strong>Step 5:</strong> Create a new row for the UK in 2015 with the following
+entries:</p>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Database column</th>
+<th class="head">Value</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>id</td>
+<td>United Kingdom</td>
+</tr>
+<tr class="row-odd"><td>as_of_year</td>
+<td>2015</td>
+</tr>
+<tr class="row-even"><td>population</td>
+<td>120000000</td>
+</tr>
+<tr class="row-odd"><td>population_datasource</td>
+<td>Fake value for test</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Step 6:</strong> Run the model as in the first example.</p>
+<p><strong>Step 7:</strong> Visualise the data for output area 5448. Note how the
+building emissions are approximately half of those in the first example,
+because the national energy consumption per-capita is now half as much.
+The vehicle emissions are the same because they are specified per 10,000
+people in the LQF database.</p>
+<div class="figure align-center" id="id14">
+<a class="reference internal image-reference" href="../../../../../_images/525px-LQF_Tutorial_Temporal_customdatabase.png"><img alt="LQF_Tutorial_Temporal_customdatabase.png" src="../../../../../_images/525px-LQF_Tutorial_Temporal_customdatabase.png" style="width: 350px;" /></a>
+<p class="caption"><span class="caption-text">Output from LQF for seven days in London using cutom database</span></p>
+</div>
+<p><strong>Step 8:</strong> Restore the original LQF database so that the test values do
+not corrupt future modelling studies.</p>
+<p><strong>Tip:</strong> To check which national values were used at a given time, check
+the log folder of the model output directory: <strong>NationalParameters.txt</strong>
+contains a list of the values used for each modelled year and country.
+The following example shows the 2014 value of energy consumption
+(kwh_year) being looked up for model runs in 2015.</p>
+<p>“DB&nbsp;value&nbsp;for&nbsp;United&nbsp;Kingdom&nbsp;kwh_year&nbsp;in&nbsp;modelled&nbsp;year&nbsp;2015:&nbsp;966862000000.0&nbsp;(2014&nbsp;value)”</p>
+<p>See <a class="reference external" href="https://umep-docs.readthedocs.io/en/latest/OtherManuals/LQF_Manual.html#spatial-information">the manual</a> for a list of the
+parameters stored in the LQF database.</p>
+</div>
+<div class="section" id="tutorial-2c-custom-temperature-response-function">
+<h3>Tutorial 2c: Custom temperature response function<a class="headerlink" href="#tutorial-2c-custom-temperature-response-function" title="Permalink to this headline">¶</a></h3>
+<p>Building emissions are governed by a function that relates the daily
+mean air temperature to energy consumption. This is a simple treatment
+that may not capture the full relationship, so a custom function with
+more parameters can also be used in LQF (<a class="reference external" href="https://umep-docs.readthedocs.io/en/latest/OtherManuals/LQF_Manual.html#temperature-response-functions">full
+details</a>).</p>
+<p>This example shows how to activate the custom temperature response
+function, and how it affects the results.</p>
+<p>The parameters of the custom function are specified using optional
+entries in the <a class="reference external" href="https://umep-docs.readthedocs.io/en/latest/OtherManuals/LQF_Manual.html#parameters-file">Parameters file</a>. In this
+example, we will assume that:</p>
+<ul class="simple">
+<li>The use of energy stops increasing when the temperature exceeds 20C
+(weighting is 0.5)</li>
+<li>Energy use increases steeply by 0.5 per degree below 20C</li>
+</ul>
+<p><strong>Step 1:</strong> Open the <strong>parameters.nml</strong> file</p>
+<p><strong>Step 2:</strong> Copy the optional entries needed for the custom temperature
+response from the manual and ensure the values are consistent with those
+below</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">CustomTemperatureResponse</span>
+   <span class="n">Th</span> <span class="o">=</span> <span class="mi">20</span>
+   <span class="n">Tc</span> <span class="o">=</span> <span class="mi">20</span>
+   <span class="n">Ah</span> <span class="o">=</span> <span class="mf">0.5</span>
+   <span class="n">Ac</span> <span class="o">=</span> <span class="mf">0.5</span>
+   <span class="n">c</span> <span class="o">=</span> <span class="mf">0.5</span>
+   <span class="n">Tmax</span> <span class="o">=</span> <span class="mi">50</span>
+   <span class="n">Tmin</span> <span class="o">=</span> <span class="o">-</span><span class="mi">10</span>
+<span class="o">/</span>
+</pre></div>
+</div>
+<p><strong>Step 3</strong> : Save the parameters file and run the model as in the
+original tutorial. Note how the day-to-day variations in the building
+emissions are much greater than in Tutorial 1, but the transport and
+metabolism emissions remains the same as before.</p>
+<div class="figure align-center" id="id15">
+<a class="reference internal image-reference" href="../../../../../_images/525px-LQF_Tutorial_Temporal_customResponse.png"><img alt="LQF_Tutorial_Temporal_customResponse.png" src="../../../../../_images/525px-LQF_Tutorial_Temporal_customResponse.png" style="width: 350px;" /></a>
+<p class="caption"><span class="caption-text">Output from LQF for seven days in London</span></p>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018 – 2019, micromet@University of Reading, led by Prof Sue Grimmond
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../../" src="../../../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../../../_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

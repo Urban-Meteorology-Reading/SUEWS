@@ -1,0 +1,5 @@
+"Referencing Table","Requirement","Comment"
+"`SUEWS_NonVeg.txt`","`L`","Code for OHM coefficients to use for this surface during wet conditions in winter. Links to `SUEWS_OHMCoefficients.txt` . Value of integer is arbitrary but must match code specified in column 1 of `SUEWS_OHMCoefficients.txt`. "
+"`SUEWS_Veg.txt`","`L`","Code for OHM coefficients to use for this surface during wet conditions in winter. Links to `SUEWS_OHMCoefficients.txt` . Value of integer is arbitrary but must match code specified in column 1 of `SUEWS_OHMCoefficients.txt`. "
+"`SUEWS_Water.txt`","`L`","Code for OHM coefficients to use for this surface during wet conditions in winter. Links to `SUEWS_OHMCoefficients.txt` . Value of integer is arbitrary but must match code specified in column 1 of `SUEWS_OHMCoefficients.txt`. "
+"`SUEWS_Snow.txt`","`L`","Code for OHM coefficients to use for this surface during wet conditions in winter. Links to `SUEWS_OHMCoefficients.txt` . Value of integer is arbitrary but must match code specified in column 1 of `SUEWS_OHMCoefficients.txt`. "

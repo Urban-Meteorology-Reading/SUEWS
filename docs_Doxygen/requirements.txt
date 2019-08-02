@@ -1,0 +1,4 @@
+pandas==0.24.2
+nbsphinx==0.4.2
+numpy==1.16.4
+f90nml==1.1

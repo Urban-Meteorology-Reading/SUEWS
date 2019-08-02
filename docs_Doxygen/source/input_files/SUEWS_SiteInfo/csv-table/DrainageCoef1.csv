@@ -1,0 +1,20 @@
+"Referencing Table","Requirement","Comment"
+"`SUEWS_NonVeg.txt`","`MD`","
+
+- Example values:
+
+  - `DrainageEq` = 3, 10 for `Paved` and `Bldgs`;
+
+  - `DrainageEq` = 2, 0.013 for `BSoil`
+
+"
+"`SUEWS_Veg.txt`","`MD`","
+
+- Example values:
+
+    - `DrainageEq` = 3, 10 for `Grass` (irrigated);
+
+    - `DrainageEq` = 2, 0.013 for `EveTr`, `DecTr`, `Grass` (unirrigated)
+
+    "
+"`SUEWS_Water.txt`","`MD`","Not currently used for water surface"

@@ -1,0 +1,2 @@
+"Referencing Table","Requirement","Comment"
+"`SUEWS_SiteSelect.txt`","`O`","Frontal area index for buildings [-] Required if `RoughLenMomMethod` = 3 in `RunControl.nml` . "

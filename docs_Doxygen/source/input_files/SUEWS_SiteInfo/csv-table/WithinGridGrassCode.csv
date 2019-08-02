@@ -1,0 +1,2 @@
+"Referencing Table","Requirement","Comment"
+"`SUEWS_SiteSelect.txt`","`L`","Code that links to the fraction of water that flows from Grass surfaces to surfaces in columns 2-10 of `SUEWS_WithinGridWaterDist.txt`. Value of integer is arbitrary but must match code specified in column 1 of `SUEWS_WithinGridWaterDist.txt`. "

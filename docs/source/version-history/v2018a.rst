@@ -13,8 +13,8 @@ Version 2018a (released 2 August 2018)
 
      * Improved the alignment in output txt files
 
-     
-  #. New `readthedocs.org`-based documentation system
+
+  #. New ``readthedocs.org``-based documentation system
   #. Added `input_converter` for conversion of input files between versions
   #. Added `benchmark_report` for recent releases.
 

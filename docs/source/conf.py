@@ -23,6 +23,7 @@ from pathlib import Path
 
 import pandas as pd
 import nbsphinx
+import exhale
 
 
 # -- processing code --------------------------------------------------------
@@ -134,8 +135,32 @@ extensions = [
     'recommonmark',
     'nbsphinx',
     'sphinx.ext.mathjax',
+    'breathe',
+    'exhale'
 
 ]
+
+breathe_projects = {
+    "SUEWS": "./doxygenoutput/xml"
+}
+breathe_default_project = "SUEWS"
+
+exhale_args = {
+    # These arguments are required
+    "containmentFolder":     "./api",
+    "rootFileName":          "library_root.rst",
+    "rootFileTitle":         "API",
+    "doxygenStripFromPath":  "..",
+    # Suggested optional arguments
+    "createTreeView":        True,
+    # TIP: if using the sphinx-bootstrap-theme, you need
+    # "treeViewIsBootstrap": True,
+    "exhaleExecutesDoxygen": True,
+    "exhaleUseDoxyfile" :    True,
+    #"exhaleDoxygenStdin":    '''INPUT = ../../../SUEWS-SourceCode\n
+    #                            GENERATE_HTML  = YES
+    #                            '''
+}
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -228,12 +253,14 @@ html_theme_path = ["_themes"]
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 #
-html_static_path = ['_static']
+html_static_path = ['_static','doxygenoutput']
 # html_context = {
 #     'css_files': [
 #         '_static/theme_overrides.css',  # override wide tables in RTD theme
 #         ],
 #      }
+
+# html_extra_path = ['doxygenoutput']
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.

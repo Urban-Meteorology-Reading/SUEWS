@@ -82,3 +82,10 @@ Release/*.zip
 
 # editor related
 .vscode/
+
+# doxygen related
+doxygenoutput
+api
+
+# DONT ignore these files
+!docs/source/assets/*/*

@@ -140,10 +140,10 @@ extensions = [
 
 ]
 
-# breathe_projects = {
-#     "SUEWS": "./doxygenoutput/xml"
-# }
-# breathe_default_project = "SUEWS"
+breathe_projects = {
+    "SUEWS": "./doxygenoutput/xml"
+}
+breathe_default_project = "SUEWS"
 
 # exhale_args = {
 #     # These arguments are required

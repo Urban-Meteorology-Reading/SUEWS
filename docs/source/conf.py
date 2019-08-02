@@ -134,8 +134,32 @@ extensions = [
     'recommonmark',
     'nbsphinx',
     'sphinx.ext.mathjax',
+    'breathe',
+    'exhale'
 
 ]
+
+breathe_projects = {
+    "SUEWS": "./doxygenoutput/xml"
+}
+breathe_default_project = "SUEWS"
+
+exhale_args = {
+    # These arguments are required
+    "containmentFolder":     "./api",
+    "rootFileName":          "library_root.rst",
+    "rootFileTitle":         "API",
+    "doxygenStripFromPath":  "..",
+    # Suggested optional arguments
+    "createTreeView":        True,
+    # TIP: if using the sphinx-bootstrap-theme, you need
+    # "treeViewIsBootstrap": True,
+    "exhaleExecutesDoxygen": True,
+    "exhaleUseDoxyfile" :    True,
+    #"exhaleDoxygenStdin":    '''INPUT = ../../../SUEWS-SourceCode\n
+    #                            GENERATE_HTML  = YES
+    #                            '''
+}
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:

@@ -15,6 +15,7 @@
 # import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
+import subprocess
 import os
 import platform
 import sys
@@ -136,7 +137,7 @@ extensions = [
     'nbsphinx',
     'sphinx.ext.mathjax',
     'breathe',
-    # 'exhale'
+    'exhale'
 
 ]
 
@@ -144,6 +145,14 @@ breathe_projects = {
     "SUEWS": "./doxygenoutput/xml"
 }
 breathe_default_project = "SUEWS"
+
+# run doxygen
+read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
+
+if read_the_docs_build:
+
+    subprocess.call('doxygen', shell=True)
+
 
 # exhale_args = {
 #     # These arguments are required

@@ -82,3 +82,7 @@ Release/*.zip
 
 # editor related
 .vscode/
+
+# doxygen related
+doxygenoutput
+api

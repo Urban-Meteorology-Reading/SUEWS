@@ -1,5 +1,0 @@
-"Referencing Table","Requirement","Comment"
-"`SUEWS_NonVeg.txt`","`MD`","Not actually used for building and paved surfaces (as impervious). "
-"`SUEWS_Veg.txt`","`MD`","Note that OHM coefficients for wet conditions are applied if the surface is wet. "
-"`SUEWS_Water.txt`","`MD`","Not actually used for water surface (as no soil surface beneath). "
-"`SUEWS_Snow.txt`","`MD`","Not actually used for Snow surface as winter wet conditions always assumed. "

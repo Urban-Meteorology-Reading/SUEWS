@@ -1,2 +1,0 @@
-"Referencing Table","Requirement","Comment"
-"`SUEWS_SiteSelect.txt`","`MD`","Maximum water bucket reservoir [mm] Used for LUMPS surface wetness control. Default recommended value of 10 mm from Loridan et al. (2011) [L2011]_ . "

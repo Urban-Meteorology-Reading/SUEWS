@@ -1,4 +1,0 @@
-"Value","Comments"
-0,"All (except snow-related) output variables written. This is the default option."
-1,"All (including snow-related) output variables written."
-2,"Writes out a minimal set of output variables (use this to save space or if information about the different surfaces is not required)."

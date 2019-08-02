@@ -1,8 +1,0 @@
-"Referencing Table","Requirement","Comment"
-"`SUEWS_Veg.txt`","`MD`","
-Coefficients are specified in the following parameters: `LeafGrowthPower1`, `LeafGrowthPower2`, `LeafOffPower1` and `LeafOffPower2`.
-
-Options
-
-- 0 Järvi et al. (2011) [J11]_
-- 1 Järvi et al. (2014) [Leena2014]_ "

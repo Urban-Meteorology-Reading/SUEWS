@@ -1,2 +1,0 @@
-"Referencing Table","Requirement","Comment"
-"`SUEWS_SiteSelect.txt`","`MD`","Difference in input and output flows for water surface [mm |h^-1|] Used to indicate river or stream flow through the grid. Currently not fully tested! "

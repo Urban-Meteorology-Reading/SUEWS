@@ -1,8 +1,0 @@
-"Referencing Table","Requirement","Comment"
-"`SUEWS_AnthropogenicHeat.txt`","`MU` `O`","Use with `EmissionsMethod` = 2
-
-Example values:
-
-- 0.0102 Järvi et al. (2011) [J11]_
-
-- 0.0102 Järvi et al. (2014) [Leena2014]_ "

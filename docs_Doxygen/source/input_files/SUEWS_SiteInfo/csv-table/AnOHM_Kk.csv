@@ -1,5 +1,0 @@
-"Referencing Table","Requirement","Comment"
-"`SUEWS_NonVeg.txt`","`MU`","Thermal conductivity for this surface to use in AnOHM [W m |K^-1|]"
-"`SUEWS_Veg.txt`","`MU`","Thermal conductivity for this surface to use in AnOHM [W m |K^-1|]"
-"`SUEWS_Water.txt`","`MU`","Thermal conductivity for this surface to use in AnOHM [W m |K^-1|]"
-"`SUEWS_Snow.txt`","`MU`","Thermal conductivity for this surface to use in AnOHM [W m |K^-1|]"

@@ -1,2 +1,0 @@
-"Referencing Table","Requirement","Comment"
-"`SUEWS_SiteSelect.txt`","`O`","Daytime population density (i.e. workers, tourists) [people ha -1 ] Population density is required if EmissionsMethod = 2 in `RunControl.nml` . The model will use the average of daytime and night-time population densities, unless only one is provided. If daytime population density is unknown, set to -999. "

@@ -1,2 +1,0 @@
-"Referencing Table","Requirement","Comment"
-"`SUEWS_SiteSelect.txt`","`L`","Value of integer is arbitrary but must match code specified in column 1 of `SUEWS_NonVeg.txt`."

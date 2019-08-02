@@ -1,2 +1,0 @@
-"Referencing Table","Requirement","Comment"
-"`SUEWS_ESTMCoefficients.txt`","`O`","Bulk transfer coefficient of internal roof [W |m^-2| |K^-1|] (for building surfaces only and if `IbldCHmod` == 0 in `ESTMinput.nml` "

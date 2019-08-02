@@ -1,9 +1,0 @@
-"Referencing Table","Requirement","Comment"
-"`SUEWS_NonVeg.txt`","`O`","
-Not needed if `SnowUse` = 0 in `RunControl.nml` .
-|NotAvail|
-
-Example values [mm]
-
-- 40: `Paved` Järvi et al. (2014) [Leena2014]_
-- 100: `Bldgs` Järvi et al. (2014) [Leena2014]_ "

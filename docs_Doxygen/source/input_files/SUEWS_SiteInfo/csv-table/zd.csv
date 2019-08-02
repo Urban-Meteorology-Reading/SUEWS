@@ -1,2 +1,0 @@
-"Referencing Table","Requirement","Comment"
-"`SUEWS_SiteSelect.txt`","`O`","Value supplied here is used if RoughLenMomMethod = 1 in `RunControl.nml` ; otherwise set to '-999' and a value will be calculated by the model (RoughLenMomMethod = 2, 3). "

@@ -1,2 +1,0 @@
-"Referencing Table","Requirement","Comment"
-"`SUEWS_SiteSelect.txt`","`MU`","Time zone [h] for site relative to UTC (east is positive). This should be set according to the times given in the meteorological forcing file(s)."

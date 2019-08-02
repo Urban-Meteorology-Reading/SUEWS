@@ -1,5 +1,0 @@
-"Referencing Table","Requirement","Comment"
-"`SUEWS_NonVeg.txt`","`MD`","Temperature threshold determining whether summer/winter OHM coefficients are applied [°C] If 5-day running mean air temperature is greater than or equal to this threshold, OHM coefficients for summertime are applied; otherwise coefficients for wintertime are applied. "
-"`SUEWS_Veg.txt`","`MD`","Temperature threshold determining whether summer/winter OHM coefficients are applied [°C] If 5-day running mean air temperature is greater than or equal to this threshold, OHM coefficients for summertime are applied; otherwise coefficients for wintertime are applied. "
-"`SUEWS_Water.txt`","`MD`","Temperature threshold determining whether summer/winter OHM coefficients are applied [°C] If 5-day running mean air temperature is greater than or equal to this threshold, OHM coefficients for summertime are applied; otherwise coefficients for wintertime are applied. "
-"`SUEWS_Snow.txt`","`MD`","Not actually used for Snow surface as winter wet conditions always assumed."

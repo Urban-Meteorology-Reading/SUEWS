@@ -1,2 +1,0 @@
-"Referencing Table","Requirement","Comment"
-"`SUEWS_SiteSelect.txt`","`L`","Code for modelling irrigation Provides the link to column 1 of SUEWS_Irrigation.txt, which contains the model coefficients for estimation of the water use (used if WU_Choice = 0 in `RunControl.nml` ). Value of integer is arbitrary but must match code specified in column 1 of SUEWS_Irrigation.txt. "

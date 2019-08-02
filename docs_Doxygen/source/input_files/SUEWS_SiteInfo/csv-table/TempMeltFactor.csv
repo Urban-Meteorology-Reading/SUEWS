@@ -1,2 +1,0 @@
-"Referencing Table","Requirement","Comment"
-"`SUEWS_Snow.txt`","`MU`","Hourly temperature melt factor of snow [mm |K^-1| |h^-1|] (In previous model version, this parameter was 0.12)"

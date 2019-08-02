@@ -1,6 +1,0 @@
-"Referencing Table","Requirement","Comment"
-"`SUEWS_BiogenCO2.txt`","`MU` `O`","
-Example value:
-`EmissionsMethod` = 21, 22, 23, 24, 25, 26: 0.723 Bellucco et al. (2017) [B2017]_
-`EmissionsMethod` = 31, 32, 33, 34, 35, 36: 0.96 Bellucco et al. (2017) [B2017]_
-"

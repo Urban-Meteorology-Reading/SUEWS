@@ -1,4 +1,0 @@
-"Value","Comments"
-0,"Output files at model time are not saved. This is the default option.
-Recommended to save disk space as (e.g. 5-min) files can be large."
-1,"Output files at model time step are written out."

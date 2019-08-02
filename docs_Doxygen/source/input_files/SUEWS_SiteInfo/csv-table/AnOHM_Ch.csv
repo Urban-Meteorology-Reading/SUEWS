@@ -1,5 +1,0 @@
-"Referencing Table","Requirement","Comment"
-"`SUEWS_NonVeg.txt`","`MU`","Bulk transfer coefficient for this surface to use in AnOHM [-]"
-"`SUEWS_Veg.txt`","`MU`","Bulk transfer coefficient for this surface to use in AnOHM [-]"
-"`SUEWS_Water.txt`","`MU`","Bulk transfer coefficient for this surface to use in AnOHM [-]"
-"`SUEWS_Snow.txt`","`MU`","Bulk transfer coefficient for this surface to use in AnOHM [-]"

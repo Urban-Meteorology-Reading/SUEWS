@@ -1,2 +1,0 @@
-"Referencing Table","Requirement","Comment"
-"`SUEWS_SiteSelect.txt`","`MU`","Year [YYYY] Years must be continuous. If running multiple years, ensure the rows in `SUEWS_SiteSelect.txt` are arranged so that all grids for a particular year appear on consecutive lines (rather than grouping all years together for a particular grid). "

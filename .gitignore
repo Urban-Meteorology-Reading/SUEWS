@@ -88,4 +88,4 @@ doxygenoutput
 api
 
 # DONT ignore these files
-!SUEWS_V*.pdf
+!docs/source/assets/*/*

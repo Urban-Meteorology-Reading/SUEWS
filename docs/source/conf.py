@@ -23,6 +23,7 @@ from pathlib import Path
 
 import pandas as pd
 import nbsphinx
+import exhale
 
 
 # -- processing code --------------------------------------------------------

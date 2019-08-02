@@ -86,3 +86,6 @@ Release/*.zip
 # doxygen related
 doxygenoutput
 api
+
+# DONT ignore these files
+!SUEWS_V*.pdf

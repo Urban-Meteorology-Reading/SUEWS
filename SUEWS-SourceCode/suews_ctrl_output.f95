@@ -444,7 +444,67 @@ MODULE ctrl_output
       varAttr('U_27', 'm s-1', f104, 'U at 2.7Zh', aA, 'RSL', 0), &
       varAttr('U_28', 'm s-1', f104, 'U at 2.8Zh', aA, 'RSL', 0), &
       varAttr('U_29', 'm s-1', f104, 'U at 2.9Zh', aA, 'RSL', 0), &
-      varAttr('U_30', 'm s-1', f104, 'U at 3.0Zh', aA, 'RSL', 0) &
+      varAttr('U_30', 'm s-1', f104, 'U at 3.0Zh', aA, 'RSL', 0), &
+      varAttr('T_1', 'degC', f104, 'T at 0.1Zh', aA, 'RSL', 0), &
+      varAttr('T_2', 'degC', f104, 'T at 0.2Zh', aA, 'RSL', 0), &
+      varAttr('T_3', 'degC', f104, 'T at 0.3Zh', aA, 'RSL', 0), &
+      varAttr('T_4', 'degC', f104, 'T at 0.4Zh', aA, 'RSL', 0), &
+      varAttr('T_5', 'degC', f104, 'T at 0.5Zh', aA, 'RSL', 0), &
+      varAttr('T_6', 'degC', f104, 'T at 0.6Zh', aA, 'RSL', 0), &
+      varAttr('T_7', 'degC', f104, 'T at 0.7Zh', aA, 'RSL', 0), &
+      varAttr('T_8', 'degC', f104, 'T at 0.8Zh', aA, 'RSL', 0), &
+      varAttr('T_9', 'degC', f104, 'T at 0.9Zh', aA, 'RSL', 0), &
+      varAttr('T_10', 'degC', f104, 'T at Zh', aA, 'RSL', 0), &
+      varAttr('T_11', 'degC', f104, 'T at 1.1Zh', aA, 'RSL', 0), &
+      varAttr('T_12', 'degC', f104, 'T at 1.2Zh', aA, 'RSL', 0), &
+      varAttr('T_13', 'degC', f104, 'T at 1.3Zh', aA, 'RSL', 0), &
+      varAttr('T_14', 'degC', f146, 'T at 1.4Zh', aA, 'RSL', 0), &
+      varAttr('T_15', 'degC', f104, 'T at 1.5Zh', aA, 'RSL', 0), &
+      varAttr('T_16', 'degC', f104, 'T at 1.6Zh', aA, 'RSL', 0), &
+      varAttr('T_17', 'degC', f104, 'T at 1.7Zh', aA, 'RSL', 0), &
+      varAttr('T_18', 'degC', f104, 'T at 1.8Zh', aA, 'RSL', 0), &
+      varAttr('T_19', 'degC', f104, 'T at 1.9Zh', aA, 'RSL', 0), &
+      varAttr('T_20', 'degC', f104, 'T at 2.0Zh', aA, 'RSL', 0), &
+      varAttr('T_21', 'degC', f146, 'T at 2.1Zh', aA, 'RSL', 0), &
+      varAttr('T_22', 'degC', f104, 'T at 2.2Zh', aA, 'RSL', 0), &
+      varAttr('T_23', 'degC', f104, 'T at 2.3Zh', aA, 'RSL', 0), &
+      varAttr('T_24', 'degC', f104, 'T at 2.4Zh', aA, 'RSL', 0), &
+      varAttr('T_25', 'degC', f104, 'T at 2.5Zh', aA, 'RSL', 0), &
+      varAttr('T_26', 'degC', f104, 'T at 2.6Zh', aA, 'RSL', 0), &
+      varAttr('T_27', 'degC', f104, 'T at 2.7Zh', aA, 'RSL', 0), &
+      varAttr('T_28', 'degC', f104, 'T at 2.8Zh', aA, 'RSL', 0), &
+      varAttr('T_29', 'degC', f104, 'T at 2.9Zh', aA, 'RSL', 0), &
+      varAttr('T_30', 'degC', f104, 'T at 3.0Zh', aA, 'RSL', 0), &
+      varAttr('q_1', 'g kg-1', f104, 'q at 0.1Zh', aA, 'RSL', 0), &
+      varAttr('q_2', 'g kg-1', f104, 'q at 0.2Zh', aA, 'RSL', 0), &
+      varAttr('q_3', 'g kg-1', f104, 'q at 0.3Zh', aA, 'RSL', 0), &
+      varAttr('q_4', 'g kg-1', f104, 'q at 0.4Zh', aA, 'RSL', 0), &
+      varAttr('q_5', 'g kg-1', f104, 'q at 0.5Zh', aA, 'RSL', 0), &
+      varAttr('q_6', 'g kg-1', f104, 'q at 0.6Zh', aA, 'RSL', 0), &
+      varAttr('q_7', 'g kg-1', f104, 'q at 0.7Zh', aA, 'RSL', 0), &
+      varAttr('q_8', 'g kg-1', f104, 'q at 0.8Zh', aA, 'RSL', 0), &
+      varAttr('q_9', 'g kg-1', f104, 'q at 0.9Zh', aA, 'RSL', 0), &
+      varAttr('q_10', 'g kg-1', f104, 'q at Zh', aA, 'RSL', 0), &
+      varAttr('q_11', 'g kg-1', f104, 'q at 1.1Zh', aA, 'RSL', 0), &
+      varAttr('q_12', 'g kg-1', f104, 'q at 1.2Zh', aA, 'RSL', 0), &
+      varAttr('q_13', 'g kg-1', f104, 'q at 1.3Zh', aA, 'RSL', 0), &
+      varAttr('q_14', 'g kg-1', f146, 'q at 1.4Zh', aA, 'RSL', 0), &
+      varAttr('q_15', 'g kg-1', f104, 'q at 1.5Zh', aA, 'RSL', 0), &
+      varAttr('q_16', 'g kg-1', f104, 'q at 1.6Zh', aA, 'RSL', 0), &
+      varAttr('q_17', 'g kg-1', f104, 'q at 1.7Zh', aA, 'RSL', 0), &
+      varAttr('q_18', 'g kg-1', f104, 'q at 1.8Zh', aA, 'RSL', 0), &
+      varAttr('q_19', 'g kg-1', f104, 'q at 1.9Zh', aA, 'RSL', 0), &
+      varAttr('q_20', 'g kg-1', f104, 'q at 2.0Zh', aA, 'RSL', 0), &
+      varAttr('q_21', 'g kg-1', f146, 'q at 2.1Zh', aA, 'RSL', 0), &
+      varAttr('q_22', 'g kg-1', f104, 'q at 2.2Zh', aA, 'RSL', 0), &
+      varAttr('q_23', 'g kg-1', f104, 'q at 2.3Zh', aA, 'RSL', 0), &
+      varAttr('q_24', 'g kg-1', f104, 'q at 2.4Zh', aA, 'RSL', 0), &
+      varAttr('q_25', 'g kg-1', f104, 'q at 2.5Zh', aA, 'RSL', 0), &
+      varAttr('q_26', 'g kg-1', f104, 'q at 2.6Zh', aA, 'RSL', 0), &
+      varAttr('q_27', 'g kg-1', f104, 'q at 2.7Zh', aA, 'RSL', 0), &
+      varAttr('q_28', 'g kg-1', f104, 'q at 2.8Zh', aA, 'RSL', 0), &
+      varAttr('q_29', 'g kg-1', f104, 'q at 2.9Zh', aA, 'RSL', 0), &
+      varAttr('q_30', 'g kg-1', f104, 'q at 3.0Zh', aA, 'RSL', 0) &
       /
 
 CONTAINS

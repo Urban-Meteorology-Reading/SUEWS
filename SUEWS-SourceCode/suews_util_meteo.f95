@@ -202,7 +202,7 @@ CONTAINS
       INTEGER, PARAMETER::notUsedI = -55
 
       ! initialisation
-      es_hPa=10
+      es_hPa = 10
 
       !If air temperature between -0.001 -
       IF (ABS(temp_C) < 0.001000) THEN

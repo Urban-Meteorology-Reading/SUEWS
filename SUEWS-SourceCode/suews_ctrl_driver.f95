@@ -12,9 +12,9 @@ MODULE SUEWS_Driver
    USE Snow_module, ONLY: SnowCalc, Snow_cal_MeltHeat
    USE DailyState_module, ONLY: SUEWS_cal_DailyState, update_DailyState
    USE WaterDist_module, ONLY: drainage, soilstore, &
-      SUEWS_cal_SoilState, SUEWS_update_SoilMoist, &
-      ReDistributeWater, SUEWS_cal_HorizontalSoilWater, &
-      SUEWS_cal_WaterUse
+                               SUEWS_cal_SoilState, SUEWS_update_SoilMoist, &
+                               ReDistributeWater, SUEWS_cal_HorizontalSoilWater, &
+                               SUEWS_cal_WaterUse
    USE ctrl_output, ONLY: varListAll
    USE DailyState_module, ONLY: SUEWS_update_DailyState
    USE allocateArray, ONLY: &
@@ -742,7 +742,7 @@ CONTAINS
       CALL RSLProfile( &
          UStar, &!input
          L_mod, sfr, Zh, planF, &
-         StabilityMethod, Temp_C, avRh , Press_hPa, z, TStar, qe, &
+         StabilityMethod, Temp_C, avRh, Press_hPa, z, TStar, qe, &
          zarrays, dataoutLineRSL)!output
 
       !============ surface-level diagonostics end ===============

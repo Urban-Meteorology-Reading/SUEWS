@@ -130,8 +130,8 @@ SUBROUTINE LUMPS_cal_QHQE( &
    ENDIF
 
    ! initialisation
-   alpha_sl=0.6
-   alpha_in=0.2
+   alpha_sl = 0.6
+   alpha_in = 0.2
 
    IF (TempVeg > 0.9000) THEN   !If vegetation fraction is larger than 0.9
       beta = (20 - 3)*TempVeg + 3

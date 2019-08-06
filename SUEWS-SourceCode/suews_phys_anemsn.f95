@@ -111,10 +111,9 @@ SUBROUTINE AnthropogenicEmissions( &
       AHDorNorT          ! Anthropogenic heat
 
    ! initialisation
-   QF_traff=0
-   QF_SAHP_heat=0
-   QF_SAHP_ac=0
-
+   QF_traff = 0
+   QF_SAHP_heat = 0
+   QF_SAHP_ac = 0
 
    ! Transfer HDD values to local explict variables
    HDD_daily = HDD_id(7)

@@ -171,7 +171,7 @@ CONTAINS
       ENDIF
       i = 1
       LOLD = -999.
-      DO WHILE ((ABS(LOLD - L_MOD) > 0.01).AND.(i < 330)) !NT: add error threshold !Iteration starts
+      DO WHILE ((ABS(LOLD - L_MOD) > 0.01) .AND. (i < 330)) !NT: add error threshold !Iteration starts
          LOLD = L_MOD
          zL = zzd/L_MOD
          z0L = z0m/L_MOD  !z0m roughness length
@@ -263,7 +263,7 @@ CONTAINS
       REAL(KIND(1d0)):: piover2, psym, zl, zl_f, x, x2
       INTEGER ::StabilityMethod
 
-      psym=0
+      psym = 0
 
       PIOVER2 = ACOS(-1.)/2.
       !PRINT*,StabilityMethod,zl,"stab_fn_mom:"
@@ -402,8 +402,8 @@ CONTAINS
       INTEGER :: StabilityMethod
 
       ! initialisation
-      psyh=0
-      x=0
+      psyh = 0
+      x = 0
 
       IF (ABS(zl) < neut_limit) THEN      !Neutral
          psyh = 0
@@ -466,7 +466,7 @@ CONTAINS
       ELSEIF (zL < -neut_limit) THEN     ! Unstable
          IF (StabilityMethod == 3) THEN
             !campbell & norman eqn 7.26
-            phih = (1. - 16.*zl_f)**(-0.5)
+            phih = (1.-16.*zl_f)**(-0.5)
          ELSE
 
             IF (StabilityMethod == 4) THEN ! Businger et al (1971) modifed  Hogstrom (1988)
@@ -481,9 +481,9 @@ CONTAINS
       ELSE IF (zL > neut_limit) THEN    !Stable
          IF (StabilityMethod == 4) THEN !Businger et al (1971) modifed  Hogstrom (1988)
             ! psyh=0.95+(7.8*zl_f) ! this is NOT the integral form but the stability function, TS 13 Jun 2017
-            phih = 1. + 7.8*zl_f   ! this is the integral form, TS 13 Jun 2017
+            phih = 1.+7.8*zl_f   ! this is the integral form, TS 13 Jun 2017
          ELSE !Dyer (1974)  PSYH=(-5)*ZL        modifed  Hogstrom (1988)
-            phih = 1. + 4.5*Zl_f
+            phih = 1.+4.5*Zl_f
          ENDIF
 
       ENDIF

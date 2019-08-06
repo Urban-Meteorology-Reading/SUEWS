@@ -49,7 +49,7 @@ Contributors
     - University of Helsinki, Finland
     - CO2
     - v2018c – v2019a
-    - Major contributor to WRF(v4.0)-SUEWS(v2018c) coupling
+    -
   * - Dr Zhenkun Li
     - Shanghai Climate Centre, China
     - WRF-SUEWS coupling

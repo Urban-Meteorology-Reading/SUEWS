@@ -244,7 +244,7 @@ rst_prolog = """
 .. |NotAvail| replace:: **Not available in this version.**
 .. |NotUsed| replace:: **Not used in this version.**
 
-.. _GitHub page: https://github.com/Urban-Meteorology-Reading/SUEWS-Docs/issues/new?template=issue-report.md
+.. _GitHub page: https://github.com/Urban-Meteorology-Reading/SUEWS/issues/new?assignees=&labels=docs&template=docs-issue-report.md&title=
 
 .. only:: html
 

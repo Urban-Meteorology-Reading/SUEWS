@@ -149,7 +149,7 @@ Development (D) & Observations (O)
     - Mobility funding
     - O    
   * - H2020
-    - UrbanFluxes (637519),
+    - UrbanFluxes (637519)
     - D, O    
   * - EUf7
     - BRIDGE (211345)

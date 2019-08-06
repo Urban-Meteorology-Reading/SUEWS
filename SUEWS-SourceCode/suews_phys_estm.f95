@@ -361,6 +361,11 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(ncolsESTMdata):: ESTMArray
       REAL(KIND(1d0)):: imin_prev, ih_prev, iday_prev, tstep_estm   !For checks on temporal resolution of estm data
 
+      ! initialise
+      imin_prev = 0
+      ih_prev = 0
+      iday_prev = 0
+
       !---------------------------------------------------------------
 
       !Open the file for reading and read the actual data
@@ -1360,7 +1365,7 @@ CONTAINS
       ENDIF
 
       IF (Nroof < 5) THEN
-         Troofout = (/Troof, (dum(ii), ii=1, (5 - Nroof))/); 
+         Troofout = (/Troof, (dum(ii), ii=1, (5 - Nroof))/);
       ELSE
          Troofout = Troof
       ENDIF

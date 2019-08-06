@@ -2224,6 +2224,12 @@ SUBROUTINE SUEWS_InitializeMetData(lunit)
    REAL(KIND(1d0)), DIMENSION(24)::MetArray
    REAL(KIND(1d0)):: imin_prev, ih_prev, iday_prev, tstep_met, iy_only   !For checks on temporal resolution of met data
 
+   ! initialisation
+   iy_only=1
+   ih_prev=1
+   imin_prev=1
+   iday_prev=1
+
    !---------------------------------------------------------------
 
    !Open the file for reading and read the actual data

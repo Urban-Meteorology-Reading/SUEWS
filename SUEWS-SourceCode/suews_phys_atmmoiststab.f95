@@ -263,6 +263,8 @@ CONTAINS
       REAL(KIND(1d0)):: piover2, psym, zl, zl_f, x, x2
       INTEGER ::StabilityMethod
 
+      psym=0
+
       PIOVER2 = ACOS(-1.)/2.
       !PRINT*,StabilityMethod,zl,"stab_fn_mom:"
       IF (ABS(zL) < neut_limit) THEN
@@ -340,6 +342,8 @@ CONTAINS
       REAL(KIND(1d0)):: phim, zl, zl_f
       INTEGER ::StabilityMethod
 
+      phim = 0
+
       IF (ABS(zL) < neut_limit) THEN
          phim = 0
       ELSEIF (zL < -neut_limit) THEN    !Unstable
@@ -397,6 +401,10 @@ CONTAINS
       REAL(KIND(1d0)):: zl, zl_f, psyh, x
       INTEGER :: StabilityMethod
 
+      ! initialisation
+      psyh=0
+      x=0
+
       IF (ABS(zl) < neut_limit) THEN      !Neutral
          psyh = 0
       ELSEIF (zL < -neut_limit) THEN     ! Unstable
@@ -419,11 +427,11 @@ CONTAINS
       ELSE IF (zL > neut_limit) THEN    !Stable
          IF (zL <= 1) THEN ! weak/moderate stable
             IF (StabilityMethod == 4) THEN !Businger et al (1971) modifed  Hogstrom (1988)
-               psyh = (-7.8)*zl_f  
+               psyh = (-7.8)*zl_f
             ELSE !Dyer (1974)  PSYH=(-5)*ZL        modifed  Hogstrom (1988)
                PSYH = (-4.5)*Zl_f
             ENDIF
-         ELSE 
+         ELSE
             ! adopt the form as Brutasert (1982) eqn 4.58. but following the coeffs. of the above eqns
             IF (StabilityMethod == 4) THEN !Businger et al (1971) modifed  Hogstrom (1988)
                psyh = (-7.8)*(1 + LOG(zl_f))
@@ -450,6 +458,8 @@ CONTAINS
 
       REAL(KIND(1d0)):: zl, zl_f, phih
       INTEGER :: StabilityMethod
+
+      phih = 0
 
       IF (ABS(zl) < neut_limit) THEN      !Neutral
          phih = 0
@@ -480,7 +490,7 @@ CONTAINS
 
       RETURN
    END FUNCTION stab_phi_heat
-   
+
    !--------------------------------------------------------------------------------
    ! psys - roughness sublayer correction psi_*
    !

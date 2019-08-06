@@ -201,6 +201,9 @@ CONTAINS
       INTEGER:: from, iv
       INTEGER, PARAMETER::notUsedI = -55
 
+      ! initialisation
+      es_hPa=10
+
       !If air temperature between -0.001 -
       IF (ABS(temp_C) < 0.001000) THEN
          IF (from == 1) THEN  ! not from determining Tw

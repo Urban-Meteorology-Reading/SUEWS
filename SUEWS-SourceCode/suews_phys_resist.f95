@@ -208,6 +208,12 @@ SUBROUTINE SurfaceResistance( &
    REAL(KIND(1d0)), PARAMETER :: notUsed = -55
    ! REAL(KIND(1d0)),PARAMETER :: notUsedi=-55.5
 
+   ! initialisation
+   gdq=0.5
+   gtemp=0.5
+   gs=0.5
+   gq=0.5
+
    id_real = REAL(id) !Day of year in real number
 
    !gsModel = 1 - original parameterisation (Jarvi et al. 2011)
@@ -277,18 +283,18 @@ SUBROUTINE SurfaceResistance( &
      ENDDO
 
      IF (avkdn <= 0) THEN      !At nighttime set gsc at arbitrary low value: gsc=0.1 mm/s (Shuttleworth, 1988b)
-        gsc = 0.1 
+        gsc = 0.1
      ELSE
         ! Multiply parts together
         gsc = (G1*gq*gdq*gtemp*gs*gl)
      ENDIF
-     
+
      IF (gsc <= 0) THEN
         CALL errorHint(65, 'subroutine SurfaceResistance.f95 (gsModel=1): gs <= 0, setting to 0.1 mm s-1', gsc, id_real,it)
         gsc = 0.1
      ENDIF
 
-   ELSEIF (gsModel == 2 .OR. gsModel == 4) THEN 
+   ELSEIF (gsModel == 2 .OR. gsModel == 4) THEN
 
      ! ---- g(kdown)----
      QNM = Kmax/(Kmax + G2)
@@ -297,7 +303,7 @@ SUBROUTINE SurfaceResistance( &
         WRITE (*, *) 'Kmax exceeds Kdn setting to g(Kdn) to 1'
         gq = 1
      ENDIF
-      
+
      ! ---- g(delq) ----
      gdq = G3 + (1 - G3)*(G4**dq)   !Ogink-Hendriks (1995) Eq 12 (using G3 as Kshd and G4 as r)
 
@@ -345,19 +351,19 @@ SUBROUTINE SurfaceResistance( &
         !  gl=gl+(sfr(iv+2)*(1-snowFrac(iv+2)))*LAI(id-1,iv)/LAIMax(iv)*MaxConductance(iv)
         gl = gl + (sfr(iv + 2)*(1 - snowFrac(iv + 2)))*LAI_id(iv)/LAIMax(iv)*MaxConductance(iv)
      ENDDO
-     
+
      IF (avkdn <= 0) THEN      !At nighttime set gsc at arbitrary low value: gsc=0.1 mm/s (Shuttleworth, 1988b)
-        gsc = 0.1 
+        gsc = 0.1
      ELSE
         ! Multiply parts together
         gsc = (G1*gq*gdq*gtemp*gs*gl)
      ENDIF
-      
+
      IF (gsc <= 0) THEN
         CALL errorHint(65, 'subroutine SurfaceResistance.f95 (gsModel=2): gsc <= 0, setting to 0.1 mm s-1', gsc, id_real,it)
         gsc = 0.1
      ENDIF
-     
+
    ELSEIF (gsModel < 1 .OR. gsModel > 4) THEN
      CALL errorHint(71, 'Value of gsModel not recognised.', notUsed, NotUsed, gsModel)
    ENDIF

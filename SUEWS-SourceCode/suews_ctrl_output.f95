@@ -58,7 +58,7 @@ MODULE ctrl_output
       CHARACTER(len=15) :: header ! short name in headers
       CHARACTER(len=12) :: unit   ! unit
       CHARACTER(len=10) :: fmt    ! output format
-      CHARACTER(len=50) :: longNm ! long name for detailed description
+      CHARACTER(len=100) :: longNm ! long name for detailed description
       CHARACTER(len=1)  :: aggreg ! aggregation method
       CHARACTER(len=10) :: group  ! group: datetime, default, ESTM, Snow, etc.
       INTEGER             :: level  ! output priority level: 0 for highest (defualt output)
@@ -780,8 +780,8 @@ CONTAINS
       TYPE(varAttr), DIMENSION(:), ALLOCATABLE::varListSel
       INTEGER :: xx, err, fn, i
       CHARACTER(len=365) :: FileOutX
-      CHARACTER(len=50*300) :: str_cat
-      CHARACTER(len=50) :: str_x = ''
+      CHARACTER(len=100*300) :: str_cat
+      CHARACTER(len=100) :: str_x = ''
       CHARACTER(len=3) :: itextX
 
       ! get filename

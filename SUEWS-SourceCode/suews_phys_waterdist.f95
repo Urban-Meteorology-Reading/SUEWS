@@ -910,7 +910,7 @@ CONTAINS
       REAL(KIND(1d0)):: &
          InternalWaterUse, &    !Internal water use for the model timestep [mm]
          WuFr = 1, &
-         wu!Water use for the model timestep [mm]
+         wu = 0!Water use for the model timestep [mm]
       INTEGER:: ih   !Hour corrected for Daylight savings
       INTEGER:: iu   !1=weekday OR 2=weekend
       INTEGER :: tstep ! timestep in second

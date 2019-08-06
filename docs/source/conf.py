@@ -65,8 +65,13 @@ def gen_df_suews(df_csv, df_opt_desc, csv_suews):
     for ind, row in df_csv_suews.iterrows():
         var = row.loc['Column Name'].strip('`')
         if var in df_opt_desc.index:
+            print(f'\t\t {var} found...')
             df_csv_suews.at[
                 ind, 'Description'] = df_opt_desc.loc[var].values[0]
+        else:
+            print(f'\t\t {var} NOT found...')
+            sys.exit(0)
+    print(f'\n')
     return df_csv_suews
 
 
@@ -82,8 +87,9 @@ def gen_csv_suews(path_csv):
 
     list_csv_suews = df_csv.index.levels[0].to_series().filter(like='SUEWS')
     for csv_suews in list_csv_suews:
-        df_csv_suews = gen_df_suews(df_csv, df_opt_desc, csv_suews)
-        df_csv_suews.to_csv(path_csv / (csv_suews + '.csv'), index=False)
+        if 'Profiles' not in csv_suews:
+            df_csv_suews = gen_df_suews(df_csv, df_opt_desc, csv_suews)
+            df_csv_suews.to_csv(path_csv / (csv_suews + '.csv'), index=False)
 
     return list_csv_suews
 

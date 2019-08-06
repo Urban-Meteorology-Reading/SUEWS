@@ -158,7 +158,7 @@ Wind, Temperature and Humidity Profiles in the Roughness Sublayer
 Wind, temperature and humidity profiles are derived at 30 levels in the surface layer.
 In order to account for the roughness sublayer and canopy layer,
 we follow Harman and Finnigan (2007) [HF07]_,
-Harman and Finnigan (2008) [HF08]_, and Theeuwes et al. (2019) [Theeuwes19]_.
+Harman and Finnigan (2008) [HF08]_, and Theeuwes et al. (2019) [T19]_.
 
 The 30 levels have a step of 0.1 times the canopy height ``zh``
 (should still output zh somewhere) ``dz = 0.1 * zh``.

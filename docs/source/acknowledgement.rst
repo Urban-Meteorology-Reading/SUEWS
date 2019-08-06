@@ -68,12 +68,12 @@ Contributors
   * - Dr Thomas Loridan
     - King’s College London, UK
     - NARP
-    - v2016a
+    - prior to v2016a
     -
   * - Dr Brian Offerle
     - Indiana University, USA
     - ESTM, NARP
-    - v2016a
+    - prior to v2016a
     -
 
 

@@ -1,6 +1,4 @@
 
-.. _new_latest:
-
 .. _new_2018c:
 
 Version 2018c (released on 21 February 2019)

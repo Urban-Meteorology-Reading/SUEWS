@@ -133,27 +133,24 @@ Development (D) & Observations (O)
   * - NERC/Belmont
     - TRUC NE/L008971/1, G8MUREFU3FP-2201-075
     - D, O
-  * - H2020
-    - UrbanFluxes
   * - EPSRC
     - LoHCool Low carbon climate-responsive Heating and Cooling of Cities EP/N009797/1 
+    - D
   * - NERC
     - Independent Research Fellowship
+    - D
   * - National Science Foundation (USA)
     - BCS-0095284, ATM-0710631, BCS-0221105
+    - D, O
   * - EPSRC 
     - Data Assimilation for the REsilient City (DARE) EP/P002331/1
     - O
   * - Royal Society/Newton
     - Mobility funding
-    - O
-  * - European Commission
-    - FP7 (grant no. 211345)
+    - O    
   * - H2020
     - UrbanFluxes (637519),
-    - D, O
-  * - EPSRC
-    - EP/I00159X/1, EP/I00159X/2
+    - D, O    
   * - EUf7
     - BRIDGE (211345)
     - D, O

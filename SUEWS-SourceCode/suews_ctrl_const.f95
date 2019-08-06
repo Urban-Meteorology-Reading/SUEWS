@@ -916,7 +916,7 @@ MODULE Initial
              nlinesConductance, &        !Number of lines in SUEWS_Conductance.txt
              nlinesOHMCoefficients, &    !Number of lines in SUEWS_OHMCoefficients.txt
              nlinesESTMCoefficients, &   !Number of lines in SUEWS_ESTMCoefficients.txt
-             nlinesAnthropogenic, &      !Number of lines in SUEWS_AnthropogenicHeat.txt
+             nlinesAnthropogenic, &      !Number of lines in SUEWS_AnthropogenicEmission.txt
              nlinesIrrigation, &         !Number of lines in SUEWS_Irrigation.txt
              nlinesProfiles, &           !Number of lines in SUEWS_Profiles.txt
              nlinesWGWaterDist, &        !Number of lines in SUEWS_WGWaterDist.txt
@@ -1025,7 +1025,7 @@ MODULE data_in
    ! ---- Variables in alphabetical order --------------------------------------------------------
    !! Add units
    REAL(KIND(1d0))::  alpha_qhqe, & !Alpha parameter used in LUMPS QH and QE calculations [-]
-                     alt, &       !Altitude in m
+                     alt, &       !Altitude  [m]
                      avdens, &    !Average air density
                      avkdn, &     !Average downwelling shortwave radiation
                      avrh, &      !Average relative humidity

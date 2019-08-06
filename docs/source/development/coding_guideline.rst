@@ -69,7 +69,7 @@ Preparation of SUEWS Manual
 #. The SUEWS manual is hosted by `readthedocs.org <https://www.readthedocs.org>`_
 #. CSV tables used in following pages are automatically generated from the *Description* field in `Input_Options` by each build, so **DON'T** manually edit them as your edits will be swiped automatically:
 
-  * `SUEWS_AnthropogenicHeat.txt`
+  * `SUEWS_AnthropogenicEmission.txt`
   * `SUEWS_BiogenCO2.txt`
   * `SUEWS_Conductance.txt`
   * `SUEWS_Irrigation.txt`

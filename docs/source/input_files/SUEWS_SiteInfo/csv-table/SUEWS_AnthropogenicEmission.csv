@@ -27,9 +27,14 @@ No.,Column Name,Use,Description
 26,`PopProfWE`,`MU` `O`,Code for population density profile (weekends) linking to `Code` of `SUEWS_Profiles.txt`.
 27,`MinQFMetab`,`MU` `O`,Minimum value for human heat emission. [W |m^-2|]
 28,`MaxQFMetab`,`MU` `O`,Maximum value for human heat emission. [W |m^-2|]
-29,`FrFossilFuel_Heat`,`MU` `O`,Fraction of fossil fuels used for building heating [-]
-30,`FrFossilFuel_NonHeat`,`MU` `O`,Fraction of fossil fuels used for building energy use [-]
-31,`EF_umolCO2perJ`,`MU` `O`,Emission factor for fuels used for building heating.
-32,`EnEF_v_Jkm`,`MU` `O`,Emission factor for heat [J k|m^-1|].
-33,`FcEF_v_kgkm`,`MU` `O`,CO2 emission factor [kg |km^-1|]
-34,`TrafficUnits`,`MU` `O`,Units for the traffic rate for the study area. Not used in v2018a.
+29,`MinFCMetab`,`MU` `O`,Minimum (night) CO2 from human metabolism. [W |m^-2|]
+30,`MaxFCMetab`,`MU` `O`,Maximum (day) CO2 from human metabolism. [W |m^-2|]
+31,`FrPDDwe`,`MU` `O`,Fraction of weekend population to weekday population. [-]
+32,`FrFossilFuel_Heat`,`MU` `O`,Fraction of fossil fuels used for building heating [-]
+33,`FrFossilFuel_NonHeat`,`MU` `O`,Fraction of fossil fuels used for building energy use [-]
+34,`EF_umolCO2perJ`,`MU` `O`,Emission factor for fuels used for building heating.
+35,`EnEF_v_Jkm`,`MU` `O`,Emission factor for heat [J k|m^-1|].
+36,`FcEF_v_kgkmWD`,`MU` `O`,CO2 emission factor for weekdays [kg |km^-1|]
+37,`FcEF_v_kgkmWE`,`MU` `O`,CO2 emission factor for weekends [kg |km^-1|]
+38,`CO2PointSource`,`MU` `O`,CO2 emission factor [kg |km^-1|]
+39,`TrafficUnits`,`MU` `O`,Units for the traffic rate for the study area. Not used in v2018a.

@@ -3,7 +3,8 @@
 Acknowledgements
 ================
 
--  Current contributors:
+Contributors
+------------
 
    .. list-table::
      :widths: 30 35 35
@@ -33,16 +34,6 @@ Acknowledgements
      * - Dr Helen Ward, Past Lead Developer
        - University of Reading, UK
        - OHM improvement; Resistance calculation; Anthropogenic heat calculation
-
--  Past Contributors:
-
-   .. list-table::
-     :widths: 30 35 35
-     :header-rows: 1
-
-     * - Name
-       - Affiliation
-       - Contributions
      * - Dr Shiho Onomura
        - Göteborg University, Sweden
        - BLUEWS, ESTM
@@ -55,7 +46,8 @@ Acknowledgements
 
 
 
--  Libraries/code that SUEWS uses as dependency:
+Dependency Libraries
+--------------------
 
    .. note::
 
@@ -77,7 +69,8 @@ Acknowledgements
         - string processing
 
 
--  Funding to support development:
+Funding
+-------
 
    .. list-table::
       :widths: auto

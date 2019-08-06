@@ -64,12 +64,12 @@ OTHERS =  suews_ctrl_translate.o \
 					suews_phys_evap.o \
 					suews_ctrl_init.o \
 					suews_phys_anemsn.o \
-                    suews_phys_RSLwind.o \
+                    suews_phys_rslprof.o \
 					suews_phys_biogenco2.o
 
 # modules under rapid development
 TEST =  suews_phys_ohm.o \
-				suews_ctrl_calculations.o
+		suews_ctrl_calculations.o
 
 # modules for WRF coupling
 WRF =  suews_ctrl_sumin.o

@@ -38,13 +38,13 @@ SUBROUTINE RSLProfile( &
                                 beta_N = 0.40, &  ! H&F beta coefficient in neutral conditions from Theeuwes et al., 2019 BLM
                                 pi = 4.*ATAN(1.0),r = 0.1, &
                                 a1 = 4., a2 = -0.1, a3 = 1.5, a4 = -1. ! constraints to determine beta
-               
+
    INTEGER, PARAMETER :: nz = 30   ! number of levels 10 levels in canopy plus 20 (3 x Zh) above the canopy
 
    REAL(KIND(1d0)), INTENT(out), DIMENSION(nz*3):: zarrays ! Height array
    REAL(KIND(1d0)), INTENT(out), DIMENSION(nz*3):: dataoutLineRSL  ! Variables array (/U,T,q/)
    REAL(KIND(1d0)), DIMENSION(nz):: dif, dif2, psihat_z, psihath_z, zarray, &
-                                    dataoutLineURSL, & ! wind speed array [m s-1]                                              
+                                    dataoutLineURSL, & ! wind speed array [m s-1]
                                     dataoutLineTRSL, & ! Temperature array [C]
                                     dataoutLineqRSL    ! Specific humidity array [g kg-1]
 
@@ -62,11 +62,11 @@ SUBROUTINE RSLProfile( &
                      qa_gkg, qStar ! specific humidity scale
    INTEGER :: I, z, it, idx_can, idx_za
    !
-   ! Step 1: Calculate grid-cel dependent constants 
+   ! Step 1: Calculate grid-cel dependent constants
    ! Step 2: Calculate Beta (crucial for H&F method)
-   ! Step 3: calculate the stability dependent H&F constants 
-   ! Step 4: determine psihat at levels above the canopy 
-   ! Step 5: Calculate z0 iteratively 
+   ! Step 3: calculate the stability dependent H&F constants
+   ! Step 4: determine psihat at levels above the canopy
+   ! Step 5: Calculate z0 iteratively
    ! Step 6: Calculate mean variables above canopy
    ! Step 7: Calculate mean variables in canopy
    !
@@ -152,11 +152,11 @@ SUBROUTINE RSLProfile( &
    !
    psihat_z = 0.*zarray
    DO z =  nz-1, idx_can-1,-1
-      phimz = stab_phi_mom(StabilityMethod, (zarray(z) - zd)/L_MOD, (zarray(z) - zd)/L_MOD)  
+      phimz = stab_phi_mom(StabilityMethod, (zarray(z) - zd)/L_MOD, (zarray(z) - zd)/L_MOD)
       phimzp = stab_phi_mom(StabilityMethod, (zarray(z + 1) - zd)/L_MOD, (zarray(z + 1) - zd)/L_MOD)
       phihz = stab_phi_heat(StabilityMethod, (zarray(z) - zd)/L_MOD, (zarray(z) -  zd)/L_MOD)
       phihzp = stab_phi_heat(StabilityMethod, (zarray(z + 1) - zd)/L_MOD, (zarray(z + 1) - zd)/L_MOD)
-   
+
       psihat_z(z) = psihat_z(z + 1) + dz/2.*phimzp*(cm*EXP(-1.*c2*beta*(zarray(z + 1) - zd)/elm)) &  !Taylor's approximation for integral
                     /(zarray(z + 1) - zd)
       psihat_z(z) = psihat_z(z) + dz/2.*phimz*(cm*EXP(-1.*c2*beta*(zarray(z) - zd)/elm)) &
@@ -175,7 +175,7 @@ SUBROUTINE RSLProfile( &
    psimz0 = 0.5
    it = 1
    DO WHILE ((err > 0.001) .AND. (it < 10))
-      psimz0 = stab_fn_mom(StabilityMethod, z0/L_MOD, z0/L_MOD) 
+      psimz0 = stab_fn_mom(StabilityMethod, z0/L_MOD, z0/L_MOD)
       z01 = z0
       z0 = (Zh - zd)*EXP(-1.*kappa/beta)*EXP(-1.*psimZh + psimz0)*EXP(psihat_z(idx_can))
       err = ABS(z01 - z0)
@@ -186,7 +186,7 @@ SUBROUTINE RSLProfile( &
    psihza = stab_fn_heat(StabilityMethod, (zMeas - zd)/L_MOD, (zMeas-zd)/L_MOD)
    qStar = -1.* (qe/lv) / UStar
    qa_gkg = RH2qa(avRH/100, Press_hPa, Temp_c)
-   ! 
+   !
    ! Step 6
    ! calculate above canopy wind speed
    !

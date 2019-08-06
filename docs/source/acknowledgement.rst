@@ -56,7 +56,7 @@ Contributors
     - v2018b – v2018c
     - Major contributor to WRF(v3.9)-SUEWS(v2018b) coupling
   * - Yihao Tang
-    - University of Reading
+    - University of Reading, UK
     - Stability, air temperature
     - v2018b - v2018c
     -

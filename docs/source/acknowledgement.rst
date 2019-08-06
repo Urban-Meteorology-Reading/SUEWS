@@ -133,8 +133,8 @@ Development
   * - NERC
     - Independent Research Fellowship
 
-Observation
-~~~~~~~~~~~
+Observations
+~~~~~~~~~~~~
 
 .. list-table::
   :widths: auto

@@ -10,6 +10,7 @@ Version 2019a (planned release in late August 2019)
 
   #. An anthropogenic emission module is added.
   Module details refer to Järvi et al. (2019) [J19]_.
+  
   #. A `canyon profile module <Wind, Temperature and Humidity Profiles in the Roughness Sublayer>`_ is added.
   Module details refer to Theeuwes et al. (2019) [T19]_.
 

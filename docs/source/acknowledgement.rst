@@ -6,93 +6,153 @@ Acknowledgements
 Contributors
 ------------
 
-   .. list-table::
-     :widths: 30 35 35
-     :header-rows: 1
+.. list-table::
+  :widths: 10 20 30 10 10
+  :header-rows: 1
 
-     * - Name
-       - Affiliation
-       - Contributions
-     * - Dr Ting Sun, Current Lead Developer
-       - University of Reading, UK
-       - AnOHM; Documentation system; WRF-SUEWS coupling; SuPy (python wrapper of SUEWS)
-     * - Dr Leena Järvi, Lead Developer
-       - University of Helsinki, Finland
-       - Snow-related physics; Anthropogenic emission calculation, CO2
-     * - Prof C.S.B. Grimmond, Team Leader
-       - University of Reading; previously, Indiana University, USA, King’s College London, UK, University of British Columbia, Canada
-       - OHM, Evaporation-Interception, Resistances, NARP, irrigation, anthropogenic heat, etc
-     * - Dr Fredrik Lindberg
-       - Göteborg University, Sweden
-       - UMEP-related work, NARP, ESTM
-     * - Dr Zhenkun Li
-       - Shanghai Climate Centre, China
-       - WRF-SUEWS coupling
-     * - Yihao Tang
-       - University of Reading
-       - Stability, air temperature
-     * - Dr Helen Ward, Past Lead Developer
-       - University of Reading, UK
-       - OHM improvement; Resistance calculation; Anthropogenic heat calculation
-     * - Dr Shiho Onomura
-       - Göteborg University, Sweden
-       - BLUEWS, ESTM
-     * - Dr Thomas Loridan
-       - King’s College London, UK
-       - NARP
-     * - Dr Brian Offerle
-       - Indiana University, USA
-       - ESTM, NARP
+  * - Name
+    - Affiliation
+    - Contributions
+    - Versions contributed
+    - Remarks
+  * - Prof C.S.B. Grimmond
+    - University of Reading, UK; previously, Indiana University, USA, King’s College London, UK, University of British Columbia, Canada
+    - OHM, Evaporation-Interception, Resistances, NARP, irrigation, anthropogenic heat, etc
+    - v2011b – v2019a
+    - Team Leader
+  * - Dr Ting Sun
+    - University of Reading, UK
+    - AnOHM; Documentation system; WRF-SUEWS coupling; SuPy (python wrapper of SUEWS)
+    - v2017b – v2019a
+    - Current Lead Developer
+  * - Dr Leena Järvi
+    - University of Helsinki, Finland
+    - Snow-related physics; Anthropogenic emission calculation, CO2
+    - v2011b – v2019a
+    - Lead Developer of v2011b – v2014b
+  * - Dr Helen Ward
+    - University of Reading, UK
+    - OHM improvement; Resistance calculation; Anthropogenic heat calculation
+    - v2016a - v2017b
+    - Lead Developer of v2016a - v2017
+  * - Dr Fredrik Lindberg
+    - Göteborg University, Sweden
+    - UMEP-related work, NARP, ESTM
+    - v2011b – v2019a
+    - Lead Developer of UMEP
+  * - Dr Hamidreza Omidvar
+    - University of Reading, UK
+    - WRF-SUEWS coupling
+    - v2018c – v2019a
+    - Major contributor to WRF(v4.0)-SUEWS(v2018c) coupling
+  * - Minttu P. Havu
+    - University of Helsinki, Finland
+    - CO2
+    - v2018c – v2019a
+    - Major contributor to WRF(v4.0)-SUEWS(v2018c) coupling
+  * - Dr Zhenkun Li
+    - Shanghai Climate Centre, China
+    - WRF-SUEWS coupling
+    - v2018b – v2018c
+    - Major contributor to WRF(v3.9)-SUEWS(v2018b) coupling
+  * - Yihao Tang
+    - University of Reading
+    - Stability, air temperature
+    - v2018b - v2018c
+    -
+  * - Dr Shiho Onomura
+    - Göteborg University, Sweden
+    - BLUEWS, ESTM
+    - v2016a
+    -
+  * - Dr Thomas Loridan
+    - King’s College London, UK
+    - NARP
+    - v2016a
+    -
+  * - Dr Brian Offerle
+    - Indiana University, USA
+    - ESTM, NARP
+    - v2016a
+    -
 
 
 
 Dependency Libraries
 --------------------
 
-   .. note::
+.. note::
 
-       We gratefully acknowledge the libraries/code that SUEWS uses as dependency and greatly appreciate their developers for the excellent work. Please let us know if any inapproriate use of these code and we will remove/modify the related parts accordingly.
+    We gratefully acknowledge the libraries/code that SUEWS uses as dependency and greatly appreciate their developers for the excellent work.
+    Please let us know if any inapproriate use of these code and we will remove/modify the related parts accordingly.
 
-   .. list-table::
-      :widths: auto
-      :header-rows: 1
+.. list-table::
+  :widths: auto
+  :header-rows: 1
 
-      * - Library
-        - Comments
-      * - `datetime-fortran <https://wavebitscientific.github.io/datetime-fortran/>`_
-        - date and time related processsing
-      * - `minpack <https://people.sc.fsu.edu/~jburkardt/f_src/minpack/minpack.html>`_
-        - AnOHM-related sinusoidal curve fitting
-      * - `Recursive Fortran 95 quicksort routine <http://www.fortran.com/qsort_c.f95>`_
-        - netCDF output for QGIS-compliant grid layout
-      * - `Fortran Strings Module by Dr George Benthien <http://gbenthien.net/strings/str-index.html>`_
-        - string processing
+  * - Library
+    - Remarks
+  * - `datetime-fortran <https://wavebitscientific.github.io/datetime-fortran/>`_
+    - date and time related processsing
+  * - `minpack <https://people.sc.fsu.edu/~jburkardt/f_src/minpack/minpack.html>`_
+    - AnOHM-related sinusoidal curve fitting
+  * - `Recursive Fortran 95 quicksort routine <http://www.fortran.com/qsort_c.f95>`_
+    - netCDF output for QGIS-compliant grid layout
+  * - `Fortran Strings Module by Dr George Benthien <http://gbenthien.net/strings/str-index.html>`_
+    - string processing
 
 
 Funding
 -------
 
-   .. list-table::
-      :widths: auto
-      :header-rows: 1
+Development
+~~~~~~~~~~~
 
-      * - Funder
-        - Project
-      * - National Science Foundation (USA)
-        - BCS-0095284, ATM-0710631
-      * - EU Framework 7
-        - BRIDGE (211345)
-      * - EUf7
-        - emBRACE
-      * - Newton/Met Office
-        - CSSP-China
-      * - NERC
-        - ClearfLo
-      * - NERC/Belmont
-        - TRUC
-      * - H2020
-        - UrbanFluxes
-      * - EPSRC
-        - LoHCool
-      * - NERC
-        - Independent Research Fellowship
+.. list-table::
+  :widths: auto
+  :header-rows: 1
+
+  * - Funder
+    - Project
+  * - National Science Foundation (USA)
+    - BCS-0095284, ATM-0710631
+  * - EU Framework 7
+    - BRIDGE (211345)
+  * - EUf7
+    - emBRACE
+  * - Newton/Met Office
+    - CSSP-China
+  * - NERC
+    - ClearfLo
+  * - NERC/Belmont
+    - TRUC
+  * - H2020
+    - UrbanFluxes
+  * - EPSRC
+    - LoHCool
+  * - NERC
+    - Independent Research Fellowship
+
+Observation
+~~~~~~~~~~~
+
+.. list-table::
+  :widths: auto
+  :header-rows: 1
+
+  * - Royal Society/Newton
+    - Mobility funding
+  * - NERC
+    - NE/H003231/1
+  * - European Commission
+    - FP7 (grant no. 211345)
+  * - European Commission
+    - H2020-EO-2014 (UrbanFluxes (grant no. 637519)),
+  * - EPSRC
+    - EP/I00159X/1, EP/I00159X/2
+  * - KCL
+    - Sue Grimmond
+  * - Belmont Forum
+    - TRUC NE/L008971/1, G8MUREFU3FP-2201-075
+  * - Newton Fund and the Met Office (
+    - CSSP grant

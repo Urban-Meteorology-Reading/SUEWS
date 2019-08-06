@@ -15,7 +15,7 @@ Contributors
     - Contributions
     - Versions
     - Remarks
-  * - Prof C.S.B. Grimmond
+  * - Prof Sue Grimmond
     - University of Reading, UK; previously, Indiana University, USA, King’s College London, UK, University of British Columbia, Canada
     - OHM, Evaporation-Interception, Resistances, NARP, irrigation, anthropogenic heat, etc
     - v2011b – v2019a
@@ -105,8 +105,8 @@ Dependency Libraries
 Funding
 -------
 
-Development
-~~~~~~~~~~~
+Development (D) & Observations (O)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. list-table::
   :widths: auto
@@ -114,45 +114,79 @@ Development
 
   * - Funder
     - Project
-  * - National Science Foundation (USA)
-    - BCS-0095284, ATM-0710631
-  * - EU Framework 7
-    - BRIDGE (211345)
-  * - EUf7
-    - emBRACE
-  * - Newton/Met Office
-    - CSSP-China
+    - D , O
   * - NERC
-    - ClearfLo
+    - APEx
+    - D
+  * - NERC 
+    - COSMA  NE/S005889/
+    - D
+  * - UKRI
+    - GCRF Urban Disaster Risk Hub
+    - D 
+  * - Newton/Met Office
+    - CSSP-China (AJYG-DX4P1V HRC,AJYF-2GLAMK EUN, others)
+    - D, O
+  * - NERC
+    - ClearfLo Clean Air for London  NE/H003231/1 
+    - O
   * - NERC/Belmont
-    - TRUC
+    - TRUC NE/L008971/1, G8MUREFU3FP-2201-075
+    - D, O
   * - H2020
     - UrbanFluxes
   * - EPSRC
-    - LoHCool
+    - LoHCool Low carbon climate-responsive Heating and Cooling of Cities EP/N009797/1 
   * - NERC
     - Independent Research Fellowship
-
-Observations
-~~~~~~~~~~~~
-
-.. list-table::
-  :widths: auto
-  :header-rows: 1
-
+  * - National Science Foundation (USA)
+    - BCS-0095284, ATM-0710631, BCS-0221105
+  * - EPSRC 
+    - Data Assimilation for the REsilient City (DARE) EP/P002331/1
+    - O
   * - Royal Society/Newton
     - Mobility funding
-  * - NERC
-    - NE/H003231/1
+    - O
   * - European Commission
     - FP7 (grant no. 211345)
-  * - European Commission
-    - H2020-EO-2014 (UrbanFluxes (grant no. 637519)),
+  * - H2020
+    - UrbanFluxes (637519),
+    - D, O
   * - EPSRC
     - EP/I00159X/1, EP/I00159X/2
+  * - EUf7
+    - BRIDGE (211345)
+    - D, O
+  * - EUf7
+    - emBRACE (283201)
+    - D, O
+  * - University of Reading
+    - Sue Grimmond
+    - O, D
   * - KCL
     - Sue Grimmond
-  * - Belmont Forum
-    - TRUC NE/L008971/1, G8MUREFU3FP-2201-075
-  * - Newton Fund and the Met Office (
-    - CSSP grant
+    - O  
+  * - EPSRC 
+    - EP/I00159X/1 EP/I00159X/2 Materials Innovation Hub: Connecting Materials Culture to Materials Science
+    - O
+  * - NERC 
+    - Field Spectroscopy Facility (FSF) 616.1110 Investigating the Urban Energy Balance of London 
+    - O 
+  * - EUf7
+    - MEGAPOLI 212520
+    - D
+  * -	NERC 
+    - Airborne Remote Sensing Facility & Field Spectroscopy Facility (GB08/19)
+    - O
+  * - Canadian Foundation for Climate & Atmospheric Sciences (CFCAS) 
+    - Environmental Prediction for Canadian Cities
+    - D, O
+
+
+
+
+
+
+
+
+ 

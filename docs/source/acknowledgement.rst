@@ -139,7 +139,7 @@ Development (D) & Observations (O)
   * - NERC
     - Independent Research Fellowship
     - D
-  * - National Science Foundation (USA)
+  * - NSF
     - BCS-0095284, ATM-0710631, BCS-0221105
     - D, O
   * - EPSRC 
@@ -175,7 +175,7 @@ Development (D) & Observations (O)
   * -	NERC 
     - Airborne Remote Sensing Facility & Field Spectroscopy Facility (GB08/19)
     - O
-  * - Canadian Foundation for Climate & Atmospheric Sciences (CFCAS) 
+  * - CFCAS 
     - Environmental Prediction for Canadian Cities
     - D, O
 

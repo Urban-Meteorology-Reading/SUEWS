@@ -16,8 +16,7 @@ Version 2019a (planned release in late August 2019)
 
 - **Changes**
 
-  #. Input file ``SUEWS_AnthropogenicHeat.txt`` is renamed to ``SUEWS_AnthropogenicEmission.txt``
-   with new parameters added: `MinFCMetab`, `MaxFCMetab`, `FrPDDwe`, `FcEF_v_kgkmWD` and `FcEF_v_kgkmWE`.
+  #. Input file ``SUEWS_AnthropogenicHeat.txt`` is renamed to ``SUEWS_AnthropogenicEmission.txt`` with new parameters added: `MinFCMetab`, `MaxFCMetab`, `FrPDDwe`, `FcEF_v_kgkmWD` and `FcEF_v_kgkmWE`.
 
 
 - **Fix**

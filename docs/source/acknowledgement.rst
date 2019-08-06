@@ -16,7 +16,7 @@ Contributors
     - Versions
     - Remarks
   * - Prof Sue Grimmond
-    - University of Reading, UK; previously, Indiana University, USA, King’s College London, UK, University of British Columbia, Canada
+    - University of Reading, UK; prior: Indiana University, USA, King’s College London, UK, University of British Columbia, Canada
     - OHM, Evaporation-Interception, Resistances, NARP, irrigation, anthropogenic heat, etc
     - v2011b – v2019a
     - Team Leader

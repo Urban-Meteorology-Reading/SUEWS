@@ -13,7 +13,7 @@ Contributors
   * - Name
     - Affiliation
     - Contributions
-    - Versions contributed
+    - Versions
     - Remarks
   * - Prof C.S.B. Grimmond
     - University of Reading, UK; previously, Indiana University, USA, King’s College London, UK, University of British Columbia, Canada

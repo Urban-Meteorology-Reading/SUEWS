@@ -42,7 +42,7 @@ Contributors
     - Lead Developer of UMEP
   * - Dr Hamidreza Omidvar
     - University of Reading, UK
-    - WRF-SUEWS coupling
+    - WRF-SUEWS coupling; Documentation system
     - v2018c – v2019a
     - Major contributor to WRF(v4.0)-SUEWS(v2018c) coupling
   * - Minttu P. Havu

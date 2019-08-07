@@ -34,7 +34,7 @@ SUBROUTINE AerodynamicResistance( &
    !         VegFraction = Fraction of vegetation
    !               (changed from veg_fr which also includes water surface by HCW 05 Nov 2015)
 
-   USE AtmMoistStab_module, ONLY: stab_fn_heat, stab_fn_mom
+   USE AtmMoistStab_module, ONLY: stab_psi_heat, stab_psi_mom
 
    IMPLICIT NONE
 
@@ -71,8 +71,8 @@ SUBROUTINE AerodynamicResistance( &
       !    assuming stability functions the same for heat and water
    ELSEIF (AerodynamicResistanceMethod == 2) THEN  !Dyer (1974)
 
-      psim = stab_fn_mom(StabilityMethod, ZZD/L_mod, zzd/L_mod)
-      psih = stab_fn_heat(StabilityMethod, ZZD/L_mod, zzd/L_mod)
+      psim = stab_psi_mom(StabilityMethod, ZZD/L_mod, zzd/L_mod)
+      psih = stab_psi_heat(StabilityMethod, ZZD/L_mod, zzd/L_mod)
 
       !Z0V roughness length for vapour
       z0V = cal_z0V(RoughLenHeatMethod, z0m, VegFraction, UStar)

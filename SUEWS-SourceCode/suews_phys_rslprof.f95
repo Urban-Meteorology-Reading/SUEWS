@@ -9,7 +9,7 @@ SUBROUTINE RSLProfile( &
    ! NT 03/2019
    !
    !-----------------------------------------------------
-   USE AtmMoistStab_module, ONLY: STAB_lumps, stab_fn_mom, stab_fn_heat, stab_phi_mom, stab_phi_heat
+   USE AtmMoistStab_module, ONLY: STAB_lumps, stab_psi_mom, stab_psi_heat, stab_phi_mom, stab_phi_heat
    USE meteo, ONLY: RH2qa
 
    IMPLICIT NONE
@@ -124,7 +124,7 @@ SUBROUTINE RSLProfile( &
    !
    ! Step 3:
    !
-   psimZh = stab_fn_mom(StabilityMethod, (Zh - zd)/L_MOD, (Zh - zd)/L_MOD)
+   psimZh = stab_psi_mom(StabilityMethod, (Zh - zd)/L_MOD, (Zh - zd)/L_MOD)
 
    ! calculate phihatM according to H&F '07 and H&F '08 for heat and humidity
    xx1 = stab_phi_mom(StabilityMethod, (Zh - zd)/L_MOD, (Zh - zd)/L_MOD)
@@ -175,15 +175,15 @@ SUBROUTINE RSLProfile( &
    psimz0 = 0.5
    it = 1
    DO WHILE ((err > 0.001) .AND. (it < 10))
-      psimz0 = stab_fn_mom(StabilityMethod, z0/L_MOD, z0/L_MOD)
+      psimz0 = stab_psi_mom(StabilityMethod, z0/L_MOD, z0/L_MOD)
       z01 = z0
       z0 = (Zh - zd)*EXP(-1.*kappa/beta)*EXP(-1.*psimZh + psimz0)*EXP(psihat_z(idx_can))
       err = ABS(z01 - z0)
       it = it + 1
    ENDDO
 
-   psimz0 = stab_fn_mom(StabilityMethod, z0/L_MOD, z0/L_MOD)
-   psihza = stab_fn_heat(StabilityMethod, (zMeas - zd)/L_MOD, (zMeas - zd)/L_MOD)
+   psimz0 = stab_psi_mom(StabilityMethod, z0/L_MOD, z0/L_MOD)
+   psihza = stab_psi_heat(StabilityMethod, (zMeas - zd)/L_MOD, (zMeas - zd)/L_MOD)
    qStar = -1.*(qe/lv)/UStar
    qa_gkg = RH2qa(avRH/100, Press_hPa, Temp_c)
    !
@@ -191,8 +191,8 @@ SUBROUTINE RSLProfile( &
    ! calculate above canopy wind speed
    !
    DO z = idx_can, nz
-      psimz = stab_fn_mom(StabilityMethod, (zarray(z) - zd)/L_MOD, (zarray(z) - zd)/L_MOD)
-      psihz = stab_fn_heat(StabilityMethod, (zarray(z) - zd)/L_MOD, (zarray(z) - zd)/L_MOD)
+      psimz = stab_psi_mom(StabilityMethod, (zarray(z) - zd)/L_MOD, (zarray(z) - zd)/L_MOD)
+      psihz = stab_psi_heat(StabilityMethod, (zarray(z) - zd)/L_MOD, (zarray(z) - zd)/L_MOD)
       dataoutLineURSL(z) = (LOG((zarray(z) - zd)/z0) - psimz + psimz0 - psihat_z(z) + psihat_z(idx_can))/kappa
       dataoutLineTRSL(z) = (LOG((zarray(z) - zd)/(zMeas - zd)) - psihz + psihza + psihath_z(z) - psihath_z(idx_za - 1))/kappa
       dataoutLineqRSL(z) = (LOG((zarray(z) - zd)/(zMeas - zd)) - psihz + psihza + psihath_z(z) - psihath_z(idx_za - 1))/kappa

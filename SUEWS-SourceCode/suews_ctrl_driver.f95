@@ -5,7 +5,7 @@
 ! TS 03 Oct 2017: added `SUEWS_cal_AnthropogenicEmission`
 MODULE SUEWS_Driver
    USE meteo, ONLY: qsatf, RH2qa, qa2RH
-   USE AtmMoistStab_module, ONLY: LUMPS_cal_AtmMoist, STAB_lumps, stab_fn_heat, stab_fn_mom
+   USE AtmMoistStab_module, ONLY: LUMPS_cal_AtmMoist, STAB_lumps, stab_psi_heat, stab_psi_mom
    USE NARP_MODULE, ONLY: NARP_cal_SunPosition
    USE AnOHM_module, ONLY: AnOHM
    USE ESTM_module, ONLY: ESTM
@@ -2346,13 +2346,13 @@ CONTAINS
 
       ! stability correction functions
       ! momentum:
-      psimzDiag = stab_fn_mom(StabilityMethod, zDiagzd/L_mod, zDiagzd/L_mod)
+      psimzDiag = stab_psi_mom(StabilityMethod, zDiagzd/L_mod, zDiagzd/L_mod)
       ! psimz2=stab_fn_mom(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
-      psimz0 = stab_fn_mom(StabilityMethod, z0m/L_mod, z0m/L_mod)
+      psimz0 = stab_psi_mom(StabilityMethod, z0m/L_mod, z0m/L_mod)
 
       ! heat and vapor: assuming both are the same
       ! psihz2=stab_fn_heat(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
-      psihz0 = stab_fn_heat(StabilityMethod, z0h/L_mod, z0h/L_mod)
+      psihz0 = stab_psi_heat(StabilityMethod, z0h/L_mod, z0h/L_mod)
 
       !***************************************************************
       SELECT CASE (opt)
@@ -2361,8 +2361,8 @@ CONTAINS
 
          ! stability correction functions
          ! momentum:
-         psimzDiag = stab_fn_mom(StabilityMethod, zDiagzd/L_mod, zDiagzd/L_mod)
-         psimz0 = stab_fn_mom(StabilityMethod, z0m/L_mod, z0m/L_mod)
+         psimzDiag = stab_psi_mom(StabilityMethod, zDiagzd/L_mod, zDiagzd/L_mod)
+         psimz0 = stab_psi_mom(StabilityMethod, z0m/L_mod, z0m/L_mod)
          xDiag = UStar/k*(LOG(zDiagzd/z0m) - psimzDiag + psimz0) ! Brutsaert (2005), p51, eq.2.54
 
       CASE (1) ! temperature at hgtX=2 m
@@ -2370,8 +2370,8 @@ CONTAINS
          zDiagzd = zDiag + z0h! set lower limit as z0h to prevent arithmetic error, zd=0
 
          ! heat and vapor: assuming both are the same
-         psihzMeas = stab_fn_heat(StabilityMethod, zMeaszd/L_mod, zMeaszd/L_mod)
-         psihzDiag = stab_fn_heat(StabilityMethod, zDiagzd/L_mod, zDiagzd/L_mod)
+         psihzMeas = stab_psi_heat(StabilityMethod, zMeaszd/L_mod, zMeaszd/L_mod)
+         psihzDiag = stab_psi_heat(StabilityMethod, zDiagzd/L_mod, zDiagzd/L_mod)
          ! psihz0=stab_fn_heat(StabilityMethod,z0h/L_mod,z0h/L_mod)
          xDiag = xMeas + xFlux/(k*UStar*avdens*avcp)*(LOG(zMeaszd/zDiagzd) - (psihzMeas - psihzDiag)) ! Brutsaert (2005), p51, eq.2.55
          !  IF ( ABS((LOG(z2zd/z0h)-psihz2+psihz0))>10 ) THEN
@@ -2400,8 +2400,8 @@ CONTAINS
          zDiagzd = zDiag + z0h! set lower limit as z0h to prevent arithmetic error, zd=0
 
          ! heat and vapor: assuming both are the same
-         psihzMeas = stab_fn_heat(StabilityMethod, zMeaszd/L_mod, zMeaszd/L_mod)
-         psihzDiag = stab_fn_heat(StabilityMethod, zDiagzd/L_mod, zDiagzd/L_mod)
+         psihzMeas = stab_psi_heat(StabilityMethod, zMeaszd/L_mod, zMeaszd/L_mod)
+         psihzDiag = stab_psi_heat(StabilityMethod, zDiagzd/L_mod, zDiagzd/L_mod)
          ! psihz0=stab_fn_heat(StabilityMethod,z0h/L_mod,z0h/L_mod)
 
          xDiag = xMeas + xFlux/(k*UStar*avdens*tlv)*(LOG(zMeaszd/zDiagzd) - (psihzMeas - psihzDiag)) ! Brutsaert (2005), p51, eq.2.56

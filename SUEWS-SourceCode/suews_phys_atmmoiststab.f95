@@ -182,8 +182,8 @@ CONTAINS
          !    !Needs more investigations.
          ! END IF
 
-         psim = stab_fn_mom(StabilityMethod, zL, zL)
-         psimz0 = stab_fn_mom(StabilityMethod, zL, z0L)
+         psim = stab_psi_mom(StabilityMethod, zL, zL)
+         psimz0 = stab_psi_mom(StabilityMethod, zL, z0L)
 
          UStar = KUZ/(LOG(Zzd/z0m) - psim + psimz0) !Friction velocity in non-neutral situation
 
@@ -211,8 +211,8 @@ CONTAINS
          ! limit other output variables as well as z/L
          L_MOD = zzd/zL
          z0L = z0m/L_MOD
-         psim = stab_fn_mom(StabilityMethod, zL, zL)
-         psimz0 = stab_fn_mom(StabilityMethod, zL, z0L)
+         psim = stab_psi_mom(StabilityMethod, zL, zL)
+         psimz0 = stab_psi_mom(StabilityMethod, zL, z0L)
          ! TS 01 Aug 2018: set a low limit at 0.15 m/s (Schumann 1987, BLM)
          ! to prevent potential issues in other stability-related calcualtions
          UStar = MAX(0.15, KUZ/(LOG(Zzd/z0m) - psim + psimz0))
@@ -244,7 +244,7 @@ CONTAINS
 
    !==================================================================
 
-   FUNCTION stab_fn_mom(StabilityMethod, ZL, zl_f) RESULT(psim)
+   FUNCTION stab_psi_mom(StabilityMethod, ZL, zl_f) RESULT(psim)
       !     StabilityMethod = 1-4 -
       !     psim - stability FUNCTION for momentum
       !Modified by LJ Mar 2010
@@ -324,7 +324,7 @@ CONTAINS
          ENDIF
       ENDIF
       RETURN
-   END FUNCTION stab_fn_mom
+   END FUNCTION stab_psi_mom
 
    FUNCTION stab_phi_mom(StabilityMethod, ZL, zl_f) RESULT(phim)
       !     StabilityMethod = 1-4 -
@@ -389,7 +389,7 @@ CONTAINS
    !_______________________________________________________________
    !
    ! psih - stability function for heat
-   FUNCTION stab_fn_heat(StabilityMethod, ZL, zl_f) RESULT(psih)
+   FUNCTION stab_psi_heat(StabilityMethod, ZL, zl_f) RESULT(psih)
       ! USE mod_k
       IMPLICIT NONE
       REAL(KIND(1d0)), PARAMETER :: &
@@ -443,7 +443,7 @@ CONTAINS
       ENDIF
 
       RETURN
-   END FUNCTION stab_fn_heat
+   END FUNCTION stab_psi_heat
    !_______________________________________________________________
    !
    ! Phi - stability function for heat !!!!NT CHECK!!!!

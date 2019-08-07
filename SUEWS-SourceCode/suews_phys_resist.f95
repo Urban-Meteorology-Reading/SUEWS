@@ -59,7 +59,7 @@ SUBROUTINE AerodynamicResistance( &
       muu = 1.46e-5 !molecular viscosity
    REAL(KIND(1d0)):: &
       psym, &
-      psyh, z0V, cal_z0V
+      psih, z0V, cal_z0V
 
    !1)Monteith (1965)-neutral stability
    IF (AerodynamicResistanceMethod == 1) THEN
@@ -67,12 +67,12 @@ SUBROUTINE AerodynamicResistance( &
 
       !2) Non-neutral stability
       !    PSIM - stability function for momentum
-      !     PSYH - stability function for heat
+      !     psih - stability function for heat
       !    assuming stability functions the same for heat and water
    ELSEIF (AerodynamicResistanceMethod == 2) THEN  !Dyer (1974)
 
       psym = stab_fn_mom(StabilityMethod, ZZD/L_mod, zzd/L_mod)
-      psyh = stab_fn_heat(StabilityMethod, ZZD/L_mod, zzd/L_mod)
+      psih = stab_fn_heat(StabilityMethod, ZZD/L_mod, zzd/L_mod)
 
       !Z0V roughness length for vapour
       z0V = cal_z0V(RoughLenHeatMethod, z0m, VegFraction, UStar)
@@ -91,7 +91,7 @@ SUBROUTINE AerodynamicResistance( &
       IF (Zzd/L_mod == 0 .OR. UStar == 0) THEN
          RA = (LOG(ZZD/z0m)*LOG(ZZD/z0V))/(k2*AVU1) !Use neutral equation
       ELSE
-         RA = ((LOG(ZZD/z0m) - PSYM)*(LOG(ZZD/z0V) - PSYH))/(K2*AVU1)
+         RA = ((LOG(ZZD/z0m) - PSYM)*(LOG(ZZD/z0V) - psih))/(K2*AVU1)
       ENDIF
 
       !3) Thom and Oliver (1977)

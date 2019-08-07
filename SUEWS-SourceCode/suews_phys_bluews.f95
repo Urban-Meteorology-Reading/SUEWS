@@ -106,7 +106,7 @@ CONTAINS
       cbldata(7) = avu1
       cbldata(8) = UStar
       cbldata(9) = Press_hPa
-      cbldata(10) = psyh
+      cbldata(10) = psih
 
       secs0 = cbldata(1)*3600.
       secs1 = secs0 + float(tstep) ! time in seconds
@@ -350,11 +350,11 @@ CONTAINS
          gamt_Km = IniCBLdata(nLineDay, 3)
          gamq_gkgm = IniCBLdata(nLineDay, 4)
          tm_K_zm = (Temp_C + C2K)*((1000/Press_hPa)**(gas_ct_dry/avcp))
-         tm_K = tm_K_zm - psyh*qh_use/(k*UStar*avcp*avdens)
+         tm_K = tm_K_zm - psih*qh_use/(k*UStar*avcp*avdens)
          es_hPa = sat_vap_press_x(Temp_C, Press_hPa, 1, dectime)
          qm_gkg_zm = 622*avrh/(100*Press_hPa/es_hPa - avrh)
          lv = (2500.25 - 2.365*temp_C)*1000
-         qm_gkg = qm_gkg_zm - psyh*qe_use/(k*UStar*avdens*lv)
+         qm_gkg = qm_gkg_zm - psih*qe_use/(k*UStar*avdens*lv)
          tp_K = tm_K
          qp_gkg = qm_gkg
       ELSEIF (InitialData_use == 0) THEN
@@ -362,11 +362,11 @@ CONTAINS
          gamt_Km = 0.043
          gamq_gkgm = 0.0092
          tm_K_zm = (Temp_C + C2K)*((1000/Press_hPa)**(gas_ct_dry/avcp))
-         tm_K = tm_K_zm - psyh*qh_use/(k*UStar*avcp*avdens)
+         tm_K = tm_K_zm - psih*qh_use/(k*UStar*avcp*avdens)
          es_hPa = sat_vap_press_x(Temp_C, Press_hPa, 1, dectime)
          qm_gkg_zm = 622*avrh/(100*Press_hPa/es_hPa - avrh)
          lv = (2500.25 - 2.365*temp_C)*1000
-         qm_gkg = es_hPa - psyh*qe_use/(k*UStar*avdens*lv)
+         qm_gkg = es_hPa - psih*qe_use/(k*UStar*avdens*lv)
          tp_K = tm_K
          qp_gkg = qm_gkg
       ENDIF
@@ -490,11 +490,11 @@ CONTAINS
          gamt_Km = IniCBLdata(nLineDay, 3)
          gamq_gkgm = IniCBLdata(nLineDay, 4)
          tm_K_zm = (Temp_C + C2K)*((1000/Press_hPa)**(gas_ct_dry/avcp))
-         tm_K = tm_K_zm - psyh*qh_use/(k*UStar*avcp*avdens)
+         tm_K = tm_K_zm - psih*qh_use/(k*UStar*avcp*avdens)
          es_hPa = sat_vap_press_x(Temp_C, Press_hPa, 1, dectime)
          qm_gkg_zm = 622*avrh/(100*Press_hPa/es_hPa - avrh)
          lv = (2500.25 - 2.365*temp_C)*1000
-         qm_gkg = qm_gkg_zm - psyh*qe_use/(k*UStar*avdens*lv)
+         qm_gkg = qm_gkg_zm - psih*qe_use/(k*UStar*avdens*lv)
          tp_K = tm_K
          qp_gkg = qm_gkg
       ELSEIF (InitialData_use == 0) THEN
@@ -502,11 +502,11 @@ CONTAINS
          gamt_Km = 0.043
          gamq_gkgm = 0.0092
          tm_K_zm = (Temp_C + C2K)*((1000/Press_hPa)**(gas_ct_dry/avcp))
-         tm_K = tm_K_zm - psyh*qh_use/(k*UStar*avcp*avdens)
+         tm_K = tm_K_zm - psih*qh_use/(k*UStar*avcp*avdens)
          es_hPa = sat_vap_press_x(Temp_C, Press_hPa, 1, dectime)
          qm_gkg_zm = 622*avrh/(100*Press_hPa/es_hPa - avrh)
          lv = (2500.25 - 2.365*temp_C)*1000
-         qm_gkg = es_hPa - psyh*qe_use/(k*UStar*avdens*lv)
+         qm_gkg = es_hPa - psih*qe_use/(k*UStar*avdens*lv)
          tp_K = tm_K
          qp_gkg = qm_gkg
       ENDIF

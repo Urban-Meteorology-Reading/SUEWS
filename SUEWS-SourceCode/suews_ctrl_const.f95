@@ -1520,7 +1520,7 @@ MODULE sues_data
    REAL(KIND(1d0))::H, &          !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
                      l_mod, &      !Monin-Obukhov length (either measured or modelled)
                      psim, &       !Stability function of momentum
-                     psyh, &       !Stability function of heat
+                     psih, &       !Stability function of heat
                      RA, &         !Aerodynamic resistance
                      RAsnow, &     !Aerodynamic resistance over snow
                      TStar, &      !T*

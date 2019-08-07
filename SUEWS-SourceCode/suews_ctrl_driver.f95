@@ -2304,7 +2304,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(out):: xDiag
 
       REAL(KIND(1d0)) :: L_mod
-      REAL(KIND(1d0)) :: psymz0, psyhzDiag, psyhzMeas, psyhz0, psymzDiag ! stability correction functions
+      REAL(KIND(1d0)) :: psimz0, psihzDiag, psihzMeas, psihz0, psimzDiag ! stability correction functions
       REAL(KIND(1d0)) :: z0h, cal_z0V ! Roughness length for heat
       REAL(KIND(1d0)) :: zDiagzd! height for diagnositcs
       REAL(KIND(1d0)) :: zMeaszd
@@ -2346,13 +2346,13 @@ CONTAINS
 
       ! stability correction functions
       ! momentum:
-      psymzDiag = stab_fn_mom(StabilityMethod, zDiagzd/L_mod, zDiagzd/L_mod)
-      ! psymz2=stab_fn_mom(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
-      psymz0 = stab_fn_mom(StabilityMethod, z0m/L_mod, z0m/L_mod)
+      psimzDiag = stab_fn_mom(StabilityMethod, zDiagzd/L_mod, zDiagzd/L_mod)
+      ! psimz2=stab_fn_mom(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
+      psimz0 = stab_fn_mom(StabilityMethod, z0m/L_mod, z0m/L_mod)
 
       ! heat and vapor: assuming both are the same
-      ! psyhz2=stab_fn_heat(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
-      psyhz0 = stab_fn_heat(StabilityMethod, z0h/L_mod, z0h/L_mod)
+      ! psihz2=stab_fn_heat(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
+      psihz0 = stab_fn_heat(StabilityMethod, z0h/L_mod, z0h/L_mod)
 
       !***************************************************************
       SELECT CASE (opt)
@@ -2361,20 +2361,20 @@ CONTAINS
 
          ! stability correction functions
          ! momentum:
-         psymzDiag = stab_fn_mom(StabilityMethod, zDiagzd/L_mod, zDiagzd/L_mod)
-         psymz0 = stab_fn_mom(StabilityMethod, z0m/L_mod, z0m/L_mod)
-         xDiag = UStar/k*(LOG(zDiagzd/z0m) - psymzDiag + psymz0) ! Brutsaert (2005), p51, eq.2.54
+         psimzDiag = stab_fn_mom(StabilityMethod, zDiagzd/L_mod, zDiagzd/L_mod)
+         psimz0 = stab_fn_mom(StabilityMethod, z0m/L_mod, z0m/L_mod)
+         xDiag = UStar/k*(LOG(zDiagzd/z0m) - psimzDiag + psimz0) ! Brutsaert (2005), p51, eq.2.54
 
       CASE (1) ! temperature at hgtX=2 m
          zMeaszd = zMeas - zd
          zDiagzd = zDiag + z0h! set lower limit as z0h to prevent arithmetic error, zd=0
 
          ! heat and vapor: assuming both are the same
-         psyhzMeas = stab_fn_heat(StabilityMethod, zMeaszd/L_mod, zMeaszd/L_mod)
-         psyhzDiag = stab_fn_heat(StabilityMethod, zDiagzd/L_mod, zDiagzd/L_mod)
-         ! psyhz0=stab_fn_heat(StabilityMethod,z0h/L_mod,z0h/L_mod)
-         xDiag = xMeas + xFlux/(k*UStar*avdens*avcp)*(LOG(zMeaszd/zDiagzd) - (psyhzMeas - psyhzDiag)) ! Brutsaert (2005), p51, eq.2.55
-         !  IF ( ABS((LOG(z2zd/z0h)-psyhz2+psyhz0))>10 ) THEN
+         psihzMeas = stab_fn_heat(StabilityMethod, zMeaszd/L_mod, zMeaszd/L_mod)
+         psihzDiag = stab_fn_heat(StabilityMethod, zDiagzd/L_mod, zDiagzd/L_mod)
+         ! psihz0=stab_fn_heat(StabilityMethod,z0h/L_mod,z0h/L_mod)
+         xDiag = xMeas + xFlux/(k*UStar*avdens*avcp)*(LOG(zMeaszd/zDiagzd) - (psihzMeas - psihzDiag)) ! Brutsaert (2005), p51, eq.2.55
+         !  IF ( ABS((LOG(z2zd/z0h)-psihz2+psihz0))>10 ) THEN
          !     PRINT*, '#####################################'
          !     PRINT*, 'xSurf',xSurf
          !     PRINT*, 'xFlux',xFlux
@@ -2384,13 +2384,13 @@ CONTAINS
          !     PRINT*, 'avdens',avdens
          !     PRINT*, 'avcp',avcp
          !     PRINT*, 'xFlux/X',xFlux/(k*us*avdens*avcp)
-         !     PRINT*, 'stab',(LOG(z2zd/z0h)-psyhz2+psyhz0)
+         !     PRINT*, 'stab',(LOG(z2zd/z0h)-psihz2+psihz0)
          !     PRINT*, 'LOG(z2zd/z0h)',LOG(z2zd/z0h)
          !     PRINT*, 'z2zd',z2zd,'L_mod',L_mod,'z0h',z0h
          !     PRINT*, 'z2zd/L_mod',z2zd/L_mod
-         !     PRINT*, 'psyhz2',psyhz2
-         !     PRINT*, 'psyhz0',psyhz0
-         !     PRINT*, 'psyhz2-psyhz0',psyhz2-psyhz0
+         !     PRINT*, 'psihz2',psihz2
+         !     PRINT*, 'psihz0',psihz0
+         !     PRINT*, 'psihz2-psihz0',psihz2-psihz0
          !     PRINT*, 'xDiag',xDiag
          !     PRINT*, '*************************************'
          !  END IF
@@ -2400,11 +2400,11 @@ CONTAINS
          zDiagzd = zDiag + z0h! set lower limit as z0h to prevent arithmetic error, zd=0
 
          ! heat and vapor: assuming both are the same
-         psyhzMeas = stab_fn_heat(StabilityMethod, zMeaszd/L_mod, zMeaszd/L_mod)
-         psyhzDiag = stab_fn_heat(StabilityMethod, zDiagzd/L_mod, zDiagzd/L_mod)
-         ! psyhz0=stab_fn_heat(StabilityMethod,z0h/L_mod,z0h/L_mod)
+         psihzMeas = stab_fn_heat(StabilityMethod, zMeaszd/L_mod, zMeaszd/L_mod)
+         psihzDiag = stab_fn_heat(StabilityMethod, zDiagzd/L_mod, zDiagzd/L_mod)
+         ! psihz0=stab_fn_heat(StabilityMethod,z0h/L_mod,z0h/L_mod)
 
-         xDiag = xMeas + xFlux/(k*UStar*avdens*tlv)*(LOG(zMeaszd/zDiagzd) - (psyhzMeas - psyhzDiag)) ! Brutsaert (2005), p51, eq.2.56
+         xDiag = xMeas + xFlux/(k*UStar*avdens*tlv)*(LOG(zMeaszd/zDiagzd) - (psihzMeas - psihzDiag)) ! Brutsaert (2005), p51, eq.2.56
 
       END SELECT
 

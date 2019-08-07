@@ -388,8 +388,8 @@ CONTAINS
    END FUNCTION stab_phi_mom
    !_______________________________________________________________
    !
-   ! PSYH - stability function for heat
-   FUNCTION stab_fn_heat(StabilityMethod, ZL, zl_f) RESULT(psyh)
+   ! psih - stability function for heat
+   FUNCTION stab_fn_heat(StabilityMethod, ZL, zl_f) RESULT(psih)
       ! USE mod_k
       IMPLICIT NONE
       REAL(KIND(1d0)), PARAMETER :: &
@@ -398,19 +398,19 @@ CONTAINS
          neut_limit = 0.001000 !Limit for neutral stability
       !  notUsedI=-55
 
-      REAL(KIND(1d0)):: zl, zl_f, psyh, x
+      REAL(KIND(1d0)):: zl, zl_f, psih, x
       INTEGER :: StabilityMethod
 
       ! initialisation
-      psyh = 0
+      psih = 0
       x = 0
 
       IF (ABS(zl) < neut_limit) THEN      !Neutral
-         psyh = 0
+         psih = 0
       ELSEIF (zL < -neut_limit) THEN     ! Unstable
          IF (StabilityMethod == 3) THEN
             !campbell & norman eqn 7.26
-            psyh = 0.6*(2)*LOG((1 + (1 - 16*zl_f)**0.5)/2)
+            psih = 0.6*(2)*LOG((1 + (1 - 16*zl_f)**0.5)/2)
          ELSE
 
             IF (StabilityMethod == 4) THEN ! Businger et al (1971) modifed  Hogstrom (1988)
@@ -420,23 +420,23 @@ CONTAINS
             ELSEIF (StabilityMethod == 2) THEN ! Dyer 1974 X=(1.-(16.*ZL))**(0.5)modified Hosgstrom
                x = 0.95*(1.-15.2*zl_f)**0.5
             ENDIF
-            ! PSYH = 2*LOG((1 + x**2)/2)  ! NT: do not think this is correct
-            PSYH = 2*LOG((1 + x)/2)
+            ! psih = 2*LOG((1 + x**2)/2)  ! NT: do not think this is correct
+            psih = 2*LOG((1 + x)/2)
          ENDIF
 
       ELSE IF (zL > neut_limit) THEN    !Stable
          IF (zL <= 1) THEN ! weak/moderate stable
             IF (StabilityMethod == 4) THEN !Businger et al (1971) modifed  Hogstrom (1988)
-               psyh = (-7.8)*zl_f
-            ELSE !Dyer (1974)  PSYH=(-5)*ZL        modifed  Hogstrom (1988)
-               PSYH = (-4.5)*Zl_f
+               psih = (-7.8)*zl_f
+            ELSE !Dyer (1974)  psih=(-5)*ZL        modifed  Hogstrom (1988)
+               psih = (-4.5)*Zl_f
             ENDIF
          ELSE
             ! adopt the form as Brutasert (1982) eqn 4.58. but following the coeffs. of the above eqns
             IF (StabilityMethod == 4) THEN !Businger et al (1971) modifed  Hogstrom (1988)
-               psyh = (-7.8)*(1 + LOG(zl_f))
-            ELSE !Dyer (1974)  PSYH=(-5)*ZL        modifed  Hogstrom (1988)
-               PSYH = (-4.5)*(1 + LOG(zl_f))
+               psih = (-7.8)*(1 + LOG(zl_f))
+            ELSE !Dyer (1974)  psih=(-5)*ZL        modifed  Hogstrom (1988)
+               psih = (-4.5)*(1 + LOG(zl_f))
             ENDIF
          END IF
 
@@ -480,9 +480,9 @@ CONTAINS
 
       ELSE IF (zL > neut_limit) THEN    !Stable
          IF (StabilityMethod == 4) THEN !Businger et al (1971) modifed  Hogstrom (1988)
-            ! psyh=0.95+(7.8*zl_f) ! this is NOT the integral form but the stability function, TS 13 Jun 2017
+            ! psih=0.95+(7.8*zl_f) ! this is NOT the integral form but the stability function, TS 13 Jun 2017
             phih = 1.+7.8*zl_f   ! this is the integral form, TS 13 Jun 2017
-         ELSE !Dyer (1974)  PSYH=(-5)*ZL        modifed  Hogstrom (1988)
+         ELSE !Dyer (1974)  psih=(-5)*ZL        modifed  Hogstrom (1988)
             phih = 1.+4.5*Zl_f
          ENDIF
 

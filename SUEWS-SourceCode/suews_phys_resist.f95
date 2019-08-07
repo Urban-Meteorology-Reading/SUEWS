@@ -58,7 +58,7 @@ SUBROUTINE AerodynamicResistance( &
       k2 = 0.16, & !Power of Van Karman's constant (= 0.16 = 0.4^2)
       muu = 1.46e-5 !molecular viscosity
    REAL(KIND(1d0)):: &
-      psym, &
+      psim, &
       psih, z0V, cal_z0V
 
    !1)Monteith (1965)-neutral stability
@@ -71,7 +71,7 @@ SUBROUTINE AerodynamicResistance( &
       !    assuming stability functions the same for heat and water
    ELSEIF (AerodynamicResistanceMethod == 2) THEN  !Dyer (1974)
 
-      psym = stab_fn_mom(StabilityMethod, ZZD/L_mod, zzd/L_mod)
+      psim = stab_fn_mom(StabilityMethod, ZZD/L_mod, zzd/L_mod)
       psih = stab_fn_heat(StabilityMethod, ZZD/L_mod, zzd/L_mod)
 
       !Z0V roughness length for vapour
@@ -91,7 +91,7 @@ SUBROUTINE AerodynamicResistance( &
       IF (Zzd/L_mod == 0 .OR. UStar == 0) THEN
          RA = (LOG(ZZD/z0m)*LOG(ZZD/z0V))/(k2*AVU1) !Use neutral equation
       ELSE
-         RA = ((LOG(ZZD/z0m) - PSYM)*(LOG(ZZD/z0V) - psih))/(K2*AVU1)
+         RA = ((LOG(ZZD/z0m) - psim)*(LOG(ZZD/z0V) - psih))/(K2*AVU1)
       ENDIF
 
       !3) Thom and Oliver (1977)

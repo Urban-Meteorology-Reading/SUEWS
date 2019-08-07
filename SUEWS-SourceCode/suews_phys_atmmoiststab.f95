@@ -244,9 +244,9 @@ CONTAINS
 
    !==================================================================
 
-   FUNCTION stab_fn_mom(StabilityMethod, ZL, zl_f) RESULT(psym)
+   FUNCTION stab_fn_mom(StabilityMethod, ZL, zl_f) RESULT(psim)
       !     StabilityMethod = 1-4 -
-      !     PSYM - stability FUNCTION for momentum
+      !     psim - stability FUNCTION for momentum
       !Modified by LJ Mar 2010
       !Input:Used stability method, stability (z-d)/L, zeta (either (z-d)/L or z0/L)
 
@@ -260,33 +260,33 @@ CONTAINS
          neut_limit = 0.001000 !Limit for neutral stability
       !  notUsedI=-55
 
-      REAL(KIND(1d0)):: piover2, psym, zl, zl_f, x, x2
+      REAL(KIND(1d0)):: piover2, psim, zl, zl_f, x, x2
       INTEGER ::StabilityMethod
 
-      psym = 0
+      psim = 0
 
       PIOVER2 = ACOS(-1.)/2.
       !PRINT*,StabilityMethod,zl,"stab_fn_mom:"
       IF (ABS(zL) < neut_limit) THEN
-         psym = 0
+         psim = 0
       ELSEIF (zL < -neut_limit) THEN    !Unstable
 
          IF (StabilityMethod == 1) THEN     !    Jensen et al 1984 - Van Ulden & Holtslag (1985) p 1206&
-            psym = ((1.-16.*zl_f)**0.25) - 1
+            psim = ((1.-16.*zl_f)**0.25) - 1
          ELSEIF (StabilityMethod == 2) THEN !Dyer (1974)(1-16z/L)**.25' k=0.41  mod. Hogstrom (1988)v15.2
             X = (1.-(15.2*zl_f))**0.25
             X2 = LOG((1 + (X**2.))/2.)
-            PSYM = (2.*LOG((1 + X)/2.)) + X2 - (2.*ATAN(X)) + PIOVER2
+            psim = (2.*LOG((1 + X)/2.)) + X2 - (2.*ATAN(X)) + PIOVER2
          ELSEIF (StabilityMethod == 3) THEN ! Kondo (1975) adopted by Campbell & Norman eqn 7.26 p 97
-            psym = 0.6*(2)*LOG((1 + (1 - 16*zl_f)**0.5)/2)
+            psim = 0.6*(2)*LOG((1 + (1 - 16*zl_f)**0.5)/2)
          ELSEIF (StabilityMethod == 4) THEN !Businger et al (1971) modifed  Hogstrom (1988)
             x = (1 - 19.3*zl_f)**(-0.25)
             X2 = LOG((1 + (X**2.))/2.)
-            PSYM = (2.*LOG((1 + X)/2.)) + X2 - (2.*ATAN(X)) + PIOVER2
+            psim = (2.*LOG((1 + X)/2.)) + X2 - (2.*ATAN(X)) + PIOVER2
          ELSEIF (StabilityMethod == 7) THEN ! Dyer & Bradley (1982) (1-28z/L)**.25' k=0.4
             X = (1 - (28.*zl_f))**0.25  ! NT: changed + to - (bug -> checked reference)
             X2 = LOG((1 + X**2.)/2.)
-            PSYM = (2.*LOG((1 + X)/2.)) + X2 - (2.*ATAN(X)) + PIOVER2
+            psim = (2.*LOG((1 + X)/2.)) + X2 - (2.*ATAN(X)) + PIOVER2
          ELSEIF (StabilityMethod == 5) THEN ! Zilitinkevich & Chalikov (1968) modified Hogstrom (1988)
             IF (zl_f >= -0.16) THEN
                x = 1 + 1.38*zl_f
@@ -294,7 +294,7 @@ CONTAINS
                x = 0.42*(-1)*zl_f**0.333
             ENDIF
             X2 = LOG((1 + (X**2.))/2.)
-            PSYM = (2.*LOG((1 + X)/2.)) + X2 - (2.*ATAN(X)) + PIOVER2
+            psim = (2.*LOG((1 + X)/2.)) + X2 - (2.*ATAN(X)) + PIOVER2
 
          ELSEIF (StabilityMethod == 6) THEN !     Foken and Skeib (1983)
             IF (zl_f >= 0.06) THEN
@@ -303,23 +303,23 @@ CONTAINS
                x = ((-1)*zl_f/0.06)**0.25
             ENDIF
             X2 = LOG((1 + (X**2.))/2.)
-            PSYM = (2.*LOG((1 + X)/2.)) + X2 - (2.*ATAN(X)) + PIOVER2
+            psim = (2.*LOG((1 + X)/2.)) + X2 - (2.*ATAN(X)) + PIOVER2
          ENDIF
 
       ELSEIF (zL > neut_limit) THEN            !Stable
 
          IF (StabilityMethod == 1) THEN         !Dyer (1974) k=0.35 x=1+5*zl Mod. Hogstrom (1988)
-            psym = (-4.8)*zl_f
+            psim = (-4.8)*zl_f
          ELSEIF (StabilityMethod == 2) THEN     !Van Ulden & Holtslag (1985) p 1206
             IF (zl_f > 1000.) THEN
                zl_f = 1000.
             END IF
-            PSYM = (-17.*(1.-EXP(-0.29*zl_f)))
+            psim = (-17.*(1.-EXP(-0.29*zl_f)))
          ELSEIF (StabilityMethod == 4) THEN ! Businger et al (1971) modifed  Hogstrom (1988)
-            ! psym=1+6*zl_f  ! this is NOT the integral form but the stability function, TS 13 Jun 2017
-            psym = (-6)*zl_f   ! this is the integral form, TS 13 Jun 2017
+            ! psim=1+6*zl_f  ! this is NOT the integral form but the stability function, TS 13 Jun 2017
+            psim = (-6)*zl_f   ! this is the integral form, TS 13 Jun 2017
          ELSEIF (StabilityMethod == 3) THEN ! Kondo (1975) adopted by Campbell & Norman eqn 7.26 p 97
-            psym = (-6)*LOG(1 + zl_f)
+            psim = (-6)*LOG(1 + zl_f)
 
          ENDIF
       ENDIF

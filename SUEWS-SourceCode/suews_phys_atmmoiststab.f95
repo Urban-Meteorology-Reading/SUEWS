@@ -278,7 +278,7 @@ CONTAINS
          ELSEIF (StabilityMethod == 3) THEN ! Kondo (1975) adopted by Campbell & Norman eqn 7.26 p 97
             psim = 0.6*(2)*LOG((1 + (1 - 16*zl_f)**0.5)/2)
          ELSEIF (StabilityMethod == 4) THEN !Businger et al (1971) modifed  Hogstrom (1988)
-            x = (1 - 19.3*zl_f)**(-0.25)
+            x = (1 - 19.3*zl_f)**(0.25) ! M Nag spotted the wrong exponent, TS corrected this from (1 - 19.3*zl_f)**(-0.25)
             X2 = LOG((1 + (X**2.))/2.)
             psim = (2.*LOG((1 + X)/2.)) + X2 - (2.*ATAN(X)) + PIOVER2
          ELSEIF (StabilityMethod == 7) THEN ! Dyer & Bradley (1982) (1-28z/L)**.25' k=0.4

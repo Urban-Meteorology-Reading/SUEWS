@@ -1,15 +1,19 @@
 MODULE WaterDist_module
+   USE allocateArray, ONLY: nsurf, &
+                            PavSurf, BldgSurf, &
+                            ConifSurf, DecidSurf, GrassSurf, &
+                            BSoilSurf, WaterSurf, ExcessSurf
 
    IMPLICIT NONE
-   INTEGER, PARAMETER :: nsurf = 7
-   INTEGER, PARAMETER :: PavSurf = 1
-   INTEGER, PARAMETER :: BldgSurf = 2
-   INTEGER, PARAMETER :: ConifSurf = 3
-   INTEGER, PARAMETER :: DecidSurf = 4
-   INTEGER, PARAMETER :: GrassSurf = 5
-   INTEGER, PARAMETER :: BSoilSurf = 6
-   INTEGER, PARAMETER :: WaterSurf = 7
-   INTEGER, PARAMETER :: ExcessSurf = 8
+   ! INTEGER, PARAMETER :: nsurf = 7
+   ! INTEGER, PARAMETER :: PavSurf = 1
+   ! INTEGER, PARAMETER :: BldgSurf = 2
+   ! INTEGER, PARAMETER :: ConifSurf = 3
+   ! INTEGER, PARAMETER :: DecidSurf = 4
+   ! INTEGER, PARAMETER :: GrassSurf = 5
+   ! INTEGER, PARAMETER :: BSoilSurf = 6
+   ! INTEGER, PARAMETER :: WaterSurf = 7
+   ! INTEGER, PARAMETER :: ExcessSurf = 8
 CONTAINS
 
    !------------------------------------------------------------------------------
@@ -35,17 +39,15 @@ CONTAINS
       !------------------------------------------------------------------------------
 
       IMPLICIT NONE
-      INTEGER, INTENT(in):: &
-         is ! surface type number
-      REAL(KIND(1d0)), INTENT(in):: &
-         state_is, &!Wetness status of surface type "is" [mm]
-         StorCap, &!current storage capacity [mm]
-         DrainCoef1, &!Drainage coeff 1 [units depend on choice of eqn]
-         DrainCoef2, &!Drainage coeff 2 [units depend on choice of eqn]
-         DrainEq, &!Drainage equation to use
-         nsh_real    !nsh cast as a real for use in calculations
-      REAL(KIND(1d0)), INTENT(out):: &
-         drain_is!Drainage of surface type "is" [mm]
+      INTEGER, INTENT(in):: is ! surface type number
+
+      REAL(KIND(1d0)), INTENT(in)::state_is !Wetness status of surface type "is" [mm]
+      REAL(KIND(1d0)), INTENT(in)::StorCap !current storage capacity [mm]
+      REAL(KIND(1d0)), INTENT(in)::DrainCoef1 !Drainage coeff 1 [units depend on choice of eqn]
+      REAL(KIND(1d0)), INTENT(in)::DrainCoef2 !Drainage coeff 2 [units depend on choice of eqn]
+      REAL(KIND(1d0)), INTENT(in)::DrainEq !Drainage equation to use
+      REAL(KIND(1d0)), INTENT(in)::nsh_real    !nsh cast as a real for use in calculations
+      REAL(KIND(1d0)), INTENT(out):: drain_is!Drainage of surface type "is" [mm]
 
       !If surface is dry, no drainage occurs
       IF (state_is < 0.000000001) THEN
@@ -547,6 +549,7 @@ CONTAINS
       smd, smd_nsurf, tot_chang_per_tstep, SoilState)!output
 
       IMPLICIT NONE
+      INTEGER, PARAMETER :: nsurf = 7
 
       INTEGER, INTENT(in) ::SMDMethod
       REAL(KIND(1d0)), INTENT(in)::xsmd
@@ -870,6 +873,7 @@ CONTAINS
       !        - Add functionality for water on paved surfaces (street cleaning, fountains)
 
       IMPLICIT NONE
+      INTEGER, PARAMETER :: nsurf = 7
 
       REAL(KIND(1d0)), INTENT(in)::nsh_real
       REAL(KIND(1d0)), INTENT(in)::wu_m3 ! external water input (e.g., irrigation) in m^3

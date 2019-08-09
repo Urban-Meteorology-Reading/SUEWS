@@ -8,7 +8,7 @@ MODULE SUEWS_Driver
    USE AtmMoistStab_module, ONLY: LUMPS_cal_AtmMoist, STAB_lumps, stab_psi_heat, stab_psi_mom
    USE NARP_MODULE, ONLY: NARP_cal_SunPosition
    USE AnOHM_module, ONLY: AnOHM
-   USE resist_module, ONLY: AerodynamicResistance, BoundaryLayerResistance, SurfaceResistance,&
+   USE resist_module, ONLY: AerodynamicResistance, BoundaryLayerResistance, SurfaceResistance, &
                             cal_z0V, SUEWS_cal_RoughnessParameters
    USE ESTM_module, ONLY: ESTM
    USE Snow_module, ONLY: SnowCalc, Snow_cal_MeltHeat

@@ -34,7 +34,7 @@ target_f95 = [
         'suews_phys_narp.f95',
         'suews_phys_atmmoiststab.f95',
         'suews_phys_resist.f95',
-        'suews_phys_evap.f95',
+        # 'suews_phys_evap.f95',
         'suews_phys_snow.f95',
         'suews_phys_dailystate.f95',
         'suews_phys_lumps.f95',
@@ -76,12 +76,13 @@ src_f95 = target_f95 + other_f95
 # # directory of SUEWS source code
 # # this dir is included as a git submodule so DON'T make ANY change there
 # file_all_f95 = 'suews_all.f95'
-# path_src_SUEWS = Path(dir_f95)
+# path_src_SUEWS = Path(dir_f95).resolve()
+# print(path_src_SUEWS)
 # # 4. generate SUEWS related source files from $dir_src_SUEWS and add them to $dir_WRF_SUEWS
 # path_sf_suewsdrv = Path(file_all_f95)
 # print(f'calling merge_source to generate {file_all_f95}')
 # merge_source(path_src_SUEWS, path_sf_suewsdrv)
-#             # for f in target_f95 + other_obj:
+# # for f in target_f95:
 # #     print(f)
 
 
@@ -128,13 +129,13 @@ class BinaryDistribution(Distribution):
         return False
 
 
-# print('will build', lib_name)
-
+# # print('will build', lib_name)
+# for x in other_obj:
+#     print(x)
 
 ext_modules = [
     Extension('supy_driver.suews_driver',
               target_f95,
-            #   [file_all_f95],
               extra_compile_args=['-D_POSIX_C_SOURCE=200809L'],
               extra_f90_compile_args=['-cpp'],
               f2py_options=[

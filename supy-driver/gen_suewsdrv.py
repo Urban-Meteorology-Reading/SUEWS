@@ -7,14 +7,14 @@
 # history:
 # 13 Aug 2018, initial version
 #####################################################################
-
+# %%
 import pandas as pd
 import numpy as np
 from glob import glob
 import os
 from copy import copy
 
-
+# %%
 def get_file_list(path_Makefile):
     """Short summary.
 
@@ -37,7 +37,10 @@ def get_file_list(path_Makefile):
 
     # retrieve lines for dependencies
     modules = [
-        'UTILS', 'MODULES', 'OTHERS', 'TEST',
+        # 'UTILS',
+        'MODULES',
+        'OTHERS',
+        # 'TEST',
         # 'WRF', # we dont need 'WRF' for supy
     ]
     # positions for staring lines
@@ -56,7 +59,7 @@ def get_file_list(path_Makefile):
     list_mod_files = [pd.Series(mod[1:]).str.strip() for mod in mod_files]
 
     # combine all files into one list
-    list_files = pd.concat(list_mod_files).reset_index(
+    list_files = pd.concat([list_mod_files[0]]).reset_index(
         drop=True).str.replace('.o', '.f95', regex=False).tolist()
     return list_files
 
@@ -81,58 +84,72 @@ def merge_source(path_source_dir, path_target):
     # get list of dependencies
     list_files = get_file_list(path_Makefile)
 
-    f = open(path_target, 'w')
-    for file in list_files:
-        fp = open(os.path.join(path_source_dir, file), 'r')
-        line = fp.readline()
-        while line:
-            # check if define wrf
-            if line.lstrip().startswith('#ifdef wrf'):
-                line = fp.readline()
-                break_flag = False
-                while break_flag == False:
-                    if line.lstrip().startswith('#else'):
-                        line = fp.readline()
-                        while break_flag == False:
-                            if line.lstrip().startswith('#endif'):
-                                break_flag = True
-                            else:
-                                line = fp.readline()
-                    elif line.lstrip().startswith('#endif'):
-                        break_flag = True
-                    else:
-                        f.writelines(line)
+    path_temp = 'temp-all.f95'
+    with open(path_temp, 'w') as f:
+        for file in list_files:
+            print(file)
+            fp = open(os.path.join(path_source_dir, file), 'r')
+            line = fp.readline()
+            while line:
+                # check if define wrf
+                if line.lstrip().startswith('#ifdef wrf'):
                     line = fp.readline()
-            # check if define nc
-            elif line.lstrip().startswith('#ifdef nc'):
-                line = fp.readline()
-                break_flag = False
-                while break_flag == False:
-                    if line.lstrip().startswith('#else'):
+                    break_flag = False
+                    while break_flag == False:
+                        if line.lstrip().startswith('#else'):
+                            line = fp.readline()
+                            while break_flag == False:
+                                if line.lstrip().startswith('#endif'):
+                                    break_flag = True
+                                else:
+                                    line = fp.readline()
+                        elif line.lstrip().startswith('#endif'):
+                            break_flag = True
+                        else:
+                            f.writelines(line)
                         line = fp.readline()
-                        while break_flag == False:
-                            if line.lstrip().startswith('#endif'):
-                                break_flag = True
-                            else:
-                                f.writelines(line)
-                                line = fp.readline()
-                    elif line.lstrip().startswith('#endif'):
-                        break_flag = True
+                # check if define nc
+                elif line.lstrip().startswith('#ifdef nc'):
                     line = fp.readline()
-            else:
-                f.writelines(line)
-                line = fp.readline()
-        fp.close()
-        f.writelines('\n')
-    f.close()
+                    break_flag = False
+                    while break_flag == False:
+                        if line.lstrip().startswith('#else'):
+                            line = fp.readline()
+                            while break_flag == False:
+                                if line.lstrip().startswith('#endif'):
+                                    break_flag = True
+                                else:
+                                    f.writelines(line)
+                                    line = fp.readline()
+                        elif line.lstrip().startswith('#endif'):
+                            break_flag = True
+                        line = fp.readline()
+                else:
+                    f.writelines(line)
+                    line = fp.readline()
+            fp.close()
+            f.writelines('\n')
+
+    with open(path_temp, 'r') as f_read:
+        with open(path_target, 'w') as f_write:
+            for line in f_read.readlines():
+                x = line.strip()
+                if not x.startswith('!'):
+                    # print(x)
+                    f_write.write(x)
+                    f_write.write('\n')
+
 
     return path_target
 
+# %%
+# # path settings:
+# path_source_dir = 'SUEWS-SourceCode'
+# path_target = './module_sf_suewsdrv.f95'
 
-# path settings:
-path_source_dir = '../SUEWS/SUEWS-SourceCode'
-path_target = './module_sf_suewsdrv.F'
 
-
-# merge files
+# # merge files
 # path_merged = merge_source(path_source_dir, path_target)
+
+
+#%%

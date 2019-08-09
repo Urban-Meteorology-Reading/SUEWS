@@ -1459,6 +1459,7 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
    USE time
    USE InitialCond
    use DailyState_module, only: update_WaterUse_X
+   use resist_module, only: SUEWS_cal_RoughnessParameters
 
    IMPLICIT NONE
 

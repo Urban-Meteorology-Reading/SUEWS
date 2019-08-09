@@ -45,8 +45,9 @@ UTILS = suews_ctrl_const.o \
 
 # SUEWS modules
 MODULES =	suews_phys_narp.o \
-					suews_ctrl_input.o  \
 					suews_phys_atmmoiststab.o \
+					suews_phys_resist.o \
+					suews_ctrl_input.o  \
 					suews_phys_bluews.o \
 					suews_phys_waterdist.o \
 					suews_phys_snow.o \
@@ -59,7 +60,6 @@ MODULES =	suews_phys_narp.o \
 # Rest of the files including modules and functions which are independent
 OTHERS =  suews_ctrl_translate.o \
 					suews_phys_lumps.o \
-					suews_phys_resist.o \
 					suews_ctrl_error.o \
 					suews_phys_evap.o \
 					suews_ctrl_init.o \

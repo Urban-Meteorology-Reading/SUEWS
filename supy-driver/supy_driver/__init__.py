@@ -7,8 +7,9 @@
 # 01 Feb 2018: performance improvement
 # 03 Feb 2018: improvement in output processing
 # 08 Mar 2018: pypi packaging
+# 09 Aug 2019: included more SUEWS modules
 ###########################################################################
 
-from supy_driver.suews_driver import suews_driver
+from supy_driver.suews_driver import (suews_driver, atmmoiststab_module,
+                                      resist_module, snow_module,)
 from supy_driver.version import __version__
-

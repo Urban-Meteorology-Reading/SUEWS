@@ -1,6 +1,9 @@
-SUBROUTINE AerodynamicResistance( &
-   ! input:
-   ZZD, &
+module resist_module
+   implicit none
+
+contains
+   SUBROUTINE AerodynamicResistance( &
+   ZZD, &! input:
    z0m, &
    AVU1, &
    L_mod, &
@@ -9,8 +12,7 @@ SUBROUTINE AerodynamicResistance( &
    AerodynamicResistanceMethod, &
    StabilityMethod, &
    RoughLenHeatMethod, &
-   ! output:
-   RA)
+   RA)! output:
 
    ! Returns Aerodynamic resistance (RA) to the main program SUEWS_Calculations
    ! All RA equations reported in Thom & Oliver (1977)
@@ -59,7 +61,7 @@ SUBROUTINE AerodynamicResistance( &
       muu = 1.46e-5 !molecular viscosity
    REAL(KIND(1d0)):: &
       psim, &
-      psih, z0V, cal_z0V
+      psih, z0V
 
    !1)Monteith (1965)-neutral stability
    IF (AerodynamicResistanceMethod == 1) THEN
@@ -547,3 +549,6 @@ FUNCTION cal_z0V(RoughLenHeatMethod, z0m, VegFraction, UStar) RESULT(z0V)
    ENDIF
 
 END FUNCTION cal_z0v
+
+
+end module resist_module

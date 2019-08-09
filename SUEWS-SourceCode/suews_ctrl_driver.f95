@@ -8,6 +8,8 @@ MODULE SUEWS_Driver
    USE AtmMoistStab_module, ONLY: LUMPS_cal_AtmMoist, STAB_lumps, stab_psi_heat, stab_psi_mom
    USE NARP_MODULE, ONLY: NARP_cal_SunPosition
    USE AnOHM_module, ONLY: AnOHM
+   USE resist_module, ONLY: AerodynamicResistance, BoundaryLayerResistance, SurfaceResistance,&
+                            cal_z0V, SUEWS_cal_RoughnessParameters
    USE ESTM_module, ONLY: ESTM
    USE Snow_module, ONLY: SnowCalc, Snow_cal_MeltHeat
    USE DailyState_module, ONLY: SUEWS_cal_DailyState, update_DailyState
@@ -2305,7 +2307,7 @@ CONTAINS
 
       REAL(KIND(1d0)) :: L_mod
       REAL(KIND(1d0)) :: psimz0, psihzDiag, psihzMeas, psihz0, psimzDiag ! stability correction functions
-      REAL(KIND(1d0)) :: z0h, cal_z0V ! Roughness length for heat
+      REAL(KIND(1d0)) :: z0h ! Roughness length for heat
       REAL(KIND(1d0)) :: zDiagzd! height for diagnositcs
       REAL(KIND(1d0)) :: zMeaszd
       REAL(KIND(1d0)) :: tlv, H_kms, TStar, zL, UStar

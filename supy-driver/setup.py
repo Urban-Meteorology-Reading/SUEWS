@@ -1,4 +1,3 @@
-# from setuptools import setup, Distribution
 from setuptools import Distribution
 from numpy.distutils.core import Extension, setup
 import platform
@@ -8,7 +7,7 @@ from pathlib import Path
 import subprocess
 import shutil
 from nonstopf2py import f2py
-
+from gen_suewsdrv import merge_source
 
 # wrap OS-specific `SUEWS_driver` libs
 sysname = platform.system()
@@ -33,6 +32,16 @@ target_f95 = [
         'suews_ctrl_const.f95',
         'suews_ctrl_error.f95',
         'suews_ctrl_driver.f95',
+        'suews_phys_atmmoiststab.f95',
+        # 'suews_phys_waterdist.f95',
+        'suews_phys_snow.f95',
+        # 'suews_phys_estm.f95',
+        # 'suews_phys_anohm.f95',
+        'suews_phys_resist.f95',
+        'suews_phys_evap.f95',
+        'suews_phys_anemsn.f95',
+        'suews_phys_rslprof.f95',
+        'suews_phys_biogenco2.f95',
     ]
 ]
 all_f95 = glob.glob(os.path.join(dir_f95, '*.f95'))
@@ -55,8 +64,23 @@ if sysname == 'Windows':
     other_obj.append(os.path.join(dir_f95, 'strptime.o'))
 
 src_f95 = target_f95 + other_f95
-# for f in target_f95 + other_obj:
-#     print(f)
+
+# # combine for files to use:
+# file_all_f95 = 'suews_all.f95'
+# # with open(file_all_f95, 'wb') as wfd:
+# #     for f in src_f95:
+# #         with open(f, 'rb') as fd:
+# #             shutil.copyfileobj(fd, wfd)
+# # directory of SUEWS source code
+# # this dir is included as a git submodule so DON'T make ANY change there
+# file_all_f95 = 'suews_all.f95'
+# path_src_SUEWS = Path(dir_f95)
+# # 4. generate SUEWS related source files from $dir_src_SUEWS and add them to $dir_WRF_SUEWS
+# path_sf_suewsdrv = Path(file_all_f95)
+# print(f'calling merge_source to generate {file_all_f95}')
+# merge_source(path_src_SUEWS, path_sf_suewsdrv)
+#             # for f in target_f95 + other_obj:
+# #     print(f)
 
 
 def readme():
@@ -108,6 +132,7 @@ class BinaryDistribution(Distribution):
 ext_modules = [
     Extension('supy_driver.suews_driver',
               target_f95,
+            #   [file_all_f95],
               extra_compile_args=['-D_POSIX_C_SOURCE=200809L'],
               extra_f90_compile_args=['-cpp'],
               f2py_options=[
@@ -150,7 +175,7 @@ setup(name='supy_driver',
 path_dir_driver = Path(__file__).resolve().parent
 list_wheels = [str(x) for x in path_dir_driver.glob('dist/*whl')]
 fn_wheel = sorted(list_wheels, key=os.path.getmtime)[-1]
-print(list_wheels, fn_wheel)
+# print(list_wheels, fn_wheel)
 
 # use auditwheel to repair file name for Linux
 if sysname == 'Linux':

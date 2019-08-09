@@ -101,8 +101,7 @@ CONTAINS
    !       Van Ulden & Holtslag (1985) JCAM: 24: 1196-1207
 
    SUBROUTINE STAB_lumps( &
-      ! input
-      StabilityMethod, &
+      StabilityMethod, &! input
       dectime, & !Decimal time
       zzd, &     !Active measurement height (meas. height-displac. height)
       z0m, &     !Aerodynamic roughness length
@@ -110,8 +109,7 @@ CONTAINS
       avU1, &    !Average wind speed
       Temp_C, &  !Air temperature
       H_init, & !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
-      ! output:
-      L_MOD, & !Obukhov length
+      L_MOD, & !Obukhov length! output:
       TStar, & !T*
       UStar, & !Friction velocity
       zL)!Stability scale

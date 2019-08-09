@@ -1,5 +1,5 @@
+f90nml==1.0.2
 exhale==0.2.3
+numpy==1.17.0
 pandas==0.24.2
 nbsphinx==0.4.2
-numpy==1.17.0
-f90nml==1.0.2

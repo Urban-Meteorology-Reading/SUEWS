@@ -11,5 +11,8 @@
 ###########################################################################
 
 from supy_driver.suews_driver import (suews_driver, atmmoiststab_module,
+                                      dailystate_module,lumps_module,
+                                    #   anemsn_module,
+                                      rsl_module,
                                       resist_module, snow_module,)
 from supy_driver.version import __version__

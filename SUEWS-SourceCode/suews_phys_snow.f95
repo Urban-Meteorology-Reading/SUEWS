@@ -1,4 +1,5 @@
 MODULE Snow_module
+   use evap_module, only:evap_suews
 
    IMPLICIT NONE
 CONTAINS

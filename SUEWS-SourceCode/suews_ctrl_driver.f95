@@ -19,6 +19,12 @@ MODULE SUEWS_Driver
                                SUEWS_cal_WaterUse
    USE ctrl_output, ONLY: varListAll
    USE DailyState_module, ONLY: SUEWS_update_DailyState
+   use lumps_module, only: LUMPS_cal_QHQE
+   use evap_module, only:evap_SUEWS
+   use rsl_module, only:RSLProfile
+   use anemsn_module, only: AnthropogenicEmissions
+   use CO2_module, only: CO2_biogen
+   use evap_module, only: evap_SUEWS
    USE allocateArray, ONLY: &
       nsurf, nvegsurf, &
       PavSurf, BldgSurf, ConifSurf, DecidSurf, GrassSurf, BSoilSurf, WaterSurf, &

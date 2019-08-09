@@ -31,17 +31,19 @@ target_f95 = [
     [
         'suews_ctrl_const.f95',
         'suews_ctrl_error.f95',
-        'suews_ctrl_driver.f95',
+        'suews_phys_narp.f95',
         'suews_phys_atmmoiststab.f95',
-        # 'suews_phys_waterdist.f95',
-        'suews_phys_snow.f95',
-        # 'suews_phys_estm.f95',
-        # 'suews_phys_anohm.f95',
         'suews_phys_resist.f95',
         'suews_phys_evap.f95',
-        'suews_phys_anemsn.f95',
+        'suews_phys_snow.f95',
+        'suews_phys_dailystate.f95',
+        'suews_phys_lumps.f95',
+        # 'suews_phys_anemsn.f95',
         'suews_phys_rslprof.f95',
-        'suews_phys_biogenco2.f95',
+        # 'suews_phys_biogenco2.f95',
+        # 'suews_phys_ohm.f95',
+        # 'suews_phys_waterdist.f95',
+        'suews_ctrl_driver.f95',
     ]
 ]
 all_f95 = glob.glob(os.path.join(dir_f95, '*.f95'))
@@ -145,7 +147,7 @@ ext_modules = [
 
 setup(name='supy_driver',
       # update version info here!
-      version=get_suews_version(ver_minor=1),
+      version=get_suews_version(ver_minor=2),
       description='the SUEWS driver driven by f2py',
       long_description=readme(),
       url='https://github.com/sunt05/SuPy',

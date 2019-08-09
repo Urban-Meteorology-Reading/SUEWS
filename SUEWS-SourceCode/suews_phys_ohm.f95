@@ -185,7 +185,7 @@ SUBROUTINE OHM(qn1, qn1_av, dqndt, &
    ENDIF
 
    RETURN
-ENDSUBROUTINE OHM
+END SUBROUTINE OHM
 !========================================================================================
 
 SUBROUTINE OHM_coef_cal(sfr, nsurf, &

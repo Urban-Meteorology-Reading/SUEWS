@@ -1064,7 +1064,7 @@ CONTAINS
          wu_Grass = wu_Grass*ext_wu/wu
       ENDIF
 
-   endsubroutine SUEWS_cal_WaterUse
+   END SUBROUTINE SUEWS_cal_WaterUse
    !===================================================================================
 
 END MODULE WaterDist_module

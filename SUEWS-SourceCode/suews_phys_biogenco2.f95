@@ -224,7 +224,7 @@ SUBROUTINE CO2_biogen( &
 
    RETURN
 
-ENDSUBROUTINE CO2_biogen
+END SUBROUTINE CO2_biogen
 !========================================================================================
 
 end module CO2_module

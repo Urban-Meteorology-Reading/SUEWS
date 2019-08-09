@@ -121,6 +121,6 @@ contains
       !    STOP "stop in Evap_SUEWS_new"
       !
       ! END IF
-   ENDSUBROUTINE Evap_SUEWS
+   END SUBROUTINE Evap_SUEWS
 
 end module evap_module

@@ -10,9 +10,17 @@
 # 09 Aug 2019: included more SUEWS modules
 ###########################################################################
 
-from supy_driver.suews_driver import (suews_driver, atmmoiststab_module,
-                                      dailystate_module,lumps_module,
-                                    #   anemsn_module,
+from supy_driver.suews_driver import (suews_driver,
+                                      narp_module,
+                                      atmmoiststab_module,
+                                      resist_module,
+                                      evap_module,
+                                      snow_module,
+                                      dailystate_module,
+                                      lumps_module,
+                                      anemsn_module,
                                       rsl_module,
-                                      resist_module, snow_module,)
+                                      co2_module,
+                                      waterdist_module,
+                                      )
 from supy_driver.version import __version__

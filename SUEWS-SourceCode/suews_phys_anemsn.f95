@@ -320,7 +320,7 @@ module AnEmsn_module
       ENDIF
 
       RETURN
-   ENDSUBROUTINE AnthropogenicEmissions
+   END SUBROUTINE AnthropogenicEmissions
 
 end module AnEmsn_module
 !========================================================================================

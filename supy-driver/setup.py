@@ -7,7 +7,7 @@ from pathlib import Path
 import subprocess
 import shutil
 from nonstopf2py import f2py
-from gen_suewsdrv import merge_source
+# from gen_suewsdrv import merge_source
 
 # wrap OS-specific `SUEWS_driver` libs
 sysname = platform.system()

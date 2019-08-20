@@ -108,7 +108,7 @@ Funding
 .. note::
 
     The following grants are acknowledged for their contribution
-    to model development (D) and/or supportive observations (O).
+    to **model development (D)** and/or **supportive observations (O)**.
 
 
 .. list-table::

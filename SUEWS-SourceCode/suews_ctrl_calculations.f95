@@ -35,14 +35,14 @@
 
 SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
    USE data_in, ONLY: diagnose, ah_min, ah_slope_cooling, ah_slope_heating, &
-                      alt, avkdn, avrh, avu1, basetHDD, diagqn, diagqs, drainrt, co2pointsource, &
+                      alt, avkdn, avrh, avu1, basetHDD, diagqn, diagqs, drainrt, co2pointsource, CBLuse, &
                       ef_umolco2perj, emissionsmethod, enef_v_jkm, enddls, fcef_v_kgkm, fcld_obs, &
                       frfossilfuel_heat, frfossilfuel_nonheat, EvapMethod, &
                       LAIcalcyes, LAI_obs, lat, ldown_obs, lng, maxfcmetab, maxqfmetab, &
                       minfcmetab, minqfmetab, netradiationmethod, numcapita, ohmincqf, &
                       popdensdaytime, popdensnighttime, &
                       precip, press_hpa, qf0_beu, qf_a, qf_b, qf_c, &
-                      qh_obs, qn1_obs, qs_obs, qf_obs, &
+                      qe_obs, qh_obs, qn1_obs, qs_obs, qf_obs, &
                       raincover, rainmaxres, &
                       roughlenmommethod, smdmethod, snowFrac_obs, snowuse, startdls, &
                       storageheatmethod, t_critic_cooling, t_critic_heating, temp_c, &
@@ -76,13 +76,13 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       datetimeline, dataoutlinesuews, dataoutlinesnow, &
       dataoutlineestm, dataoutlineRSL, dailystateline, dataoutdailystate, &
       dataoutsuews, dataoutsnow, dataoutestm, dataoutRSL
-
    USE sues_data, ONLY: &
       aerodynamicresistancemethod, daywat, daywatper, faut, flowchange, &
       ie_a, ie_end, ie_m, ie_start, internalwateruse_h, &
       irrfracconif, irrfracdecid, irrfracgrass, &
       pipecapacity, roughlenheatmethod, runofftowater, stabilitymethod, &
-      surfacearea, tstep, tstep_prev
+      surfacearea, tstep, tstep_prev, &
+      qhforCBL, qeforCBL, qh_choice
    USE snowMod, ONLY: &
       crwmax, crwmin, preciplimit, preciplimitalb, radmeltfact, &
       snowalb, snowAlbMax, snowAlbMin, &
@@ -97,6 +97,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
    USE resist, ONLY: g1, g2, g3, g4, g5, g6, gsmodel, kmax, s1, s2, th, tl
    USE DailyState_module, ONLY: SUEWS_update_DailyState
    USE SUEWS_Driver, ONLY: SUEWS_cal_Main
+   USE BLUEWS_module, ONLY: CBL
 
    IMPLICIT NONE
 
@@ -104,6 +105,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
    INTEGER :: ir
    INTEGER :: iMB
    INTEGER :: irMax
+   REAL(KIND(1d0)) :: qhforCBL1d, qeforCBL1d  !local variety
 
    !==================================================================
 
@@ -112,6 +114,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
    CALL SUEWS_Translate(Gridiv, ir, iMB)
 
    IF (Diagnose == 1) PRINT *, 'Calling SUEWS_cal_Main...'
+   qhforCBL1d = qhforCBL(Gridiv) !assign qhforCBL1d
+   qeforCBL1d = qeforCBL(Gridiv) !assign qeforCBL1d
    CALL SUEWS_cal_Main( &
       AerodynamicResistanceMethod, AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, & ! input&inout in alphabetical order
       AH_SLOPE_Heating, &
@@ -137,7 +141,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       PopDensNighttime, PopProf_24hr, PorMax_dec, PorMin_dec, &
       Precip, PrecipLimit, PrecipLimitAlb, Press_hPa, &
       QF0_BEU, Qf_A, Qf_B, Qf_C, &
-      qn1_obs, qh_obs, qs_obs, qf_obs, &
+      qe_obs, qn1_obs, qh_obs, qs_obs, qf_obs, &
+      qhforCBL1d, qeforCBL1d, qh_choice,&
       RadMeltFact, RAINCOVER, RainMaxRes, resp_a, resp_b, &
       RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
       SatHydraulicConduct, SDDFull, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
@@ -172,10 +177,13 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
 
    ! NB: CBL disabled for the moment for interface improvement
    ! NB: CBL be decoupled from SUEWS TS 10 Jun 2018
-   ! IF(CBLuse>=1)THEN ! If CBL is used, calculated Temp_C and RH are replaced with the obs.
-   !    IF(Diagnose==1) WRITE(*,*) 'Calling CBL...'
-   !    CALL CBL(ir,iMB,Gridiv)   !ir=1 indicates first row of each met data block
-   ! ENDIF
+
+   qhforCBL(Gridiv) = qhforCBL1d
+   qeforCBL(Gridiv) = qeforCBL1d
+   IF(CBLuse>=1)THEN ! If CBL is used, calculated Temp_C and RH are replaced with the obs.
+      IF(Diagnose==1) WRITE(*,*) 'Calling CBL...'
+       CALL CBL(ir, Gridiv)   !ir=1 indicates first row of each met data block
+    ENDIF
 
    ! NB: SOLWEIG can be treated as a separate part:
    ! NB: SOLWEIG is disabled for v2018a TS 10 Jun 2018

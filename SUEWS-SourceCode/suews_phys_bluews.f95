@@ -31,7 +31,7 @@ CONTAINS
       REAL(KIND(1d0))::qh_use, qe_use, tm_K_zm, qm_gkg_zm
       REAL(KIND(1d0))::Temp_C1, avrh1, es_hPa1
       REAL(KIND(1d0))::secs0, secs1, Lv
-      INTEGER::idoy, ifirst, Gridiv, startflag, iNBL
+      INTEGER::idoy, ifirst, iMB, Gridiv, startflag, iNBL
 
       ! initialise startflag
       startflag = 0

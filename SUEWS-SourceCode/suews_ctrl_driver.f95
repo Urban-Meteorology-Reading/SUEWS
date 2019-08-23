@@ -62,7 +62,8 @@ CONTAINS
       PopDensNighttime, PopProf_24hr, PorMax_dec, PorMin_dec, &
       Precip, PrecipLimit, PrecipLimitAlb, Press_hPa, &
       QF0_BEU, Qf_A, Qf_B, Qf_C, &
-      qn1_obs, qh_obs, qs_obs, qf_obs, &
+      qe_obs, qn1_obs, qh_obs, qs_obs, qf_obs, &
+      qhforCBL1d, qeforCBL1d, qh_choice, &
       RadMeltFact, RAINCOVER, RainMaxRes, resp_a, resp_b, &
       RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
       SatHydraulicConduct, SDDFull, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
@@ -114,6 +115,7 @@ CONTAINS
       INTEGER, INTENT(in)::dt_since_start ! time since simulation starts [s]
       INTEGER, INTENT(IN)::veg_type
       INTEGER, INTENT(IN)::WaterUseMethod
+      INTEGER, INTENT(IN)::qh_choice
 
       REAL(KIND(1D0)), INTENT(IN)::AlbMax_DecTr
       REAL(KIND(1D0)), INTENT(IN)::AlbMax_EveTr
@@ -174,10 +176,13 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::PrecipLimit
       REAL(KIND(1D0)), INTENT(IN)::PrecipLimitAlb
       REAL(KIND(1D0)), INTENT(IN)::Press_hPa
+      REAL(KIND(1D0)), INTENT(IN)::qe_obs
       REAL(KIND(1D0)), INTENT(IN)::qh_obs
       REAL(KIND(1D0)), INTENT(IN)::qn1_obs
       REAL(KIND(1D0)), INTENT(IN)::qs_obs
       REAL(KIND(1D0)), INTENT(IN)::qf_obs
+      REAL(KIND(1d0)), INTENT(OUT)::qhforCBL1d
+      REAL(KIND(1d0)), INTENT(OUT)::qeforCBL1d
       REAL(KIND(1D0)), INTENT(IN)::RadMeltFact
       REAL(KIND(1D0)), INTENT(IN)::RAINCOVER
       REAL(KIND(1D0)), INTENT(IN)::RainMaxRes
@@ -776,6 +781,8 @@ CONTAINS
          kup, LAI_id, ldown, l_mod, lup, mwh, &
          MwStore, &
          nsh_real, NWstate_per_tstep, Precip, q2_gkg, &
+         qhforCBL1d,qeforCBL1d,&
+         qe_obs,qh_obs,qh_choice,&
          qeOut, qf, qh, qh_resist, Qm, QmFreez, &
          QmRain, qn1, qn1_S, qn1_snowfree, qs, RA, &
          resistsurf, RH2, runoffAGimpervious, runoffAGveg, &
@@ -1959,6 +1966,8 @@ CONTAINS
       kup, LAI_id, ldown, l_mod, lup, mwh, &
       MwStore, &
       nsh_real, NWstate_per_tstep, Precip, q2_gkg, &
+      qhforCBL1d,qeforCBL1d,&
+      qe_obs,qh_obs,qh_choice,&
       qeOut, qf, qh, qh_resist, Qm, QmFreez, &
       QmRain, qn1, qn1_S, qn1_snowfree, qs, RA, &
       resistsurf, RH2, runoffAGimpervious, runoffAGveg, &
@@ -1977,7 +1986,8 @@ CONTAINS
       ! INTEGER,INTENT(in) :: id_prev_t
       INTEGER, INTENT(in) :: it
       INTEGER, INTENT(in) :: imin
-
+      INTEGER, INTENT(in) :: qh_choice
+  !  INTEGER, INTENT(in) :: Gridiv
       REAL(KIND(1d0)), INTENT(in) :: AdditionalWater
       REAL(KIND(1d0)), INTENT(in) :: alb(nsurf)
       REAL(KIND(1d0)), INTENT(in) :: avkdn
@@ -2011,6 +2021,8 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(in) :: NWstate_per_tstep
       REAL(KIND(1d0)), INTENT(in) :: Precip
       REAL(KIND(1d0)), INTENT(in) :: q2_gkg
+      REAL(KIND(1d0)), INTENT(in) :: qh_obs
+      REAL(KIND(1d0)), INTENT(in) :: qe_obs
       REAL(KIND(1d0)), INTENT(in) :: qeOut
       REAL(KIND(1d0)), INTENT(in) :: qf
       REAL(KIND(1d0)), INTENT(in) :: qh
@@ -2056,7 +2068,7 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutSUEWS - 5), INTENT(out) :: dataOutLineSUEWS
       ! REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutSnow-5),INTENT(out) :: dataOutLineSnow
       ! REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutESTM-5),INTENT(out) :: dataOutLineESTM
-
+      REAL(KIND(1d0)), INTENT(out) :: qhforCBL1d,qeforCBL1d
       ! INTEGER:: is
       REAL(KIND(1d0)):: LAI_wt
       REAL(KIND(1d0)):: RH2_pct ! RH2 in percentage
@@ -2097,20 +2109,21 @@ CONTAINS
 
       ! NB: this part needs to be reconsidered for calculation logic. TS, 27 Sep 2018
       ! TODO: this part should be reconnected to an improved CBL interface. TS 10 Jun 2018
-      ! ! Save qh and qe for CBL in next iteration
-      ! IF(Qh_choice==1) THEN   !use QH and QE from SUEWS
-      !    qhforCBL(Gridiv) = qh
-      !    qeforCBL(Gridiv) = qeOut
-      ! ELSEIF(Qh_choice==2)THEN   !use QH and QE from LUMPS
-      !    qhforCBL(Gridiv) = h_mod
-      !    qeforCBL(Gridiv) = e_mod
-      ! ELSEIF(qh_choice==3)THEN  !use QH and QE from OBS
-      !    qhforCBL(Gridiv) = qh_obs
-      !    qeforCBL(Gridiv) = qe_obs
-      !    IF(qh_obs<-900.OR.qe_obs<-900)THEN  ! observed data has a problem
-      !       CALL ErrorHint(22,'Unrealistic observed qh or qe_value.',qh_obs,qe_obs,qh_choice)
-      !    ENDIF
-      ! ENDIF
+      ! uncomment the CBL.HWJ，21 Aug 2019
+      ! Save qh and qe for CBL in next iteration
+      IF(Qh_choice==1) THEN   !use QH and QE from SUEWS
+          qhforCBL1d = qh
+          qeforCBL1d = qeOut
+       ELSEIF(Qh_choice==2)THEN   !use QH and QE from LUMPS
+          qhforCBL1d = h_mod
+          qeforCBL1d = e_mod
+       ELSEIF(qh_choice==3)THEN  !use QH and QE from OBS
+          qhforCBL1d = qh_obs
+         qeforCBL1d = qe_obs
+          IF(qh_obs<-900.OR.qe_obs<-900)THEN  ! observed data has a problem
+             CALL ErrorHint(22,'Unrealistic observed qh or qe_value.',qh_obs,qe_obs,qh_choice)
+          ENDIF
+      ENDIF
 
       !====================== update output line ==============================
       ! date & time:
@@ -2493,441 +2506,443 @@ CONTAINS
 
    END SUBROUTINE output_size
 
-   SUBROUTINE SUEWS_cal_multitsteps( &
-      MetForcingBlock, len_sim, &
-      AerodynamicResistanceMethod, AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, & ! input&inout in alphabetical order
-      AH_SLOPE_Heating, &
-      alb, AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
-      AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
-      alpha_bioCO2, alpha_enh_bioCO2, alt, BaseT, BaseTe, &
-      BaseTHDD, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
-      chAnOHM, CO2PointSource, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
-      DecTreeH, Diagnose, DiagQN, DiagQS, DRAINRT, &
-      dt_since_start, dqndt, qn1_av, dqnsdt, qn1_s_av, &
-      EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
-      FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, FlowChange, &
-      FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD_id, &
-      GDDFull, Gridiv, gsModel, HDD_id, HumActivity_24hr, &
-      IceFrac, Ie_a, Ie_end, Ie_m, Ie_start, &
-      InternalWaterUse_h, IrrFracConif, IrrFracDecid, IrrFracGrass, EvapMethod, &
-      kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax, LAIMin, &
-      LAIPower, LAIType, lat, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
-      SnowWater, MinFCMetab, MinQFMetab, min_res_bioCO2, &
-      NARP_EMIS_SNOW, NARP_TRANS_SITE, NetRadiationMethod, &
-      NumCapita, OHM_coef, OHMIncQF, OHM_threshSW, &
-      OHM_threshWD, PipeCapacity, PopDensDaytime, &
-      PopDensNighttime, PopProf_24hr, PorMax_dec, PorMin_dec, &
-      PrecipLimit, PrecipLimitAlb, &
-      QF0_BEU, Qf_A, Qf_B, Qf_C, &
-      RadMeltFact, RAINCOVER, RainMaxRes, resp_a, resp_b, &
-      RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
-      SatHydraulicConduct, SDDFull, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
-      SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
-      SnowLimBldg, SnowLimPaved, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
-      soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
-      StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair24HR, tau_a, tau_f, tau_r, &
-      T_CRITIC_Cooling, T_CRITIC_Heating, TempMeltFact, TH, &
-      theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
-      TraffProf_24hr, Ts5mindata_ir, tstep, tstep_prev, veg_type, &
-      WaterDist, WaterUseMethod, WetThresh, &
-      WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
-      WUProfA_24hr, WUProfM_24hr, Z, z0m_in, zdm_in, &
-      dataOutBlockSUEWS, dataOutBlockSnow, dataOutBlockESTM, dataOutBlockRSL, &!output
-      DailyStateBlock)
-
-      IMPLICIT NONE
-      ! input:
-      ! met forcing block
-      REAL(KIND(1D0)), DIMENSION(len_sim, 24), INTENT(IN) ::MetForcingBlock
-      INTEGER, INTENT(IN) :: len_sim
-      ! input variables
-      INTEGER, INTENT(IN)::AerodynamicResistanceMethod
-      INTEGER, INTENT(IN)::Diagnose
-      INTEGER, INTENT(IN)::DiagQN
-      INTEGER, INTENT(IN)::DiagQS
-      INTEGER, INTENT(IN)::startDLS
-      INTEGER, INTENT(IN)::endDLS
-      INTEGER, INTENT(IN)::EmissionsMethod
-      INTEGER, INTENT(IN)::Gridiv
-      INTEGER, INTENT(IN)::gsModel
-      INTEGER, INTENT(IN)::Ie_end
-      INTEGER, INTENT(IN)::Ie_start
-      INTEGER, INTENT(IN)::EvapMethod
-      INTEGER, INTENT(IN)::LAICalcYes
-      INTEGER, INTENT(IN)::NetRadiationMethod
-      INTEGER, INTENT(IN)::OHMIncQF
-      INTEGER, INTENT(IN)::RoughLenHeatMethod
-      INTEGER, INTENT(IN)::RoughLenMomMethod
-      INTEGER, INTENT(IN)::SMDMethod
-      INTEGER, INTENT(IN)::snowUse
-      INTEGER, INTENT(IN)::StabilityMethod
-      INTEGER, INTENT(IN)::StorageHeatMethod
-      INTEGER, INTENT(IN)::tstep
-      INTEGER, INTENT(IN)::tstep_prev ! tstep size of the previous step
-      INTEGER, INTENT(in)::dt_since_start ! time since simulation starts [s]
-      INTEGER, INTENT(IN)::veg_type
-      INTEGER, INTENT(IN)::WaterUseMethod
-
-      INTEGER, DIMENSION(NVEGSURF), INTENT(IN)::LAIType
-
-      REAL(KIND(1D0)), INTENT(IN)::AlbMax_DecTr
-      REAL(KIND(1D0)), INTENT(IN)::AlbMax_EveTr
-      REAL(KIND(1D0)), INTENT(IN)::AlbMax_Grass
-      REAL(KIND(1D0)), INTENT(IN)::AlbMin_DecTr
-      REAL(KIND(1D0)), INTENT(IN)::AlbMin_EveTr
-      REAL(KIND(1D0)), INTENT(IN)::AlbMin_Grass
-      REAL(KIND(1D0)), INTENT(IN)::alt
-      ! REAL(KIND(1D0)),INTENT(IN)::avkdn
-      ! REAL(KIND(1D0)),INTENT(IN)::avRh
-      ! REAL(KIND(1D0)),INTENT(IN)::avU1
-      REAL(KIND(1D0)), INTENT(IN)::BaseTHDD
-      REAL(KIND(1D0)), INTENT(IN)::bldgH
-      REAL(KIND(1D0)), INTENT(IN)::CapMax_dec
-      REAL(KIND(1D0)), INTENT(IN)::CapMin_dec
-      REAL(KIND(1D0)), INTENT(IN)::CO2PointSource
-      REAL(KIND(1D0)), INTENT(IN)::CRWmax
-      REAL(KIND(1D0)), INTENT(IN)::CRWmin
-      REAL(KIND(1D0)), INTENT(IN)::DecTreeH
-      REAL(KIND(1D0)), INTENT(IN)::DRAINRT
-      REAL(KIND(1D0)), INTENT(IN)::EF_umolCO2perJ
-      REAL(KIND(1D0)), INTENT(IN)::EnEF_v_Jkm
-      REAL(KIND(1D0)), INTENT(IN)::EveTreeH
-      REAL(KIND(1D0)), INTENT(IN)::FAIBldg
-      REAL(KIND(1D0)), INTENT(IN)::FAIDecTree
-      REAL(KIND(1D0)), INTENT(IN)::FAIEveTree
-      REAL(KIND(1D0)), INTENT(IN)::Faut
-      ! REAL(KIND(1D0)),INTENT(IN)::fcld_obs
-      REAL(KIND(1D0)), INTENT(IN)::FlowChange
-      REAL(KIND(1D0)), INTENT(IN)::FrFossilFuel_Heat
-      REAL(KIND(1D0)), INTENT(IN)::FrFossilFuel_NonHeat
-      REAL(KIND(1D0)), INTENT(IN)::G1
-      REAL(KIND(1D0)), INTENT(IN)::G2
-      REAL(KIND(1D0)), INTENT(IN)::G3
-      REAL(KIND(1D0)), INTENT(IN)::G4
-      REAL(KIND(1D0)), INTENT(IN)::G5
-      REAL(KIND(1D0)), INTENT(IN)::G6
-      REAL(KIND(1D0)), INTENT(IN)::InternalWaterUse_h
-      REAL(KIND(1D0)), INTENT(IN)::IrrFracConif
-      REAL(KIND(1D0)), INTENT(IN)::IrrFracDecid
-      REAL(KIND(1D0)), INTENT(IN)::IrrFracGrass
-      REAL(KIND(1D0)), INTENT(IN)::Kmax
-      ! REAL(KIND(1D0)),INTENT(IN)::LAI_obs
-      REAL(KIND(1D0)), INTENT(IN)::lat
-      ! REAL(KIND(1D0)),INTENT(IN)::ldown_obs
-      REAL(KIND(1D0)), INTENT(IN)::lng
-      REAL(KIND(1D0)), INTENT(IN)::MaxFCMetab
-      REAL(KIND(1D0)), INTENT(IN)::MaxQFMetab
-      REAL(KIND(1D0)), INTENT(IN)::MinFCMetab
-      REAL(KIND(1D0)), INTENT(IN)::MinQFMetab
-      REAL(KIND(1D0)), INTENT(IN)::NARP_EMIS_SNOW
-      REAL(KIND(1D0)), INTENT(IN)::NARP_TRANS_SITE
-      REAL(KIND(1D0)), INTENT(IN)::PipeCapacity
-      REAL(KIND(1D0)), INTENT(IN)::PopDensNighttime
-      REAL(KIND(1D0)), INTENT(IN)::PorMax_dec
-      REAL(KIND(1D0)), INTENT(IN)::PorMin_dec
-      ! REAL(KIND(1D0)),INTENT(IN)::Precip
-      REAL(KIND(1D0)), INTENT(IN)::PrecipLimit
-      REAL(KIND(1D0)), INTENT(IN)::PrecipLimitAlb
-      ! REAL(KIND(1D0)),INTENT(IN)::Press_hPa
-      ! REAL(KIND(1D0)),INTENT(IN)::qh_obs
-      ! REAL(KIND(1D0)),INTENT(IN)::qn1_obs
-      ! REAL(KIND(1D0)),INTENT(IN)::qs_obs
-      ! REAL(KIND(1D0)),INTENT(IN)::qf_obs
-      REAL(KIND(1D0)), INTENT(IN)::RadMeltFact
-      REAL(KIND(1D0)), INTENT(IN)::RAINCOVER
-      REAL(KIND(1D0)), INTENT(IN)::RainMaxRes
-      REAL(KIND(1D0)), INTENT(IN)::RunoffToWater
-      REAL(KIND(1D0)), INTENT(IN)::S1
-      REAL(KIND(1D0)), INTENT(IN)::S2
-      REAL(KIND(1D0)), INTENT(IN)::SnowAlbMax
-      REAL(KIND(1D0)), INTENT(IN)::SnowAlbMin
-      REAL(KIND(1D0)), INTENT(IN)::SnowDensMax
-      REAL(KIND(1D0)), INTENT(IN)::SnowDensMin
-      REAL(KIND(1D0)), INTENT(IN)::SnowLimBldg
-      REAL(KIND(1D0)), INTENT(IN)::SnowLimPaved
-      ! REAL(KIND(1D0)),INTENT(IN)::snowFrac_obs
-      REAL(KIND(1D0)), INTENT(IN)::SurfaceArea
-      REAL(KIND(1D0)), INTENT(IN)::tau_a
-      REAL(KIND(1D0)), INTENT(IN)::tau_f
-      REAL(KIND(1D0)), INTENT(IN)::tau_r
-      ! REAL(KIND(1D0)),INTENT(IN)::Temp_C
-      REAL(KIND(1D0)), INTENT(IN)::TempMeltFact
-      REAL(KIND(1D0)), INTENT(IN)::TH
-      REAL(KIND(1D0)), INTENT(IN)::timezone
-      REAL(KIND(1D0)), INTENT(IN)::TL
-      REAL(KIND(1D0)), INTENT(IN)::TrafficUnits
-      ! REAL(KIND(1D0)),INTENT(IN)::xsmd
-      REAL(KIND(1D0)), INTENT(IN)::Z
-      REAL(KIND(1D0)), INTENT(IN)::z0m_in
-      REAL(KIND(1D0)), INTENT(IN)::zdm_in
-
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::AH_MIN
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::AH_SLOPE_Cooling
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::AH_SLOPE_Heating
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::FcEF_v_kgkm
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::QF0_BEU
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::Qf_A
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::Qf_B
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::Qf_C
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::Numcapita
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::PopDensDaytime
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::T_CRITIC_Cooling
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::T_CRITIC_Heating
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::TrafficRate
-      REAL(KIND(1D0)), DIMENSION(3), INTENT(IN)               ::Ie_a
-      REAL(KIND(1D0)), DIMENSION(3), INTENT(IN)               ::Ie_m
-      REAL(KIND(1D0)), DIMENSION(3), INTENT(IN)               ::MaxConductance
-      REAL(KIND(1D0)), DIMENSION(7), INTENT(IN)               ::DayWat
-      REAL(KIND(1D0)), DIMENSION(7), INTENT(IN)               ::DayWatPer
-      REAL(KIND(1D0)), DIMENSION(nsurf + 1), INTENT(IN)         ::OHM_threshSW
-      REAL(KIND(1D0)), DIMENSION(nsurf + 1), INTENT(IN)         ::OHM_threshWD
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::chAnOHM
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::cpAnOHM
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::emis
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::kkAnOHM
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::SatHydraulicConduct
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::sfr
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::SnowPackLimit
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::SoilDepth
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::SoilStoreCap
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::StateLimit
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::WetThresh
-      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::alpha_bioCO2
-      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::alpha_enh_bioCO2
-      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::BaseT
-      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::BaseTe
-      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::beta_bioCO2
-      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::beta_enh_bioCO2
-      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::GDDFull
-      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::LAIMax
-      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::LAIMin
-      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::min_res_bioCO2
-      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::resp_a
-      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::resp_b
-      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::SDDFull
-      REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(IN)          ::SnowProf_24hr
-      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::theta_bioCO2
-      REAL(KIND(1D0)), DIMENSION(4, NVEGSURF), INTENT(IN)      ::LAIPower
-      REAL(KIND(1D0)), DIMENSION(nsurf + 1, 4, 3), INTENT(IN)     ::OHM_coef
-      REAL(KIND(1D0)), DIMENSION(NSURF + 1, NSURF - 1), INTENT(IN) ::WaterDist
-      REAL(KIND(1d0)), DIMENSION(:), INTENT(IN)               ::Ts5mindata_ir
-
-      ! diurnal profile values for 24hr
-      REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(IN) ::AHProf_24hr
-      REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(IN) ::HumActivity_24hr
-      REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(IN) ::PopProf_24hr
-      REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(IN) ::TraffProf_24hr
-      REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(IN) ::WUProfA_24hr
-      REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(IN) ::WUProfM_24hr
-      ! ########################################################################################
-
-      ! ########################################################################################
-      ! inout variables
-      ! OHM related:
-      REAL(KIND(1d0)), INTENT(INOUT) ::qn1_av
-      REAL(KIND(1d0)), INTENT(INOUT) ::dqndt
-      REAL(KIND(1d0)), INTENT(INOUT) ::qn1_s_av
-      REAL(KIND(1d0)), INTENT(INOUT) ::dqnsdt
-
-      ! snow related:
-      REAL(KIND(1D0)), INTENT(INOUT)                  ::SnowfallCum
-      REAL(KIND(1D0)), INTENT(INOUT)                  ::SnowAlb
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) ::IceFrac
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) ::SnowWater
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) ::SnowDens
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) ::snowFrac
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) ::SnowPack
-
-      ! water balance related:
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT)   ::soilstore_id
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT)   ::state_id
-      REAL(KIND(1D0)), DIMENSION(6, NSURF), INTENT(INOUT) ::StoreDrainPrm
-
-      ! phenology related:
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT)   ::alb
-      REAL(KIND(1d0)), DIMENSION(5), INTENT(INOUT)       ::GDD_id !Growing Degree Days (see SUEWS_DailyState.f95)
-      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(INOUT)::LAI_id !LAI for each veg surface [m2 m-2]
-      REAL(KIND(1d0)), INTENT(INOUT)                    :: DecidCap_id
-      REAL(KIND(1d0)), INTENT(INOUT)                    :: albDecTr_id
-      REAL(KIND(1d0)), INTENT(INOUT)                    :: albEveTr_id
-      REAL(KIND(1d0)), INTENT(INOUT)                    :: albGrass_id
-      REAL(KIND(1d0)), INTENT(INOUT)                    :: porosity_id
-
-      ! anthropogenic heat related:
-      REAL(KIND(1d0)), DIMENSION(12), INTENT(INOUT) ::HDD_id !Heating Degree Days (see SUEWS_DailyState.f95)
-
-      ! water use related:
-      REAL(KIND(1d0)), DIMENSION(9), INTENT(INOUT)  ::WUDay_id
-
-      ! ESTM related:
-      REAL(KIND(1d0)), DIMENSION(24*3600/tstep), INTENT(INOUT)    ::Tair24HR ! TODO: this can be merged as one value rather than a vector, TS 20180906
-      ! ########################################################################################
-
-      ! ########################################################################################
-      ! output variables
-      ! REAL(KIND(1D0)),DIMENSION(:,:,:),ALLOCATABLE,INTENT(OUT) ::datetimeBlock
-      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSUEWS), INTENT(OUT) ::dataOutBlockSUEWS
-      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSnow), INTENT(OUT) ::dataOutBlockSnow
-      REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutESTM), INTENT(OUT) ::dataOutBlockESTM
-      REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutRSL), INTENT(OUT) ::dataOutBlockRSL
-      REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutDailyState), INTENT(OUT) ::DailyStateBlock
-      ! ########################################################################################
-
-      ! internal temporal iteration related variables
-      INTEGER::dt_since_start_x ! time since simulation starts [s]
-
-      ! model output blocks of the same size as met forcing block
-
-      ! local variables
-      ! length of met forcing block
-      INTEGER :: ir
-      ! met forcing variables
-      INTEGER :: iy
-      INTEGER :: id
-      INTEGER :: it
-      INTEGER :: imin
-      INTEGER :: isec
-      INTEGER, PARAMETER :: gridiv_x = 1 ! a dummy gridiv as this routine is only one grid
-      REAL(KIND(1D0))::qn1_obs
-      REAL(KIND(1D0))::qh_obs
-      REAL(KIND(1D0))::qe_obs
-      REAL(KIND(1D0))::qs_obs
-      REAL(KIND(1D0))::qf_obs
-      REAL(KIND(1D0))::avu1
-      REAL(KIND(1D0))::avrh
-      REAL(KIND(1D0))::Temp_C
-      REAL(KIND(1D0))::Press_hPa
-      REAL(KIND(1D0))::Precip
-      REAL(KIND(1D0))::avkdn
-      REAL(KIND(1D0))::snowFrac_obs
-      REAL(KIND(1D0))::ldown_obs
-      REAL(KIND(1D0))::fcld_obs
-      REAL(KIND(1D0))::wu_m3
-      REAL(KIND(1D0))::xsmd
-      REAL(KIND(1D0))::LAI_obs
-      REAL(KIND(1D0))::kdiff
-      REAL(KIND(1D0))::kdir
-      REAL(KIND(1D0))::wdir
-
-      REAL(KIND(1D0)), DIMENSION(5)::datetimeLine
-      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSUEWS - 5)::dataOutLineSUEWS
-      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow - 5)::dataOutLineSnow
-      REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutESTM - 5)::dataOutLineESTM
-      REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutRSL - 5)::dataOutLineRSL
-      REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutDailyState - 5)::DailyStateLine
-
-      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSUEWS, 1) ::dataOutBlockSUEWS_X
-      REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSnow, 1) ::dataOutBlockSnow_X
-      REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutESTM, 1) ::dataOutBlockESTM_X
-      REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutRSL, 1) ::dataOutBlockRSL_X
-      ! REAL(KIND(1d0)),DIMENSION(len_sim,ncolumnsDataOutDailyState,1) ::DailyStateBlock_X
-
-      ! REAL(KIND(1D0)),DIMENSION(:,:)          ::MetForcingData_grid
-
-      ! get initial dt_since_start_x from dt_since_start, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018
-      dt_since_start_x = dt_since_start
-
-      DO ir = 1, len_sim, 1
-         ! =============================================================================
-         ! === Translate met data from MetForcingBlock to variable names used in model ==
-         ! =============================================================================
-         iy = INT(MetForcingBlock(ir, 1)) !Integer variables
-         id = INT(MetForcingBlock(ir, 2))
-         it = INT(MetForcingBlock(ir, 3))
-         imin = INT(MetForcingBlock(ir, 4))
-         isec = 0 ! NOT used by SUEWS but by WRF-SUEWS via the cal_main interface
-         qn1_obs = MetForcingBlock(ir, 5)      !Real values (kind(1d0))
-         qh_obs = MetForcingBlock(ir, 6)
-         qe_obs = MetForcingBlock(ir, 7)
-         qs_obs = MetForcingBlock(ir, 8)
-         qf_obs = MetForcingBlock(ir, 9)
-         avu1 = MetForcingBlock(ir, 10)
-         avrh = MetForcingBlock(ir, 11)
-         Temp_C = MetForcingBlock(ir, 12)
-         Press_hPa = MetForcingBlock(ir, 13)
-         Precip = MetForcingBlock(ir, 14)
-         avkdn = MetForcingBlock(ir, 15)
-         snowFrac_obs = MetForcingBlock(ir, 16)
-         ldown_obs = MetForcingBlock(ir, 17)
-         fcld_obs = MetForcingBlock(ir, 18)
-         wu_m3 = MetForcingBlock(ir, 19)
-         xsmd = MetForcingBlock(ir, 20)
-         LAI_obs = MetForcingBlock(ir, 21)
-         kdiff = MetForcingBlock(ir, 22)
-         kdir = MetForcingBlock(ir, 23)
-         wdir = MetForcingBlock(ir, 24)
-
-         CALL SUEWS_cal_Main( &
-            AerodynamicResistanceMethod, AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, & ! input&inout in alphabetical order
-            AH_SLOPE_Heating, &
-            alb, AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
-            AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
-            alpha_bioCO2, alpha_enh_bioCO2, alt, avkdn, avRh, avU1, BaseT, BaseTe, &
-            BaseTHDD, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
-            chAnOHM, CO2PointSource, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
-            DecTreeH, Diagnose, DiagQN, DiagQS, DRAINRT, &
-            dt_since_start_x, dqndt, qn1_av, dqnsdt, qn1_s_av, &
-            EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
-            FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, fcld_obs, FlowChange, &
-            FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD_id, &
-            GDDFull, gridiv_x, gsModel, HDD_id, HumActivity_24hr, &
-            IceFrac, id, Ie_a, Ie_end, Ie_m, Ie_start, imin, &
-            InternalWaterUse_h, IrrFracConif, IrrFracDecid, IrrFracGrass, isec, it, EvapMethod, &
-            iy, kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax, LAIMin, LAI_obs, &
-            LAIPower, LAIType, lat, ldown_obs, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
-            SnowWater, MetForcingBlock, MinFCMetab, MinQFMetab, min_res_bioCO2, &
-            NARP_EMIS_SNOW, NARP_TRANS_SITE, NetRadiationMethod, &
-            NumCapita, OHM_coef, OHMIncQF, OHM_threshSW, &
-            OHM_threshWD, PipeCapacity, PopDensDaytime, &
-            PopDensNighttime, PopProf_24hr, PorMax_dec, PorMin_dec, &
-            Precip, PrecipLimit, PrecipLimitAlb, Press_hPa, &
-            QF0_BEU, Qf_A, Qf_B, Qf_C, &
-            qn1_obs, qh_obs, qs_obs, qf_obs, &
-            RadMeltFact, RAINCOVER, RainMaxRes, resp_a, resp_b, &
-            RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
-            SatHydraulicConduct, SDDFull, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
-            SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
-            SnowLimBldg, SnowLimPaved, snowFrac_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
-            soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
-            StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair24HR, tau_a, tau_f, tau_r, &
-            T_CRITIC_Cooling, T_CRITIC_Heating, Temp_C, TempMeltFact, TH, &
-            theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
-            TraffProf_24hr, Ts5mindata_ir, tstep, tstep_prev, veg_type, &
-            WaterDist, WaterUseMethod, WetThresh, wu_m3, &
-            WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
-            WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
-            datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataOutLineRSL, & !output
-            DailyStateLine)!output
-
-         ! update dt_since_start_x for next iteration, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018
-         dt_since_start_x = dt_since_start_x + tstep
-
-         !============ update and write out SUEWS_cal_DailyState ===============
-         ! only works at the last timestep of a day
-         ! CALL SUEWS_update_DailyState(&
-         !      id, datetimeLine, &!input
-         !      Gridiv, 1, &
-         !      DailyStateLine, &
-         !      DailyStateBlock_X)!inout
-         DailyStateBlock(ir, :) = [datetimeLine, DailyStateLine]
-
-         !============ write out results ===============
-         ! works at each timestep
-         CALL SUEWS_update_output( &
-            SnowUse, storageheatmethod, &!input
-            len_sim, 1, &
-            ir, gridiv_x, datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, &!input
-            dataOutBlockSUEWS_X, dataOutBlockSnow_X, dataOutBlockESTM_X, dataOutBlockRSL_X)!inout
-
-      END DO
-
-      dataOutBlockSUEWS = dataOutBlockSUEWS_X(:, :, 1)
-      dataOutBlockSnow = dataOutBlockSnow_X(:, :, 1)
-      dataOutBlockESTM = dataOutBlockESTM_X(:, :, 1)
-      dataOutBlockRSL = dataOutBlockRSL_X(:, :, 1)
-      ! DailyStateBlock=DailyStateBlock_X(:,:,1)
-
-   END SUBROUTINE SUEWS_cal_multitsteps
+   ! SUBROUTINE SUEWS_cal_multitsteps( &
+   !    MetForcingBlock, len_sim, &
+   !    AerodynamicResistanceMethod, AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, & ! input&inout in alphabetical order
+   !    AH_SLOPE_Heating, &
+   !    alb, AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
+   !    AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
+   !    alpha_bioCO2, alpha_enh_bioCO2, alt, BaseT, BaseTe, &
+   !    BaseTHDD, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
+   !    chAnOHM, CO2PointSource, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
+   !    DecTreeH, Diagnose, DiagQN, DiagQS, DRAINRT, &
+   !    dt_since_start, dqndt, qn1_av, dqnsdt, qn1_s_av, &
+   !    EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
+   !    FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, FlowChange, &
+   !    FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD_id, &
+   !    GDDFull, Gridiv, gsModel, HDD_id, HumActivity_24hr, &
+   !    IceFrac, Ie_a, Ie_end, Ie_m, Ie_start, &
+   !    InternalWaterUse_h, IrrFracConif, IrrFracDecid, IrrFracGrass, EvapMethod, &
+   !    kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax, LAIMin, &
+   !    LAIPower, LAIType, lat, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
+   !    SnowWater, MinFCMetab, MinQFMetab, min_res_bioCO2, &
+   !    NARP_EMIS_SNOW, NARP_TRANS_SITE, NetRadiationMethod, &
+   !    NumCapita, OHM_coef, OHMIncQF, OHM_threshSW, &
+   !    OHM_threshWD, PipeCapacity, PopDensDaytime, &
+   !    PopDensNighttime, PopProf_24hr, PorMax_dec, PorMin_dec, &
+   !    PrecipLimit, PrecipLimitAlb, &
+   !    QF0_BEU, Qf_A, Qf_B, Qf_C, &
+   !    RadMeltFact, RAINCOVER, RainMaxRes, resp_a, resp_b, &
+   !    RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
+   !    SatHydraulicConduct, SDDFull, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
+   !    SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
+   !    SnowLimBldg, SnowLimPaved, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
+   !    soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
+   !    StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair24HR, tau_a, tau_f, tau_r, &
+   !    T_CRITIC_Cooling, T_CRITIC_Heating, TempMeltFact, TH, &
+   !    theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
+   !    TraffProf_24hr, Ts5mindata_ir, tstep, tstep_prev, veg_type, &
+   !    WaterDist, WaterUseMethod, WetThresh, &
+   !    WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
+   !    WUProfA_24hr, WUProfM_24hr, Z, z0m_in, zdm_in, &
+   !    dataOutBlockSUEWS, dataOutBlockSnow, dataOutBlockESTM, dataOutBlockRSL, &!output
+   !    DailyStateBlock)
+   !
+   !    IMPLICIT NONE
+   !    ! input:
+   !    ! met forcing block
+   !    REAL(KIND(1D0)), DIMENSION(len_sim, 24), INTENT(IN) ::MetForcingBlock
+   !    INTEGER, INTENT(IN) :: len_sim
+   !    ! input variables
+   !    INTEGER, INTENT(IN)::AerodynamicResistanceMethod
+   !    INTEGER, INTENT(IN)::Diagnose
+   !    INTEGER, INTENT(IN)::DiagQN
+   !    INTEGER, INTENT(IN)::DiagQS
+   !    INTEGER, INTENT(IN)::startDLS
+   !    INTEGER, INTENT(IN)::endDLS
+   !    INTEGER, INTENT(IN)::EmissionsMethod
+   !    INTEGER, INTENT(IN)::Gridiv
+   !    INTEGER, INTENT(IN)::gsModel
+   !    INTEGER, INTENT(IN)::Ie_end
+   !    INTEGER, INTENT(IN)::Ie_start
+   !    INTEGER, INTENT(IN)::EvapMethod
+   !    INTEGER, INTENT(IN)::LAICalcYes
+   !    INTEGER, INTENT(IN)::NetRadiationMethod
+   !    INTEGER, INTENT(IN)::OHMIncQF
+   !    INTEGER, INTENT(IN)::RoughLenHeatMethod
+   !    INTEGER, INTENT(IN)::RoughLenMomMethod
+   !    INTEGER, INTENT(IN)::SMDMethod
+   !    INTEGER, INTENT(IN)::snowUse
+   !    INTEGER, INTENT(IN)::StabilityMethod
+   !    INTEGER, INTENT(IN)::StorageHeatMethod
+   !    INTEGER, INTENT(IN)::tstep
+   !    INTEGER, INTENT(IN)::tstep_prev ! tstep size of the previous step
+   !    INTEGER, INTENT(in)::dt_since_start ! time since simulation starts [s]
+   !    INTEGER, INTENT(IN)::veg_type
+   !    INTEGER, INTENT(IN)::WaterUseMethod
+   !
+   !    INTEGER, DIMENSION(NVEGSURF), INTENT(IN)::LAIType
+   !
+   !    REAL(KIND(1D0)), INTENT(IN)::AlbMax_DecTr
+   !    REAL(KIND(1D0)), INTENT(IN)::AlbMax_EveTr
+   !    REAL(KIND(1D0)), INTENT(IN)::AlbMax_Grass
+   !    REAL(KIND(1D0)), INTENT(IN)::AlbMin_DecTr
+   !    REAL(KIND(1D0)), INTENT(IN)::AlbMin_EveTr
+   !    REAL(KIND(1D0)), INTENT(IN)::AlbMin_Grass
+   !    REAL(KIND(1D0)), INTENT(IN)::alt
+   !    ! REAL(KIND(1D0)),INTENT(IN)::avkdn
+   !    ! REAL(KIND(1D0)),INTENT(IN)::avRh
+   !    ! REAL(KIND(1D0)),INTENT(IN)::avU1
+   !    REAL(KIND(1D0)), INTENT(IN)::BaseTHDD
+   !    REAL(KIND(1D0)), INTENT(IN)::bldgH
+   !    REAL(KIND(1D0)), INTENT(IN)::CapMax_dec
+   !    REAL(KIND(1D0)), INTENT(IN)::CapMin_dec
+   !    REAL(KIND(1D0)), INTENT(IN)::CO2PointSource
+   !    REAL(KIND(1D0)), INTENT(IN)::CRWmax
+   !    REAL(KIND(1D0)), INTENT(IN)::CRWmin
+   !    REAL(KIND(1D0)), INTENT(IN)::DecTreeH
+   !    REAL(KIND(1D0)), INTENT(IN)::DRAINRT
+   !    REAL(KIND(1D0)), INTENT(IN)::EF_umolCO2perJ
+   !    REAL(KIND(1D0)), INTENT(IN)::EnEF_v_Jkm
+   !    REAL(KIND(1D0)), INTENT(IN)::EveTreeH
+   !    REAL(KIND(1D0)), INTENT(IN)::FAIBldg
+   !    REAL(KIND(1D0)), INTENT(IN)::FAIDecTree
+   !    REAL(KIND(1D0)), INTENT(IN)::FAIEveTree
+   !    REAL(KIND(1D0)), INTENT(IN)::Faut
+   !    ! REAL(KIND(1D0)),INTENT(IN)::fcld_obs
+   !    REAL(KIND(1D0)), INTENT(IN)::FlowChange
+   !    REAL(KIND(1D0)), INTENT(IN)::FrFossilFuel_Heat
+   !    REAL(KIND(1D0)), INTENT(IN)::FrFossilFuel_NonHeat
+   !    REAL(KIND(1D0)), INTENT(IN)::G1
+   !    REAL(KIND(1D0)), INTENT(IN)::G2
+   !    REAL(KIND(1D0)), INTENT(IN)::G3
+   !    REAL(KIND(1D0)), INTENT(IN)::G4
+   !    REAL(KIND(1D0)), INTENT(IN)::G5
+   !    REAL(KIND(1D0)), INTENT(IN)::G6
+   !    REAL(KIND(1D0)), INTENT(IN)::InternalWaterUse_h
+   !    REAL(KIND(1D0)), INTENT(IN)::IrrFracConif
+   !    REAL(KIND(1D0)), INTENT(IN)::IrrFracDecid
+   !    REAL(KIND(1D0)), INTENT(IN)::IrrFracGrass
+   !    REAL(KIND(1D0)), INTENT(IN)::Kmax
+   !    ! REAL(KIND(1D0)),INTENT(IN)::LAI_obs
+   !    REAL(KIND(1D0)), INTENT(IN)::lat
+   !    ! REAL(KIND(1D0)),INTENT(IN)::ldown_obs
+   !    REAL(KIND(1D0)), INTENT(IN)::lng
+   !    REAL(KIND(1D0)), INTENT(IN)::MaxFCMetab
+   !    REAL(KIND(1D0)), INTENT(IN)::MaxQFMetab
+   !    REAL(KIND(1D0)), INTENT(IN)::MinFCMetab
+   !    REAL(KIND(1D0)), INTENT(IN)::MinQFMetab
+   !    REAL(KIND(1D0)), INTENT(IN)::NARP_EMIS_SNOW
+   !    REAL(KIND(1D0)), INTENT(IN)::NARP_TRANS_SITE
+   !    REAL(KIND(1D0)), INTENT(IN)::PipeCapacity
+   !    REAL(KIND(1D0)), INTENT(IN)::PopDensNighttime
+   !    REAL(KIND(1D0)), INTENT(IN)::PorMax_dec
+   !    REAL(KIND(1D0)), INTENT(IN)::PorMin_dec
+   !    ! REAL(KIND(1D0)),INTENT(IN)::Precip
+   !    REAL(KIND(1D0)), INTENT(IN)::PrecipLimit
+   !    REAL(KIND(1D0)), INTENT(IN)::PrecipLimitAlb
+   !    ! REAL(KIND(1D0)),INTENT(IN)::Press_hPa
+   !    ! REAL(KIND(1D0)),INTENT(IN)::qh_obs
+   !    ! REAL(KIND(1D0)),INTENT(IN)::qn1_obs
+   !    ! REAL(KIND(1D0)),INTENT(IN)::qs_obs
+   !    ! REAL(KIND(1D0)),INTENT(IN)::qf_obs
+   !    REAL(KIND(1D0)), INTENT(IN)::RadMeltFact
+   !    REAL(KIND(1D0)), INTENT(IN)::RAINCOVER
+   !    REAL(KIND(1D0)), INTENT(IN)::RainMaxRes
+   !    REAL(KIND(1D0)), INTENT(IN)::RunoffToWater
+   !    REAL(KIND(1D0)), INTENT(IN)::S1
+   !    REAL(KIND(1D0)), INTENT(IN)::S2
+   !    REAL(KIND(1D0)), INTENT(IN)::SnowAlbMax
+   !    REAL(KIND(1D0)), INTENT(IN)::SnowAlbMin
+   !    REAL(KIND(1D0)), INTENT(IN)::SnowDensMax
+   !    REAL(KIND(1D0)), INTENT(IN)::SnowDensMin
+   !    REAL(KIND(1D0)), INTENT(IN)::SnowLimBldg
+   !    REAL(KIND(1D0)), INTENT(IN)::SnowLimPaved
+   !    ! REAL(KIND(1D0)),INTENT(IN)::snowFrac_obs
+   !    REAL(KIND(1D0)), INTENT(IN)::SurfaceArea
+   !    REAL(KIND(1D0)), INTENT(IN)::tau_a
+   !    REAL(KIND(1D0)), INTENT(IN)::tau_f
+   !    REAL(KIND(1D0)), INTENT(IN)::tau_r
+   !    ! REAL(KIND(1D0)),INTENT(IN)::Temp_C
+   !    REAL(KIND(1D0)), INTENT(IN)::TempMeltFact
+   !    REAL(KIND(1D0)), INTENT(IN)::TH
+   !    REAL(KIND(1D0)), INTENT(IN)::timezone
+   !    REAL(KIND(1D0)), INTENT(IN)::TL
+   !    REAL(KIND(1D0)), INTENT(IN)::TrafficUnits
+   !    ! REAL(KIND(1D0)),INTENT(IN)::xsmd
+   !    REAL(KIND(1D0)), INTENT(IN)::Z
+   !    REAL(KIND(1D0)), INTENT(IN)::z0m_in
+   !    REAL(KIND(1D0)), INTENT(IN)::zdm_in
+   !
+   !    REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::AH_MIN
+   !    REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::AH_SLOPE_Cooling
+   !    REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::AH_SLOPE_Heating
+   !    REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::FcEF_v_kgkm
+   !    REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::QF0_BEU
+   !    REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::Qf_A
+   !    REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::Qf_B
+   !    REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::Qf_C
+   !    REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::Numcapita
+   !    REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::PopDensDaytime
+   !    REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::T_CRITIC_Cooling
+   !    REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::T_CRITIC_Heating
+   !    REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::TrafficRate
+   !    REAL(KIND(1D0)), DIMENSION(3), INTENT(IN)               ::Ie_a
+   !    REAL(KIND(1D0)), DIMENSION(3), INTENT(IN)               ::Ie_m
+   !    REAL(KIND(1D0)), DIMENSION(3), INTENT(IN)               ::MaxConductance
+   !    REAL(KIND(1D0)), DIMENSION(7), INTENT(IN)               ::DayWat
+   !    REAL(KIND(1D0)), DIMENSION(7), INTENT(IN)               ::DayWatPer
+   !    REAL(KIND(1D0)), DIMENSION(nsurf + 1), INTENT(IN)         ::OHM_threshSW
+   !    REAL(KIND(1D0)), DIMENSION(nsurf + 1), INTENT(IN)         ::OHM_threshWD
+   !    REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::chAnOHM
+   !    REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::cpAnOHM
+   !    REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::emis
+   !    REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::kkAnOHM
+   !    REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::SatHydraulicConduct
+   !    REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::sfr
+   !    REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::SnowPackLimit
+   !    REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::SoilDepth
+   !    REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::SoilStoreCap
+   !    REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::StateLimit
+   !    REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::WetThresh
+   !    REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::alpha_bioCO2
+   !    REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::alpha_enh_bioCO2
+   !    REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::BaseT
+   !    REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::BaseTe
+   !    REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::beta_bioCO2
+   !    REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::beta_enh_bioCO2
+   !    REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::GDDFull
+   !    REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::LAIMax
+   !    REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::LAIMin
+   !    REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::min_res_bioCO2
+   !    REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::resp_a
+   !    REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::resp_b
+   !    REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::SDDFull
+   !    REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(IN)          ::SnowProf_24hr
+   !    REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::theta_bioCO2
+   !    REAL(KIND(1D0)), DIMENSION(4, NVEGSURF), INTENT(IN)      ::LAIPower
+   !    REAL(KIND(1D0)), DIMENSION(nsurf + 1, 4, 3), INTENT(IN)     ::OHM_coef
+   !    REAL(KIND(1D0)), DIMENSION(NSURF + 1, NSURF - 1), INTENT(IN) ::WaterDist
+   !    REAL(KIND(1d0)), DIMENSION(:), INTENT(IN)               ::Ts5mindata_ir
+   !
+   !    ! diurnal profile values for 24hr
+   !    REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(IN) ::AHProf_24hr
+   !    REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(IN) ::HumActivity_24hr
+   !    REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(IN) ::PopProf_24hr
+   !    REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(IN) ::TraffProf_24hr
+   !    REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(IN) ::WUProfA_24hr
+   !    REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(IN) ::WUProfM_24hr
+   !    ! ########################################################################################
+   !
+   !    ! ########################################################################################
+   !    ! inout variables
+   !    ! OHM related:
+   !    REAL(KIND(1d0)), INTENT(INOUT) ::qn1_av
+   !    REAL(KIND(1d0)), INTENT(INOUT) ::dqndt
+   !    REAL(KIND(1d0)), INTENT(INOUT) ::qn1_s_av
+   !    REAL(KIND(1d0)), INTENT(INOUT) ::dqnsdt
+   !
+   !    ! snow related:
+   !    REAL(KIND(1D0)), INTENT(INOUT)                  ::SnowfallCum
+   !    REAL(KIND(1D0)), INTENT(INOUT)                  ::SnowAlb
+   !    REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) ::IceFrac
+   !    REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) ::SnowWater
+   !    REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) ::SnowDens
+   !    REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) ::snowFrac
+   !    REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) ::SnowPack
+   !
+   !    ! water balance related:
+   !    REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT)   ::soilstore_id
+   !    REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT)   ::state_id
+   !    REAL(KIND(1D0)), DIMENSION(6, NSURF), INTENT(INOUT) ::StoreDrainPrm
+   !
+   !    ! phenology related:
+   !    REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT)   ::alb
+   !    REAL(KIND(1d0)), DIMENSION(5), INTENT(INOUT)       ::GDD_id !Growing Degree Days (see SUEWS_DailyState.f95)
+   !    REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(INOUT)::LAI_id !LAI for each veg surface [m2 m-2]
+   !    REAL(KIND(1d0)), INTENT(INOUT)                    :: DecidCap_id
+   !    REAL(KIND(1d0)), INTENT(INOUT)                    :: albDecTr_id
+   !    REAL(KIND(1d0)), INTENT(INOUT)                    :: albEveTr_id
+   !    REAL(KIND(1d0)), INTENT(INOUT)                    :: albGrass_id
+   !    REAL(KIND(1d0)), INTENT(INOUT)                    :: porosity_id
+   !
+   !    ! anthropogenic heat related:
+   !    REAL(KIND(1d0)), DIMENSION(12), INTENT(INOUT) ::HDD_id !Heating Degree Days (see SUEWS_DailyState.f95)
+   !
+   !    ! water use related:
+   !    REAL(KIND(1d0)), DIMENSION(9), INTENT(INOUT)  ::WUDay_id
+   !
+   !    ! ESTM related:
+   !    REAL(KIND(1d0)), DIMENSION(24*3600/tstep), INTENT(INOUT)    ::Tair24HR ! TODO: this can be merged as one value rather than a vector, TS 20180906
+   !    ! ########################################################################################
+   !
+   !    ! ########################################################################################
+   !    ! output variables
+   !    ! REAL(KIND(1D0)),DIMENSION(:,:,:),ALLOCATABLE,INTENT(OUT) ::datetimeBlock
+   !    REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSUEWS), INTENT(OUT) ::dataOutBlockSUEWS
+   !    REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSnow), INTENT(OUT) ::dataOutBlockSnow
+   !    REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutESTM), INTENT(OUT) ::dataOutBlockESTM
+   !    REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutRSL), INTENT(OUT) ::dataOutBlockRSL
+   !    REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutDailyState), INTENT(OUT) ::DailyStateBlock
+   !    ! ########################################################################################
+   !
+   !    ! internal temporal iteration related variables
+   !    INTEGER::dt_since_start_x ! time since simulation starts [s]
+   !
+   !    ! model output blocks of the same size as met forcing block
+   !
+   !    ! local variables
+   !    ! length of met forcing block
+   !    INTEGER :: ir
+   !    ! met forcing variables
+   !    INTEGER :: iy
+   !    INTEGER :: id
+   !    INTEGER :: it
+   !    INTEGER :: imin
+   !    INTEGER :: isec
+   !    INTEGER, PARAMETER :: gridiv_x = 1 ! a dummy gridiv as this routine is only one grid
+   !    REAL(KIND(1D0))::qn1_obs
+   !    REAL(KIND(1D0))::qh_obs
+   !    REAL(KIND(1D0))::qe_obs
+   !    REAL(KIND(1D0))::qs_obs
+   !    REAL(KIND(1D0))::qf_obs
+   !    REAL(KIND(1D0))::avu1
+   !    REAL(KIND(1D0))::avrh
+   !    REAL(KIND(1D0))::Temp_C
+   !    REAL(KIND(1D0))::Press_hPa
+   !    REAL(KIND(1D0))::Precip
+   !    REAL(KIND(1D0))::avkdn
+   !    REAL(KIND(1D0))::snowFrac_obs
+   !    REAL(KIND(1D0))::ldown_obs
+   !    REAL(KIND(1D0))::fcld_obs
+   !    REAL(KIND(1D0))::wu_m3
+   !    REAL(KIND(1D0))::xsmd
+   !    REAL(KIND(1D0))::LAI_obs
+   !    REAL(KIND(1D0))::kdiff
+   !    REAL(KIND(1D0))::kdir
+   !    REAL(KIND(1D0))::wdir
+   !
+   !    REAL(KIND(1D0)), DIMENSION(5)::datetimeLine
+   !    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSUEWS - 5)::dataOutLineSUEWS
+   !    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow - 5)::dataOutLineSnow
+   !    REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutESTM - 5)::dataOutLineESTM
+   !    REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutRSL - 5)::dataOutLineRSL
+   !    REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutDailyState - 5)::DailyStateLine
+   !
+   !    REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSUEWS, 1) ::dataOutBlockSUEWS_X
+   !    REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSnow, 1) ::dataOutBlockSnow_X
+   !    REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutESTM, 1) ::dataOutBlockESTM_X
+   !    REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutRSL, 1) ::dataOutBlockRSL_X
+   !    ! REAL(KIND(1d0)),DIMENSION(len_sim,ncolumnsDataOutDailyState,1) ::DailyStateBlock_X
+   !
+   !    ! REAL(KIND(1D0)),DIMENSION(:,:)          ::MetForcingData_grid
+   !
+   !    ! get initial dt_since_start_x from dt_since_start, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018
+   !    dt_since_start_x = dt_since_start
+   !
+   !    DO ir = 1, len_sim, 1
+   !       ! =============================================================================
+   !       ! === Translate met data from MetForcingBlock to variable names used in model ==
+   !       ! =============================================================================
+   !       iy = INT(MetForcingBlock(ir, 1)) !Integer variables
+   !       id = INT(MetForcingBlock(ir, 2))
+   !       it = INT(MetForcingBlock(ir, 3))
+   !       imin = INT(MetForcingBlock(ir, 4))
+   !       isec = 0 ! NOT used by SUEWS but by WRF-SUEWS via the cal_main interface
+   !       qn1_obs = MetForcingBlock(ir, 5)      !Real values (kind(1d0))
+   !       qh_obs = MetForcingBlock(ir, 6)
+   !       qe_obs = MetForcingBlock(ir, 7)
+   !       qs_obs = MetForcingBlock(ir, 8)
+   !       qf_obs = MetForcingBlock(ir, 9)
+   !       avu1 = MetForcingBlock(ir, 10)
+   !       avrh = MetForcingBlock(ir, 11)
+   !       Temp_C = MetForcingBlock(ir, 12)
+   !       Press_hPa = MetForcingBlock(ir, 13)
+   !       Precip = MetForcingBlock(ir, 14)
+   !       avkdn = MetForcingBlock(ir, 15)
+   !       snowFrac_obs = MetForcingBlock(ir, 16)
+   !       ldown_obs = MetForcingBlock(ir, 17)
+   !       fcld_obs = MetForcingBlock(ir, 18)
+   !       wu_m3 = MetForcingBlock(ir, 19)
+   !       xsmd = MetForcingBlock(ir, 20)
+   !       LAI_obs = MetForcingBlock(ir, 21)
+   !       kdiff = MetForcingBlock(ir, 22)
+   !       kdir = MetForcingBlock(ir, 23)
+   !       wdir = MetForcingBlock(ir, 24)
+   !
+   !       CALL SUEWS_cal_Main( &
+   !          AerodynamicResistanceMethod, AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, & ! input&inout in alphabetical order
+   !          AH_SLOPE_Heating, &
+   !          alb, AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
+   !          AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
+   !          alpha_bioCO2, alpha_enh_bioCO2, alt, avkdn, avRh, avU1, BaseT, BaseTe, &
+   !          BaseTHDD, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
+   !          chAnOHM, CO2PointSource, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
+   !          DecTreeH, Diagnose, DiagQN, DiagQS, DRAINRT, &
+   !          dt_since_start_x, dqndt, qn1_av, dqnsdt, qn1_s_av, &
+   !          EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
+   !          FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, fcld_obs, FlowChange, &
+   !          FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD_id, &
+   !          GDDFull, gridiv_x, gsModel, HDD_id, HumActivity_24hr, &
+   !          IceFrac, id, Ie_a, Ie_end, Ie_m, Ie_start, imin, &
+   !          InternalWaterUse_h, IrrFracConif, IrrFracDecid, IrrFracGrass, isec, it, EvapMethod, &
+   !          iy, kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax, LAIMin, LAI_obs, &
+   !          LAIPower, LAIType, lat, ldown_obs, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
+   !          SnowWater, MetForcingBlock, MinFCMetab, MinQFMetab, min_res_bioCO2, &
+   !          NARP_EMIS_SNOW, NARP_TRANS_SITE, NetRadiationMethod, &
+   !          NumCapita, OHM_coef, OHMIncQF, OHM_threshSW, &
+   !          OHM_threshWD, PipeCapacity, PopDensDaytime, &
+   !          PopDensNighttime, PopProf_24hr, PorMax_dec, PorMin_dec, &
+   !          Precip, PrecipLimit, PrecipLimitAlb, Press_hPa, &
+   !          QF0_BEU, Qf_A, Qf_B, Qf_C, &
+   !          qe_obs, qn1_obs, qh_obs, qs_obs, qf_obs, &
+   !          qhforCBL1d, qeforCBL1d, qh_choice, &
+   !          qn1_obs, qh_obs, qs_obs, qf_obs, &
+   !          RadMeltFact, RAINCOVER, RainMaxRes, resp_a, resp_b, &
+   !          RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
+   !          SatHydraulicConduct, SDDFull, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
+   !          SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
+   !          SnowLimBldg, SnowLimPaved, snowFrac_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
+   !          soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
+   !          StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair24HR, tau_a, tau_f, tau_r, &
+   !          T_CRITIC_Cooling, T_CRITIC_Heating, Temp_C, TempMeltFact, TH, &
+   !          theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
+   !          TraffProf_24hr, Ts5mindata_ir, tstep, tstep_prev, veg_type, &
+   !          WaterDist, WaterUseMethod, WetThresh, wu_m3, &
+   !          WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
+   !          WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
+   !          datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataOutLineRSL, & !output
+   !          DailyStateLine)!output
+   !
+   !       ! update dt_since_start_x for next iteration, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018
+   !       dt_since_start_x = dt_since_start_x + tstep
+   !
+   !       !============ update and write out SUEWS_cal_DailyState ===============
+   !       ! only works at the last timestep of a day
+   !       ! CALL SUEWS_update_DailyState(&
+   !       !      id, datetimeLine, &!input
+   !       !      Gridiv, 1, &
+   !       !      DailyStateLine, &
+   !       !      DailyStateBlock_X)!inout
+   !       DailyStateBlock(ir, :) = [datetimeLine, DailyStateLine]
+   !
+   !       !============ write out results ===============
+   !       ! works at each timestep
+   !       CALL SUEWS_update_output( &
+   !          SnowUse, storageheatmethod, &!input
+   !          len_sim, 1, &
+   !          ir, gridiv_x, datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, &!input
+   !          dataOutBlockSUEWS_X, dataOutBlockSnow_X, dataOutBlockESTM_X, dataOutBlockRSL_X)!inout
+   !
+   !    END DO
+   !
+   !    dataOutBlockSUEWS = dataOutBlockSUEWS_X(:, :, 1)
+   !    dataOutBlockSnow = dataOutBlockSnow_X(:, :, 1)
+   !    dataOutBlockESTM = dataOutBlockESTM_X(:, :, 1)
+   !    dataOutBlockRSL = dataOutBlockRSL_X(:, :, 1)
+   !    ! DailyStateBlock=DailyStateBlock_X(:,:,1)
+   !
+   ! END SUBROUTINE SUEWS_cal_multitsteps
 
    ! a wrapper of NARP_cal_SunPosition used by supy
    SUBROUTINE SUEWS_cal_sunposition( &

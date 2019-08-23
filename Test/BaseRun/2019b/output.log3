@@ -1,0 +1,42 @@
+STOP Fatal error in SUEWS!
+ ========================================================
+ Running SUEWS_V2019a                                                                              
+ --------------------------------------------------------
+ LUMPS/SUEWS - relevant references
+ LUMPS - Grimmond and Oke (2002) JAM, 41, 79-810
+ OHM - Grimmond and Oke (1999) JAM, 38, 922-940
+ NARP - Offerle et al. (2003) JAM
+ SUES - Evaporation Grimmond & Oke (1991) WRR
+ Water Balance Model Grimmond et al. (1986) WRR
+ NARP - Long wave improvements (Loridan et al. 2011 JAMC)
+ SUEWS - Anthropogenic heat, etc (Jarvi et al. 2011 JH)
+ SUEWS - Snow module included (Jarvi et al. 2014 GMD)
+ SUEWS - v2016a release (Ward et al. 2016 UC)
+ --------------------------------------------------------
+ Reading the following input files:
+ SUEWS_SiteSelect.txt                              
+ SUEWS_NonVeg.txt                                  
+ SUEWS_Veg.txt                                     
+ SUEWS_Water.txt                                   
+ SUEWS_Snow.txt                                    
+ SUEWS_Soil.txt                                    
+ SUEWS_Conductance.txt                             
+ SUEWS_OHMCoefficients.txt                         
+ SUEWS_ESTMCoefficients.txt                        
+ SUEWS_AnthropogenicEmission.txt                   
+ SUEWS_Irrigation.txt                              
+ SUEWS_Profiles.txt                                
+ SUEWS_WithinGridWaterDist.txt                     
+ SUEWS_BiogenCO2.txt                               
+ --------------------------------------------
+ Years identified:        2004 to        2005
+ No. grids identified:           1 grids
+ Maximum No. grids allowed:       10000 grids
+  
+ Resolution of met forcing data: 60 min; model time-step: 5 min -> SUEWS will perform disaggregation.
+ Original met data will be read in chunks of           96 lines.
+ Processing current year in            1 blocks.
+ >>> See problems.txt for serious issues in the run <<<
+ ERROR! SUEWS run stopped.
+ problem: CBLInput.nml
+ See problems.txt for more info.

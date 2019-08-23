@@ -1,7 +1,7 @@
 &CBLInput
 EntrainmentType=4       ! 1.Tennekes and Driedonks(1981), 2.McNaughton and Springgs(1986), 3.Rayner and Watson(1991),4.Tennekes(1973),
 QH_choice=1             ! 1.suews  2.lumps 3.obs
-isub=0
+isubs=0
 CO2_included=0
 cblday(236)=1
 cblday(258)=1

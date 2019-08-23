@@ -40,7 +40,7 @@ CONTAINS
       IF (ifirst == 1) THEN
          iCBLcount = 0
       ENDIF
-
+    !  print*,IniCBLdata
       !write(*,*) DateTIme
       !Skip first loop and unspecified days
       !IF((ifirst==1 .AND. iMB==1) .OR. CBLday(id)==0) THEN   !HCW modified condition to check for first timestep of the model run

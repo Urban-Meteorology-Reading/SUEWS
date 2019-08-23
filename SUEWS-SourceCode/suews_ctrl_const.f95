@@ -152,8 +152,8 @@ MODULE allocateArray
    REAL(KIND(1d0)), DIMENSION(0:23, 2):: HumActivity_24hr   !Human actvity profiles for (1)weekdays / (2)weekends
    REAL(KIND(1d0)), DIMENSION(0:23, 2):: TraffProf_24hr   !Traffic profiles for (1)weekdays / (2)weekends
    REAL(KIND(1d0)), DIMENSION(0:23, 2):: PopProf_24hr   !Population profiles for (1)weekdays / (2)weekends
-   REAL(KIND(1d0)), DIMENSION(0:23, 2):: WUProfM_24Hr
-   REAL(KIND(1d0)), DIMENSION(0:23, 2):: WUProfA_24Hr
+   REAL(KIND(1d0)), DIMENSION(0:23, 2):: WUProfM_24Hr !Hourly profiles for water use (manual irrigation)
+   REAL(KIND(1d0)), DIMENSION(0:23, 2):: WUProfA_24Hr !Hourly profiles for water use (automatic irrigation)
 
    ! ---- For ESTM
    REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :):: Ts5mindata   !surface temperature input data
@@ -1566,8 +1566,8 @@ MODULE sues_data
    ! 7 - number of days in week
    REAL(KIND(1d0)), DIMENSION(7)::DayWatPer, &  !% of houses following daily water
                                    DayWat       !Days of watering allowed
-   REAL(KIND(1d0)), DIMENSION(0:23, 2):: WUProfM_24hr, &   !Hourly profiles for water use (manual irrigation)
-                                         WUProfA_24hr   !Hourly profiles for water use (automatic irrigation)
+   ! REAL(KIND(1d0)), DIMENSION(0:23, 2):: WUProfM_24hr, &   !Hourly profiles for water use (manual irrigation)
+   !                                       WUProfA_24hr   !Hourly profiles for water use (automatic irrigation)
 
    REAL(KIND(1d0)), DIMENSION(3)::Ie_a, Ie_m   !Coefficients for automatic and manual irrigation models
 

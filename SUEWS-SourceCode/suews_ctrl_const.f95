@@ -1186,7 +1186,7 @@ MODULE cbl_MODULE
    INTEGER::EntrainmentType, &  ! Entrainment type choice
              CO2_included, &     ! CO2 included
              InitialData_use, &  ! 1 read initial data, 0 do not
-             !qh_choice,&        ! selection of qh use to drive CBL growth 1=Suews 2=lumps 3=obs  ! moved to suews_ctrl_driver
+            !  qh_choice,&        ! selection of qh use to drive CBL growth 1=Suews 2=lumps 3=obs  ! moved to suews_data
              sondeflag, &      ! 1 read sonde or vertical profile data in 0 do not
              isubs          ! 1 include subsidence in equations
 

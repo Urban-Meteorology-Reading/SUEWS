@@ -105,7 +105,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
    INTEGER :: ir
    INTEGER :: iMB
    INTEGER :: irMax
-   REAL(KIND(1d0)) :: qhforCBL1d, qeforCBL1d  !local variety
 
    !==================================================================
 
@@ -114,8 +113,6 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
    CALL SUEWS_Translate(Gridiv, ir, iMB)
 
    IF (Diagnose == 1) PRINT *, 'Calling SUEWS_cal_Main...'
-   qhforCBL1d = qhforCBL(Gridiv) !assign qhforCBL1d
-   qeforCBL1d = qeforCBL(Gridiv) !assign qeforCBL1d
    CALL SUEWS_cal_Main( &
       AerodynamicResistanceMethod, AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, & ! input&inout in alphabetical order
       AH_SLOPE_Heating, &
@@ -141,8 +138,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       PopDensNighttime, PopProf_24hr, PorMax_dec, PorMin_dec, &
       Precip, PrecipLimit, PrecipLimitAlb, Press_hPa, &
       QF0_BEU, Qf_A, Qf_B, Qf_C, &
-      qe_obs, qn1_obs, qh_obs, qs_obs, qf_obs, &
-      qhforCBL1d, qeforCBL1d, qh_choice,&
+      qn1_obs, qh_obs, qs_obs, qf_obs, &
       RadMeltFact, RAINCOVER, RainMaxRes, resp_a, resp_b, &
       RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
       SatHydraulicConduct, SDDFull, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
@@ -177,13 +173,23 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
 
    ! NB: CBL disabled for the moment for interface improvement
    ! NB: CBL be decoupled from SUEWS TS 10 Jun 2018
-
-   qhforCBL(Gridiv) = qhforCBL1d
-   qeforCBL(Gridiv) = qeforCBL1d
+   IF(Qh_choice==1) THEN   !use QH and QE from SUEWS
+      qhforCBL(Gridiv) = dataOutLineSUEWS(9)
+      qeforCBL(Gridiv) = dataOutLineSUEWS(10)
+   ELSEIF(Qh_choice==2)THEN   !use QH and QE from LUMPS
+      qhforCBL(Gridiv) = dataOutLineSUEWS(11)
+      qeforCBL(Gridiv) = dataOutLineSUEWS(12)
+   ELSEIF(qh_choice==3)THEN  !use QH and QE from OBS
+      qhforCBL(Gridiv) = qh_obs
+      qeforCBL(Gridiv) = qe_obs
+      IF(qh_obs<-900.OR.qe_obs<-900)THEN  ! observed data has a problem
+         CALL ErrorHint(22,'Unrealistic observed qh or qe_value.',qh_obs,qe_obs,qh_choice)
+      ENDIF
+   ENDIF
    IF(CBLuse>=1)THEN ! If CBL is used, calculated Temp_C and RH are replaced with the obs.
       IF(Diagnose==1) WRITE(*,*) 'Calling CBL...'
-       CALL CBL(ir, Gridiv)   !ir=1 indicates first row of each met data block
-    ENDIF
+      CALL CBL(ir, Gridiv)   !ir=1 indicates first row of each met data block
+   ENDIF
 
    ! NB: SOLWEIG can be treated as a separate part:
    ! NB: SOLWEIG is disabled for v2018a TS 10 Jun 2018

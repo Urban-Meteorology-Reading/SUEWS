@@ -31,7 +31,7 @@ CONTAINS
       REAL(KIND(1d0))::qh_use, qe_use, tm_K_zm, qm_gkg_zm
       REAL(KIND(1d0))::Temp_C1, avrh1, es_hPa1
       REAL(KIND(1d0))::secs0, secs1, Lv
-      INTEGER::idoy, ifirst, iMB, Gridiv, startflag, iNBL
+      INTEGER::idoy, ifirst, Gridiv, startflag, iNBL
 
       ! initialise startflag
       startflag = 0
@@ -256,6 +256,7 @@ CONTAINS
          ENDDO
          CLOSE (52)
 
+         if(allocated(IniCBLdata)) deallocate(IniCBLdata)
          ALLOCATE (IniCBLdata(1:nlineInData, 1:8))
          OPEN (52, file=TRIM(FileInputPath)//TRIM(InitialDataFileName), status='old', err=25)
          READ (52, *)

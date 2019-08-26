@@ -410,7 +410,6 @@ PROGRAM SUEWS_Program
       SkippedLinesOrigESTM = 0  !Initialise lines to be skipped in original met forcing file
 
       DO iblock = 1, ReadBlocksMetData   !Loop through blocks of met data
-
          ! WRITE(*,*) iblock,'/',ReadBlocksMetData
 
          ! Model calculations are made in two stages:

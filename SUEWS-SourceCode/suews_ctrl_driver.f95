@@ -32,6 +32,7 @@ MODULE SUEWS_Driver
       ncolumnsDataOutSUEWS, ncolumnsDataOutSnow, &
       ncolumnsDataOutESTM, ncolumnsDataOutDailyState, &
       ncolumnsDataOutRSL
+   use moist, only: avcp
 
    IMPLICIT NONE
 
@@ -448,7 +449,7 @@ CONTAINS
       INTEGER, DIMENSION(3)    ::dayofWeek_id
       INTEGER::DLS
 
-      REAL(KIND(1D0))::avcp
+      ! REAL(KIND(1D0))::avcp
       REAL(KIND(1D0))::avdens
       REAL(KIND(1D0))::dq
       REAL(KIND(1D0))::lv_J_kg
@@ -2534,7 +2535,7 @@ CONTAINS
       WUProfA_24hr, WUProfM_24hr, Z, z0m_in, zdm_in, &
       dataOutBlockSUEWS, dataOutBlockSnow, dataOutBlockESTM, dataOutBlockRSL, &!output
       DailyStateBlock)
-   
+
       IMPLICIT NONE
       ! input:
       ! met forcing block
@@ -2567,9 +2568,9 @@ CONTAINS
       INTEGER, INTENT(in)::dt_since_start ! time since simulation starts [s]
       INTEGER, INTENT(IN)::veg_type
       INTEGER, INTENT(IN)::WaterUseMethod
-   
+
       INTEGER, DIMENSION(NVEGSURF), INTENT(IN)::LAIType
-   
+
       REAL(KIND(1D0)), INTENT(IN)::AlbMax_DecTr
       REAL(KIND(1D0)), INTENT(IN)::AlbMax_EveTr
       REAL(KIND(1D0)), INTENT(IN)::AlbMax_Grass
@@ -2660,7 +2661,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::Z
       REAL(KIND(1D0)), INTENT(IN)::z0m_in
       REAL(KIND(1D0)), INTENT(IN)::zdm_in
-   
+
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::AH_MIN
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::AH_SLOPE_Cooling
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::AH_SLOPE_Heating
@@ -2711,7 +2712,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(nsurf + 1, 4, 3), INTENT(IN)     ::OHM_coef
       REAL(KIND(1D0)), DIMENSION(NSURF + 1, NSURF - 1), INTENT(IN) ::WaterDist
       REAL(KIND(1d0)), DIMENSION(:), INTENT(IN)               ::Ts5mindata_ir
-   
+
       ! diurnal profile values for 24hr
       REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(IN) ::AHProf_24hr
       REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(IN) ::HumActivity_24hr
@@ -2720,7 +2721,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(IN) ::WUProfA_24hr
       REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(IN) ::WUProfM_24hr
       ! ########################################################################################
-   
+
       ! ########################################################################################
       ! inout variables
       ! OHM related:
@@ -2728,7 +2729,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(INOUT) ::dqndt
       REAL(KIND(1d0)), INTENT(INOUT) ::qn1_s_av
       REAL(KIND(1d0)), INTENT(INOUT) ::dqnsdt
-   
+
       ! snow related:
       REAL(KIND(1D0)), INTENT(INOUT)                  ::SnowfallCum
       REAL(KIND(1D0)), INTENT(INOUT)                  ::SnowAlb
@@ -2737,12 +2738,12 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) ::SnowDens
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) ::snowFrac
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) ::SnowPack
-   
+
       ! water balance related:
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT)   ::soilstore_id
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT)   ::state_id
       REAL(KIND(1D0)), DIMENSION(6, NSURF), INTENT(INOUT) ::StoreDrainPrm
-   
+
       ! phenology related:
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT)   ::alb
       REAL(KIND(1d0)), DIMENSION(5), INTENT(INOUT)       ::GDD_id !Growing Degree Days (see SUEWS_DailyState.f95)
@@ -2752,17 +2753,17 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(INOUT)                    :: albEveTr_id
       REAL(KIND(1d0)), INTENT(INOUT)                    :: albGrass_id
       REAL(KIND(1d0)), INTENT(INOUT)                    :: porosity_id
-   
+
       ! anthropogenic heat related:
       REAL(KIND(1d0)), DIMENSION(12), INTENT(INOUT) ::HDD_id !Heating Degree Days (see SUEWS_DailyState.f95)
-   
+
       ! water use related:
       REAL(KIND(1d0)), DIMENSION(9), INTENT(INOUT)  ::WUDay_id
-   
+
       ! ESTM related:
       REAL(KIND(1d0)), DIMENSION(24*3600/tstep), INTENT(INOUT)    ::Tair24HR ! TODO: this can be merged as one value rather than a vector, TS 20180906
       ! ########################################################################################
-   
+
       ! ########################################################################################
       ! output variables
       ! REAL(KIND(1D0)),DIMENSION(:,:,:),ALLOCATABLE,INTENT(OUT) ::datetimeBlock
@@ -2772,12 +2773,12 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutRSL), INTENT(OUT) ::dataOutBlockRSL
       REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutDailyState), INTENT(OUT) ::DailyStateBlock
       ! ########################################################################################
-   
+
       ! internal temporal iteration related variables
       INTEGER::dt_since_start_x ! time since simulation starts [s]
-   
+
       ! model output blocks of the same size as met forcing block
-   
+
       ! local variables
       ! length of met forcing block
       INTEGER :: ir
@@ -2808,25 +2809,25 @@ CONTAINS
       REAL(KIND(1D0))::kdiff
       REAL(KIND(1D0))::kdir
       REAL(KIND(1D0))::wdir
-   
+
       REAL(KIND(1D0)), DIMENSION(5)::datetimeLine
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSUEWS - 5)::dataOutLineSUEWS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow - 5)::dataOutLineSnow
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutESTM - 5)::dataOutLineESTM
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutRSL - 5)::dataOutLineRSL
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutDailyState - 5)::DailyStateLine
-   
+
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSUEWS, 1) ::dataOutBlockSUEWS_X
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSnow, 1) ::dataOutBlockSnow_X
       REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutESTM, 1) ::dataOutBlockESTM_X
       REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutRSL, 1) ::dataOutBlockRSL_X
       ! REAL(KIND(1d0)),DIMENSION(len_sim,ncolumnsDataOutDailyState,1) ::DailyStateBlock_X
-   
+
       ! REAL(KIND(1D0)),DIMENSION(:,:)          ::MetForcingData_grid
-   
+
       ! get initial dt_since_start_x from dt_since_start, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018
       dt_since_start_x = dt_since_start
-   
+
       DO ir = 1, len_sim, 1
          ! =============================================================================
          ! === Translate met data from MetForcingBlock to variable names used in model ==
@@ -2856,7 +2857,7 @@ CONTAINS
          kdiff = MetForcingBlock(ir, 22)
          kdir = MetForcingBlock(ir, 23)
          wdir = MetForcingBlock(ir, 24)
-   
+
          CALL SUEWS_cal_Main( &
             AerodynamicResistanceMethod, AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, & ! input&inout in alphabetical order
             AH_SLOPE_Heating, &
@@ -2898,10 +2899,10 @@ CONTAINS
             WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
             datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataOutLineRSL, & !output
             DailyStateLine)!output
-   
+
          ! update dt_since_start_x for next iteration, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018
          dt_since_start_x = dt_since_start_x + tstep
-   
+
          !============ update and write out SUEWS_cal_DailyState ===============
          ! only works at the last timestep of a day
          ! CALL SUEWS_update_DailyState(&
@@ -2910,7 +2911,7 @@ CONTAINS
          !      DailyStateLine, &
          !      DailyStateBlock_X)!inout
          DailyStateBlock(ir, :) = [datetimeLine, DailyStateLine]
-   
+
          !============ write out results ===============
          ! works at each timestep
          CALL SUEWS_update_output( &
@@ -2918,15 +2919,15 @@ CONTAINS
             len_sim, 1, &
             ir, gridiv_x, datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, &!input
             dataOutBlockSUEWS_X, dataOutBlockSnow_X, dataOutBlockESTM_X, dataOutBlockRSL_X)!inout
-   
+
       END DO
-   
+
       dataOutBlockSUEWS = dataOutBlockSUEWS_X(:, :, 1)
       dataOutBlockSnow = dataOutBlockSnow_X(:, :, 1)
       dataOutBlockESTM = dataOutBlockESTM_X(:, :, 1)
       dataOutBlockRSL = dataOutBlockRSL_X(:, :, 1)
       ! DailyStateBlock=DailyStateBlock_X(:,:,1)
-   
+
    END SUBROUTINE SUEWS_cal_multitsteps
 
    ! a wrapper of NARP_cal_SunPosition used by supy

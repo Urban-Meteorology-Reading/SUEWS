@@ -5,8 +5,8 @@ MODULE BLUEWS_module
 CONTAINS
    ! Note: INTERVAL is now set to 3600 s in Initial (it is no longer set in RunControl) HCW 29 Jan 2015
    ! Last modified:
-   !  HCW 29 Mar 2017 - Changed third dimension of dataOutBL to Gridiv (was previously iMB which seems incorrect)
    !  NT 6 Apr 2017 - include top of the CBL variables in RKUTTA scheme + add flag to include or exclude subsidence
+   !  HCW 29 Mar 2017 - Changed third dimension of dataOutBL to Gridiv (was previously iMB which seems incorrect)
    !  LJ 27 Jan 2016 - Removal of tabs
 
    SUBROUTINE CBL(ifirst, Gridiv)
@@ -36,30 +36,46 @@ CONTAINS
       ! initialise startflag
       startflag = 0
 
+      ! print *, 'iCBLcount', iCBLcount,ifirst
+      ! print *,iy, id,it,imin
+      ! print *, cbldata(1),tm_K
+
       ! Reset iCBLcount at start of each metblock (HCW added 29/03/2017)
-      IF (ifirst == 1) THEN
-         iCBLcount = 0
-      ENDIF
+      ! IF (ifirst == 1) THEN
+      !    iCBLcount = 0
+      ! ENDIF
     !  print*,IniCBLdata
       !write(*,*) DateTIme
       !Skip first loop and unspecified days
       !IF((ifirst==1 .AND. iMB==1) .OR. CBLday(id)==0) THEN   !HCW modified condition to check for first timestep of the model run
-      IF (ifirst == 1 .OR. IniCBLdata(id, 2) == -999) THEN   !TS modified to adapt the format of the new CBL_initial file
-         iCBLcount = iCBLcount + 1
-         !write(*,*) 'ifirst or nonCBLday', DateTime, iCBLcount
-         dataOutBL(iCBLcount, 1:ncolumnsdataOutBL, Gridiv) = (/REAL(iy, 8), REAL(id, 8), REAL(it, 8), REAL(imin, 8), dectime, &
-                                                               (NAN, is=6, ncolumnsdataOutBL)/)
-         RETURN
-      ELSEIF (avkdn < 5) THEN
-         iNBL = 1
-         IF (iNBL == -9) THEN
-            CALL CBL_initial(qh_use, qe_use, tm_K_zm, qm_gkg_zm, startflag, Gridiv)
-            RETURN
-         ELSE
+      ! IF (ifirst == 1 .OR. IniCBLdata(id, 2) == -999) THEN   !TS modified to adapt the format of the new CBL_initial file
+      !    iCBLcount = iCBLcount + 1
+      !    !write(*,*) 'ifirst or nonCBLday', DateTime, iCBLcount
+      !    dataOutBL(iCBLcount, 1:ncolumnsdataOutBL, Gridiv) = (/REAL(iy, 8), REAL(id, 8), REAL(it, 8), REAL(imin, 8), dectime, &
+      !                                                          (NAN, is=6, ncolumnsdataOutBL)/)
+      !    RETURN
+      ! ELSEIF (avkdn < 5) THEN
+      !    iNBL = 1
+      !    IF (iNBL == -9) THEN
+      !       CALL CBL_initial(qh_use, qe_use, tm_K_zm, qm_gkg_zm, startflag, Gridiv)
+      !       RETURN
+      !    ELSE
+      !       !ADD NBL for Night:(1)Fixed input/output NBL; (2) Input Fixed Theta,Q to SUEWS; (3) Currently NBL eq 200 m
+      !       CALL NBL(qh_use, qe_use, tm_K_zm, qm_gkg_zm, startflag, Gridiv)
+      !       RETURN
+      !    ENDIF
+      ! ENDIF
+
+      IF (avkdn < 5) THEN
+         ! iNBL = 1
+         ! IF (iNBL == -9) THEN
+         !    CALL CBL_initial(qh_use, qe_use, tm_K_zm, qm_gkg_zm, startflag, Gridiv)
+         !    RETURN
+         ! ELSE
             !ADD NBL for Night:(1)Fixed input/output NBL; (2) Input Fixed Theta,Q to SUEWS; (3) Currently NBL eq 200 m
             CALL NBL(qh_use, qe_use, tm_K_zm, qm_gkg_zm, startflag, Gridiv)
             RETURN
-         ENDIF
+         ! ENDIF
       ENDIF
 
       IF (startflag == 0) THEN !write down initial values in previous time step
@@ -107,6 +123,9 @@ CONTAINS
       cbldata(8) = UStar
       cbldata(9) = Press_hPa
       cbldata(10) = psih
+
+      ! print *, 'cbldata'
+      ! print *, cbldata(1),tm_K
 
       secs0 = cbldata(1)*3600.
       secs1 = secs0 + float(tstep) ! time in seconds
@@ -183,8 +202,8 @@ CONTAINS
             CALL errorHint(34, 'subroutine CBL dectime, relative humidity', idoy + cbldata(1)/24.0, avrh, 100)
             avrh = 100
          ENDIF
-         iCBLcount = iCBLcount + 1
-         !write(*,*) 'qh1or2', DateTIme, iCBLcount
+         ! iCBLcount = iCBLcount + 1
+         write(*,*) 'qh1or2', iy,id,it,imin, iCBLcount
          dataOutBL(iCBLcount, 1:ncolumnsdataOutBL, Gridiv) &
             = (/REAL(iy, 8), REAL(id, 8), REAL(it, 8), REAL(imin, 8), dectime, blh_m, tm_K, &
                 qm_kgkg*1000, tp_K, qp_kgkg*1000, &
@@ -201,7 +220,7 @@ CONTAINS
             CALL errorHint(34, 'subroutine CBL dectime, relative humidity', idoy + cbldata(1)/24.0, avrh1, 100)
             avrh1 = 100
          ENDIF
-         iCBLcount = iCBLcount + 1
+         ! iCBLcount = iCBLcount + 1
          !write(*,*) 'qh3', DateTIme, iCBLcount
          dataOutBL(iCBLcount, 1:ncolumnsdataOutBL, Gridiv) &
             = (/REAL(iy, 8), REAL(id, 8), REAL(it, 8), REAL(imin, 8), dectime, blh_m, tm_K, &
@@ -209,6 +228,8 @@ CONTAINS
                 Temp_C1, avrh1, cbldata([2, 3, 9, 7, 8, 4, 5, 6]), &
                 gamt_Km, gamq_kgkgm/)
       ENDIF
+      ! move the counter at the end, TS 27 Aug 2019
+      iCBLcount = iCBLcount + 1
 
       RETURN
 
@@ -270,7 +291,7 @@ CONTAINS
          fcbl = 0       ! hard-wire no CO2
       ENDIF
 
-      iCBLcount = 0
+      iCBLcount = 1
 
       RETURN
 
@@ -327,7 +348,7 @@ CONTAINS
 
       blh_m = NAN
       iCBLcount = iCBLcount + 1
-      !write(*,*) 'cblinitial', DateTIme, iCBLcount
+      write(*,*) 'cblinitial', DateTIme, iCBLcount
       dataOutBL(iCBLcount, 1:ncolumnsdataOutBL, Gridiv) = (/REAL(iy, 8), REAL(id, 8), REAL(it, 8), REAL(imin, 8), dectime, &
                                                             (NAN, is=6, ncolumnsdataOutBL)/)
 
@@ -456,7 +477,7 @@ CONTAINS
       tm_K = IniCBLdata(nLineDay, 7)
       qm_gkg = IniCBLdata(nLineDay, 8)
 
-      iCBLcount = iCBLcount + 1
+
       ! dataOutBL(iCBLcount,1:ncolumnsdataOutBL,Gridiv)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),&
       ! dectime,blh_m,tm_K,qm_gkg,&
       ! (NAN,is=9,ncolumnsdataOutBL)/)
@@ -470,6 +491,9 @@ CONTAINS
          CALL errorHint(34, 'subroutine CBL dectime, relative humidity', dectime, avrh, 100)
          avrh = 100
       ENDIF
+
+      ! print *, 'iCBLcount in NBL',iCBLcount
+      ! print *,iy, id,it,imin
 
       dataOutBL(iCBLcount, 1:ncolumnsdataOutBL, Gridiv) = &
          (/REAL(iy, 8), REAL(id, 8), REAL(it, 8), REAL(imin, 8), dectime, &
@@ -536,6 +560,8 @@ CONTAINS
       ENDIF
 
       startflag = 0
+
+      iCBLcount = iCBLcount + 1 ! move counter at the end, TS 27 Aug 2019
    END SUBROUTINE NBL
 
    !------------------------------------------------------------------------
@@ -631,8 +657,8 @@ CONTAINS
       !       y(2) = t = potential temp(K)
       !       y(3) = q = specific humidity(kg/kg)
       !       y(4) = c = CO2 concentration
-      USE data_in
-      USE sues_data
+      ! USE data_in
+      ! USE sues_data
       !    use allocateArray
       USE time
       USE CBL_MODULE

@@ -13,7 +13,7 @@
  RESOLUTIONFILESIN=3600       ,
  RESOLUTIONFILESOUT=3600       ,
  RESOLUTIONFILESINESTM=3600       ,
- CBLUSE=0          ,
+ CBLUSE=1          ,
  SNOWUSE=0          ,
  SOLWEIGUSE=0          ,
  EMISSIONSMETHOD=1          ,

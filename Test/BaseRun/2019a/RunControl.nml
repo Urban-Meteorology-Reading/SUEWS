@@ -1,5 +1,5 @@
 &RunControl
-CBLUse=0
+CBLUse=1
 SnowUse=0
 SOLWEIGUse=0
 NetRadiationMethod=3

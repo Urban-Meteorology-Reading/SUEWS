@@ -203,7 +203,7 @@ CONTAINS
             avrh = 100
          ENDIF
          ! iCBLcount = iCBLcount + 1
-         write(*,*) 'qh1or2', iy,id,it,imin, iCBLcount
+         ! write(*,*) 'qh1or2', iy,id,it,imin, iCBLcount
          dataOutBL(iCBLcount, 1:ncolumnsdataOutBL, Gridiv) &
             = (/REAL(iy, 8), REAL(id, 8), REAL(it, 8), REAL(imin, 8), dectime, blh_m, tm_K, &
                 qm_kgkg*1000, tp_K, qp_kgkg*1000, &

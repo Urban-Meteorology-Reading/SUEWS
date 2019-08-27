@@ -1026,7 +1026,7 @@ MODULE data_in
    !! Add units
    REAL(KIND(1d0))::  alpha_qhqe, & !Alpha parameter used in LUMPS QH and QE calculations [-]
                      alt, &       !Altitude  [m]
-                     avdens, &    !Average air density
+                     ! avdens, &    !Average air density, moved to `moist` by TS, 27 Aug 2019
                      avkdn, &     !Average downwelling shortwave radiation
                      avrh, &      !Average relative humidity
                      avts, &      !Average surface temperature
@@ -1370,12 +1370,12 @@ MODULE moist
 
    REAL(KIND(1d0))::avcp, &        !Specific heat capacity
                      dens_dry, &    !Dry air density kg m-3
+                     avdens, &    !Average air density
                      dq, &          !Specific humidity deficit
                      Ea_hPa, &      !Water vapour pressure in hPa
                      Es_hPa, &      !Saturation vapour pressure in hPa
                      lv_J_kg, &     !Latent heat of vaporization in [J kg-1]
-                     tlv, &         !Latent heat of vaporization per timestep
-                     ![J kg-1 s-1] (tlv=lv_J_kg/tstep_real)
+                     tlv, &         !Latent heat of vaporization per timestep [J kg-1 s-1] (tlv=lv_J_kg/tstep_real)
                      psyc_hPa, &    !Psychometric constant in hPa
                      psycIce_hPa, & !Psychometric constant in hPa for snow
                      s_Pa, &        !Vapour pressure versus temperature slope in Pa

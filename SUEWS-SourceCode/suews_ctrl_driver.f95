@@ -32,7 +32,7 @@ MODULE SUEWS_Driver
       ncolumnsDataOutSUEWS, ncolumnsDataOutSnow, &
       ncolumnsDataOutESTM, ncolumnsDataOutDailyState, &
       ncolumnsDataOutRSL
-   use moist, only: avcp
+   use moist, only: avcp,avdens,lv_J_kg
 
    IMPLICIT NONE
 
@@ -450,9 +450,9 @@ CONTAINS
       INTEGER::DLS
 
       ! REAL(KIND(1D0))::avcp
-      REAL(KIND(1D0))::avdens
+      ! REAL(KIND(1D0))::avdens
       REAL(KIND(1D0))::dq
-      REAL(KIND(1D0))::lv_J_kg
+      ! REAL(KIND(1D0))::lv_J_kg
       REAL(KIND(1D0))::lvS_J_kg
       REAL(KIND(1D0))::psyc_hPa
       REAL(KIND(1D0))::qe

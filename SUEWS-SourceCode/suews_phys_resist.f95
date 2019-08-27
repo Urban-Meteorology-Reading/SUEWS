@@ -37,6 +37,7 @@ contains
       !               (changed from veg_fr which also includes water surface by HCW 05 Nov 2015)
 
       USE AtmMoistStab_module, ONLY: stab_psi_heat, stab_psi_mom
+      use sues_data, only: psih
 
       IMPLICIT NONE
 
@@ -59,9 +60,9 @@ contains
          notUsed = -55.5, &
          k2 = 0.16, & !Power of Van Karman's constant (= 0.16 = 0.4^2)
          muu = 1.46e-5 !molecular viscosity
-      REAL(KIND(1d0)):: &
-         psim, &
-         psih, z0V
+      REAL(KIND(1d0)):: psim
+      ! REAL(KIND(1d0)):: psih
+      REAL(KIND(1d0))::  z0V
 
       !1)Monteith (1965)-neutral stability
       IF (AerodynamicResistanceMethod == 1) THEN

@@ -82,7 +82,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       irrfracconif, irrfracdecid, irrfracgrass, &
       pipecapacity, roughlenheatmethod, runofftowater, stabilitymethod, &
       surfacearea, tstep, tstep_prev, &
-      qhforCBL, qeforCBL, qh_choice
+      qhforCBL, qeforCBL, qh_choice, UStar
    USE snowMod, ONLY: &
       crwmax, crwmin, preciplimit, preciplimitalb, radmeltfact, &
       snowalb, snowAlbMax, snowAlbMin, &
@@ -188,6 +188,9 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
    ENDIF
    IF(CBLuse>=1)THEN ! If CBL is used, calculated Temp_C and RH are replaced with the obs.
       IF(Diagnose==1) WRITE(*,*) 'Calling CBL...'
+      ! we need the following:
+      ! avdens, lv_J_kg, avcp, UStar, psih
+      UStar = dataOutLineSUEWS(55)
       CALL CBL(ir, Gridiv)   !ir=1 indicates first row of each met data block
    ENDIF
 

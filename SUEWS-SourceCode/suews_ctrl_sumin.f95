@@ -105,7 +105,7 @@ CONTAINS
       porosity_id,&
       GDD_id, HDD_id, LAI_id, WUDay_id, soilstore_id, state_id, SnowWater, &
       avkdn, avRh, avU1, Press_hPa, Temp_C, Precip, & ! forcing variables
-      qn, qf, qs, qh, qe, qsfc, tsk, CHKLOWQ,&
+      qn, qf, qs, qh,znt,ust, qe, qsfc, tsk, CHKLOWQ,&
       kdown_o,&
       kup_o,&
       ldown_o,&
@@ -304,6 +304,8 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(out)::qf
       REAL(KIND(1D0)), INTENT(out)::qs
       REAL(KIND(1D0)), INTENT(out)::qh
+      REAL(KIND(1D0)), INTENT(out)::znt
+      REAL(KIND(1D0)), INTENT(out)::ust
       REAL(KIND(1D0)), INTENT(out)::qe
       REAL(KIND(1D0)), INTENT(out)::qsfc
       REAL(KIND(1D0)), INTENT(out)::tsk
@@ -601,6 +603,10 @@ CONTAINS
       qf = dataOutLineSUEWS(7)
       qs = dataOutLineSUEWS(8)
       qh = dataOutLineSUEWS(9)
+
+      znt = dataOutLineSUEWS(53)
+      ust = dataOutLineSUEWS(55)
+
       qe = dataOutLineSUEWS(10)
       qsfc = dataOutLineSUEWS(16)
       tsk = dataOutLineSUEWS(77) + 273.15

@@ -77,20 +77,19 @@ class Test_SUEWS(unittest.TestCase):
         print('  ')
         print('***************************************')
 
-    # TODO: need to recover this for CBL
-    # def test_ok_multigrid(self):
-    #     print('')
-    #     print('***************************************')
-    #     print('testing multi-grid multi-year run ... ')
-    #     n_grid = 3
-    #     name_sim = 'test-multi-grid' + str(np.random.randint(10000))
-    #     res_test = ts.test_multigrid(
-    #         name_sim, name_exe,
-    #         dict_runcontrol, dict_initcond, df_siteselect,
-    #         n_grid, dir_exe, path_input_ver)
-    #     self.assertTrue(res_test)
-    #     print('  ')
-    #     print('***************************************')
+    def test_ok_multigrid(self):
+        print('')
+        print('***************************************')
+        print('testing multi-grid multi-year run ... ')
+        n_grid = 3
+        name_sim = 'test-multi-grid' + str(np.random.randint(10000))
+        res_test = ts.test_multigrid(
+            name_sim, name_exe,
+            dict_runcontrol, dict_initcond, df_siteselect,
+            n_grid, dir_exe, path_input_ver)
+        self.assertTrue(res_test)
+        print('  ')
+        print('***************************************')
 
     def test_ok_samerun(self):
         print('')

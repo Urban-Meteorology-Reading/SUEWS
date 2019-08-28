@@ -9,7 +9,7 @@ CONTAINS
    !  HCW 29 Mar 2017 - Changed third dimension of dataOutBL to Gridiv (was previously iMB which seems incorrect)
    !  LJ 27 Jan 2016 - Removal of tabs
 
-   SUBROUTINE CBL(ifirst, Gridiv)
+   SUBROUTINE CBL(ir, Gridiv)
 
       USE mod_z
       USE mod_k
@@ -31,7 +31,8 @@ CONTAINS
       REAL(KIND(1d0))::qh_use, qe_use, tm_K_zm, qm_gkg_zm
       REAL(KIND(1d0))::Temp_C1, avrh1, es_hPa1
       REAL(KIND(1d0))::secs0, secs1, Lv
-      INTEGER::idoy, ifirst, Gridiv, startflag, iNBL
+      INTEGER::idoy, Gridiv, startflag
+      INTEGER::ir
 
       ! initialise startflag
       startflag = 0
@@ -57,7 +58,7 @@ CONTAINS
       ! ELSEIF (avkdn < 5) THEN
       !    iNBL = 1
       !    IF (iNBL == -9) THEN
-      !       CALL CBL_initial(qh_use, qe_use, tm_K_zm, qm_gkg_zm, startflag, Gridiv)
+      !       CALL CBL_initial(qh_use, qe_use, tm_K_zm, qm_gkg_zm, startflag, ir, Gridiv)
       !       RETURN
       !    ELSE
       !       !ADD NBL for Night:(1)Fixed input/output NBL; (2) Input Fixed Theta,Q to SUEWS; (3) Currently NBL eq 200 m
@@ -73,14 +74,14 @@ CONTAINS
          !    RETURN
          ! ELSE
             !ADD NBL for Night:(1)Fixed input/output NBL; (2) Input Fixed Theta,Q to SUEWS; (3) Currently NBL eq 200 m
-            CALL NBL(qh_use, qe_use, tm_K_zm, qm_gkg_zm, startflag, Gridiv)
+            CALL NBL(qh_use, qe_use, tm_K_zm, qm_gkg_zm, startflag, ir, Gridiv)
             RETURN
          ! ENDIF
       ENDIF
 
       IF (startflag == 0) THEN !write down initial values in previous time step
          !write(*,*) 'startflag', DateTime, iCBLcount
-         dataOutBL(iCBLcount, 1:ncolumnsdataOutBL, Gridiv) &
+         dataOutBL(ir, 1:ncolumnsdataOutBL, Gridiv) &
             = (/REAL(iy, 8), REAL(id, 8), REAL(it, 8), REAL(imin, 8), dectime, blh_m, tm_K, &
                 qm_kgkg*1000, tp_K, qp_kgkg*1000, (NAN, is=11, 20), gamt_Km, gamq_kgkgm/)
          startflag = 1
@@ -204,7 +205,7 @@ CONTAINS
          ENDIF
          ! iCBLcount = iCBLcount + 1
          ! write(*,*) 'qh1or2', iy,id,it,imin, iCBLcount
-         dataOutBL(iCBLcount, 1:ncolumnsdataOutBL, Gridiv) &
+         dataOutBL(ir, 1:ncolumnsdataOutBL, Gridiv) &
             = (/REAL(iy, 8), REAL(id, 8), REAL(it, 8), REAL(imin, 8), dectime, blh_m, tm_K, &
                 qm_kgkg*1000, tp_K, qp_kgkg*1000, &
                 Temp_C, avrh, cbldata([2, 3, 9, 7, 8, 4, 5, 6]), &
@@ -222,14 +223,14 @@ CONTAINS
          ENDIF
          ! iCBLcount = iCBLcount + 1
          !write(*,*) 'qh3', DateTIme, iCBLcount
-         dataOutBL(iCBLcount, 1:ncolumnsdataOutBL, Gridiv) &
+         dataOutBL(ir, 1:ncolumnsdataOutBL, Gridiv) &
             = (/REAL(iy, 8), REAL(id, 8), REAL(it, 8), REAL(imin, 8), dectime, blh_m, tm_K, &
                 qm_kgkg*1000, tp_K, qp_kgkg*1000, &
                 Temp_C1, avrh1, cbldata([2, 3, 9, 7, 8, 4, 5, 6]), &
                 gamt_Km, gamq_kgkgm/)
       ENDIF
       ! move the counter at the end, TS 27 Aug 2019
-      iCBLcount = iCBLcount + 1
+      ! iCBLcount = iCBLcount + 1
 
       RETURN
 
@@ -291,7 +292,7 @@ CONTAINS
          fcbl = 0       ! hard-wire no CO2
       ENDIF
 
-      iCBLcount = 1
+      ! iCBLcount = 1
 
       RETURN
 
@@ -302,7 +303,7 @@ CONTAINS
 
    !----------------------------------------------------------------------
    !-----------------------------------------------------------------------
-   SUBROUTINE CBL_initial(qh_use, qe_use, tm_K_zm, qm_gkg_zm, startflag, Gridiv)
+   SUBROUTINE CBL_initial(qh_use, qe_use, tm_K_zm, qm_gkg_zm, startflag, ir, Gridiv)
 
       USE mod_z
       USE mod_k
@@ -322,7 +323,7 @@ CONTAINS
 
       REAL(KIND(1d0))::qh_use, qe_use, tm_K_zm, qm_gkg_zm
       REAL(KIND(1d0))::lv
-      INTEGER::i, nLineDay, Gridiv, startflag
+      INTEGER::i, nLineDay, ir, Gridiv, startflag
 
       qh_use = qhforCBL(Gridiv)   !HCW 21 Mar 2017
       qe_use = qeforCBL(Gridiv)
@@ -347,9 +348,9 @@ CONTAINS
       !ENDIF
 
       blh_m = NAN
-      iCBLcount = iCBLcount + 1
-      write(*,*) 'cblinitial', DateTIme, iCBLcount
-      dataOutBL(iCBLcount, 1:ncolumnsdataOutBL, Gridiv) = (/REAL(iy, 8), REAL(id, 8), REAL(it, 8), REAL(imin, 8), dectime, &
+      ! iCBLcount = iCBLcount + 1
+      ! write(*,*) 'cblinitial', DateTIme, iCBLcount
+      dataOutBL(ir, 1:ncolumnsdataOutBL, Gridiv) = (/REAL(iy, 8), REAL(id, 8), REAL(it, 8), REAL(imin, 8), dectime, &
                                                             (NAN, is=6, ncolumnsdataOutBL)/)
 
       nLineDay = 0
@@ -423,7 +424,7 @@ CONTAINS
 
    END SUBROUTINE CBL_initial
 
-   SUBROUTINE NBL(qh_use, qe_use, tm_K_zm, qm_gkg_zm, startflag, Gridiv)
+   SUBROUTINE NBL(qh_use, qe_use, tm_K_zm, qm_gkg_zm, startflag, ir, Gridiv)
 
       USE mod_z
       USE mod_k
@@ -442,7 +443,7 @@ CONTAINS
       IMPLICIT NONE
       REAL(KIND(1d0))::qh_use, qe_use, tm_K_zm, qm_gkg_zm
       REAL(KIND(1d0))::lv
-      INTEGER::i, nLineDay, Gridiv, startflag
+      INTEGER::i, nLineDay, ir, Gridiv, startflag
 
       qh_use = qhforCBL(Gridiv)   !HCW 21 Mar 2017
       qe_use = qeforCBL(Gridiv)
@@ -495,7 +496,7 @@ CONTAINS
       ! print *, 'iCBLcount in NBL',iCBLcount
       ! print *,iy, id,it,imin
 
-      dataOutBL(iCBLcount, 1:ncolumnsdataOutBL, Gridiv) = &
+      dataOutBL(ir, 1:ncolumnsdataOutBL, Gridiv) = &
          (/REAL(iy, 8), REAL(id, 8), REAL(it, 8), REAL(imin, 8), dectime, &
            blh_m, tm_K, qm_gkg, &
            tp_K, qp_gkg, &
@@ -561,7 +562,7 @@ CONTAINS
 
       startflag = 0
 
-      iCBLcount = iCBLcount + 1 ! move counter at the end, TS 27 Aug 2019
+      ! iCBLcount = iCBLcount + 1 ! move counter at the end, TS 27 Aug 2019
    END SUBROUTINE NBL
 
    !------------------------------------------------------------------------

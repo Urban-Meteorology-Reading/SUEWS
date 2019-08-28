@@ -1,4 +1,5 @@
 MODULE Snow_module
+   use evap_module, only:evap_suews
 
    IMPLICIT NONE
 CONTAINS
@@ -1226,6 +1227,8 @@ CONTAINS
       INTEGER::is
       REAL(KIND(1d0))::asc, sweD, swe
 
+      ! initialisation
+      asc = 1
       !Impervious surface
       IF (is == PavSurf) THEN
 

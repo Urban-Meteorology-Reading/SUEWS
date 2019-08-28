@@ -1,4 +1,3 @@
-# from setuptools import setup, Distribution
 from setuptools import Distribution
 from numpy.distutils.core import Extension, setup
 import platform
@@ -8,7 +7,7 @@ from pathlib import Path
 import subprocess
 import shutil
 from nonstopf2py import f2py
-
+# from gen_suewsdrv import merge_source
 
 # wrap OS-specific `SUEWS_driver` libs
 sysname = platform.system()
@@ -32,6 +31,18 @@ target_f95 = [
     [
         'suews_ctrl_const.f95',
         'suews_ctrl_error.f95',
+        'suews_phys_narp.f95',
+        'suews_phys_atmmoiststab.f95',
+        'suews_phys_resist.f95',
+        'suews_phys_evap.f95',
+        'suews_phys_snow.f95',
+        'suews_phys_dailystate.f95',
+        'suews_phys_lumps.f95',
+        'suews_phys_anemsn.f95',
+        'suews_phys_rslprof.f95',
+        'suews_phys_biogenco2.f95',
+        'suews_phys_ohm.f95',
+        'suews_phys_waterdist.f95',
         'suews_ctrl_driver.f95',
     ]
 ]
@@ -55,8 +66,24 @@ if sysname == 'Windows':
     other_obj.append(os.path.join(dir_f95, 'strptime.o'))
 
 src_f95 = target_f95 + other_f95
-# for f in target_f95 + other_obj:
-#     print(f)
+
+# # combine for files to use:
+# file_all_f95 = 'suews_all.f95'
+# # with open(file_all_f95, 'wb') as wfd:
+# #     for f in src_f95:
+# #         with open(f, 'rb') as fd:
+# #             shutil.copyfileobj(fd, wfd)
+# # directory of SUEWS source code
+# # this dir is included as a git submodule so DON'T make ANY change there
+# file_all_f95 = 'suews_all.f95'
+# path_src_SUEWS = Path(dir_f95).resolve()
+# print(path_src_SUEWS)
+# # 4. generate SUEWS related source files from $dir_src_SUEWS and add them to $dir_WRF_SUEWS
+# path_sf_suewsdrv = Path(file_all_f95)
+# print(f'calling merge_source to generate {file_all_f95}')
+# merge_source(path_src_SUEWS, path_sf_suewsdrv)
+# # for f in target_f95:
+# #     print(f)
 
 
 def readme():
@@ -102,8 +129,9 @@ class BinaryDistribution(Distribution):
         return False
 
 
-# print('will build', lib_name)
-
+# # print('will build', lib_name)
+# for x in other_obj:
+#     print(x)
 
 ext_modules = [
     Extension('supy_driver.suews_driver',
@@ -120,7 +148,7 @@ ext_modules = [
 
 setup(name='supy_driver',
       # update version info here!
-      version=get_suews_version(ver_minor=1),
+      version=get_suews_version(ver_minor=2),
       description='the SUEWS driver driven by f2py',
       long_description=readme(),
       url='https://github.com/sunt05/SuPy',
@@ -150,7 +178,7 @@ setup(name='supy_driver',
 path_dir_driver = Path(__file__).resolve().parent
 list_wheels = [str(x) for x in path_dir_driver.glob('dist/*whl')]
 fn_wheel = sorted(list_wheels, key=os.path.getmtime)[-1]
-print(list_wheels, fn_wheel)
+# print(list_wheels, fn_wheel)
 
 # use auditwheel to repair file name for Linux
 if sysname == 'Linux':

@@ -69,7 +69,7 @@ Preparation of SUEWS Manual
 #. The SUEWS manual is hosted by `readthedocs.org <https://www.readthedocs.org>`_
 #. CSV tables used in following pages are automatically generated from the *Description* field in `Input_Options` by each build, so **DON'T** manually edit them as your edits will be swiped automatically:
 
-  * `SUEWS_AnthropogenicHeat.txt`
+  * `SUEWS_AnthropogenicEmission.txt`
   * `SUEWS_BiogenCO2.txt`
   * `SUEWS_Conductance.txt`
   * `SUEWS_Irrigation.txt`
@@ -82,3 +82,34 @@ Preparation of SUEWS Manual
   * `SUEWS_Veg.txt`
   * `SUEWS_Water.txt`
   * `SUEWS_WithinGridWaterDist.txt`
+
+F2PY tips
+*********
+
+This includes several **DON'T**'s
+that have never been mentioned by F2PY docs:
+
+1. DON'T mix comments as lines into argument list of Fortran subroutines/functions:
+
+  DONT:
+
+  .. code-block:: fortran
+
+      subroutine(&
+      ! DONT DO this
+      args&
+      )
+
+  OK:
+
+  .. code-block:: fortran
+
+      subroutine(&
+      args& ! OK this way
+      )
+
+2. DON'T end a subroutine as ``ENDSUBROUTINE``.
+Instead, leave a space in between
+to form ``END SUBROUTINE``.
+Otherwise, the subroutines won't be correctly
+parsed and picked up by F2PY.

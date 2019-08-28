@@ -23,7 +23,8 @@ or modelled by SUEWS (`SMDMethod` = 0 in `RunControl.nml`).
 
 
 .. DON'T manually modify the csv file below
-.. as it is always automatically regenrated by each build
+.. as it is always automatically regenrated by each build:
+.. edit the item descriptions in file `Input_Options.rst`
 
 .. csv-table::
   :file: csv-table/SUEWS_Soil.csv

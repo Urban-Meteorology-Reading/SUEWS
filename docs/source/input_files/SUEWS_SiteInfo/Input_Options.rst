@@ -49,17 +49,6 @@ Input Options
 			:widths: 44 18 38
 
 
-.. option:: FcEF_v_kgkm
-
-	:Description:
-		CO2 emission factor [kg |km^-1|]
-
-	:Configuration:
-		.. csv-table::
-			:class: longtable
-			:file: csv-table/FcEF_v_kgkm.csv
-			:header-rows: 1
-			:widths: 44 18 38
 
 
 .. option:: ActivityProfWD
@@ -261,7 +250,7 @@ Input Options
 .. option:: AnthropogenicCode
 
 	:Description:
-		Code for modelling anthropogenic heat flux linking to `Code` of `SUEWS_AnthropogenicHeat.txt`, which contains the model coefficients for estimation of the anthropogenic heat flux (used if `EmissionsMethod` = 1, 2 in `RunControl.nml`).
+		Code for modelling anthropogenic heat flux linking to `Code` of `SUEWS_AnthropogenicEmission.txt`, which contains the model coefficients for estimation of the anthropogenic heat flux (used if `EmissionsMethod` = 1, 2 in `RunControl.nml`).
 
 	:Configuration:
 		.. csv-table::
@@ -462,6 +451,18 @@ Input Options
 			:header-rows: 1
 			:widths: 44 18 38
 
+
+.. option:: CO2PointSource
+
+	:Description:
+		CO2 emission factor [kg |km^-1|]
+
+	:Configuration:
+		.. csv-table::
+			:class: longtable
+			:file: csv-table/CO2PointSource.csv
+			:header-rows: 1
+			:widths: 44 18 38
 
 .. option:: Code
 
@@ -1070,6 +1071,31 @@ Input Options
 			:header-rows: 1
 			:widths: 44 18 38
 
+.. option:: FcEF_v_kgkmWD
+
+	:Description:
+		CO2 emission factor for weekdays [kg |km^-1|]
+
+	:Configuration:
+		.. csv-table::
+			:class: longtable
+			:file: csv-table/FcEF_v_kgkmWD.csv
+			:header-rows: 1
+			:widths: 44 18 38
+
+
+.. option:: FcEF_v_kgkmWE
+
+	:Description:
+		CO2 emission factor for weekends [kg |km^-1|]
+
+	:Configuration:
+		.. csv-table::
+			:class: longtable
+			:file: csv-table/FcEF_v_kgkmWD.csv
+			:header-rows: 1
+			:widths: 44 18 38
+
 .. option:: FcEF_v_Jkm
 
 	:Description:
@@ -1081,7 +1107,6 @@ Input Options
 			:file: csv-table/FcEF_v_Jkm.csv
 			:header-rows: 1
 			:widths: 44 18 38
-
 
 .. option:: fcld
 
@@ -1430,6 +1455,19 @@ Input Options
 		.. csv-table::
 			:class: longtable
 			:file: csv-table/FrFossilFuel_NonHeat.csv
+			:header-rows: 1
+			:widths: 44 18 38
+
+
+.. option:: FrPDDwe
+
+	:Description:
+		Fraction of weekend population to weekday population. [-]
+
+	:Configuration:
+		.. csv-table::
+			:class: longtable
+			:file: csv-table/FrPDDwe.csv
 			:header-rows: 1
 			:widths: 44 18 38
 
@@ -2479,18 +2517,17 @@ Input Options
 			:file: csv-table/MaxQFMetab.csv
 			:header-rows: 1
 			:widths: 44 18 38
-.. option:: MinQFMetab
+
+.. option:: MaxFCMetab
 
 	:Description:
 
-		Minimum value for human heat emission. [W |m^-2|]
-
-		Example values: 75 Sailor and Lu (2004) [SL04]_
+		Maximum (day) CO2 from human metabolism. [W |m^-2|]
 
 	:Configuration:
 		.. csv-table::
 			:class: longtable
-			:file: csv-table/MinQFMetab.csv
+			:file: csv-table/MaxFCMetab.csv
 			:header-rows: 1
 			:widths: 44 18 38
 
@@ -2507,6 +2544,36 @@ Input Options
 			:file: csv-table/MaxConductance.csv
 			:header-rows: 1
 			:widths: 44 18 38
+
+.. option:: MinQFMetab
+
+	:Description:
+
+		Minimum value for human heat emission. [W |m^-2|]
+
+		Example values: 75 Sailor and Lu (2004) [SL04]_
+
+	:Configuration:
+		.. csv-table::
+			:class: longtable
+			:file: csv-table/MinQFMetab.csv
+			:header-rows: 1
+			:widths: 44 18 38
+
+.. option:: MinFCMetab
+
+	:Description:
+
+		Minimum (night) CO2 from human metabolism. [W |m^-2|]
+
+	:Configuration:
+		.. csv-table::
+			:class: longtable
+			:file: csv-table/MinFCMetab.csv
+			:header-rows: 1
+			:widths: 44 18 38
+
+
 
 
 .. option:: NARP_Trans

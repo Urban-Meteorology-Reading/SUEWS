@@ -298,8 +298,8 @@ PROGRAM SUEWS_Program
       ! ALLOCATE(qn1_av_store(2*NSH+1,NumberOfGrids))
       ! ALLOCATE(qn1_store_grid(NSH))
       ! ALLOCATE(qn1_av_store_grid(2*NSH+1))
-      ! ALLOCATE(qhforCBL(NumberOfGrids))
-      ! ALLOCATE(qeforCBL(NumberOfGrids))
+      ALLOCATE(qhforCBL(NumberOfGrids))
+      ALLOCATE(qeforCBL(NumberOfGrids))
       ALLOCATE (qn1_av_grids(NumberOfGrids))
       ALLOCATE (dqndt_grids(NumberOfGrids))
       !! QUESTION: Add snow clearing (?)
@@ -311,8 +311,8 @@ PROGRAM SUEWS_Program
       qn1_av_grids = 0 ! Initialise to 0
       dqndt_grids = 0 ! Initialise to 0
 
-      ! qhforCBL(:) = NAN
-      ! qeforCBL(:) = NAN
+       qhforCBL(:) = NAN
+       qeforCBL(:) = NAN
 
       ! QUESTION: Initialise other arrays here?
 
@@ -410,7 +410,6 @@ PROGRAM SUEWS_Program
       SkippedLinesOrigESTM = 0  !Initialise lines to be skipped in original met forcing file
 
       DO iblock = 1, ReadBlocksMetData   !Loop through blocks of met data
-
          ! WRITE(*,*) iblock,'/',ReadBlocksMetData
 
          ! Model calculations are made in two stages:
@@ -713,11 +712,13 @@ PROGRAM SUEWS_Program
       ! DEALLOCATE(qn1_av_store)
       ! DEALLOCATE(qn1_store_grid)
       ! DEALLOCATE(qn1_av_store_grid)
-      ! DEALLOCATE(qhforCBL)
-      ! DEALLOCATE(qeforCBL)
+      DEALLOCATE(qhforCBL)
+      DEALLOCATE(qeforCBL)
       DEALLOCATE (qn1_av_grids)
       DEALLOCATE (dqndt_grids)
-
+      IF (CBLuse >= 1) THEN
+      DEALLOCATE (dataOutBL)
+      END IF
       ! ----------------------------------------------------------------------
 
    ENDDO  !end loop over years

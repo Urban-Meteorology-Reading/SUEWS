@@ -1,0 +1,40 @@
+No.,Column Name,Use,Description
+1,`Code`,`L`,Code linking to a corresponding look-up table.
+2,`BaseTHDD`,`MU`,Base temperature for heating degree days [°C]
+3,`QF_A_WD`,`MU` `O`,Base value for QF on weekdays [W |m^-2| (Cap |ha^-1| |)^-1| ]
+4,`QF_B_WD`,`MU` `O`,Parameter related to cooling degree days on weekdays [W |m^-2| |K^-1| (Cap |ha^-1| |)^-1|]
+5,`QF_C_WD`,`MU` `O`,Parameter related to heating degree days on weekdays [W |m^-2| |K^-1| (Cap |ha^-1| |)^-1|]
+6,`QF_A_WE`,`MU` `O`,Base value for QF on weekends [W |m^-2| (Cap |ha^-1| |)^-1|]
+7,`QF_B_WE`,`MU` `O`,Parameter related to cooling degree days on weekends [W |m^-2| |K^-1| (Cap |ha^-1| |)^-1|]
+8,`QF_C_WE`,`MU` `O`,Parameter related to heating degree days on weekends [W |m^-2| |K^-1| (Cap |ha^-1| |)^-1|]
+9,`AHMin_WD`,`MU` `O`,Minimum QF on weekdays [W |m^-2|]
+10,`AHMin_WE`,`MU` `O`,Minimum QF on weekends [W |m^-2|]
+11,`AHSlope_Heating_WD`,`MU` `O`,Heating slope of QF on weekdays [W |m^-2| |K^-1|]
+12,`AHSlope_Heating_WE`,`MU` `O`,Heating slope of QF on weekends [W |m^-2| |K^-1|]
+13,`AHSlope_Cooling_WD`,`MU` `O`,Cooling slope of QF on weekdays [W |m^-2| |K^-1|]
+14,`AHSlope_Cooling_WE`,`MU` `O`,Cooling slope of QF on weekends [W |m^-2| |K^-1|]
+15,`TCritic_Heating_WD`,`MU` `O`,Critical heating temperature on weekdays [°C]
+16,`TCritic_Heating_WE`,`MU` `O`,Critical heating temperature on weekends [°C]
+17,`TCritic_Cooling_WD`,`MU` `O`,Critical cooling temperature on weekdays [°C]
+18,`TCritic_Cooling_WE`,`MU` `O`,Critical cooling temperature on weekends [°C]
+19,`EnergyUseProfWD`,`MU` `O`,Code linking to `EnergyUseProfWD` in `SUEWS_Profiles.txt`.
+20,`EnergyUseProfWE`,`MU` `O`,Code linking to `EnergyUseProfWE` in `SUEWS_Profiles.txt`.
+21,`ActivityProfWD`,`MU` `O`,Code linking to `ActivityProfWD` in `SUEWS_Profiles.txt`.
+22,`ActivityProfWE`,`MU` `O`,Code linking to `ActivityProfWE` in `SUEWS_Profiles.txt`.
+23,`TraffProfWD`,`MU` `O`,Code for traffic activity profile (weekdays) linking to `Code` of `SUEWS_Profiles.txt`. Not used in v2018a.
+24,`TraffProfWE`,`MU` `O`,Code for traffic activity profile (weekends) linking to `Code` of `SUEWS_Profiles.txt`. Not used in v2018a.
+25,`PopProfWD`,`MU` `O`,Code for population density profile (weekdays) linking to `Code` of `SUEWS_Profiles.txt`.
+26,`PopProfWE`,`MU` `O`,Code for population density profile (weekends) linking to `Code` of `SUEWS_Profiles.txt`.
+27,`MinQFMetab`,`MU` `O`,Minimum value for human heat emission. [W |m^-2|]
+28,`MaxQFMetab`,`MU` `O`,Maximum value for human heat emission. [W |m^-2|]
+29,`MinFCMetab`,`MU` `O`,Minimum (night) CO2 from human metabolism. [W |m^-2|]
+30,`MaxFCMetab`,`MU` `O`,Maximum (day) CO2 from human metabolism. [W |m^-2|]
+31,`FrPDDwe`,`MU` `O`,Fraction of weekend population to weekday population. [-]
+32,`FrFossilFuel_Heat`,`MU` `O`,Fraction of fossil fuels used for building heating [-]
+33,`FrFossilFuel_NonHeat`,`MU` `O`,Fraction of fossil fuels used for building energy use [-]
+34,`EF_umolCO2perJ`,`MU` `O`,Emission factor for fuels used for building heating.
+35,`EnEF_v_Jkm`,`MU` `O`,Emission factor for heat [J k|m^-1|].
+36,`FcEF_v_kgkmWD`,`MU` `O`,CO2 emission factor for weekdays [kg |km^-1|]
+37,`FcEF_v_kgkmWE`,`MU` `O`,CO2 emission factor for weekends [kg |km^-1|]
+38,`CO2PointSource`,`MU` `O`,CO2 emission factor [kg |km^-1|]
+39,`TrafficUnits`,`MU` `O`,Units for the traffic rate for the study area. Not used in v2018a.

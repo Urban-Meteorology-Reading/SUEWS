@@ -151,3 +151,32 @@ The details for formulation of these diagnostics can be found in equations 2.54,
 
 .. _LQF: http://umep-docs.readthedocs.io/en/latest/OtherManuals/LQF_Manual.html
 .. _GQF: http://umep-docs.readthedocs.io/en/latest/OtherManuals/GQF_Manual.html
+
+
+Wind, Temperature and Humidity Profiles in the Roughness Sublayer
+----------------------------------------------------------------------------
+Wind, temperature and humidity profiles are derived at 30 levels in the surface layer.
+In order to account for the roughness sublayer and canopy layer,
+we follow Harman and Finnigan (2007) [HF07]_,
+Harman and Finnigan (2008) [HF08]_, and Theeuwes et al. (2019) [T19]_.
+
+The 30 levels have a step of 0.1 times the canopy height ``zh``
+(should still output zh somewhere) ``dz = 0.1 * zh``.
+However. if 3 x canopy height is less the 10 m steps of 0.3333 m are used:
+
+.. code-block:: fortran
+
+   IF ((3.*Zh) < 10.) THEN
+   dz = 1./3.
+   zarray = (/(I, I=1, nz)/)*dz...
+
+Here ``nz = 30``.
+
+.. note::
+
+   The temperature and humidity profiles are calculated
+   from the forcing data down into the canopy.
+   Therefore it is assumed that the forcing temperature and humidity
+   are above the blending height.
+   The wind speed is calculated from the surface (assumed to be zero)
+   upward and does not use the wind speed from the forcing data.

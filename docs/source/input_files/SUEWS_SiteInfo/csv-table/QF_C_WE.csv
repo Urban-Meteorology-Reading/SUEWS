@@ -1,5 +1,5 @@
 "Referencing Table","Requirement","Comment"
-"`SUEWS_AnthropogenicHeat.txt`","`MU` `O`","
+"`SUEWS_AnthropogenicEmission.txt`","`MU` `O`","
 Example values:
 
 - 0.0102 Järvi et al. (2011) [J11]_

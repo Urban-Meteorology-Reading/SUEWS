@@ -32,6 +32,9 @@ SUBROUTINE day2month(b, mb, md, seas, year, latitude)
 
    REAL(KIND(1d0))::latitude
 
+   ! initialisation
+   mb = 1
+
    !Corrected and calculation of date added LJ (Jun 2010)
 
    t1 = 4
@@ -175,6 +178,8 @@ SUBROUTINE Day_Of_Week(DATE, MONTH, YEAR, DOW)
    IMPLICIT NONE
 
    INTEGER DATE, MONTH, DAY, YR, MN, N1, N2, DOW, YEAR
+
+   DATE = 1
 
    YR = YEAR
    MN = MONTH

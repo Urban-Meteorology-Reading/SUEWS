@@ -5,11 +5,11 @@ MODULE BLUEWS_module
 CONTAINS
    ! Note: INTERVAL is now set to 3600 s in Initial (it is no longer set in RunControl) HCW 29 Jan 2015
    ! Last modified:
-   !  HCW 29 Mar 2017 - Changed third dimension of dataOutBL to Gridiv (was previously iMB which seems incorrect)
    !  NT 6 Apr 2017 - include top of the CBL variables in RKUTTA scheme + add flag to include or exclude subsidence
+   !  HCW 29 Mar 2017 - Changed third dimension of dataOutBL to Gridiv (was previously iMB which seems incorrect)
    !  LJ 27 Jan 2016 - Removal of tabs
 
-   SUBROUTINE CBL(ifirst, Gridiv)
+   SUBROUTINE CBL(ir, Gridiv)
 
       USE mod_z
       USE mod_k
@@ -31,40 +31,57 @@ CONTAINS
       REAL(KIND(1d0))::qh_use, qe_use, tm_K_zm, qm_gkg_zm
       REAL(KIND(1d0))::Temp_C1, avrh1, es_hPa1
       REAL(KIND(1d0))::secs0, secs1, Lv
-      INTEGER::idoy, ifirst, Gridiv, startflag, iNBL
+      INTEGER::idoy, Gridiv, startflag
+      INTEGER::ir
 
       ! initialise startflag
       startflag = 0
 
-      ! Reset iCBLcount at start of each metblock (HCW added 29/03/2017)
-      IF (ifirst == 1) THEN
-         iCBLcount = 0
-      ENDIF
+      ! print *, 'iCBLcount', iCBLcount,ifirst
+      ! print *,iy, id,it,imin
+      ! print *, cbldata(1),tm_K
 
+      ! Reset iCBLcount at start of each metblock (HCW added 29/03/2017)
+      ! IF (ifirst == 1) THEN
+      !    iCBLcount = 0
+      ! ENDIF
+    !  print*,IniCBLdata
       !write(*,*) DateTIme
       !Skip first loop and unspecified days
       !IF((ifirst==1 .AND. iMB==1) .OR. CBLday(id)==0) THEN   !HCW modified condition to check for first timestep of the model run
-      IF (ifirst == 1 .OR. IniCBLdata(id, 2) == -999) THEN   !TS modified to adapt the format of the new CBL_initial file
-         iCBLcount = iCBLcount + 1
-         !write(*,*) 'ifirst or nonCBLday', DateTime, iCBLcount
-         dataOutBL(iCBLcount, 1:ncolumnsdataOutBL, Gridiv) = (/REAL(iy, 8), REAL(id, 8), REAL(it, 8), REAL(imin, 8), dectime, &
-                                                               (NAN, is=6, ncolumnsdataOutBL)/)
-         RETURN
-      ELSEIF (avkdn < 5) THEN
-         iNBL = 1
-         IF (iNBL == -9) THEN
-            CALL CBL_initial(qh_use, qe_use, tm_K_zm, qm_gkg_zm, startflag, Gridiv)
-            RETURN
-         ELSE
+      ! IF (ifirst == 1 .OR. IniCBLdata(id, 2) == -999) THEN   !TS modified to adapt the format of the new CBL_initial file
+      !    iCBLcount = iCBLcount + 1
+      !    !write(*,*) 'ifirst or nonCBLday', DateTime, iCBLcount
+      !    dataOutBL(iCBLcount, 1:ncolumnsdataOutBL, Gridiv) = (/REAL(iy, 8), REAL(id, 8), REAL(it, 8), REAL(imin, 8), dectime, &
+      !                                                          (NAN, is=6, ncolumnsdataOutBL)/)
+      !    RETURN
+      ! ELSEIF (avkdn < 5) THEN
+      !    iNBL = 1
+      !    IF (iNBL == -9) THEN
+      !       CALL CBL_initial(qh_use, qe_use, tm_K_zm, qm_gkg_zm, startflag, ir, Gridiv)
+      !       RETURN
+      !    ELSE
+      !       !ADD NBL for Night:(1)Fixed input/output NBL; (2) Input Fixed Theta,Q to SUEWS; (3) Currently NBL eq 200 m
+      !       CALL NBL(qh_use, qe_use, tm_K_zm, qm_gkg_zm, startflag, Gridiv)
+      !       RETURN
+      !    ENDIF
+      ! ENDIF
+
+      IF (avkdn < 5) THEN
+         ! iNBL = 1
+         ! IF (iNBL == -9) THEN
+         !    CALL CBL_initial(qh_use, qe_use, tm_K_zm, qm_gkg_zm, startflag, Gridiv)
+         !    RETURN
+         ! ELSE
             !ADD NBL for Night:(1)Fixed input/output NBL; (2) Input Fixed Theta,Q to SUEWS; (3) Currently NBL eq 200 m
-            CALL NBL(qh_use, qe_use, tm_K_zm, qm_gkg_zm, startflag, Gridiv)
+            CALL NBL(qh_use, qe_use, tm_K_zm, qm_gkg_zm, startflag, ir, Gridiv)
             RETURN
-         ENDIF
+         ! ENDIF
       ENDIF
 
       IF (startflag == 0) THEN !write down initial values in previous time step
          !write(*,*) 'startflag', DateTime, iCBLcount
-         dataOutBL(iCBLcount, 1:ncolumnsdataOutBL, Gridiv) &
+         dataOutBL(ir, 1:ncolumnsdataOutBL, Gridiv) &
             = (/REAL(iy, 8), REAL(id, 8), REAL(it, 8), REAL(imin, 8), dectime, blh_m, tm_K, &
                 qm_kgkg*1000, tp_K, qp_kgkg*1000, (NAN, is=11, 20), gamt_Km, gamq_kgkgm/)
          startflag = 1
@@ -106,7 +123,10 @@ CONTAINS
       cbldata(7) = avu1
       cbldata(8) = UStar
       cbldata(9) = Press_hPa
-      cbldata(10) = psyh
+      cbldata(10) = psih
+
+      ! print *, 'cbldata'
+      ! print *, cbldata(1),tm_K
 
       secs0 = cbldata(1)*3600.
       secs1 = secs0 + float(tstep) ! time in seconds
@@ -183,9 +203,9 @@ CONTAINS
             CALL errorHint(34, 'subroutine CBL dectime, relative humidity', idoy + cbldata(1)/24.0, avrh, 100)
             avrh = 100
          ENDIF
-         iCBLcount = iCBLcount + 1
-         !write(*,*) 'qh1or2', DateTIme, iCBLcount
-         dataOutBL(iCBLcount, 1:ncolumnsdataOutBL, Gridiv) &
+         ! iCBLcount = iCBLcount + 1
+         ! write(*,*) 'qh1or2', iy,id,it,imin, iCBLcount
+         dataOutBL(ir, 1:ncolumnsdataOutBL, Gridiv) &
             = (/REAL(iy, 8), REAL(id, 8), REAL(it, 8), REAL(imin, 8), dectime, blh_m, tm_K, &
                 qm_kgkg*1000, tp_K, qp_kgkg*1000, &
                 Temp_C, avrh, cbldata([2, 3, 9, 7, 8, 4, 5, 6]), &
@@ -201,14 +221,16 @@ CONTAINS
             CALL errorHint(34, 'subroutine CBL dectime, relative humidity', idoy + cbldata(1)/24.0, avrh1, 100)
             avrh1 = 100
          ENDIF
-         iCBLcount = iCBLcount + 1
+         ! iCBLcount = iCBLcount + 1
          !write(*,*) 'qh3', DateTIme, iCBLcount
-         dataOutBL(iCBLcount, 1:ncolumnsdataOutBL, Gridiv) &
+         dataOutBL(ir, 1:ncolumnsdataOutBL, Gridiv) &
             = (/REAL(iy, 8), REAL(id, 8), REAL(it, 8), REAL(imin, 8), dectime, blh_m, tm_K, &
                 qm_kgkg*1000, tp_K, qp_kgkg*1000, &
                 Temp_C1, avrh1, cbldata([2, 3, 9, 7, 8, 4, 5, 6]), &
                 gamt_Km, gamq_kgkgm/)
       ENDIF
+      ! move the counter at the end, TS 27 Aug 2019
+      ! iCBLcount = iCBLcount + 1
 
       RETURN
 
@@ -256,6 +278,7 @@ CONTAINS
          ENDDO
          CLOSE (52)
 
+         if(allocated(IniCBLdata)) deallocate(IniCBLdata)
          ALLOCATE (IniCBLdata(1:nlineInData, 1:8))
          OPEN (52, file=TRIM(FileInputPath)//TRIM(InitialDataFileName), status='old', err=25)
          READ (52, *)
@@ -269,7 +292,7 @@ CONTAINS
          fcbl = 0       ! hard-wire no CO2
       ENDIF
 
-      iCBLcount = 0
+      ! iCBLcount = 1
 
       RETURN
 
@@ -280,7 +303,7 @@ CONTAINS
 
    !----------------------------------------------------------------------
    !-----------------------------------------------------------------------
-   SUBROUTINE CBL_initial(qh_use, qe_use, tm_K_zm, qm_gkg_zm, startflag, Gridiv)
+   SUBROUTINE CBL_initial(qh_use, qe_use, tm_K_zm, qm_gkg_zm, startflag, ir, Gridiv)
 
       USE mod_z
       USE mod_k
@@ -300,7 +323,7 @@ CONTAINS
 
       REAL(KIND(1d0))::qh_use, qe_use, tm_K_zm, qm_gkg_zm
       REAL(KIND(1d0))::lv
-      INTEGER::i, nLineDay, Gridiv, startflag
+      INTEGER::i, nLineDay, ir, Gridiv, startflag
 
       qh_use = qhforCBL(Gridiv)   !HCW 21 Mar 2017
       qe_use = qeforCBL(Gridiv)
@@ -325,9 +348,9 @@ CONTAINS
       !ENDIF
 
       blh_m = NAN
-      iCBLcount = iCBLcount + 1
-      !write(*,*) 'cblinitial', DateTIme, iCBLcount
-      dataOutBL(iCBLcount, 1:ncolumnsdataOutBL, Gridiv) = (/REAL(iy, 8), REAL(id, 8), REAL(it, 8), REAL(imin, 8), dectime, &
+      ! iCBLcount = iCBLcount + 1
+      ! write(*,*) 'cblinitial', DateTIme, iCBLcount
+      dataOutBL(ir, 1:ncolumnsdataOutBL, Gridiv) = (/REAL(iy, 8), REAL(id, 8), REAL(it, 8), REAL(imin, 8), dectime, &
                                                             (NAN, is=6, ncolumnsdataOutBL)/)
 
       nLineDay = 0
@@ -350,11 +373,11 @@ CONTAINS
          gamt_Km = IniCBLdata(nLineDay, 3)
          gamq_gkgm = IniCBLdata(nLineDay, 4)
          tm_K_zm = (Temp_C + C2K)*((1000/Press_hPa)**(gas_ct_dry/avcp))
-         tm_K = tm_K_zm - psyh*qh_use/(k*UStar*avcp*avdens)
+         tm_K = tm_K_zm - psih*qh_use/(k*UStar*avcp*avdens)
          es_hPa = sat_vap_press_x(Temp_C, Press_hPa, 1, dectime)
          qm_gkg_zm = 622*avrh/(100*Press_hPa/es_hPa - avrh)
          lv = (2500.25 - 2.365*temp_C)*1000
-         qm_gkg = qm_gkg_zm - psyh*qe_use/(k*UStar*avdens*lv)
+         qm_gkg = qm_gkg_zm - psih*qe_use/(k*UStar*avdens*lv)
          tp_K = tm_K
          qp_gkg = qm_gkg
       ELSEIF (InitialData_use == 0) THEN
@@ -362,11 +385,11 @@ CONTAINS
          gamt_Km = 0.043
          gamq_gkgm = 0.0092
          tm_K_zm = (Temp_C + C2K)*((1000/Press_hPa)**(gas_ct_dry/avcp))
-         tm_K = tm_K_zm - psyh*qh_use/(k*UStar*avcp*avdens)
+         tm_K = tm_K_zm - psih*qh_use/(k*UStar*avcp*avdens)
          es_hPa = sat_vap_press_x(Temp_C, Press_hPa, 1, dectime)
          qm_gkg_zm = 622*avrh/(100*Press_hPa/es_hPa - avrh)
          lv = (2500.25 - 2.365*temp_C)*1000
-         qm_gkg = es_hPa - psyh*qe_use/(k*UStar*avdens*lv)
+         qm_gkg = es_hPa - psih*qe_use/(k*UStar*avdens*lv)
          tp_K = tm_K
          qp_gkg = qm_gkg
       ENDIF
@@ -401,7 +424,7 @@ CONTAINS
 
    END SUBROUTINE CBL_initial
 
-   SUBROUTINE NBL(qh_use, qe_use, tm_K_zm, qm_gkg_zm, startflag, Gridiv)
+   SUBROUTINE NBL(qh_use, qe_use, tm_K_zm, qm_gkg_zm, startflag, ir, Gridiv)
 
       USE mod_z
       USE mod_k
@@ -420,7 +443,7 @@ CONTAINS
       IMPLICIT NONE
       REAL(KIND(1d0))::qh_use, qe_use, tm_K_zm, qm_gkg_zm
       REAL(KIND(1d0))::lv
-      INTEGER::i, nLineDay, Gridiv, startflag
+      INTEGER::i, nLineDay, ir, Gridiv, startflag
 
       qh_use = qhforCBL(Gridiv)   !HCW 21 Mar 2017
       qe_use = qeforCBL(Gridiv)
@@ -455,7 +478,7 @@ CONTAINS
       tm_K = IniCBLdata(nLineDay, 7)
       qm_gkg = IniCBLdata(nLineDay, 8)
 
-      iCBLcount = iCBLcount + 1
+
       ! dataOutBL(iCBLcount,1:ncolumnsdataOutBL,Gridiv)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),&
       ! dectime,blh_m,tm_K,qm_gkg,&
       ! (NAN,is=9,ncolumnsdataOutBL)/)
@@ -470,7 +493,10 @@ CONTAINS
          avrh = 100
       ENDIF
 
-      dataOutBL(iCBLcount, 1:ncolumnsdataOutBL, Gridiv) = &
+      ! print *, 'iCBLcount in NBL',iCBLcount
+      ! print *,iy, id,it,imin
+
+      dataOutBL(ir, 1:ncolumnsdataOutBL, Gridiv) = &
          (/REAL(iy, 8), REAL(id, 8), REAL(it, 8), REAL(imin, 8), dectime, &
            blh_m, tm_K, qm_gkg, &
            tp_K, qp_gkg, &
@@ -490,11 +516,11 @@ CONTAINS
          gamt_Km = IniCBLdata(nLineDay, 3)
          gamq_gkgm = IniCBLdata(nLineDay, 4)
          tm_K_zm = (Temp_C + C2K)*((1000/Press_hPa)**(gas_ct_dry/avcp))
-         tm_K = tm_K_zm - psyh*qh_use/(k*UStar*avcp*avdens)
+         tm_K = tm_K_zm - psih*qh_use/(k*UStar*avcp*avdens)
          es_hPa = sat_vap_press_x(Temp_C, Press_hPa, 1, dectime)
          qm_gkg_zm = 622*avrh/(100*Press_hPa/es_hPa - avrh)
          lv = (2500.25 - 2.365*temp_C)*1000
-         qm_gkg = qm_gkg_zm - psyh*qe_use/(k*UStar*avdens*lv)
+         qm_gkg = qm_gkg_zm - psih*qe_use/(k*UStar*avdens*lv)
          tp_K = tm_K
          qp_gkg = qm_gkg
       ELSEIF (InitialData_use == 0) THEN
@@ -502,11 +528,11 @@ CONTAINS
          gamt_Km = 0.043
          gamq_gkgm = 0.0092
          tm_K_zm = (Temp_C + C2K)*((1000/Press_hPa)**(gas_ct_dry/avcp))
-         tm_K = tm_K_zm - psyh*qh_use/(k*UStar*avcp*avdens)
+         tm_K = tm_K_zm - psih*qh_use/(k*UStar*avcp*avdens)
          es_hPa = sat_vap_press_x(Temp_C, Press_hPa, 1, dectime)
          qm_gkg_zm = 622*avrh/(100*Press_hPa/es_hPa - avrh)
          lv = (2500.25 - 2.365*temp_C)*1000
-         qm_gkg = es_hPa - psyh*qe_use/(k*UStar*avdens*lv)
+         qm_gkg = es_hPa - psih*qe_use/(k*UStar*avdens*lv)
          tp_K = tm_K
          qp_gkg = qm_gkg
       ENDIF
@@ -535,6 +561,8 @@ CONTAINS
       ENDIF
 
       startflag = 0
+
+      ! iCBLcount = iCBLcount + 1 ! move counter at the end, TS 27 Aug 2019
    END SUBROUTINE NBL
 
    !------------------------------------------------------------------------
@@ -630,8 +658,8 @@ CONTAINS
       !       y(2) = t = potential temp(K)
       !       y(3) = q = specific humidity(kg/kg)
       !       y(4) = c = CO2 concentration
-      USE data_in
-      USE sues_data
+      ! USE data_in
+      ! USE sues_data
       !    use allocateArray
       USE time
       USE CBL_MODULE

@@ -51,7 +51,7 @@ No.,Column Name,Use,Description
 50,`SnowCode`,`L`,Code for snow surface characteristics linking to `Code` of SUEWS_Snow.txt
 51,`SnowClearingProfWD`,`L`,Code for snow clearing profile (weekdays) linking to `Code` of `SUEWS_Profiles.txt`.
 52,`SnowClearingProfWE`,`L`,Code for snow clearing profile (weekends) linking to `Code` of `SUEWS_Profiles.txt`.
-53,`AnthropogenicCode`,`L`,"Code for modelling anthropogenic heat flux linking to `Code` of `SUEWS_AnthropogenicHeat.txt`, which contains the model coefficients for estimation of the anthropogenic heat flux (used if `EmissionsMethod` = 1, 2 in `RunControl.nml`)."
+53,`AnthropogenicCode`,`L`,"Code for modelling anthropogenic heat flux linking to `Code` of `SUEWS_AnthropogenicEmission.txt`, which contains the model coefficients for estimation of the anthropogenic heat flux (used if `EmissionsMethod` = 1, 2 in `RunControl.nml`)."
 54,`IrrigationCode`,`L`,Code for modelling irrigation linking to `Code` of `SUEWS_Irrigation.txt`
 55,`WaterUseProfManuWD`,`L`,"Code for water use profile (manual irrigation, weekdays) linking to `Code` of `SUEWS_Profiles.txt`."
 56,`WaterUseProfManuWE`,`L`,"Code for water use profile (manual irrigation, weekends) linking to `Code` of `SUEWS_Profiles.txt`."

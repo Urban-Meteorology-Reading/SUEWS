@@ -626,6 +626,11 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
 
       ! the following initialisation is problematic: TS 01 Mar 2019
       ! what would happen if zground(5)>0? Nground is initialised NOWHERE!
+      ! initialise these variables as 5 so if z_sfc(5)>0 happens, the numbers are still correct, TS 06 Aug 2019
+      Nground = 5
+      Nroof = 5
+      Nwall = 5
+      Nibld = 5
       DO i = 1, 5
          IF (zground(i) <= 0) THEN
             Nground = i - 1

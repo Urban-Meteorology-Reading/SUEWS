@@ -1,5 +1,5 @@
 "Referencing Table","Requirement","Comment"
-"`SUEWS_AnthropogenicHeat.txt`","`MU` `O`","Use with `EmissionsMethod` = 2
+"`SUEWS_AnthropogenicEmission.txt`","`MU` `O`","Use with `EmissionsMethod` = 2
 
 Example values:
 

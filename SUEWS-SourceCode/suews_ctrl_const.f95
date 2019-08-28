@@ -52,7 +52,7 @@ MODULE allocateArray
                         ncolumnsdataOutBL = 22, &
                         ncolumnsDataOutESTM = 32, &
                         ncolumnsDataOutDailyState = 46, &
-                        ncolumnsDataOutRSL = 35
+                        ncolumnsDataOutRSL = 95
 
    ! ---- Define input file headers ---------------------------------------------------------------
    CHARACTER(len=20), DIMENSION(ncolumnsSiteSelect)::        HeaderSiteSelect_File          !Header for SiteSelect.txt
@@ -152,8 +152,8 @@ MODULE allocateArray
    REAL(KIND(1d0)), DIMENSION(0:23, 2):: HumActivity_24hr   !Human actvity profiles for (1)weekdays / (2)weekends
    REAL(KIND(1d0)), DIMENSION(0:23, 2):: TraffProf_24hr   !Traffic profiles for (1)weekdays / (2)weekends
    REAL(KIND(1d0)), DIMENSION(0:23, 2):: PopProf_24hr   !Population profiles for (1)weekdays / (2)weekends
-   REAL(KIND(1d0)), DIMENSION(0:23, 2):: WUProfM_24Hr
-   REAL(KIND(1d0)), DIMENSION(0:23, 2):: WUProfA_24Hr
+   REAL(KIND(1d0)), DIMENSION(0:23, 2):: WUProfM_24Hr !Hourly profiles for water use (manual irrigation)
+   REAL(KIND(1d0)), DIMENSION(0:23, 2):: WUProfA_24Hr !Hourly profiles for water use (automatic irrigation)
 
    ! ---- For ESTM
    REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :):: Ts5mindata   !surface temperature input data
@@ -916,7 +916,7 @@ MODULE Initial
              nlinesConductance, &        !Number of lines in SUEWS_Conductance.txt
              nlinesOHMCoefficients, &    !Number of lines in SUEWS_OHMCoefficients.txt
              nlinesESTMCoefficients, &   !Number of lines in SUEWS_ESTMCoefficients.txt
-             nlinesAnthropogenic, &      !Number of lines in SUEWS_AnthropogenicHeat.txt
+             nlinesAnthropogenic, &      !Number of lines in SUEWS_AnthropogenicEmission.txt
              nlinesIrrigation, &         !Number of lines in SUEWS_Irrigation.txt
              nlinesProfiles, &           !Number of lines in SUEWS_Profiles.txt
              nlinesWGWaterDist, &        !Number of lines in SUEWS_WGWaterDist.txt
@@ -1025,8 +1025,8 @@ MODULE data_in
    ! ---- Variables in alphabetical order --------------------------------------------------------
    !! Add units
    REAL(KIND(1d0))::  alpha_qhqe, & !Alpha parameter used in LUMPS QH and QE calculations [-]
-                     alt, &       !Altitude in m
-                     avdens, &    !Average air density
+                     alt, &       !Altitude  [m]
+                     ! avdens, &    !Average air density, moved to `moist` by TS, 27 Aug 2019
                      avkdn, &     !Average downwelling shortwave radiation
                      avrh, &      !Average relative humidity
                      avts, &      !Average surface temperature
@@ -1186,7 +1186,7 @@ MODULE cbl_MODULE
    INTEGER::EntrainmentType, &  ! Entrainment type choice
              CO2_included, &     ! CO2 included
              InitialData_use, &  ! 1 read initial data, 0 do not
-             !qh_choice,&        ! selection of qh use to drive CBL growth 1=Suews 2=lumps 3=obs  ! moved to sues_data
+            !  qh_choice,&        ! selection of qh use to drive CBL growth 1=Suews 2=lumps 3=obs  ! moved to suews_data
              sondeflag, &      ! 1 read sonde or vertical profile data in 0 do not
              isubs          ! 1 include subsidence in equations
 
@@ -1370,12 +1370,12 @@ MODULE moist
 
    REAL(KIND(1d0))::avcp, &        !Specific heat capacity
                      dens_dry, &    !Dry air density kg m-3
+                     avdens, &    !Average air density
                      dq, &          !Specific humidity deficit
                      Ea_hPa, &      !Water vapour pressure in hPa
                      Es_hPa, &      !Saturation vapour pressure in hPa
                      lv_J_kg, &     !Latent heat of vaporization in [J kg-1]
-                     tlv, &         !Latent heat of vaporization per timestep
-                     ![J kg-1 s-1] (tlv=lv_J_kg/tstep_real)
+                     tlv, &         !Latent heat of vaporization per timestep [J kg-1 s-1] (tlv=lv_J_kg/tstep_real)
                      psyc_hPa, &    !Psychometric constant in hPa
                      psycIce_hPa, & !Psychometric constant in hPa for snow
                      s_Pa, &        !Vapour pressure versus temperature slope in Pa
@@ -1520,7 +1520,7 @@ MODULE sues_data
    REAL(KIND(1d0))::H, &          !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
                      l_mod, &      !Monin-Obukhov length (either measured or modelled)
                      psim, &       !Stability function of momentum
-                     psyh, &       !Stability function of heat
+                     psih, &       !Stability function of heat
                      RA, &         !Aerodynamic resistance
                      RAsnow, &     !Aerodynamic resistance over snow
                      TStar, &      !T*
@@ -1566,8 +1566,8 @@ MODULE sues_data
    ! 7 - number of days in week
    REAL(KIND(1d0)), DIMENSION(7)::DayWatPer, &  !% of houses following daily water
                                    DayWat       !Days of watering allowed
-   REAL(KIND(1d0)), DIMENSION(0:23, 2):: WUProfM_24hr, &   !Hourly profiles for water use (manual irrigation)
-                                         WUProfA_24hr   !Hourly profiles for water use (automatic irrigation)
+   ! REAL(KIND(1d0)), DIMENSION(0:23, 2):: WUProfM_24hr, &   !Hourly profiles for water use (manual irrigation)
+   !                                       WUProfA_24hr   !Hourly profiles for water use (automatic irrigation)
 
    REAL(KIND(1d0)), DIMENSION(3)::Ie_a, Ie_m   !Coefficients for automatic and manual irrigation models
 
@@ -2092,184 +2092,6 @@ MODULE ColNamesInputFiles
 END MODULE ColNamesInputFiles
 
 !----------------------------------------------------------------------------------------
-MODULE ESTM_data !S.O. and FO
-
-   ! =======ESTMinput.nml==============================
-   INTEGER ::        evolveTibld, &
-              TsurfChoice, &
-              ibldCHmod
-
-   REAL(KIND(1d0)):: LBC_soil, &        !Lowest boundary condition in soil
-                     THEAT_ON, &
-                     THEAT_OFF, &
-                     THEAT_fix, &
-                     ivf_iw, &    !Internal view factors : im
-                     ivf_ir, &
-                     ivf_ii, &
-                     ivf_if, &
-                     ivf_ww, &    !Internal view factors : wall
-                     ivf_wr, &
-                     ivf_wi, &
-                     ivf_wf, &
-                     ivf_rw, &    !Internal view factors : roof
-                     ivf_ri, &
-                     ivf_rf, &
-                     ivf_fw, &    !Internal view factors : floor
-                     ivf_fr, &
-                     ivf_fi
-
-   !=======ESTMcoefficients.txt=================================
-   INTEGER:: Nibld, &           !Number of layers in an internal element in buildings, calculated when the file is read.
-             Nwall, &           !Number of layers in external wall
-             Nroof, &           !Number of layers in roof
-             Nground           !Number of layers in ground
-
-   REAL(KIND(1d0)), DIMENSION(5):: zibld, &    !Thickness of layers in internal building
-                                   zwall, &    !Thickness of layers in external wall
-                                   zroof, &    !Thickness of layers in roof
-                                   zground, &  !Thickness of layers in ground
-                                   kibld, &    !Thermal conductivity of layers in internal building
-                                   kwall, &    !Thermal conductivity of layers in external wall
-                                   kroof, &    !Thermal conductivity of layers in roof
-                                   kground, &  !Thermal conductivity of layers in ground
-                                   ribld, &    !Volumetric heat capacity of layers in internal building
-                                   rwall, &    !Volumetric heat capacity of layers in external wall
-                                   rroof, &    !Volumetric heat capacity of layers in roof
-                                   rground    !Volumetric heat capacity of layers in ground
-
-   ! Paved and Bldgs surfaces can include 3 and 5 classes respectively
-   !For the 3x Paved surfaces
-   REAL(KIND(1d0)), DIMENSION(5, 3):: zSurf_Paved
-   REAL(KIND(1d0)), DIMENSION(5, 3):: kSurf_Paved
-   REAL(KIND(1d0)), DIMENSION(5, 3):: rSurf_Paved
-   !For the 5x Bldgs surfaces
-   REAL(KIND(1d0)), DIMENSION(5, 5):: zSurf_Bldgs
-   REAL(KIND(1d0)), DIMENSION(5, 5):: kSurf_Bldgs
-   REAL(KIND(1d0)), DIMENSION(5, 5):: rSurf_Bldgs
-   REAL(KIND(1d0)), DIMENSION(5, 5):: zwall_Bldgs
-   REAL(KIND(1d0)), DIMENSION(5, 5):: kwall_Bldgs
-   REAL(KIND(1d0)), DIMENSION(5, 5):: rwall_Bldgs
-   REAL(KIND(1d0)), DIMENSION(5, 5):: zibld_Bldgs
-   REAL(KIND(1d0)), DIMENSION(5, 5):: kibld_Bldgs
-   REAL(KIND(1d0)), DIMENSION(5, 5):: ribld_Bldgs
-   REAL(KIND(1d0)), DIMENSION(5):: nroom_Bldgs
-   REAL(KIND(1d0)), DIMENSION(5):: alb_ibld_Bldgs
-   REAL(KIND(1d0)), DIMENSION(5):: em_ibld_Bldgs
-   REAL(KIND(1d0)), DIMENSION(5):: CH_iwall_Bldgs
-   REAL(KIND(1d0)), DIMENSION(5):: CH_iroof_Bldgs
-   REAL(KIND(1d0)), DIMENSION(5):: CH_ibld_Bldgs
-
-   REAL(KIND(1d0))::   nroom, &      !Number of rooms in internal building  (changed from integer to real HCW 16 Jun 2016)
-                     alb_ibld, & !albedo value of internal elements
-                     em_ibld, &  !emissivity of internal elements
-                     CH_iroof, & !bulk transfer coefficient of internal roof
-                     CH_iwall, & !bulk transfer coefficient of internal wall
-                     CH_ibld, &  !bulk transfer coefficient of internal building element
-                     fwall, &    !fraction of wall
-                     AreaWall   ! Area of wall within grid [m2]
-
-   !=======ESTM Ts input=================================
-   REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:)::  Tibld, Twall, Troof, Tground
-   REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :)::  Tw_4
-
-   REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :)  ::  Tibld_grids, Twall_grids, Troof_grids, Tground_grids
-   REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :, :)::  Tw_4_grids
-
-   !=======variables and parameters created in ESTM=============================
-   REAL(KIND(1d0))                           ::  alb_avg, &
-                                                alb_ground, &   !albedo value of ground
-                                                alb_roof, &     !albedo value of roof
-                                                alb_veg, &      !albedo value of veg
-                                                CHAIR, &
-                                                CHR, &
-                                                em_ground, &    !emissivity of ground
-                                                em_roof, &      !emissivity of roof
-                                                em_veg, &       !emissivity of veg
-                                                em_r, &         !emissivity of roof inside building
-                                                em_w, &         !emissivity of internal wall
-                                                em_i, &         !QUESTION: emissivity of ?
-                                                em_f, &         !emissivity of floor
-                                                fair, &         !fraction of air (or ratio of outdoor air volume to indoor air volume)
-                                                fground, &      !fraction of ground
-                                                fibld, &        !QUESTION: fraction of internal elements (?)
-                                                finternal, &    !sum of froof, fibld and fwall
-                                                froof, &        !fraction of roof
-                                                fveg, &         !fraction of veg
-                                                HW, &           !Height Width ratio
-                                                LUP_ground, &
-                                                LUP_ROOF, &
-                                                LUP_VEG, &
-                                                LUP_WALL, &
-                                                minshc_airbld, &
-                                                Pcoeff(5), &
-                                                Qsground, &     !Storage heat flux into ground
-                                                Qsroof, &       !Storage heat flux into roof
-                                                Qswall, &       !Storage heat flux into wall
-                                                Qs_4(4), &      !Storage heat flux into each external wall (N,E,S and W direction)
-                                                Qsair, &        !Storage heat flux into air
-                                                Qsibld, &       !Storage heat flux into internal building elements
-                                                RVF_ground, &
-                                                RVF_WALL, &
-                                                RVF_ROOF, &
-                                                RVF_CANYON, &
-                                                RVF_VEG, &
-                                                SHC_air, &
-                                                SVF_ground, &   !Sky view factor from ground
-                                                SVF_wall, &     !Sky view factor from wall
-                                                SVF_roof, &     !Sky view factor from roof
-                                                TANZENITH, &    !
-                                                Tair1, &
-                                                Tair2, &
-                                                Tairday, &      !24hour average air temperature
-                                                Tfloor, &
-                                                Tievolve, &
-                                                TN_roof, &
-                                                TN_wall, &
-                                                T0_wall, &
-                                                T0_roof, &
-                                                T0_ground, &
-                                                T0_ibld, &
-                                                WS, &           !Wind speed used in ESTM
-                                                xvf_wall, &
-                                                ZREF, &         !local scale reference height
-                                                zvf_ground, &   !wall view factor from ground
-                                                zvf_WALL     !wall view factor from ground
-
-   ! Arrays to store variables for each grid
-   REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE:: Tair2_grids
-   REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE:: lup_ground_grids
-   REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE:: lup_wall_grids
-   REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE:: lup_roof_grids
-   REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE:: Tievolve_grids
-   REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE:: T0_wall_grids
-   REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE:: T0_roof_grids
-   REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE:: T0_ground_grids
-   REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE:: T0_ibld_grids
-   REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE:: TN_roof_grids
-   REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE:: TN_wall_grids
-
-   ! Surface fractions for ESTM classes
-   REAL(KIND(1d0)), DIMENSION(3):: ESTMsfr_Paved
-   REAL(KIND(1d0)), DIMENSION(5):: ESTMsfr_Bldgs
-
-   LOGICAL             ::bctype(2), &
-                          CFLfail = .FALSE., &
-                          diagnoseTi = .FALSE., &
-                          first, &
-                          HVAC = .FALSE., &
-                          SPINDONE = .FALSE.
-
-   REAL(KIND(1d0)), PARAMETER::alb_wall = 0.23, em_wall = 0.9  ! used only when radforce = T but radforce is always set to F.
-   INTEGER, PARAMETER::        maxiter = 100
-   REAL(KIND(1d0)), PARAMETER:: conv = 0.0001
-
-   !=============variables maybe will be removed=======================================
-   INTEGER             ::nalb, &
-                          nemis
-   REAL(KIND(1d0))     ::sumalb, &
-                          sumemis
-
-END MODULE ESTM_data
 
 !----------------------------------------------------------------------------------
 MODULE WhereWhen

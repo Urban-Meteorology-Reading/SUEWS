@@ -5,18 +5,26 @@
 ! TS 03 Oct 2017: added `SUEWS_cal_AnthropogenicEmission`
 MODULE SUEWS_Driver
    USE meteo, ONLY: qsatf, RH2qa, qa2RH
-   USE AtmMoistStab_module, ONLY: LUMPS_cal_AtmMoist, STAB_lumps, stab_fn_heat, stab_fn_mom
+   USE AtmMoistStab_module, ONLY: LUMPS_cal_AtmMoist, STAB_lumps, stab_psi_heat, stab_psi_mom
    USE NARP_MODULE, ONLY: NARP_cal_SunPosition
    USE AnOHM_module, ONLY: AnOHM
+   USE resist_module, ONLY: AerodynamicResistance, BoundaryLayerResistance, SurfaceResistance, &
+                            cal_z0V, SUEWS_cal_RoughnessParameters
    USE ESTM_module, ONLY: ESTM
    USE Snow_module, ONLY: SnowCalc, Snow_cal_MeltHeat
    USE DailyState_module, ONLY: SUEWS_cal_DailyState, update_DailyState
    USE WaterDist_module, ONLY: drainage, soilstore, &
-      SUEWS_cal_SoilState, SUEWS_update_SoilMoist, &
-      ReDistributeWater, SUEWS_cal_HorizontalSoilWater, &
-      SUEWS_cal_WaterUse
+                               SUEWS_cal_SoilState, SUEWS_update_SoilMoist, &
+                               ReDistributeWater, SUEWS_cal_HorizontalSoilWater, &
+                               SUEWS_cal_WaterUse
    USE ctrl_output, ONLY: varListAll
    USE DailyState_module, ONLY: SUEWS_update_DailyState
+   use lumps_module, only: LUMPS_cal_QHQE
+   use evap_module, only:evap_SUEWS
+   use rsl_module, only:RSLProfile
+   use anemsn_module, only: AnthropogenicEmissions
+   use CO2_module, only: CO2_biogen
+   use evap_module, only: evap_SUEWS
    USE allocateArray, ONLY: &
       nsurf, nvegsurf, &
       PavSurf, BldgSurf, ConifSurf, DecidSurf, GrassSurf, BSoilSurf, WaterSurf, &
@@ -24,6 +32,7 @@ MODULE SUEWS_Driver
       ncolumnsDataOutSUEWS, ncolumnsDataOutSnow, &
       ncolumnsDataOutESTM, ncolumnsDataOutDailyState, &
       ncolumnsDataOutRSL
+   use moist, only: avcp,avdens,lv_J_kg
 
    IMPLICIT NONE
 
@@ -440,10 +449,10 @@ CONTAINS
       INTEGER, DIMENSION(3)    ::dayofWeek_id
       INTEGER::DLS
 
-      REAL(KIND(1D0))::avcp
-      REAL(KIND(1D0))::avdens
+      ! REAL(KIND(1D0))::avcp
+      ! REAL(KIND(1D0))::avdens
       REAL(KIND(1D0))::dq
-      REAL(KIND(1D0))::lv_J_kg
+      ! REAL(KIND(1D0))::lv_J_kg
       REAL(KIND(1D0))::lvS_J_kg
       REAL(KIND(1D0))::psyc_hPa
       REAL(KIND(1D0))::qe
@@ -490,8 +499,8 @@ CONTAINS
       REAL(KIND(1D0))::NonWaterFraction
 
       ! Related to RSL wind profiles
-      INTEGER, PARAMETER :: nz = 30   ! number of levels 10 levels in canopy plus 20 (3 x Zh) above the canopy
-      REAL(KIND(1d0)), DIMENSION(nz):: zarray ! Height array
+      INTEGER, PARAMETER :: nz = 90   ! number of levels 10 levels in canopy plus 20 (3 x Zh) above the canopy
+      REAL(KIND(1d0)), DIMENSION(nz):: zarrays ! Height array
 
       ! ########################################################################################
 
@@ -739,11 +748,11 @@ CONTAINS
          avU10_ms, t2_C, q2_gkg, tskin_C, RH2)!output
 
       IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Diagnostics...'
-      CALL WindProfile( &
+      CALL RSLProfile( &
          UStar, &!input
          L_mod, sfr, Zh, planF, &
-         StabilityMethod, &
-         zarray, dataoutLineRSL)!output
+         StabilityMethod, Temp_C, avRh, Press_hPa, z, TStar, qe, &
+         zarrays, dataoutLineRSL)!output
 
       !============ surface-level diagonostics end ===============
 
@@ -1969,7 +1978,7 @@ CONTAINS
       ! INTEGER,INTENT(in) :: id_prev_t
       INTEGER, INTENT(in) :: it
       INTEGER, INTENT(in) :: imin
-
+  !  INTEGER, INTENT(in) :: Gridiv
       REAL(KIND(1d0)), INTENT(in) :: AdditionalWater
       REAL(KIND(1d0)), INTENT(in) :: alb(nsurf)
       REAL(KIND(1d0)), INTENT(in) :: avkdn
@@ -2048,7 +2057,6 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutSUEWS - 5), INTENT(out) :: dataOutLineSUEWS
       ! REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutSnow-5),INTENT(out) :: dataOutLineSnow
       ! REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutESTM-5),INTENT(out) :: dataOutLineESTM
-
       ! INTEGER:: is
       REAL(KIND(1d0)):: LAI_wt
       REAL(KIND(1d0)):: RH2_pct ! RH2 in percentage
@@ -2089,19 +2097,20 @@ CONTAINS
 
       ! NB: this part needs to be reconsidered for calculation logic. TS, 27 Sep 2018
       ! TODO: this part should be reconnected to an improved CBL interface. TS 10 Jun 2018
-      ! ! Save qh and qe for CBL in next iteration
+      ! uncomment the CBL.HWJ，21 Aug 2019
+      ! Save qh and qe for CBL in next iteration
       ! IF(Qh_choice==1) THEN   !use QH and QE from SUEWS
-      !    qhforCBL(Gridiv) = qh
-      !    qeforCBL(Gridiv) = qeOut
-      ! ELSEIF(Qh_choice==2)THEN   !use QH and QE from LUMPS
-      !    qhforCBL(Gridiv) = h_mod
-      !    qeforCBL(Gridiv) = e_mod
-      ! ELSEIF(qh_choice==3)THEN  !use QH and QE from OBS
-      !    qhforCBL(Gridiv) = qh_obs
-      !    qeforCBL(Gridiv) = qe_obs
-      !    IF(qh_obs<-900.OR.qe_obs<-900)THEN  ! observed data has a problem
-      !       CALL ErrorHint(22,'Unrealistic observed qh or qe_value.',qh_obs,qe_obs,qh_choice)
-      !    ENDIF
+      !     qhforCBL(Gridiv) = qh
+      !     qeforCBL(Gridiv) = qeOut
+      !  ELSEIF(Qh_choice==2)THEN   !use QH and QE from LUMPS
+      !     qhforCBL(Gridiv) = h_mod
+      !     qeforCBL(Gridiv) = e_mod
+      !  ELSEIF(qh_choice==3)THEN  !use QH and QE from OBS
+      !     qhforCBL(Gridiv) = qh_obs
+      !     qeforCBL(Gridiv) = qe_obs
+      !     IF(qh_obs<-900.OR.qe_obs<-900)THEN  ! observed data has a problem
+      !        CALL ErrorHint(22,'Unrealistic observed qh or qe_value.',qh_obs,qe_obs,qh_choice)
+      !     ENDIF
       ! ENDIF
 
       !====================== update output line ==============================
@@ -2304,8 +2313,8 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(out):: xDiag
 
       REAL(KIND(1d0)) :: L_mod
-      REAL(KIND(1d0)) :: psymz0, psyhzDiag, psyhzMeas, psyhz0, psymzDiag ! stability correction functions
-      REAL(KIND(1d0)) :: z0h, cal_z0V ! Roughness length for heat
+      REAL(KIND(1d0)) :: psimz0, psihzDiag, psihzMeas, psihz0, psimzDiag ! stability correction functions
+      REAL(KIND(1d0)) :: z0h ! Roughness length for heat
       REAL(KIND(1d0)) :: zDiagzd! height for diagnositcs
       REAL(KIND(1d0)) :: zMeaszd
       REAL(KIND(1d0)) :: tlv, H_kms, TStar, zL, UStar
@@ -2346,13 +2355,13 @@ CONTAINS
 
       ! stability correction functions
       ! momentum:
-      psymzDiag = stab_fn_mom(StabilityMethod, zDiagzd/L_mod, zDiagzd/L_mod)
-      ! psymz2=stab_fn_mom(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
-      psymz0 = stab_fn_mom(StabilityMethod, z0m/L_mod, z0m/L_mod)
+      psimzDiag = stab_psi_mom(StabilityMethod, zDiagzd/L_mod, zDiagzd/L_mod)
+      ! psimz2=stab_fn_mom(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
+      psimz0 = stab_psi_mom(StabilityMethod, z0m/L_mod, z0m/L_mod)
 
       ! heat and vapor: assuming both are the same
-      ! psyhz2=stab_fn_heat(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
-      psyhz0 = stab_fn_heat(StabilityMethod, z0h/L_mod, z0h/L_mod)
+      ! psihz2=stab_fn_heat(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
+      psihz0 = stab_psi_heat(StabilityMethod, z0h/L_mod, z0h/L_mod)
 
       !***************************************************************
       SELECT CASE (opt)
@@ -2361,20 +2370,20 @@ CONTAINS
 
          ! stability correction functions
          ! momentum:
-         psymzDiag = stab_fn_mom(StabilityMethod, zDiagzd/L_mod, zDiagzd/L_mod)
-         psymz0 = stab_fn_mom(StabilityMethod, z0m/L_mod, z0m/L_mod)
-         xDiag = UStar/k*(LOG(zDiagzd/z0m) - psymzDiag + psymz0) ! Brutsaert (2005), p51, eq.2.54
+         psimzDiag = stab_psi_mom(StabilityMethod, zDiagzd/L_mod, zDiagzd/L_mod)
+         psimz0 = stab_psi_mom(StabilityMethod, z0m/L_mod, z0m/L_mod)
+         xDiag = UStar/k*(LOG(zDiagzd/z0m) - psimzDiag + psimz0) ! Brutsaert (2005), p51, eq.2.54
 
       CASE (1) ! temperature at hgtX=2 m
          zMeaszd = zMeas - zd
          zDiagzd = zDiag + z0h! set lower limit as z0h to prevent arithmetic error, zd=0
 
          ! heat and vapor: assuming both are the same
-         psyhzMeas = stab_fn_heat(StabilityMethod, zMeaszd/L_mod, zMeaszd/L_mod)
-         psyhzDiag = stab_fn_heat(StabilityMethod, zDiagzd/L_mod, zDiagzd/L_mod)
-         ! psyhz0=stab_fn_heat(StabilityMethod,z0h/L_mod,z0h/L_mod)
-         xDiag = xMeas + xFlux/(k*UStar*avdens*avcp)*(LOG(zMeaszd/zDiagzd) - (psyhzMeas - psyhzDiag)) ! Brutsaert (2005), p51, eq.2.55
-         !  IF ( ABS((LOG(z2zd/z0h)-psyhz2+psyhz0))>10 ) THEN
+         psihzMeas = stab_psi_heat(StabilityMethod, zMeaszd/L_mod, zMeaszd/L_mod)
+         psihzDiag = stab_psi_heat(StabilityMethod, zDiagzd/L_mod, zDiagzd/L_mod)
+         ! psihz0=stab_fn_heat(StabilityMethod,z0h/L_mod,z0h/L_mod)
+         xDiag = xMeas + xFlux/(k*UStar*avdens*avcp)*(LOG(zMeaszd/zDiagzd) - (psihzMeas - psihzDiag)) ! Brutsaert (2005), p51, eq.2.55
+         !  IF ( ABS((LOG(z2zd/z0h)-psihz2+psihz0))>10 ) THEN
          !     PRINT*, '#####################################'
          !     PRINT*, 'xSurf',xSurf
          !     PRINT*, 'xFlux',xFlux
@@ -2384,13 +2393,13 @@ CONTAINS
          !     PRINT*, 'avdens',avdens
          !     PRINT*, 'avcp',avcp
          !     PRINT*, 'xFlux/X',xFlux/(k*us*avdens*avcp)
-         !     PRINT*, 'stab',(LOG(z2zd/z0h)-psyhz2+psyhz0)
+         !     PRINT*, 'stab',(LOG(z2zd/z0h)-psihz2+psihz0)
          !     PRINT*, 'LOG(z2zd/z0h)',LOG(z2zd/z0h)
          !     PRINT*, 'z2zd',z2zd,'L_mod',L_mod,'z0h',z0h
          !     PRINT*, 'z2zd/L_mod',z2zd/L_mod
-         !     PRINT*, 'psyhz2',psyhz2
-         !     PRINT*, 'psyhz0',psyhz0
-         !     PRINT*, 'psyhz2-psyhz0',psyhz2-psyhz0
+         !     PRINT*, 'psihz2',psihz2
+         !     PRINT*, 'psihz0',psihz0
+         !     PRINT*, 'psihz2-psihz0',psihz2-psihz0
          !     PRINT*, 'xDiag',xDiag
          !     PRINT*, '*************************************'
          !  END IF
@@ -2400,11 +2409,11 @@ CONTAINS
          zDiagzd = zDiag + z0h! set lower limit as z0h to prevent arithmetic error, zd=0
 
          ! heat and vapor: assuming both are the same
-         psyhzMeas = stab_fn_heat(StabilityMethod, zMeaszd/L_mod, zMeaszd/L_mod)
-         psyhzDiag = stab_fn_heat(StabilityMethod, zDiagzd/L_mod, zDiagzd/L_mod)
-         ! psyhz0=stab_fn_heat(StabilityMethod,z0h/L_mod,z0h/L_mod)
+         psihzMeas = stab_psi_heat(StabilityMethod, zMeaszd/L_mod, zMeaszd/L_mod)
+         psihzDiag = stab_psi_heat(StabilityMethod, zDiagzd/L_mod, zDiagzd/L_mod)
+         ! psihz0=stab_fn_heat(StabilityMethod,z0h/L_mod,z0h/L_mod)
 
-         xDiag = xMeas + xFlux/(k*UStar*avdens*tlv)*(LOG(zMeaszd/zDiagzd) - (psyhzMeas - psyhzDiag)) ! Brutsaert (2005), p51, eq.2.56
+         xDiag = xMeas + xFlux/(k*UStar*avdens*tlv)*(LOG(zMeaszd/zDiagzd) - (psihzMeas - psihzDiag)) ! Brutsaert (2005), p51, eq.2.56
 
       END SELECT
 
@@ -2888,7 +2897,7 @@ CONTAINS
             WaterDist, WaterUseMethod, WetThresh, wu_m3, &
             WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
             WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
-            datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataOutLineRSL, &!output
+            datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataOutLineRSL, & !output
             DailyStateLine)!output
 
          ! update dt_since_start_x for next iteration, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018

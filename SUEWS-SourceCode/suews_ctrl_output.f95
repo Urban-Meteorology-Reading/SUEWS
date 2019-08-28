@@ -22,7 +22,7 @@ MODULE ctrl_output
    !===========================================================================================
 
    USE allocateArray
-   ! USE cbl_module
+   USE cbl_module
    USE data_in
    ! USE defaultNotUsed
    ! USE ESTM_data

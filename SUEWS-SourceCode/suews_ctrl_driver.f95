@@ -32,6 +32,7 @@ MODULE SUEWS_Driver
       ncolumnsDataOutSUEWS, ncolumnsDataOutSnow, &
       ncolumnsDataOutESTM, ncolumnsDataOutDailyState, &
       ncolumnsDataOutRSL
+   use moist, only: avcp,avdens,lv_J_kg
 
    IMPLICIT NONE
 
@@ -448,10 +449,10 @@ CONTAINS
       INTEGER, DIMENSION(3)    ::dayofWeek_id
       INTEGER::DLS
 
-      REAL(KIND(1D0))::avcp
-      REAL(KIND(1D0))::avdens
+      ! REAL(KIND(1D0))::avcp
+      ! REAL(KIND(1D0))::avdens
       REAL(KIND(1D0))::dq
-      REAL(KIND(1D0))::lv_J_kg
+      ! REAL(KIND(1D0))::lv_J_kg
       REAL(KIND(1D0))::lvS_J_kg
       REAL(KIND(1D0))::psyc_hPa
       REAL(KIND(1D0))::qe
@@ -1977,7 +1978,7 @@ CONTAINS
       ! INTEGER,INTENT(in) :: id_prev_t
       INTEGER, INTENT(in) :: it
       INTEGER, INTENT(in) :: imin
-
+  !  INTEGER, INTENT(in) :: Gridiv
       REAL(KIND(1d0)), INTENT(in) :: AdditionalWater
       REAL(KIND(1d0)), INTENT(in) :: alb(nsurf)
       REAL(KIND(1d0)), INTENT(in) :: avkdn
@@ -2056,7 +2057,6 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutSUEWS - 5), INTENT(out) :: dataOutLineSUEWS
       ! REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutSnow-5),INTENT(out) :: dataOutLineSnow
       ! REAL(KIND(1d0)),DIMENSION(ncolumnsDataOutESTM-5),INTENT(out) :: dataOutLineESTM
-
       ! INTEGER:: is
       REAL(KIND(1d0)):: LAI_wt
       REAL(KIND(1d0)):: RH2_pct ! RH2 in percentage
@@ -2097,19 +2097,20 @@ CONTAINS
 
       ! NB: this part needs to be reconsidered for calculation logic. TS, 27 Sep 2018
       ! TODO: this part should be reconnected to an improved CBL interface. TS 10 Jun 2018
-      ! ! Save qh and qe for CBL in next iteration
+      ! uncomment the CBL.HWJ，21 Aug 2019
+      ! Save qh and qe for CBL in next iteration
       ! IF(Qh_choice==1) THEN   !use QH and QE from SUEWS
-      !    qhforCBL(Gridiv) = qh
-      !    qeforCBL(Gridiv) = qeOut
-      ! ELSEIF(Qh_choice==2)THEN   !use QH and QE from LUMPS
-      !    qhforCBL(Gridiv) = h_mod
-      !    qeforCBL(Gridiv) = e_mod
-      ! ELSEIF(qh_choice==3)THEN  !use QH and QE from OBS
-      !    qhforCBL(Gridiv) = qh_obs
-      !    qeforCBL(Gridiv) = qe_obs
-      !    IF(qh_obs<-900.OR.qe_obs<-900)THEN  ! observed data has a problem
-      !       CALL ErrorHint(22,'Unrealistic observed qh or qe_value.',qh_obs,qe_obs,qh_choice)
-      !    ENDIF
+      !     qhforCBL(Gridiv) = qh
+      !     qeforCBL(Gridiv) = qeOut
+      !  ELSEIF(Qh_choice==2)THEN   !use QH and QE from LUMPS
+      !     qhforCBL(Gridiv) = h_mod
+      !     qeforCBL(Gridiv) = e_mod
+      !  ELSEIF(qh_choice==3)THEN  !use QH and QE from OBS
+      !     qhforCBL(Gridiv) = qh_obs
+      !     qeforCBL(Gridiv) = qe_obs
+      !     IF(qh_obs<-900.OR.qe_obs<-900)THEN  ! observed data has a problem
+      !        CALL ErrorHint(22,'Unrealistic observed qh or qe_value.',qh_obs,qe_obs,qh_choice)
+      !     ENDIF
       ! ENDIF
 
       !====================== update output line ==============================

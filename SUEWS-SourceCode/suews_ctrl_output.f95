@@ -65,7 +65,7 @@ MODULE ctrl_output
    END TYPE varAttr
 
    ! initialise valist
-   TYPE(varAttr) :: varListAll(400)
+   TYPE(varAttr) :: varListAll(500)
 
    ! datetime:
    DATA(varListAll(n), n=1, 5)/ &
@@ -415,6 +415,36 @@ MODULE ctrl_output
         + ncolumnsdataOutBL - 5 + ncolumnsDataOutSnow - 5 + ncolumnsDataOutESTM - 5 &
         + ncolumnsDataOutDailyState - 5 &
         + ncolumnsDataOutRSL - 5)/ &
+      varAttr('z_1', 'm', f104, '0.1Zh', aA, 'RSL', 0), &
+      varAttr('z_2', 'm', f104, '0.2Zh', aA, 'RSL', 0), &
+      varAttr('z_3', 'm', f104, '0.3Zh', aA, 'RSL', 0), &
+      varAttr('z_4', 'm', f104, '0.4Zh', aA, 'RSL', 0), &
+      varAttr('z_5', 'm', f104, '0.5Zh', aA, 'RSL', 0), &
+      varAttr('z_6', 'm', f104, '0.6Zh', aA, 'RSL', 0), &
+      varAttr('z_7', 'm', f104, '0.7Zh', aA, 'RSL', 0), &
+      varAttr('z_8', 'm', f104, '0.8Zh', aA, 'RSL', 0), &
+      varAttr('z_9', 'm', f104, '0.9Zh', aA, 'RSL', 0), &
+      varAttr('z_10', 'm', f104, 'Zh', aA, 'RSL', 0), &
+      varAttr('z_11', 'm', f104, '1.1Zh', aA, 'RSL', 0), &
+      varAttr('z_12', 'm', f104, '1.2Zh', aA, 'RSL', 0), &
+      varAttr('z_13', 'm', f104, '1.3Zh', aA, 'RSL', 0), &
+      varAttr('z_14', 'm', f146, '1.4Zh', aA, 'RSL', 0), &
+      varAttr('z_15', 'm', f104, '1.5Zh', aA, 'RSL', 0), &
+      varAttr('z_16', 'm', f104, '1.6Zh', aA, 'RSL', 0), &
+      varAttr('z_17', 'm', f104, '1.7Zh', aA, 'RSL', 0), &
+      varAttr('z_18', 'm', f104, '1.8Zh', aA, 'RSL', 0), &
+      varAttr('z_19', 'm', f104, '1.9Zh', aA, 'RSL', 0), &
+      varAttr('z_20', 'm', f104, '2.0Zh', aA, 'RSL', 0), &
+      varAttr('z_21', 'm', f146, '2.1Zh', aA, 'RSL', 0), &
+      varAttr('z_22', 'm', f104, '2.2Zh', aA, 'RSL', 0), &
+      varAttr('z_23', 'm', f104, '2.3Zh', aA, 'RSL', 0), &
+      varAttr('z_24', 'm', f104, '2.4Zh', aA, 'RSL', 0), &
+      varAttr('z_25', 'm', f104, '2.5Zh', aA, 'RSL', 0), &
+      varAttr('z_26', 'm', f104, '2.6Zh', aA, 'RSL', 0), &
+      varAttr('z_27', 'm', f104, '2.7Zh', aA, 'RSL', 0), &
+      varAttr('z_28', 'm', f104, '2.8Zh', aA, 'RSL', 0), &
+      varAttr('z_29', 'm', f104, '2.9Zh', aA, 'RSL', 0), &
+      varAttr('z_30', 'm', f104, '3.0Zh', aA, 'RSL', 0), &
       varAttr('U_1', 'm s-1', f104, 'U at 0.1Zh', aA, 'RSL', 0), &
       varAttr('U_2', 'm s-1', f104, 'U at 0.2Zh', aA, 'RSL', 0), &
       varAttr('U_3', 'm s-1', f104, 'U at 0.3Zh', aA, 'RSL', 0), &

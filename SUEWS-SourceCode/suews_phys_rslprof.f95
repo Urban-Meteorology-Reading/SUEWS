@@ -5,7 +5,7 @@ contains
 
    SUBROUTINE RSLProfile( &
       UStar, L_MOD, sfr, Zh, planF, StabilityMethod, Temp_C, avRH, Press_hPa, zMeas, TStar, qe, &  ! input
-      zarrays, dataoutLineRSL) ! output
+      dataoutLineRSL) ! output
       !-----------------------------------------------------
       ! calculates windprofiles using MOST with a RSL-correction
       ! based on Harman & Finnigan 2007
@@ -46,8 +46,8 @@ contains
 
       INTEGER, PARAMETER :: nz = 30   ! number of levels 10 levels in canopy plus 20 (3 x Zh) above the canopy
 
-      REAL(KIND(1d0)), INTENT(out), DIMENSION(nz*3):: zarrays ! Height array
-      REAL(KIND(1d0)), INTENT(out), DIMENSION(nz*3):: dataoutLineRSL  ! Variables array (/U,T,q/)
+      ! REAL(KIND(1d0)), INTENT(out), DIMENSION(nz*3):: zarrays ! Height array
+      REAL(KIND(1d0)), INTENT(out), DIMENSION(nz*4):: dataoutLineRSL  ! Variables array (/U,T,q/)
       REAL(KIND(1d0)), DIMENSION(nz):: dif, dif2, psihat_z, psihath_z, zarray, &
                                        dataoutLineURSL, & ! wind speed array [m s-1]
                                        dataoutLineTRSL, & ! Temperature array [C]
@@ -218,8 +218,8 @@ contains
       dataoutLineTRSL = dataoutLineTRSL*TStar + Temp_C
       dataoutLineqRSL = (dataoutLineqRSL*qStar + qa_gkg/1000.)*1000.
 
-      dataoutLineRSL = (/dataoutLineURSL, dataoutLineTRSL, dataoutLineqRSL/)
-      zarrays = (/zarray, zarray, zarray/)
+      dataoutLineRSL = (/zarray, dataoutLineURSL, dataoutLineTRSL, dataoutLineqRSL/)
+      ! zarrays = (/zarray, zarray, zarray/)
 
 ! print *, 'Wind speed', dataoutLineURSL
       ! DO z = 1, nz

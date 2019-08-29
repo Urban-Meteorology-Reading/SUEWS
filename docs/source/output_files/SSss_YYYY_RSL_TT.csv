@@ -1,96 +1,126 @@
-"Column","Name","Description"
-1,"Year","Year [YYYY]"
-2,"DOY","Day of year [DOY]"
-3,"Hour","Hour [H]"
-4,"Min","Minute [M]"
-5,"Dectime","Decimal time [-]"
-6,"U_1","Wind speed at level 1 [m |s^-1|]"
-7,"U_2","Wind speed at level 2 [m |s^-1|]"
-8,"U_3","Wind speed at level 3 [m |s^-1|]"
-9,"U_4","Wind speed at level 4 [m |s^-1|]"
-10,"U_5","Wind speed at level 5 [m |s^-1|]"
-11,"U_6","Wind speed at level 6 [m |s^-1|]"
-12,"U_7","Wind speed at level 7 [m |s^-1|]"
-13,"U_8","Wind speed at level 8 [m |s^-1|]"
-14,"U_9","Wind speed at level 9 [m |s^-1|]"
-15,"U_10","Wind speed at level 10 [m |s^-1|]"
-16,"U_11","Wind speed at level 11 [m |s^-1|]"
-17,"U_12","Wind speed at level 12 [m |s^-1|]"
-18,"U_13","Wind speed at level 13 [m |s^-1|]"
-19,"U_14","Wind speed at level 14 [m |s^-1|]"
-20,"U_15","Wind speed at level 15 [m |s^-1|]"
-21,"U_16","Wind speed at level 16 [m |s^-1|]"
-22,"U_17","Wind speed at level 17 [m |s^-1|]"
-23,"U_18","Wind speed at level 18 [m |s^-1|]"
-24,"U_19","Wind speed at level 19 [m |s^-1|]"
-25,"U_20","Wind speed at level 20 [m |s^-1|]"
-26,"U_21","Wind speed at level 21 [m |s^-1|]"
-27,"U_22","Wind speed at level 22 [m |s^-1|]"
-28,"U_23","Wind speed at level 23 [m |s^-1|]"
-29,"U_24","Wind speed at level 24 [m |s^-1|]"
-30,"U_25","Wind speed at level 25 [m |s^-1|]"
-31,"U_26","Wind speed at level 26 [m |s^-1|]"
-32,"U_27","Wind speed at level 27 [m |s^-1|]"
-33,"U_28","Wind speed at level 28 [m |s^-1|]"
-34,"U_29","Wind speed at level 29 [m |s^-1|]"
-35,"U_30","Wind speed at level 30 [m |s^-1|]"
-36,"T_1","Air temperature at level 1 [°C]"
-37,"T_2","Air temperature at level 2 [°C]"
-38,"T_3","Air temperature at level 3 [°C]"
-39,"T_4","Air temperature at level 4 [°C]"
-40,"T_5","Air temperature at level 5 [°C]"
-41,"T_6","Air temperature at level 6 [°C]"
-42,"T_7","Air temperature at level 7 [°C]"
-43,"T_8","Air temperature at level 8 [°C]"
-44,"T_9","Air temperature at level 9 [°C]"
-45,"T_10","Air temperature at level 10 [°C]"
-46,"T_11","Air temperature at level 11 [°C]"
-47,"T_12","Air temperature at level 12 [°C]"
-48,"T_13","Air temperature at level 13 [°C]"
-49,"T_14","Air temperature at level 14 [°C]"
-50,"T_15","Air temperature at level 15 [°C]"
-51,"T_16","Air temperature at level 16 [°C]"
-52,"T_17","Air temperature at level 17 [°C]"
-53,"T_18","Air temperature at level 18 [°C]"
-54,"T_19","Air temperature at level 19 [°C]"
-55,"T_20","Air temperature at level 20 [°C]"
-56,"T_21","Air temperature at level 21 [°C]"
-57,"T_22","Air temperature at level 22 [°C]"
-58,"T_23","Air temperature at level 23 [°C]"
-59,"T_24","Air temperature at level 24 [°C]"
-60,"T_25","Air temperature at level 25 [°C]"
-61,"T_26","Air temperature at level 26 [°C]"
-62,"T_27","Air temperature at level 27 [°C]"
-63,"T_28","Air temperature at level 28 [°C]"
-64,"T_29","Air temperature at level 29 [°C]"
-65,"T_30","Air temperature at level 30 [°C]"
-66,"q_1","Specific humidity at level 1 [g |kg^-1|]"
-67,"q_2","Specific humidity at level 2 [g |kg^-1|]"
-68,"q_3","Specific humidity at level 3 [g |kg^-1|]"
-69,"q_4","Specific humidity at level 4 [g |kg^-1|]"
-70,"q_5","Specific humidity at level 5 [g |kg^-1|]"
-71,"q_6","Specific humidity at level 6 [g |kg^-1|]"
-72,"q_7","Specific humidity at level 7 [g |kg^-1|]"
-73,"q_8","Specific humidity at level 8 [g |kg^-1|]"
-74,"q_9","Specific humidity at level 9 [g |kg^-1|]"
-75,"q_10","Specific humidity at level 10 [g |kg^-1|]"
-76,"q_11","Specific humidity at level 11 [g |kg^-1|]"
-77,"q_12","Specific humidity at level 12 [g |kg^-1|]"
-78,"q_13","Specific humidity at level 13 [g |kg^-1|]"
-79,"q_14","Specific humidity at level 14 [g |kg^-1|]"
-80,"q_15","Specific humidity at level 15 [g |kg^-1|]"
-81,"q_16","Specific humidity at level 16 [g |kg^-1|]"
-82,"q_17","Specific humidity at level 17 [g |kg^-1|]"
-83,"q_18","Specific humidity at level 18 [g |kg^-1|]"
-84,"q_19","Specific humidity at level 19 [g |kg^-1|]"
-85,"q_20","Specific humidity at level 20 [g |kg^-1|]"
-86,"q_21","Specific humidity at level 21 [g |kg^-1|]"
-87,"q_22","Specific humidity at level 22 [g |kg^-1|]"
-88,"q_23","Specific humidity at level 23 [g |kg^-1|]"
-89,"q_24","Specific humidity at level 24 [g |kg^-1|]"
-90,"q_25","Specific humidity at level 25 [g |kg^-1|]"
-91,"q_26","Specific humidity at level 26 [g |kg^-1|]"
-92,"q_27","Specific humidity at level 27 [g |kg^-1|]"
-93,"q_28","Specific humidity at level 28 [g |kg^-1|]"
-94,"q_29","Specific humidity at level 29 [g |kg^-1|]"
-95,"q_30","Specific humidity at level 30 [g |kg^-1|]"
+Column,Name,Description
+1,Year,Year [YYYY]
+2,DOY,Day of year [DOY]
+3,Hour,Hour [H]
+4,Min,Minute [M]
+5,Dectime,Decimal time [-]
+6,z_1,Height at level 1 [m]
+7,z_2,Height at level 2 [m]
+8,z_3,Height at level 3 [m]
+9,z_4,Height at level 4 [m]
+10,z_5,Height at level 5 [m]
+11,z_6,Height at level 6 [m]
+12,z_7,Height at level 7 [m]
+13,z_8,Height at level 8 [m]
+14,z_9,Height at level 9 [m]
+15,z_10,Height at level 10 [m]
+16,z_11,Height at level 11 [m]
+17,z_12,Height at level 12 [m]
+18,z_13,Height at level 13 [m]
+19,z_14,Height at level 14 [m]
+20,z_15,Height at level 15 [m]
+21,z_16,Height at level 16 [m]
+22,z_17,Height at level 17 [m]
+23,z_18,Height at level 18 [m]
+24,z_19,Height at level 19 [m]
+25,z_20,Height at level 20 [m]
+26,z_21,Height at level 21 [m]
+27,z_22,Height at level 22 [m]
+28,z_23,Height at level 23 [m]
+29,z_24,Height at level 24 [m]
+30,z_25,Height at level 25 [m]
+31,z_26,Height at level 26 [m]
+32,z_27,Height at level 27 [m]
+33,z_28,Height at level 28 [m]
+34,z_29,Height at level 29 [m]
+35,z_30,Height at level 30 [m]
+36,U_1,Wind speed at level 1 [m |s^-1|]
+37,U_2,Wind speed at level 2 [m |s^-1|]
+38,U_3,Wind speed at level 3 [m |s^-1|]
+39,U_4,Wind speed at level 4 [m |s^-1|]
+40,U_5,Wind speed at level 5 [m |s^-1|]
+41,U_6,Wind speed at level 6 [m |s^-1|]
+42,U_7,Wind speed at level 7 [m |s^-1|]
+43,U_8,Wind speed at level 8 [m |s^-1|]
+44,U_9,Wind speed at level 9 [m |s^-1|]
+45,U_10,Wind speed at level 10 [m |s^-1|]
+46,U_11,Wind speed at level 11 [m |s^-1|]
+47,U_12,Wind speed at level 12 [m |s^-1|]
+48,U_13,Wind speed at level 13 [m |s^-1|]
+49,U_14,Wind speed at level 14 [m |s^-1|]
+50,U_15,Wind speed at level 15 [m |s^-1|]
+51,U_16,Wind speed at level 16 [m |s^-1|]
+52,U_17,Wind speed at level 17 [m |s^-1|]
+53,U_18,Wind speed at level 18 [m |s^-1|]
+54,U_19,Wind speed at level 19 [m |s^-1|]
+55,U_20,Wind speed at level 20 [m |s^-1|]
+56,U_21,Wind speed at level 21 [m |s^-1|]
+57,U_22,Wind speed at level 22 [m |s^-1|]
+58,U_23,Wind speed at level 23 [m |s^-1|]
+59,U_24,Wind speed at level 24 [m |s^-1|]
+60,U_25,Wind speed at level 25 [m |s^-1|]
+61,U_26,Wind speed at level 26 [m |s^-1|]
+62,U_27,Wind speed at level 27 [m |s^-1|]
+63,U_28,Wind speed at level 28 [m |s^-1|]
+64,U_29,Wind speed at level 29 [m |s^-1|]
+65,U_30,Wind speed at level 30 [m |s^-1|]
+66,T_1,Air temperature at level 1 [°C]
+67,T_2,Air temperature at level 2 [°C]
+68,T_3,Air temperature at level 3 [°C]
+69,T_4,Air temperature at level 4 [°C]
+70,T_5,Air temperature at level 5 [°C]
+71,T_6,Air temperature at level 6 [°C]
+72,T_7,Air temperature at level 7 [°C]
+73,T_8,Air temperature at level 8 [°C]
+74,T_9,Air temperature at level 9 [°C]
+75,T_10,Air temperature at level 10 [°C]
+76,T_11,Air temperature at level 11 [°C]
+77,T_12,Air temperature at level 12 [°C]
+78,T_13,Air temperature at level 13 [°C]
+79,T_14,Air temperature at level 14 [°C]
+80,T_15,Air temperature at level 15 [°C]
+81,T_16,Air temperature at level 16 [°C]
+82,T_17,Air temperature at level 17 [°C]
+83,T_18,Air temperature at level 18 [°C]
+84,T_19,Air temperature at level 19 [°C]
+85,T_20,Air temperature at level 20 [°C]
+86,T_21,Air temperature at level 21 [°C]
+87,T_22,Air temperature at level 22 [°C]
+88,T_23,Air temperature at level 23 [°C]
+89,T_24,Air temperature at level 24 [°C]
+90,T_25,Air temperature at level 25 [°C]
+91,T_26,Air temperature at level 26 [°C]
+92,T_27,Air temperature at level 27 [°C]
+93,T_28,Air temperature at level 28 [°C]
+94,T_29,Air temperature at level 29 [°C]
+95,T_30,Air temperature at level 30 [°C]
+96,q_1,Specific humidity at level 1 [g |kg^-1|]
+97,q_2,Specific humidity at level 2 [g |kg^-1|]
+98,q_3,Specific humidity at level 3 [g |kg^-1|]
+99,q_4,Specific humidity at level 4 [g |kg^-1|]
+100,q_5,Specific humidity at level 5 [g |kg^-1|]
+101,q_6,Specific humidity at level 6 [g |kg^-1|]
+102,q_7,Specific humidity at level 7 [g |kg^-1|]
+103,q_8,Specific humidity at level 8 [g |kg^-1|]
+104,q_9,Specific humidity at level 9 [g |kg^-1|]
+105,q_10,Specific humidity at level 10 [g |kg^-1|]
+106,q_11,Specific humidity at level 11 [g |kg^-1|]
+107,q_12,Specific humidity at level 12 [g |kg^-1|]
+108,q_13,Specific humidity at level 13 [g |kg^-1|]
+109,q_14,Specific humidity at level 14 [g |kg^-1|]
+110,q_15,Specific humidity at level 15 [g |kg^-1|]
+111,q_16,Specific humidity at level 16 [g |kg^-1|]
+112,q_17,Specific humidity at level 17 [g |kg^-1|]
+113,q_18,Specific humidity at level 18 [g |kg^-1|]
+114,q_19,Specific humidity at level 19 [g |kg^-1|]
+115,q_20,Specific humidity at level 20 [g |kg^-1|]
+116,q_21,Specific humidity at level 21 [g |kg^-1|]
+117,q_22,Specific humidity at level 22 [g |kg^-1|]
+118,q_23,Specific humidity at level 23 [g |kg^-1|]
+119,q_24,Specific humidity at level 24 [g |kg^-1|]
+120,q_25,Specific humidity at level 25 [g |kg^-1|]
+121,q_26,Specific humidity at level 26 [g |kg^-1|]
+122,q_27,Specific humidity at level 27 [g |kg^-1|]
+123,q_28,Specific humidity at level 28 [g |kg^-1|]
+124,q_29,Specific humidity at level 29 [g |kg^-1|]
+125,q_30,Specific humidity at level 30 [g |kg^-1|]

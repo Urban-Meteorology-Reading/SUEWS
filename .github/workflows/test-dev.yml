@@ -1,19 +1,19 @@
-name: C/C++ CI
+name: Fortran CI
 
 on: [push]
 
-# File paths to consider in the event. Optional; defaults to all
-push:
-  branches:    # Array of patterns that match refs/heads
-    - master     # Push events on master branch
-    - test-dev
-#     - 'releases/*' # Push events to branches matching refs/heads/releases/*
-#     - '!refs/pull/*'
-#   tags:        # Array of patterns that match refs/tags.
-#     - v1         # Push events to v1 tag
-  paths:       # Push events containing matching files
-    - 'SUEWS-SourceCode/*'
-    - 'supy-driver/*'
+  # File paths to consider in the event. Optional; defaults to all
+  push:
+    branches:    # Array of patterns that match refs/heads
+      - master     # Push events on master branch
+      - test-dev
+  #     - 'releases/*' # Push events to branches matching refs/heads/releases/*
+  #     - '!refs/pull/*'
+  #   tags:        # Array of patterns that match refs/tags.
+  #     - v1         # Push events to v1 tag
+    paths:       # Push events containing matching files
+      - 'SUEWS-SourceCode/*'
+      - 'supy-driver/*'
 
 jobs:
   build:

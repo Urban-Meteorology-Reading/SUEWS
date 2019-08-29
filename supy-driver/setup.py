@@ -140,7 +140,7 @@ ext_modules = [
               extra_f90_compile_args=['-cpp'],
               f2py_options=[
                   # '--quiet',
-                  # '--debug-capi',
+                #   '--debug-capi',
                   # ('-DF2PY_REPORT_ATEXIT' if sysname == 'Linux' else ''),
               ],
               extra_objects=other_obj,
@@ -148,7 +148,7 @@ ext_modules = [
 
 setup(name='supy_driver',
       # update version info here!
-      version=get_suews_version(ver_minor=2),
+      version=get_suews_version(ver_minor=3),
       description='the SUEWS driver driven by f2py',
       long_description=readme(),
       url='https://github.com/sunt05/SuPy',

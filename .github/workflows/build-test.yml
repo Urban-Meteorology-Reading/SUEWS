@@ -18,7 +18,7 @@ jobs:
         submodules: yes
         token: ${{ secrets.GITHUB_TOKEN }}
     - name: test
-      run: make test
+      run: ls -l
     # - name: show
     #   run: ls -lrt .
     # - name: show

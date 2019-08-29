@@ -580,7 +580,7 @@ PROGRAM SUEWS_Program
          ! Initialise the modules on the first day
          ! Initialise CBL and SOLWEIG parts if required
          IF (iblock == 1) THEN
-            IF ((CBLuse == 1) .OR. (CBLuse == 2)) CALL CBL_ReadInputData
+            IF ((CBLuse == 1) .OR. (CBLuse == 2)) CALL CBL_ReadInputData(FileInputPath,qh_choice)
          ENDIF
 
          ! NB: SOLWEIG is disabled in v2018a

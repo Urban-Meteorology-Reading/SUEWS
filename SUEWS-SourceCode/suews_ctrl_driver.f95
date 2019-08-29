@@ -752,7 +752,7 @@ CONTAINS
          UStar, &!input
          L_mod, sfr, Zh, planF, &
          StabilityMethod, Temp_C, avRh, Press_hPa, z, TStar, qe, &
-         zarrays, dataoutLineRSL)!output
+         dataoutLineRSL)!output
 
       !============ surface-level diagonostics end ===============
 

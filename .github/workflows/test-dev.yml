@@ -1,6 +1,6 @@
 name: Fortran CI
 
-on: [push]
+on: 
 
   # File paths to consider in the event. Optional; defaults to all
   push:

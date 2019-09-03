@@ -90,3 +90,6 @@ api
 
 # DONT ignore these files
 !docs/source/assets/*/*
+
+# mac stuff
+.DS_Store

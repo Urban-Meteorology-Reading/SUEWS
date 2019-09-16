@@ -93,3 +93,6 @@ api
 
 # mac stuff
 .DS_Store
+
+# test-dev temporary files
+test-dev/

@@ -12,7 +12,8 @@ For a detailed description of the variables, see Järvi et al.
 
 
 .. DON'T manually modify the csv file below
-.. as it is always automatically regenrated by each build
+.. as it is always automatically regenrated by each build:
+.. edit the item descriptions in file `Input_Options.rst`
 
 .. csv-table::
   :class: longtable

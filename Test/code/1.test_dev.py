@@ -6,7 +6,7 @@ import numpy as np
 import unittest
 from pathlib import Path
 from tempfile import gettempdir, TemporaryDirectory
-from shutil import copyfile
+from shutil import copyfile, copytree
 
 fn_nml = 'BTS_config.nml'
 # load basic configurations
@@ -41,7 +41,10 @@ dict_runcontrol = ts.load_SUEWS_nml(path_runctrl_base)['runcontrol']
 # copy other input tables and initial conditions
 path_base_input = (path_baserun / dict_runcontrol['fileinputpath'])
 for x in path_base_input.glob('*'):
-    copyfile(x, path_input_ver / x.name)
+    if x.is_dir():
+        copytree(x, path_input_ver / x.name)
+    else:
+        copyfile(x, path_input_ver / x.name)
 
 # load name of programme for testing
 name_exe = cfg_file['name_exe']

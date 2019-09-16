@@ -1,3 +1,7 @@
+module CO2_module
+   implicit none
+
+contains
 !========================================================================================
 ! Created by HCW Aug 2016 to calculate biogenic component of CO2 flux.
 ! This subroutine is still under development and in the equations there might be bugs and
@@ -220,5 +224,7 @@ SUBROUTINE CO2_biogen( &
 
    RETURN
 
-ENDSUBROUTINE CO2_biogen
+END SUBROUTINE CO2_biogen
 !========================================================================================
+
+end module CO2_module

@@ -1,0 +1,32 @@
+
+.. _new_latest:
+
+.. _new_2019a:
+
+Version 2019a (planned release in late August 2019)
+----------------------------------------------------
+
+- **Improvement**
+
+  #. An anthropogenic emission module is added. Module details refer to Järvi et al. (2019) [J19]_.
+  
+  #. A `canyon profile module <Wind, Temperature and Humidity Profiles in the Roughness Sublayer>`_ is added. Module details refer to Theeuwes et al. (2019) [T19]_.
+
+
+
+- **Changes**
+
+  #. Input file ``SUEWS_AnthropogenicHeat.txt`` is renamed to ``SUEWS_AnthropogenicEmission.txt`` with new parameters added: `MinFCMetab`, `MaxFCMetab`, `FrPDDwe`, `FcEF_v_kgkmWD` and `FcEF_v_kgkmWE`.
+
+
+- **Fix**
+
+  #. Fixed a bug in LAI calculation for longterm runs.
+  #. Fixed a bug in net all-wave radiation differential calculation for OHM.
+  #. Fixed water redistribution bug in snow module.
+
+- **Known issues**
+
+  #. BLUEWS is disabled
+  #. Observed soil moisture can not be used as an input
+  #. Wind direction is not currently downscaled so non -999 values will cause an error.

@@ -73,15 +73,15 @@ jobs:
     displayName:        'make supy_driver'
     continueOnError:    true
 
-  - task:               UsePythonVersion@0
-    inputs:
-      versionSpec:      '3.5'
-      addToPath:        true
-      architecture:     'x64'
+  # - task:               UsePythonVersion@0
+  #   inputs:
+  #     versionSpec:      '3.5'
+  #     addToPath:        true
+  #     architecture:     'x64'
 
-  - script:             'make driver'
-    displayName:        'make supy_driver'
-    continueOnError:    true
+  # - script:             'make driver'
+  #   displayName:        'make supy_driver'
+  #   continueOnError:    true
 
   - task: TwineAuthenticate@0
     inputs:
@@ -148,15 +148,15 @@ jobs:
     displayName:        'make supy_driver'
     continueOnError:    true
 
-  - task:               UsePythonVersion@0
-    inputs:
-      versionSpec:      '3.5'
-      addToPath:        true
-      architecture:     'x64'
+  # - task:               UsePythonVersion@0
+  #   inputs:
+  #     versionSpec:      '3.5'
+  #     addToPath:        true
+  #     architecture:     'x64'
 
-  - script:             'make driver'
-    displayName:        'make supy_driver'
-    continueOnError:    true
+  # - script:             'make driver'
+  #   displayName:        'make supy_driver'
+  #   continueOnError:    true
 
   - task: TwineAuthenticate@0
     inputs:
@@ -218,9 +218,9 @@ jobs:
   - script:  |
       pip install twine
       docker run -v $(pwd):/io dockcross/manylinux1-x64 bash -c "cd /io/supy-driver;gfortran --version; make clean;make suews"
-      docker run -v $(pwd):/io dockcross/manylinux1-x64 bash -c "cd /io/supy-driver;/opt/python/cp35-cp35m/bin/python -m pip install -r requirements.txt; /opt/python/cp35-cp35m/bin/python setup.py bdist_wheel; ls -lrt dist/*; ls -lrt wheelhouse/*"
-      docker run -v $(pwd):/io dockcross/manylinux1-x64 bash -c "cd /io/supy-driver;/opt/python/cp36-cp36m/bin/python -m pip install -r requirements.txt; /opt/python/cp36-cp36m/bin/python setup.py bdist_wheel; ls -lrt dist/*; ls -lrt wheelhouse/*"
-      docker run -v $(pwd):/io dockcross/manylinux1-x64 bash -c "cd /io/supy-driver;/opt/python/cp37-cp37m/bin/python -m pip install -r requirements.txt; /opt/python/cp37-cp37m/bin/python setup.py bdist_wheel; ls -lrt *; ls -lrt dist/*; ls -lrt wheelhouse/*"
+      # docker run -v $(pwd):/io dockcross/manylinux1-x64 bash -c "cd /io/supy-driver;/opt/python/cp35-cp35m/bin/python -m pip install -r requirements.txt; /opt/python/cp35-cp35m/bin/python -m pip install numpy==1.15.4; /opt/python/cp35-cp35m/bin/python setup.py bdist_wheel; ls -lrt dist/*; ls -lrt wheelhouse/*"
+      docker run -v $(pwd):/io dockcross/manylinux1-x64 bash -c "cd /io/supy-driver;/opt/python/cp36-cp36m/bin/python -m pip install -r requirements.txt; /opt/python/cp36-cp36m/bin/python -m pip install numpy==1.15.4; /opt/python/cp36-cp36m/bin/python setup.py bdist_wheel; ls -lrt dist/*; ls -lrt wheelhouse/*"
+      docker run -v $(pwd):/io dockcross/manylinux1-x64 bash -c "cd /io/supy-driver;/opt/python/cp37-cp37m/bin/python -m pip install -r requirements.txt; /opt/python/cp37-cp37m/bin/python -m pip install numpy==1.15.4; /opt/python/cp37-cp37m/bin/python setup.py bdist_wheel; ls -lrt *; ls -lrt dist/*; ls -lrt wheelhouse/*"
       cd supy-driver
       twine upload -r SuPy --config-file $(PYPIRC_PATH) --skip-existing wheelhouse/*whl
     displayName:        'manylinux supy_driver build and upload'

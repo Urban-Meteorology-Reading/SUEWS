@@ -15,6 +15,7 @@
 # import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
+import subprocess
 import os
 import platform
 import sys
@@ -23,6 +24,7 @@ from pathlib import Path
 
 import pandas as pd
 import nbsphinx
+import exhale
 
 
 # -- processing code --------------------------------------------------------
@@ -63,8 +65,13 @@ def gen_df_suews(df_csv, df_opt_desc, csv_suews):
     for ind, row in df_csv_suews.iterrows():
         var = row.loc['Column Name'].strip('`')
         if var in df_opt_desc.index:
+            print(f'\t\t {var} found...')
             df_csv_suews.at[
                 ind, 'Description'] = df_opt_desc.loc[var].values[0]
+        else:
+            print(f'\t\t {var} NOT found...')
+            sys.exit(0)
+    print(f'\n')
     return df_csv_suews
 
 
@@ -80,8 +87,9 @@ def gen_csv_suews(path_csv):
 
     list_csv_suews = df_csv.index.levels[0].to_series().filter(like='SUEWS')
     for csv_suews in list_csv_suews:
-        df_csv_suews = gen_df_suews(df_csv, df_opt_desc, csv_suews)
-        df_csv_suews.to_csv(path_csv / (csv_suews + '.csv'), index=False)
+        if 'Profiles' not in csv_suews:
+            df_csv_suews = gen_df_suews(df_csv, df_opt_desc, csv_suews)
+            df_csv_suews.to_csv(path_csv / (csv_suews + '.csv'), index=False)
 
     return list_csv_suews
 
@@ -134,8 +142,43 @@ extensions = [
     'recommonmark',
     'nbsphinx',
     'sphinx.ext.mathjax',
+    'breathe',
+    # 'exhale'
 
 ]
+
+breathe_projects = {
+    "SUEWS": "./doxygenoutput/xml"
+}
+breathe_default_project = "SUEWS"
+
+# run doxygen
+read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
+
+if read_the_docs_build:
+
+    subprocess.call('doxygen', shell=True)
+else:
+    subprocess.call('doxygen', shell=True)
+
+
+
+# exhale_args = {
+#     # These arguments are required
+#     "containmentFolder":     "./api",
+#     "rootFileName":          "library_root.rst",
+#     "rootFileTitle":         "API",
+#     "doxygenStripFromPath":  "..",
+#     # Suggested optional arguments
+#     "createTreeView":        True,
+#     # TIP: if using the sphinx-bootstrap-theme, you need
+#     # "treeViewIsBootstrap": True,
+#     "exhaleExecutesDoxygen": True,
+#     "exhaleUseDoxyfile" :    True,
+#     #"exhaleDoxygenStdin":    '''INPUT = ../../../SUEWS-SourceCode\n
+#     #                            GENERATE_HTML  = YES
+#     #                            '''
+# }
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -201,7 +244,7 @@ rst_prolog = """
 .. |NotAvail| replace:: **Not available in this version.**
 .. |NotUsed| replace:: **Not used in this version.**
 
-.. _GitHub page: https://github.com/Urban-Meteorology-Reading/SUEWS-Docs/issues/new?template=issue-report.md
+.. _GitHub page: https://github.com/Urban-Meteorology-Reading/SUEWS/issues/new?assignees=&labels=docs&template=docs-issue-report.md&title=
 
 .. only:: html
 
@@ -228,12 +271,14 @@ html_theme_path = ["_themes"]
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 #
-html_static_path = ['_static']
+html_static_path = ['_static','doxygenoutput']
 # html_context = {
 #     'css_files': [
 #         '_static/theme_overrides.css',  # override wide tables in RTD theme
 #         ],
 #      }
+
+# html_extra_path = ['doxygenoutput']
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.

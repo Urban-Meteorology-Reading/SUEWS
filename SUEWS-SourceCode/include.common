@@ -45,31 +45,31 @@ UTILS = suews_ctrl_const.o \
 
 # SUEWS modules
 MODULES =	suews_phys_narp.o \
-					suews_ctrl_input.o  \
 					suews_phys_atmmoiststab.o \
+					suews_phys_resist.o \
+					suews_ctrl_input.o  \
 					suews_phys_bluews.o \
 					suews_phys_waterdist.o \
+					suews_phys_evap.o \
 					suews_phys_snow.o \
 					suews_phys_dailystate.o \
 					suews_phys_estm.o \
 					suews_ctrl_output.o \
 					suews_phys_anohm.o \
+					suews_phys_lumps.o \
+					suews_phys_anemsn.o \
+                    suews_phys_rslprof.o \
+					suews_phys_biogenco2.o \
+					suews_phys_ohm.o \
 					suews_ctrl_driver.o
 
 # Rest of the files including modules and functions which are independent
 OTHERS =  suews_ctrl_translate.o \
-					suews_phys_lumps.o \
-					suews_phys_resist.o \
 					suews_ctrl_error.o \
-					suews_phys_evap.o \
-					suews_ctrl_init.o \
-					suews_phys_anemsn.o \
-                    suews_phys_RSLwind.o \
-					suews_phys_biogenco2.o
+					suews_ctrl_init.o
 
 # modules under rapid development
-TEST =  suews_phys_ohm.o \
-				suews_ctrl_calculations.o
+TEST = suews_ctrl_calculations.o
 
 # modules for WRF coupling
 WRF =  suews_ctrl_sumin.o

@@ -121,10 +121,25 @@ SSss_YYYY_snow_TT.txt
 SUEWS produces a separate output file for snow (when :option:`snowUse` = 1 in
 `RunControl.nml`) with details for each surface type.
 
-File format of SSss_YYYY_snow_60.txt
+File format of SSss_YYYY_snow_TT.txt
 
 .. csv-table::
   :file: SSss_YYYY_snow_TT.csv
+  :header-rows: 1
+  :widths: auto
+
+SSss_YYYY_RSL_TT.txt
+~~~~~~~~~~~~~~~~~~~~~
+
+SUEWS produces a separate output file for wind, temperature and humidity
+profiles in the roughness sublayer at 30 levels:
+levels 1 and 30 are positioned at 0.1 and 3.0 ``Zh`` (i.e., canopy height)
+with other levels evenly distributed in between.
+
+File format of SSss_YYYY_RSL_TT.txt:
+
+.. csv-table::
+  :file: SSss_YYYY_RSL_TT.csv
   :header-rows: 1
   :widths: auto
 

@@ -11,7 +11,8 @@ particular surface type. For suggestions on how to complete this table,
 see: `Typical Values <typical_values>`.
 
 .. DON'T manually modify the csv file below
-.. as it is always automatically regenrated by each build
+.. as it is always automatically regenrated by each build:
+.. edit the item descriptions in file `Input_Options.rst`
 
 .. csv-table::
   :class: longtable

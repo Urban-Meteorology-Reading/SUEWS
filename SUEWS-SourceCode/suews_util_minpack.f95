@@ -4126,6 +4126,7 @@ subroutine lmstr(fcn, m, n, x, fvec, fjac, ldfjac, ftol, xtol, gtol, maxfev, &
    iflag = 0
    nfev = 0
    njev = 0
+   xnorm = 0
 !
 !  Check the input parameters for errors.
 !

@@ -8,7 +8,8 @@ cover type by linking codes in column 1 of `SUEWS_Water.txt` to the codes
 specified in `SUEWS_SiteSelect.txt` (`Code_Water`).
 
 .. DON'T manually modify the csv file below
-.. as it is always automatically regenrated by each build
+.. as it is always automatically regenrated by each build:
+.. edit the item descriptions in file `Input_Options.rst`
 
 .. csv-table::
   :class: longtable

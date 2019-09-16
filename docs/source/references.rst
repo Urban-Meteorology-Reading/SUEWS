@@ -12,7 +12,9 @@ References
 
 
 .. [J11]
-   Järvi L, Grimmond CSB & Christen A (2011) The Surface Urban Energy and Water Balance Scheme (SUEWS): Evaluation in Los Angeles and Vancouver. J. Hydrol. 411, 219-237.
+   Järvi L, Grimmond CSB & Christen A (2011)
+   The Surface Urban Energy and Water Balance Scheme (SUEWS): Evaluation in Los Angeles and Vancouver.
+   J. Hydrol. 411, 219-237.
 
 
 .. [W16]
@@ -308,3 +310,21 @@ References
 
 .. [B05]
    Brutsaert, W. (2005), Hydrology: an introduction, Cambridge Univ Pr, Cambridge.
+
+.. [HF07]
+   Harman IN, Finnigan JJ (2007) A simple unied theory for flow in the canopy and roughness sublayer.
+   Boundary-Layer Meteorol 123(2):339--363
+
+.. [HF08]
+   Harman, IN, Finnigan, JJ (2008) Scalar concentration profiles in the canopy and roughness sublayer.
+   Boundary-layer meteorol, 129(3), 323--351.
+
+.. [T19]
+   Theeuwes NE, Ronda RJ, Harman IN, Christen A, Grimmond CSB (2019)
+   Parametrizing Horizontally Averaged Wind and Temperature Profiles in the Urban Roughness Sublayer.
+   Boundary-Layer Meteorol accepted
+
+.. [J19]
+    Järvi, L., Havu, M., Ward, H. C., Bellucco, V., McFadden, J. P., Toivonen, T., et al. (2019).
+    Spatial modeling of local‐scale biogenic and anthropogenic carbon dioxide emissions in Helsinki.
+    Journal of Geophysical Research: Atmospheres, 124. https://doi.org/10.1029/2018JD029576

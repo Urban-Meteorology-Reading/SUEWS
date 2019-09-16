@@ -1,12 +1,12 @@
 name: Fortran prettify
 
-on: [push]
+on:
 
   # File paths to consider in the event. Optional; defaults to all
   push:
-    branches:    # Array of patterns that match refs/heads
-      - master     # Push events on master branch
-      - test-dev
+    # branches:    # Array of patterns that match refs/heads
+    #   - master     # Push events on master branch
+    #   - test-dev
   #     - 'releases/*' # Push events to branches matching refs/heads/releases/*
   #     - '!refs/pull/*'
   #   tags:        # Array of patterns that match refs/tags.

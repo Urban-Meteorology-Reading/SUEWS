@@ -298,8 +298,8 @@ PROGRAM SUEWS_Program
       ! ALLOCATE(qn1_av_store(2*NSH+1,NumberOfGrids))
       ! ALLOCATE(qn1_store_grid(NSH))
       ! ALLOCATE(qn1_av_store_grid(2*NSH+1))
-      ALLOCATE(qhforCBL(NumberOfGrids))
-      ALLOCATE(qeforCBL(NumberOfGrids))
+      ALLOCATE (qhforCBL(NumberOfGrids))
+      ALLOCATE (qeforCBL(NumberOfGrids))
       ALLOCATE (qn1_av_grids(NumberOfGrids))
       ALLOCATE (dqndt_grids(NumberOfGrids))
       !! QUESTION: Add snow clearing (?)
@@ -311,8 +311,8 @@ PROGRAM SUEWS_Program
       qn1_av_grids = 0 ! Initialise to 0
       dqndt_grids = 0 ! Initialise to 0
 
-       qhforCBL(:) = NAN
-       qeforCBL(:) = NAN
+      qhforCBL(:) = NAN
+      qeforCBL(:) = NAN
 
       ! QUESTION: Initialise other arrays here?
 
@@ -580,7 +580,7 @@ PROGRAM SUEWS_Program
          ! Initialise the modules on the first day
          ! Initialise CBL and SOLWEIG parts if required
          IF (iblock == 1) THEN
-            IF ((CBLuse == 1) .OR. (CBLuse == 2)) CALL CBL_ReadInputData(FileInputPath,qh_choice)
+            IF ((CBLuse == 1) .OR. (CBLuse == 2)) CALL CBL_ReadInputData(FileInputPath, qh_choice)
          ENDIF
 
          ! NB: SOLWEIG is disabled in v2018a
@@ -712,12 +712,12 @@ PROGRAM SUEWS_Program
       ! DEALLOCATE(qn1_av_store)
       ! DEALLOCATE(qn1_store_grid)
       ! DEALLOCATE(qn1_av_store_grid)
-      DEALLOCATE(qhforCBL)
-      DEALLOCATE(qeforCBL)
+      DEALLOCATE (qhforCBL)
+      DEALLOCATE (qeforCBL)
       DEALLOCATE (qn1_av_grids)
       DEALLOCATE (dqndt_grids)
       IF (CBLuse >= 1) THEN
-      DEALLOCATE (dataOutBL)
+         DEALLOCATE (dataOutBL)
       END IF
       ! ----------------------------------------------------------------------
 

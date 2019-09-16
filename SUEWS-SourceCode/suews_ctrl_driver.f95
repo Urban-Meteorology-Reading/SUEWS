@@ -20,8 +20,8 @@ MODULE SUEWS_Driver
    USE ctrl_output, ONLY: varListAll
    USE DailyState_module, ONLY: SUEWS_update_DailyState
    use lumps_module, only: LUMPS_cal_QHQE
-   use evap_module, only:evap_SUEWS
-   use rsl_module, only:RSLProfile
+   use evap_module, only: evap_SUEWS
+   use rsl_module, only: RSLProfile
    use anemsn_module, only: AnthropogenicEmissions
    use CO2_module, only: CO2_biogen
    use evap_module, only: evap_SUEWS
@@ -32,7 +32,7 @@ MODULE SUEWS_Driver
       ncolumnsDataOutSUEWS, ncolumnsDataOutSnow, &
       ncolumnsDataOutESTM, ncolumnsDataOutDailyState, &
       ncolumnsDataOutRSL
-   use moist, only: avcp,avdens,lv_J_kg
+   use moist, only: avcp, avdens, lv_J_kg
 
    IMPLICIT NONE
 
@@ -1978,7 +1978,7 @@ CONTAINS
       ! INTEGER,INTENT(in) :: id_prev_t
       INTEGER, INTENT(in) :: it
       INTEGER, INTENT(in) :: imin
-  !  INTEGER, INTENT(in) :: Gridiv
+      !  INTEGER, INTENT(in) :: Gridiv
       REAL(KIND(1d0)), INTENT(in) :: AdditionalWater
       REAL(KIND(1d0)), INTENT(in) :: alb(nsurf)
       REAL(KIND(1d0)), INTENT(in) :: avkdn

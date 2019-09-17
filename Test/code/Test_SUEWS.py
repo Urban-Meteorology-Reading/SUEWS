@@ -244,6 +244,9 @@ def test_multiyear(
         name_sim, name_exe, dict_runcontrol, dict_initcond, df_siteselect,
         dir_exe, dir_input, dir_save=tempfile.mkdtemp()):
 
+    print(('test_multiyear for', name_exe))
+    print(('running here:', dir_save))
+
     # generate a multi-grid SiteSelect file using only one grid
     df_siteselect_multi = gen_SiteSelect_multi(df_siteselect, n_grid=1)
 
@@ -259,9 +262,6 @@ def test_multiyear(
 
     # test if multiple years have been run
     res_test = len(res_sim_multiyear.shape) > 0
-
-    print(('test_multiyear for', name_exe))
-    print(('running here:', dir_save))
 
     return res_test
 
@@ -283,6 +283,9 @@ def test_multigrid(
             print('Directory not created.')
         else:
             raise
+
+    print(('test_multigrid for', name_exe))
+    print(('running here:', dir_save))
 
     # generate a multi-grid SiteSelect file
     df_siteselect_multi = gen_SiteSelect_multi(df_siteselect, n_grid)
@@ -322,8 +325,6 @@ def test_multigrid(
     # change back to previous path
     os.chdir(dir_sys)
 
-    print(('test_multigrid for', name_exe))
-    print(('running here:', dir_save))
 
     return res_test
 

@@ -76,8 +76,8 @@ df_siteselect = ts.load_SUEWS_table(
 class Test_SUEWS(unittest.TestCase):
     def test_ok_multiyear(self):
         print('***************************************')
-        print('testing single-grid multi-year run ... ')
         if flag_multi_year:
+            print('testing single-grid multi-year run ... ')
             name_sim = 'test-multi-year' + str(np.random.randint(10000))
             res_test = ts.test_multiyear(
                 name_sim, name_exe, dict_runcontrol, dict_initcond, df_siteselect,

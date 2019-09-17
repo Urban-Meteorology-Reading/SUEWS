@@ -20,8 +20,8 @@ MODULE SUEWS_Driver
    USE ctrl_output, ONLY: varListAll
    USE DailyState_module, ONLY: SUEWS_update_DailyState
    use lumps_module, only: LUMPS_cal_QHQE
-   use evap_module, only:evap_SUEWS
-   use rsl_module, only:RSLProfile
+   use evap_module, only: evap_SUEWS
+   use rsl_module, only: RSLProfile
    use anemsn_module, only: AnthropogenicEmissions
    use CO2_module, only: CO2_biogen
    use evap_module, only: evap_SUEWS
@@ -32,7 +32,7 @@ MODULE SUEWS_Driver
       ncolumnsDataOutSUEWS, ncolumnsDataOutSnow, &
       ncolumnsDataOutESTM, ncolumnsDataOutDailyState, &
       ncolumnsDataOutRSL
-   use moist, only: avcp,avdens,lv_J_kg
+   use moist, only: avcp, avdens, lv_J_kg
 
    IMPLICIT NONE
 
@@ -596,7 +596,7 @@ CONTAINS
          alb, albDecTr_id, DecidCap_id, albEveTr_id, albGrass_id, StoreDrainPrm, snowFrac, &!inout
          ldown, fcld, &!output
          qn1, qn1_snowfree, qn1_S, kclear, kup, lup, tsurf, &
-         qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind,&
+         qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
          alb1)
 
       ! ===================ANTHROPOGENIC HEAT AND CO2 FLUX======================
@@ -631,7 +631,7 @@ CONTAINS
          lvS_J_kg, lv_J_kg, tstep_real, RadMeltFact, TempMeltFact, SnowAlbMax, &
          SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
          nsh_real, sfr, Tsurf_ind, Tsurf_ind_snow, state_id, qn1_ind_snow, &
-         kup_ind_snow, SnowWater, deltaQi,alb1, &
+         kup_ind_snow, SnowWater, deltaQi, alb1, &
          SnowPack, snowFrac, SnowAlb, SnowDens, SnowfallCum, &!inout
          mwh, fwh, Qm, QmFreez, QmRain, &! output
          veg_fr, snowCalcSwitch, Qm_melt, Qm_freezState, Qm_rain, FreezMelt, &
@@ -1063,7 +1063,7 @@ CONTAINS
       alb, albDecTr_id, DecidCap_id, albEveTr_id, albGrass_id, StoreDrainPrm, snowFrac, &!inout
       ldown, fcld, &!output
       qn1, qn1_snowfree, qn1_S, kclear, kup, lup, tsurf, &
-      qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind,&
+      qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
       alb1)
       USE NARP_MODULE, ONLY: RadMethod, NARP
 
@@ -1160,8 +1160,8 @@ CONTAINS
          alb(GrassSurf) = albGrass_id
 
          IF (Diagnose == 1) WRITE (*, *) 'Calling NARP...'
-         IF (Diagqn == 1) WRITE (*, *) 'NetRadiationMethodX:',NetRadiationMethodX
-         IF (Diagqn == 1) WRITE (*, *) 'AlbedoChoice:',AlbedoChoice
+         IF (Diagqn == 1) WRITE (*, *) 'NetRadiationMethodX:', NetRadiationMethodX
+         IF (Diagqn == 1) WRITE (*, *) 'AlbedoChoice:', AlbedoChoice
 
          CALL NARP( &
             nsurf, sfr, snowFrac, alb, emis, IceFrac, &! input:
@@ -1170,7 +1170,7 @@ CONTAINS
             SnowAlb, &
             AlbedoChoice, ldown_option, NetRadiationMethodX, DiagQN, &
             qn1, qn1_snowfree, qn1_S, kclear, kup, LDown, lup, fcld, tsurf, &! output:
-            qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind,alb0,alb1)
+            qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, alb0, alb1)
 
       ELSE ! NetRadiationMethod==0
          snowFrac = snowFrac_obs
@@ -1988,7 +1988,7 @@ CONTAINS
       ! INTEGER,INTENT(in) :: id_prev_t
       INTEGER, INTENT(in) :: it
       INTEGER, INTENT(in) :: imin
-  !  INTEGER, INTENT(in) :: Gridiv
+      !  INTEGER, INTENT(in) :: Gridiv
       REAL(KIND(1d0)), INTENT(in) :: AdditionalWater
       REAL(KIND(1d0)), INTENT(in) :: alb(nsurf)
       REAL(KIND(1d0)), INTENT(in) :: avkdn

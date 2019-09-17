@@ -845,7 +845,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    !-----------------------------------------------------
    !-----------------------------------------------------
    ! load snow related properties for NARP
-   if ( snowuse==1 )  NARP_EMIS_SNOW = SurfaceChar(Gridiv, c_SnowEmis)
+   if (snowuse == 1) NARP_EMIS_SNOW = SurfaceChar(Gridiv, c_SnowEmis)
    !NARP_CONFIGURATION if net radiation is to be modelled
    IF (NetRadiationMethod > 0) THEN
       NARP_LAT = SurfaceChar(Gridiv, c_lat)
@@ -1243,7 +1243,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       ! DecidCap(id) = ModelDailyState(Gridiv,cMDS_DecidCap)
 
       ! SnowfallCum is instantaneous values and should be translated at each tstep, TS 17 Sep 2019
-      SnowfallCum  = ModelDailyState(Gridiv,cMDS_SnowfallCum)
+      SnowfallCum = ModelDailyState(Gridiv, cMDS_SnowfallCum)
       ! ---- Snow density of each surface
       SnowDens(1:nsurf) = ModelDailyState(Gridiv, cMDS_SnowDens(1:nsurf))
 

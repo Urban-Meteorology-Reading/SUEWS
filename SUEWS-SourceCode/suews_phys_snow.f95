@@ -1,5 +1,5 @@
 MODULE Snow_module
-   use evap_module, only:evap_suews
+   use evap_module, only: evap_suews
 
    IMPLICIT NONE
 CONTAINS
@@ -32,7 +32,7 @@ CONTAINS
       lvS_J_kg, lv_J_kg, tstep_real, RadMeltFact, TempMeltFact, SnowAlbMax, &
       SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
       nsh_real, sfr, Tsurf_ind, Tsurf_ind_snow, state_id, qn1_ind_snow, &
-      kup_ind_snow, SnowWater, deltaQi, alb1,&
+      kup_ind_snow, SnowWater, deltaQi, alb1, &
       SnowPack, snowFrac, SnowAlb, SnowDens, SnowfallCum, &!inout
       mwh, fwh, Qm, QmFreez, QmRain, &! output
       veg_fr, snowCalcSwitch, Qm_melt, Qm_freezState, Qm_rain, FreezMelt, &
@@ -157,7 +157,7 @@ CONTAINS
                         rainOnSnow(1:nsurf), & !53
                         qn1_ind_snow(1:nsurf), kup_ind_snow(1:nsurf), freezMelt(1:nsurf), & !74
                         SnowWater(1:nsurf), SnowDens(1:nsurf), & !88
-                        snowDepth(1:nsurf), Tsurf_ind_snow(1:nsurf),&
+                        snowDepth(1:nsurf), Tsurf_ind_snow(1:nsurf), &
                         alb1]
       ! dataOutLineSnow=set_nan(dataOutLineSnow)
 

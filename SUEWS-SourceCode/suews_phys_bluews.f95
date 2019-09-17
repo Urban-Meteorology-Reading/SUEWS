@@ -1,40 +1,37 @@
 MODULE BLUEWS_module
-  USE cbl_module
-  USE meteo, ONLY: qsatf,sat_vap_press_x
+   USE cbl_module
+   USE meteo, ONLY: qsatf, sat_vap_press_x
 
-  IMPLICIT NONE
-CONTAINS
-  ! Note: INTERVAL is now set to 3600 s in Initial (it is no longer set in RunControl) HCW 29 Jan 2015
-  ! Last modified:
-  !  NT 6 Apr 2017 - include top of the CBL variables in RKUTTA scheme + add flag to include or exclude subsidence
-  !  HCW 29 Mar 2017 - Changed third dimension of dataOutBL to Gridiv (was previously iMB which seems incorrect)
-  !  LJ 27 Jan 2016 - Removal of tabs
-
- SUBROUTINE CBL(iy, id, it, imin, ir, Gridiv, qh_choice, dectime,Temp_C, Press_hPa, avkdn, avu1, avrh,&
-   avcp, avdens, es_hPa, lv_J_kg, nsh_real,tstep, UStar,psih,is, NumberOfGrids, qhforCBL, qeforCBL,&
-   ReadLinesMetdata,dataOutBL)
    IMPLICIT NONE
-   INTEGER, PARAMETER:: ncolumnsdataOutBL = 22
+CONTAINS
+   ! Note: INTERVAL is now set to 3600 s in Initial (it is no longer set in RunControl) HCW 29 Jan 2015
+   ! Last modified:
+   !  NT 6 Apr 2017 - include top of the CBL variables in RKUTTA scheme + add flag to include or exclude subsidence
+   !  HCW 29 Mar 2017 - Changed third dimension of dataOutBL to Gridiv (was previously iMB which seems incorrect)
+   !  LJ 27 Jan 2016 - Removal of tabs
 
-   INTEGER,INTENT(IN):: tstep,is,NumberOfGrids,Gridiv,ReadLinesMetdata,ir
-   REAL(KIND(1d0)), INTENT(IN), DIMENSION(NumberOfGrids):: qhforCBL,qeforCBL
-   REAL(KIND(1d0)),INTENT(IN):: avkdn,nsh_real,UStar,psih
-   INTEGER,INTENT(INOUT) :: qh_choice,iy, id, it, imin
-   REAL(KIND(1d0)),INTENT(INOUT):: dectime, Press_hPa, avu1, avrh, es_hPa,avcp,avdens, lv_J_kg
-   REAL(KIND(1d0)),INTENT(OUT):: Temp_C
-   REAL(KIND(1d0)), INTENT(OUT), DIMENSION(ReadLinesMetdata, ncolumnsdataOutBL, NumberOfGrids) ::dataOutBL
+   SUBROUTINE CBL(iy, id, it, imin, ir, Gridiv, qh_choice, dectime, Temp_C, Press_hPa, avkdn, avu1, avrh, &
+                  avcp, avdens, es_hPa, lv_J_kg, nsh_real, tstep, UStar, psih, is, NumberOfGrids, qhforCBL, qeforCBL, &
+                  ReadLinesMetdata, dataOutBL)
+      IMPLICIT NONE
+      INTEGER, PARAMETER:: ncolumnsdataOutBL = 22
 
+      INTEGER, INTENT(IN):: tstep, is, NumberOfGrids, Gridiv, ReadLinesMetdata, ir
+      REAL(KIND(1d0)), INTENT(IN), DIMENSION(NumberOfGrids):: qhforCBL, qeforCBL
+      REAL(KIND(1d0)), INTENT(IN):: avkdn, nsh_real, UStar, psih
+      INTEGER, INTENT(INOUT) :: qh_choice, iy, id, it, imin
+      REAL(KIND(1d0)), INTENT(INOUT):: dectime, Press_hPa, avu1, avrh, es_hPa, avcp, avdens, lv_J_kg
+      REAL(KIND(1d0)), INTENT(OUT):: Temp_C
+      REAL(KIND(1d0)), INTENT(OUT), DIMENSION(ReadLinesMetdata, ncolumnsdataOutBL, NumberOfGrids) ::dataOutBL
 
-
-   REAL(KIND(1d0))::  gas_ct_dry = 8.31451/0.028965 !j/kg/k=dry_gas/molar
-   REAL(KIND(1d0))::  gas_ct_wv = 8.31451/0.0180153 !j/kg/kdry_gas/molar_wat_vap
-   REAL(KIND(1d0))::qh_use, qe_use, tm_K_zm, qm_gkg_zm
-   REAL(KIND(1d0))::Temp_C1, avrh1, es_hPa1
-   REAL(KIND(1d0))::secs0, secs1, Lv
-   REAL(KIND(1d0))::notUsed = -55.55, NAN = -999
-   INTEGER::idoy, startflag, iNBL,&
-            notUsedI = -55
-
+      REAL(KIND(1d0))::  gas_ct_dry = 8.31451/0.028965 !j/kg/k=dry_gas/molar
+      REAL(KIND(1d0))::  gas_ct_wv = 8.31451/0.0180153 !j/kg/kdry_gas/molar_wat_vap
+      REAL(KIND(1d0))::qh_use, qe_use, tm_K_zm, qm_gkg_zm
+      REAL(KIND(1d0))::Temp_C1, avrh1, es_hPa1
+      REAL(KIND(1d0))::secs0, secs1, Lv
+      REAL(KIND(1d0))::notUsed = -55.55, NAN = -999
+      INTEGER::idoy, startflag, iNBL, &
+                notUsedI = -55
 
       ! initialise startflag
       startflag = 0
@@ -47,7 +44,7 @@ CONTAINS
       ! IF (ifirst == 1) THEN
       !    iCBLcount = 0
       ! ENDIF
-    !  print*,IniCBLdata
+      !  print*,IniCBLdata
       !write(*,*) DateTIme
       !Skip first loop and unspecified days
       !IF((ifirst==1 .AND. iMB==1) .OR. CBLday(id)==0) THEN   !HCW modified condition to check for first timestep of the model run
@@ -75,14 +72,14 @@ CONTAINS
          !    CALL CBL_initial(qh_use, qe_use, tm_K_zm, qm_gkg_zm, startflag, Gridiv)
          !    RETURN
          ! ELSE
-            !ADD NBL for Night:(1)Fixed input/output NBL; (2) Input Fixed Theta,Q to SUEWS; (3) Currently NBL eq 200 m
-            CALL NBL(iy, id, it, imin,dectime,ir,qh_choice,qh_use, qe_use, tm_K_zm, qm_gkg_zm, startflag, Gridiv, &
-             psih, UStar,Temp_C, &
-             NumberOfGrids,qhforCBL,qeforCBL,&
-             Press_hPa, avu1, avrh, &
-             readLinesMetdata,dataOutBL,&
-             avcp, avdens, es_hPa,lv_J_kg)
-            RETURN
+         !ADD NBL for Night:(1)Fixed input/output NBL; (2) Input Fixed Theta,Q to SUEWS; (3) Currently NBL eq 200 m
+         CALL NBL(iy, id, it, imin, dectime, ir, qh_choice, qh_use, qe_use, tm_K_zm, qm_gkg_zm, startflag, Gridiv, &
+                  psih, UStar, Temp_C, &
+                  NumberOfGrids, qhforCBL, qeforCBL, &
+                  Press_hPa, avu1, avrh, &
+                  readLinesMetdata, dataOutBL, &
+                  avcp, avdens, es_hPa, lv_J_kg)
+         RETURN
          ! ENDIF
       ENDIF
 
@@ -245,15 +242,14 @@ CONTAINS
 
    !-----------------------------------------------------------------------
    !-----------------------------------------------------------------------
-   SUBROUTINE CBL_ReadInputData(FileInputPath,qh_choice)
+   SUBROUTINE CBL_ReadInputData(FileInputPath, qh_choice)
 
       IMPLICIT NONE
       INTEGER, INTENT(INOUT)::qh_choice
-      CHARACTER(len=150),INTENT(IN):: FileInputPath
+      CHARACTER(len=150), INTENT(IN):: FileInputPath
 
       INTEGER::i, ios
       REAL(KIND(1d0))::l
-
 
       NAMELIST /CBLInput/ EntrainmentType, &
          QH_choice, &
@@ -282,7 +278,7 @@ CONTAINS
          ENDDO
          CLOSE (52)
 
-         if(allocated(IniCBLdata)) deallocate(IniCBLdata)
+         if (allocated(IniCBLdata)) deallocate (IniCBLdata)
          ALLOCATE (IniCBLdata(1:nlineInData, 1:8))
          OPEN (52, file=TRIM(FileInputPath)//TRIM(InitialDataFileName), status='old', err=25)
          READ (52, *)
@@ -355,7 +351,7 @@ CONTAINS
       ! iCBLcount = iCBLcount + 1
       ! write(*,*) 'cblinitial', DateTIme, iCBLcount
       dataOutBL(ir, 1:ncolumnsdataOutBL, Gridiv) = (/REAL(iy, 8), REAL(id, 8), REAL(it, 8), REAL(imin, 8), dectime, &
-                                                            (NAN, is=6, ncolumnsdataOutBL)/)
+                                                     (NAN, is=6, ncolumnsdataOutBL)/)
 
       nLineDay = 0
       DO i = 1, nlineInData
@@ -428,33 +424,28 @@ CONTAINS
 
    END SUBROUTINE CBL_initial
 
+   SUBROUTINE NBL(iy, id, it, imin, dectime, ir, qh_choice, qh_use, qe_use, &
+                  tm_K_zm, qm_gkg_zm, startflag, Gridiv, &
+                  psih, UStar, Temp_C, NumberOfGrids, qhforCBL, qeforCBL, Press_hPa, avu1, avrh, &
+                  ReadLinesMetdata, dataOutBL, &
+                  avcp, avdens, es_hPa, lv_J_kg)
 
-     SUBROUTINE NBL(iy, id, it, imin, dectime, ir,qh_choice, qh_use, qe_use, &
-      tm_K_zm, qm_gkg_zm, startflag, Gridiv,&
-      psih, UStar,Temp_C, NumberOfGrids,qhforCBL,qeforCBL,Press_hPa, avu1, avrh, &
-      ReadLinesMetdata,dataOutBL,&
-      avcp, avdens, es_hPa,lv_J_kg)
+      IMPLICIT NONE
+      INTEGER, PARAMETER:: ncolumnsdataOutBL = 22
 
+      INTEGER, INTENT(IN) :: qh_choice, iy, id, it, imin, NumberOfGrids, ReadLinesMetdata, ir
+      REAL(KIND(1d0)), INTENT(IN)::  Press_hPa, psih, UStar
+      REAL(KIND(1d0)), INTENT(OUT):: Temp_C, tm_K_zm, qm_gkg_zm
+      REAL(KIND(1d0)), INTENT(INOUT):: dectime, avu1, avRH, avcp, avdens, es_hPa, lv_J_kg
+      REAL(KIND(1d0)), INTENT(IN), DIMENSION(NumberOfGrids):: qhforCBL, qeforCBL
+      REAL(KIND(1d0)), INTENT(OUT), DIMENSION(ReadLinesMetdata, ncolumnsdataOutBL, NumberOfGrids) ::dataOutBL
 
-
-        IMPLICIT NONE
-        INTEGER, PARAMETER:: ncolumnsdataOutBL = 22
-
-        INTEGER,INTENT(IN) :: qh_choice,iy, id, it, imin,NumberOfGrids,ReadLinesMetdata,ir
-        REAL(KIND(1d0)),INTENT(IN)::  Press_hPa, psih, UStar
-        REAL(KIND(1d0)),INTENT(OUT):: Temp_C,tm_K_zm, qm_gkg_zm
-        REAL(KIND(1d0)),INTENT(INOUT):: dectime, avu1, avRH,avcp, avdens,es_hPa, lv_J_kg
-        REAL(KIND(1d0)), INTENT(IN), DIMENSION(NumberOfGrids):: qhforCBL,qeforCBL
-        REAL(KIND(1d0)), INTENT(OUT), DIMENSION(ReadLinesMetdata, ncolumnsdataOutBL, NumberOfGrids) ::dataOutBL
-
-        REAL(KIND(1d0)) :: &
-                     k = 0.4, &       !Von Karman's contant
-                     gas_ct_dry = 8.31451/0.028965  !j/kg/k=dry_gas/molar
-        REAL(KIND(1d0))::qh_use, qe_use
-        REAL(KIND(1d0))::lv
-        INTEGER::i, nLineDay, Gridiv, startflag
-
-
+      REAL(KIND(1d0)) :: &
+         k = 0.4, &       !Von Karman's contant
+         gas_ct_dry = 8.31451/0.028965  !j/kg/k=dry_gas/molar
+      REAL(KIND(1d0))::qh_use, qe_use
+      REAL(KIND(1d0))::lv
+      INTEGER::i, nLineDay, Gridiv, startflag
 
       qh_use = qhforCBL(Gridiv)   !HCW 21 Mar 2017
       qe_use = qeforCBL(Gridiv)
@@ -488,7 +479,6 @@ CONTAINS
       qp_gkg = IniCBLdata(nLineDay, 6)
       tm_K = IniCBLdata(nLineDay, 7)
       qm_gkg = IniCBLdata(nLineDay, 8)
-
 
       ! dataOutBL(iCBLcount,1:ncolumnsdataOutBL,Gridiv)=(/REAL(iy,8),REAL(id,8),REAL(it,8),REAL(imin,8),&
       ! dectime,blh_m,tm_K,qm_gkg,&

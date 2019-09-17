@@ -410,6 +410,7 @@ def test_physics(name_exe, dir_input, dir_exe,
                  dict_runcontrol, dict_initcond, df_siteselect,
                  dict_phy_opt_sel,
                  test_complete=True,
+                 test_number=50,
                  dir_save=tempfile.mkdtemp()):
 
     print(('test_physics for', name_exe))
@@ -428,7 +429,7 @@ def test_physics(name_exe, dir_input, dir_exe,
     else:
         # 2. simple test by incorporating each entry into the basis scheme options
         # faster but less coverage
-        list_to_test= np.random.choice(list_to_test_all, 50).tolist()
+        list_to_test = np.random.choice(list_to_test_all, test_number).tolist()
         # list_to_test = []
         # for method in dict_phy_opt_sel:
         #     options = dict_phy_opt_sel[method]

@@ -55,6 +55,7 @@ flag_multi_grid = True if cfg_test['multi_grid'] == 1 else False
 flag_multi_year = True if cfg_test['multi_year'] == 1 else False
 flag_same_run = True if cfg_test['same_run'] == 1 else False
 flag_test_complete = True if cfg_test['test_complete'] == 1 else False
+test_number = cfg_test['test_number']
 
 # load physics options to test
 dict_phy_opt_sel = nml['physics_test']
@@ -74,43 +75,49 @@ df_siteselect = ts.load_SUEWS_table(
 # test case class for unit test
 class Test_SUEWS(unittest.TestCase):
     def test_ok_multiyear(self):
-        # if flag_multi_year:
         print('***************************************')
         print('testing single-grid multi-year run ... ')
-        name_sim = 'test-multi-year' + str(np.random.randint(10000))
-        res_test = ts.test_multiyear(
-            name_sim, name_exe, dict_runcontrol, dict_initcond, df_siteselect,
-            dir_exe, path_input_ver)
-        self.assertTrue(res_test)
+        if flag_multi_year:
+            name_sim = 'test-multi-year' + str(np.random.randint(10000))
+            res_test = ts.test_multiyear(
+                name_sim, name_exe, dict_runcontrol, dict_initcond, df_siteselect,
+                dir_exe, path_input_ver)
+            self.assertTrue(res_test)
+        else:
+            print('single-grid multi-year test skipped ... ')
         print('  ')
         print('***************************************')
 
     def test_ok_multigrid(self):
-        # if flag_multi_grid:
         print('')
         print('***************************************')
-        print('testing multi-grid multi-year run ... ')
-        n_grid = 3
-        name_sim = 'test-multi-grid' + str(np.random.randint(10000))
-        res_test = ts.test_multigrid(
-            name_sim, name_exe,
-            dict_runcontrol, dict_initcond, df_siteselect,
-            n_grid, dir_exe, path_input_ver)
-        self.assertTrue(res_test)
+        if flag_multi_grid:
+            print('testing multi-grid multi-year run ... ')
+            n_grid = 3
+            name_sim = 'test-multi-grid' + str(np.random.randint(10000))
+            res_test = ts.test_multigrid(
+                name_sim, name_exe,
+                dict_runcontrol, dict_initcond, df_siteselect,
+                n_grid, dir_exe, path_input_ver)
+            self.assertTrue(res_test)
+        else:
+            print('multi-grid multi-year test skipped ... ')
         print('  ')
         print('***************************************')
 
     def test_ok_samerun(self):
-        # if flag_same_run:
         print('')
         print('****************************************************')
-        print('testing if results could match the standard run ... ')
-        name_sim = 'test-same-run' + str(np.random.randint(10000))
-        res_test = ts.test_samerun(name_sim, name_exe,
-                                    dict_runcontrol, dict_initcond,
-                                    df_siteselect,
-                                    dir_exe, path_baserun)
-        self.assertTrue(res_test)
+        if flag_same_run:
+            print('testing if results could match the standard run ... ')
+            name_sim = 'test-same-run' + str(np.random.randint(10000))
+            res_test = ts.test_samerun(name_sim, name_exe,
+                                        dict_runcontrol, dict_initcond,
+                                        df_siteselect,
+                                        dir_exe, path_baserun)
+            self.assertTrue(res_test)
+        else:
+            print('identity test skipped ... ')
         print('  ')
         print('****************************************************')
 
@@ -127,7 +134,8 @@ class Test_SUEWS(unittest.TestCase):
             name_exe, path_input_ver, dir_exe,
             dict_runcontrol, dict_initcond, df_siteselect,
             dict_phy_opt_sel,
-            flag_test_complete
+            flag_test_complete,
+            test_number
         )
 
         # `0` means no failure: all options can pass test

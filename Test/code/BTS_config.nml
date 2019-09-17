@@ -10,9 +10,10 @@
     multi_year = 1
     same_run = 1
     test_complete = 0
+    test_number=100
 /
 
-&physics_test ! all available options in 2018b below
+&physics_test ! all available options in 2019a below
     snowuse            = 0, 1
     cbluse             = 0, 1
     stabilitymethod    = 2, 3

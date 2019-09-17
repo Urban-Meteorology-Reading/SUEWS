@@ -471,8 +471,8 @@ contains
 !          Zh = bldgH*sfr(BldgSurf)/areaZh + EveTreeH*sfr(ConifSurf)/areaZh + DecTreeH*(1 - porosity_id)*sfr(DecidSurf)/areaZh
 ! planF = FAIBldg*sfr(BldgSurf)/areaZh + FAIEveTree*sfr(ConifSurf)/areaZh + FAIDecTree*(1 - porosity_id)*sfr(DecidSurf)/areaZh  ! NT: added calculation of FAI here
 
-         Zh = dot_product([bldgH,EveTreeH,DecTreeH*(1 - porosity_id)],sfr([BldgSurf,ConifSurf,DecidSurf]))/areaZh
-         planF = dot_product([FAIBldg,FAIEveTree,FAIDecTree*(1 - porosity_id)],sfr([BldgSurf,ConifSurf,DecidSurf]))/areaZh
+         Zh = dot_product([bldgH, EveTreeH, DecTreeH*(1 - porosity_id)], sfr([BldgSurf, ConifSurf, DecidSurf]))/areaZh
+         planF = dot_product([FAIBldg, FAIEveTree, FAIDecTree*(1 - porosity_id)], sfr([BldgSurf, ConifSurf, DecidSurf]))/areaZh
       ELSE
          Zh = 0   !Set Zh to zero if areaZh = 0
          planF = 0.00001

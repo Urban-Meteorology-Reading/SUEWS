@@ -102,8 +102,8 @@ CONTAINS
       AlbedoChoice, ldown_option, &
       NetRadiationMethodX, DiagQN, &
       QSTARall, QSTAR_SF, QSTAR_S, kclear, KUPall, LDOWN, LUPall, fcld, TSURFall, &! output:
-      qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind,&
-      alb0,alb1)
+      qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
+      alb0, alb1)
       !KCLEAR,FCLD,DTIME,KDOWN,QSTARall,KUPall,LDOWN,LUPall,TSURFall,&
       !AlbedoChoice,ldown_option,Temp_C,Press_hPa,Ea_hPa,qn1_obs,RH,&
       !,zenith_degnetRadiationChoice,
@@ -247,10 +247,10 @@ CONTAINS
       QSTAR_SF = 0
       QSTAR_S = 0
 
-      qn1_ind_snow=0
-      kup_ind_snow=0
-      lup_ind_snow=0
-      Tsurf_ind_snow=0
+      qn1_ind_snow = 0
+      kup_ind_snow = 0
+      lup_ind_snow = 0
+      Tsurf_ind_snow = 0
 
       !Total snowfree surface fraction
       SF_all = 0

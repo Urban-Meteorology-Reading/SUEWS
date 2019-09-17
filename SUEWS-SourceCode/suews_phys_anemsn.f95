@@ -1,7 +1,6 @@
 module AnEmsn_module
    implicit none
 
-
    !===================================================================================
    !Simple Anthropogenic Heat and Carbon Dioxide Parameterization routines
    !This subroutine is still under development and in the equations concerning CO2 fluxes
@@ -25,7 +24,7 @@ module AnEmsn_module
    !
    !===================================================================================
 
-   contains
+contains
 
    SUBROUTINE AnthropogenicEmissions( &
       CO2PointSource, EmissionsMethod, &

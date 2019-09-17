@@ -75,7 +75,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       AHProf_24Hr, HumActivity_24Hr, PopProf_24Hr, TraffProf_24Hr, WUProfA_24hr, WUProfM_24hr, &
       datetimeline, dataoutlinesuews, dataoutlinesnow, &
       dataoutlineestm, dataoutlineRSL, dailystateline, dataoutdailystate, &
-      dataoutsuews, dataoutsnow, dataoutestm, dataoutRSL,&
+      dataoutsuews, dataoutsnow, dataoutestm, dataoutRSL, &
       dataoutBL
    USE sues_data, ONLY: &
       aerodynamicresistancemethod, daywat, daywatper, faut, flowchange, &
@@ -83,7 +83,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       irrfracconif, irrfracdecid, irrfracgrass, &
       pipecapacity, roughlenheatmethod, runofftowater, stabilitymethod, &
       surfacearea, tstep, tstep_prev, &
-      qhforCBL, qeforCBL, qh_choice, nsh_real, UStar,psih,is
+      qhforCBL, qeforCBL, qh_choice, nsh_real, UStar, psih, is
    USE snowMod, ONLY: &
       crwmax, crwmin, preciplimit, preciplimitalb, radmeltfact, &
       snowalb, snowAlbMax, snowAlbMin, &
@@ -175,26 +175,26 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
 
    ! NB: CBL disabled for the moment for interface improvement
    ! NB: CBL be decoupled from SUEWS TS 10 Jun 2018
-   IF(Qh_choice==1) THEN   !use QH and QE from SUEWS
+   IF (Qh_choice == 1) THEN   !use QH and QE from SUEWS
       qhforCBL(Gridiv) = dataOutLineSUEWS(9)
       qeforCBL(Gridiv) = dataOutLineSUEWS(10)
-   ELSEIF(Qh_choice==2)THEN   !use QH and QE from LUMPS
+   ELSEIF (Qh_choice == 2) THEN   !use QH and QE from LUMPS
       qhforCBL(Gridiv) = dataOutLineSUEWS(11)
       qeforCBL(Gridiv) = dataOutLineSUEWS(12)
-   ELSEIF(qh_choice==3)THEN  !use QH and QE from OBS
+   ELSEIF (qh_choice == 3) THEN  !use QH and QE from OBS
       qhforCBL(Gridiv) = qh_obs
       qeforCBL(Gridiv) = qe_obs
-      IF(qh_obs<-900.OR.qe_obs<-900)THEN  ! observed data has a problem
-         CALL ErrorHint(22,'Unrealistic observed qh or qe_value.',qh_obs,qe_obs,qh_choice)
+      IF (qh_obs < -900 .OR. qe_obs < -900) THEN  ! observed data has a problem
+         CALL ErrorHint(22, 'Unrealistic observed qh or qe_value.', qh_obs, qe_obs, qh_choice)
       ENDIF
    ENDIF
-   IF(CBLuse>=1)THEN ! If CBL is used, calculated Temp_C and RH are replaced with the obs.
-      IF(Diagnose==1) WRITE(*,*) 'Calling CBL...'
+   IF (CBLuse >= 1) THEN ! If CBL is used, calculated Temp_C and RH are replaced with the obs.
+      IF (Diagnose == 1) WRITE (*, *) 'Calling CBL...'
       ! we need the following:
       ! avdens, lv_J_kg, avcp, UStar, psih
       UStar = dataOutLineSUEWS(55)
-      CALL CBL(iy, id, it, imin,ir, Gridiv,qh_choice,dectime,Temp_C, Press_hPa,avkdn, avu1, avrh, avcp, avdens, es_hPa, lv_J_kg,&
-       nsh_real, tstep, UStar, psih, is,NumberOfGrids,qhforCBL,qeforCBL,ReadLinesMetdata,dataOutBL)   !ir=1 indicates first row of each met data block
+   CALL CBL(iy, id, it, imin, ir, Gridiv, qh_choice, dectime, Temp_C, Press_hPa, avkdn, avu1, avrh, avcp, avdens, es_hPa, lv_J_kg, &
+               nsh_real, tstep, UStar, psih, is, NumberOfGrids, qhforCBL, qeforCBL, ReadLinesMetdata, dataOutBL)   !ir=1 indicates first row of each met data block
    ENDIF
 
    ! NB: SOLWEIG can be treated as a separate part:

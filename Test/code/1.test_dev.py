@@ -35,7 +35,7 @@ if path_input_ver.exists():
 
 # copy runcontrol
 path_runctrl_base = path_baserun/'RunControl.nml'
-path_runctrl_input=path_input_ver/'RunControl.nml'
+path_runctrl_input = path_input_ver/'RunControl.nml'
 copyfile(path_runctrl_base, path_runctrl_input)
 dict_runcontrol = ts.load_SUEWS_nml(path_runctrl_base)['runcontrol']
 # copy other input tables and initial conditions
@@ -48,6 +48,13 @@ for x in path_base_input.glob('*'):
 
 # load name of programme for testing
 name_exe = cfg_file['name_exe']
+
+# load test configurations
+cfg_test = nml['test']
+flag_multi_grid = True if cfg_test['multi_grid'] == 1 else False
+flag_multi_year = True if cfg_test['multi_year'] == 1 else False
+flag_same_run = True if cfg_test['same_run'] == 1 else False
+flag_test_complete = True if cfg_test['test_complete'] == 1 else False
 
 # load physics options to test
 dict_phy_opt_sel = nml['physics_test']
@@ -67,6 +74,7 @@ df_siteselect = ts.load_SUEWS_table(
 # test case class for unit test
 class Test_SUEWS(unittest.TestCase):
     def test_ok_multiyear(self):
+        # if flag_multi_year:
         print('***************************************')
         print('testing single-grid multi-year run ... ')
         name_sim = 'test-multi-year' + str(np.random.randint(10000))
@@ -78,6 +86,7 @@ class Test_SUEWS(unittest.TestCase):
         print('***************************************')
 
     def test_ok_multigrid(self):
+        # if flag_multi_grid:
         print('')
         print('***************************************')
         print('testing multi-grid multi-year run ... ')
@@ -92,14 +101,15 @@ class Test_SUEWS(unittest.TestCase):
         print('***************************************')
 
     def test_ok_samerun(self):
+        # if flag_same_run:
         print('')
         print('****************************************************')
         print('testing if results could match the standard run ... ')
         name_sim = 'test-same-run' + str(np.random.randint(10000))
         res_test = ts.test_samerun(name_sim, name_exe,
-                                   dict_runcontrol, dict_initcond,
-                                   df_siteselect,
-                                   dir_exe, path_baserun)
+                                    dict_runcontrol, dict_initcond,
+                                    df_siteselect,
+                                    dir_exe, path_baserun)
         self.assertTrue(res_test)
         print('  ')
         print('****************************************************')
@@ -108,11 +118,17 @@ class Test_SUEWS(unittest.TestCase):
         print('')
         print('************************************************')
         print('testing if some physics schemes are working ... ')
+        if flag_test_complete:
+            print('testing in complete mode: all physics schemes will be tested!')
+        else:
+            print('testing in concise mode: only part of physics schemes will be tested!')
         # show options to test
         res_list_fail = ts.test_physics(
             name_exe, path_input_ver, dir_exe,
             dict_runcontrol, dict_initcond, df_siteselect,
-            dict_phy_opt_sel)
+            dict_phy_opt_sel,
+            flag_test_complete
+        )
 
         # `0` means no failure: all options can pass test
         res_test = len(res_list_fail) == 0

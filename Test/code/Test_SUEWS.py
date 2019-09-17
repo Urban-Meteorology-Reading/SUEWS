@@ -5,7 +5,7 @@ from __future__ import print_function
 
 import errno
 import filecmp
-# import itertools
+import itertools
 import os
 import tempfile
 from glob import glob
@@ -409,29 +409,34 @@ def test_samerun(name_sim, name_exe,
 def test_physics(name_exe, dir_input, dir_exe,
                  dict_runcontrol, dict_initcond, df_siteselect,
                  dict_phy_opt_sel,
+                 test_complete=True,
                  dir_save=tempfile.mkdtemp()):
 
     print(('test_physics for', name_exe))
     print('running here:', dir_save)
 
     # get options to test
-    # !. matrix-like combinations of all test options
-    # really time consuming!
-    # methods, options = list(zip(*list(dict_phy_opt_sel.items())))
-    # options = [x if type(x) == list else [x] for x in options]
-    # list_to_test = [dict(list(zip(methods, v)))
-    #                 for v in itertools.product(*options)]
-
-    # 2. simple test by incorporating each eatry into the basis scheme options
-    # faster but less coverage
-    list_to_test = []
-    for method in dict_phy_opt_sel:
-        options = dict_phy_opt_sel[method]
-        if type(options) == list:
-            for x in options:
-                list_to_test.append({method: x})
-        else:
-            list_to_test.append({method: options})
+    # matrix-like combinations of all test options
+    methods, options = list(zip(*list(dict_phy_opt_sel.items())))
+    options = [x if type(x) == list else [x] for x in options]
+    list_to_test_all = [dict(list(zip(methods, v)))
+                    for v in itertools.product(*options)]
+    if test_complete:
+        # 1. use all possible combinations
+        # really time consuming!
+        list_to_test=list_to_test_all
+    else:
+        # 2. simple test by incorporating each entry into the basis scheme options
+        # faster but less coverage
+        list_to_test= np.random.choice(list_to_test_all, 50).tolist()
+        # list_to_test = []
+        # for method in dict_phy_opt_sel:
+        #     options = dict_phy_opt_sel[method]
+        #     if type(options) == list:
+        #         for x in options:
+        #             list_to_test.append({method: x})
+        #     else:
+        #         list_to_test.append({method: options})
 
     print('number of tests:', len(list_to_test))
     # test selected physics schemes
@@ -453,8 +458,8 @@ def test_physics(name_exe, dir_input, dir_exe,
     dict_test_OK = {k: 'fail' if type(v) == str else 'pass'
                     for k, v in iter(dict_test.items())}
 
-    df_test = pd.DataFrame(list_to_test).assign(
-        result=list(dict_test_OK.values()))
+    df_test = pd.DataFrame(list_to_test)
+    df_test = df_test.assign(result=list(dict_test_OK.values()))
 
     df_test.to_csv('~/df_test.csv')
     # test results

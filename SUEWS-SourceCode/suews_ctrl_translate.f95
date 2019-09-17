@@ -844,15 +844,15 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
 
    !-----------------------------------------------------
    !-----------------------------------------------------
+   ! load snow related properties for NARP
+   if ( snowuse==1 )  NARP_EMIS_SNOW = SurfaceChar(Gridiv, c_SnowEmis)
    !NARP_CONFIGURATION if net radiation is to be modelled
    IF (NetRadiationMethod > 0) THEN
       NARP_LAT = SurfaceChar(Gridiv, c_lat)
       NARP_LONG = SurfaceChar(Gridiv, c_lng)    ! New sun_position_v2 use degrees FL
       NARP_YEAR = INT(SurfaceChar(Gridiv, c_Year))
       NARP_TZ = TIMEZONE                           !not every 5-min
-      NARP_EMIS_SNOW = SurfaceChar(Gridiv, c_SnowEmis)
       NARP_TRANS_SITE = TRANS_SITE
-
       !INTERVAL IS ONLY RELEVANT TO LUPCORR
       !ALL OTHER CALCULATIONS ARE INTERVAL INDEPENDENT
       !NB FOR INTERVALS LONGER THAN 15 MINUTES ERRORS IN KCLEAR WILL BE GREATER

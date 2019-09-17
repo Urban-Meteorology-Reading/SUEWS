@@ -319,7 +319,8 @@ MODULE ctrl_output
       varAttr('Tsnow_DecTr', 'degC', f146, 'Snow surface temperature for deciduous tree surface', aA, 'snow', 0), &
       varAttr('Tsnow_Grass', 'degC', f146, 'Snow surface temperature for grass surface', aA, 'snow', 0), &
       varAttr('Tsnow_BSoil', 'degC', f146, 'Snow surface temperature for bare soil surface', aA, 'snow', 0), &
-      varAttr('Tsnow_Water', 'degC', f146, 'Snow surface temperature for water surface', aA, 'snow', 0) &
+      varAttr('Tsnow_Water', 'degC', f146, 'Snow surface temperature for water surface', aA, 'snow', 0), &
+      varAttr('SnowAlb', '-', f146, 'Surface albedo for snow/ice', aA, 'snow', 0) &
       /
 
    ! ESTM:

@@ -102,7 +102,8 @@ CONTAINS
       AlbedoChoice, ldown_option, &
       NetRadiationMethodX, DiagQN, &
       QSTARall, QSTAR_SF, QSTAR_S, kclear, KUPall, LDOWN, LUPall, fcld, TSURFall, &! output:
-      qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind)
+      qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind,&
+      alb0,alb1)
       !KCLEAR,FCLD,DTIME,KDOWN,QSTARall,KUPall,LDOWN,LUPall,TSURFall,&
       !AlbedoChoice,ldown_option,Temp_C,Press_hPa,Ea_hPa,qn1_obs,RH,&
       !,zenith_degnetRadiationChoice,
@@ -193,6 +194,9 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out) ::Tsurf_ind_snow
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out) ::Tsurf_ind
 
+      REAL(KIND(1d0)), INTENT(out) ::alb0
+      REAL(KIND(1d0)), INTENT(out) ::alb1
+
       REAL(KIND(1d0)), DIMENSION(nsurf) ::qn1_ind
       REAL(KIND(1d0)), DIMENSION(nsurf) ::kup_ind
       REAL(KIND(1d0)), DIMENSION(nsurf) ::lup_ind
@@ -204,13 +208,13 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(nsurf) ::lup_ind_snow
 
       REAL(KIND(1D0)) ::Temp_K, TD, ZENITH, QSTAR, QSTAR_SNOW, KUP_SNOW, LUP_SNOW, TSURF_SNOW, KUP, LUP, TSURF
-      REAL(KIND(1D0)) ::ALB0, EMIS0, EMIS_A, TRANS!,RH,DTIME,KDOWN
+      REAL(KIND(1D0)) ::EMIS0, EMIS_A, TRANS!,RH,DTIME,KDOWN
       REAL(KIND(1D0)) ::LUPCORR, SIGMATK4, KDOWN_HR = 0.
       INTEGER         ::DOY, is
 
       REAL(KIND(1D0))::qn1_cum, kup_cum, lup_cum, tsurf_cum, &   !Cumulative radiation components
                         qn1_is, kup_is, lup_is, tsurf_is, &       !Sub-surface radiation components
-                        SF_all, ALB1
+                        SF_all
 
       REAL(KIND(1D0)), PARAMETER   :: DEG2RAD = 0.017453292
       ! REAL(KIND(1D0)),PARAMETER   ::RAD2DEG=57.29577951
@@ -242,6 +246,11 @@ CONTAINS
 
       QSTAR_SF = 0
       QSTAR_S = 0
+
+      qn1_ind_snow=0
+      kup_ind_snow=0
+      lup_ind_snow=0
+      Tsurf_ind_snow=0
 
       !Total snowfree surface fraction
       SF_all = 0

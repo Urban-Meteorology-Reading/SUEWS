@@ -498,9 +498,13 @@ CONTAINS
       REAL(KIND(1D0))::PervFraction
       REAL(KIND(1D0))::NonWaterFraction
 
+      ! snow related temporary values
+      REAL(KIND(1D0))::alb0
+      REAL(KIND(1D0))::alb1
+
       ! Related to RSL wind profiles
       INTEGER, PARAMETER :: nz = 90   ! number of levels 10 levels in canopy plus 20 (3 x Zh) above the canopy
-      REAL(KIND(1d0)), DIMENSION(nz):: zarrays ! Height array
+      ! REAL(KIND(1d0)), DIMENSION(nz):: zarrays ! Height array
 
       ! ########################################################################################
 
@@ -592,7 +596,8 @@ CONTAINS
          alb, albDecTr_id, DecidCap_id, albEveTr_id, albGrass_id, StoreDrainPrm, snowFrac, &!inout
          ldown, fcld, &!output
          qn1, qn1_snowfree, qn1_S, kclear, kup, lup, tsurf, &
-         qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind)
+         qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind,&
+         alb1)
 
       ! ===================ANTHROPOGENIC HEAT AND CO2 FLUX======================
       CALL SUEWS_cal_AnthropogenicEmission( &
@@ -626,7 +631,7 @@ CONTAINS
          lvS_J_kg, lv_J_kg, tstep_real, RadMeltFact, TempMeltFact, SnowAlbMax, &
          SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
          nsh_real, sfr, Tsurf_ind, Tsurf_ind_snow, state_id, qn1_ind_snow, &
-         kup_ind_snow, SnowWater, deltaQi, &
+         kup_ind_snow, SnowWater, deltaQi,alb1, &
          SnowPack, snowFrac, SnowAlb, SnowDens, SnowfallCum, &!inout
          mwh, fwh, Qm, QmFreez, QmRain, &! output
          veg_fr, snowCalcSwitch, Qm_melt, Qm_freezState, Qm_rain, FreezMelt, &
@@ -1058,7 +1063,8 @@ CONTAINS
       alb, albDecTr_id, DecidCap_id, albEveTr_id, albGrass_id, StoreDrainPrm, snowFrac, &!inout
       ldown, fcld, &!output
       qn1, qn1_snowfree, qn1_S, kclear, kup, lup, tsurf, &
-      qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind)
+      qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind,&
+      alb1)
       USE NARP_MODULE, ONLY: RadMethod, NARP
 
       IMPLICIT NONE
@@ -1108,6 +1114,8 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(out)::kup
       REAL(KIND(1d0)), INTENT(out)::lup
       REAL(KIND(1d0)), INTENT(out)::tsurf
+      REAL(KIND(1d0)), INTENT(out)::alb1
+      REAL(KIND(1d0))::alb0
 
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out) ::qn1_ind_snow
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out) ::kup_ind_snow
@@ -1152,6 +1160,8 @@ CONTAINS
          alb(GrassSurf) = albGrass_id
 
          IF (Diagnose == 1) WRITE (*, *) 'Calling NARP...'
+         IF (Diagqn == 1) WRITE (*, *) 'NetRadiationMethodX:',NetRadiationMethodX
+         IF (Diagqn == 1) WRITE (*, *) 'AlbedoChoice:',AlbedoChoice
 
          CALL NARP( &
             nsurf, sfr, snowFrac, alb, emis, IceFrac, &! input:
@@ -1160,7 +1170,7 @@ CONTAINS
             SnowAlb, &
             AlbedoChoice, ldown_option, NetRadiationMethodX, DiagQN, &
             qn1, qn1_snowfree, qn1_S, kclear, kup, LDown, lup, fcld, tsurf, &! output:
-            qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind)
+            qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind,alb0,alb1)
 
       ELSE ! NetRadiationMethod==0
          snowFrac = snowFrac_obs

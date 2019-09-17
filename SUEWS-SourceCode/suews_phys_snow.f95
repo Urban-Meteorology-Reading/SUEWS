@@ -32,7 +32,7 @@ CONTAINS
       lvS_J_kg, lv_J_kg, tstep_real, RadMeltFact, TempMeltFact, SnowAlbMax, &
       SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
       nsh_real, sfr, Tsurf_ind, Tsurf_ind_snow, state_id, qn1_ind_snow, &
-      kup_ind_snow, SnowWater, deltaQi, &
+      kup_ind_snow, SnowWater, deltaQi, alb1,&
       SnowPack, snowFrac, SnowAlb, SnowDens, SnowfallCum, &!inout
       mwh, fwh, Qm, QmFreez, QmRain, &! output
       veg_fr, snowCalcSwitch, Qm_melt, Qm_freezState, Qm_rain, FreezMelt, &
@@ -44,7 +44,7 @@ CONTAINS
       INTEGER, PARAMETER::PavSurf = 1
       INTEGER, PARAMETER::BldgSurf = 2
       INTEGER, PARAMETER::WaterSurf = 7
-      INTEGER, PARAMETER::ncolumnsDataOutSnow = 102 - 5
+      INTEGER, PARAMETER::ncolumnsDataOutSnow_notime = 103 - 5
       REAL(KIND(1d0)), PARAMETER::waterDens = 999.8395 !Density of water in 0 cel deg
 
       !These are input to the module
@@ -66,6 +66,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(in)::PrecipLimit
       REAL(KIND(1d0)), INTENT(in)::PrecipLimitAlb
       REAL(KIND(1d0)), INTENT(in)::nsh_real
+      REAL(KIND(1d0)), INTENT(in)::alb1
       ! REAL(KIND(1d0)),INTENT(in)::waterdens
 
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::sfr
@@ -105,7 +106,7 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::SnowDepth
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::mw_ind
 
-      REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutSnow), INTENT(out) :: dataOutLineSnow
+      REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutSnow_notime), INTENT(out) :: dataOutLineSnow
 
       IF (snowUse == 1) THEN
 
@@ -156,7 +157,8 @@ CONTAINS
                         rainOnSnow(1:nsurf), & !53
                         qn1_ind_snow(1:nsurf), kup_ind_snow(1:nsurf), freezMelt(1:nsurf), & !74
                         SnowWater(1:nsurf), SnowDens(1:nsurf), & !88
-                        snowDepth(1:nsurf), Tsurf_ind_snow(1:nsurf)]
+                        snowDepth(1:nsurf), Tsurf_ind_snow(1:nsurf),&
+                        alb1]
       ! dataOutLineSnow=set_nan(dataOutLineSnow)
 
    END SUBROUTINE Snow_cal_MeltHeat

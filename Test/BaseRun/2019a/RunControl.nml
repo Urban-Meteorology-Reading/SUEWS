@@ -1,6 +1,6 @@
 &RunControl
 CBLUse=1
-SnowUse=0
+SnowUse=1
 SOLWEIGUse=0
 NetRadiationMethod=3
 EmissionsMethod=1
@@ -19,7 +19,7 @@ MultipleInitFiles=0
 MultipleESTMFiles=1
 KeepTstepFilesIn=1
 KeepTstepFilesOut=0
-WriteOutOption=0
+WriteOutOption=1
 ResolutionFilesOut=3600
 Tstep=300
 ResolutionFilesIn=3600

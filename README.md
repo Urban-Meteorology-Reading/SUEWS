@@ -107,6 +107,7 @@ Once the docker image is installed, simply run this from the SUEWS root folder f
 1. enable the debugging related flags in `Makefile` under `SUEWS-SourceCode` by removing the `#` after the equal sign `=`:
 
 ```makefile
+FCNOOPT = -O0
 FFLAGS = -O3 $(STATIC) $(FCDEBUG) -Wall -Wtabs -fbounds-check -cpp \
 					-Wno-unused-dummy-argument -Wno-unused-variable
 ```

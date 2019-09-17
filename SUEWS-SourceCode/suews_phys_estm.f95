@@ -657,10 +657,13 @@ CONTAINS
       INTEGER:: Gridiv
 
       !Set initial values at the start of each run for each grid
+      ! the initiliastion part is problematic:
+      ! cannot be initialised under a multi-grid scenario
       IF (Gridiv == 1) ESTMStart = ESTMStart + 1
+      ! print *, 'gridiv in ESTM',gridiv,'ESTMStart',ESTMStart
       IF (ESTMStart == 1) THEN
 
-         !write(*,*) ' ESTMStart: ',ESTMStart, 'initialising ESTM for grid no. ', Gridiv
+         ! write(*,*) ' ESTMStart: ',ESTMStart, 'initialising ESTM for grid no. ', Gridiv
 
          TFLOOR = 20.0 ! This is used only when radforce =T  !TODO:  should be put in the namelist
          TFLOOR = TFLOOR + C2K
@@ -696,10 +699,10 @@ CONTAINS
          ! ---- Initialization of variables and parameters for first row of run for each grid ----
          ! N layers are calculated in SUEWS_translate
          IF (.NOT. ALLOCATED(Tibld)) THEN
-            print *, "Nibld", Nibld
-            print *, "Nwall", Nwall
-            print *, "Nroof", Nroof
-            print *, "Nground", Nground
+            ! print *, "Nibld", Nibld
+            ! print *, "Nwall", Nwall
+            ! print *, "Nroof", Nroof
+            ! print *, "Nground", Nground
             ALLOCATE (Tibld(Nibld), Twall(Nwall), Troof(Nroof), Tground(Nground), Tw_4(Nwall, 4))
             ALLOCATE (Tibld_grids(Nibld, NumberOfGrids), &
                       Twall_grids(Nwall, NumberOfGrids), &
@@ -1148,7 +1151,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(in)::bldgh
       ! REAL(KIND(1d0)),INTENT(in):: dectime        !Decimal time
       REAL(KIND(1d0)), DIMENSION(ncolsESTMdata), INTENT(in)::  Ts5mindata_ir     !surface temperature input data
-      REAL(KIND(1d0)), DIMENSION(24*nsh), INTENT(inout) ::   Tair24HR ! may be replaced with MetForcingData by extracting the Tiar part
+      REAL(KIND(1d0)), INTENT(inout) ::   Tair24HR ! may be replaced with MetForcingData by extracting the Tiar part
 
       REAL(KIND(1d0)), DIMENSION(27), INTENT(out):: dataOutLineESTM
       !Output to SUEWS
@@ -1297,8 +1300,9 @@ CONTAINS
       ENDIF
 
       SHC_air = HEATCAPACITY_AIR(Tair1, avrh, Press_hPa)   ! Use SUEWS version
-      Tair24HR = EOSHIFT(Tair24HR, 1, Tair1, 1) !!!*** NB: Check this. and is this the tair of past 24 hrs? TS 10 Oct 2017
-      Tairday = SUM(Tair24HR)/(24*nsh)
+      ! Tair24HR = EOSHIFT(Tair24HR, 1, Tair1, 1) !!!*** NB: Check this. and is this the tair of past 24 hrs? TS 10 Oct 2017
+      ! Tairday = SUM(Tair24HR)/(24*nsh)
+      Tairday = Tair24HR
 
       !Evolution of building temperature from heat added by convection
       SELECT CASE (evolvetibld)   !EvolveTiBld specifies which internal building temperature approach to use
@@ -1544,7 +1548,7 @@ CONTAINS
       ENDIF
 
       IF (Nroof < 5) THEN
-         Troofout = (/Troof, (dum(ii), ii=1, (5 - Nroof))/); 
+         Troofout = (/Troof, (dum(ii), ii=1, (5 - Nroof))/);
       ELSE
          Troofout = Troof
       ENDIF

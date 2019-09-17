@@ -300,6 +300,7 @@ PROGRAM SUEWS_Program
       ! ALLOCATE(qn1_av_store_grid(2*NSH+1))
       ALLOCATE (qhforCBL(NumberOfGrids))
       ALLOCATE (qeforCBL(NumberOfGrids))
+      ALLOCATE (tair_av_grids(NumberOfGrids))
       ALLOCATE (qn1_av_grids(NumberOfGrids))
       ALLOCATE (dqndt_grids(NumberOfGrids))
       !! QUESTION: Add snow clearing (?)
@@ -308,6 +309,7 @@ PROGRAM SUEWS_Program
       ! qn1_av_store(:,:) = NAN ! Initialise to -999
       ! qn1_store_grid(:)=NAN
       ! qn1_av_store_grid(:)=NAN
+      tair_av_grids = 273.15 ! Initialise to 273.15 K
       qn1_av_grids = 0 ! Initialise to 0
       dqndt_grids = 0 ! Initialise to 0
 
@@ -714,6 +716,7 @@ PROGRAM SUEWS_Program
       ! DEALLOCATE(qn1_av_store_grid)
       DEALLOCATE (qhforCBL)
       DEALLOCATE (qeforCBL)
+      DEALLOCATE (tair_av_grids)
       DEALLOCATE (qn1_av_grids)
       DEALLOCATE (dqndt_grids)
       IF (CBLuse >= 1) THEN

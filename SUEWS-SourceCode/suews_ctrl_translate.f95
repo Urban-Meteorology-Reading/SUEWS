@@ -1199,6 +1199,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       ! qn1_av_store_grid(:)   = qn1_av_store(:,Gridiv)
       dqndt = dqndt_grids(Gridiv)
       qn1_av = qn1_av_grids(Gridiv)
+      tair_av = tair_av_grids(Gridiv)
 
       IF (SnowUse == 1) THEN
          ! qn1_S_store_grid(:)    = qn1_S_store(:,Gridiv)
@@ -1263,7 +1264,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
 
       !Also translate ESTM forcing data
       IF (StorageHeatMethod == 4 .OR. StorageHeatMethod == 14) THEN
-         !write(*,*) 'Translating ESTM forcing data'
+         ! write(*,*) 'Translating ESTM forcing data'
          Ts5mindata(ir, 1:ncolsESTMdata) = ESTMForcingData(ir, 1:ncolsESTMdata, Gridiv)
          Ts5mindata_ir(1:ncolsESTMdata) = ESTMForcingData(ir, 1:ncolsESTMdata, Gridiv)
          CALL ESTM_translate(Gridiv)
@@ -1354,6 +1355,7 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv, ir, irMax)
    ! update averaged qn1 memory
    dqndt_grids(Gridiv) = dqndt
    qn1_av_grids(Gridiv) = qn1_av
+   tair_av_grids(Gridiv) = tair_av
    IF (SnowUse == 1) THEN
       dqnsdt_grids(Gridiv) = dqnsdt
       qn1_s_av_grids(Gridiv) = qn1_s_av

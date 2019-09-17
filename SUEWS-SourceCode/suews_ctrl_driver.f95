@@ -70,7 +70,7 @@ CONTAINS
       SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
       SnowLimBldg, SnowLimPaved, snowFrac_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
       soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
-      StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair24HR, tau_a, tau_f, tau_r, &
+      StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair_av, tau_a, tau_f, tau_r, &
       T_CRITIC_Cooling, T_CRITIC_Heating, Temp_C, TempMeltFact, TH, &
       theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
       TraffProf_24hr, Ts5mindata_ir, tstep, tstep_prev, veg_type, &
@@ -310,7 +310,7 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(9), INTENT(INOUT)  ::WUDay_id
 
       ! ESTM related:
-      REAL(KIND(1d0)), DIMENSION(24*3600/tstep), INTENT(INOUT)    ::Tair24HR ! TODO: this can be merged as one value rather than a vector, TS 20180906
+      REAL(KIND(1d0)), INTENT(INOUT)    ::Tair_av
       ! ########################################################################################
 
       ! ########################################################################################
@@ -533,6 +533,9 @@ CONTAINS
          id, startDLS, endDLS, & !input
          DLS) !output
 
+      ! calculate mean air temperature of past 24 hours
+      call suews_cal_tair_av(Tair_av,dt_since_start,tstep,temp_c)
+
       !==============main calculation start=======================
       IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_RoughnessParameters...'
       IF (Diagnose == 1) PRINT *, 'z0m_in =', z0m_in
@@ -619,7 +622,7 @@ CONTAINS
          HDD_id, MetForcingData_grid, Ts5mindata_ir, qf, qn1, &
          avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown, &
          bldgh, alb, emis, cpAnOHM, kkAnOHM, chAnOHM, EmissionsMethod, &
-         Tair24HR, qn1_av, dqndt, qn1_s_av, dqnsdt, &!inout
+         Tair_av, qn1_av, dqndt, qn1_s_av, dqnsdt, &!inout
          StoreDrainPrm, &
          qn1_S, snowFrac, dataOutLineESTM, qs, &!output
          deltaQi, a1, a2, a3)
@@ -1249,11 +1252,11 @@ CONTAINS
 
       REAL(KIND(1d0)), DIMENSION(:), INTENT(in)::Ts5mindata_ir
 
-      REAL(KIND(1d0)), DIMENSION(24*nsh), INTENT(inout)::Tair24HR
-      REAL(KIND(1d0)), INTENT(inout)                  ::qn1_av
-      REAL(KIND(1d0)), INTENT(inout)                  ::dqndt!Rate of change of net radiation [W m-2 h-1] at t-1
-      REAL(KIND(1d0)), INTENT(inout)                  ::qn1_s_av
-      REAL(KIND(1d0)), INTENT(inout)                  ::dqnsdt !Rate of change of net radiation [W m-2 h-1] at t-1
+      REAL(KIND(1d0)), INTENT(inout)::Tair24HR
+      REAL(KIND(1d0)), INTENT(inout)::qn1_av
+      REAL(KIND(1d0)), INTENT(inout)::dqndt  ! Rate of change of net radiation [W m-2 h-1] at t-1
+      REAL(KIND(1d0)), INTENT(inout)::qn1_s_av
+      REAL(KIND(1d0)), INTENT(inout)::dqnsdt ! Rate of change of net radiation [W m-2 h-1] at t-1
       ! REAL(KIND(1d0)),DIMENSION(nsh),INTENT(inout)   ::qn1_store_grid
       ! REAL(KIND(1d0)),DIMENSION(nsh),INTENT(inout)   ::qn1_S_store_grid !< stored qn1 [W m-2]
 
@@ -2536,7 +2539,7 @@ CONTAINS
       SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
       SnowLimBldg, SnowLimPaved, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
       soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
-      StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair24HR, tau_a, tau_f, tau_r, &
+      StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair_av, tau_a, tau_f, tau_r, &
       T_CRITIC_Cooling, T_CRITIC_Heating, TempMeltFact, TH, &
       theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
       TraffProf_24hr, Ts5mindata_ir, tstep, tstep_prev, veg_type, &
@@ -2771,7 +2774,7 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(9), INTENT(INOUT)  ::WUDay_id
 
       ! ESTM related:
-      REAL(KIND(1d0)), DIMENSION(24*3600/tstep), INTENT(INOUT)    ::Tair24HR ! TODO: this can be merged as one value rather than a vector, TS 20180906
+      REAL(KIND(1d0)), INTENT(INOUT)    ::Tair_av
       ! ########################################################################################
 
       ! ########################################################################################
@@ -2900,7 +2903,7 @@ CONTAINS
             SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
             SnowLimBldg, SnowLimPaved, snowFrac_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
             soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
-            StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair24HR, tau_a, tau_f, tau_r, &
+            StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair_av, tau_a, tau_f, tau_r, &
             T_CRITIC_Cooling, T_CRITIC_Heating, Temp_C, TempMeltFact, TH, &
             theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
             TraffProf_24hr, Ts5mindata_ir, tstep, tstep_prev, veg_type, &
@@ -2955,5 +2958,32 @@ CONTAINS
          sunazimuth, sunzenith)
 
    END SUBROUTINE SUEWS_cal_sunposition
+
+   subroutine suews_cal_tair_av(tair_av, dt_since_start, tstep, temp_c)
+      ! calculate mean air temperature of past 24 hours
+      ! TS, 17 Sep 2019
+   implicit none
+   real(KIND(1D0)),intent(inout) :: tair_av
+   real(KIND(1D0)),intent(in) ::  temp_c
+   integer,intent(in) ::  dt_since_start
+   integer,intent(in) ::  tstep
+
+   real(KIND(1D0)),parameter:: len_day_s=24*3600 ! day length in seconds
+   real(KIND(1D0)):: len_cal_s ! length of average period in seconds
+   real(KIND(1D0)):: temp_k ! temp in K
+
+   ! determine the average period
+   if ( dt_since_start> len_day_s) then
+      ! if simulation has been running over one day
+      len_cal_s=len_day_s
+   else
+      ! if simulation has been running less than one day
+      len_cal_s=dt_since_start+tstep
+   end if
+   temp_k=temp_c+273.15
+   tair_av=tair_av*(len_cal_s-tstep*1.)/len_cal_s+temp_k*tstep/len_cal_s
+
+
+   end subroutine suews_cal_tair_av
 
 END MODULE SUEWS_Driver

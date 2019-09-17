@@ -94,7 +94,7 @@ CONTAINS
       qh_use = qhforCBL(Gridiv)   !HCW 21 Mar 2017
       qe_use = qeforCBL(Gridiv)
       IF (qh_use < -900 .OR. qe_use < -900) THEN  ! observed data has a problem
-         CALL ErrorHint(22, 'Unrealistic qh or qe_value for CBL.', qh_use, qe_use, qh_choice)
+         CALL ErrorHint(22, 'Unrealistic qh or qe_value for CBL in CBL.', qh_use, qe_use, qh_choice)
       ENDIF
       !!Heat flux choices - these are now made in SUEWS_Calculations for qhforCBL and qeCBL, rather than here
       !IF(Qh_choice==1) THEN   !from SUEWS
@@ -328,7 +328,7 @@ CONTAINS
       qh_use = qhforCBL(Gridiv)   !HCW 21 Mar 2017
       qe_use = qeforCBL(Gridiv)
       IF (qh_use < -900 .OR. qe_use < -900) THEN  ! observed data has a problem
-         CALL ErrorHint(22, 'Unrealistic qh or qe_value for CBL.', qh_use, qe_use, qh_choice)
+         CALL ErrorHint(22, 'Unrealistic qh or qe_value for CBL in CBL_initial.', qh_use, qe_use, qh_choice)
       ENDIF
       !!Heat flux choices - these are now made in SUEWS_Calculations for qhforCBL and qeCBL, rather than here
       !IF(Qh_choice==1) THEN   !from SUEWS
@@ -450,7 +450,7 @@ CONTAINS
       qh_use = qhforCBL(Gridiv)   !HCW 21 Mar 2017
       qe_use = qeforCBL(Gridiv)
       IF (qh_use < -900 .OR. qe_use < -900) THEN  ! observed data has a problem
-         CALL ErrorHint(22, 'Unrealistic qh or qe_value for CBL.', qh_use, qe_use, qh_choice)
+         CALL ErrorHint(22, 'Unrealistic qh or qe_value for CBL in NBL.', qh_use, qe_use, qh_choice)
       ENDIF
 
       nLineDay = 0

@@ -64,6 +64,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       narp_emis_snow, narp_trans_site, &
       ohm_coef, ohm_threshsw, ohm_threshwd, &
       pormax_dec, pormin_dec, &
+      tair_av, &
       dqndt, qn1_av, &
       dqnsdt, qn1_s_av, &
       resp_a, resp_b, sathydraulicconduct, sddfull, &
@@ -147,7 +148,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
       SnowLimBldg, SnowLimPaved, snowFrac_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
       soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
-      StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair24HR, tau_a, tau_f, tau_r, &
+      StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair_av, tau_a, tau_f, tau_r, &
       T_CRITIC_Cooling, T_CRITIC_Heating, Temp_C, TempMeltFact, TH, &
       theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
       TraffProf_24hr, Ts5mindata_ir, tstep, tstep_prev, veg_type, &

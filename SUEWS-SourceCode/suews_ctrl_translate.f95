@@ -1241,7 +1241,9 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       ! albEveTr(id) = ModelDailyState(Gridiv,cMDS_albEveTr)
       ! albGrass(id) = ModelDailyState(Gridiv,cMDS_albGrass)
       ! DecidCap(id) = ModelDailyState(Gridiv,cMDS_DecidCap)
-      ! SnowfallCum  = ModelDailyState(Gridiv,cMDS_SnowfallCum)
+
+      ! SnowfallCum is instantaneous values and should be translated at each tstep, TS 17 Sep 2019
+      SnowfallCum  = ModelDailyState(Gridiv,cMDS_SnowfallCum)
       ! ---- Snow density of each surface
       SnowDens(1:nsurf) = ModelDailyState(Gridiv, cMDS_SnowDens(1:nsurf))
 

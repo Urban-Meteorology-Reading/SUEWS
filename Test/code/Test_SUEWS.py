@@ -426,18 +426,19 @@ def test_physics(name_exe, dir_input, dir_exe,
         # 1. use all possible combinations
         # really time consuming!
         list_to_test=list_to_test_all
+        if test_number>0:
+            list_to_test = np.random.choice(list_to_test_all, test_number).tolist()
     else:
         # 2. simple test by incorporating each entry into the basis scheme options
         # faster but less coverage
-        list_to_test = np.random.choice(list_to_test_all, test_number).tolist()
-        # list_to_test = []
-        # for method in dict_phy_opt_sel:
-        #     options = dict_phy_opt_sel[method]
-        #     if type(options) == list:
-        #         for x in options:
-        #             list_to_test.append({method: x})
-        #     else:
-        #         list_to_test.append({method: options})
+        list_to_test = []
+        for method in dict_phy_opt_sel:
+            options = dict_phy_opt_sel[method]
+            if type(options) == list:
+                for x in options:
+                    list_to_test.append({method: x})
+            else:
+                list_to_test.append({method: options})
 
     print('number of tests:', len(list_to_test))
     # test selected physics schemes

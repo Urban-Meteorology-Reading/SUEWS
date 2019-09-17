@@ -126,7 +126,11 @@ class Test_SUEWS(unittest.TestCase):
         print('************************************************')
         print('testing if some physics schemes are working ... ')
         if flag_test_complete:
-            print('testing in complete mode: all physics schemes will be tested!')
+            if test_number>0:
+                print(
+                    f'testing in selective mode: a randomly chosen {test_number} combinations of physics schemes will be tested!')
+            else:
+                print('testing in complete mode: all physics schemes will be tested!')
         else:
             print('testing in concise mode: only part of physics schemes will be tested!')
         # show options to test

@@ -1433,9 +1433,10 @@ CONTAINS
       !!FO!! temperature equal on both sides of inside wall
       bc(2) = bc(1)
 
-      print*,'ESTM Qsibld cal before',Qsibld,Tibld,zibld(1:Nibld)
+      ! print*,'ESTM Qsibld cal before',Qsibld,Tibld,zibld(1:Nibld)
       CALL heatcond1d(Tibld, Qsibld, zibld(1:Nibld), REAL(Tstep, KIND(1d0)), kibld(1:Nibld), ribld(1:Nibld), bc, bctype)
-      print*,'ESTM Qsibld cal after',Qsibld,Tibld
+
+      ! print*,'ESTM Qsibld cal after',Qsibld,Tibld
 
       !========>WALLS<================
       bctype = .FALSE.
@@ -1526,8 +1527,8 @@ CONTAINS
       Qsground = Qsground*fground
       QS = Qsibld + Qswall + Qsroof + Qsground                              !!FO!! QSair not included; called QS in output file (column #10)
 
-      print*,'ESTM QS',qs,Qsibld,Qswall,Qsroof ,Qsground
-      print*,'ESTM Qsibld',Qsibld,fibld
+      ! print*,'ESTM QS',qs,Qsibld,Qswall,Qsroof ,Qsground
+      ! print*,'ESTM Qsibld',Qsibld,fibld
       !write(*,*) Qsair, QSibld, Qswall, Qsroof, Qsground, QS
 
       !========>Radiation<================
@@ -1605,7 +1606,6 @@ CONTAINS
       Tibld_grids(:, Gridiv) = Tibld(:)
       Tw_4_grids(:, :, Gridiv) = Tw_4(:, :)
 
-      print*,'ESTM QS',qs
 
    END SUBROUTINE ESTM
 

@@ -56,22 +56,20 @@ CONTAINS
    !==============================================================================
    SUBROUTINE SUEWS_cal_DailyState( &
       iy, id, it, imin, isec, tstep, tstep_prev, dt_since_start, DayofWeek_id, &!input
-      WaterUseMethod, snowUse, Ie_start, Ie_end, &
+      WaterUseMethod, Ie_start, Ie_end, &
       LAICalcYes, LAIType, &
       nsh_real, avkdn, Temp_C, Precip, BaseTHDD, &
-      lat, Faut, LAI_obs, tau_a, tau_f, tau_r, &
-      SnowDensMax, SnowDensMin, SnowAlbMax, SnowAlbMin, &
+      lat, Faut, LAI_obs, &
       AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
       AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
       CapMax_dec, CapMin_dec, PorMax_dec, PorMin_dec, &
-      Ie_a, Ie_m, DayWatPer, DayWat, SnowPack, &
+      Ie_a, Ie_m, DayWatPer, DayWat, &
       BaseT, BaseTe, GDDFull, SDDFull, LAIMin, LAIMax, LAIPower, &
-      SnowAlb, SnowDens, &!inout
-      GDD_id, HDD_id, LAI_id, LAI_id_prev, WUDay_id, &
+      GDD_id, HDD_id, LAI_id, LAI_id_prev, WUDay_id, &!inout
       DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       deltaLAI)!output
 
-      USE Snow_module, ONLY: SnowUpdate
+      ! USE Snow_module, ONLY: SnowUpdate
       USE datetime_module, ONLY: datetime, timedelta
 
       IMPLICIT NONE
@@ -86,7 +84,6 @@ CONTAINS
       INTEGER, INTENT(IN)::dt_since_start
 
       INTEGER, INTENT(IN)::WaterUseMethod
-      INTEGER, INTENT(IN)::snowUse
       INTEGER, INTENT(IN)::Ie_start   !Starting time of water use (DOY)
       INTEGER, INTENT(IN)::Ie_end       !Ending time of water use (DOY)
       INTEGER, INTENT(IN)::LAICalcYes
@@ -101,13 +98,13 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(IN)::lat
       REAL(KIND(1d0)), INTENT(IN)::Faut
       REAL(KIND(1d0)), INTENT(IN)::LAI_obs
-      REAL(KIND(1D0)), INTENT(IN)::tau_a
-      REAL(KIND(1D0)), INTENT(IN)::tau_f
-      REAL(KIND(1D0)), INTENT(IN)::tau_r
-      REAL(KIND(1D0)), INTENT(IN)::SnowDensMax
-      REAL(KIND(1D0)), INTENT(IN)::SnowDensMin
-      REAL(KIND(1D0)), INTENT(in)::SnowAlbMax
-      REAL(KIND(1D0)), INTENT(IN)::SnowAlbMin
+      ! REAL(KIND(1D0)), INTENT(IN)::tau_a
+      ! REAL(KIND(1D0)), INTENT(IN)::tau_f
+      ! REAL(KIND(1D0)), INTENT(IN)::tau_r
+      ! REAL(KIND(1D0)), INTENT(IN)::SnowDensMax
+      ! REAL(KIND(1D0)), INTENT(IN)::SnowDensMin
+      ! REAL(KIND(1D0)), INTENT(in)::SnowAlbMax
+      ! REAL(KIND(1D0)), INTENT(IN)::SnowAlbMin
       REAL(KIND(1d0)), INTENT(IN)::AlbMax_DecTr
       REAL(KIND(1d0)), INTENT(IN)::AlbMax_EveTr
       REAL(KIND(1d0)), INTENT(IN)::AlbMax_Grass
@@ -125,7 +122,7 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(7), INTENT(IN) ::DayWatPer !% of houses following daily water
       REAL(KIND(1d0)), DIMENSION(7), INTENT(IN) ::DayWat !Days of watering allowed
 
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(IN)      ::SnowPack
+      ! REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(IN)      ::SnowPack
       REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(IN)   ::BaseT !Base temperature for growing degree days [degC]
       REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(IN)   ::BaseTe !Base temperature for senescence degree days [degC]
       REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(IN)   ::GDDFull !Growing degree days needed for full capacity [degC]
@@ -134,7 +131,7 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(IN)   ::LAIMax !Max LAI [m2 m-2]
       REAL(KIND(1d0)), DIMENSION(4, nvegsurf), INTENT(IN) ::LAIPower !Coeffs for LAI equation: 1,2 - leaf growth; 3,4 - leaf off
 
-      REAL(KIND(1d0)), INTENT(INOUT)::SnowAlb
+      ! REAL(KIND(1d0)), INTENT(INOUT)::SnowAlb
 
       REAL(KIND(1d0)), DIMENSION(5), INTENT(INOUT) :: GDD_id   ! Growing Degree Days (see SUEWS_DailyState.f95)
       REAL(KIND(1d0)), DIMENSION(3), INTENT(INOUT) :: LAI_id   ! LAI for each veg surface [m2 m-2]
@@ -182,7 +179,7 @@ CONTAINS
       ! WUDay_id(9) - Manual irrigation for Irr Grass [mm]
       ! --------------------------------------------------------------------------------
 
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(INOUT)::SnowDens
+      ! REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(INOUT)::SnowDens
       INTEGER, DIMENSION(3), INTENT(in)::DayofWeek_id
 
       !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
@@ -233,10 +230,10 @@ CONTAINS
          HDD_id)
 
       ! Update snow density, albedo surface fraction
-      IF (snowUse == 1) CALL SnowUpdate( &
-         nsurf, tstep, Temp_C, tau_a, tau_f, tau_r, &!input
-         SnowDensMax, SnowDensMin, SnowAlbMax, SnowAlbMin, SnowPack, &
-         SnowAlb, SnowDens)!inout
+      ! IF (snowUse == 1) CALL SnowUpdate( &
+      !    nsurf, tstep, Temp_C, tau_a, tau_f, tau_r, &!input
+      !    SnowDensMax, SnowDensMin, SnowAlbMax, SnowAlbMin, SnowPack, &
+      !    SnowAlb, SnowDens)!inout
 
       ! --------------------------------------------------------------------------------
       ! On last timestep, perform the daily calculations -------------------------------

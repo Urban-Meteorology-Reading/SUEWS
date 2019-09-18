@@ -408,10 +408,10 @@ CONTAINS
       REAL(KIND(1D0))::tsurf
       REAL(KIND(1D0))::UStar
       REAL(KIND(1D0))::VPD_Pa
-      REAL(KIND(1D0))::WUAreaDecTr_m2
-      REAL(KIND(1D0))::WUAreaEveTr_m2
-      REAL(KIND(1D0))::WUAreaGrass_m2
-      REAL(KIND(1D0))::WUAreaTotal_m2
+      ! REAL(KIND(1D0))::WUAreaDecTr_m2
+      ! REAL(KIND(1D0))::WUAreaEveTr_m2
+      ! REAL(KIND(1D0))::WUAreaGrass_m2
+      ! REAL(KIND(1D0))::WUAreaTotal_m2
       REAL(KIND(1D0))::wu_DecTr
       REAL(KIND(1D0))::wu_EveTr
       REAL(KIND(1D0))::wu_Grass
@@ -652,6 +652,17 @@ CONTAINS
          SoilMoistCap, SoilState, &!output
          vsmd, smd)
 
+         IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_WaterUse...'
+      !Gives the external and internal water uses per timestep
+      CALL SUEWS_cal_WaterUse( &
+         nsh_real, & ! input:
+         wu_m3, SurfaceArea, sfr, &
+         IrrFracConif, IrrFracDecid, IrrFracGrass, &
+         DayofWeek_id, WUProfA_24hr, WUProfM_24hr, &
+         InternalWaterUse_h, HDD_id, WUDay_id, &
+         WaterUseMethod, NSH, it, imin, DLS, &
+         wu_EveTr, wu_DecTr, wu_Grass, int_wu, ext_wu)! output:
+
       ! ===================NET ALLWAVE RADIATION================================
       CALL SUEWS_cal_Qn( &
          NetRadiationMethod, snowUse, &!input
@@ -716,16 +727,7 @@ CONTAINS
          H_mod, & !output
          E_mod, psyc_hPa, s_hPa, sIce_hpa, TempVeg, VegPhenLumps)
 
-      IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_WaterUse...'
-      !Gives the external and internal water uses per timestep
-      CALL SUEWS_cal_WaterUse( &
-         nsh_real, & ! input:
-         wu_m3, SurfaceArea, sfr, &
-         IrrFracConif, IrrFracDecid, IrrFracGrass, &
-         DayofWeek_id, WUProfA_24hr, WUProfM_24hr, &
-         InternalWaterUse_h, HDD_id, WUDay_id, &
-         WaterUseMethod, NSH, it, imin, DLS, &
-         wu_EveTr, wu_DecTr, wu_Grass, int_wu, ext_wu)! output:
+
 
       !============= calculate water balance =============
       CALL SUEWS_cal_Water( &

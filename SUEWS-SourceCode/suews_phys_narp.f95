@@ -95,7 +95,7 @@ CONTAINS
 
    !==============================================================================
    SUBROUTINE NARP( &
-      nsurf, sfr, snowFrac, alb, emis, IceFrac, &! input:
+      nsurf, sfr, SnowFrac, alb, emis, IceFrac, &! input:
       NARP_TRANS_SITE, NARP_EMIS_SNOW, &
       DTIME, ZENITH_deg, kdown, Temp_C, RH, Press_hPa, qn1_obs, &
       SnowAlb, &
@@ -156,7 +156,7 @@ CONTAINS
       ! use moist   ! Included 20140701, FL
       ! use time    ! Included 20140701, FL
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) ::sfr
-      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) ::snowFrac
+      REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) ::SnowFrac
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) ::alb
       REAL(KIND(1D0)), DIMENSION(nsurf), INTENT(in) ::emis
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in) ::IceFrac
@@ -255,7 +255,7 @@ CONTAINS
       !Total snowfree surface fraction
       SF_all = 0
       DO is = 1, nsurf
-         IF (sfr(is) /= 0) SF_all = SF_all + sfr(is)*(1 - snowFrac(is))
+         IF (sfr(is) /= 0) SF_all = SF_all + sfr(is)*(1 - SnowFrac(is))
       ENDDO
 
       DO is = 1, nsurf
@@ -330,19 +330,19 @@ CONTAINS
 
          !======================================================================
          !Snow related parameters if snow pack existing
-         IF (snowFrac(is) > 0) THEN
+         IF (SnowFrac(is) > 0) THEN
             IF (AlbedoChoice == 1 .AND. 180*ZENITH/ACOS(0.0) < 90) THEN
                ALB1 = SnowAlb + 0.5e-16*(180*ZENITH/ACOS(0.0))**8 !AIDA 1982
             ELSE
                ALB1 = SnowAlb
             ENDIF
 
-            KUP_SNOW = (ALB1*(snowFrac(is) - snowFrac(is)*IceFrac(is)) + ALB0*snowFrac(is)*IceFrac(is))*KDOWN
+            KUP_SNOW = (ALB1*(SnowFrac(is) - SnowFrac(is)*IceFrac(is)) + ALB0*SnowFrac(is)*IceFrac(is))*KDOWN
             TSURF_SNOW = ((NARP_EMIS_SNOW*SIGMATK4)/(NARP_EMIS_SNOW*SIGMA_SB))**0.25 !Snow surface temperature
 
             !IF (TSURF_SNOW>273.16) TSURF_SNOW=min(273.16,Temp_K)!Set this to 2 degrees (melted water on top)
             !open(34,file='TestingSnowFrac.txt',position='append')
-            !write(34,*) dectime,is,alb1,alb0,snowFrac(is),IceFrac(is),KDOWN,KUP_snow
+            !write(34,*) dectime,is,alb1,alb0,SnowFrac(is),IceFrac(is),KDOWN,KUP_snow
             !close(34)
 
             LUP_SNOW = NARP_EMIS_SNOW*SIGMA_SB*TSURF_SNOW**4 + (1 - NARP_EMIS_SNOW)*LDOWN
@@ -369,25 +369,25 @@ CONTAINS
          Tsurf_ind_snow(is) = TSURF_SNOW
 
          IF (SF_all /= 0) THEN
-            QSTAR_SF = QSTAR_SF + QSTAR*sfr(is)*(1 - snowFrac(is))/SF_all
+            QSTAR_SF = QSTAR_SF + QSTAR*sfr(is)*(1 - SnowFrac(is))/SF_all
          ELSE
-            QSTAR_SF = QSTAR_SF + QSTAR*sfr(is)*(1 - snowFrac(is))
+            QSTAR_SF = QSTAR_SF + QSTAR*sfr(is)*(1 - SnowFrac(is))
          ENDIF
 
          IF ((1 - SF_all) /= 0) THEN
-            QSTAR_S = QSTAR_S + QSTAR_SNOW*sfr(is)*snowFrac(is)/(1 - SF_all)
+            QSTAR_S = QSTAR_S + QSTAR_SNOW*sfr(is)*SnowFrac(is)/(1 - SF_all)
          ELSE
-            QSTAR_S = QSTAR_S + QSTAR_SNOW*sfr(is)*snowFrac(is)
+            QSTAR_S = QSTAR_S + QSTAR_SNOW*sfr(is)*SnowFrac(is)
          ENDIF
 
          !---------------------------------------------------------------------
          !Calculate weighted variables for each subsurface
-         qn1_is = QSTAR*(1 - snowFrac(is)) + QSTAR_SNOW*snowFrac(is)
-         kup_is = KUP*(1 - snowFrac(is)) + KUP_SNOW*snowFrac(is)
-         lup_is = LUP*(1 - snowFrac(is)) + LUP_SNOW*snowFrac(is)
-         tsurf_is = TSURF*(1 - snowFrac(is)) + TSURF_SNOW*snowFrac(is)
+         qn1_is = QSTAR*(1 - SnowFrac(is)) + QSTAR_SNOW*SnowFrac(is)
+         kup_is = KUP*(1 - SnowFrac(is)) + KUP_SNOW*SnowFrac(is)
+         lup_is = LUP*(1 - SnowFrac(is)) + LUP_SNOW*SnowFrac(is)
+         tsurf_is = TSURF*(1 - SnowFrac(is)) + TSURF_SNOW*SnowFrac(is)
 
-         IF (DiagQN == 1) WRITE (*, *) 'QSTAR', QSTAR, 'QSTAR_SNOW', QSTAR_SNOW, 'snowFrac', snowFrac(is)
+         IF (DiagQN == 1) WRITE (*, *) 'QSTAR', QSTAR, 'QSTAR_SNOW', QSTAR_SNOW, 'SnowFrac', SnowFrac(is)
 
          qn1_cum = qn1_cum + (qn1_is*sfr(is))  !Calculate cumulative radiation components
          kup_cum = kup_cum + (kup_is*sfr(is))

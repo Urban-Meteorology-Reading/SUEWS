@@ -68,7 +68,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       dqndt, qn1_av, &
       dqnsdt, qn1_s_av, &
       resp_a, resp_b, sathydraulicconduct, sddfull, &
-      sfr, SnowPackLimit, snowdens, snowfrac, snowpack, &
+      sfr, SnowPackLimit, snowdens, SnowFrac, snowpack, &
       soildepth, soilstore_id, SoilStoreCap, state_id, statelimit, &
       StoreDrainPrm, theta_bioco2, ts5mindata_ir, &
       waterdist, wetthresh, &
@@ -145,7 +145,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       RadMeltFact, RAINCOVER, RainMaxRes, resp_a, resp_b, &
       RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
       SatHydraulicConduct, SDDFull, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
-      SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
+      SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, SnowFrac, &
       SnowLimBldg, SnowLimPaved, snowFrac_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
       soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
       StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair_av, tau_a, tau_f, tau_r, &

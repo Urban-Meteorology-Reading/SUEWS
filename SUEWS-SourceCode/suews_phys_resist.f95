@@ -118,7 +118,7 @@ contains
 
    SUBROUTINE SurfaceResistance( &
       id, it, &! input:
-      SMDMethod, snowFrac, sfr, avkdn, Temp_C, dq, xsmd, vsmd, MaxConductance, &
+      SMDMethod, SnowFrac, sfr, avkdn, Temp_C, dq, xsmd, vsmd, MaxConductance, &
       LAIMax, LAI_id, gsModel, Kmax, &
       G1, G2, G3, G4, G5, G6, TH, TL, S1, S2, &
       gfunc, gsc, ResistSurf)! output:
@@ -186,7 +186,7 @@ contains
       REAL(KIND(1d0)), DIMENSION(3), INTENT(in)    ::MaxConductance!Max conductance [mm s-1]
       REAL(KIND(1d0)), DIMENSION(3), INTENT(in)    ::LAIMax        !Max LAI [m2 m-2]
       REAL(KIND(1d0)), DIMENSION(3), INTENT(in)    ::LAI_id        !=LAI(id-1,:), LAI for each veg surface [m2 m-2]
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::snowFrac      !Surface fraction of snow cover
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::SnowFrac      !Surface fraction of snow cover
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::sfr           !Surface fractions [-]
 
       REAL(KIND(1d0)), INTENT(out)::gfunc!gdq*gtemp*gs*gq for photosynthesis calculations
@@ -241,8 +241,8 @@ contains
          IF (Temp_C <= tl) THEN
             gtemp = (tl + 0.1 - tl)*(th - (tl + 0.1))**tc/tc2
             !Call error only if no snow on ground
-            !  IF (MIN(snowFrac(1),snowFrac(2),snowFrac(3),snowFrac(4),snowFrac(5),snowFrac(6))/=1) THEN
-            IF (MINVAL(snowFrac(1:6)) /= 1) THEN
+            !  IF (MIN(SnowFrac(1),SnowFrac(2),SnowFrac(3),SnowFrac(4),SnowFrac(5),SnowFrac(6))/=1) THEN
+            IF (MINVAL(SnowFrac(1:6)) /= 1) THEN
                CALL errorHint(29, 'subroutine SurfaceResistance.f95: T changed to fit limits TL=0.1,Temp_c,id,it', &
                               REAL(Temp_c, KIND(1d0)), id_real, it)
             ENDIF
@@ -264,7 +264,7 @@ contains
                gs = 0   !If no veg so no vsmd, or all water so no smd, set gs=0 (HCW 21 Jul 2016)
             ENDIF
          ENDIF
-         !gs = gs*(1 - SUM(snowFrac(1:6))/6)
+         !gs = gs*(1 - SUM(SnowFrac(1:6))/6)
          IF (gs < 0) THEN
             CALL errorHint(65, &
                            'subroutine SurfaceResistance.f95 (gsModel=1): g(smd) < 0 calculated, setting to 0.0001', &
@@ -282,8 +282,8 @@ contains
          !  print*,id,it,sfr
          ! DO iv=ivConif,ivGrass
          DO iv = 1, 3
-            ! gl=gl+(sfr(iv+2)*(1-snowFrac(iv+2)))*LAI(id-1,iv)/LAIMax(iv)*MaxConductance(iv)
-            gl = gl + (sfr(iv + 2)*(1 - snowFrac(iv + 2)))*LAI_id(iv)/LAIMax(iv)*MaxConductance(iv)
+            ! gl=gl+(sfr(iv+2)*(1-SnowFrac(iv+2)))*LAI(id-1,iv)/LAIMax(iv)*MaxConductance(iv)
+            gl = gl + (sfr(iv + 2)*(1 - SnowFrac(iv + 2)))*LAI_id(iv)/LAIMax(iv)*MaxConductance(iv)
          ENDDO
 
          IF (avkdn <= 0) THEN      !At nighttime set gsc at arbitrary low value: gsc=0.1 mm/s (Shuttleworth, 1988b)
@@ -318,7 +318,7 @@ contains
          IF (Temp_C <= TL) THEN
             gtemp = (TL + 0.1 - TL)*(TH - (TL + 0.1))**Tc/Tc2
             ! Call error only if no snow on ground
-            IF (MIN(snowFrac(1), snowFrac(2), snowFrac(3), snowFrac(4), snowFrac(5), snowFrac(6)) /= 1) THEN
+            IF (MIN(SnowFrac(1), SnowFrac(2), SnowFrac(3), SnowFrac(4), SnowFrac(5), SnowFrac(6)) /= 1) THEN
                CALL errorHint(29, 'subroutine SurfaceResistance.f95: T changed to fit limits TL+0.1,Temp_C,id,it', &
                               REAL(Temp_c, KIND(1d0)), id_real, it)
             ENDIF
@@ -341,7 +341,7 @@ contains
             ENDIF
          ENDIF
 
-         !gs = gs*(1 - SUM(snowFrac(1:6))/6)
+         !gs = gs*(1 - SUM(SnowFrac(1:6))/6)
 
          IF (gs < 0) THEN
             CALL errorHint(65, &
@@ -354,8 +354,8 @@ contains
          gl = 0    !Initialise
          ! DO iv=ivConif,ivGrass   !For vegetated surfaces
          DO iv = 1, 3   !For vegetated surfaces
-            !  gl=gl+(sfr(iv+2)*(1-snowFrac(iv+2)))*LAI(id-1,iv)/LAIMax(iv)*MaxConductance(iv)
-            gl = gl + (sfr(iv + 2)*(1 - snowFrac(iv + 2)))*LAI_id(iv)/LAIMax(iv)*MaxConductance(iv)
+            !  gl=gl+(sfr(iv+2)*(1-SnowFrac(iv+2)))*LAI(id-1,iv)/LAIMax(iv)*MaxConductance(iv)
+            gl = gl + (sfr(iv + 2)*(1 - SnowFrac(iv + 2)))*LAI_id(iv)/LAIMax(iv)*MaxConductance(iv)
          ENDDO
 
          IF (avkdn <= 0) THEN      !At nighttime set gsc at arbitrary low value: gsc=0.1 mm/s (Shuttleworth, 1988b)

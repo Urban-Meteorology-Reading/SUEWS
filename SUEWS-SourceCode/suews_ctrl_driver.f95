@@ -67,7 +67,7 @@ CONTAINS
       RadMeltFact, RAINCOVER, RainMaxRes, resp_a, resp_b, &
       RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
       SatHydraulicConduct, SDDFull, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
-      SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
+      SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, SnowFrac, &
       SnowLimBldg, SnowLimPaved, snowFrac_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
       soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
       StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair_av, tau_a, tau_f, tau_r, &
@@ -285,7 +285,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) ::IceFrac
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) ::SnowWater
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) ::SnowDens
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) ::snowFrac
+      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) ::SnowFrac
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) ::SnowPack
 
       ! water balance related:
@@ -670,7 +670,7 @@ CONTAINS
          FcEF_v_kgkm, FrFossilFuel_Heat, FrFossilFuel_NonHeat, HDD_id, HumActivity_24hr, &
          id, imin, it, MaxFCMetab, MaxQFMetab, MinFCMetab, MinQFMetab, nsh, NumCapita, &
          PopDensDaytime, PopDensNighttime, PopProf_24hr, QF, QF0_BEU, Qf_A, Qf_B, Qf_C, &
-         QF_obs, QF_SAHP, sfr, snowFrac, SurfaceArea, T_CRITIC_Cooling, T_CRITIC_Heating, &
+         QF_obs, QF_SAHP, sfr, SnowFrac, SurfaceArea, T_CRITIC_Cooling, T_CRITIC_Heating, &
          Temp_C, TrafficRate, TrafficUnits, TraffProf_24hr, &
          Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff)! output:
 
@@ -735,7 +735,7 @@ CONTAINS
          SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
          nsh_real, sfr, Tsurf_ind, Tsurf_ind_snow, state_id, qn1_ind_snow, &
          kup_ind_snow, SnowWater, deltaQi, alb1, &
-         SnowPack, snowFrac, SnowAlb, SnowDens, SnowfallCum, &!inout
+         SnowPack, SnowFrac, SnowAlb, SnowDens, SnowfallCum, &!inout
          mwh, Qm, QmFreez, QmRain, &! output
          veg_fr, snowCalcSwitch, Qm_melt, Qm_freezState, Qm_rain, FreezMelt, &
          FreezState, FreezStateVol, rainOnSnow, SnowDepth, mw_ind, &
@@ -774,7 +774,7 @@ CONTAINS
          g1, g2, g3, g4, &
          g5, g6, s1, s2, &
          th, tl, &
-         dq, xsmd, vsmd, MaxConductance, LAIMax, LAI_id, snowFrac, sfr, &
+         dq, xsmd, vsmd, MaxConductance, LAIMax, LAI_id, SnowFrac, sfr, &
          UStar, TStar, L_mod, &!output
          zL, gsc, ResistSurf, RA, RAsnow, rb)
 
@@ -791,7 +791,7 @@ CONTAINS
          freezmelt, freezstate, freezstatevol, Qm_Melt, Qm_rain, Tsurf_ind, sfr, &
          StateLimit, AddWater, addwaterrunoff, StoreDrainPrm, SnowPackLimit, SnowProf_24hr, &
          runoff_per_interval, state_id, & !inout:
-         soilstore_id, SnowPack, snowFrac, SnowWater, iceFrac, SnowDens, &
+         soilstore_id, SnowPack, SnowFrac, SnowWater, iceFrac, SnowDens, &
          runoffSnow, runoff, runoffSoil, chang, changSnow, &! output:
          snowDepth, SnowToSurf, ev_snow, SnowRemoval, &
          evap, rss_nsurf, p_mm, qe, state_per_tstep, NWstate_per_tstep, qeOut, &
@@ -868,7 +868,7 @@ CONTAINS
          ConifSurf, DecidSurf, dectime, Diagnose, EmissionsMethod, Fc_anthro, G1, G2, G3, G4, &
          G5, G6, gfunc, GrassSurf, gsmodel, id, it, ivConif, ivDecid, ivGrass, Kmax, LAI_id, LAIMin, &
          LAIMax, MaxConductance, min_res_bioCO2, nsurf, NVegSurf, Press_hPa, resp_a, &
-         resp_b, S1, S2, sfr, SMDMethod, snowFrac, t2_C, Temp_C, theta_bioCO2, TH, TL, vsmd, xsmd, &
+         resp_b, S1, S2, sfr, SMDMethod, SnowFrac, t2_C, Temp_C, theta_bioCO2, TH, TL, vsmd, xsmd, &
          Fc, Fc_biogen, Fc_photo, Fc_respi)! output:
 
       !==============main calculation end=======================
@@ -949,7 +949,7 @@ CONTAINS
       FcEF_v_kgkm, FrFossilFuel_Heat, FrFossilFuel_NonHeat, HDD_id, HumActivity_24hr, &
       id, imin, it, MaxFCMetab, MaxQFMetab, MinFCMetab, MinQFMetab, nsh, NumCapita, &
       PopDensDaytime, PopDensNighttime, PopProf_24hr, QF, QF0_BEU, Qf_A, Qf_B, Qf_C, &
-      QF_obs, QF_SAHP, sfr, snowFrac, SurfaceArea, T_CRITIC_Cooling, T_CRITIC_Heating, &
+      QF_obs, QF_SAHP, sfr, SnowFrac, SurfaceArea, T_CRITIC_Cooling, T_CRITIC_Heating, &
       Temp_C, TrafficRate, TrafficUnits, TraffProf_24hr, &
       Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff)! output:
 
@@ -1000,7 +1000,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in)::TrafficUnits
 
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::sfr
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::snowFrac
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::SnowFrac
       REAL(KIND(1D0)), INTENT(IN)::SurfaceArea
 
       REAL(KIND(1D0)), INTENT(out)::Fc_anthro
@@ -1055,7 +1055,7 @@ CONTAINS
       ConifSurf, DecidSurf, dectime, Diagnose, EmissionsMethod, Fc_anthro, G1, G2, G3, G4, &
       G5, G6, gfunc, GrassSurf, gsmodel, id, it, ivConif, ivDecid, ivGrass, Kmax, LAI_id, LAIMin, &
       LAIMax, MaxConductance, min_res_bioCO2, nsurf, NVegSurf, Press_hPa, resp_a, &
-      resp_b, S1, S2, sfr, SMDMethod, snowFrac, t2_C, Temp_C, theta_bioCO2, TH, TL, vsmd, xsmd, &
+      resp_b, S1, S2, sfr, SMDMethod, SnowFrac, t2_C, Temp_C, theta_bioCO2, TH, TL, vsmd, xsmd, &
       Fc, Fc_biogen, Fc_photo, Fc_respi)! output:
 
       IMPLICIT NONE
@@ -1073,7 +1073,7 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(in)::theta_bioCO2
 
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::sfr
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::snowFrac
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::SnowFrac
 
       REAL(KIND(1d0)), DIMENSION(3), INTENT(in)::MaxConductance
 
@@ -1154,7 +1154,7 @@ CONTAINS
 
             CALL SurfaceResistance( &
                id, it, &! input:
-               SMDMethod, snowFrac, sfr, avkdn, t2, dq, xsmd, vsmd, MaxConductance, &
+               SMDMethod, SnowFrac, sfr, avkdn, t2, dq, xsmd, vsmd, MaxConductance, &
                LAIMax, LAI_id, gsModel, Kmax, &
                G1, G2, G3, G4, G5, G6, TH, TL, S1, S2, &
                gfunc2, dummy10, dummy11)! output:
@@ -1166,7 +1166,7 @@ CONTAINS
             alpha_bioCO2, alpha_enh_bioCO2, avkdn, beta_bioCO2, beta_enh_bioCO2, BSoilSurf, &! input:
             ConifSurf, DecidSurf, dectime, EmissionsMethod, gfunc, gfunc2, GrassSurf, gsmodel, &
             id, it, ivConif, ivDecid, ivGrass, LAI_id, LAIMin, LAIMax, min_res_bioCO2, nsurf, &
-            NVegSurf, resp_a, resp_b, sfr, snowFrac, t2, Temp_C, theta_bioCO2, &
+            NVegSurf, resp_a, resp_b, sfr, SnowFrac, t2, Temp_C, theta_bioCO2, &
             Fc_biogen, Fc_photo, Fc_respi)! output:
       ENDIF
 
@@ -1235,7 +1235,7 @@ CONTAINS
 
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::snowFrac_prev
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::snowFrac_next
-      REAL(KIND(1d0)), DIMENSION(nsurf)::snowFrac
+      REAL(KIND(1d0)), DIMENSION(nsurf)::SnowFrac
 
       REAL(KIND(1d0)), INTENT(out)::ldown
       REAL(KIND(1d0)), INTENT(out)::fcld
@@ -1267,11 +1267,11 @@ CONTAINS
          snowUse, &!input
          NetRadiationMethodX, AlbedoChoice, ldown_option)!output
 
-      snowFrac = snowFrac_prev
+      SnowFrac = snowFrac_prev
       IF (NetRadiationMethodX > 0) THEN
 
-         ! IF (snowUse==0) snowFrac=snowFrac_obs
-         IF (snowUse == 0) snowFrac = 0
+         ! IF (snowUse==0) SnowFrac=snowFrac_obs
+         IF (snowUse == 0) SnowFrac = 0
 
          IF (ldown_option == 1) THEN !Observed ldown provided as forcing
             ldown = ldown_obs
@@ -1297,7 +1297,7 @@ CONTAINS
          IF (Diagqn == 1) WRITE (*, *) 'AlbedoChoice:', AlbedoChoice
 
          CALL NARP( &
-            nsurf, sfr, snowFrac, alb, emis, IceFrac, &! input:
+            nsurf, sfr, SnowFrac, alb, emis, IceFrac, &! input:
             NARP_TRANS_SITE, NARP_EMIS_SNOW, &
             dectime, ZENITH_deg, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
             SnowAlb, &
@@ -1306,7 +1306,7 @@ CONTAINS
             qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, alb0, alb1)
 
       ELSE ! NetRadiationMethod==0
-         snowFrac = snowFrac_obs
+         SnowFrac = snowFrac_obs
          qn1 = qn1_obs
          qn1_snowfree = qn1_obs
          qn1_s = qn1_obs
@@ -1320,7 +1320,7 @@ CONTAINS
          qn1_ind = NAN
          Fcld = NAN
       ENDIF
-      snowFrac_next = snowFrac
+      snowFrac_next = SnowFrac
 
       IF (ldown_option == 1) THEN
          Fcld = NAN
@@ -1334,7 +1334,7 @@ CONTAINS
       StorageHeatMethod, qs_obs, OHMIncQF, Gridiv, &!input
       id, tstep, dt_since_start, Diagnose, sfr, &
       OHM_coef, OHM_threshSW, OHM_threshWD, &
-      soilstore_id, SoilStoreCap, state_id, SnowUse, snowFrac, DiagQS, &
+      soilstore_id, SoilStoreCap, state_id, SnowUse, SnowFrac, DiagQS, &
       HDD_id, MetForcingData_grid, Ts5mindata_ir, qf, qn1, &
       avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown, &
       bldgh, alb, emis, cpAnOHM, kkAnOHM, chAnOHM, EmissionsMethod, &
@@ -1378,7 +1378,7 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::cpAnOHM   !< heat capacity [J m-3 K-1]
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::kkAnOHM   !< thermal conductivity [W m-1 K-1]
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::chAnOHM   !< bulk transfer coef [J m-3 K-1]
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::snowFrac
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::SnowFrac
 
       REAL(KIND(1d0)), DIMENSION(:, :), INTENT(in)::MetForcingData_grid !< met forcing array of grid
 
@@ -1416,7 +1416,7 @@ CONTAINS
 
       ! initialise output variables
       !deltaQi = 0
-      !snowFrac = 0
+      !SnowFrac = 0
       !qn1_S = 0
       dataOutLineESTM = -999
       qs = -999
@@ -1629,7 +1629,7 @@ CONTAINS
       SurfaceArea, FlowChange, drain, WetThresh, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
       freezmelt, freezstate, freezstatevol, Qm_Melt, Qm_rain, Tsurf_ind, sfr, &
       StateLimit, AddWater, addwaterrunoff, StoreDrainPrm, SnowPackLimit, SnowProf_24hr, &
-      runoff_per_interval, state_id, soilstore_id, SnowPack, snowFrac, SnowWater, &! inout:
+      runoff_per_interval, state_id, soilstore_id, SnowPack, SnowFrac, SnowWater, &! inout:
       iceFrac, SnowDens, &
       runoffSnow, runoff, runoffSoil, chang, changSnow, &! output:
       snowDepth, SnowToSurf, ev_snow, SnowRemoval, &
@@ -1715,7 +1715,7 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(inout)::state_id
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(inout)::soilstore_id
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(inout)::SnowPack
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(inout)::snowFrac
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(inout)::SnowFrac
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(inout)::SnowWater
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(inout)::iceFrac
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(inout)::SnowDens
@@ -1834,7 +1834,7 @@ CONTAINS
                   Qm_Melt, Qm_rain, Tsurf_ind, sfr, dayofWeek_id, StoreDrainPrm, SnowPackLimit, &
                   AddWater, addwaterrunoff, &
                   soilstore_id, SnowPack, SurplusEvap, &!inout
-                  snowFrac, SnowWater, iceFrac, SnowDens, &
+                  SnowFrac, SnowWater, iceFrac, SnowDens, &
                   runoffAGimpervious, runoffAGveg, surplusWaterBody, &
                   rss_nsurf, runoffSnow, & ! output
                   runoff, runoffSoil, chang, changSnow, SnowToSurf, state_id, ev_snow, &
@@ -1849,7 +1849,7 @@ CONTAINS
                surf_chang_per_tstep = surf_chang_per_tstep + surf_chang_tot
                chSnow_per_interval = chSnow_per_interval + chSnow_tot
             ELSE
-               snowFrac(is) = 0
+               SnowFrac(is) = 0
                SnowDens(is) = 0
                SnowPack(is) = 0
             ENDIF
@@ -1972,7 +1972,7 @@ CONTAINS
       qh_obs, avdens, avcp, h_mod, qn1, dectime, zzd, z0m, zdm, &
       avU1, Temp_C, VegFraction, &
       avkdn, Kmax, G1, G2, G3, G4, G5, G6, S1, S2, TH, TL, dq, &
-      xsmd, vsmd, MaxConductance, LAIMax, LAI_id, snowFrac, sfr, &
+      xsmd, vsmd, MaxConductance, LAIMax, LAI_id, SnowFrac, sfr, &
       UStar, TStar, L_mod, &!output
       zL, gsc, ResistSurf, RA, RAsnow, rb)
 
@@ -2020,7 +2020,7 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(3), INTENT(in) ::LAIMax        !Max LAI [m2 m-2]
       REAL(KIND(1d0)), DIMENSION(3), INTENT(in) ::LAI_id        !=LAI_id(id-1,:), LAI for each veg surface [m2 m-2]
 
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::snowFrac      !Surface fraction of snow cover
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::SnowFrac      !Surface fraction of snow cover
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::sfr           !Surface fractions [-]
 
       REAL(KIND(1d0)), INTENT(out)::TStar     !T*
@@ -2089,7 +2089,7 @@ CONTAINS
       ! CALL SurfaceResistance(id,it)   !qsc and surface resistance out
       CALL SurfaceResistance( &
          id, it, &! input:
-         SMDMethod, snowFrac, sfr, avkdn, Temp_C, dq, xsmd, vsmd, MaxConductance, &
+         SMDMethod, SnowFrac, sfr, avkdn, Temp_C, dq, xsmd, vsmd, MaxConductance, &
          LAIMax, LAI_id, gsModel, Kmax, &
          G1, G2, G3, G4, G5, G6, TH, TL, S1, S2, &
          gfunc, gsc, ResistSurf)! output:
@@ -2678,7 +2678,7 @@ CONTAINS
       RadMeltFact, RAINCOVER, RainMaxRes, resp_a, resp_b, &
       RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
       SatHydraulicConduct, SDDFull, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
-      SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
+      SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, SnowFrac, &
       SnowLimBldg, SnowLimPaved, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
       soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
       StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair_av, tau_a, tau_f, tau_r, &
@@ -2891,7 +2891,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) ::IceFrac
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) ::SnowWater
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) ::SnowDens
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) ::snowFrac
+      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) ::SnowFrac
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) ::SnowPack
 
       ! water balance related:
@@ -3042,7 +3042,7 @@ CONTAINS
             RadMeltFact, RAINCOVER, RainMaxRes, resp_a, resp_b, &
             RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
             SatHydraulicConduct, SDDFull, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
-            SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
+            SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, SnowFrac, &
             SnowLimBldg, SnowLimPaved, snowFrac_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
             soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
             StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair_av, tau_a, tau_f, tau_r, &

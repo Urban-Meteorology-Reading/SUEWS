@@ -499,12 +499,27 @@ CONTAINS
       REAL(KIND(1D0))::NonWaterFraction
 
       ! snow related temporary values
-      REAL(KIND(1D0))::alb0
+      ! REAL(KIND(1D0))::alb0
       REAL(KIND(1D0))::alb1
+
+      ! temporary variables to save values for inout varialbes
+      REAL(KIND(1D0))::qn1_av_prev, qn1_av_next
+      REAL(KIND(1D0))::dqndt_prev, dqndt_next
+      REAL(KIND(1D0))::qn1_s_av_prev, qn1_s_av_next
+      REAL(KIND(1D0))::dqnsdt_prev, dqnsdt_next
+      REAL(KIND(1D0))::Tair_av_prev, Tair_av_next
 
       ! Related to RSL wind profiles
       INTEGER, PARAMETER :: nz = 90   ! number of levels 10 levels in canopy plus 20 (3 x Zh) above the canopy
       ! REAL(KIND(1d0)), DIMENSION(nz):: zarrays ! Height array
+
+      ! ########################################################################################
+      ! save initial values of inout variables
+      qn1_av_prev = qn1_av
+      dqndt_prev = dqndt
+      qn1_s_av_prev = qn1_s_av
+      dqnsdt_prev = dqnsdt
+      Tair_av_prev = Tair_av
 
       ! ########################################################################################
 
@@ -534,7 +549,7 @@ CONTAINS
          DLS) !output
 
       ! calculate mean air temperature of past 24 hours
-      call suews_cal_tair_av(Tair_av, dt_since_start, tstep, temp_c)
+      Tair_av_next = cal_tair_av(Tair_av_prev, dt_since_start, tstep, temp_c)
 
       !==============main calculation start=======================
       IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_RoughnessParameters...'
@@ -622,9 +637,10 @@ CONTAINS
          HDD_id, MetForcingData_grid, Ts5mindata_ir, qf, qn1, &
          avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown, &
          bldgh, alb, emis, cpAnOHM, kkAnOHM, chAnOHM, EmissionsMethod, &
-         Tair_av, qn1_av, dqndt, qn1_s_av, dqnsdt, &!inout
-         StoreDrainPrm, &
+         Tair_av_next, qn1_av_prev, dqndt_prev, qn1_s_av_prev, dqnsdt_prev, &
+         StoreDrainPrm, &!inout
          qn1_S, snowFrac, dataOutLineESTM, qs, &!output
+         qn1_av_next, dqndt_next, qn1_s_av_next, dqnsdt_next, &
          deltaQi, a1, a2, a3)
 
       !==================Energy related to snow melting/freezing processes=======
@@ -774,6 +790,14 @@ CONTAINS
          Fc, Fc_biogen, Fc_photo, Fc_respi)! output:
 
       !==============main calculation end=======================
+
+      !==============================================================
+      ! update inout variables with new values
+      qn1_av = qn1_av_next
+      dqndt = dqndt_next
+      qn1_s_av = qn1_s_av_next
+      dqnsdt = dqnsdt_next
+      Tair_av = Tair_av_next
 
       !==============translation of  output variables into output array===========
       CALL SUEWS_update_outputLine( &
@@ -1207,9 +1231,10 @@ CONTAINS
       HDD_id, MetForcingData_grid, Ts5mindata_ir, qf, qn1, &
       avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown, &
       bldgh, alb, emis, cpAnOHM, kkAnOHM, chAnOHM, EmissionsMethod, &
-      Tair24HR, qn1_av, dqndt, qn1_s_av, dqnsdt, &!inout
-      StoreDrainPrm, &
+      Tair_av, qn1_av_prev, dqndt_prev, qn1_s_av_prev, dqnsdt_prev, &
+      StoreDrainPrm, &!inout
       qn1_S, snowFrac, dataOutLineESTM, qs, &!output
+      qn1_av_next, dqndt_next, qn1_s_av_next, dqnsdt_next, &
       deltaQi, a1, a2, a3)
 
       IMPLICIT NONE
@@ -1252,11 +1277,15 @@ CONTAINS
 
       REAL(KIND(1d0)), DIMENSION(:), INTENT(in)::Ts5mindata_ir
 
-      REAL(KIND(1d0)), INTENT(inout)::Tair24HR
-      REAL(KIND(1d0)), INTENT(inout)::qn1_av
-      REAL(KIND(1d0)), INTENT(inout)::dqndt  ! Rate of change of net radiation [W m-2 h-1] at t-1
-      REAL(KIND(1d0)), INTENT(inout)::qn1_s_av
-      REAL(KIND(1d0)), INTENT(inout)::dqnsdt ! Rate of change of net radiation [W m-2 h-1] at t-1
+      REAL(KIND(1d0)), INTENT(in)::Tair_av
+      REAL(KIND(1d0)), INTENT(in)::qn1_av_prev
+      REAL(KIND(1d0)), INTENT(out)::qn1_av_next
+      REAL(KIND(1d0)), INTENT(in)::dqndt_prev  ! Rate of change of net radiation [W m-2 h-1] at t-1
+      REAL(KIND(1d0)), INTENT(out)::dqndt_next  ! Rate of change of net radiation [W m-2 h-1] at t-1
+      REAL(KIND(1d0)), INTENT(in)::qn1_s_av_prev
+      REAL(KIND(1d0)), INTENT(out)::qn1_s_av_next
+      REAL(KIND(1d0)), INTENT(in)::dqnsdt_prev ! Rate of change of net radiation [W m-2 h-1] at t-1
+      REAL(KIND(1d0)), INTENT(out)::dqnsdt_next ! Rate of change of net radiation [W m-2 h-1] at t-1
       ! REAL(KIND(1d0)),DIMENSION(nsh),INTENT(inout)   ::qn1_store_grid
       ! REAL(KIND(1d0)),DIMENSION(nsh),INTENT(inout)   ::qn1_S_store_grid !< stored qn1 [W m-2]
 
@@ -1275,6 +1304,8 @@ CONTAINS
 
       REAL(KIND(1d0))::Tair_mav_5d ! Tair_mav_5d=HDD(id-1,4) HDD at the begining of today (id-1)
       REAL(KIND(1d0))::qn1_use ! qn used in OHM calculations
+
+      REAL(KIND(1d0)):: moist_surf(nsurf) !< non-dimensional surface wetness status (0-1) [-]
 
       ! initialise output variables
       !deltaQi = 0
@@ -1299,8 +1330,8 @@ CONTAINS
       ELSEIF (StorageHeatMethod == 1) THEN           !Use OHM to calculate QS
          Tair_mav_5d = HDD_id(10)
          IF (Diagnose == 1) WRITE (*, *) 'Calling OHM...'
-         CALL OHM(qn1, qn1_av, dqndt, &
-                  qn1_S, qn1_s_av, dqnsdt, &
+         CALL OHM(qn1_use, qn1_av_prev, dqndt_prev, qn1_av_next, dqndt_next, &
+                  qn1_S, qn1_s_av_prev, dqnsdt_prev, qn1_s_av_next, dqnsdt_next, &
                   tstep, dt_since_start, &
                   sfr, nsurf, &
                   Tair_mav_5d, &
@@ -1320,12 +1351,14 @@ CONTAINS
          !      alb, emis, cpAnOHM, kkAnOHM, chAnOHM,&
          !      sfr,nsurf,nsh,EmissionsMethod,id,Gridiv,&
          !      a1,a2,a3,qs,deltaQi)
+         moist_surf = state_id/StoreDrainPrm(6, :)
          CALL AnOHM( &
             tstep, dt_since_start, &
-            qn1_use, qn1_av, dqndt, qf, &
-            MetForcingData_grid, state_id/StoreDrainPrm(6, :), &
+            qn1_use, qn1_av_prev, dqndt_prev, qf, &
+            MetForcingData_grid, moist_surf, &
             alb, emis, cpAnOHM, kkAnOHM, chAnOHM, &! input
             sfr, nsurf, EmissionsMethod, id, Gridiv, &
+            qn1_av_next, dqndt_next, &
             a1, a2, a3, qs, deltaQi)! output
 
          ! !Calculate QS using ESTM
@@ -1337,7 +1370,7 @@ CONTAINS
             tstep, &
             avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown, &
             bldgh, Ts5mindata_ir, &
-            Tair24HR, &!inout
+            Tair_av, &
             dataOutLineESTM, QS)!output
          !    CALL ESTM(QSestm,Gridiv,ir)  ! iMB corrected to Gridiv, TS 09 Jun 2016
          !    QS=QSestm   ! Use ESTM qs
@@ -2959,11 +2992,19 @@ CONTAINS
 
    END SUBROUTINE SUEWS_cal_sunposition
 
-   subroutine suews_cal_tair_av(tair_av, dt_since_start, tstep, temp_c)
+   ! function func(arg) result(retval)
+   !    implicit none
+   !    type :: arg
+   !    type :: retval
+
+   ! end function func
+
+   real(KIND(1D0)) function cal_tair_av(tair_av_prev, dt_since_start, tstep, temp_c) result(tair_av_next)
       ! calculate mean air temperature of past 24 hours
       ! TS, 17 Sep 2019
       implicit none
-      real(KIND(1D0)), intent(inout) :: tair_av
+      real(KIND(1D0)), intent(in) :: tair_av_prev
+      ! real(KIND(1D0)), intent(out) :: tair_av_next
       real(KIND(1D0)), intent(in) ::  temp_c
       integer, intent(in) ::  dt_since_start
       integer, intent(in) ::  tstep
@@ -2981,8 +3022,8 @@ CONTAINS
          len_cal_s = dt_since_start + tstep
       end if
       temp_k = temp_c + 273.15
-      tair_av = tair_av*(len_cal_s - tstep*1.)/len_cal_s + temp_k*tstep/len_cal_s
+      tair_av_next = tair_av_prev*(len_cal_s - tstep*1.)/len_cal_s + temp_k*tstep/len_cal_s
 
-   end subroutine suews_cal_tair_av
+   end function cal_tair_av
 
 END MODULE SUEWS_Driver

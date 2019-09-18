@@ -126,7 +126,6 @@ MODULE ESTM_data !S.O. and FO
                                                 TANZENITH, &    !
                                                 Tair1, &
                                                 Tair2, &
-                                                Tairday, &      !24hour average air temperature
                                                 Tfloor, &
                                                 Tievolve, &
                                                 TN_roof, &
@@ -973,7 +972,7 @@ CONTAINS
       tstep, &
       avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown, &
       bldgh, Ts5mindata_ir, &
-      Tair24HR, &!inout
+      Tair_av, &
       dataOutLineESTM, QS)!output
       ! NB: HCW Questions:
       !                - should TFloor be set in namelist instead of hard-coded here?
@@ -1151,7 +1150,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(in)::bldgh
       ! REAL(KIND(1d0)),INTENT(in):: dectime        !Decimal time
       REAL(KIND(1d0)), DIMENSION(ncolsESTMdata), INTENT(in)::  Ts5mindata_ir     !surface temperature input data
-      REAL(KIND(1d0)), INTENT(inout) ::   Tair24HR ! may be replaced with MetForcingData by extracting the Tiar part
+      REAL(KIND(1d0)), INTENT(in) ::   Tair_av ! mean air temperature of past 24hr
 
       REAL(KIND(1d0)), DIMENSION(27), INTENT(out):: dataOutLineESTM
       !Output to SUEWS
@@ -1300,9 +1299,6 @@ CONTAINS
       ENDIF
 
       SHC_air = HEATCAPACITY_AIR(Tair1, avrh, Press_hPa)   ! Use SUEWS version
-      ! Tair24HR = EOSHIFT(Tair24HR, 1, Tair1, 1) !!!*** NB: Check this. and is this the tair of past 24 hrs? TS 10 Oct 2017
-      ! Tairday = SUM(Tair24HR)/(24*nsh)
-      Tairday = Tair24HR
 
       !Evolution of building temperature from heat added by convection
       SELECT CASE (evolvetibld)   !EvolveTiBld specifies which internal building temperature approach to use
@@ -1323,9 +1319,9 @@ CONTAINS
       END SELECT
 
       !ASSUME AIR MIXES IN PROPORTION TO # OF EXCHANGES
-      IF (Tairday > 20.+C2K .AND. Tievolve > 25.+C2K .AND. TAIR1 < Tievolve .AND. .NOT. HVAC) THEN
+      IF (Tair_av > 20.+C2K .AND. Tievolve > 25.+C2K .AND. TAIR1 < Tievolve .AND. .NOT. HVAC) THEN
          AIREXHR = 2.0  !Windows or exterior doors on 3 sides (ASHRAE 1981 22.8)
-      ELSEIF (Tairday < 17.+C2K .OR. HVAC) THEN
+      ELSEIF (Tair_av < 17.+C2K .OR. HVAC) THEN
          AIREXHR = 0.5 !No window or exterior doors, storm sash or weathertripped (ASHRAE 1981 22.8)
       ELSE
          AIREXHR = 1.0

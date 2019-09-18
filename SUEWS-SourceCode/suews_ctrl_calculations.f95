@@ -70,7 +70,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       resp_a, resp_b, sathydraulicconduct, sddfull, &
       sfr, SnowPackLimit, snowdens, snowfrac, snowpack, &
       soildepth, soilstore_id, SoilStoreCap, state_id, statelimit, &
-      StoreDrainPrm, tair24hr, theta_bioco2, ts5mindata_ir, &
+      StoreDrainPrm, theta_bioco2, ts5mindata_ir, &
       waterdist, wetthresh, &
       WUDay_id, &
       AHProf_24Hr, HumActivity_24Hr, PopProf_24Hr, TraffProf_24Hr, WUProfA_24hr, WUProfM_24hr, &

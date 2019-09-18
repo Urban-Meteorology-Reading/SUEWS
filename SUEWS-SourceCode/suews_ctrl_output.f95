@@ -676,9 +676,9 @@ CONTAINS
       CASE ('SUEWS') !default
          dataOutX = dataOutSUEWS(1:irMax, 1:SIZE(varListX), Gridiv)
 
-      CASE ('SOLWEIG') !SOLWEIG
-         ! todo: inconsistent data structure
-         dataOutX = dataOutSOL(1:irMax, 1:SIZE(varListX), Gridiv)
+         ! CASE ('SOLWEIG') !SOLWEIG
+         !    ! todo: inconsistent data structure
+         !    dataOutX = dataOutSOL(1:irMax, 1:SIZE(varListX), Gridiv)
 
       CASE ('BL') !BL
          dataOutX = dataOutBL(1:irMax, 1:SIZE(varListX), Gridiv)

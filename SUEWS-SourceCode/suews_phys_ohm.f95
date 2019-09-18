@@ -9,8 +9,8 @@
 !   IMPLICIT NONE
 ! CONTAINS
 !========================================================================================
-SUBROUTINE OHM(qn1, qn1_av, dqndt, &
-               qn1_S, qn1_s_av, dqnsdt, &
+SUBROUTINE OHM(qn1, qn1_av_prev, dqndt_prev, qn1_av_next, dqndt_next, &
+               qn1_S, qn1_s_av_prev, dqnsdt_prev, qn1_s_av_next, dqnsdt_next, &
                tstep, dt_since_start, &
                sfr, nsurf, &
                Tair_mav_5d, &
@@ -20,7 +20,7 @@ SUBROUTINE OHM(qn1, qn1_av, dqndt, &
                BldgSurf, WaterSurf, &
                SnowUse, SnowFrac, &
                DiagQS, &
-               a1, a2, a3, qs, deltaQi)!output
+               a1, a2, a3, qs, deltaQi)
    ! Made by HCW Jan 2015 to replace OHMnew (no longer needed).
    ! Calculates net storage heat flux (QS) from Eq 4, Grimmond et al. 1991, Atm Env.
    ! Accounts for variable timesteps in dQ*/dt term.
@@ -69,10 +69,19 @@ SUBROUTINE OHM(qn1, qn1_av, dqndt, &
    INTEGER, INTENT(in)::SnowUse   ! option for snow related calculations
    INTEGER, INTENT(in)::DiagQS    ! diagnostic option
 
-   REAL(KIND(1d0)), INTENT(inout)::qn1_av
-   REAL(KIND(1d0)), INTENT(inout)::dqndt  !Rate of change of net radiation [W m-2 h-1] at t-1
-   REAL(KIND(1d0)), INTENT(inout)::qn1_s_av
-   REAL(KIND(1d0)), INTENT(inout)::dqnsdt  !Rate of change of net radiation [W m-2 h-1] at t-1
+   REAL(KIND(1d0)), INTENT(in)::qn1_av_prev
+   REAL(KIND(1d0)), INTENT(out)::qn1_av_next
+   REAL(KIND(1d0)), INTENT(in)::dqndt_prev  ! Rate of change of net radiation [W m-2 h-1] at t-1
+   REAL(KIND(1d0)), INTENT(out)::dqndt_next  ! Rate of change of net radiation [W m-2 h-1] at t-1
+   REAL(KIND(1d0)), INTENT(in)::qn1_s_av_prev
+   REAL(KIND(1d0)), INTENT(out)::qn1_s_av_next
+   REAL(KIND(1d0)), INTENT(in)::dqnsdt_prev ! Rate of change of net radiation [W m-2 h-1] at t-1
+   REAL(KIND(1d0)), INTENT(out)::dqnsdt_next ! Rate of change of net radiation [W m-2 h-1] at t-1
+
+   ! REAL(KIND(1d0)), INTENT(inout)::qn1_av
+   ! REAL(KIND(1d0)), INTENT(inout)::dqndt  !Rate of change of net radiation [W m-2 h-1] at t-1
+   ! REAL(KIND(1d0)), INTENT(inout)::qn1_s_av
+   ! REAL(KIND(1d0)), INTENT(inout)::dqnsdt  !Rate of change of net radiation [W m-2 h-1] at t-1
    ! REAL(KIND(1d0)),INTENT(inout)::qn1_store_grid(nsh)
    ! REAL(KIND(1d0)),INTENT(inout)::qn1_av_store_grid(2*nsh+1)
    ! REAL(KIND(1d0)),INTENT(inout)::qn1_S_store_grid(nsh)
@@ -137,12 +146,13 @@ SUBROUTINE OHM(qn1, qn1_av, dqndt, &
       ! print*,''
       ! CALL OHM_dqndt_cal(nsh,qn1,qn1_store_grid,qn1_av_store_grid,dqndt)
       ! print*, 'old dqndt',dqndt
-      CALL OHM_dqndt_cal_X(tstep, dt_since_start, qn1_av, qn1, dqndt)
+      CALL OHM_dqndt_cal_X(tstep, dt_since_start, qn1_av_prev, qn1, dqndt_prev, &
+                           qn1_av_next, dqndt_next)
       ! print*, 'new dqndt',dqndt
 
       ! Calculate net storage heat flux
-      CALL OHM_QS_cal(qn1, dqndt, a1, a2, a3, qs)
-      IF (DiagQS == 1) WRITE (*, *) 'qs: ', qs, 'qn1:', qn1, 'dqndt: ', dqndt
+      CALL OHM_QS_cal(qn1, dqndt_next, a1, a2, a3, qs)
+      IF (DiagQS == 1) WRITE (*, *) 'qs: ', qs, 'qn1:', qn1, 'dqndt: ', dqndt_next
 
    ELSE
       CALL ErrorHint(21, 'In SUEWS_OHM.f95: bad value for qn1 found during qs calculation.', qn1, -55.55d0, -55)
@@ -170,10 +180,11 @@ SUBROUTINE OHM(qn1, qn1_av, dqndt, &
          ! Store instantaneous qn1 values for previous hour (qn1_store_grid) and average (qn1_av)
          ! CALL OHM_dqndt_cal(nsh,qn1_S,qn1_S_store_grid,qn1_S_av_store_grid,dqndt)
 
-         CALL OHM_dqndt_cal_X(tstep, dt_since_start, qn1_s_av, qn1_S, dqnsdt)
+         CALL OHM_dqndt_cal_X(tstep, dt_since_start, qn1_s_av_prev, qn1_S, dqnsdt_prev, &
+                              qn1_s_av_next, dqnsdt_next)
 
          ! Calculate net storage heat flux for snow surface (winter wet conditions)
-         CALL OHM_QS_cal(qn1_S, dqnsdt, &
+         CALL OHM_QS_cal(qn1_S, dqnsdt_next, &
                          OHM_coef(nsurf + 1, 3, 1), OHM_coef(nsurf + 1, 3, 2), OHM_coef(nsurf + 1, 3, 3), &
                          deltaQi0)
          deltaQi = deltaQi0
@@ -257,13 +268,15 @@ SUBROUTINE OHM_coef_cal(sfr, nsurf, &
 END SUBROUTINE OHM_coef_cal
 
 ! Updated OHM calculations for WRF-SUEWS coupling (v2018b onwards) weighted mean (TS Apr 2018)
-SUBROUTINE OHM_dqndt_cal_X(dt, dt_since_start, qn1_av, qn1, dqndt)
+SUBROUTINE OHM_dqndt_cal_X(dt, dt_since_start, qn1_av_prev, qn1, dqndt_prev, qn1_av_next, dqndt_next)
    IMPLICIT NONE
    INTEGER, INTENT(in)            :: dt              ! time step [s]
    INTEGER, INTENT(in)            :: dt_since_start  ! time since simulation starts [s]
    REAL(KIND(1d0)), INTENT(in)    :: qn1             ! new qn1 value [W m-2]
-   REAL(KIND(1d0)), INTENT(inout) :: qn1_av          ! weighted average of qn1 [W m-2]
-   REAL(KIND(1d0)), INTENT(inout) :: dqndt           ! dQ* per dt for 60 min [W m-2 h-1]
+   REAL(KIND(1d0)), INTENT(in) :: qn1_av_prev          ! weighted average of qn1 [W m-2]
+   REAL(KIND(1d0)), INTENT(in) :: dqndt_prev           ! dQ* per dt for 60 min [W m-2 h-1]
+   REAL(KIND(1d0)), INTENT(out) :: qn1_av_next          ! weighted average of qn1 [W m-2]
+   REAL(KIND(1d0)), INTENT(out) :: dqndt_next           ! dQ* per dt for 60 min [W m-2 h-1]
    REAL(KIND(1d0)), PARAMETER     :: dt0_thresh = 3600 ! threshold for period of dqndt0 [s]
    REAL(KIND(1d0)), PARAMETER     :: window_hr = 2     ! window size for Difference calculation [hr]
 
@@ -280,14 +293,14 @@ SUBROUTINE OHM_dqndt_cal_X(dt, dt_since_start, qn1_av, qn1, dqndt)
    ENDIF
 
    ! get weighted average at a previous time specified by `window_hr`
-   qn1_av_0 = qn1_av - dqndt*(window_hr - dt/3600.)
+   qn1_av_0 = qn1_av_prev - dqndt_prev*(window_hr - dt/3600.)
 
    ! averaged qn1 for previous period = dt0_thresh
-   qn1_av = (qn1_av*(dt0 - dt) + qn1*dt)/(dt0)
+   qn1_av_next = (qn1_av_prev*(dt0 - dt) + qn1*dt)/(dt0)
 
    ! do weighted average to calculate the difference by using the memory value and new forcing value
    ! NB: keep the output dqndt in [W m-2 h-1]
-   dqndt = (qn1_av - qn1_av_0)/window_hr
+   dqndt_next = (qn1_av_next - qn1_av_0)/window_hr
 
 END SUBROUTINE OHM_dqndt_cal_X
 

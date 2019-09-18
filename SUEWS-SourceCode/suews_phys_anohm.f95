@@ -27,10 +27,11 @@ CONTAINS
    !! -# grid ensemble OHM coefficients: a1, a2 and a3
    SUBROUTINE AnOHM( &
       tstep, dt_since_start, &
-      qn1, qn1_av, dqndt, qf, &
+      qn1, qn1_av_prev, dqndt_prev, qf, &
       MetForcingData_grid, moist_surf, &
       alb, emis, cpAnOHM, kkAnOHM, chAnOHM, &! input
       sfr, nsurf, EmissionsMethod, id, Gridiv, &
+      qn1_av_next, dqndt_next, &
       a1, a2, a3, qs, deltaQi)! output
 
       IMPLICIT NONE
@@ -56,8 +57,10 @@ CONTAINS
       INTEGER, INTENT(in):: nsurf             !< number of surfaces [-]
       ! INTEGER,INTENT(in):: nsh               !< number of timesteps in one hour [-]
 
-      REAL(KIND(1d0)), INTENT(inout)::qn1_av
-      REAL(KIND(1d0)), INTENT(inout)::dqndt  !Rate of change of net radiation [W m-2 h-1] at t-1
+      REAL(KIND(1d0)), INTENT(in)::qn1_av_prev
+      REAL(KIND(1d0)), INTENT(out)::qn1_av_next
+      REAL(KIND(1d0)), INTENT(in)::dqndt_prev  !Rate of change of net radiation [W m-2 h-1] at t-1
+      REAL(KIND(1d0)), INTENT(out)::dqndt_next  !Rate of change of net radiation [W m-2 h-1] at t-1
 
       ! REAL(KIND(1d0)),INTENT(inout)::qn1_store(nsh) !< stored qn1 [W m-2]
       ! REAL(KIND(1d0)),INTENT(inout)::qn1_av_store(2*nsh+1) !< average net radiation over previous hour [W m-2]
@@ -124,10 +127,11 @@ CONTAINS
 
          ! Store instantaneous qn1 values for previous hour (qn1_store) and average (qn1_av)
          ! CALL OHM_dqndt_cal(nsh,qn1,qn1_store,qn1_av_store,dqndt)
-         CALL OHM_dqndt_cal_X(tstep, dt_since_start, qn1_av, qn1, dqndt)
+         CALL OHM_dqndt_cal_X(tstep, dt_since_start, qn1_av_prev, qn1, dqndt_prev, &
+                              qn1_av_next, dqndt_next)
 
          ! Calculate net storage heat flux
-         CALL OHM_QS_cal(qn1, dqndt, a1, a2, a3, qs)
+         CALL OHM_QS_cal(qn1, dqndt_prev, a1, a2, a3, qs)
 
       ELSE
          CALL ErrorHint(21, 'SUEWS_AnOHM.f95: bad value for qn found during qs calculation.', qn1, NotUsed, notUsedI)

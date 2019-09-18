@@ -1,3 +1,60 @@
+!======================================================================================================
+MODULE cbl_MODULE
+
+   INTEGER::EntrainmentType, &  ! Entrainment type choice
+             CO2_included, &     ! CO2 included
+             InitialData_use, &  ! 1 read initial data, 0 do not
+             !  qh_choice,&        ! selection of qh use to drive CBL growth 1=Suews 2=lumps 3=obs  ! moved to suews_data
+             sondeflag, &      ! 1 read sonde or vertical profile data in 0 do not
+             isubs          ! 1 include subsidence in equations
+
+   INTEGER, DIMENSION(366)::cblday = 0
+
+   CHARACTER(len=200), DIMENSION(366)::FileSonde = ""
+   CHARACTER(len=200)::InitialDataFileName
+   REAL(KIND(1D0)):: wsb       ! subsidence velocity
+   REAL(KIND(1d0)), DIMENSION(1:10):: cbldata
+   REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE::IniCBLdata
+
+   !Parameters in CBL code
+   INTEGER::zmax, &
+             nEqn = 6, &  !NT changed from 4 to 6
+             iCBLcount, &
+             nlineInData
+   REAL(KIND(1d0))::C2K = 273.16
+
+   REAL(KIND(1D0)):: usbl, ftbl, fqbl, fcbl, gamt, gamq, gamc, tpp, qpp, cp0!,tk
+
+   REAL(KIND(1D0))::alpha3, &
+                     blh_m, &    ! Boundary layer height(m)
+                     blh1_m, &
+                     cm, &       ! CO2 concentration in CBL
+                     !cp0,gamc,& !
+                     gamt_Km, &  ! Vertical gradient of theta (K/m)
+                     gamq_gkgm, &! Vertical gradient of specific humidity (g/kg/m)
+                     gamq_kgkgm, &! Vertical gradient of specific humidity (kg/kg/m)
+                     !fcbl,&
+                     tm_C, &     ! Potential temperature in CBL (degree Celsius)
+                     tm_K, &     ! Potential temperature in CBL (K)
+                     tmp_K, &
+                     tp_C, &     ! Potential temperature just above Boundary layer height(degree Celsius)
+                     tp_K, &     ! Potential temperature just above Boundary layer height(K)
+                     tpp_K, &
+                     febl_kgkgms, &! Kinematic latent heat flux((kg/kg)*m/s)
+                     fhbl_Kms, &   ! Kinematic sensible heat flux(K*m/s)
+                     qm_gkg, &   ! Specific humidity in CBL(g/kg)
+                     qm_kgkg, &  ! Specific humidity in CBL(kg/kg)
+                     qp_gkg, &   ! Specific humidity above Boundary layer height(g/kg)
+                     qp_kgkg, &  ! Specific humidity above Boundary layer height(kg/kg)
+                     qpp_kgkg
+
+   REAL(KIND(1D0)), DIMENSION(0:500, 2):: gtheta, ghum ! Vertical gradient of theta and specific humidity from sonde data
+   REAL(KIND(1D0)), DIMENSION(6)::y  ! NT set from 4 to 6
+
+END MODULE cbl_MODULE
+!===================================================================================
+
+
 MODULE BLUEWS_module
    USE cbl_module
    USE meteo, ONLY: qsatf, sat_vap_press_x
@@ -25,13 +82,12 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(OUT), DIMENSION(ReadLinesMetdata, ncolumnsdataOutBL, NumberOfGrids) ::dataOutBL
 
       REAL(KIND(1d0))::  gas_ct_dry = 8.31451/0.028965 !j/kg/k=dry_gas/molar
-      REAL(KIND(1d0))::  gas_ct_wv = 8.31451/0.0180153 !j/kg/kdry_gas/molar_wat_vap
+      ! REAL(KIND(1d0))::  gas_ct_wv = 8.31451/0.0180153 !j/kg/kdry_gas/molar_wat_vap
       REAL(KIND(1d0))::qh_use, qe_use, tm_K_zm, qm_gkg_zm
       REAL(KIND(1d0))::Temp_C1, avrh1, es_hPa1
       REAL(KIND(1d0))::secs0, secs1, Lv
-      REAL(KIND(1d0))::notUsed = -55.55, NAN = -999
-      INTEGER::idoy, startflag, iNBL, &
-                notUsedI = -55
+      REAL(KIND(1d0))::NAN = -999
+      INTEGER::idoy, startflag
 
       ! initialise startflag
       startflag = 0
@@ -573,7 +629,7 @@ CONTAINS
    ! NT 6 Apr 2017: include iteration over top of CBL scalars and include subsidence flag
    ! Last modified: LJ 27 Jan 2016 - Removal of tabs
    !-----------------------------------------------------------------------
-   SUBROUTINE RKUTTA(neqn, XA, XB, Y, NSTEPS)
+   SUBROUTINE RKUTTA(neqn_use, XA, XB, y_use, NSTEPS)
       !       XA=s0
       !       XB=s1
       !       Y(1)=blh_m
@@ -601,8 +657,8 @@ CONTAINS
       !       DYDX = ON EXIT, ARRAY (LENGTH NE) OF VALUES OF DERIVATIVES
       !        IMPLICIT real*8 (A-H,O-Z)
       IMPLICIT NONE
-      INTEGER::ns, nsteps, nj, n, neqn
-      REAL(KIND(1D0)), DIMENSION(neqn):: y
+      INTEGER::ns, nsteps, nj, n, neqn_use
+      REAL(KIND(1D0)), DIMENSION(neqn_use):: y_use
       REAL(KIND(1D0)), DIMENSION(21):: dydx, arg
       REAL(KIND(1D0)), DIMENSION(21, 5):: rk
       REAL(KIND(1D0)), DIMENSION(4):: coef
@@ -616,7 +672,7 @@ CONTAINS
       STEP = (XB - XA)/NSTEPS
 
       DO NS = 1, NSTEPS
-         DO NJ = 1, nEqn
+         DO NJ = 1, neqn_use
             RK(NJ, 1) = 0
          ENDDO
          X = XA + (NS - 1)*STEP
@@ -627,20 +683,20 @@ CONTAINS
                XX = X + COEF(N)*STEP
             ENDIF
 
-            DO NJ = 1, nEqn
-               ARG(NJ) = Y(NJ) + COEF(N)*RK(NJ, N)
+            DO NJ = 1, neqn_use
+               ARG(NJ) = y_use(NJ) + COEF(N)*RK(NJ, N)
             ENDDO
 
             CALL DIFF(xx, ARG, DYDX)
 
-            DO NJ = 1, nEqn
+            DO NJ = 1, neqn_use
                RK(NJ, N + 1) = STEP*DYDX(NJ)
             ENDDO
          ENDDO
 
-         DO NJ = 1, nEqn
+         DO NJ = 1, neqn_use
             DO N = 1, 4
-               Y(NJ) = Y(NJ) + RK(NJ, N + 1)/(6*COEF(N))
+               y_use(NJ) = y_use(NJ) + RK(NJ, N + 1)/(6*COEF(N))
             ENDDO
          ENDDO
       ENDDO

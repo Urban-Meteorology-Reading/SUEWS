@@ -748,16 +748,14 @@ CONTAINS
 
       !============= calculate water balance =============
       CALL SUEWS_cal_Water( &
-      Diagnose, &!input
-      snowUse, NonWaterFraction, addPipes, addImpervious, addVeg, addWaterBody, &
-      state_id, soilstore_id, sfr, StoreDrainPrm, WaterDist, nsh_real, &
-      drain_per_tstep, &  !output
-      drain, AddWaterRunoff, &
-      AdditionalWater, runoffPipes, runoff_per_interval, &
-      AddWater, stateOld, soilstoreOld)
+         Diagnose, &!input
+         snowUse, NonWaterFraction, addPipes, addImpervious, addVeg, addWaterBody, &
+         state_id, soilstore_id, sfr, StoreDrainPrm, WaterDist, nsh_real, &
+         drain_per_tstep, &  !output
+         drain, AddWaterRunoff, &
+         AdditionalWater, runoffPipes, runoff_per_interval, &
+         AddWater, stateOld, soilstoreOld)
       !============= calculate water balance end =============
-
-
 
       !===============Resistance Calculations=======================
       CALL SUEWS_cal_Resistance( &
@@ -774,13 +772,13 @@ CONTAINS
          UStar, TStar, L_mod, &!output
          zL, gsc, ResistSurf, RA, RAsnow, rb)
 
-      IceFrac = IceFrac_prev
-      SnowWater = SnowWater_prev
-      SnowPack = SnowPack_next
-      SnowDens = SnowDens_next
-      SnowFrac = SnowFrac_next
-      SnowAlb = SnowAlb_next
-      SnowfallCum = SnowfallCum_next
+      ! IceFrac = IceFrac_prev
+      ! SnowWater = SnowWater_prev
+      ! SnowPack = SnowPack_next
+      ! SnowDens = SnowDens_next
+      ! SnowFrac = SnowFrac_next
+      ! SnowAlb = SnowAlb_next
+      ! SnowfallCum = SnowfallCum_next
 
       !======== Evaporation and surface state_id ========
       CALL SUEWS_cal_QE( &
@@ -794,8 +792,10 @@ CONTAINS
       SurfaceArea, FlowChange, drain, WetThresh, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
       freezmelt, freezstate, freezstatevol, Qm_Melt, Qm_rain, Tsurf_ind, sfr, &
       StateLimit, AddWater, addwaterrunoff, StoreDrainPrm, SnowPackLimit, SnowProf_24hr, &
-      runoff_per_interval, state_id, soilstore_id, SnowPack, SnowFrac, SnowWater, &! inout:
-      iceFrac, SnowDens, &
+      SnowPack_next, SnowFrac_next, SnowWater_prev, IceFrac_prev, SnowDens_next, &! input:
+      runoff_per_interval, state_id, soilstore_id, &! input:
+      runoff_per_interval, state_id, soilstore_id, &! output:
+      SnowPack_next, SnowFrac_next, SnowWater_next, iceFrac_next, SnowDens_next, &! output
       runoffSnow, runoff, runoffSoil, chang, changSnow, &! output:
       snowDepth, SnowToSurf, ev_snow, SnowRemoval, &
       evap, rss_nsurf, p_mm, qe, state_per_tstep, NWstate_per_tstep, qeOut, &
@@ -812,13 +812,13 @@ CONTAINS
          qh, qh_residual, qh_resist)!output
       !============ Sensible heat flux end===============
 
-      SnowfallCum_next = SnowfallCum
-      SnowAlb_next = SnowAlb
-      IceFrac_next = IceFrac
-      SnowWater_next = SnowWater
-      SnowDens_next = SnowDens
-      SnowFrac_next = SnowFrac
-      SnowPack_next = SnowPack
+      ! SnowfallCum_next = SnowfallCum
+      ! SnowAlb_next = SnowAlb
+      ! IceFrac_next = IceFrac
+      ! SnowWater_next = SnowWater
+      ! SnowDens_next = SnowDens
+      ! SnowFrac_next = SnowFrac
+      ! SnowPack_next = SnowPack
 
       ! N.B.: snow-related calculations end here.
       !===================================================
@@ -1632,8 +1632,10 @@ CONTAINS
       SurfaceArea, FlowChange, drain, WetThresh, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
       freezmelt, freezstate, freezstatevol, Qm_Melt, Qm_rain, Tsurf_ind, sfr, &
       StateLimit, AddWater, addwaterrunoff, StoreDrainPrm, SnowPackLimit, SnowProf_24hr, &
-      runoff_per_interval, state_id, soilstore_id, SnowPack, SnowFrac, SnowWater, &! inout:
-      iceFrac, SnowDens, &
+      SnowPack_in, SnowFrac_in, SnowWater_in, iceFrac_in, SnowDens_in, &! input:
+      runoff_per_interval_in, state_id_in, soilstore_id_in, &! input:
+      runoff_per_interval_out, state_id_out, soilstore_id_out, &! output:
+      SnowPack_out, SnowFrac_out, SnowWater_out, iceFrac_out, SnowDens_out, &! output
       runoffSnow, runoff, runoffSoil, chang, changSnow, &! output:
       snowDepth, SnowToSurf, ev_snow, SnowRemoval, &
       evap, rss_nsurf, p_mm, qe, state_per_tstep, NWstate_per_tstep, qeOut, &
@@ -1712,18 +1714,26 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(6, nsurf), INTENT(in)::StoreDrainPrm
       REAL(KIND(1d0)), DIMENSION(0:23, 2), INTENT(in):: SnowProf_24hr
 
-      !Updated status: input and output
-      REAL(KIND(1d0)), INTENT(inout)::runoff_per_interval! Total water transported to each grid for grid-to-grid connectivity
-
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(inout)::state_id
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(inout)::soilstore_id
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(inout)::SnowPack
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(inout)::SnowFrac
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(inout)::SnowWater
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(inout)::iceFrac
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(inout)::SnowDens
+      ! Total water transported to each grid for grid-to-grid connectivity
+      REAL(KIND(1d0)), INTENT(in)::runoff_per_interval_in
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::state_id_in
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::soilstore_id_in
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::SnowPack_in
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::SnowFrac_in
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::SnowWater_in
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::iceFrac_in
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::SnowDens_in
 
       ! output:
+      REAL(KIND(1d0)), INTENT(out)::runoff_per_interval_out
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::state_id_out
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::soilstore_id_out
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::SnowPack_out
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::SnowFrac_out
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::SnowWater_out
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::iceFrac_out
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::SnowDens_out
+
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::runoffSnow !Initialize for runoff caused by snowmelting
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::runoff
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::runoffSoil
@@ -1760,6 +1770,15 @@ CONTAINS
       ! local:
       INTEGER:: is
 
+      REAL(KIND(1d0))::runoff_per_interval
+      REAL(KIND(1d0)), DIMENSION(nsurf)::state_id
+      REAL(KIND(1d0)), DIMENSION(nsurf)::soilstore_id
+      REAL(KIND(1d0)), DIMENSION(nsurf)::SnowPack
+      REAL(KIND(1d0)), DIMENSION(nsurf)::SnowFrac
+      REAL(KIND(1d0)), DIMENSION(nsurf)::SnowWater
+      REAL(KIND(1d0)), DIMENSION(nsurf)::iceFrac
+      REAL(KIND(1d0)), DIMENSION(nsurf)::SnowDens
+
       REAL(KIND(1d0)), DIMENSION(2)    ::SurplusEvap        !Surplus for evaporation in 5 min timestep
       REAL(KIND(1d0))::surplusWaterBody
       REAL(KIND(1d0))::pin!Rain per time interval
@@ -1780,6 +1799,15 @@ CONTAINS
       REAL(KIND(1d0))::chSnow_tot
 
       REAL(KIND(1d0)), DIMENSION(7)::capStore ! current storage capacity [mm]
+
+      runoff_per_interval = runoff_per_interval_in
+      state_id = state_id_in
+      soilstore_id = soilstore_id_in
+      SnowPack = SnowPack_in
+      SnowFrac = SnowFrac_in
+      SnowWater = SnowWater_in
+      iceFrac = iceFrac_in
+      SnowDens = SnowDens_in
 
       tstep_real = tstep*1.d0
       nsh_real = 3600/tstep_real
@@ -1913,6 +1941,15 @@ CONTAINS
       runoffAGveg_m3 = runoffAGveg/1000*SurfaceArea
       runoffWaterBody_m3 = runoffWaterBody/1000*SurfaceArea
       runoffPipes_m3 = runoffPipes/1000*SurfaceArea
+
+      runoff_per_interval_out = runoff_per_interval
+      state_id_out = state_id
+      soilstore_id_out = soilstore_id
+      SnowPack_out = SnowPack
+      SnowFrac_out = SnowFrac
+      SnowWater_out = SnowWater
+      iceFrac_out = iceFrac
+      SnowDens_out = SnowDens
 
    END SUBROUTINE SUEWS_cal_QE
    !========================================================================

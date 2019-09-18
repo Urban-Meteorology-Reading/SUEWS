@@ -600,6 +600,8 @@ CONTAINS
       Tair_av_next = cal_tair_av(Tair_av_prev, dt_since_start, tstep, temp_c)
 
       !==============main calculation start=======================
+
+      !==============surface roughness calculation=======================
       IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_RoughnessParameters...'
       IF (Diagnose == 1) PRINT *, 'z0m_in =', z0m_in
       CALL SUEWS_cal_RoughnessParameters( &
@@ -610,7 +612,7 @@ CONTAINS
          planF, &!output
          Zh, z0m, zdm, ZZD)
 
-      ! Calculate sun position
+      !=================Calculate sun position=================
       IF (Diagnose == 1) WRITE (*, *) 'Calling NARP_cal_SunPosition...'
       CALL NARP_cal_SunPosition( &
          REAL(iy, KIND(1d0)), &!input:
@@ -618,7 +620,7 @@ CONTAINS
          timezone, lat, lng, alt, &
          azimuth, zenith_deg)!output:
 
-      !Call the SUEWS_cal_DailyState routine to get surface characteristics ready
+      !=================Call the SUEWS_cal_DailyState routine to get surface characteristics ready=================
       IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_DailyState...'
       CALL SUEWS_cal_DailyState( &
          iy, id, it, imin, isec, tstep, tstep_prev, dt_since_start, DayofWeek_id, &!input
@@ -637,7 +639,7 @@ CONTAINS
          DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
          deltaLAI)!output
 
-      !Calculation of density and other water related parameters
+      !=================Calculation of density and other water related parameters=================
       IF (Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_AtmMoist...'
       CALL LUMPS_cal_AtmMoist( &
          Temp_C, Press_hPa, avRh, dectime, &! input:
@@ -652,8 +654,8 @@ CONTAINS
          SoilMoistCap, SoilState, &!output
          vsmd, smd)
 
-         IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_WaterUse...'
-      !Gives the external and internal water uses per timestep
+      IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_WaterUse...'
+      !=================Gives the external and internal water uses per timestep=================
       CALL SUEWS_cal_WaterUse( &
          nsh_real, & ! input:
          wu_m3, SurfaceArea, sfr, &
@@ -675,7 +677,7 @@ CONTAINS
          Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff)! output:
 
       ! ========================================================================
-      ! N.B.: the following parts involves snow-related calculations. TS 18 Sep 2019
+      ! N.B.: the following parts involves snow-related calculations.
 
       ! ===================NET ALLWAVE RADIATION================================
       CALL SUEWS_cal_Qn( &
@@ -689,7 +691,6 @@ CONTAINS
          qn1, qn1_snowfree, qn1_S, kclear, kup, lup, tsurf, &
          qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
          alb1)
-
 
       ! =================STORAGE HEAT FLUX=======================================
       CALL SUEWS_cal_Qs( &
@@ -715,7 +716,7 @@ CONTAINS
          nsh_real, sfr, Tsurf_ind, Tsurf_ind_snow, state_id, qn1_ind_snow, &
          kup_ind_snow, SnowWater, deltaQi, alb1, &
          SnowPack, snowFrac, SnowAlb, SnowDens, SnowfallCum, &!inout
-         mwh, fwh, Qm, QmFreez, QmRain, &! output
+         mwh, Qm, QmFreez, QmRain, &! output
          veg_fr, snowCalcSwitch, Qm_melt, Qm_freezState, Qm_rain, FreezMelt, &
          FreezState, FreezStateVol, rainOnSnow, SnowDepth, mw_ind, &
          dataOutLineSnow)!output
@@ -730,8 +731,6 @@ CONTAINS
          Precip, RainMaxRes, RAINCOVER, sfr, LAI_id, LAImax, LAImin, &
          H_mod, & !output
          E_mod, psyc_hPa, s_hPa, sIce_hpa, TempVeg, VegPhenLumps)
-
-
 
       !============= calculate water balance =============
       CALL SUEWS_cal_Water( &
@@ -761,7 +760,7 @@ CONTAINS
 
       !======== Evaporation and surface state_id ========
       CALL SUEWS_cal_QE( &
-         Diagnose, &!input
+         Diagnose, snowuse, &!input
          tstep, imin, it, EvapMethod, snowCalcSwitch, dayofWeek_id, CRWmin, CRWmax, &
          dectime, lvS_J_kg, lv_j_kg, avdens, avRh, Press_hPa, Temp_C, &
          RAsnow, psyc_hPa, avcp, sIce_hPa, &
@@ -856,6 +855,7 @@ CONTAINS
       ! SnowDens = SnowDens_next
       ! SnowFrac = SnowFrac_next
       ! SnowPack = SnowPack_next
+
       ! soilstore_id = soilstore_id_next
       ! state_id = state_id_next
       ! StoreDrainPrm = StoreDrainPrm_next
@@ -1582,6 +1582,7 @@ CONTAINS
    ! TODO: optimise the structure of this function
    SUBROUTINE SUEWS_cal_QE( &
       Diagnose, &!input
+      snowuse, &
       tstep, imin, it, EvapMethod, snowCalcSwitch, dayofWeek_id, CRWmin, CRWmax, &
       dectime, lvS_J_kg, lv_j_kg, avdens, avRh, Press_hPa, Temp_C, &
       RAsnow, psyc_hPa, avcp, sIce_hPa, &
@@ -1603,6 +1604,7 @@ CONTAINS
       IMPLICIT NONE
 
       INTEGER, INTENT(in) ::Diagnose
+      INTEGER, INTENT(in) ::snowuse
       INTEGER, INTENT(in) ::tstep
       INTEGER, INTENT(in) ::imin
       INTEGER, INTENT(in) ::it
@@ -1781,7 +1783,7 @@ CONTAINS
       DO is = 1, nsurf   !For each surface in turn
          IF (snowCalcSwitch(is) == 1) THEN ! snow calculation
             IF (sfr(is) /= 0) THEN
-               IF (Diagnose == 1) WRITE (*, *) 'Calling SnowCalc...'
+               ! IF (Diagnose == 1) WRITE (*, *) 'Calling SnowCalc...'
                CALL SnowCalc( &
                   tstep, imin, it, dectime, is, &!input
                   EvapMethod, CRWmin, CRWmax, nsh_real, lvS_J_kg, lv_j_kg, avdens, &

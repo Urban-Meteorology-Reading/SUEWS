@@ -34,7 +34,7 @@ CONTAINS
       nsh_real, sfr, Tsurf_ind, Tsurf_ind_snow, state_id, qn1_ind_snow, &
       kup_ind_snow, SnowWater, deltaQi, alb1, &
       SnowPack, snowFrac, SnowAlb, SnowDens, SnowfallCum, &!inout
-      mwh, fwh, Qm, QmFreez, QmRain, &! output
+      mwh, Qm, QmFreez, QmRain, &! output
       veg_fr, snowCalcSwitch, Qm_melt, Qm_freezState, Qm_rain, FreezMelt, &
       FreezState, FreezStateVol, rainOnSnow, SnowDepth, mw_ind, &
       dataOutLineSnow)!output
@@ -87,7 +87,7 @@ CONTAINS
 
       !Output:
       REAL(KIND(1d0)), INTENT(out)::mwh
-      REAL(KIND(1d0)), INTENT(out)::fwh
+      REAL(KIND(1d0))::fwh
       REAL(KIND(1d0)), INTENT(out)::Qm
       REAL(KIND(1d0)), INTENT(out)::QmFreez
       REAL(KIND(1d0)), INTENT(out)::QmRain

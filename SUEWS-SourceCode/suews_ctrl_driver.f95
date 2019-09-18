@@ -620,6 +620,17 @@ CONTAINS
          timezone, lat, lng, alt, &
          azimuth, zenith_deg)!output:
 
+
+      ! ========================================================================
+      ! N.B.: the following parts involves snow-related calculations.
+      SnowfallCum = SnowfallCum_prev
+      SnowAlb = SnowAlb_prev
+      IceFrac = IceFrac_prev
+      SnowWater = SnowWater_prev
+      SnowDens = SnowDens_prev
+      SnowFrac = SnowFrac_prev
+      SnowPack = SnowPack_prev
+
       !=================Call the SUEWS_cal_DailyState routine to get surface characteristics ready=================
       IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_DailyState...'
       CALL SUEWS_cal_DailyState( &
@@ -676,8 +687,7 @@ CONTAINS
          Temp_C, TrafficRate, TrafficUnits, TraffProf_24hr, &
          Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff)! output:
 
-      ! ========================================================================
-      ! N.B.: the following parts involves snow-related calculations.
+
 
       ! ===================NET ALLWAVE RADIATION================================
       CALL SUEWS_cal_Qn( &
@@ -788,6 +798,17 @@ CONTAINS
          qh, qh_residual, qh_resist)!output
       !============ Sensible heat flux end===============
 
+      SnowfallCum_next=SnowfallCum
+      SnowAlb_next=SnowAlb
+      IceFrac_next=IceFrac
+      SnowWater_next=SnowWater
+      SnowDens_next=SnowDens
+      SnowFrac_next=SnowFrac
+      SnowPack_next=SnowPack
+
+      ! N.B.: snow-related calculations end here.
+      !===================================================
+
       !=== Horizontal movement between soil stores ===
       ! Now water is allowed to move horizontally between the soil stores
       IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_HorizontalSoilWater...'
@@ -848,13 +869,13 @@ CONTAINS
       dqndt = dqndt_next
       qn1_s_av = qn1_s_av_next
       dqnsdt = dqnsdt_next
-      ! SnowfallCum = SnowfallCum_next
-      ! SnowAlb = SnowAlb_next
-      ! IceFrac = IceFrac_next
-      ! SnowWater = SnowWater_next
-      ! SnowDens = SnowDens_next
-      ! SnowFrac = SnowFrac_next
-      ! SnowPack = SnowPack_next
+      SnowfallCum = SnowfallCum_next
+      SnowAlb = SnowAlb_next
+      IceFrac = IceFrac_next
+      SnowWater = SnowWater_next
+      SnowDens = SnowDens_next
+      SnowFrac = SnowFrac_next
+      SnowPack = SnowPack_next
 
       ! soilstore_id = soilstore_id_next
       ! state_id = state_id_next

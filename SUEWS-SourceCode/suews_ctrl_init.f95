@@ -59,7 +59,7 @@ SUBROUTINE OverallRunControl
       ResolutionFilesInESTM, &
       CBLuse, &
       SNOWuse, &
-      SOLWEIGuse, &
+      ! SOLWEIGuse, &
       EmissionsMethod, &
       NetRadiationMethod, &
       RoughLenHeatMethod, &

@@ -721,13 +721,13 @@ CONTAINS
          StorageHeatMethod, qs_obs, OHMIncQF, Gridiv, &!input
          id, tstep, dt_since_start, Diagnose, sfr, &
          OHM_coef, OHM_threshSW, OHM_threshWD, &
-         soilstore_id, SoilStoreCap, state_id, SnowUse, DiagQS, &
+         soilstore_id, SoilStoreCap, state_id, SnowUse, snowFrac, DiagQS, &
          HDD_id, MetForcingData_grid, Ts5mindata_ir, qf, qn1, &
          avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown, &
          bldgh, alb, emis, cpAnOHM, kkAnOHM, chAnOHM, EmissionsMethod, &
          Tair_av_next, qn1_av_prev, dqndt_prev, qn1_s_av_prev, dqnsdt_prev, &
          StoreDrainPrm, &!inout
-         qn1_S, snowFrac, dataOutLineESTM, qs, &!output
+         qn1_S, dataOutLineESTM, qs, &!output
          qn1_av_next, dqndt_next, qn1_s_av_next, dqnsdt_next, &
          deltaQi, a1, a2, a3)
 
@@ -1338,13 +1338,13 @@ CONTAINS
       StorageHeatMethod, qs_obs, OHMIncQF, Gridiv, &!input
       id, tstep, dt_since_start, Diagnose, sfr, &
       OHM_coef, OHM_threshSW, OHM_threshWD, &
-      soilstore_id, SoilStoreCap, state_id, SnowUse, DiagQS, &
+      soilstore_id, SoilStoreCap, state_id, SnowUse, snowFrac,DiagQS, &
       HDD_id, MetForcingData_grid, Ts5mindata_ir, qf, qn1, &
       avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown, &
       bldgh, alb, emis, cpAnOHM, kkAnOHM, chAnOHM, EmissionsMethod, &
       Tair_av, qn1_av_prev, dqndt_prev, qn1_s_av_prev, dqnsdt_prev, &
       StoreDrainPrm, &!inout
-      qn1_S, snowFrac, dataOutLineESTM, qs, &!output
+      qn1_S, dataOutLineESTM, qs, &!output
       qn1_av_next, dqndt_next, qn1_s_av_next, dqnsdt_next, &
       deltaQi, a1, a2, a3)
 

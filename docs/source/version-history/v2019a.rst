@@ -3,13 +3,13 @@
 
 .. _new_2019a:
 
-Version 2019a (planned release in late August 2019)
+Version 2019a (planned release in late September 2019)
 ----------------------------------------------------
 
 - **Improvement**
 
   #. An anthropogenic emission module is added. Module details refer to Järvi et al. (2019) [J19]_.
-  
+
   #. A `canyon profile module <Wind, Temperature and Humidity Profiles in the Roughness Sublayer>`_ is added. Module details refer to Theeuwes et al. (2019) [T19]_.
 
 
@@ -17,6 +17,12 @@ Version 2019a (planned release in late August 2019)
 - **Changes**
 
   #. Input file ``SUEWS_AnthropogenicHeat.txt`` is renamed to ``SUEWS_AnthropogenicEmission.txt`` with new parameters added: `MinFCMetab`, `MaxFCMetab`, `FrPDDwe`, `FcEF_v_kgkmWD` and `FcEF_v_kgkmWE`.
+  #. BLUEWS has been recovered; set `CBLUse` to use it.
+  #. Removed features:
+    - SOLWEIG: fully removed from code.
+    - netCDF: fully removed as this is very infrequently used;
+      users who need this are suggested to use `SuPy`
+      with help from `pandas` and `xarray` to save results in netCDF more elegantly.
 
 
 - **Fix**
@@ -27,6 +33,5 @@ Version 2019a (planned release in late August 2019)
 
 - **Known issues**
 
-  #. BLUEWS is disabled
   #. Observed soil moisture can not be used as an input
   #. Wind direction is not currently downscaled so non -999 values will cause an error.

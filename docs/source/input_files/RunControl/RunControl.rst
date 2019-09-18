@@ -27,7 +27,6 @@ The parameters and their setting instructions are provided through the links bel
       .. hlist::
         + :option:`CBLuse`
         + :option:`SnowUse`
-        + :option:`SOLWEIGUse`
         + :option:`NetRadiationMethod`
         + :option:`EmissionsMethod`
         + :option:`StorageHeatMethod`
@@ -74,17 +73,6 @@ The parameters and their setting instructions are provided through the links bel
         + :option:`MultRainAmongNUpperI`
         + :option:`DisaggMethodESTM`
 
-* :ref:`netCDF_related_options` (|NotAvail|)
-
-      .. hlist::
-        + :option:`ncMode`
-        + :option:`nRow`
-        + :option:`nCol`
-
-
-
-
-
 
 .. toctree::
    :maxdepth: 1
@@ -94,4 +82,3 @@ The parameters and their setting instructions are provided through the links bel
    Time_related_options
    File_related_options
    Options_related_to_disaggregation_of_input_data
-   netCDF_related_options

@@ -31,25 +31,6 @@ Scheme options
 			:widths: 10 80
 
 
-.. option:: SOLWEIGUse
-
-		.. warning::
-			#. |NotAvail|
-			#. This option will considerably slow down the model since SOLWEIG is a 2D model.
-
-	:Requirement:
-		Required
-	:Description:
-		Determines whether a high resolution radiation model to calculate mean radiant temperate should be used (SOLWEIG).
-
-
-	:Configuration:
-		.. csv-table::
-			:file: csv-table/SOLWEIGUse.csv
-			:header-rows: 1
-			:widths: 10 80
-
-
 .. option:: NetRadiationMethod
 
 	:Requirement:

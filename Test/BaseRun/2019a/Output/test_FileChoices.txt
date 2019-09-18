@@ -15,7 +15,6 @@
  RESOLUTIONFILESINESTM=3600       ,
  CBLUSE=1          ,
  SNOWUSE=1          ,
- SOLWEIGUSE=0          ,
  EMISSIONSMETHOD=1          ,
  NETRADIATIONMETHOD=3          ,
  ROUGHLENHEATMETHOD=2          ,

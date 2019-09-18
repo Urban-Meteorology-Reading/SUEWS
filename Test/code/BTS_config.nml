@@ -14,14 +14,14 @@
 /
 
 &physics_test ! all available options in 2019a below
-    snowuse            = 0, 1
     cbluse             = 0, 1
+    snowuse            = 0, 1
     stabilitymethod    = 2, 3
     netradiationmethod = 0, 1, 2, 3, 100, 200, 300
     emissionsmethod    = 0, 1, 2, 3
     storageheatmethod  = 1, 3, 4
     ohmincqf           = 0, 1
-    stabilitymethod    = 1, 2, 3, 4
+    stabilitymethod    = 2, 3, 4
     roughlenheatmethod = 1, 2, 3, 4
     roughlenmommethod  = 1, 2, 3
     smdmethod          = 0

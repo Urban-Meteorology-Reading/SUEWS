@@ -420,7 +420,7 @@ CONTAINS
       REAL(KIND(1D0))::ZENITH_deg
       REAL(KIND(1D0))::Zh
 
-      REAL(KIND(1d0)), DIMENSION(nvegsurf):: LAI_id_prev !LAI for each veg surface [m2 m-2]
+      ! REAL(KIND(1d0)), DIMENSION(nvegsurf):: LAI_id_prev !LAI for each veg surface [m2 m-2]
 
       REAL(KIND(1D0)), DIMENSION(2)::SnowRemoval
       REAL(KIND(1D0)), DIMENSION(NSURF)::chang
@@ -502,12 +502,42 @@ CONTAINS
       ! REAL(KIND(1D0))::alb0
       REAL(KIND(1D0))::alb1
 
+      ! ########################################################################################
       ! temporary variables to save values for inout varialbes
+      ! OHM related:
       REAL(KIND(1D0))::qn1_av_prev, qn1_av_next
       REAL(KIND(1D0))::dqndt_prev, dqndt_next
       REAL(KIND(1D0))::qn1_s_av_prev, qn1_s_av_next
       REAL(KIND(1D0))::dqnsdt_prev, dqnsdt_next
+
+      ! snow related:
+      REAL(KIND(1D0))::SnowfallCum_prev, SnowfallCum_next
+      REAL(KIND(1D0))::SnowAlb_prev, SnowAlb_next
+
+      REAL(KIND(1D0)), DIMENSION(NSURF)::IceFrac_prev, IceFrac_next
+      REAL(KIND(1D0)), DIMENSION(NSURF)::SnowWater_prev, SnowWater_next
+      REAL(KIND(1D0)), DIMENSION(NSURF)::SnowDens_prev, SnowDens_next
+      REAL(KIND(1D0)), DIMENSION(NSURF)::SnowFrac_prev, SnowFrac_next
+      REAL(KIND(1D0)), DIMENSION(NSURF)::SnowPack_prev, SnowPack_next
+
+      ! water balance related:
+      REAL(KIND(1D0)), DIMENSION(NSURF)   ::soilstore_id_prev, soilstore_id_next
+      REAL(KIND(1D0)), DIMENSION(NSURF)   ::state_id_prev, state_id_next
+      REAL(KIND(1D0)), DIMENSION(6, NSURF)::StoreDrainPrm_prev, StoreDrainPrm_next
+
+      ! phenology related:
+      REAL(KIND(1D0)), DIMENSION(NSURF)   ::alb_prev, alb_next
+      REAL(KIND(1d0)), DIMENSION(5)       ::GDD_id_prev, GDD_id_next
+      REAL(KIND(1d0)), DIMENSION(nvegsurf)::LAI_id_prev, LAI_id_next
+
+      REAL(KIND(1D0))::DecidCap_id_prev, DecidCap_id_next
+      REAL(KIND(1D0))::albDecTr_id_prev, albDecTr_id_next
+      REAL(KIND(1D0))::albEveTr_id_prev, albEveTr_id_next
+      REAL(KIND(1D0))::albGrass_id_prev, albGrass_id_next
+      REAL(KIND(1D0))::porosity_id_prev, porosity_id_next
+
       REAL(KIND(1D0))::Tair_av_prev, Tair_av_next
+      ! ########################################################################################
 
       ! Related to RSL wind profiles
       INTEGER, PARAMETER :: nz = 90   ! number of levels 10 levels in canopy plus 20 (3 x Zh) above the canopy
@@ -519,6 +549,24 @@ CONTAINS
       dqndt_prev = dqndt
       qn1_s_av_prev = qn1_s_av
       dqnsdt_prev = dqnsdt
+      SnowfallCum_prev = SnowfallCum
+      SnowAlb_prev = SnowAlb
+      IceFrac_prev = IceFrac
+      SnowWater_prev = SnowWater
+      SnowDens_prev = SnowDens
+      SnowFrac_prev = SnowFrac
+      SnowPack_prev = SnowPack
+      soilstore_id_prev = soilstore_id
+      state_id_prev = state_id
+      StoreDrainPrm_prev = StoreDrainPrm
+      alb_prev = alb
+      GDD_id_prev = GDD_id
+      LAI_id_prev = LAI_id
+      DecidCap_id_prev = DecidCap_id
+      albDecTr_id_prev = albDecTr_id
+      albEveTr_id_prev = albEveTr_id
+      albGrass_id_prev = albGrass_id
+      porosity_id_prev = porosity_id
       Tair_av_prev = Tair_av
 
       ! ########################################################################################
@@ -797,6 +845,24 @@ CONTAINS
       dqndt = dqndt_next
       qn1_s_av = qn1_s_av_next
       dqnsdt = dqnsdt_next
+      ! SnowfallCum = SnowfallCum_next
+      ! SnowAlb = SnowAlb_next
+      ! IceFrac = IceFrac_next
+      ! SnowWater = SnowWater_next
+      ! SnowDens = SnowDens_next
+      ! SnowFrac = SnowFrac_next
+      ! SnowPack = SnowPack_next
+      ! soilstore_id = soilstore_id_next
+      ! state_id = state_id_next
+      ! StoreDrainPrm = StoreDrainPrm_next
+      ! alb = alb_next
+      ! GDD_id = GDD_id_next
+      ! LAI_id = LAI_id_next
+      ! DecidCap_id = DecidCap_id_next
+      ! albDecTr_id = albDecTr_id_next
+      ! albEveTr_id = albEveTr_id_next
+      ! albGrass_id = albGrass_id_next
+      ! porosity_id = porosity_id_next
       Tair_av = Tair_av_next
 
       !==============translation of  output variables into output array===========

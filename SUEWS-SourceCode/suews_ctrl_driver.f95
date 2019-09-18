@@ -784,24 +784,24 @@ CONTAINS
 
       !======== Evaporation and surface state_id ========
       CALL SUEWS_cal_QE( &
-         Diagnose, snowuse, &!input
-         tstep, imin, it, EvapMethod, snowCalcSwitch, dayofWeek_id, CRWmin, CRWmax, &
-         dectime, lvS_J_kg, lv_j_kg, avdens, avRh, Press_hPa, Temp_C, &
-         RAsnow, psyc_hPa, avcp, sIce_hPa, &
-         PervFraction, vegfraction, addimpervious, qn1_snowfree, qf, qs, vpd_hPa, s_hPa, &
-         ResistSurf, RA, rb, snowdensmin, precip, PipeCapacity, RunoffToWater, &
-         NonWaterFraction, wu_EveTr, wu_DecTr, wu_Grass, addVeg, addWaterBody, SnowLimPaved, SnowLimBldg, &
-         SurfaceArea, FlowChange, drain, WetThresh, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
-         freezmelt, freezstate, freezstatevol, Qm_Melt, Qm_rain, Tsurf_ind, sfr, &
-         StateLimit, AddWater, addwaterrunoff, StoreDrainPrm, SnowPackLimit, SnowProf_24hr, &
-         runoff_per_interval, state_id, & !inout:
-         soilstore_id, SnowPack, SnowFrac, SnowWater, iceFrac, SnowDens, &
-         runoffSnow, runoff, runoffSoil, chang, changSnow, &! output:
-         snowDepth, SnowToSurf, ev_snow, SnowRemoval, &
-         evap, rss_nsurf, p_mm, qe, state_per_tstep, NWstate_per_tstep, qeOut, &
-         swe, ev, chSnow_per_interval, ev_per_tstep, qe_per_tstep, runoff_per_tstep, &
-         surf_chang_per_tstep, runoffPipes, mwstore, runoffwaterbody, &
-         runoffAGveg, runoffAGimpervious, runoffWaterBody_m3, runoffPipes_m3)
+      Diagnose, snowuse, &!input
+      tstep, imin, it, EvapMethod, snowCalcSwitch, dayofWeek_id, CRWmin, CRWmax, &
+      dectime, lvS_J_kg, avRh, Press_hPa, Temp_C, &
+      RAsnow, psyc_hPa, sIce_hPa, &
+      PervFraction, vegfraction, addimpervious, qn1_snowfree, qf, qs, vpd_hPa, s_hPa, &
+      ResistSurf, RA, rb, snowdensmin, precip, PipeCapacity, RunoffToWater, &
+      NonWaterFraction, wu_EveTr, wu_DecTr, wu_Grass, addVeg, addWaterBody, SnowLimPaved, SnowLimBldg, &
+      SurfaceArea, FlowChange, drain, WetThresh, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
+      freezmelt, freezstate, freezstatevol, Qm_Melt, Qm_rain, Tsurf_ind, sfr, &
+      StateLimit, AddWater, addwaterrunoff, StoreDrainPrm, SnowPackLimit, SnowProf_24hr, &
+      runoff_per_interval, state_id, soilstore_id, SnowPack, SnowFrac, SnowWater, &! inout:
+      iceFrac, SnowDens, &
+      runoffSnow, runoff, runoffSoil, chang, changSnow, &! output:
+      snowDepth, SnowToSurf, ev_snow, SnowRemoval, &
+      evap, rss_nsurf, p_mm, qe, state_per_tstep, NWstate_per_tstep, qeOut, &
+      swe, ev, chSnow_per_interval, ev_per_tstep, qe_per_tstep, runoff_per_tstep, &
+      surf_chang_per_tstep, runoffPipes, mwstore, runoffwaterbody, &
+      runoffAGveg, runoffAGimpervious, runoffWaterBody_m3, runoffPipes_m3)
       !======== Evaporation and surface state_id end========
 
       !============ Sensible heat flux ===============
@@ -1622,11 +1622,10 @@ CONTAINS
    !================latent heat flux and surface wetness===================
    ! TODO: optimise the structure of this function
    SUBROUTINE SUEWS_cal_QE( &
-      Diagnose, &!input
-      snowuse, &
+      Diagnose, snowuse, &!input
       tstep, imin, it, EvapMethod, snowCalcSwitch, dayofWeek_id, CRWmin, CRWmax, &
-      dectime, lvS_J_kg, lv_j_kg, avdens, avRh, Press_hPa, Temp_C, &
-      RAsnow, psyc_hPa, avcp, sIce_hPa, &
+      dectime, lvS_J_kg, avRh, Press_hPa, Temp_C, &
+      RAsnow, psyc_hPa, sIce_hPa, &
       PervFraction, vegfraction, addimpervious, qn1_snowfree, qf, qs, vpd_hPa, s_hPa, &
       ResistSurf, RA, rb, snowdensmin, precip, PipeCapacity, RunoffToWater, &
       NonWaterFraction, wu_EveTr, wu_DecTr, wu_Grass, addVeg, addWaterBody, SnowLimPaved, SnowLimBldg, &
@@ -1658,14 +1657,14 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(in)::CRWmax
       REAL(KIND(1d0)), INTENT(in)::dectime
       REAL(KIND(1d0)), INTENT(in)::lvS_J_kg
-      REAL(KIND(1d0)), INTENT(in)::lv_j_kg
-      REAL(KIND(1d0)), INTENT(in)::avdens
+      ! REAL(KIND(1d0)), INTENT(in)::lv_j_kg
+      ! REAL(KIND(1d0)), INTENT(in)::avdens
       REAL(KIND(1d0)), INTENT(in)::avRh
       REAL(KIND(1d0)), INTENT(in)::Press_hPa
       REAL(KIND(1d0)), INTENT(in)::Temp_C
       REAL(KIND(1d0)), INTENT(in)::RAsnow
       REAL(KIND(1d0)), INTENT(in)::psyc_hPa
-      REAL(KIND(1d0)), INTENT(in)::avcp
+      ! REAL(KIND(1d0)), INTENT(in)::avcp
       REAL(KIND(1d0)), INTENT(in)::sIce_hPa
       REAL(KIND(1d0)), INTENT(in)::PervFraction
       REAL(KIND(1d0)), INTENT(in)::vegfraction

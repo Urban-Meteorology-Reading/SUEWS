@@ -30,8 +30,9 @@ FCNOOPT = #-O0
 FCDEBUG = #-g $(FCNOOPT) -fbacktrace -ggdb -fcheck=bounds,do,mem,pointer -ffpe-trap=invalid,zero,overflow
 FCPROF = #-pg
 
-FFLAGS = -O3 $(STATIC) $(FCDEBUG) -Wall -Wtabs -fbounds-check -cpp \
-					-Wno-unused-dummy-argument -Wno-unused-variable
+FFLAGS = -O3 $(STATIC) $(FCDEBUG) \
+		-Wall -Wtabs -fbounds-check -cpp \
+		-Wno-unused-dummy-argument -Wno-unused-variable
 CFLAGS =
 
 

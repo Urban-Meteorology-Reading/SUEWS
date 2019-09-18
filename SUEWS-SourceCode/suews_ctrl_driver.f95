@@ -725,9 +725,18 @@ CONTAINS
          DayofWeek_id, WUProfA_24hr, WUProfM_24hr, &
          InternalWaterUse_h, HDD_id, WUDay_id, &
          WaterUseMethod, NSH, it, imin, DLS, &
-         WUAreaEveTr_m2, WUAreaDecTr_m2, & ! output:
-         WUAreaGrass_m2, WUAreaTotal_m2, &
-         wu_EveTr, wu_DecTr, wu_Grass, int_wu, ext_wu)
+         wu_EveTr, wu_DecTr, wu_Grass, int_wu, ext_wu)! output:
+
+      !============= calculate water balance =============
+      CALL SUEWS_cal_Water( &
+         Diagnose, &!input
+         snowUse, NonWaterFraction, addPipes, addImpervious, addVeg, addWaterBody, &
+         state_id, soilstore_id, sfr, StoreDrainPrm, WaterDist, nsh_real, &
+         drain_per_tstep, &  !output
+         drain, AddWaterRunoff, &
+         AdditionalWater, runoffPipes, runoff_per_interval, &
+         AddWater, stateOld, soilstoreOld)
+      !============= calculate water balance end =============
 
       !===============Resistance Calculations=======================
       CALL SUEWS_cal_Resistance( &
@@ -743,17 +752,6 @@ CONTAINS
          dq, xsmd, vsmd, MaxConductance, LAIMax, LAI_id, snowFrac, sfr, &
          UStar, TStar, L_mod, &!output
          zL, gsc, ResistSurf, RA, RAsnow, rb)
-
-      !============= calculate water balance =============
-      CALL SUEWS_cal_Water( &
-         Diagnose, &!input
-         snowUse, NonWaterFraction, addPipes, addImpervious, addVeg, addWaterBody, &
-         state_id, soilstore_id, sfr, StoreDrainPrm, WaterDist, nsh_real, &
-         drain_per_tstep, &  !output
-         drain, AddWaterRunoff, &
-         AdditionalWater, runoffPipes, runoff_per_interval, &
-         AddWater, stateOld, soilstoreOld)
-      !============= calculate water balance end =============
 
       !======== Evaporation and surface state_id ========
       CALL SUEWS_cal_QE( &

@@ -854,9 +854,7 @@ CONTAINS
       DayofWeek_id, WUProfA_24hr, WUProfM_24hr, &
       InternalWaterUse_h, HDD_id, WUDay_id, &
       WaterUseMethod, NSH, it, imin, DLS, &
-      WUAreaEveTr_m2, WUAreaDecTr_m2, & ! output:
-      WUAreaGrass_m2, WUAreaTotal_m2, &
-      wu_EveTr, wu_DecTr, wu_Grass, int_wu, ext_wu)
+      wu_EveTr, wu_DecTr, wu_Grass, int_wu, ext_wu)! output:
       ! Conversion of water use (irrigation)
       ! Last modified:
       !  TS 30 Oct 2018  - fixed a bug in external water use
@@ -901,10 +899,6 @@ CONTAINS
       !  nsurf
 
       REAL(KIND(1d0)), INTENT(out):: &
-         WUAreaEveTr_m2, &
-         WUAreaDecTr_m2, &
-         WUAreaGrass_m2, &
-         WUAreaTotal_m2, &
          wu_EveTr, &
          wu_DecTr, &
          wu_Grass, &
@@ -912,6 +906,10 @@ CONTAINS
          ext_wu
 
       REAL(KIND(1d0)):: &
+      WUAreaEveTr_m2, &
+         WUAreaDecTr_m2, &
+         WUAreaGrass_m2, &
+         WUAreaTotal_m2, &
          InternalWaterUse, &    !Internal water use for the model timestep [mm]
          WuFr = 1, &
          wu = 0!Water use for the model timestep [mm]

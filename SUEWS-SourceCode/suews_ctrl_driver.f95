@@ -1334,7 +1334,7 @@ CONTAINS
       StorageHeatMethod, qs_obs, OHMIncQF, Gridiv, &!input
       id, tstep, dt_since_start, Diagnose, sfr, &
       OHM_coef, OHM_threshSW, OHM_threshWD, &
-      soilstore_id, SoilStoreCap, state_id, SnowUse, snowFrac,DiagQS, &
+      soilstore_id, SoilStoreCap, state_id, SnowUse, snowFrac, DiagQS, &
       HDD_id, MetForcingData_grid, Ts5mindata_ir, qf, qn1, &
       avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown, &
       bldgh, alb, emis, cpAnOHM, kkAnOHM, chAnOHM, EmissionsMethod, &

@@ -128,6 +128,7 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
    ELSEIF (errh == 22) THEN
       text1 = ' QH_observed, QE_observed, QH_choice: '
       v4 = .TRUE.
+      returnTrue = .TRUE.
    ELSEIF (errh == 23) THEN
       text1 = 'CBL-sonde -need to increase size of izm:zmax,izm'
       v5 = .TRUE.

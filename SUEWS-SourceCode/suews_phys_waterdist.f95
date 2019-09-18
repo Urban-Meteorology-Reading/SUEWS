@@ -906,7 +906,7 @@ CONTAINS
          ext_wu
 
       REAL(KIND(1d0)):: &
-      WUAreaEveTr_m2, &
+         WUAreaEveTr_m2, &
          WUAreaDecTr_m2, &
          WUAreaGrass_m2, &
          WUAreaTotal_m2, &

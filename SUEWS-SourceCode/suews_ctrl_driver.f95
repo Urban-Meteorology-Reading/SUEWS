@@ -11,7 +11,7 @@ MODULE SUEWS_Driver
    USE resist_module, ONLY: AerodynamicResistance, BoundaryLayerResistance, SurfaceResistance, &
                             cal_z0V, SUEWS_cal_RoughnessParameters
    USE ESTM_module, ONLY: ESTM
-   USE Snow_module, ONLY: SnowCalc, Snow_cal_MeltHeat,SnowUpdate
+   USE Snow_module, ONLY: SnowCalc, Snow_cal_MeltHeat, SnowUpdate
    USE DailyState_module, ONLY: SUEWS_cal_DailyState, update_DailyState
    USE WaterDist_module, ONLY: drainage, soilstore, &
                                SUEWS_cal_SoilState, SUEWS_update_SoilMoist, &
@@ -620,25 +620,22 @@ CONTAINS
          timezone, lat, lng, alt, &
          azimuth, zenith_deg)!output:
 
-
-
-
       !=================Call the SUEWS_cal_DailyState routine to get surface characteristics ready=================
       IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_DailyState...'
       CALL SUEWS_cal_DailyState( &
-      iy, id, it, imin, isec, tstep, tstep_prev, dt_since_start, DayofWeek_id, &!input
-      WaterUseMethod, Ie_start, Ie_end, &
-      LAICalcYes, LAIType, &
-      nsh_real, avkdn, Temp_C, Precip, BaseTHDD, &
-      lat, Faut, LAI_obs, &
-      AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
-      AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
-      CapMax_dec, CapMin_dec, PorMax_dec, PorMin_dec, &
-      Ie_a, Ie_m, DayWatPer, DayWat, &
-      BaseT, BaseTe, GDDFull, SDDFull, LAIMin, LAIMax, LAIPower, &
-      GDD_id, HDD_id, LAI_id, LAI_id_prev, WUDay_id, &!inout
-      DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
-      deltaLAI)!output
+         iy, id, it, imin, isec, tstep, tstep_prev, dt_since_start, DayofWeek_id, &!input
+         WaterUseMethod, Ie_start, Ie_end, &
+         LAICalcYes, LAIType, &
+         nsh_real, avkdn, Temp_C, Precip, BaseTHDD, &
+         lat, Faut, LAI_obs, &
+         AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
+         AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
+         CapMax_dec, CapMin_dec, PorMax_dec, PorMin_dec, &
+         Ie_a, Ie_m, DayWatPer, DayWat, &
+         BaseT, BaseTe, GDDFull, SDDFull, LAIMin, LAIMax, LAIPower, &
+         GDD_id, HDD_id, LAI_id, LAI_id_prev, WUDay_id, &!inout
+         DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
+         deltaLAI)!output
 
       !=================Calculation of density and other water related parameters=================
       IF (Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_AtmMoist...'
@@ -691,8 +688,6 @@ CONTAINS
          nsurf, tstep, Temp_C, tau_a, tau_f, tau_r, &!input
          SnowDensMax, SnowDensMin, SnowAlbMax, SnowAlbMin, SnowPack, &
          SnowAlb, SnowDens)!inout
-
-
 
       ! ===================NET ALLWAVE RADIATION================================
       CALL SUEWS_cal_Qn( &
@@ -803,13 +798,13 @@ CONTAINS
          qh, qh_residual, qh_resist)!output
       !============ Sensible heat flux end===============
 
-      SnowfallCum_next=SnowfallCum
-      SnowAlb_next=SnowAlb
-      IceFrac_next=IceFrac
-      SnowWater_next=SnowWater
-      SnowDens_next=SnowDens
-      SnowFrac_next=SnowFrac
-      SnowPack_next=SnowPack
+      SnowfallCum_next = SnowfallCum
+      SnowAlb_next = SnowAlb
+      IceFrac_next = IceFrac
+      SnowWater_next = SnowWater
+      SnowDens_next = SnowDens
+      SnowFrac_next = SnowFrac
+      SnowPack_next = SnowPack
 
       ! N.B.: snow-related calculations end here.
       !===================================================

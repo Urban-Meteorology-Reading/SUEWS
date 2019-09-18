@@ -1300,7 +1300,7 @@ CONTAINS
 
    SUBROUTINE SnowUpdate( &
       nsurf, tstep, &!input
-      Temp_C_hr, &
+      Temp_C, &
       tau_a, &
       tau_f, &
       tau_r, &
@@ -1308,16 +1308,16 @@ CONTAINS
       SnowDensMin, &
       SnowAlbMax, &
       SnowAlbMin, &
-      SnowPack, &
-      SnowAlb, &!inout
-      SnowDens)
+      SnowPack_prev, SnowAlb_prev, SnowDens_prev,&
+      SnowAlb_next, SnowDens_next & ! output
+      )
 
       IMPLICIT NONE
 
       INTEGER, INTENT(in)::nsurf
       INTEGER, INTENT(in)::tstep
 
-      REAL(KIND(1D0)), INTENT(in)::Temp_C_hr        !Air temperature
+      REAL(KIND(1D0)), INTENT(in)::Temp_C        !Air temperature
       REAL(KIND(1D0)), INTENT(in)::tau_a
       REAL(KIND(1D0)), INTENT(in)::tau_f
       REAL(KIND(1D0)), INTENT(in)::tau_r
@@ -1326,11 +1326,13 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in)::SnowAlbMax
       REAL(KIND(1D0)), INTENT(in)::SnowAlbMin
 
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::SnowPack
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::SnowPack_prev
 
-      REAL(KIND(1d0)), INTENT(inout)::SnowAlb
+      REAL(KIND(1d0)), INTENT(in)::SnowAlb_prev
+      REAL(KIND(1d0)), INTENT(out)::SnowAlb_next
 
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(inout)::SnowDens
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::SnowDens_prev
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::SnowDens_next
 
       INTEGER::is
       REAL(KIND(1D0))::alb_change, &     !Change in snow albedo
@@ -1345,34 +1347,34 @@ CONTAINS
       !==========================================================
       !Calculation of snow albedo by Lemonsu et al. 2010
       !(org: Verseghy (1991)&Baker et al.(1990))
-      IF (SUM(SnowPack) > 0) THEN !Check if snow on any of the surfaces
-         IF (Temp_C_hr < 0) THEN
+      IF (SUM(SnowPack_prev) > 0) THEN !Check if snow on any of the surfaces
+         IF (Temp_C < 0) THEN
             !alb_change = tau_a*(60*60)/tau_1
             alb_change = tau_a*(tstep)/tau_1
-            SnowAlb = SnowAlb - alb_change
+            SnowAlb_next = SnowAlb_prev - alb_change
          ELSE
             !alb_change = exp(-tau_f*(60*60)/tau_1)
             alb_change = EXP(-tau_f*(tstep)/tau_1)
-            SnowAlb = (SnowAlb - SnowAlbMin)*alb_change + SnowAlbMin
+            SnowAlb_next = (SnowAlb_prev - SnowAlbMin)*alb_change + SnowAlbMin
          ENDIF
-         IF (SnowAlb < SnowAlbMin) SnowAlb = SnowAlbMin !Albedo cannot be smaller than the min albedo
-         IF (SnowAlb > SnowAlbMax) SnowAlb = SnowAlbMax !Albedo cannot be larger than the max albedo
-         if (SnowAlb < 0) print *, 'SnowAlbMin/max in SnowUpdate', SnowAlbMin, SnowAlbMax, SnowAlb
+         IF (SnowAlb_next < SnowAlbMin) SnowAlb_next = SnowAlbMin !Albedo cannot be smaller than the min albedo
+         IF (SnowAlb_next > SnowAlbMax) SnowAlb_next = SnowAlbMax !Albedo cannot be larger than the max albedo
+         if (SnowAlb_next < 0) print *, 'SnowAlbMin/max in SnowUpdate', SnowAlbMin, SnowAlbMax, SnowAlb_next
       ELSE
-         SnowAlb = 0
+         SnowAlb_next = 0
       ENDIF
-      if (SnowAlb < 0) print *, 'SnowAlb in SnowUpdate', SnowAlb
+      if (SnowAlb_next < 0) print *, 'SnowAlb in SnowUpdate', SnowAlb_next
 
       !Update snow density: There is a mistake in Järvi et al. (2014): tau_h should be tau_1
       DO is = 1, nsurf
 
          !If SnowPack existing
-         IF (SnowPack(is) > 0) THEN
+         IF (SnowPack_prev(is) > 0) THEN
             dens_change = EXP(-tau_r*(tstep)/tau_1)
-            IF (SnowPack(is) > 0) SnowDens(is) = (SnowDens(is) - SnowDensMax)*dens_change + SnowDensMax
-            IF (SnowDens(is) > SnowDensMax) SnowDens(is) = SnowDensMax
+            IF (SnowPack_prev(is) > 0) SnowDens_next(is) = (SnowDens_prev(is) - SnowDensMax)*dens_change + SnowDensMax
+            IF (SnowDens_next(is) > SnowDensMax) SnowDens_next(is) = SnowDensMax
          ELSE
-            SnowDens(is) = SnowDensMin
+            SnowDens_next(is) = SnowDensMin
          ENDIF
       ENDDO
 

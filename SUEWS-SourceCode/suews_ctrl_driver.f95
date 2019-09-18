@@ -677,20 +677,31 @@ CONTAINS
          Temp_C, TrafficRate, TrafficUnits, TraffProf_24hr, &
          Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff)! output:
 
+
+
+      IF (snowUse == 1) CALL SnowUpdate( &
+      nsurf, tstep, &!input
+      Temp_C, &
+      tau_a, &
+      tau_f, &
+      tau_r, &
+      SnowDensMax, &
+      SnowDensMin, &
+      SnowAlbMax, &
+      SnowAlbMin, &
+      SnowPack_prev, SnowAlb_prev, SnowDens_prev,&
+      SnowAlb_next, SnowDens_next & ! output
+      )
+
       ! ========================================================================
       ! N.B.: the following parts involves snow-related calculations.
       SnowfallCum = SnowfallCum_prev
-      SnowAlb = SnowAlb_prev
+      SnowAlb = SnowAlb_next
       IceFrac = IceFrac_prev
       SnowWater = SnowWater_prev
-      SnowDens = SnowDens_prev
+      SnowDens = SnowDens_next
       SnowFrac = SnowFrac_prev
       SnowPack = SnowPack_prev
-
-      IF (snowUse == 1) CALL SnowUpdate( &
-         nsurf, tstep, Temp_C, tau_a, tau_f, tau_r, &!input
-         SnowDensMax, SnowDensMin, SnowAlbMax, SnowAlbMin, SnowPack, &
-         SnowAlb, SnowDens)!inout
 
 
 

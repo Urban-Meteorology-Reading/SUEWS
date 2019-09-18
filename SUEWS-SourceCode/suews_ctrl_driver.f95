@@ -534,7 +534,7 @@ CONTAINS
          DLS) !output
 
       ! calculate mean air temperature of past 24 hours
-      call suews_cal_tair_av(Tair_av,dt_since_start,tstep,temp_c)
+      call suews_cal_tair_av(Tair_av, dt_since_start, tstep, temp_c)
 
       !==============main calculation start=======================
       IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_RoughnessParameters...'
@@ -2962,27 +2962,26 @@ CONTAINS
    subroutine suews_cal_tair_av(tair_av, dt_since_start, tstep, temp_c)
       ! calculate mean air temperature of past 24 hours
       ! TS, 17 Sep 2019
-   implicit none
-   real(KIND(1D0)),intent(inout) :: tair_av
-   real(KIND(1D0)),intent(in) ::  temp_c
-   integer,intent(in) ::  dt_since_start
-   integer,intent(in) ::  tstep
+      implicit none
+      real(KIND(1D0)), intent(inout) :: tair_av
+      real(KIND(1D0)), intent(in) ::  temp_c
+      integer, intent(in) ::  dt_since_start
+      integer, intent(in) ::  tstep
 
-   real(KIND(1D0)),parameter:: len_day_s=24*3600 ! day length in seconds
-   real(KIND(1D0)):: len_cal_s ! length of average period in seconds
-   real(KIND(1D0)):: temp_k ! temp in K
+      real(KIND(1D0)), parameter:: len_day_s = 24*3600 ! day length in seconds
+      real(KIND(1D0)):: len_cal_s ! length of average period in seconds
+      real(KIND(1D0)):: temp_k ! temp in K
 
-   ! determine the average period
-   if ( dt_since_start> len_day_s) then
-      ! if simulation has been running over one day
-      len_cal_s=len_day_s
-   else
-      ! if simulation has been running less than one day
-      len_cal_s=dt_since_start+tstep
-   end if
-   temp_k=temp_c+273.15
-   tair_av=tair_av*(len_cal_s-tstep*1.)/len_cal_s+temp_k*tstep/len_cal_s
-
+      ! determine the average period
+      if (dt_since_start > len_day_s) then
+         ! if simulation has been running over one day
+         len_cal_s = len_day_s
+      else
+         ! if simulation has been running less than one day
+         len_cal_s = dt_since_start + tstep
+      end if
+      temp_k = temp_c + 273.15
+      tair_av = tair_av*(len_cal_s - tstep*1.)/len_cal_s + temp_k*tstep/len_cal_s
 
    end subroutine suews_cal_tair_av
 

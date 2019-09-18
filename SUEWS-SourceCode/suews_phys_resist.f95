@@ -266,7 +266,9 @@ contains
          ENDIF
          !gs = gs*(1 - SUM(snowFrac(1:6))/6)
          IF (gs < 0) THEN
-       CALL errorHint(65, 'subroutine SurfaceResistance.f95 (gsModel=1): g(smd) < 0 calculated, setting to 0.0001', gs, id_real, it)
+            CALL errorHint(65, &
+                           'subroutine SurfaceResistance.f95 (gsModel=1): g(smd) < 0 calculated, setting to 0.0001', &
+                           gs, id_real, it)
             gs = 0.0001
          ENDIF
 
@@ -342,7 +344,9 @@ contains
          !gs = gs*(1 - SUM(snowFrac(1:6))/6)
 
          IF (gs < 0) THEN
-           CALL errorHint(65, 'subroutine SurfaceResistance.f95 (gsModel=2): gs < 0 calculated, setting to 0.0001', gs, id_real, it)
+            CALL errorHint(65, &
+                           'subroutine SurfaceResistance.f95 (gsModel=2): gs < 0 calculated, setting to 0.0001', &
+                           gs, id_real, it)
             gs = 0.0001
          ENDIF
 

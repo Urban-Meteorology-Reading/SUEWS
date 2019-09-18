@@ -179,7 +179,8 @@ contains
             Bellucco2017_Pho = -(1/(2*theta_bioCO2_v2(ivConif))*( &
                                  alpha_bioCO2_v2(ivConif)*PAR_umolm2s1 + beta_bioCO2_v2(ivConif) &
                                  - SQRT((alpha_bioCO2_v2(ivConif)*PAR_umolm2s1 + beta_bioCO2_v2(ivConif))**2 &
-                                       - 4*alpha_bioCO2_v2(ivConif)*beta_bioCO2_v2(ivConif)*theta_bioCO2_v2(ivConif)*PAR_umolm2s1)))
+                                        - 4*alpha_bioCO2_v2(ivConif)*beta_bioCO2_v2(ivConif)*theta_bioCO2_v2(ivConif) &
+                                        *PAR_umolm2s1)))
 
          ENDIF
          ! Calculate carbon uptake due to photosynthesis -------------

@@ -714,21 +714,22 @@ MODULE allocateArray
 
    !ESTM
    ! Roof/surface characteristics for all surfaces including snow
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_thick1  = (/(cc, cc=ccEndB+ 0*nsurfIncSnow+1,ccEndB+ 0*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER, DIMENSION(nsurfIncSnow):: c_Surf_k1 = (/(cc, cc=ccEndB + 1*nsurfIncSnow + 1, ccEndB + 1*nsurfIncSnow + nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_rhoCp1  = (/(cc, cc=ccEndB+ 2*nsurfIncSnow+1,ccEndB+ 2*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_thick2  = (/(cc, cc=ccEndB+ 3*nsurfIncSnow+1,ccEndB+ 3*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER, DIMENSION(nsurfIncSnow):: c_Surf_k2 = (/(cc, cc=ccEndB + 4*nsurfIncSnow + 1, ccEndB + 4*nsurfIncSnow + nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_rhoCp2  = (/(cc, cc=ccEndB+ 5*nsurfIncSnow+1,ccEndB+ 5*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_thick3  = (/(cc, cc=ccEndB+ 6*nsurfIncSnow+1,ccEndB+ 6*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER, DIMENSION(nsurfIncSnow):: c_Surf_k3 = (/(cc, cc=ccEndB + 7*nsurfIncSnow + 1, ccEndB + 7*nsurfIncSnow + nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_rhoCp3  = (/(cc, cc=ccEndB+ 8*nsurfIncSnow+1,ccEndB+ 8*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_thick4  = (/(cc, cc=ccEndB+ 9*nsurfIncSnow+1,ccEndB+ 9*nsurfIncSnow+nsurfIncSnow, 1)/)
-INTEGER, DIMENSION(nsurfIncSnow):: c_Surf_k4 = (/(cc, cc=ccEndB + 10*nsurfIncSnow + 1, ccEndB + 10*nsurfIncSnow + nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_rhoCp4  = (/(cc, cc=ccEndB+11*nsurfIncSnow+1,ccEndB+11*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_thick5  = (/(cc, cc=ccEndB+12*nsurfIncSnow+1,ccEndB+12*nsurfIncSnow+nsurfIncSnow, 1)/)
-INTEGER, DIMENSION(nsurfIncSnow):: c_Surf_k5 = (/(cc, cc=ccEndB + 13*nsurfIncSnow + 1, ccEndB + 13*nsurfIncSnow + nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_rhoCp5  = (/(cc, cc=ccEndB+14*nsurfIncSnow+1,ccEndB+14*nsurfIncSnow+nsurfIncSnow, 1)/)
+   INTEGER, DIMENSION(nsurfIncSnow) :: &
+      c_Surf_thick1 = [(cc, cc=ccEndB + 0*nsurfIncSnow + 1, ccEndB + 0*nsurfIncSnow + nsurfIncSnow, 1)], &
+      c_Surf_k1 = [(cc, cc=ccEndB + 1*nsurfIncSnow + 1, ccEndB + 1*nsurfIncSnow + nsurfIncSnow, 1)], &
+      c_Surf_rhoCp1 = [(cc, cc=ccEndB + 2*nsurfIncSnow + 1, ccEndB + 2*nsurfIncSnow + nsurfIncSnow, 1)], &
+      c_Surf_thick2 = [(cc, cc=ccEndB + 3*nsurfIncSnow + 1, ccEndB + 3*nsurfIncSnow + nsurfIncSnow, 1)], &
+      c_Surf_k2 = [(cc, cc=ccEndB + 4*nsurfIncSnow + 1, ccEndB + 4*nsurfIncSnow + nsurfIncSnow, 1)], &
+      c_Surf_rhoCp2 = [(cc, cc=ccEndB + 5*nsurfIncSnow + 1, ccEndB + 5*nsurfIncSnow + nsurfIncSnow, 1)], &
+      c_Surf_thick3 = [(cc, cc=ccEndB + 6*nsurfIncSnow + 1, ccEndB + 6*nsurfIncSnow + nsurfIncSnow, 1)], &
+      c_Surf_k3 = [(cc, cc=ccEndB + 7*nsurfIncSnow + 1, ccEndB + 7*nsurfIncSnow + nsurfIncSnow, 1)], &
+      c_Surf_rhoCp3 = [(cc, cc=ccEndB + 8*nsurfIncSnow + 1, ccEndB + 8*nsurfIncSnow + nsurfIncSnow, 1)], &
+      c_Surf_thick4 = [(cc, cc=ccEndB + 9*nsurfIncSnow + 1, ccEndB + 9*nsurfIncSnow + nsurfIncSnow, 1)], &
+      c_Surf_k4 = [(cc, cc=ccEndB + 10*nsurfIncSnow + 1, ccEndB + 10*nsurfIncSnow + nsurfIncSnow, 1)], &
+      c_Surf_rhoCp4 = [(cc, cc=ccEndB + 11*nsurfIncSnow + 1, ccEndB + 11*nsurfIncSnow + nsurfIncSnow, 1)], &
+      c_Surf_thick5 = [(cc, cc=ccEndB + 12*nsurfIncSnow + 1, ccEndB + 12*nsurfIncSnow + nsurfIncSnow, 1)], &
+      c_Surf_k5 = [(cc, cc=ccEndB + 13*nsurfIncSnow + 1, ccEndB + 13*nsurfIncSnow + nsurfIncSnow, 1)], &
+      c_Surf_rhoCp5 = [(cc, cc=ccEndB + 14*nsurfIncSnow + 1, ccEndB + 14*nsurfIncSnow + nsurfIncSnow, 1)]
    ! Find current column number
    INTEGER, PARAMETER:: ccEndESTMB = (ccEndB + 14*nsurfIncSnow + nsurfIncSnow)
    ! Other ESTM characteristics are for built surfaces only

@@ -1308,7 +1308,7 @@ CONTAINS
       SnowDensMin, &
       SnowAlbMax, &
       SnowAlbMin, &
-      SnowPack_prev, SnowAlb_prev, SnowDens_prev,&
+      SnowPack_prev, SnowAlb_prev, SnowDens_prev, &
       SnowAlb_next, SnowDens_next & ! output
       )
 

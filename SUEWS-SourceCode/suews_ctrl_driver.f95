@@ -674,37 +674,33 @@ CONTAINS
          Temp_C, TrafficRate, TrafficUnits, TraffProf_24hr, &
          Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff)! output:
 
-
-
       IF (snowUse == 1) CALL SnowUpdate( &
-      nsurf, tstep, &!input
-      Temp_C, &
-      tau_a, &
-      tau_f, &
-      tau_r, &
-      SnowDensMax, &
-      SnowDensMin, &
-      SnowAlbMax, &
-      SnowAlbMin, &
-      SnowPack_prev, SnowAlb_prev, SnowDens_prev,&
-      SnowAlb_next, SnowDens_next & ! output
-      )
-
-
+         nsurf, tstep, &!input
+         Temp_C, &
+         tau_a, &
+         tau_f, &
+         tau_r, &
+         SnowDensMax, &
+         SnowDensMin, &
+         SnowAlbMax, &
+         SnowAlbMin, &
+         SnowPack_prev, SnowAlb_prev, SnowDens_prev, &
+         SnowAlb_next, SnowDens_next & ! output
+         )
 
       ! ===================NET ALLWAVE RADIATION================================
       CALL SUEWS_cal_Qn( &
-      NetRadiationMethod, snowUse, &!input
-      Diagnose, snowFrac_obs, ldown_obs, fcld_obs, &
-      dectime, ZENITH_deg, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
-      SnowAlb_next,snowFrac_prev, DiagQN, &
-      NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac, sfr, emis, &
-      alb, albDecTr_id, DecidCap_id, albEveTr_id, albGrass_id, &!inout
-      StoreDrainPrm, &!inout
-      ldown, fcld, &!output
-      qn1, qn1_snowfree, qn1_S, kclear, kup, lup, tsurf, &
-      qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
-      alb1,snowFrac_next)
+         NetRadiationMethod, snowUse, &!input
+         Diagnose, snowFrac_obs, ldown_obs, fcld_obs, &
+         dectime, ZENITH_deg, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
+         SnowAlb_next, snowFrac_prev, DiagQN, &
+         NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac, sfr, emis, &
+         alb, albDecTr_id, DecidCap_id, albEveTr_id, albGrass_id, &!inout
+         StoreDrainPrm, &!inout
+         ldown, fcld, &!output
+         qn1, qn1_snowfree, qn1_S, kclear, kup, lup, tsurf, &
+         qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
+         alb1, snowFrac_next)
 
       ! ========================================================================
       ! N.B.: the following parts involves snow-related calculations.
@@ -1190,14 +1186,14 @@ CONTAINS
       NetRadiationMethod, snowUse, &!input
       Diagnose, snowFrac_obs, ldown_obs, fcld_obs, &
       dectime, ZENITH_deg, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
-      SnowAlb,snowFrac_prev, DiagQN, &
+      SnowAlb, snowFrac_prev, DiagQN, &
       NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac, sfr, emis, &
       alb, albDecTr_id, DecidCap_id, albEveTr_id, albGrass_id, &!inout
       StoreDrainPrm, &!inout
       ldown, fcld, &!output
       qn1, qn1_snowfree, qn1_S, kclear, kup, lup, tsurf, &
       qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
-      alb1,snowFrac_next)
+      alb1, snowFrac_next)
       USE NARP_MODULE, ONLY: RadMethod, NARP
 
       IMPLICIT NONE
@@ -1237,8 +1233,8 @@ CONTAINS
 
       REAL(KIND(1d0)), DIMENSION(6, nsurf), INTENT(inout)::StoreDrainPrm
 
-      REAL(KIND(1d0)), DIMENSION(nsurf),INTENT(in)::snowFrac_prev
-      REAL(KIND(1d0)), DIMENSION(nsurf),INTENT(out)::snowFrac_next
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::snowFrac_prev
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::snowFrac_next
       REAL(KIND(1d0)), DIMENSION(nsurf)::snowFrac
 
       REAL(KIND(1d0)), INTENT(out)::ldown
@@ -1271,7 +1267,7 @@ CONTAINS
          snowUse, &!input
          NetRadiationMethodX, AlbedoChoice, ldown_option)!output
 
-      snowFrac= snowFrac_prev
+      snowFrac = snowFrac_prev
       IF (NetRadiationMethodX > 0) THEN
 
          ! IF (snowUse==0) snowFrac=snowFrac_obs
@@ -1324,7 +1320,7 @@ CONTAINS
          qn1_ind = NAN
          Fcld = NAN
       ENDIF
-      snowFrac_next=snowFrac
+      snowFrac_next = snowFrac
 
       IF (ldown_option == 1) THEN
          Fcld = NAN

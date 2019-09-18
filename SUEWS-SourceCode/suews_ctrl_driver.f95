@@ -663,6 +663,20 @@ CONTAINS
          WaterUseMethod, NSH, it, imin, DLS, &
          wu_EveTr, wu_DecTr, wu_Grass, int_wu, ext_wu)! output:
 
+      ! ===================ANTHROPOGENIC HEAT AND CO2 FLUX======================
+      CALL SUEWS_cal_AnthropogenicEmission( &
+         AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, AH_SLOPE_Heating, CO2PointSource, &! input:
+         dayofWeek_id, Diagnose, DLS, EF_umolCO2perJ, EmissionsMethod, EnEF_v_Jkm, &
+         FcEF_v_kgkm, FrFossilFuel_Heat, FrFossilFuel_NonHeat, HDD_id, HumActivity_24hr, &
+         id, imin, it, MaxFCMetab, MaxQFMetab, MinFCMetab, MinQFMetab, nsh, NumCapita, &
+         PopDensDaytime, PopDensNighttime, PopProf_24hr, QF, QF0_BEU, Qf_A, Qf_B, Qf_C, &
+         QF_obs, QF_SAHP, sfr, snowFrac, SurfaceArea, T_CRITIC_Cooling, T_CRITIC_Heating, &
+         Temp_C, TrafficRate, TrafficUnits, TraffProf_24hr, &
+         Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff)! output:
+
+      ! ========================================================================
+      ! N.B.: the following parts involves snow-related calculations. TS 18 Sep 2019
+
       ! ===================NET ALLWAVE RADIATION================================
       CALL SUEWS_cal_Qn( &
          NetRadiationMethod, snowUse, &!input
@@ -676,16 +690,6 @@ CONTAINS
          qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
          alb1)
 
-      ! ===================ANTHROPOGENIC HEAT AND CO2 FLUX======================
-      CALL SUEWS_cal_AnthropogenicEmission( &
-         AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, AH_SLOPE_Heating, CO2PointSource, &! input:
-         dayofWeek_id, Diagnose, DLS, EF_umolCO2perJ, EmissionsMethod, EnEF_v_Jkm, &
-         FcEF_v_kgkm, FrFossilFuel_Heat, FrFossilFuel_NonHeat, HDD_id, HumActivity_24hr, &
-         id, imin, it, MaxFCMetab, MaxQFMetab, MinFCMetab, MinQFMetab, nsh, NumCapita, &
-         PopDensDaytime, PopDensNighttime, PopProf_24hr, QF, QF0_BEU, Qf_A, Qf_B, Qf_C, &
-         QF_obs, QF_SAHP, sfr, snowFrac, SurfaceArea, T_CRITIC_Cooling, T_CRITIC_Heating, &
-         Temp_C, TrafficRate, TrafficUnits, TraffProf_24hr, &
-         Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff)! output:
 
       ! =================STORAGE HEAT FLUX=======================================
       CALL SUEWS_cal_Qs( &

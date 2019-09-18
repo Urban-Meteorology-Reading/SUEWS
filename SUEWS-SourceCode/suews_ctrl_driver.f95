@@ -707,7 +707,7 @@ CONTAINS
          StorageHeatMethod, qs_obs, OHMIncQF, Gridiv, &!input
          id, tstep, dt_since_start, Diagnose, sfr, &
          OHM_coef, OHM_threshSW, OHM_threshWD, &
-         soilstore_id, SoilStoreCap, state_id, SnowUse, snowFrac_next, DiagQS, &
+         soilstore_id, SoilStoreCap, state_id_prev, SnowUse, snowFrac_next, DiagQS, &
          HDD_id, MetForcingData_grid, Ts5mindata_ir, qf, qn1, &
          avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown, &
          bldgh, alb, emis, cpAnOHM, kkAnOHM, chAnOHM, EmissionsMethod, &
@@ -726,7 +726,7 @@ CONTAINS
          snowUse, &!input
          lvS_J_kg, lv_J_kg, tstep_real, RadMeltFact, TempMeltFact, SnowAlbMax, &
          SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
-         nsh_real, sfr, Tsurf_ind, Tsurf_ind_snow, state_id, qn1_ind_snow, &
+         nsh_real, sfr, Tsurf_ind, Tsurf_ind_snow, state_id_prev, qn1_ind_snow, &
          kup_ind_snow, SnowWater_prev, deltaQi, alb1, &
          SnowPack_prev, SnowFrac_next, SnowAlb_next, SnowDens_next, SnowfallCum_prev, &!input
          SnowPack_next, SnowFrac_next, SnowAlb_next, SnowDens_next, SnowfallCum_next, &!output
@@ -750,7 +750,7 @@ CONTAINS
       CALL SUEWS_cal_Water( &
          Diagnose, &!input
          snowUse, NonWaterFraction, addPipes, addImpervious, addVeg, addWaterBody, &
-         state_id, soilstore_id, sfr, StoreDrainPrm, WaterDist, nsh_real, &
+         state_id_prev, soilstore_id, sfr, StoreDrainPrm, WaterDist, nsh_real, &
          drain_per_tstep, &  !output
          drain, AddWaterRunoff, &
          AdditionalWater, runoffPipes, runoff_per_interval, &
@@ -793,8 +793,8 @@ CONTAINS
       freezmelt, freezstate, freezstatevol, Qm_Melt, Qm_rain, Tsurf_ind, sfr, &
       StateLimit, AddWater, addwaterrunoff, StoreDrainPrm, SnowPackLimit, SnowProf_24hr, &
       SnowPack_next, SnowFrac_next, SnowWater_prev, IceFrac_prev, SnowDens_next, &! input:
-      runoff_per_interval, state_id, soilstore_id, &! input:
-      runoff_per_interval, state_id, soilstore_id, &! output:
+      runoff_per_interval, state_id_prev, soilstore_id, &! input:
+      state_id_next, soilstore_id, &! output:
       SnowPack_next, SnowFrac_next, SnowWater_next, iceFrac_next, SnowDens_next, &! output
       runoffSnow, runoff, runoffSoil, chang, changSnow, &! output:
       snowDepth, SnowToSurf, ev_snow, SnowRemoval, &
@@ -892,7 +892,7 @@ CONTAINS
       SnowPack = SnowPack_next
 
       ! soilstore_id = soilstore_id_next
-      ! state_id = state_id_next
+      state_id = state_id_next
       ! StoreDrainPrm = StoreDrainPrm_next
       ! alb = alb_next
       ! GDD_id = GDD_id_next
@@ -919,7 +919,7 @@ CONTAINS
          resistsurf, RH2, runoffAGimpervious, runoffAGveg, &
          runoff_per_tstep, runoffPipes, runoffSoil_per_tstep, &
          runoffWaterBody, sfr, smd, smd_nsurf, SnowAlb, SnowRemoval, &
-         state_id, state_per_tstep, surf_chang_per_tstep, swe, t2_C, tskin_C, &
+         state_id_next, state_per_tstep, surf_chang_per_tstep, swe, t2_C, tskin_C, &
          tot_chang_per_tstep, tsurf, UStar, wu_DecTr, &
          wu_EveTr, wu_Grass, z0m, zdm, zenith_deg, &
          datetimeLine, dataOutLineSUEWS)!output
@@ -1634,7 +1634,7 @@ CONTAINS
       StateLimit, AddWater, addwaterrunoff, StoreDrainPrm, SnowPackLimit, SnowProf_24hr, &
       SnowPack_in, SnowFrac_in, SnowWater_in, iceFrac_in, SnowDens_in, &! input:
       runoff_per_interval_in, state_id_in, soilstore_id_in, &! input:
-      runoff_per_interval_out, state_id_out, soilstore_id_out, &! output:
+      state_id_out, soilstore_id_out, &! output:
       SnowPack_out, SnowFrac_out, SnowWater_out, iceFrac_out, SnowDens_out, &! output
       runoffSnow, runoff, runoffSoil, chang, changSnow, &! output:
       snowDepth, SnowToSurf, ev_snow, SnowRemoval, &
@@ -1725,7 +1725,7 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::SnowDens_in
 
       ! output:
-      REAL(KIND(1d0)), INTENT(out)::runoff_per_interval_out
+      REAL(KIND(1d0))::runoff_per_interval_out
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::state_id_out
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::soilstore_id_out
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::SnowPack_out

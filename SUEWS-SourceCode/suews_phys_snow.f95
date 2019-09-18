@@ -33,7 +33,8 @@ CONTAINS
       SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
       nsh_real, sfr, Tsurf_ind, Tsurf_ind_snow, state_id, qn1_ind_snow, &
       kup_ind_snow, SnowWater, deltaQi, alb1, &
-      SnowPack, SnowFrac, SnowAlb, SnowDens, SnowfallCum, &!inout
+      SnowPack_in, SnowFrac_in, SnowAlb_in, SnowDens_in, SnowfallCum_in, &!input
+      SnowPack_out, SnowFrac_out, SnowAlb_out, SnowDens_out, SnowfallCum_out, &!output
       mwh, Qm, QmFreez, QmRain, &! output
       veg_fr, snowCalcSwitch, Qm_melt, Qm_freezState, Qm_rain, FreezMelt, &
       FreezState, FreezStateVol, rainOnSnow, SnowDepth, mw_ind, &
@@ -79,11 +80,22 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::deltaQi
 
       !Input and output as this is updated in this subroutine
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(inout)::SnowPack
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(inout)::SnowFrac
-      REAL(KIND(1d0)), INTENT(inout)::SnowAlb
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(inout)::SnowDens
-      REAL(KIND(1d0)), INTENT(inout)::SnowfallCum
+      REAL(KIND(1d0)), INTENT(in)::SnowAlb_in
+      REAL(KIND(1d0)), INTENT(in)::SnowfallCum_in
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::SnowPack_in
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::SnowFrac_in
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::SnowDens_in
+      REAL(KIND(1d0)), INTENT(out)::SnowAlb_out
+      REAL(KIND(1d0)), INTENT(out)::SnowfallCum_out
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::SnowPack_out
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::SnowFrac_out
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::SnowDens_out
+
+      REAL(KIND(1d0))::SnowAlb
+      REAL(KIND(1d0))::SnowfallCum
+      REAL(KIND(1d0)), DIMENSION(nsurf)::SnowPack
+      REAL(KIND(1d0)), DIMENSION(nsurf)::SnowFrac
+      REAL(KIND(1d0)), DIMENSION(nsurf)::SnowDens
 
       !Output:
       REAL(KIND(1d0)), INTENT(out)::mwh
@@ -108,6 +120,11 @@ CONTAINS
 
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutSnow_notime), INTENT(out) :: dataOutLineSnow
 
+      SnowAlb = SnowAlb_in
+      SnowfallCum = SnowfallCum_in
+      SnowPack = SnowPack_in
+      SnowFrac = SnowFrac_in
+      SnowDens = SnowDens_in
       IF (snowUse == 1) THEN
 
          CALL MeltHeat( &
@@ -149,14 +166,19 @@ CONTAINS
             veg_fr)!output
 
       END IF
+      SnowAlb_out = SnowAlb
+      SnowfallCum_out = SnowfallCum
+      SnowPack_out = SnowPack
+      SnowFrac_out = SnowFrac
+      SnowDens_out = SnowDens
 
       ! pack output into one line
       dataOutLineSnow = [ &
-                        SnowPack(1:nsurf), mw_ind(1:nsurf), Qm_melt(1:nsurf), & !26
-                        Qm_rain(1:nsurf), Qm_freezState(1:nsurf), SnowFrac(1:(nsurf - 1)), & !46
+                        SnowPack_out(1:nsurf), mw_ind(1:nsurf), Qm_melt(1:nsurf), & !26
+                        Qm_rain(1:nsurf), Qm_freezState(1:nsurf), SnowFrac_out(1:(nsurf - 1)), & !46
                         rainOnSnow(1:nsurf), & !53
                         qn1_ind_snow(1:nsurf), kup_ind_snow(1:nsurf), freezMelt(1:nsurf), & !74
-                        SnowWater(1:nsurf), SnowDens(1:nsurf), & !88
+                        SnowWater(1:nsurf), SnowDens_out(1:nsurf), & !88
                         snowDepth(1:nsurf), Tsurf_ind_snow(1:nsurf), &
                         alb1]
       ! dataOutLineSnow=set_nan(dataOutLineSnow)

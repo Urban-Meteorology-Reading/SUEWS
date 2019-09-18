@@ -719,13 +719,6 @@ CONTAINS
 
       ! ========================================================================
       ! N.B.: the following parts involves snow-related calculations.
-      SnowfallCum = SnowfallCum_prev
-      IceFrac = IceFrac_prev
-      SnowWater = SnowWater_prev
-      SnowPack = SnowPack_prev
-      SnowDens = SnowDens_next
-      SnowFrac = SnowFrac_next
-      SnowAlb = SnowAlb_next
 
       !==================Energy related to snow melting/freezing processes=======
       IF (Diagnose == 1) WRITE (*, *) 'Calling MeltHeat'
@@ -734,8 +727,9 @@ CONTAINS
          lvS_J_kg, lv_J_kg, tstep_real, RadMeltFact, TempMeltFact, SnowAlbMax, &
          SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
          nsh_real, sfr, Tsurf_ind, Tsurf_ind_snow, state_id, qn1_ind_snow, &
-         kup_ind_snow, SnowWater, deltaQi, alb1, &
-         SnowPack, SnowFrac, SnowAlb, SnowDens, SnowfallCum, &!inout
+         kup_ind_snow, SnowWater_prev, deltaQi, alb1, &
+         SnowPack_prev, SnowFrac_next, SnowAlb_next, SnowDens_next, SnowfallCum_prev, &!input
+         SnowPack_next, SnowFrac_next, SnowAlb_next, SnowDens_next, SnowfallCum_next, &!output
          mwh, Qm, QmFreez, QmRain, &! output
          veg_fr, snowCalcSwitch, Qm_melt, Qm_freezState, Qm_rain, FreezMelt, &
          FreezState, FreezStateVol, rainOnSnow, SnowDepth, mw_ind, &
@@ -754,14 +748,16 @@ CONTAINS
 
       !============= calculate water balance =============
       CALL SUEWS_cal_Water( &
-         Diagnose, &!input
-         snowUse, NonWaterFraction, addPipes, addImpervious, addVeg, addWaterBody, &
-         state_id, soilstore_id, sfr, StoreDrainPrm, WaterDist, nsh_real, &
-         drain_per_tstep, &  !output
-         drain, AddWaterRunoff, &
-         AdditionalWater, runoffPipes, runoff_per_interval, &
-         AddWater, stateOld, soilstoreOld)
+      Diagnose, &!input
+      snowUse, NonWaterFraction, addPipes, addImpervious, addVeg, addWaterBody, &
+      state_id, soilstore_id, sfr, StoreDrainPrm, WaterDist, nsh_real, &
+      drain_per_tstep, &  !output
+      drain, AddWaterRunoff, &
+      AdditionalWater, runoffPipes, runoff_per_interval, &
+      AddWater, stateOld, soilstoreOld)
       !============= calculate water balance end =============
+
+
 
       !===============Resistance Calculations=======================
       CALL SUEWS_cal_Resistance( &
@@ -774,9 +770,17 @@ CONTAINS
          g1, g2, g3, g4, &
          g5, g6, s1, s2, &
          th, tl, &
-         dq, xsmd, vsmd, MaxConductance, LAIMax, LAI_id, SnowFrac, sfr, &
+         dq, xsmd, vsmd, MaxConductance, LAIMax, LAI_id, SnowFrac_next, sfr, &
          UStar, TStar, L_mod, &!output
          zL, gsc, ResistSurf, RA, RAsnow, rb)
+
+      IceFrac = IceFrac_prev
+      SnowWater = SnowWater_prev
+      SnowPack = SnowPack_next
+      SnowDens = SnowDens_next
+      SnowFrac = SnowFrac_next
+      SnowAlb = SnowAlb_next
+      SnowfallCum = SnowfallCum_next
 
       !======== Evaporation and surface state_id ========
       CALL SUEWS_cal_QE( &

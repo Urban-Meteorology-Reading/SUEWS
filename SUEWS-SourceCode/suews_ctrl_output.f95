@@ -613,7 +613,7 @@ CONTAINS
 ! #ifdef nc
 !                IF (PRESENT(Gridiv)) THEN
 ! #endif
-                  CALL SUEWS_Output_txt_grp(iv, irMax, iyr, varListX, Gridiv, outLevel, Tstep)
+               CALL SUEWS_Output_txt_grp(iv, irMax, iyr, varListX, Gridiv, outLevel, Tstep)
 ! #ifdef nc
 !                ELSE
 !                   CALL SUEWS_Output_nc_grp(irMax, varListX, outLevel, Tstep)
@@ -626,7 +626,7 @@ CONTAINS
 ! #ifdef nc
 !                IF (PRESENT(Gridiv)) THEN
 ! #endif
-                  CALL SUEWS_Output_txt_grp(iv, irMax, iyr, varListX, Gridiv, outLevel, ResolutionFilesOut)
+               CALL SUEWS_Output_txt_grp(iv, irMax, iyr, varListX, Gridiv, outLevel, ResolutionFilesOut)
 ! #ifdef nc
 !                ELSE
 !                   CALL SUEWS_Output_nc_grp(irMax, varListX, outLevel, ResolutionFilesOut)
@@ -638,7 +638,7 @@ CONTAINS
 ! #ifdef nc
 !             IF (PRESENT(Gridiv)) THEN
 ! #endif
-               CALL SUEWS_Output_txt_grp(iv, irMax, iyr, varListX, Gridiv, outLevel, Tstep)
+            CALL SUEWS_Output_txt_grp(iv, irMax, iyr, varListX, Gridiv, outLevel, Tstep)
 ! #ifdef nc
 !             ELSE
 !                CALL SUEWS_Output_nc_grp(irMax, varListX, outLevel, Tstep)

@@ -657,10 +657,10 @@ PROGRAM SUEWS_Program
 ! #ifdef nc
 !          IF (ncMode == 0) THEN
 ! #endif
-            DO igrid = 1, NumberOfGrids
-               IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_Output...'
-               CALL SUEWS_Output(irMax, iblock, igrid, year_int)
-            ENDDO
+         DO igrid = 1, NumberOfGrids
+            IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_Output...'
+            CALL SUEWS_Output(irMax, iblock, igrid, year_int)
+         ENDDO
 ! #ifdef nc
 !          ENDIF
 

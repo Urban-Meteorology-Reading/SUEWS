@@ -618,7 +618,7 @@ CONTAINS
          StorageHeatMethod, qs_obs, OHMIncQF, Gridiv, &!input
          id, tstep, dt_since_start, Diagnose, sfr, &
          OHM_coef, OHM_threshSW, OHM_threshWD, &
-         soilstore_id, SoilStoreCap, state_id, nsh, SnowUse, DiagQS, &
+         soilstore_id, SoilStoreCap, state_id, SnowUse, DiagQS, &
          HDD_id, MetForcingData_grid, Ts5mindata_ir, qf, qn1, &
          avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown, &
          bldgh, alb, emis, cpAnOHM, kkAnOHM, chAnOHM, EmissionsMethod, &
@@ -1203,7 +1203,7 @@ CONTAINS
       StorageHeatMethod, qs_obs, OHMIncQF, Gridiv, &!input
       id, tstep, dt_since_start, Diagnose, sfr, &
       OHM_coef, OHM_threshSW, OHM_threshWD, &
-      soilstore_id, SoilStoreCap, state_id, nsh, SnowUse, DiagQS, &
+      soilstore_id, SoilStoreCap, state_id, SnowUse, DiagQS, &
       HDD_id, MetForcingData_grid, Ts5mindata_ir, qf, qn1, &
       avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown, &
       bldgh, alb, emis, cpAnOHM, kkAnOHM, chAnOHM, EmissionsMethod, &
@@ -1221,7 +1221,7 @@ CONTAINS
       INTEGER, INTENT(in)  ::tstep ! time step [s]
       INTEGER, INTENT(in) ::dt_since_start  ! time since simulation starts [s]
       INTEGER, INTENT(in)  ::Diagnose
-      INTEGER, INTENT(in)  ::nsh              ! number of timesteps in one hour
+      ! INTEGER, INTENT(in)  ::nsh              ! number of timesteps in one hour
       INTEGER, INTENT(in)  ::SnowUse          ! option for snow related calculations
       INTEGER, INTENT(in)  ::DiagQS           ! diagnostic option
       INTEGER, INTENT(in)  :: EmissionsMethod !< AnthropHeat option [-]
@@ -1334,7 +1334,7 @@ CONTAINS
          IF (Diagnose == 1) WRITE (*, *) 'Calling ESTM...'
          CALL ESTM( &
             Gridiv, &!input
-            nsh, tstep, &
+            tstep, &
             avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown, &
             bldgh, Ts5mindata_ir, &
             Tair24HR, &!inout

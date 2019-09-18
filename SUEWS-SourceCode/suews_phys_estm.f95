@@ -970,7 +970,7 @@ CONTAINS
    !===============================================================================
    SUBROUTINE ESTM( &
       Gridiv, &!input
-      nsh, tstep, &
+      tstep, &
       avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown, &
       bldgh, Ts5mindata_ir, &
       Tair24HR, &!inout
@@ -1135,7 +1135,7 @@ CONTAINS
       REAL(KIND(1d0)), PARAMETER::NAN = -999
 
       INTEGER, INTENT(in)::Gridiv
-      INTEGER, INTENT(in)::nsh, tstep
+      INTEGER, INTENT(in)::tstep
       ! INTEGER,INTENT(in)::iy !Year
       ! INTEGER,INTENT(in)::id !Day of year
       ! INTEGER,INTENT(in)::it !Hour
@@ -1426,9 +1426,16 @@ CONTAINS
       Pcoeff = (/em_ibld*SBConst*(1 - ivf_ii*em_ibld), 0.0d0, 0.0d0, kdz + shc_airbld*CH_ibld, &
                  -kdz*Tibld(1) - shc_airbld*CH_ibld*Tievolve - Rs_ibld - Rl_ibld/)
       T0_ibld = NewtonPolynomial(T0_ibld, Pcoeff, conv, maxiter)
-      bc(1) = T0_ibld                                                       !!FO!! this leads to Tibld(1) = Tibld(3) , i.e. ...
-      bc(2) = bc(1)                                                         !!FO!! temperature equal on both sides of inside wall
+
+      !!FO!! this leads to Tibld(1) = Tibld(3) , i.e. ...
+      bc(1) = T0_ibld
+
+      !!FO!! temperature equal on both sides of inside wall
+      bc(2) = bc(1)
+
+      print*,'ESTM Qsibld cal before',Qsibld,Tibld,zibld(1:Nibld)
       CALL heatcond1d(Tibld, Qsibld, zibld(1:Nibld), REAL(Tstep, KIND(1d0)), kibld(1:Nibld), ribld(1:Nibld), bc, bctype)
+      print*,'ESTM Qsibld cal after',Qsibld,Tibld
 
       !========>WALLS<================
       bctype = .FALSE.
@@ -1519,6 +1526,8 @@ CONTAINS
       Qsground = Qsground*fground
       QS = Qsibld + Qswall + Qsroof + Qsground                              !!FO!! QSair not included; called QS in output file (column #10)
 
+      print*,'ESTM QS',qs,Qsibld,Qswall,Qsroof ,Qsground
+      print*,'ESTM Qsibld',Qsibld,fibld
       !write(*,*) Qsair, QSibld, Qswall, Qsroof, Qsground, QS
 
       !========>Radiation<================
@@ -1595,6 +1604,8 @@ CONTAINS
       Troof_grids(:, Gridiv) = Troof(:)
       Tibld_grids(:, Gridiv) = Tibld(:)
       Tw_4_grids(:, :, Gridiv) = Tw_4(:, :)
+
+      print*,'ESTM QS',qs
 
    END SUBROUTINE ESTM
 

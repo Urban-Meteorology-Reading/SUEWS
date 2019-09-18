@@ -702,6 +702,21 @@ CONTAINS
          qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
          alb1, snowFrac_next)
 
+      ! =================STORAGE HEAT FLUX=======================================
+      CALL SUEWS_cal_Qs( &
+         StorageHeatMethod, qs_obs, OHMIncQF, Gridiv, &!input
+         id, tstep, dt_since_start, Diagnose, sfr, &
+         OHM_coef, OHM_threshSW, OHM_threshWD, &
+         soilstore_id, SoilStoreCap, state_id, SnowUse, snowFrac_next, DiagQS, &
+         HDD_id, MetForcingData_grid, Ts5mindata_ir, qf, qn1, &
+         avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown, &
+         bldgh, alb, emis, cpAnOHM, kkAnOHM, chAnOHM, EmissionsMethod, &
+         Tair_av_next, qn1_av_prev, dqndt_prev, qn1_s_av_prev, dqnsdt_prev, &
+         StoreDrainPrm, &!inout
+         qn1_S, dataOutLineESTM, qs, &!output
+         qn1_av_next, dqndt_next, qn1_s_av_next, dqnsdt_next, &
+         deltaQi, a1, a2, a3)
+
       ! ========================================================================
       ! N.B.: the following parts involves snow-related calculations.
       SnowfallCum = SnowfallCum_prev
@@ -711,21 +726,6 @@ CONTAINS
       SnowDens = SnowDens_next
       SnowFrac = SnowFrac_next
       SnowAlb = SnowAlb_next
-
-      ! =================STORAGE HEAT FLUX=======================================
-      CALL SUEWS_cal_Qs( &
-         StorageHeatMethod, qs_obs, OHMIncQF, Gridiv, &!input
-         id, tstep, dt_since_start, Diagnose, sfr, &
-         OHM_coef, OHM_threshSW, OHM_threshWD, &
-         soilstore_id, SoilStoreCap, state_id, SnowUse, snowFrac, DiagQS, &
-         HDD_id, MetForcingData_grid, Ts5mindata_ir, qf, qn1, &
-         avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown, &
-         bldgh, alb, emis, cpAnOHM, kkAnOHM, chAnOHM, EmissionsMethod, &
-         Tair_av_next, qn1_av_prev, dqndt_prev, qn1_s_av_prev, dqnsdt_prev, &
-         StoreDrainPrm, &!inout
-         qn1_S, dataOutLineESTM, qs, &!output
-         qn1_av_next, dqndt_next, qn1_s_av_next, dqnsdt_next, &
-         deltaQi, a1, a2, a3)
 
       !==================Energy related to snow melting/freezing processes=======
       IF (Diagnose == 1) WRITE (*, *) 'Calling MeltHeat'

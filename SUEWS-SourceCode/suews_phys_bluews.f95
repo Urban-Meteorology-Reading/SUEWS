@@ -54,7 +54,6 @@ MODULE cbl_MODULE
 END MODULE cbl_MODULE
 !===================================================================================
 
-
 MODULE BLUEWS_module
    USE cbl_module
    USE meteo, ONLY: qsatf, sat_vap_press_x

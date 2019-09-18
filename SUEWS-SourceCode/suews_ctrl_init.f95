@@ -77,9 +77,9 @@ SUBROUTINE OverallRunControl
       MultRainAmongNUpperI, &
       KdownZen, &
       SuppressWarnings, &
-      ncMode, &
-      nRow, &
-      nCol, &
+      ! ncMode, &
+      ! nRow, &
+      ! nCol, &
       Diagnose, &
       DiagnoseDisagg, &
       DiagnoseDisaggESTM, &

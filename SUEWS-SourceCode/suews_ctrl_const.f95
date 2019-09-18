@@ -20,11 +20,11 @@ MODULE allocateArray
    IMPLICIT NONE
 
    ! ---- Set parameters for reading in data ------------------------------------------------------
-#ifdef nc
-   INTEGER, PARAMETER:: MaxNumberOfGrids = 90000   !Max no. grids   !TS changed to 90000 for large-scale simulation based on netCDF IO
-#else
+! #ifdef nc
+!    INTEGER, PARAMETER:: MaxNumberOfGrids = 90000   !Max no. grids   !TS changed to 90000 for large-scale simulation based on netCDF IO
+! #else
    INTEGER, PARAMETER:: MaxNumberOfGrids = 10000   !Max no. grids   !HCW changed to 2000 from 10000 so prog can run on windows (2GB lim)
-#endif
+! #endif
    INTEGER, PARAMETER:: MaxLinesMet = 8640        !Max no. lines to read in one go (for all grids, ie MaxLinesMet/NumberOfGrids each)
 
    ! ---- Set number of columns in input files ----------------------------------------------------
@@ -989,9 +989,9 @@ MODULE data_in
              SuppressWarnings = 1, &     ! Set to 1 to prevent warnings.txt file from being written
              Diagnose, &             !Set to 1 to get print-out of model progress
              DiagnoseDisagg, &       !Set to 1 to get print-out of met forcing disaggregation progress
-             ncMode, &               !Write output file in netCDF (1) or not (0) , TS, 09 Dec 2016
-             nRow, &                 !number of rows of checker board layout in the netCDF output, TS, 09 Dec 2016
-             nCol, &                 !number of columns of checker board layout in the netCDF output, TS, 09 Dec 2016
+            !  ncMode, &               !Write output file in netCDF (1) or not (0) , TS, 09 Dec 2016
+            !  nRow, &                 !number of rows of checker board layout in the netCDF output, TS, 09 Dec 2016
+            !  nCol, &                 !number of columns of checker board layout in the netCDF output, TS, 09 Dec 2016
              DiagnoseDisaggESTM, &   !Set to 1 to get print-out of ESTM forcing disaggregation progress
              DiagQN, DiagQS         !Set to 1 to print values/components
 

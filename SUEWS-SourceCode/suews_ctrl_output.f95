@@ -543,11 +543,11 @@ CONTAINS
    SUBROUTINE SUEWS_Output(irMax, iv, Gridiv, iyr)
       IMPLICIT NONE
       INTEGER, INTENT(in) :: irMax
-#ifdef nc
-      INTEGER, INTENT(in), OPTIONAL ::iv, Gridiv, iyr
-#else
+! #ifdef nc
+!       INTEGER, INTENT(in), OPTIONAL ::iv, Gridiv, iyr
+! #else
       INTEGER, INTENT(in) ::iv, Gridiv, iyr
-#endif
+! #endif
 
       INTEGER :: xx, err, outLevel, i
       TYPE(varAttr), DIMENSION(:), ALLOCATABLE::varListX
@@ -610,40 +610,40 @@ CONTAINS
             ! all output frequency option:
             ! as forcing:
             IF (ResolutionFilesOut == Tstep .OR. KeepTstepFilesOut == 1) THEN
-#ifdef nc
-               IF (PRESENT(Gridiv)) THEN
-#endif
+! #ifdef nc
+!                IF (PRESENT(Gridiv)) THEN
+! #endif
                   CALL SUEWS_Output_txt_grp(iv, irMax, iyr, varListX, Gridiv, outLevel, Tstep)
-#ifdef nc
-               ELSE
-                  CALL SUEWS_Output_nc_grp(irMax, varListX, outLevel, Tstep)
-               ENDIF
-#endif
+! #ifdef nc
+!                ELSE
+!                   CALL SUEWS_Output_nc_grp(irMax, varListX, outLevel, Tstep)
+!                ENDIF
+! #endif
 
             ENDIF
             !  as specified ResolutionFilesOut:
             IF (ResolutionFilesOut /= Tstep) THEN
-#ifdef nc
-               IF (PRESENT(Gridiv)) THEN
-#endif
+! #ifdef nc
+!                IF (PRESENT(Gridiv)) THEN
+! #endif
                   CALL SUEWS_Output_txt_grp(iv, irMax, iyr, varListX, Gridiv, outLevel, ResolutionFilesOut)
-#ifdef nc
-               ELSE
-                  CALL SUEWS_Output_nc_grp(irMax, varListX, outLevel, ResolutionFilesOut)
-               ENDIF
-#endif
+! #ifdef nc
+!                ELSE
+!                   CALL SUEWS_Output_nc_grp(irMax, varListX, outLevel, ResolutionFilesOut)
+!                ENDIF
+! #endif
             ENDIF
          ELSE
             !  DailyState array, which does not need aggregation
-#ifdef nc
-            IF (PRESENT(Gridiv)) THEN
-#endif
+! #ifdef nc
+!             IF (PRESENT(Gridiv)) THEN
+! #endif
                CALL SUEWS_Output_txt_grp(iv, irMax, iyr, varListX, Gridiv, outLevel, Tstep)
-#ifdef nc
-            ELSE
-               CALL SUEWS_Output_nc_grp(irMax, varListX, outLevel, Tstep)
-            ENDIF
-#endif
+! #ifdef nc
+!             ELSE
+!                CALL SUEWS_Output_nc_grp(irMax, varListX, outLevel, Tstep)
+!             ENDIF
+! #endif
          ENDIF
 
          IF (ALLOCATED(varListX)) DEALLOCATE (varListX, stat=err)
@@ -1068,14 +1068,14 @@ CONTAINS
       DOY_int = INT(dataOutX(1, 2))
       WRITE (str_DOY, '(i3.3)') DOY_int
 
-#ifdef nc
-      ! year for nc use that in dataOutX
-      year_int = INT(dataOutX(1, 1))
-      WRITE (str_year, '(i4)') year_int
-      str_date = '_'//TRIM(ADJUSTL(str_year))
-      ! add DOY as a specifier
-      IF (ncMode == 1) str_date = TRIM(ADJUSTL(str_date))//TRIM(ADJUSTL(str_DOY))
-#endif
+! #ifdef nc
+!       ! year for nc use that in dataOutX
+!       year_int = INT(dataOutX(1, 1))
+!       WRITE (str_year, '(i4)') year_int
+!       str_date = '_'//TRIM(ADJUSTL(str_year))
+!       ! add DOY as a specifier
+!       IF (ncMode == 1) str_date = TRIM(ADJUSTL(str_date))//TRIM(ADJUSTL(str_DOY))
+! #endif
 
       ! year for txt use specified value to avoid conflicts when crossing years
       year_int = iyr
@@ -1110,15 +1110,15 @@ CONTAINS
 
       ! grid name:
       WRITE (str_grid, '(i10)') GridIDmatrix(Gridiv)
-#ifdef nc
-      IF (ncMode == 1) str_grid = '' ! grid name not needed by nc files
-#endif
+! #ifdef nc
+!       IF (ncMode == 1) str_grid = '' ! grid name not needed by nc files
+! #endif
 
       ! suffix:
       str_sfx = '.txt'
-#ifdef nc
-      IF (ncMode == 1) str_sfx = '.nc'
-#endif
+! #ifdef nc
+!       IF (ncMode == 1) str_sfx = '.nc'
+! #endif
 
       ! filename: FileOutX
       FileOutX = TRIM(FileOutputPath)// &
@@ -1235,577 +1235,577 @@ CONTAINS
    ! the output file frequency is the same as metblocks in the main SUEWS loop
    !===========================================================================!
 
-#ifdef nc
-
-   SUBROUTINE SUEWS_Output_nc_grp(irMax, varList, outLevel, outFreq_s)
-      IMPLICIT NONE
-
-      TYPE(varAttr), DIMENSION(:), INTENT(in)::varList
-      INTEGER, INTENT(in) :: irMax, outLevel, outFreq_s
-
-      REAL(KIND(1d0)), ALLOCATABLE::dataOutX(:, :, :)
-      REAL(KIND(1d0)), ALLOCATABLE::dataOutX_agg(:, :, :), dataOutX_agg0(:, :)
-      INTEGER :: iGrid, err, idMin, idMax
-      INTEGER, DIMENSION(:), ALLOCATABLE  ::id_seq
-
-      IF (.NOT. ALLOCATED(dataOutX)) THEN
-         ALLOCATE (dataOutX(irMax, SIZE(varList), NumberOfGrids), stat=err)
-         IF (err /= 0) PRINT *, "dataOutX: Allocation request denied"
-      ENDIF
-
-      ! determine dataOutX array according to variable group
-      SELECT CASE (TRIM(varList(SIZE(varList))%group))
-      CASE ('SUEWS') !default
-         dataOutX = dataOutSUEWS(1:irMax, 1:SIZE(varList), :)
-
-      CASE ('SOLWEIG') !SOLWEIG
-         ! todo: inconsistent data structure
-         dataOutX = dataOutSOL(1:irMax, 1:SIZE(varList), :)
-
-      CASE ('BL') !BL
-         dataOutX = dataOutBL(1:irMax, 1:SIZE(varList), :)
-
-      CASE ('snow')    !snow
-         dataOutX = dataOutSnow(1:irMax, 1:SIZE(varList), :)
-
-      CASE ('ESTM')    !ESTM
-         dataOutX = dataOutESTM(1:irMax, 1:SIZE(varList), :)
-
-      CASE ('DailyState')    !DailyState
-         ! get correct day index
-         CALL unique(INT(PACK(dataOutSUEWS(1:irMax, 2, 1), &
-                              mask=(dataOutSUEWS(1:irMax, 3, Gridiv) == 23 &
-                                    .AND. dataOutSUEWS(1:irMax, 4, Gridiv) == (nsh - 1)/nsh*60))), &
-                     id_seq)
-         IF (ALLOCATED(dataOutX)) THEN
-            DEALLOCATE (dataOutX)
-            IF (err /= 0) PRINT *, "dataOutX: Deallocation request denied"
-         ENDIF
-
-         IF (.NOT. ALLOCATED(dataOutX)) THEN
-            ALLOCATE (dataOutX(SIZE(id_seq), SIZE(varList), NumberOfGrids), stat=err)
-            IF (err /= 0) PRINT *, "dataOutX: Allocation request denied"
-         ENDIF
-
-         dataOutX = dataOutDailyState(id_seq, 1:SIZE(varList), :)
-         ! print*, 'idMin line',dataOutX(idMin,1:4,1)
-         ! print*, 'idMax line',dataOutX(idMax,1:4,1)
-
-      END SELECT
-
-      ! aggregation:
-      IF (TRIM(varList(SIZE(varList))%group) /= 'DailyState') THEN
-         DO iGrid = 1, NumberOfGrids
-            CALL SUEWS_Output_Agg(dataOutX_agg0, dataOutX(:, :, iGrid), varList, irMax, outFreq_s)
-            IF (.NOT. ALLOCATED(dataOutX_agg)) THEN
-               ALLOCATE (dataOutX_agg(SIZE(dataOutX_agg0, dim=1), SIZE(varList), NumberOfGrids), stat=err)
-               IF (err /= 0) PRINT *, ": Allocation request denied"
-            ENDIF
-            dataOutX_agg(:, :, iGrid) = dataOutX_agg0
-         END DO
-      ELSE
-         IF (.NOT. ALLOCATED(dataOutX_agg)) THEN
-            ALLOCATE (dataOutX_agg(SIZE(dataOutX, dim=1), SIZE(varList), NumberOfGrids), stat=err)
-            IF (err /= 0) PRINT *, ": Allocation request denied"
-         ENDIF
-         dataOutX_agg = dataOutX
-      ENDIF
-
-      ! write out data
-      CALL SUEWS_Write_nc(dataOutX_agg, varList, outLevel)
-      IF (ALLOCATED(dataOutX_agg)) THEN
-         DEALLOCATE (dataOutX_agg)
-         IF (err /= 0) PRINT *, "dataOutX_agg: Deallocation request denied"
-      ENDIF
-   END SUBROUTINE SUEWS_Output_nc_grp
-
-   ! SUBROUTINE SUEWS_Write_nc(dataOutX, varList, outLevel)
-   !    ! generic subroutine to write out data in netCDF format
-   !    USE netCDF
-
-   !    IMPLICIT NONE
-   !    REAL(KIND(1d0)), DIMENSION(:, :, :), INTENT(in)::dataOutX
-   !    TYPE(varAttr), DIMENSION(:), INTENT(in)::varList
-   !    INTEGER, INTENT(in) :: outLevel
-
-   !    CHARACTER(len=365):: fileOut
-   !    REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE::dataOutSel
-   !    TYPE(varAttr), DIMENSION(:), ALLOCATABLE::varListSel
-
-   !    ! We are writing 3D data, {time, y, x}
-   !    INTEGER, PARAMETER :: NDIMS = 3, iVarStart = 6
-   !    INTEGER :: NX, NY, nTime, nVar, err
-
-   !    ! When we create netCDF files, variables and dimensions, we get back
-   !    ! an ID for each one.
-   !    INTEGER :: ncID, varID, dimids(NDIMS), varIDGrid
-   !    INTEGER :: x_dimid, y_dimid, time_dimid, iVar, varIDx, varIDy, varIDt, varIDCRS
-   !    REAL(KIND(1d0)), ALLOCATABLE :: varOut(:, :, :), &
-   !                                    varX(:, :), varY(:, :), &
-   !                                    lat(:, :), lon(:, :), &
-   !                                    varSeq0(:), varSeq(:), &
-   !                                    xTime(:), xGridID(:, :)
-
-   !    INTEGER :: idVar(iVarStart:SIZE(varList))
-   !    CHARACTER(len=50):: header_str, longNm_str, unit_str
-   !    CHARACTER(len=4)  :: yrStr2
-   !    CHARACTER(len=40) :: startStr2
-   !    REAL(KIND(1d0)) :: minLat, maxLat, dLat, minLon, maxLon, dLon
-   !    REAL(KIND(1d0)), DIMENSION(1:6) :: geoTrans
-   !    CHARACTER(len=80) :: strGeoTrans
-
-   !    ! determine number of times
-   !    nTime = SIZE(dataOutX, dim=1)
-
-   !    !select variables to output
-   !    nVar = COUNT((varList%level <= outLevel), dim=1)
-   !    ALLOCATE (varListSel(nVar), stat=err)
-   !    IF (err /= 0) PRINT *, "varListSel: Allocation request denied"
-   !    varListSel = PACK(varList, mask=(varList%level <= outLevel))
-
-   !    ! copy data accordingly
-   !    ALLOCATE (dataOutSel(nTime, nVar, NumberOfGrids), stat=err)
-   !    IF (err /= 0) PRINT *, "dataOutSel: Allocation request denied"
-   !    dataOutSel = dataOutX(:, PACK((/(i, i=1, SIZE(varList))/), varList%level <= outLevel), :)
-
-   !    ! determine filename
-   !    CALL filename_gen(dataOutSel(:, :, 1), varListSel, 1, FileOut)
-   !    ! PRINT*, 'writing file:',TRIM(fileOut)
-
-   !    ! set year string
-   !    WRITE (yrStr2, '(i4)') INT(dataOutX(1, 1, 1))
-   !    ! get start for later time unit creation
-   !    startStr2 = TRIM(yrStr2)//'-01-01 00:00:00'
-
-   !    ! define the dimension of spatial array/frame in the output
-   !    nX = nCol
-   !    nY = nRow
-
-   !    ALLOCATE (varSeq0(nX*nY))
-   !    ALLOCATE (varSeq(nX*nY))
-   !    ALLOCATE (xGridID(nX, nY))
-   !    ALLOCATE (lon(nX, nY))
-   !    ALLOCATE (lat(nX, nY))
-   !    ALLOCATE (varY(nX, nY))
-   !    ALLOCATE (varX(nX, nY))
-   !    ALLOCATE (xTime(nTime))
-
-   !    ! GridID:
-   !    varSeq = SurfaceChar(1:nX*nY, 1)
-   !    ! CALL sortSeqReal(varSeq0,varSeq,nY,nX)
-   !    xGridID = RESHAPE(varSeq, (/nX, nY/), order=(/1, 2/))
-   !    ! PRINT*, 'before flipping:',lat(1:2,1)
-   !    xGridID = xGridID(:, nY:1:-1)
-
-   !    ! latitude:
-   !    varSeq = SurfaceChar(1:nX*nY, 5)
-   !    ! CALL sortSeqReal(varSeq0,varSeq,nY,nX)
-   !    lat = RESHAPE(varSeq, (/nX, nY/), order=(/1, 2/))
-   !    ! PRINT*, 'before flipping:',lat(1:2,1)
-   !    lat = lat(:, nY:1:-1)
-   !    ! PRINT*, 'after flipping:',lat(1:2,1)
-
-   !    ! longitude:
-   !    varSeq = SurfaceChar(1:nX*nY, 6)
-   !    ! CALL sortSeqReal(varSeq0,varSeq,nY,nX)
-   !    lon = RESHAPE(varSeq, (/nX, nY/), order=(/1, 2/))
-   !    lon = lon(:, nY:1:-1)
-
-   !    ! pass values to coordinate variables
-   !    varY = lat
-   !    varX = lon
-
-   !    ! calculate GeoTransform array as needed by GDAL
-   !    ! ref: http://www.perrygeo.com/python-affine-transforms.html
-   !    ! the values below are different from the above ref,
-   !    ! as the layout of SUEWS output is different from the schematic shown there
-   !    ! SUEWS output is arranged northward down the page
-   !    ! if data are formatted as a normal matrix
-   !    minLat = lat(1, 1)               ! the lower-left pixel
-   !    maxLat = lat(1, NY)              ! the upper-left pixel
-   !    IF (nY > 1) THEN
-   !       dLat = (maxLat - minLat)/(nY - 1) ! height of a pixel
-   !    ELSE
-   !       dLat = 1
-   !    END IF
-
-   !    ! PRINT*, 'lat:',minLat,maxLat,dLat
-   !    minLon = lon(1, 1)              ! the lower-left pixel
-   !    maxLon = lon(NX, 1)             ! the lower-right pixel
-   !    IF (nY > 1) THEN
-   !       dLon = (maxLon - minLon)/(nX - 1) ! width of a pixel
-   !    ELSE
-   !       dLon = 1
-   !    END IF
-
-   !    ! PRINT*, 'lon:',minLon,maxLon,dLon
-   !    geoTrans(1) = minLon - dLon/2          ! x-coordinate of the lower-left corner of the lower-left pixel
-   !    geoTrans(2) = dLon                   ! width of a pixel
-   !    geoTrans(3) = 0.                     ! row rotation (typically zero)
-   !    geoTrans(4) = minLat - dLat/2          ! y-coordinate of the of the lower-left corner of the lower-left pixel
-   !    geoTrans(5) = 0.                     ! column rotation (typically zero)
-   !    geoTrans(6) = dLat                   ! height of a pixel (typically negative, but here positive)
-   !    ! write GeoTransform to strGeoTrans
-   !    WRITE (strGeoTrans, '(6(f12.8,1x))') geoTrans
-
-   !    ! Create the netCDF file. The nf90_clobber parameter tells netCDF to
-   !    ! overwrite this file, if it already exists.
-   !    CALL check(nf90_create(TRIM(fileOut), NF90_CLOBBER, ncID))
-
-   !    ! put global attributes
-   !    CALL check(nf90_put_att(ncID, NF90_GLOBAL, 'Conventions', 'CF1.6'))
-   !    CALL check(nf90_put_att(ncID, NF90_GLOBAL, 'title', 'SUEWS output'))
-   !    CALL check(nf90_put_att(ncID, NF90_GLOBAL, 'source', 'Micromet Group, University of Reading'))
-   !    CALL check(nf90_put_att(ncID, NF90_GLOBAL, 'references', 'http://urban-climate.net/umep/SUEWS'))
-
-   !    ! Define the dimensions. NetCDF will hand back an ID for each.
-   !    ! nY = ncolumnsDataOutSUEWS-4
-   !    ! nx = NumberOfGrids
-   !    CALL check(nf90_def_dim(ncID, "time", NF90_UNLIMITED, time_dimid))
-   !    CALL check(nf90_def_dim(ncID, "west_east", NX, x_dimid))
-   !    CALL check(nf90_def_dim(ncID, "south_north", NY, y_dimid))
-   !    ! PRINT*, 'good define dim'
-
-   !    ! The dimids array is used to pass the IDs of the dimensions of
-   !    ! the variables. Note that in fortran arrays are stored in
-   !    ! column-major format.
-   !    dimids = (/x_dimid, y_dimid, time_dimid/)
-
-   !    ! write out each variable
-   !    ALLOCATE (varOut(nX, nY, nTime))
-
-   !    ! define all variables
-   !    ! define time variable:
-   !    CALL check(nf90_def_var(ncID, 'time', NF90_REAL, time_dimid, varIDt))
-   !    CALL check(nf90_put_att(ncID, varIDt, 'units', 'minutes since '//startStr2))
-   !    CALL check(nf90_put_att(ncID, varIDt, 'long_name', 'time'))
-   !    CALL check(nf90_put_att(ncID, varIDt, 'standard_name', 'time'))
-   !    CALL check(nf90_put_att(ncID, varIDt, 'calendar', 'gregorian'))
-   !    CALL check(nf90_put_att(ncID, varIDt, 'axis', 'T'))
-
-   !    ! define coordinate variables:
-   !    CALL check(nf90_def_var(ncID, 'lon', NF90_REAL, (/x_dimid, y_dimid/), varIDx))
-   !    CALL check(nf90_put_att(ncID, varIDx, 'units', 'degree_east'))
-   !    CALL check(nf90_put_att(ncID, varIDx, 'long_name', 'longitude'))
-   !    CALL check(nf90_put_att(ncID, varIDx, 'standard_name', 'longitude'))
-   !    CALL check(nf90_put_att(ncID, varIDx, 'axis', 'X'))
-
-   !    CALL check(nf90_def_var(ncID, 'lat', NF90_REAL, (/x_dimid, y_dimid/), varIDy))
-   !    CALL check(nf90_put_att(ncID, varIDy, 'units', 'degree_north'))
-   !    CALL check(nf90_put_att(ncID, varIDy, 'long_name', 'latitude'))
-   !    CALL check(nf90_put_att(ncID, varIDy, 'standard_name', 'latitude'))
-   !    CALL check(nf90_put_att(ncID, varIDy, 'axis', 'Y'))
-
-   !    ! define coordinate referencing system:
-   !    CALL check(nf90_def_var(ncID, 'crsWGS84', NF90_INT, varIDCRS))
-   !    CALL check(nf90_put_att(ncID, varIDCRS, 'grid_mapping_name', 'latitude_longitude'))
-   !    CALL check(nf90_put_att(ncID, varIDCRS, 'long_name', 'CRS definition'))
-   !    CALL check(nf90_put_att(ncID, varIDCRS, 'longitude_of_prime_meridian', '0.0'))
-   !    CALL check(nf90_put_att(ncID, varIDCRS, 'semi_major_axis', '6378137.0'))
-   !    CALL check(nf90_put_att(ncID, varIDCRS, 'inverse_flattening', '298.257223563'))
-   !    CALL check(nf90_put_att(ncID, varIDCRS, 'epsg_code', 'EPSG:4326'))
-   !    CALL check(nf90_put_att(ncID, varIDCRS, 'GeoTransform', TRIM(strGeoTrans)))
-   !    CALL check(nf90_put_att(ncID, varIDCRS, 'spatial_ref',&
-   !         &'GEOGCS["WGS 84",&
-   !         &    DATUM["WGS_1984",&
-   !         &        SPHEROID["WGS 84",6378137,298.257223563,&
-   !         &            AUTHORITY["EPSG","7030"]],&
-   !         &        AUTHORITY["EPSG","6326"]],&
-   !         &    PRIMEM["Greenwich",0],&
-   !         &    UNIT["degree",0.0174532925199433],&
-   !         &    AUTHORITY["EPSG","4326"]]' &
-   !         ))
-
-   !    ! define grid_ID:
-   !    CALL check(nf90_def_var(ncID, 'grid_ID', NF90_INT, (/x_dimid, y_dimid/), varIDGrid))
-   !    CALL check(nf90_put_att(ncID, varIDGrid, 'coordinates', 'lon lat'))
-   !    CALL check(nf90_put_att(ncID, varIDGrid, 'long_name', 'Grid ID as in SiteSelect'))
-   !    CALL check(nf90_put_att(ncID, varIDGrid, 'grid_mapping', 'crsWGS84'))
-   !    ! varIDGrid=varID
-
-   !    ! define other 3D variables:
-   !    DO iVar = iVarStart, nVar
-   !       ! define variable name
-   !       header_str = varListSel(iVar)%header
-   !       unit_str = varListSel(iVar)%unit
-   !       longNm_str = varListSel(iVar)%longNm
-
-   !       ! Define the variable. The type of the variable in this case is
-   !       ! NF90_REAL.
-
-   !       CALL check(nf90_def_var(ncID, TRIM(ADJUSTL(header_str)), NF90_REAL, dimids, varID))
-
-   !       CALL check(nf90_put_att(ncID, varID, 'coordinates', 'lon lat'))
-
-   !       CALL check(nf90_put_att(ncID, varID, 'units', TRIM(ADJUSTL(unit_str))))
-
-   !       CALL check(nf90_put_att(ncID, varID, 'long_name', TRIM(ADJUSTL(longNm_str))))
-
-   !       CALL check(nf90_put_att(ncID, varID, 'grid_mapping', 'crsWGS84'))
-
-   !       idVar(iVar) = varID
-   !    END DO
-   !    CALL check(nf90_enddef(ncID))
-   !    ! End define mode. This tells netCDF we are done defining metadata.
-
-   !    ! put all variable values into netCDF datasets
-   !    ! put time variable in minute:
-   !    xTime = (dataOutSel(1:nTime, 2, 1) - 1)*24*60 + dataOutSel(1:nTime, 3, 1)*60 + dataOutSel(1:nTime, 4, 1)
-   !    CALL check(nf90_put_var(ncID, varIDt, xTime))
-
-   !    ! put coordinate variables:
-   !    CALL check(nf90_put_var(ncID, varIDx, varX))
-   !    CALL check(nf90_put_var(ncID, varIDy, varY))
-
-   !    ! put CRS variable:
-   !    CALL check(nf90_put_var(ncID, varIDCRS, 9999))
-
-   !    CALL check(NF90_SYNC(ncID))
-   !    ! PRINT*, 'good put var'
-
-   !    ! put grid_ID:
-   !    CALL check(nf90_put_var(ncID, varIDGrid, xGridID))
-   !    ! PRINT*, 'good put varIDGrid',varIDGrid
-
-   !    CALL check(NF90_SYNC(ncID))
-
-   !    ! then other 3D variables
-   !    DO iVar = iVarStart, nVar
-   !       ! reshape dataOutX to be aligned in checker board form
-   !       varOut = RESHAPE(dataOutSel(1:nTime, iVar, :), (/nX, nY, nTime/), order=(/3, 1, 2/))
-   !       varOut = varOut(:, nY:1:-1, :)
-   !       !  get the variable id
-   !       varID = idVar(iVar)
-
-   !       CALL check(nf90_put_var(ncID, varID, varOut))
-
-   !       CALL check(NF90_SYNC(ncID))
-   !    END DO
-
-   !    IF (ALLOCATED(varOut)) DEALLOCATE (varOut)
-   !    IF (ALLOCATED(varSeq0)) DEALLOCATE (varSeq0)
-   !    IF (ALLOCATED(varSeq)) DEALLOCATE (varSeq)
-   !    IF (ALLOCATED(xGridID)) DEALLOCATE (xGridID)
-   !    IF (ALLOCATED(lon)) DEALLOCATE (lon)
-   !    IF (ALLOCATED(lat)) DEALLOCATE (lat)
-   !    IF (ALLOCATED(varY)) DEALLOCATE (varY)
-   !    IF (ALLOCATED(varX)) DEALLOCATE (varX)
-   !    IF (ALLOCATED(xTime)) DEALLOCATE (xTime)
-
-   !    ! Close the file. This frees up any internal netCDF resources
-   !    ! associated with the file, and flushes any buffers.
-   !    CALL check(nf90_close(ncID))
-
-   !    ! PRINT*, "*** SUCCESS writing netCDF file:"
-   !    ! PRINT*, FileOut
-   ! END SUBROUTINE SUEWS_Write_nc
-
-   !===========================================================================!
-   ! convert a vector of grids to a matrix
-   ! the grid IDs in seqGrid2Sort follow the QGIS convention
-   ! the spatial matrix arranges successive rows down the page (i.e., north to south)
-   !   and succesive columns across (i.e., west to east)
-   ! seqGridSorted stores the grid IDs as aligned in matGrid but squeezed into a vector
-   !===========================================================================!
-   SUBROUTINE grid2mat(seqGrid2Sort, seqGridSorted, matGrid, nRow, nCol)
-
-      IMPLICIT NONE
-
-      INTEGER, DIMENSION(nRow*nCol) :: seqGrid2Sort, seqGridSorted
-      INTEGER, DIMENSION(nRow, nCol) :: matGrid
-      INTEGER :: nRow, nCol, i, j, loc
-
-      CALL sortGrid(seqGrid2Sort, seqGridSorted, nRow, nCol)
-      PRINT *, 'old:'
-      PRINT *, seqGrid2Sort(1:5)
-      PRINT *, 'sorted:'
-      PRINT *, seqGridSorted(1:5)
-      PRINT *, ''
-      DO i = 1, nRow
-         DO j = 1, nCol
-            loc = (i - 1)*nCol + j
-            matGrid(i, j) = seqGridSorted(loc)
-         END DO
-      END DO
-   END SUBROUTINE grid2mat
-
-   !===========================================================================!
-   ! convert sequence of REAL values to a matrix
-   ! the grid IDs in seqGrid2Sort follow the QGIS convention
-   ! the spatial matrix arranges successive rows down the page (i.e., north to south)
-   !   and succesive columns across (i.e., west to east)
-   ! seqGridSorted stores the grid IDs as aligned in matGrid but squeezed into a vector
-   !===========================================================================!
-   SUBROUTINE seq2mat(seq2Sort, seqSorted, matGrid, nRow, nCol)
-
-      IMPLICIT NONE
-
-      REAL(KIND(1d0)), DIMENSION(nRow*nCol) :: seq2Sort, seqSorted
-      REAL(KIND(1d0)), DIMENSION(nRow, nCol) :: matGrid
-      INTEGER :: nRow, nCol, i, j, loc
-
-      CALL sortSeqReal(seq2Sort, seqSorted, nRow, nCol)
-      PRINT *, 'old:'
-      PRINT *, seq2Sort(1:5)
-      PRINT *, 'sorted:'
-      PRINT *, seqSorted(1:5)
-      PRINT *, ''
-      DO i = 1, nRow
-         DO j = 1, nCol
-            loc = (i - 1)*nCol + j
-            matGrid(i, j) = seqSorted(loc)
-         END DO
-      END DO
-   END SUBROUTINE seq2mat
-
-   !===========================================================================!
-   ! sort a sequence of LONG values into the specially aligned sequence per QGIS
-   !===========================================================================!
-   SUBROUTINE sortGrid(seqGrid2Sort0, seqGridSorted, nRow, nCol)
-      USE qsort_c_module
-      ! convert a vector of grids to a matrix
-      ! the grid IDs in seqGrid2Sort follow the QGIS convention
-      ! the spatial matrix arranges successive rows down the page (i.e., north to south)
-      !   and succesive columns across (i.e., west to east)
-      ! seqGridSorted stores the grid IDs as aligned in matGrid but squeezed into a vector
-
-      IMPLICIT NONE
-      INTEGER :: nRow, nCol, i = 1, j = 1, xInd, len
-
-      INTEGER, DIMENSION(nRow*nCol), INTENT(in) :: seqGrid2Sort0
-      INTEGER, DIMENSION(nRow*nCol), INTENT(out) :: seqGridSorted
-      INTEGER, DIMENSION(nRow*nCol) :: seqGrid2Sort, locSorted
-      INTEGER :: loc
-      REAL:: ind(nRow*nCol, 2)
-      REAL, DIMENSION(nRow*nCol) :: seqGrid2SortReal, seqGridSortedReal
-      REAL :: val
-
-      ! number of grids
-      len = nRow*nCol
-
-      !sort the input array to make sure the grid order is in QGIS convention
-      ! i.e., diagonally ascending
-      seqGrid2SortReal = seqGrid2Sort0*1.
-      CALL QsortC(seqGrid2SortReal)
-      seqGrid2Sort = INT(seqGrid2SortReal)
-
-      ! fill in an nRow*nCol array with values to determine sequence
-      xInd = 1
-      DO i = 1, nRow
-         DO j = 1, nCol
-            !  {row, col, value for sorting, index in new sequence}
-            ind(xInd, :) = (/i + j + i/(nRow + 1.), xInd*1./)
-            xInd = xInd + 1
-         END DO
-      END DO
-
-      ! then sorted ind(:,3) will have the same order as seqGrid2Sort
-      ! sort ind(:,3)
-      seqGridSortedReal = ind(:, 1)*1.
-      CALL QsortC(seqGridSortedReal)
-      ! print*, 'sorted real:'
-      ! print*, seqGridSortedReal
-
-      ! get index of each element of old sequence in the sorted sequence
-      DO i = 1, len
-         ! value in old sequence
-         !  val=ind(i,3)*1.
-         val = seqGridSortedReal(i)
-         DO j = 1, len
-            IF (val == ind(j, 1)*1.) THEN
-               ! location in sorted sequence
-               locSorted(i) = j
-            END IF
-         END DO
-      END DO
-
-      ! put elements of old sequence in the sorted order
-      DO i = 1, len
-         loc = locSorted(i)
-         seqGridSorted(loc) = seqGrid2Sort(i)
-      END DO
-      seqGridSorted = seqGridSorted(len:1:-1)
-
-   END SUBROUTINE sortGrid
-
-   !===========================================================================!
-   ! sort a sequence of REAL values into the specially aligned sequence per QGIS
-   !===========================================================================!
-   SUBROUTINE sortSeqReal(seqReal2Sort, seqRealSorted, nRow, nCol)
-      USE qsort_c_module
-      ! convert a vector of grids to a matrix
-      ! the grid IDs in seqReal2Sort follow the QGIS convention
-      ! the spatial matrix arranges successive rows down the page (i.e., north to south)
-      !   and succesive columns across (i.e., west to east)
-      ! seqRealSorted stores the grid IDs as aligned in matGrid but squeezed into a vector
-
-      IMPLICIT NONE
-      INTEGER :: nRow, nCol, i = 1, j = 1, xInd, len
-
-      REAL(KIND(1d0)), DIMENSION(nRow*nCol), INTENT(in) :: seqReal2Sort
-      REAL(KIND(1d0)), DIMENSION(nRow*nCol), INTENT(out) :: seqRealSorted
-      INTEGER(KIND(1d0)), DIMENSION(nRow*nCol) :: locSorted
-      INTEGER(KIND(1d0)) :: loc
-      REAL:: ind(nRow*nCol, 2)
-      REAL :: seqRealSortedReal(nRow*nCol), val
-
-      ! number of grids
-      len = nRow*nCol
-
-      ! fill in an nRow*nCol array with values to determine sequence
-      xInd = 1
-      DO i = 1, nRow
-         DO j = 1, nCol
-            !  {row, col, value for sorting, index in new sequence}
-            ind(xInd, :) = (/i + j + i/(nRow + 1.), xInd*1./)
-            xInd = xInd + 1
-         END DO
-      END DO
-
-      ! then sorted ind(:,3) will have the same order as seqReal2Sort
-      ! sort ind(:,3)
-      seqRealSortedReal = ind(:, 1)*1.
-      CALL QsortC(seqRealSortedReal)
-      ! print*, 'sorted real:'
-      ! print*, seqRealSortedReal
-
-      ! get index of each element of old sequence in the sorted sequence
-      DO i = 1, len
-         ! value in old sequence
-         !  val=ind(i,3)*1.
-         val = seqRealSortedReal(i)
-         DO j = 1, len
-            IF (val == ind(j, 1)*1.) THEN
-               ! location in sorted sequence
-               locSorted(i) = j
-            END IF
-         END DO
-      END DO
-
-      ! put elements of old sequence in the sorted order
-      DO i = 1, len
-         loc = locSorted(i)
-         seqRealSorted(loc) = seqReal2Sort(i)
-      END DO
-      seqRealSorted = seqRealSorted(len:1:-1)
-
-   END SUBROUTINE sortSeqReal
-
-   !===========================================================================!
-   ! a wrapper for checking netCDF status
-   !===========================================================================!
-
-   SUBROUTINE check(status)
-      USE netcdf
-      IMPLICIT NONE
-
-      INTEGER, INTENT(in) :: status
-
-      IF (status /= nf90_noerr) THEN
-         PRINT *, TRIM(nf90_strerror(status))
-         STOP "Stopped"
-      END IF
-   END SUBROUTINE check
-#endif
+! #ifdef nc
+
+!    SUBROUTINE SUEWS_Output_nc_grp(irMax, varList, outLevel, outFreq_s)
+!       IMPLICIT NONE
+
+!       TYPE(varAttr), DIMENSION(:), INTENT(in)::varList
+!       INTEGER, INTENT(in) :: irMax, outLevel, outFreq_s
+
+!       REAL(KIND(1d0)), ALLOCATABLE::dataOutX(:, :, :)
+!       REAL(KIND(1d0)), ALLOCATABLE::dataOutX_agg(:, :, :), dataOutX_agg0(:, :)
+!       INTEGER :: iGrid, err, idMin, idMax
+!       INTEGER, DIMENSION(:), ALLOCATABLE  ::id_seq
+
+!       IF (.NOT. ALLOCATED(dataOutX)) THEN
+!          ALLOCATE (dataOutX(irMax, SIZE(varList), NumberOfGrids), stat=err)
+!          IF (err /= 0) PRINT *, "dataOutX: Allocation request denied"
+!       ENDIF
+
+!       ! determine dataOutX array according to variable group
+!       SELECT CASE (TRIM(varList(SIZE(varList))%group))
+!       CASE ('SUEWS') !default
+!          dataOutX = dataOutSUEWS(1:irMax, 1:SIZE(varList), :)
+
+!       CASE ('SOLWEIG') !SOLWEIG
+!          ! todo: inconsistent data structure
+!          dataOutX = dataOutSOL(1:irMax, 1:SIZE(varList), :)
+
+!       CASE ('BL') !BL
+!          dataOutX = dataOutBL(1:irMax, 1:SIZE(varList), :)
+
+!       CASE ('snow')    !snow
+!          dataOutX = dataOutSnow(1:irMax, 1:SIZE(varList), :)
+
+!       CASE ('ESTM')    !ESTM
+!          dataOutX = dataOutESTM(1:irMax, 1:SIZE(varList), :)
+
+!       CASE ('DailyState')    !DailyState
+!          ! get correct day index
+!          CALL unique(INT(PACK(dataOutSUEWS(1:irMax, 2, 1), &
+!                               mask=(dataOutSUEWS(1:irMax, 3, Gridiv) == 23 &
+!                                     .AND. dataOutSUEWS(1:irMax, 4, Gridiv) == (nsh - 1)/nsh*60))), &
+!                      id_seq)
+!          IF (ALLOCATED(dataOutX)) THEN
+!             DEALLOCATE (dataOutX)
+!             IF (err /= 0) PRINT *, "dataOutX: Deallocation request denied"
+!          ENDIF
+
+!          IF (.NOT. ALLOCATED(dataOutX)) THEN
+!             ALLOCATE (dataOutX(SIZE(id_seq), SIZE(varList), NumberOfGrids), stat=err)
+!             IF (err /= 0) PRINT *, "dataOutX: Allocation request denied"
+!          ENDIF
+
+!          dataOutX = dataOutDailyState(id_seq, 1:SIZE(varList), :)
+!          ! print*, 'idMin line',dataOutX(idMin,1:4,1)
+!          ! print*, 'idMax line',dataOutX(idMax,1:4,1)
+
+!       END SELECT
+
+!       ! aggregation:
+!       IF (TRIM(varList(SIZE(varList))%group) /= 'DailyState') THEN
+!          DO iGrid = 1, NumberOfGrids
+!             CALL SUEWS_Output_Agg(dataOutX_agg0, dataOutX(:, :, iGrid), varList, irMax, outFreq_s)
+!             IF (.NOT. ALLOCATED(dataOutX_agg)) THEN
+!                ALLOCATE (dataOutX_agg(SIZE(dataOutX_agg0, dim=1), SIZE(varList), NumberOfGrids), stat=err)
+!                IF (err /= 0) PRINT *, ": Allocation request denied"
+!             ENDIF
+!             dataOutX_agg(:, :, iGrid) = dataOutX_agg0
+!          END DO
+!       ELSE
+!          IF (.NOT. ALLOCATED(dataOutX_agg)) THEN
+!             ALLOCATE (dataOutX_agg(SIZE(dataOutX, dim=1), SIZE(varList), NumberOfGrids), stat=err)
+!             IF (err /= 0) PRINT *, ": Allocation request denied"
+!          ENDIF
+!          dataOutX_agg = dataOutX
+!       ENDIF
+
+!       ! write out data
+!       CALL SUEWS_Write_nc(dataOutX_agg, varList, outLevel)
+!       IF (ALLOCATED(dataOutX_agg)) THEN
+!          DEALLOCATE (dataOutX_agg)
+!          IF (err /= 0) PRINT *, "dataOutX_agg: Deallocation request denied"
+!       ENDIF
+!    END SUBROUTINE SUEWS_Output_nc_grp
+
+!    ! SUBROUTINE SUEWS_Write_nc(dataOutX, varList, outLevel)
+!    !    ! generic subroutine to write out data in netCDF format
+!    !    USE netCDF
+
+!    !    IMPLICIT NONE
+!    !    REAL(KIND(1d0)), DIMENSION(:, :, :), INTENT(in)::dataOutX
+!    !    TYPE(varAttr), DIMENSION(:), INTENT(in)::varList
+!    !    INTEGER, INTENT(in) :: outLevel
+
+!    !    CHARACTER(len=365):: fileOut
+!    !    REAL(KIND(1d0)), DIMENSION(:, :, :), ALLOCATABLE::dataOutSel
+!    !    TYPE(varAttr), DIMENSION(:), ALLOCATABLE::varListSel
+
+!    !    ! We are writing 3D data, {time, y, x}
+!    !    INTEGER, PARAMETER :: NDIMS = 3, iVarStart = 6
+!    !    INTEGER :: NX, NY, nTime, nVar, err
+
+!    !    ! When we create netCDF files, variables and dimensions, we get back
+!    !    ! an ID for each one.
+!    !    INTEGER :: ncID, varID, dimids(NDIMS), varIDGrid
+!    !    INTEGER :: x_dimid, y_dimid, time_dimid, iVar, varIDx, varIDy, varIDt, varIDCRS
+!    !    REAL(KIND(1d0)), ALLOCATABLE :: varOut(:, :, :), &
+!    !                                    varX(:, :), varY(:, :), &
+!    !                                    lat(:, :), lon(:, :), &
+!    !                                    varSeq0(:), varSeq(:), &
+!    !                                    xTime(:), xGridID(:, :)
+
+!    !    INTEGER :: idVar(iVarStart:SIZE(varList))
+!    !    CHARACTER(len=50):: header_str, longNm_str, unit_str
+!    !    CHARACTER(len=4)  :: yrStr2
+!    !    CHARACTER(len=40) :: startStr2
+!    !    REAL(KIND(1d0)) :: minLat, maxLat, dLat, minLon, maxLon, dLon
+!    !    REAL(KIND(1d0)), DIMENSION(1:6) :: geoTrans
+!    !    CHARACTER(len=80) :: strGeoTrans
+
+!    !    ! determine number of times
+!    !    nTime = SIZE(dataOutX, dim=1)
+
+!    !    !select variables to output
+!    !    nVar = COUNT((varList%level <= outLevel), dim=1)
+!    !    ALLOCATE (varListSel(nVar), stat=err)
+!    !    IF (err /= 0) PRINT *, "varListSel: Allocation request denied"
+!    !    varListSel = PACK(varList, mask=(varList%level <= outLevel))
+
+!    !    ! copy data accordingly
+!    !    ALLOCATE (dataOutSel(nTime, nVar, NumberOfGrids), stat=err)
+!    !    IF (err /= 0) PRINT *, "dataOutSel: Allocation request denied"
+!    !    dataOutSel = dataOutX(:, PACK((/(i, i=1, SIZE(varList))/), varList%level <= outLevel), :)
+
+!    !    ! determine filename
+!    !    CALL filename_gen(dataOutSel(:, :, 1), varListSel, 1, FileOut)
+!    !    ! PRINT*, 'writing file:',TRIM(fileOut)
+
+!    !    ! set year string
+!    !    WRITE (yrStr2, '(i4)') INT(dataOutX(1, 1, 1))
+!    !    ! get start for later time unit creation
+!    !    startStr2 = TRIM(yrStr2)//'-01-01 00:00:00'
+
+!    !    ! define the dimension of spatial array/frame in the output
+!    !    nX = nCol
+!    !    nY = nRow
+
+!    !    ALLOCATE (varSeq0(nX*nY))
+!    !    ALLOCATE (varSeq(nX*nY))
+!    !    ALLOCATE (xGridID(nX, nY))
+!    !    ALLOCATE (lon(nX, nY))
+!    !    ALLOCATE (lat(nX, nY))
+!    !    ALLOCATE (varY(nX, nY))
+!    !    ALLOCATE (varX(nX, nY))
+!    !    ALLOCATE (xTime(nTime))
+
+!    !    ! GridID:
+!    !    varSeq = SurfaceChar(1:nX*nY, 1)
+!    !    ! CALL sortSeqReal(varSeq0,varSeq,nY,nX)
+!    !    xGridID = RESHAPE(varSeq, (/nX, nY/), order=(/1, 2/))
+!    !    ! PRINT*, 'before flipping:',lat(1:2,1)
+!    !    xGridID = xGridID(:, nY:1:-1)
+
+!    !    ! latitude:
+!    !    varSeq = SurfaceChar(1:nX*nY, 5)
+!    !    ! CALL sortSeqReal(varSeq0,varSeq,nY,nX)
+!    !    lat = RESHAPE(varSeq, (/nX, nY/), order=(/1, 2/))
+!    !    ! PRINT*, 'before flipping:',lat(1:2,1)
+!    !    lat = lat(:, nY:1:-1)
+!    !    ! PRINT*, 'after flipping:',lat(1:2,1)
+
+!    !    ! longitude:
+!    !    varSeq = SurfaceChar(1:nX*nY, 6)
+!    !    ! CALL sortSeqReal(varSeq0,varSeq,nY,nX)
+!    !    lon = RESHAPE(varSeq, (/nX, nY/), order=(/1, 2/))
+!    !    lon = lon(:, nY:1:-1)
+
+!    !    ! pass values to coordinate variables
+!    !    varY = lat
+!    !    varX = lon
+
+!    !    ! calculate GeoTransform array as needed by GDAL
+!    !    ! ref: http://www.perrygeo.com/python-affine-transforms.html
+!    !    ! the values below are different from the above ref,
+!    !    ! as the layout of SUEWS output is different from the schematic shown there
+!    !    ! SUEWS output is arranged northward down the page
+!    !    ! if data are formatted as a normal matrix
+!    !    minLat = lat(1, 1)               ! the lower-left pixel
+!    !    maxLat = lat(1, NY)              ! the upper-left pixel
+!    !    IF (nY > 1) THEN
+!    !       dLat = (maxLat - minLat)/(nY - 1) ! height of a pixel
+!    !    ELSE
+!    !       dLat = 1
+!    !    END IF
+
+!    !    ! PRINT*, 'lat:',minLat,maxLat,dLat
+!    !    minLon = lon(1, 1)              ! the lower-left pixel
+!    !    maxLon = lon(NX, 1)             ! the lower-right pixel
+!    !    IF (nY > 1) THEN
+!    !       dLon = (maxLon - minLon)/(nX - 1) ! width of a pixel
+!    !    ELSE
+!    !       dLon = 1
+!    !    END IF
+
+!    !    ! PRINT*, 'lon:',minLon,maxLon,dLon
+!    !    geoTrans(1) = minLon - dLon/2          ! x-coordinate of the lower-left corner of the lower-left pixel
+!    !    geoTrans(2) = dLon                   ! width of a pixel
+!    !    geoTrans(3) = 0.                     ! row rotation (typically zero)
+!    !    geoTrans(4) = minLat - dLat/2          ! y-coordinate of the of the lower-left corner of the lower-left pixel
+!    !    geoTrans(5) = 0.                     ! column rotation (typically zero)
+!    !    geoTrans(6) = dLat                   ! height of a pixel (typically negative, but here positive)
+!    !    ! write GeoTransform to strGeoTrans
+!    !    WRITE (strGeoTrans, '(6(f12.8,1x))') geoTrans
+
+!    !    ! Create the netCDF file. The nf90_clobber parameter tells netCDF to
+!    !    ! overwrite this file, if it already exists.
+!    !    CALL check(nf90_create(TRIM(fileOut), NF90_CLOBBER, ncID))
+
+!    !    ! put global attributes
+!    !    CALL check(nf90_put_att(ncID, NF90_GLOBAL, 'Conventions', 'CF1.6'))
+!    !    CALL check(nf90_put_att(ncID, NF90_GLOBAL, 'title', 'SUEWS output'))
+!    !    CALL check(nf90_put_att(ncID, NF90_GLOBAL, 'source', 'Micromet Group, University of Reading'))
+!    !    CALL check(nf90_put_att(ncID, NF90_GLOBAL, 'references', 'http://urban-climate.net/umep/SUEWS'))
+
+!    !    ! Define the dimensions. NetCDF will hand back an ID for each.
+!    !    ! nY = ncolumnsDataOutSUEWS-4
+!    !    ! nx = NumberOfGrids
+!    !    CALL check(nf90_def_dim(ncID, "time", NF90_UNLIMITED, time_dimid))
+!    !    CALL check(nf90_def_dim(ncID, "west_east", NX, x_dimid))
+!    !    CALL check(nf90_def_dim(ncID, "south_north", NY, y_dimid))
+!    !    ! PRINT*, 'good define dim'
+
+!    !    ! The dimids array is used to pass the IDs of the dimensions of
+!    !    ! the variables. Note that in fortran arrays are stored in
+!    !    ! column-major format.
+!    !    dimids = (/x_dimid, y_dimid, time_dimid/)
+
+!    !    ! write out each variable
+!    !    ALLOCATE (varOut(nX, nY, nTime))
+
+!    !    ! define all variables
+!    !    ! define time variable:
+!    !    CALL check(nf90_def_var(ncID, 'time', NF90_REAL, time_dimid, varIDt))
+!    !    CALL check(nf90_put_att(ncID, varIDt, 'units', 'minutes since '//startStr2))
+!    !    CALL check(nf90_put_att(ncID, varIDt, 'long_name', 'time'))
+!    !    CALL check(nf90_put_att(ncID, varIDt, 'standard_name', 'time'))
+!    !    CALL check(nf90_put_att(ncID, varIDt, 'calendar', 'gregorian'))
+!    !    CALL check(nf90_put_att(ncID, varIDt, 'axis', 'T'))
+
+!    !    ! define coordinate variables:
+!    !    CALL check(nf90_def_var(ncID, 'lon', NF90_REAL, (/x_dimid, y_dimid/), varIDx))
+!    !    CALL check(nf90_put_att(ncID, varIDx, 'units', 'degree_east'))
+!    !    CALL check(nf90_put_att(ncID, varIDx, 'long_name', 'longitude'))
+!    !    CALL check(nf90_put_att(ncID, varIDx, 'standard_name', 'longitude'))
+!    !    CALL check(nf90_put_att(ncID, varIDx, 'axis', 'X'))
+
+!    !    CALL check(nf90_def_var(ncID, 'lat', NF90_REAL, (/x_dimid, y_dimid/), varIDy))
+!    !    CALL check(nf90_put_att(ncID, varIDy, 'units', 'degree_north'))
+!    !    CALL check(nf90_put_att(ncID, varIDy, 'long_name', 'latitude'))
+!    !    CALL check(nf90_put_att(ncID, varIDy, 'standard_name', 'latitude'))
+!    !    CALL check(nf90_put_att(ncID, varIDy, 'axis', 'Y'))
+
+!    !    ! define coordinate referencing system:
+!    !    CALL check(nf90_def_var(ncID, 'crsWGS84', NF90_INT, varIDCRS))
+!    !    CALL check(nf90_put_att(ncID, varIDCRS, 'grid_mapping_name', 'latitude_longitude'))
+!    !    CALL check(nf90_put_att(ncID, varIDCRS, 'long_name', 'CRS definition'))
+!    !    CALL check(nf90_put_att(ncID, varIDCRS, 'longitude_of_prime_meridian', '0.0'))
+!    !    CALL check(nf90_put_att(ncID, varIDCRS, 'semi_major_axis', '6378137.0'))
+!    !    CALL check(nf90_put_att(ncID, varIDCRS, 'inverse_flattening', '298.257223563'))
+!    !    CALL check(nf90_put_att(ncID, varIDCRS, 'epsg_code', 'EPSG:4326'))
+!    !    CALL check(nf90_put_att(ncID, varIDCRS, 'GeoTransform', TRIM(strGeoTrans)))
+!    !    CALL check(nf90_put_att(ncID, varIDCRS, 'spatial_ref',&
+!    !         &'GEOGCS["WGS 84",&
+!    !         &    DATUM["WGS_1984",&
+!    !         &        SPHEROID["WGS 84",6378137,298.257223563,&
+!    !         &            AUTHORITY["EPSG","7030"]],&
+!    !         &        AUTHORITY["EPSG","6326"]],&
+!    !         &    PRIMEM["Greenwich",0],&
+!    !         &    UNIT["degree",0.0174532925199433],&
+!    !         &    AUTHORITY["EPSG","4326"]]' &
+!    !         ))
+
+!    !    ! define grid_ID:
+!    !    CALL check(nf90_def_var(ncID, 'grid_ID', NF90_INT, (/x_dimid, y_dimid/), varIDGrid))
+!    !    CALL check(nf90_put_att(ncID, varIDGrid, 'coordinates', 'lon lat'))
+!    !    CALL check(nf90_put_att(ncID, varIDGrid, 'long_name', 'Grid ID as in SiteSelect'))
+!    !    CALL check(nf90_put_att(ncID, varIDGrid, 'grid_mapping', 'crsWGS84'))
+!    !    ! varIDGrid=varID
+
+!    !    ! define other 3D variables:
+!    !    DO iVar = iVarStart, nVar
+!    !       ! define variable name
+!    !       header_str = varListSel(iVar)%header
+!    !       unit_str = varListSel(iVar)%unit
+!    !       longNm_str = varListSel(iVar)%longNm
+
+!    !       ! Define the variable. The type of the variable in this case is
+!    !       ! NF90_REAL.
+
+!    !       CALL check(nf90_def_var(ncID, TRIM(ADJUSTL(header_str)), NF90_REAL, dimids, varID))
+
+!    !       CALL check(nf90_put_att(ncID, varID, 'coordinates', 'lon lat'))
+
+!    !       CALL check(nf90_put_att(ncID, varID, 'units', TRIM(ADJUSTL(unit_str))))
+
+!    !       CALL check(nf90_put_att(ncID, varID, 'long_name', TRIM(ADJUSTL(longNm_str))))
+
+!    !       CALL check(nf90_put_att(ncID, varID, 'grid_mapping', 'crsWGS84'))
+
+!    !       idVar(iVar) = varID
+!    !    END DO
+!    !    CALL check(nf90_enddef(ncID))
+!    !    ! End define mode. This tells netCDF we are done defining metadata.
+
+!    !    ! put all variable values into netCDF datasets
+!    !    ! put time variable in minute:
+!    !    xTime = (dataOutSel(1:nTime, 2, 1) - 1)*24*60 + dataOutSel(1:nTime, 3, 1)*60 + dataOutSel(1:nTime, 4, 1)
+!    !    CALL check(nf90_put_var(ncID, varIDt, xTime))
+
+!    !    ! put coordinate variables:
+!    !    CALL check(nf90_put_var(ncID, varIDx, varX))
+!    !    CALL check(nf90_put_var(ncID, varIDy, varY))
+
+!    !    ! put CRS variable:
+!    !    CALL check(nf90_put_var(ncID, varIDCRS, 9999))
+
+!    !    CALL check(NF90_SYNC(ncID))
+!    !    ! PRINT*, 'good put var'
+
+!    !    ! put grid_ID:
+!    !    CALL check(nf90_put_var(ncID, varIDGrid, xGridID))
+!    !    ! PRINT*, 'good put varIDGrid',varIDGrid
+
+!    !    CALL check(NF90_SYNC(ncID))
+
+!    !    ! then other 3D variables
+!    !    DO iVar = iVarStart, nVar
+!    !       ! reshape dataOutX to be aligned in checker board form
+!    !       varOut = RESHAPE(dataOutSel(1:nTime, iVar, :), (/nX, nY, nTime/), order=(/3, 1, 2/))
+!    !       varOut = varOut(:, nY:1:-1, :)
+!    !       !  get the variable id
+!    !       varID = idVar(iVar)
+
+!    !       CALL check(nf90_put_var(ncID, varID, varOut))
+
+!    !       CALL check(NF90_SYNC(ncID))
+!    !    END DO
+
+!    !    IF (ALLOCATED(varOut)) DEALLOCATE (varOut)
+!    !    IF (ALLOCATED(varSeq0)) DEALLOCATE (varSeq0)
+!    !    IF (ALLOCATED(varSeq)) DEALLOCATE (varSeq)
+!    !    IF (ALLOCATED(xGridID)) DEALLOCATE (xGridID)
+!    !    IF (ALLOCATED(lon)) DEALLOCATE (lon)
+!    !    IF (ALLOCATED(lat)) DEALLOCATE (lat)
+!    !    IF (ALLOCATED(varY)) DEALLOCATE (varY)
+!    !    IF (ALLOCATED(varX)) DEALLOCATE (varX)
+!    !    IF (ALLOCATED(xTime)) DEALLOCATE (xTime)
+
+!    !    ! Close the file. This frees up any internal netCDF resources
+!    !    ! associated with the file, and flushes any buffers.
+!    !    CALL check(nf90_close(ncID))
+
+!    !    ! PRINT*, "*** SUCCESS writing netCDF file:"
+!    !    ! PRINT*, FileOut
+!    ! END SUBROUTINE SUEWS_Write_nc
+
+!    !===========================================================================!
+!    ! convert a vector of grids to a matrix
+!    ! the grid IDs in seqGrid2Sort follow the QGIS convention
+!    ! the spatial matrix arranges successive rows down the page (i.e., north to south)
+!    !   and succesive columns across (i.e., west to east)
+!    ! seqGridSorted stores the grid IDs as aligned in matGrid but squeezed into a vector
+!    !===========================================================================!
+!    SUBROUTINE grid2mat(seqGrid2Sort, seqGridSorted, matGrid, nRow, nCol)
+
+!       IMPLICIT NONE
+
+!       INTEGER, DIMENSION(nRow*nCol) :: seqGrid2Sort, seqGridSorted
+!       INTEGER, DIMENSION(nRow, nCol) :: matGrid
+!       INTEGER :: nRow, nCol, i, j, loc
+
+!       CALL sortGrid(seqGrid2Sort, seqGridSorted, nRow, nCol)
+!       PRINT *, 'old:'
+!       PRINT *, seqGrid2Sort(1:5)
+!       PRINT *, 'sorted:'
+!       PRINT *, seqGridSorted(1:5)
+!       PRINT *, ''
+!       DO i = 1, nRow
+!          DO j = 1, nCol
+!             loc = (i - 1)*nCol + j
+!             matGrid(i, j) = seqGridSorted(loc)
+!          END DO
+!       END DO
+!    END SUBROUTINE grid2mat
+
+!    !===========================================================================!
+!    ! convert sequence of REAL values to a matrix
+!    ! the grid IDs in seqGrid2Sort follow the QGIS convention
+!    ! the spatial matrix arranges successive rows down the page (i.e., north to south)
+!    !   and succesive columns across (i.e., west to east)
+!    ! seqGridSorted stores the grid IDs as aligned in matGrid but squeezed into a vector
+!    !===========================================================================!
+!    SUBROUTINE seq2mat(seq2Sort, seqSorted, matGrid, nRow, nCol)
+
+!       IMPLICIT NONE
+
+!       REAL(KIND(1d0)), DIMENSION(nRow*nCol) :: seq2Sort, seqSorted
+!       REAL(KIND(1d0)), DIMENSION(nRow, nCol) :: matGrid
+!       INTEGER :: nRow, nCol, i, j, loc
+
+!       CALL sortSeqReal(seq2Sort, seqSorted, nRow, nCol)
+!       PRINT *, 'old:'
+!       PRINT *, seq2Sort(1:5)
+!       PRINT *, 'sorted:'
+!       PRINT *, seqSorted(1:5)
+!       PRINT *, ''
+!       DO i = 1, nRow
+!          DO j = 1, nCol
+!             loc = (i - 1)*nCol + j
+!             matGrid(i, j) = seqSorted(loc)
+!          END DO
+!       END DO
+!    END SUBROUTINE seq2mat
+
+!    !===========================================================================!
+!    ! sort a sequence of LONG values into the specially aligned sequence per QGIS
+!    !===========================================================================!
+!    SUBROUTINE sortGrid(seqGrid2Sort0, seqGridSorted, nRow, nCol)
+!       USE qsort_c_module
+!       ! convert a vector of grids to a matrix
+!       ! the grid IDs in seqGrid2Sort follow the QGIS convention
+!       ! the spatial matrix arranges successive rows down the page (i.e., north to south)
+!       !   and succesive columns across (i.e., west to east)
+!       ! seqGridSorted stores the grid IDs as aligned in matGrid but squeezed into a vector
+
+!       IMPLICIT NONE
+!       INTEGER :: nRow, nCol, i = 1, j = 1, xInd, len
+
+!       INTEGER, DIMENSION(nRow*nCol), INTENT(in) :: seqGrid2Sort0
+!       INTEGER, DIMENSION(nRow*nCol), INTENT(out) :: seqGridSorted
+!       INTEGER, DIMENSION(nRow*nCol) :: seqGrid2Sort, locSorted
+!       INTEGER :: loc
+!       REAL:: ind(nRow*nCol, 2)
+!       REAL, DIMENSION(nRow*nCol) :: seqGrid2SortReal, seqGridSortedReal
+!       REAL :: val
+
+!       ! number of grids
+!       len = nRow*nCol
+
+!       !sort the input array to make sure the grid order is in QGIS convention
+!       ! i.e., diagonally ascending
+!       seqGrid2SortReal = seqGrid2Sort0*1.
+!       CALL QsortC(seqGrid2SortReal)
+!       seqGrid2Sort = INT(seqGrid2SortReal)
+
+!       ! fill in an nRow*nCol array with values to determine sequence
+!       xInd = 1
+!       DO i = 1, nRow
+!          DO j = 1, nCol
+!             !  {row, col, value for sorting, index in new sequence}
+!             ind(xInd, :) = (/i + j + i/(nRow + 1.), xInd*1./)
+!             xInd = xInd + 1
+!          END DO
+!       END DO
+
+!       ! then sorted ind(:,3) will have the same order as seqGrid2Sort
+!       ! sort ind(:,3)
+!       seqGridSortedReal = ind(:, 1)*1.
+!       CALL QsortC(seqGridSortedReal)
+!       ! print*, 'sorted real:'
+!       ! print*, seqGridSortedReal
+
+!       ! get index of each element of old sequence in the sorted sequence
+!       DO i = 1, len
+!          ! value in old sequence
+!          !  val=ind(i,3)*1.
+!          val = seqGridSortedReal(i)
+!          DO j = 1, len
+!             IF (val == ind(j, 1)*1.) THEN
+!                ! location in sorted sequence
+!                locSorted(i) = j
+!             END IF
+!          END DO
+!       END DO
+
+!       ! put elements of old sequence in the sorted order
+!       DO i = 1, len
+!          loc = locSorted(i)
+!          seqGridSorted(loc) = seqGrid2Sort(i)
+!       END DO
+!       seqGridSorted = seqGridSorted(len:1:-1)
+
+!    END SUBROUTINE sortGrid
+
+!    !===========================================================================!
+!    ! sort a sequence of REAL values into the specially aligned sequence per QGIS
+!    !===========================================================================!
+!    SUBROUTINE sortSeqReal(seqReal2Sort, seqRealSorted, nRow, nCol)
+!       USE qsort_c_module
+!       ! convert a vector of grids to a matrix
+!       ! the grid IDs in seqReal2Sort follow the QGIS convention
+!       ! the spatial matrix arranges successive rows down the page (i.e., north to south)
+!       !   and succesive columns across (i.e., west to east)
+!       ! seqRealSorted stores the grid IDs as aligned in matGrid but squeezed into a vector
+
+!       IMPLICIT NONE
+!       INTEGER :: nRow, nCol, i = 1, j = 1, xInd, len
+
+!       REAL(KIND(1d0)), DIMENSION(nRow*nCol), INTENT(in) :: seqReal2Sort
+!       REAL(KIND(1d0)), DIMENSION(nRow*nCol), INTENT(out) :: seqRealSorted
+!       INTEGER(KIND(1d0)), DIMENSION(nRow*nCol) :: locSorted
+!       INTEGER(KIND(1d0)) :: loc
+!       REAL:: ind(nRow*nCol, 2)
+!       REAL :: seqRealSortedReal(nRow*nCol), val
+
+!       ! number of grids
+!       len = nRow*nCol
+
+!       ! fill in an nRow*nCol array with values to determine sequence
+!       xInd = 1
+!       DO i = 1, nRow
+!          DO j = 1, nCol
+!             !  {row, col, value for sorting, index in new sequence}
+!             ind(xInd, :) = (/i + j + i/(nRow + 1.), xInd*1./)
+!             xInd = xInd + 1
+!          END DO
+!       END DO
+
+!       ! then sorted ind(:,3) will have the same order as seqReal2Sort
+!       ! sort ind(:,3)
+!       seqRealSortedReal = ind(:, 1)*1.
+!       CALL QsortC(seqRealSortedReal)
+!       ! print*, 'sorted real:'
+!       ! print*, seqRealSortedReal
+
+!       ! get index of each element of old sequence in the sorted sequence
+!       DO i = 1, len
+!          ! value in old sequence
+!          !  val=ind(i,3)*1.
+!          val = seqRealSortedReal(i)
+!          DO j = 1, len
+!             IF (val == ind(j, 1)*1.) THEN
+!                ! location in sorted sequence
+!                locSorted(i) = j
+!             END IF
+!          END DO
+!       END DO
+
+!       ! put elements of old sequence in the sorted order
+!       DO i = 1, len
+!          loc = locSorted(i)
+!          seqRealSorted(loc) = seqReal2Sort(i)
+!       END DO
+!       seqRealSorted = seqRealSorted(len:1:-1)
+
+!    END SUBROUTINE sortSeqReal
+
+!    !===========================================================================!
+!    ! a wrapper for checking netCDF status
+!    !===========================================================================!
+
+!    SUBROUTINE check(status)
+!       USE netcdf
+!       IMPLICIT NONE
+
+!       INTEGER, INTENT(in) :: status
+
+!       IF (status /= nf90_noerr) THEN
+!          PRINT *, TRIM(nf90_strerror(status))
+!          STOP "Stopped"
+!       END IF
+!    END SUBROUTINE check
+! #endif
 
 END MODULE ctrl_output

@@ -693,30 +693,33 @@ CONTAINS
       SnowAlb_next, SnowDens_next & ! output
       )
 
-      ! ========================================================================
-      ! N.B.: the following parts involves snow-related calculations.
-      SnowfallCum = SnowfallCum_prev
-      SnowAlb = SnowAlb_next
-      IceFrac = IceFrac_prev
-      SnowWater = SnowWater_prev
-      SnowDens = SnowDens_next
-      SnowFrac = SnowFrac_prev
-      SnowPack = SnowPack_prev
+
 
 
 
       ! ===================NET ALLWAVE RADIATION================================
       CALL SUEWS_cal_Qn( &
-         NetRadiationMethod, snowUse, &!input
-         Diagnose, snowFrac_obs, ldown_obs, fcld_obs, &
-         dectime, ZENITH_deg, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
-         SnowAlb, DiagQN, &
-         NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac, sfr, emis, &
-         alb, albDecTr_id, DecidCap_id, albEveTr_id, albGrass_id, StoreDrainPrm, snowFrac, &!inout
-         ldown, fcld, &!output
-         qn1, qn1_snowfree, qn1_S, kclear, kup, lup, tsurf, &
-         qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
-         alb1)
+      NetRadiationMethod, snowUse, &!input
+      Diagnose, snowFrac_obs, ldown_obs, fcld_obs, &
+      dectime, ZENITH_deg, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
+      SnowAlb_next,snowFrac_prev, DiagQN, &
+      NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac, sfr, emis, &
+      alb, albDecTr_id, DecidCap_id, albEveTr_id, albGrass_id, &!inout
+      StoreDrainPrm, &!inout
+      ldown, fcld, &!output
+      qn1, qn1_snowfree, qn1_S, kclear, kup, lup, tsurf, &
+      qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
+      alb1,snowFrac_next)
+
+      ! ========================================================================
+      ! N.B.: the following parts involves snow-related calculations.
+      SnowfallCum = SnowfallCum_prev
+      IceFrac = IceFrac_prev
+      SnowWater = SnowWater_prev
+      SnowPack = SnowPack_prev
+      SnowDens = SnowDens_next
+      SnowFrac = SnowFrac_next
+      SnowAlb = SnowAlb_next
 
       ! =================STORAGE HEAT FLUX=======================================
       CALL SUEWS_cal_Qs( &
@@ -1192,13 +1195,14 @@ CONTAINS
       NetRadiationMethod, snowUse, &!input
       Diagnose, snowFrac_obs, ldown_obs, fcld_obs, &
       dectime, ZENITH_deg, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
-      SnowAlb, DiagQN, &
+      SnowAlb,snowFrac_prev, DiagQN, &
       NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac, sfr, emis, &
-      alb, albDecTr_id, DecidCap_id, albEveTr_id, albGrass_id, StoreDrainPrm, snowFrac, &!inout
+      alb, albDecTr_id, DecidCap_id, albEveTr_id, albGrass_id, &!inout
+      StoreDrainPrm, &!inout
       ldown, fcld, &!output
       qn1, qn1_snowfree, qn1_S, kclear, kup, lup, tsurf, &
       qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
-      alb1)
+      alb1,snowFrac_next)
       USE NARP_MODULE, ONLY: RadMethod, NARP
 
       IMPLICIT NONE
@@ -1235,9 +1239,12 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(in)  ::DecidCap_id
       REAL(KIND(1d0)), INTENT(in)  ::albEveTr_id
       REAL(KIND(1d0)), INTENT(in)  ::albGrass_id
+
       REAL(KIND(1d0)), DIMENSION(6, nsurf), INTENT(inout)::StoreDrainPrm
 
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(inout)::snowFrac
+      REAL(KIND(1d0)), DIMENSION(nsurf),INTENT(in)::snowFrac_prev
+      REAL(KIND(1d0)), DIMENSION(nsurf),INTENT(out)::snowFrac_next
+      REAL(KIND(1d0)), DIMENSION(nsurf)::snowFrac
 
       REAL(KIND(1d0)), INTENT(out)::ldown
       REAL(KIND(1d0)), INTENT(out)::fcld
@@ -1269,6 +1276,7 @@ CONTAINS
          snowUse, &!input
          NetRadiationMethodX, AlbedoChoice, ldown_option)!output
 
+      snowFrac= snowFrac_prev
       IF (NetRadiationMethodX > 0) THEN
 
          ! IF (snowUse==0) snowFrac=snowFrac_obs
@@ -1321,6 +1329,7 @@ CONTAINS
          qn1_ind = NAN
          Fcld = NAN
       ENDIF
+      snowFrac_next=snowFrac
 
       IF (ldown_option == 1) THEN
          Fcld = NAN
@@ -3108,15 +3117,16 @@ CONTAINS
 
    ! end function func
 
-   real(KIND(1D0)) function cal_tair_av(tair_av_prev, dt_since_start, tstep, temp_c) result(tair_av_next)
+   function cal_tair_av(tair_av_prev, dt_since_start, tstep, temp_c) result(tair_av_next)
       ! calculate mean air temperature of past 24 hours
       ! TS, 17 Sep 2019
       implicit none
       real(KIND(1D0)), intent(in) :: tair_av_prev
-      ! real(KIND(1D0)), intent(out) :: tair_av_next
       real(KIND(1D0)), intent(in) ::  temp_c
       integer, intent(in) ::  dt_since_start
       integer, intent(in) ::  tstep
+
+      real(KIND(1D0)) ::tair_av_next
 
       real(KIND(1D0)), parameter:: len_day_s = 24*3600 ! day length in seconds
       real(KIND(1D0)):: len_cal_s ! length of average period in seconds

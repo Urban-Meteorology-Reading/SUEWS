@@ -1183,61 +1183,6 @@ MODULE data_in
 END MODULE data_in
 !==================================================================================================
 
-!======================================================================================================
-MODULE cbl_MODULE
-
-   INTEGER::EntrainmentType, &  ! Entrainment type choice
-             CO2_included, &     ! CO2 included
-             InitialData_use, &  ! 1 read initial data, 0 do not
-             !  qh_choice,&        ! selection of qh use to drive CBL growth 1=Suews 2=lumps 3=obs  ! moved to suews_data
-             sondeflag, &      ! 1 read sonde or vertical profile data in 0 do not
-             isubs          ! 1 include subsidence in equations
-
-   INTEGER, DIMENSION(366)::cblday = 0
-
-   CHARACTER(len=200), DIMENSION(366)::FileSonde = ""
-   CHARACTER(len=200)::InitialDataFileName
-   REAL(KIND(1D0)):: wsb       ! subsidence velocity
-   REAL(KIND(1d0)), DIMENSION(1:10):: cbldata
-   REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE::IniCBLdata
-
-   !Parameters in CBL code
-   INTEGER::zmax, &
-             nEqn = 6, &  !NT changed from 4 to 6
-             iCBLcount, &
-             nlineInData
-   REAL(KIND(1d0))::C2K = 273.16
-
-   REAL(KIND(1D0)):: usbl, ftbl, fqbl, fcbl, gamt, gamq, gamc, tpp, qpp, cp0!,tk
-
-   REAL(KIND(1D0))::alpha3, &
-                     blh_m, &    ! Boundary layer height(m)
-                     blh1_m, &
-                     cm, &       ! CO2 concentration in CBL
-                     !cp0,gamc,& !
-                     gamt_Km, &  ! Vertical gradient of theta (K/m)
-                     gamq_gkgm, &! Vertical gradient of specific humidity (g/kg/m)
-                     gamq_kgkgm, &! Vertical gradient of specific humidity (kg/kg/m)
-                     !fcbl,&
-                     tm_C, &     ! Potential temperature in CBL (degree Celsius)
-                     tm_K, &     ! Potential temperature in CBL (K)
-                     tmp_K, &
-                     tp_C, &     ! Potential temperature just above Boundary layer height(degree Celsius)
-                     tp_K, &     ! Potential temperature just above Boundary layer height(K)
-                     tpp_K, &
-                     febl_kgkgms, &! Kinematic latent heat flux((kg/kg)*m/s)
-                     fhbl_Kms, &   ! Kinematic sensible heat flux(K*m/s)
-                     qm_gkg, &   ! Specific humidity in CBL(g/kg)
-                     qm_kgkg, &  ! Specific humidity in CBL(kg/kg)
-                     qp_gkg, &   ! Specific humidity above Boundary layer height(g/kg)
-                     qp_kgkg, &  ! Specific humidity above Boundary layer height(kg/kg)
-                     qpp_kgkg
-
-   REAL(KIND(1D0)), DIMENSION(0:500, 2):: gtheta, ghum ! Vertical gradient of theta and specific humidity from sonde data
-   REAL(KIND(1D0)), DIMENSION(6)::y  ! NT set from 4 to 6
-
-END MODULE cbl_MODULE
-!===================================================================================
 
 MODULE snowMod
    IMPLICIT NONE

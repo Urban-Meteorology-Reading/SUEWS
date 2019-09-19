@@ -573,17 +573,19 @@ CONTAINS
       Tair_av_prev = Tair_av
       LAI_id_prev = LAI_id
       GDD_id_prev = GDD_id
+      StoreDrainPrm_prev = StoreDrainPrm
 
       ! in progress:
-      StoreDrainPrm_prev = StoreDrainPrm
+      DecidCap_id_prev = DecidCap_id
 
       ! todo:
       alb_prev = alb
-      DecidCap_id_prev = DecidCap_id
       albDecTr_id_prev = albDecTr_id
       albEveTr_id_prev = albEveTr_id
       albGrass_id_prev = albGrass_id
       porosity_id_prev = porosity_id
+      HDD_id_prev = HDD_id
+      WUDay_id_prev = WUDay_id
 
       ! ########################################################################################
 
@@ -649,10 +651,10 @@ CONTAINS
          CapMax_dec, CapMin_dec, PorMax_dec, PorMin_dec, &
          Ie_a, Ie_m, DayWatPer, DayWat, &
          BaseT, BaseTe, GDDFull, SDDFull, LAIMin, LAIMax, LAIPower, &
-         StoreDrainPrm_prev,LAI_id_prev,GDD_id_prev,&
+         DecidCap_id_prev,StoreDrainPrm_prev,LAI_id_prev,GDD_id_prev,&
          HDD_id, WUDay_id, &!inout
-         DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
-         StoreDrainPrm_next,LAI_id_next,GDD_id_next,deltaLAI)!output
+         albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
+         DecidCap_id_next,StoreDrainPrm_next,LAI_id_next,GDD_id_next,deltaLAI)!output
 
 
 
@@ -912,11 +914,10 @@ CONTAINS
 
       soilstore_id = soilstore_id_next
       state_id = state_id_next
-      ! StoreDrainPrm = StoreDrainPrm_next
       ! alb = alb_next
       GDD_id = GDD_id_next
       LAI_id = LAI_id_next
-      ! DecidCap_id = DecidCap_id_next
+      DecidCap_id = DecidCap_id_next
       ! albDecTr_id = albDecTr_id_next
       ! albEveTr_id = albEveTr_id_next
       ! albGrass_id = albGrass_id_next

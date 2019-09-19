@@ -565,9 +565,9 @@ CONTAINS
       soilstore_id_prev = soilstore_id
       state_id_prev = state_id
       Tair_av_prev = Tair_av
+      LAI_id_prev = LAI_id
 
       ! in progress:
-      LAI_id_prev = LAI_id
       GDD_id_prev = GDD_id
 
       ! todo:
@@ -649,7 +649,7 @@ CONTAINS
          StoreDrainPrm,&
          LAI_id_next, deltaLAI)!output
 
-      LAI_ID=LAI_id_next
+
       !=================Calculation of density and other water related parameters=================
       IF (Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_AtmMoist...'
       CALL LUMPS_cal_AtmMoist( &
@@ -755,7 +755,7 @@ CONTAINS
          veg_type, & !input
          snowUse, qn1, qf, qs, Qm, Temp_C, Veg_Fr, avcp, Press_hPa, lv_J_kg, &
          tstep_real, DRAINRT, nsh_real, &
-         Precip, RainMaxRes, RAINCOVER, sfr, LAI_id, LAImax, LAImin, &
+         Precip, RainMaxRes, RAINCOVER, sfr, LAI_id_next, LAImax, LAImin, &
          H_mod, & !output
          E_mod, psyc_hPa, s_hPa, sIce_hpa, TempVeg, VegPhenLumps)
 
@@ -781,7 +781,7 @@ CONTAINS
          g1, g2, g3, g4, &
          g5, g6, s1, s2, &
          th, tl, &
-         dq, xsmd, vsmd, MaxConductance, LAIMax, LAI_id, SnowFrac_next, sfr, &
+         dq, xsmd, vsmd, MaxConductance, LAIMax, LAI_id_next, SnowFrac_next, sfr, &
          UStar, TStar, L_mod, &!output
          zL, gsc, ResistSurf, RA, RAsnow, rb)
 
@@ -883,7 +883,7 @@ CONTAINS
       CALL SUEWS_cal_BiogenCO2( &
          alpha_bioCO2, alpha_enh_bioCO2, avkdn, avRh, beta_bioCO2, beta_enh_bioCO2, BSoilSurf, &! input:
          ConifSurf, DecidSurf, dectime, Diagnose, EmissionsMethod, Fc_anthro, G1, G2, G3, G4, &
-         G5, G6, gfunc, GrassSurf, gsmodel, id, it, ivConif, ivDecid, ivGrass, Kmax, LAI_id, LAIMin, &
+         G5, G6, gfunc, GrassSurf, gsmodel, id, it, ivConif, ivDecid, ivGrass, Kmax, LAI_id_next, LAIMin, &
          LAIMax, MaxConductance, min_res_bioCO2, nsurf, NVegSurf, Press_hPa, resp_a, &
          resp_b, S1, S2, sfr, SMDMethod, SnowFrac, t2_C, Temp_C, theta_bioCO2, TH, TL, vsmd, xsmd, &
          Fc, Fc_biogen, Fc_photo, Fc_respi)! output:
@@ -909,7 +909,7 @@ CONTAINS
       ! StoreDrainPrm = StoreDrainPrm_next
       ! alb = alb_next
       ! GDD_id = GDD_id_next
-      ! LAI_id = LAI_id_next
+      LAI_id = LAI_id_next
       ! DecidCap_id = DecidCap_id_next
       ! albDecTr_id = albDecTr_id_next
       ! albEveTr_id = albEveTr_id_next

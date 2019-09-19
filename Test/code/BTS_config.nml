@@ -5,11 +5,10 @@
 /
 
 &test
-    ! not used at the moment
-    multi_grid = 0
+    multi_grid = 1
     multi_year = 0
     same_run = 1
-    test_phys = 0
+    test_phys = 1
     test_complete = 0
     test_number=100
 /

@@ -580,11 +580,11 @@ CONTAINS
       albDecTr_id_prev = albDecTr_id
       albEveTr_id_prev = albEveTr_id
       albGrass_id_prev = albGrass_id
+      HDD_id_prev = HDD_id
 
       ! in progress:
 
       ! todo:
-      HDD_id_prev = HDD_id
       WUDay_id_prev = WUDay_id
 
       !########################################################################################

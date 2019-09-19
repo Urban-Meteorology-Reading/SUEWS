@@ -295,7 +295,7 @@ CONTAINS
 
       ! phenology related:
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT)   ::alb
-      REAL(KIND(1d0)), DIMENSION(5), INTENT(INOUT)       ::GDD_id !Growing Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1d0)), DIMENSION(5), INTENT(INOUT)::GDD_id !Growing Degree Days (see SUEWS_DailyState.f95)
       REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(INOUT)::LAI_id !LAI for each veg surface [m2 m-2]
       REAL(KIND(1d0)), INTENT(INOUT)                    :: DecidCap_id
       REAL(KIND(1d0)), INTENT(INOUT)                    :: albDecTr_id
@@ -643,11 +643,11 @@ CONTAINS
          CapMax_dec, CapMin_dec, PorMax_dec, PorMin_dec, &
          Ie_a, Ie_m, DayWatPer, DayWat, &
          BaseT, BaseTe, GDDFull, SDDFull, LAIMin, LAIMax, LAIPower, &
-         LAI_id_prev,&
-         GDD_id, HDD_id, WUDay_id, &!inout
+         LAI_id_prev,GDD_id_prev,&
+         HDD_id, WUDay_id, &!inout
          DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
          StoreDrainPrm,&
-         LAI_id_next, deltaLAI)!output
+         LAI_id_next,GDD_id_next,deltaLAI)!output
 
 
       !=================Calculation of density and other water related parameters=================
@@ -908,7 +908,7 @@ CONTAINS
       state_id = state_id_next
       ! StoreDrainPrm = StoreDrainPrm_next
       ! alb = alb_next
-      ! GDD_id = GDD_id_next
+      GDD_id = GDD_id_next
       LAI_id = LAI_id_next
       ! DecidCap_id = DecidCap_id_next
       ! albDecTr_id = albDecTr_id_next

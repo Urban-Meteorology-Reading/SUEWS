@@ -65,11 +65,11 @@ CONTAINS
       CapMax_dec, CapMin_dec, PorMax_dec, PorMin_dec, &
       Ie_a, Ie_m, DayWatPer, DayWat, &
       BaseT, BaseTe, GDDFull, SDDFull, LAIMin, LAIMax, LAIPower, &
-      LAI_id_prev,&
-      GDD_id, HDD_id, WUDay_id, &!inout
+      LAI_id_prev,GDD_id_prev,&
+      HDD_id, WUDay_id, &!inout
       DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       StoreDrainPrm,&
-      LAI_id_next,deltaLAI)!output
+      LAI_id_next,GDD_id_next,deltaLAI)!output
 
       ! USE Snow_module, ONLY: SnowUpdate
       USE datetime_module, ONLY: datetime, timedelta
@@ -135,7 +135,9 @@ CONTAINS
 
       ! REAL(KIND(1d0)), INTENT(INOUT)::SnowAlb
 
-      REAL(KIND(1d0)), DIMENSION(5), INTENT(INOUT) :: GDD_id   ! Growing Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1d0)), DIMENSION(5), INTENT(IN) :: GDD_id_prev   ! Growing Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1d0)), DIMENSION(5) :: GDD_id   ! Growing Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1d0)), DIMENSION(5), INTENT(OUT) :: GDD_id_next   ! Growing Degree Days (see SUEWS_DailyState.f95)
       REAL(KIND(1d0)), DIMENSION(3), INTENT(IN) :: LAI_id_prev   ! LAI for each veg surface [m2 m-2]
       REAL(KIND(1d0)), DIMENSION(3), INTENT(OUT) :: LAI_id_next   ! LAI for each veg surface [m2 m-2]
       REAL(KIND(1d0)), DIMENSION(3) :: LAI_id   ! LAI for each veg surface [m2 m-2]
@@ -203,6 +205,7 @@ CONTAINS
 
       ! transfer values
       LAI_id=LAI_id_prev
+      GDD_id= GDD_id_prev
 
       ! get timestamps
       time_now = datetime(year=iy) + timedelta(days=id - 1, hours=it, minutes=imin, seconds=isec)
@@ -269,6 +272,7 @@ CONTAINS
          ! ,xBo)!output
       ENDIF   !End of section done only at the end of each day (i.e. only once per day)
       LAI_id_next=LAI_id
+      GDD_id_next=GDD_id
       ! PRINT*, 'after_DailyState', iy,id,it,imin
       ! PRINT*, 'HDD(id)', HDD(id,:)
       ! PRINT*, 'HDD_id', HDD_id

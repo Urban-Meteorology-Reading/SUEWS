@@ -652,10 +652,17 @@ CONTAINS
          Ie_a, Ie_m, DayWatPer, DayWat, &
          BaseT, BaseTe, GDDFull, SDDFull, LAIMin, LAIMax, LAIPower, &
          DecidCap_id_prev,StoreDrainPrm_prev,LAI_id_prev,GDD_id_prev,&
-         HDD_id, WUDay_id, &!inout
-         albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
-         DecidCap_id_next,StoreDrainPrm_next,LAI_id_next,GDD_id_next,deltaLAI)!output
+         albDecTr_id_prev, albEveTr_id_prev, albGrass_id_prev, porosity_id_prev, &!input
+         HDD_id_prev, &!input
+         HDD_id_next, &!output
+         albDecTr_id_next, albEveTr_id_next, albGrass_id_next, porosity_id_next, &!output
+         DecidCap_id_next,StoreDrainPrm_next,LAI_id_next,GDD_id_next,deltaLAI,WUDay_id)!output
 
+         albDecTr_id=albDecTr_id_next
+         albEveTr_id=albEveTr_id_next
+         albGrass_id=albGrass_id_next
+         porosity_id=porosity_id_next
+         HDD_id=HDD_id_next
 
 
       !=================Calculation of density and other water related parameters=================

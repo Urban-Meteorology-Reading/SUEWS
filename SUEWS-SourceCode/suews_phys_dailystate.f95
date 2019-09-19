@@ -66,9 +66,11 @@ CONTAINS
       Ie_a, Ie_m, DayWatPer, DayWat, &
       BaseT, BaseTe, GDDFull, SDDFull, LAIMin, LAIMax, LAIPower, &
       DecidCap_id_prev,StoreDrainPrm_prev,LAI_id_prev,GDD_id_prev,&
-      HDD_id, WUDay_id, &!inout
-      albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
-      DecidCap_id_next,StoreDrainPrm_next,LAI_id_next,GDD_id_next,deltaLAI)!output
+      albDecTr_id_prev, albEveTr_id_prev, albGrass_id_prev, porosity_id_prev, &!input
+      HDD_id_prev, &!input
+      HDD_id_next, &!output
+      albDecTr_id_next, albEveTr_id_next, albGrass_id_next, porosity_id_next, &!output
+      DecidCap_id_next,StoreDrainPrm_next,LAI_id_next,GDD_id_next,deltaLAI,WUDay_id)!output
 
       ! USE Snow_module, ONLY: SnowUpdate
       USE datetime_module, ONLY: datetime, timedelta
@@ -134,13 +136,15 @@ CONTAINS
 
       ! REAL(KIND(1d0)), INTENT(INOUT)::SnowAlb
 
-      REAL(KIND(1d0)), DIMENSION(5), INTENT(IN) :: GDD_id_prev   ! Growing Degree Days (see SUEWS_DailyState.f95)
       REAL(KIND(1d0)), DIMENSION(5) :: GDD_id   ! Growing Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1d0)), DIMENSION(5), INTENT(IN) :: GDD_id_prev   ! Growing Degree Days (see SUEWS_DailyState.f95)
       REAL(KIND(1d0)), DIMENSION(5), INTENT(OUT) :: GDD_id_next   ! Growing Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1d0)), DIMENSION(3) :: LAI_id   ! LAI for each veg surface [m2 m-2]
       REAL(KIND(1d0)), DIMENSION(3), INTENT(IN) :: LAI_id_prev   ! LAI for each veg surface [m2 m-2]
       REAL(KIND(1d0)), DIMENSION(3), INTENT(OUT) :: LAI_id_next   ! LAI for each veg surface [m2 m-2]
-      REAL(KIND(1d0)), DIMENSION(3) :: LAI_id   ! LAI for each veg surface [m2 m-2]
-      REAL(KIND(1d0)), DIMENSION(12), INTENT(INOUT) :: HDD_id   ! Heating Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1d0)), DIMENSION(12) :: HDD_id   ! Heating Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1d0)), DIMENSION(12), INTENT(IN) :: HDD_id_prev   ! Heating Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1d0)), DIMENSION(12), INTENT(OUT) :: HDD_id_next   ! Heating Degree Days (see SUEWS_DailyState.f95)
       REAL(KIND(1d0)), DIMENSION(9), INTENT(OUT)   :: WUDay_id ! Water use related array
       ! --------------------------------------------------------------------------------
       ! ------------- Key to daily arrays ----------------------------------------------
@@ -194,13 +198,21 @@ CONTAINS
       REAL(KIND(1d0)):: DecidCap_id
       REAL(KIND(1d0)), INTENT(IN):: DecidCap_id_prev
       REAL(KIND(1d0)), INTENT(OUT):: DecidCap_id_next
-      REAL(KIND(1d0)), INTENT(INOUT):: albDecTr_id
-      REAL(KIND(1d0)), INTENT(INOUT):: albEveTr_id
-      REAL(KIND(1d0)), INTENT(INOUT):: albGrass_id
-      REAL(KIND(1d0)), INTENT(INOUT):: porosity_id
+      REAL(KIND(1d0)):: albDecTr_id
+      REAL(KIND(1d0)), INTENT(IN):: albDecTr_id_prev
+      REAL(KIND(1d0)), INTENT(OUT):: albDecTr_id_next
+      REAL(KIND(1d0)):: albEveTr_id
+      REAL(KIND(1d0)), INTENT(IN):: albEveTr_id_prev
+      REAL(KIND(1d0)), INTENT(OUT):: albEveTr_id_next
+      REAL(KIND(1d0)):: albGrass_id
+      REAL(KIND(1d0)), INTENT(IN):: albGrass_id_prev
+      REAL(KIND(1d0)), INTENT(OUT):: albGrass_id_next
+      REAL(KIND(1d0)):: porosity_id
+      REAL(KIND(1d0)), INTENT(INOUT):: porosity_id_prev
+      REAL(KIND(1d0)), INTENT(INOUT):: porosity_id_next
+      REAL(KIND(1d0)), DIMENSION(6, nsurf)::StoreDrainPrm
       REAL(KIND(1d0)), DIMENSION(6, nsurf), INTENT(in)::StoreDrainPrm_prev
       REAL(KIND(1d0)), DIMENSION(6, nsurf), INTENT(out)::StoreDrainPrm_next
-      REAL(KIND(1d0)), DIMENSION(6, nsurf)::StoreDrainPrm
 
       LOGICAL :: first_tstep_Q ! if this is the first tstep of a day
       LOGICAL :: last_tstep_Q ! if this is the last tstep of a day
@@ -211,6 +223,11 @@ CONTAINS
       GDD_id= GDD_id_prev
       StoreDrainPrm=StoreDrainPrm_prev
       DecidCap_id=DecidCap_id_prev
+      albDecTr_id=albDecTr_id_prev
+      albEveTr_id=albEveTr_id_prev
+      albGrass_id=albGrass_id_prev
+      porosity_id=porosity_id_prev
+      HDD_id=HDD_id_prev
 
       ! get timestamps
       time_now = datetime(year=iy) + timedelta(days=id - 1, hours=it, minutes=imin, seconds=isec)
@@ -266,14 +283,13 @@ CONTAINS
             GDD_id, & !inout
             HDD_id, &
             LAI_id, &
-            WUDay_id, &
             DecidCap_id, &
             albDecTr_id, &
             albEveTr_id, &
             albGrass_id, &
             porosity_id, &
             StoreDrainPrm,&
-            deltaLAI)!output
+            WUDay_id,deltaLAI)!output
          ! ,xBo)!output
       ENDIF   !End of section done only at the end of each day (i.e. only once per day)
 
@@ -282,6 +298,11 @@ CONTAINS
       GDD_id_next=GDD_id
       StoreDrainPrm_next=StoreDrainPrm
       DecidCap_id_next=DecidCap_id
+      albDecTr_id_next=albDecTr_id
+      albEveTr_id_next=albEveTr_id
+      albGrass_id_next=albGrass_id
+      porosity_id_next=porosity_id
+      HDD_id_next=HDD_id
       ! PRINT*, 'after_DailyState', iy,id,it,imin
       ! PRINT*, 'HDD(id)', HDD(id,:)
       ! PRINT*, 'HDD_id', HDD_id
@@ -300,14 +321,13 @@ CONTAINS
       GDD_id, & !inout
       HDD_id, &
       LAI_id, &
-      WUDay_id, &
       DecidCap_id, &
       albDecTr_id, &
       albEveTr_id, &
       albGrass_id, &
       porosity_id, &
       StoreDrainPrm,&
-      deltaLAI)!output
+      WUDay_id,deltaLAI)!output
       IMPLICIT NONE
 
       INTEGER, INTENT(IN)::id

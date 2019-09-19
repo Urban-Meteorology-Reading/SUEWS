@@ -1,6 +1,6 @@
 MODULE DailyState_module
    USE allocateArray, ONLY: &
-      ndays, nsurf, nvegsurf, ivConif, ivDecid, ivGrass, DecidSurf,ncolumnsDataOutDailyState
+      ndays, nsurf, nvegsurf, ivConif, ivDecid, ivGrass, DecidSurf, ncolumnsDataOutDailyState
 
    IMPLICIT NONE
    ! INTEGER,PARAMETER::ndays=366
@@ -65,12 +65,12 @@ CONTAINS
       CapMax_dec, CapMin_dec, PorMax_dec, PorMin_dec, &
       Ie_a, Ie_m, DayWatPer, DayWat, &
       BaseT, BaseTe, GDDFull, SDDFull, LAIMin, LAIMax, LAIPower, &
-      DecidCap_id_prev,StoreDrainPrm_prev,LAI_id_prev,GDD_id_prev,&
+      DecidCap_id_prev, StoreDrainPrm_prev, LAI_id_prev, GDD_id_prev, &
       albDecTr_id_prev, albEveTr_id_prev, albGrass_id_prev, porosity_id_prev, &!input
       HDD_id_prev, &!input
       HDD_id_next, &!output
       albDecTr_id_next, albEveTr_id_next, albGrass_id_next, porosity_id_next, &!output
-      DecidCap_id_next,StoreDrainPrm_next,LAI_id_next,GDD_id_next,deltaLAI,WUDay_id)!output
+      DecidCap_id_next, StoreDrainPrm_next, LAI_id_next, GDD_id_next, deltaLAI, WUDay_id)!output
 
       ! USE Snow_module, ONLY: SnowUpdate
       USE datetime_module, ONLY: datetime, timedelta
@@ -219,15 +219,15 @@ CONTAINS
       TYPE(datetime) :: time_now, time_prev, time_next
 
       ! transfer values
-      LAI_id=LAI_id_prev
-      GDD_id= GDD_id_prev
-      StoreDrainPrm=StoreDrainPrm_prev
-      DecidCap_id=DecidCap_id_prev
-      albDecTr_id=albDecTr_id_prev
-      albEveTr_id=albEveTr_id_prev
-      albGrass_id=albGrass_id_prev
-      porosity_id=porosity_id_prev
-      HDD_id=HDD_id_prev
+      LAI_id = LAI_id_prev
+      GDD_id = GDD_id_prev
+      StoreDrainPrm = StoreDrainPrm_prev
+      DecidCap_id = DecidCap_id_prev
+      albDecTr_id = albDecTr_id_prev
+      albEveTr_id = albEveTr_id_prev
+      albGrass_id = albGrass_id_prev
+      porosity_id = porosity_id_prev
+      HDD_id = HDD_id_prev
 
       ! get timestamps
       time_now = datetime(year=iy) + timedelta(days=id - 1, hours=it, minutes=imin, seconds=isec)
@@ -288,21 +288,21 @@ CONTAINS
             albEveTr_id, &
             albGrass_id, &
             porosity_id, &
-            StoreDrainPrm,&
-            WUDay_id,deltaLAI)!output
+            StoreDrainPrm, &
+            WUDay_id, deltaLAI)!output
          ! ,xBo)!output
       ENDIF   !End of section done only at the end of each day (i.e. only once per day)
 
       ! translate values back
-      LAI_id_next=LAI_id
-      GDD_id_next=GDD_id
-      StoreDrainPrm_next=StoreDrainPrm
-      DecidCap_id_next=DecidCap_id
-      albDecTr_id_next=albDecTr_id
-      albEveTr_id_next=albEveTr_id
-      albGrass_id_next=albGrass_id
-      porosity_id_next=porosity_id
-      HDD_id_next=HDD_id
+      LAI_id_next = LAI_id
+      GDD_id_next = GDD_id
+      StoreDrainPrm_next = StoreDrainPrm
+      DecidCap_id_next = DecidCap_id
+      albDecTr_id_next = albDecTr_id
+      albEveTr_id_next = albEveTr_id
+      albGrass_id_next = albGrass_id
+      porosity_id_next = porosity_id
+      HDD_id_next = HDD_id
       ! PRINT*, 'after_DailyState', iy,id,it,imin
       ! PRINT*, 'HDD(id)', HDD(id,:)
       ! PRINT*, 'HDD_id', HDD_id
@@ -326,8 +326,8 @@ CONTAINS
       albEveTr_id, &
       albGrass_id, &
       porosity_id, &
-      StoreDrainPrm,&
-      WUDay_id,deltaLAI)!output
+      StoreDrainPrm, &
+      WUDay_id, deltaLAI)!output
       IMPLICIT NONE
 
       INTEGER, INTENT(IN)::id
@@ -413,7 +413,7 @@ CONTAINS
       ! This was revised and checked on 16 Feb 2014 by LJ
       !------------------------------------------------------------------------------
       ! save initial LAI_id
-      LAI_id_in=LAI_id
+      LAI_id_in = LAI_id
 
       CALL update_GDDLAI( &
          id, LAICalcYes, & !input
@@ -421,25 +421,24 @@ CONTAINS
          BaseT, BaseTe, &
          GDDFull, SDDFull, &
          LAIMin, LAIMax, LAIPower, LAIType, &
-         LAI_id_in,&
+         LAI_id_in, &
          GDD_id, &!inout
          LAI_id) !output
 
-
       CALL update_Veg( &
-      LAImax, LAIMin, &!input
-      AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
-      AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
-      CapMax_dec, CapMin_dec, &
-      PorMax_dec, PorMin_dec, &
-      LAI_id, LAI_id_in, &
-      DecidCap_id, &!inout
-      albDecTr_id, &
-      albEveTr_id, &
-      albGrass_id, &
-      porosity_id, &
-      StoreDrainPrm,&
-      deltaLAI)!output
+         LAImax, LAIMin, &!input
+         AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
+         AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
+         CapMax_dec, CapMin_dec, &
+         PorMax_dec, PorMin_dec, &
+         LAI_id, LAI_id_in, &
+         DecidCap_id, &!inout
+         albDecTr_id, &
+         albEveTr_id, &
+         albGrass_id, &
+         porosity_id, &
+         StoreDrainPrm, &
+         deltaLAI)!output
 
       ! PRINT*, 'DecidCap',DecidCap(id),DecidCap_id
       ! PRINT*, 'albDecTr',albDecTr(id),albDecTr_id
@@ -504,7 +503,6 @@ CONTAINS
 
    END SUBROUTINE update_DailyState_Day
 
-
    SUBROUTINE update_Veg( &
       LAImax, LAIMin, &!input
       AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
@@ -517,7 +515,7 @@ CONTAINS
       albEveTr_id, &
       albGrass_id, &
       porosity_id, &
-      StoreDrainPrm,&
+      StoreDrainPrm, &
       deltaLAI)!output
 
       IMPLICIT NONE
@@ -607,14 +605,13 @@ CONTAINS
 
    END SUBROUTINE update_Veg
 
-
    SUBROUTINE update_GDDLAI( &
       id, LAICalcYes, & !input
       lat, LAI_obs, &
       BaseT, BaseTe, &
       GDDFull, SDDFull, &
       LAIMin, LAIMax, LAIPower, LAIType, &
-      LAI_id_prev,&
+      LAI_id_prev, &
       GDD_id, &!inout
       LAI_id_next) !output
       IMPLICIT NONE
@@ -771,7 +768,6 @@ CONTAINS
 
    END SUBROUTINE update_GDDLAI
 
-
    SUBROUTINE update_WaterUse( &
       id, WaterUseMethod, DayofWeek_id, lat, Faut, HDD_id, &!input
       Ie_a, Ie_m, Ie_start, Ie_end, DayWatPer, DayWat, &
@@ -875,7 +871,6 @@ CONTAINS
       ENDIF
 
    END SUBROUTINE update_WaterUse
-
 
    SUBROUTINE update_HDD( &
       dt_since_start, it, imin, tstep, & !input

@@ -542,10 +542,10 @@ CONTAINS
       REAL(KIND(1D0))::porosity_id_prev, porosity_id_next
 
       ! anthropogenic heat related:
-      REAL(KIND(1d0)), DIMENSION(12)::HDD_id_prev,HDD_id_next
+      REAL(KIND(1d0)), DIMENSION(12)::HDD_id_prev, HDD_id_next
 
       ! water use related:
-      REAL(KIND(1d0)), DIMENSION(9)::WUDay_id_prev,WUDay_id_next
+      REAL(KIND(1d0)), DIMENSION(9)::WUDay_id_prev, WUDay_id_next
 
       REAL(KIND(1D0))::Tair_av_prev, Tair_av_next
       ! ########################################################################################
@@ -608,8 +608,6 @@ CONTAINS
       albGrass_id_next = albGrass_id
       HDD_id_next = HDD_id
       WUDay_id_next = WUDay_id
-
-
 
       !########################################################################################
       !           main calculation starts here
@@ -677,12 +675,12 @@ CONTAINS
          CapMax_dec, CapMin_dec, PorMax_dec, PorMin_dec, &
          Ie_a, Ie_m, DayWatPer, DayWat, &
          BaseT, BaseTe, GDDFull, SDDFull, LAIMin, LAIMax, LAIPower, &
-         DecidCap_id_prev,StoreDrainPrm_prev,LAI_id_prev,GDD_id_prev,&
+         DecidCap_id_prev, StoreDrainPrm_prev, LAI_id_prev, GDD_id_prev, &
          albDecTr_id_prev, albEveTr_id_prev, albGrass_id_prev, porosity_id_prev, &!input
          HDD_id_prev, &!input
          HDD_id_next, &!output
          albDecTr_id_next, albEveTr_id_next, albGrass_id_next, porosity_id_next, &!output
-         DecidCap_id_next,StoreDrainPrm_next,LAI_id_next,GDD_id_next,deltaLAI,WUDay_id_next)!output
+         DecidCap_id_next, StoreDrainPrm_next, LAI_id_next, GDD_id_next, deltaLAI, WUDay_id_next)!output
 
       !=================Calculation of density and other water related parameters=================
       IF (Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_AtmMoist...'
@@ -738,7 +736,6 @@ CONTAINS
          SnowAlb_next, SnowDens_next & ! output
          )
 
-
       ! ===================NET ALLWAVE RADIATION================================
       CALL SUEWS_cal_Qn( &
          NetRadiationMethod, snowUse, &!input
@@ -747,16 +744,16 @@ CONTAINS
          SnowAlb_next, snowFrac_prev, DiagQN, &
          NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac, sfr, emis, &
          alb_prev, albDecTr_id_next, albEveTr_id_next, albGrass_id_next, &!input
-         alb_next,&!output
+         alb_next, &!output
          ldown, fcld, &!output
          qn1, qn1_snowfree, qn1_S, kclear, kup, lup, tsurf, &
          qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
          alb1, snowFrac_next)
 
-         ! alb=alb_next
-         ! albDecTr_id=albDecTr_id_next
-         ! albEveTr_id=albEveTr_id_next
-         ! albGrass_id=albGrass_id_next
+      ! alb=alb_next
+      ! albDecTr_id=albDecTr_id_next
+      ! albEveTr_id=albEveTr_id_next
+      ! albGrass_id=albGrass_id_next
 
       ! =================STORAGE HEAT FLUX=======================================
       CALL SUEWS_cal_Qs( &
@@ -772,7 +769,6 @@ CONTAINS
          qn1_S, dataOutLineESTM, qs, &!output
          qn1_av_next, dqndt_next, qn1_s_av_next, dqnsdt_next, &
          deltaQi, a1, a2, a3)
-
 
       !==================Energy related to snow melting/freezing processes=======
       IF (Diagnose == 1) WRITE (*, *) 'Calling MeltHeat'
@@ -825,7 +821,6 @@ CONTAINS
          dq, xsmd, vsmd, MaxConductance, LAIMax, LAI_id_next, SnowFrac_next, sfr, &
          UStar, TStar, L_mod, &!output
          zL, gsc, ResistSurf, RA, RAsnow, rb)
-
 
       !======== Evaporation and surface state_id ========
       CALL SUEWS_cal_QE( &
@@ -940,10 +935,10 @@ CONTAINS
       albEveTr_id = albEveTr_id_next
       albGrass_id = albGrass_id_next
       porosity_id = porosity_id_next
-      StoreDrainPrm=StoreDrainPrm_next
+      StoreDrainPrm = StoreDrainPrm_next
       Tair_av = Tair_av_next
-      HDD_id=HDD_id_next
-      WUDay_id=WUDay_id_next
+      HDD_id = HDD_id_next
+      WUDay_id = WUDay_id_next
 
       !==============translation of  output variables into output array===========
       CALL SUEWS_update_outputLine( &
@@ -1310,7 +1305,7 @@ CONTAINS
       INTEGER::AlbedoChoice, ldown_option
 
       ! translate values
-      alb=alb_prev
+      alb = alb_prev
 
       CALL RadMethod( &
          NetRadiationMethod, &!inout
@@ -1377,7 +1372,7 @@ CONTAINS
       ENDIF
 
       ! translate values
-      alb_next=alb
+      alb_next = alb
 
    END SUBROUTINE SUEWS_cal_Qn
    !========================================================================

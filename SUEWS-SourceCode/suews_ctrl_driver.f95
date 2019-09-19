@@ -575,19 +575,21 @@ CONTAINS
       GDD_id_prev = GDD_id
       StoreDrainPrm_prev = StoreDrainPrm
       DecidCap_id_prev = DecidCap_id
-
-      ! in progress:
-
-      ! todo:
+      porosity_id_prev = porosity_id
       alb_prev = alb
       albDecTr_id_prev = albDecTr_id
       albEveTr_id_prev = albEveTr_id
       albGrass_id_prev = albGrass_id
-      porosity_id_prev = porosity_id
+
+      ! in progress:
+
+      ! todo:
       HDD_id_prev = HDD_id
       WUDay_id_prev = WUDay_id
 
-      ! ########################################################################################
+      !########################################################################################
+      !           main calculation starts here
+      !########################################################################################
 
       ! calculate dectime
       CALL SUEWS_cal_dectime( &
@@ -658,12 +660,6 @@ CONTAINS
          albDecTr_id_next, albEveTr_id_next, albGrass_id_next, porosity_id_next, &!output
          DecidCap_id_next,StoreDrainPrm_next,LAI_id_next,GDD_id_next,deltaLAI,WUDay_id)!output
 
-         albDecTr_id=albDecTr_id_next
-         albEveTr_id=albEveTr_id_next
-         albGrass_id=albGrass_id_next
-         porosity_id=porosity_id_next
-
-
       !=================Calculation of density and other water related parameters=================
       IF (Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_AtmMoist...'
       CALL LUMPS_cal_AtmMoist( &
@@ -718,6 +714,7 @@ CONTAINS
          SnowAlb_next, SnowDens_next & ! output
          )
 
+
       ! ===================NET ALLWAVE RADIATION================================
       CALL SUEWS_cal_Qn( &
          NetRadiationMethod, snowUse, &!input
@@ -725,11 +722,17 @@ CONTAINS
          dectime, ZENITH_deg, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
          SnowAlb_next, snowFrac_prev, DiagQN, &
          NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac, sfr, emis, &
-         alb, albDecTr_id, albEveTr_id, albGrass_id, &!inout
+         alb_prev, albDecTr_id_next, albEveTr_id_next, albGrass_id_next, &!input
+         alb_next,&!output
          ldown, fcld, &!output
          qn1, qn1_snowfree, qn1_S, kclear, kup, lup, tsurf, &
          qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
          alb1, snowFrac_next)
+
+         ! alb=alb_next
+         ! albDecTr_id=albDecTr_id_next
+         ! albEveTr_id=albEveTr_id_next
+         ! albGrass_id=albGrass_id_next
 
       ! =================STORAGE HEAT FLUX=======================================
       CALL SUEWS_cal_Qs( &
@@ -739,7 +742,7 @@ CONTAINS
          soilstore_id_prev, SoilStoreCap, state_id_prev, SnowUse, snowFrac_next, DiagQS, &
          HDD_id_next, MetForcingData_grid, Ts5mindata_ir, qf, qn1, &
          avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown, &
-         bldgh, alb, emis, cpAnOHM, kkAnOHM, chAnOHM, EmissionsMethod, &
+         bldgh, alb_next, emis, cpAnOHM, kkAnOHM, chAnOHM, EmissionsMethod, &
          Tair_av_next, qn1_av_prev, dqndt_prev, qn1_s_av_prev, dqnsdt_prev, &
          StoreDrainPrm_next, &
          qn1_S, dataOutLineESTM, qs, &!output
@@ -920,14 +923,14 @@ CONTAINS
 
       soilstore_id = soilstore_id_next
       state_id = state_id_next
-      ! alb = alb_next
+      alb = alb_next
       GDD_id = GDD_id_next
       LAI_id = LAI_id_next
       DecidCap_id = DecidCap_id_next
-      ! albDecTr_id = albDecTr_id_next
-      ! albEveTr_id = albEveTr_id_next
-      ! albGrass_id = albGrass_id_next
-      ! porosity_id = porosity_id_next
+      albDecTr_id = albDecTr_id_next
+      albEveTr_id = albEveTr_id_next
+      albGrass_id = albGrass_id_next
+      porosity_id = porosity_id_next
       StoreDrainPrm=StoreDrainPrm_next
       Tair_av = Tair_av_next
       HDD_id=HDD_id_next
@@ -1220,7 +1223,8 @@ CONTAINS
       dectime, ZENITH_deg, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
       SnowAlb, snowFrac_prev, DiagQN, &
       NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac, sfr, emis, &
-      alb, albDecTr_id, albEveTr_id, albGrass_id, &!inout
+      alb_prev, albDecTr_id, albEveTr_id, albGrass_id, &!input
+      alb_next, &!output
       ldown, fcld, &!output
       qn1, qn1_snowfree, qn1_S, kclear, kup, lup, tsurf, &
       qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
@@ -1256,7 +1260,9 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in):: sfr
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in):: emis
 
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(inout)  ::alb
+      REAL(KIND(1d0)), DIMENSION(nsurf)  ::alb
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)  ::alb_prev
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)  ::alb_next
       REAL(KIND(1d0)), INTENT(in)  ::albDecTr_id
       ! REAL(KIND(1d0)), INTENT(in)  ::DecidCap_id
       REAL(KIND(1d0)), INTENT(in)  ::albEveTr_id
@@ -1292,6 +1298,9 @@ CONTAINS
       REAL(KIND(1d0)), PARAMETER::NAN = -999
       INTEGER :: NetRadiationMethodX
       INTEGER::AlbedoChoice, ldown_option
+
+      ! translate values
+      alb=alb_prev
 
       CALL RadMethod( &
          NetRadiationMethod, &!inout
@@ -1356,6 +1365,9 @@ CONTAINS
       IF (ldown_option == 1) THEN
          Fcld = NAN
       ENDIF
+
+      ! translate values
+      alb_next=alb
 
    END SUBROUTINE SUEWS_cal_Qn
    !========================================================================

@@ -109,8 +109,11 @@ class Test_SUEWS(unittest.TestCase):
     def test_ok_samerun(self):
         print('')
         print('****************************************************')
+
         if flag_same_run:
             print('testing if results could match the standard run ... ')
+            print('N.B.: THE TEST IS GENERATED USING LONGTERM FORCING!')
+            print('N.B.: test_2004_data_60.txt.long')
             name_sim = 'test-same-run' + str(np.random.randint(10000))
             res_test = ts.test_samerun(name_sim, name_exe,
                                         dict_runcontrol, dict_initcond,

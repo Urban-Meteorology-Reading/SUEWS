@@ -3,13 +3,14 @@
 # from Benchmark_SUEWS import *
 from __future__ import print_function
 
+from pathlib import Path
 import errno
 import filecmp
 import itertools
 import os
 import tempfile
 from glob import glob
-from shutil import copyfile, copytree, rmtree
+from shutil import copyfile, copytree, rmtree, move
 
 # import sys
 import numpy as np
@@ -348,7 +349,15 @@ def test_samerun(name_sim, name_exe,
 
     # load configurations from dir_baserun
     copytree(dir_baserun, dir_test)
+
+    # change workign directory
     os.chdir(dir_test)
+
+    # use long-term forcing for this testing
+    path_input = Path(dict_runcontrol['fileinputpath'])
+    input_short = list(path_input.glob('*.txt.long'))[0]
+    move(input_short, input_short.parent/input_short.stem)
+
     if os.path.exists(dir_output):
         rmtree(dir_output)
         os.mkdir(dir_output)

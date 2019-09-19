@@ -48,7 +48,7 @@ main:
 
 # make fortran exe and run test cases
 test:
-	# $(MAKE) -C $(SUEWS_dir) -f $(makefile) clean; # clean Fortran SUEWS build
+	$(MAKE) -C $(SUEWS_dir) -f $(makefile) clean; # clean Fortran SUEWS build
 	$(MAKE) -C $(SUEWS_dir) -f $(makefile) main; # make SUEWS with the `main` recipe
 	cd $(test_dir); python 1.test_dev.py
 

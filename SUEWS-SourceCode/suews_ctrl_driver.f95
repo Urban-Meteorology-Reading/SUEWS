@@ -12,7 +12,7 @@ MODULE SUEWS_Driver
                             cal_z0V, SUEWS_cal_RoughnessParameters
    USE ESTM_module, ONLY: ESTM
    USE Snow_module, ONLY: SnowCalc, Snow_cal_MeltHeat, SnowUpdate
-   USE DailyState_module, ONLY: SUEWS_cal_DailyState, update_DailyState
+   USE DailyState_module, ONLY: SUEWS_cal_DailyState, update_DailyStateLine
    USE WaterDist_module, ONLY: drainage, soilstore, &
                                SUEWS_cal_SoilState, SUEWS_update_SoilMoist, &
                                ReDistributeWater, SUEWS_cal_HorizontalSoilWater, &
@@ -968,7 +968,7 @@ CONTAINS
       ! model state_id:
 
       ! daily state_id:
-      CALL update_DailyState( &
+      CALL update_DailyStateLine( &
          it, imin, nsh_real, &!input
          GDD_id, HDD_id, LAI_id, &
          DecidCap_id, &

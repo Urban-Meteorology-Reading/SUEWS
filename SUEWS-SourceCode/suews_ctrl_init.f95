@@ -1458,7 +1458,7 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
    USE sues_data
    USE time
    USE InitialCond
-   use DailyState_module, only: update_WaterUse_X
+   use DailyState_module, only: update_WaterUse
    use resist_module, only: SUEWS_cal_RoughnessParameters
 
    IMPLICIT NONE
@@ -1967,7 +1967,7 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
       iy, id, lat, & !input
       dayofWeek_id) !output
 
-   CALL update_WaterUse_X( &
+   CALL update_WaterUse( &
       id, WaterUseMethod, DayofWeek_id, lat, Faut, HDD_id, &!input
       Ie_a, Ie_m, Ie_start, Ie_end, DayWatPer, DayWat, &
       WUDay_id) !output

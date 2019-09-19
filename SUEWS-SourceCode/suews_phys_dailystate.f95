@@ -389,7 +389,7 @@ CONTAINS
       !      id,it,imin,tstep,& !input
       !      HDD) !inout
 
-      CALL update_HDD_X( &
+      CALL update_HDD( &
          dt_since_start, it, imin, tstep, & !input
          HDD_id)!inout
 
@@ -399,7 +399,7 @@ CONTAINS
       !      Ie_a,Ie_m,Ie_start,Ie_end,DayWatPer,DayWat,&
       !      WUDay) !inout
 
-      CALL update_WaterUse_X( &
+      CALL update_WaterUse( &
          id, WaterUseMethod, DayofWeek_id, lat, Faut, HDD_id, &!input
          Ie_a, Ie_m, Ie_start, Ie_end, DayWatPer, DayWat, &
          WUDay_id) !output
@@ -415,7 +415,7 @@ CONTAINS
       ! save initial LAI_id
       LAI_id_in=LAI_id
 
-      CALL update_GDDLAI_X( &
+      CALL update_GDDLAI( &
          id, LAICalcYes, & !input
          lat, LAI_obs, &
          BaseT, BaseTe, &
@@ -426,7 +426,7 @@ CONTAINS
          LAI_id) !output
 
 
-      CALL update_Veg_X( &
+      CALL update_Veg( &
       LAImax, LAIMin, &!input
       AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
       AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
@@ -504,161 +504,8 @@ CONTAINS
 
    END SUBROUTINE update_DailyState_Day
 
-   ! subroutine update_GDD(avkdn,Temp_C,nsh_real,GDD_id)
-   !    implicit none
-   !    REAL(KIND(1d0)), INTENT(IN)::avkdn
-   !    REAL(KIND(1d0)), INTENT(IN)::Temp_C
-   !    REAL(KIND(1d0)), INTENT(IN)::nsh_real
 
-   ! REAL(KIND(1d0)), DIMENSION(5), INTENT(INOUT):: GDD_id !Growing Degree Days (see SUEWS_DailyState.f95)
-
-   ! ! translate values of previous day to local variables
-   !    GDD_id_prev = GDD_id
-
-   ! ! Calculate GDD for each day from the minimum and maximum air temperature
-   !       yes = ((GDD_id_prev(3) + GDD_id_prev(4))/2 - BaseT(iv))    !Leaf on
-   !       no = ((GDD_id_prev(3) + GDD_id_prev(4))/2 - BaseTe(iv))   !Leaf off
-
-   !       indHelp = 0   !Help switch to allow GDD to go to zero in sprint-time !! QUESTION: What does this mean? HCW
-
-   !       IF (yes < 0) THEN   !GDD cannot be negative
-   !          indHelp = yes   !Amount of negative GDD
-   !          yes = 0
-   !       ENDIF
-
-   !       IF (no > 0) no = 0    !SDD cannot be positive
-
-   !       ! Calculate cumulative growing and senescence degree days
-   !       GDD_id(1) = GDD_id_prev(1) + yes
-   !       GDD_id(2) = GDD_id_prev(2) + no
-
-   !       ! Possibility for cold spring
-   !       IF (GDD_id(2) <= SDDFull(iv) .AND. indHelp < 0) THEN
-   !          GDD_id(1) = 0
-   !       ENDIF
-
-   !       IF (GDD_id(1) >= GDDFull(iv)) THEN   !Start senescence
-   !          GDD_id(1) = GDDFull(iv)          !Leaves should not grow so delete yes from earlier
-   !          IF (GDD_id(2) < -critDays) GDD_id(1) = 0
-   !       ENDIF
-
-   !       IF (GDD_id(2) <= SDDFull(iv)) THEN   !After senescence now start growing leaves
-   !          GDD_id(2) = SDDFull(iv)           !Leaves off so add back earlier
-   !          IF (GDD_id(1) > critDays) GDD_id(2) = 0
-   !       ENDIF
-
-   !       ! With these limits SDD, GDD is set to zero
-   !       IF (GDD_id(2) < -critDays .AND. GDD_id(2) > SDDFull(iv)) GDD_id(1) = 0
-   !       IF (GDD_id(1) > critDays .AND. GDD_id(1) < GDDFull(iv)) GDD_id(2) = 0
-
-   ! ! Daily min and max temp (these get updated through the day) ---------------------
-   !    GDD_id(3) = MIN(Temp_C, GDD_id(3))     !Daily min T in column 3
-   !    GDD_id(4) = MAX(Temp_C, GDD_id(4))     !Daily max T in column 4
-   !    IF (avkdn > 10) THEN
-   !       GDD_id(5) = GDD_id(5) + 1/nsh_real   !Cumulate daytime hours !Divide by nsh (HCW 01 Dec 2014)
-   !    ENDIF
-
-   ! end subroutine update_GDD
-
-   ! SUBROUTINE update_Veg(&
-   !      id,&!input
-   !      LAImax,LAIMin,&
-   !      AlbMax_DecTr,AlbMax_EveTr,AlbMax_Grass,&
-   !      AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
-   !      CapMax_dec,CapMin_dec,&
-   !      PorMax_dec,PorMin_dec,&
-   !      LAI_id,LAI_id_prev,&
-   !      DecidCap,&!inout
-   !      albDecTr,albEveTr,albGrass,&
-   !      porosity,&
-   !      deltaLAI)!output
-   !
-   !   IMPLICIT NONE
-   !
-   !   INTEGER,INTENT(IN)::id
-   !   REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN)::LAImax
-   !   REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN)::LAIMin
-   !
-   !   REAL(KIND(1d0)),INTENT(IN)::AlbMax_DecTr
-   !   REAL(KIND(1d0)),INTENT(IN)::AlbMax_EveTr
-   !   REAL(KIND(1d0)),INTENT(IN)::AlbMax_Grass
-   !   REAL(KIND(1d0)),INTENT(IN)::AlbMin_DecTr
-   !   REAL(KIND(1d0)),INTENT(IN)::AlbMin_EveTr
-   !   REAL(KIND(1d0)),INTENT(IN)::AlbMin_Grass
-   !   REAL(KIND(1d0)),INTENT(IN)::CapMax_dec
-   !   REAL(KIND(1d0)),INTENT(IN)::CapMin_dec
-   !   REAL(KIND(1d0)),INTENT(IN)::PorMax_dec
-   !   REAL(KIND(1d0)),INTENT(IN)::PorMin_dec
-   !   REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN)::LAI_id,LAI_id_prev
-   !
-   !   REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(INOUT)::DecidCap
-   !   REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(INOUT)::albDecTr
-   !   REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(INOUT)::albEveTr
-   !   REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(INOUT)::albGrass
-   !   REAL(KIND(1d0)),DIMENSION( 0:ndays),INTENT(INOUT)::porosity
-   !
-   !
-   !   REAL(KIND(1d0)),INTENT(OUT)::deltaLAI
-   !
-   !   INTEGER::iv
-   !
-   !   REAL(KIND(1d0))::albChangeDecTr
-   !   REAL(KIND(1d0))::albChangeEveTr
-   !   REAL(KIND(1d0))::albChangeGrass
-   !   REAL(KIND(1d0))::CapChange
-   !
-   !   REAL(KIND(1d0))::deltaLAIEveTr
-   !   REAL(KIND(1d0))::deltaLAIGrass
-   !   REAL(KIND(1d0))::porChange
-   !   !::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-   !   ! Calculate the development of vegetation cover
-   !   ! Albedo changes with LAI for each vegetation type
-   !   ! Storage capacity and porosity are updated based on DecTr LAI only (seasonal variation in Grass and EveTr assumed small)
-   !   ! If only LUMPS is used, set deciduous capacities to 0
-   !   ! QUESTION: Assume porosity Change based on GO99- Heisler?
-   !   deltaLAI=0
-   !   deltaLAIEveTr=0
-   !   deltaLAIGrass=0
-   !   CapChange=0
-   !   porChange=0
-   !   albChangeDecTr=0
-   !   albChangeEveTr=0
-   !   albChangeGrass=0
-   !
-   !   iv=ivDecid
-   !   IF((LAI_id(iv)-LAI_id_prev(iv))/=0) THEN
-   !      deltaLAI=(LAI_id(iv)-LAI_id_prev(iv))/(LAImax(iv)-LAIMin(iv))
-   !      albChangeDecTr=(AlbMax_DecTr-AlbMin_DecTr)* deltaLAI
-   !      CapChange=(CapMin_dec-CapMax_dec)* deltaLAI
-   !      porChange=(PorMin_dec-PorMax_dec)* deltaLAI
-   !   ENDIF
-   !
-   !   iv=ivConif
-   !   IF((LAI_id(iv)-LAI_id_prev(iv))/=0) THEN
-   !      deltaLAIEveTr=(LAI_id(iv)-LAI_id_prev(iv))/(LAImax(iv)-LAIMin(iv))
-   !      albChangeEveTr=(AlbMax_EveTr-AlbMin_EveTr)* deltaLAIEveTr    !!N.B. Currently uses deltaLAI for deciduous trees only!!
-   !   ENDIF
-   !
-   !   iv=ivGrass
-   !   IF((LAI_id(iv)-LAI_id_prev(iv))/=0) THEN
-   !      deltaLAIGrass=(LAI_id(iv)-LAI_id_prev(iv))/(LAImax(iv)-LAIMin(iv))
-   !      albChangeGrass=(AlbMax_Grass-AlbMin_Grass)* deltaLAIGrass    !!N.B. Currently uses deltaLAI for deciduous trees only!!
-   !   ENDIF
-   !
-   !   iv=ivDecid
-   !
-   !   !write(*,*) deltaLAI, deltaLAIEveTr, deltaLAIGrass
-   !
-   !   DecidCap(id) = DecidCap(id-1) - CapChange
-   !   albDecTr(id) = albDecTr(id-1) + albChangeDecTr
-   !   porosity(id) = porosity(id-1) + porChange !- changed to + by HCW 20 Aug 2015 (porosity greatest when LAI smallest)
-   !   !Also update albedo of EveTr and Grass surfaces
-   !   albEveTr(id) = albEveTr(id-1) + albChangeEveTr
-   !   albGrass(id) = albGrass(id-1) + albChangeGrass
-   !
-   ! END SUBROUTINE update_Veg
-
-   SUBROUTINE update_Veg_X( &
+   SUBROUTINE update_Veg( &
       LAImax, LAIMin, &!input
       AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
       AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
@@ -758,166 +605,10 @@ CONTAINS
       albEveTr_id = albEveTr_id + albChangeEveTr
       albGrass_id = albGrass_id + albChangeGrass
 
-   END SUBROUTINE update_Veg_X
+   END SUBROUTINE update_Veg
 
-   ! SUBROUTINE update_GDDLAI(&
-   !      id,LAICalcYes,& !input
-   !      lat,LAI_obs,&
-   !      BaseT,&
-   !      BaseTe,&
-   !      GDDFull,&
-   !      SDDFull,&
-   !      LAIMin,&
-   !      LAIMax,&
-   !      LAIPower,LAIType,&
-   !      GDD,LAI) !inout
-   !   IMPLICIT NONE
-   !
-   !   !------------------------------------------------------------------------------
-   !   ! Calculation of LAI from growing degree days
-   !   ! This was revised and checked on 16 Feb 2014 by LJ
-   !   !------------------------------------------------------------------------------
-   !
-   !   INTEGER,INTENT(IN)::id
-   !   INTEGER,INTENT(IN)::LAICalcYes
-   !
-   !   REAL(KIND(1d0)),INTENT(IN)::lat
-   !   REAL(KIND(1d0)),INTENT(IN)::LAI_obs
-   !
-   !   ! --- Vegetation phenology ---------------------------------------------------------------------
-   !   ! Parameters provided in input information for each vegetation surface (SUEWS_Veg.txt)
-   !   REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN)  :: BaseT          !Base temperature for growing degree days [degC]
-   !   REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN)  :: BaseTe         !Base temperature for senescence degree days [degC]
-   !   REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN)  :: GDDFull        !Growing degree days needed for full capacity [degC]
-   !   REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN)  :: SDDFull        !Senescence degree days needed to initiate leaf off [degC]
-   !   REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN)  :: LAIMin         !Min LAI [m2 m-2]
-   !   REAL(KIND(1d0)),DIMENSION(nvegsurf),INTENT(IN)  :: LAIMax         !Max LAI [m2 m-2]
-   !   REAL(KIND(1d0)),DIMENSION(4,nvegsurf),INTENT(IN):: LAIPower       !Coeffs for LAI equation: 1,2 - leaf growth; 3,4 - leaf off
-   !   !! N.B. currently DecTr only, although input provided for all veg types
-   !   INTEGER,DIMENSION(nvegsurf),INTENT(IN):: LAIType                  !LAI equation to use: original (0) or new (1)
-   !
-   !   REAL(KIND(1d0)),DIMENSION( 0:ndays, 5),INTENT(INOUT)       :: GDD !Growing Degree Days (see SUEWS_DailyState.f95)
-   !   REAL(KIND(1d0)),DIMENSION(-4:ndays, nvegsurf),INTENT(INOUT):: LAI !LAI for each veg surface [m2 m-2]
-   !
-   !   REAL(KIND(1d0)):: no   !Switches and checks for GDD
-   !   REAL(KIND(1d0))::yes   !Switches and checks for GDD
-   !   REAL(KIND(1d0))::indHelp   !Switches and checks for GDD
-   !
-   !   INTEGER:: critDays
-   !   INTEGER::iv
-   !
-   !
-   !   critDays=50   !Critical limit for GDD when GDD or SDD is set to zero
-   !
-   !   ! Loop through vegetation types (iv)
-   !   DO iv=1,NVegSurf
-   !      ! Calculate GDD for each day from the minimum and maximum air temperature
-   !      yes =((GDD(id,3)+GDD(id,4))/2-BaseT(iv))    !Leaf on
-   !      no  =((GDD(id,3)+GDD(id,4))/2-BaseTe(iv))   !Leaf off
-   !
-   !      indHelp = 0   !Help switch to allow GDD to go to zero in sprint-time !! QUESTION: What does this mean? HCW
-   !
-   !      IF(yes<0) THEN   !GDD cannot be negative
-   !         indHelp=yes   !Amount of negative GDD
-   !         yes=0
-   !      ENDIF
-   !
-   !      IF(no>0) no=0    !SDD cannot be positive
-   !
-   !      ! Calculate cumulative growing and senescence degree days
-   !      GDD(id,1) = GDD(id-1,1)+yes
-   !      GDD(id,2) = GDD(id-1,2)+no
-   !
-   !      ! Possibility for cold spring
-   !      IF(GDD(id,2)<=SDDFull(iv).AND.indHelp<0) THEN
-   !         GDD(id,1)=0
-   !      ENDIF
-   !
-   !      IF(GDD(id,1)>=GDDFull(iv)) THEN   !Start senescence
-   !         GDD(id,1)=GDDFull(iv)          !Leaves should not grow so delete yes from earlier
-   !         IF(GDD(id,2)<-critDays) GDD(id,1)=0
-   !      ENDIF
-   !
-   !      IF (GDD(id,2)<=SDDFull(iv)) THEN   !After senescence now start growing leaves
-   !         GDD(id,2)=SDDFull(iv)           !Leaves off so add back earlier
-   !         IF(GDD(id,1)>critDays) GDD(id,2)=0
-   !      ENDIF
-   !
-   !      ! With these limits SDD, GDD is set to zero
-   !      IF(GDD(id,2)<-critDays.AND.GDD(id,2)>SDDFull(iv))  GDD(id,1)=0
-   !      IF(GDD(id,1)> critDays.AND.GDD(id,1)<GDDFull(iv))  GDD(id,2)=0
-   !
-   !      ! Now calculate LAI itself
-   !      IF(lat>=0) THEN   !Northern hemispere
-   !         IF (id==140.AND.GDD(id,2)/=0)  GDD(id,2)=0  !If SDD is not zero by mid May, this is forced
-   !         ! Set SDD to zero in summer time
-   !         IF (GDD(id,1)> critDays.AND.id<170) GDD(id,2)=0
-   !         ! Set GDD zero in winter time
-   !         IF (GDD(id,2)<-critDays.AND.id>170) GDD(id,1)=0
-   !
-   !         IF (LAItype(iv) < 0.5) THEN   !Original LAI type
-   !            IF(GDD(id,1)>0.AND.GDD(id,1)<GDDFull(iv)) THEN       !Leaves can still grow
-   !               LAI(id,iv)=(LAI(id-1,iv)**LAIPower(1,iv)*GDD(id,1)*LAIPower(2,iv))+LAI(id-1,iv)
-   !            ELSEIF(GDD(id,2)<0.AND.GDD(id,2)>SDDFull(iv)) THEN   !Start senescence
-   !               LAI(id,iv)=(LAI(id-1,iv)**LAIPower(3,iv)*GDD(id,2)*LAIPower(4,iv))+LAI(id-1,iv)
-   !            ELSE
-   !               LAI(id,iv)=LAI(id-1,iv)
-   !            ENDIF
-   !         ELSEIF (LAItype(iv)>=0.5) THEN
-   !            IF(GDD(id,1)>0.AND.GDD(id,1)<GDDFull(iv)) THEN        !Leaves can still grow
-   !               LAI(id,iv)=(LAI(id-1,iv)**LAIPower(1,iv)*GDD(id,1)*LAIPower(2,iv))+LAI(id-1,iv)
-   !               !! Use day length to start senescence at high latitudes (N hemisphere)
-   !            ELSEIF (GDD(id,5)<=12.AND.GDD(id,2)>SDDFull(iv)) THEN !Start senescence
-   !               LAI(id,iv)=(LAI(id-1,iv)*LAIPower(3,iv)*(1-GDD(id,2))*LAIPower(4,iv))+LAI(id-1,iv)
-   !            ELSE
-   !               LAI(id,iv)=LAI(id-1,iv)
-   !            ENDIF
-   !         ENDIF
-   !
-   !      ELSEIF (lat<0) THEN   !Southern hemisphere !! N.B. not identical to N hemisphere - return to later
-   !         IF (id==300.AND.GDD(id,2)/=0)  GDD(id,2)=0   !If SDD is not zero by late Oct, this is forced
-   !         ! Set SDD to zero in summer time
-   !         IF (GDD(id,1)> critDays.AND.id>250) GDD(id,2)=0
-   !         ! Set GDD zero in winter time
-   !         IF (GDD(id,2)<-critDays.AND.id<250) GDD(id,1)=0
-   !
-   !         IF (LAItype(iv) < 0.5) THEN   !Original LAI type
-   !            IF(GDD(id,1)>0.AND.GDD(id,1)<GDDFull(iv)) THEN
-   !               LAI(id,iv)=(LAI(id-1,iv)**LAIPower(1,iv)*GDD(id,1)*LAIPower(2,iv))+LAI(id-1,iv)
-   !            ELSEIF(GDD(id,2)<0.AND.GDD(id,2)>SDDFull(iv)) THEN
-   !               LAI(id,iv)=(LAI(id-1,iv)**LAIPower(3,iv)*GDD(id,2)*LAIPower(4,iv))+LAI(id-1,iv)
-   !            ELSE
-   !               LAI(id,iv)=LAI(id-1,iv)
-   !            ENDIF
-   !         ELSE
-   !            IF(GDD(id,1)>0.AND.GDD(id,1)<GDDFull(iv)) THEN
-   !               LAI(id,iv)=(LAI(id-1,iv)**LAIPower(1,iv)*GDD(id,1)*LAIPower(2,iv))+LAI(id-1,iv)
-   !               !! Day length not used to start senescence in S hemisphere (not much land)
-   !            ELSEIF(GDD(id,2)<0.AND.GDD(id,2)>SDDFull(iv)) THEN
-   !               LAI(id,iv)=(LAI(id-1,iv)*LAIPower(3,iv)*(1-GDD(id,2))*LAIPower(4,iv))+LAI(id-1,iv)
-   !            ELSE
-   !               LAI(id,iv)=LAI(id-1,iv)
-   !            ENDIF
-   !         ENDIF
-   !      ENDIF   !N or S hemisphere
-   !
-   !      ! Check LAI within limits; if not set to limiting value
-   !      IF(LAI(id,iv)>LAImax(iv))THEN
-   !         LAI(id,iv)=LAImax(iv)
-   !      ELSEIF(LAI(id,iv)<LAImin(iv))THEN
-   !         LAI(id,iv)=LAImin(iv)
-   !      ENDIF
-   !
-   !   ENDDO   !End of loop over veg surfaces
-   !
-   !   IF(LAICalcYes==0)THEN ! moved to SUEWS_cal_DailyState, TS 18 Sep 2017
-   !      LAI(id-1,:)=LAI_obs ! check -- this is going to be a problem as it is not for each vegetation class
-   !   ENDIF
-   !   !------------------------------------------------------------------------------
-   !
-   ! END SUBROUTINE update_GDDLAI
 
-   SUBROUTINE update_GDDLAI_X( &
+   SUBROUTINE update_GDDLAI( &
       id, LAICalcYes, & !input
       lat, LAI_obs, &
       BaseT, BaseTe, &
@@ -1078,104 +769,10 @@ CONTAINS
       ENDIF
       !------------------------------------------------------------------------------
 
-   END SUBROUTINE update_GDDLAI_X
+   END SUBROUTINE update_GDDLAI
 
-   ! SUBROUTINE update_WaterUse(&
-   !      id,WaterUseMethod,DayofWeek_id,lat,Faut,HDD_id,&!input
-   !      Ie_a,Ie_m,Ie_start,Ie_end,DayWatPer,DayWat,&
-   !      WUDay) !inout
-   !
-   !   IMPLICIT NONE
-   !
-   !   INTEGER,INTENT(IN) :: id
-   !   INTEGER,INTENT(IN) :: WaterUseMethod
-   !   INTEGER,INTENT(IN)::Ie_start   !Starting time of water use (DOY)
-   !   INTEGER,INTENT(IN)::Ie_end       !Ending time of water use (DOY)
-   !   INTEGER,DIMENSION(3),INTENT(IN)::DayofWeek_id
-   !
-   !   REAL(KIND(1d0)),INTENT(IN)::lat
-   !   REAL(KIND(1d0)),INTENT(IN)::Faut          !Fraction of irrigated area using automatic irrigation
-   !
-   !   REAL(KIND(1d0)),DIMENSION(6),INTENT(IN)::HDD_id
-   !   REAL(KIND(1d0)),DIMENSION(3),INTENT(IN)::Ie_a
-   !   REAL(KIND(1d0)),DIMENSION(3),INTENT(IN)::Ie_m   !Coefficients for automatic and manual irrigation models
-   !   REAL(KIND(1d0)),DIMENSION(7),INTENT(IN)::DayWatPer  !% of houses following daily water
-   !   REAL(KIND(1d0)),DIMENSION(7),INTENT(IN)::DayWat       !Days of watering allowed
-   !
-   !   REAL(KIND(1d0)),DIMENSION(0:ndays,9),INTENT(INOUT):: WUDay       !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
-   !
-   !   INTEGER::wd        !Water use calculation is done when calc = 1
-   !   INTEGER::&
-   !        calc        !Water use calculation is done when calc = 1
-   !
-   !   IF (WaterUseMethod==0) THEN   !If water use is to be modelled (rather than observed)
-   !
-   !      wd=DayofWeek_id(1)
-   !
-   !      IF (DayWat(wd)==1.0) THEN      !1 indicates watering permitted on this day
-   !         calc=0
-   !         IF (lat>=0) THEN            !Northern Hemisphere
-   !            IF (id>=Ie_start-1.AND.id<=Ie_end+1) calc=1   !Day between irrigation period
-   !         ELSE                        !Southern Hemisphere
-   !            calc=1
-   !            IF (id>=Ie_end.AND.id<=Ie_start) calc=0       !Day between irrigation period
-   !         ENDIF
-   !
-   !         IF(calc==1) THEN
-   !            ! Model daily water use based on HDD_id(6)(days since rain) and HDD_id(3)(average temp)
-   !            ! WUDay is the amount of water [mm] per day, applied to each of the irrigated areas
-   !            ! N.B. These are the same for each vegetation type at the moment
-   !
-   !            ! ---- Automatic irrigation (evergreen trees) ----
-   !            WUDay(id,2) = Faut*(Ie_a(1)+Ie_a(2)*HDD_id(3)+Ie_a(3)*HDD_id(6))*DayWatPer(wd)
-   !            IF (WUDay(id,2)<0) WUDay(id,2)=0   !If modelled WU is negative -> 0
-   !
-   !            ! ---- Manual irrigation (evergreen trees) ----
-   !            WUDay(id,3) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD_id(3)+Ie_m(3)*HDD_id(6))*DayWatPer(wd)
-   !            IF (WUDay(id,3)<0) WUDay(id,3)=0   !If modelled WU is negative -> 0
-   !
-   !            ! ---- Total evergreen trees water use (automatic + manual) ----
-   !            WUDay(id,1)=(WUDay(id,2)+WUDay(id,3))
-   !
-   !            ! ---- Automatic irrigation (deciduous trees) ----
-   !            WUDay(id,5) = Faut*(Ie_a(1)+Ie_a(2)*HDD_id(3)+Ie_a(3)*HDD_id(6))*DayWatPer(wd)
-   !            IF (WUDay(id,5)<0) WUDay(id,5)=0   !If modelled WU is negative -> 0
-   !
-   !            ! ---- Manual irrigation (deciduous trees) ----
-   !            WUDay(id,6) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD_id(3)+Ie_m(3)*HDD_id(6))*DayWatPer(wd)
-   !            IF (WUDay(id,6)<0) WUDay(id,6)=0   !If modelled WU is negative -> 0
-   !
-   !            ! ---- Total deciduous trees water use (automatic + manual) ----
-   !            WUDay(id,4)=(WUDay(id,5)+WUDay(id,6))
-   !
-   !            ! ---- Automatic irrigation (grass) ----
-   !            WUDay(id,8) = Faut*(Ie_a(1)+Ie_a(2)*HDD_id(3)+Ie_a(3)*HDD_id(6))*DayWatPer(wd)
-   !            IF (WUDay(id,8)<0) WUDay(id,8)=0   !If modelled WU is negative -> 0
-   !
-   !            ! ---- Manual irrigation (grass) ----
-   !            WUDay(id,9) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD_id(3)+Ie_m(3)*HDD_id(6))*DayWatPer(wd)
-   !            IF (WUDay(id,9)<0) WUDay(id,9)=0   !If modelled WU is negative -> 0
-   !
-   !            ! ---- Total grass water use (automatic + manual) ----
-   !            WUDay(id,7)=(WUDay(id,8)+WUDay(id,9))
-   !
-   !         ELSE   !If no irrigation on this day
-   !            WUDay(id,1)=0
-   !            WUDay(id,2)=0
-   !            WUDay(id,3)=0
-   !            WUDay(id,4)=0
-   !            WUDay(id,5)=0
-   !            WUDay(id,6)=0
-   !            WUDay(id,7)=0
-   !            WUDay(id,8)=0
-   !            WUDay(id,9)=0
-   !         ENDIF
-   !      ENDIF
-   !   ENDIF
-   !
-   ! END SUBROUTINE update_WaterUse
 
-   SUBROUTINE update_WaterUse_X( &
+   SUBROUTINE update_WaterUse( &
       id, WaterUseMethod, DayofWeek_id, lat, Faut, HDD_id, &!input
       Ie_a, Ie_m, Ie_start, Ie_end, DayWatPer, DayWat, &
       WUDay_id) !output
@@ -1277,42 +874,10 @@ CONTAINS
          ENDIF
       ENDIF
 
-   END SUBROUTINE update_WaterUse_X
+   END SUBROUTINE update_WaterUse
 
-   ! SUBROUTINE update_HDD(&
-   !      id,it,imin,tstep,& !input
-   !      HDD) !inout
-   !   IMPLICIT NONE
-   !   INTEGER,INTENT(IN)::id,it,imin,tstep
-   !
-   !   REAL(KIND(1d0)),DIMENSION(-4:366,6),INTENT(INOUT):: HDD
-   !
-   !   INTEGER:: jj
-   !   REAL(KIND(1d0))::tstepcount
-   !
-   !   ! count of timesteps performed during day `id`
-   !   tstepcount=(it*60+imin)*60/tstep*1.
-   !   ! Heating degree days (HDD) -------------
-   !   HDD(id,1)=HDD(id,1)/tstepcount   !Heating
-   !   HDD(id,2)=HDD(id,2)/tstepcount   !Cooling
-   !   HDD(id,3)=HDD(id,3)/tstepcount   !Average temp
-   !
-   !   ! Calculate 5-day running mean temp     !!Need to deal with the previous year - CHECK!!
-   !   DO jj=1,5
-   !      HDD(id,4)=HDD(id,4) + HDD(id-(jj-1),3)
-   !   ENDDO
-   !   HDD(id,4) = HDD(id,4)/5
-   !
-   !   ! Calculate number of days since rain
-   !   IF(HDD(id,5)>0) THEN        !Rain occurred
-   !      HDD(id,6)=0
-   !   ELSE
-   !      HDD(id,6)=HDD(id-1,6)+1  !Days since rain
-   !   ENDIF
-   !
-   ! END SUBROUTINE update_HDD
 
-   SUBROUTINE update_HDD_X( &
+   SUBROUTINE update_HDD( &
       dt_since_start, it, imin, tstep, & !input
       HDD_id)!inout
       IMPLICIT NONE
@@ -1346,7 +911,7 @@ CONTAINS
       ! save updated HDD_id(1:6) values to the last-half part (i.e., HDD_id(7:12))
       HDD_id(6 + 1:6 + 6) = HDD_id(1:6)
 
-   END SUBROUTINE update_HDD_X
+   END SUBROUTINE update_HDD
 
    SUBROUTINE update_DailyState_Start( &
       it, imin, &!input
@@ -1393,14 +958,13 @@ CONTAINS
 
       ! write out to dataOutDailyState
       dataOutDailyState(id, 1:5, Gridiv) = datetimeline
-      ! dataOutDailyState(id,5,Gridiv)=dectime
       ! DailyStateLine will be -999 unless realistic values are calculated at the last timestep of each day
       dataOutDailyState(id, 6:ncolumnsDataOutDailyState, Gridiv) = DailyStateLine
 
    END SUBROUTINE SUEWS_update_DailyState
 
    ! transfer results to a one-line output for SUEWS_cal_DailyState
-   SUBROUTINE update_DailyState( &
+   SUBROUTINE update_DailyStateLine( &
       it, imin, nsh_real, &!input
       GDD_id, HDD_id, LAI_id, &
       DecidCap_id, &
@@ -1460,6 +1024,6 @@ CONTAINS
 
       END IF
 
-   END SUBROUTINE update_DailyState
+   END SUBROUTINE update_DailyStateLine
 
 END MODULE DailyState_module

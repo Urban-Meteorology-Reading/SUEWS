@@ -251,7 +251,7 @@ CONTAINS
             Ie_a, Ie_m, LAIMax, LAIMin, LAIPower, lat, PorMax_dec, PorMin_dec, SDDFull, LAI_obs, &
             GDD_id, & !inout
             HDD_id, &
-            LAI_id, LAI_id_prev, &
+            LAI_id, &
             WUDay_id, &
             DecidCap_id, &
             albDecTr_id, &
@@ -259,7 +259,7 @@ CONTAINS
             albGrass_id, &
             porosity_id, &
             StoreDrainPrm,&
-            deltaLAI)!output
+            LAI_id_prev,deltaLAI)!output
          ! ,xBo)!output
       ENDIF   !End of section done only at the end of each day (i.e. only once per day)
 
@@ -267,7 +267,7 @@ CONTAINS
       ! PRINT*, 'HDD(id)', HDD(id,:)
       ! PRINT*, 'HDD_id', HDD_id
 
-      RETURN
+      ! RETURN
 
    END SUBROUTINE SUEWS_cal_DailyState
 
@@ -280,7 +280,7 @@ CONTAINS
       Ie_a, Ie_m, LAIMax, LAIMin, LAIPower, lat, PorMax_dec, PorMin_dec, SDDFull, LAI_obs, &
       GDD_id, & !inout
       HDD_id, &
-      LAI_id, LAI_id_prev, &
+      LAI_id, &
       WUDay_id, &
       DecidCap_id, &
       albDecTr_id, &
@@ -288,7 +288,7 @@ CONTAINS
       albGrass_id, &
       porosity_id, &
       StoreDrainPrm,&
-      deltaLAI)!output
+      LAI_id_prev,deltaLAI)!output
       IMPLICIT NONE
 
       INTEGER, INTENT(IN)::id
@@ -333,7 +333,7 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(INOUT)::LAI_id !LAI for each veg surface [m2 m-2]
 
       ! REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT)::HDD_id_use ! HDD of previous day
-      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(INOUT)::LAI_id_prev ! LAI of previous day
+      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(OUT)::LAI_id_prev ! LAI of previous day
 
       REAL(KIND(1d0)), DIMENSION(9), INTENT(OUT):: WUDay_id
       REAL(KIND(1d0)), INTENT(OUT)::deltaLAI
@@ -373,39 +373,17 @@ CONTAINS
       ! Calculation of LAI from growing degree days
       ! This was revised and checked on 16 Feb 2014 by LJ
       !------------------------------------------------------------------------------
-      ! CALL update_GDDLAI(&
-      !      id,LAICalcYes,& !input
-      !      lat,LAI_obs,&
-      !      BaseT,&
-      !      BaseTe,&
-      !      GDDFull,&
-      !      SDDFull,&
-      !      LAIMin,&
-      !      LAIMax,&
-      !      LAIPower,LAIType,&
-      !      GDD,LAI) !inout
-
+      LAI_id_prev=LAI_id
       CALL update_GDDLAI_X( &
          id, LAICalcYes, & !input
          lat, LAI_obs, &
          BaseT, BaseTe, &
          GDDFull, SDDFull, &
          LAIMin, LAIMax, LAIPower, LAIType, &
-         GDD_id, LAI_id, &!inout
-         LAI_id_prev) !output
+         LAI_id_prev,&
+         GDD_id, &!inout
+         LAI_id) !output
 
-      ! CALL update_Veg(&
-      !      id,&!input
-      !      LAImax,LAIMin,&
-      !      AlbMax_DecTr,AlbMax_EveTr,AlbMax_Grass,&
-      !      AlbMin_DecTr,AlbMin_EveTr,AlbMin_Grass,&
-      !      CapMax_dec,CapMin_dec,&
-      !      PorMax_dec,PorMin_dec,&
-      !      LAI_id,LAI_id_prev,&
-      !      DecidCap,&!inout
-      !      albDecTr,albEveTr,albGrass,&
-      !      porosity,&
-      !      deltaLAI)!output
 
       CALL update_Veg_X( &
       LAImax, LAIMin, &!input
@@ -904,8 +882,9 @@ CONTAINS
       BaseT, BaseTe, &
       GDDFull, SDDFull, &
       LAIMin, LAIMax, LAIPower, LAIType, &
-      GDD_id, LAI_id, &!inout
-      LAI_id_prev) !output
+      LAI_id_prev,&
+      GDD_id, &!inout
+      LAI_id_next) !output
       IMPLICIT NONE
 
       !------------------------------------------------------------------------------
@@ -932,8 +911,8 @@ CONTAINS
       INTEGER, DIMENSION(nvegsurf), INTENT(IN):: LAIType                  !LAI equation to use: original (0) or new (1)
 
       REAL(KIND(1d0)), DIMENSION(5), INTENT(INOUT)       :: GDD_id !Growing Degree Days (see SUEWS_DailyState.f95)
-      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(INOUT):: LAI_id !LAI for each veg surface [m2 m-2]
-      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(OUT)::LAI_id_prev ! LAI of previous day
+      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(OUT):: LAI_id_next !LAI for each veg surface [m2 m-2]
+      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(IN)::LAI_id_prev ! LAI of previous day
 
       REAL(KIND(1d0)):: no   !Switches and checks for GDD
       REAL(KIND(1d0))::yes   !Switches and checks for GDD
@@ -945,7 +924,7 @@ CONTAINS
 
       ! translate values of previous day to local variables
       GDD_id_prev = GDD_id
-      LAI_id_prev = LAI_id
+      ! LAI_id_prev = LAI_id_next
 
       critDays = 50   !Critical limit for GDD when GDD or SDD is set to zero
 
@@ -998,20 +977,20 @@ CONTAINS
 
             IF (LAItype(iv) < 0.5) THEN   !Original LAI type
                IF (GDD_id(1) > 0 .AND. GDD_id(1) < GDDFull(iv)) THEN       !Leaves can still grow
-                  LAI_id(iv) = (LAI_id_prev(iv)**LAIPower(1, iv)*GDD_id(1)*LAIPower(2, iv)) + LAI_id_prev(iv)
+                  LAI_id_next(iv) = (LAI_id_prev(iv)**LAIPower(1, iv)*GDD_id(1)*LAIPower(2, iv)) + LAI_id_prev(iv)
                ELSEIF (GDD_id(2) < 0 .AND. GDD_id(2) > SDDFull(iv)) THEN   !Start senescence
-                  LAI_id(iv) = (LAI_id_prev(iv)**LAIPower(3, iv)*GDD_id(2)*LAIPower(4, iv)) + LAI_id_prev(iv)
+                  LAI_id_next(iv) = (LAI_id_prev(iv)**LAIPower(3, iv)*GDD_id(2)*LAIPower(4, iv)) + LAI_id_prev(iv)
                ELSE
-                  LAI_id(iv) = LAI_id_prev(iv)
+                  LAI_id_next(iv) = LAI_id_prev(iv)
                ENDIF
             ELSEIF (LAItype(iv) >= 0.5) THEN
                IF (GDD_id(1) > 0 .AND. GDD_id(1) < GDDFull(iv)) THEN        !Leaves can still grow
-                  LAI_id(iv) = (LAI_id_prev(iv)**LAIPower(1, iv)*GDD_id(1)*LAIPower(2, iv)) + LAI_id_prev(iv)
+                  LAI_id_next(iv) = (LAI_id_prev(iv)**LAIPower(1, iv)*GDD_id(1)*LAIPower(2, iv)) + LAI_id_prev(iv)
                   !! Use day length to start senescence at high latitudes (N hemisphere)
                ELSEIF (GDD_id(5) <= 12 .AND. GDD_id(2) > SDDFull(iv)) THEN !Start senescence
-                  LAI_id(iv) = (LAI_id_prev(iv)*LAIPower(3, iv)*(1 - GDD_id(2))*LAIPower(4, iv)) + LAI_id_prev(iv)
+                  LAI_id_next(iv) = (LAI_id_prev(iv)*LAIPower(3, iv)*(1 - GDD_id(2))*LAIPower(4, iv)) + LAI_id_prev(iv)
                ELSE
-                  LAI_id(iv) = LAI_id_prev(iv)
+                  LAI_id_next(iv) = LAI_id_prev(iv)
                ENDIF
             ENDIF
 
@@ -1025,36 +1004,36 @@ CONTAINS
 
             IF (LAItype(iv) < 0.5) THEN   !Original LAI type
                IF (GDD_id(1) > 0 .AND. GDD_id(1) < GDDFull(iv)) THEN
-                  LAI_id(iv) = (LAI_id_prev(iv)**LAIPower(1, iv)*GDD_id(1)*LAIPower(2, iv)) + LAI_id_prev(iv)
+                  LAI_id_next(iv) = (LAI_id_prev(iv)**LAIPower(1, iv)*GDD_id(1)*LAIPower(2, iv)) + LAI_id_prev(iv)
                ELSEIF (GDD_id(2) < 0 .AND. GDD_id(2) > SDDFull(iv)) THEN
-                  LAI_id(iv) = (LAI_id_prev(iv)**LAIPower(3, iv)*GDD_id(2)*LAIPower(4, iv)) + LAI_id_prev(iv)
+                  LAI_id_next(iv) = (LAI_id_prev(iv)**LAIPower(3, iv)*GDD_id(2)*LAIPower(4, iv)) + LAI_id_prev(iv)
                ELSE
-                  LAI_id(iv) = LAI_id_prev(iv)
+                  LAI_id_next(iv) = LAI_id_prev(iv)
                ENDIF
             ELSE
                IF (GDD_id(1) > 0 .AND. GDD_id(1) < GDDFull(iv)) THEN
-                  LAI_id(iv) = (LAI_id_prev(iv)**LAIPower(1, iv)*GDD_id(1)*LAIPower(2, iv)) + LAI_id_prev(iv)
+                  LAI_id_next(iv) = (LAI_id_prev(iv)**LAIPower(1, iv)*GDD_id(1)*LAIPower(2, iv)) + LAI_id_prev(iv)
                   !! Day length not used to start senescence in S hemisphere (not much land)
                ELSEIF (GDD_id(2) < 0 .AND. GDD_id(2) > SDDFull(iv)) THEN
-                  LAI_id(iv) = (LAI_id_prev(iv)*LAIPower(3, iv)*(1 - GDD_id(2))*LAIPower(4, iv)) + LAI_id_prev(iv)
+                  LAI_id_next(iv) = (LAI_id_prev(iv)*LAIPower(3, iv)*(1 - GDD_id(2))*LAIPower(4, iv)) + LAI_id_prev(iv)
                ELSE
-                  LAI_id(iv) = LAI_id_prev(iv)
+                  LAI_id_next(iv) = LAI_id_prev(iv)
                ENDIF
             ENDIF
          ENDIF   !N or S hemisphere
 
          ! Check LAI within limits; if not set to limiting value
-         IF (LAI_id(iv) > LAImax(iv)) THEN
-            LAI_id(iv) = LAImax(iv)
-         ELSEIF (LAI_id(iv) < LAImin(iv)) THEN
-            LAI_id(iv) = LAImin(iv)
+         IF (LAI_id_next(iv) > LAImax(iv)) THEN
+            LAI_id_next(iv) = LAImax(iv)
+         ELSEIF (LAI_id_next(iv) < LAImin(iv)) THEN
+            LAI_id_next(iv) = LAImin(iv)
          ENDIF
 
       ENDDO   !End of loop over veg surfaces
 
       IF (LAICalcYes == 0) THEN ! moved to SUEWS_cal_DailyState, TS 18 Sep 2017
          ! LAI(id-1,:)=LAI_obs ! check -- this is going to be a problem as it is not for each vegetation class
-         LAI_id = LAI_obs
+         LAI_id_next = LAI_obs
       ENDIF
       !------------------------------------------------------------------------------
 

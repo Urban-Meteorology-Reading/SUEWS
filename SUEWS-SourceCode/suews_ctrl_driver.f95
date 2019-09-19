@@ -566,11 +566,13 @@ CONTAINS
       state_id_prev = state_id
       Tair_av_prev = Tair_av
 
+      ! in progress:
+      LAI_id_prev = LAI_id
+      GDD_id_prev = GDD_id
+
       ! todo:
       StoreDrainPrm_prev = StoreDrainPrm
       alb_prev = alb
-      GDD_id_prev = GDD_id
-      LAI_id_prev = LAI_id
       DecidCap_id_prev = DecidCap_id
       albDecTr_id_prev = albDecTr_id
       albEveTr_id_prev = albEveTr_id

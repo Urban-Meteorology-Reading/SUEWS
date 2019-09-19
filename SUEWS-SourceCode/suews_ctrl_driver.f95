@@ -643,11 +643,13 @@ CONTAINS
          CapMax_dec, CapMin_dec, PorMax_dec, PorMin_dec, &
          Ie_a, Ie_m, DayWatPer, DayWat, &
          BaseT, BaseTe, GDDFull, SDDFull, LAIMin, LAIMax, LAIPower, &
-         GDD_id, HDD_id, LAI_id, LAI_id_prev, WUDay_id, &!inout
+         LAI_id_prev,&
+         GDD_id, HDD_id, WUDay_id, &!inout
          DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
          StoreDrainPrm,&
-         deltaLAI)!output
+         LAI_id_next, deltaLAI)!output
 
+      LAI_ID=LAI_id_next
       !=================Calculation of density and other water related parameters=================
       IF (Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_AtmMoist...'
       CALL LUMPS_cal_AtmMoist( &

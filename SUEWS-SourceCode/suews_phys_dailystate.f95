@@ -65,10 +65,11 @@ CONTAINS
       CapMax_dec, CapMin_dec, PorMax_dec, PorMin_dec, &
       Ie_a, Ie_m, DayWatPer, DayWat, &
       BaseT, BaseTe, GDDFull, SDDFull, LAIMin, LAIMax, LAIPower, &
-      GDD_id, HDD_id, LAI_id, LAI_id_prev, WUDay_id, &!inout
+      LAI_id_prev,&
+      GDD_id, HDD_id, WUDay_id, &!inout
       DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       StoreDrainPrm,&
-      deltaLAI)!output
+      LAI_id_next,deltaLAI)!output
 
       ! USE Snow_module, ONLY: SnowUpdate
       USE datetime_module, ONLY: datetime, timedelta
@@ -135,7 +136,9 @@ CONTAINS
       ! REAL(KIND(1d0)), INTENT(INOUT)::SnowAlb
 
       REAL(KIND(1d0)), DIMENSION(5), INTENT(INOUT) :: GDD_id   ! Growing Degree Days (see SUEWS_DailyState.f95)
-      REAL(KIND(1d0)), DIMENSION(3), INTENT(INOUT) :: LAI_id   ! LAI for each veg surface [m2 m-2]
+      REAL(KIND(1d0)), DIMENSION(3), INTENT(IN) :: LAI_id_prev   ! LAI for each veg surface [m2 m-2]
+      REAL(KIND(1d0)), DIMENSION(3), INTENT(OUT) :: LAI_id_next   ! LAI for each veg surface [m2 m-2]
+      REAL(KIND(1d0)), DIMENSION(3) :: LAI_id   ! LAI for each veg surface [m2 m-2]
       REAL(KIND(1d0)), DIMENSION(12), INTENT(INOUT) :: HDD_id   ! Heating Degree Days (see SUEWS_DailyState.f95)
       REAL(KIND(1d0)), DIMENSION(9), INTENT(OUT)   :: WUDay_id ! Water use related array
       ! --------------------------------------------------------------------------------
@@ -185,7 +188,7 @@ CONTAINS
 
       !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
       REAL(KIND(1d0)), INTENT(OUT)::deltaLAI
-      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(INOUT):: LAI_id_prev !LAI for each veg surface [m2 m-2]
+      ! REAL(KIND(1d0)), DIMENSION(nvegsurf),INTENT(IN):: LAI_id_prev !LAI for each veg surface [m2 m-2]
 
       REAL(KIND(1d0)), INTENT(INOUT):: DecidCap_id
       REAL(KIND(1d0)), INTENT(INOUT):: albDecTr_id
@@ -197,6 +200,9 @@ CONTAINS
       LOGICAL :: first_tstep_Q ! if this is the first tstep of a day
       LOGICAL :: last_tstep_Q ! if this is the last tstep of a day
       TYPE(datetime) :: time_now, time_prev, time_next
+
+      ! transfer values
+      LAI_id=LAI_id_prev
 
       ! get timestamps
       time_now = datetime(year=iy) + timedelta(days=id - 1, hours=it, minutes=imin, seconds=isec)
@@ -259,10 +265,10 @@ CONTAINS
             albGrass_id, &
             porosity_id, &
             StoreDrainPrm,&
-            LAI_id_prev,deltaLAI)!output
+            deltaLAI)!output
          ! ,xBo)!output
       ENDIF   !End of section done only at the end of each day (i.e. only once per day)
-
+      LAI_id_next=LAI_id
       ! PRINT*, 'after_DailyState', iy,id,it,imin
       ! PRINT*, 'HDD(id)', HDD(id,:)
       ! PRINT*, 'HDD_id', HDD_id
@@ -288,7 +294,7 @@ CONTAINS
       albGrass_id, &
       porosity_id, &
       StoreDrainPrm,&
-      LAI_id_prev,deltaLAI)!output
+      deltaLAI)!output
       IMPLICIT NONE
 
       INTEGER, INTENT(IN)::id
@@ -333,7 +339,7 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(INOUT)::LAI_id !LAI for each veg surface [m2 m-2]
 
       ! REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT)::HDD_id_use ! HDD of previous day
-      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(OUT)::LAI_id_prev ! LAI of previous day
+      REAL(KIND(1d0)), DIMENSION(nvegsurf)::LAI_id_in ! LAI of previous day
 
       REAL(KIND(1d0)), DIMENSION(9), INTENT(OUT):: WUDay_id
       REAL(KIND(1d0)), INTENT(OUT)::deltaLAI
@@ -373,14 +379,16 @@ CONTAINS
       ! Calculation of LAI from growing degree days
       ! This was revised and checked on 16 Feb 2014 by LJ
       !------------------------------------------------------------------------------
-      LAI_id_prev=LAI_id
+      ! save initial LAI_id
+      LAI_id_in=LAI_id
+
       CALL update_GDDLAI_X( &
          id, LAICalcYes, & !input
          lat, LAI_obs, &
          BaseT, BaseTe, &
          GDDFull, SDDFull, &
          LAIMin, LAIMax, LAIPower, LAIType, &
-         LAI_id_prev,&
+         LAI_id_in,&
          GDD_id, &!inout
          LAI_id) !output
 
@@ -391,7 +399,7 @@ CONTAINS
       AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
       CapMax_dec, CapMin_dec, &
       PorMax_dec, PorMin_dec, &
-      LAI_id, LAI_id_prev, &
+      LAI_id, LAI_id_in, &
       DecidCap_id, &!inout
       albDecTr_id, &
       albEveTr_id, &

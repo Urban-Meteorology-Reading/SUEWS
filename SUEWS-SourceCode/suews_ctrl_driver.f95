@@ -556,7 +556,6 @@ CONTAINS
 
       ! ########################################################################################
       ! save initial values of inout variables
-      ! done:
       qn1_av_prev = qn1_av
       dqndt_prev = dqndt
       qn1_s_av_prev = qn1_s_av
@@ -581,11 +580,36 @@ CONTAINS
       albEveTr_id_prev = albEveTr_id
       albGrass_id_prev = albGrass_id
       HDD_id_prev = HDD_id
-
-      ! in progress:
-
-      ! todo:
       WUDay_id_prev = WUDay_id
+
+      ! initialise `_next` variables
+      qn1_av_next = qn1_av
+      dqndt_next = dqndt
+      qn1_s_av_next = qn1_s_av
+      dqnsdt_next = dqnsdt
+      SnowfallCum_next = SnowfallCum
+      SnowAlb_next = SnowAlb
+      IceFrac_next = IceFrac
+      SnowWater_next = SnowWater
+      SnowDens_next = SnowDens
+      SnowFrac_next = SnowFrac
+      SnowPack_next = SnowPack
+      soilstore_id_next = soilstore_id
+      state_id_next = state_id
+      Tair_av_next = Tair_av
+      LAI_id_next = LAI_id
+      GDD_id_next = GDD_id
+      StoreDrainPrm_next = StoreDrainPrm
+      DecidCap_id_next = DecidCap_id
+      porosity_id_next = porosity_id
+      alb_next = alb
+      albDecTr_id_next = albDecTr_id
+      albEveTr_id_next = albEveTr_id
+      albGrass_id_next = albGrass_id
+      HDD_id_next = HDD_id
+      WUDay_id_next = WUDay_id
+
+
 
       !########################################################################################
       !           main calculation starts here
@@ -658,7 +682,7 @@ CONTAINS
          HDD_id_prev, &!input
          HDD_id_next, &!output
          albDecTr_id_next, albEveTr_id_next, albGrass_id_next, porosity_id_next, &!output
-         DecidCap_id_next,StoreDrainPrm_next,LAI_id_next,GDD_id_next,deltaLAI,WUDay_id)!output
+         DecidCap_id_next,StoreDrainPrm_next,LAI_id_next,GDD_id_next,deltaLAI,WUDay_id_next)!output
 
       !=================Calculation of density and other water related parameters=================
       IF (Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_AtmMoist...'
@@ -682,7 +706,7 @@ CONTAINS
          wu_m3, SurfaceArea, sfr, &
          IrrFracConif, IrrFracDecid, IrrFracGrass, &
          DayofWeek_id, WUProfA_24hr, WUProfM_24hr, &
-         InternalWaterUse_h, HDD_id_next, WUDay_id, &
+         InternalWaterUse_h, HDD_id_next, WUDay_id_next, &
          WaterUseMethod, NSH, it, imin, DLS, &
          wu_EveTr, wu_DecTr, wu_Grass, int_wu, ext_wu)! output:
 
@@ -919,7 +943,7 @@ CONTAINS
       StoreDrainPrm=StoreDrainPrm_next
       Tair_av = Tair_av_next
       HDD_id=HDD_id_next
-      ! WUDay_id=WUDay_id_next
+      WUDay_id=WUDay_id_next
 
       !==============translation of  output variables into output array===========
       CALL SUEWS_update_outputLine( &

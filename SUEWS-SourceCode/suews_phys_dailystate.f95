@@ -1,6 +1,6 @@
 MODULE DailyState_module
    USE allocateArray, ONLY: &
-      ndays, nsurf, nvegsurf, ivConif, ivDecid, ivGrass, ncolumnsDataOutDailyState
+      ndays, nsurf, nvegsurf, ivConif, ivDecid, ivGrass, DecidSurf,ncolumnsDataOutDailyState
 
    IMPLICIT NONE
    ! INTEGER,PARAMETER::ndays=366
@@ -67,6 +67,7 @@ CONTAINS
       BaseT, BaseTe, GDDFull, SDDFull, LAIMin, LAIMax, LAIPower, &
       GDD_id, HDD_id, LAI_id, LAI_id_prev, WUDay_id, &!inout
       DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
+      StoreDrainPrm,&
       deltaLAI)!output
 
       ! USE Snow_module, ONLY: SnowUpdate
@@ -191,6 +192,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(INOUT):: albEveTr_id
       REAL(KIND(1d0)), INTENT(INOUT):: albGrass_id
       REAL(KIND(1d0)), INTENT(INOUT):: porosity_id
+      REAL(KIND(1d0)), DIMENSION(6, nsurf), INTENT(inout)::StoreDrainPrm
 
       LOGICAL :: first_tstep_Q ! if this is the first tstep of a day
       LOGICAL :: last_tstep_Q ! if this is the last tstep of a day
@@ -256,6 +258,7 @@ CONTAINS
             albEveTr_id, &
             albGrass_id, &
             porosity_id, &
+            StoreDrainPrm,&
             deltaLAI)!output
          ! ,xBo)!output
       ENDIF   !End of section done only at the end of each day (i.e. only once per day)
@@ -284,6 +287,7 @@ CONTAINS
       albEveTr_id, &
       albGrass_id, &
       porosity_id, &
+      StoreDrainPrm,&
       deltaLAI)!output
       IMPLICIT NONE
 
@@ -339,6 +343,8 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(INOUT):: albEveTr_id
       REAL(KIND(1d0)), INTENT(INOUT):: albGrass_id
       REAL(KIND(1d0)), INTENT(INOUT):: porosity_id
+
+      REAL(KIND(1d0)), DIMENSION(6, nsurf), INTENT(inout)::StoreDrainPrm
 
       ! CALL update_HDD(&
       !      id,it,imin,tstep,& !input
@@ -402,18 +408,19 @@ CONTAINS
       !      deltaLAI)!output
 
       CALL update_Veg_X( &
-         LAImax, LAIMin, &!input
-         AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
-         AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
-         CapMax_dec, CapMin_dec, &
-         PorMax_dec, PorMin_dec, &
-         LAI_id, LAI_id_prev, &
-         DecidCap_id, &!inout
-         albDecTr_id, &
-         albEveTr_id, &
-         albGrass_id, &
-         porosity_id, &
-         deltaLAI)!output
+      LAImax, LAIMin, &!input
+      AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
+      AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
+      CapMax_dec, CapMin_dec, &
+      PorMax_dec, PorMin_dec, &
+      LAI_id, LAI_id_prev, &
+      DecidCap_id, &!inout
+      albDecTr_id, &
+      albEveTr_id, &
+      albGrass_id, &
+      porosity_id, &
+      StoreDrainPrm,&
+      deltaLAI)!output
 
       ! PRINT*, 'DecidCap',DecidCap(id),DecidCap_id
       ! PRINT*, 'albDecTr',albDecTr(id),albDecTr_id
@@ -644,6 +651,7 @@ CONTAINS
       albEveTr_id, &
       albGrass_id, &
       porosity_id, &
+      StoreDrainPrm,&
       deltaLAI)!output
 
       IMPLICIT NONE
@@ -669,6 +677,8 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(INOUT)::albEveTr_id
       REAL(KIND(1d0)), INTENT(INOUT)::albGrass_id
       REAL(KIND(1d0)), INTENT(INOUT)::porosity_id
+
+      REAL(KIND(1d0)), DIMENSION(6, nsurf), INTENT(inout)::StoreDrainPrm
 
       REAL(KIND(1d0)), INTENT(OUT)::deltaLAI
 
@@ -722,6 +732,7 @@ CONTAINS
       !write(*,*) deltaLAI, deltaLAIEveTr, deltaLAIGrass
 
       DecidCap_id = DecidCap_id - CapChange
+      StoreDrainPrm(6, DecidSurf) = DecidCap_id !Change current storage capacity of deciduous trees
       albDecTr_id = albDecTr_id + albChangeDecTr
       porosity_id = porosity_id + porChange !- changed to + by HCW 20 Aug 2015 (porosity greatest when LAI smallest)
       !Also update albedo of EveTr and Grass surfaces

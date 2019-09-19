@@ -503,7 +503,12 @@ CONTAINS
       REAL(KIND(1D0))::alb1
 
       ! ########################################################################################
+      ! TS 19 Sep 2019
       ! temporary variables to save values for inout varialbes
+      ! suffixes `prev` and `next` denote values from last and to next tsteps, respectively
+      ! these variables are introduced to allow safe and robust iterations inccurred in this subroutine
+      ! so that these values won't updated in unexpectedly many times
+
       ! OHM related:
       REAL(KIND(1D0))::qn1_av_prev, qn1_av_next
       REAL(KIND(1D0))::dqndt_prev, dqndt_next
@@ -545,6 +550,7 @@ CONTAINS
 
       ! ########################################################################################
       ! save initial values of inout variables
+      ! done:
       qn1_av_prev = qn1_av
       dqndt_prev = dqndt
       qn1_s_av_prev = qn1_s_av
@@ -558,6 +564,9 @@ CONTAINS
       SnowPack_prev = SnowPack
       soilstore_id_prev = soilstore_id
       state_id_prev = state_id
+      Tair_av_prev = Tair_av
+
+      ! todo:
       StoreDrainPrm_prev = StoreDrainPrm
       alb_prev = alb
       GDD_id_prev = GDD_id
@@ -567,7 +576,6 @@ CONTAINS
       albEveTr_id_prev = albEveTr_id
       albGrass_id_prev = albGrass_id
       porosity_id_prev = porosity_id
-      Tair_av_prev = Tair_av
 
       ! ########################################################################################
 
@@ -635,6 +643,7 @@ CONTAINS
          BaseT, BaseTe, GDDFull, SDDFull, LAIMin, LAIMax, LAIPower, &
          GDD_id, HDD_id, LAI_id, LAI_id_prev, WUDay_id, &!inout
          DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
+         StoreDrainPrm,&
          deltaLAI)!output
 
       !=================Calculation of density and other water related parameters=================
@@ -648,7 +657,7 @@ CONTAINS
       IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_update_SoilMoist...'
       CALL SUEWS_update_SoilMoist( &
          NonWaterFraction, &!input
-         SoilStoreCap, sfr, soilstore_id, &
+         SoilStoreCap, sfr, soilstore_id_prev, &
          SoilMoistCap, SoilState, &!output
          vsmd, smd)
 
@@ -674,6 +683,9 @@ CONTAINS
          Temp_C, TrafficRate, TrafficUnits, TraffProf_24hr, &
          Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff)! output:
 
+      ! ========================================================================
+      ! N.B.: the following parts involves snow-related calculations.
+
       IF (snowUse == 1) CALL SnowUpdate( &
          nsurf, tstep, &!input
          Temp_C, &
@@ -695,8 +707,7 @@ CONTAINS
          dectime, ZENITH_deg, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
          SnowAlb_next, snowFrac_prev, DiagQN, &
          NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac, sfr, emis, &
-         alb, albDecTr_id, DecidCap_id, albEveTr_id, albGrass_id, &!inout
-         StoreDrainPrm, &!inout
+         alb, albDecTr_id, albEveTr_id, albGrass_id, &!inout
          ldown, fcld, &!output
          qn1, qn1_snowfree, qn1_S, kclear, kup, lup, tsurf, &
          qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
@@ -707,18 +718,16 @@ CONTAINS
          StorageHeatMethod, qs_obs, OHMIncQF, Gridiv, &!input
          id, tstep, dt_since_start, Diagnose, sfr, &
          OHM_coef, OHM_threshSW, OHM_threshWD, &
-         soilstore_id, SoilStoreCap, state_id_prev, SnowUse, snowFrac_next, DiagQS, &
+         soilstore_id_prev, SoilStoreCap, state_id_prev, SnowUse, snowFrac_next, DiagQS, &
          HDD_id, MetForcingData_grid, Ts5mindata_ir, qf, qn1, &
          avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown, &
          bldgh, alb, emis, cpAnOHM, kkAnOHM, chAnOHM, EmissionsMethod, &
          Tair_av_next, qn1_av_prev, dqndt_prev, qn1_s_av_prev, dqnsdt_prev, &
-         StoreDrainPrm, &!inout
+         StoreDrainPrm, &
          qn1_S, dataOutLineESTM, qs, &!output
          qn1_av_next, dqndt_next, qn1_s_av_next, dqnsdt_next, &
          deltaQi, a1, a2, a3)
 
-      ! ========================================================================
-      ! N.B.: the following parts involves snow-related calculations.
 
       !==================Energy related to snow melting/freezing processes=======
       IF (Diagnose == 1) WRITE (*, *) 'Calling MeltHeat'
@@ -750,7 +759,7 @@ CONTAINS
       CALL SUEWS_cal_Water( &
          Diagnose, &!input
          snowUse, NonWaterFraction, addPipes, addImpervious, addVeg, addWaterBody, &
-         state_id_prev, soilstore_id, sfr, StoreDrainPrm, WaterDist, nsh_real, &
+         state_id_prev, soilstore_id_prev, sfr, StoreDrainPrm, WaterDist, nsh_real, &
          drain_per_tstep, &  !output
          drain, AddWaterRunoff, &
          AdditionalWater, runoffPipes, runoff_per_interval, &
@@ -782,26 +791,26 @@ CONTAINS
 
       !======== Evaporation and surface state_id ========
       CALL SUEWS_cal_QE( &
-      Diagnose, snowuse, &!input
-      tstep, imin, it, EvapMethod, snowCalcSwitch, dayofWeek_id, CRWmin, CRWmax, &
-      dectime, lvS_J_kg, avRh, Press_hPa, Temp_C, &
-      RAsnow, psyc_hPa, sIce_hPa, &
-      PervFraction, vegfraction, addimpervious, qn1_snowfree, qf, qs, vpd_hPa, s_hPa, &
-      ResistSurf, RA, rb, snowdensmin, precip, PipeCapacity, RunoffToWater, &
-      NonWaterFraction, wu_EveTr, wu_DecTr, wu_Grass, addVeg, addWaterBody, SnowLimPaved, SnowLimBldg, &
-      SurfaceArea, FlowChange, drain, WetThresh, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
-      freezmelt, freezstate, freezstatevol, Qm_Melt, Qm_rain, Tsurf_ind, sfr, &
-      StateLimit, AddWater, addwaterrunoff, StoreDrainPrm, SnowPackLimit, SnowProf_24hr, &
-      SnowPack_next, SnowFrac_next, SnowWater_prev, IceFrac_prev, SnowDens_next, &! input:
-      runoff_per_interval, state_id_prev, soilstore_id, &! input:
-      state_id_next, soilstore_id, &! output:
-      SnowPack_next, SnowFrac_next, SnowWater_next, iceFrac_next, SnowDens_next, &! output
-      runoffSnow, runoff, runoffSoil, chang, changSnow, &! output:
-      snowDepth, SnowToSurf, ev_snow, SnowRemoval, &
-      evap, rss_nsurf, p_mm, qe, state_per_tstep, NWstate_per_tstep, qeOut, &
-      swe, ev, chSnow_per_interval, ev_per_tstep, qe_per_tstep, runoff_per_tstep, &
-      surf_chang_per_tstep, runoffPipes, mwstore, runoffwaterbody, &
-      runoffAGveg, runoffAGimpervious, runoffWaterBody_m3, runoffPipes_m3)
+         Diagnose, snowuse, &!input
+         tstep, imin, it, EvapMethod, snowCalcSwitch, dayofWeek_id, CRWmin, CRWmax, &
+         dectime, lvS_J_kg, avRh, Press_hPa, Temp_C, &
+         RAsnow, psyc_hPa, sIce_hPa, &
+         PervFraction, vegfraction, addimpervious, qn1_snowfree, qf, qs, vpd_hPa, s_hPa, &
+         ResistSurf, RA, rb, snowdensmin, precip, PipeCapacity, RunoffToWater, &
+         NonWaterFraction, wu_EveTr, wu_DecTr, wu_Grass, addVeg, addWaterBody, SnowLimPaved, SnowLimBldg, &
+         SurfaceArea, FlowChange, drain, WetThresh, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
+         freezmelt, freezstate, freezstatevol, Qm_Melt, Qm_rain, Tsurf_ind, sfr, &
+         StateLimit, AddWater, addwaterrunoff, StoreDrainPrm, SnowPackLimit, SnowProf_24hr, &
+         SnowPack_next, SnowFrac_next, SnowWater_prev, IceFrac_prev, SnowDens_next, &! input:
+         runoff_per_interval, state_id_prev, soilstore_id_prev, &! input:
+         state_id_next, soilstore_id_next, &! output:
+         SnowPack_next, SnowFrac_next, SnowWater_next, iceFrac_next, SnowDens_next, &! output
+         runoffSnow, runoff, runoffSoil, chang, changSnow, &! output:
+         snowDepth, SnowToSurf, ev_snow, SnowRemoval, &
+         evap, rss_nsurf, p_mm, qe, state_per_tstep, NWstate_per_tstep, qeOut, &
+         swe, ev, chSnow_per_interval, ev_per_tstep, qe_per_tstep, runoff_per_tstep, &
+         surf_chang_per_tstep, runoffPipes, mwstore, runoffwaterbody, &
+         runoffAGveg, runoffAGimpervious, runoffWaterBody_m3, runoffPipes_m3)
       !======== Evaporation and surface state_id end========
 
       !============ Sensible heat flux ===============
@@ -834,7 +843,7 @@ CONTAINS
          SurfaceArea, &!Surface area of the study area [m2]
          NonWaterFraction, &! sum of surface cover fractions for all except water surfaces
          tstep_real, & !tstep cast as a real for use in calculations
-         soilstore_id, &! inout:!Soil moisture of each surface type [mm]
+         soilstore_id_next, &! inout:!Soil moisture of each surface type [mm]
          runoffSoil, &!Soil runoff from each soil sub-surface [mm]
          runoffSoil_per_tstep &!  output:!Runoff to deep soil per timestep [mm] (for whole surface, excluding water body)
          )
@@ -844,7 +853,7 @@ CONTAINS
       CALL SUEWS_cal_SoilState( &
          SMDMethod, xsmd, NonWaterFraction, SoilMoistCap, &!input
          SoilStoreCap, surf_chang_per_tstep, &
-         soilstore_id, soilstoreOld, sfr, &
+         soilstore_id_next, soilstoreOld, sfr, &
          smd, smd_nsurf, tot_chang_per_tstep, SoilState)!output
 
       !============ surface-level diagonostics ===============
@@ -891,7 +900,7 @@ CONTAINS
       SnowFrac = SnowFrac_next
       SnowPack = SnowPack_next
 
-      ! soilstore_id = soilstore_id_next
+      soilstore_id = soilstore_id_next
       state_id = state_id_next
       ! StoreDrainPrm = StoreDrainPrm_next
       ! alb = alb_next
@@ -1192,8 +1201,7 @@ CONTAINS
       dectime, ZENITH_deg, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
       SnowAlb, snowFrac_prev, DiagQN, &
       NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac, sfr, emis, &
-      alb, albDecTr_id, DecidCap_id, albEveTr_id, albGrass_id, &!inout
-      StoreDrainPrm, &!inout
+      alb, albDecTr_id, albEveTr_id, albGrass_id, &!inout
       ldown, fcld, &!output
       qn1, qn1_snowfree, qn1_S, kclear, kup, lup, tsurf, &
       qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
@@ -1231,11 +1239,11 @@ CONTAINS
 
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(inout)  ::alb
       REAL(KIND(1d0)), INTENT(in)  ::albDecTr_id
-      REAL(KIND(1d0)), INTENT(in)  ::DecidCap_id
+      ! REAL(KIND(1d0)), INTENT(in)  ::DecidCap_id
       REAL(KIND(1d0)), INTENT(in)  ::albEveTr_id
       REAL(KIND(1d0)), INTENT(in)  ::albGrass_id
 
-      REAL(KIND(1d0)), DIMENSION(6, nsurf), INTENT(inout)::StoreDrainPrm
+      ! REAL(KIND(1d0)), DIMENSION(6, nsurf), INTENT(inout)::StoreDrainPrm
 
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::snowFrac_prev
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::snowFrac_next
@@ -1291,7 +1299,7 @@ CONTAINS
 
          ! Update variables that change daily and represent seasonal variability
          alb(DecidSurf) = albDecTr_id !Change deciduous albedo
-         StoreDrainPrm(6, DecidSurf) = DecidCap_id !Change current storage capacity of deciduous trees
+         ! StoreDrainPrm(6, DecidSurf) = DecidCap_id !Change current storage capacity of deciduous trees
          ! Change EveTr and Grass albedo too
          alb(ConifSurf) = albEveTr_id
          alb(GrassSurf) = albGrass_id
@@ -1343,7 +1351,7 @@ CONTAINS
       avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown, &
       bldgh, alb, emis, cpAnOHM, kkAnOHM, chAnOHM, EmissionsMethod, &
       Tair_av, qn1_av_prev, dqndt_prev, qn1_s_av_prev, dqnsdt_prev, &
-      StoreDrainPrm, &!inout
+      StoreDrainPrm, &
       qn1_S, dataOutLineESTM, qs, &!output
       qn1_av_next, dqndt_next, qn1_s_av_next, dqnsdt_next, &
       deltaQi, a1, a2, a3)
@@ -1402,7 +1410,7 @@ CONTAINS
 
       ! REAL(KIND(1d0)),DIMENSION(2*nsh+1),INTENT(inout)::qn1_av_store_grid
       ! REAL(KIND(1d0)),DIMENSION(2*nsh+1),INTENT(inout)::qn1_S_av_store_grid !< average net radiation over previous hour [W m-2]
-      REAL(KIND(1d0)), DIMENSION(6, nsurf), INTENT(inout)::StoreDrainPrm
+      REAL(KIND(1d0)), DIMENSION(6, nsurf), INTENT(in)::StoreDrainPrm
 
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::deltaQi ! storage heat flux of snow surfaces
 

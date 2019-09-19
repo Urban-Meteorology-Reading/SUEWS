@@ -65,11 +65,10 @@ CONTAINS
       CapMax_dec, CapMin_dec, PorMax_dec, PorMin_dec, &
       Ie_a, Ie_m, DayWatPer, DayWat, &
       BaseT, BaseTe, GDDFull, SDDFull, LAIMin, LAIMax, LAIPower, &
-      LAI_id_prev,GDD_id_prev,&
+      StoreDrainPrm_prev,LAI_id_prev,GDD_id_prev,&
       HDD_id, WUDay_id, &!inout
       DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
-      StoreDrainPrm,&
-      LAI_id_next,GDD_id_next,deltaLAI)!output
+      StoreDrainPrm_next,LAI_id_next,GDD_id_next,deltaLAI)!output
 
       ! USE Snow_module, ONLY: SnowUpdate
       USE datetime_module, ONLY: datetime, timedelta
@@ -197,7 +196,9 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(INOUT):: albEveTr_id
       REAL(KIND(1d0)), INTENT(INOUT):: albGrass_id
       REAL(KIND(1d0)), INTENT(INOUT):: porosity_id
-      REAL(KIND(1d0)), DIMENSION(6, nsurf), INTENT(inout)::StoreDrainPrm
+      REAL(KIND(1d0)), DIMENSION(6, nsurf), INTENT(in)::StoreDrainPrm_prev
+      REAL(KIND(1d0)), DIMENSION(6, nsurf), INTENT(out)::StoreDrainPrm_next
+      REAL(KIND(1d0)), DIMENSION(6, nsurf)::StoreDrainPrm
 
       LOGICAL :: first_tstep_Q ! if this is the first tstep of a day
       LOGICAL :: last_tstep_Q ! if this is the last tstep of a day
@@ -206,6 +207,7 @@ CONTAINS
       ! transfer values
       LAI_id=LAI_id_prev
       GDD_id= GDD_id_prev
+      StoreDrainPrm=StoreDrainPrm_prev
 
       ! get timestamps
       time_now = datetime(year=iy) + timedelta(days=id - 1, hours=it, minutes=imin, seconds=isec)
@@ -273,6 +275,7 @@ CONTAINS
       ENDIF   !End of section done only at the end of each day (i.e. only once per day)
       LAI_id_next=LAI_id
       GDD_id_next=GDD_id
+      StoreDrainPrm_next=StoreDrainPrm
       ! PRINT*, 'after_DailyState', iy,id,it,imin
       ! PRINT*, 'HDD(id)', HDD(id,:)
       ! PRINT*, 'HDD_id', HDD_id

@@ -575,9 +575,9 @@ CONTAINS
       GDD_id_prev = GDD_id
 
       ! in progress:
+      StoreDrainPrm_prev = StoreDrainPrm
 
       ! todo:
-      StoreDrainPrm_prev = StoreDrainPrm
       alb_prev = alb
       DecidCap_id_prev = DecidCap_id
       albDecTr_id_prev = albDecTr_id
@@ -649,11 +649,11 @@ CONTAINS
          CapMax_dec, CapMin_dec, PorMax_dec, PorMin_dec, &
          Ie_a, Ie_m, DayWatPer, DayWat, &
          BaseT, BaseTe, GDDFull, SDDFull, LAIMin, LAIMax, LAIPower, &
-         LAI_id_prev,GDD_id_prev,&
+         StoreDrainPrm_prev,LAI_id_prev,GDD_id_prev,&
          HDD_id, WUDay_id, &!inout
          DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
-         StoreDrainPrm,&
-         LAI_id_next,GDD_id_next,deltaLAI)!output
+         StoreDrainPrm_next,LAI_id_next,GDD_id_next,deltaLAI)!output
+
 
 
       !=================Calculation of density and other water related parameters=================
@@ -733,7 +733,7 @@ CONTAINS
          avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown, &
          bldgh, alb, emis, cpAnOHM, kkAnOHM, chAnOHM, EmissionsMethod, &
          Tair_av_next, qn1_av_prev, dqndt_prev, qn1_s_av_prev, dqnsdt_prev, &
-         StoreDrainPrm, &
+         StoreDrainPrm_next, &
          qn1_S, dataOutLineESTM, qs, &!output
          qn1_av_next, dqndt_next, qn1_s_av_next, dqnsdt_next, &
          deltaQi, a1, a2, a3)
@@ -769,7 +769,7 @@ CONTAINS
       CALL SUEWS_cal_Water( &
          Diagnose, &!input
          snowUse, NonWaterFraction, addPipes, addImpervious, addVeg, addWaterBody, &
-         state_id_prev, soilstore_id_prev, sfr, StoreDrainPrm, WaterDist, nsh_real, &
+         state_id_prev, soilstore_id_prev, sfr, StoreDrainPrm_next, WaterDist, nsh_real, &
          drain_per_tstep, &  !output
          drain, AddWaterRunoff, &
          AdditionalWater, runoffPipes, runoff_per_interval, &
@@ -810,7 +810,7 @@ CONTAINS
          NonWaterFraction, wu_EveTr, wu_DecTr, wu_Grass, addVeg, addWaterBody, SnowLimPaved, SnowLimBldg, &
          SurfaceArea, FlowChange, drain, WetThresh, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
          freezmelt, freezstate, freezstatevol, Qm_Melt, Qm_rain, Tsurf_ind, sfr, &
-         StateLimit, AddWater, addwaterrunoff, StoreDrainPrm, SnowPackLimit, SnowProf_24hr, &
+         StateLimit, AddWater, addwaterrunoff, StoreDrainPrm_next, SnowPackLimit, SnowProf_24hr, &
          SnowPack_next, SnowFrac_next, SnowWater_prev, IceFrac_prev, SnowDens_next, &! input:
          runoff_per_interval, state_id_prev, soilstore_id_prev, &! input:
          state_id_next, soilstore_id_next, &! output:
@@ -921,6 +921,7 @@ CONTAINS
       ! albEveTr_id = albEveTr_id_next
       ! albGrass_id = albGrass_id_next
       ! porosity_id = porosity_id_next
+      StoreDrainPrm=StoreDrainPrm_next
       Tair_av = Tair_av_next
 
       !==============translation of  output variables into output array===========

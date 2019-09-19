@@ -574,9 +574,9 @@ CONTAINS
       LAI_id_prev = LAI_id
       GDD_id_prev = GDD_id
       StoreDrainPrm_prev = StoreDrainPrm
+      DecidCap_id_prev = DecidCap_id
 
       ! in progress:
-      DecidCap_id_prev = DecidCap_id
 
       ! todo:
       alb_prev = alb
@@ -662,7 +662,6 @@ CONTAINS
          albEveTr_id=albEveTr_id_next
          albGrass_id=albGrass_id_next
          porosity_id=porosity_id_next
-         HDD_id=HDD_id_next
 
 
       !=================Calculation of density and other water related parameters=================
@@ -687,7 +686,7 @@ CONTAINS
          wu_m3, SurfaceArea, sfr, &
          IrrFracConif, IrrFracDecid, IrrFracGrass, &
          DayofWeek_id, WUProfA_24hr, WUProfM_24hr, &
-         InternalWaterUse_h, HDD_id, WUDay_id, &
+         InternalWaterUse_h, HDD_id_next, WUDay_id, &
          WaterUseMethod, NSH, it, imin, DLS, &
          wu_EveTr, wu_DecTr, wu_Grass, int_wu, ext_wu)! output:
 
@@ -695,7 +694,7 @@ CONTAINS
       CALL SUEWS_cal_AnthropogenicEmission( &
          AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, AH_SLOPE_Heating, CO2PointSource, &! input:
          dayofWeek_id, Diagnose, DLS, EF_umolCO2perJ, EmissionsMethod, EnEF_v_Jkm, &
-         FcEF_v_kgkm, FrFossilFuel_Heat, FrFossilFuel_NonHeat, HDD_id, HumActivity_24hr, &
+         FcEF_v_kgkm, FrFossilFuel_Heat, FrFossilFuel_NonHeat, HDD_id_next, HumActivity_24hr, &
          id, imin, it, MaxFCMetab, MaxQFMetab, MinFCMetab, MinQFMetab, nsh, NumCapita, &
          PopDensDaytime, PopDensNighttime, PopProf_24hr, QF, QF0_BEU, Qf_A, Qf_B, Qf_C, &
          QF_obs, QF_SAHP, sfr, SnowFrac, SurfaceArea, T_CRITIC_Cooling, T_CRITIC_Heating, &
@@ -738,7 +737,7 @@ CONTAINS
          id, tstep, dt_since_start, Diagnose, sfr, &
          OHM_coef, OHM_threshSW, OHM_threshWD, &
          soilstore_id_prev, SoilStoreCap, state_id_prev, SnowUse, snowFrac_next, DiagQS, &
-         HDD_id, MetForcingData_grid, Ts5mindata_ir, qf, qn1, &
+         HDD_id_next, MetForcingData_grid, Ts5mindata_ir, qf, qn1, &
          avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown, &
          bldgh, alb, emis, cpAnOHM, kkAnOHM, chAnOHM, EmissionsMethod, &
          Tair_av_next, qn1_av_prev, dqndt_prev, qn1_s_av_prev, dqnsdt_prev, &
@@ -931,6 +930,7 @@ CONTAINS
       ! porosity_id = porosity_id_next
       StoreDrainPrm=StoreDrainPrm_next
       Tair_av = Tair_av_next
+      HDD_id=HDD_id_next
 
       !==============translation of  output variables into output array===========
       CALL SUEWS_update_outputLine( &

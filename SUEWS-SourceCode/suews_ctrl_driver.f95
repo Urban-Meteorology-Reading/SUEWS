@@ -541,6 +541,12 @@ CONTAINS
       REAL(KIND(1D0))::albGrass_id_prev, albGrass_id_next
       REAL(KIND(1D0))::porosity_id_prev, porosity_id_next
 
+      ! anthropogenic heat related:
+      REAL(KIND(1d0)), DIMENSION(12)::HDD_id_prev,HDD_id_next
+
+      ! water use related:
+      REAL(KIND(1d0)), DIMENSION(9)::WUDay_id_prev,WUDay_id_next
+
       REAL(KIND(1D0))::Tair_av_prev, Tair_av_next
       ! ########################################################################################
 
@@ -566,9 +572,9 @@ CONTAINS
       state_id_prev = state_id
       Tair_av_prev = Tair_av
       LAI_id_prev = LAI_id
+      GDD_id_prev = GDD_id
 
       ! in progress:
-      GDD_id_prev = GDD_id
 
       ! todo:
       StoreDrainPrm_prev = StoreDrainPrm

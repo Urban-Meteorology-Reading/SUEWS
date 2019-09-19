@@ -802,13 +802,6 @@ CONTAINS
          UStar, TStar, L_mod, &!output
          zL, gsc, ResistSurf, RA, RAsnow, rb)
 
-      ! IceFrac = IceFrac_prev
-      ! SnowWater = SnowWater_prev
-      ! SnowPack = SnowPack_next
-      ! SnowDens = SnowDens_next
-      ! SnowFrac = SnowFrac_next
-      ! SnowAlb = SnowAlb_next
-      ! SnowfallCum = SnowfallCum_next
 
       !======== Evaporation and surface state_id ========
       CALL SUEWS_cal_QE( &
@@ -841,14 +834,6 @@ CONTAINS
          qn1, qf, QmRain, qeOut, qs, QmFreez, qm, avdens, avcp, tsurf, Temp_C, RA, &
          qh, qh_residual, qh_resist)!output
       !============ Sensible heat flux end===============
-
-      ! SnowfallCum_next = SnowfallCum
-      ! SnowAlb_next = SnowAlb
-      ! IceFrac_next = IceFrac
-      ! SnowWater_next = SnowWater
-      ! SnowDens_next = SnowDens
-      ! SnowFrac_next = SnowFrac
-      ! SnowPack_next = SnowPack
 
       ! N.B.: snow-related calculations end here.
       !===================================================
@@ -934,6 +919,7 @@ CONTAINS
       StoreDrainPrm=StoreDrainPrm_next
       Tair_av = Tair_av_next
       HDD_id=HDD_id_next
+      ! WUDay_id=WUDay_id_next
 
       !==============translation of  output variables into output array===========
       CALL SUEWS_update_outputLine( &

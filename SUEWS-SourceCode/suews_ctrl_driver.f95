@@ -2810,7 +2810,7 @@ CONTAINS
       LAIPower, LAIType, lat, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
       SnowWater, MinFCMetab, MinQFMetab, min_res_bioCO2, &
       NARP_EMIS_SNOW, NARP_TRANS_SITE, NetRadiationMethod, &
-      NumCapita, OHM_coef, OHMIncQF, OHM_threshSW, &
+      OHM_coef, OHMIncQF, OHM_threshSW, &
       OHM_threshWD, PipeCapacity, PopDensDaytime, &
       PopDensNighttime, PopProf_24hr, PorMax_dec, PorMin_dec, &
       PrecipLimit, PrecipLimitAlb, &
@@ -2957,50 +2957,50 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::z0m_in
       REAL(KIND(1D0)), INTENT(IN)::zdm_in
 
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::AH_MIN
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::AH_SLOPE_Cooling
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::AH_SLOPE_Heating
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::FcEF_v_kgkm
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::QF0_BEU
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::Qf_A
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::Qf_B
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::Qf_C
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::Numcapita
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::PopDensDaytime
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::T_CRITIC_Cooling
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::T_CRITIC_Heating
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::TrafficRate
-      REAL(KIND(1D0)), DIMENSION(3), INTENT(IN)               ::Ie_a
-      REAL(KIND(1D0)), DIMENSION(3), INTENT(IN)               ::Ie_m
-      REAL(KIND(1D0)), DIMENSION(3), INTENT(IN)               ::MaxConductance
-      REAL(KIND(1D0)), DIMENSION(7), INTENT(IN)               ::DayWat
-      REAL(KIND(1D0)), DIMENSION(7), INTENT(IN)               ::DayWatPer
-      REAL(KIND(1D0)), DIMENSION(nsurf + 1), INTENT(IN)         ::OHM_threshSW
-      REAL(KIND(1D0)), DIMENSION(nsurf + 1), INTENT(IN)         ::OHM_threshWD
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::chAnOHM
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::cpAnOHM
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::emis
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::kkAnOHM
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::SatHydraulicConduct
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::sfr
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::SnowPackLimit
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::SoilDepth
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::SoilStoreCap
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::StateLimit
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)           ::WetThresh
-      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::alpha_bioCO2
-      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::alpha_enh_bioCO2
-      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::BaseT
-      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::BaseTe
-      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::beta_bioCO2
-      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::beta_enh_bioCO2
-      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::GDDFull
-      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::LAIMax
-      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::LAIMin
-      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::min_res_bioCO2
-      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::resp_a
-      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::resp_b
-      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::SDDFull
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)        ::AH_MIN
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)        ::AH_SLOPE_Cooling
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)        ::AH_SLOPE_Heating
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)        ::FcEF_v_kgkm
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)        ::QF0_BEU
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)        ::Qf_A
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)        ::Qf_B
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)        ::Qf_C
+      ! REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)        ::Numcapita
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)        ::PopDensDaytime
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)        ::T_CRITIC_Cooling
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)        ::T_CRITIC_Heating
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)        ::TrafficRate
+      REAL(KIND(1D0)), DIMENSION(3), INTENT(IN)        ::Ie_a
+      REAL(KIND(1D0)), DIMENSION(3), INTENT(IN)        ::Ie_m
+      REAL(KIND(1D0)), DIMENSION(3), INTENT(IN)        ::MaxConductance
+      REAL(KIND(1D0)), DIMENSION(7), INTENT(IN)        ::DayWat
+      REAL(KIND(1D0)), DIMENSION(7), INTENT(IN)        ::DayWatPer
+      REAL(KIND(1D0)), DIMENSION(nsurf + 1), INTENT(IN)::OHM_threshSW
+      REAL(KIND(1D0)), DIMENSION(nsurf + 1), INTENT(IN)::OHM_threshWD
+      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)    ::chAnOHM
+      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)    ::cpAnOHM
+      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)    ::emis
+      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)    ::kkAnOHM
+      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)    ::SatHydraulicConduct
+      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)    ::sfr
+      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)    ::SnowPackLimit
+      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)    ::SoilDepth
+      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)    ::SoilStoreCap
+      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)    ::StateLimit
+      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(IN)    ::WetThresh
+      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN) ::alpha_bioCO2
+      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN) ::alpha_enh_bioCO2
+      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN) ::BaseT
+      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN) ::BaseTe
+      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN) ::beta_bioCO2
+      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN) ::beta_enh_bioCO2
+      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN) ::GDDFull
+      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN) ::LAIMax
+      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN) ::LAIMin
+      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN) ::min_res_bioCO2
+      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN) ::resp_a
+      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN) ::resp_b
+      REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN) ::SDDFull
       REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(IN)          ::SnowProf_24hr
       REAL(KIND(1D0)), DIMENSION(NVEGSURF), INTENT(IN)        ::theta_bioCO2
       REAL(KIND(1D0)), DIMENSION(4, NVEGSURF), INTENT(IN)      ::LAIPower

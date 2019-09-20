@@ -619,7 +619,7 @@ CONTAINS
       !########################################################################################
       flag_ts_converge = .false.
       Ts_iter = TEMP_C
-      i_iter=1
+      i_iter = 1
       ! print *,'---------------------------------------------------------------------------'
       do while (.not. flag_ts_converge)
          ! print *,'at beginning of iteration',i_iter
@@ -788,7 +788,6 @@ CONTAINS
             qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
             alb1, snowFrac_next)
 
-
          ! =================STORAGE HEAT FLUX=======================================
          CALL SUEWS_cal_Qs( &
             StorageHeatMethod, qs_obs, OHMIncQF, Gridiv, &!input
@@ -944,7 +943,7 @@ CONTAINS
             Fc, Fc_biogen, Fc_photo, Fc_respi)! output:
 
          ! force quit do-while, i.e., skip iteration and use NARP for Tsurf calculation
-         if ( NetRadiationMethod<10 .or. NetRadiationMethod>100 ) exit
+         if (NetRadiationMethod < 10 .or. NetRadiationMethod > 100) exit
 
          ! Test if surface temperatures from QN and surface diagonostics converge
          ! print*,'iteration', i_iter
@@ -952,9 +951,7 @@ CONTAINS
          ! print*,'tskin_C',tskin_C
          ! print*,'diff',tsurf-tskin_C
 
-
-
-         i_iter=i_iter+1
+         i_iter = i_iter + 1
          if (abs(tskin_C - tsurf) > 0.01) then
             flag_ts_converge = .false.
          else
@@ -962,7 +959,7 @@ CONTAINS
          end if
 
          ! force quit do-while loop if not convergent after 100 iterations
-         if ( i_iter>100 ) exit
+         if (i_iter > 100) exit
 
          Ts_iter = tskin_C
 

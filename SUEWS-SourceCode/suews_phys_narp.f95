@@ -70,12 +70,12 @@ CONTAINS
          IF (NetRadiationMethod < 100) THEN
             AlbedoChoice = 0
             ! after the introduction of iteration-based tsurf, TS 20 Sep 2019
-            NetRadiationMethod_use = mod(NetRadiationMethod,10)
+            NetRadiationMethod_use = mod(NetRadiationMethod, 10)
             IF (NetRadiationMethod_use == 1) ldown_option = 1
             IF (NetRadiationMethod_use == 2) ldown_option = 2
             IF (NetRadiationMethod_use == 3) ldown_option = 3
             ! recover values before modulus calculation
-            NetRadiationMethod_use=NetRadiationMethod
+            NetRadiationMethod_use = NetRadiationMethod
 
             ! prior to introduction of iteration-based tsurf, TS 20 Sep 2019
             ! IF (NetRadiationMethod == 1) ldown_option = 1
@@ -93,7 +93,7 @@ CONTAINS
          ENDIF
 
          !If bad NetRadiationMethod value
-         IF (mod(NetRadiationMethod,10) > 3 .OR. AlbedoChoice == -9) THEN
+         IF (mod(NetRadiationMethod, 10) > 3 .OR. AlbedoChoice == -9) THEN
             WRITE (*, *) 'NetRadiationMethod=', NetRadiationMethod_use
             WRITE (*, *) 'Value not usable'
             STOP
@@ -335,7 +335,7 @@ CONTAINS
 
          KUP = ALB0*KDOWN
 
-         if ( NetRadiationMethod_use < 10) then
+         if (NetRadiationMethod_use < 10) then
             ! NARP method
             TSURF = ((EMIS0*SIGMATK4 + LUPCORR)/(EMIS0*SIGMA_SB))**0.25 !Eqs. (14) and (15),
             LUP = EMIS0*SIGMATK4 + LUPCORR + (1 - EMIS0)*LDOWN     !Eq (16) in Offerle et al. (2002)
@@ -360,7 +360,7 @@ CONTAINS
 
             KUP_SNOW = (ALB1*(SnowFrac(is) - SnowFrac(is)*IceFrac(is)) + ALB0*SnowFrac(is)*IceFrac(is))*KDOWN
 
-            if ( NetRadiationMethod_use < 10) then
+            if (NetRadiationMethod_use < 10) then
                ! NARP method
                TSURF_SNOW = ((NARP_EMIS_SNOW*SIGMATK4)/(NARP_EMIS_SNOW*SIGMA_SB))**0.25 !Snow surface temperature
                !IF (TSURF_SNOW>273.16) TSURF_SNOW=min(273.16,Temp_K)!Set this to 2 degrees (melted water on top)

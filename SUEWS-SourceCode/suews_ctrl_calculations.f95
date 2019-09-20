@@ -39,7 +39,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
                       ef_umolco2perj, emissionsmethod, enef_v_jkm, enddls, fcef_v_kgkm, fcld_obs, &
                       frfossilfuel_heat, frfossilfuel_nonheat, EvapMethod, &
                       LAIcalcyes, LAI_obs, lat, ldown_obs, lng, maxfcmetab, maxqfmetab, &
-                      minfcmetab, minqfmetab, netradiationmethod, numcapita, ohmincqf, &
+                      minfcmetab, minqfmetab, netradiationmethod, ohmincqf, &
                       popdensdaytime, popdensnighttime, &
                       precip, press_hpa, qf0_beu, qf_a, qf_b, qf_c, &
                       qe_obs, qh_obs, qn1_obs, qs_obs, qf_obs, &
@@ -136,7 +136,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       LAIPower, LAIType, lat, ldown_obs, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
       SnowWater, MetForcingData_grid, MinFCMetab, MinQFMetab, min_res_bioCO2, &
       NARP_EMIS_SNOW, NARP_TRANS_SITE, NetRadiationMethod, &
-      NumCapita, OHM_coef, OHMIncQF, OHM_threshSW, &
+      OHM_coef, OHMIncQF, OHM_threshSW, &
       OHM_threshWD, PipeCapacity, PopDensDaytime, &
       PopDensNighttime, PopProf_24hr, PorMax_dec, PorMin_dec, &
       Precip, PrecipLimit, PrecipLimitAlb, Press_hPa, &

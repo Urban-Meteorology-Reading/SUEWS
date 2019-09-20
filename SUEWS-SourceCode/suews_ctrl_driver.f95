@@ -58,7 +58,7 @@ CONTAINS
       LAIPower, LAIType, lat, ldown_obs, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
       SnowWater, MetForcingData_grid, MinFCMetab, MinQFMetab, min_res_bioCO2, &
       NARP_EMIS_SNOW, NARP_TRANS_SITE, NetRadiationMethod, &
-      NumCapita, OHM_coef, OHMIncQF, OHM_threshSW, &
+      OHM_coef, OHMIncQF, OHM_threshSW, &
       OHM_threshWD, PipeCapacity, PopDensDaytime, &
       PopDensNighttime, PopProf_24hr, PorMax_dec, PorMin_dec, &
       Precip, PrecipLimit, PrecipLimitAlb, Press_hPa, &
@@ -218,7 +218,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::Qf_A
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::Qf_B
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::Qf_C
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::NumCapita
+      ! REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::NumCapita
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::PopDensDaytime
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::T_CRITIC_Cooling
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::T_CRITIC_Heating
@@ -352,7 +352,7 @@ CONTAINS
       REAL(KIND(1D0))::Fc_point
       REAL(KIND(1D0))::Fc_respi
       REAL(KIND(1D0))::Fc_traff
-      REAL(KIND(1D0))::fwh
+      ! REAL(KIND(1D0))::fwh
       REAL(KIND(1D0))::gfunc
       REAL(KIND(1D0))::gsc
       REAL(KIND(1D0))::H_mod
@@ -751,7 +751,7 @@ CONTAINS
             AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, AH_SLOPE_Heating, CO2PointSource, &! input:
             dayofWeek_id, Diagnose, DLS, EF_umolCO2perJ, EmissionsMethod, EnEF_v_Jkm, &
             FcEF_v_kgkm, FrFossilFuel_Heat, FrFossilFuel_NonHeat, HDD_id_next, HumActivity_24hr, &
-            id, imin, it, MaxFCMetab, MaxQFMetab, MinFCMetab, MinQFMetab, nsh, NumCapita, &
+            id, imin, it, MaxFCMetab, MaxQFMetab, MinFCMetab, MinQFMetab, nsh, &
             PopDensDaytime, PopDensNighttime, PopProf_24hr, QF, QF0_BEU, Qf_A, Qf_B, Qf_C, &
             QF_obs, QF_SAHP, sfr, SnowFrac, SurfaceArea, T_CRITIC_Cooling, T_CRITIC_Heating, &
             Temp_C, TrafficRate, TrafficUnits, TraffProf_24hr, &
@@ -1042,7 +1042,7 @@ CONTAINS
       AH_MIN, AHProf_24hr, AH_SLOPE_Cooling, AH_SLOPE_Heating, CO2PointSource, &! input:
       dayofWeek_id, Diagnose, DLS, EF_umolCO2perJ, EmissionsMethod, EnEF_v_Jkm, &
       FcEF_v_kgkm, FrFossilFuel_Heat, FrFossilFuel_NonHeat, HDD_id, HumActivity_24hr, &
-      id, imin, it, MaxFCMetab, MaxQFMetab, MinFCMetab, MinQFMetab, nsh, NumCapita, &
+      id, imin, it, MaxFCMetab, MaxQFMetab, MinFCMetab, MinQFMetab, nsh, &
       PopDensDaytime, PopDensNighttime, PopProf_24hr, QF, QF0_BEU, Qf_A, Qf_B, Qf_C, &
       QF_obs, QF_SAHP, sfr, SnowFrac, SurfaceArea, T_CRITIC_Cooling, T_CRITIC_Heating, &
       Temp_C, TrafficRate, TrafficUnits, TraffProf_24hr, &
@@ -1065,7 +1065,7 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::AH_SLOPE_Heating
       REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::AH_SLOPE_Cooling
       REAL(KIND(1D0)), DIMENSION(2), INTENT(in)::FcEF_v_kgkm
-      REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::NumCapita
+      ! REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::NumCapita
       REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::PopDensDaytime
       REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::QF0_BEU
       REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::Qf_A
@@ -1118,7 +1118,7 @@ CONTAINS
             EF_umolCO2perJ, FcEF_v_kgkm, EnEF_v_Jkm, TrafficUnits, &
             FrFossilFuel_Heat, FrFossilFuel_NonHeat, &
             MinFCMetab, MaxFCMetab, MinQFMetab, MaxQFMetab, &
-            NumCapita, PopDensDaytime, PopDensNighttime, &
+            PopDensDaytime, PopDensNighttime, &
             Temp_C, HDD_id, Qf_A, Qf_B, Qf_C, &
             AH_MIN, AH_SLOPE_Heating, AH_SLOPE_Cooling, &
             T_CRITIC_Heating, T_CRITIC_Cooling, &
@@ -3173,7 +3173,7 @@ CONTAINS
             LAIPower, LAIType, lat, ldown_obs, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
             SnowWater, MetForcingBlock, MinFCMetab, MinQFMetab, min_res_bioCO2, &
             NARP_EMIS_SNOW, NARP_TRANS_SITE, NetRadiationMethod, &
-            NumCapita, OHM_coef, OHMIncQF, OHM_threshSW, &
+            OHM_coef, OHMIncQF, OHM_threshSW, &
             OHM_threshWD, PipeCapacity, PopDensDaytime, &
             PopDensNighttime, PopProf_24hr, PorMax_dec, PorMin_dec, &
             Precip, PrecipLimit, PrecipLimitAlb, Press_hPa, &

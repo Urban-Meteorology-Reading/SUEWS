@@ -1125,7 +1125,7 @@ MODULE data_in
                                    AH_SLOPE_Heating, &  !Slope of the antrhropogenic heat flux calculation (AnthropHeatMethod = 1)
                                    AH_SLOPE_Cooling, &
                                    FcEF_v_kgkm, &
-                                 !   NumCapita, &
+                                   !   NumCapita, &
                                    PopDensDaytime, &
                                    T_CRITIC_Heating, & !Critical temperature
                                    T_CRITIC_Cooling, & !Critical cooling temperature

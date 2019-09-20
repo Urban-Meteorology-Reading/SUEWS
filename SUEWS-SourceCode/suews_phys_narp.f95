@@ -42,37 +42,46 @@ MODULE NARP_MODULE
 CONTAINS
    !==============================================================================
    SUBROUTINE RadMethod( &
-      NetRadiationMethod, &!inout
+      NetRadiationMethod, &!input
       snowUse, &!input
-      NetRadiationMethodX, AlbedoChoice, ldown_option)!output
+      NetRadiationMethod_use, AlbedoChoice, ldown_option)!output
       IMPLICIT NONE
       INTEGER, INTENT(in) :: NetRadiationMethod ! the one from RunControl setting
       INTEGER, INTENT(in) ::snowUse
-      INTEGER, INTENT(out)::NetRadiationMethodX ! processed NetRadiationMethod to be used for other radiation calculations
+      INTEGER, INTENT(out)::NetRadiationMethod_use ! processed NetRadiationMethod to be used for other radiation calculations
       INTEGER, INTENT(out)::AlbedoChoice, ldown_option
       !Determine what should be done with respect to radiation
       ! TODO: this can be wrapped into a subroutine, TS 20 Oct 2017
       AlbedoChoice = 0
       ldown_option = 0
       IF (NetRadiationMethod == 0) THEN    !Observed Q* from the met input file will be used
-         NetRadiationMethodX = 0
+         NetRadiationMethod_use = 0
          !  ldown_option is not required if NetRadiationMethodX=0 as LDOWN calculations are skipped
 
          IF (snowUse == 1) THEN            !If snow is modelled, NARP is needed for surface temperature
             ! NetRadiationMethod=3000
-            NetRadiationMethodX = 3000
+            NetRadiationMethod_use = 3000
             ldown_option = 3              !LDOWN will be modelled
             !NetRadiationMethod=NetRadiationMethod/1000
          ENDIF
 
       ELSEIF (NetRadiationMethod > 0) THEN  !Modelled Q* is used (NARP)
          AlbedoChoice = -9
-         IF (NetRadiationMethod < 10) THEN
+         IF (NetRadiationMethod < 100) THEN
             AlbedoChoice = 0
-            IF (NetRadiationMethod == 1) ldown_option = 1
-            IF (NetRadiationMethod == 2) ldown_option = 2
-            IF (NetRadiationMethod == 3) ldown_option = 3
-            NetRadiationMethodX = NetRadiationMethod
+            ! after the introduction of iteration-based tsurf, TS 20 Sep 2019
+            NetRadiationMethod_use = mod(NetRadiationMethod,10)
+            IF (NetRadiationMethod_use == 1) ldown_option = 1
+            IF (NetRadiationMethod_use == 2) ldown_option = 2
+            IF (NetRadiationMethod_use == 3) ldown_option = 3
+            ! recover values before modulus calculation
+            NetRadiationMethod_use=NetRadiationMethod
+
+            ! prior to introduction of iteration-based tsurf, TS 20 Sep 2019
+            ! IF (NetRadiationMethod == 1) ldown_option = 1
+            ! IF (NetRadiationMethod == 2) ldown_option = 2
+            ! IF (NetRadiationMethod == 3) ldown_option = 3
+            ! NetRadiationMethod_use = NetRadiationMethod
 
          ELSEIF (NetRadiationMethod >= 100 .AND. NetRadiationMethod < 1000) THEN
             AlbedoChoice = 1
@@ -80,12 +89,12 @@ CONTAINS
             IF (NetRadiationMethod == 200) ldown_option = 2
             IF (NetRadiationMethod == 300) ldown_option = 3
             ! NetRadiationMethod=NetRadiationMethod/100
-            NetRadiationMethodX = NetRadiationMethod/100
+            NetRadiationMethod_use = NetRadiationMethod/100
          ENDIF
 
          !If bad NetRadiationMethod value
-         IF (NetRadiationMethodX > 3 .OR. AlbedoChoice == -9) THEN
-            WRITE (*, *) 'NetRadiationMethod=', NetRadiationMethodX
+         IF (mod(NetRadiationMethod,10) > 3 .OR. AlbedoChoice == -9) THEN
+            WRITE (*, *) 'NetRadiationMethod=', NetRadiationMethod_use
             WRITE (*, *) 'Value not usable'
             STOP
          ENDIF
@@ -97,10 +106,10 @@ CONTAINS
    SUBROUTINE NARP( &
       nsurf, sfr, SnowFrac, alb, emis, IceFrac, &! input:
       NARP_TRANS_SITE, NARP_EMIS_SNOW, &
-      DTIME, ZENITH_deg, kdown, Temp_C, RH, Press_hPa, qn1_obs, &
+      DTIME, ZENITH_deg, tsurf_0, kdown, Temp_C, RH, Press_hPa, qn1_obs, &
       SnowAlb, &
       AlbedoChoice, ldown_option, &
-      NetRadiationMethodX, DiagQN, &
+      NetRadiationMethod_use, DiagQN, &
       QSTARall, QSTAR_SF, QSTAR_S, kclear, KUPall, LDOWN, LUPall, fcld, TSURFall, &! output:
       qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
       alb0, alb1)
@@ -164,6 +173,7 @@ CONTAINS
 
       REAL(KIND(1D0)), INTENT(in) ::DTIME
       REAL(KIND(1D0)), INTENT(in) ::ZENITH_deg
+      REAL(KIND(1D0)), INTENT(in) ::tsurf_0
       REAL(KIND(1D0)), INTENT(in) ::kdown
       REAL(KIND(1D0)), INTENT(in) ::Temp_C
       REAL(KIND(1D0)), INTENT(in) ::RH
@@ -174,7 +184,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(in) ::NARP_EMIS_SNOW
 
       INTEGER, INTENT(in) ::nsurf
-      INTEGER, INTENT(in) ::NetRadiationMethodX ! the one processed by RadMethod
+      INTEGER, INTENT(in) ::NetRadiationMethod_use ! the one processed by RadMethod
       INTEGER, INTENT(in) ::AlbedoChoice
       INTEGER, INTENT(in) ::ldown_option
       INTEGER, INTENT(in) ::DiagQN
@@ -207,6 +217,7 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(nsurf) ::Tsurf_ind_nosnow
       REAL(KIND(1d0)), DIMENSION(nsurf) ::lup_ind_snow
 
+      REAL(KIND(1D0)) ::tsurf_0_K
       REAL(KIND(1D0)) ::Temp_K, TD, ZENITH, QSTAR, QSTAR_SNOW, KUP_SNOW, LUP_SNOW, TSURF_SNOW, KUP, LUP, TSURF
       REAL(KIND(1D0)) ::EMIS0, EMIS_A, TRANS!,RH,DTIME,KDOWN
       REAL(KIND(1D0)) ::LUPCORR, SIGMATK4, KDOWN_HR = 0.
@@ -227,6 +238,7 @@ CONTAINS
       ! RH=avrh
       ! DTIME=dectime
       ! KDOWN=avkdn
+      tsurf_0_K = tsurf_0 + 273.16
       Temp_K = Temp_C + 273.16
       SIGMATK4 = SIGMA_SB*Temp_K**4
       TD = DEWPOINT(Temp_C, RH)
@@ -322,9 +334,18 @@ CONTAINS
          ENDIF
 
          KUP = ALB0*KDOWN
-         TSURF = ((EMIS0*SIGMATK4 + LUPCORR)/(EMIS0*SIGMA_SB))**0.25 !Eqs. (14) and (15),
 
-         LUP = EMIS0*SIGMATK4 + LUPCORR + (1 - EMIS0)*LDOWN              !Eq (16) in Offerle et al. (2002)
+         if ( NetRadiationMethod_use < 10) then
+            ! NARP method
+            TSURF = ((EMIS0*SIGMATK4 + LUPCORR)/(EMIS0*SIGMA_SB))**0.25 !Eqs. (14) and (15),
+            LUP = EMIS0*SIGMATK4 + LUPCORR + (1 - EMIS0)*LDOWN     !Eq (16) in Offerle et al. (2002)
+         else
+            ! use iteration-based approach to calculate LUP and also TSURF
+            TSURF = tsurf_0_K
+            LUP = EMIS0*SIGMA_SB*TSURF**4 + (1 - EMIS0)*LDOWN
+
+         end if
+
          QSTAR = KDOWN - KUP + LDOWN - LUP
          TSURF = TSURF - 273.16
 
@@ -338,14 +359,21 @@ CONTAINS
             ENDIF
 
             KUP_SNOW = (ALB1*(SnowFrac(is) - SnowFrac(is)*IceFrac(is)) + ALB0*SnowFrac(is)*IceFrac(is))*KDOWN
-            TSURF_SNOW = ((NARP_EMIS_SNOW*SIGMATK4)/(NARP_EMIS_SNOW*SIGMA_SB))**0.25 !Snow surface temperature
 
-            !IF (TSURF_SNOW>273.16) TSURF_SNOW=min(273.16,Temp_K)!Set this to 2 degrees (melted water on top)
-            !open(34,file='TestingSnowFrac.txt',position='append')
-            !write(34,*) dectime,is,alb1,alb0,SnowFrac(is),IceFrac(is),KDOWN,KUP_snow
-            !close(34)
+            if ( NetRadiationMethod_use < 10) then
+               ! NARP method
+               TSURF_SNOW = ((NARP_EMIS_SNOW*SIGMATK4)/(NARP_EMIS_SNOW*SIGMA_SB))**0.25 !Snow surface temperature
+               !IF (TSURF_SNOW>273.16) TSURF_SNOW=min(273.16,Temp_K)!Set this to 2 degrees (melted water on top)
+               !open(34,file='TestingSnowFrac.txt',position='append')
+               !write(34,*) dectime,is,alb1,alb0,SnowFrac(is),IceFrac(is),KDOWN,KUP_snow
+               !close(34)
+               LUP_SNOW = NARP_EMIS_SNOW*SIGMA_SB*TSURF_SNOW**4 + (1 - NARP_EMIS_SNOW)*LDOWN
+            else
+               ! use iteration-based approach to calculate LUP and also TSURF
+               TSURF_SNOW = tsurf_0_K
+               LUP_SNOW = NARP_EMIS_SNOW*SIGMA_SB*TSURF**4 + (1 - NARP_EMIS_SNOW)*LDOWN
+            end if
 
-            LUP_SNOW = NARP_EMIS_SNOW*SIGMA_SB*TSURF_SNOW**4 + (1 - NARP_EMIS_SNOW)*LDOWN
             QSTAR_SNOW = KDOWN - KUP_SNOW + LDOWN - LUP_SNOW
             TSURF_SNOW = TSURF_SNOW - 273.16
 
@@ -404,7 +432,7 @@ CONTAINS
       ENDDO !End of the surface types
 
       !Set overall radiation components
-      IF (NetRadiationMethodX /= 3000) THEN !Observed Q* used and snow is modeled
+      IF (NetRadiationMethod_use /= 3000) THEN !Observed Q* used and snow is modeled
          QSTARall = qn1_cum
       ELSE
          QSTARall = qn1_obs

@@ -11,7 +11,7 @@ MODULE SUEWS_Driver
    USE resist_module, ONLY: AerodynamicResistance, BoundaryLayerResistance, SurfaceResistance, &
                             cal_z0V, SUEWS_cal_RoughnessParameters
    USE ESTM_module, ONLY: ESTM
-   USE Snow_module, ONLY: SnowCalc, Snow_cal_MeltHeat, SnowUpdate, update_snow_albedo
+   USE Snow_module, ONLY: SnowCalc, Snow_cal_MeltHeat, SnowUpdate, update_snow_albedo, update_snow_dens
    USE DailyState_module, ONLY: SUEWS_cal_DailyState, update_DailyStateLine
    USE WaterDist_module, ONLY: drainage, soilstore, &
                                SUEWS_cal_SoilState, SUEWS_update_SoilMoist, &
@@ -760,18 +760,21 @@ CONTAINS
          ! ========================================================================
          ! N.B.: the following parts involves snow-related calculations.
 
-         IF (snowUse == 1) CALL SnowUpdate( &
-            tstep, &!input
-            Temp_C, &
-            tau_a, &
-            tau_f, &
-            tau_r, &
-            SnowDensMax, &
-            SnowDensMin, &
-            SnowAlbMax, &
-            SnowAlbMin, &
-            SnowPack_prev, SnowAlb_prev, SnowDens_prev, &
-            SnowAlb_next, SnowDens_next ) ! output
+         ! IF (snowUse == 1) CALL SnowUpdate( &
+         !    tstep, &!input
+         !    Temp_C, &
+         !    tau_a, &
+         !    tau_f, &
+         !    tau_r, &
+         !    SnowDensMax, &
+         !    SnowDensMin, &
+         !    SnowAlbMax, &
+         !    SnowAlbMin, &
+         !    SnowPack_prev, SnowAlb_prev, SnowDens_prev, &
+         !    SnowAlb_next, SnowDens_next ) ! output
+         IF (snowUse == 1)    SnowDens_next=update_snow_dens(&
+               tstep,SnowPack_prev,SnowDens_prev, &
+               tau_r,SnowDensMax,SnowDensMin)
 
 
          ! ===================NET ALLWAVE RADIATION================================
@@ -787,7 +790,7 @@ CONTAINS
             ldown, fcld, &!output
             qn1, qn1_snowfree, qn1_S, kclear, kup, lup, tsurf, &
             qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
-            alb1, snowFrac_next)
+            alb1, snowFrac_next, SnowAlb_next)
 
          ! =================STORAGE HEAT FLUX=======================================
          CALL SUEWS_cal_Qs( &
@@ -1290,7 +1293,7 @@ CONTAINS
       ldown, fcld, &!output
       qn1, qn1_snowfree, qn1_S, kclear, kup, lup, tsurf, &
       qn1_ind_snow, kup_ind_snow, Tsurf_ind_snow, Tsurf_ind, &
-      alb1, snowFrac_next)
+      alb1, snowFrac_next, SnowAlb_next)
       USE NARP_MODULE, ONLY: RadMethod, NARP
 
       IMPLICIT NONE
@@ -1350,6 +1353,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(out)::lup
       REAL(KIND(1d0)), INTENT(out)::tsurf
       REAL(KIND(1d0)), INTENT(out)::alb1
+      REAL(KIND(1d0)), INTENT(out)::SnowAlb_next
       REAL(KIND(1d0))::alb0
       REAL(KIND(1d0))::SnowAlb
 
@@ -1440,6 +1444,7 @@ CONTAINS
 
       ! translate values
       alb_next = alb
+      SnowAlb_next=SnowAlb
 
    END SUBROUTINE SUEWS_cal_Qn
    !========================================================================

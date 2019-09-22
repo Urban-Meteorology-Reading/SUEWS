@@ -366,11 +366,11 @@ CONTAINS
       REAL(KIND(1D0))::mwstore
       REAL(KIND(1D0))::NWstate_per_tstep
       REAL(KIND(1D0))::planF
-      REAL(KIND(1D0))::p_mm
+      ! REAL(KIND(1D0))::p_mm
       REAL(KIND(1D0))::zL
       REAL(KIND(1D0))::q2_gkg
-      REAL(KIND(1D0))::qeOut
-      REAL(KIND(1D0))::qe_per_tstep
+      REAL(KIND(1D0))::qe
+      ! REAL(KIND(1D0))::qe_per_tstep
       REAL(KIND(1D0))::qf
       REAL(KIND(1D0))::QF_SAHP
       REAL(KIND(1D0))::qh
@@ -391,10 +391,10 @@ CONTAINS
       REAL(KIND(1d0))::runoffAGimpervious
       REAL(KIND(1D0))::runoff_per_tstep
       REAL(KIND(1D0))::runoffPipes
-      REAL(KIND(1D0))::runoffPipes_m3
+      ! REAL(KIND(1D0))::runoffPipes_m3
       REAL(KIND(1D0))::runoffSoil_per_tstep
       REAL(KIND(1D0))::runoffwaterbody
-      REAL(KIND(1D0))::runoffWaterBody_m3
+      ! REAL(KIND(1D0))::runoffWaterBody_m3
       REAL(KIND(1D0))::smd
       REAL(KIND(1D0))::SoilState
       REAL(KIND(1D0))::state_per_tstep
@@ -423,10 +423,10 @@ CONTAINS
       ! REAL(KIND(1d0)), DIMENSION(nvegsurf):: LAI_id_prev !LAI for each veg surface [m2 m-2]
 
       REAL(KIND(1D0)), DIMENSION(2)::SnowRemoval
-      REAL(KIND(1D0)), DIMENSION(NSURF)::chang
-      REAL(KIND(1D0)), DIMENSION(NSURF)::changSnow
-      REAL(KIND(1D0)), DIMENSION(NSURF)::evap
-      REAL(KIND(1D0)), DIMENSION(NSURF)::ev_snow
+      ! REAL(KIND(1D0)), DIMENSION(NSURF)::chang
+      ! REAL(KIND(1D0)), DIMENSION(NSURF)::changSnow
+      ! REAL(KIND(1D0)), DIMENSION(NSURF)::evap
+      ! REAL(KIND(1D0)), DIMENSION(NSURF)::ev_snow
       REAL(KIND(1D0)), DIMENSION(NSURF)::FreezMelt
       REAL(KIND(1d0)), DIMENSION(nsurf)::kup_ind_snow
       REAL(KIND(1D0)), DIMENSION(NSURF)::mw_ind
@@ -435,12 +435,12 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(NSURF)::Qm_rain
       REAL(KIND(1D0)), DIMENSION(NSURF)::qn1_ind_snow
       REAL(KIND(1D0)), DIMENSION(NSURF)::rainOnSnow
-      REAL(KIND(1D0)), DIMENSION(NSURF)::rss_nsurf
-      REAL(KIND(1D0)), DIMENSION(NSURF)::runoff
-      REAL(KIND(1D0)), DIMENSION(NSURF)::runoffSnow
+      ! REAL(KIND(1D0)), DIMENSION(NSURF)::rss_nsurf
+      ! REAL(KIND(1D0)), DIMENSION(NSURF)::runoff
+      ! REAL(KIND(1D0)), DIMENSION(NSURF)::runoffSnow
       REAL(KIND(1D0)), DIMENSION(NSURF)::runoffSoil
       REAL(KIND(1D0)), DIMENSION(NSURF)::smd_nsurf
-      REAL(KIND(1D0)), DIMENSION(NSURF)::SnowToSurf
+      ! REAL(KIND(1D0)), DIMENSION(NSURF)::SnowToSurf
       REAL(KIND(1D0)), DIMENSION(NSURF)::snowDepth
 
       REAL(KIND(1d0)), DIMENSION(nsurf)::Tsurf_ind_snow
@@ -455,7 +455,6 @@ CONTAINS
       ! REAL(KIND(1D0))::lv_J_kg
       REAL(KIND(1D0))::lvS_J_kg
       REAL(KIND(1D0))::psyc_hPa
-      REAL(KIND(1D0))::qe
       REAL(KIND(1D0))::RAsnow
       REAL(KIND(1D0))::rb
       REAL(KIND(1D0))::runoff_per_interval
@@ -862,7 +861,7 @@ CONTAINS
             SnowPack_next, SnowFrac_next, SnowWater_next, iceFrac_next, SnowDens_next, &! output
             runoffSoil, &! output:
             SnowRemoval, &
-            state_per_tstep, NWstate_per_tstep, qeOut, &
+            state_per_tstep, NWstate_per_tstep, qe, &
             swe, chSnow_per_interval, ev_per_tstep, runoff_per_tstep, &
             surf_chang_per_tstep, runoffPipes, mwstore, runoffwaterbody, &
             runoffAGveg, runoffAGimpervious)
@@ -872,7 +871,7 @@ CONTAINS
          IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_QH...'
          CALL SUEWS_cal_QH( &
             1, &
-            qn1, qf, QmRain, qeOut, qs, QmFreez, qm, avdens, avcp, tsurf, Temp_C, RA, &
+            qn1, qf, QmRain, qe, qs, QmFreez, qm, avdens, avcp, tsurf, Temp_C, RA, &
             qh, qh_residual, qh_resist)!output
          !============ Sensible heat flux end===============
 
@@ -908,7 +907,7 @@ CONTAINS
          CALL SUEWS_cal_Diagnostics( &
             dectime, &!input
             avU1, Temp_C, avRH, Press_hPa, &
-            qh, qeOut, &
+            qh, qe, &
             VegFraction, z, z0m, zdm, RA, avdens, avcp, lv_J_kg, tstep_real, &
             RoughLenHeatMethod, StabilityMethod, &
             avU10_ms, t2_C, q2_gkg, tskin_C, RH2)!output
@@ -917,7 +916,7 @@ CONTAINS
          CALL RSLProfile( &
             UStar, &!input
             L_mod, sfr, Zh, planF, &
-            StabilityMethod, Temp_C, avRh, Press_hPa, z, TStar, qeOut, &
+            StabilityMethod, Temp_C, avRh, Press_hPa, z, TStar, qe, &
             dataoutLineRSL)!output
 
          !============ surface-level diagonostics end ===============
@@ -994,7 +993,7 @@ CONTAINS
          kup, LAI_id, ldown, l_mod, lup, mwh, &
          MwStore, &
          nsh_real, NWstate_per_tstep, Precip, q2_gkg, &
-         qeOut, qf, qh, qh_resist, Qm, QmFreez, &
+         qe, qf, qh, qh_resist, Qm, QmFreez, &
          QmRain, qn1, qn1_S, qn1_snowfree, qs, RA, &
          resistsurf, RH2, runoffAGimpervious, runoffAGveg, &
          runoff_per_tstep, runoffPipes, runoffSoil_per_tstep, &
@@ -1739,7 +1738,7 @@ CONTAINS
       SnowPack_out, SnowFrac_out, SnowWater_out, iceFrac_out, SnowDens_out, &! output
       runoffSoil, &! output:
       SnowRemoval, &
-      state_per_tstep, NWstate_per_tstep, qeOut, &
+      state_per_tstep, NWstate_per_tstep, qe, &
       swe, chSnow_per_interval, ev_per_tstep, runoff_per_tstep, &
       surf_chang_per_tstep, runoffPipes, mwstore, runoffwaterbody, &
       runoffAGveg, runoffAGimpervious)
@@ -1849,10 +1848,10 @@ CONTAINS
 
       REAL(KIND(1d0))::p_mm!Inputs to surface water balance
       ! REAL(KIND(1d0)),INTENT(out)::rss
-      REAL(KIND(1d0))::qe ! latent heat flux [W m-2]
+      REAL(KIND(1d0))::qe_surf ! latent heat flux [W m-2]
       REAL(KIND(1d0)), INTENT(out)::state_per_tstep
       REAL(KIND(1d0)), INTENT(out)::NWstate_per_tstep
-      REAL(KIND(1d0)), INTENT(out)::qeOut
+      REAL(KIND(1d0)), INTENT(out)::qe
       REAL(KIND(1d0)), INTENT(out)::swe
       REAL(KIND(1d0))::ev
       REAL(KIND(1d0)), INTENT(out)::chSnow_per_interval
@@ -1920,7 +1919,7 @@ CONTAINS
       pin = MAX(0., Precip)!Initiate rain data [mm]
 
       ! Initialize the output variables
-      qe = 0
+      qe_surf = 0
       ev = 0
       qe_tot = 0
       ev_tot = 0
@@ -1932,7 +1931,7 @@ CONTAINS
       runoff_per_tstep = 0
       state_per_tstep = 0
       NWstate_per_tstep = 0
-      qeOut = 0
+      qe = 0
       runoffwaterbody = 0
       chSnow_per_interval = 0
       mwstore = 0
@@ -1995,7 +1994,7 @@ CONTAINS
             CALL Evap_SUEWS( &
                EvapMethod, state_id(is), WetThresh(is), capStore(is), &!input
                vpd_hPa, avdens, avcp, qn_e, s_hPa, psyc_hPa, ResistSurf, RA, rb, tlv, &
-               rss_nsurf(is), ev, qe) !output
+               rss_nsurf(is), ev, qe_surf) !output
 
             !Surface water balance and soil store updates (can modify ev, updates state_id)
             CALL soilstore( &
@@ -2012,7 +2011,7 @@ CONTAINS
             ev_per_tstep = ev_per_tstep + evap(is)*sfr(is)
 
             ! Sum latent heat flux from different surfaces to find total latent heat flux
-            qe_per_tstep = qe_per_tstep + qe*sfr(is)
+            qe_per_tstep = qe_per_tstep + qe_surf*sfr(is)
 
             ! Sum change from different surfaces to find total change to surface state_id
             surf_chang_per_tstep = surf_chang_per_tstep + (state_id(is) - stateOld(is))*sfr(is)
@@ -2036,7 +2035,7 @@ CONTAINS
          ENDIF
       ENDDO  !end loop over surfaces
 
-      qeOut = qe_per_tstep
+      qe = qe_per_tstep
 
       ! Calculate volume of water that will move between grids
       ! Volume [m3] = Depth relative to whole area [mm] / 1000 [mm m-1] * SurfaceArea [m2]

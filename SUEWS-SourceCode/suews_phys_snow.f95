@@ -1,6 +1,6 @@
 MODULE Snow_module
    use evap_module, only: evap_suews
-   use allocateArray, only: nsurf,PavSurf,BldgSurf,ConifSurf,BSoilSurf,WaterSurf,ncolumnsDataOutSnow
+   use allocateArray, only: nsurf, PavSurf, BldgSurf, ConifSurf, BSoilSurf, WaterSurf, ncolumnsDataOutSnow
 
    IMPLICIT NONE
 
@@ -32,7 +32,7 @@ CONTAINS
    !=======================================================================================
    SUBROUTINE Snow_cal_MeltHeat( &
       snowUse, &!input
-      tstep,tau_r,SnowDensMax,&
+      tstep, tau_r, SnowDensMax, &
       lvS_J_kg, lv_J_kg, tstep_real, RadMeltFact, TempMeltFact, SnowAlbMax, &
       SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
       nsh_real, sfr, Tsurf_ind, Tsurf_ind_snow, state_id, qn1_ind_snow, &
@@ -134,9 +134,9 @@ CONTAINS
       SnowDens = SnowDens_in
 
       IF (snowUse == 1) THEN
-         SnowDens=update_snow_dens(&
-               tstep,SnowFrac_in,SnowDens_in, &
-               tau_r,SnowDensMax,SnowDensMin)
+         SnowDens = update_snow_dens( &
+                    tstep, SnowFrac_in, SnowDens_in, &
+                    tau_r, SnowDensMax, SnowDensMin)
 
          CALL MeltHeat( &
             lvS_J_kg, lv_J_kg, tstep_real, RadMeltFact, TempMeltFact, &
@@ -146,7 +146,6 @@ CONTAINS
             mwh, fwh, Qm, QmFreez, QmRain, snowCalcSwitch, &
             Qm_melt, Qm_freezState, Qm_rain, FreezMelt, FreezState, FreezStateVol, &
             rainOnSnow, SnowDepth, mw_ind)
-
 
       ELSE ! no snow calculation
          mwh = 0
@@ -167,13 +166,12 @@ CONTAINS
          mw_ind = 0
          SnowFrac = 0
 
-
       END IF
 
       ! update veg_fr
       CALL veg_fr_snow( &
-            sfr, SnowFrac, &!input
-            veg_fr)!output
+         sfr, SnowFrac, &!input
+         veg_fr)!output
 
       SnowAlb_out = SnowAlb
       SnowfallCum_out = SnowfallCum
@@ -1304,7 +1302,6 @@ CONTAINS
 
       IMPLICIT NONE
 
-
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in) :: sfr      !< surface fractions
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in) :: SnowFrac !< snowy surface fractions [-]
 
@@ -1363,7 +1360,7 @@ CONTAINS
       INTEGER::is
       REAL(KIND(1D0))::alb_change    !Change in snow albedo
       REAL(KIND(1D0))::dens_change    !Change in snow density
-      REAL(KIND(1D0)),parameter::  tau_1= 24*60*60         !Number of seconds in a day
+      REAL(KIND(1D0)), parameter::  tau_1 = 24*60*60         !Number of seconds in a day
 
       !Initialize
       alb_change = 0
@@ -1389,9 +1386,9 @@ CONTAINS
       !    SnowAlb_next = 0
       ! ENDIF
       ! if (SnowAlb_next < 0) print *, 'SnowAlb in SnowUpdate', SnowAlb_next
-      SnowAlb_next=update_snow_albedo (&
-         tstep,SnowPack_prev,SnowAlb_prev,Temp_C,&
-         tau_a,tau_f,SnowAlbMax,SnowAlbMin)
+      SnowAlb_next = update_snow_albedo( &
+                     tstep, SnowPack_prev, SnowAlb_prev, Temp_C, &
+                     tau_a, tau_f, SnowAlbMax, SnowAlbMin)
 
       !Update snow density: There is a mistake in Järvi et al. (2014): tau_h should be tau_1
       ! DO is = 1, nsurf
@@ -1405,16 +1402,15 @@ CONTAINS
       !    ENDIF
       ! ENDDO
 
-      SnowDens_next=update_snow_dens (&
-         tstep,SnowPack_prev,SnowDens_prev, &
-         tau_r,SnowDensMax,SnowDensMin)
-
+      SnowDens_next = update_snow_dens( &
+                      tstep, SnowPack_prev, SnowDens_prev, &
+                      tau_r, SnowDensMax, SnowDensMin)
 
    END SUBROUTINE SnowUpdate
 
-   function update_snow_albedo (&
-      tstep,SnowPack_prev,SnowAlb_prev,Temp_C,&
-      tau_a,tau_f,SnowAlbMax,SnowAlbMin) &
+   function update_snow_albedo( &
+      tstep, SnowPack_prev, SnowAlb_prev, Temp_C, &
+      tau_a, tau_f, SnowAlbMax, SnowAlbMin) &
       result(SnowAlb_next)
       implicit none
       INTEGER, INTENT(in)::tstep
@@ -1430,7 +1426,7 @@ CONTAINS
       REAL(KIND(1D0)) :: SnowAlb_next
 
       REAL(KIND(1D0))::alb_change    !Change in snow albedo
-      REAL(KIND(1D0)),parameter::  tau_1= 24*60*60         !Number of seconds in a day
+      REAL(KIND(1D0)), parameter::  tau_1 = 24*60*60         !Number of seconds in a day
 
       !==========================================================
       !Calculation of snow albedo by Lemonsu et al. 2010
@@ -1455,9 +1451,9 @@ CONTAINS
 
    end function update_snow_albedo
 
-   function update_snow_dens (&
-      tstep,SnowPack_prev,SnowDens_prev, &
-      tau_r,SnowDensMax,SnowDensMin)&
+   function update_snow_dens( &
+      tstep, SnowPack_prev, SnowDens_prev, &
+      tau_r, SnowDensMax, SnowDensMin) &
       result(SnowDens_next)
       implicit none
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::SnowPack_prev
@@ -1469,13 +1465,12 @@ CONTAINS
 
       ! REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::SnowDens_next
 
-      REAL(KIND(1D0)),DIMENSION(nsurf) :: SnowDens_next
+      REAL(KIND(1D0)), DIMENSION(nsurf) :: SnowDens_next
       REAL(KIND(1D0)) :: dens_change
-
 
       INTEGER::is
 
-      REAL(KIND(1D0)),parameter::  tau_1= 24*60*60
+      REAL(KIND(1D0)), parameter::  tau_1 = 24*60*60
       ! INTEGER,parameter::nsurf=7
 
       !Update snow density: There is a mistake in Järvi et al. (2014): tau_h should be tau_1

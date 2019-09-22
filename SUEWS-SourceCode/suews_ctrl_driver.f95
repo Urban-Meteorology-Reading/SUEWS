@@ -860,12 +860,12 @@ CONTAINS
             runoff_per_interval, state_id_prev, soilstore_id_prev, &! input:
             state_id_next, soilstore_id_next, &! output:
             SnowPack_next, SnowFrac_next, SnowWater_next, iceFrac_next, SnowDens_next, &! output
-            runoffSnow, runoff, runoffSoil, chang, changSnow, &! output:
-            snowDepth, SnowToSurf, ev_snow, SnowRemoval, &
-            evap, rss_nsurf, p_mm, qe, state_per_tstep, NWstate_per_tstep, qeOut, &
-            swe, ev, chSnow_per_interval, ev_per_tstep, qe_per_tstep, runoff_per_tstep, &
+            runoffSoil, &! output:
+            SnowRemoval, &
+            state_per_tstep, NWstate_per_tstep, qeOut, &
+            swe, chSnow_per_interval, ev_per_tstep, runoff_per_tstep, &
             surf_chang_per_tstep, runoffPipes, mwstore, runoffwaterbody, &
-            runoffAGveg, runoffAGimpervious, runoffWaterBody_m3, runoffPipes_m3)
+            runoffAGveg, runoffAGimpervious)
          !======== Evaporation and surface state_id end========
 
          !============ Sensible heat flux ===============
@@ -908,7 +908,7 @@ CONTAINS
          CALL SUEWS_cal_Diagnostics( &
             dectime, &!input
             avU1, Temp_C, avRH, Press_hPa, &
-            qh, qe, &
+            qh, qeOut, &
             VegFraction, z, z0m, zdm, RA, avdens, avcp, lv_J_kg, tstep_real, &
             RoughLenHeatMethod, StabilityMethod, &
             avU10_ms, t2_C, q2_gkg, tskin_C, RH2)!output
@@ -1737,12 +1737,12 @@ CONTAINS
       runoff_per_interval_in, state_id_in, soilstore_id_in, &! input:
       state_id_out, soilstore_id_out, &! output:
       SnowPack_out, SnowFrac_out, SnowWater_out, iceFrac_out, SnowDens_out, &! output
-      runoffSnow, runoff, runoffSoil, chang, changSnow, &! output:
-      snowDepth, SnowToSurf, ev_snow, SnowRemoval, &
-      evap, rss_nsurf, p_mm, qe, state_per_tstep, NWstate_per_tstep, qeOut, &
-      swe, ev, chSnow_per_interval, ev_per_tstep, qe_per_tstep, runoff_per_tstep, &
+      runoffSoil, &! output:
+      SnowRemoval, &
+      state_per_tstep, NWstate_per_tstep, qeOut, &
+      swe, chSnow_per_interval, ev_per_tstep, runoff_per_tstep, &
       surf_chang_per_tstep, runoffPipes, mwstore, runoffwaterbody, &
-      runoffAGveg, runoffAGimpervious, runoffWaterBody_m3, runoffPipes_m3)
+      runoffAGveg, runoffAGimpervious)
 
       IMPLICIT NONE
 
@@ -1835,36 +1835,36 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::iceFrac_out
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::SnowDens_out
 
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::runoffSnow !Initialize for runoff caused by snowmelting
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::runoff
+      REAL(KIND(1d0)), DIMENSION(nsurf)::runoffSnow !Initialize for runoff caused by snowmelting
+      REAL(KIND(1d0)), DIMENSION(nsurf)::runoff
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::runoffSoil
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::chang
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::changSnow
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::snowDepth
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::SnowToSurf
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::ev_snow
+      REAL(KIND(1d0)), DIMENSION(nsurf)::chang
+      REAL(KIND(1d0)), DIMENSION(nsurf)::changSnow
+      REAL(KIND(1d0)), DIMENSION(nsurf)::snowDepth
+      REAL(KIND(1d0)), DIMENSION(nsurf)::SnowToSurf
+      REAL(KIND(1d0)), DIMENSION(nsurf)::ev_snow
       REAL(KIND(1d0)), DIMENSION(2), INTENT(out)::SnowRemoval
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::evap
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::rss_nsurf
+      REAL(KIND(1d0)), DIMENSION(nsurf)::evap
+      REAL(KIND(1d0)), DIMENSION(nsurf)::rss_nsurf
 
-      REAL(KIND(1d0)), INTENT(out)::p_mm!Inputs to surface water balance
+      REAL(KIND(1d0))::p_mm!Inputs to surface water balance
       ! REAL(KIND(1d0)),INTENT(out)::rss
-      REAL(KIND(1d0)), INTENT(out)::qe ! latent heat flux [W m-2]
+      REAL(KIND(1d0))::qe ! latent heat flux [W m-2]
       REAL(KIND(1d0)), INTENT(out)::state_per_tstep
       REAL(KIND(1d0)), INTENT(out)::NWstate_per_tstep
       REAL(KIND(1d0)), INTENT(out)::qeOut
       REAL(KIND(1d0)), INTENT(out)::swe
-      REAL(KIND(1d0)), INTENT(out)::ev
+      REAL(KIND(1d0))::ev
       REAL(KIND(1d0)), INTENT(out)::chSnow_per_interval
       REAL(KIND(1d0)), INTENT(out)::ev_per_tstep
-      REAL(KIND(1d0)), INTENT(out)::qe_per_tstep
+      REAL(KIND(1d0))::qe_per_tstep
       REAL(KIND(1d0)), INTENT(out)::runoff_per_tstep
       REAL(KIND(1d0)), INTENT(out)::surf_chang_per_tstep
       REAL(KIND(1d0)), INTENT(out)::runoffPipes
       REAL(KIND(1d0)), INTENT(out)::mwstore
       REAL(KIND(1d0)), INTENT(out)::runoffwaterbody
-      REAL(KIND(1d0)), INTENT(out)::runoffWaterBody_m3
-      REAL(KIND(1d0)), INTENT(out)::runoffPipes_m3
+      REAL(KIND(1d0))::runoffWaterBody_m3
+      REAL(KIND(1d0))::runoffPipes_m3
       REAL(KIND(1d0)), INTENT(out)::runoffAGveg
       REAL(KIND(1d0)), INTENT(out)::runoffAGimpervious
 
@@ -1985,6 +1985,9 @@ CONTAINS
                SnowDens(is) = 0
                SnowPack(is) = 0
             ENDIF
+
+            !Store ev_tot for each surface
+            evap(is) = ev_tot
          ELSE ! snow-free calculation
 
             capStore(is) = StoreDrainPrm(6, is)

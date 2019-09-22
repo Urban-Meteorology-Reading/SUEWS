@@ -1949,7 +1949,7 @@ CONTAINS
 
       IF (Diagnose == 1) WRITE (*, *) 'Calling evap_SUEWS and SoilStore...'
       DO is = 1, nsurf   !For each surface in turn
-         IF (snowCalcSwitch(is) == 1) THEN ! snow calculation
+         IF (snowuse == 1 .and. snowCalcSwitch(is) == 1) THEN ! snow calculation
             IF (sfr(is) /= 0) THEN
                ! IF (Diagnose == 1) WRITE (*, *) 'Calling SnowCalc...'
                CALL SnowCalc( &

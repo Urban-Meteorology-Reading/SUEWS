@@ -772,9 +772,7 @@ CONTAINS
          !    SnowAlbMin, &
          !    SnowPack_prev, SnowAlb_prev, SnowDens_prev, &
          !    SnowAlb_next, SnowDens_next ) ! output
-         IF (snowUse == 1)    SnowDens_next=update_snow_dens(&
-               tstep,SnowPack_prev,SnowDens_prev, &
-               tau_r,SnowDensMax,SnowDensMin)
+
 
 
          ! ===================NET ALLWAVE RADIATION================================
@@ -809,13 +807,33 @@ CONTAINS
 
          !==================Energy related to snow melting/freezing processes=======
          IF (Diagnose == 1) WRITE (*, *) 'Calling MeltHeat'
+         ! IF (snowUse == 1)    SnowDens_next=update_snow_dens(&
+         !       tstep,SnowPack_prev,SnowDens_prev, &
+         !       tau_r,SnowDensMax,SnowDensMin)
+         ! CALL Snow_cal_MeltHeat( &
+         !    snowUse, &!input
+         !    lvS_J_kg, lv_J_kg, tstep_real, RadMeltFact, TempMeltFact, SnowAlbMax, &
+         !    SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
+         !    nsh_real, sfr, Tsurf_ind, Tsurf_ind_snow, state_id_prev, qn1_ind_snow, &
+         !    kup_ind_snow, SnowWater_prev, deltaQi, alb1, &
+         !    SnowPack_prev, SnowFrac_next, SnowAlb_next, SnowDens_next, SnowfallCum_prev, &!input
+         !    SnowPack_next, SnowFrac_next, SnowAlb_next, SnowDens_next, SnowfallCum_next, &!output
+         !    mwh, Qm, QmFreez, QmRain, &! output
+         !    veg_fr, snowCalcSwitch, Qm_melt, Qm_freezState, Qm_rain, FreezMelt, &
+         !    FreezState, FreezStateVol, rainOnSnow, SnowDepth, mw_ind, &
+         !    dataOutLineSnow)!output
+
+         ! IF (snowUse == 1)    SnowDens_next=update_snow_dens(&
+         !       tstep,SnowPack_prev,SnowDens_prev, &
+         !       tau_r,SnowDensMax,SnowDensMin)
          CALL Snow_cal_MeltHeat( &
             snowUse, &!input
+            tstep,tau_r,SnowDensMax,&
             lvS_J_kg, lv_J_kg, tstep_real, RadMeltFact, TempMeltFact, SnowAlbMax, &
             SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
             nsh_real, sfr, Tsurf_ind, Tsurf_ind_snow, state_id_prev, qn1_ind_snow, &
             kup_ind_snow, SnowWater_prev, deltaQi, alb1, &
-            SnowPack_prev, SnowFrac_next, SnowAlb_next, SnowDens_next, SnowfallCum_prev, &!input
+            SnowPack_prev, SnowFrac_next, SnowAlb_next, SnowDens_prev, SnowfallCum_prev, &!input
             SnowPack_next, SnowFrac_next, SnowAlb_next, SnowDens_next, SnowfallCum_next, &!output
             mwh, Qm, QmFreez, QmRain, &! output
             veg_fr, snowCalcSwitch, Qm_melt, Qm_freezState, Qm_rain, FreezMelt, &

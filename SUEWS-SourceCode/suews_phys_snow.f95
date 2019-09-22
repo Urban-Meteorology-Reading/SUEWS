@@ -32,6 +32,7 @@ CONTAINS
    !=======================================================================================
    SUBROUTINE Snow_cal_MeltHeat( &
       snowUse, &!input
+      tstep,tau_r,SnowDensMax,&
       lvS_J_kg, lv_J_kg, tstep_real, RadMeltFact, TempMeltFact, SnowAlbMax, &
       SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
       nsh_real, sfr, Tsurf_ind, Tsurf_ind_snow, state_id, qn1_ind_snow, &
@@ -53,6 +54,7 @@ CONTAINS
 
       !These are input to the module
       INTEGER, INTENT(in)::snowUse
+      INTEGER, INTENT(in)::tstep
       ! INTEGER,INTENT(in)::bldgsurf
       ! INTEGER,INTENT(in)::nsurf
       ! INTEGER,INTENT(in)::PavSurf
@@ -64,6 +66,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(in)::RadMeltFact
       REAL(KIND(1d0)), INTENT(in)::TempMeltFact
       REAL(KIND(1d0)), INTENT(in)::SnowAlbMax
+      REAL(KIND(1d0)), INTENT(in)::SnowDensMax
       REAL(KIND(1d0)), INTENT(in)::SnowDensMin
       REAL(KIND(1d0)), INTENT(in)::Temp_C
       REAL(KIND(1d0)), INTENT(in)::Precip
@@ -71,6 +74,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(in)::PrecipLimitAlb
       REAL(KIND(1d0)), INTENT(in)::nsh_real
       REAL(KIND(1d0)), INTENT(in)::alb1
+      REAL(KIND(1d0)), INTENT(in)::tau_r
       ! REAL(KIND(1d0)),INTENT(in)::waterdens
 
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::sfr
@@ -128,6 +132,9 @@ CONTAINS
       SnowPack = SnowPack_in
       SnowFrac = SnowFrac_in
       SnowDens = SnowDens_in
+      IF (snowUse == 1)    SnowDens=update_snow_dens(&
+               tstep,SnowFrac_in,SnowDens_in, &
+               tau_r,SnowDensMax,SnowDensMin)
       IF (snowUse == 1) THEN
 
          CALL MeltHeat( &

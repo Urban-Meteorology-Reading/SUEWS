@@ -11,7 +11,7 @@ MODULE SUEWS_Driver
    USE resist_module, ONLY: AerodynamicResistance, BoundaryLayerResistance, SurfaceResistance, &
                             cal_z0V, SUEWS_cal_RoughnessParameters
    USE ESTM_module, ONLY: ESTM
-   USE Snow_module, ONLY: SnowCalc, Snow_cal_MeltHeat, SnowUpdate
+   USE Snow_module, ONLY: SnowCalc, Snow_cal_MeltHeat, SnowUpdate, update_snow_albedo
    USE DailyState_module, ONLY: SUEWS_cal_DailyState, update_DailyStateLine
    USE WaterDist_module, ONLY: drainage, soilstore, &
                                SUEWS_cal_SoilState, SUEWS_update_SoilMoist, &
@@ -777,9 +777,10 @@ CONTAINS
          ! ===================NET ALLWAVE RADIATION================================
          CALL SUEWS_cal_Qn( &
             NetRadiationMethod, snowUse, &!input
+            tstep,SnowPack_prev,tau_a,tau_f,SnowAlbMax,SnowAlbMin,&
             Diagnose, snowFrac_obs, ldown_obs, fcld_obs, &
             dectime, ZENITH_deg, Ts_iter, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
-            SnowAlb_next, snowFrac_prev, DiagQN, &
+            SnowAlb_prev, snowFrac_prev, DiagQN, &
             NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac, sfr, emis, &
             alb_prev, albDecTr_id_next, albEveTr_id_next, albGrass_id_next, &!input
             alb_next, &!output
@@ -1279,9 +1280,10 @@ CONTAINS
    !=============net all-wave radiation=====================================
    SUBROUTINE SUEWS_cal_Qn( &
       NetRadiationMethod, snowUse, &!input
+      tstep,SnowPack_prev,tau_a,tau_f,SnowAlbMax,SnowAlbMin,&
       Diagnose, snowFrac_obs, ldown_obs, fcld_obs, &
       dectime, ZENITH_deg, Tsurf_0, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
-      SnowAlb, snowFrac_prev, DiagQN, &
+      SnowAlb_prev, snowFrac_prev, DiagQN, &
       NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac, sfr, emis, &
       alb_prev, albDecTr_id, albEveTr_id, albGrass_id, &!input
       alb_next, &!output
@@ -1301,6 +1303,7 @@ CONTAINS
       INTEGER, INTENT(in)::snowUse
       INTEGER, INTENT(in)::Diagnose
       INTEGER, INTENT(in)::DiagQN
+      INTEGER, INTENT(in)::tstep
 
       REAL(KIND(1d0)), INTENT(in)::snowFrac_obs
       REAL(KIND(1d0)), INTENT(in)::ldown_obs
@@ -1313,9 +1316,10 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(in)::avRH
       REAL(KIND(1d0)), INTENT(in)::ea_hPa
       REAL(KIND(1d0)), INTENT(in)::qn1_obs
-      REAL(KIND(1d0)), INTENT(in)::SnowAlb
+      REAL(KIND(1d0)), INTENT(in)::SnowAlb_prev
       REAL(KIND(1d0)), INTENT(in)::NARP_EMIS_SNOW
       REAL(KIND(1d0)), INTENT(in)::NARP_TRANS_SITE
+      REAL(KIND(1d0)), INTENT(in)::tau_a,tau_f,SnowAlbMax,SnowAlbMin
 
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in):: IceFrac
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in):: sfr
@@ -1331,6 +1335,7 @@ CONTAINS
 
       ! REAL(KIND(1d0)), DIMENSION(6, nsurf), INTENT(inout)::StoreDrainPrm
 
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::SnowPack_prev
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::snowFrac_prev
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::snowFrac_next
       REAL(KIND(1d0)), DIMENSION(nsurf)::SnowFrac
@@ -1346,6 +1351,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(out)::tsurf
       REAL(KIND(1d0)), INTENT(out)::alb1
       REAL(KIND(1d0))::alb0
+      REAL(KIND(1d0))::SnowAlb
 
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out) ::qn1_ind_snow
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out) ::kup_ind_snow
@@ -1362,6 +1368,11 @@ CONTAINS
 
       ! translate values
       alb = alb_prev
+
+      ! update snow albedo
+      SnowAlb=update_snow_albedo (&
+         tstep,SnowPack_prev,SnowAlb_prev,Temp_C,&
+         tau_a,tau_f,SnowAlbMax,SnowAlbMin)
 
       CALL RadMethod( &
          NetRadiationMethod, &!input

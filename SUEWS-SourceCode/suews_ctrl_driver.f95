@@ -760,21 +760,6 @@ CONTAINS
          ! ========================================================================
          ! N.B.: the following parts involves snow-related calculations.
 
-         ! IF (snowUse == 1) CALL SnowUpdate( &
-         !    tstep, &!input
-         !    Temp_C, &
-         !    tau_a, &
-         !    tau_f, &
-         !    tau_r, &
-         !    SnowDensMax, &
-         !    SnowDensMin, &
-         !    SnowAlbMax, &
-         !    SnowAlbMin, &
-         !    SnowPack_prev, SnowAlb_prev, SnowDens_prev, &
-         !    SnowAlb_next, SnowDens_next ) ! output
-
-
-
          ! ===================NET ALLWAVE RADIATION================================
          CALL SUEWS_cal_Qn( &
             NetRadiationMethod, snowUse, &!input
@@ -807,25 +792,7 @@ CONTAINS
 
          !==================Energy related to snow melting/freezing processes=======
          IF (Diagnose == 1) WRITE (*, *) 'Calling MeltHeat'
-         ! IF (snowUse == 1)    SnowDens_next=update_snow_dens(&
-         !       tstep,SnowPack_prev,SnowDens_prev, &
-         !       tau_r,SnowDensMax,SnowDensMin)
-         ! CALL Snow_cal_MeltHeat( &
-         !    snowUse, &!input
-         !    lvS_J_kg, lv_J_kg, tstep_real, RadMeltFact, TempMeltFact, SnowAlbMax, &
-         !    SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
-         !    nsh_real, sfr, Tsurf_ind, Tsurf_ind_snow, state_id_prev, qn1_ind_snow, &
-         !    kup_ind_snow, SnowWater_prev, deltaQi, alb1, &
-         !    SnowPack_prev, SnowFrac_next, SnowAlb_next, SnowDens_next, SnowfallCum_prev, &!input
-         !    SnowPack_next, SnowFrac_next, SnowAlb_next, SnowDens_next, SnowfallCum_next, &!output
-         !    mwh, Qm, QmFreez, QmRain, &! output
-         !    veg_fr, snowCalcSwitch, Qm_melt, Qm_freezState, Qm_rain, FreezMelt, &
-         !    FreezState, FreezStateVol, rainOnSnow, SnowDepth, mw_ind, &
-         !    dataOutLineSnow)!output
 
-         ! IF (snowUse == 1)    SnowDens_next=update_snow_dens(&
-         !       tstep,SnowPack_prev,SnowDens_prev, &
-         !       tau_r,SnowDensMax,SnowDensMin)
          CALL Snow_cal_MeltHeat( &
             snowUse, &!input
             tstep,tau_r,SnowDensMax,&

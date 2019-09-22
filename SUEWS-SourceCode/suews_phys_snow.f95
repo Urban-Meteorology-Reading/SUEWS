@@ -132,10 +132,11 @@ CONTAINS
       SnowPack = SnowPack_in
       SnowFrac = SnowFrac_in
       SnowDens = SnowDens_in
-      IF (snowUse == 1)    SnowDens=update_snow_dens(&
+
+      IF (snowUse == 1) THEN
+         SnowDens=update_snow_dens(&
                tstep,SnowFrac_in,SnowDens_in, &
                tau_r,SnowDensMax,SnowDensMin)
-      IF (snowUse == 1) THEN
 
          CALL MeltHeat( &
             lvS_J_kg, lv_J_kg, tstep_real, RadMeltFact, TempMeltFact, &
@@ -146,9 +147,6 @@ CONTAINS
             Qm_melt, Qm_freezState, Qm_rain, FreezMelt, FreezState, FreezStateVol, &
             rainOnSnow, SnowDepth, mw_ind)
 
-         CALL veg_fr_snow( &
-            sfr, SnowFrac, &!input
-            veg_fr)!output
 
       ELSE ! no snow calculation
          mwh = 0
@@ -167,14 +165,16 @@ CONTAINS
          rainOnSnow = 0
          SnowDepth = 0
          mw_ind = 0
-
-         ! update veg_fr when SnowFrac=0
          SnowFrac = 0
-         CALL veg_fr_snow( &
+
+
+      END IF
+
+      ! update veg_fr
+      CALL veg_fr_snow( &
             sfr, SnowFrac, &!input
             veg_fr)!output
 
-      END IF
       SnowAlb_out = SnowAlb
       SnowfallCum_out = SnowfallCum
       SnowPack_out = SnowPack

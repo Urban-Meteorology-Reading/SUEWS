@@ -762,7 +762,7 @@ CONTAINS
          ! ===================NET ALLWAVE RADIATION================================
          CALL SUEWS_cal_Qn( &
             NetRadiationMethod, snowUse, &!input
-            tstep,SnowPack_prev,tau_a,tau_f,SnowAlbMax,SnowAlbMin,&
+            tstep, SnowPack_prev, tau_a, tau_f, SnowAlbMax, SnowAlbMin, &
             Diagnose, snowFrac_obs, ldown_obs, fcld_obs, &
             dectime, ZENITH_deg, Ts_iter, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
             SnowAlb_prev, snowFrac_prev, DiagQN, &
@@ -794,7 +794,7 @@ CONTAINS
 
          CALL Snow_cal_MeltHeat( &
             snowUse, &!input
-            tstep,tau_r,SnowDensMax,&
+            tstep, tau_r, SnowDensMax, &
             lvS_J_kg, lv_J_kg, tstep_real, RadMeltFact, TempMeltFact, SnowAlbMax, &
             SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
             nsh_real, sfr, Tsurf_ind, Tsurf_ind_snow, state_id_prev, qn1_ind_snow, &
@@ -1267,7 +1267,7 @@ CONTAINS
    !=============net all-wave radiation=====================================
    SUBROUTINE SUEWS_cal_Qn( &
       NetRadiationMethod, snowUse, &!input
-      tstep,SnowPack_prev,tau_a,tau_f,SnowAlbMax,SnowAlbMin,&
+      tstep, SnowPack_prev, tau_a, tau_f, SnowAlbMax, SnowAlbMin, &
       Diagnose, snowFrac_obs, ldown_obs, fcld_obs, &
       dectime, ZENITH_deg, Tsurf_0, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
       SnowAlb_prev, snowFrac_prev, DiagQN, &
@@ -1306,7 +1306,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(in)::SnowAlb_prev
       REAL(KIND(1d0)), INTENT(in)::NARP_EMIS_SNOW
       REAL(KIND(1d0)), INTENT(in)::NARP_TRANS_SITE
-      REAL(KIND(1d0)), INTENT(in)::tau_a,tau_f,SnowAlbMax,SnowAlbMin
+      REAL(KIND(1d0)), INTENT(in)::tau_a, tau_f, SnowAlbMax, SnowAlbMin
 
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in):: IceFrac
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in):: sfr
@@ -1358,9 +1358,9 @@ CONTAINS
       alb = alb_prev
 
       ! update snow albedo
-      SnowAlb=update_snow_albedo (&
-         tstep,SnowPack_prev,SnowAlb_prev,Temp_C,&
-         tau_a,tau_f,SnowAlbMax,SnowAlbMin)
+      SnowAlb = update_snow_albedo( &
+                tstep, SnowPack_prev, SnowAlb_prev, Temp_C, &
+                tau_a, tau_f, SnowAlbMax, SnowAlbMin)
 
       CALL RadMethod( &
          NetRadiationMethod, &!input
@@ -1428,7 +1428,7 @@ CONTAINS
 
       ! translate values
       alb_next = alb
-      SnowAlb_next=SnowAlb
+      SnowAlb_next = SnowAlb
 
    END SUBROUTINE SUEWS_cal_Qn
    !========================================================================

@@ -290,7 +290,6 @@ CONTAINS
             porosity_id, &
             StoreDrainPrm, &
             WUDay_id, deltaLAI)!output
-         ! ,xBo)!output
       ENDIF   !End of section done only at the end of each day (i.e. only once per day)
 
       ! translate values back

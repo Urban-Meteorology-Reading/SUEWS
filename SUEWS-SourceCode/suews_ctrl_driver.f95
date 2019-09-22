@@ -761,7 +761,7 @@ CONTAINS
          ! N.B.: the following parts involves snow-related calculations.
 
          IF (snowUse == 1) CALL SnowUpdate( &
-            nsurf, tstep, &!input
+            tstep, &!input
             Temp_C, &
             tau_a, &
             tau_f, &
@@ -771,8 +771,8 @@ CONTAINS
             SnowAlbMax, &
             SnowAlbMin, &
             SnowPack_prev, SnowAlb_prev, SnowDens_prev, &
-            SnowAlb_next, SnowDens_next & ! output
-            )
+            SnowAlb_next, SnowDens_next ) ! output
+
 
          ! ===================NET ALLWAVE RADIATION================================
          CALL SUEWS_cal_Qn( &

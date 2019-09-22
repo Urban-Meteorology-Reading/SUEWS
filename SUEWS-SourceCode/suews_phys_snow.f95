@@ -1,9 +1,8 @@
 MODULE Snow_module
    use evap_module, only: evap_suews
+   use allocateArray, only: nsurf,PavSurf,BldgSurf,ConifSurf,BSoilSurf,WaterSurf,ncolumnsDataOutSnow
 
    IMPLICIT NONE
-
-   INTEGER,parameter::nsurf=7
 
 CONTAINS
    !This subroutine makes snow related calculations at the model time step. Needed for the
@@ -45,11 +44,11 @@ CONTAINS
       dataOutLineSnow)!output
 
       IMPLICIT NONE
-      INTEGER, PARAMETER::nsurf = 7
-      INTEGER, PARAMETER::PavSurf = 1
-      INTEGER, PARAMETER::BldgSurf = 2
-      INTEGER, PARAMETER::WaterSurf = 7
-      INTEGER, PARAMETER::ncolumnsDataOutSnow_notime = 103 - 5
+      ! INTEGER, PARAMETER::nsurf = 7
+      ! INTEGER, PARAMETER::PavSurf = 1
+      ! INTEGER, PARAMETER::BldgSurf = 2
+      ! INTEGER, PARAMETER::WaterSurf = 7
+      INTEGER, PARAMETER::ncolumnsDataOutSnow_notime = ncolumnsDataOutSnow - 5
       REAL(KIND(1d0)), PARAMETER::waterDens = 999.8395 !Density of water in 0 cel deg
 
       !These are input to the module
@@ -132,7 +131,6 @@ CONTAINS
       IF (snowUse == 1) THEN
 
          CALL MeltHeat( &
-            bldgsurf, nsurf, PavSurf, WaterSurf, &
             lvS_J_kg, lv_J_kg, tstep_real, RadMeltFact, TempMeltFact, &
             SnowAlbMax, SnowDensMin, Temp_C, Precip, PrecipLimit, PrecipLimitAlb, &
             nsh_real, waterdens, sfr, Tsurf_ind, state_id, qn1_ind_snow, &
@@ -142,7 +140,7 @@ CONTAINS
             rainOnSnow, SnowDepth, mw_ind)
 
          CALL veg_fr_snow( &
-            sfr, SnowFrac, nsurf, &!input
+            sfr, SnowFrac, &!input
             veg_fr)!output
 
       ELSE ! no snow calculation
@@ -166,7 +164,7 @@ CONTAINS
          ! update veg_fr when SnowFrac=0
          SnowFrac = 0
          CALL veg_fr_snow( &
-            sfr, SnowFrac, nsurf, &!input
+            sfr, SnowFrac, &!input
             veg_fr)!output
 
       END IF
@@ -190,11 +188,7 @@ CONTAINS
    END SUBROUTINE Snow_cal_MeltHeat
 
    SUBROUTINE MeltHeat( &
-      bldgsurf, &!input
-      nsurf, &
-      PavSurf, &
-      WaterSurf, &
-      lvS_J_kg, &
+      lvS_J_kg, &!input
       lv_J_kg, &
       tstep_real, &
       RadMeltFact, &
@@ -237,10 +231,10 @@ CONTAINS
       IMPLICIT NONE
 
       !These are input to the module
-      INTEGER, INTENT(in)::bldgsurf
-      INTEGER, INTENT(in)::nsurf
-      INTEGER, INTENT(in)::PavSurf
-      INTEGER, INTENT(in)::WaterSurf
+      ! INTEGER, INTENT(in)::bldgsurf
+      ! INTEGER, INTENT(in)::nsurf
+      ! INTEGER, INTENT(in)::PavSurf
+      ! INTEGER, INTENT(in)::WaterSurf
 
       REAL(KIND(1d0)), INTENT(in)::lvS_J_kg
       REAL(KIND(1d0)), INTENT(in)::lv_J_kg
@@ -507,14 +501,14 @@ CONTAINS
       USE WaterDist_module, ONLY: updateFlood
 
       IMPLICIT NONE
-      INTEGER, PARAMETER::nsurf = 7! number of surface types
-      INTEGER, PARAMETER::PavSurf = 1  !New surface classes: Grass = 5th/7 surfaces
-      INTEGER, PARAMETER::BldgSurf = 2  !New surface classes: Grass = 5th/7 surfaces
-      INTEGER, PARAMETER::ConifSurf = 3  !New surface classes: Grass = 5th/7 surfaces
+      ! INTEGER, PARAMETER::nsurf = 7! number of surface types
+      ! INTEGER, PARAMETER::PavSurf = 1  !New surface classes: Grass = 5th/7 surfaces
+      ! INTEGER, PARAMETER::BldgSurf = 2  !New surface classes: Grass = 5th/7 surfaces
+      ! INTEGER, PARAMETER::ConifSurf = 3  !New surface classes: Grass = 5th/7 surfaces
       ! INTEGER,PARAMETER::DecidSurf = 4  !New surface classes: Grass = 5th/7 surfaces
       ! INTEGER,PARAMETER::GrassSurf = 5
-      INTEGER, PARAMETER::BSoilSurf = 6!New surface classes: Grass = 5th/7 surfaces
-      INTEGER, PARAMETER::WaterSurf = 7
+      ! INTEGER, PARAMETER::BSoilSurf = 6!New surface classes: Grass = 5th/7 surfaces
+      ! INTEGER, PARAMETER::WaterSurf = 7
 
       INTEGER, PARAMETER::snowfractionchoice = 2 ! this PARAMETER is used all through the model
       REAL(KIND(1d0)), PARAMETER::waterDens = 999.8395 !Density of water in 0 cel deg
@@ -1298,12 +1292,11 @@ CONTAINS
    END FUNCTION SnowDepletionCurve
 
    SUBROUTINE veg_fr_snow( &
-      sfr, SnowFrac, nsurf, &!input
+      sfr, SnowFrac, &!input
       veg_fr)!output
 
       IMPLICIT NONE
 
-      INTEGER, INTENT(in) :: nsurf !< number of surface types
 
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in) :: sfr      !< surface fractions
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in) :: SnowFrac !< snowy surface fractions [-]

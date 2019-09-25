@@ -176,7 +176,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
 
    ! NB: CBL disabled for the moment for interface improvement
    ! NB: CBL be decoupled from SUEWS TS 10 Jun 2018
-   ! print*, 'test here ',1/(Qh_choice-Qh_choice)
+
    IF (Qh_choice == 1) THEN   !use QH and QE from SUEWS
       qhforCBL(Gridiv) = dataOutLineSUEWS(9)
       qeforCBL(Gridiv) = dataOutLineSUEWS(10)
@@ -187,17 +187,21 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       qhforCBL(Gridiv) = qh_obs
       qeforCBL(Gridiv) = qe_obs
       IF (qh_obs < -900 .OR. qe_obs < -900) THEN  ! observed data has a problem
+
          CALL ErrorHint(22, 'Unrealistic observed qh or qe_value for CBL.', qh_obs, qe_obs, qh_choice)
+
       ENDIF
    ENDIF
    IF (CBLuse >= 1) THEN ! If CBL is used, calculated Temp_C and RH are replaced with the obs.
       IF (Diagnose == 1) WRITE (*, *) 'Calling CBL...'
+
       UStar = dataOutLineSUEWS(55)
       !ir=1 indicates first row of each met data block
       CALL CBL(iy, id, it, imin, ir, Gridiv, qh_choice, dectime, &
                Temp_C, Press_hPa, avkdn, avu1, avrh, avcp, avdens, es_hPa, lv_J_kg, &
                nsh_real, tstep, UStar, psih, is, NumberOfGrids, &
                qhforCBL, qeforCBL, ReadLinesMetdata, dataOutBL)
+
    ENDIF
 
    ! NB: SOLWEIG can be treated as a separate part:

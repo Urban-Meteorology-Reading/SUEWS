@@ -103,8 +103,10 @@ contains
       !especially in the case of evergreen trees (i.e. in early March LAI can be in its minimum value, but air temperature and radiation
       !such that uptake can take place)
       DO iv = ivConif, ivGrass   !For vegetated surfaces. Snow included although quite often LAI will be in its minimum when snow on ground
+
          active_veg_fr(iv) = (sfr(iv + 2)*(1 - SnowFrac(iv + 2)))*(LAI_id(iv)/LAIMax(iv))
          active_veg_fr0(iv) = (sfr(iv + 2)*(1 - SnowFrac(iv + 2)))*LAI_id(iv)
+
       ENDDO
 
       IF (EmissionsMethod >= 11 .AND. EmissionsMethod <= 16) THEN   ! Rectangular hyperbola

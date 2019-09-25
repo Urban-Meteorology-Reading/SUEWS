@@ -88,6 +88,7 @@ CONTAINS
       REAL(KIND(1d0))::NAN = -999
       INTEGER::idoy, startflag
 
+
       ! initialise startflag
       startflag = 0
 

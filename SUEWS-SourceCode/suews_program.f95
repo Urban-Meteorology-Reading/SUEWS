@@ -300,6 +300,7 @@ PROGRAM SUEWS_Program
       ! ALLOCATE(qn1_av_store_grid(2*NSH+1))
       ALLOCATE (qhforCBL(NumberOfGrids))
       ALLOCATE (qeforCBL(NumberOfGrids))
+
       ALLOCATE (tair_av_grids(NumberOfGrids))
       ALLOCATE (qn1_av_grids(NumberOfGrids))
       ALLOCATE (dqndt_grids(NumberOfGrids))

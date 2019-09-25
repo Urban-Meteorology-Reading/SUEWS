@@ -340,7 +340,7 @@ CONTAINS
             TSURF = ((EMIS0*SIGMATK4 + LUPCORR)/(EMIS0*SIGMA_SB))**0.25 !Eqs. (14) and (15),
             LUP = EMIS0*SIGMATK4 + LUPCORR + (1 - EMIS0)*LDOWN     !Eq (16) in Offerle et al. (2002)
          else
-            ! use iteration-based approach to calculate LUP and also TSURF
+            ! use iteration-based approach to calculate LUP and also TSURF; TS 20 Sep 2019
             TSURF = tsurf_0_K
             LUP = EMIS0*SIGMA_SB*TSURF**4 + (1 - EMIS0)*LDOWN
 
@@ -369,7 +369,7 @@ CONTAINS
                !close(34)
                LUP_SNOW = NARP_EMIS_SNOW*SIGMA_SB*TSURF_SNOW**4 + (1 - NARP_EMIS_SNOW)*LDOWN
             else
-               ! use iteration-based approach to calculate LUP and also TSURF
+               ! use iteration-based approach to calculate LUP and also TSURF; TS 20 Sep 2019
                TSURF_SNOW = tsurf_0_K
                LUP_SNOW = NARP_EMIS_SNOW*SIGMA_SB*TSURF**4 + (1 - NARP_EMIS_SNOW)*LDOWN
             end if

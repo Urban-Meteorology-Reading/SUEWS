@@ -596,11 +596,15 @@ CONTAINS
 
       DecidCap_id = DecidCap_id - CapChange
       StoreDrainPrm(6, DecidSurf) = DecidCap_id !Change current storage capacity of deciduous trees
-      albDecTr_id = albDecTr_id + albChangeDecTr
       porosity_id = porosity_id + porChange !- changed to + by HCW 20 Aug 2015 (porosity greatest when LAI smallest)
-      !Also update albedo of EveTr and Grass surfaces
-      albEveTr_id = albEveTr_id + albChangeEveTr
-      albGrass_id = albGrass_id + albChangeGrass
+
+      ! update albedo values while limiting these to valid ranges
+      albDecTr_id = min(max(albDecTr_id + albChangeDecTr,AlbMin_DecTr),AlbMax_DecTr)
+      albEveTr_id = min(max(albEveTr_id + albChangeEveTr,AlbMin_EveTr),AlbMax_EveTr)
+      albGrass_id = min(max(albGrass_id + albChangeGrass,AlbMin_Grass),AlbMax_Grass)
+      ! albDecTr_id = albDecTr_id + albChangeDecTr
+      ! albEveTr_id = albEveTr_id + albChangeEveTr
+      ! albGrass_id = albGrass_id + albChangeGrass
 
    END SUBROUTINE update_Veg
 

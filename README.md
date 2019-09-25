@@ -22,20 +22,17 @@ These branches are regularly curated by admin members with specific purposes and
   * used for public releases: compiled binaries are archived and published to the public.
   * version information (e.g., 2018c) will be added as a tag once published and a formal release will be available via the `Releases` tab.
   * `push` is restricted to admin members.
-* `test-dev`:
-  * used for the fast development and test
-  * new features should be incorporated into this branch for testing before merging into `master`
 
 #### Feature branches
 Branches for specific features are NOT maintained by admin members: they are proposed and maintained by related developers. Being without central curation, developers are strongly suggested to following certain rules:
 
-* using the latest `test-dev` as the basis to conduct feature development for easier merging at a later time.
+* using the latest `master` as the basis to conduct feature development for easier merging at a later time.
 * naming the feature branch as `test-dev-{feature}` so certain branch maintenance rules can be easily applied by curators whenever necessary.
 * testing the features as thorough as possible; details refer to the [Test](###Test) section.
 
 #### General merging workflow
 
-`test-dev-{feature}` --[feature ready]--> `test-dev` --[central test passed]--> `master` --[release ready]--> `PublicRelease`
+`test-dev-{feature}` --[feature ready]--> [automatic test passed]--> `master` --[release ready]--> `PublicRelease`
 
 
 

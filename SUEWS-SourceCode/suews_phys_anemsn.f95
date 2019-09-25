@@ -32,7 +32,7 @@ contains
       EF_umolCO2perJ, FcEF_v_kgkm, EnEF_v_Jkm, TrafficUnits, &
       FrFossilFuel_Heat, FrFossilFuel_NonHeat, &
       MinFCMetab, MaxFCMetab, MinQFMetab, MaxQFMetab, &
-      NumCapita, PopDensDaytime, PopDensNighttime, &
+      PopDensDaytime, PopDensNighttime, &
       Temp_C, HDD_id, Qf_A, Qf_B, Qf_C, &
       AH_MIN, AH_SLOPE_Heating, AH_SLOPE_Cooling, &
       T_CRITIC_Heating, T_CRITIC_Cooling, &
@@ -64,7 +64,6 @@ contains
          AH_SLOPE_Heating, &  !Slope of the anthropogenic heat flux calculation
          AH_SLOPE_Cooling, &
          FcEF_v_kgkm, &       !CO2 Emission factor
-         NumCapita, &
          PopDensDaytime, &    !Daytime population density [ha-1] (i.e. workers)
          T_CRITIC_Heating, &  !Critical temperature
          T_CRITIC_Cooling, &  !Critical cooling temperature
@@ -106,6 +105,7 @@ contains
          HDD_daily, & !daily HDD
          CDD_daily, & !daily HDD
          Tair_avg_daily, & !daily mean air temperature
+         NumCapita(2), &
          DP_x_RhoPop, DP_x_RhoPop_traff, &
          QF_build, QF_metab, QF_traff, &
          QF_SAHP_base, &     !Anthropogenic heat flux calculated by SAHP (temp independent part)
@@ -130,7 +130,10 @@ contains
       ! Tair_avg_daily= HDD_id_use(3) ! this is daily
 
       ! use average of both daytime and nighttime population values
-      ! TS 27 Dec 2018: moved from `translate` here to simplify the interface
+      ! TS 20 Sep 2019: moved from `translate` here to simplify the interface
+      IF (PopDensDaytime(1) >= 0 .AND. PopDensNighttime >= 0) NumCapita(1) = (PopDensDaytime(1) + PopDensNighttime)/2  !If both, use average
+      IF (PopDensDaytime(2) >= 0 .AND. PopDensNighttime >= 0) NumCapita(2) = (PopDensDaytime(2) + PopDensNighttime)/2  !If both, use average
+
       !NumCapita = (PopDensDaytime + PopDensNighttime)/2
 
       !-----------------------------------------------------------------------

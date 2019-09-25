@@ -39,7 +39,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
                       ef_umolco2perj, emissionsmethod, enef_v_jkm, enddls, fcef_v_kgkm, fcld_obs, &
                       frfossilfuel_heat, frfossilfuel_nonheat, EvapMethod, &
                       LAIcalcyes, LAI_obs, lat, ldown_obs, lng, maxfcmetab, maxqfmetab, &
-                      minfcmetab, minqfmetab, netradiationmethod, numcapita, ohmincqf, &
+                      minfcmetab, minqfmetab, netradiationmethod, ohmincqf, &
                       popdensdaytime, popdensnighttime, &
                       precip, press_hpa, qf0_beu, qf_a, qf_b, qf_c, &
                       qe_obs, qh_obs, qn1_obs, qs_obs, qf_obs, &
@@ -64,12 +64,13 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       narp_emis_snow, narp_trans_site, &
       ohm_coef, ohm_threshsw, ohm_threshwd, &
       pormax_dec, pormin_dec, &
+      tair_av, &
       dqndt, qn1_av, &
       dqnsdt, qn1_s_av, &
       resp_a, resp_b, sathydraulicconduct, sddfull, &
-      sfr, SnowPackLimit, snowdens, snowfrac, snowpack, &
+      sfr, SnowPackLimit, snowdens, SnowFrac, snowpack, &
       soildepth, soilstore_id, SoilStoreCap, state_id, statelimit, &
-      StoreDrainPrm, tair24hr, theta_bioco2, ts5mindata_ir, &
+      StoreDrainPrm, theta_bioco2, ts5mindata_ir, &
       waterdist, wetthresh, &
       WUDay_id, &
       AHProf_24Hr, HumActivity_24Hr, PopProf_24Hr, TraffProf_24Hr, WUProfA_24hr, WUProfM_24hr, &
@@ -135,7 +136,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       LAIPower, LAIType, lat, ldown_obs, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
       SnowWater, MetForcingData_grid, MinFCMetab, MinQFMetab, min_res_bioCO2, &
       NARP_EMIS_SNOW, NARP_TRANS_SITE, NetRadiationMethod, &
-      NumCapita, OHM_coef, OHMIncQF, OHM_threshSW, &
+      OHM_coef, OHMIncQF, OHM_threshSW, &
       OHM_threshWD, PipeCapacity, PopDensDaytime, &
       PopDensNighttime, PopProf_24hr, PorMax_dec, PorMin_dec, &
       Precip, PrecipLimit, PrecipLimitAlb, Press_hPa, &
@@ -144,10 +145,10 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       RadMeltFact, RAINCOVER, RainMaxRes, resp_a, resp_b, &
       RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
       SatHydraulicConduct, SDDFull, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
-      SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
+      SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, SnowFrac, &
       SnowLimBldg, SnowLimPaved, snowFrac_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
       soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
-      StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair24HR, tau_a, tau_f, tau_r, &
+      StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair_av, tau_a, tau_f, tau_r, &
       T_CRITIC_Cooling, T_CRITIC_Heating, Temp_C, TempMeltFact, TH, &
       theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
       TraffProf_24hr, Ts5mindata_ir, tstep, tstep_prev, veg_type, &
@@ -175,6 +176,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
 
    ! NB: CBL disabled for the moment for interface improvement
    ! NB: CBL be decoupled from SUEWS TS 10 Jun 2018
+
    IF (Qh_choice == 1) THEN   !use QH and QE from SUEWS
       qhforCBL(Gridiv) = dataOutLineSUEWS(9)
       qeforCBL(Gridiv) = dataOutLineSUEWS(10)
@@ -185,16 +187,21 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       qhforCBL(Gridiv) = qh_obs
       qeforCBL(Gridiv) = qe_obs
       IF (qh_obs < -900 .OR. qe_obs < -900) THEN  ! observed data has a problem
-         CALL ErrorHint(22, 'Unrealistic observed qh or qe_value.', qh_obs, qe_obs, qh_choice)
+
+         CALL ErrorHint(22, 'Unrealistic observed qh or qe_value for CBL.', qh_obs, qe_obs, qh_choice)
+
       ENDIF
    ENDIF
    IF (CBLuse >= 1) THEN ! If CBL is used, calculated Temp_C and RH are replaced with the obs.
       IF (Diagnose == 1) WRITE (*, *) 'Calling CBL...'
-      ! we need the following:
-      ! avdens, lv_J_kg, avcp, UStar, psih
+
       UStar = dataOutLineSUEWS(55)
-   CALL CBL(iy, id, it, imin, ir, Gridiv, qh_choice, dectime, Temp_C, Press_hPa, avkdn, avu1, avrh, avcp, avdens, es_hPa, lv_J_kg, &
-               nsh_real, tstep, UStar, psih, is, NumberOfGrids, qhforCBL, qeforCBL, ReadLinesMetdata, dataOutBL)   !ir=1 indicates first row of each met data block
+      !ir=1 indicates first row of each met data block
+      CALL CBL(iy, id, it, imin, ir, Gridiv, qh_choice, dectime, &
+               Temp_C, Press_hPa, avkdn, avu1, avrh, avcp, avdens, es_hPa, lv_J_kg, &
+               nsh_real, tstep, UStar, psih, is, NumberOfGrids, &
+               qhforCBL, qeforCBL, ReadLinesMetdata, dataOutBL)
+
    ENDIF
 
    ! NB: SOLWEIG can be treated as a separate part:

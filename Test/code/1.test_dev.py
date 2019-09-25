@@ -35,7 +35,7 @@ if path_input_ver.exists():
 
 # copy runcontrol
 path_runctrl_base = path_baserun/'RunControl.nml'
-path_runctrl_input=path_input_ver/'RunControl.nml'
+path_runctrl_input = path_input_ver/'RunControl.nml'
 copyfile(path_runctrl_base, path_runctrl_input)
 dict_runcontrol = ts.load_SUEWS_nml(path_runctrl_base)['runcontrol']
 # copy other input tables and initial conditions
@@ -48,6 +48,15 @@ for x in path_base_input.glob('*'):
 
 # load name of programme for testing
 name_exe = cfg_file['name_exe']
+
+# load test configurations
+cfg_test = nml['test']
+flag_multi_grid = True if cfg_test['multi_grid'] == 1 else False
+flag_multi_year = True if cfg_test['multi_year'] == 1 else False
+flag_same_run = True if cfg_test['same_run'] == 1 else False
+flag_test_phys = True if cfg_test['test_phys'] == 1 else False
+flag_test_complete = True if cfg_test['test_complete'] == 1 else False
+test_number = cfg_test['test_number']
 
 # load physics options to test
 dict_phy_opt_sel = nml['physics_test']
@@ -68,62 +77,88 @@ df_siteselect = ts.load_SUEWS_table(
 class Test_SUEWS(unittest.TestCase):
     def test_ok_multiyear(self):
         print('***************************************')
-        print('testing single-grid multi-year run ... ')
-        name_sim = 'test-multi-year' + str(np.random.randint(10000))
-        res_test = ts.test_multiyear(
-            name_sim, name_exe, dict_runcontrol, dict_initcond, df_siteselect,
-            dir_exe, path_input_ver)
-        self.assertTrue(res_test)
+        if flag_multi_year:
+            print('testing single-grid multi-year run ... ')
+            name_sim = 'test-multi-year' + str(np.random.randint(10000))
+            res_test = ts.test_multiyear(
+                name_sim, name_exe, dict_runcontrol, dict_initcond, df_siteselect,
+                dir_exe, path_input_ver)
+            self.assertTrue(res_test)
+        else:
+            print('single-grid multi-year test skipped ... ')
         print('  ')
         print('***************************************')
 
     def test_ok_multigrid(self):
         print('')
         print('***************************************')
-        print('testing multi-grid multi-year run ... ')
-        n_grid = 3
-        name_sim = 'test-multi-grid' + str(np.random.randint(10000))
-        res_test = ts.test_multigrid(
-            name_sim, name_exe,
-            dict_runcontrol, dict_initcond, df_siteselect,
-            n_grid, dir_exe, path_input_ver)
-        self.assertTrue(res_test)
+        if flag_multi_grid:
+            print('testing multi-grid multi-year run ... ')
+            n_grid = 3
+            name_sim = 'test-multi-grid' + str(np.random.randint(10000))
+            res_test = ts.test_multigrid(
+                name_sim, name_exe,
+                dict_runcontrol, dict_initcond, df_siteselect,
+                n_grid, dir_exe, path_input_ver)
+            self.assertTrue(res_test)
+        else:
+            print('multi-grid multi-year test skipped ... ')
         print('  ')
         print('***************************************')
 
     def test_ok_samerun(self):
         print('')
         print('****************************************************')
-        print('testing if results could match the standard run ... ')
-        name_sim = 'test-same-run' + str(np.random.randint(10000))
-        res_test = ts.test_samerun(name_sim, name_exe,
-                                   dict_runcontrol, dict_initcond,
-                                   df_siteselect,
-                                   dir_exe, path_baserun)
-        self.assertTrue(res_test)
+
+        if flag_same_run:
+            print('testing if results could match the standard run ... ')
+            print('N.B.: THE TEST IS GENERATED USING LONGTERM FORCING!')
+            print('N.B.: test_2004_data_60.txt.long')
+            name_sim = 'test-same-run' + str(np.random.randint(10000))
+            res_test = ts.test_samerun(name_sim, name_exe,
+                                        dict_runcontrol, dict_initcond,
+                                        df_siteselect,
+                                        dir_exe, path_baserun)
+            self.assertTrue(res_test)
+        else:
+            print('identity test skipped ... ')
         print('  ')
         print('****************************************************')
 
     def test_ok_physics(self):
         print('')
         print('************************************************')
-        print('testing if some physics schemes are working ... ')
-        # show options to test
-        res_list_fail = ts.test_physics(
-            name_exe, path_input_ver, dir_exe,
-            dict_runcontrol, dict_initcond, df_siteselect,
-            dict_phy_opt_sel)
+        if flag_test_phys:
+            print('testing if some physics schemes are working ... ')
+            if flag_test_complete:
+                if test_number>0:
+                    print(
+                        f'testing in selective mode: a randomly chosen {test_number} combinations of physics schemes will be tested!')
+                else:
+                    print('testing in complete mode: all physics schemes will be tested!')
+            else:
+                print('testing in concise mode: only part of physics schemes will be tested!')
+            # show options to test
+            res_list_fail = ts.test_physics(
+                name_exe, path_input_ver, dir_exe,
+                dict_runcontrol, dict_initcond, df_siteselect,
+                dict_phy_opt_sel,
+                flag_test_complete,
+                test_number
+            )
 
-        # `0` means no failure: all options can pass test
-        res_test = len(res_list_fail) == 0
-        print(res_list_fail)
-        # print out all faulty options
-        if not res_test:
-            print('faulty options found:')
-            for fail in res_list_fail:
-                print(fail)
+            # `0` means no failure: all options can pass test
+            res_test = len(res_list_fail) == 0
+            print(res_list_fail)
+            # print out all faulty options
+            if not res_test:
+                print('faulty options found:')
+                for fail in res_list_fail:
+                    print(fail)
 
-        self.assertTrue(res_test)
+            self.assertTrue(res_test)
+        else:
+            print('physics test skipped ... ')
         print('  ')
         print('************************************************')
 

@@ -24,7 +24,7 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
 
    CHARACTER(len=*)::ProblemFile                 ! Name of the problem file
    CHARACTER(len=150)::text1                      ! Initialization of text
-   CHARACTER(len=20)::filename                  !file name for writting out error info
+   ! CHARACTER(len=20)::filename                  !file name for writting out error info
    INTEGER:: errh, ValueI, ValueI2                  ! v7,v8 initialised as false, HCW 28/10/2014
    INTEGER, DIMENSION(80):: ErrhCount = 0             ! Counts each time a error hint is called. Initialise to zero
    ! INTEGER:: WhichFile                            ! Used to switch between 500 for error file, 501 for warnings file
@@ -128,6 +128,7 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
    ELSEIF (errh == 22) THEN
       text1 = ' QH_observed, QE_observed, QH_choice: '
       v4 = .TRUE.
+      returnTrue = .TRUE.
    ELSEIF (errh == 23) THEN
       text1 = 'CBL-sonde -need to increase size of izm:zmax,izm'
       v5 = .TRUE.

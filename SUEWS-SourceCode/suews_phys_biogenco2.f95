@@ -34,7 +34,7 @@ contains
       alpha_bioCO2, alpha_enh_bioCO2, avkdn, beta_bioCO2, beta_enh_bioCO2, BSoilSurf, &! input:
       ConifSurf, DecidSurf, dectime, EmissionsMethod, gfunc, gfunc2, GrassSurf, gsmodel, &
       id, it, ivConif, ivDecid, ivGrass, LAI_id, LAIMin, LAIMax, min_res_bioCO2, nsurf, &
-      NVegSurf, resp_a, resp_b, sfr, snowFrac, t2, Temp_C, theta_bioCO2, &
+      NVegSurf, resp_a, resp_b, sfr, SnowFrac, t2, Temp_C, theta_bioCO2, &
       Fc_biogen, Fc_photo, Fc_respi)! output:
 
       IMPLICIT NONE
@@ -53,7 +53,7 @@ contains
 
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in):: &
          sfr, &   !Surface fractions [-]
-         snowFrac
+         SnowFrac
 
       REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(in):: &
          LAIMin, LAIMax, &      ! [m2 m-2]
@@ -103,8 +103,10 @@ contains
       !especially in the case of evergreen trees (i.e. in early March LAI can be in its minimum value, but air temperature and radiation
       !such that uptake can take place)
       DO iv = ivConif, ivGrass   !For vegetated surfaces. Snow included although quite often LAI will be in its minimum when snow on ground
-         active_veg_fr(iv) = (sfr(iv + 2)*(1 - snowFrac(iv + 2)))*(LAI_id(iv)/LAIMax(iv))
-         active_veg_fr0(iv) = (sfr(iv + 2)*(1 - snowFrac(iv + 2)))*LAI_id(iv)
+
+         active_veg_fr(iv) = (sfr(iv + 2)*(1 - SnowFrac(iv + 2)))*(LAI_id(iv)/LAIMax(iv))
+         active_veg_fr0(iv) = (sfr(iv + 2)*(1 - SnowFrac(iv + 2)))*LAI_id(iv)
+
       ENDDO
 
       IF (EmissionsMethod >= 11 .AND. EmissionsMethod <= 16) THEN   ! Rectangular hyperbola
@@ -179,7 +181,8 @@ contains
             Bellucco2017_Pho = -(1/(2*theta_bioCO2_v2(ivConif))*( &
                                  alpha_bioCO2_v2(ivConif)*PAR_umolm2s1 + beta_bioCO2_v2(ivConif) &
                                  - SQRT((alpha_bioCO2_v2(ivConif)*PAR_umolm2s1 + beta_bioCO2_v2(ivConif))**2 &
-                                       - 4*alpha_bioCO2_v2(ivConif)*beta_bioCO2_v2(ivConif)*theta_bioCO2_v2(ivConif)*PAR_umolm2s1)))
+                                        - 4*alpha_bioCO2_v2(ivConif)*beta_bioCO2_v2(ivConif)*theta_bioCO2_v2(ivConif) &
+                                        *PAR_umolm2s1)))
 
          ENDIF
          ! Calculate carbon uptake due to photosynthesis -------------

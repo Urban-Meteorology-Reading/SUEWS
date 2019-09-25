@@ -20,11 +20,11 @@ MODULE allocateArray
    IMPLICIT NONE
 
    ! ---- Set parameters for reading in data ------------------------------------------------------
-#ifdef nc
-   INTEGER, PARAMETER:: MaxNumberOfGrids = 90000   !Max no. grids   !TS changed to 90000 for large-scale simulation based on netCDF IO
-#else
+! #ifdef nc
+!    INTEGER, PARAMETER:: MaxNumberOfGrids = 90000   !Max no. grids   !TS changed to 90000 for large-scale simulation based on netCDF IO
+! #else
    INTEGER, PARAMETER:: MaxNumberOfGrids = 10000   !Max no. grids   !HCW changed to 2000 from 10000 so prog can run on windows (2GB lim)
-#endif
+! #endif
    INTEGER, PARAMETER:: MaxLinesMet = 8640        !Max no. lines to read in one go (for all grids, ie MaxLinesMet/NumberOfGrids each)
 
    ! ---- Set number of columns in input files ----------------------------------------------------
@@ -47,7 +47,7 @@ MODULE allocateArray
 
    ! ---- Set number of columns in output files ---------------------------------------------------
    INTEGER, PARAMETER:: ncolumnsDataOutSUEWS = 87, &    !Main output file (_5.txt). dataOutSUEWS created in SUEWS_Calculations.f95
-                        ncolumnsDataOutSnow = 102, &
+                        ncolumnsDataOutSnow = 103, &
                         ncolumnsdataOutSOL = 31, &
                         ncolumnsdataOutBL = 22, &
                         ncolumnsDataOutESTM = 32, &
@@ -390,9 +390,11 @@ MODULE allocateArray
    ! REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE::qn1_store_grid,qn1_av_store_grid
    ! REAL(KIND(1d0)),DIMENSION(:),ALLOCATABLE::qn1_S_store_grid,qn1_S_av_store_grid
 
+   REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE::tair_av_grids
    REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE::qn1_av_grids, qn1_s_av_grids
    REAL(KIND(1d0)), DIMENSION(:), ALLOCATABLE::dqndt_grids, dqnsdt_grids
    REAL(KIND(1d0))::qn1_av, dqndt
+   REAL(KIND(1d0))::tair_av
    REAL(KIND(1d0))::qn1_s_av, dqnsdt
 
    !-----------------------------------------------------------------------------------------------
@@ -712,21 +714,22 @@ MODULE allocateArray
 
    !ESTM
    ! Roof/surface characteristics for all surfaces including snow
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_thick1  = (/(cc, cc=ccEndB+ 0*nsurfIncSnow+1,ccEndB+ 0*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER, DIMENSION(nsurfIncSnow):: c_Surf_k1 = (/(cc, cc=ccEndB + 1*nsurfIncSnow + 1, ccEndB + 1*nsurfIncSnow + nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_rhoCp1  = (/(cc, cc=ccEndB+ 2*nsurfIncSnow+1,ccEndB+ 2*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_thick2  = (/(cc, cc=ccEndB+ 3*nsurfIncSnow+1,ccEndB+ 3*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER, DIMENSION(nsurfIncSnow):: c_Surf_k2 = (/(cc, cc=ccEndB + 4*nsurfIncSnow + 1, ccEndB + 4*nsurfIncSnow + nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_rhoCp2  = (/(cc, cc=ccEndB+ 5*nsurfIncSnow+1,ccEndB+ 5*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_thick3  = (/(cc, cc=ccEndB+ 6*nsurfIncSnow+1,ccEndB+ 6*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER, DIMENSION(nsurfIncSnow):: c_Surf_k3 = (/(cc, cc=ccEndB + 7*nsurfIncSnow + 1, ccEndB + 7*nsurfIncSnow + nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_rhoCp3  = (/(cc, cc=ccEndB+ 8*nsurfIncSnow+1,ccEndB+ 8*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_thick4  = (/(cc, cc=ccEndB+ 9*nsurfIncSnow+1,ccEndB+ 9*nsurfIncSnow+nsurfIncSnow, 1)/)
-INTEGER, DIMENSION(nsurfIncSnow):: c_Surf_k4 = (/(cc, cc=ccEndB + 10*nsurfIncSnow + 1, ccEndB + 10*nsurfIncSnow + nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_rhoCp4  = (/(cc, cc=ccEndB+11*nsurfIncSnow+1,ccEndB+11*nsurfIncSnow+nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_thick5  = (/(cc, cc=ccEndB+12*nsurfIncSnow+1,ccEndB+12*nsurfIncSnow+nsurfIncSnow, 1)/)
-INTEGER, DIMENSION(nsurfIncSnow):: c_Surf_k5 = (/(cc, cc=ccEndB + 13*nsurfIncSnow + 1, ccEndB + 13*nsurfIncSnow + nsurfIncSnow, 1)/)
-  INTEGER,DIMENSION(nsurfIncSnow):: c_Surf_rhoCp5  = (/(cc, cc=ccEndB+14*nsurfIncSnow+1,ccEndB+14*nsurfIncSnow+nsurfIncSnow, 1)/)
+   INTEGER, DIMENSION(nsurfIncSnow) :: &
+      c_Surf_thick1 = [(cc, cc=ccEndB + 0*nsurfIncSnow + 1, ccEndB + 0*nsurfIncSnow + nsurfIncSnow, 1)], &
+      c_Surf_k1 = [(cc, cc=ccEndB + 1*nsurfIncSnow + 1, ccEndB + 1*nsurfIncSnow + nsurfIncSnow, 1)], &
+      c_Surf_rhoCp1 = [(cc, cc=ccEndB + 2*nsurfIncSnow + 1, ccEndB + 2*nsurfIncSnow + nsurfIncSnow, 1)], &
+      c_Surf_thick2 = [(cc, cc=ccEndB + 3*nsurfIncSnow + 1, ccEndB + 3*nsurfIncSnow + nsurfIncSnow, 1)], &
+      c_Surf_k2 = [(cc, cc=ccEndB + 4*nsurfIncSnow + 1, ccEndB + 4*nsurfIncSnow + nsurfIncSnow, 1)], &
+      c_Surf_rhoCp2 = [(cc, cc=ccEndB + 5*nsurfIncSnow + 1, ccEndB + 5*nsurfIncSnow + nsurfIncSnow, 1)], &
+      c_Surf_thick3 = [(cc, cc=ccEndB + 6*nsurfIncSnow + 1, ccEndB + 6*nsurfIncSnow + nsurfIncSnow, 1)], &
+      c_Surf_k3 = [(cc, cc=ccEndB + 7*nsurfIncSnow + 1, ccEndB + 7*nsurfIncSnow + nsurfIncSnow, 1)], &
+      c_Surf_rhoCp3 = [(cc, cc=ccEndB + 8*nsurfIncSnow + 1, ccEndB + 8*nsurfIncSnow + nsurfIncSnow, 1)], &
+      c_Surf_thick4 = [(cc, cc=ccEndB + 9*nsurfIncSnow + 1, ccEndB + 9*nsurfIncSnow + nsurfIncSnow, 1)], &
+      c_Surf_k4 = [(cc, cc=ccEndB + 10*nsurfIncSnow + 1, ccEndB + 10*nsurfIncSnow + nsurfIncSnow, 1)], &
+      c_Surf_rhoCp4 = [(cc, cc=ccEndB + 11*nsurfIncSnow + 1, ccEndB + 11*nsurfIncSnow + nsurfIncSnow, 1)], &
+      c_Surf_thick5 = [(cc, cc=ccEndB + 12*nsurfIncSnow + 1, ccEndB + 12*nsurfIncSnow + nsurfIncSnow, 1)], &
+      c_Surf_k5 = [(cc, cc=ccEndB + 13*nsurfIncSnow + 1, ccEndB + 13*nsurfIncSnow + nsurfIncSnow, 1)], &
+      c_Surf_rhoCp5 = [(cc, cc=ccEndB + 14*nsurfIncSnow + 1, ccEndB + 14*nsurfIncSnow + nsurfIncSnow, 1)]
    ! Find current column number
    INTEGER, PARAMETER:: ccEndESTMB = (ccEndB + 14*nsurfIncSnow + nsurfIncSnow)
    ! Other ESTM characteristics are for built surfaces only
@@ -975,7 +978,7 @@ MODULE data_in
              OHMIncQF, &             !OHM calculation uses Q* only (0) or Q*+QF (1)
              StorageHeatMethod, &             !OHM (1); QS in met file (2); AnOHM(3); ESTM(4)
              SNOWuse, &              !Snow part used (1) or not used (0)
-             SOLWEIGuse, &           !SOLWEIG part used (calculates Tmrt and other fluxes on a grid, FL)
+             !  SOLWEIGuse, &           !SOLWEIG part used (calculates Tmrt and other fluxes on a grid, FL)
              SMDMethod, &           !Use modelled (0) or observed(1,2) soil moisture
              WaterUseMethod, &            !Use modelled (0) or observed (1) water use
              RoughLenMomMethod, &              !Defines method for calculating z0 & zd
@@ -987,9 +990,9 @@ MODULE data_in
              SuppressWarnings = 1, &     ! Set to 1 to prevent warnings.txt file from being written
              Diagnose, &             !Set to 1 to get print-out of model progress
              DiagnoseDisagg, &       !Set to 1 to get print-out of met forcing disaggregation progress
-             ncMode, &               !Write output file in netCDF (1) or not (0) , TS, 09 Dec 2016
-             nRow, &                 !number of rows of checker board layout in the netCDF output, TS, 09 Dec 2016
-             nCol, &                 !number of columns of checker board layout in the netCDF output, TS, 09 Dec 2016
+             !  ncMode, &               !Write output file in netCDF (1) or not (0) , TS, 09 Dec 2016
+             !  nRow, &                 !number of rows of checker board layout in the netCDF output, TS, 09 Dec 2016
+             !  nCol, &                 !number of columns of checker board layout in the netCDF output, TS, 09 Dec 2016
              DiagnoseDisaggESTM, &   !Set to 1 to get print-out of ESTM forcing disaggregation progress
              DiagQN, DiagQS         !Set to 1 to print values/components
 
@@ -1122,7 +1125,7 @@ MODULE data_in
                                    AH_SLOPE_Heating, &  !Slope of the antrhropogenic heat flux calculation (AnthropHeatMethod = 1)
                                    AH_SLOPE_Cooling, &
                                    FcEF_v_kgkm, &
-                                   NumCapita, &
+                                   !   NumCapita, &
                                    PopDensDaytime, &
                                    T_CRITIC_Heating, & !Critical temperature
                                    T_CRITIC_Cooling, & !Critical cooling temperature
@@ -1179,62 +1182,6 @@ MODULE data_in
 
 END MODULE data_in
 !==================================================================================================
-
-!======================================================================================================
-MODULE cbl_MODULE
-
-   INTEGER::EntrainmentType, &  ! Entrainment type choice
-             CO2_included, &     ! CO2 included
-             InitialData_use, &  ! 1 read initial data, 0 do not
-             !  qh_choice,&        ! selection of qh use to drive CBL growth 1=Suews 2=lumps 3=obs  ! moved to suews_data
-             sondeflag, &      ! 1 read sonde or vertical profile data in 0 do not
-             isubs          ! 1 include subsidence in equations
-
-   INTEGER, DIMENSION(366)::cblday = 0
-
-   CHARACTER(len=200), DIMENSION(366)::FileSonde = ""
-   CHARACTER(len=200)::InitialDataFileName
-   REAL(KIND(1D0)):: wsb       ! subsidence velocity
-   REAL(KIND(1d0)), DIMENSION(1:10):: cbldata
-   REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE::IniCBLdata
-
-   !Parameters in CBL code
-   INTEGER::zmax, &
-             nEqn = 6, &  !NT changed from 4 to 6
-             iCBLcount, &
-             nlineInData
-   REAL(KIND(1d0))::C2K = 273.16
-
-   REAL(KIND(1D0)):: usbl, ftbl, fqbl, fcbl, gamt, gamq, gamc, tpp, qpp, cp0!,tk
-
-   REAL(KIND(1D0))::alpha3, &
-                     blh_m, &    ! Boundary layer height(m)
-                     blh1_m, &
-                     cm, &       ! CO2 concentration in CBL
-                     !cp0,gamc,& !
-                     gamt_Km, &  ! Vertical gradient of theta (K/m)
-                     gamq_gkgm, &! Vertical gradient of specific humidity (g/kg/m)
-                     gamq_kgkgm, &! Vertical gradient of specific humidity (kg/kg/m)
-                     !fcbl,&
-                     tm_C, &     ! Potential temperature in CBL (degree Celsius)
-                     tm_K, &     ! Potential temperature in CBL (K)
-                     tmp_K, &
-                     tp_C, &     ! Potential temperature just above Boundary layer height(degree Celsius)
-                     tp_K, &     ! Potential temperature just above Boundary layer height(K)
-                     tpp_K, &
-                     febl_kgkgms, &! Kinematic latent heat flux((kg/kg)*m/s)
-                     fhbl_Kms, &   ! Kinematic sensible heat flux(K*m/s)
-                     qm_gkg, &   ! Specific humidity in CBL(g/kg)
-                     qm_kgkg, &  ! Specific humidity in CBL(kg/kg)
-                     qp_gkg, &   ! Specific humidity above Boundary layer height(g/kg)
-                     qp_kgkg, &  ! Specific humidity above Boundary layer height(kg/kg)
-                     qpp_kgkg
-
-   REAL(KIND(1D0)), DIMENSION(0:500, 2):: gtheta, ghum ! Vertical gradient of theta and specific humidity from sonde data
-   REAL(KIND(1D0)), DIMENSION(6)::y  ! NT set from 4 to 6
-
-END MODULE cbl_MODULE
-!===================================================================================
 
 MODULE snowMod
    IMPLICIT NONE

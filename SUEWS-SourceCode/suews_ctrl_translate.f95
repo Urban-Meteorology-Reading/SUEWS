@@ -182,9 +182,11 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    IF (PopDensDaytime(1) >= 0 .AND. PopDensNighttime < 0) PopDensNighttime = PopDensDaytime(1)  !If only daytime data provided, use them
    IF (PopDensDaytime(1) < 0 .AND. PopDensNighttime >= 0) PopDensDaytime(1) = PopDensNighttime  !If only night-time data provided, use them
    PopDensDaytime(2) = PopDensNighttime + (PopDensDaytime(1) - PopDensNighttime)*SurfaceChar(Gridiv, c_FrPDDwe) !Use weekend fraction to daytime population
-   ! IF (PopDensDaytime >= 0 .AND. PopDensNighttime >= 0) NumCapita = (PopDensDaytime + PopDensNighttime)/2  !If both, use average ! moved to `AnthropogenicEmissions`, TS 27 Dec 2018
-   IF (PopDensDaytime(1) >= 0 .AND. PopDensNighttime >= 0) NumCapita(1) = (PopDensDaytime(1) + PopDensNighttime)/2  !If both, use average
-   IF (PopDensDaytime(2) >= 0 .AND. PopDensNighttime >= 0) NumCapita(2) = (PopDensDaytime(2) + PopDensNighttime)/2  !If both, use average
+   ! the following part has been moved into `SUEWS_cal_Main` as `NumCapita` can be derived there
+   ! IF (PopDensDaytime(1) >= 0 .AND. PopDensNighttime >= 0) NumCapita(1) = (PopDensDaytime(1) + PopDensNighttime)/2  !If both, use average
+   ! IF (PopDensDaytime(2) >= 0 .AND. PopDensNighttime >= 0) NumCapita(2) = (PopDensDaytime(2) + PopDensNighttime)/2  !If both, use average
+
+   ! ! IF (PopDensDaytime >= 0 .AND. PopDensNighttime >= 0) NumCapita = (PopDensDaytime + PopDensNighttime)/2  !If both, use average ! moved to `AnthropogenicEmissions`, TS 27 Dec 2018
 
    ! ---- Traffic rate
    TrafficRate = SurfaceChar(Gridiv, (/c_TrafficRate_WD, c_TrafficRate_WE/)) ! Mean traffic rate within modelled area
@@ -844,15 +846,15 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
 
    !-----------------------------------------------------
    !-----------------------------------------------------
+   ! load snow related properties for NARP
+   if (snowuse == 1) NARP_EMIS_SNOW = SurfaceChar(Gridiv, c_SnowEmis)
    !NARP_CONFIGURATION if net radiation is to be modelled
    IF (NetRadiationMethod > 0) THEN
       NARP_LAT = SurfaceChar(Gridiv, c_lat)
       NARP_LONG = SurfaceChar(Gridiv, c_lng)    ! New sun_position_v2 use degrees FL
       NARP_YEAR = INT(SurfaceChar(Gridiv, c_Year))
       NARP_TZ = TIMEZONE                           !not every 5-min
-      NARP_EMIS_SNOW = SurfaceChar(Gridiv, c_SnowEmis)
       NARP_TRANS_SITE = TRANS_SITE
-
       !INTERVAL IS ONLY RELEVANT TO LUPCORR
       !ALL OTHER CALCULATIONS ARE INTERVAL INDEPENDENT
       !NB FOR INTERVALS LONGER THAN 15 MINUTES ERRORS IN KCLEAR WILL BE GREATER
@@ -1075,9 +1077,9 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       WRITE (12, '(a12,11f10.3,i3)') SsG_YYYY, G1, G2, G3, G4, G5, G6, TH, TL, S1, S2, Kmax, gsModel
 
       WRITE (12, *) '----- '//TRIM(ADJUSTL(SsG_YYYY))//' Energy-use parameters'//' -----'
-      WRITE (12, '(a12,11a10)') 'Grid', 'NumCapita', 'BaseTHDD', 'QF_A_WD', 'QF_A_WE', 'QF_B_WD', 'QF_B_WE', 'QF_C_WD', 'QF_C_WE', &
-         'AH_Min', 'AH_Slope', 'T_critic_Heating'
-      WRITE (12, '(a12,11f10.3)') SsG_YYYY, NumCapita(1), BaseTHDD, QF_A(1:2), QF_B(1:2), QF_C(1:2), &
+      WRITE (12, '(a12,11a10)') 'Grid', 'PopDensDaytime', 'BaseTHDD', 'QF_A_WD', 'QF_A_WE', 'QF_B_WD', 'QF_B_WE', 'QF_C_WD', &
+         'QF_C_WE', 'AH_Min', 'AH_Slope', 'T_critic_Heating'
+      WRITE (12, '(a12,11f10.3)') SsG_YYYY, PopDensDaytime, BaseTHDD, QF_A(1:2), QF_B(1:2), QF_C(1:2), &
          AH_Min, AH_Slope_Heating, T_critic_Heating
 
       WRITE (12, *) '----- '//TRIM(ADJUSTL(SsG_YYYY))//' Water-use parameters'//' -----'
@@ -1119,9 +1121,9 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
 
       WRITE (12, *) '----- '//TRIM(ADJUSTL(SsG_YYYY))//' Site parameters'//' -----'
       WRITE (12, '(a12,9a10)') &
-         'Grid', 'lat', 'lon', 'tz', 'alt', 'SurfA_ha', 'z', 'NumCapita', 'z0_input', 'zd_input', 'StartDLS', 'EndDLS'
+         'Grid', 'lat', 'lon', 'tz', 'alt', 'SurfA_ha', 'z', 'PopDensNighttime', 'z0_input', 'zd_input', 'StartDLS', 'EndDLS'
       WRITE (12, '(a12,4f10.4,f10.2,4f10.4,2i10)') &
-         SsG_YYYY, lat, lng*(-1.0), timezone, alt, SurfaceArea_ha, z, NumCapita(1), z0m_in, zdm_in, &
+         SsG_YYYY, lat, lng*(-1.0), timezone, alt, SurfaceArea_ha, z, PopDensNighttime, z0m_in, zdm_in, &
          startDLS, endDLS! DayLightSavingDay(1:2)
 
       WRITE (12, *) ''
@@ -1199,6 +1201,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       ! qn1_av_store_grid(:)   = qn1_av_store(:,Gridiv)
       dqndt = dqndt_grids(Gridiv)
       qn1_av = qn1_av_grids(Gridiv)
+      tair_av = tair_av_grids(Gridiv)
 
       IF (SnowUse == 1) THEN
          ! qn1_S_store_grid(:)    = qn1_S_store(:,Gridiv)
@@ -1241,7 +1244,9 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       ! albEveTr(id) = ModelDailyState(Gridiv,cMDS_albEveTr)
       ! albGrass(id) = ModelDailyState(Gridiv,cMDS_albGrass)
       ! DecidCap(id) = ModelDailyState(Gridiv,cMDS_DecidCap)
-      ! SnowfallCum  = ModelDailyState(Gridiv,cMDS_SnowfallCum)
+
+      ! SnowfallCum is instantaneous values and should be translated at each tstep, TS 17 Sep 2019
+      SnowfallCum = ModelDailyState(Gridiv, cMDS_SnowfallCum)
       ! ---- Snow density of each surface
       SnowDens(1:nsurf) = ModelDailyState(Gridiv, cMDS_SnowDens(1:nsurf))
 
@@ -1261,7 +1266,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
 
       !Also translate ESTM forcing data
       IF (StorageHeatMethod == 4 .OR. StorageHeatMethod == 14) THEN
-         !write(*,*) 'Translating ESTM forcing data'
+         ! write(*,*) 'Translating ESTM forcing data'
          Ts5mindata(ir, 1:ncolsESTMdata) = ESTMForcingData(ir, 1:ncolsESTMdata, Gridiv)
          Ts5mindata_ir(1:ncolsESTMdata) = ESTMForcingData(ir, 1:ncolsESTMdata, Gridiv)
          CALL ESTM_translate(Gridiv)
@@ -1352,6 +1357,7 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv, ir, irMax)
    ! update averaged qn1 memory
    dqndt_grids(Gridiv) = dqndt
    qn1_av_grids(Gridiv) = qn1_av
+   tair_av_grids(Gridiv) = tair_av
    IF (SnowUse == 1) THEN
       dqnsdt_grids(Gridiv) = dqnsdt
       qn1_s_av_grids(Gridiv) = qn1_s_av

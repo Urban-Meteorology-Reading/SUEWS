@@ -3,13 +3,14 @@
 # from Benchmark_SUEWS import *
 from __future__ import print_function
 
+from pathlib import Path
 import errno
 import filecmp
-# import itertools
+import itertools
 import os
 import tempfile
 from glob import glob
-from shutil import copyfile, copytree, rmtree
+from shutil import copyfile, copytree, rmtree, move
 
 # import sys
 import numpy as np
@@ -244,6 +245,9 @@ def test_multiyear(
         name_sim, name_exe, dict_runcontrol, dict_initcond, df_siteselect,
         dir_exe, dir_input, dir_save=tempfile.mkdtemp()):
 
+    print(('test_multiyear for', name_exe))
+    print(('running here:', dir_save))
+
     # generate a multi-grid SiteSelect file using only one grid
     df_siteselect_multi = gen_SiteSelect_multi(df_siteselect, n_grid=1)
 
@@ -259,9 +263,6 @@ def test_multiyear(
 
     # test if multiple years have been run
     res_test = len(res_sim_multiyear.shape) > 0
-
-    print(('test_multiyear for', name_exe))
-    print(('running here:', dir_save))
 
     return res_test
 
@@ -283,6 +284,9 @@ def test_multigrid(
             print('Directory not created.')
         else:
             raise
+
+    print(('test_multigrid for', name_exe))
+    print(('running here:', dir_save))
 
     # generate a multi-grid SiteSelect file
     df_siteselect_multi = gen_SiteSelect_multi(df_siteselect, n_grid)
@@ -322,8 +326,6 @@ def test_multigrid(
     # change back to previous path
     os.chdir(dir_sys)
 
-    print(('test_multigrid for', name_exe))
-    print(('running here:', dir_save))
 
     return res_test
 
@@ -347,7 +349,15 @@ def test_samerun(name_sim, name_exe,
 
     # load configurations from dir_baserun
     copytree(dir_baserun, dir_test)
+
+    # change workign directory
     os.chdir(dir_test)
+
+    # use long-term forcing for this testing
+    path_input = Path(dict_runcontrol['fileinputpath'])
+    input_short = list(path_input.glob('*.txt.long'))[0]
+    move(input_short, input_short.parent/input_short.stem)
+
     if os.path.exists(dir_output):
         rmtree(dir_output)
         os.mkdir(dir_output)
@@ -409,29 +419,36 @@ def test_samerun(name_sim, name_exe,
 def test_physics(name_exe, dir_input, dir_exe,
                  dict_runcontrol, dict_initcond, df_siteselect,
                  dict_phy_opt_sel,
+                 test_complete=True,
+                 test_number=50,
                  dir_save=tempfile.mkdtemp()):
 
     print(('test_physics for', name_exe))
     print('running here:', dir_save)
 
     # get options to test
-    # !. matrix-like combinations of all test options
-    # really time consuming!
-    # methods, options = list(zip(*list(dict_phy_opt_sel.items())))
-    # options = [x if type(x) == list else [x] for x in options]
-    # list_to_test = [dict(list(zip(methods, v)))
-    #                 for v in itertools.product(*options)]
-
-    # 2. simple test by incorporating each eatry into the basis scheme options
-    # faster but less coverage
-    list_to_test = []
-    for method in dict_phy_opt_sel:
-        options = dict_phy_opt_sel[method]
-        if type(options) == list:
-            for x in options:
-                list_to_test.append({method: x})
-        else:
-            list_to_test.append({method: options})
+    # matrix-like combinations of all test options
+    methods, options = list(zip(*list(dict_phy_opt_sel.items())))
+    options = [x if type(x) == list else [x] for x in options]
+    list_to_test_all = [dict(list(zip(methods, v)))
+                    for v in itertools.product(*options)]
+    if test_complete:
+        # 1. use all possible combinations
+        # really time consuming!
+        list_to_test=list_to_test_all
+        if test_number>0:
+            list_to_test = np.random.choice(list_to_test_all, test_number).tolist()
+    else:
+        # 2. simple test by incorporating each entry into the basis scheme options
+        # faster but less coverage
+        list_to_test = []
+        for method in dict_phy_opt_sel:
+            options = dict_phy_opt_sel[method]
+            if type(options) == list:
+                for x in options:
+                    list_to_test.append({method: x})
+            else:
+                list_to_test.append({method: options})
 
     print('number of tests:', len(list_to_test))
     # test selected physics schemes
@@ -453,8 +470,8 @@ def test_physics(name_exe, dir_input, dir_exe,
     dict_test_OK = {k: 'fail' if type(v) == str else 'pass'
                     for k, v in iter(dict_test.items())}
 
-    df_test = pd.DataFrame(list_to_test).assign(
-        result=list(dict_test_OK.values()))
+    df_test = pd.DataFrame(list_to_test)
+    df_test = df_test.assign(result=list(dict_test_OK.values()))
 
     df_test.to_csv('~/df_test.csv')
     # test results

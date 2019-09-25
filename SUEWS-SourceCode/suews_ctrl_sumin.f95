@@ -510,7 +510,7 @@ CONTAINS
       REAL(KIND(1D0))               ::SnowfallCum = 0   !Cumulative snowfall
       REAL(KIND(1D0)), DIMENSION(7) ::IceFrac = 0.2 !Estimated fraction of ice. Should be improved in the future
       REAL(KIND(1D0)), DIMENSION(7) ::SnowDens = 300 !Density of snow
-      REAL(KIND(1D0)), DIMENSION(7) ::snowFrac = 0   !!Surface fraction of snow cover
+      REAL(KIND(1D0)), DIMENSION(7) ::SnowFrac = 0   !!Surface fraction of snow cover
       REAL(KIND(1D0)), DIMENSION(7) ::SnowPack = 0   !Amount of snow on each surface in mm
 
       REAL(KIND(1D0)), DIMENSION(5)                             ::datetimeLine
@@ -569,7 +569,7 @@ CONTAINS
          RadMeltFact, RAINCOVER_id, RainMaxRes_id, resp_a, resp_b, &
          RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater_id, S1, S2, &
          SatHydraulicConduct_id, SDDFull_id, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
-         SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, snowFrac, &
+         SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, SnowFrac, &
          SnowLimBldg, SnowLimPaved, snowFrac_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth_id, &
          soilstore_id, SoilStoreCap_id, StabilityMethod, startDLS, state_id, StateLimit_id, &
          StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair24HR, tau_a, tau_f, tau_r, &

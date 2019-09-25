@@ -83,6 +83,54 @@ The test workflow is as follows (details refer to the Makefile `test` recipe and
    - `dir_input`: the directory to copy input files; suggested to be `Release/InputTables/{version}`.
    - `dir_baserun`: the base run against which to test identity in results.
 
+### Debugging using GDB
+
+GDB is a generic debugging tool used along with gfortran.
+Here are some tips to debug SUEWS code:
+
+#### using GDB on macOS
+
+Recent macOS (since High Sierra) introduces extra security procedures for system level operations that makes installation GDB more tedious than before.
+The best practice, in TS's option, to avoid hacking your macOS, is to use Linux docker images with gfortran&gdb installations: e.g., [alpine-gfortran](https://github.com/cmplopes/alpine-gfortran).
+
+Once the docker image is installed, simply run this from the SUEWS root folder for debugging:
+
+```bash
+ docker run --rm -it -v $(pwd):/source cmplopes/alpine-gfortran /bin/bash
+
+```
+ which will mount the current `SUEWS` directory to docker's path `/source` and enter the interactive mode for debugging.
+
+
+#### debugging with GDB
+
+1. enable the debugging related flags in `Makefile` under `SUEWS-SourceCode` by removing the `#` after the equal sign `=`:
+
+```makefile
+FCNOOPT = -O0
+FFLAGS = -O3 $(STATIC) $(FCDEBUG) -Wall -Wtabs -fbounds-check -cpp \
+					-Wno-unused-dummy-argument -Wno-unused-variable
+```
+
+2. fully clean and recompile `SUEWS`:
+```
+make clean; make
+```
+
+3. copy the recompiled `SUEWS` binary into your SUEWS testing folder (e.g., `Test/BaseRun/2019a`) and load it into GDB:
+
+```
+gdb SUEWS
+
+run
+
+```
+then you should have stack info printed out by GDB if any runtime error occurs.
+
+More detailed GDB tutorial can be found [here](https://github.com/jackrosenthal/gdb-tutorial/blob/master/notes.pdf).
+
+
+
 ### Questions
 
 * Please [raise issues](https://github.com/Urban-Meteorology-Reading/SUEWS/issues/new) for questions in the development so our progress can be well managed.

@@ -126,7 +126,6 @@ MODULE ESTM_data !S.O. and FO
                                                 TANZENITH, &    !
                                                 Tair1, &
                                                 Tair2, &
-                                                Tairday, &      !24hour average air temperature
                                                 Tfloor, &
                                                 Tievolve, &
                                                 TN_roof, &
@@ -657,10 +656,13 @@ CONTAINS
       INTEGER:: Gridiv
 
       !Set initial values at the start of each run for each grid
+      ! the initiliastion part is problematic:
+      ! cannot be initialised under a multi-grid scenario
       IF (Gridiv == 1) ESTMStart = ESTMStart + 1
+      ! print *, 'gridiv in ESTM',gridiv,'ESTMStart',ESTMStart
       IF (ESTMStart == 1) THEN
 
-         !write(*,*) ' ESTMStart: ',ESTMStart, 'initialising ESTM for grid no. ', Gridiv
+         ! write(*,*) ' ESTMStart: ',ESTMStart, 'initialising ESTM for grid no. ', Gridiv
 
          TFLOOR = 20.0 ! This is used only when radforce =T  !TODO:  should be put in the namelist
          TFLOOR = TFLOOR + C2K
@@ -696,10 +698,10 @@ CONTAINS
          ! ---- Initialization of variables and parameters for first row of run for each grid ----
          ! N layers are calculated in SUEWS_translate
          IF (.NOT. ALLOCATED(Tibld)) THEN
-            print *, "Nibld", Nibld
-            print *, "Nwall", Nwall
-            print *, "Nroof", Nroof
-            print *, "Nground", Nground
+            ! print *, "Nibld", Nibld
+            ! print *, "Nwall", Nwall
+            ! print *, "Nroof", Nroof
+            ! print *, "Nground", Nground
             ALLOCATE (Tibld(Nibld), Twall(Nwall), Troof(Nroof), Tground(Nground), Tw_4(Nwall, 4))
             ALLOCATE (Tibld_grids(Nibld, NumberOfGrids), &
                       Twall_grids(Nwall, NumberOfGrids), &
@@ -967,10 +969,10 @@ CONTAINS
    !===============================================================================
    SUBROUTINE ESTM( &
       Gridiv, &!input
-      nsh, tstep, &
+      tstep, &
       avkdn, avu1, temp_c, zenith_deg, avrh, press_hpa, ldown, &
       bldgh, Ts5mindata_ir, &
-      Tair24HR, &!inout
+      Tair_av, &
       dataOutLineESTM, QS)!output
       ! NB: HCW Questions:
       !                - should TFloor be set in namelist instead of hard-coded here?
@@ -1132,7 +1134,7 @@ CONTAINS
       REAL(KIND(1d0)), PARAMETER::NAN = -999
 
       INTEGER, INTENT(in)::Gridiv
-      INTEGER, INTENT(in)::nsh, tstep
+      INTEGER, INTENT(in)::tstep
       ! INTEGER,INTENT(in)::iy !Year
       ! INTEGER,INTENT(in)::id !Day of year
       ! INTEGER,INTENT(in)::it !Hour
@@ -1148,7 +1150,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(in)::bldgh
       ! REAL(KIND(1d0)),INTENT(in):: dectime        !Decimal time
       REAL(KIND(1d0)), DIMENSION(ncolsESTMdata), INTENT(in)::  Ts5mindata_ir     !surface temperature input data
-      REAL(KIND(1d0)), DIMENSION(24*nsh), INTENT(inout) ::   Tair24HR ! may be replaced with MetForcingData by extracting the Tiar part
+      REAL(KIND(1d0)), INTENT(in) ::   Tair_av ! mean air temperature of past 24hr
 
       REAL(KIND(1d0)), DIMENSION(27), INTENT(out):: dataOutLineESTM
       !Output to SUEWS
@@ -1297,8 +1299,6 @@ CONTAINS
       ENDIF
 
       SHC_air = HEATCAPACITY_AIR(Tair1, avrh, Press_hPa)   ! Use SUEWS version
-      Tair24HR = EOSHIFT(Tair24HR, 1, Tair1, 1) !!!*** NB: Check this. and is this the tair of past 24 hrs? TS 10 Oct 2017
-      Tairday = SUM(Tair24HR)/(24*nsh)
 
       !Evolution of building temperature from heat added by convection
       SELECT CASE (evolvetibld)   !EvolveTiBld specifies which internal building temperature approach to use
@@ -1319,9 +1319,9 @@ CONTAINS
       END SELECT
 
       !ASSUME AIR MIXES IN PROPORTION TO # OF EXCHANGES
-      IF (Tairday > 20.+C2K .AND. Tievolve > 25.+C2K .AND. TAIR1 < Tievolve .AND. .NOT. HVAC) THEN
+      IF (Tair_av > 20.+C2K .AND. Tievolve > 25.+C2K .AND. TAIR1 < Tievolve .AND. .NOT. HVAC) THEN
          AIREXHR = 2.0  !Windows or exterior doors on 3 sides (ASHRAE 1981 22.8)
-      ELSEIF (Tairday < 17.+C2K .OR. HVAC) THEN
+      ELSEIF (Tair_av < 17.+C2K .OR. HVAC) THEN
          AIREXHR = 0.5 !No window or exterior doors, storm sash or weathertripped (ASHRAE 1981 22.8)
       ELSE
          AIREXHR = 1.0
@@ -1422,9 +1422,17 @@ CONTAINS
       Pcoeff = (/em_ibld*SBConst*(1 - ivf_ii*em_ibld), 0.0d0, 0.0d0, kdz + shc_airbld*CH_ibld, &
                  -kdz*Tibld(1) - shc_airbld*CH_ibld*Tievolve - Rs_ibld - Rl_ibld/)
       T0_ibld = NewtonPolynomial(T0_ibld, Pcoeff, conv, maxiter)
-      bc(1) = T0_ibld                                                       !!FO!! this leads to Tibld(1) = Tibld(3) , i.e. ...
-      bc(2) = bc(1)                                                         !!FO!! temperature equal on both sides of inside wall
+
+      !!FO!! this leads to Tibld(1) = Tibld(3) , i.e. ...
+      bc(1) = T0_ibld
+
+      !!FO!! temperature equal on both sides of inside wall
+      bc(2) = bc(1)
+
+      ! print*,'ESTM Qsibld cal before',Qsibld,Tibld,zibld(1:Nibld)
       CALL heatcond1d(Tibld, Qsibld, zibld(1:Nibld), REAL(Tstep, KIND(1d0)), kibld(1:Nibld), ribld(1:Nibld), bc, bctype)
+
+      ! print*,'ESTM Qsibld cal after',Qsibld,Tibld
 
       !========>WALLS<================
       bctype = .FALSE.
@@ -1515,6 +1523,8 @@ CONTAINS
       Qsground = Qsground*fground
       QS = Qsibld + Qswall + Qsroof + Qsground                              !!FO!! QSair not included; called QS in output file (column #10)
 
+      ! print*,'ESTM QS',qs,Qsibld,Qswall,Qsroof ,Qsground
+      ! print*,'ESTM Qsibld',Qsibld,fibld
       !write(*,*) Qsair, QSibld, Qswall, Qsroof, Qsground, QS
 
       !========>Radiation<================

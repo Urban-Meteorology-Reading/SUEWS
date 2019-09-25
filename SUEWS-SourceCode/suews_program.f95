@@ -121,14 +121,14 @@ PROGRAM SUEWS_Program
       GridIDmatrix(igrid) = INT(SiteSelect(igrid, c_Grid))
    ENDDO
 
-#ifdef nc
-   ! sort grid matrix to conform the geospatial layout as in QGIS, TS 14 Dec 2016
-   IF (ncMode == 1) THEN
-      GridIDmatrix0 = GridIDmatrix
-      CALL sortGrid(GridIDmatrix0, GridIDmatrix, nRow, nCol)
-   ENDIF
-   ! GridIDmatrix0 stores the grid ID in the original order
-#endif
+! #ifdef nc
+!    ! sort grid matrix to conform the geospatial layout as in QGIS, TS 14 Dec 2016
+!    IF (ncMode == 1) THEN
+!       GridIDmatrix0 = GridIDmatrix
+!       CALL sortGrid(GridIDmatrix0, GridIDmatrix, nRow, nCol)
+!    ENDIF
+!    ! GridIDmatrix0 stores the grid ID in the original order
+! #endif
 
    ! GridIDmatrix=GridIDmatrix0
    WRITE (*, *) '--------------------------------------------'
@@ -267,7 +267,7 @@ PROGRAM SUEWS_Program
       dataOutRSL = NaN ! initialise Main output array
       ALLOCATE (dataOutDailyState(ndays, ncolumnsDataOutDailyState, NumberOfGrids))                 !DailyState array
       dataOutDailyState = NaN ! initialise DailyState
-      IF (SOLWEIGuse == 1) ALLOCATE (dataOutSOL(ReadLinesMetdata, ncolumnsdataOutSOL, NumberOfGrids))     !SOLWEIG POI output
+      ! IF (SOLWEIGuse == 1) ALLOCATE (dataOutSOL(ReadLinesMetdata, ncolumnsdataOutSOL, NumberOfGrids))     !SOLWEIG POI output
       IF (CBLuse >= 1) ALLOCATE (dataOutBL(ReadLinesMetdata, ncolumnsdataOutBL, NumberOfGrids))       !CBL output
       ! IF (SnowUse == 1) THEN
       IF (.NOT. ALLOCATED(dataOutSnow)) ALLOCATE (dataOutSnow(ReadLinesMetdata, ncolumnsDataOutSnow, NumberOfGrids))   !Snow output
@@ -300,6 +300,8 @@ PROGRAM SUEWS_Program
       ! ALLOCATE(qn1_av_store_grid(2*NSH+1))
       ALLOCATE (qhforCBL(NumberOfGrids))
       ALLOCATE (qeforCBL(NumberOfGrids))
+
+      ALLOCATE (tair_av_grids(NumberOfGrids))
       ALLOCATE (qn1_av_grids(NumberOfGrids))
       ALLOCATE (dqndt_grids(NumberOfGrids))
       !! QUESTION: Add snow clearing (?)
@@ -308,6 +310,7 @@ PROGRAM SUEWS_Program
       ! qn1_av_store(:,:) = NAN ! Initialise to -999
       ! qn1_store_grid(:)=NAN
       ! qn1_av_store_grid(:)=NAN
+      tair_av_grids = 273.15 ! Initialise to 273.15 K
       qn1_av_grids = 0 ! Initialise to 0
       dqndt_grids = 0 ! Initialise to 0
 
@@ -652,26 +655,26 @@ PROGRAM SUEWS_Program
          ENDDO !end loop over rows of met data
 
          ! Write output files in blocks --------------------------------
-#ifdef nc
-         IF (ncMode == 0) THEN
-#endif
-            DO igrid = 1, NumberOfGrids
-               IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_Output...'
-               CALL SUEWS_Output(irMax, iblock, igrid, year_int)
-            ENDDO
-#ifdef nc
-         ENDIF
+! #ifdef nc
+!          IF (ncMode == 0) THEN
+! #endif
+         DO igrid = 1, NumberOfGrids
+            IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_Output...'
+            CALL SUEWS_Output(irMax, iblock, igrid, year_int)
+         ENDDO
+! #ifdef nc
+!          ENDIF
 
-         IF (ncMode == 1) THEN
-            ! write resulst in netCDF
-            IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_Output_nc...'
-            CALL SUEWS_Output(irMax)
-            ! write input information in netCDF as well for future development
-            !  IF ( iblock==1 ) THEN
-            !     CALL SiteSelect_txt2nc
-            !  ENDIF
-         ENDIF
-#endif
+!          IF (ncMode == 1) THEN
+!             ! write resulst in netCDF
+!             IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_Output_nc...'
+!             CALL SUEWS_Output(irMax)
+!             ! write input information in netCDF as well for future development
+!             !  IF ( iblock==1 ) THEN
+!             !     CALL SiteSelect_txt2nc
+!             !  ENDIF
+!          ENDIF
+! #endif
 
       ENDDO !end loop over blocks of met data
       !-----------------------------------------------------------------------
@@ -714,6 +717,7 @@ PROGRAM SUEWS_Program
       ! DEALLOCATE(qn1_av_store_grid)
       DEALLOCATE (qhforCBL)
       DEALLOCATE (qeforCBL)
+      DEALLOCATE (tair_av_grids)
       DEALLOCATE (qn1_av_grids)
       DEALLOCATE (dqndt_grids)
       IF (CBLuse >= 1) THEN

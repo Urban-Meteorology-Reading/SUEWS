@@ -496,7 +496,7 @@ CONTAINS
       ! Reda, I., Andreas, A. (2003) Solar position algorithm for solar
       ! radiation application. National Renewable Energy Laboratory (NREL)
       ! Technical report NREL/TP-560-34302.
-      ! This document is avaLAIble at www.osti.gov/bridge
+      ! This document is available at www.osti.gov/bridge
       ! Code is translated from matlab code by Fredrik Lindberg (fredrikl@gvc.gu.se)
       ! Last modified: LJ 27 Jan 2016 - Tabs removed
 

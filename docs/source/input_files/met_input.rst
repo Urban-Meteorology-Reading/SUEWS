@@ -8,6 +8,8 @@ variables.
 
 -  Required inputs must be continuous – i.e. **gap fill** any missing
    data.
+-  Temporal information (i.e., ``iy``, ``id``, ``it`` and ``imin``
+   should be in local time.
 -  The table below gives the must-use (MU) and optional (O) additional
    input variables.
 -  If an optional input variable is not available or will not be used by

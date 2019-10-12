@@ -56,6 +56,7 @@ CONTAINS
    !==============================================================================
    SUBROUTINE SUEWS_cal_DailyState( &
       iy, id, it, imin, isec, tstep, tstep_prev, dt_since_start, DayofWeek_id, &!input
+      Tmin_id_prev, Tmax_id_prev, &
       WaterUseMethod, Ie_start, Ie_end, &
       LAICalcYes, LAIType, &
       nsh_real, avkdn, Temp_C, Precip, BaseTHDD, &
@@ -65,12 +66,13 @@ CONTAINS
       CapMax_dec, CapMin_dec, PorMax_dec, PorMin_dec, &
       Ie_a, Ie_m, DayWatPer, DayWat, &
       BaseT, BaseTe, GDDFull, SDDFull, LAIMin, LAIMax, LAIPower, &
-      DecidCap_id_prev, StoreDrainPrm_prev, LAI_id_prev, GDD_id_prev, &
+      DecidCap_id_prev, StoreDrainPrm_prev, LAI_id_prev, GDD_id_prev, SDD_id_prev, &
       albDecTr_id_prev, albEveTr_id_prev, albGrass_id_prev, porosity_id_prev, &!input
       HDD_id_prev, &!input
       HDD_id_next, &!output
+      Tmin_id_next, Tmax_id_next, &
       albDecTr_id_next, albEveTr_id_next, albGrass_id_next, porosity_id_next, &!output
-      DecidCap_id_next, StoreDrainPrm_next, LAI_id_next, GDD_id_next, deltaLAI, WUDay_id)!output
+      DecidCap_id_next, StoreDrainPrm_next, LAI_id_next, GDD_id_next, SDD_id_next, deltaLAI, WUDay_id)!output
 
       ! USE Snow_module, ONLY: SnowUpdate
       USE datetime_module, ONLY: datetime, timedelta
@@ -136,9 +138,12 @@ CONTAINS
 
       ! REAL(KIND(1d0)), INTENT(INOUT)::SnowAlb
 
-      REAL(KIND(1d0)), DIMENSION(5) :: GDD_id   ! Growing Degree Days (see SUEWS_DailyState.f95)
-      REAL(KIND(1d0)), DIMENSION(5), INTENT(IN) :: GDD_id_prev   ! Growing Degree Days (see SUEWS_DailyState.f95)
-      REAL(KIND(1d0)), DIMENSION(5), INTENT(OUT) :: GDD_id_next   ! Growing Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1d0)), DIMENSION(3) :: GDD_id   ! Growing Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1d0)), DIMENSION(3), INTENT(IN) :: GDD_id_prev   ! Growing Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1d0)), DIMENSION(3), INTENT(OUT) :: GDD_id_next   ! Growing Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1d0)), DIMENSION(3) :: SDD_id   ! Growing Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1d0)), DIMENSION(3), INTENT(IN) :: SDD_id_prev   ! Growing Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1d0)), DIMENSION(3), INTENT(OUT) :: SDD_id_next   ! Growing Degree Days (see SUEWS_DailyState.f95)
       REAL(KIND(1d0)), DIMENSION(3) :: LAI_id   ! LAI for each veg surface [m2 m-2]
       REAL(KIND(1d0)), DIMENSION(3), INTENT(IN) :: LAI_id_prev   ! LAI for each veg surface [m2 m-2]
       REAL(KIND(1d0)), DIMENSION(3), INTENT(OUT) :: LAI_id_next   ! LAI for each veg surface [m2 m-2]
@@ -191,6 +196,11 @@ CONTAINS
       ! REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(INOUT)::SnowDens
       INTEGER, DIMENSION(3), INTENT(in)::DayofWeek_id
 
+      REAL(KIND(1d0)), INTENT(IN)::Tmin_id_prev
+      REAL(KIND(1d0)), INTENT(IN)::Tmax_id_prev
+      REAL(KIND(1d0)), INTENT(out)::Tmin_id_next
+      REAL(KIND(1d0)), INTENT(out)::Tmax_id_next
+
       !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
       REAL(KIND(1d0)), INTENT(OUT)::deltaLAI
       ! REAL(KIND(1d0)), DIMENSION(nvegsurf),INTENT(IN):: LAI_id_prev !LAI for each veg surface [m2 m-2]
@@ -221,6 +231,7 @@ CONTAINS
       ! transfer values
       LAI_id = LAI_id_prev
       GDD_id = GDD_id_prev
+      SDD_id = SDD_id_prev
       StoreDrainPrm = StoreDrainPrm_prev
       DecidCap_id = DecidCap_id_prev
       albDecTr_id = albDecTr_id_prev
@@ -246,8 +257,8 @@ CONTAINS
             HDD_id)!inout
 
          ! reset certain GDD columns
-         GDD_id(3) = Temp_C   !Daily min T in column 3
-         GDD_id(4) = Temp_C   !Daily max T in column 4
+         Tmin_id_next = Temp_C   !Daily min T in column 3
+         Tmax_id_next = Temp_C   !Daily max T in column 4
          GDD_id(5) = 0        !Cumulate daytime hours
       ENDIF
 
@@ -275,12 +286,13 @@ CONTAINS
       IF (last_tstep_Q) THEN
          CALL update_DailyState_End( &
             id, it, imin, tstep, dt_since_start, &!input
+            Tmin_id_prev, Tmax_id_prev, &
             LAIType, Ie_end, Ie_start, LAICalcYes, &
             WaterUseMethod, DayofWeek_id, &
             AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
             BaseT, BaseTe, CapMax_dec, CapMin_dec, DayWat, DayWatPer, Faut, GDDFull, &
             Ie_a, Ie_m, LAIMax, LAIMin, LAIPower, lat, PorMax_dec, PorMin_dec, SDDFull, LAI_obs, &
-            GDD_id, & !inout
+            GDD_id, SDD_id, & !inout
             HDD_id, &
             LAI_id, &
             DecidCap_id, &
@@ -295,6 +307,7 @@ CONTAINS
       ! translate values back
       LAI_id_next = LAI_id
       GDD_id_next = GDD_id
+      SDD_id_next = SDD_id
       StoreDrainPrm_next = StoreDrainPrm
       DecidCap_id_next = DecidCap_id
       albDecTr_id_next = albDecTr_id
@@ -312,12 +325,13 @@ CONTAINS
 
    SUBROUTINE update_DailyState_End( &
       id, it, imin, tstep, dt_since_start, &!input
+      Tmin_id_prev, Tmax_id_prev, &
       LAIType, Ie_end, Ie_start, LAICalcYes, &
       WaterUseMethod, DayofWeek_id, &
       AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
       BaseT, BaseTe, CapMax_dec, CapMin_dec, DayWat, DayWatPer, Faut, GDDFull, &
       Ie_a, Ie_m, LAIMax, LAIMin, LAIPower, lat, PorMax_dec, PorMin_dec, SDDFull, LAI_obs, &
-      GDD_id, & !inout
+      GDD_id, SDD_id, & !inout
       HDD_id, &
       LAI_id, &
       DecidCap_id, &
@@ -365,8 +379,11 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(IN)::PorMin_dec
       REAL(KIND(1d0)), INTENT(IN)::SDDFull(nvegsurf)
       REAL(KIND(1d0)), INTENT(IN)::LAI_obs
+      REAL(KIND(1d0)), INTENT(IN)::Tmin_id_prev
+      REAL(KIND(1d0)), INTENT(IN)::Tmax_id_prev
 
-      REAL(KIND(1d0)), DIMENSION(5), INTENT(INOUT)       ::GDD_id !Growing Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1d0)), DIMENSION(3), INTENT(INOUT)       ::GDD_id !Growing Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1d0)), DIMENSION(3), INTENT(INOUT)       ::SDD_id !Senescence Degree Days (see SUEWS_DailyState.f95)
       REAL(KIND(1d0)), DIMENSION(12), INTENT(INOUT)     ::HDD_id
       REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(INOUT)::LAI_id !LAI for each veg surface [m2 m-2]
 
@@ -414,14 +431,25 @@ CONTAINS
       ! save initial LAI_id
       LAI_id_in = LAI_id
 
-      CALL update_GDDLAI( &
+      ! CALL update_GDDLAI( &
+      !    id, LAICalcYes, & !input
+      !    lat, LAI_obs, &
+      !    BaseT, BaseTe, &
+      !    GDDFull, SDDFull, &
+      !    LAIMin, LAIMax, LAIPower, LAIType, &
+      !    LAI_id_in, &
+      !    GDD_id, &!inout
+      !    LAI_id) !output
+
+      CALL update_GDDLAI_x( &
          id, LAICalcYes, & !input
          lat, LAI_obs, &
+         Tmin_id_prev, Tmax_id_prev, &
          BaseT, BaseTe, &
          GDDFull, SDDFull, &
          LAIMin, LAIMax, LAIPower, LAIType, &
          LAI_id_in, &
-         GDD_id, &!inout
+         GDD_id, SDD_id, &!inout
          LAI_id) !output
 
       CALL update_Veg( &
@@ -453,8 +481,9 @@ CONTAINS
       Precip, &
       BaseTHDD, &
       nsh_real, &
-      GDD_id, &!inout
-      HDD_id)
+      Tmin_id_prev, Tmax_id_prev,lenDay_id_prev,&!input
+      Tmin_id_next, Tmax_id_next,lenDay_id_next,&!output
+      HDD_id)!inout
       ! use time, only: id, id_prev_t
       IMPLICIT NONE
 
@@ -464,10 +493,16 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(IN)::Precip
       REAL(KIND(1d0)), INTENT(IN)::BaseTHDD
       REAL(KIND(1d0)), INTENT(IN)::nsh_real
+      REAL(KIND(1d0)), INTENT(IN)::Tmin_id_prev
+      REAL(KIND(1d0)), INTENT(IN)::Tmax_id_prev
+      REAL(KIND(1d0)), INTENT(IN)::lenDay_id_prev
+      REAL(KIND(1d0)), INTENT(out)::Tmin_id_next
+      REAL(KIND(1d0)), INTENT(out)::Tmax_id_next
+      REAL(KIND(1d0)), INTENT(out)::lenDay_id_next
 
       ! REAL(KIND(1d0))::tstepcount
       ! REAL(KIND(1d0)),DIMENSION(-4:366,6),INTENT(INOUT):: HDD
-      REAL(KIND(1d0)), DIMENSION(5), INTENT(INOUT):: GDD_id !Growing Degree Days (see SUEWS_DailyState.f95)
+      ! REAL(KIND(1d0)), DIMENSION(5), INTENT(INOUT):: GDD_id !Growing Degree Days (see SUEWS_DailyState.f95)
       REAL(KIND(1d0)), DIMENSION(12), INTENT(INOUT):: HDD_id          !Heating Degree Days (see SUEWS_DailyState.f95)
       ! REAL(KIND(1d0)),DIMENSION(5),INTENT(OUT):: GDD_id_prev !Growing Degree Days (see SUEWS_DailyState.f95)
 
@@ -475,10 +510,10 @@ CONTAINS
       INTEGER::gamma2
 
       ! Daily min and max temp (these get updated through the day) ---------------------
-      GDD_id(3) = MIN(Temp_C, GDD_id(3))     !Daily min T in column 3
-      GDD_id(4) = MAX(Temp_C, GDD_id(4))     !Daily max T in column 4
+      Tmin_id_next = MIN(Temp_C, Tmin_id_prev)     !Daily min T in column 3
+      Tmax_id_next = MAX(Temp_C, Tmax_id_prev)     !Daily max T in column 4
       IF (avkdn > 10) THEN
-         GDD_id(5) = GDD_id(5) + 1/nsh_real   !Cumulate daytime hours !Divide by nsh (HCW 01 Dec 2014)
+         lenDay_id_next = lenDay_id_prev + 1/nsh_real   !Cumulate daytime hours !Divide by nsh (HCW 01 Dec 2014)
       ENDIF
 
       ! Calculations related to heating and cooling degree days (HDD) ------------------
@@ -770,6 +805,175 @@ CONTAINS
       !------------------------------------------------------------------------------
 
    END SUBROUTINE update_GDDLAI
+
+   SUBROUTINE update_GDDLAI_x( &
+      id, LAICalcYes, & !input
+      lat, LAI_obs, &
+      Tmin_id_prev, Tmax_id_prev, &
+      BaseT, BaseTe, &
+      GDDFull, SDDFull, &
+      LAIMin, LAIMax, LAIPower, LAIType, &
+      LAI_id_prev, &
+      GDD_id, SDD_id, &!inout
+      LAI_id_next) !output
+      IMPLICIT NONE
+
+      !------------------------------------------------------------------------------
+      ! Calculation of LAI from growing degree days
+      ! This was revised and checked on 16 Feb 2014 by LJ
+      !------------------------------------------------------------------------------
+
+      INTEGER, INTENT(IN)::id
+      INTEGER, INTENT(IN)::LAICalcYes
+
+      REAL(KIND(1d0)), INTENT(IN)::lat
+      REAL(KIND(1d0)), INTENT(IN)::LAI_obs
+      REAL(KIND(1d0)), INTENT(IN)::Tmin_id_prev
+      REAL(KIND(1d0)), INTENT(IN)::Tmax_id_prev
+
+      ! --- Vegetation phenology ---------------------------------------------------------------------
+      ! Parameters provided in input information for each vegetation surface (SUEWS_Veg.txt)
+      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(IN)  :: BaseT          !Base temperature for growing degree days [degC]
+      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(IN)  :: BaseTe         !Base temperature for senescence degree days [degC]
+      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(IN)  :: GDDFull        !Growing degree days needed for full capacity [degC]
+      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(IN)  :: SDDFull        !Senescence degree days needed to initiate leaf off [degC]
+      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(IN)  :: LAIMin         !Min LAI [m2 m-2]
+      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(IN)  :: LAIMax         !Max LAI [m2 m-2]
+      REAL(KIND(1d0)), DIMENSION(4, nvegsurf), INTENT(IN):: LAIPower       !Coeffs for LAI equation: 1,2 - leaf growth; 3,4 - leaf off
+      !! N.B. currently DecTr only, although input provided for all veg types
+      INTEGER, DIMENSION(nvegsurf), INTENT(IN):: LAIType                  !LAI equation to use: original (0) or new (1)
+
+      REAL(KIND(1d0)), DIMENSION(3), INTENT(INOUT)       :: GDD_id !Growing Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1d0)), DIMENSION(3), INTENT(INOUT)       :: SDD_id !Senescence Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(OUT):: LAI_id_next !LAI for each veg surface [m2 m-2]
+      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(IN)::LAI_id_prev ! LAI of previous day
+
+      REAL(KIND(1d0)):: no   !Switches and checks for GDD
+      REAL(KIND(1d0))::yes   !Switches and checks for GDD
+      REAL(KIND(1d0))::indHelp   !Switches and checks for GDD
+      REAL(KIND(1d0)), DIMENSION(3)::GDD_id_prev ! GDD of previous day
+      REAL(KIND(1d0)), DIMENSION(3)::SDD_id_prev ! SDD of previous day
+
+      INTEGER:: critDays
+      INTEGER::iv
+
+      ! translate values of previous day to local variables
+      GDD_id_prev = GDD_id
+      SDD_id_prev = SDD_id
+      ! LAI_id_prev = LAI_id_next
+
+      critDays = 50   !Critical limit for GDD when GDD or SDD is set to zero
+
+      ! Loop through vegetation types (iv)
+      DO iv = 1, NVegSurf
+         ! Calculate GDD for each day from the minimum and maximum air temperature
+         yes = ((Tmin_id_prev + Tmax_id_prev)/2 - BaseT(iv))    !Leaf on
+         no = ((Tmin_id_prev + Tmax_id_prev)/2 - BaseTe(iv))   !Leaf off
+
+         indHelp = 0   !Help switch to allow GDD to go to zero in sprint-time !! QUESTION: What does this mean? HCW
+
+         IF (yes < 0) THEN   !GDD cannot be negative
+            indHelp = yes   !Amount of negative GDD
+            yes = 0
+         ENDIF
+
+         IF (no > 0) no = 0    !SDD cannot be positive
+
+         ! Calculate cumulative growing and senescence degree days
+         GDD_id(iv) = GDD_id_prev(1) + yes
+         SDD_id(iv) = GDD_id_prev(2) + no
+
+         ! Possibility for cold spring
+         IF (SDD_id(iv) <= SDDFull(iv) .AND. indHelp < 0) THEN
+            GDD_id(iv) = 0
+         ENDIF
+
+         IF (GDD_id(iv) >= GDDFull(iv)) THEN   !Start senescence
+            GDD_id(iv) = GDDFull(iv)          !Leaves should not grow so delete yes from earlier
+            IF (SDD_id(iv) < -critDays) GDD_id(iv) = 0
+         ENDIF
+
+         IF (SDD_id(iv) <= SDDFull(iv)) THEN   !After senescence now start growing leaves
+            SDD_id(iv) = SDDFull(iv)           !Leaves off so add back earlier
+            IF (GDD_id(iv) > critDays) SDD_id(iv) = 0
+         ENDIF
+
+         ! With these limits SDD, GDD is set to zero
+         IF (SDD_id(iv) < -critDays .AND. SDD_id(iv) > SDDFull(iv)) GDD_id(iv) = 0
+         IF (GDD_id(iv) > critDays .AND. GDD_id(iv) < GDDFull(iv)) SDD_id(iv) = 0
+
+         ! Now calculate LAI itself
+         IF (lat >= 0) THEN   !Northern hemispere
+            !If SDD is not zero by mid May, this is forced
+            IF (id == 140 .AND. SDD_id(iv) /= 0) SDD_id(iv) = 0
+            ! Set SDD to zero in summer time
+            IF (GDD_id(iv) > critDays .AND. id < 170) SDD_id(iv) = 0
+            ! Set GDD zero in winter time
+            IF (SDD_id(iv) < -critDays .AND. id > 170) GDD_id(iv) = 0
+
+            IF (LAItype(iv) < 0.5) THEN   !Original LAI type
+               IF (GDD_id(iv) > 0 .AND. GDD_id(iv) < GDDFull(iv)) THEN       !Leaves can still grow
+                  LAI_id_next(iv) = (LAI_id_prev(iv)**LAIPower(1, iv)*GDD_id(iv)*LAIPower(2, iv)) + LAI_id_prev(iv)
+               ELSEIF (SDD_id(iv) < 0 .AND. SDD_id(iv) > SDDFull(iv)) THEN   !Start senescence
+                  LAI_id_next(iv) = (LAI_id_prev(iv)**LAIPower(3, iv)*SDD_id(iv)*LAIPower(4, iv)) + LAI_id_prev(iv)
+               ELSE
+                  LAI_id_next(iv) = LAI_id_prev(iv)
+               ENDIF
+            ELSEIF (LAItype(iv) >= 0.5) THEN
+               IF (GDD_id(iv) > 0 .AND. GDD_id(iv) < GDDFull(iv)) THEN        !Leaves can still grow
+                  LAI_id_next(iv) = (LAI_id_prev(iv)**LAIPower(1, iv)*GDD_id(iv)*LAIPower(2, iv)) + LAI_id_prev(iv)
+                  !! Use day length to start senescence at high latitudes (N hemisphere)
+               ELSEIF (GDD_id(5) <= 12 .AND. SDD_id(iv) > SDDFull(iv)) THEN !Start senescence
+                  LAI_id_next(iv) = (LAI_id_prev(iv)*LAIPower(3, iv)*(1 - SDD_id(iv))*LAIPower(4, iv)) + LAI_id_prev(iv)
+               ELSE
+                  LAI_id_next(iv) = LAI_id_prev(iv)
+               ENDIF
+            ENDIF
+
+         ELSEIF (lat < 0) THEN   !Southern hemisphere !! N.B. not identical to N hemisphere - return to later
+            !If SDD is not zero by late Oct, this is forced
+            IF (id == 300 .AND. SDD_id(iv) /= 0) SDD_id(iv) = 0
+            ! Set SDD to zero in summer time
+            IF (GDD_id(iv) > critDays .AND. id > 250) SDD_id(iv) = 0
+            ! Set GDD zero in winter time
+            IF (SDD_id(iv) < -critDays .AND. id < 250) GDD_id(iv) = 0
+
+            IF (LAItype(iv) < 0.5) THEN   !Original LAI type
+               IF (GDD_id(iv) > 0 .AND. GDD_id(iv) < GDDFull(iv)) THEN
+                  LAI_id_next(iv) = (LAI_id_prev(iv)**LAIPower(1, iv)*GDD_id(iv)*LAIPower(2, iv)) + LAI_id_prev(iv)
+               ELSEIF (SDD_id(iv) < 0 .AND. SDD_id(iv) > SDDFull(iv)) THEN
+                  LAI_id_next(iv) = (LAI_id_prev(iv)**LAIPower(3, iv)*SDD_id(iv)*LAIPower(4, iv)) + LAI_id_prev(iv)
+               ELSE
+                  LAI_id_next(iv) = LAI_id_prev(iv)
+               ENDIF
+            ELSE
+               IF (GDD_id(iv) > 0 .AND. GDD_id(iv) < GDDFull(iv)) THEN
+                  LAI_id_next(iv) = (LAI_id_prev(iv)**LAIPower(1, iv)*GDD_id(iv)*LAIPower(2, iv)) + LAI_id_prev(iv)
+                  !! Day length not used to start senescence in S hemisphere (not much land)
+               ELSEIF (SDD_id(iv) < 0 .AND. SDD_id(iv) > SDDFull(iv)) THEN
+                  LAI_id_next(iv) = (LAI_id_prev(iv)*LAIPower(3, iv)*(1 - SDD_id(iv))*LAIPower(4, iv)) + LAI_id_prev(iv)
+               ELSE
+                  LAI_id_next(iv) = LAI_id_prev(iv)
+               ENDIF
+            ENDIF
+         ENDIF   !N or S hemisphere
+
+         ! Check LAI within limits; if not set to limiting value
+         IF (LAI_id_next(iv) > LAImax(iv)) THEN
+            LAI_id_next(iv) = LAImax(iv)
+         ELSEIF (LAI_id_next(iv) < LAImin(iv)) THEN
+            LAI_id_next(iv) = LAImin(iv)
+         ENDIF
+
+      ENDDO   !End of loop over veg surfaces
+
+      IF (LAICalcYes == 0) THEN ! moved to SUEWS_cal_DailyState, TS 18 Sep 2017
+         ! LAI(id-1,:)=LAI_obs ! check -- this is going to be a problem as it is not for each vegetation class
+         LAI_id_next = LAI_obs
+      ENDIF
+      !------------------------------------------------------------------------------
+
+   END SUBROUTINE update_GDDLAI_x
 
    SUBROUTINE update_WaterUse( &
       id, WaterUseMethod, DayofWeek_id, lat, Faut, HDD_id, &!input

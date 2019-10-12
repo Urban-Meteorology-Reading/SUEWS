@@ -1,8 +1,8 @@
 MODULE WaterDist_module
    USE allocateArray, ONLY: nsurf, &
-                            PavSurf, BldgSurf, &
-                            ConifSurf, DecidSurf, GrassSurf, &
-                            BSoilSurf, WaterSurf, ExcessSurf
+      PavSurf, BldgSurf, &
+      ConifSurf, DecidSurf, GrassSurf, &
+      BSoilSurf, WaterSurf, ExcessSurf
 
    IMPLICIT NONE
    ! INTEGER, PARAMETER :: nsurf = 7

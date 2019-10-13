@@ -369,11 +369,15 @@ MODULE ctrl_output
       varAttr('HDD4_T5d', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
       varAttr('P_day', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
       varAttr('DaysSR', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
-      varAttr('GDD1_g', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
-      varAttr('GDD2_s', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
-      varAttr('GDD3_Tmin', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
-      varAttr('GDD4_Tmax', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
-      varAttr('GDD5_DLHrs', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
+      varAttr('GDD_EveTr', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
+      varAttr('GDD_DecTr', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
+      varAttr('GDD_Grass', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
+      varAttr('SDD_EveTr', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
+      varAttr('SDD_DecTr', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
+      varAttr('SDD_Grass', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
+      varAttr('Tmin', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
+      varAttr('Tmax', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
+      varAttr('DLHrs', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
       varAttr('LAI_EveTr', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
       varAttr('LAI_DecTr', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &
       varAttr('LAI_Grass', 'to be added', f104, 'to be added', aL, 'DailyState', 0), &

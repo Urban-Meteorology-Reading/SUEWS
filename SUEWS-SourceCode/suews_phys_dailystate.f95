@@ -56,7 +56,7 @@ CONTAINS
    !==============================================================================
    SUBROUTINE SUEWS_cal_DailyState( &
       iy, id, it, imin, isec, tstep, tstep_prev, dt_since_start, DayofWeek_id, &!input
-      Tmin_id_prev, Tmax_id_prev, &
+      Tmin_id_prev, Tmax_id_prev, lenDay_id_prev,&
       WaterUseMethod, Ie_start, Ie_end, &
       LAICalcYes, LAIType, &
       nsh_real, avkdn, Temp_C, Precip, BaseTHDD, &
@@ -70,7 +70,7 @@ CONTAINS
       albDecTr_id_prev, albEveTr_id_prev, albGrass_id_prev, porosity_id_prev, &!input
       HDD_id_prev, &!input
       HDD_id_next, &!output
-      Tmin_id_next, Tmax_id_next, &
+      Tmin_id_next, Tmax_id_next, lenDay_id_next,&
       albDecTr_id_next, albEveTr_id_next, albGrass_id_next, porosity_id_next, &!output
       DecidCap_id_next, StoreDrainPrm_next, LAI_id_next, GDD_id_next, SDD_id_next, deltaLAI, WUDay_id)!output
 
@@ -198,8 +198,10 @@ CONTAINS
 
       REAL(KIND(1d0)), INTENT(IN)::Tmin_id_prev
       REAL(KIND(1d0)), INTENT(IN)::Tmax_id_prev
+      REAL(KIND(1d0)), INTENT(IN)::lenDay_id_prev
       REAL(KIND(1d0)), INTENT(out)::Tmin_id_next
       REAL(KIND(1d0)), INTENT(out)::Tmax_id_next
+      REAL(KIND(1d0)), INTENT(out)::lenDay_id_next
 
       !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
       REAL(KIND(1d0)), INTENT(OUT)::deltaLAI
@@ -259,7 +261,7 @@ CONTAINS
          ! reset certain GDD columns
          Tmin_id_next = Temp_C   !Daily min T in column 3
          Tmax_id_next = Temp_C   !Daily max T in column 4
-         GDD_id(5) = 0        !Cumulate daytime hours
+         lenDay_id_next = 0        !Cumulate daytime hours
       ENDIF
 
       ! --------------------------------------------------------------------------------
@@ -270,7 +272,8 @@ CONTAINS
          Precip, &
          BaseTHDD, &
          nsh_real, &
-         GDD_id, &!inout
+         Tmin_id_prev, Tmax_id_prev,lenDay_id_prev,&!input
+         Tmin_id_next, Tmax_id_next,lenDay_id_next,&!output
          HDD_id)
 
       ! Update snow density, albedo surface fraction
@@ -286,7 +289,7 @@ CONTAINS
       IF (last_tstep_Q) THEN
          CALL update_DailyState_End( &
             id, it, imin, tstep, dt_since_start, &!input
-            Tmin_id_prev, Tmax_id_prev, &
+            Tmin_id_prev, Tmax_id_prev, lenDay_id_prev,&
             LAIType, Ie_end, Ie_start, LAICalcYes, &
             WaterUseMethod, DayofWeek_id, &
             AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
@@ -325,7 +328,7 @@ CONTAINS
 
    SUBROUTINE update_DailyState_End( &
       id, it, imin, tstep, dt_since_start, &!input
-      Tmin_id_prev, Tmax_id_prev, &
+      Tmin_id_prev, Tmax_id_prev, lenDay_id_prev,&
       LAIType, Ie_end, Ie_start, LAICalcYes, &
       WaterUseMethod, DayofWeek_id, &
       AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
@@ -381,6 +384,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(IN)::LAI_obs
       REAL(KIND(1d0)), INTENT(IN)::Tmin_id_prev
       REAL(KIND(1d0)), INTENT(IN)::Tmax_id_prev
+      REAL(KIND(1d0)), INTENT(IN)::lenDay_id_prev
 
       REAL(KIND(1d0)), DIMENSION(3), INTENT(INOUT)       ::GDD_id !Growing Degree Days (see SUEWS_DailyState.f95)
       REAL(KIND(1d0)), DIMENSION(3), INTENT(INOUT)       ::SDD_id !Senescence Degree Days (see SUEWS_DailyState.f95)
@@ -444,7 +448,7 @@ CONTAINS
       CALL update_GDDLAI_x( &
          id, LAICalcYes, & !input
          lat, LAI_obs, &
-         Tmin_id_prev, Tmax_id_prev, &
+         Tmin_id_prev, Tmax_id_prev, lenDay_id_prev,&
          BaseT, BaseTe, &
          GDDFull, SDDFull, &
          LAIMin, LAIMax, LAIPower, LAIType, &
@@ -512,6 +516,7 @@ CONTAINS
       ! Daily min and max temp (these get updated through the day) ---------------------
       Tmin_id_next = MIN(Temp_C, Tmin_id_prev)     !Daily min T in column 3
       Tmax_id_next = MAX(Temp_C, Tmax_id_prev)     !Daily max T in column 4
+      lenDay_id_next=0 ! initialise lenDay_id
       IF (avkdn > 10) THEN
          lenDay_id_next = lenDay_id_prev + 1/nsh_real   !Cumulate daytime hours !Divide by nsh (HCW 01 Dec 2014)
       ENDIF
@@ -809,7 +814,7 @@ CONTAINS
    SUBROUTINE update_GDDLAI_x( &
       id, LAICalcYes, & !input
       lat, LAI_obs, &
-      Tmin_id_prev, Tmax_id_prev, &
+      Tmin_id_prev, Tmax_id_prev, lenDay_id_prev,&
       BaseT, BaseTe, &
       GDDFull, SDDFull, &
       LAIMin, LAIMax, LAIPower, LAIType, &
@@ -830,6 +835,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(IN)::LAI_obs
       REAL(KIND(1d0)), INTENT(IN)::Tmin_id_prev
       REAL(KIND(1d0)), INTENT(IN)::Tmax_id_prev
+      REAL(KIND(1d0)), INTENT(IN)::lenDay_id_prev
 
       ! --- Vegetation phenology ---------------------------------------------------------------------
       ! Parameters provided in input information for each vegetation surface (SUEWS_Veg.txt)
@@ -923,7 +929,7 @@ CONTAINS
                IF (GDD_id(iv) > 0 .AND. GDD_id(iv) < GDDFull(iv)) THEN        !Leaves can still grow
                   LAI_id_next(iv) = (LAI_id_prev(iv)**LAIPower(1, iv)*GDD_id(iv)*LAIPower(2, iv)) + LAI_id_prev(iv)
                   !! Use day length to start senescence at high latitudes (N hemisphere)
-               ELSEIF (GDD_id(5) <= 12 .AND. SDD_id(iv) > SDDFull(iv)) THEN !Start senescence
+               ELSEIF (lenDay_id_prev <= 12 .AND. SDD_id(iv) > SDDFull(iv)) THEN !Start senescence
                   LAI_id_next(iv) = (LAI_id_prev(iv)*LAIPower(3, iv)*(1 - SDD_id(iv))*LAIPower(4, iv)) + LAI_id_prev(iv)
                ELSE
                   LAI_id_next(iv) = LAI_id_prev(iv)
@@ -1169,6 +1175,8 @@ CONTAINS
    SUBROUTINE update_DailyStateLine( &
       it, imin, nsh_real, &!input
       GDD_id, HDD_id, LAI_id, &
+      SDD_id,&
+      Tmin_id,Tmax_id,lenday_id,&
       DecidCap_id, &
       albDecTr_id, &
       albEveTr_id, &
@@ -1188,7 +1196,8 @@ CONTAINS
       INTEGER, INTENT(IN) ::imin
       REAL(KIND(1d0)), INTENT(IN) ::nsh_real
 
-      REAL(KIND(1d0)), DIMENSION(5), INTENT(IN):: GDD_id          !Growing Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(IN):: GDD_id          !Growing Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(IN):: SDD_id          !Growing Degree Days (see SUEWS_DailyState.f95)
       REAL(KIND(1d0)), DIMENSION(6), INTENT(IN):: HDD_id          !Heating Degree Days (see SUEWS_DailyState.f95)
       REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(IN):: LAI_id   !LAI for each veg surface [m2 m-2]
 
@@ -1197,6 +1206,9 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(IN) ::albEveTr_id
       REAL(KIND(1d0)), INTENT(IN) ::albGrass_id
       REAL(KIND(1d0)), INTENT(IN) ::porosity_id
+      REAL(KIND(1d0)), INTENT(IN) ::Tmin_id
+      REAL(KIND(1d0)), INTENT(IN) ::Tmax_id
+      REAL(KIND(1d0)), INTENT(IN) ::lenday_id
       REAL(KIND(1d0)), DIMENSION(9), INTENT(IN):: WUDay_id !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
 
       REAL(KIND(1d0)), INTENT(IN) ::deltaLAI
@@ -1214,15 +1226,18 @@ CONTAINS
       IF (it == 23 .AND. imin == (nsh_real - 1)/nsh_real*60) THEN
          ! Write actual data only at the last timesstep of each day
          ! DailyStateLine(1:2)   = [iy,id]
-         DailyStateLine(1:6) = HDD_id
-         DailyStateLine(6 + 1:6 + 5) = GDD_id
-         DailyStateLine(11 + 1:11 + 3) = LAI_id
-         DailyStateLine(14 + 1:14 + 5) = [DecidCap_id, Porosity_id, AlbEveTr_id, AlbDecTr_id, AlbGrass_id]
-         DailyStateLine(19 + 1:19 + 9) = WUDay_id(1:9)
-         DailyStateLine(28 + 1) = deltaLAI
-         DailyStateLine(29 + 1) = VegPhenLumps
-         DailyStateLine(30 + 1:30 + 8) = [SnowAlb, SnowDens(1:7)]
-         DailyStateLine(38 + 1:38 + 3) = [a1, a2, a3]
+         ! DailyStateLine(1:6) = HDD_id
+         ! DailyStateLine(6 + 1:6 + 5) = GDD_id
+         ! DailyStateLine(11 + 1:11 + 3) = LAI_id
+         ! DailyStateLine(14 + 1:14 + 5) = [DecidCap_id, Porosity_id, AlbEveTr_id, AlbDecTr_id, AlbGrass_id]
+         ! DailyStateLine(19 + 1:19 + 9) = WUDay_id(1:9)
+         ! DailyStateLine(28 + 1) = deltaLAI
+         ! DailyStateLine(29 + 1) = VegPhenLumps
+         ! DailyStateLine(30 + 1:30 + 8) = [SnowAlb, SnowDens(1:7)]
+         ! DailyStateLine(38 + 1:38 + 3) = [a1, a2, a3]
+         DailyStateLine=[HDD_id,GDD_id,SDD_id,Tmin_id,Tmax_id,lenday_id,LAI_id,DecidCap_id, Porosity_id, &
+         AlbEveTr_id, AlbDecTr_id, AlbGrass_id,WUDay_id,deltaLAI,VegPhenLumps,SnowAlb, SnowDens,&
+         a1, a2, a3]
 
       END IF
 

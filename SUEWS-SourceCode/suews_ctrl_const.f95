@@ -51,7 +51,7 @@ MODULE allocateArray
                         ncolumnsdataOutSOL = 31, &
                         ncolumnsdataOutBL = 22, &
                         ncolumnsDataOutESTM = 32, &
-                        ncolumnsDataOutDailyState = 46, &
+                        ncolumnsDataOutDailyState = 50, &
                         ncolumnsDataOutRSL = 125
 
    ! ---- Define input file headers ---------------------------------------------------------------
@@ -248,10 +248,12 @@ MODULE allocateArray
    ! REAL(KIND(1d0)),DIMENSION( 0:ndays, 9):: WUDay       !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
    ! REAL(KIND(1d0)),DIMENSION(-4:ndays, nvegsurf):: LAI   !LAI for each veg surface [m2 m-2]
 
-   REAL(KIND(1d0)), DIMENSION(5)        :: GDD_id, GDD_id_prev     !Growing Degree Days (see SUEWS_DailyState.f95)
+   REAL(KIND(1d0)), DIMENSION(nvegsurf)        :: GDD_id,GDD_id_prev     !Growing Degree Days (see SUEWS_DailyState.f95)
+   REAL(KIND(1d0)), DIMENSION(nvegsurf)        :: SDD_id     !Growing Degree Days (see SUEWS_DailyState.f95)
+   REAL(KIND(1d0)):: Tmin_id,Tmax_id ,lenDay_id
    REAL(KIND(1d0)), DIMENSION(12)       :: HDD_id
    REAL(KIND(1d0)), DIMENSION(9)        :: WUDay_id, WUDay_id_prev !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
-   REAL(KIND(1d0)), DIMENSION(nvegsurf) :: LAI_id, LAI_id_prev     !LAI for each veg surface [m2 m-2]
+   REAL(KIND(1d0)), DIMENSION(nvegsurf) :: LAI_id,LAI_id_prev     !LAI for each veg surface [m2 m-2]
 
    ! Seasonality of deciduous trees accounted for by the following variables which change with time
    ! REAL(KIND(1d0)),DIMENSION( 0:ndays):: DecidCap   !Storage capacity of deciduous trees [mm]
@@ -278,7 +280,8 @@ MODULE allocateArray
    ! REAL(KIND(1d0)),DIMENSION( 0:ndays, 9,MaxNumberOfGrids):: WUDay_grids
    ! REAL(KIND(1d0)),DIMENSION(-4:ndays, nvegsurf,MaxNumberOfGrids):: LAI_grids
 
-   REAL(KIND(1d0)), DIMENSION(5, MaxNumberOfGrids):: GDD_id_grids
+   REAL(KIND(1d0)), DIMENSION(nvegsurf, MaxNumberOfGrids):: GDD_id_grids
+   REAL(KIND(1d0)), DIMENSION(nvegsurf, MaxNumberOfGrids):: SDD_id_grids
    REAL(KIND(1d0)), DIMENSION(12, MaxNumberOfGrids):: HDD_id_grids
    REAL(KIND(1d0)), DIMENSION(9, MaxNumberOfGrids):: WUDay_id_grids
    REAL(KIND(1d0)), DIMENSION(nvegsurf, MaxNumberOfGrids):: LAI_id_grids

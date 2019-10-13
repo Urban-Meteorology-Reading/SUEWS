@@ -55,6 +55,10 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       alpha_bioco2, alpha_enh_bioco2, baset, basete, &
       beta_bioco2, beta_enh_bioco2, capmax_dec, capmin_dec, &
       chanohm, cpanohm, emis, GDD_id, GDDfull, &
+      Tmin_id,&
+      Tmax_id,&
+      lenDay_id,&
+      SDD_id,&
       HDD_id, &
       DecidCap_id, porosity_id, &
       albDecTr_id, albEveTr_id, albGrass_id, &
@@ -155,7 +159,11 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       WaterDist, WaterUseMethod, WetThresh, wu_m3, &
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
-      datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataOutLineRSL, &!output
+      Tmin_id,&
+      Tmax_id,&
+      lenDay_id,&
+      SDD_id,&
+      datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, &!output
       DailyStateLine)!output
 
    !============ update and write out SUEWS_cal_DailyState ===============

@@ -927,13 +927,17 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
 
       ! ---- Growing degree days, GDD_id: GDD Values for one day
       GDD_id = 0
-      GDD_id(1) = 0
-      GDD_id(2) = 0
-      GDD_id(3) = ModelDailyState(Gridiv, cMDS_GDDMin)
-      GDD_id(4) = ModelDailyState(Gridiv, cMDS_GDDMax)
-      GDD_id(5) = 0
-      GDD_id_prev(1) = ModelDailyState(Gridiv, cMDS_GDD1_0)
-      GDD_id_prev(2) = ModelDailyState(Gridiv, cMDS_GDD2_0)
+      SDD_id = 0
+      Tmin_id = 0
+      Tmax_id = 0
+      lenDay_id = 0
+      ! GDD_id(1) = 0
+      ! GDD_id(2) = 0
+      ! GDD_id(3) = ModelDailyState(Gridiv, cMDS_GDDMin)
+      ! GDD_id(4) = ModelDailyState(Gridiv, cMDS_GDDMax)
+      ! GDD_id(5) = 0
+      ! GDD_id_prev(1) = ModelDailyState(Gridiv, cMDS_GDD1_0)
+      ! GDD_id_prev(2) = ModelDailyState(Gridiv, cMDS_GDD2_0)
 
       ! ---- Heating degree days, HDD
       ! HDD = 0
@@ -965,6 +969,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
 
       HDD_id_grids(:, Gridiv) = HDD_id(:)
       GDD_id_grids(:, Gridiv) = GDD_id(:)
+      SDD_id_grids(:, Gridiv) = SDD_id(:)
       LAI_id_grids(:, Gridiv) = LAI_id(:)
 
       ! daily water use
@@ -1212,6 +1217,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
 
       ! added by TS 29 Jun 2018 to remove annual loops in main calculation
       GDD_id = GDD_id_grids(:, Gridiv)
+      SDD_id = SDD_id_grids(:, Gridiv)
       HDD_id = HDD_id_grids(:, Gridiv)
       ! HDD_id_use = HDD_id_use_grids(:,Gridiv)
       LAI_id = LAI_id_grids(:, Gridiv)

@@ -137,7 +137,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       IceFrac, id, Ie_a, Ie_end, Ie_m, Ie_start, imin, &
       InternalWaterUse_h, IrrFracConif, IrrFracDecid, IrrFracGrass, isec, it, EvapMethod, &
       iy, kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax, LAIMin, LAI_obs, &
-      LAIPower, LAIType, lat, ldown_obs, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
+      LAIPower, LAIType, lat, lenDay_id, ldown_obs, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
       SnowWater, MetForcingData_grid, MinFCMetab, MinQFMetab, min_res_bioCO2, &
       NARP_EMIS_SNOW, NARP_TRANS_SITE, NetRadiationMethod, &
       OHM_coef, OHMIncQF, OHM_threshSW, &
@@ -148,21 +148,18 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       qn1_obs, qh_obs, qs_obs, qf_obs, &
       RadMeltFact, RAINCOVER, RainMaxRes, resp_a, resp_b, &
       RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
-      SatHydraulicConduct, SDDFull, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
+      SatHydraulicConduct, SDDFull, SDD_id, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
       SnowAlbMin, SnowPackLimit, SnowDens, SnowDensMax, SnowDensMin, SnowfallCum, SnowFrac, &
       SnowLimBldg, SnowLimPaved, snowFrac_obs, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
       soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
       StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair_av, tau_a, tau_f, tau_r, &
+      Tmax_id, Tmin_id, &
       T_CRITIC_Cooling, T_CRITIC_Heating, Temp_C, TempMeltFact, TH, &
       theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
       TraffProf_24hr, Ts5mindata_ir, tstep, tstep_prev, veg_type, &
       WaterDist, WaterUseMethod, WetThresh, wu_m3, &
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
-      Tmin_id, &
-      Tmax_id, &
-      lenDay_id, &
-      SDD_id, &
       datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, &!output
       DailyStateLine)!output
 

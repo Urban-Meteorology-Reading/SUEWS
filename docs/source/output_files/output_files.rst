@@ -80,20 +80,6 @@ to :option:`WriteOutOption` set in :ref:`RunControl.nml`.
   :widths: auto
 
 
-SSss_YYYY_nn_TT.nc
-~~~~~~~~~~~~~~~~~~~
-
-SUEWS can also produce the main output file in netCDF format by setting :option:`ncMode` = 1 (set in `RunControl.nml`).
-
-As the date and time information is incorporated in the netCDF output as
-separate dimension, the first five variables in the normal text output
-file (in .txt) are not included in the netCDF output but other variables
-are all kept.
-
-N.B., considering the file size limit by the classic netCDF format, the
-output frequency is determined automatically by the internal SUEWS
-program setting to avoid the oversize problem in the netCDF files.
-
 SSss_DailyState.txt
 ~~~~~~~~~~~~~~~~~~~
 

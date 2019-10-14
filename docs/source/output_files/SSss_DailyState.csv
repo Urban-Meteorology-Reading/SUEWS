@@ -1,46 +1,50 @@
-"Column","Name","Description"
-1,"Year","Year [YYYY]"
-2,"DOY","Day of year [DOY]"
-3,"Hour","Hour of the last timestep of a day [HH]"
-4,"Min","Minute of the last timestep of a day [MM]"
-5,"HDD1_h","Heating degree days [°C]"
-6,"HDD2_c","Cooling degree days [°C]"
-7,"HDD3_Tmean","Average daily air temperature [°C]"
-8,"HDD4_T5d","5-day running-mean air temperature [°C]"
-9,"P_day","Daily total precipitation [mm]"
-10,"DaysSR","Days since rain [days]"
-11,"GDD1_g","Growing degree days for leaf growth [°C]"
-12,"GDD2_s","Growing degree days for senescence [°C]"
-13,"GDD3_Tmin","Daily minimum temperature [°C]"
-14,"GDD4_Tmax","Daily maximum temperature [°C]"
-15,"GDD5_DLHrs","Day length [h]"
-16,"LAI_EveTr","Leaf area index of evergreen trees [|m^-2| |m^-2|]"
-17,"LAI_DecTr","Leaf area index of deciduous trees [|m^-2| |m^-2|]"
-18,"LAI_Grass","Leaf area index of grass [|m^-2| |m^-2|]"
-19,"DecidCap","Moisture storage capacity of deciduous trees [mm]"
-20,"Porosity","Porosity of deciduous trees [-]"
-21,"AlbEveTr","Albedo of evergreen trees [-]"
-22,"AlbDecTr","Albedo of deciduous trees [-]"
-23,"AlbGrass","Albedo of grass [-]"
-24,"WU_EveTr1","Total water use for evergreen trees [mm]"
-25,"WU_EveTr2","Automatic water use for evergreen trees [mm]"
-26,"WU_EveTr3","Manual water use for evergreen trees [mm]"
-27,"WU_DecTr1","Total water use for deciduous trees [mm]"
-28,"WU_DecTr2","Automatic water use for deciduous trees [mm]"
-29,"WU_DecTr3","Manual water use for deciduous trees [mm]"
-30,"WU_Grass1","Total water use for grass [mm]"
-31,"WU_Grass2","Automatic water use for grass [mm]"
-32,"WU_Grass3","Manual water use for grass [mm]"
-33,"deltaLAI","Change in leaf area index (normalised 0-1) [-]"
-34,"LAIlumps","Leaf area index used in LUMPS (normalised 0-1) [-]"
-35,"AlbSnow","Snow albedo [-]"
-36,"DensSnow_Paved","Snow density - paved surface [kg |m^-3|]"
-37,"DensSnow_Bldgs","Snow density - building surface [kg |m^-3|]"
-38,"DensSnow_EveTr","Snow density - evergreen surface [kg |m^-3|]"
-39,"DensSnow_DecTr","Snow density - deciduous surface [kg |m^-3|]"
-40,"DensSnow_Grass","Snow density - grass surface [kg |m^-3|]"
-41,"DensSnow_BSoil","Snow density - bare soil surface [kg |m^-3|]"
-42,"DensSnow_Water","Snow density - water surface [kg |m^-3|]"
-43,"a1","OHM cofficient a1 - [-]"
-44,"a2","OHM cofficient a2 [W |m^-2| |h^-1|]"
-45,"a3","OHM cofficient a3 - [W |m^-2|]"
+Column,Name,Description
+1,Year,Year [YYYY]
+2,DOY,Day of year [DOY]
+3,Hour,Hour of the last timestep of a day [HH]
+4,Min,Minute of the last timestep of a day [MM]
+5,HDD1_h,Heating degree days [°C d]
+6,HDD2_c,Cooling degree days [°C d]
+7,HDD3_Tmean,Average daily air temperature [°C]
+8,HDD4_T5d,5-day running-mean air temperature [°C]
+9,P_day,Daily total precipitation [mm]
+10,DaysSR,Days since rain [days]
+11,GDD_EveTr,Growing degree days for evergreen eree [°C d]
+12,GDD_DecTr,Growing degree days for deciduous tree [°C d]
+13,GDD_Grass,Growing degree days for grass [°C d]
+14,SDD_EveTr,Senescence degree days for evergreen eree  [°C d]
+15,SDD_DecTr,Senescence degree days for deciduous tree [°C d]
+16,SDD_Grass,Senescence degree days for grass [°C d]
+17,Tmin,Daily minimum temperature [°C]
+18,Tmax,Daily maximum temperature [°C]
+19,DLHrs,Day length [h]
+20,LAI_EveTr,Leaf area index of evergreen trees [|m^-2| |m^-2|]
+21,LAI_DecTr,Leaf area index of deciduous trees [|m^-2| |m^-2|]
+22,LAI_Grass,Leaf area index of grass [|m^-2| |m^-2|]
+23,DecidCap,Moisture storage capacity of deciduous trees [mm]
+24,Porosity,Porosity of deciduous trees [-]
+25,AlbEveTr,Albedo of evergreen trees [-]
+26,AlbDecTr,Albedo of deciduous trees [-]
+27,AlbGrass,Albedo of grass [-]
+28,WU_EveTr1,Total water use for evergreen trees [mm]
+29,WU_EveTr2,Automatic water use for evergreen trees [mm]
+30,WU_EveTr3,Manual water use for evergreen trees [mm]
+31,WU_DecTr1,Total water use for deciduous trees [mm]
+32,WU_DecTr2,Automatic water use for deciduous trees [mm]
+33,WU_DecTr3,Manual water use for deciduous trees [mm]
+34,WU_Grass1,Total water use for grass [mm]
+35,WU_Grass2,Automatic water use for grass [mm]
+36,WU_Grass3,Manual water use for grass [mm]
+37,deltaLAI,Change in leaf area index (normalised 0-1) [-]
+38,LAIlumps,Leaf area index used in LUMPS (normalised 0-1) [-]
+39,AlbSnow,Snow albedo [-]
+40,DensSnow_Paved,Snow density - paved surface [kg |m^-3|]
+41,DensSnow_Bldgs,Snow density - building surface [kg |m^-3|]
+42,DensSnow_EveTr,Snow density - evergreen surface [kg |m^-3|]
+43,DensSnow_DecTr,Snow density - deciduous surface [kg |m^-3|]
+44,DensSnow_Grass,Snow density - grass surface [kg |m^-3|]
+45,DensSnow_BSoil,Snow density - bare soil surface [kg |m^-3|]
+46,DensSnow_Water,Snow density - water surface [kg |m^-3|]
+47,a1,OHM cofficient a1 - [-]
+48,a2,OHM cofficient a2 [W |m^-2| |h^-1|]
+49,a3,OHM cofficient a3 - [W |m^-2|]

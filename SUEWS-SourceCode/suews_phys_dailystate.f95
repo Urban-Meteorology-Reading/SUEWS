@@ -56,7 +56,7 @@ CONTAINS
    !==============================================================================
    SUBROUTINE SUEWS_cal_DailyState( &
       iy, id, it, imin, isec, tstep, tstep_prev, dt_since_start, DayofWeek_id, &!input
-      Tmin_id_prev, Tmax_id_prev, lenDay_id_prev,&
+      Tmin_id_prev, Tmax_id_prev, lenDay_id_prev, &
       WaterUseMethod, Ie_start, Ie_end, &
       LAICalcYes, LAIType, &
       nsh_real, avkdn, Temp_C, Precip, BaseTHDD, &
@@ -70,7 +70,7 @@ CONTAINS
       albDecTr_id_prev, albEveTr_id_prev, albGrass_id_prev, porosity_id_prev, &!input
       HDD_id_prev, &!input
       HDD_id_next, &!output
-      Tmin_id_next, Tmax_id_next, lenDay_id_next,&
+      Tmin_id_next, Tmax_id_next, lenDay_id_next, &
       albDecTr_id_next, albEveTr_id_next, albGrass_id_next, porosity_id_next, &!output
       DecidCap_id_next, StoreDrainPrm_next, LAI_id_next, GDD_id_next, SDD_id_next, deltaLAI, WUDay_id)!output
 
@@ -278,7 +278,7 @@ CONTAINS
          Precip, &
          BaseTHDD, &
          nsh_real, &
-         Tmin_id, Tmax_id,lenDay_id,&!inout
+         Tmin_id, Tmax_id, lenDay_id, &!inout
          HDD_id)
 
       ! Update snow density, albedo surface fraction
@@ -294,7 +294,7 @@ CONTAINS
       IF (last_tstep_Q) THEN
          CALL update_DailyState_End( &
             id, it, imin, tstep, dt_since_start, &!input
-            Tmin_id, Tmax_id, lenDay_id,&
+            Tmin_id, Tmax_id, lenDay_id, &
             LAIType, Ie_end, Ie_start, LAICalcYes, &
             WaterUseMethod, DayofWeek_id, &
             AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
@@ -336,7 +336,7 @@ CONTAINS
 
    SUBROUTINE update_DailyState_End( &
       id, it, imin, tstep, dt_since_start, &!input
-      Tmin_id, Tmax_id, lenDay_id,&
+      Tmin_id, Tmax_id, lenDay_id, &
       LAIType, Ie_end, Ie_start, LAICalcYes, &
       WaterUseMethod, DayofWeek_id, &
       AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
@@ -456,7 +456,7 @@ CONTAINS
       CALL update_GDDLAI_x( &
          id, LAICalcYes, & !input
          lat, LAI_obs, &
-         Tmin_id, Tmax_id, lenDay_id,&
+         Tmin_id, Tmax_id, lenDay_id, &
          BaseT, BaseTe, &
          GDDFull, SDDFull, &
          LAIMin, LAIMax, LAIPower, LAIType, &
@@ -493,7 +493,7 @@ CONTAINS
       Precip, &
       BaseTHDD, &
       nsh_real, &
-      Tmin_id, Tmax_id,lenDay_id,&!inout
+      Tmin_id, Tmax_id, lenDay_id, &!inout
       HDD_id)!inout
       ! use time, only: id, id_prev_t
       IMPLICIT NONE
@@ -524,7 +524,7 @@ CONTAINS
       Tmin_id = MIN(Temp_C, Tmin_id)     !Daily min T in column 3
       Tmax_id = MAX(Temp_C, Tmax_id)     !Daily max T in column 4
       IF (avkdn > 10) THEN
-         lenDay_id= lenDay_id + 1/nsh_real   !Cumulate daytime hours !Divide by nsh (HCW 01 Dec 2014)
+         lenDay_id = lenDay_id + 1/nsh_real   !Cumulate daytime hours !Divide by nsh (HCW 01 Dec 2014)
       ENDIF
 
       ! Calculations related to heating and cooling degree days (HDD) ------------------
@@ -820,7 +820,7 @@ CONTAINS
    SUBROUTINE update_GDDLAI_x( &
       id, LAICalcYes, & !input
       lat, LAI_obs, &
-      Tmin_id_prev, Tmax_id_prev, lenDay_id_prev,&
+      Tmin_id_prev, Tmax_id_prev, lenDay_id_prev, &
       BaseT, BaseTe, &
       GDDFull, SDDFull, &
       LAIMin, LAIMax, LAIPower, LAIType, &
@@ -1181,8 +1181,8 @@ CONTAINS
    SUBROUTINE update_DailyStateLine( &
       it, imin, nsh_real, &!input
       GDD_id, HDD_id, LAI_id, &
-      SDD_id,&
-      Tmin_id,Tmax_id,lenday_id,&
+      SDD_id, &
+      Tmin_id, Tmax_id, lenday_id, &
       DecidCap_id, &
       albDecTr_id, &
       albEveTr_id, &
@@ -1241,9 +1241,9 @@ CONTAINS
          ! DailyStateLine(29 + 1) = VegPhenLumps
          ! DailyStateLine(30 + 1:30 + 8) = [SnowAlb, SnowDens(1:7)]
          ! DailyStateLine(38 + 1:38 + 3) = [a1, a2, a3]
-         DailyStateLine=[HDD_id,GDD_id,SDD_id,Tmin_id,Tmax_id,lenday_id,LAI_id,DecidCap_id, Porosity_id, &
-         AlbEveTr_id, AlbDecTr_id, AlbGrass_id,WUDay_id,deltaLAI,VegPhenLumps,SnowAlb, SnowDens,&
-         a1, a2, a3]
+         DailyStateLine = [HDD_id, GDD_id, SDD_id, Tmin_id, Tmax_id, lenday_id, LAI_id, DecidCap_id, Porosity_id, &
+                           AlbEveTr_id, AlbDecTr_id, AlbGrass_id, WUDay_id, deltaLAI, VegPhenLumps, SnowAlb, SnowDens, &
+                           a1, a2, a3]
 
       END IF
 

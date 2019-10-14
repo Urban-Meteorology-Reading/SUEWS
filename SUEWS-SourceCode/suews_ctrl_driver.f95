@@ -9,14 +9,14 @@ MODULE SUEWS_Driver
    USE NARP_MODULE, ONLY: NARP_cal_SunPosition
    USE AnOHM_module, ONLY: AnOHM
    USE resist_module, ONLY: AerodynamicResistance, BoundaryLayerResistance, SurfaceResistance, &
-      cal_z0V, SUEWS_cal_RoughnessParameters
+                            cal_z0V, SUEWS_cal_RoughnessParameters
    USE ESTM_module, ONLY: ESTM
    USE Snow_module, ONLY: SnowCalc, Snow_cal_MeltHeat, SnowUpdate, update_snow_albedo, update_snow_dens
    USE DailyState_module, ONLY: SUEWS_cal_DailyState, update_DailyStateLine
    USE WaterDist_module, ONLY: drainage, soilstore, &
-      SUEWS_cal_SoilState, SUEWS_update_SoilMoist, &
-      ReDistributeWater, SUEWS_cal_HorizontalSoilWater, &
-      SUEWS_cal_WaterUse
+                               SUEWS_cal_SoilState, SUEWS_update_SoilMoist, &
+                               ReDistributeWater, SUEWS_cal_HorizontalSoilWater, &
+                               SUEWS_cal_WaterUse
    USE ctrl_output, ONLY: varListAll
    USE DailyState_module, ONLY: SUEWS_update_DailyState
    use lumps_module, only: LUMPS_cal_QHQE
@@ -77,10 +77,10 @@ CONTAINS
       WaterDist, WaterUseMethod, WetThresh, wu_m3, &
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
-      Tmin_id,&
-      Tmax_id,&
-      lenDay_id,&
-      SDD_id,&
+      Tmin_id, &
+      Tmax_id, &
+      lenDay_id, &
+      SDD_id, &
       datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, &!output
       DailyStateLine)!output
 
@@ -223,8 +223,8 @@ CONTAINS
       REAL(KIND(1d0))::lenDay_id_next
 
       REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(INout)::SDD_id
-      REAL(KIND(1d0)),DIMENSION(nvegsurf)::SDD_id_prev
-      REAL(KIND(1d0)),DIMENSION(nvegsurf)::SDD_id_next
+      REAL(KIND(1d0)), DIMENSION(nvegsurf)::SDD_id_prev
+      REAL(KIND(1d0)), DIMENSION(nvegsurf)::SDD_id_next
 
       INTEGER, DIMENSION(NVEGSURF), INTENT(IN)::LAIType
 
@@ -733,7 +733,7 @@ CONTAINS
          IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_DailyState...'
          CALL SUEWS_cal_DailyState( &
             iy, id, it, imin, isec, tstep, tstep_prev, dt_since_start, DayofWeek_id, &!input
-            Tmin_id_prev, Tmax_id_prev, lenDay_id_prev,&
+            Tmin_id_prev, Tmax_id_prev, lenDay_id_prev, &
             WaterUseMethod, Ie_start, Ie_end, &
             LAICalcYes, LAIType, &
             nsh_real, avkdn, Temp_C, Precip, BaseTHDD, &
@@ -743,11 +743,11 @@ CONTAINS
             CapMax_dec, CapMin_dec, PorMax_dec, PorMin_dec, &
             Ie_a, Ie_m, DayWatPer, DayWat, &
             BaseT, BaseTe, GDDFull, SDDFull, LAIMin, LAIMax, LAIPower, &
-            DecidCap_id_prev, StoreDrainPrm_prev, LAI_id_prev, GDD_id_prev,SDD_id_prev, &
+            DecidCap_id_prev, StoreDrainPrm_prev, LAI_id_prev, GDD_id_prev, SDD_id_prev, &
             albDecTr_id_prev, albEveTr_id_prev, albGrass_id_prev, porosity_id_prev, &!input
             HDD_id_prev, &!input
             HDD_id_next, &!output
-            Tmin_id_next, Tmax_id_next, lenDay_id_next,&
+            Tmin_id_next, Tmax_id_next, lenDay_id_next, &
             albDecTr_id_next, albEveTr_id_next, albGrass_id_next, porosity_id_next, &!output
             DecidCap_id_next, StoreDrainPrm_next, LAI_id_next, GDD_id_next, SDD_id_next, deltaLAI, WUDay_id_next)!output
 
@@ -1045,8 +1045,8 @@ CONTAINS
       CALL update_DailyStateLine( &
          it, imin, nsh_real, &!input
          GDD_id, HDD_id, LAI_id, &
-         SDD_id,&
-         Tmin_id,Tmax_id,lenday_id,&
+         SDD_id, &
+         Tmin_id, Tmax_id, lenday_id, &
          DecidCap_id, &
          albDecTr_id, &
          albEveTr_id, &

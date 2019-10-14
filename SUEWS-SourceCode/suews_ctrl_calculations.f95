@@ -35,18 +35,18 @@
 
 SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
    USE data_in, ONLY: diagnose, ah_min, ah_slope_cooling, ah_slope_heating, &
-      alt, avkdn, avrh, avu1, basetHDD, diagqn, diagqs, drainrt, co2pointsource, CBLuse, &
-      ef_umolco2perj, emissionsmethod, enef_v_jkm, enddls, fcef_v_kgkm, fcld_obs, &
-      frfossilfuel_heat, frfossilfuel_nonheat, EvapMethod, &
-      LAIcalcyes, LAI_obs, lat, ldown_obs, lng, maxfcmetab, maxqfmetab, &
-      minfcmetab, minqfmetab, netradiationmethod, ohmincqf, &
-      popdensdaytime, popdensnighttime, &
-      precip, press_hpa, qf0_beu, qf_a, qf_b, qf_c, &
-      qe_obs, qh_obs, qn1_obs, qs_obs, qf_obs, &
-      raincover, rainmaxres, &
-      roughlenmommethod, smdmethod, snowFrac_obs, snowuse, startdls, &
-      storageheatmethod, t_critic_cooling, t_critic_heating, temp_c, &
-      timezone, trafficrate, trafficunits, waterusemethod, wu_m3, xsmd
+                      alt, avkdn, avrh, avu1, basetHDD, diagqn, diagqs, drainrt, co2pointsource, CBLuse, &
+                      ef_umolco2perj, emissionsmethod, enef_v_jkm, enddls, fcef_v_kgkm, fcld_obs, &
+                      frfossilfuel_heat, frfossilfuel_nonheat, EvapMethod, &
+                      LAIcalcyes, LAI_obs, lat, ldown_obs, lng, maxfcmetab, maxqfmetab, &
+                      minfcmetab, minqfmetab, netradiationmethod, ohmincqf, &
+                      popdensdaytime, popdensnighttime, &
+                      precip, press_hpa, qf0_beu, qf_a, qf_b, qf_c, &
+                      qe_obs, qh_obs, qn1_obs, qs_obs, qf_obs, &
+                      raincover, rainmaxres, &
+                      roughlenmommethod, smdmethod, snowFrac_obs, snowuse, startdls, &
+                      storageheatmethod, t_critic_cooling, t_critic_heating, temp_c, &
+                      timezone, trafficrate, trafficunits, waterusemethod, wu_m3, xsmd
    USE time, ONLY: iy, id, it, imin, isec, dectime, dt_since_start
    USE allocateArray, ONLY: &
       alb, &
@@ -55,10 +55,10 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       alpha_bioco2, alpha_enh_bioco2, baset, basete, &
       beta_bioco2, beta_enh_bioco2, capmax_dec, capmin_dec, &
       chanohm, cpanohm, emis, GDD_id, GDDfull, &
-      Tmin_id,&
-      Tmax_id,&
-      lenDay_id,&
-      SDD_id,&
+      Tmin_id, &
+      Tmax_id, &
+      lenDay_id, &
+      SDD_id, &
       HDD_id, &
       DecidCap_id, porosity_id, &
       albDecTr_id, albEveTr_id, albGrass_id, &
@@ -159,10 +159,10 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       WaterDist, WaterUseMethod, WetThresh, wu_m3, &
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
-      Tmin_id,&
-      Tmax_id,&
-      lenDay_id,&
-      SDD_id,&
+      Tmin_id, &
+      Tmax_id, &
+      lenDay_id, &
+      SDD_id, &
       datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, &!output
       DailyStateLine)!output
 

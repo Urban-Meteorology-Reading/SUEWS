@@ -196,11 +196,14 @@ CONTAINS
       ! REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(INOUT)::SnowDens
       INTEGER, DIMENSION(3), INTENT(in)::DayofWeek_id
 
+      REAL(KIND(1d0))::Tmin_id
       REAL(KIND(1d0)), INTENT(IN)::Tmin_id_prev
-      REAL(KIND(1d0)), INTENT(IN)::Tmax_id_prev
-      REAL(KIND(1d0)), INTENT(IN)::lenDay_id_prev
       REAL(KIND(1d0)), INTENT(out)::Tmin_id_next
+      REAL(KIND(1d0))::Tmax_id
+      REAL(KIND(1d0)), INTENT(in)::Tmax_id_prev
       REAL(KIND(1d0)), INTENT(out)::Tmax_id_next
+      REAL(KIND(1d0))::lenDay_id
+      REAL(KIND(1d0)), INTENT(IN)::lenDay_id_prev
       REAL(KIND(1d0)), INTENT(out)::lenDay_id_next
 
       !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
@@ -234,6 +237,9 @@ CONTAINS
       LAI_id = LAI_id_prev
       GDD_id = GDD_id_prev
       SDD_id = SDD_id_prev
+      Tmin_id = Tmin_id_prev
+      Tmax_id = Tmax_id_prev
+      lenDay_id = lenDay_id_prev
       StoreDrainPrm = StoreDrainPrm_prev
       DecidCap_id = DecidCap_id_prev
       albDecTr_id = albDecTr_id_prev
@@ -259,9 +265,9 @@ CONTAINS
             HDD_id)!inout
 
          ! reset certain GDD columns
-         Tmin_id_next = Temp_C   !Daily min T in column 3
-         Tmax_id_next = Temp_C   !Daily max T in column 4
-         lenDay_id_next = 0        !Cumulate daytime hours
+         Tmin_id = Temp_C   !Daily min T in column 3
+         Tmax_id = Temp_C   !Daily max T in column 4
+         lenDay_id = 0        !Cumulate daytime hours
       ENDIF
 
       ! --------------------------------------------------------------------------------
@@ -272,8 +278,7 @@ CONTAINS
          Precip, &
          BaseTHDD, &
          nsh_real, &
-         Tmin_id_prev, Tmax_id_prev,lenDay_id_prev,&!input
-         Tmin_id_next, Tmax_id_next,lenDay_id_next,&!output
+         Tmin_id, Tmax_id,lenDay_id,&!inout
          HDD_id)
 
       ! Update snow density, albedo surface fraction
@@ -289,7 +294,7 @@ CONTAINS
       IF (last_tstep_Q) THEN
          CALL update_DailyState_End( &
             id, it, imin, tstep, dt_since_start, &!input
-            Tmin_id_prev, Tmax_id_prev, lenDay_id_prev,&
+            Tmin_id, Tmax_id, lenDay_id,&
             LAIType, Ie_end, Ie_start, LAICalcYes, &
             WaterUseMethod, DayofWeek_id, &
             AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
@@ -311,6 +316,9 @@ CONTAINS
       LAI_id_next = LAI_id
       GDD_id_next = GDD_id
       SDD_id_next = SDD_id
+      Tmin_id_next = Tmin_id
+      Tmax_id_next = Tmax_id
+      lenDay_id_next = lenDay_id
       StoreDrainPrm_next = StoreDrainPrm
       DecidCap_id_next = DecidCap_id
       albDecTr_id_next = albDecTr_id
@@ -328,7 +336,7 @@ CONTAINS
 
    SUBROUTINE update_DailyState_End( &
       id, it, imin, tstep, dt_since_start, &!input
-      Tmin_id_prev, Tmax_id_prev, lenDay_id_prev,&
+      Tmin_id, Tmax_id, lenDay_id,&
       LAIType, Ie_end, Ie_start, LAICalcYes, &
       WaterUseMethod, DayofWeek_id, &
       AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
@@ -382,14 +390,14 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(IN)::PorMin_dec
       REAL(KIND(1d0)), INTENT(IN)::SDDFull(nvegsurf)
       REAL(KIND(1d0)), INTENT(IN)::LAI_obs
-      REAL(KIND(1d0)), INTENT(IN)::Tmin_id_prev
-      REAL(KIND(1d0)), INTENT(IN)::Tmax_id_prev
-      REAL(KIND(1d0)), INTENT(IN)::lenDay_id_prev
+      REAL(KIND(1d0)), INTENT(IN)::Tmin_id
+      REAL(KIND(1d0)), INTENT(IN)::Tmax_id
+      REAL(KIND(1d0)), INTENT(IN)::lenDay_id
 
-      REAL(KIND(1d0)), DIMENSION(3), INTENT(INOUT)       ::GDD_id !Growing Degree Days (see SUEWS_DailyState.f95)
-      REAL(KIND(1d0)), DIMENSION(3), INTENT(INOUT)       ::SDD_id !Senescence Degree Days (see SUEWS_DailyState.f95)
-      REAL(KIND(1d0)), DIMENSION(12), INTENT(INOUT)     ::HDD_id
-      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(INOUT)::LAI_id !LAI for each veg surface [m2 m-2]
+      REAL(KIND(1d0)), DIMENSION(3), INTENT(INOUT)       ::GDD_id ! Growing Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1d0)), DIMENSION(3), INTENT(INOUT)       ::SDD_id ! Senescence Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1d0)), DIMENSION(12), INTENT(INOUT)      ::HDD_id
+      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(INOUT)::LAI_id ! LAI for each veg surface [m2 m-2]
 
       ! REAL(KIND(1d0)),DIMENSION(6),INTENT(INOUT)::HDD_id_use ! HDD of previous day
       REAL(KIND(1d0)), DIMENSION(nvegsurf)::LAI_id_in ! LAI of previous day
@@ -448,7 +456,7 @@ CONTAINS
       CALL update_GDDLAI_x( &
          id, LAICalcYes, & !input
          lat, LAI_obs, &
-         Tmin_id_prev, Tmax_id_prev, lenDay_id_prev,&
+         Tmin_id, Tmax_id, lenDay_id,&
          BaseT, BaseTe, &
          GDDFull, SDDFull, &
          LAIMin, LAIMax, LAIPower, LAIType, &
@@ -485,8 +493,7 @@ CONTAINS
       Precip, &
       BaseTHDD, &
       nsh_real, &
-      Tmin_id_prev, Tmax_id_prev,lenDay_id_prev,&!input
-      Tmin_id_next, Tmax_id_next,lenDay_id_next,&!output
+      Tmin_id, Tmax_id,lenDay_id,&!inout
       HDD_id)!inout
       ! use time, only: id, id_prev_t
       IMPLICIT NONE
@@ -497,12 +504,12 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(IN)::Precip
       REAL(KIND(1d0)), INTENT(IN)::BaseTHDD
       REAL(KIND(1d0)), INTENT(IN)::nsh_real
-      REAL(KIND(1d0)), INTENT(IN)::Tmin_id_prev
-      REAL(KIND(1d0)), INTENT(IN)::Tmax_id_prev
-      REAL(KIND(1d0)), INTENT(IN)::lenDay_id_prev
-      REAL(KIND(1d0)), INTENT(out)::Tmin_id_next
-      REAL(KIND(1d0)), INTENT(out)::Tmax_id_next
-      REAL(KIND(1d0)), INTENT(out)::lenDay_id_next
+      REAL(KIND(1d0)), INTENT(INOUT)::Tmin_id
+      REAL(KIND(1d0)), INTENT(INOUT)::Tmax_id
+      REAL(KIND(1d0)), INTENT(INOUT)::lenDay_id
+      ! REAL(KIND(1d0)), INTENT(out)::Tmin_id_next
+      ! REAL(KIND(1d0)), INTENT(out)::Tmax_id_next
+      ! REAL(KIND(1d0)), INTENT(out)::lenDay_id_next
 
       ! REAL(KIND(1d0))::tstepcount
       ! REAL(KIND(1d0)),DIMENSION(-4:366,6),INTENT(INOUT):: HDD
@@ -514,11 +521,10 @@ CONTAINS
       INTEGER::gamma2
 
       ! Daily min and max temp (these get updated through the day) ---------------------
-      Tmin_id_next = MIN(Temp_C, Tmin_id_prev)     !Daily min T in column 3
-      Tmax_id_next = MAX(Temp_C, Tmax_id_prev)     !Daily max T in column 4
-      lenDay_id_next=0 ! initialise lenDay_id
+      Tmin_id = MIN(Temp_C, Tmin_id)     !Daily min T in column 3
+      Tmax_id = MAX(Temp_C, Tmax_id)     !Daily max T in column 4
       IF (avkdn > 10) THEN
-         lenDay_id_next = lenDay_id_prev + 1/nsh_real   !Cumulate daytime hours !Divide by nsh (HCW 01 Dec 2014)
+         lenDay_id= lenDay_id + 1/nsh_real   !Cumulate daytime hours !Divide by nsh (HCW 01 Dec 2014)
       ENDIF
 
       ! Calculations related to heating and cooling degree days (HDD) ------------------
@@ -886,8 +892,8 @@ CONTAINS
          IF (no > 0) no = 0    !SDD cannot be positive
 
          ! Calculate cumulative growing and senescence degree days
-         GDD_id(iv) = GDD_id_prev(1) + yes
-         SDD_id(iv) = GDD_id_prev(2) + no
+         GDD_id(iv) = GDD_id_prev(iv) + yes
+         SDD_id(iv) = SDD_id_prev(iv) + no
 
          ! Possibility for cold spring
          IF (SDD_id(iv) <= SDDFull(iv) .AND. indHelp < 0) THEN

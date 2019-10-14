@@ -750,6 +750,9 @@ CONTAINS
             Tmin_id_next, Tmax_id_next, lenDay_id_next,&
             albDecTr_id_next, albEveTr_id_next, albGrass_id_next, porosity_id_next, &!output
             DecidCap_id_next, StoreDrainPrm_next, LAI_id_next, GDD_id_next, SDD_id_next, deltaLAI, WUDay_id_next)!output
+            print*, 'check lenDay_id',iy, id, it, imin
+            print*, 'check lenDay_id_prev',lenDay_id_prev
+            print*, 'check lenDay_id_next',lenDay_id_next
 
          !=================Calculation of density and other water related parameters=================
          IF (Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_AtmMoist...'

@@ -282,6 +282,9 @@ MODULE allocateArray
 
    REAL(KIND(1d0)), DIMENSION(nvegsurf, MaxNumberOfGrids):: GDD_id_grids
    REAL(KIND(1d0)), DIMENSION(nvegsurf, MaxNumberOfGrids):: SDD_id_grids
+   REAL(KIND(1d0)), DIMENSION(MaxNumberOfGrids):: Tmin_id_grids
+   REAL(KIND(1d0)), DIMENSION(MaxNumberOfGrids):: Tmax_id_grids
+   REAL(KIND(1d0)), DIMENSION(MaxNumberOfGrids):: lenDay_id_grids
    REAL(KIND(1d0)), DIMENSION(12, MaxNumberOfGrids):: HDD_id_grids
    REAL(KIND(1d0)), DIMENSION(9, MaxNumberOfGrids):: WUDay_id_grids
    REAL(KIND(1d0)), DIMENSION(nvegsurf, MaxNumberOfGrids):: LAI_id_grids

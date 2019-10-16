@@ -7,8 +7,8 @@ contains
       snowUse, qn1, qf, qs, Qm, Temp_C, Veg_Fr, avcp, Press_hPa, lv_J_kg, &
       tstep_real, DRAINRT, nsh_real, &
       Precip, RainMaxRes, RAINCOVER, sfr, LAI_id_prev, LAImax, LAImin, &
-      H_mod, & !output
-      E_mod, psyc_hPa, s_hPa, sIce_hpa, TempVeg, VegPhenLumps)
+      QH_LUMPS, & !output
+      QE_LUMPS, psyc_hPa, s_hPa, sIce_hpa, TempVeg, VegPhenLumps)
       !Calculates QH and QE for LUMPS. See Loridan et al. (2011)
       ! ref: Grimmond and Oke (2002) JAM and references within that
       !      Offerle (2003) -- add water bucket
@@ -54,8 +54,8 @@ contains
       REAL(KIND(1d0)), DIMENSION(3), INTENT(in) :: LAImax!Max LAI [m2 m-2]
       REAL(KIND(1d0)), DIMENSION(3), INTENT(in) :: LAImin    !Min LAI [m2 m-2]
 
-      REAL(KIND(1d0)), INTENT(out) ::H_mod
-      REAL(KIND(1d0)), INTENT(out) ::E_mod !turbulent fluxes: QH, QE
+      REAL(KIND(1d0)), INTENT(out) ::QH_LUMPS
+      REAL(KIND(1d0)), INTENT(out) ::QE_LUMPS !turbulent fluxes: QH, QE
       REAL(KIND(1d0)), INTENT(out) ::psyc_hPa !Psychometric constant in hPa
       REAL(KIND(1d0)), INTENT(out) ::s_hPa!Vapour pressure versus temperature slope in hPa
       REAL(KIND(1d0)), INTENT(out) ::sIce_hpa!Vapour pressure versus temperature slope in hPa above ice/snow
@@ -153,12 +153,12 @@ contains
       ENDIF
 
       ! Calculate the actual heat fluxes
-      H_mod = ((1 - alpha_qhqe) + psyc_s)/(1 + psyc_s)*(qn1 + qf - qs - Qm) - beta   !Eq 3, Grimmond & Oke (2002)
-      E_mod = (alpha_qhqe/(1 + psyc_s)*(qn1 + qf - qs - Qm)) + beta              !Eq 4, Grimmond & Oke (2002)
+      QH_LUMPS = ((1 - alpha_qhqe) + psyc_s)/(1 + psyc_s)*(qn1 + qf - qs - Qm) - beta   !Eq 3, Grimmond & Oke (2002)
+      QE_LUMPS = (alpha_qhqe/(1 + psyc_s)*(qn1 + qf - qs - Qm)) + beta              !Eq 4, Grimmond & Oke (2002)
 
       ! adjust RAINRES after E_mod calculation is done: ! moved here from above. TS, 13 Jan 2018
       !IF (E_mod>0.) RainBucket=RainBucket-E_mod*1.44E-3 !1.44E-3 MM/(W/M^2)/HR (i.e. 3600/(lv_J_kg))
-      IF (E_mod > 0.) RainBucket = RainBucket - E_mod/tlv   !Adjusted for per model timestep instead of per hour HCW 04 Mar 2015
+      IF (QE_LUMPS > 0.) RainBucket = RainBucket - QE_LUMPS/tlv   !Adjusted for per model timestep instead of per hour HCW 04 Mar 2015
       IF (Temp_C > 0.) RainBucket = RainBucket - DRAINRT/nsh_real  !DRAINRT is specified in mm h-1
       IF (RainBucket < 0.) RainBucket = 0.
       IF (Precip > 0) RainBucket = MIN(RainMaxRes, RainBucket + Precip)

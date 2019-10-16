@@ -356,7 +356,7 @@ CONTAINS
       REAL(KIND(1d0))::deltaLAI
       REAL(KIND(1D0))::drain_per_tstep
       REAL(KIND(1D0))::Ea_hPa
-      REAL(KIND(1D0))::E_mod
+      REAL(KIND(1D0))::QE_LUMPS
       REAL(KIND(1D0))::es_hPa
       ! REAL(KIND(1D0))::ev
       REAL(KIND(1D0))::ev_per_tstep
@@ -374,7 +374,7 @@ CONTAINS
       ! REAL(KIND(1D0))::fwh
       REAL(KIND(1D0))::gfunc
       REAL(KIND(1D0))::gsc
-      REAL(KIND(1D0))::H_mod
+      REAL(KIND(1D0))::QH_LUMPS
       REAL(KIND(1D0))::int_wu
       REAL(KIND(1D0))::kclear
       REAL(KIND(1D0))::kup
@@ -843,8 +843,8 @@ CONTAINS
             snowUse, qn1, qf, qs, Qm, Temp_C, Veg_Fr, avcp, Press_hPa, lv_J_kg, &
             tstep_real, DRAINRT, nsh_real, &
             Precip, RainMaxRes, RAINCOVER, sfr, LAI_id_next, LAImax, LAImin, &
-            H_mod, & !output
-            E_mod, psyc_hPa, s_hPa, sIce_hpa, TempVeg, VegPhenLumps)
+            QH_LUMPS, & !output
+            QE_LUMPS, psyc_hPa, s_hPa, sIce_hpa, TempVeg, VegPhenLumps)
 
          !============= calculate water balance =============
          CALL SUEWS_cal_Water( &
@@ -862,7 +862,7 @@ CONTAINS
             StabilityMethod, &!input:
             Diagnose, AerodynamicResistanceMethod, RoughLenHeatMethod, snowUse, &
             id, it, gsModel, SMDMethod, &
-            qh_obs, avdens, avcp, h_mod, qn1, dectime, zzd, z0m, zdm, &
+            qh_obs, avdens, avcp, QH_LUMPS, qn1, dectime, zzd, z0m, zdm, &
             avU1, Temp_C, VegFraction, avkdn, &
             Kmax, &
             g1, g2, g3, g4, &
@@ -944,8 +944,9 @@ CONTAINS
          IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Diagnostics...'
          CALL RSLProfile( &
             UStar, &!input
-            L_mod, sfr, Zh, planF, &
-            StabilityMethod, Temp_C, avRh, Press_hPa, z, TStar, qe, &
+            L_mod, sfr, Zh, planF, StabilityMethod, &
+            avcp,lv_J_kg, &
+            Temp_C, avRh, Press_hPa, z, qh, qe, &
             dataoutLineRSL)!output
 
          !============ surface-level diagonostics end ===============
@@ -1020,9 +1021,9 @@ CONTAINS
       CALL SUEWS_update_outputLine( &
          AdditionalWater, alb, avkdn, avU10_ms, azimuth, &!input
          chSnow_per_interval, dectime, &
-         drain_per_tstep, E_mod, ev_per_tstep, ext_wu, Fc, Fc_build, fcld, &
+         drain_per_tstep, QE_LUMPS, ev_per_tstep, ext_wu, Fc, Fc_build, fcld, &
          Fc_metab, Fc_photo, Fc_respi, Fc_point, Fc_traff, FlowChange, &
-         h_mod, id, imin, int_wu, it, iy, &
+         QH_LUMPS, id, imin, int_wu, it, iy, &
          kup, LAI_id, ldown, l_mod, lup, mwh, &
          MwStore, &
          nsh_real, NWstate_per_tstep, Precip, q2_gkg, &

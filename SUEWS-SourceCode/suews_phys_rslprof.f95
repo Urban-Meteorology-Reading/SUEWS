@@ -4,14 +4,17 @@ module rsl_module
 contains
 
    SUBROUTINE RSLProfile( &
-      UStar, L_MOD, sfr, Zh, planF, StabilityMethod, Temp_C, avRH, Press_hPa, zMeas, TStar, qe, &  ! input
+      UStar, L_MOD, sfr, Zh, planF, StabilityMethod, &
+      avcp,lv_J_kg, &
+      Temp_C, avRH, Press_hPa, zMeas, qh, qe, &  ! input
       dataoutLineRSL) ! output
       !-----------------------------------------------------
       ! calculates windprofiles using MOST with a RSL-correction
       ! based on Harman & Finnigan 2007
       !
       ! last modified by:
-      ! NT 03/2019
+      ! NT 16 Mar 2019
+      ! TS 16 Oct 2019: improved consistency in parameters/varaibles within SUEWS
       !
       !-----------------------------------------------------
       USE AtmMoistStab_module, ONLY: STAB_lumps, stab_psi_mom, stab_psi_heat, stab_phi_mom, stab_phi_heat
@@ -30,8 +33,11 @@ contains
       REAL(KIND(1d0)), INTENT(in):: Press_hPa ! pressure at forcing height [hPa]
       REAL(KIND(1d0)), INTENT(in):: UStar  ! Friction velocity [m s-1]
       REAL(KIND(1d0)), INTENT(in):: L_MOD  ! Obukhov length [m]
-      REAL(KIND(1d0)), INTENT(in):: TStar  ! Temperature scale[K]
-      REAL(KIND(1d0)), INTENT(in):: qe     ! Latent heat flux[W m-2]
+      REAL(KIND(1d0)), INTENT(in):: avcp  ! specific heat capacity [J kg-1 K-1]
+      REAL(KIND(1d0)), INTENT(in):: qh  ! sensible heat flux [W m-2]
+      ! REAL(KIND(1d0)), INTENT(in):: TStar  ! Temperature scale [K]
+      REAL(KIND(1d0)), INTENT(in):: lv_J_kg  ! Latent heat of vaporization in [J kg-1]
+      REAL(KIND(1d0)), INTENT(in):: qe     ! Latent heat flux [W m-2]
       REAL(KIND(1d0)), INTENT(in):: Zh     ! Mean building height [m]
       REAL(KIND(1d0)), INTENT(in):: planF  ! Frontal area index [-]
       INTEGER, INTENT(in)::StabilityMethod
@@ -39,7 +45,7 @@ contains
       REAL(KIND(1d0)), PARAMETER:: cd_tree = 1.2, & ! drag coefficient tree canopy !!!!needs adjusting!!!
                                    a_tree = 0.05, & ! the foliage area per unit volume !!!!needs adjusting!!!
                                    kappa = 0.40, &! von karman constant
-                                   lv = 2.5E6, &! latent heat for water vapor!!! make consistant with rest of code
+                                 !   lv_J_kg = 2.5E6, &! latent heat for water vapor!!! make consistant with rest of code
                                    beta_N = 0.40, &  ! H&F beta coefficient in neutral conditions from Theeuwes et al., 2019 BLM
                                    pi = 4.*ATAN(1.0), r = 0.1, &
                                    a1 = 4., a2 = -0.1, a3 = 1.5, a4 = -1. ! constraints to determine beta
@@ -63,7 +69,8 @@ contains
                         xx1, xx1_2, xxh1, xxh1_2, err, z01, dphi, dphih, &  ! dummy variables for stability functions
                         z0, &  ! roughness length from H&F
                         f, cm, c2, ch, c2h, & ! H&F'07 and H&F'08 'constants'
-                        th, qh, & ! H&F'08 canopy corrections
+                        t_h, q_h, & ! H&F'08 canopy corrections
+                        TStar,&
                         qa_gkg, qStar ! specific humidity scale
       INTEGER :: I, z, it, idx_can, idx_za
       !
@@ -189,7 +196,8 @@ contains
 
       psimz0 = stab_psi_mom(StabilityMethod, z0/L_MOD, z0/L_MOD)
       psihza = stab_psi_heat(StabilityMethod, (zMeas - zd)/L_MOD, (zMeas - zd)/L_MOD)
-      qStar = -1.*(qe/lv)/UStar
+      TStar = -1.*(qh/(avcp))/UStar
+      qStar = -1.*(qe/lv_J_kg)/UStar
       qa_gkg = RH2qa(avRH/100, Press_hPa, Temp_c)
       !
       ! Step 6
@@ -206,12 +214,12 @@ contains
       ! Step 7
       ! calculate in canopy wind speed
       !
-      th = Scc*TStar/(beta*f)
-      qh = Scc*qStar/(beta*f)
+      t_h = Scc*TStar/(beta*f)
+      q_h = Scc*qStar/(beta*f)
       DO z = 1, idx_can
          dataoutLineURSL(z) = dataoutLineURSL(idx_can)*EXP(beta*(zarray(z) - Zh)/elm)
-         dataoutLineTRSL(z) = ((dataoutLineTRSL(idx_can)*TStar) + th*EXP(beta*f*(zarray(z) - Zh)/elm) - th)/TStar
-         dataoutLineqRSL(z) = ((dataoutLineqRSL(idx_can)*qStar) + qh*EXP(beta*f*(zarray(z) - Zh)/elm) - qh)/qStar
+         dataoutLineTRSL(z) = ((dataoutLineTRSL(idx_can)*TStar) + t_h*EXP(beta*f*(zarray(z) - Zh)/elm) - t_h)/TStar
+         dataoutLineqRSL(z) = ((dataoutLineqRSL(idx_can)*qStar) + q_h*EXP(beta*f*(zarray(z) - Zh)/elm) - q_h)/qStar
       ENDDO
 
       dataoutLineURSL = dataoutLineURSL*UStar

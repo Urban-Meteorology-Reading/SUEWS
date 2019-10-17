@@ -42,7 +42,7 @@ CONTAINS
          !  molar         = 0.028965,&          !Dry air molar fraction in kg/mol
          !  molar_wat_vap = 0.0180153,&         !Molar fraction of water vapor in kg/mol
          gas_ct_dry = 8.31451/0.028965, &  !j/kg/k=dry_gas/molar
-         gas_ct_wv = 8.31451/0.0180153 !j/kg/kdry_gas/molar_wat_vap
+         gas_ct_wv = 8.31451/0.0180153 !j/kg/k=dry_gas/molar_wat_vap
       !  waterDens     = 999.8395            !Density of water in 0 cel deg
       INTEGER::from = 1
 

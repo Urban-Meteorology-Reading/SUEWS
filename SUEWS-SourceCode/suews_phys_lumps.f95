@@ -8,7 +8,7 @@ contains
       tstep_real, DRAINRT, nsh_real, &
       Precip, RainMaxRes, RAINCOVER, sfr, LAI_id_prev, LAImax, LAImin, &
       QH_LUMPS, & !output
-      QE_LUMPS, psyc_hPa, s_hPa, sIce_hpa, TempVeg, VegPhenLumps)
+      QE_LUMPS, psyc_hPa, s_hPa, sIce_hpa, Veg_Fr_temp, VegPhenLumps)
       !Calculates QH and QE for LUMPS. See Loridan et al. (2011)
       ! ref: Grimmond and Oke (2002) JAM and references within that
       !      Offerle (2003) -- add water bucket
@@ -59,7 +59,7 @@ contains
       REAL(KIND(1d0)), INTENT(out) ::psyc_hPa !Psychometric constant in hPa
       REAL(KIND(1d0)), INTENT(out) ::s_hPa!Vapour pressure versus temperature slope in hPa
       REAL(KIND(1d0)), INTENT(out) ::sIce_hpa!Vapour pressure versus temperature slope in hPa above ice/snow
-      REAL(KIND(1d0)), INTENT(out) ::TempVeg !TEMPORARY VEGETATIVE SURFACE FRACTION ADJUSTED BY RAINFALL
+      REAL(KIND(1d0)), INTENT(out) ::Veg_Fr_temp !TEMPORARY VEGETATIVE SURFACE FRACTION ADJUSTED BY RAINFALL
       REAL(KIND(1d0)), INTENT(out) ::VegPhenLumps
       ! REAL(KIND(1d0)),INTENT(inout) ::RainBucket !RAINFALL RESERVOIR [mm]
       ! INTEGER::iv
@@ -127,19 +127,19 @@ contains
       ! ENDDO
 
       IF (VegMax <= 0.01000) THEN   !If max vegetation is very small, TempVeg = 0;
-         TempVeg = 0
+         Veg_Fr_temp = 0
       ELSE
          VegPhenLumps = (VegPhen)/(VegMax)
-         TempVeg = Veg_Fr*VegPhenLumps   !Now this is veg_fraction in general
+         Veg_Fr_temp = Veg_Fr*VegPhenLumps   !Now this is veg_fraction in general
       ENDIF
 
       ! initialisation
       alpha_sl = 0.6
       alpha_in = 0.2
 
-      IF (TempVeg > 0.9000) THEN   !If vegetation fraction is larger than 0.9
-         beta = (20 - 3)*TempVeg + 3
-         alpha_qhqe = TempVeg*0.8 + 0.2
+      IF (Veg_Fr_temp > 0.9000) THEN   !If vegetation fraction is larger than 0.9
+         beta = (20 - 3)*Veg_Fr_temp + 3
+         alpha_qhqe = Veg_Fr_temp*0.8 + 0.2
       ELSE
          beta = 3
          IF (veg_type == 1) THEN   !Area vegetated, including bare soil and water
@@ -149,7 +149,7 @@ contains
             alpha_sl = 0.610
             alpha_in = 0.222
          ENDIF
-         alpha_qhqe = TempVeg*alpha_sl + alpha_in
+         alpha_qhqe = Veg_Fr_temp*alpha_sl + alpha_in
       ENDIF
 
       ! Calculate the actual heat fluxes

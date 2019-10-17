@@ -2227,12 +2227,12 @@ CONTAINS
          dectime, & !Decimal time
          zzd, &     !Active measurement height (meas. height-displac. height)
          z0m, &     !Aerodynamic roughness length
-         zdm, &     !Displacement height
+         zdm, &     !zero-plane displacement
          avU1, &    !Average wind speed
          Temp_C, &  !Air temperature
          H_init, & !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
          L_mod, &! output: !Obukhov length
-         TStar, & !T*
+         TStar, & !T*, temperature scale
          UStar, & !Friction velocity
          zL)!Stability scale
 

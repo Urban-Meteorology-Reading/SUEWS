@@ -573,7 +573,7 @@ CONTAINS
       ! REAL(KIND(1d0)), DIMENSION(nz):: zarrays ! Height array
 
       ! flag for Tsurf convergence
-      logical:: flag_ts_converge
+      logical:: flag_converge
       REAL(KIND(1D0)):: Ts_iter
       INTEGER::i_iter
 
@@ -643,11 +643,11 @@ CONTAINS
       !########################################################################################
       !           main calculation starts here
       !########################################################################################
-      flag_ts_converge = .false.
+      flag_converge = .false.
       Ts_iter = TEMP_C
       i_iter = 1
       ! print *,'---------------------------------------------------------------------------'
-      do while (.not. flag_ts_converge)
+      do while (.not. flag_converge)
          ! print *,'at beginning of iteration',i_iter
          ! print *,'Ts_iter: ',Ts_iter
          ! print *,'Ts_iter: ',Ts_iter
@@ -971,9 +971,9 @@ CONTAINS
 
          i_iter = i_iter + 1
          if (abs(tskin_C - tsurf) > 0.01) then
-            flag_ts_converge = .false.
+            flag_converge = .false.
          else
-            flag_ts_converge = .true.
+            flag_converge = .true.
          end if
 
          ! force quit do-while loop if not convergent after 100 iterations
@@ -2148,7 +2148,7 @@ CONTAINS
       StabilityMethod, &!input:
       Diagnose, AerodynamicResistanceMethod, RoughLenHeatMethod, snowUse, &
       id, it, gsModel, SMDMethod, &
-      qh_obs, avdens, avcp, h_mod, qn1, dectime, zzd, z0m, zdm, &
+      qh_obs, avdens, avcp, QH_init, qn1, dectime, zzd, z0m, zdm, &
       avU1, Temp_C, VegFraction, &
       avkdn, Kmax, G1, G2, G3, G4, G5, G6, S1, S2, TH, TL, dq, &
       xsmd, vsmd, MaxConductance, LAIMax, LAI_id, SnowFrac, sfr, &
@@ -2170,7 +2170,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(in)::qh_obs
       REAL(KIND(1d0)), INTENT(in)::avdens
       REAL(KIND(1d0)), INTENT(in)::avcp
-      REAL(KIND(1d0)), INTENT(in)::h_mod
+      REAL(KIND(1d0)), INTENT(in)::QH_init
       REAL(KIND(1d0)), INTENT(in)::qn1
       REAL(KIND(1d0)), INTENT(in)::dectime    !Decimal time
       REAL(KIND(1d0)), INTENT(in)::zzd        !Active measurement height (meas. height-displac. height)
@@ -2217,7 +2217,7 @@ CONTAINS
 
       ! Get first estimate of sensible heat flux. Modified by HCW 26 Feb 2015
       CALL SUEWS_init_QH( &
-         qh_obs, avdens, avcp, h_mod, qn1, dectime, &
+         qh_obs, avdens, avcp, QH_init, qn1, dectime, &
          H_init)
 
       IF (Diagnose == 1) WRITE (*, *) 'Calling STAB_lumps...'
@@ -2275,7 +2275,7 @@ CONTAINS
 
       IF (Diagnose == 1) WRITE (*, *) 'Calling BoundaryLayerResistance...'
       CALL BoundaryLayerResistance( &
-         zzd, &! input:     !Active measurement height (meas. height-displac. height)
+         zzd, &! input:     !Active measurement height (meas. height- zero-plane displacement)
          z0m, &     !Aerodynamic roughness length
          avU1, &    !Average wind speed
          UStar, &  ! input/output:

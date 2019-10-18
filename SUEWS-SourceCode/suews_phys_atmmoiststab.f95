@@ -408,7 +408,7 @@ CONTAINS
       ELSEIF (zL < -neut_limit) THEN     ! Unstable
          IF (StabilityMethod == 3) THEN
             !campbell & norman eqn 7.26
-            psih = 0.6*(2)*LOG((1 + (1 - 16*zl_f)**0.5)/2)
+            psih = (2)*LOG((1 + (1 - 16*zl_f)**0.5)/2)
          ELSE
 
             IF (StabilityMethod == 4) THEN ! Businger et al (1971) modifed  Hogstrom (1988)

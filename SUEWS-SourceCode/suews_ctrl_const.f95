@@ -953,6 +953,7 @@ MODULE data_in
    ! ---- File names -----------------------------------------------------------------------------
    CHARACTER(len=150):: FileOut, &         !Output file name
                         FileChoices, &     !Run characteristics file name
+                        FileStateInit, &     !Run characteristics file name
                         FileMet, &         !Meteorological forcing file name
                         FileOrigMet, &     !Original meteorological forcing file name (i.e. before downscaling)
                         FileOrigESTM, &    !Original ESTM forcing file name (i.e. before downscaling)

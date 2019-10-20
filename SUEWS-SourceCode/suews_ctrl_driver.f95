@@ -2900,7 +2900,8 @@ CONTAINS
       INTEGER, INTENT(IN)::StorageHeatMethod
       INTEGER, INTENT(IN)::tstep
       INTEGER, INTENT(IN)::tstep_prev ! tstep size of the previous step
-      INTEGER, INTENT(in)::dt_since_start ! time since simulation starts [s]
+      ! dt_since_start is intentionally made as inout to keep naming consistency with the embedded subroutine
+      INTEGER, INTENT(inout)::dt_since_start ! time since simulation starts [s]
       INTEGER, INTENT(IN)::veg_type
       INTEGER, INTENT(IN)::WaterUseMethod
 
@@ -3114,7 +3115,7 @@ CONTAINS
       ! ########################################################################################
 
       ! internal temporal iteration related variables
-      INTEGER::dt_since_start_x ! time since simulation starts [s]
+      ! INTEGER::dt_since_start ! time since simulation starts [s]
 
       ! model output blocks of the same size as met forcing block
 
@@ -3165,7 +3166,7 @@ CONTAINS
       ! REAL(KIND(1D0)),DIMENSION(:,:)          ::MetForcingData_grid
 
       ! get initial dt_since_start_x from dt_since_start, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018
-      dt_since_start_x = dt_since_start
+      ! dt_since_start = dt_since_start
 
       DO ir = 1, len_sim, 1
          ! =============================================================================
@@ -3241,7 +3242,7 @@ CONTAINS
             DailyStateLine)!output
 
          ! update dt_since_start_x for next iteration, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018
-         dt_since_start_x = dt_since_start_x + tstep
+         dt_since_start = dt_since_start + tstep
 
          !============ update and write out SUEWS_cal_DailyState ===============
          ! only works at the last timestep of a day

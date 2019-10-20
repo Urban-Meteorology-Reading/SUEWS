@@ -1014,7 +1014,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    ! Do once per grid per year (was in SUEWS_Initial.f95)
    IF (ir == 1 .AND. iMB == 1) THEN   !For first row of first block only
       !write(*,*) 'Writing to FileChoices for first chunk of met data per year per grid'
-      FileChoices = TRIM(FileOutputPath)//TRIM(FileCode)//'_FileChoices.txt'
+      FileStateInit = TRIM(FileOutputPath)//TRIM(FileCode)//'_FileChoices.txt'
       OPEN (12, file=FileChoices, position='append')
 
       WRITE (grid_txt, '(I5)') INT(SurfaceChar(Gridiv, c_Grid))

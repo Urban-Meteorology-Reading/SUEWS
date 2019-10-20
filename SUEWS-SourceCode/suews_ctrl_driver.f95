@@ -2899,7 +2899,8 @@ CONTAINS
       INTEGER, INTENT(IN)::StorageHeatMethod
       INTEGER, INTENT(IN)::tstep
       INTEGER, INTENT(IN)::tstep_prev ! tstep size of the previous step
-      INTEGER, INTENT(in)::dt_since_start ! time since simulation starts [s]
+      ! dt_since_start is intentionally made as inout to keep naming consistency with the embedded subroutine
+      INTEGER, INTENT(inout)::dt_since_start ! time since simulation starts [s]
       INTEGER, INTENT(IN)::veg_type
       INTEGER, INTENT(IN)::WaterUseMethod
 
@@ -3113,7 +3114,7 @@ CONTAINS
       ! ########################################################################################
 
       ! internal temporal iteration related variables
-      INTEGER::dt_since_start_x ! time since simulation starts [s]
+      ! INTEGER::dt_since_start ! time since simulation starts [s]
 
       ! model output blocks of the same size as met forcing block
 
@@ -3169,7 +3170,7 @@ CONTAINS
       CHARACTER(len=2):: it_text, imin_text
 
       ! get initial dt_since_start_x from dt_since_start, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018
-      dt_since_start_x = dt_since_start
+      ! dt_since_start = dt_since_start
 
       DO ir = 1, len_sim, 1
          ! =============================================================================
@@ -3441,7 +3442,7 @@ CONTAINS
             BaseTHDD, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
             chAnOHM, CO2PointSource, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
             DecTreeH, Diagnose, DiagQN, DiagQS, DRAINRT, &
-            dt_since_start_x, dqndt, qn1_av, dqnsdt, qn1_s_av, &
+            dt_since_start, dqndt, qn1_av, dqnsdt, qn1_s_av, &
             EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
             FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, fcld_obs, FlowChange, &
             FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD_id, &
@@ -3476,7 +3477,7 @@ CONTAINS
             DailyStateLine)!output
 
          ! update dt_since_start_x for next iteration, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018
-         dt_since_start_x = dt_since_start_x + tstep
+         dt_since_start = dt_since_start + tstep
 
          !============ update and write out SUEWS_cal_DailyState ===============
          ! only works at the last timestep of a day

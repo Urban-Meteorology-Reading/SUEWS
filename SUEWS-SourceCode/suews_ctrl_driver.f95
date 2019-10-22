@@ -5,7 +5,7 @@
 ! TS 03 Oct 2017: added `SUEWS_cal_AnthropogenicEmission`
 MODULE SUEWS_Driver
    USE meteo, ONLY: qsatf, RH2qa, qa2RH
-   USE AtmMoistStab_module, ONLY: LUMPS_cal_AtmMoist, STAB_lumps, stab_psi_heat, stab_psi_mom
+   USE AtmMoistStab_module, ONLY: cal_AtmMoist, cal_Stab, stab_psi_heat, stab_psi_mom
    USE NARP_MODULE, ONLY: NARP_cal_SunPosition
    USE AnOHM_module, ONLY: AnOHM
    USE resist_module, ONLY: AerodynamicResistance, BoundaryLayerResistance, SurfaceResistance, &
@@ -750,7 +750,7 @@ CONTAINS
 
          !=================Calculation of density and other water related parameters=================
          IF (Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_AtmMoist...'
-         CALL LUMPS_cal_AtmMoist( &
+         CALL cal_AtmMoist( &
             Temp_C, Press_hPa, avRh, dectime, &! input:
             lv_J_kg, lvS_J_kg, &! output:
             es_hPa, Ea_hPa, VPd_hpa, VPD_Pa, dq, dens_dry, avcp, avdens)
@@ -1266,7 +1266,7 @@ CONTAINS
                t2 = t2_C
             ENDIF
 
-            CALL LUMPS_cal_AtmMoist( &
+            CALL cal_AtmMoist( &
                t2, Press_hPa, avRh, dectime, &! input:
                dummy1, dummy2, &! output:
                dummy3, dummy4, dummy5, dummy6, dq, dummy7, dummy8, dummy9)
@@ -2222,7 +2222,7 @@ CONTAINS
 
       IF (Diagnose == 1) WRITE (*, *) 'Calling STAB_lumps...'
       !u* and Obukhov length out
-      CALL STAB_lumps( &
+      CALL cal_Stab( &
          StabilityMethod, &  ! input
          dectime, & !Decimal time
          zzd, &     !Active measurement height (meas. height-displac. height)
@@ -2666,7 +2666,7 @@ CONTAINS
          H_kms)!output
 
       ! redo the calculation for stability correction
-      CALL STAB_lumps( &
+      CALL cal_Stab( &
          ! input
          StabilityMethod, &
          dectime, & !Decimal time
@@ -3244,13 +3244,7 @@ CONTAINS
          ! update dt_since_start_x for next iteration, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018
          dt_since_start = dt_since_start + tstep
 
-         !============ update and write out SUEWS_cal_DailyState ===============
-         ! only works at the last timestep of a day
-         ! CALL SUEWS_update_DailyState(&
-         !      id, datetimeLine, &!input
-         !      Gridiv, 1, &
-         !      DailyStateLine, &
-         !      DailyStateBlock_X)!inout
+         !============ update DailyStateBlock ===============
          DailyStateBlock(ir, :) = [datetimeLine, DailyStateLine]
 
          !============ write out results ===============

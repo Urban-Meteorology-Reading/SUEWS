@@ -5,7 +5,7 @@ CONTAINS
    !.c!! For Lumps Version 2 - no stability calculations
    ! Latent heat of sublimation when air temperature below zero added. LJ Nov 2012
    ! explict interface added to all subroutines, TS 08 Aug 2017
-   SUBROUTINE LUMPS_cal_AtmMoist( &
+   SUBROUTINE cal_AtmMoist( &
       Temp_C, Press_hPa, avRh, dectime, &! input:
       lv_J_kg, lvS_J_kg, &! output:
       es_hPa, Ea_hPa, VPd_hpa, VPD_Pa, dq, dens_dry, avcp, air_dens)
@@ -85,7 +85,7 @@ CONTAINS
          CALL ErrorHint(46, 'Function LUMPS_cal_AtmMoist', press_hPa, -55.55d0, -55)
       ENDIF
       RETURN
-   END SUBROUTINE LUMPS_cal_AtmMoist
+   END SUBROUTINE cal_AtmMoist
 
    !.c!! For Lumps Version 2 - no stability calculations
    !==========================================================
@@ -100,7 +100,7 @@ CONTAINS
    !     L - monin obukhov stability length
    !       Van Ulden & Holtslag (1985) JCAM: 24: 1196-1207
 
-   SUBROUTINE STAB_lumps( &
+   SUBROUTINE cal_Stab( &
       StabilityMethod, &! input
       dectime, & !Decimal time
       zzd, &     !Active measurement height (meas. height-displac. height)
@@ -238,7 +238,7 @@ CONTAINS
       !
       ! end if
 
-   END SUBROUTINE STAB_lumps
+   END SUBROUTINE cal_Stab
 
    !==================================================================
 

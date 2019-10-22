@@ -17,7 +17,7 @@ contains
       ! TS 16 Oct 2019: improved consistency in parameters/varaibles within SUEWS
       !
       !-----------------------------------------------------
-      USE AtmMoistStab_module, ONLY: STAB_lumps, stab_psi_mom, stab_psi_heat, stab_phi_mom, stab_phi_heat
+      USE AtmMoistStab_module, ONLY: cal_Stab, stab_psi_mom, stab_psi_heat, stab_phi_mom, stab_phi_heat
       USE meteo, ONLY: RH2qa
 
       IMPLICIT NONE

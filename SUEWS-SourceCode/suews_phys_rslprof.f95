@@ -195,7 +195,7 @@ contains
       ENDDO
 
       psimz0 = stab_psi_mom(StabilityMethod, z0/L_MOD)
-      psihza = stab_psi_heat(StabilityMethod, (zMeas - zd)/L_MOD, (zMeas - zd)/L_MOD)
+      psihza = stab_psi_heat(StabilityMethod, (zMeas - zd)/L_MOD)
       TStar = -1.*(qh/(avcp))/UStar
       qStar = -1.*(qe/lv_J_kg)/UStar
       qa_gkg = RH2qa(avRH/100, Press_hPa, Temp_c)
@@ -205,7 +205,7 @@ contains
       !
       DO z = idx_can, nz
          psimz = stab_psi_mom(StabilityMethod, (zarray(z) - zd)/L_MOD)
-         psihz = stab_psi_heat(StabilityMethod, (zarray(z) - zd)/L_MOD, (zarray(z) - zd)/L_MOD)
+         psihz = stab_psi_heat(StabilityMethod, (zarray(z) - zd)/L_MOD)
          dataoutLineURSL(z) = (LOG((zarray(z) - zd)/z0) - psimz + psimz0 - psihat_z(z) + psihat_z(idx_can))/kappa
          dataoutLineTRSL(z) = (LOG((zarray(z) - zd)/(zMeas - zd)) - psihz + psihza + psihath_z(z) - psihath_z(idx_za - 1))/kappa
          dataoutLineqRSL(z) = (LOG((zarray(z) - zd)/(zMeas - zd)) - psihz + psihza + psihath_z(z) - psihath_z(idx_za - 1))/kappa

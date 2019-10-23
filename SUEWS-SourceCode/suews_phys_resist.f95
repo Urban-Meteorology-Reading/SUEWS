@@ -75,7 +75,7 @@ contains
       ELSEIF (AerodynamicResistanceMethod == 2) THEN  !Dyer (1974)
 
          psim = stab_psi_mom(StabilityMethod, zzd/L_mod)
-         psih = stab_psi_heat(StabilityMethod, ZZD/L_mod, zzd/L_mod)
+         psih = stab_psi_heat(StabilityMethod, ZZD/L_mod)
 
          !Z0V roughness length for vapour
          z0V = cal_z0V(RoughLenHeatMethod, z0m, VegFraction, UStar)

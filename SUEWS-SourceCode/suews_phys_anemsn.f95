@@ -297,10 +297,10 @@ contains
          ENDIF
 
          ! Energy released from buildings only
-         ! Should buildings have their own profile? Now using population profile      
-         QF_build = ((QF_SAHP_base*QF0_BEU(iu) + QF_SAHP_heat + QF_SAHP_ac)/DP_x_RhoPop) * &
-               (PopDensNighttime*(2-PopDorNorT) + PopDensDaytime(iu)*(PopDorNorT-1))
-               
+         ! Should buildings have their own profile? Now using population profile
+         QF_build = ((QF_SAHP_base*QF0_BEU(iu) + QF_SAHP_heat + QF_SAHP_ac)/DP_x_RhoPop)* &
+                    (PopDensNighttime*(2 - PopDorNorT) + PopDensDaytime(iu)*(PopDorNorT - 1))
+
          ! Consider the various components of QF_build to calculate Fc_build
          Fc_build = QF_SAHP_heat*FrFossilFuel_Heat*EF_umolCO2perJ
          ! ... and there is also a temperature-independent contribution from building energy use

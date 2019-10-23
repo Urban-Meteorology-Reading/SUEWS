@@ -297,8 +297,10 @@ contains
          ENDIF
 
          ! Energy released from buildings only
-         QF_build = QF_SAHP_base + QF_SAHP_heat + QF_SAHP_ac
-
+         ! Should buildings have their own profile? Now using population profile      
+         QF_build = ((QF_SAHP_base*QF0_BEU(iu) + QF_SAHP_heat + QF_SAHP_ac)/DP_x_RhoPop) * &
+               (PopDensNighttime*(2-PopDorNorT) + PopDensDaytime(iu)*(PopDorNorT-1))
+               
          ! Consider the various components of QF_build to calculate Fc_build
          Fc_build = QF_SAHP_heat*FrFossilFuel_Heat*EF_umolCO2perJ
          ! ... and there is also a temperature-independent contribution from building energy use
@@ -316,6 +318,7 @@ contains
 
          ! Sum components to give anthropogenic heat flux [W m-2]
          QF_SAHP = QF_metab + QF_traff + QF_build
+
          ! Sum components to give anthropogenic CO2 flux [umol m-2 s-1]
          Fc_anthro = Fc_metab + Fc_traff + Fc_build + Fc_point
 

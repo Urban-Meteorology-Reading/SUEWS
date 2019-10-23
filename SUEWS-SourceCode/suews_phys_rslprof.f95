@@ -5,7 +5,7 @@ contains
 
    SUBROUTINE RSLProfile( &
       UStar, L_MOD, sfr, Zh, planF, StabilityMethod, &
-      avcp,lv_J_kg, &
+      avcp, lv_J_kg, &
       Temp_C, avRH, Press_hPa, zMeas, qh, qe, &  ! input
       dataoutLineRSL) ! output
       !-----------------------------------------------------
@@ -45,7 +45,7 @@ contains
       REAL(KIND(1d0)), PARAMETER:: cd_tree = 1.2, & ! drag coefficient tree canopy !!!!needs adjusting!!!
                                    a_tree = 0.05, & ! the foliage area per unit volume !!!!needs adjusting!!!
                                    kappa = 0.40, &! von karman constant
-                                 !   lv_J_kg = 2.5E6, &! latent heat for water vapor!!! make consistant with rest of code
+                                   !   lv_J_kg = 2.5E6, &! latent heat for water vapor!!! make consistant with rest of code
                                    beta_N = 0.40, &  ! H&F beta coefficient in neutral conditions from Theeuwes et al., 2019 BLM
                                    pi = 4.*ATAN(1.0), r = 0.1, &
                                    a1 = 4., a2 = -0.1, a3 = 1.5, a4 = -1. ! constraints to determine beta
@@ -70,7 +70,7 @@ contains
                         z0, &  ! roughness length from H&F
                         f, cm, c2, ch, c2h, & ! H&F'07 and H&F'08 'constants'
                         t_h, q_h, & ! H&F'08 canopy corrections
-                        TStar,&
+                        TStar, &
                         qa_gkg, qStar ! specific humidity scale
       INTEGER :: I, z, it, idx_can, idx_za
       !

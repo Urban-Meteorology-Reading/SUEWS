@@ -649,7 +649,7 @@ CONTAINS
       ! iteration is used below to get results converge
       flag_converge = .false.
       Ts_iter = TEMP_C
-      L_mod_iter=10
+      L_mod_iter = 10
       i_iter = 1
       do while (.not. flag_converge)
 
@@ -813,23 +813,22 @@ CONTAINS
 
          !==========================Turbulent Fluxes================================
          IF (Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_QHQE...'
-         if ( i_iter==1 ) then
+         if (i_iter == 1) then
             !Calculate QH and QE from LUMPS in the first iteration of each time step
             CALL LUMPS_cal_QHQE( &
-            veg_type, & !input
-            snowUse, qn1, qf, qs, Qm, Temp_C, Veg_Fr, avcp, Press_hPa, lv_J_kg, &
-            tstep_real, DRAINRT, nsh_real, &
-            Precip, RainMaxRes, RAINCOVER, sfr, LAI_id_next, LAImax, LAImin, &
-            QH_LUMPS, & !output
-            QE_LUMPS, psyc_hPa, s_hPa, sIce_hpa, TempVeg, VegPhenLumps)
+               veg_type, & !input
+               snowUse, qn1, qf, qs, Qm, Temp_C, Veg_Fr, avcp, Press_hPa, lv_J_kg, &
+               tstep_real, DRAINRT, nsh_real, &
+               Precip, RainMaxRes, RAINCOVER, sfr, LAI_id_next, LAImax, LAImin, &
+               QH_LUMPS, & !output
+               QE_LUMPS, psyc_hPa, s_hPa, sIce_hpa, TempVeg, VegPhenLumps)
 
             ! use LUMPS QH to do stability correction
-            QH_Init=QH_LUMPS
+            QH_Init = QH_LUMPS
          else
             ! use SUEWS QH to do stability correction
-            QH_Init=QH
+            QH_Init = QH
          end if
-
 
          !============= calculate water balance =============
          CALL SUEWS_cal_Water( &
@@ -930,7 +929,7 @@ CONTAINS
          CALL RSLProfile( &
             UStar, &!input
             L_mod, sfr, Zh, planF, StabilityMethod, &
-            avcp,lv_J_kg, &
+            avcp, lv_J_kg, &
             Temp_C, avRh, Press_hPa, z, qh, qe, &
             dataoutLineRSL)!output
 
@@ -960,7 +959,7 @@ CONTAINS
          if (i_iter > 100) exit
 
          Ts_iter = tskin_C
-         l_mod_iter=l_mod
+         l_mod_iter = l_mod
 
          !==============main calculation end=======================
       ENDDO ! end iteration for tsurf calculations
@@ -1725,12 +1724,12 @@ CONTAINS
       ! IF (qh_obs /= NAN) THEN   !if(qh_obs/=NAN) qh=qh_obs   !Commented out by HCW 04 Mar 2015
       !    H_init = qh_obs/(avdens*avcp)  !Use observed value
       ! ELSE
-         IF (h_mod /= NAN) THEN
-            H_init = h_mod/(avdens*avcp)   !Use LUMPS value
-         ELSE
-            H_init = (qn1*0.2)/(avdens*avcp)   !If LUMPS has had a problem, we still need a value
-            CALL ErrorHint(38, 'LUMPS unable to calculate realistic value for H_mod.', h_mod, dectime, notUsedI)
-         ENDIF
+      IF (h_mod /= NAN) THEN
+         H_init = h_mod/(avdens*avcp)   !Use LUMPS value
+      ELSE
+         H_init = (qn1*0.2)/(avdens*avcp)   !If LUMPS has had a problem, we still need a value
+         CALL ErrorHint(38, 'LUMPS unable to calculate realistic value for H_mod.', h_mod, dectime, notUsedI)
+      ENDIF
       ! ENDIF
 
    END SUBROUTINE SUEWS_init_QH

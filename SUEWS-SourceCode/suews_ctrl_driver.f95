@@ -651,8 +651,8 @@ CONTAINS
       i_iter = 1
       ! print *,'---------------------------------------------------------------------------'
       do while (.not. flag_converge)
-         print *,''
-         print *,'at beginning of iteration',i_iter
+         ! print *,''
+         ! print *,'at beginning of iteration',i_iter
          ! print *,'Ts_iter: ',Ts_iter
          ! print *,'Ts_iter: ',Ts_iter
          ! print *,'prev values: ',qn1_av_prev,&
@@ -854,7 +854,7 @@ CONTAINS
          else
             QH_Init=QH
          end if
-         print *,'QH_Init: ',QH_Init
+         ! print *,'QH_Init: ',QH_Init
 
 
          !============= calculate water balance =============
@@ -979,11 +979,11 @@ CONTAINS
          ! print*,'tsurf',tsurf
          ! print*,'tskin_C',tskin_C
          ! print*,'diff',tsurf-tskin_C
-         print *,'L_mod_iter: ',L_mod_iter
-         print *,'L_mod: ',L_mod
-         print *,'QH: ',QH
-         print *,'QH_Init: ',QH_Init
-         print *,'T2_c: ',T2_c
+         ! print *,'L_mod_iter: ',L_mod_iter
+         ! print *,'L_mod: ',L_mod
+         ! print *,'QH: ',QH
+         ! print *,'QH_Init: ',QH_Init
+         ! print *,'T2_c: ',T2_c
 
          i_iter = i_iter + 1
          if (abs(QH - QH_Init) > 0.1) then

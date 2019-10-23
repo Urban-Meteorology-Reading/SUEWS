@@ -348,7 +348,7 @@ CONTAINS
       REAL(KIND(1D0))::a2
       REAL(KIND(1D0))::a3
       REAL(KIND(1D0))::AdditionalWater
-      REAL(KIND(1D0))::avU10_ms
+      REAL(KIND(1D0))::U10_ms
       REAL(KIND(1D0))::azimuth
       REAL(KIND(1D0))::chSnow_per_interval
 
@@ -916,22 +916,22 @@ CONTAINS
             smd, smd_nsurf, tot_chang_per_tstep, SoilState)!output
 
          !============ surface-level diagonostics ===============
-         IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Diagnostics...'
-         CALL SUEWS_cal_Diagnostics( &
-            dectime, &!input
-            avU1, Temp_C, avRH, Press_hPa, &
-            qh, qe, &
-            VegFraction, z, z0m, zdm, RA, avdens, avcp, lv_J_kg, tstep_real, &
-            RoughLenHeatMethod, StabilityMethod, &
-            avU10_ms, t2_C, q2_gkg, tskin_C, RH2)!output
+         ! IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Diagnostics...'
+         ! CALL SUEWS_cal_Diagnostics( &
+         !    dectime, &!input
+         !    avU1, Temp_C, avRH, Press_hPa, &
+         !    qh, qe, &
+         !    VegFraction, z, z0m, zdm, RA, avdens, avcp, lv_J_kg, tstep_real, &
+         !    RoughLenHeatMethod, StabilityMethod, &
+         !    U10_ms, t2_C, q2_gkg, tskin_C, RH2)!output
 
          IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Diagnostics...'
          CALL RSLProfile( &
-            UStar, &!input
-            L_mod, sfr, Zh, planF, StabilityMethod, &
-            avcp, lv_J_kg, &
-            Temp_C, avRh, Press_hPa, z, qh, qe, &
-            dataoutLineRSL)!output
+      UStar, L_MOD, sfr, Zh, planF, StabilityMethod, &
+      avcp, lv_J_kg, &
+      Temp_C, avRH, Press_hPa, z, qh, qe, &  ! input
+      T2_C,q2_gkg,U10_ms,RH2,& !output
+      dataoutLineRSL) ! output
 
          !============ surface-level diagonostics end ===============
 
@@ -999,7 +999,7 @@ CONTAINS
 
       !==============translation of  output variables into output array===========
       CALL SUEWS_update_outputLine( &
-         AdditionalWater, alb, avkdn, avU10_ms, azimuth, &!input
+         AdditionalWater, alb, avkdn, U10_ms, azimuth, &!input
          chSnow_per_interval, dectime, &
          drain_per_tstep, QE_LUMPS, ev_per_tstep, ext_wu, Fc, Fc_build, fcld, &
          Fc_metab, Fc_photo, Fc_respi, Fc_point, Fc_traff, FlowChange, &

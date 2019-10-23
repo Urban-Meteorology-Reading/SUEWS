@@ -645,41 +645,13 @@ CONTAINS
       !########################################################################################
       !           main calculation starts here
       !########################################################################################
+
+      ! iteration is used below to get results converge
       flag_converge = .false.
       Ts_iter = TEMP_C
       L_mod_iter=10
       i_iter = 1
-      ! print *,'---------------------------------------------------------------------------'
       do while (.not. flag_converge)
-         ! print *,''
-         ! print *,'at beginning of iteration',i_iter
-         ! print *,'Ts_iter: ',Ts_iter
-         ! print *,'Ts_iter: ',Ts_iter
-         ! print *,'prev values: ',qn1_av_prev,&
-         !       dqndt_prev,&
-         !       qn1_s_av_prev,&
-         !       dqnsdt_prev,&
-         !       SnowfallCum_prev,&
-         !       SnowAlb_prev,&
-         !       IceFrac_prev,&
-         !       SnowWater_prev,&
-         !       SnowDens_prev,&
-         !       SnowFrac_prev,&
-         !       SnowPack_prev,&
-         !       soilstore_id_prev,&
-         !       state_id_prev,&
-         !       Tair_av_prev,&
-         !       LAI_id_prev,&
-         !       GDD_id_prev,&
-         !       StoreDrainPrm_prev,&
-         !       DecidCap_id_prev,&
-         !       porosity_id_prev,&
-         !       alb_prev,&
-         !       albDecTr_id_prev,&
-         !       albEveTr_id_prev,&
-         !       albGrass_id_prev,&
-         !       HDD_id_prev,&
-         !       WUDay_id_prev
 
          ! calculate dectime
          CALL SUEWS_cal_dectime( &
@@ -841,8 +813,8 @@ CONTAINS
 
          !==========================Turbulent Fluxes================================
          IF (Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_QHQE...'
-         !Calculate QH and QE from LUMPS
          if ( i_iter==1 ) then
+            !Calculate QH and QE from LUMPS in the first iteration of each time step
             CALL LUMPS_cal_QHQE( &
             veg_type, & !input
             snowUse, qn1, qf, qs, Qm, Temp_C, Veg_Fr, avcp, Press_hPa, lv_J_kg, &
@@ -850,11 +822,13 @@ CONTAINS
             Precip, RainMaxRes, RAINCOVER, sfr, LAI_id_next, LAImax, LAImin, &
             QH_LUMPS, & !output
             QE_LUMPS, psyc_hPa, s_hPa, sIce_hpa, TempVeg, VegPhenLumps)
+
+            ! use LUMPS QH to do stability correction
             QH_Init=QH_LUMPS
          else
+            ! use SUEWS QH to do stability correction
             QH_Init=QH
          end if
-         ! print *,'QH_Init: ',QH_Init
 
 
          !============= calculate water balance =============
@@ -974,17 +948,7 @@ CONTAINS
          ! force quit do-while, i.e., skip iteration and use NARP for Tsurf calculation
          ! if (NetRadiationMethod < 10 .or. NetRadiationMethod > 100) exit
 
-         ! Test if surface temperatures from QN and surface diagonostics converge
-         ! print*,'iteration', i_iter
-         ! print*,'tsurf',tsurf
-         ! print*,'tskin_C',tskin_C
-         ! print*,'diff',tsurf-tskin_C
-         ! print *,'L_mod_iter: ',L_mod_iter
-         ! print *,'L_mod: ',L_mod
-         ! print *,'QH: ',QH
-         ! print *,'QH_Init: ',QH_Init
-         ! print *,'T2_c: ',T2_c
-
+         ! Test if sensible heat fluxes converge in iterations
          i_iter = i_iter + 1
          if (abs(QH - QH_Init) > 0.1) then
             flag_converge = .false.

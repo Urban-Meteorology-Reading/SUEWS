@@ -324,7 +324,7 @@ CONTAINS
       RETURN
    END FUNCTION stab_psi_mom
 
-   FUNCTION stab_phi_mom(StabilityMethod, ZL, zl_f) RESULT(phim)
+   FUNCTION stab_phi_mom(StabilityMethod, ZL) RESULT(phim)
       !     StabilityMethod = 1-4 -
       !     phi - stability FUNCTION for momentum
       !Modified by NT May 2019 !!!!! check if all are correct!
@@ -337,7 +337,7 @@ CONTAINS
          neut_limit = 0.001000 !Limit for neutral stability
       !  notUsedI=-55
 
-      REAL(KIND(1d0)):: phim, zl, zl_f
+      REAL(KIND(1d0)):: phim, zl
       INTEGER ::StabilityMethod
 
       phim = 0
@@ -347,39 +347,39 @@ CONTAINS
       ELSEIF (zL < -neut_limit) THEN    !Unstable
 
          IF (StabilityMethod == 1) THEN     !    Jensen et al 1984 - Van Ulden & Holtslag (1985) p 1206&
-            phim = ((1.-16.*zl_f)**(-0.25))
+            phim = ((1.-16.*zl)**(-0.25))
          ELSEIF (StabilityMethod == 2) THEN !Dyer (1974)(1-16z/L)**.25' k=0.41  mod. Hogstrom (1988)v15.2
-            phim = (1.-(15.2*zl_f))**(-0.25)
+            phim = (1.-(15.2*zl))**(-0.25)
          ELSEIF (StabilityMethod == 3) THEN ! Kondo (1975) adopted by Campbell & Norman eqn 7.26 p 97
-            phim = ((1.-16.*zl_f)**(-0.25))
+            phim = ((1.-16.*zl)**(-0.25))
          ELSEIF (StabilityMethod == 4) THEN !Businger et al (1971) modifed  Hogstrom (1988)
-            phim = (1.-19.*zl_f)**(-0.25)
+            phim = (1.-19.*zl)**(-0.25)
          ELSEIF (StabilityMethod == 7) THEN ! Dyer & Bradley (1982) (1-28z/L)**.25' k=0.4
-            phim = (1.-(28.*zl_f))**(-0.25)
+            phim = (1.-(28.*zl))**(-0.25)
          ELSEIF (StabilityMethod == 5) THEN ! Zilitinkevich & Chalikov (1968) modified Hogstrom (1988)
-            IF (zl_f >= -0.16) THEN
-               phim = 1 + 1.38*zl_f
+            IF (zl >= -0.16) THEN
+               phim = 1 + 1.38*zl
             ELSE
-               phim = 0.42*(-1)*zl_f*(-0.333)
+               phim = 0.42*(-1)*zl*(-0.333)
             ENDIF
          ELSEIF (StabilityMethod == 6) THEN !     Foken and Skeib (1983)
-            IF (zl_f >= 0.06) THEN
+            IF (zl >= 0.06) THEN
                phim = 1
             ELSE
-               phim = ((-1)*zl_f/0.06)**(-0.25)
+               phim = ((-1)*zl/0.06)**(-0.25)
             ENDIF
          ENDIF
 
       ELSEIF (zL > neut_limit) THEN            !Stable
 
          IF (StabilityMethod == 1) THEN         !Dyer (1974) k=0.35 x=1+5*zl Mod. Hogstrom (1988)
-            phim = 1.+(4.8)*zl_f
+            phim = 1.+(4.8)*zl
          ELSEIF (StabilityMethod == 2) THEN     !Van Ulden & Holtslag (1985) p 1206 ! NT: have no function for phim
-            phim = 1.+(4.8)*zl_f
+            phim = 1.+(4.8)*zl
          ELSEIF (StabilityMethod == 4) THEN ! Businger et al (1971) modifed  Hogstrom (1988)
-            phim = 1 + 6*zl_f
+            phim = 1 + 6*zl
          ELSEIF (StabilityMethod == 3) THEN ! Kondo (1975) adopted by Campbell & Norman eqn 7.26 p 97  !!NT: checked
-            phim = 1.+6.*zl_f/(1.+zl_f)  !!NT: checked reference and updated
+            phim = 1.+6.*zl/(1.+zl)  !!NT: checked reference and updated
          ENDIF
       ENDIF
       RETURN

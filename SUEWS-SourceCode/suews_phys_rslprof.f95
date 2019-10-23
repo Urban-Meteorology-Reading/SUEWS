@@ -106,7 +106,7 @@ contains
          dif(z) = ABS(zarray(z) - Zh)
       ENDDO
       idx_can = MINLOC(dif, DIM=1)
-      phim = stab_phi_mom(StabilityMethod, Lc/L_MOD, Lc/L_MOD)
+      phim = stab_phi_mom(StabilityMethod, Lc/L_MOD)
       !
       ! Step 2:
       ! Parameterise beta according to Harman 2012 with upper limit of 0.5
@@ -139,8 +139,8 @@ contains
       psimZh = stab_psi_mom(StabilityMethod, (Zh - zd)/L_MOD, (Zh - zd)/L_MOD)
 
       ! calculate phihatM according to H&F '07 and H&F '08 for heat and humidity
-      xx1 = stab_phi_mom(StabilityMethod, (Zh - zd)/L_MOD, (Zh - zd)/L_MOD)
-      xx1_2 = stab_phi_mom(StabilityMethod, (Zh - zd + 1.)/L_MOD, (Zh - zd + 1.)/L_MOD)
+      xx1 = stab_phi_mom(StabilityMethod, (Zh - zd)/L_MOD)
+      xx1_2 = stab_phi_mom(StabilityMethod, (Zh - zd + 1.)/L_MOD)
 
       xxh1 = stab_phi_heat(StabilityMethod, (Zh - zd)/L_MOD, (Zh - zd)/L_MOD)
       xxh1_2 = stab_phi_heat(StabilityMethod, (Zh - zd + 1.)/L_MOD, (Zh - zd + 1.)/L_MOD)
@@ -164,8 +164,8 @@ contains
       !
       psihat_z = 0.*zarray
       DO z = nz - 1, idx_can - 1, -1
-         phimz = stab_phi_mom(StabilityMethod, (zarray(z) - zd)/L_MOD, (zarray(z) - zd)/L_MOD)
-         phimzp = stab_phi_mom(StabilityMethod, (zarray(z + 1) - zd)/L_MOD, (zarray(z + 1) - zd)/L_MOD)
+         phimz = stab_phi_mom(StabilityMethod, (zarray(z) - zd)/L_MOD)
+         phimzp = stab_phi_mom(StabilityMethod, (zarray(z + 1) - zd)/L_MOD)
          phihz = stab_phi_heat(StabilityMethod, (zarray(z) - zd)/L_MOD, (zarray(z) - zd)/L_MOD)
          phihzp = stab_phi_heat(StabilityMethod, (zarray(z + 1) - zd)/L_MOD, (zarray(z + 1) - zd)/L_MOD)
 

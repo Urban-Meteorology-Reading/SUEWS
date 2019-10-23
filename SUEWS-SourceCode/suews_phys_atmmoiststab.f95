@@ -5,7 +5,7 @@ CONTAINS
    !.c!! For Lumps Version 2 - no stability calculations
    ! Latent heat of sublimation when air temperature below zero added. LJ Nov 2012
    ! explict interface added to all subroutines, TS 08 Aug 2017
-   SUBROUTINE LUMPS_cal_AtmMoist( &
+   SUBROUTINE cal_AtmMoist( &
       Temp_C, Press_hPa, avRh, dectime, &! input:
       lv_J_kg, lvS_J_kg, &! output:
       es_hPa, Ea_hPa, VPd_hpa, VPD_Pa, dq, dens_dry, avcp, air_dens)
@@ -42,7 +42,7 @@ CONTAINS
          !  molar         = 0.028965,&          !Dry air molar fraction in kg/mol
          !  molar_wat_vap = 0.0180153,&         !Molar fraction of water vapor in kg/mol
          gas_ct_dry = 8.31451/0.028965, &  !j/kg/k=dry_gas/molar
-         gas_ct_wv = 8.31451/0.0180153 !j/kg/kdry_gas/molar_wat_vap
+         gas_ct_wv = 8.31451/0.0180153 !j/kg/k=dry_gas/molar_wat_vap
       !  waterDens     = 999.8395            !Density of water in 0 cel deg
       INTEGER::from = 1
 
@@ -85,7 +85,7 @@ CONTAINS
          CALL ErrorHint(46, 'Function LUMPS_cal_AtmMoist', press_hPa, -55.55d0, -55)
       ENDIF
       RETURN
-   END SUBROUTINE LUMPS_cal_AtmMoist
+   END SUBROUTINE cal_AtmMoist
 
    !.c!! For Lumps Version 2 - no stability calculations
    !==========================================================
@@ -100,7 +100,7 @@ CONTAINS
    !     L - monin obukhov stability length
    !       Van Ulden & Holtslag (1985) JCAM: 24: 1196-1207
 
-   SUBROUTINE STAB_lumps( &
+   SUBROUTINE cal_Stab( &
       StabilityMethod, &! input
       dectime, & !Decimal time
       zzd, &     !Active measurement height (meas. height-displac. height)
@@ -180,8 +180,8 @@ CONTAINS
          !    !Needs more investigations.
          ! END IF
 
-         psim = stab_psi_mom(StabilityMethod, zL, zL)
-         psimz0 = stab_psi_mom(StabilityMethod, zL, z0L)
+         psim = stab_psi_mom(StabilityMethod, zL)
+         psimz0 = stab_psi_mom(StabilityMethod, z0L)
 
          UStar = KUZ/(LOG(Zzd/z0m) - psim + psimz0) !Friction velocity in non-neutral situation
 
@@ -204,18 +204,18 @@ CONTAINS
       IF (ABS(L_MOD) > 1e6) L_MOD = L_MOD/ABS(L_MOD)*1e6
 
       ! limit zL to be within [-5,2]
-      IF (zL < -5 .OR. zL > 2) THEN
-         zL = MIN(2., MAX(-5., zL))
-         ! limit other output variables as well as z/L
-         L_MOD = zzd/zL
-         z0L = z0m/L_MOD
-         psim = stab_psi_mom(StabilityMethod, zL, zL)
-         psimz0 = stab_psi_mom(StabilityMethod, zL, z0L)
-         ! TS 01 Aug 2018: set a low limit at 0.15 m/s (Schumann 1987, BLM)
-         ! to prevent potential issues in other stability-related calcualtions
-         UStar = MAX(0.15, KUZ/(LOG(Zzd/z0m) - psim + psimz0))
-         TStar = (-H/UStar)
-      END IF
+      ! IF (zL < -5 .OR. zL > 2) THEN
+      !    zL = MIN(2., MAX(-5., zL))
+      !    ! limit other output variables as well as z/L
+      !    L_MOD = zzd/zL
+      !    z0L = z0m/L_MOD
+      !    psim = stab_psi_mom(StabilityMethod, zL, zL)
+      !    psimz0 = stab_psi_mom(StabilityMethod, zL, z0L)
+      !    ! TS 01 Aug 2018: set a low limit at 0.15 m/s (Schumann 1987, BLM)
+      !    ! to prevent potential issues in other stability-related calcualtions
+      !    UStar = MAX(0.15, KUZ/(LOG(Zzd/z0m) - psim + psimz0))
+      !    TStar = (-H/UStar)
+      ! END IF
 
       ! TS: limit UStar and TStar to reasonable values
       ! 02 Aug 2018: set a low limit at 0.15 m/s (Schumann 1987, BLM)
@@ -238,11 +238,11 @@ CONTAINS
       !
       ! end if
 
-   END SUBROUTINE STAB_lumps
+   END SUBROUTINE cal_Stab
 
    !==================================================================
 
-   FUNCTION stab_psi_mom(StabilityMethod, ZL, zl_f) RESULT(psim)
+   FUNCTION stab_psi_mom(StabilityMethod, ZL) RESULT(psim)
       !     StabilityMethod = 1-4 -
       !     psim - stability FUNCTION for momentum
       !Modified by LJ Mar 2010
@@ -258,7 +258,7 @@ CONTAINS
          neut_limit = 0.001000 !Limit for neutral stability
       !  notUsedI=-55
 
-      REAL(KIND(1d0)):: piover2, psim, zl, zl_f, x, x2
+      REAL(KIND(1d0)):: piover2, psim, zl, x, x2
       INTEGER ::StabilityMethod
 
       psim = 0
@@ -270,35 +270,35 @@ CONTAINS
       ELSEIF (zL < -neut_limit) THEN    !Unstable
 
          IF (StabilityMethod == 1) THEN     !    Jensen et al 1984 - Van Ulden & Holtslag (1985) p 1206&
-            psim = ((1.-16.*zl_f)**0.25) - 1
+            psim = ((1.-16.*zl)**0.25) - 1
          ELSEIF (StabilityMethod == 2) THEN !Dyer (1974)(1-16z/L)**.25' k=0.41  mod. Hogstrom (1988)v15.2
-            X = (1.-(15.2*zl_f))**0.25
+            X = (1.-(15.2*zl))**0.25
             X2 = LOG((1 + (X**2.))/2.)
             psim = (2.*LOG((1 + X)/2.)) + X2 - (2.*ATAN(X)) + PIOVER2
          ELSEIF (StabilityMethod == 3) THEN ! Kondo (1975) adopted by Campbell & Norman eqn 7.26 p 97
-            psim = 0.6*(2)*LOG((1 + (1 - 16*zl_f)**0.5)/2)
+            psim = 0.6*(2)*LOG((1 + (1 - 16*zl)**0.5)/2)
          ELSEIF (StabilityMethod == 4) THEN !Businger et al (1971) modifed  Hogstrom (1988)
-            x = (1 - 19.3*zl_f)**(0.25) ! M Nag spotted the wrong exponent, TS corrected this from (1 - 19.3*zl_f)**(-0.25)
+            x = (1 - 19.3*zl)**(0.25) ! M Nag spotted the wrong exponent, TS corrected this from (1 - 19.3*zl_f)**(-0.25)
             X2 = LOG((1 + (X**2.))/2.)
             psim = (2.*LOG((1 + X)/2.)) + X2 - (2.*ATAN(X)) + PIOVER2
          ELSEIF (StabilityMethod == 7) THEN ! Dyer & Bradley (1982) (1-28z/L)**.25' k=0.4
-            X = (1 - (28.*zl_f))**0.25  ! NT: changed + to - (bug -> checked reference)
+            X = (1 - (28.*zl))**0.25  ! NT: changed + to - (bug -> checked reference)
             X2 = LOG((1 + X**2.)/2.)
             psim = (2.*LOG((1 + X)/2.)) + X2 - (2.*ATAN(X)) + PIOVER2
          ELSEIF (StabilityMethod == 5) THEN ! Zilitinkevich & Chalikov (1968) modified Hogstrom (1988)
-            IF (zl_f >= -0.16) THEN
-               x = 1 + 1.38*zl_f
+            IF (zl >= -0.16) THEN
+               x = 1 + 1.38*zl
             ELSE
-               x = 0.42*(-1)*zl_f**0.333
+               x = 0.42*(-1)*zl**0.333
             ENDIF
             X2 = LOG((1 + (X**2.))/2.)
             psim = (2.*LOG((1 + X)/2.)) + X2 - (2.*ATAN(X)) + PIOVER2
 
          ELSEIF (StabilityMethod == 6) THEN !     Foken and Skeib (1983)
-            IF (zl_f >= 0.06) THEN
+            IF (zl >= 0.06) THEN
                x = 1
             ELSE
-               x = ((-1)*zl_f/0.06)**0.25
+               x = ((-1)*zl/0.06)**0.25
             ENDIF
             X2 = LOG((1 + (X**2.))/2.)
             psim = (2.*LOG((1 + X)/2.)) + X2 - (2.*ATAN(X)) + PIOVER2
@@ -307,24 +307,24 @@ CONTAINS
       ELSEIF (zL > neut_limit) THEN            !Stable
 
          IF (StabilityMethod == 1) THEN         !Dyer (1974) k=0.35 x=1+5*zl Mod. Hogstrom (1988)
-            psim = (-4.8)*zl_f
+            psim = (-4.8)*zl
          ELSEIF (StabilityMethod == 2) THEN     !Van Ulden & Holtslag (1985) p 1206
-            IF (zl_f > 1000.) THEN
-               zl_f = 1000.
+            IF (zl > 1000.) THEN
+               zl = 1000.
             END IF
-            psim = (-17.*(1.-EXP(-0.29*zl_f)))
+            psim = (-17.*(1.-EXP(-0.29*zl)))
          ELSEIF (StabilityMethod == 4) THEN ! Businger et al (1971) modifed  Hogstrom (1988)
             ! psim=1+6*zl_f  ! this is NOT the integral form but the stability function, TS 13 Jun 2017
-            psim = (-6)*zl_f   ! this is the integral form, TS 13 Jun 2017
+            psim = (-6)*zl   ! this is the integral form, TS 13 Jun 2017
          ELSEIF (StabilityMethod == 3) THEN ! Kondo (1975) adopted by Campbell & Norman eqn 7.26 p 97
-            psim = (-6)*LOG(1 + zl_f)
+            psim = (-6)*LOG(1 + zl)
 
          ENDIF
       ENDIF
       RETURN
    END FUNCTION stab_psi_mom
 
-   FUNCTION stab_phi_mom(StabilityMethod, ZL, zl_f) RESULT(phim)
+   FUNCTION stab_phi_mom(StabilityMethod, ZL) RESULT(phim)
       !     StabilityMethod = 1-4 -
       !     phi - stability FUNCTION for momentum
       !Modified by NT May 2019 !!!!! check if all are correct!
@@ -337,7 +337,7 @@ CONTAINS
          neut_limit = 0.001000 !Limit for neutral stability
       !  notUsedI=-55
 
-      REAL(KIND(1d0)):: phim, zl, zl_f
+      REAL(KIND(1d0)):: phim, zl
       INTEGER ::StabilityMethod
 
       phim = 0
@@ -347,39 +347,39 @@ CONTAINS
       ELSEIF (zL < -neut_limit) THEN    !Unstable
 
          IF (StabilityMethod == 1) THEN     !    Jensen et al 1984 - Van Ulden & Holtslag (1985) p 1206&
-            phim = ((1.-16.*zl_f)**(-0.25))
+            phim = ((1.-16.*zl)**(-0.25))
          ELSEIF (StabilityMethod == 2) THEN !Dyer (1974)(1-16z/L)**.25' k=0.41  mod. Hogstrom (1988)v15.2
-            phim = (1.-(15.2*zl_f))**(-0.25)
+            phim = (1.-(15.2*zl))**(-0.25)
          ELSEIF (StabilityMethod == 3) THEN ! Kondo (1975) adopted by Campbell & Norman eqn 7.26 p 97
-            phim = ((1.-16.*zl_f)**(-0.25))
+            phim = ((1.-16.*zl)**(-0.25))
          ELSEIF (StabilityMethod == 4) THEN !Businger et al (1971) modifed  Hogstrom (1988)
-            phim = (1.-19.*zl_f)**(-0.25)
+            phim = (1.-19.*zl)**(-0.25)
          ELSEIF (StabilityMethod == 7) THEN ! Dyer & Bradley (1982) (1-28z/L)**.25' k=0.4
-            phim = (1.-(28.*zl_f))**(-0.25)
+            phim = (1.-(28.*zl))**(-0.25)
          ELSEIF (StabilityMethod == 5) THEN ! Zilitinkevich & Chalikov (1968) modified Hogstrom (1988)
-            IF (zl_f >= -0.16) THEN
-               phim = 1 + 1.38*zl_f
+            IF (zl >= -0.16) THEN
+               phim = 1 + 1.38*zl
             ELSE
-               phim = 0.42*(-1)*zl_f*(-0.333)
+               phim = 0.42*(-1)*zl*(-0.333)
             ENDIF
          ELSEIF (StabilityMethod == 6) THEN !     Foken and Skeib (1983)
-            IF (zl_f >= 0.06) THEN
+            IF (zl >= 0.06) THEN
                phim = 1
             ELSE
-               phim = ((-1)*zl_f/0.06)**(-0.25)
+               phim = ((-1)*zl/0.06)**(-0.25)
             ENDIF
          ENDIF
 
       ELSEIF (zL > neut_limit) THEN            !Stable
 
          IF (StabilityMethod == 1) THEN         !Dyer (1974) k=0.35 x=1+5*zl Mod. Hogstrom (1988)
-            phim = 1.+(4.8)*zl_f
+            phim = 1.+(4.8)*zl
          ELSEIF (StabilityMethod == 2) THEN     !Van Ulden & Holtslag (1985) p 1206 ! NT: have no function for phim
-            phim = 1.+(4.8)*zl_f
+            phim = 1.+(4.8)*zl
          ELSEIF (StabilityMethod == 4) THEN ! Businger et al (1971) modifed  Hogstrom (1988)
-            phim = 1 + 6*zl_f
+            phim = 1 + 6*zl
          ELSEIF (StabilityMethod == 3) THEN ! Kondo (1975) adopted by Campbell & Norman eqn 7.26 p 97  !!NT: checked
-            phim = 1.+6.*zl_f/(1.+zl_f)  !!NT: checked reference and updated
+            phim = 1.+6.*zl/(1.+zl)  !!NT: checked reference and updated
          ENDIF
       ENDIF
       RETURN
@@ -387,7 +387,7 @@ CONTAINS
    !_______________________________________________________________
    !
    ! psih - stability function for heat
-   FUNCTION stab_psi_heat(StabilityMethod, ZL, zl_f) RESULT(psih)
+   FUNCTION stab_psi_heat(StabilityMethod, ZL) RESULT(psih)
       ! USE mod_k
       IMPLICIT NONE
       REAL(KIND(1d0)), PARAMETER :: &
@@ -396,7 +396,7 @@ CONTAINS
          neut_limit = 0.001000 !Limit for neutral stability
       !  notUsedI=-55
 
-      REAL(KIND(1d0)):: zl, zl_f, psih, x
+      REAL(KIND(1d0)):: zl, psih, x
       INTEGER :: StabilityMethod
 
       ! initialisation
@@ -408,15 +408,15 @@ CONTAINS
       ELSEIF (zL < -neut_limit) THEN     ! Unstable
          IF (StabilityMethod == 3) THEN
             !campbell & norman eqn 7.26
-            psih = (2)*LOG((1 + (1 - 16*zl_f)**0.5)/2)
+            psih = (2)*LOG((1 + (1 - 16*zl)**0.5)/2)
          ELSE
 
             IF (StabilityMethod == 4) THEN ! Businger et al (1971) modifed  Hogstrom (1988)
-               x = 0.95*(1.-11.6*zl_f)**(0.5)
+               x = 0.95*(1.-11.6*zl)**(0.5)
             ELSEIF (StabilityMethod == 7) THEN
                x = (1 - (28.*ZL))**0.25
             ELSEIF (StabilityMethod == 2) THEN ! Dyer 1974 X=(1.-(16.*ZL))**(0.5)modified Hosgstrom
-               x = 0.95*(1.-15.2*zl_f)**0.5
+               x = 0.95*(1.-15.2*zl)**0.5
             ENDIF
             ! psih = 2*LOG((1 + x**2)/2)  ! NT: do not think this is correct
             psih = 2*LOG((1 + x)/2)
@@ -425,16 +425,16 @@ CONTAINS
       ELSE IF (zL > neut_limit) THEN    !Stable
          IF (zL <= 1) THEN ! weak/moderate stable
             IF (StabilityMethod == 4) THEN !Businger et al (1971) modifed  Hogstrom (1988)
-               psih = (-7.8)*zl_f
+               psih = (-7.8)*zl
             ELSE !Dyer (1974)  psih=(-5)*ZL        modifed  Hogstrom (1988)
-               psih = (-4.5)*Zl_f
+               psih = (-4.5)*zl
             ENDIF
          ELSE
             ! adopt the form as Brutasert (1982) eqn 4.58. but following the coeffs. of the above eqns
             IF (StabilityMethod == 4) THEN !Businger et al (1971) modifed  Hogstrom (1988)
-               psih = (-7.8)*(1 + LOG(zl_f))
+               psih = (-7.8)*(1 + LOG(zl))
             ELSE !Dyer (1974)  psih=(-5)*ZL        modifed  Hogstrom (1988)
-               psih = (-4.5)*(1 + LOG(zl_f))
+               psih = (-4.5)*(1 + LOG(zl))
             ENDIF
          END IF
 
@@ -445,7 +445,7 @@ CONTAINS
    !_______________________________________________________________
    !
    ! Phi - stability function for heat !!!!NT CHECK!!!!
-   FUNCTION stab_phi_heat(StabilityMethod, ZL, zl_f) RESULT(phih)
+   FUNCTION stab_phi_heat(StabilityMethod, ZL) RESULT(phih)
       ! USE mod_k
       IMPLICIT NONE
       REAL(KIND(1d0)), PARAMETER :: &
@@ -454,7 +454,7 @@ CONTAINS
          neut_limit = 0.001000 !Limit for neutral stability
       !  notUsedI=-55
 
-      REAL(KIND(1d0)):: zl, zl_f, phih
+      REAL(KIND(1d0)):: zl, phih
       INTEGER :: StabilityMethod
 
       phih = 0
@@ -464,24 +464,24 @@ CONTAINS
       ELSEIF (zL < -neut_limit) THEN     ! Unstable
          IF (StabilityMethod == 3) THEN
             !campbell & norman eqn 7.26
-            phih = (1.-16.*zl_f)**(-0.5)
+            phih = (1.-16.*zl)**(-0.5)
          ELSE
 
             IF (StabilityMethod == 4) THEN ! Businger et al (1971) modifed  Hogstrom (1988)
-               phih = 0.95*(1.-11.6*zl_f)**(-0.5)
+               phih = 0.95*(1.-11.6*zl)**(-0.5)
             ELSEIF (StabilityMethod == 7) THEN
                phih = (1 - (28.*ZL))**(-0.25)
             ELSEIF (StabilityMethod == 2) THEN ! Dyer 1974 X=(1.-(16.*ZL))**(0.5)modified Hosgstrom
-               phih = 0.95*(1.-15.2*zl_f)**(-0.5)
+               phih = 0.95*(1.-15.2*zl)**(-0.5)
             ENDIF
          ENDIF
 
       ELSE IF (zL > neut_limit) THEN    !Stable
          IF (StabilityMethod == 4) THEN !Businger et al (1971) modifed  Hogstrom (1988)
             ! psih=0.95+(7.8*zl_f) ! this is NOT the integral form but the stability function, TS 13 Jun 2017
-            phih = 1.+7.8*zl_f   ! this is the integral form, TS 13 Jun 2017
+            phih = 1.+7.8*zl   ! this is the integral form, TS 13 Jun 2017
          ELSE !Dyer (1974)  psih=(-5)*ZL        modifed  Hogstrom (1988)
-            phih = 1.+4.5*Zl_f
+            phih = 1.+4.5*zl
          ENDIF
 
       ENDIF

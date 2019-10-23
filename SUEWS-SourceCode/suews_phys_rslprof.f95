@@ -4,17 +4,20 @@ module rsl_module
 contains
 
    SUBROUTINE RSLProfile( &
-      UStar, L_MOD, sfr, Zh, planF, StabilityMethod, Temp_C, avRH, Press_hPa, zMeas, TStar, qe, &  ! input
+      UStar, L_MOD, sfr, Zh, planF, StabilityMethod, &
+      avcp, lv_J_kg, &
+      Temp_C, avRH, Press_hPa, zMeas, qh, qe, &  ! input
       dataoutLineRSL) ! output
       !-----------------------------------------------------
       ! calculates windprofiles using MOST with a RSL-correction
       ! based on Harman & Finnigan 2007
       !
       ! last modified by:
-      ! NT 03/2019
+      ! NT 16 Mar 2019
+      ! TS 16 Oct 2019: improved consistency in parameters/varaibles within SUEWS
       !
       !-----------------------------------------------------
-      USE AtmMoistStab_module, ONLY: STAB_lumps, stab_psi_mom, stab_psi_heat, stab_phi_mom, stab_phi_heat
+      USE AtmMoistStab_module, ONLY: cal_Stab, stab_psi_mom, stab_psi_heat, stab_phi_mom, stab_phi_heat
       USE meteo, ONLY: RH2qa
 
       IMPLICIT NONE
@@ -30,8 +33,11 @@ contains
       REAL(KIND(1d0)), INTENT(in):: Press_hPa ! pressure at forcing height [hPa]
       REAL(KIND(1d0)), INTENT(in):: UStar  ! Friction velocity [m s-1]
       REAL(KIND(1d0)), INTENT(in):: L_MOD  ! Obukhov length [m]
-      REAL(KIND(1d0)), INTENT(in):: TStar  ! Temperature scale[K]
-      REAL(KIND(1d0)), INTENT(in):: qe     ! Latent heat flux[W m-2]
+      REAL(KIND(1d0)), INTENT(in):: avcp  ! specific heat capacity [J kg-1 K-1]
+      REAL(KIND(1d0)), INTENT(in):: qh  ! sensible heat flux [W m-2]
+      ! REAL(KIND(1d0)), INTENT(in):: TStar  ! Temperature scale [K]
+      REAL(KIND(1d0)), INTENT(in):: lv_J_kg  ! Latent heat of vaporization in [J kg-1]
+      REAL(KIND(1d0)), INTENT(in):: qe     ! Latent heat flux [W m-2]
       REAL(KIND(1d0)), INTENT(in):: Zh     ! Mean building height [m]
       REAL(KIND(1d0)), INTENT(in):: planF  ! Frontal area index [-]
       INTEGER, INTENT(in)::StabilityMethod
@@ -39,7 +45,7 @@ contains
       REAL(KIND(1d0)), PARAMETER:: cd_tree = 1.2, & ! drag coefficient tree canopy !!!!needs adjusting!!!
                                    a_tree = 0.05, & ! the foliage area per unit volume !!!!needs adjusting!!!
                                    kappa = 0.40, &! von karman constant
-                                   lv = 2.5E6, &! latent heat for water vapor!!! make consistant with rest of code
+                                   !   lv_J_kg = 2.5E6, &! latent heat for water vapor!!! make consistant with rest of code
                                    beta_N = 0.40, &  ! H&F beta coefficient in neutral conditions from Theeuwes et al., 2019 BLM
                                    pi = 4.*ATAN(1.0), r = 0.1, &
                                    a1 = 4., a2 = -0.1, a3 = 1.5, a4 = -1. ! constraints to determine beta
@@ -63,7 +69,8 @@ contains
                         xx1, xx1_2, xxh1, xxh1_2, err, z01, dphi, dphih, &  ! dummy variables for stability functions
                         z0, &  ! roughness length from H&F
                         f, cm, c2, ch, c2h, & ! H&F'07 and H&F'08 'constants'
-                        th, qh, & ! H&F'08 canopy corrections
+                        t_h, q_h, & ! H&F'08 canopy corrections
+                        TStar, &
                         qa_gkg, qStar ! specific humidity scale
       INTEGER :: I, z, it, idx_can, idx_za
       !
@@ -99,7 +106,7 @@ contains
          dif(z) = ABS(zarray(z) - Zh)
       ENDDO
       idx_can = MINLOC(dif, DIM=1)
-      phim = stab_phi_mom(StabilityMethod, Lc/L_MOD, Lc/L_MOD)
+      phim = stab_phi_mom(StabilityMethod, Lc/L_MOD)
       !
       ! Step 2:
       ! Parameterise beta according to Harman 2012 with upper limit of 0.5
@@ -129,14 +136,14 @@ contains
       !
       ! Step 3:
       !
-      psimZh = stab_psi_mom(StabilityMethod, (Zh - zd)/L_MOD, (Zh - zd)/L_MOD)
+      psimZh = stab_psi_mom(StabilityMethod, (Zh - zd)/L_MOD)
 
       ! calculate phihatM according to H&F '07 and H&F '08 for heat and humidity
-      xx1 = stab_phi_mom(StabilityMethod, (Zh - zd)/L_MOD, (Zh - zd)/L_MOD)
-      xx1_2 = stab_phi_mom(StabilityMethod, (Zh - zd + 1.)/L_MOD, (Zh - zd + 1.)/L_MOD)
+      xx1 = stab_phi_mom(StabilityMethod, (Zh - zd)/L_MOD)
+      xx1_2 = stab_phi_mom(StabilityMethod, (Zh - zd + 1.)/L_MOD)
 
-      xxh1 = stab_phi_heat(StabilityMethod, (Zh - zd)/L_MOD, (Zh - zd)/L_MOD)
-      xxh1_2 = stab_phi_heat(StabilityMethod, (Zh - zd + 1.)/L_MOD, (Zh - zd + 1.)/L_MOD)
+      xxh1 = stab_phi_heat(StabilityMethod, (Zh - zd)/L_MOD)
+      xxh1_2 = stab_phi_heat(StabilityMethod, (Zh - zd + 1.)/L_MOD)
 
       phi_hatmZh = kappa/(2.*beta*xx1)
       phi_hathZh = kappa*Scc/(2.*beta*xxh1)
@@ -157,10 +164,10 @@ contains
       !
       psihat_z = 0.*zarray
       DO z = nz - 1, idx_can - 1, -1
-         phimz = stab_phi_mom(StabilityMethod, (zarray(z) - zd)/L_MOD, (zarray(z) - zd)/L_MOD)
-         phimzp = stab_phi_mom(StabilityMethod, (zarray(z + 1) - zd)/L_MOD, (zarray(z + 1) - zd)/L_MOD)
-         phihz = stab_phi_heat(StabilityMethod, (zarray(z) - zd)/L_MOD, (zarray(z) - zd)/L_MOD)
-         phihzp = stab_phi_heat(StabilityMethod, (zarray(z + 1) - zd)/L_MOD, (zarray(z + 1) - zd)/L_MOD)
+         phimz = stab_phi_mom(StabilityMethod, (zarray(z) - zd)/L_MOD)
+         phimzp = stab_phi_mom(StabilityMethod, (zarray(z + 1) - zd)/L_MOD)
+         phihz = stab_phi_heat(StabilityMethod, (zarray(z) - zd)/L_MOD)
+         phihzp = stab_phi_heat(StabilityMethod, (zarray(z + 1) - zd)/L_MOD)
 
          psihat_z(z) = psihat_z(z + 1) + dz/2.*phimzp*(cm*EXP(-1.*c2*beta*(zarray(z + 1) - zd)/elm)) &  !Taylor's approximation for integral
                        /(zarray(z + 1) - zd)
@@ -180,24 +187,25 @@ contains
       psimz0 = 0.5
       it = 1
       DO WHILE ((err > 0.001) .AND. (it < 10))
-         psimz0 = stab_psi_mom(StabilityMethod, z0/L_MOD, z0/L_MOD)
+         psimz0 = stab_psi_mom(StabilityMethod, z0/L_MOD)
          z01 = z0
          z0 = (Zh - zd)*EXP(-1.*kappa/beta)*EXP(-1.*psimZh + psimz0)*EXP(psihat_z(idx_can))
          err = ABS(z01 - z0)
          it = it + 1
       ENDDO
 
-      psimz0 = stab_psi_mom(StabilityMethod, z0/L_MOD, z0/L_MOD)
-      psihza = stab_psi_heat(StabilityMethod, (zMeas - zd)/L_MOD, (zMeas - zd)/L_MOD)
-      qStar = -1.*(qe/lv)/UStar
+      psimz0 = stab_psi_mom(StabilityMethod, z0/L_MOD)
+      psihza = stab_psi_heat(StabilityMethod, (zMeas - zd)/L_MOD)
+      TStar = -1.*(qh/(avcp))/UStar
+      qStar = -1.*(qe/lv_J_kg)/UStar
       qa_gkg = RH2qa(avRH/100, Press_hPa, Temp_c)
       !
       ! Step 6
       ! calculate above canopy wind speed
       !
       DO z = idx_can, nz
-         psimz = stab_psi_mom(StabilityMethod, (zarray(z) - zd)/L_MOD, (zarray(z) - zd)/L_MOD)
-         psihz = stab_psi_heat(StabilityMethod, (zarray(z) - zd)/L_MOD, (zarray(z) - zd)/L_MOD)
+         psimz = stab_psi_mom(StabilityMethod, (zarray(z) - zd)/L_MOD)
+         psihz = stab_psi_heat(StabilityMethod, (zarray(z) - zd)/L_MOD)
          dataoutLineURSL(z) = (LOG((zarray(z) - zd)/z0) - psimz + psimz0 - psihat_z(z) + psihat_z(idx_can))/kappa
          dataoutLineTRSL(z) = (LOG((zarray(z) - zd)/(zMeas - zd)) - psihz + psihza + psihath_z(z) - psihath_z(idx_za - 1))/kappa
          dataoutLineqRSL(z) = (LOG((zarray(z) - zd)/(zMeas - zd)) - psihz + psihza + psihath_z(z) - psihath_z(idx_za - 1))/kappa
@@ -206,12 +214,12 @@ contains
       ! Step 7
       ! calculate in canopy wind speed
       !
-      th = Scc*TStar/(beta*f)
-      qh = Scc*qStar/(beta*f)
+      t_h = Scc*TStar/(beta*f)
+      q_h = Scc*qStar/(beta*f)
       DO z = 1, idx_can
          dataoutLineURSL(z) = dataoutLineURSL(idx_can)*EXP(beta*(zarray(z) - Zh)/elm)
-         dataoutLineTRSL(z) = ((dataoutLineTRSL(idx_can)*TStar) + th*EXP(beta*f*(zarray(z) - Zh)/elm) - th)/TStar
-         dataoutLineqRSL(z) = ((dataoutLineqRSL(idx_can)*qStar) + qh*EXP(beta*f*(zarray(z) - Zh)/elm) - qh)/qStar
+         dataoutLineTRSL(z) = ((dataoutLineTRSL(idx_can)*TStar) + t_h*EXP(beta*f*(zarray(z) - Zh)/elm) - t_h)/TStar
+         dataoutLineqRSL(z) = ((dataoutLineqRSL(idx_can)*qStar) + q_h*EXP(beta*f*(zarray(z) - Zh)/elm) - q_h)/qStar
       ENDDO
 
       dataoutLineURSL = dataoutLineURSL*UStar

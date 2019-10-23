@@ -5,7 +5,7 @@
 ! TS 03 Oct 2017: added `SUEWS_cal_AnthropogenicEmission`
 MODULE SUEWS_Driver
    USE meteo, ONLY: qsatf, RH2qa, qa2RH
-   USE AtmMoistStab_module, ONLY: LUMPS_cal_AtmMoist, STAB_lumps, stab_psi_heat, stab_psi_mom
+   USE AtmMoistStab_module, ONLY: cal_AtmMoist, cal_Stab, stab_psi_heat, stab_psi_mom
    USE NARP_MODULE, ONLY: NARP_cal_SunPosition
    USE AnOHM_module, ONLY: AnOHM
    USE resist_module, ONLY: AerodynamicResistance, BoundaryLayerResistance, SurfaceResistance, &
@@ -63,7 +63,7 @@ CONTAINS
       PopDensNighttime, PopProf_24hr, PorMax_dec, PorMin_dec, &
       Precip, PrecipLimit, PrecipLimitAlb, Press_hPa, &
       QF0_BEU, Qf_A, Qf_B, Qf_C, &
-      qn1_obs, qh_obs, qs_obs, qf_obs, &
+      qn1_obs, qs_obs, qf_obs, &
       RadMeltFact, RAINCOVER, RainMaxRes, resp_a, resp_b, &
       RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
       SatHydraulicConduct, SDDFull, SDD_id, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
@@ -176,7 +176,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::PrecipLimit
       REAL(KIND(1D0)), INTENT(IN)::PrecipLimitAlb
       REAL(KIND(1D0)), INTENT(IN)::Press_hPa
-      REAL(KIND(1D0)), INTENT(IN)::qh_obs
+      ! REAL(KIND(1D0)), INTENT(IN)::qh_obs
       REAL(KIND(1D0)), INTENT(IN)::qn1_obs
       REAL(KIND(1D0)), INTENT(IN)::qs_obs
       REAL(KIND(1D0)), INTENT(IN)::qf_obs
@@ -356,7 +356,7 @@ CONTAINS
       REAL(KIND(1d0))::deltaLAI
       REAL(KIND(1D0))::drain_per_tstep
       REAL(KIND(1D0))::Ea_hPa
-      REAL(KIND(1D0))::E_mod
+      REAL(KIND(1D0))::QE_LUMPS
       REAL(KIND(1D0))::es_hPa
       ! REAL(KIND(1D0))::ev
       REAL(KIND(1D0))::ev_per_tstep
@@ -374,7 +374,7 @@ CONTAINS
       ! REAL(KIND(1D0))::fwh
       REAL(KIND(1D0))::gfunc
       REAL(KIND(1D0))::gsc
-      REAL(KIND(1D0))::H_mod
+      REAL(KIND(1D0))::QH_LUMPS
       REAL(KIND(1D0))::int_wu
       REAL(KIND(1D0))::kclear
       REAL(KIND(1D0))::kup
@@ -573,8 +573,10 @@ CONTAINS
       ! REAL(KIND(1d0)), DIMENSION(nz):: zarrays ! Height array
 
       ! flag for Tsurf convergence
-      logical:: flag_ts_converge
+      logical:: flag_converge
       REAL(KIND(1D0)):: Ts_iter
+      REAL(KIND(1D0)):: L_mod_iter
+      REAL(KIND(1D0)):: QH_Init
       INTEGER::i_iter
 
       ! ########################################################################################
@@ -643,39 +645,13 @@ CONTAINS
       !########################################################################################
       !           main calculation starts here
       !########################################################################################
-      flag_ts_converge = .false.
+
+      ! iteration is used below to get results converge
+      flag_converge = .false.
       Ts_iter = TEMP_C
+      L_mod_iter = 10
       i_iter = 1
-      ! print *,'---------------------------------------------------------------------------'
-      do while (.not. flag_ts_converge)
-         ! print *,'at beginning of iteration',i_iter
-         ! print *,'Ts_iter: ',Ts_iter
-         ! print *,'Ts_iter: ',Ts_iter
-         ! print *,'prev values: ',qn1_av_prev,&
-         !       dqndt_prev,&
-         !       qn1_s_av_prev,&
-         !       dqnsdt_prev,&
-         !       SnowfallCum_prev,&
-         !       SnowAlb_prev,&
-         !       IceFrac_prev,&
-         !       SnowWater_prev,&
-         !       SnowDens_prev,&
-         !       SnowFrac_prev,&
-         !       SnowPack_prev,&
-         !       soilstore_id_prev,&
-         !       state_id_prev,&
-         !       Tair_av_prev,&
-         !       LAI_id_prev,&
-         !       GDD_id_prev,&
-         !       StoreDrainPrm_prev,&
-         !       DecidCap_id_prev,&
-         !       porosity_id_prev,&
-         !       alb_prev,&
-         !       albDecTr_id_prev,&
-         !       albEveTr_id_prev,&
-         !       albGrass_id_prev,&
-         !       HDD_id_prev,&
-         !       WUDay_id_prev
+      do while (.not. flag_converge)
 
          ! calculate dectime
          CALL SUEWS_cal_dectime( &
@@ -750,7 +726,7 @@ CONTAINS
 
          !=================Calculation of density and other water related parameters=================
          IF (Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_AtmMoist...'
-         CALL LUMPS_cal_AtmMoist( &
+         CALL cal_AtmMoist( &
             Temp_C, Press_hPa, avRh, dectime, &! input:
             lv_J_kg, lvS_J_kg, &! output:
             es_hPa, Ea_hPa, VPd_hpa, VPD_Pa, dq, dens_dry, avcp, avdens)
@@ -837,14 +813,22 @@ CONTAINS
 
          !==========================Turbulent Fluxes================================
          IF (Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_QHQE...'
-         !Calculate QH and QE from LUMPS
-         CALL LUMPS_cal_QHQE( &
-            veg_type, & !input
-            snowUse, qn1, qf, qs, Qm, Temp_C, Veg_Fr, avcp, Press_hPa, lv_J_kg, &
-            tstep_real, DRAINRT, nsh_real, &
-            Precip, RainMaxRes, RAINCOVER, sfr, LAI_id_next, LAImax, LAImin, &
-            H_mod, & !output
-            E_mod, psyc_hPa, s_hPa, sIce_hpa, TempVeg, VegPhenLumps)
+         if (i_iter == 1) then
+            !Calculate QH and QE from LUMPS in the first iteration of each time step
+            CALL LUMPS_cal_QHQE( &
+               veg_type, & !input
+               snowUse, qn1, qf, qs, Qm, Temp_C, Veg_Fr, avcp, Press_hPa, lv_J_kg, &
+               tstep_real, DRAINRT, nsh_real, &
+               Precip, RainMaxRes, RAINCOVER, sfr, LAI_id_next, LAImax, LAImin, &
+               QH_LUMPS, & !output
+               QE_LUMPS, psyc_hPa, s_hPa, sIce_hpa, TempVeg, VegPhenLumps)
+
+            ! use LUMPS QH to do stability correction
+            QH_Init = QH_LUMPS
+         else
+            ! use SUEWS QH to do stability correction
+            QH_Init = QH
+         end if
 
          !============= calculate water balance =============
          CALL SUEWS_cal_Water( &
@@ -862,7 +846,7 @@ CONTAINS
             StabilityMethod, &!input:
             Diagnose, AerodynamicResistanceMethod, RoughLenHeatMethod, snowUse, &
             id, it, gsModel, SMDMethod, &
-            qh_obs, avdens, avcp, h_mod, qn1, dectime, zzd, z0m, zdm, &
+            avdens, avcp, QH_Init, qn1, dectime, zzd, z0m, zdm, &
             avU1, Temp_C, VegFraction, avkdn, &
             Kmax, &
             g1, g2, g3, g4, &
@@ -944,8 +928,9 @@ CONTAINS
          IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Diagnostics...'
          CALL RSLProfile( &
             UStar, &!input
-            L_mod, sfr, Zh, planF, &
-            StabilityMethod, Temp_C, avRh, Press_hPa, z, TStar, qe, &
+            L_mod, sfr, Zh, planF, StabilityMethod, &
+            avcp, lv_J_kg, &
+            Temp_C, avRh, Press_hPa, z, qh, qe, &
             dataoutLineRSL)!output
 
          !============ surface-level diagonostics end ===============
@@ -960,25 +945,21 @@ CONTAINS
             Fc, Fc_biogen, Fc_photo, Fc_respi)! output:
 
          ! force quit do-while, i.e., skip iteration and use NARP for Tsurf calculation
-         if (NetRadiationMethod < 10 .or. NetRadiationMethod > 100) exit
+         ! if (NetRadiationMethod < 10 .or. NetRadiationMethod > 100) exit
 
-         ! Test if surface temperatures from QN and surface diagonostics converge
-         ! print*,'iteration', i_iter
-         ! print*,'tsurf',tsurf
-         ! print*,'tskin_C',tskin_C
-         ! print*,'diff',tsurf-tskin_C
-
+         ! Test if sensible heat fluxes converge in iterations
          i_iter = i_iter + 1
-         if (abs(tskin_C - tsurf) > 0.01) then
-            flag_ts_converge = .false.
+         if (abs(QH - QH_Init) > 0.1) then
+            flag_converge = .false.
          else
-            flag_ts_converge = .true.
+            flag_converge = .true.
          end if
 
          ! force quit do-while loop if not convergent after 100 iterations
          if (i_iter > 100) exit
 
          Ts_iter = tskin_C
+         l_mod_iter = l_mod
 
          !==============main calculation end=======================
       ENDDO ! end iteration for tsurf calculations
@@ -1020,9 +1001,9 @@ CONTAINS
       CALL SUEWS_update_outputLine( &
          AdditionalWater, alb, avkdn, avU10_ms, azimuth, &!input
          chSnow_per_interval, dectime, &
-         drain_per_tstep, E_mod, ev_per_tstep, ext_wu, Fc, Fc_build, fcld, &
+         drain_per_tstep, QE_LUMPS, ev_per_tstep, ext_wu, Fc, Fc_build, fcld, &
          Fc_metab, Fc_photo, Fc_respi, Fc_point, Fc_traff, FlowChange, &
-         h_mod, id, imin, int_wu, it, iy, &
+         QH_LUMPS, id, imin, int_wu, it, iy, &
          kup, LAI_id, ldown, l_mod, lup, mwh, &
          MwStore, &
          nsh_real, NWstate_per_tstep, Precip, q2_gkg, &
@@ -1265,7 +1246,7 @@ CONTAINS
                t2 = t2_C
             ENDIF
 
-            CALL LUMPS_cal_AtmMoist( &
+            CALL cal_AtmMoist( &
                t2, Press_hPa, avRh, dectime, &! input:
                dummy1, dummy2, &! output:
                dummy3, dummy4, dummy5, dummy6, dq, dummy7, dummy8, dummy9)
@@ -1724,11 +1705,11 @@ CONTAINS
 
    !===============initialize sensible heat flux============================
    SUBROUTINE SUEWS_init_QH( &
-      qh_obs, avdens, avcp, h_mod, qn1, dectime, &!input
+      avdens, avcp, h_mod, qn1, dectime, &!input
       H_init)!output
 
       IMPLICIT NONE
-      REAL(KIND(1d0)), INTENT(in)::qh_obs
+      ! REAL(KIND(1d0)), INTENT(in)::qh_obs
       REAL(KIND(1d0)), INTENT(in)::avdens
       REAL(KIND(1d0)), INTENT(in)::avcp
       REAL(KIND(1d0)), INTENT(in)::h_mod
@@ -1740,16 +1721,16 @@ CONTAINS
       INTEGER, PARAMETER::notUsedI = -999
 
       ! Calculate kinematic heat flux (w'T') from sensible heat flux [W m-2] from observed data (if available) or LUMPS
-      IF (qh_obs /= NAN) THEN   !if(qh_obs/=NAN) qh=qh_obs   !Commented out by HCW 04 Mar 2015
-         H_init = qh_obs/(avdens*avcp)  !Use observed value
+      ! IF (qh_obs /= NAN) THEN   !if(qh_obs/=NAN) qh=qh_obs   !Commented out by HCW 04 Mar 2015
+      !    H_init = qh_obs/(avdens*avcp)  !Use observed value
+      ! ELSE
+      IF (h_mod /= NAN) THEN
+         H_init = h_mod/(avdens*avcp)   !Use LUMPS value
       ELSE
-         IF (h_mod /= NAN) THEN
-            H_init = h_mod/(avdens*avcp)   !Use LUMPS value
-         ELSE
-            H_init = (qn1*0.2)/(avdens*avcp)   !If LUMPS has had a problem, we still need a value
-            CALL ErrorHint(38, 'LUMPS unable to calculate realistic value for H_mod.', h_mod, dectime, notUsedI)
-         ENDIF
+         H_init = (qn1*0.2)/(avdens*avcp)   !If LUMPS has had a problem, we still need a value
+         CALL ErrorHint(38, 'LUMPS unable to calculate realistic value for H_mod.', h_mod, dectime, notUsedI)
       ENDIF
+      ! ENDIF
 
    END SUBROUTINE SUEWS_init_QH
    !========================================================================
@@ -2147,7 +2128,7 @@ CONTAINS
       StabilityMethod, &!input:
       Diagnose, AerodynamicResistanceMethod, RoughLenHeatMethod, snowUse, &
       id, it, gsModel, SMDMethod, &
-      qh_obs, avdens, avcp, h_mod, qn1, dectime, zzd, z0m, zdm, &
+      avdens, avcp, QH_init, qn1, dectime, zzd, z0m, zdm, &
       avU1, Temp_C, VegFraction, &
       avkdn, Kmax, G1, G2, G3, G4, G5, G6, S1, S2, TH, TL, dq, &
       xsmd, vsmd, MaxConductance, LAIMax, LAI_id, SnowFrac, sfr, &
@@ -2166,10 +2147,10 @@ CONTAINS
       INTEGER, INTENT(in)::gsModel  !Choice of gs parameterisation (1 = Ja11, 2 = Wa16)
       INTEGER, INTENT(in)::SMDMethod!Method of measured soil moisture
 
-      REAL(KIND(1d0)), INTENT(in)::qh_obs
+      ! REAL(KIND(1d0)), INTENT(in)::qh_obs
       REAL(KIND(1d0)), INTENT(in)::avdens
       REAL(KIND(1d0)), INTENT(in)::avcp
-      REAL(KIND(1d0)), INTENT(in)::h_mod
+      REAL(KIND(1d0)), INTENT(in)::QH_init
       REAL(KIND(1d0)), INTENT(in)::qn1
       REAL(KIND(1d0)), INTENT(in)::dectime    !Decimal time
       REAL(KIND(1d0)), INTENT(in)::zzd        !Active measurement height (meas. height-displac. height)
@@ -2216,22 +2197,22 @@ CONTAINS
 
       ! Get first estimate of sensible heat flux. Modified by HCW 26 Feb 2015
       CALL SUEWS_init_QH( &
-         qh_obs, avdens, avcp, h_mod, qn1, dectime, &
+         avdens, avcp, QH_init, qn1, dectime, &
          H_init)
 
       IF (Diagnose == 1) WRITE (*, *) 'Calling STAB_lumps...'
       !u* and Obukhov length out
-      CALL STAB_lumps( &
+      CALL cal_Stab( &
          StabilityMethod, &  ! input
          dectime, & !Decimal time
          zzd, &     !Active measurement height (meas. height-displac. height)
          z0m, &     !Aerodynamic roughness length
-         zdm, &     !Displacement height
+         zdm, &     !zero-plane displacement
          avU1, &    !Average wind speed
          Temp_C, &  !Air temperature
          H_init, & !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
          L_mod, &! output: !Obukhov length
-         TStar, & !T*
+         TStar, & !T*, temperature scale
          UStar, & !Friction velocity
          zL)!Stability scale
 
@@ -2274,7 +2255,7 @@ CONTAINS
 
       IF (Diagnose == 1) WRITE (*, *) 'Calling BoundaryLayerResistance...'
       CALL BoundaryLayerResistance( &
-         zzd, &! input:     !Active measurement height (meas. height-displac. height)
+         zzd, &! input:     !Active measurement height (meas. height- zero-plane displacement)
          z0m, &     !Aerodynamic roughness length
          avU1, &    !Average wind speed
          UStar, &  ! input/output:
@@ -2661,11 +2642,11 @@ CONTAINS
 
       ! get !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
       CALL SUEWS_init_QH( &
-         qh, avdens, avcp, qh, 0d0, dectime, & ! use qh as qh_obs to initialise H_init
+         avdens, avcp, qh, 0d0, dectime, & ! use qh as qh_obs to initialise H_init
          H_kms)!output
 
       ! redo the calculation for stability correction
-      CALL STAB_lumps( &
+      CALL cal_Stab( &
          ! input
          StabilityMethod, &
          dectime, & !Decimal time
@@ -2688,13 +2669,13 @@ CONTAINS
 
       ! stability correction functions
       ! momentum:
-      psimzDiag = stab_psi_mom(StabilityMethod, zDiagzd/L_mod, zDiagzd/L_mod)
+      psimzDiag = stab_psi_mom(StabilityMethod, zDiagzd/L_mod)
       ! psimz2=stab_fn_mom(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
-      psimz0 = stab_psi_mom(StabilityMethod, z0m/L_mod, z0m/L_mod)
+      psimz0 = stab_psi_mom(StabilityMethod, z0m/L_mod)
 
       ! heat and vapor: assuming both are the same
       ! psihz2=stab_fn_heat(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
-      psihz0 = stab_psi_heat(StabilityMethod, z0h/L_mod, z0h/L_mod)
+      psihz0 = stab_psi_heat(StabilityMethod, z0h/L_mod)
 
       !***************************************************************
       SELECT CASE (opt)
@@ -2703,8 +2684,8 @@ CONTAINS
 
          ! stability correction functions
          ! momentum:
-         psimzDiag = stab_psi_mom(StabilityMethod, zDiagzd/L_mod, zDiagzd/L_mod)
-         psimz0 = stab_psi_mom(StabilityMethod, z0m/L_mod, z0m/L_mod)
+         psimzDiag = stab_psi_mom(StabilityMethod, zDiagzd/L_mod)
+         psimz0 = stab_psi_mom(StabilityMethod, z0m/L_mod)
          xDiag = UStar/k*(LOG(zDiagzd/z0m) - psimzDiag + psimz0) ! Brutsaert (2005), p51, eq.2.54
 
       CASE (1) ! temperature at hgtX=2 m
@@ -2712,8 +2693,8 @@ CONTAINS
          zDiagzd = zDiag + z0h! set lower limit as z0h to prevent arithmetic error, zd=0
 
          ! heat and vapor: assuming both are the same
-         psihzMeas = stab_psi_heat(StabilityMethod, zMeaszd/L_mod, zMeaszd/L_mod)
-         psihzDiag = stab_psi_heat(StabilityMethod, zDiagzd/L_mod, zDiagzd/L_mod)
+         psihzMeas = stab_psi_heat(StabilityMethod, zMeaszd/L_mod)
+         psihzDiag = stab_psi_heat(StabilityMethod, zDiagzd/L_mod)
          ! psihz0=stab_fn_heat(StabilityMethod,z0h/L_mod,z0h/L_mod)
          xDiag = xMeas + xFlux/(k*UStar*avdens*avcp)*(LOG(zMeaszd/zDiagzd) - (psihzMeas - psihzDiag)) ! Brutsaert (2005), p51, eq.2.55
          !  IF ( ABS((LOG(z2zd/z0h)-psihz2+psihz0))>10 ) THEN
@@ -2742,8 +2723,8 @@ CONTAINS
          zDiagzd = zDiag + z0h! set lower limit as z0h to prevent arithmetic error, zd=0
 
          ! heat and vapor: assuming both are the same
-         psihzMeas = stab_psi_heat(StabilityMethod, zMeaszd/L_mod, zMeaszd/L_mod)
-         psihzDiag = stab_psi_heat(StabilityMethod, zDiagzd/L_mod, zDiagzd/L_mod)
+         psihzMeas = stab_psi_heat(StabilityMethod, zMeaszd/L_mod)
+         psihzDiag = stab_psi_heat(StabilityMethod, zDiagzd/L_mod)
          ! psihz0=stab_fn_heat(StabilityMethod,z0h/L_mod,z0h/L_mod)
 
          xDiag = xMeas + xFlux/(k*UStar*avdens*tlv)*(LOG(zMeaszd/zDiagzd) - (psihzMeas - psihzDiag)) ! Brutsaert (2005), p51, eq.2.56
@@ -3458,7 +3439,7 @@ CONTAINS
             PopDensNighttime, PopProf_24hr, PorMax_dec, PorMin_dec, &
             Precip, PrecipLimit, PrecipLimitAlb, Press_hPa, &
             QF0_BEU, Qf_A, Qf_B, Qf_C, &
-            qn1_obs, qh_obs, qs_obs, qf_obs, &
+            qn1_obs, qs_obs, qf_obs, &
             RadMeltFact, RAINCOVER, RainMaxRes, resp_a, resp_b, &
             RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
             SatHydraulicConduct, SDDFull, SDD_id, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
@@ -3479,13 +3460,7 @@ CONTAINS
          ! update dt_since_start_x for next iteration, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018
          dt_since_start = dt_since_start + tstep
 
-         !============ update and write out SUEWS_cal_DailyState ===============
-         ! only works at the last timestep of a day
-         ! CALL SUEWS_update_DailyState(&
-         !      id, datetimeLine, &!input
-         !      Gridiv, 1, &
-         !      DailyStateLine, &
-         !      DailyStateBlock_X)!inout
+         !============ update DailyStateBlock ===============
          DailyStateBlock(ir, :) = [datetimeLine, DailyStateLine]
 
          !============ write out results ===============

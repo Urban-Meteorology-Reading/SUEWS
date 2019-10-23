@@ -420,7 +420,7 @@ CONTAINS
       REAL(KIND(1D0))::surf_chang_per_tstep
       REAL(KIND(1D0))::swe
       REAL(KIND(1D0))::t2_C
-      REAL(KIND(1D0))::tskin_C
+      REAL(KIND(1D0))::tsfc_C
       REAL(KIND(1D0))::TempVeg
       REAL(KIND(1D0))::tot_chang_per_tstep
       REAL(KIND(1D0))::TStar
@@ -923,15 +923,19 @@ CONTAINS
          !    qh, qe, &
          !    VegFraction, z, z0m, zdm, RA, avdens, avcp, lv_J_kg, tstep_real, &
          !    RoughLenHeatMethod, StabilityMethod, &
-         !    U10_ms, t2_C, q2_gkg, tskin_C, RH2)!output
+         !    U10_ms, t2_C, q2_gkg, tsfc_C, RH2)!output
 
-         IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Diagnostics...'
+         !============ roughness sub-layer diagonostics ===============
+         IF (Diagnose == 1) WRITE (*, *) 'Calling RSLProfile...'
          CALL RSLProfile( &
-      UStar, L_MOD, sfr, Zh, planF, StabilityMethod, &
-      avcp, lv_J_kg, &
-      Temp_C, avRH, Press_hPa, z, qh, qe, &  ! input
-      T2_C,q2_gkg,U10_ms,RH2,& !output
-      dataoutLineRSL) ! output
+            UStar, L_MOD, sfr, Zh, planF, StabilityMethod, &
+            avcp, lv_J_kg, &
+            Temp_C, avRH, Press_hPa, z, qh, qe, &  ! input
+            T2_C,q2_gkg,U10_ms,RH2,& !output
+            dataoutLineRSL) ! output
+
+         ! diagnose surface temperature
+         tsfc_C = cal_tsfc(qh, avdens, avcp, RA, temp_c)
 
          !============ surface-level diagonostics end ===============
 
@@ -958,7 +962,7 @@ CONTAINS
          ! force quit do-while loop if not convergent after 100 iterations
          if (i_iter > 100) exit
 
-         Ts_iter = tskin_C
+         Ts_iter = tsfc_C
          l_mod_iter = l_mod
 
          !==============main calculation end=======================
@@ -1012,7 +1016,7 @@ CONTAINS
          resistsurf, RH2, runoffAGimpervious, runoffAGveg, &
          runoff_per_tstep, runoffPipes, runoffSoil_per_tstep, &
          runoffWaterBody, sfr, smd, smd_nsurf, SnowAlb, SnowRemoval, &
-         state_id_next, state_per_tstep, surf_chang_per_tstep, swe, t2_C, tskin_C, &
+         state_id_next, state_per_tstep, surf_chang_per_tstep, swe, t2_C, tsfc_C, &
          tot_chang_per_tstep, tsurf, UStar, wu_DecTr, &
          wu_EveTr, wu_Grass, z0m, zdm, zenith_deg, &
          datetimeLine, dataOutLineSUEWS)!output
@@ -2184,7 +2188,6 @@ CONTAINS
 
       REAL(KIND(1d0)), INTENT(out)::TStar     !T*
       REAL(KIND(1d0)), INTENT(out)  ::UStar     !Friction velocity
-      ! REAL(KIND(1d0)),INTENT(out)::psim      !Stability function of momentum
       REAL(KIND(1d0)), INTENT(out)  ::zL        !
       REAL(KIND(1d0)), INTENT(out)  ::gsc       !Surface Layer Conductance
       REAL(KIND(1d0)), INTENT(out)  ::ResistSurf!Surface resistance
@@ -3531,5 +3534,20 @@ CONTAINS
       tair_av_next = tair_av_prev*(len_cal_s - tstep*1.)/len_cal_s + temp_k*tstep/len_cal_s
 
    end function cal_tair_av
+
+   function cal_tsfc(qh, avdens, avcp, RA,temp_c) result(tsfc_C)
+      ! calculate surface/skin temperature
+      ! TS, 23 Oct 2019
+      implicit none
+      real(KIND(1D0)), intent(in) :: qh ! sensible heat flux [W m-2]
+      real(KIND(1D0)), intent(in) ::  avdens ! air density [kg m-3]
+      real(KIND(1D0)), intent(in) ::  avcp !air heat capacity [J m-3 K-1]
+      real(KIND(1D0)), intent(in) ::  RA !Aerodynamic resistance [s m^-1]
+      real(KIND(1D0)), intent(in) ::  temp_C ! air temperature [C]
+
+      real(KIND(1D0)) ::tsfc_C ! surface temperature [C]
+
+   tsfc_C = qh/(avdens*avcp)*RA + temp_C
+   end function cal_tsfc
 
 END MODULE SUEWS_Driver

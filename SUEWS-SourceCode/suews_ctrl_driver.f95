@@ -575,6 +575,8 @@ CONTAINS
       ! flag for Tsurf convergence
       logical:: flag_converge
       REAL(KIND(1D0)):: Ts_iter
+      REAL(KIND(1D0)):: L_mod_iter
+      REAL(KIND(1D0)):: QH_Init
       INTEGER::i_iter
 
       ! ########################################################################################
@@ -645,10 +647,12 @@ CONTAINS
       !########################################################################################
       flag_converge = .false.
       Ts_iter = TEMP_C
+      L_mod_iter=10
       i_iter = 1
       ! print *,'---------------------------------------------------------------------------'
       do while (.not. flag_converge)
-         ! print *,'at beginning of iteration',i_iter
+         print *,''
+         print *,'at beginning of iteration',i_iter
          ! print *,'Ts_iter: ',Ts_iter
          ! print *,'Ts_iter: ',Ts_iter
          ! print *,'prev values: ',qn1_av_prev,&
@@ -838,13 +842,20 @@ CONTAINS
          !==========================Turbulent Fluxes================================
          IF (Diagnose == 1) WRITE (*, *) 'Calling LUMPS_cal_QHQE...'
          !Calculate QH and QE from LUMPS
-         CALL LUMPS_cal_QHQE( &
+         if ( i_iter==1 ) then
+            CALL LUMPS_cal_QHQE( &
             veg_type, & !input
             snowUse, qn1, qf, qs, Qm, Temp_C, Veg_Fr, avcp, Press_hPa, lv_J_kg, &
             tstep_real, DRAINRT, nsh_real, &
             Precip, RainMaxRes, RAINCOVER, sfr, LAI_id_next, LAImax, LAImin, &
             QH_LUMPS, & !output
             QE_LUMPS, psyc_hPa, s_hPa, sIce_hpa, TempVeg, VegPhenLumps)
+            QH_Init=QH_LUMPS
+         else
+            QH_Init=QH
+         end if
+         print *,'QH_Init: ',QH_Init
+
 
          !============= calculate water balance =============
          CALL SUEWS_cal_Water( &
@@ -862,7 +873,7 @@ CONTAINS
             StabilityMethod, &!input:
             Diagnose, AerodynamicResistanceMethod, RoughLenHeatMethod, snowUse, &
             id, it, gsModel, SMDMethod, &
-            avdens, avcp, QH_LUMPS, qn1, dectime, zzd, z0m, zdm, &
+            avdens, avcp, QH_Init, qn1, dectime, zzd, z0m, zdm, &
             avU1, Temp_C, VegFraction, avkdn, &
             Kmax, &
             g1, g2, g3, g4, &
@@ -961,16 +972,21 @@ CONTAINS
             Fc, Fc_biogen, Fc_photo, Fc_respi)! output:
 
          ! force quit do-while, i.e., skip iteration and use NARP for Tsurf calculation
-         if (NetRadiationMethod < 10 .or. NetRadiationMethod > 100) exit
+         ! if (NetRadiationMethod < 10 .or. NetRadiationMethod > 100) exit
 
          ! Test if surface temperatures from QN and surface diagonostics converge
          ! print*,'iteration', i_iter
          ! print*,'tsurf',tsurf
          ! print*,'tskin_C',tskin_C
          ! print*,'diff',tsurf-tskin_C
+         print *,'L_mod_iter: ',L_mod_iter
+         print *,'L_mod: ',L_mod
+         print *,'QH: ',QH
+         print *,'QH_Init: ',QH_Init
+         print *,'T2_c: ',T2_c
 
          i_iter = i_iter + 1
-         if (abs(tskin_C - tsurf) > 0.01) then
+         if (abs(QH - QH_Init) > 0.1) then
             flag_converge = .false.
          else
             flag_converge = .true.
@@ -980,6 +996,7 @@ CONTAINS
          if (i_iter > 100) exit
 
          Ts_iter = tskin_C
+         l_mod_iter=l_mod
 
          !==============main calculation end=======================
       ENDDO ! end iteration for tsurf calculations

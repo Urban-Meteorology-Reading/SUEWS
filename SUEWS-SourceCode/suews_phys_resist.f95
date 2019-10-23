@@ -74,7 +74,7 @@ contains
          !    assuming stability functions the same for heat and water
       ELSEIF (AerodynamicResistanceMethod == 2) THEN  !Dyer (1974)
 
-         psim = stab_psi_mom(StabilityMethod, ZZD/L_mod, zzd/L_mod)
+         psim = stab_psi_mom(StabilityMethod, zzd/L_mod)
          psih = stab_psi_heat(StabilityMethod, ZZD/L_mod, zzd/L_mod)
 
          !Z0V roughness length for vapour

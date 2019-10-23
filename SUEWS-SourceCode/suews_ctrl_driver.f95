@@ -2706,9 +2706,9 @@ CONTAINS
 
       ! stability correction functions
       ! momentum:
-      psimzDiag = stab_psi_mom(StabilityMethod, zDiagzd/L_mod, zDiagzd/L_mod)
+      psimzDiag = stab_psi_mom(StabilityMethod, zDiagzd/L_mod)
       ! psimz2=stab_fn_mom(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
-      psimz0 = stab_psi_mom(StabilityMethod, z0m/L_mod, z0m/L_mod)
+      psimz0 = stab_psi_mom(StabilityMethod, z0m/L_mod)
 
       ! heat and vapor: assuming both are the same
       ! psihz2=stab_fn_heat(StabilityMethod,z2zd/L_mod,z2zd/L_mod)
@@ -2721,8 +2721,8 @@ CONTAINS
 
          ! stability correction functions
          ! momentum:
-         psimzDiag = stab_psi_mom(StabilityMethod, zDiagzd/L_mod, zDiagzd/L_mod)
-         psimz0 = stab_psi_mom(StabilityMethod, z0m/L_mod, z0m/L_mod)
+         psimzDiag = stab_psi_mom(StabilityMethod, zDiagzd/L_mod)
+         psimz0 = stab_psi_mom(StabilityMethod, z0m/L_mod)
          xDiag = UStar/k*(LOG(zDiagzd/z0m) - psimzDiag + psimz0) ! Brutsaert (2005), p51, eq.2.54
 
       CASE (1) ! temperature at hgtX=2 m

@@ -136,14 +136,14 @@ contains
       !
       ! Step 3:
       !
-      psimZh = stab_psi_mom(StabilityMethod, (Zh - zd)/L_MOD, (Zh - zd)/L_MOD)
+      psimZh = stab_psi_mom(StabilityMethod, (Zh - zd)/L_MOD)
 
       ! calculate phihatM according to H&F '07 and H&F '08 for heat and humidity
       xx1 = stab_phi_mom(StabilityMethod, (Zh - zd)/L_MOD)
       xx1_2 = stab_phi_mom(StabilityMethod, (Zh - zd + 1.)/L_MOD)
 
-      xxh1 = stab_phi_heat(StabilityMethod, (Zh - zd)/L_MOD, (Zh - zd)/L_MOD)
-      xxh1_2 = stab_phi_heat(StabilityMethod, (Zh - zd + 1.)/L_MOD, (Zh - zd + 1.)/L_MOD)
+      xxh1 = stab_phi_heat(StabilityMethod, (Zh - zd)/L_MOD)
+      xxh1_2 = stab_phi_heat(StabilityMethod, (Zh - zd + 1.)/L_MOD)
 
       phi_hatmZh = kappa/(2.*beta*xx1)
       phi_hathZh = kappa*Scc/(2.*beta*xxh1)
@@ -166,8 +166,8 @@ contains
       DO z = nz - 1, idx_can - 1, -1
          phimz = stab_phi_mom(StabilityMethod, (zarray(z) - zd)/L_MOD)
          phimzp = stab_phi_mom(StabilityMethod, (zarray(z + 1) - zd)/L_MOD)
-         phihz = stab_phi_heat(StabilityMethod, (zarray(z) - zd)/L_MOD, (zarray(z) - zd)/L_MOD)
-         phihzp = stab_phi_heat(StabilityMethod, (zarray(z + 1) - zd)/L_MOD, (zarray(z + 1) - zd)/L_MOD)
+         phihz = stab_phi_heat(StabilityMethod, (zarray(z) - zd)/L_MOD)
+         phihzp = stab_phi_heat(StabilityMethod, (zarray(z + 1) - zd)/L_MOD)
 
          psihat_z(z) = psihat_z(z + 1) + dz/2.*phimzp*(cm*EXP(-1.*c2*beta*(zarray(z + 1) - zd)/elm)) &  !Taylor's approximation for integral
                        /(zarray(z + 1) - zd)
@@ -187,14 +187,14 @@ contains
       psimz0 = 0.5
       it = 1
       DO WHILE ((err > 0.001) .AND. (it < 10))
-         psimz0 = stab_psi_mom(StabilityMethod, z0/L_MOD, z0/L_MOD)
+         psimz0 = stab_psi_mom(StabilityMethod, z0/L_MOD)
          z01 = z0
          z0 = (Zh - zd)*EXP(-1.*kappa/beta)*EXP(-1.*psimZh + psimz0)*EXP(psihat_z(idx_can))
          err = ABS(z01 - z0)
          it = it + 1
       ENDDO
 
-      psimz0 = stab_psi_mom(StabilityMethod, z0/L_MOD, z0/L_MOD)
+      psimz0 = stab_psi_mom(StabilityMethod, z0/L_MOD)
       psihza = stab_psi_heat(StabilityMethod, (zMeas - zd)/L_MOD, (zMeas - zd)/L_MOD)
       TStar = -1.*(qh/(avcp))/UStar
       qStar = -1.*(qe/lv_J_kg)/UStar
@@ -204,7 +204,7 @@ contains
       ! calculate above canopy wind speed
       !
       DO z = idx_can, nz
-         psimz = stab_psi_mom(StabilityMethod, (zarray(z) - zd)/L_MOD, (zarray(z) - zd)/L_MOD)
+         psimz = stab_psi_mom(StabilityMethod, (zarray(z) - zd)/L_MOD)
          psihz = stab_psi_heat(StabilityMethod, (zarray(z) - zd)/L_MOD, (zarray(z) - zd)/L_MOD)
          dataoutLineURSL(z) = (LOG((zarray(z) - zd)/z0) - psimz + psimz0 - psihat_z(z) + psihat_z(idx_can))/kappa
          dataoutLineTRSL(z) = (LOG((zarray(z) - zd)/(zMeas - zd)) - psihz + psihza + psihath_z(z) - psihath_z(idx_za - 1))/kappa

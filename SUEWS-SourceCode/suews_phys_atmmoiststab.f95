@@ -180,8 +180,8 @@ CONTAINS
          !    !Needs more investigations.
          ! END IF
 
-         psim = stab_psi_mom(StabilityMethod, zL, zL)
-         psimz0 = stab_psi_mom(StabilityMethod, zL, z0L)
+         psim = stab_psi_mom(StabilityMethod, zL)
+         psimz0 = stab_psi_mom(StabilityMethod, z0L)
 
          UStar = KUZ/(LOG(Zzd/z0m) - psim + psimz0) !Friction velocity in non-neutral situation
 
@@ -242,7 +242,7 @@ CONTAINS
 
    !==================================================================
 
-   FUNCTION stab_psi_mom(StabilityMethod, ZL, zl_f) RESULT(psim)
+   FUNCTION stab_psi_mom(StabilityMethod, ZL) RESULT(psim)
       !     StabilityMethod = 1-4 -
       !     psim - stability FUNCTION for momentum
       !Modified by LJ Mar 2010
@@ -258,7 +258,7 @@ CONTAINS
          neut_limit = 0.001000 !Limit for neutral stability
       !  notUsedI=-55
 
-      REAL(KIND(1d0)):: piover2, psim, zl, zl_f, x, x2
+      REAL(KIND(1d0)):: piover2, psim, zl, x, x2
       INTEGER ::StabilityMethod
 
       psim = 0
@@ -270,35 +270,35 @@ CONTAINS
       ELSEIF (zL < -neut_limit) THEN    !Unstable
 
          IF (StabilityMethod == 1) THEN     !    Jensen et al 1984 - Van Ulden & Holtslag (1985) p 1206&
-            psim = ((1.-16.*zl_f)**0.25) - 1
+            psim = ((1.-16.*zl)**0.25) - 1
          ELSEIF (StabilityMethod == 2) THEN !Dyer (1974)(1-16z/L)**.25' k=0.41  mod. Hogstrom (1988)v15.2
-            X = (1.-(15.2*zl_f))**0.25
+            X = (1.-(15.2*zl))**0.25
             X2 = LOG((1 + (X**2.))/2.)
             psim = (2.*LOG((1 + X)/2.)) + X2 - (2.*ATAN(X)) + PIOVER2
          ELSEIF (StabilityMethod == 3) THEN ! Kondo (1975) adopted by Campbell & Norman eqn 7.26 p 97
-            psim = 0.6*(2)*LOG((1 + (1 - 16*zl_f)**0.5)/2)
+            psim = 0.6*(2)*LOG((1 + (1 - 16*zl)**0.5)/2)
          ELSEIF (StabilityMethod == 4) THEN !Businger et al (1971) modifed  Hogstrom (1988)
-            x = (1 - 19.3*zl_f)**(0.25) ! M Nag spotted the wrong exponent, TS corrected this from (1 - 19.3*zl_f)**(-0.25)
+            x = (1 - 19.3*zl)**(0.25) ! M Nag spotted the wrong exponent, TS corrected this from (1 - 19.3*zl_f)**(-0.25)
             X2 = LOG((1 + (X**2.))/2.)
             psim = (2.*LOG((1 + X)/2.)) + X2 - (2.*ATAN(X)) + PIOVER2
          ELSEIF (StabilityMethod == 7) THEN ! Dyer & Bradley (1982) (1-28z/L)**.25' k=0.4
-            X = (1 - (28.*zl_f))**0.25  ! NT: changed + to - (bug -> checked reference)
+            X = (1 - (28.*zl))**0.25  ! NT: changed + to - (bug -> checked reference)
             X2 = LOG((1 + X**2.)/2.)
             psim = (2.*LOG((1 + X)/2.)) + X2 - (2.*ATAN(X)) + PIOVER2
          ELSEIF (StabilityMethod == 5) THEN ! Zilitinkevich & Chalikov (1968) modified Hogstrom (1988)
-            IF (zl_f >= -0.16) THEN
-               x = 1 + 1.38*zl_f
+            IF (zl >= -0.16) THEN
+               x = 1 + 1.38*zl
             ELSE
-               x = 0.42*(-1)*zl_f**0.333
+               x = 0.42*(-1)*zl**0.333
             ENDIF
             X2 = LOG((1 + (X**2.))/2.)
             psim = (2.*LOG((1 + X)/2.)) + X2 - (2.*ATAN(X)) + PIOVER2
 
          ELSEIF (StabilityMethod == 6) THEN !     Foken and Skeib (1983)
-            IF (zl_f >= 0.06) THEN
+            IF (zl >= 0.06) THEN
                x = 1
             ELSE
-               x = ((-1)*zl_f/0.06)**0.25
+               x = ((-1)*zl/0.06)**0.25
             ENDIF
             X2 = LOG((1 + (X**2.))/2.)
             psim = (2.*LOG((1 + X)/2.)) + X2 - (2.*ATAN(X)) + PIOVER2
@@ -307,17 +307,17 @@ CONTAINS
       ELSEIF (zL > neut_limit) THEN            !Stable
 
          IF (StabilityMethod == 1) THEN         !Dyer (1974) k=0.35 x=1+5*zl Mod. Hogstrom (1988)
-            psim = (-4.8)*zl_f
+            psim = (-4.8)*zl
          ELSEIF (StabilityMethod == 2) THEN     !Van Ulden & Holtslag (1985) p 1206
-            IF (zl_f > 1000.) THEN
-               zl_f = 1000.
+            IF (zl > 1000.) THEN
+               zl = 1000.
             END IF
-            psim = (-17.*(1.-EXP(-0.29*zl_f)))
+            psim = (-17.*(1.-EXP(-0.29*zl)))
          ELSEIF (StabilityMethod == 4) THEN ! Businger et al (1971) modifed  Hogstrom (1988)
             ! psim=1+6*zl_f  ! this is NOT the integral form but the stability function, TS 13 Jun 2017
-            psim = (-6)*zl_f   ! this is the integral form, TS 13 Jun 2017
+            psim = (-6)*zl   ! this is the integral form, TS 13 Jun 2017
          ELSEIF (StabilityMethod == 3) THEN ! Kondo (1975) adopted by Campbell & Norman eqn 7.26 p 97
-            psim = (-6)*LOG(1 + zl_f)
+            psim = (-6)*LOG(1 + zl)
 
          ENDIF
       ENDIF
@@ -445,7 +445,7 @@ CONTAINS
    !_______________________________________________________________
    !
    ! Phi - stability function for heat !!!!NT CHECK!!!!
-   FUNCTION stab_phi_heat(StabilityMethod, ZL, zl_f) RESULT(phih)
+   FUNCTION stab_phi_heat(StabilityMethod, ZL) RESULT(phih)
       ! USE mod_k
       IMPLICIT NONE
       REAL(KIND(1d0)), PARAMETER :: &
@@ -454,7 +454,7 @@ CONTAINS
          neut_limit = 0.001000 !Limit for neutral stability
       !  notUsedI=-55
 
-      REAL(KIND(1d0)):: zl, zl_f, phih
+      REAL(KIND(1d0)):: zl, phih
       INTEGER :: StabilityMethod
 
       phih = 0
@@ -464,24 +464,24 @@ CONTAINS
       ELSEIF (zL < -neut_limit) THEN     ! Unstable
          IF (StabilityMethod == 3) THEN
             !campbell & norman eqn 7.26
-            phih = (1.-16.*zl_f)**(-0.5)
+            phih = (1.-16.*zl)**(-0.5)
          ELSE
 
             IF (StabilityMethod == 4) THEN ! Businger et al (1971) modifed  Hogstrom (1988)
-               phih = 0.95*(1.-11.6*zl_f)**(-0.5)
+               phih = 0.95*(1.-11.6*zl)**(-0.5)
             ELSEIF (StabilityMethod == 7) THEN
                phih = (1 - (28.*ZL))**(-0.25)
             ELSEIF (StabilityMethod == 2) THEN ! Dyer 1974 X=(1.-(16.*ZL))**(0.5)modified Hosgstrom
-               phih = 0.95*(1.-15.2*zl_f)**(-0.5)
+               phih = 0.95*(1.-15.2*zl)**(-0.5)
             ENDIF
          ENDIF
 
       ELSE IF (zL > neut_limit) THEN    !Stable
          IF (StabilityMethod == 4) THEN !Businger et al (1971) modifed  Hogstrom (1988)
             ! psih=0.95+(7.8*zl_f) ! this is NOT the integral form but the stability function, TS 13 Jun 2017
-            phih = 1.+7.8*zl_f   ! this is the integral form, TS 13 Jun 2017
+            phih = 1.+7.8*zl   ! this is the integral form, TS 13 Jun 2017
          ELSE !Dyer (1974)  psih=(-5)*ZL        modifed  Hogstrom (1988)
-            phih = 1.+4.5*Zl_f
+            phih = 1.+4.5*zl
          ENDIF
 
       ENDIF

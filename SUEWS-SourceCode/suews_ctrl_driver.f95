@@ -63,7 +63,7 @@ CONTAINS
       PopDensNighttime, PopProf_24hr, PorMax_dec, PorMin_dec, &
       Precip, PrecipLimit, PrecipLimitAlb, Press_hPa, &
       QF0_BEU, Qf_A, Qf_B, Qf_C, &
-      qn1_obs, qh_obs, qs_obs, qf_obs, &
+      qn1_obs, qs_obs, qf_obs, &
       RadMeltFact, RAINCOVER, RainMaxRes, resp_a, resp_b, &
       RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
       SatHydraulicConduct, SDDFull, SDD_id, sfr, SMDMethod, SnowAlb, SnowAlbMax, &
@@ -176,7 +176,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::PrecipLimit
       REAL(KIND(1D0)), INTENT(IN)::PrecipLimitAlb
       REAL(KIND(1D0)), INTENT(IN)::Press_hPa
-      REAL(KIND(1D0)), INTENT(IN)::qh_obs
+      ! REAL(KIND(1D0)), INTENT(IN)::qh_obs
       REAL(KIND(1D0)), INTENT(IN)::qn1_obs
       REAL(KIND(1D0)), INTENT(IN)::qs_obs
       REAL(KIND(1D0)), INTENT(IN)::qf_obs
@@ -862,7 +862,7 @@ CONTAINS
             StabilityMethod, &!input:
             Diagnose, AerodynamicResistanceMethod, RoughLenHeatMethod, snowUse, &
             id, it, gsModel, SMDMethod, &
-            qh_obs, avdens, avcp, QH_LUMPS, qn1, dectime, zzd, z0m, zdm, &
+            avdens, avcp, QH_LUMPS, qn1, dectime, zzd, z0m, zdm, &
             avU1, Temp_C, VegFraction, avkdn, &
             Kmax, &
             g1, g2, g3, g4, &
@@ -1725,11 +1725,11 @@ CONTAINS
 
    !===============initialize sensible heat flux============================
    SUBROUTINE SUEWS_init_QH( &
-      qh_obs, avdens, avcp, h_mod, qn1, dectime, &!input
+      avdens, avcp, h_mod, qn1, dectime, &!input
       H_init)!output
 
       IMPLICIT NONE
-      REAL(KIND(1d0)), INTENT(in)::qh_obs
+      ! REAL(KIND(1d0)), INTENT(in)::qh_obs
       REAL(KIND(1d0)), INTENT(in)::avdens
       REAL(KIND(1d0)), INTENT(in)::avcp
       REAL(KIND(1d0)), INTENT(in)::h_mod
@@ -1741,16 +1741,16 @@ CONTAINS
       INTEGER, PARAMETER::notUsedI = -999
 
       ! Calculate kinematic heat flux (w'T') from sensible heat flux [W m-2] from observed data (if available) or LUMPS
-      IF (qh_obs /= NAN) THEN   !if(qh_obs/=NAN) qh=qh_obs   !Commented out by HCW 04 Mar 2015
-         H_init = qh_obs/(avdens*avcp)  !Use observed value
-      ELSE
+      ! IF (qh_obs /= NAN) THEN   !if(qh_obs/=NAN) qh=qh_obs   !Commented out by HCW 04 Mar 2015
+      !    H_init = qh_obs/(avdens*avcp)  !Use observed value
+      ! ELSE
          IF (h_mod /= NAN) THEN
             H_init = h_mod/(avdens*avcp)   !Use LUMPS value
          ELSE
             H_init = (qn1*0.2)/(avdens*avcp)   !If LUMPS has had a problem, we still need a value
             CALL ErrorHint(38, 'LUMPS unable to calculate realistic value for H_mod.', h_mod, dectime, notUsedI)
          ENDIF
-      ENDIF
+      ! ENDIF
 
    END SUBROUTINE SUEWS_init_QH
    !========================================================================
@@ -2148,7 +2148,7 @@ CONTAINS
       StabilityMethod, &!input:
       Diagnose, AerodynamicResistanceMethod, RoughLenHeatMethod, snowUse, &
       id, it, gsModel, SMDMethod, &
-      qh_obs, avdens, avcp, QH_init, qn1, dectime, zzd, z0m, zdm, &
+      avdens, avcp, QH_init, qn1, dectime, zzd, z0m, zdm, &
       avU1, Temp_C, VegFraction, &
       avkdn, Kmax, G1, G2, G3, G4, G5, G6, S1, S2, TH, TL, dq, &
       xsmd, vsmd, MaxConductance, LAIMax, LAI_id, SnowFrac, sfr, &
@@ -2167,7 +2167,7 @@ CONTAINS
       INTEGER, INTENT(in)::gsModel  !Choice of gs parameterisation (1 = Ja11, 2 = Wa16)
       INTEGER, INTENT(in)::SMDMethod!Method of measured soil moisture
 
-      REAL(KIND(1d0)), INTENT(in)::qh_obs
+      ! REAL(KIND(1d0)), INTENT(in)::qh_obs
       REAL(KIND(1d0)), INTENT(in)::avdens
       REAL(KIND(1d0)), INTENT(in)::avcp
       REAL(KIND(1d0)), INTENT(in)::QH_init
@@ -2217,7 +2217,7 @@ CONTAINS
 
       ! Get first estimate of sensible heat flux. Modified by HCW 26 Feb 2015
       CALL SUEWS_init_QH( &
-         qh_obs, avdens, avcp, QH_init, qn1, dectime, &
+         avdens, avcp, QH_init, qn1, dectime, &
          H_init)
 
       IF (Diagnose == 1) WRITE (*, *) 'Calling STAB_lumps...'
@@ -2662,7 +2662,7 @@ CONTAINS
 
       ! get !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
       CALL SUEWS_init_QH( &
-         qh, avdens, avcp, qh, 0d0, dectime, & ! use qh as qh_obs to initialise H_init
+         avdens, avcp, qh, 0d0, dectime, & ! use qh as qh_obs to initialise H_init
          H_kms)!output
 
       ! redo the calculation for stability correction
@@ -3223,7 +3223,7 @@ CONTAINS
             PopDensNighttime, PopProf_24hr, PorMax_dec, PorMin_dec, &
             Precip, PrecipLimit, PrecipLimitAlb, Press_hPa, &
             QF0_BEU, Qf_A, Qf_B, Qf_C, &
-            qn1_obs, qh_obs, qs_obs, qf_obs, &
+            qn1_obs, qs_obs, qf_obs, &
             RadMeltFact, RAINCOVER, RainMaxRes, resp_a, resp_b, &
             RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
             SatHydraulicConduct, SDDFull, SDD_id, sfr, SMDMethod, SnowAlb, SnowAlbMax, &

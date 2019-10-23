@@ -156,7 +156,7 @@
  ----- test1_2004 Energy-use parameters -----
         GridPopDensDay  BaseTHDD   QF_A_WD   QF_A_WE   QF_B_WD   QF_B_WE   QF_C_WD   QF_C_WE    AH_Min  AH_SlopeT_critic_H
   test1_2004     0.000     0.000    18.200     0.308     0.308     0.010     0.010     0.010     0.010    15.000    15.000
-    š™™™™™@     2.700     7.000     7.000
+    ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½@     2.700     7.000     7.000
  ----- test1_2004 Water-use parameters -----
         Grid   IeStart     IeEnd IntWatUse      Faut     Ie_a1     Ie_a2     Ie_a3     Ie_m1     Ie_m2     Ie_m3
   test1_2004         1       366     0.000     0.000     0.000     0.000     0.000     0.000     0.000     0.000
@@ -189,7 +189,7 @@
         Grid       lat       lon        tz       alt  SurfA_ha         zPopDensNig  z0_input  zd_input
     StartDLS    EndDLS
   test1_2004   57.7700  -11.8700    2.0000   15.0000      1.00   50.0000    0.0000    0.0100    0.2000        85       302
- 
+
  ----- InitialConditionstest1_2005.nml -----
 &INITIALCONDITIONS
  DAYSSINCERAIN=0          ,
@@ -308,7 +308,7 @@
  ----- test1_2005 Energy-use parameters -----
         GridPopDensDay  BaseTHDD   QF_A_WD   QF_A_WE   QF_B_WD   QF_B_WE   QF_C_WD   QF_C_WE    AH_Min  AH_SlopeT_critic_H
   test1_2005     0.000     0.000    18.200     0.308     0.308     0.010     0.010     0.010     0.010    15.000    15.000
-    š™™™™™@     2.700     7.000     7.000
+    ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½@     2.700     7.000     7.000
  ----- test1_2005 Water-use parameters -----
         Grid   IeStart     IeEnd IntWatUse      Faut     Ie_a1     Ie_a2     Ie_a3     Ie_m1     Ie_m2     Ie_m3
   test1_2005         1       366     0.000     0.000     0.000     0.000     0.000     0.000     0.000     0.000
@@ -341,4 +341,4 @@
         Grid       lat       lon        tz       alt  SurfA_ha         zPopDensNig  z0_input  zd_input
     StartDLS    EndDLS
   test1_2005   57.7700  -11.8700    2.0000   15.0000      1.00   50.0000    0.0000    0.0100    0.2000        85       302
- 
+

@@ -176,7 +176,6 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::PrecipLimit
       REAL(KIND(1D0)), INTENT(IN)::PrecipLimitAlb
       REAL(KIND(1D0)), INTENT(IN)::Press_hPa
-      ! REAL(KIND(1D0)), INTENT(IN)::qh_obs
       REAL(KIND(1D0)), INTENT(IN)::qn1_obs
       REAL(KIND(1D0)), INTENT(IN)::qs_obs
       REAL(KIND(1D0)), INTENT(IN)::qf_obs
@@ -209,20 +208,6 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::z0m_in
       REAL(KIND(1D0)), INTENT(IN)::zdm_in
 
-      REAL(KIND(1d0)), INTENT(INout)::Tmin_id
-      REAL(KIND(1d0))::Tmin_id_prev
-      REAL(KIND(1d0))::Tmin_id_next
-      REAL(KIND(1d0)), INTENT(INout)::Tmax_id
-      REAL(KIND(1d0))::Tmax_id_prev
-      REAL(KIND(1d0))::Tmax_id_next
-      REAL(KIND(1d0)), INTENT(INout)::lenDay_id
-      REAL(KIND(1d0))::lenDay_id_prev
-      REAL(KIND(1d0))::lenDay_id_next
-
-      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(INout)::SDD_id
-      REAL(KIND(1d0)), DIMENSION(nvegsurf)::SDD_id_prev
-      REAL(KIND(1d0)), DIMENSION(nvegsurf)::SDD_id_next
-
       INTEGER, DIMENSION(NVEGSURF), INTENT(IN)::LAIType
 
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::AH_MIN
@@ -233,7 +218,6 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::Qf_A
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::Qf_B
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::Qf_C
-      ! REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::NumCapita
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::PopDensDaytime
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::T_CRITIC_Cooling
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::T_CRITIC_Heating
@@ -285,9 +269,6 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(IN) ::WUProfA_24hr
       REAL(KIND(1D0)), DIMENSION(0:23, 2), INTENT(IN) ::WUProfM_24hr
 
-      ! REAL(KIND(1d0)), DIMENSION(3), INTENT(IN) :: SDD_id_prev   ! Growing Degree Days (see SUEWS_DailyState.f95)
-      ! REAL(KIND(1d0)), DIMENSION(3), INTENT(OUT) :: SDD_id_next   ! Growing Degree Days (see SUEWS_DailyState.f95)
-
       ! ########################################################################################
 
       ! ########################################################################################
@@ -301,26 +282,30 @@ CONTAINS
       ! snow related:
       REAL(KIND(1D0)), INTENT(INOUT)                  ::SnowfallCum
       REAL(KIND(1D0)), INTENT(INOUT)                  ::SnowAlb
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) ::IceFrac
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) ::SnowWater
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) ::SnowDens
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) ::SnowFrac
-      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT) ::SnowPack
+      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT)::IceFrac
+      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT)::SnowWater
+      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT)::SnowDens
+      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT)::SnowFrac
+      REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT)::SnowPack
 
       ! water balance related:
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT)   ::soilstore_id
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT)   ::state_id
-      REAL(KIND(1D0)), DIMENSION(6, NSURF), INTENT(INOUT) ::StoreDrainPrm
+      REAL(KIND(1D0)), DIMENSION(6, NSURF), INTENT(INOUT)::StoreDrainPrm
 
       ! phenology related:
       REAL(KIND(1D0)), DIMENSION(NSURF), INTENT(INOUT)   ::alb
       REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(INOUT)::GDD_id !Growing Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(INout)::SDD_id !Senescence Degree Days (see SUEWS_DailyState.f95)
       REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(INOUT)::LAI_id !LAI for each veg surface [m2 m-2]
-      REAL(KIND(1d0)), INTENT(INOUT)                    :: DecidCap_id
-      REAL(KIND(1d0)), INTENT(INOUT)                    :: albDecTr_id
-      REAL(KIND(1d0)), INTENT(INOUT)                    :: albEveTr_id
-      REAL(KIND(1d0)), INTENT(INOUT)                    :: albGrass_id
-      REAL(KIND(1d0)), INTENT(INOUT)                    :: porosity_id
+      REAL(KIND(1d0)), INTENT(INout)::Tmin_id
+      REAL(KIND(1d0)), INTENT(INout)::Tmax_id
+      REAL(KIND(1d0)), INTENT(INout)::lenDay_id
+      REAL(KIND(1d0)), INTENT(INOUT)::DecidCap_id
+      REAL(KIND(1d0)), INTENT(INOUT)::albDecTr_id
+      REAL(KIND(1d0)), INTENT(INOUT)::albEveTr_id
+      REAL(KIND(1d0)), INTENT(INOUT)::albGrass_id
+      REAL(KIND(1d0)), INTENT(INOUT)::porosity_id
 
       ! anthropogenic heat related:
       REAL(KIND(1d0)), DIMENSION(12), INTENT(INOUT) ::HDD_id !Heating Degree Days (see SUEWS_DailyState.f95)
@@ -334,12 +319,12 @@ CONTAINS
 
       ! ########################################################################################
       ! output variables
-      REAL(KIND(1D0)), DIMENSION(5), INTENT(OUT)                           ::datetimeLine
-      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSUEWS - 5), INTENT(OUT)      ::dataOutLineSUEWS
-      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow - 5), INTENT(OUT)       ::dataOutLineSnow
-      REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutESTM - 5), INTENT(OUT)       ::dataOutLineESTM
-      REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutRSL - 5), INTENT(OUT):: dataoutLineRSL ! Wind speed array
-      REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutDailyState - 5), INTENT(OUT) ::DailyStateLine
+      REAL(KIND(1D0)), DIMENSION(5), INTENT(OUT)                            ::datetimeLine
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSUEWS - 5), INTENT(OUT)     ::dataOutLineSUEWS
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow - 5), INTENT(OUT)      ::dataOutLineSnow
+      REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutESTM - 5), INTENT(OUT)      ::dataOutLineESTM
+      REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutRSL - 5), INTENT(OUT)       ::dataoutLineRSL ! Wind speed array
+      REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutDailyState - 5), INTENT(OUT)::DailyStateLine
       ! ########################################################################################
 
       ! ########################################################################################
@@ -348,7 +333,7 @@ CONTAINS
       REAL(KIND(1D0))::a2
       REAL(KIND(1D0))::a3
       REAL(KIND(1D0))::AdditionalWater
-      REAL(KIND(1D0))::avU10_ms
+      REAL(KIND(1D0))::U10_ms
       REAL(KIND(1D0))::azimuth
       REAL(KIND(1D0))::chSnow_per_interval
 
@@ -358,7 +343,6 @@ CONTAINS
       REAL(KIND(1D0))::Ea_hPa
       REAL(KIND(1D0))::QE_LUMPS
       REAL(KIND(1D0))::es_hPa
-      ! REAL(KIND(1D0))::ev
       REAL(KIND(1D0))::ev_per_tstep
       REAL(KIND(1D0))::ext_wu
       REAL(KIND(1D0))::Fc
@@ -371,7 +355,6 @@ CONTAINS
       REAL(KIND(1D0))::Fc_point
       REAL(KIND(1D0))::Fc_respi
       REAL(KIND(1D0))::Fc_traff
-      ! REAL(KIND(1D0))::fwh
       REAL(KIND(1D0))::gfunc
       REAL(KIND(1D0))::gsc
       REAL(KIND(1D0))::QH_LUMPS
@@ -385,11 +368,9 @@ CONTAINS
       REAL(KIND(1D0))::mwstore
       REAL(KIND(1D0))::NWstate_per_tstep
       REAL(KIND(1D0))::planF
-      ! REAL(KIND(1D0))::p_mm
       REAL(KIND(1D0))::zL
       REAL(KIND(1D0))::q2_gkg
       REAL(KIND(1D0))::qe
-      ! REAL(KIND(1D0))::qe_per_tstep
       REAL(KIND(1D0))::qf
       REAL(KIND(1D0))::QF_SAHP
       REAL(KIND(1D0))::qh
@@ -405,32 +386,25 @@ CONTAINS
       REAL(KIND(1D0))::RA
       REAL(KIND(1D0))::ResistSurf
       REAL(KIND(1D0))::RH2
-      ! REAL(KIND(1D0))::rss
       REAL(KIND(1d0))::runoffAGveg
       REAL(KIND(1d0))::runoffAGimpervious
       REAL(KIND(1D0))::runoff_per_tstep
       REAL(KIND(1D0))::runoffPipes
-      ! REAL(KIND(1D0))::runoffPipes_m3
       REAL(KIND(1D0))::runoffSoil_per_tstep
       REAL(KIND(1D0))::runoffwaterbody
-      ! REAL(KIND(1D0))::runoffWaterBody_m3
       REAL(KIND(1D0))::smd
       REAL(KIND(1D0))::SoilState
       REAL(KIND(1D0))::state_per_tstep
       REAL(KIND(1D0))::surf_chang_per_tstep
       REAL(KIND(1D0))::swe
       REAL(KIND(1D0))::t2_C
-      REAL(KIND(1D0))::tskin_C
+      REAL(KIND(1D0))::tsfc_C
       REAL(KIND(1D0))::TempVeg
       REAL(KIND(1D0))::tot_chang_per_tstep
       REAL(KIND(1D0))::TStar
       REAL(KIND(1D0))::tsurf
       REAL(KIND(1D0))::UStar
       REAL(KIND(1D0))::VPD_Pa
-      ! REAL(KIND(1D0))::WUAreaDecTr_m2
-      ! REAL(KIND(1D0))::WUAreaEveTr_m2
-      ! REAL(KIND(1D0))::WUAreaGrass_m2
-      ! REAL(KIND(1D0))::WUAreaTotal_m2
       REAL(KIND(1D0))::wu_DecTr
       REAL(KIND(1D0))::wu_EveTr
       REAL(KIND(1D0))::wu_Grass
@@ -439,13 +413,7 @@ CONTAINS
       REAL(KIND(1D0))::ZENITH_deg
       REAL(KIND(1D0))::Zh
 
-      ! REAL(KIND(1d0)), DIMENSION(nvegsurf):: LAI_id_prev !LAI for each veg surface [m2 m-2]
-
       REAL(KIND(1D0)), DIMENSION(2)::SnowRemoval
-      ! REAL(KIND(1D0)), DIMENSION(NSURF)::chang
-      ! REAL(KIND(1D0)), DIMENSION(NSURF)::changSnow
-      ! REAL(KIND(1D0)), DIMENSION(NSURF)::evap
-      ! REAL(KIND(1D0)), DIMENSION(NSURF)::ev_snow
       REAL(KIND(1D0)), DIMENSION(NSURF)::FreezMelt
       REAL(KIND(1d0)), DIMENSION(nsurf)::kup_ind_snow
       REAL(KIND(1D0)), DIMENSION(NSURF)::mw_ind
@@ -454,12 +422,8 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(NSURF)::Qm_rain
       REAL(KIND(1D0)), DIMENSION(NSURF)::qn1_ind_snow
       REAL(KIND(1D0)), DIMENSION(NSURF)::rainOnSnow
-      ! REAL(KIND(1D0)), DIMENSION(NSURF)::rss_nsurf
-      ! REAL(KIND(1D0)), DIMENSION(NSURF)::runoff
-      ! REAL(KIND(1D0)), DIMENSION(NSURF)::runoffSnow
       REAL(KIND(1D0)), DIMENSION(NSURF)::runoffSoil
       REAL(KIND(1D0)), DIMENSION(NSURF)::smd_nsurf
-      ! REAL(KIND(1D0)), DIMENSION(NSURF)::SnowToSurf
       REAL(KIND(1D0)), DIMENSION(NSURF)::snowDepth
 
       REAL(KIND(1d0)), DIMENSION(nsurf)::Tsurf_ind_snow
@@ -470,8 +434,8 @@ CONTAINS
 
       ! REAL(KIND(1D0))::avcp
       ! REAL(KIND(1D0))::avdens
-      REAL(KIND(1D0))::dq
       ! REAL(KIND(1D0))::lv_J_kg
+      REAL(KIND(1D0))::dq
       REAL(KIND(1D0))::lvS_J_kg
       REAL(KIND(1D0))::psyc_hPa
       REAL(KIND(1D0))::RAsnow
@@ -550,14 +514,19 @@ CONTAINS
 
       ! phenology related:
       REAL(KIND(1D0)), DIMENSION(NSURF)   ::alb_prev, alb_next
-      REAL(KIND(1d0)), DIMENSION(nvegsurf)       ::GDD_id_prev, GDD_id_next
+      REAL(KIND(1d0)), DIMENSION(nvegsurf)::GDD_id_prev, GDD_id_next
       REAL(KIND(1d0)), DIMENSION(nvegsurf)::LAI_id_prev, LAI_id_next
+      REAL(KIND(1d0)), DIMENSION(nvegsurf)::SDD_id_prev, SDD_id_next
 
       REAL(KIND(1D0))::DecidCap_id_prev, DecidCap_id_next
       REAL(KIND(1D0))::albDecTr_id_prev, albDecTr_id_next
       REAL(KIND(1D0))::albEveTr_id_prev, albEveTr_id_next
       REAL(KIND(1D0))::albGrass_id_prev, albGrass_id_next
       REAL(KIND(1D0))::porosity_id_prev, porosity_id_next
+
+      REAL(KIND(1d0))::Tmin_id_prev, Tmin_id_next
+      REAL(KIND(1d0))::Tmax_id_prev, Tmax_id_next
+      REAL(KIND(1d0))::lenDay_id_prev, lenDay_id_next
 
       ! anthropogenic heat related:
       REAL(KIND(1d0)), DIMENSION(12)::HDD_id_prev, HDD_id_next
@@ -570,7 +539,6 @@ CONTAINS
 
       ! Related to RSL wind profiles
       INTEGER, PARAMETER :: nz = 90   ! number of levels 10 levels in canopy plus 20 (3 x Zh) above the canopy
-      ! REAL(KIND(1d0)), DIMENSION(nz):: zarrays ! Height array
 
       ! flag for Tsurf convergence
       logical:: flag_converge
@@ -689,7 +657,7 @@ CONTAINS
          CALL SUEWS_cal_RoughnessParameters( &
             RoughLenMomMethod, sfr, &!input
             bldgH, EveTreeH, DecTreeH, &
-            porosity_id, FAIBldg, FAIEveTree, FAIDecTree, &
+            porosity_id_prev, FAIBldg, FAIEveTree, FAIDecTree, &
             z0m_in, zdm_in, Z, &
             planF, &!output
             Zh, z0m, zdm, ZZD)
@@ -771,7 +739,7 @@ CONTAINS
             Diagnose, snowFrac_obs, ldown_obs, fcld_obs, &
             dectime, ZENITH_deg, Ts_iter, avKdn, Temp_C, avRH, ea_hPa, qn1_obs, &
             SnowAlb_prev, snowFrac_prev, DiagQN, &
-            NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac, sfr, emis, &
+            NARP_TRANS_SITE, NARP_EMIS_SNOW, IceFrac_prev, sfr, emis, &
             alb_prev, albDecTr_id_next, albEveTr_id_next, albGrass_id_next, &!input
             alb_next, &!output
             ldown, fcld, &!output
@@ -916,22 +884,26 @@ CONTAINS
             smd, smd_nsurf, tot_chang_per_tstep, SoilState)!output
 
          !============ surface-level diagonostics ===============
-         IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Diagnostics...'
-         CALL SUEWS_cal_Diagnostics( &
-            dectime, &!input
-            avU1, Temp_C, avRH, Press_hPa, &
-            qh, qe, &
-            VegFraction, z, z0m, zdm, RA, avdens, avcp, lv_J_kg, tstep_real, &
-            RoughLenHeatMethod, StabilityMethod, &
-            avU10_ms, t2_C, q2_gkg, tskin_C, RH2)!output
+         ! IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Diagnostics...'
+         ! CALL SUEWS_cal_Diagnostics( &
+         !    dectime, &!input
+         !    avU1, Temp_C, avRH, Press_hPa, &
+         !    qh, qe, &
+         !    VegFraction, z, z0m, zdm, RA, avdens, avcp, lv_J_kg, tstep_real, &
+         !    RoughLenHeatMethod, StabilityMethod, &
+         !    U10_ms, t2_C, q2_gkg, tsfc_C, RH2)!output
 
-         IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Diagnostics...'
+         !============ roughness sub-layer diagonostics ===============
+         IF (Diagnose == 1) WRITE (*, *) 'Calling RSLProfile...'
          CALL RSLProfile( &
-            UStar, &!input
-            L_mod, sfr, Zh, planF, StabilityMethod, &
+            UStar, L_MOD, sfr, Zh, planF, StabilityMethod, &
             avcp, lv_J_kg, &
-            Temp_C, avRh, Press_hPa, z, qh, qe, &
-            dataoutLineRSL)!output
+            Temp_C, avRH, Press_hPa, z, qh, qe, &  ! input
+            T2_C, q2_gkg, U10_ms, RH2, & !output
+            dataoutLineRSL) ! output
+
+         ! diagnose surface temperature
+         tsfc_C = cal_tsfc(qh, avdens, avcp, RA, temp_c)
 
          !============ surface-level diagonostics end ===============
 
@@ -958,7 +930,7 @@ CONTAINS
          ! force quit do-while loop if not convergent after 100 iterations
          if (i_iter > 100) exit
 
-         Ts_iter = tskin_C
+         Ts_iter = tsfc_C
          l_mod_iter = l_mod
 
          !==============main calculation end=======================
@@ -999,7 +971,7 @@ CONTAINS
 
       !==============translation of  output variables into output array===========
       CALL SUEWS_update_outputLine( &
-         AdditionalWater, alb, avkdn, avU10_ms, azimuth, &!input
+         AdditionalWater, alb, avkdn, U10_ms, azimuth, &!input
          chSnow_per_interval, dectime, &
          drain_per_tstep, QE_LUMPS, ev_per_tstep, ext_wu, Fc, Fc_build, fcld, &
          Fc_metab, Fc_photo, Fc_respi, Fc_point, Fc_traff, FlowChange, &
@@ -1012,7 +984,7 @@ CONTAINS
          resistsurf, RH2, runoffAGimpervious, runoffAGveg, &
          runoff_per_tstep, runoffPipes, runoffSoil_per_tstep, &
          runoffWaterBody, sfr, smd, smd_nsurf, SnowAlb, SnowRemoval, &
-         state_id_next, state_per_tstep, surf_chang_per_tstep, swe, t2_C, tskin_C, &
+         state_id_next, state_per_tstep, surf_chang_per_tstep, swe, t2_C, tsfc_C, &
          tot_chang_per_tstep, tsurf, UStar, wu_DecTr, &
          wu_EveTr, wu_Grass, z0m, zdm, zenith_deg, &
          datetimeLine, dataOutLineSUEWS)!output
@@ -2184,7 +2156,6 @@ CONTAINS
 
       REAL(KIND(1d0)), INTENT(out)::TStar     !T*
       REAL(KIND(1d0)), INTENT(out)  ::UStar     !Friction velocity
-      ! REAL(KIND(1d0)),INTENT(out)::psim      !Stability function of momentum
       REAL(KIND(1d0)), INTENT(out)  ::zL        !
       REAL(KIND(1d0)), INTENT(out)  ::gsc       !Surface Layer Conductance
       REAL(KIND(1d0)), INTENT(out)  ::ResistSurf!Surface resistance
@@ -3531,5 +3502,20 @@ CONTAINS
       tair_av_next = tair_av_prev*(len_cal_s - tstep*1.)/len_cal_s + temp_k*tstep/len_cal_s
 
    end function cal_tair_av
+
+   function cal_tsfc(qh, avdens, avcp, RA, temp_c) result(tsfc_C)
+      ! calculate surface/skin temperature
+      ! TS, 23 Oct 2019
+      implicit none
+      real(KIND(1D0)), intent(in) :: qh ! sensible heat flux [W m-2]
+      real(KIND(1D0)), intent(in) ::  avdens ! air density [kg m-3]
+      real(KIND(1D0)), intent(in) ::  avcp !air heat capacity [J m-3 K-1]
+      real(KIND(1D0)), intent(in) ::  RA !Aerodynamic resistance [s m^-1]
+      real(KIND(1D0)), intent(in) ::  temp_C ! air temperature [C]
+
+      real(KIND(1D0)) ::tsfc_C ! surface temperature [C]
+
+      tsfc_C = qh/(avdens*avcp)*RA + temp_C
+   end function cal_tsfc
 
 END MODULE SUEWS_Driver

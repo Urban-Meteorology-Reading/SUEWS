@@ -829,7 +829,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    ! Porosity(:) = Porosity_grids(:,Gridiv)
    ! AlbEveTr(:) = AlbEveTr_grids(:,Gridiv)
    ! AlbGrass(:) = AlbGrass_grids(:,Gridiv)
-   SnowAlb = ModelDailyState(Gridiv, cMDS_SnowAlb)
+   ! SnowAlb = ModelDailyState(Gridiv, cMDS_SnowAlb)
 
    !! ---- Between-grid water distribution
 !!! Need to make these larger than MaxNumberOfGrids (and recode), as each grid can have 8 connections
@@ -885,11 +885,6 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       ! Get id_prev from ModelDailyState
       id_prev = INT(ModelDailyState(Gridiv, cMDS_id_prev))
 
-      ! porosity    = ModelDailyState(Gridiv,cMDS_porosity)
-      ! albDecTr    = ModelDailyState(Gridiv,cMDS_albDecTr)
-      ! albEveTr    = ModelDailyState(Gridiv,cMDS_albEveTr)
-      ! albGrass    = ModelDailyState(Gridiv,cMDS_albGrass)
-      ! DecidCap    = ModelDailyState(Gridiv,cMDS_DecidCap)
       SnowfallCum = ModelDailyState(Gridiv, cMDS_SnowfallCum)
       SnowAlb = ModelDailyState(Gridiv, cMDS_SnowAlb)
 
@@ -905,41 +900,22 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       albGrass_id_grids(Gridiv) = albGrass_id
       porosity_id_grids(Gridiv) = porosity_id
 
-      ! ---- LAI
-      ! LAI=0
-      ! LAI(id_prev,ivConif) = ModelDailyState(Gridiv,cMDS_LAIInitialEveTr)
-      ! LAI(id_prev,ivDecid) = ModelDailyState(Gridiv,cMDS_LAIInitialDecTr)
-      ! LAI(id_prev,ivGrass) = ModelDailyState(Gridiv,cMDS_LAIInitialGrass)
-
+      ! ---- Phenology
       ! ---- LAI
       LAI_id = 0
       LAI_id(ivConif) = ModelDailyState(Gridiv, cMDS_LAIInitialEveTr)
       LAI_id(ivDecid) = ModelDailyState(Gridiv, cMDS_LAIInitialDecTr)
       LAI_id(ivGrass) = ModelDailyState(Gridiv, cMDS_LAIInitialGrass)
 
-      ! ---- Growing degree days, GDD
-      ! GDD = 0
-      ! GDD(:,1)=0
-      ! GDD(:,2)=0
-      ! GDD(:,3) = ModelDailyState(Gridiv,cMDS_GDDMin)
-      ! GDD(:,4) = ModelDailyState(Gridiv,cMDS_GDDMax)
-      ! GDD(:,5)=0
-      ! GDD(id_prev,1) = ModelDailyState(Gridiv,cMDS_GDD1_0)
-      ! GDD(id_prev,2) = ModelDailyState(Gridiv,cMDS_GDD2_0)
-
-      ! ---- Growing degree days, GDD_id: GDD Values for one day
+      ! GDD_id: GDD Values for one day
       GDD_id = ModelDailyState(Gridiv, cMDS_GDD1_0)
+      ! SDD_id: SDD Values for one day
       SDD_id = ModelDailyState(Gridiv, cMDS_GDD2_0)
+      ! Tmin, Tmax: daily minimum and maximum temperatures
       Tmin_id = ModelDailyState(Gridiv, cMDS_GDDMin)
       Tmax_id = ModelDailyState(Gridiv, cMDS_GDDMax)
+      ! length of daylight
       lenDay_id = 0
-      ! GDD_id(1) = 0
-      ! GDD_id(2) = 0
-      ! GDD_id(3) = ModelDailyState(Gridiv, cMDS_GDDMin)
-      ! GDD_id(4) = ModelDailyState(Gridiv, cMDS_GDDMax)
-      ! GDD_id(5) = 0
-      ! GDD_id_prev(1) = ModelDailyState(Gridiv, cMDS_GDD1_0)
-      ! GDD_id_prev(2) = ModelDailyState(Gridiv, cMDS_GDD2_0)
 
       ! ---- Heating degree days, HDD
       ! HDD = 0
@@ -964,11 +940,6 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       ! HDD_id(6) = ModelDailyState(Gridiv,cMDS_DaysSinceRain)
 
       ! Save required DailyState variables for the current grid (HCW 27 Nov 2014)
-      ! HDD_grids(:,:,Gridiv)    = HDD(:,:)
-      ! GDD_grids(:,:,Gridiv)    = GDD(:,:)
-      ! LAI_grids(:,:,Gridiv)    = LAI(:,:)
-      ! WUDay_grids(:,:,Gridiv) = WUDay(:,:)
-
       HDD_id_grids(:, Gridiv) = HDD_id(:)
       GDD_id_grids(:, Gridiv) = GDD_id(:)
       SDD_id_grids(:, Gridiv) = SDD_id(:)
@@ -1014,7 +985,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    ! Do once per grid per year (was in SUEWS_Initial.f95)
    IF (ir == 1 .AND. iMB == 1) THEN   !For first row of first block only
       !write(*,*) 'Writing to FileChoices for first chunk of met data per year per grid'
-      FileStateInit = TRIM(FileOutputPath)//TRIM(FileCode)//'_FileChoices.txt'
+      FileChoices = TRIM(FileOutputPath)//TRIM(FileCode)//'_FileChoices.txt'
       OPEN (12, file=FileChoices, position='append')
 
       WRITE (grid_txt, '(I5)') INT(SurfaceChar(Gridiv, c_Grid))
@@ -1207,15 +1178,11 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       wdir = MetForcingData(ir, 24, Gridiv)
 
       ! get qn1 memory for previous time steps
-      ! qn1_store_grid(:)      = qn1_store(:,Gridiv)
-      ! qn1_av_store_grid(:)   = qn1_av_store(:,Gridiv)
       dqndt = dqndt_grids(Gridiv)
       qn1_av = qn1_av_grids(Gridiv)
       tair_av = tair_av_grids(Gridiv)
 
       IF (SnowUse == 1) THEN
-         ! qn1_S_store_grid(:)    = qn1_S_store(:,Gridiv)
-         ! qn1_S_av_store_grid(:) = qn1_S_av_store(:,Gridiv)
          dqnsdt = dqnsdt_grids(Gridiv)
          qn1_s_av = qn1_s_av_grids(Gridiv)
       ENDIF
@@ -1226,7 +1193,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       Tmin_id = Tmin_id_grids(Gridiv)
       Tmax_id = Tmax_id_grids(Gridiv)
       lenDay_id = lenDay_id_grids(Gridiv)
-      ! HDD_id_use = HDD_id_use_grids(:,Gridiv)
+      HDD_id = HDD_id_grids(:, Gridiv)
       LAI_id = LAI_id_grids(:, Gridiv)
       WUDay_id = WUDay_id_grids(:, Gridiv)
 
@@ -1262,6 +1229,8 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       SnowfallCum = ModelDailyState(Gridiv, cMDS_SnowfallCum)
       ! ---- Snow density of each surface
       SnowDens(1:nsurf) = ModelDailyState(Gridiv, cMDS_SnowDens(1:nsurf))
+      ! ---- Snow albedo
+      SnowAlb = ModelDailyState(Gridiv, cMDS_SnowAlb)
 
       ! =============================================================================
       ! === Translate values from ModelOutputData to variable names used in model ===
@@ -1276,6 +1245,9 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       SnowPack(1:nsurf) = ModelOutputData(ir - 1, cMOD_SnowPack(1:nsurf), Gridiv)
       ! ---- Liquid (melted) water in SnowPack
       SnowWater(1:nsurf) = ModelOutputData(ir - 1, cMOD_SnowWaterState(1:nsurf), Gridiv)
+
+      ! ---- ice fraction
+      IceFrac = IceFrac_grids(:, Gridiv)
 
       !Also translate ESTM forcing data
       IF (StorageHeatMethod == 4 .OR. StorageHeatMethod == 14) THEN
@@ -1297,8 +1269,8 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    ! ======================================================================
    ! write out initial conditions for debugging supy
    if (ir == 1 .and. imb == 1) then
-      FileChoices = TRIM(FileOutputPath)//TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(ADJUSTL(year_txt))//'_state_init.nml'
-      OPEN (12, file=FileChoices, position='rewind')
+      FileStateInit = TRIM(FileOutputPath)//TRIM(FileCode)//TRIM(ADJUSTL(grid_txt))//'_'//TRIM(ADJUSTL(year_txt))//'_state_init.txt'
+      OPEN (12, file=FileStateInit, position='rewind')
 
       write (12, *) '&state_init'
       write (12, *) 'aerodynamicresistancemethod=', aerodynamicresistancemethod
@@ -1607,7 +1579,7 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv, ir, irMax)
    Tmin_id_grids(Gridiv) = Tmin_id
    Tmax_id_grids(Gridiv) = Tmax_id
    lenDay_id_grids(Gridiv) = lenDay_id
-   ! HDD_id_use_grids(:,Gridiv)=HDD_id_use
+   HDD_id_grids(:, Gridiv) = HDD_id
    LAI_id_grids(:, Gridiv) = LAI_id
    WUDay_id_grids(:, Gridiv) = WUDay_id
 
@@ -1630,6 +1602,9 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv, ir, irMax)
    ModelOutputData(ir, cMOD_SnowFrac(1:nsurf), Gridiv) = SnowFrac(1:nsurf)
    ModelOutputData(ir, cMOD_SnowPack(1:nsurf), Gridiv) = SnowPack(1:nsurf)
    ModelOutputData(ir, cMOD_SnowWaterState(1:nsurf), Gridiv) = SnowWater(1:nsurf)
+
+   ! ---- ice fraction
+   IceFrac_grids(:, Gridiv) = IceFrac
 
    IF (ir == irMax) THEN   !Store variables ready for next chunk of met data
       ModelOutputData(0, cMOD_State(1:nsurf), Gridiv) = state_id(1:nsurf)

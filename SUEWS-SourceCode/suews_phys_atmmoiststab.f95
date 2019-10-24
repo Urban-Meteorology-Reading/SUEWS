@@ -1,5 +1,6 @@
 MODULE AtmMoistStab_module
    IMPLICIT NONE
+   REAL(KIND(1d0)), PARAMETER :: neut_limit = 1.E-5 !Limit for neutral stability
 
 CONTAINS
    !.c!! For Lumps Version 2 - no stability calculations
@@ -252,10 +253,10 @@ CONTAINS
       ! USE mod_k
 
       IMPLICIT NONE
-      REAL(KIND(1d0)), PARAMETER :: &
-         !  k=0.4,&             !Von Karman's contant
-         !  k2=0.16,&           !Power of Van Karman's contant
-         neut_limit = 0.001000 !Limit for neutral stability
+      ! REAL(KIND(1d0)), PARAMETER :: &
+      !  k=0.4,&             !Von Karman's contant
+      !  k2=0.16,&           !Power of Van Karman's contant
+      ! neut_limit = 0.001000 !Limit for neutral stability
       !  notUsedI=-55
 
       REAL(KIND(1d0)):: piover2, psim, zl, x, x2
@@ -331,10 +332,10 @@ CONTAINS
       !Input:Used stability method, stability (z-d)/L, zeta (either (z-d)/L or z0/L)
 
       IMPLICIT NONE
-      REAL(KIND(1d0)), PARAMETER :: &
-         !  k=0.4,&             !Von Karman's contant
-         !  k2=0.16,&           !Power of Van Karman's contant
-         neut_limit = 0.001000 !Limit for neutral stability
+      ! REAL(KIND(1d0)), PARAMETER :: &
+      !  k=0.4,&             !Von Karman's contant
+      !  k2=0.16,&           !Power of Van Karman's contant
+      ! neut_limit = 0.001000 !Limit for neutral stability
       !  notUsedI=-55
 
       REAL(KIND(1d0)):: phim, zl
@@ -390,10 +391,10 @@ CONTAINS
    FUNCTION stab_psi_heat(StabilityMethod, ZL) RESULT(psih)
       ! USE mod_k
       IMPLICIT NONE
-      REAL(KIND(1d0)), PARAMETER :: &
-         !  k=0.4,&             !Von Karman's contant
-         !  k2=0.16,&           !Power of Van Karman's contant
-         neut_limit = 0.001000 !Limit for neutral stability
+      ! REAL(KIND(1d0)), PARAMETER :: &
+      !  k=0.4,&             !Von Karman's contant
+      !  k2=0.16,&           !Power of Van Karman's contant
+      ! neut_limit = 0.001000 !Limit for neutral stability
       !  notUsedI=-55
 
       REAL(KIND(1d0)):: zl, psih, x
@@ -448,10 +449,10 @@ CONTAINS
    FUNCTION stab_phi_heat(StabilityMethod, ZL) RESULT(phih)
       ! USE mod_k
       IMPLICIT NONE
-      REAL(KIND(1d0)), PARAMETER :: &
-         !  k=0.4,&             !Von Karman's contant
-         !  k2=0.16,&           !Power of Van Karman's contant
-         neut_limit = 0.001000 !Limit for neutral stability
+      ! REAL(KIND(1d0)), PARAMETER :: &
+      !  k=0.4,&             !Von Karman's contant
+      !  k2=0.16,&           !Power of Van Karman's contant
+      ! neut_limit = 0.001000 !Limit for neutral stability
       !  notUsedI=-55
 
       REAL(KIND(1d0)):: zl, phih

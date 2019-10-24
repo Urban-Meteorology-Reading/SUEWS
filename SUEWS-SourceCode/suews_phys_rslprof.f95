@@ -7,7 +7,7 @@ contains
       UStar, L_MOD, sfr, Zh, planF, StabilityMethod, &
       avcp, lv_J_kg, &
       Temp_C, avRH, Press_hPa, zMeas, qh, qe, &  ! input
-      T2_C,q2_gkg,U10_ms,RH2,& !output
+      T2_C, q2_gkg, U10_ms, RH2, & !output
       dataoutLineRSL) ! output
       !-----------------------------------------------------
       ! calculates windprofiles using MOST with a RSL-correction
@@ -19,7 +19,7 @@ contains
       !
       !-----------------------------------------------------
       USE AtmMoistStab_module, ONLY: cal_Stab, stab_psi_mom, stab_psi_heat, stab_phi_mom, stab_phi_heat
-      USE meteo, ONLY: RH2qa,qa2RH
+      USE meteo, ONLY: RH2qa, qa2RH
 
       IMPLICIT NONE
       INTEGER, PARAMETER:: nsurf = 7 ! number of surface types
@@ -47,7 +47,6 @@ contains
       REAL(KIND(1d0)), INTENT(out):: q2_gkg ! Air specific humidity at 2 m [g kg-1]
       REAL(KIND(1d0)), INTENT(out):: U10_ms ! wind speed at 10 m [m s-1]
       REAL(KIND(1d0)), INTENT(out):: RH2 ! Air relative humidity [-]
-
 
       REAL(KIND(1d0)), PARAMETER:: cd_tree = 1.2, & ! drag coefficient tree canopy !!!!needs adjusting!!!
                                    a_tree = 0.05, & ! the foliage area per unit volume !!!!needs adjusting!!!
@@ -79,7 +78,7 @@ contains
                         t_h, q_h, & ! H&F'08 canopy corrections
                         TStar, &
                         qa_gkg, qStar ! specific humidity scale
-      INTEGER :: I, z, it, idx_can, idx_za,idx_2m, idx_10m
+      INTEGER :: I, z, it, idx_can, idx_za, idx_2m, idx_10m
       !
       ! Step 1: Calculate grid-cel dependent constants
       ! Step 2: Calculate Beta (crucial for H&F method)
@@ -115,13 +114,13 @@ contains
          dif(z) = ABS(zarray(z) - 2)
       ENDDO
       idx_2m = MINLOC(dif, DIM=1)
-      zarray(idx_2m)=2
+      zarray(idx_2m) = 2
       ! 10m:
       DO z = 1, nz
          dif(z) = ABS(zarray(z) - 10)
       ENDDO
       idx_10m = MINLOC(dif, DIM=1)
-      zarray(idx_10m)=10
+      zarray(idx_10m) = 10
 
       ! determine index at the canyon top
       DO z = 1, nz
@@ -255,12 +254,11 @@ contains
       ! Step 8
       ! retrieve the diagnostics at key heights
       !
-      T2_C=dataoutLineTRSL(idx_2m)
-      q2_gkg=dataoutLineqRSL(idx_2m)
-      U10_ms=dataoutLineURSL(idx_10m)
+      T2_C = dataoutLineTRSL(idx_2m)
+      q2_gkg = dataoutLineqRSL(idx_2m)
+      U10_ms = dataoutLineURSL(idx_10m)
       ! get relative humidity:
-      RH2=qa2RH(q2_gkg,press_hPa,T2_C)
-
+      RH2 = qa2RH(q2_gkg, press_hPa, T2_C)
 
 ! print *, 'Wind speed', dataoutLineURSL
       ! DO z = 1, nz

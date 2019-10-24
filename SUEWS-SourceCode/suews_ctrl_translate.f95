@@ -900,7 +900,6 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       albGrass_id_grids(Gridiv) = albGrass_id
       porosity_id_grids(Gridiv) = porosity_id
 
-
       ! ---- Phenology
       ! ---- LAI
       LAI_id = 0
@@ -1194,7 +1193,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       Tmin_id = Tmin_id_grids(Gridiv)
       Tmax_id = Tmax_id_grids(Gridiv)
       lenDay_id = lenDay_id_grids(Gridiv)
-      HDD_id = HDD_id_grids(:,Gridiv)
+      HDD_id = HDD_id_grids(:, Gridiv)
       LAI_id = LAI_id_grids(:, Gridiv)
       WUDay_id = WUDay_id_grids(:, Gridiv)
 
@@ -1248,7 +1247,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       SnowWater(1:nsurf) = ModelOutputData(ir - 1, cMOD_SnowWaterState(1:nsurf), Gridiv)
 
       ! ---- ice fraction
-      IceFrac=IceFrac_grids(:,Gridiv)
+      IceFrac = IceFrac_grids(:, Gridiv)
 
       !Also translate ESTM forcing data
       IF (StorageHeatMethod == 4 .OR. StorageHeatMethod == 14) THEN
@@ -1580,7 +1579,7 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv, ir, irMax)
    Tmin_id_grids(Gridiv) = Tmin_id
    Tmax_id_grids(Gridiv) = Tmax_id
    lenDay_id_grids(Gridiv) = lenDay_id
-   HDD_id_grids(:,Gridiv) = HDD_id
+   HDD_id_grids(:, Gridiv) = HDD_id
    LAI_id_grids(:, Gridiv) = LAI_id
    WUDay_id_grids(:, Gridiv) = WUDay_id
 
@@ -1605,7 +1604,7 @@ SUBROUTINE SUEWS_TranslateBack(Gridiv, ir, irMax)
    ModelOutputData(ir, cMOD_SnowWaterState(1:nsurf), Gridiv) = SnowWater(1:nsurf)
 
    ! ---- ice fraction
-   IceFrac_grids(:,Gridiv)=IceFrac
+   IceFrac_grids(:, Gridiv) = IceFrac
 
    IF (ir == irMax) THEN   !Store variables ready for next chunk of met data
       ModelOutputData(0, cMOD_State(1:nsurf), Gridiv) = state_id(1:nsurf)

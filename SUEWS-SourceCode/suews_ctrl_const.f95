@@ -431,7 +431,7 @@ MODULE allocateArray
                                        SnowPackLimit, &
                                        deltaQi
 
-   REAL(KIND(1d0)), DIMENSION(nsurf,MaxNumberOfGrids)::iceFrac_grids
+   REAL(KIND(1d0)), DIMENSION(nsurf, MaxNumberOfGrids)::iceFrac_grids
 
    REAL(KIND(1d0)), DIMENSION(nsurf):: snowPack, &        !Amount of snow on each surface in mm
                                        snowPackOld

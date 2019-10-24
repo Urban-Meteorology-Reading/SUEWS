@@ -208,7 +208,6 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::z0m_in
       REAL(KIND(1D0)), INTENT(IN)::zdm_in
 
-
       INTEGER, DIMENSION(NVEGSURF), INTENT(IN)::LAIType
 
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)               ::AH_MIN
@@ -414,7 +413,6 @@ CONTAINS
       REAL(KIND(1D0))::ZENITH_deg
       REAL(KIND(1D0))::Zh
 
-
       REAL(KIND(1D0)), DIMENSION(2)::SnowRemoval
       REAL(KIND(1D0)), DIMENSION(NSURF)::FreezMelt
       REAL(KIND(1d0)), DIMENSION(nsurf)::kup_ind_snow
@@ -518,7 +516,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(NSURF)   ::alb_prev, alb_next
       REAL(KIND(1d0)), DIMENSION(nvegsurf)::GDD_id_prev, GDD_id_next
       REAL(KIND(1d0)), DIMENSION(nvegsurf)::LAI_id_prev, LAI_id_next
-      REAL(KIND(1d0)), DIMENSION(nvegsurf)::SDD_id_prev,SDD_id_next
+      REAL(KIND(1d0)), DIMENSION(nvegsurf)::SDD_id_prev, SDD_id_next
 
       REAL(KIND(1D0))::DecidCap_id_prev, DecidCap_id_next
       REAL(KIND(1D0))::albDecTr_id_prev, albDecTr_id_next
@@ -526,9 +524,9 @@ CONTAINS
       REAL(KIND(1D0))::albGrass_id_prev, albGrass_id_next
       REAL(KIND(1D0))::porosity_id_prev, porosity_id_next
 
-      REAL(KIND(1d0))::Tmin_id_prev,Tmin_id_next
-      REAL(KIND(1d0))::Tmax_id_prev,Tmax_id_next
-      REAL(KIND(1d0))::lenDay_id_prev,lenDay_id_next
+      REAL(KIND(1d0))::Tmin_id_prev, Tmin_id_next
+      REAL(KIND(1d0))::Tmax_id_prev, Tmax_id_next
+      REAL(KIND(1d0))::lenDay_id_prev, lenDay_id_next
 
       ! anthropogenic heat related:
       REAL(KIND(1d0)), DIMENSION(12)::HDD_id_prev, HDD_id_next
@@ -901,7 +899,7 @@ CONTAINS
             UStar, L_MOD, sfr, Zh, planF, StabilityMethod, &
             avcp, lv_J_kg, &
             Temp_C, avRH, Press_hPa, z, qh, qe, &  ! input
-            T2_C,q2_gkg,U10_ms,RH2,& !output
+            T2_C, q2_gkg, U10_ms, RH2, & !output
             dataoutLineRSL) ! output
 
          ! diagnose surface temperature
@@ -3505,7 +3503,7 @@ CONTAINS
 
    end function cal_tair_av
 
-   function cal_tsfc(qh, avdens, avcp, RA,temp_c) result(tsfc_C)
+   function cal_tsfc(qh, avdens, avcp, RA, temp_c) result(tsfc_C)
       ! calculate surface/skin temperature
       ! TS, 23 Oct 2019
       implicit none
@@ -3517,7 +3515,7 @@ CONTAINS
 
       real(KIND(1D0)) ::tsfc_C ! surface temperature [C]
 
-   tsfc_C = qh/(avdens*avcp)*RA + temp_C
+      tsfc_C = qh/(avdens*avcp)*RA + temp_C
    end function cal_tsfc
 
 END MODULE SUEWS_Driver

@@ -65,19 +65,22 @@ contains
                                        dataoutLineTRSL, & ! Temperature array [C]
                                        dataoutLineqRSL    ! Specific humidity array [g kg-1]
 
-      REAL(KIND(1d0)):: zd, & ! displacement height
-                        Lc_build, Lc_tree, Lc, & ! canopy drag length scale
-                        Scc, & ! Schmidt number for temperature and humidity
-                        dz, & ! height steps
-                        phim, psimz, psimZh, psimz0, phi_hatmZh, phi_hathZh, phimzp, phimz, phihzp, phihz, psihz, psihza, &  ! stability function for momentum
-                        betaHF, betaNL, beta, betaN2, &  ! beta coefficient from Harman 2012
-                        elm, & ! mixing length
-                        xx1, xx1_2, xxh1, xxh1_2, err, z01, dphi, dphih, &  ! dummy variables for stability functions
-                        z0, &  ! roughness length from H&F
-                        f, cm, c2, ch, c2h, & ! H&F'07 and H&F'08 'constants'
-                        t_h, q_h, & ! H&F'08 canopy corrections
-                        TStar, &
-                        qa_gkg, qStar ! specific humidity scale
+      REAL(KIND(1d0))::zd ! displacement height
+      REAL(KIND(1d0))::Lc_build, Lc_tree, Lc ! canopy drag length scale
+      REAL(KIND(1d0))::Scc ! Schmidt number for temperature and humidity
+      REAL(KIND(1d0))::dz ! height steps
+      REAL(KIND(1d0))::phim, psimz, psimZh, psimz0, phi_hatmZh, phi_hathZh, phimzp, phimz, phihzp, phihz, psihz, psihza  ! stability function for momentum
+      REAL(KIND(1d0))::betaHF, betaNL, beta, betaN2  ! beta coefficient from Harman 2012
+      REAL(KIND(1d0))::elm ! mixing length
+      REAL(KIND(1d0))::xx1, xx1_2, xxh1, xxh1_2, err, z01, dphi, dphih ! dummy variables for stability functions
+      REAL(KIND(1d0))::z0  ! roughness length from H&F
+      REAL(KIND(1d0))::f, cm, c2, ch, c2h ! H&F'07 and H&F'08 'constants'
+      REAL(KIND(1d0))::t_h, q_h ! H&F'08 canopy corrections
+      REAL(KIND(1d0))::TStar ! temperature scale
+      REAL(KIND(1d0))::sfr_zh ! land cover fraction of bluff bodies: buildings and trees
+      REAL(KIND(1d0))::sfr_tr ! land cover fraction of trees
+
+      REAL(KIND(1d0))::qa_gkg, qStar ! specific humidity scale
       INTEGER :: I, z, it, idx_can, idx_za, idx_2m, idx_10m
       !
       ! Step 1: Calculate grid-cel dependent constants
@@ -97,6 +100,8 @@ contains
       Lc = (1.-(sfr(BldgSurf) + sfr(ConifSurf) + sfr(ConifSurf)))/planF*Zh
       Scc = 0.5 + 0.3*TANH(2.*Lc/L_MOD)  ! Schmidt number Harman and Finnigan 2008: assuming the same for heat and momemntum
       f = 0.5*((1.+4.*r*Scc)**0.5) - 0.5
+      sfr_zh=sum(sfr([BldgSurf, ConifSurf, DecidSurf]))
+      sfr_tr=sum(sfr([ConifSurf, DecidSurf]))
       !
       ! Define the height array
       !
@@ -132,7 +137,13 @@ contains
       ! Step 2:
       ! Parameterise beta according to Harman 2012 with upper limit of 0.5
       ! betaN for trees found to be 0.3 and for urban 0.4 linearly interpolate between the two using surface fractions
-      betaN2 = 0.30 + (1.-sfr(ConifSurf) - sfr(ConifSurf))*0.1
+      ! betaN2 = 0.30 + (1.-sfr(ConifSurf) - sfr(ConifSurf))*0.1
+      if ( sfr_zh>0 ) then
+         betaN2 = 0.30*sfr_tr/sfr_zh + (sfr_zh-sfr_tr/sfr_zh)*0.4
+      else
+         betaN2=0
+      end if
+
 
       betaHF = betaN2/phim
       betaNL = (kappa/2.)/phim

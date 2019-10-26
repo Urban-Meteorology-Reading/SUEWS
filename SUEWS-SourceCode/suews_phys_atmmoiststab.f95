@@ -204,18 +204,18 @@ CONTAINS
       ENDDO
       IF (ABS(L_MOD) > 1e6) L_MOD = L_MOD/ABS(L_MOD)*1e6
 
-      ! limit zL to be within [-5,2]
-      ! IF (zL < -5 .OR. zL > 2) THEN
-      !    zL = MIN(2., MAX(-5., zL))
-      !    ! limit other output variables as well as z/L
-      !    L_MOD = zzd/zL
-      !    z0L = z0m/L_MOD
-      !    psim = stab_psi_mom(StabilityMethod, zL, zL)
-      !    psimz0 = stab_psi_mom(StabilityMethod, zL, z0L)
-      !    ! TS 01 Aug 2018: set a low limit at 0.15 m/s (Schumann 1987, BLM)
-      !    ! to prevent potential issues in other stability-related calcualtions
-      !    UStar = MAX(0.15, KUZ/(LOG(Zzd/z0m) - psim + psimz0))
-      !    TStar = (-H/UStar)
+      ! limit zL to be within [-5,5]
+      ! IF (zL < -5 .OR. zL > 5) THEN
+      zL = MIN(5., MAX(-5., zL))
+      ! limit other output variables as well as z/L
+      L_MOD = zzd/zL
+      z0L = z0m/L_MOD
+      psim = stab_psi_mom(StabilityMethod, zL)
+      psimz0 = stab_psi_mom(StabilityMethod, z0L)
+      ! TS 01 Aug 2018: set a low limit at 0.15 m/s (Schumann 1987, BLM)
+      ! to prevent potential issues in other stability-related calcualtions
+      UStar = MAX(0.15, KUZ/(LOG(Zzd/z0m) - psim + psimz0))
+      TStar = (-H/UStar)
       ! END IF
 
       ! TS: limit UStar and TStar to reasonable values

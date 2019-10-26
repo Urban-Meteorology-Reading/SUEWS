@@ -1,10 +1,13 @@
 module rsl_module
+   USE allocateArray, ONLY: &
+      nsurf, BldgSurf, ConifSurf, DecidSurf
    implicit none
 
 contains
 
    SUBROUTINE RSLProfile( &
-      UStar, L_MOD, sfr, Zh, planF, StabilityMethod, &
+      Zh, z0m, zdm,&
+      UStar, L_MOD, sfr, planF, StabilityMethod, &
       avcp, lv_J_kg, &
       Temp_C, avRH, Press_hPa, zMeas, qh, qe, &  ! input
       T2_C, q2_gkg, U10_ms, RH2, & !output
@@ -22,10 +25,10 @@ contains
       USE meteo, ONLY: RH2qa, qa2RH
 
       IMPLICIT NONE
-      INTEGER, PARAMETER:: nsurf = 7 ! number of surface types
-      INTEGER, PARAMETER:: BldgSurf = 2
-      INTEGER, PARAMETER:: ConifSurf = 3
-      INTEGER, PARAMETER:: DecidSurf = 4
+      ! INTEGER, PARAMETER:: nsurf = 7 ! number of surface types
+      ! INTEGER, PARAMETER:: BldgSurf = 2
+      ! INTEGER, PARAMETER:: ConifSurf = 3
+      ! INTEGER, PARAMETER:: DecidSurf = 4
 
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in) ::sfr! surface fractions
       REAL(KIND(1d0)), INTENT(in):: zMeas  ! Air temperature/ moisture forcing height [m]
@@ -39,6 +42,8 @@ contains
       REAL(KIND(1d0)), INTENT(in):: qh  ! sensible heat flux [W m-2]
       REAL(KIND(1d0)), INTENT(in):: qe     ! Latent heat flux [W m-2]
       REAL(KIND(1d0)), INTENT(in):: Zh     ! Mean building height [m]
+      REAL(KIND(1d0)), INTENT(in):: z0m     ! Mean building height [m]
+      REAL(KIND(1d0)), INTENT(in):: zdm     ! Mean building height [m]
       REAL(KIND(1d0)), INTENT(in):: planF  ! Frontal area index [-]
 
       INTEGER, INTENT(in)::StabilityMethod
@@ -60,7 +65,7 @@ contains
 
       ! REAL(KIND(1d0)), INTENT(out), DIMENSION(nz*3):: zarrays ! Height array
       REAL(KIND(1d0)), INTENT(out), DIMENSION(nz*4):: dataoutLineRSL  ! Variables array (/U,T,q/)
-      REAL(KIND(1d0)), DIMENSION(nz):: dif, dif2, psihat_z, psihath_z, zarray, &
+      REAL(KIND(1d0)), DIMENSION(nz):: dif, dif2, psihatm_z, psihath_z, zarray, &
                                        dataoutLineURSL, & ! wind speed array [m s-1]
                                        dataoutLineTRSL, & ! Temperature array [C]
                                        dataoutLineqRSL    ! Specific humidity array [g kg-1]
@@ -95,13 +100,13 @@ contains
       ! Start setting up the parameters
       ! calculate Lc for tree grid fraction using eq 1 H&F'07 and rest of grid using C&B'04
       !
-      Lc_build = (1.-sfr(BldgSurf))/planF*Zh  ! Coceal and Belcher 2004 assuming Cd = 2
-      Lc_tree = 1./(cd_tree*a_tree)
-      Lc = (1.-(sfr(BldgSurf) + sfr(ConifSurf) + sfr(ConifSurf)))/planF*Zh
-      Scc = 0.5 + 0.3*TANH(2.*Lc/L_MOD)  ! Schmidt number Harman and Finnigan 2008: assuming the same for heat and momemntum
-      f = 0.5*((1.+4.*r*Scc)**0.5) - 0.5
       sfr_zh=sum(sfr([BldgSurf, ConifSurf, DecidSurf]))
       sfr_tr=sum(sfr([ConifSurf, DecidSurf]))
+      Lc_build = (1.-sfr(BldgSurf))/planF*Zh  ! Coceal and Belcher 2004 assuming Cd = 2
+      Lc_tree = 1./(cd_tree*a_tree)
+      Lc = (1.-min(sfr_zh,0.99))/planF*Zh ! set a threshold of 0.99 for sfr_zh to avoid numerical difficulties
+      Scc = 0.5 + 0.3*TANH(2.*Lc/L_MOD)  ! Schmidt number Harman and Finnigan 2008: assuming the same for heat and momemntum
+      f = 0.5*((1.+4.*r*Scc)**0.5) - 0.5
       !
       ! Define the height array
       !
@@ -132,6 +137,7 @@ contains
          dif(z) = ABS(zarray(z) - Zh)
       ENDDO
       idx_can = MINLOC(dif, DIM=1)
+      ! zarray(idx_can) = Zh
       phim = stab_phi_mom(StabilityMethod, Lc/L_MOD)
       !
       ! Step 2:
@@ -139,9 +145,9 @@ contains
       ! betaN for trees found to be 0.3 and for urban 0.4 linearly interpolate between the two using surface fractions
       ! betaN2 = 0.30 + (1.-sfr(ConifSurf) - sfr(ConifSurf))*0.1
       if ( sfr_zh>0 ) then
-         betaN2 = 0.30*sfr_tr/sfr_zh + (sfr_zh-sfr_tr/sfr_zh)*0.4
+         betaN2 = 0.30*sfr_tr/sfr_zh + (sfr_zh-sfr_tr)/sfr_zh*0.4
       else
-         betaN2=0
+         betaN2=0.35 ! what about if sfr_zh==0?
       end if
 
 
@@ -157,7 +163,7 @@ contains
       IF (beta > 0.5) THEN
          beta = 0.5
       ENDIF
-      zd = Zh - (beta**2.)*Lc
+      zd = merge(Zh - (beta**2.)*Lc, zdm, Zh>0) ! if Zh>0, calculate z0 using RSL method; use SUEWS-based zdm otherwise
       elm = 2.*beta**3*Lc
 
       DO z = 1, nz
@@ -194,16 +200,16 @@ contains
       !
       ! Step 4:
       !
-      psihat_z = 0.*zarray
+      psihatm_z = 0.*zarray
       DO z = nz - 1, idx_can - 1, -1
          phimz = stab_phi_mom(StabilityMethod, (zarray(z) - zd)/L_MOD)
          phimzp = stab_phi_mom(StabilityMethod, (zarray(z + 1) - zd)/L_MOD)
          phihz = stab_phi_heat(StabilityMethod, (zarray(z) - zd)/L_MOD)
          phihzp = stab_phi_heat(StabilityMethod, (zarray(z + 1) - zd)/L_MOD)
 
-         psihat_z(z) = psihat_z(z + 1) + dz/2.*phimzp*(cm*EXP(-1.*c2*beta*(zarray(z + 1) - zd)/elm)) &  !Taylor's approximation for integral
+         psihatm_z(z) = psihatm_z(z + 1) + dz/2.*phimzp*(cm*EXP(-1.*c2*beta*(zarray(z + 1) - zd)/elm)) &  !Taylor's approximation for integral
                        /(zarray(z + 1) - zd)
-         psihat_z(z) = psihat_z(z) + dz/2.*phimz*(cm*EXP(-1.*c2*beta*(zarray(z) - zd)/elm)) &
+         psihatm_z(z) = psihatm_z(z) + dz/2.*phimz*(cm*EXP(-1.*c2*beta*(zarray(z) - zd)/elm)) &
                        /(zarray(z) - zd)
          psihath_z(z) = psihath_z(z + 1) + dz/2.*phihzp*(ch*EXP(-1.*c2h*beta*(zarray(z + 1) - zd)/elm)) &  !Taylor's approximation for integral
                         /(zarray(z + 1) - zd)
@@ -214,17 +220,22 @@ contains
       ! Step 5
       ! calculate z0 iteratively
       !
-      z0 = 0.5  !first guess
-      err = 10.
-      psimz0 = 0.5
-      it = 1
-      DO WHILE ((err > 0.001) .AND. (it < 10))
-         psimz0 = stab_psi_mom(StabilityMethod, z0/L_MOD)
-         z01 = z0
-         z0 = (Zh - zd)*EXP(-1.*kappa/beta)*EXP(-1.*psimZh + psimz0)*EXP(psihat_z(idx_can))
-         err = ABS(z01 - z0)
-         it = it + 1
-      ENDDO
+      ! z0 = 0.5  !first guess
+      z0 = z0m  !first guess
+      if (Zh>0) then
+         ! if Zh>0, calculate z0 using RSL method
+         err = 10.
+         psimz0 = 0.5
+         it = 1
+         DO WHILE ((err > 0.001) .AND. (it < 10))
+            psimz0 = stab_psi_mom(StabilityMethod, z0/L_MOD)
+            z01 = z0
+            z0 = (Zh - zd)*EXP(-1.*kappa/beta)*EXP(-1.*psimZh + psimz0)*EXP(psihatm_z(idx_can))
+            err = ABS(z01 - z0)
+            it = it + 1
+         ENDDO
+      endif
+
 
       psimz0 = stab_psi_mom(StabilityMethod, z0/L_MOD)
       psihza = stab_psi_heat(StabilityMethod, (zMeas - zd)/L_MOD)
@@ -238,7 +249,7 @@ contains
       DO z = idx_can, nz
          psimz = stab_psi_mom(StabilityMethod, (zarray(z) - zd)/L_MOD)
          psihz = stab_psi_heat(StabilityMethod, (zarray(z) - zd)/L_MOD)
-         dataoutLineURSL(z) = (LOG((zarray(z) - zd)/z0) - psimz + psimz0 - psihat_z(z) + psihat_z(idx_can))/kappa
+         dataoutLineURSL(z) = (LOG((zarray(z) - zd)/z0) - psimz + psimz0 - psihatm_z(z) + psihatm_z(idx_can))/kappa
          dataoutLineTRSL(z) = (LOG((zarray(z) - zd)/(zMeas - zd)) - psihz + psihza + psihath_z(z) - psihath_z(idx_za - 1))/kappa
          dataoutLineqRSL(z) = (LOG((zarray(z) - zd)/(zMeas - zd)) - psihz + psihza + psihath_z(z) - psihath_z(idx_za - 1))/kappa
       ENDDO

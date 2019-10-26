@@ -896,7 +896,8 @@ CONTAINS
          !============ roughness sub-layer diagonostics ===============
          IF (Diagnose == 1) WRITE (*, *) 'Calling RSLProfile...'
          CALL RSLProfile( &
-            UStar, L_MOD, sfr, Zh, planF, StabilityMethod, &
+            Zh, z0m, zdm,&
+            UStar, L_MOD, sfr, planF, StabilityMethod, &
             avcp, lv_J_kg, &
             Temp_C, avRH, Press_hPa, z, qh, qe, &  ! input
             T2_C, q2_gkg, U10_ms, RH2, & !output

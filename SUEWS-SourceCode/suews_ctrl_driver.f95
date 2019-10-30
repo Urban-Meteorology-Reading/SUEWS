@@ -547,6 +547,9 @@ CONTAINS
       REAL(KIND(1D0)):: QH_Init
       INTEGER::i_iter
 
+      REAL(KIND(1d0)), DIMENSION(30):: psihatm_z
+      REAL(KIND(1d0)), DIMENSION(30):: psihath_z
+
       ! ########################################################################################
       ! save initial values of inout variables
       qn1_av_prev = qn1_av
@@ -901,6 +904,7 @@ CONTAINS
             avcp, lv_J_kg, &
             Temp_C, avRH, Press_hPa, z, qh, qe, &  ! input
             T2_C, q2_gkg, U10_ms, RH2, & !output
+            z0m,z0m,psihatm_z,psihath_z,& !output
             dataoutLineRSL) ! output
 
          ! diagnose surface temperature

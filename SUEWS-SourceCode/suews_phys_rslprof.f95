@@ -179,6 +179,10 @@ contains
       !    dz = Zh_RSL/10.
       !    zarray = (/(I, I=1, nz)/)*dz
       ! ENDIF
+      ! dz =(zMeas-min(1./3.,Zh_RSL/2.))/(nz-1)
+      ! do i = 1, nz
+      !    zarray(i) =min(1./3.,Zh_RSL/2.)+(i-1)*dz
+      ! end do
       IF (Zh_RSL <= 2) THEN
          ! add key heights for within canyon calculations
          zarray(1) = Zh_RSL/4.
@@ -264,7 +268,7 @@ contains
       ch = (1.-phi_hathzh)*EXP(c2h/2.)
 
       !
-      ! Step 4:
+      ! Step 4: determine psihat at levels above the canopy
       !
       psihatm_z = 0.*zarray
       psihath_z = 0.*zarray
@@ -296,7 +300,7 @@ contains
       ! if (Zh_RSL>Zh_min) then
       ! if Zh>Zh_min, calculate z0 using RSL method
       err = 10.
-      psimz0 = 0.5
+      ! psimz0 = 0.5
       it = 1
       DO WHILE ((err > 0.001) .AND. (it < 10))
          psimz0 = stab_psi_mom(StabilityMethod, z0/L_MOD_RSL)
@@ -305,6 +309,7 @@ contains
          err = ABS(z01 - z0)
          it = it + 1
       ENDDO
+      ! z0=RSL_cal_z0(StabilityMethod, zH_RSL,zd, beta, L_MOD_RSL, Lc,z0m)
       ! endif
 
       psimz0 = stab_psi_mom(StabilityMethod, z0/L_MOD_RSL)
@@ -320,7 +325,7 @@ contains
          psimz = stab_psi_mom(StabilityMethod, (zarray(z) - zd)/L_MOD_RSL)
          psihz = stab_psi_heat(StabilityMethod, (zarray(z) - zd)/L_MOD_RSL)
          ! dataoutLineURSL(z) = (LOG((zarray(z) - zd)/z0) - psimz + psimz0 - psihatm_z(z) + psihatm_z(idx_can))/kappa ! this is different from Theeuwes et al. (2019 BLM)
-         dataoutLineURSL(z) = (LOG((zarray(z) - zd)/z0) - psimz + psimz0 - psihatm_z(z))/kappa ! eqn. 3 in Theeuwes et al. (2019 BLM)
+         dataoutLineURSL(z) = (LOG((zarray(z) - zd)/z0) - psimz + psimz0 + psihatm_z(z))/kappa ! eqn. 3 in Theeuwes et al. (2019 BLM)
          ! dataoutLineTRSL(z) = (LOG((zarray(z) - zd)/(zMeas - zd)) - psihz + psihza + psihath_z(z) - psihath_z(idx_za - 1))/kappa
          ! dataoutLineqRSL(z) = (LOG((zarray(z) - zd)/(zMeas - zd)) - psihz + psihza + psihath_z(z) - psihath_z(idx_za - 1))/kappa
          dataoutLineTRSL(z) = (LOG((zarray(z) - zd)/(zMeas - zd)) - psihz + psihza + psihath_z(z) - psihath_z(idx_za))/kappa ! eqn. 4 in Theeuwes et al. (2019 BLM)
@@ -399,6 +404,13 @@ contains
       REAL(KIND(1d0)), PARAMETER::kappa = 0.40
       REAL(KIND(1d0)), PARAMETER::dz = 0.1 !height step
 
+      if ( z>100 ) then
+         psim_hat_z=0.
+         return
+      end if
+
+      zp=1.01*z ! a height above z
+
       zd = Zh_RSL - (beta**2.)*Lc
       elm = 2.*beta**3*Lc
 
@@ -411,9 +423,9 @@ contains
       psim_hat_zp = cal_psim_hat(StabilityMethod, zp, zh_RSL, L_MOD_RSL, beta, Lc)
 
       xxm1 = stab_phi_mom(StabilityMethod, (Zh_RSL - zd)/L_MOD_RSL)
-      xxm1_2 = stab_phi_mom(StabilityMethod, (Zh_RSL - zd + 0.01)/L_MOD_RSL)
+      xxm1_2 = stab_phi_mom(StabilityMethod, (Zh_RSL - zd + dz)/L_MOD_RSL)
 
-      dphi = (xxm1_2 - xxm1)/0.01
+      dphi = (xxm1_2 - xxm1)/dz
 
       phi_hatmZh = kappa/(2.*beta*xxm1)
 
@@ -472,6 +484,51 @@ contains
 
    end function cal_Lc
 
+   function RSL_cal_z0(StabilityMethod, zH_RSL,zd, beta, L_MOD_RSL,Lc,z0m) result(z0)
+      ! calculate surface/skin temperature
+      ! TS, 23 Oct 2019
+      implicit none
+      integer, intent(in) ::StabilityMethod
+      real(KIND(1D0)), intent(in) ::  zH_RSL ! canyon depth [m]
+      real(KIND(1D0)), intent(in) ::  zd ! canyon depth [m]
+      real(KIND(1D0)), intent(in) ::  L_MOD_RSL ! canyon depth [m]
+      real(KIND(1D0)), intent(in) ::  Lc ! canyon depth [m]
+      real(KIND(1D0)), intent(in) ::  z0m ! canyon depth [m]
+      real(KIND(1D0)), intent(in) ::  beta ! height scale for bluff bodies [m]
+      ! real(KIND(1D0)), DIMENSION(nsurf), intent(in) ::  sfr ! land cover fractions
+
+      ! output
+      real(KIND(1D0)) ::z0
+
+      ! internal variables
+      real(KIND(1D0)) ::psimZh,psimz0,z01,psihatm_Zh
+      real(KIND(1D0)) ::err
+      integer ::it
+
+      REAL(KIND(1d0)), PARAMETER::kappa = 0.40
+      ! REAL(KIND(1d0)), PARAMETER::r = 0.1
+      ! REAL(KIND(1d0)), PARAMETER::a1 = 4., a2 = -0.1, a3 = 1.5, a4 = -1.
+
+      psimZh = stab_psi_mom(StabilityMethod, (Zh_RSL - zd)/L_MOD_RSL)
+      psihatm_Zh=cal_psim_hat(StabilityMethod, Zh_RSL, zh_RSL, L_MOD_RSL, beta, Lc)
+
+      !first guess
+      z0 = z0m
+      ! if (Zh_RSL>Zh_min) then
+      ! if Zh>Zh_min, calculate z0 using RSL method
+      err = 10.
+      ! psimz0 = 0.5
+      it = 1
+      DO WHILE ((err > 0.001) .AND. (it < 10))
+         psimz0 = stab_psi_mom(StabilityMethod, z0/L_MOD_RSL)
+         z01 = z0
+         z0 = (Zh_RSL - zd)*EXP(-1.*kappa/beta)*EXP(-1.*psimZh + psimz0)*EXP(psihatm_Zh)
+         err = ABS(z01 - z0)
+         it = it + 1
+      ENDDO
+
+   end function RSL_cal_z0
+
    subroutine RSL_cal_prms( &
       StabilityMethod, zh, L_MOD, sfr, planF, &!input
       L_MOD_RSL,zH_RSL,Lc, beta, zd, elm,Scc,f)!output
@@ -480,24 +537,24 @@ contains
       implicit none
       integer, intent(in) :: StabilityMethod ! stability method
       real(KIND(1D0)), intent(in) ::  zh ! canyon depth [m]
-      real(KIND(1D0)), intent(in) ::  planF ! height scale for bluff bodies [m]
+      real(KIND(1D0)), intent(in) ::  planF ! frontal area index
       real(KIND(1D0)), intent(in) ::  L_MOD ! Obukhov length [m]
       real(KIND(1D0)), DIMENSION(nsurf), intent(in) ::  sfr ! land cover fractions
 
       ! output
       real(KIND(1D0)), intent(out) ::L_MOD_RSL
       real(KIND(1D0)), intent(out) ::zH_RSL
-      real(KIND(1D0)), intent(out) ::Lc
+      real(KIND(1D0)), intent(out) ::Lc ! height scale for bluff bodies [m]
       real(KIND(1D0)), intent(out) ::beta ! psim_hat at height of interest
       real(KIND(1D0)), intent(out) ::zd
       real(KIND(1D0)), intent(out) ::elm
+      real(KIND(1D0)), intent(out) ::Scc
+      real(KIND(1D0)), intent(out) ::f
 
       ! internal variables
       real(KIND(1D0)) ::sfr_zh
       real(KIND(1D0)) ::sfr_tr
       real(KIND(1D0)) ::phim
-      real(KIND(1D0)) ::Scc
-      real(KIND(1D0)) ::f
       real(KIND(1D0)) ::betaN2
       real(KIND(1D0)) ::betaHF
       real(KIND(1D0)) ::betaNL
@@ -512,6 +569,7 @@ contains
 
       ! zH_RSL
       zH_RSL = max(zh, Zh_min)
+      zH_RSL = zh
 
       ! land cover fraction of bluff bodies
       sfr_zh = sum(sfr([BldgSurf, ConifSurf, DecidSurf]))

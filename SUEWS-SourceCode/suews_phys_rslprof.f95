@@ -8,6 +8,7 @@ module rsl_module
 contains
 
    SUBROUTINE RSLProfile( &
+      zh_min,&
       Zh, z0m, zdm, &
       UStar, L_MOD, sfr, planF, StabilityMethod, &
       avcp, lv_J_kg, &
@@ -42,6 +43,7 @@ contains
       REAL(KIND(1d0)), INTENT(in):: z0m     ! Mean building height [m]
       REAL(KIND(1d0)), INTENT(in):: zdm     ! Mean building height [m]
       REAL(KIND(1d0)), INTENT(in):: planF  ! Frontal area index [-]
+      REAL(KIND(1d0)), INTENT(in):: zh_min  ! Frontal area index [-]
 
       INTEGER, INTENT(in)::StabilityMethod
 
@@ -90,7 +92,7 @@ contains
       REAL(KIND(1d0))::psihatm_zp
       REAL(KIND(1d0))::psihath_zp
       REAL(KIND(1d0))::dz! initial height step
-      REAL(KIND(1d0)), parameter::Zh_min = 0.15! limit for minimum canyon height used in RSL module
+      ! REAL(KIND(1d0)), parameter::Zh_min = 0.15! limit for minimum canyon height used in RSL module
       REAL(KIND(1d0)), parameter::ratio_dz = 1.618! ratio between neighbouring height steps
 
       REAL(KIND(1d0))::qa_gkg, qStar ! specific humidity scale
@@ -167,8 +169,9 @@ contains
       ! elm = 2.*beta**3*Lc
 
       call RSL_cal_prms( &
+         zh_min,&
          StabilityMethod, zh, L_MOD, sfr, planF, &!input
-         L_MOD_RSL,zH_RSL,Lc, beta, zd, elm,Scc,f)
+         L_MOD_RSL,zH_RSL,Lc, beta, zd,z0, elm,Scc,f)
 
       ! Define the height array
       !
@@ -295,32 +298,44 @@ contains
       ! Step 5
       ! calculate z0 iteratively
       !
-      ! z0 = 0.5  !first guess
-      z0 = z0m  !first guess
-      ! if (Zh_RSL>Zh_min) then
-      ! if Zh>Zh_min, calculate z0 using RSL method
-      err = 10.
-      ! psimz0 = 0.5
-      it = 1
-      DO WHILE ((err > 0.001) .AND. (it < 10))
-         psimz0 = stab_psi_mom(StabilityMethod, z0/L_MOD_RSL)
-         z01 = z0
-         z0 = (Zh_RSL - zd)*EXP(-1.*kappa/beta)*EXP(-1.*psimZh + psimz0)*EXP(psihatm_z(idx_can))
-         err = ABS(z01 - z0)
-         it = it + 1
-      ENDDO
+      ! ! z0 = 0.5  !first guess
+      ! z0 = z0m  !first guess
+      ! ! if (Zh_RSL>Zh_min) then
+      ! ! if Zh>Zh_min, calculate z0 using RSL method
+      ! err = 10.
+      ! ! psimz0 = 0.5
+      ! it = 1
+      ! DO WHILE ((err > 0.001) .AND. (it < 10))
+      !    psimz0 = stab_psi_mom(StabilityMethod, z0/L_MOD_RSL)
+      !    z01 = z0
+      !    z0 = (Zh_RSL - zd)*EXP(-1.*kappa/beta)*EXP(-1.*psimZh + psimz0)*EXP(psihatm_z(idx_can))
+      !    err = ABS(z01 - z0)
+      !    it = it + 1
+      ! ENDDO
       ! z0=RSL_cal_z0(StabilityMethod, zH_RSL,zd, beta, L_MOD_RSL, Lc,z0m)
       ! endif
 
+      !
+      ! Step 6
+      ! calculate above canopy variables
+      !
       psimz0 = stab_psi_mom(StabilityMethod, z0/L_MOD_RSL)
       psihza = stab_psi_heat(StabilityMethod, (zMeas - zd)/L_MOD_RSL)
       TStar = -1.*(qh/(avcp))/UStar
       qStar = -1.*(qe/lv_J_kg)/UStar
       qa_gkg = RH2qa(avRH/100, Press_hPa, Temp_c)
-      !
-      ! Step 6
-      ! calculate above canopy variables
-      !
+
+      if ( zh_RSL-zd <z0 ) then
+         ! when zh_RSL is too shallow, implying RSL doesn't apply, force RSL correction to zero
+         psihatm_z=0
+         psihath_z=0
+         beta=1.e6
+         !correct RSL-based z0 and zd using Rule of thumb (G&O 1999)
+         zd=0.7*zH_RSL
+         z0=0.1*zH_RSL
+         ! then MOST recovers from RSL correction
+      end if
+
       DO z = idx_can, nz
          psimz = stab_psi_mom(StabilityMethod, (zarray(z) - zd)/L_MOD_RSL)
          psihz = stab_psi_heat(StabilityMethod, (zarray(z) - zd)/L_MOD_RSL)
@@ -340,7 +355,9 @@ contains
       DO z = 1, idx_can
          dataoutLineURSL(z) = dataoutLineURSL(idx_can)*EXP(beta*(zarray(z) - Zh_RSL)/elm)
          dataoutLineTRSL(z) = ((dataoutLineTRSL(idx_can)*TStar) + t_h*EXP(beta*f*(zarray(z) - Zh_RSL)/elm) - t_h)/TStar
+         ! dataoutLineTRSL(z) = ((dataoutLineTRSL(idx_can)*TStar) + t_h*EXP(beta*f*(zarray(z) - Zh_RSL)/elm) - t_h)/TStar
          dataoutLineqRSL(z) = ((dataoutLineqRSL(idx_can)*qStar) + q_h*EXP(beta*f*(zarray(z) - Zh_RSL)/elm) - q_h)/qStar
+         ! dataoutLineqRSL(z) = ((dataoutLineqRSL(idx_can)*qStar) + q_h*EXP(beta*f*(zarray(z) - Zh_RSL)/elm) - q_h)/qStar
       ENDDO
 
       dataoutLineURSL = dataoutLineURSL*UStar
@@ -530,12 +547,14 @@ contains
    end function RSL_cal_z0
 
    subroutine RSL_cal_prms( &
+      zh_min,&
       StabilityMethod, zh, L_MOD, sfr, planF, &!input
-      L_MOD_RSL,zH_RSL,Lc, beta, zd, elm,Scc,f)!output
+      L_MOD_RSL,zH_RSL,Lc, beta, zd, z0, elm,Scc,f)!output
       ! calculate surface/skin temperature
       ! TS, 23 Oct 2019
       implicit none
       integer, intent(in) :: StabilityMethod ! stability method
+      real(KIND(1D0)), intent(in) ::  zh_min ! canyon depth [m]
       real(KIND(1D0)), intent(in) ::  zh ! canyon depth [m]
       real(KIND(1D0)), intent(in) ::  planF ! frontal area index
       real(KIND(1D0)), intent(in) ::  L_MOD ! Obukhov length [m]
@@ -547,6 +566,7 @@ contains
       real(KIND(1D0)), intent(out) ::Lc ! height scale for bluff bodies [m]
       real(KIND(1D0)), intent(out) ::beta ! psim_hat at height of interest
       real(KIND(1D0)), intent(out) ::zd
+      real(KIND(1D0)), intent(out) ::z0
       real(KIND(1D0)), intent(out) ::elm
       real(KIND(1D0)), intent(out) ::Scc
       real(KIND(1D0)), intent(out) ::f
@@ -559,17 +579,19 @@ contains
       real(KIND(1D0)) ::betaHF
       real(KIND(1D0)) ::betaNL
 
+      REAL(KIND(1d0)), PARAMETER::planF_low = 1e-6
       REAL(KIND(1d0)), PARAMETER::kappa = 0.40
+      REAL(KIND(1d0)), PARAMETER::z0m= 0.40
       REAL(KIND(1d0)), PARAMETER::r = 0.1
       REAL(KIND(1d0)), PARAMETER::a1 = 4., a2 = -0.1, a3 = 1.5, a4 = -1.
-      REAL(KIND(1d0)), parameter::Zh_min = 0.15! limit for minimum canyon height used in RSL module
+      ! REAL(KIND(1d0)), parameter::Zh_min = 2.5! limit for minimum canyon height used in RSL module
 
       ! under stable conditions, set a threshold for L_MOD to avoid numerical issues. TS 28 Oct 2019
       L_MOD_RSL = merge(L_MOD, max(300., L_MOD), L_MOD < 0)
 
       ! zH_RSL
       zH_RSL = max(zh, Zh_min)
-      zH_RSL = zh
+      ! zH_RSL = zh
 
       ! land cover fraction of bluff bodies
       sfr_zh = sum(sfr([BldgSurf, ConifSurf, DecidSurf]))
@@ -599,13 +621,10 @@ contains
       ! Parameterise beta according to Harman 2012 with upper limit of 0.5
       ! betaN for trees found to be 0.3 and for urban 0.4 linearly interpolate between the two using surface fractions
       ! betaN2 = 0.30 + (1.-sfr(ConifSurf) - sfr(ConifSurf))*0.1
-      if (sfr_zh > 0) then
+      ! if (sfr_zh > 0) then
          betaN2 = 0.30*sfr_tr/sfr_zh + (sfr_zh - sfr_tr)/sfr_zh*0.4
-      else
-         betaN2 = 0.35 ! what about if sfr_zh==0?
-      end if
 
-      betaHF = betaN2/phim
+         betaHF = betaN2/phim
       betaNL = (kappa/2.)/phim
 
       IF (Lc/L_MOD_RSL > a2) THEN
@@ -617,9 +636,10 @@ contains
       IF (beta > 0.5) THEN
          beta = 0.5
       ENDIF
-
       zd = Zh_RSL - (beta**2.)*Lc
       elm = 2.*beta**3*Lc
+
+      z0=rsl_cal_z0(StabilityMethod,zh_RSL,zd,beta,l_mod_rsl,lc,z0m)
 
    end subroutine RSL_cal_prms
 

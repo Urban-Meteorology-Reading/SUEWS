@@ -9,14 +9,14 @@ MODULE SUEWS_Driver
    USE NARP_MODULE, ONLY: NARP_cal_SunPosition
    USE AnOHM_module, ONLY: AnOHM
    USE resist_module, ONLY: AerodynamicResistance, BoundaryLayerResistance, SurfaceResistance, &
-                            cal_z0V, SUEWS_cal_RoughnessParameters
+      cal_z0V, SUEWS_cal_RoughnessParameters
    USE ESTM_module, ONLY: ESTM
    USE Snow_module, ONLY: SnowCalc, Snow_cal_MeltHeat, SnowUpdate, update_snow_albedo, update_snow_dens
    USE DailyState_module, ONLY: SUEWS_cal_DailyState, update_DailyStateLine
    USE WaterDist_module, ONLY: drainage, soilstore, &
-                               SUEWS_cal_SoilState, SUEWS_update_SoilMoist, &
-                               ReDistributeWater, SUEWS_cal_HorizontalSoilWater, &
-                               SUEWS_cal_WaterUse
+      SUEWS_cal_SoilState, SUEWS_update_SoilMoist, &
+      ReDistributeWater, SUEWS_cal_HorizontalSoilWater, &
+      SUEWS_cal_WaterUse
    USE ctrl_output, ONLY: varListAll
    USE DailyState_module, ONLY: SUEWS_update_DailyState
    use lumps_module, only: LUMPS_cal_QHQE
@@ -899,13 +899,13 @@ CONTAINS
          !============ roughness sub-layer diagonostics ===============
          IF (Diagnose == 1) WRITE (*, *) 'Calling RSLProfile...'
          CALL RSLProfile( &
-            1.2d0,&
-            Zh, z0m, zdm,&
+            1.2d0, &
+            Zh, z0m, zdm, &
             UStar, L_MOD, sfr, planF, StabilityMethod, &
             avcp, lv_J_kg, &
             Temp_C, avRH, Press_hPa, z, qh, qe, &  ! input
             T2_C, q2_gkg, U10_ms, RH2, & !output
-            z0m,z0m,psihatm_z,psihath_z,& !output
+            z0m, z0m, psihatm_z, psihath_z, & !output
             dataoutLineRSL) ! output
 
          ! diagnose surface temperature
@@ -2185,8 +2185,8 @@ CONTAINS
          avU1, &    !Average wind speed
          Temp_C, &  !Air temperature
          QH_init, & !sensible heat flux
-         avdens,& ! air density
-         avcp,& ! heat capacity of air
+         avdens, & ! air density
+         avcp, & ! heat capacity of air
          L_mod, &! output: !Obukhov length
          TStar, & !T*, temperature scale
          UStar, & !Friction velocity

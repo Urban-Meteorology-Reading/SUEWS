@@ -109,8 +109,8 @@ CONTAINS
       avU1, &    !Average wind speed
       Temp_C, &  !Air temperature
       QH_init, & !sensible heat flux [W m-2]
-      avdens,& ! air density
-      avcp,& ! heat capacity of air
+      avdens, & ! air density
+      avcp, & ! heat capacity of air
       L_MOD, & !Obukhov length! output:
       TStar, & !T*
       UStar, & !Friction velocity
@@ -140,7 +140,7 @@ CONTAINS
                         psim, &
                         z0l, &
                         psimz0, &
-                        H_init,&
+                        H_init, &
                         h
       REAL(KIND(1d0)), PARAMETER :: &
          k = 0.4, &             !Von Karman's contant

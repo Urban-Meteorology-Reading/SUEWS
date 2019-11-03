@@ -156,7 +156,7 @@ contains
       ! Calculate the actual heat fluxes
       QH_LUMPS = ((1 - alpha_qhqe) + psyc_s)/(1 + psyc_s)*(qn1 + qf - qs - Qm) - beta   !Eq 3, Grimmond & Oke (2002)
       !If LUMPS has had a problem, we still need a value
-      if ( QH_LUMPS == NAN )  QH_LUMPS =qn1*0.2
+      if (QH_LUMPS == NAN) QH_LUMPS = qn1*0.2
       QE_LUMPS = (alpha_qhqe/(1 + psyc_s)*(qn1 + qf - qs - Qm)) + beta              !Eq 4, Grimmond & Oke (2002)
 
       ! adjust RAINRES after E_mod calculation is done: ! moved here from above. TS, 13 Jan 2018

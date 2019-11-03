@@ -409,6 +409,8 @@ contains
 
       integer::z, idx_can
 
+      psihatm_z = 0.*zarray
+
       ! determine index at the canyon top
       DO z = 1, nz
          dif(z) = ABS(zarray(z) - Zh_RSL)
@@ -482,6 +484,8 @@ contains
       REAL(KIND(1d0)), PARAMETER::dz = 0.1 !height step
 
       integer::z, idx_can
+
+      psihath_z = 0.*zarray
 
       ! determine index at the canyon top
       DO z = 1, nz

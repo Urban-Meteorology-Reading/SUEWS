@@ -965,7 +965,6 @@ CONTAINS
       ! calculations of diagnostics end
       !==============================================================
 
-
       !==============================================================
       ! update inout variables with new values
       qn1_av = qn1_av_next

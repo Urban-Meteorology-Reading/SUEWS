@@ -323,7 +323,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSUEWS - 5), INTENT(OUT)     ::dataOutLineSUEWS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow - 5), INTENT(OUT)      ::dataOutLineSnow
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutESTM - 5), INTENT(OUT)      ::dataOutLineESTM
-      REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutRSL - 5), INTENT(OUT)       ::dataoutLineRSL ! Wind speed array
+      REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutRSL - 5), INTENT(OUT)       ::dataoutLineRSL ! RSL variable array
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutDailyState - 5), INTENT(OUT)::DailyStateLine
       ! ########################################################################################
 
@@ -398,7 +398,7 @@ CONTAINS
       REAL(KIND(1D0))::surf_chang_per_tstep
       REAL(KIND(1D0))::swe
       REAL(KIND(1D0))::t2_C
-      REAL(KIND(1D0))::tsfc_C
+      REAL(KIND(1D0))::TSfc_C
       REAL(KIND(1D0))::TempVeg
       REAL(KIND(1D0))::tot_chang_per_tstep
       REAL(KIND(1D0))::TStar
@@ -897,30 +897,28 @@ CONTAINS
          !    U10_ms, t2_C, q2_gkg, tsfc_C, RH2)!output
 
          !============ roughness sub-layer diagonostics ===============
-         IF (Diagnose == 1) WRITE (*, *) 'Calling RSLProfile...'
-         CALL RSLProfile( &
-            1.2d0, &
-            Zh, z0m, zdm, &
-            UStar, L_MOD, sfr, planF, StabilityMethod, &
-            avcp, lv_J_kg, &
-            Temp_C, avRH, Press_hPa, z, qh, qe, &  ! input
-            T2_C, q2_gkg, U10_ms, RH2, & !output
-            z0m, z0m, psihatm_z, psihath_z, & !output
-            dataoutLineRSL) ! output
+         ! IF (Diagnose == 1) WRITE (*, *) 'Calling RSLProfile...'
+         ! CALL RSLProfile( &
+         !    Zh, z0m, zdm, &
+         !    UStar, L_MOD, sfr, planF, StabilityMethod, &
+         !    avcp, lv_J_kg, &
+         !    Temp_C, avRH, Press_hPa, z, qh, qe, &  ! input
+         !    T2_C, q2_gkg, U10_ms, RH2, & !output
+         !    dataoutLineRSL) ! output
 
-         ! diagnose surface temperature
-         tsfc_C = cal_tsfc(qh, avdens, avcp, RA, temp_c)
+         !============ calculate surface temperature ===============
+         TSfc_C = cal_tsfc(qh, avdens, avcp, RA, temp_c)
 
          !============ surface-level diagonostics end ===============
 
          ! ============ BIOGENIC CO2 FLUX =======================
-         CALL SUEWS_cal_BiogenCO2( &
-            alpha_bioCO2, alpha_enh_bioCO2, avkdn, avRh, beta_bioCO2, beta_enh_bioCO2, BSoilSurf, &! input:
-            ConifSurf, DecidSurf, dectime, Diagnose, EmissionsMethod, Fc_anthro, G1, G2, G3, G4, &
-            G5, G6, gfunc, GrassSurf, gsmodel, id, it, ivConif, ivDecid, ivGrass, Kmax, LAI_id_next, LAIMin, &
-            LAIMax, MaxConductance, min_res_bioCO2, nsurf, NVegSurf, Press_hPa, resp_a, &
-            resp_b, S1, S2, sfr, SMDMethod, SnowFrac, t2_C, Temp_C, theta_bioCO2, TH, TL, vsmd, xsmd, &
-            Fc, Fc_biogen, Fc_photo, Fc_respi)! output:
+         ! CALL SUEWS_cal_BiogenCO2( &
+         !    alpha_bioCO2, alpha_enh_bioCO2, avkdn, avRh, beta_bioCO2, beta_enh_bioCO2, BSoilSurf, &! input:
+         !    ConifSurf, DecidSurf, dectime, Diagnose, EmissionsMethod, Fc_anthro, G1, G2, G3, G4, &
+         !    G5, G6, gfunc, GrassSurf, gsmodel, id, it, ivConif, ivDecid, ivGrass, Kmax, LAI_id_next, LAIMin, &
+         !    LAIMax, MaxConductance, min_res_bioCO2, nsurf, NVegSurf, Press_hPa, resp_a, &
+         !    resp_b, S1, S2, sfr, SMDMethod, SnowFrac, t2_C, Temp_C, theta_bioCO2, TH, TL, vsmd, xsmd, &
+         !    Fc, Fc_biogen, Fc_photo, Fc_respi)! output:
 
          ! force quit do-while, i.e., skip iteration and use NARP for Tsurf calculation
          ! if (NetRadiationMethod < 10 .or. NetRadiationMethod > 100) exit
@@ -936,11 +934,37 @@ CONTAINS
          ! force quit do-while loop if not convergent after 100 iterations
          if (i_iter > 100) exit
 
-         Ts_iter = tsfc_C
+         Ts_iter = TSfc_C
          l_mod_iter = l_mod
 
          !==============main calculation end=======================
       ENDDO ! end iteration for tsurf calculations
+
+      !==============================================================
+      ! Calculate diagnostics: these variables are decoupled from the main SUEWS calculation
+
+      !============ roughness sub-layer diagonostics ===============
+      IF (Diagnose == 1) WRITE (*, *) 'Calling RSLProfile...'
+      CALL RSLProfile( &
+         Zh, z0m, zdm, &
+         UStar, L_MOD, sfr, planF, StabilityMethod, &
+         avcp, lv_J_kg, &
+         Temp_C, avRH, Press_hPa, z, qh, qe, &  ! input
+         T2_C, q2_gkg, U10_ms, RH2, & !output
+         dataoutLineRSL) ! output
+
+      ! ============ BIOGENIC CO2 FLUX =======================
+      CALL SUEWS_cal_BiogenCO2( &
+         alpha_bioCO2, alpha_enh_bioCO2, avkdn, avRh, beta_bioCO2, beta_enh_bioCO2, BSoilSurf, &! input:
+         ConifSurf, DecidSurf, dectime, Diagnose, EmissionsMethod, Fc_anthro, G1, G2, G3, G4, &
+         G5, G6, gfunc, GrassSurf, gsmodel, id, it, ivConif, ivDecid, ivGrass, Kmax, LAI_id_next, LAIMin, &
+         LAIMax, MaxConductance, min_res_bioCO2, nsurf, NVegSurf, Press_hPa, resp_a, &
+         resp_b, S1, S2, sfr, SMDMethod, SnowFrac, t2_C, Temp_C, theta_bioCO2, TH, TL, vsmd, xsmd, &
+         Fc, Fc_biogen, Fc_photo, Fc_respi)! output:
+
+      ! calculations of diagnostics end
+      !==============================================================
+
 
       !==============================================================
       ! update inout variables with new values
@@ -990,7 +1014,7 @@ CONTAINS
          resistsurf, RH2, runoffAGimpervious, runoffAGveg, &
          runoff_per_tstep, runoffPipes, runoffSoil_per_tstep, &
          runoffWaterBody, sfr, smd, smd_nsurf, SnowAlb, SnowRemoval, &
-         state_id_next, state_per_tstep, surf_chang_per_tstep, swe, t2_C, tsfc_C, &
+         state_id_next, state_per_tstep, surf_chang_per_tstep, swe, t2_C, TSfc_C, &
          tot_chang_per_tstep, tsurf, UStar, wu_DecTr, &
          wu_EveTr, wu_Grass, z0m, zdm, zenith_deg, &
          datetimeLine, dataOutLineSUEWS)!output

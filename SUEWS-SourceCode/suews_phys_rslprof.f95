@@ -8,13 +8,11 @@ module rsl_module
 contains
 
    SUBROUTINE RSLProfile( &
-      zh_min, &
       Zh, z0m, zdm, &
       UStar, L_MOD, sfr, planF, StabilityMethod, &
       avcp, lv_J_kg, &
       Temp_C, avRH, Press_hPa, zMeas, qh, qe, &  ! input
       T2_C, q2_gkg, U10_ms, RH2, &!output
-      z0, zd, psihatm_z, psihath_z, & !output
       dataoutLineRSL) ! output
       !-----------------------------------------------------
       ! calculates windprofiles using MOST with a RSL-correction
@@ -43,7 +41,6 @@ contains
       REAL(KIND(1d0)), INTENT(in):: z0m     ! Mean building height [m]
       REAL(KIND(1d0)), INTENT(in):: zdm     ! Mean building height [m]
       REAL(KIND(1d0)), INTENT(in):: planF  ! Frontal area index [-]
-      REAL(KIND(1d0)), INTENT(in):: zh_min  ! Frontal area index [-]
 
       INTEGER, INTENT(in)::StabilityMethod
 
@@ -64,8 +61,8 @@ contains
 
       ! REAL(KIND(1d0)), INTENT(out), DIMENSION(nz*3):: zarrays ! Height array
       REAL(KIND(1d0)), INTENT(out), DIMENSION(nz*4):: dataoutLineRSL  ! Variables array (/U,T,q/)
-      REAL(KIND(1d0)), DIMENSION(nz), INTENT(out):: psihatm_z
-      REAL(KIND(1d0)), DIMENSION(nz), INTENT(out):: psihath_z
+      REAL(KIND(1d0)), DIMENSION(nz):: psihatm_z
+      REAL(KIND(1d0)), DIMENSION(nz):: psihath_z
       REAL(KIND(1d0)), DIMENSION(nz):: dif
       ! REAL(KIND(1d0)), DIMENSION(nz):: psihatm_z, psihath_z
       REAL(KIND(1d0)), DIMENSION(nz):: zarray
@@ -73,8 +70,8 @@ contains
       REAL(KIND(1d0)), DIMENSION(nz):: dataoutLineTRSL ! Temperature array [C]
       REAL(KIND(1d0)), DIMENSION(nz):: dataoutLineqRSL ! Specific humidity array [g kg-1]
 
-      REAL(KIND(1d0)), INTENT(out)::z0  ! roughness length from H&F
-      REAL(KIND(1d0)), INTENT(out)::zd ! zero-plane displacement
+      REAL(KIND(1d0))::z0  ! roughness length from H&F
+      REAL(KIND(1d0))::zd ! zero-plane displacement
 
       REAL(KIND(1d0))::Lc_build, Lc_tree, Lc ! canopy drag length scale
       REAL(KIND(1d0))::Scc ! Schmidt number for temperature and humidity
@@ -92,7 +89,7 @@ contains
       REAL(KIND(1d0))::psihatm_zp
       REAL(KIND(1d0))::psihath_zp
       REAL(KIND(1d0))::dz! initial height step
-      ! REAL(KIND(1d0)), parameter::Zh_min = 0.15! limit for minimum canyon height used in RSL module
+      REAL(KIND(1d0)), parameter::Zh_min = 0.15! limit for minimum canyon height used in RSL module
       REAL(KIND(1d0)), parameter::ratio_dz = 1.618! ratio between neighbouring height steps
 
       REAL(KIND(1d0))::qa_gkg, qStar ! specific humidity scale
@@ -169,7 +166,8 @@ contains
       ! elm = 2.*beta**3*Lc
 
       call RSL_cal_prms( &
-         zh_min, z0m, zdm, &
+         Zh_min,&
+         z0m, zdm, &
          StabilityMethod, zh, L_MOD, sfr, planF, &!input
          L_MOD_RSL, zH_RSL, Lc, beta, zd, z0, elm, Scc, f)
 
@@ -503,7 +501,7 @@ contains
    end function RSL_cal_z0
 
    subroutine RSL_cal_prms( &
-      zh_min, z0m, zdm, &
+      zh_min,z0m, zdm, &
       StabilityMethod, zh, L_MOD, sfr, planF, &!input
       L_MOD_RSL, zH_RSL, Lc, beta, zd, z0, elm, Scc, f)!output
       ! calculate surface/skin temperature
@@ -519,15 +517,15 @@ contains
       real(KIND(1D0)), DIMENSION(nsurf), intent(in) ::  sfr ! land cover fractions
 
       ! output
-      real(KIND(1D0)), intent(out) ::L_MOD_RSL
-      real(KIND(1D0)), intent(out) ::zH_RSL
+      real(KIND(1D0)), intent(out) ::L_MOD_RSL ! Obukhov length used in RSL module with thresholds applied
+      real(KIND(1D0)), intent(out) ::zH_RSL ! mean canyon height used in RSL module with thresholds applied
       real(KIND(1D0)), intent(out) ::Lc ! height scale for bluff bodies [m]
       real(KIND(1D0)), intent(out) ::beta ! psim_hat at height of interest
-      real(KIND(1D0)), intent(out) ::zd
-      real(KIND(1D0)), intent(out) ::z0
-      real(KIND(1D0)), intent(out) ::elm
-      real(KIND(1D0)), intent(out) ::Scc
-      real(KIND(1D0)), intent(out) ::f
+      real(KIND(1D0)), intent(out) ::zd ! displacement height to prescribe if necessary [m]
+      real(KIND(1D0)), intent(out) ::z0 ! roughness length [m]
+      real(KIND(1D0)), intent(out) ::elm ! length scale used in RSL
+      real(KIND(1D0)), intent(out) ::Scc ! parameter in RSL
+      real(KIND(1D0)), intent(out) ::f ! parameter in RSL
 
       ! internal variables
       real(KIND(1D0)) ::sfr_zh
@@ -542,7 +540,7 @@ contains
       ! REAL(KIND(1d0)), PARAMETER::z0m= 0.40
       REAL(KIND(1d0)), PARAMETER::r = 0.1
       REAL(KIND(1d0)), PARAMETER::a1 = 4., a2 = -0.1, a3 = 1.5, a4 = -1.
-      ! REAL(KIND(1d0)), parameter::Zh_min = 2.5! limit for minimum canyon height used in RSL module
+      ! REAL(KIND(1d0)), parameter::Zh_min = 0.4! limit for minimum canyon height used in RSL module
 
       ! under stable conditions, set a threshold for L_MOD to avoid numerical issues. TS 28 Oct 2019
       L_MOD_RSL = merge(L_MOD, max(300., L_MOD), L_MOD < 0)

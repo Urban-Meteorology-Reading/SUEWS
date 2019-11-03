@@ -86,8 +86,6 @@ contains
       REAL(KIND(1d0))::sfr_tr ! land cover fraction of trees
       REAL(KIND(1d0))::L_MOD_RSL ! Obukhov length used in RSL module with thresholds applied
       REAL(KIND(1d0))::zH_RSL ! mean canyon height used in RSL module with thresholds applied
-      REAL(KIND(1d0))::psihatm_zp
-      REAL(KIND(1d0))::psihath_zp
       REAL(KIND(1d0))::dz! initial height step
       REAL(KIND(1d0)), parameter::Zh_min = 0.15! limit for minimum canyon height used in RSL module
       REAL(KIND(1d0)), parameter::ratio_dz = 1.618! ratio between neighbouring height steps
@@ -105,65 +103,6 @@ contains
       !
       ! ! Step 1
       ! ! Start setting up the parameters
-      ! ! calculate Lc for tree grid fraction using eq 1 H&F'07 and rest of grid using C&B'04
-      ! !
-      ! ! under stable conditions, set a threshold for L_MOD to avoid numerical issues. TS 28 Oct 2019
-      ! L_MOD_RSL = merge(L_MOD, max(300., L_MOD), L_MOD < 0)
-
-      ! ! zH_RSL
-      ! zH_RSL = max(zh, Zh_min)
-
-      ! ! land cover fraction of bluff bodies
-      ! sfr_zh = sum(sfr([BldgSurf, ConifSurf, DecidSurf]))
-      ! ! set a threshold of 0.99 for sfr_zh to avoid numerical difficulties
-      ! sfr_zh = min(sfr_zh, 0.99)
-
-      ! ! land cover fraction of trees
-      ! sfr_tr = sum(sfr([ConifSurf, DecidSurf]))
-
-      ! ! height scale for buildings !not used? why?
-      ! Lc_build = (1.-sfr(BldgSurf))/planF*Zh_RSL  ! Coceal and Belcher 2004 assuming Cd = 2
-
-      ! ! height scale for tress
-      ! Lc_tree = 1./(cd_tree*a_tree) ! not used? why?
-
-      ! ! height scale for bluff bodies
-      ! Lc = (1.-sfr_zh)/planF*Zh_RSL
-      ! Lc = cal_lc(zh_RSL, planF, sfr)
-
-      ! ! phim at Lc
-      ! phim = stab_phi_mom(StabilityMethod, Lc/L_MOD_RSL)
-
-      ! Scc = 0.5 + 0.3*TANH(2.*Lc/L_MOD_RSL)  ! Schmidt number Harman and Finnigan 2008: assuming the same for heat and momemntum
-      ! f = 0.5*((1.+4.*r*Scc)**0.5) - 0.5
-      ! !
-
-      ! !
-      ! ! Step 2:
-      ! ! Parameterise beta according to Harman 2012 with upper limit of 0.5
-      ! ! betaN for trees found to be 0.3 and for urban 0.4 linearly interpolate between the two using surface fractions
-      ! ! betaN2 = 0.30 + (1.-sfr(ConifSurf) - sfr(ConifSurf))*0.1
-      ! if (sfr_zh > 0) then
-      !    betaN2 = 0.30*sfr_tr/sfr_zh + (sfr_zh - sfr_tr)/sfr_zh*0.4
-      ! else
-      !    betaN2 = 0.35 ! what about if sfr_zh==0?
-      ! end if
-
-      ! betaHF = betaN2/phim
-      ! betaNL = (kappa/2.)/phim
-
-      ! IF (Lc/L_MOD_RSL > a2) THEN
-      !    beta = betaHF
-      ! ELSE
-      !    beta = betaNL + ((betaHF - betaNL)/(1.+a1*abs(Lc/L_MOD_RSL - a2)**a3))
-      ! ENDIF
-
-      ! IF (beta > 0.5) THEN
-      !    beta = 0.5
-      ! ENDIF
-      ! ! zd = merge(Zh_RSL - (beta**2.)*Lc, zdm, Zh_RSL>zh_min) ! if Zh>0, calculate z0 using RSL method; use SUEWS-based zdm otherwise
-      ! zd = Zh_RSL - (beta**2.)*Lc
-      ! elm = 2.*beta**3*Lc
 
       call RSL_cal_prms( &
          Zh_min, &
@@ -258,8 +197,6 @@ contains
          !otherwise use RSL approach to calculate correction factors
          ! Step 3:
          !
-         psimZh = stab_psi_mom(StabilityMethod, (Zh_RSL - zd)/L_MOD_RSL)
-
          ! calculate phihatM according to H&F '07 and H&F '08 for heat and humidity
          xxm1 = stab_phi_mom(StabilityMethod, (Zh_RSL - zd)/L_MOD_RSL)
          xxm1_2 = stab_phi_mom(StabilityMethod, (Zh_RSL - zd + 1.)/L_MOD_RSL)
@@ -303,46 +240,11 @@ contains
             psihath_z(z) = psihath_z(z) + dz/2.*phihz*(ch*EXP(-1.*c2h*beta*(zarray(z) - zd)/elm)) &
                            /(zarray(z) - zd)
          ENDDO
-         ! psihatm_z=cal_psihatm_z(StabilityMethod, zarray, zh_RSL, L_MOD_RSL, beta, Lc)
-         ! psihath_z=cal_psihath_z(StabilityMethod, zarray, zh_RSL, L_MOD_RSL, beta, Scc, f, Lc)
+         ! psihatm_z=cal_psihatm_z(StabilityMethod, zarray, L_MOD_RSL, zH_RSL, Lc, beta, zd, elm)
+         ! psihath_z=cal_psihath_z(StabilityMethod, zarray, L_MOD_RSL, zH_RSL, Lc, beta, zd, elm, Scc, f)
 
       end if
 
-      !
-      ! Step 5
-      ! calculate z0 iteratively
-      !
-      ! ! z0 = 0.5  !first guess
-      ! z0 = z0m  !first guess
-      ! ! if (Zh_RSL>Zh_min) then
-      ! ! if Zh>Zh_min, calculate z0 using RSL method
-      ! err = 10.
-      ! ! psimz0 = 0.5
-      ! it = 1
-      ! DO WHILE ((err > 0.001) .AND. (it < 10))
-      !    psimz0 = stab_psi_mom(StabilityMethod, z0/L_MOD_RSL)
-      !    z01 = z0
-      !    z0 = (Zh_RSL - zd)*EXP(-1.*kappa/beta)*EXP(-1.*psimZh + psimz0)*EXP(psihatm_z(idx_can))
-      !    err = ABS(z01 - z0)
-      !    it = it + 1
-      ! ENDDO
-      ! z0=RSL_cal_z0(StabilityMethod, zH_RSL,zd, beta, L_MOD_RSL, Lc,z0m)
-      ! endif
-
-      ! correct parameters if RSL approach doesn't apply for a shallow canyon
-      ! if (zh_RSL - zd < z0) then
-      !    ! when zh_RSL is too shallow, implying RSL doesn't apply, force RSL correction to zero
-      !    psihatm_z = 0
-      !    psihath_z = 0
-      !    beta = 1.e6
-      !    !correct RSL-based z0 and zd using Rule of thumb (G&O 1999)
-      !    zd = 0.7*zH_RSL
-      !    z0 = 0.1*zH_RSL
-      !    ! then MOST recovers from RSL correction
-      ! end if
-
-      !
-      ! Step 6
       ! calculate above canopy variables
       !
       psimz0 = stab_psi_mom(StabilityMethod, z0/L_MOD_RSL)
@@ -472,7 +374,7 @@ contains
 
    end function cal_psim_hat
 
-   function cal_psihatm_z(StabilityMethod, zarray, zh_RSL, L_MOD_RSL, beta, Lc) result(psihatm_z)
+   function cal_psihatm_z(StabilityMethod, zarray, L_MOD_RSL, zH_RSL, Lc, beta, zd, elm) result(psihatm_z)
       ! calculate psi_hat for momentum
       ! TS, 23 Oct 2019
       implicit none
@@ -482,18 +384,18 @@ contains
       real(KIND(1D0)), intent(in) ::  Lc ! height scale for bluff bodies [m]
       real(KIND(1D0)), intent(in) ::  beta ! parameter in RSL
       real(KIND(1D0)), intent(in) ::  L_MOD_RSL ! Obukhov length [m]
+      real(KIND(1D0)),intent(in) ::zd ! displacement height used in RSL
+      real(KIND(1D0)),intent(in) ::elm ! displacement height used in RSL
 
       ! output
       real(KIND(1D0)), DIMENSION(nz) ::psihatm_z ! psim_hat at height of interest
 
       ! internal variables
-      real(KIND(1D0)) ::zp ! a height above z used for iterative calculations
-      real(KIND(1D0)) ::zd ! displacement height used in RSL
-      real(KIND(1D0)) ::phim_lc ! displacement height used in RSL
+      ! real(KIND(1D0)) ::zp ! a height above z used for iterative calculations
+      ! real(KIND(1D0)) ::phim_lc ! displacement height used in RSL
       real(KIND(1D0)) ::phimz ! displacement height used in RSL
       real(KIND(1D0)) ::phimzp ! displacement height used in RSL
-      real(KIND(1D0)) ::psim_hat_zp ! displacement height used in RSL
-      real(KIND(1D0)) ::elm ! displacement height used in RSL
+      ! real(KIND(1D0)) ::psim_hat_zp ! displacement height used in RSL
       real(KIND(1D0)) ::xxm1 ! displacement height used in RSL
       real(KIND(1D0)) ::xxm1_2 ! displacement height used in RSL
       real(KIND(1D0)) ::dphi ! displacement height used in RSL
@@ -544,7 +446,7 @@ contains
 
    end function cal_psihatm_z
 
-   function cal_psihath_z(StabilityMethod, zarray, zh_RSL, L_MOD_RSL, beta, Scc, f, Lc) result(psihath_z)
+   function cal_psihath_z(StabilityMethod, zarray, L_MOD_RSL, zH_RSL, Lc, beta, zd, elm, Scc, f) result(psihath_z)
       ! calculate psi_hat for momentum
       ! TS, 23 Oct 2019
       implicit none
@@ -556,18 +458,18 @@ contains
       real(KIND(1D0)), intent(in) ::  Scc ! parameter in RSL
       real(KIND(1D0)), intent(in) ::  f ! parameter in RSL
       real(KIND(1D0)), intent(in) ::  L_MOD_RSL ! Obukhov length [m]
+      real(KIND(1D0)), intent(in) ::  elm ! displacement height used in RSL
+      real(KIND(1D0)),intent(in) ::zd ! displacement height used in RSL
 
       ! output
       real(KIND(1D0)), DIMENSION(nz) ::psihath_z ! psim_hat at height of interest
 
       ! internal variables
-      real(KIND(1D0)) ::zp ! a height above z used for iterative calculations
-      real(KIND(1D0)) ::zd ! displacement height used in RSL
-      real(KIND(1D0)) ::phim_lc ! displacement height used in RSL
+      ! real(KIND(1D0)) ::zp ! a height above z used for iterative calculations
+      ! real(KIND(1D0)) ::phim_lc ! displacement height used in RSL
       real(KIND(1D0)) ::phihz ! displacement height used in RSL
       real(KIND(1D0)) ::phihzp ! displacement height used in RSL
-      real(KIND(1D0)) ::psim_hat_zp ! displacement height used in RSL
-      real(KIND(1D0)) ::elm ! displacement height used in RSL
+      ! real(KIND(1D0)) ::psim_hat_zp ! displacement height used in RSL
       real(KIND(1D0)) ::xxh1 ! displacement height used in RSL
       real(KIND(1D0)) ::xxh1_2 ! displacement height used in RSL
       real(KIND(1D0)) ::dphih ! displacement height used in RSL

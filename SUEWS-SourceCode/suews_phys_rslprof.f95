@@ -384,8 +384,8 @@ contains
       real(KIND(1D0)), intent(in) ::  Lc ! height scale for bluff bodies [m]
       real(KIND(1D0)), intent(in) ::  beta ! parameter in RSL
       real(KIND(1D0)), intent(in) ::  L_MOD_RSL ! Obukhov length [m]
-      real(KIND(1D0)),intent(in) ::zd ! displacement height used in RSL
-      real(KIND(1D0)),intent(in) ::elm ! displacement height used in RSL
+      real(KIND(1D0)), intent(in) ::zd ! displacement height used in RSL
+      real(KIND(1D0)), intent(in) ::elm ! displacement height used in RSL
 
       ! output
       real(KIND(1D0)), DIMENSION(nz) ::psihatm_z ! psim_hat at height of interest
@@ -461,7 +461,7 @@ contains
       real(KIND(1D0)), intent(in) ::  f ! parameter in RSL
       real(KIND(1D0)), intent(in) ::  L_MOD_RSL ! Obukhov length [m]
       real(KIND(1D0)), intent(in) ::  elm ! displacement height used in RSL
-      real(KIND(1D0)),intent(in) ::zd ! displacement height used in RSL
+      real(KIND(1D0)), intent(in) ::zd ! displacement height used in RSL
 
       ! output
       real(KIND(1D0)), DIMENSION(nz) ::psihath_z ! psim_hat at height of interest

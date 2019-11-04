@@ -153,7 +153,6 @@ contains
          zarray(i) = zarray(4) + (i - 4)*dz
       end do
 
-
       ! add key heights (2m and 10m) to zarray
       ! 2m:
       DO z = 1, nz
@@ -375,7 +374,6 @@ contains
       psim_hat_z = psim_hat_zp + dz/2.*phim_zp*(cm*EXP(-1.*c2*beta*(zp - zd)/elm))/(zp - zd)
       psim_hat_z = psim_hat_z + dz/2.*phim_z*(cm*EXP(-1.*c2*beta*(z - zd)/elm))/(z - zd)
 
-
    end function cal_psim_hat
 
    function cal_psihatm_z(StabilityMethod, nz, zarray, L_MOD_RSL, zH_RSL, Lc, beta, zd, elm) result(psihatm_z)
@@ -453,7 +451,6 @@ contains
       ENDDO
 
    end function cal_psihatm_z
-
 
    function cal_psihath_z(StabilityMethod, nz, zarray, L_MOD_RSL, zH_RSL, Lc, beta, zd, elm, Scc, f) result(psihath_z)
 

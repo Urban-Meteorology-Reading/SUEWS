@@ -103,13 +103,14 @@ CONTAINS
 
    SUBROUTINE cal_Stab( &
       StabilityMethod, &! input
-      dectime, & !Decimal time
       zzd, &     !Active measurement height (meas. height-displac. height)
       z0m, &     !Aerodynamic roughness length
       zdm, &     !Displacement height
       avU1, &    !Average wind speed
       Temp_C, &  !Air temperature
-      H_init, & !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
+      QH_init, & !sensible heat flux [W m-2]
+      avdens, & ! air density
+      avcp, & ! heat capacity of air
       L_MOD, & !Obukhov length! output:
       TStar, & !T*
       UStar, & !Friction velocity
@@ -118,13 +119,14 @@ CONTAINS
       IMPLICIT NONE
       INTEGER, INTENT(in):: StabilityMethod
 
-      REAL(KIND(1d0)), INTENT(in)::dectime !Decimal time
       REAL(KIND(1d0)), INTENT(in)::zzd     !Active measurement height (meas. height-displac. height)
       REAL(KIND(1d0)), INTENT(in)::z0m     !Aerodynamic roughness length
       REAL(KIND(1d0)), INTENT(in)::zdm     !Displacement height
       REAL(KIND(1d0)), INTENT(in)::avU1    !Average wind speed
       REAL(KIND(1d0)), INTENT(in)::Temp_C    !Air temperature
-      REAL(KIND(1d0)), INTENT(in)::H_init    !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
+      REAL(KIND(1d0)), INTENT(in)::QH_init    !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
+      REAL(KIND(1d0)), INTENT(in)::avdens ! air density [kg m-3]
+      REAL(KIND(1d0)), INTENT(in)::avcp ! volumetric heat capacity [J m-3 K-1]
 
       REAL(KIND(1d0)), INTENT(out)::L_MOD!Obukhov length
       REAL(KIND(1d0)), INTENT(out)::TStar!T*
@@ -138,6 +140,7 @@ CONTAINS
                         psim, &
                         z0l, &
                         psimz0, &
+                        H_init, &
                         h
       REAL(KIND(1d0)), PARAMETER :: &
          k = 0.4, &             !Von Karman's contant
@@ -147,6 +150,9 @@ CONTAINS
       INTEGER :: i
 
       LOGICAL :: debug = .FALSE.
+
+      !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
+      H_init = QH_init/(avdens*avcp)
 
       IF (debug) WRITE (*, *) StabilityMethod, z0m, avU1, H_init, UStar, L_MOD
       G_T_K = (Grav/(Temp_C + 273.16))*k !gravity constant/(Temperature*Von Karman Constant)
@@ -204,31 +210,31 @@ CONTAINS
       ENDDO
       IF (ABS(L_MOD) > 1e6) L_MOD = L_MOD/ABS(L_MOD)*1e6
 
-      ! limit zL to be within [-5,2]
-      ! IF (zL < -5 .OR. zL > 2) THEN
-      !    zL = MIN(2., MAX(-5., zL))
-      !    ! limit other output variables as well as z/L
-      !    L_MOD = zzd/zL
-      !    z0L = z0m/L_MOD
-      !    psim = stab_psi_mom(StabilityMethod, zL, zL)
-      !    psimz0 = stab_psi_mom(StabilityMethod, zL, z0L)
-      !    ! TS 01 Aug 2018: set a low limit at 0.15 m/s (Schumann 1987, BLM)
-      !    ! to prevent potential issues in other stability-related calcualtions
-      !    UStar = MAX(0.15, KUZ/(LOG(Zzd/z0m) - psim + psimz0))
-      !    TStar = (-H/UStar)
+      ! limit zL to be within [-5,5]
+      ! IF (zL < -5 .OR. zL > 5) THEN
+      zL = MIN(5., MAX(-5., zL))
+      ! limit other output variables as well as z/L
+      L_MOD = zzd/zL
+      z0L = z0m/L_MOD
+      psim = stab_psi_mom(StabilityMethod, zL)
+      psimz0 = stab_psi_mom(StabilityMethod, z0L)
+      ! TS 01 Aug 2018: set a low limit at 0.15 m/s (Schumann 1987, BLM)
+      ! to prevent potential issues in other stability-related calcualtions
+      UStar = MAX(0.15, KUZ/(LOG(Zzd/z0m) - psim + psimz0))
+      TStar = (-H/UStar)
       ! END IF
 
       ! TS: limit UStar and TStar to reasonable values
       ! 02 Aug 2018: set a low limit at 0.15 m/s (Schumann 1987, BLM)
-      UStar = MAX(0.15, UStar)
+      ! UStar = MAX(0.15, UStar)
       TStar = (-H/UStar)
       IF (UStar < 0.0001) THEN       !If u* still too small after iteration, then force quit simulation and write out error info
          ! UStar=KUZ/(LOG(Zzd/z0m))
          PRINT *, 'UStar', UStar, KUZ, (LOG(Zzd/z0m)), Zzd, z0m
-         CALL ErrorHint(30, 'SUBROUTINE STAB_lumps:[ u*< 0.0001] zl,dectime', zl, dectime, notUsedI)
-         CALL ErrorHint(30, 'SUBROUTINE STAB_lumps:[ u*< 0.0001] z0l,UStar', z0l, UStar, notUsedI)
-         CALL ErrorHint(30, 'SUBROUTINE STAB_lumps:[ u*< 0.0001] psim,psimz0', psim, psimz0, notUsedI)
-         CALL ErrorHint(30, 'SUBROUTINE STAB_lumps:[ u*< 0.0001] AVU1,log(zzd/z0m)', AVU1, LOG(zzd/z0m), notUsedI)
+         CALL ErrorHint(30, 'SUBROUTINE cal_Stab:[ u*< 0.0001] zl,L_MOD', zl, L_MOD, notUsedI)
+         CALL ErrorHint(30, 'SUBROUTINE cal_Stab:[ u*< 0.0001] z0l,UStar', z0l, UStar, notUsedI)
+         CALL ErrorHint(30, 'SUBROUTINE cal_Stab:[ u*< 0.0001] psim,psimz0', psim, psimz0, notUsedI)
+         CALL ErrorHint(30, 'SUBROUTINE cal_Stab:[ u*< 0.0001] AVU1,log(zzd/z0m)', AVU1, LOG(zzd/z0m), notUsedI)
 
          ! RETURN
       ENDIF

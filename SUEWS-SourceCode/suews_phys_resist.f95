@@ -440,10 +440,10 @@ contains
       REAL(KIND(1d0)), INTENT(in) ::Z
 
       REAL(KIND(1d0)), INTENT(out) ::planF
-      REAL(KIND(1d0)), INTENT(out) ::Zh
-      REAL(KIND(1d0)), INTENT(out) ::z0m
-      REAL(KIND(1d0)), INTENT(out) ::zdm
-      REAL(KIND(1d0)), INTENT(out) ::ZZD
+      REAL(KIND(1d0)), INTENT(out) ::Zh  ! effective height of bluff bodies
+      REAL(KIND(1d0)), INTENT(out) ::z0m ! aerodynamic roughness length
+      REAL(KIND(1d0)), INTENT(out) ::zdm ! zero-plance displacement
+      REAL(KIND(1d0)), INTENT(out) ::ZZD ! z-zdm
 
       REAL(KIND(1d0)) ::areaZh
       INTEGER, PARAMETER :: notUsedI = -55

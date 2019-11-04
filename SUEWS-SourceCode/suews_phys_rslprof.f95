@@ -652,9 +652,9 @@ contains
       ! betaN for trees found to be 0.3 and for urban 0.4 linearly interpolate between the two using surface fractions
       ! betaN2 = 0.30 + (1.-sfr(ConifSurf) - sfr(ConifSurf))*0.1
       if (sfr_zh > 0) then
-      betaN2 = 0.30*sfr_tr/sfr_zh + (sfr_zh - sfr_tr)/sfr_zh*0.4
+         betaN2 = 0.30*sfr_tr/sfr_zh + (sfr_zh - sfr_tr)/sfr_zh*0.4
       ELSE
-         betaN2=0.35
+         betaN2 = 0.35
       endif
 
       betaHF = betaN2/phim

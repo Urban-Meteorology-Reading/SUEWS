@@ -5,8 +5,6 @@ module rsl_module
       nsurf, BldgSurf, ConifSurf, DecidSurf
    implicit none
 
-
-
 contains
 
    SUBROUTINE RSLProfile( &

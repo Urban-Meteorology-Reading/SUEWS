@@ -5,6 +5,8 @@ module rsl_module
       nsurf, BldgSurf, ConifSurf, DecidSurf
    implicit none
 
+   INTEGER, PARAMETER :: nz = 30   ! number of levels 10 levels in canopy plus 20 (3 x Zh) above the canopy
+
 contains
 
    SUBROUTINE RSLProfile( &
@@ -150,6 +152,7 @@ contains
       do i = 5, nz
          zarray(i) = zarray(4) + (i - 4)*dz
       end do
+
 
       ! add key heights (2m and 10m) to zarray
       ! 2m:
@@ -372,9 +375,11 @@ contains
       psim_hat_z = psim_hat_zp + dz/2.*phim_zp*(cm*EXP(-1.*c2*beta*(zp - zd)/elm))/(zp - zd)
       psim_hat_z = psim_hat_z + dz/2.*phim_z*(cm*EXP(-1.*c2*beta*(z - zd)/elm))/(z - zd)
 
+
    end function cal_psim_hat
 
    function cal_psihatm_z(StabilityMethod, nz, zarray, L_MOD_RSL, zH_RSL, Lc, beta, zd, elm) result(psihatm_z)
+
       ! calculate psi_hat for momentum
       ! TS, 23 Oct 2019
       implicit none
@@ -449,12 +454,15 @@ contains
 
    end function cal_psihatm_z
 
+
    function cal_psihath_z(StabilityMethod, nz, zarray, L_MOD_RSL, zH_RSL, Lc, beta, zd, elm, Scc, f) result(psihath_z)
+
       ! calculate psi_hat for momentum
       ! TS, 23 Oct 2019
       implicit none
       integer, intent(in) :: StabilityMethod ! stability method
       integer, intent(in) :: nz ! number of vertical layers
+
       real(KIND(1D0)), DIMENSION(nz), intent(in) :: zarray ! height of interest [m]
       real(KIND(1D0)), intent(in) ::  zh_RSL ! canyon depth [m]
       real(KIND(1D0)), intent(in) ::  Lc ! height scale for bluff bodies [m]

@@ -371,7 +371,7 @@ CONTAINS
             else
                ! use iteration-based approach to calculate LUP and also TSURF; TS 20 Sep 2019
                TSURF_SNOW = tsurf_0_K
-               LUP_SNOW = NARP_EMIS_SNOW*SIGMA_SB*TSURF**4 + (1 - NARP_EMIS_SNOW)*LDOWN
+               LUP_SNOW = NARP_EMIS_SNOW*SIGMA_SB*TSURF_SNOW**4 + (1 - NARP_EMIS_SNOW)*LDOWN
             end if
 
             QSTAR_SNOW = KDOWN - KUP_SNOW + LDOWN - LUP_SNOW

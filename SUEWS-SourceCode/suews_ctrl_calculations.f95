@@ -145,7 +145,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       PopDensNighttime, PopProf_24hr, PorMax_dec, PorMin_dec, &
       Precip, PrecipLimit, PrecipLimitAlb, Press_hPa, &
       QF0_BEU, Qf_A, Qf_B, Qf_C, &
-      qn1_obs, qh_obs, qs_obs, qf_obs, &
+      qn1_obs, qs_obs, qf_obs, &
       RadMeltFact, RAINCOVER, RainMaxRes, resp_a, resp_b, &
       RoughLenHeatMethod, RoughLenMomMethod, RunoffToWater, S1, S2, &
       SatHydraulicConduct, SDDFull, SDD_id, sfr, SMDMethod, SnowAlb, SnowAlbMax, &

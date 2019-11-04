@@ -75,6 +75,21 @@ def load_SUEWS_results(n_grid, n_year):
     return res_sim
 
 
+# load results as pandas dataframe
+def load_df_SUEWS(dir_out='Output', fn_pattern='*SUEWS_60.txt'):
+    fl_res = list(Path(dir_out).glob(fn_pattern))
+    # re-order results into [year, grid] layout
+    fl_res = sorted(list(Path(dir_out).glob(fn_pattern)))
+    list_grid = [fn.stem.split('_')[0] for fn in fl_res]
+    # load individual files with extra level named by grid
+    list_df = [pd.concat([pd.read_csv(fn, sep=r'\s+', header=0)], keys=[grid])
+               for fn, grid in zip(fl_res, list_grid)]
+    # re-order the results into [grid,time]
+    res_sim = pd.concat(list_df).sort_index()
+
+    return res_sim
+
+
 # save SiteSelect to file
 def save_SiteSelect(df_siteselect, fn_ss='Input/SUEWS_SiteSelect.txt'):
     # process SiteSelect
@@ -223,7 +238,8 @@ def run_sim(name_sim, dir_input, dir_exe, name_exe,
     fl_output = glob('Output/*SUEWS_60.txt')
     if len(fl_output) > 0:
         # load results
-        res_sim = load_SUEWS_results(n_grid, n_year)
+        # res_sim = load_SUEWS_results(n_grid, n_year)
+        res_sim = load_df_SUEWS('Output','*SUEWS_60.txt')
         return res_sim
     else:
         # change back to original path
@@ -318,10 +334,12 @@ def test_multigrid(
         res_sim_singlegrid.append(res_sim_grid)
 
     # combine `res_sim_singlegrid`
-    res_sim_singlegrid = np.concatenate(tuple(res_sim_singlegrid))
+    # res_sim_singlegrid = np.concatenate(tuple(res_sim_singlegrid))
+    res_sim_singlegrid = pd.concat(res_sim_singlegrid).sort_index()
 
     # test equality
-    res_test = np.array_equal(res_sim_multigrid, res_sim_singlegrid)
+    # res_test = np.array_equal(res_sim_multigrid.values, res_sim_singlegrid.values)
+    res_test = res_sim_multigrid.equals(res_sim_singlegrid)
 
     # change back to previous path
     os.chdir(dir_sys)

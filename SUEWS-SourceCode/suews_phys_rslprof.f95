@@ -51,6 +51,8 @@ contains
       REAL(KIND(1d0)), INTENT(out):: U10_ms ! wind speed at 10 m [m s-1]
       REAL(KIND(1d0)), INTENT(out):: RH2 ! Air relative humidity [-]
 
+      INTEGER, PARAMETER :: nz = 30   ! number of levels 10 levels in canopy plus 20 (3 x Zh) above the canopy
+
       REAL(KIND(1d0)), PARAMETER:: cd_tree = 1.2, & ! drag coefficient tree canopy !!!!needs adjusting!!!
                                    a_tree = 0.05, & ! the foliage area per unit volume !!!!needs adjusting!!!
                                    kappa = 0.40, &! von karman constant
@@ -240,8 +242,8 @@ contains
             psihath_z(z) = psihath_z(z) + dz/2.*phihz*(ch*EXP(-1.*c2h*beta*(zarray(z) - zd)/elm)) &
                            /(zarray(z) - zd)
          ENDDO
-         ! psihatm_z=cal_psihatm_z(StabilityMethod, zarray, L_MOD_RSL, zH_RSL, Lc, beta, zd, elm)
-         ! psihath_z=cal_psihath_z(StabilityMethod, zarray, L_MOD_RSL, zH_RSL, Lc, beta, zd, elm, Scc, f)
+         ! psihatm_z=cal_psihatm_z(StabilityMethod, nz, zarray, L_MOD_RSL, zH_RSL, Lc, beta, zd, elm)
+         ! psihath_z=cal_psihath_z(StabilityMethod, nz, zarray, L_MOD_RSL, zH_RSL, Lc, beta, zd, elm, Scc, f)
 
       end if
 
@@ -374,11 +376,13 @@ contains
 
    end function cal_psim_hat
 
-   function cal_psihatm_z(StabilityMethod, zarray, L_MOD_RSL, zH_RSL, Lc, beta, zd, elm) result(psihatm_z)
+   function cal_psihatm_z(StabilityMethod, nz, zarray, L_MOD_RSL, zH_RSL, Lc, beta, zd, elm) result(psihatm_z)
+
       ! calculate psi_hat for momentum
       ! TS, 23 Oct 2019
       implicit none
       integer, intent(in) :: StabilityMethod ! stability method
+      integer, intent(in) :: nz ! number of vertical layers
       real(KIND(1D0)), DIMENSION(nz), intent(in) :: zarray ! height of interest [m]
       real(KIND(1D0)), intent(in) ::  zh_RSL ! canyon depth [m]
       real(KIND(1D0)), intent(in) ::  Lc ! height scale for bluff bodies [m]
@@ -448,11 +452,14 @@ contains
 
    end function cal_psihatm_z
 
-   function cal_psihath_z(StabilityMethod, zarray, L_MOD_RSL, zH_RSL, Lc, beta, zd, elm, Scc, f) result(psihath_z)
+   function cal_psihath_z(StabilityMethod, nz, zarray, L_MOD_RSL, zH_RSL, Lc, beta, zd, elm, Scc, f) result(psihath_z)
+
       ! calculate psi_hat for momentum
       ! TS, 23 Oct 2019
       implicit none
       integer, intent(in) :: StabilityMethod ! stability method
+      integer, intent(in) :: nz ! number of vertical layers
+
       real(KIND(1D0)), DIMENSION(nz), intent(in) :: zarray ! height of interest [m]
       real(KIND(1D0)), intent(in) ::  zh_RSL ! canyon depth [m]
       real(KIND(1D0)), intent(in) ::  Lc ! height scale for bluff bodies [m]

@@ -2,6 +2,25 @@
 
 This is a public repo for SUEWS source and documentation.
 
+
+
+- [SUEWS](#suews)
+  - [Documentation](#documentation)
+  - [Developer Note](#developer-note)
+    - [Branch](#branch)
+      - [Central curated branches](#central-curated-branches)
+      - [Workflow](#workflow)
+    - [Manual](#manual)
+    - [Test](#test)
+      - [Tests and purposes](#tests-and-purposes)
+      - [Workflow](#workflow-1)
+      - [Preparation of tests](#preparation-of-tests)
+    - [Debugging using GDB](#debugging-using-gdb)
+      - [using GDB on macOS](#using-gdb-on-macos)
+      - [debugging with GDB](#debugging-with-gdb)
+    - [Questions](#questions)
+
+
 ## Documentation
 
 * Documentation site: <https://suews-docs.readthedocs.io/>
@@ -94,6 +113,8 @@ Once the docker image is installed, simply run this from the SUEWS root folder f
 
 ```
  which will mount the current `SUEWS` directory to docker's path `/source` and enter the interactive mode for debugging.
+
+
 
 
 #### debugging with GDB

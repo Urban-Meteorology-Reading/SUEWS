@@ -465,7 +465,7 @@ contains
          planF = dot_product([FAIBldg, FAIEveTree, FAIDecTree*(1 - porosity_id)], sfr([BldgSurf, ConifSurf, DecidSurf]))/areaZh
       ELSE
          Zh = 0   !Set Zh to zero if areaZh = 0
-         planF = 0.00001
+         planF = 0.01
       ENDIF
 
       IF (Zh /= 0) THEN

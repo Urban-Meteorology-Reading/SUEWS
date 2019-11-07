@@ -12,27 +12,24 @@ This is a public repo for SUEWS source and documentation.
 
 ### Branch
 
+The SUEWS repo follows the [`GitFlow` model](https://nvie.com/posts/a-successful-git-branching-model/) to manage sustainable development.
+
 #### Central curated branches
 These branches are regularly curated by admin members with specific purposes and set with triggers for automatic deployment (via MS Azure Pipeline) in the [*releases* page](https://github.com/Urban-Meteorology-Reading/SUEWS/releases) named **Latest Release Test**:
 
 * `master`:
   * the main branch that keeps milestone and stable features.
   * `push` is restricted to admin members.
-* `PublicRelease`:
-  * used for public releases: compiled binaries are archived and published to the public.
-  * version information (e.g., 2018c) will be added as a tag once published and a formal release will be available via the `Releases` tab.
+* `develop`:
+  * used for core developments.
   * `push` is restricted to admin members.
 
-#### Feature branches
-Branches for specific features are NOT maintained by admin members: they are proposed and maintained by related developers. Being without central curation, developers are strongly suggested to following certain rules:
 
-* using the latest `master` as the basis to conduct feature development for easier merging at a later time.
-* naming the feature branch as `test-dev-{feature}` so certain branch maintenance rules can be easily applied by curators whenever necessary.
-* testing the features as thorough as possible; details refer to the [Test](###Test) section.
+#### Workflow
 
-#### General merging workflow
+Please follow the [`GitFlow` model](https://nvie.com/posts/a-successful-git-branching-model/) for development.
 
-`test-dev-{feature}` --[feature ready]--> [automatic test passed]--> `master` --[release ready]--> `PublicRelease`
+![`GitFlow` model](https://nvie.com/img/git-model@2x.png)
 
 
 

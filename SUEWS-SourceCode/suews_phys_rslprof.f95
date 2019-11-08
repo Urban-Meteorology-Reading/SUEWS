@@ -117,20 +117,20 @@ contains
       ! Define the height array with consideration of key heights
       ! set number of heights within canopy
       IF (Zh_RSL <= 2) THEN
-         nz_can=5
+         nz_can = 5
       ELSE IF (Zh_RSL <= 10) THEN
-         nz_can=10
+         nz_can = 10
       else
-         nz_can=15
+         nz_can = 15
       ENDIF
       ! fill up heights in canopy
-      dz=Zh_RSL/nz_can
+      dz = Zh_RSL/nz_can
       do i = 1, nz_can
-         zarray(i)=dz*i
+         zarray(i) = dz*i
       end do
       ! fill up heights above canopy
       dz = (zMeas - Zh_RSL)/(nz - nz_can)
-      do i = nz_can+1, nz
+      do i = nz_can + 1, nz
          zarray(i) = Zh_RSL + (i - nz_can)*dz
       end do
 
@@ -163,7 +163,7 @@ contains
       idx_za = MINLOC(dif, DIM=1)
       zarray(idx_za) = zMeas
 
-      if (zh_RSL - zd < z0 .or. zh< zh_min) then
+      if (zh_RSL - zd < z0 .or. zh < zh_min) then
          ! correct parameters if RSL approach doesn't apply for a shallow canyon
          ! when zh_RSL is too shallow, implying RSL doesn't apply, force RSL correction to zero
          psihatm_z = 0
@@ -233,7 +233,7 @@ contains
       psimz0 = stab_psi_mom(StabilityMethod, z0/L_MOD_RSL)
       psimza = stab_psi_mom(StabilityMethod, (zMeas - zd)/L_MOD_RSL)
       psihza = stab_psi_heat(StabilityMethod, (zMeas - zd)/L_MOD_RSL)
-      UStar_RSL= avU1*kappa/(LOG((zMeas - zd)/z0) - psimza + psimz0 + psihatm_z(nz))
+      UStar_RSL = avU1*kappa/(LOG((zMeas - zd)/z0) - psimza + psimz0 + psihatm_z(nz))
       TStar_RSL = -1.*(qh/(avcp))/UStar_RSL
       qStar_RSL = -1.*(qe/lv_J_kg)/UStar_RSL
       qa_gkg = RH2qa(avRH/100, Press_hPa, Temp_c)

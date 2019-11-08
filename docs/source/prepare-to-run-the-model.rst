@@ -47,7 +47,7 @@ Decide what type of model run you are interested in
    * - SUEWS for multiple grids or areas
      - Yes
    * - SUEWS with Boundary Layer (BL)
-     - No
+     - Yes
    * - SUEWS with snow
      - Yes
    * - SUEWS with SOLWEIG

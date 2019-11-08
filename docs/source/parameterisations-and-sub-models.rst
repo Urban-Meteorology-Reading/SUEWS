@@ -125,17 +125,19 @@ A convective boundary layer (CBL) slab model (Cleugh and Grimmond
 2001 [CG2001]_) calculates the CBL height, temperature and humidity during
 daytime (Onomura et al. 2015 [Shiho2015]_).
 
-Thermal comfort
----------------
+.. SOLWEIG is fully removed since 2019a
 
-**SOLWEIG** (Solar and longwave environmental irradiance geometry model,
-Lindberg et al. 2008 [FL2008]_, Lindberg and Grimmond 2011 [FL2011]_) is a 2D
-radiation model to estimate mean radiant temperature.
+.. Thermal comfort
+.. ---------------
 
-.. figure:: /assets/img/Bluews_2.jpg
-    :alt:  Overview of scales. Source: Onomura et al. (2015) [Shiho2015]_
+.. **SOLWEIG** (Solar and longwave environmental irradiance geometry model,
+.. Lindberg et al. 2008 [FL2008]_, Lindberg and Grimmond 2011 [FL2011]_) is a 2D
+.. radiation model to estimate mean radiant temperature.
 
-    Overview of scales. Source: Onomura et al. (2015) [Shiho2015]_
+.. .. figure:: /assets/img/Bluews_2.jpg
+..     :alt:  Overview of scales. Source: Onomura et al. (2015) [Shiho2015]_
+
+..     Overview of scales. Source: Onomura et al. (2015) [Shiho2015]_
 
 Surface Diagnostics
 -------------------

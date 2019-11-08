@@ -322,7 +322,7 @@ References
 .. [T19]
    Theeuwes NE, Ronda RJ, Harman IN, Christen A, Grimmond CSB (2019)
    Parametrizing Horizontally Averaged Wind and Temperature Profiles in the Urban Roughness Sublayer.
-   Boundary-Layer Meteorol accepted
+   Boundary-Layer Meteorol, 173: 321. https://doi.org/10.1007/s10546-019-00472-1
 
 .. [J19]
     Järvi, L., Havu, M., Ward, H. C., Bellucco, V., McFadden, J. P., Toivonen, T., et al. (2019).

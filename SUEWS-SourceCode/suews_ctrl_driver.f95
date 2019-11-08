@@ -947,9 +947,9 @@ CONTAINS
       IF (Diagnose == 1) WRITE (*, *) 'Calling RSLProfile...'
       CALL RSLProfile( &
          Zh, z0m, zdm, &
-         UStar, L_MOD, sfr, planF, StabilityMethod, &
+         L_MOD, sfr, planF, StabilityMethod, &
          avcp, lv_J_kg, &
-         Temp_C, avRH, Press_hPa, z, qh, qe, &  ! input
+         avU1, Temp_C, avRH, Press_hPa, z, qh, qe, &  ! input
          T2_C, q2_gkg, U10_ms, RH2, & !output
          dataoutLineRSL) ! output
 

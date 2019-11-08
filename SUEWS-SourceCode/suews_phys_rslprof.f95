@@ -11,9 +11,9 @@ contains
 
    SUBROUTINE RSLProfile( &
       Zh, z0m, zdm, &
-      UStar, L_MOD, sfr, planF, StabilityMethod, &
+      L_MOD, sfr, planF, StabilityMethod, &
       avcp, lv_J_kg, &
-      Temp_C, avRH, Press_hPa, zMeas, qh, qe, &  ! input
+      avU1, Temp_C, avRH, Press_hPa, zMeas, qh, qe, &  ! input
       T2_C, q2_gkg, U10_ms, RH2, &!output
       dataoutLineRSL) ! output
       !-----------------------------------------------------
@@ -29,11 +29,11 @@ contains
       IMPLICIT NONE
 
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in) ::sfr! surface fractions
-      REAL(KIND(1d0)), INTENT(in):: zMeas  ! Air temperature/ moisture forcing height [m]
+      REAL(KIND(1d0)), INTENT(in):: zMeas  ! height of atmospheric forcing [m]
+      REAL(KIND(1d0)), INTENT(in):: avU1   ! Wind speed at forcing height [m s-1]
       REAL(KIND(1d0)), INTENT(in):: Temp_C ! Air temperature at forcing height [C]
       REAL(KIND(1d0)), INTENT(in):: avRH   ! relative humidity at forcing height [-]
       REAL(KIND(1d0)), INTENT(in):: Press_hPa ! pressure at forcing height [hPa]
-      REAL(KIND(1d0)), INTENT(in):: UStar  ! Friction velocity [m s-1]
       REAL(KIND(1d0)), INTENT(in):: L_MOD  ! Obukhov length [m]
       REAL(KIND(1d0)), INTENT(in):: avcp  ! specific heat capacity [J kg-1 K-1]
       REAL(KIND(1d0)), INTENT(in):: lv_J_kg  ! Latent heat of vaporization in [J kg-1]
@@ -77,13 +77,14 @@ contains
 
       REAL(KIND(1d0))::Lc_build, Lc_tree, Lc ! canopy drag length scale
       REAL(KIND(1d0))::Scc ! Schmidt number for temperature and humidity
-      REAL(KIND(1d0))::phim, psimz, psimZh, psimz0, phi_hatmZh, phi_hathZh, phimzp, phimz, phihzp, phihz, psihz, psihza  ! stability function for momentum
+      REAL(KIND(1d0))::phim, psimz, psimZh, psimz0, psimza, phi_hatmZh, phi_hathZh, phimzp, phimz, phihzp, phihz, psihz, psihza  ! stability function for momentum
       REAL(KIND(1d0))::betaHF, betaNL, beta, betaN2  ! beta coefficient from Harman 2012
       REAL(KIND(1d0))::elm ! mixing length
       REAL(KIND(1d0))::xxm1, xxm1_2, xxh1, xxh1_2, err, z01, dphi, dphih ! dummy variables for stability functions
       REAL(KIND(1d0))::f, cm, c2, ch, c2h ! H&F'07 and H&F'08 'constants'
       REAL(KIND(1d0))::t_h, q_h ! H&F'08 canopy corrections
-      REAL(KIND(1d0))::TStar ! temperature scale
+      REAL(KIND(1d0))::TStar_RSL ! temperature scale
+      REAL(KIND(1d0))::UStar_RSL ! friction velocity used in RSL
       REAL(KIND(1d0))::sfr_zh ! land cover fraction of bluff bodies: buildings and trees
       REAL(KIND(1d0))::sfr_tr ! land cover fraction of trees
       REAL(KIND(1d0))::L_MOD_RSL ! Obukhov length used in RSL module with thresholds applied
@@ -92,8 +93,9 @@ contains
       REAL(KIND(1d0)), parameter::Zh_min = 0.15! limit for minimum canyon height used in RSL module
       REAL(KIND(1d0)), parameter::ratio_dz = 1.618! ratio between neighbouring height steps
 
-      REAL(KIND(1d0))::qa_gkg, qStar ! specific humidity scale
+      REAL(KIND(1d0))::qa_gkg, qStar_RSL ! specific humidity scale
       INTEGER :: I, z, it, idx_can, idx_za, idx_2m, idx_10m
+      INTEGER :: nz_can ! number of heights in canyon
       !
       ! Step 1: Calculate grid-cell dependent constants
       ! Step 2: Calculate Beta (crucial for H&F method)
@@ -112,45 +114,24 @@ contains
          StabilityMethod, zh, L_MOD, sfr, planF, &!input
          L_MOD_RSL, zH_RSL, Lc, beta, zd, z0, elm, Scc, f)
 
-      ! Define the height array
-      !
-      ! IF ((3.*Zh_RSL) < 10.) THEN
-      !    dz = min(1./3.,Zh_RSL/2.)      ! if canopy height is small use steps of 0.33333 m to get to 10 m
-      !    zarray = (/(I, I=1, nz)/)*dz
-      ! ELSE
-      !    dz = Zh_RSL/10.
-      !    zarray = (/(I, I=1, nz)/)*dz
-      ! ENDIF
-      ! dz =(zMeas-min(1./3.,Zh_RSL/2.))/(nz-1)
-      ! do i = 1, nz
-      !    zarray(i) =min(1./3.,Zh_RSL/2.)+(i-1)*dz
-      ! end do
+      ! Define the height array with consideration of key heights
+      ! set number of heights within canopy
       IF (Zh_RSL <= 2) THEN
-         ! add key heights for within canyon calculations
-         zarray(1) = Zh_RSL/4.
-         zarray(2) = Zh_RSL/2.
-         zarray(3) = merge(0.99*Zh_RSL, Zh_RSL, Zh_RSL == 2.)
-         ! define heights for above canyon calculations
-         zarray(4) = 2.
+         nz_can=5
       ELSE IF (Zh_RSL <= 10) THEN
-         ! add key heights for within canyon calculations
-         zarray(1) = 2.
-         zarray(2) = (2 + Zh_RSL)/2.
-         zarray(3) = merge(0.99*Zh_RSL, Zh_RSL, Zh_RSL == 10.)
-         ! define heights for above canyon calculations
-         zarray(4) = 10.
+         nz_can=10
       else
-         ! add key heights for within canyon calculations
-         zarray(1) = 2.
-         zarray(2) = 10.
-         zarray(3) = (10 + Zh_RSL)/2.
-         ! define heights for above canyon calculations
-         zarray(4) = Zh_RSL
+         nz_can=15
       ENDIF
-      ! fill up other heights in zarray
-      dz = (zMeas - zarray(4))/(nz - 4.)
-      do i = 5, nz
-         zarray(i) = zarray(4) + (i - 4)*dz
+      ! fill up heights in canopy
+      dz=Zh_RSL/nz_can
+      do i = 1, nz_can
+         zarray(i)=dz*i
+      end do
+      ! fill up heights above canopy
+      dz = (zMeas - Zh_RSL)/(nz - nz_can)
+      do i = nz_can+1, nz
+         zarray(i) = Zh_RSL + (i - nz_can)*dz
       end do
 
       ! add key heights (2m and 10m) to zarray
@@ -182,7 +163,7 @@ contains
       idx_za = MINLOC(dif, DIM=1)
       zarray(idx_za) = zMeas
 
-      if (zh_RSL - zd < z0) then
+      if (zh_RSL - zd < z0 .or. zh< zh_min) then
          ! correct parameters if RSL approach doesn't apply for a shallow canyon
          ! when zh_RSL is too shallow, implying RSL doesn't apply, force RSL correction to zero
          psihatm_z = 0
@@ -250,16 +231,19 @@ contains
       ! calculate above canopy variables
       !
       psimz0 = stab_psi_mom(StabilityMethod, z0/L_MOD_RSL)
+      psimza = stab_psi_mom(StabilityMethod, (zMeas - zd)/L_MOD_RSL)
       psihza = stab_psi_heat(StabilityMethod, (zMeas - zd)/L_MOD_RSL)
-      TStar = -1.*(qh/(avcp))/UStar
-      qStar = -1.*(qe/lv_J_kg)/UStar
+      UStar_RSL= avU1*kappa/(LOG((zMeas - zd)/z0) - psimza + psimz0 + psihatm_z(nz))
+      TStar_RSL = -1.*(qh/(avcp))/UStar_RSL
+      qStar_RSL = -1.*(qe/lv_J_kg)/UStar_RSL
       qa_gkg = RH2qa(avRH/100, Press_hPa, Temp_c)
 
       DO z = idx_can, nz
          psimz = stab_psi_mom(StabilityMethod, (zarray(z) - zd)/L_MOD_RSL)
          psihz = stab_psi_heat(StabilityMethod, (zarray(z) - zd)/L_MOD_RSL)
-         ! dataoutLineURSL(z) = (LOG((zarray(z) - zd)/z0) - psimz + psimz0 - psihatm_z(z) + psihatm_z(idx_can))/kappa ! this is different from Theeuwes et al. (2019 BLM)
+         dataoutLineURSL(z) = (LOG((zarray(z) - zd)/z0) - psimz + psimz0 - psihatm_z(z) + psihatm_z(idx_can))/kappa ! this is different from Theeuwes et al. (2019 BLM)
          dataoutLineURSL(z) = (LOG((zarray(z) - zd)/z0) - psimz + psimz0 + psihatm_z(z))/kappa ! eqn. 3 in Theeuwes et al. (2019 BLM)
+         ! dataoutLineURSL(z) = (LOG((zarray(z) - zd)/(zMeas - zd)) - psimz + psimza + psihatm_z(z)-psihatm_z(idx_za))/kappa ! eqn. 3 in Theeuwes et al. (2019 BLM)
          dataoutLineTRSL(z) = (LOG((zarray(z) - zd)/(zMeas - zd)) - psihz + psihza + psihath_z(z) - psihath_z(idx_za))/kappa ! eqn. 4 in Theeuwes et al. (2019 BLM)
          dataoutLineqRSL(z) = (LOG((zarray(z) - zd)/(zMeas - zd)) - psihz + psihza + psihath_z(z) - psihath_z(idx_za))/kappa
       ENDDO
@@ -267,17 +251,17 @@ contains
       ! Step 7
       ! calculate in canopy variables
       !
-      t_h = Scc*TStar/(beta*f)
-      q_h = Scc*qStar/(beta*f)
+      t_h = Scc*TStar_RSL/(beta*f)
+      q_h = Scc*qStar_RSL/(beta*f)
       DO z = 1, idx_can
          dataoutLineURSL(z) = dataoutLineURSL(idx_can)*EXP(beta*(zarray(z) - Zh_RSL)/elm)
-         dataoutLineTRSL(z) = ((dataoutLineTRSL(idx_can)*TStar) + t_h*EXP(beta*f*(zarray(z) - Zh_RSL)/elm) - t_h)/TStar
-         dataoutLineqRSL(z) = ((dataoutLineqRSL(idx_can)*qStar) + q_h*EXP(beta*f*(zarray(z) - Zh_RSL)/elm) - q_h)/qStar
+         dataoutLineTRSL(z) = dataoutLineTRSL(idx_can) + (t_h*EXP(beta*f*(zarray(z) - Zh_RSL)/elm) - t_h)/TStar_RSL
+         dataoutLineqRSL(z) = dataoutLineqRSL(idx_can) + (q_h*EXP(beta*f*(zarray(z) - Zh_RSL)/elm) - q_h)/qStar_RSL
       ENDDO
 
-      dataoutLineURSL = dataoutLineURSL*UStar
-      dataoutLineTRSL = dataoutLineTRSL*TStar + Temp_C
-      dataoutLineqRSL = (dataoutLineqRSL*qStar + qa_gkg/1000.)*1000.
+      dataoutLineURSL = dataoutLineURSL*UStar_RSL
+      dataoutLineTRSL = dataoutLineTRSL*TStar_RSL + Temp_C
+      dataoutLineqRSL = (dataoutLineqRSL*qStar_RSL + qa_gkg/1000.)*1000.
 
       dataoutLineRSL = (/zarray, dataoutLineURSL, dataoutLineTRSL, dataoutLineqRSL/)
 
@@ -625,8 +609,8 @@ contains
 
       ! land cover fraction of bluff bodies
       sfr_zh = sum(sfr([BldgSurf, ConifSurf, DecidSurf]))
-      ! set a threshold of 0.99 for sfr_zh to avoid numerical difficulties
-      sfr_zh = min(sfr_zh, 0.99)
+      ! set a threshold for sfr_zh to avoid numerical difficulties
+      sfr_zh = min(sfr_zh, 0.8)
 
       ! land cover fraction of trees
       sfr_tr = sum(sfr([ConifSurf, DecidSurf]))

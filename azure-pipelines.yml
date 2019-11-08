@@ -6,8 +6,12 @@ trigger:
 
 # Set variables once
 variables:
-  release_tag:          'latest-dev'
-  release_title:        'Latest Development'
+  # use `latest-dev` in dev mode
+  # release_tag:          'latest-dev'
+  # release_title:        'Latest Development'
+  # update the following in release mode
+  release_tag:          '2019a'
+  release_title:        '2019a Release'
 
 resources:
 - repo:                 self

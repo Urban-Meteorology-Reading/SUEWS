@@ -35,7 +35,7 @@ jobs:
   - script:             |
       make release
       make test
-    displayName:        'make suews'
+    displayName:        'prepare release'
     continueOnError:    true
 
   - task:               GithubRelease@0
@@ -110,7 +110,7 @@ jobs:
 
   - bash:               |
        make release
-    displayName:        'make suews'
+    displayName:        'prepare release suews'
     failOnStderr:       false
 
   - task:               GithubRelease@0
@@ -192,7 +192,7 @@ jobs:
 
   - script:             |
        make release
-    displayName:        'make suews'
+    displayName:        'prepare release'
     continueOnError:    true
 
   - task:               GithubRelease@0

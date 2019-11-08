@@ -72,7 +72,7 @@ docs:
 	$(MAKE) -B -C $(docs_dir) html
 
 # live html documentation
-docs:
+livehtml:
 	$(MAKE) -B -C $(docs_dir) livehtml
 
 # If wanted, clean all *.o files after build

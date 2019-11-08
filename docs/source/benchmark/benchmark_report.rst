@@ -18,4 +18,4 @@ Each report includes the following parts:
   #. Pair plots: comparison in simulation results between different version-pairs.
   #. Time series plots: comparison in simulated monthly climatologies of diurnal cycles of each variable between different version-pairs.
 
-The latest benchmark reports are available at `the SUEWS Benchmark site <https://urban-meteorology-reading.github.io/SUEWS-Benchmark/cases/London_KCL/report/London_KCL.html>`_.
+The latest benchmark reports are available at `the SUEWS Benchmark site <https://urban-meteorology-reading.github.io/SUEWS-Benchmark/>`_.

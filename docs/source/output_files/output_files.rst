@@ -142,19 +142,21 @@ Input).
   :widths: auto
 
 
-SOLWEIGpoiOut.txt
-~~~~~~~~~~~~~~~~~
+.. SOLWEIG is fully removed since 2019a
 
-Calculated variables from POI, point of interest (row, col) stated in
-`SOLWEIGinput.nml`.
+.. SOLWEIGpoiOut.txt
+.. ~~~~~~~~~~~~~~~~~
 
-SOLWEIG model output file format: SOLWEIGpoiOUT.txt
+.. Calculated variables from POI, point of interest (row, col) stated in
+.. `SOLWEIGinput.nml`.
+
+.. SOLWEIG model output file format: SOLWEIGpoiOUT.txt
 
 
-.. csv-table::
-  :file: SOLWEIGpoiOut.csv
-  :header-rows: 1
-  :widths: auto
+.. .. csv-table::
+..   :file: SOLWEIGpoiOut.csv
+..   :header-rows: 1
+..   :widths: auto
 
 
 

@@ -29,6 +29,7 @@ Version 2019a (planned release in late September 2019)
 
   #. Fixed a bug in LAI calculation for longterm runs.
   #. Fixed a bug in net all-wave radiation differential calculation for OHM.
+  #. Fixed a bug in GDD/SDD calculation that different vegetative land covers could unexpectedly affect each other.
   #. Fixed water redistribution bug in snow module.
 
 - **Known issues**

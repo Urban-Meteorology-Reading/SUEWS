@@ -1,7 +1,8 @@
 trigger:
+  # branch names
 - master
-- PublicRelease
-- test-dev
+- release/*
+- develop
 
 # Set variables once
 variables:
@@ -48,6 +49,8 @@ jobs:
       tagSource:        'manual' # 'auto'
       tag:              $(release_tag) # Required when action == edit || action == discard || tagSource == manual
       title:            $(release_title)
+      releaseNotesSource: file
+      releaseNotesFile: ./docs/source/version-history/v2019a.rst
       assetUploadMode:  'replace'
       isDraft:          true
       isPrerelease:     false

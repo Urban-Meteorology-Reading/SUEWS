@@ -1,6 +1,6 @@
 # SUEWS
 
-This is a public repo for SUEWS source and documentation.
+This is a public repo for SUEWS source code and documentation.
 
 
 

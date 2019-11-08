@@ -71,6 +71,10 @@ pip:
 docs:
 	$(MAKE) -B -C $(docs_dir) html
 
+# live html documentation
+docs:
+	$(MAKE) -B -C $(docs_dir) livehtml
+
 # If wanted, clean all *.o files after build
 clean:
 	$(MAKE) -C $(SUEWS_dir) clean

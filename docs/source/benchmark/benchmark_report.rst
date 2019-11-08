@@ -18,16 +18,4 @@ Each report includes the following parts:
   #. Pair plots: comparison in simulation results between different version-pairs.
   #. Time series plots: comparison in simulated monthly climatologies of diurnal cycles of each variable between different version-pairs.
 
-.. only:: html
-
-    Currently, these benchmark reports are available:
-
-    .. toctree::
-      :maxdepth: 1
-
-      Kumpula/Kumpula
-      London_KCL/London_KCL
-
-.. only:: latex
-
-    The benchmark report can be found in the online version.
+The latest benchmark reports are available at `the SUEWS Benchmark site <https://urban-meteorology-reading.github.io/SUEWS-Benchmark/>`_.

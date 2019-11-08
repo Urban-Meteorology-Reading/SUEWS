@@ -15,10 +15,10 @@ jobs:
     - name: checkout
       uses: actions/checkout@master
       with:
-        submodules: yes
+        submodules: 'yes'
         token: ${{ secrets.GITHUB_TOKEN }}
-    - name: test
-      run: ls -l
+    # - name: test
+    #   run: ls -l
     # - name: show
     #   run: ls -lrt .
     # - name: show

@@ -1,12 +1,17 @@
 trigger:
+  # branch names
 - master
-- PublicRelease
-- test-dev
+- release/*
+- develop
 
 # Set variables once
 variables:
-  release_tag:          'latest-dev'
-  release_title:        'Latest Release Test'
+  # use `latest-dev` in dev mode
+  # release_tag:          'latest-dev'
+  # release_title:        'Latest Development'
+  # update the following in release mode
+  release_tag:          '2019a'
+  release_title:        '2019a Release'
 
 resources:
 - repo:                 self
@@ -48,6 +53,8 @@ jobs:
       tagSource:        'manual' # 'auto'
       tag:              $(release_tag) # Required when action == edit || action == discard || tagSource == manual
       title:            $(release_title)
+      releaseNotesSource: file
+      releaseNotesFile: ./docs/source/version-history/v2019a.rst
       assetUploadMode:  'replace'
       isDraft:          true
       isPrerelease:     false

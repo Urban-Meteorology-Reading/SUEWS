@@ -7,7 +7,7 @@ trigger:
 # Set variables once
 variables:
   release_tag:          'latest-dev'
-  release_title:        'Latest Release Test'
+  release_title:        'Latest Development'
 
 resources:
 - repo:                 self

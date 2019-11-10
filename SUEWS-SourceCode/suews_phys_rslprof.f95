@@ -12,7 +12,7 @@ contains
    SUBROUTINE RSLProfile( &
       Zh, z0m, zdm, &
       L_MOD, sfr, planF, StabilityMethod, &
-      avcp, lv_J_kg, &
+      avcp, lv_J_kg, avdens, &
       avU1, Temp_C, avRH, Press_hPa, zMeas, qh, qe, &  ! input
       T2_C, q2_gkg, U10_ms, RH2, &!output
       dataoutLineRSL) ! output
@@ -28,7 +28,7 @@ contains
 
       IMPLICIT NONE
 
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in) ::sfr! surface fractions
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in) ::sfr! surface fractions [-]
       REAL(KIND(1d0)), INTENT(in):: zMeas  ! height of atmospheric forcing [m]
       REAL(KIND(1d0)), INTENT(in):: avU1   ! Wind speed at forcing height [m s-1]
       REAL(KIND(1d0)), INTENT(in):: Temp_C ! Air temperature at forcing height [C]
@@ -37,6 +37,7 @@ contains
       REAL(KIND(1d0)), INTENT(in):: L_MOD  ! Obukhov length [m]
       REAL(KIND(1d0)), INTENT(in):: avcp  ! specific heat capacity [J kg-1 K-1]
       REAL(KIND(1d0)), INTENT(in):: lv_J_kg  ! Latent heat of vaporization in [J kg-1]
+      REAL(KIND(1d0)), INTENT(in):: avdens  ! air density [kg m-3]
       REAL(KIND(1d0)), INTENT(in):: qh  ! sensible heat flux [W m-2]
       REAL(KIND(1d0)), INTENT(in):: qe     ! Latent heat flux [W m-2]
       REAL(KIND(1d0)), INTENT(in):: Zh     ! Mean building height [m]
@@ -234,8 +235,8 @@ contains
       psimza = stab_psi_mom(StabilityMethod, (zMeas - zd)/L_MOD_RSL)
       psihza = stab_psi_heat(StabilityMethod, (zMeas - zd)/L_MOD_RSL)
       UStar_RSL = avU1*kappa/(LOG((zMeas - zd)/z0) - psimza + psimz0 + psihatm_z(nz))
-      TStar_RSL = -1.*(qh/(avcp))/UStar_RSL
-      qStar_RSL = -1.*(qe/lv_J_kg)/UStar_RSL
+      TStar_RSL = -1.*(qh/(avcp*avdens))/UStar_RSL
+      qStar_RSL = -1.*(qe/lv_J_kg*avdens)/UStar_RSL
       qa_gkg = RH2qa(avRH/100, Press_hPa, Temp_c)
 
       DO z = idx_can, nz

@@ -948,7 +948,7 @@ CONTAINS
       CALL RSLProfile( &
          Zh, z0m, zdm, &
          L_MOD, sfr, planF, StabilityMethod, &
-         avcp, lv_J_kg, &
+         avcp, lv_J_kg, avdens,&
          avU1, Temp_C, avRH, Press_hPa, z, qh, qe, &  ! input
          T2_C, q2_gkg, U10_ms, RH2, & !output
          dataoutLineRSL) ! output

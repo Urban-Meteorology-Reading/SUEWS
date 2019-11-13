@@ -242,7 +242,7 @@ contains
       DO z = idx_can, nz
          psimz = stab_psi_mom(StabilityMethod, (zarray(z) - zd)/L_MOD_RSL)
          psihz = stab_psi_heat(StabilityMethod, (zarray(z) - zd)/L_MOD_RSL)
-         dataoutLineURSL(z) = (LOG((zarray(z) - zd)/z0) - psimz + psimz0 - psihatm_z(z) + psihatm_z(idx_can))/kappa ! this is different from Theeuwes et al. (2019 BLM)
+         ! dataoutLineURSL(z) = (LOG((zarray(z) - zd)/z0) - psimz + psimz0 - psihatm_z(z) + psihatm_z(idx_can))/kappa ! this is different from Theeuwes et al. (2019 BLM)
          dataoutLineURSL(z) = (LOG((zarray(z) - zd)/z0) - psimz + psimz0 + psihatm_z(z))/kappa ! eqn. 3 in Theeuwes et al. (2019 BLM)
          ! dataoutLineURSL(z) = (LOG((zarray(z) - zd)/(zMeas - zd)) - psimz + psimza + psihatm_z(z)-psihatm_z(idx_za))/kappa ! eqn. 3 in Theeuwes et al. (2019 BLM)
          dataoutLineTRSL(z) = (LOG((zarray(z) - zd)/(zMeas - zd)) - psihz + psihza + psihath_z(z) - psihath_z(idx_za))/kappa ! eqn. 4 in Theeuwes et al. (2019 BLM)

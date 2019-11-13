@@ -515,29 +515,29 @@ CONTAINS
       qsat = (molar_wat_vap/molar)*ES/PMB!(rmh2o/rmair)*ES/PMB
    END FUNCTION qsatf
 
-   FUNCTION RH2qa(RH, pres_hPa, Ta_degC) RESULT(qa)
+   FUNCTION RH2qa(RH_dec, pres_hPa, Ta_degC) RESULT(qa_gkg)
       ! convert relative humidity to specific humidity
       ! TS 31 Jul 2018: initial version
       ! Brutasert (2005) section 2.1.2, eqn 2.2, 2.4 and 2.5.
-      REAL(KIND(1D0)), INTENT(in) :: RH ! relative humidity in decimal
+      REAL(KIND(1D0)), INTENT(in) :: RH_dec ! relative humidity in decimal
       REAL(KIND(1D0)), INTENT(in) :: pres_hPa ! atmospheric pressure in hPa
       REAL(KIND(1D0)), INTENT(in) :: Ta_degC ! air temperature in degC
 
       REAL(KIND(1d0)) ::es ! saturation vapour pressure in hPa
       REAL(KIND(1d0)) ::ea ! vapour pressure in hPa
-      REAL(KIND(1d0)) ::qa ! specific humidity in (g kg-1)
+      REAL(KIND(1d0)) ::qa_gkg ! specific humidity in (g kg-1)
 
       es = sat_vap_press(Ta_degC + 273.15, pres_hPa)
-      ea = es*RH ! Brutasert (2005) section 2.1.2, eqn 2.3
-      qa = 0.622*ea/(pres_hPa - 0.378*ea)*1000 ! eqn 2.2, 2.4 and 2.5.
+      ea = es*RH_dec ! Brutasert (2005) section 2.1.2, eqn 2.3
+      qa_gkg = 0.622*ea/(pres_hPa - 0.378*ea)*1000 ! eqn 2.2, 2.4 and 2.5.
 
    END FUNCTION RH2qa
 
-   FUNCTION qa2RH(qa, pres_hPa, Ta_degC) RESULT(RH)
+   FUNCTION qa2RH(qa_gkg, pres_hPa, Ta_degC) RESULT(RH)
       ! convert specific humidity to relative humidity
       ! TS 31 Jul 2018: initial version
       ! Brutasert (2005) section 2.1.2, eqn 2.2, 2.4 and 2.5.
-      REAL(KIND(1d0)), INTENT(in) :: qa       ! specific humidity in (g kg-1)
+      REAL(KIND(1d0)), INTENT(in) :: qa_gkg       ! specific humidity in (g kg-1)
       REAL(KIND(1D0)), INTENT(in) :: pres_hPa ! atmospheric pressure in hPa
       REAL(KIND(1D0)), INTENT(in) :: Ta_degC  ! air temperature in degC
       REAL(KIND(1D0))             :: RH       ! relative humidity in decimal
@@ -546,7 +546,7 @@ CONTAINS
       REAL(KIND(1d0))    ::ea ! vapour pressure in hPa
       REAL(KIND(1d0))    ::qa_kgkg !specific humidity in (kg kg-1)
 
-      qa_kgkg = qa/1000
+      qa_kgkg = qa_gkg/1000
       es = sat_vap_press(Ta_degC + 273.15, pres_hPa)
       ea = 500*pres_hPa*qa_kgkg/(311 + 189*qa_kgkg)
       ! qa=0.622*ea/(pres_hPa-0.378*ea)*1000 ! eqn 2.2, 2.4 and 2.5.

@@ -20,5 +20,4 @@ Version in Development
 
 - **Known issues**
 
-  #. Observed soil moisture can not be used as an input
   #. Wind direction is not currently downscaled so non -999 values will cause an error.

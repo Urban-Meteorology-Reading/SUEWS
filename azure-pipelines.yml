@@ -7,13 +7,13 @@ trigger:
 # Set variables once
 variables:
   # use `latest-dev` in dev mode
-  # release_tag:          'latest-dev'
-  # release_title:        'Latest Development'
-  # release_notes_file:     './docs/source/version-history/dev.rst'
+  release_tag:          'latest-dev'
+  release_title:        'Latest Development'
+  release_notes_file:     './docs/source/version-history/dev.rst'
   # update the following in release mode
-  release_tag:          '2019a'
-  release_title:        '2019a Release'
-  release_notes_file:     './docs/source/version-history/v2019a.rst'
+  # release_tag:          '2019a'
+  # release_title:        '2019a Release'
+  # release_notes_file:     './docs/source/version-history/v2019a.rst'
 
 resources:
 - repo:                 self

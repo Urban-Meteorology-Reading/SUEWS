@@ -7,11 +7,13 @@ trigger:
 # Set variables once
 variables:
   # use `latest-dev` in dev mode
-  # release_tag:          'latest-dev'
-  # release_title:        'Latest Development'
+  release_tag:          'latest-dev'
+  release_title:        'Latest Development'
+  release_notes_file:     './docs/source/version-history/dev.rst'
   # update the following in release mode
-  release_tag:          '2019a'
-  release_title:        '2019a Release'
+  # release_tag:          '2019a'
+  # release_title:        '2019a Release'
+  # releaseNotesFile:     './docs/source/version-history/v2019a.rst'
 
 resources:
 - repo:                 self
@@ -54,7 +56,7 @@ jobs:
       tag:              $(release_tag) # Required when action == edit || action == discard || tagSource == manual
       title:            $(release_title)
       releaseNotesSource: file
-      releaseNotesFile: ./docs/source/version-history/v2019a.rst
+      releaseNotesFile: $(release_notes_file)
       assetUploadMode:  'replace'
       isDraft:          true
       isPrerelease:     false

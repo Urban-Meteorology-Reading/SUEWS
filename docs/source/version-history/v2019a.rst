@@ -3,7 +3,7 @@
 
 .. _new_2019a:
 
-Version 2019a (planned release in late September 2019)
+Version 2019a (released on 15 November 2019)
 ----------------------------------------------------
 
 - **Improvement**
@@ -19,6 +19,7 @@ Version 2019a (planned release in late September 2019)
   #. Input file ``SUEWS_AnthropogenicHeat.txt`` is renamed to ``SUEWS_AnthropogenicEmission.txt`` with new parameters added: `MinFCMetab`, `MaxFCMetab`, `FrPDDwe`, `FcEF_v_kgkmWD` and `FcEF_v_kgkmWE`.
   #. BLUEWS has been recovered; set `CBLUse` to use it.
   #. Removed features:
+
     - SOLWEIG: fully removed from code.
     - netCDF: fully removed as this is very infrequently used;
       users who need this are suggested to use `SuPy`
@@ -34,5 +35,4 @@ Version 2019a (planned release in late September 2019)
 
 - **Known issues**
 
-  #. Observed soil moisture can not be used as an input
   #. Wind direction is not currently downscaled so non -999 values will cause an error.

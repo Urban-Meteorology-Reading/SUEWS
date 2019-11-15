@@ -23,5 +23,6 @@ from supy_driver.suews_driver import (
     rsl_module,
     co2_module,
     waterdist_module,
+    meteo,
 )
 from supy_driver.version import __version__

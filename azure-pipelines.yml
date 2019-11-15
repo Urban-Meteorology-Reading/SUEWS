@@ -13,7 +13,7 @@ variables:
   # update the following in release mode
   # release_tag:          '2019a'
   # release_title:        '2019a Release'
-  # releaseNotesFile:     './docs/source/version-history/v2019a.rst'
+  # release_notes_file:     './docs/source/version-history/v2019a.rst'
 
 resources:
 - repo:                 self

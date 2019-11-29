@@ -26,6 +26,16 @@ import pandas as pd
 import nbsphinx
 import exhale
 
+import sphinxcontrib.bibtex
+from pybtex.style.sorting.author_year_title import SortingStyle as Sorter
+from pybtex.style.template import (
+    join, words, field, optional, first_of,
+    names, sentence, tag, optional_field, href
+)
+from pybtex.style.formatting import toplevel, BaseStyle
+from pybtex.plugin import register_plugin
+from pybtex.style.formatting.unsrt import Style as UnsrtStyle, pages, date, Text
+
 
 # -- processing code --------------------------------------------------------
 # load all csv as a whole df
@@ -134,6 +144,7 @@ extensions = [
     'sphinx.ext.autosectionlabel',
     # 'sphinxfortran.fortran_autodoc',
     # 'sphinxfortran.fortran_domain',
+    'sphinxcontrib.bibtex',
     'sphinx.ext.githubpages',
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
@@ -410,3 +421,99 @@ intersphinx_mapping = {
     'numpy': ('https://docs.scipy.org/doc/numpy/', None),
     'supy': ('https://supy.readthedocs.io/en/latest/', None),
 }
+
+
+# -- sphinxcontrib.bibtex configuration -------------------------------------------------
+# Custom bibliography stuff for sphinxcontrib.bibtex
+class MySort(Sorter):
+
+    def sort(self, entries):
+        entry_dict = dict(
+            (self.sorting_key(entry), entry)
+            for entry in entries
+        )
+        sorted_keys = sorted(entry_dict, reverse=True)
+        sorted_entries = [entry_dict[key] for key in sorted_keys]
+        return sorted_entries
+
+    def sorting_key(self, entry):
+        if entry.type in ('book', 'inbook'):
+            author_key = self.author_editor_key(entry)
+        elif 'author' in entry.persons:
+            author_key = self.persons_key(entry.persons['author'])
+        else:
+            author_key = ''
+        return (entry.fields.get('year', ''),
+                author_key,
+                entry.fields.get('title', ''))
+
+
+class MyStyle(UnsrtStyle):
+    default_sorting_style = 'author_year_title'
+    default_name_style = 'lastfirst'
+    # default_label_style = 'number'
+
+    def format_web_refs(self, e):
+        # based on urlbst output.web.refs
+        return sentence[
+            optional[self.format_doi(e)],
+        ]
+
+    def get_book_template(self, e):
+        template = toplevel[
+            self.format_author_or_editor(e),
+            self.format_btitle(e, 'title'),
+            self.format_volume_and_series(e),
+            sentence[
+                field('publisher'),
+                self.format_edition(e),
+                date
+            ],
+            optional[sentence[self.format_isbn(e)]],
+            self.format_web_refs(e),
+
+            # tag('strong')[optional_field('note')],
+        ]
+
+        return template
+
+
+# reading list style
+class RLStyle(UnsrtStyle):
+    default_sorting_style = 'author_year_title'
+    default_label_style = 'number'
+    default_name_style = 'lastfirst'
+
+    def format_web_refs(self, e):
+        # based on urlbst output.web.refs
+        return sentence[
+            optional[self.format_doi(e)],
+        ]
+
+    def get_book_template(self, e):
+        template = toplevel[
+                self.format_author_or_editor(e),
+                self.format_btitle(e, 'title'),
+                self.format_volume_and_series(e),
+                sentence[
+                    field('publisher'),
+                    self.format_edition(e),
+                    date
+                ],
+                optional[sentence[self.format_isbn(e)]],
+            optional[sentence[self.format_web_refs(e)]],
+
+            tag('strong')[optional_field('note')],
+            ]
+
+        return template
+
+
+    # format_online = format_article
+    # format_book = format_article
+
+
+
+register_plugin('pybtex.style.formatting', 'refs', MyStyle)
+register_plugin('pybtex.style.formatting', 'rl', RLStyle)
+# register_plugin('pybtex.style.sorting', 'year_author_title', MySort)

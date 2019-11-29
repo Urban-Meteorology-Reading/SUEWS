@@ -435,6 +435,7 @@ intersphinx_mapping = {
 class MySort(Sorter):
     def sort(self, entries):
         entry_dict = dict((self.sorting_key(entry), entry) for entry in entries)
+
         sorted_keys = sorted(entry_dict, reverse=True)
         sorted_entries = [entry_dict[key] for key in sorted_keys]
         return sorted_entries
@@ -468,6 +469,7 @@ class MyStyle(UnsrtStyle):
     default_name_style = "lastfirst"
     default_label_style = "alpha"
 
+
     def format_web_refs(self, e):
         # based on urlbst output.web.refs
         return sentence[
@@ -482,6 +484,7 @@ class MyStyle(UnsrtStyle):
             sentence[field("publisher"), self.format_edition(e), date],
             optional[sentence[self.format_isbn(e)]],
             self.format_web_refs(e),
+
             # tag('strong')[optional_field('note')],
         ]
 
@@ -493,6 +496,7 @@ class RLStyle(UnsrtStyle):
     default_sorting_style = "author_year_title"
     default_label_style = "number"
     default_name_style = "lastfirst"
+
 
     def format_web_refs(self, e):
         # based on urlbst output.web.refs
@@ -513,6 +517,7 @@ class RLStyle(UnsrtStyle):
 
         return template
 
+
     # format_online = format_article
     # format_book = format_article
 
@@ -520,4 +525,3 @@ class RLStyle(UnsrtStyle):
 register_plugin("pybtex.style.formatting", "refs", MyStyle)
 register_plugin("pybtex.style.formatting", "rl", RLStyle)
 register_plugin("pybtex.style.sorting", "year_author_title", MySort)
-

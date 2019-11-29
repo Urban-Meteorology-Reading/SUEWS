@@ -19,6 +19,8 @@ import subprocess
 import os
 import platform
 import sys
+from time import strptime
+
 # from datetime import datetime
 from pathlib import Path
 
@@ -29,8 +31,16 @@ import exhale
 import sphinxcontrib.bibtex
 from pybtex.style.sorting.author_year_title import SortingStyle as Sorter
 from pybtex.style.template import (
-    join, words, field, optional, first_of,
-    names, sentence, tag, optional_field, href
+    join,
+    words,
+    field,
+    optional,
+    first_of,
+    names,
+    sentence,
+    tag,
+    optional_field,
+    href,
 )
 from pybtex.style.formatting import toplevel, BaseStyle
 from pybtex.plugin import register_plugin
@@ -41,83 +51,87 @@ from pybtex.style.formatting.unsrt import Style as UnsrtStyle, pages, date, Text
 # load all csv as a whole df
 def load_df_csv(path_csv):
     if not path_csv.exists():
-        print(str(path_csv), 'not existing!')
+        print(str(path_csv), "not existing!")
         sys.exit()
 
     # get list of all csv file names
-    list_csv = list(path_csv.glob('*csv'))
+    list_csv = list(path_csv.glob("*csv"))
     df_csv = pd.concat(
-        {csv.stem: pd.read_csv(csv, skipinitialspace=True, quotechar='"')
-            for csv in list_csv},
-        sort=False)
+        {
+            csv.stem: pd.read_csv(csv, skipinitialspace=True, quotechar='"')
+            for csv in list_csv
+        },
+        sort=False,
+    )
     return df_csv
 
 
 # retrieve description from rst files
 def load_df_opt_desc(file_options):
-    ser_opts = pd.read_csv(
-        file_options,
-        sep='\n', skipinitialspace=True)
+    ser_opts = pd.read_csv(file_options, sep="\n", skipinitialspace=True)
     ser_opts = ser_opts.iloc[:, 0]
-    ind_opt = ser_opts.index[ser_opts.str.contains('.. option::')]
-    ser_opt_name = ser_opts[ind_opt].str.replace('.. option::', '').str.strip()
+    ind_opt = ser_opts.index[ser_opts.str.contains(".. option::")]
+    ser_opt_name = ser_opts[ind_opt].str.replace(".. option::", "").str.strip()
     ser_opt_desc = ser_opts[ind_opt + 2].str.strip()
     df_opt_desc = pd.DataFrame(
-        {'desc': ser_opt_desc.values}, index=ser_opt_name.rename('option'))
+        {"desc": ser_opt_desc.values}, index=ser_opt_name.rename("option")
+    )
     return df_opt_desc
 
 
 # generate dataframe for a specific SUEWS table `csv_suews`
 def gen_df_suews(df_csv, df_opt_desc, csv_suews):
-    print('\t', csv_suews + '.csv')
+    print("\t", csv_suews + ".csv")
     df_csv_suews = df_csv.loc[csv_suews].dropna(axis=1).copy()
-    df_csv_suews.loc[:, 'No.'] = df_csv_suews.loc[:, 'No.'].astype(int)
+    df_csv_suews.loc[:, "No."] = df_csv_suews.loc[:, "No."].astype(int)
     for ind, row in df_csv_suews.iterrows():
-        var = row.loc['Column Name'].strip('`')
+        var = row.loc["Column Name"].strip("`")
         if var in df_opt_desc.index:
-            print(f'\t\t {var} found...')
-            df_csv_suews.at[
-                ind, 'Description'] = df_opt_desc.loc[var].values[0]
+            print(f"\t\t {var} found...")
+            df_csv_suews.at[ind, "Description"] = df_opt_desc.loc[var].values[0]
         else:
-            print(f'\t\t {var} NOT found...')
+            print(f"\t\t {var} NOT found...")
             sys.exit(0)
-    print(f'\n')
+    print(f"\n")
     return df_csv_suews
 
 
 # save all re-generated CSV files to `path_csv`
 def gen_csv_suews(path_csv):
-    print('re-generating summary tables ...')
+    print("re-generating summary tables ...")
     # load all csv as a whole df
     df_csv = load_df_csv(path_csv)
 
     # retrieve description from rst files
-    file_options = path_csv.parent / 'Input_Options.rst'
+    file_options = path_csv.parent / "Input_Options.rst"
     df_opt_desc = load_df_opt_desc(file_options)
 
-    list_csv_suews = df_csv.index.levels[0].to_series().filter(like='SUEWS')
+    list_csv_suews = df_csv.index.levels[0].to_series().filter(like="SUEWS")
     for csv_suews in list_csv_suews:
-        if 'Profiles' not in csv_suews:
+        if "Profiles" not in csv_suews:
             df_csv_suews = gen_df_suews(df_csv, df_opt_desc, csv_suews)
-            df_csv_suews.to_csv(path_csv / (csv_suews + '.csv'), index=False)
+            df_csv_suews.to_csv(path_csv / (csv_suews + ".csv"), index=False)
 
     return list_csv_suews
 
 
 # -- Project information ----------------------------------------------------
-project = u'SUEWS'
-doc_name = u'SUEWS Documentation'
+project = "SUEWS"
+doc_name = "SUEWS Documentation"
 # today = datetime.today()
-copyright = '2018 – 2019' + \
-    ', micromet@University of Reading, led by Prof Sue Grimmond'
-author = u'micromet@University of Reading, led by Prof Sue Grimmond'
+copyright = "2018 – 2019" + ", micromet@University of Reading, led by Prof Sue Grimmond"
+author = "micromet@University of Reading, led by Prof Sue Grimmond"
 
 
 # determine latest version and release
-path_source = Path('.').resolve()
+path_source = Path(".").resolve()
 list_ver = sorted(
-    [x.stem for x in list((path_source / 'version-history').glob('v*rst'))
-     if 'version' not in x.stem])
+    [
+        x.stem
+        for x in list((path_source / "version-history").glob("v*rst"))
+        if "version" not in x.stem
+    ]
+)
 
 
 # The short X.Y version
@@ -125,7 +139,7 @@ version = list_ver[-1]
 # The full version, including alpha/beta/rc tags
 release = list_ver[-1]
 
-path_csv = path_source / 'input_files/SUEWS_SiteInfo/csv-table'
+path_csv = path_source / "input_files/SUEWS_SiteInfo/csv-table"
 gen_csv_suews(path_csv)
 # -- General configuration ---------------------------------------------------
 
@@ -137,41 +151,37 @@ gen_csv_suews(path_csv)
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.mathjax',
-    'sphinx.ext.ifconfig',
-    'sphinx.ext.viewcode',
+    "sphinx.ext.mathjax",
+    "sphinx.ext.ifconfig",
+    "sphinx.ext.viewcode",
     # 'rinoh.frontend.sphinx',
-    'sphinx.ext.autosectionlabel',
+    "sphinx.ext.autosectionlabel",
     # 'sphinxfortran.fortran_autodoc',
     # 'sphinxfortran.fortran_domain',
-    'sphinxcontrib.bibtex',
-    'sphinx.ext.githubpages',
-    'sphinx.ext.autodoc',
-    'sphinx.ext.autosummary',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.extlinks',
-    'recommonmark',
-    'nbsphinx',
-    'sphinx.ext.mathjax',
-    'breathe',
+    "sphinxcontrib.bibtex",
+    "sphinx.ext.githubpages",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.extlinks",
+    "recommonmark",
+    "nbsphinx",
+    "sphinx.ext.mathjax",
+    "breathe",
     # 'exhale'
-
 ]
 
-breathe_projects = {
-    "SUEWS": "./doxygenoutput/xml"
-}
+breathe_projects = {"SUEWS": "./doxygenoutput/xml"}
 breathe_default_project = "SUEWS"
 
 # run doxygen
-read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
+read_the_docs_build = os.environ.get("READTHEDOCS", None) == "True"
 
 if read_the_docs_build:
 
-    subprocess.call('doxygen', shell=True)
+    subprocess.call("doxygen", shell=True)
 else:
-    subprocess.call('doxygen', shell=True)
-
+    subprocess.call("doxygen", shell=True)
 
 
 # exhale_args = {
@@ -193,21 +203,21 @@ else:
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
-source_suffix = ['.rst', '.md']
+source_suffix = [".rst", ".md"]
 # source_suffix = '.rst'
 
 # fortran source code for `fortran_autodoc` and `fortran_domain`
 fortran_src = [
-    os.path.abspath('../fortran-src'),
+    os.path.abspath("../fortran-src"),
 ]
-fortran_ext = ['f90', 'F90', 'f95', 'F95']
+fortran_ext = ["f90", "F90", "f95", "F95"]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # The master toctree document.
-master_doc = 'index'
-master_doc_latex = 'index_latex'
+master_doc = "index"
+master_doc_latex = "index_latex"
 
 # The language for content autogenerated by Sphinx. Refer to documentation
 # for a list of supported languages.
@@ -220,16 +230,16 @@ language = None
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path .
 
-exclude_patterns = ['_build', '**.ipynb_checkpoints']
+exclude_patterns = ["_build", "**.ipynb_checkpoints"]
 # tags.add('html')
 # if tags.has('html'):
 #     exclude_patterns = ['references.rst']
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = "sphinx"
 
 # default interpretation of `role` markups
-default_role = 'any'
+default_role = "any"
 
 # some text replacement defintions
 rst_prolog = """
@@ -269,7 +279,7 @@ rst_prolog = """
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+html_theme = "sphinx_rtd_theme"
 html_theme_path = ["_themes"]
 
 # Theme options are theme-specific and customize the look and feel of a theme
@@ -282,7 +292,7 @@ html_theme_path = ["_themes"]
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 #
-html_static_path = ['_static','doxygenoutput']
+html_static_path = ["_static", "doxygenoutput"]
 # html_context = {
 #     'css_files': [
 #         '_static/theme_overrides.css',  # override wide tables in RTD theme
@@ -306,28 +316,26 @@ numfig = True
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'SUEWSdoc'
+htmlhelp_basename = "SUEWSdoc"
 
 
 # -- Options for LaTeX output ------------------------------------------------
 # this can be one of ['pdflatex', 'xelatex', 'lualatex', 'platex']
-if platform.system() == 'Darwin':
-    latex_engine = 'lualatex'
+if platform.system() == "Darwin":
+    latex_engine = "lualatex"
 else:
-    latex_engine = 'pdflatex'
+    latex_engine = "pdflatex"
 
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     #
     # 'papersize': 'letterpaper',
-
     # The font size ('10pt', '11pt' or '12pt').
     #
     # 'pointsize': '10pt',
-
     # Additional stuff for the LaTeX preamble.
     #
-    'preamble': r'''
+    "preamble": r"""
 \usepackage[titles]{tocloft}
 \usepackage{ragged2e}
 \addto\captionsenglish{\renewcommand{\bibname}{References}}
@@ -337,9 +345,7 @@ latex_elements = {
 \setlength{\cftsecnumwidth}{1.25cm}
 \newcolumntype{T}{L}
 \setlength{\tymin}{40pt}
-''',
-
-
+""",
     # Latex figure (float) alignment
     #
     # 'figure_align': 'htbp',
@@ -351,11 +357,7 @@ latex_show_pagerefs = False
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc,
-     'SUEWS.tex',
-     doc_name,
-     author,
-     'manual'),
+    (master_doc, "SUEWS.tex", doc_name, author, "manual"),
 ]
 # latex_logo = 'assets/img/SUEWS_LOGO.png'
 
@@ -364,8 +366,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'suews', u'SUEWS Documentation',
-     [author], 1),
+    (master_doc, "suews", "SUEWS Documentation", [author], 1),
 ]
 
 
@@ -375,9 +376,15 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'SUEWS', u'SUEWS Documentation',
-     author, 'SUEWS', 'One line description of project.',
-     'Miscellaneous'),
+    (
+        master_doc,
+        "SUEWS",
+        "SUEWS Documentation",
+        author,
+        "SUEWS",
+        "One line description of project.",
+        "Miscellaneous",
+    ),
 ]
 
 
@@ -399,7 +406,7 @@ epub_copyright = copyright
 # epub_uid = ''
 
 # A list of files that should not be packed into the epub file.
-epub_exclude_files = ['search.html']
+epub_exclude_files = ["search.html"]
 
 
 # -- Extension configuration -------------------------------------------------
@@ -411,47 +418,55 @@ epub_exclude_files = ['search.html']
 # Fix for scrolling tables in the RTD-theme
 # https://rackerlabs.github.io/docs-rackspace/tools/rtd-tables.html
 def setup(app):
-    app.add_stylesheet('theme_overrides.css')
+    app.add_stylesheet("theme_overrides.css")
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/3/', None),
-    'pandas': ('http://pandas.pydata.org/pandas-docs/stable/', None),
-    'numpy': ('https://docs.scipy.org/doc/numpy/', None),
-    'supy': ('https://supy.readthedocs.io/en/latest/', None),
+    "python": ("https://docs.python.org/3/", None),
+    "pandas": ("http://pandas.pydata.org/pandas-docs/stable/", None),
+    "numpy": ("https://docs.scipy.org/doc/numpy/", None),
+    "supy": ("https://supy.readthedocs.io/en/latest/", None),
 }
 
 
 # -- sphinxcontrib.bibtex configuration -------------------------------------------------
 # Custom bibliography stuff for sphinxcontrib.bibtex
 class MySort(Sorter):
-
     def sort(self, entries):
-        entry_dict = dict(
-            (self.sorting_key(entry), entry)
-            for entry in entries
-        )
+        entry_dict = dict((self.sorting_key(entry), entry) for entry in entries)
         sorted_keys = sorted(entry_dict, reverse=True)
         sorted_entries = [entry_dict[key] for key in sorted_keys]
         return sorted_entries
 
     def sorting_key(self, entry):
-        if entry.type in ('book', 'inbook'):
+        if entry.type in ("book", "inbook"):
             author_key = self.author_editor_key(entry)
-        elif 'author' in entry.persons:
-            author_key = self.persons_key(entry.persons['author'])
+        elif "author" in entry.persons:
+            author_key = self.persons_key(entry.persons["author"])
         else:
-            author_key = ''
-        return (entry.fields.get('year', ''),
-                author_key,
-                entry.fields.get('title', ''))
+            author_key = ""
+
+        name_mon = entry.fields.get("month", "")
+        try:
+            num_mon = strptime(name_mon, "%b").tm_mon
+        except:
+            num_mon = strptime(name_mon, "%B").tm_mon
+
+        return (
+            entry.fields.get("year", ""),
+            str(num_mon),
+            # entry.fields.get("month", ""),
+            author_key,
+            entry.fields.get("title", ""),
+        )
 
 
 class MyStyle(UnsrtStyle):
-    default_sorting_style = 'author_year_title'
-    default_name_style = 'lastfirst'
-    # default_label_style = 'number'
+    # default_sorting_style = 'author_year_title'
+    default_sorting_style = "year_author_title"
+    default_name_style = "lastfirst"
+    default_label_style = "alpha"
 
     def format_web_refs(self, e):
         # based on urlbst output.web.refs
@@ -462,16 +477,11 @@ class MyStyle(UnsrtStyle):
     def get_book_template(self, e):
         template = toplevel[
             self.format_author_or_editor(e),
-            self.format_btitle(e, 'title'),
+            self.format_btitle(e, "title"),
             self.format_volume_and_series(e),
-            sentence[
-                field('publisher'),
-                self.format_edition(e),
-                date
-            ],
+            sentence[field("publisher"), self.format_edition(e), date],
             optional[sentence[self.format_isbn(e)]],
             self.format_web_refs(e),
-
             # tag('strong')[optional_field('note')],
         ]
 
@@ -480,9 +490,9 @@ class MyStyle(UnsrtStyle):
 
 # reading list style
 class RLStyle(UnsrtStyle):
-    default_sorting_style = 'author_year_title'
-    default_label_style = 'number'
-    default_name_style = 'lastfirst'
+    default_sorting_style = "author_year_title"
+    default_label_style = "number"
+    default_name_style = "lastfirst"
 
     def format_web_refs(self, e):
         # based on urlbst output.web.refs
@@ -492,28 +502,22 @@ class RLStyle(UnsrtStyle):
 
     def get_book_template(self, e):
         template = toplevel[
-                self.format_author_or_editor(e),
-                self.format_btitle(e, 'title'),
-                self.format_volume_and_series(e),
-                sentence[
-                    field('publisher'),
-                    self.format_edition(e),
-                    date
-                ],
-                optional[sentence[self.format_isbn(e)]],
+            self.format_author_or_editor(e),
+            self.format_btitle(e, "title"),
+            self.format_volume_and_series(e),
+            sentence[field("publisher"), self.format_edition(e), date],
+            optional[sentence[self.format_isbn(e)]],
             optional[sentence[self.format_web_refs(e)]],
-
-            tag('strong')[optional_field('note')],
-            ]
+            tag("strong")[optional_field("note")],
+        ]
 
         return template
-
 
     # format_online = format_article
     # format_book = format_article
 
 
+register_plugin("pybtex.style.formatting", "refs", MyStyle)
+register_plugin("pybtex.style.formatting", "rl", RLStyle)
+register_plugin("pybtex.style.sorting", "year_author_title", MySort)
 
-register_plugin('pybtex.style.formatting', 'refs', MyStyle)
-register_plugin('pybtex.style.formatting', 'rl', RLStyle)
-# register_plugin('pybtex.style.sorting', 'year_author_title', MySort)

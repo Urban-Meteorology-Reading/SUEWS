@@ -154,6 +154,7 @@ The details for formulation of these diagnostics can be found in equations 2.54,
 .. _LQF: http://umep-docs.readthedocs.io/en/latest/OtherManuals/LQF_Manual.html
 .. _GQF: http://umep-docs.readthedocs.io/en/latest/OtherManuals/GQF_Manual.html
 
+.. _rsl_mod:
 
 Wind, Temperature and Humidity Profiles in the Roughness Sublayer
 ----------------------------------------------------------------------------
@@ -176,9 +177,7 @@ Here ``nz = 30``.
 
 .. note::
 
-   The temperature and humidity profiles are calculated
+   All the diagnostic profiles (wind speed, temperature and humidity) are calculated
    from the forcing data down into the canopy.
    Therefore it is assumed that the forcing temperature and humidity
    are above the blending height.
-   The wind speed is calculated from the surface (assumed to be zero)
-   upward and does not use the wind speed from the forcing data.

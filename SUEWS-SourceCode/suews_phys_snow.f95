@@ -1,5 +1,5 @@
 MODULE Snow_module
-   use evap_module, only: evap_suews
+   use evap_module, only: cal_evap
    use allocateArray, only: nsurf, PavSurf, BldgSurf, ConifSurf, BSoilSurf, WaterSurf, ncolumnsDataOutSnow
 
    IMPLICIT NONE
@@ -694,7 +694,7 @@ CONTAINS
       ! Calculate evaporation from SnowPack and snow free surfaces (in mm)
       ! IF (SnowFrac(is)<1) CALL Evap_SUEWS !ev and qe for snow free surface out
       capStore(is) = StoreDrainPrm(6, is)
-      IF (SnowFrac(is) < 1) CALL Evap_SUEWS( &
+      IF (SnowFrac(is) < 1) CALL cal_evap( &
          EvapMethod, state_id(is), WetThresh(is), capStore(is), &!input
          vpd_hPa, avdens, avcp, qn_e, s_hPa, psyc_hPa, ResistSurf, RA, rb, tlv, &
          rss_nsurf(is), ev, qe) !output

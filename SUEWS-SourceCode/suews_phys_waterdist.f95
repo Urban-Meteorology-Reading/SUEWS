@@ -91,7 +91,7 @@ CONTAINS
    !--------------Calculation of water storage change of specific land cover------------------------------
    SUBROUTINE cal_water_storage( &
       is, sfr, PipeCapacity, RunoffToWater, pin, & ! input:
-      wu_ext,&
+      WU_nsurf,&
       drain, AddWater, addImpervious, nsh_real, stateOld, AddWaterRunoff, &
       PervFraction, addVeg, SoilStoreCap, addWaterBody, FlowChange, StateLimit, &
       runoffAGimpervious, surplusWaterBody, & ! inout:
@@ -175,7 +175,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(out)::p_mm!Inputs to surface water balance
 
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in) ::drain !Drainage of each surface type [mm]
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in) ::WU_ext !external water use of each surface type [mm]
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in) ::WU_nsurf !external water use of each surface type [mm]
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::chang !Change in state_id [mm]
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::runoff!Runoff from each surface type [mm]
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::state_id !Wetness status of each surface type [mm]
@@ -209,7 +209,7 @@ CONTAINS
 
       ! Combine water inputs to the current surface
       ! Add external water use for each surface type
-      p_mm= pin + WU_ext(is)
+      p_mm= pin + WU_nsurf(is)
 
       ! Add water from other surfaces within the same grid (RS2S) ----
       ! AddWater is the water supplied to the current surface from other surfaces

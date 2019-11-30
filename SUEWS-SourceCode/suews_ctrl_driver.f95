@@ -13,18 +13,18 @@ MODULE SUEWS_Driver
    USE ESTM_module, ONLY: ESTM
    USE Snow_module, ONLY: SnowCalc, Snow_cal_MeltHeat, SnowUpdate, update_snow_albedo, update_snow_dens
    USE DailyState_module, ONLY: SUEWS_cal_DailyState, update_DailyStateLine
-   USE WaterDist_module, ONLY: drainage, soilstore, &
+   USE WaterDist_module, ONLY: drainage, cal_water_storage, &
                                SUEWS_cal_SoilState, SUEWS_update_SoilMoist, &
                                ReDistributeWater, SUEWS_cal_HorizontalSoilWater, &
                                SUEWS_cal_WaterUse
    USE ctrl_output, ONLY: varListAll
    USE DailyState_module, ONLY: SUEWS_update_DailyState
    use lumps_module, only: LUMPS_cal_QHQE
-   use evap_module, only: evap_SUEWS
+   use evap_module, only: cal_evap
    use rsl_module, only: RSLProfile
    use anemsn_module, only: AnthropogenicEmissions
    use CO2_module, only: CO2_biogen
-   use evap_module, only: evap_SUEWS
+   use evap_module, only: cal_evap
    USE allocateArray, ONLY: &
       nsurf, nvegsurf, &
       PavSurf, BldgSurf, ConifSurf, DecidSurf, GrassSurf, BSoilSurf, WaterSurf, &
@@ -414,6 +414,7 @@ CONTAINS
       REAL(KIND(1D0))::Zh
 
       REAL(KIND(1D0)), DIMENSION(2)::SnowRemoval
+      REAL(KIND(1D0)), DIMENSION(NSURF)::wu_nsurf
       REAL(KIND(1D0)), DIMENSION(NSURF)::FreezMelt
       REAL(KIND(1d0)), DIMENSION(nsurf)::kup_ind_snow
       REAL(KIND(1D0)), DIMENSION(NSURF)::mw_ind
@@ -547,8 +548,8 @@ CONTAINS
       REAL(KIND(1D0)):: QH_Init
       INTEGER::i_iter
 
-      REAL(KIND(1d0)), DIMENSION(30):: psihatm_z
-      REAL(KIND(1d0)), DIMENSION(30):: psihath_z
+      ! REAL(KIND(1d0)), DIMENSION(30):: psihatm_z
+      ! REAL(KIND(1d0)), DIMENSION(30):: psihath_z
 
       ! ########################################################################################
       ! save initial values of inout variables
@@ -719,7 +720,7 @@ CONTAINS
             DayofWeek_id, WUProfA_24hr, WUProfM_24hr, &
             InternalWaterUse_h, HDD_id_next, WUDay_id_next, &
             WaterUseMethod, NSH, it, imin, DLS, &
-            wu_EveTr, wu_DecTr, wu_Grass, int_wu, ext_wu)! output:
+            wu_nsurf, int_wu, ext_wu)! output:
 
          ! ===================ANTHROPOGENIC HEAT AND CO2 FLUX======================
          CALL SUEWS_cal_AnthropogenicEmission( &
@@ -835,7 +836,7 @@ CONTAINS
             RAsnow, psyc_hPa, sIce_hPa, &
             PervFraction, vegfraction, addimpervious, qn1_snowfree, qf, qs, vpd_hPa, s_hPa, &
             ResistSurf, RA, rb, snowdensmin, precip, PipeCapacity, RunoffToWater, &
-            NonWaterFraction, wu_EveTr, wu_DecTr, wu_Grass, addVeg, addWaterBody, SnowLimPaved, SnowLimBldg, &
+            NonWaterFraction, wu_nsurf, addVeg, addWaterBody, SnowLimPaved, SnowLimBldg, &
             SurfaceArea, FlowChange, drain, WetThresh, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
             freezmelt, freezstate, freezstatevol, Qm_Melt, Qm_rain, Tsurf_ind, sfr, &
             StateLimit, AddWater, addwaterrunoff, StoreDrainPrm_next, SnowPackLimit, SnowProf_24hr, &
@@ -1745,7 +1746,7 @@ CONTAINS
       RAsnow, psyc_hPa, sIce_hPa, &
       PervFraction, vegfraction, addimpervious, qn1_snowfree, qf, qs, vpd_hPa, s_hPa, &
       ResistSurf, RA, rb, snowdensmin, precip, PipeCapacity, RunoffToWater, &
-      NonWaterFraction, wu_EveTr, wu_DecTr, wu_Grass, addVeg, addWaterBody, SnowLimPaved, SnowLimBldg, &
+      NonWaterFraction, Wu_ext, addVeg, addWaterBody, SnowLimPaved, SnowLimBldg, &
       SurfaceArea, FlowChange, drain, WetThresh, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
       freezmelt, freezstate, freezstatevol, Qm_Melt, Qm_rain, Tsurf_ind, sfr, &
       StateLimit, AddWater, addwaterrunoff, StoreDrainPrm, SnowPackLimit, SnowProf_24hr, &
@@ -1801,9 +1802,9 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(in)::PipeCapacity
       REAL(KIND(1d0)), INTENT(in)::RunoffToWater
       REAL(KIND(1d0)), INTENT(in)::NonWaterFraction
-      REAL(KIND(1d0)), INTENT(in)::wu_EveTr!Water use for evergreen trees/shrubs [mm]
-      REAL(KIND(1d0)), INTENT(in)::wu_DecTr!Water use for deciduous trees/shrubs [mm]
-      REAL(KIND(1d0)), INTENT(in)::wu_Grass!Water use for grass [mm]
+      ! REAL(KIND(1d0)), INTENT(in)::wu_EveTr!Water use for evergreen trees/shrubs [mm]
+      ! REAL(KIND(1d0)), INTENT(in)::wu_DecTr!Water use for deciduous trees/shrubs [mm]
+      ! REAL(KIND(1d0)), INTENT(in)::wu_Grass!Water use for grass [mm]
       REAL(KIND(1d0)), INTENT(in)::addVeg!Water from vegetated surfaces of other grids [mm] for whole surface area
       REAL(KIND(1d0)), INTENT(in)::addWaterBody!Water from water surface of other grids [mm] for whole surface area
       REAL(KIND(1d0)), INTENT(in)::SnowLimPaved
@@ -1811,6 +1812,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(in)::SurfaceArea
       REAL(KIND(1d0)), INTENT(in)::FlowChange
 
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::WU_Ext
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::drain
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::WetThresh
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::stateOld
@@ -2008,15 +2010,16 @@ CONTAINS
 
             capStore(is) = StoreDrainPrm(6, is)
             !Calculates ev [mm]
-            CALL Evap_SUEWS( &
+            CALL cal_evap( &
                EvapMethod, state_id(is), WetThresh(is), capStore(is), &!input
                vpd_hPa, avdens, avcp, qn_e, s_hPa, psyc_hPa, ResistSurf, RA, rb, tlv, &
                rss_nsurf(is), ev, qe_surf) !output
 
             !Surface water balance and soil store updates (can modify ev, updates state_id)
-            CALL soilstore( &
+            CALL cal_water_storage( &
                is, sfr, PipeCapacity, RunoffToWater, pin, & ! input:
-               wu_EveTr, wu_DecTr, wu_Grass, drain, AddWater, addImpervious, nsh_real, stateOld, AddWaterRunoff, &
+               wu_ext,&
+               drain, AddWater, addImpervious, nsh_real, stateOld, AddWaterRunoff, &
                PervFraction, addVeg, SoilStoreCap, addWaterBody, FlowChange, StateLimit, runoffAGimpervious, surplusWaterBody, &
                runoffAGveg, runoffPipes, ev, soilstore_id, SurplusEvap, runoffWaterBody, &
                p_mm, chang, runoff, state_id)!output:

@@ -1015,8 +1015,9 @@ CONTAINS
          runoff_per_tstep, runoffPipes, runoffSoil_per_tstep, &
          runoffWaterBody, sfr, smd, smd_nsurf, SnowAlb, SnowRemoval, &
          state_id_next, state_per_tstep, surf_chang_per_tstep, swe, t2_C, TSfc_C, &
-         tot_chang_per_tstep, tsurf, UStar, wu_DecTr, &
-         wu_EveTr, wu_Grass, z0m, zdm, zenith_deg, &
+         tot_chang_per_tstep, tsurf, UStar, &
+         wu_nsurf, &
+         z0m, zdm, zenith_deg, &
          datetimeLine, dataOutLineSUEWS)!output
 
       ! model state_id:
@@ -2282,8 +2283,9 @@ CONTAINS
       runoff_per_tstep, runoffPipes, runoffSoil_per_tstep, &
       runoffWaterBody, sfr, smd, smd_nsurf, SnowAlb, SnowRemoval, &
       state_id, state_per_tstep, surf_chang_per_tstep, swe, t2_C, tskin_C, &
-      tot_chang_per_tstep, tsurf, UStar, wu_DecTr, &
-      wu_EveTr, wu_Grass, z0m, zdm, zenith_deg, &
+      tot_chang_per_tstep, tsurf, UStar, &
+      wu_nsurf, &
+      z0m, zdm, zenith_deg, &
       datetimeLine, dataOutLineSUEWS)!output
       IMPLICIT NONE
 
@@ -2362,9 +2364,8 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(in) :: tot_chang_per_tstep
       REAL(KIND(1d0)), INTENT(in) :: tsurf
       REAL(KIND(1d0)), INTENT(in) :: UStar
-      REAL(KIND(1d0)), INTENT(in) :: wu_DecTr
-      REAL(KIND(1d0)), INTENT(in) :: wu_EveTr
-      REAL(KIND(1d0)), INTENT(in) :: wu_Grass
+      REAL(KIND(1d0)), DIMENSION(nsurf),INTENT(in) :: wu_nsurf
+
       REAL(KIND(1d0)), INTENT(in) :: z0m
       REAL(KIND(1d0)), INTENT(in) :: zdm
       REAL(KIND(1d0)), INTENT(in) :: zenith_deg
@@ -2383,6 +2384,9 @@ CONTAINS
       REAL(KIND(1d0))::bulkalbedo
       REAL(KIND(1d0))::smd_nsurf_x(nsurf)
       REAL(KIND(1d0))::state_x(nsurf)
+      REAL(KIND(1d0)):: wu_DecTr
+      REAL(KIND(1d0)):: wu_EveTr
+      REAL(KIND(1d0)):: wu_Grass
 
       !=====================================================================
       !====================== Prepare data for output ======================
@@ -2411,23 +2415,10 @@ CONTAINS
       ! convert RH2 to a percentage form
       RH2_pct = RH2*100.0
 
-      ! NB: this part needs to be reconsidered for calculation logic. TS, 27 Sep 2018
-      ! TODO: this part should be reconnected to an improved CBL interface. TS 10 Jun 2018
-      ! uncomment the CBL.HWJ，21 Aug 2019
-      ! Save qh and qe for CBL in next iteration
-      ! IF(Qh_choice==1) THEN   !use QH and QE from SUEWS
-      !     qhforCBL(Gridiv) = qh
-      !     qeforCBL(Gridiv) = qeOut
-      !  ELSEIF(Qh_choice==2)THEN   !use QH and QE from LUMPS
-      !     qhforCBL(Gridiv) = h_mod
-      !     qeforCBL(Gridiv) = e_mod
-      !  ELSEIF(qh_choice==3)THEN  !use QH and QE from OBS
-      !     qhforCBL(Gridiv) = qh_obs
-      !     qeforCBL(Gridiv) = qe_obs
-      !     IF(qh_obs<-900.OR.qe_obs<-900)THEN  ! observed data has a problem
-      !        CALL ErrorHint(22,'Unrealistic observed qh or qe_value.',qh_obs,qe_obs,qh_choice)
-      !     ENDIF
-      ! ENDIF
+      ! translate water use to vegetated surfaces
+      wu_DecTr=wu_nsurf(3)
+      wu_EveTr=wu_nsurf(4)
+      wu_Grass=wu_nsurf(5)
 
       !====================== update output line ==============================
       ! date & time:

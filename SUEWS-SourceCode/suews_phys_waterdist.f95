@@ -88,7 +88,7 @@ CONTAINS
    END SUBROUTINE drainage
    !------------------------------------------------------------------------------
 
-   !------------------------------------------------------------------------------
+   !--------------Calculation of soil water storage change of specific land cover------------------------------
    SUBROUTINE soilstore( &
       is, sfr, PipeCapacity, RunoffToWater, pin, & ! input:
       wu_EveTr, wu_DecTr, wu_Grass, drain, AddWater, addImpervious, nsh_real, stateOld, AddWaterRunoff, &
@@ -183,6 +183,9 @@ CONTAINS
 
       !Initialise extra evaporation to zero
       EvPart = 0
+
+      !Initialise runoff to zero
+      runoff(is) = 0
 
       !SurfaceFlood(is) = 0 !!This probably needs to be carried over between timesteps, but reset for now
 
@@ -541,7 +544,7 @@ CONTAINS
    END SUBROUTINE SUEWS_update_SoilMoist
    !------------------------------------------------------------------------------
 
-   !========== Calculate soil moisture ============
+   !========== Calculate soil moisture of a whole grid ============
    SUBROUTINE SUEWS_cal_SoilState( &
       SMDMethod, xsmd, NonWaterFraction, SoilMoistCap, &!input
       SoilStoreCap, surf_chang_per_tstep, &
@@ -874,36 +877,33 @@ CONTAINS
       INTEGER, PARAMETER :: nsurf = 7
 
       REAL(KIND(1d0)), INTENT(in)::nsh_real
-      REAL(KIND(1d0)), INTENT(in)::wu_m3 ! external water input (e.g., irrigation) in m^3
+      REAL(KIND(1d0)), INTENT(in)::wu_m3 ! external water input (e.g., irrigation)  [m3]
       REAL(KIND(1d0)), INTENT(in)::SurfaceArea !Surface area of the study area [m2]
-      REAL(KIND(1d0)), INTENT(in)::sfr(nsurf)!Surface fractions [-]
       REAL(KIND(1d0)), INTENT(in)::IrrFracConif!Fraction of evergreen trees which are irrigated
       REAL(KIND(1d0)), INTENT(in)::IrrFracDecid!Fraction of deciduous trees which are irrigated
       REAL(KIND(1d0)), INTENT(in)::IrrFracGrass!Fraction of grass which is irrigated
       REAL(KIND(1d0)), INTENT(in)::InternalWaterUse_h !Internal water use [mm h-1]
-      ! WUProfA_tstep(24*NSH,2),& !Automatic water use profiles at model timestep
-      ! WUProfM_tstep(24*NSH,2),& !Manual water use profiles at model timestep
       REAL(KIND(1d0)), DIMENSION(0:23, 2), INTENT(in)::WUProfA_24hr !Automatic water use profiles at hourly scales
       REAL(KIND(1d0)), DIMENSION(0:23, 2), INTENT(in)::WUProfM_24hr !Manual water use profiles at hourly scales
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::sfr!Surface fractions [-]
 
       REAL(KIND(1d0)), DIMENSION(12), INTENT(in)::HDD_id !HDD(id-1), Heating Degree Days (see SUEWS_DailyState.f95)
       REAL(KIND(1d0)), DIMENSION(9), INTENT(in)::WUDay_id!WUDay(id-1), Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
 
-      INTEGER, INTENT(in):: &
-         DayofWeek_id(3), & !DayofWeek(id) 1 - day of week; 2 - month; 3 - season
-         WaterUseMethod, & !Use modelled (0) or observed (1) water use
-         NSH, &!Number of timesteps per hour
-         it, & !Hour
-         imin, & !Minutes
-         DLS !day lightsavings =1 + 1h) =0
-      !  nsurf
 
-      REAL(KIND(1d0)), INTENT(out):: &
-         wu_EveTr, &
-         wu_DecTr, &
-         wu_Grass, &
-         int_wu, &
-         ext_wu
+         INTEGER, INTENT(in)::DayofWeek_id(3)!DayofWeek(id) 1 - day of week; 2 - month; 3 - season
+         INTEGER, INTENT(in)::WaterUseMethod !Use modelled (0) or observed (1) water use
+         INTEGER, INTENT(in)::NSH!Number of timesteps per hour
+         INTEGER, INTENT(in)::it !Hour
+         INTEGER, INTENT(in)::imin !Minutes
+         INTEGER, INTENT(in)::DLS !day lightsavings =1 + 1h) =0
+
+
+         REAL(KIND(1d0)), INTENT(out)::wu_EveTr !Water use for evergreen trees/shrubs [mm]
+         REAL(KIND(1d0)), INTENT(out)::wu_DecTr !Water use for deciduous trees/shrubs [mm]
+         REAL(KIND(1d0)), INTENT(out)::wu_Grass !Water use for grass [mm]
+         REAL(KIND(1d0)), INTENT(out)::int_wu !Internal water use for the model timestep [mm] (over whole study area)
+         REAL(KIND(1d0)), INTENT(out)::ext_wu !External water use for the model timestep [mm] (over whole study area)
 
       REAL(KIND(1d0)):: &
          WUAreaEveTr_m2, &

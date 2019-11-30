@@ -138,23 +138,43 @@ CONTAINS
 
       ! REAL(KIND(1d0)), INTENT(INOUT)::SnowAlb
 
+      ! Growing Degree Days
       REAL(KIND(1d0)), DIMENSION(3) :: GDD_id   ! Growing Degree Days (see SUEWS_DailyState.f95)
       REAL(KIND(1d0)), DIMENSION(3), INTENT(IN) :: GDD_id_prev   ! Growing Degree Days (see SUEWS_DailyState.f95)
       REAL(KIND(1d0)), DIMENSION(3), INTENT(OUT) :: GDD_id_next   ! Growing Degree Days (see SUEWS_DailyState.f95)
-      REAL(KIND(1d0)), DIMENSION(3) :: SDD_id   ! Growing Degree Days (see SUEWS_DailyState.f95)
-      REAL(KIND(1d0)), DIMENSION(3), INTENT(IN) :: SDD_id_prev   ! Growing Degree Days (see SUEWS_DailyState.f95)
-      REAL(KIND(1d0)), DIMENSION(3), INTENT(OUT) :: SDD_id_next   ! Growing Degree Days (see SUEWS_DailyState.f95)
+
+      ! Senescence Degree Days
+      REAL(KIND(1d0)), DIMENSION(3) :: SDD_id   ! Senescence Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1d0)), DIMENSION(3), INTENT(IN) :: SDD_id_prev   ! Senescence Degree Days (see SUEWS_DailyState.f95)
+      REAL(KIND(1d0)), DIMENSION(3), INTENT(OUT) :: SDD_id_next   ! Senescence Degree Days (see SUEWS_DailyState.f95)
+
+      ! Daily min temp [degC]
+      REAL(KIND(1d0))::Tmin_id
+      REAL(KIND(1d0)), INTENT(IN)::Tmin_id_prev
+      REAL(KIND(1d0)), INTENT(out)::Tmin_id_next
+
+      ! Daily max temp [degC]
+      REAL(KIND(1d0))::Tmax_id
+      REAL(KIND(1d0)), INTENT(in)::Tmax_id_prev
+      REAL(KIND(1d0)), INTENT(out)::Tmax_id_next
+
+      ! Daytime hours [h]
+      REAL(KIND(1d0))::lenDay_id
+      REAL(KIND(1d0)), INTENT(IN)::lenDay_id_prev
+      REAL(KIND(1d0)), INTENT(out)::lenDay_id_next
+
+      ! LAI for each veg surface [m2 m-2]
       REAL(KIND(1d0)), DIMENSION(3) :: LAI_id   ! LAI for each veg surface [m2 m-2]
       REAL(KIND(1d0)), DIMENSION(3), INTENT(IN) :: LAI_id_prev   ! LAI for each veg surface [m2 m-2]
       REAL(KIND(1d0)), DIMENSION(3), INTENT(OUT) :: LAI_id_next   ! LAI for each veg surface [m2 m-2]
+
+      ! ------------- Key to daily arrays ----------------------------------------------
+      ! TS, 27 Dec 2018: updated the annotation for 2018b and WRF-SUEWS coupling
+
+      ! Heating Degree Days
       REAL(KIND(1d0)), DIMENSION(12) :: HDD_id   ! Heating Degree Days (see SUEWS_DailyState.f95)
       REAL(KIND(1d0)), DIMENSION(12), INTENT(IN) :: HDD_id_prev   ! Heating Degree Days (see SUEWS_DailyState.f95)
       REAL(KIND(1d0)), DIMENSION(12), INTENT(OUT) :: HDD_id_next   ! Heating Degree Days (see SUEWS_DailyState.f95)
-      REAL(KIND(1d0)), DIMENSION(9), INTENT(OUT)   :: WUDay_id ! Water use related array
-      ! --------------------------------------------------------------------------------
-      ! ------------- Key to daily arrays ----------------------------------------------
-      ! TS, 27 Dec 2018: updated the annotation for 2018b and WRF-SUEWS coupling
-      !
       ! HDD_id:
       ! first half used for update through the day
       ! HDD_id(1) ---- Heating [degC]: used for accumulation during calculation
@@ -170,17 +190,11 @@ CONTAINS
       ! HDD_id(6+4) ---- 5-day running mean temp [degC]: used for actual calculation
       ! HDD_id(6+5) ---- Daily precip total [mm]
       ! HDD_id(6+6) ---- Days since rain [d]
-      !
-      ! GDD_id:
-      ! GDD_id(1) ---- Growing [degC]
-      ! GDD_id(2) ---- Senescence [degC]
-      ! GDD_id(3) ---- Daily min temp [degC]
-      ! GDD_id(4) ---- Daily max temp [degC]
-      ! GDD_id(5) ---- Daytime hours [h]
-      !
-      ! LAI_id:
-      ! LAI_id(1:3) -- LAI for each veg surface [m2 m-2]
-      !
+      ! --------------------------------------------------------------------------------
+
+      ! --------------------------------------------------------------------------------
+      !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
+      REAL(KIND(1d0)), DIMENSION(9), INTENT(OUT)   :: WUDay_id ! Water use related array
       ! WUDay_id:
       ! WUDay_id(1) - Daily water use total for Irr EveTr (automatic+manual) [mm]
       ! WUDay_id(2) - Automatic irrigation for Irr EveTr [mm]
@@ -196,19 +210,7 @@ CONTAINS
       ! REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(INOUT)::SnowDens
       INTEGER, DIMENSION(3), INTENT(in)::DayofWeek_id
 
-      REAL(KIND(1d0))::Tmin_id
-      REAL(KIND(1d0)), INTENT(IN)::Tmin_id_prev
-      REAL(KIND(1d0)), INTENT(out)::Tmin_id_next
-      REAL(KIND(1d0))::Tmax_id
-      REAL(KIND(1d0)), INTENT(in)::Tmax_id_prev
-      REAL(KIND(1d0)), INTENT(out)::Tmax_id_next
-      REAL(KIND(1d0))::lenDay_id
-      REAL(KIND(1d0)), INTENT(IN)::lenDay_id_prev
-      REAL(KIND(1d0)), INTENT(out)::lenDay_id_next
-
-      !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
       REAL(KIND(1d0)), INTENT(OUT)::deltaLAI
-      ! REAL(KIND(1d0)), DIMENSION(nvegsurf),INTENT(IN):: LAI_id_prev !LAI for each veg surface [m2 m-2]
 
       REAL(KIND(1d0)):: DecidCap_id
       REAL(KIND(1d0)), INTENT(IN):: DecidCap_id_prev
@@ -988,7 +990,7 @@ CONTAINS
    END SUBROUTINE update_GDDLAI_x
 
    SUBROUTINE update_WaterUse( &
-      id, WaterUseMethod, DayofWeek_id, lat, Faut, HDD_id, &!input
+      id, WaterUseMethod, DayofWeek_id, lat, FrIrriAuto, HDD_id, &!input
       Ie_a, Ie_m, Ie_start, Ie_end, DayWatPer, DayWat, &
       WUDay_id) !output
 
@@ -1001,7 +1003,7 @@ CONTAINS
       INTEGER, DIMENSION(3), INTENT(IN)::DayofWeek_id
 
       REAL(KIND(1d0)), INTENT(IN)::lat
-      REAL(KIND(1d0)), INTENT(IN)::Faut          !Fraction of irrigated area using automatic irrigation
+      REAL(KIND(1d0)), INTENT(IN)::FrIrriAuto          !Fraction of irrigated area using automatic irrigation
 
       REAL(KIND(1d0)), DIMENSION(12), INTENT(IN)::HDD_id
       REAL(KIND(1d0)), DIMENSION(3), INTENT(IN)::Ie_a
@@ -1043,33 +1045,33 @@ CONTAINS
                ! N.B. These are the same for each vegetation type at the moment
 
                ! ---- Automatic irrigation (evergreen trees) ----
-               WUDay_id(2) = Faut*(Ie_a(1) + Ie_a(2)*temp_avg + Ie_a(3)*days_since_rain)*DayWatPer(wd)
+               WUDay_id(2) = FrIrriAuto*(Ie_a(1) + Ie_a(2)*temp_avg + Ie_a(3)*days_since_rain)*DayWatPer(wd)
                IF (WUDay_id(2) < 0) WUDay_id(2) = 0   !If modelled WU is negative -> 0
 
                ! ---- Manual irrigation (evergreen trees) ----
-               WUDay_id(3) = (1 - Faut)*(Ie_m(1) + Ie_m(2)*temp_avg + Ie_m(3)*days_since_rain)*DayWatPer(wd)
+               WUDay_id(3) = (1 - FrIrriAuto)*(Ie_m(1) + Ie_m(2)*temp_avg + Ie_m(3)*days_since_rain)*DayWatPer(wd)
                IF (WUDay_id(3) < 0) WUDay_id(3) = 0   !If modelled WU is negative -> 0
 
                ! ---- Total evergreen trees water use (automatic + manual) ----
                WUDay_id(1) = (WUDay_id(2) + WUDay_id(3))
 
                ! ---- Automatic irrigation (deciduous trees) ----
-               WUDay_id(5) = Faut*(Ie_a(1) + Ie_a(2)*temp_avg + Ie_a(3)*days_since_rain)*DayWatPer(wd)
+               WUDay_id(5) = FrIrriAuto*(Ie_a(1) + Ie_a(2)*temp_avg + Ie_a(3)*days_since_rain)*DayWatPer(wd)
                IF (WUDay_id(5) < 0) WUDay_id(5) = 0   !If modelled WU is negative -> 0
 
                ! ---- Manual irrigation (deciduous trees) ----
-               WUDay_id(6) = (1 - Faut)*(Ie_m(1) + Ie_m(2)*temp_avg + Ie_m(3)*days_since_rain)*DayWatPer(wd)
+               WUDay_id(6) = (1 - FrIrriAuto)*(Ie_m(1) + Ie_m(2)*temp_avg + Ie_m(3)*days_since_rain)*DayWatPer(wd)
                IF (WUDay_id(6) < 0) WUDay_id(6) = 0   !If modelled WU is negative -> 0
 
                ! ---- Total deciduous trees water use (automatic + manual) ----
                WUDay_id(4) = (WUDay_id(5) + WUDay_id(6))
 
                ! ---- Automatic irrigation (grass) ----
-               WUDay_id(8) = Faut*(Ie_a(1) + Ie_a(2)*temp_avg + Ie_a(3)*days_since_rain)*DayWatPer(wd)
+               WUDay_id(8) = FrIrriAuto*(Ie_a(1) + Ie_a(2)*temp_avg + Ie_a(3)*days_since_rain)*DayWatPer(wd)
                IF (WUDay_id(8) < 0) WUDay_id(8) = 0   !If modelled WU is negative -> 0
 
                ! ---- Manual irrigation (grass) ----
-               WUDay_id(9) = (1 - Faut)*(Ie_m(1) + Ie_m(2)*temp_avg + Ie_m(3)*days_since_rain)*DayWatPer(wd)
+               WUDay_id(9) = (1 - FrIrriAuto)*(Ie_m(1) + Ie_m(2)*temp_avg + Ie_m(3)*days_since_rain)*DayWatPer(wd)
                IF (WUDay_id(9) < 0) WUDay_id(9) = 0   !If modelled WU is negative -> 0
 
                ! ---- Total grass water use (automatic + manual) ----

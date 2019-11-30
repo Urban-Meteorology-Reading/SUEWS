@@ -88,18 +88,21 @@ CONTAINS
    END SUBROUTINE drainage
    !------------------------------------------------------------------------------
 
-   !--------------Calculation of soil water storage change of specific land cover------------------------------
-   SUBROUTINE soilstore( &
+   !--------------Calculation of water storage change of specific land cover------------------------------
+   SUBROUTINE cal_water_storage( &
       is, sfr, PipeCapacity, RunoffToWater, pin, & ! input:
-      wu_EveTr, wu_DecTr, wu_Grass, drain, AddWater, addImpervious, nsh_real, stateOld, AddWaterRunoff, &
+      wu_ext,&
+      drain, AddWater, addImpervious, nsh_real, stateOld, AddWaterRunoff, &
       PervFraction, addVeg, SoilStoreCap, addWaterBody, FlowChange, StateLimit, &
       runoffAGimpervious, surplusWaterBody, & ! inout:
       runoffAGveg, runoffPipes, ev, soilstore_id, SurplusEvap, runoffWaterBody, &
       p_mm, chang, runoff, state_id)!output:
       !------------------------------------------------------------------------------
       !Calculation of storage change
+      ! TS 30 Nov 2019
+      !   - Allow irrigation on all surfaces (previously only on vegetated surfaces)
       ! LJ 27 Jan 2016
-      !   -Removed tabs and cleaned the code
+      !   - Removed tabs and cleaned the code
       ! HCW 08 Dec 2015
       !   -Added if-loop check for no Paved surfaces
       ! LJ 6 May 2015
@@ -149,9 +152,9 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(in)::PipeCapacity!Capacity of pipes to transfer water
       REAL(KIND(1d0)), INTENT(in)::RunoffToWater!Fraction of surface runoff going to water body
       REAL(KIND(1d0)), INTENT(in)::pin!Rain per time interval
-      REAL(KIND(1d0)), INTENT(in)::wu_EveTr!Water use for evergreen trees/shrubs [mm]
-      REAL(KIND(1d0)), INTENT(in)::wu_DecTr!Water use for deciduous trees/shrubs [mm]
-      REAL(KIND(1d0)), INTENT(in)::wu_Grass!Water use for grass [mm]
+      ! REAL(KIND(1d0)), INTENT(in)::wu_EveTr!Water use for evergreen trees/shrubs [mm]
+      ! REAL(KIND(1d0)), INTENT(in)::wu_DecTr!Water use for deciduous trees/shrubs [mm]
+      ! REAL(KIND(1d0)), INTENT(in)::wu_Grass!Water use for grass [mm]
       REAL(KIND(1d0)), INTENT(in)::addImpervious!Water from impervious surfaces of other grids [mm] for whole surface area
       REAL(KIND(1d0)), INTENT(in)::nsh_real!nsh cast as a real for use in calculations
       REAL(KIND(1d0)), INTENT(in)::PervFraction! sum of surface cover fractions for impervious surfaces
@@ -171,9 +174,10 @@ CONTAINS
 
       REAL(KIND(1d0)), INTENT(out)::p_mm!Inputs to surface water balance
 
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in) ::drain !Drainage of each surface type [mm]
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in) ::WU_ext !external water use of each surface type [mm]
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::chang !Change in state_id [mm]
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::runoff!Runoff from each surface type [mm]
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in) ::drain !Drainage of each surface type [mm]
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::state_id !Wetness status of each surface type [mm]
 
       !Extra evaporation [mm] from impervious surfaces which cannot happen due to lack of water
@@ -192,16 +196,20 @@ CONTAINS
       !==================================================================
       ! Combine water inputs to the current surface
       ! Add external water use for each surface type
-      SELECT CASE (is)
-      CASE (ConifSurf)
-         p_mm = pin + wu_EveTr
-      CASE (DecidSurf)
-         p_mm = pin + wu_DecTr
-      CASE (GrassSurf)
-         p_mm = pin + wu_Grass
-      CASE default
-         p_mm = pin
-      END SELECT
+      ! SELECT CASE (is)
+      ! CASE (ConifSurf)
+      !    p_mm = pin + wu_EveTr
+      ! CASE (DecidSurf)
+      !    p_mm = pin + wu_DecTr
+      ! CASE (GrassSurf)
+      !    p_mm = pin + wu_Grass
+      ! CASE default
+      !    p_mm = pin
+      ! END SELECT
+
+      ! Combine water inputs to the current surface
+      ! Add external water use for each surface type
+      p_mm= pin + WU_ext(is)
 
       ! Add water from other surfaces within the same grid (RS2S) ----
       ! AddWater is the water supplied to the current surface from other surfaces
@@ -393,7 +401,7 @@ CONTAINS
             runoffAGimpervious, surplusWaterBody, runoffAGveg, runoffPipes)! inout:
       ENDIF
 
-   END SUBROUTINE soilstore
+   END SUBROUTINE cal_water_storage
    !------------------------------------------------------------------------------
 
    !------------------------------------------------------------------------------
@@ -857,17 +865,19 @@ CONTAINS
       DayofWeek_id, WUProfA_24hr, WUProfM_24hr, &
       InternalWaterUse_h, HDD_id, WUDay_id, &
       WaterUseMethod, NSH, it, imin, DLS, &
-      wu_EveTr, wu_DecTr, wu_Grass, int_wu, ext_wu)! output:
+      wu_nsurf, wu_int_tstep, wu_ext_tstep)! output:
       ! Conversion of water use (irrigation)
       ! Last modified:
-      !  TS 30 Oct 2018  - fixed a bug in external water use
-      !  TS 08 Aug 2017  - addded explicit interface
-      !  LJ  6 Apr 2017  - WUchoice changed to WaterUseMethod
-      !  TK 14 Mar 2017  - Corrected the variable name WUAreaEveTr_m2 -> WUAreaGrass_m2 (row 35)
-      !                    Corrected conversion from m to mm /1000 -> *1000 (row 47 and 60)
-      !  LJ 27 Jan 2016  - Removing Tab:s and cleaning the code
-      !  HCW 12 Feb 2015 - Water use [mm] now inidcates the amount of water supplied for each surface
-      !  HCW 26 Jan 2015 - Water use [mm] is the same for each surface at the moment and indicates the
+      ! TS 30 Nov 2019  - allow external water use for all surfaces
+      !                    (previously only on vegetated surfaces)
+      ! TS 30 Oct 2018  - fixed a bug in external water use
+      ! TS 08 Aug 2017  - addded explicit interface
+      ! LJ  6 Apr 2017  - WUchoice changed to WaterUseMethod
+      ! TK 14 Mar 2017  - Corrected the variable name WUAreaEveTr_m2 -> WUAreaGrass_m2 (row 35)
+      !                   Corrected conversion from m to mm /1000 -> *1000 (row 47 and 60)
+      ! LJ 27 Jan 2016  - Removing Tab:s and cleaning the code
+      ! HCW 12 Feb 2015 - Water use [mm] now inidcates the amount of water supplied for each surface
+      ! HCW 26 Jan 2015 - Water use [mm] is the same for each surface at the moment and indicates the
       !                    amount of water supplied for each irrigated area
       !
       ! To Do:
@@ -891,28 +901,34 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(9), INTENT(in)::WUDay_id!WUDay(id-1), Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
 
 
-         INTEGER, INTENT(in)::DayofWeek_id(3)!DayofWeek(id) 1 - day of week; 2 - month; 3 - season
-         INTEGER, INTENT(in)::WaterUseMethod !Use modelled (0) or observed (1) water use
-         INTEGER, INTENT(in)::NSH!Number of timesteps per hour
-         INTEGER, INTENT(in)::it !Hour
-         INTEGER, INTENT(in)::imin !Minutes
-         INTEGER, INTENT(in)::DLS !day lightsavings =1 + 1h) =0
+      INTEGER, INTENT(in)::DayofWeek_id(3)!DayofWeek(id) 1 - day of week; 2 - month; 3 - season
+      INTEGER, INTENT(in)::WaterUseMethod !Use modelled (0) or observed (1) water use
+      INTEGER, INTENT(in)::NSH!Number of timesteps per hour
+      INTEGER, INTENT(in)::it !Hour
+      INTEGER, INTENT(in)::imin !Minutes
+      INTEGER, INTENT(in)::DLS !day lightsavings =1 + 1h) =0
 
 
-         REAL(KIND(1d0)), INTENT(out)::wu_EveTr !Water use for evergreen trees/shrubs [mm]
-         REAL(KIND(1d0)), INTENT(out)::wu_DecTr !Water use for deciduous trees/shrubs [mm]
-         REAL(KIND(1d0)), INTENT(out)::wu_Grass !Water use for grass [mm]
-         REAL(KIND(1d0)), INTENT(out)::int_wu !Internal water use for the model timestep [mm] (over whole study area)
-         REAL(KIND(1d0)), INTENT(out)::ext_wu !External water use for the model timestep [mm] (over whole study area)
+      REAL(KIND(1d0)), DIMENSION(nsurf),INTENT(out)::wu_nsurf !external Water use for each surface [mm]
+      REAL(KIND(1d0)), INTENT(out)::wu_int_tstep !Internal water use for the model timestep [mm] (over whole study area)
+      REAL(KIND(1d0)), INTENT(out)::wu_ext_tstep !External water use for the model timestep [mm] (over whole study area)
 
-      REAL(KIND(1d0)):: &
-         WUAreaEveTr_m2, &
-         WUAreaDecTr_m2, &
-         WUAreaGrass_m2, &
-         WUAreaTotal_m2, &
-         InternalWaterUse, &    !Internal water use for the model timestep [mm]
-         WuFr = 1, &
-         wu = 0!Water use for the model timestep [mm]
+      REAL(KIND(1d0))::wu_EveTr !Water use for evergreen trees/shrubs [mm]
+      REAL(KIND(1d0))::wu_DecTr !Water use for deciduous trees/shrubs [mm]
+      REAL(KIND(1d0))::wu_Grass !Water use for grass [mm]
+
+      REAL(KIND(1d0)), DIMENSION(nsurf)::WUDay_A_id!modelled Automatic Daily water use for each surface [mm] (see SUEWS_DailyState.f95)
+      REAL(KIND(1d0)), DIMENSION(nsurf)::WUDay_M_id!modelled Manual Daily water use for each surface [mm] (see SUEWS_DailyState.f95)
+      REAL(KIND(1d0)), DIMENSION(nsurf)::IrrFrac !faction of irrigated part in each surface [-]
+      REAL(KIND(1d0)), DIMENSION(nsurf)::WUArea !water use area [m2] for each surface type
+
+      REAL(KIND(1d0)):: WUAreaEveTr_m2
+      REAL(KIND(1d0)):: WUAreaDecTr_m2
+      REAL(KIND(1d0)):: WUAreaGrass_m2
+      REAL(KIND(1d0)):: WUAreaTotal_m2
+      REAL(KIND(1d0)):: InternalWaterUse    !Internal water use for the model timestep [mm]
+      REAL(KIND(1d0)):: flag_WuM = 1
+      REAL(KIND(1d0)):: wu !Water use for the model timestep [mm]
       INTEGER:: ih   !Hour corrected for Daylight savings
       INTEGER:: iu   !1=weekday OR 2=weekend
       INTEGER :: tstep ! timestep in second
@@ -921,6 +937,9 @@ CONTAINS
       REAL(KIND(1d0)):: rain_cum_daily ! accumulated daily rainfall
 
       REAL(KIND(1d0)):: get_Prof_SpecTime_sum
+
+      REAL(KIND(1d0)):: WUProfA_tstep ! automatic water use profile value at tstep
+      REAL(KIND(1d0)):: WUProfM_tstep ! mannual water use profile value at tstep
 
       ! NB: set OverUse as 0 as done module_constants, TS 22 Oct 2017
       ! and the logic for calculating OverUse to be determined
@@ -932,6 +951,13 @@ CONTAINS
       ! accumulated daily rainfall
       rain_cum_daily = HDD_id(11)
 
+      ! Irrigated Fraction of each surface
+      ! TS: as of 20191130, assuming irrigation fraction as ONE except for vegetated surfaces
+      IrrFrac=1
+      IrrFrac(ConifSurf)=IrrFracConif
+      IrrFrac(DecidSurf)=IrrFracDecid
+      IrrFrac(GrassSurf)=IrrFracGrass
+
       ! --------------------------------------------------------------------------------
       ! If water used is observed and provided in the met forcing file, units are m3
       ! Divide observed water use (in m3) by water use area to find water use (in mm)
@@ -942,10 +968,15 @@ CONTAINS
          WUAreaGrass_m2 = IrrFracGrass*sfr(GrassSurf)*SurfaceArea
          WUAreaTotal_m2 = WUAreaEveTr_m2 + WUAreaDecTr_m2 + WUAreaGrass_m2
 
+         WUArea=IrrFrac*sfr*SurfaceArea
+         WUAreaTotal_m2=sum(WUArea)
+
          !Set water use [mm] for each surface type to zero initially
          wu_EveTr = 0
          wu_DecTr = 0
          wu_Grass = 0
+
+         wu_nsurf=0
          IF (wu_m3 == NAN .OR. wu_m3 == 0) THEN !If no water use
             ! wu_m3=0
             wu = 0
@@ -964,6 +995,9 @@ CONTAINS
                   wu_Grass = wu                    !Water use for Irr Grass in mm - these are all the same at the moment
                   wu_Grass = wu_Grass*IrrFracGrass !Water use for Grass in mm
                ENDIF
+
+               wu_nsurf= wu*IrrFrac
+
                wu = (wu_m3/SurfaceArea*1000)     !Water use for the whole study area in mm
             ENDIF
          ENDIF
@@ -984,15 +1018,26 @@ CONTAINS
          ENDIF
 
          !write(*,*) (NSH*(ih+1-1)+imin*NSH/60+1)
+         WUDay_A_id=0
+         WUDay_A_id(ConifSurf)=WUDay_id(2)
+         WUDay_A_id(DecidSurf)=WUDay_id(5)
+         WUDay_A_id(GrassSurf)=WUDay_id(8)
+
+         WUDay_M_id=0
+         WUDay_M_id(ConifSurf)=WUDay_id(3)
+         WUDay_M_id(DecidSurf)=WUDay_id(6)
+         WUDay_M_id(GrassSurf)=WUDay_id(9)
 
          ! ---- Automatic irrigation ----
          ! wu_EveTr = WUProfA_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WUDay_id(2)   !Automatic evergreen trees
          ! wu_DecTr = WUProfA_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WUDay_id(5)   !Automatic deciduous trees
          ! wu_Grass = WUProfA_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WUDay_id(8)   !Automatic grass
+         WUProfA_tstep=get_Prof_SpecTime_sum(ih, imin, 0, WUProfA_24hr(:, iu), tstep)
          wu_EveTr = get_Prof_SpecTime_sum(ih, imin, 0, WUProfA_24hr(:, iu), tstep)*WUDay_id(2)   !Automatic evergreen trees
          wu_DecTr = get_Prof_SpecTime_sum(ih, imin, 0, WUProfA_24hr(:, iu), tstep)*WUDay_id(5)   !Automatic deciduous trees
          wu_Grass = get_Prof_SpecTime_sum(ih, imin, 0, WUProfA_24hr(:, iu), tstep)*WUDay_id(8)   !Automatic grass
 
+         wu_nsurf=WUProfA_tstep*WUDay_A_id
          ! PRINT*, ''
          ! PRINT*, 'WUDay_id(2) ',WUDay_id(2)
          ! PRINT*, 'profile ',get_Prof_SpecTime_sum(ih,imin,0,WUProfA_24hr(:,iu),tstep)
@@ -1002,19 +1047,24 @@ CONTAINS
          ! PRINT*, 'wu_Grass',wu_Grass
 
          ! ---- Manual irrigation ----
-         WuFr = 1 !Initialize WuFr to 1, but if raining, reduce manual fraction of water use
+         flag_WuM = 1 !Initialize flag_WuM to 1, but if raining, reduce manual fraction of water use
          ! If cumulative daily precipitation exceeds 2 mm
          IF (rain_cum_daily > 2) THEN    !.and.WUDay(id-1,3)>0) then !Commented out HCW 23/01/2015
-            WuFr = 0   ! 0 -> No manual irrigation if raining
+            flag_WuM = 0   ! 0 -> No manual irrigation if raining
          ENDIF
 
          ! Add manual to automatic to find total irrigation
          ! wu_EveTr = wu_EveTr + (WuFr*WUProfM_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WUDay_id(3)) !Manual evergreen trees
          ! wu_DecTr = wu_DecTr + (WuFr*WUProfM_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WUDay_id(6)) !Manual deciduous trees
          ! wu_Grass = wu_Grass + (WuFr*WUProfM_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WUDay_id(9)) !Manual grass
-         wu_EveTr = wu_EveTr + (get_Prof_SpecTime_sum(ih, imin, 0, WUProfM_24hr(:, iu), tstep)*WuFr*WUDay_id(3)) !Manual evergreen trees
-         wu_DecTr = wu_DecTr + (get_Prof_SpecTime_sum(ih, imin, 0, WUProfM_24hr(:, iu), tstep)*WuFr*WUDay_id(6)) !Manual deciduous trees
-         wu_Grass = wu_Grass + (get_Prof_SpecTime_sum(ih, imin, 0, WUProfM_24hr(:, iu), tstep)*WuFr*WUDay_id(9)) !Manual grass
+         WUProfM_tstep=get_Prof_SpecTime_sum(ih, imin, 0, WUProfM_24hr(:, iu), tstep)
+         wu_EveTr = wu_EveTr + (get_Prof_SpecTime_sum(ih, imin, 0, WUProfM_24hr(:, iu), tstep)*flag_WuM*WUDay_id(3)) !Manual evergreen trees
+         wu_DecTr = wu_DecTr + (get_Prof_SpecTime_sum(ih, imin, 0, WUProfM_24hr(:, iu), tstep)*flag_WuM*WUDay_id(6)) !Manual deciduous trees
+         wu_Grass = wu_Grass + (get_Prof_SpecTime_sum(ih, imin, 0, WUProfM_24hr(:, iu), tstep)*flag_WuM*WUDay_id(9)) !Manual grass
+
+         wu_nsurf=wu_nsurf+WUProfM_tstep*WUDay_M_id*flag_WuM
+         wu_nsurf=wu_nsurf*IrrFrac
+
 
          ! PRINT*, 'auto:'
          ! PRINT*, 'wu_EveTr',wu_EveTr
@@ -1035,6 +1085,7 @@ CONTAINS
 
          ! Total water use for the whole study area [mm]
          wu = wu_EveTr*sfr(ConifSurf) + wu_DecTr*sfr(DecidSurf) + wu_Grass*sfr(GrassSurf)
+         wu = dot_product(wu_nsurf,sfr)
 
       ENDIF   !End WU_choice
       ! --------------------------------------------------------------------------------
@@ -1044,22 +1095,22 @@ CONTAINS
       InternalWaterUse = InternalWaterUse_h/nsh_real
 
       ! Remove InternalWaterUse from the total water use
-      ext_wu = wu - (InternalWaterUse + OverUse)
+      wu_ext_tstep = wu - (InternalWaterUse + OverUse)
       ! Check ext_wu cannot be negative
-      IF (ext_wu < 0) THEN
-         overUse = ABS(ext_wu)
-         ext_wu = 0
+      IF (wu_ext_tstep < 0) THEN
+         overUse = ABS(wu_ext_tstep)
+         wu_ext_tstep = 0
       ELSE
          OverUse = 0
       ENDIF
 
-      int_wu = wu - ext_wu
+      wu_int_tstep = wu - wu_ext_tstep
 
       ! Decrease the water use for each surface by the same proportion
-      IF (ext_wu /= 0 .AND. wu /= 0) THEN
-         wu_EveTr = wu_EveTr*ext_wu/wu
-         wu_DecTr = wu_DecTr*ext_wu/wu
-         wu_Grass = wu_Grass*ext_wu/wu
+      IF (wu_ext_tstep /= 0 .AND. wu /= 0) THEN
+         wu_EveTr = wu_EveTr*wu_ext_tstep/wu
+         wu_DecTr = wu_DecTr*wu_ext_tstep/wu
+         wu_Grass = wu_Grass*wu_ext_tstep/wu
       ENDIF
 
    END SUBROUTINE SUEWS_cal_WaterUse

@@ -2,7 +2,7 @@ module evap_module
    implicit none
 
 contains
-   SUBROUTINE Evap_SUEWS( &
+   SUBROUTINE cal_evap( &
       EvapMethod, state_is, WetThresh_is, capStore_is, &!input
       vpd_hPa, avdens, avcp, qn_e, s_hPa, psyc_hPa, ResistSurf, RA, rb, tlv, &
       rss, ev, qe) !output
@@ -121,6 +121,6 @@ contains
       !    STOP "stop in Evap_SUEWS_new"
       !
       ! END IF
-   END SUBROUTINE Evap_SUEWS
+   END SUBROUTINE cal_evap
 
 end module evap_module

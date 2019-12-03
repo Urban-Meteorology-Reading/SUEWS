@@ -1,8 +1,8 @@
 MODULE WaterDist_module
    USE allocateArray, ONLY: nsurf, &
-                            PavSurf, BldgSurf, &
-                            ConifSurf, DecidSurf, GrassSurf, &
-                            BSoilSurf, WaterSurf, ExcessSurf
+      PavSurf, BldgSurf, &
+      ConifSurf, DecidSurf, GrassSurf, &
+      BSoilSurf, WaterSurf, ExcessSurf
 
    IMPLICIT NONE
    ! INTEGER, PARAMETER :: nsurf = 7
@@ -91,7 +91,7 @@ CONTAINS
    !--------------Calculation of water storage change of specific land cover------------------------------
    SUBROUTINE cal_water_storage( &
       is, sfr, PipeCapacity, RunoffToWater, pin, & ! input:
-      WU_nsurf,&
+      WU_nsurf, &
       drain, AddWater, addImpervious, nsh_real, stateOld, AddWaterRunoff, &
       PervFraction, addVeg, SoilStoreCap, addWaterBody, FlowChange, StateLimit, &
       runoffAGimpervious, surplusWaterBody, & ! inout:
@@ -209,7 +209,7 @@ CONTAINS
 
       ! Combine water inputs to the current surface
       ! Add external water use for each surface type
-      p_mm= pin + WU_nsurf(is)
+      p_mm = pin + WU_nsurf(is)
 
       ! Add water from other surfaces within the same grid (RS2S) ----
       ! AddWater is the water supplied to the current surface from other surfaces
@@ -560,7 +560,7 @@ CONTAINS
       smd, smd_nsurf, tot_chang_per_tstep, SoilState)!output
 
       IMPLICIT NONE
-      INTEGER, PARAMETER :: nsurf = 7
+      ! INTEGER, PARAMETER :: nsurf = 7
 
       INTEGER, INTENT(in) ::SMDMethod
       REAL(KIND(1d0)), INTENT(in)::xsmd
@@ -865,7 +865,7 @@ CONTAINS
       DayofWeek_id, WUProfA_24hr, WUProfM_24hr, &
       InternalWaterUse_h, HDD_id, WUDay_id, &
       WaterUseMethod, NSH, it, imin, DLS, &
-      wu_nsurf, wu_int_tstep, wu_ext_tstep)! output:
+      wu_nsurf, wu_int, wu_ext)! output:
       ! Conversion of water use (irrigation)
       ! Last modified:
       ! TS 30 Nov 2019  - allow external water use for all surfaces
@@ -884,7 +884,7 @@ CONTAINS
       !        - Add functionality for water on paved surfaces (street cleaning, fountains)
 
       IMPLICIT NONE
-      INTEGER, PARAMETER :: nsurf = 7
+      ! INTEGER, PARAMETER :: nsurf = 7
 
       REAL(KIND(1d0)), INTENT(in)::nsh_real
       REAL(KIND(1d0)), INTENT(in)::wu_m3 ! external water input (e.g., irrigation)  [m3]
@@ -900,7 +900,6 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(12), INTENT(in)::HDD_id !HDD(id-1), Heating Degree Days (see SUEWS_DailyState.f95)
       REAL(KIND(1d0)), DIMENSION(9), INTENT(in)::WUDay_id!WUDay(id-1), Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
 
-
       INTEGER, INTENT(in)::DayofWeek_id(3)!DayofWeek(id) 1 - day of week; 2 - month; 3 - season
       INTEGER, INTENT(in)::WaterUseMethod !Use modelled (0) or observed (1) water use
       INTEGER, INTENT(in)::NSH!Number of timesteps per hour
@@ -908,10 +907,9 @@ CONTAINS
       INTEGER, INTENT(in)::imin !Minutes
       INTEGER, INTENT(in)::DLS !day lightsavings =1 + 1h) =0
 
-
-      REAL(KIND(1d0)), DIMENSION(nsurf),INTENT(out)::wu_nsurf !external Water use for each surface [mm]
-      REAL(KIND(1d0)), INTENT(out)::wu_int_tstep !Internal water use for the model timestep [mm] (over whole study area)
-      REAL(KIND(1d0)), INTENT(out)::wu_ext_tstep !External water use for the model timestep [mm] (over whole study area)
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::wu_nsurf !external Water use for each surface [mm]
+      REAL(KIND(1d0)), INTENT(out)::wu_int !Internal water use for the model timestep [mm] (over whole study area)
+      REAL(KIND(1d0)), INTENT(out)::wu_ext !External water use for the model timestep [mm] (over whole study area)
 
       REAL(KIND(1d0))::wu_EveTr !Water use for evergreen trees/shrubs [mm]
       REAL(KIND(1d0))::wu_DecTr !Water use for deciduous trees/shrubs [mm]
@@ -953,50 +951,50 @@ CONTAINS
 
       ! Irrigated Fraction of each surface
       ! TS: as of 20191130, assuming irrigation fraction as ONE except for vegetated surfaces
-      IrrFrac=1
-      IrrFrac(ConifSurf)=IrrFracConif
-      IrrFrac(DecidSurf)=IrrFracDecid
-      IrrFrac(GrassSurf)=IrrFracGrass
+      IrrFrac = 1
+      IrrFrac(ConifSurf) = IrrFracConif
+      IrrFrac(DecidSurf) = IrrFracDecid
+      IrrFrac(GrassSurf) = IrrFracGrass
 
       ! --------------------------------------------------------------------------------
       ! If water used is observed and provided in the met forcing file, units are m3
       ! Divide observed water use (in m3) by water use area to find water use (in mm)
       IF (WaterUseMethod == 1) THEN   !If water use is observed
          ! Calculate water use area [m2] for each surface type
-         WUAreaEveTr_m2 = IrrFracConif*sfr(ConifSurf)*SurfaceArea
-         WUAreaDecTr_m2 = IrrFracDecid*sfr(DecidSurf)*SurfaceArea
-         WUAreaGrass_m2 = IrrFracGrass*sfr(GrassSurf)*SurfaceArea
+         ! WUAreaEveTr_m2 = IrrFracConif*sfr(ConifSurf)*SurfaceArea
+         ! WUAreaDecTr_m2 = IrrFracDecid*sfr(DecidSurf)*SurfaceArea
+         ! WUAreaGrass_m2 = IrrFracGrass*sfr(GrassSurf)*SurfaceArea
          WUAreaTotal_m2 = WUAreaEveTr_m2 + WUAreaDecTr_m2 + WUAreaGrass_m2
 
-         WUArea=IrrFrac*sfr*SurfaceArea
-         WUAreaTotal_m2=sum(WUArea)
+         WUArea = IrrFrac*sfr*SurfaceArea
+         WUAreaTotal_m2 = sum(WUArea)
 
          !Set water use [mm] for each surface type to zero initially
          wu_EveTr = 0
          wu_DecTr = 0
          wu_Grass = 0
 
-         wu_nsurf=0
+         wu_nsurf = 0
          IF (wu_m3 == NAN .OR. wu_m3 == 0) THEN !If no water use
             ! wu_m3=0
             wu = 0
          ELSE                            !If water use
             IF (WUAreaTotal_m2 > 0) THEN
                wu = (wu_m3/WUAreaTotal_m2*1000)  !Water use in mm for the whole irrigated area
-               IF (WUAreaEveTr_m2 > 0) THEN
-                  wu_EveTr = wu                    !Water use for Irr EveTr in mm - these are all the same at the moment
-                  wu_EveTr = wu_EveTr*IrrFracConif !Water use for EveTr in mm
-               ENDIF
-               IF (WUAreaDecTr_m2 > 0) THEN
-                  wu_DecTr = wu                        !Water use for Irr DecTr in mm - these are all the same at the moment
-                  wu_DecTr = wu_DecTr*IrrFracDecid     !Water use for DecTr in mm
-               ENDIF
-               IF (WUAreaGrass_m2 > 0) THEN
-                  wu_Grass = wu                    !Water use for Irr Grass in mm - these are all the same at the moment
-                  wu_Grass = wu_Grass*IrrFracGrass !Water use for Grass in mm
-               ENDIF
+               ! IF (WUAreaEveTr_m2 > 0) THEN
+               !    wu_EveTr = wu                    !Water use for Irr EveTr in mm - these are all the same at the moment
+               !    wu_EveTr = wu_EveTr*IrrFracConif !Water use for EveTr in mm
+               ! ENDIF
+               ! IF (WUAreaDecTr_m2 > 0) THEN
+               !    wu_DecTr = wu                        !Water use for Irr DecTr in mm - these are all the same at the moment
+               !    wu_DecTr = wu_DecTr*IrrFracDecid     !Water use for DecTr in mm
+               ! ENDIF
+               ! IF (WUAreaGrass_m2 > 0) THEN
+               !    wu_Grass = wu                    !Water use for Irr Grass in mm - these are all the same at the moment
+               !    wu_Grass = wu_Grass*IrrFracGrass !Water use for Grass in mm
+               ! ENDIF
 
-               wu_nsurf= wu*IrrFrac
+               wu_nsurf = wu*IrrFrac
 
                wu = (wu_m3/SurfaceArea*1000)     !Water use for the whole study area in mm
             ENDIF
@@ -1018,26 +1016,26 @@ CONTAINS
          ENDIF
 
          !write(*,*) (NSH*(ih+1-1)+imin*NSH/60+1)
-         WUDay_A_id=0
-         WUDay_A_id(ConifSurf)=WUDay_id(2)
-         WUDay_A_id(DecidSurf)=WUDay_id(5)
-         WUDay_A_id(GrassSurf)=WUDay_id(8)
+         WUDay_A_id = 0
+         WUDay_A_id(ConifSurf) = WUDay_id(2)
+         WUDay_A_id(DecidSurf) = WUDay_id(5)
+         WUDay_A_id(GrassSurf) = WUDay_id(8)
 
-         WUDay_M_id=0
-         WUDay_M_id(ConifSurf)=WUDay_id(3)
-         WUDay_M_id(DecidSurf)=WUDay_id(6)
-         WUDay_M_id(GrassSurf)=WUDay_id(9)
+         WUDay_M_id = 0
+         WUDay_M_id(ConifSurf) = WUDay_id(3)
+         WUDay_M_id(DecidSurf) = WUDay_id(6)
+         WUDay_M_id(GrassSurf) = WUDay_id(9)
 
          ! ---- Automatic irrigation ----
          ! wu_EveTr = WUProfA_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WUDay_id(2)   !Automatic evergreen trees
          ! wu_DecTr = WUProfA_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WUDay_id(5)   !Automatic deciduous trees
          ! wu_Grass = WUProfA_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WUDay_id(8)   !Automatic grass
-         WUProfA_tstep=get_Prof_SpecTime_sum(ih, imin, 0, WUProfA_24hr(:, iu), tstep)
-         wu_EveTr = get_Prof_SpecTime_sum(ih, imin, 0, WUProfA_24hr(:, iu), tstep)*WUDay_id(2)   !Automatic evergreen trees
-         wu_DecTr = get_Prof_SpecTime_sum(ih, imin, 0, WUProfA_24hr(:, iu), tstep)*WUDay_id(5)   !Automatic deciduous trees
-         wu_Grass = get_Prof_SpecTime_sum(ih, imin, 0, WUProfA_24hr(:, iu), tstep)*WUDay_id(8)   !Automatic grass
+         WUProfA_tstep = get_Prof_SpecTime_sum(ih, imin, 0, WUProfA_24hr(:, iu), tstep)
+         ! wu_EveTr = get_Prof_SpecTime_sum(ih, imin, 0, WUProfA_24hr(:, iu), tstep)*WUDay_id(2)   !Automatic evergreen trees
+         ! wu_DecTr = get_Prof_SpecTime_sum(ih, imin, 0, WUProfA_24hr(:, iu), tstep)*WUDay_id(5)   !Automatic deciduous trees
+         ! wu_Grass = get_Prof_SpecTime_sum(ih, imin, 0, WUProfA_24hr(:, iu), tstep)*WUDay_id(8)   !Automatic grass
 
-         wu_nsurf=WUProfA_tstep*WUDay_A_id
+         wu_nsurf = WUProfA_tstep*WUDay_A_id
          ! PRINT*, ''
          ! PRINT*, 'WUDay_id(2) ',WUDay_id(2)
          ! PRINT*, 'profile ',get_Prof_SpecTime_sum(ih,imin,0,WUProfA_24hr(:,iu),tstep)
@@ -1057,14 +1055,13 @@ CONTAINS
          ! wu_EveTr = wu_EveTr + (WuFr*WUProfM_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WUDay_id(3)) !Manual evergreen trees
          ! wu_DecTr = wu_DecTr + (WuFr*WUProfM_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WUDay_id(6)) !Manual deciduous trees
          ! wu_Grass = wu_Grass + (WuFr*WUProfM_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WUDay_id(9)) !Manual grass
-         WUProfM_tstep=get_Prof_SpecTime_sum(ih, imin, 0, WUProfM_24hr(:, iu), tstep)
-         wu_EveTr = wu_EveTr + (get_Prof_SpecTime_sum(ih, imin, 0, WUProfM_24hr(:, iu), tstep)*flag_WuM*WUDay_id(3)) !Manual evergreen trees
-         wu_DecTr = wu_DecTr + (get_Prof_SpecTime_sum(ih, imin, 0, WUProfM_24hr(:, iu), tstep)*flag_WuM*WUDay_id(6)) !Manual deciduous trees
-         wu_Grass = wu_Grass + (get_Prof_SpecTime_sum(ih, imin, 0, WUProfM_24hr(:, iu), tstep)*flag_WuM*WUDay_id(9)) !Manual grass
+         WUProfM_tstep = get_Prof_SpecTime_sum(ih, imin, 0, WUProfM_24hr(:, iu), tstep)
+         ! wu_EveTr = wu_EveTr + (get_Prof_SpecTime_sum(ih, imin, 0, WUProfM_24hr(:, iu), tstep)*flag_WuM*WUDay_id(3)) !Manual evergreen trees
+         ! wu_DecTr = wu_DecTr + (get_Prof_SpecTime_sum(ih, imin, 0, WUProfM_24hr(:, iu), tstep)*flag_WuM*WUDay_id(6)) !Manual deciduous trees
+         ! wu_Grass = wu_Grass + (get_Prof_SpecTime_sum(ih, imin, 0, WUProfM_24hr(:, iu), tstep)*flag_WuM*WUDay_id(9)) !Manual grass
 
-         wu_nsurf=wu_nsurf+WUProfM_tstep*WUDay_M_id*flag_WuM
-         wu_nsurf=wu_nsurf*IrrFrac
-
+         wu_nsurf = wu_nsurf + WUProfM_tstep*WUDay_M_id*flag_WuM
+         wu_nsurf = wu_nsurf*IrrFrac
 
          ! PRINT*, 'auto:'
          ! PRINT*, 'wu_EveTr',wu_EveTr
@@ -1074,9 +1071,9 @@ CONTAINS
          !wu_EveTr=wu_EveTr*sfr(ConifSurf)*IrrFracConif        !Water use for EveTr [mm]
          !wu_DecTr=wu_DecTr*sfr(DecidSurf)*IrrFracDecid        !Water use for DecTr [mm]
          !wu_Grass=wu_Grass*sfr(GrassSurf)*IrrFracGrass        !Water use for Grass [mm]
-         wu_EveTr = wu_EveTr*IrrFracConif  !Water use for EveTr [mm]
-         wu_DecTr = wu_DecTr*IrrFracDecid  !Water use for DecTr [mm]
-         wu_Grass = wu_Grass*IrrFracGrass  !Water use for Grass [mm]
+         ! wu_EveTr = wu_EveTr*IrrFracConif  !Water use for EveTr [mm]
+         ! wu_DecTr = wu_DecTr*IrrFracDecid  !Water use for DecTr [mm]
+         ! wu_Grass = wu_Grass*IrrFracGrass  !Water use for Grass [mm]
 
          ! PRINT*, 'auto:'
          ! PRINT*, 'IrrFracConif',IrrFracConif
@@ -1084,8 +1081,8 @@ CONTAINS
          ! PRINT*, 'IrrFracGrass',IrrFracGrass
 
          ! Total water use for the whole study area [mm]
-         wu = wu_EveTr*sfr(ConifSurf) + wu_DecTr*sfr(DecidSurf) + wu_Grass*sfr(GrassSurf)
-         wu = dot_product(wu_nsurf,sfr)
+         ! wu = wu_EveTr*sfr(ConifSurf) + wu_DecTr*sfr(DecidSurf) + wu_Grass*sfr(GrassSurf)
+         wu = dot_product(wu_nsurf, sfr)
 
       ENDIF   !End WU_choice
       ! --------------------------------------------------------------------------------
@@ -1095,22 +1092,23 @@ CONTAINS
       InternalWaterUse = InternalWaterUse_h/nsh_real
 
       ! Remove InternalWaterUse from the total water use
-      wu_ext_tstep = wu - (InternalWaterUse + OverUse)
+      wu_ext = wu - (InternalWaterUse + OverUse)
       ! Check ext_wu cannot be negative
-      IF (wu_ext_tstep < 0) THEN
-         overUse = ABS(wu_ext_tstep)
-         wu_ext_tstep = 0
+      IF (wu_ext < 0) THEN
+         overUse = ABS(wu_ext)
+         wu_ext = 0
       ELSE
          OverUse = 0
       ENDIF
 
-      wu_int_tstep = wu - wu_ext_tstep
+      wu_int = wu - wu_ext
 
       ! Decrease the water use for each surface by the same proportion
-      IF (wu_ext_tstep /= 0 .AND. wu /= 0) THEN
-         wu_EveTr = wu_EveTr*wu_ext_tstep/wu
-         wu_DecTr = wu_DecTr*wu_ext_tstep/wu
-         wu_Grass = wu_Grass*wu_ext_tstep/wu
+      IF (wu_ext /= 0 .AND. wu /= 0) THEN
+         ! wu_EveTr = wu_EveTr*wu_ext/wu
+         ! wu_DecTr = wu_DecTr*wu_ext/wu
+         ! wu_Grass = wu_Grass*wu_ext/wu
+         wu_nsurf = wu_nsurf*wu_ext/wu
       ENDIF
 
    END SUBROUTINE SUEWS_cal_WaterUse

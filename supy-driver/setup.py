@@ -167,7 +167,7 @@ setup(name='supy_driver',
       ext_modules=ext_modules,
       python_requires='>=3.5',
       install_requires=[
-          'numpy>=1.15.2'
+          'numpy>=1.17.4'
       ],
       include_package_data=True,
       test_suite='nose.collector',

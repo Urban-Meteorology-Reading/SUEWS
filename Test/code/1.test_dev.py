@@ -25,17 +25,20 @@ path_baserun = Path(path_baserun)
 path_release_input = Path('../../Release/InputTables').resolve()
 # version specific input folder under release folder
 path_input_ver = (path_release_input / path_baserun.name).resolve()
-print('dir_input', path_input_ver)
+print('dir_input:', path_input_ver)
 # clean existing files
 if path_input_ver.exists():
     print('cleaning existing files...')
     rmtree(path_input_ver)
-    path_input_ver.mkdir()
+# make an empty directory
+path_input_ver.mkdir()
 
 
 # copy runcontrol
 path_runctrl_base = path_baserun/'RunControl.nml'
+print('path_runctrl_base:', path_runctrl_base)
 path_runctrl_input = path_input_ver/'RunControl.nml'
+print('path_runctrl_input:', path_runctrl_input)
 copyfile(path_runctrl_base, path_runctrl_input)
 dict_runcontrol = ts.load_SUEWS_nml(path_runctrl_base)['runcontrol']
 # copy other input tables and initial conditions

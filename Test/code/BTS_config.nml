@@ -1,7 +1,7 @@
 &file
-    name_exe    = 'SUEWS_V2019a'
+    name_exe    = 'SUEWS_V2019b'
     dir_exe     = '../../SUEWS-SourceCode'
-    dir_baserun = '../BaseRun/2019a'
+    dir_baserun = '../BaseRun/2019b'
 /
 
 &test
@@ -13,7 +13,7 @@
     test_number=100
 /
 
-&physics_test ! all available options in 2019a below
+&physics_test ! all available options in 2019b below
     cbluse             = 0, 1
     snowuse            = 0, 1
     stabilitymethod    = 2, 3

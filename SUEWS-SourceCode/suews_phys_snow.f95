@@ -1,5 +1,5 @@
 MODULE Snow_module
-   use evap_module, only: evap_suews
+   use evap_module, only: cal_evap
    use allocateArray, only: nsurf, PavSurf, BldgSurf, ConifSurf, BSoilSurf, WaterSurf, ncolumnsDataOutSnow
 
    IMPLICIT NONE
@@ -476,7 +476,7 @@ CONTAINS
    !===============================================================================================
    SUBROUTINE SnowCalc( &
       tstep, imin, it, dectime, is, &!input
-      EvapMethod, CRWmin, CRWmax, nsh_real, lvS_J_kg, lv_j_kg, avdens, &
+      EvapMethod, CRWmin, CRWmax, nsh_real, lvS_J_kg, avdens, &
       avRh, Press_hPa, Temp_C, RAsnow, psyc_hPa, avcp, sIce_hPa, &
       PervFraction, vegfraction, addimpervious, &
       vpd_hPa, qn_e, s_hPa, ResistSurf, RA, rb, tlv, snowdensmin, SnowProf_24hr, precip, &
@@ -538,7 +538,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(in)::CRWmax
       REAL(KIND(1d0)), INTENT(in)::nsh_real
       REAL(KIND(1d0)), INTENT(in)::lvS_J_kg
-      REAL(KIND(1d0)), INTENT(in)::lv_j_kg
+      ! REAL(KIND(1d0)), INTENT(in)::lv_j_kg
       REAL(KIND(1d0)), INTENT(in)::avdens
       REAL(KIND(1d0)), INTENT(in)::vpd_hPa ! vapour pressure deficit [hPa]
       REAL(KIND(1d0)), INTENT(in)::qn_e !net available energy for evaporation
@@ -694,7 +694,7 @@ CONTAINS
       ! Calculate evaporation from SnowPack and snow free surfaces (in mm)
       ! IF (SnowFrac(is)<1) CALL Evap_SUEWS !ev and qe for snow free surface out
       capStore(is) = StoreDrainPrm(6, is)
-      IF (SnowFrac(is) < 1) CALL Evap_SUEWS( &
+      IF (SnowFrac(is) < 1) CALL cal_evap( &
          EvapMethod, state_id(is), WetThresh(is), capStore(is), &!input
          vpd_hPa, avdens, avcp, qn_e, s_hPa, psyc_hPa, ResistSurf, RA, rb, tlv, &
          rss_nsurf(is), ev, qe) !output
@@ -1357,7 +1357,7 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::SnowDens_prev
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out)::SnowDens_next
 
-      INTEGER::is
+      ! INTEGER::is
       REAL(KIND(1D0))::alb_change    !Change in snow albedo
       REAL(KIND(1D0))::dens_change    !Change in snow density
       REAL(KIND(1D0)), parameter::  tau_1 = 24*60*60         !Number of seconds in a day

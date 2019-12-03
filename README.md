@@ -3,7 +3,6 @@
 This is a public repo for SUEWS source code and documentation.
 
 
-
 - [SUEWS](#suews)
   - [Documentation](#documentation)
   - [Developer Note](#developer-note)
@@ -15,8 +14,8 @@ This is a public repo for SUEWS source code and documentation.
       - [Tests and purposes](#tests-and-purposes)
       - [Workflow](#workflow-1)
       - [Preparation of tests](#preparation-of-tests)
-    - [Debugging using GDB](#debugging-using-gdb)
-      - [using GDB on macOS](#using-gdb-on-macos)
+    - [Debugging with GDB](#debugging-with-gdb)
+      - [GDB on macOS](#gdb-on-macos)
       - [debugging with GDB](#debugging-with-gdb)
     - [Questions](#questions)
 
@@ -96,12 +95,12 @@ The test workflow is as follows (details refer to the Makefile `test` recipe and
    - `dir_input`: the directory to copy input files; suggested to be `Release/InputTables/{version}`.
    - `dir_baserun`: the base run against which to test identity in results.
 
-### Debugging using GDB
+### Debugging with GDB
 
 GDB is a generic debugging tool used along with gfortran.
 Here are some tips to debug SUEWS code:
 
-#### using GDB on macOS
+#### GDB on macOS
 
 Recent macOS (since High Sierra) introduces extra security procedures for system level operations that makes installation GDB more tedious than before.
 The best practice, in TS's option, to avoid hacking your macOS, is to use Linux docker images with gfortran&gdb installations: e.g., [alpine-gfortran](https://github.com/cmplopes/alpine-gfortran).
@@ -113,8 +112,6 @@ Once the docker image is installed, simply run this from the SUEWS root folder f
 
 ```
  which will mount the current `SUEWS` directory to docker's path `/source` and enter the interactive mode for debugging.
-
-
 
 
 #### debugging with GDB

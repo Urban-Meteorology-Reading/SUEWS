@@ -2768,13 +2768,14 @@ CONTAINS
 
    END FUNCTION square_real
 
-   SUBROUTINE output_name_n(i, name, group, aggreg)
+   SUBROUTINE output_name_n(i, name, group, aggreg,outlevel)
       ! used by f2py module `SuPy` to handle output names
       IMPLICIT NONE
       ! the dimension is potentially incorrect,
       ! which should be consistent with that in output module
       INTEGER, INTENT(in) :: i
       CHARACTER(len=15), INTENT(out) :: name, group, aggreg
+      INTEGER, INTENT(out) :: outlevel
 
       INTEGER :: nVar
       nVar = SIZE(varListAll, dim=1)
@@ -2782,10 +2783,12 @@ CONTAINS
          name = TRIM(varListAll(i)%header)
          group = TRIM(varListAll(i)%group)
          aggreg = TRIM(varListAll(i)%aggreg)
+         outlevel = varListAll(i)%level
       ELSE
          name = ''
          group = ''
          aggreg = ''
+         outlevel = 0
       END IF
 
    END SUBROUTINE output_name_n

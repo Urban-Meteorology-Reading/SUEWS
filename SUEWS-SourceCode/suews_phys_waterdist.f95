@@ -968,7 +968,7 @@ CONTAINS
          ! WUAreaEveTr_m2 = IrrFracConif*sfr(ConifSurf)*SurfaceArea
          ! WUAreaDecTr_m2 = IrrFracDecid*sfr(DecidSurf)*SurfaceArea
          ! WUAreaGrass_m2 = IrrFracGrass*sfr(GrassSurf)*SurfaceArea
-         WUAreaTotal_m2 = WUAreaEveTr_m2 + WUAreaDecTr_m2 + WUAreaGrass_m2
+         ! WUAreaTotal_m2 = WUAreaEveTr_m2 + WUAreaDecTr_m2 + WUAreaGrass_m2
 
          WUArea = IrrFrac*sfr*SurfaceArea
          WUAreaTotal_m2 = sum(WUArea)

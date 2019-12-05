@@ -5,19 +5,11 @@ MODULE WaterDist_module
                             BSoilSurf, WaterSurf, ExcessSurf
 
    IMPLICIT NONE
-   ! INTEGER, PARAMETER :: nsurf = 7
-   ! INTEGER, PARAMETER :: PavSurf = 1
-   ! INTEGER, PARAMETER :: BldgSurf = 2
-   ! INTEGER, PARAMETER :: ConifSurf = 3
-   ! INTEGER, PARAMETER :: DecidSurf = 4
-   ! INTEGER, PARAMETER :: GrassSurf = 5
-   ! INTEGER, PARAMETER :: BSoilSurf = 6
-   ! INTEGER, PARAMETER :: WaterSurf = 7
-   ! INTEGER, PARAMETER :: ExcessSurf = 8
+
 CONTAINS
 
    !------------------------------------------------------------------------------
-   SUBROUTINE drainage( &
+   SUBROUTINE cal_drainage( &
       is, & !input
       state_is, &
       StorCap, &
@@ -85,7 +77,7 @@ CONTAINS
 
       RETURN
 
-   END SUBROUTINE drainage
+   END SUBROUTINE cal_drainage
    !------------------------------------------------------------------------------
 
    !--------------Calculation of water storage change of specific land cover------------------------------
@@ -395,7 +387,7 @@ CONTAINS
 
       IF (is < WaterSurf) THEN   !Not for water body
          !  CALL updateFlood
-         CALL updateFlood( &
+         CALL update_flood( &
             is, runoff, &! input:
             sfr, PipeCapacity, RunoffToWater, &
             runoffAGimpervious, surplusWaterBody, runoffAGveg, runoffPipes)! inout:
@@ -405,7 +397,7 @@ CONTAINS
    !------------------------------------------------------------------------------
 
    !------------------------------------------------------------------------------
-   SUBROUTINE updateFlood( &
+   SUBROUTINE update_flood( &
       is, runoff, &! input:
       sfr, PipeCapacity, RunoffToWater, &
       runoffAGimpervious, surplusWaterBody, runoffAGveg, runoffPipes)! inout:
@@ -450,11 +442,11 @@ CONTAINS
 
       ENDIF   !If runoff exceed pipe capacity
 
-   END SUBROUTINE updateFlood
+   END SUBROUTINE update_flood
    !------------------------------------------------------------------------------
 
    !------------------------------------------------------------------------------
-   SUBROUTINE ReDistributeWater( &
+   SUBROUTINE redist_water( &
       snowUse, WaterDist, sfr, Drain, &! input:
       AddWaterRunoff, AddWater)! output:
       !Drainage moves into different parts defined by WaterDistSS_YYYY.txt. LJ 2010
@@ -503,7 +495,7 @@ CONTAINS
          ENDDO
       ENDDO
 
-   END SUBROUTINE ReDistributeWater
+   END SUBROUTINE redist_water
    !------------------------------------------------------------------------------
 
    !------------------------------------------------------------------------------
@@ -522,15 +514,19 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(out)::vsmd, smd
 
       INTEGER :: is
+      REAL(KIND(1d0))::frac_veg
 
       SoilMoistCap = 0   !Maximum capacity of soil store [mm] for whole surface
       SoilState = 0      !Area-averaged soil moisture [mm] for whole surface
 
       IF (NonWaterFraction /= 0) THEN !Soil states only calculated if soil exists. LJ June 2017
-         DO is = 1, nsurf - 1   !No water body included
-            SoilMoistCap = SoilMoistCap + (SoilStoreCap(is)*sfr(is)/NonWaterFraction)
-            SoilState = SoilState + (soilstore_id(is)*sfr(is)/NonWaterFraction)
-         ENDDO
+         ! DO is = 1, nsurf - 1   !No water body included
+         !    SoilMoistCap = SoilMoistCap + (SoilStoreCap(is)*sfr(is)/NonWaterFraction)
+         !    SoilState = SoilState + (soilstore_id(is)*sfr(is)/NonWaterFraction)
+         ! ENDDO
+          !No water body included
+         SoilMoistCap=dot_product(SoilStoreCap(1:nsurf-1),sfr(1:nsurf-1))/NonWaterFraction
+         SoilState=dot_product(soilstore_id(1:nsurf-1),sfr(1:nsurf-1))/NonWaterFraction
       ENDIF
 
       !If loop removed HCW 26 Feb 2015
@@ -538,16 +534,24 @@ CONTAINS
       smd = SoilMoistCap - SoilState
       !endif
 
-      ! Calculate soil moisture for vegetated surfaces only (for use in surface conductance)
-      vsmd = 0
-      DO is = ConifSurf, GrassSurf  !Vegetated surfaces only
-         IF (sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) == 0) THEN
-            vsmd = 0
-         ELSE
-            vsmd = vsmd + (SoilStoreCap(is) - soilstore_id(is))*sfr(is)/(sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf))
-         END IF
-         !write(*,*) is, vsmd, smd
-      ENDDO
+      ! Calculate soil moisture deficit for vegetated surfaces only (for use in surface conductance)
+      !Vegetated surfaces only
+      frac_veg=sum(sfr(ConifSurf:GrassSurf))
+      if ( frac_veg>0  ) then
+         vsmd = dot_product(&
+            SoilStoreCap(ConifSurf:GrassSurf)-soilstore_id(ConifSurf:GrassSurf),&
+            sfr(ConifSurf:GrassSurf)&
+         )/frac_veg
+      end if
+
+      ! DO is = ConifSurf, GrassSurf  !Vegetated surfaces only
+      !    IF (sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) == 0) THEN
+      !       vsmd = 0
+      !    ELSE
+      !       vsmd = vsmd + (SoilStoreCap(is) - soilstore_id(is))*sfr(is)/(sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf))
+      !    END IF
+      !    !write(*,*) is, vsmd, smd
+      ! ENDDO
 
    END SUBROUTINE SUEWS_update_SoilMoist
    !------------------------------------------------------------------------------

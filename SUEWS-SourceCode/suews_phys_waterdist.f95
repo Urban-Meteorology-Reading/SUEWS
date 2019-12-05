@@ -144,9 +144,6 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(in)::PipeCapacity!Capacity of pipes to transfer water
       REAL(KIND(1d0)), INTENT(in)::RunoffToWater!Fraction of surface runoff going to water body
       REAL(KIND(1d0)), INTENT(in)::pin!Rain per time interval
-      ! REAL(KIND(1d0)), INTENT(in)::wu_EveTr!Water use for evergreen trees/shrubs [mm]
-      ! REAL(KIND(1d0)), INTENT(in)::wu_DecTr!Water use for deciduous trees/shrubs [mm]
-      ! REAL(KIND(1d0)), INTENT(in)::wu_Grass!Water use for grass [mm]
       REAL(KIND(1d0)), INTENT(in)::addImpervious!Water from impervious surfaces of other grids [mm] for whole surface area
       REAL(KIND(1d0)), INTENT(in)::nsh_real!nsh cast as a real for use in calculations
       REAL(KIND(1d0)), INTENT(in)::PervFraction! sum of surface cover fractions for impervious surfaces

@@ -170,21 +170,21 @@ MODULE ctrl_output
         ncolumnsDataOutSUEWS + ncolumnsdataOutSOL - 5)/ &
       varAttr('azimuth', 'to_add', f106, 'azimuth', aA, 'SOLWEIG', 0), &
       varAttr('altitude', 'to_add', f106, 'altitude', aA, 'SOLWEIG', 0), &
-      varAttr('GlobalRad', 'to_add', f106, 'GlobalRad', aA, 'SOLWEIG', 0), &
-      varAttr('DiffuseRad', 'to_add', f106, 'DiffuseRad', aA, 'SOLWEIG', 0), &
-      varAttr('DirectRad', 'to_add', f106, 'DirectRad', aA, 'SOLWEIG', 0), &
-      varAttr('Kdown2d', 'to_add', f106, 'Kdown2d', aA, 'SOLWEIG', 0), &
+      varAttr('GlobalRad', 'to_add', f106, 'Global Irradiance', aA, 'SOLWEIG', 0), &
+      varAttr('DiffuseRad', 'to_add', f106, 'Diffuse Radiation', aA, 'SOLWEIG', 0), &
+      varAttr('DirectRad', 'to_add', f106, 'Direct Radiation', aA, 'SOLWEIG', 0), &
+      varAttr('Kdown2d', 'to_add', f106, 'K down2d', aA, 'SOLWEIG', 0), &
       varAttr('Kup2d', 'to_add', f106, 'Kup2d', aA, 'SOLWEIG', 0), &
-      varAttr('Ksouth', 'to_add', f106, 'Ksouth', aA, 'SOLWEIG', 0), &
-      varAttr('Kwest', 'to_add', f106, 'Kwest', aA, 'SOLWEIG', 0), &
-      varAttr('Knorth', 'to_add', f106, 'Knorth', aA, 'SOLWEIG', 0), &
-      varAttr('Keast', 'to_add', f106, 'Keast', aA, 'SOLWEIG', 0), &
-      varAttr('Ldown2d', 'to_add', f106, 'Ldown2d', aA, 'SOLWEIG', 0), &
-      varAttr('Lup2d', 'to_add', f106, 'Lup2d', aA, 'SOLWEIG', 0), &
-      varAttr('Lsouth', 'to_add', f106, 'Lsouth', aA, 'SOLWEIG', 0), &
-      varAttr('Lwest', 'to_add', f106, 'Lwest', aA, 'SOLWEIG', 0), &
-      varAttr('Lnorth', 'to_add', f106, 'Lnorth', aA, 'SOLWEIG', 0), &
-      varAttr('Least', 'to_add', f106, 'Least', aA, 'SOLWEIG', 0), &
+      varAttr('Ksouth', 'to_add', f106, 'K south', aA, 'SOLWEIG', 0), &
+      varAttr('Kwest', 'to_add', f106, 'K west', aA, 'SOLWEIG', 0), &
+      varAttr('Knorth', 'to_add', f106, 'K north', aA, 'SOLWEIG', 0), &
+      varAttr('Keast', 'to_add', f106, 'K east', aA, 'SOLWEIG', 0), &
+      varAttr('Ldown2d', 'to_add', f106, 'L down2d', aA, 'SOLWEIG', 0), &
+      varAttr('Lup2d', 'to_add', f106, 'L up2d', aA, 'SOLWEIG', 0), &
+      varAttr('Lsouth', 'to_add', f106, 'L south', aA, 'SOLWEIG', 0), &
+      varAttr('Lwest', 'to_add', f106, 'L west', aA, 'SOLWEIG', 0), &
+      varAttr('Lnorth', 'to_add', f106, 'L north', aA, 'SOLWEIG', 0), &
+      varAttr('Least', 'to_add', f106, 'L east', aA, 'SOLWEIG', 0), &
       varAttr('Tmrt', 'to_add', f106, 'Tmrt', aA, 'SOLWEIG', 0), &
       varAttr('I0', 'to_add', f106, 'I0', aA, 'SOLWEIG', 0), &
       varAttr('CI', 'to_add', f106, 'CI', aA, 'SOLWEIG', 0), &

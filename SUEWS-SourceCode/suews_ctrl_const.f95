@@ -131,6 +131,7 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSUEWS - 5)     ::dataOutLineSUEWS ! output of SUEWS results per each timestep
    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow - 5)      ::dataOutLineSnow  ! output of snow results per each timestep
    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL - 5)      ::dataOutLineRSL  ! output of snow results per each timestep
+   REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSOL - 5)      ::dataOutLineSOL  ! output of snow results per each timestep
    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState - 5)::DailyStateLine   ! output of DailyState results per each timestep
 
    REAL(KIND(1d0)), DIMENSION(:, :), ALLOCATABLE:: MetForDisagg           !Array for original met forcing data (for disaggregation)

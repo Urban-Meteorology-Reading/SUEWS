@@ -35,18 +35,18 @@
 
 SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
    USE data_in, ONLY: diagnose, ah_min, ah_slope_cooling, ah_slope_heating, &
-                      alt, avkdn, avrh, avu1, basetHDD, diagqn, diagqs, drainrt, co2pointsource, CBLuse, &
-                      ef_umolco2perj, emissionsmethod, enef_v_jkm, enddls, fcef_v_kgkm, fcld_obs, &
-                      frfossilfuel_heat, frfossilfuel_nonheat, EvapMethod, &
-                      LAIcalcyes, LAI_obs, lat, ldown_obs, lng, maxfcmetab, maxqfmetab, &
-                      minfcmetab, minqfmetab, netradiationmethod, ohmincqf, &
-                      popdensdaytime, popdensnighttime, &
-                      precip, press_hpa, qf0_beu, qf_a, qf_b, qf_c, &
-                      qe_obs, qh_obs, qn1_obs, qs_obs, qf_obs, &
-                      raincover, rainmaxres, &
-                      roughlenmommethod, smdmethod, snowFrac_obs, snowuse, startdls, &
-                      storageheatmethod, t_critic_cooling, t_critic_heating, temp_c, &
-                      timezone, trafficrate, trafficunits, waterusemethod, wu_m3, xsmd
+      alt, avkdn, avrh, avu1, basetHDD, diagqn, diagqs, drainrt, co2pointsource, CBLuse, &
+      ef_umolco2perj, emissionsmethod, enef_v_jkm, enddls, fcef_v_kgkm, fcld_obs, &
+      frfossilfuel_heat, frfossilfuel_nonheat, EvapMethod, &
+      LAIcalcyes, LAI_obs, lat, ldown_obs, lng, maxfcmetab, maxqfmetab, &
+      minfcmetab, minqfmetab, netradiationmethod, ohmincqf, &
+      popdensdaytime, popdensnighttime, &
+      precip, press_hpa, qf0_beu, qf_a, qf_b, qf_c, &
+      qe_obs, qh_obs, qn1_obs, qs_obs, qf_obs, &
+      raincover, rainmaxres, &
+      roughlenmommethod, smdmethod, snowFrac_obs, snowuse, startdls, &
+      storageheatmethod, t_critic_cooling, t_critic_heating, temp_c, &
+      timezone, trafficrate, trafficunits, waterusemethod, wu_m3, xsmd
    USE time, ONLY: iy, id, it, imin, isec, dectime, dt_since_start
    USE allocateArray, ONLY: &
       alb, &
@@ -79,9 +79,9 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       WUDay_id, &
       AHProf_24Hr, HumActivity_24Hr, PopProf_24Hr, TraffProf_24Hr, WUProfA_24hr, WUProfM_24hr, &
       datetimeline, dataoutlinesuews, dataoutlinesnow, &
-      dataoutlineestm, dataoutlineRSL,dataoutlineSOL, &
+      dataoutlineestm, dataoutlineRSL, dataoutlineSOL, &
       dailystateline, dataoutdailystate, &
-      dataoutsuews, dataoutsnow, dataoutestm, dataoutRSL, dataOutSOL,&
+      dataoutsuews, dataoutsnow, dataoutestm, dataoutRSL, dataOutSOL, &
       dataoutBL
    USE sues_data, ONLY: &
       aerodynamicresistancemethod, daywat, daywatper, faut, flowchange, &
@@ -161,7 +161,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       WaterDist, WaterUseMethod, WetThresh, wu_m3, &
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
-      datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineSOL,&!output
+      datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineSOL, &!output
       DailyStateLine)!output
 
    !============ update and write out SUEWS_cal_DailyState ===============
@@ -177,8 +177,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
    CALL SUEWS_update_output( &
       SnowUse, storageheatmethod, &!input
       ReadLinesMetdata, NumberOfGrids, &
-      ir, gridiv, datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL,dataOutLineSOL, &!input
-      dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL,dataOutSOL)!inout
+      ir, gridiv, datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineSOL, &!input
+      dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL, dataOutSOL)!inout
 
    ! NB: CBL disabled for the moment for interface improvement
    ! NB: CBL be decoupled from SUEWS TS 10 Jun 2018

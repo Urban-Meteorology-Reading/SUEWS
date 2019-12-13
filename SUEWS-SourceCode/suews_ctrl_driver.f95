@@ -9,14 +9,14 @@ MODULE SUEWS_Driver
    USE NARP_MODULE, ONLY: NARP_cal_SunPosition
    USE AnOHM_module, ONLY: AnOHM
    USE resist_module, ONLY: AerodynamicResistance, BoundaryLayerResistance, SurfaceResistance, &
-                            cal_z0V, SUEWS_cal_RoughnessParameters
+      cal_z0V, SUEWS_cal_RoughnessParameters
    USE ESTM_module, ONLY: ESTM
    USE Snow_module, ONLY: SnowCalc, Snow_cal_MeltHeat, SnowUpdate, update_snow_albedo, update_snow_dens
    USE DailyState_module, ONLY: SUEWS_cal_DailyState, update_DailyStateLine
    USE WaterDist_module, ONLY: drainage, cal_water_storage, &
-                               SUEWS_cal_SoilState, SUEWS_update_SoilMoist, &
-                               ReDistributeWater, SUEWS_cal_HorizontalSoilWater, &
-                               SUEWS_cal_WaterUse
+      SUEWS_cal_SoilState, SUEWS_update_SoilMoist, &
+      ReDistributeWater, SUEWS_cal_HorizontalSoilWater, &
+      SUEWS_cal_WaterUse
    USE ctrl_output, ONLY: varListAll
    USE DailyState_module, ONLY: SUEWS_update_DailyState
    use lumps_module, only: LUMPS_cal_QHQE
@@ -31,7 +31,7 @@ MODULE SUEWS_Driver
       ivConif, ivDecid, ivGrass, &
       ncolumnsDataOutSUEWS, ncolumnsDataOutSnow, &
       ncolumnsDataOutESTM, ncolumnsDataOutDailyState, &
-      ncolumnsDataOutRSL,ncolumnsdataOutSOL
+      ncolumnsDataOutRSL, ncolumnsdataOutSOL
    use moist, only: avcp, avdens, lv_J_kg
    use solweig_module, only: Solweig_2014a_core
 
@@ -1002,8 +1002,8 @@ CONTAINS
       WUDay_id = WUDay_id_next
 
       !==============use SOLWEIG to get localised radiation flux==================
-      CALL Solweig_2014a_core(id,it,dectime,avkdn, ldown, Temp_C, avRh,Press_hPa,&
-      lat,ZENITH_deg,azimuth,1.d0,alb(1),alb(2),emis(1),emis(2),bldgH,dataOutLineSOL)
+      CALL Solweig_2014a_core(id, it, dectime, avkdn, ldown, Temp_C, avRh, Press_hPa, &
+                              lat, ZENITH_deg, azimuth, 1.d0, alb(1), alb(2), emis(1), emis(2), bldgH, dataOutLineSOL)
 
       !==============translation of  output variables into output array===========
       CALL SUEWS_update_outputLine( &
@@ -2466,8 +2466,8 @@ CONTAINS
       SnowUse, storageheatmethod, &!input
       ReadLinesMetdata, NumberOfGrids, &
       ir, gridiv, &
-      datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL,dataoutLineSOL, &!input
-      dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL,dataOutSOL)!inout
+      datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataoutLineSOL, &!input
+      dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL, dataOutSOL)!inout
       IMPLICIT NONE
 
       INTEGER, INTENT(in) ::ReadLinesMetdata
@@ -2777,7 +2777,7 @@ CONTAINS
 
    END FUNCTION square_real
 
-   SUBROUTINE output_name_n(i, name, group, aggreg,outlevel)
+   SUBROUTINE output_name_n(i, name, group, aggreg, outlevel)
       ! used by f2py module `SuPy` to handle output names
       IMPLICIT NONE
       ! the dimension is potentially incorrect,
@@ -2853,7 +2853,7 @@ CONTAINS
       WaterDist, WaterUseMethod, WetThresh, &
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, Z, z0m_in, zdm_in, &
-      dataOutBlockSUEWS, dataOutBlockSnow, dataOutBlockESTM, dataOutBlockRSL,dataOutBlockSOL, &!output
+      dataOutBlockSUEWS, dataOutBlockSnow, dataOutBlockESTM, dataOutBlockRSL, dataOutBlockSOL, &!output
       DailyStateBlock)
 
       IMPLICIT NONE
@@ -3462,7 +3462,7 @@ CONTAINS
             WaterDist, WaterUseMethod, WetThresh, wu_m3, &
             WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
             WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
-            datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL,dataOutLineSOL, &!output
+            datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineSOL, &!output
             DailyStateLine)!output
 
          ! update dt_since_start_x for next iteration, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018
@@ -3476,8 +3476,8 @@ CONTAINS
          CALL SUEWS_update_output( &
             SnowUse, storageheatmethod, &!input
             len_sim, 1, &
-            ir, gridiv_x, datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL,dataOutLineSOL, &!input
-            dataOutBlockSUEWS_X, dataOutBlockSnow_X, dataOutBlockESTM_X, dataOutBlockRSL_X,dataOutBlockSOL_X)!inout
+            ir, gridiv_x, datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineSOL, &!input
+            dataOutBlockSUEWS_X, dataOutBlockSnow_X, dataOutBlockESTM_X, dataOutBlockRSL_X, dataOutBlockSOL_X)!inout
 
       END DO
 

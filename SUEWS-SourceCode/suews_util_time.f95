@@ -231,8 +231,8 @@ SUBROUTINE DAYLEN(DOY, XLAT, DAYL, DEC, SNDN, SNUP)
    !-----------------------------------------------------------------------
    IMPLICIT NONE
    INTEGER :: DOY
-   REAL(KIND(1d0)),INTENT(IN) :: XLAT
-   REAL(KIND(1d0)),INTENT(OUT) ::  DEC, DAYL, SNDN, SNUP
+   REAL(KIND(1d0)), INTENT(IN) :: XLAT
+   REAL(KIND(1d0)), INTENT(OUT) ::  DEC, DAYL, SNDN, SNUP
    REAL(KIND(1d0)):: SOC
    REAL(KIND(1d0)), PARAMETER :: PI = 3.14159, RAD = PI/180.0
 

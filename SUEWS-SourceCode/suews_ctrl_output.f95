@@ -578,13 +578,14 @@ CONTAINS
       grpList0(5) = 'ESTM'
       grpList0(6) = 'DailyState'
       grpList0(7) = 'RSL'
-      grpCond = (/.TRUE., &
-                  SOLWEIGpoi_out == 1, &
-                  CBLuse >= 1, &
-                  SnowUse >= 1, &
-                  StorageHeatMethod == 4 .OR. StorageHeatMethod == 14, &
-                  .TRUE., &
-                  .TRUE./)
+      grpCond = [ &
+                .TRUE., &
+                .TRUE., &
+                CBLuse >= 1, &
+                SnowUse >= 1, &
+                StorageHeatMethod == 4 .OR. StorageHeatMethod == 14, &
+                .TRUE., &
+                .TRUE.]
       xx = COUNT(grpCond)
 
       ! PRINT*, grpList0,xx
@@ -614,40 +615,17 @@ CONTAINS
             ! all output frequency option:
             ! as forcing:
             IF (ResolutionFilesOut == Tstep .OR. KeepTstepFilesOut == 1) THEN
-! #ifdef nc
-!                IF (PRESENT(Gridiv)) THEN
-! #endif
                CALL SUEWS_Output_txt_grp(iv, irMax, iyr, varListX, Gridiv, outLevel, Tstep)
-! #ifdef nc
-!                ELSE
-!                   CALL SUEWS_Output_nc_grp(irMax, varListX, outLevel, Tstep)
-!                ENDIF
-! #endif
-
             ENDIF
             !  as specified ResolutionFilesOut:
             IF (ResolutionFilesOut /= Tstep) THEN
-! #ifdef nc
-!                IF (PRESENT(Gridiv)) THEN
-! #endif
                CALL SUEWS_Output_txt_grp(iv, irMax, iyr, varListX, Gridiv, outLevel, ResolutionFilesOut)
-! #ifdef nc
-!                ELSE
-!                   CALL SUEWS_Output_nc_grp(irMax, varListX, outLevel, ResolutionFilesOut)
-!                ENDIF
-! #endif
             ENDIF
          ELSE
             !  DailyState array, which does not need aggregation
-! #ifdef nc
-!             IF (PRESENT(Gridiv)) THEN
-! #endif
+
             CALL SUEWS_Output_txt_grp(iv, irMax, iyr, varListX, Gridiv, outLevel, Tstep)
-! #ifdef nc
-!             ELSE
-!                CALL SUEWS_Output_nc_grp(irMax, varListX, outLevel, Tstep)
-!             ENDIF
-! #endif
+
          ENDIF
 
          IF (ALLOCATED(varListX)) DEALLOCATE (varListX, stat=err)
@@ -680,9 +658,8 @@ CONTAINS
       CASE ('SUEWS') !default
          dataOutX = dataOutSUEWS(1:irMax, 1:SIZE(varListX), Gridiv)
 
-         ! CASE ('SOLWEIG') !SOLWEIG
-         !    ! todo: inconsistent data structure
-         !    dataOutX = dataOutSOL(1:irMax, 1:SIZE(varListX), Gridiv)
+      CASE ('SOLWEIG') !SOLWEIG
+         dataOutX = dataOutSOL(1:irMax, 1:SIZE(varListX), Gridiv)
 
       CASE ('BL') !BL
          dataOutX = dataOutBL(1:irMax, 1:SIZE(varListX), Gridiv)

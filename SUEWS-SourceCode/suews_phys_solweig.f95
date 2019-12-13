@@ -30,16 +30,16 @@ MODULE solweig_module
    INTEGER, parameter    :: sizex = 1 ! number of rows and cols of grid
    INTEGER, parameter   :: sizey = 1 ! number of rows and cols of grid
 
-   REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :)  :: a, sh, vbshvegsh, vegsh
-   REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :)  :: bush, vegdem, vegdem2, tempgrid
-   REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :)  :: buildings, svf, svfE, svfS, svfW, svfN
-   REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :)  :: svfveg, svfEveg, svfSveg, svfWveg, svfNveg
-   REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :)  :: svfaveg, svfEaveg, svfSaveg, svfWaveg, svfNaveg, last
-   REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :)  :: Kdown2d, Keast, Knorth, Ksouth, Kup2d, Kwest
-   REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :)  :: Ldown2d, Least, Lnorth, Lsouth, Lup2d, Lwest
-   REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :)  :: gvf, Tmrt, shadow, Sstr, F_sh, sunwall
-   REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :)  :: svfalfa, sos, Tgmap1
-   REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :)  :: viktveg, viktsky, viktrefl, viktwall, savegrid
+   REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: a, sh, vbshvegsh, vegsh
+   REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: bush, vegdem, vegdem2, tempgrid
+   REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: buildings, svf, svfE, svfS, svfW, svfN
+   REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: svfveg, svfEveg, svfSveg, svfWveg, svfNveg
+   REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: svfaveg, svfEaveg, svfSaveg, svfWaveg, svfNaveg, last
+   REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: Kdown2d, Keast, Knorth, Ksouth, Kup2d, Kwest
+   REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: Ldown2d, Least, Lnorth, Lsouth, Lup2d, Lwest
+   REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: gvf, Tmrt, shadow, Sstr, F_sh, sunwall
+   REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: svfalfa, sos, Tgmap1
+   REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: viktveg, viktsky, viktrefl, viktwall, savegrid
 CONTAINS
    ! This is the core function of the SOLWEIG model
    ! 2013-10-27
@@ -62,7 +62,7 @@ CONTAINS
       lat, &
       zenith_deg, &
       azimuth, &
-      scale,&
+      scale, &
       alb_ground, &
       alb_bldg, &
       emis_ground, &
@@ -156,28 +156,28 @@ CONTAINS
       !allocate(Tgmap0(sizey,sizex))
 
       ! external grids
-      IF (ALLOCATED(Kdown2d)) DEALLOCATE (Kdown2d); ALLOCATE (Kdown2d(sizey, sizex))
-      IF (ALLOCATED(Kup2d)) DEALLOCATE (Kup2d); ALLOCATE (Kup2d(sizey, sizex))
-      IF (ALLOCATED(Knorth)) DEALLOCATE (Knorth); ALLOCATE (Knorth(sizey, sizex))
-      IF (ALLOCATED(Kwest)) DEALLOCATE (Kwest); ALLOCATE (Kwest(sizey, sizex))
-      IF (ALLOCATED(Ksouth)) DEALLOCATE (Ksouth); ALLOCATE (Ksouth(sizey, sizex))
-      IF (ALLOCATED(Keast)) DEALLOCATE (Keast); ALLOCATE (Keast(sizey, sizex))
-      IF (ALLOCATED(Ldown2d)) DEALLOCATE (Ldown2d); ALLOCATE (Ldown2d(sizey, sizex))
-      IF (ALLOCATED(Lup2d)) DEALLOCATE (Lup2d); ALLOCATE (Lup2d(sizey, sizex))
-      IF (ALLOCATED(LNorth)) DEALLOCATE (LNorth); ALLOCATE (LNorth(sizey, sizex))
-      IF (ALLOCATED(Lwest)) DEALLOCATE (Lwest); ALLOCATE (Lwest(sizey, sizex))
-      IF (ALLOCATED(Lsouth)) DEALLOCATE (Lsouth); ALLOCATE (Lsouth(sizey, sizex))
-      IF (ALLOCATED(Least)) DEALLOCATE (Least); ALLOCATE (Least(sizey, sizex))
-      IF (ALLOCATED(gvf)) DEALLOCATE (gvf); ALLOCATE (gvf(sizey, sizex))
-      IF (ALLOCATED(Sstr)) DEALLOCATE (Sstr); ALLOCATE (Sstr(sizey, sizex))
-      IF (ALLOCATED(Tmrt)) DEALLOCATE (Tmrt); ALLOCATE (Tmrt(sizey, sizex))
-      IF (ALLOCATED(shadow)) DEALLOCATE (shadow); ALLOCATE (shadow(sizey, sizex))
-      IF (ALLOCATED(sos)) DEALLOCATE (sos); ALLOCATE (sos(sizey, sizex))
-      IF (ALLOCATED(F_sh)) DEALLOCATE (F_sh); ALLOCATE (F_sh(sizey, sizex))
-      IF (ALLOCATED(svfalfa)) DEALLOCATE (svfalfa); ALLOCATE (svfalfa(sizey, sizex))
+      ! IF (ALLOCATED(Kdown2d)) DEALLOCATE (Kdown2d); ALLOCATE (Kdown2d(sizey, sizex))
+      ! IF (ALLOCATED(Kup2d)) DEALLOCATE (Kup2d); ALLOCATE (Kup2d(sizey, sizex))
+      ! IF (ALLOCATED(Knorth)) DEALLOCATE (Knorth); ALLOCATE (Knorth(sizey, sizex))
+      ! IF (ALLOCATED(Kwest)) DEALLOCATE (Kwest); ALLOCATE (Kwest(sizey, sizex))
+      ! IF (ALLOCATED(Ksouth)) DEALLOCATE (Ksouth); ALLOCATE (Ksouth(sizey, sizex))
+      ! IF (ALLOCATED(Keast)) DEALLOCATE (Keast); ALLOCATE (Keast(sizey, sizex))
+      ! IF (ALLOCATED(Ldown2d)) DEALLOCATE (Ldown2d); ALLOCATE (Ldown2d(sizey, sizex))
+      ! IF (ALLOCATED(Lup2d)) DEALLOCATE (Lup2d); ALLOCATE (Lup2d(sizey, sizex))
+      ! IF (ALLOCATED(LNorth)) DEALLOCATE (LNorth); ALLOCATE (LNorth(sizey, sizex))
+      ! IF (ALLOCATED(Lwest)) DEALLOCATE (Lwest); ALLOCATE (Lwest(sizey, sizex))
+      ! IF (ALLOCATED(Lsouth)) DEALLOCATE (Lsouth); ALLOCATE (Lsouth(sizey, sizex))
+      ! IF (ALLOCATED(Least)) DEALLOCATE (Least); ALLOCATE (Least(sizey, sizex))
+      ! IF (ALLOCATED(gvf)) DEALLOCATE (gvf); ALLOCATE (gvf(sizey, sizex))
+      ! IF (ALLOCATED(Sstr)) DEALLOCATE (Sstr); ALLOCATE (Sstr(sizey, sizex))
+      ! IF (ALLOCATED(Tmrt)) DEALLOCATE (Tmrt); ALLOCATE (Tmrt(sizey, sizex))
+      ! IF (ALLOCATED(shadow)) DEALLOCATE (shadow); ALLOCATE (shadow(sizey, sizex))
+      ! IF (ALLOCATED(sos)) DEALLOCATE (sos); ALLOCATE (sos(sizey, sizex))
+      ! IF (ALLOCATED(F_sh)) DEALLOCATE (F_sh); ALLOCATE (F_sh(sizey, sizex))
+      ! IF (ALLOCATED(svfalfa)) DEALLOCATE (svfalfa); ALLOCATE (svfalfa(sizey, sizex))
 
       ! initialise this as ONE
-      CIlatenight =1
+      CIlatenight = 1
 
       IF (Posture == 1) THEN
          Fside = 0.22
@@ -427,18 +427,18 @@ CONTAINS
       DEALLOCATE (svf_blgd_veg)
 
       ! external grids
-      DEALLOCATE (Kdown2d)
-      DEALLOCATE (Kup2d)
-      DEALLOCATE (Knorth)
-      DEALLOCATE (Kwest)
-      DEALLOCATE (Ksouth)
-      DEALLOCATE (Keast)
-      DEALLOCATE (Ldown2d)
-      DEALLOCATE (Lup2d)
-      DEALLOCATE (Lnorth)
-      DEALLOCATE (Lwest)
-      DEALLOCATE (Lsouth)
-      DEALLOCATE (Least)
+      ! DEALLOCATE (Kdown2d)
+      ! DEALLOCATE (Kup2d)
+      ! DEALLOCATE (Knorth)
+      ! DEALLOCATE (Kwest)
+      ! DEALLOCATE (Ksouth)
+      ! DEALLOCATE (Keast)
+      ! DEALLOCATE (Ldown2d)
+      ! DEALLOCATE (Lup2d)
+      ! DEALLOCATE (Lnorth)
+      ! DEALLOCATE (Lwest)
+      ! DEALLOCATE (Lsouth)
+      ! DEALLOCATE (Least)
 
    END SUBROUTINE Solweig_2014a_core
 
@@ -1066,10 +1066,10 @@ CONTAINS
       ALLOCATE (viktaveg(sizex, sizey))
       ALLOCATE (svfvegbu(sizex, sizey))
 
-      IF (ALLOCATED(viktwall)) DEALLOCATE (viktwall); ALLOCATE (viktwall(sizey, sizex))
-      IF (ALLOCATED(viktsky)) DEALLOCATE (viktsky); ALLOCATE (viktsky(sizey, sizex))
-      IF (ALLOCATED(viktveg)) DEALLOCATE (viktveg); ALLOCATE (viktveg(sizey, sizex))
-      IF (ALLOCATED(viktrefl)) DEALLOCATE (viktrefl); ALLOCATE (viktrefl(sizey, sizex))
+      ! IF (ALLOCATED(viktwall)) DEALLOCATE (viktwall); ALLOCATE (viktwall(sizey, sizex))
+      ! IF (ALLOCATED(viktsky)) DEALLOCATE (viktsky); ALLOCATE (viktsky(sizey, sizex))
+      ! IF (ALLOCATED(viktveg)) DEALLOCATE (viktveg); ALLOCATE (viktveg(sizey, sizex))
+      ! IF (ALLOCATED(viktrefl)) DEALLOCATE (viktrefl); ALLOCATE (viktrefl(sizey, sizex))
 
       !Building height angle from svf
       oneminussvfE = 1.-svfE; WHERE (oneminussvfE <= 0) oneminussvfE = 0.000000001 ! avoiding log(0)
@@ -1399,8 +1399,8 @@ CONTAINS
       ALLOCATE (f(sizex, sizey))
       ALLOCATE (temp(sizex, sizey))
 
-      IF (ALLOCATED(sh)) DEALLOCATE (sh)
-      ALLOCATE (sh(sizex, sizey))
+      ! IF (ALLOCATED(sh)) DEALLOCATE (sh)
+      ! ALLOCATE (sh(sizex, sizey))
 
       ! initialise parameters
       f = a
@@ -1507,12 +1507,12 @@ CONTAINS
       degrees = pi/180;
       azi = azimuth*degrees;
       alt = altitude*degrees;
-      IF (ALLOCATED(sh)) DEALLOCATE (sh)
-      ALLOCATE (sh(sizex, sizey))
-      IF (ALLOCATED(vegsh)) DEALLOCATE (vegsh)
-      ALLOCATE (vegsh(sizex, sizey))
-      IF (ALLOCATED(vbshvegsh)) DEALLOCATE (vbshvegsh)
-      ALLOCATE (vbshvegsh(sizex, sizey))
+      ! IF (ALLOCATED(sh)) DEALLOCATE (sh)
+      ! ALLOCATE (sh(sizex, sizey))
+      ! IF (ALLOCATED(vegsh)) DEALLOCATE (vegsh)
+      ! ALLOCATE (vegsh(sizex, sizey))
+      ! IF (ALLOCATED(vbshvegsh)) DEALLOCATE (vbshvegsh)
+      ! ALLOCATE (vbshvegsh(sizex, sizey))
 
       ! allocation of grids
       ALLOCATE (f(sizex, sizey))
@@ -1860,7 +1860,7 @@ CONTAINS
       !allocate(a(sizex,sizey))
       !allocate(buildings(sizex,sizey))
 
-      IF (ALLOCATED(sunwall)) DEALLOCATE (sunwall); ALLOCATE (sunwall(sizey, sizex))
+      ! IF (ALLOCATED(sunwall)) DEALLOCATE (sunwall); ALLOCATE (sunwall(sizey, sizex))
 
       iazimuth = azimuth + 180
       IF (iazimuth >= 360) THEN

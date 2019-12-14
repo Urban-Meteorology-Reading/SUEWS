@@ -13,9 +13,9 @@ MODULE SUEWS_Driver
    USE ESTM_module, ONLY: ESTM
    USE Snow_module, ONLY: SnowCalc, Snow_cal_MeltHeat, SnowUpdate, update_snow_albedo, update_snow_dens
    USE DailyState_module, ONLY: SUEWS_cal_DailyState, update_DailyStateLine
-   USE WaterDist_module, ONLY: cal_drainage, cal_water_storage, &
+   USE WaterDist_module, ONLY: drainage, cal_water_storage, &
                                SUEWS_cal_SoilState, SUEWS_update_SoilMoist, &
-                               redist_water, SUEWS_cal_HorizontalSoilWater, &
+                               ReDistributeWater, SUEWS_cal_HorizontalSoilWater, &
                                SUEWS_cal_WaterUse
    USE ctrl_output, ONLY: varListAll
    USE DailyState_module, ONLY: SUEWS_update_DailyState
@@ -1674,7 +1674,7 @@ CONTAINS
       IF (NonWaterFraction /= 0) THEN !Soil states only calculated if soil exists. LJ June 2017
          DO is = 1, nsurf - 1
 
-            CALL cal_drainage( &
+            CALL drainage( &
                is, &! input:
                state_id(is), &
                StoreDrainPrm(6, is), &
@@ -1699,7 +1699,7 @@ CONTAINS
       IF (Diagnose == 1) WRITE (*, *) 'Calling ReDistributeWater...'
       ! CALL ReDistributeWater
       !Calculates AddWater(is)
-      CALL redist_water( &
+      CALL ReDistributeWater( &
          snowUse, WaterDist, sfr, Drain, &! input:
          AddWaterRunoff, AddWater)! output
 

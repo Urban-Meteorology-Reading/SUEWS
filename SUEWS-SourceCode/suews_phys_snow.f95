@@ -503,7 +503,7 @@ CONTAINS
       !  HCW 26 Jan 2015 - Added weekday/weekend option for snow clearing profiles
       !  LJ in 24 May 2013
       !========================================================================
-      USE WaterDist_module, ONLY: update_flood
+      USE WaterDist_module, ONLY: updateFlood
 
       IMPLICIT NONE
       ! INTEGER, PARAMETER::nsurf = 7! number of surface types
@@ -1024,7 +1024,7 @@ CONTAINS
       !Add runoff to pipes
       runoffPipes = runoffPipes + runoffSnow(is)*sfr(is)*MAX(SnowFrac(is), snowfracOld) + runoff(is)*sfr(is)*(1 - SnowFrac(is)) &
                     + runoffTest*sfr(is)
-      CALL update_flood( &
+      CALL updateFlood( &
          is, runoff, &! input:
          sfr, PipeCapacity, RunoffToWater, &
          runoffAGimpervious, surplusWaterBody, runoffAGveg, runoffPipes)! inout:

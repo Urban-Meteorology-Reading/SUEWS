@@ -170,30 +170,30 @@ MODULE ctrl_output
         ncolumnsDataOutSUEWS + ncolumnsdataOutSOL - 5)/ &
       varAttr('azimuth', 'to_add', f106, 'azimuth', aA, 'SOLWEIG', 0), &
       varAttr('altitude', 'to_add', f106, 'altitude', aA, 'SOLWEIG', 0), &
-      varAttr('GlobalRad', 'to_add', f106, 'GlobalRad', aA, 'SOLWEIG', 0), &
-      varAttr('DiffuseRad', 'to_add', f106, 'DiffuseRad', aA, 'SOLWEIG', 0), &
-      varAttr('DirectRad', 'to_add', f106, 'DirectRad', aA, 'SOLWEIG', 0), &
-      varAttr('Kdown2d', 'to_add', f106, 'Kdown2d', aA, 'SOLWEIG', 0), &
-      varAttr('Kup2d', 'to_add', f106, 'Kup2d', aA, 'SOLWEIG', 0), &
-      varAttr('Ksouth', 'to_add', f106, 'Ksouth', aA, 'SOLWEIG', 0), &
-      varAttr('Kwest', 'to_add', f106, 'Kwest', aA, 'SOLWEIG', 0), &
-      varAttr('Knorth', 'to_add', f106, 'Knorth', aA, 'SOLWEIG', 0), &
-      varAttr('Keast', 'to_add', f106, 'Keast', aA, 'SOLWEIG', 0), &
-      varAttr('Ldown2d', 'to_add', f106, 'Ldown2d', aA, 'SOLWEIG', 0), &
-      varAttr('Lup2d', 'to_add', f106, 'Lup2d', aA, 'SOLWEIG', 0), &
-      varAttr('Lsouth', 'to_add', f106, 'Lsouth', aA, 'SOLWEIG', 0), &
-      varAttr('Lwest', 'to_add', f106, 'Lwest', aA, 'SOLWEIG', 0), &
-      varAttr('Lnorth', 'to_add', f106, 'Lnorth', aA, 'SOLWEIG', 0), &
-      varAttr('Least', 'to_add', f106, 'Least', aA, 'SOLWEIG', 0), &
-      varAttr('Tmrt', 'to_add', f106, 'Tmrt', aA, 'SOLWEIG', 0), &
-      varAttr('I0', 'to_add', f106, 'I0', aA, 'SOLWEIG', 0), &
-      varAttr('CI', 'to_add', f106, 'CI', aA, 'SOLWEIG', 0), &
-      varAttr('gvf', 'to_add', f106, 'gvf', aA, 'SOLWEIG', 0), &
-      varAttr('shadow', 'to_add', f106, 'shadow', aA, 'SOLWEIG', 0), &
-      varAttr('svf', 'to_add', f106, 'svf', aA, 'SOLWEIG', 0), &
-      varAttr('svfbuveg', 'to_add', f106, 'svfbuveg', aA, 'SOLWEIG', 0), &
-      varAttr('Ta', 'to_add', f106, 'Ta', aA, 'SOLWEIG', 0), &
-      varAttr('Tg', 'to_add', f106, 'Tg', aA, 'SOLWEIG', 0) &
+      varAttr('GlobalRad', 'W m-2', f106, 'Global Irradiance', aA, 'SOLWEIG', 0), &
+      varAttr('DiffuseRad', 'W m-2', f106, 'Diffuse Radiation', aA, 'SOLWEIG', 0), &
+      varAttr('DirectRad', 'W m-2', f106, 'Direct Radiation', aA, 'SOLWEIG', 0), &
+      varAttr('Kdown2d', 'W m-2', f106, 'Incoming shortwave radiation at POI', aA, 'SOLWEIG', 0), &
+      varAttr('Kup2d', 'W m-2', f106, 'Outgoing shortwave radiation at POI', aA, 'SOLWEIG', 0), &
+      varAttr('Ksouth', 'W m-2', f106, 'Shortwave radiation from south at POI', aA, 'SOLWEIG', 0), &
+      varAttr('Kwest', 'W m-2', f106, 'Shortwave radiation from west at POI', aA, 'SOLWEIG', 0), &
+      varAttr('Knorth', 'W m-2', f106, 'Shortwave radiation from north at POI', aA, 'SOLWEIG', 0), &
+      varAttr('Keast', 'W m-2', f106, 'Shortwave radiation from east at POI', aA, 'SOLWEIG', 0), &
+      varAttr('Ldown2d', 'W m-2', f106, 'Incoming longwave radiation at POI', aA, 'SOLWEIG', 0), &
+      varAttr('Lup2d', 'W m-2', f106, 'Outgoing longwave radiation at POI', aA, 'SOLWEIG', 0), &
+      varAttr('Lsouth', 'W m-2', f106, 'Longwave radiation from west at POI', aA, 'SOLWEIG', 0), &
+      varAttr('Lwest', 'W m-2', f106, 'Longwave radiation from south at POI', aA, 'SOLWEIG', 0), &
+      varAttr('Lnorth', 'W m-2', f106, 'Longwave radiation from north at POI', aA, 'SOLWEIG', 0), &
+      varAttr('Least', 'W m-2', f106, 'Longwave radiation from east at POI', aA, 'SOLWEIG', 0), &
+      varAttr('Tmrt', 'degC', f106, 'Mean Radiant Temperature', aA, 'SOLWEIG', 0), &
+      varAttr('I0', 'W m-2', f106, 'theoretical value of maximum incoming solar radiation', aA, 'SOLWEIG', 0), &
+      varAttr('CI', '', f106, 'clearness index for Ldown', aA, 'SOLWEIG', 0), &
+      varAttr('gvf', '', f106, 'Ground view factor', aA, 'SOLWEIG', 0), &
+      varAttr('shadow', '', f106, 'Shadow value (0= shadow, 1 = sun)', aA, 'SOLWEIG', 0), &
+      varAttr('svf', '', f106, 'Sky View Factor from ground and buildings', aA, 'SOLWEIG', 0), &
+      varAttr('svfbuveg', '', f106, 'Sky View Factor from ground, buildings and vegetation', aA, 'SOLWEIG', 0), &
+      varAttr('Ta', 'degC', f106, 'Air temperature', aA, 'SOLWEIG', 0), &
+      varAttr('Tg', 'degC', f106, 'Surface temperature', aA, 'SOLWEIG', 0) &
       /
 
    ! BL:
@@ -578,13 +578,14 @@ CONTAINS
       grpList0(5) = 'ESTM'
       grpList0(6) = 'DailyState'
       grpList0(7) = 'RSL'
-      grpCond = (/.TRUE., &
-                  SOLWEIGpoi_out == 1, &
-                  CBLuse >= 1, &
-                  SnowUse >= 1, &
-                  StorageHeatMethod == 4 .OR. StorageHeatMethod == 14, &
-                  .TRUE., &
-                  .TRUE./)
+      grpCond = [ &
+                .TRUE., &
+                .TRUE., &
+                CBLuse >= 1, &
+                SnowUse >= 1, &
+                StorageHeatMethod == 4 .OR. StorageHeatMethod == 14, &
+                .TRUE., &
+                .TRUE.]
       xx = COUNT(grpCond)
 
       ! PRINT*, grpList0,xx
@@ -614,40 +615,17 @@ CONTAINS
             ! all output frequency option:
             ! as forcing:
             IF (ResolutionFilesOut == Tstep .OR. KeepTstepFilesOut == 1) THEN
-! #ifdef nc
-!                IF (PRESENT(Gridiv)) THEN
-! #endif
                CALL SUEWS_Output_txt_grp(iv, irMax, iyr, varListX, Gridiv, outLevel, Tstep)
-! #ifdef nc
-!                ELSE
-!                   CALL SUEWS_Output_nc_grp(irMax, varListX, outLevel, Tstep)
-!                ENDIF
-! #endif
-
             ENDIF
             !  as specified ResolutionFilesOut:
             IF (ResolutionFilesOut /= Tstep) THEN
-! #ifdef nc
-!                IF (PRESENT(Gridiv)) THEN
-! #endif
                CALL SUEWS_Output_txt_grp(iv, irMax, iyr, varListX, Gridiv, outLevel, ResolutionFilesOut)
-! #ifdef nc
-!                ELSE
-!                   CALL SUEWS_Output_nc_grp(irMax, varListX, outLevel, ResolutionFilesOut)
-!                ENDIF
-! #endif
             ENDIF
          ELSE
             !  DailyState array, which does not need aggregation
-! #ifdef nc
-!             IF (PRESENT(Gridiv)) THEN
-! #endif
+
             CALL SUEWS_Output_txt_grp(iv, irMax, iyr, varListX, Gridiv, outLevel, Tstep)
-! #ifdef nc
-!             ELSE
-!                CALL SUEWS_Output_nc_grp(irMax, varListX, outLevel, Tstep)
-!             ENDIF
-! #endif
+
          ENDIF
 
          IF (ALLOCATED(varListX)) DEALLOCATE (varListX, stat=err)
@@ -680,9 +658,8 @@ CONTAINS
       CASE ('SUEWS') !default
          dataOutX = dataOutSUEWS(1:irMax, 1:SIZE(varListX), Gridiv)
 
-         ! CASE ('SOLWEIG') !SOLWEIG
-         !    ! todo: inconsistent data structure
-         !    dataOutX = dataOutSOL(1:irMax, 1:SIZE(varListX), Gridiv)
+      CASE ('SOLWEIG') !SOLWEIG
+         dataOutX = dataOutSOLWEIG(1:irMax, 1:SIZE(varListX), Gridiv)
 
       CASE ('BL') !BL
          dataOutX = dataOutBL(1:irMax, 1:SIZE(varListX), Gridiv)
@@ -1264,7 +1241,7 @@ CONTAINS
 
 !       CASE ('SOLWEIG') !SOLWEIG
 !          ! todo: inconsistent data structure
-!          dataOutX = dataOutSOL(1:irMax, 1:SIZE(varList), :)
+!          dataOutX = dataOutSOLWEIG(1:irMax, 1:SIZE(varList), :)
 
 !       CASE ('BL') !BL
 !          dataOutX = dataOutBL(1:irMax, 1:SIZE(varList), :)

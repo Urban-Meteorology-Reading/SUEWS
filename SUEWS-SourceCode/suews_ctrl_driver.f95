@@ -9,14 +9,14 @@ MODULE SUEWS_Driver
    USE NARP_MODULE, ONLY: NARP_cal_SunPosition
    USE AnOHM_module, ONLY: AnOHM
    USE resist_module, ONLY: AerodynamicResistance, BoundaryLayerResistance, SurfaceResistance, &
-                            cal_z0V, SUEWS_cal_RoughnessParameters
+      cal_z0V, SUEWS_cal_RoughnessParameters
    USE ESTM_module, ONLY: ESTM
    USE Snow_module, ONLY: SnowCalc, Snow_cal_MeltHeat, SnowUpdate, update_snow_albedo, update_snow_dens
    USE DailyState_module, ONLY: SUEWS_cal_DailyState, update_DailyStateLine
    USE WaterDist_module, ONLY: drainage, cal_water_storage, &
-                               SUEWS_cal_SoilState, SUEWS_update_SoilMoist, &
-                               ReDistributeWater, SUEWS_cal_HorizontalSoilWater, &
-                               SUEWS_cal_WaterUse
+      SUEWS_cal_SoilState, SUEWS_update_SoilMoist, &
+      ReDistributeWater, SUEWS_cal_HorizontalSoilWater, &
+      SUEWS_cal_WaterUse
    USE ctrl_output, ONLY: varListAll
    USE DailyState_module, ONLY: SUEWS_update_DailyState
    use lumps_module, only: LUMPS_cal_QHQE
@@ -31,8 +31,9 @@ MODULE SUEWS_Driver
       ivConif, ivDecid, ivGrass, &
       ncolumnsDataOutSUEWS, ncolumnsDataOutSnow, &
       ncolumnsDataOutESTM, ncolumnsDataOutDailyState, &
-      ncolumnsDataOutRSL
+      ncolumnsDataOutRSL, ncolumnsdataOutSOL
    use moist, only: avcp, avdens, lv_J_kg
+   use solweig_module, only: SOLWEIG_cal_main
 
    IMPLICIT NONE
 
@@ -78,7 +79,7 @@ CONTAINS
       WaterDist, WaterUseMethod, WetThresh, wu_m3, &
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
-      datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, &!output
+      datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineSOLWEIG, &!output
       DailyStateLine)!output
 
       IMPLICIT NONE
@@ -324,6 +325,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow - 5), INTENT(OUT)      ::dataOutLineSnow
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutESTM - 5), INTENT(OUT)      ::dataOutLineESTM
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutRSL - 5), INTENT(OUT)       ::dataoutLineRSL ! RSL variable array
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSol - 5), INTENT(OUT)     ::dataOutLineSOLWEIG
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutDailyState - 5), INTENT(OUT)::DailyStateLine
       ! ########################################################################################
 
@@ -998,6 +1000,10 @@ CONTAINS
       lenday_id = lenday_id_next
       HDD_id = HDD_id_next
       WUDay_id = WUDay_id_next
+
+      !==============use SOLWEIG to get localised radiation flux==================
+      CALL SOLWEIG_cal_main(id, it, dectime, 0.8d0, planf, avkdn, ldown, Temp_C, avRh, Press_hPa, TSfc_C, &
+                            lat, ZENITH_deg, azimuth, 1.d0, alb(1), alb(2), emis(1), emis(2), bldgH, dataOutLineSOLWEIG)
 
       !==============translation of  output variables into output array===========
       CALL SUEWS_update_outputLine( &
@@ -2460,8 +2466,8 @@ CONTAINS
       SnowUse, storageheatmethod, &!input
       ReadLinesMetdata, NumberOfGrids, &
       ir, gridiv, &
-      datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineURSL, &!input
-      dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL)!inout
+      datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineSOLWEIG, &!input
+      dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL, dataOutSOLWEIG)!inout
       IMPLICIT NONE
 
       INTEGER, INTENT(in) ::ReadLinesMetdata
@@ -2475,17 +2481,20 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutSUEWS - 5), INTENT(in) :: dataOutLineSUEWS
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutESTM - 5), INTENT(in) :: dataOutLineESTM
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutSnow - 5), INTENT(in) :: dataOutLineSnow
-      REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutRSL - 5), INTENT(in) :: dataoutLineURSL
+      REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutRSL - 5), INTENT(in) :: dataoutLineRSL
+      REAL(KIND(1d0)), DIMENSION(ncolumnsdataOutSOL - 5), INTENT(in) :: dataOutLineSOLWEIG
 
       REAL(KIND(1d0)), INTENT(inout) :: dataOutSUEWS(ReadLinesMetdata, ncolumnsDataOutSUEWS, NumberOfGrids)
       REAL(KIND(1d0)), INTENT(inout) :: dataOutSnow(ReadLinesMetdata, ncolumnsDataOutSnow, NumberOfGrids)
       REAL(KIND(1d0)), INTENT(inout) :: dataOutESTM(ReadLinesMetdata, ncolumnsDataOutESTM, NumberOfGrids)
       REAL(KIND(1d0)), INTENT(inout) :: dataOutRSL(ReadLinesMetdata, ncolumnsDataOutRSL, NumberOfGrids)
+      REAL(KIND(1d0)), INTENT(inout) :: dataOutSOLWEIG(ReadLinesMetdata, ncolumnsDataOutRSL, NumberOfGrids)
 
       !====================== update output arrays ==============================
       !Define the overall output matrix to be printed out step by step
       dataOutSUEWS(ir, 1:ncolumnsDataOutSUEWS, Gridiv) = [datetimeLine, set_nan(dataOutLineSUEWS)]
-      dataOutRSL(ir, 1:ncolumnsDataOutRSL, Gridiv) = [datetimeLine, set_nan(dataoutLineURSL)]
+      dataOutRSL(ir, 1:ncolumnsDataOutRSL, Gridiv) = [datetimeLine, set_nan(dataoutLineRSL)]
+      dataOutSOLWEIG(ir, 1:ncolumnsDataOutSOL, Gridiv) = [datetimeLine, set_nan(dataOutLineSOLWEIG)]
       ! ! set invalid values to NAN
       ! dataOutSUEWS(ir,6:ncolumnsDataOutSUEWS,Gridiv)=set_nan(dataOutSUEWS(ir,6:ncolumnsDataOutSUEWS,Gridiv))
 
@@ -2768,7 +2777,7 @@ CONTAINS
 
    END FUNCTION square_real
 
-   SUBROUTINE output_name_n(i, name, group, aggreg,outlevel)
+   SUBROUTINE output_name_n(i, name, group, aggreg, outlevel)
       ! used by f2py module `SuPy` to handle output names
       IMPLICIT NONE
       ! the dimension is potentially incorrect,
@@ -2844,7 +2853,7 @@ CONTAINS
       WaterDist, WaterUseMethod, WetThresh, &
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, Z, z0m_in, zdm_in, &
-      dataOutBlockSUEWS, dataOutBlockSnow, dataOutBlockESTM, dataOutBlockRSL, &!output
+      dataOutBlockSUEWS, dataOutBlockSnow, dataOutBlockESTM, dataOutBlockRSL, dataOutBlockSOL, &!output
       DailyStateBlock)
 
       IMPLICIT NONE
@@ -3087,6 +3096,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSnow), INTENT(OUT) ::dataOutBlockSnow
       REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutESTM), INTENT(OUT) ::dataOutBlockESTM
       REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutRSL), INTENT(OUT) ::dataOutBlockRSL
+      REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsdataOutSOL), INTENT(OUT) ::dataOutBlockSOL
       REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutDailyState), INTENT(OUT) ::DailyStateBlock
       ! ########################################################################################
 
@@ -3131,12 +3141,14 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow - 5)::dataOutLineSnow
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutESTM - 5)::dataOutLineESTM
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutRSL - 5)::dataOutLineRSL
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSol - 5) ::dataOutLineSOLWEIG
       REAL(KIND(1d0)), DIMENSION(ncolumnsDataOutDailyState - 5)::DailyStateLine
 
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSUEWS, 1) ::dataOutBlockSUEWS_X
       REAL(KIND(1D0)), DIMENSION(len_sim, ncolumnsDataOutSnow, 1) ::dataOutBlockSnow_X
       REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutESTM, 1) ::dataOutBlockESTM_X
       REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutRSL, 1) ::dataOutBlockRSL_X
+      REAL(KIND(1d0)), DIMENSION(len_sim, ncolumnsDataOutSOL, 1) ::dataOutBlockSOL_X
       ! REAL(KIND(1d0)),DIMENSION(len_sim,ncolumnsDataOutDailyState,1) ::DailyStateBlock_X
 
       REAL(KIND(1D0)), DIMENSION(10, 10)          ::MetForcingData_grid ! fake array as a placeholder
@@ -3450,7 +3462,7 @@ CONTAINS
             WaterDist, WaterUseMethod, WetThresh, wu_m3, &
             WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
             WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
-            datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, &!output
+            datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineSOLWEIG, &!output
             DailyStateLine)!output
 
          ! update dt_since_start_x for next iteration, dt_since_start_x is used for Qn averaging. TS 28 Nov 2018
@@ -3464,8 +3476,8 @@ CONTAINS
          CALL SUEWS_update_output( &
             SnowUse, storageheatmethod, &!input
             len_sim, 1, &
-            ir, gridiv_x, datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, &!input
-            dataOutBlockSUEWS_X, dataOutBlockSnow_X, dataOutBlockESTM_X, dataOutBlockRSL_X)!inout
+            ir, gridiv_x, datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineSOLWEIG, &!input
+            dataOutBlockSUEWS_X, dataOutBlockSnow_X, dataOutBlockESTM_X, dataOutBlockRSL_X, dataOutBlockSOL_X)!inout
 
       END DO
 
@@ -3473,6 +3485,7 @@ CONTAINS
       dataOutBlockSnow = dataOutBlockSnow_X(:, :, 1)
       dataOutBlockESTM = dataOutBlockESTM_X(:, :, 1)
       dataOutBlockRSL = dataOutBlockRSL_X(:, :, 1)
+      dataOutBlockSOL = dataOutBlockSOL_X(:, :, 1)
       ! DailyStateBlock=DailyStateBlock_X(:,:,1)
 
    END SUBROUTINE SUEWS_cal_multitsteps

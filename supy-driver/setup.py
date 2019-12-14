@@ -97,7 +97,7 @@ def readme():
 # str(path_source)
 
 
-def get_suews_version(dir_source=dir_f95, ver_minor=2):
+def get_suews_version(dir_source=dir_f95, ver_minor=1):
     path_source = Path(dir_source)
     path_makefile = (path_source / 'include.common')
     # identify `file` to retrieve version
@@ -149,7 +149,7 @@ ext_modules = [
 
 setup(name='supy_driver',
       # update version info here!
-      version=get_suews_version(ver_minor=2),
+      version=get_suews_version(ver_minor=3),
       description='the SUEWS driver driven by f2py',
       long_description=readme(),
       url='https://github.com/sunt05/SuPy',

@@ -61,6 +61,7 @@ MODULES =	suews_phys_narp.o \
                     suews_phys_rslprof.o \
 					suews_phys_biogenco2.o \
 					suews_phys_ohm.o \
+					suews_phys_solweig.o \
 					suews_ctrl_driver.o
 
 # Rest of the files including modules and functions which are independent

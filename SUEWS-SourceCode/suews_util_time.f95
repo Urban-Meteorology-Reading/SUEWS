@@ -222,16 +222,18 @@ END SUBROUTINE dectime_to_timevec
 !==============================================================================
 
 !FL
-!=======================================================================
-!  DAYLEN, Real Function, N.B. Pickering, 09/23/1993
-!  Computes solar day length (Spitters, 1986).
-!=======================================================================
 
 SUBROUTINE DAYLEN(DOY, XLAT, DAYL, DEC, SNDN, SNUP)
+   !=======================================================================
+   !  DAYLEN, Real Function, N.B. Pickering, 09/23/1993
+   !  Computes solar day length (Spitters, 1986).
+   !=======================================================================
    !-----------------------------------------------------------------------
    IMPLICIT NONE
    INTEGER :: DOY
-   REAL(KIND(1d0)) :: DEC, DAYL, SOC, SNDN, SNUP, XLAT
+   REAL(KIND(1d0)), INTENT(IN) :: XLAT
+   REAL(KIND(1d0)), INTENT(OUT) ::  DEC, DAYL, SNDN, SNUP
+   REAL(KIND(1d0)):: SOC
    REAL(KIND(1d0)), PARAMETER :: PI = 3.14159, RAD = PI/180.0
 
    !-----------------------------------------------------------------------

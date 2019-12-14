@@ -659,7 +659,7 @@ CONTAINS
          dataOutX = dataOutSUEWS(1:irMax, 1:SIZE(varListX), Gridiv)
 
       CASE ('SOLWEIG') !SOLWEIG
-         dataOutX = dataOutSOL(1:irMax, 1:SIZE(varListX), Gridiv)
+         dataOutX = dataOutSOLWEIG(1:irMax, 1:SIZE(varListX), Gridiv)
 
       CASE ('BL') !BL
          dataOutX = dataOutBL(1:irMax, 1:SIZE(varListX), Gridiv)
@@ -1241,7 +1241,7 @@ CONTAINS
 
 !       CASE ('SOLWEIG') !SOLWEIG
 !          ! todo: inconsistent data structure
-!          dataOutX = dataOutSOL(1:irMax, 1:SIZE(varList), :)
+!          dataOutX = dataOutSOLWEIG(1:irMax, 1:SIZE(varList), :)
 
 !       CASE ('BL') !BL
 !          dataOutX = dataOutBL(1:irMax, 1:SIZE(varList), :)

@@ -71,7 +71,7 @@ CONTAINS
       emis_ground, &
       emis_wall, &
       heightgravity, &
-      dataOutLineSOL) ! output
+      dataOutLineSOLWEIG) ! output
 
       ! USE matsize
       ! USE solweig_module
@@ -108,7 +108,7 @@ CONTAINS
       REAL(KIND(1D0)), intent(in)::emis_wall           ! Tranmissivity of K through decidious vegetation (leaf off)
       REAL(KIND(1D0)), intent(in)::emis_ground           ! Tranmissivity of K through decidious vegetation (leaf off)
 
-      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSol - 5), INTENT(OUT)     ::dataOutLineSOL
+      REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSol - 5), INTENT(OUT)     ::dataOutLineSOLWEIG
 
       REAL(KIND(1d0)) :: t, Tstart, height, psi!,timezone,lat,lng,alt,amaxvalue
       REAL(KIND(1d0)) :: altitude, zen!scale,azimuth,zenith
@@ -408,15 +408,15 @@ CONTAINS
       Tmrt = SQRT(SQRT((Sstr/(absL*SBC)))) - 273.15
 
       ! IF (SOLWEIGpoi_out == 1) THEN
-      !    dataOutSOL(SolweigCount, 1:4, iMBi) = [iy, id, it, imin]
-      !    dataOutSOL(SolweigCount, 5, iMBi) = dectime
-      !    dataOutSOL(SolweigCount, 6:ncolumnsdataOutSOL, iMBi) = &
+      !    dataOutSOLWEIG(SolweigCount, 1:4, iMBi) = [iy, id, it, imin]
+      !    dataOutSOLWEIG(SolweigCount, 5, iMBi) = dectime
+      !    dataOutSOLWEIG(SolweigCount, 6:ncolumnsdataOutSOL, iMBi) = &
       !       [azimuth, altitude, radG, radD, radI, &
       !        Kdown2d(row, col), Kup2d(row, col), Ksouth(row, col), Kwest(row, col), Knorth(row, col), Keast(row, col), &
       !        Ldown2d(row, col), Lup2d(row, col), Lsouth(row, col), Lwest(row, col), Lnorth(row, col), Least(row, col), &
       !        Tmrt(row, col), I0, CI, gvf(row, col), shadow(row, col), svf(row, col), svf_blgd_veg(row, col), Ta, Tg]
       ! END IF
-      dataOutLineSOL = [azimuth, altitude, radG, radI, radD, &
+      dataOutLineSOLWEIG = [azimuth, altitude, radG, radI, radD, &
                         Kdown2d(row, col), Kup2d(row, col), Ksouth(row, col), Kwest(row, col), Knorth(row, col), Keast(row, col), &
                         Ldown2d(row, col), Lup2d(row, col), Lsouth(row, col), Lwest(row, col), Lnorth(row, col), Least(row, col), &
                         Tmrt(row, col), I0, CI, gvf(row, col), shadow(row, col), svf(row, col), svf_blgd_veg(row, col), Ta, Tg]

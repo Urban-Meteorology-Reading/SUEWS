@@ -170,30 +170,30 @@ MODULE ctrl_output
         ncolumnsDataOutSUEWS + ncolumnsdataOutSOL - 5)/ &
       varAttr('azimuth', 'to_add', f106, 'azimuth', aA, 'SOLWEIG', 0), &
       varAttr('altitude', 'to_add', f106, 'altitude', aA, 'SOLWEIG', 0), &
-      varAttr('GlobalRad', 'to_add', f106, 'Global Irradiance', aA, 'SOLWEIG', 0), &
-      varAttr('DiffuseRad', 'to_add', f106, 'Diffuse Radiation', aA, 'SOLWEIG', 0), &
-      varAttr('DirectRad', 'to_add', f106, 'Direct Radiation', aA, 'SOLWEIG', 0), &
-      varAttr('Kdown2d', 'to_add', f106, 'K down2d', aA, 'SOLWEIG', 0), &
-      varAttr('Kup2d', 'to_add', f106, 'Kup2d', aA, 'SOLWEIG', 0), &
-      varAttr('Ksouth', 'to_add', f106, 'K south', aA, 'SOLWEIG', 0), &
-      varAttr('Kwest', 'to_add', f106, 'K west', aA, 'SOLWEIG', 0), &
-      varAttr('Knorth', 'to_add', f106, 'K north', aA, 'SOLWEIG', 0), &
-      varAttr('Keast', 'to_add', f106, 'K east', aA, 'SOLWEIG', 0), &
-      varAttr('Ldown2d', 'to_add', f106, 'L down2d', aA, 'SOLWEIG', 0), &
-      varAttr('Lup2d', 'to_add', f106, 'L up2d', aA, 'SOLWEIG', 0), &
-      varAttr('Lsouth', 'to_add', f106, 'L south', aA, 'SOLWEIG', 0), &
-      varAttr('Lwest', 'to_add', f106, 'L west', aA, 'SOLWEIG', 0), &
-      varAttr('Lnorth', 'to_add', f106, 'L north', aA, 'SOLWEIG', 0), &
-      varAttr('Least', 'to_add', f106, 'L east', aA, 'SOLWEIG', 0), &
-      varAttr('Tmrt', 'to_add', f106, 'Tmrt', aA, 'SOLWEIG', 0), &
-      varAttr('I0', 'to_add', f106, 'I0', aA, 'SOLWEIG', 0), &
-      varAttr('CI', 'to_add', f106, 'CI', aA, 'SOLWEIG', 0), &
-      varAttr('gvf', 'to_add', f106, 'gvf', aA, 'SOLWEIG', 0), &
-      varAttr('shadow', 'to_add', f106, 'shadow', aA, 'SOLWEIG', 0), &
-      varAttr('svf', 'to_add', f106, 'svf', aA, 'SOLWEIG', 0), &
-      varAttr('svfbuveg', 'to_add', f106, 'svfbuveg', aA, 'SOLWEIG', 0), &
-      varAttr('Ta', 'to_add', f106, 'Ta', aA, 'SOLWEIG', 0), &
-      varAttr('Tg', 'to_add', f106, 'Tg', aA, 'SOLWEIG', 0) &
+      varAttr('GlobalRad', 'W m-2', f106, 'Global Irradiance', aA, 'SOLWEIG', 0), &
+      varAttr('DiffuseRad', 'W m-2', f106, 'Diffuse Radiation', aA, 'SOLWEIG', 0), &
+      varAttr('DirectRad', 'W m-2', f106, 'Direct Radiation', aA, 'SOLWEIG', 0), &
+      varAttr('Kdown2d', 'W m-2', f106, 'Incoming shortwave radiation at POI', aA, 'SOLWEIG', 0), &
+      varAttr('Kup2d', 'W m-2', f106, 'Outgoing shortwave radiation at POI', aA, 'SOLWEIG', 0), &
+      varAttr('Ksouth', 'W m-2', f106, 'Shortwave radiation from south at POI', aA, 'SOLWEIG', 0), &
+      varAttr('Kwest', 'W m-2', f106, 'Shortwave radiation from west at POI', aA, 'SOLWEIG', 0), &
+      varAttr('Knorth', 'W m-2', f106, 'Shortwave radiation from north at POI', aA, 'SOLWEIG', 0), &
+      varAttr('Keast', 'W m-2', f106, 'Shortwave radiation from east at POI', aA, 'SOLWEIG', 0), &
+      varAttr('Ldown2d', 'W m-2', f106, 'Incoming longwave radiation at POI', aA, 'SOLWEIG', 0), &
+      varAttr('Lup2d', 'W m-2', f106, 'Outgoing longwave radiation at POI', aA, 'SOLWEIG', 0), &
+      varAttr('Lsouth', 'W m-2', f106, 'Longwave radiation from west at POI', aA, 'SOLWEIG', 0), &
+      varAttr('Lwest', 'W m-2', f106, 'Longwave radiation from south at POI', aA, 'SOLWEIG', 0), &
+      varAttr('Lnorth', 'W m-2', f106, 'Longwave radiation from north at POI', aA, 'SOLWEIG', 0), &
+      varAttr('Least', 'W m-2', f106, 'Longwave radiation from east at POI', aA, 'SOLWEIG', 0), &
+      varAttr('Tmrt', 'degC', f106, 'Mean Radiant Temperature', aA, 'SOLWEIG', 0), &
+      varAttr('I0', 'W m-2', f106, 'theoretical value of maximum incoming solar radiation', aA, 'SOLWEIG', 0), &
+      varAttr('CI', '', f106, 'clearness index for Ldown', aA, 'SOLWEIG', 0), &
+      varAttr('gvf', '', f106, 'Ground view factor', aA, 'SOLWEIG', 0), &
+      varAttr('shadow', '', f106, 'Shadow value (0= shadow, 1 = sun)', aA, 'SOLWEIG', 0), &
+      varAttr('svf', '', f106, 'Sky View Factor from ground and buildings', aA, 'SOLWEIG', 0), &
+      varAttr('svfbuveg', '', f106, 'Sky View Factor from ground, buildings and vegetation', aA, 'SOLWEIG', 0), &
+      varAttr('Ta', 'degC', f106, 'Air temperature', aA, 'SOLWEIG', 0), &
+      varAttr('Tg', 'degC', f106, 'Surface temperature', aA, 'SOLWEIG', 0) &
       /
 
    ! BL:

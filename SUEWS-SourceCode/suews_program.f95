@@ -269,7 +269,7 @@ PROGRAM SUEWS_Program
       dataOutDailyState = NaN ! initialise DailyState
       ! IF (SOLWEIGuse == 1) ALLOCATE (dataOutSOL(ReadLinesMetdata, ncolumnsdataOutSOL, NumberOfGrids))     !SOLWEIG POI output
       ALLOCATE (dataOutSOL(ReadLinesMetdata, ncolumnsdataOutSOL, NumberOfGrids))     !SOLWEIG POI output
-      dataOutSOL=NaN
+      dataOutSOL = NaN
       IF (CBLuse >= 1) ALLOCATE (dataOutBL(ReadLinesMetdata, ncolumnsdataOutBL, NumberOfGrids))       !CBL output
       ! IF (SnowUse == 1) THEN
       IF (.NOT. ALLOCATED(dataOutSnow)) ALLOCATE (dataOutSnow(ReadLinesMetdata, ncolumnsDataOutSnow, NumberOfGrids))   !Snow output

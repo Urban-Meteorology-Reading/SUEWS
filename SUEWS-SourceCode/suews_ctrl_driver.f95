@@ -33,7 +33,7 @@ MODULE SUEWS_Driver
       ncolumnsDataOutESTM, ncolumnsDataOutDailyState, &
       ncolumnsDataOutRSL, ncolumnsdataOutSOL
    use moist, only: avcp, avdens, lv_J_kg
-   use solweig_module, only: Solweig_2014a_core
+   use solweig_module, only: SOLWEIG_cal_main
 
    IMPLICIT NONE
 
@@ -1002,8 +1002,8 @@ CONTAINS
       WUDay_id = WUDay_id_next
 
       !==============use SOLWEIG to get localised radiation flux==================
-      CALL Solweig_2014a_core(id, it, dectime, avkdn, ldown, Temp_C, avRh, Press_hPa, &
-                              lat, ZENITH_deg, azimuth, 1.d0, alb(1), alb(2), emis(1), emis(2), bldgH, dataOutLineSOL)
+      CALL SOLWEIG_cal_main(id, it, dectime, 0.8d0, planf, avkdn, ldown, Temp_C, avRh, Press_hPa, &
+                            lat, ZENITH_deg, azimuth, 1.d0, alb(1), alb(2), emis(1), emis(2), bldgH, dataOutLineSOL)
 
       !==============translation of  output variables into output array===========
       CALL SUEWS_update_outputLine( &

@@ -61,6 +61,7 @@ CONTAINS
       Temp_C, &
       avrh, &
       Press_hPa, &
+      Tg, &
       lat, &
       zenith_deg, &
       azimuth, &
@@ -89,6 +90,7 @@ CONTAINS
       REAL(KIND(1d0)), intent(in) ::avrh
       REAL(KIND(1d0)), intent(in) ::avkdn
       REAL(KIND(1d0)), intent(in) ::ldown
+      REAL(KIND(1d0)), intent(in) ::Tg
       ! REAL(KIND(1d0)), intent(in) ::kdiff
       ! REAL(KIND(1d0)), intent(in) ::kdir
       REAL(KIND(1d0)), intent(in) ::lat
@@ -110,7 +112,7 @@ CONTAINS
 
       REAL(KIND(1d0)) :: t, Tstart, height, psi!,timezone,lat,lng,alt,amaxvalue
       REAL(KIND(1d0)) :: altitude, zen!scale,azimuth,zenith
-      REAL(KIND(1d0)) :: CI, CI_Tg, c, I0, Kt, Tg, Tgamp, Tw, Ktc, weight1
+      REAL(KIND(1d0)) :: CI, CI_Tg, c, I0, Kt, Tgamp, Tw, Ktc, weight1
       REAL(KIND(1d0)) :: Ta, RH, P, radG, radD, radI, radI0!,idectime,tdectime!dectime,
       REAL(KIND(1d0)) :: corr, I0et, CIuncorr, s!,lati
       REAL(KIND(1d0)) :: SNDN, SNUP, DEC, DAYL!,timestepdec,YEAR
@@ -288,29 +290,30 @@ CONTAINS
             Keast, Knorth, Ksouth, Kwest) ! output
 
 !!!! Surface temperature parameterisation during daytime !!!!
-         dfm = ABS(172 - DOY) !Day from midsommer
-         Tgamp = 0.000006*dfm**3 - 0.0017*dfm**2 + 0.0127*dfm + 17.084 + Tstart !sinus function for daily surface temperature wave
-         !Tg=Tgamp*sin(((hour-rise)/(15-rise))*pi/2)-Tstart ! check if this should be 15 (3 pm)
-         Tg = Tgamp*SIN(((dectime - DOY - SNUP/24)/(15./24 - SNUP/24))*pi/2) - Tstart !new sunrise time 2014a
-         IF (Tg < 0) Tg = 0! temporary for removing low Tg during morning 20140513, from SOLWEIG1D
-         s = (dectime - DOY - SNUP/24)
-         !New estimation of Tg reduction for non-clear situation based on Reindl et al. 1990
-         Ktc = 1.0
-         CALL diffusefraction(I0, altitude, Ktc, Ta, RH, radI0, s)
-         corr = 0.1473*LOG(90.-(zen*RAD2DEG)) + 0.3454 ! 20070329 temporary correction of latitude from Lindberg et al. 2008
-         CI_Tg = (radI/radI0) + (1.-corr)
+         ! dfm = ABS(172 - DOY) !Day from midsommer
+         ! Tgamp = 0.000006*dfm**3 - 0.0017*dfm**2 + 0.0127*dfm + 17.084 + Tstart !sinus function for daily surface temperature wave
+         ! !Tg=Tgamp*sin(((hour-rise)/(15-rise))*pi/2)-Tstart ! check if this should be 15 (3 pm)
+         ! Tg = Tgamp*SIN(((dectime - DOY - SNUP/24)/(15./24 - SNUP/24))*pi/2) - Tstart !new sunrise time 2014a
+         ! IF (Tg < 0) Tg = 0! temporary for removing low Tg during morning 20140513, from SOLWEIG1D
+         ! s = (dectime - DOY - SNUP/24)
+         ! !New estimation of Tg reduction for non-clear situation based on Reindl et al. 1990
+         ! Ktc = 1.0
+         ! CALL diffusefraction(I0, altitude, Ktc, Ta, RH, radI0, s)
+         ! corr = 0.1473*LOG(90.-(zen*RAD2DEG)) + 0.3454 ! 20070329 temporary correction of latitude from Lindberg et al. 2008
+         ! CI_Tg = (radI/radI0) + (1.-corr)
 
-         IF (CI_Tg > 1) CI_Tg = 1  !!FIX THIS?? .and. CI_Tg<inf then CI_Tg=1
+         ! IF (CI_Tg > 1) CI_Tg = 1  !!FIX THIS?? .and. CI_Tg<inf then CI_Tg=1
 
-         Tg = Tg*CI_Tg !new estimation
+         ! Tg = Tg*CI_Tg !new estimation
          Tw = Tg
 
 !!!! Lup, daytime !!!!
          !Surface temperature wave delay - new as from 2014a
          Tgmap0 = gvf*Tg + Ta ! current timestep
-         IF (firstdaytime == 1) THEN !"first in morning"
-            Tgmap1 = Tgmap0
-         END IF
+         Tgmap1 = Tgmap0 !"first in morning"
+         ! IF (firstdaytime == 1) THEN !"first in morning"
+         !    Tgmap1 = Tgmap0
+         ! END IF
          IF (timeadd >= (59/1440.)) THEN !more or equal to 59 min
             weight1 = EXP(-33.27*timeadd) !surface temperature delay function - 1 step
             Tgmap1 = Tgmap0*(1 - weight1) + Tgmap1*weight1
@@ -325,7 +328,7 @@ CONTAINS
             weight1 = EXP(-33.27*timeadd) !surface temperature delay function - 1 step
             Lup2d = SBC*emis_ground*((Tgmap0*(1 - weight1) + Tgmap1*weight1 + 273.15)**4)
          END IF
-         firstdaytime = 0
+         ! firstdaytime = 0
 
       ELSE !!!!!!! NIGHTTIME !!!!!!!!
 
@@ -353,7 +356,7 @@ CONTAINS
          END IF
 
          Tw = 0.0
-         Tg = 0.0
+         ! Tg = 0.0
 
          !Nocturnal Kfluxes set to 0
          Kdown2d = 0.0

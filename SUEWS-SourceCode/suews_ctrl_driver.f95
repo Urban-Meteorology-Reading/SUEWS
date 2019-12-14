@@ -1002,7 +1002,7 @@ CONTAINS
       WUDay_id = WUDay_id_next
 
       !==============use SOLWEIG to get localised radiation flux==================
-      CALL SOLWEIG_cal_main(id, it, dectime, 0.8d0, planf, avkdn, ldown, Temp_C, avRh, Press_hPa, &
+      CALL SOLWEIG_cal_main(id, it, dectime, 0.8d0, planf, avkdn, ldown, Temp_C, avRh, Press_hPa, TSfc_C, &
                             lat, ZENITH_deg, azimuth, 1.d0, alb(1), alb(2), emis(1), emis(2), bldgH, dataOutLineSOL)
 
       !==============translation of  output variables into output array===========

@@ -395,7 +395,9 @@ CONTAINS
       END IF
 
 !!! Lside !!!
-      CALL Lside_veg_v2(altitude, Ta, Tw, SBC, emis_wall, emis_sky, t, CI, azimuth, zen, ldown, svfalfa)
+      CALL Lside_veg_v2(Ldown2d, Lup2d, &
+                        altitude, Ta, Tw, SBC, emis_wall, emis_sky, t, CI, azimuth, zen, ldown, svfalfa, &
+                        Least, Lnorth, Lsouth, Lwest)
 
 !!! Calculation of radiant flux density and Tmrt !!!
       Sstr = absK*(Kdown2d*Fup + Kup2d*Fup + Knorth*Fside + Keast*Fside + Ksouth*Fside + Kwest*Fside) &
@@ -1109,12 +1111,20 @@ CONTAINS
       viktveg = viktveg - viktwall
    END SUBROUTINE Kvikt_veg
 
-   SUBROUTINE Lside_veg_v2(altitude, Ta, Tw, SBC, emis_wall, emis_sky, t, CI, azimuth, zen, ldown, svfalfa)
+   SUBROUTINE Lside_veg_v2( &
+      Ldown2d, Lup2d, &
+      altitude, Ta, Tw, SBC, emis_wall, emis_sky, t, CI, azimuth, zen, ldown, svfalfa, &
+      Least, Lnorth, Lsouth, Lwest)
       ! This m-file is the current one that estimates L from the four cardinal points 20100414
       IMPLICIT NONE
-      REAL(KIND(1D0)), intent(in):: altitude, Ta, Tw, SBC, emis_wall, emis_sky, t, CI, azimuth, ldown, zen
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), intent(in)         ::svfalfa
-      REAL(KIND(1D0))                             :: vikttot, aziE, aziN, aziS, aziW, c
+
+      REAL(KIND(1D0)), intent(in)::altitude, Ta, Tw, SBC, emis_wall, emis_sky, t, CI, azimuth, ldown, zen
+
+      REAL(KIND(1d0)), DIMENSION(sizey, sizex), intent(in)::svfalfa
+      REAL(KIND(1d0)), DIMENSION(sizey, sizex), intent(in)::Ldown2d, Lup2d
+      REAL(KIND(1d0)), DIMENSION(sizey, sizex), intent(out)::Least, Lnorth, Lsouth, Lwest
+
+      REAL(KIND(1D0))::vikttot, aziE, aziN, aziS, aziW, c
 
       REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :)  :: svfalfaE, svfalfaS, svfalfaW, svfalfaN
       REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :)  :: alfaB, betaB, betasun
@@ -1125,10 +1135,20 @@ CONTAINS
 
       REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: viktveg, viktsky, viktrefl, viktwall
       REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: F_sh
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: svfE, svfS, svfW, svfN
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: svfEveg, svfSveg, svfWveg, svfNveg
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: svfEaveg, svfSaveg, svfWaveg, svfNaveg
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: Ldown2d, Least, Lnorth, Lsouth, Lup2d, Lwest
+
+      ! assuming all SVF to ONE, TS 14 Dec 2019
+      REAL(KIND(1d0)), DIMENSION(sizey, sizex), PARAMETER  :: svfE=1
+      REAL(KIND(1d0)), DIMENSION(sizey, sizex), PARAMETER  :: svfS=1
+      REAL(KIND(1d0)), DIMENSION(sizey, sizex), PARAMETER  :: svfW=1
+      REAL(KIND(1d0)), DIMENSION(sizey, sizex), PARAMETER  :: svfN=1
+      REAL(KIND(1d0)), DIMENSION(sizey, sizex), PARAMETER  :: svfEveg=1
+      REAL(KIND(1d0)), DIMENSION(sizey, sizex), PARAMETER  :: svfSveg=1
+      REAL(KIND(1d0)), DIMENSION(sizey, sizex), PARAMETER  :: svfWveg=1
+      REAL(KIND(1d0)), DIMENSION(sizey, sizex), PARAMETER  :: svfNveg=1
+      REAL(KIND(1d0)), DIMENSION(sizey, sizex), PARAMETER  :: svfEaveg=1
+      REAL(KIND(1d0)), DIMENSION(sizey, sizex), PARAMETER  :: svfSaveg=1
+      REAL(KIND(1d0)), DIMENSION(sizey, sizex), PARAMETER  :: svfWaveg=1
+      REAL(KIND(1d0)), DIMENSION(sizey, sizex), PARAMETER  :: svfNaveg=1
 
       ALLOCATE (oneminussvfE(sizex, sizey))
       ALLOCATE (oneminussvfS(sizex, sizey))
@@ -1185,7 +1205,7 @@ CONTAINS
       END IF
 
       !! Least
-      CALL Lvikt_veg(svfE, svfEveg, svfEaveg, vikttot)
+      CALL Lvikt_veg(svfE, svfEveg, svfEaveg, vikttot, viktveg, viktsky, viktrefl)
 
       IF (altitude > 0) THEN ! daytime
          alfaB = ATAN(svfalfaE)
@@ -1210,7 +1230,7 @@ CONTAINS
       Least = Lsky + Lwallsun + Lwallsh + Lveg + Lground + Lrefl
 
       !! Lsouth
-      CALL Lvikt_veg(svfS, svfSveg, svfSaveg, vikttot)
+      CALL Lvikt_veg(svfS, svfSveg, svfSaveg, vikttot, viktveg, viktsky, viktrefl)
 
       IF (altitude > 0) THEN ! daytime
          alfaB = ATAN(svfalfaS)
@@ -1235,7 +1255,7 @@ CONTAINS
       Lsouth = Lsky + Lwallsun + Lwallsh + Lveg + Lground + Lrefl
 
       !! Lwest
-      CALL Lvikt_veg(svfW, svfWveg, svfWaveg, vikttot)
+      CALL Lvikt_veg(svfW, svfWveg, svfWaveg, vikttot, viktveg, viktsky, viktrefl)
 
       IF (altitude > 0) THEN ! daytime
          alfaB = ATAN(svfalfaW)
@@ -1260,7 +1280,7 @@ CONTAINS
       Lwest = Lsky + Lwallsun + Lwallsh + Lveg + Lground + Lrefl
 
       !! Lnorth
-      CALL Lvikt_veg(svfN, svfNveg, svfNaveg, vikttot)
+      CALL Lvikt_veg(svfN, svfNveg, svfNaveg, vikttot, viktveg, viktsky, viktrefl)
 
       IF (altitude > 0) THEN ! daytime
          alfaB = ATAN(svfalfaN)
@@ -1304,19 +1324,22 @@ CONTAINS
 
    END SUBROUTINE Lside_veg_v2
 
-   SUBROUTINE Lvikt_veg(isvf, isvfveg, isvfaveg, vikttot)
+   SUBROUTINE Lvikt_veg(isvf, isvfveg, isvfaveg, vikttot, & ! input
+                        viktveg, viktsky, viktrefl) !output
 
       IMPLICIT NONE
-      REAL(KIND(1D0)) :: vikttot
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex) :: isvf
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex) :: isvfveg
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex) :: isvfaveg
+      REAL(KIND(1D0)), intent(in):: vikttot
+      REAL(KIND(1d0)), DIMENSION(sizey, sizex), intent(in) :: isvf
+      REAL(KIND(1d0)), DIMENSION(sizey, sizex), intent(in) :: isvfveg
+      REAL(KIND(1d0)), DIMENSION(sizey, sizex), intent(in) :: isvfaveg
+      REAL(KIND(1d0)), DIMENSION(sizey, sizex), intent(out)  :: viktveg
+      REAL(KIND(1d0)), DIMENSION(sizey, sizex), intent(out)  ::viktsky
+      REAL(KIND(1d0)), DIMENSION(sizey, sizex), intent(out)  :: viktrefl
+
       REAL(KIND(1d0)), DIMENSION(sizey, sizex) :: viktonlywall
       REAL(KIND(1d0)), DIMENSION(sizey, sizex) :: viktaveg
-      !real(kind(1d0)), dimension(sizey,sizex) :: viktwall
+      real(kind(1d0)), dimension(sizey, sizex) :: viktwall
       REAL(KIND(1d0)), DIMENSION(sizey, sizex) :: svfvegbu
-
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: viktveg, viktsky, viktrefl, viktwall
 
       !allocate(svfalfaE(sizex,sizey))
       !allocate(svfalfaS(sizex,sizey))

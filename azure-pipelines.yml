@@ -64,6 +64,16 @@ jobs:
 
   - task:               UsePythonVersion@0
     inputs:
+      versionSpec:      '3.8'
+      addToPath:        true
+      architecture:     'x64'
+
+  - script:             'make driver'
+    displayName:        'make supy_driver'
+    continueOnError:    true
+
+  - task:               UsePythonVersion@0
+    inputs:
       versionSpec:      '3.7'
       addToPath:        true
       architecture:     'x64'

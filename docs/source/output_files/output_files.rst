@@ -129,15 +129,15 @@ File format of SSss_YYYY_RSL_TT.txt:
   :header-rows: 1
   :widths: auto
 
-SSss_YYYY_BL.txt
-~~~~~~~~~~~~~~~~
+SSss_YYYY_BL_TT.txt
+~~~~~~~~~~~~~~~~~~~~
 
 Meteorological variables modelled by CBL portion of the model are output
 in to this file created for each day with time step (see section CBL
 Input).
 
 .. csv-table::
-  :file: SSss_YYYY_BL.csv
+  :file: SSss_YYYY_BL_TT.csv
   :header-rows: 1
   :widths: auto
 

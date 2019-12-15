@@ -42,6 +42,7 @@ target_f95 = [
         'suews_phys_rslprof.f95',
         'suews_phys_biogenco2.f95',
         'suews_phys_ohm.f95',
+        'suews_phys_solweig.f95',
         'suews_phys_waterdist.f95',
         'suews_util_meteo.f95',
         'suews_ctrl_driver.f95',
@@ -149,7 +150,7 @@ ext_modules = [
 
 setup(name='supy_driver',
       # update version info here!
-      version=get_suews_version(ver_minor=3),
+      version=get_suews_version(ver_minor=4),
       description='the SUEWS driver driven by f2py',
       long_description=readme(),
       url='https://github.com/sunt05/SuPy',

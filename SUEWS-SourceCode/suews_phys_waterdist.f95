@@ -940,6 +940,9 @@ CONTAINS
       ! and the logic for calculating OverUse to be determined
       OverUse = 0
 
+      ! initialise wu
+      wu = 0
+
       ! timestep in second
       tstep = INT(3600/NSH)
 
@@ -970,6 +973,7 @@ CONTAINS
          wu_EveTr = 0
          wu_DecTr = 0
          wu_Grass = 0
+
 
          wu_nsurf = 0
          IF (wu_m3 == NAN .OR. wu_m3 == 0) THEN !If no water use

@@ -25,21 +25,21 @@ MODULE solweig_module
    ! REAL(KIND(1d0)) :: cellsize
    ! INTEGER         :: SolweigCount
 
-   INTEGER, PARAMETER:: SOLWEIG_ldown = 0  !! force not to use SOLWEIG based Ldown calculations, TS 13 Dec 2019
+   ! INTEGER, PARAMETER:: SOLWEIG_ldown = 0  !! force not to use SOLWEIG based Ldown calculations, TS 13 Dec 2019
 
-   INTEGER, parameter    :: sizex = 1 ! number of rows and cols of grid
-   INTEGER, parameter   :: sizey = 1 ! number of rows and cols of grid
+   ! INTEGER, parameter    :: 1 = 1 ! number of rows and cols of grid
+   ! INTEGER, parameter   :: 1 = 1 ! number of rows and cols of grid
 
-   ! REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: a, sh, vbshvegsh, vegsh
-   ! REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: bush, vegdem, vegdem2, tempgrid
-   ! REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: buildings, svf, svfE, svfS, svfW, svfN
-   ! REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: svfveg, svfEveg, svfSveg, svfWveg, svfNveg
-   ! REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: svfaveg, svfEaveg, svfSaveg, svfWaveg, svfNaveg, last
-   ! REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: Kdown2d, Keast, Knorth, Ksouth, Kup2d, Kwest
-   ! REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: Ldown2d, Least, Lnorth, Lsouth, Lup2d, Lwest
-   ! REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: gvf, Tmrt, shadow, Sstr, F_sh, sunwall
-   ! REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: svfalfa, sos, Tgmap1
-   ! REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: viktveg, viktsky, viktrefl, viktwall, savegrid
+   ! REAL(KIND(1d0)), DIMENSION(1, 1)  :: a, sh, vbshvegsh, vegsh
+   ! REAL(KIND(1d0)), DIMENSION(1, 1)  :: bush, vegdem, vegdem2, tempgrid
+   ! REAL(KIND(1d0)), DIMENSION(1, 1)  :: buildings, svf, svfE, svfS, svfW, svfN
+   ! REAL(KIND(1d0)), DIMENSION(1, 1)  :: svfveg, svfEveg, svfSveg, svfWveg, svfNveg
+   ! REAL(KIND(1d0)), DIMENSION(1, 1)  :: svfaveg, svfEaveg, svfSaveg, svfWaveg, svfNaveg, last
+   ! REAL(KIND(1d0)), DIMENSION(1, 1)  :: Kdown2d, Keast, Knorth, Ksouth, Kup2d, Kwest
+   ! REAL(KIND(1d0)), DIMENSION(1, 1)  :: Ldown2d, Least, Lnorth, Lsouth, Lup2d, Lwest
+   ! REAL(KIND(1d0)), DIMENSION(1, 1)  :: gvf, Tmrt, shadow, Sstr, F_sh, sunwall
+   ! REAL(KIND(1d0)), DIMENSION(1, 1)  :: svfalfa, sos, Tgmap1
+   ! REAL(KIND(1d0)), DIMENSION(1, 1)  :: viktveg, viktsky, viktrefl, viktwall, savegrid
 CONTAINS
    ! This is the core function of the SOLWEIG model
    ! 2013-10-27
@@ -127,15 +127,15 @@ CONTAINS
       REAL(KIND(1d0)) :: Fup ! fraction of a person seen from down and up
       REAL(KIND(1d0)) :: HW ! building height to width ratio
 
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: svfalfa, sos, Tgmap1
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: gvf   !Ground View Factors (GVF)
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: Tmrt, shadow, Sstr, F_sh
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: vegsh
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: buildings, svf
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: svfveg
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: svfaveg
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: Kdown2d, Keast, Knorth, Ksouth, Kup2d, Kwest
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: Ldown2d, Least, Lnorth, Lsouth, Lup2d, Lwest
+      REAL(KIND(1d0)), DIMENSION(1, 1)  :: svfalfa, sos, Tgmap1
+      REAL(KIND(1d0)), DIMENSION(1, 1)  :: gvf   !Ground View Factors (GVF)
+      REAL(KIND(1d0)), DIMENSION(1, 1)  :: Tmrt, shadow, Sstr, F_sh
+      REAL(KIND(1d0)), DIMENSION(1, 1)  :: vegsh
+      REAL(KIND(1d0)), DIMENSION(1, 1)  :: buildings, svf
+      REAL(KIND(1d0)), DIMENSION(1, 1)  :: svfveg
+      REAL(KIND(1d0)), DIMENSION(1, 1)  :: svfaveg
+      REAL(KIND(1d0)), DIMENSION(1, 1)  :: Kdown2d, Keast, Knorth, Ksouth, Kup2d, Kwest
+      REAL(KIND(1d0)), DIMENSION(1, 1)  :: Ldown2d, Least, Lnorth, Lsouth, Lup2d, Lwest
 
       ! Internal grids
       REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :) :: tmp, Knight, svf_blgd_veg, Tgmap0!,Tgmap
@@ -151,16 +151,17 @@ CONTAINS
       INTEGER, PARAMETER:: row = 1  !! force to 1, TS 13 Dec 2019
       INTEGER, PARAMETER:: col = 1  !! force to 1, TS 13 Dec 2019
       INTEGER, PARAMETER:: Posture = 1  !! force to 1, TS 13 Dec 2019
+      INTEGER, PARAMETER:: SOLWEIG_ldown = 0  !! force to 0, TS 13 Dec 2019
 
       ! INTEGER:: firstTimeofDay = 0  !!Needs updating for new model timestep
 
 !!!!!! Begin program !!!!!!
       ! internal grids
-      ALLOCATE (tmp(sizey, sizex))
-      ALLOCATE (Knight(sizey, sizex))
-      ALLOCATE (Tgmap0(sizey, sizex))
-      ALLOCATE (svf_blgd_veg(sizey, sizex))
-      !allocate(Tgmap0(sizey,sizex))
+      ALLOCATE (tmp(1, 1))
+      ALLOCATE (Knight(1, 1))
+      ALLOCATE (Tgmap0(1, 1))
+      ALLOCATE (svf_blgd_veg(1, 1))
+      !allocate(Tgmap0(1,1))
 
       ! initialise this as ONE
       CIlatenight = 1
@@ -640,29 +641,29 @@ CONTAINS
 
       REAL(KIND(1d0)), PARAMETER          :: pi = 3.141592653589793
       REAL(KIND(1d0)), intent(in)         :: zen
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), intent(in)         ::svfalfa     !>
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), intent(out)::F_sh
+      REAL(KIND(1d0)), DIMENSION(1, 1), intent(in)         ::svfalfa     !>
+      REAL(KIND(1d0)), DIMENSION(1, 1), intent(out)::F_sh
 
       REAL(KIND(1d0)) :: beta      !>
       REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :) :: alfa, xa, ha, hkil, ba
       REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :) :: Ai, phi, qa, Za
       REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :) :: ukil, Ssurf
-      !real(kind(1d0)), dimension(sizey,sizex) ::
-      !real(kind(1d0)), dimension(sizey,sizex) ::
-      ! REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: sos, Tgmap1
-      ! REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: gvf, Tmrt, shadow, Sstr, sunwall
+      !real(kind(1d0)), dimension(1,1) ::
+      !real(kind(1d0)), dimension(1,1) ::
+      ! REAL(KIND(1d0)), DIMENSION(1, 1)  :: sos, Tgmap1
+      ! REAL(KIND(1d0)), DIMENSION(1, 1)  :: gvf, Tmrt, shadow, Sstr, sunwall
 
-      ALLOCATE (alfa(sizey, sizex))
-      ALLOCATE (ba(sizey, sizex))
-      ALLOCATE (ha(sizey, sizex))
-      ALLOCATE (xa(sizey, sizex))
-      ALLOCATE (qa(sizey, sizex))
-      ALLOCATE (Za(sizey, sizex))
-      ALLOCATE (phi(sizey, sizex))
-      ALLOCATE (ukil(sizey, sizex))
-      ALLOCATE (Ai(sizey, sizex))
-      ALLOCATE (Ssurf(sizey, sizex))
-      ALLOCATE (hkil(sizey, sizex))
+      ALLOCATE (alfa(1, 1))
+      ALLOCATE (ba(1, 1))
+      ALLOCATE (ha(1, 1))
+      ALLOCATE (xa(1, 1))
+      ALLOCATE (qa(1, 1))
+      ALLOCATE (Za(1, 1))
+      ALLOCATE (phi(1, 1))
+      ALLOCATE (ukil(1, 1))
+      ALLOCATE (Ai(1, 1))
+      ALLOCATE (Ssurf(1, 1))
+      ALLOCATE (hkil(1, 1))
 
       beta = zen
       alfa = svfalfa
@@ -783,7 +784,7 @@ CONTAINS
    !    INTEGER                           :: col, row
    !    CHARACTER(len=100)                :: GridPath, GridName, GridFile, n
    !    !real(kind(1d0)),intent(out)       :: tempgrid
-   !    !real(kind(1d0)),dimension(sizey,sizex),intent(out)       :: tempgrid!,allocatable
+   !    !real(kind(1d0)),dimension(1,1),intent(out)       :: tempgrid!,allocatable
 
    !    ! Loading DSM
    !    !GridPath='D:\SOLWEIG2013b_Fortran\Inputdata\'
@@ -792,18 +793,18 @@ CONTAINS
    !    OPEN (99, File=GridFile, status='old')
 
    !    ! Read Header
-   !    READ (99, *) n, sizex
-   !    READ (99, *) n, sizey
+   !    READ (99, *) n, 1
+   !    READ (99, *) n, 1
    !    READ (99, *) n, xllcornerlo
    !    READ (99, *) n, yllcornerlo
    !    READ (99, *) n, cellsizelo
    !    READ (99, *) n, NoDatalo
 
-   !    ALLOCATE (tempgrid(sizex, sizey))
+   !    ALLOCATE (tempgrid(1, 1))
 
    !    ! Read Matrix
-   !    DO row = 1, sizey
-   !       READ (99, *) (tempgrid(row, col), col=1, sizex)
+   !    DO row = 1, 1
+   !       READ (99, *) (tempgrid(row, col), col=1, 1)
    !    END DO
    !    CLOSE (99)
 
@@ -817,9 +818,9 @@ CONTAINS
 !       REAL(KIND(1d0))                   :: xllcornerlo, yllcornerlo, cellsizelo, NoDatalo
 !       INTEGER                           :: col, row
 !       CHARACTER(len=100)                :: GridPath, GridName, GridFile
-!       !integer                           :: sizey,sizex!,intent(in)
+!       !integer                           :: 1,1!,intent(in)
 !       !real(kind(1d0)), allocatable, dimension(:,:):: grid
-!       ! real(kind(1d0)),dimension(sizey,sizex)       :: grid!,allocatable
+!       ! real(kind(1d0)),dimension(1,1)       :: grid!,allocatable
 
 !       ! Loading DSM
 !       !GridPath='D:\SOLWEIG2013b_Fortran\Inputdata\'
@@ -828,16 +829,16 @@ CONTAINS
 !       OPEN (94, File=GridFile, status='unknown')
 
 !       ! Read Header
-!       WRITE (94, "(A5,1x,I0)") 'ncols', sizex
-!       WRITE (94, "(A5,1x,I0)") 'nrows', sizey
+!       WRITE (94, "(A5,1x,I0)") 'ncols', 1
+!       WRITE (94, "(A5,1x,I0)") 'nrows', 1
 !       WRITE (94, "(A9,1x,F0.2)") 'xllcorner', xllcornerlo
 !       WRITE (94, "(A9,1x,F0.2)") 'yllcorner', yllcornerlo
 !       WRITE (94, "(A8,1x,F0.2)") 'cellsize', cellsizelo
 !       WRITE (94, "(A12,1x,F0.2)") 'NODATA_value', NoDatalo
 
 !       ! write Matrix
-!       DO row = 1, sizey
-!          WRITE (94, 100) (savegrid(row, col), col=1, sizex)
+!       DO row = 1, 1
+!          WRITE (94, 100) (savegrid(row, col), col=1, 1)
 !       END DO
 !       CLOSE (94)
 ! 100   FORMAT(200(f6.2, 1x))
@@ -915,7 +916,7 @@ CONTAINS
 ! !!! Loading DSM !!!
 !       Path = TRIM(FileInputPath)//TRIM(DSMPath)
 !       CALL LoadEsriAsciiGrid(Path, DSMName, xllcorner, yllcorner, cellsize, NoData)
-!       ALLOCATE (a(sizey, sizex))
+!       ALLOCATE (a(1, 1))
 !       a = tempgrid
 !       DEALLOCATE (tempgrid)
 
@@ -941,14 +942,14 @@ CONTAINS
 !          ! Loading vegDSM (SDSM)
 !          Path = TRIM(FileInputPath)//TRIM(DSMPath)
 !          CALL LoadEsriAsciiGrid(Path, CDSMname, xllcorner, yllcorner, cellsize, NoData)
-!          ALLOCATE (vegdem(sizey, sizex))
+!          ALLOCATE (vegdem(1, 1))
 !          vegdem = tempgrid
 !          DEALLOCATE (tempgrid)
 
 !          ! Loading trunkDSM (TDSM)
 !          Path = TRIM(FileInputPath)//TRIM(DSMPath)
 !          CALL LoadEsriAsciiGrid(Path, TDSMname, xllcorner, yllcorner, cellsize, NoData)
-!          ALLOCATE (vegdem2(sizey, sizex))
+!          ALLOCATE (vegdem2(1, 1))
 !          vegdem2 = tempgrid
 !          DEALLOCATE (tempgrid)
 
@@ -967,7 +968,7 @@ CONTAINS
 !          vegdem2 = 0.0
 !          END WHERE
 !          ! Bush separation
-!          ALLOCATE (bush(sizex, sizey))
+!          ALLOCATE (bush(1, 1))
 !          WHERE ((vegdem > 0) .AND. (vegdem2 == 0))
 !          bush = vegdem
 !          ELSEWHERE
@@ -984,35 +985,35 @@ CONTAINS
 !                      'svfaveg.asc ', 'svfEaveg.asc', 'svfNaveg.asc', 'svfWaveg.asc', 'svfSaveg.asc']
 !       ! SVFs, Should be done as a loop... ! How to change variable in a loop???
 !       CALL LoadEsriAsciiGrid(Path, svfname(1), xllcorner, yllcorner, cellsize, NoData)
-!       ALLOCATE (svf(sizey, sizex)); svf = tempgrid; DEALLOCATE (tempgrid)
+!       ALLOCATE (svf(1, 1)); svf = tempgrid; DEALLOCATE (tempgrid)
 !       CALL LoadEsriAsciiGrid(Path, svfname(2), xllcorner, yllcorner, cellsize, NoData)
-!       ALLOCATE (svfE(sizey, sizex)); svfE = tempgrid; DEALLOCATE (tempgrid)
+!       ALLOCATE (svfE(1, 1)); svfE = tempgrid; DEALLOCATE (tempgrid)
 !       CALL LoadEsriAsciiGrid(Path, svfname(3), xllcorner, yllcorner, cellsize, NoData)
-!       ALLOCATE (svfN(sizey, sizex)); svfN = tempgrid; DEALLOCATE (tempgrid)
+!       ALLOCATE (svfN(1, 1)); svfN = tempgrid; DEALLOCATE (tempgrid)
 !       CALL LoadEsriAsciiGrid(Path, svfname(4), xllcorner, yllcorner, cellsize, NoData)
-!       ALLOCATE (svfW(sizey, sizex)); svfW = tempgrid; DEALLOCATE (tempgrid)
+!       ALLOCATE (svfW(1, 1)); svfW = tempgrid; DEALLOCATE (tempgrid)
 !       CALL LoadEsriAsciiGrid(Path, svfname(5), xllcorner, yllcorner, cellsize, NoData)
-!       ALLOCATE (svfS(sizey, sizex)); svfS = tempgrid; DEALLOCATE (tempgrid)
+!       ALLOCATE (svfS(1, 1)); svfS = tempgrid; DEALLOCATE (tempgrid)
 !       CALL LoadEsriAsciiGrid(Path, svfvegname(1), xllcorner, yllcorner, cellsize, NoData)
-!       ALLOCATE (svfveg(sizey, sizex)); svfveg = tempgrid; DEALLOCATE (tempgrid)
+!       ALLOCATE (svfveg(1, 1)); svfveg = tempgrid; DEALLOCATE (tempgrid)
 !       CALL LoadEsriAsciiGrid(Path, svfvegname(2), xllcorner, yllcorner, cellsize, NoData)
-!       ALLOCATE (svfEveg(sizey, sizex)); svfEveg = tempgrid; DEALLOCATE (tempgrid)
+!       ALLOCATE (svfEveg(1, 1)); svfEveg = tempgrid; DEALLOCATE (tempgrid)
 !       CALL LoadEsriAsciiGrid(Path, svfvegname(3), xllcorner, yllcorner, cellsize, NoData)
-!       ALLOCATE (svfNveg(sizey, sizex)); svfNveg = tempgrid; DEALLOCATE (tempgrid)
+!       ALLOCATE (svfNveg(1, 1)); svfNveg = tempgrid; DEALLOCATE (tempgrid)
 !       CALL LoadEsriAsciiGrid(Path, svfvegname(4), xllcorner, yllcorner, cellsize, NoData)
-!       ALLOCATE (svfWveg(sizey, sizex)); svfWveg = tempgrid; DEALLOCATE (tempgrid)
+!       ALLOCATE (svfWveg(1, 1)); svfWveg = tempgrid; DEALLOCATE (tempgrid)
 !       CALL LoadEsriAsciiGrid(Path, svfvegname(5), xllcorner, yllcorner, cellsize, NoData)
-!       ALLOCATE (svfSveg(sizey, sizex)); svfSveg = tempgrid; DEALLOCATE (tempgrid)
+!       ALLOCATE (svfSveg(1, 1)); svfSveg = tempgrid; DEALLOCATE (tempgrid)
 !       CALL LoadEsriAsciiGrid(Path, svfvegname(6), xllcorner, yllcorner, cellsize, NoData)
-!       ALLOCATE (svfaveg(sizey, sizex)); svfaveg = tempgrid; DEALLOCATE (tempgrid)
+!       ALLOCATE (svfaveg(1, 1)); svfaveg = tempgrid; DEALLOCATE (tempgrid)
 !       CALL LoadEsriAsciiGrid(Path, svfvegname(7), xllcorner, yllcorner, cellsize, NoData)
-!       ALLOCATE (svfEaveg(sizey, sizex)); svfEaveg = tempgrid; DEALLOCATE (tempgrid)
+!       ALLOCATE (svfEaveg(1, 1)); svfEaveg = tempgrid; DEALLOCATE (tempgrid)
 !       CALL LoadEsriAsciiGrid(Path, svfvegname(8), xllcorner, yllcorner, cellsize, NoData)
-!       ALLOCATE (svfNaveg(sizey, sizex)); svfNaveg = tempgrid; DEALLOCATE (tempgrid)
+!       ALLOCATE (svfNaveg(1, 1)); svfNaveg = tempgrid; DEALLOCATE (tempgrid)
 !       CALL LoadEsriAsciiGrid(Path, svfvegname(9), xllcorner, yllcorner, cellsize, NoData)
-!       ALLOCATE (svfWaveg(sizey, sizex)); svfWaveg = tempgrid; DEALLOCATE (tempgrid)
+!       ALLOCATE (svfWaveg(1, 1)); svfWaveg = tempgrid; DEALLOCATE (tempgrid)
 !       CALL LoadEsriAsciiGrid(Path, svfvegname(10), xllcorner, yllcorner, cellsize, NoData)
-!       ALLOCATE (svfSaveg(sizey, sizex)); svfSaveg = tempgrid; DEALLOCATE (tempgrid)
+!       ALLOCATE (svfSaveg(1, 1)); svfSaveg = tempgrid; DEALLOCATE (tempgrid)
 
 ! !!! Loading buildings grid !!!
 !       Path = TRIM(FileInputPath)//TRIM(DSMPath)
@@ -1020,7 +1021,7 @@ CONTAINS
 !       INQUIRE (file=GridFile, exist=exist)
 !       IF (exist) THEN
 !          CALL LoadEsriAsciiGrid(Path, buildingsname, xllcorner, yllcorner, cellsize, NoData)
-!          ALLOCATE (buildings(sizey, sizex))
+!          ALLOCATE (buildings(1, 1))
 !          buildings = tempgrid
 !          DEALLOCATE (tempgrid)
 !       ELSE
@@ -1032,7 +1033,7 @@ CONTAINS
 !       timeadd = 0.00
 
 !       ! Initiate map for surface temperature delay
-!       ALLOCATE (Tgmap1(sizey, sizex))
+!       ALLOCATE (Tgmap1(1, 1))
 !       Tgmap1 = 0.0
 
 !       RETURN
@@ -1058,26 +1059,26 @@ CONTAINS
       REAL(KIND(1D0)), intent(in)::t
       REAL(KIND(1D0)), intent(in)::albedo
 
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), intent(in)  :: shadow, F_sh
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), intent(out)  :: Keast, Knorth, Ksouth, Kwest
+      REAL(KIND(1d0)), DIMENSION(1, 1), intent(in)  :: shadow, F_sh
+      REAL(KIND(1d0)), DIMENSION(1, 1), intent(out)  :: Keast, Knorth, Ksouth, Kwest
 
       REAL(KIND(1D0)) :: vikttot, aziE, aziN, aziS, aziW
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: viktveg, viktwall
+      REAL(KIND(1d0)), DIMENSION(1, 1)  :: viktveg, viktwall
 
       ! assuming the following SVF to ONE
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), parameter  :: svfE = 1
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), parameter  :: svfS = 1
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), parameter  :: svfW = 1
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), parameter  :: svfN = 1
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), parameter  :: svfEveg = 1
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), parameter  :: svfSveg = 1
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), parameter  :: svfWveg = 1
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), parameter  :: svfNveg = 1
+      REAL(KIND(1d0)), DIMENSION(1, 1), parameter  :: svfE = 1
+      REAL(KIND(1d0)), DIMENSION(1, 1), parameter  :: svfS = 1
+      REAL(KIND(1d0)), DIMENSION(1, 1), parameter  :: svfW = 1
+      REAL(KIND(1d0)), DIMENSION(1, 1), parameter  :: svfN = 1
+      REAL(KIND(1d0)), DIMENSION(1, 1), parameter  :: svfEveg = 1
+      REAL(KIND(1d0)), DIMENSION(1, 1), parameter  :: svfSveg = 1
+      REAL(KIND(1d0)), DIMENSION(1, 1), parameter  :: svfWveg = 1
+      REAL(KIND(1d0)), DIMENSION(1, 1), parameter  :: svfNveg = 1
 
       ! Internal grids
       REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :) :: svfviktbuveg
 
-      ALLOCATE (svfviktbuveg(sizex, sizey))
+      ALLOCATE (svfviktbuveg(1, 1))
       ! New reflection equation 2012-05-25
       vikttot = 4.4897
       aziE = azimuth + t
@@ -1130,10 +1131,10 @@ CONTAINS
 
       IMPLICIT NONE
       REAL(KIND(1D0)), intent(in):: vikttot
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), intent(in):: isvf
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), intent(in):: isvfveg
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), intent(out)  :: viktveg, viktwall
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex) :: svfvegbu
+      REAL(KIND(1d0)), DIMENSION(1, 1), intent(in):: isvf
+      REAL(KIND(1d0)), DIMENSION(1, 1), intent(in):: isvfveg
+      REAL(KIND(1d0)), DIMENSION(1, 1), intent(out)  :: viktveg, viktwall
+      REAL(KIND(1d0)), DIMENSION(1, 1) :: svfvegbu
 
       !! Least
       viktwall = (vikttot &
@@ -1158,9 +1159,9 @@ CONTAINS
 
       REAL(KIND(1D0)), intent(in)::altitude, Ta, Tw, SBC, emis_wall, emis_sky, t, CI, azimuth, ldown, zen
 
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), intent(in)::svfalfa
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), intent(in)::Ldown2d, Lup2d
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), intent(out)::Least, Lnorth, Lsouth, Lwest
+      REAL(KIND(1d0)), DIMENSION(1, 1), intent(in)::svfalfa
+      REAL(KIND(1d0)), DIMENSION(1, 1), intent(in)::Ldown2d, Lup2d
+      REAL(KIND(1d0)), DIMENSION(1, 1), intent(out)::Least, Lnorth, Lsouth, Lwest
 
       REAL(KIND(1D0))::vikttot, aziE, aziN, aziS, aziW, c
 
@@ -1170,50 +1171,51 @@ CONTAINS
       REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :)  :: viktonlywall, viktaveg, svfvegbu
       REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :)  :: oneminussvfE, oneminussvfS, oneminussvfW, oneminussvfN
       REAL(KIND(1d0)), PARAMETER                   :: pi = 3.141592653589793
+      INTEGER, PARAMETER:: SOLWEIG_ldown = 0  !! force to 0, TS 13 Dec 2019
 
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: viktveg, viktsky, viktrefl, viktwall
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: F_sh
+      REAL(KIND(1d0)), DIMENSION(1, 1)  :: viktveg, viktsky, viktrefl, viktwall
+      REAL(KIND(1d0)), DIMENSION(1, 1)  :: F_sh
 
       ! assuming all SVF to ONE, TS 14 Dec 2019
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), PARAMETER  :: svfE=1
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), PARAMETER  :: svfS=1
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), PARAMETER  :: svfW=1
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), PARAMETER  :: svfN=1
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), PARAMETER  :: svfEveg=1
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), PARAMETER  :: svfSveg=1
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), PARAMETER  :: svfWveg=1
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), PARAMETER  :: svfNveg=1
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), PARAMETER  :: svfEaveg=1
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), PARAMETER  :: svfSaveg=1
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), PARAMETER  :: svfWaveg=1
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), PARAMETER  :: svfNaveg=1
+      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfE=1
+      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfS=1
+      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfW=1
+      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfN=1
+      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfEveg=1
+      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfSveg=1
+      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfWveg=1
+      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfNveg=1
+      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfEaveg=1
+      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfSaveg=1
+      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfWaveg=1
+      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfNaveg=1
 
-      ALLOCATE (oneminussvfE(sizex, sizey))
-      ALLOCATE (oneminussvfS(sizex, sizey))
-      ALLOCATE (oneminussvfW(sizex, sizey))
-      ALLOCATE (oneminussvfN(sizex, sizey))
-      ALLOCATE (svfalfaE(sizex, sizey))
-      ALLOCATE (svfalfaS(sizex, sizey))
-      ALLOCATE (svfalfaW(sizex, sizey))
-      ALLOCATE (svfalfaN(sizex, sizey))
-      ALLOCATE (alfaB(sizex, sizey))
-      ALLOCATE (betaB(sizex, sizey))
-      ALLOCATE (betasun(sizex, sizey))
-      ALLOCATE (Lground(sizex, sizey))
-      ALLOCATE (Lrefl(sizex, sizey))
-      ALLOCATE (Lsky(sizex, sizey))
-      ALLOCATE (Lsky_allsky(sizex, sizey))
-      ALLOCATE (Lveg(sizex, sizey))
-      ALLOCATE (Lwallsh(sizex, sizey))
-      ALLOCATE (Lwallsun(sizex, sizey))
-      ALLOCATE (viktonlywall(sizex, sizey))
-      ALLOCATE (viktaveg(sizex, sizey))
-      ALLOCATE (svfvegbu(sizex, sizey))
+      ALLOCATE (oneminussvfE(1, 1))
+      ALLOCATE (oneminussvfS(1, 1))
+      ALLOCATE (oneminussvfW(1, 1))
+      ALLOCATE (oneminussvfN(1, 1))
+      ALLOCATE (svfalfaE(1, 1))
+      ALLOCATE (svfalfaS(1, 1))
+      ALLOCATE (svfalfaW(1, 1))
+      ALLOCATE (svfalfaN(1, 1))
+      ALLOCATE (alfaB(1, 1))
+      ALLOCATE (betaB(1, 1))
+      ALLOCATE (betasun(1, 1))
+      ALLOCATE (Lground(1, 1))
+      ALLOCATE (Lrefl(1, 1))
+      ALLOCATE (Lsky(1, 1))
+      ALLOCATE (Lsky_allsky(1, 1))
+      ALLOCATE (Lveg(1, 1))
+      ALLOCATE (Lwallsh(1, 1))
+      ALLOCATE (Lwallsun(1, 1))
+      ALLOCATE (viktonlywall(1, 1))
+      ALLOCATE (viktaveg(1, 1))
+      ALLOCATE (svfvegbu(1, 1))
 
-      ! IF (ALLOCATED(viktwall)) DEALLOCATE (viktwall); ALLOCATE (viktwall(sizey, sizex))
-      ! IF (ALLOCATED(viktsky)) DEALLOCATE (viktsky); ALLOCATE (viktsky(sizey, sizex))
-      ! IF (ALLOCATED(viktveg)) DEALLOCATE (viktveg); ALLOCATE (viktveg(sizey, sizex))
-      ! IF (ALLOCATED(viktrefl)) DEALLOCATE (viktrefl); ALLOCATE (viktrefl(sizey, sizex))
+      ! IF (ALLOCATED(viktwall)) DEALLOCATE (viktwall); ALLOCATE (viktwall(1, 1))
+      ! IF (ALLOCATED(viktsky)) DEALLOCATE (viktsky); ALLOCATE (viktsky(1, 1))
+      ! IF (ALLOCATED(viktveg)) DEALLOCATE (viktveg); ALLOCATE (viktveg(1, 1))
+      ! IF (ALLOCATED(viktrefl)) DEALLOCATE (viktrefl); ALLOCATE (viktrefl(1, 1))
 
       !Building height angle from svf
       oneminussvfE = 1.-svfE; WHERE (oneminussvfE <= 0) oneminussvfE = 0.000000001 ! avoiding log(0)
@@ -1371,24 +1373,24 @@ CONTAINS
 
       IMPLICIT NONE
       REAL(KIND(1D0)), intent(in):: vikttot
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), intent(in) :: isvf
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), intent(in) :: isvfveg
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), intent(in) :: isvfaveg
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), intent(out)  :: viktveg
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), intent(out)  ::viktsky
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), intent(out)  :: viktrefl
-      real(kind(1d0)), dimension(sizey, sizex), intent(out)  :: viktwall
+      REAL(KIND(1d0)), DIMENSION(1, 1), intent(in) :: isvf
+      REAL(KIND(1d0)), DIMENSION(1, 1), intent(in) :: isvfveg
+      REAL(KIND(1d0)), DIMENSION(1, 1), intent(in) :: isvfaveg
+      REAL(KIND(1d0)), DIMENSION(1, 1), intent(out)  :: viktveg
+      REAL(KIND(1d0)), DIMENSION(1, 1), intent(out)  ::viktsky
+      REAL(KIND(1d0)), DIMENSION(1, 1), intent(out)  :: viktrefl
+      real(kind(1d0)), dimension(1, 1), intent(out)  :: viktwall
 
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex) :: viktonlywall
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex) :: viktaveg
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex) :: svfvegbu
+      REAL(KIND(1d0)), DIMENSION(1, 1) :: viktonlywall
+      REAL(KIND(1d0)), DIMENSION(1, 1) :: viktaveg
+      REAL(KIND(1d0)), DIMENSION(1, 1) :: svfvegbu
 
-      !allocate(svfalfaE(sizex,sizey))
-      !allocate(svfalfaS(sizex,sizey))
-      !allocate(svfalfaW(sizex,sizey))
-      !allocate(svfalfaN(sizex,sizey))
-      !allocate(alfaB(sizex,sizey))
-      !allocate(betaB(sizex,sizey))
+      !allocate(svfalfaE(1,1))
+      !allocate(svfalfaS(1,1))
+      !allocate(svfalfaW(1,1))
+      !allocate(svfalfaN(1,1))
+      !allocate(alfaB(1,1))
+      !allocate(betaB(1,1))
 
       !! Least
       viktonlywall = (vikttot - &
@@ -1442,7 +1444,7 @@ CONTAINS
    !    CHARACTER(len=4)       ::doy, hour
    !    !real(kind(1d0)), allocatable, dimension(:,:):: savegrid
 
-   !    ALLOCATE (savegrid(sizey, sizex))
+   !    ALLOCATE (savegrid(1, 1))
 
    !    IF (Tmrt_out == 1) THEN
    !       Gridpath2 = 'Grids/'
@@ -1526,9 +1528,9 @@ CONTAINS
 
       IMPLICIT NONE
       REAL(KIND(1d0)), intent(in)  :: azimuth, altitude, scale
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex), intent(out)  :: shadow
+      REAL(KIND(1d0)), DIMENSION(1, 1), intent(out)  :: shadow
 
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex):: a
+      REAL(KIND(1d0)), DIMENSION(1, 1):: a
 
       REAL(KIND(1d0)), PARAMETER          :: pi = 3.141592653589793
       REAL(KIND(1d0)), PARAMETER          :: maxpos = 10000000000.0
@@ -1537,7 +1539,7 @@ CONTAINS
       REAL(KIND(1d0))                     :: amaxvalue, pibyfour, threetimespibyfour, fivetimespibyfour
       REAL(KIND(1d0))                     :: seventimespibyfour, sinazimuth, cosazimuth, tanazimuth
       REAL(KIND(1d0))                     :: signsinazimuth, signcosazimuth, dssin, dscos, tanaltitudebyscale
-      INTEGER                             :: index, xc1, xc2, yc1, yc2, xp1, xp2, yp1, yp2!,row,col !,sizex,sizey
+      INTEGER                             :: index, xc1, xc2, yc1, yc2, xp1, xp2, yp1, yp2!,row,col !,1,1
       ! Internal grids
       REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :) :: temp, f
 
@@ -1557,11 +1559,11 @@ CONTAINS
       azi = min(azimuth, 0 - 0.0001)*degrees
       alt = min(altitude, 90 - 0.0001)*degrees
 
-      ALLOCATE (f(sizex, sizey))
-      ALLOCATE (temp(sizex, sizey))
+      ALLOCATE (f(1, 1))
+      ALLOCATE (temp(1, 1))
 
       ! IF (ALLOCATED(sh)) DEALLOCATE (sh)
-      ! ALLOCATE (sh(sizex, sizey))
+      ! ALLOCATE (sh(1, 1))
 
       ! initialise parameters
       f = a
@@ -1589,7 +1591,7 @@ CONTAINS
       tanaltitudebyscale = TAN(alt)/scale
 
       ! main loop
-      DO WHILE (amaxvalue >= dz .AND. ABS(dx) <= sizex .AND. ABS(dy) <= sizey)
+      DO WHILE (amaxvalue >= dz .AND. ABS(dx) <= 1 .AND. ABS(dy) <= 1)
 
          IF ((pibyfour <= azi .AND. azi < threetimespibyfour) .OR. (fivetimespibyfour <= azi .AND. azi < seventimespibyfour)) THEN
             dy = signsinazimuth*index
@@ -1608,13 +1610,13 @@ CONTAINS
          absdy = ABS(dy)
 
          xc1 = INT((dx + absdx)/2) + 1
-         xc2 = (sizex + INT((dx - absdx)/2))
+         xc2 = (1 + INT((dx - absdx)/2))
          yc1 = INT((dy + absdy)/2) + 1
-         yc2 = (sizey + INT((dy - absdy)/2))
+         yc2 = (1 + INT((dy - absdy)/2))
          xp1 = -INT((dx - absdx)/2) + 1
-         xp2 = (sizex - INT((dx + absdx)/2))
+         xp2 = (1 - INT((dx + absdx)/2))
          yp1 = -INT((dy - absdy)/2) + 1
-         yp2 = (sizey - INT((dy + absdy)/2))
+         yp2 = (1 - INT((dy + absdy)/2))
 
          temp(xp1:xp2, yp1:yp2) = a(xc1:xc2, yc1:yc2) - dz
 
@@ -1649,12 +1651,12 @@ CONTAINS
    !    REAL(KIND(1d0))                     :: amaxvalue, pibyfour, threetimespibyfour, fivetimespibyfour
    !    REAL(KIND(1d0))                     :: seventimespibyfour, sinazimuth, cosazimuth, tanazimuth
    !    REAL(KIND(1d0))                     :: signsinazimuth, signcosazimuth, dssin, dscos, tanaltitudebyscale, scale
-   !    INTEGER                             :: index, xc1, xc2, yc1, yc2, xp1, xp2, yp1, yp2!,test!,row,col !,sizex,sizey
+   !    INTEGER                             :: index, xc1, xc2, yc1, yc2, xp1, xp2, yp1, yp2!,test!,row,col !,1,1
    !    ! Internal grids
    !    REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :) :: f, temp, tmp, stopbuild, stopveg, g, bushplant, tempvegdem, tempvegdem2
    !    REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :) :: fabovea, gabovea, tempbush, firstvegdem, vegsh2
-   !    REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: bush, vegdem, vegdem2
-   !    REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: a, sh, vbshvegsh, vegsh
+   !    REAL(KIND(1d0)), DIMENSION(1, 1)  :: bush, vegdem, vegdem2
+   !    REAL(KIND(1d0)), DIMENSION(1, 1)  :: a, sh, vbshvegsh, vegsh
 
    !    !real                                                                 :: start_time,end_time
 
@@ -1671,27 +1673,27 @@ CONTAINS
    !    azi = azimuth*degrees;
    !    alt = altitude*degrees;
    !    ! IF (ALLOCATED(sh)) DEALLOCATE (sh)
-   !    ! ALLOCATE (sh(sizex, sizey))
+   !    ! ALLOCATE (sh(1, 1))
    !    ! IF (ALLOCATED(vegsh)) DEALLOCATE (vegsh)
-   !    ! ALLOCATE (vegsh(sizex, sizey))
+   !    ! ALLOCATE (vegsh(1, 1))
    !    ! IF (ALLOCATED(vbshvegsh)) DEALLOCATE (vbshvegsh)
-   !    ! ALLOCATE (vbshvegsh(sizex, sizey))
+   !    ! ALLOCATE (vbshvegsh(1, 1))
 
    !    ! allocation of grids
-   !    ALLOCATE (f(sizex, sizey))
-   !    ALLOCATE (temp(sizex, sizey))
-   !    ALLOCATE (tmp(sizex, sizey))
-   !    ALLOCATE (stopbuild(sizex, sizey))
-   !    ALLOCATE (stopveg(sizex, sizey))
-   !    ALLOCATE (g(sizex, sizey))
-   !    ALLOCATE (bushplant(sizex, sizey))
-   !    ALLOCATE (tempvegdem(sizex, sizey))
-   !    ALLOCATE (tempvegdem2(sizex, sizey))
-   !    ALLOCATE (fabovea(sizex, sizey))
-   !    ALLOCATE (gabovea(sizex, sizey))
-   !    ALLOCATE (firstvegdem(sizex, sizey))
-   !    ALLOCATE (tempbush(sizex, sizey))
-   !    ALLOCATE (vegsh2(sizex, sizey))
+   !    ALLOCATE (f(1, 1))
+   !    ALLOCATE (temp(1, 1))
+   !    ALLOCATE (tmp(1, 1))
+   !    ALLOCATE (stopbuild(1, 1))
+   !    ALLOCATE (stopveg(1, 1))
+   !    ALLOCATE (g(1, 1))
+   !    ALLOCATE (bushplant(1, 1))
+   !    ALLOCATE (tempvegdem(1, 1))
+   !    ALLOCATE (tempvegdem2(1, 1))
+   !    ALLOCATE (fabovea(1, 1))
+   !    ALLOCATE (gabovea(1, 1))
+   !    ALLOCATE (firstvegdem(1, 1))
+   !    ALLOCATE (tempbush(1, 1))
+   !    ALLOCATE (vegsh2(1, 1))
 
    !    ! initialise parameters
    !    f = a
@@ -1728,7 +1730,7 @@ CONTAINS
    !    dssin = ABS(1./sinazimuth);
    !    dscos = ABS(1./cosazimuth);
    !    tanaltitudebyscale = TAN(alt)/scale;
-   !    DO WHILE (amaxvalue >= dz .AND. ABS(dx) <= sizex .AND. ABS(dy) <= sizey)
+   !    DO WHILE (amaxvalue >= dz .AND. ABS(dx) <= 1 .AND. ABS(dy) <= 1)
 
    !       IF ((pibyfour <= azi .AND. azi < threetimespibyfour) .OR. (fivetimespibyfour <= azi .AND. azi < seventimespibyfour)) THEN
    !          dy = signsinazimuth*index
@@ -1749,13 +1751,13 @@ CONTAINS
    !       absdy = ABS(dy)
 
    !       xc1 = INT(((dx + absdx)/2)) + 1
-   !       xc2 = (sizex + INT((dx - absdx)/2))
+   !       xc2 = (1 + INT((dx - absdx)/2))
    !       yc1 = INT((dy + absdy)/2) + 1
-   !       yc2 = (sizey + INT((dy - absdy)/2))
+   !       yc2 = (1 + INT((dy - absdy)/2))
    !       xp1 = -INT((dx - absdx)/2) + 1
-   !       xp2 = (sizex - INT((dx + absdx)/2))
+   !       xp2 = (1 - INT((dx + absdx)/2))
    !       yp1 = -INT((dy - absdy)/2) + 1
-   !       yp2 = (sizey - INT((dy + absdy)/2))
+   !       yp2 = (1 - INT((dy + absdy)/2))
 
    !       temp(xp1:xp2, yp1:yp2) = a(xc1:xc2, yc1:yc2) - dz
    !       tempvegdem(xp1:xp2, yp1:yp2) = vegdem(xc1:xc2, yc1:yc2) - dz
@@ -1798,7 +1800,7 @@ CONTAINS
    !          tmp = 1
    !          END WHERE
    !          vegsh = vegsh*tmp
-   !          vbshvegsh = temp*0.0 !vbshvegsh=zeros(sizex,sizey);
+   !          vbshvegsh = temp*0.0 !vbshvegsh=zeros(1,1);
    !       END IF
 
    !       ! Bush shadow on bush plant
@@ -1869,12 +1871,12 @@ CONTAINS
       REAL(KIND(1d0)) ,intent(in)::scale
       REAL(KIND(1d0)) ,intent(in)::psi
 
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex),intent(in)  :: buildings
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex),intent(out)::sos
+      REAL(KIND(1d0)), DIMENSION(1, 1),intent(in)  :: buildings
+      REAL(KIND(1d0)), DIMENSION(1, 1),intent(out)::sos
 
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex):: sunwall
+      REAL(KIND(1d0)), DIMENSION(1, 1):: sunwall
 
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex):: sh, vegsh
+      REAL(KIND(1d0)), DIMENSION(1, 1):: sh, vegsh
 
       REAL(KIND(1d0))             :: iazimuth, sinazimuth, cosazimuth, tanazimuth
       INTEGER                     :: index, xc1, xc2, yc1, yc2, xp1, xp2, yp1, yp2, n
@@ -1889,17 +1891,17 @@ CONTAINS
       REAL(KIND(1d0)), PARAMETER  :: pi = 3.141592653589793
       REAL(KIND(1d0)), PARAMETER  :: maxpos = 10000000000.0
 
-      ALLOCATE (weightsumwall(sizex, sizey))
-      ALLOCATE (weightsumsh(sizex, sizey))
-      ALLOCATE (gvf1(sizex, sizey))
-      ALLOCATE (gvf2(sizex, sizey))
-      ALLOCATE (f(sizex, sizey))
-      ALLOCATE (tempsh(sizex, sizey))
-      ALLOCATE (tempbu(sizex, sizey))
-      ALLOCATE (tempbub(sizex, sizey))
-      ALLOCATE (tempwallsun(sizex, sizey))
-      ALLOCATE (tempb(sizex, sizey))
-      ALLOCATE (sh1(sizex, sizey))
+      ALLOCATE (weightsumwall(1, 1))
+      ALLOCATE (weightsumsh(1, 1))
+      ALLOCATE (gvf1(1, 1))
+      ALLOCATE (gvf2(1, 1))
+      ALLOCATE (f(1, 1))
+      ALLOCATE (tempsh(1, 1))
+      ALLOCATE (tempbu(1, 1))
+      ALLOCATE (tempbub(1, 1))
+      ALLOCATE (tempwallsun(1, 1))
+      ALLOCATE (tempb(1, 1))
+      ALLOCATE (sh1(1, 1))
 
       iazimuth = iazimuthA*(pi/180)
       !special cases
@@ -1964,13 +1966,13 @@ CONTAINS
          absdy = ABS(dy)
 
          xc1 = INT((dx + absdx)/2) + 1
-         xc2 = (sizex + INT((dx - absdx)/2))
+         xc2 = (1 + INT((dx - absdx)/2))
          yc1 = INT((dy + absdy)/2) + 1
-         yc2 = (sizey + INT((dy - absdy)/2))
+         yc2 = (1 + INT((dy - absdy)/2))
          xp1 = -INT((dx - absdx)/2) + 1
-         xp2 = (sizex - INT((dx + absdx)/2))
+         xp2 = (1 - INT((dx + absdx)/2))
          yp1 = -INT((dy - absdy)/2) + 1
-         yp2 = (sizey - INT((dy + absdy)/2))
+         yp2 = (1 - INT((dy + absdy)/2))
 
          tempbu(xp1:xp2, yp1:yp2) = buildings(xc1:xc2, yc1:yc2) !moving building
 
@@ -2029,7 +2031,7 @@ CONTAINS
 
    !    IMPLICIT NONE
    !    REAL(KIND(1d0)) ,intent(in)            :: azimuth
-   !    REAL(KIND(1d0)), DIMENSION(sizey, sizex),intent(out)  :: sunwall
+   !    REAL(KIND(1d0)), DIMENSION(1, 1),intent(out)  :: sunwall
 
    !    REAL(KIND(1d0))             ::iazimuth
    !    INTEGER                     :: index, xc1, xc2, yc1, yc2, xp1, xp2, yp1, yp2
@@ -2041,16 +2043,16 @@ CONTAINS
    !    REAL(KIND(1d0)), PARAMETER  :: maxpos = 10000000000.0
    !    ! Internal grids
    !    REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :) :: temp, sh1
-   !    REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: sh, vegsh
-   !    REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: buildings
+   !    REAL(KIND(1d0)), DIMENSION(1, 1)  :: sh, vegsh
+   !    REAL(KIND(1d0)), DIMENSION(1, 1)  :: buildings
 
-   !    ALLOCATE (temp(sizex, sizey))
-   !    ALLOCATE (sh1(sizex, sizey))
-   !    !allocate(vegsh(sizex,sizey))
-   !    !allocate(a(sizex,sizey))
-   !    !allocate(buildings(sizex,sizey))
+   !    ALLOCATE (temp(1, 1))
+   !    ALLOCATE (sh1(1, 1))
+   !    !allocate(vegsh(1,1))
+   !    !allocate(a(1,1))
+   !    !allocate(buildings(1,1))
 
-   !    ! IF (ALLOCATED(sunwall)) DEALLOCATE (sunwall); ALLOCATE (sunwall(sizey, sizex))
+   !    ! IF (ALLOCATED(sunwall)) DEALLOCATE (sunwall); ALLOCATE (sunwall(1, 1))
 
    !    iazimuth = azimuth + 180
    !    IF (iazimuth >= 360) THEN
@@ -2104,13 +2106,13 @@ CONTAINS
    !    absdy = ABS(dy)
 
    !    xc1 = INT((dx + absdx)/2) + 1  !LJ added int to the equation to account for the conversion from real to int
-   !    xc2 = (sizex + INT((dx - absdx)/2))
+   !    xc2 = (1 + INT((dx - absdx)/2))
    !    yc1 = INT((dy + absdy)/2) + 1
-   !    yc2 = (sizey + INT((dy - absdy)/2))
+   !    yc2 = (1 + INT((dy - absdy)/2))
    !    xp1 = -INT((dx - absdx)/2) + 1
-   !    xp2 = (sizex - INT((dx + absdx)/2))
+   !    xp2 = (1 - INT((dx + absdx)/2))
    !    yp1 = -INT((dy - absdy)/2) + 1
-   !    yp2 = (sizey - INT((dy + absdy)/2))
+   !    yp2 = (1 - INT((dy + absdy)/2))
 
    !    temp(xp1:xp2, yp1:yp2) = buildings(xc1:xc2, yc1:yc2)
 

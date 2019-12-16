@@ -917,9 +917,9 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(nsurf)::IrrFrac !faction of irrigated part in each surface [-]
       REAL(KIND(1d0)), DIMENSION(nsurf)::WUArea !water use area [m2] for each surface type
 
-      REAL(KIND(1d0)):: WUAreaEveTr_m2
-      REAL(KIND(1d0)):: WUAreaDecTr_m2
-      REAL(KIND(1d0)):: WUAreaGrass_m2
+      ! REAL(KIND(1d0)):: WUAreaEveTr_m2
+      ! REAL(KIND(1d0)):: WUAreaDecTr_m2
+      ! REAL(KIND(1d0)):: WUAreaGrass_m2
       REAL(KIND(1d0)):: WUAreaTotal_m2
       REAL(KIND(1d0)):: InternalWaterUse    !Internal water use for the model timestep [mm]
       REAL(KIND(1d0)):: flag_WuM = 1

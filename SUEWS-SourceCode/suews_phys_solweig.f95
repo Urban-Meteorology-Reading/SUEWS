@@ -112,16 +112,16 @@ CONTAINS
 
       REAL(KIND(1d0)) :: t, Tstart, height, psi!,timezone,lat,lng,alt,amaxvalue
       REAL(KIND(1d0)) :: altitude, zen!scale,azimuth,zenith
-      REAL(KIND(1d0)) :: CI, CI_Tg, c, I0, Kt, Tgamp, Tw, Ktc, weight1
-      REAL(KIND(1d0)) :: Ta, RH, P, radG, radD, radI, radI0!,idectime,tdectime!dectime,
-      REAL(KIND(1d0)) :: corr, I0et, CIuncorr, s!,lati
+      REAL(KIND(1d0)) :: CI, c, I0, Kt, Tw, weight1
+      REAL(KIND(1d0)) :: Ta, RH, P, radG, radD, radI!,idectime,tdectime!dectime,
+      REAL(KIND(1d0)) :: I0et, CIuncorr!,lati
       REAL(KIND(1d0)) :: SNDN, SNUP, DEC, DAYL!,timestepdec,YEAR
       REAL(KIND(1d0)) :: msteg, emis_sky, ea
       ! REAL(KIND(1d0)),intent(in) ::lai_id
-      INTEGER         :: DOY, hour, first, second, j, dfm!,ith!onlyglobal,usevegdem,x,y,i
+      INTEGER         :: DOY, hour, first, second, j!,ith!onlyglobal,usevegdem,x,y,i
       REAL(KIND(1d0)) :: timeadd
       REAL(KIND(1d0)) :: firstdaytime ! if new day starts, =1 else =0
-      REAL(KIND(1d0)) :: timestepdec !time step in decimal time
+      ! REAL(KIND(1d0)) :: timestepdec !time step in decimal time
       REAL(KIND(1d0)) :: CIlatenight
       REAL(KIND(1d0)) :: Fside ! fraction of a person seen from each cardinal point
       REAL(KIND(1d0)) :: Fup ! fraction of a person seen from down and up
@@ -214,6 +214,10 @@ CONTAINS
       ! svfveg: SVF based on vegetation blocking the sky (1 = no vegetation)
       svfveg = 1
 
+      ! TODO: what are these?
+      svfaveg = 1
+      buildings = 1
+
       tmp = 1 - (svf + svfveg - 1)
       WHERE (tmp <= 0) tmp = 0.000000001 ! avoiding log(0)
       svfalfa = ASIN(EXP(LOG(tmp)/2))
@@ -264,9 +268,9 @@ CONTAINS
 
          !Ground View Factors based on shadow patterns and sunlit walls
          gvf = 0.0D0
-         CALL wallinsun_veg(azimuth)
+         ! CALL wallinsun_veg(azimuth,sunwall)
          DO j = 1, SIZE(azimuthA)
-            CALL sunonsurface_veg(azimuthA(j), scale, first, second, psi)
+            CALL sunonsurface_veg(azimuthA(j), scale,buildings, first, second, psi, sos)
             gvf = gvf + sos
          END DO
          gvf = gvf/SIZE(azimuthA) + (buildings*(-1) + 1)
@@ -286,6 +290,7 @@ CONTAINS
                  + radG*alb_bldg*(1 - svf_blgd_veg)*(1 - F_sh))
 
          CALL Kside_veg_v24( &
+            shadow, F_sh,&
             radI, radG, radD, azimuth, altitude, psi, t, alb_ground, & ! input
             Keast, Knorth, Ksouth, Kwest) ! output
 
@@ -314,20 +319,23 @@ CONTAINS
          ! IF (firstdaytime == 1) THEN !"first in morning"
          !    Tgmap1 = Tgmap0
          ! END IF
-         IF (timeadd >= (59/1440.)) THEN !more or equal to 59 min
-            weight1 = EXP(-33.27*timeadd) !surface temperature delay function - 1 step
-            Tgmap1 = Tgmap0*(1 - weight1) + Tgmap1*weight1
-            Lup2d = SBC*emis_ground*((Tgmap1 + 273.15)**4)
-            IF (timestepdec > (59/1440.)) THEN
-               timeadd = timestepdec
-            ELSE
-               timeadd = 0
-            END IF
-         ELSE
-            timeadd = timeadd + timestepdec
-            weight1 = EXP(-33.27*timeadd) !surface temperature delay function - 1 step
-            Lup2d = SBC*emis_ground*((Tgmap0*(1 - weight1) + Tgmap1*weight1 + 273.15)**4)
-         END IF
+         ! IF (timeadd >= (59/1440.)) THEN !more or equal to 59 min
+         !    ! weight1 = EXP(-33.27*timeadd) !surface temperature delay function - 1 step
+         !    ! Tgmap1 = Tgmap0*(1 - weight1) + Tgmap1*weight1
+         !    ! Lup2d = SBC*emis_ground*((Tgmap1 + 273.15)**4)
+         !    timestepdec=tstep/(60*60*24)
+         !    IF (timestepdec > (59/1440.)) THEN
+         !       timeadd = timestepdec
+         !    ELSE
+         !       timeadd = 0
+         !    END IF
+         ! ELSE
+         !    timeadd = timeadd + timestepdec
+         ! END IF
+         timeadd=(dectime+1)-DOY-(it/24.)
+         weight1 = EXP(-33.27*timeadd) !surface temperature delay function - 1 step
+         Tgmap1 = Tgmap0*(1 - weight1) + Tgmap1*weight1
+         Lup2d = SBC*emis_ground*((Tgmap1 + 273.15)**4)
          ! firstdaytime = 0
 
       ELSE !!!!!!! NIGHTTIME !!!!!!!!
@@ -357,6 +365,9 @@ CONTAINS
 
          Tw = 0.0
          ! Tg = 0.0
+         radG=0
+         radI=0
+         radD=0
 
          !Nocturnal Kfluxes set to 0
          Kdown2d = 0.0
@@ -492,17 +503,26 @@ CONTAINS
    END FUNCTION hwToSVF_roof
 
    !>
-   SUBROUTINE clearnessindex_2013b(zen, jday, Ta, RH, radG, lat, P, I0, CI, Kt, I0et, CIuncorr)
+   SUBROUTINE clearnessindex_2013b(zen, DOY, Ta, RH, radG, lat, P_kPa, I0, CI, Kt, I0et, CIuncorr)
       !Last modified:
       !LJ 27 Jan 2016 - Removal of tabs
 
       IMPLICIT NONE
       ! Use somemodule
+      INTEGER, intent(in):: DOY
 
-      REAL(KIND(1d0))                 :: CI, CIuncorr, I0, I0et
+      REAL(KIND(1d0)), intent(in):: zen
+      REAL(KIND(1d0)), intent(in):: Ta
+      REAL(KIND(1d0)), intent(in):: RH
+      REAL(KIND(1d0)), intent(in):: P_kPa
+      REAL(KIND(1d0)), intent(in):: radG
+      REAL(KIND(1d0)), intent(in):: lat
+      REAL(KIND(1d0)), intent(out):: I0et
+      REAL(KIND(1d0)), intent(out):: CIuncorr
+      REAL(KIND(1d0)), intent(out):: CI
+      REAL(KIND(1d0)), intent(out):: I0
       REAL(KIND(1d0)), intent(out):: Kt
-      INTEGER                         :: jday
-      REAL(KIND(1d0))                 :: P, radG, RH, Ta, zen, lat, iG, Itoa
+      REAL(KIND(1d0)):: iG, Itoa,p
       REAL(KIND(1d0)), DIMENSION(4)   :: G
       REAL(KIND(1d0)), PARAMETER          :: pi = 3.141592653589793
 
@@ -522,52 +542,54 @@ CONTAINS
 
       ! Clearness Index at the Earth's surface calculated from Crawford and Duchon 1999
 
-      IF (P == -999) THEN
+      IF (P_kPa == -999) THEN
          p = 1013 !Pressure in millibars
       ELSE
-         p = P*10 !Convert from hPa to millibars
+         p = P_kPa*10 !Convert from hPa to millibars
       END IF
-      Itoa = 1370 !Effective solar constant
+      !Effective solar constant
+      Itoa = 1370
       !call solar_ESdist(jday,D)
-      CALL sun_distance(jday, D)
+      CALL sun_distance(DOY, D)
       !D=sun_distance(jday) !irradiance differences due to Sun-Earth distances
       m = 35.*COS(zen)*((1224.*(COS(zen)**2) + 1.)**(-1./2.)) !optical air mass at p=1013
       Trpg = 1.021 - 0.084*(m*(0.000949*p + 0.051))**0.5 !Transmission coefficient for Rayliegh scattering and permanent gases
 
       ! empirical constant depending on latitude
+      G = 0
       IF (lat < 10) THEN
-         G = (/3.37, 2.85, 2.80, 2.64/)
+         G = [3.37, 2.85, 2.80, 2.64]
       ELSE IF (lat >= 10 .AND. lat < 20) THEN
-         G = (/2.99, 3.02, 2.70, 2.93/)
+         G = [2.99, 3.02, 2.70, 2.93]
       ELSE IF (lat >= 20 .AND. lat < 30) THEN
-         G = (/3.60, 3.00, 2.98, 2.93/)
+         G = [3.60, 3.00, 2.98, 2.93]
       ELSE IF (lat >= 30 .AND. lat < 40) THEN
-         G = (/3.04, 3.11, 2.92, 2.94/)
+         G = [3.04, 3.11, 2.92, 2.94]
       ELSE IF (lat >= 40 .AND. lat < 50) THEN
-         G = (/2.70, 2.95, 2.77, 2.71/)
+         G = [2.70, 2.95, 2.77, 2.71]
       ELSE IF (lat >= 50 .AND. lat < 60) THEN
-         G = (/2.52, 3.07, 2.67, 2.93/)
+         G = [2.52, 3.07, 2.67, 2.93]
       ELSE IF (lat >= 60 .AND. lat < 70) THEN
-         G = (/1.76, 2.69, 2.61, 2.61/)
+         G = [1.76, 2.69, 2.61, 2.61]
       ELSE IF (lat >= 70 .AND. lat < 80) THEN
-         G = (/1.60, 1.67, 2.24, 2.63/)
+         G = [1.60, 1.67, 2.24, 2.63]
       ELSE IF (lat >= 80 .AND. lat < 90) THEN
-         G = (/1.11, 1.44, 1.94, 2.02/)
+         G = [1.11, 1.44, 1.94, 2.02]
       END IF
-      IF (jday > 335 .OR. jday <= 60) THEN
+      IF (DOY > 335 .OR. DOY <= 60) THEN
          iG = G(1)
-      ELSE IF (jday > 60 .AND. jday <= 152) THEN
+      ELSE IF (DOY > 60 .AND. DOY <= 152) THEN
          iG = G(2)
-      ELSE IF (jday > 152 .AND. jday <= 244) THEN
+      ELSE IF (DOY > 152 .AND. DOY <= 244) THEN
          iG = G(3)
-      ELSE IF (jday > 244 .AND. jday <= 335) THEN
+      ELSE IF (DOY > 244 .AND. DOY <= 335) THEN
          iG = G(4)
       END IF
       !dewpoint calculation
       a2 = 17.27
       b2 = 237.7
       Td = (b2*(((a2*Ta)/(b2 + Ta)) + LOG(RH)))/(a2 - (((a2*Ta)/(b2 + Ta)) + LOG(RH)))
-      Td = (Td*1.8) + 32 !Dewpoint (�F)
+      Td = (Td*1.8) + 32 !Dewpoint (degF)
       u = EXP(0.1133 - LOG(iG + 1) + 0.0393*Td) !Precipitable water
       Tw = 1 - 0.077*((u*m)**0.3) !Transmission coefficient for water vapor
       Tar = 0.935**m !Transmission coefficient for aerosols
@@ -697,7 +719,11 @@ CONTAINS
    SUBROUTINE diffusefraction(radG, altitude, Kt, Ta, RH, radI, radD)
       IMPLICIT NONE
 
-      REAL(KIND(1d0)), intent(in) :: radG, altitude, Kt, Ta, RH
+      REAL(KIND(1d0)), intent(in) :: radG
+      REAL(KIND(1d0)), intent(in) ::altitude
+      REAL(KIND(1d0)), intent(in) :: Kt
+      REAL(KIND(1d0)), intent(in) :: Ta
+      REAL(KIND(1d0)), intent(in) :: RH
       REAL(KIND(1d0)), intent(out)::radD ! direct radiation
       REAL(KIND(1d0)), intent(out)::radI ! diffusive radiation
       REAL(KIND(1d0))::alfa
@@ -723,20 +749,28 @@ CONTAINS
             radD = radG*(0.426*Kt - 0.256*SIN(alfa) + 0.00349*Ta + 0.0734*(RH/100))
          END IF
       END IF
+      ! correction of radD
+      radD=max(0.d0,radD)
+      radD=min(radG,radD)
+
+      ! calculation of diffuse radiation
       radI = (radG - radD)/(SIN(alfa))
 
       !! Corrections for low sun altitudes (20130307)
-      IF (radI < 0) THEN
-         radI = 0
-      END IF
+      ! IF (radI < 0) THEN
+      !    radI = 0
+      ! END IF
+      ! IF (radD < 0) THEN
+      !    radD = 0
+      ! END IF
 
       IF (altitude < 1 .AND. radI > radG) THEN
          radI = radG
       END IF
 
-      IF (radD > radG) THEN
-         radD = radG
-      END IF
+      ! IF (radD > radG) THEN
+      !    radD = radG
+      ! END IF
    END SUBROUTINE diffusefraction
    ! This subroutine loads a ESRIACSII grid as a 2D array
    ! Last modified:
@@ -945,9 +979,9 @@ CONTAINS
 
 ! !!! Loading/creating SVFs !!!
 !       Path = TRIM(FileInputPath)//TRIM(SVFPath)//TRIM(SVFsuffix)
-!       svfname = (/'svf.asc ', 'svfE.asc', 'svfN.asc', 'svfW.asc', 'svfS.asc'/)
-!       svfvegname = (/'svfveg.asc  ', 'svfEveg.asc ', 'svfNveg.asc ', 'svfWveg.asc ', 'svfSveg.asc ', &
-!                      'svfaveg.asc ', 'svfEaveg.asc', 'svfNaveg.asc', 'svfWaveg.asc', 'svfSaveg.asc'/)
+!       svfname = ['svf.asc ', 'svfE.asc', 'svfN.asc', 'svfW.asc', 'svfS.asc']
+!       svfvegname = ['svfveg.asc  ', 'svfEveg.asc ', 'svfNveg.asc ', 'svfWveg.asc ', 'svfSveg.asc ', &
+!                      'svfaveg.asc ', 'svfEaveg.asc', 'svfNaveg.asc', 'svfWaveg.asc', 'svfSaveg.asc']
 !       ! SVFs, Should be done as a loop... ! How to change variable in a loop???
 !       CALL LoadEsriAsciiGrid(Path, svfname(1), xllcorner, yllcorner, cellsize, NoData)
 !       ALLOCATE (svf(sizey, sizex)); svf = tempgrid; DEALLOCATE (tempgrid)
@@ -1008,6 +1042,7 @@ CONTAINS
 !    END SUBROUTINE SOLWEIG_Initial
 
    SUBROUTINE Kside_veg_v24( &
+      shadow, F_sh,&
       radI, radG, radD, azimuth, altitude, psi, t, albedo, & ! input
       Keast, Knorth, Ksouth, Kwest) ! output
 
@@ -1023,11 +1058,11 @@ CONTAINS
       REAL(KIND(1D0)), intent(in)::t
       REAL(KIND(1D0)), intent(in)::albedo
 
+      REAL(KIND(1d0)), DIMENSION(sizey, sizex), intent(in)  :: shadow, F_sh
       REAL(KIND(1d0)), DIMENSION(sizey, sizex), intent(out)  :: Keast, Knorth, Ksouth, Kwest
 
       REAL(KIND(1D0)) :: vikttot, aziE, aziN, aziS, aziW
       REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: viktveg, viktwall
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: shadow, F_sh
 
       ! assuming the following SVF to ONE
       REAL(KIND(1d0)), DIMENSION(sizey, sizex), parameter  :: svfE = 1
@@ -1208,7 +1243,8 @@ CONTAINS
       END IF
 
       !! Least
-      CALL Lvikt_veg(svfE, svfEveg, svfEaveg, vikttot, viktveg, viktsky, viktrefl)
+      CALL Lvikt_veg(svfE, svfEveg, svfEaveg, vikttot,&
+       viktveg, viktsky, viktrefl,viktwall)
 
       IF (altitude > 0) THEN ! daytime
          alfaB = ATAN(svfalfaE)
@@ -1233,7 +1269,8 @@ CONTAINS
       Least = Lsky + Lwallsun + Lwallsh + Lveg + Lground + Lrefl
 
       !! Lsouth
-      CALL Lvikt_veg(svfS, svfSveg, svfSaveg, vikttot, viktveg, viktsky, viktrefl)
+      CALL Lvikt_veg(svfS, svfSveg, svfSaveg, vikttot,&
+       viktveg, viktsky, viktrefl,viktwall)
 
       IF (altitude > 0) THEN ! daytime
          alfaB = ATAN(svfalfaS)
@@ -1258,7 +1295,8 @@ CONTAINS
       Lsouth = Lsky + Lwallsun + Lwallsh + Lveg + Lground + Lrefl
 
       !! Lwest
-      CALL Lvikt_veg(svfW, svfWveg, svfWaveg, vikttot, viktveg, viktsky, viktrefl)
+      CALL Lvikt_veg(svfW, svfWveg, svfWaveg, vikttot,&
+       viktveg, viktsky, viktrefl,viktwall)
 
       IF (altitude > 0) THEN ! daytime
          alfaB = ATAN(svfalfaW)
@@ -1283,7 +1321,8 @@ CONTAINS
       Lwest = Lsky + Lwallsun + Lwallsh + Lveg + Lground + Lrefl
 
       !! Lnorth
-      CALL Lvikt_veg(svfN, svfNveg, svfNaveg, vikttot, viktveg, viktsky, viktrefl)
+      CALL Lvikt_veg(svfN, svfNveg, svfNaveg, vikttot, &
+      viktveg, viktsky, viktrefl,viktwall)
 
       IF (altitude > 0) THEN ! daytime
          alfaB = ATAN(svfalfaN)
@@ -1328,7 +1367,7 @@ CONTAINS
    END SUBROUTINE Lside_veg_v2
 
    SUBROUTINE Lvikt_veg(isvf, isvfveg, isvfaveg, vikttot, & ! input
-                        viktveg, viktsky, viktrefl) !output
+                        viktveg, viktsky, viktrefl,viktwall) !output
 
       IMPLICIT NONE
       REAL(KIND(1D0)), intent(in):: vikttot
@@ -1338,10 +1377,10 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(sizey, sizex), intent(out)  :: viktveg
       REAL(KIND(1d0)), DIMENSION(sizey, sizex), intent(out)  ::viktsky
       REAL(KIND(1d0)), DIMENSION(sizey, sizex), intent(out)  :: viktrefl
+      real(kind(1d0)), dimension(sizey, sizex), intent(out)  :: viktwall
 
       REAL(KIND(1d0)), DIMENSION(sizey, sizex) :: viktonlywall
       REAL(KIND(1d0)), DIMENSION(sizey, sizex) :: viktaveg
-      real(kind(1d0)), dimension(sizey, sizex) :: viktwall
       REAL(KIND(1d0)), DIMENSION(sizey, sizex) :: svfvegbu
 
       !allocate(svfalfaE(sizex,sizey))
@@ -1598,245 +1637,254 @@ CONTAINS
    ! Shadow casting algorithm, vegetation           !
    !------------------------------------------------!
 
-   SUBROUTINE shadowingfunction_veg(azimuth, altitude, scale, amaxvalue)
+   ! SUBROUTINE shadowingfunction_veg(azimuth, altitude, scale, amaxvalue)
 
-      ! This m.file calculates shadows on a DSM and for vegetation units
-      ! This code is translated from Matlab by Fredrik Lindberg, Gothenburg University
+   !    ! This m.file calculates shadows on a DSM and for vegetation units
+   !    ! This code is translated from Matlab by Fredrik Lindberg, Gothenburg University
 
-      IMPLICIT NONE
-      REAL(KIND(1d0)), PARAMETER          :: pi = 3.141592653589793
-      REAL(KIND(1d0)), PARAMETER          :: maxpos = 10000000000.0
-      REAL(KIND(1d0))                     :: degrees, azi, alt, dx, dy, dz, ds, absdx, absdy, azimuth, altitude
-      REAL(KIND(1d0))                     :: amaxvalue, pibyfour, threetimespibyfour, fivetimespibyfour
-      REAL(KIND(1d0))                     :: seventimespibyfour, sinazimuth, cosazimuth, tanazimuth
-      REAL(KIND(1d0))                     :: signsinazimuth, signcosazimuth, dssin, dscos, tanaltitudebyscale, scale
-      INTEGER                             :: index, xc1, xc2, yc1, yc2, xp1, xp2, yp1, yp2!,test!,row,col !,sizex,sizey
-      ! Internal grids
-      REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :) :: f, temp, tmp, stopbuild, stopveg, g, bushplant, tempvegdem, tempvegdem2
-      REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :) :: fabovea, gabovea, tempbush, firstvegdem, vegsh2
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: bush, vegdem, vegdem2
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: a, sh, vbshvegsh, vegsh
+   !    IMPLICIT NONE
+   !    REAL(KIND(1d0)), PARAMETER          :: pi = 3.141592653589793
+   !    REAL(KIND(1d0)), PARAMETER          :: maxpos = 10000000000.0
+   !    REAL(KIND(1d0))                     :: degrees, azi, alt, dx, dy, dz, ds, absdx, absdy, azimuth, altitude
+   !    REAL(KIND(1d0))                     :: amaxvalue, pibyfour, threetimespibyfour, fivetimespibyfour
+   !    REAL(KIND(1d0))                     :: seventimespibyfour, sinazimuth, cosazimuth, tanazimuth
+   !    REAL(KIND(1d0))                     :: signsinazimuth, signcosazimuth, dssin, dscos, tanaltitudebyscale, scale
+   !    INTEGER                             :: index, xc1, xc2, yc1, yc2, xp1, xp2, yp1, yp2!,test!,row,col !,sizex,sizey
+   !    ! Internal grids
+   !    REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :) :: f, temp, tmp, stopbuild, stopveg, g, bushplant, tempvegdem, tempvegdem2
+   !    REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :) :: fabovea, gabovea, tempbush, firstvegdem, vegsh2
+   !    REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: bush, vegdem, vegdem2
+   !    REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: a, sh, vbshvegsh, vegsh
 
-      !real                                                                 :: start_time,end_time
+   !    !real                                                                 :: start_time,end_time
 
-      !special case
-      IF (altitude == 90) THEN
-         altitude = altitude - 0.0001
-      END IF
-      IF (azimuth == 0) THEN
-         azimuth = azimuth - 0.0001
-      END IF
+   !    !special case
+   !    IF (altitude == 90) THEN
+   !       altitude = altitude - 0.0001
+   !    END IF
+   !    IF (azimuth == 0) THEN
+   !       azimuth = azimuth - 0.0001
+   !    END IF
 
-      ! conversion
-      degrees = pi/180;
-      azi = azimuth*degrees;
-      alt = altitude*degrees;
-      ! IF (ALLOCATED(sh)) DEALLOCATE (sh)
-      ! ALLOCATE (sh(sizex, sizey))
-      ! IF (ALLOCATED(vegsh)) DEALLOCATE (vegsh)
-      ! ALLOCATE (vegsh(sizex, sizey))
-      ! IF (ALLOCATED(vbshvegsh)) DEALLOCATE (vbshvegsh)
-      ! ALLOCATE (vbshvegsh(sizex, sizey))
+   !    ! conversion
+   !    degrees = pi/180;
+   !    azi = azimuth*degrees;
+   !    alt = altitude*degrees;
+   !    ! IF (ALLOCATED(sh)) DEALLOCATE (sh)
+   !    ! ALLOCATE (sh(sizex, sizey))
+   !    ! IF (ALLOCATED(vegsh)) DEALLOCATE (vegsh)
+   !    ! ALLOCATE (vegsh(sizex, sizey))
+   !    ! IF (ALLOCATED(vbshvegsh)) DEALLOCATE (vbshvegsh)
+   !    ! ALLOCATE (vbshvegsh(sizex, sizey))
 
-      ! allocation of grids
-      ALLOCATE (f(sizex, sizey))
-      ALLOCATE (temp(sizex, sizey))
-      ALLOCATE (tmp(sizex, sizey))
-      ALLOCATE (stopbuild(sizex, sizey))
-      ALLOCATE (stopveg(sizex, sizey))
-      ALLOCATE (g(sizex, sizey))
-      ALLOCATE (bushplant(sizex, sizey))
-      ALLOCATE (tempvegdem(sizex, sizey))
-      ALLOCATE (tempvegdem2(sizex, sizey))
-      ALLOCATE (fabovea(sizex, sizey))
-      ALLOCATE (gabovea(sizex, sizey))
-      ALLOCATE (firstvegdem(sizex, sizey))
-      ALLOCATE (tempbush(sizex, sizey))
-      ALLOCATE (vegsh2(sizex, sizey))
+   !    ! allocation of grids
+   !    ALLOCATE (f(sizex, sizey))
+   !    ALLOCATE (temp(sizex, sizey))
+   !    ALLOCATE (tmp(sizex, sizey))
+   !    ALLOCATE (stopbuild(sizex, sizey))
+   !    ALLOCATE (stopveg(sizex, sizey))
+   !    ALLOCATE (g(sizex, sizey))
+   !    ALLOCATE (bushplant(sizex, sizey))
+   !    ALLOCATE (tempvegdem(sizex, sizey))
+   !    ALLOCATE (tempvegdem2(sizex, sizey))
+   !    ALLOCATE (fabovea(sizex, sizey))
+   !    ALLOCATE (gabovea(sizex, sizey))
+   !    ALLOCATE (firstvegdem(sizex, sizey))
+   !    ALLOCATE (tempbush(sizex, sizey))
+   !    ALLOCATE (vegsh2(sizex, sizey))
 
-      ! initialise parameters
-      f = a
-      dx = 0
-      dy = 0
-      dz = 0
-      temp = a*0.0
-      sh = temp
-      vegsh = sh
-      stopbuild = sh
-      stopveg = sh
-      vbshvegsh = sh
-      g = sh
-      bushplant = temp
-      WHERE (bush > 1)
-      bushplant = 1
-      END WHERE
+   !    ! initialise parameters
+   !    f = a
+   !    dx = 0
+   !    dy = 0
+   !    dz = 0
+   !    temp = a*0.0
+   !    sh = temp
+   !    vegsh = sh
+   !    stopbuild = sh
+   !    stopveg = sh
+   !    vbshvegsh = sh
+   !    g = sh
+   !    bushplant = temp
+   !    WHERE (bush > 1)
+   !    bushplant = 1
+   !    END WHERE
 
-      index = 1
-      !test=0
-      ! other loop parameters
-      !amaxvalue=maxval(a)
-      pibyfour = pi/4.
-      threetimespibyfour = 3.*pibyfour;
-      fivetimespibyfour = 5.*pibyfour;
-      seventimespibyfour = 7.*pibyfour;
-      sinazimuth = SIN(azi);
-      cosazimuth = COS(azi);
-      tanazimuth = TAN(azi);
-      CALL issign(sinazimuth, maxpos, signsinazimuth)
-      CALL issign(cosazimuth, maxpos, signcosazimuth)
-      !signsinazimuth=sinazimuth/abs(sinazimuth);
-      !signcosazimuth=cosazimuth/abs(cosazimuth);
-      dssin = ABS(1./sinazimuth);
-      dscos = ABS(1./cosazimuth);
-      tanaltitudebyscale = TAN(alt)/scale;
-      DO WHILE (amaxvalue >= dz .AND. ABS(dx) <= sizex .AND. ABS(dy) <= sizey)
+   !    index = 1
+   !    !test=0
+   !    ! other loop parameters
+   !    !amaxvalue=maxval(a)
+   !    pibyfour = pi/4.
+   !    threetimespibyfour = 3.*pibyfour;
+   !    fivetimespibyfour = 5.*pibyfour;
+   !    seventimespibyfour = 7.*pibyfour;
+   !    sinazimuth = SIN(azi);
+   !    cosazimuth = COS(azi);
+   !    tanazimuth = TAN(azi);
+   !    CALL issign(sinazimuth, maxpos, signsinazimuth)
+   !    CALL issign(cosazimuth, maxpos, signcosazimuth)
+   !    !signsinazimuth=sinazimuth/abs(sinazimuth);
+   !    !signcosazimuth=cosazimuth/abs(cosazimuth);
+   !    dssin = ABS(1./sinazimuth);
+   !    dscos = ABS(1./cosazimuth);
+   !    tanaltitudebyscale = TAN(alt)/scale;
+   !    DO WHILE (amaxvalue >= dz .AND. ABS(dx) <= sizex .AND. ABS(dy) <= sizey)
 
-         IF ((pibyfour <= azi .AND. azi < threetimespibyfour) .OR. (fivetimespibyfour <= azi .AND. azi < seventimespibyfour)) THEN
-            dy = signsinazimuth*index
-            dx = -1.*signcosazimuth*ABS(NINT(index/tanazimuth))
-            ds = dssin
-         ELSE
-            dy = signsinazimuth*ABS(NINT(index*tanazimuth))
-            dx = -1.*signcosazimuth*index
-            ds = dscos
-         END IF
+   !       IF ((pibyfour <= azi .AND. azi < threetimespibyfour) .OR. (fivetimespibyfour <= azi .AND. azi < seventimespibyfour)) THEN
+   !          dy = signsinazimuth*index
+   !          dx = -1.*signcosazimuth*ABS(NINT(index/tanazimuth))
+   !          ds = dssin
+   !       ELSE
+   !          dy = signsinazimuth*ABS(NINT(index*tanazimuth))
+   !          dx = -1.*signcosazimuth*index
+   !          ds = dscos
+   !       END IF
 
-         dz = ds*index*tanaltitudebyscale
-         temp = temp*0
-         tempvegdem = temp
-         tempvegdem2 = temp
+   !       dz = ds*index*tanaltitudebyscale
+   !       temp = temp*0
+   !       tempvegdem = temp
+   !       tempvegdem2 = temp
 
-         absdx = ABS(dx)
-         absdy = ABS(dy)
+   !       absdx = ABS(dx)
+   !       absdy = ABS(dy)
 
-         xc1 = INT(((dx + absdx)/2)) + 1
-         xc2 = (sizex + INT((dx - absdx)/2))
-         yc1 = INT((dy + absdy)/2) + 1
-         yc2 = (sizey + INT((dy - absdy)/2))
-         xp1 = -INT((dx - absdx)/2) + 1
-         xp2 = (sizex - INT((dx + absdx)/2))
-         yp1 = -INT((dy - absdy)/2) + 1
-         yp2 = (sizey - INT((dy + absdy)/2))
+   !       xc1 = INT(((dx + absdx)/2)) + 1
+   !       xc2 = (sizex + INT((dx - absdx)/2))
+   !       yc1 = INT((dy + absdy)/2) + 1
+   !       yc2 = (sizey + INT((dy - absdy)/2))
+   !       xp1 = -INT((dx - absdx)/2) + 1
+   !       xp2 = (sizex - INT((dx + absdx)/2))
+   !       yp1 = -INT((dy - absdy)/2) + 1
+   !       yp2 = (sizey - INT((dy + absdy)/2))
 
-         temp(xp1:xp2, yp1:yp2) = a(xc1:xc2, yc1:yc2) - dz
-         tempvegdem(xp1:xp2, yp1:yp2) = vegdem(xc1:xc2, yc1:yc2) - dz
-         tempvegdem2(xp1:xp2, yp1:yp2) = vegdem2(xc1:xc2, yc1:yc2) - dz
+   !       temp(xp1:xp2, yp1:yp2) = a(xc1:xc2, yc1:yc2) - dz
+   !       tempvegdem(xp1:xp2, yp1:yp2) = vegdem(xc1:xc2, yc1:yc2) - dz
+   !       tempvegdem2(xp1:xp2, yp1:yp2) = vegdem2(xc1:xc2, yc1:yc2) - dz
 
-         f = MAX(f, temp)
-         WHERE (f > a) !sh(f>a)=1;sh(f<=a)=0; !Moving building shadow
-         sh = 1
-         ELSEWHERE
-         sh = 0
-         END WHERE
-         WHERE (tempvegdem > a) !fabovea=tempvegdem>a; !vegdem above DEM
-         fabovea = 1
-         ELSEWHERE
-         fabovea = 0
-         END WHERE
-         WHERE (tempvegdem2 > a) !gabovea=tempvegdem2>a; !vegdem2 above DEM
-         gabovea = 1
-         ELSEWHERE
-         gabovea = 0
-         END WHERE
-         vegsh2 = fabovea - gabovea
-         vegsh = MAX(vegsh, vegsh2)
-         WHERE ((vegsh*sh) > 0) !vegsh(vegsh.*sh>0)=0;! removing shadows 'behind' buildings
-         vegsh = 0
-         END WHERE
-         vbshvegsh = vegsh + vbshvegsh
+   !       f = MAX(f, temp)
+   !       WHERE (f > a) !sh(f>a)=1;sh(f<=a)=0; !Moving building shadow
+   !       sh = 1
+   !       ELSEWHERE
+   !       sh = 0
+   !       END WHERE
+   !       WHERE (tempvegdem > a) !fabovea=tempvegdem>a; !vegdem above DEM
+   !       fabovea = 1
+   !       ELSEWHERE
+   !       fabovea = 0
+   !       END WHERE
+   !       WHERE (tempvegdem2 > a) !gabovea=tempvegdem2>a; !vegdem2 above DEM
+   !       gabovea = 1
+   !       ELSEWHERE
+   !       gabovea = 0
+   !       END WHERE
+   !       vegsh2 = fabovea - gabovea
+   !       vegsh = MAX(vegsh, vegsh2)
+   !       WHERE ((vegsh*sh) > 0) !vegsh(vegsh.*sh>0)=0;! removing shadows 'behind' buildings
+   !       vegsh = 0
+   !       END WHERE
+   !       vbshvegsh = vegsh + vbshvegsh
 
-         ! vegsh at high sun altitudes
-         IF (index == 1) THEN
-            firstvegdem = tempvegdem - temp
-            WHERE (firstvegdem <= 0)!firstvegdem(firstvegdem<=0)=1000;
-            firstvegdem = 1000
-            END WHERE
-            WHERE (firstvegdem < dz)!vegsh(firstvegdem<dz)=1;
-            vegsh = 1
-            END WHERE
-            tmp = temp*0.0
-            WHERE (vegdem2 > a)!vegsh=vegsh.*(vegdem2>a);
-            tmp = 1
-            END WHERE
-            vegsh = vegsh*tmp
-            vbshvegsh = temp*0.0 !vbshvegsh=zeros(sizex,sizey);
-         END IF
+   !       ! vegsh at high sun altitudes
+   !       IF (index == 1) THEN
+   !          firstvegdem = tempvegdem - temp
+   !          WHERE (firstvegdem <= 0)!firstvegdem(firstvegdem<=0)=1000;
+   !          firstvegdem = 1000
+   !          END WHERE
+   !          WHERE (firstvegdem < dz)!vegsh(firstvegdem<dz)=1;
+   !          vegsh = 1
+   !          END WHERE
+   !          tmp = temp*0.0
+   !          WHERE (vegdem2 > a)!vegsh=vegsh.*(vegdem2>a);
+   !          tmp = 1
+   !          END WHERE
+   !          vegsh = vegsh*tmp
+   !          vbshvegsh = temp*0.0 !vbshvegsh=zeros(sizex,sizey);
+   !       END IF
 
-         ! Bush shadow on bush plant
-         tmp = fabovea*bush
-         IF ((MAXVAL(bush) > 0) .AND. (MAXVAL(tmp) > 0)) THEN
-            tempbush = temp*0.0
-            tempbush(xp1:xp2, yp1:yp2) = bush(xc1:xc2, yc1:yc2) - dz
-            g = MAX(g, tempbush)
-            g = bushplant*g
-         END IF
+   !       ! Bush shadow on bush plant
+   !       tmp = fabovea*bush
+   !       IF ((MAXVAL(bush) > 0) .AND. (MAXVAL(tmp) > 0)) THEN
+   !          tempbush = temp*0.0
+   !          tempbush(xp1:xp2, yp1:yp2) = bush(xc1:xc2, yc1:yc2) - dz
+   !          g = MAX(g, tempbush)
+   !          g = bushplant*g
+   !       END IF
 
-         index = index + 1
-      END DO
+   !       index = index + 1
+   !    END DO
 
-      sh = 1 - sh
-      WHERE (vbshvegsh > 0)!vbshvegsh(vbshvegsh>0)=1;
-      vbshvegsh = 1
-      END WHERE
-      vbshvegsh = vbshvegsh - vegsh;
-      IF (MAXVAL(bush) > 0) THEN
-         g = g - bush
-         WHERE (g > 0)!g(g>0)=1;g(g<0)=0;
-         g = 1
-         ELSEWHERE
-         g = 0
-         END WHERE
-         vegsh = vegsh - bushplant + g
-         WHERE (vegsh < 0)!vegsh(vegsh<0)=0;
-         vegsh = 0
-         END WHERE
-      END IF
+   !    sh = 1 - sh
+   !    WHERE (vbshvegsh > 0)!vbshvegsh(vbshvegsh>0)=1;
+   !    vbshvegsh = 1
+   !    END WHERE
+   !    vbshvegsh = vbshvegsh - vegsh;
+   !    IF (MAXVAL(bush) > 0) THEN
+   !       g = g - bush
+   !       WHERE (g > 0)!g(g>0)=1;g(g<0)=0;
+   !       g = 1
+   !       ELSEWHERE
+   !       g = 0
+   !       END WHERE
+   !       vegsh = vegsh - bushplant + g
+   !       WHERE (vegsh < 0)!vegsh(vegsh<0)=0;
+   !       vegsh = 0
+   !       END WHERE
+   !    END IF
 
-      WHERE (vegsh > 0)!vegsh(vegsh>0)=1;
-      vegsh = 1
-      END WHERE
-      vegsh = 1 - vegsh
-      vbshvegsh = 1 - vbshvegsh
+   !    WHERE (vegsh > 0)!vegsh(vegsh>0)=1;
+   !    vegsh = 1
+   !    END WHERE
+   !    vegsh = 1 - vegsh
+   !    vbshvegsh = 1 - vbshvegsh
 
-      !deallocation of grids
-      DEALLOCATE (f)
-      DEALLOCATE (temp)
-      DEALLOCATE (tmp)
-      DEALLOCATE (stopbuild)
-      DEALLOCATE (stopveg)
-      DEALLOCATE (g)
-      DEALLOCATE (bushplant)
-      DEALLOCATE (tempvegdem)
-      DEALLOCATE (tempvegdem2)
-      DEALLOCATE (fabovea)
-      DEALLOCATE (gabovea)
-      DEALLOCATE (firstvegdem)
-      DEALLOCATE (tempbush)
-      DEALLOCATE (vegsh2)
+   !    !deallocation of grids
+   !    DEALLOCATE (f)
+   !    DEALLOCATE (temp)
+   !    DEALLOCATE (tmp)
+   !    DEALLOCATE (stopbuild)
+   !    DEALLOCATE (stopveg)
+   !    DEALLOCATE (g)
+   !    DEALLOCATE (bushplant)
+   !    DEALLOCATE (tempvegdem)
+   !    DEALLOCATE (tempvegdem2)
+   !    DEALLOCATE (fabovea)
+   !    DEALLOCATE (gabovea)
+   !    DEALLOCATE (firstvegdem)
+   !    DEALLOCATE (tempbush)
+   !    DEALLOCATE (vegsh2)
 
-   END SUBROUTINE shadowingfunction_veg
+   ! END SUBROUTINE shadowingfunction_veg
 
-   SUBROUTINE sunonsurface_veg(iazimuthA, scale, first, second, psi)
+   SUBROUTINE sunonsurface_veg(iazimuthA, scale,buildings, first, second, psi, sos)
       ! This m-file creates a boolean image of sunlit walls.
       ! Shadows from both buildings and vegetation is accounted for
       ! moving building in the direction of the sun
       ! Last modified:
       ! LJ 27 Jan 2016 - Removal of tabs and fixing real-int conversions
       IMPLICIT NONE
-      REAL(KIND(1d0))             :: iazimuthA, iazimuth, sinazimuth, cosazimuth, tanazimuth
-      REAL(KIND(1d0))             :: scale
-      INTEGER                     :: index, xc1, xc2, yc1, yc2, xp1, xp2, yp1, yp2, n, first, second
-      REAL(KIND(1d0))             :: dx, dy, ds, absdx, absdy, psi !,dz
+
+      INTEGER::first, second
+
+      REAL(KIND(1d0)) ,intent(in)::iazimuthA
+      REAL(KIND(1d0)) ,intent(in)::scale
+      REAL(KIND(1d0)) ,intent(in)::psi
+
+      REAL(KIND(1d0)), DIMENSION(sizey, sizex),intent(in)  :: buildings
+      REAL(KIND(1d0)), DIMENSION(sizey, sizex),intent(out)::sos
+
+      REAL(KIND(1d0)), DIMENSION(sizey, sizex):: sunwall
+
+      REAL(KIND(1d0)), DIMENSION(sizey, sizex):: sh, vegsh
+
+      REAL(KIND(1d0))             :: iazimuth, sinazimuth, cosazimuth, tanazimuth
+      INTEGER                     :: index, xc1, xc2, yc1, yc2, xp1, xp2, yp1, yp2, n
+      REAL(KIND(1d0))             :: dx, dy, ds, absdx, absdy !,dz
       REAL(KIND(1d0))             :: pibyfour, threetimespibyfour, fivetimespibyfour
       REAL(KIND(1d0))             :: seventimespibyfour
       REAL(KIND(1d0))             :: signsinazimuth, signcosazimuth, dssin, dscos
       REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :)  ::weightsumwall, weightsumsh, gvf1, gvf2
       REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :)  ::f, tempsh, tempbu, tempbub, tempwallsun, tempb, sh1
 
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: sos
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: sunwall
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: sh, vegsh
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: buildings
 
       REAL(KIND(1d0)), PARAMETER  :: pi = 3.141592653589793
       REAL(KIND(1d0)), PARAMETER  :: maxpos = 10000000000.0
@@ -1861,6 +1909,13 @@ CONTAINS
       ! loop parameters
       index = 0
       f = buildings
+
+      ! TODO: what are these:
+      sh=1
+      vegsh=1
+      sunwall=0
+
+
       sh1 = sh - (1 - vegsh)*(1 - psi)
       dx = 0
       dy = 0
@@ -1964,111 +2019,113 @@ CONTAINS
    END SUBROUTINE sunonsurface_veg
 
    !>
-   SUBROUTINE wallinsun_veg(azimuth)
-      ! This m-file creates a boolean image of sunlit walls.
-      ! Shadows from both buildings and vegetation is accounted for
-      ! moving building in the direction of the sun
-      ! Last modified:
-      !  LJ 27 Jan 2017 - Change of equations xc1...yp2 to account for the change from real to integer
-      !---------------------------------------------------------------------------------
+   ! SUBROUTINE wallinsun_veg(azimuth,sunwall)
+   !    ! This m-file creates a boolean image of sunlit walls.
+   !    ! Shadows from both buildings and vegetation is accounted for
+   !    ! moving building in the direction of the sun
+   !    ! Last modified:
+   !    !  LJ 27 Jan 2017 - Change of equations xc1...yp2 to account for the change from real to integer
+   !    !---------------------------------------------------------------------------------
 
-      IMPLICIT NONE
-      REAL(KIND(1d0))             :: azimuth, iazimuth
-      INTEGER                     :: index, xc1, xc2, yc1, yc2, xp1, xp2, yp1, yp2
-      REAL(KIND(1d0))             :: dx, dy, dz, ds, absdx, absdy
-      REAL(KIND(1d0))             :: pibyfour, threetimespibyfour, fivetimespibyfour
-      REAL(KIND(1d0))             :: seventimespibyfour, sinazimuth, cosazimuth, tanazimuth
-      REAL(KIND(1d0))             :: signsinazimuth, signcosazimuth, dssin, dscos, azi
-      REAL(KIND(1d0)), PARAMETER  :: pi = 3.141592653589793
-      REAL(KIND(1d0)), PARAMETER  :: maxpos = 10000000000.0
-      ! Internal grids
-      REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :) :: temp, sh1
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: sunwall
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: sh, vegsh
-      REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: buildings
+   !    IMPLICIT NONE
+   !    REAL(KIND(1d0)) ,intent(in)            :: azimuth
+   !    REAL(KIND(1d0)), DIMENSION(sizey, sizex),intent(out)  :: sunwall
 
-      ALLOCATE (temp(sizex, sizey))
-      ALLOCATE (sh1(sizex, sizey))
-      !allocate(vegsh(sizex,sizey))
-      !allocate(a(sizex,sizey))
-      !allocate(buildings(sizex,sizey))
+   !    REAL(KIND(1d0))             ::iazimuth
+   !    INTEGER                     :: index, xc1, xc2, yc1, yc2, xp1, xp2, yp1, yp2
+   !    REAL(KIND(1d0))             :: dx, dy, dz, ds, absdx, absdy
+   !    REAL(KIND(1d0))             :: pibyfour, threetimespibyfour, fivetimespibyfour
+   !    REAL(KIND(1d0))             :: seventimespibyfour, sinazimuth, cosazimuth, tanazimuth
+   !    REAL(KIND(1d0))             :: signsinazimuth, signcosazimuth, dssin, dscos, azi
+   !    REAL(KIND(1d0)), PARAMETER  :: pi = 3.141592653589793
+   !    REAL(KIND(1d0)), PARAMETER  :: maxpos = 10000000000.0
+   !    ! Internal grids
+   !    REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :) :: temp, sh1
+   !    REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: sh, vegsh
+   !    REAL(KIND(1d0)), DIMENSION(sizey, sizex)  :: buildings
 
-      ! IF (ALLOCATED(sunwall)) DEALLOCATE (sunwall); ALLOCATE (sunwall(sizey, sizex))
+   !    ALLOCATE (temp(sizex, sizey))
+   !    ALLOCATE (sh1(sizex, sizey))
+   !    !allocate(vegsh(sizex,sizey))
+   !    !allocate(a(sizex,sizey))
+   !    !allocate(buildings(sizex,sizey))
 
-      iazimuth = azimuth + 180
-      IF (iazimuth >= 360) THEN
-         iazimuth = iazimuth - 360
-      END IF
-      !special cases
-      IF (iazimuth == 0) THEN
-         iazimuth = iazimuth + 0.00001
-      END IF
-      ! conversion into radians
-      azi = iazimuth*(pi/180)
+   !    ! IF (ALLOCATED(sunwall)) DEALLOCATE (sunwall); ALLOCATE (sunwall(sizey, sizex))
 
-      index = 1
-      dx = 0.
-      dy = 0.
-      dz = 0.
-      ds = 0.
+   !    iazimuth = azimuth + 180
+   !    IF (iazimuth >= 360) THEN
+   !       iazimuth = iazimuth - 360
+   !    END IF
+   !    !special cases
+   !    IF (iazimuth == 0) THEN
+   !       iazimuth = iazimuth + 0.00001
+   !    END IF
+   !    ! conversion into radians
+   !    azi = iazimuth*(pi/180)
 
-      temp = 0.0D0
+   !    index = 1
+   !    dx = 0.
+   !    dy = 0.
+   !    dz = 0.
+   !    ds = 0.
 
-      ! other loop parameters
-      pibyfour = pi/4.
-      threetimespibyfour = 3.*pibyfour
-      fivetimespibyfour = 5.*pibyfour
-      seventimespibyfour = 7.*pibyfour
-      sinazimuth = SIN(azi)
-      cosazimuth = COS(azi)
-      tanazimuth = TAN(azi)
-      CALL issign(sinazimuth, maxpos, signsinazimuth)
-      CALL issign(cosazimuth, maxpos, signcosazimuth)
-      !signsinazimuth=sinazimuth/abs(sinazimuth)
-      !signcosazimuth=cosazimuth/abs(cosazimuth)
-      dssin = ABS(1./sinazimuth)
-      dscos = ABS(1./cosazimuth)
+   !    temp = 0.0D0
 
-      sh1 = vegsh + sh - 1.
-      !! The Shadow casting algoritm
-      IF ((pibyfour <= azi .AND. azi < threetimespibyfour) .OR. (fivetimespibyfour <= azi .AND. azi < seventimespibyfour)) THEN
-         dy = signsinazimuth*index
-         dx = -1.*signcosazimuth*ABS(NINT(index/tanazimuth))
-         ds = dssin
-      ELSE
-         dy = signsinazimuth*ABS(NINT(index*tanazimuth))
-         dx = -1.*signcosazimuth*index
-         ds = dscos
-      END IF
+   !    ! other loop parameters
+   !    pibyfour = pi/4.
+   !    threetimespibyfour = 3.*pibyfour
+   !    fivetimespibyfour = 5.*pibyfour
+   !    seventimespibyfour = 7.*pibyfour
+   !    sinazimuth = SIN(azi)
+   !    cosazimuth = COS(azi)
+   !    tanazimuth = TAN(azi)
+   !    CALL issign(sinazimuth, maxpos, signsinazimuth)
+   !    CALL issign(cosazimuth, maxpos, signcosazimuth)
+   !    !signsinazimuth=sinazimuth/abs(sinazimuth)
+   !    !signcosazimuth=cosazimuth/abs(cosazimuth)
+   !    dssin = ABS(1./sinazimuth)
+   !    dscos = ABS(1./cosazimuth)
 
-      ! note: dx and dy represent absolute values while ds is an incremental value
+   !    sh1 = vegsh + sh - 1.
+   !    !! The Shadow casting algoritm
+   !    IF ((pibyfour <= azi .AND. azi < threetimespibyfour) .OR. (fivetimespibyfour <= azi .AND. azi < seventimespibyfour)) THEN
+   !       dy = signsinazimuth*index
+   !       dx = -1.*signcosazimuth*ABS(NINT(index/tanazimuth))
+   !       ds = dssin
+   !    ELSE
+   !       dy = signsinazimuth*ABS(NINT(index*tanazimuth))
+   !       dx = -1.*signcosazimuth*index
+   !       ds = dscos
+   !    END IF
 
-      absdx = ABS(dx)
-      absdy = ABS(dy)
+   !    ! note: dx and dy represent absolute values while ds is an incremental value
 
-      xc1 = INT((dx + absdx)/2) + 1  !LJ added int to the equation to account for the conversion from real to int
-      xc2 = (sizex + INT((dx - absdx)/2))
-      yc1 = INT((dy + absdy)/2) + 1
-      yc2 = (sizey + INT((dy - absdy)/2))
-      xp1 = -INT((dx - absdx)/2) + 1
-      xp2 = (sizex - INT((dx + absdx)/2))
-      yp1 = -INT((dy - absdy)/2) + 1
-      yp2 = (sizey - INT((dy + absdy)/2))
+   !    absdx = ABS(dx)
+   !    absdy = ABS(dy)
 
-      temp(xp1:xp2, yp1:yp2) = buildings(xc1:xc2, yc1:yc2)
+   !    xc1 = INT((dx + absdx)/2) + 1  !LJ added int to the equation to account for the conversion from real to int
+   !    xc2 = (sizex + INT((dx - absdx)/2))
+   !    yc1 = INT((dy + absdy)/2) + 1
+   !    yc2 = (sizey + INT((dy - absdy)/2))
+   !    xp1 = -INT((dx - absdx)/2) + 1
+   !    xp2 = (sizex - INT((dx + absdx)/2))
+   !    yp1 = -INT((dy - absdy)/2) + 1
+   !    yp2 = (sizey - INT((dy + absdy)/2))
 
-      sunwall = temp - buildings
-      WHERE (sunwall == 1) !f1(f1==1)=0
-      sunwall = 0
-      END WHERE
-      WHERE (sunwall == -1) !f1(f1==-1)=1
-      sunwall = 1
-      END WHERE
-      sunwall = sh1*sunwall
+   !    temp(xp1:xp2, yp1:yp2) = buildings(xc1:xc2, yc1:yc2)
 
-      DEALLOCATE (temp)
-      DEALLOCATE (sh1)
+   !    sunwall = temp - buildings
+   !    WHERE (sunwall == 1) !f1(f1==1)=0
+   !    sunwall = 0
+   !    END WHERE
+   !    WHERE (sunwall == -1) !f1(f1==-1)=1
+   !    sunwall = 1
+   !    END WHERE
+   !    sunwall = sh1*sunwall
 
-   END SUBROUTINE wallinsun_veg
+   !    DEALLOCATE (temp)
+   !    DEALLOCATE (sh1)
+
+   ! END SUBROUTINE wallinsun_veg
 
 END MODULE solweig_module

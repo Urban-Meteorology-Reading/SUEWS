@@ -1002,9 +1002,12 @@ CONTAINS
       WUDay_id = WUDay_id_next
 
       !==============use SOLWEIG to get localised radiation flux==================
+      if (sfr(BldgSurf)>0) then
       CALL SOLWEIG_cal_main(id, it, dectime, 0.8d0, planf, avkdn, ldown, Temp_C, avRh, Press_hPa, TSfc_C, &
                             lat, ZENITH_deg, azimuth, 1.d0, alb(1), alb(2), emis(1), emis(2), bldgH, dataOutLineSOLWEIG)
-
+      else
+         dataOutLineSOLWEIG=set_nan(dataOutLineSOLWEIG)
+      endif
       !==============translation of  output variables into output array===========
       CALL SUEWS_update_outputLine( &
          AdditionalWater, alb, avkdn, U10_ms, azimuth, &!input

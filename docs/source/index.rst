@@ -84,8 +84,8 @@ SUEWS: Surface Urban Energy and Water Balance Scheme
 .. _this form: `dowload form`_
 .. _dowload form: http://micromet.reading.ac.uk/software/
 
-.. |doi_software| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.2574410.svg
-    :target: https://doi.org/10.5281/zenodo.2574410
+.. |doi_software| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.3267305.svg
+    :target: https://doi.org/10.5281/zenodo.3267305
 
 .. |doi_docs| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.2574997.svg
     :target: https://doi.org/10.5281/zenodo.2574997

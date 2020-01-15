@@ -1,7 +1,7 @@
 &file
-    name_exe    = 'SUEWS_V2019a'
+    name_exe    = 'SUEWS_V2019b'
     dir_exe     = '../../SUEWS-SourceCode'
-    dir_baserun = '../BaseRun/2019a'
+    dir_baserun = '../BaseRun/2019b'
 /
 
 &test

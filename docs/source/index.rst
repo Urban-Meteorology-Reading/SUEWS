@@ -59,15 +59,9 @@ SUEWS: Surface Urban Energy and Water Balance Scheme
 
       Visit the repositories below for different citation styles.
 
-  - Software:
+  - Software with manual:
 
-       Sun Ting, Järvi Leena, Grimmond Sue, Lindberg Fredrik, Li Zhenkun, Tang Yihao, Ward Helen: (2019, February 21). SUEWS: Surface Urban Energy and Water Balance Scheme (Version 2018c). Zenodo. |doi_software|
-
-
-  - Manual:
-
-       Sun Ting, Järvi Leena, Grimmond Sue, Lindberg Fredrik, Li Zhenkun, Tang Yihao, Ward Helen: (2019, February 21). SUEWS Documentation (Version 2018c). Zenodo. |doi_docs|
-
+       Ting Sun, Leena Järvi, Hamidreza Omidvar, Natalie Theeuwes, Fredrik Lindberg, Zhenkun Li, & Sue Grimmond. (2019, November 8). Urban-Meteorology-Reading/SUEWS: 2019a Release (Version 2019a). Zenodo. |doi_software|
 
 
 
@@ -84,8 +78,8 @@ SUEWS: Surface Urban Energy and Water Balance Scheme
 .. _this form: `dowload form`_
 .. _dowload form: http://micromet.reading.ac.uk/software/
 
-.. |doi_software| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.3267305.svg
-    :target: https://doi.org/10.5281/zenodo.3267305
+.. |doi_software| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.3533450.svg
+    :target: http://doi.org/10.5281/zenodo.3533450
 
 .. |doi_docs| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.2574997.svg
     :target: https://doi.org/10.5281/zenodo.2574997

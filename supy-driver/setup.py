@@ -7,65 +7,56 @@ from pathlib import Path
 import subprocess
 import shutil
 from nonstopf2py import f2py
+
 # from gen_suewsdrv import merge_source
 
 # wrap OS-specific `SUEWS_driver` libs
 sysname = platform.system()
-lib_basename = 'supy_driver'
-if sysname == 'Windows':
-    lib_name = lib_basename + '.pyd'
-elif sysname == 'Darwin':
-    lib_name = lib_basename + '.so'
-elif sysname == 'Linux':
-    lib_name = lib_basename + '.so'
+lib_basename = "supy_driver"
+if sysname == "Windows":
+    lib_name = lib_basename + ".pyd"
+elif sysname == "Darwin":
+    lib_name = lib_basename + ".so"
+elif sysname == "Linux":
+    lib_name = lib_basename + ".so"
 
 # change compiler settings
-if sysname == 'Windows':
-    shutil.copyfile('win-setup.cfg', 'setup.cfg')
+if sysname == "Windows":
+    shutil.copyfile("win-setup.cfg", "setup.cfg")
 
 # load SUEWS Fortran source files
-dir_f95 = '../SUEWS-SourceCode'
+dir_f95 = "../SUEWS-SourceCode"
 target_f95 = [
     os.path.join(dir_f95, f)
-    for f in
-    [
-        'suews_ctrl_const.f95',
-        'suews_ctrl_error.f95',
-        'suews_phys_narp.f95',
-        'suews_phys_atmmoiststab.f95',
-        'suews_phys_resist.f95',
-        'suews_phys_evap.f95',
-        'suews_phys_snow.f95',
-        'suews_phys_dailystate.f95',
-        'suews_phys_lumps.f95',
-        'suews_phys_anemsn.f95',
-        'suews_phys_rslprof.f95',
-        'suews_phys_biogenco2.f95',
-        'suews_phys_ohm.f95',
-        'suews_phys_solweig.f95',
-        'suews_phys_waterdist.f95',
-        'suews_util_meteo.f95',
-        'suews_ctrl_driver.f95',
+    for f in [
+        "suews_ctrl_const.f95",
+        "suews_ctrl_error.f95",
+        "suews_phys_narp.f95",
+        "suews_phys_atmmoiststab.f95",
+        "suews_phys_resist.f95",
+        "suews_phys_evap.f95",
+        "suews_phys_snow.f95",
+        "suews_phys_dailystate.f95",
+        "suews_phys_lumps.f95",
+        "suews_phys_anemsn.f95",
+        "suews_phys_rslprof.f95",
+        "suews_phys_biogenco2.f95",
+        "suews_phys_ohm.f95",
+        "suews_phys_solweig.f95",
+        "suews_phys_waterdist.f95",
+        "suews_util_meteo.f95",
+        "suews_ctrl_driver.f95",
     ]
 ]
-all_f95 = glob.glob(os.path.join(dir_f95, '*.f95'))
+all_f95 = glob.glob(os.path.join(dir_f95, "*.f95"))
 exclude_f95 = [
     os.path.join(dir_f95, f)
-    for f in
-    [
-        'suews_c_wrapper.f95',
-        'suews_ctrl_sumin.f95',
-        'suews_program.f95',
-    ]
+    for f in ["suews_c_wrapper.f95", "suews_ctrl_sumin.f95", "suews_program.f95",]
 ]
-other_f95 = list(
-    set(all_f95)
-    - set(target_f95)
-    - set(exclude_f95)
-)
-other_obj = [f.replace('.f95', '.o') for f in other_f95]
-if sysname == 'Windows':
-    other_obj.append(os.path.join(dir_f95, 'strptime.o'))
+other_f95 = list(set(all_f95) - set(target_f95) - set(exclude_f95))
+other_obj = [f.replace(".f95", ".o") for f in other_f95]
+if sysname == "Windows":
+    other_obj.append(os.path.join(dir_f95, "strptime.o"))
 
 src_f95 = target_f95 + other_f95
 
@@ -93,6 +84,8 @@ def readme():
     `supy_driver` is `F2PY`-based python binary package for `supy` with `SUEWS` as the computation core.
     """
     return f
+
+
 # dir_source='SUEWS-SourceCode'
 # path_source = Path(dir_source)
 # str(path_source)
@@ -100,24 +93,24 @@ def readme():
 
 def get_suews_version(dir_source=dir_f95, ver_minor=1):
     path_source = Path(dir_source)
-    path_makefile = (path_source / 'include.common')
+    path_makefile = path_source / "include.common"
     # identify `file` to retrieve version
     with open(str(path_makefile)) as fm:
         for line in fm:
-            if 'file ' in line:
-                file = line.split(':=')[-1].split('#')[0].strip()
+            if "file " in line:
+                file = line.split(":=")[-1].split("#")[0].strip()
 
     # get version from `file`
-    path_constfile = (path_source / file)
+    path_constfile = path_source / file
     with open(str(path_constfile)) as fm:
         for line in fm:
-            if 'progname' in line:
-                ver = line.split('SUEWS_V')[-1].replace("'", '').strip()
+            if "progname" in line:
+                ver = line.split("SUEWS_V")[-1].replace("'", "").strip()
                 ver += str(ver_minor)
 
     # cast `ver` to the driver package
-    path_pkg_init = Path('.')/lib_basename/'version.py'
-    with open(str(path_pkg_init), 'w') as fm:
+    path_pkg_init = Path(".") / lib_basename / "version.py"
+    with open(str(path_pkg_init), "w") as fm:
         fm.write("__version__='{ver}'".format(ver=ver))
 
     return ver
@@ -136,54 +129,57 @@ class BinaryDistribution(Distribution):
 #     print(x)
 
 ext_modules = [
-    Extension('supy_driver.suews_driver',
-              target_f95,
-              extra_compile_args=['-D_POSIX_C_SOURCE=200809L'],
-              extra_f90_compile_args=['-cpp'],
-              f2py_options=[
-                  # '--quiet',
-                #   '--debug-capi',
-                  # ('-DF2PY_REPORT_ATEXIT' if sysname == 'Linux' else ''),
-              ],
-              extra_objects=other_obj,
-              extra_link_args=[('' if sysname == 'Linux' else '-static')])]
+    Extension(
+        "supy_driver.suews_driver",
+        target_f95,
+        extra_compile_args=["-D_POSIX_C_SOURCE=200809L"],
+        extra_f90_compile_args=["-cpp"],
+        f2py_options=[
+            # '--quiet',
+            #   '--debug-capi',
+            # ('-DF2PY_REPORT_ATEXIT' if sysname == 'Linux' else ''),
+        ],
+        extra_objects=other_obj,
+        extra_link_args=[("" if sysname == "Linux" else "-static")],
+    )
+]
 
-setup(name='supy_driver',
-      # update version info here!
-      version=get_suews_version(ver_minor=5),
-      description='the SUEWS driver driven by f2py',
-      long_description=readme(),
-      url='https://github.com/sunt05/SuPy',
-      author='Ting Sun',
-      author_email='ting.sun@reading.ac.uk',
-      # license='GPL-V3.0',
-      packages=['supy_driver'],
-      package_data={
-          'supy_driver': [
-              # lib_name,
-           # '*.json'
-          ]
-      },
-      distclass=BinaryDistribution,
-      ext_modules=ext_modules,
-      python_requires='>=3.5',
-      install_requires=[
-          'numpy>=1.17.4'
-      ],
-      include_package_data=True,
-      test_suite='nose.collector',
-      tests_require=['nose'],
-      zip_safe=False)
+setup(
+    name="supy_driver",
+    # update version info here!
+    version=get_suews_version(ver_minor=5),
+    description="the SUEWS driver driven by f2py",
+    long_description=readme(),
+    url="https://github.com/sunt05/SuPy",
+    author="Ting Sun",
+    author_email="ting.sun@reading.ac.uk",
+    # license='GPL-V3.0',
+    packages=["supy_driver"],
+    package_data={
+        "supy_driver": [
+            # lib_name,
+            # '*.json'
+        ]
+    },
+    distclass=BinaryDistribution,
+    ext_modules=ext_modules,
+    python_requires=">=3.5",
+    install_requires=["numpy>=1.17.4"],
+    include_package_data=True,
+    test_suite="nose.collector",
+    tests_require=["nose"],
+    zip_safe=False,
+)
 
 
 # check latest build
 path_dir_driver = Path(__file__).resolve().parent
-list_wheels = [str(x) for x in path_dir_driver.glob('dist/*whl')]
+list_wheels = [str(x) for x in path_dir_driver.glob("dist/*whl")]
 fn_wheel = sorted(list_wheels, key=os.path.getmtime)[-1]
 # print(list_wheels, fn_wheel)
 
 # use auditwheel to repair file name for Linux
-if sysname == 'Linux':
+if sysname == "Linux":
     # path_dir_driver = Path(__file__).resolve().parent
     # list_wheels = [str(x) for x in path_dir_driver.glob('dist/*whl')]
     # fn_wheel = sorted(list_wheels, key=os.path.getmtime)[-1]
@@ -193,5 +189,5 @@ if sysname == 'Linux':
 
 
 # change compiler settings
-if sysname == 'Windows':
-    os.remove('setup.cfg')
+if sysname == "Windows":
+    os.remove("setup.cfg")

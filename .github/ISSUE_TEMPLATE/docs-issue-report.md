@@ -1,25 +1,28 @@
 ---
-name: Docs issue report
-about: Create a report to help us improve the documentation
-title: ''
+name: release checklist
+about: Checklist for regular release. ONLY USEFUL FOR DEVELOPERS!
+title: 'Checklist for V202Yx'
 labels: docs
 assignees: ''
 
 ---
+## New Features
+<!--planned new features-->
 
-**Describe the bug**
-<!--A clear and concise description of what the issue is.-->
+## Fixes
+<!--planned fixes-->
 
-**Location**
-<!--A link to the problematic page.-->
+## Code Health
+- [ ] update release identifier: [`progname` in `suews_ctrl_const.f95`](../../SUEWS-SourceCode/suews_ctrl_const.f95)
+- [ ] update test identifier: [`name_exe` and `dir_baserun` in `BTS_config.nml`](../../Test/code/BTS_config.nml)
+- [ ] run simple test:
+  - [ ] set up test folder for the new release
+  - [ ] use `make test` in the root folder for testing
 
-**Expected statement**
-<!--A clear and concise description of what you expected to happen-->
+**Docs**
+- [ ] update [scheme descriptions](../../docs/source/parameterisations-and-sub-models.rst) if any.
+- [ ] update [option descriptions](../../docs/source/input_files/RunControl/RunControl.rst) and relevant csv files if any.
 
 
-**Screenshots**
-<!--If applicable, add screenshots to help explain your problem.-->
-
-
-**Additional context**
-Add any other context about the problem here.
+**Additional Remarks**
+<!-- Other remarks about this release -->

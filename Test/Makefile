@@ -32,7 +32,7 @@ PYTHON := $(if $(PYTHON_exe),$(PYTHON_exe),python)
 test:
 	$(MAKE) -C $(SUEWS_dir) -f $(makefile) clean; # clean Fortran SUEWS build
 	$(MAKE) -C $(SUEWS_dir) -f $(makefile) main; # make SUEWS with the `main` recipe
-	cd code; python 1.test_dev.py
+	cd code; python test_dev.py
 
 clean:
 	rm -rf *.zip

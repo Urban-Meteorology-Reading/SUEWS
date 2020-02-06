@@ -22,7 +22,7 @@
     storageheatmethod  = 1, 3, 4
     ohmincqf           = 0, 1
     stabilitymethod    = 2, 3, 4
-    roughlenheatmethod = 1, 2, 3, 4
+    roughlenheatmethod = 1, 2, 3, 4, 5
     roughlenmommethod  = 1, 2, 3
     smdmethod          = 0, 1, 2
     waterusemethod     = 0, 1

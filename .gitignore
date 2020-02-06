@@ -55,7 +55,7 @@ launch.json
 
 #intermediate suews files
 warnings.txt
-SUEWS_V201*
+SUEWS_V20*
 problems-checkpoint.txt
 warnings-checkpoint.txt
 Saeve_2004_data_5.txt.save

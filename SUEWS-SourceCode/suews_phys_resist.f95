@@ -540,6 +540,15 @@ contains
          z0V = z0m*EXP(-20.) ! Voogt and Grimmond, JAM, 2000
       ELSEIF (RoughLenHeatMethod == 4) THEN
          z0V = z0m*EXP(2 - 1.29*(UStar*z0m/muu)**0.25) !See !Kanda and Moriwaki (2007),Loridan et al. (2010)
+      ELSEIF (RoughLenHeatMethod == 5) THEN
+         ! an adaptive way to determine z0v; TS 06 Feb 2020
+         if ( VegFraction >.999) then
+            ! fully pervious surface
+            z0V = z0m/10
+      else
+         ! impervious-pervious mixed surface
+         z0V = z0m*EXP(2 - (1.2 - 0.9*VegFraction**0.29)*(UStar*z0m/muu)**0.25)
+      endif
       ENDIF
 
    END FUNCTION cal_z0v

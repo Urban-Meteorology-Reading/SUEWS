@@ -17,7 +17,9 @@ if not path_build.exists():
 
 # load version
 path_sys = list(path_build.glob('*'))[0]
+# system: macOS, Windows, or Linux
 name_sys = path_sys.stem
+# SUEWS release:
 path_exe = list(path_sys.glob('SUEWS*'))[0]
 name_exe = path_exe.stem
 name_ver = name_exe.split('_V')[-1]

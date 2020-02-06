@@ -14,9 +14,9 @@ assignees: ''
 
 ## Code Health
 - [ ] update release identifier: [`progname` in `suews_ctrl_const.f95`](../../SUEWS-SourceCode/suews_ctrl_const.f95)
-- [ ] update test identifier: [`name_exe` and `dir_baserun` in `BTS_config.nml`](../../Test/code/BTS_config.nml)
+- [ ] update test identifier: [`name_exe` in `BTS_config.nml`](../../Test/code/BTS_config.nml)
 - [ ] run simple test:
-  - [ ] set up test folder for the new release
+  - [ ] set up test folder for the new release: `Test/BaseRun/$release_ver`
   - [ ] use `make test` in the root folder for testing
 
 **Docs**

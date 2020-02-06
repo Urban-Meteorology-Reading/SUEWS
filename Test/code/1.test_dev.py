@@ -9,14 +9,18 @@ from tempfile import gettempdir, TemporaryDirectory
 from shutil import copyfile, copytree
 
 fn_nml = 'BTS_config.nml'
+####################################
 # load basic configurations
-# load path
 nml = f90nml.read(fn_nml)
 cfg_file = nml['file']
-dir_exe, path_baserun = (
-    os.path.abspath(cfg_file[x])
-    for x in ['dir_exe', 'dir_baserun'])
-path_baserun = Path(path_baserun)
+
+# load name of programme for testing
+name_exe = cfg_file['name_exe']
+
+# load path
+dir_exe=Path(cfg_file['dir_exe']).resolve()
+path_baserun=Path(cfg_file['dir_baserun']).resolve()/name_exe.replace('SUEWS_V','')
+
 # dir_exe = os.path.abspath(path_base[])
 # dir_baserun = path_base[]
 
@@ -49,8 +53,7 @@ for x in path_base_input.glob('*'):
     else:
         copyfile(x, path_input_ver / x.name)
 
-# load name of programme for testing
-name_exe = cfg_file['name_exe']
+
 
 # load test configurations
 cfg_test = nml['test']

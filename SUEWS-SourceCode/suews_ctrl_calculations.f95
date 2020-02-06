@@ -35,18 +35,18 @@
 
 SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
    USE data_in, ONLY: diagnose, ah_min, ah_slope_cooling, ah_slope_heating, &
-      alt, avkdn, avrh, avu1, basetHDD, diagqn, diagqs, drainrt, co2pointsource, CBLuse, &
-      ef_umolco2perj, emissionsmethod, enef_v_jkm, enddls, fcef_v_kgkm, fcld_obs, &
-      frfossilfuel_heat, frfossilfuel_nonheat, EvapMethod, &
-      LAIcalcyes, LAI_obs, lat, ldown_obs, lng, maxfcmetab, maxqfmetab, &
-      minfcmetab, minqfmetab, netradiationmethod, ohmincqf, &
-      popdensdaytime, popdensnighttime, &
-      precip, press_hpa, qf0_beu, qf_a, qf_b, qf_c, &
-      qe_obs, qh_obs, qn1_obs, qs_obs, qf_obs, &
-      raincover, rainmaxres, &
-      roughlenmommethod, smdmethod, snowFrac_obs, snowuse, startdls, &
-      storageheatmethod, t_critic_cooling, t_critic_heating, temp_c, &
-      timezone, trafficrate, trafficunits, waterusemethod, wu_m3, xsmd
+                      alt, avkdn, avrh, avu1, basetHDD, diagqn, diagqs, drainrt, co2pointsource, CBLuse, &
+                      ef_umolco2perj, emissionsmethod, enef_v_jkm, enddls, fcef_v_kgkm, fcld_obs, &
+                      frfossilfuel_heat, frfossilfuel_nonheat, EvapMethod, &
+                      LAIcalcyes, LAI_obs, lat, ldown_obs, lng, maxfcmetab, maxqfmetab, &
+                      minfcmetab, minqfmetab, netradiationmethod, ohmincqf, &
+                      popdensdaytime, popdensnighttime, &
+                      precip, press_hpa, qf0_beu, qf_a, qf_b, qf_c, &
+                      qe_obs, qh_obs, qn1_obs, qs_obs, qf_obs, &
+                      raincover, rainmaxres, &
+                      roughlenmommethod, smdmethod, snowFrac_obs, snowuse, startdls, &
+                      storageheatmethod, t_critic_cooling, t_critic_heating, temp_c, &
+                      timezone, trafficrate, trafficunits, waterusemethod, wu_m3, xsmd
    USE time, ONLY: iy, id, it, imin, isec, dectime, dt_since_start
    USE allocateArray, ONLY: &
       alb, &

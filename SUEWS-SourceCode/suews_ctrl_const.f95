@@ -949,7 +949,6 @@ MODULE data_in
 
    CHARACTER(len=90)::progname = 'SUEWS_V2020a'
 
-
    ! ---- Run information ------------------------------------------------------------------------
    CHARACTER(len=20)::  FileCode   !Set in RunControl
    CHARACTER(len=150):: FileInputPath, &   !Filepath for input files (set in RunControl)

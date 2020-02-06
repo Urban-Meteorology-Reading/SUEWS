@@ -271,7 +271,7 @@ CONTAINS
          gvf = 0.0D0
          ! CALL wallinsun_veg(azimuth,sunwall)
          DO j = 1, SIZE(azimuthA)
-            CALL sunonsurface_veg(azimuthA(j), scale,buildings, first, second, psi, sos)
+            CALL sunonsurface_veg(azimuthA(j), scale, buildings, first, second, psi, sos)
             gvf = gvf + sos
          END DO
          gvf = gvf/SIZE(azimuthA) + (buildings*(-1) + 1)
@@ -291,7 +291,7 @@ CONTAINS
                  + radG*alb_bldg*(1 - svf_blgd_veg)*(1 - F_sh))
 
          CALL Kside_veg_v24( &
-            shadow, F_sh,&
+            shadow, F_sh, &
             radI, radG, radD, azimuth, altitude, psi, t, alb_ground, & ! input
             Keast, Knorth, Ksouth, Kwest) ! output
 
@@ -333,7 +333,7 @@ CONTAINS
          ! ELSE
          !    timeadd = timeadd + timestepdec
          ! END IF
-         timeadd=(dectime+1)-DOY-(it/24.)
+         timeadd = (dectime + 1) - DOY - (it/24.)
          weight1 = EXP(-33.27*timeadd) !surface temperature delay function - 1 step
          Tgmap1 = Tgmap0*(1 - weight1) + Tgmap1*weight1
          Lup2d = SBC*emis_ground*((Tgmap1 + 273.15)**4)
@@ -366,9 +366,9 @@ CONTAINS
 
          Tw = 0.0
          ! Tg = 0.0
-         radG=0
-         radI=0
-         radD=0
+         radG = 0
+         radI = 0
+         radD = 0
 
          !Nocturnal Kfluxes set to 0
          Kdown2d = 0.0
@@ -429,9 +429,9 @@ CONTAINS
       !        Tmrt(row, col), I0, CI, gvf(row, col), shadow(row, col), svf(row, col), svf_blgd_veg(row, col), Ta, Tg]
       ! END IF
       dataOutLineSOLWEIG = [azimuth, altitude, radG, radI, radD, &
-                        Kdown2d(row, col), Kup2d(row, col), Ksouth(row, col), Kwest(row, col), Knorth(row, col), Keast(row, col), &
-                        Ldown2d(row, col), Lup2d(row, col), Lsouth(row, col), Lwest(row, col), Lnorth(row, col), Least(row, col), &
-                        Tmrt(row, col), I0, CI, gvf(row, col), shadow(row, col), svf(row, col), svf_blgd_veg(row, col), Ta, Tg]
+                         Kdown2d(row, col), Kup2d(row, col), Ksouth(row, col), Kwest(row, col), Knorth(row, col), Keast(row, col), &
+                         Ldown2d(row, col), Lup2d(row, col), Lsouth(row, col), Lwest(row, col), Lnorth(row, col), Least(row, col), &
+                            Tmrt(row, col), I0, CI, gvf(row, col), shadow(row, col), svf(row, col), svf_blgd_veg(row, col), Ta, Tg]
 
       ! CALL SaveGrids
 
@@ -523,7 +523,7 @@ CONTAINS
       REAL(KIND(1d0)), intent(out):: CI
       REAL(KIND(1d0)), intent(out):: I0
       REAL(KIND(1d0)), intent(out):: Kt
-      REAL(KIND(1d0)):: iG, Itoa,p
+      REAL(KIND(1d0)):: iG, Itoa, p
       REAL(KIND(1d0)), DIMENSION(4)   :: G
       REAL(KIND(1d0)), PARAMETER          :: pi = 3.141592653589793
 
@@ -751,8 +751,8 @@ CONTAINS
          END IF
       END IF
       ! correction of radD
-      radD=max(0.d0,radD)
-      radD=min(radG,radD)
+      radD = max(0.d0, radD)
+      radD = min(radG, radD)
 
       ! calculation of diffuse radiation
       radI = (radG - radD)/(SIN(alfa))
@@ -1043,7 +1043,7 @@ CONTAINS
 !    END SUBROUTINE SOLWEIG_Initial
 
    SUBROUTINE Kside_veg_v24( &
-      shadow, F_sh,&
+      shadow, F_sh, &
       radI, radG, radD, azimuth, altitude, psi, t, albedo, & ! input
       Keast, Knorth, Ksouth, Kwest) ! output
 
@@ -1177,18 +1177,18 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(1, 1)  :: F_sh
 
       ! assuming all SVF to ONE, TS 14 Dec 2019
-      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfE=1
-      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfS=1
-      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfW=1
-      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfN=1
-      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfEveg=1
-      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfSveg=1
-      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfWveg=1
-      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfNveg=1
-      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfEaveg=1
-      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfSaveg=1
-      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfWaveg=1
-      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfNaveg=1
+      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfE = 1
+      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfS = 1
+      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfW = 1
+      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfN = 1
+      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfEveg = 1
+      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfSveg = 1
+      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfWveg = 1
+      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfNveg = 1
+      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfEaveg = 1
+      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfSaveg = 1
+      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfWaveg = 1
+      REAL(KIND(1d0)), DIMENSION(1, 1), PARAMETER  :: svfNaveg = 1
 
       ALLOCATE (oneminussvfE(1, 1))
       ALLOCATE (oneminussvfS(1, 1))
@@ -1245,8 +1245,8 @@ CONTAINS
       END IF
 
       !! Least
-      CALL Lvikt_veg(svfE, svfEveg, svfEaveg, vikttot,&
-       viktveg, viktsky, viktrefl,viktwall)
+      CALL Lvikt_veg(svfE, svfEveg, svfEaveg, vikttot, &
+                     viktveg, viktsky, viktrefl, viktwall)
 
       IF (altitude > 0) THEN ! daytime
          alfaB = ATAN(svfalfaE)
@@ -1271,8 +1271,8 @@ CONTAINS
       Least = Lsky + Lwallsun + Lwallsh + Lveg + Lground + Lrefl
 
       !! Lsouth
-      CALL Lvikt_veg(svfS, svfSveg, svfSaveg, vikttot,&
-       viktveg, viktsky, viktrefl,viktwall)
+      CALL Lvikt_veg(svfS, svfSveg, svfSaveg, vikttot, &
+                     viktveg, viktsky, viktrefl, viktwall)
 
       IF (altitude > 0) THEN ! daytime
          alfaB = ATAN(svfalfaS)
@@ -1297,8 +1297,8 @@ CONTAINS
       Lsouth = Lsky + Lwallsun + Lwallsh + Lveg + Lground + Lrefl
 
       !! Lwest
-      CALL Lvikt_veg(svfW, svfWveg, svfWaveg, vikttot,&
-       viktveg, viktsky, viktrefl,viktwall)
+      CALL Lvikt_veg(svfW, svfWveg, svfWaveg, vikttot, &
+                     viktveg, viktsky, viktrefl, viktwall)
 
       IF (altitude > 0) THEN ! daytime
          alfaB = ATAN(svfalfaW)
@@ -1324,7 +1324,7 @@ CONTAINS
 
       !! Lnorth
       CALL Lvikt_veg(svfN, svfNveg, svfNaveg, vikttot, &
-      viktveg, viktsky, viktrefl,viktwall)
+                     viktveg, viktsky, viktrefl, viktwall)
 
       IF (altitude > 0) THEN ! daytime
          alfaB = ATAN(svfalfaN)
@@ -1369,7 +1369,7 @@ CONTAINS
    END SUBROUTINE Lside_veg_v2
 
    SUBROUTINE Lvikt_veg(isvf, isvfveg, isvfaveg, vikttot, & ! input
-                        viktveg, viktsky, viktrefl,viktwall) !output
+                        viktveg, viktsky, viktrefl, viktwall) !output
 
       IMPLICIT NONE
       REAL(KIND(1D0)), intent(in):: vikttot
@@ -1857,7 +1857,7 @@ CONTAINS
 
    ! END SUBROUTINE shadowingfunction_veg
 
-   SUBROUTINE sunonsurface_veg(iazimuthA, scale,buildings, first, second, psi, sos)
+   SUBROUTINE sunonsurface_veg(iazimuthA, scale, buildings, first, second, psi, sos)
       ! This m-file creates a boolean image of sunlit walls.
       ! Shadows from both buildings and vegetation is accounted for
       ! moving building in the direction of the sun
@@ -1867,12 +1867,12 @@ CONTAINS
 
       INTEGER::first, second
 
-      REAL(KIND(1d0)) ,intent(in)::iazimuthA
-      REAL(KIND(1d0)) ,intent(in)::scale
-      REAL(KIND(1d0)) ,intent(in)::psi
+      REAL(KIND(1d0)), intent(in)::iazimuthA
+      REAL(KIND(1d0)), intent(in)::scale
+      REAL(KIND(1d0)), intent(in)::psi
 
-      REAL(KIND(1d0)), DIMENSION(1, 1),intent(in)  :: buildings
-      REAL(KIND(1d0)), DIMENSION(1, 1),intent(out)::sos
+      REAL(KIND(1d0)), DIMENSION(1, 1), intent(in)  :: buildings
+      REAL(KIND(1d0)), DIMENSION(1, 1), intent(out)::sos
 
       REAL(KIND(1d0)), DIMENSION(1, 1):: sunwall
 
@@ -1886,7 +1886,6 @@ CONTAINS
       REAL(KIND(1d0))             :: signsinazimuth, signcosazimuth, dssin, dscos
       REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :)  ::weightsumwall, weightsumsh, gvf1, gvf2
       REAL(KIND(1d0)), ALLOCATABLE, DIMENSION(:, :)  ::f, tempsh, tempbu, tempbub, tempwallsun, tempb, sh1
-
 
       REAL(KIND(1d0)), PARAMETER  :: pi = 3.141592653589793
       REAL(KIND(1d0)), PARAMETER  :: maxpos = 10000000000.0
@@ -1913,10 +1912,9 @@ CONTAINS
       f = buildings
 
       ! TODO: what are these:
-      sh=1
-      vegsh=1
-      sunwall=0
-
+      sh = 1
+      vegsh = 1
+      sunwall = 0
 
       sh1 = sh - (1 - vegsh)*(1 - psi)
       dx = 0

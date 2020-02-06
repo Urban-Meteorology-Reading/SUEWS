@@ -1,8 +1,8 @@
 MODULE WaterDist_module
    USE allocateArray, ONLY: nsurf, &
-      PavSurf, BldgSurf, &
-      ConifSurf, DecidSurf, GrassSurf, &
-      BSoilSurf, WaterSurf, ExcessSurf
+                            PavSurf, BldgSurf, &
+                            ConifSurf, DecidSurf, GrassSurf, &
+                            BSoilSurf, WaterSurf, ExcessSurf
 
    IMPLICIT NONE
    ! INTEGER, PARAMETER :: nsurf = 7
@@ -973,7 +973,6 @@ CONTAINS
          wu_EveTr = 0
          wu_DecTr = 0
          wu_Grass = 0
-
 
          wu_nsurf = 0
          IF (wu_m3 == NAN .OR. wu_m3 == 0) THEN !If no water use

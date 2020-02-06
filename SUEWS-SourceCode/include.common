@@ -82,6 +82,7 @@ main: suews_program$(suffix_code) $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(
 			$(FC) suews_program$(suffix_code)  -c
 			$(FC) suews_program.o $(C_MODULE) $(UTILS) $(DATETIME) $(MODULES) $(OTHERS) $(TEST) $(STATICLIB) \
 			-o $(TARGET)
+			rm -rf $(SUEWS_build_dir)
 			mkdir -p $(SUEWS_build_dir)
 			cp -f $(TARGET) $(SUEWS_build_dir)/.
 

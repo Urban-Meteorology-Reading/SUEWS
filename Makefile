@@ -29,7 +29,7 @@ SUEWS_dir = SUEWS-SourceCode
 
 docs_dir = docs
 
-test_dir= Test/code
+test_dir= Test
 
 release_dir = Release
 
@@ -48,14 +48,13 @@ main:
 
 # make fortran exe and run test cases
 test:
-	$(MAKE) -C $(SUEWS_dir) -f $(makefile) clean; # clean Fortran SUEWS build
-	$(MAKE) -C $(SUEWS_dir) -f $(makefile) main; # make SUEWS with the `main` recipe
-	cd $(test_dir); python 1.test_dev.py
+	$(MAKE) -C $(test_dir) test
 
 # make fortran exe, run test cases and pack release archive
 release: pip
-	$(MAKE) main
-	$(MAKE) -C $(release_dir) pack; # clean Fortran SUEWS build
+	$(MAKE) -C $(release_dir) clean; # clean release directory
+	$(MAKE) main # build SUEWS binary
+	$(MAKE) -C $(release_dir) pack # pack binary and input files
 
 # make supy dist
 driver:

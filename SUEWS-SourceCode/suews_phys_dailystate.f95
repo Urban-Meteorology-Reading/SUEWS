@@ -69,6 +69,7 @@ CONTAINS
       DecidCap_id_prev, StoreDrainPrm_prev, LAI_id_prev, GDD_id_prev, SDD_id_prev, &
       albDecTr_id_prev, albEveTr_id_prev, albGrass_id_prev, porosity_id_prev, &!input
       HDD_id_prev, &!input
+      h_ponding,state_id,&!input
       HDD_id_next, &!output
       Tmin_id_next, Tmax_id_next, lenDay_id_next, &
       albDecTr_id_next, albEveTr_id_next, albGrass_id_next, porosity_id_next, &!output
@@ -126,6 +127,11 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(3), INTENT(IN) ::Ie_m !Coefficients for automatic and manual irrigation models
       REAL(KIND(1d0)), DIMENSION(7), INTENT(IN) ::DayWatPer !% of houses following daily water
       REAL(KIND(1d0)), DIMENSION(7), INTENT(IN) ::DayWat !Days of watering allowed
+
+      ! ponding-water related
+      REAL(KIND(1d0)), INTENT(IN)::h_ponding ! ponding water depth to maintain [mm]
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(IN)::state_id ! surface wetness [mm]
+
 
       ! REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(IN)      ::SnowPack
       REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(IN)   ::BaseT !Base temperature for growing degree days [degC]
@@ -302,6 +308,7 @@ CONTAINS
             AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
             BaseT, BaseTe, CapMax_dec, CapMin_dec, DayWat, DayWatPer, Faut, GDDFull, &
             Ie_a, Ie_m, LAIMax, LAIMin, LAIPower, lat, PorMax_dec, PorMin_dec, SDDFull, LAI_obs, &
+            h_ponding,state_id,&
             GDD_id, SDD_id, & !inout
             HDD_id, &
             LAI_id, &
@@ -344,6 +351,7 @@ CONTAINS
       AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
       BaseT, BaseTe, CapMax_dec, CapMin_dec, DayWat, DayWatPer, Faut, GDDFull, &
       Ie_a, Ie_m, LAIMax, LAIMin, LAIPower, lat, PorMax_dec, PorMin_dec, SDDFull, LAI_obs, &
+      h_ponding,state_id,&
       GDD_id, SDD_id, & !inout
       HDD_id, &
       LAI_id, &
@@ -395,6 +403,8 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(IN)::Tmin_id
       REAL(KIND(1d0)), INTENT(IN)::Tmax_id
       REAL(KIND(1d0)), INTENT(IN)::lenDay_id
+      REAL(KIND(1d0)), INTENT(IN)::h_ponding ! ponding water depth to maintain
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(IN)::state_id ! surface wetness [mm]
 
       REAL(KIND(1d0)), DIMENSION(3), INTENT(INOUT)       ::GDD_id ! Growing Degree Days (see SUEWS_DailyState.f95)
       REAL(KIND(1d0)), DIMENSION(3), INTENT(INOUT)       ::SDD_id ! Senescence Degree Days (see SUEWS_DailyState.f95)
@@ -424,6 +434,7 @@ CONTAINS
       ! Calculate modelled daily water use ------------------------------------------
       CALL update_WaterUse( &
          id, WaterUseMethod, DayofWeek_id, lat, Faut, HDD_id, &!input
+         state_id, h_ponding, &!input
          Ie_a, Ie_m, Ie_start, Ie_end, DayWatPer, DayWat, &
          WUDay_id) !output
 
@@ -811,6 +822,7 @@ CONTAINS
 
    SUBROUTINE update_WaterUse( &
       id, WaterUseMethod, DayofWeek_id, lat, FrIrriAuto, HDD_id, &!input
+      state_id, h_ponding, &!input
       Ie_a, Ie_m, Ie_start, Ie_end, DayWatPer, DayWat, &
       WUDay_id) !output
 
@@ -831,10 +843,20 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(7), INTENT(IN)::DayWatPer  !% of houses following daily water
       REAL(KIND(1d0)), DIMENSION(7), INTENT(IN)::DayWat       !Days of watering allowed
 
+      ! ponding control related
+      REAL(KIND(1d0)), INTENT(IN)::h_ponding  ! ponding water depth to maintain [mm]
+      REAL(KIND(1d0)), DIMENSION(7), INTENT(IN)::state_id  ! surface wetness [mm]
+
       REAL(KIND(1d0)), DIMENSION(9), INTENT(OUT):: WUDay_id       !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
+
+      REAL(KIND(1d0)), DIMENSION(3)::WUDay_P   !water used to maintain ponding level [mm]
+      REAL(KIND(1d0)), DIMENSION(3)::WUDay_A   !automatic irrigation [mm]
+      REAL(KIND(1d0)), DIMENSION(3)::WUDay_M   !manual irrigation [mm]
+      REAL(KIND(1d0)), DIMENSION(3)::WUDay_total   !Coefficients for manual irrigation models
 
       INTEGER::wd        !Water use calculation is done when calc = 1
       INTEGER::calc        !Water use calculation is done when calc = 1
+      INTEGER::i
 
       REAL(KIND(1d0))::temp_avg
       REAL(KIND(1d0))::days_since_rain
@@ -864,49 +886,72 @@ CONTAINS
                ! WUDay is the amount of water [mm] per day, applied to each of the irrigated areas
                ! N.B. These are the same for each vegetation type at the moment
 
-               ! ---- Automatic irrigation (evergreen trees) ----
-               WUDay_id(2) = FrIrriAuto*(Ie_a(1) + Ie_a(2)*temp_avg + Ie_a(3)*days_since_rain)*DayWatPer(wd)
-               IF (WUDay_id(2) < 0) WUDay_id(2) = 0   !If modelled WU is negative -> 0
+               ! ---- irrigation amount to maintain ponding water----
+               WUDay_P=h_ponding-state_id(3:5)
+               WUDay_P=MERGE(WUDay_P,WUDay_P*0,WUDay_P>0)
 
-               ! ---- Manual irrigation (evergreen trees) ----
-               WUDay_id(3) = (1 - FrIrriAuto)*(Ie_m(1) + Ie_m(2)*temp_avg + Ie_m(3)*days_since_rain)*DayWatPer(wd)
-               IF (WUDay_id(3) < 0) WUDay_id(3) = 0   !If modelled WU is negative -> 0
+               ! ---- automatic irrigation ----
+               WUDay_A=FrIrriAuto*(Ie_a(1) + Ie_a(2)*temp_avg + Ie_a(3)*days_since_rain)*DayWatPer(wd)
+               WUDay_A=MERGE(WUDay_A,WUDay_A*0,WUDay_A>0)
+               ! add ponding-demand to auto-irrigation
+               WUDay_A=WUDay_A+WUDay_P
 
-               ! ---- Total evergreen trees water use (automatic + manual) ----
-               WUDay_id(1) = (WUDay_id(2) + WUDay_id(3))
+               ! ---- Manual irrigation----
+               WUDay_M=(1 - FrIrriAuto)*(Ie_m(1) + Ie_m(2)*temp_avg + Ie_m(3)*days_since_rain)*DayWatPer(wd)
+               WUDay_M=MERGE(WUDay_M,WUDay_M*0,WUDay_M>0)
 
-               ! ---- Automatic irrigation (deciduous trees) ----
-               WUDay_id(5) = FrIrriAuto*(Ie_a(1) + Ie_a(2)*temp_avg + Ie_a(3)*days_since_rain)*DayWatPer(wd)
-               IF (WUDay_id(5) < 0) WUDay_id(5) = 0   !If modelled WU is negative -> 0
+               ! ---- total irrigation
+               WUDay_total=WUDay_P+WUDay_A+WUDay_M
 
-               ! ---- Manual irrigation (deciduous trees) ----
-               WUDay_id(6) = (1 - FrIrriAuto)*(Ie_m(1) + Ie_m(2)*temp_avg + Ie_m(3)*days_since_rain)*DayWatPer(wd)
-               IF (WUDay_id(6) < 0) WUDay_id(6) = 0   !If modelled WU is negative -> 0
+               ! transfer values to WUDay_id
+               WUDay_id([((i-1)*3+1,i = 1,3)]) = WUDay_total
+               WUDay_id([((i-1)*3+2,i = 1,3)]) = WUDay_A
+               WUDay_id([((i-1)*3+3,i = 1,3)]) = WUDay_M
 
-               ! ---- Total deciduous trees water use (automatic + manual) ----
-               WUDay_id(4) = (WUDay_id(5) + WUDay_id(6))
+               ! ! ---- Automatic irrigation (evergreen trees) ----
+               ! WUDay_id(2) = FrIrriAuto*(Ie_a(1) + Ie_a(2)*temp_avg + Ie_a(3)*days_since_rain)*DayWatPer(wd)
+               ! IF (WUDay_id(2) < 0) WUDay_id(2) = 0   !If modelled WU is negative -> 0
 
-               ! ---- Automatic irrigation (grass) ----
-               WUDay_id(8) = FrIrriAuto*(Ie_a(1) + Ie_a(2)*temp_avg + Ie_a(3)*days_since_rain)*DayWatPer(wd)
-               IF (WUDay_id(8) < 0) WUDay_id(8) = 0   !If modelled WU is negative -> 0
+               ! ! ---- Manual irrigation (evergreen trees) ----
+               ! WUDay_id(3) = (1 - FrIrriAuto)*(Ie_m(1) + Ie_m(2)*temp_avg + Ie_m(3)*days_since_rain)*DayWatPer(wd)
+               ! IF (WUDay_id(3) < 0) WUDay_id(3) = 0   !If modelled WU is negative -> 0
 
-               ! ---- Manual irrigation (grass) ----
-               WUDay_id(9) = (1 - FrIrriAuto)*(Ie_m(1) + Ie_m(2)*temp_avg + Ie_m(3)*days_since_rain)*DayWatPer(wd)
-               IF (WUDay_id(9) < 0) WUDay_id(9) = 0   !If modelled WU is negative -> 0
+               ! ! ---- Total evergreen trees water use (automatic + manual) ----
+               ! WUDay_id(1) = (WUDay_id(2) + WUDay_id(3))
 
-               ! ---- Total grass water use (automatic + manual) ----
-               WUDay_id(7) = (WUDay_id(8) + WUDay_id(9))
+               ! ! ---- Automatic irrigation (deciduous trees) ----
+               ! WUDay_id(5) = FrIrriAuto*(Ie_a(1) + Ie_a(2)*temp_avg + Ie_a(3)*days_since_rain)*DayWatPer(wd)
+               ! IF (WUDay_id(5) < 0) WUDay_id(5) = 0   !If modelled WU is negative -> 0
+
+               ! ! ---- Manual irrigation (deciduous trees) ----
+               ! WUDay_id(6) = (1 - FrIrriAuto)*(Ie_m(1) + Ie_m(2)*temp_avg + Ie_m(3)*days_since_rain)*DayWatPer(wd)
+               ! IF (WUDay_id(6) < 0) WUDay_id(6) = 0   !If modelled WU is negative -> 0
+
+               ! ! ---- Total deciduous trees water use (automatic + manual) ----
+               ! WUDay_id(4) = (WUDay_id(5) + WUDay_id(6))
+
+               ! ! ---- Automatic irrigation (grass) ----
+               ! WUDay_id(8) = FrIrriAuto*(Ie_a(1) + Ie_a(2)*temp_avg + Ie_a(3)*days_since_rain)*DayWatPer(wd)
+               ! IF (WUDay_id(8) < 0) WUDay_id(8) = 0   !If modelled WU is negative -> 0
+
+               ! ! ---- Manual irrigation (grass) ----
+               ! WUDay_id(9) = (1 - FrIrriAuto)*(Ie_m(1) + Ie_m(2)*temp_avg + Ie_m(3)*days_since_rain)*DayWatPer(wd)
+               ! IF (WUDay_id(9) < 0) WUDay_id(9) = 0   !If modelled WU is negative -> 0
+
+               ! ! ---- Total grass water use (automatic + manual) ----
+               ! WUDay_id(7) = (WUDay_id(8) + WUDay_id(9))
 
             ELSE   !If no irrigation on this day
-               WUDay_id(1) = 0
-               WUDay_id(2) = 0
-               WUDay_id(3) = 0
-               WUDay_id(4) = 0
-               WUDay_id(5) = 0
-               WUDay_id(6) = 0
-               WUDay_id(7) = 0
-               WUDay_id(8) = 0
-               WUDay_id(9) = 0
+               WUDay_id    = 0
+               ! WUDay_id(1) = 0
+               ! WUDay_id(2) = 0
+               ! WUDay_id(3) = 0
+               ! WUDay_id(4) = 0
+               ! WUDay_id(5) = 0
+               ! WUDay_id(6) = 0
+               ! WUDay_id(7) = 0
+               ! WUDay_id(8) = 0
+               ! WUDay_id(9) = 0
             ENDIF
          ENDIF
       ENDIF

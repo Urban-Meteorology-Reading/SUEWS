@@ -52,7 +52,7 @@ CONTAINS
       EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
       FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, fcld_obs, FlowChange, &
       FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD_id, &
-      GDDFull, Gridiv, gsModel, HDD_id, HumActivity_24hr, &
+      GDDFull, Gridiv, gsModel, h_ponding, HDD_id, HumActivity_24hr, &
       IceFrac, id, Ie_a, Ie_end, Ie_m, Ie_start, imin, &
       InternalWaterUse_h, IrrFracConif, IrrFracDecid, IrrFracGrass, isec, it, EvapMethod, &
       iy, kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax, LAIMin, LAI_obs, &
@@ -154,6 +154,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::G4
       REAL(KIND(1D0)), INTENT(IN)::G5
       REAL(KIND(1D0)), INTENT(IN)::G6
+      REAL(KIND(1D0)), INTENT(IN)::h_ponding
       REAL(KIND(1D0)), INTENT(IN)::InternalWaterUse_h
       REAL(KIND(1D0)), INTENT(IN)::IrrFracConif
       REAL(KIND(1D0)), INTENT(IN)::IrrFracDecid
@@ -469,7 +470,7 @@ CONTAINS
       REAL(KIND(1D0))::addVeg = 0
       REAL(KIND(1D0))::addWaterBody = 0
       REAL(KIND(1D0)), DIMENSION(NSURF)::AddWater = 0
-      REAL(KIND(1D0)), DIMENSION(NSURF)::AddWaterRunoff = 0
+      REAL(KIND(1D0)), DIMENSION(NSURF)::frac_water2runoff = 0
 
       ! values that are derived from tstep
       INTEGER::nsh ! number of timesteps per hour
@@ -693,6 +694,7 @@ CONTAINS
             DecidCap_id_prev, StoreDrainPrm_prev, LAI_id_prev, GDD_id_prev, SDD_id_prev, &
             albDecTr_id_prev, albEveTr_id_prev, albGrass_id_prev, porosity_id_prev, &!input
             HDD_id_prev, &!input
+            h_ponding,state_id_prev,&!input
             HDD_id_next, &!output
             Tmin_id_next, Tmax_id_next, lenDay_id_next, &
             albDecTr_id_next, albEveTr_id_next, albGrass_id_next, porosity_id_next, &!output
@@ -810,7 +812,7 @@ CONTAINS
             snowUse, NonWaterFraction, addPipes, addImpervious, addVeg, addWaterBody, &
             state_id_prev, soilstore_id_prev, sfr, StoreDrainPrm_next, WaterDist, nsh_real, &
             drain_per_tstep, &  !output
-            drain, AddWaterRunoff, &
+            drain, frac_water2runoff, &
             AdditionalWater, runoffPipes, runoff_per_interval, &
             AddWater, stateOld, soilstoreOld)
          !============= calculate water balance end =============
@@ -841,7 +843,7 @@ CONTAINS
             NonWaterFraction, wu_nsurf, addVeg, addWaterBody, SnowLimPaved, SnowLimBldg, &
             SurfaceArea, FlowChange, drain, WetThresh, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
             freezmelt, freezstate, freezstatevol, Qm_Melt, Qm_rain, Tsurf_ind, sfr, &
-            StateLimit, AddWater, addwaterrunoff, StoreDrainPrm_next, SnowPackLimit, SnowProf_24hr, &
+            StateLimit, AddWater, frac_water2runoff, StoreDrainPrm_next, SnowPackLimit, SnowProf_24hr, &
             SnowPack_next, SnowFrac_next, SnowWater_prev, IceFrac_prev, SnowDens_next, &! input:
             runoff_per_interval, state_id_prev, soilstore_id_prev, &! input:
             state_id_next, soilstore_id_next, &! output:
@@ -1618,13 +1620,13 @@ CONTAINS
    END SUBROUTINE SUEWS_cal_Qs
    !=======================================================================
 
-   !==========================water balance================================
+   !==========================drainage and runoff================================
    SUBROUTINE SUEWS_cal_Water( &
       Diagnose, &!input
       snowUse, NonWaterFraction, addPipes, addImpervious, addVeg, addWaterBody, &
       state_id, soilstore_id, sfr, StoreDrainPrm, WaterDist, nsh_real, &
       drain_per_tstep, &  !output
-      drain, AddWaterRunoff, &
+      drain, frac_water2runoff, &
       AdditionalWater, runoffPipes, runoff_per_interval, &
       AddWater, stateOld, soilstoreOld)
 
@@ -1648,7 +1650,7 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(nsurf + 1, nsurf - 1), INTENT(in)::WaterDist
 
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out):: drain         !Drainage of surface type "is" [mm]
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out):: AddWaterRunoff!Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out):: frac_water2runoff!Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out):: AddWater      !water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out):: stateOld
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out):: soilstoreOld
@@ -1710,7 +1712,7 @@ CONTAINS
       !Calculates AddWater(is)
       CALL ReDistributeWater( &
          snowUse, WaterDist, sfr, Drain, &! input:
-         AddWaterRunoff, AddWater)! output
+         frac_water2runoff, AddWater)! output
 
    END SUBROUTINE SUEWS_cal_Water
    !=======================================================================
@@ -2830,7 +2832,7 @@ CONTAINS
       EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
       FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, FlowChange, &
       FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD_id, &
-      GDDFull, Gridiv, gsModel, HDD_id, HumActivity_24hr, &
+      GDDFull, Gridiv, gsModel, h_ponding, HDD_id, HumActivity_24hr, &
       IceFrac, Ie_a, Ie_end, Ie_m, Ie_start, &
       InternalWaterUse_h, IrrFracConif, IrrFracDecid, IrrFracGrass, EvapMethod, &
       kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax, LAIMin, &
@@ -2931,6 +2933,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::G4
       REAL(KIND(1D0)), INTENT(IN)::G5
       REAL(KIND(1D0)), INTENT(IN)::G6
+      REAL(KIND(1D0)), INTENT(IN)::h_ponding
       REAL(KIND(1D0)), INTENT(IN)::InternalWaterUse_h
       REAL(KIND(1D0)), INTENT(IN)::IrrFracConif
       REAL(KIND(1D0)), INTENT(IN)::IrrFracDecid
@@ -3438,7 +3441,7 @@ CONTAINS
             EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
             FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, fcld_obs, FlowChange, &
             FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD_id, &
-            GDDFull, Gridiv, gsModel, HDD_id, HumActivity_24hr, &
+            GDDFull, Gridiv, gsModel, h_ponding, HDD_id, HumActivity_24hr, &
             IceFrac, id, Ie_a, Ie_end, Ie_m, Ie_start, imin, &
             InternalWaterUse_h, IrrFracConif, IrrFracDecid, IrrFracGrass, isec, it, EvapMethod, &
             iy, kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax, LAIMin, LAI_obs, &

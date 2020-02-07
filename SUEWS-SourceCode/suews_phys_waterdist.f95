@@ -1035,7 +1035,6 @@ CONTAINS
          ! wu_DecTr = get_Prof_SpecTime_sum(ih, imin, 0, WUProfA_24hr(:, iu), tstep)*WUDay_id(5)   !Automatic deciduous trees
          ! wu_Grass = get_Prof_SpecTime_sum(ih, imin, 0, WUProfA_24hr(:, iu), tstep)*WUDay_id(8)   !Automatic grass
 
-         wu_nsurf = WUProfA_tstep*WUDay_A_id
          ! PRINT*, ''
          ! PRINT*, 'WUDay_id(2) ',WUDay_id(2)
          ! PRINT*, 'profile ',get_Prof_SpecTime_sum(ih,imin,0,WUProfA_24hr(:,iu),tstep)
@@ -1056,11 +1055,10 @@ CONTAINS
          ! wu_DecTr = wu_DecTr + (WuFr*WUProfM_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WUDay_id(6)) !Manual deciduous trees
          ! wu_Grass = wu_Grass + (WuFr*WUProfM_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)*WUDay_id(9)) !Manual grass
          WUProfM_tstep = get_Prof_SpecTime_sum(ih, imin, 0, WUProfM_24hr(:, iu), tstep)
-         ! wu_EveTr = wu_EveTr + (get_Prof_SpecTime_sum(ih, imin, 0, WUProfM_24hr(:, iu), tstep)*flag_WuM*WUDay_id(3)) !Manual evergreen trees
-         ! wu_DecTr = wu_DecTr + (get_Prof_SpecTime_sum(ih, imin, 0, WUProfM_24hr(:, iu), tstep)*flag_WuM*WUDay_id(6)) !Manual deciduous trees
-         ! wu_Grass = wu_Grass + (get_Prof_SpecTime_sum(ih, imin, 0, WUProfM_24hr(:, iu), tstep)*flag_WuM*WUDay_id(9)) !Manual grass
 
-         wu_nsurf = wu_nsurf + WUProfM_tstep*WUDay_M_id*flag_WuM
+         ! sum up irrigation amount of automatic and manual approaches
+         wu_nsurf = WUProfA_tstep*WUDay_A_id + WUProfM_tstep*WUDay_M_id*flag_WuM
+         ! apply irrigation fraction: part of land covers are not irrigated
          wu_nsurf = wu_nsurf*IrrFrac
 
          ! PRINT*, 'auto:'

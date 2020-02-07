@@ -85,6 +85,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       dataoutBL
    USE sues_data, ONLY: &
       aerodynamicresistancemethod, daywat, daywatper, faut, flowchange, &
+      h_ponding,&
       ie_a, ie_end, ie_m, ie_start, internalwateruse_h, &
       irrfracconif, irrfracdecid, irrfracgrass, &
       pipecapacity, roughlenheatmethod, runofftowater, stabilitymethod, &
@@ -134,7 +135,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
       FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, fcld_obs, FlowChange, &
       FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD_id, &
-      GDDFull, Gridiv, gsModel, HDD_id, HumActivity_24hr, &
+      GDDFull, Gridiv, gsModel, h_ponding, HDD_id, HumActivity_24hr, &
       IceFrac, id, Ie_a, Ie_end, Ie_m, Ie_start, imin, &
       InternalWaterUse_h, IrrFracConif, IrrFracDecid, IrrFracGrass, isec, it, EvapMethod, &
       iy, kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax, LAIMin, LAI_obs, &

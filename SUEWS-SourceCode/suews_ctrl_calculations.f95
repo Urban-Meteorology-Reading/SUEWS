@@ -79,8 +79,9 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       WUDay_id, &
       AHProf_24Hr, HumActivity_24Hr, PopProf_24Hr, TraffProf_24Hr, WUProfA_24hr, WUProfM_24hr, &
       datetimeline, dataoutlinesuews, dataoutlinesnow, &
-      dataoutlineestm, dataoutlineRSL, dailystateline, dataoutdailystate, &
-      dataoutsuews, dataoutsnow, dataoutestm, dataoutRSL, &
+      dataoutlineestm, dataoutlineRSL, dataOutLineSOLWEIG, &
+      dailystateline, dataoutdailystate, &
+      dataoutsuews, dataoutsnow, dataoutestm, dataoutRSL, dataOutSOLWEIG, &
       dataoutBL
    USE sues_data, ONLY: &
       aerodynamicresistancemethod, daywat, daywatper, faut, flowchange, &
@@ -160,7 +161,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       WaterDist, WaterUseMethod, WetThresh, wu_m3, &
       WUDay_id, DecidCap_id, albDecTr_id, albEveTr_id, albGrass_id, porosity_id, &
       WUProfA_24hr, WUProfM_24hr, xsmd, Z, z0m_in, zdm_in, &
-      datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, &!output
+      datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineSOLWEIG, &!output
       DailyStateLine)!output
 
    !============ update and write out SUEWS_cal_DailyState ===============
@@ -176,8 +177,8 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
    CALL SUEWS_update_output( &
       SnowUse, storageheatmethod, &!input
       ReadLinesMetdata, NumberOfGrids, &
-      ir, gridiv, datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, &!input
-      dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL)!inout
+      ir, gridiv, datetimeLine, dataOutLineSUEWS, dataOutLineSnow, dataOutLineESTM, dataoutLineRSL, dataOutLineSOLWEIG, &!input
+      dataOutSUEWS, dataOutSnow, dataOutESTM, dataOutRSL, dataOutSOLWEIG)!inout
 
    ! NB: CBL disabled for the moment for interface improvement
    ! NB: CBL be decoupled from SUEWS TS 10 Jun 2018

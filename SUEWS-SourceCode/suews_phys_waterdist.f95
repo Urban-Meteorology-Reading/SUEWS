@@ -152,9 +152,6 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(in)::PipeCapacity!Capacity of pipes to transfer water
       REAL(KIND(1d0)), INTENT(in)::RunoffToWater!Fraction of surface runoff going to water body
       REAL(KIND(1d0)), INTENT(in)::pin!Rain per time interval
-      ! REAL(KIND(1d0)), INTENT(in)::wu_EveTr!Water use for evergreen trees/shrubs [mm]
-      ! REAL(KIND(1d0)), INTENT(in)::wu_DecTr!Water use for deciduous trees/shrubs [mm]
-      ! REAL(KIND(1d0)), INTENT(in)::wu_Grass!Water use for grass [mm]
       REAL(KIND(1d0)), INTENT(in)::addImpervious!Water from impervious surfaces of other grids [mm] for whole surface area
       REAL(KIND(1d0)), INTENT(in)::nsh_real!nsh cast as a real for use in calculations
       REAL(KIND(1d0)), INTENT(in)::PervFraction! sum of surface cover fractions for impervious surfaces
@@ -920,9 +917,9 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(nsurf)::IrrFrac !faction of irrigated part in each surface [-]
       REAL(KIND(1d0)), DIMENSION(nsurf)::WUArea !water use area [m2] for each surface type
 
-      REAL(KIND(1d0)):: WUAreaEveTr_m2
-      REAL(KIND(1d0)):: WUAreaDecTr_m2
-      REAL(KIND(1d0)):: WUAreaGrass_m2
+      ! REAL(KIND(1d0)):: WUAreaEveTr_m2
+      ! REAL(KIND(1d0)):: WUAreaDecTr_m2
+      ! REAL(KIND(1d0)):: WUAreaGrass_m2
       REAL(KIND(1d0)):: WUAreaTotal_m2
       REAL(KIND(1d0)):: InternalWaterUse    !Internal water use for the model timestep [mm]
       REAL(KIND(1d0)):: flag_WuM = 1
@@ -942,6 +939,9 @@ CONTAINS
       ! NB: set OverUse as 0 as done module_constants, TS 22 Oct 2017
       ! and the logic for calculating OverUse to be determined
       OverUse = 0
+
+      ! initialise wu
+      wu = 0
 
       ! timestep in second
       tstep = INT(3600/NSH)
@@ -964,7 +964,8 @@ CONTAINS
          ! WUAreaEveTr_m2 = IrrFracConif*sfr(ConifSurf)*SurfaceArea
          ! WUAreaDecTr_m2 = IrrFracDecid*sfr(DecidSurf)*SurfaceArea
          ! WUAreaGrass_m2 = IrrFracGrass*sfr(GrassSurf)*SurfaceArea
-         WUAreaTotal_m2 = WUAreaEveTr_m2 + WUAreaDecTr_m2 + WUAreaGrass_m2
+         ! WUAreaTotal_m2 = WUAreaEveTr_m2 + WUAreaDecTr_m2 + WUAreaGrass_m2
+
 
          WUArea = IrrFrac*sfr*SurfaceArea
          WUAreaTotal_m2 = sum(WUArea)

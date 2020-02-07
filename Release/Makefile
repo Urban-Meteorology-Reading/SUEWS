@@ -30,7 +30,6 @@ PYTHON := $(if $(PYTHON_exe),$(PYTHON_exe),python)
 
 # make fortran exe
 pack:
-	$(MAKE) clean
 	python pack_release.py
 
 clean:

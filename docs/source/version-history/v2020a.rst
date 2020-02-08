@@ -1,0 +1,35 @@
+
+.. _new_latest:
+
+.. _new_2020a:
+
+Version 2020a (in development)
+----------------------------------------------------
+
+- **Improvement**
+
+  #. A ponding water scheme is added in the automatic irrigation calculation;
+  useful when a certain depth of ponding water to maintain in irrigation
+  (e.g., flooding irrigation in rice crop-field).
+
+
+
+- **Changes**
+
+  #. A new `RoughLenHeatMethod` option `5`:
+  adaptively choose option `1` for fully pervious surface
+  or `2` otherwise (if any impervious surface exists).
+
+  #. A new column `H_ponding` is added in ``SUEWS_Irrigation.txt``
+  to set ponding water depth.
+
+- **Fix**
+
+  #. Irrigation over impervious surfaces is allowed;
+  currently assuming irrigaton fration.
+
+
+- **Known issues**
+
+  #. Wind direction is not currently downscaled
+  so non -999 values will cause an error.

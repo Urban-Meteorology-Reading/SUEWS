@@ -38,7 +38,7 @@ MODULE allocateArray
    INTEGER, PARAMETER:: ncolumnsOHMCoefficients = 4    !SUEWS_OHMCoefficients.txt
    INTEGER, PARAMETER:: ncolumnsESTMCoefficients = 52  !SUEWS_ESTMCoefficients.txt ! S.O. 04 Feb 2016
    INTEGER, PARAMETER:: ncolumnsAnthropogenic = 39     !SUEWS_AnthropogenicEmission.txt
-   INTEGER, PARAMETER:: ncolumnsIrrigation = 25        !SUEWS_Irrigation.txt
+   INTEGER, PARAMETER:: ncolumnsIrrigation = 26        !SUEWS_Irrigation.txt
    INTEGER, PARAMETER:: ncolumnsProfiles = 25          !SUEWS_Profiles.txt
    INTEGER, PARAMETER:: ncolumnsWGWaterDist = 10       !SUEWS_WithinGridWaterDist.txt
    INTEGER, PARAMETER:: ncolumnsBiogen = 9             !SUEWS_BiogenCO2.txt
@@ -667,13 +667,14 @@ MODULE allocateArray
    INTEGER :: c_IeEnd = (ccEndA + 2)
    INTEGER :: c_IntWU = (ccEndA + 3)
    INTEGER :: c_Faut = (ccEndA + 4)
-   INTEGER, DIMENSION(3):: c_Ie_a = (/(cc, cc=ccEndA + 4 + 0*3 + 1, ccEndA + 4 + 0*3 + 3, 1)/)  ! Automatic irrigation coeffs
-   INTEGER, DIMENSION(3):: c_Ie_m = (/(cc, cc=ccEndA + 4 + 1*3 + 1, ccEndA + 4 + 1*3 + 3, 1)/)  ! Manual irrigation coeffs
-   INTEGER, DIMENSION(7):: c_DayWat = (/(cc, cc=ccEndA + 10 + 0*7 + 1, ccEndA + 10 + 0*7 + 7, 1)/)  ! Irrigation allowed on each day
-   INTEGER, DIMENSION(7):: c_DayWatPer = (/(cc, cc=ccEndA + 10 + 1*7 + 1, ccEndA + 10 + 1*7 + 7, 1)/)  ! Fraction properties using irrigation allowed on each day
+   INTEGER :: c_h_ponding = (ccEndA + 5)
+   INTEGER, DIMENSION(3):: c_Ie_a = (/(cc, cc=ccEndA + 5 + 0*3 + 1, ccEndA + 5 + 0*3 + 3, 1)/)  ! Automatic irrigation coeffs
+   INTEGER, DIMENSION(3):: c_Ie_m = (/(cc, cc=ccEndA + 5 + 1*3 + 1, ccEndA + 5 + 1*3 + 3, 1)/)  ! Manual irrigation coeffs
+   INTEGER, DIMENSION(7):: c_DayWat = (/(cc, cc=ccEndA + 11 + 0*7 + 1, ccEndA + 11 + 0*7 + 7, 1)/)  ! Irrigation allowed on each day
+   INTEGER, DIMENSION(7):: c_DayWatPer = (/(cc, cc=ccEndA + 11 + 1*7 + 1, ccEndA + 11 + 1*7 + 7, 1)/)  ! Fraction properties using irrigation allowed on each day
 
    ! Find current column number
-   INTEGER, PARAMETER:: ccEndIr = (ccEndA + 10 + 1*7 + 7)
+   INTEGER, PARAMETER:: ccEndIr = (ccEndA + 11 + 1*7 + 7)
 
    ! Hourly profiles
    INTEGER, DIMENSION(24):: c_HrProfEnUseWD = (/(cc, cc=ccEndIr + 0*24 + 1, ccEndIr + 0*24 + 24, 1)/)  ! Energy use, weekdays
@@ -1514,6 +1515,7 @@ MODULE sues_data
    !Water use related variables
    REAL(KIND(1d0)):: ext_wu, &         !External water use for the model timestep [mm] (over whole study area)
                      Faut, &           !Fraction of irrigated area using automatic irrigation
+                     h_ponding, &      ! ponding water depth to maintain [mm] (over whole study area)
                      int_wu, &         !Internal water use for the model timestep [mm] (over whole study area)
                      IrrFracConif, &  !Fraction of evergreen trees which are irrigated
                      IrrFracDecid, &  !Fraction of deciduous trees which are irrigated
@@ -1994,27 +1996,27 @@ MODULE ColNamesInputFiles
               cIr_IeEnd = 3, &
               cIr_IntWU = 4, &
               cIr_Faut = 5, &
-              cIr_Ie_a1 = 6, &
-              cIr_Ie_a2 = 7, &
-              cIr_Ie_a3 = 8, &
-              cIr_Ie_m1 = 9, &
-              cIr_Ie_m2 = 10, &
-              cIr_Ie_m3 = 11, &
-              cIr_DayWat1 = 12, &
-              cIr_DayWat2 = 13, &
-              cIr_DayWat3 = 14, &
-              cIr_DayWat4 = 15, &
-              cIr_DayWat5 = 16, &
-              cIr_DayWat6 = 17, &
-              cIr_DayWat7 = 18, &
-              cIr_DayWatPer1 = 19, &
-              cIr_DayWatPer2 = 20, &
-              cIr_DayWatPer3 = 21, &
-              cIr_DayWatPer4 = 22, &
-              cIr_DayWatPer5 = 23, &
-              cIr_DayWatPer6 = 24, &
-              cIr_DayWatPer7 = 25
-
+              cIr_H_ponding = 6, &
+              cIr_Ie_a1 = 7, &
+              cIr_Ie_a2 = 8, &
+              cIr_Ie_a3 = 9, &
+              cIr_Ie_m1 = 10, &
+              cIr_Ie_m2 = 11, &
+              cIr_Ie_m3 = 12, &
+              cIr_DayWat1 = 13, &
+              cIr_DayWat2 = 14, &
+              cIr_DayWat3 = 15, &
+              cIr_DayWat4 = 16, &
+              cIr_DayWat5 = 17, &
+              cIr_DayWat6 = 18, &
+              cIr_DayWat7 = 19, &
+              cIr_DayWatPer1 = 20, &
+              cIr_DayWatPer2 = 21, &
+              cIr_DayWatPer3 = 22, &
+              cIr_DayWatPer4 = 23, &
+              cIr_DayWatPer5 = 24, &
+              cIr_DayWatPer6 = 25, &
+              cIr_DayWatPer7= 26
    !========== Columns for SUEWS_Profile.txt =============================
 
    INTEGER:: cc   !Column counter

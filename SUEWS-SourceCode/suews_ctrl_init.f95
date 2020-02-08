@@ -1331,6 +1331,7 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv, rr)
    SurfaceChar(gridiv, c_IeEnd) = Irrigation_Coeff(iv5, cIr_IeEnd)
    SurfaceChar(gridiv, c_IntWU) = Irrigation_Coeff(iv5, cIr_IntWU)
    SurfaceChar(gridiv, c_Faut) = Irrigation_Coeff(iv5, cIr_Faut)
+   SurfaceChar(gridiv, c_h_ponding) = Irrigation_Coeff(iv5, cIr_h_ponding)
    SurfaceChar(gridiv, c_Ie_a) = Irrigation_Coeff(iv5, cIr_Ie_a1:cIr_Ie_a3)
    SurfaceChar(gridiv, c_Ie_m) = Irrigation_Coeff(iv5, cIr_Ie_m1:cIr_Ie_m3)
    SurfaceChar(gridiv, c_DayWat) = Irrigation_Coeff(iv5, cIr_DayWat1:cIr_DayWat7)
@@ -1967,8 +1968,10 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
       iy, id, lat, & !input
       dayofWeek_id) !output
 
+   state_id=[PavedState,BldgsState,EveTrState,DecTrState,GrassState,BSoilState,WaterState]
    CALL update_WaterUse( &
       id, WaterUseMethod, DayofWeek_id, lat, Faut, HDD_id, &!input
+      state_id,h_ponding,&
       Ie_a, Ie_m, Ie_start, Ie_end, DayWatPer, DayWat, &
       WUDay_id) !output
 

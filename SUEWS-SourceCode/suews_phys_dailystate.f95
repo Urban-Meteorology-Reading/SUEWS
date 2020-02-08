@@ -69,6 +69,7 @@ CONTAINS
       DecidCap_id_prev, StoreDrainPrm_prev, LAI_id_prev, GDD_id_prev, SDD_id_prev, &
       albDecTr_id_prev, albEveTr_id_prev, albGrass_id_prev, porosity_id_prev, &!input
       HDD_id_prev, &!input
+      h_ponding,state_id,&!input
       HDD_id_next, &!output
       Tmin_id_next, Tmax_id_next, lenDay_id_next, &
       albDecTr_id_next, albEveTr_id_next, albGrass_id_next, porosity_id_next, &!output
@@ -126,6 +127,11 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(3), INTENT(IN) ::Ie_m !Coefficients for automatic and manual irrigation models
       REAL(KIND(1d0)), DIMENSION(7), INTENT(IN) ::DayWatPer !% of houses following daily water
       REAL(KIND(1d0)), DIMENSION(7), INTENT(IN) ::DayWat !Days of watering allowed
+
+      ! ponding-water related
+      REAL(KIND(1d0)), INTENT(IN)::h_ponding ! ponding water depth to maintain [mm]
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(IN)::state_id ! surface wetness [mm]
+
 
       ! REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(IN)      ::SnowPack
       REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(IN)   ::BaseT !Base temperature for growing degree days [degC]
@@ -302,6 +308,7 @@ CONTAINS
             AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
             BaseT, BaseTe, CapMax_dec, CapMin_dec, DayWat, DayWatPer, Faut, GDDFull, &
             Ie_a, Ie_m, LAIMax, LAIMin, LAIPower, lat, PorMax_dec, PorMin_dec, SDDFull, LAI_obs, &
+            h_ponding,state_id,&
             GDD_id, SDD_id, & !inout
             HDD_id, &
             LAI_id, &
@@ -344,6 +351,7 @@ CONTAINS
       AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
       BaseT, BaseTe, CapMax_dec, CapMin_dec, DayWat, DayWatPer, Faut, GDDFull, &
       Ie_a, Ie_m, LAIMax, LAIMin, LAIPower, lat, PorMax_dec, PorMin_dec, SDDFull, LAI_obs, &
+      h_ponding,state_id,&
       GDD_id, SDD_id, & !inout
       HDD_id, &
       LAI_id, &
@@ -395,6 +403,8 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(IN)::Tmin_id
       REAL(KIND(1d0)), INTENT(IN)::Tmax_id
       REAL(KIND(1d0)), INTENT(IN)::lenDay_id
+      REAL(KIND(1d0)), INTENT(IN)::h_ponding ! ponding water depth to maintain
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(IN)::state_id ! surface wetness [mm]
 
       REAL(KIND(1d0)), DIMENSION(3), INTENT(INOUT)       ::GDD_id ! Growing Degree Days (see SUEWS_DailyState.f95)
       REAL(KIND(1d0)), DIMENSION(3), INTENT(INOUT)       ::SDD_id ! Senescence Degree Days (see SUEWS_DailyState.f95)
@@ -415,22 +425,16 @@ CONTAINS
 
       REAL(KIND(1d0)), DIMENSION(6, nsurf), INTENT(inout)::StoreDrainPrm
 
-      ! CALL update_HDD(&
-      !      id,it,imin,tstep,& !input
-      !      HDD) !inout
 
+      ! Calculate heating degree days ------------------------------------------
       CALL update_HDD( &
          dt_since_start, it, imin, tstep, & !input
          HDD_id)!inout
 
       ! Calculate modelled daily water use ------------------------------------------
-      ! CALL update_WaterUse(&
-      !      id,WaterUseMethod,DayofWeek_id,lat,Faut,HDD_id,&!input
-      !      Ie_a,Ie_m,Ie_start,Ie_end,DayWatPer,DayWat,&
-      !      WUDay) !inout
-
       CALL update_WaterUse( &
          id, WaterUseMethod, DayofWeek_id, lat, Faut, HDD_id, &!input
+         state_id, h_ponding, &!input
          Ie_a, Ie_m, Ie_start, Ie_end, DayWatPer, DayWat, &
          WUDay_id) !output
 
@@ -445,17 +449,7 @@ CONTAINS
       ! save initial LAI_id
       LAI_id_in = LAI_id
 
-      ! CALL update_GDDLAI( &
-      !    id, LAICalcYes, & !input
-      !    lat, LAI_obs, &
-      !    BaseT, BaseTe, &
-      !    GDDFull, SDDFull, &
-      !    LAIMin, LAIMax, LAIPower, LAIType, &
-      !    LAI_id_in, &
-      !    GDD_id, &!inout
-      !    LAI_id) !output
-
-      CALL update_GDDLAI_x( &
+      CALL update_GDDLAI( &
          id, LAICalcYes, & !input
          lat, LAI_obs, &
          Tmin_id, Tmax_id, lenDay_id, &
@@ -659,169 +653,6 @@ CONTAINS
    SUBROUTINE update_GDDLAI( &
       id, LAICalcYes, & !input
       lat, LAI_obs, &
-      BaseT, BaseTe, &
-      GDDFull, SDDFull, &
-      LAIMin, LAIMax, LAIPower, LAIType, &
-      LAI_id_prev, &
-      GDD_id, &!inout
-      LAI_id_next) !output
-      IMPLICIT NONE
-
-      !------------------------------------------------------------------------------
-      ! Calculation of LAI from growing degree days
-      ! This was revised and checked on 16 Feb 2014 by LJ
-      !------------------------------------------------------------------------------
-
-      INTEGER, INTENT(IN)::id
-      INTEGER, INTENT(IN)::LAICalcYes
-
-      REAL(KIND(1d0)), INTENT(IN)::lat
-      REAL(KIND(1d0)), INTENT(IN)::LAI_obs
-
-      ! --- Vegetation phenology ---------------------------------------------------------------------
-      ! Parameters provided in input information for each vegetation surface (SUEWS_Veg.txt)
-      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(IN)  :: BaseT          !Base temperature for growing degree days [degC]
-      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(IN)  :: BaseTe         !Base temperature for senescence degree days [degC]
-      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(IN)  :: GDDFull        !Growing degree days needed for full capacity [degC]
-      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(IN)  :: SDDFull        !Senescence degree days needed to initiate leaf off [degC]
-      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(IN)  :: LAIMin         !Min LAI [m2 m-2]
-      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(IN)  :: LAIMax         !Max LAI [m2 m-2]
-      REAL(KIND(1d0)), DIMENSION(4, nvegsurf), INTENT(IN):: LAIPower       !Coeffs for LAI equation: 1,2 - leaf growth; 3,4 - leaf off
-      !! N.B. currently DecTr only, although input provided for all veg types
-      INTEGER, DIMENSION(nvegsurf), INTENT(IN):: LAIType                  !LAI equation to use: original (0) or new (1)
-
-      REAL(KIND(1d0)), DIMENSION(5), INTENT(INOUT)       :: GDD_id !Growing Degree Days (see SUEWS_DailyState.f95)
-      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(OUT):: LAI_id_next !LAI for each veg surface [m2 m-2]
-      REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(IN)::LAI_id_prev ! LAI of previous day
-
-      REAL(KIND(1d0)):: no   !Switches and checks for GDD
-      REAL(KIND(1d0))::yes   !Switches and checks for GDD
-      REAL(KIND(1d0))::indHelp   !Switches and checks for GDD
-      REAL(KIND(1d0)), DIMENSION(5)::GDD_id_prev ! GDD of previous day
-
-      INTEGER:: critDays
-      INTEGER::iv
-
-      ! translate values of previous day to local variables
-      GDD_id_prev = GDD_id
-      ! LAI_id_prev = LAI_id_next
-
-      critDays = 50   !Critical limit for GDD when GDD or SDD is set to zero
-
-      ! Loop through vegetation types (iv)
-      DO iv = 1, NVegSurf
-         ! Calculate GDD for each day from the minimum and maximum air temperature
-         yes = ((GDD_id_prev(3) + GDD_id_prev(4))/2 - BaseT(iv))    !Leaf on
-         no = ((GDD_id_prev(3) + GDD_id_prev(4))/2 - BaseTe(iv))   !Leaf off
-
-         indHelp = 0   !Help switch to allow GDD to go to zero in sprint-time !! QUESTION: What does this mean? HCW
-
-         IF (yes < 0) THEN   !GDD cannot be negative
-            indHelp = yes   !Amount of negative GDD
-            yes = 0
-         ENDIF
-
-         IF (no > 0) no = 0    !SDD cannot be positive
-
-         ! Calculate cumulative growing and senescence degree days
-         GDD_id(1) = GDD_id_prev(1) + yes
-         GDD_id(2) = GDD_id_prev(2) + no
-
-         ! Possibility for cold spring
-         IF (GDD_id(2) <= SDDFull(iv) .AND. indHelp < 0) THEN
-            GDD_id(1) = 0
-         ENDIF
-
-         IF (GDD_id(1) >= GDDFull(iv)) THEN   !Start senescence
-            GDD_id(1) = GDDFull(iv)          !Leaves should not grow so delete yes from earlier
-            IF (GDD_id(2) < -critDays) GDD_id(1) = 0
-         ENDIF
-
-         IF (GDD_id(2) <= SDDFull(iv)) THEN   !After senescence now start growing leaves
-            GDD_id(2) = SDDFull(iv)           !Leaves off so add back earlier
-            IF (GDD_id(1) > critDays) GDD_id(2) = 0
-         ENDIF
-
-         ! With these limits SDD, GDD is set to zero
-         IF (GDD_id(2) < -critDays .AND. GDD_id(2) > SDDFull(iv)) GDD_id(1) = 0
-         IF (GDD_id(1) > critDays .AND. GDD_id(1) < GDDFull(iv)) GDD_id(2) = 0
-
-         ! Now calculate LAI itself
-         IF (lat >= 0) THEN   !Northern hemispere
-            !If SDD is not zero by mid May, this is forced
-            IF (id == 140 .AND. GDD_id(2) /= 0) GDD_id(2) = 0
-            ! Set SDD to zero in summer time
-            IF (GDD_id(1) > critDays .AND. id < 170) GDD_id(2) = 0
-            ! Set GDD zero in winter time
-            IF (GDD_id(2) < -critDays .AND. id > 170) GDD_id(1) = 0
-
-            IF (LAItype(iv) < 0.5) THEN   !Original LAI type
-               IF (GDD_id(1) > 0 .AND. GDD_id(1) < GDDFull(iv)) THEN       !Leaves can still grow
-                  LAI_id_next(iv) = (LAI_id_prev(iv)**LAIPower(1, iv)*GDD_id(1)*LAIPower(2, iv)) + LAI_id_prev(iv)
-               ELSEIF (GDD_id(2) < 0 .AND. GDD_id(2) > SDDFull(iv)) THEN   !Start senescence
-                  LAI_id_next(iv) = (LAI_id_prev(iv)**LAIPower(3, iv)*GDD_id(2)*LAIPower(4, iv)) + LAI_id_prev(iv)
-               ELSE
-                  LAI_id_next(iv) = LAI_id_prev(iv)
-               ENDIF
-            ELSEIF (LAItype(iv) >= 0.5) THEN
-               IF (GDD_id(1) > 0 .AND. GDD_id(1) < GDDFull(iv)) THEN        !Leaves can still grow
-                  LAI_id_next(iv) = (LAI_id_prev(iv)**LAIPower(1, iv)*GDD_id(1)*LAIPower(2, iv)) + LAI_id_prev(iv)
-                  !! Use day length to start senescence at high latitudes (N hemisphere)
-               ELSEIF (GDD_id(5) <= 12 .AND. GDD_id(2) > SDDFull(iv)) THEN !Start senescence
-                  LAI_id_next(iv) = (LAI_id_prev(iv)*LAIPower(3, iv)*(1 - GDD_id(2))*LAIPower(4, iv)) + LAI_id_prev(iv)
-               ELSE
-                  LAI_id_next(iv) = LAI_id_prev(iv)
-               ENDIF
-            ENDIF
-
-         ELSEIF (lat < 0) THEN   !Southern hemisphere !! N.B. not identical to N hemisphere - return to later
-            !If SDD is not zero by late Oct, this is forced
-            IF (id == 300 .AND. GDD_id(2) /= 0) GDD_id(2) = 0
-            ! Set SDD to zero in summer time
-            IF (GDD_id(1) > critDays .AND. id > 250) GDD_id(2) = 0
-            ! Set GDD zero in winter time
-            IF (GDD_id(2) < -critDays .AND. id < 250) GDD_id(1) = 0
-
-            IF (LAItype(iv) < 0.5) THEN   !Original LAI type
-               IF (GDD_id(1) > 0 .AND. GDD_id(1) < GDDFull(iv)) THEN
-                  LAI_id_next(iv) = (LAI_id_prev(iv)**LAIPower(1, iv)*GDD_id(1)*LAIPower(2, iv)) + LAI_id_prev(iv)
-               ELSEIF (GDD_id(2) < 0 .AND. GDD_id(2) > SDDFull(iv)) THEN
-                  LAI_id_next(iv) = (LAI_id_prev(iv)**LAIPower(3, iv)*GDD_id(2)*LAIPower(4, iv)) + LAI_id_prev(iv)
-               ELSE
-                  LAI_id_next(iv) = LAI_id_prev(iv)
-               ENDIF
-            ELSE
-               IF (GDD_id(1) > 0 .AND. GDD_id(1) < GDDFull(iv)) THEN
-                  LAI_id_next(iv) = (LAI_id_prev(iv)**LAIPower(1, iv)*GDD_id(1)*LAIPower(2, iv)) + LAI_id_prev(iv)
-                  !! Day length not used to start senescence in S hemisphere (not much land)
-               ELSEIF (GDD_id(2) < 0 .AND. GDD_id(2) > SDDFull(iv)) THEN
-                  LAI_id_next(iv) = (LAI_id_prev(iv)*LAIPower(3, iv)*(1 - GDD_id(2))*LAIPower(4, iv)) + LAI_id_prev(iv)
-               ELSE
-                  LAI_id_next(iv) = LAI_id_prev(iv)
-               ENDIF
-            ENDIF
-         ENDIF   !N or S hemisphere
-
-         ! Check LAI within limits; if not set to limiting value
-         IF (LAI_id_next(iv) > LAImax(iv)) THEN
-            LAI_id_next(iv) = LAImax(iv)
-         ELSEIF (LAI_id_next(iv) < LAImin(iv)) THEN
-            LAI_id_next(iv) = LAImin(iv)
-         ENDIF
-
-      ENDDO   !End of loop over veg surfaces
-
-      IF (LAICalcYes == 0) THEN ! moved to SUEWS_cal_DailyState, TS 18 Sep 2017
-         ! LAI(id-1,:)=LAI_obs ! check -- this is going to be a problem as it is not for each vegetation class
-         LAI_id_next = LAI_obs
-      ENDIF
-      !------------------------------------------------------------------------------
-
-   END SUBROUTINE update_GDDLAI
-
-   SUBROUTINE update_GDDLAI_x( &
-      id, LAICalcYes, & !input
-      lat, LAI_obs, &
       Tmin_id_prev, Tmax_id_prev, lenDay_id_prev, &
       BaseT, BaseTe, &
       GDDFull, SDDFull, &
@@ -987,10 +818,11 @@ CONTAINS
       ENDIF
       !------------------------------------------------------------------------------
 
-   END SUBROUTINE update_GDDLAI_x
+   END SUBROUTINE update_GDDLAI
 
    SUBROUTINE update_WaterUse( &
       id, WaterUseMethod, DayofWeek_id, lat, FrIrriAuto, HDD_id, &!input
+      state_id, h_ponding, &!input
       Ie_a, Ie_m, Ie_start, Ie_end, DayWatPer, DayWat, &
       WUDay_id) !output
 
@@ -1006,15 +838,25 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(IN)::FrIrriAuto          !Fraction of irrigated area using automatic irrigation
 
       REAL(KIND(1d0)), DIMENSION(12), INTENT(IN)::HDD_id
-      REAL(KIND(1d0)), DIMENSION(3), INTENT(IN)::Ie_a
-      REAL(KIND(1d0)), DIMENSION(3), INTENT(IN)::Ie_m   !Coefficients for automatic and manual irrigation models
+      REAL(KIND(1d0)), DIMENSION(3), INTENT(IN)::Ie_a   !Coefficients for automatic irrigation models
+      REAL(KIND(1d0)), DIMENSION(3), INTENT(IN)::Ie_m   !Coefficients for manual irrigation models
       REAL(KIND(1d0)), DIMENSION(7), INTENT(IN)::DayWatPer  !% of houses following daily water
       REAL(KIND(1d0)), DIMENSION(7), INTENT(IN)::DayWat       !Days of watering allowed
 
+      ! ponding control related
+      REAL(KIND(1d0)), INTENT(IN)::h_ponding  ! ponding water depth to maintain [mm]
+      REAL(KIND(1d0)), DIMENSION(7), INTENT(IN)::state_id  ! surface wetness [mm]
+
       REAL(KIND(1d0)), DIMENSION(9), INTENT(OUT):: WUDay_id       !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
+
+      REAL(KIND(1d0)), DIMENSION(3)::WUDay_P   !water used to maintain ponding level [mm]
+      REAL(KIND(1d0)), DIMENSION(3)::WUDay_A   !automatic irrigation [mm]
+      REAL(KIND(1d0)), DIMENSION(3)::WUDay_M   !manual irrigation [mm]
+      REAL(KIND(1d0)), DIMENSION(3)::WUDay_total   !Coefficients for manual irrigation models
 
       INTEGER::wd        !Water use calculation is done when calc = 1
       INTEGER::calc        !Water use calculation is done when calc = 1
+      INTEGER::i
 
       REAL(KIND(1d0))::temp_avg
       REAL(KIND(1d0))::days_since_rain
@@ -1044,49 +886,72 @@ CONTAINS
                ! WUDay is the amount of water [mm] per day, applied to each of the irrigated areas
                ! N.B. These are the same for each vegetation type at the moment
 
-               ! ---- Automatic irrigation (evergreen trees) ----
-               WUDay_id(2) = FrIrriAuto*(Ie_a(1) + Ie_a(2)*temp_avg + Ie_a(3)*days_since_rain)*DayWatPer(wd)
-               IF (WUDay_id(2) < 0) WUDay_id(2) = 0   !If modelled WU is negative -> 0
+               ! ---- irrigation amount to maintain ponding water----
+               WUDay_P=h_ponding-state_id(3:5)
+               WUDay_P=MERGE(WUDay_P,WUDay_P*0,WUDay_P>0)
 
-               ! ---- Manual irrigation (evergreen trees) ----
-               WUDay_id(3) = (1 - FrIrriAuto)*(Ie_m(1) + Ie_m(2)*temp_avg + Ie_m(3)*days_since_rain)*DayWatPer(wd)
-               IF (WUDay_id(3) < 0) WUDay_id(3) = 0   !If modelled WU is negative -> 0
+               ! ---- automatic irrigation ----
+               WUDay_A=FrIrriAuto*(Ie_a(1) + Ie_a(2)*temp_avg + Ie_a(3)*days_since_rain)*DayWatPer(wd)
+               WUDay_A=MERGE(WUDay_A,WUDay_A*0,WUDay_A>0)
+               ! add ponding-demand to auto-irrigation
+               WUDay_A=WUDay_A+WUDay_P
 
-               ! ---- Total evergreen trees water use (automatic + manual) ----
-               WUDay_id(1) = (WUDay_id(2) + WUDay_id(3))
+               ! ---- Manual irrigation----
+               WUDay_M=(1 - FrIrriAuto)*(Ie_m(1) + Ie_m(2)*temp_avg + Ie_m(3)*days_since_rain)*DayWatPer(wd)
+               WUDay_M=MERGE(WUDay_M,WUDay_M*0,WUDay_M>0)
 
-               ! ---- Automatic irrigation (deciduous trees) ----
-               WUDay_id(5) = FrIrriAuto*(Ie_a(1) + Ie_a(2)*temp_avg + Ie_a(3)*days_since_rain)*DayWatPer(wd)
-               IF (WUDay_id(5) < 0) WUDay_id(5) = 0   !If modelled WU is negative -> 0
+               ! ---- total irrigation
+               WUDay_total=WUDay_P+WUDay_A+WUDay_M
 
-               ! ---- Manual irrigation (deciduous trees) ----
-               WUDay_id(6) = (1 - FrIrriAuto)*(Ie_m(1) + Ie_m(2)*temp_avg + Ie_m(3)*days_since_rain)*DayWatPer(wd)
-               IF (WUDay_id(6) < 0) WUDay_id(6) = 0   !If modelled WU is negative -> 0
+               ! transfer values to WUDay_id
+               WUDay_id([((i-1)*3+1,i = 1,3)]) = WUDay_total
+               WUDay_id([((i-1)*3+2,i = 1,3)]) = WUDay_A
+               WUDay_id([((i-1)*3+3,i = 1,3)]) = WUDay_M
 
-               ! ---- Total deciduous trees water use (automatic + manual) ----
-               WUDay_id(4) = (WUDay_id(5) + WUDay_id(6))
+               ! ! ---- Automatic irrigation (evergreen trees) ----
+               ! WUDay_id(2) = FrIrriAuto*(Ie_a(1) + Ie_a(2)*temp_avg + Ie_a(3)*days_since_rain)*DayWatPer(wd)
+               ! IF (WUDay_id(2) < 0) WUDay_id(2) = 0   !If modelled WU is negative -> 0
 
-               ! ---- Automatic irrigation (grass) ----
-               WUDay_id(8) = FrIrriAuto*(Ie_a(1) + Ie_a(2)*temp_avg + Ie_a(3)*days_since_rain)*DayWatPer(wd)
-               IF (WUDay_id(8) < 0) WUDay_id(8) = 0   !If modelled WU is negative -> 0
+               ! ! ---- Manual irrigation (evergreen trees) ----
+               ! WUDay_id(3) = (1 - FrIrriAuto)*(Ie_m(1) + Ie_m(2)*temp_avg + Ie_m(3)*days_since_rain)*DayWatPer(wd)
+               ! IF (WUDay_id(3) < 0) WUDay_id(3) = 0   !If modelled WU is negative -> 0
 
-               ! ---- Manual irrigation (grass) ----
-               WUDay_id(9) = (1 - FrIrriAuto)*(Ie_m(1) + Ie_m(2)*temp_avg + Ie_m(3)*days_since_rain)*DayWatPer(wd)
-               IF (WUDay_id(9) < 0) WUDay_id(9) = 0   !If modelled WU is negative -> 0
+               ! ! ---- Total evergreen trees water use (automatic + manual) ----
+               ! WUDay_id(1) = (WUDay_id(2) + WUDay_id(3))
 
-               ! ---- Total grass water use (automatic + manual) ----
-               WUDay_id(7) = (WUDay_id(8) + WUDay_id(9))
+               ! ! ---- Automatic irrigation (deciduous trees) ----
+               ! WUDay_id(5) = FrIrriAuto*(Ie_a(1) + Ie_a(2)*temp_avg + Ie_a(3)*days_since_rain)*DayWatPer(wd)
+               ! IF (WUDay_id(5) < 0) WUDay_id(5) = 0   !If modelled WU is negative -> 0
+
+               ! ! ---- Manual irrigation (deciduous trees) ----
+               ! WUDay_id(6) = (1 - FrIrriAuto)*(Ie_m(1) + Ie_m(2)*temp_avg + Ie_m(3)*days_since_rain)*DayWatPer(wd)
+               ! IF (WUDay_id(6) < 0) WUDay_id(6) = 0   !If modelled WU is negative -> 0
+
+               ! ! ---- Total deciduous trees water use (automatic + manual) ----
+               ! WUDay_id(4) = (WUDay_id(5) + WUDay_id(6))
+
+               ! ! ---- Automatic irrigation (grass) ----
+               ! WUDay_id(8) = FrIrriAuto*(Ie_a(1) + Ie_a(2)*temp_avg + Ie_a(3)*days_since_rain)*DayWatPer(wd)
+               ! IF (WUDay_id(8) < 0) WUDay_id(8) = 0   !If modelled WU is negative -> 0
+
+               ! ! ---- Manual irrigation (grass) ----
+               ! WUDay_id(9) = (1 - FrIrriAuto)*(Ie_m(1) + Ie_m(2)*temp_avg + Ie_m(3)*days_since_rain)*DayWatPer(wd)
+               ! IF (WUDay_id(9) < 0) WUDay_id(9) = 0   !If modelled WU is negative -> 0
+
+               ! ! ---- Total grass water use (automatic + manual) ----
+               ! WUDay_id(7) = (WUDay_id(8) + WUDay_id(9))
 
             ELSE   !If no irrigation on this day
-               WUDay_id(1) = 0
-               WUDay_id(2) = 0
-               WUDay_id(3) = 0
-               WUDay_id(4) = 0
-               WUDay_id(5) = 0
-               WUDay_id(6) = 0
-               WUDay_id(7) = 0
-               WUDay_id(8) = 0
-               WUDay_id(9) = 0
+               WUDay_id    = 0
+               ! WUDay_id(1) = 0
+               ! WUDay_id(2) = 0
+               ! WUDay_id(3) = 0
+               ! WUDay_id(4) = 0
+               ! WUDay_id(5) = 0
+               ! WUDay_id(6) = 0
+               ! WUDay_id(7) = 0
+               ! WUDay_id(8) = 0
+               ! WUDay_id(9) = 0
             ENDIF
          ENDIF
       ENDIF

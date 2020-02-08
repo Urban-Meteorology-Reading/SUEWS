@@ -674,7 +674,7 @@ MODULE allocateArray
    INTEGER, DIMENSION(7):: c_DayWatPer = (/(cc, cc=ccEndA + 11 + 1*7 + 1, ccEndA + 11 + 1*7 + 7, 1)/)  ! Fraction properties using irrigation allowed on each day
 
    ! Find current column number
-   INTEGER, PARAMETER:: ccEndIr = (ccEndA + 10 + 1*7 + 7)
+   INTEGER, PARAMETER:: ccEndIr = (ccEndA + 11 + 1*7 + 7)
 
    ! Hourly profiles
    INTEGER, DIMENSION(24):: c_HrProfEnUseWD = (/(cc, cc=ccEndIr + 0*24 + 1, ccEndIr + 0*24 + 24, 1)/)  ! Energy use, weekdays

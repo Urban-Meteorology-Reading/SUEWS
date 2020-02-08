@@ -1071,6 +1071,19 @@ Input Options
 			:header-rows: 1
 			:widths: 44 18 38
 
+
+.. option:: H_ponding
+
+	:Description:
+		Ponding water depth to maintain used in automatic irrigation (e.g., ponding water due to flooding irrigation in rice crop-field) [mm].
+
+	:Configuration:
+		.. csv-table::
+			:class: longtable
+			:file: csv-table/H_ponding.csv
+			:header-rows: 1
+			:widths: 44 18 38
+
 .. option:: FcEF_v_kgkmWD
 
 	:Description:

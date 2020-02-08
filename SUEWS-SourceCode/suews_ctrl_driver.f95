@@ -694,7 +694,7 @@ CONTAINS
             DecidCap_id_prev, StoreDrainPrm_prev, LAI_id_prev, GDD_id_prev, SDD_id_prev, &
             albDecTr_id_prev, albEveTr_id_prev, albGrass_id_prev, porosity_id_prev, &!input
             HDD_id_prev, &!input
-            h_ponding,state_id_prev,&!input
+            h_ponding, state_id_prev, &!input
             HDD_id_next, &!output
             Tmin_id_next, Tmax_id_next, lenDay_id_next, &
             albDecTr_id_next, albEveTr_id_next, albGrass_id_next, porosity_id_next, &!output

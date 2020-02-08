@@ -2016,7 +2016,7 @@ MODULE ColNamesInputFiles
               cIr_DayWatPer4 = 23, &
               cIr_DayWatPer5 = 24, &
               cIr_DayWatPer6 = 25, &
-              cIr_DayWatPer7= 26
+              cIr_DayWatPer7 = 26
    !========== Columns for SUEWS_Profile.txt =============================
 
    INTEGER:: cc   !Column counter

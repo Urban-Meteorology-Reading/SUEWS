@@ -1968,10 +1968,10 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
       iy, id, lat, & !input
       dayofWeek_id) !output
 
-   state_id=[PavedState,BldgsState,EveTrState,DecTrState,GrassState,BSoilState,WaterState]
+   state_id = [PavedState, BldgsState, EveTrState, DecTrState, GrassState, BSoilState, WaterState]
    CALL update_WaterUse( &
       id, WaterUseMethod, DayofWeek_id, lat, Faut, HDD_id, &!input
-      state_id,h_ponding,&
+      state_id, h_ponding, &
       Ie_a, Ie_m, Ie_start, Ie_end, DayWatPer, DayWat, &
       WUDay_id) !output
 

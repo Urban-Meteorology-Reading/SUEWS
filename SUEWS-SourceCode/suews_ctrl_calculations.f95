@@ -85,7 +85,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       dataoutBL
    USE sues_data, ONLY: &
       aerodynamicresistancemethod, daywat, daywatper, faut, flowchange, &
-      h_ponding,&
+      h_ponding, &
       ie_a, ie_end, ie_m, ie_start, internalwateruse_h, &
       irrfracconif, irrfracdecid, irrfracgrass, &
       pipecapacity, roughlenheatmethod, runofftowater, stabilitymethod, &

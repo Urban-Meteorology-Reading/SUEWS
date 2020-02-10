@@ -54,7 +54,7 @@ CONTAINS
       FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD_id, &
       GDDFull, Gridiv, gsModel, h_ponding, HDD_id, HumActivity_24hr, &
       IceFrac, id, Ie_a, Ie_end, Ie_m, Ie_start, imin, &
-      InternalWaterUse_h, IrrFracConif, IrrFracDecid, IrrFracGrass, isec, it, EvapMethod, &
+      InternalWaterUse_h, IrrFracEveTr, IrrFracDecTr, IrrFracGrass, isec, it, EvapMethod, &
       iy, kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax, LAIMin, LAI_obs, &
       LAIPower, LAIType, lat, lenDay_id, ldown_obs, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
       SnowWater, MetForcingData_grid, MinFCMetab, MinQFMetab, min_res_bioCO2, &
@@ -156,8 +156,8 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::G6
       REAL(KIND(1D0)), INTENT(IN)::h_ponding
       REAL(KIND(1D0)), INTENT(IN)::InternalWaterUse_h
-      REAL(KIND(1D0)), INTENT(IN)::IrrFracConif
-      REAL(KIND(1D0)), INTENT(IN)::IrrFracDecid
+      REAL(KIND(1D0)), INTENT(IN)::IrrFracEveTr
+      REAL(KIND(1D0)), INTENT(IN)::IrrFracDecTr
       REAL(KIND(1D0)), INTENT(IN)::IrrFracGrass
       REAL(KIND(1D0)), INTENT(IN)::Kmax
       REAL(KIND(1D0)), INTENT(IN)::LAI_obs
@@ -720,7 +720,7 @@ CONTAINS
          CALL SUEWS_cal_WaterUse( &
             nsh_real, & ! input:
             wu_m3, SurfaceArea, sfr, &
-            IrrFracConif, IrrFracDecid, IrrFracGrass, &
+            IrrFracEveTr, IrrFracDecTr, IrrFracGrass, &
             DayofWeek_id, WUProfA_24hr, WUProfM_24hr, &
             InternalWaterUse_h, HDD_id_next, WUDay_id_next, &
             WaterUseMethod, NSH, it, imin, DLS, &
@@ -2834,7 +2834,7 @@ CONTAINS
       FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD_id, &
       GDDFull, Gridiv, gsModel, h_ponding, HDD_id, HumActivity_24hr, &
       IceFrac, Ie_a, Ie_end, Ie_m, Ie_start, &
-      InternalWaterUse_h, IrrFracConif, IrrFracDecid, IrrFracGrass, EvapMethod, &
+      InternalWaterUse_h, IrrFracEveTr, IrrFracDecTr, IrrFracGrass, EvapMethod, &
       kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax, LAIMin, &
       LAIPower, LAIType, lat, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
       SnowWater, MinFCMetab, MinQFMetab, min_res_bioCO2, &
@@ -2935,8 +2935,8 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::G6
       REAL(KIND(1D0)), INTENT(IN)::h_ponding
       REAL(KIND(1D0)), INTENT(IN)::InternalWaterUse_h
-      REAL(KIND(1D0)), INTENT(IN)::IrrFracConif
-      REAL(KIND(1D0)), INTENT(IN)::IrrFracDecid
+      REAL(KIND(1D0)), INTENT(IN)::IrrFracEveTr
+      REAL(KIND(1D0)), INTENT(IN)::IrrFracDecTr
       REAL(KIND(1D0)), INTENT(IN)::IrrFracGrass
       REAL(KIND(1D0)), INTENT(IN)::Kmax
       ! REAL(KIND(1D0)),INTENT(IN)::LAI_obs
@@ -3291,8 +3291,8 @@ CONTAINS
          ! write (12, *) 'ie_start=', ie_start
          ! write (12, *) 'imin=', imin
          ! write (12, *) 'internalwateruse_h=', internalwateruse_h
-         ! write (12, *) 'irrfracconif=', irrfracconif
-         ! write (12, *) 'irrfracdecid=', irrfracdecid
+         ! write (12, *) 'IrrFracEveTr=', IrrFracEveTr
+         ! write (12, *) 'IrrFracDecTr=', IrrFracDecTr
          ! write (12, *) 'irrfracgrass=', irrfracgrass
          ! write (12, *) 'isec=', isec
          ! write (12, *) 'it=', it
@@ -3443,7 +3443,7 @@ CONTAINS
             FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD_id, &
             GDDFull, Gridiv, gsModel, h_ponding, HDD_id, HumActivity_24hr, &
             IceFrac, id, Ie_a, Ie_end, Ie_m, Ie_start, imin, &
-            InternalWaterUse_h, IrrFracConif, IrrFracDecid, IrrFracGrass, isec, it, EvapMethod, &
+            InternalWaterUse_h, IrrFracEveTr, IrrFracDecTr, IrrFracGrass, isec, it, EvapMethod, &
             iy, kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax, LAIMin, LAI_obs, &
             LAIPower, LAIType, lat, lenDay_id, ldown_obs, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
             SnowWater, MetForcingData_grid, MinFCMetab, MinQFMetab, min_res_bioCO2, &

@@ -1990,23 +1990,23 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
    !          ! Model daily water use based on HDD_id(6)(days since rain) and HDD_id(3)(average temp)
    !
    !          ! ---- Automatic irrigation (evergreen trees) ----
-   !          WUDay_id(2) = Faut*(Ie_a(1)+Ie_a(2)*HDD_id(3)+Ie_a(3)*HDD_id(6))*sfr(ConifSurf)*IrrFracConif*DayWatPer(wd)
+   !          WUDay_id(2) = Faut*(Ie_a(1)+Ie_a(2)*HDD_id(3)+Ie_a(3)*HDD_id(6))*sfr(ConifSurf)*IrrFracEveTr*DayWatPer(wd)
    !          IF (WUDay_id(2)<0) WUDay_id(2)=0   !If modelled WU is negative -> 0
    !
    !          ! ---- Manual irrigation (evergreen trees) ----
-   !          WUDay_id(3) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD_id(3)+Ie_m(3)*HDD_id(6))*sfr(ConifSurf)*IrrFracConif*DayWatPer(wd)
+   !          WUDay_id(3) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD_id(3)+Ie_m(3)*HDD_id(6))*sfr(ConifSurf)*IrrFracEveTr*DayWatPer(wd)
    !          IF (WUDay_id(3)<0) WUDay_id(3)=0   !If modelled WU is negative -> 0
    !
    !          ! ---- Total evergreen trees water use (automatic + manual) ----
    !          WUDay_id(1)=(WUDay_id(2)+WUDay_id(3))
    !
    !          ! ---- Automatic irrigation (deciduous trees) ----
-   !          WUDay_id(5) = Faut*(Ie_a(1)+Ie_a(2)*HDD_id(3)+Ie_a(3)*HDD_id(6))*sfr(DecidSurf)*IrrFracDecid*DayWatPer(wd)
+   !          WUDay_id(5) = Faut*(Ie_a(1)+Ie_a(2)*HDD_id(3)+Ie_a(3)*HDD_id(6))*sfr(DecidSurf)*IrrFracDecTr*DayWatPer(wd)
    !          IF (WUDay_id(5)<0) WUDay_id(5)=0   !If modelled WU is negative -> 0
    !
    !          ! ---- Manual irrigation (deciduous trees) ----
    !          WUDay_id(6) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD_id(3)+Ie_m(3)*HDD_id(6))*sfr(DecidSurf)*&
-   !               IrrFracDecid*DayWatPer(wd)
+   !               IrrFracDecTr*DayWatPer(wd)
    !          IF (WUDay_id(6)<0) WUDay_id(6)=0   !If modelled WU is negative -> 0
    !
    !          ! ---- Total deciduous trees water use (automatic + manual) ----

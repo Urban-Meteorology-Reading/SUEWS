@@ -858,7 +858,7 @@ CONTAINS
    SUBROUTINE SUEWS_cal_WaterUse( &
       nsh_real, & ! input:
       wu_m3, SurfaceArea, sfr, &
-      IrrFracConif, IrrFracDecid, IrrFracGrass, &
+      IrrFracEveTr, IrrFracDecTr, IrrFracGrass, &
       DayofWeek_id, WUProfA_24hr, WUProfM_24hr, &
       InternalWaterUse_h, HDD_id, WUDay_id, &
       WaterUseMethod, NSH, it, imin, DLS, &
@@ -886,8 +886,8 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(in)::nsh_real
       REAL(KIND(1d0)), INTENT(in)::wu_m3 ! external water input (e.g., irrigation)  [m3]
       REAL(KIND(1d0)), INTENT(in)::SurfaceArea !Surface area of the study area [m2]
-      REAL(KIND(1d0)), INTENT(in)::IrrFracConif!Fraction of evergreen trees which are irrigated
-      REAL(KIND(1d0)), INTENT(in)::IrrFracDecid!Fraction of deciduous trees which are irrigated
+      REAL(KIND(1d0)), INTENT(in)::IrrFracEveTr!Fraction of evergreen trees which are irrigated
+      REAL(KIND(1d0)), INTENT(in)::IrrFracDecTr!Fraction of deciduous trees which are irrigated
       REAL(KIND(1d0)), INTENT(in)::IrrFracGrass!Fraction of grass which is irrigated
       REAL(KIND(1d0)), INTENT(in)::InternalWaterUse_h !Internal water use [mm h-1]
       REAL(KIND(1d0)), DIMENSION(0:23, 2), INTENT(in)::WUProfA_24hr !Automatic water use profiles at hourly scales
@@ -952,8 +952,8 @@ CONTAINS
       ! Irrigated Fraction of each surface
       ! TS: as of 20191130, assuming irrigation fraction as ONE except for vegetated surfaces
       IrrFrac = 1
-      IrrFrac(ConifSurf) = IrrFracConif
-      IrrFrac(DecidSurf) = IrrFracDecid
+      IrrFrac(ConifSurf) = IrrFracEveTr
+      IrrFrac(DecidSurf) = IrrFracDecTr
       IrrFrac(GrassSurf) = IrrFracGrass
 
       ! --------------------------------------------------------------------------------
@@ -961,8 +961,8 @@ CONTAINS
       ! Divide observed water use (in m3) by water use area to find water use (in mm)
       IF (WaterUseMethod == 1) THEN   !If water use is observed
          ! Calculate water use area [m2] for each surface type
-         ! WUAreaEveTr_m2 = IrrFracConif*sfr(ConifSurf)*SurfaceArea
-         ! WUAreaDecTr_m2 = IrrFracDecid*sfr(DecidSurf)*SurfaceArea
+         ! WUAreaEveTr_m2 = IrrFracEveTr*sfr(ConifSurf)*SurfaceArea
+         ! WUAreaDecTr_m2 = IrrFracDecTr*sfr(DecidSurf)*SurfaceArea
          ! WUAreaGrass_m2 = IrrFracGrass*sfr(GrassSurf)*SurfaceArea
          ! WUAreaTotal_m2 = WUAreaEveTr_m2 + WUAreaDecTr_m2 + WUAreaGrass_m2
 
@@ -983,11 +983,11 @@ CONTAINS
                wu = (wu_m3/WUAreaTotal_m2*1000)  !Water use in mm for the whole irrigated area
                ! IF (WUAreaEveTr_m2 > 0) THEN
                !    wu_EveTr = wu                    !Water use for Irr EveTr in mm - these are all the same at the moment
-               !    wu_EveTr = wu_EveTr*IrrFracConif !Water use for EveTr in mm
+               !    wu_EveTr = wu_EveTr*IrrFracEveTr !Water use for EveTr in mm
                ! ENDIF
                ! IF (WUAreaDecTr_m2 > 0) THEN
                !    wu_DecTr = wu                        !Water use for Irr DecTr in mm - these are all the same at the moment
-               !    wu_DecTr = wu_DecTr*IrrFracDecid     !Water use for DecTr in mm
+               !    wu_DecTr = wu_DecTr*IrrFracDecTr     !Water use for DecTr in mm
                ! ENDIF
                ! IF (WUAreaGrass_m2 > 0) THEN
                !    wu_Grass = wu                    !Water use for Irr Grass in mm - these are all the same at the moment
@@ -1066,16 +1066,16 @@ CONTAINS
          ! PRINT*, 'wu_DecTr',wu_DecTr
          ! PRINT*, 'wu_Grass',wu_Grass
          ! Added HCW 12 Feb 2015.
-         !wu_EveTr=wu_EveTr*sfr(ConifSurf)*IrrFracConif        !Water use for EveTr [mm]
-         !wu_DecTr=wu_DecTr*sfr(DecidSurf)*IrrFracDecid        !Water use for DecTr [mm]
+         !wu_EveTr=wu_EveTr*sfr(ConifSurf)*IrrFracEveTr        !Water use for EveTr [mm]
+         !wu_DecTr=wu_DecTr*sfr(DecidSurf)*IrrFracDecTr        !Water use for DecTr [mm]
          !wu_Grass=wu_Grass*sfr(GrassSurf)*IrrFracGrass        !Water use for Grass [mm]
-         ! wu_EveTr = wu_EveTr*IrrFracConif  !Water use for EveTr [mm]
-         ! wu_DecTr = wu_DecTr*IrrFracDecid  !Water use for DecTr [mm]
+         ! wu_EveTr = wu_EveTr*IrrFracEveTr  !Water use for EveTr [mm]
+         ! wu_DecTr = wu_DecTr*IrrFracDecTr  !Water use for DecTr [mm]
          ! wu_Grass = wu_Grass*IrrFracGrass  !Water use for Grass [mm]
 
          ! PRINT*, 'auto:'
-         ! PRINT*, 'IrrFracConif',IrrFracConif
-         ! PRINT*, 'IrrFracDecid',IrrFracDecid
+         ! PRINT*, 'IrrFracEveTr',IrrFracEveTr
+         ! PRINT*, 'IrrFracDecTr',IrrFracDecTr
          ! PRINT*, 'IrrFracGrass',IrrFracGrass
 
          ! Total water use for the whole study area [mm]

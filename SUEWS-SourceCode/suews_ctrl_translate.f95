@@ -52,7 +52,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       snowdensmin, snowdensmax, tau_r, crwmin, crwmax, &
       preciplimit, SnowProf_24hr, snowalb, snowfallcum
    USE sues_data, ONLY: &
-      surfacearea_ha, surfacearea, irrfracconif, irrfracdecid, irrfracgrass, &
+      surfacearea_ha, surfacearea, IrrFracEveTr, IrrFracDecTr, irrfracgrass, &
       soildensity, soildepthmeas, smcap, soilrocks, pipecapacity, flowchange, &
       runofftowater, ie_start, ie_end, internalwateruse_h, faut, &
       h_ponding, &
@@ -126,8 +126,8 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       CALL ErrorHint(10, 'Surface fractions (Fr_) should add up to 1.', SUM(sfr), notUsed, notUsedI)
 
    ! ---- Irrigated fractions
-   IrrFracConif = SurfaceChar(Gridiv, c_IrrEveTrFrac)  ! Everg
-   IrrFracDecid = SurfaceChar(Gridiv, c_IrrDecTrFrac)  ! Decid
+   IrrFracEveTr = SurfaceChar(Gridiv, c_IrrEveTrFrac)  ! Everg
+   IrrFracDecTr = SurfaceChar(Gridiv, c_IrrDecTrFrac)  ! Decid
    IrrFracGrass = SurfaceChar(Gridiv, c_IrrGrassFrac)  ! Grass
 
    ! ---------------------------------------------------------------------------------
@@ -145,7 +145,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    IF (veg_type == 1) THEN          ! area vegetated
       veg_fr = (sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) + sfr(BSoilSurf) + sfr(WaterSurf))
    ELSEIF (veg_type == 2) THEN      ! area irrigated
-      veg_fr = (IrrFracConif*sfr(ConifSurf) + IrrFracDecid*sfr(DecidSurf) + IrrFracGrass*sfr(GrassSurf))
+      veg_fr = (IrrFracEveTr*sfr(ConifSurf) + IrrFracDecTr*sfr(DecidSurf) + IrrFracGrass*sfr(GrassSurf))
    ENDIF
 
    ImpervFraction = (sfr(PavSurf) + sfr(BldgSurf))
@@ -999,7 +999,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       ! Characteristics that apply to some or all surface types
       WRITE (12, '(8a10,a16)') 'Paved', 'Bldgs', 'EveTr', 'DecTr', 'Grass', 'BSoil', 'Water', 'Snow', ' SurfType'
       WRITE (12, 120) (sfr(iv), iv=1, nsurf), FCskip, ' SurfFr'
-      WRITE (12, 120) FCskip, FCskip, IrrFracConif, IrrFracDecid, IrrFracGrass, FCskip, FCskip, FCskip, ' IrrFr'
+      WRITE (12, 120) FCskip, FCskip, IrrFracEveTr, IrrFracDecTr, IrrFracGrass, FCskip, FCskip, FCskip, ' IrrFr'
       WRITE (12, 120) FCskip, FCskip, WUAreaEveTr_m2, WUAreaDecTr_m2, WUAreaGrass_m2, FCskip, FCskip, FCskip, ' WaterUseArea'
       WRITE (12, 120) FCskip, BldgH, EveTreeH, DecTreeH, FCskip, FCskip, FCskip, FCskip, ' H'
       WRITE (12, 120) FCskip, FAIBldg, FAIEveTree, FAIDecTree, FCskip, FCskip, FCskip, FCskip, ' FAI'
@@ -1353,8 +1353,8 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       write (12, *) 'ie_start=', ie_start
       write (12, *) 'imin=', imin
       write (12, *) 'internalwateruse_h=', internalwateruse_h
-      write (12, *) 'irrfracconif=', irrfracconif
-      write (12, *) 'irrfracdecid=', irrfracdecid
+      write (12, *) 'IrrFracEveTr=', IrrFracEveTr
+      write (12, *) 'IrrFracDecTr=', IrrFracDecTr
       write (12, *) 'irrfracgrass=', irrfracgrass
       write (12, *) 'isec=', isec
       write (12, *) 'it=', it

@@ -429,8 +429,8 @@ CONTAINS
       REAL(KIND(1D0)), PARAMETER::wu_m3 = 0  !External water use
       !REAL(KIND(1D0)), PARAMETER::Faut = 0  !Fraction of irrigated area using automatic irrigation
       REAL(KIND(1D0)), PARAMETER::InternalWaterUse_h = 0 !Internal water use [mm h-1]
-      !REAL(KIND(1D0)), PARAMETER::IrrFracConif = 0 !Fraction of evergreen trees which are irrigated
-      !REAL(KIND(1D0)), PARAMETER::IrrFracDecid = 0 !Fraction of deciduous trees which are irrigated
+      !REAL(KIND(1D0)), PARAMETER::IrrFracEveTr = 0 !Fraction of evergreen trees which are irrigated
+      !REAL(KIND(1D0)), PARAMETER::IrrFracDecTr = 0 !Fraction of deciduous trees which are irrigated
       !REAL(KIND(1D0)), PARAMETER::IrrFracGrass = 0 !Fraction of grass which is irrigated
       !Todo
       !REAL(KIND(1D0)), DIMENSION(7), PARAMETER ::DayWat = 0                     !Days of watering allowed

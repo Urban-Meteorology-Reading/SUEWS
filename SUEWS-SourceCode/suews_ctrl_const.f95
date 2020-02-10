@@ -1517,8 +1517,8 @@ MODULE sues_data
                      Faut, &           !Fraction of irrigated area using automatic irrigation
                      h_ponding, &      ! ponding water depth to maintain [mm] (over whole study area)
                      int_wu, &         !Internal water use for the model timestep [mm] (over whole study area)
-                     IrrFracConif, &  !Fraction of evergreen trees which are irrigated
-                     IrrFracDecid, &  !Fraction of deciduous trees which are irrigated
+                     IrrFracEveTr, &  !Fraction of evergreen trees which are irrigated
+                     IrrFracDecTr, &  !Fraction of deciduous trees which are irrigated
                      IrrFracGrass, &  !Fraction of grass which is irrigated
                      InternalWaterUse_h !Internal water use [mm h-1]
 

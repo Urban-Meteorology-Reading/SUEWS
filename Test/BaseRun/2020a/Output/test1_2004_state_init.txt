@@ -77,8 +77,8 @@
  ie_start=           1
  imin=           5
  internalwateruse_h=   0.0000000000000000     
- irrfracconif=   0.0000000000000000     
- irrfracdecid=   0.0000000000000000     
+ IrrFracEveTr=   0.0000000000000000     
+ IrrFracDecTr=   0.0000000000000000     
  irrfracgrass=   0.0000000000000000     
  isec=           0
  it=           0

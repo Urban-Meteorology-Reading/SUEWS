@@ -525,7 +525,7 @@ SUBROUTINE InputHeaderCheck(FileName)
    HeaderIrrigation_Reqd(cIr_IeEnd) = "Ie_end"
    HeaderIrrigation_Reqd(cIr_IntWU) = "InternalWaterUse"
    HeaderIrrigation_Reqd(cIr_Faut) = "Faut"
-   HeaderIrrigation_Reqd(cIr_H_ponding) = "H_ponding"
+   HeaderIrrigation_Reqd(cIr_H_ponding) = "H_maintain"
    HeaderIrrigation_Reqd(cIr_Ie_a1) = "Ie_a1"
    HeaderIrrigation_Reqd(cIr_Ie_a2) = "Ie_a2"
    HeaderIrrigation_Reqd(cIr_Ie_a3) = "Ie_a3"

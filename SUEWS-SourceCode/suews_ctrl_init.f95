@@ -1331,7 +1331,7 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv, rr)
    SurfaceChar(gridiv, c_IeEnd) = Irrigation_Coeff(iv5, cIr_IeEnd)
    SurfaceChar(gridiv, c_IntWU) = Irrigation_Coeff(iv5, cIr_IntWU)
    SurfaceChar(gridiv, c_Faut) = Irrigation_Coeff(iv5, cIr_Faut)
-   SurfaceChar(gridiv, c_h_ponding) = Irrigation_Coeff(iv5, cIr_h_ponding)
+   SurfaceChar(gridiv, c_h_maintain) = Irrigation_Coeff(iv5, cIr_h_ponding)
    SurfaceChar(gridiv, c_Ie_a) = Irrigation_Coeff(iv5, cIr_Ie_a1:cIr_Ie_a3)
    SurfaceChar(gridiv, c_Ie_m) = Irrigation_Coeff(iv5, cIr_Ie_m1:cIr_Ie_m3)
    SurfaceChar(gridiv, c_DayWat) = Irrigation_Coeff(iv5, cIr_DayWat1:cIr_DayWat7)
@@ -1969,74 +1969,14 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
       dayofWeek_id) !output
 
    state_id = [PavedState, BldgsState, EveTrState, DecTrState, GrassState, BSoilState, WaterState]
+   soilstore_id=[SoilStorePavedState,SoilStoreBldgsState,SoilStoreEveTrstate,SoilStoreDecTrState,&
+   SoilStoreGrassState,SoilStoreBSoilState,0d0]
    CALL update_WaterUse( &
       id, WaterUseMethod, DayofWeek_id, lat, Faut, HDD_id, &!input
-      state_id, h_ponding, &
+      state_id, soilstore_id, SoilStoreCap, H_maintain, &!input
       Ie_a, Ie_m, Ie_start, Ie_end, DayWatPer, DayWat, &
       WUDay_id) !output
 
-   ! WUDay_id=0                !Initialize WUDay
-   ! IF (WaterUseMethod==0) THEN  !Model water use
-   !    calc=0
-   !
-   !    IF (DayWat(wd)==1.0) THEN !if DayWat(wd)=1.0 (irrigation occurs on this day)
-   !       IF (lat>=0) THEN            !Northern Hemisphere
-   !          IF (id>=Ie_start.AND.id<=Ie_end) calc=1 !if day between irrigation period
-   !       ELSE                        !Southern Hemisphere
-   !          calc=1
-   !          IF (id>=Ie_end.AND.id<=Ie_start) calc=0 !if day between irrigation period
-   !       ENDIF
-   !       IF(calc==1) THEN
-   !          ! Model daily water use based on HDD_id(6)(days since rain) and HDD_id(3)(average temp)
-   !
-   !          ! ---- Automatic irrigation (evergreen trees) ----
-   !          WUDay_id(2) = Faut*(Ie_a(1)+Ie_a(2)*HDD_id(3)+Ie_a(3)*HDD_id(6))*sfr(ConifSurf)*IrrFracEveTr*DayWatPer(wd)
-   !          IF (WUDay_id(2)<0) WUDay_id(2)=0   !If modelled WU is negative -> 0
-   !
-   !          ! ---- Manual irrigation (evergreen trees) ----
-   !          WUDay_id(3) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD_id(3)+Ie_m(3)*HDD_id(6))*sfr(ConifSurf)*IrrFracEveTr*DayWatPer(wd)
-   !          IF (WUDay_id(3)<0) WUDay_id(3)=0   !If modelled WU is negative -> 0
-   !
-   !          ! ---- Total evergreen trees water use (automatic + manual) ----
-   !          WUDay_id(1)=(WUDay_id(2)+WUDay_id(3))
-   !
-   !          ! ---- Automatic irrigation (deciduous trees) ----
-   !          WUDay_id(5) = Faut*(Ie_a(1)+Ie_a(2)*HDD_id(3)+Ie_a(3)*HDD_id(6))*sfr(DecidSurf)*IrrFracDecTr*DayWatPer(wd)
-   !          IF (WUDay_id(5)<0) WUDay_id(5)=0   !If modelled WU is negative -> 0
-   !
-   !          ! ---- Manual irrigation (deciduous trees) ----
-   !          WUDay_id(6) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD_id(3)+Ie_m(3)*HDD_id(6))*sfr(DecidSurf)*&
-   !               IrrFracDecTr*DayWatPer(wd)
-   !          IF (WUDay_id(6)<0) WUDay_id(6)=0   !If modelled WU is negative -> 0
-   !
-   !          ! ---- Total deciduous trees water use (automatic + manual) ----
-   !          WUDay_id(4)=(WUDay_id(5)+WUDay_id(6))
-   !
-   !          ! ---- Automatic irrigation (grass) ----
-   !          WUDay_id(8) = Faut*(Ie_a(1)+Ie_a(2)*HDD_id(3)+Ie_a(3)*HDD_id(6))*sfr(GrassSurf)*&
-   !               IrrFracGrass*DayWatPer(wd)
-   !          IF (WUDay_id(8)<0) WUDay_id(8)=0   !If modelled WU is negative -> 0
-   !          ! ---- Manual irrigation (grass) ----
-   !          WUDay_id(9) = (1-Faut)*(Ie_m(1)+Ie_m(2)*HDD_id(3)+Ie_m(3)*HDD_id(6))*sfr(GrassSurf)*&
-   !               IrrFracGrass*DayWatPer(wd)
-   !          IF (WUDay_id(9)<0) WUDay_id(9)=0   !If modelled WU is negative -> 0
-   !          ! ---- Total grass water use (automatic + manual) ----
-   !          WUDay_id(7)=(WUDay_id(8)+WUDay_id(9))
-   !       ELSE
-   !          WUDay_id(1)=0
-   !          WUDay_id(2)=0
-   !          WUDay_id(3)=0
-   !          WUDay_id(4)=0
-   !          WUDay_id(5)=0
-   !          WUDay_id(6)=0
-   !          WUDay_id(7)=0
-   !          WUDay_id(8)=0
-   !          WUDay_id(9)=0
-   !       ENDIF
-   !    ENDIF
-   ! ENDIF
-
-   ! -----------------------------------------------------------------------
 
    ! ---- AnOHM TS ---------------------
    ! initialize Bowen ratio

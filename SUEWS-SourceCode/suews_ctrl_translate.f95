@@ -55,7 +55,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       surfacearea_ha, surfacearea, IrrFracEveTr, IrrFracDecTr, irrfracgrass, &
       soildensity, soildepthmeas, smcap, soilrocks, pipecapacity, flowchange, &
       runofftowater, ie_start, ie_end, internalwateruse_h, faut, &
-      h_ponding, &
+      H_maintain, &
       ie_a, ie_m, daywat, daywatper, &
       wuareaevetr_m2, wuareadectr_m2, wuareagrass_m2, &
       AerodynamicResistanceMethod, RoughLenHeatMethod, StabilityMethod, tstep, tstep_prev
@@ -763,7 +763,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    Ie_end = INT(SurfaceChar(Gridiv, c_IeEnd))
    InternalWaterUse_h = SurfaceChar(Gridiv, c_IntWU)
    Faut = SurfaceChar(Gridiv, c_Faut)
-   h_ponding = SurfaceChar(Gridiv, c_h_ponding)   !Automatic irrigation model coefficients [mm d-1]; [mm d-1 degC-1]; [mm d-2]
+   H_maintain = SurfaceChar(Gridiv, c_h_maintain)   !Automatic irrigation model coefficients [mm d-1]; [mm d-1 degC-1]; [mm d-2]
    Ie_a = SurfaceChar(Gridiv, c_Ie_a)   !Automatic irrigation model coefficients [mm d-1]; [mm d-1 degC-1]; [mm d-2]
    Ie_m = SurfaceChar(Gridiv, c_Ie_m)   !Manual irrigation model coefficients [mm d-1]; [mm d-1 degC-1]; [mm d-2]
    DayWat = SurfaceChar(Gridiv, c_DayWat)

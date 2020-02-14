@@ -1760,15 +1760,19 @@ Input Options
 			:header-rows: 1
 			:widths: 44 18 38
 
-.. option:: H_ponding
+.. option:: H_maintain
 
 	:Description:
-		Ponding water depth to maintain used in automatic irrigation (e.g., ponding water due to flooding irrigation in rice crop-field) [mm].
+		water depth to maintain used in automatic irrigation (e.g., ponding water due to flooding irrigation in rice crop-field) [mm].
+
+	.. note::
+		1. `H_maintain` can be positive (e.g., ponding water due to flooding irrigation in rice crop-field) or negative (e.g., soil water store level to maintain: `SoilStoreCap` + `H_maintain` ) or zero (e.g., to maintain a maximum soil store level, i.e., `SoilStoreCap`).
+		2. Disable this feature by setting this parameter to ``-999``: then no restrictions will be applied to maintain available water level.
 
 	:Configuration:
 		.. csv-table::
 			:class: longtable
-			:file: csv-table/H_ponding.csv
+			:file: csv-table/H_maintain.csv
 			:header-rows: 1
 			:widths: 44 18 38
 

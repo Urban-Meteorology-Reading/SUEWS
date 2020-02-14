@@ -69,7 +69,7 @@ CONTAINS
       DecidCap_id_prev, StoreDrainPrm_prev, LAI_id_prev, GDD_id_prev, SDD_id_prev, &
       albDecTr_id_prev, albEveTr_id_prev, albGrass_id_prev, porosity_id_prev, &!input
       HDD_id_prev, &!input
-      h_ponding, state_id, &!input
+      state_id, soilstore_id, SoilStoreCap, H_maintain, &!input
       HDD_id_next, &!output
       Tmin_id_next, Tmax_id_next, lenDay_id_next, &
       albDecTr_id_next, albEveTr_id_next, albGrass_id_next, porosity_id_next, &!output
@@ -129,8 +129,10 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(7), INTENT(IN) ::DayWat !Days of watering allowed
 
       ! ponding-water related
-      REAL(KIND(1d0)), INTENT(IN)::h_ponding ! ponding water depth to maintain [mm]
+      REAL(KIND(1d0)), INTENT(IN)::H_maintain ! ponding water depth to maintain [mm]
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(IN)::state_id ! surface wetness [mm]
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(IN)::soilstore_id  ! soil water store [mm]
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::SoilStoreCap!Capacity of soil store for each surface [mm]
 
       ! REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(IN)      ::SnowPack
       REAL(KIND(1d0)), DIMENSION(nvegsurf), INTENT(IN)   ::BaseT !Base temperature for growing degree days [degC]
@@ -307,7 +309,7 @@ CONTAINS
             AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
             BaseT, BaseTe, CapMax_dec, CapMin_dec, DayWat, DayWatPer, Faut, GDDFull, &
             Ie_a, Ie_m, LAIMax, LAIMin, LAIPower, lat, PorMax_dec, PorMin_dec, SDDFull, LAI_obs, &
-            h_ponding, state_id, &
+            state_id, soilstore_id, SoilStoreCap, H_maintain, &!input
             GDD_id, SDD_id, & !inout
             HDD_id, &
             LAI_id, &
@@ -350,7 +352,7 @@ CONTAINS
       AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
       BaseT, BaseTe, CapMax_dec, CapMin_dec, DayWat, DayWatPer, Faut, GDDFull, &
       Ie_a, Ie_m, LAIMax, LAIMin, LAIPower, lat, PorMax_dec, PorMin_dec, SDDFull, LAI_obs, &
-      h_ponding, state_id, &
+      state_id, soilstore_id, SoilStoreCap, H_maintain, &!input
       GDD_id, SDD_id, & !inout
       HDD_id, &
       LAI_id, &
@@ -402,8 +404,10 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(IN)::Tmin_id
       REAL(KIND(1d0)), INTENT(IN)::Tmax_id
       REAL(KIND(1d0)), INTENT(IN)::lenDay_id
-      REAL(KIND(1d0)), INTENT(IN)::h_ponding ! ponding water depth to maintain
+      REAL(KIND(1d0)), INTENT(IN)::H_maintain ! ponding water depth to maintain
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(IN)::state_id ! surface wetness [mm]
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(IN)::soilstore_id  ! soil water store [mm]
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::SoilStoreCap!Capacity of soil store for each surface [mm]
 
       REAL(KIND(1d0)), DIMENSION(3), INTENT(INOUT)       ::GDD_id ! Growing Degree Days (see SUEWS_DailyState.f95)
       REAL(KIND(1d0)), DIMENSION(3), INTENT(INOUT)       ::SDD_id ! Senescence Degree Days (see SUEWS_DailyState.f95)
@@ -432,7 +436,7 @@ CONTAINS
       ! Calculate modelled daily water use ------------------------------------------
       CALL update_WaterUse( &
          id, WaterUseMethod, DayofWeek_id, lat, Faut, HDD_id, &!input
-         state_id, h_ponding, &!input
+         state_id, soilstore_id, SoilStoreCap, H_maintain, &!input
          Ie_a, Ie_m, Ie_start, Ie_end, DayWatPer, DayWat, &
          WUDay_id) !output
 
@@ -820,7 +824,7 @@ CONTAINS
 
    SUBROUTINE update_WaterUse( &
       id, WaterUseMethod, DayofWeek_id, lat, FrIrriAuto, HDD_id, &!input
-      state_id, h_ponding, &!input
+      state_id, soilstore_id, SoilStoreCap, H_maintain, &!input
       Ie_a, Ie_m, Ie_start, Ie_end, DayWatPer, DayWat, &
       WUDay_id) !output
 
@@ -836,17 +840,21 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(IN)::FrIrriAuto          !Fraction of irrigated area using automatic irrigation
 
       REAL(KIND(1d0)), DIMENSION(12), INTENT(IN)::HDD_id
-      REAL(KIND(1d0)), DIMENSION(3), INTENT(IN)::Ie_a   !Coefficients for automatic irrigation models
-      REAL(KIND(1d0)), DIMENSION(3), INTENT(IN)::Ie_m   !Coefficients for manual irrigation models
-      REAL(KIND(1d0)), DIMENSION(7), INTENT(IN)::DayWatPer  !% of houses following daily water
-      REAL(KIND(1d0)), DIMENSION(7), INTENT(IN)::DayWat       !Days of watering allowed
+      REAL(KIND(1d0)), DIMENSION(NVegSurf), INTENT(IN)::Ie_a   !Coefficients for automatic irrigation models
+      REAL(KIND(1d0)), DIMENSION(NVegSurf), INTENT(IN)::Ie_m   !Coefficients for manual irrigation models
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(IN)::DayWatPer  !% of houses following daily water
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(IN)::DayWat       !Days of watering allowed
 
       ! ponding control related
-      REAL(KIND(1d0)), INTENT(IN)::h_ponding  ! ponding water depth to maintain [mm]
-      REAL(KIND(1d0)), DIMENSION(7), INTENT(IN)::state_id  ! surface wetness [mm]
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(IN)::state_id  ! surface wetness [mm]
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(IN)::soilstore_id  ! soil water store [mm]
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(in)::SoilStoreCap!Capacity of soil store for each surface [mm]
+      REAL(KIND(1d0)), INTENT(IN)::H_maintain  ! ponding water depth to maintain [mm]
 
       REAL(KIND(1d0)), DIMENSION(9), INTENT(OUT):: WUDay_id       !Daily water use for EveTr, DecTr, Grass [mm] (see SUEWS_DailyState.f95)
 
+      REAL(KIND(1d0)), DIMENSION(3)::h_need        !water level to maintain: surface+soil [mm]
+      REAL(KIND(1d0)), DIMENSION(3)::store_total   !current water level: surface+soil [mm]
       REAL(KIND(1d0)), DIMENSION(3)::WUDay_P   !water used to maintain ponding level [mm]
       REAL(KIND(1d0)), DIMENSION(3)::WUDay_A   !automatic irrigation [mm]
       REAL(KIND(1d0)), DIMENSION(3)::WUDay_M   !manual irrigation [mm]
@@ -884,19 +892,23 @@ CONTAINS
                ! WUDay is the amount of water [mm] per day, applied to each of the irrigated areas
                ! N.B. These are the same for each vegetation type at the moment
 
-               ! ---- irrigation amount to maintain ponding water----
-               WUDay_P = h_ponding - state_id(3:5)
-               WUDay_P = MERGE(WUDay_P, WUDay_P*0, WUDay_P > 0)
+               ! ---- irrigation amount to maintain a certain water availability----
+               ! NB: H_maintain can be either positive or negative
+               h_need=SoilStoreCap(3:5)+H_maintain
+               store_total=state_id(3:5)+soilstore_id(3:5)
+               WUDay_P=h_need-store_total
+               WUDay_P = MERGE(WUDay_P, 0d0, WUDay_P > 0)
+
 
                ! ---- automatic irrigation ----
                WUDay_A = FrIrriAuto*(Ie_a(1) + Ie_a(2)*temp_avg + Ie_a(3)*days_since_rain)*DayWatPer(wd)
-               WUDay_A = MERGE(WUDay_A, WUDay_A*0, WUDay_A > 0)
+               WUDay_A = MERGE(WUDay_A, 0d0, WUDay_A > 0)
                ! add ponding-demand to auto-irrigation
                WUDay_A = WUDay_A + WUDay_P
 
                ! ---- Manual irrigation----
                WUDay_M = (1 - FrIrriAuto)*(Ie_m(1) + Ie_m(2)*temp_avg + Ie_m(3)*days_since_rain)*DayWatPer(wd)
-               WUDay_M = MERGE(WUDay_M, WUDay_M*0, WUDay_M > 0)
+               WUDay_M = MERGE(WUDay_M, 0d0, WUDay_M > 0)
 
                ! ---- total irrigation
                WUDay_total = WUDay_P + WUDay_A + WUDay_M

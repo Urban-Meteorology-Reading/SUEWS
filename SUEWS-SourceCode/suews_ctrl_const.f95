@@ -667,7 +667,7 @@ MODULE allocateArray
    INTEGER :: c_IeEnd = (ccEndA + 2)
    INTEGER :: c_IntWU = (ccEndA + 3)
    INTEGER :: c_Faut = (ccEndA + 4)
-   INTEGER :: c_h_ponding = (ccEndA + 5)
+   INTEGER :: c_h_maintain = (ccEndA + 5)
    INTEGER, DIMENSION(3):: c_Ie_a = (/(cc, cc=ccEndA + 5 + 0*3 + 1, ccEndA + 5 + 0*3 + 3, 1)/)  ! Automatic irrigation coeffs
    INTEGER, DIMENSION(3):: c_Ie_m = (/(cc, cc=ccEndA + 5 + 1*3 + 1, ccEndA + 5 + 1*3 + 3, 1)/)  ! Manual irrigation coeffs
    INTEGER, DIMENSION(7):: c_DayWat = (/(cc, cc=ccEndA + 11 + 0*7 + 1, ccEndA + 11 + 0*7 + 7, 1)/)  ! Irrigation allowed on each day
@@ -1515,7 +1515,7 @@ MODULE sues_data
    !Water use related variables
    REAL(KIND(1d0)):: ext_wu, &         !External water use for the model timestep [mm] (over whole study area)
                      Faut, &           !Fraction of irrigated area using automatic irrigation
-                     h_ponding, &      ! ponding water depth to maintain [mm] (over whole study area)
+                     H_maintain, &      ! ponding water depth to maintain [mm] (over whole study area)
                      int_wu, &         !Internal water use for the model timestep [mm] (over whole study area)
                      IrrFracEveTr, &  !Fraction of evergreen trees which are irrigated
                      IrrFracDecTr, &  !Fraction of deciduous trees which are irrigated

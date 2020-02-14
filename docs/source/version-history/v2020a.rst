@@ -20,7 +20,7 @@ Version 2020a (in development)
   adaptively choose option `1` for fully pervious surface
   or `2` otherwise (if any impervious surface exists).
 
-  #. A new column `H_ponding` is added in ``SUEWS_Irrigation.txt``
+  #. A new column `H_maintain` is added in ``SUEWS_Irrigation.txt``
   to set ponding water depth.
 
 - **Fix**

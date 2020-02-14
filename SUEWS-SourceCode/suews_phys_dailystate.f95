@@ -894,11 +894,10 @@ CONTAINS
 
                ! ---- irrigation amount to maintain a certain water availability----
                ! NB: H_maintain can be either positive or negative
-               h_need=SoilStoreCap(3:5)+H_maintain
-               store_total=state_id(3:5)+soilstore_id(3:5)
-               WUDay_P=h_need-store_total
+               h_need = SoilStoreCap(3:5) + H_maintain
+               store_total = state_id(3:5) + soilstore_id(3:5)
+               WUDay_P = h_need - store_total
                WUDay_P = MERGE(WUDay_P, 0d0, WUDay_P > 0)
-
 
                ! ---- automatic irrigation ----
                WUDay_A = FrIrriAuto*(Ie_a(1) + Ie_a(2)*temp_avg + Ie_a(3)*days_since_rain)*DayWatPer(wd)

@@ -1969,14 +1969,13 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
       dayofWeek_id) !output
 
    state_id = [PavedState, BldgsState, EveTrState, DecTrState, GrassState, BSoilState, WaterState]
-   soilstore_id=[SoilStorePavedState,SoilStoreBldgsState,SoilStoreEveTrstate,SoilStoreDecTrState,&
-   SoilStoreGrassState,SoilStoreBSoilState,0d0]
+   soilstore_id = [SoilStorePavedState, SoilStoreBldgsState, SoilStoreEveTrstate, SoilStoreDecTrState, &
+                   SoilStoreGrassState, SoilStoreBSoilState, 0d0]
    CALL update_WaterUse( &
       id, WaterUseMethod, DayofWeek_id, lat, Faut, HDD_id, &!input
       state_id, soilstore_id, SoilStoreCap, H_maintain, &!input
       Ie_a, Ie_m, Ie_start, Ie_end, DayWatPer, DayWat, &
       WUDay_id) !output
-
 
    ! ---- AnOHM TS ---------------------
    ! initialize Bowen ratio

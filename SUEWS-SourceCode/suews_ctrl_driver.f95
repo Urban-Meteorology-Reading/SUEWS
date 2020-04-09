@@ -2783,7 +2783,7 @@ CONTAINS
    END FUNCTION square_real
 
    SUBROUTINE output_name_n(i, name, group, aggreg, outlevel)
-      ! used by f2py module  to handle output names
+      ! used by f2py module `SuPy` to handle output names
       IMPLICIT NONE
       ! the dimension is potentially incorrect,
       ! which should be consistent with that in output module

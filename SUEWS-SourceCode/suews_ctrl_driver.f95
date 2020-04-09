@@ -1,22 +1,22 @@
 !========================================================================================
 ! SUEWS driver subroutines
 ! TS 31 Aug 2017: initial version
-! TS 02 Oct 2017: added `SUEWS_cal_Main` as the generic wrapper
-! TS 03 Oct 2017: added `SUEWS_cal_AnthropogenicEmission`
+! TS 02 Oct 2017: added  as the generic wrapper
+! TS 03 Oct 2017: added
 MODULE SUEWS_Driver
    USE meteo, ONLY: qsatf, RH2qa, qa2RH
    USE AtmMoistStab_module, ONLY: cal_AtmMoist, cal_Stab, stab_psi_heat, stab_psi_mom
    USE NARP_MODULE, ONLY: NARP_cal_SunPosition
    USE AnOHM_module, ONLY: AnOHM
    USE resist_module, ONLY: AerodynamicResistance, BoundaryLayerResistance, SurfaceResistance, &
-                            cal_z0V, SUEWS_cal_RoughnessParameters
+      cal_z0V, SUEWS_cal_RoughnessParameters
    USE ESTM_module, ONLY: ESTM
    USE Snow_module, ONLY: SnowCalc, Snow_cal_MeltHeat, SnowUpdate, update_snow_albedo, update_snow_dens
    USE DailyState_module, ONLY: SUEWS_cal_DailyState, update_DailyStateLine
    USE WaterDist_module, ONLY: drainage, cal_water_storage, &
-                               SUEWS_cal_SoilState, SUEWS_update_SoilMoist, &
-                               ReDistributeWater, SUEWS_cal_HorizontalSoilWater, &
-                               SUEWS_cal_WaterUse
+      SUEWS_cal_SoilState, SUEWS_update_SoilMoist, &
+      ReDistributeWater, SUEWS_cal_HorizontalSoilWater, &
+      SUEWS_cal_WaterUse
    USE ctrl_output, ONLY: varListAll
    USE DailyState_module, ONLY: SUEWS_update_DailyState
    use lumps_module, only: LUMPS_cal_QHQE
@@ -463,7 +463,7 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(NSURF)::tsurf_ind
 
       ! TODO: TS 25 Oct 2017
-      ! the `add-*` variables are not used currently as grid-to-grid connection is NOT set up.
+      ! the  variables are not used currently as grid-to-grid connection is NOT set up.
       ! set these variables as zero.
       REAL(KIND(1D0))::addImpervious = 0
       REAL(KIND(1D0))::addPipes = 0
@@ -491,7 +491,7 @@ CONTAINS
       ! ########################################################################################
       ! TS 19 Sep 2019
       ! temporary variables to save values for inout varialbes
-      ! suffixes `prev` and `next` denote values from last and to next tsteps, respectively
+      ! suffixes  and  denote values from last and to next tsteps, respectively
       ! these variables are introduced to allow safe and robust iterations inccurred in this subroutine
       ! so that these values won't updated in unexpectedly many times
 
@@ -586,7 +586,7 @@ CONTAINS
       HDD_id_prev = HDD_id
       WUDay_id_prev = WUDay_id
 
-      ! initialise `_next` variables
+      ! initialise  variables
       qn1_av_next = qn1_av
       dqndt_next = dqndt
       qn1_s_av_next = qn1_s_av
@@ -2783,7 +2783,7 @@ CONTAINS
    END FUNCTION square_real
 
    SUBROUTINE output_name_n(i, name, group, aggreg, outlevel)
-      ! used by f2py module `SuPy` to handle output names
+      ! used by f2py module  to handle output names
       IMPLICIT NONE
       ! the dimension is potentially incorrect,
       ! which should be consistent with that in output module
@@ -2808,7 +2808,7 @@ CONTAINS
    END SUBROUTINE output_name_n
 
    SUBROUTINE output_size(nVar)
-      ! used by f2py module `SuPy` to get size of the output list
+      ! used by f2py module  to get size of the output list
       IMPLICIT NONE
       ! the dimension is potentially incorrect,
       ! which should be consistent with that in output module

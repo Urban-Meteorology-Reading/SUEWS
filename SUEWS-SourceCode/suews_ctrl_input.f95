@@ -977,7 +977,7 @@ SUBROUTINE CodeMatchESTM_Class(Gridiv, is, ii)
          ENDIF
       ENDDO
    ELSE
-      WRITE (*, *) 'Problem with CodeMatchESTM_Class (in SUEWS_CodeMatch.f95). ', is, ' not correct. Needs to be either ', &
+      WRITE (*, *) 'Problem with CodeMatchESTM_Class (in SUEWS_ctrl_input.f95). ', is, ' not correct. Needs to be either ', &
          '1 = Paved surfaced, 2 = Bldgs surfaces.'
       STOP
    ENDIF

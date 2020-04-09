@@ -28,7 +28,7 @@ MODULE allocateArray
    INTEGER, PARAMETER:: MaxLinesMet = 8640        !Max no. lines to read in one go (for all grids, ie MaxLinesMet/NumberOfGrids each)
 
    ! ---- Set number of columns in input files ----------------------------------------------------
-   INTEGER, PARAMETER:: ncolumnsSiteSelect = 101       !SUEWS_SiteSelect.txt
+   INTEGER, PARAMETER:: ncolumnsSiteSelect = 105       !SUEWS_SiteSelect.txt
    INTEGER, PARAMETER:: ncolumnsNonVeg = 24            !SUEWS_NonVeg.txt
    INTEGER, PARAMETER:: ncolumnsVeg = 38               !SUEWS_Veg.txt
    INTEGER, PARAMETER:: ncolumnsWater = 22             !SUEWS_Water.txt
@@ -1040,7 +1040,7 @@ MODULE data_in
    !! Add units
    REAL(KIND(1d0))::  alpha_qhqe, & !Alpha parameter used in LUMPS QH and QE calculations [-]
                      alt, &       !Altitude  [m]
-                     ! avdens, &    !Average air density, moved to `moist` by TS, 27 Aug 2019
+                     ! avdens, &    !Average air density, moved to  by TS, 27 Aug 2019
                      avkdn, &     !Average downwelling shortwave radiation
                      avrh, &      !Average relative humidity
                      avts, &      !Average surface temperature
@@ -1517,9 +1517,13 @@ MODULE sues_data
                      Faut, &           !Fraction of irrigated area using automatic irrigation
                      H_maintain, &      ! ponding water depth to maintain [mm] (over whole study area)
                      int_wu, &         !Internal water use for the model timestep [mm] (over whole study area)
+                     IrrFracPaved, &  !Fraction of paved which are irrigated
+                     IrrFracBldgs, &  !Fraction of buildings which are irrigated
                      IrrFracEveTr, &  !Fraction of evergreen trees which are irrigated
                      IrrFracDecTr, &  !Fraction of deciduous trees which are irrigated
                      IrrFracGrass, &  !Fraction of grass which is irrigated
+                     IrrFracBSoil, &  !Fraction of bare soil which is irrigated
+                     IrrFracWater, &  !Fraction of water which is irrigated
                      InternalWaterUse_h !Internal water use [mm h-1]
 
    ! 7 - number of days in week
@@ -1662,88 +1666,92 @@ MODULE ColNamesInputFiles
              c_FrBSoil = 19, &
              c_FrWater = 20, &
              ! Irrigated fractions
-             c_IrrEveTrFrac = 21, &
-             c_IrrDecTrFrac = 22, &
-             c_IrrGrassFrac = 23, &
+             c_IrrPavedFrac = 21, &
+             c_IrrBldgsFrac = 22, &
+             c_IrrEveTrFrac = 23, &
+             c_IrrDecTrFrac = 24, &
+             c_IrrGrassFrac = 25, &
+             c_IrrBSoilFrac = 26, &
+             c_IrrWaterFrac = 27, &
              ! Height information
-             c_HBldgs = 24, &
-             c_HEveTr = 25, &
-             c_HDecTr = 26, &
-             c_z0m = 27, &
-             c_zdm = 28, &
-             c_FAIBldgs = 29, &
-             c_FAIEveTr = 30, &
-             c_FAIDecTr = 31, &
+             c_HBldgs = 28, &
+             c_HEveTr = 29, &
+             c_HDecTr = 30, &
+             c_z0m = 31, &
+             c_zdm = 32, &
+             c_FAIBldgs = 33, &
+             c_FAIEveTr = 34, &
+             c_FAIDecTr = 35, &
              ! Population
-             c_PopDensDay = 32, &
-             c_PopDensNight = 33, &
-             c_TrafficRate_WD = 34, &    ! Mean traffic rate in modelled area [veh km m-2 s-1] Weekday
-             c_TrafficRate_WE = 35, &    ! Mean traffic rate in modelled area [veh km m-2 s-1] Weekend
-             c_QF0_BEU_WD = 36, &    ! Building energy use for modelled area [W m-2] - QUESTION: could change units?
-             c_QF0_BEU_WE = 37, &
+             c_PopDensDay = 36, &
+             c_PopDensNight = 37, &
+             c_TrafficRate_WD = 38, &    ! Mean traffic rate in modelled area [veh km m-2 s-1] Weekday
+             c_TrafficRate_WE = 39, &    ! Mean traffic rate in modelled area [veh km m-2 s-1] Weekend
+             c_QF0_BEU_WD = 40, &    ! Building energy use for modelled area [W m-2] - QUESTION: could change units?
+             c_QF0_BEU_WE = 41, &
              ! Codes for different surfaces
-             c_PavedCode = 38, &  ! Links characteristics in SUEWS_NonVeg.txt
-             c_BldgsCode = 39, &  ! Links characteristics in SUEWS_NonVeg.txt
-             c_EveTrCode = 40, &  ! Links characteristics in SUEWS_Veg.txt
-             c_DecTrCode = 41, &    ! Links characteristics in SUEWS_Veg.txt
-             c_GrassCode = 42, &     ! Links characteristics in SUEWS_Veg.txt
-             c_BSoilCode = 43, &  ! Links characteristics in SUEWS_Veg.txt
-             c_WaterCode = 44, &       ! Links characteristics in SUEWS_Water.txt
+             c_PavedCode = 42, &  ! Links characteristics in SUEWS_NonVeg.txt
+             c_BldgsCode = 43, &  ! Links characteristics in SUEWS_NonVeg.txt
+             c_EveTrCode = 44, &  ! Links characteristics in SUEWS_Veg.txt
+             c_DecTrCode = 45, &    ! Links characteristics in SUEWS_Veg.txt
+             c_GrassCode = 46, &     ! Links characteristics in SUEWS_Veg.txt
+             c_BSoilCode = 47, &  ! Links characteristics in SUEWS_Veg.txt
+             c_WaterCode = 48, &       ! Links characteristics in SUEWS_Water.txt
              ! LUMPS info
-             c_LUMPSDr = 45, &
-             c_LUMPSCover = 46, &
-             c_LUMPSMaxRes = 47, &
+             c_LUMPSDr = 49, &
+             c_LUMPSCover = 50, &
+             c_LUMPSMaxRes = 51, &
              ! NARP info
-             c_NARPTrans = 48, &
+             c_NARPTrans = 52, &
              ! Code for conductances
-             c_CondCode = 49, &       ! Links characteristics in SUEWS_Conductance.txt
+             c_CondCode = 53, &       ! Links characteristics in SUEWS_Conductance.txt
              ! Code for snow
-             c_SnowCode = 50, &    ! Links characteristics in SUEWS_Snow.txt
+             c_SnowCode = 54, &    ! Links characteristics in SUEWS_Snow.txt
              ! Codes for human impacts on energy, water and snow
-             c_SnowProfWD = 51, &  ! Snow-clearing profile in SUEWS_Profile.txt (weekdays)
-             c_SnowProfWE = 52, &  ! Snow-clearing profile in SUEWS_Profile.txt (weekends)
-             c_QFCode = 53, &  ! Links anthropogenic heat info in SUEWS_AnthropogenicEmission.txt
-             c_IrrCode = 54, &  ! Links irrigation info in SUEWS_Irrigation.txt
-             c_WProfManuWD = 55, &  ! Links to water-use profile in SUEWS_Profile.txt (manual irrigation, weekdays)
-             c_WProfManuWE = 56, &  ! Links to water-use profile in SUEWS_Profile.txt (manual irrigation, weekends)
-             c_WProfAutoWD = 57, &  ! Links to water-use profile in SUEWS_Profile.txt (automatic irrigation, weekdays)
-             c_WProfAutoWE = 58, &  ! Links to water-use profile in SUEWS_Profile.txt (automatic irrigation, weekends)
+             c_SnowProfWD = 55, &  ! Snow-clearing profile in SUEWS_Profile.txt (weekdays)
+             c_SnowProfWE = 56, &  ! Snow-clearing profile in SUEWS_Profile.txt (weekends)
+             c_QFCode = 57, &  ! Links anthropogenic heat info in SUEWS_AnthropogenicEmission.txt
+             c_IrrCode = 58, &  ! Links irrigation info in SUEWS_Irrigation.txt
+             c_WProfManuWD = 59, &  ! Links to water-use profile in SUEWS_Profile.txt (manual irrigation, weekdays)
+             c_WProfManuWE = 60, &  ! Links to water-use profile in SUEWS_Profile.txt (manual irrigation, weekends)
+             c_WProfAutoWD = 61, &  ! Links to water-use profile in SUEWS_Profile.txt (automatic irrigation, weekdays)
+             c_WProfAutoWE = 62, &  ! Links to water-use profile in SUEWS_Profile.txt (automatic irrigation, weekends)
              ! Flow information
-             c_FlowChange = 59, &  ! Difference in input & output flows for water surface
-             c_RunoffToWater = 60, &    ! Fraction of above-ground runoff flowing to water surface
-             c_PipeCapacity = 61, &  ! Pipe capacity [mm]
+             c_FlowChange = 63, &  ! Difference in input & output flows for water surface
+             c_RunoffToWater = 64, &    ! Fraction of above-ground runoff flowing to water surface
+             c_PipeCapacity = 65, &  ! Pipe capacity [mm]
              ! Runoff (to 8 adjacent grids)
-             c_GridConnection1of8 = 62, &
-             c_Fraction1of8 = 63, &
-             c_GridConnection2of8 = 64, &
-             c_Fraction2of8 = 65, &
-             c_GridConnection3of8 = 66, &
-             c_Fraction3of8 = 67, &
-             c_GridConnection4of8 = 68, &
-             c_Fraction4of8 = 69, &
-             c_GridConnection5of8 = 70, &
-             c_Fraction5of8 = 71, &
-             c_GridConnection6of8 = 72, &
-             c_Fraction6of8 = 73, &
-             c_GridConnection7of8 = 74, &
-             c_Fraction7of8 = 75, &
-             c_GridConnection8of8 = 76, &
-             c_Fraction8of8 = 77, &
+             c_GridConnection1of8 = 66, &
+             c_Fraction1of8 = 67, &
+             c_GridConnection2of8 = 68, &
+             c_Fraction2of8 = 69, &
+             c_GridConnection3of8 = 70, &
+             c_Fraction3of8 = 71, &
+             c_GridConnection4of8 = 72, &
+             c_Fraction4of8 = 73, &
+             c_GridConnection5of8 = 74, &
+             c_Fraction5of8 = 75, &
+             c_GridConnection6of8 = 76, &
+             c_Fraction6of8 = 77, &
+             c_GridConnection7of8 = 78, &
+             c_Fraction7of8 = 79, &
+             c_GridConnection8of8 = 80, &
+             c_Fraction8of8 = 81, &
              ! Runoff within grid (for each surface type)
-             c_WGPavedCode = 78, &   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
-             c_WGBldgsCode = 79, &   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
-             c_WGEveTrCode = 80, &   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
-             c_WGDecTrCode = 81, &   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
-             c_WGGrassCode = 82, &   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
-             c_WGBSoilCode = 83, &   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
-             c_WGWaterCode = 84, &   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
+             c_WGPavedCode = 82, &   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
+             c_WGBldgsCode = 83, &   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
+             c_WGEveTrCode = 84, &   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
+             c_WGDecTrCode = 85, &   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
+             c_WGGrassCode = 86, &   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
+             c_WGBSoilCode = 87, &   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
+             c_WGWaterCode = 88, &   ! Links to SUEWS_WaterDistibuteWithinGrid.txt
              ! Additional info for ESTM
-             c_AreaWall = 85   ! Wall surface fraction (Awall/Agridcell)
+             c_AreaWall = 89   ! Wall surface fraction (Awall/Agridcell)
 
-   INTEGER, DIMENSION(3):: c_Fr_ESTMClass_Paved = (/(ccc, ccc=86, 88, 1)/) ! Fraction of Paved surface with ESTM Class 1-5
-   INTEGER, DIMENSION(3)::         c_Code_ESTMClass_Paved = (/(ccc, ccc=89, 91, 1)/) ! Code for Paved surface ESTM Class 1-5
-   INTEGER, DIMENSION(5):: c_Fr_ESTMClass_Bldgs = (/(ccc, ccc=92, 96, 1)/) ! Fraction of Bldgs surface with ESTM Class 1-5
-   INTEGER, DIMENSION(5)::         c_Code_ESTMClass_Bldgs = (/(ccc, ccc=97, 101, 1)/) ! Code for Bldgs surface ESTM Class 1-5
+   INTEGER, DIMENSION(3)::c_Fr_ESTMClass_Paved = (/(ccc, ccc=90, 92, 1)/) ! Fraction of Paved surface with ESTM Class 1-3
+   INTEGER, DIMENSION(3)::c_Code_ESTMClass_Paved = (/(ccc, ccc=93, 95, 1)/) ! Code for Paved surface ESTM Class 1-3
+   INTEGER, DIMENSION(5)::c_Fr_ESTMClass_Bldgs = (/(ccc, ccc=96, 100, 1)/) ! Fraction of Bldgs surface with ESTM Class 1-5
+   INTEGER, DIMENSION(5)::c_Code_ESTMClass_Bldgs = (/(ccc, ccc=101, 105, 1)/) ! Code for Bldgs surface ESTM Class 1-5
 
    !========== Columns for SUEWS_NonVeg.txt ==========================
    INTEGER :: ci_Code = 1, &

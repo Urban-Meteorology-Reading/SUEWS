@@ -52,7 +52,10 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       snowdensmin, snowdensmax, tau_r, crwmin, crwmax, &
       preciplimit, SnowProf_24hr, snowalb, snowfallcum
    USE sues_data, ONLY: &
-      surfacearea_ha, surfacearea, IrrFracEveTr, IrrFracDecTr, irrfracgrass, &
+      surfacearea_ha, surfacearea, &
+      IrrFracPaved, IrrFracBldgs, &
+      IrrFracEveTr, IrrFracDecTr, irrfracgrass, &
+      IrrFracBSoil, IrrFracWater, &
       soildensity, soildepthmeas, smcap, soilrocks, pipecapacity, flowchange, &
       runofftowater, ie_start, ie_end, internalwateruse_h, faut, &
       H_maintain, &
@@ -126,9 +129,13 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       CALL ErrorHint(10, 'Surface fractions (Fr_) should add up to 1.', SUM(sfr), notUsed, notUsedI)
 
    ! ---- Irrigated fractions
+   IrrFracPaved = SurfaceChar(Gridiv, c_IrrPavedFrac)  ! Paved
+   IrrFracBldgs = SurfaceChar(Gridiv, c_IrrBldgsFrac)  ! Bldgs
    IrrFracEveTr = SurfaceChar(Gridiv, c_IrrEveTrFrac)  ! Everg
    IrrFracDecTr = SurfaceChar(Gridiv, c_IrrDecTrFrac)  ! Decid
    IrrFracGrass = SurfaceChar(Gridiv, c_IrrGrassFrac)  ! Grass
+   IrrFracBSoil = SurfaceChar(Gridiv, c_IrrBSoilFrac)  ! BSoil
+   IrrFracWater = SurfaceChar(Gridiv, c_IrrWaterFrac)  ! Water
 
    ! ---------------------------------------------------------------------------------
    ! --------- Surface cover calculations (previously in LUMPS_gis_read) -------------
@@ -185,11 +192,11 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    IF (PopDensDaytime(1) >= 0 .AND. PopDensNighttime < 0) PopDensNighttime = PopDensDaytime(1)  !If only daytime data provided, use them
    IF (PopDensDaytime(1) < 0 .AND. PopDensNighttime >= 0) PopDensDaytime(1) = PopDensNighttime  !If only night-time data provided, use them
    PopDensDaytime(2) = PopDensNighttime + (PopDensDaytime(1) - PopDensNighttime)*SurfaceChar(Gridiv, c_FrPDDwe) !Use weekend fraction to daytime population
-   ! the following part has been moved into `SUEWS_cal_Main` as `NumCapita` can be derived there
+   ! the following part has been moved into  as  can be derived there
    ! IF (PopDensDaytime(1) >= 0 .AND. PopDensNighttime >= 0) NumCapita(1) = (PopDensDaytime(1) + PopDensNighttime)/2  !If both, use average
    ! IF (PopDensDaytime(2) >= 0 .AND. PopDensNighttime >= 0) NumCapita(2) = (PopDensDaytime(2) + PopDensNighttime)/2  !If both, use average
 
-   ! ! IF (PopDensDaytime >= 0 .AND. PopDensNighttime >= 0) NumCapita = (PopDensDaytime + PopDensNighttime)/2  !If both, use average ! moved to `AnthropogenicEmissions`, TS 27 Dec 2018
+   ! ! IF (PopDensDaytime >= 0 .AND. PopDensNighttime >= 0) NumCapita = (PopDensDaytime + PopDensNighttime)/2  !If both, use average ! moved to , TS 27 Dec 2018
 
    ! ---- Traffic rate
    TrafficRate = SurfaceChar(Gridiv, (/c_TrafficRate_WD, c_TrafficRate_WE/)) ! Mean traffic rate within modelled area

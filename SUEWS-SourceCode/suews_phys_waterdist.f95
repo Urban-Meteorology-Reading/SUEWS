@@ -1,8 +1,8 @@
 MODULE WaterDist_module
    USE allocateArray, ONLY: nsurf, &
-                            PavSurf, BldgSurf, &
-                            ConifSurf, DecidSurf, GrassSurf, &
-                            BSoilSurf, WaterSurf, ExcessSurf
+      PavSurf, BldgSurf, &
+      ConifSurf, DecidSurf, GrassSurf, &
+      BSoilSurf, WaterSurf, ExcessSurf
 
    IMPLICIT NONE
    ! INTEGER, PARAMETER :: nsurf = 7
@@ -858,7 +858,9 @@ CONTAINS
    SUBROUTINE SUEWS_cal_WaterUse( &
       nsh_real, & ! input:
       wu_m3, SurfaceArea, sfr, &
+      IrrFracPaved, IrrFracBldgs, &
       IrrFracEveTr, IrrFracDecTr, IrrFracGrass, &
+      IrrFracBSoil, IrrFracWater, &
       DayofWeek_id, WUProfA_24hr, WUProfM_24hr, &
       InternalWaterUse_h, HDD_id, WUDay_id, &
       WaterUseMethod, NSH, it, imin, DLS, &
@@ -886,9 +888,13 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(in)::nsh_real
       REAL(KIND(1d0)), INTENT(in)::wu_m3 ! external water input (e.g., irrigation)  [m3]
       REAL(KIND(1d0)), INTENT(in)::SurfaceArea !Surface area of the study area [m2]
-      REAL(KIND(1d0)), INTENT(in)::IrrFracEveTr!Fraction of evergreen trees which are irrigated
-      REAL(KIND(1d0)), INTENT(in)::IrrFracDecTr!Fraction of deciduous trees which are irrigated
-      REAL(KIND(1d0)), INTENT(in)::IrrFracGrass!Fraction of grass which is irrigated
+      REAL(KIND(1D0)), INTENT(IN)::IrrFracPaved!Fraction of paved which are irrigated
+      REAL(KIND(1D0)), INTENT(IN)::IrrFracBldgs!Fraction of buildings (e.g., green roofs) which are irrigated
+      REAL(KIND(1D0)), INTENT(IN)::IrrFracEveTr!Fraction of evergreen trees which are irrigated
+      REAL(KIND(1D0)), INTENT(IN)::IrrFracDecTr!Fraction of deciduous trees which are irrigated
+      REAL(KIND(1D0)), INTENT(IN)::IrrFracGrass!Fraction of grass which is irrigated
+      REAL(KIND(1D0)), INTENT(IN)::IrrFracBSoil!Fraction of bare soil trees which are irrigated
+      REAL(KIND(1D0)), INTENT(IN)::IrrFracWater!Fraction of water which are irrigated
       REAL(KIND(1d0)), INTENT(in)::InternalWaterUse_h !Internal water use [mm h-1]
       REAL(KIND(1d0)), DIMENSION(0:23, 2), INTENT(in)::WUProfA_24hr !Automatic water use profiles at hourly scales
       REAL(KIND(1d0)), DIMENSION(0:23, 2), INTENT(in)::WUProfM_24hr !Manual water use profiles at hourly scales
@@ -951,10 +957,16 @@ CONTAINS
 
       ! Irrigated Fraction of each surface
       ! TS: as of 20191130, assuming irrigation fraction as ONE except for vegetated surfaces
-      IrrFrac = 1
-      IrrFrac(ConifSurf) = IrrFracEveTr
-      IrrFrac(DecidSurf) = IrrFracDecTr
-      IrrFrac(GrassSurf) = IrrFracGrass
+      ! IrrFrac = 1
+      ! IrrFrac(ConifSurf) = IrrFracEveTr
+      ! IrrFrac(DecidSurf) = IrrFracDecTr
+      ! IrrFrac(GrassSurf) = IrrFracGrass
+
+      ! Irrigated Fraction of each surface
+      ! TS: 20200409, add irrigation fractions for all surfaces
+      IrrFrac = [IrrFracPaved, IrrFracBldgs, &
+                 IrrFracEveTr, IrrFracDecTr, IrrFracGrass, &
+                 IrrFracBSoil, IrrFracWater]
 
       ! --------------------------------------------------------------------------------
       ! If water used is observed and provided in the met forcing file, units are m3

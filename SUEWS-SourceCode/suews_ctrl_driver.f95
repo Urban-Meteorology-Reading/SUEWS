@@ -4,19 +4,22 @@
 ! TS 02 Oct 2017: added  as the generic wrapper
 ! TS 03 Oct 2017: added
 MODULE SUEWS_Driver
+   ! only the following immutable objects are imported:
+   ! 1. functions/subroutines
+   ! 2. constant variables
    USE meteo, ONLY: qsatf, RH2qa, qa2RH
    USE AtmMoistStab_module, ONLY: cal_AtmMoist, cal_Stab, stab_psi_heat, stab_psi_mom
    USE NARP_MODULE, ONLY: NARP_cal_SunPosition
    USE AnOHM_module, ONLY: AnOHM
    USE resist_module, ONLY: AerodynamicResistance, BoundaryLayerResistance, SurfaceResistance, &
-                            cal_z0V, SUEWS_cal_RoughnessParameters
+      cal_z0V, SUEWS_cal_RoughnessParameters
    USE ESTM_module, ONLY: ESTM
    USE Snow_module, ONLY: SnowCalc, Snow_cal_MeltHeat, SnowUpdate, update_snow_albedo, update_snow_dens
    USE DailyState_module, ONLY: SUEWS_cal_DailyState, update_DailyStateLine
    USE WaterDist_module, ONLY: drainage, cal_water_storage, &
-                               SUEWS_cal_SoilState, SUEWS_update_SoilMoist, &
-                               ReDistributeWater, SUEWS_cal_HorizontalSoilWater, &
-                               SUEWS_cal_WaterUse
+      SUEWS_cal_SoilState, SUEWS_update_SoilMoist, &
+      ReDistributeWater, SUEWS_cal_HorizontalSoilWater, &
+      SUEWS_cal_WaterUse
    USE ctrl_output, ONLY: varListAll
    USE DailyState_module, ONLY: SUEWS_update_DailyState
    use lumps_module, only: LUMPS_cal_QHQE
@@ -54,7 +57,11 @@ CONTAINS
       FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD_id, &
       GDDFull, Gridiv, gsModel, H_maintain, HDD_id, HumActivity_24hr, &
       IceFrac, id, Ie_a, Ie_end, Ie_m, Ie_start, imin, &
-      InternalWaterUse_h, IrrFracEveTr, IrrFracDecTr, IrrFracGrass, isec, it, EvapMethod, &
+      InternalWaterUse_h, &
+      IrrFracPaved, IrrFracBldgs, &
+      IrrFracEveTr, IrrFracDecTr, IrrFracGrass, &
+      IrrFracBSoil, IrrFracWater, &
+      isec, it, EvapMethod, &
       iy, kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax, LAIMin, LAI_obs, &
       LAIPower, LAIType, lat, lenDay_id, ldown_obs, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
       SnowWater, MetForcingData_grid, MinFCMetab, MinQFMetab, min_res_bioCO2, &
@@ -156,9 +163,13 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::G6
       REAL(KIND(1D0)), INTENT(IN)::H_maintain
       REAL(KIND(1D0)), INTENT(IN)::InternalWaterUse_h
+      REAL(KIND(1D0)), INTENT(IN)::IrrFracPaved
+      REAL(KIND(1D0)), INTENT(IN)::IrrFracBldgs
       REAL(KIND(1D0)), INTENT(IN)::IrrFracEveTr
       REAL(KIND(1D0)), INTENT(IN)::IrrFracDecTr
       REAL(KIND(1D0)), INTENT(IN)::IrrFracGrass
+      REAL(KIND(1D0)), INTENT(IN)::IrrFracBSoil
+      REAL(KIND(1D0)), INTENT(IN)::IrrFracWater
       REAL(KIND(1D0)), INTENT(IN)::Kmax
       REAL(KIND(1D0)), INTENT(IN)::LAI_obs
       REAL(KIND(1D0)), INTENT(IN)::lat
@@ -720,7 +731,9 @@ CONTAINS
          CALL SUEWS_cal_WaterUse( &
             nsh_real, & ! input:
             wu_m3, SurfaceArea, sfr, &
+            IrrFracPaved, IrrFracBldgs, &
             IrrFracEveTr, IrrFracDecTr, IrrFracGrass, &
+            IrrFracBSoil, IrrFracWater, &
             DayofWeek_id, WUProfA_24hr, WUProfM_24hr, &
             InternalWaterUse_h, HDD_id_next, WUDay_id_next, &
             WaterUseMethod, NSH, it, imin, DLS, &
@@ -2783,7 +2796,7 @@ CONTAINS
    END FUNCTION square_real
 
    SUBROUTINE output_name_n(i, name, group, aggreg, outlevel)
-      ! used by f2py module `SuPy` to handle output names
+      ! used by f2py module  to handle output names
       IMPLICIT NONE
       ! the dimension is potentially incorrect,
       ! which should be consistent with that in output module
@@ -2834,7 +2847,11 @@ CONTAINS
       FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD_id, &
       GDDFull, Gridiv, gsModel, H_maintain, HDD_id, HumActivity_24hr, &
       IceFrac, Ie_a, Ie_end, Ie_m, Ie_start, &
-      InternalWaterUse_h, IrrFracEveTr, IrrFracDecTr, IrrFracGrass, EvapMethod, &
+      InternalWaterUse_h, &
+      IrrFracPaved, IrrFracBldgs, &
+      IrrFracEveTr, IrrFracDecTr, IrrFracGrass, &
+      IrrFracBSoil, IrrFracWater, &
+      isec, it, EvapMethod, &
       kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax, LAIMin, &
       LAIPower, LAIType, lat, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
       SnowWater, MinFCMetab, MinQFMetab, min_res_bioCO2, &
@@ -2935,9 +2952,13 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::G6
       REAL(KIND(1D0)), INTENT(IN)::H_maintain
       REAL(KIND(1D0)), INTENT(IN)::InternalWaterUse_h
+      REAL(KIND(1D0)), INTENT(IN)::IrrFracPaved
+      REAL(KIND(1D0)), INTENT(IN)::IrrFracBldgs
       REAL(KIND(1D0)), INTENT(IN)::IrrFracEveTr
       REAL(KIND(1D0)), INTENT(IN)::IrrFracDecTr
       REAL(KIND(1D0)), INTENT(IN)::IrrFracGrass
+      REAL(KIND(1D0)), INTENT(IN)::IrrFracBSoil
+      REAL(KIND(1D0)), INTENT(IN)::IrrFracWater
       REAL(KIND(1D0)), INTENT(IN)::Kmax
       ! REAL(KIND(1D0)),INTENT(IN)::LAI_obs
       REAL(KIND(1D0)), INTENT(IN)::lat
@@ -3443,7 +3464,11 @@ CONTAINS
             FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD_id, &
             GDDFull, Gridiv, gsModel, H_maintain, HDD_id, HumActivity_24hr, &
             IceFrac, id, Ie_a, Ie_end, Ie_m, Ie_start, imin, &
-            InternalWaterUse_h, IrrFracEveTr, IrrFracDecTr, IrrFracGrass, isec, it, EvapMethod, &
+            InternalWaterUse_h, &
+            IrrFracPaved, IrrFracBldgs, &
+            IrrFracEveTr, IrrFracDecTr, IrrFracGrass, &
+            IrrFracBSoil, IrrFracWater, &
+            isec, it, EvapMethod, &
             iy, kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax, LAIMin, LAI_obs, &
             LAIPower, LAIType, lat, lenDay_id, ldown_obs, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
             SnowWater, MetForcingData_grid, MinFCMetab, MinQFMetab, min_res_bioCO2, &

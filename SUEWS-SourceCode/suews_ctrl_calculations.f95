@@ -87,7 +87,9 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       aerodynamicresistancemethod, daywat, daywatper, faut, flowchange, &
       H_maintain, &
       ie_a, ie_end, ie_m, ie_start, internalwateruse_h, &
-      IrrFracEveTr, IrrFracDecTr, irrfracgrass, &
+      IrrFracPaved, IrrFracBldgs, &
+      IrrFracEveTr, IrrFracDecTr, IrrFracGrass, &
+      IrrFracBSoil, IrrFracWater, &
       pipecapacity, roughlenheatmethod, runofftowater, stabilitymethod, &
       surfacearea, tstep, tstep_prev, &
       qhforCBL, qeforCBL, qh_choice, nsh_real, UStar, psih, is
@@ -137,7 +139,11 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD_id, &
       GDDFull, Gridiv, gsModel, H_maintain, HDD_id, HumActivity_24hr, &
       IceFrac, id, Ie_a, Ie_end, Ie_m, Ie_start, imin, &
-      InternalWaterUse_h, IrrFracEveTr, IrrFracDecTr, IrrFracGrass, isec, it, EvapMethod, &
+      InternalWaterUse_h, &
+      IrrFracPaved, IrrFracBldgs, &
+      IrrFracEveTr, IrrFracDecTr, IrrFracGrass, &
+      IrrFracBSoil, IrrFracWater, &
+      isec, it, EvapMethod, &
       iy, kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax, LAIMin, LAI_obs, &
       LAIPower, LAIType, lat, lenDay_id, ldown_obs, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
       SnowWater, MetForcingData_grid, MinFCMetab, MinQFMetab, min_res_bioCO2, &

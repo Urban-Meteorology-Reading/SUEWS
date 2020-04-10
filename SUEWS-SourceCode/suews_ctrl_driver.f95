@@ -1145,7 +1145,7 @@ CONTAINS
       ELSEIF ((EmissionsMethod > 0 .AND. EmissionsMethod <= 6) .OR. EmissionsMethod >= 11) THEN
          CALL AnthropogenicEmissions( &
             CO2PointSource, EmissionsMethod, &
-            id, it, imin, DLS, nsh, DayofWeek_id, &
+            it, imin, DLS, DayofWeek_id, &
             EF_umolCO2perJ, FcEF_v_kgkm, EnEF_v_Jkm, TrafficUnits, &
             FrFossilFuel_Heat, FrFossilFuel_NonHeat, &
             MinFCMetab, MaxFCMetab, MinQFMetab, MaxQFMetab, &

@@ -28,7 +28,7 @@ contains
 
    SUBROUTINE AnthropogenicEmissions( &
       CO2PointSource, EmissionsMethod, &
-      id, it, imin, DLS, nsh, DayofWeek_id, &
+      it, imin, DLS, DayofWeek_id, &
       EF_umolCO2perJ, FcEF_v_kgkm, EnEF_v_Jkm, TrafficUnits, &
       FrFossilFuel_Heat, FrFossilFuel_NonHeat, &
       MinFCMetab, MaxFCMetab, MinQFMetab, MaxQFMetab, &
@@ -48,11 +48,9 @@ contains
 
       INTEGER, INTENT(in):: &
          EmissionsMethod, &
-         id, &   !Hour
          it, &   !Hour
          imin, & !Minutes
-         DLS, &  !day lightsavings =1+1h=0
-         nsh     !Number of timesteps per hour
+         DLS  !day lightsavings =1+1h=0
 
       INTEGER, DIMENSION(3), INTENT(in)::DayofWeek_id   !1 - day of week; 2 - month; 3 - season
 

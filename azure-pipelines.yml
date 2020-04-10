@@ -25,7 +25,7 @@ jobs:
 
   condition:            succeeded()
   pool:
-    vmImage:            'macOS-10.14'
+    vmImage:            'macOS-10.15'
   steps:
   # Use Python Version
   # Retrieves the specified version of Python from the tool cache. Optionally add it to PATH.

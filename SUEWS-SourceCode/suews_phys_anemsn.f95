@@ -186,9 +186,7 @@ contains
          ENDIF
 
          ! Need to be checked later, not recommended to use
-         ! QF_SAHP_base = AH_MIN(iu) * DP_x_RhoPop   ! Temperature-independent contribution
          QF_SAHP_base = AH_MIN(iu)*AHDorNorT         ! Temperature-independent contribution
-         ! QF_SAHP_heating = QF_SAHP - QF_SAHP_base       ! Heating contribution
          QF_SAHP_cooling = 0                              ! No AC contribution with this method
 
       ELSEIF (EmissionsMethod == 2 .OR. EmissionsMethod == 5 .OR. EmissionsMethod == 12 .OR. EmissionsMethod == 15 .OR. &
@@ -211,25 +209,19 @@ contains
          ! Scales with population density
 
          ! Need to be checked later, not recommended to use
-         ! QF_SAHP_base = AH_MIN(iu) * DP_x_RhoPop       ! Temperature-independent contribution
          QF_SAHP_base = AH_MIN(iu)*AHDorNorT           ! Temperature-independent contribution
 
          IF (Tair_avg_daily < T_CRITIC_Heating(iu)) THEN     ! Heating
-            ! QF_SAHP = (AH_MIN(iu) + AH_SLOPE_Heating(iu)*(T_CRITIC_Heating(iu) - Tair_avg_daily))*AHDorNorT
-            ! QF_SAHP_heating = QF_SAHP - QF_SAHP_base        ! Heating contribution
             QF_SAHP_heating = (AH_SLOPE_Heating(iu)*(T_CRITIC_Heating(iu) - Tair_avg_daily))*AHDorNorT        ! Heating contribution
             QF_SAHP_cooling = 0
 
          ELSEIF (Tair_avg_daily > T_CRITIC_Cooling(iu)) THEN ! Air-conditioning
-            ! QF_SAHP = (AH_MIN(iu) + AH_SLOPE_Cooling(iu)*(Tair_avg_daily - T_CRITIC_Cooling(iu)))*AHDorNorT
             QF_SAHP_heating = 0
-            ! QF_SAHP_cooling = QF_SAHP - QF_SAHP_base          ! AC contribution
             QF_SAHP_cooling = (AH_SLOPE_Cooling(iu)*(Tair_avg_daily - T_CRITIC_Cooling(iu)))*AHDorNorT          ! AC contribution
 
          ELSE
             QF_SAHP_heating = 0
             QF_SAHP_cooling = 0
-            ! QF_SAHP = AH_MIN(iu)*AHDorNorT
          ENDIF
 
       ENDIF

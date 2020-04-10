@@ -10,12 +10,12 @@ Version in Development
 
 - **Improvement**
 
-  None.
+  1. Irrigation fraction can be specified for all surfaces (previously only available for vegetated surfaces)
 
 
 - **Changes**
 
-  None.
+  1. New columns to specify irrigation fractions for non-vegetated surfaces in `SUEWS_SiteSelect.txt`.
 
 
 - **Fix**

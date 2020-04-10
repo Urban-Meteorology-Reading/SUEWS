@@ -2205,10 +2205,36 @@ Input Options
 			:widths: 44 18 38
 
 
+.. option:: IrrFr_Paved
+
+	:Description:
+		Fraction of `Paved` that is irrigated [-]
+
+	:Configuration:
+		.. csv-table::
+			:class: longtable
+			:file: csv-table/IrrFr_Paved.csv
+			:header-rows: 1
+			:widths: 44 18 38
+
+
+.. option:: IrrFr_Bldgs
+
+	:Description:
+		Fraction of `Bldgs` that is irrigated [-]
+
+	:Configuration:
+		.. csv-table::
+			:class: longtable
+			:file: csv-table/IrrFr_Bldgs.csv
+			:header-rows: 1
+			:widths: 44 18 38
+
+
 .. option:: IrrFr_DecTr
 
 	:Description:
-		Fraction of deciduous trees that are irrigated [-]
+		Fraction of `DecTr` that is irrigated [-]
 
 	:Configuration:
 		.. csv-table::
@@ -2221,7 +2247,7 @@ Input Options
 .. option:: IrrFr_EveTr
 
 	:Description:
-		Fraction of evergreen trees that are irrigated [-]
+		Fraction of `EveTr` that is irrigated [-]
 
 	:Configuration:
 		.. csv-table::
@@ -2240,6 +2266,32 @@ Input Options
 		.. csv-table::
 			:class: longtable
 			:file: csv-table/IrrFr_Grass.csv
+			:header-rows: 1
+			:widths: 44 18 38
+
+
+.. option:: IrrFr_BSoil
+
+	:Description:
+		Fraction of `BSoil` that is irrigated [-]
+
+	:Configuration:
+		.. csv-table::
+			:class: longtable
+			:file: csv-table/IrrFr_BSoil.csv
+			:header-rows: 1
+			:widths: 44 18 38
+
+
+.. option:: IrrFr_Water
+
+	:Description:
+		Fraction of `Water` that is irrigated [-]
+
+	:Configuration:
+		.. csv-table::
+			:class: longtable
+			:file: csv-table/IrrFr_Water.csv
 			:header-rows: 1
 			:widths: 44 18 38
 

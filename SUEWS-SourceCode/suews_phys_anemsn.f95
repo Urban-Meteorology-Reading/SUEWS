@@ -178,15 +178,17 @@ contains
          ! Now scales with population density
 
          IF (Temp_C < T_CRITIC_Heating(iu)) THEN
-            QF_SAHP = (AH_MIN(iu) + AH_SLOPE_Heating(iu)*(T_CRITIC_Heating(iu) - Temp_C))*AHDorNorT
+            ! QF_SAHP = (AH_MIN(iu) + AH_SLOPE_Heating(iu)*(T_CRITIC_Heating(iu) - Temp_C))*AHDorNorT
+            QF_SAHP_heating = (AH_SLOPE_Heating(iu)*(T_CRITIC_Heating(iu) - Temp_C))*AHDorNorT
          ELSE
-            QF_SAHP = AH_MIN(iu)*AHDorNorT
+            QF_SAHP_heating = 0
+            !    QF_SAHP = AH_MIN(iu)*AHDorNorT
          ENDIF
 
          ! Need to be checked later, not recommended to use
          ! QF_SAHP_base = AH_MIN(iu) * DP_x_RhoPop   ! Temperature-independent contribution
          QF_SAHP_base = AH_MIN(iu)*AHDorNorT         ! Temperature-independent contribution
-         QF_SAHP_heating = QF_SAHP - QF_SAHP_base       ! Heating contribution
+         ! QF_SAHP_heating = QF_SAHP - QF_SAHP_base       ! Heating contribution
          QF_SAHP_cooling = 0                              ! No AC contribution with this method
 
       ELSEIF (EmissionsMethod == 2 .OR. EmissionsMethod == 5 .OR. EmissionsMethod == 12 .OR. EmissionsMethod == 15 .OR. &
@@ -195,7 +197,7 @@ contains
          ! Jarvi et al. (2011) JH Eq 3 using HDD and CDD
          ! Weekday/weekend differences due to profile and coefficients QF_a,b,c
          ! Scales with population density
-         QF_SAHP = (Qf_a(iu) + Qf_b(iu)*CDD_daily + Qf_c(iu)*HDD_daily)*DP_x_RhoPop  !This contains QF from all three sources: buildings, metabolism and traffic!
+         ! QF_SAHP = (Qf_a(iu) + Qf_b(iu)*CDD_daily + Qf_c(iu)*HDD_daily)*DP_x_RhoPop  !This contains QF from all three sources: buildings, metabolism and traffic!
          QF_SAHP_base = (Qf_a(iu))*DP_x_RhoPop                ! Temperature-independent contribution from buildings, traffic and human metabolism
          QF_SAHP_heating = (Qf_c(iu)*HDD_daily)*DP_x_RhoPop    ! Heating contribution
          QF_SAHP_cooling = (Qf_b(iu)*CDD_daily)*DP_x_RhoPop    ! Cooling (AC) contribution
@@ -213,17 +215,21 @@ contains
          QF_SAHP_base = AH_MIN(iu)*AHDorNorT           ! Temperature-independent contribution
 
          IF (Tair_avg_daily < T_CRITIC_Heating(iu)) THEN     ! Heating
-            QF_SAHP = (AH_MIN(iu) + AH_SLOPE_Heating(iu)*(T_CRITIC_Heating(iu) - Tair_avg_daily))*AHDorNorT
-            QF_SAHP_heating = QF_SAHP - QF_SAHP_base        ! Heating contribution
+            ! QF_SAHP = (AH_MIN(iu) + AH_SLOPE_Heating(iu)*(T_CRITIC_Heating(iu) - Tair_avg_daily))*AHDorNorT
+            ! QF_SAHP_heating = QF_SAHP - QF_SAHP_base        ! Heating contribution
+            QF_SAHP_heating = (AH_SLOPE_Heating(iu)*(T_CRITIC_Heating(iu) - Tair_avg_daily))*AHDorNorT        ! Heating contribution
             QF_SAHP_cooling = 0
 
          ELSEIF (Tair_avg_daily > T_CRITIC_Cooling(iu)) THEN ! Air-conditioning
-            QF_SAHP = (AH_MIN(iu) + AH_SLOPE_Cooling(iu)*(Tair_avg_daily - T_CRITIC_Cooling(iu)))*AHDorNorT
+            ! QF_SAHP = (AH_MIN(iu) + AH_SLOPE_Cooling(iu)*(Tair_avg_daily - T_CRITIC_Cooling(iu)))*AHDorNorT
             QF_SAHP_heating = 0
-            QF_SAHP_cooling = QF_SAHP - QF_SAHP_base          ! AC contribution
+            ! QF_SAHP_cooling = QF_SAHP - QF_SAHP_base          ! AC contribution
+            QF_SAHP_cooling = (AH_SLOPE_Cooling(iu)*(Tair_avg_daily - T_CRITIC_Cooling(iu)))*AHDorNorT          ! AC contribution
 
          ELSE
-            QF_SAHP = AH_MIN(iu)*AHDorNorT
+            QF_SAHP_heating = 0
+            QF_SAHP_cooling = 0
+            ! QF_SAHP = AH_MIN(iu)*AHDorNorT
          ENDIF
 
       ENDIF

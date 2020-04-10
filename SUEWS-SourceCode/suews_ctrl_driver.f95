@@ -12,14 +12,14 @@ MODULE SUEWS_Driver
    USE NARP_MODULE, ONLY: NARP_cal_SunPosition
    USE AnOHM_module, ONLY: AnOHM
    USE resist_module, ONLY: AerodynamicResistance, BoundaryLayerResistance, SurfaceResistance, &
-                            cal_z0V, SUEWS_cal_RoughnessParameters
+      cal_z0V, SUEWS_cal_RoughnessParameters
    USE ESTM_module, ONLY: ESTM
    USE Snow_module, ONLY: SnowCalc, Snow_cal_MeltHeat, SnowUpdate, update_snow_albedo, update_snow_dens
    USE DailyState_module, ONLY: SUEWS_cal_DailyState, update_DailyStateLine
    USE WaterDist_module, ONLY: drainage, cal_water_storage, &
-                               SUEWS_cal_SoilState, SUEWS_update_SoilMoist, &
-                               ReDistributeWater, SUEWS_cal_HorizontalSoilWater, &
-                               SUEWS_cal_WaterUse
+      SUEWS_cal_SoilState, SUEWS_update_SoilMoist, &
+      ReDistributeWater, SUEWS_cal_HorizontalSoilWater, &
+      SUEWS_cal_WaterUse
    USE ctrl_output, ONLY: varListAll
    USE DailyState_module, ONLY: SUEWS_update_DailyState
    use lumps_module, only: LUMPS_cal_QHQE
@@ -48,7 +48,8 @@ CONTAINS
       alb, AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
       AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
       alpha_bioCO2, alpha_enh_bioCO2, alt, avkdn, avRh, avU1, BaseT, BaseTe, &
-      BaseTHDD, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
+      BaseTMethod, &
+      BaseT_HC, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
       chAnOHM, CO2PointSource, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
       DecTreeH, Diagnose, DiagQN, DiagQS, DRAINRT, &
       dt_since_start, dqndt, qn1_av, dqnsdt, qn1_s_av, &
@@ -80,7 +81,7 @@ CONTAINS
       soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
       StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair_av, tau_a, tau_f, tau_r, &
       Tmax_id, Tmin_id, &
-      T_CRITIC_Cooling, T_CRITIC_Heating, Temp_C, TempMeltFact, TH, &
+      BaseT_Cooling, BaseT_Heating, Temp_C, TempMeltFact, TH, &
       theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
       TraffProf_24hr, Ts5mindata_ir, tstep, tstep_prev, veg_type, &
       WaterDist, WaterUseMethod, WetThresh, wu_m3, &
@@ -94,6 +95,7 @@ CONTAINS
       ! ########################################################################################
       ! input variables
       INTEGER, INTENT(IN)::AerodynamicResistanceMethod
+      INTEGER, INTENT(IN)::BaseTMethod
       INTEGER, INTENT(IN)::Diagnose
       INTEGER, INTENT(IN)::DiagQN
       INTEGER, INTENT(IN)::DiagQS
@@ -135,7 +137,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::avkdn
       REAL(KIND(1D0)), INTENT(IN)::avRh
       REAL(KIND(1D0)), INTENT(IN)::avU1
-      REAL(KIND(1D0)), INTENT(IN)::BaseTHDD
+      REAL(KIND(1D0)), INTENT(IN)::BaseT_HC
       REAL(KIND(1D0)), INTENT(IN)::bldgH
       REAL(KIND(1D0)), INTENT(IN)::CapMax_dec
       REAL(KIND(1D0)), INTENT(IN)::CapMin_dec
@@ -232,8 +234,8 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)                   ::Qf_B
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)                   ::Qf_C
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)                   ::PopDensDaytime
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)                   ::T_CRITIC_Cooling
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)                   ::T_CRITIC_Heating
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)                   ::BaseT_Cooling
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)                   ::BaseT_Heating
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)                   ::TrafficRate
       REAL(KIND(1D0)), DIMENSION(3), INTENT(IN)                   ::Ie_a
       REAL(KIND(1D0)), DIMENSION(3), INTENT(IN)                   ::Ie_m
@@ -693,9 +695,11 @@ CONTAINS
          CALL SUEWS_cal_DailyState( &
             iy, id, it, imin, isec, tstep, tstep_prev, dt_since_start, DayofWeek_id, &!input
             Tmin_id_prev, Tmax_id_prev, lenDay_id_prev, &
+            BaseTMethod, &
             WaterUseMethod, Ie_start, Ie_end, &
             LAICalcYes, LAIType, &
-            nsh_real, avkdn, Temp_C, Precip, BaseTHDD, &
+            nsh_real, avkdn, Temp_C, Precip, BaseT_HC, &
+            BaseT_Heating, BaseT_Cooling, &
             lat, Faut, LAI_obs, &
             AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
             AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
@@ -746,7 +750,7 @@ CONTAINS
             FcEF_v_kgkm, FrFossilFuel_Heat, FrFossilFuel_NonHeat, HDD_id_next, HumActivity_24hr, &
             id, imin, it, MaxFCMetab, MaxQFMetab, MinFCMetab, MinQFMetab, nsh, &
             PopDensDaytime, PopDensNighttime, PopProf_24hr, QF, QF0_BEU, Qf_A, Qf_B, Qf_C, &
-            QF_obs, QF_SAHP, SurfaceArea, T_CRITIC_Cooling, T_CRITIC_Heating, &
+            QF_obs, QF_SAHP, SurfaceArea, BaseT_Cooling, BaseT_Heating, &
             Temp_C, TrafficRate, TrafficUnits, TraffProf_24hr, &
             Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff)! output:
 
@@ -1075,7 +1079,7 @@ CONTAINS
       FcEF_v_kgkm, FrFossilFuel_Heat, FrFossilFuel_NonHeat, HDD_id, HumActivity_24hr, &
       id, imin, it, MaxFCMetab, MaxQFMetab, MinFCMetab, MinQFMetab, nsh, &
       PopDensDaytime, PopDensNighttime, PopProf_24hr, QF, QF0_BEU, Qf_A, Qf_B, Qf_C, &
-      QF_obs, QF_SAHP, SurfaceArea, T_CRITIC_Cooling, T_CRITIC_Heating, &
+      QF_obs, QF_SAHP, SurfaceArea, BaseT_Cooling, BaseT_Heating, &
       Temp_C, TrafficRate, TrafficUnits, TraffProf_24hr, &
       Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff)! output:
 
@@ -1102,8 +1106,8 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::Qf_A
       REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::Qf_B
       REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::Qf_C
-      REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::T_CRITIC_Heating
-      REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::T_CRITIC_Cooling
+      REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::BaseT_Heating
+      REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::BaseT_Cooling
       REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::TrafficRate
 
       REAL(KIND(1d0)), DIMENSION(0:23, 2), INTENT(in)::AHProf_24hr
@@ -1152,7 +1156,7 @@ CONTAINS
             PopDensDaytime, PopDensNighttime, &
             Temp_C, HDD_id, Qf_A, Qf_B, Qf_C, &
             AH_MIN, AH_SLOPE_Heating, AH_SLOPE_Cooling, &
-            T_CRITIC_Heating, T_CRITIC_Cooling, &
+            BaseT_Heating, BaseT_Cooling, &
             TrafficRate, &
             QF0_BEU, QF_SAHP, &
             Fc_anthro, Fc_metab, Fc_traff, Fc_build, Fc_point, &
@@ -2838,7 +2842,8 @@ CONTAINS
       alb, AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
       AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
       alpha_bioCO2, alpha_enh_bioCO2, alt, BaseT, BaseTe, &
-      BaseTHDD, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
+      BaseTMethod, &
+      BaseT_HC, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
       chAnOHM, CO2PointSource, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
       DecTreeH, Diagnose, DiagQN, DiagQS, DRAINRT, &
       dt_since_start, dqndt, qn1_av, dqnsdt, qn1_s_av, &
@@ -2868,7 +2873,7 @@ CONTAINS
       SnowLimBldg, SnowLimPaved, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
       soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
       StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair_av, tau_a, tau_f, tau_r, &
-      T_CRITIC_Cooling, T_CRITIC_Heating, TempMeltFact, TH, &
+      BaseT_Cooling, BaseT_Heating, TempMeltFact, TH, &
       theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
       Tmin_id, Tmax_id, lenday_id, &
       TraffProf_24hr, Ts5mindata_ir, tstep, tstep_prev, veg_type, &
@@ -2885,6 +2890,7 @@ CONTAINS
       INTEGER, INTENT(IN) :: len_sim
       ! input variables
       INTEGER, INTENT(IN)::AerodynamicResistanceMethod
+      INTEGER, INTENT(IN)::BaseTMethod
       INTEGER, INTENT(IN)::Diagnose
       INTEGER, INTENT(IN)::DiagQN
       INTEGER, INTENT(IN)::DiagQS
@@ -2924,7 +2930,7 @@ CONTAINS
       ! REAL(KIND(1D0)),INTENT(IN)::avkdn
       ! REAL(KIND(1D0)),INTENT(IN)::avRh
       ! REAL(KIND(1D0)),INTENT(IN)::avU1
-      REAL(KIND(1D0)), INTENT(IN)::BaseTHDD
+      REAL(KIND(1D0)), INTENT(IN)::BaseT_HC
       REAL(KIND(1D0)), INTENT(IN)::bldgH
       REAL(KIND(1D0)), INTENT(IN)::CapMax_dec
       REAL(KIND(1D0)), INTENT(IN)::CapMin_dec
@@ -3020,8 +3026,8 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)        ::Qf_C
       ! REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)        ::Numcapita
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)        ::PopDensDaytime
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)        ::T_CRITIC_Cooling
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)        ::T_CRITIC_Heating
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)        ::BaseT_Cooling
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)        ::BaseT_Heating
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)        ::TrafficRate
       REAL(KIND(1D0)), DIMENSION(3), INTENT(IN)        ::Ie_a
       REAL(KIND(1D0)), DIMENSION(3), INTENT(IN)        ::Ie_m
@@ -3254,7 +3260,7 @@ CONTAINS
          ! write (12, *) 'avu1=', avu1
          ! write (12, *) 'baset=', baset
          ! write (12, *) 'basete=', basete
-         ! write (12, *) 'basethdd=', basethdd
+         ! write (12, *) 'BaseT_HC=', BaseT_HC
          ! write (12, *) 'beta_bioco2=', beta_bioco2
          ! write (12, *) 'beta_enh_bioco2=', beta_enh_bioco2
          ! write (12, *) 'bldgh=', bldgh
@@ -3411,8 +3417,8 @@ CONTAINS
          ! write (12, *) 'tau_r=', tau_r
          ! write (12, *) 'tmax_id=', tmax_id
          ! write (12, *) 'tmin_id=', tmin_id
-         ! write (12, *) 't_critic_cooling=', t_critic_cooling
-         ! write (12, *) 't_critic_heating=', t_critic_heating
+         ! write (12, *) 'BaseT_Cooling=', BaseT_Cooling
+         ! write (12, *) 'BaseT_Heating=', BaseT_Heating
          ! write (12, *) 'temp_c=', temp_c
          ! write (12, *) 'tempmeltfact=', tempmeltfact
          ! write (12, *) 'th=', th
@@ -3455,7 +3461,8 @@ CONTAINS
             alb, AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
             AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
             alpha_bioCO2, alpha_enh_bioCO2, alt, avkdn, avRh, avU1, BaseT, BaseTe, &
-            BaseTHDD, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
+            BaseTMethod, &
+            BaseT_HC, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
             chAnOHM, CO2PointSource, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
             DecTreeH, Diagnose, DiagQN, DiagQS, DRAINRT, &
             dt_since_start, dqndt, qn1_av, dqnsdt, qn1_s_av, &
@@ -3487,7 +3494,7 @@ CONTAINS
             soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
             StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair_av, tau_a, tau_f, tau_r, &
             Tmax_id, Tmin_id, &
-            T_CRITIC_Cooling, T_CRITIC_Heating, Temp_C, TempMeltFact, TH, &
+            BaseT_Cooling, BaseT_Heating, Temp_C, TempMeltFact, TH, &
             theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
             TraffProf_24hr, Ts5mindata_ir, tstep, tstep_prev, veg_type, &
             WaterDist, WaterUseMethod, WetThresh, wu_m3, &

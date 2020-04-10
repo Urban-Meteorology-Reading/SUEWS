@@ -620,7 +620,7 @@ MODULE allocateArray
    INTEGER, PARAMETER:: ccEndO = (ccEndGs + 18*nsurfIncSnow + nsurfIncSnow)
 
    ! Anthropogenic Emissions
-   INTEGER :: c_BaseTHDD = (ccEndO + 1)
+   INTEGER :: c_BaseT_HC = (ccEndO + 1)
    INTEGER :: c_QF_A1 = (ccEndO + 2)
    INTEGER :: c_QF_B1 = (ccEndO + 3)
    INTEGER :: c_QF_C1 = (ccEndO + 4)
@@ -975,6 +975,7 @@ MODULE data_in
 
    ! ---- Model options set in RunControl --------------------------------------------------------
    INTEGER:: EmissionsMethod, & !
+             BaseTMethod, & !
              CBLuse, &               !CBL slab model used (1) or not used (0)
              MultipleMetFiles, &     !Indicates whether a single met file is used for all grids (0) or one for each grid (1)
              MultipleInitFiles, &      !Indicates whether a single initial conditions file is used for all grids (0) or one for each grid (1)
@@ -1047,7 +1048,7 @@ MODULE data_in
                      avu1, &      !Average wind speed
                      avU10_ms, &  !Average wind speed at 10 m
                      azimuth, &   !Sun azimuth in degrees
-                     BaseTHDD, &  !Base temperature for QF
+                     BaseT_HC, &  !Base temperature for QF
                      BuildEnergyUse, &  ! Building energy use
                      CO2mWD, &    !Diurnal activity profile (weekday)
                      CO2mWE, &    !Diurnal activity profile (weekend)
@@ -1138,8 +1139,8 @@ MODULE data_in
                                    FcEF_v_kgkm, &
                                    !   NumCapita, &
                                    PopDensDaytime, &
-                                   T_CRITIC_Heating, & !Critical temperature
-                                   T_CRITIC_Cooling, & !Critical cooling temperature
+                                   BaseT_Heating, & !Critical temperature
+                                   BaseT_Cooling, & !Critical cooling temperature
                                    TrafficRate, & !Traffic rate
                                    QF0_BEU
 
@@ -1958,7 +1959,7 @@ MODULE ColNamesInputFiles
 
    !========== Columns for SUEWS_AnthropogenicEmission.txt ===================
    INTEGER ::   cA_Code = 1, &
-              cA_BaseTHDD = 2, &
+              cA_BaseT_HC = 2, &
               cA_QF_A1 = 3, &   !Weekday
               cA_QF_B1 = 4, &   !Weekday
               cA_QF_C1 = 5, &   !Weekday

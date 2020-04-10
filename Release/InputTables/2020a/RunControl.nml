@@ -2,6 +2,7 @@
 CBLUse=1
 SnowUse=1
 NetRadiationMethod=13
+BaseTMethod=1
 EmissionsMethod=1
 StorageHeatMethod=1
 OHMIncQF=0

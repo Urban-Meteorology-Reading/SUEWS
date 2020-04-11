@@ -57,9 +57,11 @@ CONTAINS
    SUBROUTINE SUEWS_cal_DailyState( &
       iy, id, it, imin, isec, tstep, tstep_prev, dt_since_start, DayofWeek_id, &!input
       Tmin_id_prev, Tmax_id_prev, lenDay_id_prev, &
+      BaseTMethod,&
       WaterUseMethod, Ie_start, Ie_end, &
       LAICalcYes, LAIType, &
-      nsh_real, avkdn, Temp_C, Precip, BaseTHDD, &
+      nsh_real, avkdn, Temp_C, Precip, BaseT_HC, &
+      BaseT_Heating, BaseT_Cooling, &
       lat, Faut, LAI_obs, &
       AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
       AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
@@ -90,6 +92,7 @@ CONTAINS
       INTEGER, INTENT(IN)::dt_since_start
 
       INTEGER, INTENT(IN)::WaterUseMethod
+      INTEGER, INTENT(IN)::BaseTMethod
       INTEGER, INTENT(IN)::Ie_start   !Starting time of water use (DOY)
       INTEGER, INTENT(IN)::Ie_end       !Ending time of water use (DOY)
       INTEGER, INTENT(IN)::LAICalcYes
@@ -100,7 +103,9 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(IN)::avkdn
       REAL(KIND(1d0)), INTENT(IN)::Temp_C
       REAL(KIND(1d0)), INTENT(IN)::Precip
-      REAL(KIND(1d0)), INTENT(IN)::BaseTHDD
+      REAL(KIND(1d0)), INTENT(IN)::BaseT_HC
+      REAL(KIND(1d0)), DIMENSION(2),INTENT(IN)::BaseT_Heating
+      REAL(KIND(1d0)), DIMENSION(2),INTENT(IN)::BaseT_Cooling
       REAL(KIND(1d0)), INTENT(IN)::lat
       REAL(KIND(1d0)), INTENT(IN)::Faut
       REAL(KIND(1d0)), INTENT(IN)::LAI_obs
@@ -282,13 +287,16 @@ CONTAINS
       ! --------------------------------------------------------------------------------
       ! regular update at all timesteps of a day
       CALL update_DailyState_Day( &
-         avkdn, &!input
-         Temp_C, &
-         Precip, &
-         BaseTHDD, &
-         nsh_real, &
-         Tmin_id, Tmax_id, lenDay_id, &!inout
-         HDD_id)
+      BaseTMethod, &
+      DayofWeek_id,&
+      avkdn, &!input
+      Temp_C, &
+      Precip, &
+      BaseT_HC, &
+      BaseT_Heating, BaseT_Cooling, &
+      nsh_real, &
+      Tmin_id, Tmax_id, lenDay_id, &!inout
+      HDD_id)!inout
 
       ! Update snow density, albedo surface fraction
       ! IF (snowUse == 1) CALL SnowUpdate( &
@@ -486,21 +494,28 @@ CONTAINS
    END SUBROUTINE update_DailyState_End
 
    SUBROUTINE update_DailyState_Day( &
+      BaseTMethod, &
+      DayofWeek_id,&
       avkdn, &!input
       Temp_C, &
       Precip, &
-      BaseTHDD, &
+      BaseT_HC, &
+      BaseT_Heating, BaseT_Cooling, &
       nsh_real, &
       Tmin_id, Tmax_id, lenDay_id, &!inout
       HDD_id)!inout
       ! use time, only: id, id_prev_t
       IMPLICIT NONE
 
-      ! INTEGER,INTENT(IN)::id
+      INTEGER, INTENT(IN)::BaseTMethod
+      INTEGER, DIMENSION(3), INTENT(in)::DayofWeek_id
+
       REAL(KIND(1d0)), INTENT(IN)::avkdn
       REAL(KIND(1d0)), INTENT(IN)::Temp_C
       REAL(KIND(1d0)), INTENT(IN)::Precip
-      REAL(KIND(1d0)), INTENT(IN)::BaseTHDD
+      REAL(KIND(1d0)), INTENT(IN)::BaseT_HC
+      REAL(KIND(1d0)),DIMENSION(2), INTENT(IN)::BaseT_Heating
+      REAL(KIND(1d0)),DIMENSION(2), INTENT(IN)::BaseT_Cooling
       REAL(KIND(1d0)), INTENT(IN)::nsh_real
       REAL(KIND(1d0)), INTENT(INOUT)::Tmin_id
       REAL(KIND(1d0)), INTENT(INOUT)::Tmax_id
@@ -514,9 +529,31 @@ CONTAINS
       ! REAL(KIND(1d0)), DIMENSION(5), INTENT(INOUT):: GDD_id !Growing Degree Days (see SUEWS_DailyState.f95)
       REAL(KIND(1d0)), DIMENSION(12), INTENT(INOUT):: HDD_id          !Heating Degree Days (see SUEWS_DailyState.f95)
       ! REAL(KIND(1d0)),DIMENSION(5),INTENT(OUT):: GDD_id_prev !Growing Degree Days (see SUEWS_DailyState.f95)
+      INTEGER:: iu ! flag for weekday/weekend
 
-      INTEGER::gamma1
-      INTEGER::gamma2
+      REAL(KIND(1d0))::dT_heating
+      REAL(KIND(1d0))::dT_cooling
+
+      REAL(KIND(1d0))::BaseT_Heating_use
+      REAL(KIND(1d0))::BaseT_Cooling_use
+
+      ! Set weekday/weekend counter
+      iu = 1   !Set to 1=weekday
+      IF (DayofWeek_id(1) == 1 .OR. DayofWeek_id(1) == 7) iu = 2  !Set to 2=weekend
+
+
+      select case (BaseTMethod)
+      case (1)
+         BaseT_Heating_use = BaseT_HC
+         BaseT_Cooling_use = BaseT_HC
+      case (2)
+         BaseT_Heating_use = BaseT_Heating(iu)
+         BaseT_Cooling_use = BaseT_Cooling(iu)
+
+      case default
+         call ErrorHint(75, "RunControl.nml", -999, -999, -999)
+
+      end select
 
       ! Daily min and max temp (these get updated through the day) ---------------------
       Tmin_id = MIN(Temp_C, Tmin_id)     !Daily min T in column 3
@@ -527,18 +564,11 @@ CONTAINS
 
       ! Calculations related to heating and cooling degree days (HDD) ------------------
       ! See Sailor & Vasireddy (2006) EMS Eq 1,2 (theirs is hourly timestep)
-      gamma1 = MERGE(1, 0, (BaseTHDD - Temp_C) >= 0)
-      gamma2 = MERGE(1, 0, (Temp_C - BaseTHDD) >= 0)
+      dT_heating = BaseT_Heating_use - Temp_C
+      dT_cooling = Temp_C - BaseT_Cooling_use
 
-      ! HDD(id,1)=HDD(id,1) + gamma1*(BaseTHDD-Temp_C)   !Heating
-      ! HDD(id,2)=HDD(id,2) + gamma2*(Temp_C-BaseTHDD)   !Cooling
-      ! HDD(id,3)=HDD(id,3) + Temp_C                     !Will become daily average temperature
-      ! !      4 ------------------------------------!   !5-day running mean
-      ! HDD(id,5)=HDD(id,5) + Precip                     !Daily precip total
-      !      6 ------------------------------------!   !Days since rain
-
-      HDD_id(1) = HDD_id(1) + gamma1*(BaseTHDD - Temp_C)   !Heating
-      HDD_id(2) = HDD_id(2) + gamma2*(Temp_C - BaseTHDD)   !Cooling
+      HDD_id(1) = HDD_id(1) + MERGE(dT_heating, 0d0, dT_heating >= 0)   !Heating
+      HDD_id(2) = HDD_id(2) + MERGE(dT_cooling, 0d0, dT_cooling >= 0)   !Cooling
       HDD_id(3) = HDD_id(3) + Temp_C                     !Will become daily average temperature
       !      4 ------------------------------------!   !5-day running mean
       HDD_id(5) = HDD_id(5) + Precip                     !Daily precip total
@@ -917,50 +947,10 @@ CONTAINS
                WUDay_id([((i - 1)*3 + 2, i=1, 3)]) = WUDay_A
                WUDay_id([((i - 1)*3 + 3, i=1, 3)]) = WUDay_M
 
-               ! ! ---- Automatic irrigation (evergreen trees) ----
-               ! WUDay_id(2) = FrIrriAuto*(Ie_a(1) + Ie_a(2)*temp_avg + Ie_a(3)*days_since_rain)*DayWatPer(wd)
-               ! IF (WUDay_id(2) < 0) WUDay_id(2) = 0   !If modelled WU is negative -> 0
 
-               ! ! ---- Manual irrigation (evergreen trees) ----
-               ! WUDay_id(3) = (1 - FrIrriAuto)*(Ie_m(1) + Ie_m(2)*temp_avg + Ie_m(3)*days_since_rain)*DayWatPer(wd)
-               ! IF (WUDay_id(3) < 0) WUDay_id(3) = 0   !If modelled WU is negative -> 0
-
-               ! ! ---- Total evergreen trees water use (automatic + manual) ----
-               ! WUDay_id(1) = (WUDay_id(2) + WUDay_id(3))
-
-               ! ! ---- Automatic irrigation (deciduous trees) ----
-               ! WUDay_id(5) = FrIrriAuto*(Ie_a(1) + Ie_a(2)*temp_avg + Ie_a(3)*days_since_rain)*DayWatPer(wd)
-               ! IF (WUDay_id(5) < 0) WUDay_id(5) = 0   !If modelled WU is negative -> 0
-
-               ! ! ---- Manual irrigation (deciduous trees) ----
-               ! WUDay_id(6) = (1 - FrIrriAuto)*(Ie_m(1) + Ie_m(2)*temp_avg + Ie_m(3)*days_since_rain)*DayWatPer(wd)
-               ! IF (WUDay_id(6) < 0) WUDay_id(6) = 0   !If modelled WU is negative -> 0
-
-               ! ! ---- Total deciduous trees water use (automatic + manual) ----
-               ! WUDay_id(4) = (WUDay_id(5) + WUDay_id(6))
-
-               ! ! ---- Automatic irrigation (grass) ----
-               ! WUDay_id(8) = FrIrriAuto*(Ie_a(1) + Ie_a(2)*temp_avg + Ie_a(3)*days_since_rain)*DayWatPer(wd)
-               ! IF (WUDay_id(8) < 0) WUDay_id(8) = 0   !If modelled WU is negative -> 0
-
-               ! ! ---- Manual irrigation (grass) ----
-               ! WUDay_id(9) = (1 - FrIrriAuto)*(Ie_m(1) + Ie_m(2)*temp_avg + Ie_m(3)*days_since_rain)*DayWatPer(wd)
-               ! IF (WUDay_id(9) < 0) WUDay_id(9) = 0   !If modelled WU is negative -> 0
-
-               ! ! ---- Total grass water use (automatic + manual) ----
-               ! WUDay_id(7) = (WUDay_id(8) + WUDay_id(9))
 
             ELSE   !If no irrigation on this day
                WUDay_id = 0
-               ! WUDay_id(1) = 0
-               ! WUDay_id(2) = 0
-               ! WUDay_id(3) = 0
-               ! WUDay_id(4) = 0
-               ! WUDay_id(5) = 0
-               ! WUDay_id(6) = 0
-               ! WUDay_id(7) = 0
-               ! WUDay_id(8) = 0
-               ! WUDay_id(9) = 0
             ENDIF
          ENDIF
       ENDIF
@@ -979,7 +969,7 @@ CONTAINS
       INTEGER:: days_prev
       REAL(KIND(1d0))::tstepcount
 
-      ! count of timesteps performed during day `id`
+      ! count of timesteps performed during day
       tstepcount = (it*60 + imin)*60/tstep*1.
       ! Heating degree days (HDD) -------------
       HDD_id(1) = HDD_id(1)/tstepcount   !Heating

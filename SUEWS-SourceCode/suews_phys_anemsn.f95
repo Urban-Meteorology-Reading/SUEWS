@@ -28,14 +28,14 @@ contains
 
    SUBROUTINE AnthropogenicEmissions( &
       CO2PointSource, EmissionsMethod, &
-      id, it, imin, DLS, nsh, DayofWeek_id, &
+      it, imin, DLS, DayofWeek_id, &
       EF_umolCO2perJ, FcEF_v_kgkm, EnEF_v_Jkm, TrafficUnits, &
       FrFossilFuel_Heat, FrFossilFuel_NonHeat, &
       MinFCMetab, MaxFCMetab, MinQFMetab, MaxQFMetab, &
       PopDensDaytime, PopDensNighttime, &
       Temp_C, HDD_id, Qf_A, Qf_B, Qf_C, &
       AH_MIN, AH_SLOPE_Heating, AH_SLOPE_Cooling, &
-      T_CRITIC_Heating, T_CRITIC_Cooling, &
+      BaseT_Heating, BaseT_Cooling, &
       TrafficRate, &
       QF0_BEU, QF_SAHP, &
       Fc_anthro, Fc_metab, Fc_traff, Fc_build, Fc_point, &
@@ -48,11 +48,9 @@ contains
 
       INTEGER, INTENT(in):: &
          EmissionsMethod, &
-         id, &   !Hour
          it, &   !Hour
          imin, & !Minutes
-         DLS, &  !day lightsavings =1+1h=0
-         nsh     !Number of timesteps per hour
+         DLS  !day lightsavings =1+1h=0
 
       INTEGER, DIMENSION(3), INTENT(in)::DayofWeek_id   !1 - day of week; 2 - month; 3 - season
 
@@ -65,8 +63,8 @@ contains
          AH_SLOPE_Cooling, &
          FcEF_v_kgkm, &       !CO2 Emission factor
          PopDensDaytime, &    !Daytime population density [ha-1] (i.e. workers)
-         T_CRITIC_Heating, &  !Critical temperature
-         T_CRITIC_Cooling, &  !Critical cooling temperature
+         BaseT_Heating, &  !Critical temperature
+         BaseT_Cooling, &  !Critical cooling temperature
          TrafficRate, &       !Traffic rate
          QF0_BEU
 
@@ -109,8 +107,8 @@ contains
          DP_x_RhoPop, DP_x_RhoPop_traff, &
          QF_build, QF_metab, QF_traff, &
          QF_SAHP_base, &     !Anthropogenic heat flux calculated by SAHP (temp independent part)
-         QF_SAHP_heat, &     !Anthropogenic heat flux calculated by SAHP (heating part only)
-         QF_SAHP_ac, &       !AC contribution
+         QF_SAHP_heating, &     !Anthropogenic heat flux calculated by SAHP (heating part only)
+         QF_SAHP_cooling, &       !AC contribution
          PopDorNorT, &       ! Population
          ActDorNorT, &       ! Human activity
          TraffDorNorT, &     ! Traffic
@@ -118,10 +116,10 @@ contains
 
       ! initialisation
       QF_traff = 0
-      QF_SAHP_heat = 0
-      QF_SAHP_ac = 0
+      QF_SAHP_heating = 0
+      QF_SAHP_cooling = 0
 
-      ! Transfer HDD values to local explict variables
+      ! Transfer HDD/CDD values to local explict variables
       HDD_daily = HDD_id(7)
       CDD_daily = HDD_id(8)
       ! NB: temporarily use 5-day running mean to test the performance
@@ -130,7 +128,7 @@ contains
       ! Tair_avg_daily= HDD_id_use(3) ! this is daily
 
       ! use average of both daytime and nighttime population values
-      ! TS 20 Sep 2019: moved from `translate` here to simplify the interface
+      ! TS 20 Sep 2019: moved from  here to simplify the interface
       IF (PopDensDaytime(1) >= 0 .AND. PopDensNighttime >= 0) NumCapita(1) = (PopDensDaytime(1) + PopDensNighttime)/2  !If both, use average
       IF (PopDensDaytime(2) >= 0 .AND. PopDensNighttime >= 0) NumCapita(2) = (PopDensDaytime(2) + PopDensNighttime)/2  !If both, use average
 
@@ -153,10 +151,10 @@ contains
       ! AHDorNorT    = AHProf_tstep((NSH*(ih+1-1)+imin*NSH/60+1),iu)       ! normalise so the AVERAGE of the multipliers is equal to 1
       ! PRINT*, ''
       ! PRINT*, 'AHDorNorT old:',AHDorNorT
-      PopDorNorT = get_Prof_SpecTime_inst(ih, imin, 0, PopProf_24hr(:, iu))
-      ActDorNorT = get_Prof_SpecTime_inst(ih, imin, 0, HumActivity_24hr(:, iu))
-      TraffDorNorT = get_Prof_SpecTime_mean(ih, imin, 0, TraffProf_24hr(:, iu))
-      AHDorNorT = get_Prof_SpecTime_mean(ih, imin, 0, AHProf_24hr(:, iu))
+      PopDorNorT = get_Prof_SpecTime_inst(ih, imin, 0, PopProf_24hr(:, iu))     ! 1=night, 2=day, 1-2=transition
+      ActDorNorT = get_Prof_SpecTime_inst(ih, imin, 0, HumActivity_24hr(:, iu)) ! 1=night, 2=day, 1-2=transition
+      TraffDorNorT = get_Prof_SpecTime_mean(ih, imin, 0, TraffProf_24hr(:, iu)) ! normalise so the AVERAGE of the multipliers is equal to 1
+      AHDorNorT = get_Prof_SpecTime_mean(ih, imin, 0, AHProf_24hr(:, iu))       ! normalise so the AVERAGE of the multipliers is equal to 1
 
       ! Diurnal profile times population density [cap ha-1]
       DP_x_RhoPop = AHDorNorT*NumCapita(iu)
@@ -172,38 +170,44 @@ contains
       !1-3: CO2 emission is calculated from QF which can be calculated with three methods
       !41-43: CO2 emission is calculated with local information. QF methods are used for housing and human metabolism
 
-      IF (EmissionsMethod == 1 .OR. EmissionsMethod == 4 .OR. EmissionsMethod == 11 .OR. EmissionsMethod == 14 .OR. &
-          EmissionsMethod == 21 .OR. EmissionsMethod == 24 .OR. EmissionsMethod == 31 .OR. EmissionsMethod == 34 .OR. &
+      IF (EmissionsMethod == 1 .OR. EmissionsMethod == 4 .OR. &
+          EmissionsMethod == 11 .OR. EmissionsMethod == 14 .OR. &
+          EmissionsMethod == 21 .OR. EmissionsMethod == 24 .OR. &
+          EmissionsMethod == 31 .OR. EmissionsMethod == 34 .OR. &
           EmissionsMethod == 41 .OR. EmissionsMethod == 44) THEN   ! (formerly SAHP_1 subroutine)
          ! Loridan et al. (2011) JAMC Eq 13: linear relation with air temperature
          ! Weekday/weekend differences due to profile only
          ! Now scales with population density
 
-         IF (Temp_C < T_CRITIC_Heating(iu)) THEN
-            QF_SAHP = (AH_MIN(iu) + AH_SLOPE_Heating(iu)*(T_CRITIC_Heating(iu) - Temp_C))*AHDorNorT
+         IF (Temp_C < BaseT_Heating(iu)) THEN
+            ! QF_SAHP = (AH_MIN(iu) + AH_SLOPE_Heating(iu)*(BaseT_Heating(iu) - Temp_C))*AHDorNorT
+            QF_SAHP_heating = (AH_SLOPE_Heating(iu)*(BaseT_Heating(iu) - Temp_C))*AHDorNorT
          ELSE
-            QF_SAHP = AH_MIN(iu)*AHDorNorT
+            QF_SAHP_heating = 0
+            !    QF_SAHP = AH_MIN(iu)*AHDorNorT
          ENDIF
 
          ! Need to be checked later, not recommended to use
-         ! QF_SAHP_base = AH_MIN(iu) * DP_x_RhoPop   ! Temperature-independent contribution
          QF_SAHP_base = AH_MIN(iu)*AHDorNorT         ! Temperature-independent contribution
-         QF_SAHP_heat = QF_SAHP - QF_SAHP_base       ! Heating contribution
-         QF_SAHP_ac = 0                              ! No AC contribution with this method
+         QF_SAHP_cooling = 0                              ! No AC contribution with this method
 
-      ELSEIF (EmissionsMethod == 2 .OR. EmissionsMethod == 5 .OR. EmissionsMethod == 12 .OR. EmissionsMethod == 15 .OR. &
-              EmissionsMethod == 22 .OR. EmissionsMethod == 25 .OR. EmissionsMethod == 32 .OR. EmissionsMethod == 35 .OR. &
+      ELSEIF (EmissionsMethod == 2 .OR. EmissionsMethod == 5 .OR. &
+              EmissionsMethod == 12 .OR. EmissionsMethod == 15 .OR. &
+              EmissionsMethod == 22 .OR. EmissionsMethod == 25 .OR. &
+              EmissionsMethod == 32 .OR. EmissionsMethod == 35 .OR. &
               EmissionsMethod == 42 .OR. EmissionsMethod == 45) THEN   ! (formerly SAHP_2 subroutine)
          ! Jarvi et al. (2011) JH Eq 3 using HDD and CDD
          ! Weekday/weekend differences due to profile and coefficients QF_a,b,c
          ! Scales with population density
-         QF_SAHP = (Qf_a(iu) + Qf_b(iu)*CDD_daily + Qf_c(iu)*HDD_daily)*DP_x_RhoPop  !This contains QF from all three sources: buildings, metabolism and traffic!
+         ! QF_SAHP = (Qf_a(iu) + Qf_b(iu)*CDD_daily + Qf_c(iu)*HDD_daily)*DP_x_RhoPop  !This contains QF from all three sources: buildings, metabolism and traffic!
          QF_SAHP_base = (Qf_a(iu))*DP_x_RhoPop                ! Temperature-independent contribution from buildings, traffic and human metabolism
-         QF_SAHP_heat = (Qf_c(iu)*HDD_daily)*DP_x_RhoPop    ! Heating contribution
-         QF_SAHP_ac = (Qf_b(iu)*CDD_daily)*DP_x_RhoPop    ! Cooling (AC) contribution
+         QF_SAHP_heating = (Qf_c(iu)*HDD_daily)*DP_x_RhoPop    ! Heating contribution
+         QF_SAHP_cooling = (Qf_b(iu)*CDD_daily)*DP_x_RhoPop    ! Cooling (AC) contribution
 
-      ELSEIF (EmissionsMethod == 3 .OR. EmissionsMethod == 6 .OR. EmissionsMethod == 13 .OR. EmissionsMethod == 16 .OR. &
-              EmissionsMethod == 23 .OR. EmissionsMethod == 26 .OR. EmissionsMethod == 33 .OR. EmissionsMethod == 36 .OR. &
+      ELSEIF (EmissionsMethod == 3 .OR. EmissionsMethod == 6 .OR. &
+              EmissionsMethod == 13 .OR. EmissionsMethod == 16 .OR. &
+              EmissionsMethod == 23 .OR. EmissionsMethod == 26 .OR. &
+              EmissionsMethod == 33 .OR. EmissionsMethod == 36 .OR. &
               EmissionsMethod == 43 .OR. EmissionsMethod == 46) THEN
          ! Updated Loridan et al. (2011) method using daily (not instantaneous) air temperature (HDD_id_use(3))
          ! Linear relation with air temperature
@@ -211,44 +215,47 @@ contains
          ! Scales with population density
 
          ! Need to be checked later, not recommended to use
-         ! QF_SAHP_base = AH_MIN(iu) * DP_x_RhoPop       ! Temperature-independent contribution
          QF_SAHP_base = AH_MIN(iu)*AHDorNorT           ! Temperature-independent contribution
 
-         IF (Tair_avg_daily < T_CRITIC_Heating(iu)) THEN     ! Heating
-            QF_SAHP = (AH_MIN(iu) + AH_SLOPE_Heating(iu)*(T_CRITIC_Heating(iu) - Tair_avg_daily))*AHDorNorT
-            QF_SAHP_heat = QF_SAHP - QF_SAHP_base        ! Heating contribution
-            QF_SAHP_ac = 0
+         IF (Tair_avg_daily < BaseT_Heating(iu)) THEN     ! Heating
+            QF_SAHP_heating = (AH_SLOPE_Heating(iu)*(BaseT_Heating(iu) - Tair_avg_daily))*AHDorNorT        ! Heating contribution
+            QF_SAHP_cooling = 0
 
-         ELSEIF (Tair_avg_daily > T_CRITIC_Cooling(iu)) THEN ! Air-conditioning
-            QF_SAHP = (AH_MIN(iu) + AH_SLOPE_Cooling(iu)*(Tair_avg_daily - T_CRITIC_Cooling(iu)))*AHDorNorT
-            QF_SAHP_heat = 0
-            QF_SAHP_ac = QF_SAHP - QF_SAHP_base          ! AC contribution
+         ELSEIF (Tair_avg_daily > BaseT_Cooling(iu)) THEN ! Air-conditioning
+            QF_SAHP_heating = 0
+            QF_SAHP_cooling = (AH_SLOPE_Cooling(iu)*(Tair_avg_daily - BaseT_Cooling(iu)))*AHDorNorT          ! AC contribution
 
          ELSE
-            QF_SAHP = AH_MIN(iu)*AHDorNorT
+            QF_SAHP_heating = 0
+            QF_SAHP_cooling = 0
          ENDIF
 
       ENDIF
 
-      IF (EmissionsMethod >= 1 .AND. EmissionsMethod <= 3 .OR. EmissionsMethod >= 11 .AND. EmissionsMethod <= 13 .OR. &
-          EmissionsMethod >= 21 .AND. EmissionsMethod <= 23 .OR. EmissionsMethod >= 31 .AND. EmissionsMethod <= 33 .OR. &
+      ! total QF as the sum of components
+      QF_SAHP = QF_SAHP_base + QF_SAHP_heating + QF_SAHP_cooling
+
+      IF (EmissionsMethod >= 1 .AND. EmissionsMethod <= 3 .OR. &
+          EmissionsMethod >= 11 .AND. EmissionsMethod <= 13 .OR. &
+          EmissionsMethod >= 21 .AND. EmissionsMethod <= 23 .OR. &
+          EmissionsMethod >= 31 .AND. EmissionsMethod <= 33 .OR. &
           EmissionsMethod >= 41 .AND. EmissionsMethod <= 43) THEN
 
-         ! Calculate QF from buildings. First remove (if possibe) human metabolism from the total value given by SAHP.
+         ! Calculate QF from buildings.
+         ! First remove (if possibe) human metabolism from the total value given by SAHP.
          IF ((QF_SAHP_base - QF_metab) > 0) THEN
-            QF_build = QF_SAHP_base*QF0_BEU(iu) + QF_SAHP_heat + QF_SAHP_ac !QF0_BEU = QF0_BuildingEnergyUse = Fraction of base value coming from buildings
+            QF_build = QF_SAHP_base*QF0_BEU(iu) + QF_SAHP_heating + QF_SAHP_cooling !QF0_BEU = QF0_BuildingEnergyUse = Fraction of base value coming from buildings
             !relative to traffic as metabolism is separately calculated
          ELSE
-            !  CALL ErrorHint(69,'QF metab exceeds base QF.',QF_metab,QF_SAHP_base,notUsedI)
             CALL ErrorHint(69, 'QF metab exceeds base QF.', QF_metab, QF_SAHP_base)
 
-            QF_build = QF_SAHP_heat + QF_SAHP_ac + (QF_SAHP_base - QF_metab) !If human metabolism greater than Base QF, remove this from the heating/cooling contribution also
+            QF_build = QF_SAHP_heating + QF_SAHP_cooling + (QF_SAHP_base - QF_metab) !If human metabolism greater than Base QF, remove this from the heating/cooling contribution also
          ENDIF
 
          ! Consider the various components of QF_build to calculate Fc_build
          ! Assume all A/C electric, so QF_SAHP_ac is not associated with any local CO2 emissions
          ! HDD part is building energy use, split between electricity (no local emissions CO2) and combustion (CO2) heating...
-         Fc_build = QF_SAHP_heat*FrFossilFuel_Heat*EF_umolCO2perJ
+         Fc_build = QF_SAHP_heating*FrFossilFuel_Heat*EF_umolCO2perJ
 
          ! ... and there is also a temperature-independent contribution from building energy use.
          IF ((QF_SAHP_base - QF_metab) > 0) THEN
@@ -272,8 +279,10 @@ contains
          ! Sum components to give anthropogenic CO2 flux [umol m-2 s-1]
          Fc_anthro = Fc_metab + Fc_traff + Fc_build + Fc_point
 
-      ELSEIF (EmissionsMethod >= 4 .AND. EmissionsMethod <= 6 .OR. EmissionsMethod >= 14 .AND. EmissionsMethod <= 16 .OR. &
-              EmissionsMethod >= 24 .AND. EmissionsMethod <= 26 .OR. EmissionsMethod >= 34 .AND. EmissionsMethod <= 36 .OR. &
+      ELSEIF (EmissionsMethod >= 4 .AND. EmissionsMethod <= 6 .OR. &
+              EmissionsMethod >= 14 .AND. EmissionsMethod <= 16 .OR. &
+              EmissionsMethod >= 24 .AND. EmissionsMethod <= 26 .OR. &
+              EmissionsMethod >= 34 .AND. EmissionsMethod <= 36 .OR. &
               EmissionsMethod >= 44 .AND. EmissionsMethod <= 46) THEN
          ! Calculate QF and Fc using building energy use and transport statistics
 
@@ -298,11 +307,11 @@ contains
 
          ! Energy released from buildings only
          ! Should buildings have their own profile? Now using population profile
-         QF_build = ((QF_SAHP_base*QF0_BEU(iu) + QF_SAHP_heat + QF_SAHP_ac)/DP_x_RhoPop)* &
+         QF_build = ((QF_SAHP_base*QF0_BEU(iu) + QF_SAHP_heating + QF_SAHP_cooling)/DP_x_RhoPop)* &
                     (PopDensNighttime*(2 - PopDorNorT) + PopDensDaytime(iu)*(PopDorNorT - 1))
 
          ! Consider the various components of QF_build to calculate Fc_build
-         Fc_build = QF_SAHP_heat*FrFossilFuel_Heat*EF_umolCO2perJ
+         Fc_build = QF_SAHP_heating*FrFossilFuel_Heat*EF_umolCO2perJ
          ! ... and there is also a temperature-independent contribution from building energy use
          Fc_build = Fc_build + QF_SAHP_base*QF0_BEU(iu)*FrFossilFuel_NonHeat*EF_umolCO2perJ
 

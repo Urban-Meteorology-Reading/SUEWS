@@ -60,6 +60,7 @@ SUBROUTINE OverallRunControl
       CBLuse, &
       SNOWuse, &
       ! SOLWEIGuse, &
+      BaseTMethod,&
       EmissionsMethod, &
       NetRadiationMethod, &
       RoughLenHeatMethod, &
@@ -1285,7 +1286,7 @@ SUBROUTINE InitializeSurfaceCharacteristics(Gridiv, rr)
    ! ---- Find code for Anthropogenic heat ----
    CALL CodeMatchAnthropogenic(rr, c_QFCode)
    ! Transfer Anthropogenic heat characteristics to SurfaceChar
-   SurfaceChar(gridiv, c_BaseTHDD) = Anthropogenic_Coeff(iv5, cA_BaseTHDD)
+   SurfaceChar(gridiv, c_BaseT_HC) = Anthropogenic_Coeff(iv5, cA_BaseT_HC)
    SurfaceChar(gridiv, c_QF_A1) = Anthropogenic_Coeff(iv5, cA_QF_A1)
    SurfaceChar(gridiv, c_QF_B1) = Anthropogenic_Coeff(iv5, cA_QF_B1)
    SurfaceChar(gridiv, c_QF_C1) = Anthropogenic_Coeff(iv5, cA_QF_C1)
@@ -1806,23 +1807,23 @@ SUBROUTINE InitialState(GridName, year_int, Gridiv, NumberOfGrids)
    ModelDailyState(Gridiv, cMDS_TempCOld3) = Temp_C0
 
    ! -- Anthropogenic heat flux initializations --
-   ! Need to get BaseTHDD from SurfaceChar, as info not transferred until SUEWS_Translate called
-   BaseTHDD = SurfaceChar(Gridiv, c_BaseTHDD)
+   ! Need to get BaseT_HC from SurfaceChar, as info not transferred until SUEWS_Translate called
+   BaseT_HC = SurfaceChar(Gridiv, c_BaseT_HC)
 
    IF (EmissionsMethod >= 0) THEN
-      !Calculations related to heating and cooling degree days (BaseT is used always)
-      IF ((Temp_C0 - BaseTHDD) >= 0) THEN   !Cooling
+      !Calculations related to heating and cooling degree days (BaseT_HC is used always)
+      IF ((Temp_C0 - BaseT_HC) >= 0) THEN   !Cooling
          gamma2 = 1
       ELSE
          gamma2 = 0
       ENDIF
-      IF ((BaseTHDD - Temp_C0) >= 0) THEN   !Heating
+      IF ((BaseT_HC - Temp_C0) >= 0) THEN   !Heating
          gamma1 = 1
       ELSE
          gamma1 = 0
       ENDIF
-      ModelDailyState(Gridiv, cMDS_HDD1) = gamma1*(BaseTHDD - Temp_C0) ! Heating
-      ModelDailyState(Gridiv, cMDS_HDD2) = gamma2*(Temp_C0 - BaseTHDD) ! Cooling
+      ModelDailyState(Gridiv, cMDS_HDD1) = gamma1*(BaseT_HC - Temp_C0) ! Heating
+      ModelDailyState(Gridiv, cMDS_HDD2) = gamma2*(Temp_C0 - BaseT_HC) ! Cooling
    ENDIF
 
    ! -- Save snow density and snow albedo info in InitialConditions to ModelDailyState array --

@@ -480,7 +480,7 @@ SUBROUTINE InputHeaderCheck(FileName)
 
    ! ========== SUEWS_AnthropogenicEmission.txt ======
    HeaderAnthropogenic_Reqd(cA_Code) = "Code"
-   HeaderAnthropogenic_Reqd(cA_BaseTHDD) = "BaseTHDD"
+   HeaderAnthropogenic_Reqd(cA_BaseT_HC) = "BaseT_HC"
    HeaderAnthropogenic_Reqd(cA_QF_A1) = "QF_A_WD"
    HeaderAnthropogenic_Reqd(cA_QF_B1) = "QF_B_WD"
    HeaderAnthropogenic_Reqd(cA_QF_C1) = "QF_C_WD"

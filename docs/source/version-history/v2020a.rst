@@ -12,6 +12,8 @@ Version 2020a (in development)
 
   #. Irrigation fraction can be specified for all surfaces (previously only available for vegetated surfaces)
 
+  #. A U-shape approach for calculating HDD/CDD is introduced to account for a wide comfort zone between heating and cooling critical temperatures.
+
 
 
 - **Changes**
@@ -21,6 +23,8 @@ Version 2020a (in development)
   #. A new column `H_maintain` is added in `SUEWS_Irrigation.txt` to set ponding water depth.
 
   #. New columns to specify irrigation fractions for non-vegetated surfaces in `SUEWS_SiteSelect.txt`.
+
+  #. A new `scheme option <:ref:scheme_options>`_ `BaseTMethod` in `RunControl.nml` to set calculation scheme for HDD/CDD.
 
 - **Fix**
 

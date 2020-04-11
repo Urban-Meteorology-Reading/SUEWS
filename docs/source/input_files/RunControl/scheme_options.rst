@@ -44,6 +44,18 @@ Scheme options
 			:widths: 10 80
 
 
+.. option:: BaseTMethod
+
+	:Requirement:
+		Required
+	:Description:
+		Determines method for base temperature used in HDD/CDD calculations.
+	:Configuration:
+		.. csv-table::
+			:file: csv-table/BaseTMethod.csv
+			:header-rows: 1
+			:widths: 10 80
+
 .. option:: EmissionsMethod
 
 	:Requirement:

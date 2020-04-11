@@ -1,0 +1,3 @@
+"Value","Comments"
+1,"V-shape approach: a single `BaseT_HC` is used"
+2,"U-shape approach: `TCritic_Heating_WD` (`TCritic_Heating_WE`) and `TCritic_Cooling_WD` (TCritic_Cooling_WE) are used for HDD and CDD calculations in weekdays (weekends), respectively."

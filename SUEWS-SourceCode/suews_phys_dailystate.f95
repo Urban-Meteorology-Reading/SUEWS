@@ -57,7 +57,7 @@ CONTAINS
    SUBROUTINE SUEWS_cal_DailyState( &
       iy, id, it, imin, isec, tstep, tstep_prev, dt_since_start, DayofWeek_id, &!input
       Tmin_id_prev, Tmax_id_prev, lenDay_id_prev, &
-      BaseTMethod,&
+      BaseTMethod, &
       WaterUseMethod, Ie_start, Ie_end, &
       LAICalcYes, LAIType, &
       nsh_real, avkdn, Temp_C, Precip, BaseT_HC, &
@@ -104,8 +104,8 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(IN)::Temp_C
       REAL(KIND(1d0)), INTENT(IN)::Precip
       REAL(KIND(1d0)), INTENT(IN)::BaseT_HC
-      REAL(KIND(1d0)), DIMENSION(2),INTENT(IN)::BaseT_Heating
-      REAL(KIND(1d0)), DIMENSION(2),INTENT(IN)::BaseT_Cooling
+      REAL(KIND(1d0)), DIMENSION(2), INTENT(IN)::BaseT_Heating
+      REAL(KIND(1d0)), DIMENSION(2), INTENT(IN)::BaseT_Cooling
       REAL(KIND(1d0)), INTENT(IN)::lat
       REAL(KIND(1d0)), INTENT(IN)::Faut
       REAL(KIND(1d0)), INTENT(IN)::LAI_obs
@@ -287,16 +287,16 @@ CONTAINS
       ! --------------------------------------------------------------------------------
       ! regular update at all timesteps of a day
       CALL update_DailyState_Day( &
-      BaseTMethod, &
-      DayofWeek_id,&
-      avkdn, &!input
-      Temp_C, &
-      Precip, &
-      BaseT_HC, &
-      BaseT_Heating, BaseT_Cooling, &
-      nsh_real, &
-      Tmin_id, Tmax_id, lenDay_id, &!inout
-      HDD_id)!inout
+         BaseTMethod, &
+         DayofWeek_id, &
+         avkdn, &!input
+         Temp_C, &
+         Precip, &
+         BaseT_HC, &
+         BaseT_Heating, BaseT_Cooling, &
+         nsh_real, &
+         Tmin_id, Tmax_id, lenDay_id, &!inout
+         HDD_id)!inout
 
       ! Update snow density, albedo surface fraction
       ! IF (snowUse == 1) CALL SnowUpdate( &
@@ -495,7 +495,7 @@ CONTAINS
 
    SUBROUTINE update_DailyState_Day( &
       BaseTMethod, &
-      DayofWeek_id,&
+      DayofWeek_id, &
       avkdn, &!input
       Temp_C, &
       Precip, &
@@ -514,8 +514,8 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(IN)::Temp_C
       REAL(KIND(1d0)), INTENT(IN)::Precip
       REAL(KIND(1d0)), INTENT(IN)::BaseT_HC
-      REAL(KIND(1d0)),DIMENSION(2), INTENT(IN)::BaseT_Heating
-      REAL(KIND(1d0)),DIMENSION(2), INTENT(IN)::BaseT_Cooling
+      REAL(KIND(1d0)), DIMENSION(2), INTENT(IN)::BaseT_Heating
+      REAL(KIND(1d0)), DIMENSION(2), INTENT(IN)::BaseT_Cooling
       REAL(KIND(1d0)), INTENT(IN)::nsh_real
       REAL(KIND(1d0)), INTENT(INOUT)::Tmin_id
       REAL(KIND(1d0)), INTENT(INOUT)::Tmax_id
@@ -540,7 +540,6 @@ CONTAINS
       ! Set weekday/weekend counter
       iu = 1   !Set to 1=weekday
       IF (DayofWeek_id(1) == 1 .OR. DayofWeek_id(1) == 7) iu = 2  !Set to 2=weekend
-
 
       select case (BaseTMethod)
       case (1)
@@ -946,8 +945,6 @@ CONTAINS
                WUDay_id([((i - 1)*3 + 1, i=1, 3)]) = WUDay_total
                WUDay_id([((i - 1)*3 + 2, i=1, 3)]) = WUDay_A
                WUDay_id([((i - 1)*3 + 3, i=1, 3)]) = WUDay_M
-
-
 
             ELSE   !If no irrigation on this day
                WUDay_id = 0

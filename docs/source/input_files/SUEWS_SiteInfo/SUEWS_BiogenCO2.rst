@@ -1,4 +1,4 @@
-.. _SUEWS_BiogenCO2.txt:
+.. _SUEWS_BiogenCO2:
 
 SUEWS_BiogenCO2.txt
 ~~~~~~~~~~~~~~~~~~~

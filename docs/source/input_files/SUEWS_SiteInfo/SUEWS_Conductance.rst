@@ -1,4 +1,4 @@
-.. _SUEWS_Conductance.txt:
+.. _SUEWS_Conductance:
 
 SUEWS_Conductance.txt
 ~~~~~~~~~~~~~~~~~~~~~

@@ -1,6 +1,6 @@
 No.,Column Name,Use,Description
 1,`Code`,`L`,Code linking to a corresponding look-up table.
-2,`BaseTHDD`,`MU`,Base temperature for heating degree days [°C]
+2,`BaseT_HC`,`MU`,Base temperature for heating degree days [°C]
 3,`QF_A_WD`,`MU` `O`,Base value for QF on weekdays [W |m^-2| (Cap |ha^-1| |)^-1| ]
 4,`QF_B_WD`,`MU` `O`,Parameter related to cooling degree days on weekdays [W |m^-2| |K^-1| (Cap |ha^-1| |)^-1|]
 5,`QF_C_WD`,`MU` `O`,Parameter related to heating degree days on weekdays [W |m^-2| |K^-1| (Cap |ha^-1| |)^-1|]

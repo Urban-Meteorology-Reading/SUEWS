@@ -1,4 +1,4 @@
-.. _SUEWS_Snow.txt:
+.. _SUEWS_Snow:
 
 SUEWS_Snow.txt
 ~~~~~~~~~~~~~~

@@ -1,4 +1,4 @@
-.. _SUEWS_Soil.txt:
+.. _SUEWS_Soil:
 
 SUEWS_Soil.txt
 ~~~~~~~~~~~~~~

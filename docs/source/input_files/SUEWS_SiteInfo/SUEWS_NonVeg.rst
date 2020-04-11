@@ -1,4 +1,4 @@
-.. _SUEWS_NonVeg.txt:
+.. _SUEWS_NonVeg:
 
 SUEWS_NonVeg.txt
 ~~~~~~~~~~~~~~~~

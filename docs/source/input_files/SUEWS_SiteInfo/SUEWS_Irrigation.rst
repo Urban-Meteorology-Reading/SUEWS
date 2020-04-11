@@ -1,4 +1,4 @@
-.. _SUEWS_Irrigation.txt:
+.. _SUEWS_Irrigation:
 
 SUEWS_Irrigation.txt
 ~~~~~~~~~~~~~~~~~~~~

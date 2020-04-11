@@ -301,7 +301,7 @@ Input Options
 			:widths: 44 18 38
 
 
-.. option:: BaseTHDD
+.. option:: BaseT_HC
 
 	:Description:
 		Base temperature for heating degree days [°C]
@@ -309,7 +309,7 @@ Input Options
 	:Configuration:
 		.. csv-table::
 			:class: longtable
-			:file: csv-table/BaseTHDD.csv
+			:file: csv-table/BaseT_HC.csv
 			:header-rows: 1
 			:widths: 44 18 38
 

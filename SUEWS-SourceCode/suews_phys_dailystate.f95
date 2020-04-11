@@ -947,50 +947,10 @@ CONTAINS
                WUDay_id([((i - 1)*3 + 2, i=1, 3)]) = WUDay_A
                WUDay_id([((i - 1)*3 + 3, i=1, 3)]) = WUDay_M
 
-               ! ! ---- Automatic irrigation (evergreen trees) ----
-               ! WUDay_id(2) = FrIrriAuto*(Ie_a(1) + Ie_a(2)*temp_avg + Ie_a(3)*days_since_rain)*DayWatPer(wd)
-               ! IF (WUDay_id(2) < 0) WUDay_id(2) = 0   !If modelled WU is negative -> 0
 
-               ! ! ---- Manual irrigation (evergreen trees) ----
-               ! WUDay_id(3) = (1 - FrIrriAuto)*(Ie_m(1) + Ie_m(2)*temp_avg + Ie_m(3)*days_since_rain)*DayWatPer(wd)
-               ! IF (WUDay_id(3) < 0) WUDay_id(3) = 0   !If modelled WU is negative -> 0
-
-               ! ! ---- Total evergreen trees water use (automatic + manual) ----
-               ! WUDay_id(1) = (WUDay_id(2) + WUDay_id(3))
-
-               ! ! ---- Automatic irrigation (deciduous trees) ----
-               ! WUDay_id(5) = FrIrriAuto*(Ie_a(1) + Ie_a(2)*temp_avg + Ie_a(3)*days_since_rain)*DayWatPer(wd)
-               ! IF (WUDay_id(5) < 0) WUDay_id(5) = 0   !If modelled WU is negative -> 0
-
-               ! ! ---- Manual irrigation (deciduous trees) ----
-               ! WUDay_id(6) = (1 - FrIrriAuto)*(Ie_m(1) + Ie_m(2)*temp_avg + Ie_m(3)*days_since_rain)*DayWatPer(wd)
-               ! IF (WUDay_id(6) < 0) WUDay_id(6) = 0   !If modelled WU is negative -> 0
-
-               ! ! ---- Total deciduous trees water use (automatic + manual) ----
-               ! WUDay_id(4) = (WUDay_id(5) + WUDay_id(6))
-
-               ! ! ---- Automatic irrigation (grass) ----
-               ! WUDay_id(8) = FrIrriAuto*(Ie_a(1) + Ie_a(2)*temp_avg + Ie_a(3)*days_since_rain)*DayWatPer(wd)
-               ! IF (WUDay_id(8) < 0) WUDay_id(8) = 0   !If modelled WU is negative -> 0
-
-               ! ! ---- Manual irrigation (grass) ----
-               ! WUDay_id(9) = (1 - FrIrriAuto)*(Ie_m(1) + Ie_m(2)*temp_avg + Ie_m(3)*days_since_rain)*DayWatPer(wd)
-               ! IF (WUDay_id(9) < 0) WUDay_id(9) = 0   !If modelled WU is negative -> 0
-
-               ! ! ---- Total grass water use (automatic + manual) ----
-               ! WUDay_id(7) = (WUDay_id(8) + WUDay_id(9))
 
             ELSE   !If no irrigation on this day
                WUDay_id = 0
-               ! WUDay_id(1) = 0
-               ! WUDay_id(2) = 0
-               ! WUDay_id(3) = 0
-               ! WUDay_id(4) = 0
-               ! WUDay_id(5) = 0
-               ! WUDay_id(6) = 0
-               ! WUDay_id(7) = 0
-               ! WUDay_id(8) = 0
-               ! WUDay_id(9) = 0
             ENDIF
          ENDIF
       ENDIF
@@ -1009,7 +969,7 @@ CONTAINS
       INTEGER:: days_prev
       REAL(KIND(1d0))::tstepcount
 
-      ! count of timesteps performed during day uid=501(sunt05) gid=20(staff) groups=20(staff),12(everyone),61(localaccounts),79(_appserverusr),80(admin),81(_appserveradm),98(_lpadmin),33(_appstore),100(_lpoperator),204(_developer),250(_analyticsusers),395(com.apple.access_ftp),398(com.apple.access_screensharing),399(com.apple.access_ssh),400(com.apple.access_remote_ae)
+      ! count of timesteps performed during day
       tstepcount = (it*60 + imin)*60/tstep*1.
       ! Heating degree days (HDD) -------------
       HDD_id(1) = HDD_id(1)/tstepcount   !Heating

@@ -119,7 +119,7 @@ contains
       QF_SAHP_heating = 0
       QF_SAHP_cooling = 0
 
-      ! Transfer HDD values to local explict variables
+      ! Transfer HDD/CDD values to local explict variables
       HDD_daily = HDD_id(7)
       CDD_daily = HDD_id(8)
       ! NB: temporarily use 5-day running mean to test the performance

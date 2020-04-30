@@ -140,7 +140,8 @@ The information required to run SUEWS for your site consists of:
    land cover, heights of buildings and trees, radiative characteristics
    (e.g. albedo, emissivity), drainage characteristics, soil
    characteristics, snow characteristics, phenological characteristics
-   (e.g. seasonal cycle of LAI).
+   (e.g. seasonal cycle of LAI). For guidance on how to derive parameters related to
+   LAI, albedo, surface conductance and surface roughness, the reader is referred to this `link <https://suews-parameters-docs.readthedocs.io/>`_.
 #. Information about *human behaviour*, including energy use and water
    use (e.g. for irrigation or street cleaning) and snow clearing (if
    applicable). The anthropogenic energy use and water use may be

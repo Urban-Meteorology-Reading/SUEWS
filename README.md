@@ -8,15 +8,14 @@ This is a public repo for SUEWS source code and documentation.
   - [Developer Note](#developer-note)
     - [Branch](#branch)
       - [Central curated branches](#central-curated-branches)
-      - [Workflow](#workflow)
     - [Manual](#manual)
     - [Test](#test)
       - [Tests and purposes](#tests-and-purposes)
-      - [Workflow](#workflow-1)
+      - [Workflow](#workflow)
       - [Preparation of tests](#preparation-of-tests)
     - [Debugging with GDB](#debugging-with-gdb)
       - [GDB on macOS](#gdb-on-macos)
-      - [debugging with GDB](#debugging-with-gdb)
+      - [debugging with GDB](#debugging-with-gdb-1)
     - [Questions](#questions)
 
 
@@ -30,8 +29,6 @@ This is a public repo for SUEWS source code and documentation.
 
 ### Branch
 
-The SUEWS repo follows the [`GitFlow` model](https://nvie.com/posts/a-successful-git-branching-model/) to manage sustainable development.
-
 #### Central curated branches
 These branches are regularly curated by admin members with specific purposes and set with triggers for automatic deployment (via MS Azure Pipeline) in the [*releases* page](https://github.com/Urban-Meteorology-Reading/SUEWS/releases) named **Latest Release Test**:
 
@@ -41,14 +38,6 @@ These branches are regularly curated by admin members with specific purposes and
 * `develop`:
   * used for core developments.
   * `push` is restricted to admin members.
-
-
-#### Workflow
-
-Please follow the [`GitFlow` model](https://nvie.com/posts/a-successful-git-branching-model/) for development.
-
-![`GitFlow` model](https://nvie.com/img/git-model@2x.png)
-
 
 
 ### Manual

@@ -11,7 +11,7 @@ contains
 
    SUBROUTINE RSLProfile( &
       Zh, z0m, zdm, &
-      L_MOD, sfr, planF, StabilityMethod, &
+      L_MOD, sfr, FAI, StabilityMethod, &
       avcp, lv_J_kg, avdens, &
       avU1, Temp_C, avRH, Press_hPa, zMeas, qh, qe, &  ! input
       T2_C, q2_gkg, U10_ms, RH2, &!output
@@ -23,6 +23,7 @@ contains
       ! last modified by:
       ! NT 16 Mar 2019: initial version
       ! TS 16 Oct 2019: improved consistency in parameters/varaibles within SUEWS
+      ! TODO how to improve the speed of this code
       !
       !-----------------------------------------------------
 
@@ -43,7 +44,7 @@ contains
       REAL(KIND(1d0)), INTENT(in):: Zh     ! Mean building height [m]
       REAL(KIND(1d0)), INTENT(in):: z0m     ! Mean building height [m]
       REAL(KIND(1d0)), INTENT(in):: zdm     ! Mean building height [m]
-      REAL(KIND(1d0)), INTENT(in):: planF  ! Frontal area index [-]
+      REAL(KIND(1d0)), INTENT(in):: FAI  ! Frontal area index [-]
 
       INTEGER, INTENT(in)::StabilityMethod
 
@@ -112,7 +113,7 @@ contains
       call RSL_cal_prms( &
          Zh_min, &
          z0m, zdm, &
-         StabilityMethod, zh, L_MOD, sfr, planF, &!input
+         StabilityMethod, zh, L_MOD, sfr, FAI, &!input
          L_MOD_RSL, zH_RSL, Lc, beta, zd, z0, elm, Scc, f)
 
       ! Define the height array with consideration of key heights

@@ -13,10 +13,9 @@ Usage
 Please refer to the :ref:`SuPy API page <suews-convert>`.
 
 
-Example
--------
+Example (from 2018a to 2020a)
+-----------------------------
 
-1. Convert input tables from 2018a to 2020a
 
 Assuming your 2018a files are all included in the folder ``your_2018a_folder`` and your desirable converted files should be placed in a new folder ``your_2020a_folder``, please do the following in your command line tool:
 

@@ -1,7 +1,6 @@
 trigger:
   # branch names
 - master
-- release/*
 - develop
 
 # Set variables once

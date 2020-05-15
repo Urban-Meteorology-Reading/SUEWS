@@ -480,7 +480,7 @@ SUBROUTINE InputHeaderCheck(FileName)
 
    ! ========== SUEWS_AnthropogenicEmission.txt ======
    HeaderAnthropogenic_Reqd(cA_Code) = "Code"
-   HeaderAnthropogenic_Reqd(cA_BaseTHDD) = "BaseTHDD"
+   HeaderAnthropogenic_Reqd(cA_BaseT_HC) = "BaseT_HC"
    HeaderAnthropogenic_Reqd(cA_QF_A1) = "QF_A_WD"
    HeaderAnthropogenic_Reqd(cA_QF_B1) = "QF_B_WD"
    HeaderAnthropogenic_Reqd(cA_QF_C1) = "QF_C_WD"
@@ -525,6 +525,7 @@ SUBROUTINE InputHeaderCheck(FileName)
    HeaderIrrigation_Reqd(cIr_IeEnd) = "Ie_end"
    HeaderIrrigation_Reqd(cIr_IntWU) = "InternalWaterUse"
    HeaderIrrigation_Reqd(cIr_Faut) = "Faut"
+   HeaderIrrigation_Reqd(cIr_H_ponding) = "H_maintain"
    HeaderIrrigation_Reqd(cIr_Ie_a1) = "Ie_a1"
    HeaderIrrigation_Reqd(cIr_Ie_a2) = "Ie_a2"
    HeaderIrrigation_Reqd(cIr_Ie_a3) = "Ie_a3"
@@ -976,7 +977,7 @@ SUBROUTINE CodeMatchESTM_Class(Gridiv, is, ii)
          ENDIF
       ENDDO
    ELSE
-      WRITE (*, *) 'Problem with CodeMatchESTM_Class (in SUEWS_CodeMatch.f95). ', is, ' not correct. Needs to be either ', &
+      WRITE (*, *) 'Problem with CodeMatchESTM_Class (in SUEWS_ctrl_input.f95). ', is, ' not correct. Needs to be either ', &
          '1 = Paved surfaced, 2 = Bldgs surfaces.'
       STOP
    ENDIF

@@ -147,7 +147,7 @@ ext_modules = [
 setup(
     name="supy_driver",
     # update version info here!
-    version=get_suews_version(ver_minor=1),
+    version=get_suews_version(ver_minor=9),
     description="the SUEWS driver driven by f2py",
     long_description=readme(),
     url="https://github.com/sunt05/SuPy",

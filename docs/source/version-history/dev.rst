@@ -5,17 +5,17 @@
 
 **THIS RELEASE IS ONLY FOR VALIDATING THE SUEWS CI WORKFLOW.**
 
-Version in Development
+Version 2020b (in development)
 ----------------------------------------------------
 
 - **Improvement**
 
-  None.
+  1. TO ADD
 
 
 - **Changes**
 
-  None.
+  1. TO ADD
 
 
 - **Fix**

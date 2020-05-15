@@ -48,27 +48,23 @@ def load_SUEWS_table(fileX):
     # remove case issues
     fileX = path_insensitive(fileX)
     rawdata = pd.read_csv(
-        fileX,
-        delim_whitespace=True,
-        comment='!', error_bad_lines=True,
-        skiprows=1).dropna()
+        fileX, delim_whitespace=True, comment="!", error_bad_lines=True, skiprows=1
+    ).dropna()
     return rawdata
 
 
 # load results
 def load_SUEWS_results(n_grid, n_year):
-    path_out = os.path.join('Output/*SUEWS_60.txt')
+    path_out = os.path.join("Output/*SUEWS_60.txt")
     # re-order results into [year, grid] layout
     fl_res = np.array(sorted(glob(path_out)))
     fl_res = fl_res.reshape(n_grid, n_year).swapaxes(0, 1)
     res_sim = [
         np.array(
-            [
-                pd.read_csv(f_grid, sep=r'\s+', header=0).values
-                for f_grid in fl_year
-            ]
+            [pd.read_csv(f_grid, sep=r"\s+", header=0).values for f_grid in fl_year]
         )
-        for fl_year in fl_res]
+        for fl_year in fl_res
+    ]
     # re-order the results into [grid,time]
     res_sim = np.concatenate(res_sim, axis=1)
 
@@ -76,14 +72,16 @@ def load_SUEWS_results(n_grid, n_year):
 
 
 # load results as pandas dataframe
-def load_df_SUEWS(dir_out='Output', fn_pattern='*SUEWS_60.txt'):
+def load_df_SUEWS(dir_out="Output", fn_pattern="*SUEWS_60.txt"):
     fl_res = list(Path(dir_out).glob(fn_pattern))
     # re-order results into [year, grid] layout
     fl_res = sorted(list(Path(dir_out).glob(fn_pattern)))
-    list_grid = [fn.stem.split('_')[0] for fn in fl_res]
+    list_grid = [fn.stem.split("_")[0] for fn in fl_res]
     # load individual files with extra level named by grid
-    list_df = [pd.concat([pd.read_csv(fn, sep=r'\s+', header=0)], keys=[grid])
-               for fn, grid in zip(fl_res, list_grid)]
+    list_df = [
+        pd.concat([pd.read_csv(fn, sep=r"\s+", header=0)], keys=[grid])
+        for fn, grid in zip(fl_res, list_grid)
+    ]
     # re-order the results into [grid,time]
     res_sim = pd.concat(list_df).sort_index()
 
@@ -91,7 +89,7 @@ def load_df_SUEWS(dir_out='Output', fn_pattern='*SUEWS_60.txt'):
 
 
 # save SiteSelect to file
-def save_SiteSelect(df_siteselect, fn_ss='Input/SUEWS_SiteSelect.txt'):
+def save_SiteSelect(df_siteselect, fn_ss="Input/SUEWS_SiteSelect.txt"):
     # process SiteSelect
     # fn_ss = 'SUEWS_SiteSelect.txt'
     cfg_siteselect_base = df_siteselect
@@ -100,33 +98,37 @@ def save_SiteSelect(df_siteselect, fn_ss='Input/SUEWS_SiteSelect.txt'):
     # n_year = cfg_siteselect_dim[0]
 
     cfg_siteselect_header = np.vstack(
-        (np.arange(1, cfg_siteselect_dim[1] + 1), cfg_siteselect_base.columns))
+        (np.arange(1, cfg_siteselect_dim[1] + 1), cfg_siteselect_base.columns)
+    )
 
     # generate header for SiteSelect.txt
-    header_SS = '\n'.join(
-        [' '.join(line) for line in cfg_siteselect_header.astype(str)])
+    header_SS = "\n".join(
+        [" ".join(line) for line in cfg_siteselect_header.astype(str)]
+    )
 
     # create SiteSelect.txt
     np.savetxt(
-        fn_ss, cfg_siteselect_x,
-        fmt=' '.join(['%i'] * 4 + ['%1.4f'] * (cfg_siteselect_dim[1] - 4)),
-        header=header_SS, footer='-9\n-9', comments='')
+        fn_ss,
+        cfg_siteselect_x,
+        fmt=" ".join(["%i"] * 4 + ["%1.4f"] * (cfg_siteselect_dim[1] - 4)),
+        header=header_SS,
+        footer="-9\n-9",
+        comments="",
+    )
     # print('SiteSelect saved!')
 
 
 # save InitCond to file
-def save_InitCond(dict_initcond, year, grid=''):
-    InitCond = {'initialconditions': dict_initcond.copy()}
-    for k, v in InitCond['initialconditions'].items():
+def save_InitCond(dict_initcond, year, grid=""):
+    InitCond = {"initialconditions": dict_initcond.copy()}
+    for k, v in InitCond["initialconditions"].items():
         if int(v) == v:
-            InitCond['initialconditions'][k] = int(v)
+            InitCond["initialconditions"][k] = int(v)
 
     # save RunControl to file
-    fn_nml = os.path.join(
-        'Input',
-        'InitialConditionstest{grid}_{year}.nml').format(
-        grid=grid,
-        year=year)
+    fn_nml = os.path.join("Input", "InitialConditionstest{grid}_{year}.nml").format(
+        grid=grid, year=year
+    )
     if os.path.exists(fn_nml):
         os.remove(fn_nml)
     f90nml.write(InitCond, fn_nml)
@@ -139,39 +141,48 @@ def gen_SiteSelect_multi(df_siteselect, n_grid):
     cfg_siteselect_base = df_siteselect.iloc[[0]]
     year0 = cfg_siteselect_base.Year[0]
     cfg_siteselect_base = pd.concat([cfg_siteselect_base, cfg_siteselect_base])
-    cfg_siteselect_base.loc[:, 'Year'] = [year0, year0 + 1]
+    cfg_siteselect_base.loc[:, "Year"] = [year0, year0 + 1]
     cfg_siteselect_dim = cfg_siteselect_base.shape
     n_year = cfg_siteselect_dim[0]
 
     # create random surface fraction info for multiple grids
     # n_grid = 2  # number of grids
     cfg_siteselect = np.tile(cfg_siteselect_base.values, (n_grid, 1))
-    fr_multigrid = [fr_line / np.sum(fr_line)
-                    for fr_line in np.random.rand(n_grid, 7)]
-    loc_fr = cfg_siteselect_base.columns.get_loc('Fr_Paved')
-    cfg_siteselect[:, loc_fr:loc_fr + 7] = np.repeat(
-        fr_multigrid, cfg_siteselect_dim[0], axis=0)
+    fr_multigrid = [fr_line / np.sum(fr_line) for fr_line in np.random.rand(n_grid, 7)]
+    loc_fr = cfg_siteselect_base.columns.get_loc("Fr_Paved")
+    cfg_siteselect[:, loc_fr : loc_fr + 7] = np.repeat(
+        fr_multigrid, cfg_siteselect_dim[0], axis=0
+    )
 
     # specify grid numbers
-    cfg_siteselect[:, 0] = np.repeat(
-        np.arange(1, n_grid + 1), cfg_siteselect_dim[0])
+    cfg_siteselect[:, 0] = np.repeat(np.arange(1, n_grid + 1), cfg_siteselect_dim[0])
 
     # re-order results into [year, grid] layout
-    cfg_siteselect_x = cfg_siteselect.reshape(
-        n_grid, n_year, -1).swapaxes(0, 1).reshape(
-        n_grid * n_year, -1)
+    cfg_siteselect_x = (
+        cfg_siteselect.reshape(n_grid, n_year, -1)
+        .swapaxes(0, 1)
+        .reshape(n_grid * n_year, -1)
+    )
 
     # perform multi-grid run:
     df_siteselect_multi = pd.DataFrame(
-        cfg_siteselect_x, columns=cfg_siteselect_base.columns)
+        cfg_siteselect_x, columns=cfg_siteselect_base.columns
+    )
 
     return df_siteselect_multi
 
 
 # run simulation
-def run_sim(name_sim, dir_input, dir_exe, name_exe,
-            dict_runcontrol, dict_initcond, df_siteselect,
-            dir_save=tempfile.mkdtemp()):
+def run_sim(
+    name_sim,
+    dir_input,
+    dir_exe,
+    name_exe,
+    dict_runcontrol,
+    dict_initcond,
+    df_siteselect,
+    dir_save=tempfile.mkdtemp(),
+):
     # TODO: support for user-specified forcing condition
     # create dir_save if not exisitng
     dir_save = os.path.abspath(os.path.expanduser(dir_save))
@@ -183,45 +194,45 @@ def run_sim(name_sim, dir_input, dir_exe, name_exe,
         os.chdir(dir_save)
         os.mkdir(name_sim)
         os.chdir(name_sim)
-        os.mkdir('Output')
+        os.mkdir("Output")
     except OSError as e:
         if e.errno == errno.EEXIST:
-            print('Directory not created.')
+            print("Directory not created.")
         else:
             raise
     # copy base input files
-    copytree(dir_input, 'Input')
+    copytree(dir_input, "Input")
 
     # get sim info
-    yr_sim = df_siteselect.loc[:, 'Year'].unique().astype(int)
-    grid_sim = df_siteselect.loc[:, 'Grid'].unique().astype(int)
+    yr_sim = df_siteselect.loc[:, "Year"].unique().astype(int)
+    grid_sim = df_siteselect.loc[:, "Grid"].unique().astype(int)
     n_grid = len(grid_sim)
     n_year = len(yr_sim)
 
     # RunControl
     # set default values
-    RunControl = {'runcontrol': dict_runcontrol.copy()}
-    RunControl['runcontrol']['filecode'] = 'test'
-    RunControl['runcontrol']['fileoutputpath'] = './Output/'
+    RunControl = {"runcontrol": dict_runcontrol.copy()}
+    RunControl["runcontrol"]["filecode"] = "test"
+    RunControl["runcontrol"]["fileoutputpath"] = "./Output/"
 
     # Initial condition
     # multi-grid initcond or not?
     if np.array_equal(grid_sim, list(dict_initcond.keys())):
         # use specific InitCond
-        RunControl['runcontrol']['multipleinitfiles'] = 1
+        RunControl["runcontrol"]["multipleinitfiles"] = 1
         # set default values
         for grid in grid_sim:
             save_InitCond(dict_initcond[grid], min(yr_sim), grid)
     else:
         # use same InitCond
-        RunControl['runcontrol']['multipleinitfiles'] = 0
+        RunControl["runcontrol"]["multipleinitfiles"] = 0
         save_InitCond(dict_initcond, min(yr_sim))
 
     # save SiteSelect to file
     save_SiteSelect(df_siteselect)
 
     # save RunControl to file
-    f90nml.write(RunControl, 'RunControl.nml')
+    f90nml.write(RunControl, "RunControl.nml")
 
     # copy SUEWS executable
     # name_exe = 'SUEWS_V2018a'
@@ -232,19 +243,20 @@ def run_sim(name_sim, dir_input, dir_exe, name_exe,
     # perform multi-grid run:
     # exit_code = os.system('./SUEWS_V2018a')
     # suppress output info
-    os.system('./' + name_exe + ' &>/dev/null')
+    os.system("./" + name_exe + " &>/dev/null")
 
     # check if results generated:
-    fl_output = glob('Output/*SUEWS_60.txt')
+    fl_output = glob("Output/*SUEWS_60.txt")
     if len(fl_output) > 0:
         # load results
         # res_sim = load_SUEWS_results(n_grid, n_year)
-        res_sim = load_df_SUEWS('Output','*SUEWS_60.txt')
+        res_sim = load_df_SUEWS("Output", "*SUEWS_60.txt")
         return res_sim
     else:
         # change back to original path
         os.chdir(dir_sys)
-        return 'run failed!'
+        return "run failed!"
+
 
 # %%
 
@@ -258,24 +270,37 @@ def run_sim(name_sim, dir_input, dir_exe, name_exe,
 
 # %%if single-grid multi-year run OK?
 def test_multiyear(
-        name_sim, name_exe, dict_runcontrol, dict_initcond, df_siteselect,
-        dir_exe, dir_input, dir_save=tempfile.mkdtemp()):
+    name_sim,
+    name_exe,
+    dict_runcontrol,
+    dict_initcond,
+    df_siteselect,
+    dir_exe,
+    dir_input,
+    dir_save=tempfile.mkdtemp(),
+):
 
-    print(('test_multiyear for', name_exe))
-    print(('running here:', dir_save))
+    print(("test_multiyear for", name_exe))
+    print(("running here:", dir_save))
 
     # generate a multi-grid SiteSelect file using only one grid
     df_siteselect_multi = gen_SiteSelect_multi(df_siteselect, n_grid=1)
 
     # process RunControl
-    dict_runcontrol['resolutionfilesout'] = 3600
-    dict_runcontrol['KeepTstepFilesOut'] = 0
+    dict_runcontrol["resolutionfilesout"] = 3600
+    dict_runcontrol["KeepTstepFilesOut"] = 0
 
     # result in [year, grid] order
     res_sim_multiyear = run_sim(
-        name_sim, dir_input, dir_exe, name_exe,
-        dict_runcontrol, dict_initcond, df_siteselect_multi,
-        dir_save)
+        name_sim,
+        dir_input,
+        dir_exe,
+        name_exe,
+        dict_runcontrol,
+        dict_initcond,
+        df_siteselect_multi,
+        dir_save,
+    )
 
     # test if multiple years have been run
     res_test = len(res_sim_multiyear.shape) > 0
@@ -285,9 +310,16 @@ def test_multiyear(
 
 # %%if multi-grid run produce the same resutls as their single-grid runs?
 def test_multigrid(
-        name_sim, name_exe,
-        dict_runcontrol, dict_initcond, df_siteselect,
-        n_grid, dir_exe, dir_input, dir_save=tempfile.mkdtemp()):
+    name_sim,
+    name_exe,
+    dict_runcontrol,
+    dict_initcond,
+    df_siteselect,
+    n_grid,
+    dir_exe,
+    dir_input,
+    dir_save=tempfile.mkdtemp(),
+):
     # create folder `name_sim`
     dir_sys = os.getcwd()
     try:
@@ -297,40 +329,50 @@ def test_multigrid(
         # os.mkdir('Output')
     except OSError as e:
         if e.errno == errno.EEXIST:
-            print('Directory not created.')
+            print("Directory not created.")
         else:
             raise
 
-    print(('test_multigrid for', name_exe))
-    print(('running here:', dir_save))
+    print(("test_multigrid for", name_exe))
+    print(("running here:", dir_save))
 
     # generate a multi-grid SiteSelect file
     df_siteselect_multi = gen_SiteSelect_multi(df_siteselect, n_grid)
 
     # process RunControl
-    dict_runcontrol['resolutionfilesout'] = 3600
-    dict_runcontrol['KeepTstepFilesOut'] = 0
+    dict_runcontrol["resolutionfilesout"] = 3600
+    dict_runcontrol["KeepTstepFilesOut"] = 0
 
     # perform one multi-grid simulation and load results
-    name_sim = 'multi_grid'
+    name_sim = "multi_grid"
     # result in [year, grid] order
     res_sim_multigrid = run_sim(
-        name_sim, dir_input, dir_exe, name_exe,
-        dict_runcontrol, dict_initcond,
+        name_sim,
+        dir_input,
+        dir_exe,
+        name_exe,
+        dict_runcontrol,
+        dict_initcond,
         df_siteselect_multi,
-        dir_save)
+        dir_save,
+    )
 
     # perform multiple single-grid simulation and load results
     res_sim_singlegrid = []
-    list_grid = df_siteselect_multi.loc[:, 'Grid'].unique()
+    list_grid = df_siteselect_multi.loc[:, "Grid"].unique()
     for grid_name in list_grid:
         # grid_name = df_siteselect.loc[ind_grid, 'Grid']
-        name_sim = 'single_grid_' + str(int(grid_name))
+        name_sim = "single_grid_" + str(int(grid_name))
         res_sim_grid = run_sim(
-            name_sim, dir_input, dir_exe, name_exe,
-            dict_runcontrol, dict_initcond,
+            name_sim,
+            dir_input,
+            dir_exe,
+            name_exe,
+            dict_runcontrol,
+            dict_initcond,
             df_siteselect_multi.loc[df_siteselect_multi.Grid == grid_name],
-            dir_save)
+            dir_save,
+        )
         res_sim_singlegrid.append(res_sim_grid)
 
     # combine `res_sim_singlegrid`
@@ -344,21 +386,27 @@ def test_multigrid(
     # change back to previous path
     os.chdir(dir_sys)
 
-
     return res_test
 
 
 # %% if the test run can produce the same results as the SampleRun
-def test_samerun(name_sim, name_exe,
-                 dict_runcontrol, dict_initcond, df_siteselect,
-                 dir_exe, dir_baserun, dir_save=tempfile.mkdtemp()):
+def test_samerun(
+    name_sim,
+    name_exe,
+    dict_runcontrol,
+    dict_initcond,
+    df_siteselect,
+    dir_exe,
+    dir_baserun,
+    dir_save=tempfile.mkdtemp(),
+):
     dir_sys = os.getcwd()
     # load RunControl
     dict_runcontrol = load_SUEWS_RunControl(
-        os.path.join(dir_baserun, 'RunControl.nml')
-    )['runcontrol']
+        os.path.join(dir_baserun, "RunControl.nml")
+    )["runcontrol"]
     # dir_input = dict_runcontrol['fileoutiutpath']
-    dir_output = dict_runcontrol['fileoutputpath']
+    dir_output = dict_runcontrol["fileoutputpath"]
 
     # temp dir for testing
     dir_test = dir_save
@@ -372,9 +420,9 @@ def test_samerun(name_sim, name_exe,
     os.chdir(dir_test)
 
     # use long-term forcing for this testing
-    path_input = Path(dict_runcontrol['fileinputpath'])
-    input_short = list(path_input.glob('*.txt.long'))[0]
-    move(input_short, input_short.parent/input_short.stem)
+    path_input = Path(dict_runcontrol["fileinputpath"])
+    input_short = list(path_input.glob("*.txt.long"))[0]
+    move(input_short, input_short.parent / input_short.stem)
 
     if os.path.exists(dir_output):
         rmtree(dir_output)
@@ -390,7 +438,7 @@ def test_samerun(name_sim, name_exe,
 
     # perform simulation
     # exit_code = os.system('./SUEWS_V2018a')
-    os.system('./' + name_exe + ' &>/dev/null')
+    os.system("./" + name_exe + " &>/dev/null")
 
     # compare results
     dir_res_sample = os.path.join(dir_baserun, dir_output)
@@ -401,21 +449,22 @@ def test_samerun(name_sim, name_exe,
 
     common_files = [
         os.path.basename(x)
-        for x in glob(os.path.join(dir_res_sample, '*'))]
+        for x in glob(os.path.join(dir_res_sample, "*"))
+        # exclude certain files
+        if not any(excl in x for excl in ["FileChoices.txt", "state_init.txt"])
+    ]
     comp_files_test = filecmp.cmpfiles(
-        dir_res_sample,
-        dir_res_test,
-        common_files,
-        shallow=False)
-    print(('comp_files_test', comp_files_test))
-    print(('common_files', common_files))
+        dir_res_sample, dir_res_test, common_files, shallow=False
+    )
+    print(("comp_files_test", comp_files_test))
+    print(("common_files", common_files))
 
     # test if mismatch list non-empty
     res_test = len(comp_files_test[1]) == 0
 
     if not res_test:
         # if not match, print mismatch list
-        print('these files are different:')
+        print("these files are different:")
         print(sorted(comp_files_test[1]))
 
     # res_test = (set(comp_files_test[0]) == set(common_files))
@@ -427,34 +476,41 @@ def test_samerun(name_sim, name_exe,
 
     dir_sys = os.chdir(dir_sys)
     # rmtree(dir_test)
-    print(('test_samerun for', name_exe))
-    print(('running here:', dir_save))
+    print(("test_samerun for", name_exe))
+    print(("running here:", dir_save))
 
     return res_test
 
 
 # %% diagnose working&faulty physics options
-def test_physics(name_exe, dir_input, dir_exe,
-                 dict_runcontrol, dict_initcond, df_siteselect,
-                 dict_phy_opt_sel,
-                 test_complete=True,
-                 test_number=50,
-                 dir_save=tempfile.mkdtemp()):
+def test_physics(
+    name_exe,
+    dir_input,
+    dir_exe,
+    dict_runcontrol,
+    dict_initcond,
+    df_siteselect,
+    dict_phy_opt_sel,
+    test_complete=True,
+    test_number=50,
+    dir_save=tempfile.mkdtemp(),
+):
 
-    print(('test_physics for', name_exe))
-    print('running here:', dir_save)
+    print(("test_physics for", name_exe))
+    print("running here:", dir_save)
 
     # get options to test
     # matrix-like combinations of all test options
     methods, options = list(zip(*list(dict_phy_opt_sel.items())))
     options = [x if type(x) == list else [x] for x in options]
-    list_to_test_all = [dict(list(zip(methods, v)))
-                    for v in itertools.product(*options)]
+    list_to_test_all = [
+        dict(list(zip(methods, v))) for v in itertools.product(*options)
+    ]
     if test_complete:
         # 1. use all possible combinations
         # really time consuming!
-        list_to_test=list_to_test_all
-        if test_number>0:
+        list_to_test = list_to_test_all
+        if test_number > 0:
             list_to_test = np.random.choice(list_to_test_all, test_number).tolist()
     else:
         # 2. simple test by incorporating each entry into the basis scheme options
@@ -468,63 +524,78 @@ def test_physics(name_exe, dir_input, dir_exe,
             else:
                 list_to_test.append({method: options})
 
-    print('number of tests:', len(list_to_test))
+    print("number of tests:", len(list_to_test))
     # test selected physics schemes
     dict_test = {}
     for ind, cfg in enumerate(list_to_test):
-        print(f'testing {ind+1}/{len(list_to_test)}:')
+        print(f"testing {ind+1}/{len(list_to_test)}:")
         runcontrol_test = dict_runcontrol.copy()
         runcontrol_test.update(cfg)
         runcontrol_test_sel = {x: runcontrol_test[x] for x in dict_phy_opt_sel}
-        print(f'{runcontrol_test_sel}')
+        print(f"{runcontrol_test_sel}")
         name_sim = str(ind)
         res_sim = run_sim(
-            name_sim, dir_input, dir_exe, name_exe,
+            name_sim,
+            dir_input,
+            dir_exe,
+            name_exe,
             runcontrol_test,
-            dict_initcond, df_siteselect,
-            dir_save)
+            dict_initcond,
+            df_siteselect,
+            dir_save,
+        )
         dict_test.update({ind: res_sim})
 
-    dict_test_OK = {k: 'fail' if type(v) == str else 'pass'
-                    for k, v in iter(dict_test.items())}
+    dict_test_OK = {
+        k: "fail" if type(v) == str else "pass" for k, v in iter(dict_test.items())
+    }
 
     df_test = pd.DataFrame(list_to_test)
     df_test = df_test.assign(result=list(dict_test_OK.values()))
 
-    df_test.to_csv('~/df_test.csv')
+    df_test.to_csv("~/df_test.csv")
     # test results
-    list_method_test = [c for c in df_test.columns if not c == 'result']
+    list_method_test = [c for c in df_test.columns if not c == "result"]
     df_test_pass = pd.concat(
-        [df_test.loc[:, [c, 'result']].pivot_table(
-            index='result', columns=c, aggfunc=len)
-            for c in list_method_test],
+        [
+            df_test.loc[:, [c, "result"]].pivot_table(
+                index="result", columns=c, aggfunc=len
+            )
+            for c in list_method_test
+        ],
         keys=list_method_test,
         sort=True,
-        axis=1)
-    df_test_pass = df_test_pass\
-        .loc['pass', :]\
-        .to_frame()\
-        .rename(columns={'pass': 'result'})\
-        .applymap(lambda x: 'pass' if x > 0 else 'fail')
-    df_test_pass.index.set_names(['method', 'option'], inplace=True)
+        axis=1,
+    )
+    df_test_pass = (
+        df_test_pass.loc["pass", :]
+        .to_frame()
+        .rename(columns={"pass": "result"})
+        .applymap(lambda x: "pass" if x > 0 else "fail")
+    )
+    df_test_pass.index.set_names(["method", "option"], inplace=True)
 
     # get `fail` options:
-    list_fail = df_test_pass.loc[
-        df_test_pass['result'] == 'fail'].index.tolist()
+    list_fail = df_test_pass.loc[df_test_pass["result"] == "fail"].index.tolist()
 
     return list_fail
 
 
-def test_ok_multiyear(name_exe,
-                      dict_runcontrol, dict_initcond, df_siteselect,
-                      dir_exe, dir_input):
-    print('***************************************')
-    print('testing single-grid multi-year run ... ')
-    name_sim = 'test-multi-year' + str(np.random.randint(10000))
+def test_ok_multiyear(
+    name_exe, dict_runcontrol, dict_initcond, df_siteselect, dir_exe, dir_input
+):
+    print("***************************************")
+    print("testing single-grid multi-year run ... ")
+    name_sim = "test-multi-year" + str(np.random.randint(10000))
     res_test = test_multiyear(
-        name_sim, name_exe,
-        dict_runcontrol, dict_initcond, df_siteselect,
-        dir_exe, dir_input)
+        name_sim,
+        name_exe,
+        dict_runcontrol,
+        dict_initcond,
+        df_siteselect,
+        dir_exe,
+        dir_input,
+    )
 
     # xx = unittest.TestCase.assertTrue(res_test)
     return res_test
@@ -595,15 +666,15 @@ def test_ok_multiyear(name_exe,
 def test_code(fn_nml):
     # load path
     nml = f90nml.read(fn_nml)
-    cfg_file = nml['file']
+    cfg_file = nml["file"]
     dir_input, dir_exe, dir_baserun = (
-        os.path.abspath(cfg_file[x])
-        for x in ['dir_input', 'dir_exe', 'dir_baserun'])
+        os.path.abspath(cfg_file[x]) for x in ["dir_input", "dir_exe", "dir_baserun"]
+    )
     # dir_exe = os.path.abspath(path_base[])
     # dir_baserun = path_base[]
 
     # load name of programme for testing
-    name_exe = cfg_file['name_exe']
+    name_exe = cfg_file["name_exe"]
 
     # load physics options to test
     # dict_phy_opt_sel = nml['physics_test']
@@ -611,22 +682,23 @@ def test_code(fn_nml):
     # load basic configurations
     # runcontrol settings
     dict_runcontrol = load_SUEWS_nml(
-        os.path.join(dir_input, 'RunControl.nml')).to_dict()['runcontrol']
+        os.path.join(dir_input, "RunControl.nml")
+    ).to_dict()["runcontrol"]
     # initial condition
-    dict_initcond = (load_SUEWS_nml(
-        os.path.join(dir_input, 'InitialConditionstest_2004.nml')).to_dict()[
-        'initialconditions'])
+    dict_initcond = load_SUEWS_nml(
+        os.path.join(dir_input, "InitialConditionstest_2004.nml")
+    ).to_dict()["initialconditions"]
     # siteselect info
-    df_siteselect = load_SUEWS_table(
-        os.path.join(dir_input, 'SUEWS_SiteSelect.txt'))
+    df_siteselect = load_SUEWS_table(os.path.join(dir_input, "SUEWS_SiteSelect.txt"))
 
     # test code
     # unittest.main()
-    xx = test_ok_multiyear(name_exe,
-                           dict_runcontrol, dict_initcond, df_siteselect,
-                           dir_exe, dir_input)
+    xx = test_ok_multiyear(
+        name_exe, dict_runcontrol, dict_initcond, df_siteselect, dir_exe, dir_input
+    )
 
     return xx
+
 
 ##############################################################################
 # auxiliary functions
@@ -663,16 +735,16 @@ def _path_insensitive(path):
     Recursive part of path_insensitive to do the work.
     """
 
-    if path == '' or os.path.exists(path):
+    if path == "" or os.path.exists(path):
         return path
 
     base = os.path.basename(path)  # may be a directory or a file
     dirname = os.path.dirname(path)
 
-    suffix = ''
+    suffix = ""
     if not base:  # dir ends with a slash?
         if len(dirname) < len(path):
-            suffix = path[:len(path) - len(dirname)]
+            suffix = path[: len(path) - len(dirname)]
 
         base = os.path.basename(dirname)
         dirname = os.path.dirname(dirname)
@@ -699,4 +771,3 @@ def _path_insensitive(path):
         return os.path.join(dirname, basefinal) + suffix
     else:
         return
-

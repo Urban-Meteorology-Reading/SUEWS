@@ -35,8 +35,8 @@
 
 SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
    USE data_in, ONLY: diagnose, ah_min, ah_slope_cooling, ah_slope_heating, &
-                      alt, avkdn, avrh, avu1, basetHDD, diagqn, diagqs, drainrt, co2pointsource, CBLuse, &
-                      ef_umolco2perj, emissionsmethod, enef_v_jkm, enddls, fcef_v_kgkm, fcld_obs, &
+                      alt, avkdn, avrh, avu1, BaseT_HC, diagqn, diagqs, drainrt, co2pointsource, CBLuse, &
+                      ef_umolco2perj, BaseTMethod, emissionsmethod, enef_v_jkm, enddls, fcef_v_kgkm, fcld_obs, &
                       frfossilfuel_heat, frfossilfuel_nonheat, EvapMethod, &
                       LAIcalcyes, LAI_obs, lat, ldown_obs, lng, maxfcmetab, maxqfmetab, &
                       minfcmetab, minqfmetab, netradiationmethod, ohmincqf, &
@@ -45,7 +45,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
                       qe_obs, qh_obs, qn1_obs, qs_obs, qf_obs, &
                       raincover, rainmaxres, &
                       roughlenmommethod, smdmethod, snowFrac_obs, snowuse, startdls, &
-                      storageheatmethod, t_critic_cooling, t_critic_heating, temp_c, &
+                      storageheatmethod, BaseT_Cooling, BaseT_Heating, temp_c, &
                       timezone, trafficrate, trafficunits, waterusemethod, wu_m3, xsmd
    USE time, ONLY: iy, id, it, imin, isec, dectime, dt_since_start
    USE allocateArray, ONLY: &
@@ -85,8 +85,11 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       dataoutBL
    USE sues_data, ONLY: &
       aerodynamicresistancemethod, daywat, daywatper, faut, flowchange, &
+      H_maintain, &
       ie_a, ie_end, ie_m, ie_start, internalwateruse_h, &
-      irrfracconif, irrfracdecid, irrfracgrass, &
+      IrrFracPaved, IrrFracBldgs, &
+      IrrFracEveTr, IrrFracDecTr, IrrFracGrass, &
+      IrrFracBSoil, IrrFracWater, &
       pipecapacity, roughlenheatmethod, runofftowater, stabilitymethod, &
       surfacearea, tstep, tstep_prev, &
       qhforCBL, qeforCBL, qh_choice, nsh_real, UStar, psih, is
@@ -127,16 +130,21 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       alb, AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
       AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
       alpha_bioCO2, alpha_enh_bioCO2, alt, avkdn, avRh, avU1, BaseT, BaseTe, &
-      BaseTHDD, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
+      BaseTMethod, &
+      BaseT_HC, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
       chAnOHM, CO2PointSource, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
       DecTreeH, Diagnose, DiagQN, DiagQS, DRAINRT, &
       dt_since_start, dqndt, qn1_av, dqnsdt, qn1_s_av, &
       EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
       FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, fcld_obs, FlowChange, &
       FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD_id, &
-      GDDFull, Gridiv, gsModel, HDD_id, HumActivity_24hr, &
+      GDDFull, Gridiv, gsModel, H_maintain, HDD_id, HumActivity_24hr, &
       IceFrac, id, Ie_a, Ie_end, Ie_m, Ie_start, imin, &
-      InternalWaterUse_h, IrrFracConif, IrrFracDecid, IrrFracGrass, isec, it, EvapMethod, &
+      InternalWaterUse_h, &
+      IrrFracPaved, IrrFracBldgs, &
+      IrrFracEveTr, IrrFracDecTr, IrrFracGrass, &
+      IrrFracBSoil, IrrFracWater, &
+      isec, it, EvapMethod, &
       iy, kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax, LAIMin, LAI_obs, &
       LAIPower, LAIType, lat, lenDay_id, ldown_obs, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
       SnowWater, MetForcingData_grid, MinFCMetab, MinQFMetab, min_res_bioCO2, &
@@ -155,7 +163,7 @@ SUBROUTINE SUEWS_Calculations(Gridiv, ir, iMB, irMax)
       soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
       StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair_av, tau_a, tau_f, tau_r, &
       Tmax_id, Tmin_id, &
-      T_CRITIC_Cooling, T_CRITIC_Heating, Temp_C, TempMeltFact, TH, &
+      BaseT_Cooling, BaseT_Heating, Temp_C, TempMeltFact, TH, &
       theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
       TraffProf_24hr, Ts5mindata_ir, tstep, tstep_prev, veg_type, &
       WaterDist, WaterUseMethod, WetThresh, wu_m3, &

@@ -1,4 +1,4 @@
-.. _SUEWS_WithinGridWaterDist.txt:
+.. _SUEWS_WithinGridWaterDist:
 
 SUEWS_WithinGridWaterDist.txt
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

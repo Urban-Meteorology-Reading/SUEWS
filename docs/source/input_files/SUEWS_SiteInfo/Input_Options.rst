@@ -301,7 +301,7 @@ Input Options
 			:widths: 44 18 38
 
 
-.. option:: BaseTHDD
+.. option:: BaseT_HC
 
 	:Description:
 		Base temperature for heating degree days [°C]
@@ -309,7 +309,7 @@ Input Options
 	:Configuration:
 		.. csv-table::
 			:class: longtable
-			:file: csv-table/BaseTHDD.csv
+			:file: csv-table/BaseT_HC.csv
 			:header-rows: 1
 			:widths: 44 18 38
 
@@ -1071,6 +1071,8 @@ Input Options
 			:header-rows: 1
 			:widths: 44 18 38
 
+
+
 .. option:: FcEF_v_kgkmWD
 
 	:Description:
@@ -1758,6 +1760,21 @@ Input Options
 			:header-rows: 1
 			:widths: 44 18 38
 
+.. option:: H_maintain
+
+	:Description:
+		water depth to maintain used in automatic irrigation (e.g., ponding water due to flooding irrigation in rice crop-field) [mm].
+
+	.. note::
+		1. `H_maintain` can be positive (e.g., ponding water due to flooding irrigation in rice crop-field) or negative (e.g., soil water store level to maintain: `SoilStoreCap` + `H_maintain` ) or zero (e.g., to maintain a maximum soil store level, i.e., `SoilStoreCap`).
+		2. Disable this feature by setting this parameter to ``-999``: then no restrictions will be applied to maintain available water level.
+
+	:Configuration:
+		.. csv-table::
+			:class: longtable
+			:file: csv-table/H_maintain.csv
+			:header-rows: 1
+			:widths: 44 18 38
 
 .. option:: id
 
@@ -2188,10 +2205,36 @@ Input Options
 			:widths: 44 18 38
 
 
+.. option:: IrrFr_Paved
+
+	:Description:
+		Fraction of `Paved` that is irrigated [-]
+
+	:Configuration:
+		.. csv-table::
+			:class: longtable
+			:file: csv-table/IrrFr_Paved.csv
+			:header-rows: 1
+			:widths: 44 18 38
+
+
+.. option:: IrrFr_Bldgs
+
+	:Description:
+		Fraction of `Bldgs` that is irrigated [-]
+
+	:Configuration:
+		.. csv-table::
+			:class: longtable
+			:file: csv-table/IrrFr_Bldgs.csv
+			:header-rows: 1
+			:widths: 44 18 38
+
+
 .. option:: IrrFr_DecTr
 
 	:Description:
-		Fraction of deciduous trees that are irrigated [-]
+		Fraction of `DecTr` that is irrigated [-]
 
 	:Configuration:
 		.. csv-table::
@@ -2204,7 +2247,7 @@ Input Options
 .. option:: IrrFr_EveTr
 
 	:Description:
-		Fraction of evergreen trees that are irrigated [-]
+		Fraction of `EveTr` that is irrigated [-]
 
 	:Configuration:
 		.. csv-table::
@@ -2223,6 +2266,32 @@ Input Options
 		.. csv-table::
 			:class: longtable
 			:file: csv-table/IrrFr_Grass.csv
+			:header-rows: 1
+			:widths: 44 18 38
+
+
+.. option:: IrrFr_BSoil
+
+	:Description:
+		Fraction of `BSoil` that is irrigated [-]
+
+	:Configuration:
+		.. csv-table::
+			:class: longtable
+			:file: csv-table/IrrFr_BSoil.csv
+			:header-rows: 1
+			:widths: 44 18 38
+
+
+.. option:: IrrFr_Water
+
+	:Description:
+		Fraction of `Water` that is irrigated [-]
+
+	:Configuration:
+		.. csv-table::
+			:class: longtable
+			:file: csv-table/IrrFr_Water.csv
 			:header-rows: 1
 			:widths: 44 18 38
 

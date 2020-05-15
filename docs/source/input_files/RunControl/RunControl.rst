@@ -1,5 +1,4 @@
 .. _RunControl:
-.. _RunControl.nml:
 
 RunControl.nml
 --------------
@@ -28,6 +27,7 @@ The parameters and their setting instructions are provided through the links bel
         + :option:`CBLuse`
         + :option:`SnowUse`
         + :option:`NetRadiationMethod`
+        + :option:`BaseTMethod`
         + :option:`EmissionsMethod`
         + :option:`StorageHeatMethod`
         + :option:`OHMIncQF`

@@ -305,6 +305,10 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
       text1 = 'Iteration loop stopped for too unstable conditions.'
       ! returnTrue=.TRUE.
       v2 = .TRUE.
+   ELSEIF (errh == 75) THEN
+      text1 = 'Invalid value for `BaseTMethod`!'
+      ! returnTrue=.TRUE.
+      v2 = .TRUE.
    ENDIF
 
    ErrhCount(errh) = ErrhCount(errh) + 1   ! Increase error count by 1

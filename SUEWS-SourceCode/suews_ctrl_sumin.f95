@@ -92,7 +92,7 @@ CONTAINS
       RunoffToWater_id, &
       StateLimit_id, &
       WetThresh_id, &
-      BaseTHDD_id, &
+      BaseT_HC_id, &
       Faut_id, &
       IrrFracConif_id, &
       IrrFracDecid_id, &
@@ -260,7 +260,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(INOUT) ::RunoffToWater_id
       REAL(KIND(1d0)), DIMENSION(7), INTENT(INOUT) ::StateLimit_id
       REAL(KIND(1d0)), DIMENSION(7), INTENT(INOUT) ::WetThresh_id
-      REAL(KIND(1d0)), INTENT(INOUT) ::BaseTHDD_id
+      REAL(KIND(1d0)), INTENT(INOUT) ::BaseT_HC_id
       REAL(KIND(1d0)), INTENT(INOUT) ::Faut_id
       REAL(KIND(1d0)), INTENT(INOUT) ::IrrFracConif_id
       REAL(KIND(1d0)), INTENT(INOUT) ::IrrFracDecid_id
@@ -422,15 +422,15 @@ CONTAINS
       !REAL(KIND(1d0)), DIMENSION(7 + 1), PARAMETER:: OHM_threshSW = [10, 10, 10, 10, 10, 10, 10, 10]         !Arrays for OHM thresholds
       !REAL(KIND(1d0)), DIMENSION(7 + 1), PARAMETER:: OHM_threshWD = [0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9] !Arrays for OHM thresholds
 
-      !REAL(KIND(1d0)), PARAMETER::  BaseTHDD = 18.9  !Base temperature for QF
+      !REAL(KIND(1d0)), PARAMETER::  BaseT_HC = 18.9  !Base temperature for QF
       !not used
       REAL(KIND(1D0)), PARAMETER::xsmd = 0. !Measured soil moisture deficit
       !Todo
       REAL(KIND(1D0)), PARAMETER::wu_m3 = 0  !External water use
       !REAL(KIND(1D0)), PARAMETER::Faut = 0  !Fraction of irrigated area using automatic irrigation
       REAL(KIND(1D0)), PARAMETER::InternalWaterUse_h = 0 !Internal water use [mm h-1]
-      !REAL(KIND(1D0)), PARAMETER::IrrFracConif = 0 !Fraction of evergreen trees which are irrigated
-      !REAL(KIND(1D0)), PARAMETER::IrrFracDecid = 0 !Fraction of deciduous trees which are irrigated
+      !REAL(KIND(1D0)), PARAMETER::IrrFracEveTr = 0 !Fraction of evergreen trees which are irrigated
+      !REAL(KIND(1D0)), PARAMETER::IrrFracDecTr = 0 !Fraction of deciduous trees which are irrigated
       !REAL(KIND(1D0)), PARAMETER::IrrFracGrass = 0 !Fraction of grass which is irrigated
       !Todo
       !REAL(KIND(1D0)), DIMENSION(7), PARAMETER ::DayWat = 0                     !Days of watering allowed
@@ -474,8 +474,8 @@ CONTAINS
       !REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::Qf_A = [0.1, 0.1]!Qf coefficients
       !REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::Qf_B = [0.00986, 0.00986]!Qf coefficients
       !REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::Qf_C = [0.0102, 0.0102]!Qf coefficients
-      !REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::T_CRITIC_Cooling = [7, 7] !Critical temperature
-      !REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::T_CRITIC_Heating = [7, 7] !Critical temperature
+      !REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::BaseT_Cooling = [7, 7] !Critical temperature
+      !REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::BaseT_Heating = [7, 7] !Critical temperature
       !REAL(KIND(1D0)), DIMENSION(2), PARAMETER ::TrafficRate = [0.0134, 0.0095]
       !keep them here
       REAL(KIND(1D0)), PARAMETER::EF_umolCO2perJ = 1.159
@@ -546,7 +546,7 @@ CONTAINS
          alb, AlbMax_DecTr_id, AlbMax_EveTr_id, AlbMax_Grass_id, &
          AlbMin_DecTr_id, AlbMin_EveTr_id, AlbMin_Grass_id, &
          alpha_bioCO2, alpha_enh_bioCO2, alt, avkdn, avRh, avU1, BaseT_id, BaseTe_id, &
-         BaseTHDD_id, beta_bioCO2, beta_enh_bioCO2, bldgH_id, CapMax_dec_id, CapMin_dec_id, &
+         BaseT_HC_id, beta_bioCO2, beta_enh_bioCO2, bldgH_id, CapMax_dec_id, CapMin_dec_id, &
          chAnOHM, cpAnOHM, CRWmax, CRWmin, DayWat_id, DayWatPer_id, &
          DecTreeH_id, Diagnose, DiagQN, DiagQS, DRAINRT_id, &
          dt_since_start, dqndt, qn1_av, dqnsdt, qn1_s_av, &

@@ -1,4 +1,4 @@
-.. _SUEWS_SiteSelect.txt:
+.. _SUEWS_SiteSelect:
 
 SUEWS_SiteSelect.txt
 ~~~~~~~~~~~~~~~~~~~~

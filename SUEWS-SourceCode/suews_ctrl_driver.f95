@@ -1,9 +1,12 @@
 !========================================================================================
 ! SUEWS driver subroutines
 ! TS 31 Aug 2017: initial version
-! TS 02 Oct 2017: added `SUEWS_cal_Main` as the generic wrapper
-! TS 03 Oct 2017: added `SUEWS_cal_AnthropogenicEmission`
+! TS 02 Oct 2017: added  as the generic wrapper
+! TS 03 Oct 2017: added
 MODULE SUEWS_Driver
+   ! only the following immutable objects are imported:
+   ! 1. functions/subroutines
+   ! 2. constant variables
    USE meteo, ONLY: qsatf, RH2qa, qa2RH
    USE AtmMoistStab_module, ONLY: cal_AtmMoist, cal_Stab, stab_psi_heat, stab_psi_mom
    USE NARP_MODULE, ONLY: NARP_cal_SunPosition
@@ -45,16 +48,21 @@ CONTAINS
       alb, AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
       AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
       alpha_bioCO2, alpha_enh_bioCO2, alt, avkdn, avRh, avU1, BaseT, BaseTe, &
-      BaseTHDD, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
+      BaseTMethod, &
+      BaseT_HC, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
       chAnOHM, CO2PointSource, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
       DecTreeH, Diagnose, DiagQN, DiagQS, DRAINRT, &
       dt_since_start, dqndt, qn1_av, dqnsdt, qn1_s_av, &
       EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
       FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, fcld_obs, FlowChange, &
       FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD_id, &
-      GDDFull, Gridiv, gsModel, HDD_id, HumActivity_24hr, &
+      GDDFull, Gridiv, gsModel, H_maintain, HDD_id, HumActivity_24hr, &
       IceFrac, id, Ie_a, Ie_end, Ie_m, Ie_start, imin, &
-      InternalWaterUse_h, IrrFracConif, IrrFracDecid, IrrFracGrass, isec, it, EvapMethod, &
+      InternalWaterUse_h, &
+      IrrFracPaved, IrrFracBldgs, &
+      IrrFracEveTr, IrrFracDecTr, IrrFracGrass, &
+      IrrFracBSoil, IrrFracWater, &
+      isec, it, EvapMethod, &
       iy, kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax, LAIMin, LAI_obs, &
       LAIPower, LAIType, lat, lenDay_id, ldown_obs, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
       SnowWater, MetForcingData_grid, MinFCMetab, MinQFMetab, min_res_bioCO2, &
@@ -73,7 +81,7 @@ CONTAINS
       soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
       StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair_av, tau_a, tau_f, tau_r, &
       Tmax_id, Tmin_id, &
-      T_CRITIC_Cooling, T_CRITIC_Heating, Temp_C, TempMeltFact, TH, &
+      BaseT_Cooling, BaseT_Heating, Temp_C, TempMeltFact, TH, &
       theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
       TraffProf_24hr, Ts5mindata_ir, tstep, tstep_prev, veg_type, &
       WaterDist, WaterUseMethod, WetThresh, wu_m3, &
@@ -87,6 +95,7 @@ CONTAINS
       ! ########################################################################################
       ! input variables
       INTEGER, INTENT(IN)::AerodynamicResistanceMethod
+      INTEGER, INTENT(IN)::BaseTMethod
       INTEGER, INTENT(IN)::Diagnose
       INTEGER, INTENT(IN)::DiagQN
       INTEGER, INTENT(IN)::DiagQS
@@ -128,7 +137,7 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::avkdn
       REAL(KIND(1D0)), INTENT(IN)::avRh
       REAL(KIND(1D0)), INTENT(IN)::avU1
-      REAL(KIND(1D0)), INTENT(IN)::BaseTHDD
+      REAL(KIND(1D0)), INTENT(IN)::BaseT_HC
       REAL(KIND(1D0)), INTENT(IN)::bldgH
       REAL(KIND(1D0)), INTENT(IN)::CapMax_dec
       REAL(KIND(1D0)), INTENT(IN)::CapMin_dec
@@ -154,10 +163,15 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::G4
       REAL(KIND(1D0)), INTENT(IN)::G5
       REAL(KIND(1D0)), INTENT(IN)::G6
+      REAL(KIND(1D0)), INTENT(IN)::H_maintain
       REAL(KIND(1D0)), INTENT(IN)::InternalWaterUse_h
-      REAL(KIND(1D0)), INTENT(IN)::IrrFracConif
-      REAL(KIND(1D0)), INTENT(IN)::IrrFracDecid
+      REAL(KIND(1D0)), INTENT(IN)::IrrFracPaved
+      REAL(KIND(1D0)), INTENT(IN)::IrrFracBldgs
+      REAL(KIND(1D0)), INTENT(IN)::IrrFracEveTr
+      REAL(KIND(1D0)), INTENT(IN)::IrrFracDecTr
       REAL(KIND(1D0)), INTENT(IN)::IrrFracGrass
+      REAL(KIND(1D0)), INTENT(IN)::IrrFracBSoil
+      REAL(KIND(1D0)), INTENT(IN)::IrrFracWater
       REAL(KIND(1D0)), INTENT(IN)::Kmax
       REAL(KIND(1D0)), INTENT(IN)::LAI_obs
       REAL(KIND(1D0)), INTENT(IN)::lat
@@ -220,8 +234,8 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)                   ::Qf_B
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)                   ::Qf_C
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)                   ::PopDensDaytime
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)                   ::T_CRITIC_Cooling
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)                   ::T_CRITIC_Heating
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)                   ::BaseT_Cooling
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)                   ::BaseT_Heating
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)                   ::TrafficRate
       REAL(KIND(1D0)), DIMENSION(3), INTENT(IN)                   ::Ie_a
       REAL(KIND(1D0)), DIMENSION(3), INTENT(IN)                   ::Ie_m
@@ -462,14 +476,14 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(NSURF)::tsurf_ind
 
       ! TODO: TS 25 Oct 2017
-      ! the `add-*` variables are not used currently as grid-to-grid connection is NOT set up.
+      ! the  variables are not used currently as grid-to-grid connection is NOT set up.
       ! set these variables as zero.
       REAL(KIND(1D0))::addImpervious = 0
       REAL(KIND(1D0))::addPipes = 0
       REAL(KIND(1D0))::addVeg = 0
       REAL(KIND(1D0))::addWaterBody = 0
       REAL(KIND(1D0)), DIMENSION(NSURF)::AddWater = 0
-      REAL(KIND(1D0)), DIMENSION(NSURF)::AddWaterRunoff = 0
+      REAL(KIND(1D0)), DIMENSION(NSURF)::frac_water2runoff = 0
 
       ! values that are derived from tstep
       INTEGER::nsh ! number of timesteps per hour
@@ -490,7 +504,7 @@ CONTAINS
       ! ########################################################################################
       ! TS 19 Sep 2019
       ! temporary variables to save values for inout varialbes
-      ! suffixes `prev` and `next` denote values from last and to next tsteps, respectively
+      ! suffixes  and  denote values from last and to next tsteps, respectively
       ! these variables are introduced to allow safe and robust iterations inccurred in this subroutine
       ! so that these values won't updated in unexpectedly many times
 
@@ -585,7 +599,7 @@ CONTAINS
       HDD_id_prev = HDD_id
       WUDay_id_prev = WUDay_id
 
-      ! initialise `_next` variables
+      ! initialise  variables
       qn1_av_next = qn1_av
       dqndt_next = dqndt
       qn1_s_av_next = qn1_s_av
@@ -681,9 +695,11 @@ CONTAINS
          CALL SUEWS_cal_DailyState( &
             iy, id, it, imin, isec, tstep, tstep_prev, dt_since_start, DayofWeek_id, &!input
             Tmin_id_prev, Tmax_id_prev, lenDay_id_prev, &
+            BaseTMethod, &
             WaterUseMethod, Ie_start, Ie_end, &
             LAICalcYes, LAIType, &
-            nsh_real, avkdn, Temp_C, Precip, BaseTHDD, &
+            nsh_real, avkdn, Temp_C, Precip, BaseT_HC, &
+            BaseT_Heating, BaseT_Cooling, &
             lat, Faut, LAI_obs, &
             AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
             AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
@@ -693,6 +709,7 @@ CONTAINS
             DecidCap_id_prev, StoreDrainPrm_prev, LAI_id_prev, GDD_id_prev, SDD_id_prev, &
             albDecTr_id_prev, albEveTr_id_prev, albGrass_id_prev, porosity_id_prev, &!input
             HDD_id_prev, &!input
+            state_id_prev, soilstore_id_prev, SoilStoreCap, H_maintain, &!input
             HDD_id_next, &!output
             Tmin_id_next, Tmax_id_next, lenDay_id_next, &
             albDecTr_id_next, albEveTr_id_next, albGrass_id_next, porosity_id_next, &!output
@@ -718,7 +735,9 @@ CONTAINS
          CALL SUEWS_cal_WaterUse( &
             nsh_real, & ! input:
             wu_m3, SurfaceArea, sfr, &
-            IrrFracConif, IrrFracDecid, IrrFracGrass, &
+            IrrFracPaved, IrrFracBldgs, &
+            IrrFracEveTr, IrrFracDecTr, IrrFracGrass, &
+            IrrFracBSoil, IrrFracWater, &
             DayofWeek_id, WUProfA_24hr, WUProfM_24hr, &
             InternalWaterUse_h, HDD_id_next, WUDay_id_next, &
             WaterUseMethod, NSH, it, imin, DLS, &
@@ -731,7 +750,7 @@ CONTAINS
             FcEF_v_kgkm, FrFossilFuel_Heat, FrFossilFuel_NonHeat, HDD_id_next, HumActivity_24hr, &
             id, imin, it, MaxFCMetab, MaxQFMetab, MinFCMetab, MinQFMetab, nsh, &
             PopDensDaytime, PopDensNighttime, PopProf_24hr, QF, QF0_BEU, Qf_A, Qf_B, Qf_C, &
-            QF_obs, QF_SAHP, SurfaceArea, T_CRITIC_Cooling, T_CRITIC_Heating, &
+            QF_obs, QF_SAHP, SurfaceArea, BaseT_Cooling, BaseT_Heating, &
             Temp_C, TrafficRate, TrafficUnits, TraffProf_24hr, &
             Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff)! output:
 
@@ -810,7 +829,7 @@ CONTAINS
             snowUse, NonWaterFraction, addPipes, addImpervious, addVeg, addWaterBody, &
             state_id_prev, soilstore_id_prev, sfr, StoreDrainPrm_next, WaterDist, nsh_real, &
             drain_per_tstep, &  !output
-            drain, AddWaterRunoff, &
+            drain, frac_water2runoff, &
             AdditionalWater, runoffPipes, runoff_per_interval, &
             AddWater, stateOld, soilstoreOld)
          !============= calculate water balance end =============
@@ -841,7 +860,7 @@ CONTAINS
             NonWaterFraction, wu_nsurf, addVeg, addWaterBody, SnowLimPaved, SnowLimBldg, &
             SurfaceArea, FlowChange, drain, WetThresh, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
             freezmelt, freezstate, freezstatevol, Qm_Melt, Qm_rain, Tsurf_ind, sfr, &
-            StateLimit, AddWater, addwaterrunoff, StoreDrainPrm_next, SnowPackLimit, SnowProf_24hr, &
+            StateLimit, AddWater, frac_water2runoff, StoreDrainPrm_next, SnowPackLimit, SnowProf_24hr, &
             SnowPack_next, SnowFrac_next, SnowWater_prev, IceFrac_prev, SnowDens_next, &! input:
             runoff_per_interval, state_id_prev, soilstore_id_prev, &! input:
             state_id_next, soilstore_id_next, &! output:
@@ -1060,7 +1079,7 @@ CONTAINS
       FcEF_v_kgkm, FrFossilFuel_Heat, FrFossilFuel_NonHeat, HDD_id, HumActivity_24hr, &
       id, imin, it, MaxFCMetab, MaxQFMetab, MinFCMetab, MinQFMetab, nsh, &
       PopDensDaytime, PopDensNighttime, PopProf_24hr, QF, QF0_BEU, Qf_A, Qf_B, Qf_C, &
-      QF_obs, QF_SAHP, SurfaceArea, T_CRITIC_Cooling, T_CRITIC_Heating, &
+      QF_obs, QF_SAHP, SurfaceArea, BaseT_Cooling, BaseT_Heating, &
       Temp_C, TrafficRate, TrafficUnits, TraffProf_24hr, &
       Fc_anthro, Fc_build, Fc_metab, Fc_point, Fc_traff)! output:
 
@@ -1087,8 +1106,8 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::Qf_A
       REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::Qf_B
       REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::Qf_C
-      REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::T_CRITIC_Heating
-      REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::T_CRITIC_Cooling
+      REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::BaseT_Heating
+      REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::BaseT_Cooling
       REAL(KIND(1d0)), DIMENSION(2), INTENT(in)::TrafficRate
 
       REAL(KIND(1d0)), DIMENSION(0:23, 2), INTENT(in)::AHProf_24hr
@@ -1130,14 +1149,14 @@ CONTAINS
       ELSEIF ((EmissionsMethod > 0 .AND. EmissionsMethod <= 6) .OR. EmissionsMethod >= 11) THEN
          CALL AnthropogenicEmissions( &
             CO2PointSource, EmissionsMethod, &
-            id, it, imin, DLS, nsh, DayofWeek_id, &
+            it, imin, DLS, DayofWeek_id, &
             EF_umolCO2perJ, FcEF_v_kgkm, EnEF_v_Jkm, TrafficUnits, &
             FrFossilFuel_Heat, FrFossilFuel_NonHeat, &
             MinFCMetab, MaxFCMetab, MinQFMetab, MaxQFMetab, &
             PopDensDaytime, PopDensNighttime, &
             Temp_C, HDD_id, Qf_A, Qf_B, Qf_C, &
             AH_MIN, AH_SLOPE_Heating, AH_SLOPE_Cooling, &
-            T_CRITIC_Heating, T_CRITIC_Cooling, &
+            BaseT_Heating, BaseT_Cooling, &
             TrafficRate, &
             QF0_BEU, QF_SAHP, &
             Fc_anthro, Fc_metab, Fc_traff, Fc_build, Fc_point, &
@@ -1618,13 +1637,13 @@ CONTAINS
    END SUBROUTINE SUEWS_cal_Qs
    !=======================================================================
 
-   !==========================water balance================================
+   !==========================drainage and runoff================================
    SUBROUTINE SUEWS_cal_Water( &
       Diagnose, &!input
       snowUse, NonWaterFraction, addPipes, addImpervious, addVeg, addWaterBody, &
       state_id, soilstore_id, sfr, StoreDrainPrm, WaterDist, nsh_real, &
       drain_per_tstep, &  !output
-      drain, AddWaterRunoff, &
+      drain, frac_water2runoff, &
       AdditionalWater, runoffPipes, runoff_per_interval, &
       AddWater, stateOld, soilstoreOld)
 
@@ -1648,7 +1667,7 @@ CONTAINS
       REAL(KIND(1d0)), DIMENSION(nsurf + 1, nsurf - 1), INTENT(in)::WaterDist
 
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out):: drain         !Drainage of surface type "is" [mm]
-      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out):: AddWaterRunoff!Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
+      REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out):: frac_water2runoff!Fraction of water going to runoff/sub-surface soil (WGWaterDist) [-]
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out):: AddWater      !water from other surfaces (WGWaterDist in SUEWS_ReDistributeWater.f95) [mm]
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out):: stateOld
       REAL(KIND(1d0)), DIMENSION(nsurf), INTENT(out):: soilstoreOld
@@ -1710,7 +1729,7 @@ CONTAINS
       !Calculates AddWater(is)
       CALL ReDistributeWater( &
          snowUse, WaterDist, sfr, Drain, &! input:
-         AddWaterRunoff, AddWater)! output
+         frac_water2runoff, AddWater)! output
 
    END SUBROUTINE SUEWS_cal_Water
    !=======================================================================
@@ -2781,7 +2800,7 @@ CONTAINS
    END FUNCTION square_real
 
    SUBROUTINE output_name_n(i, name, group, aggreg, outlevel)
-      ! used by f2py module `SuPy` to handle output names
+      ! used by f2py module  to handle output names
       IMPLICIT NONE
       ! the dimension is potentially incorrect,
       ! which should be consistent with that in output module
@@ -2806,7 +2825,7 @@ CONTAINS
    END SUBROUTINE output_name_n
 
    SUBROUTINE output_size(nVar)
-      ! used by f2py module `SuPy` to get size of the output list
+      ! used by f2py module  to get size of the output list
       IMPLICIT NONE
       ! the dimension is potentially incorrect,
       ! which should be consistent with that in output module
@@ -2823,16 +2842,21 @@ CONTAINS
       alb, AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
       AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
       alpha_bioCO2, alpha_enh_bioCO2, alt, BaseT, BaseTe, &
-      BaseTHDD, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
+      BaseTMethod, &
+      BaseT_HC, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
       chAnOHM, CO2PointSource, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
       DecTreeH, Diagnose, DiagQN, DiagQS, DRAINRT, &
       dt_since_start, dqndt, qn1_av, dqnsdt, qn1_s_av, &
       EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
       FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, FlowChange, &
       FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD_id, &
-      GDDFull, Gridiv, gsModel, HDD_id, HumActivity_24hr, &
+      GDDFull, Gridiv, gsModel, H_maintain, HDD_id, HumActivity_24hr, &
       IceFrac, Ie_a, Ie_end, Ie_m, Ie_start, &
-      InternalWaterUse_h, IrrFracConif, IrrFracDecid, IrrFracGrass, EvapMethod, &
+      InternalWaterUse_h, &
+      IrrFracPaved, IrrFracBldgs, &
+      IrrFracEveTr, IrrFracDecTr, IrrFracGrass, &
+      IrrFracBSoil, IrrFracWater, &
+      EvapMethod, &
       kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax, LAIMin, &
       LAIPower, LAIType, lat, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
       SnowWater, MinFCMetab, MinQFMetab, min_res_bioCO2, &
@@ -2849,7 +2873,7 @@ CONTAINS
       SnowLimBldg, SnowLimPaved, SnowPack, SnowProf_24hr, snowUse, SoilDepth, &
       soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
       StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair_av, tau_a, tau_f, tau_r, &
-      T_CRITIC_Cooling, T_CRITIC_Heating, TempMeltFact, TH, &
+      BaseT_Cooling, BaseT_Heating, TempMeltFact, TH, &
       theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
       Tmin_id, Tmax_id, lenday_id, &
       TraffProf_24hr, Ts5mindata_ir, tstep, tstep_prev, veg_type, &
@@ -2866,6 +2890,7 @@ CONTAINS
       INTEGER, INTENT(IN) :: len_sim
       ! input variables
       INTEGER, INTENT(IN)::AerodynamicResistanceMethod
+      INTEGER, INTENT(IN)::BaseTMethod
       INTEGER, INTENT(IN)::Diagnose
       INTEGER, INTENT(IN)::DiagQN
       INTEGER, INTENT(IN)::DiagQS
@@ -2905,7 +2930,7 @@ CONTAINS
       ! REAL(KIND(1D0)),INTENT(IN)::avkdn
       ! REAL(KIND(1D0)),INTENT(IN)::avRh
       ! REAL(KIND(1D0)),INTENT(IN)::avU1
-      REAL(KIND(1D0)), INTENT(IN)::BaseTHDD
+      REAL(KIND(1D0)), INTENT(IN)::BaseT_HC
       REAL(KIND(1D0)), INTENT(IN)::bldgH
       REAL(KIND(1D0)), INTENT(IN)::CapMax_dec
       REAL(KIND(1D0)), INTENT(IN)::CapMin_dec
@@ -2931,10 +2956,15 @@ CONTAINS
       REAL(KIND(1D0)), INTENT(IN)::G4
       REAL(KIND(1D0)), INTENT(IN)::G5
       REAL(KIND(1D0)), INTENT(IN)::G6
+      REAL(KIND(1D0)), INTENT(IN)::H_maintain
       REAL(KIND(1D0)), INTENT(IN)::InternalWaterUse_h
-      REAL(KIND(1D0)), INTENT(IN)::IrrFracConif
-      REAL(KIND(1D0)), INTENT(IN)::IrrFracDecid
+      REAL(KIND(1D0)), INTENT(IN)::IrrFracPaved
+      REAL(KIND(1D0)), INTENT(IN)::IrrFracBldgs
+      REAL(KIND(1D0)), INTENT(IN)::IrrFracEveTr
+      REAL(KIND(1D0)), INTENT(IN)::IrrFracDecTr
       REAL(KIND(1D0)), INTENT(IN)::IrrFracGrass
+      REAL(KIND(1D0)), INTENT(IN)::IrrFracBSoil
+      REAL(KIND(1D0)), INTENT(IN)::IrrFracWater
       REAL(KIND(1D0)), INTENT(IN)::Kmax
       ! REAL(KIND(1D0)),INTENT(IN)::LAI_obs
       REAL(KIND(1D0)), INTENT(IN)::lat
@@ -2996,8 +3026,8 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)        ::Qf_C
       ! REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)        ::Numcapita
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)        ::PopDensDaytime
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)        ::T_CRITIC_Cooling
-      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)        ::T_CRITIC_Heating
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)        ::BaseT_Cooling
+      REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)        ::BaseT_Heating
       REAL(KIND(1D0)), DIMENSION(2), INTENT(IN)        ::TrafficRate
       REAL(KIND(1D0)), DIMENSION(3), INTENT(IN)        ::Ie_a
       REAL(KIND(1D0)), DIMENSION(3), INTENT(IN)        ::Ie_m
@@ -3230,7 +3260,7 @@ CONTAINS
          ! write (12, *) 'avu1=', avu1
          ! write (12, *) 'baset=', baset
          ! write (12, *) 'basete=', basete
-         ! write (12, *) 'basethdd=', basethdd
+         ! write (12, *) 'BaseT_HC=', BaseT_HC
          ! write (12, *) 'beta_bioco2=', beta_bioco2
          ! write (12, *) 'beta_enh_bioco2=', beta_enh_bioco2
          ! write (12, *) 'bldgh=', bldgh
@@ -3288,8 +3318,8 @@ CONTAINS
          ! write (12, *) 'ie_start=', ie_start
          ! write (12, *) 'imin=', imin
          ! write (12, *) 'internalwateruse_h=', internalwateruse_h
-         ! write (12, *) 'irrfracconif=', irrfracconif
-         ! write (12, *) 'irrfracdecid=', irrfracdecid
+         ! write (12, *) 'IrrFracEveTr=', IrrFracEveTr
+         ! write (12, *) 'IrrFracDecTr=', IrrFracDecTr
          ! write (12, *) 'irrfracgrass=', irrfracgrass
          ! write (12, *) 'isec=', isec
          ! write (12, *) 'it=', it
@@ -3387,8 +3417,8 @@ CONTAINS
          ! write (12, *) 'tau_r=', tau_r
          ! write (12, *) 'tmax_id=', tmax_id
          ! write (12, *) 'tmin_id=', tmin_id
-         ! write (12, *) 't_critic_cooling=', t_critic_cooling
-         ! write (12, *) 't_critic_heating=', t_critic_heating
+         ! write (12, *) 'BaseT_Cooling=', BaseT_Cooling
+         ! write (12, *) 'BaseT_Heating=', BaseT_Heating
          ! write (12, *) 'temp_c=', temp_c
          ! write (12, *) 'tempmeltfact=', tempmeltfact
          ! write (12, *) 'th=', th
@@ -3431,16 +3461,21 @@ CONTAINS
             alb, AlbMax_DecTr, AlbMax_EveTr, AlbMax_Grass, &
             AlbMin_DecTr, AlbMin_EveTr, AlbMin_Grass, &
             alpha_bioCO2, alpha_enh_bioCO2, alt, avkdn, avRh, avU1, BaseT, BaseTe, &
-            BaseTHDD, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
+            BaseTMethod, &
+            BaseT_HC, beta_bioCO2, beta_enh_bioCO2, bldgH, CapMax_dec, CapMin_dec, &
             chAnOHM, CO2PointSource, cpAnOHM, CRWmax, CRWmin, DayWat, DayWatPer, &
             DecTreeH, Diagnose, DiagQN, DiagQS, DRAINRT, &
             dt_since_start, dqndt, qn1_av, dqnsdt, qn1_s_av, &
             EF_umolCO2perJ, emis, EmissionsMethod, EnEF_v_Jkm, endDLS, EveTreeH, FAIBldg, &
             FAIDecTree, FAIEveTree, Faut, FcEF_v_kgkm, fcld_obs, FlowChange, &
             FrFossilFuel_Heat, FrFossilFuel_NonHeat, G1, G2, G3, G4, G5, G6, GDD_id, &
-            GDDFull, Gridiv, gsModel, HDD_id, HumActivity_24hr, &
+            GDDFull, Gridiv, gsModel, H_maintain, HDD_id, HumActivity_24hr, &
             IceFrac, id, Ie_a, Ie_end, Ie_m, Ie_start, imin, &
-            InternalWaterUse_h, IrrFracConif, IrrFracDecid, IrrFracGrass, isec, it, EvapMethod, &
+            InternalWaterUse_h, &
+            IrrFracPaved, IrrFracBldgs, &
+            IrrFracEveTr, IrrFracDecTr, IrrFracGrass, &
+            IrrFracBSoil, IrrFracWater, &
+            isec, it, EvapMethod, &
             iy, kkAnOHM, Kmax, LAI_id, LAICalcYes, LAIMax, LAIMin, LAI_obs, &
             LAIPower, LAIType, lat, lenDay_id, ldown_obs, lng, MaxConductance, MaxFCMetab, MaxQFMetab, &
             SnowWater, MetForcingData_grid, MinFCMetab, MinQFMetab, min_res_bioCO2, &
@@ -3459,7 +3494,7 @@ CONTAINS
             soilstore_id, SoilStoreCap, StabilityMethod, startDLS, state_id, StateLimit, &
             StorageHeatMethod, StoreDrainPrm, SurfaceArea, Tair_av, tau_a, tau_f, tau_r, &
             Tmax_id, Tmin_id, &
-            T_CRITIC_Cooling, T_CRITIC_Heating, Temp_C, TempMeltFact, TH, &
+            BaseT_Cooling, BaseT_Heating, Temp_C, TempMeltFact, TH, &
             theta_bioCO2, timezone, TL, TrafficRate, TrafficUnits, &
             TraffProf_24hr, Ts5mindata_ir, tstep, tstep_prev, veg_type, &
             WaterDist, WaterUseMethod, WetThresh, wu_m3, &

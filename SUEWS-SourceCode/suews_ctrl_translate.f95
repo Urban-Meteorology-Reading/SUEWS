@@ -52,9 +52,13 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       snowdensmin, snowdensmax, tau_r, crwmin, crwmax, &
       preciplimit, SnowProf_24hr, snowalb, snowfallcum
    USE sues_data, ONLY: &
-      surfacearea_ha, surfacearea, irrfracconif, irrfracdecid, irrfracgrass, &
+      surfacearea_ha, surfacearea, &
+      IrrFracPaved, IrrFracBldgs, &
+      IrrFracEveTr, IrrFracDecTr, irrfracgrass, &
+      IrrFracBSoil, IrrFracWater, &
       soildensity, soildepthmeas, smcap, soilrocks, pipecapacity, flowchange, &
       runofftowater, ie_start, ie_end, internalwateruse_h, faut, &
+      H_maintain, &
       ie_a, ie_m, daywat, daywatper, &
       wuareaevetr_m2, wuareadectr_m2, wuareagrass_m2, &
       AerodynamicResistanceMethod, RoughLenHeatMethod, StabilityMethod, tstep, tstep_prev
@@ -125,9 +129,13 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       CALL ErrorHint(10, 'Surface fractions (Fr_) should add up to 1.', SUM(sfr), notUsed, notUsedI)
 
    ! ---- Irrigated fractions
-   IrrFracConif = SurfaceChar(Gridiv, c_IrrEveTrFrac)  ! Everg
-   IrrFracDecid = SurfaceChar(Gridiv, c_IrrDecTrFrac)  ! Decid
+   IrrFracPaved = SurfaceChar(Gridiv, c_IrrPavedFrac)  ! Paved
+   IrrFracBldgs = SurfaceChar(Gridiv, c_IrrBldgsFrac)  ! Bldgs
+   IrrFracEveTr = SurfaceChar(Gridiv, c_IrrEveTrFrac)  ! Everg
+   IrrFracDecTr = SurfaceChar(Gridiv, c_IrrDecTrFrac)  ! Decid
    IrrFracGrass = SurfaceChar(Gridiv, c_IrrGrassFrac)  ! Grass
+   IrrFracBSoil = SurfaceChar(Gridiv, c_IrrBSoilFrac)  ! BSoil
+   IrrFracWater = SurfaceChar(Gridiv, c_IrrWaterFrac)  ! Water
 
    ! ---------------------------------------------------------------------------------
    ! --------- Surface cover calculations (previously in LUMPS_gis_read) -------------
@@ -144,7 +152,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    IF (veg_type == 1) THEN          ! area vegetated
       veg_fr = (sfr(ConifSurf) + sfr(DecidSurf) + sfr(GrassSurf) + sfr(BSoilSurf) + sfr(WaterSurf))
    ELSEIF (veg_type == 2) THEN      ! area irrigated
-      veg_fr = (IrrFracConif*sfr(ConifSurf) + IrrFracDecid*sfr(DecidSurf) + IrrFracGrass*sfr(GrassSurf))
+      veg_fr = (IrrFracEveTr*sfr(ConifSurf) + IrrFracDecTr*sfr(DecidSurf) + IrrFracGrass*sfr(GrassSurf))
    ENDIF
 
    ImpervFraction = (sfr(PavSurf) + sfr(BldgSurf))
@@ -184,11 +192,11 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    IF (PopDensDaytime(1) >= 0 .AND. PopDensNighttime < 0) PopDensNighttime = PopDensDaytime(1)  !If only daytime data provided, use them
    IF (PopDensDaytime(1) < 0 .AND. PopDensNighttime >= 0) PopDensDaytime(1) = PopDensNighttime  !If only night-time data provided, use them
    PopDensDaytime(2) = PopDensNighttime + (PopDensDaytime(1) - PopDensNighttime)*SurfaceChar(Gridiv, c_FrPDDwe) !Use weekend fraction to daytime population
-   ! the following part has been moved into `SUEWS_cal_Main` as `NumCapita` can be derived there
+   ! the following part has been moved into  as  can be derived there
    ! IF (PopDensDaytime(1) >= 0 .AND. PopDensNighttime >= 0) NumCapita(1) = (PopDensDaytime(1) + PopDensNighttime)/2  !If both, use average
    ! IF (PopDensDaytime(2) >= 0 .AND. PopDensNighttime >= 0) NumCapita(2) = (PopDensDaytime(2) + PopDensNighttime)/2  !If both, use average
 
-   ! ! IF (PopDensDaytime >= 0 .AND. PopDensNighttime >= 0) NumCapita = (PopDensDaytime + PopDensNighttime)/2  !If both, use average ! moved to `AnthropogenicEmissions`, TS 27 Dec 2018
+   ! ! IF (PopDensDaytime >= 0 .AND. PopDensNighttime >= 0) NumCapita = (PopDensDaytime + PopDensNighttime)/2  !If both, use average ! moved to , TS 27 Dec 2018
 
    ! ---- Traffic rate
    TrafficRate = SurfaceChar(Gridiv, (/c_TrafficRate_WD, c_TrafficRate_WE/)) ! Mean traffic rate within modelled area
@@ -718,25 +726,25 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    END IF
 
    ! ---- QF coeffs (was in SUEWS_SAHP.f95, subroutine SAHP_Coefs)
-   BaseTHDD = -999 ! Initialise QF coeffs
+   BaseT_HC = -999 ! Initialise QF coeffs
    QF_A = 0
    QF_B = 0
    QF_C = 0
    AH_min = 0
-   T_CRITIC_Heating = 0
-   T_CRITIC_Cooling = 0
+   BaseT_Heating = 0
+   BaseT_Cooling = 0
    AH_slope_Heating = 0
    AH_slope_Cooling = 0
 
-   BaseTHDD = SurfaceChar(Gridiv, c_BaseTHDD)
+   BaseT_HC = SurfaceChar(Gridiv, c_BaseT_HC)
    QF_A = SurfaceChar(Gridiv, (/c_QF_A1, c_QF_A2/))
    QF_B = SurfaceChar(Gridiv, (/c_QF_B1, c_QF_B2/))
    QF_C = SurfaceChar(Gridiv, (/c_QF_C1, c_QF_C2/))
    AH_min = SurfaceChar(Gridiv, (/c_AHMin_WD, c_AHMin_WE/))
    AH_slope_Heating = SurfaceChar(Gridiv, (/c_AHSlopeHeating_WD, c_AHSlopeHeating_WE/))
    AH_slope_Cooling = SurfaceChar(Gridiv, (/c_AHSlopeCooling_WD, c_AHSlopeCooling_WE/))
-   T_Critic_Heating = SurfaceChar(Gridiv, (/c_TCriticHeating_WD, c_TCriticHeating_WE/))
-   T_Critic_Cooling = SurfaceChar(Gridiv, (/c_TCriticCooling_WD, c_TCriticCooling_WE/))
+   BaseT_Heating = SurfaceChar(Gridiv, (/c_TCriticHeating_WD, c_TCriticHeating_WE/))
+   BaseT_Cooling = SurfaceChar(Gridiv, (/c_TCriticCooling_WD, c_TCriticCooling_WE/))
    EnProfWD = SurfaceChar(Gridiv, c_EnProfWD)
    EnProfWE = SurfaceChar(Gridiv, c_EnProfWE)
    CO2mWD = SurfaceChar(Gridiv, c_CO2mWD)
@@ -762,6 +770,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
    Ie_end = INT(SurfaceChar(Gridiv, c_IeEnd))
    InternalWaterUse_h = SurfaceChar(Gridiv, c_IntWU)
    Faut = SurfaceChar(Gridiv, c_Faut)
+   H_maintain = SurfaceChar(Gridiv, c_h_maintain)   !Automatic irrigation model coefficients [mm d-1]; [mm d-1 degC-1]; [mm d-2]
    Ie_a = SurfaceChar(Gridiv, c_Ie_a)   !Automatic irrigation model coefficients [mm d-1]; [mm d-1 degC-1]; [mm d-2]
    Ie_m = SurfaceChar(Gridiv, c_Ie_m)   !Manual irrigation model coefficients [mm d-1]; [mm d-1 degC-1]; [mm d-2]
    DayWat = SurfaceChar(Gridiv, c_DayWat)
@@ -997,7 +1006,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       ! Characteristics that apply to some or all surface types
       WRITE (12, '(8a10,a16)') 'Paved', 'Bldgs', 'EveTr', 'DecTr', 'Grass', 'BSoil', 'Water', 'Snow', ' SurfType'
       WRITE (12, 120) (sfr(iv), iv=1, nsurf), FCskip, ' SurfFr'
-      WRITE (12, 120) FCskip, FCskip, IrrFracConif, IrrFracDecid, IrrFracGrass, FCskip, FCskip, FCskip, ' IrrFr'
+      WRITE (12, 120) FCskip, FCskip, IrrFracEveTr, IrrFracDecTr, IrrFracGrass, FCskip, FCskip, FCskip, ' IrrFr'
       WRITE (12, 120) FCskip, FCskip, WUAreaEveTr_m2, WUAreaDecTr_m2, WUAreaGrass_m2, FCskip, FCskip, FCskip, ' WaterUseArea'
       WRITE (12, 120) FCskip, BldgH, EveTreeH, DecTreeH, FCskip, FCskip, FCskip, FCskip, ' H'
       WRITE (12, 120) FCskip, FAIBldg, FAIEveTree, FAIDecTree, FCskip, FCskip, FCskip, FCskip, ' FAI'
@@ -1058,10 +1067,10 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       WRITE (12, '(a12,11f10.3,i3)') SsG_YYYY, G1, G2, G3, G4, G5, G6, TH, TL, S1, S2, Kmax, gsModel
 
       WRITE (12, *) '----- '//TRIM(ADJUSTL(SsG_YYYY))//' Energy-use parameters'//' -----'
-      WRITE (12, '(a12,11a10)') 'Grid', 'PopDensDaytime', 'BaseTHDD', 'QF_A_WD', 'QF_A_WE', 'QF_B_WD', 'QF_B_WE', 'QF_C_WD', &
-         'QF_C_WE', 'AH_Min', 'AH_Slope', 'T_critic_Heating'
-      WRITE (12, '(a12,11f10.3)') SsG_YYYY, PopDensDaytime, BaseTHDD, QF_A(1:2), QF_B(1:2), QF_C(1:2), &
-         AH_Min, AH_Slope_Heating, T_critic_Heating
+      WRITE (12, '(a12,11a10)') 'Grid', 'PopDensDaytime', 'BaseT_HC', 'QF_A_WD', 'QF_A_WE', 'QF_B_WD', 'QF_B_WE', 'QF_C_WD', &
+         'QF_C_WE', 'AH_Min', 'AH_Slope', 'BaseT_Heating'
+      WRITE (12, '(a12,11f10.3)') SsG_YYYY, PopDensDaytime, BaseT_HC, QF_A(1:2), QF_B(1:2), QF_C(1:2), &
+         AH_Min, AH_Slope_Heating, BaseT_Heating
 
       WRITE (12, *) '----- '//TRIM(ADJUSTL(SsG_YYYY))//' Water-use parameters'//' -----'
       WRITE (12, '(a12,10a10)') 'Grid', 'IeStart', 'IeEnd', 'IntWatUse', 'Faut', &
@@ -1116,7 +1125,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
 
       ! Coefficients for anthropogenic heat models ----------------------------------
       IF (EmissionsMethod == 1) THEN   !Loridan et al. (2011) calculation
-         IF (AH_min(1) == 0 .AND. Ah_slope_Heating(1) == 0 .AND. T_Critic_Heating(1) == 0) THEN
+         IF (AH_min(1) == 0 .AND. Ah_slope_Heating(1) == 0 .AND. BaseT_Heating(1) == 0) THEN
             CALL ErrorHint(53, 'Check QF calculation coefficients.', notUsed, notUsed, EmissionsMethod)
          ENDIF
 
@@ -1293,7 +1302,7 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       write (12, *) 'avu1=', avu1
       write (12, *) 'baset=', baset
       write (12, *) 'basete=', basete
-      write (12, *) 'basethdd=', basethdd
+      write (12, *) 'BaseT_HC=', BaseT_HC
       write (12, *) 'beta_bioco2=', beta_bioco2
       write (12, *) 'beta_enh_bioco2=', beta_enh_bioco2
       write (12, *) 'bldgh=', bldgh
@@ -1351,8 +1360,8 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       write (12, *) 'ie_start=', ie_start
       write (12, *) 'imin=', imin
       write (12, *) 'internalwateruse_h=', internalwateruse_h
-      write (12, *) 'irrfracconif=', irrfracconif
-      write (12, *) 'irrfracdecid=', irrfracdecid
+      write (12, *) 'IrrFracEveTr=', IrrFracEveTr
+      write (12, *) 'IrrFracDecTr=', IrrFracDecTr
       write (12, *) 'irrfracgrass=', irrfracgrass
       write (12, *) 'isec=', isec
       write (12, *) 'it=', it
@@ -1450,8 +1459,8 @@ SUBROUTINE SUEWS_Translate(Gridiv, ir, iMB)
       write (12, *) 'tau_r=', tau_r
       write (12, *) 'tmax_id=', tmax_id
       write (12, *) 'tmin_id=', tmin_id
-      write (12, *) 't_critic_cooling=', t_critic_cooling
-      write (12, *) 't_critic_heating=', t_critic_heating
+      write (12, *) 'BaseT_Cooling=', BaseT_Cooling
+      write (12, *) 'BaseT_Heating=', BaseT_Heating
       write (12, *) 'temp_c=', temp_c
       write (12, *) 'tempmeltfact=', tempmeltfact
       write (12, *) 'th=', th

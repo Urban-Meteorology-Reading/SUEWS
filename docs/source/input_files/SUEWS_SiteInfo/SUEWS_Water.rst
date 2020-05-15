@@ -1,4 +1,4 @@
-.. _SUEWS_Water.txt:
+.. _SUEWS_Water:
 
 SUEWS_Water.txt
 ~~~~~~~~~~~~~~~

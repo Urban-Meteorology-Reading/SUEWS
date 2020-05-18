@@ -3,16 +3,19 @@
 SUEWS_Irrigation.txt
 ~~~~~~~~~~~~~~~~~~~~
 
-SUEWS includes a simple model for external water use if observed data
-are not available. The model calculates daily water use from the mean
-daily air temperature, number of days since rain and fraction of
-irrigated area using automatic/manual irrigation. The sub-daily pattern
-of water use is modelled according to the daily cycles specified in
-`SUEWS_Profiles.txt`.
+External water use may be used for a wide range of reasons (e.g. cleaning roads, irrigating plants, fountains, washing cars).
 
-Alternatively, if available, the external water use can be provided in
-the met forcing file (and set `WaterUseMethod` = 1 in
-`RunControl.nml`) by filling the `Wuh` columns with valid values.
+SUEWS has two options for External Water use (if non- zero)
+1) provide observed data in meteorological forcing file in the `Wuh` column with valid values
+  set `WaterUseMethod` = 1 in `RunControl.nml`
+  
+2) a simple model that calculates daily water use from the mean daily air temperature, number of days since rain and fraction of
+irrigated area using automatic/manual irrigation. The user needs to supply coefficients (XXX) for these relations. 
+ a) sub-daily pattern of water use is detemined from the daily cycles specified in `SUEWS_Profiles.txt`.
+ b) surface that the water can be applied to is specified by XX.
+ c) water can pond
+
+
 
 .. DON'T manually modify the csv file below
 .. as it is always automatically regenrated by each build:

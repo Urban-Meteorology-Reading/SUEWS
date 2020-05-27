@@ -119,7 +119,7 @@ def gen_csv_suews(path_csv):
 project = "SUEWS"
 doc_name = "SUEWS Documentation"
 # today = datetime.today()
-copyright = "2018 – 2019" + ", micromet@University of Reading, led by Prof Sue Grimmond"
+copyright = "2018 – 2020" + ", micromet@University of Reading, led by Prof Sue Grimmond"
 author = "micromet@University of Reading, led by Prof Sue Grimmond"
 
 

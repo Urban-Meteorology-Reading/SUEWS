@@ -208,13 +208,14 @@ CONTAINS
 
          i = i + 1
       ENDDO
-      IF (ABS(L_MOD) > 1e6) L_MOD = L_MOD/ABS(L_MOD)*1e6
 
       ! limit zL to be within [-5,5]
       ! IF (zL < -5 .OR. zL > 5) THEN
       zL = MIN(5., MAX(-5., zL))
       ! limit other output variables as well as z/L
       L_MOD = zzd/zL
+      ! limit L_mod to 3.e4 for consistency with output
+      IF (ABS(L_MOD) > 3e4) L_MOD = L_MOD/ABS(L_MOD)*3e4
       z0L = z0m/L_MOD
       psim = stab_psi_mom(StabilityMethod, zL)
       psimz0 = stab_psi_mom(StabilityMethod, z0L)

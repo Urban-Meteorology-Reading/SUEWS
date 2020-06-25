@@ -32,10 +32,10 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
    CHARACTER(len=1024) :: message ! Used to pass through function wrf_debug() by Zhenkun Li, 10/08/2018
 #endif
    CHARACTER(len=1024) :: Errmessage
-   CHARACTER(len=1024) :: StopMessage ! used to pass error message to `stop` statement; useful to supy_driver, TS 19 Feb 2019
+   CHARACTER(len=1024) :: StopMessage ! used to pass error message to  statement; useful to supy_driver, TS 19 Feb 2019
 
    ! TS 16 Jul 2018:
-   ! these LOGICAL values should NOT be initialised as `SAVE` is implied
+   ! these LOGICAL values should NOT be initialised as  is implied
    ! which will cause cross-assignment in parallel mode and thus subsequent unintentional STOP
    LOGICAL:: v1, v2, v3, v4, v5, v6, v7, v8
    LOGICAL:: returnTrue
@@ -306,9 +306,13 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
       ! returnTrue=.TRUE.
       v2 = .TRUE.
    ELSEIF (errh == 75) THEN
-      text1 = 'Invalid value for `BaseTMethod`!'
+      text1 = 'Invalid value for !'
       ! returnTrue=.TRUE.
       v2 = .TRUE.
+   ELSEIF (errh == 76) THEN
+      text1 = 'erroneous T2 by RSL!'
+      returnTrue = .FALSE.
+      v4 = .TRUE.
    ENDIF
 
    ErrhCount(errh) = ErrhCount(errh) + 1   ! Increase error count by 1
@@ -323,7 +327,7 @@ SUBROUTINE ErrorHint(errh, ProblemFile, VALUE, value2, valueI)
    ELSEIF (v3) THEN ! 1 integer
       WRITE (Errmessage, '(a,i10)') ' Value: ', valueI
    ELSEIF (v4) THEN ! 2 real, 1 integer
-      WRITE (Errmessage, '(a,2f9.4,i10)') ' Values: ', VALUE, value2, valueI
+      WRITE (Errmessage, '(a,2f12.4,i10)') ' Values: ', VALUE, value2, valueI
    ELSEIF (v5) THEN ! 1 real 1 integer
       WRITE (Errmessage, '(a,f9.4,i10)') ' Values: ', VALUE, valueI
    ELSEIF (v6) THEN ! 2 integer

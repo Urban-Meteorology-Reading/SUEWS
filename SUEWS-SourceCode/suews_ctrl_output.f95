@@ -540,6 +540,19 @@ MODULE ctrl_output
       varAttr('q_28', 'g kg-1', f104, 'q at 2.8Zh', aA, 'RSL', 0), &
       varAttr('q_29', 'g kg-1', f104, 'q at 2.9Zh', aA, 'RSL', 0), &
       varAttr('q_30', 'g kg-1', f104, 'q at 3.0Zh', aA, 'RSL', 0) &
+      ! debug info
+      ! varAttr('L_MOD_RSL', 'g kg-1', f104, 'q at 3.0Zh', aA, 'RSL', 0), &
+      ! varAttr('zH_RSL', 'g kg-1', f104, 'q at 3.0Zh', aA, 'RSL', 0), &
+      ! varAttr('Lc', 'g kg-1', f104, 'q at 3.0Zh', aA, 'RSL', 0), &
+      ! varAttr('beta', 'g kg-1', f104, 'q at 3.0Zh', aA, 'RSL', 0), &
+      ! varAttr('zd_RSL', 'g kg-1', f104, 'q at 3.0Zh', aA, 'RSL', 0), &
+      ! varAttr('z0_RSL', 'g kg-1', f104, 'q at 3.0Zh', aA, 'RSL', 0), &
+      ! varAttr('elm', 'g kg-1', f104, 'q at 3.0Zh', aA, 'RSL', 0), &
+      ! varAttr('Scc', 'g kg-1', f104, 'q at 3.0Zh', aA, 'RSL', 0), &
+      ! varAttr('f', 'g kg-1', f104, 'q at 3.0Zh', aA, 'RSL', 0), &
+      ! varAttr('UStar_RSL', 'g kg-1', f104, 'q at 3.0Zh', aA, 'RSL', 0), &
+      ! varAttr('FAI', 'g kg-1', f104, 'q at 3.0Zh', aA, 'RSL', 0), &
+      ! varAttr('sfr_zH', 'g kg-1', f104, 'q at 3.0Zh', aA, 'RSL', 0) &
       /
 
 CONTAINS

@@ -427,7 +427,7 @@ CONTAINS
       REAL(KIND(1D0))::z0m
       REAL(KIND(1D0))::zdm
       REAL(KIND(1D0))::ZENITH_deg
-      REAL(KIND(1D0))::Zh
+      REAL(KIND(1D0))::zH
 
       REAL(KIND(1D0)), DIMENSION(2)::SnowRemoval
       REAL(KIND(1D0)), DIMENSION(NSURF)::wu_nsurf
@@ -680,7 +680,7 @@ CONTAINS
             porosity_id_prev, FAIBldg, FAIEveTree, FAIDecTree, &
             z0m_in, zdm_in, Z, &
             planF, &!output
-            Zh, z0m, zdm, ZZD)
+            zH, z0m, zdm, ZZD)
 
          !=================Calculate sun position=================
          IF (Diagnose == 1) WRITE (*, *) 'Calling NARP_cal_SunPosition...'
@@ -908,39 +908,11 @@ CONTAINS
             soilstore_id_next, soilstoreOld, sfr, &
             smd, smd_nsurf, tot_chang_per_tstep, SoilState)!output
 
-         !============ surface-level diagonostics ===============
-         ! IF (Diagnose == 1) WRITE (*, *) 'Calling SUEWS_cal_Diagnostics...'
-         ! CALL SUEWS_cal_Diagnostics( &
-         !    dectime, &!input
-         !    avU1, Temp_C, avRH, Press_hPa, &
-         !    qh, qe, &
-         !    VegFraction, z, z0m, zdm, RA, avdens, avcp, lv_J_kg, tstep_real, &
-         !    RoughLenHeatMethod, StabilityMethod, &
-         !    U10_ms, t2_C, q2_gkg, tsfc_C, RH2)!output
-
-         !============ roughness sub-layer diagonostics ===============
-         ! IF (Diagnose == 1) WRITE (*, *) 'Calling RSLProfile...'
-         ! CALL RSLProfile( &
-         !    Zh, z0m, zdm, &
-         !    UStar, L_MOD, sfr, planF, StabilityMethod, &
-         !    avcp, lv_J_kg, &
-         !    Temp_C, avRH, Press_hPa, z, qh, qe, &  ! input
-         !    T2_C, q2_gkg, U10_ms, RH2, & !output
-         !    dataoutLineRSL) ! output
 
          !============ calculate surface temperature ===============
          TSfc_C = cal_tsfc(qh, avdens, avcp, RA, temp_c)
 
          !============ surface-level diagonostics end ===============
-
-         ! ============ BIOGENIC CO2 FLUX =======================
-         ! CALL SUEWS_cal_BiogenCO2( &
-         !    alpha_bioCO2, alpha_enh_bioCO2, avkdn, avRh, beta_bioCO2, beta_enh_bioCO2, BSoilSurf, &! input:
-         !    ConifSurf, DecidSurf, dectime, Diagnose, EmissionsMethod, Fc_anthro, G1, G2, G3, G4, &
-         !    G5, G6, gfunc, GrassSurf, gsmodel, id, it, ivConif, ivDecid, ivGrass, Kmax, LAI_id_next, LAIMin, &
-         !    LAIMax, MaxConductance, min_res_bioCO2, nsurf, NVegSurf, Press_hPa, resp_a, &
-         !    resp_b, S1, S2, sfr, SMDMethod, SnowFrac, t2_C, Temp_C, theta_bioCO2, TH, TL, vsmd, xsmd, &
-         !    Fc, Fc_biogen, Fc_photo, Fc_respi)! output:
 
          ! force quit do-while, i.e., skip iteration and use NARP for Tsurf calculation
          ! if (NetRadiationMethod < 10 .or. NetRadiationMethod > 100) exit
@@ -968,7 +940,7 @@ CONTAINS
       !============ roughness sub-layer diagonostics ===============
       IF (Diagnose == 1) WRITE (*, *) 'Calling RSLProfile...'
       CALL RSLProfile( &
-         Zh, z0m, zdm, &
+         zH, z0m, zdm, &
          L_MOD, sfr, planF, StabilityMethod, &
          avcp, lv_J_kg, avdens, &
          avU1, Temp_C, avRH, Press_hPa, z, qh, qe, &  ! input
@@ -2514,8 +2486,10 @@ CONTAINS
 
       !====================== update output arrays ==============================
       !Define the overall output matrix to be printed out step by step
-      dataOutSUEWS(ir, 1:ncolumnsDataOutSUEWS, Gridiv) = [datetimeLine, set_nan(dataOutLineSUEWS)]
-      dataOutRSL(ir, 1:ncolumnsDataOutRSL, Gridiv) = [datetimeLine, set_nan(dataoutLineRSL)]
+      dataOutSUEWS(ir, 1:ncolumnsDataOutSUEWS, Gridiv) = [datetimeLine, (dataOutLineSUEWS)]
+      ! dataOutSUEWS(ir, 1:ncolumnsDataOutSUEWS, Gridiv) = [datetimeLine, set_nan(dataOutLineSUEWS)]
+      dataOutRSL(ir, 1:ncolumnsDataOutRSL, Gridiv) = [datetimeLine, (dataoutLineRSL)]
+      ! dataOutRSL(ir, 1:ncolumnsDataOutRSL, Gridiv) = [datetimeLine, set_nan(dataoutLineRSL)]
       dataOutSOLWEIG(ir, 1:ncolumnsDataOutSOL, Gridiv) = [datetimeLine, set_nan(dataOutLineSOLWEIG)]
       ! ! set invalid values to NAN
       ! dataOutSUEWS(ir,6:ncolumnsDataOutSUEWS,Gridiv)=set_nan(dataOutSUEWS(ir,6:ncolumnsDataOutSUEWS,Gridiv))

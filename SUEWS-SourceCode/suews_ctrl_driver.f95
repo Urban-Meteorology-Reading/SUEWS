@@ -908,7 +908,6 @@ CONTAINS
             soilstore_id_next, soilstoreOld, sfr, &
             smd, smd_nsurf, tot_chang_per_tstep, SoilState)!output
 
-
          !============ calculate surface temperature ===============
          TSfc_C = cal_tsfc(qh, avdens, avcp, RA, temp_c)
 

@@ -43,7 +43,7 @@ SUEWS and UMEP
 
 
 SUEWS can be run as a standalone model but also can be used within
-`UMEP <http://umep-docs.readthedocs.io/en/latest/UMEP_Manual>`_. There are numerous
+`UMEP <http://umep-docs.readthedocs.io/>`_. There are numerous
 tools included within UMEP to help a user get started. The `SUEWS (Simple)`_
 within UMEP is a fast way to start using SUEWS.
 

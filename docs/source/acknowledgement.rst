@@ -18,12 +18,12 @@ Contributors
   * - Prof Sue Grimmond
     - University of Reading, UK; prior: Indiana University, USA, King’s College London, UK, University of British Columbia, Canada
     - OHM, Evaporation-Interception, Resistances, NARP, irrigation, anthropogenic heat, etc
-    - v2011b – v2019a
+    - v2011b – onwards
     - Team Leader
   * - Dr Ting Sun
     - University of Reading, UK
     - AnOHM; Documentation system; WRF-SUEWS coupling; SuPy (python wrapper of SUEWS)
-    - v2017b – v2019a
+    - v2017b – onwards
     - Current Lead Developer
   * - Dr Leena Järvi
     - University of Helsinki, Finland
@@ -38,7 +38,7 @@ Contributors
   * - Dr Fredrik Lindberg
     - Göteborg University, Sweden
     - UMEP-related work, NARP, ESTM
-    - v2011b – v2019a
+    - v2011b – owards
     - Lead Developer of UMEP
   * - Dr Hamidreza Omidvar
     - University of Reading, UK

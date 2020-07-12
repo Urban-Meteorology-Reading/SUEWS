@@ -30,7 +30,7 @@ PYTHON := $(if $(PYTHON_exe),$(PYTHON_exe),python)
 
 # test the current version
 test:
-	# $(MAKE) -C $(SUEWS_dir) -f $(makefile) clean; # clean Fortran SUEWS build
+	$(MAKE) -C $(SUEWS_dir) -f $(makefile) clean; # clean Fortran SUEWS build
 	$(MAKE) -C $(SUEWS_dir) -f $(makefile) main; # make SUEWS with the `main` recipe
 	cd code; python test_dev.py
 

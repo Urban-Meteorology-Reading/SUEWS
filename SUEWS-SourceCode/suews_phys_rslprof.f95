@@ -749,7 +749,7 @@ contains
       sfr_tr = sum(sfr([ConifSurf, DecidSurf]))
 
       ! height scale for buildings !not used? why?
-      ! Lc_build = (1.-sfr(BldgSurf))/planF*Zh_RSL  ! Coceal and Belcher 2004 assuming Cd = 2
+      ! Lc_build = (1.-sfr(BldgSurf))/FAI*Zh_RSL  ! Coceal and Belcher 2004 assuming Cd = 2
 
       ! height scale for tress
       ! Lc_tree = 1./(cd_tree*a_tree) ! not used? why?

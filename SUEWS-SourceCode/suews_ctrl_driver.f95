@@ -383,7 +383,7 @@ CONTAINS
       REAL(KIND(1D0))::mwh
       REAL(KIND(1D0))::mwstore
       REAL(KIND(1D0))::NWstate_per_tstep
-      REAL(KIND(1D0))::planF
+      REAL(KIND(1D0))::FAI
       REAL(KIND(1D0))::zL
       REAL(KIND(1D0))::q2_gkg
       REAL(KIND(1D0))::qe
@@ -679,7 +679,7 @@ CONTAINS
             bldgH, EveTreeH, DecTreeH, &
             porosity_id_prev, FAIBldg, FAIEveTree, FAIDecTree, &
             z0m_in, zdm_in, Z, &
-            planF, &!output
+            FAI, &!output
             zH, z0m, zdm, ZZD)
 
          !=================Calculate sun position=================
@@ -940,7 +940,7 @@ CONTAINS
       IF (Diagnose == 1) WRITE (*, *) 'Calling RSLProfile...'
       CALL RSLProfile( &
          zH, z0m, zdm, &
-         L_MOD, sfr, planF, StabilityMethod, &
+         L_MOD, sfr, FAI, StabilityMethod, &
          avcp, lv_J_kg, avdens, &
          avU1, Temp_C, avRH, Press_hPa, z, qh, qe, &  ! input
          T2_C, q2_gkg, U10_ms, RH2, & !output
@@ -993,7 +993,7 @@ CONTAINS
 
       !==============use SOLWEIG to get localised radiation flux==================
       if (sfr(BldgSurf) > 0) then
-         CALL SOLWEIG_cal_main(id, it, dectime, 0.8d0, planf, avkdn, ldown, Temp_C, avRh, Press_hPa, TSfc_C, &
+         CALL SOLWEIG_cal_main(id, it, dectime, 0.8d0, FAI, avkdn, ldown, Temp_C, avRh, Press_hPa, TSfc_C, &
                                lat, ZENITH_deg, azimuth, 1.d0, alb(1), alb(2), emis(1), emis(2), bldgH, dataOutLineSOLWEIG)
       else
          dataOutLineSOLWEIG = set_nan(dataOutLineSOLWEIG)

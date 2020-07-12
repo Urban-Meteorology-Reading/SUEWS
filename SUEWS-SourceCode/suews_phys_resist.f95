@@ -403,7 +403,7 @@ contains
       bldgH, EveTreeH, DecTreeH, &
       porosity_id, FAIBldg, FAIEveTree, FAIDecTree, &
       z0m_in, zdm_in, Z, &
-      planF, &! output:
+      FAI, &! output:
       Zh, z0m, zdm, ZZD)
       ! Get surface covers and frontal area fractions (LJ 11/2010)
       ! Last modified:
@@ -439,7 +439,7 @@ contains
       REAL(KIND(1d0)), INTENT(in) ::zdm_in ! zdm set in SiteSelect
       REAL(KIND(1d0)), INTENT(in) ::Z
 
-      REAL(KIND(1d0)), INTENT(out) ::planF
+      REAL(KIND(1d0)), INTENT(out) ::FAI
       REAL(KIND(1d0)), INTENT(out) ::Zh  ! effective height of bluff bodies
       REAL(KIND(1d0)), INTENT(out) ::z0m ! aerodynamic roughness length
       REAL(KIND(1d0)), INTENT(out) ::zdm ! zero-plance displacement
@@ -462,10 +462,10 @@ contains
       !If total area of buildings and trees is larger than zero, use tree heights and building heights to calculate zH and FAI
       IF (areaZh /= 0) THEN
          Zh = dot_product([bldgH, EveTreeH, DecTreeH*(1 - porosity_id)], sfr([BldgSurf, ConifSurf, DecidSurf]))/areaZh
-         planF = dot_product([FAIBldg, FAIEveTree, FAIDecTree*(1 - porosity_id)], sfr([BldgSurf, ConifSurf, DecidSurf]))/areaZh
+         FAI = dot_product([FAIBldg, FAIEveTree, FAIDecTree*(1 - porosity_id)], sfr([BldgSurf, ConifSurf, DecidSurf]))/areaZh
       ELSE
          Zh = 0   !Set Zh to zero if areaZh = 0
-         planF = 1e-5
+         FAI = 1e-5
       ENDIF
 
       IF (Zh /= 0) THEN
@@ -475,14 +475,14 @@ contains
             zdm = 0.7*Zh
          ELSEIF (RoughLenMomMethod == 3) THEN !MacDonald 1998
             IF (areaZh /= 0) THEN  !Plan area fraction
-               !planF=FAIBldg*sfr(BldgSurf)/areaZh+FAItree*sfr(ConifSurf)/areaZh+FAItree*(1-porosity_id)*sfr(DecidSurf)/areaZh
-               !   planF = FAIBldg*sfr(BldgSurf)/areaZh + FAIEveTree*sfr(ConifSurf)/areaZh + FAIDecTree*(1 - porosity_id)*sfr(DecidSurf)/areaZh
+               !FAI=FAIBldg*sfr(BldgSurf)/areaZh+FAItree*sfr(ConifSurf)/areaZh+FAItree*(1-porosity_id)*sfr(DecidSurf)/areaZh
+               !   FAI = FAIBldg*sfr(BldgSurf)/areaZh + FAIEveTree*sfr(ConifSurf)/areaZh + FAIDecTree*(1 - porosity_id)*sfr(DecidSurf)/areaZh
             ELSE
-               ! planF = 0.00001
+               ! FAI = 0.00001
                Zh = 1
             ENDIF
             zdm = (1 + 4.43**(-sfr(BldgSurf))*(sfr(BldgSurf) - 1))*Zh
-            z0m = ((1 - zdm/Zh)*EXP(-(0.5*1.0*1.2/0.4**2*(1 - zdm/Zh)*planF)**(-0.5)))*Zh
+            z0m = ((1 - zdm/Zh)*EXP(-(0.5*1.0*1.2/0.4**2*(1 - zdm/Zh)*FAI)**(-0.5)))*Zh
          ENDIF
       ELSEIF (Zh == 0) THEN   !If zh calculated to be zero, set default roughness length and displacement height
          IF (areaZh /= 0) CALL ErrorHint(15, 'In SUEWS_RoughnessParameters.f95, zh = 0 m but areaZh > 0', zh, areaZh, notUsedI)

@@ -1449,7 +1449,7 @@ MODULE sues_data
                      qe_per_tstep, &     !QE [W m-2] (for whole surface)
                      p_mm, &                !Inputs to surface water balance
                      pin, &                 !Rain per time interval
-                     planF, &               !Areally weighted frontal area fraction
+                     FAI, &               !Areally weighted frontal area fraction
                      rb, &                  !Boundary layer resistance
                      ! Water leaving each grid for grid-to-grid connectivity
                      runoffAGimpervious, &     !Above ground runoff from impervious surface [mm] for whole surface area

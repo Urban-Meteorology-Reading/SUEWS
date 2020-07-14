@@ -539,20 +539,20 @@ MODULE ctrl_output
       varAttr('q_27', 'g kg-1', f104, 'q at 2.7Zh', aA, 'RSL', 0), &
       varAttr('q_28', 'g kg-1', f104, 'q at 2.8Zh', aA, 'RSL', 0), &
       varAttr('q_29', 'g kg-1', f104, 'q at 2.9Zh', aA, 'RSL', 0), &
-      varAttr('q_30', 'g kg-1', f104, 'q at 3.0Zh', aA, 'RSL', 0) &
+      varAttr('q_30', 'g kg-1', f104, 'q at 3.0Zh', aA, 'RSL', 0), &
       ! debug info
-      ! varAttr('L_MOD_RSL', 'g kg-1', f104, 'q at 3.0Zh', aA, 'RSL', 0), &
-      ! varAttr('zH_RSL', 'g kg-1', f104, 'q at 3.0Zh', aA, 'RSL', 0), &
-      ! varAttr('Lc', 'g kg-1', f104, 'q at 3.0Zh', aA, 'RSL', 0), &
-      ! varAttr('beta', 'g kg-1', f104, 'q at 3.0Zh', aA, 'RSL', 0), &
-      ! varAttr('zd_RSL', 'g kg-1', f104, 'q at 3.0Zh', aA, 'RSL', 0), &
-      ! varAttr('z0_RSL', 'g kg-1', f104, 'q at 3.0Zh', aA, 'RSL', 0), &
-      ! varAttr('elm', 'g kg-1', f104, 'q at 3.0Zh', aA, 'RSL', 0), &
-      ! varAttr('Scc', 'g kg-1', f104, 'q at 3.0Zh', aA, 'RSL', 0), &
-      ! varAttr('f', 'g kg-1', f104, 'q at 3.0Zh', aA, 'RSL', 0), &
-      ! varAttr('UStar_RSL', 'g kg-1', f104, 'q at 3.0Zh', aA, 'RSL', 0), &
-      ! varAttr('FAI', 'g kg-1', f104, 'q at 3.0Zh', aA, 'RSL', 0), &
-      ! varAttr('sfr_zH', 'g kg-1', f104, 'q at 3.0Zh', aA, 'RSL', 0) &
+      varAttr('L_MOD_RSL', 'm', f104, 'Obukhob length', aA, 'RSL', 0), &
+      varAttr('zH_RSL', 'm', f104, 'canyon depth', aA, 'RSL', 0), &
+      varAttr('Lc', 'm', f104, 'canopy drag length scale', aA, 'RSL', 0), &
+      varAttr('beta', 'm', f104, 'beta coefficient from Harman 2012', aA, 'RSL', 0), &
+      varAttr('zd_RSL', 'm', f104, 'displacement height', aA, 'RSL', 0), &
+      varAttr('z0_RSL', 'm', f104, 'roughness length', aA, 'RSL', 0), &
+      varAttr('elm', 'm', f104, 'mixing length', aA, 'RSL', 0), &
+      varAttr('Scc', '-', f104, 'Schmidt number for temperature and humidity', aA, 'RSL', 0), &
+      varAttr('f', 'g kg-1', f104, 'H&F07 and H&F08 constants', aA, 'RSL', 0), &
+      varAttr('UStar_RSL', 'm s-1', f104, 'friction velocity used in RSL', aA, 'RSL', 0), &
+      varAttr('FAI', '-', f104, 'frontal area index', aA, 'RSL', 0), &
+      varAttr('PAI', '-', f104, 'plan area index', aA, 'RSL', 0) &
       /
 
 CONTAINS

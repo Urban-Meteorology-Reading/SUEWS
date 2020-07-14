@@ -450,7 +450,8 @@ contains
       REAL(KIND(1d0)), PARAMETER:: notUsed = -55.5
       REAL(KIND(1D0)):: z0m4Paved, z0m4Grass, z0m4BSoil, z0m4Water   !Default values for roughness lengths [m]
 
-      areaZh = (sfr(BldgSurf) + sfr(ConifSurf) + sfr(DecidSurf)) !Total area of buildings and trees
+      !Total area of buildings and trees
+      areaZh = (sfr(BldgSurf) + sfr(ConifSurf) + sfr(DecidSurf))
 
       ! Set default values (using Moene & van Dam 2013, Atmos-Veg-Soil Interactions, Table 3.3)
       Z0m4Paved = 0.003 !estimate
@@ -474,14 +475,6 @@ contains
             z0m = 0.1*Zh
             zdm = 0.7*Zh
          ELSEIF (RoughLenMomMethod == 3) THEN !MacDonald 1998
-
-            ! IF (areaZh /= 0) THEN  !Plan area fraction
-            !    !FAI=FAIBldg*sfr(BldgSurf)/areaZh+FAItree*sfr(ConifSurf)/areaZh+FAItree*(1-porosity_id)*sfr(DecidSurf)/areaZh
-            !    !   FAI = FAIBldg*sfr(BldgSurf)/areaZh + FAIEveTree*sfr(ConifSurf)/areaZh + FAIDecTree*(1 - porosity_id)*sfr(DecidSurf)/areaZh
-            ! ELSE
-            !    ! FAI = 0.00001
-            !    Zh = 1
-            ! ENDIF
             zdm = (1 + 4.43**(-sfr(BldgSurf))*(sfr(BldgSurf) - 1))*Zh
             z0m = ((1 - zdm/Zh)*EXP(-(0.5*1.0*1.2/0.4**2*(1 - zdm/Zh)*FAI)**(-0.5)))*Zh
          ENDIF

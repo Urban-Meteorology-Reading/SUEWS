@@ -301,7 +301,7 @@ contains
             Fc_traff = TrafficRate(iu)/(60*60*24)*FcEF_v_kgkm(iu)*1e3*1e6/44*DP_x_RhoPop_traff
 
          ELSE ! If TrafficUnits doesn't match possible units
-            ! CALL ErrorHint(75, 'Check TrafficUnits', TrafficUnits, -999d1, -999)
+            CALL ErrorHint(75, 'Check TrafficUnits', TrafficUnits,-999d1)
 
          ENDIF
 

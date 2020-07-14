@@ -440,7 +440,7 @@ contains
       ENDIF
       ! force c2 to 0.5 for better stability. TS 14 Jul 2020
       ! TODO: a more proper threshold needs to be determined
-      c2=0.5
+      c2 = 0.5
 
       cm = (1.-phi_hatmZh)*EXP(c2/2.)
 
@@ -492,7 +492,7 @@ contains
       ENDIF
       ! force c2h to 0.5 for better stability. TS 14 Jul 2020
       ! TODO: a more proper threshold needs to be determined
-      c2h=0.5
+      c2h = 0.5
 
       ch = (1.-phi_hathZh)*EXP(c2h/2.)
 

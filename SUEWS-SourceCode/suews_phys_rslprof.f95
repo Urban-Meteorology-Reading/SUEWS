@@ -63,8 +63,11 @@ contains
                                    pi = 4.*ATAN(1.0), r = 0.1, &
                                    a1 = 4., a2 = -0.1, a3 = 1.5, a4 = -1. ! constraints to determine beta
 
-      ! REAL(KIND(1d0)), INTENT(out), DIMENSION(nz*3):: zarrays ! Height array
-      REAL(KIND(1d0)), INTENT(out), DIMENSION(nz*4):: dataoutLineRSL  ! Variables array (/U,T,q/)
+      ! Variables array [z,U,T,q, 12 debug vars]
+      ! z: height array
+      ! U,T,q: wind speed, air temp, specific humidity at z;
+      ! debug vars: see dataoutLineRSL
+      REAL(KIND(1d0)), INTENT(out), DIMENSION(ncolumnsDataOutRSL - 5):: dataoutLineRSL
       REAL(KIND(1d0)), DIMENSION(nz):: psihatm_z
       REAL(KIND(1d0)), DIMENSION(nz):: psihath_z
       REAL(KIND(1d0)), DIMENSION(nz):: dif
@@ -89,12 +92,13 @@ contains
       REAL(KIND(1d0))::t_h, q_h ! H&F'08 canopy corrections
       REAL(KIND(1d0))::TStar_RSL ! temperature scale
       REAL(KIND(1d0))::UStar_RSL ! friction velocity used in RSL
-      REAL(KIND(1d0))::sfr_zh ! land cover fraction of bluff bodies: buildings and trees
+      REAL(KIND(1d0))::PAI ! plan area index, including areas of roughness elements: buildings and trees
       ! REAL(KIND(1d0))::sfr_tr ! land cover fraction of trees
-      REAL(KIND(1d0))::L_MOD_RSL ! Obukhov length used in RSL module with thresholds applied
+      ! REAL(KIND(1d0))::L_MOD ! Obukhov length used in RSL module with thresholds applied
       REAL(KIND(1d0))::zH_RSL ! mean canyon height used in RSL module with thresholds applied
       REAL(KIND(1d0))::dz! initial height step
-      REAL(KIND(1d0)), parameter::zH_min = 8! limit for minimum canyon height used in RSL module
+      REAL(KIND(1d0))::phi_hatmZh, phim_zh
+      ! REAL(KIND(1d0)), parameter::zH_min = 8! limit for minimum canyon height used in RSL module
       REAL(KIND(1d0)), parameter::ratio_dz = 1.618! ratio between neighbouring height steps
 
       REAL(KIND(1d0))::qa_gkg, qStar_RSL ! specific humidity scale
@@ -114,19 +118,19 @@ contains
       ! ! Start setting up the parameters
 
       call RSL_cal_prms( &
-         zH_min, &
-         StabilityMethod, zh, L_MOD, sfr, FAI, &!input
-         L_MOD_RSL, zH_RSL, Lc, beta, zd_RSL, z0_RSL, elm, Scc, f, sfr_zh)
+         StabilityMethod, &!input
+         zh, L_MOD, sfr, FAI, &!input
+         zH_RSL, Lc, beta, zd_RSL, z0_RSL, elm, Scc, f, PAI)
 
       ! Define the height array with consideration of key heights
       ! set number of heights within canopy
-      IF (Zh_RSL <= 2) THEN
-         nz_can = 5
-      ELSE IF (Zh_RSL <= 10) THEN
-         nz_can = 10
-      else
-         nz_can = 15
-      ENDIF
+      ! IF (Zh_RSL <= 2) THEN
+      !    nz_can = 5
+      ! ELSE IF (Zh_RSL <= 10) THEN
+      nz_can = 10
+      ! else
+      !    nz_can = 15
+      ! ENDIF
       ! fill up heights in canopy
       dz = Zh_RSL/nz_can
       do i = 1, nz_can
@@ -167,59 +171,34 @@ contains
       idx_za = MINLOC(dif, DIM=1)
       zarray(idx_za) = zMeas
 
-      if (zh_RSL - zd_RSL < z0_RSL .or. zh_RSL <= zH_min) then
-         ! correct parameters if RSL approach doesn't apply for a shallow canyon
-         ! when zh_RSL is too shallow, implying RSL doesn't apply, force RSL correction to zero
+      if ((1.-PAI)/FAI > 10) then
+
+         ! correct parameters if RSL approach doesn't apply for scenario of isolated flows
+         ! see Fig 1 of Grimmond and Oke (1999)
+         ! when isolated flow, implying RSL doesn't apply, force RSL correction to zero
          psihatm_z = 0
          psihath_z = 0
          beta = 1.e6
-         !correct RSL-based z0 and zd using Rule of thumb (G&O 1999)
-         ! zd = 0.7*zH_RSL
-         ! z0 = 0.1*zH_RSL
+
          !correct RSL-based using SUEWS system-wide values
-         zd_RSL = zdm
          z0_RSL = z0m
+         zd_RSL = zdm
          ! then MOST recovers from RSL correction
       else
          !otherwise use RSL approach to calculate correction factors
-         ! Step 3:
-         !
-         ! calculate phihatM according to H&F '07 and H&F '08 for heat and humidity
-         ! xxm1 = stab_phi_mom(StabilityMethod, (Zh_RSL - zd_RSL)/L_MOD_RSL)
-         ! xxm1_2 = stab_phi_mom(StabilityMethod, (Zh_RSL - zd_RSL + 1.)/L_MOD_RSL)
+         ! Step 3: calculate the stability dependent H&F constants
 
-         ! xxh1 = stab_phi_heat(StabilityMethod, (Zh_RSL - zd_RSL)/L_MOD_RSL)
-         ! xxh1_2 = stab_phi_heat(StabilityMethod, (Zh_RSL - zd_RSL + 1.)/L_MOD_RSL)
+         call cal_ch(StabilityMethod, zh_RSL, zd_RSL, Lc, beta, L_MOD, Scc, f, c2h, ch)
+         call cal_cm(StabilityMethod, zH_RSL, zd_RSL, Lc, beta, L_MOD, c2, cm, phi_hatmZh, phim_zh)
 
-         ! phi_hatmZh = kappa/(2.*beta*xxm1)
-         ! phi_hathZh = kappa*Scc/(2.*beta*xxh1)
-         ! dphi = xxm1_2 - xxm1
-         ! dphih = xxh1_2 - xxh1
-         ! IF (phi_hatmZh > 1.) THEN
-         !    c2 = 0.5 ! more stable, but less correct
-         !    c2h = 0.5
-         ! ELSE
-         !    c2 = (kappa*(3.-(2.*beta**2.*Lc/xxm1*dphi)))/(2.*beta*xxm1 - kappa)  ! if very unstable this might cause some high values of psihat_z
-         !    c2h = (kappa*Scc*(2.+f - (dphih*2.*beta**2.*Lc/xxh1)))/(2.*beta*xxh1 - kappa*Scc)
-         ! ENDIF
-         ! cm = (1.-phi_hatmZh)*EXP(c2/2.)
-         ! ch = (1.-phi_hathzh)*EXP(c2h/2.)
-
-         call cal_ch(StabilityMethod, zh_RSL, zd_RSL, Lc, beta, L_MOD_RSL, Scc, f, c2h, ch)
-         call cal_cm(StabilityMethod, zH_RSL, zd_RSL, Lc, beta, L_MOD_RSL, c2, cm)
-
-         !
          ! Step 4: determine psihat at levels above the canopy
-         !
          psihatm_z = 0.*zarray
          psihath_z = 0.*zarray
-         ! psihatm_zp = 0.
-         ! psihath_zp = 0
          DO z = nz - 1, idx_can - 1, -1
-            phimz = stab_phi_mom(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD_RSL)
-            phimzp = stab_phi_mom(StabilityMethod, (zarray(z + 1) - zd_RSL)/L_MOD_RSL)
-            phihz = stab_phi_heat(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD_RSL)
-            phihzp = stab_phi_heat(StabilityMethod, (zarray(z + 1) - zd_RSL)/L_MOD_RSL)
+            phimz = stab_phi_mom(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD)
+            phimzp = stab_phi_mom(StabilityMethod, (zarray(z + 1) - zd_RSL)/L_MOD)
+            phihz = stab_phi_heat(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD)
+            phihzp = stab_phi_heat(StabilityMethod, (zarray(z + 1) - zd_RSL)/L_MOD)
 
             psihatm_z(z) = psihatm_z(z + 1) + dz/2.*phimzp*(cm*EXP(-1.*c2*beta*(zarray(z + 1) - zd_RSL)/elm)) &  !Taylor's approximation for integral
                            /(zarray(z + 1) - zd_RSL)
@@ -230,35 +209,32 @@ contains
             psihath_z(z) = psihath_z(z) + dz/2.*phihz*(ch*EXP(-1.*c2h*beta*(zarray(z) - zd_RSL)/elm)) &
                            /(zarray(z) - zd_RSL)
          ENDDO
-         ! psihatm_z=cal_psihatm_z(StabilityMethod, nz, zarray, L_MOD_RSL, zH_RSL, Lc, beta, zd, elm)
-         ! psihath_z=cal_psihath_z(StabilityMethod, nz, zarray, L_MOD_RSL, zH_RSL, Lc, beta, zd, elm, Scc, f)
 
       end if
 
-      ! calculate above canopy variables
+      ! Step 6: Calculate mean variables above canopy
       !
-      psimz0 = stab_psi_mom(StabilityMethod, z0_RSL/L_MOD_RSL)
-      psimza = stab_psi_mom(StabilityMethod, (zMeas - zd_RSL)/L_MOD_RSL)
-      psihza = stab_psi_heat(StabilityMethod, (zMeas - zd_RSL)/L_MOD_RSL)
+      psimz0 = stab_psi_mom(StabilityMethod, z0_RSL/L_MOD)
+      psimza = stab_psi_mom(StabilityMethod, (zMeas - zd_RSL)/L_MOD)
+      psihza = stab_psi_heat(StabilityMethod, (zMeas - zd_RSL)/L_MOD)
       UStar_RSL = avU1*kappa/(LOG((zMeas - zd_RSL)/z0_RSL) - psimza + psimz0 + psihatm_z(nz))
       TStar_RSL = -1.*(qh/(avcp*avdens))/UStar_RSL
       qStar_RSL = -1.*(qe/lv_J_kg*avdens)/UStar_RSL
       qa_gkg = RH2qa(avRH/100, Press_hPa, Temp_c)
 
       DO z = idx_can, nz
-         psimz = stab_psi_mom(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD_RSL)
-         psihz = stab_psi_heat(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD_RSL)
+         psimz = stab_psi_mom(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD)
+         psihz = stab_psi_heat(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD)
          dataoutLineURSL(z) = (LOG((zarray(z) - zd_RSL)/z0_RSL) - psimz + psimz0 + psihatm_z(z))/kappa ! eqn. 3 in Theeuwes et al. (2019 BLM)
          dataoutLineTRSL(z) = (LOG((zarray(z) - zd_RSL)/(zMeas - zd_RSL)) - psihz + psihza + psihath_z(z) - psihath_z(idx_za))/kappa ! eqn. 4 in Theeuwes et al. (2019 BLM)
          dataoutLineqRSL(z) = (LOG((zarray(z) - zd_RSL)/(zMeas - zd_RSL)) - psihz + psihza + psihath_z(z) - psihath_z(idx_za))/kappa
       ENDDO
       !
-      ! Step 7
-      ! calculate in canopy variables
+      ! Step 7: calculate in canopy variables
       !
       t_h = Scc*TStar_RSL/(beta*f)
       q_h = Scc*qStar_RSL/(beta*f)
-      DO z = 1, idx_can
+      DO z = 1, idx_can - 1
          dataoutLineURSL(z) = dataoutLineURSL(idx_can)*EXP(beta*(zarray(z) - Zh_RSL)/elm)
          dataoutLineTRSL(z) = dataoutLineTRSL(idx_can) + (t_h*EXP(beta*f*(zarray(z) - Zh_RSL)/elm) - t_h)/TStar_RSL
          dataoutLineqRSL(z) = dataoutLineqRSL(idx_can) + (q_h*EXP(beta*f*(zarray(z) - Zh_RSL)/elm) - q_h)/qStar_RSL
@@ -268,9 +244,9 @@ contains
       dataoutLineTRSL = dataoutLineTRSL*TStar_RSL + Temp_C
       dataoutLineqRSL = (dataoutLineqRSL*qStar_RSL + qa_gkg/1000.)*1000.
 
-      dataoutLineRSL = [zarray, dataoutLineURSL, dataoutLineTRSL, dataoutLineqRSL &
+      dataoutLineRSL = [zarray, dataoutLineURSL, dataoutLineTRSL, dataoutLineqRSL, &
                         !information for debugging
-                        ! L_MOD_RSL, zH_RSL, Lc, beta, zd_RSL, z0_RSL, elm, Scc, f, UStar_RSL, FAI, sfr_zh&
+                        L_MOD, zH_RSL, Lc, beta, zd_RSL, z0_RSL, elm, Scc, f, UStar_RSL, FAI, PAI &
                         ]
 
       !
@@ -314,21 +290,6 @@ contains
 ! print *, 'humidity' , qa_gkg, dataoutLineqRSL*1000.
    END SUBROUTINE RSLProfile
 
-   function cal_zd_RSL(zh_RSL, beta, Lc) result(zd_RSL)
-
-      real(KIND(1D0)), intent(in) ::  zh_RSL ! canyon depth [m]
-      real(KIND(1D0)), intent(in) ::  Lc ! height scale for bluff bodies [m]
-      real(KIND(1D0)), intent(in) ::  beta ! parameter in RSL
-
-      ! output
-      real(KIND(1D0)) ::zd_RSL ! zd used in RSL
-
-      zd_RSL = Zh_RSL - (beta**2.)*Lc
-      !correct negative values using rule of thumb, TS 24 Jun 2020
-      if (zd_RSL < 0) zd_RSL = 0.7*Zh_RSL
-
-   end function cal_zd_RSL
-
    function cal_elm_RSL(beta, Lc) result(elm)
 
       real(KIND(1D0)), intent(in) ::  Lc ! height scale for bluff bodies [m]
@@ -361,14 +322,17 @@ contains
       real(KIND(1D0)) ::phim_lc ! displacement height used in RSL
       real(KIND(1D0)) ::phim_z ! displacement height used in RSL
       real(KIND(1D0)) ::phim_zp ! displacement height used in RSL
+      real(KIND(1D0)) ::phim_hat_zp ! displacement height used in RSL
+      real(KIND(1D0)) ::phim_hat_z ! displacement height used in RSL
       real(KIND(1D0)) ::psim_hat_zp ! displacement height used in RSL
       real(KIND(1D0)) ::elm ! displacement height used in RSL
       ! real(KIND(1D0)) ::xxm1 ! displacement height used in RSL
       ! real(KIND(1D0)) ::xxm1_2 ! displacement height used in RSL
       ! real(KIND(1D0)) ::dphi ! displacement height used in RSL
       ! real(KIND(1D0)) ::phi_hatmZh ! displacement height used in RSL
-      real(KIND(1D0)) ::cm ! displacement height used in RSL
-      real(KIND(1D0)) ::c2 ! displacement height used in RSL
+      real(KIND(1D0)) ::cm
+      real(KIND(1D0)) ::c2
+      real(KIND(1D0)) ::phi_hatmZh, phim_zh
 
       REAL(KIND(1d0)), PARAMETER::kappa = 0.40
       REAL(KIND(1d0)), PARAMETER::dz = 0.1 !height step
@@ -391,15 +355,45 @@ contains
 
       psim_hat_zp = cal_psim_hat(StabilityMethod, zp, zh_RSL, L_MOD_RSL, beta, Lc)
 
-      call cal_cm(StabilityMethod, zh_RSL, zd_RSL, Lc, beta, L_MOD_RSL, c2, cm)
+      call cal_cm(StabilityMethod, zh_RSL, zd_RSL, Lc, beta, L_MOD_RSL, c2, cm, phi_hatmZh, phim_zh)
 
       !Taylor's approximation for integral
-      psim_hat_z = psim_hat_zp + dz/2.*phim_zp*(cm*EXP(-1.*c2*beta*(zp - zd_RSL)/elm))/(zp - zd_RSL)
-      psim_hat_z = psim_hat_z + dz/2.*phim_z*(cm*EXP(-1.*c2*beta*(z - zd_RSL)/elm))/(z - zd_RSL)
+      ! psim_hat_z = psim_hat_zp + dz/2.*phim_zp*(cm*EXP(-1.*c2*beta*(zp - zd_RSL)/elm))/(zp - zd_RSL)
+      ! psim_hat_z = psim_hat_z + dz/2.*phim_z*(cm*EXP(-1.*c2*beta*(z - zd_RSL)/elm))/(z - zd_RSL)
+      phim_hat_zp = cal_phim_hat(StabilityMethod, zp, zh_RSL, L_MOD_RSL, beta, lc)
+      phim_hat_z = cal_phim_hat(StabilityMethod, z, zh_RSL, L_MOD_RSL, beta, lc)
+
+      psim_hat_z = psim_hat_zp + dz/2.*phim_zp*(1 - phim_hat_zp)/(zp - zd_RSL)
+      psim_hat_z = psim_hat_z + dz/2.*phim_z*(1 - phim_hat_z)/(z - zd_RSL)
 
    end function cal_psim_hat
 
-   subroutine cal_cm(StabilityMethod, zh_RSL, zd_RSL, Lc, beta, L_MOD_RSL, c2, cm)
+   function cal_phim_hat(StabilityMethod, z, zh_RSL, L_MOD_RSL, beta, lc) result(phim_hat)
+      implicit none
+      integer, intent(in) :: StabilityMethod ! stability method
+      real(KIND(1D0)), intent(in) :: z
+      real(KIND(1D0)), intent(in) :: zh_RSL
+      real(KIND(1D0)), intent(in) :: L_MOD_RSL
+      real(KIND(1D0)), intent(in) :: beta
+      real(KIND(1D0)), intent(in) :: lc
+      real(KIND(1D0)) :: phim_hat
+      real(KIND(1D0)) :: zd_RSL
+
+      real(KIND(1D0)) :: elm
+      real(KIND(1D0)) :: c2
+      real(KIND(1D0)) :: cm, phi_hatmZh, phim_zh
+
+      elm = cal_elm_RSL(beta, lc)
+
+      zd_RSL = cal_zd_RSL(Zh_RSL, beta, lc)
+
+      call cal_cm(StabilityMethod, zh_RSL, zd_RSL, Lc, beta, L_MOD_RSL, c2, cm, phi_hatmZh, phim_zh)
+
+      phim_hat = 1 - cm*EXP(-1.*c2*beta*(z - zd_RSL)/elm)
+
+   end function cal_phim_hat
+
+   subroutine cal_cm(StabilityMethod, zh_RSL, zd_RSL, Lc, beta, L_MOD_RSL, c2, cm, phi_hatmZh, phim_zh)
 
       implicit none
       integer, intent(in) :: StabilityMethod ! stability method
@@ -411,24 +405,26 @@ contains
       real(KIND(1D0)), intent(in) ::  L_MOD_RSL ! Obukhov length [m]
 
       ! output
-      real(KIND(1D0)), intent(out) ::c2 ! displacement height used in RSL
+      real(KIND(1D0)), intent(out) ::c2
       real(KIND(1D0)), intent(out) ::cm
+      real(KIND(1D0)), intent(out) ::phi_hatmZh
+      real(KIND(1D0)), intent(out) ::phim_zh
 
       ! internal variables
-      real(KIND(1D0)) ::xxm1 ! displacement height used in RSL
-      real(KIND(1D0)) ::xxm1_2 ! displacement height used in RSL
-      real(KIND(1D0)) ::dphi ! displacement height used in RSL
-      real(KIND(1D0)) ::phi_hatmZh ! displacement height used in RSL
+      ! real(KIND(1D0)) ::phim_zh
+      real(KIND(1D0)) ::phim_zhdz
+      real(KIND(1D0)) ::dphi
+      ! real(KIND(1D0)) ::phi_hatmZh
 
       REAL(KIND(1d0)), PARAMETER::kappa = 0.40
       REAL(KIND(1d0)), PARAMETER::dz = 0.1 !height step
 
-      xxm1 = stab_phi_mom(StabilityMethod, (Zh_RSL - zd_RSL)/L_MOD_RSL)
-      xxm1_2 = stab_phi_mom(StabilityMethod, (Zh_RSL - zd_RSL + dz)/L_MOD_RSL)
+      phim_zh = stab_phi_mom(StabilityMethod, (Zh_RSL - zd_RSL)/L_MOD_RSL)
+      phim_zhdz = stab_phi_mom(StabilityMethod, (Zh_RSL - zd_RSL + dz)/L_MOD_RSL)
 
-      dphi = (xxm1_2 - xxm1)/dz
-      if (xxm1 /= 0.) then
-         phi_hatmZh = kappa/(2.*beta*xxm1)
+      dphi = (phim_zhdz - phim_zh)/dz
+      if (phim_zh /= 0.) then
+         phi_hatmZh = kappa/(2.*beta*phim_zh)
       else
          ! neutral condition
          phi_hatmZh = 1.
@@ -440,8 +436,11 @@ contains
          phi_hatmZh = 1.
       ELSE
          ! if very unstable this might cause some high values of psihat_z
-         c2 = (kappa*(3.-(2.*beta**2.*Lc/xxm1*dphi)))/(2.*beta*xxm1 - kappa)
+         c2 = (kappa*(3.-(2.*beta**2.*Lc/phim_zh*dphi)))/(2.*beta*phim_zh - kappa)
       ENDIF
+      ! force c2 to 0.5 for better stability. TS 14 Jul 2020
+      ! TODO: a more proper threshold needs to be determined
+      c2=0.5
 
       cm = (1.-phi_hatmZh)*EXP(c2/2.)
 
@@ -465,20 +464,20 @@ contains
       real(KIND(1D0)), intent(out) ::c2h ! displacement height used in RSL
 
       ! internal variables
-      real(KIND(1D0)) ::xxh1 ! displacement height used in RSL
-      real(KIND(1D0)) ::xxh1_2 ! displacement height used in RSL
+      real(KIND(1D0)) ::phih_zh ! displacement height used in RSL
+      real(KIND(1D0)) ::phih_zhdz ! displacement height used in RSL
       real(KIND(1D0)) ::dphih ! displacement height used in RSL
       real(KIND(1D0)) ::phi_hathZh ! displacement height used in RSL
 
       REAL(KIND(1d0)), PARAMETER::kappa = 0.40
       REAL(KIND(1d0)), PARAMETER::dz = 0.1 !height step
 
-      xxh1 = stab_phi_heat(StabilityMethod, (Zh_RSL - zd_RSL)/L_MOD_RSL)
-      xxh1_2 = stab_phi_heat(StabilityMethod, (Zh_RSL - zd_RSL + 1.)/L_MOD_RSL)
+      phih_zh = stab_phi_heat(StabilityMethod, (Zh_RSL - zd_RSL)/L_MOD_RSL)
+      phih_zhdz = stab_phi_heat(StabilityMethod, (Zh_RSL - zd_RSL + 1.)/L_MOD_RSL)
 
-      dphih = xxh1_2 - xxh1
-      if (xxh1 /= 0.) then
-         phi_hathZh = kappa*Scc/(2.*beta*xxh1)
+      dphih = phih_zhdz - phih_zh
+      if (phih_zh /= 0.) then
+         phi_hathZh = kappa*Scc/(2.*beta*phih_zh)
       else
          phi_hathZh = 1.
       end if
@@ -489,8 +488,11 @@ contains
          phi_hathZh = 1.
       ELSE
          ! if very unstable this might cause some high values of psihat_z
-         c2h = (kappa*Scc*(2.+f - (dphih*2.*beta**2.*Lc/xxh1)))/(2.*beta*xxh1 - kappa*Scc)
+         c2h = (kappa*Scc*(2.+f - (dphih*2.*beta**2.*Lc/phih_zh)))/(2.*beta*phih_zh - kappa*Scc)
       ENDIF
+      ! force c2h to 0.5 for better stability. TS 14 Jul 2020
+      ! TODO: a more proper threshold needs to be determined
+      c2h=0.5
 
       ch = (1.-phi_hathZh)*EXP(c2h/2.)
 
@@ -651,7 +653,22 @@ contains
 
    end function cal_psihath_z
 
-   function RSL_cal_z0(StabilityMethod, zH_RSL, zd_RSL, beta, L_MOD_RSL, Lc) result(z0_RSL)
+   function cal_zd_RSL(zh_RSL, beta, Lc) result(zd_RSL)
+
+      real(KIND(1D0)), intent(in) ::  zh_RSL ! canyon depth [m]
+      real(KIND(1D0)), intent(in) ::  Lc ! height scale for bluff bodies [m]
+      real(KIND(1D0)), intent(in) ::  beta ! parameter in RSL
+
+      ! output
+      real(KIND(1D0)) ::zd_RSL ! zd used in RSL
+
+      zd_RSL = Zh_RSL - (beta**2.)*Lc
+      !correct negative values using rule of thumb, TS 24 Jun 2020
+      ! if (zd_RSL < 0) zd_RSL = 0.7*Zh_RSL
+
+   end function cal_zd_RSL
+
+   function cal_z0_RSL(StabilityMethod, zH_RSL, zd_RSL, beta, L_MOD_RSL, Lc) result(z0_RSL)
       ! calculate z0 iteratively
       ! TS, 23 Oct 2019
       implicit none
@@ -679,8 +696,6 @@ contains
 
       !first guess
       z0_RSL = 0.1*Zh_RSL
-      ! if (Zh_RSL>Zh_min) then
-      ! if Zh>Zh_min, calculate z0 using RSL method
       err = 10.
       ! psimz0 = 0.5
       it = 1
@@ -692,24 +707,21 @@ contains
          it = it + 1
       ENDDO
 
-   end function RSL_cal_z0
+   end function cal_z0_RSL
 
    subroutine RSL_cal_prms( &
-      zh_min, &
       StabilityMethod, zh, L_MOD, sfr, FAI, &!input
-      L_MOD_RSL, zH_RSL, Lc, beta, zd_RSL, z0_RSL, elm, Scc, f, sfr_zh)!output
-      ! calculate surface/skin temperature
-      ! TS, 23 Oct 2019
+      zH_RSL, Lc, beta, zd_RSL, z0_RSL, elm, Scc, f, PAI)!output
+
       implicit none
       integer, intent(in) :: StabilityMethod ! stability method
-      real(KIND(1D0)), intent(in) ::  zh_min ! canyon depth [m]
       real(KIND(1D0)), intent(in) ::  zh ! canyon depth [m]
       real(KIND(1D0)), intent(in) ::  FAI ! frontal area index
       real(KIND(1D0)), intent(in) ::  L_MOD ! Obukhov length [m]
       real(KIND(1D0)), DIMENSION(nsurf), intent(in) ::  sfr ! land cover fractions
 
       ! output
-      real(KIND(1D0)), intent(out) ::L_MOD_RSL ! Obukhov length used in RSL module with thresholds applied
+      ! real(KIND(1D0)), intent(out) ::L_MOD ! Obukhov length used in RSL module with thresholds applied
       real(KIND(1D0)), intent(out) ::zH_RSL ! mean canyon height used in RSL module with thresholds applied
       real(KIND(1D0)), intent(out) ::Lc ! height scale for bluff bodies [m]
       real(KIND(1D0)), intent(out) ::beta ! psim_hat at height of interest
@@ -718,7 +730,7 @@ contains
       real(KIND(1D0)), intent(out) ::elm ! length scale used in RSL
       real(KIND(1D0)), intent(out) ::Scc ! parameter in RSL
       real(KIND(1D0)), intent(out) ::f ! parameter in RSL
-      real(KIND(1D0)), intent(out) ::sfr_zh ! parameter in RSL
+      real(KIND(1D0)), intent(out) ::PAI ! plan area index inlcuding area of trees
 
       ! internal variables
       real(KIND(1D0)) ::sfr_tr
@@ -732,18 +744,18 @@ contains
       ! REAL(KIND(1d0)), PARAMETER::z0m= 0.40
       REAL(KIND(1d0)), PARAMETER::r = 0.1
       REAL(KIND(1d0)), PARAMETER::a1 = 4., a2 = -0.1, a3 = 1.5, a4 = -1.
-      ! REAL(KIND(1d0)), parameter::Zh_min = 0.4! limit for minimum canyon height used in RSL module
+      REAL(KIND(1d0)), parameter::Zh_min = 0.4! limit for minimum canyon height used in RSL module
 
       ! under stable conditions, set a threshold for L_MOD to avoid numerical issues. TS 28 Oct 2019
-      L_MOD_RSL = merge(L_MOD, max(300., L_MOD), L_MOD < 0)
+      ! L_MOD = merge(L_MOD, 300.d1, L_MOD < 300.)
 
       ! zH_RSL
       zH_RSL = max(zh, Zh_min)
 
       ! land cover fraction of bluff bodies
-      sfr_zh = sum(sfr([BldgSurf, ConifSurf, DecidSurf]))
+      PAI = sum(sfr([BldgSurf, ConifSurf, DecidSurf]))
       ! set a threshold for sfr_zh to avoid numerical difficulties
-      sfr_zh = min(sfr_zh, 0.8)
+      PAI = min(PAI, 0.8)
 
       ! land cover fraction of trees
       sfr_tr = sum(sfr([ConifSurf, DecidSurf]))
@@ -755,12 +767,12 @@ contains
       ! Lc_tree = 1./(cd_tree*a_tree) ! not used? why?
 
       ! height scale for bluff bodies
-      Lc = (1.-sfr_zh)/FAI*Zh_RSL
+      Lc = (1.-PAI)/FAI*Zh_RSL
 
       ! phim at Lc
-      phim = stab_phi_mom(StabilityMethod, Lc/L_MOD_RSL)
+      phim = stab_phi_mom(StabilityMethod, Lc/L_MOD)
 
-      Scc = 0.5 + 0.3*TANH(2.*Lc/L_MOD_RSL)  ! Schmidt number Harman and Finnigan 2008: assuming the same for heat and momemntum
+      Scc = 0.5 + 0.3*TANH(2.*Lc/L_MOD)  ! Schmidt number Harman and Finnigan 2008: assuming the same for heat and momemntum
       f = 0.5*((1.+4.*r*Scc)**0.5) - 0.5
 
       !
@@ -768,8 +780,8 @@ contains
       ! Parameterise beta according to Harman 2012 with upper limit of 0.5
       ! betaN for trees found to be 0.3 and for urban 0.4 linearly interpolate between the two using surface fractions
       ! betaN2 = 0.30 + (1.-sfr(ConifSurf) - sfr(ConifSurf))*0.1
-      if (sfr_zh > 0) then
-         betaN2 = 0.30*sfr_tr/sfr_zh + (sfr_zh - sfr_tr)/sfr_zh*0.4
+      if (PAI > 0) then
+         betaN2 = 0.30*sfr_tr/PAI + (PAI - sfr_tr)/PAI*0.4
       ELSE
          betaN2 = 0.35
       endif
@@ -777,10 +789,10 @@ contains
       betaHF = betaN2/phim
       betaNL = (kappa/2.)/phim
 
-      IF (Lc/L_MOD_RSL > a2) THEN
+      IF (Lc/L_MOD > a2) THEN
          beta = betaHF
       ELSE
-         beta = betaNL + ((betaHF - betaNL)/(1.+a1*abs(Lc/L_MOD_RSL - a2)**a3))
+         beta = betaNL + ((betaHF - betaNL)/(1.+a1*abs(Lc/L_MOD - a2)**a3))
       ENDIF
 
       IF (beta > 0.5) THEN
@@ -792,7 +804,7 @@ contains
       elm = cal_elm_RSL(beta, Lc)
 
       ! calculate z0 iteratively
-      z0_RSL = rsl_cal_z0(StabilityMethod, zh_RSL, zd_RSL, beta, l_mod_rsl, lc)
+      z0_RSL = cal_z0_RSL(StabilityMethod, zh_RSL, zd_RSL, beta, L_MOD, lc)
 
       ! correct parameters if RSL approach doesn't apply for a shallow canyon
       ! if (zh_RSL - zd < z0) then

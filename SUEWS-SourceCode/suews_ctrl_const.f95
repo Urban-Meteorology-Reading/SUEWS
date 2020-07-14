@@ -52,7 +52,7 @@ MODULE allocateArray
                         ncolumnsdataOutBL = 22, &
                         ncolumnsDataOutESTM = 32, &
                         ncolumnsDataOutDailyState = 50, &
-                        ncolumnsDataOutRSL = 30*4 + 5!+12
+                        ncolumnsDataOutRSL = 30*4 + 5 + 12
 
    ! ---- Define input file headers ---------------------------------------------------------------
    CHARACTER(len=20), DIMENSION(ncolumnsSiteSelect)::        HeaderSiteSelect_File          !Header for SiteSelect.txt
@@ -130,7 +130,8 @@ MODULE allocateArray
    REAL(KIND(1D0)), DIMENSION(5)                          ::datetimeLine     ! output of datetime info per each timestep
    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSUEWS - 5)     ::dataOutLineSUEWS ! output of SUEWS results per each timestep
    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSnow - 5)      ::dataOutLineSnow  ! output of snow results per each timestep
-   REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL - 5)      ::dataOutLineRSL  ! output of snow results per each timestep
+   ! REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL - 5)      ::dataOutLineRSL  ! output of snow results per each timestep
+   REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutRSL - 5 + 12)      ::dataOutLineRSL  ! output of snow results per each timestep
    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutSOL - 5)      ::dataOutLineSOLWEIG  ! output of snow results per each timestep
    REAL(KIND(1D0)), DIMENSION(ncolumnsDataOutDailyState - 5)::DailyStateLine   ! output of DailyState results per each timestep
 

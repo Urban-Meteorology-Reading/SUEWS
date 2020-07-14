@@ -34,6 +34,7 @@ jobs:
       addToPath:        true
       architecture:     'x64'
 
+
   - script:             'brew update; brew install gcc'
     displayName:        'install gcc+gfortran'
     continueOnError:    true

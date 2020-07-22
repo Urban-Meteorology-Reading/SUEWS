@@ -466,7 +466,7 @@ contains
          FAI = dot_product([FAIBldg, FAIEveTree, FAIDecTree*(1 - porosity_id)], sfr([BldgSurf, ConifSurf, DecidSurf]))
 
          ! `1e-5` set to avoid numerical difficulty
-         FAI=max(FAI,1e-5)
+         FAI = max(FAI, 1e-5)
       ELSE
          Zh = 0   !Set Zh to zero if areaZh = 0
          FAI = 1e-5

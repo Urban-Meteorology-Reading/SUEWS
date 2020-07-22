@@ -1,6 +1,7 @@
 module rsl_module
    USE AtmMoistStab_module, ONLY: cal_Stab, stab_psi_mom, stab_psi_heat, stab_phi_mom, stab_phi_heat
    USE meteo, ONLY: RH2qa, qa2RH
+   use resist_module, only: SUEWS_cal_RoughnessParameters
    USE allocateArray, ONLY: &
       nsurf, BldgSurf, ConifSurf, DecidSurf, ncolumnsDataOutRSL
    implicit none
@@ -124,13 +125,13 @@ contains
 
       ! Define the height array with consideration of key heights
       ! set number of heights within canopy
-      ! IF (Zh_RSL <= 2) THEN
-      !    nz_can = 5
-      ! ELSE IF (Zh_RSL <= 10) THEN
-      nz_can = 10
-      ! else
-      !    nz_can = 15
-      ! ENDIF
+      IF (Zh_RSL <= 2) THEN
+         nz_can = 5
+      ELSE IF (Zh_RSL <= 10) THEN
+         nz_can = 10
+      else
+         nz_can = 15
+      ENDIF
       ! fill up heights in canopy
       dz = Zh_RSL/nz_can
       do i = 1, nz_can
@@ -178,11 +179,19 @@ contains
          ! when isolated flow, implying RSL doesn't apply, force RSL correction to zero
          psihatm_z = 0
          psihath_z = 0
-         beta = 1.e6
+         ! beta = 1.e6
 
          !correct RSL-based using SUEWS system-wide values
          z0_RSL = z0m
          zd_RSL = zdm
+         if (zh_rsl <= zd_RSL) then
+            ! this may happen as only building height is considered in calculation of zd
+            zd_RSL = 0.7*zh_rsl
+         end if
+
+         ! given isolated flow, canyon effect is ignored by restricting canyon height to a very low level
+         idx_can = 1
+
          ! then MOST recovers from RSL correction
       else
          !otherwise use RSL approach to calculate correction factors
@@ -194,7 +203,7 @@ contains
          ! Step 4: determine psihat at levels above the canopy
          psihatm_z = 0.*zarray
          psihath_z = 0.*zarray
-         DO z = nz - 1, idx_can - 1, -1
+         DO z = nz - 1, idx_can, -1
             phimz = stab_phi_mom(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD)
             phimzp = stab_phi_mom(StabilityMethod, (zarray(z + 1) - zd_RSL)/L_MOD)
             phihz = stab_phi_heat(StabilityMethod, (zarray(z) - zd_RSL)/L_MOD)
@@ -232,13 +241,15 @@ contains
       !
       ! Step 7: calculate in canopy variables
       !
-      t_h = Scc*TStar_RSL/(beta*f)
-      q_h = Scc*qStar_RSL/(beta*f)
-      DO z = 1, idx_can - 1
-         dataoutLineURSL(z) = dataoutLineURSL(idx_can)*EXP(beta*(zarray(z) - Zh_RSL)/elm)
-         dataoutLineTRSL(z) = dataoutLineTRSL(idx_can) + (t_h*EXP(beta*f*(zarray(z) - Zh_RSL)/elm) - t_h)/TStar_RSL
-         dataoutLineqRSL(z) = dataoutLineqRSL(idx_can) + (q_h*EXP(beta*f*(zarray(z) - Zh_RSL)/elm) - q_h)/qStar_RSL
-      ENDDO
+      if (idx_can > 1) then
+         t_h = Scc*TStar_RSL/(beta*f)
+         q_h = Scc*qStar_RSL/(beta*f)
+         DO z = 1, idx_can - 1
+            dataoutLineURSL(z) = dataoutLineURSL(idx_can)*EXP(beta*(zarray(z) - Zh_RSL)/elm)
+            dataoutLineTRSL(z) = dataoutLineTRSL(idx_can) + (t_h*EXP(beta*f*(zarray(z) - Zh_RSL)/elm) - t_h)/TStar_RSL
+            dataoutLineqRSL(z) = dataoutLineqRSL(idx_can) + (q_h*EXP(beta*f*(zarray(z) - Zh_RSL)/elm) - q_h)/qStar_RSL
+         ENDDO
+      end if
 
       dataoutLineURSL = dataoutLineURSL*UStar_RSL
       dataoutLineTRSL = dataoutLineTRSL*TStar_RSL + Temp_C
@@ -330,9 +341,9 @@ contains
       ! real(KIND(1D0)) ::xxm1_2 ! displacement height used in RSL
       ! real(KIND(1D0)) ::dphi ! displacement height used in RSL
       ! real(KIND(1D0)) ::phi_hatmZh ! displacement height used in RSL
-      real(KIND(1D0)) ::cm
-      real(KIND(1D0)) ::c2
-      real(KIND(1D0)) ::phi_hatmZh, phim_zh
+      ! real(KIND(1D0)) ::cm
+      ! real(KIND(1D0)) ::c2
+      ! real(KIND(1D0)) ::phi_hatmZh, phim_zh
 
       REAL(KIND(1d0)), PARAMETER::kappa = 0.40
       REAL(KIND(1d0)), PARAMETER::dz = 0.1 !height step
@@ -354,8 +365,6 @@ contains
       phim_zp = stab_phi_mom(StabilityMethod, (zp - zd_RSL)/L_MOD_RSL)
 
       psim_hat_zp = cal_psim_hat(StabilityMethod, zp, zh_RSL, L_MOD_RSL, beta, Lc)
-
-      call cal_cm(StabilityMethod, zh_RSL, zd_RSL, Lc, beta, L_MOD_RSL, c2, cm, phi_hatmZh, phim_zh)
 
       !Taylor's approximation for integral
       ! psim_hat_z = psim_hat_zp + dz/2.*phim_zp*(cm*EXP(-1.*c2*beta*(zp - zd_RSL)/elm))/(zp - zd_RSL)

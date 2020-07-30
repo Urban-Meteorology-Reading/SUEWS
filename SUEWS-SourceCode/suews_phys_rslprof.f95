@@ -315,8 +315,6 @@ contains
          v_x = v(idx_low) + (z_x - z(idx_low))*slope
       endif
 
-
-
    end function interp_z
 
    function cal_elm_RSL(beta, Lc) result(elm)

@@ -126,7 +126,7 @@ contains
       ! Define the height array with consideration of key heights
       ! set number of heights within canopy
       IF (Zh_RSL <= 2) THEN
-         nz_can = 5
+         nz_can = 3
       ELSE IF (Zh_RSL <= 10) THEN
          nz_can = 10
       else
@@ -137,6 +137,11 @@ contains
       do i = 1, nz_can
          zarray(i) = dz*i
       end do
+
+      ! guaranttee 2 m is within the zarray
+      if (dz > 2) zarray(1) = 2.
+
+      zarray(nz_can) = Zh_RSL
       ! fill up heights above canopy
       dz = (zMeas - Zh_RSL)/(nz - nz_can)
       do i = nz_can + 1, nz
@@ -145,17 +150,19 @@ contains
 
       ! add key heights (2m and 10m) to zarray
       ! 2m:
-      DO z = 1, nz
-         dif(z) = ABS(zarray(z) - 2)
-      ENDDO
-      idx_2m = MINLOC(dif, DIM=1)
-      zarray(idx_2m) = 2
+      ! DO z = 1, nz
+      !    dif(z) = ABS(zarray(z) - 2)
+      ! ENDDO
+      ! idx_2m = MINLOC(dif, DIM=1)
+      ! zarray(idx_2m) = 2
+      idx_2m = 2
       ! 10m:
-      DO z = 1, nz
-         dif(z) = ABS(zarray(z) - 10)
-      ENDDO
-      idx_10m = MINLOC(dif, DIM=1)
-      zarray(idx_10m) = 10
+      ! DO z = 1, nz
+      !    dif(z) = ABS(zarray(z) - 10)
+      ! ENDDO
+      ! idx_10m = MINLOC(dif, DIM=1)
+      ! zarray(idx_10m) = 10
+      idx_10m = 4
 
       ! determine index at the canyon top
       DO z = 1, nz
@@ -165,36 +172,14 @@ contains
       zarray(idx_can) = Zh_RSL
 
       ! determine index at measurement height
-      DO z = 1, nz
-         ! dif2(z) = ABS(zarray(z) - (zMeas - zd))
-         dif(z) = ABS(zarray(z) - zMeas)
-      ENDDO
-      idx_za = MINLOC(dif, DIM=1)
+      ! DO z = 1, nz
+      !    dif(z) = ABS(zarray(z) - zMeas)
+      ! ENDDO
+      idx_za = nz
       zarray(idx_za) = zMeas
 
-      if ((1.-PAI)/FAI > 10) then
-
-         ! correct parameters if RSL approach doesn't apply for scenario of isolated flows
-         ! see Fig 1 of Grimmond and Oke (1999)
-         ! when isolated flow, implying RSL doesn't apply, force RSL correction to zero
-         psihatm_z = 0
-         psihath_z = 0
-         ! beta = 1.e6
-
-         !correct RSL-based using SUEWS system-wide values
-         z0_RSL = z0m
-         zd_RSL = zdm
-         if (zh_rsl <= zd_RSL) then
-            ! this may happen as only building height is considered in calculation of zd
-            zd_RSL = 0.7*zh_rsl
-         end if
-
-         ! given isolated flow, canyon effect is ignored by restricting canyon height to a very low level
-         idx_can = 1
-
-         ! then MOST recovers from RSL correction
-      else
-         !otherwise use RSL approach to calculate correction factors
+      if ((1.-PAI)/FAI <= 10) then
+         ! use RSL approach to calculate correction factors
          ! Step 3: calculate the stability dependent H&F constants
 
          call cal_ch(StabilityMethod, zh_RSL, zd_RSL, Lc, beta, L_MOD, Scc, f, c2h, ch)
@@ -219,6 +204,27 @@ contains
                            /(zarray(z) - zd_RSL)
          ENDDO
 
+      else
+
+         ! correct parameters if RSL approach doesn't apply for scenario of isolated flows
+         ! see Fig 1 of Grimmond and Oke (1999)
+         ! when isolated flow, implying RSL doesn't apply, force RSL correction to zero
+         psihatm_z = 0
+         psihath_z = 0
+         ! beta = 1.e6
+
+         !correct RSL-based using SUEWS system-wide values
+         z0_RSL = z0m
+         zd_RSL = zdm
+         if (zh_rsl <= zd_RSL) then
+            ! this may happen as only building height is considered in calculation of zd
+            zd_RSL = 0.99*zh_rsl
+         end if
+
+         ! given isolated flow, canyon effect is ignored by restricting canyon height to a very low level
+         ! idx_can = 1
+
+         ! then MOST recovers from RSL correction
       end if
 
       ! Step 6: Calculate mean variables above canopy
@@ -264,42 +270,54 @@ contains
       ! Step 8
       ! retrieve the diagnostics at key heights
       !
-      T2_C = dataoutLineTRSL(idx_2m)
-      q2_gkg = dataoutLineqRSL(idx_2m)
-      U10_ms = dataoutLineURSL(idx_10m)
+      T2_C = interp_z(2d0, zarray, dataoutLineTRSL)
+      q2_gkg = interp_z(2d0, zarray, dataoutLineqRSL)
+      U10_ms = interp_z(10d0, zarray, dataoutLineURSL)
       ! get relative humidity:
       RH2 = qa2RH(q2_gkg, press_hPa, T2_C)
 
-      ! if (abs(T2_C) > 100) then
-      !    WRITE (Errmessage, *) &
-      !       'L_MOD_RSL', L_MOD_RSL, &
-      !       'zH_RSL', zH_RSL, &
-      !       'Lc', Lc, &
-      !       'beta', beta, &
-      !       'zd', zd_RSL, &
-      !       'z0', z0_RSL, &
-      !       'elm', elm, &
-      !       'Scc', Scc, &
-      !       'f', f, &
-      !       't_h', t_h, &
-      !       ' T_can', dataoutLineTRSL(idx_can), &
-      !       ' T2_C', T2_C, &
-      !       'TStar_RSL', TStar_RSL
-      !    CALL ErrorHint(76, Errmessage, L_MOD, FAI, int(T2_C))
-
-      ! end if
-
-! print *, 'Wind speed', dataoutLineURSL
-      ! DO z = 1, nz
-      !    print *, dataoutLineTRSL(z)
-      ! ENDDO
-      ! DO z = 1, nz
-      !    print *, zarray(z)
-      ! ENDDO
-! print *, 'Temperature', Temp_C, dataoutLineTRSL
-! print *, 'qStar', qStar, qe
-! print *, 'humidity' , qa_gkg, dataoutLineqRSL*1000.
    END SUBROUTINE RSLProfile
+
+   function interp_z(z_x, z, v) result(v_x)
+
+      real(KIND(1D0)), intent(in) ::  z_x ! height to interpolate at
+      real(KIND(1D0)), dimension(nz), intent(in) ::  z ! heights
+      real(KIND(1D0)), dimension(nz), intent(in) ::  v ! values associated with heights
+
+      ! output
+      real(KIND(1D0)) ::v_x ! zd used in RSL
+
+      ! local variables
+      real(KIND(1D0)) ::slope! slope
+      real(KIND(1D0)) ::dz! slope
+      real(KIND(1D0)), dimension(nz) ::dif! slope
+      integer :: idx_low! vertical index lower than z_x
+      integer :: idx_x! vertical index lower than z_x
+      integer :: idx_high! vertical index higher than z_x
+      integer :: idx! vertical index higher than z_x
+      integer, PARAMETER::nz = 30! vertical index higher than z_x
+
+      ! initialise variables
+      idx_x = -999
+
+      dif = z - z_x
+      idx_x = MAXLOC(dif, 1, dif == 0)
+      idx_low = MAXLOC(dif, 1, dif < 0)
+      idx_high = MINLOC(dif, 1, dif > 0)
+
+      if (idx > 0) then
+         ! z_x is one of zarray elements
+         v_x = v(idx_x)
+      else
+         ! linear interpolation is performed
+         dz = z(idx_high) - z(idx_low)
+         slope = (v(idx_high) - v(idx_low))/dz
+         v_x = v(idx_low) + (z_x - z(idx_low))*slope
+      endif
+
+
+
+   end function interp_z
 
    function cal_elm_RSL(beta, Lc) result(elm)
 

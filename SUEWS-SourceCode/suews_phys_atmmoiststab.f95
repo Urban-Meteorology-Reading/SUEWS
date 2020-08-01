@@ -124,7 +124,7 @@ CONTAINS
       REAL(KIND(1d0)), INTENT(in)::zdm     !Displacement height
       REAL(KIND(1d0)), INTENT(in)::avU1    !Average wind speed
       REAL(KIND(1d0)), INTENT(in)::Temp_C    !Air temperature
-      REAL(KIND(1d0)), INTENT(in)::QH_init    !Kinematic sensible heat flux [K m s-1] used to calculate friction velocity
+      REAL(KIND(1d0)), INTENT(in)::QH_init    !sensible heat flux [W m-2]
       REAL(KIND(1d0)), INTENT(in)::avdens ! air density [kg m-3]
       REAL(KIND(1d0)), INTENT(in)::avcp ! volumetric heat capacity [J m-3 K-1]
 
@@ -181,7 +181,7 @@ CONTAINS
          zL = zzd/L_MOD
          z0L = z0m/L_MOD  !z0m roughness length
 
-         ! IF (z  L>2)THEN
+         ! IF (zL>2)THEN
          !    CALL ErrorHint(73,'LUMPS_atmos_functions_stab.f95: stability scale (z/L), UStar',zL,UStar,notUsedI)
          !    RETURN !MO-theory not necessarily valid above zL>2. Still causes problematic UStar values and correct limit might be 0.3.
          !    !Needs more investigations.
@@ -221,24 +221,24 @@ CONTAINS
       psimz0 = stab_psi_mom(StabilityMethod, z0L)
       ! TS 01 Aug 2018: set a low limit at 0.15 m/s (Schumann 1987, BLM)
       ! to prevent potential issues in other stability-related calcualtions
-      UStar = MAX(0.15, KUZ/(LOG(Zzd/z0m) - psim + psimz0))
-      TStar = (-H/UStar)
+      UStar = KUZ/(LOG(Zzd/z0m) - psim + psimz0)
+      ! TStar = (-H/UStar)
       ! END IF
 
       ! TS: limit UStar and TStar to reasonable values
       ! 02 Aug 2018: set a low limit at 0.15 m/s (Schumann 1987, BLM)
-      ! UStar = MAX(0.15, UStar)
+      UStar = MAX(0.15, UStar)
       TStar = (-H/UStar)
-      IF (UStar < 0.0001) THEN       !If u* still too small after iteration, then force quit simulation and write out error info
-         ! UStar=KUZ/(LOG(Zzd/z0m))
-         PRINT *, 'UStar', UStar, KUZ, (LOG(Zzd/z0m)), Zzd, z0m
-         CALL ErrorHint(30, 'SUBROUTINE cal_Stab:[ u*< 0.0001] zl,L_MOD', zl, L_MOD, notUsedI)
-         CALL ErrorHint(30, 'SUBROUTINE cal_Stab:[ u*< 0.0001] z0l,UStar', z0l, UStar, notUsedI)
-         CALL ErrorHint(30, 'SUBROUTINE cal_Stab:[ u*< 0.0001] psim,psimz0', psim, psimz0, notUsedI)
-         CALL ErrorHint(30, 'SUBROUTINE cal_Stab:[ u*< 0.0001] AVU1,log(zzd/z0m)', AVU1, LOG(zzd/z0m), notUsedI)
+      ! IF (UStar < 0.0001) THEN       !If u* still too small after iteration, then force quit simulation and write out error info
+      !    ! UStar=KUZ/(LOG(Zzd/z0m))
+      !    PRINT *, 'UStar', UStar, KUZ, (LOG(Zzd/z0m)), Zzd, z0m
+      !    CALL ErrorHint(30, 'SUBROUTINE cal_Stab:[ u*< 0.0001] zl,L_MOD', zl, L_MOD, notUsedI)
+      !    CALL ErrorHint(30, 'SUBROUTINE cal_Stab:[ u*< 0.0001] z0l,UStar', z0l, UStar, notUsedI)
+      !    CALL ErrorHint(30, 'SUBROUTINE cal_Stab:[ u*< 0.0001] psim,psimz0', psim, psimz0, notUsedI)
+      !    CALL ErrorHint(30, 'SUBROUTINE cal_Stab:[ u*< 0.0001] AVU1,log(zzd/z0m)', AVU1, LOG(zzd/z0m), notUsedI)
 
-         ! RETURN
-      ENDIF
+      !    ! RETURN
+      ! ENDIF
 
       ! if ( L_MOD<-990 ) then
       !   print*, 'L_MOD too low',L_MOD

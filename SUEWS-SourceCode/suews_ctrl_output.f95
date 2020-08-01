@@ -552,7 +552,8 @@ MODULE ctrl_output
       varAttr('f', 'g kg-1', f104, 'H&F07 and H&F08 constants', aA, 'RSL', 0), &
       varAttr('UStar_RSL', 'm s-1', f104, 'friction velocity used in RSL', aA, 'RSL', 0), &
       varAttr('FAI', '-', f104, 'frontal area index', aA, 'RSL', 0), &
-      varAttr('PAI', '-', f104, 'plan area index', aA, 'RSL', 0) &
+      varAttr('PAI', '-', f104, 'plan area index', aA, 'RSL', 0), &
+      varAttr('flag_RSL', '-', f104, 'flag for RSL', aA, 'RSL', 0) &
       /
 
 CONTAINS

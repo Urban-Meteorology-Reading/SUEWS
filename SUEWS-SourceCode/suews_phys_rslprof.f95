@@ -183,7 +183,7 @@ contains
 
       ! see Fig 1 of Grimmond and Oke (1999) for the range for 'real cities'
       ! PAI ~ [0.1,.61], FAI ~ [0.05,0.45]
-      flag_RSL = (1.-PAI)/FAI <= 18 .and. (1.-PAI)/FAI>.87
+      flag_RSL = (1.-PAI)/FAI <= 18 .and. (1.-PAI)/FAI > .87
 
       if (flag_RSL) then
          ! use RSL approach to calculate correction factors
@@ -230,14 +230,14 @@ contains
 
          ! correct elm uisng suggested valid thresholds by Harman and Finnigan (2007)
 
-         if (L_MOD>0) then
+         if (L_MOD > 0) then
             ! eqn 25 in HF07, stable condition:
-            Lc=2.2*kappa/beta*L_MOD
+            Lc = 2.2*kappa/beta*L_MOD
          else
             ! eqn 26 in HF07, stable condition:
-            Lc=-2/beta**2*L_MOD
+            Lc = -2/beta**2*L_MOD
          endif
-         elm=cal_elm_RSL(beta, Lc)
+         elm = cal_elm_RSL(beta, Lc)
 
          ! then MOST recovers from RSL correction
       end if
@@ -752,7 +752,7 @@ contains
       ENDDO
 
       ! set limit on z0_RSL for numeric stability
-      z0_RSL=merge(z0_RSL,1d-2,z0_RSL<1d-2)
+      z0_RSL = merge(z0_RSL, 1d-2, z0_RSL < 1d-2)
 
    end function cal_z0_RSL
 

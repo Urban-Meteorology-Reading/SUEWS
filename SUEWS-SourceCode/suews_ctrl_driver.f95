@@ -560,7 +560,7 @@ CONTAINS
       ! flag for Tsurf convergence
       logical:: flag_converge
       REAL(KIND(1D0)):: Ts_iter
-      REAL(KIND(1D0)):: L_mod_iter
+      ! REAL(KIND(1D0)):: L_mod_iter
       REAL(KIND(1D0)):: QH_Init
       INTEGER::i_iter
 
@@ -637,9 +637,9 @@ CONTAINS
       ! iteration is used below to get results converge
       flag_converge = .false.
       Ts_iter = TEMP_C
-      L_mod_iter = 10
+      ! L_mod_iter = 10
       i_iter = 1
-      do while (.not. flag_converge)
+      do while ((.not. flag_converge) .and. i_iter < 100)
 
          ! calculate dectime
          CALL SUEWS_cal_dectime( &
@@ -917,18 +917,20 @@ CONTAINS
          ! if (NetRadiationMethod < 10 .or. NetRadiationMethod > 100) exit
 
          ! Test if sensible heat fluxes converge in iterations
-         i_iter = i_iter + 1
-         if (abs(QH - QH_Init) > 0.1) then
+         ! if (abs(QH - QH_Init) > 0.1) then
+         if (abs(Ts_iter - TSfc_C) > 0.1) then
             flag_converge = .false.
          else
             flag_converge = .true.
          end if
 
-         ! force quit do-while loop if not convergent after 100 iterations
-         if (i_iter > 100) exit
+         ! ! force quit do-while loop if not convergent after 100 iterations
+         ! if (i_iter > 100) exit
 
          Ts_iter = TSfc_C
-         l_mod_iter = l_mod
+         ! l_mod_iter = l_mod
+
+         i_iter = i_iter + 1
 
          !==============main calculation end=======================
       ENDDO ! end iteration for tsurf calculations

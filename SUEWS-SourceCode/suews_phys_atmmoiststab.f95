@@ -219,16 +219,15 @@ CONTAINS
       z0L = z0m/L_MOD
       psim = stab_psi_mom(StabilityMethod, zL)
       psimz0 = stab_psi_mom(StabilityMethod, z0L)
+
       ! TS 01 Aug 2018: set a low limit at 0.15 m/s (Schumann 1987, BLM)
+      ! TS: limit UStar and TStar to reasonable values
       ! to prevent potential issues in other stability-related calcualtions
       UStar = KUZ/(LOG(Zzd/z0m) - psim + psimz0)
-      ! TStar = (-H/UStar)
-      ! END IF
-
-      ! TS: limit UStar and TStar to reasonable values
       ! 02 Aug 2018: set a low limit at 0.15 m/s (Schumann 1987, BLM)
       UStar = MAX(0.15, UStar)
       TStar = (-H/UStar)
+
       ! IF (UStar < 0.0001) THEN       !If u* still too small after iteration, then force quit simulation and write out error info
       !    ! UStar=KUZ/(LOG(Zzd/z0m))
       !    PRINT *, 'UStar', UStar, KUZ, (LOG(Zzd/z0m)), Zzd, z0m

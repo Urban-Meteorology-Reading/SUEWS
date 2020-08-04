@@ -1,6 +1,6 @@
 MODULE AtmMoistStab_module
    IMPLICIT NONE
-   REAL(KIND(1d0)), PARAMETER :: neut_limit = 1.E-5 !Limit for neutral stability
+   REAL(KIND(1d0)), PARAMETER :: neut_limit = 1.E-7 !Limit for neutral stability
 
 CONTAINS
    !.c!! For Lumps Version 2 - no stability calculations

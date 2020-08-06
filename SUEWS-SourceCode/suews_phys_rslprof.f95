@@ -188,8 +188,11 @@ contains
       zarray(idx_za) = zMeas
 
       ! see Fig 1 of Grimmond and Oke (1999) for the range for 'real cities'
-      ! PAI ~ [0.1,.61], FAI ~ [0.05,0.45]
-      flag_RSL = (1.-PAI)/FAI <= 18 .and. (1.-PAI)/FAI > .021
+      ! PAI ~ [0.1,.61], FAI ~ [0.05,0.45], zH_RSL > 2 m
+      flag_RSL = (1.-PAI)/FAI <= 18 .and. (1.-PAI)/FAI > .021 &
+                 .and. zH_RSL > 2
+      ! &
+      ! .and. PAI>0.1 .and. PAI<0.61
 
       if (flag_RSL) then
          ! use RSL approach to calculate correction factors
@@ -289,8 +292,11 @@ contains
 
       dataoutLineRSL = [zarray, dataoutLineURSL, dataoutLineTRSL, dataoutLineqRSL, &
                         !information for debugging
-                        L_stab, L_unstab, L_MOD_RSL, &
-                        zH_RSL, Lc_stab, Lc_unstab, Lc, &
+                        ! L_stab, L_unstab,
+                        L_MOD_RSL, &
+                        zH_RSL, &
+                        ! Lc_stab, Lc_unstab,
+                        Lc, &
                         beta, zd_RSL, z0_RSL, elm, Scc, f, UStar_RSL, FAI, PAI, merge(1.d0, 0.d0, flag_RSL) &
                         ]
 
@@ -830,49 +836,23 @@ contains
 
       ! height scale for bluff bodies
       Lc = (1.-PAI)/FAI*Zh_RSL
+      ! set a threshold of Lc to avoid numerical diffulties when FAI is too large (e.g., FAI>10)
+      Lc = merge(Lc, 0.5*Zh_RSL, Lc > 0.5*Zh_RSL)
 
-      L_MOD_RSL_x = L_MOD
-      L_MOD_RSL = L_MOD
-      it = 1
-      ! do while (abs(L_MOD_RSL_x - L_MOD_RSL) > .01 .and. it<5)
-      do while (abs(Lc_x - Lc) > .01 .and. it < 5)
+      ! a normalised scale with a physcially valid range between [-2,2] (Harman 2012, BLM)
+      lc_over_L = Lc/L_MOD
+      ! lc_over_L = lc/L_MOD_RSL_x
+      if (lc_over_L > 0) then
+         lc_over_L = min(2., lc_over_L)
+      else
+         lc_over_L = max(-2., lc_over_L)
+      end if
+      ! correct L_MOD_RSL
+      L_MOD_RSL = Lc/lc_over_L
 
-         Lc_x = Lc
-         L_MOD_RSL_x = L_MOD_RSL
-
-         ! a normalised scale with a physcially valid range between [-2,2] (Harman 2012, BLM)
-         lc_over_L = lc/L_MOD
-         ! lc_over_L = lc/L_MOD_RSL_x
-         if (lc_over_L > 0) then
-            lc_over_L = min(2., lc_over_L)
-         else
-            lc_over_L = max(-2., lc_over_L)
-         end if
-
-         ! Step 2:
-         ! Parameterise beta according to Harman 2012 with upper limit of 0.5
-
-         call cal_beta_RSL(StabilityMethod, PAI, sfr_tr, lc_over_L, beta, betaHF, betaNL)
-
-         ! correct L_MOD_RSL uisng suggested valid thresholds by Harman and Finnigan (2007)
-         ! eqn 25 in HF07 assuming gamma==1, stable condition:
-         L_stab = Lc/(2.2*kappa/beta)
-         Lc_stab = L_MOD*(2.2*kappa/beta)
-         ! eqn 26 in HF07, unstable condition:
-         L_unstab = Lc/(-2/beta**2)
-         Lc_unstab = L_MOD*(-2/beta**2)
-
-         ! corrections:
-         if (L_MOD > 0) then
-            ! L_MOD_RSL = merge(L_MOD, L_stab, L_MOD > L_stab)
-            Lc = merge(Lc, Lc_stab, Lc < Lc_stab)
-         else
-            ! L_MOD_RSL = merge(L_MOD, L_unstab, L_MOD < L_unstab)
-            Lc = merge(Lc, Lc_unstab, Lc > Lc_unstab)
-         endif
-         it = it + 1
-
-      end do
+      ! Step 2:
+      ! Parameterise beta according to Harman 2012 with upper limit of 0.5
+      beta=cal_beta_RSL(StabilityMethod, PAI, sfr_tr, lc_over_L)
 
       ! Schmidt number Harman and Finnigan 2008: assuming the same for heat and momemntum
       Scc = 0.5 + 0.3*TANH(2.*lc_over_L)
@@ -887,7 +867,7 @@ contains
 
    end subroutine RSL_cal_prms
 
-   subroutine cal_beta_RSL(StabilityMethod, PAI, sfr_tr, lc_over_L, beta, betaHF, betaNL)
+   function cal_beta_RSL(StabilityMethod, PAI, sfr_tr, lc_over_L) result(beta)
       ! Step 2:
       ! Parameterise beta according to Harman 2012 with upper limit of 0.5
       implicit none
@@ -898,21 +878,22 @@ contains
       real(KIND(1D0)), intent(in) :: lc_over_L
 
       ! output
-      real(KIND(1D0)), intent(out):: beta
-      real(KIND(1D0)), intent(out):: betaHF
-      real(KIND(1D0)), intent(out):: betaNL
+      real(KIND(1D0)):: beta
+
+      ! internal use
+      real(KIND(1D0)):: betaHF
+      real(KIND(1D0)):: betaNL
 
       real(KIND(1D0)), PARAMETER :: kappa = 0.4
       REAL(KIND(1d0)), PARAMETER::a1 = 4., a2 = -0.1, a3 = 1.5, a4 = -1.
       ! real(KIND(1D0)) :: phim_hat
       ! real(KIND(1D0)) :: zd_RSL
 
-      real(KIND(1D0)) :: betaN2, betaHF_0, betaNL_0
-      INTEGER :: it
-      real(KIND(1D0)) :: err
-      real(KIND(1D0)) :: phim
+      real(KIND(1D0)) :: betaN2
+      ! INTEGER :: it
+      ! real(KIND(1D0)) :: err
+      ! real(KIND(1D0)) :: phim
 
-      !
 
       ! betaN for trees found to be 0.3 and for urban 0.4 linearly interpolate between the two using surface fractions
       ! betaN2 = 0.30 + (1.-sfr(ConifSurf) - sfr(ConifSurf))*0.1
@@ -922,29 +903,8 @@ contains
          betaN2 = 0.35
       endif
 
-      ! betaHF
-      ! it = 1
-      ! phim = 1
-      ! DO WHILE ((err > 0.001) .AND. (it < 10))
-      !    betaHF_0 = betaN2/phim
-      !    phim = stab_phi_mom(StabilityMethod, (betaHF_0**2)*Lc/L_MOD)
-      !    betaHF = betaN2/phim
-      !    err = ABS(betaHF - betaHF_0)
-      !    it = it + 1
-      ! ENDDO
 
       betaHF = cal_beta_lc(stabilityMethod, betaN2, lc_over_L)
-
-      ! betaNL
-      ! it = 1
-      ! phim = 1
-      ! DO WHILE ((err > 0.001) .AND. (it < 10))
-      !    betaNL_0 = (kappa/2.)/phim
-      !    phim = stab_phi_mom(StabilityMethod, (betaNL_0**2)*Lc/L_MOD)
-      !    betaNL = (kappa/2.)/phim
-      !    err = ABS(betaNL_0 - betaNL)
-      !    it = it + 1
-      ! ENDDO
 
       betaNL = cal_beta_lc(stabilityMethod, kappa/2., lc_over_L)
 
@@ -958,7 +918,7 @@ contains
          beta = 0.5
       ENDIF
 
-   end subroutine cal_beta_RSL
+   end function cal_beta_RSL
 
    function cal_beta_lc(stabilityMethod, beta0, lc_over_l) result(beta_x)
       ! TS, 03 Aug 2020:

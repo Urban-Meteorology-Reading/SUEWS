@@ -541,12 +541,12 @@ MODULE ctrl_output
       varAttr('q_29', 'g kg-1', f104, 'q at 2.9Zh', aA, 'RSL', 0), &
       varAttr('q_30', 'g kg-1', f104, 'q at 3.0Zh', aA, 'RSL', 0), &
       ! debug info
-      varAttr('L_stab', 'm', f104, 'threshold of Obukhob length under stable conditions', aA, 'RSL', 0), &
-      varAttr('L_unstab', 'm', f104, 'threshold of Obukhob length under unstable conditions', aA, 'RSL', 0), &
+      ! varAttr('L_stab', 'm', f104, 'threshold of Obukhob length under stable conditions', aA, 'RSL', 0), &
+      ! varAttr('L_unstab', 'm', f104, 'threshold of Obukhob length under unstable conditions', aA, 'RSL', 0), &
       varAttr('L_MOD_RSL', 'm', f104, 'Obukhob length', aA, 'RSL', 0), &
       varAttr('zH_RSL', 'm', f104, 'canyon depth', aA, 'RSL', 0), &
-      varAttr('Lc_stab', 'm', f104, 'threshold of canopy drag length scale under stable conditions', aA, 'RSL', 0), &
-      varAttr('Lc_unstab', 'm', f104, 'threshold of canopy drag length scale under unstable conditions', aA, 'RSL', 0), &
+      ! varAttr('Lc_stab', 'm', f104, 'threshold of canopy drag length scale under stable conditions', aA, 'RSL', 0), &
+      ! varAttr('Lc_unstab', 'm', f104, 'threshold of canopy drag length scale under unstable conditions', aA, 'RSL', 0), &
       varAttr('Lc', 'm', f104, 'canopy drag length scale', aA, 'RSL', 0), &
       varAttr('beta', 'm', f104, 'beta coefficient from Harman 2012', aA, 'RSL', 0), &
       varAttr('zd_RSL', 'm', f104, 'displacement height', aA, 'RSL', 0), &

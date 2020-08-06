@@ -852,7 +852,7 @@ contains
 
       ! Step 2:
       ! Parameterise beta according to Harman 2012 with upper limit of 0.5
-      beta=cal_beta_RSL(StabilityMethod, PAI, sfr_tr, lc_over_L)
+      beta = cal_beta_RSL(StabilityMethod, PAI, sfr_tr, lc_over_L)
 
       ! Schmidt number Harman and Finnigan 2008: assuming the same for heat and momemntum
       Scc = 0.5 + 0.3*TANH(2.*lc_over_L)
@@ -894,7 +894,6 @@ contains
       ! real(KIND(1D0)) :: err
       ! real(KIND(1D0)) :: phim
 
-
       ! betaN for trees found to be 0.3 and for urban 0.4 linearly interpolate between the two using surface fractions
       ! betaN2 = 0.30 + (1.-sfr(ConifSurf) - sfr(ConifSurf))*0.1
       if (PAI > 0) then
@@ -902,7 +901,6 @@ contains
       ELSE
          betaN2 = 0.35
       endif
-
 
       betaHF = cal_beta_lc(stabilityMethod, betaN2, lc_over_L)
 

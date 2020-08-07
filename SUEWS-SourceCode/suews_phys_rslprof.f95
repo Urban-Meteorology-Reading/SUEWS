@@ -190,7 +190,7 @@ contains
       ! see Fig 1 of Grimmond and Oke (1999) for the range for 'real cities'
       ! PAI ~ [0.1,.61], FAI ~ [0.05,0.45], zH_RSL > 2 m
       flag_RSL = (1.-PAI)/FAI <= 18 .and. (1.-PAI)/FAI > .021 &
-                 .and. zH_RSL > 2
+                 .and. zH_RSL > 6
       ! &
       ! .and. PAI>0.1 .and. PAI<0.61
 
@@ -234,10 +234,10 @@ contains
          !correct RSL-based using SUEWS system-wide values
          z0_RSL = z0m
          zd_RSL = zdm
-         if (zh_rsl <= zd_RSL) then
-            ! this may happen as only building height is considered in calculation of zd
-            zd_RSL = 0.99*zh_rsl
-         end if
+         ! if (zh_rsl <= zd_RSL) then
+         !    ! this may happen as only building height is considered in calculation of zd
+         !    zd_RSL = 0.99*zh_rsl
+         ! end if
 
          ! correct elm uisng suggested valid thresholds by Harman and Finnigan (2007)
          if (L_MOD_RSL > 0) then

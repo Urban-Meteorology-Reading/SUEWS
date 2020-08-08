@@ -148,7 +148,7 @@ contains
       end do
 
       ! guaranttee 2 m is within the zarray
-      if (dz > 2) zarray(1) = 2.
+      if (dz > 2) zarray(1) = 1.999
 
       zarray(nz_can) = Zh_RSL
       ! fill up heights above canopy
@@ -332,12 +332,12 @@ contains
       integer, PARAMETER::nz = 30! vertical index higher than z_x
 
       ! initialise variables
-      idx_x = -999
+      idx_x = 0
 
       dif = z - z_x
-      idx_x = MAXLOC(dif, 1, dif == 0)
-      idx_low = MAXLOC(dif, 1, dif < 0)
-      idx_high = MINLOC(dif, 1, dif > 0)
+      idx_x = MAXLOC(dif, 1, abs(dif) < 1.d-6)
+      idx_low = MAXLOC(dif, 1, dif < 0.)
+      idx_high = MINLOC(dif, 1, dif > 0.)
 
       if (idx > 0) then
          ! z_x is one of zarray elements

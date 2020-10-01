@@ -273,7 +273,6 @@ rst_prolog = """
 
       1. Please report issues with the manual on the `GitHub page`_.
       2. Please cite SUEWS with proper information from our `Zenodo page`_.
-
 """
 # -- Options for HTML output -------------------------------------------------
 # The theme to use for HTML and HTML Help pages.  See the documentation for

@@ -265,14 +265,14 @@ rst_prolog = """
 .. |NotAvail| replace:: **Not available in this version.**
 .. |NotUsed| replace:: **Not used in this version.**
 
-.. _GitHub page: https://github.com/Urban-Meteorology-Reading/SUEWS/issues/new?assignees=&labels=docs&template=docs-issue-report.md&title=
+.. _Zenodo page: https://doi.org/10.5281/zenodo.3267305
 
 .. only:: html
 
     .. note::
 
-      Please report issues with the manual on the `GitHub page`_.
-
+      1. Please report issues with the manual on the `GitHub page`_.
+      2. Please cite SUEWS with proper information from our `Zenodo page`_.
 
 """
 # -- Options for HTML output -------------------------------------------------
@@ -280,7 +280,15 @@ rst_prolog = """
 # a list of builtin themes.
 #
 html_theme = "sphinx_rtd_theme"
-html_theme_path = ["_themes"]
+# html_theme_path = ["_themes"]
+html_context = {
+    "display_github": True, # Integrate GitHub
+    "github_user": "Urban-Meteorology-Reading", # Username
+    "github_repo": "SUEWS", # Repo name
+    "github_version": "master", # Version
+    "conf_py_path": "/source/", # Path in the checkout to the docs root
+}
+
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -415,10 +423,36 @@ epub_exclude_files = ["search.html"]
 #                     'Document Title',   # document title
 #                     'John A. Uthor')]   # document author
 
+
+
+
+def source_read_handler(app, docname, source):
+    if app.builder.format != 'html':
+        return
+    src = source[0]
+    # base location for `docname`
+    if ('"metadata":' in src) and ('"nbformat":' in src):
+        # consider this as an ipynb
+        # and do nothing
+        return
+
+    # modify the issue link to provide page specific URL
+    str_base='source'
+    str_repo=html_context['github_repo']
+    str_GHPage=f"""
+.. _GitHub page: https://github.com/Urban-Meteorology-Reading/SUEWS/issues/new?assignees=&labels=docs&template=docs-issue-report.md&body=[page-link](https://github.com/Urban-Meteorology-Reading/{str_repo}/blob/master/{str_base}/{docname}.rst)&title=[Docs]{docname}
+"""
+    rendered='\n'.join([str_GHPage,src])
+    source[0]=rendered.rstrip('\n')
+
+
 # Fix for scrolling tables in the RTD-theme
 # https://rackerlabs.github.io/docs-rackspace/tools/rtd-tables.html
 def setup(app):
+    app.connect('source-read', source_read_handler)
     app.add_stylesheet("theme_overrides.css")
+    # Fix equation formatting in the RTD-theme
+    app.add_css_file('fix-eq.css')
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
@@ -525,3 +559,5 @@ class RLStyle(UnsrtStyle):
 register_plugin("pybtex.style.formatting", "refs", MyStyle)
 register_plugin("pybtex.style.formatting", "rl", RLStyle)
 register_plugin("pybtex.style.sorting", "year_author_title", MySort)
+
+

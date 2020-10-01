@@ -7,3 +7,4 @@ nbsphinx==0.4.2
 exhale==0.2.3
 sphinxcontrib_programoutput==0.15
 sphinxcontrib.bibtex
+sphinx_rtd_theme

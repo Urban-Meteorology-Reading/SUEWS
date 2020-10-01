@@ -59,9 +59,8 @@ SUEWS: Surface Urban Energy and Water Balance Scheme
 
       Visit the repositories below for different citation styles.
 
-  - Software with manual:
+  Please go to `our Zenodo repository`_ for a proper citation of SUEWS.
 
-       Ting Sun, Leena Järvi, Hamidreza Omidvar, Natalie Theeuwes, Fredrik Lindberg, Zhenkun Li, & Sue Grimmond. (2019, November 8). Urban-Meteorology-Reading/SUEWS: 2019a Release (Version 2019a). Zenodo. |doi_software|
 
 
 
@@ -74,7 +73,7 @@ SUEWS: Surface Urban Energy and Water Balance Scheme
 
 
 .. _our GitHub page: https://urban-meteorology-reading.github.io/SUEWS
-.. _our Zenodo repository: https://zenodo.org/record/3533450
+.. _our Zenodo repository: `Zenodo page`_
 .. _this form: `dowload form`_
 .. _dowload form: http://micromet.reading.ac.uk/software/
 

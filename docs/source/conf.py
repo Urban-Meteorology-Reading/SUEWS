@@ -439,7 +439,7 @@ def source_read_handler(app, docname, source):
     str_base='docs/source'
     str_repo=html_context['github_repo']
     str_GHPage=f"""
-.. _GitHub page: https://github.com/Urban-Meteorology-Reading/SUEWS/issues/new?assignees=&labels=docs&template=docs-issue-report.md&body=[page-link](https://github.com/Urban-Meteorology-Reading/{str_repo}/blob/master/{str_base}/{docname}.rst)&title=[Docs]{docname}
+.. _GitHub page: https://github.com/Urban-Meteorology-Reading/SUEWS/issues/new?assignees=&labels=docs&template=docs-issue-report.md&body=[source-link](https://github.com/Urban-Meteorology-Reading/{str_repo}/blob/master/{str_base}/{docname}.rst)+[docs-link](https://suews.readthedocs.org/{docname}.html)&title=[Docs]{docname}
 """
     rendered='\n'.join([str_GHPage,src])
     source[0]=rendered.rstrip('\n')

@@ -181,7 +181,8 @@ if read_the_docs_build:
 
     subprocess.call("doxygen", shell=True)
 else:
-    subprocess.call("doxygen", shell=True)
+    # subprocess.call("doxygen", shell=True)
+    pass
 
 
 # exhale_args = {
@@ -281,11 +282,11 @@ rst_prolog = """
 html_theme = "sphinx_rtd_theme"
 # html_theme_path = ["_themes"]
 html_context = {
-    "display_github": True, # Integrate GitHub
-    "github_user": "Urban-Meteorology-Reading", # Username
-    "github_repo": "SUEWS", # Repo name
-    "github_version": "master", # Version
-    "conf_py_path": "/source/", # Path in the checkout to the docs root
+    "display_github": True,  # Integrate GitHub
+    "github_user": "Urban-Meteorology-Reading",  # Username
+    "github_repo": "SUEWS",  # Repo name
+    "github_version": "master",  # Version
+    "conf_py_path": "/source/",  # Path in the checkout to the docs root
 }
 
 
@@ -423,10 +424,11 @@ epub_exclude_files = ["search.html"]
 #                     'John A. Uthor')]   # document author
 
 
+import urllib.parse
 
 
 def source_read_handler(app, docname, source):
-    if app.builder.format != 'html':
+    if app.builder.format != "html":
         return
     src = source[0]
     # base location for `docname`
@@ -436,22 +438,33 @@ def source_read_handler(app, docname, source):
         return
 
     # modify the issue link to provide page specific URL
-    str_base='docs/source'
-    str_repo=html_context['github_repo']
-    str_GHPage=f"""
-.. _GitHub page: https://github.com/Urban-Meteorology-Reading/SUEWS/issues/new?assignees=&labels=docs&template=docs-issue-report.md&body=[source-link](https://github.com/Urban-Meteorology-Reading/{str_repo}/blob/master/{str_base}/{docname}.rst)+[docs-link](https://suews.readthedocs.org/{docname}.html)&title=[Docs]{docname}
+    str_base = "docs/source"
+    str_repo = html_context["github_repo"]
+
+    # encode body query to be URL compliant
+    str_body = f"""## Issue
+<!-- Please describe the issue below this line -->
+
+## Links
+[source doc](https://github.com/Urban-Meteorology-Reading/{str_repo}/blob/master/{str_base}/{docname}.rst)
+[RTD page](https://suews.readthedocs.org/en/latest/{docname}.html)
 """
-    rendered='\n'.join([str_GHPage,src])
-    source[0]=rendered.rstrip('\n')
+    str_query_body=urllib.parse.urlencode({'body':str_body})
+    str_url = f"https://github.com/Urban-Meteorology-Reading/SUEWS/issues/new?assignees=&labels=docs&template=docs-issue-report.md&{str_query_body}&title=[Docs]{docname}"
+    str_GHPage = f"""
+.. _GitHub page: {str_url}
+"""
+    rendered = "\n".join([str_GHPage, src])
+    source[0] = rendered.rstrip("\n")
 
 
 # Fix for scrolling tables in the RTD-theme
 # https://rackerlabs.github.io/docs-rackspace/tools/rtd-tables.html
 def setup(app):
-    app.connect('source-read', source_read_handler)
+    app.connect("source-read", source_read_handler)
     app.add_stylesheet("theme_overrides.css")
     # Fix equation formatting in the RTD-theme
-    app.add_css_file('fix-eq.css')
+    app.add_css_file("fix-eq.css")
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
@@ -502,7 +515,6 @@ class MyStyle(UnsrtStyle):
     default_name_style = "lastfirst"
     default_label_style = "alpha"
 
-
     def format_web_refs(self, e):
         # based on urlbst output.web.refs
         return sentence[
@@ -517,7 +529,6 @@ class MyStyle(UnsrtStyle):
             sentence[field("publisher"), self.format_edition(e), date],
             optional[sentence[self.format_isbn(e)]],
             self.format_web_refs(e),
-
             # tag('strong')[optional_field('note')],
         ]
 
@@ -529,7 +540,6 @@ class RLStyle(UnsrtStyle):
     default_sorting_style = "author_year_title"
     default_label_style = "number"
     default_name_style = "lastfirst"
-
 
     def format_web_refs(self, e):
         # based on urlbst output.web.refs
@@ -550,7 +560,6 @@ class RLStyle(UnsrtStyle):
 
         return template
 
-
     # format_online = format_article
     # format_book = format_article
 
@@ -558,5 +567,4 @@ class RLStyle(UnsrtStyle):
 register_plugin("pybtex.style.formatting", "refs", MyStyle)
 register_plugin("pybtex.style.formatting", "rl", RLStyle)
 register_plugin("pybtex.style.sorting", "year_author_title", MySort)
-
 

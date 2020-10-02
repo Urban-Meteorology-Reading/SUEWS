@@ -437,7 +437,7 @@ def source_read_handler(app, docname, source):
         return
 
     # modify the issue link to provide page specific URL
-    str_base='source'
+    str_base='docs/source'
     str_repo=html_context['github_repo']
     str_GHPage=f"""
 .. _GitHub page: https://github.com/Urban-Meteorology-Reading/SUEWS/issues/new?assignees=&labels=docs&template=docs-issue-report.md&body=[page-link](https://github.com/Urban-Meteorology-Reading/{str_repo}/blob/master/{str_base}/{docname}.rst)&title=[Docs]{docname}

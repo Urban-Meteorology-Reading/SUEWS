@@ -471,8 +471,8 @@ CONTAINS
       REAL(KIND(1D0)), DIMENSION(NSURF)::drain
       REAL(KIND(1D0)), DIMENSION(NSURF)::FreezState
       REAL(KIND(1D0)), DIMENSION(NSURF)::FreezStateVol
-      REAL(KIND(1D0)), DIMENSION(NSURF)::soilstoreOld
-      REAL(KIND(1D0)), DIMENSION(NSURF)::stateOld
+      REAL(KIND(1D0)), DIMENSION(NSURF)::soilstore_updated
+      REAL(KIND(1D0)), DIMENSION(NSURF)::state_id_updated
       REAL(KIND(1D0)), DIMENSION(NSURF)::tsurf_ind
 
       ! TODO: TS 25 Oct 2017
@@ -831,7 +831,7 @@ CONTAINS
             drain_per_tstep, &  !output
             drain, frac_water2runoff, &
             AdditionalWater, runoffPipes, runoff_per_interval, &
-            AddWater, stateOld, soilstoreOld)
+            AddWater, state_id_updated, soilstore_updated)
          !============= calculate water balance end =============
 
          !===============Resistance Calculations=======================
@@ -858,7 +858,7 @@ CONTAINS
             PervFraction, vegfraction, addimpervious, qn1_snowfree, qf, qs, vpd_hPa, s_hPa, &
             ResistSurf, RA, rb, snowdensmin, precip, PipeCapacity, RunoffToWater, &
             NonWaterFraction, wu_nsurf, addVeg, addWaterBody, SnowLimPaved, SnowLimBldg, &
-            SurfaceArea, FlowChange, drain, WetThresh, stateOld, mw_ind, SoilStoreCap, rainonsnow, &
+            SurfaceArea, FlowChange, drain, WetThresh, state_id_updated, mw_ind, SoilStoreCap, rainonsnow, &
             freezmelt, freezstate, freezstatevol, Qm_Melt, Qm_rain, Tsurf_ind, sfr, &
             StateLimit, AddWater, frac_water2runoff, StoreDrainPrm_next, SnowPackLimit, SnowProf_24hr, &
             SnowPack_next, SnowFrac_next, SnowWater_prev, IceFrac_prev, SnowDens_next, &! input:
@@ -905,7 +905,7 @@ CONTAINS
          CALL SUEWS_cal_SoilState( &
             SMDMethod, xsmd, NonWaterFraction, SoilMoistCap, &!input
             SoilStoreCap, surf_chang_per_tstep, &
-            soilstore_id_next, soilstoreOld, sfr, &
+            soilstore_id_next, soilstore_updated, sfr, &
             smd, smd_nsurf, tot_chang_per_tstep, SoilState)!output
 
          !============ calculate surface temperature ===============
@@ -1764,6 +1764,7 @@ CONTAINS
       runoffAGveg, runoffAGimpervious)
 
       IMPLICIT NONE
+      ! TODO: #140 several state/soilstore related variables need to be sorted out
 
       INTEGER, INTENT(in) ::Diagnose
       INTEGER, INTENT(in) ::snowuse

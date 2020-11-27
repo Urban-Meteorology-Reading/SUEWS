@@ -51,7 +51,6 @@ CONTAINS
       INTEGER, INTENT(out)::NetRadiationMethod_use ! processed NetRadiationMethod to be used for other radiation calculations
       INTEGER, INTENT(out)::AlbedoChoice, ldown_option
       !Determine what should be done with respect to radiation
-      ! TODO: this can be wrapped into a subroutine, TS 20 Oct 2017
       AlbedoChoice = 0
       ldown_option = 0
       IF (NetRadiationMethod == 0) THEN    !Observed Q* from the met input file will be used

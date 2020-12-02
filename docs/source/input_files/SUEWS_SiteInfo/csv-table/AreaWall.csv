@@ -1,2 +1,2 @@
 "Referencing Table","Requirement","Comment"
-"`SUEWS_SiteSelect.txt`","`MU`","Area of wall within grid (needed for ESTM calculation). [|m^2|]"
+"`SUEWS_SiteSelect.txt`","`MU`","Area of wall within grid (needed for ESTM calculation). [ |m^2| ]"

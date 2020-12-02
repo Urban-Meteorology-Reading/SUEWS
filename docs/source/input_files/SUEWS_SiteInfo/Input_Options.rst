@@ -263,7 +263,7 @@ Input Options
 .. option:: AreaWall
 
 	:Description:
-		Area of wall within grid (needed for ESTM calculation).
+		Area of wall within grid (needed for ESTM calculation) [W |m^-2| ].
 
 	:Configuration:
 		.. csv-table::

@@ -1,5 +1,10 @@
 # SUEWS
 
+
+THIS PROJECT IS ARCHIVED AND NOW MAINTAINED BY [@UMEP-dev](https://github.com/UMEP-dev).
+
+-------
+
 This is a public repo for SUEWS source code and documentation.
 
 
